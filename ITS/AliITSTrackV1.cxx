@@ -623,7 +623,7 @@ void  AliITSTrackV1::Correct(Double_t rk) {
   		
 }
 
-void AliITSTrackV1::AddMS(AliITSRad *rl, Double_t mass) {
+void AliITSTrackV1::AddMS(Double_t mass) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it       
 //////////   Modification of the covariance matrix to take into account multiple scattering  ///////////     
    
@@ -697,7 +697,7 @@ void AliITSTrackV1::AddMS(AliITSRad *rl, Double_t mass) {
   fC44+=theta2*q30*q30;
     
 }
-void AliITSTrackV1::PrimaryTrack(AliITSRad *rl) {
+void AliITSTrackV1::PrimaryTrack() {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
 // calculation of part of covariance matrix for vertex constraint
 
@@ -725,7 +725,7 @@ void AliITSTrackV1::PrimaryTrack(AliITSRad *rl) {
     fd2(i)=fC22;
     ftgl2(i)=fC33;
     fdtgl(i)=fC32; 
-    AddMS(rl);    
+    AddMS();    
     AddEL(-1,0); 	   
   } 		
 }	

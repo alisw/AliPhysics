@@ -454,6 +454,7 @@ AliITSVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   delete hITSYv;
   Char_t name[30];
   //  sprintf(name,"Vertex_%d",evnumber);
+  if(fDebug>0)Info("FindVertexForCurrentEvent","Vertex found for event %d",evnumber);
   sprintf(name,"Vertex");
   fCurrentVertex = new AliITSVertex(Position,Resolution,SNR,name);
   return fCurrentVertex;

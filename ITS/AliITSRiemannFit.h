@@ -42,11 +42,11 @@ class AliITSRiemannFit : public TObject{
   Float_t GetdY(Int_t i) const {return this->fPointRecs[i]->fdy;}
   Float_t GetdZ(Int_t i) const {return this->fPointRecs[i]->fdz;}
   
-  void     InitPoints(Int_t evnt,Int_t ntracks,AliITS *ITS,TTree *TR,Int_t nparticles);
+  void     InitPoints(Int_t ntracks,AliITS *ITS,TTree *TR,Int_t nparticles);
   void     WritePoints(void);
   void     ReadPoints(void);
   static Int_t SolveCubic(Double_t a,Double_t b,Double_t c,Double_t&,Double_t&,Double_t&);
-  Int_t FitHelix(Int_t tracknumber,Int_t charge,Double_t Px,Double_t Py,Double_t Pz,
+  Int_t FitHelix(Int_t tracknumber,Double_t Px,Double_t Py,Double_t Pz,
 		 Double_t& fd0,Double_t& fphi,Double_t& u0, Double_t& v0, Double_t& rho,
 		 Double_t& omega, Double_t& z0,
 		 Double_t& vpar,Double_t& chisql,Double_t& fCorrLin,Double_t& fFit,

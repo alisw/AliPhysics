@@ -180,7 +180,7 @@ void FillPoints(Point_tl **Points,Int_t &index,Float_t *xpoint,
 }
 // -----------------------------------------------------------------------
 
-void AliITSRiemannFit::InitPoints(Int_t evnt,Int_t ntracks,AliITS *ITS,
+void AliITSRiemannFit::InitPoints(Int_t ntracks,AliITS *ITS,
 				    TTree *TR,Int_t nparticles){
   //////////////////////////////////////////////////////////////////////
   // Fill the class member fPointRecs with the reconstructed points
@@ -676,7 +676,7 @@ Int_t FitLinear(Int_t npoints, TVector3 **input, TVector3 **errors, Double_t ome
 }
 
 //-------------------------------------------------------------------
-Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Int_t charge,Double_t Px,Double_t Py,Double_t Pz,Double_t& fd0,
+Int_t AliITSRiemannFit::FitHelix(Int_t tracknumber,Double_t Px,Double_t Py,Double_t Pz,Double_t& fd0,
 				   Double_t& fphi,Double_t& u0, Double_t& v0, Double_t& rho,Double_t& omega, Double_t& z0,
 				   Double_t& vpar,Double_t& chisql, Double_t& fCorrLin,Double_t& fFit,
 				   Int_t first,Int_t second,Int_t third,Int_t fourth,Int_t fifth,Int_t sixth) {

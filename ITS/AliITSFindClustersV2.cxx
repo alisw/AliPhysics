@@ -268,7 +268,7 @@ void AliITSFindClustersV2::Exec(const Option_t *opt){
     Char_t name[50];
 
     if(!fInit){
-	Warning("Exec","Initilization not succesfull. Aborting.");
+	Warning("Exec","(opt=%s) Initilization not succesfull. Aborting.\n",opt);
 	return;
     } // end if !fInit
 

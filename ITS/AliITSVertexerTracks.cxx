@@ -210,7 +210,7 @@ AliITSVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(Int_t evnumb) {
   TString treeName = "TreeT_ITS_";
   treeName += evnumb;
   //  TTree *trkTree=(TTree*)fInFile->Get(treeName.Data()); masera
-  TTree *trkTree;
+  TTree *trkTree=0;
   if(!trkTree) return fCurrentVertex;
 
 

@@ -398,7 +398,7 @@ Int_t AliITStrackerV2::PropagateBack(TTree *inp, TTree *out) {
   //--------------------------------------------------------------------
   //This functions propagates reconstructed ITS tracks back
   //--------------------------------------------------------------------
-  Error("PropagateBack","This method is not converted to NewIO yet\n");
+  Error("PropagateBack","This method is not converted to NewIO yet (Args: %x , %x )\n",inp,out);
   return 1;
   /*
   TFile *in=(TFile*)inp;
@@ -541,7 +541,7 @@ Int_t AliITStrackerV2::RefitInward(TTree *in, TTree *out) {
   // This functions refits ITS tracks using the 
   // "inward propagated" TPC tracks
   //--------------------------------------------------------------------
-  Error("RefitInward","This method is not converted to NewIO yet\n");
+  Error("RefitInward","This method is not converted to NewIO yet (Args: %x , %x )\n",in,out);
   return 1;
   /*
   TFile *in=(TFile*)inp;

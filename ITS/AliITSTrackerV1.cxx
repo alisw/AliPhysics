@@ -679,7 +679,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	primaryTrack.SetZv(zv);
 	primaryTrack.SetsigmaDv(sigmaDv);
 	primaryTrack.SetsigmaZv(sigmaZv);
-	primaryTrack.PrimaryTrack(frl);
+	primaryTrack.PrimaryTrack();
 	TVector  d2=primaryTrack.Getd2();
 	TVector  tgl2=primaryTrack.Gettgl2();
 	TVector  dtgl=primaryTrack.Getdtgl();
@@ -1211,7 +1211,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 		    // cout<<" chi2pred = "<<chi2pred<<"\n";
 		    // if(chi2pred>fChi2max) continue; //aggiunto il 30-7-2001
 		    if(iriv == 0) flaghit=1;
-		    (*newTrack).AddMS(frl);  // add the multiple scattering 
+		    (*newTrack).AddMS();  // add the multiple scattering 
 		                             //matrix to the covariance matrix 
 		    (*newTrack).AddEL(1.,0);
 
@@ -1232,7 +1232,7 @@ void AliITSTrackerV1::RecursiveTracking(TList *trackITSlist) {
 	    AliITSTrackV1 *newTrack = new AliITSTrackV1(*trackITS);
 	    (*newTrack).Setfnoclust();        	 
 	    //(*newTrack).SetLayer((*trackITS).GetLayer()-1); 
-	    (*newTrack).AddMS(frl);  // add the multiple scattering matrix
+	    (*newTrack).AddMS();  // add the multiple scattering matrix
 	                             // to the covariance matrix  
 	    (*newTrack).AddEL(1.,0);
 	    listoftrack.AddLast(newTrack);

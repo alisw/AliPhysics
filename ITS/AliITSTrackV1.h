@@ -95,7 +95,7 @@ public:
   Double_t GetSigmaphi() const{return fC00;}    // gets the phi variance
   Double_t GetSigmaZ() const{return  fC11;}     // gets the Z variance
   void AddEL(Double_t signdE,  Bool_t flagtot, Double_t mass=0.1396);  // adds the energy loss
-  void AddMS(AliITSRad *rl,Double_t mass=0.1396);  // modify the covariance matrix to take into account the multiple scattering
+  void AddMS(Double_t mass=0.1396);  // modify the covariance matrix to take into account the multiple scattering
   void Correct(Double_t rk);  // correct the track to take into account the real detector geometry
   void SetDv(Double_t x) {fDv=x;}  // sets the radial impact parameter for vertex constraint 
   void SetZv(Double_t x) {fZv=x;}  // sets longitudinal impact parameter for vertex constraint
@@ -106,7 +106,7 @@ public:
   void Setfnoclust() {fnoclust++;}          //modify fnoclust 
   Double_t GetsigmaDv() const {return fsigmaDv;}   // gets sigma for Dv extraction
   Double_t GetsigmaZv() const {return fsigmaZv;}   // gets sigma for Zv extraction
-  void PrimaryTrack(AliITSRad *rl);   // calculation of part of covariance matrix for vertex constraint
+  void PrimaryTrack();   // calculation of part of covariance matrix for vertex constraint
   void Setd2(TVector &x) {for(Int_t i=0; i<6; i++){fd2(i)=x(i);}} // sets the vector fd2
   void Settgl2(TVector &x) {for(Int_t i=0; i<6; i++){ftgl2(i)=x(i);}}  // sets the vector ftgl2
   void Setdtgl(TVector &x) {for(Int_t i=0; i<6; i++){fdtgl(i)=x(i);}}  // sets the vector fdtgl

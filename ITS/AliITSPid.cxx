@@ -121,6 +121,7 @@ Int_t	AliITSPid::wpikp(Float_t pm,Float_t q)
 //-----------------------------------------------------------
 Int_t	AliITSPid::GetPcode(TClonesArray* rps,Float_t pm)
 {
+  Info("GetPcode","method not implemented - Inputs TClonesArray *%x , Float_t %f",rps,pm); 
     return 0;    
 }
 //-----------------------------------------------------------
