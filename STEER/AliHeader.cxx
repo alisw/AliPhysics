@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/05/23 08:50:01  hristov
+Weird inline removed
+
 Revision 1.7  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -109,7 +112,7 @@ void AliHeader::SetGenEventHeader(AliGenEventHeader* header)
     fGenHeader = header;
 }
 
-iAliGenEventHeader*  AliHeader::GenEventHeader() const
+AliGenEventHeader*  AliHeader::GenEventHeader() const
 {
 // Get pointer to header for generated event
     return fGenHeader;
