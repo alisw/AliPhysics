@@ -29,10 +29,12 @@ public TObject {
     virtual TObject * GetHit(Int_t ix, Int_t iy) const             =0;
     // Flag a hit as used
     virtual void   FlagHit(Int_t ix, Int_t iy)                     =0;
-    // Test hit status
+    // Validate
+    virtual  Bool_t ValidateHit(Int_t ix, Int_t iy)                =0;
+     // Test hit status
     virtual FlagType TestHit(Int_t ix, Int_t iy)                   =0;
     
-    ClassDef(AliHitMap,1) //virtual base class for HitMap
+    ClassDef(AliHitMap,2) //virtual base class for HitMap
 };
 #endif	
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/11/02 12:43:21  jchudoba
+remove fNdigits data member, it could have wrong value if fDigits is updated. Make this class non-persistent
+
 Revision 1.9  2001/03/20 13:34:05  egangler
 Obvious small bug
 
@@ -99,6 +102,16 @@ void AliMUONHitMapA1::Clear(const char *)
 {
 // Clear hitmap
     memset(fHitMap,0,sizeof(int)*fMaxIndex);
+}
+
+Bool_t AliMUONHitMapA1::ValidateHit(Int_t ix, Int_t iy)
+{
+    //
+    // Check if pad coordinates are within boundaries
+    //
+//    printf("\n Validate %d %d %d %d", ix, iy, fNpx, fNpy);
+    
+    return (TMath::Abs(ix) <= fNpx && TMath::Abs(iy) <= fNpy); 
 }
 
 Int_t AliMUONHitMapA1::CheckedIndex(Int_t ix, Int_t iy) const
