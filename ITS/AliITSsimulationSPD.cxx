@@ -57,6 +57,7 @@ AliITSsimulationSPD::AliITSsimulationSPD(AliITSsegmentation *seg, AliITSresponse
       fMapA2 = new AliITSMapA2(fSegmentation);
 
       //
+
       fNPixelsZ=fSegmentation->Npz();
       fNPixelsX=fSegmentation->Npx();
 
@@ -115,26 +116,19 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
     Float_t spdLength = fSegmentation->Dz();
     Float_t spdWidth = fSegmentation->Dx();
 
-    Float_t difCoef, dum; 
+    Float_t difCoef, dum;       
     fResponse->DiffCoeff(difCoef,dum); 
 
     Float_t zPix0 = 1e+6;
     Float_t xPix0 = 1e+6;
-    Float_t yPix0 = 1e+6;
     Float_t yPrev = 1e+6;   
-    Float_t zP0 = 100.;
-    Float_t xP0 = 100.;
 
     Float_t zPitch = fSegmentation->Dpz(0);
     Float_t xPitch = fSegmentation->Dpx(0);
   
-    //cout << "pitch per z: " << zPitch << endl;
-    //cout << "pitch per r*phi: " << xPitch << endl;
-
     TObjArray *fHits = mod->GetHits();
     Int_t nhits = fHits->GetEntriesFast();
     if (!nhits) return;
-    //    cout << "module, nhits ="<<module<<","<<nhits<< endl;
 
   //  Array of pointers to the label-signal list
 
@@ -146,20 +140,22 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
     // Fill detector maps with GEANT hits
     // loop over hits in the module
     static Bool_t first;
-    Int_t lasttrack=-2,idhit=-1;
+    Int_t lasttrack=-2;
     Int_t hit, iZi, jz, jx;
     for (hit=0;hit<nhits;hit++) {
         AliITShit *iHit = (AliITShit*) fHits->At(hit);
 	Int_t layer = iHit->GetLayer();
+        Float_t yPix0 = -73; 
+        if(layer == 1) yPix0 = -77; 
 
 	// work with the idtrack=entry number in the TreeH
-	//Int_t idhit,idtrack;
-	//mod->GetHitTrackAndHitIndex(hit,idtrack,idhit);    
+	Int_t idhit,idtrack;
+	mod->GetHitTrackAndHitIndex(hit,idtrack,idhit);    
 	//Int_t idtrack=mod->GetHitTrackIndex(hit);  
         // or store straight away the particle position in the array
 	// of particles : 
 
-        if(iHit->StatusEntering()) idhit=hit;
+	//b.b.        if(iHit->StatusEntering()) idhit=hit;
         Int_t itrack = iHit->GetTrack();
         Int_t dray = 0;
    
@@ -192,21 +188,10 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 	Int_t status = iHit->GetTrackStatus();      
       
 	// Check boundaries
-	if(TMath::Abs(zPix) > spdLength/2.) {
-	  printf("!! Zpix outside = %f\n",zPix);
-	  if(status == 66) zP0=100;
-	  continue;
-	} 
-
-
-	if (TMath::Abs(xPix) > spdWidth/2.) {
-	  printf("!! Xpix outside = %f\n",xPix);
-	  if (status == 66) xP0=100;
-	  continue;
-	}  
-
-	Float_t zP = (zPix + spdLength/2.)/1000.;  
-	Float_t xP = (xPix + spdWidth/2.)/1000.;  
+	if(zPix  > spdLength/2) zPix = spdLength/2 - 10;
+	if(zPix  < 0 && zPix < -spdLength/2) zPix = -spdLength/2 + 10;
+	if(xPix  > spdWidth/2) xPix = spdWidth/2 - 10;
+	if(xPix  < 0 && xPix < -spdWidth/2) zPix = -spdWidth/2 + 10;
 
 	Int_t trdown = 0;
 
@@ -216,33 +201,17 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
            xPix0 = xPix;
            yPrev = yPix; 
 	}   
-	// enter Si only
-	if (layer == 1 && status == 66 && yPix > 71.) {     
-             yPix0 = yPix;
-             zP0 = zP;
-             xP0 = xP;
-	}
-	// enter Si only
-	if (layer == 2 && status == 66 && yPix < -71.) {    
-             yPix0 = yPix;
-             zP0 = zP;
-             xP0 = xP;
-	}       
+
 	Float_t depEnergy = iHit->GetIonization();
 	// skip if the input point to Si       
+
 	if(depEnergy <= 0.) continue;        
-	// skip if the input point is outside of Si, but the next
-	// point is inside of Si
-	if(zP0 > 90 || xP0 > 90) continue; 
+
 	// if track returns to the opposite direction:
-	if (layer == 1 && yPix > yPrev) {
-	    yPix0 = yPrev;
-            trdown = 1;
-	}
-	if (layer == 2 && yPix < yPrev) {
-            yPix0 = yPrev;
+	if (yPix < yPrev) {
             trdown = 1;
 	} 
+
 
 	// take into account the holes diffusion inside the Silicon
 	// the straight line between the entrance and exit points in Si is
@@ -259,9 +228,10 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 	Float_t sigmaDif = 0.; 
 	Float_t zdif = zPix - zPix0;
 	Float_t xdif = xPix - xPix0;
-	Float_t ydif = yPix - yPix0;
+	Float_t ydif = TMath::Abs(yPix - yPrev);
+	Float_t ydif0 = TMath::Abs(yPrev - yPix0);
 
-	if(TMath::Abs(ydif) < 0.1) continue; // Ydif is not zero
+	if(ydif < 1) continue; // ydif is not zero
 
 	Float_t projDif = sqrt(xdif*xdif + zdif*zdif);
 	Int_t ndZ = (Int_t)TMath::Abs(zdif/zPitch) + 1;
@@ -272,16 +242,18 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 	if(ndX > ndZ) nsteps = ndX;
 	if(nsteps < 6) nsteps = 6;  // minimum number of the steps 
 
-	if(TMath::Abs(projDif) > 5.0) tang = ydif/projDif;
+	if (projDif < 5 ) {
+	   drPath = (yPix-yPix0)*1.e-4;  
+           drPath = TMath::Abs(drPath);        // drift path in cm
+	   sigmaDif = difCoef*sqrt(drPath);    // sigma diffusion in cm        
+	   sigmaDif = sigmaDif*kconv;         // sigma diffusion in microns
+           nsteps = 1;
+	}  
+
+	if(projDif > 5) tang = ydif/projDif;
 	Float_t dCharge = charge/nsteps;       // charge in e- for one step
 	Float_t dZ = zdif/nsteps;
 	Float_t dX = xdif/nsteps;
-
-	if (TMath::Abs(projDif) < 5.0 ) {
-	   drPath = ydif*1.e-4;  
-           drPath = TMath::Abs(drPath);        // drift path in cm
-	   sigmaDif = difCoef*sqrt(drPath);    // sigma diffusion in cm        
-	}  
 
 	for (iZi = 1;iZi <= nsteps;iZi++) {
             Float_t dZn = iZi*dZ;
@@ -289,20 +261,20 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 	    Float_t zPixn = zPix0 + dZn;
 	    Float_t xPixn = xPix0 + dXn;
 
-	    if(TMath::Abs(projDif) >= 5.) {
+	    if(projDif >= 5) {
 	      Float_t dProjn = sqrt(dZn*dZn+dXn*dXn);
-	      if(trdown == 0) {
 		drPath = dProjn*tang*1.e-4; // drift path for iZi step in cm 
-		drPath = TMath::Abs(drPath);
+	      if(trdown == 0) {
+		drPath = TMath::Abs(drPath) + ydif0*1.e-4;
 	      }
 	      if(trdown == 1) {
-		Float_t dProjn = projDif/nsteps; 
-		drPath = (projDif-(iZi-1)*dProjn)*tang*1.e-4;
-		drPath = TMath::Abs(drPath);
+		drPath = ydif0*1.e-4 - TMath::Abs(drPath);
+                drPath = TMath::Abs(drPath);
 	      }
 	      sigmaDif = difCoef*sqrt(drPath);    
 	      sigmaDif = sigmaDif*kconv;         // sigma diffusion in microns
 	    }
+
 	    zPixn = (zPixn + spdLength/2.);  
 	    xPixn = (xPixn + spdWidth/2.);  
             Int_t nZpix, nXpix;
@@ -533,7 +505,7 @@ void AliITSsimulationSPD::ChargeToSignal(Float_t **pList)
   AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
   
 
-  TRandom random; 
+  TRandom *random = new TRandom(); 
   Float_t threshold = (float)fResponse->MinVal();
 
   Int_t digits[3], tracks[3], hits[3],gi,j1;
@@ -542,7 +514,7 @@ void AliITSsimulationSPD::ChargeToSignal(Float_t **pList)
   Float_t signal,phys;
   for(Int_t iz=0;iz<fNPixelsZ;iz++){
     for(Int_t ix=0;ix<fNPixelsX;ix++){
-      electronics = fBaseline + fNoise*random.Gaus();
+      electronics = fBaseline + fNoise*random->Gaus();
       signal = (float)fMapA2->GetSignal(iz,ix);
       signal += electronics;
       gi =iz*fNPixelsX+ix; // global index
@@ -552,7 +524,7 @@ void AliITSsimulationSPD::ChargeToSignal(Float_t **pList)
 	 digits[2]=1;
 	 for(j1=0;j1<3;j1++){
 	   if (pList[gi]) {
-	     tracks[j1]=-3;
+	     //b.b.	     tracks[j1]=-3;
 	     tracks[j1] = (Int_t)(*(pList[gi]+j1));
 	     hits[j1] = (Int_t)(*(pList[gi]+j1+6));
 	   }else {
@@ -601,8 +573,8 @@ void AliITSsimulationSPD::CreateHistograms()
       printf("SPD - create histograms\n");
 
       fHis=new TObjArray(fNPixelsZ);
+      TString spdName("spd_");
       for (Int_t i=0;i<fNPixelsZ;i++) {
-	   TString spdName("spd_");
 	   Char_t pixelz[4];
 	   sprintf(pixelz,"%d",i+1);
 	   spdName.Append(pixelz);
@@ -618,6 +590,7 @@ void AliITSsimulationSPD::ResetHistograms()
     //
     // Reset histograms for this detector
     //
+
     for ( int i=0;i<fNPixelsZ;i++ ) {
 	if ((*fHis)[i])    ((TH1F*)(*fHis)[i])->Reset();
     }
