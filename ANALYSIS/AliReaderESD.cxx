@@ -19,6 +19,8 @@
 #include <TParticle.h>
 #include <TH1.h>
 
+#include <TGliteXmlEventlist.h>
+
 #include <AliRun.h>
 #include <AliRunLoader.h>
 #include <AliStack.h>
@@ -645,6 +647,7 @@ void AliReaderESD::Rewind()
   fRunLoader = 0x0;
   fCurrentDir = 0;
   fNEventsRead = 0;
+  if (fEventList) fEventList->Reset(); 
   if (fTrackCounter) fTrackCounter->Reset();
 }
 /**********************************************************/
@@ -652,14 +655,39 @@ void AliReaderESD::Rewind()
 TFile* AliReaderESD::OpenFile(Int_t n)
 {
 //opens fFile with  tree
-
+ if (fEventList)
+  { 
+    if (fCurrentDir > n)
+     {
+       fEventList->Reset();
+       fCurrentDir = 0;
+     }
+    
+    while (fCurrentDir < n)
+     {
+       fEventList->Next();
+       fCurrentDir++;
+     }
+    fEventList->Next();
+  }
+ 
  const TString& dirname = GetDirName(n);
  if (dirname == "")
   {
    Error("OpenFiles","Can not get directory name");
    return 0x0;
   }
- TString filename = dirname +"/"+ fESDFileName;
+ TString filename;
+ 
+ if (fEventList)
+  {
+    filename = fEventList->GetURL(fESDFileName);
+  }
+ else
+  {
+    filename = dirname +"/"+ fESDFileName;
+  }
+ Info("OpenFile","%s ==> %s",fESDFileName.Data(),filename.Data()); 
  TFile *ret = TFile::Open(filename.Data()); 
 
  if ( ret == 0x0)
@@ -675,7 +703,19 @@ TFile* AliReaderESD::OpenFile(Int_t n)
  
  if (fReadSim )
   {
-   fRunLoader = AliRunLoader::Open(dirname +"/"+ fGAlFileName);
+    TString gafilename;
+    if (fEventList)
+     {
+       gafilename = fEventList->GetURL(fGAlFileName);
+     }
+    else
+     {
+       gafilename = dirname +"/"+ fGAlFileName;
+     }
+   Info("OpenFile","%s ==> %s",fGAlFileName.Data(),gafilename.Data()); 
+
+   fRunLoader = AliRunLoader::Open(gafilename);
+   
    if (fRunLoader == 0x0)
     {
       Error("OpenFiles","Can't get RunLoader for directory %s",dirname.Data());
@@ -684,6 +724,14 @@ TFile* AliReaderESD::OpenFile(Int_t n)
     }
     
    fRunLoader->LoadHeader();
+   
+   if (fEventList)
+    {
+      TString kinefilename = fEventList->GetURL("Kinematics.root");
+      fRunLoader->SetKineFileName(kinefilename);
+      Info("OpenFile","%s ==> %s","Kinematics.root",kinefilename.Data()); 
+    } 
+   
    if (fRunLoader->LoadKinematics())
     {
       Error("Next","Error occured while loading kinematics.");

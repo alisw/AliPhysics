@@ -53,6 +53,8 @@
 #include <TNamed.h>
 #include <TObjArray.h>
 
+class TGliteXmlEventlist;
+    
 class AliAODRun;
 class AliAOD;
 class AliAODParticleCut;
@@ -89,7 +91,9 @@ class AliReader: public TNamed
     virtual Int_t        GetNumberOfRecEvents();//Returns number of available events -> usually conncected with reading all events
                                                 //may be time consuming
     virtual Int_t        GetNumberOfSimEvents();// 
-    
+     
+    void                 SetEventList(TGliteXmlEventlist* evl){fEventList = evl;}
+         
     void                 SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names
     void                 SetEventBuffering(Bool_t flag){fBufferEvents = flag;}//switches on/off buffering - read data are kept in local buffer
     void                 SetBlend(Bool_t flag = kTRUE){fBlend=flag;} //set blending - randomizing particle order
@@ -99,6 +103,8 @@ class AliReader: public TNamed
     virtual void         WriteTrackCounter() const;//Writes the track counting histigram 
     
   protected:
+    
+    TGliteXmlEventlist*  fEventList;//Event list delivered by GLite/AliEn
     
     TObjArray*           fCuts;//array with particle cuts
     TObjArray*           fDirs;//arry with directories to read data from

@@ -56,6 +56,8 @@
 #include <TRandom.h>
 #include <TH1.h>
 
+#include <TGliteXmlEventlist.h>
+
 #include "AliAODParticleCut.h"
 #include "AliAOD.h"
 #include "AliAODRun.h"
@@ -66,6 +68,7 @@ ClassImp(AliReader)
 /*************************************************************************************/
 
 AliReader::AliReader():
+ fEventList(0x0),
  fCuts(new TObjArray()),
  fDirs(0x0),
  fCurrentEvent(0),
@@ -87,6 +90,7 @@ AliReader::AliReader():
 /*************************************************************************************/
 
 AliReader::AliReader(TObjArray* dirs):
+ fEventList(0x0),
  fCuts(new TObjArray()),
  fDirs(dirs),
  fCurrentEvent(0),
@@ -108,6 +112,7 @@ AliReader::AliReader(TObjArray* dirs):
 /*************************************************************************************/
 AliReader::AliReader(const AliReader& in):
  TNamed(in),
+ fEventList((in.fEventList)?(TGliteXmlEventlist*)in.fEventList->Clone():0x0),
  fCuts((in.fCuts)?(TObjArray*)in.fCuts->Clone():0x0),
  fDirs((in.fDirs)?(TObjArray*)in.fDirs->Clone():0x0),
  fCurrentEvent(0),
@@ -138,6 +143,7 @@ AliReader::~AliReader()
  delete fEventSim;
  delete fEventRec;
  delete fTrackCounter;
+ delete fEventList;
 }
 /*************************************************************************************/
 
