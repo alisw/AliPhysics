@@ -389,18 +389,18 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     // loop over V0s
     for (Int_t iV0 = 0; iV0 < esd->GetNumberOfV0s(); iV0++) {
       AliESDv0* v0 = esd->GetV0(iV0);
-      switch (v0->GetPdgCode()) {
-      case kK0Short   : hMassK0->Fill(v0->GetEffMass()); break;
-      case kLambda0   : hMassLambda->Fill(v0->GetEffMass()); break;
-      case kLambda0Bar: hMassLambdaBar->Fill(v0->GetEffMass()); break;
-      default   : break;
-      }
+      v0->ChangeMassHypothesis(kK0Short);
+      hMassK0->Fill(v0->GetEffMass());
+      v0->ChangeMassHypothesis(kLambda0);
+      hMassLambda->Fill(v0->GetEffMass());
+      v0->ChangeMassHypothesis(kLambda0Bar);
+      hMassLambdaBar->Fill(v0->GetEffMass());
 
       Int_t negLabel = TMath::Abs(esd->GetTrack(v0->GetNindex())->GetLabel());
       if (negLabel > stack->GetNtrack()) continue;     // background
       Int_t negMother = stack->Particle(negLabel)->GetMother(0);
       if (negMother < 0) continue;
-      Int_t posLabel = TMath::Abs(esd->GetTrack(v0->GetNindex())->GetLabel());
+      Int_t posLabel = TMath::Abs(esd->GetTrack(v0->GetPindex())->GetLabel());
       if (posLabel > stack->GetNtrack()) continue;     // background
       Int_t posMother = stack->Particle(posLabel)->GetMother(0);
       if (negMother != posMother) continue;
@@ -414,18 +414,18 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     for (Int_t iCascade = 0; iCascade < esd->GetNumberOfCascades(); 
 	 iCascade++) {
       AliESDcascade* cascade = esd->GetCascade(iCascade);
-      switch (TMath::Abs(cascade->GetPdgCode())) {
-      case kXiMinus   : hMassXi->Fill(cascade->GetEffMass()); break;
-      case kOmegaMinus: hMassOmega->Fill(cascade->GetEffMass()); break;
-      default   : break;
-      }
+      Double_t v0q;
+      cascade->ChangeMassHypothesis(v0q,kXiMinus);
+      hMassXi->Fill(cascade->GetEffMass());
+      cascade->ChangeMassHypothesis(v0q,kOmegaMinus);
+      hMassOmega->Fill(cascade->GetEffMass());
 
       Int_t negLabel = TMath::Abs(esd->GetTrack(cascade->GetNindex())
 				  ->GetLabel());
       if (negLabel > stack->GetNtrack()) continue;     // background
       Int_t negMother = stack->Particle(negLabel)->GetMother(0);
       if (negMother < 0) continue;
-      Int_t posLabel = TMath::Abs(esd->GetTrack(cascade->GetNindex())
+      Int_t posLabel = TMath::Abs(esd->GetTrack(cascade->GetPindex())
 				  ->GetLabel());
       if (posLabel > stack->GetNtrack()) continue;     // background
       Int_t posMother = stack->Particle(posLabel)->GetMother(0);
