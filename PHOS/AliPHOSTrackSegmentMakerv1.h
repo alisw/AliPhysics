@@ -46,17 +46,18 @@ public:
 		    TClonesArray * LinkLowArray, TClonesArray * LinkUpArray, TrackSegmentsList * trsl) ; 
                     //Finds pairs(triplets) with smallest link
   void    MakeTrackSegments(DigitsList * DL, RecPointsList * emcl, RecPointsList * ppsdl, TrackSegmentsList * trsl ) ; // does the job
+  virtual void SetMaxEmcPpsdDistance(Float_t r){ fR0 = r ;}
   virtual void    SetUnfoldFlag() { fUnfoldFlag = kTRUE ; } ; 
   static Double_t ShowerShape(Double_t r) ; // Shape of shower used in unfolding; class member function (not object member function)
-  void    UnfoldClusters(DigitsList * DL, RecPointsList * emcIn, AliPHOSEmcRecPoint * iniEmc, Int_t Nmax, 
+  void  UnfoldClusters(DigitsList * DL, RecPointsList * emcIn, AliPHOSEmcRecPoint * iniEmc, Int_t Nmax, 
 		         int * maxAt, Float_t * maxAtEnergy, TObjArray * emclist) ; //Unfolds overlaping clusters using TMinuit package
-  virtual void    UnSetUnfoldFlag() { fUnfoldFlag = kFALSE ; } ; 
+  virtual void UnsetUnfoldFlag() { fUnfoldFlag = kFALSE ; } 
 
 private:
 
   Float_t fDelta ;    // parameter used for sorting
-  Float_t fR0 ;       // Maximal distance between EMC and PPSD clusters of one Track Segment in module plane
   TMinuit * fMinuit ; // Minuit object needed by cluster unfolding
+  Float_t fR0 ;
   Bool_t fUnfoldFlag ;// Directive to unfold or not the clusters in case of multiple maxima
 
   ClassDef( AliPHOSTrackSegmentMakerv1,1)  // track segment maker implementation , version 1

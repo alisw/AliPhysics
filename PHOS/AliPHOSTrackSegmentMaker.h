@@ -34,15 +34,14 @@ public:
   
   virtual ~ AliPHOSTrackSegmentMaker(){}  // dtor
 
-  virtual void MakeTrackSegments(DigitsList * DL, RecPointsList * emcl, RecPointsList * ppsdl, TrackSegmentsList * trsl ) = 0  ; 
+  virtual void MakeTrackSegments(DigitsList * DL, RecPointsList * emcl, RecPointsList * ppsdl, TrackSegmentsList * trsl ) = 0 ; 
                                          // does the job
-  virtual void SetMaxEmcPpsdDistance(Float_t r){ fR0 = r ;}
-  virtual void SetUnfoldFlag() ;
-  virtual void UnsetUnfoldFlag() ; 
+  virtual void SetMaxEmcPpsdDistance(Float_t r) = 0 ; 
+  virtual void SetUnfoldFlag() = 0 ;
+  virtual void UnsetUnfoldFlag() = 0 ;
 
-private:
+ protected:
 
-  Float_t fR0 ;
 
   ClassDef( AliPHOSTrackSegmentMaker,1)  // subtracking implementation , version 1
 
