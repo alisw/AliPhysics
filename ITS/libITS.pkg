@@ -111,6 +111,11 @@ SRCS = 	AliITS.cxx \
 		AliITSBeamTestDigitizer.cxx \
 		AliITSEventHeader.cxx \
 		AliITSRawStreamSSDv1.cxx \
+ 		AliITSClusterFinderV2.cxx \
+		AliITSClusterFinderV2SDD.cxx \
+		AliITSClusterFinderV2SPD.cxx \
+		AliITSClusterFinderV2SSD.cxx \
+
 #          AliITSv11.cxx \
 #          AliITSv11Geometry.cxx \
 #          AliITSv11GeometrySupport.cxx \

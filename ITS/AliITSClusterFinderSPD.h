@@ -22,10 +22,6 @@ class AliITSClusterFinderSPD : public AliITSClusterFinder{
     AliITSClusterFinderSPD(AliITSsegmentation *segmentation,
 			   TClonesArray *digits,TClonesArray *recpoints);
     virtual ~AliITSClusterFinderSPD(){}// destructor
-    // copy constructor
-    AliITSClusterFinderSPD(const AliITSClusterFinderSPD &source);
-    // assignment operator
-    AliITSClusterFinderSPD& operator=(const AliITSClusterFinderSPD &source);
 
     virtual AliITSresponseSPD* GetResp()const{
         return (AliITSresponseSPD*) GetResponse();}//Return Response
@@ -46,7 +42,12 @@ class AliITSClusterFinderSPD : public AliITSClusterFinder{
                         Double_t xcenter[],Double_t zcenter[],
                         Double_t errxcenter[],Double_t errzcenter[],  
                         Int_t tr1clus[],Int_t tr2clus[], Int_t tr3clus[]);
-  private:
+ protected:
+    // copy constructor
+    AliITSClusterFinderSPD(const AliITSClusterFinderSPD &source);
+    // assignment operator
+    AliITSClusterFinderSPD& operator=(const AliITSClusterFinderSPD &source);
+
     Double_t             fDz;            // dz
     Double_t             fDx;            // dx
     Int_t               fMinNCells;     // min num of cells in the cluster

@@ -15,6 +15,121 @@
 /*
   $Id$
   $Log$
+  Revision 1.37  2004/06/10 21:00:24  nilsen
+  Modifications associated with remerging the Ba/Sa and Dubna pixel simulations,
+  some cleaning of general code (including coding convensions), and adding some
+  protections associated with SetDefaults/SetDefaultSimulations which should help
+  with the Test beam simulations. Details below. The default SPD simulation for
+  the general ITS runs/geometry is still the Ba/Sa, but for the Test beam
+  geometries this has been changed to the merged versions.
+  File: AliITS.cxx                         Modified
+  File: AliITS.h                           Modified
+        In lined many one-two line functions. Added some protection to
+        SetDefaults(), SetDefaultSimulation(), and SetDefaultClusterFinders(),
+        such that they should now even work when only one detector type has
+        been defined (as it should be for the test beams...). Some mostly
+        cosmetic issues associated with getting branch names for digits. And
+        Generally some cleaning up of the code.
+  File: AliITSClusterFinder.cxx            Modified
+  File: AliITSClusterFinder.h              Modified
+        Did some additional consolidation of data into the base class, added
+        TClonesArray *fClusters, a fDebug, and fModule variables. Otherwise
+        some cosmetic and coding conversion changes.
+  File: AliITSClusterFinderSDD.cxx         Modified
+  File: AliITSClusterFinderSDD.h           Modified
+        Changes to be consistent with the modified base class, and cosmetic
+        and coding conversion changes.
+  File: AliITSClusterFinderSPD.cxx         Modified
+  File: AliITSClusterFinderSPD.h           Modified
+        Changes to be consistent with the modified base class, and cosmetic
+        and coding conversion changes.
+  File: AliITSClusterFinderSPDdubna.h       Removed
+  File: AliITSClusterFinderSPDdubna.cxx     Removed
+        Since we have ClusterFinderSPD and V2 and this version isn't being
+        maintained, it is being retired.
+  File: AliITSClusterFinderSSD.cxx         Modified
+  File: AliITSClusterFinderSSD.h           Modified
+        Changes to be consistent with the modified base class, and cosmetic
+        and coding conversion changes.
+  File: AliITSDetType.cxx                  Modified
+  File: AliITSDetType.h                    Modified
+        Added a new class variable to indicate what the detector type is
+        AliITSDetector fDetType;  values of kSPD, kSDD, kSSD, .... Otherwise
+        cosmetic and Coding convention changes.
+  File: AliITSLoader.cxx                   Modified
+  File: AliITSLoader.h                     Modified
+        Some changes which are not complete. The idea is to be able to get,
+        simply via one call, a specific hit, Sdigit, digit, RecPoint,...
+        without all of the usual over head of initializing TClonesArrays setting
+        branch addresses and the like. Work is far form ready.
+  File: AliITSdcsSSD.cxx                   Modified
+        Some nearly cosmetic changes necessary due to changes to response and
+        segmentation class'.
+  File: AliITSgeom.h                       Modified
+        In the definition of AliITSDetector type, added kND=-1, no detector
+        defined. Expect to use it later(?).
+  File: AliITSresponse.h                   Modified
+        Basically cosmetic. Mostly changing Float_t to Double_t.
+  File: AliITSresponseSDD.cxx              Modified
+  File: AliITSresponseSDD.h                Modified
+        Basically the cosmetic and Float_t to Double_t
+  File: AliITSresponseSPD.cxx              Modified
+  File: AliITSresponseSPD.h                Modified
+        Mostly Float_t to Double_t and added in the IsPixelDead function for
+        the dubna version (otherwise the merging had been done).
+  File: AliITSresponseSPDdubna.h           Removed
+  File: AliITSresponseSPDdubna.cxx         Removed
+        We should be able to remove this class now. AliITSresponseSPD is now
+        used for both the Bari-Salerno and the dubna models.
+  File: AliITSresponseSSD.cxx              Modified
+  File: AliITSresponseSSD.h                Modified
+        Float_t to Double_t changes.
+  File: AliITSsegmentation.h               Modified
+        Made LocaltoDet return a Bool_t. Now if the x,z location is outside
+        of the volume, it returns kFALSE. see below.
+  File: AliITSsegmentationSDD.cxx          Modified
+  File: AliITSsegmentationSDD.h            Modified
+        Made LocaltoDet return a Bool_t. Now if the x,z location is outside
+        of the volume, it returns kFALSE.
+  File: AliITSsegmentationSPD.cxx          Modified
+  File: AliITSsegmentationSPD.h            Modified
+        Made LocaltoDet return a Bool_t. Now if the x,z location is outside
+        of the volume, it returns kFALSE.
+  File: AliITSsegmentationSSD.cxx          Modified
+  File: AliITSsegmentationSSD.h            Modified
+        Made LocaltoDet return a Bool_t. Now if the x,z location is outside
+        of the volume, it returns kFALSE. see below.
+  File: AliITSsimulation.cxx               Modified
+  File: AliITSsimulation.h                 Modified
+        Added fDebug variable, new Constructor for use below. Cosmetic and
+        coding convention changes
+  File: AliITSsimulationSDD.cxx            Modified
+  File: AliITSsimulationSDD.h              Modified
+        Added new Constructor, removed redundant variables and Cosmetic and
+        coding convention changes.
+  File: AliITSsimulationSPD.cxx            Modified
+  File: AliITSsimulationSPD.h              Modified
+        Removed some dead code, made changes as needed by the changes above
+        (response and segmentation classes...). a few cosmetic and coding
+        convention changes.
+  File: AliITSsimulationSPDdubna.cxx       Modified
+  File: AliITSsimulationSPDdubna.h         Modified
+        New merged version, implemented new and old coupling with switch,
+        coding convention and similar changes. (found 1 bugs, missing
+        ! in front of if(mod-LineSegmentL(....,).
+  File: AliITSsimulationSSD.cxx            Modified
+  File: AliITSsimulationSSD.h              Modified
+        removed redundant variables with base class. Fixed for coding
+        convention and other cosmetic changes.
+  File: AliITSvSDD03.cxx                   Modified
+  File: AliITSvSPD02.cxx                   Modified
+  File: AliITSvSSD03.cxx                   Modified
+        These two have their private versions of SetDefaults and
+        SetDefaultSimulation which have been similarly protected as in AliITS.cxx
+  File: ITSLinkDef.h                       Modified
+  File: libITS.pkg                         Modified
+        Versions which include v11 geometry and other private changes
+
   Revision 1.36  2004/01/27 16:12:03  masera
   Coding conventions for AliITSdigitXXX classes and AliITSTrackerV1
 
@@ -60,11 +175,11 @@
   noise values).
 
  */
-// 
-//  Cluster finder 
-//  for Silicon
-//  Drift Detector
-//
+/////////////////////////////////////////////////////////////////////////// 
+//  Cluster finder                                                       //
+//  for Silicon                                                          //
+//  Drift Detector                                                       //
+////////////////////////////////////////////////////////////////////////// 
 #include <Riostream.h>
 
 #include <TMath.h>
@@ -139,7 +254,6 @@ void AliITSClusterFinderSDD::SetCutAmplitude(Double_t nsigma){
 //______________________________________________________________________
 void AliITSClusterFinderSDD::Find1DClusters(){
     // find 1D clusters
-    static AliITS *iTS = (AliITS*)gAlice->GetModule("ITS");
   
     // retrieve the parameters 
     Int_t fNofMaps       = GetSeg()->Npz();
@@ -278,7 +392,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
                                               clusteranodePath, //f
                                               clusterMult, //i
                                               0,0,0,0,0,0,0);//7*i
-                    iTS->AddCluster(1,&clust);
+                    fITS->AddCluster(1,&clust);
                     it = tstop;
                 } // ilcl
                 it++;
@@ -294,7 +408,6 @@ void AliITSClusterFinderSDD::Find1DClusters(){
 //______________________________________________________________________
 void AliITSClusterFinderSDD::Find1DClustersE(){
     // find 1D clusters
-    static AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
     // retrieve the parameters 
     Int_t fNofMaps = GetSeg()->Npz();
     Int_t fMaxNofSamples = GetSeg()->Npx();
@@ -372,7 +485,7 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
                                                       driftPath,anodePath,
                                                       nTsteps,start,stop,
                                                       start, stop, 1, k, k );
-                            iTS->AddCluster( 1, &clust );
+                            fITS->AddCluster( 1, &clust );
                             if(GetDebug(5)) clust.PrintInfo();
                             nClu++;
                         } // end if nTsteps
@@ -733,10 +846,9 @@ Int_t AliITSClusterFinderSDD::NoLinearFit( Int_t xdim, Int_t zdim,
 }
 
 //______________________________________________________________________
-void AliITSClusterFinderSDD::ResolveClustersE(){
+void AliITSClusterFinderSDD::ResolveClusters(){
     // The function to resolve clusters if the clusters overlapping exists
     Int_t i;
-    static AliITS *iTS = (AliITS*)gAlice->GetModule( "ITS" );
     // get number of clusters for this module
     Int_t nofClusters = NClusters();
     nofClusters -= fNclusters;
@@ -767,7 +879,7 @@ void AliITSClusterFinderSDD::ResolveClustersE(){
         Int_t xdim = tstop-tstart+3;
         Int_t zdim = astop-astart+3;
         if( xdim > 50 || zdim > 30 ) { 
-            Warning("ResolveClustersE","xdim: %d , zdim: %d ",xdim,zdim);
+            Warning("ResolveClusters","xdim: %d , zdim: %d ",xdim,zdim);
             continue;
         }
         Double_t *sp = new Double_t[ xdim*zdim+1 ];
@@ -866,7 +978,7 @@ void AliITSClusterFinderSDD::ResolveClustersE(){
                 }
                 
                 if( peakpos < 0 ) { 
-                    //Warning("ResolveClustersE",
+                    //Warning("ResolveClusters",
                     //        "Digit not found for cluster");
                     //if(GetDebug(3)) clusterI.PrintInfo(); 
                    continue;
@@ -882,17 +994,17 @@ void AliITSClusterFinderSDD::ResolveClustersE(){
                 clusterI.SetTsigma( tau[i]*fTimeStep );
                 clusterI.SetQ( integral[i] );
                 
-                iTS->AddCluster( 1, &clusterI );
+                fITS->AddCluster( 1, &clusterI );
             } // end for i
             Clusters()->RemoveAt( j );
             delete [] par;
         } else {  // something odd
-            Warning( "ResolveClustersE",
+            Warning( "ResolveClusters",
                      "--- Peak not found!!!!  minpeak=%d ,cluster peak= %f"
                      " , module= %d",
                      fMinPeak, clusterJ->PeakAmpl(),GetModule()); 
             clusterJ->PrintInfo();
-            Warning( "ResolveClustersE"," xdim= %d zdim= %d", xdim-2, zdim-2 );
+            Warning( "ResolveClusters"," xdim= %d zdim= %d", xdim-2, zdim-2 );
         }
         delete [] sp;
     } // cluster loop
@@ -964,303 +1076,11 @@ void AliITSClusterFinderSDD::SelectClusters(){
     Clusters()->Compress();
     return;
 }
-//__________________________________________________________________________
-void AliITSClusterFinderSDD::ResolveClusters(){
-    // The function to resolve clusters if the clusters overlapping exists
-/*    AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
-    // get number of clusters for this module
-    Int_t nofClusters = NClusters();
-    nofClusters -= fNclusters;
-    //cout<<"Resolve Cl: nofClusters, fNclusters ="<<nofClusters<<","
-    // <<fNclusters<<endl;
-    Int_t fNofMaps = GetSeg()->Npz();
-    Int_t fNofAnodes = fNofMaps/2;
-    Int_t dummy=0;
-    Double_t fTimeStep = GetSeg()->Dpx(dummy);
-    Double_t fSddLength = GetSeg()->Dx();
-    Double_t fDriftSpeed = GetResp()->DriftSpeed();
-    Double_t anodePitch = GetSeg()->Dpz(dummy);
-    Double_t n, baseline;
-    GetResp()->GetNoiseParam(n,baseline);
-    Double_t dzz_1A = anodePitch * anodePitch / 12;
-    // fill Map of signals
-    Map()->FillMap(); 
-    Int_t j,i,ii,ianode,anode,itime;
-    Int_t wing,astart,astop,tstart,tstop,nanode;
-    Double_t fadc,ClusterTime;
-    Double_t q[400],x[400],z[400]; // digit charges and coordinates
-    for(j=0; j<nofClusters; j++) { 
-        AliITSRawClusterSDD *clusterJ=(AliITSRawClusterSDD*) Cluster(j);
-        Int_t ndigits = 0;
-        astart=clusterJ->Astart();
-        astop=clusterJ->Astop();
-        tstart=clusterJ->Tstartf();
-        tstop=clusterJ->Tstopf();
-        nanode=clusterJ->Anodes();  // <- Ernesto
-        wing=(Int_t)clusterJ->W();
-        if(wing == 2) {
-            astart += fNofAnodes; 
-            astop  += fNofAnodes;
-        }  // end if
-        // cout<<"astart,astop,tstart,tstop ="<<astart<<","<<astop<<","
-        //      <<tstart<<","<<tstop<<endl;
-        // clear the digit arrays
-        for(ii=0; ii<400; ii++) { 
-            q[ii] = 0.; 
-            x[ii] = 0.;
-            z[ii] = 0.;
-        } // end for ii
 
-        for(ianode=astart; ianode<=astop; ianode++) { 
-            for(itime=tstart; itime<=tstop; itime++) { 
-                fadc=Map()->GetSignal(ianode,itime);
-                if(fadc>baseline) {
-                    fadc-=(Double_t)baseline;
-                    q[ndigits] = fadc*(fTimeStep/160);  // KeV
-                    anode = ianode;
-                    if(wing == 2) anode -= fNofAnodes;
-                    z[ndigits] = (anode + 0.5 - fNofAnodes/2)*anodePitch;
-                    ClusterTime = itime*fTimeStep;
-                    if(ClusterTime > fTimeCorr) ClusterTime -= fTimeCorr;// ns
-                    x[ndigits] = fSddLength - ClusterTime*fDriftSpeed;
-                    if(wing == 1) x[ndigits] *= (-1);
-                    // cout<<"ianode,itime,fadc ="<<ianode<<","<<itime<<","
-                    //     <<fadc<<endl;
-                    // cout<<"wing,anode,ndigits,charge ="<<wing<<","
-                    //      <<anode<<","<<ndigits<<","<<q[ndigits]<<endl;
-                    ndigits++;
-                    continue;
-                } //  end if
-                fadc=0;
-                //              cout<<"fadc=0, ndigits ="<<ndigits<<endl;
-            } // time loop
-        } // anode loop
-        //     cout<<"for new cluster ndigits ="<<ndigits<<endl;
-        // Fit cluster to resolve for two separate ones --------------------
-        Double_t qq=0., xm=0., zm=0., xx=0., zz=0., xz=0.;
-        Double_t dxx=0., dzz=0., dxz=0.;
-        Double_t scl = 0., tmp, tga, elps = -1.;
-        Double_t xfit[2], zfit[2], qfit[2];
-        Double_t pitchz = anodePitch*1.e-4;             // cm
-        Double_t pitchx = fTimeStep*fDriftSpeed*1.e-4;  // cm
-        Double_t sigma2;
-        Int_t nfhits;
-        Int_t nbins = ndigits;
-        Int_t separate = 0;
-        // now, all lengths are in microns
-        for (ii=0; ii<nbins; ii++) {
-            qq += q[ii];
-            xm += x[ii]*q[ii];
-            zm += z[ii]*q[ii];
-            xx += x[ii]*x[ii]*q[ii];
-            zz += z[ii]*z[ii]*q[ii];
-            xz += x[ii]*z[ii]*q[ii];
-        } // end for ii
-        xm /= qq;
-        zm /= qq;
-        xx /= qq;
-        zz /= qq;
-        xz /= qq;
-        dxx = xx - xm*xm;
-        dzz = zz - zm*zm;
-        dxz = xz - xm*zm;
-
-        // shrink the cluster in the time direction proportionaly to the 
-        // dxx/dzz, which lineary depends from the drift path
-        // new  Ernesto........         
-        if( nanode == 1 ){
-            dzz = dzz_1A; // for one anode cluster dzz = anode**2/12
-            scl = TMath::Sqrt( 7.2/(-0.57*xm*1.e-3+71.8) );
-        } // end if
-        if( nanode == 2 ){
-            scl = TMath::Sqrt( (-0.18*xm*1.e-3+21.3)/(-0.57*xm*1.e-3+71.8) );
-        } // end if
-        if( nanode == 3 ){
-            scl = TMath::Sqrt( (-0.5*xm*1.e-3+34.5)/(-0.57*xm*1.e-3+71.8) );
-        } // end if
-        if( nanode > 3 ){
-            scl = TMath::Sqrt( (1.3*xm*1.e-3+49.)/(-0.57*xm*1.e-3+71.8) );
-        } // end if
-        //   cout<<"1 microns: zm,dzz,xm,dxx,dxz,qq ="<<zm<<","<<dzz<<","
-        //  <<xm<<","<<dxx<<","<<dxz<<","<<qq<<endl;
-        //  old Boris.........
-        //  tmp=29730. - 585.*fabs(xm/1000.); 
-        //  scl=TMath::Sqrt(tmp/130000.);
-   
-        xm *= scl;
-        xx *= scl*scl;
-        xz *= scl;
-
-        dxx = xx - xm*xm;
-        //   dzz = zz - zm*zm;
-        dxz = xz - xm*zm;
-        //   cout<<"microns: zm,dzz,xm,dxx,xz,dxz,qq ="<<zm<<","<<dzz<<","
-        // <<xm<<","<<dxx<<","<<xz<<","<<dxz<<","<<qq<<endl;
-        // if(dzz < 7200.) dzz=7200.;//for one anode cluster dzz = anode**2/12
-  
-        if (dxx < 0.) dxx=0.;
-        // the data if no cluster overlapping (the coordunates are in cm) 
-        nfhits = 1;
-        xfit[0] = xm*1.e-4;
-        zfit[0] = zm*1.e-4;
-        qfit[0] = qq;
-        //   if(nbins < 7) cout<<"**** nbins ="<<nbins<<endl;
-  
-        if (nbins >= 7) {
-            if (dxz==0.) tga=0.;
-            else {
-                tmp=0.5*(dzz-dxx)/dxz;
-                tga = (dxz<0.) ? tmp-TMath::Sqrt(tmp*tmp+1) : 
-                                                   tmp+TMath::Sqrt(tmp*tmp+1);
-            } // end if dxz
-            elps=(tga*tga*dxx-2*tga*dxz+dzz)/(dxx+2*tga*dxz+tga*tga*dzz);
-            // change from microns to cm
-            xm *= 1.e-4; 
-            zm *= 1.e-4; 
-            zz *= 1.e-8;
-            xx *= 1.e-8;
-            xz *= 1.e-8;
-            dxz *= 1.e-8;
-            dxx *= 1.e-8;
-            dzz *= 1.e-8;
-            //   cout<<"cm: zm,dzz,xm,dxx,xz,dxz,qq ="<<zm<<","<<dzz<<","
-            //  <<xm<<","<<dxx<<","<<xz<<","<<dxz<<","<<qq<<endl;
-            for (i=0; i<nbins; i++) {     
-                x[i] = x[i] *= scl;
-                x[i] = x[i] *= 1.e-4;
-                z[i] = z[i] *= 1.e-4;
-            } // end for i
-            //     cout<<"!!! elps ="<<elps<<endl;
-            if (elps < 0.3) { // try to separate hits 
-                separate = 1;
-                tmp=atan(tga);
-                Double_t cosa=cos(tmp),sina=sin(tmp);
-                Double_t a1=0., x1=0., xxx=0.;
-                for (i=0; i<nbins; i++) {
-                    tmp=x[i]*cosa + z[i]*sina;
-                    if (q[i] > a1) {
-                        a1=q[i];
-                        x1=tmp;
-                    } // end if
-                    xxx += tmp*tmp*tmp*q[i];
-                } // end for i
-                xxx /= qq;
-                Double_t z12=-sina*xm + cosa*zm;
-                sigma2=(sina*sina*xx-2*cosa*sina*xz+cosa*cosa*zz) - z12*z12;
-                xm=cosa*xm + sina*zm;
-                xx=cosa*cosa*xx + 2*cosa*sina*xz + sina*sina*zz;
-                Double_t x2=(xx - xm*x1 - sigma2)/(xm - x1);
-                Double_t r=a1*2*TMath::ACos(-1.)*sigma2/(qq*pitchx*pitchz);
-                for (i=0; i<33; i++) { // solve a system of equations
-                    Double_t x1_old=x1, x2_old=x2, r_old=r;
-                    Double_t c11=x1-x2;
-                    Double_t c12=r;
-                    Double_t c13=1-r;
-                    Double_t c21=x1*x1 - x2*x2;
-                    Double_t c22=2*r*x1;
-                    Double_t c23=2*(1-r)*x2;
-                    Double_t c31=3*sigma2*(x1-x2) + x1*x1*x1 - x2*x2*x2;
-                    Double_t c32=3*r*(sigma2 + x1*x1);
-                    Double_t c33=3*(1-r)*(sigma2 + x2*x2);
-                    Double_t f1=-(r*x1 + (1-r)*x2 - xm);
-                    Double_t f2=-(r*(sigma2+x1*x1)+(1-r)*(sigma2+x2*x2)- xx);
-                    Double_t f3=-(r*x1*(3*sigma2+x1*x1)+(1-r)*x2*
-                                                         (3*sigma2+x2*x2)-xxx);
-                    Double_t d=c11*c22*c33+c21*c32*c13+c12*c23*c31-
-                                       c31*c22*c13 - c21*c12*c33 - c32*c23*c11;
-                    if (d==0.) {
-                        cout<<"*********** d=0 ***********\n";
-                        break;
-                    } // end if
-                    Double_t dr=f1*c22*c33 + f2*c32*c13 + c12*c23*f3 -
-                        f3*c22*c13 - f2*c12*c33 - c32*c23*f1;
-                    Double_t d1=c11*f2*c33 + c21*f3*c13 + f1*c23*c31 -
-                        c31*f2*c13 - c21*f1*c33 - f3*c23*c11;
-                    Double_t d2=c11*c22*f3 + c21*c32*f1 + c12*f2*c31 -
-                        c31*c22*f1 - c21*c12*f3 - c32*f2*c11;
-                    r  += dr/d;
-                    x1 += d1/d;
-                    x2 += d2/d;
-                    if (fabs(x1-x1_old) > 0.0001) continue;
-                    if (fabs(x2-x2_old) > 0.0001) continue;
-                    if (fabs(r-r_old)/5 > 0.001) continue;
-                    a1=r*qq*pitchx*pitchz/(2*TMath::ACos(-1.)*sigma2);
-                    Double_t a2=a1*(1-r)/r;
-                    qfit[0]=a1; xfit[0]=x1*cosa - z12*sina; zfit[0]=x1*sina + 
-                                                                z12*cosa;
-                    qfit[1]=a2; xfit[1]=x2*cosa - z12*sina; zfit[1]=x2*sina + 
-                                                                z12*cosa;
-                    nfhits=2;
-                    break; // Ok !
-                } // end for i
-                if (i==33) cerr<<"No more iterations ! "<<endl;
-            } // end of attempt to separate overlapped clusters
-        } // end of nbins cut 
-        if(elps < 0.) cout<<" elps=-1 ="<<elps<<endl;
-        if(elps >0. && elps< 0.3 && nfhits == 1) cout<<" small elps, nfh=1 ="
-                                                     <<elps<<","<<nfhits<<endl;
-        if(nfhits == 2) cout<<" nfhits=2 ="<<nfhits<<endl;
-        for (i=0; i<nfhits; i++) {
-            xfit[i] *= (1.e+4/scl);
-            if(wing == 1) xfit[i] *= (-1);
-            zfit[i] *= 1.e+4;
-            //       cout<<" ---------  i,xfiti,zfiti,qfiti ="<<i<<","
-            // <<xfit[i]<<","<<zfit[i]<<","<<qfit[i]<<endl;
-        } // end for i
-        Int_t ncl = nfhits;
-        if(nfhits == 1 && separate == 1) {
-            cout<<"!!!!! no separate"<<endl;
-            ncl = -2;
-        }  // end if
-        if(nfhits == 2) {
-            cout << "Split cluster: " << endl;
-            clusterJ->PrintInfo();
-            cout << " in: " << endl;
-            for (i=0; i<nfhits; i++) {
-                // AliITSRawClusterSDD *clust = new AliITSRawClusterSDD(wing,
-                                               -1,-1,(Double_t)qfit[i],ncl,0,0,
-                                               (Double_t)xfit[i],
-                                               (Double_t)zfit[i],0,0,0,0,
-                                                tstart,tstop,astart,astop);
-            //    AliITSRawClusterSDD *clust = new AliITSRawClusterSDD(wing,-1,
-            //                                 -1,(Double_t)qfit[i],0,0,0,
-            //                                  (Double_t)xfit[i],
-            //                                  (Double_t)zfit[i],0,0,0,0,
-            //                                  tstart,tstop,astart,astop,ncl);
-            // ???????????
-            // if(wing == 1) xfit[i] *= (-1);
-            Double_t Anode = (zfit[i]/anodePitch+fNofAnodes/2-0.5);
-            Double_t Time = (fSddLength - xfit[i])/fDriftSpeed;
-            Double_t clusterPeakAmplitude = clusterJ->PeakAmpl();
-            Double_t peakpos = clusterJ->PeakPos();
-            Double_t clusteranodePath = (Anode - fNofAnodes/2)*anodePitch;
-            Double_t clusterDriftPath = Time*fDriftSpeed;
-            clusterDriftPath = fSddLength-clusterDriftPath;
-            AliITSRawClusterSDD *clust = new AliITSRawClusterSDD(wing,Anode,
-                                                                 Time,qfit[i],
-                                               clusterPeakAmplitude,peakpos,
-                                               0.,0.,clusterDriftPath,
-                                         clusteranodePath,clusterJ->Samples()/2
-                                    ,tstart,tstop,0,0,0,astart,astop);
-            clust->PrintInfo();
-            iTS->AddCluster(1,clust);
-            //    cout<<"new cluster added: tstart,tstop,astart,astop,x,ncl ="
-            // <<tstart<<","<<tstop<<","<<astart<<","<<astop<<","<<xfit[i]
-            // <<","<<ncl<<endl;
-            delete clust;
-        }// nfhits loop
-        Clusters()->RemoveAt(j);
-    } // if nfhits = 2
-} // cluster loop
-Clusters()->Compress();
-Map()->ClearMap(); 
-*/
-    return;
-}
 //______________________________________________________________________
 void AliITSClusterFinderSDD::GetRecPoints(){
     // get rec points
-    static AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
+  
     // get number of clusters for this module
     Int_t nofClusters = NClusters();
     nofClusters -= fNclusters;
@@ -1300,7 +1120,7 @@ void AliITSClusterFinderSDD::GetRecPoints(){
         if(dig) rnew.fTracks[1]=dig->GetTrack(1);
         if(dig) rnew.fTracks[2]=dig->GetTrack(2);
 
-        iTS->AddRecPoint(rnew);
+        fITS->AddRecPoint(rnew);
     } // I clusters
 //    Map()->ClearMap();
 }
@@ -1312,7 +1132,7 @@ void AliITSClusterFinderSDD::FindRawClusters(Int_t mod){
     Find1DClustersE();
     GroupClusters();
     SelectClusters();
-    ResolveClustersE();
+    ResolveClusters();
     GetRecPoints();
 }
 //_______________________________________________________________________

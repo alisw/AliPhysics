@@ -12,12 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-// **************************************************************************
-//  * The package was revised and changed by Boris Batiounia in the time     *
-//  * period of March - June 2001                                            *
-// **************************************************************************/
-//
+///////////////////////////////////////////////////////////////////////////////
+// **************************************************************************//
+//  * The package was revised and changed by Boris Batiounia in the time     //
+//  * period of March - June 2001                                            //
+// **************************************************************************//
+///////////////////////////////////////////////////////////////////////////////
 #include <Riostream.h>
 #include <TArrayI.h>
 #include "AliRun.h"
@@ -44,7 +44,6 @@ ClassImp(AliITSClusterFinderSSD)
 //______________________________________________________________________
 AliITSClusterFinderSSD::AliITSClusterFinderSSD():
 AliITSClusterFinder(),
-fITS(0),
 fClusterP(0),
 fNClusterP(0),
 fClusterN(0),
@@ -67,7 +66,6 @@ fSFB(0){
 AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg,
                                                TClonesArray *digits):
 AliITSClusterFinder(seg,0),
-fITS(0),
 fClusterP(0),
 fNClusterP(0),
 fClusterN(0),
@@ -88,7 +86,6 @@ fSFB(0){
 
     SetDigits(digits);
     SetMap(new AliITSMapA1(GetSeg(),Digits()));
-    fITS          = (AliITS*)gAlice->GetModule("ITS");
     fClusterP     = new TClonesArray ("AliITSclusterSSD",200);    
     fNClusterP    = 0;
     fClusterN     = new TClonesArray ("AliITSclusterSSD",200);   
@@ -106,7 +103,6 @@ fSFB(0){
 AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg,
                                                AliITSresponse *res):
 AliITSClusterFinder(seg,res),
-fITS(0),
 fClusterP(0),
 fNClusterP(0),
 fClusterN(0),
@@ -125,7 +121,6 @@ fSFF(0),
 fSFB(0){
     //Standard constructor
 
-    fITS          = (AliITS*)gAlice->GetModule("ITS");
     fClusterP     = new TClonesArray ("AliITSclusterSSD",200);    
     fNClusterP    = 0;
     fClusterN     = new TClonesArray ("AliITSclusterSSD",200);   
@@ -139,11 +134,26 @@ fSFB(0){
     fPitch        = GetSeg()->Dpx(0);
     fPNsignalRatio= 7./8.;    // warning: hard-wired number
 }
+
+//______________________________________________________________________
+AliITSClusterFinderSSD::AliITSClusterFinderSSD(const AliITSClusterFinderSSD &source) : AliITSClusterFinder(source) {
+  // Copy constructor
+  // Copies are not allowed. The method is protected to avoid misuse.
+  Fatal("AliITSClusterFinderSSD","Copy constructor not allowed\n");
+}
+
+//______________________________________________________________________
+AliITSClusterFinderSSD& AliITSClusterFinderSSD::operator=(const AliITSClusterFinderSSD& /* source */){
+  // Assignment operator
+  // Assignment is not allowed. The method is protected to avoid misuse.
+  Fatal("= operator","Assignment operator not allowed\n");
+  return *this;
+}
+
 //______________________________________________________________________
 AliITSClusterFinderSSD::~AliITSClusterFinderSSD(){
     // Default destructor
 
-    fITS = 0;
     delete fClusterP;
     delete fClusterN;        
     delete fPackages;        

@@ -17,11 +17,11 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-//      An overview of the basic philosophy of the ITS code development
-// and analysis is show in the figure below.
-//Begin_Html
-/*
+//                                                                           //
+//      An overview of the basic philosophy of the ITS code development      //
+// and analysis is show in the figure below.                                 //
+//Begin_Html                                                                 //
+/*                                               
 <img src="picts/ITS/ITS_Analysis_schema.gif">
 </pre>
 <br clear=left>
@@ -86,12 +86,16 @@ the AliITS class.
 #include "AliITSClusterFinderSDD.h"
 #include "AliITSClusterFinderSPD.h"
 #include "AliITSClusterFinderSSD.h"
+#include "AliITSClusterFinderV2SDD.h"
+#include "AliITSClusterFinderV2SPD.h"
+#include "AliITSClusterFinderV2SSD.h"
 #include "AliITSDetType.h"
 #include "AliITSLoader.h"
 #include "AliITSRawClusterSPD.h"
 #include "AliITSRawClusterSDD.h"
 #include "AliITSRawClusterSSD.h"
 #include "AliITSRecPoint.h"
+#include "AliITSclusterV2.h"
 #include "AliITSdigitSPD.h"
 #include "AliITSdigitSDD.h"
 #include "AliITSdigitSSD.h"
@@ -112,6 +116,7 @@ the AliITS class.
 #include "AliITSDigitizer.h"
 #include "AliITSDDLRawData.h"
 #include "AliRun.h"
+#include "AliRawReader.h"
 
 ClassImp(AliITS)
 
@@ -134,6 +139,8 @@ AliITS::AliITS() : AliDetector(),
     fNctype(0),
     fRecPoints(0),
     fNRecPoints(0),
+    fClustersV2(0),
+    fNClustersV2(0),		   
     fSelectedVertexer(0){
     // Default initializer for ITS
     //      The default constructor of the AliITS class. In addition to
@@ -174,6 +181,8 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title),
     fNctype(0),
     fRecPoints(0),
     fNRecPoints(0),
+    fClustersV2(0),
+    fNClustersV2(0),						    
     fSelectedVertexer(0){
     //     The standard Constructor for the ITS class. In addition to 
     // creating the AliITS class, it allocates memory for the TClonesArrays 
@@ -222,6 +231,8 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title),
 
     fRecPoints  = new TClonesArray("AliITSRecPoint",1000);
     fNRecPoints = 0;
+    fClustersV2 = new TClonesArray("AliITSclusterV2",3000);
+    fNClustersV2=0;
 
     Int_t i;
     for(i=0;i<fNDetTypes;i++) {
@@ -266,6 +277,11 @@ AliITS::~AliITS(){
       fRecPoints->Delete();
       delete fRecPoints;
       fRecPoints=0;
+    }
+    if(fClustersV2){
+      fClustersV2->Delete();
+      delete fClustersV2;
+      fClustersV2=0;
     }
     delete[] fIdName;  // Array of TStrings
     delete[] fIdSens;
@@ -550,6 +566,61 @@ void AliITS::SetDefaultClusterFinders(){
         } // end if
     } // end if iDetType
 }
+
+
+//______________________________________________________________________
+void AliITS::SetDefaultClusterFindersV2(){
+    // Sets the default cluster finders. Used in finding RecPoints.
+    // Inputs:
+    //      none.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
+    AliITSDetType *iDetType;
+    AliITSsegmentation *seg;
+    AliITSClusterFinder *clf;
+
+    MakeTreeC();
+
+    // SPD
+    iDetType=DetType(kSPD);
+    if(iDetType){
+        if (!iDetType->GetReconstructionModel()) {
+            seg =(AliITSsegmentation*)iDetType->GetSegmentationModel();
+            clf = new AliITSClusterFinderV2SPD();
+	    clf->SetSegmentation(seg);
+	    clf->SetDigits(DigitsAddress(0));
+            SetReconstructionModel(kSPD,clf);
+        } // end if
+    } // end if iDetType
+
+    // SDD
+    iDetType=DetType(kSDD);
+    if(iDetType){
+        if (!iDetType->GetReconstructionModel()) {
+            seg = (AliITSsegmentation*)iDetType->GetSegmentationModel();
+            clf = new AliITSClusterFinderV2SDD();
+	    clf->SetSegmentation(seg);
+	    clf->SetDigits(DigitsAddress(1));
+            SetReconstructionModel(kSDD,clf);
+        } // end if
+    } // end if iDetType
+
+    // SSD
+    iDetType=DetType(kSSD);
+    if(iDetType){
+        if (!iDetType->GetReconstructionModel()) {
+            seg = (AliITSsegmentation*)iDetType->GetSegmentationModel();
+            clf = new AliITSClusterFinderV2SSD();
+	    clf->SetSegmentation(seg);
+	    clf->SetDigits(DigitsAddress(2));
+            SetReconstructionModel(kSSD,clf);
+        } // end if
+    } // end if iDetType
+}
+
+
 //______________________________________________________________________
 void AliITS::MakeBranch(Option_t* option){
     // Creates Tree branches for the ITS.
@@ -568,7 +639,9 @@ void AliITS::MakeBranch(Option_t* option){
     Bool_t cD = (strstr(option,"D")!=0);
     Bool_t cR = (strstr(option,"R")!=0);
     Bool_t cRF = (strstr(option,"RF")!=0);
+    Bool_t v2 = (strstr(option,"v2")!=0);
     
+
     if(cRF)cR = kFALSE;
     if(cH && (fHits == 0x0)) fHits  = new TClonesArray("AliITShit", 1560);
     
@@ -578,6 +651,7 @@ void AliITS::MakeBranch(Option_t* option){
     if(cD) MakeBranchD(0);
     if(cR) MakeBranchR(0);
     if(cRF) MakeBranchRF(0);
+    if(v2) MakeBranchR(0,"v2");
 }
 //______________________________________________________________________
 void AliITS::SetTreeAddress(){
@@ -1086,6 +1160,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
     // Return:
     //      none.
 
+
     if(!GetITSgeom()) return; // need transformations to do digitization.
     AliITSgeom *geom = GetITSgeom();
 
@@ -1446,18 +1521,33 @@ void AliITS::MakeBranchR(const char *file, Option_t *opt){
 
     // only one branch for rec points for all detector types
     Bool_t oFast= (strstr(opt,"Fast")!=0);
+    Bool_t v2 = (strstr(opt,"v2")!=0);
+    
+
     if(oFast){
         sprintf(branchname,"%sRecPointsF",GetName());
+    } else if(v2){
+        sprintf(branchname,"Clusters");
     } else {
         sprintf(branchname,"%sRecPoints",GetName());
     }
 
-    if(!fRecPoints)fRecPoints = new TClonesArray("AliITSRecPoint",1000);
-    if (fLoader->TreeR()) {
+    if(v2){
+      
+      if(!fClustersV2)fClustersV2 = new TClonesArray("AliITSclusterV2",3000);
+      if(fLoader->TreeR()){
+	if(fClustersV2==0x0) fClustersV2 = new TClonesArray("AliITSclusterV2",3000);
+	MakeBranchInTree(fLoader->TreeR(),branchname,&fClustersV2,buffsz,file);
+
+      }
+    }else{
+      if(!fRecPoints)fRecPoints = new TClonesArray("AliITSRecPoint",1000);
+      if (fLoader->TreeR()) {
         if(fRecPoints==0x0) fRecPoints = new TClonesArray("AliITSRecPoint",
                                                           1000);
         MakeBranchInTree(fLoader->TreeR(),branchname,&fRecPoints,buffsz,file);
-    } // end if
+      } // end if
+    }
 }
 //______________________________________________________________________
 void AliITS::SetTreeAddressR(TTree *treeR){
@@ -1472,17 +1562,26 @@ void AliITS::SetTreeAddressR(TTree *treeR){
 
     if(!treeR) return;
     if(fRecPoints==0x0) fRecPoints = new TClonesArray("AliITSRecPoint",1000);
-    TBranch *branch;
-    sprintf(branchname,"%sRecPoints",GetName());
-    branch = treeR->GetBranch(branchname);
-    if (branch) {
+    TBranch *branch1;
+    sprintf(branchname,"Clusters");
+    branch1 = treeR->GetBranch(branchname);
+    if(branch1){
+      if(fClustersV2==0x0) fClustersV2 = new TClonesArray("AliITSclusterV2",3000);
+      branch1->SetAddress(&fClustersV2);
+    }
+    else{
+      TBranch *branch;
+      sprintf(branchname,"%sRecPoints",GetName());
+      branch = treeR->GetBranch(branchname);
+      if (branch) {
         branch->SetAddress(&fRecPoints);
-    }else {
+      }else {
         sprintf(branchname,"%sRecPointsF",GetName());
         branch = treeR->GetBranch(branchname);
         if (branch) {
-            branch->SetAddress(&fRecPoints);
+	  branch->SetAddress(&fRecPoints);
         }
+      }
     }
 }
 //______________________________________________________________________
@@ -1498,6 +1597,20 @@ void AliITS::AddRecPoint(const AliITSRecPoint &r){
 
     TClonesArray &lrecp = *fRecPoints;
     new(lrecp[fNRecPoints++]) AliITSRecPoint(r);
+}
+//______________________________________________________________________
+void AliITS::AddClusterV2(const AliITSclusterV2 &r){
+    // Add a reconstructed space point to the list
+    // Inputs:
+    //      const AliITSClusterV2 &r class to be added to the tree
+    //                              of reconstructed points TreeR.
+    // Outputs:
+    //      none.
+    // Return:
+    //      none.
+
+    TClonesArray &lrecp = *fClustersV2;
+    new(lrecp[fNClustersV2++]) AliITSclusterV2(r);
 }
 //______________________________________________________________________
 void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
@@ -1625,8 +1738,9 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt){
           rec->SetClusters(ClustersAddress(id));
           rec->FindRawClusters(module);
       } // end if
-      pITSloader->TreeR()->Fill(); 
+      pITSloader->TreeR()->Fill();
       ResetRecPoints();
+      ResetClustersV2();
       treeC->Fill();
       ResetClusters();
   } // end for module
@@ -1634,6 +1748,74 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt){
   pITSloader->WriteRecPoints("OVERWRITE");
   pITSloader->WriteRawClusters("OVERWRITE");
 }
+//______________________________________________________________________
+void AliITS::DigitsToRecPoints(AliRawReader* rawReader){
+  // cluster finding and reconstruction of space points
+  // the condition below will disappear when the geom class will be
+  // initialized for all versions - for the moment it is only for v5 !
+  // 7 is the SDD beam test version
+  // Inputs:
+  //      Int_t evNumber   Event number to be processed.
+  //      Int_t lastentry  Offset for module when not all of the modules
+  //                       are processed.
+  //      Option_t *opt    String indicating which ITS sub-detectors should
+  //                       be processed. If ="All" then all of the ITS
+  //                       sub detectors are processed.
+  // Outputs:
+  //      none.
+  // Return:
+  //      none.
+  if(!GetITSgeom()) return;
+  AliITSgeom *geom = GetITSgeom();
+  
+    
+  SetDefaultClusterFindersV2();
+  
+  AliITSLoader *pITSloader = (AliITSLoader*)fLoader;
+  AliITSClusterFinderV2 *rec     = 0;
+  AliITSDetType      *iDetType = 0;
+  Int_t id=0;
+
+  if(!pITSloader->TreeR()) pITSloader->MakeTree("R");
+  TTree* cTree = pITSloader->TreeR();
+  TClonesArray *array=new TClonesArray("AliITSclusterV2",1000);
+  cTree->Branch("Clusters",&array);
+  delete array;
+ 
+  TClonesArray** clusters = new TClonesArray*[geom->GetIndexMax()]; 
+  for (Int_t iModule = 0; iModule < geom->GetIndexMax(); iModule++) {
+    clusters[iModule] = NULL;
+  }
+  for(id=0;id<3;id++){
+    iDetType = DetType(id);
+    rec = (AliITSClusterFinderV2*)iDetType->GetReconstructionModel();
+    if (!rec) {
+      Error("DigitsToRecPoints",
+	    "The reconstruction class was not instanciated");
+      exit(1);
+    } 
+    rec->RawdataToClusters(rawReader,clusters);    
+  } 
+  Int_t nClusters =0;
+  for(Int_t iModule=0;iModule<geom->GetIndexMax();iModule++){
+    array = clusters[iModule];
+    if(!array){
+      Error("DigitsToRecPoints","data for module %d missing!",iModule);
+      array = new TClonesArray("AliITSclusterV2");
+    }
+    cTree->SetBranchAddress("Clusters",&array);
+    cTree->Fill();
+    nClusters+=array->GetEntriesFast();
+    delete array;
+  }
+  pITSloader->WriteRecPoints("OVERWRITE");
+
+  delete[] clusters;
+  Info("DigitsToRecPoints", "total number of found clustersV2 in ITS: %d\n", 
+       nClusters);
+  
+}
+
 //______________________________________________________________________
 AliLoader* AliITS::MakeLoader(const char* topfoldername){ 
     //builds ITSgetter (AliLoader type)

@@ -200,6 +200,11 @@
 #pragma link C++ class AliITSEventHeader+;
 
 #pragma link C++ class AliITSReconstructor+;
+#pragma link C++ class AliITSClusterFinderV2+;
+#pragma link C++ class AliITSClusterFinderV2SDD+;
+#pragma link C++ class AliITSClusterFinderV2SPD+;
+#pragma link C++ class AliITSClusterFinderV2SSD+;
+
 
 //
 //#pragma link C++ class AliACORDEFunction+;

@@ -12,11 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//
-//  Cluster finder
-//  for Silicon pixels
-//
-//
+////////////////////////////////////////////////////////////////////////////
+//  Cluster finder                                                       ///
+//  for Silicon pixels                                                    // 
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////        
 #include "AliITSClusterFinderSPD.h"
 #include "AliITS.h"
 #include "AliITSdigitSPD.h"
@@ -64,27 +64,20 @@ fMinNCells(0){
     SetDx();
     SetDz();
 }
-//_____________________________________________________________________
-AliITSClusterFinderSPD::AliITSClusterFinderSPD(
-         const AliITSClusterFinderSPD &source): AliITSClusterFinder(source){
-    //     Copy Constructor 
 
-    if(&source == this) return;
-    this->fDz        = source.fDz;
-    this->fDx        = source.fDx;
-    this->fMinNCells = source.fMinNCells;
-    return;
-}
 //______________________________________________________________________
-AliITSClusterFinderSPD& AliITSClusterFinderSPD::operator=(
-                                       const AliITSClusterFinderSPD &source) {
-    //    Assignment operator
+AliITSClusterFinderSPD::AliITSClusterFinderSPD(const AliITSClusterFinderSPD &source) : AliITSClusterFinder(source) {
+  // Copy constructor
+  // Copies are not allowed. The method is protected to avoid misuse.
+  Fatal("AliITSClusterFinderSPD","Copy constructor not allowed\n");
+}
 
-    if(&source == this) return *this;
-    this->fDz        = source.fDz;
-    this->fDx        = source.fDx;
-    this->fMinNCells = source.fMinNCells;
-    return *this;
+//______________________________________________________________________
+AliITSClusterFinderSPD& AliITSClusterFinderSPD::operator=(const AliITSClusterFinderSPD& /* source */){
+  // Assignment operator
+  // Assignment is not allowed. The method is protected to avoid misuse.
+  Fatal("= operator","Assignment operator not allowed\n");
+  return *this;
 }
 //______________________________________________________________________
 void AliITSClusterFinderSPD::FindRawClusters(Int_t module){   
@@ -381,7 +374,7 @@ void AliITSClusterFinderSPD::ClusterFinder(Int_t ndigits,Int_t digx[],
         } // end if iclus[i]
 
         // store the cluster information to the AliITSRawCLusterSPD object
-        static AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
+   
 
         //put the cluster center in local reference frame of the detector
         // and in microns
@@ -396,7 +389,7 @@ void AliITSClusterFinderSPD::ClusterFinder(Int_t ndigits,Int_t digx[],
                                                              (Double_t) ndzmin,
                                                              (Double_t) ndzmax,
                                                              0,GetModule());
-        iTS->AddCluster(0,clust);
+        fITS->AddCluster(0,clust);
         delete clust;
     }//end loop on clusters   
     delete[] ifpad;
@@ -421,7 +414,6 @@ void AliITSClusterFinderSPD::DigitToPoint(Int_t nclus,
     const Double_t kconv = 1.0e-4; // micron -> cm
 
     // get rec points
-    static AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
     for (Int_t i=0; i<nclus; i++){
         l[0] = kconv*xcenter[i];
         l[1] = kconv*GetSeg()->Dy()/2.;
@@ -442,6 +434,6 @@ void AliITSClusterFinderSPD::DigitToPoint(Int_t nclus,
         rnew.fTracks[0]=tr1clus[i];
         rnew.fTracks[1]=tr2clus[i];
         rnew.fTracks[2]=tr3clus[i];
-        iTS->AddRecPoint(rnew); 
+        fITS->AddRecPoint(rnew); 
     } // end for i
 }

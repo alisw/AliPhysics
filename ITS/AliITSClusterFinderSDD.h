@@ -64,8 +64,7 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
     void  GroupClusters();
     void  SelectClusters();
     void  GetRecPoints();
-    void  ResolveClusters(); // Boris........ 
-    void  ResolveClustersE(); // Ernesto 
+    void  ResolveClusters(); // Ernesto Lopez Torres
     Int_t SearchPeak(Double_t *spect,Int_t xdim,Int_t zdim,Int_t *peakX,
                      Int_t *peakZ,Double_t *peakAmp,Double_t minpeak);//Ernesto
     Int_t NoLinearFit( Int_t xdim, Int_t zdim, Double_t *param, Double_t *spe,

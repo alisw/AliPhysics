@@ -2,7 +2,10 @@
 #define ALIITSCLUSTERFINDERSSD_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
+/////////////////////////////////////////////////////////////////////////////
+//          SSD Cluster Finder                                             //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
 //#include <TMath.h>
 #include "AliITSClusterFinder.h"
 //#include "AliITSsegmentationSSD.h"
@@ -24,6 +27,10 @@ class AliITSClusterFinderSSD: public AliITSClusterFinder{
     void FindRawClusters(Int_t module);
 
   protected:
+    // copy constructor
+    AliITSClusterFinderSSD(const AliITSClusterFinderSSD &source);
+    // assignment operator
+    AliITSClusterFinderSSD& operator=(const AliITSClusterFinderSSD &source);
     virtual AliITSresponseSSD* GetResp()const{
         return (AliITSresponseSSD*) GetResponse();}//Return Response
     //Returns fSegmentation
@@ -57,7 +64,6 @@ class AliITSClusterFinderSSD: public AliITSClusterFinder{
     void   GetCrossingError(Double_t& dp, Double_t& dn);
 
     // Data memebers
-    AliITS          *fITS;           //!Pointer to AliITS object
     TClonesArray    *fClusterP;      //!
     Int_t            fNClusterP;     //!Number of P side clusters in the array
     TClonesArray    *fClusterN;      //!Number of N side clusters in the array

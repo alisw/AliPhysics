@@ -30,6 +30,7 @@ class TFile;
 
 class AliITSsimulation;
 class AliITSClusterFinder;
+class AliITSclusterV2;
 class AliITSLoader;
 class AliITSsegmentation;
 class AliITSresponse;
@@ -43,6 +44,7 @@ class AliITSmodule;
 class AliVertexer;
 class AliDigitizer;
 class AliRunDigitizer;
+class AliRawReader;
 
 const Int_t kNTYPES=3;
 
@@ -111,6 +113,7 @@ class AliITS : public AliDetector {
     virtual void SetDefaults();
     virtual void SetDefaultSimulation();
     virtual void SetDefaultClusterFinders();
+    virtual void SetDefaultClusterFindersV2();
     virtual void MakeBranch(Option_t *opt=" ");
     virtual void SetTreeAddress();
 #ifndef NEWVERSION
@@ -352,6 +355,12 @@ class AliITS : public AliDetector {
     void ResetRecPoints(){if(fRecPoints) fRecPoints->Clear();fNRecPoints = 0;};
     // Return pointer to rec points 
     TClonesArray  *RecPoints()   {return fRecPoints;}
+
+    void AddClusterV2(const AliITSclusterV2 &cl);
+    void ResetClustersV2(){if(fClustersV2) fClustersV2->Clear();fNClustersV2=0;} 
+    Int_t GetNClustersV2()const {return fNClustersV2;}
+// Return pointer to clustersV2
+TClonesArray *ClustersV2() {return fClustersV2;}
 #endif
 #ifdef NEWVERSION
     void MakeBranchR(const char *file, Option_t *opt=" ");
@@ -368,7 +377,7 @@ class AliITS : public AliDetector {
     void Digits2Reco(){
         DigitsToRecPoints(fLoader->GetRunLoader()->GetEventNumber(),0,fOpt);};
     void DigitsToRecPoints(Int_t evNumber,Int_t lastEntry,Option_t *det);
-
+void DigitsToRecPoints(AliRawReader* rawReader);
  protected:
     //================== Data Members ==================================
 #ifdef NEWVERSION
@@ -402,10 +411,14 @@ class AliITS : public AliDetector {
 
     TClonesArray *fRecPoints;  //! List of reconstructed points
     Int_t         fNRecPoints; // Number of rec points
+
+    TClonesArray *fClustersV2; //!List of reconstructed clusters v2
+    Int_t         fNClustersV2;    //Number of clusters v2
+
 #endif
     TString fSelectedVertexer; // Vertexer selected in CreateVertexer
 #ifndef NEWVERSION
-    ClassDef(AliITS,4) // Base class for ITS
+    ClassDef(AliITS,5) // Base class for ITS
 #endif
 #ifdef NEWVERSION
     ClassDef(AliITS,5) // Base class for ITS

@@ -8,9 +8,10 @@
 
 ////////////////////////////////////////////////
 //  ITS Cluster Finder Class                  //
+//                                            //
+//                                            //
 ////////////////////////////////////////////////
 
-#include <Riostream.h>
 #include <TObject.h>
 #include <TClonesArray.h>
 
@@ -31,13 +32,10 @@ class AliITSClusterFinder :public TObject{
     AliITSClusterFinder(AliITSsegmentation *seg, AliITSresponse *resp,
                         TClonesArray *digits);// Standard+ Constructor
     virtual ~AliITSClusterFinder(); // Destructor
-    AliITSClusterFinder(const AliITSClusterFinder &source); // copy constructor
-    // assignment operator
-    AliITSClusterFinder& operator=(const AliITSClusterFinder &source);
     //
     // Do the Reconstruction.
     virtual void FindRawClusters(Int_t mod=0); // Finds cluster of digits.
-    //
+     //
     // Sets the debug flag for debugging output
     void SetDebug(Int_t level=1){fDebug=level;}
     // Clears the debug flag so no debugging output will be generated
@@ -119,8 +117,18 @@ class AliITSClusterFinder :public TObject{
     void Print(ostream *os); // Class ascii print function
     void Read(istream *os);  // Class ascii read function
 
-    // data members
+    // Conversion from RecPoints to V2Clusters
+    void RecPoints2Clusters(const TClonesArray *points, Int_t idx, TClonesArray *clusters);
+
+ 
   protected:
+    // methods 
+    static void CheckLabels(Int_t lab[3]);
+    void Init();                      
+    AliITSClusterFinder(const AliITSClusterFinder &source); // copy constructor
+    // assignment operator
+    AliITSClusterFinder& operator=(const AliITSClusterFinder &source);
+   // data members       
     Int_t              fDebug;         //! Debug flag/level
     Int_t              fModule;        //! Module number to be reconstuctted
     TClonesArray       *fDigits;       //! digits
@@ -133,12 +141,18 @@ class AliITSClusterFinder :public TObject{
                                        // and want to keep track of 
                                        // the cluster which was splitted
     AliITSMap          *fMap;          //! map
+    AliITS             *fITS;          //! pointer to the ITS      
     Int_t              fNperMax;       //! NperMax
     Int_t              fDeclusterFlag; //! DeclusterFlag
     Int_t              fClusterSize;   //! ClusterSize
     Int_t              fNPeaks;        //! NPeaks  
+    // Data members needed to fill AliCluster objects
+    Float_t fYshift[2200];       // y-shifts of detector local coor. systems 
+    Float_t fZshift[2200];       // z-shifts of detector local coor. systems 
+    Int_t fNdet[2200];           // detector index  
+    Int_t fNlayer[2200];         // detector layer
 
-    ClassDef(AliITSClusterFinder,3) //Class for clustering and reconstruction of space points
+    ClassDef(AliITSClusterFinder,4) //Class for clustering and reconstruction of space points
 };
 // Input and output functions for standard C++ input/output.
 ostream &operator<<(ostream &os,AliITSClusterFinder &source);
