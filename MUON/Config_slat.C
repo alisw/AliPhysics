@@ -453,14 +453,14 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 //
  AliMUONSegmentationV01 *seg31=new AliMUONSegmentationV01;
  seg31->SetSegRadii(rseg2);
- seg31->SetPadSize(6, 0.5);
+ seg31->SetPadSize(3.0, 0.5);
  seg31->SetDAnod(3.0/3./4);
  seg31->SetPadDivision(nseg2);
  MUON->SetSegmentationModel(chamber-1, 1, seg31);
 //
  AliMUONSegmentationV02 *seg32=new AliMUONSegmentationV02;
  seg32->SetSegRadii(rseg2); 
- seg32->SetPadSize(0.75, 4.);
+ seg32->SetPadSize(0.75, 2.0);
  seg32->SetPadDivision(nseg2);
  seg32->SetDAnod(3.0/3./4);
 
@@ -475,14 +475,14 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 //
  AliMUONSegmentationV01 *seg41=new AliMUONSegmentationV01;
  seg41->SetSegRadii(rseg2);
- seg41->SetPadSize(6, 0.5);
+ seg41->SetPadSize(3.0, 0.5);
  seg41->SetDAnod(3.0/3./4);
  seg41->SetPadDivision(nseg2);
  MUON->SetSegmentationModel(chamber-1, 1, seg41);
 //
  AliMUONSegmentationV02 *seg42=new AliMUONSegmentationV02;
  seg42->SetSegRadii(rseg2); 
- seg42->SetPadSize(0.75, 4.);
+ seg42->SetPadSize(0.75, 2.0);
  seg42->SetPadDivision(nseg2);
  seg42->SetDAnod(3.0/3./4);
 
