@@ -15,6 +15,7 @@ class TString ;
 class TTask ;
 class TFolder ;
 class TTree ; 
+class TRandom ; 
 
 // --- AliRoot header files ---
 #include "AliDetector.h" 
@@ -23,7 +24,7 @@ class AliPHOSQAChecker ;
 
 class AliPHOS : public AliDetector {
 
- public:
+public:
 
   AliPHOS() ;
   AliPHOS(const char* name, const char* title="") ;  
@@ -31,7 +32,6 @@ class AliPHOS : public AliDetector {
     Copy(*this) ; 
   }
   virtual ~AliPHOS() ; 
-  virtual void Copy(AliPHOS & phos) ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
     // do not use this definition but the one below
     Fatal("AddHit(Int_t, Int_t*, Float_t *)", "do not use") ;
@@ -39,8 +39,10 @@ class AliPHOS : public AliDetector {
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, 
 			 Int_t id, Float_t *hits ) = 0 ;   
+  virtual void Copy(AliPHOS & phos) ; 
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;            
+  virtual void  Digits2Raw();
   virtual void  FinishRun() {WriteQA();}
   virtual AliPHOSGeometry * GetGeometry() const 
   {return AliPHOSGeometry::GetInstance(GetTitle(),"") ;  }
@@ -52,7 +54,6 @@ class AliPHOS : public AliDetector {
   virtual TTree * TreeQA() const {return fTreeQA; } 
   virtual const TString Version() const {return TString(" ") ; } 
   virtual void WriteQA() ; 
-  virtual void Digits2Raw();
   AliPHOS & operator = (const AliPHOS & /*rvalue*/)  {
     Fatal("operator =", "not implemented") ; return *this ; }
 
@@ -60,6 +61,8 @@ protected:
   
   AliPHOSQAChecker * fQATask ; //! PHOS checkers container
   TTree * fTreeQA ;            // the QA tree that contains the alarms
+  TRandom * fRan ;             //! random number generator
+
   ClassDef(AliPHOS,2) // Photon Spectrometer Detector (base class)
 
 } ;
