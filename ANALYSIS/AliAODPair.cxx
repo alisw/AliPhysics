@@ -39,6 +39,10 @@ AliAODPair::AliAODPair(Bool_t rev):
  fKtNotCalc(kTRUE),
  fKStar(0.0),
  fKStarNotCalc(kTRUE),
+ fKStarOut(0.0),
+ fKStarSide(0.0),
+ fKStarLong(0.0),
+ fKStarCompNotCalc(kTRUE),
  fPInv(0.0),
  fQSide(0.0),
  fOut(0.0),
@@ -94,6 +98,10 @@ AliAODPair::AliAODPair(AliVAODParticle* part1, AliVAODParticle* part2, Bool_t re
  fKtNotCalc(kTRUE),
  fKStar(0.0),
  fKStarNotCalc(kTRUE),
+ fKStarOut(0.0),
+ fKStarSide(0.0),
+ fKStarLong(0.0),
+ fKStarCompNotCalc(kTRUE),
  fPInv(0.0),
  fQSide(0.0),
  fOut(0.0),
@@ -149,6 +157,10 @@ AliAODPair::AliAODPair(const AliAODPair& in):
  fKtNotCalc(kTRUE),
  fKStar(0.0),
  fKStarNotCalc(kTRUE),
+ fKStarOut(0.0),
+ fKStarSide(0.0),
+ fKStarLong(0.0),
+ fKStarCompNotCalc(kTRUE),
  fPInv(0.0),
  fQSide(0.0),
  fOut(0.0),
@@ -407,6 +419,24 @@ Double_t AliAODPair::GetKStar()
     fKStarNotCalc = kFALSE;
    }
   return fKStar;
+}
+/************************************************************************/
+Double_t AliAODPair::GetKStarOut()
+{
+    CalculateKStarComp();
+    return fKStarOut;
+}
+/************************************************************************/
+Double_t AliAODPair::GetKStarSide()
+{
+    CalculateKStarComp();
+    return fKStarSide;
+}
+/************************************************************************/
+Double_t AliAODPair::GetKStarLong()
+{
+    CalculateKStarComp();
+    return fKStarLong;
 }
 /************************************************************************/
 

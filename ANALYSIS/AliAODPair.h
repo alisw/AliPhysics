@@ -48,7 +48,11 @@ class AliAODPair: public TObject
    
    virtual Double_t GetKt();  //returns K transverse
    virtual Double_t GetKStar();
+   virtual Double_t GetKStarOut();  //z.ch.
+   virtual Double_t GetKStarSide(); //z.ch.
+   virtual Double_t GetKStarLong(); //z.ch.
    
+
    virtual Double_t GetAvarageDistance();//returns avarage distnace between two tracks
    
    virtual Double_t GetDeltaE(); //return difference of Energies
@@ -104,7 +108,12 @@ class AliAODPair: public TObject
    
    Double_t fKStar; // KStar
    Bool_t   fKStarNotCalc;// flag indicating if fKStar is calculated
-   
+   Double_t fKStarOut; // KStarOut   z.ch.
+   Double_t fKStarSide;// KStarSide  z.ch.
+   Double_t fKStarLong;// KStarLong  z.ch.
+
+   Bool_t   fKStarCompNotCalc; // flag indicating if CalcuteKStarComp() is calculated  z.ch.
+
    Double_t fPInv;  //invariant momentum
    
    Double_t fQSide; //Q Side
@@ -131,6 +140,7 @@ class AliAODPair: public TObject
    Double_t fESum;// Sum of energies
    Bool_t   fSumsNotCalc;//flag indicating if fPxSum,fPxSum,fPxSum and fESum is calculated for current pair
    void     CalculateSums();
+   void     CalculateKStarComp();
    
    Double_t fPxDiff;// Difference of Px momenta
    Double_t fPyDiff;// Difference of Px momenta
@@ -184,6 +194,7 @@ void AliAODPair::Changed()
  fQtNotCalc        = kTRUE;
  fKtNotCalc         = kTRUE;
  fKStarNotCalc      = kTRUE;
+ fKStarCompNotCalc  = kTRUE;
  fQInvLNotCalc      = kTRUE;
  fGammaLCMSNotCalc = kTRUE;
  fAvarageDistanceNotCalc = kTRUE;
@@ -230,6 +241,46 @@ void AliAODPair::CalculateSums()
      fSumsNotCalc = kFALSE;
     }
  }
+/****************************************************************/
+inline
+void AliAODPair::CalculateKStarComp()
+{
+  
+  if (fKStarCompNotCalc)
+    {
+      CalculateSums();
+
+      Double_t ptrans = fPxSum*fPxSum + fPySum*fPySum;
+      Double_t mtrans = fESum*fESum - fPzSum*fPzSum;
+      Double_t pinv  =  TMath::Sqrt(mtrans - ptrans);
+      ptrans         =  TMath::Sqrt(ptrans);
+      mtrans         =  TMath::Sqrt(mtrans);
+      
+      Double_t px1   = fPart1->Px();
+      Double_t py1   = fPart1->Py();
+      Double_t pz1   = fPart1->Pz();
+      Double_t pE1   = fPart1->E();
+
+      // boost to LCMS
+      Double_t beta  = fPzSum / fESum;
+      Double_t gamma = fESum / mtrans;
+
+      fKStarLong     = gamma * (pz1 - beta * pE1);
+      double   temp  = gamma * (pE1 - beta * pz1);
+
+      // rotate in transverse plane
+      fKStarSide = (-px1*fPySum + py1*fPxSum)/ptrans;
+      fKStarOut  = ( px1*fPxSum + py1*fPySum)/ptrans;
+ 
+      // go from LCMS to CMS
+      gamma = mtrans/pinv;
+      beta  = ptrans/mtrans;
+      fKStarOut  = gamma * (fKStarOut - beta * temp);
+
+      fKStarCompNotCalc = kFALSE;
+    }
+}
+
 /****************************************************************/
 inline 
 void AliAODPair::CalculateDiffs()
