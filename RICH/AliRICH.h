@@ -13,6 +13,8 @@
 
 #include "AliRICHConst.h"
 #include "AliRICHChamber.h"
+#include "AliRICHParam.h"
+
 
 #include "AliRICHDigit.h"
 #include "AliRICHSDigit.h"
@@ -165,24 +167,28 @@ public:
   virtual ~AliRICHdigit() {;}  
   inline   Int_t    Compare(const TObject *pObj) const;                               //virtual
            Bool_t   IsSortable()                                  const{return kTRUE;}//virtual
-           Int_t    C()                                           const{return fChamber;}
+           Int_t    C()                                           const{return fChamber/10;}
+           Int_t    S()                                           const{return fChamber-(fChamber/10)*10;} 
+           Int_t    Chamber()                                     const{return C();}
+           Int_t    Sector()                                      const{return S();}
            Int_t    X()                                           const{return fPadX;}
            Int_t    Y()                                           const{return fPadY;}
-           Int_t    Id()                                          const{return fChamber*1000000+fPadX*1000+fPadY;}
+           Int_t    Id()                                          const{return fChamber*10000000+fPadX*1000+fPadY;}
            Double_t Q()                                           const{return fQdc;}
            Int_t    T(Int_t i)                                    const{return fTracks[i];}
-           void  Print(Option_t *option)const;                                       //virtual
+           void  Print(Option_t *option="")const;                 //virtual
 protected:
-  Int_t    fChamber;  //module number 
+  Int_t    fChamber;  //10*module number+ sector number 
   Int_t    fPadX;     //pad number along X
   Int_t    fPadY;     //pad number along Y
   Double_t fQdc;      //QDC value, fractions are permitted for summable procedure
   ClassDef(AliRICHdigit,1) //RICH digit class       
 };//class AliRICHdigit
 //__________________________________________________________________________________________________
-AliRICHdigit::AliRICHdigit(Int_t iC,Int_t iX,Int_t iY,Double_t q,Int_t iT0,Int_t iT1,Int_t iT2)
+AliRICHdigit::AliRICHdigit(Int_t iC,Int_t iPadX,Int_t iPadY,Double_t q,Int_t iT0,Int_t iT1,Int_t iT2)
 {
-  fChamber=iC;fPadX=iX;fPadY=iY;fQdc=q;
+  fPadX=iPadX;fPadY=iPadY;fQdc=q;  
+  fChamber=10*iC+AliRICHParam::Pad2Sec(iPadX,iPadY);
   fTracks[0]=iT0;fTracks[1]=iT1;fTracks[2]=iT2;
 }
 //__________________________________________________________________________________________________
@@ -204,21 +210,23 @@ enum ClusterStatus {kOK,kEdge,kShape,kSize,kRaw};
 class AliRICHcluster :public TObject
 {
 public:
-           AliRICHcluster()                                     {fSize=fQdc=0;fStatus=fChamber=fDimXY=kBad;fX=fY=kBad;fDigits=0;}
+           AliRICHcluster()                                     {fSize=fQdc=fStatus=fChamber=fDimXY=kBad;fX=fY=kBad;fDigits=0;}
   virtual ~AliRICHcluster() {delete fDigits;}  
-           Int_t    Size()                                      const{return fSize;}
-           Int_t    DimXY()                                     const{return fDimXY;}
-           Int_t    Chamber()                                   const{return fChamber/10;}
-           Int_t    Sector()                                    const{return fChamber-(fChamber/10)*10;} 
-           Int_t    Q()                                         const{return fQdc;}
-           Double_t X()                                         const{return fX;}
-           Double_t Y()                                         const{return fY;}
-           Int_t    Status()                                    const{return fStatus;}
-           void  SetStatus(Int_t status)                             {fStatus=status;}
-           void  Print(Option_t *option)const;                                                            //virtual
-   inline  void  AddDigit(AliRICHdigit *pDig);
-   inline  void  CoG();
-   TObjArray* Digits() const{return fDigits;}
+         Int_t      Size()                                      const{return fSize;}                       //
+         Int_t      DimXY()                                     const{return fDimXY;}                      //
+         Int_t      C()                                         const{return fChamber/10;}                 //
+         Int_t      S()                                         const{return fChamber-(fChamber/10)*10;}   //
+         Int_t      Chamber()                                   const{return C();}                         //
+         Int_t      Sector()                                    const{return S();}                         //
+         Int_t      Q()                                         const{return fQdc;}                        // 
+         Double_t   X()                                         const{return fX;}                          //
+         Double_t   Y()                                         const{return fY;}                          // 
+         Int_t      Status()                                    const{return fStatus;}                     //
+         void       SetStatus(Int_t status)                          {fStatus=status;}                     //
+         TObjArray* Digits()                                    const{return fDigits;}                     //  
+         void       Print(Option_t *option="")const;                                                       //virtual
+  inline void       AddDigit(AliRICHdigit *pDig);                                                          //
+  inline void       CoG();                                                                                 // 
 protected:
   Int_t         fSize;        //how many digits belong to this cluster    
   Int_t         fDimXY;       //100*xdim+ydim box containing the cluster
@@ -228,31 +236,33 @@ protected:
   Double_t      fY;           //local y postion  
   Int_t         fStatus;      //flag to mark the quality of the cluster   
   TObjArray    *fDigits;      //! list of digits forming this cluster
-  ClassDef(AliRICHcluster,1)  //RICH digit class       
+  ClassDef(AliRICHcluster,1)  //RICH cluster class       
 };//class AliRICHcluster
 //__________________________________________________________________________________________________
 void AliRICHcluster::AddDigit(AliRICHdigit *pDig)
-{  
-  if(!fDigits) fDigits = new TObjArray;
+{//    
+  if(!fDigits) {fQdc=fSize=0;fDigits = new TObjArray;}
   fQdc+=(Int_t)pDig->Q(); fDigits->Add(pDig);
+  fChamber=10*pDig->C()+pDig->S();
   fSize++;
 }
 //__________________________________________________________________________________________________
 void AliRICHcluster::CoG()
-{
-   Int_t xmin=999,ymin=999;
-   Int_t xmax=0,ymax=0;   
-   Double_t x,y;      
-   for(Int_t iDig=0;iDig<Size();iDig++) {
-     AliRICHdigit *pDig=(AliRICHdigit*)fDigits->At(iDig);
-     Int_t padX = pDig->X();Int_t padY = pDig->Y();Double_t q=pDig->Q();
-     AliRICHParam::Pad2Loc(padX,padY,x,y);
-     fX += x*q;fY +=y*q;
-     if(padX<xmin) xmin = padX;if(padX>xmax) xmax = padX;if(padY<ymin) ymin = padY;if(padY>ymax) ymax = padY;//find box edges containing cluster
+{//
+  Int_t xmin=999,ymin=999,xmax=0,ymax=0;   
+  Double_t x,y;        
+  fX=fY=0;
+  for(Int_t iDig=0;iDig<Size();iDig++) {
+    AliRICHdigit *pDig=(AliRICHdigit*)fDigits->At(iDig);
+    Int_t padX = pDig->X();Int_t padY = pDig->Y();Double_t q=pDig->Q();
+    AliRICHParam::Pad2Loc(padX,padY,x,y);
+    fX += x*q;fY +=y*q;
+    if(padX<xmin)xmin=padX;if(padX>xmax)xmax=padX;if(padY<ymin)ymin=padY;if(padY>ymax)ymax=padY;
    }
-   fX/=fQdc;fY/=fQdc;
-   fDimXY = 100*(xmax-xmin+1)+ymax-ymin+1;
-}
+   fX/=fQdc;fY/=fQdc;//Center of Gravity
+   fDimXY = 100*(xmax-xmin+1)+ymax-ymin+1;//find box containing cluster
+   fStatus=kRaw;
+}//CoG()
 //__________________AliRICH_________________________________________________________________________
 //__________________________________________________________________________________________________
 //__________________________________________________________________________________________________
@@ -280,7 +290,7 @@ public:
   inline  void    AddHit(Int_t track, Int_t *vol, Float_t *hits);                                                 //virtual
   inline  void    AddSDigit(Int_t iC,Int_t iX,Int_t iY,Double_t q,Int_t iT0,Int_t iT1=kBad,Int_t iT2=kBad);
   inline  void    AddDigit (Int_t iC,Int_t iX,Int_t iY,Int_t iQ,Int_t iT0,Int_t iT1=kBad,Int_t iT2=kBad);     
-  inline  void    AddCluster(AliRICHcluster clus);
+  inline  void    AddCluster(AliRICHcluster &clus);
           void    ResetHits()     {AliDetector::ResetHits();fNcerenkovs=0;if(fCerenkovs)fCerenkovs->Clear();fNspecials=0;if(fSpecials)fSpecials->Clear();}  //virtual
           void    ResetSDigits()  {fNsdigits=0;  if(fSdigits)  fSdigits ->Clear();}                                 
           void    ResetDigits()   {if(fDigitsNew)for(int i=0;i<kNCH;i++){fDigitsNew->At(i)->Clear();fNdigitsNew[i]=0;}}
@@ -380,10 +390,11 @@ void AliRICH::AddDigit(Int_t iC,Int_t iX,Int_t iY,Int_t iAdc,Int_t iT0,Int_t iT1
   new(tmp[fNdigitsNew[iC-1]++]) AliRICHdigit(iC,iX,iY,iAdc,iT0,iT1,iT2);
 }
 //__________________________________________________________________________________________________
-void AliRICH::AddCluster(AliRICHcluster clus)
+void AliRICH::AddCluster(AliRICHcluster &cluster)
 {//Adds the current cluster to the corresponding RICH list of clusters (individual list per chamber)
-  TClonesArray &tmp=*((TClonesArray*)fClusters->At(clus.Chamber()-1));
-  new(tmp[fNclusters[clus.Chamber()-1]++]) AliRICHcluster(clus);
+  cluster.Print();
+  TClonesArray &tmp=*((TClonesArray*)fClusters->At(cluster.Chamber()-1));
+  new(tmp[fNclusters[cluster.Chamber()-1]++]) AliRICHcluster(cluster);
 }
 //__________________________________________________________________________________________________
 void AliRICH::CreateHits()

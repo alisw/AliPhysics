@@ -481,27 +481,22 @@ Float_t AliRICH::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
 }//Float_t AliRICH::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
 //__________________________________________________________________________________________________
 Float_t AliRICH::AbsoCH4(Float_t x)
-{
-
-    //KLOSCH,SCH4(9),WL(9),EM(9),ALENGTH(31)
-    Float_t sch4[9] = {.12,.16,.23,.38,.86,2.8,7.9,28.,80.};              //MB X 10^22
-    //Float_t wl[9] = {153.,152.,151.,150.,149.,148.,147.,146.,145};
-    Float_t em[9] = {8.1,8.158,8.212,8.267,8.322,8.378,8.435,8.493,8.55};
-    const Float_t kLosch=2.686763E19;                                      // LOSCHMIDT NUMBER IN CM-3
-    const Float_t kIgas1=100, kIgas2=0, kOxy=10., kWater=5., kPressure=750.,kTemperature=283.;                                      
-    Float_t pn=kPressure/760.;
-    Float_t tn=kTemperature/273.16;
+{//KLOSCH,SCH4(9),WL(9),EM(9),ALENGTH(31)
+  Float_t sch4[9] = {.12,.16,.23,.38,.86,2.8,7.9,28.,80.};              //MB X 10^22
+  //Float_t wl[9] = {153.,152.,151.,150.,149.,148.,147.,146.,145};
+  Float_t em[9] = {8.1,8.158,8.212,8.267,8.322,8.378,8.435,8.493,8.55};
+  const Float_t kLosch=2.686763E19;                                      // LOSCHMIDT NUMBER IN CM-3
+  const Float_t kIgas1=100, kIgas2=0, kOxy=10., kWater=5., kPressure=750.,kTemperature=283.;                                      
+  Float_t pn=kPressure/760.;
+  Float_t tn=kTemperature/273.16;
     
-	
-// ------- METHANE CROSS SECTION -----------------
-// ASTROPH. J. 214, L47 (1978)
-	
+		
     Float_t sm=0;
     if (x<7.75) 
 	sm=.06e-22;
     
-    if(x>=7.75 && x<=8.1)
-    {
+    if(x>=7.75 && x<=8.1)                           // ------- METHANE CROSS SECTION -----------------
+    {                                               // ASTROPH. J. 214, L47 (1978)
 	Float_t c0=-1.655279e-1;
 	Float_t c1=6.307392e-2;
 	Float_t c2=-8.011441e-3;
@@ -512,7 +507,7 @@ Float_t AliRICH::AbsoCH4(Float_t x)
     if (x> 8.1)
     {
 	Int_t j=0;
-	while (x<=em[j] && x>=em[j+1])
+	while (x<=em[j] || x>=em[j+1])
 	{
 	    j++;
 	    Float_t a=(sch4[j+1]-sch4[j])/(em[j+1]-em[j]);
@@ -522,16 +517,11 @@ Float_t AliRICH::AbsoCH4(Float_t x)
     
     Float_t dm=(kIgas1/100.)*(1.-((kOxy+kWater)/1.e6))*kLosch*pn/tn;
     Float_t abslm=1./sm/dm;
-    
-//    ------- ISOBUTHANE CROSS SECTION --------------
-//     i-C4H10 (ai) abs. length from curves in
-//     Lu-McDonald paper for BARI RICH workshop .
-//     -----------------------------------------------------------
-    
-    Float_t ai;
-    Float_t absli;
-    if (kIgas2 != 0) 
-    {
+        
+    Float_t ai;                                          //    ------- ISOBUTHANE CROSS SECTION --------------
+    Float_t absli;                                       //     i-C4H10 (ai) abs. length from curves in
+    if (kIgas2 != 0)                                     //     Lu-McDonald paper for BARI RICH workshop .
+    {                                                    //     -----------------------------------------------------------
 	if (x<7.25)
 	    ai=100000000.;
 	
@@ -547,66 +537,51 @@ Float_t AliRICH::AbsoCH4(Float_t x)
     }
     else
 	absli=1.e18;
-//    ---------------------------------------------------------
-//
-//       transmission of O2
-//
-//       y= path in cm, x=energy in eV
-//       so= cross section for UV absorption in cm2
-//       do= O2 molecular density in cm-3
-//    ---------------------------------------------------------
     
-    Float_t abslo;
-    Float_t so=0;
-    if(x>=6.0)
-    {
-	if(x>=6.0 && x<6.5)
-	{
-	    so=3.392709e-13 * TMath::Exp(2.864104 *x);
-	    so=so*1e-18;
-	}
-	
-	if(x>=6.5 && x<7.0) 
-	{
-	    so=2.910039e-34 * TMath::Exp(10.3337*x);
-	    so=so*1e-18;
-	}
-	    
+  Float_t abslo;                                         //    ---------------------------------------------------------
+  Float_t so=0;                                          //
+  if(x>=6.0)                                             //       transmission of O2
+  {                                                      //
+      if(x>=6.0 && x<6.5)                                //       y= path in cm, x=energy in eV
+      {                                                  //       so= cross section for UV absorption in cm2
+          so=3.392709e-13 * TMath::Exp(2.864104 *x);     //       do= O2 molecular density in cm-3
+          so=so*1e-18;                                   //    ---------------------------------------------------------
+      }
 
-	if (x>=7.0) 
-	{
-	    Float_t a0=-73770.76;
-	    Float_t a1=46190.69;
-	    Float_t a2=-11475.44;
-	    Float_t a3=1412.611;
-	    Float_t a4=-86.07027;
-	    Float_t a5=2.074234;
-	    so= a0+(a1*x)+(a2*x*x)+(a3*x*x*x)+(a4*x*x*x*x)+(a5*x*x*x*x*x);
-	    so=so*1e-18;
-	}
-	
-	Float_t dox=(kOxy/1e6)*kLosch*pn/tn;
+      if(x>=6.5 && x<7.0) 
+      {
+          so=2.910039e-34 * TMath::Exp(10.3337*x);
+          so=so*1e-18;
+      }
+          
+
+      if (x>=7.0) 
+      {
+          Float_t a0=-73770.76;
+          Float_t a1=46190.69;
+          Float_t a2=-11475.44;
+          Float_t a3=1412.611;
+          Float_t a4=-86.07027;
+          Float_t a5=2.074234;
+          so= a0+(a1*x)+(a2*x*x)+(a3*x*x*x)+(a4*x*x*x*x)+(a5*x*x*x*x*x);
+          so=so*1e-18;
+      }
+
+      Float_t dox=(kOxy/1e6)*kLosch*pn/tn;
 	abslo=1./so/dox;
     }
     else
 	abslo=1.e18;
-//     ---------------------------------------------------------
-//
-//       transmission of H2O
-//
-//       y= path in cm, x=energy in eV
-//       sw= cross section for UV absorption in cm2
-//       dw= H2O molecular density in cm-3
-//     ---------------------------------------------------------
+
     
-    Float_t abslw;
-    
-    Float_t b0=29231.65;
-    Float_t b1=-15807.74;
-    Float_t b2=3192.926;
-    Float_t b3=-285.4809;
-    Float_t b4=9.533944;
-    
+    Float_t abslw;             //     ---------------------------------------------------------
+                               //
+    Float_t b0=29231.65;       //       transmission of H2O
+    Float_t b1=-15807.74;      //
+    Float_t b2=3192.926;       //       y= path in cm, x=energy in eV
+    Float_t b3=-285.4809;      //       sw= cross section for UV absorption in cm2
+    Float_t b4=9.533944;       //       dw= H2O molecular density in cm-3
+                               //     ---------------------------------------------------------
     if(x>6.75)
     {    
 	Float_t sw= b0+(b1*x)+(b2*x*x)+(b3*x*x*x)+(b4*x*x*x*x);
@@ -617,11 +592,10 @@ Float_t AliRICH::AbsoCH4(Float_t x)
     else
     	abslw=1.e18;
 	    
-//    ---------------------------------------------------------
     
     Float_t alength=1./(1./abslm+1./absli+1./abslo+1./abslw);
     return (alength);
-}
+}//AbsoCH4()
 //__________________________________________________________________________________________________
 void AliRICH::MakeBranch(Option_t* option)
 {//Create Tree branches for the RICH.
@@ -648,17 +622,20 @@ void AliRICH::MakeBranch(Option_t* option)
   if(cD&&fLoader->TreeD()){//D
     CreateDigits();
     CreateDigitsOld();  
-    for(int i=0;i<kNCH;i++){ 
+    for(Int_t i=0;i<kNCH;i++){ 
       MakeBranchInTree(fLoader->TreeD(),Form("%sDigits%d",GetName(),i+1),&((*fDchambers)[i]),kBufferSize,0);
       MakeBranchInTree(fLoader->TreeD(),Form("%s%d",GetName(),i+1),&((*fDigitsNew)[i]),kBufferSize,0);
     }
   }//D
   
   if(cR&&fLoader->TreeR()){//R
+    CreateClusters();
     CreateRawClustersOld(); 
-    for(int i=0; i<kNCH ;i++)
+    for(Int_t i=0;i<kNCH;i++){
+      MakeBranchInTree(fLoader->TreeR(),Form("%sClusters%d",GetName(),i+1), &((*fClusters)[i]), kBufferSize, 0);
       MakeBranchInTree(fLoader->TreeR(),Form("%sRawClusters%d",GetName(),i+1), &((*fRawClusters)[i]), kBufferSize, 0);
-   }//R
+    }
+  }//R
   if(GetDebug())Info("MakeBranch","Stop.");   
 }//void AliRICH::MakeBranch(Option_t* option)
 //__________________________________________________________________________________________________
@@ -697,7 +674,7 @@ void AliRICH::SetTreeAddress()
 
     for(int i=0;i<kNCH;i++){         
       branch=fLoader->TreeR()->GetBranch(Form("%sClusters%d" ,GetName(),i+1));
-      if(branch){CreateClusters(); branch->SetAddress(&((*fRawClusters)[i]));}
+      if(branch){CreateClusters(); branch->SetAddress(&((*fClusters)[i]));}
     }
     
     for(int i=0;i<kNCH;i++) {
