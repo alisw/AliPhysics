@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2003/02/27 16:15:52  hristov
+Code for inward refitting (S.Radomski)
+
 Revision 1.27  2003/02/25 16:47:58  hristov
 allow back propagation for more than 1 event (J.Chudoba)
 
@@ -777,6 +780,7 @@ Int_t AliTPCtracker::Clusters2Tracks(const TFile *inp, TFile *out) {
         if (t.GetNumberOfClusters() >= Int_t(0.4*nrows)) {
           t.CookdEdx();
           CookLabel(pt,0.1); //For comparison only
+          pt->PropagateTo(fParam->GetInnerRadiusLow());
           iotrack=pt;
           tracktree.Fill();
           UseClusters(&t);
@@ -899,7 +903,7 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   if (!in->IsOpen()) {
      cerr<<"AliTPCtracker::PropagateBack(): ";
      cerr<<"file with back propagated ITS tracks is not open !\n";
-     return 1;
+     //return 1;
   }
 
   if (!out->IsOpen()) {
@@ -917,10 +921,10 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   if (!bckTree) {
      cerr<<"AliTPCtracker::PropagateBack() ";
      cerr<<"can't get a tree with back propagated ITS tracks !\n";
-     return 3;
+     //return 3;
   }
   AliTPCtrack *bckTrack=new AliTPCtrack; 
-  bckTree->SetBranchAddress("tracks",&bckTrack);
+  if (bckTree) bckTree->SetBranchAddress("tracks",&bckTrack);
 
   sprintf(tName,"TreeT_TPC_%d",GetEventNumber());
   TTree *tpcTree=(TTree*)in->Get(tName);
@@ -950,7 +954,7 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   Int_t bckN= (bckTree)? (Int_t)bckTree->GetEntries() : 0;
 
   // look up table   
-  const Int_t nLab = 20000; // limit on number of primaries (arbitrary)
+  const Int_t nLab = 200000; // limit on number of primaries (arbitrary)
   Int_t lut[nLab];
   for(Int_t i=0; i<nLab; i++) lut[i] = -1;
     
@@ -959,6 +963,8 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
       bckTree->GetEvent(i);
       Int_t lab = TMath::Abs(bckTrack->GetLabel());
       if (lab < nLab) lut[lab] = i;
+      else {
+	cerr << "AliTPCtracker: The size of the LUT is too small\n";
     }
   }
   
@@ -970,7 +976,9 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
 
       // No ITS - use TPC track only
       
-      fSeeds->AddLast(new AliTPCseed(*tpcTrack, tpcTrack->GetAlpha()));
+      AliTPCseed seed = new AliTPCseed(*tpcTrack, tpcTrack->GetAlpha());
+      seed->ResetCovariance();
+      fSeeds->AddLast(seed);
       tracks.AddLast(new AliTPCtrack(*tpcTrack));
     
     } else {  
