@@ -60,8 +60,7 @@ void TestPrimaries(Int_t evNumber1=0, Int_t evNumber2=0)
 	    Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
 	    Float_t y     = 0.5*TMath::Log((E+Pz+1.e-13)/(E-Pz+1.e-13));
 	    
-	    //	    if (child1 >= 0) continue;
-	    if (mother > 0) continue;
+	    if (child1 >= 0) continue;
 	    if (DataBase->GetParticle(mpart)->Charge() == 0) continue;
 	    Float_t wgt = 1./(Float_t ((evNumber2-evNumber1)+1.));
 	    thetaH->Fill(theta*180./TMath::Pi(),wgt);
