@@ -23,7 +23,7 @@ public:
   AliITSsimulationSSD(AliITSsegmentation *seg, AliITSresponse *resp);
   virtual ~AliITSsimulationSSD();
     
-  void DigitiseModule(AliITSmodule *mod, Int_t mod, Int_t dummy);  
+  void DigitiseModule(AliITSmodule *mod, Int_t imod, Int_t dummy);  
   //void HitToDigit(Double_t x0, Double_t y0, Double_t z0, 
   void HitToDigit(Int_t module, Double_t x0, Double_t y0, Double_t z0, //b.b. 
 		  Double_t x, Double_t y, Double_t z, Double_t de,
