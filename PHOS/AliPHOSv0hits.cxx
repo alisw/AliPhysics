@@ -82,7 +82,7 @@ AliPHOSv0hits::~AliPHOSv0hits()
 }
 
 //____________________________________________________________________________
-void AliPHOSv0hits::AddHit(Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
+void AliPHOSv0hits::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.
   // In this version of AliPHOSv0, a PHOS hit is real geant 
@@ -100,7 +100,7 @@ void AliPHOSv0hits::AddHit(Int_t primary, Int_t tracknumber, Int_t Id, Float_t *
 
   //  fHits->Print("");
 
-  newHit = new AliPHOSHit(primary, tracknumber, Id, hits) ;
+  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits) ;
 
   // We DO want to save in TreeH the raw hits 
   //  TClonesArray &lhits = *fHits;
@@ -227,7 +227,7 @@ void AliPHOSv0hits::StepManager(void)
        	fGeom->RelToAbsNumbering(relid, absid) ; 
 
 	// add current hit to the hit list      
-	AddHit(primary, tracknumber, absid, xyze);
+	AddHit(fIshunt, primary, tracknumber, absid, xyze);
 
       } // there is deposited energy 
      } // We are inside the gas of the CPV  
@@ -254,7 +254,7 @@ void AliPHOSv0hits::StepManager(void)
  
       // add current hit to the hit list
 
-          AddHit(primary,tracknumber, absid, xyze);
+          AddHit(fIshunt, primary,tracknumber, absid, xyze);
     
        } // there is deposited energy
     } // we are inside a PHOS Xtal

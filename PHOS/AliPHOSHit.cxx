@@ -64,7 +64,7 @@ AliPHOSHit::AliPHOSHit(Int_t primary, Int_t id, Float_t *hits)
    fELOS       = hits[3] ;
    fPrimary    = primary ;
 }
-AliPHOSHit::AliPHOSHit(Int_t primary, Int_t Track, Int_t id, Float_t *hits)
+AliPHOSHit::AliPHOSHit(Int_t Shunt, Int_t primary, Int_t Track, Int_t id, Float_t *hits) : AliHit(Shunt, Track)
 {
   // ctor
   
