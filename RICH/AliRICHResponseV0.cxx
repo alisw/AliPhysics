@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/10/03 21:44:09  morsch
+  Use AliSegmentation and AliHit abstract base classes.
+
   Revision 1.2  2000/10/02 21:28:12  fca
   Removal of useless dependecies via forward declarations
 
@@ -212,7 +215,7 @@ Int_t AliRICHResponseV0::FeedBackPhotons(Float_t *source, Float_t qtot)
 
     gAlice->SetTrack(Int_t(1), gAlice->CurrentTrack(), Int_t(50000051),
 		     mom,source,pol,position[3],
-		     "Feedback", nt, 1.);
+		     kPFeedBackPhoton, nt, 1.);
   }
   return(sNfeed);
 }
