@@ -43,12 +43,77 @@ ClassImp(AliReconstructor)
 
 
 //_____________________________________________________________________________
+void AliReconstructor::ConvertDigits(AliRawReader* /*rawReader*/, 
+				     TTree* /*digitsTree*/) const
+{
+// convert raw data digits into digit objects in a root tree
+
+  AliError("conversion of raw data digits into digit objects not implemented");
+}
+
+
+//_____________________________________________________________________________
+void AliReconstructor::Reconstruct(TTree* /*digitsTree*/,
+				   TTree* /*clustersTree*/) const
+{
+// run the local reconstruction
+
+  AliError("local event reconstruction not implemented");
+}
+
+//_____________________________________________________________________________
+void AliReconstructor::Reconstruct(AliRawReader* /*rawReader*/, 
+				   TTree* /*clustersTree*/) const
+{
+// run the local reconstruction with raw data input
+
+  AliError("local event reconstruction not implemented for raw data input");
+}
+
+//_____________________________________________________________________________
+void AliReconstructor::Reconstruct(AliRunLoader* /*runLoader*/) const
+{
+// run the local reconstruction
+
+  AliError("local reconstruction not implemented");
+}
+
+//_____________________________________________________________________________
 void AliReconstructor::Reconstruct(AliRunLoader* /*runLoader*/, 
 				   AliRawReader* /*rawReader*/) const
 {
 // run the local reconstruction with raw data input
 
   AliError("local reconstruction not implemented for raw data input");
+}
+
+
+//_____________________________________________________________________________
+void AliReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/,
+			       AliESD* /*esd*/) const
+{
+// fill the ESD.
+// by default nothing is done
+
+}
+
+//_____________________________________________________________________________
+void AliReconstructor::FillESD(AliRawReader* /*rawReader*/, 
+			       TTree* clustersTree, AliESD* esd) const
+{
+// fill the ESD in case of raw data input.
+// by default the FillESD method for MC is called
+
+  FillESD((TTree*)NULL, clustersTree, esd);
+}
+
+//_____________________________________________________________________________
+void AliReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
+			       AliESD* /*esd*/) const
+{
+// fill the ESD.
+// by default nothing is done
+
 }
 
 //_____________________________________________________________________________

@@ -42,6 +42,8 @@ public:
 
   void           SetGAliceFile(const char* fileName);
   void           SetInput(const char* input) {fInput = input;};
+  void           SetEventRange(Int_t firstEvent = 0, Int_t lastEvent = -1) 
+    {fFirstEvent = firstEvent; fLastEvent = lastEvent;};
   void           SetOption(const char* detector, const char* option);
 
   void           SetRunLocalReconstruction(const char* detectors) {
@@ -60,10 +62,16 @@ public:
   void           SetCheckPointLevel(Int_t checkPointLevel)
     {fCheckPointLevel = checkPointLevel;}
 
-  virtual Bool_t Run(const char* input = NULL);
+  virtual Bool_t Run(const char* input, 
+		     Int_t firstEvent, Int_t lastEvent = -1);
+  Bool_t         Run(const char* input = NULL)
+    {return Run(input, fFirstEvent, fLastEvent);};
+  Bool_t         Run(Int_t firstEvent, Int_t lastEvent = -1)
+    {return Run(NULL, firstEvent, lastEvent);};
 
 private:
   Bool_t         RunLocalReconstruction(const TString& detectors);
+  Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESD*& esd);
   Bool_t         RunTracking(AliESD*& esd);
   Bool_t         FillESD(AliESD*& esd, const TString& detectors);
@@ -73,7 +81,7 @@ private:
   AliReconstructor* GetReconstructor(Int_t iDet);
   Bool_t         CreateVertexer();
   Bool_t         CreateTrackers(const TString& detectors);
-  void           CleanUp(TFile* file = NULL);
+  void           CleanUp(TFile* file = NULL, TFile* fileOld = NULL);
 
   Bool_t         ReadESD(AliESD*& esd, const char* recStep) const;
   void           WriteESD(AliESD* esd, const char* recStep) const;
@@ -84,6 +92,8 @@ private:
   TString        fFillESD;            // fill ESD for these detectors
   TString        fGAliceFileName;     // name of the galice file
   TString        fInput;              // name of input file or directory
+  Int_t          fFirstEvent;         // index of first event to be reconstr.
+  Int_t          fLastEvent;          // index of last event to be reconstr.
   Bool_t         fStopOnError;        // stop or continue on errors
   Int_t          fCheckPointLevel;    // level of ESD check points
   TObjArray      fOptions;            // options for reconstructor objects
@@ -98,7 +108,7 @@ private:
   AliVertexer*   fVertexer;                //! vertexer for ITS
   AliTracker*    fTracker[fgkNDetectors];  //! trackers
 
-  ClassDef(AliReconstruction, 3)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 4)      // class for running the reconstruction
 };
 
 #endif

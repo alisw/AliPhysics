@@ -38,6 +38,15 @@
 // - raw data DATE file: DATE file name, any other non-empty string          //
 // - MC root files     : empty string, default                               //
 //                                                                           //
+// By default all events are reconstructed. The reconstruction can be        //
+// limited to a range of events by giving the index of the first and the     //
+// last event as an argument to the Run method or by calling                 //
+//                                                                           //
+//   rec.SetEventRange(..., ...);                                            //
+//                                                                           //
+// The index -1 (default) can be used for the last event to indicate no      //
+// upper limit of the event range.                                           //
+//                                                                           //
 // The name of the galice file can be changed from the default               //
 // "galice.root" by passing it as argument to the AliReconstruction          //
 // constructor or by                                                         //
@@ -113,6 +122,7 @@
 #include "AliVertexer.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
+#include "AliPID.h"
 #include "AliESDpid.h"
 #include "AliMagF.h"
 
@@ -133,6 +143,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fFillESD("ALL"),
   fGAliceFileName(gAliceFilename),
   fInput(""),
+  fFirstEvent(0),
+  fLastEvent(-1),
   fStopOnError(kFALSE),
   fCheckPointLevel(0),
   fOptions(),
@@ -149,6 +161,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
   }
+  AliPID::Init();
 }
 
 //_____________________________________________________________________________
@@ -161,6 +174,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fFillESD(rec.fFillESD),
   fGAliceFileName(rec.fGAliceFileName),
   fInput(rec.fInput),
+  fFirstEvent(rec.fFirstEvent),
+  fLastEvent(rec.fLastEvent),
   fStopOnError(rec.fStopOnError),
   fCheckPointLevel(0),
   fOptions(),
@@ -222,7 +237,8 @@ void AliReconstruction::SetOption(const char* detector, const char* option)
 
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::Run(const char* input)
+Bool_t AliReconstruction::Run(const char* input,
+			      Int_t firstEvent, Int_t lastEvent)
 {
 // run the reconstruction
 
@@ -247,8 +263,8 @@ Bool_t AliReconstruction::Run(const char* input)
       if (fStopOnError) {CleanUp(); return kFALSE;}
     }
   }
-  if (!fRunVertexFinder && fRunTracking.IsNull() && 
-      fFillESD.IsNull()) return kTRUE;
+//  if (!fRunVertexFinder && fRunTracking.IsNull() && 
+//      fFillESD.IsNull()) return kTRUE;
 
   // get vertexer
   if (fRunVertexFinder && !CreateVertexer()) {
@@ -266,31 +282,61 @@ Bool_t AliReconstruction::Run(const char* input)
     }      
   }
 
+  // get the possibly already existing ESD file and tree
+  AliESD* esd = new AliESD;
+  TFile* fileOld = NULL;
+  TTree* treeOld = NULL;
+  if (!gSystem->AccessPathName("AliESDs.root")){
+    gSystem->CopyFile("AliESDs.root", "AliESDs.old.root", kTRUE);
+    fileOld = TFile::Open("AliESDs.old.root");
+    if (fileOld && fileOld->IsOpen()) {
+      treeOld = (TTree*) fileOld->Get("esdTree");
+      if (treeOld) treeOld->SetBranchAddress("ESD", &esd);
+    }
+  }
+
   // create the ESD output file and tree
   TFile* file = TFile::Open("AliESDs.root", "RECREATE");
   if (!file->IsOpen()) {
     AliError("opening AliESDs.root failed");
-    if (fStopOnError) {CleanUp(file); return kFALSE;}    
+    if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}    
   }
-  AliESD* esd = new AliESD;
   TTree* tree = new TTree("esdTree", "Tree with ESD objects");
   tree->Branch("ESD", "AliESD", &esd);
   delete esd;
+  esd = NULL;
   gROOT->cd();
 
   // loop over events
   if (fRawReader) fRawReader->RewindEvents();
   
   for (Int_t iEvent = 0; iEvent < fRunLoader->GetNumberOfEvents(); iEvent++) {
+    if (fRawReader) fRawReader->NextEvent();
+    if ((iEvent < firstEvent) || ((lastEvent >= 0) && (iEvent > lastEvent))) {
+      // copy old ESD to the new one
+      if (treeOld) {
+	treeOld->SetBranchAddress("ESD", &esd);
+	treeOld->GetEntry(iEvent);
+      }
+      tree->Fill();
+      continue;
+    }
+
     AliInfo(Form("processing event %d", iEvent));
     fRunLoader->GetEvent(iEvent);
-    if (fRawReader) fRawReader->NextEvent();
 
     char fileName[256];
     sprintf(fileName, "ESD_%d.%d_final.root", 
 	    fRunLoader->GetHeader()->GetRun(), 
 	    fRunLoader->GetHeader()->GetEventNrInRun());
     if (!gSystem->AccessPathName(fileName)) continue;
+
+    // local reconstruction
+    if (!fRunLocalReconstruction.IsNull()) {
+      if (!RunLocalEventReconstruction(fRunLocalReconstruction)) {
+	if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
+      }
+    }
 
     esd = new AliESD;
     esd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
@@ -305,7 +351,7 @@ Bool_t AliReconstruction::Run(const char* input)
     if (fRunVertexFinder) {
       if (!ReadESD(esd, "vertex")) {
 	if (!RunVertexFinder(esd)) {
-	  if (fStopOnError) {CleanUp(file); return kFALSE;}
+	  if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
 	}
 	if (fCheckPointLevel > 0) WriteESD(esd, "vertex");
       }
@@ -315,7 +361,7 @@ Bool_t AliReconstruction::Run(const char* input)
     if (!fRunTracking.IsNull()) {
       if (!ReadESD(esd, "tracking")) {
 	if (!RunTracking(esd)) {
-	  if (fStopOnError) {CleanUp(file); return kFALSE;}
+	  if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
 	}
 	if (fCheckPointLevel > 0) WriteESD(esd, "tracking");
       }
@@ -324,7 +370,7 @@ Bool_t AliReconstruction::Run(const char* input)
     // fill ESD
     if (!fFillESD.IsNull()) {
       if (!FillESD(esd, fFillESD)) {
-	if (fStopOnError) {CleanUp(file); return kFALSE;}
+	if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
       }
     }
 
@@ -337,11 +383,12 @@ Bool_t AliReconstruction::Run(const char* input)
 
     if (fCheckPointLevel > 0) WriteESD(esd, "final");
     delete esd;
+    esd = NULL;
   }
 
   file->cd();
   tree->Write();
-  CleanUp(file);
+  CleanUp(file, fileOld);
 
   return kTRUE;
 }
@@ -360,6 +407,7 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
     AliReconstructor* reconstructor = GetReconstructor(iDet);
     if (!reconstructor) continue;
+    if (reconstructor->HasLocalReconstruction()) continue;
 
     AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
     TStopwatch stopwatchDet;
@@ -372,6 +420,78 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
     }
     AliInfo(Form("execution time for %s:", fgkDetectorName[iDet]));
     ToAliInfo(stopwatchDet.Print());
+  }
+
+  if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
+    AliError(Form("the following detectors were not found: %s",
+                  detStr.Data()));
+    if (fStopOnError) return kFALSE;
+  }
+
+  AliInfo("execution time:");
+  ToAliInfo(stopwatch.Print());
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
+{
+// run the local reconstruction
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
+  TString detStr = detectors;
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+    AliReconstructor* reconstructor = GetReconstructor(iDet);
+    if (!reconstructor) continue;
+    AliLoader* loader = fLoader[iDet];
+
+    // conversion of digits
+    if (fRawReader && reconstructor->HasDigitConversion()) {
+      AliInfo(Form("converting raw data digits into root objects for %s", 
+		   fgkDetectorName[iDet]));
+      TStopwatch stopwatchDet;
+      stopwatchDet.Start();
+      loader->LoadDigits("update");
+      loader->CleanDigits();
+      loader->MakeDigitsContainer();
+      TTree* digitsTree = loader->TreeD();
+      reconstructor->ConvertDigits(fRawReader, digitsTree);
+      loader->WriteDigits("OVERWRITE");
+      loader->UnloadDigits();
+      AliDebug(1, Form("execution time for %s:", fgkDetectorName[iDet]));
+      ToAliDebug(1, stopwatchDet.Print());
+    }
+
+    // local reconstruction
+    if (!reconstructor->HasLocalReconstruction()) continue;
+    AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
+    TStopwatch stopwatchDet;
+    stopwatchDet.Start();
+    loader->LoadRecPoints("update");
+    loader->CleanRecPoints();
+    loader->MakeRecPointsContainer();
+    TTree* clustersTree = loader->TreeR();
+    if (fRawReader && !reconstructor->HasDigitConversion()) {
+      reconstructor->Reconstruct(fRawReader, clustersTree);
+    } else {
+      loader->LoadDigits("read");
+      TTree* digitsTree = loader->TreeD();
+      if (!digitsTree) {
+	AliError(Form("Can't get the %s digits tree", fgkDetectorName[iDet]));
+	if (fStopOnError) return kFALSE;
+      } else {
+	reconstructor->Reconstruct(digitsTree, clustersTree);
+      }
+      loader->UnloadDigits();
+    }
+    loader->WriteRecPoints("OVERWRITE");
+    loader->UnloadRecPoints();
+    AliDebug(1, Form("execution time for %s:", fgkDetectorName[iDet]));
+    ToAliDebug(1, stopwatchDet.Print());
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
@@ -405,7 +525,9 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
 
   if (fVertexer) {
     AliInfo("running the ITS vertex finder");
+    if (fLoader[0]) fLoader[0]->LoadRecPoints();
     vertex = fVertexer->FindVertexForCurrentEvent(fRunLoader->GetEventNumber());
+    if (fLoader[0]) fLoader[0]->UnloadRecPoints();
     if(!vertex){
       AliWarning("Vertex not found");
       vertex = new AliESDVertex();
@@ -473,6 +595,7 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     // preliminary PID in TPC needed by the ITS tracker
     if (iDet == 1) {
       GetReconstructor(1)->FillESD(fRunLoader, esd);
+      GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       AliESDpid::MakePID(esd);
     }
   }
@@ -561,6 +684,36 @@ Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
 
     if (!ReadESD(esd, fgkDetectorName[iDet])) {
       AliDebug(1, Form("filling ESD for %s", fgkDetectorName[iDet]));
+      TTree* clustersTree = NULL;
+      if (reconstructor->HasLocalReconstruction() && fLoader[iDet]) {
+	fLoader[iDet]->LoadRecPoints("read");
+	clustersTree = fLoader[iDet]->TreeR();
+	if (!clustersTree) {
+	  AliError(Form("Can't get the %s clusters tree", 
+			fgkDetectorName[iDet]));
+	  if (fStopOnError) return kFALSE;
+	}
+      }
+      if (fRawReader && !reconstructor->HasDigitConversion()) {
+        reconstructor->FillESD(fRawReader, clustersTree, esd);
+      } else {
+	TTree* digitsTree = NULL;
+	if (fLoader[iDet]) {
+	  fLoader[iDet]->LoadDigits("read");
+	  digitsTree = fLoader[iDet]->TreeD();
+	  if (!digitsTree) {
+	    AliError(Form("Can't get the %s digits tree", 
+			  fgkDetectorName[iDet]));
+	    if (fStopOnError) return kFALSE;
+	  }
+	}
+	reconstructor->FillESD(digitsTree, clustersTree, esd);
+	if (fLoader[iDet]) fLoader[iDet]->UnloadDigits();
+      }
+      if (reconstructor->HasLocalReconstruction() && fLoader[iDet]) {
+	fLoader[iDet]->UnloadRecPoints();
+      }
+
       if (fRawReader) {
         reconstructor->FillESD(fRunLoader, fRawReader, esd);
       } else {
@@ -624,16 +777,27 @@ Bool_t AliReconstruction::InitRunLoader()
   if (gAlice) delete gAlice;
   gAlice = NULL;
 
-  if (!gSystem->AccessPathName(fGAliceFileName.Data())) {
+  if (!gSystem->AccessPathName(fGAliceFileName.Data())) { // galice.root exists
+    // load all base libraries to get the loader classes
+    TString libs = gSystem->GetLibraries();
+    for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+      TString detName = fgkDetectorName[iDet];
+      if (detName == "HLT") continue;
+      if (libs.Contains("lib" + detName + "base.so")) continue;
+      gSystem->Load("lib" + detName + "base.so");
+    }
     fRunLoader = AliRunLoader::Open(fGAliceFileName.Data());
     if (!fRunLoader) {
       AliError(Form("no run loader found in file %s", fGAliceFileName.Data()));
       CleanUp();
       return kFALSE;
     }
-    if (fRunLoader->LoadgAlice() == 0) {
-      gAlice = fRunLoader->GetAliRun();
-      AliTracker::SetFieldMap(gAlice->Field());
+    fRunLoader->CdGAFile();
+    if (gFile->GetKey(AliRunLoader::GetGAliceName())) {
+      if (fRunLoader->LoadgAlice() == 0) {
+	gAlice = fRunLoader->GetAliRun();
+	AliTracker::SetFieldMap(gAlice->Field());
+      }
     }
     if (!gAlice && !fRawReader) {
       AliError(Form("no gAlice object found in file %s",
@@ -706,7 +870,9 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   // if not, add a plugin for it
   if (!pluginHandler) {
     AliDebug(1, Form("defining plugin for %s", recName.Data()));
-    if (gSystem->Load("lib" + detName + "base.so") == 0) {
+    TString libs = gSystem->GetLibraries();
+    if (libs.Contains("lib" + detName + "base.so") ||
+	(gSystem->Load("lib" + detName + "base.so") >= 0)) {
       pluginManager->AddHandler("AliReconstructor", detName, 
 				recName, detName + "rec", recName + "()");
     } else {
@@ -721,6 +887,7 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   if (reconstructor) {
     TObject* obj = fOptions.FindObject(detName.Data());
     if (obj) reconstructor->SetOption(obj->GetTitle());
+    reconstructor->Init(fRunLoader);
     fReconstructor[iDet] = reconstructor;
   }
 
@@ -808,7 +975,7 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
 }
 
 //_____________________________________________________________________________
-void AliReconstruction::CleanUp(TFile* file)
+void AliReconstruction::CleanUp(TFile* file, TFile* fileOld)
 {
 // delete trackers and the run loader and close and delete the file
 
@@ -830,6 +997,12 @@ void AliReconstruction::CleanUp(TFile* file)
   if (file) {
     file->Close();
     delete file;
+  }
+
+  if (fileOld) {
+    fileOld->Close();
+    delete fileOld;
+    gSystem->Unlink("AliESDs.old.root");
   }
 }
 
