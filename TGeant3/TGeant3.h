@@ -10,7 +10,8 @@
 //////////////////////////////////////////////// 
  
 #include <AliMC.h> 
-  
+#include <GenTypeDefs.h>
+
 //______________________________________________________________
 //
 //       Geant3 prototypes for commons
@@ -521,6 +522,7 @@ typedef struct {
  *                                                                      *
  ************************************************************************/
 
+class AliDecayer;
 class TGeant3 : public AliMC { 
 
 public: 
@@ -586,6 +588,8 @@ public:
   void SetCut(const char* cutName, Float_t cutValue);
   void SetProcess(const char* flagName, Int_t flagValue);
   //  void GetParticle(const Int_t pdg, char *name, Float_t &mass) const;
+  void SetExternalDecayer(AliDecayer* decayer) {fDecayer=decayer;}
+  void SetForceDecay(Decay_t decay) {fForceDecay=decay;}
   virtual Int_t GetMedium() const;
   virtual Float_t Edep() const;
   virtual Float_t Etot() const;
@@ -824,6 +828,9 @@ public:
   virtual void FinishGeometry();
   virtual void BuildPhysics();
 
+  // Get pointer to external decayer
+  virtual AliDecayer* Decayer() {return fDecayer;}
+
 protected:
   Int_t fNextVol;    // Iterator for GeomIter
 
@@ -871,6 +878,12 @@ protected:
   Int_t fNPDGCodes;               // Number of PDG codes known by G3
 
   Int_t fPDGCode[kMaxParticles];  // Translation table of PDG codes
+
+
+
+protected:
+    AliDecayer* fDecayer;      // Pointer to decayer
+    Decay_t     fForceDecay;   // Forced decay modes
 
 private:
   TGeant3(const TGeant3 &) {}

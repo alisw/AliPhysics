@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.32  2000/08/24 16:28:53  hristov
+TGeant3::IsNewTrack corrected by F.Carminati
+
 Revision 1.31  2000/07/13 16:19:10  fca
 Mainly coding conventions + some small bug fixes
 
@@ -92,6 +95,9 @@ Introduction of the Copyright and cvs Log
 #include "THIGZ.h" 
 #include "ctype.h" 
 #include <TDatabasePDG.h>
+#include "AliDecayer.h"
+#include "AliDecayerPythia.h"
+
 #include "AliCallf77.h" 
  
 #ifndef WIN32 
@@ -549,6 +555,8 @@ TGeant3::TGeant3(const char *title, Int_t nwgeant)
   //
   // Zero number of particles
   fNPDGCodes=0;
+  fDecayer=new AliDecayerPythia();
+  fForceDecay = all;
 } 
 
 //____________________________________________________________________________ 
@@ -855,10 +863,10 @@ void TGeant3::DefineParticles()
   fPDGCode[fNPDGCodes++]=213;   // 42 = RHO+
 
   Gspart(43, "RHO -", 4, 0.768, -1., 4.353e-24);
-  fPDGCode[fNPDGCodes++]=-213;   // 40 = RHO-
+  fPDGCode[fNPDGCodes++]=-213;   // 43 = RHO-
 
   Gspart(44, "RHO 0", 3, 0.768, 0., 4.353e-24);
-  fPDGCode[fNPDGCodes++]=113;   // 37 = D0
+  fPDGCode[fNPDGCodes++]=113;   //  44 = RHO0
 
   //
   // Use ENDF-6 mapping for ions = 10000*z+10*a+iso
@@ -970,6 +978,62 @@ void TGeant3::DefineParticles()
   pdgDB->AddParticle("FeedbackPhoton","FeedbackPhoton",0,kFALSE,
 		     0,0,"Special",kspe+51);
   fPDGCode[fNPDGCodes++]=kspe+51;   // 51 = FeedbackPhoton
+  Gspart(52, "Lambda_c+", 4, 2.2849, +1., 2.06e-13);
+  fPDGCode[fNPDGCodes++]=4122;   //52 = Lambda_c+
+
+  Gspart(53, "Lambda_c-", 4, 2.2849, -1., 2.06e-13);
+  fPDGCode[fNPDGCodes++]=-4122; //53 = Lambda_c-  
+
+  Gspart(54, "D_s+", 4, 1.9685, +1., 4.67e-13);
+  fPDGCode[fNPDGCodes++]=431;   //54 = D_s+
+
+  Gspart(55, "D_s-", 4, 1.9685, -1., 4.67e-13);
+  fPDGCode[fNPDGCodes++]=-431; //55 = D_s-
+
+  Gspart(56, "Tau+", 5, 1.77705, +1., 2.9e-13);
+  fPDGCode[fNPDGCodes++]=15;   //56 = Tau+
+
+  Gspart(57, "Tau-", 5, 1.77705, -1., 2.9e-13);
+  fPDGCode[fNPDGCodes++]=-15;  //57 = Tau-  
+
+  Gspart(58, "B0",     3, 5.2792, +0., 1.56e-12);
+  fPDGCode[fNPDGCodes++]=511;   //58 = B0
+
+  Gspart(59, "B0 bar", 3, 5.2792, -0., 1.56e-12);
+  fPDGCode[fNPDGCodes++]=-511;  //58 = B0bar
+
+  Gspart(60, "B+",     4, 5.2789, +1., 1.65e-12);
+  fPDGCode[fNPDGCodes++]=521;   //60 = B+
+
+  Gspart(61, "B-",     4, 5.2789, -1., 1.65e-12);
+  fPDGCode[fNPDGCodes++]=-521;  //61 = B-
+
+  Gspart(62, "Bs",     3, 5.3693, +0., 1.54e-12);
+  fPDGCode[fNPDGCodes++]=521;   //62 = B_s
+
+  Gspart(63, "Bs bar", 3, 5.3693, -0., 1.54e-12);
+  fPDGCode[fNPDGCodes++]=-521;  //63 = B_s bar
+
+  Gspart(64, "Lambda_b",     3, 5.624, +0., 1.24e-12);
+  fPDGCode[fNPDGCodes++]=5122;   //64 = Lambda_b
+
+  Gspart(65, "Lambda_b bar", 3, 5.624, -0., 1.24e-12);
+  fPDGCode[fNPDGCodes++]=-5122;  //65 = Lambda_b bar
+
+  Gspart(66, "J/Psi", 3.09688, 3, 0., 0.);
+  fPDGCode[fNPDGCodes++]=443;       // 66 = J/Psi
+
+  Gspart(67, "Psi Prime", 3, 3.686, 0., 0.);
+  fPDGCode[fNPDGCodes++]=20443;    // 67 = Psi prime
+
+  Gspart(68, "Upsilon(1S)", 9.46037, 3, 0., 0.);
+  fPDGCode[fNPDGCodes++]=553;       // 68 = Upsilon(1S)
+
+  Gspart(69, "Upsilon(2S)", 10.0233, 3, 0., 0.);
+  fPDGCode[fNPDGCodes++]=20553;       // 69 = Upsilon(2S)
+
+  Gspart(70, "Upsilon(3S)", 10.3553, 3, 0., 0.);
+  fPDGCode[fNPDGCodes++]=30553;       // 70 = Upsilon(3S)
 
 /* --- Define additional decay modes --- */
 /* --- omega(783) --- */
@@ -1003,6 +1067,7 @@ void TGeant3::DefineParticles()
     mode[4] = 1701;
     Gsdk(ipa, bratio, mode);
 /* --- D+ --- */
+    /*
     for (kz = 0; kz < 6; ++kz) {
 	bratio[kz] = 0.;
 	mode[kz] = 0;
@@ -1018,6 +1083,7 @@ void TGeant3::DefineParticles()
     mode[3] = 110809;
     Gsdk(ipa, bratio, mode);
 /* --- D- --- */
+    /*
     for (kz = 0; kz < 6; ++kz) {
 	bratio[kz] = 0.;
 	mode[kz] = 0;
@@ -1032,7 +1098,9 @@ void TGeant3::DefineParticles()
     mode[2] = 121109;
     mode[3] = 120908;
     Gsdk(ipa, bratio, mode);
+    */
 /* --- D0 --- */
+    /*
     for (kz = 0; kz < 6; ++kz) {
 	bratio[kz] = 0.;
 	mode[kz] = 0;
@@ -1045,7 +1113,9 @@ void TGeant3::DefineParticles()
     mode[1] = 1208;
     mode[2] = 1112;
     Gsdk(ipa, bratio, mode);
+    */
 /* --- Anti D0 --- */
+    /*
     for (kz = 0; kz < 6; ++kz) {
 	bratio[kz] = 0.;
 	mode[kz] = 0;
@@ -1058,6 +1128,7 @@ void TGeant3::DefineParticles()
     mode[1] = 1109;
     mode[2] = 1112;
     Gsdk(ipa, bratio, mode);
+    */
 /* --- rho+ --- */
     for (kz = 0; kz < 6; ++kz) {
 	bratio[kz] = 0.;
@@ -1813,7 +1884,9 @@ void  TGeant3::Gtrig()
 { 
   //
   // Steering function to process one event
-  //
+  //  
+
+  fDecayer->ForceDecay(fForceDecay);
   gtrig(); 
 } 
  
