@@ -1,5 +1,7 @@
 #ifndef ALIPMDCELL_H
 #define ALIPMDCELL_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 //-----------------------------------------------------//
 //                                                     //
 //  Date   : August 05 2003                            //
@@ -9,10 +11,7 @@
 //                                                     //
 //-----------------------------------------------------//
 
-//#include "Riostream.h"
-//#include "Rtypes.h"
 #include "TObject.h"
-//class TObject;
 class TClonesArray;
 
 class AliPMDcell : public TObject
@@ -40,7 +39,7 @@ class AliPMDcell : public TObject
   Int_t   fYpos;         // y-position of the cell
   Float_t fEdep;         // Energy deposition in a cell
   
-  ClassDef(AliPMDcell,1) // To keep cell information
+  ClassDef(AliPMDcell,2) // To keep cell information
 };
 
 #endif

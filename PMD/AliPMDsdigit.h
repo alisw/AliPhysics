@@ -1,5 +1,7 @@
-#ifndef PMDsdigit_H
-#define PMDsdigit_H
+#ifndef ALIPMDSDIGIT_H
+#define ALIPMDSDIGIT_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 //-----------------------------------------------------//
 //                                                     //
 //                                                     //
@@ -8,25 +10,20 @@
 //                                                     //
 //-----------------------------------------------------//
 
-#include "Riostream.h"
-#include "Rtypes.h"
 #include "TObject.h"
-#include "TClonesArray.h"
+class TClonesArray;
 
 class AliPMDsdigit : public TObject
 {
-  
- protected:
-
-  Int_t   fTrNumber, fDet, fSMN, fCellNumber;
-  Float_t fEdep;
 
  public:
   AliPMDsdigit();
-  AliPMDsdigit(Int_t /* trnumber */, Int_t /* det */, Int_t /* smn */,
-	       Int_t /* cellnumber */, Float_t /* edep */);
+  AliPMDsdigit(Int_t trnumber, Int_t det, Int_t smn,
+	       Int_t cellnumber, Float_t edep);
   AliPMDsdigit(AliPMDsdigit *pmdsdigit) {*this = *pmdsdigit;}
-  
+  AliPMDsdigit (const AliPMDsdigit &pmdsdigit);  // copy constructor
+  AliPMDsdigit &operator=(const AliPMDsdigit &pmdsdigit); // assignment op
+
   virtual ~AliPMDsdigit();
 
   Int_t   GetTrackNumber() const;
@@ -34,8 +31,16 @@ class AliPMDsdigit : public TObject
   Int_t   GetSMNumber() const;
   Int_t   GetCellNumber() const;
   Float_t GetCellEdep() const;
+
   
-  ClassDef(AliPMDsdigit,1)
+ protected:
+  Int_t   fTrNumber;   // Parent Track Number
+  Int_t   fDet;        // Detector Number (0:PRE, 1:CPV)
+  Int_t   fSMN;        // Serial Module Number
+  Int_t   fCellNumber; // Cell Number (row(0-47)*96 + col(0-95))
+  Float_t fEdep;       // Energy deposition in a hexagonal cell
+  
+  ClassDef(AliPMDsdigit,2) // SDigits object for Detector set:PMD
 };
 
 #endif
