@@ -6,6 +6,10 @@
 
 /* $Id$ */
 
+//
+// Class to determine the particle ID for TPC tracks
+//
+
 #include <TMath.h>
 #include <TObject.h>
 #include "Riostream.h"
@@ -15,12 +19,28 @@ class AliTPCtrackPid : public TObject {
 public:
     AliTPCtrackPid();
     virtual ~AliTPCtrackPid(){}
+
 public:
-    Float_t fWpi,fWk,fWp,fSignal,fMom,fPhi,fLam;
-    Int_t   fPcode,fLabel;
+    Float_t fWpi;     // Particle ID
+    Float_t fWk;      // Particle k
+    Float_t fWp;      // Particle momentum
+    Float_t fSignal;  // Signal
+    Float_t fMom;     // Momentum
+    Float_t fPhi;     // Phi
+    Float_t fLam;     // Lambda
+    Int_t   fPcode;   // Particle code
+    Int_t   fLabel;   // Particle Label
     
-    Float_t fGSignal,fGMom,fGpx,fGpy,fGpz,fGx,fGy,fGz;
-    Int_t   fGcode,fGlab;
+    Float_t fGSignal; // Signal G
+    Float_t fGMom;    // Moment G
+    Float_t fGpx;     // px G
+    Float_t fGpy;     // py G
+    Float_t fGpz;     // pz G
+    Float_t fGx;      // x G
+    Float_t fGy;      // y G
+    Float_t fGz;      // z G
+    Int_t   fGcode;   // Code G
+    Int_t   fGlab;    // Lab G
 
   ClassDef(AliTPCtrackPid,1)  // TPC track PID
 };

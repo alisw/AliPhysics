@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+//
+// Class to determine the particle ID for TPC tracks
+// More comments and a description of the class will be added here
+// 
+//
+
 #include "AliTPCtrackPid.h"
 
 ClassImp(AliTPCtrackPid)
