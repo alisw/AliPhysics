@@ -32,7 +32,7 @@ class AliHBTQLongResolVSQLongFctn;//QLongCMSLC Res   VS   QLong
 class AliHBTQOutResolVSQInvFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQOutResolVSQInvFctn(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+   AliHBTQOutResolVSQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
    
    virtual ~AliHBTQOutResolVSQInvFctn(){}
@@ -54,7 +54,7 @@ class AliHBTQOutResolVSQInvFctn: public AliHBTTwoPairFctn2D
 class AliHBTQSideResolVSQInvFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQSideResolVSQInvFctn(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+   AliHBTQSideResolVSQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
    virtual ~AliHBTQSideResolVSQInvFctn(){}
 
@@ -75,7 +75,7 @@ class AliHBTQSideResolVSQInvFctn: public AliHBTTwoPairFctn2D
 class AliHBTQLongResolVSQInvFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQLongResolVSQInvFctn(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+   AliHBTQLongResolVSQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
    virtual ~AliHBTQLongResolVSQInvFctn(){}
 
@@ -96,7 +96,7 @@ class AliHBTQLongResolVSQInvFctn: public AliHBTTwoPairFctn2D
 class AliHBTQInvResolVSKtFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQInvResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+   AliHBTQInvResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
    virtual ~AliHBTQInvResolVSKtFctn(){};
 
@@ -116,7 +116,7 @@ class AliHBTQInvResolVSKtFctn: public AliHBTTwoPairFctn2D
 class AliHBTQOutResolVSKtFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQOutResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+   AliHBTQOutResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
    virtual ~AliHBTQOutResolVSKtFctn(){}
    TH1* GetResult(){return GetNumerator();}
@@ -135,7 +135,7 @@ class AliHBTQOutResolVSKtFctn: public AliHBTTwoPairFctn2D
 class AliHBTQSideResolVSKtFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQSideResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+   AliHBTQSideResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                             Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
    virtual ~AliHBTQSideResolVSKtFctn(){}
    TH1* GetResult(){return GetNumerator();}
@@ -154,7 +154,7 @@ class AliHBTQSideResolVSKtFctn: public AliHBTTwoPairFctn2D
 class AliHBTQLongResolVSKtFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQLongResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+   AliHBTQLongResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
    virtual ~AliHBTQLongResolVSKtFctn(){}
 
@@ -174,7 +174,7 @@ class AliHBTQLongResolVSKtFctn: public AliHBTTwoPairFctn2D
 class AliHBTQOutResolVSQOutFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQOutResolVSQOutFctn(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+   AliHBTQOutResolVSQOutFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = -0.2, 
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
    virtual ~AliHBTQOutResolVSQOutFctn(){}
 
@@ -196,7 +196,7 @@ class AliHBTQOutResolVSQOutFctn: public AliHBTTwoPairFctn2D
 class AliHBTQSideResolVSQSideFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQSideResolVSQSideFctn(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+   AliHBTQSideResolVSQSideFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = -0.2, 
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
    virtual ~AliHBTQSideResolVSQSideFctn(){}
 
@@ -219,7 +219,7 @@ class AliHBTQSideResolVSQSideFctn: public AliHBTTwoPairFctn2D
 class AliHBTQLongResolVSQLongFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQLongResolVSQLongFctn(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+   AliHBTQLongResolVSQLongFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = -0.2,
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
    virtual ~AliHBTQLongResolVSQLongFctn(){}
 
