@@ -72,6 +72,7 @@ AliCalorimeter::AliCalorimeter()
  fAttributes=0;
  fGains=0;
  fPositions=0;
+ fName=" ";
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalorimeter::~AliCalorimeter()
@@ -183,6 +184,8 @@ AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol)
 
  fNvetos=0;
  fVetos=0;
+
+ fName=" ";
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliCalorimeter::GetNrows()
@@ -1092,5 +1095,15 @@ AliSignal* AliCalorimeter::GetVetoSignal(Int_t i)
   cout << " --- First signal (if any) returned." << endl;
   return (AliSignal*)fVetos->At(0);
  }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliCalorimeter::SetName(TString name)
+{
+ fName=name;
+}
+///////////////////////////////////////////////////////////////////////////
+TString AliCalorimeter::GetName()
+{
+ return fName;
 }
 ///////////////////////////////////////////////////////////////////////////

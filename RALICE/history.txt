@@ -272,3 +272,9 @@
                 into AddJet(AliJet*) and AddVertex(AliVertex*) in class AliVertex.
 29-jun-2001 NvE TrackCopy mode introduced in AliJet.
 02-jul-2001 NvE Misplaced statement corrected in AliJet::SetNtinit().
+03-jul-2001 NvE Protections added in AliJet::GetTrack() and AliVertex::GetVertex() and
+                VertexCopy introduced in AliVertex.
+                Naming facility introduced in AliCalorimeter in order to identify
+                different calorimeter systems in an event structure.
+                Storage of jets introduced in AliVertex on the same footing as the
+                storage of (secondary) vertices.

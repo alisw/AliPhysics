@@ -295,7 +295,24 @@ Float_t AliJet::GetCharge()
 AliTrack* AliJet::GetTrack(Int_t i)
 {
 // Return the i-th track of this jet
- return (AliTrack*)fTracks->At(i-1);
+ if (!fTracks)
+ {
+  cout << " *AliJet*::GetTrack* No tracks present." << endl;
+  return 0;
+ }
+ else
+ {
+  if (i<=0 || i>fNtrk)
+  {
+   cout << " *AliJet*::GetTrack* Invalid argument i : " << i
+        << " Ntrk = " << fNtrk << endl;
+   return 0;
+  }
+  else
+  {
+   return (AliTrack*)fTracks->At(i-1);
+  }
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliJet::GetPt()
