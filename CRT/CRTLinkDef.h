@@ -8,11 +8,13 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ enum   ECRMode;
 #pragma link C++ class  AliCRT+;
 #pragma link C++ class  AliCRTConstants+;
 #pragma link C++ class  AliCRTv0+;
 #pragma link C++ class  AliCRTdigit+;
 #pragma link C++ class  AliCRThit+;
-
+#pragma link C++ class  AliGenCRT+;
+#pragma link C++ class  AliCRTv1+;
 
 #endif

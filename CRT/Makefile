@@ -5,11 +5,11 @@
 include $(ALICE_ROOT)/conf/GeneralDef
 include $(ALICE_ROOT)/conf/MachineDef.$(ALICE_TARGET)
 
-PACKAGE = TOF
+PACKAGE = CRT
 
 # C++ sources
 
-SRCS  = AliCRT.cxx AliCRTv0.cxx AliCRThit.cxx AliCRTdigit.cxx AliCRTConstants.cxx
+SRCS  = AliCRT.cxx AliCRTv0.cxx AliCRTv1.cxx AliGenCRT.cxx AliCRThit.cxx AliCRTdigit.cxx AliCRTConstants.cxx 
 
 # C++ Headers
 

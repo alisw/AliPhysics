@@ -1,4 +1,4 @@
-SRCS = AliCRT.cxx AliCRTConstants.cxx AliCRTv0.cxx AliCRTdigit.cxx AliCRThit.cxx
+SRCS = AliCRT.cxx AliCRTConstants.cxx AliCRTv0.cxx AliCRTdigit.cxx AliCRThit.cxx AliGenCRT.cxx AliCRTv1.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
