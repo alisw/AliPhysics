@@ -276,7 +276,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   // Float_t zpos;
   // Float_t pcits[50]
   Float_t xltpc;
-  Int_t idrotm[999], i;
+  Int_t idrotm[1999], i;
   Float_t dgh[50];
   
   Int_t *idtmed = fIdtmed->GetArray()-199;
@@ -336,9 +336,38 @@ void AliITSvPPRasymm::CreateGeometry(){
   AliMatrix(idrotm[247],90.0,139.0,90.0,49.0,180.0,0.0);
   AliMatrix(idrotm[248],90.0,148.0,90.0,58.0,180.0,0.0);
   AliMatrix(idrotm[249],90.0,157.0,90.0,67.0,180.0,0.0);
+  AliMatrix(idrotm[1003],90.0,73.5,90.0,163.5,0.0,0.0);
+  AliMatrix(idrotm[1011],90.0,342.0,90.0,72.0,0.0,0.0);
+  AliMatrix(idrotm[1039],90.0,72.0,90.0,162.0,0.0,0.0);
+  AliMatrix(idrotm[1043],90.0,66.91,90.0,156.91,0.0,0.0);
+  AliMatrix(idrotm[1065],90.0,144.0,90.0,234.0,0.0,0.0);
+  AliMatrix(idrotm[1078],90.0,180.0,90.0,270.0,0.0,0.0);
+  AliMatrix(idrotm[1088],90.0,57.41,90.0,147.41,0.0,0.0);
+  AliMatrix(idrotm[1089],90.0,333.0,90.0,63.0,0.0,0.0);
+  AliMatrix(idrotm[1090],90.0,351.0,90.0,81.0,0.0,0.0);
+  AliMatrix(idrotm[1091],90.0,216.0,90.0,306.0,0.0,0.0);
+  AliMatrix(idrotm[1092],90.0,27.0,90.0,117.0,0.0,0.0);
+  AliMatrix(idrotm[1093],90.0,18.0,90.0,108.0,0.0,0.0);
+  AliMatrix(idrotm[1094],90.0,9.0,90.0,99.0,0.0,0.0);
+  AliMatrix(idrotm[1104],90.0,252.0,90.0,342.0,0.0,0.0);
+  AliMatrix(idrotm[1106],90.0,36.0,90.0,126.0,0.0,0.0);
+  AliMatrix(idrotm[1107],90.0,108.0,90.0,198.0,0.0,0.0);
+  AliMatrix(idrotm[1108],90.0,324.0,90.0,54.0,180.0,0.0);
+  AliMatrix(idrotm[1109],90.0,0.0,90.0,90.0,180.0,0.0);
+  AliMatrix(idrotm[1110],90.0,36.0,90.0,126.0,180.0,0.0);
+  AliMatrix(idrotm[1111],90.0,72.0,90.0,162.0,180.0,0.0);
+  AliMatrix(idrotm[1112],90.0,108.0,90.0,198.0,180.0,0.0);
+  AliMatrix(idrotm[1113],90.0,144.0,90.0,234.0,180.0,0.0);
+  AliMatrix(idrotm[1114],90.0,180.0,90.0,270.0,180.0,0.0);
+  AliMatrix(idrotm[1115],90.0,216.0,90.0,306.0,180.0,0.0);
+  AliMatrix(idrotm[1116],90.0,252.0,90.0,342.0,180.0,0.0);
+  AliMatrix(idrotm[1117],90.0,288.0,90.0,18.0,0.0,0.0);
+  AliMatrix(idrotm[1118],90.0,288.0,90.0,18.0,180.0,0.0);
+  AliMatrix(idrotm[1130],90.0,324.0,90.0,54.0,0.0,0.0);  
 */
   
   // SPD - option 'b' (this is the default)  
+    
   
   AliMatrix(idrotm[201],90.0,0.0,90.0,90.0,180.0,0.0);
   AliMatrix(idrotm[202],90.0,90.0,90.0,0.0,0.0,0.0);
@@ -389,7 +418,34 @@ void AliITSvPPRasymm::CreateGeometry(){
   AliMatrix(idrotm[247],90.0,144.0,90.0,234.0,0.0,0.0);
   AliMatrix(idrotm[248],90.0,288.0,90.0,18.0,0.0,0.0);
   AliMatrix(idrotm[249],90.0,324.0,90.0,54.0,0.0,0.0);  
-  
+  AliMatrix(idrotm[1003],90.0,73.5,90.0,163.5,0.0,0.0);
+  AliMatrix(idrotm[1011],90.0,342.0,90.0,72.0,0.0,0.0);
+  AliMatrix(idrotm[1039],90.0,72.0,90.0,162.0,0.0,0.0);
+  AliMatrix(idrotm[1043],90.0,66.91,90.0,156.91,0.0,0.0);
+  AliMatrix(idrotm[1065],90.0,144.0,90.0,234.0,0.0,0.0);
+  AliMatrix(idrotm[1078],90.0,180.0,90.0,270.0,0.0,0.0);
+  AliMatrix(idrotm[1088],90.0,57.41,90.0,147.41,0.0,0.0);
+  AliMatrix(idrotm[1089],90.0,333.0,90.0,63.0,0.0,0.0);
+  AliMatrix(idrotm[1090],90.0,351.0,90.0,81.0,0.0,0.0);
+  AliMatrix(idrotm[1091],90.0,216.0,90.0,306.0,0.0,0.0);
+  AliMatrix(idrotm[1092],90.0,27.0,90.0,117.0,0.0,0.0);
+  AliMatrix(idrotm[1093],90.0,18.0,90.0,108.0,0.0,0.0);
+  AliMatrix(idrotm[1094],90.0,9.0,90.0,99.0,0.0,0.0);
+  AliMatrix(idrotm[1104],90.0,252.0,90.0,342.0,0.0,0.0);
+  AliMatrix(idrotm[1106],90.0,36.0,90.0,126.0,0.0,0.0);
+  AliMatrix(idrotm[1107],90.0,108.0,90.0,198.0,0.0,0.0);
+  AliMatrix(idrotm[1108],90.0,324.0,90.0,54.0,180.0,0.0);
+  AliMatrix(idrotm[1109],90.0,0.0,90.0,90.0,180.0,0.0);
+  AliMatrix(idrotm[1110],90.0,36.0,90.0,126.0,180.0,0.0);
+  AliMatrix(idrotm[1111],90.0,72.0,90.0,162.0,180.0,0.0);
+  AliMatrix(idrotm[1112],90.0,108.0,90.0,198.0,180.0,0.0);
+  AliMatrix(idrotm[1113],90.0,144.0,90.0,234.0,180.0,0.0);
+  AliMatrix(idrotm[1114],90.0,180.0,90.0,270.0,180.0,0.0);
+  AliMatrix(idrotm[1115],90.0,216.0,90.0,306.0,180.0,0.0);
+  AliMatrix(idrotm[1116],90.0,252.0,90.0,342.0,180.0,0.0);
+  AliMatrix(idrotm[1117],90.0,288.0,90.0,18.0,0.0,0.0);
+  AliMatrix(idrotm[1118],90.0,288.0,90.0,18.0,180.0,0.0);
+  AliMatrix(idrotm[1130],90.0,324.0,90.0,54.0,0.0,0.0);  
   
   // SDD
   
@@ -1024,6 +1080,84 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[1] = 0.005;
   dits[2] = 3.48;
   gMC->Gsvolu("ITS2", "BOX ", idtmed[200], dits, 3);  
+
+  dits[0] = 3.701;
+  dits[1] = 7.699;
+  dits[2] = 4;
+  dits[3] = 57.1;
+  dits[4] = 99.9;  
+  gMC->Gsvolu("I650", "TUBS", idtmed[254], dits, 5);  // was I150 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.5;
+  dits[2] = 1.5;
+  gMC->Gsvolu("I676", "TUBE", idtmed[274], dits, 3); // was I176 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.18;
+  dits[2] = 0.8;
+  gMC->Gsvolu("I673", "TUBE", idtmed[274], dits, 3); // was I173 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.18;
+  dits[2] = 3;
+  gMC->Gsvolu("I671", "TUBE", idtmed[274], dits, 3); // was I171 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.075;
+  dits[2] = 0.8;
+  gMC->Gsvolu("I669", "TUBE", idtmed[264], dits, 3); // was I169 in old geom.
+
+  dits[0] = 3.5;
+  dits[1] = 5.6;
+  dits[2] = 0.55;
+  dits[3] = 0;
+  dits[4] = 38;
+  gMC->Gsvolu("I667", "TUBS", idtmed[263], dits, 5); // was I167 in old geom.
+
+  dits[0] = 6.6;
+  dits[1] = 7.6;
+  dits[2] = 0.5;
+  dits[3] = 0;
+  dits[4] = 9;
+  gMC->Gsvolu("I666", "TUBS", idtmed[263], dits, 5); // was I166 in old geom.
+
+  dits[0] = 0.26;
+  dits[1] = 0.32;
+  dits[2] = 0.55;
+  gMC->Gsvolu("I678", "TUBE", idtmed[263], dits, 3); // was I178 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.3;
+  dits[2] = 1.5;
+  gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); // was I177 in old geom.
+
+  dits[0] = 0.07;
+  dits[1] = 0.125;
+  dits[2] = 0.3;
+  gMC->Gsvolu("I675", "TUBE", idtmed[263], dits, 3); // was I175 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.1;
+  dits[2] = 0.8;
+  gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); // was I174 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.1;
+  dits[2] = 3;
+  gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); // was I172 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.0746;
+  dits[2] = 0.8;
+  gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); // was I170 in old geom.
+
+  dits[0] = 3.7;
+  dits[1] = 5.4;
+  dits[2] = 0.35;
+  dits[3] = 2;
+  dits[4] = 36;
+  gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); // was I168 in old geom.
 */
 
 
@@ -1205,10 +1339,10 @@ void AliITSvPPRasymm::CreateGeometry(){
   gMC->Gsvolu("I105", "BOX ", idtmed[201], dits, 3);  
   
   dits[0] = 0.793;
-  dits[1] = 0.015 ;
-  dits[2] = 2.5;
-  gMC->Gsvolu("I107", "BOX ", idtmed[254], dits, 3);  
-
+  dits[1] = 0.0125;
+  dits[2] = 3.536;
+  gMC->Gsvolu("I107", "BOX ", idtmed[254], dits, 3);    
+  
   dits[0] = 0.705;
   dits[1] = 0.01;
   dits[2] = 2.5;
@@ -1297,6 +1431,84 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[2] = 3.48;
   gMC->Gsvolu("ITS2", "BOX ", idtmed[200], dits, 3);  
 
+  dits[0] = 3.701;
+  dits[1] = 7.699;
+  dits[2] = 4;
+  dits[3] = 57.1;
+  dits[4] = 99.9;  
+  gMC->Gsvolu("I650", "TUBS", idtmed[254], dits, 5);  // was I150 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.5;
+  dits[2] = 1.5;
+  gMC->Gsvolu("I676", "TUBE", idtmed[274], dits, 3); // was I176 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.18;
+  dits[2] = 0.8;
+  gMC->Gsvolu("I673", "TUBE", idtmed[274], dits, 3); // was I173 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.18;
+  dits[2] = 3;
+  gMC->Gsvolu("I671", "TUBE", idtmed[274], dits, 3); // was I171 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.075;
+  dits[2] = 0.8;
+  gMC->Gsvolu("I669", "TUBE", idtmed[264], dits, 3); // was I169 in old geom.
+
+  dits[0] = 3.5;
+  dits[1] = 5.6;
+  dits[2] = 0.55;
+  dits[3] = 0;
+  dits[4] = 38;
+  gMC->Gsvolu("I667", "TUBS", idtmed[263], dits, 5); // was I167 in old geom.
+
+  dits[0] = 6.6;
+  dits[1] = 7.6;
+  dits[2] = 0.5;
+  dits[3] = 0;
+  dits[4] = 9;
+  gMC->Gsvolu("I666", "TUBS", idtmed[263], dits, 5); // was I166 in old geom.
+
+  dits[0] = 0.26;
+  dits[1] = 0.32;
+  dits[2] = 0.55;
+  gMC->Gsvolu("I678", "TUBE", idtmed[263], dits, 3); // was I178 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.3;
+  dits[2] = 1.5;
+  gMC->Gsvolu("I677", "TUBE", idtmed[211], dits, 3); // was I177 in old geom.
+
+  dits[0] = 0.07;
+  dits[1] = 0.125;
+  dits[2] = 0.3;
+  gMC->Gsvolu("I675", "TUBE", idtmed[263], dits, 3); // was I175 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.1;
+  dits[2] = 0.8;
+  gMC->Gsvolu("I674", "TUBE", idtmed[211], dits, 3); // was I174 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.1;
+  dits[2] = 3;
+  gMC->Gsvolu("I672", "TUBE", idtmed[211], dits, 3); // was I172 in old geom.
+
+  dits[0] = 0;
+  dits[1] = 0.0746;
+  dits[2] = 0.8;
+  gMC->Gsvolu("I670", "TUBE", idtmed[211], dits, 3); // was I170 in old geom.
+
+  dits[0] = 3.7;
+  dits[1] = 5.4;
+  dits[2] = 0.35;
+  dits[3] = 2;
+  dits[4] = 36;
+  gMC->Gsvolu("I668", "TUBS", idtmed[211], dits, 5); // was I168 in old geom.
+
 
   // --- Define SDD volumes ------------------------------------------
 
@@ -1307,16 +1519,16 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[3] = -34.6;
   dits[4] = 23.495;
   dits[5] = 28.5;
-  dits[6] = -27.35; //-23.7
+  dits[6] = -27.35; 
   dits[7] = 23.495;
   dits[8] = 28.5;
-  dits[9] = -27.35;  // -23.7
+  dits[9] = -27.35;  
   dits[10] = 14.595; 
   dits[11] = 28.5;
-  dits[12] = 27.35;   // 23.7
+  dits[12] = 27.35;   
   dits[13] = 14.595;
   dits[14] = 28.5;
-  dits[15] = 27.35;    // 23.7
+  dits[15] = 27.35;    
   dits[16] = 23.495;
   dits[17] = 28.5;
   dits[18] = 34.65;
@@ -1336,7 +1548,7 @@ void AliITSvPPRasymm::CreateGeometry(){
 
   dits[0] = 3.2;
   dits[1] = 2;
-  dits[2] = 27.35; //23.7
+  dits[2] = 27.35; 
   gMC->Gsvolu("I047", "BOX ", idtmed[209], dits, 3);  
 
   dits[0] = 3.63;
@@ -1544,12 +1756,12 @@ void AliITSvPPRasymm::CreateGeometry(){
   gMC->Gsvolu("I403", "TRAP", idtmed[209], dits, 11);  
 
   dits[0] = 3.5;
-  dits[1] = 0.014;
+  dits[1] = 0.01499; // not 0.015 because it is included into I302 which is 0.015
   dits[2] = 3.763;
   gMC->Gsvolu("ITS3", "BOX ", idtmed[200], dits, 3);  
 
   dits[0] = 3.5;
-  dits[1] = 0.014;
+  dits[1] = 0.01499; // not 0.015 because it is included into I402 which is 0.015
   dits[2] = 3.763;
   gMC->Gsvolu("ITS4", "BOX ", idtmed[200], dits, 3);  
 
@@ -1894,13 +2106,6 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[2] = 17.5/2.;
   gMC->Gsvolu("IC02", "TUBE", idtmed[289], dits, 3);    
   
-  //dits[0] = 15.75/2.;
-  //dits[1] = 8.5;
-  //dits[2] = 10;
-  //dits[3] = 22.1913;
-  //dits[4] = 23.6913;
-  //gMC->Gsvolu("IC03", "CONE", idtmed[289], dits, 5);   
-  
  
    // --- Define volumes of cylinder between SDD and SSD --------------
   
@@ -2119,11 +2324,6 @@ void AliITSvPPRasymm::CreateGeometry(){
   dits[19] = 28;
   dits[20] = 30.5;
   gMC->Gsvolu("I212", "PCON", idtmed[272], dits, 21);  // SSD cone
-
-  //dits[0] = 29.82;
-  //dits[1] = 30.5;
-  //dits[2] = 56.3;
-  //gMC->Gsvolu("I210", "TUBE", idtmed[272], dits, 3);
   
   dits[0] = 28;
   dits[1] = 29.82;
@@ -2412,16 +2612,65 @@ void AliITSvPPRasymm::CreateGeometry(){
   gMC->Gspos("I106",3,"I107",0.0,-0.005,1.4,0,"ONLY");
   gMC->Gspos("I106",4,"I107",0.0,-0.005,2.8,0,"ONLY");
   gMC->Gspos("I106",5,"I107",0.0,-0.005,-2.8,0,"ONLY");
-  gMC->Gspos("I101",2,"I107",0.0,0.0075,0.0,0,"ONLY");
+  gMC->Gspos("I101",1,"I107",0.0,0.0075,0.0,0,"ONLY");
   gMC->Gspos("I106",6,"I1D7",0.0,-0.005,-1.4,0,"ONLY");
   gMC->Gspos("I106",7,"I1D7",0.0,-0.005,0.0,0,"ONLY");
   gMC->Gspos("I106",8,"I1D7",0.0,-0.005,1.4,0,"ONLY");
   gMC->Gspos("I106",9,"I1D7",0.0,-0.005,2.8,0,"ONLY");
   gMC->Gspos("I106",10,"I1D7",0.0,-0.005,-2.8,0,"ONLY");
-  gMC->Gspos("I1D1",2,"I1D7",0.0,0.0075,0.0,0,"ONLY");
+  gMC->Gspos("I1D1",1,"I1D7",0.0,0.0075,0.0,0,"ONLY");
   gMC->Gspos("I117",1,"I116",0.0,0.0,0.0,0,"ONLY");
   gMC->Gspos("ITS1",1,"I101",0.0,0.0,0.0,0,"ONLY");
   gMC->Gspos("ITS2",1,"I1D1",0.0,0.0,0.0,0,"ONLY");
+  gMC->Gspos("I650",16,"IT12",0.0,0.0,22.0,idrotm[1104],"MANY");
+  gMC->Gspos("I650",20,"IT12",0.0,0.0,22.0,idrotm[1130],"MANY");
+  gMC->Gspos("I650",18,"IT12",0.0,0.0,22.0,idrotm[1117],"MANY");
+  gMC->Gspos("I650",1,"IT12",0.0,0.0,22.0,0,"MANY");
+  gMC->Gspos("I650",4,"IT12",0.0,0.0,22.0,idrotm[1106],"MANY");
+  gMC->Gspos("I650",6,"IT12",0.0,0.0,22.0,idrotm[1039],"MANY");
+  gMC->Gspos("I650",8,"IT12",0.0,0.0,22.0,idrotm[1107],"MANY");
+  gMC->Gspos("I650",10,"IT12",0.0,0.0,22.0,idrotm[1065],"MANY");
+  gMC->Gspos("I650",12,"IT12",0.0,0.0,22.0,idrotm[1078],"MANY");
+  gMC->Gspos("I650",14,"IT12",0.0,0.0,22.0,idrotm[1091],"MANY");
+  gMC->Gspos("I650",19,"IT12",0.0,0.0,-22.0,idrotm[1108],"MANY");
+  gMC->Gspos("I650",2,"IT12",0.0,0.0,-22.0,idrotm[1109],"MANY");
+  gMC->Gspos("I650",3,"IT12",0.0,0.0,-22.0,idrotm[1110],"MANY");
+  gMC->Gspos("I650",5,"IT12",0.0,0.0,-22.0,idrotm[1111],"MANY");
+  gMC->Gspos("I650",7,"IT12",0.0,0.0,-22.0,idrotm[1112],"MANY");
+  gMC->Gspos("I650",9,"IT12",0.0,0.0,-22.0,idrotm[1113],"MANY");
+  gMC->Gspos("I650",11,"IT12",0.0,0.0,-22.0,idrotm[1114],"MANY");
+  gMC->Gspos("I650",13,"IT12",0.0,0.0,-22.0,idrotm[1115],"MANY");
+  gMC->Gspos("I650",15,"IT12",0.0,0.0,-22.0,idrotm[1116],"MANY");
+  gMC->Gspos("I650",17,"IT12",0.0,0.0,-22.0,idrotm[1118],"MANY");
+  gMC->Gspos("I666",1,"I650",0.0,0.0,0.25,idrotm[1003],"MANY");
+  gMC->Gspos("I667",1,"I650",0.1102,0.9945,0.45,idrotm[1088],"ONLY");
+  gMC->Gspos("I669",3,"I650",0.1883,4.0372,-3.2,0,"ONLY");
+  gMC->Gspos("I671",3,"I650",0.1883,4.0372,0.6,0,"ONLY");
+  gMC->Gspos("I669",2,"I650",1.3343,4.0609,-3.2,0,"ONLY");
+  gMC->Gspos("I671",2,"I650",1.3343,4.0609,0.6,0,"ONLY");
+  gMC->Gspos("I669",6,"I650",2.9567,6.1959,-3.2,idrotm[1089],"ONLY");
+  gMC->Gspos("I671",6,"I650",2.9567,6.1959,0.6,idrotm[1089],"ONLY");
+  gMC->Gspos("I669",5,"I650",1.9511,6.5822,-3.2,idrotm[1011],"ONLY");
+  gMC->Gspos("I671",5,"I650",1.9511,6.5822,0.6,idrotm[1011],"ONLY");
+  gMC->Gspos("I669",4,"I650",0.8974,6.8064,-3.2,idrotm[1090],"ONLY");
+  gMC->Gspos("I671",4,"I650",0.8974,6.8064,0.6,idrotm[1090],"ONLY");
+  gMC->Gspos("I669",1,"I650",-0.1784,6.863,-3.2,0,"ONLY");
+  gMC->Gspos("I671",1,"I650",-0.1784,6.863,0.6,0,"ONLY");
+  gMC->Gspos("I673",1,"I650",0.2173,4.8037,1.8,0,"ONLY");
+  gMC->Gspos("I673",6,"I650",1.5093,4.5605,1.8,0,"ONLY");
+  gMC->Gspos("I673",4,"I650",-0.173,6.2531,1.8,idrotm[1092],"ONLY");
+  gMC->Gspos("I673",3,"I650",0.8073,6.2032,1.8,idrotm[1093],"ONLY");
+  gMC->Gspos("I673",2,"I650",1.7678,6.0005,1.8,idrotm[1094],"ONLY");
+  gMC->Gspos("I673",5,"I650",2.6847,5.6501,1.8,0,"ONLY");
+  gMC->Gspos("I676",2,"I650",1.7618,5.2269,2.5,0,"ONLY");
+  gMC->Gspos("I676",1,"I650",0.4018,5.5869,2.5,0,"ONLY");
+  gMC->Gspos("I668",1,"I667",0.0,0.0,0.0,0,"ONLY");
+  gMC->Gspos("I670",1,"I669",0.0,0.0,0.0,0,"ONLY");
+  gMC->Gspos("I672",1,"I671",0.0,0.0,0.0,0,"ONLY");
+  gMC->Gspos("I674",1,"I673",0.0,0.0,0.0,0,"MANY");
+  gMC->Gspos("I675",1,"I673",0.0,0.0,-0.5,0,"ONLY");
+  gMC->Gspos("I677",1,"I676",0.0,0.0,0.0,0,"MANY");
+  gMC->Gspos("I678",1,"I676",0.0,0.0,-0.95,0,"ONLY");  
 
     
   // --- Place SDD volumes into their mother volume IT34
@@ -2516,31 +2765,15 @@ void AliITSvPPRasymm::CreateGeometry(){
   gMC->Gspos("I402",1,"I005",0.0,-0.115,25.9,0,"ONLY");
   gMC->Gspos("I402",6,"I005",0.0,0.115,-11.05,0,"ONLY");
   gMC->Gspos("I402",7,"I005",0.0,-0.115,-18.3,0,"ONLY");
-  gMC->Gspos("I402",8,"I005",0.0,0.115,-25.9,0,"ONLY");
-
-//  gMC->Gspos("I024",1,"I047",0.0,0.0,20.975,0,"ONLY");
-  
+  gMC->Gspos("I402",8,"I005",0.0,0.115,-25.9,0,"ONLY");  
   gMC->Gspos("I024",1,"I047",0.0,0.0,24.625,0,"ONLY");  
-
-/*
-  gMC->Gspos("I018",4,"I047",0.0,0.0,7.3,0,"ONLY");
-  gMC->Gspos("I018",5,"I047",0.0,0.0,14.6,0,"ONLY");
-  gMC->Gspos("I018",1,"I047",0.0,0.0,0.0,0,"ONLY");
-  gMC->Gspos("I018",3,"I047",0.0,0.0,-14.6,0,"ONLY");
-  gMC->Gspos("I018",2,"I047",0.0,0.0,-7.3,0,"ONLY");
-*/
-
   gMC->Gspos("I018",4,"I047",0.0,0.0,-3.65,0,"ONLY");
   gMC->Gspos("I018",5,"I047",0.0,0.0,-10.95,0,"ONLY");
   gMC->Gspos("I018",6,"I047",0.0,0.0,-18.25,0,"ONLY");
   gMC->Gspos("I018",1,"I047",0.0,0.0,3.65,0,"ONLY");
   gMC->Gspos("I018",2,"I047",0.0,0.0,10.95,0,"ONLY");
   gMC->Gspos("I018",3,"I047",0.0,0.0,18.25,0,"ONLY");
-
   gMC->Gspos("I024",2,"I047",0.0,0.0,-24.625,idrotm[355],"ONLY");
-
-//  gMC->Gspos("I024",2,"I047",0.0,0.0,-20.975,idrotm[355],"ONLY");
-
   gMC->Gspos("I302",4,"I004",0.0,-0.115,-3.7,0,"ONLY");
   gMC->Gspos("I302",3,"I004",0.0,0.115,3.7,0,"ONLY");
   gMC->Gspos("I302",6,"I004",0.0,-0.115,-18.35,0,"ONLY");
