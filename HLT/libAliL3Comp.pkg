@@ -9,7 +9,8 @@ comp/AliL3DataCompressor.cxx \
 comp/AliL3DataCompressorHelper.cxx \
 comp/AliL3ModelTrack.cxx \
 comp/AliL3Modeller.cxx \
-comp/AliL3OfflineDataCompressor.cxx
+comp/AliL3OfflineDataCompressor.cxx \
+comp/AliL3CompressAC.cxx
 
 CSRCS:= comp/AliL3FitUtilities.c comp/bitio.c comp/errhand.c
 

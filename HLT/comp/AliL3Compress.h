@@ -4,6 +4,7 @@
 #define AliL3_Compress
 
 #include "AliL3RootTypes.h"
+#include "AliL3StandardIncludes.h"
 #include "AliL3DataCompressor.h"
 
 class AliL3Compress {
