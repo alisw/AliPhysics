@@ -94,8 +94,13 @@ protected:
     TArrayF     fOsigma;     // Sigma of the Origin of even
     TArrayF     fVertex;     //! Vertex of current event
     
-    enum {kThetaRange=1, kVertexRange=2, kPhiRange=4, kPtRange=8,
-	  kYRange=32, kMomentumRange=16};
+    enum {kThetaRange    = BIT(14),
+	  kVertexRange   = BIT(15),
+	  kPhiRange      = BIT(16), 
+	  kPtRange       = BIT(17),
+	  kYRange        = BIT(18), 
+	  kMomentumRange = BIT(19)
+    };
 
     ClassDef(AliGenerator,1) // Base class for event generators
 };
