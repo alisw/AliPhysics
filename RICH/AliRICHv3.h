@@ -13,14 +13,15 @@ public:
     
    AliRICHv3():AliRICH()                                {} // Default ctor
    AliRICHv3(const char *pcName, const char *pcTitle);     // Named ctor 
-   virtual       ~AliRICHv3()                           {} // Dtor
+   virtual       ~AliRICHv3();                             // Dtor
    
    virtual Int_t  IsVersion()                     const {return 3;}
       
    virtual void   CreateMaterials(); // Provides material definition for simulation (currently GEANT)   
-   virtual void   CreateGeometry();  // Provides geometry structure for simulation (currently GEANT modules tree)
+   virtual void   CreateGeometry();  // Provides geometry structure for simulation (currently GEANT volumes tree)
    virtual void   BuildGeometry();   // Provides geometry structure for event display (ROOT TNode tree)
-   virtual void   Init();            // Makes nothing for a while 
+   virtual void   Init();            // Makes nothing for a while
+   virtual void   StepManager();     // Processes the particle transport 
        
 private:
     ClassDef(AliRICHv3,1)  //RICH full version, configurable with azimuthal rotation	
