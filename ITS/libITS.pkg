@@ -103,6 +103,14 @@ SRCS = 	AliITS.cxx \
 		AliITSRawStreamSSD.cxx \
 		AliITSRawStreamSDD.cxx \
 		AliITSRawStreamSPD.cxx \
+		AliITSBeamTest.cxx \
+		AliITSBeamTestDig.cxx \
+		AliITSBeamTestDigSDD.cxx \
+		AliITSBeamTestDigSPD.cxx \
+		AliITSBeamTestDigSSD.cxx \
+		AliITSBeamTestDigitizer.cxx \
+		AliITSEventHeader.cxx \
+		AliITSRawStreamSSDv1.cxx \
 #          AliITSv11.cxx \
 #          AliITSv11Geometry.cxx \
 #          AliITSv11GeometrySupport.cxx \

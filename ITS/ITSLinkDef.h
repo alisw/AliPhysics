@@ -185,11 +185,19 @@
 #pragma link C++ class AliITStrackSA+;
 #pragma link C++ class AliITSVertexerFast+;
 #pragma link C++ class AliITSRawStream+;
-#pragma link C++ class AliITSRawStreamSDD;
-#pragma link C++ class AliITSRawStreamSDDv2;
-#pragma link C++ class AliITSRawStreamSDDv3;
-#pragma link C++ class AliITSRawStreamSPD;
-#pragma link C++ class AliITSRawStreamSSD;
+#pragma link C++ class AliITSRawStreamSDD+;
+#pragma link C++ class AliITSRawStreamSDDv2+;
+#pragma link C++ class AliITSRawStreamSDDv3+;
+#pragma link C++ class AliITSRawStreamSPD+;
+#pragma link C++ class AliITSRawStreamSSD+;
+#pragma link C++ class AliITSRawStreamSSDv1+;
+#pragma link C++ class AliITSBeamTest+;
+#pragma link C++ class AliITSBeamTestDig+;
+#pragma link C++ class AliITSBeamTestDigSPD+;
+#pragma link C++ class AliITSBeamTestDigSDD+;
+#pragma link C++ class AliITSBeamTestDigSSD+;
+#pragma link C++ class AliITSBeamTestDigitizer+;
+#pragma link C++ class AliITSEventHeader+;
 
 #pragma link C++ class AliITSReconstructor+;
 

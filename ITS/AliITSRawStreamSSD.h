@@ -33,7 +33,7 @@ class AliITSRawStreamSSD: public AliITSRawStream {
     static Int_t     GetModuleNumber(UInt_t iDDL, UInt_t iModule)
       {return fgkDDLModuleMap[iDDL][iModule];}
 
-  private :
+  protected :
     static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL];  // mapping DDL/module -> module number
 
     UInt_t           fData;         // data read for file

@@ -139,6 +139,9 @@ Bool_t AliITSRawStreamSDDv3::Next()
 
 Int_t AliITSRawStreamSDDv3::GetJitter() {
 
+  // Reads the value of the jitter between L0 and pascal stop
+  // written in the last word of the buffer
+
      if (!fRawReader->ReadNextInt(fData)){
        Error("GetJitter","Jitter word not found!!");
        return -1;  // read last word

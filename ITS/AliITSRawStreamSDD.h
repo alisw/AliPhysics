@@ -45,7 +45,7 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     virtual UInt_t   ReadBits();
     virtual Int_t    DecompAmbra(Int_t value) const;
 
-    static const UInt_t fgkCodeLength[8];
+    static const UInt_t fgkCodeLength[8]; //code length
 
     UInt_t           fData;         // data read for file
     Int_t            fSkip;         // number of skipped words
