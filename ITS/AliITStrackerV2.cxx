@@ -197,7 +197,10 @@ Int_t AliITStrackerV2::Clusters2Tracks(AliESD *event) {
         delete t;
         continue;
       }
-      if (TMath::Abs(t->GetD())>4) continue;
+      if (TMath::Abs(t->GetD())>4) {
+	delete t;
+	continue;
+      }
 
       if (CorrectForDeadZoneMaterial(t)!=0) {
          Warning("Clusters2Tracks",
@@ -284,11 +287,15 @@ Int_t AliITStrackerV2::Clusters2Tracks(TTree *tpcTree, TTree *itsTree) {
            delete t;
            continue;
        }
-       if (TMath::Abs(t->GetD())>4) continue;
+       if (TMath::Abs(t->GetD())>4) {
+	 delete t;
+	 continue;
+       }
 
        if (CorrectForDeadZoneMaterial(t)!=0) {
 	 Warning("Clusters2Tracks",
                  "failed to correct for the material in the dead zone !\n");
+	 delete t;
          continue;
        }
 

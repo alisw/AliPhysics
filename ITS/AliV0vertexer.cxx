@@ -54,8 +54,14 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
      AliITStrackV2 *iotrack=new AliITStrackV2(*esd);
      iotrack->SetLabel(i);  // now it is the index in array of ESD tracks
      if ((status&AliESDtrack::kITSrefit)==0)   //correction for the beam pipe
-        if (!iotrack->PropagateTo(3.,0.0023,65.19)) continue;
-     if (!iotrack->PropagateTo(2.5,0.,0.)) continue;
+        if (!iotrack->PropagateTo(3.,0.0023,65.19)) {
+	  delete iotrack;
+	  continue;
+	}
+     if (!iotrack->PropagateTo(2.5,0.,0.)) {
+       delete iotrack;
+       continue;
+     }
 
      if (iotrack->Get1Pt() > 0.) {nneg++; negtrks.AddLast(iotrack);}
      else {npos++; postrks.AddLast(iotrack);}
@@ -146,8 +152,14 @@ Int_t AliV0vertexer::Tracks2V0vertices(TTree *tTree, TTree *vTree) {
        branch->SetAddress(&iotrack);
        tTree->GetEvent(i);
 
-       if (!iotrack->PropagateTo(3.,0.0023,65.19)) continue; 
-       if (!iotrack->PropagateTo(2.5,0.,0.)) continue;
+       if (!iotrack->PropagateTo(3.,0.0023,65.19)) {
+	 delete iotrack;
+	 continue; 
+       }
+       if (!iotrack->PropagateTo(2.5,0.,0.)) {
+	 delete iotrack;
+	 continue;
+       }
 
        if (iotrack->Get1Pt() > 0.) {nneg++; negtrks.AddLast(iotrack);}
        else {npos++; postrks.AddLast(iotrack);}
