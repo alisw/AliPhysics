@@ -92,8 +92,7 @@ ALILIBS += -lAliGeant4 -L$(ALICE)/geant4_vmc/lib/tgt_$(ALICE_TARGET) -lgeant4vmc
 
 LIBS = $(ALILIBS) $(CLIBS) $(GLIBS) -lEG -lEGPythia6 -lpythia6 -lpdf \
 	-lTHijing -lhijing  -lTMevSim -lmevsim -lTHbtp -lHBTP \
-	-lTHerwig -lherwig $(G4LDLIBS) \
-	-L$(MINSTALL)/lib/Linux-g++ -lplane -lsector -lmotif -lbasic
+	-lTHerwig -lherwig $(G4LDLIBS)
 
 TOCLEAN	      = $(OBJS) $(POBJ) *Cint.cxx *Cint.h
 
