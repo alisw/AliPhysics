@@ -11,7 +11,7 @@ CC	      = cc
 OPT           = -O
 
 CXXOPTS       = $(OPT) -Wc,-ansi_for_scope,on +Z -z +W70,495,740,749,823,829 -Dextname
-COPT          = $(OPT) +Z
+COPT          = $(OPT) +Z -Ae
 FOPT          = $(OPT) +ppu +Z
 
 
@@ -38,9 +38,6 @@ LDFLAGS       = $(OPT) -z -Wl,+s -Wl,-E
 SHLD	      = $(LD)
 SOFLAGS       = -b /usr/lib/libm.sl 
 
-LIBS          = $(ROOTLIBS)
-GLIBS         = $(ROOTLIBS) -L/usr/lib/X11R6 -lX11 
-
 SOEXT 	      = sl
 
 # additional ROOT libraries
@@ -49,9 +46,7 @@ ROOTLIBS  += -lcrypt
 # rmkdepend flags for building dependencies of FORTRAN files
 DEPENDFFLAGS = $(FFLAGS)
 
-
-LIBS          = $(ROOTLIBS)
-GLIBS         = $(ROOTLIBS) -L/usr/lib/X11R6 -lX11 
+GLIBS         = -L/usr/lib/X11R6 -lX11 
 
 # System libraries
 
