@@ -101,8 +101,6 @@ void MUONTestTrigger (Int_t evNumber1=0,Int_t evNumber2=0)
     } // end of loop on entries of TreeR
   } // loop on event
   
-// store histos in ouput file
-    hfile->Write();
 } 
 
 
