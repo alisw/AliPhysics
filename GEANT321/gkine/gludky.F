@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:20  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:18  cernlib
 * Geant
 *
@@ -57,13 +60,13 @@ C
 *--  Set some particles to be stable in LUND so that GEANT can handle
 *--  their tracking and decays. (K0s, sigma+-, xi0-, lambda0, omega-)
 *
-         MDCY(LUCOMP(310) ,1)=0
-         MDCY(LUCOMP(3222),1)=0
-         MDCY(LUCOMP(3112),1)=0
-         MDCY(LUCOMP(3322),1)=0
-         MDCY(LUCOMP(3312),1)=0
-         MDCY(LUCOMP(3122),1)=0
-         MDCY(LUCOMP(3334),1)=0
+         MDCY(PYCOMP(310) ,1)=0
+         MDCY(PYCOMP(3222),1)=0
+         MDCY(PYCOMP(3112),1)=0
+         MDCY(PYCOMP(3322),1)=0
+         MDCY(PYCOMP(3312),1)=0
+         MDCY(PYCOMP(3122),1)=0
+         MDCY(PYCOMP(3334),1)=0
          IFINIT(6) = 1
       ENDIF
 C
@@ -76,8 +79,8 @@ C
 *            for TAU+ TAU-
 *            could be extended to all charm particles
 *
-         CALL LU1ENT(1,IPLUND(IPART),EDKY,THDKY,PHDKY)
-         CALL LUEXEC
+         CALL PY1ENT(1,IPLUND(IPART),EDKY,THDKY,PHDKY)
+         CALL PYEXEC
          NGKINE=0
          DO 20 I = 1,N
             IF(K(I,1).GE.1.AND.K(I,1).LE.10) THEN

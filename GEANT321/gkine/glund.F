@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:20  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:18  cernlib
 * Geant
 *
@@ -52,7 +55,7 @@ C.
 *.
       IF (IFINIT(3).EQ.0)  CALL GLUNDI
 *
-      CALL LUEEVT(IFLUND,ECLUND)
+      CALL PYEEVT(IFLUND,ECLUND)
 *
       NCVERT = 10
       NCKINE = N+10
