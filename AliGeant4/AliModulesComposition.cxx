@@ -153,11 +153,16 @@ void AliModulesComposition::CreateG4Geometry()
   // print name map
   // pGeometryManager->PrintNameMap();
 
+/*
+  // moved to AliSDConstruction
+  // to be performed after Init  (required for MUON)
+  
   for (i=0; i<nofModules; i++) {
 
     // construct geometry for display
     fModuleConstructionVector[i]->GetAliModule()->BuildGeometry();
   }
+*/
 
   // reset TG4GeometryManager 
   pGeometryManager->ClearG3Tables();
