@@ -24,16 +24,16 @@ class AliEMCALJet : public TObject {
   void SetEta(Float_t val)    {fEta    = val;}    
   void SetIsWeightedEnergy(Bool_t flag)    {fIsWeightedEnergy    = flag;}    
   void SetTrackList(Int_t val, Float_t* pt, Float_t* eta, Float_t* phi, Int_t* pdg);
-  Float_t Energy()  {return fEnergy;}
-  Float_t EMCALEnergy()  {return fEMCALEnergy;}
-  Float_t EMCALEnergyBGSub()  {return fEMCALEnergyBGSub;}
-  Float_t TrackEnergy()  {return fTrackEnergy;}
-  Float_t TrackEnergyPtCut()  {return fTrackEnergyPtCut;}
-  Float_t HCEnergy()  {return fHCEnergy;}
-  Float_t Phi()     {return fPhi;}
-  Float_t Eta()     {return fEta;}
+  const Float_t Energy()  {return fEnergy;}
+  const Float_t EMCALEnergy()  {return fEMCALEnergy;}
+  const Float_t EMCALEnergyBGSub()  {return fEMCALEnergyBGSub;}
+  const Float_t TrackEnergy()  {return fTrackEnergy;}
+  const Float_t TrackEnergyPtCut()  {return fTrackEnergyPtCut;}
+  const Float_t HCEnergy()  {return fHCEnergy;}
+  const Float_t Phi()     {return fPhi;}
+  const Float_t Eta()     {return fEta;}
   Int_t   TrackList(Float_t* pt, Float_t* eta, Float_t* phi, Int_t* pdg);
-  Int_t   NTracks() {return fNt;} 
+  const Int_t   NTracks() {return fNt;} 
   
 protected:
   Float_t  fEnergy;      // Jet Energy
@@ -43,14 +43,14 @@ protected:
   Float_t  fTrackEnergyPtCut; // Charge tracks component of Energy inside Jet cone after pT cut
   Float_t  fHCEnergy;    // HC  component of Energy inside Jet cone
   Bool_t   fIsWeightedEnergy; // Store flag regarding energy calculation
-  Float_t  fEta;      // Jet Phi
-  Float_t  fPhi;      // Jet Eta
+  Float_t  fEta;      // Jet Eta
+  Float_t  fPhi;      // Jet Phi
   Int_t    fNt;       // Number of associated tracks
   Float_t  fPtT [1000]; // Track pt 
   Float_t  fEtaT[1000]; // Track eta
   Float_t  fPhiT[1000]; // Track phi
   Int_t    fPdgT[1000]; // Track pdg code
-  ClassDef(AliEMCALJet,6) // Jet for EMCAL
+  ClassDef(AliEMCALJet,7) // Jet for EMCAL
 
 } ;
 
