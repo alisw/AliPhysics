@@ -99,7 +99,7 @@ void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z){
                      |00/
                      |0/
     // expects x, z in microns
-
+    */
     Float_t tanP=TMath::Tan(fStereoP);
     Float_t tanN=TMath::Tan(-fStereoN);
     Float_t x1 = x;
@@ -133,7 +133,7 @@ void AliITSsegmentationSSD::GetPadIxz(Float_t x,Float_t z,Int_t &iP,Int_t &iN)
                      |0/
 
     // expects x, z in microns
-/*
+  */
     Float_t tanP=TMath::Tan(fStereoP);
     Float_t tanN=TMath::Tan(fStereoN);
     //cout<<"1 segment::GetPad: xL,zL,fDx,fDz ="<<x<<","<<z<<","<<fDx<<","<<fDz<<endl;
@@ -145,10 +145,10 @@ void AliITSsegmentationSSD::GetPadIxz(Float_t x,Float_t z,Int_t &iP,Int_t &iN)
 //    cout << "GetPadIxz::Tan(" << fStereoN << ")=" << tanN << endl;
     x1 += fDx/2;
     z1 += fDz/2;
-    Float_t  ldX = x1 - z1*tanP;          // distance from left-down edge 
-*/
+    //Float_t  ldX = x1 - z1*tanP;          // distance from left-down edge 
+
     this->GetPadTxz(x,z);  // use existing routine.
-    iP = (Int_t) x; //(Int_t)(ldX/fPitch);
+    iP = (Int_t) x; //(Int_t)(ldX/fPitch);  // remove declaration of ldX if you remove this comment
     iP = (iP<0)? -1: iP;      
     iP = (iP>fNstrips)? -1: iP;
 /*
