@@ -36,6 +36,8 @@ AliESD::AliESD():
   fT0zVertex(0),
   fPrimaryVertex(),
   fTracks("AliESDtrack",15000),
+  fHLTConfMapTracks("AliESDHLTtrack",25000),
+  fHLTHoughTracks("AliESDHLTtrack",15000),
   fMuonTracks("AliESDMuonTrack",30),
   fPmdTracks("AliESDPmdTrack",3000),
   fV0s("AliESDv0",200),
@@ -79,6 +81,8 @@ void AliESD::Print(Option_t *) const
   printf("Event from reconstruction version %d \n",fRecoVersion);
   printf("Number of tracks: \n");
   printf("                 charged   %d\n",GetNumberOfTracks()-GetNumberOfPHOSParticles()-GetNumberOfEMCALParticles());
+  printf("                 hlt CF    %d\n", GetNumberOfHLTConfMapTracks());
+  printf("                 hlt HT    %d\n", GetNumberOfHLTHoughTracks());
   printf("                 phos      %d\n", GetNumberOfPHOSParticles());
   printf("                 emcal     %d\n", GetNumberOfEMCALParticles());
   printf("                 muon      %d\n", GetNumberOfMuonTracks());

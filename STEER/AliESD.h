@@ -21,6 +21,7 @@
 #include "AliESDVertex.h"
 #include "AliESDcascade.h"
 #include "AliESDtrack.h"
+#include "AliESDHLTtrack.h"
 #include "AliESDv0.h"
 
 class AliESD : public TObject {
@@ -37,6 +38,12 @@ public:
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks.UncheckedAt(i);
   }
+  AliESDHLTtrack *GetHLTConfMapTrack(Int_t i) const {
+    return (AliESDHLTtrack *)fHLTConfMapTracks.UncheckedAt(i);
+  }
+  AliESDHLTtrack *GetHLTHoughTrack(Int_t i) const {
+    return (AliESDHLTtrack *)fHLTHoughTracks.UncheckedAt(i);
+  }
   AliESDMuonTrack *GetMuonTrack(Int_t i) const {
     return (AliESDMuonTrack *)fMuonTracks.UncheckedAt(i);
   }
@@ -47,7 +54,12 @@ public:
   void AddTrack(const AliESDtrack *t) {
     new(fTracks[fTracks.GetEntriesFast()]) AliESDtrack(*t);
   }
-
+  void AddHLTConfMapTrack(const AliESDHLTtrack *t) {
+    new(fHLTConfMapTracks[fHLTConfMapTracks.GetEntriesFast()]) AliESDHLTtrack(*t);
+  }
+  void AddHLTHoughTrack(const AliESDHLTtrack *t) {
+    new(fHLTHoughTracks[fHLTHoughTracks.GetEntriesFast()]) AliESDHLTtrack(*t);
+  }
   void AddMuonTrack(const AliESDMuonTrack *t) {
     new(fMuonTracks[fMuonTracks.GetEntriesFast()]) AliESDMuonTrack(*t);
   }
@@ -79,6 +91,8 @@ public:
   Long_t GetTrigger() const {return fTrigger;}
   
   Int_t GetNumberOfTracks()     const {return fTracks.GetEntriesFast();}
+  Int_t GetNumberOfHLTConfMapTracks()     const {return fHLTConfMapTracks.GetEntriesFast();}
+  Int_t GetNumberOfHLTHoughTracks()     const {return fHLTHoughTracks.GetEntriesFast();}
   Int_t GetNumberOfMuonTracks() const {return fMuonTracks.GetEntriesFast();}
   Int_t GetNumberOfPmdTracks() const {return fPmdTracks.GetEntriesFast();}
   Int_t GetNumberOfV0s()      const {return fV0s.GetEntriesFast();}
@@ -109,6 +123,8 @@ protected:
   AliESDVertex  fPrimaryVertex;  // Primary vertex estimated by the ITS
 
   TClonesArray  fTracks;         // ESD tracks
+  TClonesArray  fHLTConfMapTracks; // HLT ESD tracks from Conformal Mapper method
+  TClonesArray  fHLTHoughTracks; // HLT ESD tracks from Hough Transform method
   TClonesArray  fMuonTracks;     // MUON ESD tracks
   TClonesArray  fPmdTracks;      // PMD ESD tracks
   TClonesArray  fV0s;            // V0 vertices
@@ -118,8 +134,8 @@ protected:
   Int_t         fFirstPHOSParticle; // First PHOS particle in the fTracks list 
   Int_t         fFirstEMCALParticle;// First EMCAL particle in the fTracks list 
  
-  ClassDef(AliESD,6)  //ESD class 
-                      //ver. 2: Magnetic Field Added; skowron
+  ClassDef(AliESD,7)  //ESD class 
+
 };
 
 #endif 

@@ -114,7 +114,7 @@ private:
   AliLoader*     fTOFLoader;          //! loader for TOF
   AliTracker*    fTOFTracker;         //! tracker for TOF
 
-  static const Int_t fgkNDetectors = 14;   //! number of detectors
+  static const Int_t fgkNDetectors = 15;   //! number of detectors
   static const char* fgkDetectorName[fgkNDetectors]; //! names of detectors
   TObjArray      fReconstructors;     //! array of reconstructor objects
 

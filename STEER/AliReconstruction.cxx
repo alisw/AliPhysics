@@ -86,12 +86,13 @@
 #include "AliGenEventHeader.h"
 #include "AliESDpid.h"
 #include "AliMagF.h"
+#include "../TPC/AliTPCReconstructor.h"
 
 ClassImp(AliReconstruction)
 
 
 //_____________________________________________________________________________
-const char* AliReconstruction::fgkDetectorName[AliReconstruction::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "RICH", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "START", "VZERO", "CRT"};
+const char* AliReconstruction::fgkDetectorName[AliReconstruction::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "RICH", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "START", "VZERO", "CRT", "HLT"};
 
 //_____________________________________________________________________________
 AliReconstruction::AliReconstruction(const char* gAliceFilename,
@@ -204,7 +205,16 @@ Bool_t AliReconstruction::Run()
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     TString detName = fgkDetectorName[iDet];
     TString recName = "Ali" + detName + "Reconstructor";
-    if (!gAlice->GetDetector(detName)) continue;
+    if (!gAlice->GetDetector(detName) && detName != "HLT") continue;
+
+    if(detName == "HLT") {
+      if (!gROOT->GetClass("AliLevel3")) {
+	gSystem->Load("libAliL3Src.so");
+	gSystem->Load("libAliL3Misc.so");
+	gSystem->Load("libAliL3Hough.so");
+	gSystem->Load("libAliL3Comp.so");
+      }
+    }
 
     AliReconstructor* reconstructor = NULL;
     // first check if a plugin is defined for the reconstructor

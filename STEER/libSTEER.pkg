@@ -16,7 +16,7 @@ AliMergeCombi.cxx AliMagFMaps.cxx AliFieldMap.cxx \
 AliGausCorr.cxx AliTrackReference.cxx AliESD.cxx \
 AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
 AliMemoryWatcher.cxx AliBarrelTrack.cxx \
-AliESDtrack.cxx AliESDMuonTrack.cxx AliESDPmdTrack.cxx AliESDv0.cxx AliESDcascade.cxx AliESDVertex.cxx AliESDpid.cxx \
+AliESDtrack.cxx AliESDMuonTrack.cxx AliESDPmdTrack.cxx AliESDHLTtrack.cxx AliESDv0.cxx AliESDcascade.cxx AliESDVertex.cxx AliESDpid.cxx \
 AliVertexer.cxx \
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
 AliReconstructor.cxx
