@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2000/12/10 16:00:44  barbera
+Added last definition of special media like end-ladder boxes and cones
+
 Revision 1.11  2000/10/30 08:02:25  barbera
 PCON's changed into simpler CONS and TUBS. Services now allow for the rails to go through them.
 
@@ -479,7 +482,7 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   pcits[0] = (59.5-0.13/2.)/2.;
   pcits[1] = (59.5+0.13/2.)/2.;
   pcits[2] = 57.;
-  gMC->Gsvolu("ICY2", "TUBE", idtmed[240], pcits, 3);   
+  gMC->Gsvolu("ICY2", "TUBE", idtmed[274], pcits, 3);   
   gMC->Gspos("ICY2", 1, "ITSD", 0., 0., 0., 0, "ONLY"); 
 
   //    DEFINE END CONES FOR SSD
@@ -741,17 +744,17 @@ void AliITSvPPRcoarsesymm::CreateMaterials(){
   //AliMaterial(9, "SPD End ladder$", 55.845, 26., -7.87/10., -1.76*10., 999); 
   AliMaterial(10, "SPD cone$",28.0855, 14., 2.33, 9.36, 999);       // check !!!!
   // ** 
-  AliMedium(0, "SPD Si$",       0, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(1, "SPD Si chip$",  1, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(2, "SPD Si bus$",   2, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(3, "SPD C$",        3, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(4, "SPD Air$",      4, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(5, "SPD Vacuum$",   5, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
-  AliMedium(6, "SPD Al$",       6, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(7, "SPD Water $",   7, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(8, "SPD Freon$",    8, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(9, "SPD End ladder",9, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(10, "SPD cone$",   10, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);   
+  AliMedium(0, "SPD Si$",        0, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(1, "SPD Si chip$",   1, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(2, "SPD Si bus$",    2, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(3, "SPD C$",         3, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(4, "SPD Air$",       4, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(5, "SPD Vacuum$",    5, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
+  AliMedium(6, "SPD Al$",        6, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(7, "SPD Water $",    7, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(8, "SPD Freon$",     8, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(9, "SPD End ladder$",9, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(10, "SPD cone$",    10, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);   
   
   //  225-249 --> Silicon Drift Detectors (detectors, chips, buses, cooling,..)
   
@@ -783,21 +786,21 @@ void AliITSvPPRcoarsesymm::CreateMaterials(){
   //AliMaterial(39, "SDD cone$", 63.546, 29., -1.15, -1.265, 999);         
   // ** 
   // check A and Z 
-  AliMedium(25, "SDD Si$",      25, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(26, "SDD Si chip$", 26, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(27, "SDD Si bus$",  27, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(28, "SDD C$",       28, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(29, "SDD Air$",     29, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(30, "SDD Vacuum$",  30, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
-  AliMedium(31, "SDD Al$",      31, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(32, "SDD Water $",  32, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(33, "SDD Freon$",   33, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(34, "SDD PCB$",     34, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(35, "SDD Copper$",  35, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(36, "SDD Ceramics$",36, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(37, "SDD Kapton$",  37, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(38, "SDD End ladder",38, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(39, "SDD cone$",   39, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(25, "SDD Si$",        25, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(26, "SDD Si chip$",   26, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(27, "SDD Si bus$",    27, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(28, "SDD C$",         28, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(29, "SDD Air$",       29, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(30, "SDD Vacuum$",    30, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
+  AliMedium(31, "SDD Al$",        31, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(32, "SDD Water $",    32, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(33, "SDD Freon$",     33, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(34, "SDD PCB$",       34, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(35, "SDD Copper$",    35, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(36, "SDD Ceramics$",  36, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(37, "SDD Kapton$",    37, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(38, "SDD End ladder$",38, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(39, "SDD cone$",      39, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   
   //  250-274 --> Silicon Strip Detectors (detectors, chips, buses, cooling,..)
   
@@ -834,22 +837,22 @@ void AliITSvPPRcoarsesymm::CreateMaterials(){
   //AliMaterial(64, "SSD End ladder$", 32.0988, 15.4021, -0.68, -35.3238, 999); 
   //AliMaterial(65, "SSD cone$",63.546, 29., -1.15, -1.265, 999);     
   // ** 
-  AliMedium(50, "SSD Si$",      50, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(51, "SSD Si chip$", 51, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(52, "SSD Si bus$",  52, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(53, "SSD C$",       53, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(54, "SSD Air$",     54, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(55, "SSD Vacuum$",  55, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
-  AliMedium(56, "SSD Al$",      56, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(57, "SSD Water $",  57, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(58, "SSD Freon$",   58, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(59, "SSD PCB$",     59, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(60, "SSD Copper$",  60, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(61, "SSD Ceramics$",61, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(62, "SSD Kapton$",  62, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(63, "SSD G10FR4$",  63, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(64, "SPD End ladder",64, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(65, "SPD cone$",   65, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(50, "SSD Si$",        50, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(51, "SSD Si chip$",   51, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(52, "SSD Si bus$",    52, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(53, "SSD C$",         53, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(54, "SSD Air$",       54, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(55, "SSD Vacuum$",    55, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
+  AliMedium(56, "SSD Al$",        56, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(57, "SSD Water $",    57, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(58, "SSD Freon$",     58, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(59, "SSD PCB$",       59, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(60, "SSD Copper$",    60, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(61, "SSD Ceramics$",  61, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(62, "SSD Kapton$",    62, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(63, "SSD G10FR4$",    63, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(64, "SSD End ladder$",64, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(65, "SSD cone$",      65, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   
   //     275-299 --> General (end-caps, frames, cooling, cables, etc.) 
   
