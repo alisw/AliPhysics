@@ -186,6 +186,17 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     gAlice->SetGenEventHeader(header); 
 }
 
+void AliGenCocktail::SetVertexSmear(VertexSmear_t smear)
+{
+// Set vertex smearing and propagate it to the generators
+
+  AliGenerator::SetVertexSmear(smear);
+  TIter next(fEntries);
+  while (AliGenCocktailEntry* entry = (AliGenCocktailEntry*)next()) {
+    entry->Generator()->SetVertexSmear(smear);
+  }
+}
+
 AliGenCocktailEntry *  AliGenCocktail::FirstGenerator()
 {
 // Iterator over generators: Initialisation

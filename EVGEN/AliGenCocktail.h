@@ -25,6 +25,7 @@ class AliGenCocktail : public AliGenerator
     virtual void Init();
     virtual void FinishRun();
     virtual void Generate();
+    virtual void SetVertexSmear(VertexSmear_t smear);
     //
     // Add a new generator to the list
     virtual void AddGenerator
