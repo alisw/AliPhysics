@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2002/05/29 11:23:46  morsch
+Numerical overlap for 2nd bellow corrected.
+
 Revision 1.13  2002/05/02 12:50:06  morsch
 For G4: gMC->VolId(...) replaced by gAlice->GetModule(...).
 
@@ -414,10 +417,10 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
   tpar[0]=0;
   tpar[1]=rB1+hB1;
-  tpar[2]=lB1/2.;
+  tpar[2]=-lB1/2.;
   gMC->Gsvolu("YBU1", "TUBE", idtmed[kVacuum+40], tpar, 3);
 
-  dz=-tpar[2]+dl3;
+  dz=-lB1/2.+dl3;
   gMC->Gspos("YB13", 1, "YBU1", 0., 0., dz, 0, "ONLY"); 
   dz+=dl3;
   dz+=dl1;  
@@ -437,17 +440,15 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   tpar[1]=rB1+hB1+0.5;
   tpar[2]=12.*lB1/2.;
   gMC->Gsvolu("YBM1", "TUBE", idtmed[kVacuum+40], tpar, 3);
+  gMC->Gsdvn("YB1S", "YBM1", 12 , 3);
+
   Float_t bsize = tpar[2];
   tpar[0]=rB1+hB1;
+  tpar[2]=-lB1/2.;
   gMC->Gsvolu("YBI1", "TUBE", idtmed[kInsulation+40], tpar, 3);
-  gMC->Gspos("YBI1", 2, "YBM1", 0., 0., 0., 0, "ONLY"); 
 
-  dz=-bsize+lB1/2.;
-
-  for (i=0; i<12; i++) {
-    gMC->Gspos("YBU1", i+1 , "YBM1", 0., 0., dz, 0, "ONLY"); 
-    dz+=lB1;
-  }
+  gMC->Gspos("YBI1", 1, "YB1S", 0., 0., 0., 0, "ONLY"); 
+  gMC->Gspos("YBU1", 1, "YB1S", 0., 0., 0., 0, "ONLY"); 
 
   dz=-dl+(zvac1-zstart)+dr11+bsize;
   gMC->Gspos("YBM1", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
@@ -1147,7 +1148,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 //
 // Bellow2
 //
-  Float_t eps = 1.e-2;
+  Float_t eps = 0.;
   Float_t lB2S = lB2-eps;
   
   tpar[0]=rB2;
@@ -1171,10 +1172,18 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
   tpar[0]=0;
   tpar[1]=rB2+hB2;
-  tpar[2]=lB2S/2.;
+  tpar[2]= - lB2S/2.;
   gMC->Gsvolu("YBU2", "TUBE", idtmed[kVacuum+40], tpar, 3);
 
-  dz=-tpar[2]+dl3;
+  tpar[0]=0;
+  tpar[1]=rB2+hB2;
+  tpar[2]=7.*lB2/2.;
+
+  gMC->Gsvolu("YBM2", "TUBE", idtmed[kVacuum+40], tpar, 3);
+  gMC->Gsdvn("YBMS", "YBM2", 7, 3);
+  gMC->Gspos("YBU2", 1, "YBMS", 0., 0., 0., 0, "ONLY"); 
+
+  dz=-lB2S/2.+dl3;
   gMC->Gspos("YB23", 1, "YBU2", 0., 0., dz, 0, "ONLY"); 
   dz+=dl3;
   dz+=dl1;  
@@ -1188,18 +1197,6 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   dz+=dl1;
   dz+=dl3;
   gMC->Gspos("YB23", 2, "YBU2", 0., 0., dz, 0, "ONLY"); 
-  
-
-  tpar[0]=0;
-  tpar[1]=rB2+hB2;
-  tpar[2]=7.*lB2/2.;
-  gMC->Gsvolu("YBM2", "TUBE", idtmed[kVacuum+40], tpar, 3);
-  dz=-tpar[2]+lB2/2.;
-
-  for (i=0; i<7; i++) {
-    gMC->Gspos("YBU2", i+1 , "YBM2", 0., 0.,dz , 0, "ONLY"); 
-    dz+=lB2;
-  }
 
   dz=-dl+dr21+tpar[2];
   gMC->Gspos("YBM2", 1, "YMO3", 0., 0., dz, 0, "ONLY"); 
