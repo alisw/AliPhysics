@@ -30,8 +30,8 @@ TG4MaterialsFrames::TG4MaterialsFrames( TGTab* Tab, TGMainFrame* ActionFrame )
 { 
 //---> creates the materials properties display frame
 //---> and plunges it into the main frame
-   TGCompositeFrame* Parent = Tab->AddTab("Materials Properties");
-   fCapFrame = new TGCompositeFrame(Parent, 60, 20, kHorizontalFrame);
+   TGCompositeFrame* parent = Tab->AddTab("Materials Properties");
+   fCapFrame = new TGCompositeFrame(parent, 60, 20, kHorizontalFrame);
    ULong_t back= TGFrame::GetBlackPixel(); 
    fCapFrame->ChangeBackground(back);   
    fMatSubframe1 = new TGCompositeFrame(fCapFrame, 60, 20, kVerticalFrame);
@@ -90,7 +90,7 @@ TG4MaterialsFrames::TG4MaterialsFrames( TGTab* Tab, TGMainFrame* ActionFrame )
      fCapFrame->AddFrame(fMatSubframe2,fMatFrameLayout);
 
 // going to the main frame     
-     Parent->AddFrame(fCapFrame, fMatFrameLayout);   
+     parent->AddFrame(fCapFrame, fMatFrameLayout);   
    
 }
 

@@ -26,8 +26,8 @@ ClassImp(TG4ListTreeFrame)
 TG4ListTreeFrame::TG4ListTreeFrame( TGTab* Tab, TGMainFrame* ActionFrame)
 {
 //------>canvas for the ListTree
-   TGCompositeFrame* Parent= Tab->AddTab("Volumes");
-   fCanvasWindow = new TGCanvas( Parent, 400, 240);   
+   TGCompositeFrame* parent= Tab->AddTab("Volumes");
+   fCanvasWindow = new TGCanvas( parent, 400, 240);   
    ULong_t back= TGFrame::GetWhitePixel(); 
    fCanvasWindow->ChangeBackground(back);
  
@@ -38,7 +38,7 @@ TG4ListTreeFrame::TG4ListTreeFrame( TGTab* Tab, TGMainFrame* ActionFrame)
    fCanvasWindow->SetContainer(fVolumesListTree);
 
    TGLayoutHints *lCanvasLayout = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
-   Parent->AddFrame(fCanvasWindow, lCanvasLayout);
+   parent->AddFrame(fCanvasWindow, lCanvasLayout);
    
 }
 
