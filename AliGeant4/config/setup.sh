@@ -20,7 +20,7 @@
 # ====== AG4_VERSION
 # Geant4 version
 # If set: the provided Geant4 version and not the default one is set
-#export AG4_VERSION=1.0_test
+#export AG4_VERSION=2.0_opt_global
 
 #
 # ====== AG4_VISUALIZE
@@ -295,10 +295,18 @@ export G4LEVELGAMMADATA=$G4INSTALL/data/PhotonEvaporation
 SYSTEM=`uname`
 if [ "$SYSTEM" = "HP-UX" ]; then
   export G4SYSTEM="HP-aCC"
-  #export G4USE_OSPACE=1      # compiling with Object Space STL
+  #export G4USE_OSPACE=1        # compiling with Object Space STL
 fi  
 if [ "$SYSTEM" = "Linux" ]; then
   export G4SYSTEM="Linux-g++"
+fi
+if [ "$SYSTEM" = "OSF1" ]; then
+  export G4SYSTEM="DEC-cxx"
+  #export G4NO_STD_NAMESPACE=1  # compiling with non ISO/ANSI setup
+fi
+if [ "$SYSTEM" = "SunOS" ]; then
+  export G4SYSTEM="SUN-CC"
+  export G4USE_OSPACE=1         # compiling with Object Space STL
 fi
 if [ "$VERBOSE" = "YES" ]; then
   echo "Architecture is $SYSTEM"
@@ -317,6 +325,14 @@ fi
 
 if [ -d $LHCXX_BASE/CLHEP/new ]; then
   export CLHEP_BASE_DIR=$LHCXX_BASE/CLHEP/new
+  if [ "$SYSTEM" = "OSF1" ]; then
+    # temporarily needed 
+    export CLHEP_BASE_DIR=$LHCXX_BASE/CLHEP/1.5.0.0
+  fi
+  if [ "$SYSTEM" = "SunOS" ]; then
+    # temporarily needed 
+    export CLHEP_BASE_DIR=$LHCXX_BASE/CLHEP/1.5.0.0
+  fi
 else
   echo "WARNING: CLHEP has not been found in the default path."
   if [ "$VERBOSE" = "YES" ]; then
@@ -440,7 +456,19 @@ if [ $AG4_VISUALIZE ]; then
   export G4VIS_USE_OPENGLXM=1
   export OGLHOME=/usr/local
   export OGLLIBS="-L$OGLHOME/lib -lMesaGLU -lMesaGL"
-
+  if [ "$SYSTEM" = "HP-UX" ]; then
+    export OGLLIBS="-L/usr/lib $OGLLIBS"
+  fi
+  if [ "$SYSTEM" = "OSF1" ]; then
+    # temporarily excluded
+    # due to problems with Root
+    unset G4VIS_BUILD_OPENGLX_DRIVER
+    unset G4VIS_BUILD_OPENGLXM_DRIVER
+    unset G4VIS_USE_OPENGLX
+    unset G4VIS_USE_OPENGLXM
+    unset OGLHOME
+    unset OGLLIBS
+  fi
   if [ "$VERBOSE" = "YES" ]; then
     if [ $G4VIS_USE_OPENGLX ]; then
       echo "  OpenGL and  X11 driver activated"
@@ -620,6 +648,9 @@ if [ $AG4_OPACS ]; then
   export G4VIS_USE_OPENGLX=1
   export OGLHOME=/usr/local
   export OGLLIBS="-L$OGLHOME/lib -lMesaGLU -lMesaGL"
+  if [ "$SYSTEM" = "HP-UX" ]; then
+    export OGLLIBS="-L/usr/lib $OGLLIBS"
+  fi
     
   #
   # OPACS
@@ -662,14 +693,8 @@ else
 fi
 
 #
-# path to Alice executable and config scripts
+# path to AliGeant4 config scripts
 #  
-if [ "`echo ${PATH} | grep ${AG4_INSTALL}/bin/${G4SYSTEM} `" = "" ]; then
-  if [ "$VERBOSE" = "YES" ]; then
-    echo Adding $AG4_INSTALL/bin/$G4SYSTEM to the path...
-  fi
-  export PATH=$PATH:$AG4_INSTALL/bin/$G4SYSTEM
-fi
 if [ "`echo ${PATH} | grep ${AG4_INSTALL}/config `" = "" ]; then
   if [ "$VERBOSE" = "YES" ]; then
     echo Adding ${AG4_INSTALL}/config to the path...
@@ -688,11 +713,13 @@ if [ "$SYSTEM" = "Linux" ]; then
   SHLIBVAR=$LD_LIBRARY_PATH
   SHLIBVARNAME=LD_LIBRARY_PATH
 fi
-if [ "`echo ${SHLIBVAR} | grep ${AG4_INSTALL}/lib/${G4SYSTEM} `" = "" ]; then
-  if [ "$VERBOSE" = "YES" ]; then
-    echo Adding ${AG4_INSTALL}/lib/${G4SYSTEM} to the shared libraries path...
-  fi
-  SHLIBVAR="${AG4_INSTALL}/lib/${G4SYSTEM}:${SHLIBVAR}"
+if [ "$SYSTEM" = "OSF1" ]; then
+  SHLIBVAR=$LD_LIBRARY_PATH
+  SHLIBVARNAME=LD_LIBRARY_PATH
+fi
+if [ "$SYSTEM" = "SunOS" ]; then
+  SHLIBVAR=$LD_LIBRARY_PATH
+  SHLIBVARNAME=LD_LIBRARY_PATH
 fi
 
 if [ "`echo ${SHLIBVAR} | grep ${G4INSTALL}/lib/${G4SYSTEM} `" = "" ]; then
