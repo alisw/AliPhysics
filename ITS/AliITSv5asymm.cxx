@@ -15,6 +15,14 @@
 
 /*
 $Log$
+Revision 1.7  2001/02/13 16:53:35  nilsen
+Fixed a but when trying to use GEANT4. Needed to replace
+if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
+because just casting gMC to be TGeant3* even when it realy is a TGeant3 pointer
+did not result in a zero value. For AliITSv5asymm and AliITSv5symm, needed
+to fix a bug in the initilizers and a bug in BuildGeometry. This is now done
+in the same way as in AliITSv5.cxx.
+
 Revision 1.6  2001/02/09 20:06:26  nilsen
 Fixed bug in distructor. Can't distroy fixxed length arrays. Thanks Peter.
 
@@ -159,7 +167,7 @@ AliITSv5asymm::AliITSv5asymm(const char *name, const char *title) : AliITS(name,
 
     fEuclidMaterial = "$ALICE_ROOT/Euclid/ITSgeometry_5asymm.tme";
     fEuclidGeometry = "$ALICE_ROOT/Euclid/ITSgeometry_5asymm.euc";
-    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_v5asymm.det",60);
+    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_v5.det",60);
     strncpy(fRead,fEuclidGeomDet,60);
     strncpy(fWrite,fEuclidGeomDet,60);
 }
