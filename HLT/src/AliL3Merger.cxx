@@ -62,6 +62,7 @@ void AliL3Merger::InitMerger(Int_t ntrackarrays,Char_t *tracktype)
 
 void AliL3Merger::DeleteArray()
 {
+  //delete arrays
   for(Int_t i=0; i<fNIn;i++)
     {
       if(!fInTrack[i]) continue;
@@ -77,7 +78,8 @@ void AliL3Merger::DeleteArray()
 }
 
 void AliL3Merger::SetArray(Int_t nin)
-{
+{ 
+  //set arrays
   DeleteArray();//Make sure arrays are cleaned 
   
   fNIn = nin;
@@ -97,7 +99,8 @@ void AliL3Merger::SetArray(Int_t nin)
 }
 
 void AliL3Merger::Reset()
-{
+{ 
+  //reset
   for(Int_t i=0; i<fNIn;i++)
     {
       fInTrack[i]->Reset();
@@ -108,7 +111,6 @@ void AliL3Merger::Reset()
 void AliL3Merger::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr)
 {
   //Read tracks from shared memory (or memory)
-
   AliL3TrackArray *destination = GetInTracks(fCurrentTracks);
   if(Is2Global())
     destination->FillTracks(ntracks, tr, fSlice);
@@ -117,7 +119,8 @@ void AliL3Merger::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr)
 }
 
 void AliL3Merger::AddAllTracks()
-{
+{ 
+  //add all tracks
   for(Int_t i=0; i<GetNIn();i++)
     {
       AliL3TrackArray *in = GetInTracks(i);
@@ -127,7 +130,8 @@ void AliL3Merger::AddAllTracks()
 }
 
 void AliL3Merger::SortGlobalTracks(AliL3Track **tracks, Int_t ntrack)
-{
+{ 
+  //sort global tracks
   AliL3Track **tmp = new AliL3Track*[ntrack]; 
   for(Int_t i=0;i<ntrack;i++) tmp[i] = tracks[i];
   Int_t *t = new Int_t[ntrack];
@@ -155,9 +159,9 @@ void AliL3Merger::SortGlobalTracks(AliL3Track **tracks, Int_t ntrack)
   delete[] tmp;
 }
 
-
-void AliL3Merger::SortTracks(AliL3Track **tracks, Int_t ntrack)
-{
+void AliL3Merger::SortTracks(AliL3Track **tracks, Int_t ntrack) const
+{ 
+  //sort tracks
   AliL3Track **tmp = new  AliL3Track*[ntrack];
   for(Int_t i=0;i<ntrack;i++) tmp[i] = tracks[i];
   Int_t *t = new Int_t[ntrack];
@@ -185,14 +189,16 @@ void AliL3Merger::SortTracks(AliL3Track **tracks, Int_t ntrack)
 }
 
 void AliL3Merger::AddTrack(AliL3TrackArray *mergedtrack,AliL3Track *track)
-{
+{ 
+  // add tracks
   AliL3Track *t[1];
   t[0] = track;
   MultiMerge(mergedtrack,t,1);
 }
 
 AliL3Track * AliL3Merger::MergeTracks(AliL3TrackArray *mergedtrack,AliL3Track *t0,AliL3Track *t1)
-{
+{ 
+  //merge tracks
   AliL3Track *t[2];
   t[0] = t0; 
   t[1] = t1;
@@ -202,8 +208,7 @@ AliL3Track * AliL3Merger::MergeTracks(AliL3TrackArray *mergedtrack,AliL3Track *t
 
 AliL3Track * AliL3Merger::MultiMerge(AliL3TrackArray *mergedtracks,AliL3Track **tracks, Int_t ntrack)
 {
-  // merge the tracks!!
-  
+  //multi merge the tracks
   //check npoints
   Int_t nps = 0;
   for(Int_t i=0;i<ntrack;i++)
@@ -247,8 +252,9 @@ AliL3Track * AliL3Merger::MultiMerge(AliL3TrackArray *mergedtracks,AliL3Track **
   return newtrack;
 }
 
-void* AliL3Merger::GetNtuple(char *varlist)
-{
+void* AliL3Merger::GetNtuple(char *varlist) const
+{ 
+  //get ntuple
 #ifdef use_root
   TNtuple* nt = new TNtuple("ntuple","ntuple",varlist);
   return (void*) nt;
@@ -257,8 +263,9 @@ void* AliL3Merger::GetNtuple(char *varlist)
 #endif
 }
 
-void* AliL3Merger::GetNtuple()
-{
+void* AliL3Merger::GetNtuple() const
+{ 
+  //get ntuple
 #ifdef use_root
   TNtuple* nt = new TNtuple("ntuple","ntuple",
 			    "dx:dy:dz:dk:dpsi:dtgl:dq:disx:disy:disz:dis:n0:n1:diff:drx:dry:drz");
@@ -268,8 +275,9 @@ void* AliL3Merger::GetNtuple()
 #endif
 }
 
-Bool_t AliL3Merger::WriteNtuple(char *filename, void* nt)
-{
+Bool_t AliL3Merger::WriteNtuple(char *filename, void* nt) const
+{ 
+  //write ntuple
 #ifdef use_root
   TNtuple *ntuple=(TNtuple *) nt;
   TFile *f = new TFile(filename,"RECREATE");
@@ -283,7 +291,8 @@ Bool_t AliL3Merger::WriteNtuple(char *filename, void* nt)
 }
 
 void AliL3Merger::FillNtuple(void *nt,AliL3Track *innertrack,AliL3Track *outertrack)
-{
+{ 
+  //fill ntuple
   Float_t data[17];
   if(outertrack->IsPoint()&&innertrack->IsPoint())
     {
@@ -314,8 +323,9 @@ void AliL3Merger::FillNtuple(void *nt,AliL3Track *innertrack,AliL3Track *outertr
     }
 }
 
-void AliL3Merger::FillNtuple(void *nt,Float_t *data)
-{
+void AliL3Merger::FillNtuple(void *nt,Float_t *data) const
+{ 
+  //fill ntuple
 #ifdef use_root
   TNtuple *ntuple = (TNtuple *) nt;
   ntuple->Fill(data);
@@ -323,7 +333,8 @@ void AliL3Merger::FillNtuple(void *nt,Float_t *data)
 }
 
 Double_t AliL3Merger::GetAngle(Double_t a1,Double_t a2)
-{
+{ 
+  //get angle
   Double_t da = a1 - a2 + 4*AliL3Transform::Pi();
   da = fmod(da,AliL3Transform::TwoPi());
   if(da>AliL3Transform::Pi()) da = AliL3Transform::TwoPi()-da;
@@ -331,7 +342,8 @@ Double_t AliL3Merger::GetAngle(Double_t a1,Double_t a2)
 }
 
 void AliL3Merger::SetParameter(Double_t maxy, Double_t maxz, Double_t maxkappa, Double_t maxpsi, Double_t maxtgl)
-{
+{ 
+  //set parameters for merger
   fMaxY = maxy;
   fMaxZ = maxz;
   fMaxKappa = maxkappa;
@@ -341,7 +353,7 @@ void AliL3Merger::SetParameter(Double_t maxy, Double_t maxz, Double_t maxkappa, 
 
 Bool_t AliL3Merger::IsTrack(AliL3Track *innertrack,AliL3Track *outertrack)
 {
-  
+  //is track to be merged
   if(innertrack->GetCharge()!=outertrack->GetCharge()) return kFALSE;
   if( (!innertrack->IsPoint()) || (!outertrack->IsPoint()) )  return kFALSE; 
   if(innertrack->GetNHits()+outertrack->GetNHits()>AliL3Transform::GetNRows()) return kFALSE;
@@ -356,12 +368,14 @@ Bool_t AliL3Merger::IsTrack(AliL3Track *innertrack,AliL3Track *outertrack)
 }
 
 Bool_t AliL3Merger::IsRTrack(AliL3Track *innertrack,AliL3Track *outertrack)
-{
+{ 
+  //same as IsTrack
   return IsTrack(innertrack,outertrack);
 }
 
 Double_t AliL3Merger::TrackDiff(AliL3Track *innertrack,AliL3Track *outertrack)
-{
+{ 
+  //return track difference
   Double_t diff =-1;
   Double_t x[4],y[4],z[4],dy[4],dz[4];
   AliL3Track *tracks[2]; 
@@ -415,7 +429,8 @@ Double_t AliL3Merger::TrackDiff(AliL3Track *innertrack,AliL3Track *outertrack)
 }
 
 void AliL3Merger::PrintDiff(AliL3Track *innertrack,AliL3Track *outertrack)
-{
+{ 
+  // print difference
   if(!innertrack->IsPoint()||!outertrack->IsPoint())
     {
       LOG(AliL3Log::kInformational,"AliL3Merger::PrintDiff","No Points")<<ENDLOG;
@@ -475,7 +490,8 @@ void AliL3Merger::Print()
 }
 
 void AliL3Merger::PrintTrack(AliL3Track *track)
-{
+{ 
+  //print track info
   fprintf(stderr,"npt: %3d pt: %.2f psi: %.2f tgl: %5.2f q: %2d\n",
 	  track->GetNHits(),track->GetPt(),track->GetPsi(),
 	  track->GetTgl(),track->GetCharge());

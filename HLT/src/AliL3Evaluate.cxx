@@ -4,11 +4,14 @@
 //*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
+#include <TObject.h>
 #include <TFile.h>
 #include <TH1.h>
 #include <TParticle.h>
 #include <TTree.h>
 #include <TClonesArray.h>
+#include <TTree.h>
+#include <TNtuple.h>
 
 #include <AliRun.h>
 #include <AliSimDigits.h>
@@ -52,12 +55,14 @@ using namespace std;
 ClassImp(AliL3Evaluate)
 
 AliL3Evaluate::AliL3Evaluate()
-{
+{ 
+  //constructor
   Clear();
 }
 
 AliL3Evaluate::AliL3Evaluate(Char_t *datapath,Int_t min_clusters,Int_t minhits,Double_t minpt,Double_t maxpt,Int_t *slice)
-{
+{ 
+  //constructor
   Clear();
 
   if(slice)
@@ -79,7 +84,8 @@ AliL3Evaluate::AliL3Evaluate(Char_t *datapath,Int_t min_clusters,Int_t minhits,D
 }
 
 AliL3Evaluate::~AliL3Evaluate()
-{
+{ 
+  //destructor
   if(fGoodTracks) delete[] fGoodTracks;
   if(fTracks) delete fTracks;
   if(fPtRes) delete fPtRes;
@@ -108,7 +114,8 @@ AliL3Evaluate::~AliL3Evaluate()
 }
 
 void AliL3Evaluate::Clear()
-{
+{ 
+  //clear
   fTracks = 0;
   fMinSlice=0;
   fMaxSlice=0;
@@ -148,7 +155,8 @@ void AliL3Evaluate::Clear()
 }
 
 void AliL3Evaluate::LoadData(Int_t event,Bool_t sp)
-{
+{ 
+  //load cluster points
   Char_t fname[1024];
 
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
@@ -202,7 +210,8 @@ void AliL3Evaluate::LoadData(Int_t event,Bool_t sp)
 }
 
 void AliL3Evaluate::AssignPIDs()
-{
+{ 
+  //assign pid 
   if(!fTracks) return;
   fTracks->QSort();
   LOG(AliL3Log::kDebug,"AliL3Evaluate::AssignPIDs","Track Loop")
@@ -221,7 +230,7 @@ void AliL3Evaluate::AssignPIDs()
 }
   
 void AliL3Evaluate::AssignIDs()
-{
+{ 
   //Assign MC id to the tracks.
 #ifndef do_mc
   cerr<<"AliL3Evaluate::AssignIDs() : You need to compile with the do_mc flag!"<<endl;
@@ -246,7 +255,8 @@ void AliL3Evaluate::AssignIDs()
 }
 
 Float_t AliL3Evaluate::GetTrackPID(AliL3Track *track)
-{
+{ 
+  //get track pid
   track->CalculateHelix();
   // Track dEdx
   Int_t nc=track->GetNHits();
@@ -301,7 +311,8 @@ Float_t AliL3Evaluate::GetTrackPID(AliL3Track *track)
 }
 
 struct S {Int_t lab; Int_t max;};
-Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){ 
+Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track)
+{ 
   //Returns the MCtrackID of the belonging clusters.
   //If MCLabel < 0, means that track is fake.
   //Definitions are identical to offline.
@@ -481,15 +492,15 @@ void AliL3Evaluate::GetGoodParticles(Char_t *path,Int_t event,Int_t *padrowrange
   if(fGoodTracks)
     delete [] fGoodTracks;
   fGoodGen=0;
-  fGoodTracks = new GoodTrack[MaxTracks];
+  fGoodTracks = new AliGoodTrack[MaxTracks];
   
   if(fStandardComparison){
-    while (in>>fGoodTracks[fGoodGen].label>>fGoodTracks[fGoodGen].code>>
-	   fGoodTracks[fGoodGen].px>>fGoodTracks[fGoodGen].py>>fGoodTracks[fGoodGen].pz>>
-	   fGoodTracks[fGoodGen].x>>fGoodTracks[fGoodGen].y>>fGoodTracks[fGoodGen].z)
+    while (in>>fGoodTracks[fGoodGen].flabel>>fGoodTracks[fGoodGen].fcode>>
+	   fGoodTracks[fGoodGen].fpx>>fGoodTracks[fGoodGen].fpy>>fGoodTracks[fGoodGen].fpz>>
+	   fGoodTracks[fGoodGen].fx>>fGoodTracks[fGoodGen].fy>>fGoodTracks[fGoodGen].fz)
       {
-        fGoodTracks[fGoodGen].nhits=-1;
-        fGoodTracks[fGoodGen].sector=-1; 
+        fGoodTracks[fGoodGen].fnhits=-1;
+        fGoodTracks[fGoodGen].fsector=-1; 
 	fGoodGen++;
 	if (fGoodGen==MaxTracks) 
 	  {
@@ -498,9 +509,10 @@ void AliL3Evaluate::GetGoodParticles(Char_t *path,Int_t event,Int_t *padrowrange
 	  }
       }
   } else {
-    while (in>>fGoodTracks[fGoodGen].label>>fGoodTracks[fGoodGen].code>>
-	   fGoodTracks[fGoodGen].px>>fGoodTracks[fGoodGen].py>>fGoodTracks[fGoodGen].pz>>
-	   fGoodTracks[fGoodGen].x>>fGoodTracks[fGoodGen].y >>fGoodTracks[fGoodGen].z>>fGoodTracks[fGoodGen].nhits>>fGoodTracks[fGoodGen].sector) 
+    while (in>>fGoodTracks[fGoodGen].flabel>>fGoodTracks[fGoodGen].fcode>>
+	   fGoodTracks[fGoodGen].fpx>>fGoodTracks[fGoodGen].fpy>>fGoodTracks[fGoodGen].fpz>>
+	   fGoodTracks[fGoodGen].fx>>fGoodTracks[fGoodGen].fy >>fGoodTracks[fGoodGen].fz>>
+	   fGoodTracks[fGoodGen].fnhits>>fGoodTracks[fGoodGen].fsector) 
       {
 	fGoodGen++;
 	if (fGoodGen==MaxTracks) 
@@ -512,10 +524,10 @@ void AliL3Evaluate::GetGoodParticles(Char_t *path,Int_t event,Int_t *padrowrange
   }
 }
 
-//has to be modified for fakes.
-
 void AliL3Evaluate::FillEffHistos()
-{  
+{ 
+  //has to be modified for fakes.
+
   if(!fGoodTracks)
     {
       cerr<<"AliL3Evaluate::FillEffHistos : No good tracks"<<endl;
@@ -528,10 +540,10 @@ void AliL3Evaluate::FillEffHistos()
     {
       //cout<<"Checking particle "<<i<<endl;
       if(!fStandardComparison) 
-	if(fGoodTracks[i].nhits < fMinHitsFromParticle) continue;
-      Float_t ptg = TMath::Sqrt(fGoodTracks[i].px*fGoodTracks[i].px + fGoodTracks[i].py*fGoodTracks[i].py);
+	if(fGoodTracks[i].fnhits < fMinHitsFromParticle) continue;
+      Float_t ptg = TMath::Sqrt(fGoodTracks[i].fpx*fGoodTracks[i].fpx + fGoodTracks[i].fpy*fGoodTracks[i].fpy);
       if(ptg < fMinGoodPt || ptg > fMaxGoodPt) continue;
-      Float_t pzg=fGoodTracks[i].pz;
+      Float_t pzg=fGoodTracks[i].fpz;
       Float_t dipangle=TMath::ATan2(pzg,ptg)*180./TMath::Pi();
       
       //If we are only considering tracks on one side of the TPC:
@@ -552,10 +564,10 @@ void AliL3Evaluate::FillEffHistos()
 	  Int_t tracklabel;
 	  tracklabel = track->GetMCid();
 	  
-	  if(TMath::Abs(tracklabel) != fGoodTracks[i].label) continue;
+	  if(TMath::Abs(tracklabel) != fGoodTracks[i].flabel) continue;
 	  found=1;
 	  Float_t pt=track->GetPt();
-	  if(tracklabel == fGoodTracks[i].label) 
+	  if(tracklabel == fGoodTracks[i].flabel) 
 	    {
 	      fNFoundTracksPt->Fill(ptg); 
 	      fNFoundTracksEta->Fill(dipangle);
@@ -585,10 +597,10 @@ void AliL3Evaluate::FillEffHistosNAIVE()
   for(Int_t i=0; i<fGoodGen; i++)
     {
       if(!fStandardComparison) 
-	if(fGoodTracks[i].nhits < fMinHitsFromParticle) continue;
-      Double_t ptg=TMath::Sqrt(fGoodTracks[i].px*fGoodTracks[i].px + fGoodTracks[i].py*fGoodTracks[i].py);
+	if(fGoodTracks[i].fnhits < fMinHitsFromParticle) continue;
+      Double_t ptg=TMath::Sqrt(fGoodTracks[i].fpx*fGoodTracks[i].fpx + fGoodTracks[i].fpy*fGoodTracks[i].fpy);
       if(ptg < fMinGoodPt || ptg > fMaxGoodPt) continue;
-      Double_t pzg=fGoodTracks[i].pz;
+      Double_t pzg=fGoodTracks[i].fpz;
       Float_t dipangle=TMath::ATan2(pzg,ptg)*180./TMath::Pi();
       //printf("filling particle with pt %f and dipangle %f\n",ptg,dipangle);
       fNGoodTracksPt->Fill(ptg);
@@ -609,12 +621,12 @@ void AliL3Evaluate::FillEffHistosNAIVE()
       //Float_t pt=track->GetPt();
       //fPtRes->Fill((pt-ptg)/ptg*100.);
       //fNtuppel->Fill(ptg,pt,nHits);
-            
     }
 }
 
 void AliL3Evaluate::CalcEffHistos()
-{  
+{ 
+  //calc eff histos
 
   Stat_t ngood=fNGoodTracksPt->GetEntries();
   Stat_t nfound=fNFoundTracksPt->GetEntries();
@@ -682,7 +694,8 @@ void AliL3Evaluate::Write2File(Char_t *outputfile)
 }
 
 TNtuple *AliL3Evaluate::GetNtuple()
-{
+{ 
+  //get ntuple
   if(!fNtupleRes)
     {
       fNtupleRes = new TNtuple("ntuppel","Residuals","residual_trans:residual_long:zHit:pt:dipangle:beta:padrow:nHits");
@@ -692,8 +705,8 @@ TNtuple *AliL3Evaluate::GetNtuple()
 }
 
 void AliL3Evaluate::CalculateResiduals()
-{
-
+{ 
+  //calculate residuals
   TNtuple *ntuppel = GetNtuple();
   
   for(Int_t i=0; i<fTracks->GetNTracks(); i++)
@@ -944,7 +957,6 @@ void AliL3Evaluate::EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *to
   ntuppel->Write();
   ntuppel2->Write();
   ofile->Close();
-  
 #endif
 }
 

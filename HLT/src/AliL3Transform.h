@@ -12,60 +12,60 @@
 class AliL3Transform {
 
  public:
-  enum VersionType { fV_default=0, fV_deprecated=1, fV_aliroot=10, fV_cosmics=100};
+  enum VersionType { kVdefault=0, kVdeprecated=1, kValiroot=10, kVcosmics=100};
 
  private:
-  static const Double_t fBFACT;
-  static const Double_t fPi;
-  static const Double_t fPi2;
-  static const Double_t f2Pi;
-  static const Double_t fAnodeWireSpacing; 
-  static const Double_t fToDeg;
+  static const Double_t fgkBFACT; //bfield
+  static const Double_t fgkPi;    //pi
+  static const Double_t fgkPi2;   //2pi
+  static const Double_t fgk2Pi;   //pi/2
+  static const Double_t fgkAnodeWireSpacing; //anode wire spacing 
+  static const Double_t fgkToDeg; //rad to deg
 
-  static Int_t fNPatches; //6 (dont change this) 
-  static Int_t fRows[6][2];
-  static Int_t fNRows[6];
+  static Int_t fgNPatches;   //6 (dont change this) 
+  static Int_t fgRows[6][2]; //rows per patch
+  static Int_t fgNRows[6];   //rows per patch
 
-  static Double_t fBField;
-  static Double_t fBFieldFactor;
-  static Double_t fSolenoidBField;
-  static Int_t fNTimeBins;
-  static Int_t fNRowLow;
-  static Int_t fNRowUp;
-  static Int_t fNRowUp1;
-  static Int_t fNRowUp2;
-  static Int_t fNSectorLow;
-  static Int_t fNSectorUp;
-  static Int_t fSlice2Sector[36][2];
-  static Int_t fSector2Slice[72];
-  static Int_t fSectorLow[72];
-  static Double_t fPadPitchWidthLow;
-  static Double_t fPadPitchWidthUp;
-  static Double_t fZWidth;
-  static Double_t fZSigma;
-  static Double_t fZLength;
-  static Double_t fZOffset;
-  static Int_t fNSector; //72  (dont change this)
-  static Int_t fNSlice;  //36  (dont change this)
-  static Int_t fNRow;    //159 (dont change this)
-  static Double_t fNRotShift; //Rotation shift (eg. 0.5 for 10 degrees)
-  static Int_t fNPads[159]; //fill this following Init and fVersion
-  static Double_t fX[159];  //X position in local coordinates
-  static Int_t fVersion;  //flags the version
-  static Double_t fDiffT; //Transversal diffusion constant
-  static Double_t fDiffL; //Longitudinal diffusion constant
-  static Double_t fOmegaTau; //ExB effects
-  static Double_t fInnerPadLength;
-  static Double_t fOuter1PadLength;
-  static Double_t fOuter2PadLength;
-  static Double_t fInnerPRFSigma;
-  static Double_t fOuter1PRFSigma;
-  static Double_t fOuter2PRFSigma;
-  static Double_t fTimeSigma; //Minimal longitudinal width
-  static Int_t fADCSat; //ADC Saturation (1024 = 10 bit)
-  static Int_t fZeroSup; //Zero suppression threshold
-  static Double_t fCos[36]; //stores the cos value for local to global rotations  
-  static Double_t fSin[36]; //stores the sin value for local to global rotations  
+  static Double_t fgBField;         //field
+  static Double_t fgBFieldFactor;   //field 
+  static Double_t fgSolenoidBField; //field
+  static Int_t fgNTimeBins;  //ntimebins
+  static Int_t fgNRowLow;    //nrows
+  static Int_t fgNRowUp;     //nrows
+  static Int_t fgNRowUp1;    //nrows
+  static Int_t fgNRowUp2;    //nrows
+  static Int_t fgNSectorLow; //nsector
+  static Int_t fgNSectorUp;  //nsector
+  static Int_t fgSlice2Sector[36][2]; //nslice
+  static Int_t fgSector2Slice[72];    //nslice
+  static Int_t fgSectorLow[72];       //nsector
+  static Double_t fgPadPitchWidthLow; //pad pitch
+  static Double_t fgPadPitchWidthUp;  //pad pitch
+  static Double_t fgZWidth;  //width
+  static Double_t fgZSigma;  //sigma
+  static Double_t fgZLength; //length
+  static Double_t fgZOffset; //offset
+  static Int_t fgNSector; //72  (dont change this)
+  static Int_t fgNSlice;  //36  (dont change this)
+  static Int_t fgNRow;    //159 (dont change this)
+  static Double_t fgNRotShift; //Rotation shift (eg. 0.5 for 10 degrees)
+  static Int_t fgNPads[159]; //fill this following Init and fVersion
+  static Double_t fgX[159];  //X position in local coordinates
+  static Int_t fgVersion;  //flags the version
+  static Double_t fgDiffT; //Transversal diffusion constant
+  static Double_t fgDiffL; //Longitudinal diffusion constant
+  static Double_t fgOmegaTau; //ExB effects
+  static Double_t fgInnerPadLength;  //innner pad length
+  static Double_t fgOuter1PadLength; //outer pad length
+  static Double_t fgOuter2PadLength; //outer pad length
+  static Double_t fgInnerPRFSigma;   //inner pad response function
+  static Double_t fgOuter1PRFSigma;  //outer pad response function
+  static Double_t fgOuter2PRFSigma;  //outer pad response function
+  static Double_t fgTimeSigma; //Minimal longitudinal width
+  static Int_t fgADCSat; //ADC Saturation (1024 = 10 bit)
+  static Int_t fgZeroSup; //Zero suppression threshold
+  static Double_t fgCos[36]; //stores the cos value for local to global rotations  
+  static Double_t fgSin[36]; //stores the sin value for local to global rotations  
 
  public:
 #ifdef use_aliroot
@@ -78,108 +78,118 @@ class AliL3Transform {
   static Bool_t SaveInitFile(Char_t *filename); //save parameters in init file
 
   //setters
-  static void SetNPatches(Int_t i){fNPatches = i;}
-  static void SetNRows(Int_t s[6]){for(Int_t i=0;i<fNPatches;i++) fNRows[i] = s[i];}
+  static void SetNPatches(Int_t i){fgNPatches = i;}
+  static void SetNRows(Int_t s[6]){for(Int_t i=0;i<fgNPatches;i++) fgNRows[i] = s[i];}
   static void SetRows(Int_t s[6][2]){
-    for(Int_t i=0;i<fNPatches;i++){
-      fRows[i][0] = s[i][0];
-      fRows[i][1] = s[i][1];
+    for(Int_t i=0;i<fgNPatches;i++){
+      fgRows[i][0] = s[i][0];
+      fgRows[i][1] = s[i][1];
     }
   }
-  static void SetBField(Double_t f) {fBField = f;} //careful, these 3 are not independent!
-  static void SetBFieldFactor(Double_t f) {fBFieldFactor = f;fBField=fBFieldFactor*fSolenoidBField*0.1;}
-  static void SetSolenoidBField(Double_t f){fSolenoidBField = f;fBField=fBFieldFactor*fSolenoidBField*0.1;}
-  static void SetNTimeBins(Int_t i){fNTimeBins = i;}
-  static void SetNRowLow(Int_t i){fNRowLow = i;}
-  static void SetNRowUp(Int_t i){fNRowUp = i;}
-  static void SetNRowUp1(Int_t i){fNRowUp1 = i;}
-  static void SetNRowUp2(Int_t i){fNRowUp2 = i;}
+  static void SetBField(Double_t f) {fgBField = f;} //careful, these 3 are not independent!
+  static void SetBFieldFactor(Double_t f) {
+    fgBFieldFactor = f;
+    fgBField=fgBFieldFactor*fgSolenoidBField*0.1;
+  }
+  static void SetSolenoidBField(Double_t f){
+    fgSolenoidBField = f;
+    fgBField=fgBFieldFactor*fgSolenoidBField*0.1;
+  }
+  static void SetNTimeBins(Int_t i){fgNTimeBins = i;}
+  static void SetNRowLow(Int_t i){fgNRowLow = i;}
+  static void SetNRowUp(Int_t i){fgNRowUp = i;}
+  static void SetNRowUp1(Int_t i){fgNRowUp1 = i;}
+  static void SetNRowUp2(Int_t i){fgNRowUp2 = i;}
   static void SetSlice2Sector(Int_t s[36][2]){
-    for(Int_t i=0;i<fNSlice;i++){
-      fSlice2Sector[i][0] = s[i][0];
-      fSlice2Sector[i][1] = s[i][1];
+    for(Int_t i=0;i<fgNSlice;i++){
+      fgSlice2Sector[i][0] = s[i][0];
+      fgSlice2Sector[i][1] = s[i][1];
     }
   }
-  static void SetSector2Slice(Int_t s[72]){for(Int_t i=0;i<fNSector;i++) fSector2Slice[i] = s[i];}
-  static void SetSectorLow(Int_t s[72]){for(Int_t i=0;i<fNSector;i++) fSectorLow[i] = s[i];}
-  static void SetNSectorLow(Int_t i){fNSectorLow = i;}
-  static void SetNSectorUp(Int_t i){fNSectorUp = i;}
-  static void SetPadPitchWidthLow(Double_t f){fPadPitchWidthLow = f;}
-  static void SetPadPitchWidthUp(Double_t f){fPadPitchWidthUp = f;}
-  static void SetZWidth(Double_t f){fZWidth = f;}
-  static void SetZSigma(Double_t f){fZSigma = f;}
-  static void SetZLength(Double_t f){fZLength = f;}
-  static void SetZOffset(Double_t f){fZOffset = f;}
-  static void SetNSector(Int_t i){fNSector = i;}
-  static void SetNSlice(Int_t i){fNSlice = i;}
-  static void SetNRow(Int_t i){fNRow = i;}
-  static void SetNRotShift(Double_t f){fNRotShift = f;}
-  static void SetNPads(Int_t pads[159]){for(Int_t i=0;i<fNRow;i++) fNPads[i] = pads[i];}
-  static void SetX(Double_t xs[159]){for(Int_t i=0;i<fNRow;i++) fX[i] = xs[i];}
-  static void SetVersion(Int_t i){fVersion = i;}
-  static void SetDiffT(Double_t f){fDiffT = f;}
-  static void SetDiffL(Double_t f){fDiffL = f;}
-  static void SetOmegaTau(Double_t f){fOmegaTau = f;}
-  static void SetInnerPadLength(Double_t f){fInnerPadLength = f;}
-  static void SetOuter1PadLength(Double_t f){fOuter1PadLength = f;}
-  static void SetOuter2PadLength(Double_t f){fOuter2PadLength = f;}
-  static void SetInnerPRFSigma(Double_t f){fInnerPRFSigma = f;}
-  static void SetOuter1PRFSigma(Double_t f){fOuter1PRFSigma = f;}
-  static void SetOuter2PRFSigma(Double_t f){fOuter2PRFSigma = f;}
-  static void SetTimeSigma(Double_t f){fTimeSigma = f;}
-  static void SetADCSat(Int_t i) {fADCSat = i;}
-  static void SetZeroSup(Int_t i) {fZeroSup = i;}
+  static void SetSector2Slice(Int_t s[72]){
+    for(Int_t i=0;i<fgNSector;i++) fgSector2Slice[i] = s[i];}
+  static void SetSectorLow(Int_t s[72]){
+    for(Int_t i=0;i<fgNSector;i++) fgSectorLow[i] = s[i];}
+  static void SetNSectorLow(Int_t i){fgNSectorLow = i;}
+  static void SetNSectorUp(Int_t i){fgNSectorUp = i;}
+  static void SetPadPitchWidthLow(Double_t f){fgPadPitchWidthLow = f;}
+  static void SetPadPitchWidthUp(Double_t f){fgPadPitchWidthUp = f;}
+  static void SetZWidth(Double_t f){fgZWidth = f;}
+  static void SetZSigma(Double_t f){fgZSigma = f;}
+  static void SetZLength(Double_t f){fgZLength = f;}
+  static void SetZOffset(Double_t f){fgZOffset = f;}
+  static void SetNSector(Int_t i){fgNSector = i;}
+  static void SetNSlice(Int_t i){fgNSlice = i;}
+  static void SetNRow(Int_t i){fgNRow = i;}
+  static void SetNRotShift(Double_t f){fgNRotShift = f;}
+  static void SetNPads(Int_t pads[159]){
+    for(Int_t i=0;i<fgNRow;i++) fgNPads[i] = pads[i];}
+  static void SetX(Double_t xs[159]){
+    for(Int_t i=0;i<fgNRow;i++) fgX[i] = xs[i];}
+  static void SetVersion(Int_t i){fgVersion = i;}
+  static void SetDiffT(Double_t f){fgDiffT = f;}
+  static void SetDiffL(Double_t f){fgDiffL = f;}
+  static void SetOmegaTau(Double_t f){fgOmegaTau = f;}
+  static void SetInnerPadLength(Double_t f){fgInnerPadLength = f;}
+  static void SetOuter1PadLength(Double_t f){fgOuter1PadLength = f;}
+  static void SetOuter2PadLength(Double_t f){fgOuter2PadLength = f;}
+  static void SetInnerPRFSigma(Double_t f){fgInnerPRFSigma = f;}
+  static void SetOuter1PRFSigma(Double_t f){fgOuter1PRFSigma = f;}
+  static void SetOuter2PRFSigma(Double_t f){fgOuter2PRFSigma = f;}
+  static void SetTimeSigma(Double_t f){fgTimeSigma = f;}
+  static void SetADCSat(Int_t i) {fgADCSat = i;}
+  static void SetZeroSup(Int_t i) {fgZeroSup = i;}
 
   //getters
   static const Char_t* GetParamName() {return "75x40_100x60_150x60";}
-  static const Double_t Pi()     {return fPi;}
-  static const Double_t PiHalf() {return fPi2;}
-  static const Double_t TwoPi()  {return f2Pi;}
-  static const Double_t GetAnodeWireSpacing() {return fAnodeWireSpacing;}
-  static const Double_t GetBFact() {return fBFACT;}
-  static const Double_t ToRad() {return 1./fToDeg;}
-  static const Double_t ToDeg() {return fToDeg;}
+  static const Double_t Pi()     {return fgkPi;}
+  static const Double_t PiHalf() {return fgkPi2;}
+  static const Double_t TwoPi()  {return fgk2Pi;}
+  static const Double_t GetAnodeWireSpacing() {return fgkAnodeWireSpacing;}
+  static const Double_t GetBFact() {return fgkBFACT;}
+  static const Double_t ToRad() {return 1./fgkToDeg;}
+  static const Double_t ToDeg() {return fgkToDeg;}
 
   static Int_t GetFirstRow(Int_t patch);
   static Int_t GetLastRow(Int_t patch);
   static Int_t GetNRows(Int_t patch);
   static Int_t GetPatch(Int_t padrow);
-  static Int_t GetNRows() {return fNRow;}
-  static Int_t GetNRowLow() {return fNRowLow;}
-  static Int_t GetNRowUp1() {return fNRowUp1;}
-  static Int_t GetNRowUp2() {return fNRowUp2;}
+  static Int_t GetNRows() {return fgNRow;}
+  static Int_t GetNRowLow() {return fgNRowLow;}
+  static Int_t GetNRowUp1() {return fgNRowUp1;}
+  static Int_t GetNRowUp2() {return fgNRowUp2;}
   static Int_t GetPadRow(Float_t x);
-  static Int_t GetNPatches() {return fNPatches;}
+  static Int_t GetNPatches() {return fgNPatches;}
   static Int_t GetNPads(Int_t row);
-  static Int_t GetNTimeBins(){return fNTimeBins;}
-  static Double_t GetBField() {return fBField;}
-  static Double_t GetSolenoidField() {return fSolenoidBField;}
-  static Double_t GetBFactFactor() {return fBFieldFactor;}
-  static Double_t GetBFieldValue() {return (fBField*fBFACT);}
-  static Float_t Deg2Rad(Float_t angle) {return angle/fToDeg;}
-  static Float_t Rad2Deg(Float_t angle) {return angle*fToDeg;}
-  static Int_t GetVersion(){return fVersion;}
-  static Double_t GetPadPitchWidthLow() {return fPadPitchWidthLow;}
-  static Double_t GetPadPitchWidthUp() {return fPadPitchWidthUp;}
+  static Int_t GetNTimeBins(){return fgNTimeBins;}
+  static Double_t GetBField() {return fgBField;}
+  static Double_t GetSolenoidField() {return fgSolenoidBField;}
+  static Double_t GetBFactFactor() {return fgBFieldFactor;}
+  static Double_t GetBFieldValue() {return (fgBField*fgkBFACT);}
+  static Float_t Deg2Rad(Float_t angle) {return angle/fgkToDeg;}
+  static Float_t Rad2Deg(Float_t angle) {return angle*fgkToDeg;}
+  static Int_t GetVersion(){return fgVersion;}
+  static Double_t GetPadPitchWidthLow() {return fgPadPitchWidthLow;}
+  static Double_t GetPadPitchWidthUp() {return fgPadPitchWidthUp;}
   static Double_t GetPadPitchWidth(Int_t patch);
-  static Double_t GetZWidth() {return fZWidth;}
-  static Double_t GetZLength() {return fZLength;}
-  static Double_t GetZOffset() {return fZOffset;}
-  static Double_t GetDiffT() {return fDiffT;}
-  static Double_t GetDiffL() {return fDiffL;}
+  static Double_t GetZWidth() {return fgZWidth;}
+  static Double_t GetZLength() {return fgZLength;}
+  static Double_t GetZOffset() {return fgZOffset;}
+  static Double_t GetDiffT() {return fgDiffT;}
+  static Double_t GetDiffL() {return fgDiffL;}
   static Double_t GetParSigmaY2(Int_t padrow,Float_t z,Float_t angle);
   static Double_t GetParSigmaZ2(Int_t padrow,Float_t z,Float_t tgl);
-  static Double_t GetOmegaTau() {return fOmegaTau;}
+  static Double_t GetOmegaTau() {return fgOmegaTau;}
   static Double_t GetPadLength(Int_t padrow);
   static Double_t GetPRFSigma(Int_t padrow);
-  static Double_t GetTimeSigma() {return fTimeSigma;}
-  static Double_t GetZSigma() {return fZSigma;}
-  static Int_t GetADCSat() {return fADCSat;}
-  static Int_t GetZeroSup() {return fZeroSup;}
-  static Int_t GetNSlice() {return fNSlice;}
-  static Int_t GetNSector() {return fNSector;}
-  static Int_t GetNSectorLow() {return fNSectorLow;}
-  static Int_t GetNSectorUp() {return fNSectorUp;}
+  static Double_t GetTimeSigma() {return fgTimeSigma;}
+  static Double_t GetZSigma() {return fgZSigma;}
+  static Int_t GetADCSat() {return fgADCSat;}
+  static Int_t GetZeroSup() {return fgZeroSup;}
+  static Int_t GetNSlice() {return fgNSlice;}
+  static Int_t GetNSector() {return fgNSector;}
+  static Int_t GetNSectorLow() {return fgNSectorLow;}
+  static Int_t GetNSectorUp() {return fgNSectorUp;}
   
   static Bool_t Slice2Sector(Int_t slice, Int_t slicerow, Int_t &sector, Int_t &row);
   static Bool_t Sector2Slice(Int_t &slice, Int_t sector);

@@ -6,7 +6,7 @@
 #include "AliL3RootTypes.h"
 
 
-struct ClusterData
+struct AliClusterData
 {
   UInt_t fTotalCharge;
   UInt_t fPad;
@@ -19,7 +19,7 @@ struct ClusterData
   UInt_t fLastCharge;    //for deconvolution
   UInt_t fLastMergedPad; //dont merge twice per pad
 };
-typedef struct ClusterData ClusterData;
+typedef struct AliClusterData AliClusterData;
 
 class AliL3DigitRowData;
 class AliL3SpacePointData;
@@ -36,18 +36,18 @@ class AliL3ClustFinderNew {
   Bool_t fCalcerr;    //calculate centroid sigmas
   Bool_t fRawSP;      //store centroids in raw system
 
-  UInt_t fNDigitRowData;
-  Int_t fFirstRow;
-  Int_t fLastRow;
-  Int_t fCurrentRow;
-  Int_t fCurrentSlice;
-  Int_t fCurrentPatch;
-  Int_t fMatch;
-  UInt_t fThreshold;
-  Int_t fNClusters;
-  Int_t fMaxNClusters;
-  Float_t fXYErr;
-  Float_t fZErr;
+  UInt_t fNDigitRowData; //ndigts on row
+  Int_t fFirstRow;       //first row
+  Int_t fLastRow;        //last row
+  Int_t fCurrentRow;     //current active row
+  Int_t fCurrentSlice;   //current slice
+  Int_t fCurrentPatch;   //current patch
+  Int_t fMatch;          //size of match
+  UInt_t fThreshold;     //threshold for clusters
+  Int_t fNClusters;      //number of found clusters
+  Int_t fMaxNClusters;   //max. number of clusters
+  Float_t fXYErr;        //fixed error in XY
+  Float_t fZErr;         //fixed error in Z
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
@@ -63,7 +63,7 @@ class AliL3ClustFinderNew {
   void ProcessDigits();
   void ProcessRow(AliL3DigitRowData *tempPt);
   void SetOutputArray(AliL3SpacePointData *pt);
-  void WriteClusters(Int_t n_clusters,ClusterData *list);
+  void WriteClusters(Int_t n_clusters,AliClusterData *list);
 
   void SetXYError(Float_t f) {fXYErr=f;}
   void SetZError(Float_t f) {fZErr=f;}
@@ -73,7 +73,7 @@ class AliL3ClustFinderNew {
   void SetSTDOutput(Bool_t f=kFALSE) {fStdout=f;}  
   void SetCalcErr(Bool_t f=kTRUE) {fCalcerr=f;}
   void SetRawSP(Bool_t f=kFALSE) {fRawSP=f;}
-  Int_t GetNumberOfClusters() {return fNClusters;}
+  Int_t GetNumberOfClusters() const {return fNClusters;}
   
   ClassDef(AliL3ClustFinderNew,1) //Fast cluster finder
 

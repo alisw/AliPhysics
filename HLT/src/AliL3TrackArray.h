@@ -9,19 +9,20 @@ class AliL3ConfMapTrack;
 class AliL3Track;
 class AliL3TrackSegmentData;
 
-class AliL3TrackArray{
- private:
-  void DeleteArray();
+class AliL3TrackArray {
 
-  Char_t fTrackType;
-  Int_t fSize;
+ private:
+
+  Char_t fTrackType; //track type
+  Int_t fSize; //size of arra
   Bool_t *fIsPresent;//!
-  Int_t fNAbsent;
+  Int_t fNAbsent; //ntracks absent
 
   AliL3Track **fTrack;//!
-  Int_t fNTracks;
+  Int_t fNTracks; //ntracks in
 
   UInt_t WriteConfMapTracks(AliL3TrackSegmentData* tr); 
+  void DeleteArray();
 
  public:
   AliL3TrackArray();
@@ -30,12 +31,11 @@ class AliL3TrackArray{
   AliL3TrackArray(char* tracktype);
   virtual ~AliL3TrackArray();
   Int_t GetTrackType(){return fTrackType;}
-  Int_t GetSize(){return fSize;}
+  Int_t GetSize() const {return fSize;}
   Bool_t SetSize(Int_t newsize=2000);
 
-  Int_t GetNPresent(){return (fNTracks- fNAbsent);}
-
-  Int_t GetNTracks(){return fNTracks;}
+  Int_t GetNPresent() const {return (fNTracks- fNAbsent);}
+  Int_t GetNTracks() const {return fNTracks;}
   AliL3Track *NextTrack();
   AliL3Track *GetCheckedTrack(Int_t t){if(fIsPresent[t]) return fTrack[t]; return 0;}
   AliL3Track *GetTrack(Int_t t){return fTrack[t];}
@@ -46,8 +46,7 @@ class AliL3TrackArray{
   void Reset();
   void QSort();
   void QSort( AliL3Track **a, Int_t first, Int_t last);
-  Int_t TrackCompare(AliL3Track *a, AliL3Track *b);
-
+  Int_t TrackCompare(AliL3Track *a, AliL3Track *b) const;
 
   void FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t slice); //Fill tracks and transform
   void FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr); //Fill tracks

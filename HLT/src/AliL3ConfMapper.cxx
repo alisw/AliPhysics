@@ -44,7 +44,6 @@ AliL3ConfMapper::AliL3ConfMapper()
 AliL3ConfMapper::~AliL3ConfMapper()
 {
   // Destructor.
-
   if(fVolume) {
     delete [] fVolume;
   }
@@ -150,6 +149,7 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
 
 Bool_t AliL3ConfMapper::ReadHits(UInt_t count, AliL3SpacePointData* hits )
 {
+  //read hits
   Int_t nhit=(Int_t)count; 
   for (Int_t i=0;i<nhit;i++)
     {
@@ -353,6 +353,7 @@ void AliL3ConfMapper::MainVertexSettings(Int_t trackletlength, Int_t tracklength
 void AliL3ConfMapper::NonVertexSettings(Int_t trackletlength, Int_t tracklength,
 					Int_t rowscopetracklet, Int_t rowscopetrack)
 {
+  //set parameters for non-vertex tracking
   SetTrackletLength(trackletlength,(Bool_t)false);
   SetRowScopeTracklet(rowscopetracklet, (Bool_t)false);
   SetRowScopeTrack(rowscopetrack, (Bool_t)false);
@@ -497,27 +498,26 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
 	  tracks++;
 	  			  
 	  //define variables to keep the total chi:
-	  Double_t xyChi2 = track->fChiSq[0];
-	  Double_t szChi2 = track->fChiSq[1];
+	  Double_t xyChi2 = track->GetChiSq1();
+	  Double_t szChi2 = track->GetChiSq2();
 	  
 	  for(point = fTrackletLength[fVertexConstraint]; point <= fNumRowSegment; point++)
 	    {
-	      track->fChiSq[0] = fHitChi2Cut[fVertexConstraint];
-	      closest_hit = GetNextNeighbor((AliL3ConfMapPoint*)track->lastHit,track);
+	      track->SetChiSq1(fHitChi2Cut[fVertexConstraint]);
+	      closest_hit = GetNextNeighbor((AliL3ConfMapPoint*)track->GetLastHit(),track);
 	      
 	      if(closest_hit)
 		{
-		  
 		  //keep total chi:
-		  Double_t lxyChi2 = track->fChiSq[0]-track->fChiSq[1];
+		  Double_t lxyChi2 = track->GetChiSq1()-track->GetChiSq2();
 		  xyChi2 += lxyChi2;
 		  closest_hit->xyChi2 = lxyChi2;
 		  		  
 		  //update track length:
 		  //track->fLength = closest_hit->GetS();
 		  track->SetLength(closest_hit->GetS());
-		  szChi2 += track->fChiSq[1];
-		  closest_hit->szChi2 = track->fChiSq[1];
+		  szChi2 += track->GetChiSq2();
+		  closest_hit->szChi2 = track->GetChiSq2();
 		  
 		  track->UpdateParam(closest_hit);
 		  trackhitnumber[track->GetNumberOfPoints()-1] = closest_hit->GetHitNumber();
@@ -537,9 +537,9 @@ void AliL3ConfMapper::CreateTrack(AliL3ConfMapPoint *hit)
 	    }//create tracks
 	  
 	  //store track chi2:
-	  track->fChiSq[0] = xyChi2;
-	  track->fChiSq[1] = szChi2;
-	  Double_t normalized_chi2 = (track->fChiSq[0]+track->fChiSq[1])/track->GetNumberOfPoints();
+	  track->SetChiSq1(xyChi2);
+	  track->SetChiSq2(szChi2);
+	  Double_t normalized_chi2 = (track->GetChiSq1()+track->GetChiSq2())/track->GetNumberOfPoints();
 	  
 	  //remove tracks with not enough points already now
 	  if(track->GetNumberOfPoints() < fMinPoints[fVertexConstraint] || normalized_chi2 > fTrackChi2Cut[fVertexConstraint])
@@ -716,13 +716,13 @@ Int_t AliL3ConfMapper::EvaluateHit(AliL3ConfMapPoint *start_hit,AliL3ConfMapPoin
   //Check if space point gives a fit with acceptable chi2.
   
   Double_t temp,dxy,lchi2,dx,dy,slocal,dsz,lszChi2;
-  temp = (track->a2Xy*hit->GetXprime()-hit->GetYprime()+track->a1Xy);
-  dxy = temp*temp/(track->a2Xy*track->a2Xy + 1.);
+  temp = (track->GetA2Xy()*hit->GetXprime()-hit->GetYprime()+track->GetA1Xy());
+  dxy = temp*temp/(track->GetA2Xy()*track->GetA2Xy() + 1.);
   
   //Calculate chi2
   lchi2 = (dxy*hit->GetXYWeight());
   
-  if(lchi2 > track->fChiSq[0])//chi2 was worse than before.
+  if(lchi2 > track->GetChiSq1())//chi2 was worse than before.
     return 0;
     
   //calculate s and the distance hit-line
@@ -731,8 +731,8 @@ Int_t AliL3ConfMapper::EvaluateHit(AliL3ConfMapPoint *start_hit,AliL3ConfMapPoin
   //slocal = track->fLength+sqrt(dx*dx+dy*dy);
   slocal = track->GetLength()+sqrt(dx*dx+dy*dy);
   
-  temp = (track->a2Sz*slocal-hit->GetZ()+track->a1Sz);
-  dsz = temp*temp/(track->a2Sz*track->a2Sz+1);
+  temp = (track->GetA2Sz()*slocal-hit->GetZ()+track->GetA1Sz());
+  dsz = temp*temp/(track->GetA2Sz()*track->GetA2Sz()+1);
   
   //calculate chi2
   lszChi2 = dsz*hit->GetZWeight();
@@ -740,10 +740,10 @@ Int_t AliL3ConfMapper::EvaluateHit(AliL3ConfMapPoint *start_hit,AliL3ConfMapPoin
   
     
   //check whether chi2 is better than previous one:
-  if(lchi2 < track->fChiSq[0])
+  if(lchi2 < track->GetChiSq1())
     {
-      track->fChiSq[0] = lchi2;
-      track->fChiSq[1] = lszChi2;
+      track->SetChiSq1(lchi2);
+      track->SetChiSq2(lszChi2);
     
       hit->SetS(slocal);
   
@@ -800,7 +800,7 @@ Double_t AliL3ConfMapper::TrackletAngle(AliL3ConfMapTrack *track,Int_t n) const
   Int_t counter=0;
   for(track->StartLoop(); track->LoopDone(); track->GetNextHit())
     {
-      AliL3ConfMapPoint *p = (AliL3ConfMapPoint*)track->currentHit;
+      AliL3ConfMapPoint *p = (AliL3ConfMapPoint*)track->GetCurrentHit();
       if( (n-1) == counter)
 	{
 	  x1[0] = p->GetX();
@@ -856,25 +856,23 @@ Int_t AliL3ConfMapper::FillTracks()
   //which should be done in order to get nice tracks.
   
   Int_t num_of_tracks = nTracks;
-  LOG(AliL3Log::kInformational,"AliL3ConfMapper::FillTracks","nTracks")<<AliL3Log::kDec<<
-    "Number of found tracks: "<<nTracks<<ENDLOG;
-  
   if(nTracks == 0)
     {
       LOG(AliL3Log::kError,"AliL3ConfMapper::FillTracks","nTracks")<<AliL3Log::kDec<<
 	"No tracks found!!"<<ENDLOG;
       return 0;
     }
+
+  LOG(AliL3Log::kInformational,"AliL3ConfMapper::FillTracks","nTracks")<<AliL3Log::kDec<<
+    "Number of found tracks: "<<nTracks<<ENDLOG;
   
   //  fTrack->Sort();
-  for(int i=0; i<num_of_tracks; i++)
+  for(Int_t i=0; i<num_of_tracks; i++)
     {
       AliL3ConfMapTrack *track = (AliL3ConfMapTrack*)fTrack->GetTrack(i);
       track->Fill(fVertex,fMaxDca);
-      
     }
   return 1;
-
 }
 
 Double_t AliL3ConfMapper::CpuTime()
@@ -883,5 +881,4 @@ Double_t AliL3ConfMapper::CpuTime()
  struct timeval tv;
  gettimeofday( &tv, NULL );
  return tv.tv_sec+(((Double_t)tv.tv_usec)/1000000.);
- //return (Double_t)(clock()) / CLOCKS_PER_SEC;
 }

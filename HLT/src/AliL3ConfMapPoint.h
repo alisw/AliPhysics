@@ -13,24 +13,24 @@ class AliL3ConfMapPoint {
 
  private:
 
-  Int_t fHitNumber;
-  Int_t fTrackNumber;
-  Int_t fNextHitNumber;
-  Bool_t fUsed;
-  Int_t fPadrow;
-  Int_t fSector;
+  Int_t fHitNumber;     //hit number
+  Int_t fTrackNumber;   //track number
+  Int_t fNextHitNumber; //next hit number
+  Bool_t fUsed;         //flag is used
+  Int_t fPadrow;        //padrow
+  Int_t fSector;        //sector
 
   //global coordinates and their errors
-  Double_t x;
-  Double_t y;
-  Double_t z;
-  Double_t xerr;
-  Double_t yerr;
-  Double_t zerr;
+  Double_t fx;    //glob x
+  Double_t fy;    //glob y
+  Double_t fz;    //glob z
+  Double_t fxerr; //glob xerr
+  Double_t fyerr; //glob yerr
+  Double_t fzerr; //glob zerr
 
   Double_t fWxy;  // x-y weight on x-y
   Double_t fWz;   // z weight on z
-  Float_t s;     //track trajectory
+  Float_t fs;      //track trajectory
   
    // Interaction point
   Double_t   fXt;          // x-value of the interaction point
@@ -63,7 +63,7 @@ class AliL3ConfMapPoint {
   Double_t   fPhi;         // angle phi
   Double_t   fEta;         // pseudorapidity
   
-  static Bool_t fDontMap; //flag to switch off mapping  
+  static Bool_t fgDontMap; //flag to switch off mapping  
 
  public:
 
@@ -77,26 +77,26 @@ class AliL3ConfMapPoint {
   AliL3ConfMapPoint *nextRowHit;  //!
   
   AliL3ConfMapPoint *nextTrackHit; //! Linked chain of points in a track
-  Short_t phiIndex;
-  Short_t etaIndex;
+  Short_t phiIndex; //phi index
+  Short_t etaIndex; //eta index
  
-  Double_t xyChi2;
-  Double_t szChi2;
+  Double_t xyChi2; //xy chi
+  Double_t szChi2; //z chi
   Int_t fMCTrackID[3]; //MClabel of tracks, may overlap
 
    // getter
-  Double_t GetX() const {return x;}
-  Double_t GetY() const {return y;}
-  Double_t GetZ() const {return z;}
-  Double_t GetXerr() const {return xerr;}
-  Double_t GetYerr() const {return yerr;}
-  Double_t GetZerr() const {return zerr;}
+  Double_t GetX() const {return fx;}
+  Double_t GetY() const {return fy;}
+  Double_t GetZ() const {return fz;}
+  Double_t GetXerr() const {return fxerr;}
+  Double_t GetYerr() const {return fyerr;}
+  Double_t GetZerr() const {return fzerr;}
   Int_t GetPadRow() const {return fPadrow;}
   Int_t GetSector() const {return fSector;}
   
   Double_t GetXYWeight() const {return fWxy;}
   Double_t GetZWeight() const {return fWz;}
-  Float_t GetS()        const {return s;}
+  Float_t GetS()        const {return fs;}
 
   //AliL3ConfMapTrack *GetTrack(TClonesArray *tracks) const;
   
@@ -126,24 +126,24 @@ class AliL3ConfMapPoint {
   Int_t GetHitNumber() const {return fHitNumber;}
   Int_t GetNextHitNumber() const {return fNextHitNumber;}
   Int_t GetTrackNumber() const {return fTrackNumber;}
-  //  Int_t const *GetMCTrackID()     const {return fMCTrackID;}
+  //Int_t const *GetMCTrackID()     const {return fMCTrackID;}
   
   // setter
-  static void SetDontMap(Bool_t b){fDontMap=b;}
+  static void SetDontMap(Bool_t b){fgDontMap=b;}
 
-  void SetX(Double_t f) {x=f;}
-  void SetY(Double_t f) {y=f;}
-  void SetZ(Double_t f) {z=f;}
-  void SetXerr(Double_t f) {xerr=f;}
-  void SetYerr(Double_t f) {yerr=f;}
-  void SetZerr(Double_t f) {zerr=f;}
+  void SetX(Double_t f) {fx=f;}
+  void SetY(Double_t f) {fy=f;}
+  void SetZ(Double_t f) {fz=f;}
+  void SetXerr(Double_t f) {fxerr=f;}
+  void SetYerr(Double_t f) {fyerr=f;}
+  void SetZerr(Double_t f) {fzerr=f;}
   void SetPadRow(Int_t f) {fPadrow=f;}
   void SetSector(Int_t f) {fSector=f;}
   void SetMCTrackID(Int_t f,Int_t g,Int_t h) {fMCTrackID[0] = f; fMCTrackID[1]=g; fMCTrackID[2]=h;}
 
   void SetXYWeight(Float_t f) {fWxy = f;}
   void SetZWeight(Float_t f) {fWz = f;}
-  void SetS(Float_t f) {s = f;}
+  void SetS(Float_t f) {fs = f;}
 
   void SetUsage(Bool_t f) {fUsed=f;}
     

@@ -47,6 +47,7 @@ ClassImp(AliL3Display)
 
 AliL3Display::AliL3Display()
 {
+  //constructor
   fGeom = NULL;
   fTracks = NULL;
 }
@@ -73,7 +74,7 @@ AliL3Display::AliL3Display(Int_t *slice,Char_t *gfile)
 
 AliL3Display::~AliL3Display()
 {
-
+  //destructor
   if(fTracks)
     delete fTracks;
 }

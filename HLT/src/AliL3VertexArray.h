@@ -6,17 +6,17 @@
 #include <math.h>
 #include "AliL3RootTypes.h"
  
-class AliL3VertexArray{
+class AliL3VertexArray {
   private:
 
-  Char_t fArray[8320][8][8];
-  Double_t fZSector;
-  Double_t fZSectorErr;
-  Int_t fMaxSeed;
-  Int_t fNSeed;
-  Float_t fZSeed[400];
-  Float_t fRSeed[400];
-  Int_t fSecSeed[400];
+  Char_t fArray[8320][8][8]; //array
+  Double_t fZSector;    //sector
+  Double_t fZSectorErr; //sector error
+  Int_t fMaxSeed;  //max seed
+  Int_t fNSeed;    //number of seeds
+  Float_t fZSeed[400]; //seed in Z
+  Float_t fRSeed[400]; //seed in XY
+  Int_t fSecSeed[400]; //seed for sectors
 
   void FindMean(Float_t *vertex,Int_t *array, Int_t len);
   void AnalyzeSector(Float_t *vertex, Int_t *array, Int_t len);
@@ -49,40 +49,46 @@ class AliL3VertexArray{
 
 };
 
-inline void AliL3VertexArray::FillSector3D(Float_t x, Float_t y, Float_t z){
+inline void AliL3VertexArray::FillSector3D(Float_t x, Float_t y, Float_t z)
+{
   // Filling routine in coordinates
   Int_t sec = Int_t( (y+.168*x)/(.336*x)*8); // 8 subsec!!
   Float_t r = sqrt(pow(y,2)+pow(x,2));
   FillSector2D(z,r,sec); 
 }
 
-inline void AliL3VertexArray:: FillSectorSeed3D(Float_t x,Float_t y, Float_t z){
+inline void AliL3VertexArray:: FillSectorSeed3D(Float_t x,Float_t y, Float_t z)
+{
   // Filling routine for seeds in coordinates
   Int_t sec = Int_t( (y+.168*x)/(.336*x)*8); // 8 subsec!!
   Float_t r = sqrt(pow(y,2)+pow(x,2));
   FillSectorSeed2D(z,r,sec);    
 }
 
-inline void AliL3VertexArray::FillSectorSeed2D(Float_t z,Float_t r,Int_t sec){
+inline void AliL3VertexArray::FillSectorSeed2D(Float_t z,Float_t r,Int_t sec)
+{
   // Filling routine in r,z coordinates 
   if(fNSeed>=400) return;
   fZSeed[fNSeed] = z; fRSeed[fNSeed] = r; fSecSeed[fNSeed] = sec;
   fNSeed++; 
 }
 
-inline void AliL3VertexArray::FillSector2D(Float_t z,Float_t r,Int_t sec){
+inline void AliL3VertexArray::FillSector2D(Float_t z,Float_t r,Int_t sec)
+{
   // Filling routine for seeds in r,z coordinates
   if(z>r||z<=0||r<220||r>=252) return;
   fArray[Int_t(z/r*32*260)][(Int_t(r-220))/4][sec] += 1;
 }
 
-inline Int_t AliL3VertexArray::GetContent(Float_t z,Float_t r,Int_t sec){
+inline Int_t AliL3VertexArray::GetContent(Float_t z,Float_t r,Int_t sec)
+{
   // Return content of array in r,z coordinates
   if(z>r||z<=0||r<220||r>=252) return 0;
   return  fArray[Int_t(z/r*32*260)][(Int_t(r-220))/4][sec];
 }
 
-inline void AliL3VertexArray::ResetSector(){
+inline void AliL3VertexArray::ResetSector()
+{
   // do it!
   fZSector=0;
   fZSectorErr=0;
@@ -95,7 +101,8 @@ inline void AliL3VertexArray::ResetSector(){
         fArray[z][r][sec] = 0;
 }
 
-inline Int_t AliL3VertexArray::Trace(Float_t z,Float_t r,Int_t sec,Float_t vertex){
+inline Int_t AliL3VertexArray::Trace(Float_t z,Float_t r,Int_t sec,Float_t vertex)
+{
 // count the number of entries along starting from z,r to vertex,0
   Int_t cont=0;
   for(Int_t i = 0;i<8;i++){

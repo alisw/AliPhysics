@@ -14,6 +14,12 @@
 #include <TSystem.h>
 #include <TArrayF.h>
 
+#include <AliRunLoader.h>
+#include <AliHeader.h>
+#include <AliGenEventHeader.h>
+#include <AliESD.h>
+#include <AliESDHLTtrack.h>
+
 #include "AliL3StandardIncludes.h"
 #include "AliL3Logging.h"
 #include "AliLevel3.h"
@@ -25,11 +31,6 @@
 #include "AliL3Track.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3TrackArray.h"
-#include "AliRunLoader.h"
-#include "AliHeader.h"
-#include "AliGenEventHeader.h"
-#include "AliESD.h"
-#include "AliESDHLTtrack.h"
 
 #if __GNUC__== 3
 using namespace std;
@@ -39,7 +40,8 @@ using namespace std;
 ClassImp(AliHLTReconstructor)
 
 AliHLTReconstructor::AliHLTReconstructor(): AliReconstructor() 
-{
+{ 
+  //constructor
   AliL3Log::fgLevel=AliL3Log::kWarning;
   fDoTracker=1;
   fDoHough=1;
@@ -48,7 +50,8 @@ AliHLTReconstructor::AliHLTReconstructor(): AliReconstructor()
 }
 
 AliHLTReconstructor::AliHLTReconstructor(Bool_t doTracker, Bool_t doHough): AliReconstructor() 
-{
+{ 
+  //constructor
   AliL3Log::fgLevel=AliL3Log::kWarning;
   fDoTracker=doTracker;
   fDoHough=doHough;
@@ -57,7 +60,8 @@ AliHLTReconstructor::AliHLTReconstructor(Bool_t doTracker, Bool_t doHough): AliR
 }
 
 AliHLTReconstructor::~AliHLTReconstructor()
-{
+{ 
+  //deconstructor
   if(fDoCleanUp){
     char name[256];
     gSystem->Exec("rm -rf hlt");
@@ -71,6 +75,7 @@ AliHLTReconstructor::~AliHLTReconstructor()
 
 void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
+  // do the standard and hough reconstruction chain
   if(!runLoader) {
     LOG(AliL3Log::kFatal,"AliHLTReconstructor::Reconstruct","RunLoader")
       <<" Missing RunLoader! 0x0"<<ENDLOG;
@@ -100,6 +105,7 @@ void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
 void AliHLTReconstructor::ReconstructWithConformalMapping(AliRunLoader* runLoader,Int_t iEvent) const
 {
+  // reconstruct with conformal mapper
   AliLevel3 *fHLT = new AliLevel3(runLoader);
   fHLT->Init("./", AliLevel3::kRunLoader, 1);
 
@@ -147,6 +153,7 @@ void AliHLTReconstructor::ReconstructWithConformalMapping(AliRunLoader* runLoade
 
 void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,Int_t iEvent) const
 {
+  //reconstruct with hough
   Float_t ptmin = 0.1*AliL3Transform::GetSolenoidField();
 
   Float_t zvertex = 0;
@@ -189,6 +196,7 @@ void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,
 void AliHLTReconstructor::FillESD(AliRunLoader* runLoader, 
 				  AliESD* esd) const
 {
+  //fill the esd file with found tracks
   Int_t iEvent = runLoader->GetEventNumber();
 
   if(fDoTracker) FillESDforConformalMapping(esd,iEvent);
@@ -197,7 +205,7 @@ void AliHLTReconstructor::FillESD(AliRunLoader* runLoader,
 
 void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) const
 {
-  //Assign MC labels for found tracks
+  //fill esd with tracks from conformal mapping
   Int_t slicerange[2]={0,35};
   Int_t good = (int)(0.4*AliL3Transform::GetNRows());
   Int_t nclusters = (int)(0.4*AliL3Transform::GetNRows());
@@ -243,6 +251,7 @@ void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) c
 
 void AliHLTReconstructor::FillESDforHoughTransform(AliESD* esd,Int_t iEvent) const
 {
+  //fill esd with tracks from hough
   char filename[256];
   sprintf(filename,"./hough/tracks_%d.raw",iEvent);
   

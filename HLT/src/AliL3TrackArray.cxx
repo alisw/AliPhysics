@@ -26,7 +26,8 @@
 
 ClassImp(AliL3TrackArray)
 
-AliL3TrackArray::AliL3TrackArray(){
+AliL3TrackArray::AliL3TrackArray()
+{
   //Default constructor
   fSize = 0;
   fNTracks=0;
@@ -36,7 +37,8 @@ AliL3TrackArray::AliL3TrackArray(){
 }
 
 
-AliL3TrackArray::AliL3TrackArray(Int_t ntrack){
+AliL3TrackArray::AliL3TrackArray(Int_t ntrack)
+{
   //Constructor.
   fSize = 0;
   fNTracks=0;
@@ -45,7 +47,8 @@ AliL3TrackArray::AliL3TrackArray(Int_t ntrack){
   SetSize(ntrack);
 }
 
-AliL3TrackArray::AliL3TrackArray(char* tracktype,Int_t ntrack){
+AliL3TrackArray::AliL3TrackArray(char* tracktype,Int_t ntrack)
+{
   //Constructor.
   fSize = 0;
   fNTracks=0;
@@ -57,7 +60,8 @@ AliL3TrackArray::AliL3TrackArray(char* tracktype,Int_t ntrack){
   SetSize(ntrack);
 }
 
-AliL3TrackArray::AliL3TrackArray(char* tracktype){
+AliL3TrackArray::AliL3TrackArray(char* tracktype)
+{
   //Constructor.
   fSize = 0;
   fNTracks=0;
@@ -69,26 +73,33 @@ AliL3TrackArray::AliL3TrackArray(char* tracktype){
   SetSize();
 }
 
-AliL3TrackArray::~AliL3TrackArray(){
+AliL3TrackArray::~AliL3TrackArray()
+{
   //Destructor
   DeleteArray();
 }
 
 
-AliL3Track *AliL3TrackArray::NextTrack(){
+AliL3Track *AliL3TrackArray::NextTrack()
+{
+  //next track in array
   if(fNTracks<fSize) return fTrack[fNTracks++];
   SetSize(fSize+100);
    return fTrack[fNTracks++]; 
 }
 
-void AliL3TrackArray::DeleteArray(){
+void AliL3TrackArray::DeleteArray()
+{
+  //delete array
   for(Int_t i=0; i<fSize;i++)
     delete fTrack[i];
   delete[] fIsPresent;
   delete[] fTrack;
 }
 
-Bool_t AliL3TrackArray::SetSize(Int_t newsize){
+Bool_t AliL3TrackArray::SetSize(Int_t newsize)
+{
+  //set size
   if(newsize<=fSize) return kFALSE; //shrink comes later!! 
   if(!fSize){
     fSize = newsize;
@@ -172,14 +183,18 @@ Bool_t AliL3TrackArray::SetSize(Int_t newsize){
   return kTRUE;
 }
 
-void AliL3TrackArray::Reset(){
+void AliL3TrackArray::Reset()
+{
+  //reset
   fNTracks=0;
   fNAbsent=0;
   for(Int_t i=0; i<fSize;i++)
     fIsPresent[i] = kTRUE; 
 }
 
-void AliL3TrackArray::Remove(Int_t track){
+void AliL3TrackArray::Remove(Int_t track)
+{
+  //remove track
   if(fIsPresent[track]){
     fIsPresent[track]=kFALSE;
     fNAbsent++;
@@ -215,7 +230,8 @@ void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr){
   }
 }
 
-void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t slice){
+void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t slice)
+{
   //Read tracks from shared memory (or memory)
   AliL3TrackSegmentData *trs = tr;
   for(Int_t i=0; i<ntracks; i++){
@@ -253,7 +269,9 @@ void AliL3TrackArray::FillTracks(Int_t ntracks, AliL3TrackSegmentData* tr,Int_t 
   }
 }
 
-UInt_t AliL3TrackArray::GetOutSize(){
+UInt_t AliL3TrackArray::GetOutSize()
+{
+  //get size for IO
   UInt_t count = GetOutCount();   //use only present tracks
   UInt_t tHits = 0;
   for(Int_t i=0;i<fNTracks;i++){  //loop over all tracks
@@ -266,12 +284,15 @@ UInt_t AliL3TrackArray::GetOutSize(){
   return count*sizeof(AliL3TrackSegmentData)+sizeof(UInt_t)*tHits;
 }
 
-UInt_t AliL3TrackArray::WriteTracks(UInt_t & ntracks,AliL3TrackSegmentData* tr){
+UInt_t AliL3TrackArray::WriteTracks(UInt_t & ntracks,AliL3TrackSegmentData* tr)
+{
+  //write tracks
   ntracks = GetOutCount();
   return WriteTracks(tr);
 }
 
-UInt_t AliL3TrackArray::WriteTracks(AliL3TrackSegmentData* tr){
+UInt_t AliL3TrackArray::WriteTracks(AliL3TrackSegmentData* tr)
+{
   //if(GetTrackType()=='c') return WriteConfMapTracks(tr);
   AliL3TrackSegmentData *tP = tr;
   UInt_t *pP;
@@ -316,7 +337,8 @@ UInt_t AliL3TrackArray::WriteTracks(AliL3TrackSegmentData* tr){
   return size;
 }
 
-UInt_t AliL3TrackArray::WriteConfMapTracks(AliL3TrackSegmentData* tr){
+UInt_t AliL3TrackArray::WriteConfMapTracks(AliL3TrackSegmentData* tr)
+{
   // use first and last point objects
   AliL3TrackSegmentData *tP = tr;
   UInt_t *pP;
@@ -324,8 +346,8 @@ UInt_t AliL3TrackArray::WriteConfMapTracks(AliL3TrackSegmentData* tr){
   for(Int_t i=0; i<fNTracks; i++){  //loop over all tracks
     AliL3ConfMapTrack *track =(AliL3ConfMapTrack *) GetCheckedTrack(i); //use only present tracks
     if(!track) continue;                           //use only present tracks
-    AliL3ConfMapPoint *hit = (AliL3ConfMapPoint*)track->lastHit;
-    AliL3ConfMapPoint *lastHit = (AliL3ConfMapPoint*)track->firstHit;
+    AliL3ConfMapPoint *hit = (AliL3ConfMapPoint*)track->GetLastHit();
+    AliL3ConfMapPoint *lastHit = (AliL3ConfMapPoint*)track->GetFirstHit();
     tP->fX = hit->GetX();
     tP->fY = hit->GetY();
     tP->fZ = hit->GetZ();
@@ -365,6 +387,7 @@ UInt_t AliL3TrackArray::WriteConfMapTracks(AliL3TrackSegmentData* tr){
 
 void AliL3TrackArray::AddLast(AliL3Track *track)
 {
+  //add track to last position
   AliL3Track *tpt = NextTrack();
   tpt->Set(track);
   
@@ -372,6 +395,7 @@ void AliL3TrackArray::AddLast(AliL3Track *track)
 
 void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack,Bool_t remove_old,Int_t slice)
 {
+  //add tracks
   if(GetTrackType() != newtrack->GetTrackType() && GetTrackType()!='t')
     {
       LOG(AliL3Log::kError,"AliL3TrackArray::AddTracks","Track types")
@@ -400,8 +424,9 @@ void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack,Bool_t remove_old,Int_
   }
 }
 
-
-void AliL3TrackArray::Compress(){
+void AliL3TrackArray::Compress()
+{
+  //compress array
   if(GetNPresent()==GetNTracks()) return;
   AliL3Track **tmp =  new AliL3Track *[fNTracks];
   Int_t present=0;
@@ -424,14 +449,15 @@ void AliL3TrackArray::Compress(){
   fNAbsent = 0;
 }
 
-void AliL3TrackArray::QSort(){
-  // compress an sort
+void AliL3TrackArray::QSort()
+{
+  // compress and sort
   Compress();
   QSort(fTrack,0,fNTracks);
 }
 
-void AliL3TrackArray::QSort( AliL3Track **a, Int_t first, Int_t last){
-
+void AliL3TrackArray::QSort( AliL3Track **a, Int_t first, Int_t last)
+{
    // Sort array of AliL3Track pointers using a quicksort algorithm.
    // Uses TrackCompare() to compare objects.
    // Thanks to Root! 
@@ -472,7 +498,8 @@ void AliL3TrackArray::QSort( AliL3Track **a, Int_t first, Int_t last){
    }
 }
 
-Int_t AliL3TrackArray::TrackCompare(AliL3Track *a, AliL3Track *b){
+Int_t AliL3TrackArray::TrackCompare(AliL3Track *a, AliL3Track *b) const
+{
    // Compare the two tracks.
   
   return b->Compare(a);

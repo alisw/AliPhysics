@@ -14,13 +14,12 @@ class AliL3TrackArray;
 class AliL3Display : public TObject {
 
  private:
-  TGeometry *fGeom;
+  TGeometry *fGeom; //!
   AliL3SpacePointData *fClusters[36][6]; //!
   AliL3TrackArray *fTracks; //!
-  UInt_t fNcl[36][6];
-
-  Int_t fMinSlice;
-  Int_t fMaxSlice;
+  UInt_t fNcl[36][6]; //number of cluster
+  Int_t fMinSlice; //min slice
+  Int_t fMaxSlice; //max slice
   
  public:
   AliL3Display();

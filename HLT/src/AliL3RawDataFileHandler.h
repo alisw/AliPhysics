@@ -5,7 +5,7 @@
 
 #include "AliL3MemHandler.h"
 
-class AliL3RawDataFileHandler:public AliL3MemHandler{
+class AliL3RawDataFileHandler:public AliL3MemHandler {
  private:
   
   FILE *fMapping;//!
@@ -14,7 +14,7 @@ class AliL3RawDataFileHandler:public AliL3MemHandler{
   ofstream *fOutRaw;//!
 
   //found in mapping file
-  UInt_t fNChannels; 
+  UInt_t fNChannels;   //number of channels 
   Byte_t *fRow;//!     //store the channeln to row mapping
   Byte_t *fPad;//!     //store the channel to pad mapping
   Short_t **fRowPad;//! //store the row-and-pad to channel mapping
@@ -27,13 +27,13 @@ class AliL3RawDataFileHandler:public AliL3MemHandler{
   Int_t fNTimeBins;  //stored in data header
 
   Short_t **fPedestals;//! pedestal values, if not used, fPedVal is used
-  Short_t fPedVal;
+  Short_t fPedVal; //ped val if not used per channel
 
   Short_t **fCharges;//! charge values read from pointer or from file
 
-  Bool_t fConvert;
-  Int_t Convert4(Int_t i);     //big2little and vice versa
-  Short_t Convert2(Short_t i); //big2little and vice versa
+  Bool_t fConvert; //convert big/little
+  Int_t Convert4(Int_t i) const;     //big2little and vice versa
+  Short_t Convert2(Short_t i) const; //big2little and vice versa
 
  public:
   AliL3RawDataFileHandler();
@@ -68,12 +68,12 @@ class AliL3RawDataFileHandler:public AliL3MemHandler{
   void SetBig2Little(Bool_t b){fConvert=b;}
   void SetPedVal(Short_t val){fPedVal=val;}
 
-  Int_t GetRowMinUsed(){return fRowMinUsed;} //smallest row number used in the test
-  Int_t GetRowMaxUsed(){return fRowMaxUsed;} //hightest row number used in the test
-  Int_t GetPadMinUsed(){return fPadMinUsed;} 
-  Int_t GetPadMaxUsed(){return fPadMaxUsed;} 
-  Short_t GetPedVal(){return fPedVal;}
-  Int_t GetNChannels(){return fNChannels;}
+  Int_t GetRowMinUsed() const {return fRowMinUsed;} //smallest row number used in the test
+  Int_t GetRowMaxUsed() const {return fRowMaxUsed;} //hightest row number used in the test
+  Int_t GetPadMinUsed() const {return fPadMinUsed;} 
+  Int_t GetPadMaxUsed() const {return fPadMaxUsed;} 
+  Short_t GetPedVal()   const {return fPedVal;}
+  Int_t GetNChannels()  const {return fNChannels;}
 
   AliL3DigitRowData* RawData2Memory(UInt_t &nrow,Int_t event=-1);
   Bool_t RawData2CompBinary(Int_t event=-1);

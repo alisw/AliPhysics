@@ -29,14 +29,13 @@ ClassImp(AliL3ConfMapTrack)
 AliL3ConfMapTrack::AliL3ConfMapTrack()
 {
   //Constructor
-
   fChiSq[0] = 0.;
   fChiSq[1] = 0.;
 }
 
 AliL3ConfMapTrack::~AliL3ConfMapTrack()
 {
-
+  //deconstructor
 }
 
 void AliL3ConfMapTrack::DeleteCandidate()
@@ -44,7 +43,7 @@ void AliL3ConfMapTrack::DeleteCandidate()
   //Deletes this track by resetting all its parameters. Does not delete
   //the object itself.
 
-  AliL3ConfMapPoint *curHit = (AliL3ConfMapPoint*)firstHit;
+  AliL3ConfMapPoint *curHit = (AliL3ConfMapPoint*)fFirstHit;
   AliL3ConfMapPoint *nextHit;
   
   while(curHit != 0)
@@ -77,10 +76,9 @@ void AliL3ConfMapTrack::DeleteCandidate()
 void AliL3ConfMapTrack::SetProperties(Bool_t usage)
 {
   //Set the hits to this track to 'usage'
-  
   for(StartLoop(); LoopDone(); GetNextHit())
     {
-      AliL3ConfMapPoint *p = (AliL3ConfMapPoint*)currentHit;
+      AliL3ConfMapPoint *p = (AliL3ConfMapPoint*)fCurrentHit;
       p->SetUsage(usage);
     }
   return;
@@ -91,19 +89,19 @@ void AliL3ConfMapTrack::Reset()
   //Resets the fit parameters of this track.
 
   //xy-plane
-  s11Xy   = 0;
-  s12Xy   = 0;
-  s22Xy   = 0;
-  g1Xy    = 0;
-  g2Xy    = 0;
+  fs11Xy   = 0;
+  fs12Xy   = 0;
+  fs22Xy   = 0;
+  fg1Xy    = 0;
+  fg2Xy    = 0;
   fChiSq[0]  = 0.;
     
   //sz-plane
-  s11Sz = 0;
-  s12Sz = 0;
-  s22Sz = 0;
-  g1Sz  = 0;
-  g2Sz  = 0;
+  fs11Sz = 0;
+  fs12Sz = 0;
+  fs22Sz = 0;
+  fg1Sz  = 0;
+  fg2Sz  = 0;
   fChiSq[1] = 0; 
   SetLength(0);
   SetNHits(0);
@@ -125,37 +123,37 @@ void AliL3ConfMapTrack::UpdateParam(AliL3ConfMapPoint *thisHit)
   //Set the hit pointers:
   //if(fNHits == 1)
   if(GetNHits()==1)  
-    firstHit = thisHit;
+    fFirstHit = thisHit;
   else
-    ((AliL3ConfMapPoint*)lastHit)->nextTrackHit = thisHit;
-  lastHit = thisHit;
+    ((AliL3ConfMapPoint*)fLastHit)->nextTrackHit = thisHit;
+  fLastHit = thisHit;
 
   
-  s11Xy = s11Xy + thisHit->GetXYWeight() ;
-  s12Xy = s12Xy + thisHit->GetXYWeight() * thisHit->GetXprime() ;
-  s22Xy = s22Xy + thisHit->GetXYWeight() * pow((thisHit->GetXprime()),2) ;
-  g1Xy  = g1Xy  + thisHit->GetXYWeight() * thisHit->GetYprime() ;
-  g2Xy  = g2Xy  + thisHit->GetXYWeight() * thisHit->GetXprime() * thisHit->GetYprime() ;
+  fs11Xy = fs11Xy + thisHit->GetXYWeight() ;
+  fs12Xy = fs12Xy + thisHit->GetXYWeight() * thisHit->GetXprime() ;
+  fs22Xy = fs22Xy + thisHit->GetXYWeight() * pow((thisHit->GetXprime()),2) ;
+  fg1Xy  = fg1Xy  + thisHit->GetXYWeight() * thisHit->GetYprime() ;
+  fg2Xy  = fg2Xy  + thisHit->GetXYWeight() * thisHit->GetXprime() * thisHit->GetYprime() ;
     
-  ddXy  = s11Xy * s22Xy - pow((s12Xy),2) ;
-  if ( ddXy != 0 ) 
+  fddXy  = fs11Xy * fs22Xy - pow((fs12Xy),2) ;
+  if ( fddXy != 0 ) 
     {
-      a1Xy  = ( g1Xy * s22Xy - g2Xy * s12Xy ) / ddXy ;
-      a2Xy  = ( g2Xy * s11Xy - g1Xy * s12Xy ) / ddXy ;
+      fa1Xy  = ( fg1Xy * fs22Xy - fg2Xy * fs12Xy ) / fddXy ;
+      fa2Xy  = ( fg2Xy * fs11Xy - fg1Xy * fs12Xy ) / fddXy ;
     }
 
   //     Now in the sz plane
-  s11Sz = s11Sz + thisHit->GetZWeight() ;
-  s12Sz = s12Sz + thisHit->GetZWeight() * thisHit->GetS() ;
-  s22Sz = s22Sz + thisHit->GetZWeight() * thisHit->GetS() * thisHit->GetS() ;
-  g1Sz  = g1Sz  + thisHit->GetZWeight() * thisHit->GetZ() ;
-  g2Sz  = g2Sz  + thisHit->GetZWeight() * thisHit->GetS() * thisHit->GetZ() ;
+  fs11Sz = fs11Sz + thisHit->GetZWeight() ;
+  fs12Sz = fs12Sz + thisHit->GetZWeight() * thisHit->GetS() ;
+  fs22Sz = fs22Sz + thisHit->GetZWeight() * thisHit->GetS() * thisHit->GetS() ;
+  fg1Sz  = fg1Sz  + thisHit->GetZWeight() * thisHit->GetZ() ;
+  fg2Sz  = fg2Sz  + thisHit->GetZWeight() * thisHit->GetS() * thisHit->GetZ() ;
   
         
-  ddSz  = s11Sz * s22Sz -  s12Sz * s12Sz ;
-  if ( ddSz != 0 ) {
-    a1Sz  = ( g1Sz * s22Sz - g2Sz * s12Sz ) / ddSz ;
-    a2Sz  = ( g2Sz * s11Sz - g1Sz * s12Sz ) / ddSz ;
+  fddSz  = fs11Sz * fs22Sz -  fs12Sz * fs12Sz ;
+  if ( fddSz != 0 ) {
+    fa1Sz  = ( fg1Sz * fs22Sz - fg2Sz * fs12Sz ) / fddSz ;
+    fa2Sz  = ( fg2Sz * fs11Sz - fg1Sz * fs12Sz ) / fddSz ;
   }
 }
 
@@ -164,8 +162,8 @@ void AliL3ConfMapTrack::Fill(AliL3Vertex *vertex,Double_t max_Dca)
 {
   //Fill track variables with or without fit.
   
-  //fRadius = sqrt(a2Xy*a2Xy+1)/(2*fabs(a1Xy));
-  Double_t radius = sqrt(a2Xy*a2Xy+1)/(2*fabs(a1Xy));
+  //fRadius = sqrt(fa2Xy*fa2Xy+1)/(2*fabs(fa1Xy));
+  Double_t radius = sqrt(fa2Xy*fa2Xy+1)/(2*fabs(fa1Xy));
   SetRadius(radius);
 
   //fPt = (Double_t)(AliL3Transform::GetBFieldValue() * fRadius);
@@ -178,8 +176,8 @@ void AliL3ConfMapTrack::Fill(AliL3Vertex *vertex,Double_t max_Dca)
       ComesFromMainVertex(AliLevel3::DoVertexFit());
       fit->FitHelix();
       
-      //AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)lastHit;
-      AliL3ConfMapPoint *fHit = (AliL3ConfMapPoint*)firstHit;
+      //AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)fLastHit;
+      AliL3ConfMapPoint *fHit = (AliL3ConfMapPoint*)fFirstHit;
       SetLastPoint(fHit->GetX(),fHit->GetY(),fHit->GetZ());
       
       UpdateToFirstPoint();

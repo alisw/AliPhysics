@@ -59,8 +59,9 @@ AliL3Track::AliL3Track()
   fPID = 0;
 }
 
-void AliL3Track::Set(AliL3Track *tpt){
-  
+void AliL3Track::Set(AliL3Track *tpt)
+{
+  //setter
   SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
   SetPhi0(tpt->GetPhi0());
   SetKappa(tpt->GetKappa());
@@ -81,6 +82,7 @@ void AliL3Track::Set(AliL3Track *tpt){
 
 Int_t AliL3Track::Compare(const AliL3Track *track) const
 {
+  // compare tracks
   if(track->GetNHits() < GetNHits()) return 1;
   if(track->GetNHits() > GetNHits()) return -1;
   return 0;
@@ -98,7 +100,7 @@ Double_t AliL3Track::GetP() const
 }
 
 Double_t AliL3Track::GetPseudoRapidity() const
-{
+{ //get pseudo rap
   return 0.5 * log((GetP() + GetPz()) / (GetP() - GetPz()));
 }
 
@@ -110,7 +112,8 @@ Double_t AliL3Track::GetEta() const
 */
 
 Double_t AliL3Track::GetRapidity() const
-{
+{ 
+  //get rap
   const Double_t m_pi = 0.13957;
   return 0.5 * log((m_pi + GetPz()) / (m_pi - GetPz()));
 }
@@ -121,7 +124,6 @@ void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
   //If flag tolocal is set, the track is rotated
   //to local coordinates.
 
-  
   Float_t psi[1] = {GetPsi()};
   if(!tolocal)
     AliL3Transform::Local2GlobalAngle(psi,slice);
@@ -168,10 +170,9 @@ void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
     fIsLocal=kTRUE;
 }
 
-void AliL3Track::CalculateHelix(){
+void AliL3Track::CalculateHelix()
+{
   //Calculate Radius, CenterX and CenterY from Psi, X0, Y0
-  //
-  
   fRadius = fPt / (AliL3Transform::GetBFieldValue());
   if(fRadius) fKappa = -fQ*1./fRadius;
   else fRadius = 999999;  //just zero
@@ -262,7 +263,8 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
 
 }
 
-Bool_t AliL3Track::CalculateReferencePoint(Double_t angle,Double_t radius){
+Bool_t AliL3Track::CalculateReferencePoint(Double_t angle,Double_t radius)
+{
   // Global coordinate: crossing point with y = ax+ b; 
   // a=tan(angle-AliL3Transform::PiHalf());
   //
@@ -313,7 +315,8 @@ Bool_t AliL3Track::CalculateReferencePoint(Double_t angle,Double_t radius){
   return IsPoint(kTRUE);
 }
 
-Bool_t AliL3Track::CalculateEdgePoint(Double_t angle){
+Bool_t AliL3Track::CalculateEdgePoint(Double_t angle)
+{
   // Global coordinate: crossing point with y = ax; a=tan(angle);
   //
   Double_t rmin=AliL3Transform::Row2X(AliL3Transform::GetFirstRow(-1));  //min Radius of TPC
@@ -376,7 +379,8 @@ Bool_t AliL3Track::CalculateEdgePoint(Double_t angle){
   return IsPoint(kTRUE);
 }
 
-Bool_t AliL3Track::CalculatePoint(Double_t xplane){
+Bool_t AliL3Track::CalculatePoint(Double_t xplane)
+{
   // Local coordinate: crossing point with x plane
   //
   Double_t racine = pow(fRadius,2)-pow(xplane-fCenterX,2);
@@ -506,4 +510,3 @@ void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_
   
   closest_z = GetFirstPointZ() - s_tot*GetTgl();
 }
-

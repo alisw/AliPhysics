@@ -7,7 +7,6 @@
 
 #ifdef use_reconstruction
 #include "AliReconstructor.h"
-#include "AliL3Logging.h"
 
 class AliHLTReconstructor: public AliReconstructor {
 public:

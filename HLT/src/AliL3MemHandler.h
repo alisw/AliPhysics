@@ -16,30 +16,30 @@ class AliL3RandomPointData;
 class AliRunLoader;
 #endif
 
-class AliL3MemHandler{
+class AliL3MemHandler { 
  private:
   
   Byte_t *fPt;//!
-  UInt_t fSize;
+  UInt_t fSize; //size of allocated data structure
 
   AliL3RandomDigitData **fDPt;//!
-  AliL3RandomDigitData *fDigits;//!
-  Bool_t IsRandom;
-  Int_t fNRandom;
-  Int_t fNGenerate;
-  Int_t fNUsed;
-  Int_t fNDigits;
+  AliL3RandomDigitData *fRandomDigits;//!
+  Bool_t fIsRandom; //random data generated
+  Int_t fNRandom;   //count random digits 
+  Int_t fNGenerate; //count generated digits
+  Int_t fNUsed;     //count used digits
+  Int_t fNDigits;   //count digits from digitstree
 
-  void Write(UInt_t *comp, UInt_t & index, UInt_t & subindex, UShort_t value);
-  UShort_t Read(UInt_t *comp, UInt_t & index, UInt_t & subindex);
-  UShort_t Test(UInt_t *comp, UInt_t index, UInt_t subindex); 
+  void Write(UInt_t *comp, UInt_t & index, UInt_t & subindex, UShort_t value) const;
+  UShort_t Read(UInt_t *comp, UInt_t & index, UInt_t & subindex) const;
+  UShort_t Test(UInt_t *comp, UInt_t index, UInt_t subindex) const; 
   
   void DigitizePoint(Int_t row,Int_t pad, Int_t time,Int_t charge);
   void QSort(AliL3RandomDigitData **a, Int_t first, Int_t last);
-  Int_t ComparePoints(UInt_t row,UShort_t pad,UShort_t time);
-  Int_t CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b);
+  Int_t ComparePoints(UInt_t row,UShort_t pad,UShort_t time) const ;
+  Int_t CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b) const;
   void AddData(AliL3DigitData *data,UInt_t & ndata,
-                      UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
+                      UInt_t row,UShort_t pad,UShort_t time,UShort_t charge) const;
   void AddRandom(AliL3DigitData *data,UInt_t & ndata);
   void MergeDataRandom(AliL3DigitData *data,UInt_t & ndata,
                       UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
@@ -47,13 +47,13 @@ class AliL3MemHandler{
                       UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
 
  protected:
-  Int_t fRowMin;
-  Int_t fRowMax;
-  Int_t fSlice;
-  Int_t fPatch;
+  Int_t fRowMin; //min row
+  Int_t fRowMax; //max row
+  Int_t fSlice;  //slice
+  Int_t fPatch;  //patch
 
   Int_t fEtaMinTimeBin[159]; //for ROI in eta only
-  Int_t fEtaMaxTimeBin[159];
+  Int_t fEtaMaxTimeBin[159]; //for ROI in eta only
   
   FILE *fInBinary;//!
   FILE *fOutBinary;//!
@@ -110,16 +110,16 @@ class AliL3MemHandler{
   Bool_t Binary2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data);
   Bool_t TrackArray2Binary(AliL3TrackArray *array);
   Bool_t Binary2TrackArray(AliL3TrackArray *array);
-  Bool_t TrackArray2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array);
-  Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array);
-  Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array,Int_t slice);
+  Bool_t TrackArray2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array) const;
+  Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array) const;
+  Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array,Int_t slice) const;
     
   //Memory Allocation
-  UInt_t GetAllocatedSize(){return fSize;}  
+  UInt_t GetAllocatedSize() const {return fSize;}  
   UInt_t GetFileSize();
-  UInt_t GetMemorySize(UInt_t nrow,UInt_t *comp);
-  UInt_t GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data);
-  UInt_t GetRandomSize();
+  UInt_t GetMemorySize(UInt_t nrow,UInt_t *comp) const;
+  UInt_t GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data) const;
+  UInt_t GetRandomSize() const;
 
   Byte_t *Allocate(UInt_t size);
   Byte_t *Allocate();  // allocate size of Binary Input File
@@ -129,10 +129,10 @@ class AliL3MemHandler{
   void   Free();
   
   //Getters:
-  Int_t GetRowMin(){return fRowMin;}
-  Int_t GetRowMax(){return fRowMax;}
-  Int_t GetSlice(){return fSlice;}
-  Int_t GetPatch(){return fPatch;}
+  Int_t GetRowMin() const {return fRowMin;}
+  Int_t GetRowMax() const {return fRowMax;}
+  Int_t GetSlice() const {return fSlice;}
+  Int_t GetPatch() const {return fPatch;}
   
   //virtual functions:
   virtual void FreeDigitsTree() {return;}
@@ -192,7 +192,8 @@ class AliL3MemHandler{
   ClassDef(AliL3MemHandler,1) // Memory handler class
 };
 
-inline Int_t  AliL3MemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_t time){
+inline Int_t  AliL3MemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_t time) const
+{
   if(fNUsed>=fNDigits) return -2;
 
   if(pad==fDPt[fNUsed]->fPad&&time==fDPt[fNUsed]->fTime) return 0;
@@ -203,7 +204,8 @@ inline Int_t  AliL3MemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_
   return 1;
 }
 
-inline Int_t AliL3MemHandler::CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b){
+inline Int_t AliL3MemHandler::CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b) const
+{
   if(a->fPad==b->fPad && a->fTime == b->fTime) return 0;
 
   if(a->fPad<b->fPad) return -1;

@@ -59,7 +59,7 @@
 
 ClassImp(AliLevel3)
 
-Bool_t AliLevel3::fDoVertexFit = kTRUE;//Include the vertex in the final track fit
+Bool_t AliLevel3::fgDoVertexFit = kTRUE;//Include the vertex in the final track fit
 
 AliLevel3::AliLevel3()
 {
@@ -116,6 +116,7 @@ AliLevel3::AliLevel3(AliRunLoader *rl)
 
 void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
 {
+  //Init the whole standard tracker chain
 #ifndef use_newio
   if (filetype==kRunLoader){
     LOG(AliL3Log::kError,"AliLevel3::Init","Files")
@@ -231,20 +232,25 @@ void AliLevel3::Init(Char_t *path,EFileType filetype,Int_t npatches)
   fBenchmark = new AliL3Benchmark();
 }
 
-void AliLevel3::DoBench(char* name){
+void AliLevel3::DoBench(char* name)
+{ 
+  //dobench
   fBenchmark->Analyze(name);
   delete fBenchmark;
   fBenchmark = new AliL3Benchmark();
 }
 
-void AliLevel3::DoMc(char* file){
+void AliLevel3::DoMc(char* file)
+{ 
+  //domc
 #ifdef use_aliroot
   if(!fFileHandler->IsDigit(fEvent))
     fFileHandler->SetMCOutput(file);
 #endif
 }
 
-AliLevel3::~AliLevel3(){
+AliLevel3::~AliLevel3()
+{
   //Destructor
   if(fVertexFinder) delete fVertexFinder;
   if(fVertex) delete fVertex;
@@ -256,7 +262,8 @@ AliLevel3::~AliLevel3(){
 }
 
 void AliLevel3::SetClusterFinderParam(Float_t fXYError, Float_t fZError, Bool_t deconv)
-{
+{ 
+  //set cluster finder parameter
   fXYClusterError=fXYError;
   fZClusterError=fZError;
   fClusterDeconv=deconv;
@@ -287,10 +294,12 @@ void AliLevel3::SetTrackerParam(Int_t phi_segments, Int_t eta_segments,
 
 void AliLevel3::SetMergerParameters(Double_t maxy,Double_t maxz,Double_t maxkappa,Double_t maxpsi,Double_t maxtgl)
 {
+  //set global merger parameter
   fGlobalMerger->SetParameter(maxy,maxz,maxkappa,maxpsi,maxtgl);
 }
 
-void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
+void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event)
+{
   //Do tracking on all slices in region [first,last]
   //Slices numbering in TPC goes from 0-35, which means that one slice
   //corresponds to inner+outer sector.E.g. slice 2 corresponds to
@@ -322,7 +331,9 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last,Int_t event){
   fFileHandler->FreeDigitsTree();
 }
 
-void AliLevel3::ProcessSlice(Int_t slice){
+void AliLevel3::ProcessSlice(Int_t slice)
+{
+  //process slice
   char name[256];
   Bool_t UseCF = kFALSE;
 #ifdef use_aliroot
@@ -333,8 +344,8 @@ void AliLevel3::ProcessSlice(Int_t slice){
   if(fNoCF == kTRUE) //In case you don't want to run with cluster finder
     UseCF = kFALSE;
 
-  const Int_t maxpoints=120000;
-  const Int_t pointsize = maxpoints * sizeof(AliL3SpacePointData);
+  const Int_t kmaxpoints=120000;
+  const Int_t kpointsize = kmaxpoints * sizeof(AliL3SpacePointData);
   AliL3MemHandler *memory = new AliL3MemHandler();
 
   fTrackMerger->Reset();
@@ -457,9 +468,9 @@ void AliLevel3::ProcessSlice(Int_t slice){
 #endif
       }//end else UseBinary
 
-      points = (AliL3SpacePointData *) memory->Allocate(pointsize);
+      points = (AliL3SpacePointData *) memory->Allocate(kpointsize);
       fClusterFinder = new AliL3ClustFinderNew();
-      fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1],maxpoints);
+      fClusterFinder->InitSlice(slice,patch,fRow[patch][0],fRow[patch][1],kmaxpoints);
       fClusterFinder->SetDeconv(fClusterDeconv);
       fClusterFinder->SetXYError(fXYClusterError);
       fClusterFinder->SetZError(fZClusterError);
@@ -616,7 +627,8 @@ void AliLevel3::ProcessSlice(Int_t slice){
 }
 
 void AliLevel3::FitGlobalTracks()
-{
+{ 
+  //fit global tracks
   AliL3Fitter *fitter = new AliL3Fitter(fVertex,AliLevel3::DoVertexFit());
   if(fNPatch==1)
     fitter->LoadClusters(fWriteOutPath,fEvent,kTRUE);
@@ -637,8 +649,9 @@ void AliLevel3::FitGlobalTracks()
 }
 
 void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
-				 Int_t slice,Int_t patch)
-{
+				 Int_t slice,Int_t patch) const
+{ 
+  //write space points
   char name[256];
   if(fNPatch==1)
     sprintf(name,"%s/points_%d_%d_%d.raw",fWriteOutPath,fEvent,slice,-1);
@@ -652,8 +665,9 @@ void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
   delete  memory;
 }
 
-Int_t AliLevel3::WriteTracks(char *filename,AliL3Merger *merger,char opt)
-{
+Int_t AliLevel3::WriteTracks(char *filename,AliL3Merger *merger,char opt) const
+{ 
+  //write tracks
   AliL3MemHandler *memory = new AliL3MemHandler();
   memory->SetBinaryOutput(filename);
   if(opt=='a'||opt=='i'){  //add intracks
@@ -669,7 +683,7 @@ Int_t AliLevel3::WriteTracks(char *filename,AliL3Merger *merger,char opt)
   }
 
   memory->CloseBinaryOutput();
- 
+  delete memory;
   return 1;
 }
 

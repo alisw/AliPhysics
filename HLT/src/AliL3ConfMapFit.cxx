@@ -33,6 +33,7 @@ AliL3ConfMapFit::AliL3ConfMapFit(AliL3ConfMapTrack *track,AliL3Vertex *vertex)
 
 Int_t AliL3ConfMapFit::FitHelix()
 {
+  //fit the helix
   if(FitCircle())
     {
       LOG(AliL3Log::kError,"AliL3ConfMapFit::FitHelix","TrackFit")<<AliL3Log::kDec<<
@@ -72,7 +73,7 @@ Int_t AliL3ConfMapFit::FitCircle()
   for(fTrack->StartLoop(); fTrack->LoopDone(); fTrack->GetNextHit())
     {
       co++;
-      AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint*)fTrack->currentHit;
+      AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint*)fTrack->GetCurrentHit();
       cHit->SetXYWeight( 1./ (Double_t)(cHit->GetXerr()*cHit->GetXerr() + cHit->GetYerr()*cHit->GetYerr()) );
       wsum      += cHit->GetXYWeight() ;
       xav       += cHit->GetXYWeight() * cHit->GetX() ;
@@ -101,7 +102,7 @@ Int_t AliL3ConfMapFit::FitCircle()
   for(fTrack->StartLoop(); fTrack->LoopDone(); fTrack->GetNextHit())
     { 
       //AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint *)hits->At(hit_counter);
-      AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint*)fTrack->currentHit;
+      AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint*)fTrack->GetCurrentHit();
       xi        = cHit->GetX() - xav ;
       yi        = cHit->GetY() - yav ;
       xxav     += xi * xi * cHit->GetXYWeight() ;
@@ -185,7 +186,7 @@ Int_t AliL3ConfMapFit::FitCircle()
   for(fTrack->StartLoop(); fTrack->LoopDone(); fTrack->GetNextHit())  
     { 
       //AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint*)hits->At(hit_counter);  
-      AliL3ConfMapPoint* cHit = (AliL3ConfMapPoint*)fTrack->currentHit;
+      AliL3ConfMapPoint* cHit = (AliL3ConfMapPoint*)fTrack->GetCurrentHit();
 
       xold = cHit->GetX() - xav ;
       yold = cHit->GetY() - yav ;
@@ -346,7 +347,7 @@ Int_t AliL3ConfMapFit::FitCircle()
   //Set the first point on the track to the space point coordinates of the innermost track
   //This will be updated to lie on the fit later on (AliL3Track::UpdateToFirstPoint).
   Double_t x0,y0,psi,pt ;
-  AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)fTrack->lastHit;
+  AliL3ConfMapPoint *lHit = (AliL3ConfMapPoint*)fTrack->GetLastHit();
   x0 = lHit->GetX();
   y0 = lHit->GetY();
   fTrack->SetFirstPoint(x0,y0,0); //Z-value is set in FitLine
@@ -396,13 +397,13 @@ Int_t AliL3ConfMapFit::FitLine ( )
 
   if (0)// fTrack->ComesFromMainVertex() == true ) 
     {
-      dx = ((AliL3ConfMapPoint*)fTrack->firstHit)->GetX() - fVertex->GetX();
-      dy = ((AliL3ConfMapPoint*)fTrack->firstHit)->GetY() - fVertex->GetY() ;
+      dx = ((AliL3ConfMapPoint*)fTrack->GetFirstHit())->GetX() - fVertex->GetX();
+      dy = ((AliL3ConfMapPoint*)fTrack->GetFirstHit())->GetY() - fVertex->GetY() ;
     }
   else 
     {
-      dx = ((AliL3ConfMapPoint *)fTrack->firstHit)->GetX() - ((AliL3ConfMapPoint *)fTrack->lastHit)->GetX() ;
-      dy = ((AliL3ConfMapPoint *)fTrack->firstHit)->GetY() - ((AliL3ConfMapPoint *)fTrack->lastHit)->GetY() ;
+      dx = ((AliL3ConfMapPoint *)fTrack->GetFirstHit())->GetX() - ((AliL3ConfMapPoint *)fTrack->GetLastHit())->GetX() ;
+      dy = ((AliL3ConfMapPoint *)fTrack->GetFirstHit())->GetY() - ((AliL3ConfMapPoint *)fTrack->GetLastHit())->GetY() ;
       //dx = ((AliL3ConfMapPoint *)hits->First())->GetX() - ((AliL3ConfMapPoint *)hits->Last())->GetX() ;
       //dy = ((AliL3ConfMapPoint *)hits->First())->GetY() - ((AliL3ConfMapPoint *)hits->Last())->GetY() ;
     }
@@ -430,9 +431,9 @@ Int_t AliL3ConfMapFit::FitLine ( )
   for(fTrack->StartLoop(); fTrack->LoopDone(); fTrack->GetNextHit())  
     {
       // AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint*)hits->At(hit_counter);
-      AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint*)fTrack->currentHit;
-      // if ( currentHit != firstHit ) 
-      if(cHit != fTrack->firstHit)//  hits->First())
+      AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint*)fTrack->GetCurrentHit();
+      // if ( GetCurrentHit() != GetFirstHit() ) 
+      if(cHit != fTrack->GetFirstHit())//  hits->First())
 	{
 	  dx   = cHit->GetX() - previousHit->GetX() ;
 	  dy   = cHit->GetY() - previousHit->GetY() ;
@@ -479,7 +480,7 @@ Int_t AliL3ConfMapFit::FitLine ( )
   for(fTrack->StartLoop(); fTrack->LoopDone(); fTrack->GetNextHit())  
     {
       //AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint*)hits->At(hit_counter);
-      AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint*)fTrack->currentHit;
+      AliL3ConfMapPoint *cHit = (AliL3ConfMapPoint*)fTrack->GetCurrentHit();
       r1   = cHit->GetZ() - tanl * cHit->GetS() - z0 ;
       chi2 += (Double_t) ( (Double_t)cHit->GetZWeight() * (r1 * r1) );
     }

@@ -26,26 +26,26 @@ class AliL3FileHandler:public AliL3MemHandler{
 
  protected:
 #ifdef use_newio
-  AliRunLoader *fInAli;
-  Bool_t fUseRunLoader;
+  AliRunLoader *fInAli;//!
+  Bool_t fUseRunLoader; //use runloader
 #else
-  TFile *fInAli;
+  TFile *fInAli;//!
 #endif
 
-  AliTPCParam *fParam;
-  virtual Bool_t SetAliInput();
-  AliSimDigits *fDigits;
+  AliTPCParam *fParam;//!
+  AliSimDigits *fDigits;//!
 
-  TTree *fDigitsTree;
+  TTree *fDigitsTree;//!
   FILE *fMC;//!
   
   Bool_t fIndexCreated;   //is index created
   Int_t  fIndex[36][159]; //stores index over digitstree 
                           //for faster access w/o ASVVERSION
   Bool_t fUseStaticIndex; //take static index
-  static Bool_t fStaticIndexCreated;   //global index created
-  static Int_t  fStaticIndex[36][159]; //global index
+  static Bool_t fgStaticIndexCreated;   //global index created
+  static Int_t  fgStaticIndex[36][159]; //global index
 
+  virtual Bool_t SetAliInput();
   Bool_t GetDigitsTree(Int_t event);
   Bool_t CreateIndex();  //create the index
 

@@ -78,17 +78,16 @@ using namespace std;
 ClassImp(AliL3MemHandler)
   
 AliL3MemHandler::AliL3MemHandler()
-{
+{ 
   //Constructor
-  
   fPt = 0;
   fSize =0;
   fInBinary = 0;
   fOutBinary = 0;
   fNRandom = 0;
   Init(0,0);
-  IsRandom = kFALSE;
-  fDigits = 0;
+  fIsRandom = kFALSE;
+  fRandomDigits = 0;
   fDPt =0;
   fNGenerate = 0;
   fNUsed = 0;
@@ -101,12 +100,13 @@ AliL3MemHandler::~AliL3MemHandler()
 {
   //Destructor
   if(fPt) delete[] fPt;
-  if(fDigits) delete [] fDigits;
+  if(fRandomDigits) delete [] fRandomDigits;
   if(fDPt) delete [] fDPt;
 }
 
 void AliL3MemHandler::Init(Int_t s,Int_t p, Int_t *r)
 {
+  //init handler
   fSlice=s;fPatch=p;
   if(r) {
     fRowMin=r[0];
@@ -121,7 +121,6 @@ void AliL3MemHandler::Init(Int_t s,Int_t p, Int_t *r)
 void AliL3MemHandler::ResetROI()
 {
   //Resets the Look-up table for Region of Interest mode.
-  
   for(Int_t i=fRowMin; i<=fRowMax; i++)
     {
       fEtaMinTimeBin[i] = 0;
@@ -186,7 +185,6 @@ void AliL3MemHandler::SetROI(Float_t *eta,Int_t */*slice*/)
 Bool_t AliL3MemHandler::SetBinaryInput(char *name)
 {
   //Set the input binary file.
-
   fInBinary = fopen(name,"r");
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::SetBinaryInput","File Open")
@@ -199,7 +197,6 @@ Bool_t AliL3MemHandler::SetBinaryInput(char *name)
 Bool_t AliL3MemHandler::SetBinaryInput(FILE *file)
 {
   //Set the input binary file.
-
   fInBinary = file;
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::SetBinaryInput","File Open")
@@ -212,7 +209,6 @@ Bool_t AliL3MemHandler::SetBinaryInput(FILE *file)
 void AliL3MemHandler::CloseBinaryInput()
 {
   //Close the input file.
-
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::CloseBinaryInput","File Close")
       <<"Nothing to Close"<<ENDLOG;
@@ -237,8 +233,7 @@ Bool_t AliL3MemHandler::SetBinaryOutput(char *name)
 Bool_t AliL3MemHandler::SetBinaryOutput(FILE *file)
 {
   //Set the binary output file.
-  
-  fOutBinary = file;
+    fOutBinary = file;
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::SetBinaryOutput","File Open")
       <<"Pointer to File = 0x0 "<<ENDLOG;
@@ -249,6 +244,7 @@ Bool_t AliL3MemHandler::SetBinaryOutput(FILE *file)
 
 void AliL3MemHandler::CloseBinaryOutput()
 {
+  //close binary  
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::CloseBinaryOutPut","File Close")
       <<"Nothing to Close"<<ENDLOG;
@@ -261,7 +257,6 @@ void AliL3MemHandler::CloseBinaryOutput()
 UInt_t AliL3MemHandler::GetFileSize()
 {
   //Returns the file size in bytes of the input file.
-  
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::GetFileSize","File")
       <<"No Input File"<<ENDLOG;
@@ -275,13 +270,13 @@ UInt_t AliL3MemHandler::GetFileSize()
 
 Byte_t *AliL3MemHandler::Allocate()
 {
+  //Allocate
   return Allocate(GetFileSize()); 
 }
 
 Byte_t *AliL3MemHandler::Allocate(AliL3TrackArray *array)
 {
   //Allocate memory for tracks in memory. Used by TrackArray2Binary()
-  
   if(!array){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Allocate","Memory")
       <<"Pointer to AliL3TrackArray = 0x0 "<<ENDLOG;
@@ -293,7 +288,6 @@ Byte_t *AliL3MemHandler::Allocate(AliL3TrackArray *array)
 Byte_t *AliL3MemHandler::Allocate(UInt_t size)
 {
   //Allocate memory of size in bytes.
-  
   if(fPt){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Allocate","Memory")
       <<"Delete Memory"<<ENDLOG;
@@ -310,7 +304,6 @@ Byte_t *AliL3MemHandler::Allocate(UInt_t size)
 void AliL3MemHandler::Free()
 {
   //Clear the memory, if allocated.
-  
   if(!fPt){
     LOG(AliL3Log::kInformational,"AliL3MemHandler::Free","Memory")
       <<"No Memory allocated - can't Free"<<ENDLOG;
@@ -333,16 +326,17 @@ void AliL3MemHandler::SetRandomCluster(Int_t maxnumber)
 {
   //If you are adding random data to the original data.
   
-  IsRandom = kTRUE;
+  fIsRandom = kTRUE;
   fNRandom = maxnumber;
   fNDigits = 0;
-  if(fDigits) delete [] fDigits;
-  fDigits = new AliL3RandomDigitData[fNRandom*9];
+  if(fRandomDigits) delete [] fRandomDigits;
+  fRandomDigits = new AliL3RandomDigitData[fNRandom*9];
   if(fDPt) delete [] fDPt;
   fDPt = new AliL3RandomDigitData *[fNRandom*9];
 }
 
-void AliL3MemHandler::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last){
+void AliL3MemHandler::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last)
+{
 
    // Sort array of AliL3RandomDigitData pointers using a quicksort algorithm.
    // Uses CompareDigits() to compare objects.
@@ -385,8 +379,9 @@ void AliL3MemHandler::QSort(AliL3RandomDigitData **a, Int_t first, Int_t last){
    }
 }
 
-UInt_t AliL3MemHandler::GetRandomSize()
+UInt_t AliL3MemHandler::GetRandomSize() const
 {
+  //get random size
   Int_t nrandom = 0;
   for(Int_t r=fRowMin;r<=fRowMax;r++){
     Int_t npad=AliL3Transform::GetNPads(r);
@@ -397,9 +392,10 @@ UInt_t AliL3MemHandler::GetRandomSize()
 
 void AliL3MemHandler::Generate(Int_t row)
 {
-  //Generate random data on row, if you didn't ask for this, nothing happens here.
+  //Generate random data on row, if you didn't 
+  //ask for this, nothing happens here.
   
-  if(!IsRandom) return;
+  if(!fIsRandom) return;
   ResetRandom();
   fNDigits = 0;
   Int_t npad=AliL3Transform::GetNPads(row);
@@ -414,9 +410,6 @@ void AliL3MemHandler::Generate(Int_t row)
     DigitizePoint(row,pad,time,charge);
   }
   QSort(fDPt,0,fNDigits);
-  //  for(Int_t d=0;d<fNDigits;d++)
-  //    fprintf(stderr,"%d %d %d %d\n",fDPt[d]->fRow,fDPt[d]->fPad,
-  //                             fDPt[d]->fTime,fDPt[d]->fCharge);
 }
 
 
@@ -436,11 +429,11 @@ void AliL3MemHandler::DigitizePoint(Int_t row, Int_t pad,
       if(dpad<0||dpad>=AliL3Transform::GetNPads(row))  continue;
       if(dtime<0||dtime>=AliL3Transform::GetNTimeBins()) continue;
       
-      fDigits[fNDigits].fCharge = dcharge;
-      fDigits[fNDigits].fRow = row;
-      fDigits[fNDigits].fPad = dpad;
-      fDigits[fNDigits].fTime = dtime;
-      fDPt[fNDigits] = &fDigits[fNDigits];
+      fRandomDigits[fNDigits].fCharge = dcharge;
+      fRandomDigits[fNDigits].fRow = row;
+      fRandomDigits[fNDigits].fPad = dpad;
+      fRandomDigits[fNDigits].fTime = dtime;
+      fDPt[fNDigits] = &fRandomDigits[fNDigits];
       fNDigits++;
     }
   }
@@ -523,8 +516,9 @@ Bool_t AliL3MemHandler::Binary2Memory(UInt_t & nrow,AliL3DigitRowData *data)
 }
 
 void AliL3MemHandler::AddData(AliL3DigitData *data,UInt_t & ndata,
-			      UInt_t /*row*/,UShort_t pad,UShort_t time,UShort_t charge)
+			      UInt_t /*row*/,UShort_t pad,UShort_t time,UShort_t charge) const
 {
+  //add some data
   data[ndata].fPad = pad;
   data[ndata].fTime = time;
   data[ndata].fCharge = charge;
@@ -533,6 +527,7 @@ void AliL3MemHandler::AddData(AliL3DigitData *data,UInt_t & ndata,
 
 void AliL3MemHandler::AddRandom(AliL3DigitData *data, UInt_t & ndata)
 {
+  //add some random data
   data[ndata].fPad = fDPt[fNUsed]->fPad;
   data[ndata].fTime = fDPt[fNUsed]->fTime;
   data[ndata].fCharge = fDPt[fNUsed]->fCharge;
@@ -543,6 +538,7 @@ void AliL3MemHandler::AddRandom(AliL3DigitData *data, UInt_t & ndata)
 void AliL3MemHandler::MergeDataRandom(AliL3DigitData *data, UInt_t & ndata,
 				      UInt_t row, UShort_t pad, UShort_t time, UShort_t charge)
 {
+  //merge random data
   data[ndata].fPad = pad;
   data[ndata].fTime = time;
   data[ndata].fCharge = charge;
@@ -558,6 +554,7 @@ void AliL3MemHandler::MergeDataRandom(AliL3DigitData *data, UInt_t & ndata,
 void AliL3MemHandler::AddDataRandom(AliL3DigitData *data, UInt_t & ndata,
                    UInt_t row, UShort_t pad, UShort_t time, UShort_t charge)
 {
+  //add data random
   Int_t action;
   while((action=ComparePoints(row,pad,time))==1){
     AddRandom(data,ndata);
@@ -571,8 +568,9 @@ void AliL3MemHandler::AddDataRandom(AliL3DigitData *data, UInt_t & ndata,
 }
 
 void AliL3MemHandler::Write(UInt_t *comp, UInt_t & index, 
-			    UInt_t & subindex, UShort_t value)
+			    UInt_t & subindex, UShort_t value) const
 {
+  //write compressed data
   UInt_t shift[3] = {0,10,20};
   if(subindex==0) comp[index] =0; //clean up memory
   comp[index] |= (value&0x03ff)<<shift[subindex];
@@ -583,8 +581,9 @@ void AliL3MemHandler::Write(UInt_t *comp, UInt_t & index,
   else subindex++;
 }
 
-UShort_t AliL3MemHandler::Read(UInt_t *comp, UInt_t & index, UInt_t & subindex)
-{
+UShort_t AliL3MemHandler::Read(UInt_t *comp, UInt_t & index, UInt_t & subindex) const
+{ 
+  //read compressed data
   UInt_t shift[3] = {0,10,20};
   UShort_t value = (comp[index]>>shift[subindex])&0x03ff;
   if(subindex == 2){
@@ -597,8 +596,9 @@ UShort_t AliL3MemHandler::Read(UInt_t *comp, UInt_t & index, UInt_t & subindex)
 }
 
 UShort_t AliL3MemHandler::Test(UInt_t *comp, 
-			       UInt_t index, UInt_t  subindex)
+			       UInt_t index, UInt_t  subindex) const
 {
+  //supi dupi test
   UInt_t shift[3] = {0,10,20};
   return (comp[index]>>shift[subindex])&0x03ff;
 }
@@ -690,7 +690,7 @@ Int_t AliL3MemHandler::CompMemory2Memory(UInt_t  nrow,
 {
   //Uncompress the run-length encoded data in memory pointed to by comp, and
   //  store it in data.
-   
+
   if(!comp){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::CompMemory2Memory","Memory")
       <<"Pointer to compressed data = 0x0 "<<ENDLOG;
@@ -747,7 +747,7 @@ Int_t AliL3MemHandler::CompMemory2Memory(UInt_t  nrow,
   return outsize;
 }
 
-UInt_t AliL3MemHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data)
+UInt_t AliL3MemHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data) const
 {
   //Return the size of RLE data, after compressing data.
   
@@ -815,7 +815,9 @@ UInt_t AliL3MemHandler::GetCompMemorySize(UInt_t nrow,AliL3DigitRowData *data)
   return (index/3) * sizeof(UInt_t);
 }
 
-UInt_t AliL3MemHandler::GetMemorySize(UInt_t nrow,UInt_t *comp){
+UInt_t AliL3MemHandler::GetMemorySize(UInt_t nrow,UInt_t *comp) const
+{
+  //get memory size
   if(!comp){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::GetMemorySize","Memory")
     <<"Pointer to compressed data = 0x0 "<<ENDLOG;
@@ -851,6 +853,7 @@ UInt_t AliL3MemHandler::GetMemorySize(UInt_t nrow,UInt_t *comp){
 
 UInt_t AliL3MemHandler::GetNRow(UInt_t *comp,UInt_t size)
 {
+  //get number of rows
   if(!comp){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::GetNRow","Memory")
       <<"Pointer to compressed data = 0x0 "<<ENDLOG;
@@ -940,7 +943,6 @@ Bool_t AliL3MemHandler::CompBinary2CompMemory(UInt_t & nrow,UInt_t *comp)
 AliL3DigitRowData *AliL3MemHandler::CompBinary2Memory(UInt_t & nrow)
 {
   // Read the RLE inputfile, unpack it and return the pointer to it.
-  
   AliL3MemHandler * handler = new AliL3MemHandler();
   handler->SetBinaryInput(fInBinary);
   UInt_t *comp =(UInt_t *)handler->Allocate();
@@ -1078,7 +1080,6 @@ Bool_t AliL3MemHandler::Memory2Binary(UInt_t ntrack,AliL3TrackSegmentData *data)
 Bool_t AliL3MemHandler::Binary2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data)
 {
   //Read the tracks in inputfile, and store it in data.
-  
   if(!fInBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Binary2Memory","File")
     <<"No Input File"<<ENDLOG;
@@ -1152,7 +1153,7 @@ Bool_t AliL3MemHandler::Binary2TrackArray(AliL3TrackArray *array)
   return kTRUE;
 }
 
-Bool_t AliL3MemHandler::TrackArray2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array)
+Bool_t AliL3MemHandler::TrackArray2Memory(UInt_t & ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array) const
 {
   //Fill the trackarray into the AliTrackSegmentData structures before writing to outputfile.
   if(!data){
@@ -1170,7 +1171,7 @@ Bool_t AliL3MemHandler::TrackArray2Memory(UInt_t & ntrack,AliL3TrackSegmentData 
   return kTRUE;
 }
 
-Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array)
+Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array) const
 {
   //Fill the tracks in data into trackarray.
   
@@ -1188,7 +1189,7 @@ Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *d
   return kTRUE;
 }
 
-Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array,Int_t slice)
+Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array,Int_t slice) const
 {
   //Fill the tracks in data into trackarray, and rotate the tracks to global coordinates.
     

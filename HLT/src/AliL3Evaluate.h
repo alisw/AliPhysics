@@ -5,26 +5,20 @@
 
 
 class TClonesArray;
-
-#include <TObject.h>
-#include <TH1.h>
-#include <TTree.h>
 #include <TNtuple.h>
-#include "AliSimDigits.h"
+#include <TH1F.h>
 
-
-struct GoodTrack 
+struct AliGoodTrack 
 {
-  Int_t label;
-  Double_t eta;
-  Int_t code;
-  Double_t px,py,pz;
-  Double_t x,y,z;
-  Int_t nhits;
-  Int_t sector;
+  Int_t flabel;  //label
+  Double_t feta; //eta
+  Int_t fcode;   //pcode
+  Double_t fpx,fpy,fpz; //momentum
+  Double_t fx,fy,fz;    //pos at entrance 
+  Int_t fnhits;  //nhits
+  Int_t fsector; //sector number
 };
-typedef struct GoodTrack GoodTrack;
-
+typedef struct AliGoodTrack AliGoodTrack;
 
 class AliL3Track;
 class TClonesArray;
@@ -44,44 +38,41 @@ class AliL3Evaluate {
  private:
 
   AliL3TrackArray *fTracks; //!
-  //AliTPCParam *fParam;
   AliL3SpacePointData *fClusters[36][6]; //!
   AliL3FileHandler *fClustersFile[36][6]; //!
-  //TTree *fDigitsTree;
-  //AliSimDigits *fDigits;
-  Char_t fPath[1024];
-  Int_t fMinSlice;
-  Int_t fMaxSlice;
-  UInt_t fNcl[36][6];
-  Int_t fRowid[36][176];
-  Int_t fMinPointsOnTrack;  //Minimum points on track to be considered.
-  Int_t fMinHitsFromParticle;
-  GoodTrack *fGoodTracks; //!
-  Float_t fMaxFalseClusters;
+  Char_t fPath[1024];      //path
+  Int_t fMinSlice;         //min slice
+  Int_t fMaxSlice;         //max slice
+  UInt_t fNcl[36][6];      //cluster numbers
+  Int_t fRowid[36][176];   //row ids
+  Int_t fMinPointsOnTrack;    //minimum points on track to be considered.
+  Int_t fMinHitsFromParticle; //minimums hits a particle has to create
+  AliGoodTrack *fGoodTracks; //!
+  Float_t fMaxFalseClusters;  //maximum number of false assigned clusters
   
-  Int_t fNFastPoints;
+  Int_t fNFastPoints; //fast access to points
   UInt_t *fMcIndex;//!
   Int_t *fMcId;//!
-  Int_t fGoodFound;
-  Int_t fGoodGen;
-  Double_t fMinGoodPt;
-  Double_t fMaxGoodPt;
+  Int_t fGoodFound;    //good found
+  Int_t fGoodGen;      //good generated found
+  Double_t fMinGoodPt; //min pt
+  Double_t fMaxGoodPt; //max pt
   
   //Histograms
-  TNtuple *fNtuppel;
-  TH1F *fPtRes;
-  TH1F *fNGoodTracksPt;
-  TH1F *fNFoundTracksPt;
-  TH1F *fNFakeTracksPt;
-  TH1F *fTrackEffPt;
-  TH1F *fFakeTrackEffPt;
-  TH1F *fNGoodTracksEta;
-  TH1F *fNFoundTracksEta;
-  TH1F *fNFakeTracksEta;
-  TH1F *fTrackEffEta;
-  TH1F *fFakeTrackEffEta;
-  TNtuple *fNtupleRes;
-  Bool_t fStandardComparison;
+  TNtuple *fNtuppel;//!
+  TH1F *fPtRes;//!
+  TH1F *fNGoodTracksPt;//!
+  TH1F *fNFoundTracksPt;//!
+  TH1F *fNFakeTracksPt;//!
+  TH1F *fTrackEffPt;//!
+  TH1F *fFakeTrackEffPt;//!
+  TH1F *fNGoodTracksEta;//!
+  TH1F *fNFoundTracksEta;//!
+  TH1F *fNFakeTracksEta;//!
+  TH1F *fTrackEffEta;//!
+  TH1F *fFakeTrackEffEta;//!
+  TNtuple *fNtupleRes;//!
+  Bool_t fStandardComparison; // take standard macro
   
   void Clear();
  public:
@@ -111,8 +102,8 @@ class AliL3Evaluate {
   void SetMaxFalseClusters(Float_t f) {fMaxFalseClusters = f;}
   void SetStandardComparison(Bool_t b) {fStandardComparison = b;}  
   TNtuple *GetNtuple();
-  Int_t GetNGoodTracks() {return fGoodGen;}
-  Int_t GetNFoundTracks() {return fGoodFound;}
+  Int_t GetNGoodTracks() const {return fGoodGen;}
+  Int_t GetNFoundTracks() const {return fGoodFound;}
   TH1F *GetTrackEffPt() {return fTrackEffPt;}
   TH1F *GetTrackEffEta() {return fTrackEffEta;}
   TH1F *GetFakeEffEta() {return fFakeTrackEffEta;}

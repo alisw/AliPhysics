@@ -22,7 +22,7 @@
 
 ClassImp(AliL3ConfMapPoint)
 
-Bool_t AliL3ConfMapPoint::fDontMap=kFALSE;
+Bool_t AliL3ConfMapPoint::fgDontMap=kFALSE;
 
 AliL3ConfMapPoint::AliL3ConfMapPoint()
 {
@@ -52,11 +52,12 @@ AliL3ConfMapPoint::AliL3ConfMapPoint()
 AliL3ConfMapPoint::~AliL3ConfMapPoint()
 {
   // Destructor.
-  // Does nothing except destruct. 
+  ;
 }
 
-Bool_t AliL3ConfMapPoint::ReadHits(AliL3SpacePointData* hits ){
-  
+Bool_t AliL3ConfMapPoint::ReadHits(AliL3SpacePointData* hits )
+{
+  //read the hits
   SetHitNumber(hits->fID);
   SetPadRow(hits->fPadRow);
   Int_t slice = (hits->fID>>25) & 0x7f;
@@ -82,16 +83,17 @@ void AliL3ConfMapPoint::Reset()
 
 void AliL3ConfMapPoint::Setup(AliL3Vertex *vertex)
 {
-  //Setup. Sets the vertex, conformal coordinates, and phi and eta of each hit.
+  //Setup. Sets the vertex, conformal coordinates, 
+  //and phi and eta of each hit.
   
   SetIntPoint(vertex->GetX(),    vertex->GetY(),    vertex->GetZ(),
               vertex->GetXErr(), vertex->GetYErr(), vertex->GetZErr());
   SetShiftedCoord();
   SetConfCoord();
-  // The angles are set properly if they are set after the interaction point and the shifted coordinates
+  // The angles are set properly if they are set after 
+  // the interaction point and the shifted coordinates
   SetAngles();
   //SetDist(0., 0.);
-  
   return;
 }
 
@@ -155,11 +157,11 @@ void AliL3ConfMapPoint::SetConfCoord()
   // assumed to be at (0, 0, 0). Otherwise the function will use the
   // interaction point specified by fXt and fYt.
 
-  if(fDontMap){
-    fXprime = x;
-    fYprime = y;
+  if(fgDontMap){
+    fXprime = fx;
+    fYprime = fy;
     fWxy = 0;
-    s = 0; //track trajectory
+    fs = 0; //track trajectory
     fWz = 0;
     return;
   }
@@ -174,9 +176,9 @@ void AliL3ConfMapPoint::SetConfCoord()
       fYprime = -fYv / r2;
       
       //set weights:
-      fWxy = r2*r2 / ((xyErrorScale*xyErrorScale)*((xerr*xerr)+(yerr*yerr)));
-      s = 0; //track trajectory
-      fWz = (Double_t)(1./(szErrorScale*zerr*zerr));
+      fWxy = r2*r2 / ((xyErrorScale*xyErrorScale)*((fxerr*fxerr)+(fyerr*fyerr)));
+      fs = 0; //track trajectory
+      fWz = (Double_t)(1./(szErrorScale*fzerr*fzerr));
     } else {
     fXprime    = 0.;
     fYprime    = 0.;
@@ -184,7 +186,7 @@ void AliL3ConfMapPoint::SetConfCoord()
     fYprimeerr = 0.;
     fWxy = 0;
     fWz = 0;
-    s = 0;
+    fs = 0;
   }
 
   return;
@@ -225,13 +227,14 @@ void AliL3ConfMapPoint::SetAngles()
   }
   */
   //fPhi = TMath::ATan2(y,x);
-  fPhi = atan2(y,x);
+  fPhi = atan2(fy,fx);
   //if(fPhi<0) fPhi = fPhi + 2*TMath::Pi();
   
   //fEta = 0.5 * TMath::Log((r3dim + fZv)/(r3dim - fZv));
   fEta = 0.5 * log((r3dim + fZv)/(r3dim - fZv));
   return;
 }
+
 /*
 AliL3ConfMapTrack *AliL3ConfMapPoint::GetTrack(TClonesArray *tracks) const
 {

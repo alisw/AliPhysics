@@ -72,23 +72,24 @@ using namespace std;
 ClassImp(AliL3FileHandler)
 
 // of course on start up the index is not created
-Bool_t AliL3FileHandler::fStaticIndexCreated=kFALSE;
-Int_t  AliL3FileHandler::fStaticIndex[36][159]; 
+Bool_t AliL3FileHandler::fgStaticIndexCreated=kFALSE;
+Int_t  AliL3FileHandler::fgStaticIndex[36][159]; 
 
 void AliL3FileHandler::CleanStaticIndex() 
-{ // use this static call to clean static index after
+{ 
+  // use this static call to clean static index after
   // running over one event
-
   for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
     for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
-      fStaticIndex[i][j]=-1;
+      fgStaticIndex[i][j]=-1;
   }
-  fStaticIndexCreated=kFALSE;
+  fgStaticIndexCreated=kFALSE;
 }
 
 Int_t AliL3FileHandler::SaveStaticIndex(Char_t *prefix,Int_t event) 
-{ // use this static call to store static index after
-  if(!fStaticIndexCreated) return -1;
+{ 
+  // use this static call to store static index after
+  if(!fgStaticIndexCreated) return -1;
 
   Char_t fname[1024];
   if(prefix)
@@ -101,7 +102,7 @@ Int_t AliL3FileHandler::SaveStaticIndex(Char_t *prefix,Int_t event)
 
   for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
     for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
-      file << fStaticIndex[i][j] << " ";
+      file << fgStaticIndex[i][j] << " ";
     file << endl;
   }
   file.close();
@@ -109,8 +110,9 @@ Int_t AliL3FileHandler::SaveStaticIndex(Char_t *prefix,Int_t event)
 }
 
 Int_t AliL3FileHandler::LoadStaticIndex(Char_t *prefix,Int_t event) 
-{ // use this static call to store static index after
-  if(fStaticIndexCreated){
+{ 
+  // use this static call to store static index after
+  if(fgStaticIndexCreated){
       LOG(AliL3Log::kWarning,"AliL3FileHandler::LoadStaticIndex","Inxed")
 	<<"Static index already created, will overwrite"<<ENDLOG;
       CleanStaticIndex();
@@ -127,11 +129,11 @@ Int_t AliL3FileHandler::LoadStaticIndex(Char_t *prefix,Int_t event)
 
   for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
     for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
-      file >> fStaticIndex[i][j];
+      file >> fgStaticIndex[i][j];
   }
   file.close();
 
-  fStaticIndexCreated=kTRUE;
+  fgStaticIndexCreated=kTRUE;
   return 0;
 }
 
@@ -153,7 +155,7 @@ AliL3FileHandler::AliL3FileHandler(Bool_t b)
     for(Int_t j=0;j<AliL3Transform::GetNRows();j++) 
       fIndex[i][j]=-1;
 
-  if(fUseStaticIndex&&!fStaticIndexCreated) CleanStaticIndex();
+  if(fUseStaticIndex&&!fgStaticIndexCreated) CleanStaticIndex();
 }
 
 AliL3FileHandler::~AliL3FileHandler()
@@ -165,7 +167,8 @@ AliL3FileHandler::~AliL3FileHandler()
 }
 
 void AliL3FileHandler::FreeDigitsTree()
-{
+{ 
+  //free digits tree
   if(!fDigitsTree)
     {
       LOG(AliL3Log::kInformational,"AliL3FileHandler::FreeDigitsTree()","Pointer")
@@ -187,7 +190,8 @@ void AliL3FileHandler::FreeDigitsTree()
 }
 
 Bool_t AliL3FileHandler::SetMCOutput(Char_t *name)
-{
+{ 
+  //set mc input
   fMC = fopen(name,"w");
   if(!fMC){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetMCOutput","File Open")
@@ -198,7 +202,8 @@ Bool_t AliL3FileHandler::SetMCOutput(Char_t *name)
 }
 
 Bool_t AliL3FileHandler::SetMCOutput(FILE *file)
-{
+{ 
+  //set mc output
   fMC = file;
   if(!fMC){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetMCOutput","File Open")
@@ -209,7 +214,8 @@ Bool_t AliL3FileHandler::SetMCOutput(FILE *file)
 }
 
 void AliL3FileHandler::CloseMCOutput()
-{
+{ 
+  //close mc output
   if(!fMC){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::CloseMCOutPut","File Close")
       <<"Nothing to Close"<<ENDLOG;
@@ -220,7 +226,8 @@ void AliL3FileHandler::CloseMCOutput()
 }
 
 Bool_t AliL3FileHandler::SetAliInput()
-{
+{ 
+  //set ali input
 #ifdef use_newio
   fInAli->CdGAFile();
   fParam = AliTPC::LoadTPCParam(gFile);
@@ -261,7 +268,7 @@ Bool_t AliL3FileHandler::SetAliInput()
 }
 
 Bool_t AliL3FileHandler::SetAliInput(Char_t *name)
-{
+{ 
   //Open the AliROOT file with name.
 #ifdef use_newio
   fInAli= AliRunLoader::Open(name);
@@ -278,7 +285,8 @@ Bool_t AliL3FileHandler::SetAliInput(Char_t *name)
 
 #ifdef use_newio
 Bool_t AliL3FileHandler::SetAliInput(AliRunLoader *runLoader)
-{
+{ 
+  //set ali input as runloader
   fInAli=runLoader;
   fUseRunLoader = kTRUE;
   if(!fInAli){
@@ -293,13 +301,14 @@ Bool_t AliL3FileHandler::SetAliInput(AliRunLoader *runLoader)
 #ifdef use_newio
 Bool_t AliL3FileHandler::SetAliInput(TFile */*file*/)
 {
+  //Specify already opened AliROOT file to use as an input.
   LOG(AliL3Log::kFatal,"AliL3FileHandler::SetAliInput","File Open")
     <<"This function is not supported for NEWIO, check ALIHLT_USENEWIO settings in Makefile.conf"<<ENDLOG;
   return kFALSE;
 }
 #else
 Bool_t AliL3FileHandler::SetAliInput(TFile *file)
-{
+{ 
   //Specify already opened AliROOT file to use as an input.
   fInAli=file;
   if(!fInAli){
@@ -312,7 +321,8 @@ Bool_t AliL3FileHandler::SetAliInput(TFile *file)
 #endif
 
 void AliL3FileHandler::CloseAliInput()
-{
+{ 
+  //close ali input
 #ifdef use_newio
   if(fUseRunLoader) return;
 #endif
@@ -369,6 +379,7 @@ Bool_t AliL3FileHandler::IsDigit(Int_t event)
 ///////////////////////////////////////// Digit IO  
 Bool_t AliL3FileHandler::AliDigits2Binary(Int_t event,Bool_t altro)
 {
+  //save alidigits as binary
   Bool_t out = kTRUE;
   UInt_t nrow;
   AliL3DigitRowData* data = 0;
@@ -403,7 +414,7 @@ Bool_t AliL3FileHandler::CreateIndex()
   //create the access index or copy from static index
   fIndexCreated=kFALSE;
 
-  if(!fStaticIndexCreated || !fUseStaticIndex) { //we have to create index 
+  if(!fgStaticIndexCreated || !fUseStaticIndex) { //we have to create index 
     LOG(AliL3Log::kInformational,"AliL3FileHandler::CreateIndex","Index")
       <<"Starting to create index, this can take a while."<<ENDLOG;
 
@@ -425,9 +436,9 @@ Bool_t AliL3FileHandler::CreateIndex()
     if(fUseStaticIndex) { // create static index
       for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
 	for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
-	  fStaticIndex[i][j]=fIndex[i][j];
+	  fgStaticIndex[i][j]=fIndex[i][j];
       }
-      fStaticIndexCreated=kTRUE; //remember that index has been created
+      fgStaticIndexCreated=kTRUE; //remember that index has been created
     }
 
   LOG(AliL3Log::kInformational,"AliL3FileHandler::CreateIndex","Index")
@@ -436,14 +447,12 @@ Bool_t AliL3FileHandler::CreateIndex()
   } else if(fUseStaticIndex) { //simply copy static index
     for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
       for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
-	fIndex[i][j]=fStaticIndex[i][j];
+	fIndex[i][j]=fgStaticIndex[i][j];
     }
 
   LOG(AliL3Log::kInformational,"AliL3FileHandler::CreateIndex","Index")
     <<"Index successfully taken from static copy."<<ENDLOG;
-
   }
- 
   fIndexCreated=kTRUE;
   return kTRUE;
 }
@@ -1191,7 +1200,9 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 }
 
 ///////////////////////////////////////// Point IO  
-Bool_t AliL3FileHandler::AliPoints2Binary(Int_t eventn){
+Bool_t AliL3FileHandler::AliPoints2Binary(Int_t eventn)
+{
+  //points to binary
   Bool_t out = kTRUE;
   UInt_t npoint;
   AliL3SpacePointData *data = AliPoints2Memory(npoint,eventn);
@@ -1200,7 +1211,9 @@ Bool_t AliL3FileHandler::AliPoints2Binary(Int_t eventn){
   return out;
 }
 
-AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint,Int_t eventn){
+AliL3SpacePointData * AliL3FileHandler::AliPoints2Memory(UInt_t & npoint,Int_t eventn)
+{
+  //points to memory
   AliL3SpacePointData *data = 0;
   npoint=0;
   if(!fInAli){

@@ -85,6 +85,7 @@ ClassImp(AliL3ClustFinderNew)
 
 AliL3ClustFinderNew::AliL3ClustFinderNew()
 {
+  //constructor
   fMatch = 1;
   fThreshold = 10;
   fXYErr = 0.2;
@@ -100,10 +101,13 @@ AliL3ClustFinderNew::AliL3ClustFinderNew()
 
 AliL3ClustFinderNew::~AliL3ClustFinderNew()
 {
+  //destructor
+  ;
 }
 
 void AliL3ClustFinderNew::InitSlice(Int_t slice,Int_t patch,Int_t firstrow, Int_t lastrow,Int_t nmaxpoints)
 {
+  //init slice
   fNClusters = 0;
   fMaxNClusters = nmaxpoints;
   fCurrentSlice = slice;
@@ -114,6 +118,7 @@ void AliL3ClustFinderNew::InitSlice(Int_t slice,Int_t patch,Int_t firstrow, Int_
 
 void AliL3ClustFinderNew::InitSlice(Int_t slice,Int_t patch,Int_t nmaxpoints)
 {
+  //init slice
   fNClusters = 0;
   fMaxNClusters = nmaxpoints;
   fCurrentSlice = slice;
@@ -124,11 +129,13 @@ void AliL3ClustFinderNew::InitSlice(Int_t slice,Int_t patch,Int_t nmaxpoints)
 
 void AliL3ClustFinderNew::SetOutputArray(AliL3SpacePointData *pt)
 {
+  //set pointer to output
   fSpacePointData = pt;
 }
 
 void AliL3ClustFinderNew::Read(UInt_t ndigits,AliL3DigitRowData *ptr)
 {
+  //set input pointer
   fNDigitRowData = ndigits;
   fDigitRowData = ptr;
 }
@@ -136,7 +143,6 @@ void AliL3ClustFinderNew::Read(UInt_t ndigits,AliL3DigitRowData *ptr)
 void AliL3ClustFinderNew::ProcessDigits()
 {
   //Loop over rows, and call processrow
-  
   AliL3DigitRowData *tempPt = (AliL3DigitRowData*)fDigitRowData;
   
   for(Int_t i=fFirstRow; i<=fLastRow; i++)
@@ -160,15 +166,15 @@ void AliL3ClustFinderNew::ProcessDigits()
 
 void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 {
-
+  //process row
   UInt_t last_pad = 123456789;
 
-  ClusterData *pad1[5000]; //2 lists for internal memory=2pads
-  ClusterData *pad2[5000]; //2 lists for internal memory=2pads
-  ClusterData clusterlist[10000]; //Clusterlist
+  AliClusterData *pad1[5000]; //2 lists for internal memory=2pads
+  AliClusterData *pad2[5000]; //2 lists for internal memory=2pads
+  AliClusterData clusterlist[10000]; //Clusterlist
 
-  ClusterData **currentPt;  //List of pointers to the current pad
-  ClusterData **previousPt; //List of pointers to the previous pad
+  AliClusterData **currentPt;  //List of pointers to the current pad
+  AliClusterData **previousPt; //List of pointers to the previous pad
   currentPt = pad2;
   previousPt = pad1;
   UInt_t n_previous=0,n_current=0,n_total=0;
@@ -290,7 +296,7 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 
 	  if(difference <= fMatch) //There is a match here!!
 	    {
-	      ClusterData *local = previousPt[p];
+	      AliClusterData *local = previousPt[p];
 
 	      if(fDeconvPad)
 		{
@@ -333,7 +339,7 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	  //current pad will be previous pad on next pad.
 
 	  //Add to the clusterlist:
-	  ClusterData *tmp = &clusterlist[n_total];
+	  AliClusterData *tmp = &clusterlist[n_total];
 	  tmp->fTotalCharge = seq_charge;
 	  tmp->fPad = pad_mean;
 	  tmp->fPad2 = pad_error;
@@ -362,8 +368,9 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
   WriteClusters(n_total,clusterlist);
 }
 
-void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
+void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,AliClusterData *list)
 {
+  //write cluster to output pointer
   Int_t thisrow,thissector;
   UInt_t counter = fNClusters;
   
@@ -381,7 +388,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
       if(fCalcerr) { //calc the errors, otherwice take the fixed error 
 	Int_t patch = AliL3Transform::GetPatch(fCurrentRow);
 
-	Float_t sy2=(Float_t)list[j].fPad2/(Float_t)list[j].fTotalCharge - fpad*fpad;
+	Double_t sy2=(Float_t)list[j].fPad2/(Float_t)list[j].fTotalCharge - fpad*fpad;
 	if(sy2 < 0) {
 	    LOG(AliL3Log::kError,"AliL3ClustFinderNew::WriteClusters","Cluster width")
 	      <<"SigmaY2 negative "<<sy2<<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
@@ -396,7 +403,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
 	    }
 	  } else fpad2=sy2; //take the width not the error
 	}
-	Float_t sz2=(Float_t)list[j].fTime2/(Float_t)list[j].fTotalCharge - ftime*ftime;
+	Double_t sz2=(Float_t)list[j].fTime2/(Float_t)list[j].fTotalCharge - ftime*ftime;
 	if(sz2 < 0){
 	  LOG(AliL3Log::kError,"AliL3ClustFinderNew::WriteClusters","Cluster width")
 	    <<"SigmaZ2 negative "<<sz2<<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
@@ -466,6 +473,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
 #ifdef do_mc
 void AliL3ClustFinderNew::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
 {
+  //get mc id
   AliL3DigitRowData *rowPt = (AliL3DigitRowData*)fDigitRowData;
   
   trackID[0]=trackID[1]=trackID[2]=-2;

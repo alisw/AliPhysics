@@ -8,16 +8,13 @@
 
 class MLUCLogServer;
 
-class AliL3Logger{
-  public:
-  static Int_t kAll;
-  static Int_t kDebug;
-  static Int_t kInformational;
-  static Int_t kWarning;
-  static Int_t kError;
-  static Int_t kFatal;
+class AliL3Logger {
+
+ public:
+ 
   AliL3Logger();
   virtual ~AliL3Logger();
+
   void Set(Int_t l);
   void UnSet(Int_t l);
   void UseDevNull();
@@ -28,15 +25,26 @@ class AliL3Logger{
   void NotUseStdout();
   void NotUseStderr();
   void NotUseStream();
-  private:
-  MLUCLogServer *dn; //!
-  MLUCLogServer *so; //!
-  MLUCLogServer *se; //!
-  MLUCLogServer *sm; //!
+
+ protected:
+
+  static Int_t fgAll;   //level all
+  static Int_t fgDebug; //level debug
+  static Int_t fgInformational; //level info
+  static Int_t fgWarning; //level warning
+  static Int_t fgError; //level error
+  static Int_t fgFatal; //level fatal
+
+ private:
+
+  MLUCLogServer *fdn; //!
+  MLUCLogServer *fso; //!
+  MLUCLogServer *fse; //!
+  MLUCLogServer *fsm; //!
 #if __GNUC__ == 3
-  std::ofstream *of; //!
+  std::ofstream *fof; //!
 #else  
-  ofstream *of; //!
+  ofstream *fof; //!
 #endif
 
   ClassDef(AliL3Logger,1)

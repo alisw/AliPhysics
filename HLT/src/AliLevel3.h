@@ -41,7 +41,7 @@ class AliLevel3 : public TObject {
 #endif
 
  private:
-  UInt_t fNTrackData;
+  UInt_t fNTrackData; //count data
   AliL3TrackSegmentData* fTrackData; //!
   AliL3ConfMapper *fTracker; //!
   AliL3Vertex *fVertex; //! 
@@ -53,37 +53,36 @@ class AliLevel3 : public TObject {
   AliL3MemHandler *fFileHandler; //!
   AliL3Benchmark *fBenchmark;//!
 
-  Int_t fEvent;
-  Int_t fNPatch;
-  Int_t fRow[6][2];
-  Float_t fEta[2];
+  Int_t fEvent;    //event number
+  Int_t fNPatch;   //number of patches
+  Int_t fRow[6][2];//rows
+  Float_t fEta[2]; //eta
   
   Char_t *fInputFile;//!
 #ifdef use_newio
-  AliRunLoader *fRunLoader;
+  AliRunLoader *fRunLoader; //runloader
 #endif
-  Char_t fPath[256];
-  Char_t fWriteOutPath[256];
+  Char_t fPath[256]; //path to aliroot
+  Char_t fWriteOutPath[256]; //path to store
   
-  Bool_t fDoRoi;
-  Bool_t fFindVertex;
-  Bool_t fDoNonVertex;
-  Bool_t fPileUp;
-  Bool_t fNoCF;
+  Bool_t fDoRoi; //do region of interest
+  Bool_t fFindVertex; //find vertex
+  Bool_t fDoNonVertex;//do non vertex pass
+  Bool_t fPileUp; //do pileup
+  Bool_t fNoCF; //dont do cluster finder
   
-  Bool_t fUseBinary;
-  Bool_t fWriteOut;
+  Bool_t fUseBinary; //use binary input
+  Bool_t fWriteOut; //write tracks
   
-  static Bool_t fDoVertexFit;
+  static Bool_t fgDoVertexFit; //do vertex fix
 
-  Bool_t fClusterDeconv;
-  Float_t fXYClusterError;
-  Float_t fZClusterError;
-
+  Bool_t fClusterDeconv; //do cluster deconv
+  Float_t fXYClusterError; //Cluster error
+  Float_t fZClusterError; //Cluster error
 
   void WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
-                                          Int_t slice,Int_t patch);
-  Int_t WriteTracks(char *filename,AliL3Merger *merger,char opt='o');  
+                        Int_t slice,Int_t patch) const;
+  Int_t WriteTracks(char *filename,AliL3Merger *merger,char opt='o') const;  
   void WriteResults();
   void FitGlobalTracks();
   void SetPath(char *p){sprintf(fPath,"%s",p);}
@@ -121,8 +120,8 @@ class AliLevel3 : public TObject {
   void DoRoi(Float_t e0=0.4,Float_t e1=0.5){fEta[0]=e0;fEta[1]=e1;fDoRoi=kTRUE;}
   void WriteFiles(Char_t *path="./"){fWriteOut = kTRUE; sprintf(fWriteOutPath,"%s",path);}
   
-  static void SetVertexFit(Bool_t f)   {fDoVertexFit=f;}
-  static Bool_t DoVertexFit()          {return fDoVertexFit;}
+  static void SetVertexFit(Bool_t f)   {fgDoVertexFit=f;}
+  static Bool_t DoVertexFit()          {return fgDoVertexFit;}
 
   ClassDef(AliLevel3,1) //Interface class for Level3-tracking
 };

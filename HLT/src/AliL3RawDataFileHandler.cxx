@@ -29,6 +29,7 @@ ClassImp(AliL3RawDataFileHandler)
 
 AliL3RawDataFileHandler::AliL3RawDataFileHandler()
 {
+  //constructor
   fConvert=kTRUE;
   fInRaw = 0;
   fInRawPed = 0;
@@ -50,11 +51,13 @@ AliL3RawDataFileHandler::AliL3RawDataFileHandler()
 
 AliL3RawDataFileHandler::~AliL3RawDataFileHandler()
 {
+  //destructor
   FreeAll();
 }
 
 void AliL3RawDataFileHandler::FreeAll()
 {
+  //free all heap
   if(fInRaw) CloseRawInput();
   if(fInRawPed) CloseRawPedestalsInput();
   if(fMapping) CloseMappingFile();
@@ -88,6 +91,7 @@ void AliL3RawDataFileHandler::FreeAll()
 
 Bool_t AliL3RawDataFileHandler::SetRawInput(Char_t *name)
 {
+  //set raw input
   if(fInRaw){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawInput","File Open")
       <<"File ptr is already in use, close file first"<<ENDLOG;
@@ -117,6 +121,7 @@ Bool_t AliL3RawDataFileHandler::SetRawInput(Char_t *name)
 
 Bool_t AliL3RawDataFileHandler::SetRawInput(ifstream *file)
 {
+  //set raw input
   if(fInRaw){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawInput","File Open")
       <<"File ptr is already in use, close file first"<<ENDLOG;
@@ -140,6 +145,7 @@ Bool_t AliL3RawDataFileHandler::SetRawInput(ifstream *file)
 
 void AliL3RawDataFileHandler::CloseRawInput()
 {
+  //close raw input
   if(!fInRaw){
     LOG(AliL3Log::kWarning,"AliL3RawDataFileHandler::CloseRawInput","File Close")
       <<"Nothing to Close"<<ENDLOG;
@@ -156,6 +162,7 @@ void AliL3RawDataFileHandler::CloseRawInput()
 
 Bool_t AliL3RawDataFileHandler::SetRawOutput(Char_t *name)
 {
+  //set raw output
   if(fOutRaw){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawOutput","File Open")
       <<"File ptr is already in use, close file first"<<ENDLOG;
@@ -184,6 +191,7 @@ Bool_t AliL3RawDataFileHandler::SetRawOutput(Char_t *name)
 
 Bool_t AliL3RawDataFileHandler::SetRawOutput(ofstream *file)
 {
+  //set raw output
   if(fOutRaw){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawOutput","File Open")
       <<"File ptr is already in use, close file first"<<ENDLOG;
@@ -208,6 +216,7 @@ Bool_t AliL3RawDataFileHandler::SetRawOutput(ofstream *file)
 
 void AliL3RawDataFileHandler::CloseRawOutput()
 {
+  //close raw output
   if(!fOutRaw){
     LOG(AliL3Log::kWarning,"AliL3RawDataFileHandler::CloseRawOutput","File Close")
       <<"Nothing to Close"<<ENDLOG;
@@ -225,6 +234,7 @@ void AliL3RawDataFileHandler::CloseRawOutput()
 
 Bool_t AliL3RawDataFileHandler::SetRawPedestalsInput(Char_t *name)
 {
+  //set raw pedestals
   if(fInRawPed){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawPedestalsInput","File Open")
       <<"File ptr is already in use, close file first"<<ENDLOG;
@@ -254,6 +264,7 @@ Bool_t AliL3RawDataFileHandler::SetRawPedestalsInput(Char_t *name)
 
 Bool_t AliL3RawDataFileHandler::SetRawPedestalsInput(ifstream *file)
 {
+  //set raw pedestals input
   if(fInRawPed){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetRawPedestalsInput","File Open")
       <<"File ptr is already in use, close file first"<<ENDLOG;
@@ -277,6 +288,7 @@ Bool_t AliL3RawDataFileHandler::SetRawPedestalsInput(ifstream *file)
 
 void AliL3RawDataFileHandler::CloseRawPedestalsInput()
 {
+  //close raw pedestals input
   if(!fInRawPed){
     LOG(AliL3Log::kWarning,"AliL3RawDataFileHandler::CloseRawPedestalsInput","File Close")
       <<"Nothing to Close"<<ENDLOG;
@@ -293,6 +305,7 @@ void AliL3RawDataFileHandler::CloseRawPedestalsInput()
 
 Bool_t AliL3RawDataFileHandler::SetMappingFile(Char_t *name)
 {
+  //set mapping file
   if(fMapping){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetMapping","File Open")
       <<"File ptr is already in use, close file first"<<ENDLOG;
@@ -311,6 +324,7 @@ Bool_t AliL3RawDataFileHandler::SetMappingFile(Char_t *name)
 
 Bool_t AliL3RawDataFileHandler::SetMappingFile(FILE *file)
 {
+  //set mapping file
   if(fMapping){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::SetMapping","File Open")
       <<"File ptr is already in use, close file first"<<ENDLOG;
@@ -329,6 +343,7 @@ Bool_t AliL3RawDataFileHandler::SetMappingFile(FILE *file)
 
 void AliL3RawDataFileHandler::CloseMappingFile()
 {
+  //close mapping file
   if(!fMapping){
     LOG(AliL3Log::kWarning,"AliL3RawDataFileHandler::CloseMappingFile","File Close")
       <<"Nothing to Close"<<ENDLOG;
@@ -340,6 +355,7 @@ void AliL3RawDataFileHandler::CloseMappingFile()
 
 Int_t AliL3RawDataFileHandler::ReadMappingFile()
 {
+  //read mapping file
   if(!fMapping){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::ReadMappingFile","File Open")
       <<"Pointer to file = 0x0"<<ENDLOG;
@@ -387,8 +403,9 @@ Int_t AliL3RawDataFileHandler::ReadMappingFile()
   return fNChannels;
 }
 
-inline Int_t AliL3RawDataFileHandler::Convert4(Int_t i)
-{ //BigEndian i0i1i2i3 -> LittleEndian i3i2i1i0
+inline Int_t AliL3RawDataFileHandler::Convert4(Int_t i) const
+{ 
+  //BigEndian i0i1i2i3 -> LittleEndian i3i2i1i0
   if(!fConvert) return i;
   Char_t *p=(Char_t*)&i;
   Char_t temp[4];
@@ -399,8 +416,9 @@ inline Int_t AliL3RawDataFileHandler::Convert4(Int_t i)
   return (*(Int_t*)temp);
 }
 
-inline Short_t AliL3RawDataFileHandler::Convert2(Short_t s)
-{ //BigEndian i0i1 -> LittleEndian i1i0
+inline Short_t AliL3RawDataFileHandler::Convert2(Short_t s) const
+{ 
+  //BigEndian i0i1 -> LittleEndian i1i0
   if(!fConvert) return s;
   Char_t *p=(Char_t*)&s;
   Char_t temp[2];
@@ -567,6 +585,7 @@ Int_t AliL3RawDataFileHandler::ReadRawInputPointer(const Char_t *ptr)
 
 Short_t** AliL3RawDataFileHandler::GetRawData(Int_t &channels, Int_t &timebins)
 {
+  //get raw data
   Short_t **charges=0;
   channels=0;
   timebins=0;
@@ -602,7 +621,6 @@ Short_t** AliL3RawDataFileHandler::GetRawData(Int_t &channels, Int_t &timebins)
 Int_t AliL3RawDataFileHandler::StoreRawData(Short_t **charges)
 {
   //store charges in the raw data format
-
   if(!fOutRaw){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::StoreRawData","File Open")
       <<"No Output avalible: no object ofstream"<<ENDLOG;
@@ -650,6 +668,7 @@ Int_t AliL3RawDataFileHandler::StoreRawData(Short_t **charges)
 
 Int_t AliL3RawDataFileHandler::ReadRawPedestalsInput()
 {
+  //read raw pedestals input
   if(!fInRawPed){
     LOG(AliL3Log::kError,"AliL3RawDataFileHandler::ReadRawPedestalsInput","File Open")
       <<"No Input avalible: no object ifstream"<<ENDLOG;
@@ -715,6 +734,7 @@ Int_t AliL3RawDataFileHandler::ReadRawPedestalsInput()
 
 AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t /*event*/)
 {
+  //convert raw data to memory
   AliL3DigitRowData *data = 0;
   nrow=0;
 
@@ -727,7 +747,6 @@ AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t /
       return 0;
     }
   }
-  
 
   //get data size
   Int_t nrows=0;
@@ -842,6 +861,7 @@ AliL3DigitRowData * AliL3RawDataFileHandler::RawData2Memory(UInt_t &nrow,Int_t /
 
 Bool_t AliL3RawDataFileHandler::RawData2CompBinary(Int_t event)
 {
+  //raw data to binary
   Bool_t out = kTRUE;
   UInt_t ndigits=0;
   AliL3DigitRowData *digits=0;

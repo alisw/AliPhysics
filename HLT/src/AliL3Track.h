@@ -14,8 +14,7 @@ class AliL3Track {
   
  private:
 
-  Int_t fNHits;
-
+  Int_t fNHits; //Number of hits
   Int_t fMCid;  //Assigned id from MC data.
 
   Double_t fKappa;   // Signed curvature (projected to a circle)
@@ -36,29 +35,28 @@ class AliL3Track {
   Double_t fPt;   //transverse momentum
   Double_t fLength; //length of track (s)
   
-  Double_t fPterr;
-  Double_t fPsierr;
-  Double_t fZ0err;
-  Double_t fTanlerr;
+  Double_t fPterr;   //errors for fast hough
+  Double_t fPsierr;  //errors for fast hough
+  Double_t fZ0err;   //errors for fast hough
+  Double_t fTanlerr; //errors for fast hough
 
   Double_t fPhi0; //azimuthal angle of the first point
   Double_t fR0;   //radius of the first point
   Double_t fZ0;   //z coordinate of the first point (fFirstPoint[2])
 
-  Double_t fFirstPoint[3];
-  Double_t fLastPoint[3];
-  Double_t fPoint[3];
+  Double_t fFirstPoint[3]; //first point
+  Double_t fLastPoint[3];  //last point
+  Double_t fPoint[3]; //point
   Double_t fPointPsi; //azimuthal angle of the momentum at Point
 
-
-  Bool_t fIsPoint;    //Helix crosses the X-plane
-  Bool_t IsPoint(Bool_t ispoint) {fIsPoint = ispoint;return fIsPoint;}
-  
+  Bool_t fIsPoint;  //Helix crosses the X-plane
   Bool_t fIsLocal; //Track given in local coordinates.
 
-  UInt_t fHitNumbers[159];  //Array of hit numbers for this track
+  Float_t fPID; //pid 
+  UInt_t fHitNumbers[159]; //Array of hit numbers for this track
 
-  Float_t fPID;
+  Bool_t IsPoint(Bool_t ispoint) {fIsPoint = ispoint;return fIsPoint;}
+
  public:
   
   AliL3Track();
@@ -77,25 +75,25 @@ class AliL3Track {
   Double_t GetDistance(Double_t /*x0*/,Double_t /*x1*/){return 0;}
   void UpdateToFirstPoint();
 
-  Float_t GetPID() {return fPID;}
+  Float_t GetPID() const {return fPID;}
   void    SetPID(Float_t pid) {fPID=pid;}
 
   void GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_t &closest_y,Double_t &closest_z);
   void Rotate(Int_t slice,Bool_t tolocal=kFALSE);
-  Bool_t IsLocal() {return fIsLocal;}
+  Bool_t IsLocal() const {return fIsLocal;}
   
   // getter
-  Double_t GetFirstPointX() {return fFirstPoint[0];}
-  Double_t GetFirstPointY() {return fFirstPoint[1];}
-  Double_t GetFirstPointZ() {return fFirstPoint[2];}
-  Double_t GetLastPointX() {return fLastPoint[0];}
-  Double_t GetLastPointY() {return fLastPoint[1];}
-  Double_t GetLastPointZ() {return fLastPoint[2];}
+  Double_t GetFirstPointX() const {return fFirstPoint[0];}
+  Double_t GetFirstPointY() const {return fFirstPoint[1];}
+  Double_t GetFirstPointZ() const {return fFirstPoint[2];}
+  Double_t GetLastPointX() const {return fLastPoint[0];}
+  Double_t GetLastPointY() const {return fLastPoint[1];}
+  Double_t GetLastPointZ() const {return fLastPoint[2];}
 
-  Double_t GetPointPsi() {return fPointPsi;}
-  Double_t GetPointX() {return fPoint[0];}
-  Double_t GetPointY() {return fPoint[1];}
-  Double_t GetPointZ() {return fPoint[2];}
+  Double_t GetPointPsi() const {return fPointPsi;}
+  Double_t GetPointX() const {return fPoint[0];}
+  Double_t GetPointY() const {return fPoint[1];}
+  Double_t GetPointZ() const {return fPoint[2];}
 
   Double_t GetPt() const {return fPt;}
   Double_t GetTgl() const {return fTanl;}
@@ -103,7 +101,7 @@ class AliL3Track {
   Double_t GetPhi0() const {return fPhi0;}
   Double_t GetR0() const {return fR0;}
   Double_t GetZ0() const {return fFirstPoint[2];}
-  //Double_t GetZ0() const {return fZ0;}
+  //const Double_t GetZ0() const {return fZ0;}
   
   Double_t GetKappa() const {return fKappa;}
   Double_t GetRadius() const {return fRadius;}
@@ -172,4 +170,3 @@ class AliL3Track {
 };
     
 #endif
-

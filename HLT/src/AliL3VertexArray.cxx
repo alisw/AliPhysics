@@ -31,8 +31,9 @@
 */
 
 ClassImp(AliL3VertexArray)
-void AliL3VertexArray::AnalyzeSector(Float_t *vertex, Int_t *array, Int_t len){
-//loop over all seeds and all vertex position
+void AliL3VertexArray::AnalyzeSector(Float_t *vertex, Int_t *array, Int_t len)
+{
+  //loop over all seeds and all vertex position
   LOG(AliL3Log::kInformational,"AliL3VertexArray::AnalyzeSector","Analyze")
   <<AliL3Log::kDec<<"Number of Seeds: "<<fNSeed<<ENDLOG;
   for(Int_t i =0;i<fNSeed;i++)
@@ -40,34 +41,36 @@ void AliL3VertexArray::AnalyzeSector(Float_t *vertex, Int_t *array, Int_t len){
       array[bin] += Trace(fZSeed[i],fRSeed[i],fSecSeed[i],vertex[bin]);
 }
 
-void AliL3VertexArray::FindSectorVertex(Double_t pos, Double_t range, Int_t nbin){
-//define position and range for search and
-//loop over all seeds
-//and find position of vertex and error 
-  const Int_t len = nbin;
-  const Double_t width = range; 
-  const Double_t  xmin = pos - width/2;
-  const Double_t step = width/len;
-  const Double_t start = xmin + step/2.;
-  Int_t * array = new Int_t[len];
-  Float_t * ver   = new Float_t[len];
-  for(Int_t i=0;i<len;i++){
-    ver[i] =  start + step * i;
+void AliL3VertexArray::FindSectorVertex(Double_t pos, Double_t range, Int_t nbin)
+{
+  //define position and range for search and
+  //loop over all seeds
+  //and find position of vertex and error 
+  const Int_t klen = nbin;
+  const Double_t kwidth = range; 
+  const Double_t kxmin = pos - kwidth/2;
+  const Double_t kstep = kwidth/klen;
+  const Double_t kstart = kxmin + kstep/2.;
+  Int_t * array = new Int_t[klen];
+  Float_t * ver   = new Float_t[klen];
+  for(Int_t i=0;i<klen;i++){
+    ver[i] =  kstart + kstep * i;
     array[i] = 0;
   }
-  AnalyzeSector(ver,array,len);
-  FindMean(ver,array,len);
+  AnalyzeSector(ver,array,klen);
+  FindMean(ver,array,klen);
   delete[] array;
   delete[] ver;
 }
 
-void AliL3VertexArray::FindMean(Float_t *vertex,Int_t *array, Int_t len){
-//find mean and error of array and store it in
-//fZSector and fZSectorErr
-  const Int_t nbin = len;
+void AliL3VertexArray::FindMean(Float_t *vertex,Int_t *array, Int_t len)
+{
+  //find mean and error of array and store it in
+  //fZSector and fZSectorErr
+  const Int_t knbin = len;
   Int_t xbin =0;
   Int_t max=0;
-  for(Int_t i = 0;i<nbin;i++){
+  for(Int_t i = 0;i<knbin;i++){
     if(array[i]>max){
       max = array[i];
       xbin =i;
@@ -85,13 +88,13 @@ void AliL3VertexArray::FindMean(Float_t *vertex,Int_t *array, Int_t len){
   }
   xmax = xbin;
   while(xmax++){
-    if(xmax>=nbin) {ops++;break;}
+    if(xmax>=knbin) {ops++;break;}
     if(array[xmax]<hmax){
       break;
     }
   }
   if(ops){
-    if(xbin >= nbin/2){xmin = 2 * xbin - nbin +1;xmax = nbin-1;}
+    if(xbin >= knbin/2){xmin = 2 * xbin - knbin +1;xmax = knbin-1;}
     else{xmin = 0;xmax = 2 * xbin;}
   }
   Double_t sumw=0;
@@ -112,7 +115,7 @@ void AliL3VertexArray::FindMean(Float_t *vertex,Int_t *array, Int_t len){
   }
   else{fZSectorErr = fZSector = 0;}
   sumw=sumw2=sumwx=sumwx2=0;
-  for(Int_t bin = 0;bin<nbin;bin++){
+  for(Int_t bin = 0;bin<knbin;bin++){
     sumw   += array[bin];
     sumw2  += array[bin] * array[bin];
     sumwx  += array[bin] * vertex[bin];

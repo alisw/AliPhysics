@@ -12,88 +12,183 @@ ClassImp(AliL3Logger)
 
 #ifdef use_logging
 
-Int_t AliL3Logger::kAll= AliL3Log::kAll;
-Int_t AliL3Logger::kDebug = AliL3Log::kDebug;
-Int_t AliL3Logger::kInformational = AliL3Log::kInformational;
-Int_t AliL3Logger::kWarning = AliL3Log::kWarning;
-Int_t AliL3Logger::kError = AliL3Log::kError;
-Int_t AliL3Logger::kFatal = AliL3Log::kFatal;
+Int_t AliL3Logger::fgAll= AliL3Log::kAll;
+Int_t AliL3Logger::fgDebug = AliL3Log::kDebug;
+Int_t AliL3Logger::fgInformational = AliL3Log::kInformational;
+Int_t AliL3Logger::fgWarning = AliL3Log::kWarning;
+Int_t AliL3Logger::fgError = AliL3Log::kError;
+Int_t AliL3Logger::fgFatal = AliL3Log::kFatal;
 
-AliL3Logger::AliL3Logger(){
-  gLogLevel=AliL3Log::kAll;
-  dn = so = se = sm =0;
-  of = 0;
+AliL3Logger::AliL3Logger()
+{
+  //constructor
+  gLogLevel=AliL3Log::fgAll;
+  fdn = fso = fse = fsm =0;
+  fof = 0;
 }
-AliL3Logger::~AliL3Logger(){
-  if(dn) {gLog.DelServer(dn);delete dn;}
-  if(so) {gLog.DelServer(so);delete so;}
-  if(se) {gLog.DelServer(se);delete se;}
-  if(sm) {gLog.DelServer(sm);delete sm;}
-  if(of) {of->close();delete of;}
+
+AliL3Logger::~AliL3Logger()
+{
+  //destructor
+  if(fdn) {gLog.DelServer(fdn);delete fdn;}
+  if(fso) {gLog.DelServer(fso);delete fso;}
+  if(fse) {gLog.DelServer(fse);delete fse;}
+  if(fsm) {gLog.DelServer(fsm);delete fsm;}
+  if(fof) {fof->close();delete fof;}
 }
-void AliL3Logger::Set(Int_t l){gLogLevel |=l;}
-void AliL3Logger::UnSet(Int_t l){gLogLevel &=(~l);}
-void AliL3Logger::UseDevNull(){
-  if(dn) return;
-  dn = new AliL3DevNullLogServer();
+
+void AliL3Logger::Set(Int_t l)
+{ 
+  //set logger
+  gLogLevel |=l;
+}
+
+void AliL3Logger::UnSet(Int_t l)
+{ 
+  //unset logger
+  gLogLevel &=(~l);
+}
+
+void AliL3Logger::UseDevNull()
+{
+  //use dev null
+  if(fdn) return;
+  fdn = new AliL3DevNullLogServer();
   gLog.AddServer(dn);
 }
-void AliL3Logger::UseStdout(){
-  if(so)return;
-  so = new AliL3StdoutLogServer(); 
-  gLog.AddServer(so);
+void AliL3Logger::UseStdout()
+{
+  //use stdout
+  if(fso)return;
+  fso = new AliL3StdoutLogServer(); 
+  gLog.AddServer(fso);
 }
-void AliL3Logger::UseStderr(){
-  if(se) return;
-  se = new AliL3StderrLogServer();
-  gLog.AddServer(se);
-}
-
-void AliL3Logger::UseStream(Char_t *name){
-  if(sm) return;
-  if(of) of->close();
-  delete of;
-  of = 0;
-  of = new ofstream();
-  of->open(name);
-  sm = new  AliL3StreamLogServer(*of);
-  gLog.AddServer(sm);
-}
-void AliL3Logger::NotUseDevNull(){
-  if(dn) {gLog.DelServer(dn);delete dn;dn=0;}
-}
-void AliL3Logger::NotUseStdout(){
-  if(so) {gLog.DelServer(so);delete so;so=0;}
-}
-void AliL3Logger::NotUseStderr(){
-  if(se) {gLog.DelServer(se);delete se;se=0;}
+void AliL3Logger::UseStderr()
+{
+  //use stderr
+  if(fse) return;
+  fse = new AliL3StderrLogServer();
+  gLog.AddServer(fse);
 }
 
-void AliL3Logger::NotUseStream(){
-  if(sm) {gLog.DelServer(sm);delete sm;sm=0;}
-  if(of) {of->close();delete of;of=0;}
+void AliL3Logger::UseStream(Char_t *name)
+{
+  //use stream
+  if(fsm) return;
+  if(fof) fof->close();
+  delete fof;
+  fof = 0;
+  fof = new ofstream();
+  fof->open(name);
+  fsm = new  AliL3StreamLogServer(*fof);
+  gLog.AddServer(fsm);
 }
-#else
 
-Int_t AliL3Logger::kAll= AliL3Log::kAll;
-Int_t AliL3Logger::kDebug = AliL3Log::kDebug;
-Int_t AliL3Logger::kInformational = AliL3Log::kInformational;
-Int_t AliL3Logger::kWarning = AliL3Log::kWarning;
-Int_t AliL3Logger::kError = AliL3Log::kError;
-Int_t AliL3Logger::kFatal = AliL3Log::kFatal;
+void AliL3Logger::NotUseDevNull()
+{
+  //not dev null
+  if(fdn) {gLog.DelServer(fdn);delete fdn;fdn=0;}
+}
 
-AliL3Logger::AliL3Logger(){;}
-AliL3Logger::~AliL3Logger(){;}
-void AliL3Logger::Set(Int_t /*l*/){;}
-void AliL3Logger::UnSet(Int_t /*l*/){;}
-void AliL3Logger::UseDevNull(){;}
-void AliL3Logger::UseStdout(){;}
-void AliL3Logger::UseStderr(){;}
-void AliL3Logger::UseStream(Char_t */*name*/){;}
-void AliL3Logger::NotUseDevNull(){;}
-void AliL3Logger::NotUseStdout(){;}
-void AliL3Logger::NotUseStderr(){;}
-void AliL3Logger::NotUseStream(){;}
+void AliL3Logger::NotUseStdout()
+{
+  //not stdout
+  if(fso) {gLog.DelServer(fso);delete fso;fso=0;}
+}
+
+void AliL3Logger::NotUseStderr()
+{
+  //not stderr
+  if(fse) {gLog.DelServer(fse);delete fse;fse=0;}
+}
+
+void AliL3Logger::NotUseStream()
+{
+  //not stream
+  if(fsm) {gLog.DelServer(fsm);delete fsm;fsm=0;}
+  if(fof) {fof->close();delete fof;fof=0;}
+}
+
+#else /*not use_logging*/
+
+Int_t AliL3Logger::fgAll= AliL3Log::kAll;
+Int_t AliL3Logger::fgDebug = AliL3Log::kDebug;
+Int_t AliL3Logger::fgInformational = AliL3Log::kInformational;
+Int_t AliL3Logger::fgWarning = AliL3Log::kWarning;
+Int_t AliL3Logger::fgError = AliL3Log::kError;
+Int_t AliL3Logger::fgFatal = AliL3Log::kFatal;
+
+AliL3Logger::AliL3Logger()
+{
+  //
+  ;
+}
+
+AliL3Logger::~AliL3Logger()
+{
+  //
+  ;
+}
+
+void AliL3Logger::Set(Int_t /*l*/)
+{
+  //
+  ;
+}
+
+void AliL3Logger::UnSet(Int_t /*l*/)
+{
+  //
+  ;
+}
+
+void AliL3Logger::UseDevNull()
+{
+  //
+  ;
+}
+
+void AliL3Logger::UseStdout()
+{
+  //
+  ;
+}
+
+void AliL3Logger::UseStderr()
+{
+  //
+  ;
+}
+
+void AliL3Logger::UseStream(Char_t */*name*/)
+{
+  //
+  ;
+}
+
+void AliL3Logger::NotUseDevNull()
+{
+  //
+  ;
+}
+
+void AliL3Logger::NotUseStdout()
+{
+  //
+  ;
+}
+
+void AliL3Logger::NotUseStderr()
+{
+  //
+  ;
+}
+
+void AliL3Logger::NotUseStream()
+{
+  //
+  ;
+}
 #endif
 
 
