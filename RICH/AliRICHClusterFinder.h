@@ -22,7 +22,7 @@ public:
   void     FormRawCluster(Int_t i, Int_t j, AliRICHcluster &cluster);           //form a raw cluster
   void     FindLocalMaxima(AliRICHcluster &cluster);                            //Find local maxima in a cluster
   void     ResolveCluster(AliRICHcluster  &cluster);                            //Try to resolve a cluster with maxima > 2
-  void     CoG();                                                               //Evaluate the CoG as the best  
+  //PH  void     CoG();                                                               //Evaluate the CoG as the best  
   void     WriteRawCluster(AliRICHcluster &cluster);                            //write in the list of the raw clusters  
 protected:      
   AliRICH                *fRICH;                         //Pointer to RICH

@@ -29,7 +29,7 @@ public :
   AliRICH* Rich() {return fRich;}             //main pointer to RICH
   void StartProcessEvent();                   //
   void EndProcessEvent();                     //
-  void InitRecon();                           //
+  //PH  void InitRecon();                           //
   void PatRec();                              //
   void Minimization();                        //
   void FillHistograms();                      //
