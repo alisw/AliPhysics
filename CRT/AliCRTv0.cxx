@@ -223,18 +223,20 @@ void AliCRTv0::CreateGeometry()
   Int_t  idrotm[2499];    // The rotation matrix.
   Int_t* idtmed = fIdtmed->GetArray() - 1099;
   AliCRTConstants* crtConstants = AliCRTConstants::Instance();
+
   // Create the mother volume.
   // This volume can be seen as the volume which ACORDE will ocupate
   // above the upper face of the L3 magnet. Inside this volume the detectors
   // aboce the magnet will be, then there will be two copies of this volume,
   // one for each side.
   Float_t box[3];
-  box[0] = 2*crtConstants->MagMinRadius()*TMath::Sin(kDegrad*22.5);
+  //box[0] = 2*crtConstants->MagMinRadius()*TMath::Sin(kDegrad*22.5);
+  box[0] = crtConstants->MagMinRadius()*TMath::Sin(kDegrad*22.5);
   box[1] = crtConstants->MagMaxRadius() - crtConstants->MagMinRadius();
-  box[2] = crtConstants->MagnetLenght();
+  box[2] = crtConstants->MagnetLenght()/2;
   gMC->Gsvolu("CRT1", "BOX", idtmed[1112], box, 3);
 
-  // Check if the AliCRTModule instance hav been set, otherwise
+  // Check if the AliCRTModule instance have been set, otherwise
   // use the default values
   if ( !fModule ) {
     Info("CreateGeometry", "Using default dimensions");
@@ -282,14 +284,13 @@ void AliCRTv0::CreateGeometry()
   // 4 support bars
   Int_t copyNumber = 0;
   for ( Int_t k = 0; k < fModule->NumberOfRows(); k++ ) {
-  //for (Int_t k = 0; k < fModule->NumberOfModules(); k++ ) {
-    //Float_t zCoordinate = (k-(fModule->NumberOfColumns()-1)/2)*fModule->ZGap();
-    //Float_t zCoordinate = k*fModule->ZGap() - (fModule->NumberOfColums()-1)*fModule->ZGap()/2;
     Float_t zCoordinate = k*fModule->ZGap() - 450;
     gMC->Gspos("CRT2",++copyNumber,"CRT1",-150, 15, zCoordinate, 0, "MANY");
     gMC->Gspos("CRT2",++copyNumber,"CRT1",150, 15, zCoordinate, 0, "MANY");
+
   }
-  // Put the suppor bars
+
+  // Put the support bars
   gMC->Gspos("CRT6", 1, "CRT1",  -75, 5, 0, 0, "ONLY");
   gMC->Gspos("CRT6", 2, "CRT1", -225, 5, 0, 0, "ONLY");
   gMC->Gspos("CRT6", 3, "CRT1",   75, 5, 0, 0, "ONLY");
