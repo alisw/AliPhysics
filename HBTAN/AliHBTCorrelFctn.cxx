@@ -71,3 +71,24 @@ TH1* AliHBTInvMassCorrelFctn::GetResult()
  TString name = fName + " Result";
  return (TH1*)GetNumerator()->Clone(name.Data());
 }
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+
+ClassImp(AliHBTTwoKStarCorrelFctn)
+
+AliHBTTwoKStarCorrelFctn::
+AliHBTTwoKStarCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+                     AliHBTOnePairFctn1D(nbins,maxXval,minXval)
+{
+ Rename("twokstarcf","2K^{*} Correlation Function");
+}
+
+/*************************************************************************************/ 
+
+TH1* AliHBTTwoKStarCorrelFctn::GetResult()
+{  
+ return GetRatio(Scale());
+}
+
+/*************************************************************************************/ 

@@ -67,7 +67,7 @@
 #pragma link C++ class AliHBTReaderInternal+;
 
 #pragma link C++ class AliHBTQInvCorrelFctn+;
-
+#pragma link C++ class AliHBTTwoKStarCorrelFctn+;
 #pragma link C++ class AliHBTQOutCMSLCCorrelFctn+;
 #pragma link C++ class AliHBTQLongCMSLCCorrelFctn+;
 #pragma link C++ class AliHBTQSideCMSLCCorrelFctn+;
