@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/06/15 09:40:31  morsch
+Obsolete typedef keyword removed
+
 Revision 1.6  2000/06/13 15:01:38  morsch
 Make kind of heavy shielding material (Pb, NiCuW) dependent on presence of outer cone.
 
@@ -99,7 +102,7 @@ void AliSHILv0::CreateGeometry()
   //End_Html
 
     Float_t cpar[5], cpar0[5], tpar[3], par1[39], par2[27], par3[27], 
-	par4[21], par0[42];
+	par4[21], par0[45];
     Float_t dz, dZ;
   
     Int_t *idtmed = fIdtmed->GetArray()-1699;
@@ -438,42 +441,38 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
   par2[0]  = 0.;
   par2[1]  = 360.;
-  par2[2]  = 7.;
+  par2[2]  = 6.;
   dl=(zvac7-zvac4)/2.;
-// recess station 1   
+// recess station 2   
   par2[3]  = -dl;
   par2[4]  = r2+(zvac4-zvac3) * TMath::Tan(thetaOpen2);
-  par2[5]  = R11;
-// recess station 2   
-  par2[6]  = -dl;
-  par2[7]  = par2[4];
+  par2[5]  = R21;
+
+  par2[6]  = -dl+(zvac6-zvac4);
+  par2[7]  = r2+(zvac6-zvac3) * TMath::Tan(thetaOpen2);
   par2[8]  = R21;
 
-  par2[9]  = -dl+(zvac6-zvac4);
-  par2[10]  = r2+(zvac6-zvac3) * TMath::Tan(thetaOpen2);
-  par2[11]  = R21;
-
-  par2[12] = -dl+(zvac6-zvac4);
-  par2[13] = par2[10];
-  par2[14] = zvac6*TMath::Tan(accMin);
+  par2[9] = -dl+(zvac6-zvac4);
+  par2[10] = par2[7];
+  par2[11] = zvac6*TMath::Tan(accMin);
 
 // Start of Pb section
-  par2[15] = -dl+(zPb-zvac4);
-  par2[16] = r2+(zPb-zvac3) * TMath::Tan(thetaOpen2);
-  par2[17] = zPb*TMath::Tan(accMin);
+  par2[12] = -dl+(zPb-zvac4);
+  par2[13] = r2+(zPb-zvac3) * TMath::Tan(thetaOpen2);
+  par2[14] = zPb*TMath::Tan(accMin);
 
 //
 // end of cone following 2 deg line
-  par2[18] = -dl+(zConeE-zvac4);
-  par2[19] = r2+(zConeE-zvac3) * TMath::Tan(thetaOpen2);
+  par2[15] = -dl+(zConeE-zvac4);
+  par2[16] = r2+(zConeE-zvac3) * TMath::Tan(thetaOpen2);
+  par2[17] = 30.;
+
+  par2[18] = -dl+(zvac7-zvac4);
+  par2[19] = r2+(zvac7-zvac3) * TMath::Tan(thetaOpen2);
   par2[20] = 30.;
 
-  par2[21] = -dl+(zvac7-zvac4);
-  par2[22] = r2+(zvac7-zvac3) * TMath::Tan(thetaOpen2);
-  par2[23] = 30.;
 
-
-  gMC->Gsvolu("YGO2", "PCON", idtmed[iHeavy+40], par2, 24);
+  gMC->Gsvolu("YGO2", "PCON", idtmed[kNiCuW+40], par2, 21);
 //
 // Lead cone option replacing Tungsten 
 //
@@ -496,7 +495,20 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   parPb[11]  = 30.;
   gMC->Gsvolu("YXO2", "PCON", idtmed[kPb], parPb, 12);	  
   gMC->Gspos("YXO2", 1, "YGO2", 0., 0., (zPb-zvac4)/2., 0, "ONLY");  
+
+  parPb[4]  = r2+(zPb-zvac3) * TMath::Tan(thetaOpen2);
+  parPb[5]  = 17.657;
   
+  parPb[7]  = r2+(zConeE-zvac3) * TMath::Tan(thetaOpen2);
+  parPb[8]  = parPb[5]+(zConeE-zPb)*TMath::Tan(thetaOpenPb);
+  
+  parPb[10]  = r2+(zvac7-zvac3) * TMath::Tan(thetaOpen2);
+  parPb[11]  = parPb[8]+(zvac7-zConeE)*TMath::Tan(thetaOpenPb);
+
+  gMC->Gsvolu("YYO2", "PCON", idtmed[iHeavy+40], parPb, 12);	  
+  gMC->Gspos("YYO2", 1, "YGO2", 0., 0., (zPb-zvac4)/2., 0, "ONLY");  
+  
+
   { // Begin local scope for i
       for (Int_t i=4; i<23; i+=3) par2[i]  = 0;
   } // End local scope for i
@@ -1050,14 +1062,70 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 //
 // Outer Pb Cone
   if (fPbCone) {
-      cpar[0]=(zFilterIn-zConeE)/2.;
-      cpar[1]=30.;
-      cpar[2]=30.001;
-      cpar[3]=30.;
-      cpar[4]=30.+2.*cpar[0]*TMath::Tan(thetaOpenPbO);
-      
-      gMC->Gsvolu("YOPB", "CONE", idtmed[kPb], cpar, 5);
-      dz=zConeE+cpar[0];
+      par0[0]  = 0.;
+      par0[1]  = 360.;
+      par0[2]  = 14.;
+//    start of cone
+      par0[3]  = zConeE;
+      par0[4]  = 30.0;
+      par0[5]  = 30.01;
+//    3rd station
+      par0[6]  = zch31;
+      par0[7]  = 30.0;
+      par0[8]  = 30.-(zConeE-zch31)*TMath::Tan(thetaOpenPbO);
+
+      par0[9]   = zch31;
+      par0[10]  = 30.0;
+      par0[11]  = 30.1;
+
+      par0[12]  = zch32;
+      par0[13]  = 30.0;
+      par0[14]  = 30.1;
+
+      par0[15]  = zch32;
+      par0[16]  = 30.0;
+      par0[17]  = 30.-(zConeE-zch32)*TMath::Tan(thetaOpenPbO);
+
+//    4th station
+      par0[18]  = zch41;
+      par0[19]  = 30.0;
+      par0[20]  = 30.-(zConeE-zch41)*TMath::Tan(thetaOpenPbO);
+
+      par0[21]   = zch41;
+      par0[22]  = 30.0;
+      par0[23]  = 30.-(zConeE-zch41)*TMath::Tan(thetaOpenPbO)-7.;
+
+      par0[24]  = zch42;
+      par0[25]  = 30.0;
+      par0[26]  = 30.-(zConeE-zch41)*TMath::Tan(thetaOpenPbO)-7.;
+
+      par0[27]  = zch42;
+      par0[28]  = 30.0;
+      par0[29]  = 30.-(zConeE-zch42)*TMath::Tan(thetaOpenPbO);
+
+//    5th station
+      par0[30]  = zch51;
+      par0[31]  = 30.0;
+      par0[32]  = 30.-(zConeE-zch51)*TMath::Tan(thetaOpenPbO);
+
+      par0[33]  = zch51;
+      par0[34]  = 30.0;
+      par0[35]  = 30.-(zConeE-zch51)*TMath::Tan(thetaOpenPbO)-7.;
+
+      par0[36]  = zch52;
+      par0[37]  = 30.0;
+      par0[38]  = 30.-(zConeE-zch51)*TMath::Tan(thetaOpenPbO)-7.;
+
+      par0[39]  = zch52;
+      par0[40]  = 30.0;
+      par0[41]  = 30.-(zConeE-zch52)*TMath::Tan(thetaOpenPbO);
+// end of cone
+      par0[42]  = zFilterIn;
+      par0[43]  = 30.0;
+      par0[44]  = 30.-(zConeE-zFilterIn)*TMath::Tan(thetaOpenPbO);
+//
+      gMC->Gsvolu("YOPB", "PCON", idtmed[kPb], par0, 45);
+      dz=0.;
       gMC->Gspos("YOPB", 1, "ALIC", 0., 0., dz, 0, "ONLY");
   }
 }
