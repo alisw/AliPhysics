@@ -1898,7 +1898,7 @@ void TFluka::TrackPosition(TLorentzVector& position) const
 // TRACKR.ytrack = y-position of the last point
 // TRACKR.ztrack = z-position of the last point
   Int_t caller = GetCaller();
-  if (caller == 1 || caller == 3 || caller == 6) { //bxdraw,endraw,usdraw
+  if (caller == 1 || caller == 3 || caller == 6 || caller == 11 || caller == 12) { //bxdraw,endraw,usdraw
     position.SetX(GetXsco());
     position.SetY(GetYsco());
     position.SetZ(GetZsco());
@@ -1930,7 +1930,7 @@ void TFluka::TrackPosition(Double_t& x, Double_t& y, Double_t& z) const
 // TRACKR.ytrack = y-position of the last point
 // TRACKR.ztrack = z-position of the last point
   Int_t caller = GetCaller();
-  if (caller == 1 || caller == 3 || caller == 6) { //bxdraw,endraw,usdraw
+  if (caller == 1 || caller == 3 || caller == 6 || caller == 11 || caller == 12) { //bxdraw,endraw,usdraw
     x = GetXsco();
     y = GetYsco();
     z = GetZsco();
@@ -2157,7 +2157,7 @@ Bool_t   TFluka::IsTrackEntering() const
 // True if this is the first step of the track in the current volume
 
   Int_t caller = GetCaller();
-  if (caller == 11 || caller == 4)  // bxdraw entering
+  if (caller == 11)  // bxdraw entering
     return 1;
   else return 0;
 }
@@ -2356,7 +2356,7 @@ Int_t TFluka::VolId2Mate(Int_t id) const
 // Returns the material number for a given volume ID
 //
     if (fVerbosityLevel >= 3)
-    printf("VolId2Mate %d %d\n", id, fMediaByRegion[id]); 
+    printf("VolId2Mate %d %d\n", id, fMediaByRegion[id-1]); 
     return fMediaByRegion[id-1];
 }
 
@@ -2402,10 +2402,10 @@ Int_t TFluka::CurrentVolID(Int_t& copyNo) const
 //
     int ir = fCurrentFlukaRegion;
     int id = (FGeometryInit::GetInstance())->CurrentVolID(ir, copyNo);
+    copyNo++;
     if (fVerbosityLevel >= 3)
     printf("CurrentVolID: %d %d %d \n", ir, id, copyNo); 
     return id;
-
 } 
 
 Int_t TFluka::CurrentVolOffID(Int_t off, Int_t& copyNo) const
@@ -2419,6 +2419,7 @@ Int_t TFluka::CurrentVolOffID(Int_t off, Int_t& copyNo) const
     
     int ir = fCurrentFlukaRegion;
     int id = (FGeometryInit::GetInstance())->CurrentVolOffID(ir, off, copyNo);
+    copyNo++;
     if (fVerbosityLevel >= 3)
     printf("CurrentVolOffID: %d %d %d \n", ir, id, copyNo); 
     if (id == -1) 
