@@ -15,6 +15,11 @@
 
 /*
   $Log$
+  Revision 1.28  2000/10/17 20:50:57  jbarbosa
+  Inversed digtise by particle type (now, only the selected particle type is not digitsed).
+  Corrected several geometry minor bugs.
+  Added new parameter (opaque quartz thickness).
+
   Revision 1.27  2000/10/11 10:33:55  jbarbosa
   Corrected bug introduced by earlier revisions  (CerenkovData array cannot be reset to zero on wach call of StepManager)
 
@@ -384,7 +389,7 @@ void AliRICH::CreateGeometry()
   geometry->SetRadiatorToPads(distance);
     
   //Opaque quartz thickness
-  Float_t oqua_thickness = 1;
+  Float_t oqua_thickness = .4;
     
     Int_t *idtmed = fIdtmed->GetArray()-999;
     
@@ -413,7 +418,7 @@ void AliRICH::CreateGeometry()
     gMC->Gsvolu("SRIC", "BOX ", idtmed[1000], par, 3);
     
     //     Honeycomb 
-    par[0] = 64.8;
+    par[0] = 63.1;
     par[1] = .188;                 //Original Settings
     par[2] = 66.55;
     /*par[0] = 66.55;
@@ -422,7 +427,7 @@ void AliRICH::CreateGeometry()
     gMC->Gsvolu("HONE", "BOX ", idtmed[1001], par, 3);
     
     //     Aluminium sheet 
-    par[0] = 64.8;
+    par[0] = 63.1;
     par[1] = .025;                 //Original Settings
     par[2] = 66.55;
     /*par[0] = 66.5;
@@ -450,7 +455,7 @@ void AliRICH::CreateGeometry()
     gMC->Gsvolu("SPAC", "TUBE", idtmed[1002], par, 3);
     
     //     Opaque quartz 
-    par[0] = 64.8;
+    par[0] = 61.95;
     par[1] = .2;                   //Original Settings
     par[2] = 66.5;
     /*par[0] = 66.5;
@@ -459,9 +464,11 @@ void AliRICH::CreateGeometry()
     gMC->Gsvolu("OQUA", "BOX ", idtmed[1007], par, 3);
   
     //     Frame of opaque quartz
-    par[0] = geometry->GetOuterFreonWidth()/2 + oqua_thickness;
+    par[0] = geometry->GetOuterFreonWidth()/2;
+    //+ oqua_thickness;
     par[1] = geometry->GetFreonThickness()/2;
-    par[2] = geometry->GetOuterFreonLength()/2 + oqua_thickness; 
+    par[2] = geometry->GetOuterFreonLength()/2; 
+    //+ oqua_thickness; 
     /*par[0] = 20.65;
     par[1] = .5;                   //Original Settings
     par[2] = 66.5;*/
@@ -478,7 +485,9 @@ void AliRICH::CreateGeometry()
     //     Little bar of opaque quartz 
     par[0] = .275;
     par[1] = geometry->GetQuartzThickness()/2;
-    par[2] = geometry->GetInnerFreonLength()/2 - 2.4; 
+    //par[2] = geometry->GetInnerFreonLength()/2 - 2.4; 
+    par[2] = geometry->GetInnerFreonLength()/2;
+    //+ oqua_thickness;
     /*par[0] = .275;
     par[1] = .25;                   //Original Settings
     par[2] = 63.1;*/
@@ -2056,6 +2065,7 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
     static Bool_t first=kTRUE;
     static TFile *pFile;
     char *addBackground = strstr(option,"Add");
+    Int_t particle;
 
     FILE* points; //these will be the digits...
 
@@ -2064,7 +2074,7 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
     AliRICHChamber*       iChamber;
     AliSegmentation*  segmentation;
 
-    Int_t digitse=0;
+    Int_t digitise=0;
     Int_t trk[50];
     Int_t chtrk[50];  
     TObjArray *list=new TObjArray;
@@ -2137,48 +2147,56 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	  mHit=(AliRICHHit*)pRICH->NextHit()) 
 	{
 	  
-	  digitse=0;
-	  
 	  Int_t   nch   = mHit->fChamber-1;  // chamber number
+	  Int_t   index = mHit->Track();
 	  if (nch >kNCH) continue;
 	  iChamber = &(pRICH->Chamber(nch));
 	  
-	  TParticle *current = (TParticle*)(*gAlice->Particles())[track];
+	  TParticle *current = (TParticle*)(*gAlice->Particles())[index];
 	  
-	  Int_t particle = current->GetPdgCode();
+	  if (current->GetPdgCode() >= 50000050)
+	    {
+	      TParticle *motherofcurrent = (TParticle*)(*gAlice->Particles())[current->GetFirstMother()];
+	      particle = motherofcurrent->GetPdgCode();
+	    }
+	  else
+	    {
+	      particle = current->GetPdgCode();
+	    }
+
 	  
 	  //printf("Flag:%d\n",flag);
 	  //printf("Track:%d\n",track);
 	  //printf("Particle:%d\n",particle);
 	  
-	  digitse=1;
+	  digitise=1;
 	  
 	  if (flag == 1) 
-	    if(TMath::Abs(particle) == 211 || TMath::Abs(particle) == 111)
-	      digitse=0;
+	    if(TMath::Abs(particle)==211 || TMath::Abs(particle)==111)
+	      digitise=0;
 	  
 	  if (flag == 2)
 	    if(TMath::Abs(particle)==321 || TMath::Abs(particle)==130 || TMath::Abs(particle)==310 
 	       || TMath::Abs(particle)==311)
-	      digitse=0;
+	      digitise=0;
 	  
 	  if (flag == 3 && TMath::Abs(particle)==2212)
-	    digitse=0;
+	    digitise=0;
 	  
 	  if (flag == 4 && TMath::Abs(particle)==13)
-	    digitse=0;
+	    digitise=0;
 	  
 	  if (flag == 5 && TMath::Abs(particle)==11)
-	    digitse=0;
+	    digitise=0;
 	  
 	  if (flag == 6 && TMath::Abs(particle)==2112)
-	    digitse=0;
+	    digitise=0;
 	  
 	  
-	  //printf ("Particle: %d, Flag: %d, Digitse: %d\n",particle,flag,digitse); 
+	  //printf ("Particle: %d, Flag: %d, Digitise: %d\n",particle,flag,digitise); 
 	  
 	  
-	  if (digitse)
+	  if (digitise)
 	    {
 	      
 	      //
