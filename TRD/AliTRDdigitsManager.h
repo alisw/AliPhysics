@@ -41,9 +41,9 @@ class AliTRDdigitsManager : public TObject {
           AliTRDdigit        *GetDigit(Int_t row, Int_t col, Int_t time, Int_t det);
           Int_t               GetTrack(Int_t track, Int_t row, Int_t col, Int_t time, Int_t det);
 
-  inline  AliTRDdataArrayI   *GetDigits(Int_t det);
-  inline  AliTRDdataArrayI   *GetDictionary(Int_t det, Int_t i);
-  inline  Int_t               GetTrack(Int_t track, AliTRDdigit *Digit);
+          AliTRDdataArrayI   *GetDigits(Int_t det);
+          AliTRDdataArrayI   *GetDictionary(Int_t det, Int_t i);
+          Int_t               GetTrack(Int_t track, AliTRDdigit *Digit);
 
  protected:
 

@@ -35,7 +35,7 @@ class AliTRDdataArrayF : public AliTRDdataArray {
   virtual Bool_t  Next(); 
   virtual void    Reset();
 
-  inline  void    SetData(Int_t row, Int_t col, Int_t time, Float_t value);
+          void    SetData(Int_t row, Int_t col, Int_t time, Float_t value);
   virtual void    SetThreshold(Float_t threshold) { fThreshold = threshold; };
 
   virtual Float_t GetData(Int_t row, Int_t col, Int_t time);
