@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/04/27 10:38:21  fca
+Correct termination of Lego Run and introduce Lego getter in AliRun
+
 Revision 1.13  2000/04/26 10:17:31  fca
 Changes in Lego for G4 compatibility
 
@@ -183,16 +186,16 @@ void AliLego::StepManager()
    Float_t vect[3], dir[3];
    TLorentzVector pos, mom;
 
+   if (z < 1) return;
+    
    gMC->TrackPosition(pos);  
    gMC->TrackMomentum(mom);
    gMC->CurrentMaterial(a,z,dens,radl,absl);
    
-   if (z < 1) return;
-   
 // --- See if we have to stop now
    if (TMath::Abs(pos[2]) > fGener->ZMax()  || 
        pos[0]*pos[0] +pos[1]*pos[1] > fGener->RadMax()*fGener->RadMax()) {
-     if (gMC->TrackLength()) {
+     if (!gMC->IsNewTrack()) {
        // Not the first step, add past contribution
        fTotAbso += t/absl;
        fTotRadl += t/radl;

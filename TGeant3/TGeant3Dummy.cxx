@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2000/04/09 19:00:26  fca
+Small corrections left over from removal of AliVMC for G4 compatibility
+
 Revision 1.18  2000/02/28 21:03:57  fca
 Some additions to improve the compatibility with G4
 
@@ -90,6 +93,7 @@ void    TGeant3::SetProcess(const char* , Int_t ) {}
 const char*   TGeant3::VolName(Int_t ) const {return 0;}
 Float_t TGeant3::TrackCharge() const {return 0;}
 Float_t TGeant3::TrackMass() const {return 0;}
+Bool_t  TGeant3::IsNewTrack() const {return 0;}
 Bool_t  TGeant3::IsTrackInside() const {return 0;}
 Bool_t  TGeant3::IsTrackEntering() const {return 0;}
 Bool_t  TGeant3::IsTrackExiting() const {return 0;}

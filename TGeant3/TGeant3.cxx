@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2000/04/07 11:12:35  fca
+G4 compatibility changes
+
 Revision 1.24  2000/02/28 21:03:57  fca
 Some additions to improve the compatibility with G4
 
@@ -1204,6 +1207,15 @@ Float_t TGeant3::TrackLength() const
   // Return the length of the current track from its origin
   //
   return fGctrak->sleng;
+}
+
+//_____________________________________________________________________________
+Bool_t TGeant3::IsNewTrack() const
+{
+  //
+  // True if the track is not at the boundary of the current volume
+  //
+  return (fGctrak->sleng>0);
 }
 
 //_____________________________________________________________________________

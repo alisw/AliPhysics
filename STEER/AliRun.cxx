@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.32  2000/04/27 10:38:21  fca
+Correct termination of Lego Run and introduce Lego getter in AliRun
+
 Revision 1.31  2000/04/26 10:17:32  fca
 Changes in Lego for G4 compatibility
 
@@ -1134,9 +1137,12 @@ void AliRun::PurifyKine()
   // Save in Header total number of tracks before compression
   fHeader.SetNtrack(fHeader.GetNtrack()+fNtrack-fHgwmk);
 
-  // Preset map, to be removed later
+  // First pass, invalid Daughter information
   for(i=0; i<fNtrack; i++) {
-    if(i<=fHgwmk) map[i]=i ; else map[i] = -99 ;}
+    // Preset map, to be removed later
+    if(i<=fHgwmk) map[i]=i ; else map[i] = -99;
+    ((TParticle *)particles.UncheckedAt(i))->ResetBit(Daughters_Bit);
+  }
   // Second pass, build map between old and new numbering
   for(i=fHgwmk+1; i<fNtrack; i++) {
     part = (TParticle *)particles.UncheckedAt(i);
@@ -1454,6 +1460,8 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
   ((TParticle*)particles[fNtrack])->SetPolarisation(TVector3(polar[0],polar[1],polar[2]));
   ((TParticle*)particles[fNtrack])->SetWeight(weight);
   if(!done) particle->SetBit(Done_Bit);
+  //Declare that the daughter information is valid
+  ((TParticle*)particles[fNtrack])->SetBit(Daughters_Bit);
   
   if(parent>=0) {
     particle=(TParticle*) fParticles->UncheckedAt(parent);

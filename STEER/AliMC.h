@@ -148,6 +148,7 @@ class AliMC : public TNamed
     virtual Float_t Etot() const =0;
 
         // track status
+    virtual Bool_t  IsNewTrack() const =0;
     virtual Bool_t  IsTrackInside() const =0;
     virtual Bool_t  IsTrackEntering() const =0;
     virtual Bool_t  IsTrackExiting() const =0;

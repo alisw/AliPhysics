@@ -598,6 +598,7 @@ public:
   Float_t TrackStep() const;
   Float_t TrackLength() const;
   Int_t   TrackPid() const;
+  Bool_t IsNewTrack() const;
   Bool_t IsTrackInside() const;
   Bool_t IsTrackEntering() const;
   Bool_t IsTrackExiting() const;
