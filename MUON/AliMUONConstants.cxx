@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/01/30 12:19:39  morsch
+Update chamber positions (AdTDR version update 4/12/2000).
+
 Revision 1.5  2000/10/18 13:26:10  morsch
 New z-positions of chambers after Erice
 
@@ -49,7 +52,7 @@ Float_t AliMUONConstants::fgDefaultChamberZ[14] =
 		   1610, 1625., 1710., 1725.}; 
 
 Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  66.0,   80.,   80., 100., 100.};    
-Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 316.6,  560.,  560., 830., 880.};  
+Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 316.6,  560.,  560., 850., 900.};  
 
 Int_t   AliMUONConstants::fgMaxZoom = 20;
 

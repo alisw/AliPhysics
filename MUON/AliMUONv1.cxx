@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.23  2001/01/18 15:23:49  egangler
+Bug correction in StepManager :
+Now the systematic offset with angle is cured
+
 Revision 1.22  2001/01/17 21:01:21  hristov
 Unused variable removed
 
@@ -1257,16 +1261,19 @@ void AliMUONv1::CreateGeometry()
 
 //  Parameters of the Trigger Chambers
 
-    		
+// DP03-01 introduce dead zone of +/- 2 cm arround x=0 (as in TDR, fig3.27)    		
+     const Float_t kDXZERO=2.; 
      const Float_t kXMC1MIN=34.;       
      const Float_t kXMC1MED=51.;                                
      const Float_t kXMC1MAX=272.;                               
      const Float_t kYMC1MIN=34.;                              
      const Float_t kYMC1MAX=51.;                              
      const Float_t kRMIN1=50.;
-     const Float_t kRMAX1=62.;
+// DP03-01     const Float_t kRMAX1=62.;
+     const Float_t kRMAX1=64.;
      const Float_t kRMIN2=50.;
-     const Float_t kRMAX2=66.;
+// DP03-01      const Float_t kRMAX2=66.;
+     const Float_t kRMAX2=68.;
 
 //   zposition of the middle of the gas gap in mother vol 
      const Float_t kZMCm=-3.6;
@@ -1334,7 +1341,8 @@ void AliMUONv1::CreateGeometry()
      tpar[0] = -1.;
      tpar[1] = -1.;
      
-     const Float_t kXMC1A=kXMC1MED+(kXMC1MAX-kXMC1MED)/2.;
+// DP03-01     const Float_t kXMC1A=kXMC1MED+(kXMC1MAX-kXMC1MED)/2.;
+     const Float_t kXMC1A=kDXZERO+kXMC1MED+(kXMC1MAX-kXMC1MED)/2.;
      const Float_t kYMC1Am=0.;
      const Float_t kYMC1Ap=0.;
           
@@ -1358,7 +1366,8 @@ void AliMUONv1::CreateGeometry()
      tpar[0] = (kXMC1MAX-kXMC1MIN)/2.;
      tpar[1] = (kYMC1MAX-kYMC1MIN)/2.;
      
-     const Float_t kXMC1B=kXMC1MIN+tpar[0];
+// DP03-01     const Float_t kXMC1B=kXMC1MIN+tpar[0];
+     const Float_t kXMC1B=kDXZERO+kXMC1MIN+tpar[0];
      const Float_t kYMC1Bp=(y1msave+tpar1save)*zpm+tpar[1];
      const Float_t kYMC1Bm=(y1psave+tpar1save)*zmp+tpar[1];
 
@@ -1375,7 +1384,9 @@ void AliMUONv1::CreateGeometry()
      tpar[0] = kXMC1MAX/2;
      tpar[1] = kYMC1MAX/2;
      
-     const Float_t kXMC1C=tpar[0];
+
+// DP03-01     const Float_t kXMC1C=tpar[0];
+     const Float_t kXMC1C=kDXZERO+tpar[0];
 // warning : same Z than type B
      const Float_t kYMC1Cp=(y1psave+tpar1save)*1.+tpar[1];
      const Float_t kYMC1Cm=(y1msave+tpar1save)*1.+tpar[1];
@@ -1393,7 +1404,8 @@ void AliMUONv1::CreateGeometry()
      tpar[0] = kXMC1MAX/2.;
      tpar[1] = kYMC1MIN;
      
-     const Float_t kXMC1D=tpar[0];
+// DP03-01     const Float_t kXMC1D=tpar[0];
+     const Float_t kXMC1D=kDXZERO+tpar[0];
      const Float_t kYMC1Dp=(y1msave+tpar1save)*zpm+tpar[1];
      const Float_t kYMC1Dm=(y1psave+tpar1save)*zmp+tpar[1];
      
