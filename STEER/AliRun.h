@@ -73,6 +73,8 @@ public:
    AliDetector   *GetDetector(const char *name) const;
    AliMCQA       *GetMCQA() const {return fMCQA;}
    Int_t          GetModuleID(const char *name) const;
+   virtual  const char *GetBaseFile() const 
+    {return fBaseFileName.Data();}
    virtual  Int_t GetEvent(Int_t event);
    virtual  void  SetEvent(Int_t event) {fEvent=event;}
    virtual  void  SetConfigFunction(const char * config="Config();");
@@ -107,7 +109,6 @@ public:
    virtual  void  ResetPoints();
    virtual  void  SetTransPar(char *filename="$(ALICE_ROOT)/data/galice.cuts");
    virtual  void  SetBaseFile(char *filename="galice.root");
-   virtual  void  OpenBaseFile(const char *option);
    virtual  void  ReadTransPar();
    virtual  void  ResetStack() {fCurrent=-1;fHgwmk=fNtrack=fLoadPoint=0;fParticles->Clear();}
    virtual  void  RunMC(Int_t nevent=1, const char *setup="Config.C");

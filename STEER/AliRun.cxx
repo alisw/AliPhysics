@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.54  2001/02/07 10:39:05  hristov
+Remove default value for argument
+
 Revision 1.53  2001/02/06 11:02:26  hristov
 New SetTrack interface added, added check for unfilled particles in FinishEvent (I.Hrivnacova)
 
@@ -223,7 +226,7 @@ AliRun::AliRun()
   fRandom = 0;
   fMCQA = 0;
   fTransParName = "\0";
-  fBaseFileName = "\0";
+  fBaseFileName = ".\0";
   fParticleBuffer = 0;
   fParticleMap = new TObjArray(10000);
 }
@@ -300,7 +303,7 @@ AliRun::AliRun(const char *name, const char *title)
   fHitLists  = new TList();
   //
   SetTransPar();
-  fBaseFileName = "\0";
+  fBaseFileName = ".\0";
   fParticleBuffer = 0;
   fParticleMap = new TObjArray(10000);
 }
@@ -1009,8 +1012,6 @@ void AliRun::InitMC(const char *setup)
     return;
   }
     
-  OpenBaseFile("recreate");
-  
   gROOT->LoadMacro(setup);
   gInterpreter->ProcessLine(fConfigFunction.Data());
 
@@ -1157,22 +1158,7 @@ void AliRun::SetTransPar(char *filename)
 //____________________________________________________________________________
 void AliRun::SetBaseFile(char *filename)
 {
-  fBaseFileName = *filename;
-}
-
-//____________________________________________________________________________
-void AliRun::OpenBaseFile(const char *option)
-{
-  if(!strlen(fBaseFileName.Data())) {
-    const char *filename;
-    if ((filename=gSystem->Getenv("CONFIG_FILE"))) {
-      fBaseFileName=filename;
-    } else {
-      fBaseFileName="galice.root";
-    }  
-  }
-  TFile *rootfile = new TFile(fBaseFileName.Data(),option); 
-  rootfile->SetCompressionLevel(2);
+  fBaseFileName = filename;
 }
 
 //____________________________________________________________________________
@@ -1290,15 +1276,18 @@ void AliRun::MakeBranchInTree(TTree *tree, const char* name, void* address, Int_
     TBranch *branch = tree->Branch(name,address,size);
 
     if (file) {
+        char * outFile = new char[strlen(gAlice->GetBaseFile())+strlen(file)+2];
+        sprintf(outFile,"%s/%s",gAlice->GetBaseFile(),file);
         TDirectory *cwd = gDirectory;
-        branch->SetFile(file);
+        branch->SetFile(outFile);
         TIter next( branch->GetListOfBranches());
         while ((branch=(TBranch*)next())) {
-           branch->SetFile(file);
+           branch->SetFile(outFile);
         }   
         if (GetDebug()>1)
             printf("* MakeBranch * Diverting Branch %s to file %s\n",name,file);
         cwd->cd();
+        delete outFile;
     } 
 }
 
@@ -1310,14 +1299,17 @@ void AliRun::MakeBranchInTree(TTree *tree, const char* name, const char *classna
     if (GetDebug()>1)
       printf("* MakeBranch * Making Branch %s \n",name);
     if (file) {
-        branch->SetFile(file);
+        char * outFile = new char[strlen(gAlice->GetBaseFile())+strlen(file)+2];
+        sprintf(outFile,"%s/%s",gAlice->GetBaseFile(),file);
+        branch->SetFile(outFile);
         TIter next( branch->GetListOfBranches());
         while ((branch=(TBranch*)next())) {
-           branch->SetFile(file);
+           branch->SetFile(outFile);
         } 
        if (GetDebug()>1)
            printf("* MakeBranch * Diverting Branch %s to file %s\n",name,file);
         cwd->cd();
+        delete outFile;
     }
 }
 //_____________________________________________________________________________
@@ -1648,10 +1640,10 @@ void AliRun::RunMC(Int_t nevent, const char *setup)
   // Create the Root Tree with one branch per detector
 
   if (gSystem->Getenv("CONFIG_SPLIT_FILE")) {
-    MakeTree("E");
-    MakeTree("K","Kine.root");
-    MakeTree("H","Hits.root");
-    MakeTree("R","Reco.root");
+     MakeTree("E");
+     MakeTree("K","Kine.root");
+     MakeTree("H","Hits.root");
+     MakeTree("R","Reco.root");
   } else {
     MakeTree("EKHR");
   }
