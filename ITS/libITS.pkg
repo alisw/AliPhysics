@@ -60,3 +60,5 @@ DHDR=ITSLinkDef.h
 
 EINCLUDE:=$(ALICE)/geant3/TGeant3 TPC CONTAINERS RAW
 
+EXPORT:=AliITStrackV2.h AliITSVertexerTracks.h AliITSVertex.h AliV0vertexer.h \
+        AliV0vertex.h AliITSVertexer.h AliITSrecoV2.h
