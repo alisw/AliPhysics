@@ -54,11 +54,11 @@ class AliGenMC : public AliGenerator
     virtual void SetNumberOfAcceptedParticles(Int_t NumberOfAcceptedParticles=2) {fNumberOfAcceptedParticles = NumberOfAcceptedParticles;}
     
     virtual Bool_t CheckAcceptanceGeometry(Int_t np, TClonesArray* particles);
-    virtual void   SetProjectile(TString proj="A", Int_t a=208, Int_t z=82)
+    virtual void   SetProjectile(TString proj="P", Int_t a = 1, Int_t z = 1)
 	{fProjectile = proj; fAProjectile = a; fZProjectile = z;}    
-    virtual void   SetTarget(TString tar="A", Int_t a=208, Int_t z=82)
+    virtual void   SetTarget(TString tar="P", Int_t a = 1, Int_t z = 1)
 	{fTarget = tar; fATarget = a; fZTarget = z;}    
-    virtual void Boost(Float_t dy);
+    virtual void Boost();
 
  protected:
     // check if particle is selected as parent particle
@@ -92,7 +92,7 @@ class AliGenMC : public AliGenerator
     Int_t       fZTarget;       // Target Z
     TString     fProjectile;    // Projectile
     TString     fTarget;        // Target
-
+    Double_t    fDyBoost;       // dy for boost into lab frame
     AliGeometry * fGeometryAcceptance; // Geometry to which particles must be simulated
     Int_t       fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
     Int_t       fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 

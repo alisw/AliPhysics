@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2003/04/04 08:13:26  morsch
+Boost method added.
+
 Revision 1.14  2003/01/14 10:50:19  alibrary
 Cleanup of STEER coding conventions
 
@@ -157,6 +160,12 @@ void AliGenMC::Init()
     case kNoDecay:
     case kNoDecayHeavy:
 	break;
+    }
+
+    if (fZTarget != 0 && fAProjectile != 0) 
+    {
+	fDyBoost    = - 0.5 * TMath::Log(Double_t(fZProjectile) * Double_t(fATarget) / 
+					 (Double_t(fZTarget)    * Double_t(fAProjectile)));
     }
 }
 
@@ -341,17 +350,17 @@ Int_t AliGenMC::CheckPDGCode(Int_t pdgcode) const
   return pdgcode;
 }
 
-void AliGenMC::Boost(Float_t dy)
+void AliGenMC::Boost()
 {
 //
 // Boost cms into LHC lab frame
 //
 
-    Double_t beta  = TMath::TanH(dy);
+    Double_t beta  = TMath::TanH(fDyBoost);
     Double_t gamma = 1./TMath::Sqrt(1.-beta*beta);
     Double_t gb    = gamma * beta;
 
-    printf("\n Boosting particles to lab frame %f %f %f", dy, beta, gamma);
+    printf("\n Boosting particles to lab frame %f %f %f", fDyBoost, beta, gamma);
     
     Int_t i;
     Int_t np = fParticles->GetEntriesFast();
