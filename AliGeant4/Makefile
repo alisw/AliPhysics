@@ -61,6 +61,7 @@ ALIBRARY	= $(LIBDIR)/libAliGeant4.a
 PROGRAM		= $(BINDIR)/$(TARGET)
 
 default:	$(SLIBRARY) $(PROGRAM)
+archived:	$(ALIBRARY)
 
 $(LIBDIR)/libAliGeant4.$(SL):		$(OBJS)
 $(LIBDIR)/libAliGeant4.a:		$(OBJS)
@@ -83,7 +84,8 @@ ALILIBS := $(filter-out -lITS,$(ALILIBS))
 ALILIBS += -lAliGeant4 -lTGeant4
 
 LIBS = $(ALILIBS) $(CLIBS) $(GLIBS) -lEG -lEGPythia6 -lpythia6 -lpdf \
-	-lTHijing -lhijing  -lTMevSim -lmevsim $(G4LDLIBS)
+	-lTHijing -lhijing  -lTMevSim -lmevsim -lTHBTprocessor -lhbtprocessor \
+	$(G4LDLIBS)
 
 TOCLEAN	      = $(OBJS) $(POBJ) *Cint.cxx *Cint.h
 
