@@ -10,12 +10,12 @@
 // http://consult.cern.ch/alice/Internal_Notes/1995/32/abstract
 // Author: andreas.morsch@cern.ch
 
-#include "AliGenerator.h"
+#include "AliGenMC.h"
 #include "AliGenReader.h"
 
 class TTree;
 
-class AliGenExtFile : public AliGenerator
+class AliGenExtFile : public AliGenMC
 {
  public:
     AliGenExtFile();

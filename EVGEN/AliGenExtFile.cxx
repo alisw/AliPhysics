@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2002/03/22 09:43:28  morsch
+Don't delete the TParticle.
+
 Revision 1.19  2002/02/08 16:50:50  morsch
 Add name and title in constructor.
 
@@ -80,8 +83,9 @@ Introduction of the Copyright and cvs Log
 
 
  ClassImp(AliGenExtFile)
-     AliGenExtFile::AliGenExtFile()
-	 :AliGenerator(-1)
+
+AliGenExtFile::AliGenExtFile()
+  :AliGenMC()
 {
 //  Constructor
 //
@@ -91,7 +95,7 @@ Introduction of the Copyright and cvs Log
 }
 
 AliGenExtFile::AliGenExtFile(Int_t npart)
-    :AliGenerator(npart)
+    :AliGenMC(npart)
 {
 //  Constructor
     fName   = "ExtFile";
@@ -138,41 +142,68 @@ void AliGenExtFile::Generate()
     }
   }
 
-  Int_t nTracks = fReader->NextEvent(); 	
-  if (nTracks == 0) {
-      printf("\n No more events !!! !\n");
+  while(1) {
+    Int_t nTracks = fReader->NextEvent(); 	
+    if (nTracks == 0) {
+      // printf("\n No more events !!! !\n");
+      Warning("AliGenExtFile::Generate","\nNo more events in external file!!!\nLast event may be empty or incomplete.\n");
       return;
-  }
+    }
 
-  for (i = 0; i < nTracks; i++) {
+    //
+    // Particle selection loop
+    //
+    // The selction criterium for the external file generator is as follows:
+    //
+    // 1) All tracs are subjects to the cuts defined by AliGenerator, i.e.
+    //    fThetaMin, fThetaMax, fPhiMin, fPhiMax, fPMin, fPMax, fPtMin, fPtMax,
+    //    fYMin, fYMax.
+    //    If the particle does not satisfy these cuts, it is not put on the
+    //    stack.
+    // 2) If fCutOnChild and some specific child is selected (e.g. if
+    //    fForceDecay==kSemiElectronic) the event is rejected if NOT EVEN ONE
+    //    child falls into the child-cuts.
+    if(fCutOnChild) {
+      // Count the selected children
+      Int_t nSelected = 0;
 
-      
-      TParticle* iparticle = fReader->NextParticle();
-      Double_t  theta = iparticle->Theta();
-      Double_t  phi = iparticle->Phi();
-      if (phi > TMath::Pi()) phi -= 2.*TMath::Pi();
-      Double_t  pmom = iparticle->P();
-      Double_t  pz   = iparticle->Pz();
-      Double_t  e    = iparticle->Energy();
-      Double_t  pt   = iparticle->Pt();
-      Double_t  y;
-      if ((e-pz) == 0) {
-	  y = 20.;
-      } else if ((e+pz) == 0.) {
-	  y = -20.;
-      } else {
-	  y = 0.5*TMath::Log((e+pz)/(e-pz));	  
+      for (i = 0; i < nTracks; i++) {
+	TParticle* iparticle = fReader->NextParticle();
+	Int_t kf = CheckPDGCode(iparticle->GetPdgCode());
+	kf = TMath::Abs(kf);
+	if (ChildSelected(kf) && KinematicSelection(iparticle, 1)) {
+	  nSelected++;
+	}
       }
-       
-      if(theta < fThetaMin || theta > fThetaMax ||
-	 phi   < fPhiMin   || phi   > fPhiMax   ||
-	 pmom  < fPMin     || pmom  > fPMax     ||
-	 pt    < fPtMin    || pt    > fPtMax    ||
-	 y     < fYMin     || y     > fYMax        )
-      {
-	  printf("\n Not selected %d %f %f %f %f %f", i, theta, phi, pmom, pt, y);
-	  delete iparticle;
-	  continue;
+      if (!nSelected) continue;    // No particle selected:  Go to next event
+      fReader->RewindEvent();
+    }
+
+    //
+    // Stack filling loop
+    //
+    for (i = 0; i < nTracks; i++) {
+
+      TParticle* iparticle = fReader->NextParticle();
+      if (!KinematicSelection(iparticle,0)) {
+	Double_t  pz   = iparticle->Pz();
+	Double_t  e    = iparticle->Energy();
+	Double_t  y;
+	if ((e-pz) == 0) {
+	  y = 20.;
+	} else if ((e+pz) == 0.) {
+	  y = -20.;
+	} else {
+	  y = 0.5*TMath::Log((e+pz)/(e-pz));	  
+	}
+	printf("\n Not selected %d %f %f %f %f %f", i,
+	       iparticle->Theta(),
+	       iparticle->Phi(),
+	       iparticle->P(),
+	       iparticle->Pt(),
+	       y);
+	delete iparticle;
+	continue;
       }
       p[0] = iparticle->Px();
       p[1] = iparticle->Py();
@@ -186,8 +217,21 @@ void AliGenExtFile::Generate()
 		  TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	  }
       }
-      SetTrack(fTrackIt,-1,idpart,p,origin,polar,0,kPPrimary,nt);
-   }
+      Int_t decayed = iparticle->GetFirstDaughter();
+      Int_t doTracking = fTrackIt && (decayed < 0) &&
+	                 (TMath::Abs(idpart) > 10);
+      // printf("*** pdg, first daughter, trk = %d, %d, %d\n",
+      //   idpart,decayed, doTracking);
+      SetTrack(doTracking,-1,idpart,p,origin,polar,0,kPPrimary,nt);
+      KeepTrack(nt);
+    } // track loop
+
+    break;
+
+  } // event loop
+
+  SetHighWaterMark(nt);
+
   TFile *pFile=0;
 // Get AliRun object or create it 
   if (!gAlice) {
