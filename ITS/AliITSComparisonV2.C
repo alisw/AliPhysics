@@ -448,7 +448,7 @@ Int_t GoodTracksITS(const Char_t *dir) {
 
    sprintf(fname,"%s/GoodTracksITS.root",dir);
    TFile *itsFile=TFile::Open(fname,"recreate");
-   TClonesArray dummy("AliTrackReference",1000), *itsRefs=&dummy;
+   TClonesArray dummy2("AliTrackReference",1000), *itsRefs=&dummy2;
    TTree itsTree("itsTree","Tree with info about the reconstructable ITS tracks");
    itsTree.Branch("ITS",&itsRefs);
 
@@ -531,9 +531,9 @@ Int_t GoodTracksITS(const Char_t *dir) {
            continue;
         }
 
-        AliTrackReference *ref=new((*itsRefs)[nt]) AliTrackReference(*tpcRef);
-        ref->SetMomentum(p->Px(),p->Py(),p->Pz());
-        ref->SetPosition(p->Vx(),p->Vy(),p->Vz());
+	AliTrackReference *ref=new((*itsRefs)[nt]) AliTrackReference(*tpcRef);
+	ref->SetMomentum(p->Px(),p->Py(),p->Pz());
+	ref->SetPosition(p->Vx(),p->Vy(),p->Vz());
         nt++;
      }
      tpcRefs->Clear();
