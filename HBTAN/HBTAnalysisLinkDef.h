@@ -9,13 +9,13 @@
 #pragma link C++ class AliHBTEvent+;
 #pragma link C++ class AliHBTRun+;
 #pragma link C++ class AliHBTFunction+;
-#pragma link C++ class AliHBTTwoPartFctn+;
-#pragma link C++ class AliHBTFourPartFctn+;
-#pragma link C++ class AliHBTTwoPartFctn1D+;
-#pragma link C++ class AliHBTTwoPartFctn2D+;
-#pragma link C++ class AliHBTTwoPartFctn3D+;
+#pragma link C++ class AliHBTOnePairFctn+;
+#pragma link C++ class AliHBTTwoPairFctn+;
+#pragma link C++ class AliHBTOnePairFctn1D+;
+#pragma link C++ class AliHBTOnePairFctn2D+;
+#pragma link C++ class AliHBTOnePairFctn3D+;
 
-#pragma link C++ class AliHBTFourPartFctn2D+;
+#pragma link C++ class AliHBTTwoPairFctn2D+;
 
 #pragma link C++ class AliHBTPair+;
 #pragma link C++ class AliHBTParticleCut-;
