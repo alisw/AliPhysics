@@ -128,6 +128,11 @@ AliFMDReconstructor::AliFMDReconstructor()
   
   fAlgorithms.Add(new AliFMDMultNaiive);
   fAlgorithms.Add(new AliFMDMultPoisson);
+
+  TIter next(&fAlgorithms);
+  AliFMDMultAlgorithm* algorithm = 0;
+  while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) 
+    algorithm->PreRun(0);
 }
   
 
