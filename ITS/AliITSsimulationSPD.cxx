@@ -130,6 +130,7 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
     Int_t nhits = fHits->GetEntriesFast();
     if (!nhits) return;
 
+    //cout<<"len,wid,dy,nx,nz,pitchx,pitchz ="<<spdLength<<","<<spdWidth<<","<<fSegmentation->Dy()<<","<<fNPixelsX<<","<<fNPixelsZ<<","<<xPitch<<","<<zPitch<<endl;
   //  Array of pointers to the label-signal list
 
     Int_t maxNDigits = fNPixelsX*fNPixelsZ + fNPixelsX ;; 
@@ -142,6 +143,7 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
     static Bool_t first;
     Int_t lasttrack=-2;
     Int_t hit, iZi, jz, jx;
+    //cout<<"SPD: module,nhits ="<<module<<","<<nhits<<endl;
     for (hit=0;hit<nhits;hit++) {
         AliITShit *iHit = (AliITShit*) fHits->At(hit);
 	Int_t layer = iHit->GetLayer();
@@ -167,10 +169,16 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 //  partcode (pdgCode): 11 - e-, 13 - mu-, 22 - gamma, 111 - pi0, 211 - pi+
 //                      310 - K0s, 321 - K+, 2112 - n, 2212 - p, 3122 - lambda
 
-        Float_t px = iHit->GetPXL();
-        Float_t py = iHit->GetPYL();
+	/*
+        Float_t px = iHit->GetPXL();   // the momenta at the        
+        Float_t py = iHit->GetPYL();   // each  GEANT step 
         Float_t pz = iHit->GetPZL();
-        Float_t pmod = 1000*sqrt(px*px+py*py+pz*pz);
+        Float_t ptot = 1000*sqrt(px*px+py*py+pz*pz);
+	*/
+
+	Float_t pmod = iHit->GetParticle()->P(); // total momentum at the
+	                                           // vertex
+        pmod *= 1000;
 
 
         if(partcode == 11 && pmod < 6) dray = 1; // delta ray is e-
@@ -186,13 +194,29 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 
 	// Get track status
 	Int_t status = iHit->GetTrackStatus();      
-      
-	// Check boundaries
-	if(zPix  > spdLength/2) zPix = spdLength/2 - 10;
-	if(zPix  < 0 && zPix < -spdLength/2) zPix = -spdLength/2 + 10;
-	if(xPix  > spdWidth/2) xPix = spdWidth/2 - 10;
-	if(xPix  < 0 && xPix < -spdWidth/2) zPix = -spdWidth/2 + 10;
+	//cout<<"hit,status,y ="<<hit<<","<<status<<","<<yPix<<endl;      
 
+	// Check boundaries
+	if(zPix  > spdLength/2) {
+	  //cout<<"!!!1 z outside ="<<zPix<<endl;
+         zPix = spdLength/2 - 10;
+	 //cout<<"!!!2 z outside ="<<zPix<<endl;
+	}
+	if(zPix  < 0 && zPix < -spdLength/2) {
+	  //cout<<"!!!1 z outside ="<<zPix<<endl;
+         zPix = -spdLength/2 + 10;
+	 //cout<<"!!!2 z outside ="<<zPix<<endl;
+	}
+	if(xPix  > spdWidth/2) {
+	  //cout<<"!!!1 x outside ="<<xPix<<endl;
+         xPix = spdWidth/2 - 10;
+	 //cout<<"!!!2 x outside ="<<xPix<<endl;
+	}
+	if(xPix  < 0 && xPix < -spdWidth/2) {
+	  //cout<<"!!!1 x outside ="<<xPix<<endl;
+         xPix = -spdWidth/2 + 10;
+	 //cout<<"!!!2 x outside ="<<xPix<<endl;
+	}
 	Int_t trdown = 0;
 
 	// enter Si or after event in Si
@@ -234,6 +258,7 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
 	if(ydif < 1) continue; // ydif is not zero
 
 	Float_t projDif = sqrt(xdif*xdif + zdif*zdif);
+
 	Int_t ndZ = (Int_t)TMath::Abs(zdif/zPitch) + 1;
 	Int_t ndX = (Int_t)TMath::Abs(xdif/xPitch) + 1; 
 

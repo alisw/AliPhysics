@@ -268,10 +268,6 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 		  Float_t zhit = 10000*itsHit->GetZL();
 		  Float_t xhit = 10000*itsHit->GetXL();
 
-        Int_t parent = itsHit->GetParticle()->GetFirstMother();
-        Int_t partcode = itsHit->GetParticle()->GetPdgCode();
-	Float_t pmod = itsHit->GetParticle()->P(); // total momentum at the
-
         Float_t pxsimL = itsHit->GetPXL();  // the momenta at GEANT points
         Float_t pysimL = itsHit->GetPYL();
         Float_t pzsimL = itsHit->GetPZL();
@@ -330,13 +326,13 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
                 //        Int_t partcode = part->GetPdgCode();
                 //              Int_t primery = gAlice->GetPrimary(track);
 
-        //Int_t parent = itsHit->GetParticle()->GetFirstMother();
-        //Int_t partcode = itsHit->GetParticle()->GetPdgCode();
+        Int_t parent = itsHit->GetParticle()->GetFirstMother();
+        Int_t partcode = itsHit->GetParticle()->GetPdgCode();
 
 //  partcode (pdgCode): 11 - e-, 13 - mu-, 22 - gamma, 111 - pi0, 211 - pi+
 //                      310 - K0s, 321 - K+, 2112 - n, 2212 - p, 3122 - lambda
 
-	//Float_t pmod = itsHit->GetParticle()->P(); // total momentum at the
+	Float_t pmod = itsHit->GetParticle()->P(); // total momentum at the
 	                                           // vertex
 	Float_t energy = itsHit->GetParticle()->Energy(); // energy at the
 	                                           // vertex
@@ -352,7 +348,7 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	                                           // vertex
 	Float_t theta = itsHit->GetParticle()->Theta(); // Theta angle at the
 	                                           // vertex
-	//Float_t y = itsHit->GetParticle()->Eta(); // Rapiditi at the
+	//Float_t eta = itsHit->GetParticle()->Eta(); // Pseudo rapidity at the
 	                                           // vertex
 	if((energy-pz) > 0) {
 	  Float_t y = 0.5*TMath::Log((energy+pz)/(energy-pz));
@@ -478,6 +474,10 @@ noverprim,dx,dz);
 
      cout<<" Occupancy for layer-1 ="<<occup1<<endl;
      cout<<" Occupancy for layer-2 ="<<occup2<<endl;
+     // The real occupancy values are:
+     // (for full ALICE event at the full SPD acceptence)
+     //   occup1 /= 3932160;    
+     //   occup2 /= 7864320;
 
   } // idettype loop
  } // end if ITS

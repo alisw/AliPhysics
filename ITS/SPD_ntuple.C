@@ -81,42 +81,22 @@ gPad->SetFillColor(33);
 c2->cd(1);
 gPad->SetFillColor(33);
       ntuple->SetFillColor(42);
-      ntuple->Draw("dx","lay == 1 && hitprim == 1 && ntrover==1");
+      ntuple->Draw("dx","lay == 1 && hitprim == 1 && ntrover>=1&&nx==4");
 c2->cd(2);
 gPad->SetFillColor(33);
       ntuple->SetFillColor(46);
-      ntuple->Draw("dz","lay == 1 && hitprim == 1 && ntrover==1");
+      ntuple->Draw("dz","lay == 1 && hitprim == 1 && ntrover>=1&&nz==4");
 c2->cd(3);
 gPad->SetFillColor(33);
       ntuple->SetFillColor(42);
-      ntuple->Draw("dx","lay == 2 && hitprim == 1 && ntrover==1");
+      ntuple->Draw("dx","lay == 2 && hitprim == 1 && ntrover>=1&&nx==4");
 c2->cd(4);
 gPad->SetFillColor(33);
       ntuple->SetFillColor(46);
-      ntuple->Draw("dz","lay == 2 && hitprim == 1 && ntrover==1");
+      ntuple->Draw("dz","lay == 2 && hitprim == 1 && ntrover>=1&&nz==4");
 */
 
-/*      
-c2->cd(1);
-gPad->SetFillColor(33);
-      ntuple->SetFillColor(42);
-      ntuple->Draw("dx","lay == 1 && hitprim == 1");
-c2->cd(2);
-gPad->SetFillColor(33);
-      ntuple->SetFillColor(46);
-      ntuple->Draw("dx","lay == 1 && hitprim == 1 && nx < 15");
-c2->cd(3);
-gPad->SetFillColor(33);
-      ntuple->SetFillColor(42);
-      ntuple->Draw("dx","lay == 1 && hitprim == 1 && nx < 5");
-c2->cd(4);
-gPad->SetFillColor(33);
-      ntuple->SetFillColor(46);
-      ntuple->Draw("dx","lay == 1 && hitprim == 1 && nx < 4");
-*/
-    
 
-/*
 c2->cd(1);
 gPad->SetFillColor(33);
       ntuple->SetFillColor(42);
@@ -133,7 +113,7 @@ c2->cd(4);
 gPad->SetFillColor(33);
       ntuple->SetFillColor(46);
       ntuple->Draw("dz","lay==2&&hitprim==1&&dz>-500&&dz<500");
-*/
+
 
 /*
 c2->cd(1);
@@ -154,45 +134,45 @@ gPad->SetFillColor(33);
       ntuple->Draw("dz","lay==2&&hitprim==1&&dz>-500&&dz<500&&ntrover==1");
 */
 
-/*
+      /*
 c2->cd(1);
 gPad->SetFillColor(33);
       ntuple->SetFillColor(42);
-      ntuple->Draw("dx","lay==1&&hitprim==1&&nx<4");
+      ntuple->Draw("dx","lay==1&&hitprim==1&&nx>4");
 c2->cd(2);
 gPad->SetFillColor(33);
       ntuple->SetFillColor(46);
-      ntuple->Draw("dz","lay==1&&hitprim==1&&nz<4");
+      ntuple->Draw("dz","lay==1&&hitprim==1&&nz>4");
 c2->cd(3);
 gPad->SetFillColor(33);
       ntuple->SetFillColor(42);
-      ntuple->Draw("dx","lay==2&&hitprim==1&&nx<4");
+      ntuple->Draw("dx","lay==2&&hitprim==1&&nx>4");
 c2->cd(4);
 gPad->SetFillColor(33);
       ntuple->SetFillColor(46);
-      ntuple->Draw("dz","lay==2&&hitprim==1&&nz<4");
-*/      
+      ntuple->Draw("dz","lay==2&&hitprim==1&&nz>4");
+      */
 
 /*
 c2->cd(1);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(42);
-      ntuple1->Draw("noverlaps","lay == 1");
+      ntuple1->Draw("noverlaps","lay == 1&&noverprim>0&&noverlaps>0");
 c2->cd(2);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(46);
-      ntuple1->Draw("noverlaps","lay == 2");
+      ntuple1->Draw("noverlaps","lay == 2&&noverprim>0&&noverlaps>0");
 c2->cd(3);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(42);
-      ntuple1->Draw("ntrover","lay == 1");
+      ntuple1->Draw("ntrover","lay == 1&&noverprim>0&&ntrover>0");
 c2->cd(4);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(46);
-      ntuple1->Draw("ntrover","lay == 2");
+      ntuple1->Draw("ntrover","lay == 2&&noverprim>0&&ntrover>0");
 */
 
-/*
+      /*
 c2->cd(1);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(42);
@@ -209,7 +189,7 @@ c2->cd(4);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(46);
       ntuple1->Draw("noverprim","lay == 2 && noverprim < 1");
-*/
+      */
 
 /*
 c2->cd(1);
@@ -222,7 +202,7 @@ gPad->SetFillColor(33);
       ntuple1->Draw("nx:nz","lay == 2");
 */
 
-/*
+      /*
 c2->cd(1);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(42);
@@ -231,7 +211,7 @@ c2->cd(2);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(46);
       ntuple1->Draw("qcl","lay == 2");
-*/
+      */
 
 /*
 c2->cd(1);
@@ -347,7 +327,7 @@ gPad->SetFillColor(33);
       ntuple1->Draw("dz","lay == 2");
       */
 
-
+      /*
 c2->cd(1);
 gPad->SetFillColor(33);
       ntuple2->SetFillColor(42);
@@ -364,7 +344,7 @@ c2->cd(4);
 gPad->SetFillColor(33);
       ntuple2->SetFillColor(46);
       ntuple2->Draw("z","lay==2");
-
+      */
 
       /*
 c2->cd(1);
