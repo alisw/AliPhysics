@@ -142,21 +142,43 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 //********************************************
 // Example for Charm  Production with Pythia *
 //********************************************
-
-     AliGenPythia *gener = new AliGenPythia(ntracks);
+     AliGenPythia *gener = new AliGenPythia(-1);
+//   final state kinematic cuts
      gener->SetMomentumRange(0,999);
-     gener->SetPhiRange(0,360);
+     gener->SetPhiRange(-180,180);
      gener->SetThetaRange(0., 180.);
      gener->SetYRange(-10,10);
      gener->SetPtRange(0,100);
-     gener->SetOrigin(0,0,0);          // vertex position
-     gener->SetVertexSmear(kPerEvent); 
-     gener->SetSigma(0,0,5.6);         // Sigma in (X,Y,Z) (cm) on IP position
-//     gener->SetStrucFunc(DO_Set_1);
-     gener->SetProcess(mb); 
+//   vertex position and smearing 
+     gener->SetOrigin(0,0,0);         // vertex position
+     gener->SetVertexSmear(kPerEvent);
+     gener->SetSigma(0,0,5.6);        // Sigma in (X,Y,Z) (cm) on IP position
+//   Structure function
+// DO_Set_1
+// GRV_LO
+// GRV_HO
+// MRS_D_minus
+// MRS_D0
+// MRS_G
+// CTEQ_2pM
+// CTEQ_4M
+     gener->SetStrucFunc(GRV_HO);
+// Select corection for nuclear structure functions
+//     gener->SetNuclei(208,208);
+//
+//   Process type
+//   charm, beauty, charm_unforced, beauty_unforced, jpsi, jpsi_chi, mb
+     gener->SetProcess(beauty);
+//   
+//   Pt transfer of the hard scattering
+     gener->SetPtHard(0.,5.);
+//   Decay type (semielectronic, semimuonic, nodecay)
+     gener->SetForceDecay(semielectronic);
+//   Centre of mass energy 
      gener->SetEnergyCMS(5500.);
-     break;
-     
+//   No Tracking 
+     gener->SetTrackingFlag(0);
+     break;              
 
  case param1:
 //*******************************************************
