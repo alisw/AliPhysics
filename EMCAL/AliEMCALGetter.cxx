@@ -122,8 +122,8 @@ AliEMCALGetter::AliEMCALGetter(const char* headerFile, const char* branchTitle, 
        	fFailed = kTRUE ;
         return ;  
       }
+      gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
     }
-    gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
   }
   
 

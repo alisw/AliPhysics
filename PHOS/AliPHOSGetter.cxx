@@ -119,8 +119,8 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
 	fFailed = kTRUE ;
         return ;  
       }
+      gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
     }       
-    gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
   }
   
   if (!gAlice) {
@@ -540,7 +540,6 @@ Bool_t AliPHOSGetter::PostSDigitizer(const char * name, const char * file) const
     cerr << "ERROR: AliPHOSGetter::Post Ser -> Task //" << fTasksFolder << "/SDigitizer not found!" << endl;
     return kFALSE ;
   }        
-  cout << "AliPHOSGetter::PostSDigitizer3 " << endl ; 
 
   TTask * phos = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
