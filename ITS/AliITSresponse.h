@@ -27,15 +27,12 @@ class AliITSresponse : public TObject {
     //
     // Configuration methods
     //
-
-    // Set GeVcharge value (Default value is based on about 20,000 e- by a 
-    // mip (1.163E-4GeV) in 300 microns)
-    virtual void SetGeVToCharge(Double_t gc=1.719E+8){fGeVcharge = gc;}
+    // fGeVcharge is set by default 3.6e-9 GeV See for ex. PDG 2004.
+    virtual void SetGeVToCharge(Double_t gc=3.6e-9){fGeVcharge = gc;}
     // Returns the value fGeVcharge
     virtual Double_t GetGeVToCharge() const {return fGeVcharge;}
     // Converts deposited energy to number of electrons liberated
-    virtual Double_t GeVToCharge(Double_t gev) const {return gev*fGeVcharge;}
-
+    virtual Double_t GeVToCharge(Double_t gev) const {return gev/fGeVcharge;}
     // Diffusion coefficient
     virtual void    SetDiffCoeff(Double_t, Double_t) = 0;
     // Get diffusion coefficients
@@ -181,7 +178,7 @@ class AliITSresponse : public TObject {
                    // the potential v is applied d/v [cm/volts]
     Double_t fN;   // the impurity consentration of the material in #/cm^3
     Double_t fT;   // The temperature of the Si in Degree K.
-    Double_t fGeVcharge; // Energy to ionize (free an electron).
+    Double_t fGeVcharge; // Energy to ionize (free an electron) in GeV
     TString  fFileName1;        // input keys : run, module #
     TString  fFileName2;        // baseline & noise val or output code
                                 // signal or monitored bgr.

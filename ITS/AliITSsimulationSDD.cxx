@@ -479,8 +479,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     Float_t  cHloss     = GetResp()->ChargeLoss();
     Float_t  norm       = maxadc/topValue;
     Double_t dfCoeff, s1; GetResp()->DiffCoeff(dfCoeff,s1); // Signal 2d Shape
-    Double_t eVpairs    = 3.6;  // electron pair energy eV.
-                                // GetResp()->GetGeVToCharge()/1.0E8; //2.778
+    Double_t eVpairs    = GetResp()->GetGeVToCharge()*1.0E9; // 3.6 eV by def.
     Float_t  nsigma     = GetResp()->NSigmaIntegration(); //
     Int_t    nlookups   = GetResp()->GausNLookUp();       //
     Float_t  jitter     = ((AliITSresponseSDD*)GetResp())->JitterError(); // 
