@@ -72,13 +72,28 @@ endif
 #               Check if HLT code is there
 
 ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
-DEFSTR = -Duse_aliroot -Duse_root
+HLTFLAGS = -DALI_HLT -Duse_aliroot -Duse_root
 ifeq ($(ALIHLT_DOMC),true)
-DEFSTR += -Ddo_mc
+HLTFLAGS += -Ddo_mc
 endif
-CXXFLAGS += -DALI_HLT $(DEFSTR) -I$(ALIHLT_TOPDIR)/src
-CINTFLAGS += -DALI_HLT $(DEFSTR) -I$(ALIHLT_TOPDIR)/src
-DEPINC += -DALI_HLT $(DEFSTR) -I$(ALIHLT_TOPDIR)/src
+HLTFLAGS += -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/misc -I$(ALIHLT_TOPDIR)/comp
+CXXFLAGS += $(HLTFLAGS)
+CFLAGS += $(HLTFLAGS)
+CINTFLAGS += $(HLTFLAGS)
+DEPINC += $(HLTFLAGS)
+endif
+##################################################################
+
+##################################################################
+# 
+#               check if DATE is installed
+
+ifdef DATE_ROOT
+DATEFLAGS = -DALI_DATE -D${DATE_SYS} -DDATE_SYS=${DATE_SYS} -Dlong32=${DATE_LONG32} -Dlong64=${DATE_LONG64} -DdatePointer=${DATE_POINTER}
+CXXFLAGS += $(DATEFLAGS)
+CFLAGS += $(DATEFLAGS)
+CINTFLAGS += $(DATEFLAGS)
+DEPINC += $(DATEFLAGS)
 endif
 ##################################################################
 
