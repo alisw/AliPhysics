@@ -37,7 +37,7 @@ void AliPHOSv1::CreateGeometry()
 
   AliMC* pMC = AliMC::GetMC();
 
-  AliPHOS *PHOS_tmp = (AliPHOS*)gAlice->GetDetector("PHOS");
+  AliPHOS *PHOS_tmp = (AliPHOS*)gAlice->GetModule("PHOS");
   if( NULL==PHOS_tmp )
   {
     printf("There isn't PHOS detector!\n");
@@ -216,7 +216,7 @@ void AliPHOSv1::StepManager()
   {
     // GEANT particle just have entered into PIN diode.
 
-    AliPHOS &PHOS = *(AliPHOS*)gAlice->GetDetector("PHOS");
+    AliPHOS &PHOS = *(AliPHOS*)gAlice->GetModule("PHOS");
 
     MC->CurrentVolOff(4,0,copy);
     cradle_number  = copy-1;
@@ -240,7 +240,7 @@ void AliPHOSv1::StepManager()
   {
     // GEANT particle into crystal.
 
-    AliPHOS &PHOS = *(AliPHOS*)gAlice->GetDetector("PHOS");
+    AliPHOS &PHOS = *(AliPHOS*)gAlice->GetModule("PHOS");
 
     MC->CurrentVolOff(5,0,copy);
     cradle_number  = copy-1;
@@ -263,7 +263,7 @@ void AliPHOSv1::StepManager()
   {
     // GEANT particle just have entered into CPV detector.
 
-    AliPHOS &PHOS = *(AliPHOS*)gAlice->GetDetector("PHOS");
+    AliPHOS &PHOS = *(AliPHOS*)gAlice->GetModule("PHOS");
 
     MC->CurrentVolOff(1,0,cradle_number);
     cradle_number--;
