@@ -167,16 +167,17 @@ void AliPHOSFastRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSFastRecParticle::IsPhoton(const char* purity) const
+Bool_t AliPHOSFastRecParticle::IsPhoton(TString purity) const
 {
   // Rec.Particle is a photon if it has a photon-like shape, fast and neutral
   // photon-like shape is defined with a purity "low", "medium" or "high"
 
+  purity.ToLower();
   Bool_t photonLike = kFALSE;
-  if      (strcmp(purity,"low")   ==0) photonLike = TestPIDBit(6);
-  else if (strcmp(purity,"medium")==0) photonLike = TestPIDBit(7);
-  else if (strcmp(purity,"high")  ==0) photonLike = TestPIDBit(8);
-  else Error("IsPhoton","Wrong purity type: \'%s\'",purity);
+  if      (purity == "low"   ) photonLike = TestPIDBit(6);
+  else if (purity == "medium") photonLike = TestPIDBit(7);
+  else if (purity == "high"  ) photonLike = TestPIDBit(8);
+  else Error("IsPhoton","Wrong purity type: \'%s\'",purity.Data());
   if (photonLike                                   && //  photon by PCA
       (TestPIDBit(5)||TestPIDBit(4)||TestPIDBit(3))&& //  fast by TOF
       (TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0)))  //  neutral by CPV
@@ -186,16 +187,17 @@ Bool_t AliPHOSFastRecParticle::IsPhoton(const char* purity) const
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSFastRecParticle::IsPi0(const char* purity) const
+Bool_t AliPHOSFastRecParticle::IsPi0(TString purity) const
 {
   // Rec.Particle is a pi0 if it has a pi0-like shape, fast and neutral
   // pi0-like shape is defined with a purity "low", "medium" or "high"
 
+  purity.ToLower();
   Bool_t pi0Like = kFALSE;
-  if      (strcmp(purity,"low")   ==0) pi0Like = TestPIDBit(9);
-  else if (strcmp(purity,"medium")==0) pi0Like = TestPIDBit(10);
-  else if (strcmp(purity,"high")  ==0) pi0Like = TestPIDBit(11);
-  else Error("IsPi0","Wrong purity type: %s",purity);
+  if      (purity == "low"   ) pi0Like = TestPIDBit(9);
+  else if (purity == "medium") pi0Like = TestPIDBit(10);
+  else if (purity == "high"  ) pi0Like = TestPIDBit(11);
+  else Error("IsPi0","Wrong purity type: %s",purity.Data());
   if (pi0Like                                      && //  pi0 by PCA
       (TestPIDBit(5)||TestPIDBit(4)||TestPIDBit(3))&& //  fast by TOF
       (TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0)))  //  neutral by CPV
@@ -205,16 +207,17 @@ Bool_t AliPHOSFastRecParticle::IsPi0(const char* purity) const
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSFastRecParticle::IsElectron(const char* purity) const
+Bool_t AliPHOSFastRecParticle::IsElectron(TString purity) const
 {
   // Rec.Particle is an electron if it has a photon-like shape, fast and charged
   // photon-like shape is defined with a purity "low", "medium" or "high"
 
+  purity.ToLower();
   Bool_t photonLike = kFALSE;
-  if      (strcmp(purity,"low")   ==0) photonLike = TestPIDBit(6);
-  else if (strcmp(purity,"medium")==0) photonLike = TestPIDBit(7);
-  else if (strcmp(purity,"high")  ==0) photonLike = TestPIDBit(8);
-  else Error("IsElectron","Wrong purity type: %s",purity);
+  if      (purity == "low"   ) photonLike = TestPIDBit(6);
+  else if (purity == "medium") photonLike = TestPIDBit(7);
+  else if (purity == "high"  ) photonLike = TestPIDBit(8);
+  else Error("IsElectron","Wrong purity type: %s",purity.Data());
   if (photonLike                                   && //  photon by PCA
       (TestPIDBit(5)||TestPIDBit(4)||TestPIDBit(3))&& //  fast by TOF
      !(TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0)))  //  charged by CPV
