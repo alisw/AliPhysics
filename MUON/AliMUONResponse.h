@@ -43,6 +43,10 @@ public TObject {
     virtual void    SetPitch(Float_t)                         =0;
     // Get anode cathode Pitch
     virtual Float_t Pitch()                                   =0;
+    // Set the charge correlation
+    virtual void SetChargeCorrel(Float_t correl)              =0;
+    // Get the charge correlation
+    virtual Float_t ChargeCorrel()                            =0;
     //  
     // Chamber response methods
     // Pulse height from scored quantity (eloss)

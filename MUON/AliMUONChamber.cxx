@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.9  2001/01/26 21:35:54  morsch
+All pointers set to 0 in default constructor.
+
 Revision 1.8  2001/01/17 20:53:40  hristov
 Destructors corrected to avoid memory leaks
 
@@ -82,7 +85,6 @@ ClassImp(AliMUONChamber)
     fReconstruction=0;
     fId=0;
     // to avoid mistakes if ChargeCorrelInit is not called
-    fChargeCorrel = 0;
     fCurrentCorrel =1;
 }
 
@@ -97,7 +99,6 @@ ClassImp(AliMUONChamber)
     fReconstruction=0;
     fId=id;
     // to avoid mistakes if ChargeCorrelInit is not called
-    fChargeCorrel = 0;
     fCurrentCorrel =1;
 }
 
@@ -166,7 +167,8 @@ if (fnsec==1)
     fCurrentCorrel =1;
 else 
     // exponential is here to avoid eventual problems in 0 
-    fCurrentCorrel = TMath::Exp(gRandom->Gaus(0,fChargeCorrel/2));
+    // factor 2 because chargecorrel is q1/q2 and not q1/qtrue
+    fCurrentCorrel = TMath::Exp(gRandom->Gaus(0,fResponse->ChargeCorrel()/2));
 }
 
 void AliMUONChamber::DisIntegration(Float_t eloss, Float_t tof, 
