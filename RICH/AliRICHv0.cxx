@@ -21,18 +21,9 @@
 #include <TLorentzVector.h>
 
 ClassImp(AliRICHv0)
-//__________________________________________________________________________________________________
-AliRICHv0::AliRICHv0(const char *name, const char *title)
-          :AliRICH(name,title)
-{
-  if(GetDebug())Info("named ctor","Start.");
-  if(GetDebug())Info("named ctor","Stop.");
-}//name ctor
-//__________________________________________________________________________________________________
+
 void AliRICHv0::StepManager()
-{//
-//  if(!gMC->IsNewTrack()) return;
- 
+{
   char *sParticle;
   switch(gMC->TrackPid()){
     case kProton:
@@ -41,36 +32,58 @@ void AliRICHv0::StepManager()
       sParticle="n";break;
     case kGamma:
       sParticle="gamma";break;
-    case 50000050:
+    case kCerenkov:
       sParticle="photon";break;
+    case kPi0:
+      sParticle="Pi0";break;  
     default:
       sParticle="not known";break;
   }
 
-  Info("StepManager","Event=%i hunt=%i TID=%i PID=%s Mass=%f Charge=%i",
-                      gMC->CurrentEvent(),
-                                fIshunt,
-                                        gAlice->GetCurrentTrackNumber(),
-                                               sParticle,
-                                                      gMC->TrackMass(),
-                                                              gMC->TrackCharge());
-  Info("StepManager","Flags:Alive(%i) Disap(%i) Enter(%i) Exit(%i) Inside(%i) Out(%i) Stop(%i) New(%i)",
+  Info("","event=%i hunt=%i tid=%i pid=%i(%s) m=%f q=%f",
+                            gMC->CurrentEvent(),
+                            fIshunt,
+                            gAlice->GetCurrentTrackNumber(),
+                            gMC->TrackPid(),
+                            sParticle,
+                            gMC->TrackMass(),
+                            gMC->TrackCharge());
+  Info("","Flags:alive(%i) disap(%i) enter(%i) exit(%i) inside(%i) out(%i) stop(%i) new(%i)",
                             gMC->IsTrackAlive(),
-                                      gMC->IsTrackDisappeared(),
-                                                gMC->IsTrackEntering(),
-                                                          gMC->IsTrackExiting(),
-                                                                    gMC->IsTrackInside(),
-                                                                          gMC->IsTrackOut(),
-                                                                                  gMC->IsTrackStop(),
-                                                                                       gMC->IsNewTrack());
-  Info("StepManager","Volume=%s of volume=%s",
-                      gMC->CurrentVolName(),gMC->CurrentVolOffName(1));
-
-//  Info("StepManager","TrackPID %i Particle %i",
-//                     gMC->TrackPid(),gAlice->Particles()[gAlice->CurrentTrack()]
+                            gMC->IsTrackDisappeared(),
+                            gMC->IsTrackEntering(),
+                            gMC->IsTrackExiting(),
+                            gMC->IsTrackInside(),
+                            gMC->IsTrackOut(),
+                            gMC->IsTrackStop(),
+                            gMC->IsNewTrack());
+  Int_t copy0,copy1,copy2,copy3;
+  Int_t vid0=gMC->CurrentVolID(copy0);
+  Int_t vid1=gMC->CurrentVolOffID(1,copy1);
+  Int_t vid2=gMC->CurrentVolOffID(2,copy2);
+  Int_t vid3=gMC->CurrentVolOffID(3,copy3);
+  Info("","vid0=%i(%s)c%i vid1=%i(%s)c%i vid2=%i(%s)c%i vid3=%i(%s)c%i   %s-%s-%s-%s",
+                      vid0,gMC->VolName(vid0),copy0, 
+                      vid1,gMC->VolName(vid1),copy1, 
+                      vid2,gMC->VolName(vid2),copy2, 
+                      vid3,gMC->VolName(vid3),copy3, 
+                      gMC->CurrentVolName(),
+                      gMC->CurrentVolOffName(1),
+                      gMC->CurrentVolOffName(2),
+                      gMC->CurrentVolOffName(3));
+  
+  Float_t a,z,den,rad,abs; a=z=den=rad=abs=kBad;
+  Int_t mid=gMC->CurrentMaterial(a,z,den,rad,abs);
+  Info("","mid=%i a=%7.2f z=%7.2f den=%7.2f rad=%7.2f abs=%7.2f",mid,a,z,den,rad,abs);
+  
   TLorentzVector x4;
   gMC->TrackPosition(x4);
-  Info("StepManager","x=%f y=%f z=%f r=%f theta=%f phi=%f\n",
-                      x4.X(),x4.Y(),x4.Z(),x4.Rho(),x4.Theta()*kR2d,x4.Phi()*kR2d);  
+  Float_t glo[3],loc[3];
+  glo[0]=x4.X();glo[1]=x4.Y();glo[2]=x4.Z();  
+  gMC->Gmtod(glo,loc,1);
+  Info("","glo(%7.2f,%7.2f,%7.2f) r=%7.2f theta=%7.2f phi=%7.2f",
+                      glo[0],glo[1],glo[2],x4.Rho(),x4.Theta()*kR2d,x4.Phi()*kR2d);  
+  Info("","loc(%7.2f,%7.2f,%7.2f)\n",
+                      loc[0],loc[1],loc[2]);  
 }//AliRICHv0::StepManager()
 //__________________________________________________________________________________________________

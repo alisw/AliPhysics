@@ -9,11 +9,11 @@
 class AliRICHv0 : public AliRICH 
 {    
 public:
-  AliRICHv0():AliRICH()                                            {;}
-  AliRICHv0(const char *name, const char *title);
-  virtual       ~AliRICHv0()                                       {;}
-  virtual void   Init()                                            {;}
-  virtual Int_t  IsVersion()                                  const{return 0;}
+  AliRICHv0():AliRICH()                                              {;}
+  AliRICHv0(const char *name, const char *title):AliRICH(name,title) {;}
+  virtual       ~AliRICHv0()                                         {;}
+  virtual void   Init()                                              {;}
+  virtual Int_t  IsVersion()                                    const{return 0;}
   virtual void   StepManager();
 protected:
   ClassDef(AliRICHv0,1)  //RICH coarse version for material budget study and debuging
