@@ -19,7 +19,7 @@
 
 #include "AliMpPad.h"
 
-class AliMpPadRowSegment;
+class AliMpVPadRowSegment;
 class AliMpPadRow;
 class AliMpVMotif;
 class AliMpVRowSegment;
@@ -33,11 +33,12 @@ class AliMpRow;
   typedef vector<AliMpPadRow*>  PadRowVector;
   typedef vector<AliMpVMotif*>  MotifVector;
   typedef vector<AliMpVRowSegment*>  RowSegmentVector;
-  typedef vector<AliMpPadRowSegment*>  PadRowSegmentVector;
+  typedef vector<AliMpVPadRowSegment*>  PadRowSegmentVector;
   typedef vector<AliMpSubZone*> SubZoneVector;
   typedef vector<AliMpRow*> RowVector;
   typedef vector<AliMpZone*> ZoneVector;
   typedef map<Int_t, TVector2>  PadDimensionsMap;
+  typedef PadDimensionsMap::const_iterator  PadDimensionsMapCIterator;
   typedef map<string,pair<Int_t,Int_t> > PadMapType;
   typedef PadMapType::iterator PadMapTypeIterator;
   typedef set<AliMpPad> PadSet;
@@ -48,11 +49,12 @@ class AliMpRow;
   typedef std::vector<AliMpPadRow*>  PadRowVector;
   typedef std::vector<AliMpVMotif*>  MotifVector;
   typedef std::vector<AliMpVRowSegment*>  RowSegmentVector;
-  typedef std::vector<AliMpPadRowSegment*>  PadRowSegmentVector;
+  typedef std::vector<AliMpVPadRowSegment*>  PadRowSegmentVector;
   typedef std::vector<AliMpSubZone*>  SubZoneVector;
   typedef std::vector<AliMpRow*> RowVector;
   typedef std::vector<AliMpZone*> ZoneVector;
   typedef std::map<Int_t, TVector2>  PadDimensionsMap;
+  typedef PadDimensionsMap::const_iterator  PadDimensionsMapCIterator;
   typedef std::map<std::string, std::pair<Int_t,Int_t> > PadMapType;
   typedef PadMapType::iterator PadMapTypeIterator;
   typedef std::set<AliMpPad> PadSet;
