@@ -16,6 +16,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/04/23 12:54:29  morsch
+New options kPi0Flat y kEtaFlat (Gustavo Conesa)
+
 Revision 1.7  2001/03/09 13:01:41  morsch
 - enum constants for paramterisation type (particle family) moved to AliGen*lib.h
 - use AliGenGSIlib::kUpsilon, AliGenPHOSlib::kEtaPrime to access the constants
@@ -485,7 +488,7 @@ Double_t AliGenPHOSlib::YEtaFlat( Double_t *py, Double_t *)
 
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
- GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* tname)
+ GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* tname) const
 {
 // Return pinter to pT parameterisation
     GenFunc func;
@@ -523,7 +526,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 
- GenFunc AliGenPHOSlib::GetY(Int_t param, const char* tname)
+ GenFunc AliGenPHOSlib::GetY(Int_t param, const char* tname) const
 {
 // Return pointer to Y parameterisation
     GenFunc func;
@@ -563,7 +566,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 typedef Int_t (*GenFuncIp) (TRandom *);
- GenFuncIp AliGenPHOSlib::GetIp(Int_t param,  const char* tname)
+ GenFuncIp AliGenPHOSlib::GetIp(Int_t param,  const char* tname) const
 {
 // Return pointer to particle composition
     GenFuncIp func;
