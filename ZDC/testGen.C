@@ -7,7 +7,7 @@ gROOT.Reset();
 AliGenZDC *gener = new AliGenZDC();
 gener->SetParticle(kProton);
 gener->SetMomentum(2760.);
-gener->SetDir(0,0,0,1);
+gener->SetDirection(0,0,0,1);
 gener->SetFermi(1);
 gener->SetDiv(0.000032,0.0001,2);
 gener->Init();

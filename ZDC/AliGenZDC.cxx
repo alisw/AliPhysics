@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/09/26 16:00:47  coppedis
+Minor change
+
 Revision 1.8  2001/04/20 10:10:25  coppedis
 Minor changes
 
@@ -239,7 +242,7 @@ void AliGenZDC::ExtractFermi(Int_t id, Double_t *fPp, Double_t *fProbintp,
   Float_t xx = gRandom->Rndm();
   assert ( id==kProton || id==kNeutron );
   if(id==kProton){
-    for(i=0; i<=200; i++){
+    for(i=1; i<=200; i++){
        if((xx>=fProbintp[i-1]) && (xx<fProbintp[i])) break;
        }
   }
