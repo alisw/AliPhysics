@@ -364,11 +364,15 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
 
      AliITSRawClusterSPD *clust = new AliITSRawClusterSPD(zcenter[i],xcenter[i],1.,ndz,ndx,0.,0.,0.,0.,0.,0.,0.);
      iTS->AddCluster(0,clust);
+     delete clust;
    }	  
    delete[] ifpad;
    delete[] xpad ;
    delete[] zpad ;
    delete[] iclus;
+   delete [] tr1pad;
+   delete [] tr2pad;
+   delete [] tr3pad;
 }
 //______________________________________________________
 void AliITSClusterFinderSPDbari::DigitToPoint(Int_t nclus,
@@ -410,5 +414,7 @@ void AliITSClusterFinderSPDbari::DigitToPoint(Int_t nclus,
         rnew.fTracks[2]=tr3clus[i];
         iTS->AddRecPoint(rnew); 
      }
+
+
 
 }
