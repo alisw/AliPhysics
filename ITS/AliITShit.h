@@ -5,10 +5,11 @@
 
 /* $Id$ */
 
-#include "AliDetector.h"
-#include "TParticle.h"
+
 #include "AliHit.h" 
-#include "AliITSgeom.h"
+
+class TParticle;
+
 
 
 class AliITShit : public AliHit {

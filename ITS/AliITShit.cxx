@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/07/10 16:07:18  fca
+Release version of ITS code
+
 Revision 1.3.4.2  2000/03/04 23:43:57  nilsen
 Fixed up the comments/documentation.
 
@@ -34,10 +37,11 @@ Introduction of the Copyright and cvs Log
 #include <TGeometry.h>
 #include <TNode.h>
 #include <TTUBE.h>
+#include "TParticle.h"
 
 #include "AliRun.h"
-#include "AliITSgeom.h"
 #include "AliITS.h"
+#include "AliITSgeom.h"
 #include "AliITShit.h"
 
 
@@ -241,10 +245,18 @@ void AliITShit::GetPositionL(Float_t &x,Float_t &y,Float_t &z){
     g[0] = fX;
     g[1] = fY;
     g[2] = fZ;
-    gm->GtoL(fLayer,fLadder,fDet,g,l);
-    x = l[0];
-    y = l[1];
-    z = l[2];
+    if(gm) {
+      gm->GtoL(fLayer,fLadder,fDet,g,l);
+      x = l[0];
+      y = l[1];
+      z = l[2];
+    } else {
+      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+      // AliITSv7 - SDD case
+      x=fX;
+      y=fZ;
+      z=fY;
+    }
     return;
 }
 //______________________________________________________________________
@@ -259,10 +271,18 @@ void AliITShit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof){
     g[0] = fX;
     g[1] = fY;
     g[2] = fZ;
-    gm->GtoL(fLayer,fLadder,fDet,g,l);
-    x = l[0];
-    y = l[1];
-    z = l[2];
+    if(gm) {
+      gm->GtoL(fLayer,fLadder,fDet,g,l);
+      x = l[0];
+      y = l[1];
+      z = l[2];
+    } else {
+      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+      // AliITSv7 - SDD case
+      x=fX;
+      y=fZ;
+      z=fY;
+    }
     tof = fTof;
     return;
 }
@@ -278,8 +298,13 @@ Float_t AliITShit::GetXL(){
     g[0] = fX;
     g[1] = fY;
     g[2] = fZ;
-    gm->GtoL(fLayer,fLadder,fDet,g,l);
-    return l[0];
+    if(gm) {
+      gm->GtoL(fLayer,fLadder,fDet,g,l);
+      return l[0];
+    } else {
+      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+      return fX;
+    }
 }
 //______________________________________________________________________
 Float_t AliITShit::GetYL(){
@@ -293,8 +318,13 @@ Float_t AliITShit::GetYL(){
     g[0] = fX;
     g[1] = fY;
     g[2] = fZ;
-    gm->GtoL(fLayer,fLadder,fDet,g,l);
-    return l[1];
+    if (gm) {
+      gm->GtoL(fLayer,fLadder,fDet,g,l);
+      return l[1];
+    } else {
+      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+      return fZ;
+    }
 }
 //______________________________________________________________________
 Float_t AliITShit::GetZL(){
@@ -308,8 +338,13 @@ Float_t AliITShit::GetZL(){
     g[0] = fX;
     g[1] = fY;
     g[2] = fZ;
-    gm->GtoL(fLayer,fLadder,fDet,g,l);
-    return l[2];
+    if(gm) {
+      gm->GtoL(fLayer,fLadder,fDet,g,l);
+      return l[2];
+    } else {
+      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+      return fY;
+    }
 }
 //______________________________________________________________________
 void AliITShit::GetMomentumL(Float_t &px,Float_t &py,Float_t &pz){
@@ -323,10 +358,17 @@ void AliITShit::GetMomentumL(Float_t &px,Float_t &py,Float_t &pz){
     g[0] = fPx;
     g[1] = fPy;
     g[2] = fPz;
-    gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
-    px = l[0];
-    py = l[1];
-    pz = l[2];
+    if (gm) {
+      gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
+      px = l[0];
+      py = l[1];
+      pz = l[2];
+    } else {
+      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+      px=fPx;
+      py=fPy;
+      pz=fPz;
+    }
     return;
 }
 //______________________________________________________________________
@@ -341,8 +383,13 @@ Float_t AliITShit::GetPXL(){
     g[0] = fPx;
     g[1] = fPy;
     g[2] = fPz;
-    gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
-    return l[0];
+    if (gm) {
+      gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
+      return l[0];
+    } else {
+      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+      return fPx;
+    }
 }
 //______________________________________________________________________
 Float_t AliITShit::GetPYL(){
@@ -356,8 +403,14 @@ Float_t AliITShit::GetPYL(){
     g[0] = fPx;
     g[1] = fPy;
     g[2] = fPz;
-    gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
-    return l[1];
+    if (gm) {
+      gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
+      return l[1];
+    } else {
+      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+      return fPy;
+    }
+
 }
 //______________________________________________________________________
 Float_t AliITShit::GetPZL(){
@@ -371,8 +424,14 @@ Float_t AliITShit::GetPZL(){
     g[0] = fPx;
     g[1] = fPy;
     g[2] = fPz;
-    gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
-    return l[2];
+    if (gm) {
+      gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
+      return l[2];
+    } else {
+      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+      return fPz;
+    }
+
 }
 //___________________________________________________________________________;
 Int_t AliITShit::GetModule(){
@@ -381,7 +440,11 @@ Int_t AliITShit::GetModule(){
 ////////////////////////////////////////////////////////////////////////
     AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
 
-    return gm->GetModuleIndex(fLayer,fLadder,fDet);
+    if (gm) return gm->GetModuleIndex(fLayer,fLadder,fDet);
+    else {
+      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+      return 0;
+    }
 }
 //______________________________________________________________________
 TParticle * AliITShit::GetParticle(){
