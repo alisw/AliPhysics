@@ -51,7 +51,6 @@ AliEMCALTowerRecPoint::AliEMCALTowerRecPoint() : AliEMCALRecPoint()
   fEnergyList = 0 ;
   fTime = 0. ;
   fLocPos.SetX(0.)  ;      //Local position should be evaluated
-   
 }
 
 //____________________________________________________________________________
@@ -64,8 +63,7 @@ AliEMCALTowerRecPoint::AliEMCALTowerRecPoint(const char * opt) : AliEMCALRecPoin
   fCoreEnergy = 0 ; 
   fEnergyList = 0 ;
   fTime = -1. ;
-  fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
-  
+  fLocPos.SetX(1000000.)  ;      //Local position should be evaluated  
 }
 
 //____________________________________________________________________________
@@ -342,7 +340,7 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
 
   const Float_t kDeg2Rad = TMath::Pi() / static_cast<Double_t>(180) ; 
   
-  Float_t cyl_radius = emcalgeom->GetIPDistance()+emcalgeom->GetAirGap() ;
+  Float_t cyl_radius = emcalgeom->GetIP2Tower() ;
   Float_t x =  cyl_radius * TMath::Cos(fPhi * kDeg2Rad ) ;
   Float_t y =  cyl_radius * TMath::Sin(fPhi * kDeg2Rad ) ; 
   Float_t z =  cyl_radius / TMath::Tan(fTheta * kDeg2Rad ) ; 
@@ -416,7 +414,7 @@ void AliEMCALTowerRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * dig
 
   const Float_t kDeg2Rad = TMath::Pi() / static_cast<Double_t>(180) ; 
 
-  Float_t cyl_radius = emcalgeom->GetIPDistance()+emcalgeom->GetAirGap() ;
+  Float_t cyl_radius = emcalgeom->GetIP2Tower();
   Float_t x =  cyl_radius * TMath::Cos(fPhi * kDeg2Rad ) ;
   Float_t y =  cyl_radius * TMath::Cos(fPhi * kDeg2Rad ) ; 
   Float_t z =  cyl_radius * TMath::Tan(fTheta * kDeg2Rad ) ; 
@@ -460,7 +458,7 @@ void  AliEMCALTowerRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digi
   Int_t iDigit;
   const Float_t kDeg2Rad = TMath::Pi() / static_cast<Double_t>(180) ; 
   
-  Float_t cyl_radius = emcalgeom->GetIPDistance()+emcalgeom->GetAirGap() ;
+  Float_t cyl_radius = emcalgeom->GetIP2Tower() ;
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
