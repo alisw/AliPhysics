@@ -122,6 +122,7 @@ void AliL3HoughTrack::GetLineCrossingPoint(Int_t padrow,Double_t *xy)
 
 }
 
+/*
 Double_t AliL3HoughTrack::GetCrossingAngle(Int_t padrow)
 {
   //Calculate the crossing angle between track and given padrow.
@@ -198,7 +199,7 @@ Bool_t AliL3HoughTrack::GetCrossingPoint(Int_t padrow,Float_t *xyz)
   
   return true;
 }
-
+*/
 
 Bool_t AliL3HoughTrack::GetCrossingPoint(Int_t slice,Int_t padrow,Float_t *xyz)
 {

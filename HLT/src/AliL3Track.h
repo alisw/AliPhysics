@@ -67,8 +67,11 @@ class AliL3Track {
   Bool_t CalculatePoint(Double_t xplane);//Calculate crossing point with X-plane
   Bool_t IsPoint() {return fIsPoint;}
   void CalculateHelix();
+  Double_t GetCrossingAngle(Int_t padrow);
+  Bool_t GetCrossingPoint(Int_t padrow,Float_t *xyz);
   Double_t GetDistance(Double_t x0,Double_t x1){return 0;}
-
+  
+  void Rotate(Int_t slice);
   Bool_t IsLocal() {return fIsLocal;}
 
   // getter

@@ -16,9 +16,12 @@
 
 #include "AliL3RootTypes.h"
 
+#include "AliL3Defs.h"
 #include "AliL3Logging.h"
 #include "AliL3Track.h"
+#include "AliL3Transform.h"
 #include <math.h>
+
 
 ClassImp(AliL3Track)
 
@@ -98,6 +101,33 @@ Double_t AliL3Track::GetRapidity() const
   return 0.5 * log((m_pi + GetPz()) / (m_pi - GetPz()));
 }
 
+void AliL3Track::Rotate(Int_t slice)
+{
+
+  //Rotate track to global parameters
+
+  AliL3Transform *transform = new AliL3Transform();
+  
+  Float_t psi[1] = {GetPsi()};
+  transform->Local2GlobalAngle(psi,slice);
+  SetPsi(psi[0]);
+  Float_t first[3];
+  first[0] = GetFirstPointX();
+  first[1] = GetFirstPointY();
+  first[2] = GetFirstPointZ();
+  transform->Local2Global(first,slice);
+  SetFirstPoint(first[0],first[1],first[2]);
+  Float_t last[3];
+  last[0] = GetLastPointX();
+  last[1] = GetLastPointY();
+  last[2] = GetLastPointZ();
+  transform->Local2Global(last,slice);
+  SetLastPoint(last[0],last[1],last[2]);
+
+  fIsLocal=false;
+  delete transform;
+}
+
 void AliL3Track::CalculateHelix(){
   //Calculate Radius, CenterX and Centery from Psi, X0, Y0
   //
@@ -110,6 +140,76 @@ void AliL3Track::CalculateHelix(){
   fCenterX = fFirstPoint[0] - fRadius *  cos(trackPhi0);
   fCenterY = fFirstPoint[1] - fRadius *  sin(trackPhi0);
 }
+
+Double_t AliL3Track::GetCrossingAngle(Int_t padrow)
+{
+  //Calculate the crossing angle between track and given padrow.
+
+  if(!IsLocal())
+    {
+      printf("Track is not given in local coordinates\n");
+      return 0;
+    }
+
+  Float_t xyz[3];
+  if(!GetCrossingPoint(padrow,xyz))
+    printf("AliL3HoughTrack::GetCrossingPoint : Track does not cross line!!\n");
+  
+  //Take the dot product of the tangent vector of the track, and
+  //vector perpendicular to the padrow.
+  
+  Double_t tangent[2];
+  tangent[1] = (xyz[0] - GetCenterX())/GetRadius();
+  tangent[0] = -1.*(xyz[1] - GetCenterY())/GetRadius();
+
+  Double_t perp_padrow[2] = {1,0}; //locally in slice
+
+  Double_t cos_beta = fabs(tangent[0]*perp_padrow[0] + tangent[1]*perp_padrow[1]);
+  return acos(cos_beta);
+  
+}
+
+Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
+{
+  //Assumes the track is given in local coordinates
+
+  AliL3Transform *transform = new AliL3Transform();
+  if(!IsLocal())
+    {
+      printf("GetCrossingPoint: Track is given on global coordinates\n");
+      return false;
+    }
+  
+  Double_t xHit = transform->Row2X(padrow);
+
+  xyz[0] = xHit;
+  Double_t aa = (xHit - GetCenterX())*(xHit - GetCenterX());
+  Double_t r2 = GetRadius()*GetRadius();
+  if(aa > r2)
+    return false;
+
+  Double_t aa2 = sqrt(r2 - aa);
+  Double_t y1 = GetCenterY() + aa2;
+  Double_t y2 = GetCenterY() - aa2;
+  xyz[1] = y1;
+  if(fabs(y2) < fabs(y1)) xyz[1] = y2;
+  
+  Double_t yHit = xyz[1];
+  Double_t angle1 = atan2((yHit - GetCenterY()),(xHit - GetCenterX()));
+  if(angle1 < 0) angle1 += 2.*Pi;
+  Double_t angle2 = atan2((GetFirstPointY() - GetCenterY()),(GetFirstPointX() - GetCenterX()));
+  if(angle2 < 0) angle2 += 2.*Pi;
+  Double_t diff_angle = angle1 - angle2;
+  diff_angle = fmod(diff_angle,2*Pi);
+  if((GetCharge()*diff_angle) > 0) diff_angle = diff_angle - GetCharge()*2.*Pi;
+  Double_t s_tot = fabs(diff_angle)*GetRadius();
+  Double_t zHit = GetFirstPointZ() + s_tot*GetTgl();
+  xyz[2] = zHit;
+  
+  delete transform;
+  return true;
+}
+
 
 Bool_t AliL3Track::CalculateReferencePoint(Double_t angle){
   // Global coordinate: crossing point with y = ax+ b; a=tan(angle-Pi/2);
