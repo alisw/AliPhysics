@@ -30,9 +30,6 @@ extern "C" void type_of_call magfld(double& x,   double& y,   double& z,
 *                                                                      *
 *----------------------------------------------------------------------*
 */
-
-    printf("\n ========> magfld\n");
-    
     
     idisc = 0;
     
@@ -68,6 +65,4 @@ extern "C" void type_of_call magfld(double& x,   double& y,   double& z,
     
     // from kG to T
     b /= (Double_t) 10.;
-    printf("\n #magfld: x, y, z, btx, bty, btz, b %f %f %f %f %f %f %f \n", 
-	   x, y, z, btx, bty, btz, b);
 } 
