@@ -77,6 +77,7 @@
 #pragma link C++ class  AliMemoryWatcher+;
 #pragma link C++ class  AliBarrelTrack+;
 #pragma link C++ class  AliMC+;
+#pragma link C++ class  AliSimulation+;
 #endif
 
 
