@@ -92,11 +92,11 @@ ClassImp(AliEMCALDigitizer)
   fTimeResolution     = 0.5e-9 ;
   fTimeSignalLength   = 1.0e-9 ;
   fPreShowerDigitThreshold = fEMCDigitThreshold/100. ;
-  fADCchannelTower = 0.0015;        // width of one ADC channel in GeV
+  fADCchannelTower = 0.0030;        // width of one ADC channel in GeV
   fADCpedestalTower = 0.005 ;      // pedestal of ADC
   fNADCTower = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
 
-  fADCchannelPreSho = 0.0015 ;          // width of one ADC channel in Pre Shower
+  fADCchannelPreSho = 0.0030 ;          // width of one ADC channel in Pre Shower
   fADCpedestalPreSho = 0.005 ;         // pedestal of ADC
   fNADCPreSho = (Int_t) TMath::Power(2,16);      // number of channels in Pre Shower ADC
   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
@@ -118,11 +118,11 @@ Bool_t AliEMCALDigitizer::Init()
   fTimeSignalLength   = 1.0e-9 ;
   fPreShowerDigitThreshold = fEMCDigitThreshold/100. ;
   fInitialized = kFALSE ;
-  fADCchannelTower = 0.0015;        // width of one ADC channel in GeV
+  fADCchannelTower = 0.0030;        // width of one ADC channel in GeV
   fADCpedestalTower = 0.005 ;      //
   fNADCTower = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
 
-  fADCchannelPreSho = 0.0015 ;          // width of one ADC channel in Pre Shower
+  fADCchannelPreSho = 0.0030 ;          // width of one ADC channel in Pre Shower
   fADCpedestalPreSho = 0.005 ;         // 
   fNADCPreSho = (Int_t) TMath::Power(2,16);      // number of channels in Pre ShowerADC
 
