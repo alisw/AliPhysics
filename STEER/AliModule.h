@@ -61,8 +61,10 @@ public:
   virtual Int_t IsVersion() const =0;
 
   // Other methods
-  virtual void        AddDigit(Int_t*, Int_t*){}
-  virtual void        AddHit(Int_t, Int_t*, Float_t *) {}
+  virtual void        AddDigit(Int_t*, Int_t*){
+  Error("AddDigit","Digits cannot be added to module %s\n",fName.Data());}
+  virtual void        AddHit(Int_t, Int_t*, Float_t *) {
+  Error("AddDigit","Hits cannot be added to module %s\n",fName.Data());}
   virtual void        Browse(TBrowser *) {}
   virtual void        CreateGeometry() {}
   virtual void        CreateMaterials() {}
@@ -73,7 +75,7 @@ public:
   virtual void        PostTrack(){}
   virtual void        FinishEvent() {}
   virtual void        FinishRun() {}
-  virtual void        Hits2Digits() {}
+  //virtual void        Hits2Digits() {}
   virtual void        Init() {}
   virtual void        LoadPoints(Int_t ) {}
   virtual void        MakeBranch(Option_t *) {}
@@ -85,8 +87,8 @@ public:
   virtual void        SetTimeGate(Float_t) {}
   virtual Float_t     GetTimeGate() {return 1.e10;}
   virtual void        StepManager() {}
-  virtual AliHit*     FirstHit(Int_t) {return 0;}
-  virtual AliHit*     NextHit() {return 0;}
+  //virtual AliHit*     FirstHit(Int_t) {return 0;}
+  //virtual AliHit*     NextHit() {return 0;}
   virtual void        SetBufferSize(Int_t) {}  
   virtual void        SetEuclidFile(char*,char*geometry=0);
  

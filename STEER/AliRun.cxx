@@ -1530,7 +1530,7 @@ void AliRun::ReadEuclid(const char* filnam, const AliModule *det, const char* to
       printf(" *** GREUCL *** warning: %s is another possible top volume\n",volst[i]);
     }
     if (istop[i] && !flag) {
-      topvol=volst[i];
+      strcpy(topvol,volst[i]);
       printf(" *** GREUCL *** volume %s taken as a top volume\n",topvol);
       flag=1;
     }

@@ -23,14 +23,15 @@ AliFRAMEv0::AliFRAMEv0()
 AliFRAMEv0::AliFRAMEv0(const char *name, const char *title)
   : AliFRAME(name,title)
 {
-  printf("Create FRAMEv0 object");  
+  printf("Create FRAMEv0 object\n");  
+  fEuclidGeometry="$(ALICE_ROOT)/Euclid/frame0399.euc";
+  fEuclidMaterial="$(ALICE_ROOT)/Euclid/frame.tme";
 }
 
  
 //___________________________________________
 void AliFRAMEv0::CreateGeometry()
 {
-  printf("Create FRAMEv0 geometry ");
 //Begin_Html
 /*
 <img src="picts/frame.gif">
@@ -45,21 +46,20 @@ void AliFRAMEv0::CreateGeometry()
 //End_Html
 
   char *filetmp;
-  const char *framename = "$(ALICE_ROOT)/Euclid/frame0399.euc";
   char topvol[5];
-  printf("Create FRAMEv0 geometry ");
   
 //
 // The Space frame
-  filetmp = gSystem->ExpandPathName(framename);
+  filetmp = gSystem->ExpandPathName(fEuclidGeometry.Data());
   FILE *file = fopen(filetmp,"r");
   delete [] filetmp;
   if(file) {
     fclose(file);
-    printf(" Reading FRAME \n");
-    gAlice->ReadEuclid(framename,this,topvol);
+    printf(" Reading FRAME geometry\n");
+    gAlice->ReadEuclid(fEuclidGeometry.Data(),this,topvol);
   } else {
-    Warning("CreateGeometry","The Euclid file %s does not exist!\n",framename);
+    Warning("CreateGeometry","The Euclid file %s does not exist!\n",
+	    fEuclidGeometry.Data());
     exit(1);
   }
 //
@@ -67,10 +67,10 @@ void AliFRAMEv0::CreateGeometry()
 //    and make it invisible
 // 
 //  AliMatrix(idrotm[2001],90.,0.,90.,90.,180.,0.);
-  
-  gMC->Gspos("B010",1,"ALIC",0,0,0,0,"ONLY");
 
-  gMC->Gsatt("B010", "SEEN", 0);
+  gMC->Gspos(topvol,1,"ALIC",0,0,0,0,"ONLY");
+
+  gMC->Gsatt(topvol, "SEEN", 0);
 }
 
  
@@ -78,16 +78,16 @@ void AliFRAMEv0::CreateGeometry()
 void AliFRAMEv0::CreateMaterials()
 {
   char *filetmp;
-  printf("Create FRAMEv0 materials");
-  const char *name = "$(ALICE_ROOT)/Euclid/frame.tme";
-  filetmp = gSystem->ExpandPathName(name);
+  printf("Create FRAMEv0 materials\n");
+  filetmp = gSystem->ExpandPathName(fEuclidMaterial.Data());
   FILE *file = fopen(filetmp,"r");
   delete [] filetmp;
   if(file) {
     fclose(file);
-    gAlice->ReadEuclidMedia(name,this);
+    gAlice->ReadEuclidMedia(fEuclidMaterial.Data(),this);
   } else {
-    Warning("CreateMaterials","The material file %s does not exist!\n",name);
+    Warning("CreateMaterials","The material file %s does not exist!\n",
+	    fEuclidMaterial.Data());
     exit(1);
   }
 }
