@@ -35,8 +35,17 @@
 ClassImp(AliMUONFactory)
 
 //__________________________________________________________________________
+AliMUONFactory::AliMUONFactory(const char* name)
+  : TNamed(name, ""),
+    fMUON(0),
+    fResponse0(0)
+{
+//
+}
+
+//__________________________________________________________________________
 AliMUONFactory::AliMUONFactory()
-  : TObject(),
+  : TNamed(),
     fMUON(0),
     fResponse0(0)
 {
@@ -45,7 +54,7 @@ AliMUONFactory::AliMUONFactory()
 
 //__________________________________________________________________________
 AliMUONFactory::AliMUONFactory(const AliMUONFactory& rhs)
-  : TObject(rhs)
+  : TNamed(rhs)
 {
 // Protected copy constructor
 

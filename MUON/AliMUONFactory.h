@@ -10,14 +10,15 @@
 //  Factory for muon chambers, segmentations and response //
 ////////////////////////////////////////////////////////////
 
-#include <TObject.h>
+#include <TNamed.h>
 
 class AliMUON;
 class AliMUONResponseV0;
 
-class AliMUONFactory : public  TObject {
+class AliMUONFactory : public  TNamed {
 
   public:
+    AliMUONFactory(const char* name);
     AliMUONFactory();
     virtual ~AliMUONFactory();
     

@@ -40,13 +40,27 @@
 ClassImp(AliMUONFactoryV2)
 
 //__________________________________________________________________________
-  AliMUONFactoryV2::AliMUONFactoryV2()
-    : AliMUONFactory(),
+  AliMUONFactoryV2::AliMUONFactoryV2(const char* name)
+    : AliMUONFactory(name),
       fMUON(0),
-      fResponse0(0)
+      fResponse0(0),
+      fDESegmentations(0)
 {
   // FactoryV2 inherite from Factory for switching in AliMUONv1::Init()
   // to be changed when old segmentation will be removed.
+
+  fDESegmentations = new TObjArray();
+  fDESegmentations->SetOwner(kTRUE);
+}
+
+//__________________________________________________________________________
+  AliMUONFactoryV2::AliMUONFactoryV2()
+    : AliMUONFactory(),
+      fMUON(0),
+      fResponse0(0),
+      fDESegmentations(0)
+{
+// Default constructor
 }
 
 //__________________________________________________________________________
@@ -62,7 +76,9 @@ AliMUONFactoryV2::AliMUONFactoryV2(const AliMUONFactoryV2& rhs)
 
 AliMUONFactoryV2::~AliMUONFactoryV2()
 {
-  //
+// Destructor
+
+  delete fDESegmentations;
 }
 
 //__________________________________________________________________________
@@ -127,6 +143,10 @@ void AliMUONFactoryV2::BuildStation1()
     = new AliMUONSt12QuadrantSegmentation(kStation1, kBendingPlane);
   AliMUONSt12QuadrantSegmentation* nonbendSt1
     = new AliMUONSt12QuadrantSegmentation(kStation1, kNonBendingPlane);
+  
+  // Add in the array (for safe deleting)  
+  fDESegmentations->Add(bendSt1);  
+  fDESegmentations->Add(nonbendSt1);  
 
   AliMUONGeometrySegmentation* segmentation[2];
 
@@ -178,6 +198,10 @@ void AliMUONFactoryV2::BuildStation2()
     = new AliMUONSt12QuadrantSegmentation(kStation2, kBendingPlane);
   AliMUONSt12QuadrantSegmentation* nonbendSt2
     = new AliMUONSt12QuadrantSegmentation(kStation2, kNonBendingPlane);
+
+  // Add in the array (for safe deleting)  
+  fDESegmentations->Add(bendSt2);  
+  fDESegmentations->Add(nonbendSt2);  
 
   AliMUONGeometrySegmentation* segmentation[2];
 
@@ -233,11 +257,13 @@ void AliMUONFactoryV2::BuildStation3()
   Int_t ndiv[4] ={ 4, 4, 2, 1};  // densities zones 
   for(Int_t i=0; i<4; i++) {
     slatsegB[i] = new AliMUONSt345SlatSegmentation(1);
+    fDESegmentations->Add(slatsegB[i]);  
     slatsegB[i]->SetPadSize(10.,0.5);
     slatsegB[i]->SetPadDivision(ndiv);
     slatsegB[i]->SetId(1); // Id elt ????
     slatsegB[i]->SetDAnod(AliMUONConstants::Pitch());
     slatsegNB[i] = new AliMUONSt345SlatSegmentation(0);
+    fDESegmentations->Add(slatsegNB[i]);  
     slatsegNB[i]->SetPadSize(0.713,10.); // Nbending
     slatsegNB[i]->SetPadDivision(ndiv);
     slatsegNB[i]->SetId(1);
@@ -372,11 +398,13 @@ void AliMUONFactoryV2::BuildStation4()
   Int_t ndiv[4] ={ 4, 4, 2, 1};  // densities zones 
   for(Int_t i = 0; i < 7; i++) {
     slatsegB[i] = new AliMUONSt345SlatSegmentation(1);
+    fDESegmentations->Add(slatsegB[i]);  
     slatsegB[i]->SetPadSize(10.,0.5);
     slatsegB[i]->SetPadDivision(ndiv);
     slatsegB[i]->SetId(1);
     slatsegB[i]->SetDAnod(AliMUONConstants::Pitch());
     slatsegNB[i] = new AliMUONSt345SlatSegmentation(0);
+    fDESegmentations->Add(slatsegNB[i]);  
     slatsegNB[i]->SetPadSize(0.713,10.); 
     slatsegNB[i]->SetPadDivision(ndiv);
     slatsegNB[i]->SetId(1);
@@ -578,11 +606,13 @@ void AliMUONFactoryV2::BuildStation5()
   Int_t ndiv[4] ={ 4, 4, 2, 1};  // densities zones 
   for(Int_t i = 0; i < 6; i++) {
     slatsegB[i] = new AliMUONSt345SlatSegmentation(1);
+    fDESegmentations->Add(slatsegB[i]);  
     slatsegB[i]->SetPadSize(10.,0.5);
     slatsegB[i]->SetPadDivision(ndiv);
     slatsegB[i]->SetId(1);
     slatsegB[i]->SetDAnod(AliMUONConstants::Pitch());
     slatsegNB[i] = new AliMUONSt345SlatSegmentation(0);
+    fDESegmentations->Add(slatsegNB[i]);  
     slatsegNB[i]->SetPadSize(0.713,10.); 
     slatsegNB[i]->SetPadDivision(ndiv);
     slatsegNB[i]->SetId(1);
@@ -768,6 +798,8 @@ void AliMUONFactoryV2::BuildStation6()
       for(Int_t i=0; i<9; i++) {
         trigSegX[i] = new AliMUONTriggerSegmentation(1);
         trigSegY[i] = new AliMUONTriggerSegmentation(0);
+        fDESegmentations->Add(trigSegX[i]);  
+        fDESegmentations->Add(trigSegY[i]);  
         trigSegX[i]->SetLineNumber(9-i);    
         trigSegY[i]->SetLineNumber(9-i);    
       }

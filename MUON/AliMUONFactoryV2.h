@@ -23,6 +23,7 @@ class AliMUONResponseV0;
 class AliMUONFactoryV2 : public  AliMUONFactory {
 
   public:
+    AliMUONFactoryV2(const char* name);
     AliMUONFactoryV2();
     virtual ~AliMUONFactoryV2();
     
@@ -43,8 +44,9 @@ class AliMUONFactoryV2 : public  AliMUONFactory {
     void BuildStation6();
 
     // data members	
-    AliMUON*           fMUON;      // MUON detector 
-    AliMUONResponseV0* fResponse0; // default response 
+    AliMUON*           fMUON;           // MUON detector 
+    AliMUONResponseV0* fResponse0;      // default response 
+    TObjArray*         fDESegmentations;// DE segmentations
 
   ClassDef(AliMUONFactoryV2,0)  // MUON Factory for Chambers and Segmentation
 };
