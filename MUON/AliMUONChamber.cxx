@@ -17,6 +17,7 @@
 
 // --- MUON includes ---
 #include "AliMUONChamber.h"
+#include "AliMUONChamberGeometry.h"
 
 // --- ROOT includes ---
 
@@ -32,6 +33,8 @@ ClassImp(AliMUONChamber)
     fResponse=0;
     fnsec=1;
     fReconstruction=0;
+    fGeometry = 0;
+    
     fId=0;
     // to avoid mistakes if ChargeCorrelInit is not called
     fCurrentCorrel =1;
@@ -44,6 +47,7 @@ ClassImp(AliMUONChamber)
     fSegmentation->AddAt(0,0);
     fSegmentation->AddAt(0,1);
     fResponse=0;
+    fGeometry = new AliMUONChamberGeometry(fId);
     fnsec=1;
     fReconstruction=0;
     fId=id;
@@ -66,6 +70,14 @@ AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber):TObject(rChamber)
      ;
 }
 
+
+Bool_t  AliMUONChamber::IsSensId(Int_t volId) const 
+{
+// Returns true if the volume specified by volId is in the list
+// of sesitive volumes for this chamber
+
+  return fGeometry->IsSensitiveVolume(volId);
+}  
 
 void AliMUONChamber::Init()
 {

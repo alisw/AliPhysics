@@ -12,6 +12,7 @@
 class AliMUONClusterFinderVS;
 //class AliMUONResponse ;
 //class AliSegmentation ;
+class AliMUONChamberGeometry;
 
 class AliMUONChamber:
 public TObject
@@ -23,11 +24,20 @@ public TObject
     virtual ~AliMUONChamber();
     
 //
+// Get chamber Id
+  virtual Int_t   GetId() {return fId;}
+//
+
+// Get chamber Id
+  virtual Bool_t  IsSensId(Int_t volId) const;
+/*
 // Get GEANT id of sensitive volume
   virtual Int_t   GetGid() {return fGid;}
 // Set GEANT id of sensitive volume
   virtual void    SetGid(Int_t id) {fGid=id;}
-//  
+//
+*/
+  
 // Initialisation
   virtual void    Init();
 // Set z-position of chamber  
@@ -113,6 +123,11 @@ public TObject
   virtual void SetDGas(Float_t DGas) {fdGas = DGas;}
   virtual void SetDAlu(Float_t DAlu) {fdAlu = DAlu;}  
   virtual void SetChargeCorrel(Float_t correl) {fResponse->SetChargeCorrel(correl);}
+
+// geometry  
+  void SetGeometry(AliMUONChamberGeometry* geometry) {fGeometry = geometry;}
+  AliMUONChamberGeometry* GetGeometry() const {return fGeometry; }
+
 // assignment operator  
   AliMUONChamber& operator =(const AliMUONChamber& rhs);
   
@@ -120,7 +135,8 @@ public TObject
   Int_t   fId;   // chamber number
   Float_t fdGas; // half gaz gap
   Float_t fdAlu; // half Alu width  
-  Int_t   fGid;  // GEANT volume if for sensitive volume of this chamber
+  //Int_t   fGid;  // GEANT volume if for sensitive volume of this chamber
+                   // moved to AliMUONChamberGeometry
   Float_t fZ;    // Z position (cm)
   Int_t   fnsec; // number of semented cathode planes
   Float_t frMin; // innermost sensitive radius
@@ -130,6 +146,7 @@ public TObject
   TObjArray              *fSegmentation;    // pointer to segmentation
   AliMUONClusterFinderVS *fReconstruction;  // pointer to reconstruction
   AliMUONResponse        *fResponse;        // pointer to response
+  AliMUONChamberGeometry *fGeometry;        // pointer to geometry
   ClassDef(AliMUONChamber,1) // Muon tracking chamber class
 };
 

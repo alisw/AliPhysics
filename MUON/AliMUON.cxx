@@ -66,6 +66,7 @@
 #include "AliMUONTransientDigit.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerDecision.h"
+#include "AliMUONVGeometryBuilder.h"	
 #include "AliRun.h"	
 #include "AliMUONDigitizerv1.h"
 
@@ -94,6 +95,7 @@ AliMUON::AliMUON()
     fNTrackingCh     = 0;
     fIshunt          = 0;
     fChambers        = 0;
+    fGeometryBuilders = 0; 
     fTriggerCircuits = 0;
     fAccMin          = 0.;
     fAccMax          = 0.;   
@@ -124,6 +126,8 @@ AliMUON::AliMUON(const char *name, const char *title)
 // Creating List of Chambers
     Int_t ch;
     fChambers = new TObjArray(AliMUONConstants::NCh());
+    fGeometryBuilders = new TObjArray(AliMUONConstants::NCh());
+
     // Loop over stations
     for (Int_t st = 0; st < AliMUONConstants::NCh() / 2; st++) {
       // Loop over 2 chambers in the station
@@ -138,7 +142,7 @@ AliMUON::AliMUON(const char *name, const char *title)
 	  fChambers->AddAt(new AliMUONChamberTrigger(ch),ch);
 	}
 	AliMUONChamber* chamber = (AliMUONChamber*) fChambers->At(ch);
-	chamber->SetGid(0);
+	//chamber->SetGid(0);
 	// Default values for Z of chambers
 	chamber->SetZ(AliMUONConstants::DefaultChamberZ(ch));
 	//
@@ -184,6 +188,19 @@ AliMUON::~AliMUON()
   if(fDebug) printf("%s: Calling AliMUON destructor !!!\n",ClassName());
   fIshunt  = 0;
   if (fMerger) delete fMerger;
+
+  if (fGeometryBuilders){
+    fGeometryBuilders->Delete();
+    delete fGeometryBuilders;
+  } 
+}
+//_____________________________________________________________________________
+void AliMUON::AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder)
+{
+// Adds the geometry builder to the list
+// ---
+
+  fGeometryBuilders->Add(geomBuilder);
 }
 //____________________________________________________________________
 void AliMUON::BuildGeometry()
@@ -313,6 +330,39 @@ void AliMUON::SetAcceptance(Bool_t acc, Float_t angmin, Float_t angmax)
     } // station loop
   }
 }
+
+//____________________________________________________________________
+Float_t  AliMUON::GetMaxStepGas() const
+{
+// Return stepsize in gas
+  
+  return fMaxStepGas;
+}  
+
+//____________________________________________________________________
+Float_t  AliMUON::GetMaxStepAlu() const
+{
+// Return step size in Alu
+  
+  return fMaxStepAlu;
+}
+  
+//____________________________________________________________________
+Float_t  AliMUON::GetMaxDestepGas() const
+{
+// Return maximum step size in Gas
+  
+  return fMaxDestepGas;
+}
+  
+//____________________________________________________________________
+Float_t  AliMUON::GetMaxDestepAlu() const
+{
+// Return maximum step size in Gas
+  
+  return fMaxDestepAlu;
+}
+
 //____________________________________________________________________
 void   AliMUON::SetSegmentationModel(Int_t id, Int_t isec, AliSegmentation *segmentation)
 {

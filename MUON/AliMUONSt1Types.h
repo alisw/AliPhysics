@@ -17,6 +17,7 @@
 #include <vector>
 #include <fstream>
 
+#include "AliMUONSt1Containers.h"
 #include "AliMUONSt1SpecialMotif.h"
 
 class TString;
@@ -37,6 +38,24 @@ class AliMUONSt1ResponseParameter;
   typedef std::map<Int_t , AliMUONSt1SpecialMotif> TSpecialMap;
   typedef std::map<std::string,AliMUONSt1ResponseParameter*> TParamsMap;
   typedef std::map<std::string,TList*> TListMap;
+#endif
+
+#ifdef ST1_WITH_STL
+  #include <map>
+  #ifdef __HP_aCC
+    using std::map;
+  #endif
+#endif
+
+#ifdef ST1_WITH_ROOT
+  #include "TExMap.h"
+#endif
+
+#ifdef ST1_WITH_STL
+    typedef map<Int_t , AliMUONSt1SpecialMotif> SpecialMap;
+#endif
+#ifdef ST1_WITH_ROOT
+    typedef  TExMap  SpecialMap;
 #endif
 
 #endif //ALI_MUON_ST1_TYPES_H

@@ -28,6 +28,7 @@ class AliMUONRawCluster;
 class AliMUONClusterFinderVS;
 class AliMUONReconstHit;
 class AliMUONMerger;
+class AliMUONVGeometryBuilder;
 
 class TVector;
 #include "TObjArray.h"
@@ -42,6 +43,7 @@ class AliMUON : public  AliDetector {
     AliMUON(const AliMUON& rMUON);
     virtual       ~AliMUON();
    
+    void           AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder);
     virtual void   BuildGeometry();
     Int_t          DistancetoPrimitive(Int_t px, Int_t py);
     AliMUONData*   GetMUONData() {return fMUONData;}
@@ -94,6 +96,12 @@ class AliMUON : public  AliDetector {
     virtual void   SetMaxDestepAlu(Float_t p1);
     virtual void   SetAcceptance(Bool_t acc=0, Float_t angmin=2, Float_t angmax=9);
    
+    // Get Stepping Parameters
+    virtual Float_t  GetMaxStepGas() const;
+    virtual Float_t  GetMaxStepAlu() const;
+    virtual Float_t  GetMaxDestepGas() const;
+    virtual Float_t  GetMaxDestepAlu() const;
+   
     // get Trigger answer
     void   Trigger(Int_t nev);
     // Return reference to Chamber #id
@@ -118,6 +126,7 @@ class AliMUON : public  AliDetector {
     AliMUONData*          fMUONData;           // Data container for MUON subsystem  
     Int_t                 fSplitLevel;         // Splitlevel when making branches in outfiles.
     TObjArray*            fChambers;           // List of Tracking Chambers
+    TObjArray            *fGeometryBuilders;   // List of Geometry Builders
     TObjArray*            fTriggerCircuits;    // List of Trigger Circuits
    
     //

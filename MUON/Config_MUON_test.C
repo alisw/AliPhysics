@@ -87,7 +87,7 @@ void Config(char directory[100]="", char option[6]="box")
   if (!strcmp(option,"box")) {
     AliGenBox * gener = new AliGenBox(1);
     gener->SetMomentumRange(20.,20.1);
-    gener->SetPhiRange(0, 360);         
+    gener->SetPhiRange(-180, 180.01);         
     gener->SetThetaRange(171.000,178.001);
     gener->SetPart(13);           // Muons
     gener->SetOrigin(0.,0., 0.);  //vertex position
@@ -111,7 +111,7 @@ void Config(char directory[100]="", char option[6]="box")
     AliGenParam *gener = new AliGenParam(1, AliGenMUONlib::kUpsilon);
     gener->SetMomentumRange(0,999);
     gener->SetPtRange(0,100.);
-    gener->SetPhiRange(0, 360);
+    gener->SetPhiRange(-180, 180);
     gener->SetCutOnChild(1);
     gener->SetChildPhiRange(0.,360.);
     gener->SetChildThetaRange(171.0,178.0);
@@ -128,18 +128,28 @@ void Config(char directory[100]="", char option[6]="box")
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY","Alice envelop");
   //=================== ABSO parameters ============================
-  AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
+  //AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
   //=================== DIPO parameters ============================
-  AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
+  //AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
   //================== HALL parameters ============================
-  AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
+ // AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
   //=================== PIPE parameters ============================
-  AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
+  //AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
   //=================== SHIL parameters ============================
-  AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
+  //AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
   //=================== MUON Subsystem ===========================
   cout << ">>> Config_MUON_test.C: Creating AliMUONv1 ..."<<endl;
-  AliMUONv1 *MUON  = new AliMUONv1("MUON","default"); 
+ 
+  // Old MUONv1 version (renamed to MUONv3)
+  //AliMUONv3 *MUON  = new AliMUONv3("MUON","default"); 
+  
+  // New MUONv1 version (geometry defined via builders)
+  AliMUON *MUON = new AliMUONv1("MUON", "default");
+  //MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
+  //MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilderV2(MUON));
+  //MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilder(MUON));
+  MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
+  //MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
 }
 
 Float_t EtaToTheta(Float_t arg){

@@ -5,6 +5,7 @@
 #pragma link C++ class  AliMUON+;
 #pragma link C++ class  AliMUONv0+;
 #pragma link C++ class  AliMUONv1+;
+#pragma link C++ class  AliMUONv3+;
 #pragma link C++ class  AliMUONData+;
 #pragma link C++ class  AliMUONLoader+;
 #pragma link C++ class  AliMUONHit+;
@@ -60,14 +61,21 @@
 #pragma link C++ class  AliMUONTrackK+;
 #pragma link C++ class  AliMUONPixel+;
 #pragma link C++ class  AliMUONClusterFinderAZ+;
-#pragma link C++ class  AliMUONv2+;
 #pragma link C++ class  AliMUONSt1Segmentation+;
 #pragma link C++ class  AliMUONSt1Response+;
 #pragma link C++ class  AliMUONSt1ElectronicElement+;
 #pragma link C++ class  AliMUONSt1SpecialMotif+;
 #pragma link C++ class  AliMUONSt1ResponseParameter+;
 #pragma link C++ class  AliMUONSt1ResponseRule+;
-
+#pragma link C++ class  AliMUONChamberGeometry+;
+#pragma link C++ class  AliMUONGeometryConstituent+;
+#pragma link C++ class  AliMUONGeometryEnvelope+;
+#pragma link C++ class  AliMUONSt1GeometryBuilder+;
+#pragma link C++ class  AliMUONSt1GeometryBuilderV2+;
+#pragma link C++ class  AliMUONSt2GeometryBuilder+;
+#pragma link C++ class  AliMUONSlatGeometryBuilder+;
+#pragma link C++ class  AliMUONTriggerGeometryBuilder+;
+#pragma link C++ class  AliMUONVGeometryBuilder+;
 #include "MUONLinkDefMapping.h"
 
 #endif

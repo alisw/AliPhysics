@@ -13,22 +13,26 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
+// $Id$
 //
-// Class AliMUONv2
-// ---------------
-// Inherits from AliMUONv1 but with a more detailed
-// geometrical description of station 1 
+// Class AliMUONSt1GeometryBuilderV2
+// ---------------------------------
+// MUON Station1 detailed geometry construction class.
+//
+// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 
-#include <algorithm>
-#include <string>
+#ifdef ST1_WITH_STL
+  #include <vector>
+#endif
+
+#ifdef ST1_WITH_ROOT
+  #include "TArrayI.h"
+#endif
 
 #include <TVector2.h>
+#include <TVector3.h>
+#include <TGeoMatrix.h>
 #include <TClonesArray.h>
-#include <TLorentzVector.h>
-#include <TArrayI.h>
 #include <Riostream.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
@@ -41,101 +45,73 @@
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 
-#include "AliMUONv2.h"
+#include "AliMUONSt1GeometryBuilderV2.h"
+#include "AliMUONSt1SpecialMotif.h"
+#include "AliMUON.h"
+#include "AliMUONChamber.h"
+#include "AliMUONChamberGeometry.h"
 #include "AliMUONConstants.h"
-#include "AliMUONHit.h"
 #include "AliRun.h"
 #include "AliMagF.h"
-#include "AliConst.h" 
-#include "AliMUONChamber.h"
 
-ClassImp(AliMUONv2)
+ClassImp(AliMUONSt1GeometryBuilderV2)
 
 // Thickness Constants
-const GReal_t AliMUONv2::fgkHzPadPlane=0.0148/2.;     //Pad plane
-const GReal_t AliMUONv2::fgkHzFoam = 2.083/2.;        //Foam of mechanicalplane
-const GReal_t AliMUONv2::fgkHzFR4 = 0.0031/2.;        //FR4 of mechanical plane
-const GReal_t AliMUONv2::fgkHzSnPb = 0.0091/2.;       //Pad/Kapton connection (66 pt)
-const GReal_t AliMUONv2::fgkHzKapton = 0.0122/2.;     //Kapton
-const GReal_t AliMUONv2::fgkHzBergPlastic = 0.3062/2.;//Berg connector
-const GReal_t AliMUONv2::fgkHzBergCopper = 0.1882/2.; //Berg connector
-const GReal_t AliMUONv2::fgkHzDaughter = 0.0156/2.;   //Daughter board
-const GReal_t AliMUONv2::fgkHzGas = 0.2/2.;           //Gas thickness
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzPadPlane=0.0148/2.;     //Pad plane
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzFoam = 2.083/2.;        //Foam of mechanicalplane
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzFR4 = 0.0031/2.;        //FR4 of mechanical plane
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzSnPb = 0.0091/2.;       //Pad/Kapton connection (66 pt)
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzKapton = 0.0122/2.;     //Kapton
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzBergPlastic = 0.3062/2.;//Berg connector
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzBergCopper = 0.1882/2.; //Berg connector
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzDaughter = 0.0156/2.;   //Daughter board
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzGas = 0.2/2.;           //Gas thickness
 
 // Quadrant Mother volume - TUBS1 - Middle layer of model
-const GReal_t AliMUONv2::fgkMotherIR1 = 18.3;
-const GReal_t AliMUONv2::fgkMotherOR1 = 105.673;   
-const GReal_t AliMUONv2::fgkMotherThick1 = 6.5/2;  
-const GReal_t AliMUONv2::fgkMotherPhiL1 = 0.; 
-const GReal_t AliMUONv2::fgkMotherPhiU1 = 90.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherIR1 = 18.3;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherOR1 = 105.673;   
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherThick1 = 6.5/2;  
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherPhiL1 = 0.; 
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherPhiU1 = 90.;
 
 // Quadrant Mother volume - TUBS2 - near and far layers of model
-const GReal_t AliMUONv2::fgkMotherIR2 = 20.7;   
-const GReal_t AliMUONv2::fgkMotherOR2 = 100.073;   
-const GReal_t AliMUONv2::fgkMotherThick2 = 3.0/2; 
-const GReal_t AliMUONv2::fgkMotherPhiL2 = 0.; 
-const GReal_t AliMUONv2::fgkMotherPhiU2 = 90.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherIR2 = 20.7;   
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherOR2 = 100.073;   
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherThick2 = 3.0/2; 
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherPhiL2 = 0.; 
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherPhiU2 = 90.;
 
 // Sensitive copper pads, foam layer, PCB and electronics model parameters
-const GReal_t AliMUONv2::fgkHxHole=1.5/2.;
-const GReal_t AliMUONv2::fgkHyHole=6./2.;
-const GReal_t AliMUONv2::fgkHxBergPlastic=0.74/2.;
-const GReal_t AliMUONv2::fgkHyBergPlastic=5.09/2.;
-const GReal_t AliMUONv2::fgkHxBergCopper=0.25/2.;
-const GReal_t AliMUONv2::fgkHyBergCopper=3.6/2.;
-const GReal_t AliMUONv2::fgkHxKapton=0.8/2.;
-const GReal_t AliMUONv2::fgkHyKapton=5.7/2.;
-const GReal_t AliMUONv2::fgkHxDaughter=2.3/2.;
-const GReal_t AliMUONv2::fgkHyDaughter=6.3/2.;
-const GReal_t AliMUONv2::fgkOffsetX=1.46;
-const GReal_t AliMUONv2::fgkOffsetY=0.71;
-const GReal_t AliMUONv2::fgkDeltaFilleEtamX=1.46;
-const GReal_t AliMUONv2::fgkDeltaFilleEtamY=0.051;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHxHole=1.5/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHyHole=6./2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHxBergPlastic=0.74/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHyBergPlastic=5.09/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHxBergCopper=0.25/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHyBergCopper=3.6/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHxKapton=0.8/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHyKapton=5.7/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHxDaughter=2.3/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHyDaughter=6.3/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkOffsetX=1.46;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkOffsetY=0.71;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaFilleEtamX=1.46;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaFilleEtamY=0.051;
 
-const GReal_t AliMUONv2::fgkDeltaQuadLHC=2.6;  // LHC Origin wrt Quadrant Origin
-const GReal_t AliMUONv2::fgkFrameOffset=5.0;  
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaQuadLHC=2.6;  // LHC Origin wrt Quadrant Origin
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkFrameOffset=5.0;  
 
-const char* AliMUONv2::fgkHoleName="MCHL";      
-const char* AliMUONv2::fgkDaughterName="MCDB";  
-const char  AliMUONv2::fgkFoamLayerSuffix='F';  // prefix for automatic volume naming
-const char* AliMUONv2::fgkQuadrantMLayerName="SQM";
-const char* AliMUONv2::fgkQuadrantNLayerName="SQN";
-const char* AliMUONv2::fgkQuadrantFLayerName="SQF";
+const char* AliMUONSt1GeometryBuilderV2::fgkHoleName="MCHL";      
+const char* AliMUONSt1GeometryBuilderV2::fgkDaughterName="MCDB";  
+const char  AliMUONSt1GeometryBuilderV2::fgkFoamLayerSuffix='F';  // prefix for automatic volume naming
+const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantMLayerName="SQM";
+const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantNLayerName="SQN";
+const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantFLayerName="SQF";
 
 //______________________________________________________________________________
-AliMUONv2::AliMUONv2()
-  : AliMUONv1()
+AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(AliMUON* muon)
+  : AliMUONVGeometryBuilder(&muon->Chamber(0), &muon->Chamber(1)),
+    fMUON(muon)
 {
-// Default Constructor
-// --
-   fChamberV2[0] = 0;
-   fChamberV2[1] = 0;
-   
-   // keep secondaries
-   SetIshunt(0);
- 
-   // set path to mapping data files
-   if (! gSystem->Getenv("MINSTALL")) {    
-     TString dirPath = gSystem->Getenv("ALICE_ROOT");
-     dirPath += "/MUON/mapping"; 
-     AliMpFiles::Instance()->SetTopPath(dirPath);
-     gSystem->Setenv("MINSTALL", dirPath.Data());
-     //cout << "AliMpFiles top path set to " << dirPath << endl;	  
-   }
-   //else
-   //  cout << gSystem->Getenv("MINSTALL") << endl;	  
-}
- 
-//______________________________________________________________________________
-AliMUONv2::AliMUONv2(const char *name, const char *title)
-  : AliMUONv1(name,title)
-{
-   fChamberV2[0] = 0;
-   fChamberV2[1] = 0;
-   
-   // keep secondaries
-   SetIshunt(0);
-   
    // set path to mapping data files
    if (! gSystem->Getenv("MINSTALL")) {    
      TString dirPath = gSystem->Getenv("ALICE_ROOT");
@@ -149,15 +125,42 @@ AliMUONv2::AliMUONv2(const char *name, const char *title)
 }
  
 //______________________________________________________________________________
-AliMUONv2::AliMUONv2(const AliMUONv2& rMUON):AliMUONv1(rMUON)
+AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2()
+  : AliMUONVGeometryBuilder(),
+    fMUON(0)
+{
+// Default Constructor
+// --
+}
+ 
+//______________________________________________________________________________
+AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(const AliMUONSt1GeometryBuilderV2& rhs)
+  : AliMUONVGeometryBuilder(rhs)
 {
 // Dummy copy constructor
+
+ Fatal("Copy constructor", 
+        "Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
-AliMUONv2::~AliMUONv2()
+AliMUONSt1GeometryBuilderV2::~AliMUONSt1GeometryBuilderV2()
 {
 // Destructor
+}
+
+
+//______________________________________________________________________________
+AliMUONSt1GeometryBuilderV2& 
+AliMUONSt1GeometryBuilderV2::operator = (const AliMUONSt1GeometryBuilderV2& rhs) 
+{
+  // check assignement to self
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", 
+        "Assignment operator is not implemented.");
+    
+  return *this;  
 }
 
 //
@@ -165,13 +168,14 @@ AliMUONv2::~AliMUONv2()
 //
 
 //______________________________________________________________________________
-void AliMUONv2::CreateHole()
+void AliMUONSt1GeometryBuilderV2::CreateHole()
 {
 // Create all the elements found inside a foam hole
 // --
-  Int_t* idtmed = fIdtmed->GetArray()-1099;
-  Int_t idAir  = idtmed[1100];    // medium 1
-  Int_t idCopper  = idtmed[1109]; // medium 10 = copper
+  Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
+  Int_t idAir  = idtmed[1100];      // medium 1
+  //Int_t idCopper  = idtmed[1109]; // medium 10 = copper 
+  Int_t idCopper  = idtmed[1121]; // medium 22 = copper 
 
   GReal_t par[3];
   GReal_t posX,posY,posZ;
@@ -201,14 +205,16 @@ void AliMUONv2::CreateHole()
 }
 
 //______________________________________________________________________________
-void AliMUONv2::CreateDaughterBoard()
+void AliMUONSt1GeometryBuilderV2::CreateDaughterBoard()
 {
 // Create all the elements in a daughter board
 // --
-  Int_t* idtmed = fIdtmed->GetArray()-1099;
+  Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
   Int_t idAir  = idtmed[1100]; // medium 1
-  Int_t idCopper  = idtmed[1109]; // medium 10 = copper
-  Int_t idPlastic  =idtmed[1116]; // medium 17 = Plastic
+  //Int_t idCopper  = idtmed[1109]; // medium 10 = copper
+  //Int_t idPlastic  =idtmed[1116]; // medium 17 = Plastic
+  Int_t idCopper  = idtmed[1121]; // medium 22 = copper
+  Int_t idPlastic  =idtmed[1127]; // medium 28 = Plastic
 
   GReal_t par[3];
   GReal_t posX,posY,posZ;
@@ -247,16 +253,18 @@ void AliMUONv2::CreateDaughterBoard()
 }
 
 //______________________________________________________________________________
-void AliMUONv2::CreateInnerLayers()
+void AliMUONSt1GeometryBuilderV2::CreateInnerLayers()
 {
 // Create the layer of sensitive volumes with gas
 // and the copper layer.
 // --
 
 // Gas Medium
-  Int_t* idtmed = fIdtmed->GetArray()-1099; 
-  Int_t idArCO2  = idtmed[1108];  // medium 9 (ArCO2 80%) 
-  Int_t idCopper  = idtmed[1109]; // medium 10 = copper
+  Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099; 
+  //Int_t idArCO2  = idtmed[1108];  // medium 9 (ArCO2 80%) 
+  //Int_t idCopper  = idtmed[1109]; // medium 10 = copper
+  Int_t idArCO2   = idtmed[1124]; // medium 25 (ArCO2 80%) 
+  Int_t idCopper  = idtmed[1121]; // medium 22 = copper
 
   Float_t par[11];
 
@@ -463,7 +471,7 @@ void AliMUONv2::CreateInnerLayers()
 }
 
 //______________________________________________________________________________
-void AliMUONv2::CreateQuadrant(Int_t chamber)
+void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
 {
 // create the quadrant (bending and non-bending planes)
 // for the given chamber
@@ -471,10 +479,20 @@ void AliMUONv2::CreateQuadrant(Int_t chamber)
 
   CreateFrame(chamber);
 
-  TSpecialMap specialMap;
+#ifdef ST1_WITH_STL
+  SpecialMap specialMap;
   specialMap[1001] = AliMUONSt1SpecialMotif(TVector2( 0.1, 0.84), 90.);
   specialMap[1002] = AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36));
   specialMap[1003] = AliMUONSt1SpecialMotif(TVector2(1.01, 0.36));
+#endif
+  
+#ifdef ST1_WITH_ROOT
+  SpecialMap specialMap;
+  specialMap.Add(1001, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.1, 0.84), 90.));
+  specialMap.Add(1002, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36)));
+  specialMap.Add(1003, (Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01, 0.36)));
+#endif
+
   AliMpReader reader1(kStation1, kBendingPlane);
   AliMpSector* sector1 = reader1.BuildSector();
 
@@ -482,6 +500,7 @@ void AliMUONv2::CreateQuadrant(Int_t chamber)
   TVector3 where = TVector3(2.5+0.1+0.56+0.001, 2.5+0.1+0.001, 0.);
   PlaceSector(sector1, specialMap, where, reflectZ, chamber);
   
+#ifdef ST1_WITH_STL
   specialMap.clear();
   specialMap[4001] = AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.);
   specialMap[4002] = AliMUONSt1SpecialMotif(TVector2(1.96, 0.17));
@@ -489,24 +508,42 @@ void AliMUONv2::CreateQuadrant(Int_t chamber)
   specialMap[4004] = AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08));
   specialMap[4005] = AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25));
   specialMap[4006] = AliMUONSt1SpecialMotif(TVector2(0.28, 0.21));
+#endif
+
+#ifdef ST1_WITH_ROOT
+  specialMap.Delete();
+  specialMap.Add(4001,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.));
+  specialMap.Add(4002,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.96, 0.17)));
+  specialMap.Add(4003,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
+  specialMap.Add(4004,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 ,-0.08)));
+  specialMap.Add(4005,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.2 , 0.25)));
+  specialMap.Add(4006,(Long_t) new AliMUONSt1SpecialMotif(TVector2(0.28, 0.21)));
+#endif
+
   AliMpReader reader2(kStation1, kNonBendingPlane);
   AliMpSector* sector2 = reader2.BuildSector();
 
   reflectZ = false;
   where = TVector3(where.X()+0.63/2.,where.Y()+0.42/2., 0.); //add a half pad shift
   PlaceSector(sector2, specialMap, where, reflectZ, chamber);
+
+#ifdef ST1_WITH_ROOT
+  specialMap.Delete();
+#endif
 }
 
 //______________________________________________________________________________
-void AliMUONv2::CreateFoamBox(const char* name,const  TVector2& dimensions)
+void AliMUONSt1GeometryBuilderV2::CreateFoamBox(const char* name,const  TVector2& dimensions)
 {
 // create all the elements in the copper plane
 // --
 
-  Int_t* idtmed = fIdtmed->GetArray()-1099;
+  Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
   Int_t idAir  = idtmed[1100]; // medium 1
-  Int_t idFoam = idtmed[1115]; // medium 16 = Foam
-  Int_t idFR4  = idtmed[1114]; // medium 15 = FR4
+  //Int_t idFoam = idtmed[1115]; // medium 16 = Foam
+  //Int_t idFR4  = idtmed[1114]; // medium 15 = FR4
+  Int_t idFoam = idtmed[1125]; // medium 26 = Foam
+  Int_t idFR4  = idtmed[1122]; // medium 23 = FR4
 
   // mother volume
   GReal_t par[3];
@@ -542,7 +579,7 @@ void AliMUONv2::CreateFoamBox(const char* name,const  TVector2& dimensions)
 }
 
 //______________________________________________________________________________
-void AliMUONv2::CreatePlaneSegment(const char* name,const  TVector2& dimensions,
+void AliMUONSt1GeometryBuilderV2::CreatePlaneSegment(const char* name,const  TVector2& dimensions,
       	      	      	      	   Int_t nofHoles)
 {
 // Create a segment of a plane (this includes a foam layer, 
@@ -566,7 +603,7 @@ void AliMUONv2::CreatePlaneSegment(const char* name,const  TVector2& dimensions,
 }
 
 //______________________________________________________________________________
-void AliMUONv2::CreateFrame(Int_t chamber)
+void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
 {
 // Create the non-sensitive elements of the frame for the  <chamber>
 //
@@ -597,71 +634,77 @@ void AliMUONv2::CreateFrame(Int_t chamber)
 // SQFx is the Quadrant Far side layer for chamber <x> ( posZ in (3.25,6.25] ).
 //---
 
-const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
+  const Float_t kNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 
   // tracking medias
-  Int_t* idtmed = fIdtmed->GetArray()-1099;
+  Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
   
   Int_t idAir  = idtmed[1100];       // medium 1
-  Int_t idFrameEpoxy = idtmed[1115]; // medium 16 = Frame Epoxy ME730
-  Int_t idInox = idtmed[1116];       // medium 17 Stainless Steel (18%Cr,9%Ni,Fe)
-  Int_t idFR4 = idtmed[1110];        // medium 11 FR4
-  Int_t idCopper = idtmed[1109];     // medium 10 Copper
-  Int_t idAlu = idtmed[1103];        // medium 4 Aluminium
+  //Int_t idFrameEpoxy = idtmed[1115]; // medium 16 = Frame Epoxy ME730
+  //Int_t idInox = idtmed[1116];       // medium 17 Stainless Steel (18%Cr,9%Ni,Fe)
+  //Int_t idFR4 = idtmed[1110];        // medium 11 FR4
+  //Int_t idCopper = idtmed[1109];     // medium 10 Copper
+  //Int_t idAlu = idtmed[1103];        // medium 4 Aluminium
+  Int_t idFrameEpoxy = idtmed[1123]; // medium 24 = Frame Epoxy ME730  // was 20 not 16
+  Int_t idInox = idtmed[1128];       // medium 29 Stainless Steel (18%Cr,9%Ni,Fe) // was 21 not 17
+  Int_t idFR4 = idtmed[1122];        // medium 23 FR4  // was 15 not 11
+  Int_t idCopper = idtmed[1121];     // medium 22 Copper
+  Int_t idAlu = idtmed[1120];        // medium 21 Aluminium
   
   
 // Rotation Matrices  
       Int_t rot1, rot2, rot3;    
       
 //   Rotation matrices  
-     AliMatrix(rot1,  90.,  90., 90., 180.,  0., 0.); // +90 deg in x-y plane
-     AliMatrix(rot2,  90.,  45., 90., 135.,  0., 0.); // +45 deg in x-y plane 
-     AliMatrix(rot3,  90.,  45., 90., 315.,180., 0.); // +45 deg in x-y + rotation 180° around y
+     fMUON->AliMatrix(rot1,  90.,  90., 90., 180.,  0., 0.); // +90 deg in x-y plane
+     fMUON->AliMatrix(rot2,  90.,  45., 90., 135.,  0., 0.); // +45 deg in x-y plane 
+     fMUON->AliMatrix(rot3,  90.,  45., 90., 315.,180., 0.); // +45 deg in x-y + rotation 180° around y
 
 //   Translation matrices ... NOT USED  
-//     AliMatrix(trans1, 90.,   0., 90.,  90.,   0., 0.); // X-> X; Y -> Y; Z -> Z
-//     AliMatrix(trans2, 90., 180., 90.,  90., 180., 0.); // X->-X; Y -> Y; Z ->-Z
-//     AliMatrix(trans3, 90., 180., 90., 270.,   0., 0.); // X->-X; Y ->-Y; Z -> Z
-//     AliMatrix(trans4, 90.,   0., 90., 270., 180., 0.); // X-> X; Y ->-Y; Z ->-Z
+//     fMUON->AliMatrix(trans1, 90.,   0., 90.,  90.,   0., 0.); // X-> X; Y -> Y; Z -> Z
+//     fMUON->AliMatrix(trans2, 90., 180., 90.,  90., 180., 0.); // X->-X; Y -> Y; Z ->-Z
+//     fMUON->AliMatrix(trans3, 90., 180., 90., 270.,   0., 0.); // X->-X; Y ->-Y; Z -> Z
+//     fMUON->AliMatrix(trans4, 90.,   0., 90., 270., 180., 0.); // X-> X; Y ->-Y; Z ->-Z
 //  
       // ___________________Volume thicknesses________________________
 
-  Float_t hzFrameThickness = 1.59/2.;     //equivalent thickness
-  Float_t hzOuterFrameEpoxy = 1.19/2.;    //equivalent thickness
-  Float_t hzOuterFrameInox = 0.1/2.;      //equivalent thickness
-  Float_t hzFoam = 2.083/2.;              //evaluated elsewhere
+  const Float_t kHzFrameThickness = 1.59/2.;     //equivalent thickness
+  const Float_t kHzOuterFrameEpoxy = 1.19/2.;    //equivalent thickness
+  const Float_t kHzOuterFrameInox = 0.1/2.;      //equivalent thickness
+  const Float_t kHzFoam = 2.083/2.;              //evaluated elsewhere
+                                                 // CHECK with fgkHzFoam
   
 // Pertaining to the top outer area 
-  Float_t hzTopAnodeSteel1 = 0.185/2.;    //equivalent thickness
-  Float_t hzTopAnodeSteel2 = 0.51/2.;     //equivalent thickness  
-  Float_t hzAnodeFR4 = 0.08/2.;           //equivalent thickness
-  Float_t hzTopEarthFaceCu = 0.364/2.;    //equivalent thickness
-  Float_t hzTopEarthProfileCu = 1.1/2.;   //equivalent thickness
-  Float_t hzTopPositionerSteel = 1.45/2.; //should really be 2.125/2.; 
-  Float_t hzTopGasSupportAl = 0.85/2.;    //equivalent thickness
+  const Float_t kHzTopAnodeSteel1 = 0.185/2.;    //equivalent thickness
+  const Float_t kHzTopAnodeSteel2 = 0.51/2.;     //equivalent thickness  
+  const Float_t kHzAnodeFR4 = 0.08/2.;           //equivalent thickness
+  const Float_t kHzTopEarthFaceCu = 0.364/2.;    //equivalent thickness
+  const Float_t kHzTopEarthProfileCu = 1.1/2.;   //equivalent thickness
+  const Float_t kHzTopPositionerSteel = 1.45/2.; //should really be 2.125/2.; 
+  const Float_t kHzTopGasSupportAl = 0.85/2.;    //equivalent thickness
   
 // Pertaining to the vertical outer area  
-  Float_t hzVerticalCradleAl = 0.8/2.;     //equivalent thickness
-  Float_t hzLateralSightAl = 0.975/2.;     //equivalent thickness
-  Float_t hzLateralPosnInoxFace = 2.125/2.;//equivalent thickness
-  Float_t hzLatPosInoxProfM = 6.4/2.;      //equivalent thickness
-  Float_t hzLatPosInoxProfNF = 1.45/2.;    //equivalent thickness
-  Float_t hzLateralPosnAl = 0.5/2.;        //equivalent thickness
-  Float_t hzVertEarthFaceCu = 0.367/2.;    //equivalent thickness
-  Float_t hzVertBarSteel = 0.198/2.;       //equivalent thickness
-  Float_t hzVertEarthProfCu = 1.1/2.;      //equivalent thickness
+  const Float_t kHzVerticalCradleAl = 0.8/2.;     //equivalent thickness
+  const Float_t kHzLateralSightAl = 0.975/2.;     //equivalent thickness
+  const Float_t kHzLateralPosnInoxFace = 2.125/2.;//equivalent thickness
+  const Float_t kHzLatPosInoxProfM = 6.4/2.;      //equivalent thickness
+  const Float_t kHzLatPosInoxProfNF = 1.45/2.;    //equivalent thickness
+  const Float_t kHzLateralPosnAl = 0.5/2.;        //equivalent thickness
+  const Float_t kHzVertEarthFaceCu = 0.367/2.;    //equivalent thickness
+  const Float_t kHzVertBarSteel = 0.198/2.;       //equivalent thickness
+  const Float_t kHzVertEarthProfCu = 1.1/2.;      //equivalent thickness
 
       //_______________Parameter definitions in sequence _________
 
 // InVFrame parameters
-  Float_t hxInVFrame  = 1.85/2.;
-  Float_t hyInVFrame  = 73.95/2.;
-  Float_t hzInVFrame  = hzFrameThickness;
+  const Float_t kHxInVFrame  = 1.85/2.;
+  const Float_t kHyInVFrame  = 73.95/2.;
+  const Float_t kHzInVFrame  = kHzFrameThickness;
 
 //Flat 7.5mm vertical section
-  Float_t hxV1mm  = 0.75/2.;
-  Float_t hyV1mm  = 1.85/2.;
-  Float_t hzV1mm  = hzFrameThickness;
+  const Float_t kHxV1mm  = 0.75/2.;
+  const Float_t kHyV1mm  = 1.85/2.;
+  const Float_t kHzV1mm  = kHzFrameThickness;
 
 // OuterTopFrame Structure 
 //
@@ -689,164 +732,164 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 //---
   
 //TopFrameAnode parameters - cuboid, 2 layers
-  Float_t hxTFA = 34.1433/2.;
-  Float_t hyTFA = 7.75/2.;
-  Float_t hzTFAE = hzOuterFrameEpoxy;     // layer 1 thickness
-  Float_t hzTFAI = hzOuterFrameInox;      // layer 3 thickness
+  const Float_t kHxTFA = 34.1433/2.;
+  const Float_t kHyTFA = 7.75/2.;
+  const Float_t kHzTFAE = kHzOuterFrameEpoxy;     // layer 1 thickness
+  const Float_t kHzTFAI = kHzOuterFrameInox;      // layer 3 thickness
   
 // TopFrameAnodeA parameters - trapezoid, 2 layers
-  Float_t hzFAAE = hzOuterFrameEpoxy;     // layer 1 thickness
-  Float_t hzFAAI = hzOuterFrameInox;      // layer 3 thickness
-  Float_t tetFAA = 0.;
-  Float_t phiFAA = 0.;
-  Float_t h1FAA = 8.7/2.;
-  Float_t bl1FAA = 4.35/2.;
-  Float_t tl1FAA =  7.75/2.;
-  Float_t alp1FAA = 11.06; 
-  Float_t h2FAA = 8.7/2.;
-  Float_t bl2FAA = 4.35/2.;
-  Float_t tl2FAA = 7.75/2.;
-  Float_t alp2FAA = 11.06;  
+  const Float_t kHzFAAE = kHzOuterFrameEpoxy;     // layer 1 thickness
+  const Float_t kHzFAAI = kHzOuterFrameInox;      // layer 3 thickness
+  const Float_t kTetFAA = 0.;
+  const Float_t kPhiFAA = 0.;
+  const Float_t kH1FAA = 8.7/2.;
+  const Float_t kBl1FAA = 4.35/2.;
+  const Float_t kTl1FAA =  7.75/2.;
+  const Float_t kAlp1FAA = 11.06; 
+  const Float_t kH2FAA = 8.7/2.;
+  const Float_t kBl2FAA = 4.35/2.;
+  const Float_t kTl2FAA = 7.75/2.;
+  const Float_t kAlp2FAA = 11.06;  
   
 // TopFrameAnodeB parameters - trapezoid, 2 layers
-  Float_t hzFABE = hzOuterFrameEpoxy;     // layer 1 thickness
-  Float_t hzFABI = hzOuterFrameInox;      // layer 3 thickness
-  Float_t tetFAB = 0.;
-  Float_t phiFAB = 0.;
-  Float_t h1FAB = 8.70/2.;
-  Float_t bl1FAB = 0.;
-  Float_t tl1FAB = 4.35/2.;
-  Float_t alp1FAB = 14.03; 
-  Float_t h2FAB = 8.70/2.;
-  Float_t bl2FAB = 0.;
-  Float_t tl2FAB = 4.35/2.;
-  Float_t alp2FAB = 14.03;  
+  const Float_t kHzFABE = kHzOuterFrameEpoxy;     // layer 1 thickness
+  const Float_t kHzFABI = kHzOuterFrameInox;      // layer 3 thickness
+  const Float_t kTetFAB = 0.;
+  const Float_t kPhiFAB = 0.;
+  const Float_t kH1FAB = 8.70/2.;
+  const Float_t kBl1FAB = 0.;
+  const Float_t kTl1FAB = 4.35/2.;
+  const Float_t kAlp1FAB = 14.03; 
+  const Float_t kH2FAB = 8.70/2.;
+  const Float_t kBl2FAB = 0.;
+  const Float_t kTl2FAB = 4.35/2.;
+  const Float_t kAlp2FAB = 14.03;  
   
 // TopAnode parameters - cuboid (part 1 of 3 parts)
-  Float_t hxTA1 = 16.2/2.;
-  Float_t hyTA1 = 3.5/2.;
-  Float_t hzTA11 = hzTopAnodeSteel1;   // layer 1
-  Float_t hzTA12 = hzAnodeFR4;         // layer 2 
+  const Float_t kHxTA1 = 16.2/2.;
+  const Float_t kHyTA1 = 3.5/2.;
+  const Float_t kHzTA11 = kHzTopAnodeSteel1;   // layer 1
+  const Float_t kHzTA12 = kHzAnodeFR4;         // layer 2 
 
 // TopAnode parameters - trapezoid 1 (part 2 of 3 parts)
-  Float_t hzTA21 = hzTopAnodeSteel2;   // layer 1 
-  Float_t hzTA22 = hzAnodeFR4;         // layer 2 
-  Float_t tetTA2 = 0.;
-  Float_t phiTA2= 0.;
-  Float_t h1TA2 = 7.268/2.;
-  Float_t bl1TA2 = 2.03/2.;
-  Float_t tl1TA2 = 3.5/2.;
-  Float_t alp1TA2 = 5.78; 
-  Float_t h2TA2 = 7.268/2.;
-  Float_t bl2TA2 = 2.03/2.;
-  Float_t tl2TA2 = 3.5/2.;
-  Float_t alp2TA2 = 5.78;  
+  const Float_t kHzTA21 = kHzTopAnodeSteel2;   // layer 1 
+  const Float_t kHzTA22 = kHzAnodeFR4;         // layer 2 
+  const Float_t kTetTA2 = 0.;
+  const Float_t kPhiTA2= 0.;
+  const Float_t kH1TA2 = 7.268/2.;
+  const Float_t kBl1TA2 = 2.03/2.;
+  const Float_t kTl1TA2 = 3.5/2.;
+  const Float_t kAlp1TA2 = 5.78; 
+  const Float_t kH2TA2 = 7.268/2.;
+  const Float_t kBl2TA2 = 2.03/2.;
+  const Float_t kTl2TA2 = 3.5/2.;
+  const Float_t kAlp2TA2 = 5.78;  
 
 // TopAnode parameters - trapezoid 2 (part 3 of 3 parts)
-  Float_t hzTA3 = hzAnodeFR4;       // layer 1 
-  Float_t tetTA3 = 0.;
-  Float_t phiTA3 = 0.;
-  Float_t h1TA3 = 7.268/2.;
-  Float_t bl1TA3 = 0.;
-  Float_t tl1TA3 = 2.03/2.;
-  Float_t alp1TA3 = 7.95; 
-  Float_t h2TA3 = 7.268/2.;
-  Float_t bl2TA3 = 0.;
-  Float_t tl2TA3 = 2.03/2.;
-  Float_t alp2TA3 = 7.95;  
+  const Float_t kHzTA3 = kHzAnodeFR4;       // layer 1 
+  const Float_t kTetTA3 = 0.;
+  const Float_t kPhiTA3 = 0.;
+  const Float_t kH1TA3 = 7.268/2.;
+  const Float_t kBl1TA3 = 0.;
+  const Float_t kTl1TA3 = 2.03/2.;
+  const Float_t kAlp1TA3 = 7.95; 
+  const Float_t kH2TA3 = 7.268/2.;
+  const Float_t kBl2TA3 = 0.;
+  const Float_t kTl2TA3 = 2.03/2.;
+  const Float_t kAlp2TA3 = 7.95;  
   
 // TopEarthFace parameters - single trapezoid
-  Float_t hzTEF = hzTopEarthFaceCu;
-  Float_t tetTEF = 0.;
-  Float_t phiTEF = 0.;
-  Float_t h1TEF = 1.200/2.;
-  Float_t bl1TEF = 21.323/2.;
-  Float_t tl1TEF = 17.963/2.;
-  Float_t alp1TEF = -54.46; 
-  Float_t h2TEF = 1.200/2.;
-  Float_t bl2TEF = 21.323/2.;
-  Float_t tl2TEF = 17.963/2.;
-  Float_t alp2TEF = -54.46;
+  const Float_t kHzTEF = kHzTopEarthFaceCu;
+  const Float_t kTetTEF = 0.;
+  const Float_t kPhiTEF = 0.;
+  const Float_t kH1TEF = 1.200/2.;
+  const Float_t kBl1TEF = 21.323/2.;
+  const Float_t kTl1TEF = 17.963/2.;
+  const Float_t kAlp1TEF = -54.46; 
+  const Float_t kH2TEF = 1.200/2.;
+  const Float_t kBl2TEF = 21.323/2.;
+  const Float_t kTl2TEF = 17.963/2.;
+  const Float_t kAlp2TEF = -54.46;
 
 // TopEarthProfile parameters - single trapezoid
-  Float_t hzTEP = hzTopEarthProfileCu;
-  Float_t tetTEP = 0.;
-  Float_t phiTEP = 0.;
-  Float_t h1TEP = 0.40/2.;
-  Float_t bl1TEP = 31.766/2.;
-  Float_t tl1TEP = 30.535/2.;
-  Float_t alp1TEP = -56.98; 
-  Float_t h2TEP = 0.40/2.;
-  Float_t bl2TEP = 31.766/2.;
-  Float_t tl2TEP = 30.535/2.;
-  Float_t alp2TEP = -56.98;
+  const Float_t kHzTEP = kHzTopEarthProfileCu;
+  const Float_t kTetTEP = 0.;
+  const Float_t kPhiTEP = 0.;
+  const Float_t kH1TEP = 0.40/2.;
+  const Float_t kBl1TEP = 31.766/2.;
+  const Float_t kTl1TEP = 30.535/2.;
+  const Float_t kAlp1TEP = -56.98; 
+  const Float_t kH2TEP = 0.40/2.;
+  const Float_t kBl2TEP = 31.766/2.;
+  const Float_t kTl2TEP = 30.535/2.;
+  const Float_t kAlp2TEP = -56.98;
 
 // TopPositioner parameters - single Stainless Steel trapezoid 
-  Float_t hzTP = hzTopPositionerSteel;
-  Float_t tetTP = 0.;
-  Float_t phiTP = 0.;
-  Float_t h1TP = 3.00/2.;
-  Float_t bl1TP = 7.023/2.;
-  Float_t tl1TP = 7.314/2.;
-  Float_t alp1TP = 2.78; 
-  Float_t h2TP = 3.00/2.;
-  Float_t bl2TP = 7.023/2.;
-  Float_t tl2TP = 7.314/2.;
-  Float_t alp2TP = 2.78;
+  const Float_t kHzTP = kHzTopPositionerSteel;
+  const Float_t kTetTP = 0.;
+  const Float_t kPhiTP = 0.;
+  const Float_t kH1TP = 3.00/2.;
+  const Float_t kBl1TP = 7.023/2.;
+  const Float_t kTl1TP = 7.314/2.;
+  const Float_t kAlp1TP = 2.78; 
+  const Float_t kH2TP = 3.00/2.;
+  const Float_t kBl2TP = 7.023/2.;
+  const Float_t kTl2TP = 7.314/2.;
+  const Float_t kAlp2TP = 2.78;
 
 // TopGasSupport parameters - single cuboid 
-  Float_t hxTGS  = 8.50/2.;
-  Float_t hyTGS  = 3.00/2.;
-  Float_t hzTGS  = hzTopGasSupportAl;
+  const Float_t kHxTGS  = 8.50/2.;
+  const Float_t kHyTGS  = 3.00/2.;
+  const Float_t kHzTGS  = kHzTopGasSupportAl;
     
 // OutEdgeFrame parameters - 4 trapezoidal sections, 2 layers of material
 //
 //---
 
 // Trapezoid 1
-  Float_t hzOETFE = hzOuterFrameEpoxy;    // layer 1 
-  Float_t hzOETFI = hzOuterFrameInox;     // layer 3
+  const Float_t kHzOETFE = kHzOuterFrameEpoxy;    // layer 1 
+  const Float_t kHzOETFI = kHzOuterFrameInox;     // layer 3
    
-  Float_t tetOETF = 0.;            // common to all 4 trapezoids
-  Float_t phiOETF = 0.;            // common to all 4 trapezoids
+  const Float_t kTetOETF = 0.;            // common to all 4 trapezoids
+  const Float_t kPhiOETF = 0.;            // common to all 4 trapezoids
 
-  Float_t h1OETF = 7.196/2.;       // common to all 4 trapezoids
-  Float_t h2OETF = 7.196/2.;       // common to all 4 trapezoids   
+  const Float_t kH1OETF = 7.196/2.;       // common to all 4 trapezoids
+  const Float_t kH2OETF = 7.196/2.;       // common to all 4 trapezoids   
   
-  Float_t bl1OETF1 = 3.75/2; 
-  Float_t tl1OETF1 = 3.996/2.;
-  Float_t alp1OETF1 = 0.98;
+  const Float_t kBl1OETF1 = 3.75/2; 
+  const Float_t kTl1OETF1 = 3.996/2.;
+  const Float_t kAlp1OETF1 = 0.98;
 
-  Float_t bl2OETF1 = 3.75/2;
-  Float_t tl2OETF1 = 3.996/2.;
-  Float_t alp2OETF1 = 0.98;
+  const Float_t kBl2OETF1 = 3.75/2;
+  const Float_t kTl2OETF1 = 3.996/2.;
+  const Float_t kAlp2OETF1 = 0.98;
   
 // Trapezoid 2
-  Float_t bl1OETF2 = 3.01/2.;
-  Float_t tl1OETF2 = 3.75/2;
-  Float_t alp1OETF2 = 2.94;
+  const Float_t kBl1OETF2 = 3.01/2.;
+  const Float_t kTl1OETF2 = 3.75/2;
+  const Float_t kAlp1OETF2 = 2.94;
       
-  Float_t bl2OETF2 = 3.01/2.;
-  Float_t tl2OETF2 = 3.75/2;
-  Float_t alp2OETF2 = 2.94; 
+  const Float_t kBl2OETF2 = 3.01/2.;
+  const Float_t kTl2OETF2 = 3.75/2;
+  const Float_t kAlp2OETF2 = 2.94; 
  
 // Trapezoid 3
-  Float_t bl1OETF3 = 1.767/2.;
-  Float_t tl1OETF3 = 3.01/2.;
-  Float_t alp1OETF3 = 4.94;
+  const Float_t kBl1OETF3 = 1.767/2.;
+  const Float_t kTl1OETF3 = 3.01/2.;
+  const Float_t kAlp1OETF3 = 4.94;
       
-  Float_t bl2OETF3 = 1.767/2.;
-  Float_t tl2OETF3 = 3.01/2.; 
-  Float_t alp2OETF3 = 4.94; 
+  const Float_t kBl2OETF3 = 1.767/2.;
+  const Float_t kTl2OETF3 = 3.01/2.; 
+  const Float_t kAlp2OETF3 = 4.94; 
   
 // Trapezoid 4
-  Float_t bl1OETF4 = 0.;
-  Float_t tl1OETF4 = 1.77/2.;
-  Float_t alp1OETF4 = 7.01;
+  const Float_t kBl1OETF4 = 0.;
+  const Float_t kTl1OETF4 = 1.77/2.;
+  const Float_t kAlp1OETF4 = 7.01;
       
-  Float_t bl2OETF4 = 0.;
-  Float_t tl2OETF4 = 1.77/2.;
-  Float_t alp2OETF4 =  7.01;   
+  const Float_t kBl2OETF4 = 0.;
+  const Float_t kTl2OETF4 = 1.77/2.;
+  const Float_t kAlp2OETF4 =  7.01;   
   
 // Frame Structure (OutVFrame):
 //
@@ -859,184 +902,184 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 //---
 
 // OutVFrame parameters - cuboid
-  Float_t hxOutVFrame = 1.85/2.;
-  Float_t hyOutVFrame = 46.23/2.;
-  Float_t hzOutVFrame = hzFrameThickness;
+  const Float_t kHxOutVFrame = 1.85/2.;
+  const Float_t kHyOutVFrame = 46.23/2.;
+  const Float_t kHzOutVFrame = kHzFrameThickness;
 
 // OutVFrame corner parameters - trapezoid
-  Float_t hzOCTF = hzFrameThickness;
-  Float_t tetOCTF = 0.;
-  Float_t phiOCTF = 0.;
-  Float_t h1OCTF = 1.85/2.;
-  Float_t bl1OCTF = 0.;
-  Float_t tl1OCTF = 3.66/2.;
-  Float_t alp1OCTF = 44.67; 
-  Float_t h2OCTF = 1.85/2.;
-  Float_t bl2OCTF = 0.;
-  Float_t tl2OCTF = 3.66/2.;
-  Float_t alp2OCTF = 44.67;  
+  const Float_t kHzOCTF = kHzFrameThickness;
+  const Float_t kTetOCTF = 0.;
+  const Float_t kPhiOCTF = 0.;
+  const Float_t kH1OCTF = 1.85/2.;
+  const Float_t kBl1OCTF = 0.;
+  const Float_t kTl1OCTF = 3.66/2.;
+  const Float_t kAlp1OCTF = 44.67; 
+  const Float_t kH2OCTF = 1.85/2.;
+  const Float_t kBl2OCTF = 0.;
+  const Float_t kTl2OCTF = 3.66/2.;
+  const Float_t kAlp2OCTF = 44.67;  
   
 // VertEarthFaceCu parameters - single trapezoid
-  Float_t hzVFC = hzVertEarthFaceCu;
-  Float_t tetVFC = 0.;
-  Float_t phiVFC = 0.;
-  Float_t h1VFC = 1.200/2.;
-  Float_t bl1VFC = 46.11/2.;
-  Float_t tl1VFC = 48.236/2.;
-  Float_t alp1VFC = 41.54; 
-  Float_t h2VFC = 1.200/2.;
-  Float_t bl2VFC = 46.11/2.;
-  Float_t tl2VFC = 48.236/2.;
-  Float_t alp2VFC = 41.54;
+  const Float_t kHzVFC = kHzVertEarthFaceCu;
+  const Float_t kTetVFC = 0.;
+  const Float_t kPhiVFC = 0.;
+  const Float_t kH1VFC = 1.200/2.;
+  const Float_t kBl1VFC = 46.11/2.;
+  const Float_t kTl1VFC = 48.236/2.;
+  const Float_t kAlp1VFC = 41.54; 
+  const Float_t kH2VFC = 1.200/2.;
+  const Float_t kBl2VFC = 46.11/2.;
+  const Float_t kTl2VFC = 48.236/2.;
+  const Float_t kAlp2VFC = 41.54;
     
 // VertEarthSteel parameters - single trapezoid
-  Float_t hzVES = hzVertBarSteel;
-  Float_t tetVES = 0.;
-  Float_t phiVES = 0.;
-  Float_t h1VES = 1.200/2.;
-  Float_t bl1VES = 30.486/2.;
-  Float_t tl1VES = 32.777/2.;
-  Float_t alp1VES = 43.67; 
-  Float_t h2VES = 1.200/2.;
-  Float_t bl2VES = 30.486/2.;
-  Float_t tl2VES = 32.777/2.;
-  Float_t alp2VES = 43.67;
+  const Float_t kHzVES = kHzVertBarSteel;
+  const Float_t kTetVES = 0.;
+  const Float_t kPhiVES = 0.;
+  const Float_t kH1VES = 1.200/2.;
+  const Float_t kBl1VES = 30.486/2.;
+  const Float_t kTl1VES = 32.777/2.;
+  const Float_t kAlp1VES = 43.67; 
+  const Float_t kH2VES = 1.200/2.;
+  const Float_t kBl2VES = 30.486/2.;
+  const Float_t kTl2VES = 32.777/2.;
+  const Float_t kAlp2VES = 43.67;
 
 // VertEarthProfCu parameters - single trapezoid
-  Float_t hzVPC = hzVertEarthProfCu;
-  Float_t tetVPC = 0.;
-  Float_t phiVPC = 0.;
-  Float_t h1VPC = 0.400/2.;
-  Float_t bl1VPC = 29.287/2.;
-  Float_t tl1VPC = 30.091/2.;
-  Float_t alp1VPC = 45.14; 
-  Float_t h2VPC = 0.400/2.;
-  Float_t bl2VPC = 29.287/2.;
-  Float_t tl2VPC = 30.091/2.;
-  Float_t alp2VPC = 45.14;
+  const Float_t kHzVPC = kHzVertEarthProfCu;
+  const Float_t kTetVPC = 0.;
+  const Float_t kPhiVPC = 0.;
+  const Float_t kH1VPC = 0.400/2.;
+  const Float_t kBl1VPC = 29.287/2.;
+  const Float_t kTl1VPC = 30.091/2.;
+  const Float_t kAlp1VPC = 45.14; 
+  const Float_t kH2VPC = 0.400/2.;
+  const Float_t kBl2VPC = 29.287/2.;
+  const Float_t kTl2VPC = 30.091/2.;
+  const Float_t kAlp2VPC = 45.14;
 
 // SuppLateralPositionner - single cuboid
-  Float_t hxSLP  = 2.80/2.;
-  Float_t hySLP  = 5.00/2.;
-  Float_t hzSLP  = hzLateralPosnAl;
+  const Float_t kHxSLP  = 2.80/2.;
+  const Float_t kHySLP  = 5.00/2.;
+  const Float_t kHzSLP  = kHzLateralPosnAl;
   
 // LateralPositionner - squared off U bend, face view
-  Float_t hxLPF  = 5.2/2.;
-  Float_t hyLPF  = 3.0/2.;
-  Float_t hzLPF  = hzLateralPosnInoxFace;
+  const Float_t kHxLPF  = 5.2/2.;
+  const Float_t kHyLPF  = 3.0/2.;
+  const Float_t kHzLPF  = kHzLateralPosnInoxFace;
   
 // LateralPositionner - squared off U bend, profile view
-  Float_t hxLPP  = 0.425/2.;
-  Float_t hyLPP  = 3.0/2.;
-  Float_t hzLPP  = hzLatPosInoxProfM;  // middle layer
-  Float_t hzLPNF  = hzLatPosInoxProfNF; // near and far layers
+  const Float_t kHxLPP  = 0.425/2.;
+  const Float_t kHyLPP  = 3.0/2.;
+  const Float_t kHzLPP  = kHzLatPosInoxProfM;  // middle layer
+  const Float_t kHzLPNF  = kHzLatPosInoxProfNF; // near and far layers
            
 // VertCradle, 3 layers (copies), each composed of 4 trapezoids
 // VertCradleA
-  Float_t hzVC1 = hzVerticalCradleAl;
-  Float_t tetVC1 = 0.;
-  Float_t phiVC1 = 0.;
-  Float_t h1VC1 = 10.25/2.;
-  Float_t bl1VC1 = 3.70/2.;
-  Float_t tl1VC1 = 0.;
-  Float_t alp1VC1 = -10.23; 
-  Float_t h2VC1 = 10.25/2.;
-  Float_t bl2VC1 = 3.70/2.;
-  Float_t tl2VC1 = 0.;
-  Float_t alp2VC1 = -10.23;
+  const Float_t kHzVC1 = kHzVerticalCradleAl;
+  const Float_t kTetVC1 = 0.;
+  const Float_t kPhiVC1 = 0.;
+  const Float_t kH1VC1 = 10.25/2.;
+  const Float_t kBl1VC1 = 3.70/2.;
+  const Float_t kTl1VC1 = 0.;
+  const Float_t kAlp1VC1 = -10.23; 
+  const Float_t kH2VC1 = 10.25/2.;
+  const Float_t kBl2VC1 = 3.70/2.;
+  const Float_t kTl2VC1 = 0.;
+  const Float_t kAlp2VC1 = -10.23;
         
 // VertCradleB
-  Float_t hzVC2 = hzVerticalCradleAl;
-  Float_t tetVC2 = 0.;
-  Float_t phiVC2 = 0.;
-  Float_t h1VC2 = 10.25/2.;
-  Float_t bl1VC2 = 6.266/2.;
-  Float_t tl1VC2 = 3.70/2.;
-  Float_t alp1VC2 = -7.13; 
-  Float_t h2VC2 = 10.25/2.;
-  Float_t bl2VC2 = 6.266/2.;
-  Float_t tl2VC2 = 3.70/2.;
-  Float_t alp2VC2 = -7.13;
+  const Float_t kHzVC2 = kHzVerticalCradleAl;
+  const Float_t kTetVC2 = 0.;
+  const Float_t kPhiVC2 = 0.;
+  const Float_t kH1VC2 = 10.25/2.;
+  const Float_t kBl1VC2 = 6.266/2.;
+  const Float_t kTl1VC2 = 3.70/2.;
+  const Float_t kAlp1VC2 = -7.13; 
+  const Float_t kH2VC2 = 10.25/2.;
+  const Float_t kBl2VC2 = 6.266/2.;
+  const Float_t kTl2VC2 = 3.70/2.;
+  const Float_t kAlp2VC2 = -7.13;
   
 // VertCradleC
-  Float_t hzVC3 = hzVerticalCradleAl;
-  Float_t tetVC3 = 0.;
-  Float_t phiVC3 = 0.;
-  Float_t h1VC3 = 10.25/2.;
-  Float_t bl1VC3 = 7.75/2.;
-  Float_t tl1VC3 = 6.266/2.;
-  Float_t alp1VC3 = -4.14; 
-  Float_t h2VC3 = 10.25/2.;
-  Float_t bl2VC3 = 7.75/2.;
-  Float_t tl2VC3 = 6.266/2.;
-  Float_t alp2VC3 = -4.14;
+  const Float_t kHzVC3 = kHzVerticalCradleAl;
+  const Float_t kTetVC3 = 0.;
+  const Float_t kPhiVC3 = 0.;
+  const Float_t kH1VC3 = 10.25/2.;
+  const Float_t kBl1VC3 = 7.75/2.;
+  const Float_t kTl1VC3 = 6.266/2.;
+  const Float_t kAlp1VC3 = -4.14; 
+  const Float_t kH2VC3 = 10.25/2.;
+  const Float_t kBl2VC3 = 7.75/2.;
+  const Float_t kTl2VC3 = 6.266/2.;
+  const Float_t kAlp2VC3 = -4.14;
 
 // VertCradleD
-  Float_t hzVC4 = hzVerticalCradleAl;
-  Float_t tetVC4 = 0.;
-  Float_t phiVC4 = 0.;
-  Float_t h1VC4 = 10.27/2.;
-  Float_t bl1VC4 = 8.273/2.;
-  Float_t tl1VC4 = 7.75/2.;
-  Float_t alp1VC4 = -1.46; 
-  Float_t h2VC4 = 10.27/2.;
-  Float_t bl2VC4 = 8.273/2.;
-  Float_t tl2VC4 = 7.75/2.;
-  Float_t alp2VC4 = -1.46;
+  const Float_t kHzVC4 = kHzVerticalCradleAl;
+  const Float_t kTetVC4 = 0.;
+  const Float_t kPhiVC4 = 0.;
+  const Float_t kH1VC4 = 10.27/2.;
+  const Float_t kBl1VC4 = 8.273/2.;
+  const Float_t kTl1VC4 = 7.75/2.;
+  const Float_t kAlp1VC4 = -1.46; 
+  const Float_t kH2VC4 = 10.27/2.;
+  const Float_t kBl2VC4 = 8.273/2.;
+  const Float_t kTl2VC4 = 7.75/2.;
+  const Float_t kAlp2VC4 = -1.46;
   
 // LateralSightSupport - single trapezoid
-  Float_t hzVSS = hzLateralSightAl;
-  Float_t tetVSS = 0.;
-  Float_t phiVSS = 0.;
-  Float_t h1VSS = 5.00/2.;
-  Float_t bl1VSS = 7.747/2;
-  Float_t tl1VSS = 7.188/2.;
-  Float_t alp1VSS = -3.20; 
-  Float_t h2VSS = 5.00/2.;
-  Float_t bl2VSS = 7.747/2.;
-  Float_t tl2VSS = 7.188/2.;
-  Float_t alp2VSS = -3.20;  
+  const Float_t kHzVSS = kHzLateralSightAl;
+  const Float_t kTetVSS = 0.;
+  const Float_t kPhiVSS = 0.;
+  const Float_t kH1VSS = 5.00/2.;
+  const Float_t kBl1VSS = 7.747/2;
+  const Float_t kTl1VSS = 7.188/2.;
+  const Float_t kAlp1VSS = -3.20; 
+  const Float_t kH2VSS = 5.00/2.;
+  const Float_t kBl2VSS = 7.747/2.;
+  const Float_t kTl2VSS = 7.188/2.;
+  const Float_t kAlp2VSS = -3.20;  
   
 // LateralSight (reference point) - 3 per quadrant, only 1 programmed for now
-  Float_t vSInRad  = 0.6;
-  Float_t vSOutRad  = 1.3;
-  Float_t vSLen  = hzFrameThickness; 
+  const Float_t kVSInRad  = 0.6;
+  const Float_t kVSOutRad  = 1.3;
+  const Float_t kVSLen  = kHzFrameThickness; 
   
 //---
 
 // InHFrame parameters
-  Float_t hxInHFrame  = 75.8/2.;
-  Float_t hyInHFrame  = 1.85/2.;
-  Float_t hzInHFrame  = hzFrameThickness;
+  const Float_t kHxInHFrame  = 75.8/2.;
+  const Float_t kHyInHFrame  = 1.85/2.;
+  const Float_t kHzInHFrame  = kHzFrameThickness;
  
 //Flat 7.5mm horizontal section
-  Float_t hxH1mm  = 1.85/2.;
-  Float_t hyH1mm  = 0.75/2.;
-  Float_t hzH1mm  = hzFrameThickness;
+  const Float_t kHxH1mm  = 1.85/2.;
+  const Float_t kHyH1mm  = 0.75/2.;
+  const Float_t kHzH1mm  = kHzFrameThickness;
 
 //---
 
 // InArcFrame parameters
-  Float_t iAF  = 15.70;
-  Float_t oAF  = 17.55;
-  Float_t hzAF  = hzFrameThickness;
-  Float_t aFphi1  = 0.0;
-  Float_t aFphi2  = 90.0;
+  const Float_t kIAF  = 15.70;
+  const Float_t kOAF  = 17.55;
+  const Float_t kHzAF  = kHzFrameThickness;
+  const Float_t kAFphi1  = 0.0;
+  const Float_t kAFphi2  = 90.0;
 
 //---
 
 // ScrewsInFrame parameters HEAD
-  Float_t sCRUHMI  = 0.;
-  Float_t sCRUHMA  = 0.690/2.;
-  Float_t sCRUHLE  = 0.4/2.;
+  const Float_t kSCRUHMI  = 0.;
+  const Float_t kSCRUHMA  = 0.690/2.;
+  const Float_t kSCRUHLE  = 0.4/2.;
 // ScrewsInFrame parameters MIDDLE
-  Float_t sCRUMMI  = 0.;
-  Float_t sCRUMMA  = 0.39/2.;
-  Float_t sCRUMLE  = hzFrameThickness;
+  const Float_t kSCRUMMI  = 0.;
+  const Float_t kSCRUMMA  = 0.39/2.;
+  const Float_t kSCRUMLE  = kHzFrameThickness;
 // ScrewsInFrame parameters NUT
-  Float_t sCRUNMI  = 0.;
-  Float_t sCRUNMA  = 0.78/2.;
-  Float_t sCRUNLE  = 0.8/2.;   
+  const Float_t kSCRUNMI  = 0.;
+  const Float_t kSCRUNMA  = 0.78/2.;
+  const Float_t kSCRUNLE  = 0.8/2.;   
   
        // ___________________Make volumes________________________
 
@@ -1063,15 +1106,15 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 
    if (chamber==1) {   
     // InVFrame  
-    par[0] = hxInVFrame;
-    par[1] = hyInVFrame;
-    par[2] = hzInVFrame;
+    par[0] = kHxInVFrame;
+    par[1] = kHyInVFrame;
+    par[2] = kHzInVFrame;
     gMC->Gsvolu("SQ00","BOX",idFrameEpoxy,par,3);
 
     //Flat 1mm vertical section
-    par[0] = hxV1mm;
-    par[1] = hyV1mm;
-    par[2] = hzV1mm;
+    par[0] = kHxV1mm;
+    par[1] = kHyV1mm;
+    par[2] = kHzV1mm;
     gMC->Gsvolu("SQ01","BOX",idFrameEpoxy,par,3); 
  
 // OutTopFrame 
@@ -1081,139 +1124,139 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 //---
 
     // TopFrameAnode - layer 1 of 2 
-    par[0] = hxTFA;
-    par[1] = hyTFA;
-    par[2] = hzTFAE;
+    par[0] = kHxTFA;
+    par[1] = kHyTFA;
+    par[2] = kHzTFAE;
     gMC->Gsvolu("SQ02","BOX",idFrameEpoxy,par,3);
     
     // TopFrameAnode - layer 2 of 2 
-    par[2] = hzTFAI;
+    par[2] = kHzTFAI;
     gMC->Gsvolu("SQ03","BOX",idInox,par,3);
             
     // TopFrameAnodeA - layer 1 of 2  
-    par[0] = hzFAAE;
-    par[1] = tetFAA;
-    par[2] = phiFAA;
-    par[3] = h1FAA;
-    par[4] = bl1FAA;
-    par[5] = tl1FAA;
-    par[6] = alp1FAA;
-    par[7] = h2FAA;
-    par[8] = bl2FAA;
-    par[9] = tl2FAA;
-    par[10] = alp2FAA;    
+    par[0] = kHzFAAE;
+    par[1] = kTetFAA;
+    par[2] = kPhiFAA;
+    par[3] = kH1FAA;
+    par[4] = kBl1FAA;
+    par[5] = kTl1FAA;
+    par[6] = kAlp1FAA;
+    par[7] = kH2FAA;
+    par[8] = kBl2FAA;
+    par[9] = kTl2FAA;
+    par[10] = kAlp2FAA;    
     gMC->Gsvolu("SQ04","TRAP",idFrameEpoxy,par,11);    
 
     // TopFrameAnodeA - layer 2 of 2
-    par[0] = hzFAAI;    
+    par[0] = kHzFAAI;    
     gMC->Gsvolu("SQ05","TRAP",idInox,par,11); 
       
     // TopFrameAnodeB - layer 1 of 2
-    par[0] = hzFABE;
-    par[1] = tetFAB;
-    par[2] = phiFAB;
-    par[3] = h1FAB;
-    par[4] = bl1FAB;
-    par[5] = tl1FAB;
-    par[6] = alp1FAB;
-    par[7] = h2FAB;
-    par[8] = bl2FAB;
-    par[9] = tl2FAB;
-    par[10] = alp2FAB;
+    par[0] = kHzFABE;
+    par[1] = kTetFAB;
+    par[2] = kPhiFAB;
+    par[3] = kH1FAB;
+    par[4] = kBl1FAB;
+    par[5] = kTl1FAB;
+    par[6] = kAlp1FAB;
+    par[7] = kH2FAB;
+    par[8] = kBl2FAB;
+    par[9] = kTl2FAB;
+    par[10] = kAlp2FAB;
     gMC->Gsvolu("SQ06","TRAP",idFrameEpoxy,par,11);     
 
     // OutTopTrapFrameB - layer 2 of 2
-    par[0] = hzFABI;   
+    par[0] = kHzFABI;   
     gMC->Gsvolu("SQ07","TRAP",idInox,par,11);
 
     // TopAnode1 -  layer 1 of 2
-    par[0] = hxTA1;
-    par[1] = hyTA1;
-    par[2] = hzTA11;    
+    par[0] = kHxTA1;
+    par[1] = kHyTA1;
+    par[2] = kHzTA11;    
     gMC->Gsvolu("SQ08","BOX",idInox,par,3); 
     
     // TopAnode1 -  layer 2 of 2
-    par[2] = hzTA12;    
+    par[2] = kHzTA12;    
     gMC->Gsvolu("SQ09","BOX",idFR4,par,11); 
 
     // TopAnode2 -  layer 1 of 2
-    par[0] = hzTA21;
-    par[1] = tetTA2;
-    par[2] = phiTA2;
-    par[3] = h1TA2;
-    par[4] = bl1TA2;
-    par[5] = tl1TA2;
-    par[6] = alp1TA2;
-    par[7] = h2TA2;
-    par[8] = bl2TA2;
-    par[9] = tl2TA2;
-    par[10] = alp2TA2;    
+    par[0] = kHzTA21;
+    par[1] = kTetTA2;
+    par[2] = kPhiTA2;
+    par[3] = kH1TA2;
+    par[4] = kBl1TA2;
+    par[5] = kTl1TA2;
+    par[6] = kAlp1TA2;
+    par[7] = kH2TA2;
+    par[8] = kBl2TA2;
+    par[9] = kTl2TA2;
+    par[10] = kAlp2TA2;    
     gMC->Gsvolu("SQ10","TRAP",idInox,par,11); 
  
     // TopAnode2 -  layer 2 of 2
-    par[0] = hzTA22;    
+    par[0] = kHzTA22;    
     gMC->Gsvolu("SQ11","TRAP",idFR4,par,11);   
 
     // TopAnode3 -  layer 1 of 1 
-    par[0] = hzTA3;
-    par[1] = tetTA3;
-    par[2] = phiTA3;
-    par[3] = h1TA3;
-    par[4] = bl1TA3;
-    par[5] = tl1TA3;
-    par[6] = alp1TA3;
-    par[7] = h2TA3;
-    par[8] = bl2TA3;
-    par[9] = tl2TA3;
-    par[10] = alp2TA3;    
+    par[0] = kHzTA3;
+    par[1] = kTetTA3;
+    par[2] = kPhiTA3;
+    par[3] = kH1TA3;
+    par[4] = kBl1TA3;
+    par[5] = kTl1TA3;
+    par[6] = kAlp1TA3;
+    par[7] = kH2TA3;
+    par[8] = kBl2TA3;
+    par[9] = kTl2TA3;
+    par[10] = kAlp2TA3;    
     gMC->Gsvolu("SQ12","TRAP",idFR4,par,11); 
 
     // TopEarthFace 
-    par[0] = hzTEF;
-    par[1] = tetTEF;
-    par[2] = phiTEF;
-    par[3] = h1TEF;
-    par[4] = bl1TEF;
-    par[5] = tl1TEF;
-    par[6] = alp1TEF;
-    par[7] = h2TEF;
-    par[8] = bl2TEF;
-    par[9] = tl2TEF;
-    par[10] = alp2TEF;    
+    par[0] = kHzTEF;
+    par[1] = kTetTEF;
+    par[2] = kPhiTEF;
+    par[3] = kH1TEF;
+    par[4] = kBl1TEF;
+    par[5] = kTl1TEF;
+    par[6] = kAlp1TEF;
+    par[7] = kH2TEF;
+    par[8] = kBl2TEF;
+    par[9] = kTl2TEF;
+    par[10] = kAlp2TEF;    
     gMC->Gsvolu("SQ13","TRAP",idCopper,par,11);   
 
     // TopEarthProfile 
-    par[0] = hzTEP;
-    par[1] = tetTEP;
-    par[2] = phiTEP;
-    par[3] = h1TEP;
-    par[4] = bl1TEP;
-    par[5] = tl1TEP;
-    par[6] = alp1TEP;
-    par[7] = h2TEP;
-    par[8] = bl2TEP;
-    par[9] = tl2TEP;
-    par[10] = alp2TEP;
+    par[0] = kHzTEP;
+    par[1] = kTetTEP;
+    par[2] = kPhiTEP;
+    par[3] = kH1TEP;
+    par[4] = kBl1TEP;
+    par[5] = kTl1TEP;
+    par[6] = kAlp1TEP;
+    par[7] = kH2TEP;
+    par[8] = kBl2TEP;
+    par[9] = kTl2TEP;
+    par[10] = kAlp2TEP;
     gMC->Gsvolu("SQ14","TRAP",idCopper,par,11);       
 
     // TopGasSupport  
-    par[0] = hxTGS;
-    par[1] = hyTGS;
-    par[2] = hzTGS;
+    par[0] = kHxTGS;
+    par[1] = kHyTGS;
+    par[2] = kHzTGS;
     gMC->Gsvolu("SQ15","BOX",idAlu,par,3);
 
     // TopPositioner parameters - single Stainless Steel trapezoid 
-    par[0] = hzTP;
-    par[1] = tetTP; 
-    par[2] = phiTP;
-    par[3] = h1TP;
-    par[4] = bl1TP; 
-    par[5] = tl1TP; 
-    par[6] = alp1TP;
-    par[7] = h2TP;
-    par[8] = bl2TP; 
-    par[9] = tl2TP; 
-    par[10] = alp2TP;     
+    par[0] = kHzTP;
+    par[1] = kTetTP; 
+    par[2] = kPhiTP;
+    par[3] = kH1TP;
+    par[4] = kBl1TP; 
+    par[5] = kTl1TP; 
+    par[6] = kAlp1TP;
+    par[7] = kH2TP;
+    par[8] = kBl2TP; 
+    par[9] = kTl2TP; 
+    par[10] = kAlp2TP;     
     gMC->Gsvolu("SQ16","TRAP",idInox,par,11);       
 
 //
@@ -1221,323 +1264,328 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 //
 //---
     // Trapezoid 1 - 2 layers
-    par[1] = tetOETF;
-    par[2] = phiOETF;
-    par[3] = h1OETF;
-    par[4] = bl1OETF1;
-    par[5] = tl1OETF1;
-    par[6] = alp1OETF1;
-    par[7] = h2OETF;
-    par[8] = bl2OETF1;
-    par[9] = tl2OETF1;
-    par[10] = alp2OETF1; 
+    par[1] = kTetOETF;
+    par[2] = kPhiOETF;
+    par[3] = kH1OETF;
+    par[4] = kBl1OETF1;
+    par[5] = kTl1OETF1;
+    par[6] = kAlp1OETF1;
+    par[7] = kH2OETF;
+    par[8] = kBl2OETF1;
+    par[9] = kTl2OETF1;
+    par[10] = kAlp2OETF1; 
            
-    par[0] = hzOETFE;             
+    par[0] = kHzOETFE;             
     gMC->Gsvolu("SQ17","TRAP",idFrameEpoxy,par,11); 
-    par[0] = hzOETFI;
+    par[0] = kHzOETFI;
     gMC->Gsvolu("SQ18","TRAP",idInox,par,11);
     
     // Trapezoid 2 - 2 layers
-    par[4] = bl1OETF2;
-    par[5] = tl1OETF2;
-    par[6] = alp1OETF2;
+    par[4] = kBl1OETF2;
+    par[5] = kTl1OETF2;
+    par[6] = kAlp1OETF2;
 
-    par[8] = bl2OETF2;
-    par[9] = tl2OETF2;
-    par[10] = alp2OETF2; 
+    par[8] = kBl2OETF2;
+    par[9] = kTl2OETF2;
+    par[10] = kAlp2OETF2; 
     
-    par[0] = hzOETFE;    
+    par[0] = kHzOETFE;    
     gMC->Gsvolu("SQ19","TRAP",idFrameEpoxy,par,11);    
-    par[0] = hzOETFI;    
+    par[0] = kHzOETFI;    
     gMC->Gsvolu("SQ20","TRAP",idInox,par,11);     
     
     // Trapezoid 3 - 2 layers
-    par[4] = bl1OETF3;
-    par[5] = tl1OETF3;
-    par[6] = alp1OETF3;
+    par[4] = kBl1OETF3;
+    par[5] = kTl1OETF3;
+    par[6] = kAlp1OETF3;
 
-    par[8] = bl2OETF3;
-    par[9] = tl2OETF3;
-    par[10] = alp2OETF3; 
+    par[8] = kBl2OETF3;
+    par[9] = kTl2OETF3;
+    par[10] = kAlp2OETF3; 
  
-    par[0] = hzOETFE;    
+    par[0] = kHzOETFE;    
     gMC->Gsvolu("SQ21","TRAP",idFrameEpoxy,par,11);   
-    par[0] = hzOETFI;    
+    par[0] = kHzOETFI;    
     gMC->Gsvolu("SQ22","TRAP",idInox,par,11);     
     
     // Trapezoid 4 - 2 layers
 
-    par[4] = bl1OETF4;
-    par[5] = tl1OETF4;
-    par[6] = alp1OETF4;
+    par[4] = kBl1OETF4;
+    par[5] = kTl1OETF4;
+    par[6] = kAlp1OETF4;
 
-    par[8] = bl2OETF4;
-    par[9] = tl2OETF4;
-    par[10] = alp2OETF4;  
+    par[8] = kBl2OETF4;
+    par[9] = kTl2OETF4;
+    par[10] = kAlp2OETF4;  
    
-    par[0] = hzOETFE;    
+    par[0] = kHzOETFE;    
     gMC->Gsvolu("SQ23","TRAP",idFrameEpoxy,par,11);    
-    par[0] = hzOETFI;    
+    par[0] = kHzOETFI;    
     gMC->Gsvolu("SQ24","TRAP",idInox,par,11);     
              
 //---
     // OutVFrame    
-    par[0] = hxOutVFrame;
-    par[1] = hyOutVFrame;
-    par[2] = hzOutVFrame;
+    par[0] = kHxOutVFrame;
+    par[1] = kHyOutVFrame;
+    par[2] = kHzOutVFrame;
     gMC->Gsvolu("SQ25","BOX",idFrameEpoxy,par,3);
-    
+        
     // OutVFrame corner  
-    par[0] = hzOCTF;
-    par[1] = tetOCTF;
-    par[2] = phiOCTF;
-    par[3] = h1OCTF;
-    par[4] = bl1OCTF;
-    par[5] = tl1OCTF;
-    par[6] = alp1OCTF;
-    par[7] = h2OCTF;
-    par[8] = bl2OCTF;
-    par[9] = tl2OCTF;
-    par[10] = alp2OCTF;    
+    par[0] = kHzOCTF;
+    par[1] = kTetOCTF;
+    par[2] = kPhiOCTF;
+    par[3] = kH1OCTF;
+    par[4] = kBl1OCTF;
+    par[5] = kTl1OCTF;
+    par[6] = kAlp1OCTF;
+    par[7] = kH2OCTF;
+    par[8] = kBl2OCTF;
+    par[9] = kTl2OCTF;
+    par[10] = kAlp2OCTF;    
     gMC->Gsvolu("SQ26","TRAP",idFrameEpoxy,par,11);
  
     // EarthFaceCu trapezoid
-    par[0] = hzVFC;
-    par[1] = tetVFC;
-    par[2] = phiVFC;
-    par[3] = h1VFC;
-    par[4] = bl1VFC;
-    par[5] = tl1VFC;
-    par[6] = alp1VFC;
-    par[7] = h2VFC;
-    par[8] = bl2VFC;
-    par[9] = tl2VFC;
-    par[10] = alp2VFC;   
+    par[0] = kHzVFC;
+    par[1] = kTetVFC;
+    par[2] = kPhiVFC;
+    par[3] = kH1VFC;
+    par[4] = kBl1VFC;
+    par[5] = kTl1VFC;
+    par[6] = kAlp1VFC;
+    par[7] = kH2VFC;
+    par[8] = kBl2VFC;
+    par[9] = kTl2VFC;
+    par[10] = kAlp2VFC;   
     gMC->Gsvolu("SQ27","TRAP",idCopper,par,11);     
 
     // VertEarthSteel trapezoid
-    par[0] = hzVES;
-    par[1] = tetVES;
-    par[2] = phiVES;
-    par[3] = h1VES;
-    par[4] = bl1VES;
-    par[5] = tl1VES;
-    par[6] = alp1VES;
-    par[7] = h2VES;
-    par[8] = bl2VES;
-    par[9] = tl2VES;
-    par[10] = alp2VES;    
+    par[0] = kHzVES;
+    par[1] = kTetVES;
+    par[2] = kPhiVES;
+    par[3] = kH1VES;
+    par[4] = kBl1VES;
+    par[5] = kTl1VES;
+    par[6] = kAlp1VES;
+    par[7] = kH2VES;
+    par[8] = kBl2VES;
+    par[9] = kTl2VES;
+    par[10] = kAlp2VES;    
     gMC->Gsvolu("SQ28","TRAP",idInox,par,11); 
 
     // VertEarthProfCu trapezoid       
-    par[0] = hzVPC;
-    par[1] = tetVPC;
-    par[2] = phiVPC;
-    par[3] = h1VPC;
-    par[4] = bl1VPC;
-    par[5] = tl1VPC;
-    par[6] = alp1VPC;
-    par[7] = h2VPC;
-    par[8] = bl2VPC;
-    par[9] = tl2VPC;
-    par[10] = alp2VPC;
+    par[0] = kHzVPC;
+    par[1] = kTetVPC;
+    par[2] = kPhiVPC;
+    par[3] = kH1VPC;
+    par[4] = kBl1VPC;
+    par[5] = kTl1VPC;
+    par[6] = kAlp1VPC;
+    par[7] = kH2VPC;
+    par[8] = kBl2VPC;
+    par[9] = kTl2VPC;
+    par[10] = kAlp2VPC;
     gMC->Gsvolu("SQ29","TRAP",idCopper,par,11);
 
     // SuppLateralPositionner cuboid    
-    par[0] = hxSLP;
-    par[1] = hySLP;
-    par[2] = hzSLP;
+    par[0] = kHxSLP;
+    par[1] = kHySLP;
+    par[2] = kHzSLP;
     gMC->Gsvolu("SQ30","BOX",idAlu,par,3);
 
     // LateralPositionerFace
-    par[0] = hxLPF;
-    par[1] = hyLPF;
-    par[2] = hzLPF;
+    par[0] = kHxLPF;
+    par[1] = kHyLPF;
+    par[2] = kHzLPF;
     gMC->Gsvolu("SQ31","BOX",idInox,par,3);
 
     // LateralPositionerProfile
-    par[0] = hxLPP;
-    par[1] = hyLPP;
-    par[2] = hzLPP;
+    par[0] = kHxLPP;
+    par[1] = kHyLPP;
+    par[2] = kHzLPP;
     gMC->Gsvolu("SQ32","BOX",idInox,par,3); // middle layer
     
-    par[0] = hxLPP;
-    par[1] = hyLPP;
-    par[2] = hzLPNF;
+    par[0] = kHxLPP;
+    par[1] = kHyLPP;
+    par[2] = kHzLPNF;
     gMC->Gsvolu("SQ33","BOX",idInox,par,3); // near and far layers
 
     // VertCradleA - 1st trapezoid
-    par[0] = hzVC1;
-    par[1] = tetVC1;
-    par[2] = phiVC1;
-    par[3] = h1VC1;
-    par[4] = bl1VC1;
-    par[5] = tl1VC1;
-    par[6] = alp1VC1;
-    par[7] = h2VC1;
-    par[8] = bl2VC1;
-    par[9] = tl2VC1;
-    par[10] = alp2VC1;
+    par[0] = kHzVC1;
+    par[1] = kTetVC1;
+    par[2] = kPhiVC1;
+    par[3] = kH1VC1;
+    par[4] = kBl1VC1;
+    par[5] = kTl1VC1;
+    par[6] = kAlp1VC1;
+    par[7] = kH2VC1;
+    par[8] = kBl2VC1;
+    par[9] = kTl2VC1;
+    par[10] = kAlp2VC1;
     gMC->Gsvolu("SQ34","TRAP",idAlu,par,11); 
     
     // VertCradleB - 2nd trapezoid
-    par[0] = hzVC2;
-    par[1] = tetVC2;
-    par[2] = phiVC2;
-    par[3] = h1VC2;
-    par[4] = bl1VC2;
-    par[5] = tl1VC2;
-    par[6] = alp1VC2;
-    par[7] = h2VC2;
-    par[8] = bl2VC2;
-    par[9] = tl2VC2;
-    par[10] = alp2VC2;
+    par[0] = kHzVC2;
+    par[1] = kTetVC2;
+    par[2] = kPhiVC2;
+    par[3] = kH1VC2;
+    par[4] = kBl1VC2;
+    par[5] = kTl1VC2;
+    par[6] = kAlp1VC2;
+    par[7] = kH2VC2;
+    par[8] = kBl2VC2;
+    par[9] = kTl2VC2;
+    par[10] = kAlp2VC2;
     gMC->Gsvolu("SQ35","TRAP",idAlu,par,11);  
        
     // VertCradleC - 3rd trapezoid
-    par[0] = hzVC3;
-    par[1] = tetVC3;
-    par[2] = phiVC3;
-    par[3] = h1VC3;
-    par[4] = bl1VC3;
-    par[5] = tl1VC3;
-    par[6] = alp1VC3;
-    par[7] = h2VC3;
-    par[8] = bl2VC3;
-    par[9] = tl2VC3;
-    par[10] = alp2VC3;    
+    par[0] = kHzVC3;
+    par[1] = kTetVC3;
+    par[2] = kPhiVC3;
+    par[3] = kH1VC3;
+    par[4] = kBl1VC3;
+    par[5] = kTl1VC3;
+    par[6] = kAlp1VC3;
+    par[7] = kH2VC3;
+    par[8] = kBl2VC3;
+    par[9] = kTl2VC3;
+    par[10] = kAlp2VC3;    
     gMC->Gsvolu("SQ36","TRAP",idAlu,par,11);  
 
     // VertCradleD - 4th trapezoid
-    par[0] = hzVC4;
-    par[1] = tetVC4;
-    par[2] = phiVC4;
-    par[3] = h1VC4;
-    par[4] = bl1VC4;
-    par[5] = tl1VC4;
-    par[6] = alp1VC4;
-    par[7] = h2VC4;
-    par[8] = bl2VC4;
-    par[9] = tl2VC4;
-    par[10] = alp2VC4;    
+    par[0] = kHzVC4;
+    par[1] = kTetVC4;
+    par[2] = kPhiVC4;
+    par[3] = kH1VC4;
+    par[4] = kBl1VC4;
+    par[5] = kTl1VC4;
+    par[6] = kAlp1VC4;
+    par[7] = kH2VC4;
+    par[8] = kBl2VC4;
+    par[9] = kTl2VC4;
+    par[10] = kAlp2VC4;    
     gMC->Gsvolu("SQ37","TRAP",idAlu,par,11);  
           
     // LateralSightSupport trapezoid
-    par[0] = hzVSS;
-    par[1] = tetVSS;
-    par[2] = phiVSS;
-    par[3] = h1VSS;
-    par[4] = bl1VSS;
-    par[5] = tl1VSS;
-    par[6] = alp1VSS;
-    par[7] = h2VSS;
-    par[8] = bl2VSS;
-    par[9] = tl2VSS;
-    par[10] = alp2VSS;
+    par[0] = kHzVSS;
+    par[1] = kTetVSS;
+    par[2] = kPhiVSS;
+    par[3] = kH1VSS;
+    par[4] = kBl1VSS;
+    par[5] = kTl1VSS;
+    par[6] = kAlp1VSS;
+    par[7] = kH2VSS;
+    par[8] = kBl2VSS;
+    par[9] = kTl2VSS;
+    par[10] = kAlp2VSS;
     gMC->Gsvolu("SQ38","TRAP",idAlu,par,11);
 
     // LateralSight
-    par[0] = vSInRad;
-    par[1] = vSOutRad;
-    par[2] = vSLen;       
+    par[0] = kVSInRad;
+    par[1] = kVSOutRad;
+    par[2] = kVSLen;       
     gMC->Gsvolu("SQ39","TUBE",idFrameEpoxy,par,3);   
 
 //---
     // InHFrame
-    par[0] = hxInHFrame;
-    par[1] = hyInHFrame;
-    par[2] = hzInHFrame;
+    par[0] = kHxInHFrame;
+    par[1] = kHyInHFrame;
+    par[2] = kHzInHFrame;
     gMC->Gsvolu("SQ40","BOX",idFrameEpoxy,par,3);
 
     //Flat 7.5mm horizontal section
-    par[0] = hxH1mm;
-    par[1] = hyH1mm;
-    par[2] = hzH1mm;
+    par[0] = kHxH1mm;
+    par[1] = kHyH1mm;
+    par[2] = kHzH1mm;
     gMC->Gsvolu("SQ41","BOX",idFrameEpoxy,par,3);
 
     // InArcFrame 
-    par[0] = iAF;
-    par[1] = oAF; 
-    par[2] = hzAF;  
-    par[3] = aFphi1; 
-    par[4] = aFphi2;
+    par[0] = kIAF;
+    par[1] = kOAF; 
+    par[2] = kHzAF;  
+    par[3] = kAFphi1; 
+    par[4] = kAFphi2;
 
     gMC->Gsvolu("SQ42","TUBS",idFrameEpoxy,par,5);
 
 //---
     // ScrewsInFrame - 3 sections in order to avoid overlapping volumes
     // Screw Head, in air
-    par[0] = sCRUHMI;
-    par[1] = sCRUHMA; 
-    par[2] = sCRUHLE;  
+    par[0] = kSCRUHMI;
+    par[1] = kSCRUHMA; 
+    par[2] = kSCRUHLE;  
 
     gMC->Gsvolu("SQ43","TUBE",idInox,par,3);
     
     // Middle part, in the Epoxy
-    par[0] = sCRUMMI;
-    par[1] = sCRUMMA;
-    par[2] = sCRUMLE;
+    par[0] = kSCRUMMI;
+    par[1] = kSCRUMMA;
+    par[2] = kSCRUMLE;
     gMC->Gsvolu("SQ44","TUBE",idInox,par,3);
     
     // Screw nut, in air
-    par[0] = sCRUNMI;
-    par[1] = sCRUNMA;
-    par[2] = sCRUNLE;   
+    par[0] = kSCRUNMI;
+    par[1] = kSCRUNMA;
+    par[2] = kSCRUNLE;   
     gMC->Gsvolu("SQ45","TUBE",idInox,par,3);     
    }
               
 // __________________Place volumes in the quadrant ____________ 
         
     // InVFrame  
-    posX = hxInVFrame;
-    posY = 2.0*hyInHFrame+2.*hyH1mm+iAF+hyInVFrame;        
+    posX = kHxInVFrame;
+    posY = 2.0*kHyInHFrame+2.*kHyH1mm+kIAF+kHyInVFrame;        
     posZ = 0.;
     gMC->Gspos("SQ00",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
 
+// keep memory of the mid position. Used for placing screws
+    const GReal_t kMidVposX = posX;
+    const GReal_t kMidVposY = posY;
+    const GReal_t kMidVposZ = posZ;
+
     //Flat 7.5mm vertical section
-    posX = 2.0*hxInVFrame+hxV1mm;
-    posY = 2.0*hyInHFrame+2.*hyH1mm+iAF+hyV1mm;
+    posX = 2.0*kHxInVFrame+kHxV1mm;
+    posY = 2.0*kHyInHFrame+2.*kHyH1mm+kIAF+kHyV1mm;
     posZ = 0.;
     gMC->Gspos("SQ01",1,QuadrantMLayerName(chamber),posX, posY, posZ,0, "ONLY"); 
     
     // TopFrameAnode place 2 layers of TopFrameAnode cuboids  
-    posX = hxTFA;
-    posY = 2.*hyInHFrame+2.*hyH1mm+iAF+2.*hyInVFrame+hyTFA;   
-    posZ = hzOuterFrameInox;
+    posX = kHxTFA;
+    posY = 2.*kHyInHFrame+2.*kHyH1mm+kIAF+2.*kHyInVFrame+kHyTFA;   
+    posZ = kHzOuterFrameInox;
     gMC->Gspos("SQ02",1,QuadrantMLayerName(chamber),posX, posY, posZ,0,"ONLY"); 
-    posZ = posZ+hzOuterFrameInox;
+    posZ = posZ+kHzOuterFrameInox;
     gMC->Gspos("SQ03",1,QuadrantMLayerName(chamber),posX, posY, posZ,0,"ONLY");
     
     // place 2 layers of TopFrameAnodeA trapezoids 
     posX = 35.8932+fgkDeltaQuadLHC;
     posY = 92.6745+fgkDeltaQuadLHC;
-    posZ = hzOuterFrameInox; 
+    posZ = kHzOuterFrameInox; 
     gMC->Gspos("SQ04",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");
-    posZ = posZ+hzOuterFrameInox;
+    posZ = posZ+kHzOuterFrameInox;
     gMC->Gspos("SQ05",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");
     
     // place 2 layers of TopFrameAnodeB trapezoids 
     posX = 44.593+fgkDeltaQuadLHC;
     posY = 90.737+fgkDeltaQuadLHC;
-    posZ = hzOuterFrameInox; 
+    posZ = kHzOuterFrameInox; 
     gMC->Gspos("SQ06",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");
-    posZ = posZ+hzOuterFrameInox;
+    posZ = posZ+kHzOuterFrameInox;
     gMC->Gspos("SQ07",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");    
 
     // TopAnode1 place 2 layers  
     posX = 6.8+fgkDeltaQuadLHC;
     posY = 99.85+fgkDeltaQuadLHC;
-    posZ = -1.*hzAnodeFR4;
+    posZ = -1.*kHzAnodeFR4;
     gMC->Gspos("SQ08",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");  
-    posZ = posZ+hzTopAnodeSteel1;
+    posZ = posZ+kHzTopAnodeSteel1;
     gMC->Gspos("SQ09",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");    
          
     // TopAnode2 place 2 layers
     posX = 18.534+fgkDeltaQuadLHC;
     posY = 99.482+fgkDeltaQuadLHC; 
-    posZ = -1.*hzAnodeFR4;    
+    posZ = -1.*kHzAnodeFR4;    
     gMC->Gspos("SQ10",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");
-    posZ = posZ+hzTopAnodeSteel2;    
+    posZ = posZ+kHzTopAnodeSteel2;    
     gMC->Gspos("SQ11",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");       
     
     // TopAnode3 place 1 layer
@@ -1549,7 +1597,7 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     // TopEarthFace - 2 copies
     posX = 23.122+fgkDeltaQuadLHC;
     posY = 96.90+fgkDeltaQuadLHC;
-    posZ = hzOuterFrameEpoxy+hzOuterFrameInox+hzTopEarthFaceCu;
+    posZ = kHzOuterFrameEpoxy+kHzOuterFrameInox+kHzTopEarthFaceCu;
     gMC->Gspos("SQ13",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
     posZ = -1.*posZ;
     gMC->Gspos("SQ13",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
@@ -1557,7 +1605,7 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     // TopEarthProfile 
     posX = 14.475+fgkDeltaQuadLHC;
     posY = 97.900+fgkDeltaQuadLHC; 
-    posZ = hzTopEarthProfileCu;
+    posZ = kHzTopEarthProfileCu;
     gMC->Gspos("SQ14",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
     posZ = -1.0*posZ;
     gMC->Gspos("SQ14",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
@@ -1565,7 +1613,7 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     // TopGasSupport - 2 copies                            
     posX = 4.9500+fgkDeltaQuadLHC;
     posY = 96.200+fgkDeltaQuadLHC;
-    posZ = hzOuterFrameEpoxy+hzOuterFrameInox+hzTopGasSupportAl;
+    posZ = kHzOuterFrameEpoxy+kHzOuterFrameInox+kHzTopGasSupportAl;
     gMC->Gspos("SQ15",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
     posZ = -1.*posZ;
     gMC->Gspos("SQ15",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0,"ONLY");
@@ -1573,7 +1621,7 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     // TopPositioner parameters - single Stainless Steel trapezoid - 2 copies
     posX = 7.60+fgkDeltaQuadLHC;
     posY = 98.98+fgkDeltaQuadLHC;   
-    posZ = hzOuterFrameEpoxy+hzOuterFrameInox+2.*hzTopGasSupportAl+hzTopPositionerSteel;
+    posZ = kHzOuterFrameEpoxy+kHzOuterFrameInox+2.*kHzTopGasSupportAl+kHzTopPositionerSteel;
     gMC->Gspos("SQ16",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY");
     posZ = -1.*posZ;
     gMC->Gspos("SQ16",2,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY"); 
@@ -1602,7 +1650,7 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     yCenter[6] = 82.862 + fgkDeltaQuadLHC;
     yCenter[7] = 87.418 + fgkDeltaQuadLHC; 
       
-    posZ = -1.0*hzOuterFrameInox;     
+    posZ = -1.0*kHzOuterFrameInox;     
     gMC->Gspos("SQ17",1,QuadrantMLayerName(chamber), xCenter[0], yCenter[0], posZ, rot2,"ONLY");
     gMC->Gspos("SQ17",2,QuadrantMLayerName(chamber), xCenter[4], yCenter[4], posZ, rot3,"ONLY");
 
@@ -1615,7 +1663,7 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     gMC->Gspos("SQ23",1,QuadrantMLayerName(chamber), xCenter[3], yCenter[3], posZ, rot2,"ONLY");
     gMC->Gspos("SQ23",2,QuadrantMLayerName(chamber), xCenter[7], yCenter[7], posZ, rot3,"ONLY");
      
-    posZ = posZ+hzOuterFrameEpoxy;
+    posZ = posZ+kHzOuterFrameEpoxy;
    
     gMC->Gspos("SQ18",1,QuadrantMLayerName(chamber), xCenter[0], yCenter[0], posZ, rot2,"ONLY");
     gMC->Gspos("SQ18",2,QuadrantMLayerName(chamber), xCenter[4], yCenter[4], posZ, rot3,"ONLY");
@@ -1632,24 +1680,29 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 //---    
         
 // OutVFrame
-    posX = 2.*hxInVFrame+iAF+2.*hxInHFrame-hxOutVFrame+2.*hxV1mm;
-    posY = 2.*hyInHFrame+hyOutVFrame;    
+    posX = 2.*kHxInVFrame+kIAF+2.*kHxInHFrame-kHxOutVFrame+2.*kHxV1mm;
+    posY = 2.*kHyInHFrame+kHyOutVFrame;    
     posZ = 0.;              
     gMC->Gspos("SQ25",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
 
-    Float_t tOPY = posY+hyOutVFrame;
-    Float_t oUTX = posX;
+ // keep memory of the mid position. Used for placing screws
+    const GReal_t kMidOVposX = posX;
+    const GReal_t kMidOVposY = posY;
+    const GReal_t kMidOVposZ = posZ;
+
+    const Float_t kTOPY = posY+kHyOutVFrame;
+    const Float_t kOUTX = posX;
 
 // OutVFrame corner
-    posX = oUTX;
-    posY = tOPY+((bl1OCTF+tl1OCTF)/2.);
+    posX = kOUTX;
+    posY = kTOPY+((kBl1OCTF+kTl1OCTF)/2.);
     posZ = 0.;     
     gMC->Gspos("SQ26",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1,"ONLY"); 
 
 // VertEarthFaceCu - 2 copies
     posX = 89.4000+fgkDeltaQuadLHC;
     posY = 25.79+fgkDeltaQuadLHC;    
-    posZ = hzFrameThickness+2.0*hzFoam+hzVertEarthFaceCu;              
+    posZ = kHzFrameThickness+2.0*kHzFoam+kHzVertEarthFaceCu;              
     gMC->Gspos("SQ27",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY"); 
     posZ = -1.0*posZ; 
     gMC->Gspos("SQ27",2,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY"); 
@@ -1657,7 +1710,7 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 // VertEarthSteel - 2 copies
     posX = 91.00+fgkDeltaQuadLHC;
     posY = 30.616+fgkDeltaQuadLHC;    
-    posZ = hzFrameThickness+2.0*hzFoam+hzVertBarSteel;              
+    posZ = kHzFrameThickness+2.0*kHzFoam+kHzVertBarSteel;              
     gMC->Gspos("SQ28",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY"); 
     posZ = -1.0*posZ;              
     gMC->Gspos("SQ28",2,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY");
@@ -1665,36 +1718,36 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 // VertEarthProfCu - 2 copies
     posX = 92.000+fgkDeltaQuadLHC;
     posY = 29.64+fgkDeltaQuadLHC;    
-    posZ = hzFrameThickness;              
+    posZ = kHzFrameThickness;              
     gMC->Gspos("SQ29",1,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY"); 
     posZ = -1.0*posZ;    
     gMC->Gspos("SQ29",2,QuadrantMLayerName(chamber),posX, posY, posZ, rot1, "ONLY"); 
 
 // SuppLateralPositionner - 2 copies 
-    posX = 90.2-kfgkNearFarLHC;
-    posY = 5.00-kfgkNearFarLHC;    
-    posZ = hzLateralPosnAl-fgkMotherThick2;             
+    posX = 90.2-kNearFarLHC;
+    posY = 5.00-kNearFarLHC;    
+    posZ = kHzLateralPosnAl-fgkMotherThick2;             
     gMC->Gspos("SQ30",1,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
     posZ = -1.0*posZ;            
     gMC->Gspos("SQ30",2,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
 
 // LateralPositionner - 2 copies - Face view
-    posX = 92.175-kfgkNearFarLHC-2.*hxLPP;
-    posY = 5.00-kfgkNearFarLHC;   
-    posZ =2.0*hzLateralPosnAl+hzLateralPosnInoxFace-fgkMotherThick2;              
+    posX = 92.175-kNearFarLHC-2.*kHxLPP;
+    posY = 5.00-kNearFarLHC;   
+    posZ =2.0*kHzLateralPosnAl+kHzLateralPosnInoxFace-fgkMotherThick2;              
     gMC->Gspos("SQ31",1,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
     posZ = -1.0*posZ;             
     gMC->Gspos("SQ31",2,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
 
 // LateralPositionner -  Profile view   
-    posX = 92.175+fgkDeltaQuadLHC+hxLPF-hxLPP;
+    posX = 92.175+fgkDeltaQuadLHC+kHxLPF-kHxLPP;
     posY = 5.00+fgkDeltaQuadLHC;    
     posZ = 0.;              
     gMC->Gspos("SQ32",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); // middle layer
 
-    posX = 92.175-kfgkNearFarLHC+hxLPF-hxLPP; 
-    posY = 5.0000-kfgkNearFarLHC;    
-    posZ = fgkMotherThick2-hzLPNF;              
+    posX = 92.175-kNearFarLHC+kHxLPF-kHxLPP; 
+    posY = 5.0000-kNearFarLHC;    
+    posZ = fgkMotherThick2-kHzLPNF;              
     gMC->Gspos("SQ33",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); // near layer
     posZ = -1.*posZ;
     gMC->Gspos("SQ33",2,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY"); // far layer
@@ -1705,9 +1758,9 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     posZ = 0.;              
     gMC->Gspos("SQ34",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");  
 
-    posX = 95.73-kfgkNearFarLHC;
-    posY = 33.26-kfgkNearFarLHC;
-    posZ = 2.0*hzLateralSightAl+hzVerticalCradleAl-fgkMotherThick2;               
+    posX = 95.73-kNearFarLHC;
+    posY = 33.26-kNearFarLHC;
+    posZ = 2.0*kHzLateralSightAl+kHzVerticalCradleAl-fgkMotherThick2;               
     gMC->Gspos("SQ34",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY");
     posZ = -1.0*posZ;              
     gMC->Gspos("SQ34",3,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY");
@@ -1718,9 +1771,9 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     posZ = 0.;              
     gMC->Gspos("SQ35",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");
 
-    posX = 97.29-kfgkNearFarLHC;
-    posY = 23.02-kfgkNearFarLHC;   
-    posZ = 2.0*hzLateralSightAl+hzVerticalCradleAl-fgkMotherThick2;          
+    posX = 97.29-kNearFarLHC;
+    posY = 23.02-kNearFarLHC;   
+    posZ = 2.0*kHzLateralSightAl+kHzVerticalCradleAl-fgkMotherThick2;          
     gMC->Gspos("SQ35",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY");    
     posZ = -1.0*posZ;          
     gMC->Gspos("SQ35",3,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY");
@@ -1731,10 +1784,10 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     posZ = 0.;              
     gMC->Gspos("SQ36",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");
 
-    posX = 98.31-kfgkNearFarLHC;
-    posY = 12.77-kfgkNearFarLHC;        
+    posX = 98.31-kNearFarLHC;
+    posY = 12.77-kNearFarLHC;        
 
-    posZ = 2.0*hzLateralSightAl+hzVerticalCradleAl-fgkMotherThick2;         
+    posZ = 2.0*kHzLateralSightAl+kHzVerticalCradleAl-fgkMotherThick2;         
     gMC->Gspos("SQ36",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY");       
     posZ = -1.0*posZ;
     gMC->Gspos("SQ36",3,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY");  
@@ -1745,15 +1798,15 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     posZ = 0.;              
     gMC->Gspos("SQ37",2,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");
    
-    posZ = fgkMotherThick1-hzVerticalCradleAl;                
+    posZ = fgkMotherThick1-kHzVerticalCradleAl;                
     gMC->Gspos("SQ37",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");
     posZ = -1.0*posZ;          
     gMC->Gspos("SQ37",3,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY");          
              
 // LateralSightSupport - 2 copies
-    posX = 98.53-kfgkNearFarLHC;
-    posY = 10.00-kfgkNearFarLHC;    
-    posZ = hzLateralSightAl-fgkMotherThick2;
+    posX = 98.53-kNearFarLHC;
+    posY = 10.00-kNearFarLHC;    
+    posZ = kHzLateralSightAl-fgkMotherThick2;
     gMC->Gspos("SQ38",1,QuadrantNLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
     posZ = -1.0*posZ;             
     gMC->Gspos("SQ38",2,QuadrantFLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
@@ -1767,22 +1820,32 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 //---
 
 // InHFrame
-    posX = 2.0*hxInVFrame+2.*hxV1mm+iAF+hxInHFrame;
-    posY = hyInHFrame;
+    posX = 2.0*kHxInVFrame+2.*kHxV1mm+kIAF+kHxInHFrame;
+    posY = kHyInHFrame;
     posZ = 0.;       
     gMC->Gspos("SQ40",1,QuadrantMLayerName(chamber),posX, posY, posZ, 0, "ONLY"); 
  
+ // keep memory of the mid position. Used for placing screws
+    const GReal_t kMidHposX = posX;
+    const GReal_t kMidHposY = posY;
+    const GReal_t kMidHposZ = posZ;
+
 // Flat 7.5mm horizontal section
-    posX = 2.0*hxInVFrame+2.*hxV1mm+iAF+hxH1mm;
-    posY = 2.0*hyInHFrame+hyH1mm;
+    posX = 2.0*kHxInVFrame+2.*kHxV1mm+kIAF+kHxH1mm;
+    posY = 2.0*kHyInHFrame+kHyH1mm;
     posZ = 0.;
     gMC->Gspos("SQ41",1,QuadrantMLayerName(chamber),posX, posY, posZ,0, "ONLY"); 
         
 // InArcFrame 
-    posX = 2.0*hxInVFrame+2.*hxV1mm;
-    posY = 2.0*hyInHFrame+2.*hyH1mm;
+    posX = 2.0*kHxInVFrame+2.*kHxV1mm;
+    posY = 2.0*kHyInHFrame+2.*kHyH1mm;
     posZ = 0.;    
     gMC->Gspos("SQ42",1,QuadrantMLayerName(chamber),posX, posY, posZ,0, "ONLY"); 
+
+// keep memory of the mid position. Used for placing screws
+    const GReal_t kMidArcposX = posX;
+    const GReal_t kMidArcposY = posY;
+    const GReal_t kMidArcposZ = posZ;
 
 // ScrewsInFrame - in sensitive volume
 
@@ -1791,25 +1854,26 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
          
 // Screws on IHEpoxyFrame
 
-     const Int_t knumberOfScrewsIH = 14;    // no. of screws on the IHEpoxyFrame
-     const Float_t koffX = 5.;              // inter-screw distance 
+     const Int_t kNumberOfScrewsIH = 14;    // no. of screws on the IHEpoxyFrame
+     const Float_t kOffX = 5.;              // inter-screw distance 
 
      // first screw coordinates 
      scruX[0] = 21.07;                  
      scruY[0] = -2.23; 
      // other screw coordinates      
-     for (Int_t i = 1;i<knumberOfScrewsIH;i++){   
-     scruX[i] = scruX[i-1]+koffX; 
+     for (Int_t i = 1;i<kNumberOfScrewsIH;i++){   
+     scruX[i] = scruX[i-1]+kOffX; 
      scruY[i] = scruY[0];
      }    
      // Position the volumes on the frames
-     for (Int_t i = 0;i<knumberOfScrewsIH;i++){
+     for (Int_t i = 0;i<kNumberOfScrewsIH;i++){
      posX = fgkDeltaQuadLHC + scruX[i];
      posY = fgkDeltaQuadLHC + scruY[i];
      posZ = 0.;   
-     gMC->Gspos("SQ43",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-sCRUHLE, 0, "ONLY");      
-     gMC->Gspos("SQ44",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY");
-     gMC->Gspos("SQ45",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+sCRUNLE, 0, "ONLY"); 
+     gMC->Gspos("SQ43",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");      
+     if (chamber==1)
+       gMC->Gspos("SQ44",i+1,"SQ40",posX+0.1-kMidHposX, posY+0.1-kMidHposY, posZ-kMidHposZ, 0, "ONLY");
+     gMC->Gspos("SQ45",i+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY"); 
      }
      // special screw coordinates
      scruX[63] = 16.3;  
@@ -1817,14 +1881,15 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
      posX = fgkDeltaQuadLHC + scruX[63];
      posY = fgkDeltaQuadLHC + scruY[63];
      posZ = 0.;            
-     gMC->Gspos("SQ43",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-sCRUHLE, 0, "ONLY");
-     gMC->Gspos("SQ44",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY"); 
-     gMC->Gspos("SQ45",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+sCRUNLE, 0, "ONLY");  
+     gMC->Gspos("SQ43",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");
+     if (chamber==1)
+       gMC->Gspos("SQ44",64,"SQ40",posX+0.1-kMidHposX, posY+0.1-kMidHposY, posZ-kMidHposZ, 0, "ONLY"); 
+     gMC->Gspos("SQ45",64,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY");  
      
 // Screws on the IVEpoxyFrame
   
-    const Int_t knumberOfScrewsIV = 15;     // no. of screws on the IVEpoxyFrame
-    const Float_t koffY = 5.;               // inter-screw distance 
+    const Int_t kNumberOfScrewsIV = 15;     // no. of screws on the IVEpoxyFrame
+    const Float_t kOffY = 5.;               // inter-screw distance 
     Int_t firstScrew = 58;
     Int_t lastScrew = 44;
  
@@ -1837,43 +1902,53 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     // other screw coordinates      
     for (Int_t i = firstScrew-3;i>lastScrew-2;i--){   
     scruX[i] = scruX[firstScrew-2];
-    scruY[i] = scruY[i+1]+koffY;
+    scruY[i] = scruY[i+1]+kOffY;
     }
     
-    for (Int_t i = 0;i<knumberOfScrewsIV;i++){
+    for (Int_t i = 0;i<kNumberOfScrewsIV;i++){
     posX = fgkDeltaQuadLHC + scruX[i+lastScrew-1];
     posY = fgkDeltaQuadLHC + scruY[i+lastScrew-1];
     posZ = 0.;       
-    gMC->Gspos("SQ43",i+lastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-sCRUHLE, 0, "ONLY");     
-    gMC->Gspos("SQ44",i+lastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY"); 
-    gMC->Gspos("SQ45",i+lastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+sCRUNLE, 0, "ONLY");
+    gMC->Gspos("SQ43",i+lastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");     
+    if (chamber==1)
+      gMC->Gspos("SQ44",i+lastScrew,"SQ00",posX+0.1-kMidVposX, posY+0.1-kMidVposY, posZ-kMidVposZ, 0, "ONLY"); 
+    gMC->Gspos("SQ45",i+lastScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY");
     }    
     
 // Screws on the OVEpoxyFrame
   
-    const Int_t knumberOfScrewsOV = 10;     // no. of screws on the OVEpoxyFrame
+    const Int_t kNumberOfScrewsOV = 10;     // no. of screws on the OVEpoxyFrame
 
     firstScrew = 15;
     lastScrew = 25;
  
     // first (repetitive) screw coordinates
+    // notes: 1st screw should be placed in volume 40 (InnerHorizFrame)
     scruX[firstScrew-1] = 90.9; 
     scruY[firstScrew-1] = -2.23;  // true value
  
     // other screw coordinates      
     for (Int_t i = firstScrew; i<lastScrew; i++ ){   
     scruX[i] = scruX[firstScrew-1];
-    scruY[i] = scruY[i-1]+koffY;
+    scruY[i] = scruY[i-1]+kOffY;
     }
-    for (Int_t i = 0;i<knumberOfScrewsOV;i++){
+    for (Int_t i = 1;i<kNumberOfScrewsOV;i++){
     posX = fgkDeltaQuadLHC + scruX[i+firstScrew-1];
     posY = fgkDeltaQuadLHC + scruY[i+firstScrew-1];
     posZ = 0.;   
-    gMC->Gspos("SQ43",i+firstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-sCRUHLE, 0, "ONLY");     
-    gMC->Gspos("SQ44",i+firstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY"); 
-    gMC->Gspos("SQ45",i+firstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+sCRUNLE, 0, "ONLY"); 
+    gMC->Gspos("SQ43",i+firstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");     
+    // ??
+    if (chamber==1)
+      gMC->Gspos("SQ44",i+firstScrew,"SQ25",posX+0.1-kMidOVposX, posY+0.1-kMidOVposY, posZ-kMidOVposZ, 0, "ONLY"); 
+    gMC->Gspos("SQ45",i+firstScrew,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY"); 
     }
-      
+    // special case for 1st screw, inside the horizontal frame (volume 40)
+    posX = fgkDeltaQuadLHC + scruX[firstScrew-1];
+    posY = fgkDeltaQuadLHC + scruY[firstScrew-1];
+    posZ = 0.;   
+    if (chamber==1)
+      gMC->Gspos("SQ44",firstScrew,"SQ40",posX+0.1-kMidHposX, posY+0.1-kMidHposY, posZ-kMidHposZ, 0, "ONLY"); 
+          
 // Inner Arc of Frame, screw positions and numbers-1
    scruX[62] = 16.009; scruY[62]  = 1.401;
    scruX[61] = 14.564; scruY[61]  = 6.791;
@@ -1885,14 +1960,15 @@ const Float_t kfgkNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
     posX = fgkDeltaQuadLHC + scruX[i+58];
     posY = fgkDeltaQuadLHC + scruY[i+58];
     posZ = 0.;   
-    gMC->Gspos("SQ43",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-hzInHFrame-sCRUHLE, 0, "ONLY");    
-    gMC->Gspos("SQ44",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ, 0, "ONLY");
-    gMC->Gspos("SQ45",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+hzInHFrame+sCRUNLE, 0, "ONLY");
+    gMC->Gspos("SQ43",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ-kHzInHFrame-kSCRUHLE, 0, "ONLY");    
+    if (chamber==1)
+      gMC->Gspos("SQ44",i+58+1,"SQ42",posX+0.1-kMidArcposX, posY+0.1-kMidArcposY, posZ-kMidArcposZ, 0, "ONLY");
+    gMC->Gspos("SQ45",i+58+1,QuadrantMLayerName(chamber),posX+0.1, posY+0.1, posZ+kHzInHFrame+kSCRUNLE, 0, "ONLY");
     }
 }
 
 //______________________________________________________________________________
-void AliMUONv2::PlaceInnerLayers(Int_t chamber)
+void AliMUONSt1GeometryBuilderV2::PlaceInnerLayers(Int_t chamber)
 {
 // Place the gas and copper layers for the specified chamber.
 // --
@@ -1900,10 +1976,10 @@ void AliMUONv2::PlaceInnerLayers(Int_t chamber)
 // Rotation Matrices 
   Int_t rot1, rot2, rot3, rot4;   
 
-  AliMatrix(rot1,  90., 315., 90.,  45., 0., 0.); // -45 deg
-  AliMatrix(rot2,  90.,  90., 90., 180., 0., 0.); //  90 deg
-  AliMatrix(rot3,  90., 270., 90.,   0., 0., 0.); // -90 deg 
-  AliMatrix(rot4,  90.,  45., 90., 135., 0., 0.); //  deg 
+  fMUON->AliMatrix(rot1,  90., 315., 90.,  45., 0., 0.); // -45 deg
+  fMUON->AliMatrix(rot2,  90.,  90., 90., 180., 0., 0.); //  90 deg
+  fMUON->AliMatrix(rot3,  90., 270., 90.,   0., 0., 0.); // -90 deg 
+  fMUON->AliMatrix(rot4,  90.,  45., 90., 135., 0., 0.); //  deg 
 
   GReal_t x;
   GReal_t y;
@@ -1991,7 +2067,7 @@ void AliMUONv2::PlaceInnerLayers(Int_t chamber)
 }
 
 //______________________________________________________________________________
-void AliMUONv2::PlaceSector(AliMpSector* sector,TSpecialMap specialMap, 
+void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap specialMap, 
                             const TVector3& where, Bool_t reflectZ, Int_t chamber)
 {
 // Place all the segments in the mother volume, at the position defined
@@ -2006,16 +2082,24 @@ void AliMUONv2::PlaceSector(AliMpSector* sector,TSpecialMap specialMap,
   if (!reflectZ) {
     sgn= 1;
     reflZ=0;                                     // no reflection along z... nothing
-    AliMatrix(rotMat,  90.,90.,90,180.,0.,0.);   // 90° rotation around z, NO reflection along z
+    fMUON->AliMatrix(rotMat,  90.,90.,90,180.,0.,0.);   // 90° rotation around z, NO reflection along z
   } else  {
     sgn=-1;
-    AliMatrix(reflZ,  90.,0.,90,90.,180.,0.);    // reflection along z
-    AliMatrix(rotMat,  90.,90.,90,180.,180.,0.); // 90° rotation around z AND reflection along z
+    fMUON->AliMatrix(reflZ,  90.,0.,90,90.,180.,0.);    // reflection along z
+    fMUON->AliMatrix(rotMat,  90.,90.,90,180.,180.,0.); // 90° rotation around z AND reflection along z
   }
   
   GReal_t posX,posY,posZ;
   
-  IntVector alreadydone;
+#ifdef ST1_WITH_STL  
+  vector<Int_t> alreadyDone;
+#endif
+
+#ifdef ST1_WITH_ROOT  
+  TArrayI alreadyDone(20);
+  Int_t nofAlreadyDone = 0;
+#endif  
+
   for (Int_t irow=0;irow<sector->GetNofRows();irow++){ // for each row
     AliMpRow* row = sector->GetRow(irow);
 
@@ -2024,10 +2108,18 @@ void AliMUONv2::PlaceSector(AliMpSector* sector,TSpecialMap specialMap,
       AliMpVRowSegment* seg = row->GetRowSegment(iseg);
       char segName[5];
       
-      TSpecialMap::iterator iter 
+#ifdef ST1_WITH_STL 
+      SpecialMap::iterator iter 
         = specialMap.find(seg->GetMotifPositionId(0));
 
       if ( iter == specialMap.end()){ //if this is a normal segment (ie. not part of <specialMap>)
+#endif  
+      
+#ifdef ST1_WITH_ROOT  
+      Long_t value = specialMap.GetValue(seg->GetMotifPositionId(0));
+
+      if ( value == 0 ){ //if this is a normal segment (ie. not part of <specialMap>)
+#endif  
       
         // create the cathode part
         sprintf(segName,"%.3dM", segNum);
@@ -2058,10 +2150,26 @@ void AliMUONv2::PlaceSector(AliMpSector* sector,TSpecialMap specialMap,
 
           Int_t motifPosId = seg->GetMotifPositionId(motifNum);
           
-          if (find(alreadydone.begin(),alreadydone.end(),motifPosId)
-              != alreadydone.end()) continue; // don't treat the same motif twice
-          
+#ifdef ST1_WITH_STL
+          if (find(alreadyDone.begin(),alreadyDone.end(),motifPosId)
+              != alreadyDone.end()) continue; // don't treat the same motif twice
+
           AliMUONSt1SpecialMotif spMot = specialMap[motifPosId];
+#endif
+#ifdef ST1_WITH_ROOT
+          Bool_t isDone = false;
+	  Int_t i=0;
+	  while (i<nofAlreadyDone && !isDone) {
+	    if (alreadyDone.At(i) == motifPosId) isDone=true;
+	    i++;
+	  }  
+	  if (isDone) continue; // don't treat the same motif twice
+
+          AliMUONSt1SpecialMotif spMot = *((AliMUONSt1SpecialMotif*)specialMap.GetValue(motifPosId));
+#endif
+          // check
+	  // cout << chamber << " processing special motif: " << motifPosId << endl;  
+
           AliMpMotifPosition* motifPos = sector->GetMotifMap()->FindMotifPosition(motifPosId);
 
           // place the hole for the motif, wrt the requested rotation angle
@@ -2078,7 +2186,16 @@ void AliMUONv2::PlaceSector(AliMpSector* sector,TSpecialMap specialMap,
 	  posZ = where.Z() + sgn * (fgkMotherThick1 - TotalHzDaughter()); 
           gMC->Gspos(fgkDaughterName, motifPosId, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
 
-          alreadydone.push_back(motifPosId);// mark this motif as done
+#ifdef ST1_WITH_STL
+          alreadyDone.push_back(motifPosId);// mark this motif as done
+#endif
+#ifdef ST1_WITH_ROOT
+          if (nofAlreadyDone == alreadyDone.GetSize()) 
+	     alreadyDone.Set(2*nofAlreadyDone); 
+          alreadyDone.AddAt(motifPosId, nofAlreadyDone++);       	  
+#endif
+          // check
+	  // cout << chamber << " processed motifPosId: " << motifPosId << endl;
 	}		
       }// end of special motif case
     }
@@ -2086,7 +2203,7 @@ void AliMUONv2::PlaceSector(AliMpSector* sector,TSpecialMap specialMap,
 } 
 
 //______________________________________________________________________________
-TString AliMUONv2::GasVolumeName(const TString& name, Int_t chamber) const
+TString AliMUONSt1GeometryBuilderV2::GasVolumeName(const TString& name, Int_t chamber) const
 {
 // Inserts the chamber number into the name.
 // ---
@@ -2101,8 +2218,9 @@ TString AliMUONv2::GasVolumeName(const TString& name, Int_t chamber) const
   return newString;
 }
 
+/*
 //______________________________________________________________________________
-Bool_t AliMUONv2::IsInChamber(Int_t ich, Int_t volGid) const
+Bool_t AliMUONSt1GeometryBuilderV2::IsInChamber(Int_t ich, Int_t volGid) const
 {
 // True if volume <volGid> is part of the sensitive 
 // volumes of chamber <ich> 
@@ -2112,13 +2230,15 @@ Bool_t AliMUONv2::IsInChamber(Int_t ich, Int_t volGid) const
   }
   return kFALSE;
 }
+*/
 
 //
 // protected methods
 //
 
+/*
 //______________________________________________________________________________
-Int_t  AliMUONv2::GetChamberId(Int_t volId) const
+Int_t  AliMUONSt1GeometryBuilderV2::GetChamberId(Int_t volId) const
 {
 // Check if the volume with specified  volId is a sensitive volume (gas) 
 // of some chamber and returns the chamber number;
@@ -2133,161 +2253,177 @@ Int_t  AliMUONv2::GetChamberId(Int_t volId) const
 
   return 0;
 }
+*/
 
 //
 // public methods
 //
 
 //______________________________________________________________________________
-void AliMUONv2::CreateMaterials()
+void AliMUONSt1GeometryBuilderV2::CreateMaterials()
 {
-// --- Define the various mixtures for GEANT ---
-  
-  //     Ar-CO2 gas (80%+20%)
-  Float_t ag1[2]   = { 39.95,44.01};
-  Float_t zg1[2]   = { 18.,22.};
-  Float_t dg1      = .001821;
-  Float_t wg1[2]   = { .8,0.2};
-  // use wg1 weighting factors (6th arg > 0)
-  AliMixture(22, "ArCO2 80%$", ag1, zg1, dg1, 2, wg1);  
-  
-  // Ar-buthane-freon gas -- trigger chambers 
-  Float_t atr1[4]  = { 39.95,12.01,1.01,19. };
-  Float_t ztr1[4]  = { 18.,6.,1.,9. };
-  Float_t wtr1[4]  = { .56,.1262857,.2857143,.028 };
-  Float_t dtr1     = .002599;
-  AliMixture(23, "Ar-freon $", atr1, ztr1, dtr1, 4, wtr1);
+// Materials and medias defined in MUONv1:
+//
+//  AliMaterial( 9, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+//  AliMaterial(10, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
+//  AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
+//  AliMixture( 19, "Bakelite$", abak, zbak, dbak, -3, wbak);
+//  AliMixture( 20, "ArC4H10 GAS$", ag, zg, dg, 3, wg);
+//  AliMixture( 21, "TRIG GAS$", atrig, ztrig, dtrig, -5, wtrig);
+//  AliMixture( 22, "ArCO2 80%$", ag1, zg1, dg1, 3, wg1);
+//  AliMixture( 23, "Ar-freon $", atr1, ztr1, dtr1, 4, wtr1);
+//  AliMixture( 24, "ArCO2 GAS$", agas, zgas, dgas, 3, wgas);
+//  AliMaterial(31, "COPPER$",   63.54,    29.,   8.96,  1.4, 0.);
+//  AliMixture( 32, "Vetronite$",aglass, zglass, dglass,    5, wglass);
+//  AliMaterial(33, "Carbon$",   12.01,     6.,  2.265, 18.8, 49.9);
+//  AliMixture( 34, "Rohacell$", arohac, zrohac, drohac,   -4, wrohac); 
 
-  // Rohacell 51  - imide methacrylique
-  Float_t aRohacell51[4] = {12.01,1.01,16.00,14.01}; 
-  Float_t zRohacell51[4] = {6.,1.,8.,7.}; 
+//  AliMedium( 1, "AIR_CH_US         ",  15, 1, iSXFLD, ...
+//  AliMedium( 4, "ALU_CH_US          ",  9, 0, iSXFLD, ... 
+//  AliMedium( 5, "ALU_CH_US          ", 10, 0, iSXFLD, ... 
+//  AliMedium( 6, "AR_CH_US          ",  20, 1, iSXFLD, ... 
+//  AliMedium( 7, "GAS_CH_TRIGGER    ",  21, 1, iSXFLD, ... 
+//  AliMedium( 8, "BAKE_CH_TRIGGER   ",  19, 0, iSXFLD, ... 
+//  AliMedium( 9, "ARG_CO2   ",          22, 1, iSXFLD, ... 
+//  AliMedium(11, "PCB_COPPER        ",  31, 0, iSXFLD, ... 
+//  AliMedium(12, "VETRONITE         ",  32, 0, iSXFLD, ... 
+//  AliMedium(13, "CARBON            ",  33, 0, iSXFLD, ... 
+//  AliMedium(14, "Rohacell          ",  34, 0, iSXFLD, ... 
+
+  //
+  // --- Define materials for GEANT ---
+  //
+
+  fMUON->AliMaterial(41, "Aluminium II$", 26.98, 13., 2.7, -8.9, 26.1);
+       // was id: 9
+       // from PDG and "The Particle Detector BriefBook", Bock and Vasilescu, P.18  
+        // ??? same but the last but one argument < 0 
+  
+  fMUON->AliMaterial(42, "Copper$", 63.546,29.,8.96,-1.43,9.6);
+       // was id: 30
+
+  fMUON->AliMaterial(43, "FR4$", 17.749, 8.875, 1.7, -19.4, 999.);    // from DPG
+       // was id: 31
+
+  fMUON->AliMaterial(44, "FrameEpoxy",12.24,6.0,1.85,-19.14,999);// use 16.75cm
+        // was id: 36
+        // Density of FrameEpoxy only from manufacturer's specifications
+        // Frame composite epoxy , X0 in g/cm**2 (guestimation!)
+  
+  //
+  // --- Define mixtures for GEANT ---
+  //
+
+  //     Ar-CO2 gas II (80%+20%)
+  Float_t ag1[2]   = { 39.95,  44.01};
+  Float_t zg1[2]   = { 18., 22.};
+  Float_t wg1[2]   = { .8, 0.2};
+  Float_t dg1      = .001821;
+  fMUON->AliMixture(45, "ArCO2 II 80%$", ag1, zg1, dg1, 2, wg1);  
+            // was id: 22
+            // use wg1 weighting factors (6th arg > 0)
+
+  // Rohacell 51  II - imide methacrylique
+  Float_t aRohacell51[4] = { 12.01, 1.01, 16.00, 14.01}; 
+  Float_t zRohacell51[4] = { 6., 1., 8., 7.}; 
+  Float_t wRohacell51[4] = { 9., 13., 2., 1.};  
   Float_t dRohacell51 = 0.052;
-  Float_t wRohacell51[4] = {9.,13.,2.,1.};  
-  // use relative A (molecular) values (6th arg < 0)
-  AliMixture(32, "FOAM$",aRohacell51,zRohacell51,dRohacell51,-4,wRohacell51);  
+  fMUON->AliMixture(46, "FOAM$",aRohacell51,zRohacell51,dRohacell51,-4,wRohacell51);  
+            // was id: 32
+            // use relative A (molecular) values (6th arg < 0)
    
-  Float_t aSnPb[2] = {118.69,207.19};
-  Float_t zSnPb[2] = {50,82};
+  Float_t aSnPb[2] = { 118.69, 207.19};
+  Float_t zSnPb[2] = { 50, 82};
+  Float_t wSnPb[2] = { 0.6, 0.4} ;
   Float_t dSnPb = 8.926;
-  Float_t wSnPb[2] = {0.6, 0.4} ;
-  // use wSnPb weighting factors (6th arg > 0)
-  AliMixture(35, "SnPb$", aSnPb,zSnPb,dSnPb,2,wSnPb);
+  fMUON->AliMixture(47, "SnPb$", aSnPb,zSnPb,dSnPb,2,wSnPb);
+            // was id: 35
+            // use wSnPb weighting factors (6th arg > 0)
 
   // plastic definition from K5, Freiburg (found on web)
-  Float_t aPlastic[2]={1.01,12.01};
-  Float_t zPlastic[2]={1,6};
+  Float_t aPlastic[2]={ 1.01, 12.01};
+  Float_t zPlastic[2]={ 1, 6};
+  Float_t wPlastic[2]={ 1, 1};
   Float_t denPlastic=1.107;
-  Float_t wPlastic[2]={1,1};
-  // use relative A (molecular) values (6th arg < 0)...no other info...
-  AliMixture( 33, "Plastic$",aPlastic,zPlastic,denPlastic,-2,wPlastic);
+  fMUON->AliMixture(48, "Plastic$",aPlastic,zPlastic,denPlastic,-2,wPlastic);
+            // was id: 33
+            // use relative A (molecular) values (6th arg < 0)...no other info...
  
-  // from CERN note NUFACT Note023, Oct.2000 
+  // Not used, to be removed
+  //
+  fMUON->AliMaterial(49, "Kapton$", 12.01,6,1.42,-28.6,999);          // from DPG
+       // was id: 34
+
   // Inox/Stainless Steel (18%Cr, 9%Ni)
-  Float_t aInox[3] = {55.847,51.9961,58.6934};  
-  Float_t zInox[3] = {26.,24.,28.};
+  Float_t aInox[3] = {55.847, 51.9961, 58.6934};  
+  Float_t zInox[3] = {26., 24., 28.};
+  Float_t wInox[3] = {0.73, 0.18, 0.09}; 
   Float_t denInox = 7.930;
-  Float_t wInox[3] = {0.73,0.18,0.09}; 
-  // use wInox weighting factors (6th arg > 0) 
-  AliMixture(37, "StainlessSteel$",aInox,zInox,denInox,3,wInox);   
+  fMUON->AliMixture(50, "StainlessSteel$",aInox,zInox,denInox,3,wInox);   
+            // was id: 37
+            // use wInox weighting factors (6th arg > 0) 
+            // from CERN note NUFACT Note023, Oct.2000 
+  //
+  // End - Not used, to be removed
 
-  // bakelite 
-  Float_t abak[3] = {12.01 , 1.01 , 16.};
-  Float_t zbak[3] = {6.     , 1.   , 8.};
-  Float_t wbak[3] = {6.     , 6.   , 1.}; 
-  Float_t dbak = 1.4;
-  AliMixture(19, "Bakelite$", abak, zbak, dbak, -3, wbak);
-  
-  // Ar-Isobutane gas (80%+20%) 
-  Float_t ag[3]    = { 39.95,12.01,1.01 };
-  Float_t zg[3]    = { 18.,6.,1. };
-  Float_t wg[3]    = { .8,.057,.143 };
-  Float_t dg       = .0019596;
-  AliMixture(20, "ArC4H10 GAS$", ag, zg, dg, 3, wg);
+  //
+  // --- Define the tracking medias for GEANT ---
+  // 
 
-  //     Ar-Isobutane-Forane-SF6 gas (49%+7%+40%+4%) -- trigger 
-  Float_t atrig[5] = { 39.95,12.01,1.01,19.,32.066 };
-  Float_t ztrig[5] = { 18.,6.,1.,9.,16. };
-  Float_t wtrig[5] = { .49,1.08,1.5,1.84,0.04 };
-  Float_t dtrig    = .0031463;
-  AliMixture(21, "TRIG GAS$", atrig, ztrig, dtrig, -5, wtrig);
-      
-// --- Define the various AliMaterials for GEANT ---
-  // from PDG and "The Particle Detector BriefBook", Bock and Vasilescu, P.18  
-  AliMaterial( 9, "Aluminium$", 26.98, 13., 2.7, -8.9, 26.1);
-  AliMaterial(10, "Aluminium$", 26.98, 13., 2.7, -8.9, 26.1);
-  AliMaterial(15, "air$", 14.61, 7.3, .001205, -30423.24, 67500);
-  AliMaterial(30, "Copper$", 63.546,29.,8.96,-1.43,9.6);
-  AliMaterial(31, "FR4$", 17.749, 8.875, 1.7, -19.4, 999.);    // from DPG
-  AliMaterial(34, "Kapton$", 12.01,6,1.42,-28.6,999);          // from DPG
- // Density of FrameEpoxy only from manufacturer's specifications
- // Frame composite epoxy , X0 in g/cm**2 (guestimation!)
-  AliMaterial(36, "FrameEpoxy",12.24,6.0,1.85,-19.14,999);// use 16.75cm
-  
-// --- Define the tracking medias (AliMediums) for GEANT ---
   GReal_t epsil  = .001;       // Tracking precision,
-  GReal_t stemax = -1.;        // Maximum displacement for multiple scat
+  //GReal_t stemax = -1.;        // Maximum displacement for multiple scat
   GReal_t tmaxfd = -20.;       // Maximum angle due to field deflection
-  GReal_t deemax = -.3;        // Maximum fractional energy loss, DLS
+  //GReal_t deemax = -.3;        // Maximum fractional energy loss, DLS
   GReal_t stmin  = -.8;
-  GReal_t maxStepAlu = 0.001;  // from AliMUON.cxx
-  GReal_t maxDestepAlu = -1.;  // from AliMUON.cxx
-  GReal_t maxStepGas=0.01;     // from AliMUON.cxx
-
+  GReal_t maxStepAlu   = fMUON->GetMaxStepAlu();
+  GReal_t maxDestepAlu = fMUON->GetMaxDestepAlu();
+  GReal_t maxStepGas   = fMUON->GetMaxStepGas();
   Int_t iSXFLD   = gAlice->Field()->Integ();
   Float_t sXMGMX = gAlice->Field()->Max();
 
-  AliMedium(1, "AIR_CH_US$", 15, 1, iSXFLD, sXMGMX, tmaxfd,
-	    stemax, deemax, epsil, stmin);
-  AliMedium(4, "ALU_CH_US$", 9, 0, iSXFLD, sXMGMX, tmaxfd,
-	    maxStepAlu, maxDestepAlu, epsil, stmin);
-  AliMedium(5, "ALU_CH_US$", 10, 0, iSXFLD, sXMGMX, tmaxfd,
-	    maxStepAlu,maxDestepAlu, epsil, stmin);  
-  AliMedium(6, "AR_CH_US          ", 20, 1, iSXFLD, sXMGMX, 
-              tmaxfd, fMaxStepGas,fMaxDestepGas, epsil, stmin);
-              
-  //    Ar-Isobuthane-Forane-SF6 gas 
-  AliMedium(7, "GAS_CH_TRIGGER    ", 21, 1, iSXFLD, sXMGMX, 
-               tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(8, "BAKE_CH_TRIGGER   ", 19, 0, iSXFLD, sXMGMX, 
-               tmaxfd, fMaxStepAlu, fMaxDestepAlu, epsil, stmin);
+  fMUON->AliMedium(21, "ALU_II$",    41, 0, iSXFLD, sXMGMX, 
+                   tmaxfd, maxStepAlu, maxDestepAlu, epsil, stmin);
+		   // was med: 4  mat: 9
+  fMUON->AliMedium(22, "COPPER_II$", 42, 0, iSXFLD, sXMGMX, 
+                   tmaxfd, maxStepAlu, maxDestepAlu, epsil, stmin);
+		   // was med: 10  mat: 30
+  fMUON->AliMedium(23, "FR4_CH$",    43, 0, iSXFLD, sXMGMX, 
+                   10.0, 0.01, 0.1, 0.003, 0.003);
+		   // was med: 15  mat: 31 
+  fMUON->AliMedium(24, "FrameCH$",   44, 1, iSXFLD, sXMGMX, 
+                   10.0, 0.001, 0.001, 0.001, 0.001);
+		   // was med: 20  mat: 36
+  fMUON->AliMedium(25, "ARG_CO2_II", 45, 1, iSXFLD, sXMGMX,
+                   tmaxfd, maxStepGas, maxDestepAlu, epsil, stmin);
+		   // was med: 9   mat: 22
+  fMUON->AliMedium(26, "FOAM_CH$",   46, 0, iSXFLD, sXMGMX,
+                   10.0,  0.1, 0.1, 0.1, 0.1, 0, 0) ;
+		   // was med: 16  mat: 32
+  fMUON->AliMedium(27, "SnPb$",      47, 0, iSXFLD, sXMGMX,  
+                   10.0, 0.01, 1.0, 0.003, 0.003);
+		   // was med: 19  mat: 35
+  fMUON->AliMedium(28, "Plastic$",   48, 0, iSXFLD, sXMGMX,
+                   10.0, 0.01, 1.0, 0.003, 0.003);
+		   // was med: 17  mat: 33
 
-  AliMedium(9, "ArCO2 80%$", 22, 1, iSXFLD, sXMGMX, tmaxfd, maxStepGas,
-	      maxDestepAlu, epsil, stmin);
-  AliMedium(10, "COPPER_CH$", 30, 0, iSXFLD, sXMGMX, tmaxfd,
-	      maxStepAlu, maxDestepAlu, epsil, stmin);
-  AliMedium(11, "PCB_COPPER        ", 31, 0, iSXFLD, sXMGMX, tmaxfd, 
-                fMaxStepAlu, fMaxDestepAlu, epsil, stmin);
-  AliMedium(12, "VETRONITE         ", 32, 0, iSXFLD, sXMGMX, tmaxfd, 
-                fMaxStepAlu, fMaxDestepAlu, epsil, stmin);
-  AliMedium(13, "CARBON            ", 33, 0, iSXFLD, sXMGMX, tmaxfd, 
-                fMaxStepAlu, fMaxDestepAlu, epsil, stmin);
-  AliMedium(14, "Rohacell          ", 34, 0, iSXFLD, sXMGMX, tmaxfd, 
-	      fMaxStepAlu, fMaxDestepAlu, epsil, stmin);
-  AliMedium(15, "FR4_CH$",  31, 0,iSXFLD, sXMGMX, 10., .01,.1, .003, .003);
-  AliMedium(16, "FOAM_CH$", 32, 0,
-	      iSXFLD, sXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
-  AliMedium(17, "Plastic$", 33, 0,iSXFLD, sXMGMX,  10., .01, 1., .003, .003);
-  AliMedium(18, "Kapton$", 34, 0,iSXFLD, sXMGMX,  10., .01, 1., .003, .003);
-  AliMedium(19, "SnPb$", 35, 0,iSXFLD, sXMGMX,  10., .01,  1., .003, .003);
-  AliMedium(20, "FrameCH$", 36, 1,iSXFLD, sXMGMX,  10., .001, 0.001, .001, .001);
-  AliMedium(21, "InoxBolts$", 37,1,iSXFLD, sXMGMX,  10., .01, 1., .003, .003);
-
-// store the parameters
-  Float_t a, z, dens, absl;
-  char matName[5];
-  AliGetMaterial(30,matName,a,z,dens,fRadlCopper,absl);
-  AliGetMaterial(31,matName,a,z,dens,fRadlFR4,absl);
-  AliGetMaterial(32,matName,a,z,dens,fRadlFoam,absl);
+  // Not used, to be romoved
+  //
+  fMUON->AliMedium(29, "Kapton$",    49, 0, iSXFLD, sXMGMX,  
+                   10.0, 0.01, 1.0, 0.003, 0.003);
+		   // was med: 18  mat: 34 
+  fMUON->AliMedium(30, "InoxBolts$", 50, 1, iSXFLD, sXMGMX, 
+                   10.0, 0.01, 1.0, 0.003, 0.003);
+		   // was med: 21  mat: 37
+  //
+  // End - Not used, to be removed
 }
 
 //______________________________________________________________________________
-void AliMUONv2::CreateGeometry()
+void AliMUONSt1GeometryBuilderV2::CreateGeometry()
 {
-// Create the GEANT geometry for the dimuon arm.
-// Use the parent's method for stations 2, 3, 4 and 5.
-// Use the detailed code for the first station.
+// Create the detailed GEANT geometry for the dimuon arm station1
 // --
-  cout << "AliMUONv2::CreateGeometry()" << endl;
+  cout << "AliMUONSt1GeometryBuilderV2::CreateGeometry()" << endl;
   cout << "_________________________________________" << endl;
 
   // Create basic volumes
@@ -2298,11 +2434,12 @@ void AliMUONv2::CreateGeometry()
   
   // Create reflexion matrices
   //
+/*
   Int_t reflXZ, reflYZ, reflXY;
-  AliMatrix(reflXZ,  90.,  180., 90., 90., 180., 0.);
-  AliMatrix(reflYZ,  90., 0., 90.,-90., 180., 0.);
-  AliMatrix(reflXY,  90., 180., 90., 270., 0., 0.);
-
+  fMUON->AliMatrix(reflXZ,  90.,  180., 90., 90., 180., 0.);
+  fMUON->AliMatrix(reflYZ,  90., 0., 90.,-90., 180., 0.);
+  fMUON->AliMatrix(reflXY,  90., 180., 90., 270., 0., 0.);
+*/
   // Define transformations for each quadrant
   // 
   //     II. |  I.
@@ -2310,11 +2447,18 @@ void AliMUONv2::CreateGeometry()
   //         |
   //    III. |  IV.
   // 
+/*
   Int_t rotm[4];
   rotm[0]=0;       // quadrant I
   rotm[1]=reflXZ;  // quadrant II
   rotm[2]=reflXY;  // quadrant III
   rotm[3]=reflYZ;  // quadrant IV
+*/
+  TGeoRotation rotm[4]; 
+  rotm[0] = TGeoRotation("identity");
+  rotm[1] = TGeoRotation("reflXZ", 90.,  180., 90., 90., 180., 0.);
+  rotm[2] = TGeoRotation("reflXY", 90., 180., 90., 270., 0., 0.);
+  rotm[3] = TGeoRotation("reflYZ", 90., 0., 90.,-90., 180., 0.);
   
   TVector3 scale[4];  
   scale[0] = TVector3( 1,  1,  1);  // quadrant I
@@ -2348,87 +2492,73 @@ void AliMUONv2::CreateGeometry()
       // Middle layer
       GReal_t posx = pos0.X() * scale[i].X();
       GReal_t posy = pos0.Y() * scale[i].Y();
-      GReal_t posz = pos0.Z() * scale[i].Z() + AliMUONConstants::DefaultChamberZ(ich-1);
-      gMC->Gspos(QuadrantMLayerName(ich), i+1, "ALIC", posx, posy, posz, rotm[i], "ONLY");
+      //GReal_t posz = pos0.Z() * scale[i].Z() + AliMUONConstants::DefaultChamberZ(ich-1);
+      //gMC->Gspos(QuadrantMLayerName(ich), i+1, "ALIC", posx, posy, posz, rotm[i], "ONLY");
+      GReal_t posz = pos0.Z() * scale[i].Z();
+      GetChamber(ich-1)->GetGeometry()
+        ->AddEnvelope(QuadrantMLayerName(ich), i+1, TGeoTranslation(posx, posy, posz), rotm[i]); 
 
       // Near/far layers
       Real_t  posx2 = posx + shiftXY * scale[i].X();
       Real_t  posy2 = posy + shiftXY * scale[i].Y();
       Real_t  posz2 = posz - scale[i].Z()*shiftZ;
-      gMC->Gspos(QuadrantNLayerName(ich), i+1, "ALIC", posx2, posy2, posz2, rotm[i],"ONLY");
+      //gMC->Gspos(QuadrantNLayerName(ich), i+1, "ALIC", posx2, posy2, posz2, rotm[i],"ONLY");
+      GetChamber(ich-1)->GetGeometry()
+        ->AddEnvelope(QuadrantNLayerName(ich), i+1, TGeoTranslation(posx2, posy2, posz2), rotm[i]); 
     
-      posz2 = posz + scale[i].Z()*shiftZ;
-      gMC->Gspos(QuadrantFLayerName(ich), i+1, "ALIC", posx2, posy2, posz2, rotm[i],"ONLY");
+      posz2 = posz + scale[i].Z()*shiftZ;      
+      //gMC->Gspos(QuadrantFLayerName(ich), i+1, "ALIC", posx2, posy2, posz2, rotm[i],"ONLY");
+      GetChamber(ich-1)->GetGeometry()
+        ->AddEnvelope(QuadrantFLayerName(ich), i+1, TGeoTranslation(posx2, posy2, posz2), rotm[i]); 
    }
  }     
-
-  static Int_t stations[5]={0,1,1,1,1};
-  fStations=stations;
-  AliMUONv1::CreateGeometry();
 }
 
 //______________________________________________________________________________
-void AliMUONv2::Init() 
+void AliMUONSt1GeometryBuilderV2::SetTransformations() 
 {
-   // Initialize Station 1 Tracking Chambers
- 
-   //
-   // Set the chamber (sensitive region) GEANT identifier
-    fChamberV2[0] = new TArrayI(11);             // Chamber 1 sensitive volume Id array
-    fChamberV2[1] = new TArrayI(11);             // Chamber 2 sensitive volume Id array
+// Defines the transformations for the station2 chambers.
+// ---
 
-    AddChamberGid(0,gMC->VolId("SA1G"),0);
-    AddChamberGid(0,gMC->VolId("SB1G"),1);
-    AddChamberGid(0,gMC->VolId("SC1G"),2);
-    AddChamberGid(0,gMC->VolId("SD1G"),3);
-    AddChamberGid(0,gMC->VolId("SE1G"),4);
-    AddChamberGid(0,gMC->VolId("SF1G"),5);
-    AddChamberGid(0,gMC->VolId("SG1G"),6);
-    AddChamberGid(0,gMC->VolId("SH1G"),7);
-    AddChamberGid(0,gMC->VolId("SI1G"),8);
-    AddChamberGid(0,gMC->VolId("SJ1G"),9);
-    AddChamberGid(0,gMC->VolId("SK1G"),10);
+  AliMUONChamber* iChamber1 = GetChamber(0);
+  Double_t zpos1 = - iChamber1->Z(); 
+  iChamber1->GetGeometry()
+    ->SetTranslation(TGeoTranslation(0., 0., zpos1));
 
+  AliMUONChamber* iChamber2 = GetChamber(1);
+  Double_t zpos2 = - iChamber2->Z(); 
+  iChamber2->GetGeometry()
+    ->SetTranslation(TGeoTranslation(0., 0., zpos2));
+}
+
+//______________________________________________________________________________
+void AliMUONSt1GeometryBuilderV2::SetSensitiveVolumes()
+{
+// Defines the sensitive volumes for station2 chambers.
+// ---
+
+  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SA1G");
+  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SB1G");
+  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SC1G");
+  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SD1G");
+  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SE1G");
+  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SF1G");
+  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SG1G");
+  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SH1G");
+  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SI1G");
+  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SJ1G");
+  GetChamber(0)->GetGeometry()->SetSensitiveVolume("SK1G");
     
-    AddChamberGid(1,gMC->VolId("SA2G"),0);
-    AddChamberGid(1,gMC->VolId("SB2G"),1);
-    AddChamberGid(1,gMC->VolId("SC2G"),2);
-    AddChamberGid(1,gMC->VolId("SD2G"),3);
-    AddChamberGid(1,gMC->VolId("SE2G"),4);
-    AddChamberGid(1,gMC->VolId("SF2G"),5);
-    AddChamberGid(1,gMC->VolId("SG2G"),6);
-    AddChamberGid(1,gMC->VolId("SH2G"),7);
-    AddChamberGid(1,gMC->VolId("SI2G"),8);
-    AddChamberGid(1,gMC->VolId("SJ2G"),9);
-    AddChamberGid(1,gMC->VolId("SK2G"),10);
-
-  Int_t i;
-// now do the other stations as in AliMUONv1
-   for (i=0; i<AliMUONConstants::NCh(); i++) {
-       ( (AliMUONChamber*) (*fChambers)[i])->Init();
-   }
-   
-   //
-   // Set the chamber (sensitive region) GEANT identifier
-   ((AliMUONChamber*)(*fChambers)[0])->SetGid(-1);  // joker
-   ((AliMUONChamber*)(*fChambers)[1])->SetGid(-1);  // joker
-
-   ((AliMUONChamber*)(*fChambers)[2])->SetGid(gMC->VolId("S03G"));
-   ((AliMUONChamber*)(*fChambers)[3])->SetGid(gMC->VolId("S04G"));
-
-   ((AliMUONChamber*)(*fChambers)[4])->SetGid(gMC->VolId("S05G"));
-   ((AliMUONChamber*)(*fChambers)[5])->SetGid(gMC->VolId("S06G"));
-
-   ((AliMUONChamber*)(*fChambers)[6])->SetGid(gMC->VolId("S07G"));
-   ((AliMUONChamber*)(*fChambers)[7])->SetGid(gMC->VolId("S08G"));
-
-   ((AliMUONChamber*)(*fChambers)[8])->SetGid(gMC->VolId("S09G"));
-   ((AliMUONChamber*)(*fChambers)[9])->SetGid(gMC->VolId("S10G"));
-
-   ((AliMUONChamber*)(*fChambers)[10])->SetGid(gMC->VolId("SG1A"));
-   ((AliMUONChamber*)(*fChambers)[11])->SetGid(gMC->VolId("SG2A"));
-   ((AliMUONChamber*)(*fChambers)[12])->SetGid(gMC->VolId("SG3A"));
-   ((AliMUONChamber*)(*fChambers)[13])->SetGid(gMC->VolId("SG4A"));
-
+  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SA2G");
+  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SB2G");
+  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SC2G");
+  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SD2G");
+  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SE2G");
+  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SF2G");
+  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SG2G");
+  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SH2G");
+  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SI2G");
+  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SJ2G");
+  GetChamber(1)->GetGeometry()->SetSensitiveVolume("SK2G");
 }
 

@@ -30,6 +30,7 @@
 #include "AliCallf77.h"
 #include "AliConst.h" 
 #include "AliMUONChamber.h"
+#include "AliMUONChamberGeometry.h"
 #include "AliMUONConstants.h"
 #include "AliMUONFactory.h"
 #include "AliMUONHit.h"
@@ -152,7 +153,9 @@ void AliMUONv0::Init()
 	    // trigger chambers
 	    sprintf(vName,"SG%2d",i);	 
 	}
-	((AliMUONChamber*) (*fChambers)[i])->SetGid(gMC->VolId(vName));
+	//((AliMUONChamber*) (*fChambers)[i])->SetGid(gMC->VolId(vName));
+	((AliMUONChamber*) (*fChambers)[i])
+	   ->GetGeometry()->SetSensitiveVolume(gMC->VolId(vName));
     }
 }
 
@@ -179,7 +182,8 @@ void AliMUONv0::StepManager()
   id=gMC->CurrentVolID(copy);
   
     for (Int_t i=1; i<=AliMUONConstants::NCh(); i++) {
-      if(id==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()){ 
+      //if(id==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()){ 
+      if ( ((AliMUONChamber*)(*fChambers)[i-1])->IsSensId(id) ) {
 	  vol[0]=i; 
 	  idvol=i-1;
       }
