@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/10/03 21:44:09  morsch
+  Use AliSegmentation and AliHit abstract base classes.
+
   Revision 1.2  2000/10/02 15:48:19  jbarbosa
   Fixed coding conventions.
 
@@ -36,6 +39,8 @@ void AliRICHSegmentationV0::Init(Int_t id)
   fNpy=144;
   //fNpx=80;
   //fNpy=48;
+  fPadPlane_Width=-1;
+  fPadPlane_Length=-1;
   fSector=-1;
 }
 
