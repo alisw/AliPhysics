@@ -1,0 +1,45 @@
+#ifndef ALIDEBUGVOLUME_H
+#define ALIDEBUGVOLUME_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+#include "TNamed.h"
+class AliDebugVolume : public TNamed  {
+
+public:
+  AliDebugVolume();
+  AliDebugVolume(const char *name, Int_t copy,
+		 Float_t step, Float_t x, Float_t y, Float_t z, Int_t status);
+  AliDebugVolume(const AliDebugVolume &volume) {volume.Copy(*this);}
+  virtual ~AliDebugVolume(){;}
+  
+  void  Copy(AliDebugVolume &lego) const;
+  virtual AliDebugVolume &operator=(const AliDebugVolume &volume) 
+  {volume.Copy(*this); return(*this);}
+
+  Int_t   CopyNumber() const {return fCopy;}
+  Float_t Step()       const {return fStep;}
+  Float_t X()          const {return fX;}  
+  Float_t Y()          const {return fY;}
+  Float_t Z()          const {return fZ;}
+  char*   Status()     const;
+  
+  
+  Bool_t  IsEqual(const char* name, const Int_t copy);
+private:
+   Int_t      fCopy;             //!Volume copy number
+   Float_t    fStep;             //!Stepsize to volume boundary
+   Float_t    fX;                // x
+   Float_t    fY;                // y
+   Float_t    fZ;                // z of boundary crossing
+   Int_t      fStatus;           // tracking status
+   
+  ClassDef(AliDebugVolume,1)      //Utility class to store volume information
+                                  //during debugging 
+
+};
+
+
+#endif
