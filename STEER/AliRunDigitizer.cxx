@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/11/15 09:00:11  jchudoba
+Add special treatment for TPC and TRD, they use different trees than other detectors
+
 Revision 1.8  2001/10/21 18:38:43  hristov
 Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -55,7 +58,7 @@ Manager class for merging/digitization
 // and the I/O configured (you have to specify input files 
 // and an output file). The manager connects appropriate trees from 
 // the input files according a combination returned by AliMergeCombi 
-// classcreates. It creates TreeD in the output and runs once per 
+// class. It creates TreeD in the output and runs once per 
 // event Digitize method of all existing AliDetDigitizers 
 // (without any option). AliDetDigitizers ask manager
 // for a TTree with input (manager->GetInputTreeS(Int_t i),
@@ -68,7 +71,7 @@ Manager class for merging/digitization
 // The default output is to the signal file (stream 0). This can be 
 // changed with the SetOutputFile(TString fn)  method.
 //
-// Single input file is permitted. Maximum MAXSTREAMSTOMERGE can be merged.
+// Single input file is permitted. Maximum kMaxStreamsToMerge can be merged.
 // Input from the memory (on-the-fly merging) is not yet 
 // supported, as well as access to the input data by invoking methods
 // on the output data.
@@ -123,14 +126,14 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb) : TTask("AliR
   fNinputs = nInputStreams;
   fOutputFileName = "";
   fOutputDirName = ".";
-  fCombination.Set(MAXSTREAMSTOMERGE);
-  for (i=0;i<MAXSTREAMSTOMERGE;i++) {
+  fCombination.Set(kMaxStreamsToMerge);
+  for (i=0;i<kMaxStreamsToMerge;i++) {
     fArrayTreeS[i]=fArrayTreeH[i]=fArrayTreeTPCS[i]=NULL;
     fCombination[i]=-1;
   }
   fkMASKSTEP = 10000000;
   fkMASK[0] = 0;
-  for (i=1;i<MAXSTREAMSTOMERGE;i++) {
+  for (i=1;i<kMaxStreamsToMerge;i++) {
     fkMASK[i] = fkMASK[i-1] + fkMASKSTEP;
   }
   fInputStreams = new TClonesArray("AliStream",nInputStreams);
@@ -147,11 +150,11 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb) : TTask("AliR
   fCopyTreesFromInput = -1;
   fCombi = new AliMergeCombi(nInputStreams,sperb);
   fDebug = 0;
-  if (GetDebug()>2) 
-    cerr<<"AliRunDigitizer::AliRunDigitizer() called"<<endl;
-  //PH
   fTreeD = 0;
-  for (i=0; i<MAXSTREAMSTOMERGE; i++) fInputFiles[i]=0;
+  fTreeDTPC = 0;
+  fTreeDTRD = 0;
+  
+  for (i=0; i<kMaxStreamsToMerge; i++) fInputFiles[i]=0;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -225,7 +228,7 @@ Bool_t AliRunDigitizer::ConnectInputTrees()
   TTree *tree;
   char treeName[50];
   Int_t serialNr;
-  Int_t eventNr[MAXSTREAMSTOMERGE], delta[MAXSTREAMSTOMERGE];
+  Int_t eventNr[kMaxStreamsToMerge], delta[kMaxStreamsToMerge];
   fCombi->Combination(eventNr, delta);
   for (Int_t i=0;i<fNinputs;i++) {
     if (delta[i] == 1) {
@@ -377,7 +380,7 @@ void AliRunDigitizer::FinishGlobal()
 
 
 ////////////////////////////////////////////////////////////////////////
-Int_t  AliRunDigitizer::GetNParticles(Int_t event)
+Int_t  AliRunDigitizer::GetNParticles(Int_t event) const
 {
 // return number of particles in all input files for a given
 // event (as numbered in the output file)
@@ -394,7 +397,7 @@ Int_t  AliRunDigitizer::GetNParticles(Int_t event)
 }
 
 ////////////////////////////////////////////////////////////////////////
-Int_t  AliRunDigitizer::GetNParticles(Int_t event, Int_t input)
+Int_t  AliRunDigitizer::GetNParticles(Int_t event, Int_t input) const
 {
 // return number of particles in input file input for a given
 // event (as numbered in this input file)
@@ -433,20 +436,20 @@ Int_t  AliRunDigitizer::GetNParticles(Int_t event, Int_t input)
 }
 
 ////////////////////////////////////////////////////////////////////////
-Int_t* AliRunDigitizer::GetInputEventNumbers(Int_t event)
+Int_t* AliRunDigitizer::GetInputEventNumbers(Int_t event) const
 {
 // return pointer to an int array with input event numbers which were
 // merged in the output event event
 
 // simplified for now, implement later
-  Int_t * a = new Int_t[MAXSTREAMSTOMERGE];
+  Int_t * a = new Int_t[kMaxStreamsToMerge];
   for (Int_t i = 0; i < fNinputs; i++) {
     a[i] = event;
   }
   return a;
 }
 ////////////////////////////////////////////////////////////////////////
-Int_t AliRunDigitizer::GetInputEventNumber(Int_t event, Int_t input)
+Int_t AliRunDigitizer::GetInputEventNumber(Int_t event, Int_t input) const
 {
 // return an event number of an eventInput from input file input
 // which was merged to create output event event
@@ -455,7 +458,7 @@ Int_t AliRunDigitizer::GetInputEventNumber(Int_t event, Int_t input)
   return event;
 }
 ////////////////////////////////////////////////////////////////////////
-TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t event)
+TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t event) const
 {
 // return pointer to particle with index i (index with mask)
 
@@ -465,7 +468,7 @@ TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t event)
 }
 
 ////////////////////////////////////////////////////////////////////////
-TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t input, Int_t event)
+TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t input, Int_t event) const
 {
 // return pointer to particle with index i in the input file input
 // (index without mask)
