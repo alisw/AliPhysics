@@ -1,13 +1,13 @@
 // 0 = all
-// 1 = pion
-// 2 = kaon
-// 3 = proton
-// 4 = muon
-// 5 = electron
-// 6 = neutron
+// 1 = not pion
+// 2 = not kaon
+// 3 = not proton
+// 4 = not muon
+// 5 = not electron
+// 6 = not neutron
 
 
-Int_t particle_type=0;
+Int_t particle_type=5;
 
 #include "iostream.h"
 
