@@ -11,18 +11,19 @@
 #ifndef ALI_MP_MOTIF_SPECIAL_H
 #define ALI_MP_MOTIF_SPECIAL_H
 
-#include <TObject.h>
-#include <TString.h>
 #include <TVector2.h>
 
 #include "AliMpMotifTypes.h"
 #include "AliMpVMotif.h"
+
+class TString;
 
 class AliMpMotifSpecial : public AliMpVMotif
 {
  public:
   AliMpMotifSpecial(const TString &id, AliMpMotifType *motifType);
   AliMpMotifSpecial();
+  virtual ~AliMpMotifSpecial();
 
   // Access methods
   virtual TVector2 GetPadDimensions(const AliMpIntPair& localIndices) const;

@@ -19,11 +19,14 @@ class AliMpRowPainter : public AliMpVPainter
  public:
   AliMpRowPainter();
   AliMpRowPainter(AliMpRow *row);
-  virtual void DumpObject(); //*MENU*
+  virtual ~AliMpRowPainter();
+  
+  virtual void DumpObject(); //-MENU-
   virtual void Draw(Option_t *option);
   virtual void Paint(Option_t *option);
   virtual TVector2 GetPosition() const;
   virtual TVector2 GetDimensions() const;
+
  private: 
   AliMpRow *fRow;             // the row to paint
   ClassDef(AliMpRowPainter,1) // Row painter

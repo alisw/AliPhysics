@@ -40,6 +40,12 @@ AliMpVMotif::AliMpVMotif(const TString &id, AliMpMotifType *motifType):
 }
 
 //_____________________________________________________________________________
+AliMpVMotif::~AliMpVMotif()
+{
+  // destructor
+}
+
+//_____________________________________________________________________________
 AliMpConnection* 
 AliMpVMotif::FindConnectionByLocalPos(const TVector2& localPos) const
 {

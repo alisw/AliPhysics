@@ -17,14 +17,13 @@
 
 #include "AliMpSectorTypes.h"
 #include "AliMpVSegmentation.h"
-#include "AliMpIntPair.h"
-#include "AliMpPadPair.h"
 #include "AliMpPad.h"
-#include "AliMpArea.h"
 
 class AliMpSector;
 class AliMpMotifPosition;
 class AliMpVPadIterator;
+class AliMpIntPair;
+class AliMpArea;
 
 class AliMpSectorSegmentation : public AliMpVSegmentation
 {

@@ -19,15 +19,17 @@ class AliMpSubZonePainter : public AliMpVPainter
  public:
   AliMpSubZonePainter();
   AliMpSubZonePainter(AliMpSubZone *subZone);
-  virtual void DumpObject(); //*MENU*
+  virtual ~AliMpSubZonePainter();
+  
+  virtual void DumpObject(); //-MENU-
   virtual void Draw(Option_t *option);
   virtual void Paint(Option_t *option);
   // get/set methods
   virtual TVector2 GetPosition() const;
   virtual TVector2 GetDimensions() const;
   virtual Int_t DistancetoPrimitive(Int_t x, Int_t y);
- private: 
 
+ private: 
   AliMpSubZone *fSubZone;         // the subzone to draw
   ClassDef(AliMpSubZonePainter,1) // SubZone painter
 };

@@ -19,6 +19,8 @@ class AliMpMotifPainter : public AliMpVPainter
  public:
   AliMpMotifPainter();
   AliMpMotifPainter(AliMpMotifPosition *motifPos);
+  virtual ~AliMpMotifPainter();
+  
   virtual void DumpObject(); //-MENU-
   virtual void Paint(Option_t *option);
   virtual TVector2 GetPosition() const;

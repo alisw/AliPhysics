@@ -7,7 +7,8 @@
 //
 // Authors: David Guez, IPN Orsay
 
-#include <Riostream.h>
+#include <TVirtualX.h>
+#include <TPad.h>
  
 #include "AliMpMotifPainter.h"
 #include "AliMpGraphContext.h"
@@ -32,6 +33,11 @@ AliMpMotifPainter::AliMpMotifPainter(AliMpMotifPosition *motifPos)
 {
   // normal constructor 
 
+}
+//_______________________________________________________________________
+AliMpMotifPainter::~AliMpMotifPainter()
+{
+  // default dummy constructor
 }
 //_______________________________________________________________________
 void AliMpMotifPainter::DumpObject()

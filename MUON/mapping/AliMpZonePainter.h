@@ -7,8 +7,8 @@
 //
 // Authors: David Guez, IPN Orsay
 
-#ifndef M_ZONE_PAINTER_H
-#define M_ZONE_PAINTER_H
+#ifndef ALI_MP_ZONE_PAINTER_H
+#define ALI_MP_ZONE_PAINTER_H
 
 #include "AliMpVPainter.h"
 
@@ -19,6 +19,8 @@ class AliMpZonePainter : public AliMpVPainter
  public:
   AliMpZonePainter();
   AliMpZonePainter(AliMpZone *zone);
+  virtual ~AliMpZonePainter();
+  
   virtual void DumpObject(); //*MENU*
   virtual void Draw(Option_t *option);
   virtual void Paint(Option_t *option);
@@ -31,4 +33,4 @@ class AliMpZonePainter : public AliMpVPainter
   AliMpZone *fZone;            // the zone to draw
   ClassDef(AliMpZonePainter,1) // Zone painter
 };
-#endif //M_ZONE_PAINTER_H
+#endif //ALI_MP_ZONE_PAINTER_H

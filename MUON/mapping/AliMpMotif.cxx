@@ -33,6 +33,12 @@ AliMpMotif::AliMpMotif(const TString &id, AliMpMotifType *motifType,
   // multiplying the total dimension by the number of pads
 
 }
+//_____________________________________________________________________________
+AliMpMotif::~AliMpMotif()
+{
+  // destructor
+}
+
 
 //_____________________________________________________________________________
 TVector2 AliMpMotif::GetPadDimensions(const AliMpIntPair& localIndices) const

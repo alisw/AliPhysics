@@ -7,6 +7,9 @@
 //
 // Authors: David Guez, IPN Orsay
  
+#include <TVirtualX.h>
+#include <TPad.h>
+
 #include "AliMpRowSegmentPainter.h"
 #include "AliMpGraphContext.h"
 #include "AliMpVRowSegment.h"
@@ -30,6 +33,11 @@ AliMpRowSegmentPainter::AliMpRowSegmentPainter(AliMpVRowSegment *row)
 {
   // normal constructor 
 
+}
+//_______________________________________________________________________
+AliMpRowSegmentPainter::~AliMpRowSegmentPainter()
+{
+  // destructor
 }
 //_______________________________________________________________________
 TVector2 AliMpRowSegmentPainter::GetPosition() const
@@ -97,7 +105,7 @@ void AliMpRowSegmentPainter::Draw(Option_t *option)
 
 
 //_______________________________________________________________________
-void AliMpRowSegmentPainter::Paint(Option_t *option)
+void AliMpRowSegmentPainter::Paint(Option_t* /*option*/)
 {
 // Paint the object
   AliMpGraphContext *gr = AliMpGraphContext::Instance();

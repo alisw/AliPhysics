@@ -7,6 +7,9 @@
 //
 // Authors: David Guez, IPN Orsay
   
+#include <TVirtualX.h>
+#include <TPad.h>
+ 
 #include "AliMpRowPainter.h"
 #include "AliMpGraphContext.h"
 #include "AliMpRow.h"
@@ -28,6 +31,12 @@ AliMpRowPainter::AliMpRowPainter(AliMpRow *row)
    fRow(row)
 {
   // normal constructor 
+}
+
+//_______________________________________________________________________
+AliMpRowPainter::~AliMpRowPainter()
+{
+  // destructor
 }
 
 //_______________________________________________________________________

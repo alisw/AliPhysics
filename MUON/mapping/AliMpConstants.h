@@ -11,7 +11,8 @@
 #define ALI_MP_CONSTANTS_H
 
 #include <TObject.h>
-#include <TVector2.h>
+
+class TVector2;
 
 class AliMpConstants : public TObject
 {

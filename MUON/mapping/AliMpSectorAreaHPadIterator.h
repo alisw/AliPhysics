@@ -11,8 +11,6 @@
 #ifndef ALI_MP_SECTOR_AREA_H_PAD_ITERATOR_H
 #define ALI_MP_SECTOR_AREA_H_PAD_ITERATOR_H
 
-#include <TObject.h>
-
 #include "AliMpVPadIterator.h"
 #include "AliMpArea.h"
 #include "AliMpPad.h"

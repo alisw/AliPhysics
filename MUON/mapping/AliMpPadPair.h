@@ -33,7 +33,7 @@ class AliMpPadPair : public TObject
 
   private:
     // data members
-    PadPair  fPair;
+    PadPair  fPair;  // pad pair
     
   ClassDef(AliMpPadPair,1) //utility class for the motif type
 };

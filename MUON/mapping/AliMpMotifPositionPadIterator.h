@@ -11,7 +11,6 @@
 #define ALI_MP_MOTIF_POSITION_PAD_ITERATOR_H
 
 #include "AliMpVPadIterator.h"
-#include "AliMpIntPair.h"
 #include "AliMpMotifTypePadIterator.h"
 
 class AliMpMotifPosition;

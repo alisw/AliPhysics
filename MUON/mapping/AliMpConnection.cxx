@@ -7,6 +7,8 @@
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
+#include <TError.h>
+
 #include "AliMpConnection.h"
 
 ClassImp(AliMpConnection)
@@ -25,6 +27,13 @@ AliMpConnection::AliMpConnection(Int_t padNum, Int_t bergNum,Int_t kaptonNum,
 }
 
 //_____________________________________________________________________________
+AliMpConnection::AliMpConnection(const AliMpConnection& right) 
+  : TObject(right) {
+// 
+  Fatal("AliMpConnection", "Copy constructor not provided.");
+}
+
+//_____________________________________________________________________________
 AliMpConnection::AliMpConnection() 
   : TObject(),
     fPadNum(-1),
@@ -40,3 +49,18 @@ AliMpConnection::AliMpConnection()
 AliMpConnection::~AliMpConnection() {
 //  
 }
+
+// operators
+
+//_____________________________________________________________________________
+AliMpConnection& 
+AliMpConnection::operator=(const AliMpConnection& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
+

@@ -2,6 +2,9 @@
 //
 // Authors: David Guez, IPN Orsay
   
+#include <TVirtualX.h>
+#include <TPad.h>
+
 #include "AliMpSectorPainter.h"
 #include "AliMpGraphContext.h"
 #include "AliMpSector.h"
@@ -9,12 +12,11 @@
 #include "AliMpSubZone.h"
 #include "AliMpRow.h"
 #include "AliMpVRowSegment.h"
-//#include "AliMpZonePainter.h"
 
 ClassImp(AliMpSectorPainter)
 
 //_______________________________________________________________________
-  AliMpSectorPainter::AliMpSectorPainter()
+AliMpSectorPainter::AliMpSectorPainter()
   :AliMpVPainter(),
    fSector(0)
 {
@@ -27,6 +29,11 @@ AliMpSectorPainter::AliMpSectorPainter(AliMpSector *sector)
 {
   // normal constructor 
 
+}
+//_______________________________________________________________________
+AliMpSectorPainter::~AliMpSectorPainter()
+{
+  // destructor
 }
 //_______________________________________________________________________
 void AliMpSectorPainter::DumpObject()
@@ -164,7 +171,7 @@ void AliMpSectorPainter::Draw(Option_t *option)
 
 
 //_______________________________________________________________________
-void AliMpSectorPainter::Paint(Option_t *option)
+void AliMpSectorPainter::Paint(Option_t* /*option*/)
 {
 // Paint the object
   AliMpGraphContext *gr = AliMpGraphContext::Instance();

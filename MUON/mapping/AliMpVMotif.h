@@ -24,6 +24,7 @@ class AliMpVMotif : public TObject
  public:
   AliMpVMotif(const TString &id, AliMpMotifType *motifType);
   AliMpVMotif();
+  virtual ~AliMpVMotif();
 
   // Access methods
   AliMpMotifType  *GetMotifType() const;

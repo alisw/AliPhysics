@@ -16,7 +16,7 @@
 
 #include <TObject.h>
 
-#include "AliMpVPadIterator.h"
+class AliMpVPadIterator;
 
 class AliMpPadIteratorPtr : public TObject
 {
@@ -28,12 +28,15 @@ class AliMpPadIteratorPtr : public TObject
     AliMpVPadIterator* operator->() { return  fIterator; }
     AliMpVPadIterator& operator*()  { return *fIterator; }
 
-  private:   
-    // disallow copy and assignment to avoid
-    // multiple deletion of fIterator
+  protected:
     AliMpPadIteratorPtr(const AliMpPadIteratorPtr& right);
+
+    // operators
     AliMpPadIteratorPtr& operator=(const AliMpPadIteratorPtr& right);
-     
+        // copy and assignment are disallowed to avoid
+        // multiple deletion of fIterator
+    
+  private:   
     // data members
     AliMpVPadIterator*  fIterator; //The pad iterator
      

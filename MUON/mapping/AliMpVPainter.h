@@ -11,11 +11,9 @@
 #define ALI_MP_V_PAINTER_H
 
 #include <TObject.h>
-#include <TClass.h>
 #include <TVector2.h>
-#include <TVirtualX.h>
-#include <TPad.h>
-#include <TList.h>
+
+class TList;
 
 class AliMpVPainter : public TObject
 {

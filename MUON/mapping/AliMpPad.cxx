@@ -144,7 +144,7 @@ return left.GetIndices()<right.GetIndices();
 }
 
 //_____________________________________________________________________________
-void AliMpPad::Print() const
+void AliMpPad::Print(const char* /*option*/) const
 {
 // Prints all pad data.
 // ---

@@ -9,6 +9,8 @@
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
+#include <TError.h>
+
 #include "AliMpSectorPosition.h"
 
 ClassImp(AliMpSectorPosition)
@@ -26,6 +28,13 @@ AliMpSectorPosition::AliMpSectorPosition(const AliMpSector* sector,
 }
 
 //_____________________________________________________________________________
+AliMpSectorPosition::AliMpSectorPosition(const AliMpSectorPosition& right) 
+  : TObject(right) {
+// 
+  Fatal("AliMpSectorPosition", "Copy constructor not provided.");
+}
+
+//_____________________________________________________________________________
 AliMpSectorPosition::AliMpSectorPosition() 
   : TObject(),
     fkSector(),
@@ -39,3 +48,18 @@ AliMpSectorPosition::AliMpSectorPosition()
 AliMpSectorPosition::~AliMpSectorPosition() {
 // 
 }
+
+// operators
+
+//_____________________________________________________________________________
+AliMpSectorPosition& 
+AliMpSectorPosition::operator=(const AliMpSectorPosition& right)
+{
+  // check assignement to self
+  if (this == &right) return *this;
+
+  Fatal("operator =", "Assignement operator not provided.");
+    
+  return *this;  
+}    
+

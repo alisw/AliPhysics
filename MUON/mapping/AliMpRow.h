@@ -10,7 +10,6 @@
 #ifndef ALI_MP_ROW_H
 #define ALI_MP_ROW_H
 
-#include <TString.h>
 #include <TVector2.h>
 
 #include "AliMpSectorTypes.h"

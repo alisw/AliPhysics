@@ -9,6 +9,7 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpTransformPadIterator.h"
+#include "AliMpTransformer.h"
 
 ClassImp(AliMpTransformPadIterator)
 

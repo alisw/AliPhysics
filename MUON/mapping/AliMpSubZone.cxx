@@ -48,7 +48,7 @@ void AliMpSubZone::AddRowSegment(AliMpVRowSegment* rowSegment)
 
 
 //_____________________________________________________________________________
-void AliMpSubZone::Print() const
+void AliMpSubZone::Print(const char* /*option*/) const
 {
 // Prints motif position Ids for all row segments.
 // --

@@ -16,6 +16,7 @@
 #include "AliMpSectorSegmentation.h"
 #include "AliMpSector.h"
 #include "AliMpZone.h"
+#include "AliMpSubZone.h"
 #include "AliMpRow.h"
 #include "AliMpVRowSegment.h"
 #include "AliMpMotifMap.h"
@@ -25,6 +26,8 @@
 #include "AliMpNeighboursPadIterator.h"
 #include "AliMpSectorAreaHPadIterator.h"
 #include "AliMpSectorAreaVPadIterator.h"
+#include "AliMpIntPair.h"
+#include "AliMpArea.h"
 #include "AliMpConstants.h"
 
 ClassImp(AliMpSectorSegmentation)
@@ -440,7 +443,7 @@ Int_t AliMpSectorSegmentation::Zone(const AliMpPad& pad, Bool_t warning) const
     return 0;
   }  
 
-  PadDimensionsMap::const_iterator it;
+  PadDimensionsMapCIterator it;
   for (it = fPadDimensionsMap.begin(); it != fPadDimensionsMap.end(); ++it) {
     if (AliMpConstants::IsEqual(it->second, pad.Dimensions()))
       return it->first;
@@ -458,7 +461,7 @@ AliMpSectorSegmentation::PadDimensions(Int_t zone, Bool_t warning) const
 // Returns the pad dimensions for the zone with the specified zone index.
 // ---
 
-  PadDimensionsMap::const_iterator it = fPadDimensionsMap.find(zone);
+  PadDimensionsMapCIterator it = fPadDimensionsMap.find(zone);
   if (it != fPadDimensionsMap.end()) return it->second;
 
   if (warning) Warning("PadDimensions(zone)", "not found");

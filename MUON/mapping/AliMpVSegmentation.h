@@ -14,14 +14,15 @@
 #define ALI_MP_V_SEGMENTATION_H
 
 #include <TObject.h>
-#include <TVector2.h>
 
-#include "AliMpIntPair.h"
 #include "AliMpPadPair.h"
 #include "AliMpPad.h"
-#include "AliMpArea.h"
+
+class TVector2;
 
 class AliMpVPadIterator;
+class AliMpIntPair;
+class AliMpArea;
 
 class AliMpVSegmentation : public TObject
 {

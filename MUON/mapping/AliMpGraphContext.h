@@ -8,8 +8,8 @@
 //
 // Author: David GUEZ, IPN Orsay
 
-#ifndef ALI_MP_GRAPH_CONTEXT
-#define ALI_MP_GRAPH_CONTEXT
+#ifndef ALI_MP_GRAPH_CONTEXT_H
+#define ALI_MP_GRAPH_CONTEXT_H
 
 #include <TObject.h>
 #include <TVector2.h>
@@ -18,7 +18,8 @@
 
 class MPainter;
 
-class AliMpGraphContext : public TObject{
+class AliMpGraphContext : public TObject
+{
  public:
   void Push() const;
   void Pop();
@@ -66,6 +67,6 @@ class AliMpGraphContext : public TObject{
   ClassDef(AliMpGraphContext,1) // Correspondance pad area/real world
 };
 
-#endif //ALI_MP_GRAPH_CONTEXT
+#endif //ALI_MP_GRAPH_CONTEXT_H
 
 

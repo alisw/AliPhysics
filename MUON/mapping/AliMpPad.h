@@ -31,7 +31,7 @@ class AliMpPad : public TObject
   AliMpPad& operator = (const AliMpPad& src) ;
   
   // methods
-  void Print() const;
+  virtual void Print(const char* /*option*/ = "") const;
 
   // static get methods
   static AliMpPad Invalid() {return AliMpPad();}
@@ -45,7 +45,7 @@ class AliMpPad : public TObject
 
  private:
   // unused derived functions
-  virtual void Print(const char* option) const {}
+  // virtual void Print(const char* /*option*/) const;
 
   // data members
   AliMpIntPair  fLocation;  //pad location

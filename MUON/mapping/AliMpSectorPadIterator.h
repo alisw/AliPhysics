@@ -7,11 +7,10 @@
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#ifndef M_SECTOR_PAD_ITERATOR_H
-#define M_SECTOR_PAD_ITERATOR_H
+#ifndef ALI_MP_SECTOR_PAD_ITERATOR_H
+#define ALI_MP_SECTOR_PAD_ITERATOR_H
 
-#include <TObject.h>
-
+#include "AliMpVPadIterator.h"
 #include "AliMpMotifPositionPadIterator.h"
 
 class AliMpSector;
@@ -52,4 +51,4 @@ class AliMpSectorPadIterator : public AliMpVPadIterator
  ClassDef(AliMpSectorPadIterator,1) // iterator over motif's pads
 };
 
-#endif // M_SECTOR_PAD_ITERATOR_H
+#endif // ALI_MP_SECTOR_PAD_ITERATOR_H

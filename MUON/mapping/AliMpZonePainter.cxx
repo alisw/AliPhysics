@@ -7,12 +7,14 @@
 //
 // Authors: David Guez, IPN Orsay
  
+#include <TVirtualX.h>
+#include <TPad.h>
+
 #include "AliMpZonePainter.h"
 #include "AliMpGraphContext.h"
 #include "AliMpZone.h"
 #include "AliMpSubZone.h"
 #include "AliMpVRowSegment.h"
-//#include "AliMpSubZonePainter.h"
 
 ClassImp(AliMpZonePainter)
 
@@ -30,6 +32,13 @@ AliMpZonePainter::AliMpZonePainter(AliMpZone *zone)
     fZone(zone)
 {
   // normal constructor 
+
+}
+
+//_______________________________________________________________________
+AliMpZonePainter::~AliMpZonePainter()
+{
+  // destructor 
 
 }
 

@@ -24,9 +24,9 @@
 
 #include "AliMpPlaneTypes.h"
 #include "AliMpVSegmentation.h"
+#include "AliMpTransformer.h"
 #include "AliMpIntPair.h"
 #include "AliMpPad.h"
-#include "AliMpTransformer.h"
 
 class AliMpPlane;
 class AliMpSectorSegmentation;

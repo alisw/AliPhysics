@@ -8,6 +8,9 @@
 // Authors: David Guez, IPN Orsay
   
 #include <TROOT.h>
+#include <TList.h>
+#include <TVirtualX.h>
+#include <TPad.h>
 
 #include "AliMpVPainter.h"
 #include "AliMpGraphContext.h"

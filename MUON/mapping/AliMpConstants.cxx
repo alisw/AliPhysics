@@ -8,6 +8,7 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <TMath.h>
+#include <TVector2.h>
 
 #include "AliMpConstants.h"
 

@@ -10,16 +10,12 @@
 #ifndef ALI_MP_NEIGHBOURS_PAD_ITERATOR_H
 #define ALI_MP_NEIGHBOURS_PAD_ITERATOR_H
 
-#include <TObject.h>
-#include <TVector2.h>
-
 #include "AliMpSectorTypes.h"
 #include "AliMpVPadIterator.h"
-#include "AliMpMotifTypePadIterator.h"
-#include "AliMpIntPair.h"
 #include "AliMpPad.h"
 
 class AliMpSectorSegmentation;
+class AliMpIntPair;
 
 class AliMpNeighboursPadIterator : public AliMpVPadIterator
 {
@@ -44,7 +40,7 @@ class AliMpNeighboursPadIterator : public AliMpVPadIterator
 
   private:
     // static members
-    static const UInt_t   fgkInvalidIndex;
+    static const UInt_t   fgkInvalidIndex; // invalid index number
 
     // private methods
     Bool_t    IsNeighbours(const AliMpPad& pad) const;

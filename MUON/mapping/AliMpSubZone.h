@@ -27,7 +27,7 @@ class AliMpSubZone : public TObject
   
     // methods
     void AddRowSegment(AliMpVRowSegment* rowSegment);
-    void Print() const;
+    virtual void Print(const char* /*option*/ = 0) const;
 
     // access methods
     Int_t              GetNofRowSegments() const;
@@ -35,12 +35,9 @@ class AliMpSubZone : public TObject
     AliMpVMotif*       GetMotif() const;
 
   private:
-    // unused derrived functions
-    virtual void Print(const char* option) const {}
-
     // data members
-    AliMpVMotif*  fMotif;
-    RowSegmentVector fSegments;
+    AliMpVMotif*     fMotif;   // the motif in this subzone
+    RowSegmentVector fSegments;// contained row segments
     
   ClassDef(AliMpSubZone,1)  //Zone segment
 };

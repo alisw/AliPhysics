@@ -12,11 +12,11 @@
 #define ALI_MP_ZONE_H
 
 #include <TObject.h>
-#include <TString.h>
 #include <TVector2.h>
 
 #include "AliMpSectorTypes.h"
-#include "AliMpSubZone.h"
+
+class AliMpSubZone;
 
 class AliMpZone : public TObject
 {

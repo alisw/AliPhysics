@@ -7,6 +7,9 @@
 //
 // Authors: David Guez, IPN Orsay
   
+#include <TVirtualX.h>
+#include <TPad.h>
+
 #include "AliMpSubZonePainter.h"
 #include "AliMpGraphContext.h"
 #include "AliMpSubZone.h"
@@ -29,6 +32,11 @@ AliMpSubZonePainter::AliMpSubZonePainter(AliMpSubZone *subZone)
 {
   // normal constructor 
 
+}
+//_______________________________________________________________________
+AliMpSubZonePainter::~AliMpSubZonePainter()
+{
+  // destructor
 }
 //_______________________________________________________________________
 Int_t AliMpSubZonePainter::DistancetoPrimitive(Int_t x, Int_t y)

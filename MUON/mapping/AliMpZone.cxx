@@ -9,6 +9,7 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpZone.h"
+#include "AliMpSubZone.h"
 
 ClassImp(AliMpZone)
 

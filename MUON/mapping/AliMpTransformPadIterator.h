@@ -12,8 +12,9 @@
 #define ALI_MP_TRANSFORM_PAD_ITERATOR_H
 
 #include "AliMpVPadIterator.h"
-#include "AliMpTransformer.h"
 #include "AliMpPad.h"
+
+class AliMpTransformer;
 
 class AliMpTransformPadIterator : public AliMpVPadIterator
 {

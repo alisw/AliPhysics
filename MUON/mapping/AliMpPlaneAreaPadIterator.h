@@ -11,8 +11,6 @@
 #ifndef ALI_MP_PLANE_AREA_PAD_ITERATOR_H
 #define ALI_MP_PLANE_AREA_PAD_ITERATOR_H
 
-#include <TObject.h>
-
 #include "AliMpPlaneTypes.h"
 #include "AliMpVPadIterator.h"
 #include "AliMpTransformPadIterator.h"

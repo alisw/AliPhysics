@@ -8,6 +8,8 @@
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
+#include <TString.h>
+
 #include "AliMpMotifSpecial.h"
 #include "AliMpMotifType.h"
 #include "AliMpIntPair.h"
@@ -25,8 +27,8 @@ Int_t AliMpMotifSpecial::VectorIndex(const AliMpIntPair& indices) const
 }
 
 
-
 //public methods
+
 //______________________________________________________________________________
 AliMpMotifSpecial::AliMpMotifSpecial():
   AliMpVMotif(),
@@ -49,6 +51,13 @@ AliMpMotifSpecial::AliMpMotifSpecial(const TString &id,
 
   fPadDimensionsVector.resize(motifType->GetNofPadsX()*motifType->GetNofPadsY());
 }
+
+//______________________________________________________________________________
+AliMpMotifSpecial::~AliMpMotifSpecial()
+{
+  //destructor
+}
+
 
 //______________________________________________________________________________
 TVector2 

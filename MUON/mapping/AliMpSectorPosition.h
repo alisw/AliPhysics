@@ -32,6 +32,12 @@ class AliMpSectorPosition : public TObject
     TVector2       GetOffset() const;
     AliMpIntPair   GetScale() const;
 
+  protected:
+    AliMpSectorPosition(const AliMpSectorPosition& right);
+
+    // operators
+    AliMpSectorPosition& operator=(const AliMpSectorPosition& right);
+    
   private:
     // data members
     const AliMpSector* fkSector; // sector

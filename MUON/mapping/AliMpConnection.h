@@ -11,6 +11,7 @@
 #define ALI_MP_CONNECTION_H
 
 #include <TObject.h>
+#include <TString.h>
 
 #include "AliMpMotifType.h"
 #include "AliMpIntPair.h"
@@ -36,6 +37,12 @@ class AliMpConnection : public TObject
     // modifiers
     void SetOwner(AliMpMotifType *owner) {fOwner=owner;}
 
+  protected:
+    AliMpConnection(const AliMpConnection& right);
+
+    // operators
+    AliMpConnection& operator=(const AliMpConnection& right);
+    
   private:
     // data members
     Int_t fPadNum;    // Pad number
