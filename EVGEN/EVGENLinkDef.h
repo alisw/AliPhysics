@@ -12,7 +12,6 @@
 #pragma link C++ enum   Decay_t;
 #pragma link C++ enum   StrucFunc_t;
 #pragma link C++ enum   Weighting_t;
-
 #pragma link C++ class  AliGenHIJINGpara+;
 #pragma link C++ class  AliGenFixed+;
 #pragma link C++ class  AliGenBox+;
@@ -34,6 +33,7 @@
 #pragma link C++ class  AliGenGSIlib+;
 #pragma link C++ class  AliGenPMDlib+;
 #pragma link C++ class  AliGenHijingEventHeader+;
+#pragma link C++ class  AliGenPythiaEventHeader+;
 #pragma link C++ class  AliGenHijing+;
 #pragma link C++ class  AliDecayer+;
 #pragma link C++ class  AliDecayerPythia+;
