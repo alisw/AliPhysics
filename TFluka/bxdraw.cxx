@@ -14,7 +14,6 @@ void bxdraw(Int_t& icode, Int_t& mreg, Int_t& newreg,
     TFluka* fluka = (TFluka*) gMC;
     
     fluka->SetIcode(icode);
-    fluka->SetMreg(mreg);
     fluka->SetNewreg(newreg);
     fluka->SetXsco(xsco);
     fluka->SetYsco(ysco);
@@ -22,15 +21,20 @@ void bxdraw(Int_t& icode, Int_t& mreg, Int_t& newreg,
 //
 // Double step for boundary crossing
 //
+    printf("bxdraw (ex) \n");
     fluka->SetTrackIsExiting();
     fluka->SetCaller(12);
+    fluka->SetMreg(mreg);
     (TVirtualMCApplication::Instance())->Stepping(); 
     fluka->SetCaller(11);
     fluka->SetTrackIsEntering();
+    printf("bxdraw (en) \n");
+    fluka->SetMreg(newreg);
     (TVirtualMCApplication::Instance())->Stepping();
-    fluka->SetCaller(1);
-    fluka->SetTrackIsInside();
-    (TVirtualMCApplication::Instance())->Stepping();
+//    fluka->SetCaller(1);
+//    fluka->SetTrackIsInside();
+//    printf("bxdraw (st) \n");
+//    (TVirtualMCApplication::Instance())->Stepping();
 } // end of bxdraw
 } // end of extern "C"
 
