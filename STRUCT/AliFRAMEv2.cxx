@@ -894,9 +894,7 @@ void AliFRAMEv2::CreateGeometry()
       ptrd1[2] = 375.5;
       ptrd1[3] = 14.5;
       gMC->Gsvolu("BTO1", "TRD1", kAir, ptrd1, 4);
-      ptrd1[2] = 156.75;
       gMC->Gsvolu("BTO2", "TRD1", kAir, ptrd1, 4);
-      ptrd1[2] =  79.75;
       gMC->Gsvolu("BTO3", "TRD1", kAir, ptrd1, 4);  
       
 
@@ -907,10 +905,9 @@ void AliFRAMEv2::CreateGeometry()
       gMC->Gspos("BTR3", 2, "B075", 0.,  295.75, -10.8,            0, "ONLY");
 
       gMC->Gspos("BTO1", 1, "B071", 0.,    0.00, 42.69,            0, "ONLY");
-      gMC->Gspos("BTO2", 1, "B074", 0., -218.75, 42.69, idrotm[2070], "ONLY");
-      gMC->Gspos("BTO2", 2, "B074", 0.,  218.75, 42.69,            0, "ONLY");
-      gMC->Gspos("BTO3", 1, "B075", 0., -295.75, 42.69, idrotm[2070], "ONLY");
-      gMC->Gspos("BTO3", 2, "B075", 0.,  295.75, 42.69,            0, "ONLY");
+      gMC->Gspos("BTO2", 1, "B071", 0.,    0.00, 42.69,            0, "ONLY");
+      gMC->Gspos("BTO3", 1, "B071", 0.,    0.00, 42.69,            0, "ONLY");
+
   }
   
 //
