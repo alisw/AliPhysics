@@ -117,6 +117,8 @@ public:
    {fZDCNEnergy=nEnergy; fZDCPEnergy=pEnergy; fZDCEMEnergy=emEnergy;
     fZDCParticipants=participants;}
 
+  void  Reset();
+
   void  Print(Option_t *option="") const;
    
 protected:

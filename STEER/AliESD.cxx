@@ -67,6 +67,32 @@ AliESD::~AliESD()
   fCascades.Delete();
 }
 
+//______________________________________________________________________________
+void AliESD::Reset()
+{
+  fEventNumber=0;
+  fRunNumber=0;
+  fTrigger=0;
+  fRecoVersion=0;
+  fMagneticField=0;
+  fZDCNEnergy=0;
+  fZDCPEnergy=0;
+  fZDCEMEnergy=0;
+  fZDCParticipants=0;
+  fT0zVertex=0;
+  fPrimaryVertex.Reset();
+  fTracks.Clear();
+  fHLTConfMapTracks.Clear();
+  fHLTHoughTracks.Clear();
+  fMuonTracks.Clear();
+  fPmdTracks.Clear();
+  fV0s.Clear();
+  fCascades.Clear();
+  fPHOSParticles=0; 
+  fEMCALParticles=0; 
+  fFirstPHOSParticle=-1; 
+  fFirstEMCALParticle=-1;
+}
 
 //______________________________________________________________________________
 void AliESD::Print(Option_t *) const 

@@ -72,7 +72,9 @@ class AliESDVertex : public TNamed {
   void SetTruePos(Double_t *tp){for(Int_t i=0;i<3;i++)fTruePos[i]=tp[i];}
   void GetTruePos(Double_t &x,Double_t &y,Double_t &z) const 
        {x=fTruePos[0]; y=fTruePos[1]; z=fTruePos[2];}
-        
+
+  void Reset() { SetToZero(); SetName("Vertex"); }
+
  protected:
 
   Double_t fPosition[3];  // vertex position
