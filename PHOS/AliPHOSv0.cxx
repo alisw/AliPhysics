@@ -98,6 +98,7 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   else
    cout << "AliPHOSv0 : PHOS geometry initialization failed !" << endl ;   
 }
+
 //____________________________________________________________________________
 AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
   AliPHOS(name,title)
@@ -147,13 +148,13 @@ AliPHOSv0::~AliPHOSv0()
   delete fTmpHits ;
   fTmpHits = 0 ; 
 
-  fEmcClusters->Delete() ; 
-  delete fEmcClusters ; 
-  fEmcClusters = 0 ; 
+  fEmcRecPoints->Delete() ; 
+  delete fEmcRecPoints ; 
+  fEmcRecPoints = 0 ; 
 
-  fPpsdClusters->Delete() ;
-  delete fPpsdClusters ;
-  fPpsdClusters = 0 ; 
+  fPpsdRecPoints->Delete() ;
+  delete fPpsdRecPoints ;
+  fPpsdRecPoints = 0 ; 
 
   fTrackSegments->Delete() ; 
   delete fTrackSegments ;
@@ -1254,6 +1255,32 @@ void AliPHOSv0::MakeBranch(Option_t* opt)
   }
 }
 
+//____________________________________________________________________________
+RecPointsList * AliPHOSv0::PpsdRecPoints(Int_t evt) 
+{
+  // returns the pointer to the PPSD RecPoints list
+  // if the list is empty, get it from TreeR on the disk file
+
+  RecPointsList * rv = 0 ; 
+
+  if ( fPpsdRecPoints ) 
+    rv = fPpsdRecPoints ; 
+
+  else {
+    fPpsdRecPoints = new TClonesArray("AliPHOSPpsdRecPoint", 100) ; 
+    gAlice->GetEvent(evt) ; 
+    TTree * fReconstruct = gAlice->TreeR() ; 
+    fReconstruct->SetBranchAddress( "PHOSPpsdRP", &fPpsdRecPoints) ;
+    fReconstruct->GetEvent(0) ;
+    rv =  fPpsdRecPoints ;
+  }
+  
+  fPpsdRecPoints->Expand( fPpsdRecPoints->GetEntries() ) ; 
+    
+  return rv ; 
+  
+}
+
 //_____________________________________________________________________________
 void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 { 
@@ -1272,36 +1299,36 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   gAlice->MakeTree("R") ; 
   Int_t splitlevel = 0 ; 
   
-  if (fEmcClusters) { 
-    fEmcClusters->Delete() ; 
-    delete fEmcClusters ;
-    fEmcClusters = 0 ; 
+  if (fEmcRecPoints) { 
+    fEmcRecPoints->Delete() ; 
+    delete fEmcRecPoints ;
+    fEmcRecPoints = 0 ; 
   }
 
-  //  fEmcClusters= new RecPointsList("AliPHOSEmcRecPoint", 100) ; if TClonesArray
-  fEmcClusters= new RecPointsList(100) ; 
+  //  fEmcRecPoints= new RecPointsList("AliPHOSEmcRecPoint", 100) ; if TClonesArray
+  fEmcRecPoints= new RecPointsList(100) ; 
 
-  if ( fEmcClusters && gAlice->TreeR() ) {
+  if ( fEmcRecPoints && gAlice->TreeR() ) {
     sprintf(branchname,"%sEmcRP",GetName()) ;
     
-    // gAlice->TreeR()->Branch(branchname, &fEmcClusters, fBufferSize); if TClonesArray
-    gAlice->TreeR()->Branch(branchname, "TObjArray", &fEmcClusters, fBufferSize, splitlevel) ; 
+    // gAlice->TreeR()->Branch(branchname, &fEmcRecPoints, fBufferSize); if TClonesArray
+    gAlice->TreeR()->Branch(branchname, "TObjArray", &fEmcRecPoints, fBufferSize, splitlevel) ; 
   }
 
-  if (fPpsdClusters) { 
-    fPpsdClusters->Delete() ; 
-    delete fPpsdClusters ; 
-    fPpsdClusters = 0 ; 
+  if (fPpsdRecPoints) { 
+    fPpsdRecPoints->Delete() ; 
+    delete fPpsdRecPoints ; 
+    fPpsdRecPoints = 0 ; 
   }
 
-  //  fPpsdClusters = new RecPointsList("AliPHOSPpsdRecPoint", 100) ; if TClonesArray
-  fPpsdClusters = new RecPointsList(100) ;
+  //  fPpsdRecPoints = new RecPointsList("AliPHOSPpsdRecPoint", 100) ; if TClonesArray
+  fPpsdRecPoints = new RecPointsList(100) ;
 
-  if ( fPpsdClusters && gAlice->TreeR() ) {
+  if ( fPpsdRecPoints && gAlice->TreeR() ) {
     sprintf(branchname,"%sPpsdRP",GetName()) ;
      
-     // gAlice->TreeR()->Branch(branchname, &fPpsdClusters, fBufferSize); if TClonesArray
-    gAlice->TreeR()->Branch(branchname, "TObjArray", &fPpsdClusters, fBufferSize, splitlevel);
+     // gAlice->TreeR()->Branch(branchname, &fPpsdRecPoints, fBufferSize); if TClonesArray
+    gAlice->TreeR()->Branch(branchname, "TObjArray", &fPpsdRecPoints, fBufferSize, splitlevel) ;
   }
 
   if (fTrackSegments) { 
@@ -1313,7 +1340,7 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   fTrackSegments = new TrackSegmentsList("AliPHOSTrackSegment", 100) ;
   if ( fTrackSegments && gAlice->TreeR() ) { 
     sprintf(branchname,"%sTS",GetName()) ;
-    gAlice->TreeR()->Branch(branchname, &fTrackSegments, fBufferSize);
+    gAlice->TreeR()->Branch(branchname, &fTrackSegments, fBufferSize) ;
   }
 
   if (fRecParticles) {  
@@ -1324,22 +1351,22 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   fRecParticles = new RecParticlesList("AliPHOSRecParticle", 100) ;
   if ( fRecParticles && gAlice->TreeR() ) { 
      sprintf(branchname,"%sRP",GetName()) ;
-     gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize);
+     gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize) ;
   }
   
   // 3.
 
-  fReconstructioner->Make(fDigits, fEmcClusters, fPpsdClusters, fTrackSegments, fRecParticles);
+  fReconstructioner->Make(fDigits, fEmcRecPoints, fPpsdRecPoints, fTrackSegments, fRecParticles);
 
   // 4. Expand or Shrink the arrays to the proper size
   
   Int_t size ;
   
-  size = fEmcClusters->GetEntries() ;
-  fEmcClusters->Expand(size) ;
+  size = fEmcRecPoints->GetEntries() ;
+  fEmcRecPoints->Expand(size) ;
  
-  size = fPpsdClusters->GetEntries() ;
-  fPpsdClusters->Expand(size) ;
+  size = fPpsdRecPoints->GetEntries() ;
+  fPpsdRecPoints->Expand(size) ;
 
   size = fTrackSegments->GetEntries() ;
   fTrackSegments->Expand(size) ;

@@ -41,21 +41,21 @@ public:
   virtual void   Init(void) ;                                       // does nothing
   Int_t IsVersion(void) const { return 0 ; }
   void           MakeBranch(Option_t* opt) ;
-  virtual RecPointsList* PpsdRecPoints() { return fPpsdClusters ; }          // gets Array of clusters in the PPSD 
+  virtual RecPointsList* PpsdRecPoints(Int_t evt=0) ;               // gets Array of clusters in the PPSD 
   void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
   void           ResetClusters(){} ;
   virtual void   ResetDigits() ; 
   void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {fReconstructioner = &Reconstructioner ;} 
   void           SetDigitThreshold(Float_t th) { fDigitThreshold = th ; } 
   virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
-  
+  virtual TString Version(void){ return TString("v0"); }
 protected:
 
   Float_t fDigitThreshold ;                       // Threshold for the digit registration 
   AliPHOSGeometry * fGeom ;                       // Geometry definition
   Int_t fNTmpHits ;                               //!  Used internally for digitalization
   Float_t fPinElectronicNoise  ;                  // Electronic Noise in the PIN
-  RecPointsList * fPpsdClusters ;                 // The RecPoints (clusters) list in PPSD 
+  RecPointsList * fPpsdRecPoints ;                // The RecPoints (clusters) list in PPSD 
   AliPHOSReconstructioner * fReconstructioner ;   // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
   TClonesArray * fTmpHits ;                       //!  Used internally for digitalization 
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC
