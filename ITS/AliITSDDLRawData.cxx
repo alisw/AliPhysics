@@ -37,6 +37,7 @@
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
+#include "AliBitPacking.h"
 
 ClassImp(AliITSDDLRawData)
 
@@ -97,13 +98,13 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
 	ftxt<<"DDL:"<<ddl<<" Mod: "<<modR<<" N/P: "<<iz<<" Strip: "<<ix<<" Value: "<<is-1<<endl;
       baseWord=0;
       word=is-1;
-      PackWord(baseWord,word,0,9);//ADC data
+      AliBitPacking::PackWord(word,baseWord,0,9);//ADC data
       word=ix;
-      PackWord(baseWord,word,10,19);//Strip Number
+      AliBitPacking::PackWord(word,baseWord,10,19);//Strip Number
       word=iz;      
-      PackWord(baseWord,word,20,20);//ADC Channel ID (N or P side)
+      AliBitPacking::PackWord(word,baseWord,20,20);//ADC Channel ID (N or P side)
       word=mod;
-      PackWord(baseWord,word,21,31);//ADC module ID
+      AliBitPacking::PackWord(word,baseWord,21,31);//ADC module ID
       fIndex++;
       buf[fIndex]=baseWord;
     }//end for
@@ -144,24 +145,24 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
       /*
       //10 bits words for amplitude value
       word=is;
-      PackWord(baseWord,word,0,9);//ADC data
+      AliBitPacking::PackWord(word,baseWord,0,9);//ADC data
       word=ix;
-      PackWord(baseWord,word,10,17);//Time bucket
+      AliBitPacking::PackWord(word,baseWord,10,17);//Time bucket
       word=iz;
-      PackWord(baseWord,word,18,26);//Anode Number
+      AliBitPacking::PackWord(word,baseWord,18,26);//Anode Number
       word=mod;
-      PackWord(baseWord,word,27,31);//Module number
+      AliBitPacking::PackWord(word,baseWord,27,31);//Module number
       */
       
       //8bits words for amplitude value
       word=is;
-      PackWord(baseWord,word,0,7);//ADC data
+      AliBitPacking::PackWord(word,baseWord,0,7);//ADC data
       word=ix;
-      PackWord(baseWord,word,8,15);//Time bucket
+      AliBitPacking::PackWord(word,baseWord,8,15);//Time bucket
       word=iz;
-      PackWord(baseWord,word,16,24);//Anode Number
+      AliBitPacking::PackWord(word,baseWord,16,24);//Anode Number
       word=mod;
-      PackWord(baseWord,word,25,31);//Module number
+      AliBitPacking::PackWord(word,baseWord,25,31);//Module number
      
       fIndex++;
       buf[fIndex]=baseWord;
@@ -277,50 +278,6 @@ void AliITSDDLRawData::GetDigitsSPD(TClonesArray *ITSdigits,Int_t mod,Int_t ddl,
     ftxt.close();
   return;
 }//end GetDigitsSPD
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void AliITSDDLRawData::PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, Int_t StopBit){
-  //This method packs a word into the Baseword buffer starting form the "StartBit" 
-  //and tacking StopBit-StertBit+1 bits
-  UInt_t dummyWord,offSet;
-  Int_t   length;
-  UInt_t sum;
-  //The BaseWord is being filled with 1 from StartBit to StopBit
-  length=StopBit-StartBit+1;
-  sum=(UInt_t)TMath::Power(2,length)-1;
-  if(Word > sum){
-    Error("PackWord", "Word to be filled is not within desired length\n"
-	  "Word:%d Start bit:%d Stop Bit:%d",Word,StartBit,StopBit);
-    return;
-  }
-  offSet=sum;
-  offSet<<=StartBit;
-  BaseWord=BaseWord|offSet;
-  //The Word to be filled is shifted to the position StartBit
-  //and the remaining  Left and Right bits are filled with 1
-  sum=(UInt_t)TMath::Power(2,StartBit)-1;
-  dummyWord=0xFFFFFFFF<<length;
-  dummyWord +=Word;
-  dummyWord<<=StartBit;
-  dummyWord+=sum;
-  BaseWord=BaseWord&dummyWord;
-  return;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void AliITSDDLRawData::UnpackWord(UInt_t PackedWord, Int_t StartBit, Int_t StopBit, UInt_t &Word){ 	
-  //This method unpacks a words of StopBit-StertBit+1 bits starting from "StopBits"  
-  UInt_t offSet;
-  Int_t length;
-  length=StopBit-StartBit+1;
-  offSet=(UInt_t)TMath::Power(2,length)-1;
-  offSet<<=StartBit;
-  Word=PackedWord&offSet;
-  Word>>=StartBit;
-  return;
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -482,10 +439,10 @@ void AliITSDDLRawData::WriteChipHeader(Int_t ChipAddr,Int_t EventCnt,UInt_t &Bas
   //This method writes a chip header 
   //cout<<"Chip: "<<ChipAddr<<" Half Stave module:"<<EventCnt<<endl;
   BaseWord=0;
-  PackWord(BaseWord,ChipAddr,0,3);
-  PackWord(BaseWord,EventCnt,4,10);
-  PackWord(BaseWord,0x7,11,13);
-  PackWord(BaseWord,0x1,14,15);
+  AliBitPacking::PackWord(ChipAddr,BaseWord,0,3);
+  AliBitPacking::PackWord(EventCnt,BaseWord,4,10);
+  AliBitPacking::PackWord(0x7,BaseWord,11,13);
+  AliBitPacking::PackWord(0x1,BaseWord,14,15);
   return;
 }//end WriteChipHeader
 
@@ -493,10 +450,9 @@ void AliITSDDLRawData::WriteChipHeader(Int_t ChipAddr,Int_t EventCnt,UInt_t &Bas
 
 void AliITSDDLRawData::ReadChipHeader(Int_t &ChipAddr,Int_t &EventCnt,UInt_t BaseWord){
   //This method reads a chip header
-  UInt_t temp=0;
-  UnpackWord(BaseWord,0,3,temp);
+  UInt_t temp=AliBitPacking::UnpackWord(BaseWord,0,3);
   ChipAddr=(Int_t)temp;
-  UnpackWord(BaseWord,4,10,temp);
+  temp=AliBitPacking::UnpackWord(BaseWord,4,10);
   EventCnt=(Int_t)temp;
   if(fVerbose)
     Info("ReadChipHeader", "Chip:&d Half Stave module:%d",ChipAddr,EventCnt);
@@ -509,10 +465,10 @@ void  AliITSDDLRawData::WriteChipTrailer(UInt_t *buf,Int_t ChipHitCount,UInt_t &
   //This method writes a chip trailer
   //pixel fill word
   if((ChipHitCount%2)!=0){
-    PackWord(BaseWord,0xFEDC,0,15);
+    AliBitPacking::PackWord(0xFEDC,BaseWord,0,15);
   }
-  PackWord(BaseWord,ChipHitCount,16,28);
-  PackWord(BaseWord,0x0,30,31);
+  AliBitPacking::PackWord(ChipHitCount,BaseWord,16,28);
+  AliBitPacking::PackWord(0x0,BaseWord,30,31);
   fIndex++;
   buf[fIndex]=BaseWord;
   BaseWord=0;
@@ -523,8 +479,7 @@ void  AliITSDDLRawData::WriteChipTrailer(UInt_t *buf,Int_t ChipHitCount,UInt_t &
 
 void  AliITSDDLRawData::ReadChipTrailer(Int_t &ChipHitCount,UInt_t BaseWord){
   //This method reads a chip trailer
-  UInt_t temp=0;
-  UnpackWord(BaseWord,16,28,temp);
+  UInt_t temp=AliBitPacking::UnpackWord(BaseWord,16,28);
   ChipHitCount=(Int_t)temp;
   return;
 }//end ReadChipTrailer
@@ -534,14 +489,14 @@ void  AliITSDDLRawData::ReadChipTrailer(Int_t &ChipHitCount,UInt_t BaseWord){
 void  AliITSDDLRawData::WriteHit(UInt_t *buf,Int_t RowAddr,Int_t HitAddr,UInt_t &BaseWord){
   //This method writs an hit
   if(!BaseWord){
-    PackWord(BaseWord,HitAddr,0,4);
-    PackWord(BaseWord,RowAddr,5,12);
-    PackWord(BaseWord,2,14,15);
+    AliBitPacking::PackWord(HitAddr,BaseWord,0,4);
+    AliBitPacking::PackWord(RowAddr,BaseWord,5,12);
+    AliBitPacking::PackWord(2,BaseWord,14,15);
   }//end if
   else{
-    PackWord(BaseWord,HitAddr,16,20);
-    PackWord(BaseWord,RowAddr,21,28);
-    PackWord(BaseWord,2,30,31);
+    AliBitPacking::PackWord(HitAddr,BaseWord,16,20);
+    AliBitPacking::PackWord(RowAddr,BaseWord,21,28);
+    AliBitPacking::PackWord(2,BaseWord,30,31);
     fIndex++;
     buf[fIndex]=BaseWord;
     BaseWord=0;

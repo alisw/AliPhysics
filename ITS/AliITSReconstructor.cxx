@@ -24,6 +24,7 @@
 
 #include "AliITSReconstructor.h"
 #include "AliRunLoader.h"
+#include "AliRawReader.h"
 #include "AliITSclustererV2.h"
 #include "AliITStrackerSA.h"
 #include "AliITSVertexerIons.h"
@@ -82,6 +83,41 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
   loader->UnloadRecPoints();
   loader->UnloadDigits();
   runLoader->UnloadKinematics();
+}
+
+//_____________________________________________________________________________
+void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader,
+				      AliRawReader* rawReader) const
+{
+// reconstruct clusters from raw data
+
+  AliLoader* loader = runLoader->GetLoader("ITSLoader");
+  if (!loader) {
+    Error("Reconstruct", "ITS loader not found");
+    return;
+  }
+  loader->LoadRecPoints("recreate");
+
+  AliITSgeom* geom = GetITSgeom(runLoader);
+  if (!geom) return;
+  AliITSclustererV2 clusterer(geom);
+
+  Int_t iEvent = 0;
+  while (rawReader->NextEvent()) {
+    runLoader->GetEvent(iEvent++);
+
+    TTree* treeClusters = loader->TreeR();
+    if (!treeClusters) {
+      loader->MakeTree("R");
+      treeClusters = loader->TreeR();
+    }
+
+    clusterer.Digits2Clusters(rawReader);
+         
+    loader->WriteRecPoints("OVERWRITE");
+  }
+
+  loader->UnloadRecPoints();
 }
 
 //_____________________________________________________________________________

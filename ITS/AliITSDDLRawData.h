@@ -32,12 +32,6 @@ class AliITSDDLRawData:public TObject{
   //This method formats and stores in buf all the digits of a SDD module
   void  GetDigitsSSD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf);
   //This method formats and stores in buf all the digits of a SSD module
-  void  PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, Int_t StopBit);
-  //This method stores the value of the variable Word of StopBit-StartBit+1 bits 
-  //in BaseWord, starting from the bit StartBit
-  void  UnpackWord(UInt_t PackedWord, Int_t StartBit, Int_t StopBit, UInt_t &Word);
-  //This method extracts a group of adjacent bits, specified by StartBit and StopBit, 
-  //from the word PackedWord. The resulting word is saved in the Word variable
   void  WriteChipHeader(Int_t ChipAddr,Int_t EventCnt,UInt_t &BaseWord);
   void  WriteChipTrailer(UInt_t *buf,Int_t ChipHitCount,UInt_t &BaseWord);
   void  WriteHit(UInt_t *buf,Int_t RowAddr,Int_t HitAddr,UInt_t &BaseWord);
