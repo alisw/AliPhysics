@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2002/10/22 14:45:44  alibrary
+Introducing Riostream.h
+
 Revision 1.21  2002/10/14 14:57:08  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -534,6 +537,68 @@ void AliITSsimulationSPD::SetCoupling(Int_t row, Int_t col, Int_t ntrack,
 				      Int_t idhit,Int_t module,
 				      AliITSpList *pList) {
     //  Take into account the coupling between adiacent pixels.
+    //  The parameters probcol and probrow are the probability of the
+    //  signal in one pixel shared in the two adjacent pixels along
+    //  the column and row direction, respectively.
+    //
+    //Begin_Html
+    /*
+      <img src="picts/ITS/barimodel_3.gif">
+      </pre>
+      <br clear=left>
+      <font size=+2 color=red>
+      <a href="mailto:tiziano.virgili@cern.ch"></a>.
+      </font>
+      <pre>
+    */
+    //End_Html
+    Int_t j1,j2,flag=0;
+    Double_t pulse1,pulse2;
+    Float_t couplR=0.0,couplC=0.0;
+    Double_t xr=0.;
+
+    GetCouplings(couplR,couplC);
+    j1 = row;
+    j2 = col;
+    pulse1 = fMapA2->GetSignal(row,col);
+    pulse2 = pulse1;
+    for (Int_t isign=-1;isign<=1;isign+=2){// loop in row direction
+	do{
+	    j1 += isign;
+	    //   pulse1 *= couplR; 
+          xr = gRandom->Rndm();
+	  //   if ((j1<0) || (j1>GetNPixelsZ()-1) || (pulse1<GetThreshold())){
+	    if ((j1<0) || (j1>GetNPixelsZ()-1) || (xr>couplR)){
+		j1 = row;
+	       	flag = 1;
+	    }else{
+		UpdateMapSignal(j1,col,ntrack,idhit,module,pulse1,pList);
+	      //  flag = 0;
+	      flag = 1; // only first next!!
+	    } // end if
+	} while(flag == 0);
+	// loop in column direction
+      do{
+	  j2 += isign;
+	  // pulse2 *= couplC; 
+          xr = gRandom->Rndm();
+	  //  if ((j2<0) || (j2>(GetNPixelsX()-1)) || (pulse2<GetThreshold())){
+	    if ((j2<0) || (j2>GetNPixelsX()-1) || (xr>couplC)){
+	      j2 = col;
+	      flag = 1;
+	  }else{
+	      UpdateMapSignal(row,j2,ntrack,idhit,module,pulse2,pList);
+	      //  flag = 0;
+	      flag = 1; // only first next!!
+	  } // end if
+      } while(flag == 0);
+    } // for isign
+}
+//______________________________________________________________________
+void AliITSsimulationSPD::SetCouplingOld(Int_t row, Int_t col, Int_t ntrack,
+					 Int_t idhit,Int_t module,
+					 AliITSpList *pList) {
+    //  Take into account the coupling between adiacent pixels.
     //  The parameters probcol and probrow are the fractions of the
     //  signal in one pixel shared in the two adjacent pixels along
     //  the column and row direction, respectively.
@@ -602,6 +667,7 @@ void AliITSsimulationSPD::CreateDigit(Int_t module,AliITSpList *pList) {
     Float_t * charges = new Float_t[size]; 
     Int_t j1;
 
+    for(j1=0;j1<size;j1++){tracks[j1]=-3;hits[j1]=-1;charges[j1]=0.0;}
     for (Int_t r=1;r<=GetNPixelsZ();r++) {
 	for (Int_t c=1;c<=GetNPixelsX();c++) {
 	    // check if the deposited energy in a pixel is above the
@@ -617,11 +683,11 @@ void AliITSsimulationSPD::CreateDigit(Int_t module,AliITSpList *pList) {
 		    if(j1<pList->GetNEnteries()){
 			tracks[j1] = pList->GetTrack(r,c,j1);
 			hits[j1]   = pList->GetHit(r,c,j1);
-		    }else{
-			tracks[j1] = -3;
-			hits[j1]   = -1;
+			//}else{
+			//tracks[j1] = -3;
+			//hits[j1]   = -1;
 		    } // end if
-		    charges[j1] = 0;
+		    //charges[j1] = 0;
 		} // end for j1
 		Float_t phys = 0;
 		aliITS->AddSimDigit(0,phys,digits,tracks,hits,charges);

@@ -63,7 +63,7 @@ AliITSdigitSPD::AliITSdigitSPD():AliITSdigit(){
     Int_t i;
 
     for(i=0;i<fkSspd;i++) fTracks[i]  = -3;
-    for(i=0;i<fkSspd;i++) fHits[0]    = -1;
+    for(i=0;i<fkSspd;i++) fHits[i]    = -1;
 }
 //______________________________________________________________________
 AliITSdigitSPD::AliITSdigitSPD(const Int_t *digits){
@@ -71,7 +71,7 @@ AliITSdigitSPD::AliITSdigitSPD(const Int_t *digits){
     Int_t i;
 
     for(i=0;i<fkSspd;i++) fTracks[i]  = -3;
-    for(i=0;i<fkSspd;i++) fHits[0]    = -1;
+    for(i=0;i<fkSspd;i++) fHits[i]    = -1;
     fCoord1       = digits[0];
     fCoord2       = digits[1];
     fSignal       = 1;
@@ -134,7 +134,7 @@ AliITSdigitSDD::AliITSdigitSDD():AliITSdigit(){
     Int_t i;
 
     for(i=0;i<fkSsdd;i++) fTracks[i] = -3;
-    for(i=0;i<fkSsdd;i++) fHits[1]   = -1;
+    for(i=0;i<fkSsdd;i++) fHits[i]   = -1;
     fPhysics = 0;
     for(i=0;i<fkSsdd;i++) fTcharges[i] = 0;
 }

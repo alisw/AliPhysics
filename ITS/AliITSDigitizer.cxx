@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.6  2002/10/22 14:45:34  alibrary
+Introducing Riostream.h
+
 Revision 1.5  2002/10/14 14:57:00  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -125,8 +128,6 @@ Bool_t AliITSDigitizer::Init(){
     fInit = kTRUE; // Assume for now init will work.
     if(!gAlice) {
 	fITS      = 0;
-	fActive   = 0;
-	fRoif     = -1;
 	fRoiifile = 0;
 	fInit     = kFALSE;
 	Warning("Init","gAlice not found");
@@ -134,8 +135,6 @@ Bool_t AliITSDigitizer::Init(){
     } // end if
     fITS = (AliITS *)(gAlice->GetDetector("ITS"));
     if(!fITS){
-	fActive   = 0;
-	fRoif     = -1;
 	fRoiifile = 0;
 	fInit     = kFALSE;
 	Warning("Init","ITS not found");
@@ -144,8 +143,6 @@ Bool_t AliITSDigitizer::Init(){
 	//cout << "fRoif,fRoiifile="<<fRoif<<" "<<fRoiifile<<endl;
 	fActive = new Bool_t[fITS->GetITSgeom()->GetIndexMax()];
     } else{
-	fActive   = 0;
-	fRoif     = -1;
 	fRoiifile = 0;
 	fInit     = kFALSE;
 	Warning("Init","ITS geometry not found");
@@ -217,9 +214,14 @@ void AliITSDigitizer::Exec(Option_t* opt){
     
     // Digitize
     fITS->MakeBranchInTreeD(GetManager()->GetTreeD());
+    if(fRoif!=0) Info("AliITSDigitizer","Region of Interest digitization selected");
+    else Info("AliITSDigitizer","No Region of Interest selected. Digitizing everything");
+    //cout <<"fActive="<<fActive<<" fRoif="<<fRoif;
+    if(fActive==0) fRoif = 0; // fActive array must be define for RIO cuts.
+    //cout <<" fRoif="<<fRoif<<endl;
 
     for(module=0; module<size; module++ ){
-	if(fActive && fRoif!=0) if(!fActive[module]) continue;
+	if(fRoif!=0) if(!fActive[module]) continue;
         id = fITS->GetITSgeom()->GetModuleType(module);
         if(!all && !det[id]) continue;
         iDetType = fITS->DetType( id );
@@ -233,7 +235,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
         sim->InitSimulationModule(module, event);
 	//cout << "Module=" << module;
         for(ifiles=0; ifiles<nfiles; ifiles++ ){
-	    if(fActive && fRoif!=0) if(!fActive[module]) continue;
+	    if(fRoif!=0) if(!fActive[module]) continue;
 	    //cout <<" fl[ifiles=" << ifiles << "]=" << fl[ifiles];
             TTree *treeS = GetManager()->GetInputTreeS(fl[ifiles]);
             if( !(treeS && fITS->GetSDigits()) ) continue;   
@@ -322,6 +324,7 @@ void AliITSDigitizer::SetByRegionOfInterest(TTree *ts){
 	//cout << fActive[m];
 	//cout << endl;
     } // end for m
+    Info("AliITSDigitizer","Digitization by Region of Interest selected");
     sdig->Clear();
     delete sdig;
     return;

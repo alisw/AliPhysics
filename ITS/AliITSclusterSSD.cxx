@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/10/22 14:45:37  alibrary
+Introducing Riostream.h
+
 Revision 1.9  2002/10/14 14:57:00  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -255,6 +258,42 @@ void AliITSclusterSSD::DelCross(Int_t index){
 //______________________________________________________________________
 Int_t  *AliITSclusterSSD::GetTracks(Int_t &nt){
     // return the track number of the cluster
+    Int_t ntrk = GetDigit(0)->GetNTracks();
+    Int_t ndig = GetNumOfDigits();
+    Int_t *idig = new Int_t[ndig];
+    Int_t *sdig = new Int_t[ndig];
+    Int_t *itrk = new Int_t[ndig*ntrk];
+    Int_t i,j,k,l,trk;
+    Bool_t b;
+
+    for(i=0;i<ndig;i++){idig[i] = i;sdig[i] = GetDigit(i)->GetSignal();}
+    TMath::Sort(ndig,sdig,idig,kTRUE);
+    for(i=0;i<ndig*ntrk;i++) itrk[i] = -3;
+    j = k = l = 0;
+    for(i=0;i<ndig;i++){ // fill itrk with track numbers in order of digit size
+	j = idig[i];
+	for(k=0;k<ntrk;k++) if((trk = GetDigit(j)->GetTrack(k))>=0) {
+	    itrk[l] = trk;
+	    l++;
+	} // end for k/if
+    } // end for i
+    for(i=0;i<10;i++) fTrack[i] = -3;
+    fTrack[0] = itrk[0]; // first element
+    k = 1;
+    b = kTRUE;
+    for(i=1;i<l;i++){
+	for(j=0;j<k;j++) if(fTrack[j]==itrk[i]) b = kFALSE;
+	if(b){fTrack[k] = itrk[i]; k++;}
+	if(k>9) break;
+    } // end for i
+    nt = k;
+
+    delete[] idig;
+    delete[] sdig;
+    delete[] itrk;
+
+    return fTrack;
+/*
     Int_t *tidx=0;
     Int_t i, j,n;
     Int_t bit =0;
@@ -289,6 +328,7 @@ Int_t  *AliITSclusterSSD::GetTracks(Int_t &nt){
     SetNTracks(ntracks); 
     nt = ntracks;
     return &(fTrack[0]);
+*/
 }
 //______________________________________________________________________
 Double_t AliITSclusterSSD::GetPosition(){

@@ -71,12 +71,12 @@ class AliITSdigitSPD: public AliITSdigit {
     virtual Int_t GetTrack(Int_t i) const {return fTracks[i];}
     // returns hit number kept in the array element i of fHits 
     virtual Int_t GetHit(Int_t i) const {return fHits[i];}
-    //copy the array trks[3] into fTracks
+    //copy the array trks[fkSspd] into fTracks
     virtual void SetTracks(const Int_t *trks){
-	for(Int_t i=0;i<3;i++) fTracks[i]=trks[i];}
-    //copy the array hits[3] into fHits
+	for(Int_t i=0;i<fkSspd;i++) fTracks[i]=trks[i];}
+    //copy the array hits[fkSspd] into fHits
     virtual void SetHits(const Int_t *hits){
-	for(Int_t i=0;i<3;i++) fHits[i]=hits[i];}
+	for(Int_t i=0;i<fkSspd;i++) fHits[i]=hits[i];}
     //set array element i of fTracks to trk.
     virtual void SetTrack(Int_t i,Int_t trk){fTracks[i]=trk;}
     //set array element i of fHits to hit.
@@ -121,12 +121,12 @@ class AliITSdigitSDD: public AliITSdigit {
     virtual Int_t GetTrack(Int_t i) const {return fTracks[i];}
     // returns hit number kept in the array element i of fHits 
     virtual Int_t GetHit(Int_t i) const {return fHits[i];}
-    //copy the array trks[3] into fTracks
+    //copy the array trks[fkSsdd] into fTracks
     virtual void SetTracks(const Int_t *trks){
-	for(Int_t i=0;i<3;i++) fTracks[i]=trks[i];}
-    //copy the array hits[3] into fHits
+	for(Int_t i=0;i<fkSsdd;i++) fTracks[i]=trks[i];}
+    //copy the array hits[fkSsdd] into fHits
     virtual void SetHits(const Int_t *hits){
-	for(Int_t i=0;i<3;i++) fHits[i]=hits[i];}
+	for(Int_t i=0;i<fkSsdd;i++) fHits[i]=hits[i];}
     //set array element i of fTracks to trk.
     virtual void SetTrack(Int_t i,Int_t trk){fTracks[i]=trk;}
     //set array element i of fHits to hit.
@@ -206,12 +206,12 @@ class AliITSdigitSSD: public AliITSdigit {
     virtual Int_t GetTrack(Int_t i) const {return fTracks[i];}
     // returns hit number kept in the array element i of fHits 
     virtual Int_t GetHit(Int_t i) const {return fHits[i];}
-    //copy the array trks[3] into fTracks
+    //copy the array trks[fkSssd] into fTracks
     virtual void SetTracks(const Int_t *trks){
-	for(Int_t i=0;i<3;i++) fTracks[i]=trks[i];}
-    //copy the array hits[3] into fHits
+	for(Int_t i=0;i<fkSssd;i++) fTracks[i]=trks[i];}
+    //copy the array hits[fkSssd] into fHits
     virtual void SetHits(const Int_t *hits){
-	for(Int_t i=0;i<3;i++) fHits[i]=hits[i];}
+	for(Int_t i=0;i<fkSssd;i++) fHits[i]=hits[i];}
     //set array element i of fTracks to trk.
     virtual void SetTrack(Int_t i,Int_t trk){fTracks[i]=trk;}
     //set array element i of fHits to hit.

@@ -73,7 +73,13 @@ Int_t AliITSMerge(TString digFile="galiceMD.root",
     } // end if
 //    manager->SetCopyTreesFromInput(0);
     AliITSDigitizer *dITS = new AliITSDigitizer(manager);
-    if(opt.Contains("ROI")==0) dITS->SetByRegionOfInterestFlag(1);
+    if(opt.Contains("ROI")){
+	cout << "Region of Interest selected" << endl;
+	dITS->SetByRegionOfInterestFlag(1);
+    }else{
+	cout << "Digizing everthing" << endl;
+	dITS->SetByRegionOfInterestFlag(0);
+    } // end if
 
     TStopwatch timer;
     timer.Start();

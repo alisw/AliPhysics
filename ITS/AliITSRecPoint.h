@@ -21,6 +21,8 @@ class AliITSRecPoint : public TObject {
     virtual ~AliITSRecPoint() {}; // distructor
     Bool_t IsSortable() const {return kTRUE;} // allows for sorting
     Int_t   GetLabel(Int_t i) const {return fTracks[i];} // get track label
+    Int_t  *GetTracks(){return fTracks;}// Returns pointer to track array
+    Int_t   GetNTracks(){return 3;} // returns track array size
     Float_t GetX() const {return fX;} // gets fX
     Float_t GetZ() const {return fZ;} // gets fZ
     Float_t GetQ() const {return fQ;} // gets fQ

@@ -62,9 +62,12 @@ class AliITSClusterFinder :public TObject{
     virtual void AddCluster(Int_t branch, AliITSRawCluster *c);
     virtual void AddCluster(Int_t branch, AliITSRawCluster *c,
 			    AliITSRecPoint &rp);
-    virtual void FindRawClusters(Int_t mod=0) {
-	// Search for raw clusters
-    }
+    virtual void FindRawClusters(Int_t mod=0); // Finds cluster of digits.
+    // Determins if digit i has a neighbor and if so that neighor index is j.
+    virtual Bool_t IsNeighbor(TObjArray *digs,Int_t i,Int_t j[]);
+    // Given a cluster of digits, creates the nessesary RecPoint. May also
+    // do some peak separation.
+    virtual void CreateRecPoints(TObjArray *cluster,Int_t mod){};
     virtual void FindCluster(Int_t i, Int_t j, AliITSRawCluster *c) {
 	// find cluster
     }

@@ -24,7 +24,7 @@ class AliITSpListItem: public TObject {
     virtual AliITSpListItem& operator=(const AliITSpListItem &source);
     // Returns the signal value in the list of signals
     virtual Double_t GetSignal(Int_t i){
-	                    return ( (i>=0&&i<fkSize-1) ? fSignal[i] : 0.0);}
+	                    return ( (i>=0&&i<fkSize) ? fSignal[i] : 0.0);}
     virtual Double_t GetSignal(){
 	                    return fTsignal;}
     virtual Double_t GetSignalAfterElect(){
@@ -44,10 +44,10 @@ class AliITSpListItem: public TObject {
     virtual void AddNoise(Int_t module,Int_t index,Double_t noise);
     // Returns track number.
     virtual Int_t GetTrack(Int_t i){
-	                    return ((i>=0&&i<fkSize-1) ? fTrack[i] : 0);}
+	                    return ((i>=0&&i<fkSize) ? fTrack[i] : 0);}
     // Returns hit number.
     virtual Int_t GetHit(Int_t i){
-	                    return ((i>=0&&i<fkSize-1) ? fHits[i] : 0);}
+	                    return ((i>=0&&i<fkSize) ? fHits[i] : 0);}
     // Returns module number.
     virtual Int_t GetModule(){
 	                    return fmodule;}

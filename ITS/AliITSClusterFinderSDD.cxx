@@ -15,6 +15,9 @@
 /*
   $Id$
   $Log$
+  Revision 1.28  2002/10/22 14:45:29  alibrary
+  Introducing Riostream.h
+
   Revision 1.27  2002/10/14 14:57:00  hristov
   Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -1266,7 +1269,8 @@ void AliITSClusterFinderSDD::GetRecPoints(){
 		  j<dig->GetNTracks()) j++;
 	    if(j<dig->GetNTracks()){
 		rnew.fTracks[1] = dig->fTracks[j];
-		while(rnew.fTracks[1]==dig->fTracks[j] && 
+		while((rnew.fTracks[0]==dig->fTracks[j] || 
+		       rnew.fTracks[1]==dig->fTracks[j] )&& 
 		      j<dig->GetNTracks()) j++;
 		if(j<dig->GetNTracks()) rnew.fTracks[2] = dig->fTracks[j];
 	    } // end if

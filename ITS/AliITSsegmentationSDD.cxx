@@ -92,10 +92,12 @@ void AliITSsegmentationSDD::GetPadIxz(Float_t x,Float_t z,
 
     const Float_t kconv=10000;  // cm->um
 
+    x *= kconv; // Convert to microns
+    z *= kconv; // Convert to microns
     Int_t na = fNanodes/2;
-    Float_t driftpath=fDx-TMath::Abs(kconv*x);
+    Float_t driftpath=fDx-TMath::Abs(x);
     timebin=(Int_t)(driftpath/fDriftSpeed/fTimeStep);
-    anode=(Int_t)(kconv*z/fPitch + na/2);
+    anode=(Int_t)(z/fPitch + na/2);
     if (x > 0) anode += na;
 
     timebin+=1;

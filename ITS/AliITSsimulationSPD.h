@@ -67,9 +67,16 @@ class AliITSsimulationSPD : public AliITSsimulation {
     //  Take into account the coupling between adiacent pixels.
     //  The parameters probcol and probrow are the fractions of the
     //  signal in one pixel shared in the two adjacent pixels along
-    //  the column and row direction, respectively.
+    //  the column and row direction, respectively. Now done in a statistical
+    //  way and not "mechanical" as in the Old version.
     void SetCoupling(Int_t row,Int_t col,Int_t ntrack,Int_t idhit,Int_t module,
 		     AliITSpList *pList);
+    //  Take into account the coupling between adiacent pixels.
+    //  The parameters probcol and probrow are the fractions of the
+    //  signal in one pixel shared in the two adjacent pixels along
+    //  the column and row direction, respectively.
+    void SetCouplingOld(Int_t row,Int_t col,Int_t ntrack,Int_t idhit,
+			Int_t module,AliITSpList *pList);
     // The pixels are fired if the energy deposited inside them is above
     // the threshold parameter ethr. Fired pixed are interpreted as digits
     // and stored in the file digitfilename. One also needs to write out
@@ -104,7 +111,7 @@ class AliITSsimulationSPD : public AliITSsimulation {
     void GetThresholds(Float_t &t,Float_t &s){
     ((AliITSresponseSPD*)fResponse)->Thresholds(t,s);}
     // Returns the couplings Columb and Row.
-    void GetCouplings(Float_t &cc,Float_t cr){
+    void GetCouplings(Float_t &cc,Float_t &cr){
 	((AliITSresponseSPD*)fResponse)->GetNoiseParam(cc,cr);}
     // Returns the number of pixels in x
     Int_t GetNPixelsX(){return ((AliITSsegmentationSPD*)fSegmentation)->Npx();}
