@@ -1,4 +1,4 @@
-Int_t AliITSHitsToSDigitsDefault(const char *inFile="galice.root"){
+Int_t AliITSHitsToSDigitsDefault(Int_t evNumber1=0,Int_t evNumber2=1,const char *inFile="galice.root"){
 /////////////////////////////////////////////////////////////////////////
 //   This macro is a small example of a ROOT macro
 //   illustrating how to read the output of GALICE
