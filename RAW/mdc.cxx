@@ -23,6 +23,7 @@
 
 #include "mdc.h"
 #include "AliMDC.h"
+#include "AliLog.h"
 
 void* alimdcCreate(int compress, int filterMode, 
 		   const char* localRunDB, int rdbmsRunDB,
@@ -63,4 +64,14 @@ void  alimdcDelete(void* alimdc)
 // delete the AliMDC object
 
   delete (AliMDC*)alimdc;
+}
+
+void  alimdcEnableDebug()
+{
+// enable debug and log messages
+
+  AliLog::EnableDebug(kTRUE);
+  AliLog::SetGlobalLogLevel(AliLog::kMaxType);
+  AliLog::SetGlobalDebugLevel(AliLog::kMaxType);
+  AliLog::SetPrintRepetitions(kFALSE);
 }
