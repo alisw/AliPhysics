@@ -15,6 +15,16 @@
 
 /*
 $Log$
+Revision 1.11.4.8  2000/06/12 19:14:40  barbera
+Remove partical transision to new Config.C calling convension. Bug Found.
+
+Revision 1.11.4.7  2000/06/12 18:15:38  barbera
+fixed posible compilation errors on HP unix. Modifided default constructor
+for use with new calling requirements.
+
+Revision 1.11.4.6  2000/06/11 20:37:41  barbera
+coding convenstion update.
+
 Revision 1.11.4.4  2000/05/19 10:09:51  nilsen
 fix for bug with HP and Sun unix + fix for event display in ITS-working branch
 
@@ -89,7 +99,7 @@ Introduction of the Copyright and cvs Log
 ClassImp(AliITSv3)
  
 //_____________________________________________________________________________
-AliITSv3::AliITSv3() {
+  AliITSv3::AliITSv3()/* : AliITS("ITS","TP version")*/{
 ////////////////////////////////////////////////////////////////////////
 //    Standard default constructor for the ITS version 3.
 ////////////////////////////////////////////////////////////////////////
@@ -102,6 +112,7 @@ AliITSv3::AliITSv3() {
     fId3Name[4] = "ITS5";
     fId3Name[5] = "ITS6";
     fMinorVersionV3=1;
+    printf("Created ITS TP Detailed version\n");
 }
 //____________________________________________________________________________
 AliITSv3::AliITSv3(const AliITSv3 &source){
@@ -111,19 +122,21 @@ AliITSv3::AliITSv3(const AliITSv3 &source){
     if(&source == this) return;
     this->fId3N = source.fId3N;
     this->fId3Name = new char*[fId3N];
-	 for(Int_t i=0;i<6;i++) strcpy(this->fId3Name[i],source.fId3Name[i]);
-	return;
+    Int_t i;
+    for(i=0;i<6;i++) strcpy(this->fId3Name[i],source.fId3Name[i]);
+    return;
 }
 //_____________________________________________________________________________
 AliITSv3& AliITSv3::operator=(const AliITSv3 &source){
 ////////////////////////////////////////////////////////////////////////
 //    Assignment operator for the ITS version 3.
 ////////////////////////////////////////////////////////////////////////
-	if(&source == this) return *this;
-    this->fId3N = source.fId3N;
-    this->fId3Name = new char*[fId3N];
-	 for(Int_t i=0;i<6;i++) strcpy(this->fId3Name[i],source.fId3Name[i]);
-	return *this;
+  if(&source == this) return *this;
+  this->fId3N = source.fId3N;
+  this->fId3Name = new char*[fId3N];
+  Int_t i;
+  for(i=0;i<6;i++) strcpy(this->fId3Name[i],source.fId3Name[i]);
+  return *this;
 }
 //_____________________________________________________________________________
 AliITSv3::~AliITSv3() {
@@ -146,13 +159,14 @@ AliITSv3::AliITSv3(const char *name, const char *title) : AliITS(name, title){
     fId3Name[4] = "ITS5";
     fId3Name[5] = "ITS6";
     fMinorVersionV3=1;
+    printf("Created ITS TP Detailed version\n");
 }//__________________________________________________________________________
 void AliITSv3::BuildGeometry(){
 ////////////////////////////////////////////////////////////////////////
 //    Geometry builder for the ITS version 3.
 ////////////////////////////////////////////////////////////////////////
     TNode *node, *top;
-    const int kColorITS=kYellow;
+    const Int_t kColorITS=kYellow;
     //
     top = gAlice->GetGeometry()->GetNode("alice");
 
@@ -478,7 +492,7 @@ void AliITSv3::CreateGeometry(){
   jbox2 = 0;
   
   // counter over the number of elements of layer #2 ( 
-  for (i = 1; i <= 10; ++i) {
+  for(i = 1; i <= 10; ++i) {
     
     // --- Place part # 1-2 (see sketch) 
     
@@ -1484,7 +1498,7 @@ void AliITSv3::CreateGeometry(){
   //     (IDV1) 
   
   ypos = 0.;
-  for (j = 1; j <= 5; ++j) {
+  for(j = 1; j <= 5; ++j) {
     // odd elements are up and even elements are down 
     if (j == 1) {
       xpos = dbox1[0] - dpcb[0] * 2. - dcop[0] * 2. - dcer[0] * 2. - dsil[0] * 2. - dits[0];
@@ -1720,7 +1734,7 @@ void AliITSv3::CreateGeometry(){
   //     (IDV2) 
   
   ypos = 0.;
-  for (j = 1; j <= 5; ++j) {
+  for(j = 1; j <= 5; ++j) {
     // odd element are up and even elements are down 
     if (j == 1) {
       xpos = dbox2[0] - dpcb[0] * 2. - dcop[0] * 2. - dcer[0] * 2. - dsil[0] * 2. - dits[0];
@@ -1878,7 +1892,7 @@ void AliITSv3::CreateGeometry(){
   //     mother volume (IT34) 
   //     Odd elements have large ribs and even elements have small ribs 
   
-  for (i = 1; i <= 12; ++i) {
+  for(i = 1; i <= 12; ++i) {
     atheta = (i-1) * 30.;
     AliMatrix(idrotm[i+1299], 90., atheta, 90., atheta + 90., 0.,0.);
     if (i % 2 == 0) {
@@ -2023,7 +2037,7 @@ void AliITSv3::CreateGeometry(){
   //     (IDV3) 
   
   ypos = 0.;
-  for (j = 1; j <= 7; ++j) {
+  for(j = 1; j <= 7; ++j) {
     // odd elements are down and even elements are up 
     if (j == 1) {
       xpos = dbox1[0] - dpcb[0] * 2. - dcop[0] * 2. - dcer[0] * 2. - dsil[0] * 2. - dits[0];
@@ -2269,7 +2283,7 @@ void AliITSv3::CreateGeometry(){
   //     (IDV4) 
   
   ypos = 0.;
-  for (j = 1; j <= 7; ++j) {
+  for(j = 1; j <= 7; ++j) {
     // odd elements are down and even elements are up 
     if (j == 1) {
       xpos = dbox2[0] - dpcb[0] * 2. - dcop[0] * 2. - dcer[0] * 2. - dsil[0] * 2. - dits[0];
@@ -2438,7 +2452,7 @@ void AliITSv3::CreateGeometry(){
   //     mother volume (IT34) 
   //     Odd elements have large ribs and even elements have small ribs 
   
-  for (i = 1; i <= 24; ++i) {
+  for(i = 1; i <= 24; ++i) {
     atheta = (i-1) * 15.;
     AliMatrix(idrotm[i+1399], 90., atheta, 90., atheta + 90., 0.,0.);
     if (i % 2 == 0) {
@@ -2647,7 +2661,7 @@ void AliITSv3::CreateGeometry(){
     // --- Place the sensitive part of the strips into its mother (ISV1) 
     
     ypos = 0.;
-    for (j = 1; j <= 23; ++j) {
+    for(j = 1; j <= 23; ++j) {
       if (j % 2 == 0) xpos = dbox1[0] - dits[0];
       else            xpos = -dbox1[0] + dits[0];
       zpos = ((j - 1) - 11.) * 3.91;
@@ -2657,7 +2671,7 @@ void AliITSv3::CreateGeometry(){
     // --- Place the electronics of the strips into its mother (SSV1) 
     
     ypos = 0.;
-    for (j = 1; j <= 23; ++j) {
+    for(j = 1; j <= 23; ++j) {
       if (j % 2 == 0) xpos = -dsrv[0] + .28;
       else            xpos = -dsrv[0] + .28 - dits[0] * 2. - .03;
       zpos = ((j - 1) - 11.) * 3.91 + .85;
@@ -2685,7 +2699,7 @@ void AliITSv3::CreateGeometry(){
     
     xpos = -dsrv[0] + .47 + TMath::Sqrt(3.) / 6. * 4.2;
     ypos = 0.;
-    for (j = 1; j <= 23; ++j) { // Loop was to 24. Changed to 23 to fit inside
+    for(j = 1; j <= 23; ++j) { // Loop was to 24. Changed to 23 to fit inside
                                 // volume SSV1. This is the same number of
                                 // elements as SCH5 above. Done Bjorn S. Nilsen
                                 // April 4 2000. Error found by Ivana 
@@ -2726,7 +2740,7 @@ void AliITSv3::CreateGeometry(){
     rzero   = dbox1[0] + 40.;
     runo    = dbox1[0] * 2. + 40. + dsrv[0];
     rtwo    = dbox1[0] * 2. + 40. + dela[0];
-    for (i = 1; i <= 35; ++i) {
+    for(i = 1; i <= 35; ++i) {
       atheta = (i-1) * ktwopi * kraddeg / 35. + offset2;
       AliMatrix(idrotm[i+1499], 90., atheta, 90., atheta + 90., 0., 0.);
       
@@ -2908,7 +2922,7 @@ void AliITSv3::CreateGeometry(){
     // --- Place the sensitive part of the strips into its mother (ISV2) 
     
     ypos = 0.;
-    for (j = 1; j <= 26; ++j) {
+    for(j = 1; j <= 26; ++j) {
       if (j % 2 == 0) xpos = dbox2[0] - dits[0];
       else            xpos = -dbox2[0] + dits[0];
       zpos = ((j - 1) - 12.) * 3.91 - 1.96;
@@ -2918,7 +2932,7 @@ void AliITSv3::CreateGeometry(){
     // --- Place the electronics of the strips into its mother (SSV2) 
     
     ypos = 0.;
-    for (j = 1; j <= 26; ++j) {
+    for(j = 1; j <= 26; ++j) {
       if (j % 2 == 0) xpos = -dsrv[0] + .28;
       else            xpos = -dsrv[0] + .28 - dits[0] * 2. - .03;
       zpos = ((j - 1) - 12.) * 3.91 - 1.96 + .85;
@@ -2946,7 +2960,7 @@ void AliITSv3::CreateGeometry(){
     
     xpos = -dsrv[0] + .47 + TMath::Sqrt(3.) / 6. * 4.2;
     ypos = 0.;
-    for (j = 1; j <= 27; ++j) {
+    for(j = 1; j <= 27; ++j) {
       zpos = ((j - 1) - 12.) * 3.91 - 1.96 - 4.2/2.;
       gMC->Gspos("SFR6", j, "SSV2", xpos, ypos, zpos, 0, "ONLY");
     }
@@ -2983,7 +2997,7 @@ void AliITSv3::CreateGeometry(){
     rzero   = dbox2[0] + 45.;
     runo    = dbox2[0] * 2. + 45. + dsrv[0];
     rtwo    = dbox2[0] * 2. + 45. + dela[0];
-    for (i = 1; i <= 39; ++i) {
+    for(i = 1; i <= 39; ++i) {
       atheta = (i-1) * ktwopi * kraddeg / 39. + offset2;
       AliMatrix(idrotm[i+1599], 90., atheta, 90., atheta + 90., 0., 0.);
       
@@ -3197,7 +3211,7 @@ void AliITSv3::CreateGeometry(){
     // --- Place the sensitive part of the strips into its mother (ISV1) 
     
     ypos = 0.;
-    for (j = 1; j <= 22; ++j) {
+    for(j = 1; j <= 22; ++j) {
       if (j % 2 == 0) xpos = dbox1[0] - dits[0];
       else            xpos = -dbox1[0] + dits[0];
       zpos = ((j - 1) - 10.) * 3.91 - 1.96;
@@ -3207,7 +3221,7 @@ void AliITSv3::CreateGeometry(){
     // --- Place the electronics of the strips into its mother (SSV1) 
     
     ypos = 0.;
-    for (j = 1; j <= 22; ++j) {
+    for(j = 1; j <= 22; ++j) {
       if (j % 2 == 0) xpos = -dsrv[0] + .28;
       else            xpos = -dsrv[0] + .28 - dits[0] * 2. - .03;
       zpos = ((j - 1) - 10.) * 3.91 - 1.96 + .85;
@@ -3235,7 +3249,7 @@ void AliITSv3::CreateGeometry(){
     
     xpos = -dsrv[0] + .47 + TMath::Sqrt(3.) / 6. * 4.2;
     ypos = 0.;
-    for (j = 1; j <= 23; ++j) {
+    for(j = 1; j <= 23; ++j) {
       zpos = ((j - 1) - 10.) * 3.91 - 1.96 - 4.2/2.;
       gMC->Gspos("SFR5", j, "SSV1", xpos, ypos, zpos, 0, "ONLY");
     }
@@ -3272,7 +3286,7 @@ void AliITSv3::CreateGeometry(){
     rzero   = dbox1[0] + 36.6;
     runo    = dbox1[0] * 2. + 36.6 + dsrv[0];
     rtwo    = dbox1[0] * 2. + 36.6 + dela[0];
-    for (i = 1; i <= 32; ++i) {
+    for(i = 1; i <= 32; ++i) {
       atheta = (i-1) * ktwopi * kraddeg / 32. + offset2;
       AliMatrix(idrotm[i+1499], 90., atheta, 90., atheta + 90., 0., 0.);
       
@@ -3454,7 +3468,7 @@ void AliITSv3::CreateGeometry(){
     // --- Place the sensitive part of the strips into its mother (ISV2) 
     
     ypos = 0.;
-    for (j = 1; j <= 24; ++j) {
+    for(j = 1; j <= 24; ++j) {
       if (j % 2 == 0) xpos = -dbox2[0] + dits[0];
       else            xpos = dbox2[0] - dits[0];
       zpos = ((j - 1) - 11.) * 3.91 - 1.96;
@@ -3464,7 +3478,7 @@ void AliITSv3::CreateGeometry(){
     // --- Place the electronics of the strips into its mother (SSV2) 
     
     ypos = 0.;
-    for (j = 1; j <= 24; ++j) {
+    for(j = 1; j <= 24; ++j) {
       if (j % 2 == 0) xpos = -dsrv[0] + .28 - dits[0] * 2. - .03;
       else            xpos = -dsrv[0] + .28;
       zpos = ((j - 1) - 11.) * 3.91 - 1.96 + .85;
@@ -3492,7 +3506,7 @@ void AliITSv3::CreateGeometry(){
     
     xpos = -dsrv[0] + .47 + TMath::Sqrt(3.) / 6. * 4.2;
     ypos = 0.;
-    for (j = 1; j <= 25; ++j) {
+    for(j = 1; j <= 25; ++j) {
       zpos = ((j - 1) - 11.) * 3.91 - 1.96 - 4.2/2.;
       gMC->Gspos("SFR6", j, "SSV2", xpos, ypos, zpos, 0, "ONLY");
     }
@@ -3529,7 +3543,7 @@ void AliITSv3::CreateGeometry(){
     rzero   = dbox2[0] + 41.2;
     runo    = dbox2[0] * 2. + 41.2 + dsrv[0];
     rtwo    = dbox2[0] * 2. + 41.2 + dela[0];
-    for (i = 1; i <= 36; ++i) {
+    for(i = 1; i <= 36; ++i) {
       atheta = (i-1) * ktwopi * kraddeg / 36. + offset2;
       AliMatrix(idrotm[i+1599], 90., atheta, 90., atheta + 90., 0., 0.);
       
@@ -3609,7 +3623,7 @@ void AliITSv3::CreateGeometry(){
     dtra1[2] = TMath::Sqrt(dtra[2] * dtra[2] + (55.4*55.4-50.5*50.5))/2.;
     angle    = 45.;
     offset   = angle / 2.;
-    for (i = 0; i < 8; ++i) {
+    for(i = 0; i < 8; ++i) {
       xtra[i] = rzero * TMath::Cos(i * angle * kdegrad);
       ytra[i] = rzero * TMath::Sin(i * angle * kdegrad);
       ztra[i] = 0.;
@@ -3774,7 +3788,7 @@ void AliITSv3::CreateGeometry(){
     dtra1[2] = TMath::Sqrt(dtra[2] * dtra[2] + (55.4*55.4-50.5*50.5))/2.;
     angle    = 45.;
     offset   = angle / 2.;
-    for (i = 0; i < 8; ++i) {
+    for(i = 0; i < 8; ++i) {
       xtra[i] = rzero * TMath::Cos(i * angle * kdegrad);
       ytra[i] = rzero * TMath::Sin(i * angle * kdegrad);
       ztra[i] = 0.;
@@ -3948,7 +3962,7 @@ void AliITSv3::CreateGeometry(){
     dtra4[2] = TMath::Sqrt(dtra2[2] * dtra2[2] + (59.9*59.9-50.*50.)) / 2.;
     angle = 60.;
     offset = angle / 2.;
-    for (i = 0; i < 6; ++i) {
+    for(i = 0; i < 6; ++i) {
       xtra1[i] = rzero * TMath::Cos((i * angle + offset) *kdegrad);
       ytra1[i] = rzero * TMath::Sin((i * angle + offset) *kdegrad);
       ztra1[i] = 0.;
@@ -4181,7 +4195,7 @@ void AliITSv3::CreateGeometry(){
     dtra4[2] = TMath::Sqrt(dtra2[2] * dtra2[2] + (59.9*59.9-50.*50.)) / 2.;
     angle  = 60.;
     offset = angle / 2.;
-    for (i = 0; i < 6; ++i) {
+    for(i = 0; i < 6; ++i) {
       xtra1[i] = rzero * TMath::Cos((i * angle + offset) *kdegrad);
       ytra1[i] = rzero * TMath::Sin((i * angle + offset) *kdegrad);
       ztra1[i] = 0.;
