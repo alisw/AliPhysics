@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -87,7 +91,7 @@ void AliMUONSegmentationV02::SetPad(Int_t ix,Int_t iy)
     //
     // Sets virtual pad coordinates, needed for evaluating pad response 
     // outside the tracking program 
-    GetPadC(ix,iy,fx,fy);
+    GetPadC(ix,iy,fX,fY);
     fSector=Sector(ix,iy);    
 }
 
@@ -103,26 +107,26 @@ void AliMUONSegmentationV02::NextPad()
     Int_t   ixc;
     
 //  step up    
-    if (fy < fymax && fy != 0) {
-	if (fiy==-1) fiy++;
-	fiy++;
+    if (fY < fYmax && fY != 0) {
+	if (fIy==-1) fIy++;
+	fIy++;
 //  step right 
-    } else if (fix != fixmax) {
-	if (fix==-1) fix++;
-	fix++;
+    } else if (fIx != fIxmax) {
+	if (fIx==-1) fIx++;
+	fIx++;
 //      get y-position of next row (yc), xc not used here 	
-	GetPadC(fix,fiy,xc,yc);
-//      get x-pad coordiante for 1 pad in row (fix)
-	GetPadI(xc,fymin,ixc,fiy);
+	GetPadC(fIx,fIy,xc,yc);
+//      get x-pad coordiante for 1 pad in row (fIx)
+	GetPadI(xc,fYmin,ixc,fIy);
     } else {
 	printf("\n Error: Stepping outside integration region\n ");
     }
-    GetPadC(fix,fiy,fx,fy);
-    fSector=Sector(fix,fiy);
+    GetPadC(fIx,fIy,fX,fY);
+    fSector=Sector(fIx,fIy);
     if (MorePads() && 
 	(fSector ==-1 || fSector==0 )) 
 	NextPad();
-//    printf("\n this pad %f %f %d %d \n",fx,fy,fix,fiy);
+//    printf("\n this pad %f %f %d %d \n",fX,fY,fIx,fIy);
     
 }
 
@@ -132,7 +136,7 @@ Int_t AliMUONSegmentationV02::MorePads()
 //
 // Are there more pads in the integration region
 {
-    if ((fy >= fymax  && fix >= fixmax) || fx==0) {
+    if ((fY >= fYmax  && fIx >= fIxmax) || fX==0) {
 	return 0;
     } else {
 	return 1;

@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.29  2000/07/28 13:49:38  morsch
+SetAcceptance defines inner and outer chamber radii according to angular acceptance.
+Can be used for simple acceptance studies.
+
 Revision 1.28  2000/07/22 16:43:15  morsch
 Same comment as before, but now done correctly I hope (sorry it's Saturday evening)
 
@@ -154,6 +158,7 @@ Log message added
 #include "AliMUONRawCluster.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
+#include "AliMUONTriggerCircuit.h"
 #include "AliHitMap.h"
 #include "AliMUONHitMapA1.h"
 #include "AliMUONChamberTrigger.h"

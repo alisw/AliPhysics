@@ -38,13 +38,13 @@ public AliMUONSegmentationV0 {
   Float_t fZscale;            // scaling factor (Zx/Z1, x=1,2,3,4)
 
 // Current pad during integration (cursor for disintegration)
-  Int_t fix;  // pad coord.  x 
-  Int_t fiy;  // pad coord.  y 
-  Float_t fx; // real coord. x
-  Float_t fy; // real ccord. y
+  Int_t fIx;  // pad coord.  x 
+  Int_t fIy;  // pad coord.  y 
+  Float_t fX; // real coord. x
+  Float_t fY; // real ccord. y
   
-  Float_t fxhit;  // x-position of hit
-  Float_t fyhit;  // y-position of hit
+  Float_t fXhit;  // x-position of hit
+  Float_t fYhit;  // y-position of hit
   Int_t   fSector;// Segmentation Sector
   
 };

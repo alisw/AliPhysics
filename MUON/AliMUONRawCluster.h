@@ -9,7 +9,7 @@
 class TArrayF;
 
 #include <TObject.h>
-#include <TMath.h>
+#include <TMath.h> // because of inline funtion GetRadius
 
 class AliMUONRawCluster : public TObject {
 public:

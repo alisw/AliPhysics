@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.6  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.5  2000/06/29 12:34:09  morsch
 AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
 it usable with any other geometry class. The link to the object to which it belongs is
@@ -123,7 +127,7 @@ void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof,
 	// neighbour real coordinates (just for checks here)
 	Float_t x,y,z;
 	segmentation->GetPadC(xList[j],yList[j],x,y,z);
-	// set pad (fx fy & fix fiy are the current pad coord. & Id.)
+	// set pad (fX fY & fIx fIy are the current pad coord. & Id.)
 	segmentation->SetPad(xList[j],yList[j]);
 	// get the chamber (i.e. current strip) response
 	qp=fResponse->IntXY(segmentation);	  

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/07/13 16:19:44  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.4  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -245,7 +248,7 @@ SetPad(Int_t ix, Int_t iy)
     //
     // Sets virtual pad coordinates, needed for evaluating pad response 
     // outside the tracking program 
-    GetPadC(ix,iy,fx,fy);
+    GetPadC(ix,iy,fX,fY);
     fSector=Sector(ix,iy);
 }
 
@@ -258,8 +261,8 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     //
     // Find the wire position (center of charge distribution)
     Float_t x0a=GetAnod(xhit);
-    fxhit=x0a;
-    fyhit=yhit;
+    fXhit=x0a;
+    fYhit=yhit;
     
     //
     // and take fNsigma*sigma around this center
@@ -269,20 +272,20 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     Float_t y02=yhit + dy;
     //
     // find the pads over which the charge distributes
-    GetPadI(x01,y01,fixmin,fiymin);
-    GetPadI(x02,y02,fixmax,fiymax);
-    fxmin=x01;
-    fxmax=x02;
-    fymin=y01;
-    fymax=y02;
+    GetPadI(x01,y01,fIxmin,fIymin);
+    GetPadI(x02,y02,fIxmax,fIymax);
+    fXmin=x01;
+    fXmax=x02;
+    fYmin=y01;
+    fYmax=y02;
     
     // 
     // Set current pad to lower left corner
-    if (fixmax < fixmin) fixmax=fixmin;
-    if (fiymax < fiymin) fiymax=fiymin;    
-    fix=fixmin;
-    fiy=fiymin;
-    GetPadC(fix,fiy,fx,fy);
+    if (fIxmax < fIxmin) fIxmax=fIxmin;
+    if (fIymax < fIymin) fIymax=fIymin;    
+    fIx=fIxmin;
+    fIy=fIymin;
+    GetPadC(fIx,fIy,fX,fY);
 }
 
 
@@ -297,22 +300,22 @@ void AliMUONSegmentationV01::NextPad()
     Int_t   iyc;
     
 //  step from left to right    
-    if (fx < fxmax && fx != 0) {
-	if (fix==-1) fix++;
-	fix++;
+    if (fX < fXmax && fX != 0) {
+	if (fIx==-1) fIx++;
+	fIx++;
 //  step up 
-    } else if (fiy != fiymax) {
-	if (fiy==-1) fiy++;
-	fiy++;
+    } else if (fIy != fIymax) {
+	if (fIy==-1) fIy++;
+	fIy++;
 //      get y-position of next row (yc), xc not used here 	
-	GetPadC(fix,fiy,xc,yc);
-//      get x-pad coordiante for first pad in row (fix)
-	GetPadI(fxmin,yc,fix,iyc);
+	GetPadC(fIx,fIy,xc,yc);
+//      get x-pad coordiante for first pad in row (fIx)
+	GetPadI(fXmin,yc,fIx,iyc);
     } else {
 	printf("\n Error: Stepping outside integration region\n ");
     }
-    GetPadC(fix,fiy,fx,fy);
-    fSector=Sector(fix,fiy);
+    GetPadC(fIx,fIy,fX,fY);
+    fSector=Sector(fIx,fIy);
     if (MorePads() && 
 	(fSector ==-1 || fSector==0)) 
 	NextPad();
@@ -323,7 +326,7 @@ Int_t AliMUONSegmentationV01::MorePads()
 //
 // Are there more pads in the integration region
 {
-    if ((fx >= fxmax  && fiy >= fiymax) || fy==0) {
+    if ((fX >= fXmax  && fIy >= fIymax) || fY==0) {
 	return 0;
     } else {
 	return 1;
@@ -335,9 +338,9 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
 {
 //  Returns integration limits for current pad
 //
-    x1=fxhit-fx-Dpx(fSector)/2.;
+    x1=fXhit-fX-Dpx(fSector)/2.;
     x2=x1+Dpx(fSector);
-    y1=fyhit-fy-Dpy(fSector)/2.;
+    y1=fYhit-fY-Dpy(fSector)/2.;
     y2=y1+Dpy(fSector);    
 }
 

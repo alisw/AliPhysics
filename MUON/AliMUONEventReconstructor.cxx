@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/09/22 09:16:33  hristov
+Casting needed on DEC
+
 Revision 1.10  2000/09/19 09:49:50  gosset
 AliMUONEventReconstructor package
 * track extrapolation independent from reco_muon.F, use of AliMagF...
@@ -746,7 +749,7 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
   AliMUONSegment *segment;
   Bool_t last2st;
   Double_t bendingSlope, distBend, distNonBend, extBendCoor, extNonBendCoor,
-    impactParam, maxImpactParam;
+      impactParam = 0., maxImpactParam = 0.; // =0 to avoid compilation warnings.
   AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   if (fPrintLevel >= 1)
     cout << "enter MakeSegmentsPerStation (0...) " << Station << endl;
@@ -1016,7 +1019,8 @@ void AliMUONEventReconstructor::FollowTracks(void)
   AliMUONSegment *bestSegment, *extrapSegment, *segment;
   AliMUONTrack *track, *nextTrack;
   AliMUONTrackParam *trackParam1, trackParam[2], trackParamVertex;
-  Int_t ch, chInStation, chBestHit, iHit, iSegment, station, trackIndex;
+  // -1 to avoid compilation warnings
+  Int_t ch = -1, chInStation, chBestHit = -1, iHit, iSegment, station, trackIndex; 
   Double_t bestChi2, chi2, dZ1, dZ2, dZ3, maxSigma2Distance, mcsFactor;
   AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   // local maxSigma2Distance, for easy increase in testing
@@ -1322,7 +1326,3 @@ void AliMUONEventReconstructor::EventDump(void)
   return;
 }
 
-void AliMUONEventReconstructor::Streamer(TBuffer &R__b)
-{
-    ;
-}

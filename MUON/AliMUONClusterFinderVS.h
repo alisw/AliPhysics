@@ -11,7 +11,6 @@
 #include <TObject.h>
 #include "AliMUONHitMapA1.h"
 #include "AliMUONClusterInput.h"
-#include "TF1.h"
 
 class AliMUONResponse;
 class AliSegmentation;

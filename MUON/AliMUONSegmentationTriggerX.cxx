@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.5  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.4  2000/06/29 12:34:09  morsch
 AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
 it usable with any other geometry class. The link to the object to which it belongs is
@@ -159,8 +163,8 @@ void AliMUONSegmentationTriggerX::SetPad(Int_t ix, Int_t iy)
 {
   // Sets virtual pad coordinates, needed for evaluating pad response 
   // outside the tracking program
-  GetPadC(ix,iy,fx,fy);
-  GetPadI(fx,fy,fix,fiy);
+  GetPadC(ix,iy,fX,fY);
+  GetPadI(fX,fY,fIx,fIy);
   fSector=Sector(ix,iy);
 }
 
@@ -170,11 +174,11 @@ Int_t AliMUONSegmentationTriggerX::ISector()
 
 //------------------------------------------------------------------   
 Int_t AliMUONSegmentationTriggerX::Ix()
-{ return fix;}
+{ return fIx;}
 
 //------------------------------------------------------------------   
 Int_t AliMUONSegmentationTriggerX::Iy()
-{ return fiy;}
+{ return fIy;}
 
 //------------------------------------------------------------------
 Float_t AliMUONSegmentationTriggerX::Dpx(Int_t isec)
@@ -261,11 +265,11 @@ IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& width)
 
   Int_t ix,iy;
   Float_t xstrip,ystrip;
-  GetPadI(fxhit,fyhit,ix,iy);  
+  GetPadI(fXhit,fYhit,ix,iy);  
   GetPadC(ix,iy,xstrip,ystrip);  
-  x1=fyhit;        // hit y position
+  x1=fYhit;        // hit y position
   x2=ystrip;       // y coordinate of the main strip
-  x3=fy;           // current strip real y coordinate  
+  x3=fY;           // current strip real y coordinate  
   width=StripSizeX(ix);   // width of the main strip 
 }
 

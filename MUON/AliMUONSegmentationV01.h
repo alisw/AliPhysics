@@ -108,10 +108,10 @@ public AliMUONSegmentationV0 {
     // Chamber region consideres during disintegration
     // (lower left and upper right corner)
     //
-    Float_t fxmin; // lower left  x
-    Float_t fxmax; // lower left  y
-    Float_t fymin; // upper right x
-    Float_t fymax; // upper right y 
+    Float_t fXmin; // lower left  x
+    Float_t fXmax; // lower left  y
+    Float_t fYmin; // upper right x
+    Float_t fYmax; // upper right y 
 
     //
     // Current pad during integration (cursor for disintegration)

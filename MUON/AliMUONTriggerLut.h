@@ -2,9 +2,7 @@
 #define ALIMUONTRIGGERLUT_H
 
 #include "TNamed.h"
-#include "TFile.h"
-#include "TH3.h"
-#include <iostream.h>
+#include "TH3.h" // needed by Streamer
 
 //----------------------------------------------
 class AliMUONTriggerLut : 

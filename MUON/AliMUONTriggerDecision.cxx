@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.4  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.3  2000/06/25 17:02:19  pcrochet
 scope problem on HP, i declared once, pow replaced by TMath::Power (PH)
 
@@ -41,7 +45,7 @@ Revision 1.1.2.2  2000/03/21 09:24:34  morsch
 Author and responsible for the code: Philippe Crochet
 */
 
-
+#include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerDecision.h"
 #include "AliMUONTriggerLut.h"
 #include "AliMUONHitMapA1.h"
@@ -71,7 +75,7 @@ ClassImp(AliMUONTriggerDecision)
 AliMUONTriggerDecision::AliMUONTriggerDecision(Int_t iprint)
 {
 // Constructor 
-  fiDebug = iprint;            // print option
+  fDebug = iprint;            // print option
 // iprint = 0 : don't print anything
 // iprint = 1 : print Global Trigger Output
 // iprint = 2 : print Local and Global Trigger Outputs
@@ -94,9 +98,9 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(Int_t iprint)
   }
   // Local Trigger information
   for (icirc=0; icirc<234; icirc++){
-    fiTrigger[icirc]=0;                   // trigger or not
+    fTrigger[icirc]=0;                   // trigger or not
     fStripX11[icirc]=0;                   // X strip in MC11 which triggers 
-    fdev[icirc]=0;                        // deviation which triggers 
+    fDev[icirc]=0;                        // deviation which triggers 
     fStripY11[icirc]=0;                   // Y strip in MC11 which triggers 
     for (i=0; i<2; i++) {           // pt information via LuT
       fLutLpt[icirc][i]=fLutHpt[icirc][i]=fLutApt[icirc][i]=0;    
@@ -161,7 +165,7 @@ void AliMUONTriggerDecision::Trigger(){
     Int_t iTrigger=0;
     LocalTrigger(icirc, minDevStrip, minDev, coordY, iTrigger);
 
-    if (iTrigger==1&&fiDebug>1) { 
+    if (iTrigger==1&&fDebug>1) { 
       PrintBitPatXInput(icirc);
       PrintBitPatYInput(icirc);
       PrintLocalOutput(minDevStrip, minDev, coordY);
@@ -201,9 +205,9 @@ void AliMUONTriggerDecision::ResetBit(){
     fGlobalPairLike[i]=0;
   }
   for (icirc=0; icirc<234; icirc++){
-    fiTrigger[icirc]=0;
+    fTrigger[icirc]=0;
     fStripX11[icirc]=0;
-    fdev[icirc]=0;                      
+    fDev[icirc]=0;                      
     fStripY11[icirc]=0;                 
     for (i=0; i<2; i++) {         
       fLutLpt[icirc][i]=fLutHpt[icirc][i]=fLutApt[icirc][i]=0;    
@@ -522,7 +526,7 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
   }
 
 //--- 
-  if(fiDebug==3||fiDebug==5) {
+  if(fDebug==3||fDebug==5) {
     cout << "===============================================================" << "\n";
     cout << " X plane after sgle and dble " << " \n";
     cout << "                       0987654321098765432109876543210";
@@ -597,7 +601,7 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
  }
 
   //-----------
- if(fiDebug==3||fiDebug==5) {
+ if(fDebug==3||fDebug==5) {
     cout << "===============================================================" << "\n";
    for (i=30; i>=0; i--) {
      cout << i << "\t ";
@@ -697,7 +701,7 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
   }
   
 //---
-  if(fiDebug==3||fiDebug==5) {
+  if(fDebug==3||fDebug==5) {
     cout << "===============================================================" << "\n";
     for (i=30; i>=0; i--) {
       cout << i << "\t ";
@@ -719,7 +723,7 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
     Sort2x5(dev[30],tmpMax,tmpbga1[15],bga1[15]);
 
 //--    
-  if(fiDebug==3||fiDebug==5) {
+  if(fDebug==3||fDebug==5) {
     cout << "===============================================================" << "\n";
     cout << " sorting : 1st level " << "\n";
     for (i=15; i>=0; i--) {
@@ -736,7 +740,7 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
   }
 
 //--    
-  if(fiDebug==3||fiDebug==5) {
+  if(fDebug==3||fDebug==5) {
     cout << "===============================================================" << "\n";
     cout << " sorting : 2nd level " << "\n";
     for (i=7; i>=0; i--) {
@@ -753,7 +757,7 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
   }
 
 //--    
-  if(fiDebug==3||fiDebug==5) {
+  if(fDebug==3||fDebug==5) {
     cout << "===============================================================" << "\n";
     cout << " sorting : 3rd level " << "\n";
     for (i=3; i>=0; i--) {
@@ -770,7 +774,7 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
   }
 
 //--    
-  if(fiDebug==3||fiDebug==5) {
+  if(fDebug==3||fDebug==5) {
     cout << "===============================================================" << "\n";
     cout << " sorting : 4th level " << "\n";
     for (i=1; i>=0; i--) {
@@ -803,7 +807,7 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
     tmpAd=minDevStrip[1]+minDevStrip[2]*2+minDevStrip[3]*4+minDevStrip[4]*8;
     if (tmpAd<=15) minDevStrip[0]=bga1[tmpAd];
 
-  if(fiDebug==3||fiDebug==5) {
+  if(fDebug==3||fDebug==5) {
     cout << "===============================================================" << "\n";
     cout << "minDevStrip = ";
     for  (i=4; i>=0; i--) {cout << minDevStrip[i];}
@@ -912,7 +916,7 @@ void AliMUONTriggerDecision::TrigY(Int_t y1[16], Int_t y2[16],
   }
 
 // debug
-  if(fiDebug==4||fiDebug==5) {
+  if(fDebug==4||fDebug==5) {
     cout << "===============================================================" << "\n";  
     cout << " Y plane after PreHandling x2m x2ud orMud " 
 	 << x2m << " , " << x2ud << " , " << orMud[0] << orMud[1] << "\n"; 
@@ -957,7 +961,7 @@ void AliMUONTriggerDecision::TrigY(Int_t y1[16], Int_t y2[16],
   }
 
   //debug
-  if(fiDebug==4||fiDebug==5) {
+  if(fDebug==4||fDebug==5) {
     cout << "===============================================================" << "\n";
     cout << " Y plane after sgle dble " << "\n"; 
     cout << "                            ";
@@ -1021,7 +1025,7 @@ void AliMUONTriggerDecision::TrigY(Int_t y1[16], Int_t y2[16],
 
 
 //debug
-  if(fiDebug==4||fiDebug==5) {
+  if(fDebug==4||fDebug==5) {
     cout << "===============================================================" << "\n";
     cout << " Y plane frontImage\n";
     cout << "                            ";
@@ -1113,8 +1117,8 @@ void AliMUONTriggerDecision::LocalTrigger(Int_t icirc,
   }
   
   if (iTrigger==1) { 
-// fill fiTrigger fStripX11 fStripY11 
-    fiTrigger[icirc] = 1;
+// fill fTrigger fStripX11 fStripY11 
+    fTrigger[icirc] = 1;
     fStripX11[icirc] = istripX1Circ;
     fStripY11[icirc] = iStripY;
     
@@ -1123,19 +1127,19 @@ void AliMUONTriggerDecision::LocalTrigger(Int_t icirc,
     if (signDev==0&&deviation!=0) sign=-1;
     if (signDev==0&&deviation==0) sign=0;
     if (signDev==1)               sign=1;    
-    fdev[icirc] = sign * deviation + 15; // fill fdev 
+    fDev[icirc] = sign * deviation + 15; // fill fDev 
 
 // get Lut output for circuit/istripX/idev/istripY
     AliMUONTriggerLut* lut = new AliMUONTriggerLut;    
     //    lut->StartEvent();
-    lut->GetLutOutput(icirc,fStripX11[icirc],fdev[icirc],fStripY11[icirc],
+    lut->GetLutOutput(icirc,fStripX11[icirc],fDev[icirc],fStripY11[icirc],
 		      fLutLpt[icirc],fLutHpt[icirc],fLutApt[icirc]);
     //    lut->FinishEvent();
     delete lut;
     
-    if (fiDebug>1) {
+    if (fDebug>1) {
       Float_t pt= // get ptCal corresponding to istripX1Circ/idev/iStripY
-      triggerCircuit->PtCal(fStripX11[icirc],fdev[icirc],fStripY11[icirc]);
+      triggerCircuit->PtCal(fStripX11[icirc],fDev[icirc],fStripY11[icirc]);
       cout << "-------------------------------------------" << "\n";
       cout << " Local Trigger info for circuit Id " << idCircuit 
 	   << " (number " << icirc << ")" << "\n";
@@ -1152,7 +1156,7 @@ void AliMUONTriggerDecision::LocalTrigger(Int_t icirc,
       for (i=1; i>=0; i--) { cout << fLutApt[icirc][i] ; }	  
       cout << "\n";
       cout << "-------------------------------------------" << "\n";
-    } // fiDebug > 1    
+    } // fDebug > 1    
   }  // local trigger = 1
 }
 
@@ -1201,7 +1205,7 @@ void AliMUONTriggerDecision::GlobalTrigger(){
       fGlobalSingleUndef[i]*fGlobalSingleMinus[i]; 
   }
   
-  if (fiDebug>=1) {
+  if (fDebug>=1) {
     cout << "\n";
     cout << "===================================================" << "\n";
     cout << " Global Trigger output       " << "Low pt  High pt   All"  << "\n";
@@ -1336,7 +1340,7 @@ void AliMUONTriggerDecision::PrintLocalOutput(Int_t minDevStrip[5],
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerDecision::GetITrigger(Int_t icirc){
 // returns Local Trigger Status
-  return fiTrigger[icirc];
+  return fTrigger[icirc];
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerDecision::GetStripX11(Int_t icirc){
@@ -1346,7 +1350,7 @@ Int_t AliMUONTriggerDecision::GetStripX11(Int_t icirc){
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerDecision::GetDev(Int_t icirc){
 // returns idev
-  return fdev[icirc];
+  return fDev[icirc];
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerDecision::GetStripY11(Int_t icirc){

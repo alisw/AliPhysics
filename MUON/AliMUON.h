@@ -9,7 +9,7 @@
 //  Manager and hits classes for set:MUON     //
 ////////////////////////////////////////////////
 #include "AliDetector.h"
-#include "AliMUONTriggerCircuit.h" // cp
+// #include "AliMUONTriggerCircuit.h" // cp
 
 class AliMUONChamber;
 class AliMUONLocalTrigger;

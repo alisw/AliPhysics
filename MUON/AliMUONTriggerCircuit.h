@@ -64,9 +64,9 @@ public TObject {
   ClassDef(AliMUONTriggerCircuit,1) // Trigger Circuit class
     
  private:    
-  Int_t fidCircuit;            // circuit Id number
-  Int_t fx2m;                  // internal info needed by TriggerDecision
-  Int_t fx2ud;                 // internal info needed by TriggerDecision
+  Int_t fIdCircuit;            // circuit Id number
+  Int_t fX2m;                  // internal info needed by TriggerDecision
+  Int_t fX2ud;                 // internal info needed by TriggerDecision
   Int_t fOrMud[2];             // internal info needed by TriggerDecision
   Int_t fXcode[4][32];         // code of X strips
   Int_t fYcode[4][32];         // code of Y strips 

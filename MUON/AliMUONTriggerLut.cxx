@@ -14,8 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.3  2000/06/25 16:47:43  pcrochet
+pow replaced by TMath::Power
+
 */
 
+#include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerLut.h"
 #include "TTree.h"
 #include "AliRun.h"
@@ -24,7 +28,7 @@ $Log$
 #include "TMath.h"
 #include "TFile.h"
 #include "TH3.h"
-#include "iostream.h"
+#include <iostream.h>
 
 ClassImp(AliMUONTriggerLut)
 

@@ -7,6 +7,8 @@
 
 #include "AliSegmentation.h"
 
+#include "TF1.h"
+
 //----------------------------------------------
 //
 // Chamber segmentation for homogeneously segmented circular chamber
@@ -84,9 +86,9 @@ dummy);
     //
     // Current Pad during Integration
     // x-coordinaten
-    virtual Int_t  Ix(){return fix;}
+    virtual Int_t  Ix(){return fIx;}
     // y-coordinate
-    virtual Int_t  Iy(){return fiy;}
+    virtual Int_t  Iy(){return fIy;}
     // current sector
     virtual Int_t  ISector(){return 1;}
     // calculate sector from pad coordinates
@@ -130,28 +132,28 @@ dummy);
     
     
     // Chamber region consideres during disintegration   
-    Int_t fixmin; // lower left  x
-    Int_t fixmax; // lower left  y
-    Int_t fiymin; // upper right x
-    Int_t fiymax; // upper right y 
+    Int_t fIxmin; // lower left  x
+    Int_t fIxmax; // lower left  y
+    Int_t fIymin; // upper right x
+    Int_t fIymax; // upper right y 
     //
     // Current pad during integration (cursor for disintegration)
-    Int_t fix;  // pad coord.  x 
-    Int_t fiy;  // pad coord.  y 
-    Float_t fx; // real coord. x
-    Float_t fy; // real ccord. y
+    Int_t fIx;  // pad coord.  x 
+    Int_t fIy;  // pad coord.  y 
+    Float_t fX; // real coord. x
+    Float_t fY; // real ccord. y
     //
     // Current pad and wire during tracking (cursor at hit centre)
     //
     //
-    Float_t fxhit;  // x-position of hit
-    Float_t fyhit;  // y-position of hit
+    Float_t fXhit;  // x-position of hit
+    Float_t fYhit;  // y-position of hit
     // Reference point to define signal generation condition
-    Int_t fixt;     // pad coord. x
-    Int_t fiyt;     // pad coord. y
-    Int_t fiwt;     // wire number
-    Float_t fxt;    // x
-    Float_t fyt;    // y
+    Int_t fIxt;     // pad coord. x
+    Int_t fIyt;     // pad coord. y
+    Int_t fIwt;     // wire number
+    Float_t fXt;    // x
+    Float_t fYt;    // y
     TF1*    fCorr;  // correction function
 };
 #endif

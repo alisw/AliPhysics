@@ -99,7 +99,7 @@ public AliSegmentation {
     virtual Int_t Ix(Int_t trueX, Int_t trueY);
     virtual Int_t Ix();
     // y-coordinate
-    virtual Int_t Iy(){return fiy;}
+    virtual Int_t Iy(){return fIy;}
     // current sector
     virtual Int_t ISector();
     // calculate sector from pad coordinates
@@ -158,26 +158,26 @@ public AliSegmentation {
     
     // Chamber region consideres during disintegration (lower left and upper right corner)
     //
-    Int_t fixmin; // lower left  x
-    Int_t fixmax; // lower left  y
-    Int_t fiymin; // upper right x
-    Int_t fiymax; // upper right y 
+    Int_t fIxmin; // lower left  x
+    Int_t fIxmax; // lower left  y
+    Int_t fIymin; // upper right x
+    Int_t fIymax; // upper right y 
     //
     // Current pad during integration (cursor for disintegration)
-    Int_t fix;   // pad coord.  x
-    Int_t fiy;   // pad coord.  y
-    Float_t fx;  // real coord. x
-    Float_t fy;  // real ccord. y
+    Int_t fIx;   // pad coord.  x
+    Int_t fIy;   // pad coord.  y
+    Float_t fX;  // real coord. x
+    Float_t fY;  // real ccord. y
     //
     // Current pad and wire during tracking (cursor at hit centre)
-    Int_t fixt;  // x-position of hit
-    Int_t fiyt;  // y-position of hit
+    Int_t fIxt;  // x-position of hit
+    Int_t fIyt;  // y-position of hit
     // Reference point to define signal generation condition
-    Int_t fiwt;     // wire number
-    Float_t fxt;    // x
-    Float_t fyt;    // y
-    Float_t fxhit;  // x-position of hit
-    Float_t fyhit;  // y-position of hit
+    Int_t fIwt;     // wire number
+    Float_t fXt;    // x
+    Float_t fYt;    // y
+    Float_t fXhit;  // x-position of hit
+    Float_t fYhit;  // y-position of hit
     
     TF1* fCorr;     // correction function
 };

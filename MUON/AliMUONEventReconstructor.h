@@ -147,7 +147,7 @@ class AliMUONEventReconstructor : public TObject {
   void FollowTracks(void);
   void RemoveDoubleTracks(void);
 
-  ClassDef(AliMUONEventReconstructor, 1) // MUON event reconstructor in ALICE
+  ClassDef(AliMUONEventReconstructor, 0) // MUON event reconstructor in ALICE
     };
 	
 #endif

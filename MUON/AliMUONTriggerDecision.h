@@ -62,7 +62,7 @@ public TObject {
   ClassDef(AliMUONTriggerDecision,1) // Trigger Decision class
 
     protected:     
-  Int_t fiDebug;               // print option     
+  Int_t fDebug;               // print option     
 
   // Global Trigger information [0] : Low pt, [1] : High pt, [2] : All pt 
   Int_t fGlobalSinglePlus[3];  // tot num of single plus
@@ -72,9 +72,9 @@ public TObject {
   Int_t fGlobalPairLike[3];    // tot num of like-sign pairs
 
   // Local Trigger information
-  Int_t fiTrigger[234];  // fiTrigger = 0 : no trigger, 1 : trigger
+  Int_t fTrigger[234];  // fTrigger = 0 : no trigger, 1 : trigger
   Int_t fStripX11[234];  // X strip in MC11 which triggers
-  Int_t fdev[234];       // deviation which triggers
+  Int_t fDev[234];       // deviation which triggers
   Int_t fStripY11[234];  // Y strip in MC11 which triggers
   Int_t fLutLpt[234][2]; // Local Trigger info Low pt
   Int_t fLutHpt[234][2]; // Local Trigger info High pt

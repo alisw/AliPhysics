@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.6  2000/09/19 09:49:50  gosset
+AliMUONEventReconstructor package
+* track extrapolation independent from reco_muon.F, use of AliMagF...
+* possibility to use new magnetic field (automatic from generated root file)
+
 Revision 1.5  2000/07/18 16:04:06  gosset
 AliMUONEventReconstructor package:
 * a few minor modifications and more comments
@@ -245,7 +250,7 @@ void AliMUONTrackParam::ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackP
   // are returned in the array (dimension 2) of track parameters
   // pointed to by "TrackParam" (index 0 and 1 for first and second chambers).
   Double_t extZ[2], z1, z2;
-  Int_t i1, i2;
+  Int_t i1 = -1, i2 = -1; // = -1 to avoid compilation warnings
   AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   // range of Station to be checked ????
   z1 = (&(pMUON->Chamber(2 * Station)))->Z(); // Z of first chamber

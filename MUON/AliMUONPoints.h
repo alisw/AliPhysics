@@ -11,7 +11,7 @@ class AliMUONHit;
 
 class TMatrix;
 
-#include <TMarker3DBox.h>
+#include <TMarker3DBox.h> // needed for Cint compilation of Streamer
 #include "AliPoints.h"
 
 class AliMUONPoints : public AliPoints {

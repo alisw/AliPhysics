@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/29 12:34:09  morsch
+AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
+it usable with any other geometry class. The link to the object to which it belongs is
+established via an index. This assumes that there exists a global geometry manager
+from which the pointer to the parent object can be obtained (in our case gAlice).
+
 Revision 1.3  2000/06/26 10:00:14  pcrochet
 global variables removed, problem with HP compiler solved (PH)
 
@@ -228,8 +234,8 @@ void AliMUONSegmentationTrigger::SetHit(Float_t xhit, Float_t yhit)
     // Sets virtual hit position, needed for evaluating pad response 
     // outside the tracking program 
     
-  fxhit=xhit;
-  fyhit=yhit;
+  fXhit=xhit;
+  fYhit=yhit;
 }
 
 

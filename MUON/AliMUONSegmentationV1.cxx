@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.4  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.3  2000/06/29 12:34:09  morsch
 AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
 it usable with any other geometry class. The link to the object to which it belongs is
@@ -180,24 +184,24 @@ void AliMUONSegmentationV1::
 SetHit(Float_t xhit, Float_t yhit)
 {
 // Find the wire position (center of charge distribution)
-    fxhit=xhit;
-    fyhit=yhit;
+    fXhit=xhit;
+    fYhit=yhit;
 }
 
 void AliMUONSegmentationV1::
 SetPad(Int_t ix, Int_t iy)
 {
 // Set current pad position
-    GetPadC(ix,iy,fx,fy);
+    GetPadC(ix,iy,fX,fY);
 }
 
 
 void AliMUONSegmentationV1::SetPadCoord(Int_t iX, Int_t iY)
 {    
 // Set current pad coordinates
-GetPadC(iX,iY,fx,fy);
+GetPadC(iX,iY,fX,fY);
  Float_t radius2;
- if ( ( (radius2=fx*fx+fy*fy) > frSensMax2 || radius2 < frSensMin2 ) 
+ if ( ( (radius2=fX*fX+fY*fY) > frSensMax2 || radius2 < frSensMin2 ) 
       && MorePads() )
      NextPad();
 }
@@ -207,8 +211,8 @@ void AliMUONSegmentationV1::FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Flo
     //
     // Find the wire position (center of charge distribution)
     Float_t x0a=GetAnod(xhit);
-    fxhit=x0a;
-    fyhit=yhit;
+    fXhit=x0a;
+    fYhit=yhit;
     //
     // and take fNsigma*sigma around this center
     Float_t x01=x0a  - dx;
@@ -227,27 +231,27 @@ void AliMUONSegmentationV1::FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Flo
       y02 = TMath::Sign(fSensOffset, yhit);
     //
     // find the pads over which the charge distributes
-    GetPadI(x01,y01,fixmin,fiymin);
-    GetPadI(x02,y02,fixmax,fiymax);
+    GetPadI(x01,y01,fIxmin,fIymin);
+    GetPadI(x02,y02,fIxmax,fIymax);
     // 
     // Set current pad to lower left corner
-    fix=fixmin;
-    fiy=fiymin;
-    SetPadCoord(fix,fiy);
+    fIx=fIxmin;
+    fIy=fIymin;
+    SetPadCoord(fIx,fIy);
 }
 
 void AliMUONSegmentationV1::NextPad()
 {
   // 
   // Step to next pad in integration region
-    if (fix != fixmax) {
-	fix++;
-    } else if (fiy != fiymax) {
-	fix=fixmin;
-	fiy++;
+    if (fIx != fIxmax) {
+	fIx++;
+    } else if (fIy != fIymax) {
+	fIx=fIxmin;
+	fIy++;
     } else 
 	printf("\n Error: Stepping outside integration region\n ");
-    SetPadCoord(fix,fiy);
+    SetPadCoord(fIx,fIy);
 }
 
 Int_t AliMUONSegmentationV1::MorePads()
@@ -255,7 +259,7 @@ Int_t AliMUONSegmentationV1::MorePads()
 //
 // Are there more pads in the integration region
 
-    if (fix == fixmax && fiy == fiymax) {
+    if (fIx == fIxmax && fIy == fIymax) {
 	return 0;
     } else {
 	return 1;	
@@ -359,23 +363,23 @@ Int_t AliMUONSegmentationV1::Ix()
 {
 // returns the X number of pad which has to increment charge
 // due to parallel read-out
-return Ix(fix,fiy);
+return Ix(fIx,fIy);
 }
 
 Int_t AliMUONSegmentationV1::ISector()
 {
 // This function is of no use for this kind of segmentation.
-    return GetZone(fix,fiy);
+    return GetZone(fIx,fIy);
 }
 
 void AliMUONSegmentationV1::SigGenInit(Float_t x,Float_t y,Float_t z)
 {
 //
 //  Initialises pad and wire position during stepping
-    fxt =x;
-    fyt =y;
-    GetPadI(x,y,fixt,fiyt);
-    fiwt= GetiAnod(x);
+    fXt =x;
+    fYt =y;
+    GetPadI(x,y,fIxt,fIyt);
+    fIwt= GetiAnod(x);
 
 }
 
@@ -389,7 +393,7 @@ Int_t AliMUONSegmentationV1::SigGenCond(Float_t x,Float_t y,Float_t z)
     GetPadI(x,y,ixt,iyt);
     Int_t iwt= GetiAnod(x);
     
-    if ((ixt != fixt) || (iyt !=fiyt) || (iwt != fiwt)) {
+    if ((ixt != fIxt) || (iyt !=fIyt) || (iwt != fIwt)) {
 	return 1;
     } else {
 	return 0;
@@ -400,9 +404,9 @@ void AliMUONSegmentationV1::
 IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
 {
 // Get integration limits
-    x1=fxhit-fx-fDpx/2.;
+    x1=fXhit-fX-fDpx/2.;
     x2=x1+fDpx;
-    y1=fyhit-fy-fDpy/2.;
+    y1=fYhit-fY-fDpy/2.;
     y2=y1+fDpy;    
 }
 

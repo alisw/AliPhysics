@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.6  2000/07/13 16:19:44  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.5  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -48,9 +51,9 @@ AliMUONTriggerCircuit::AliMUONTriggerCircuit()
 {
 // Constructor
   fSegmentation=0;
-  fidCircuit=0;
-  fx2m=0;
-  fx2ud=0;
+  fIdCircuit=0;
+  fX2m=0;
+  fX2ud=0;
   fOrMud[0]=fOrMud[1]=0;
   Int_t i;  
   for (i=0; i<4; i++) {
@@ -80,7 +83,7 @@ AliMUONTriggerCircuit & AliMUONTriggerCircuit::operator=(const AliMUONTriggerCir
 //----------------------------------------------------------------------
 void AliMUONTriggerCircuit::Init(Int_t iCircuit) {
 // initialize circuit characteristics
-  fidCircuit=AliMUONTriggerConstants::CircuitId(iCircuit);
+  fIdCircuit=AliMUONTriggerConstants::CircuitId(iCircuit);
   LoadX2();
   LoadXCode();
   LoadYCode();
@@ -127,14 +130,14 @@ Int_t AliMUONTriggerCircuit::Position(Int_t idCircuit) {
 
 //----------------------------------------------------------------------
 void AliMUONTriggerCircuit::LoadX2() {
-// initialize fx2m, fx2ud and fOrMud
+// initialize fX2m, fX2ud and fOrMud
   
-  Int_t idModule=Module(fidCircuit);        // corresponding module Id.
+  Int_t idModule=Module(fIdCircuit);        // corresponding module Id.
 // and its number of X strips
   Int_t nStrX=AliMUONTriggerConstants::NstripX(ModuleNumber(idModule)); 
 // and its number of Y strips
   Int_t nStrY=AliMUONTriggerConstants::NstripY(ModuleNumber(idModule)); 
-  Int_t iPosCircuit=Position(fidCircuit); // position of circuit in module
+  Int_t iPosCircuit=Position(fIdCircuit); // position of circuit in module
   
 // first step : look at lower part 
   if (iPosCircuit==1) {               // need to scan lower module       
@@ -145,8 +148,8 @@ void AliMUONTriggerCircuit::LoadX2() {
       
       if (nStrY!=nStrD    
 	  &&TMath::Abs(idModule)!=42&&TMath::Abs(idModule)!=52) {   
-	if (nStrY==8) fx2m=1; 
-	if (nStrD==8) fx2ud=1; 
+	if (nStrY==8) fX2m=1; 
+	if (nStrD==8) fX2ud=1; 
       }      
     }      
 
@@ -164,8 +167,8 @@ void AliMUONTriggerCircuit::LoadX2() {
 
       if (nStrY!=nStrU    
 	  &&TMath::Abs(idModule)!=62&&TMath::Abs(idModule)!=52) {   
-	if (nStrY==8) fx2m=1; 
-	if (nStrU==8) fx2ud=1;
+	if (nStrY==8) fX2m=1; 
+	if (nStrU==8) fX2ud=1;
       }      
     }     
     
@@ -181,10 +184,10 @@ void AliMUONTriggerCircuit::LoadXCode(){
 
 // first part : fill XMC11 XMC12 and strips 8 to 24 (middle) XMC21 XMC22
   Int_t iStripCircMT1=0, iStripCircMT2=8;
-  Int_t idModule=Module(fidCircuit);        // corresponding module Id.
+  Int_t idModule=Module(fIdCircuit);        // corresponding module Id.
 // and its number of strips
   Int_t nStrX=AliMUONTriggerConstants::NstripX(ModuleNumber(idModule)); 
-  Int_t iPosCircuit=Position(fidCircuit);   // position of circuit in module  
+  Int_t iPosCircuit=Position(fIdCircuit);   // position of circuit in module  
   Int_t sign=TMath::Abs(idModule)/idModule; // left or right 
   Int_t istrip;
 
@@ -204,7 +207,7 @@ void AliMUONTriggerCircuit::LoadXCode(){
   Int_t idModuleD, idModuleU;
   Int_t nStrD, nStrU;
 
-  idModule=Module(fidCircuit); // corresponding module Id.
+  idModule=Module(fIdCircuit); // corresponding module Id.
 // number of X strips
   nStrX=AliMUONTriggerConstants::NstripX(ModuleNumber(idModule));  
   sign=TMath::Abs(idModule)/idModule;
@@ -271,7 +274,7 @@ void AliMUONTriggerCircuit::LoadYCode(){
 // note : for Y plane fill only "central part" of circuit
 // (upper and lower parts are filled in PreHandlingY of AliMUONTriggerDecision)
     
-  Int_t idModule=Module(fidCircuit);        // corresponding module Id.
+  Int_t idModule=Module(fIdCircuit);        // corresponding module Id.
 // and its number of Y strips
   Int_t nStrY=AliMUONTriggerConstants::NstripY(ModuleNumber(idModule)); 
   Int_t sign=TMath::Abs(idModule)/idModule; // left or right 
@@ -356,14 +359,14 @@ void AliMUONTriggerCircuit::LoadXPos(){
   iChamber = &(pMUON->Chamber(chamber-1));
   segmentation=iChamber->SegmentationModel(cathode);
   
-  Int_t idModule=Module(fidCircuit);        // corresponding module Id.  
+  Int_t idModule=Module(fIdCircuit);        // corresponding module Id.  
 // number of Y strips
   Int_t nStrY=AliMUONTriggerConstants::NstripY(ModuleNumber(idModule)); 
   Int_t idSector=segmentation->Sector(idModule,0); // corresp. sector
   Float_t width=segmentation->Dpx(idSector);      // corresponding strip width
   
 // first case : up middle and down parts have all 8 or 16 strip 
-  if ((nStrY==16)||(nStrY==8&&fx2m==0&&fx2ud==0)) { 
+  if ((nStrY==16)||(nStrY==8&&fX2m==0&&fX2ud==0)) { 
     for (istrip=0; istrip<nStrY; istrip++) {
       segmentation->GetPadC(idModule,istrip,x,y,z); 
       fXpos11[istrip]=x;
@@ -403,39 +406,39 @@ Float_t AliMUONTriggerCircuit::PtCal(Int_t istripX, Int_t idev, Int_t istripY){
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetIdCircuit(){ 
 // returns circuit Id
-  return fidCircuit;
+  return fIdCircuit;
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetIdModule(){ 
 // returns module Id
-  return Module(fidCircuit);
+  return Module(fIdCircuit);
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetNstripX() { 
 // returns the number of X strips in the module where the circuit is sitting
-  return AliMUONTriggerConstants::NstripX(ModuleNumber(Module(fidCircuit)));
+  return AliMUONTriggerConstants::NstripX(ModuleNumber(Module(fIdCircuit)));
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetNstripY() { 
 // returns the number of Y strips in the module where the circuit is sitting
-  return AliMUONTriggerConstants::NstripY(ModuleNumber(Module(fidCircuit)));
+  return AliMUONTriggerConstants::NstripY(ModuleNumber(Module(fIdCircuit)));
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetPosCircuit() { 
 // returns the position of the circuit in its module
-  return Position(fidCircuit);
+  return Position(fIdCircuit);
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetIdCircuitD(){
 // returns the Id of the circuit down 
-  Int_t idModule=Module(fidCircuit);
+  Int_t idModule=Module(fIdCircuit);
   Int_t idModuleD=(TMath::Abs(idModule)+10)*(TMath::Abs(idModule)/idModule); 
   return (TMath::Abs(idModuleD)*10+1)*(TMath::Abs(idModule)/idModule);
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetICircuitD(){
 // returns the number of the circuit down 
-  Int_t idModule=Module(fidCircuit);
+  Int_t idModule=Module(fIdCircuit);
   Int_t idModuleD=(TMath::Abs(idModule)+10)*(TMath::Abs(idModule)/idModule); 
   Int_t idCircuitD=
     (TMath::Abs(idModuleD)*10+1)*(TMath::Abs(idModule)/idModule);
@@ -444,14 +447,14 @@ Int_t AliMUONTriggerCircuit::GetICircuitD(){
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetIdCircuitU(){
 // returns the Id of the circuit up 
-  Int_t idModule=Module(fidCircuit);
+  Int_t idModule=Module(fIdCircuit);
   Int_t idModuleU=(TMath::Abs(idModule)-10)*(TMath::Abs(idModule)/idModule); 
   return (TMath::Abs(idModuleU)*10+1)*(TMath::Abs(idModule)/idModule);
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetICircuitU(){
 // returns the number of the circuit up 
-  Int_t idModule=Module(fidCircuit);
+  Int_t idModule=Module(fIdCircuit);
   Int_t idModuleU=(TMath::Abs(idModule)-10)*(TMath::Abs(idModule)/idModule); 
   Int_t idCircuitU=
     (TMath::Abs(idModuleU)*10+1)*(TMath::Abs(idModule)/idModule);
@@ -459,13 +462,13 @@ Int_t AliMUONTriggerCircuit::GetICircuitU(){
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetX2m(){ 
-// returns fx2m
-  return fx2m;
+// returns fX2m
+  return fX2m;
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuit::GetX2ud(){ 
-// returns fx2ud
-  return fx2ud;
+// returns fX2ud
+  return fX2ud;
 }
 //----------------------------------------------------------------------
 void AliMUONTriggerCircuit::GetOrMud(Int_t orMud[2]){

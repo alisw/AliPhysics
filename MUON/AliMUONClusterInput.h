@@ -5,15 +5,13 @@
 
 /*$Id $*/
 
-#include <TObject.h>
-#include <TClonesArray.h>
-
 class TMinuit;
 class AliMUONDigit;
 class AliMUONRawCluster;
 class AliSegmentation;
 class AliMUONResponse;
 
+#include <TClonesArray.h> // needed for inline function Digit
 
 
 class AliMUONClusterInput : public TObject {
@@ -67,7 +65,7 @@ class AliMUONClusterInput : public TObject {
     Float_t              fQtot[2];         // ! Total charge
     // Fitter
     static TMinuit*      fgMinuit;          // ! Fitter
-    ClassDef(AliMUONClusterInput, 1)        // Global data service for hit reconstruction
+    ClassDef(AliMUONClusterInput, 0)        // Global data service for hit reconstruction
 };
 #endif
 
