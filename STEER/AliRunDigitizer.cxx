@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/09/19 06:23:50  jchudoba
+Move some tasks to AliStream and AliMergeCombi classes
+
 Revision 1.3  2001/07/30 14:04:18  jchudoba
 correct bug in the initialization
 
@@ -369,6 +372,11 @@ Int_t  AliRunDigitizer::GetNParticles(Int_t event, Int_t input)
 // event (as numbered in this input file)
 // return -1 if some error
 
+// Must be revised in the version with AliStream
+
+  return -1;
+
+/*
   TFile *file = ConnectInputFile(input);
   if (!file) {
     Error("GetNParticles","Cannot open input file");
@@ -393,6 +401,7 @@ Int_t  AliRunDigitizer::GetNParticles(Int_t event, Int_t input)
     cerr<<"Nsecondary: "<<header->GetNsecondary()<<endl;
   }
   return header->GetNprimary() + header->GetNsecondary();
+*/
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -433,8 +442,12 @@ TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t input, Int_t event)
 // return pointer to particle with index i in the input file input
 // (index without mask)
 // event is the event number in the file input
-// return 0 i fit does not exist
+// return 0 if it does not exist
 
+// Must be revised in the version with AliStream
+
+  return 0;
+/*
   TFile *file = ConnectInputFile(input);
   if (!file) {
     Error("GetParticle","Cannot open input file");
@@ -480,6 +493,7 @@ TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t input, Int_t event)
   if (bytesRead)
     return particleBuffer;
   return  0;
+*/
 }
 ////////////////////////////////////////////////////////////////////////
 
