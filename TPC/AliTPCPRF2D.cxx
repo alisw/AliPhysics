@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:34  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -203,7 +206,6 @@ Float_t AliTPCPRF2D::GetPRF(Float_t xin, Float_t yin, Bool_t inter)
 	//Float_t res = z1*(1-dy)+z2*dy;
     return res;            
   }        
-  return 0.;
 } 
 
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  1999/10/01 09:24:40  fca
+Protect against no current file in FinishEvent
+
 Revision 1.9  1999/09/29 09:24:20  fca
 Introduction of the Copyright and cvs Log
 
@@ -121,6 +124,19 @@ void type_of_call fcnfitf(Int_t &, Double_t *, Double_t &, Double_t *, Int_t);
 void type_of_call fcnfit(Int_t &, Double_t *, Double_t &, Double_t *, Int_t &, Int_t &);
 Float_t type_of_call rndm() {return gRandom->Rndm();}
 }
+
+void fcnfwrap(Int_t &i1, Double_t *d1, Double_t &d2,
+	Double_t *d3, Int_t i2)
+{
+   fcnf(i1,d1,d2,d3,i2);
+}
+
+void fcnfitfwrap(Int_t &i1, Double_t *d1, Double_t &d2,
+	Double_t *d3, Int_t i2)
+{
+   fcnfitf(i1,d1,d2,d3,i2);
+}
+
 
 // Static variables for the pad-hit iterator routines
 static Int_t sMaxIterPad=0;
@@ -2848,7 +2864,7 @@ void trackf_fit(Int_t &ivertex, Double_t *pest, Double_t *pstep, Double_t &pxzin
   
   TMinuit *gMinuit = new TMinuit(5);
   gMinuit->mninit(5,10,7);
-  gMinuit->SetFCN(fcnf);  // constant m.f.
+  gMinuit->SetFCN(fcnfwrap);  // constant m.f.
 
   arglist[0] = -1;
   
@@ -2905,7 +2921,7 @@ void prec_fit(Double_t &pxzinv, Double_t &fis, Double_t &alams, Double_t &xvert,
       
       TMinuit *gMinuit = new TMinuit(5);
       gMinuit->mninit(5,10,7);
-      gMinuit->SetFCN(fcnfitf);
+      gMinuit->SetFCN(fcnfitfwrap);
 
       arglist[0] = -1.;
       gMinuit->mnexcm("SET PRINT", arglist, 1, ierflg);

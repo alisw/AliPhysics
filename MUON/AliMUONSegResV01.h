@@ -39,6 +39,10 @@ public AliMUONsegmentationV0 {
     //
     // Get member data
     //
+    // Pad size in x
+    virtual Float_t Dpx(){return AliMUONsegmentationV0::Dpx();}
+    // Pad size in y
+    virtual Float_t Dpy(){return AliMUONsegmentationV0::Dpy();}
     // Pad size in x by Sector
     virtual Float_t Dpx(Int_t isec);
     // Pad size in y by Sector

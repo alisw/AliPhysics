@@ -2343,9 +2343,9 @@
                PXZR = SQRT( PXR(ITR)**2+PZR(ITR)**2) 
                PRINT *,' PXZ GEANT= ', PXZV,' PXZ RECONS= ',PXZR
                FIV=ATAN2(PYV(ITR),PZV(ITR))
-               ALAMV=ATAN2(PXV(ITR),PXZV)
+               ALAMV=ATAN2(DBLE(PXV(ITR)),PXZV)
                FIR=ATAN2(PXR(ITR),PZR(ITR))
-               ALAMR=ATAN2(PYR(ITR),PXZR)
+               ALAMR=ATAN2(DBLE(PYR(ITR)),PXZR)
 **               PRINT *,' PHI GEANT= ',FIV,' PXZ RECONS= ',FIR
 **               PRINT *,' ALAM GEANT= ',ALAMV,' ALAM RECONS= ',ALAMR
           ENDDO
@@ -3597,6 +3597,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.2  1999/08/06 14:12:30  fca
+* Remove several warnings
+*
 * Revision 1.1  1999/07/30 10:53:20  fca
 * New version of MUON from M.Bondila & A.Morsch
 *

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 /////////////////////////////////////////////////////////
@@ -449,7 +452,7 @@ void AliRICHv0::StepManager()
     static Int_t   idvol;
     static Int_t   vol[2];
     Int_t          ipart;
-    static Float_t hits[9];
+    static Float_t hits[10];
     TLorentzVector Position;
     TLorentzVector Momentum;
     Float_t        pos[3];
