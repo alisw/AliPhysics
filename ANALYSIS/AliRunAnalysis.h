@@ -33,7 +33,6 @@ class AliRunAnalysis: public TTask
     
     Int_t GetDebug() {return AliAnalysis::GetDebug();}
     void SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names;
-    const char* GetName(){return fgkDefaultRunAnalysisName;}
   protected:
     TObjArray*    fAnalysies;//arry with analysies
     TObjArray*    fDirs;//arry with directories to read data from
@@ -47,9 +46,8 @@ class AliRunAnalysis: public TTask
     TFile* OpenFile(Int_t n);
     
   private:
-    TNamed::SetName;//change SetName to be private
+    void SetName(const char *){}//change SetName to be private
     
-    static const TString fgkDefaultRunAnalysisName;
     ClassDef(AliRunAnalysis,1)
 };
 

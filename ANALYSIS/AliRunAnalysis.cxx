@@ -27,11 +27,10 @@
 
 #include "AliEventCut.h"
 
-const TString AliRunAnalysis::fgkDefaultRunAnalysisName("RunAnalysis");
 
 ClassImp(AliRunAnalysis)
 AliRunAnalysis::AliRunAnalysis():
- TTask(fgkDefaultRunAnalysisName,"Alice Analysis Manager")	,
+ TTask("RunAnalysis","Alice Analysis Manager")	,
  fDirs(),
  fEventCut(0x0),
  fFileName("AliESDs.root"),
