@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2000/09/12 14:14:55  morsch
+Call fDecayer->ForceDecay() at the beginning of Generate().
+
 Revision 1.20  2000/09/06 14:29:33  morsch
 Use AliPythia for event generation an AliDecayPythia for decays.
 Correct handling of "nodecay" option
@@ -290,9 +293,9 @@ void AliGenPythia::Generate()
 //
 // 
 				  if (ChildSelected(TMath::Abs(kf))) {
-				    origin[0]=origin0[0]+ichild->Vx()*10.;
-				    origin[1]=origin0[1]+ichild->Vy()*10.;
-				    origin[2]=origin0[2]+ichild->Vz()*10.;		
+				    origin[0]=origin0[0]+ichild->Vx()/10.;
+				    origin[1]=origin0[1]+ichild->Vy()/10.;
+				    origin[2]=origin0[2]+ichild->Vz()/10.;		
 				    p[0]=ichild->Px();
 				    p[1]=ichild->Py();
 				    p[2]=ichild->Pz();
@@ -321,9 +324,9 @@ void AliGenPythia::Generate()
 			p[0]=iparticle->Px();
 			p[1]=iparticle->Py();
 			p[2]=iparticle->Pz();
-			origin[0]=origin0[0]+iparticle->Vx()*10;
-			origin[1]=origin0[1]+iparticle->Vy()*10;
-			origin[2]=origin0[2]+iparticle->Vz()*10;
+			origin[0]=origin0[0]+iparticle->Vx()/10.;
+			origin[1]=origin0[1]+iparticle->Vy()/10.;
+			origin[2]=origin0[2]+iparticle->Vz()/10.;
 			Float_t tof=kconv*iparticle->T();
 			gAlice->SetTrack(fTrackIt,-1,kf,p,origin,polar,
 					 tof,"Primary",nt);
@@ -360,6 +363,8 @@ Bool_t AliGenPythia::ParentSelected(Int_t ip)
 Bool_t AliGenPythia::ChildSelected(Int_t ip)
 {
 // True if particle is in list of decay products to be selected
+    if (fForceDecay == all) return kTRUE;
+    
     for (Int_t i=0; i<5; i++)
     {
 	if (fChildSelect[i]==ip) return kTRUE;
