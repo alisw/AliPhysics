@@ -176,7 +176,7 @@ void AliRawEquipmentHeader::Swap()
    // Swap equipment header data. There is no way to see if the data
    // has already been swapped. This method is only called when the
    // header is read from the DATE event builder (GDC).
-                                                                                
+
    fSize                 = net2host(fSize);
    fEquipmentType        = net2host(fEquipmentType);
    fEquipmentID          = net2host(fEquipmentID);
@@ -247,9 +247,14 @@ AliRawEvent *AliRawEvent::NextSubEvent()
 }
 
 //______________________________________________________________________________
-AliRawEvent *AliRawEvent::GetSubEvent(Int_t index)
+AliRawEvent *AliRawEvent::GetSubEvent(Int_t index) const
 {
-  return (AliRawEvent *)fSubEvents->At(index);
+   // Get specified sub event. Returns 0 if sub event does not exist.
+
+   if (!fSubEvents)
+      return 0;
+
+   return (AliRawEvent *) fSubEvents->At(index);
 }
 
 //______________________________________________________________________________
@@ -1251,7 +1256,7 @@ Int_t AliMDC::Run()
 #ifdef USE_EB
          ebdata = (char *)ebvec[nsub].iov_base;
 #endif
- 
+
          ALIDEBUG(1)
             Info("Run", "reading LDC %d", nsub);
 

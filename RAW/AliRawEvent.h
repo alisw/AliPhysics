@@ -191,7 +191,7 @@ public:
    AliRawData            *GetRawData();
    Int_t                  GetNSubEvents() const { return fNSubEvents; }
    AliRawEvent           *NextSubEvent();
-   AliRawEvent           *GetSubEvent(Int_t index);
+   AliRawEvent           *GetSubEvent(Int_t index) const;
    void                   Reset();
 
    ClassDef(AliRawEvent,1)  // ALICE raw event object
