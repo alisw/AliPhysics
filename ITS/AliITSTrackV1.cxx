@@ -12,7 +12,7 @@
 #include "AliITSRad.h"
 #include "AliITSTrackV1.h"
 #include "AliGenerator.h"
-#include "AliMagF.h"
+//#include "AliMagF.h"
 
 
 ClassImp(AliITSTrackV1)
@@ -35,7 +35,7 @@ AliITSTrackV1::AliITSTrackV1() {
   fFieldFactor = 0.0;
    
 }
-AliITSTrackV1::AliITSTrackV1(const char *opt) {
+AliITSTrackV1::AliITSTrackV1(const char *opt, Double_t fieldfactor) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it 
 // default constructor   
  
@@ -58,8 +58,9 @@ AliITSTrackV1::AliITSTrackV1(const char *opt) {
   
 //////////////////////////////////////// gets magnetic field factor ////////////////////////////////
 
-  AliMagF * fieldPointer = gAlice->Field();
-  fFieldFactor = (Double_t)fieldPointer->Factor();
+ // AliMagF * fieldPointer = gAlice->Field();
+  // fFieldFactor =(Double_t)fieldPointer-> SolenoidField()/10/.2;
+    fFieldFactor = fieldfactor;
   //cout<< " field factor = "<<fFieldFactor<<"\n"; getchar();
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,16 +116,17 @@ AliITSTrackV1::AliITSTrackV1(const AliITSTrackV1 &cobj) {
  
 }
 
-AliITSTrackV1::AliITSTrackV1(AliTPCtrack &obj)
+AliITSTrackV1::AliITSTrackV1(AliTPCtrack &obj, Double_t fieldfactor)
 { 
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it 
 // special constructor to convert a TPC track into an ITS track
 
 //////////////////////////////////////// gets magnetic field factor ////////////////////////////////
 
-  AliMagF * fieldPointer = gAlice->Field();
-  fFieldFactor = (Double_t)fieldPointer->Factor();
-  //cout<< " field factor = "<<fFieldFactor<<"\n"; getchar();
+   // AliMagF * fieldPointer = gAlice->Field();
+  // fFieldFactor =(Double_t)fieldPointer-> SolenoidField()/10/.2;
+    fFieldFactor = fieldfactor;
+ // cout<< " field factor dentro alitrack = "<<fFieldFactor<<"\n";/* getchar();*/
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 

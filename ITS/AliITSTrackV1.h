@@ -17,8 +17,10 @@ class AliITSTrackV1 : public TObject {
 public:
 
   AliITSTrackV1();  // default constructor
-  AliITSTrackV1(const char *opt);  // Standard constructor
-  AliITSTrackV1(AliTPCtrack &obj);  // Standard constructor
+  //AliITSTrackV1(const char *opt);  // Standard constructor
+  AliITSTrackV1(const char *opt, Double_t fieldfactor);  // Standard constructor
+  //AliITSTrackV1(AliTPCtrack &obj);  // Standard constructor
+  AliITSTrackV1(AliTPCtrack &obj, Double_t fieldfactor);  // Standard constructor
   AliITSTrackV1(const AliITSTrackV1 &cobj);  // copy constructor
   AliITSTrackV1 &operator=(AliITSTrackV1 obj);  // operator =
   ~AliITSTrackV1(); // default destructor

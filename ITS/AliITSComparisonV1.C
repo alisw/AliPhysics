@@ -79,10 +79,12 @@ void AliITSComparisonV1
 		isGood = (labITS >= 0);
 		nOK = treeTrueTracks->Draw("px:py:pz", Form("label==%d && tpc_ok==1", abs(labITS)), "goff");
 		if (!nOK) {
-			cerr << "ITS label not found among findable tracks:";
-			cerr << "   labITS = " << labITS;
-			cerr << "   labTPC = " << labTPC;
-			cerr << endl;
+		
+//                        cerr << "ITS label not found among findable tracks:";
+//			cerr << "   labITS = " << labITS;
+//			cerr << "   labTPC = " << labTPC;
+//			cerr << endl;
+			
 			isGood = kFALSE;
 		}
 		if (nOK > 1) {
@@ -121,7 +123,8 @@ void AliITSComparisonV1
 		found_py = iotrack->GetPy();
 		found_pz = iotrack->GetPz();
 		found_pt = TMath::Sqrt(found_px*found_px + found_py*found_py);
-		difpt = ((2. * found_pt - true_pt) / true_pt) * 100.;
+		difpt = ((found_pt - true_pt) / true_pt) * 100.;
+		//cout << found_pt << " " << true_pt << " " << difpt << endl;
 			
 		// lambda (mrad)
 		found_tgl = iotrack->GetStateTgl();

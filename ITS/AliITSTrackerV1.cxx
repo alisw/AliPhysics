@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.23  2002/10/22 18:29:34  barbera
+Tracking V1 ported to the HEAD
+
 Revision 1.22  2002/10/22 14:45:36  alibrary
 Introducing Riostream.h
 
@@ -44,7 +47,7 @@ Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
 cleanded up a little bit of code.
 
 */
-//     The purpose of this class is to permorm the ITS tracking. The 
+// The purpose of this class is to permorm the ITS tracking. The 
 // constructor has the task to inizialize some private members. The method 
 // DoTracking is written to be called by a macro. It gets the event number,
 // the minimum and maximum order number of TPC tracks that are to be tracked
@@ -318,8 +321,9 @@ AliITSTrackerV1::AliITSTrackerV1(AliITS* IITTSS, Int_t evnumber, Bool_t flag) {
     ////////// gets magnetic field factor //////////////////////////////
 
     AliMagF * fieldPointer = gAlice->Field();
-    fFieldFactor = (Double_t)fieldPointer->Factor();
-    //cout<< " field factor = "<<fFieldFactor<<"\n"; getchar();
+   // fFieldFactor = (Double_t)fieldPointer->Factor();
+    fFieldFactor =(Double_t)fieldPointer-> SolenoidField()/10/.2;
+   // cout<< " field factor = "<<fFieldFactor<<"\n"; getchar();
 }
 //______________________________________________________________________
 AliITSTrackerV1::AliITSTrackerV1(const AliITSTrackerV1 &cobj) {
@@ -550,7 +554,10 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     gAlice->GetEvent(evNumber);  //modificato per gestire hbt
  
     AliKalmanTrack *kkprov;
-    kkprov->SetConvConst(100/0.299792458/0.2/fFieldFactor);
+    //kkprov->SetConvConst(100/0.299792458/0.2/fFieldFactor);
+    kkprov->SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
+   // cout<<" field = "<<gAlice->Field()->SolenoidField()<<endl;
+
 
     TFile *cf=TFile::Open("AliTPCclusters.root");  
     AliTPCParam *digp= (AliTPCParam*)cf->Get("75x40_100x60_150x60");
@@ -705,8 +712,11 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     track->PropagateTo(xk, 44.77, 1.71);  //Tedlar
     xk -=0.005;
     track->PropagateTo(xk, 24.01, 2.7);    //Al 
+    
 	////////////////////////////////////////////////////////////////////////////////////////////////////////  	
-	AliITSTrackV1 trackITS(*track);     
+	//AliITSTrackV1 trackITS(*track);
+	AliITSTrackV1 trackITS(*track, fFieldFactor);
+	//cout<<" fFieldFactor = "<<fFieldFactor<<"\n";      
 	trackITS.PutMass(mass);	  //new to add mass to track
 	if(fresult){ delete fresult; fresult=0;}   	 
 	fresult = new AliITSTrackV1(trackITS);	 
@@ -756,6 +766,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	list->AddLast(&trackITS);
   
 	fPtref=TMath::Abs( (trackITS).GetPt() );
+	//cout<<" fPtref = " <<fPtref<<"\n";
 	if(fPtref>1.0) fChi2max=40.;         
 	if(fPtref<=1.0) fChi2max=20.;
 	if(fPtref<0.4 ) fChi2max=100.;

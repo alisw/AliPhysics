@@ -3,20 +3,8 @@
 # delete eventual old files from the last run
 ./AliITSDeleteOldFiles.sh
 
-# run the hit generation
-aliroot -q -b "$ALICE_ROOT/macros/grun.C"
-
-# digitize TPC
-aliroot -q -b "$ALICE_ROOT/TPC/AliTPCHits2Digits.C"
-
-# find clusters in TPC
-aliroot -q -b "$ALICE_ROOT/TPC/AliTPCFindClusters.C"
-
-# find tracks in TPC
-aliroot -q -b "$ALICE_ROOT/TPC/AliTPCFindTracks.C"
-
-# do TPC tracking comparison
-aliroot -q -b "$ALICE_ROOT/TPC/AliTPCComparison.C"
+# do everything for the TPC
+aliroot -q -b "$ALICE_ROOT/TPC/AliTPCtest.C"
 
 # create summable digits for the ITS
 aliroot -q -b "$ALICE_ROOT/ITS/AliITSHits2SDigits.C"
