@@ -87,6 +87,7 @@ ClassImp(AliEMCALClusterizerv1)
   // default ctor (to be used mainly by Streamer)
   
   InitParameters() ; 
+  fDefaultInit = kTRUE ; 
 }
 
 //____________________________________________________________________________
@@ -96,27 +97,41 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(const char* headerFile,const char* 
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
   InitParameters() ; 
+  fDefaultInit = kFALSE ; 
   Init() ;
 
 }
 //____________________________________________________________________________
   AliEMCALClusterizerv1::~AliEMCALClusterizerv1()
 {
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
+  // dtor
+  // fDefaultInit = kTRUE if Clusterizer created by default ctor (to get just the parameters)
   
-  // remove the task from the folder list
-  gime->RemoveTask("C",GetName()) ;
-  
-  // remove the RecPoints from the folder list
-  TString name(GetName()) ; 
-  name.Remove(name.Index(":")) ; 
-  gime->RemoveObjects("D", name) ;  //  Digits
-  gime->RemoveObjects("RT", name) ; // TowerRecPoints
-  gime->RemoveObjects("RP", name) ; // PreShoRecPoints
-  
-  // Delete gAlice
-  gime->CloseFile() ; 
-  
+  if (!fDefaultInit) {
+    AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
+    
+    // remove the task from the folder list
+    gime->RemoveTask("C",GetName()) ;
+    
+    // remove the RecPoints from the folder list
+    TString name(GetName()) ; 
+    name.Remove(name.Index(":")) ; 
+    gime->RemoveObjects("D", name) ;  //  Digits
+    gime->RemoveObjects("RT", name) ; // TowerRecPoints
+    gime->RemoveObjects("RP", name) ; // PreShoRecPoints
+    
+    // Delete gAlice
+    gime->CloseFile() ; 
+    
+  }
+}
+
+//____________________________________________________________________________
+const TString AliEMCALClusterizerv1::BranchName() const 
+{  
+  TString branchName(GetName() ) ;
+  branchName.Remove(branchName.Index(Version())-1) ;
+  return branchName ;
 }
 
 //____________________________________________________________________________
@@ -456,13 +471,10 @@ void AliEMCALClusterizerv1::WriteRecPoints(Int_t event)
   // Creates new branches with given title
   // fills and writes into TreeR.
 
-  TString branchName(GetName() ) ;
-  branchName.Remove(branchName.Index(Version())-1) ;
-
   AliEMCALGetter *gime = AliEMCALGetter::GetInstance() ; 
-  TObjArray * towerRecPoints = gime->TowerRecPoints(branchName) ; 
-  TObjArray * preshoRecPoints = gime->PreShowerRecPoints(branchName) ; 
-  TClonesArray * digits = gime->Digits(branchName) ; 
+  TObjArray * towerRecPoints = gime->TowerRecPoints(BranchName()) ; 
+  TObjArray * preshoRecPoints = gime->PreShowerRecPoints(BranchName()) ; 
+  TClonesArray * digits = gime->Digits(BranchName()) ; 
   TTree * treeR ; 
 
   if (!gAlice->TreeR() ) 
@@ -481,7 +493,7 @@ void AliEMCALClusterizerv1::WriteRecPoints(Int_t event)
 
   towerRecPoints->Expand(towerRecPoints->GetEntriesFast()) ; 
 
-  //Now the same for CPV
+  //Now the same for pre shower
   for(index = 0; index < preshoRecPoints->GetEntries(); index++)
     (dynamic_cast<AliEMCALRecPoint *>(preshoRecPoints->At(index)))->EvalAll(fW0CPV,digits)  ;
 
@@ -494,28 +506,25 @@ void AliEMCALClusterizerv1::WriteRecPoints(Int_t event)
   
   //Make branches in TreeR for RecPoints and Clusterizer
   
-  //Make new branches
-  TDirectory *cwd = gDirectory;
-  
  
   Int_t bufferSize = 32000 ;    
   Int_t splitlevel = 0 ;
 
-  //First EMC
+  //First Tower branch
   TBranch * emcBranch = treeR->Branch("EMCALTowerRP","TObjArray",&towerRecPoints,bufferSize,splitlevel);
-  emcBranch->SetTitle(branchName);
+  emcBranch->SetTitle(BranchName());
 
     
-  //Now CPV branch
+  //Now Pre Shower branch 
   TBranch * cpvBranch = treeR->Branch("EMCALPreShoRP","TObjArray",&preshoRecPoints,bufferSize,splitlevel);
-  cpvBranch->SetTitle(branchName);
+  cpvBranch->SetTitle(BranchName());
 
     
   //And Finally  clusterizer branch
-  AliEMCALClusterizerv1 * cl = (AliEMCALClusterizerv1*)gime->Clusterizer(branchName) ;
+  AliEMCALClusterizerv1 * cl = (AliEMCALClusterizerv1*)gime->Clusterizer(BranchName()) ;
   TBranch * clusterizerBranch = treeR->Branch("AliEMCALClusterizer","AliEMCALClusterizerv1",
 					      &cl,bufferSize,splitlevel);
-  clusterizerBranch->SetTitle(branchName);
+  clusterizerBranch->SetTitle(BranchName());
 
   emcBranch        ->Fill() ;
   cpvBranch        ->Fill() ;
