@@ -548,6 +548,7 @@ Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader)
   {
     AliTPCtrackerMI tracker(fTPCParam);
     tracker.Clusters2Tracks();
+    tracker.UnloadClusters();
   }
 
   tpcLoader->UnloadRecPoints();
