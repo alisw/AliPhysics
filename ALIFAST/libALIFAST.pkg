@@ -1,0 +1,23 @@
+SRCS= \
+AliFast.cxx \
+AliFMaker.cxx \
+AliFDet.cxx \
+AliFTrackMaker.cxx \
+AliFTrack.cxx \
+AliFHistBrowser.cxx \
+AliFBigBang.cxx \
+AliFBrowsable.cxx \
+AliFVirtualDisplay.cxx
+
+HDRS= \
+AliFast.h \
+AliFMaker.h \
+AliFDet.h \
+AliFTrackMaker.h \
+AliFTrack.h \
+AliFHistBrowser.h \
+AliFBigBang.h \
+AliFBrowsable.h \
+AliFVirtualDisplay.h
+
+DHDR:=ALIFASTLinkDef.h

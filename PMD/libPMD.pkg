@@ -1,0 +1,5 @@
+SRCS:= AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDRecPoint.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:=PMDLinkDef.h

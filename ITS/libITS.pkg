@@ -1,0 +1,42 @@
+SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
+      AliITSv5symm.cxx AliITSv5asymm.cxx \
+      AliITSvPPRcoarseasymm.cxx AliITSvPPRcoarsesymm.cxx\
+      AliITSvPPRasymm.cxx AliITSvPPRsymm.cxx\
+      AliITShit.cxx AliITSDetType.cxx \
+		AliITSgeom.cxx AliITSgeomMatrix.cxx \
+      AliITSgeomSPD.cxx AliITSgeomSDD.cxx \
+		AliITSgeomSSD.cxx AliITSmodule.cxx \
+                AliITSGeant3Geometry.cxx \
+		AliITSsimulationFastPoints.cxx \
+		AliITSsimulationFastPointsV0.cxx AliITSsimulation.cxx \
+		AliITSsimulationSPD.cxx AliITSsimulationSPDdubna.cxx \
+		AliITSsimulationSDD.cxx \
+		AliITSetfSDD.cxx AliITSsimulationSSD.cxx AliITSdcsSSD.cxx \
+		AliITSdigit.cxx AliITSRawCluster.cxx AliITSRecPoint.cxx \
+		AliITSMap.cxx AliITSMapA1.cxx AliITSMapA2.cxx \
+		AliITSpList.cxx \
+		AliITSsegmentation.cxx AliITSsegmentationSPD.cxx \
+		AliITSsegmentationSDD.cxx AliITSsegmentationSSD.cxx\
+		AliITSresponse.cxx AliITSresponseSPD.cxx \
+		AliITSresponseSPDdubna.cxx \
+		AliITSresponseSDD.cxx AliITSresponseSSD.cxx \
+		AliITSClusterFinder.cxx AliITSClusterFinderSPD.cxx \
+		AliITSClusterFinderSPDdubna.cxx \
+		AliITSClusterFinderSDD.cxx AliITSRawData.cxx \
+		AliITSHuffman.cxx AliITSClusterFinderSSD.cxx \
+		AliITSclusterSSD.cxx AliITSpackageSSD.cxx \
+		AliITSdictSSD.cxx \
+		AliITSstatistics.cxx AliITSstatistics2.cxx \
+                AliITSTrackV1.cxx AliITSIOTrack.cxx \
+		AliITSRad.cxx AliITSgeoinfo.cxx AliITSTrackerV1.cxx\
+		AliITSvtest.cxx	\
+                AliITSclusterV2.cxx AliITStrackV2.cxx AliITStrackerV2.cxx \
+		AliITSVertex.cxx		
+
+HDRS:=  $(SRCS:.cxx=.h)
+
+DHDR=ITSLinkDef.h
+
+
+
+

@@ -1,0 +1,5 @@
+SRCS= THBTprocessor.cxx 
+
+HDRS= $(SRCS:.cxx=.h)
+
+DHDR= THBTprocessorLinkDef.h

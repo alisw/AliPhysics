@@ -1,0 +1,13 @@
+SRCS= \
+AliVZERO.cxx \
+AliVZEROv0.cxx \
+AliVZEROhit.cxx \
+AliVZEROdigit.cxx
+
+HDRS= \
+AliVZERO.h \
+AliVZEROv0.h \
+AliVZEROhit.h \
+AliVZEROdigit.h
+
+DSRC=VZEROLinkDef.h

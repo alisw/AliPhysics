@@ -1,0 +1,5 @@
+SRCS= THijing.cxx
+
+HDRS= THijing.h
+
+DHDR:=THijingLinkDef.h

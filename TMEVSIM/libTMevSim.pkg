@@ -1,0 +1,11 @@
+SRCS= \
+TMevSim.cxx \
+TMevSimPartTypeParams.cxx \
+TMevSimConverter.cxx
+
+HDRS= \
+TMevSim.h \
+TMevSimPartTypeParams.h \
+TMevSimConverter.h
+
+DHDR=TMevSimLinkDef.h

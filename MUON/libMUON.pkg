@@ -1,0 +1,61 @@
+FSRCS= extrap.F
+
+SRCS         =  AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
+	       AliMUONSegmentationV0.cxx\
+	       AliMUONResponse.cxx AliMUONResponseV0.cxx \
+	       AliMUONSegmentationV01.cxx \
+               AliMUONSegmentationV02.cxx AliMUONSegmentationV04.cxx \
+	       AliMUONSegmentationV05.cxx\
+	       AliMUONSegmentationTrigger.cxx  AliMUONResponseTrigger.cxx\
+               AliMUONResponseTriggerV1.cxx\
+	       AliMUONSegmentationTriggerX.cxx AliMUONSegmentationTriggerY.cxx \
+               AliMUONSegmentationV1.cxx AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx \
+               AliMUONDisplay.cxx AliMUONPoints.cxx \
+               AliMUONClusterFinderVS.cxx \
+               AliMUONHitMapA1.cxx \
+	       AliMUONHit.cxx AliMUONPadHit.cxx AliMUONDigit.cxx \
+               AliMUONTransientDigit.cxx AliMUONRawCluster.cxx \
+	       AliMUONReconstHit.cxx \
+               AliMUONEventReconstructor.cxx \
+	       AliMUONTriggerDecision.cxx \
+               AliMUONHitForRec.cxx AliMUONSegment.cxx \
+               AliMUONTrack.cxx AliMUONTrackHit.cxx AliMUONTrackParam.cxx \
+               AliMUONTriggerCircuit.cxx AliMUONTriggerLut.cxx \
+               AliMUONGlobalTrigger.cxx AliMUONLocalTrigger.cxx \
+               AliMUONTriggerConstants.cxx  AliMUONConstants.cxx \
+	       AliMUONClusterInput.cxx  \
+	       AliMUONSegmentationSlatModule.cxx AliMUONSegmentationSlatModuleN.cxx \
+	       AliMUONSegmentationSlat.cxx AliMUONSegmentationSlatN.cxx \
+	       AliMUONRecoEvent.cxx AliMUONRecoDisplay.cxx \
+               AliMUONMerger.cxx AliMUONFactory.cxx
+
+HDRS         =  AliMUONChamber.h AliMUONChamberTrigger.h \
+	       AliMUONSegmentationV0.h\
+	       AliMUONResponse.h AliMUONResponseV0.h \
+	       AliMUONSegmentationV01.h \
+               AliMUONSegmentationV02.h AliMUONSegmentationV04.h \
+	       AliMUONSegmentationV05.h\
+	       AliMUONSegmentationTrigger.h  AliMUONResponseTrigger.h\
+               AliMUONResponseTriggerV1.h\
+	       AliMUONSegmentationTriggerX.h AliMUONSegmentationTriggerY.h \
+               AliMUONSegmentationV1.h AliMUON.h AliMUONv0.h AliMUONv1.h \
+               AliMUONDisplay.h AliMUONPoints.h \
+               AliMUONClusterFinderVS.h \
+               AliMUONHitMapA1.h \
+	       AliMUONHit.h AliMUONPadHit.h AliMUONDigit.h \
+               AliMUONTransientDigit.h AliMUONRawCluster.h \
+	       AliMUONReconstHit.h \
+               AliMUONEventReconstructor.h \
+	       AliMUONTriggerDecision.h \
+               AliMUONHitForRec.h AliMUONSegment.h \
+               AliMUONTrack.h AliMUONTrackHit.h AliMUONTrackParam.h \
+               AliMUONTriggerCircuit.h AliMUONTriggerLut.h \
+               AliMUONGlobalTrigger.h AliMUONLocalTrigger.h \
+               AliMUONTriggerConstants.h  AliMUONConstants.h \
+	       AliMUONClusterInput.h  \
+	       AliMUONSegmentationSlatModule.h AliMUONSegmentationSlatModuleN.h \
+	       AliMUONSegmentationSlat.h AliMUONSegmentationSlatN.h \
+	       AliMUONRecoEvent.h AliMUONRecoDisplay.h \
+               AliMUONMerger.h AliMUONFactory.h
+
+DHDR:= MUONLinkDef.h

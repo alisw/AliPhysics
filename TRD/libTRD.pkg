@@ -1,0 +1,41 @@
+SRCS=\
+AliTRD.cxx \
+AliTRDv0.cxx \
+AliTRDv1.cxx \
+AliTRDhit.cxx AliTRDdigit.cxx                    \
+AliTRDpixel.cxx AliTRDmatrix.cxx                 \
+AliTRDgeometry.cxx AliTRDgeometryFull.cxx        \
+AliTRDgeometryHole.cxx AliTRDdigitizer.cxx       \
+AliTRDclusterizer.cxx AliTRDclusterizerV0.cxx    \
+AliTRDclusterizerV1.cxx AliTRDrecPoint.cxx       \
+AliTRDsegmentArray.cxx AliTRDdataArray.cxx       \
+AliTRDdataArrayI.cxx AliTRDdataArrayF.cxx        \
+AliTRDdigitsManager.cxx AliTRDsim.cxx            \
+AliTRDsegmentID.cxx AliTRDsegmentArrayBase.cxx   \
+AliTRDarrayI.cxx AliTRDarrayF.cxx                \
+AliTRDpoints.cxx AliTRDtimeBin.cxx               \
+AliTRDtrackingSector.cxx                         \
+AliTRDtrack.cxx AliTRDtracker.cxx                \
+AliTRDcluster.cxx 
+
+HDRS=\
+AliTRD.h \
+AliTRDv0.h \
+AliTRDv1.h \
+AliTRDhit.h AliTRDdigit.h                    \
+AliTRDpixel.h AliTRDmatrix.h                 \
+AliTRDgeometry.h AliTRDgeometryFull.h        \
+AliTRDgeometryHole.h AliTRDdigitizer.h       \
+AliTRDclusterizer.h AliTRDclusterizerV0.h    \
+AliTRDclusterizerV1.h AliTRDrecPoint.h       \
+AliTRDsegmentArray.h AliTRDdataArray.h       \
+AliTRDdataArrayI.h AliTRDdataArrayF.h        \
+AliTRDdigitsManager.h AliTRDsim.h            \
+AliTRDsegmentID.h AliTRDsegmentArrayBase.h   \
+AliTRDarrayI.h AliTRDarrayF.h                \
+AliTRDpoints.h AliTRDtimeBin.h               \
+AliTRDtrackingSector.h                         \
+AliTRDtrack.h AliTRDtracker.h                \
+AliTRDcluster.h
+
+DHDR= TRDLinkDef.h

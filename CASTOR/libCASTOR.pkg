@@ -1,0 +1,5 @@
+SRCS = AliCASTOR.cxx
+
+HDRS = AliCASTOR.h
+
+DHDR:=CASTORLinkDef.h

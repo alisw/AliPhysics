@@ -1,0 +1,43 @@
+SRCS= \
+Ali3Vector.cxx \
+Ali4Vector.cxx \
+AliBoost.cxx \
+AliCalcluster.cxx \
+AliCalmodule.cxx \
+AliCalorimeter.cxx \
+AliInvmass.cxx \
+AliJet.cxx \
+AliMath.cxx \
+AliPosition.cxx \
+AliRandom.cxx \
+AliSample.cxx \
+AliSignal.cxx \
+AliTrack.cxx \
+AliVertex.cxx \
+Ali3VectorObj.cxx \
+Ali4VectorObj.cxx \
+AliPositionObj.cxx \
+AliEvent.cxx
+
+HDRS= \
+Ali3Vector.h \
+Ali4Vector.h \
+AliBoost.h \
+AliCalcluster.h \
+AliCalmodule.h \
+AliCalorimeter.h \
+AliInvmass.h \
+AliJet.h \
+AliMath.h \
+AliPosition.h \
+AliRandom.h \
+AliSample.h \
+AliSignal.h \
+AliTrack.h \
+AliVertex.h \
+Ali3VectorObj.h \
+Ali4VectorObj.h \
+AliPositionObj.h \
+AliEvent.h
+
+DHDR:=RALICELinkDef.h

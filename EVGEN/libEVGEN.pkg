@@ -1,0 +1,36 @@
+SRCS=  AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
+		AliGenCocktail.cxx AliGenFLUKAsource.cxx \
+		AliGenLib.cxx \
+                AliGenMUONlib.cxx AliGenParam.cxx AliGenPythia.cxx \
+                AliPythia.cxx AliDimuCombinator.cxx AliGenHalo.cxx \
+                AliGenHaloProtvino.cxx \
+                AliGenExtFile.cxx AliGenScan.cxx AliGenPHOSlib.cxx \
+		AliGenDoubleScan.cxx AliGenCocktailEntry.cxx \
+		AliGenGSIlib.cxx AliGenPMDlib.cxx\
+	        AliGenHijing.cxx \
+		AliGenHijingEventHeader.cxx AliGenPythiaEventHeader.cxx \
+		AliDecayer.cxx AliDecayerPythia.cxx \
+                AliGenMevSim.cxx AliMevSimParticle.cxx AliMevSimConfig.cxx \
+	        AliGenMC.cxx
+
+HDRS= AliGenHIJINGpara.h \
+AliGenBox.h \
+AliGenFixed.h \
+AliGenCocktail.h AliGenFLUKAsource.h \
+AliGenLib.h \
+ AliGenMUONlib.h AliGenParam.h AliGenPythia.h \
+ AliPythia.h AliDimuCombinator.h AliGenHalo.h \
+AliGenHaloProtvino.h \
+AliGenExtFile.h AliGenScan.h AliGenPHOSlib.h \
+AliGenDoubleScan.h AliGenCocktailEntry.h \
+AliGenGSIlib.h AliGenPMDlib.h\
+AliGenHijing.h \
+AliGenHijingEventHeader.h AliGenPythiaEventHeader.h \
+AliDecayer.h AliDecayerPythia.h \
+ AliGenMevSim.h AliMevSimParticle.h AliMevSimConfig.h \
+ AliGenMC.h
+
+
+
+
+DHDR:=EVGENLinkDef.h
