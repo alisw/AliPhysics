@@ -65,6 +65,8 @@ void ITSHitsToFastPoints (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal=25, 
        ITS->HitsToFastRecPoints(ev,bgr_ev,size," ","All"," ");
    } // event loop 
 
+   delete gAlice;
+      gAlice=0;
    file->Close();
 }
 
