@@ -71,11 +71,11 @@ Int_t TPCtracks() {
 
 
 /////////////////////////////////////////////////////////////////////////
-   GoodTrack gt[7000];
+   GoodTrack gt[15000];
    Int_t ngood=0;
 
    cerr<<"Marking good tracks (this will take a while)...\n";
-   ngood=good_tracks(gt,7000);
+   ngood=good_tracks(gt,15000);
    ofstream out("good_tracks");
    if (out) {
          for (Int_t ngd=0; ngd<ngood; ngd++)            
@@ -123,8 +123,9 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    Int_t gap=Int_t(0.125*nrows);
    Int_t good_number=Int_t(0.4*nrows);
 
-   TClonesArray *particles=gAlice->Particles(); 
-   Int_t np=particles->GetEntriesFast();
+   TObjArray *particles=gAlice->Particles(); 
+   //Int_t np=particles->GetEntriesFast();
+   Int_t np=gAlice->GetNtrack(); //FCA correction   
    Int_t *good=new Int_t[np];
    for (Int_t ii=0; ii<np; ii++) good[ii]=0;
    
@@ -233,8 +234,10 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
       
       if (hit1->fQ != 0.) continue;
      // Int_t i=hit->fTrack;
-	   Int_t i=hit->Track();  //modificata in accordo a nuovo AliTPCComparison
-      TParticle *p = (TParticle*)particles->UncheckedAt(i);
+	   Int_t i=hit->Track();  
+      //TParticle *p = (TParticle*)particles->UncheckedAt(i);
+	  TParticle *p = (TParticle*)gAlice->Particle(i);  //mod. secondonew
+	                                                      //AliTPCcomaprison 
       if (p->GetFirstMother()>=0) continue;  //secondary particle
       if (good[i] < 0x1000+0x800+2+good_number) continue;
       if (p->Pt()<0.100) continue;
