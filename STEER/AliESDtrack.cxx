@@ -191,7 +191,7 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
 
   case kTRDout:
     { //requested by the PHOS  ("temporary solution")
-      Double_t r=474.;
+      Double_t r=460.;
       if (t->PropagateTo(r,30.,0.)) {  
          fOalpha=t->GetAlpha();
          t->GetExternalParameters(fOx,fOp);
