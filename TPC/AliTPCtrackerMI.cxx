@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2003/10/17 12:01:16  kowal2
+Removed compiler warning.
+
 Revision 1.15  2003/09/29 11:56:58  kowal2
 bug fix2
 
@@ -1711,7 +1714,7 @@ Int_t AliTPCtrackerMI::FollowToNextCluster(AliTPCseed & t, Int_t nr) {
       }
     }
     
-    if (accept<3) UpdateTrack(&t,accept);
+    /*if (accept<3) */ UpdateTrack(&t,accept);
    
   } else {
     if (fIteration==0){
