@@ -470,6 +470,11 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     if (fCheckPointLevel > 1) {
       WriteESD(esd, Form("%s.tracking", fgkDetectorName[iDet]));
     }
+    // preliminary PID in TPC needed by the ITS tracker
+    if (iDet == 1) {
+      GetReconstructor(1)->FillESD(fRunLoader, esd);
+      AliESDpid::MakePID(esd);
+    }
   }
 
   // pass 2: ALL backwards
