@@ -36,6 +36,13 @@
 ClassImp(AliPHOSFastRecParticle) ; 
 
 //____________________________________________________________________________
+AliPHOSFastRecParticle::AliPHOSFastRecParticle() : TParticle()
+{
+  // ctor
+  fType = 0 ; 
+}
+
+//____________________________________________________________________________
  AliPHOSFastRecParticle::AliPHOSFastRecParticle(const AliPHOSFastRecParticle & rp)
 {
   // copy ctor
@@ -69,7 +76,7 @@ ClassImp(AliPHOSFastRecParticle) ;
  
   TParticle & pnoconst = (TParticle &)(pp) ;
   AliPHOSFastRecParticle & p = (AliPHOSFastRecParticle &)(pnoconst) ;
-
+  fType        = 0  ;
   fPdgCode     = p.fPdgCode;
   fStatusCode  = p.fStatusCode;
   fMother[0]   = p.fMother[0];
@@ -156,7 +163,21 @@ void AliPHOSFastRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
   }
   }
 }
-
+// Bool_t GetPhotonHiPu_LoEf() {
+//   Bool_t pid=kFALSE ;
+//   if((TestPIDBit(9)==kTRUE)&&(TestPIDBit(8)==kTRUE)&&(TestPIDBit(7)==kTRUE)) pid = kTRUE;
+//   return pid ;
+// }
+// Bool_t GetPhotonMed_Pu_Ef() {
+//   Bool_t pid=kFALSE ;
+//   if((TestPIDBit(8))&&(TestPIDBit(7))) pid = kTRUE ;
+//   return pid ;
+// }
+// Bool_t GetPhotonHiEf_LoPu() {
+//   Bool_t pid=kFALSE ;
+//   if(TestPIDBit(7)) pid = kTRUE ;
+//   return pid ;
+// }
 //____________________________________________________________________________
 TString AliPHOSFastRecParticle::Name()
 {

@@ -24,9 +24,7 @@ class AliPHOSFastRecParticle : public TParticle {
 
  public:
   
-  AliPHOSFastRecParticle() {
-    // ctor 
-  };         
+  AliPHOSFastRecParticle() ;
 
   AliPHOSFastRecParticle(const AliPHOSFastRecParticle & rp) ;  // ctor
   AliPHOSFastRecParticle(const TParticle & p) ;  // ctor
@@ -58,7 +56,32 @@ class AliPHOSFastRecParticle : public TParticle {
    else
      return kFALSE ;
    }
-     
+
+  Bool_t GetPhotonHiPu_LoEf()  {
+    Bool_t pid=kFALSE ;
+    if(TestPIDBit(8)&&TestPIDBit(7)&&TestPIDBit(6)&& //PCA
+       TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3)&& //TOF
+       TestPIDBit(2)&&TestPIDBit(1)&&TestPIDBit(0))  //RCPV
+      pid = kTRUE;
+    return pid ;
+  }
+  Bool_t GetPhotonMed_Pu_Ef(){
+    Bool_t pid=kFALSE ;
+    if(TestPIDBit(7)&&TestPIDBit(6)&& //PCA
+       TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3)&& //TOF
+       TestPIDBit(2)&&TestPIDBit(1)&&TestPIDBit(0))  //RCPV
+      pid = kTRUE ;
+    return pid ;
+  } 
+  Bool_t GetPhotonHiEf_LoPu()  {
+    Bool_t pid=kFALSE ;
+    if(TestPIDBit(6)&& //PCA
+       TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3)&& //TOF
+       TestPIDBit(2)&&TestPIDBit(1)&&TestPIDBit(0))  //RCPV
+      pid = kTRUE ;
+    return pid ;
+  }
+
   TString Name() ; 
   virtual void Paint(Option_t * option="");
   virtual void Print(const char * opt) ; 
@@ -76,9 +99,9 @@ class AliPHOSFastRecParticle : public TParticle {
     fIndexInList = val ; 
   } 
 
-  enum EParticleType { kUNDEFINED=-1, 
-		       kNEUTRALEMFAST, kNEUTRALHAFAST,  kNEUTRALEMSLOW, kNEUTRALHASLOW, 
-		       kCHARGEDEMFAST, kCHARGEDHAFAST,  kCHARGEDEMSLOW, kCHARGEDHASLOW } ; 
+  enum EParticleType { kUNDEFINED=-1,  
+		       kCHARGEDHASLOW, kNEUTRALHASLOW, kCHARGEDHAFAST, kNEUTRALHAFAST,
+		       kCHARGEDEMSLOW, kNEUTRALEMSLOW, kCHARGEDEMFAST, kNEUTRALEMFAST} ; 
 
   typedef TClonesArray  FastRecParticlesList ; 
 
