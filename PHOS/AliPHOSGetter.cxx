@@ -114,7 +114,8 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
       }
     }
   }
-  ReadTreeQA() ;
+  if ( PHOS()->TreeQA() ) 
+    ReadTreeQA() ;
   fDebug="";
 }
 //____________________________________________________________________________ 
