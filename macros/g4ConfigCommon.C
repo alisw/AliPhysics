@@ -3,6 +3,7 @@
 // AliRoot Configuration for running aliroot with Monte Carlo.
 // Called from g4Config.C
 
+Float_t EtaToTheta(Float_t arg);
 static Int_t    eventsPerRun = 100;
 enum PprGeo_t 
 {
@@ -17,8 +18,17 @@ void ConfigCommon(Bool_t interactiveSetup)
   // ============================= 
 
   // Create the output file
-  TFile *rootfile = new TFile("galice.root","recreate");
-  rootfile->SetCompressionLevel(2);
+  AliRunLoader* rl = 0;
+  rl = AliRunLoader::Open("galice.root",
+			   AliConfig::fgkDefaultEventFolderName,
+			   "recreate");
+  if (!rl) {
+    gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+    return;
+  }
+  rl->SetCompressionLevel(2);
+  rl->SetNumberOfEventsPerFile(3);
+  gAlice->SetRunLoader(rl);
 
   // Set External decayer
   AliDecayer* decayer = new AliDecayerPythia();
@@ -66,24 +76,29 @@ void ConfigCommon(Bool_t interactiveSetup)
   // --- Specify event type to be tracked through the ALICE setup
   // --- All positions are in cm, angles in degrees, and P and E in GeV
 
-  Int_t nParticles;
+  Int_t nParticles = 100;
   if (gSystem->Getenv("CONFIG_NPARTICLES")) 
     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
-  else
-    nParticles = 100; 
 
-
-  AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
-  gener->SetMomentumRange(0,999);
-  gener->SetPhiRange(0,360);
+  AliGenCocktail *gener = new AliGenCocktail();
+  gener->SetPhiRange(0, 360);
   // Set pseudorapidity range from -8 to 8.
   Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
   Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
-  gener->SetThetaRange(thmin, thmax);
-  gener->SetOrigin(0,0,0);        //vertex position
-  gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
+  gener->SetThetaRange(thmin,thmax);
+  gener->SetOrigin(0, 0, 0);  //vertex position
+  gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
+
+  AliGenHIJINGpara *hijingparam = new AliGenHIJINGpara(nParticles);
+  hijingparam->SetMomentumRange(0.2, 999);
+  gener->AddGenerator(hijingparam,"HIJING PARAM",1);
+
+  //    AliGenBox *genbox = new AliGenBox(nParticles);
+  //    genbox->SetPart(22);
+  //    genbox->SetPtRange(0.3, 10.00);
+  //    gener->AddGenerator(genbox,"GENBOX GAMMA for PHOS",1);
   gener->Init();
-  //
+
   // Activate this line if you want the vertex smearing to happen
   // track by track
 
@@ -95,7 +110,6 @@ void ConfigCommon(Bool_t interactiveSetup)
 
   // Field (L3 0.4 T)
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-  rootfile->cd();
   gAlice->SetField(field);    
   
   // Old magnetic field
@@ -108,26 +122,26 @@ void ConfigCommon(Bool_t interactiveSetup)
   if (!interactiveSetup) {
 
     // Select modules 
-  Int_t iABSO=1;
-  Int_t iDIPO=1;
-  Int_t iFMD=1;
-  Int_t iFRAME=1;
-  Int_t iHALL=1;
-  Int_t iITS=1;
-  Int_t iMAG=1;
-  Int_t iMUON=1;
-  Int_t iPHOS=1;
-  Int_t iPIPE=1;
-  Int_t iPMD=1;
-  Int_t iRICH=1;
-  Int_t iSHIL=1;
-  Int_t iSTART=1;
-  Int_t iTOF=1;
-  Int_t iTPC=1;
-  Int_t iTRD=1;
-  Int_t iZDC=1;
+  Int_t iABSO  = 1;
+  Int_t iDIPO  = 1;
+  Int_t iFMD   = 1;
+  Int_t iFRAME = 1;
+  Int_t iHALL  = 1;
+  Int_t iITS   = 1;
+  Int_t iMAG   = 1;
+  Int_t iMUON  = 1;
+  Int_t iPHOS  = 1;
+  Int_t iPIPE  = 1;
+  Int_t iPMD   = 1;
+  Int_t iRICH  = 1;
+  Int_t iSHIL  = 1;
+  Int_t iSTART = 1;
+  Int_t iTOF   = 1;
+  Int_t iTPC   = 1;
+  Int_t iTRD   = 1;
+  Int_t iZDC   = 1;
   Int_t iEMCAL = 1;
-  Int_t iCRT = 0;  
+  Int_t iCRT   = 0;  
   Int_t iVZERO = 1;
 
   // ONLY FOR GEANT4
@@ -135,6 +149,7 @@ void ConfigCommon(Bool_t interactiveSetup)
   // Exclude detectors with temporary problem
   iCRT = 0;
   iEMCAL = 0;
+  iFMD = 0;
  
   // END OF ONLY FOR GEANT4
 
@@ -200,76 +215,60 @@ void ConfigCommon(Bool_t interactiveSetup)
         AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
     }
  
-  if(iITS) {
-
-//=================== ITS parameters ============================
-    //
-    // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
-    // almost all other detectors. This involves the fact that the ITS geometry
-    // still has several options to be followed in parallel in order to determine
-    // the best set-up which minimizes the induced background. All the geometries
-    // available to date are described in the following. Read carefully the comments
-    // and use the default version (the only one uncommented) unless you are making
-    // comparisons and you know what you are doing. In this case just uncomment the
-    // ITS geometry you want to use and run Aliroot.
-    //
-    // Detailed geometries:         
-    //
-    //
-    //AliITS *ITS  = new AliITSv5symm("ITS","Updated ITS TDR detailed version with symmetric services");
-    //
-    //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
-    //
+    if(iITS) 
+    {
+      //=================== ITS parameters ============================
+      //
+      // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
+      // almost all other detectors. This involves the fact that the ITS geometry
+      // still has several options to be followed in parallel in order to determine
+      // the best set-up which minimizes the induced background. All the geometries
+      // available to date are described in the following. Read carefully the comments
+      // and use the default version (the only one uncommented) unless you are making
+      // comparisons and you know what you are doing. In this case just uncomment the
+      // ITS geometry you want to use and run Aliroot.
+      //
+      // Detailed geometries:         
+      //
+      //
+      //
 /*
-    AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
-    ITS->SetMinorVersion(2);					 // don't touch this parameter if you're not an ITS developer
-    ITS->SetReadDet(kFALSE);					 // don't touch this parameter if you're not an ITS developer
-    //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
-    ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
-    ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
-    ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
-    ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
-    ITS->SetRails(0);	     // 1 --> rails in ; 0 --> rails out
-    ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
-    //
-    //AliITSvPPRsymm *ITS  = new AliITSvPPRsymm("ITS","New ITS PPR detailed version with symmetric services");
-    //ITS->SetMinorVersion(2);                                       // don't touch this parameter if you're not an ITS developer
-    //ITS->SetReadDet(kFALSE);                                       // don't touch this parameter if you're not an ITS developer
-    //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det"); // don't touch this parameter if you're not an ITS developer
-    //ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
-    //ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
-    //ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
-    //ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
-    //ITS->SetRails(0);              // 1 --> rails in ; 0 --> rails out
-    //ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
-    //
-    //
-    // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful 
-    // for reconstruction !):
-    //                                                     
-    //
+	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","ITS PPR detailed version with asymmetric services");
+	ITS->SetMinorVersion(2);  // don't touch this parameter if you're not an ITS developer
+	ITS->SetReadDet(kTRUE);	  // don't touch this parameter if you're not an ITS developer
+	//    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
+	ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
+	ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
+	ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
+	ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
+	ITS->SetRails(0);	       // 1 --> rails in ; 0 --> rails out
+	ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
 */
-    AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS PPR coarse version with asymmetric services");
-    ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
-    ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
-    //
-    //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS PPR coarse version with symmetric services");
-    //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
-    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
-    //                      
-    //
-    //
-    // Geant3 <-> EUCLID conversion
-    // ============================
-    //
-    // SetEUCLID is a flag to output (=1) or not to output (=0) both geometry and
-    // media to two ASCII files (called by default ITSgeometry.euc and
-    // ITSgeometry.tme) in a format understandable to the CAD system EUCLID.
-    // The default (=0) means that you dont want to use this facility.
-    //
-    ITS->SetEUCLID(0);  
-  }
-  
+      //
+      // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful 
+      // for reconstruction !):
+      //                                                       
+      //
+      AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS PPR coarse version with asymmetric services");
+      ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
+      ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
+      //
+      //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS PPR coarse version with symmetric services");
+      //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
+      //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
+      //                      
+      //
+      //
+      // Geant3 <-> EUCLID conversion
+      // ============================
+      //
+      // SetEUCLID is a flag to output (=1) or not to output (=0) both geometry and
+      // media to two ASCII files (called by default ITSgeometry.euc and
+      // ITSgeometry.tme) in a format understandable to the CAD system EUCLID.
+      // The default (=0) means that you dont want to use this facility.
+      //
+      ITS->SetEUCLID(0);  
+    }  
 
     if (iTPC)
     {
@@ -346,11 +345,7 @@ void ConfigCommon(Bool_t interactiveSetup)
         //=================== FMD parameters ============================
 
         AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
-        FMD->SetRingsSi1(256);
-        FMD->SetRingsSi2(128);
-        FMD->SetSectorsSi1(20);
-        FMD->SetSectorsSi2(40);
-   }
+    }
 
     if (iMUON)
     {
