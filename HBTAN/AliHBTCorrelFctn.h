@@ -37,6 +37,26 @@ class AliHBTQInvCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunct
    ClassDef(AliHBTQInvCorrelFctn,2)
  
 };
+/*************************************************************/
+
+class AliHBTOutSideLongFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelFunction
+{
+
+  public:
+    AliHBTOutSideLongFctn(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+                             Int_t nYbins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0,
+	         Int_t nZbins = 100, Double_t maxZval = 0.15, Double_t minZval = 0.0);
+    virtual  ~AliHBTOutSideLongFctn(){}
+
+  TH1* GetResult();
+  void   ProcessSameEventParticles(AliHBTPair* partpair);
+  
+  void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z)
+    { x=TMath::Abs(pair->GetQOutCMSLC()); y=TMath::Abs(pair->GetQSideCMSLC()); z=TMath::Abs(pair->GetQLongCMSLC());} 
+
+  ClassDef(AliHBTOutSideLongFctn,1)
+};
+
 /*************************************************************************************/ 
 
 class AliHBTQOutCMSLCCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction

@@ -44,6 +44,19 @@ TH1* AliHBTQInvCorrelFctn::GetResult()
 /*************************************************************************************/ 
 /*************************************************************************************/ 
 
+ClassImp(AliHBTOutSideLongFctn)
+
+AliHBTOutSideLongFctn::AliHBTOutSideLongFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
+                                                   Int_t nYbins, Double_t maxYval, Double_t minYval,
+                                                   Int_t nZbins, Double_t maxZval, Double_t minZval):
+ AliHBTOnePairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
+{
+  fWriteNumAndDen = kTRUE;//change default behaviour
+  Rename("qoslcf","Q_{out}-Q_{side}-Q_{long} Correlation Fctn");
+}
+
+/*************************************************************************************/ 
+
 ClassImp(AliHBTQOutCMSLCCorrelFctn)
     
 AliHBTQOutCMSLCCorrelFctn::AliHBTQOutCMSLCCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):

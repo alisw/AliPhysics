@@ -83,6 +83,7 @@
 #pragma link C++ class AliHBTClusterMap+;
     
 #pragma link C++ class AliHBTQInvCorrelFctn+;
+#pragma link C++ class AliHBTOutSideLongFctn+;
 #pragma link C++ class AliHBTTwoKStarCorrelFctn+;
 #pragma link C++ class AliHBTQOutCMSLCCorrelFctn+;
 #pragma link C++ class AliHBTQLongCMSLCCorrelFctn+;
