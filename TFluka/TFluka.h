@@ -19,8 +19,8 @@
 class TFluka : public AliMC
 {
  public:
-    TFluka(const char *name, const char *title) 
-	{AliMC(name, title);}
+    TFluka(const char *title) 
+	:AliMC("TFluka", title) {;}
     TFluka() {;}
     virtual ~TFluka() {;}
   
@@ -276,9 +276,6 @@ class TFluka : public AliMC
 
   // Control Methods
 
-  virtual void Init()
-      {printf("Init not yet implemented !\n");
-      }
   
   virtual void FinishGeometry()
       {printf("FinishGeometry not yet implemented !\n");}

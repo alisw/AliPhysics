@@ -19,10 +19,11 @@
 class AliFluka : public TFluka
 {
  public:
-    AliFluka(const char *name, const char *title) 
-	{TFluka(name, title);}
+    AliFluka(const char *title) 
+	:TFluka(title){}
     AliFluka() {;}
     virtual ~AliFluka() {;}
+    virtual void Init();
     virtual void ProcessRun(Int_t nevent);
     virtual void ProcessEvent();
   private:
