@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.34  2001/02/14 15:50:40  hristov
+The last particle in event marked using SetHighWaterMark
+
 Revision 1.33  2001/01/30 09:23:12  hristov
 Streamers removed (R.Brun)
 
@@ -168,62 +171,62 @@ void AliGenPythia::Init()
 //  Parent and Children Selection
     switch (fProcess) 
     {
-    case charm:
-
+    case kPyCharm:
 	fParentSelect[0]=411;
 	fParentSelect[1]=421;
 	fParentSelect[2]=431;
 	fParentSelect[3]=4122;	
 	break;
-    case charm_unforced:
-
+    case kPyCharmUnforced:
 	fParentSelect[0]=411;
 	fParentSelect[1]=421;
 	fParentSelect[2]=431;
 	fParentSelect[3]=4122;	
 	break;
-    case beauty:
+    case kPyBeauty:
 	fParentSelect[0]=511;
 	fParentSelect[1]=521;
 	fParentSelect[2]=531;
 	fParentSelect[3]=5122;	
 	break;
-    case beauty_unforced:
+    case kPyBeautyUnforced:
 	fParentSelect[0]=511;
 	fParentSelect[1]=521;
 	fParentSelect[2]=531;
 	fParentSelect[3]=5122;	
 	break;
-    case jpsi_chi:
-    case jpsi:
+    case kPyJpsiChi:
+    case kPyJpsi:
 	fParentSelect[0]=443;
 	break;
-    case mb:
+    case kPyMb:
+    case kPyJets:
+    case kPyDirectGamma:
 	break;
     }
 
     switch (fForceDecay) 
     {
-    case semielectronic:
-    case dielectron:
-    case b_jpsi_dielectron:
-    case b_psip_dielectron:
+    case kSemiElectronic:
+    case kDiElectron:
+    case kBJpsiDiElectron:
+    case kBPsiPrimeDiElectron:
 	fChildSelect[0]=kElectron;	
 	break;
-    case semimuonic:
-    case dimuon:
-    case b_jpsi_dimuon:
-    case b_psip_dimuon:
-    case pitomu:
-    case katomu:
+    case kSemiMuonic:
+    case kDiMuon:
+    case kBJpsiDiMuon:
+    case kBPsiPrimeDiMuon:
+    case kPiToMu:
+    case kKaToMu:
 	fChildSelect[0]=kMuonMinus;
 	break;
-    case hadronicD:
+    case kHadronicD:
       fChildSelect[0]=kPiPlus;
       fChildSelect[1]=kKPlus;
       break;
-    case all:
-    case nodecay:
+    case kAll:
+    case kNoDecay:
       break;
     }
 }
@@ -273,7 +276,7 @@ void AliGenPythia::Generate()
 	printf("\n **************************************************%d\n",np);
 	Int_t nc=0;
 	if (np == 0 ) continue;
-	if (fProcess != mb) {
+	if (fProcess != kPyMb && fProcess != kPyJets && fProcess != kPyDirectGamma) {
 	    for (Int_t i = 0; i<np-1; i++) {
 		TParticle *  iparticle = (TParticle *) particles->At(i);
 		Int_t ks = iparticle->GetStatusCode();
@@ -317,9 +320,9 @@ void AliGenPythia::Generate()
 			Int_t ifch=iparticle->GetFirstDaughter();
 			Int_t ilch=iparticle->GetLastDaughter();	
 
-			if ((ifch !=0 && ilch !=0) || fForceDecay == nodecay) {
+			if ((ifch !=0 && ilch !=0) || fForceDecay == kNoDecay) {
 			  Int_t trackit=0;
-			  if (fForceDecay == nodecay) trackit = 1;
+			  if (fForceDecay == kNoDecay) trackit = 1;
 			    gAlice->SetTrack(trackit,ntP,kf,
 					     p,origin,polar,
 					     0,kPPrimary,nt,fParentWeight);
@@ -327,7 +330,7 @@ void AliGenPythia::Generate()
 			    Int_t iparent = nt;
 //
 // Children	    
-			    if (fForceDecay != nodecay) {
+			    if (fForceDecay != kNoDecay) {
 			      for (j=ifch; j<=ilch; j++)
 				{
 				  TParticle *  ichild = 
@@ -409,7 +412,7 @@ Bool_t AliGenPythia::ParentSelected(Int_t ip)
 Bool_t AliGenPythia::ChildSelected(Int_t ip)
 {
 // True if particle is in list of decay products to be selected
-    if (fForceDecay == all) return kTRUE;
+    if (fForceDecay == kAll) return kTRUE;
     
     for (Int_t i=0; i<5; i++)
     {

@@ -7,10 +7,10 @@
 
 
 #include "AliGenerator.h"
-#include "GenTypeDefs.h"
+#include "AliPythia.h"
+#include "AliDecayer.h"
 #include <TArrayI.h>    
 
-class AliDecayer;
 class AliPythia;
 class TParticle;
 
@@ -24,22 +24,22 @@ class AliGenPythia : public AliGenerator
     virtual void    Generate();
     virtual void    Init();
     // select process type
-    virtual void    SetProcess(Process_t proc=charm) {fProcess=proc;}
+    virtual void    SetProcess(Process_t proc = kPyCharm) {fProcess = proc;}
     // select structure function
-    virtual void    SetStrucFunc(StrucFunc_t func=GRV_HO) {fStrucFunc=func;}
+    virtual void    SetStrucFunc(StrucFunc_t func = kGRV_HO) {fStrucFunc = func;}
     // select pt of hard scattering 
-    virtual void    SetPtHard(Float_t ptmin=0, Float_t ptmax=1.e10)
-	{fPtHardMin=ptmin; fPtHardMax=ptmax; }
+    virtual void    SetPtHard(Float_t ptmin = 0, Float_t ptmax = 1.e10)
+	{fPtHardMin = ptmin; fPtHardMax = ptmax; }
     // set centre of mass energy
-    virtual void    SetEnergyCMS(Float_t energy=5500) {fEnergyCMS=energy;}
+    virtual void    SetEnergyCMS(Float_t energy = 5500) {fEnergyCMS = energy;}
     // force decay type
-    virtual void    SetForceDecay(Decay_t decay=semimuonic) {fForceDecay=decay;}
+    virtual void    SetForceDecay(Decay_t decay = kSemiMuonic) {fForceDecay = decay;}
     // treat protons as inside nuclei
     virtual void    SetNuclei(Int_t a1, Int_t a2);
     // get cross section of process
     virtual Float_t GetXsection() {return fXsection;}
     // Check PDG code
-    virtual Int_t CheckPDGCode(Int_t pdgcode);
+    virtual Int_t   CheckPDGCode(Int_t pdgcode);
     // Assignment Operator
     AliGenPythia & operator=(const AliGenPythia & rhs);
  protected:
@@ -57,7 +57,7 @@ class AliGenPythia : public AliGenerator
     Float_t     fPtHardMax;     // higher pT-hard cut
     Int_t       fNucA1;         // mass number nucleus side 1
     Int_t       fNucA2;         // mass number nucleus side 2
-    
+    Bool_t      fFullEvent;     // Write Full event if true
     AliDecayer  *fDecayer;      // ! pointer to the decayer instance
  private:
     // check if particle is selected as parent particle

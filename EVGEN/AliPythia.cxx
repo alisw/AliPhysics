@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/12/18 08:55:35  morsch
+Make AliPythia dependent generartors work with new scheme of random number generation
+
 Revision 1.12  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -84,7 +87,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 //  select charm production
     switch (process) 
     {
-    case charm:
+    case kPyCharm:
 	SetMSEL(4);
 //
 //  heavy quark masses
@@ -98,16 +101,16 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 	SetPARP(93,5.);
 //
 	break;
-    case beauty:
+    case kPyBeauty:
 	SetMSEL(5);
 	SetPMAS(5,1,4.75);
 	break;
-    case jpsi:
+    case kPyJpsi:
 	SetMSEL(0);
 // gg->J/Psi g
 	SetMSUB(86,1);
 	break;
-    case jpsi_chi:
+    case kPyJpsiChi:
 	SetMSEL(0);
 // gg->J/Psi g
 	SetMSUB(86,1);
@@ -117,7 +120,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 	SetMSUB(88,1);
 // gg-> chi_2c g
 	SetMSUB(89,1);	
-    case charm_unforced:
+    case kPyCharmUnforced:
 	SetMSEL(0);
 // gq->qg   
 	SetMSUB(28,1);
@@ -125,7 +128,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 	SetMSUB(53,1);
 // gg->gg
 	SetMSUB(68,1);
-    case beauty_unforced:
+    case kPyBeautyUnforced:
 	SetMSEL(0);
 // gq->qg   
 	SetMSUB(28,1);
@@ -134,7 +137,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 // gg->gg
 	SetMSUB(68,1);
 	break;
-    case mb:
+    case kPyMb:
 // Minimum Bias pp-Collisions
 //
 // Tuning of parameters descibed in G. Ciapetti and A. Di Ciaccio
@@ -156,6 +159,13 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 	SetPARP(86,0.9);
 //      90% of gluon interactions have minimum string length
 	SetPARP(85,0.9);
+	break;
+    case kPyJets:
+	SetMSEL(1);
+	break;
+    case kPyDirectGamma:
+	SetMSEL(10);
+	break;
     }
 //
 //  Initialize PYTHIA

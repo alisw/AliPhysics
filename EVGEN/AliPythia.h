@@ -7,10 +7,27 @@
 
 #include <TPythia6.h>
 #include <AliRndm.h>
-#include "GenTypeDefs.h"
+
+typedef enum
+{kPyCharm, kPyBeauty, kPyCharmUnforced, kPyBeautyUnforced, kPyJpsi, kPyJpsiChi, kPyMb, kPyJets, kPyDirectGamma}
+Process_t;
+
+typedef enum
+{
+    kDO_Set_1=1006,
+    kGRV_LO=5005,
+    kGRV_HO=5006,
+    kMRS_D_minus=3031,
+    kMRS_D0=3030,
+    kMRS_G=3041,
+    kCTEQ_2pM=4024,
+    kCTEQ_4M=4034
+}
+StrucFunc_t;
 
 class AliPythia : public TPythia6, public AliRndm
 {
+
  public:
     virtual ~AliPythia(){;}
     // convert to compressed code and print result (for debugging only)
