@@ -15,7 +15,7 @@ LDFLAGS     = -O2
 SOFLAGS     = -shared
 
 TOPDIR = $(HOME)/level3code
-OBJDIR = tgt_Linux
+OBJDIR = lib
 LIBDIR = $(LEVEL3)/lib_$(USERNAME)
 
 ifeq ($(USEPACKAGE),ROOT) 
@@ -64,7 +64,6 @@ $(OBJDIR)/%.o : %.cxx
 
 $(OBJDIR) : 
 	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
-	test ! -e $(LIBDIR) && mkdir -p $(LIBDIR)
 
 clean :
 	rm -f $(OBJDIR)/*.o

@@ -1,8 +1,9 @@
-#
-# Makefile for ROOT version of HLT code.
-#
-# Author: Anders Vestbo                       
-#
+#$Id$
+###########################
+# Makefile for HLT code.  #
+#                         #
+# Author: Anders Vestbo   #                    
+###########################
 
 CXX         = g++
 LD          = g++
@@ -11,7 +12,7 @@ LDFLAGS     = -O2
 SOFLAGS     = -shared
 
 TOPDIR = $(HOME)/level3code
-OBJDIR = tgt_Linux
+OBJDIR = lib
 LIBDIR = $(LEVEL3)/lib_$(USERNAME)
 
 SRCS	= AliL3Modeller.cxx AliL3ModelTrack.cxx AliL3Compress.cxx
@@ -42,7 +43,6 @@ $(OBJDIR)/%.o : %.cxx
 
 $(OBJDIR) : 
 	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
-	test ! -e $(LIBDIR) && mkdir -p $(LIBDIR)
 
 $(OBJDIR)/bitio.o : bitio.c
 	$(CXX) -c -o $(OBJDIR)/bitio.o bitio.c

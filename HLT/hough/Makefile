@@ -1,8 +1,9 @@
-#
-# Makefile for ROOT (no aliroot) version of HLT code.
-#
-# Author: Anders Vestbo                       
-#
+#$Id$
+###########################
+# Makefile for HLT code.  #
+#                         #
+# Author: Anders Vestbo   #                    
+###########################
 
 CXX         = g++
 LD          = g++
@@ -11,7 +12,8 @@ LDFLAGS     = -O2
 SOFLAGS     = -shared
 
 TOPDIR = $(HOME)/level3code
-OBJDIR = tgt_Linux
+OBJDIR = lib
+LIBDIR = $(LEVEL3)/lib_$(USERNAME)
 
 SRCS	= AliL3HoughTransformer.cxx AliL3Hough.cxx AliL3HoughTrack.cxx\
 	  AliL3HoughMaxFinder.cxx AliL3HoughEval.cxx AliL3HoughMerger.cxx \
@@ -26,7 +28,7 @@ HDRS = $(SRCS:.cxx=.h) AliL3HoughLinkDef.h
 
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 
-LEVELSO = $(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.so
+LEVELSO = $(LIBDIR)/libAliL3Hough.so
 
 all : $(OBJDIR) $(LEVELSO)
 
@@ -46,5 +48,8 @@ $(OBJDIR) :
 
 clean :
 	rm -f $(OBJDIR)/*.o
-	rm -f $(LEVEL3)/lib_$(USERNAME)/libAliL3Hough.so
+	rm -f $(LIBDIR)/libAliL3Hough.so
 	rm $(DICT) $(DICTH) 
+
+so: 
+	rm -f $(LIBDIR)/libAliL3Hough.so
