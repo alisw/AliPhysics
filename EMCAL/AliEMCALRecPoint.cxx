@@ -46,7 +46,7 @@ AliEMCALRecPoint::AliEMCALRecPoint()
   fMaxTrack = 0 ;
   fTheta = fPhi = 0. ; 
   fEMCALArm = 0;
-
+  fTower = kFALSE ; 
 }
 
 //____________________________________________________________________________
@@ -241,17 +241,19 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
   delete tempo ;
 
 }
+
 //____________________________________________________________________________
 void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos) const
 {
   // returns the position of the cluster in the global reference system of ALICE
-  // and the uncertainty on this position
   
   AliEMCALGeometry * emcalgeom = AliEMCALGetter::GetInstance()->EMCALGeometry();  
   gpos.SetX(fPhi) ;
-  gpos.SetY(emcalgeom->GetIPDistance() + emcalgeom->GetAirGap()) ;
+  if (IsTower() ) 
+    gpos.SetY(emcalgeom->GetIP2Tower()) ;
+  else 
+    gpos.SetY(emcalgeom->GetIP2PreShower()) ;
   gpos.SetZ(fTheta) ; 
- 
 }
 
 

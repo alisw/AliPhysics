@@ -57,7 +57,8 @@ class AliEMCALRecPoint : public AliRecPoint {
   //  virtual Int_t   GetEMCALMod(void) const {return fEMCALMod ; }
   virtual Int_t * GetPrimaries(Int_t & number) const {number = fMulTrack ; 
                                                       return fTracksList ; }
-  virtual Bool_t  IsEmc(void)const { return kTRUE ;  } 
+  virtual Bool_t  IsEmc(void)const { return kTRUE ;  }
+  const Bool_t IsTower(void) const { return fTower ; } 
   virtual Bool_t  IsSortable() const { 
     // tells that this is a sortable object
     return kTRUE ; 
@@ -66,7 +67,8 @@ class AliEMCALRecPoint : public AliRecPoint {
   virtual void    Print(Option_t * opt = "void") const {
     // Print prototype
   } 
-
+  
+  void SetTower() { fTower = kTRUE ; } 
   AliEMCALRecPoint & operator = (const AliEMCALRecPoint & )  {
     // assignement operator requested by coding convention but not needed
     assert(0==1) ;
@@ -78,9 +80,9 @@ protected:
   Int_t fEMCALArm ; // EMCAM Arm number
   Float_t fTheta ; // theta angle in Alice
   Float_t fPhi ;   // phi angle in Alice
+  Bool_t  fTower ; // tells if the recpoint is a tower or not 
 
-
-  ClassDef(AliEMCALRecPoint,1) // RecPoint for EMCAL (Base Class)
+  ClassDef(AliEMCALRecPoint,2) // RecPoint for EMCAL (Base Class)
  
 };
 
