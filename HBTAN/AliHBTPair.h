@@ -291,11 +291,11 @@ Double_t AliHBTPair::GetDeltaPhi()
     {
       if (phi1 > TMath::Pi())
        {
-         phi1-=TMath::Pi();
+         phi1-=TMath::TwoPi();
        }
       else
        {
-         phi2-=TMath::Pi();
+         phi2-=TMath::TwoPi();
        }
       diff = phi1-phi2; 
     }
