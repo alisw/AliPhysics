@@ -59,11 +59,11 @@ inline AliHBTPair* AliHBTFunction::CheckPair(AliHBTPair* pair)
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
-class AliHBTTwoPartFctn: public AliHBTFunction
+class AliHBTOnePairFctn: public AliHBTFunction
 {
   public:
-    AliHBTTwoPartFctn(){}
-    virtual ~AliHBTTwoPartFctn(){}
+    AliHBTOnePairFctn(){}
+    virtual ~AliHBTOnePairFctn(){}
     
     virtual void ProcessSameEventParticles(AliHBTPair* pair) = 0;
     virtual void ProcessDiffEventParticles(AliHBTPair* pair) = 0;
@@ -72,17 +72,17 @@ class AliHBTTwoPartFctn: public AliHBTFunction
     
   protected:
   public:  
-   ClassDef(AliHBTTwoPartFctn,1)
+   ClassDef(AliHBTOnePairFctn,1)
   
 };
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
-class AliHBTFourPartFctn: public AliHBTFunction
+class AliHBTTwoPairFctn: public AliHBTFunction
 {
   public:
-    AliHBTFourPartFctn(){};
-    virtual ~AliHBTFourPartFctn(){};
+    AliHBTTwoPairFctn(){};
+    virtual ~AliHBTTwoPairFctn(){};
     
     virtual void 
     ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair) = 0;
@@ -92,7 +92,7 @@ class AliHBTFourPartFctn: public AliHBTFunction
 	     
   protected:
   public:  
-   ClassDef(AliHBTFourPartFctn,1)
+   ClassDef(AliHBTTwoPairFctn,1)
   
 };
 /******************************************************************/
@@ -100,11 +100,11 @@ class AliHBTFourPartFctn: public AliHBTFunction
 /******************************************************************/
 
 
-class AliHBTTwoPartFctn1D: public AliHBTTwoPartFctn
+class AliHBTOnePairFctn1D: public AliHBTOnePairFctn
 {
  public:
-  AliHBTTwoPartFctn1D(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
-  virtual ~AliHBTTwoPartFctn1D();
+  AliHBTOnePairFctn1D(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
+  virtual ~AliHBTOnePairFctn1D();
   
   
   TH1* GetNumerator(){return fNumerator;}
@@ -123,19 +123,19 @@ class AliHBTTwoPartFctn1D: public AliHBTTwoPartFctn
   Int_t fNBinsToScale;
   
  public:
-  ClassDef(AliHBTTwoPartFctn1D,2)
+  ClassDef(AliHBTOnePairFctn1D,2)
 };
 
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
 
-class AliHBTTwoPartFctn2D: public AliHBTTwoPartFctn
+class AliHBTOnePairFctn2D: public AliHBTOnePairFctn
 {
  public:
-  AliHBTTwoPartFctn2D(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+  AliHBTOnePairFctn2D(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
                       Int_t nYbins = 200, Double_t maxYval = .15, Double_t minYval =-0.15);
-  ~AliHBTTwoPartFctn2D();
+  ~AliHBTOnePairFctn2D();
   
   TH1* GetNumerator(){return fNumerator;}
   TH1* GetDenominator(){return fDenominator;}
@@ -151,20 +151,20 @@ class AliHBTTwoPartFctn2D: public AliHBTTwoPartFctn
   TH2D* fDenominator;
   
  public:
-  ClassDef(AliHBTTwoPartFctn2D,1)
+  ClassDef(AliHBTOnePairFctn2D,1)
 };
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
 
-class AliHBTTwoPartFctn3D: public AliHBTTwoPartFctn
+class AliHBTOnePairFctn3D: public AliHBTOnePairFctn
 {
  public:
-  AliHBTTwoPartFctn3D(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+  AliHBTOnePairFctn3D(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
                       Int_t nYbins = 200, Double_t maxYval = .15, Double_t minYval =-0.15, 
                       Int_t nZbins = 200, Double_t maxZval = .15, Double_t minZval =-0.15);
 	    
-  virtual ~AliHBTTwoPartFctn3D();
+  virtual ~AliHBTOnePairFctn3D();
 
   TH1* GetNumerator(){return fNumerator;}
   TH1* GetDenominator(){return fDenominator;}
@@ -173,7 +173,7 @@ class AliHBTTwoPartFctn3D: public AliHBTTwoPartFctn
   TH3D* fNumerator;
   TH3D* fDenominator;
  public:
-  ClassDef(AliHBTTwoPartFctn3D,1)
+  ClassDef(AliHBTOnePairFctn3D,1)
 };
 /******************************************************************/
 /******************************************************************/
@@ -184,12 +184,12 @@ class AliHBTTwoPartFctn3D: public AliHBTTwoPartFctn
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
-class AliHBTFourPartFctn2D: public AliHBTFourPartFctn
+class AliHBTTwoPairFctn2D: public AliHBTTwoPairFctn
 {
  public:
-  AliHBTFourPartFctn2D(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+  AliHBTTwoPairFctn2D(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
                        Int_t nYbins = 200, Double_t maxYval = .15, Double_t minYval =-0.15);
-  ~AliHBTFourPartFctn2D();
+  ~AliHBTTwoPairFctn2D();
   
   TH1* GetNumerator(){return fNumerator;}
   TH1* GetDenominator(){return fDenominator;}
@@ -205,7 +205,7 @@ class AliHBTFourPartFctn2D: public AliHBTFourPartFctn
   TH2D* fDenominator;
   
  public:
-  ClassDef(AliHBTFourPartFctn2D,1)
+  ClassDef(AliHBTTwoPairFctn2D,1)
 };
 
 

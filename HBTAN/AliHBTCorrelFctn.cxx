@@ -14,7 +14,7 @@ ClassImp(AliHBTQInvCorrelFctn)
 
 AliHBTQInvCorrelFctn::
 AliHBTQInvCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
-                     AliHBTTwoPartFctn1D(nbins,maxXval,minXval)
+                     AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
  Rename("qinvcf","Q_{inv} Correlation Function");
 }
@@ -61,7 +61,7 @@ ClassImp(AliHBTInvMassCorrelFctn)
 
 AliHBTInvMassCorrelFctn::
 AliHBTInvMassCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
-                        AliHBTTwoPartFctn1D(nbins,maxXval,minXval)
+                        AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
   Rename("InvMass CF","Invariant Mass Correlation Function");
 }

@@ -24,9 +24,9 @@ AliHBTAnalysis::AliHBTAnalysis()
  {
    fReader = 0x0;
    
-   fTrackFunctions = new AliHBTTwoPartFctn* [fgkFctnArraySize];
-   fParticleFunctions = new AliHBTTwoPartFctn* [fgkFctnArraySize];
-   fParticleAndTrackFunctions = new AliHBTFourPartFctn* [fgkFctnArraySize];
+   fTrackFunctions = new AliHBTOnePairFctn* [fgkFctnArraySize];
+   fParticleFunctions = new AliHBTOnePairFctn* [fgkFctnArraySize];
+   fParticleAndTrackFunctions = new AliHBTTwoPairFctn* [fgkFctnArraySize];
    
    fNTrackFunctions = 0;
    fNParticleFunctions = 0;
@@ -559,7 +559,7 @@ void AliHBTAnalysis::SetGlobalPairCut(AliHBTPairCut* cut)
 
 /*************************************************************************************/
 
-void AliHBTAnalysis::AddTrackFunction(AliHBTTwoPartFctn* f)
+void AliHBTAnalysis::AddTrackFunction(AliHBTOnePairFctn* f)
 {
   if (f == 0x0) return;
   if (fNTrackFunctions == fgkFctnArraySize)
@@ -571,7 +571,7 @@ void AliHBTAnalysis::AddTrackFunction(AliHBTTwoPartFctn* f)
 }
 /*************************************************************************************/ 
 
-void AliHBTAnalysis::AddParticleFunction(AliHBTTwoPartFctn* f)
+void AliHBTAnalysis::AddParticleFunction(AliHBTOnePairFctn* f)
 {
   if (f == 0x0) return;
   
@@ -584,7 +584,7 @@ void AliHBTAnalysis::AddParticleFunction(AliHBTTwoPartFctn* f)
   
   
 }
-void AliHBTAnalysis::AddParticleAndTrackFunction(AliHBTFourPartFctn* f)
+void AliHBTAnalysis::AddParticleAndTrackFunction(AliHBTTwoPairFctn* f)
 {
   if (f == 0x0) return;
   if (fNParticleAndTrackFunctions == fgkFctnArraySize)

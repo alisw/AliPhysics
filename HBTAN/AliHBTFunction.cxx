@@ -13,7 +13,7 @@ Base classes for HBT functions
           /            \
          /              \
         /                \
-    two part          four part 
+    one pair          two pair 
     /   |   \         /   |   \
    /    |    \       /    |    \
   1D   2D    3D     1D   2D    3D
@@ -151,22 +151,22 @@ Rename(const Char_t * name, const Char_t * title)
 /******************************************************************/
 /******************************************************************/
 
-ClassImp( AliHBTTwoPartFctn )
+ClassImp( AliHBTOnePairFctn )
 
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
 
-ClassImp( AliHBTFourPartFctn)
+ClassImp( AliHBTTwoPairFctn)
 
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
 
-ClassImp( AliHBTTwoPartFctn1D )
+ClassImp( AliHBTOnePairFctn1D )
 
-AliHBTTwoPartFctn1D::
-AliHBTTwoPartFctn1D(Int_t nbins, Double_t maxXval, Double_t minXval)
+AliHBTOnePairFctn1D::
+AliHBTOnePairFctn1D(Int_t nbins, Double_t maxXval, Double_t minXval)
  {
  //Constructor of Two Part One Dimentional Function 
  // nbins: number of bins in histograms - default 100
@@ -188,21 +188,21 @@ AliHBTTwoPartFctn1D(Int_t nbins, Double_t maxXval, Double_t minXval)
    
  }
 /******************************************************************/
-AliHBTTwoPartFctn1D::~AliHBTTwoPartFctn1D()
+AliHBTOnePairFctn1D::~AliHBTOnePairFctn1D()
 {
   delete fNumerator;
   delete fDenominator;
 }
 /******************************************************************/
 
-void AliHBTTwoPartFctn1D::ProcessSameEventParticles(AliHBTPair* pair)
+void AliHBTOnePairFctn1D::ProcessSameEventParticles(AliHBTPair* pair)
 {
  //Fills the numerator
    pair = CheckPair(pair);
    if(pair) fNumerator->Fill(GetValue(pair));
 }
 /******************************************************************/
-void AliHBTTwoPartFctn1D::ProcessDiffEventParticles(AliHBTPair* pair)
+void AliHBTOnePairFctn1D::ProcessDiffEventParticles(AliHBTPair* pair)
  {
   //fills denumerator
    pair = CheckPair(pair);
@@ -210,7 +210,7 @@ void AliHBTTwoPartFctn1D::ProcessDiffEventParticles(AliHBTPair* pair)
 
   }
 /******************************************************************/
-Double_t AliHBTTwoPartFctn1D::Scale()
+Double_t AliHBTOnePairFctn1D::Scale()
 {
   if (gDebug>0) cout<<"Enetered Scale()"<<endl;
   if(!fNumerator) 
@@ -266,10 +266,10 @@ Double_t AliHBTTwoPartFctn1D::Scale()
 /******************************************************************/
 /******************************************************************/
 
-ClassImp( AliHBTTwoPartFctn2D )
+ClassImp( AliHBTOnePairFctn2D )
 
-AliHBTTwoPartFctn2D::
-AliHBTTwoPartFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval , 
+AliHBTOnePairFctn2D::
+AliHBTOnePairFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval , 
                     Int_t nYbins, Double_t maxYval, Double_t minYval)
 
 {
@@ -290,12 +290,12 @@ AliHBTTwoPartFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval ,
    fDenominator->Sumw2();
 
 }	  
-AliHBTTwoPartFctn2D::~AliHBTTwoPartFctn2D()
+AliHBTOnePairFctn2D::~AliHBTOnePairFctn2D()
 {
   delete fNumerator;
   delete fDenominator;
 }
-void AliHBTTwoPartFctn2D::ProcessSameEventParticles(AliHBTPair* pair)
+void AliHBTOnePairFctn2D::ProcessSameEventParticles(AliHBTPair* pair)
 {
   pair = CheckPair(pair);
   if(pair) 
@@ -306,7 +306,7 @@ void AliHBTTwoPartFctn2D::ProcessSameEventParticles(AliHBTPair* pair)
    }
 }
 
-void AliHBTTwoPartFctn2D::ProcessDiffEventParticles(AliHBTPair* pair)
+void AliHBTOnePairFctn2D::ProcessDiffEventParticles(AliHBTPair* pair)
 {
   pair = CheckPair(pair);
   if(pair) 
@@ -323,10 +323,10 @@ void AliHBTTwoPartFctn2D::ProcessDiffEventParticles(AliHBTPair* pair)
 /******************************************************************/
 /******************************************************************/
 
-ClassImp( AliHBTTwoPartFctn3D)
+ClassImp( AliHBTOnePairFctn3D)
 
-AliHBTTwoPartFctn3D::
-AliHBTTwoPartFctn3D(Int_t nXbins, Double_t maxXval, Double_t minXval, 
+AliHBTOnePairFctn3D::
+AliHBTOnePairFctn3D(Int_t nXbins, Double_t maxXval, Double_t minXval, 
                     Int_t nYbins, Double_t maxYval, Double_t minYval, 
                     Int_t nZbins, Double_t maxZval, Double_t minZval)
 
@@ -352,7 +352,7 @@ AliHBTTwoPartFctn3D(Int_t nXbins, Double_t maxXval, Double_t minXval,
 }	  
 
 
-AliHBTTwoPartFctn3D::~AliHBTTwoPartFctn3D()
+AliHBTOnePairFctn3D::~AliHBTOnePairFctn3D()
 {
   delete fNumerator;
   delete fDenominator;
@@ -362,11 +362,11 @@ AliHBTTwoPartFctn3D::~AliHBTTwoPartFctn3D()
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
-ClassImp( AliHBTFourPartFctn2D)
+ClassImp( AliHBTTwoPairFctn2D)
 
 
-AliHBTFourPartFctn2D::
-AliHBTFourPartFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval , 
+AliHBTTwoPairFctn2D::
+AliHBTTwoPairFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval , 
                     Int_t nYbins, Double_t maxYval, Double_t minYval)
 
 {
@@ -387,12 +387,12 @@ AliHBTFourPartFctn2D(Int_t nXbins, Double_t maxXval, Double_t minXval ,
    fDenominator->Sumw2();
 
 }	  
-AliHBTFourPartFctn2D::~AliHBTFourPartFctn2D()
+AliHBTTwoPairFctn2D::~AliHBTTwoPairFctn2D()
 {
   delete fNumerator;
   delete fDenominator;
 }
-void AliHBTFourPartFctn2D::
+void AliHBTTwoPairFctn2D::
 ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   partpair  = CheckPair(partpair);
@@ -405,7 +405,7 @@ ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
    }
 }
 
-void AliHBTFourPartFctn2D::
+void AliHBTTwoPairFctn2D::
 ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   partpair  = CheckPair(partpair);

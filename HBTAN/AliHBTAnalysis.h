@@ -12,8 +12,8 @@ class AliHBTPair;
 
 class AliHBTRun;
 class AliHBTReader;
-class AliHBTTwoPartFctn;      
-class AliHBTFourPartFctn;
+class AliHBTOnePairFctn;      
+class AliHBTTwoPairFctn;
 
 
 class TList;
@@ -30,11 +30,11 @@ class AliHBTAnalysis: public TObject
 
      void SetGlobalPairCut(AliHBTPairCut* cut);
      
-     void AddTrackFunction(AliHBTTwoPartFctn*);
-     void AddParticleFunction(AliHBTTwoPartFctn*);
-     void AddParticleAndTrackFunction(AliHBTFourPartFctn*);
+     void AddTrackFunction(AliHBTOnePairFctn*);
+     void AddParticleFunction(AliHBTOnePairFctn*);
+     void AddParticleAndTrackFunction(AliHBTTwoPairFctn*);
      
-     void AddResolutionFunction(AliHBTFourPartFctn* f){AddParticleAndTrackFunction(f);}
+     void AddResolutionFunction(AliHBTTwoPairFctn* f){AddParticleAndTrackFunction(f);}
      
      void SetReader(AliHBTReader* r){fReader = r;}
      
@@ -51,9 +51,9 @@ class AliHBTAnalysis: public TObject
      virtual void ProcessTracksAndParticles();
      
      
-     AliHBTTwoPartFctn**  fTrackFunctions; //!array of pointers to functions that analyze rekonstructed tracks
-     AliHBTTwoPartFctn**  fParticleFunctions; //!array of pointers to functions that analyze generated particles
-     AliHBTFourPartFctn** fParticleAndTrackFunctions; //!array of pointers to functions that analyze both 
+     AliHBTOnePairFctn**  fTrackFunctions; //!array of pointers to functions that analyze rekonstructed tracks
+     AliHBTOnePairFctn**  fParticleFunctions; //!array of pointers to functions that analyze generated particles
+     AliHBTTwoPairFctn** fParticleAndTrackFunctions; //!array of pointers to functions that analyze both 
                                         //reconstructed tracks and generated particles
 		//i.e. - resolution analyzers
      UInt_t fNTrackFunctions; //!
