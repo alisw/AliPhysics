@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/10/30 08:02:25  barbera
+PCON's changed into simpler CONS and TUBS. Services now allow for the rails to go through them.
+
 Revision 1.3.2.7  2000/10/27 17:20:00  barbera
 Position of rails w.r.t. the interaction point corrected.
 
@@ -238,9 +241,9 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   //HALF LENGTHS OF LAYERS  
   Float_t dzl[6]   = { 14.35,14.35,25.1,32.1,49.405,55.27 };
   //LENGTHS OF END-LADDER BOXES (ALL INCLUDED)
-  Float_t dzb[6]   = { 12.4,12.4,19.,19.,12.,11. };    
+  Float_t dzb[6]   = { 12.4,12.4,13.5,15.,7.5,7.5 };    
   //THICKNESSES OF END-LADDER BOXES (ALL INCLUDED)
-  Float_t drb[6]   = { rl[1]-rl[0],0.2,5.,5.,3.,3. };         
+  Float_t drb[6]   = { rl[1]-rl[0],0.2,5.,5.,4.,4. };         
 
  
   Float_t dits[3], rlim, zmax;
@@ -413,26 +416,43 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   // END-LADDER ELECTRONICS BOXES AND CABLES FOR SDD
   
   gMC->Gsvolu("IEL2", "TUBE", idtmed[237], dits, 0); 
-  for (i = 2; i < 4; i++) {
-    dits[0] = rl[i];
+  for (i = 2; i < 3; i++) {
+    dits[0] = rl[i]-2.5;
     dits[1] = dits[0] + drb[i];
     dits[2] = dzb[i] / 2.;
     zpos = dzl[i] + dits[2];
     gMC->Gsposp("IEL2", i+1, "ITSD", 0., 0., zpos, 0, "ONLY", dits, 3);
     gMC->Gsposp("IEL2", i+1+6, "ITSD", 0., 0.,-zpos, 0, "ONLY", dits, 3);
   }
+  for (i = 3; i < 4; i++) {
+    dits[0] = rl[i]-1.4;
+    dits[1] = dits[0] + drb[i];
+    dits[2] = dzb[i] / 2.;
+    zpos = dzl[i] + dits[2];
+    gMC->Gsposp("IEL2", i+1, "ITSD", 0., 0., zpos, 0, "ONLY", dits, 3);
+    gMC->Gsposp("IEL2", i+1+6, "ITSD", 0., 0.,-zpos, 0, "ONLY", dits, 3);
+  }
+
   
   // END-LADDER ELECTRONICS BOXES AND CABLES FOR SSD
   
   gMC->Gsvolu("IEL3", "TUBE", idtmed[263], dits, 0); 
-  for (i = 4; i < 6; i++) {
-    dits[0] = rl[i];
+  for (i = 4; i < 5; i++) {
+    dits[0] = rl[i]+1.4;
     dits[1] = dits[0] + drb[i];
     dits[2] = dzb[i] / 2.;
     zpos = dzl[i] + dits[2];
     gMC->Gsposp("IEL3", i+1, "ITSD", 0., 0., zpos, 0, "ONLY", dits, 3);
     gMC->Gsposp("IEL3", i+1+6, "ITSD", 0., 0.,-zpos, 0, "ONLY", dits, 3);
   }    
+  for (i = 5; i < 6; i++) {
+    dits[0] = rl[i]+0.4235;
+    dits[1] = dits[0] + drb[i];
+    dits[2] = dzb[i] / 2.;
+    zpos = dzl[i] + dits[2];
+    gMC->Gsposp("IEL3", i+1, "ITSD", 0., 0., zpos, 0, "ONLY", dits, 3);
+    gMC->Gsposp("IEL3", i+1+6, "ITSD", 0., 0.,-zpos, 0, "ONLY", dits, 3);
+  }      
     
   //    DEFINE THERMAL SCREEN FOR SPD
   
@@ -446,9 +466,9 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   
   pcits[0] = (59.-42.5)/2.;
   pcits[1] = 8.5;
-  pcits[2] = 8.5+3.0;
+  pcits[2] = 8.5+0.1;
   pcits[3] = 28.;
-  pcits[4] = 28.+3.0;  
+  pcits[4] = 28.+0.1;  
   gMC->Gsvolu("ICO1", "CONE", idtmed[274], pcits, 5);    
   AliMatrix(idrotm[200], 90., 0., 90., 90., 180., 0.);
   gMC->Gspos("ICO1", 1, "ITSD", 0., 0., 42.5+pcits[0], 0, "ONLY");
@@ -459,17 +479,17 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   pcits[0] = (59.5-0.13/2.)/2.;
   pcits[1] = (59.5+0.13/2.)/2.;
   pcits[2] = 57.;
-  gMC->Gsvolu("ICY2", "TUBE", idtmed[274], pcits, 3);   
+  gMC->Gsvolu("ICY2", "TUBE", idtmed[240], pcits, 3);   
   gMC->Gspos("ICY2", 1, "ITSD", 0., 0., 0., 0, "ONLY"); 
 
   //    DEFINE END CONES FOR SSD
   
   pcits[0] = (74.-59.)/2.;
   pcits[1] = 28.;
-  pcits[2] = 28.+4.;
+  pcits[2] = 28.+0.1;
   pcits[3] = 47.;
-  pcits[4] = 47.+4.;
-  gMC->Gsvolu("ICO2", "CONE", idtmed[274], pcits, 5);    
+  pcits[4] = 47.+0.1;
+  gMC->Gsvolu("ICO2", "CONE", idtmed[266], pcits, 5);    
   gMC->Gspos("ICO2", 1, "ITSD", 0., 0., 59.+pcits[0], 0, "ONLY");
   gMC->Gspos("ICO2", 2, "ITSD", 0., 0., -(59.+pcits[0]), idrotm[200], "ONLY");
 
@@ -625,23 +645,22 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   
   // --- DEFINE RAILS BETWEEN THE ITS AND THE TPC
   
-  dgh[0] = 0.85;
-  dgh[1] = 10.;
-  dgh[2] = 190.;  
-  gMC->Gsvolu("IRAI", "BOX ", idtmed[285], dgh, 3);   
-  gMC->Gspos("IRAI", 1, "ITSV", 53., 0., -69.5, 0, "ONLY");
-  gMC->Gspos("IRAI", 2, "ITSV", -53., 0., -69.5, 0, "ONLY");        
+  //dgh[0] = 0.85;
+  //dgh[1] = 10.;
+  //dgh[2] = 190.;  
+  //gMC->Gsvolu("IRAI", "BOX ", idtmed[285], dgh, 3);   
+  //gMC->Gspos("IRAI", 1, "ITSV", 53., 0., -69.5, 0, "ONLY");
+  //gMC->Gspos("IRAI", 2, "ITSV", -53., 0., -69.5, 0, "ONLY");        
   
   // --- DEFINE CYLINDERS HOLDING RAILS BETWEEN THE ITS AND THE TPC
   
-/*
+
   dgh[0] = 58.;
   dgh[1] = 59.;
-  dgh[2] = 0.2;  //check the thickness  
+  dgh[2] = 0.6;   
   gMC->Gsvolu("ICYL", "TUBE", idtmed[285], dgh, 3);   
-  gMC->Gspos("ICYL", 1, "ITSV", 0., 0., 74., 0, "ONLY");
-  gMC->Gspos("ICYL", 2, "ITSV", 0., 0., -74., idrtom[200], "ONLY");     
-*/
+  gMC->Gspos("ICYL", 1, "ALIC", 0., 0., 74., 0, "ONLY");
+  gMC->Gspos("ICYL", 2, "ALIC", 0., 0., -74., idrotm[200], "ONLY");     
   
   // --- Outputs the geometry tree in the EUCLID/CAD format 
   
@@ -719,6 +738,7 @@ void AliITSvPPRcoarsesymm::CreateMaterials(){
   AliMixture( 7, "SPD Water $", awat, zwat, denswat, -2, wwat);
   AliMixture( 8, "SPD Freon$",  afre, zfre, densfre, -2, wfre);
   AliMaterial(9, "SPD End ladder$", 55.845, 26., 7.87/10., 1.76*10., 999); 
+  //AliMaterial(9, "SPD End ladder$", 55.845, 26., -7.87/10., -1.76*10., 999); 
   AliMaterial(10, "SPD cone$",28.0855, 14., 2.33, 9.36, 999);       // check !!!!
   // ** 
   AliMedium(0, "SPD Si$",       0, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
@@ -757,8 +777,10 @@ void AliITSvPPRcoarsesymm::CreateMaterials(){
   AliMaterial(35, "SDD Copper$", 63.546, 29., 8.96, 1.43, 999);
   AliMixture( 36, "SDD Ceramics$", acer, zcer, denscer, -5, wcer);
   AliMaterial(37, "SDD Kapton$", 12.011, 6., 1.3, 31.27, 999);
-  AliMaterial(38, "SDD End ladder$",28.0855, 14., 2.33, 9.36, 999); // check !!!!
-  AliMaterial(39, "SDD cone$",28.0855, 14., 2.33, 9.36, 999);       // check !!!!
+  AliMaterial(38, "SDD End ladder$", 69.9298, 29.8246, 0.3824, 36.5103, 999); 
+  AliMaterial(39, "SDD cone$", 63.546, 29., 1.15, 1.265, 999);  
+  //AliMaterial(38, "SDD End ladder$", 69.9298, 29.8246, -0.3824, -36.5103, 999); 
+  //AliMaterial(39, "SDD cone$", 63.546, 29., -1.15, -1.265, 999);         
   // ** 
   // check A and Z 
   AliMedium(25, "SDD Si$",      25, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
@@ -807,8 +829,10 @@ void AliITSvPPRcoarsesymm::CreateMaterials(){
   AliMaterial(62, "SSD Kapton$", 12.011, 6., 1.3, 31.27, 999.);
   // check A and Z 
   AliMaterial(63, "SSD G10FR4$", 17.749, 8.875, 1.8, 21.822, 999.);
-  AliMaterial(64, "SSD End ladder$",28.0855, 14., 2.33, 9.36, 999); // check !!!!
-  AliMaterial(65, "SSD cone$",28.0855, 14., 2.33, 9.36, 999);       // check !!!! 
+  AliMaterial(64, "SSD End ladder$", 32.0988, 15.4021, 0.68, 35.3238, 999); 
+  AliMaterial(65, "SSD cone$",63.546, 29., 1.15, 1.265, 999);   
+  //AliMaterial(64, "SSD End ladder$", 32.0988, 15.4021, -0.68, -35.3238, 999); 
+  //AliMaterial(65, "SSD cone$",63.546, 29., -1.15, -1.265, 999);     
   // ** 
   AliMedium(50, "SSD Si$",      50, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(51, "SSD Si chip$", 51, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
