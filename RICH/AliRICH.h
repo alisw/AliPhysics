@@ -267,6 +267,7 @@ public:
   AliRICH&  operator=(const AliRICH&)                 {return *this;}
   virtual Int_t   IsVersion()                                            const =0;            
           void    Hits2SDigits();                                                                                 //virtual
+  AliDigitizer*   CreateDigitizer(AliRunDigitizer* manager);                                                      //virtual
           void    SDigits2Digits();                                                                               //virtual
   
   inline  void    CreateHits();    

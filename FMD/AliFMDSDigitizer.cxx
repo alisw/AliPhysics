@@ -62,7 +62,7 @@ ClassImp(AliFMDSDigitizer)
 }
            
 //____________________________________________________________________________ 
-AliFMDSDigitizer::AliFMDSDigitizer(char* HeaderFile,char *SdigitsFile ):TTask("AliFMDSDigitizer","") 
+AliFMDSDigitizer::AliFMDSDigitizer(const char* HeaderFile,char *SdigitsFile ):TTask("AliFMDSDigitizer","") 
 {
   fNevents = 0 ;     // Number of events to digitize, 0 means all evens in current file
   // add Task to //root/Tasks folder

@@ -25,25 +25,32 @@
 ClassImp(AliMUONDigitizerv1)
 
 //___________________________________________
-AliMUONDigitizerv1::AliMUONDigitizerv1() :AliDigitizer()
+AliMUONDigitizerv1::AliMUONDigitizerv1() :
+  AliDigitizer(),
+  fHitMap(0),
+  fTDList(0),
+  fTDCounter(0),
+  fDebug(0),
+  fMask(0),
+  fSignal(0)
 {
 // Default ctor - don't use it
-  fHitMap = 0;
-  fTDList = 0;
   if (GetDebug()>2) 
     cerr<<"AliMUONDigitizerv1::AliMUONDigitizerv1"
 	<<"(AliRunDigitizer* manager) was processed"<<endl;
 }
 
 //___________________________________________
-AliMUONDigitizerv1::AliMUONDigitizerv1(AliRunDigitizer* manager) 
-    :AliDigitizer(manager)
+AliMUONDigitizerv1::AliMUONDigitizerv1(AliRunDigitizer* manager):
+  AliDigitizer(manager),
+  fHitMap(0),
+  fTDList(0),
+  fTDCounter(0),
+  fDebug(0),
+  fMask(0),
+  fSignal(0)
 {
 // ctor which should be used
-  fHitMap  = 0;
-  fTDList  = 0;
-  fDebug   = 0; 
-  //  fHits = new TClonesArray("AliMUONHit",1000);
   if (GetDebug()>2) 
     cerr<<"AliMUONDigitizerv1::AliMUONDigitizerv1"
 	<<"(AliRunDigitizer* manager) was processed"<<endl;
@@ -53,7 +60,6 @@ AliMUONDigitizerv1::AliMUONDigitizerv1(AliRunDigitizer* manager)
 AliMUONDigitizerv1::~AliMUONDigitizerv1()
 {
 // Destructor
-  //delete fHits;
 }
 
 //------------------------------------------------------------------------

@@ -49,6 +49,9 @@ class AliEMCAL : public AliDetector {
  
   virtual AliLoader* MakeLoader(const char* topfoldername);
   
+  virtual void    Hits2SDigits();
+  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager);
+
 protected:
 
   //AliEMCALQAChecker * fQATask ; //! PHOS checkers container

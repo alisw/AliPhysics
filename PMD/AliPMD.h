@@ -48,6 +48,8 @@ public:
   virtual void  SetTreeAddress();
   virtual void  ResetHits();
   
+  virtual void  Hits2SDigits();
+
  private:
   TClonesArray* fRecPoints;   //! List of reconstructed hits
   Int_t         fNRecPoints;  // Number of reconstructed hits

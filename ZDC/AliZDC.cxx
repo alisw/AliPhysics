@@ -325,6 +325,15 @@ void AliZDC::Hits2SDigits()
 {
   printf("\n	Entering AliZDC::SDigits2Digits() ");
   
+  fLoader->LoadHits("read");
+  fLoader->LoadSDigits("recreate");
+  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
+
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+    runLoader->GetEvent(iEvent);
+    if (!fLoader->TreeS()) fLoader->MakeTree("S");
+    MakeBranch("S");
+
   //----------------------------------------------------------------
   if(!fMerger){ 
     printf("	ZDC digitization (without merging)\n");
@@ -361,9 +370,9 @@ void AliZDC::Hits2SDigits()
 	  fNMergedhits++;
 	  delete MHit;
     }
-    gAlice->TreeS()->Fill();
-    gAlice->TreeS()->AutoSave(); 
-    gAlice->TreeS()->Reset();  
+      fLoader->TreeS()->Fill();
+      fLoader->TreeS()->AutoSave(); 
+      fLoader->TreeS()->Reset();  
   }
   //----------------------------------------------------------------
   else if(fMerger){
@@ -415,6 +424,10 @@ void AliZDC::Hits2SDigits()
     treeS->AutoSave();
   }
   
+  }
+
+  fLoader->UnloadHits();
+  fLoader->UnloadSDigits();
 }
 
 //_____________________________________________________________________________

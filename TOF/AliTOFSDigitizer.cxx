@@ -74,7 +74,7 @@ ClassImp(AliTOFSDigitizer)
 }
            
 //____________________________________________________________________________ 
-  AliTOFSDigitizer::AliTOFSDigitizer(char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("AliTOFSDigitizer","") 
+  AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("AliTOFSDigitizer","") 
 {
   fEvent1=evNumber1;
   fEvent2=fEvent1+nEvents;

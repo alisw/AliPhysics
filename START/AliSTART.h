@@ -44,6 +44,8 @@ public:
    virtual void   SetTreeAddress();
    TClonesArray   *Photons() {return fPhotons;}
    
+   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager);
+
 protected:
    Int_t fIdSens;    // Sensetive Cherenkov radiator
    Int_t	fNPhotons;   // Number of photons plan to photokatod

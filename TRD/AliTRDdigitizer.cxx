@@ -81,14 +81,15 @@ AliTRDdigitizer::AliTRDdigitizer()
   // AliTRDdigitizer default constructor
   //
 
+  fRunLoader          = 0;
   fDigitsManager      = 0;
-  fSDigitsManagerList = 0;
   fSDigitsManager     = 0;
+  fSDigitsManagerList = 0;
   fTRD                = 0;
   fGeo                = 0;
   fPar                = 0;
-  fMasks              = 0;
   fEvent              = 0;
+  fMasks              = 0;
   fCompress           = kTRUE;
   fDebug              = 0;
   fSDigits            = kFALSE;
@@ -107,31 +108,26 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
   // AliTRDdigitizer constructor
   //
 
-  fDigitsManager      = NULL;
-  fSDigitsManager     = NULL;
-  fSDigitsManagerList = NULL;
-  fTRD                = NULL;
-  fGeo                = NULL;
+  fRunLoader          = 0;
 
   //NewIO: These data members probably are not needed anymore
   fDigitsManager      = 0;
-  fSDigitsManagerList = 0;
   fSDigitsManager     = 0;
+  fSDigitsManagerList = 0;
   fTRD                = 0;
   fGeo                = 0;
   fPar                = 0;
   //End NewIO comment
-  fMasks              = 0;
   fEvent              = 0;
+  fMasks              = 0;
   fCompress           = kTRUE;
   fDebug              = 0;
   fSDigits            = kFALSE;
+  fSDigitsScale       = 100.; // For the summable digits
   fMergeSignalOnly    = kFALSE;
   fSimpleSim          = kFALSE;
   fSimpleDet          = 0;
  
-  // For the summable digits
-  fSDigitsScale       = 100.;
 
 }
 
@@ -144,23 +140,23 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager
   // AliTRDdigitizer constructor
   //
 
+  fRunLoader          = 0;
   fDigitsManager      = 0;
-  fSDigitsManagerList = 0;
   fSDigitsManager     = 0;
+  fSDigitsManagerList = 0;
   fTRD                = 0;
   fGeo                = 0;
   fPar                = 0;
-  fMasks              = 0;
   fEvent              = 0;
+  fMasks              = 0;
   fCompress           = kTRUE;
   fDebug              = 0;
   fSDigits            = kFALSE;
+  fSDigitsScale       = 100.; // For the summable digits
   fMergeSignalOnly    = kFALSE;
   fSimpleSim          = kFALSE;
   fSimpleDet          = 0;
  
-  // For the summable digits
-  fSDigitsScale       = 100.;
 
 }
 
@@ -173,25 +169,23 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager)
   //
 
 
-
+  fRunLoader          = 0;
   fDigitsManager      = 0;
-  fSDigitsManagerList = 0;
   fSDigitsManager     = 0;
+  fSDigitsManagerList = 0;
   fTRD                = 0;
   fGeo                = 0;
   fPar                = 0;
-
-  fMasks              = 0;
   fEvent              = 0;
+  fMasks              = 0;
   fCompress           = kTRUE;
   fDebug              = 0;
   fSDigits            = kFALSE;
+  fSDigitsScale       = 100.;  // For the summable digits
   fMergeSignalOnly    = kFALSE;
   fSimpleSim          = kFALSE;
   fSimpleDet          = 0;
 
-  // For the summable digits
-  fSDigitsScale       = 100.;
 
 }
 
@@ -255,14 +249,15 @@ void AliTRDdigitizer::Copy(TObject &d)
   // Copy function
   //
 
-  ((AliTRDdigitizer &) d).fSDigitsManagerList = 0;
-  ((AliTRDdigitizer &) d).fSDigitsManager     = 0;
+  ((AliTRDdigitizer &) d).fRunLoader          = 0;
   ((AliTRDdigitizer &) d).fDigitsManager      = 0;
+  ((AliTRDdigitizer &) d).fSDigitsManager     = 0;
+  ((AliTRDdigitizer &) d).fSDigitsManagerList = 0;
   ((AliTRDdigitizer &) d).fTRD                = 0;
   ((AliTRDdigitizer &) d).fGeo                = 0;
-  ((AliTRDdigitizer &) d).fMasks              = 0;
-  ((AliTRDdigitizer &) d).fEvent              = 0;
   ((AliTRDdigitizer &) d).fPar                = 0;
+  ((AliTRDdigitizer &) d).fEvent              = 0;
+  ((AliTRDdigitizer &) d).fMasks              = 0;
   ((AliTRDdigitizer &) d).fCompress           = fCompress;
   ((AliTRDdigitizer &) d).fDebug              = fDebug  ;
   ((AliTRDdigitizer &) d).fSDigits            = fSDigits;
@@ -406,7 +401,7 @@ Bool_t AliTRDdigitizer::Open(const Char_t *file, Int_t nEvent)
 
   // Connect the AliRoot file containing Geometry, Kine, and Hits
   
-  fRunLoader = AliRunLoader::Open(file,AliConfig::fgkDefaultEventFolderName,"UPDATE");
+  fRunLoader = AliRunLoader::Open(file,AliConfig::fgkDefaultEventFolderName);
   
   if (!fRunLoader)
    {

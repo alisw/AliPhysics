@@ -38,6 +38,9 @@ class TFile;
 #include "AliEMCAL.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALLoader.h"
+#include "AliRun.h"
+#include "AliEMCALSDigitizer.h"
+#include "AliEMCALDigitizer.h"
 
 ClassImp(AliEMCAL)
 //____________________________________________________________________________
@@ -239,4 +242,20 @@ AliLoader* AliEMCAL::MakeLoader(const char* topfoldername)
 // --> to be discussed and made eventually coherent
  fLoader = new AliEMCALLoader(GetName(),topfoldername);
  return fLoader;
+}
+
+//____________________________________________________________________________
+void AliEMCAL::Hits2SDigits()  
+{ 
+// create summable digits
+
+  AliEMCALSDigitizer* emcalDigitizer = 
+    new AliEMCALSDigitizer(fLoader->GetRunLoader()->GetFileName().Data());
+  emcalDigitizer->ExecuteTask();
+}
+
+//____________________________________________________________________________
+AliDigitizer* AliEMCAL::CreateDigitizer(AliRunDigitizer* manager)
+{
+  return new AliEMCALDigitizer(manager);
 }

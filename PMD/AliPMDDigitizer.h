@@ -38,7 +38,7 @@ class AliPMDDigitizer
   AliPMDDigitizer();
   virtual ~AliPMDDigitizer();
 
-  void OpengAliceFile(char *file, Option_t *option);
+  void OpengAliceFile(const char *file, Option_t *option);
 
   void Hits2SDigits(Int_t ievt);
   void Hits2Digits(Int_t ievt);

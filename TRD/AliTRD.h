@@ -80,6 +80,7 @@ class AliTRD : public AliDetector {
  
   virtual void       Hits2Digits();
   virtual void       Hits2SDigits();
+  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager); 
   virtual void       SDigits2Digits();
 
   virtual AliTRDsim *CreateTR()     = 0;

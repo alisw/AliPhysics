@@ -27,7 +27,7 @@ class AliFMDSDigitizer: public TTask {
 
 public:
   AliFMDSDigitizer() ;          // ctor
-  AliFMDSDigitizer(char* HeaderFile,char *SdigitsFile = 0) ; 
+  AliFMDSDigitizer(const char* HeaderFile,char *SdigitsFile = 0) ; 
 
   virtual ~AliFMDSDigitizer() ; // dtor
   // Int_t    Digitize(Float_t Energy);

@@ -77,6 +77,7 @@ AliRunLoader::AliRunLoader():
  fUnixDirName(".")
 {
   AliConfig::Instance();//force to build the folder structure
+  if (!fgRunLoader) fgRunLoader = this;
 }
 /**************************************************************************/
 
@@ -95,6 +96,7 @@ AliRunLoader::AliRunLoader(const char* eventfoldername):
 {
 //ctor
   SetEventFolderName(eventfoldername);
+ if (!fgRunLoader) fgRunLoader = this;
 }
 /**************************************************************************/
 
@@ -124,15 +126,26 @@ AliRunLoader::~AliRunLoader()
 }
 /**************************************************************************/
 
-AliRunLoader::AliRunLoader(TFolder* topfolder):TNamed(fgkRunLoaderName,fgkRunLoaderName)
+AliRunLoader::AliRunLoader(TFolder* topfolder):
+ TNamed(fgkRunLoaderName,fgkRunLoaderName),
+ fLoaders(new TObjArray()),
+ fEventFolder(topfolder),
+ fCurrentEvent(0),
+ fGAFile(0x0),
+ fHeader(0x0),
+ fStack(0x0),
+ fKineDataLoader(new AliDataLoader(fgkDefaultKineFileName,fgkKineContainerName,"Kinematics")),
+ fTrackRefsDataLoader(new AliDataLoader(fgkDefaultTrackRefsFileName,fgkTrackRefsContainerName,"Track References")),
+ fNEventsPerFile(1),
+ fUnixDirName(".")
 {
 //ctor
+ if (!fgRunLoader) fgRunLoader = this;
  if(topfolder == 0x0)
   {
     Fatal("AliRunLoader(TFolder*)","Parameter is NULL");
     return;
   }
- fEventFolder = topfolder;
  
  TObject* obj = fEventFolder->FindObject(fgkRunLoaderName);
  if (obj)
@@ -143,7 +156,6 @@ AliRunLoader::AliRunLoader(TFolder* topfolder):TNamed(fgkRunLoaderName,fgkRunLoa
     return;//never reached
   }
    
- fLoaders = new TObjArray();
  fEventFolder->Add(this);//put myself to the folder to accessible for all
   
 }
@@ -421,7 +433,7 @@ AliRunLoader* AliRunLoader::Open
  
  result->SetDirName(dirname); 
  result->SetGAliceFile(gAliceFile);//set the pointer to gAliceFile
- fgRunLoader = result; //PH get access from any place
+ if (!fgRunLoader) fgRunLoader = result; //PH get access from any place
  return result;
 }
 /**************************************************************************/

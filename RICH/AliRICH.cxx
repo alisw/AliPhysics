@@ -28,6 +28,7 @@
 #include <AliRunDigitizer.h>
 #include <AliMC.h>
 #include <TVirtualMC.h>
+#include "AliRICHDigitizer.h"
  
 ClassImp(AliRICHhit)
 //__________________________________________________________________________________________________
@@ -132,6 +133,11 @@ void AliRICH::Hits2SDigits()
   if(GetDebug()) Info("Hit2SDigits","Start.");
   if(GetDebug()) Info("Hit2SDigits","Stop.");
 }//void AliRICH::Hits2SDigits()
+//__________________________________________________________________________________________________
+AliDigitizer* AliRICH::CreateDigitizer(AliRunDigitizer* manager)
+{
+  return new AliRICHDigitizer(manager);
+}
 //__________________________________________________________________________________________________
 void AliRICH::SDigits2Digits()
 {

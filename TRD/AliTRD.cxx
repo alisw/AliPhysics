@@ -230,32 +230,25 @@ void AliTRD::Hits2Digits()
   //
   // Create digits
   //
-  if (!fLoader->TreeH()) fLoader->LoadHits("read");
-  SetTreeAddress();
-  
   AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
                                                   ,"TRD digitizer class");
   digitizer->SetDebug(GetDebug());
-  digitizer->SetEvent(gAlice->GetEvNumber());
   
   // Initialization
   digitizer->InitDetector();
     
-  // Create the digits
-  digitizer->MakeDigits();
-  
-  // Write the digits into the input file
+  if (!fLoader->TreeH()) fLoader->LoadHits("read");
+  fLoader->LoadDigits("recreate");
+  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
 
-  if (!fLoader->TreeD()) fLoader->MakeTree("D");
-  if (digitizer->MakeBranch(fLoader->TreeD())) {
-
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+    digitizer->Open(runLoader->GetFileName().Data(), iEvent);
+    digitizer->MakeDigits();
     digitizer->WriteDigits();
-
-    // Save the digitizer class in the AliROOT 
-    digitizer->Write();
-
   }
 
+  fLoader->UnloadHits();
+  fLoader->UnloadDigits();
 }
 
 //_____________________________________________________________________________
@@ -264,35 +257,33 @@ void AliTRD::Hits2SDigits()
   //
   // Create summable digits
   //
-  if (!fLoader->TreeH()) fLoader->LoadHits("read");
-  SetTreeAddress();
-
   AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
                                                   ,"TRD digitizer class");
-  digitizer->SetDebug(GetDebug());
-
   // For the summable digits
   digitizer->SetSDigits(kTRUE);
-  digitizer->SetEvent(gAlice->GetEvNumber());
+  digitizer->SetDebug(GetDebug());
 
   // Initialization
   digitizer->InitDetector();
     
-  // Create the TRD s-digits branch
-  digitizer->MakeDigits();
-  
-  // Write the digits into the input file
-  if (!fLoader->TreeS()) fLoader->MakeTree("S");
-  
-  if (digitizer->MakeBranch(fLoader->TreeS())) {
+  if (!fLoader->TreeH()) fLoader->LoadHits("read");
+  fLoader->LoadSDigits("recreate");
+  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
 
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+    digitizer->Open(runLoader->GetFileName().Data(), iEvent);
+    digitizer->MakeDigits();
     digitizer->WriteDigits();
-
-    // Save the digitizer class in the AliROOT 
-    digitizer->Write();
-
   }
 
+  fLoader->UnloadHits();
+  fLoader->UnloadSDigits();
+  }
+
+//_____________________________________________________________________________
+AliDigitizer* AliTRD::CreateDigitizer(AliRunDigitizer* manager)
+{
+  return new AliTRDdigitizer(manager);
 }
 
 //_____________________________________________________________________________

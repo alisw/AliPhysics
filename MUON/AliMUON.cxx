@@ -67,6 +67,7 @@
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerDecision.h"
 #include "AliRun.h"	
+#include "AliMUONDigitizerv1.h"
 
 
 // Defaults parameters for Z positions of chambers
@@ -336,6 +337,11 @@ void   AliMUON::SetNsec(Int_t id, Int_t nsec)
 {
 // Set number of segmented cathods for chamber id
     ((AliMUONChamber*) fChambers->At(id))->SetNsec(nsec);
+}
+//____________________________________________________________________
+AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager)
+{
+  return new AliMUONDigitizerv1(manager);
 }
 //_____________________________________________________________________
 void AliMUON::SDigits2Digits()

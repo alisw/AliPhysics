@@ -38,7 +38,10 @@ class TFile;
 #include "AliPHOS.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSLoader.h"
-
+#include "AliPHOSQAChecker.h"
+#include "AliRun.h"
+#include "AliPHOSDigitizer.h"
+#include "AliPHOSSDigitizer.h"
 
 ClassImp(AliPHOS)
 //____________________________________________________________________________
@@ -424,4 +427,21 @@ AliLoader* AliPHOS::MakeLoader(const char* topfoldername)
 // --> to be discussed and made eventually coherent
  fLoader = new AliPHOSLoader(GetName(),topfoldername);
  return fLoader;
+}
+
+
+//____________________________________________________________________________
+void AliPHOS::Hits2SDigits()  
+{ 
+// create summable digits
+
+  AliPHOSSDigitizer* phosDigitizer = 
+    new AliPHOSSDigitizer(fLoader->GetRunLoader()->GetFileName().Data());
+  phosDigitizer->ExecuteTask("all");
+}
+
+//____________________________________________________________________________
+AliDigitizer* AliPHOS::CreateDigitizer(AliRunDigitizer* manager)
+{
+  return new AliPHOSDigitizer(manager);
 }

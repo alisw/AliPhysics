@@ -10,6 +10,8 @@
  
 #pragma link C++ global gAlice;
 #pragma link C++ global gMC;
+#pragma link C++ global kAliDetMax;
+#pragma link C++ global kAliDetAll;
  
 #pragma link C++ enum VertexSmear_t;
 #pragma link C++ enum VertexSource_t;
@@ -75,6 +77,7 @@
 #pragma link C++ class  AliMemoryWatcher+;
 #pragma link C++ class  AliBarrelTrack+;
 #pragma link C++ class  AliMC+;
+#pragma link C++ class  AliSimulation+;
 #endif
 
 

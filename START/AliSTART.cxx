@@ -56,6 +56,7 @@
 #include "AliSTARThitPhoton.h"
 #include "AliSTARTvertex.h"
 #include "AliMC.h"
+#include "AliSTARTDigitizer.h"
 
 ClassImp(AliSTART)
 
@@ -261,3 +262,8 @@ void AliSTART::Hit2digit(Int_t /*evnum*/)
 {
 }
 
+//_____________________________________________________________________________
+AliDigitizer* AliSTART::CreateDigitizer(AliRunDigitizer* manager)
+{
+  return new AliSTARTDigitizer(manager);
+}

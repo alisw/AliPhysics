@@ -70,6 +70,7 @@
 #include "AliTOFhit.h"
 #include "AliTOFhitT0.h"
 #include "AliMC.h"
+#include "AliTOFDigitizer.h"
  
 ClassImp(AliTOF)
  
@@ -723,15 +724,21 @@ void AliTOF::Hits2SDigits()
   //#endif
   
   //char * fileSDigits = 0 ;
-  char * fileHeader = 0;
+  const char * fileHeader = fLoader->GetRunLoader()->GetFileName().Data();
   AliTOFSDigitizer * sd = new AliTOFSDigitizer(fileHeader) ;
 
   sd->Exec("") ;
   sd->Print("");
 
-  delete sd ;
+//  delete sd ;
   
 }
+//___________________________________________________________________________
+AliDigitizer* AliTOF::CreateDigitizer(AliRunDigitizer* manager)
+{
+  return new AliTOFDigitizer(manager);
+}
+
 //___________________________________________________________________________
 Bool_t AliTOF::CheckOverlap(Int_t* vol, Float_t* digit,Int_t Track)
 {

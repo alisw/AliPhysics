@@ -20,6 +20,8 @@ class TFile;
 class TTree;
 class AliLoader;
 class AliTrackReference;
+class AliDigitizer;
+class AliRunDigitizer;
 
 
 class AliModule : public TNamed , public TAttLine, public TAttMarker,
@@ -80,7 +82,10 @@ public:
   virtual void        AddHit(Int_t, Int_t*, Float_t *) {
   Error("AddDigit","Hits cannot be added to module %s\n",fName.Data());}
   virtual void        Hits2SDigits() {}
+  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* /*manager*/) 
+    {return NULL;}
   virtual void        SDigits2Digits() {}
+  virtual void        Hits2Digits() {}
   virtual void        Digits2Reco() {}
   virtual void        Digits2Raw() {}
   virtual void        Raw2Digits() {}

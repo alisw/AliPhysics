@@ -64,6 +64,7 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliFMDDigitizer.h"
 
 ClassImp (AliFMD)
   //_____________________________________________________________________________
@@ -341,3 +342,8 @@ void AliFMD::MakeBranchInTreeD(TTree *treeD, const char *file)
      }
 }
 
+//____________________________________________________________________________
+AliDigitizer* AliFMD::CreateDigitizer(AliRunDigitizer* manager)
+{
+  return new AliFMDDigitizer(manager);
+}

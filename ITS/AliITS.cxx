@@ -107,6 +107,7 @@ the AliITS class.
 #include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSSD.h"
 #include "AliMC.h"
+#include "AliITSDigitizer.h"
 
 ClassImp(AliITS)
 
@@ -949,19 +950,23 @@ void AliITS::Hits2SDigits(){
     //      none.
 
 //    return; // Using Hits in place of the larger sDigits.
+    fLoader->LoadHits("read");
+    fLoader->LoadSDigits("recreate");
     AliRunLoader* rl = fLoader->GetRunLoader(); 
-    AliHeader *header=rl->GetHeader(); // Get event number from this file.
-    if (header == 0x0)
-     {
-       rl->LoadHeader();
-       header=rl->GetHeader();
-       if (header == 0x0) return;
-     }
+
+    for (Int_t iEvent = 0; iEvent < rl->GetNumberOfEvents(); iEvent++) {
     // Do the Hits to Digits operation. Use Standard input values.
     // Event number from file, no background hit merging , use size from
     // AliITSgeom class, option="All", input from this file only.
-    HitsToSDigits(header->GetEvent(),0,-1," ",fOpt," ");
+      rl->GetEvent(iEvent);
+      if (!fLoader->TreeS()) fLoader->MakeTree("S");
+      MakeBranch("S");
+      SetTreeAddress();
+      HitsToSDigits(iEvent,0,-1," ",fOpt," ");
+    }
     
+    fLoader->UnloadHits();
+    fLoader->UnloadSDigits();
 }
 //______________________________________________________________________
 void AliITS::Hits2PreDigits(){
@@ -976,6 +981,11 @@ void AliITS::Hits2PreDigits(){
     // Event number from file, no background hit merging , use size from
     // AliITSgeom class, option="All", input from this file only.
     HitsToPreDigits(header->GetEvent(),0,-1," ",fOpt," ");
+}
+//______________________________________________________________________
+AliDigitizer* AliITS::CreateDigitizer(AliRunDigitizer* manager)
+{
+  return new AliITSDigitizer(manager);
 }
 //______________________________________________________________________
 void AliITS::SDigitsToDigits(Option_t *opt){
@@ -1049,11 +1059,23 @@ void AliITS::Hits2Digits(){
     // Outputs:
     //      none.
 
-    AliHeader *header=fLoader->GetRunLoader()->GetHeader(); // Get event number from this file.
+    fLoader->LoadHits("read");
+    fLoader->LoadDigits("recreate");
+    AliRunLoader* rl = fLoader->GetRunLoader(); 
+
+    for (Int_t iEvent = 0; iEvent < rl->GetNumberOfEvents(); iEvent++) {
     // Do the Hits to Digits operation. Use Standard input values.
     // Event number from file, no background hit merging , use size from
     // AliITSgeom class, option="All", input from this file only.
-    HitsToDigits(header->GetEvent(),0,-1," ",fOpt," ");
+      rl->GetEvent(iEvent);
+      if (!fLoader->TreeD()) fLoader->MakeTree("D");
+      MakeBranch("D");
+      SetTreeAddress();   
+      HitsToDigits(iEvent,0,-1," ",fOpt," ");
+    }
+
+    fLoader->UnloadHits();
+    fLoader->UnloadDigits();
 }
 //______________________________________________________________________
 void AliITS::HitsToSDigits(Int_t evNumber,Int_t bgrev,Int_t size,

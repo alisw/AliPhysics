@@ -75,6 +75,7 @@
 #include "AliTPCcluster.h"
 #include "AliTrackReference.h"
 #include "AliMC.h"
+#include "AliTPCDigitizer.h"
 
 
 ClassImp(AliTPC) 
@@ -1227,6 +1228,11 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
 
 
 
+//______________________________________________________________________
+AliDigitizer* AliTPC::CreateDigitizer(AliRunDigitizer* manager)
+{
+  return new AliTPCDigitizer(manager);
+}
 //__
 void AliTPC::SDigits2Digits2(Int_t /*eventnumber*/)  
 {
@@ -1409,6 +1415,22 @@ void AliTPC::SetDefaults(){
 
 }
 //__________________________________________________________________  
+void AliTPC::Hits2Digits()  
+{
+  fLoader->LoadHits("read");
+  fLoader->LoadDigits("recreate");
+  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
+
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+    runLoader->GetEvent(iEvent);
+    SetActiveSectors();   
+    Hits2Digits(iEvent);
+  }
+
+  fLoader->UnloadHits();
+  fLoader->UnloadDigits();
+} 
+//__________________________________________________________________  
 void AliTPC::Hits2Digits(Int_t eventnumber)  
 { 
  //----------------------------------------------------
@@ -1555,53 +1577,19 @@ void AliTPC::Hits2SDigits()
   //   summable digits - 16 bit "ADC", no noise, no saturation
   //-----------------------------------------------------------
 
- //----------------------------------------------------
- // Loop over all sectors for a single event
- //----------------------------------------------------
-  //MI change - for pp run
-//  Int_t eventnumber = gAlice->GetEvNumber();
-//  AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::fgkRunLoaderName);
-//  rl->GetEvent(eventnumber);
-// 12/05/2003 This method is obsolete and not used. It should be redesingned
-// M.Kowalski
+  fLoader->LoadHits("read");
+  fLoader->LoadSDigits("recreate");
+  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
 
-  if (fLoader->TreeH() == 0x0)
-   {
-     if(fLoader->LoadHits())
-      {
-        Error("Hits2Digits","Can not load hits.");
-      }
-   }
-  SetTreeAddress();
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+    runLoader->GetEvent(iEvent);
+    SetTreeAddress();
+    SetActiveSectors();
+    Hits2SDigits2(iEvent);
+  }
 
-  if(fDefaults == 0) SetDefaults();
-  GenerNoise(500000); //create table with noise
-
-  //setup TPCDigitsArray 
-
-  if(GetDigitsArray()) delete GetDigitsArray();
-
-  if (fLoader->TreeS() == 0x0 ) 
-   {
-     fLoader->MakeTree("S");
-   }
-  
-  AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
-  arr->SetClass("AliSimDigits");
-  arr->Setup(fTPCParam);
-  arr->MakeTree(fLoader->TreeS());
-  SetDigitsArray(arr);
-
-  cerr<<"Digitizing TPC -- summable digits...\n"; 
-
-  //  fDigitsSwitch=1; // summable digits  -for the moment direct
-
-  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) if (IsSectorActive(isec)) Hits2DigitsSector(isec);
-
-  // write results
-  //
-  cout<<"Why method TPC::Hits2SDigits writes digits and not sdigits? skowron\n";
-  fLoader->WriteDigits("OVERWRITE");
+  fLoader->UnloadHits();
+  fLoader->UnloadSDigits();
 }
 //_____________________________________________________________________________
 
@@ -3087,18 +3075,19 @@ AliTPCParam* AliTPC::LoadTPCParam(TFile *file) {
 
 }
 
-//_____________________________________________________________________________
+
+//____________________________________________________________________________
 Double_t SigmaY2(Double_t r, Double_t tgl, Double_t pt)
 {
   //
-  // Parametrised error of the cluster reconstruction (pad direction)   
+  // Parametrised error of the cluster reconstruction (pad direction)
   //
   // Sigma rphi
   const Float_t kArphi=0.41818e-2;
   const Float_t kBrphi=0.17460e-4;
   const Float_t kCrphi=0.30993e-2;
   const Float_t kDrphi=0.41061e-3;
-  
+
   pt=TMath::Abs(pt)*1000.;
   Double_t x=r/pt;
   tgl=TMath::Abs(tgl);
@@ -3109,8 +3098,9 @@ Double_t SigmaY2(Double_t r, Double_t tgl, Double_t pt)
   return s;
 }
 
-//_____________________________________________________________________________
-Double_t SigmaZ2(Double_t r, Double_t tgl) 
+
+//____________________________________________________________________________
+Double_t SigmaZ2(Double_t r, Double_t tgl)
 {
   //
   // Parametrised error of the cluster reconstruction (drift direction)
@@ -3119,7 +3109,7 @@ Double_t SigmaZ2(Double_t r, Double_t tgl)
   const Float_t kAz=0.39614e-2;
   const Float_t kBz=0.22443e-4;
   const Float_t kCz=0.51504e-1;
-  
+
 
   tgl=TMath::Abs(tgl);
   Double_t s=kAz - kBz*r*tgl + kCz*tgl*tgl;
@@ -3128,3 +3118,4 @@ Double_t SigmaZ2(Double_t r, Double_t tgl)
 
   return s;
 }
+

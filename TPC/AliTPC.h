@@ -72,6 +72,7 @@ public:
   virtual void  Hits2Clusters(Int_t eventn=0);
   virtual void  Hits2ExactClustersSector(Int_t isec); // MI change calculate "exact" cluster position
   
+  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager);
   virtual void  SDigits2Digits(){;} //MI change -cycling to production
   virtual void  SDigits2Digits2(Int_t eventnumber=0);
 
@@ -79,7 +80,8 @@ public:
   virtual void  Hits2SDigits2(Int_t eventnumber=0);
 
   virtual void  Digits2Reco(Int_t firstevent=0,Int_t lastevent=0);
-  virtual void  Hits2Digits(Int_t eventnumber=0);   //MI change
+  virtual void  Hits2Digits();
+  virtual void  Hits2Digits(Int_t eventnumber);   //MI change
   virtual void  Hits2DigitsSector(Int_t isec);  //MI change
   virtual void  Init();
   virtual Int_t IsVersion() const =0;

@@ -52,6 +52,7 @@
 #include "AliPMDRecPoint.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliPMDDigitizer.h"
   
 ClassImp(AliPMD)
  
@@ -350,3 +351,22 @@ AliPMDhit::AliPMDhit(Int_t shunt,Int_t track, Int_t *vol, Float_t *hits):
   fEnergy=hits[3];
 }
   
+
+//____________________________________________________________________________
+void AliPMD::Hits2SDigits()  
+{ 
+// create summable digits
+
+  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
+  AliPMDDigitizer* pmdDigitizer = new AliPMDDigitizer;
+  pmdDigitizer->OpengAliceFile(fLoader->GetRunLoader()->GetFileName().Data(),
+			       "HS");
+  pmdDigitizer->SetZPosition(365.0);
+
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+    pmdDigitizer->Hits2SDigits(iEvent);
+  }
+  fLoader->UnloadHits();
+  fLoader->UnloadSDigits();
+  delete pmdDigitizer;
+}
