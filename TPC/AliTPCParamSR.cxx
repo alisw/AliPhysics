@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2002/03/18 17:59:13  kowal2
+Chnges in the pad geometry - 3 pad lengths introduced.
+
 Revision 1.6  2002/02/25 11:02:56  kowal2
 Changes towards speeding up the code. Thanks to Marian Ivanov.
 
@@ -378,9 +381,13 @@ Bool_t AliTPCParamSR::Update()
      // number of pads per row
      Float_t y = (x-0.5*fInnerPadPitchLength)*tan(fInnerAngle/2.)-fInnerWireMount-
        fInnerPadPitchWidth/2.;
-     fYInner[i]  = x*tan(fInnerAngle/2.)-fInnerWireMount;
+     // 0 and fNRowLow+1 reserved for cross talk rows
+     fYInner[i+1]  = x*tan(fInnerAngle/2.)-fInnerWireMount;
      fNPadsLow[i] = 1+2*(Int_t)(y/fInnerPadPitchWidth) ;
    }
+ // cross talk rows
+ fYInner[0]=(fPadRowLow[0]-fInnerPadPitchLength)*tan(fInnerAngle/2.)-fInnerWireMount;
+ fYInner[fNRowLow+1]=(fPadRowLow[fNRowLow-1]+fInnerPadPitchLength)*tan(fInnerAngle/2.)-fInnerWireMount; 
  firstrow = fOuterRadiusLow + 1.6;
  for(i=0;i<fNRowUp;i++)
    {
@@ -389,7 +396,7 @@ Bool_t AliTPCParamSR::Update()
        fPadRowUp[i]=x;
     Float_t y =(x-0.5*fOuter1PadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount-
 	  fOuterPadPitchWidth/2.;
-     fYOuter[i]= x*tan(fOuterAngle/2.)-fOuterWireMount;
+     fYOuter[i+1]= x*tan(fOuterAngle/2.)-fOuterWireMount;
      fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ;
      if(i==fNRowUp1-1) {
        fLastWireUp1=fPadRowUp[i] +0.375;
@@ -404,8 +411,11 @@ Float_t y =(x-0.5*fOuter2PadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount-
 	   fOuterPadPitchWidth/2.;
          fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ; 
        }
-     fYOuter[i]  = fPadRowUp[i]*tan(fOuterAngle/2.)-fOuterWireMount;
+     fYOuter[i+1]  = fPadRowUp[i]*tan(fOuterAngle/2.)-fOuterWireMount;
    }
+ // cross talk rows
+ fYOuter[0]=(fPadRowUp[0]-fOuter1PadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount;
+ fYOuter[fNRowUp+1]=(fPadRowUp[fNRowUp-1]+fOuter2PadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount;
  fNtRows = fNInnerSector*fNRowLow+fNOuterSector*fNRowUp;
  fbStatus = kTRUE;
  return kTRUE;
@@ -443,7 +453,8 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
   //
   //we suppose that coordinate is expressed in float digits 
   // it's mean coordinate system 8
-  //xyz[0] - float padrow xyz[1] is float pad  (center pad is number 0) and xyz[2] is float time bin
+  //xyz[0] - electron position w.r.t. pad center, normalized to pad length,
+  //xyz[1] is float pad  (center pad is number 0) and xyz[2] is float time bin
   if ( (fInnerPRF==0)||(fOuter1PRF==0)||(fOuter2PRF==0) ||(fTimeRF==0) ){ 
     Error("AliTPCParamSR", "response function was not adjusted");
     return -1;
@@ -501,7 +512,7 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
   } // the above is calculated only once
 
   // calculate central padrow, pad, time
-  Int_t npads = GetNPads(index[1],index[3]);
+  Int_t npads = GetNPads(index[1],index[3]-1);
   Int_t cpadrow = index[2]; // electrons are here
   Int_t cpad    = TMath::Nint(xyz[1]);
   Int_t ctime   = TMath::Nint(xyz[2]+zoffset2);
@@ -529,15 +540,15 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
   Int_t ltime =  (ctime<maxt-2) ? 2: maxt-ctime-1;
 
   // cross talk from long pad to short one
-  if(row==fNRowUp1-1 && fpadrow==-1) {
+  if(row==fNRowUp1 && fpadrow==-1) {
     dpadrow *= fOuter2PadPitchLength;
     dpadrow += fOuterWWPitch;
     dpadrow /= fOuter1PadPitchLength;
   }    
   // cross talk from short pad to long one
-  if(row==fNRowUp1 && fpadrow==1){ 
+  if(row==fNRowUp1+1 && fpadrow==1){ 
     dpadrow *= fOuter1PadPitchLength;
-    if(dpadrow < -0.) dpadrow = -1.; //protection against 3rd wire
+    if(dpadrow < 0.) dpadrow = -1.; //protection against 3rd wire
     dpadrow += fOuterWWPitch;
     dpadrow /= fOuter2PadPitchLength;
     
