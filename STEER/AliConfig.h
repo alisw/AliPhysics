@@ -6,6 +6,9 @@
 /* $Id$ */
 /* 
  * $Log$
+ * Revision 1.7  2002/10/29 14:26:49  hristov
+ * Code clean-up (F.Carminati)
+ *
  * Revision 1.6  2002/10/22 15:02:15  alibrary
  * Introducing Riostream.h
  *
@@ -64,8 +67,8 @@ private:
   AliConfig(const char * name, const char * title);
   AliConfig(const AliConfig&);
   void  AddInFolder (const char * dir, TObject *obj);
-  void  AddSubFolder(char * dir[], TObject *obj);
-  void  AddSubTask(char * dir[], TObject *obj);
+  void  AddSubFolder(const char * dir[], TObject *obj);
+  void  AddSubTask(const char * dir[], TObject *obj);
   TObject* FindInFolder (const char *dir, const char *name);
   AliConfig& operator = (const AliConfig&) {return *this;}
   
@@ -76,8 +79,8 @@ private:
   const char*  fGeneratorFolder ; 
   const char*  fMCFolder ; 
   const char*  fModuleFolder ; 
-  char** fDetectorFolder ; 
-  char** fDetectorTask ; 
+  const char** fDetectorFolder ; 
+  const char** fDetectorTask ; 
 
   static AliConfig*  fInstance;
     

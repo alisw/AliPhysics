@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/10/29 14:26:49  hristov
+Code clean-up (F.Carminati)
+
 Revision 1.7  2002/10/23 07:43:00  alibrary
 Introducing some effective C++ suggestions
 
@@ -120,8 +123,8 @@ AliConfig::AliConfig(const char *name, const char *title):
   fGeneratorFolder("RunMC/Configuration/Generators"),
   fMCFolder("RunMC/Configuration/VirtualMC"),
   fModuleFolder("Run/Configuration/Modules"),
-  fDetectorFolder(new char*[kFolders]),
-  fDetectorTask(new char*[kTasks])
+  fDetectorFolder(new const char*[kFolders]),
+  fDetectorTask(new const char*[kTasks])
 {
   //
   // Constructor
@@ -257,7 +260,7 @@ void AliConfig::AddInFolder (const char *dir, TObject *obj)
 }
 
 //____________________________________________________________________________
-void    AliConfig::AddSubFolder(char * dir[], TObject *obj)
+void    AliConfig::AddSubFolder(const char * dir[], TObject *obj)
 {
   int iDir = 0;
   
@@ -273,7 +276,7 @@ void    AliConfig::AddSubFolder(char * dir[], TObject *obj)
 }
 
 //____________________________________________________________________________
-void    AliConfig::AddSubTask(char * dir[], TObject *obj)
+void    AliConfig::AddSubTask(const char * dir[], TObject *obj)
 {
   int iDir = 0;
   
