@@ -44,9 +44,10 @@ void AliRICHTracker::RecWithESD(AliESD *pESD)
     pTrack->GetXYZ(xb); 
     pTrack->GetPxPyPz(pb); 
     Int_t status=pTrack->GetStatus()&AliESDtrack::kTOFout;//get running track parameters
-    AliDebug(1,Form("Track %i pmod=%f mass=%f stat=%i",iTrackN,pTrack->GetP(),pTrack->GetMass(),status));
-    x0.SetXYZ(xb[0],xb[1],xb[2]); p0.SetXYZ(xb[0],xb[1],xb[2]);
-    AliRICHHelix helix(x0,p0,pTrack->GetSign(),b);   
+    Int_t charge = (Int_t)TMath::Sign(1.,pTrack->GetSign()*b);
+    AliDebug(1,Form("Track %i pmod=%f charge=%i stat=%i",iTrackN,pTrack->GetP(),charge,status));
+    x0.SetXYZ(xb[0],xb[1],xb[2]); p0.SetXYZ(pb[0],pb[1],pb[2]);
+    AliRICHHelix helix(x0,p0,charge,b);   
     Int_t iChamber=helix.RichIntersect(pRich->P());        
     AliDebug(1,Form("intersection with %i chamber found",iChamber));
     if(!iChamber) continue;//intersection with no chamber found
@@ -86,6 +87,7 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
 //  pRich->GetLoader()->GetRunLoader()->LoadHeader();
   pRich->GetLoader()->GetRunLoader()->LoadKinematics();
   AliStack *pStack =   pRich->GetLoader()->GetRunLoader()->Stack();
+  if(!pStack) {AliDebug(1,Form("No STACK found in AliRoot"));return;}
   Int_t iNtracks=pStack->GetNtrack();
   AliDebug(1,Form(" Start reconstruction with %i track(s) from Stack",iNtracks));
   
@@ -101,6 +103,9 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
 
   for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
     TParticle *pParticle = pStack->Particle(iTrackN);
+    if(!pParticle) {AliDebug(1,Form("Not a valid TParticle pointer. Track skipped"));continue;}
+    AliDebug(1,Form(" PDG code : %i",pParticle->GetPdgCode()));
+    if(pParticle->GetPdgCode()>=50000050) {AliDebug(1,Form("A photon as track... Track skipped"));continue;}
     AliDebug(1,Form("Track %i is a %s with charge %i and momentum %f",
             iTrackN,pParticle->GetPDG()->GetName(),Int_t(pParticle->GetPDG()->Charge()),pParticle->P()));
 //    if(pParticle->GetMother(0)!=-1) continue; //consider only primaries
@@ -150,7 +155,7 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
     
   }//ESD tracks loop
   
- pRich->GetLoader()->UnloadRecPoints();
+  pRich->GetLoader()->UnloadRecPoints();
 
   AliDebug(1,"Stop.");  
 } //RecWithStack
