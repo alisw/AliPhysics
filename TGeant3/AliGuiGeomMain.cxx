@@ -5,7 +5,7 @@
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
+ * documentation strictlSy for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/07/13 16:19:10  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.8  2000/07/12 08:56:32  fca
 Coding convention correction and warning removal
 
@@ -54,27 +57,38 @@ The new geometry viewer from A.Morsch
  **************************************************************************/
 
 #include <stdlib.h>
-
-#include "TGMsgBox.h"
-#include "TGMenu.h"
-#include "TGTab.h"
-#include "TGFrame.h"
-#include "TGTextBuffer.h"
-#include "TGTextEntry.h"
-#include "TGLabel.h"
-#include "TGButton.h"
-#include "TGraph.h"
-#include "TCanvas.h"
-#include "TH1.h"
-#include "TApplication.h"
-#include "TGFileDialog.h"
+#include <TArrayF.h>
+#include <TGMsgBox.h>
+#include <TGMenu.h>
+#include <TGTab.h>
+#include <TGFrame.h>
+#include <TGTextBuffer.h>
+#include <TGTextEntry.h>
+#include <TGLabel.h>
+#include <TGButton.h>
+#include <TGraph.h>
+#include <TCanvas.h>
+#include <TH1.h>
+#include <TApplication.h>
+#include <TGFileDialog.h>
+#include <TGListTree.h>
+#include <TGeant3.h>
+#include <TShape.h>
+#include <TGeometry.h>
+#include <TBRIK.h>
+#include <TGeometry.h>
+#include <TList.h>
+#include <TFile.h>
+#include <TFolder.h>
 
 #include "AliGuiGeomMain.h"
-#include "AliGUIMaterial.h"
 #include "AliGuiGeomDialog.h"
-#include "AliDrawVolume.h"
-#include "AliGUIMedium.h"
-#include "TGeant3.h"
+#include "AliG3Volume.h"
+#include "AliG3Medium.h"
+#include "AliRun.h"
+#include "AliG3Material.h"
+#include "AliNode.h"
+
 
 ClassImp(AliGuiGeomMain)
 
@@ -444,10 +458,10 @@ void AliGuiGeomMain::Plot()
     Float_t *value = new Float_t[fNbins];
     Float_t *pcut  = new Float_t[fNbins];
     Int_t ixst;
-    Int_t imate=gCurrentMaterial->Id();
-    Float_t z=gCurrentMaterial->Z();
-    Float_t a=gCurrentMaterial->A();
-    Float_t density=gCurrentMaterial->Density();
+    Int_t imate = gCurrentMaterial->Id();
+    Float_t z = gCurrentMaterial->GetZ();
+    Float_t a = gCurrentMaterial->GetA();
+    Float_t density = gCurrentMaterial->GetDensity();
     
     Int_t ipart=gCurrentParticle;
     const char *kChMeca= kLabelTextMechanism[gCurrentProcess-1];
@@ -473,9 +487,7 @@ void AliGuiGeomMain::Plot()
 	    value[i]*=1000.*kAvo*density/a;
 	}
     }
-    
-    
-    printf("\n %d %d %s %d \n",imate, ipart, kChMeca, kdim);
+
     if (ixst) {
 	TGraph *graph = new TGraph(kdim,tkin,value);
 	TCanvas *c1 = new TCanvas("c1"," ",400,10,600,700);
@@ -513,17 +525,17 @@ void AliGuiGeomMain::Update()
     }
 
     Int_t imat=gCurrentVolume->Material();
-    Int_t nmat=fComboEntries->GetEntriesFast();
+    Int_t nmat=fComboMaterialEntries->GetEntriesFast();
     Int_t i=0;
     for (i=0; i<nmat; i++) {
-	gCurrentMaterial = (AliGUIMaterial*) 
-	    (fComboEntries->UncheckedAt(i));
-	if (gCurrentMaterial->Id()==imat) break;
+	gCurrentMaterial = (AliG3Material*) 
+	    (fComboMaterialEntries->UncheckedAt(i));
+	if ((gCurrentMaterial->Id())==imat) break;
     }
     Int_t imed = gCurrentVolume->Medium();
     Int_t nmed=fComboMediaEntries->GetEntriesFast();
     for (i=0; i<nmed; i++) {
-	gCurrentMedium = (AliGUIMedium*) 
+	gCurrentMedium = (AliG3Medium*) 
 	    (fComboMediaEntries->UncheckedAt(i));
 	if (gCurrentMedium->Id()==imed) break;
     }
@@ -538,12 +550,12 @@ void AliGuiGeomMain::UpdateCombo()
 // Update combos
 
     Int_t   imat = gCurrentMaterial->Id();
-    Float_t    a = gCurrentMaterial->A();
-    Float_t    z = gCurrentMaterial->Z();    
-    Float_t dens = gCurrentMaterial->Density();
-    Float_t radl = gCurrentMaterial->RadiationLength();
-    Float_t absl = gCurrentMaterial->AbsorptionLength();
-    Int_t entry=gCurrentMaterial->ItemId();
+    Float_t    a = gCurrentMaterial->GetA();
+    Float_t    z = gCurrentMaterial->GetZ();    
+    Float_t dens = gCurrentMaterial->GetDensity();
+    Float_t radl = gCurrentMaterial->GetRadLength();
+    Float_t absl = gCurrentMaterial->GetInterLength();
+    Int_t entry  = gCurrentMaterial->GetNumber();
 //    
 //
     fMaterialCombo->Select(entry);
@@ -679,7 +691,6 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 		fEmax= atof(fTbh63->GetString());
 		break;
 	    }
-	    printf("\n %d %f %f binning", fNbins, fEmin, fEmax);
 	}
 	break;
 //
@@ -695,7 +706,7 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 	      TGListTreeItem *item;
 	      if ((item = fLt->GetSelected())) 
 		{
-		  gCurrentVolume=((AliDrawVolume *) item->GetUserData());
+		  gCurrentVolume=((AliG3Volume *) item->GetUserData());
 		  Update();
 		}
 	    }
@@ -707,9 +718,9 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 		if ((item = fLt->GetSelected())) 
 		{
 
-		    ((AliDrawVolume *) item->GetUserData())->DrawSpec();
+		    ((AliG3Volume *) item->GetUserData())->DrawSpec();
 
-		    gCurrentVolume=((AliDrawVolume *) item->GetUserData());
+		    gCurrentVolume=((AliG3Volume *) item->GetUserData());
 		    Update();
 		}
 	    }
@@ -719,8 +730,8 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 		TGListTreeItem *item;
 		if ((item = fLt->GetSelected())) 
 		{
-		    ((AliDrawVolume *) item->GetUserData())->Draw();
-		    gCurrentVolume=((AliDrawVolume *) item->GetUserData());
+		    ((AliG3Volume *) item->GetUserData())->Draw();
+		    gCurrentVolume=((AliG3Volume *) item->GetUserData());
 		    Update();
 		}
 	    }
@@ -754,9 +765,9 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 //
 // Material Combo
 	    case 1:
-		gCurrentMaterial=(AliGUIMaterial*) 
-		    (fComboEntries->UncheckedAt(Int_t(parm2-1)));
-		gCurrentMedium=(AliGUIMedium*) 
+		gCurrentMaterial=(AliG3Material*) 
+		    (fComboMaterialEntries->UncheckedAt(Int_t(parm2-1)));
+		gCurrentMedium=(AliG3Medium*) 
 		    (fComboMediaEntries->UncheckedAt(Int_t(parm2-1)));
 		UpdateCombo();
 		UpdateListBox();
@@ -764,10 +775,10 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 //
 // Media Combo
 	    case 2:
-		gCurrentMedium=(AliGUIMedium*) 
+		gCurrentMedium=(AliG3Medium*) 
 		    (fComboMediaEntries->UncheckedAt(Int_t(parm2-1)));
-		gCurrentMaterial=(AliGUIMaterial*) 
-		    (fComboEntries->UncheckedAt(Int_t(parm2-1)));
+		gCurrentMaterial=(AliG3Material*) 
+		    (fComboMaterialEntries->UncheckedAt(Int_t(parm2-1)));
 		UpdateCombo();
 		UpdateListBox();
 		break;
@@ -780,7 +791,6 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 // Mechanism Combo
 	    case 4:
 		gCurrentProcess=Int_t(parm2);
-		printf("\n Process %d", gCurrentProcess);
 		break;
 	    }
 	    break;
@@ -822,27 +832,89 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
     return kTRUE;
 }
 
-void AliGuiGeomMain::AddMaterial(AliGUIMaterial *Material, Int_t i)
+void AliGuiGeomMain::AddMaterial(AliG3Material *Material, Int_t i)
 {
 // Add material to material combo
-    char* tmp;
-    tmp=Material->Name();
-    Material->SetItemId(i);
-    fMaterialCombo->AddEntry(tmp, i);
+    const char* tmp;
+    tmp=Material->GetName();
+    char mName[21];
+    
+    strncpy(mName, tmp, 20);
+    mName[20]='\0';
+    
+//    Material->SetItemId(i);
+    fMaterialCombo->AddEntry(mName, i);
     fMaterialCombo->Select(i);
     fMaterialCombo->Resize(200, 20);
 }
 
-void AliGuiGeomMain::AddMedium(AliGUIMedium *Medium, Int_t i)
+void AliGuiGeomMain::AddMedium(AliG3Medium *Medium, Int_t i)
 {
 // Add medium to medium combo
-    char* tmp;
-    tmp=Medium->Name();
+    const char* tmp;
+    tmp=Medium->GetName();
+    char mName[21];
+    strncpy(mName, tmp, 20);
+    mName[20]='\0';
     Medium->SetItemId(i);
-    
-    fMediaCombo->AddEntry(tmp, i);
+    fMediaCombo->AddEntry(mName, i);
     fMediaCombo->Select(i);
     fMediaCombo->Resize(200, 20);
 }
 
+void AliGuiGeomMain::SetMaterialComboEntries(TClonesArray *entries)
+{
+// Set the material combo entries
+//
+    fComboMaterialEntries = entries;
+    Int_t nent = fComboMaterialEntries->GetEntriesFast();
+    for (Int_t i=0; i < nent; i++)
+    {
+	AddMaterial((AliG3Material*)fComboMaterialEntries->At(i), i+1);
+	gCurrentMaterial = (AliG3Material*)fComboMaterialEntries->At(i);
+    }
+}
+
+
+void AliGuiGeomMain::SetMediaComboEntries(TClonesArray *entries)
+{
+// Set the media combo entries
+//
+    fComboMediaEntries = entries;
+    Int_t nent = fComboMediaEntries->GetEntriesFast();
+    for (Int_t i=0; i < nent; i++)
+    {
+	AddMedium((AliG3Medium*)fComboMediaEntries->At(i), i+1);
+	gCurrentMedium = (AliG3Medium*)fComboMediaEntries->At(i);
+    }
+}
+
+void AliGuiGeomMain::AddFoldersRecursively(TFolder* folder, TGListTreeItem* parent)
+{
+// Display geometry represented by TFolders in List Tree
+//
+    const TGPicture* kFolder     = gClient->GetPicture("folder_t.xpm");
+    const TGPicture* kOpenFolder = gClient->GetPicture("ofolder_t.xpm");
+    const TGPicture* kDocument   = gClient->GetPicture("doc_t.xpm");
+    
+    AliG3Volume* volume = ((AliG3Volume *) folder->FindObject(folder->GetName()));
+    volume->SetItem(folder);
+
+    TList* folders = (TList*) folder->GetListOfFolders();
+    TIter next(folders);
+    TObject* obj;
+    TGListTreeItem* nParent = 0;
+    if (folders->GetSize() > 1) {
+	nParent = fLt->AddItem(parent, folder->GetName(), volume, kOpenFolder, kFolder);
+    } else {
+	nParent = fLt->AddItem(parent, folder->GetName(), volume, kDocument, kDocument);
+    }
+    
+    while ((obj = next()))
+    {
+	if ((AliG3Volume*) obj == volume) continue;
+	TFolder* item = (TFolder*) obj;
+	AddFoldersRecursively(item, nParent);
+    }
+}
 

@@ -10,6 +10,7 @@
 #include "TGListTree.h"
 #include "TGComboBox.h"
 
+
 class TGTab;
 class TGMenuBar;
 class TGPopupMenu;
@@ -17,10 +18,14 @@ class TGTextBuffer;
 class TGTextEntry;
 class TGLabel;
 class TGTextButton;
+class AliNode;
+class TObjArray;
+class TFolder;
 
-class AliGUIMaterial;
-class AliGUIMedium;
+class AliG3Material;
+class AliG3Medium;
 class AliGuiGeomDialog;
+class AliG3Volume;
 
 class AliGuiGeomMain : public TGMainFrame {
  public:
@@ -34,9 +39,9 @@ class AliGuiGeomMain : public TGMainFrame {
 		const char* name,
 		const TGPicture* open, const TGPicture* closed);
     // Add Material to ComboBox
-    virtual void AddMaterial(AliGUIMaterial *Material, Int_t i);
+    virtual void AddMaterial(AliG3Material *Material, Int_t i);
     // Add Medium to ComboBox
-    virtual void AddMedium(AliGUIMedium *Medium, Int_t i);
+    virtual void AddMedium(AliG3Medium *Medium, Int_t i);
     // Process messages from this window
     virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
     // Update widgets
@@ -46,9 +51,9 @@ class AliGuiGeomMain : public TGMainFrame {
     virtual void UpdateListBox();
     // Relate objects to ComboEntries
     // Currently ComboBox Entries are strings only, hence we need this construction
-    virtual void SetComboEntries(TClonesArray *entries) {fComboEntries=entries;}
-    virtual void SetMediaComboEntries(TClonesArray *entries)
-	{fComboMediaEntries=entries;}
+    virtual void SetMaterialComboEntries(TClonesArray *entries);
+    virtual void SetMediaComboEntries(TClonesArray *entries);
+    virtual void AddFoldersRecursively(TFolder* folder=0, TGListTreeItem* parent=NULL);
     virtual void Plot();
 private:
     TGTab              *fTab;           // Contains Tab entries: volumes, materials..
@@ -66,7 +71,7 @@ private:
     TGComboBox         *fMechanismCombo;                          // Mechanism combo box
     TGComboBox         *fMediaCombo, *fParticleCombo;             // Media and particle combo boxes
     TGListBox          *fProcessLB, *fCutsLB;                     // List boxes for cuts and processes
-    TClonesArray       *fComboEntries;                            // List of materials
+    TClonesArray       *fComboMaterialEntries;                    // List of materials
     TClonesArray       *fComboMediaEntries;                       // List of media
     TGHorizontalFrame  *fHframe[6],*fHframeM[8];                  // sub frames 
     TGTextBuffer       *fTbh[6], *fTbhM[8], *fTbh61, *fTbh62, *fTbh63;  // text frames
@@ -76,7 +81,6 @@ private:
     Float_t            fEmin;         // minimum energy for de/dx plot
     Float_t            fEmax;         // maximum energy for de/dx plot
     Int_t              fNbins;        // number of bins for de/dx plot
-
   AliGuiGeomMain(const AliGuiGeomMain &gm) 
     : TGMainFrame((const TGMainFrame&)gm) {}
   virtual AliGuiGeomMain & operator=(const AliGuiGeomMain &) {return *this;}
@@ -85,7 +89,7 @@ private:
     ClassDef(AliGuiGeomMain,1)  // MainFrame for Geometry Browser
 };
 
-R__EXTERN AliGUIMaterial *gCurrentMaterial;
-R__EXTERN AliGUIMedium   *gCurrentMedium;
+R__EXTERN AliG3Material  *gCurrentMaterial;
+R__EXTERN AliG3Medium    *gCurrentMedium;
 
 #endif
