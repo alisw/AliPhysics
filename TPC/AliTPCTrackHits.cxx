@@ -38,6 +38,8 @@
 
 #include "AliTPC.h"
 #include "AliTPCTrackHits.h"
+//           Interface classes
+#include "AliTPCTrackHitsInterfaces.h"
 
 ClassImp(AliTPCTrackHits) 
 LClassImp(AliTrackHitsInfo) 
