@@ -13,7 +13,6 @@
 #pragma link C++ class  AliMUONRawCluster;
 #pragma link C++ class  AliMUONGlobalTrigger;
 #pragma link C++ class  AliMUONLocalTrigger;
-#pragma link C++ class  AliMUONSegmentation;
 #pragma link C++ class  AliMUONResponse;
 #pragma link C++ class  AliMUONSegmentationV0;
 #pragma link C++ class  AliMUONResponseV0;
@@ -31,7 +30,6 @@
 #pragma link C++ class  AliMUONPoints;
 #pragma link C++ class  AliMUONDisplay;
 #pragma link C++ class  AliMUONClusterFinderVS;
-#pragma link C++ class  AliMUONHitMap;
 #pragma link C++ class  AliMUONHitMapA1;
 #pragma link C++ class  AliMUONTrackReconstructor;
 #pragma link C++ class  AliMUONTriggerCircuit;

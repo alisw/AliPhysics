@@ -10,7 +10,7 @@ PACKAGE = MUON
 # C++ sources
 
 SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
-	       AliMUONSegmentation.cxx  AliMUONSegmentationV0.cxx\
+	       AliMUONSegmentationV0.cxx\
 	       AliMUONResponse.cxx AliMUONResponseV0.cxx \
 	       AliMUONSegmentationV01.cxx \
                AliMUONSegmentationV02.cxx AliMUONSegmentationV04.cxx \
@@ -20,7 +20,7 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
                AliMUONSegmentationV1.cxx AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx\
                AliMUONDisplay.cxx AliMUONPoints.cxx \
                AliMUONClusterFinderVS.cxx \
-               AliMUONHitMap.cxx AliMUONHitMapA1.cxx \
+               AliMUONHitMapA1.cxx \
 	       AliMUONHit.cxx AliMUONPadHit.cxx AliMUONDigit.cxx \
                AliMUONTransientDigit.cxx AliMUONRawCluster.cxx \
 	       AliMUONReconstHit.cxx \
