@@ -67,8 +67,8 @@ class AliGenHBTosl: public AliGenerator
    void      Generate();
    
    void      SetGenerator(AliGenerator* gen){fGenerator = gen;}
-   void      SetDebug(Bool_t debug){fDebug = debug;}
-   Bool_t    GetDebug() const {return fDebug;}
+   void      SetDebug(Int_t debug){fDebug = debug;}
+   Int_t    GetDebug() const {return fDebug;}
 
    void      Rotate(TVector3& relvector, TVector3& vector);
    Double_t  Rotate(Double_t x,Double_t y,Double_t z);
@@ -117,7 +117,7 @@ class AliGenHBTosl: public AliGenerator
   TList*   fStackBuffer;
   Int_t    fBufferSize;
   Int_t    fNBinsToScale;
-  Bool_t   fDebug;
+  Int_t    fDebug;
   Bool_t   fSignalShapeCreated;
   
   Int_t    fMaxIterations;  //maximal nuber of iterations on startup
