@@ -28,6 +28,7 @@ public:
   Int_t Clusters2Tracks(const TFile *in, TFile *out);
   Int_t PropagateBack(const TFile *in, TFile *out);
   Int_t RefitInward(const TFile *in, TFile *out);
+  Bool_t RefitAt(Double_t x, AliITStrackV2 *seed, const AliITStrackV2 *t);
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
 
@@ -91,7 +92,6 @@ private:
   Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
   void  FollowProlongation();
   Int_t TakeNextProlongation();
-  Bool_t RefitAt(Double_t x, const AliITStrackV2 *t, AliITStrackV2 *tt);
   void ResetBestTrack() {
      fBestTrack.~AliITStrackV2();
      new(&fBestTrack) AliITStrackV2(fTrackToFollow);

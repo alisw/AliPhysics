@@ -265,7 +265,9 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
        if (fBestTrack.GetNumberOfClusters() == 0) continue;
 
        if (fConstraint[fPass]) {
-	  if (!RefitAt(3.7, t, &fBestTrack)) continue;
+          ResetTrackToFollow(*t);
+	  if (!RefitAt(3.7, &fTrackToFollow, &fBestTrack)) continue;
+          ResetBestTrack();
        }
 
        fBestTrack.SetLabel(tpcLabel);
@@ -344,8 +346,8 @@ Int_t AliITStrackerV2::PropagateBack(const TFile *inp, TFile *out) {
     fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
     //
 
-    itrack->ResetCovariance(); itrack->ResetClusters();
-    if (!RefitAt(49.,itrack,&fTrackToFollow)) continue;
+    fTrackToFollow.ResetCovariance(); fTrackToFollow.ResetClusters();
+    if (!RefitAt(49.,&fTrackToFollow,itrack)) continue;
 
     if (CorrectForDeadZoneMaterial(&fTrackToFollow)!=0) {
        Warning("PropagateBack",
@@ -456,16 +458,15 @@ Int_t AliITStrackerV2::RefitInward(const TFile *inp, TFile *out) {
 
   for (i=0; i<ntpc; i++) {
     tpcTree->GetEvent(i);
-    AliITStrackV2 *t=0;
     try {
-      t=new AliITStrackV2(*itrack);
+      otrack=new AliITStrackV2(*itrack);
     } catch (const Char_t *msg) {
       Warning("RefitInward",msg);
-      delete t;
+      delete otrack;
       continue;
     }
     //check if this track was reconstructed in the ITS
-    Int_t lab=TMath::Abs(t->GetLabel());
+    Int_t lab=TMath::Abs(otrack->GetLabel());
     if (lab >= nLab) {
       Warning("RefitInward","Too big TPC track label: %d\n!",lab); 
       continue;
@@ -473,20 +474,22 @@ Int_t AliITStrackerV2::RefitInward(const TFile *inp, TFile *out) {
     Int_t idx=lut[lab];
     if (idx<0) continue; //no prolongation in the ITS for this track
     
-    if (CorrectForDeadZoneMaterial(t)!=0) {
+    if (CorrectForDeadZoneMaterial(otrack)!=0) {
        Warning("RefitInward",
                "failed to correct for the material in the dead zone !\n");
        continue;
     }
 
     //Refitting...
-    otrack=(AliITStrackV2*)itsTracks.UncheckedAt(idx);
-    if (!RefitAt(3.7, t, otrack)) continue;
+    {
+    AliITStrackV2 *ctrack=(AliITStrackV2*)itsTracks.UncheckedAt(idx);
+    if (!RefitAt(3.7, otrack, ctrack)) continue;
+    }
     otrack->SetLabel(itrack->GetLabel()); //For comparison only
     otrack->CookdEdx();
     CookLabel(otrack,0.); //For comparison only
     outTree.Fill();
-    delete t;
+    delete otrack;
   }
   i=(Int_t)outTree.GetEntries();
   Info("RefitInward","Number of inward refitted ITS tracks: %d\n",i);
@@ -970,20 +973,19 @@ Int_t AliITStrackerV2::AliITSlayer::InRoad() const {
 }
 
 Bool_t 
-AliITStrackerV2::RefitAt(Double_t x,const AliITStrackV2 *s,AliITStrackV2 *ot) {
+AliITStrackerV2::RefitAt(Double_t x,AliITStrackV2 *t,const AliITStrackV2 *c) {
   //--------------------------------------------------------------------
-  // This function refits a track at a given position
+  // This function refits the track "t" at the position "x" using
+  // the clusters from "c"
   //--------------------------------------------------------------------
-  AliITStrackV2 save(*ot), *t=&save;
   Int_t index[kMaxLayer];
   Int_t k;
   for (k=0; k<kMaxLayer; k++) index[k]=-1;
-  Int_t nc=t->GetNumberOfClusters();
+  Int_t nc=c->GetNumberOfClusters();
   for (k=0; k<nc; k++) { 
-    Int_t idx=t->GetClusterIndex(k),nl=(idx&0xf0000000)>>28;
+    Int_t idx=c->GetClusterIndex(k),nl=(idx&0xf0000000)>>28;
     index[nl]=idx; 
   }
-  t->~AliITStrackV2(); new (t) AliITStrackV2(*s);
 
   Int_t from, to, step;
   if (x > t->GetX()) {
@@ -1096,7 +1098,6 @@ AliITStrackerV2::RefitAt(Double_t x,const AliITStrackV2 *s,AliITStrackV2 *ot) {
   }
 
   if (!t->PropagateTo(x,0.,0.)) return kFALSE;
-  ot->~AliITStrackV2(); new (ot) AliITStrackV2(*t);
   return kTRUE;
 }
 
