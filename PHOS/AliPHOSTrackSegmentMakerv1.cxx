@@ -315,16 +315,17 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
     return ; 
   }
   
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;  
-  
+  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle()) ;  
+ 
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
 
   if (fLastEvent == -1) fLastEvent = gime->MaxEvent() - 1 ;
-  else fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
+  else fLastEvent = TMath::Min(fFirstEvent,gime->MaxEvent());
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
 
-  for (Int_t ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-    gime->Event(ievent,"R") ;
+  Int_t ievent ; 
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
+  gime->Event(ievent,"R") ;
     //Make some initializations 
     fNTrackSegments = 0 ;
     fEmcFirst = 0 ;    

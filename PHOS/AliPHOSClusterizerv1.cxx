@@ -129,16 +129,15 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
     return ;
   }
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle()) ; 
   
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
   else 
-    fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
+    fLastEvent = TMath::Min(fFirstEvent, gime->MaxEvent()); // one event at the time 
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
   
   Int_t ievent ;
-  
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent, "D");
 

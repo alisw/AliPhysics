@@ -354,7 +354,7 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALDigitizer");
   
-  AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
+  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ;
    
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;

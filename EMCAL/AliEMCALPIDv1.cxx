@@ -156,7 +156,7 @@ void  AliEMCALPIDv1::Exec(Option_t * option)
     Print("") ; 
     return ; 
   }
-  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ; 
 
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;

@@ -193,7 +193,7 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
   }
 
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle()) ; 
  
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;

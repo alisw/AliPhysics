@@ -408,7 +408,7 @@ void AliPHOSDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSDigitizer");
   
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
+  AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle()) ;
 
   if (fLastEvent == -1) 
     fLastEvent = gime->MaxEvent() - 1 ;
