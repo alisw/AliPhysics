@@ -15,6 +15,10 @@
 
 /*
   $Log$
+  Revision 1.18  2002/10/29 14:24:19  morsch
+  Minor corrections on the display (adc counts readable, ...).
+  (J. Barbosa)
+
   Revision 1.17  2001/10/23 13:03:35  hristov
   The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
 
@@ -200,10 +204,10 @@ AliRICHDisplay::AliRICHDisplay(Int_t size)
     SetRange();
     
     // Set front view by default
-    //fTheta = 90;              //inclined HMPID
-    //fPhi   = 30;              //inclined HMPID
-    fTheta = 90;               //normal HMPID
-    fPhi   = 90;                //normal HMPID
+    fTheta = 90;              //inclined HMPID
+    fPhi   = 30;              //inclined HMPID
+    //fTheta = 90;               //normal HMPID
+    //fPhi   = 90;                //normal HMPID
     fPsi   = 0;
     fChamber = 1;
     fCathode = 1;
