@@ -25,21 +25,8 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     cppstack->SetCurrentTrack(trackId);
 //
 //    
-    Int_t oldreg = ((TFluka*) gMC)->GetMreg();
-    if (oldreg != mreg) {
-//
-//  Boundary Crossing
-//
-	fluka->SetNewreg(mreg);
-	if (oldreg == -1) fluka->SetMreg(mreg);
-	if (verbosityLevel >= 3)
-	    printf("Boundary Crossing %d %d \n", oldreg, mreg);
-    } else {
-	fluka->SetMreg(mreg);
-	fluka->SetNewreg(mreg);
-	if (verbosityLevel >= 3)
-	    printf("Normal step %d %d \n", oldreg, mreg);
-    }
+    fluka->SetMreg(mreg);
+    fluka->SetNewreg(mreg);
     fluka->SetIcode(icode);
     fluka->SetCaller(4);
     
@@ -47,22 +34,9 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 	cout << endl << " !!! I am in mgdraw - calling Stepping()" << endl;
 	cout << endl << " Track Id =" << trackId << endl;
     }
-    
-    fluka->FutoTest();
 
-    if (oldreg != mreg) {
-//
-//  Double step for boundary crossing
-//
-	fluka->SetTrackIsExiting();
-	(TVirtualMCApplication::Instance())->Stepping();
-	fluka->SetMreg(mreg);
-	fluka->SetTrackIsEntering();
-	(TVirtualMCApplication::Instance())->Stepping();
-	fluka->SetTrackIsInside();
-    } else {
-	(TVirtualMCApplication::Instance())->Stepping();
-    }
+    (TVirtualMCApplication::Instance())->Stepping();
+
 } // end of mgdraw
 } // end of extern "C"
 
