@@ -19,5 +19,5 @@ clean-reveng-@MODULE@:
 ifndef ALIQUIET
 		@echo "***** Cleaning reverse engineering files for @MODULE@ *****"
 endif
-		$(MUTE)rm -f @MODULE@/check/*.doc
+		$(MUTE)rm -f @MODULE@/check/*.dot
 
