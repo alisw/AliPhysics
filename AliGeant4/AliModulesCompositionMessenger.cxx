@@ -13,6 +13,7 @@
 #include <G4UIcmdWithABool.hh>
 #include <G4UIcmdWithADoubleAndUnit.hh>
 
+//_____________________________________________________________________________
 AliModulesCompositionMessenger::AliModulesCompositionMessenger(
                                    AliModulesComposition* modulesComposition)
   : fModulesComposition(modulesComposition)
@@ -60,36 +61,6 @@ AliModulesCompositionMessenger::AliModulesCompositionMessenger(
   fFieldValueCmd->SetUnitCategory("Magnetic flux density");
   fFieldValueCmd->AvailableForStates(PreInit,Idle);  
   
-  fSetAllSensitiveCmd
-    = new G4UIcmdWithABool("/aliDet/setAllSensitive", this);
-  fSetAllSensitiveCmd 
-    ->SetGuidance("If true: set all logical volumes sensitive.");
-  fSetAllSensitiveCmd 
-    ->SetGuidance("         (Each logical is volume associated with a sensitive");
-  fSetAllSensitiveCmd 
-    ->SetGuidance("          detector.)");
-  fSetAllSensitiveCmd 
-    ->SetGuidance("If false: only volumes defined with a sensitive tracking");
-  fSetAllSensitiveCmd 
-    ->SetGuidance("          medium are associated with a sensitive detector.");
-  fSetAllSensitiveCmd 
-    ->SetGuidance("It has lower priority than individual module setting");
-  fSetAllSensitiveCmd->SetParameterName("sensitivity", false);
-  fSetAllSensitiveCmd->AvailableForStates(PreInit);  
-
-  fForceAllSensitiveCmd
-    = new G4UIcmdWithABool("/aliDet/forceAllSensitive", this);
-  fForceAllSensitiveCmd 
-    ->SetGuidance("If true: force to set all logical volumes sensitive.");
-  fForceAllSensitiveCmd 
-    ->SetGuidance("         (Each logical is volume associated with a sensitive");
-  fForceAllSensitiveCmd 
-    ->SetGuidance("          detector.)");
-  fForceAllSensitiveCmd 
-    ->SetGuidance("It has higher priority than individual module setting");
-  fForceAllSensitiveCmd->SetParameterName("forceSensitivity", false);
-  fForceAllSensitiveCmd->AvailableForStates(PreInit);  
-
   fSetReadGeometryCmd 
     = new G4UIcmdWithABool("/aliDet/readGeometry", this);
   fSetReadGeometryCmd->SetGuidance("Read geometry from g3calls.dat files");
@@ -120,10 +91,12 @@ AliModulesCompositionMessenger::AliModulesCompositionMessenger(
   fModulesComposition->SwitchDetOn("NONE");
 }
 
+//_____________________________________________________________________________
 AliModulesCompositionMessenger::AliModulesCompositionMessenger() {
 //
 }
 
+//_____________________________________________________________________________
 AliModulesCompositionMessenger::AliModulesCompositionMessenger(
                                 const AliModulesCompositionMessenger& right)
 {
@@ -132,6 +105,7 @@ AliModulesCompositionMessenger::AliModulesCompositionMessenger(
     "AliModulesCompositionMessenger is protected from copying.");
 }
 
+//_____________________________________________________________________________
 AliModulesCompositionMessenger::~AliModulesCompositionMessenger() {
 //
   delete fDirectory;
@@ -140,8 +114,6 @@ AliModulesCompositionMessenger::~AliModulesCompositionMessenger() {
   delete fListCmd;
   delete fListAvailableCmd;
   delete fFieldValueCmd;
-  delete fSetAllSensitiveCmd;
-  delete fForceAllSensitiveCmd;
   delete fSetReadGeometryCmd;
   delete fSetWriteGeometryCmd;
   delete fPrintMaterialsCmd;
@@ -150,6 +122,7 @@ AliModulesCompositionMessenger::~AliModulesCompositionMessenger() {
 
 // operators
 
+//_____________________________________________________________________________
 AliModulesCompositionMessenger& 
 AliModulesCompositionMessenger::operator=(
                                 const AliModulesCompositionMessenger& right)
@@ -165,6 +138,7 @@ AliModulesCompositionMessenger::operator=(
           
 // public methods
   
+//_____________________________________________________________________________
 void AliModulesCompositionMessenger::SetNewValue(G4UIcommand* command, G4String newValues)
 {
 // Applies command to the associated object.
@@ -186,14 +160,6 @@ void AliModulesCompositionMessenger::SetNewValue(G4UIcommand* command, G4String 
     fModulesComposition
       ->SetMagField(fFieldValueCmd->GetNewDoubleValue(newValues)); 
   }
-  else if (command == fSetAllSensitiveCmd) {
-    fModulesComposition->SetAllLVSensitive(
-                         fSetAllSensitiveCmd->GetNewBoolValue(newValues));
-  }
-  else if (command == fForceAllSensitiveCmd) {
-    fModulesComposition->SetForceAllLVSensitive(
-                         fForceAllSensitiveCmd->GetNewBoolValue(newValues));
-  }
   else if (command == fSetReadGeometryCmd) {
     fModulesComposition->SetReadGeometry(
                          fSetReadGeometryCmd->GetNewBoolValue(newValues));
@@ -210,6 +176,7 @@ void AliModulesCompositionMessenger::SetNewValue(G4UIcommand* command, G4String 
   }    
 }
 
+//_____________________________________________________________________________
 void AliModulesCompositionMessenger::SetCandidates() 
 {
 // Builds candidates list.
