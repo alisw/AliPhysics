@@ -405,7 +405,7 @@ void AliPHOSv1::StepManager(void)
     if ( gMC->IsTrackEntering() ){
       Float_t xyzd[3] ;
       gMC -> Gmtod (xyzte, xyzd, 1);    // transform coordinate from master to daughter system    
-      if (xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2.+0.001){   //Entered close to forward surface  
+      if (xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2.+0.1){   //Entered close to forward surface  
 	TParticle * part = 0 ; 
 	Int_t parent = gAlice->GetMCApp()->GetCurrentTrackNumber() ; 
 	while ( parent != -1 ) {
