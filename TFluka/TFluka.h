@@ -155,12 +155,9 @@ class TFluka : public TVirtualMC {
     {printf("WARNING: StopEvent not yet implemented !\n");}   
   
   // set methods
-  virtual void SetMaxStep(Double_t)
-    {printf("WARNING: SetMaxStep not yet implemented !\n");}
-  virtual void SetMaxNStep(Int_t)
-    {printf("WARNING: SetMaxNStep not yet implemented !\n");}
-  virtual void SetUserDecay(Int_t)
-    {printf("WARNING: SetUserDecay not yet implemented !\n");}  
+  virtual void SetMaxStep(Double_t);
+  virtual void SetMaxNStep(Int_t);
+  virtual void SetUserDecay(Int_t);
   
   // get methods
   // tracking volume(s) 
@@ -218,8 +215,7 @@ class TFluka : public TVirtualMC {
   virtual Int_t    NSecondaries() const ;
   virtual void     GetSecondary(Int_t isec, Int_t& particleId, 
 			TLorentzVector& position, TLorentzVector& momentum);
-  virtual TMCProcess ProdProcess(Int_t isec) const
-    {printf("WARNING: StepProcesses not yet implemented !\n"); return kPNoProcess;} 
+  virtual TMCProcess ProdProcess(Int_t isec) const ;
   virtual Int_t    StepProcesses(TArrayI &proc) const
     {printf("WARNING: StepProcesses not yet implemented !\n"); return -1;}
   

@@ -500,22 +500,37 @@ Int_t TFluka::PDGFromId(Int_t id) const
 {
   //
   // Return PDG code and pseudo ENDF code from Fluka code
-  // IPTOKP array goes from official to internal
 
-    Int_t intfluka = GetFlukaIPTOKP(id);
-
-    if (! intfluka) {
-	printf("\n Warning PDGFromId: internal id of %d is zero \n", id);
-	return -1;
-    }
-    
-    //MPKDHA() goes from internal to PDG
-    return mpdgha(intfluka);
+  //IPTOKP array goes from official to internal
+  Int_t intfluka = GetFlukaIPTOKP(id);
+  //MPKDHA() goes from internal to PDG
+  return mpdgha(intfluka);
 }
 
 //_____________________________________________________________________________
 // methods for step management
 //____________________________________________________________________________ 
+//
+// set methods
+//
+void TFluka::SetMaxStep(Double_t)
+{
+// SetMaxStep is dummy procedure in TFluka !
+  cout << "SetMaxStep is dummy procedure in TFluka !" << endl;
+}
+
+void TFluka::SetMaxNStep(Int_t)
+{
+// SetMaxNStep is dummy procedure in TFluka !
+  cout << "SetMaxNStep is dummy procedure in TFluka !" << endl;
+}
+
+void TFluka::SetUserDecay(Int_t)
+{
+// SetUserDecay is dummy procedure in TFluka !
+  cout << "SetUserDecay is dummy procedure in TFluka !" << endl;
+}
+
 //
 // dynamic properties
 //
@@ -615,12 +630,14 @@ Double_t TFluka::TrackCharge() const
 {
 // Return charge of the track currently transported
 // PAPROP.ichrge = electric charge of the particle
+// TRACKR.jtrack = identity number of the particle
   return PAPROP.ichrge[TRACKR.jtrack+6];
 }
 
 Double_t TFluka::TrackMass() const
 {
 // PAPROP.am = particle mass in GeV
+// TRACKR.jtrack = identity number of the particle
   return PAPROP.am[TRACKR.jtrack+6];
 }
 
@@ -754,65 +771,99 @@ Bool_t   TFluka::IsTrackAlive() const
 
 Int_t TFluka::NSecondaries() const
 // Number of secondary particles generated in the current step
-// fIcode = 100 = elastic interaction
-// fIcode = 101 = inelastic interaction
-// fIcode = 102 = particle decay
-// fIcode = 103 = delta ray
-// fIcode = 104 = pair production
-// fIcode = 105 = bremsstrahlung
+// FINUC.np = number of secondaries except light and heavy ions
+// FINUC.np = number of secondaries for light and heavy secondary ions
 {
-  if (fIcode >= 100 && fIcode <= 105)
-    return FINUC.np + FHEAVY.npheav;
-  else 
-    return -1;
+  return FINUC.np + FHEAVY.npheav;
 }
 
 void     TFluka::GetSecondary(Int_t isec, Int_t& particleId,
 		TLorentzVector& position, TLorentzVector& momentum)
-// 
-// fIcode = 100 = elastic interaction
-// fIcode = 101 = inelastic interaction
-// fIcode = 102 = particle decay
-// fIcode = 103 = delta ray
-// fIcode = 104 = pair production
-// fIcode = 105 = bremsstrahlung
 {
-  if (fIcode >= 100 && fIcode <= 105) {
-    if (isec >= 0 && isec < FINUC.np) {
-      particleId = PDGFromId(FINUC.kpart[isec]);
-      position.SetX(fXsco);
-      position.SetY(fYsco);
-      position.SetZ(fZsco);
-      position.SetT(FINUC.agesec[isec]);
-      momentum.SetPx(FINUC.plr[isec]*FINUC.cxr[isec]);
-      momentum.SetPy(FINUC.plr[isec]*FINUC.cyr[isec]);
-      momentum.SetPz(FINUC.plr[isec]*FINUC.czr[isec]);
-      momentum.SetE(FINUC.tki[isec] + PAPROP.am[FINUC.kpart[isec]+6]);
-    }
-    if (isec >= FINUC.np && isec < FINUC.np + FHEAVY.npheav) {
-      Int_t jsec = isec - FINUC.np;
-      particleId = FHEAVY.kheavy[jsec]; // this is Fluka id !!!
-      position.SetX(fXsco);
-      position.SetY(fYsco);
-      position.SetZ(fZsco);
-      position.SetT(FHEAVY.agheav[jsec]);
-      momentum.SetPx(FHEAVY.pheavy[jsec]*FHEAVY.cxheav[jsec]);
-      momentum.SetPy(FHEAVY.pheavy[jsec]*FHEAVY.cyheav[jsec]);
-      momentum.SetPz(FHEAVY.pheavy[jsec]*FHEAVY.czheav[jsec]);
-      if (FHEAVY.tkheav[jsec] >= 3 && FHEAVY.tkheav[jsec] <= 6) 
-        momentum.SetE(FHEAVY.tkheav[jsec] + PAPROP.am[jsec+6]);
-      else if (FHEAVY.tkheav[jsec] > 6)
-        momentum.SetE(FHEAVY.tkheav[jsec] + FHEAVY.amnhea[jsec]); // to be checked !!!
-    }
+  if (isec >= 0 && isec < FINUC.np) {
+    particleId = PDGFromId(FINUC.kpart[isec]);
+    position.SetX(fXsco);
+    position.SetY(fYsco);
+    position.SetZ(fZsco);
+    position.SetT(TRACKR.atrack);
+//  position.SetT(TRACKR.atrack+FINUC.agesec[isec]); //not yet implem.
+    momentum.SetPx(FINUC.plr[isec]*FINUC.cxr[isec]);
+    momentum.SetPy(FINUC.plr[isec]*FINUC.cyr[isec]);
+    momentum.SetPz(FINUC.plr[isec]*FINUC.czr[isec]);
+    momentum.SetE(FINUC.tki[isec] + PAPROP.am[FINUC.kpart[isec]+6]);
   }
+  if (isec >= FINUC.np && isec < FINUC.np + FHEAVY.npheav) {
+    Int_t jsec = isec - FINUC.np;
+    particleId = FHEAVY.kheavy[jsec]; // this is Fluka id !!!
+    position.SetX(fXsco);
+    position.SetY(fYsco);
+    position.SetZ(fZsco);
+    position.SetT(TRACKR.atrack);
+//  position.SetT(TRACKR.atrack+FHEAVY.agheav[jsec]); //not yet implem.
+    momentum.SetPx(FHEAVY.pheavy[jsec]*FHEAVY.cxheav[jsec]);
+    momentum.SetPy(FHEAVY.pheavy[jsec]*FHEAVY.cyheav[jsec]);
+    momentum.SetPz(FHEAVY.pheavy[jsec]*FHEAVY.czheav[jsec]);
+    if (FHEAVY.tkheav[jsec] >= 3 && FHEAVY.tkheav[jsec] <= 6) 
+      momentum.SetE(FHEAVY.tkheav[jsec] + PAPROP.am[jsec+6]);
+    else if (FHEAVY.tkheav[jsec] > 6)
+      momentum.SetE(FHEAVY.tkheav[jsec] + FHEAVY.amnhea[jsec]); // to be checked !!!
+    }
 }
 
-//TMCProcess ProdProcess(Int_t isec) const
+TMCProcess TFluka::ProdProcess(Int_t isec) const
 // Name of the process that has produced the secondary particles
 // in the current step
-//{
-// will come from FINUC when called from USDRAW
-//}
+{
+  const TMCProcess kIpNoProc = kPNoProcess;
+  const TMCProcess kIpPDecay = kPDecay;
+  const TMCProcess kIpPPair = kPPair;
+//const TMCProcess kIpPPairFromPhoton = kPPairFromPhoton;
+//const TMCProcess kIpPPairFromVirtualPhoton = kPPairFromVirtualPhoton;
+  const TMCProcess kIpPCompton = kPCompton;
+  const TMCProcess kIpPPhotoelectric = kPPhotoelectric;
+  const TMCProcess kIpPBrem = kPBrem;
+//const TMCProcess kIpPBremFromHeavy = kPBremFromHeavy;
+//const TMCProcess kIpPBremFromElectronOrPositron = kPBremFromElectronOrPositron;
+  const TMCProcess kIpPDeltaRay = kPDeltaRay;
+//const TMCProcess kIpPMoller = kPMoller;
+//const TMCProcess kIpPBhabha = kPBhabha;
+  const TMCProcess kIpPAnnihilation = kPAnnihilation;
+//const TMCProcess kIpPAnnihilInFlight = kPAnnihilInFlight;
+//const TMCProcess kIpPAnnihilAtRest = kPAnnihilAtRest;
+  const TMCProcess kIpPHadronic = kPHadronic;
+  const TMCProcess kIpPMuonNuclear = kPMuonNuclear;
+  const TMCProcess kIpPPhotoFission = kPPhotoFission;
+  const TMCProcess kIpPRayleigh = kPRayleigh;
+  const TMCProcess kIpPCerenkov = kPCerenkov;
+  const TMCProcess kIpPSynchrotron = kPSynchrotron;
+
+  Int_t mugamma = TRACKR.jtrack == 7 || TRACKR.jtrack == 10 || TRACKR.jtrack == 11;
+  if (fIcode == 102) return kIpPDecay;
+  else if (fIcode == 104 || fIcode == 217) return kIpPPair;
+//else if (fIcode == 104) return kIpPairFromPhoton;
+//else if (fIcode == 217) return kIpPPairFromVirtualPhoton;
+  else if (fIcode == 219) return kIpPCompton;
+  else if (fIcode == 221) return kIpPPhotoelectric;
+  else if (fIcode == 105 || fIcode == 208) return kIpPBrem;
+//else if (fIcode == 105) return kIpPBremFromHeavy;
+//else if (fIcode == 208) return kPBremFromElectronOrPositron;
+  else if (fIcode == 103 || fIcode == 400) return kIpPDeltaRay;
+  else if (fIcode == 210 || fIcode == 212) return kIpPDeltaRay;
+//else if (fIcode == 210) return kIpPMoller;
+//else if (fIcode == 212) return kIpPBhabha;
+  else if (fIcode == 214 || fIcode == 215) return kIpPAnnihilation;
+//else if (fIcode == 214) return kIpPAnnihilInFlight;
+//else if (fIcode == 215) return kIpPAnnihilAtRest;
+  else if (fIcode == 101) return kIpPHadronic;
+  else if (fIcode == 101) {
+    if (!mugamma) return kIpPHadronic;
+    else if (TRACKR.jtrack == 7) return kIpPPhotoFission;
+    else return kIpPMuonNuclear;
+  }
+  else if (fIcode == 225) return kIpPRayleigh;
+// Fluka codes 100, 300 and 400 still to be investigasted
+  else return kIpNoProc;
+}
 
 //Int_t StepProcesses(TArrayI &proc) const
 // Return processes active in the current step
@@ -937,8 +988,6 @@ void TFluka::FutoTest()
     cout << "TrackPid=" << TrackPid() << endl;
     cout << "NSecondaries=" << NSecondaries() << endl;
     for (Int_t isec=0; isec< NSecondaries(); isec++) {
-//void     TFluka::GetSecondary(Int_t isec, Int_t& particleId,
-//                 TLorentzVector& position, TLorentzVector& momentum)
       TFluka::GetSecondary(isec, particleId, position, momentum);
       cout << "TLorentzVector positionX=" << position.X()
            << "positionY=" << position.Y()
