@@ -19,15 +19,16 @@ void slowDigitsCreate() {
   // Create the TRD digitzer 
   AliTRDdigitizer *Digitizer = new AliTRDdigitizer("digitizer","Digitizer class");
 
+  // Open the AliRoot file
+  Digitizer->Open(alifile);
+
   // Set the parameter
-  Digitizer->SetDiffusion();
+  Digitizer->SetDiffusion(0);
   Digitizer->SetVerbose(1);
+  //Digitizer->SetTimeResponse(0);
   //Digitizer->SetExB();
   //Digitizer->SetElAttach();
   //Digitizer->SetAttachProb();
-
-  // Open the AliRoot file
-  Digitizer->Open(alifile);
 
   // Create the digits
   Digitizer->MakeDigits();

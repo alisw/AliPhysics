@@ -15,17 +15,21 @@ void slowClusterCreate() {
 
   // Input and output file names
   Char_t *infile  = "galice.root";
-  Char_t *outfile = "AliTRDclusters.root";
+  Char_t *outfile = "TRDclusters.root";
 
   // Create the clusterizer
   AliTRDclusterizerV1 *Clusterizer = 
     new AliTRDclusterizerV1("clusterizer","slow clusterizer class"); 
 
-  // Define output file name
-  Clusterizer->Init(outfile);
+  // Set the parameter
+  Clusterizer->SetClusMaxThresh(0);
+  Clusterizer->SetClusSigThresh(0);
+  //Clusterizer->SetVerbose(1);
+  Clusterizer->Dump();
 
   // Open the AliRoot file 
-  Clusterizer->Open(infile);
+  Clusterizer->Open(infile,0);
+  //Clusterizer->Open(infile,outfile,0);
 
   // Load the digits
   Clusterizer->ReadDigits();
