@@ -180,7 +180,7 @@ void AliEMCALv0::CreateGeometry(){
 
 
 
-    if(fGeom->IsInitialized()){
+    if(!(fGeom->IsInitialized())){
 
 	Error("CreateGeometry","EMCAL Geometry class has not been set up.");
 
@@ -378,11 +378,11 @@ void AliEMCALv0::CreateGeometry(){
 
 	    etamin = fGeom->GetArm1EtaMin()+
 
-		(j*fGeom->GetDeltaEta()/(fGeom->GetNEta()));
+		(j*fGeom->GetDeltaEta());
 
 	    etamax = fGeom->GetArm1EtaMin()+
 
-		((j+1)*fGeom->GetDeltaEta()/(fGeom->GetNEta()));
+		((j+1)*fGeom->GetDeltaEta());
 
 	    envelopC[4] = fGeom->ZFromEtaR(envelopD[6],etamin); //z begin  
 
@@ -408,11 +408,11 @@ void AliEMCALv0::CreateGeometry(){
 
 		etamin = fGeom->GetArm1EtaMin()+
 
-		    (j*fGeom->GetDeltaEta()/(fGeom->GetNEta()));
+		    (j*fGeom->GetDeltaEta());
 
 		etamax = fGeom->GetArm1EtaMin()+
 
-		    ((j+1)*fGeom->GetDeltaEta()/(fGeom->GetNEta()));
+		    ((j+1)*fGeom->GetDeltaEta());
 
 		envelopD[4] = fGeom->ZFromEtaR(envelopC[6],etamin);//z begin  
 
