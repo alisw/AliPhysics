@@ -113,9 +113,9 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
   fEventParticles->SetVertex(vertexpos[0],vertexpos[1],vertexpos[2]);
   //cout << vertexpos[0] << " " << vertexpos[1] << " " << vertexpos[2] << endl;
   AliL3Vertex v;
-  //v.SetX(vertexpos[0]);
-  //v.SetY(vertexpos[1]);
-  //v.SetZ(vertexpos[2]);
+  v.SetX(vertexpos[0]);
+  v.SetY(vertexpos[1]);
+  v.SetZ(vertexpos[2]);
 
   for (Int_t i = 0;i<ntr; i++) {
     AliESDHLTtrack *kesdtrack;
@@ -146,9 +146,10 @@ Int_t AliJetParticlesReaderHLT::ReadESD(AliESD* esd)
 
     if(0&&fTrackerType){
 #if 0
+      //kesdtrack->SetCharge(-kesdtrack->GetCharge());
       try {
 	Double_t mom[3];
-	AliL3ITStrack l3(*kesdtrack,vertexpos[2]);
+	AliL3ITStrack l3(*kesdtrack,0);
 	if(!l3.GetPxPyPzAt(0,mom)) continue;
 	px=mom[0];
 	py=mom[1];
