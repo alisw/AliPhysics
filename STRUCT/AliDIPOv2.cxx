@@ -822,11 +822,6 @@ void AliDIPOv2::CreateMaterials()
   Int_t isxfld   = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
   
-  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
-  Float_t zAir[4]={6.,7.,8.,18.};
-  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
-  Float_t dAir = 1.20479E-3;
-  
   
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
   Float_t zsteel[4] = { 26.,24.,28.,14. };
@@ -847,6 +842,14 @@ void AliDIPOv2::CreateMaterials()
   Float_t aAlCon[2] = { 14.61, 26.98};
   Float_t zAlCon[2] = { 7.3, 13.};
   Float_t wAlCon[2] = { .0004,.9996};
+  
+    // AIR
+
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+  Float_t dAir1 = 1.20479E-10;
 
   
   Float_t epsil, stmin, deemax, tmaxfd, stemax;
@@ -870,9 +873,9 @@ void AliDIPOv2::CreateMaterials()
   AliMixture(35, "AIR$      ", aAir, zAir, dAir, 4, wAir);
   AliMixture(55, "AIR$      ", aAir, zAir, dAir, 4, wAir);
   //     Vacuum 
-  AliMaterial(16, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
-  AliMaterial(36, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
-  AliMaterial(56, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
+  AliMixture(16, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(36, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(56, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
   
   //     stainless Steel 
   AliMixture(19, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);

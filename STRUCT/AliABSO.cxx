@@ -95,7 +95,7 @@ void AliABSO::CreateMaterials()
   Float_t zAir[4]={6.,7.,8.,18.};
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
   Float_t dAir = 1.20479E-3;
-
+  Float_t dAir1 = 1.20479E-10;
 //
 // Polyethylene
 //
@@ -139,6 +139,7 @@ void AliABSO::CreateMaterials()
   Float_t ains[4] ={28.0855, 15.9994, 47.867,  26.982};
   Float_t zins[4] ={14.,      8.    , 22.   ,  13.   };
   Float_t wins[4] ={ 0.3019,  0.4887,  0.1914,  0.018};
+  
 //
   Float_t epsil, stmin, tmaxfd, deemax, stemax;
   //
@@ -183,9 +184,9 @@ void AliABSO::CreateMaterials()
   AliMixture(55, "AIR$      ", aAir, zAir, dAir, 4, wAir);
   //
   //     Vacuum 
-  AliMaterial(16, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
-  AliMaterial(36, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
-  AliMaterial(56, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
+  AliMixture(16, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(36, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(56, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
   //
   //     Concrete 
   AliMixture(17, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);

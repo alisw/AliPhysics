@@ -141,9 +141,17 @@ void AliBODY::CreateMaterials()
 // Create materials and media
   Int_t isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
+  
+  // AIR
+
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+  Float_t dAir1 = 1.20479E-10;
   //
-  AliMaterial(1,"Vacuum  $",1.e-16,1.e-16,1.e-16,1.e16,1.e16);
-  AliMaterial(2,"Air     $",14.61,7.3,0.001205,30420,67500);
+  AliMixture(1,"Vacuum  $",aAir,zAir,dAir1,4,wAir);
+  AliMixture(2,"Air     $",aAir,zAir,dAir,4,wAir);
   AliMaterial(3,"Be      $", 9.01,4 ,1.848   ,35.30,36.70);
   //
   AliMedium(1,"Vacuum  $",1,0,isxfld,sxmgmx,10,1,0.1,0.1,10);

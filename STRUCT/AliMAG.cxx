@@ -230,7 +230,6 @@ void AliMAG::CreateMaterials()
   
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
-  
   Float_t epsil, stmin, deemax, tmaxfd, stemax;
 
 
