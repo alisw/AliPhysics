@@ -33,10 +33,10 @@ public:
   virtual Int_t IsVersion() const = 0;
   virtual void  StepManager() = 0; 
   virtual void  SetGasMix(Int_t imix = 0);
-  virtual void  SetHits(Int_t ihit) {};
-  virtual void  SetSensPlane(Int_t iplane) {};
-  virtual void  SetSensChamber(Int_t ichamber) {};
-  virtual void  SetSensSector(Int_t isector) {};
+  virtual void  SetHits(Int_t ) {};
+  virtual void  SetSensPlane(Int_t) {};
+  virtual void  SetSensChamber(Int_t) {};
+  virtual void  SetSensSector(Int_t ) {};
 
   ClassDef(AliTRD,1)                // Transition Radiation Detector base class
 

@@ -206,7 +206,7 @@ void AliGenPythia::Generate()
 			    {
 				TParticle *  ichild = 
 				    (TParticle *) particles->At(j-1);
-				Int_t kf = ichild->GetPdgCode();
+				kf = ichild->GetPdgCode();
 //
 // 
 				if (ChildSelected(TMath::Abs(kf))) {
@@ -230,7 +230,7 @@ void AliGenPythia::Generate()
 	} else {
 	    for (Int_t i = 0; i<np; i++) {
 		TParticle *  iparticle = (TParticle *) particles->At(i);
-		Int_t kf = iparticle->GetPdgCode();
+		kf = iparticle->GetPdgCode();
 		Int_t ks = iparticle->GetStatusCode();
 		if (ks==1 && kf!=0 && KinematicSelection(iparticle)) {
 			nc++;

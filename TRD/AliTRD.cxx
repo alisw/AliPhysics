@@ -14,6 +14,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <stdlib.h>
+
 #include <TMath.h>
 #include <TNode.h>
 #include <TPGON.h> 
@@ -162,13 +164,14 @@ void AliTRD::CreateGeometry()
   Float_t par_dum[3];
   Float_t par_trd[npar_trd];
   Float_t par_cha[npar_cha];
+  Int_t iplan;
 
   Float_t xpos, ypos, zpos;
 
   Int_t *idtmed = fIdtmed->GetArray()-1299;
 
   // The length of the inner chambers
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) fClengthI[iplan] = 110.0;
+  for (iplan = 0; iplan < kNplan; iplan++) fClengthI[iplan] = 110.0;
   // The length of the middle chambers
   fClengthM[0] = 123.5;
   fClengthM[1] = 131.0;
@@ -329,7 +332,7 @@ void AliTRD::CreateGeometry()
   gMC->Gspos("UL11",1,"UAIO",xpos,ypos,zpos,0,"ONLY");
 
   // Position the chambers in the TRD mother volume
-  for (Int_t iplan = 1; iplan <= kNplan; iplan++) {
+  for (iplan = 1; iplan <= kNplan; iplan++) {
 
     // The inner chambers ---------------------------------------------------------------
 
