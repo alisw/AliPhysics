@@ -83,24 +83,23 @@ ROOTLIBS      += -lMC
 # Alice libraries
 
 #ALILIBS	      = -L$(LIBDIR) -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
-#                -lITS -lPHOS -lCASTOR -lRICH -lEMCAL -lZDC -lSTRUCT \
+#                -lITS -lPHOS -lRICH -lEMCAL -lZDC -lSTRUCT \
 #                -lTGeant3 -lSTART -lEVGEN -lSTEER -lCONTAINERS
 
 # with geant3
-#ALILIBS	= -L$(LIBDIR) -L$(G3INSTALL)/lib/tgt_Linux \
+#ALILIBS	= -L$(LIBDIR) -L$(ALICE)/geant3/lib/tgt_Linux \
 #		  -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
-#		  -lITS -lPHOS -lCASTOR -lRICH -lEMCAL -lZDC -lSTRUCT \
+#		  -lITS -lPHOS -lRICH -lEMCAL -lZDC -lSTRUCT \
 #	          -lgeant321 -lEVGEN -lSTEER -lCONTAINERS  
 
 # without geant3
-ALILIBS	= -L$(LIBDIR) -L$(G3INSTALL)/lib/tgt_Linux \
+ALILIBS	= -L$(LIBDIR) -L$(ALICE)/geant3/lib/tgt_Linux \
 		  -lMUON -lTPC -lPMD -lTRD -lFMD -lTOF \
-		  -lPHOS -lCASTOR -lRICH -lEMCAL -lZDC -lSTRUCT \
-	      -lSTART -lEVGEN -lSTEER -lCONTAINERS
+		  -lPHOS -lRICH -lEMCAL -lZDC -lSTRUCT \
+	          -lSTART -lEVGEN -lSTEER -lCONTAINERS
 
 # CERN Libraries 
 
-CLIBS         = -lminicern
-
+CLIBS         = -lmicrocern
 G3LIBS        = -lgeant321
 

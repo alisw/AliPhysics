@@ -212,7 +212,7 @@ LDLIBS2 = -lG4brep -lG4geomBoolean -lG4step -lG4emstandard -lG4muons \
           -lG4leptons -lG4procman -lG4volumes -lG4digits -lG4geomver \
           -lG4track -lG4UIcommon -lG4partman -lG4specsolids -lG4csg \
           -lG4hepnumerics -lG4magneticfield -lG4geometrymng \
-          -lG4materials -lG4intercoms -lG4graphics_reps -lG4globman
+          -lG4materials -lG4intercoms -lG4graphics_reps -lG4geombias -lG4globman
 #  LDLIBS2 += -lG4xrays -lG4optical -lG4muons
 endif	
 
