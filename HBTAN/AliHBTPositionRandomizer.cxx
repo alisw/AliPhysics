@@ -101,7 +101,7 @@ Int_t AliHBTPositionRandomizer::Read(AliHBTRun* particles, AliHBTRun *tracks)
 {
   //Reads all available events and randomizes them
   if (fReader == 0x0) return 1;
-  Info("Randomize(AliHBTRun*)","");
+  if (AliHBTParticle::GetDebug() > 5) Info("Randomize(AliHBTRun*)","");
   Int_t err = fReader->Read(particles,tracks);
   if (err) return err;
   Randomize(particles);
@@ -124,7 +124,7 @@ void AliHBTPositionRandomizer::Randomize(AliHBTRun* run) const
 {
 // randomizes postions of all particles in the run
   if (run == 0x0) return;
-  Info("Randomize(AliHBTRun*)","");
+  if (AliHBTParticle::GetDebug() > 5) Info("Randomize(AliHBTRun*)","");
   for (Int_t i = 0; i < run->GetNumberOfEvents(); i++)
    {
      Randomize(run->GetEvent(i));
@@ -135,7 +135,7 @@ void AliHBTPositionRandomizer::Randomize(AliHBTEvent* event) const
 {
 // randomizes postions of all particles in the event
   static const Double_t kfmtocm = 1.e-13;
-  Info("Randomize(AliHBTEvent*)","");
+  if (AliHBTParticle::GetDebug() > 5) Info("Randomize(AliHBTEvent*)","");
   if (event == 0x0) return;
 
   for (Int_t i = 0; i < event->GetNumberOfParticles(); i++)
