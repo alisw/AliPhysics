@@ -282,7 +282,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESD *event) {
   for (fPass=0; fPass<2; fPass++) {
      Int_t &constraint=fConstraint[fPass]; if (constraint<0) continue;
      for (Int_t i=0; i<nentr; i++) {
-       cerr<<fPass<<"    "<<i<<'\r';
+//       cerr<<fPass<<"    "<<i<<'\r';
        fCurrentEsdTrack = i;
        AliITStrackV2 *t=(AliITStrackV2*)itsTracks.UncheckedAt(i);
        if (t==0) continue;              //this track has been already tracked
@@ -833,7 +833,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdin
     if (fConstraint[fPass]) track.fNSkipped+=1;
     if (!fConstraint[fPass]) {
       track.fD[0] = track.GetD(GetX(),GetY());   
-      track.fNSkipped+=4./(4.+8.*abs(track.fD[0]));
+      track.fNSkipped+=4./(4.+8.*TMath::Abs(track.fD[0]));
       if (track.fN+track.fNDeadZone+track.fNSkipped>6) {
 	track.fNSkipped = 6-track.fN+track.fNDeadZone;
       }
@@ -850,7 +850,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackV2 * otrack, Int_t esdin
       if (fConstraint[fPass]) track.fNSkipped+=2;      
       if (!fConstraint[fPass]){
 	track.fD[0] = track.GetD(GetX(),GetY());
-	track.fNSkipped+= 7./(7.+8.*abs(track.fD[0]));
+	track.fNSkipped+= 7./(7.+8.*TMath::Abs(track.fD[0]));
 	if (track.fN+track.fNDeadZone+track.fNSkipped>6) {
 	  track.fNSkipped = 6-track.fN+track.fNDeadZone;
 	}
@@ -2872,7 +2872,7 @@ void AliITStrackerMI::GetNTeor(Int_t layer, const AliITSclusterV2* /*cl*/, Float
     nz = 2.02+TMath::Abs(phi)*2.35;
     return;
   }
-  ny  = 6.6-2.7*abs(phi);
+  ny  = 6.6-2.7*TMath::Abs(phi);
   nz  = 2.8-3.11*TMath::Abs(phi)+0.45*TMath::Abs(theta);
 }
 
