@@ -243,7 +243,7 @@ public:
 
 protected:
 
-  AliPHOSGeometry(const Text_t* name, const Text_t* title) : AliGeometry(name, title) { 
+  AliPHOSGeometry(const Text_t* name, const Text_t* title="") : AliGeometry(name, title) { 
     // ctor only for internal usage (singleton)
     Init() ; 
   }  

@@ -396,11 +396,14 @@ AliPHOSGeometry *  AliPHOSGeometry::GetInstance()
 AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t* title) 
 {
   // Returns the pointer of the unique instance
-
   AliPHOSGeometry * rv = 0  ; 
   if ( fgGeom == 0 ) {
-    fgGeom = new AliPHOSGeometry(name, title) ; 
-    rv = (AliPHOSGeometry * ) fgGeom ; 
+    if ( strcmp(name,"") == 0 ) 
+      rv = 0 ;
+    else {    
+      fgGeom = new AliPHOSGeometry(name, title) ; 
+      rv = (AliPHOSGeometry * ) fgGeom ; 
+    }
   }
   else {
     if ( strcmp(fgGeom->GetName(), name) != 0 ) {

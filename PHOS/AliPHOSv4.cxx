@@ -52,27 +52,28 @@ AliPHOSv4::AliPHOSv4(const char *name, const char *title):
    
   fGeom =  AliPHOSGeometry::GetInstance(title, "") ; 
 
-  if (fGeom->IsInitialized() ) 
-    cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+  if (fGeom != 0 ) {
+    cout << "AliPHOSv4 : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+    
+    SetBigBox(0, fGeom->GetOuterBoxSize(0) ) ;
+    SetBigBox(1, fGeom->GetOuterBoxSize(1) + fGeom->GetPPSDBoxSize(1) ) ; 
+    SetBigBox(2, fGeom->GetOuterBoxSize(0) ); 
+    
+    fNRecParticles = 0 ; 
+    fFastRecParticles = new AliPHOSFastRecParticle::FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
+    
+    fResPara1 = 0.030 ;    // GeV
+    fResPara2 = 0.00003 ; 
+    fResPara3 = 0.00001 ; 
+    
+    fPosParaA0 = 2.87 ;    // mm
+    fPosParaA1 = -0.0975 ;  
+    fPosParaB0 = 0.257 ;   
+    fPosParaB1 = 0.137 ; 
+    fPosParaB2 = 0.00619 ; 
+  }
   else
-    cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
-  
-  SetBigBox(0, fGeom->GetOuterBoxSize(0) ) ;
-  SetBigBox(1, fGeom->GetOuterBoxSize(1) + fGeom->GetPPSDBoxSize(1) ) ; 
-  SetBigBox(2, fGeom->GetOuterBoxSize(0) ); 
-
-  fNRecParticles = 0 ; 
-  fFastRecParticles = new AliPHOSFastRecParticle::FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
-
-  fResPara1 = 0.030 ;    // GeV
-  fResPara2 = 0.00003 ; 
-  fResPara3 = 0.00001 ; 
-
-  fPosParaA0 = 2.87 ;    // mm
-  fPosParaA1 = -0.0975 ;  
-  fPosParaB0 = 0.257 ;   
-  fPosParaB1 = 0.137 ; 
-  fPosParaB2 = 0.00619 ; 
+    cout << "AliPHOSv4 : PHOS geometry initialization failed !" << endl ;   
 }
 
 //____________________________________________________________________________

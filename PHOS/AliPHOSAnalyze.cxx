@@ -76,7 +76,8 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * name)
   else { 
     gAlice = (AliRun*) fRootFile->Get("gAlice");
     fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
-    fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() ) ;
+     fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() ) ;
+   
     fEvt = -999 ; 
   }
 }
@@ -143,6 +144,7 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
     cout << "AnalyzeOneEvent > Found  " << nId << "  digits in PHOS"   << endl ;  
     
    
+cout << "Analyze Creator fGeom " << fGeom->GetNPhi() << " " <<fGeom->GetNZ() << endl ;
     fPHOS->Reconstruction(fRec);  
     
     // =========== End of reconstruction
@@ -400,7 +402,8 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
       //=========== Get the PHOS object and associated geometry from the file 
       
       fPHOS  = (AliPHOSv1 *)gAlice->GetDetector("PHOS") ;
-      fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
+      fGeom = fPHOS->GetGeometry();
+      //      fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
 
     } // else !ok
   } // if fRootFile
@@ -416,7 +419,7 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
 
     fClu =  new AliPHOSClusterizerv1() ; 
     fClu->SetEmcEnergyThreshold(0.030) ; 
-    fClu->SetEmcClusteringThreshold(0.50) ; 
+    fClu->SetEmcClusteringThreshold(0.20) ; 
     fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
     fClu->SetPpsdClusteringThreshold(0.0000001) ; 
     fClu->SetLocalMaxCut(0.03) ;
@@ -440,7 +443,7 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
     //========== Creates the Reconstructioner  
     
     fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ;
-    fRec -> SetDebugReconstruction(kFALSE);     
+    fRec -> SetDebugReconstruction(kTRUE);     
     
     //=========== Connect the various Tree's for evt
     
