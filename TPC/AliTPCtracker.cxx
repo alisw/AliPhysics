@@ -784,6 +784,8 @@ Int_t AliTPCtracker::PropagateBack(AliESD *event) {
 
     if ( (status & AliESDtrack::kTPCin ) == 0 ) continue;
     if ( (status & AliESDtrack::kTPCout) != 0 ) continue;
+    if ( (status & AliESDtrack::kITSin) != 0 )
+       if ( (status & AliESDtrack::kITSout) == 0 ) continue;
 
     const AliTPCtrack t(*esd);
     AliTPCseed s(t,t.GetAlpha());
@@ -1030,23 +1032,7 @@ void AliTPCtracker::AliTPCseed::CookdEdx(Double_t low, Double_t up) {
   dedx /= (nu-nl+1);
   SetdEdx(dedx);
 
-  //Very rough PID
-  Double_t p=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt()));
-
-  Double_t log1=TMath::Log(p+0.45), log2=TMath::Log(p+0.12);
-  if (p<0.6) {
-    if (dedx < 34 + 30/(p+0.45)/(p+0.45) + 24*log1) {SetMass(0.13957); return;}
-    if (dedx < 34 + 30/(p+0.12)/(p+0.12) + 24*log2) {SetMass(0.49368); return;}
-    SetMass(0.93827); return;
-  }
-
-  if (p<1.2) {
-    if (dedx < 34 + 30/(p+0.12)/(p+0.12) + 24*log2) {SetMass(0.13957); return;}
-    SetMass(0.93827); return;
-  }
-
-  SetMass(0.13957); return;
-
+  return;
 }
 
 
