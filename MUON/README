@@ -21,6 +21,21 @@ config files, simulation, digitalization, clusterization,
 reconstruction and macro analysis
 
 ==========================================================
+ How to check that your aliroot is working well
+==========================================================
+There is a script file AlirootRun_MUONtest.script which 
+allows for simulating, reconstructing and making the
+invariant analysis of the generated Upsilon (1S).
+The used configuration file is Config.C in MUON 
+directory.
+There you have to type :
+
+source $ALICE_ROOT/MUON/AlirootRun_MUONtest.script
+
+If you do not recover a few Upsilons in their mass region 
+in the file MUONmassPlot.root
+
+==========================================================
  How to run a MUON generation
 ==========================================================
 aliroot

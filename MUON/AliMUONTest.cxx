@@ -876,6 +876,8 @@ void AliMUONTest::DrawPad(Int_t& counter,
   //printf(" ***** Pad position is ix: %d iy: %d x: %f y: %f sector: %d dpx: %f dpy: %f \n",
   //       ix, iy, x, y, sector, dpx, dpy);
 
+  if (!fCanvas) Before(kDrawPads);
+
   fCanvas->cd();
   TPave* pave = new TPave(x-dpx/2., y-dpy/2., x+dpx/2., y+dpy/2., 1);
   pave->Draw();

@@ -150,6 +150,17 @@ void AliMUONGeometrySegmentation::Add(Int_t detElemId,
 }  
 
 //______________________________________________________________________________
+AliMUONGeometryDirection 
+AliMUONGeometrySegmentation::GetDirection(Int_t detElemId) const
+{
+// Return direction with a constant pad size (Direction or coordinate where the resolution is the best)
+
+  if (!Notify(detElemId)) return kDirUndefined;
+
+  return fCurrentSegmentation->GetDirection();
+}
+
+//______________________________________________________________________________
 void AliMUONGeometrySegmentation::SetPadSize(Float_t p1, Float_t p2)
 {
 // Set pad size Dx*Dy to all detection element segmentations 

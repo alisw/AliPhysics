@@ -17,6 +17,7 @@
 #define ALI_MUON_V_GEOMETRY_DE_SEGMENTATION_H
 
 #include "AliSegmentation.h"
+#include "AliMUONGeometryDirection.h"
 
 class AliMUONVGeometryDESegmentation : public AliSegmentation
 {
@@ -29,6 +30,14 @@ class AliMUONVGeometryDESegmentation : public AliSegmentation
                        // Returns true if a pad exists in the given position
     virtual Bool_t  HasPad(Int_t ix, Int_t iy) = 0;
                        // Returns true if a pad with given indices exists
+
+    virtual AliMUONGeometryDirection  GetDirection() = 0;
+    // Returns the direction with a constant pad size  (Direction or coordinate where the resolution is the best)
+    // This returns an enum defined in AliMUONGeometryDirection kDirX, KDirY and kDirUndefined
+    // This method gives the direction where the pad size of the chamber is constant.
+    // In other words this corresponds with the coordinate where the spatial resolution is the best.
+    // Normally kDirY will correspond with cathode segmentation for the bending plane and 
+    // kDirX  with cathode segmentation for the non bending plane
 
   protected:
     AliMUONVGeometryDESegmentation(const AliMUONVGeometryDESegmentation& rhs);

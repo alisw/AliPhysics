@@ -17,6 +17,8 @@
 
 #include <TObject.h>
 
+#include "AliMUONGeometryDirection.h"
+
 class TObjArray;
 class TF1;
 
@@ -38,6 +40,8 @@ class AliMUONGeometrySegmentation : public TObject
  
     // get methods
     AliMUONGeometryModule* GetGeometry() const;	      
+    virtual AliMUONGeometryDirection GetDirection(Int_t detElemId) const;
+                       // Direction with a constant pad size  (Direction or coordinate where the resolution is the best)
     
     //    
     // redefined methods from AliSegmentation interface

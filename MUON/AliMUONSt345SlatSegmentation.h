@@ -35,6 +35,7 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
 
     virtual Bool_t   HasPad(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/) { return true; }
     virtual Bool_t   HasPad(Int_t /*ix*/, Int_t /*iy*/) { return true; }
+    virtual AliMUONGeometryDirection  GetDirection() { return kDirUndefined; } 
 
     virtual Float_t  GetAnod(Float_t xhit) const;  // Anod wire coordinate closest to xhit
     virtual void     GetPadI(Float_t x ,Float_t y ,Int_t   &ix,Int_t &iy);  // Transform from pad to real coordinates

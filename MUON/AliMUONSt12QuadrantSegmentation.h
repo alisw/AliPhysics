@@ -55,6 +55,11 @@ class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation
     virtual Bool_t  HasPad(Int_t ix, Int_t iy);
                        // Returns true if a pad with given indices exists
 
+    // Quadrant type
+    //
+    virtual AliMUONGeometryDirection  GetDirection();
+                       // Returns the direction with a constant pad size
+
     // Transform from pad (wire) to real coordinates and vice versa
     //
     virtual Float_t GetAnod(Float_t xhit) const;
