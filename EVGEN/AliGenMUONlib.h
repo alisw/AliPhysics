@@ -5,11 +5,10 @@
 
 /* $Id$ */
 
-#include <TObject.h>
-#include "GenTypeDefs.h"
+#include "AliGenLib.h"
 
 class AliGenMUONlib :
-public TObject
+public AliGenLib
 {
  public:
 // pions
@@ -44,11 +43,9 @@ public TObject
     static Double_t YBeauty(Double_t *py, Double_t *dummy);
     static Int_t    IpBeauty();
 //
-    typedef Double_t (*GenFunc)  (Double_t *, Double_t *);
-    typedef Int_t    (*GenFuncIp)();    
-    static GenFunc   GetPt(Param_t param);
-    static GenFunc   GetY(Param_t param);
-    static GenFuncIp GetIp(Param_t param);    
+    GenFunc   GetPt(Param_t param, const char* tname=0);
+    GenFunc   GetY (Param_t param, const char* tname=0);
+    GenFuncIp GetIp(Param_t param, const char* tname=0);    
     ClassDef(AliGenMUONlib,1) // Library providing y and pT parameterisations
 };
 #endif

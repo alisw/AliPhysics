@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/14 15:21:05  morsch
+Include clean-up (IH)
+
 Revision 1.3  2000/06/09 20:32:54  morsch
 All coding rule violations except RS3 corrected
 
@@ -405,7 +408,7 @@ ClassImp(AliGenPHOSlib)
 
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
- GenFunc AliGenPHOSlib::GetPt(Param_t param)
+ GenFunc AliGenPHOSlib::GetPt(Param_t param, const char* tname)
 {
 // Return pinter to pT parameterisation
     GenFunc func;
@@ -437,7 +440,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 
- GenFunc AliGenPHOSlib::GetY(Param_t param)
+ GenFunc AliGenPHOSlib::GetY(Param_t param, const char* tname)
 {
 // Return pointer to Y parameterisation
     GenFunc func;
@@ -471,7 +474,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 typedef Int_t (*GenFuncIp) ();
- GenFuncIp AliGenPHOSlib::GetIp(Param_t param)
+ GenFuncIp AliGenPHOSlib::GetIp(Param_t param,  const char* tname)
 {
 // Return pointer to particle composition
     GenFuncIp func;

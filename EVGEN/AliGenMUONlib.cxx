@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/06/14 15:20:56  morsch
+Include clean-up (IH)
+
 Revision 1.8  2000/06/09 20:32:11  morsch
 All coding rule violations except RS3 corrected
 
@@ -344,7 +347,7 @@ Int_t AliGenMUONlib::IpBeauty()
 }
 
 typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
-GenFunc AliGenMUONlib::GetPt(Param_t param)
+GenFunc AliGenMUONlib::GetPt(Param_t param,  const char* tname)
 {
 // Return pointer to pT parameterisation
     GenFunc func;
@@ -378,7 +381,7 @@ GenFunc AliGenMUONlib::GetPt(Param_t param)
     return func;
 }
 
-GenFunc AliGenMUONlib::GetY(Param_t param)
+GenFunc AliGenMUONlib::GetY(Param_t param, const char* tname)
 {
 // Return pointer to y- parameterisation
     GenFunc func;
@@ -412,7 +415,7 @@ GenFunc AliGenMUONlib::GetY(Param_t param)
     return func;
 }
 typedef Int_t (*GenFuncIp) ();
-GenFuncIp AliGenMUONlib::GetIp(Param_t param)
+GenFuncIp AliGenMUONlib::GetIp(Param_t param,  const char* tname)
 {
 // Return pointer to particle type parameterisation
     GenFuncIp func;

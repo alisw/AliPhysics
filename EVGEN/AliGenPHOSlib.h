@@ -1,14 +1,13 @@
 #ifndef ALIGENPHOSLIB_H
 #define ALIGENPHOSLIB_H
-#include <TObject.h>
-#include "GenTypeDefs.h"
+#include "AliGenLib.h"
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
 class AliGenPHOSlib :
-public TObject
+public AliGenLib
 {
  public:
 // pions
@@ -41,11 +40,9 @@ public TObject
     static Double_t YBaryon( Double_t *py, Double_t *dummy);
     static Int_t    IpBaryon();
     
-    typedef Double_t (*GenFunc)  (Double_t *, Double_t *dummy);
-    typedef Int_t    (*GenFuncIp)();    
-    static GenFunc   GetPt(Param_t param);
-    static GenFunc   GetY(Param_t param);
-    static GenFuncIp GetIp(Param_t param);    
+    GenFunc   GetPt(Param_t param, const char* tname=0);
+    GenFunc   GetY (Param_t param, const char* tname=0);
+    GenFuncIp GetIp(Param_t param, const char* tname=0);    
     ClassDef(AliGenPHOSlib,1) // Library providing y and pT parameterisations
 };
 #endif

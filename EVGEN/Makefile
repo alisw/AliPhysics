@@ -11,6 +11,7 @@ PACKAGE = EVGEN
 
 SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenCocktail.cxx AliGenFLUKAsource.cxx \
+		AliGenLib.cxx \
                 AliGenMUONlib.cxx AliGenParam.cxx AliGenPythia.cxx \
                 AliPythia.cxx AliDimuCombinator.cxx AliGenHalo.cxx \
                 AliGenExtFile.cxx AliGenScan.cxx AliGenPHOSlib.cxx \

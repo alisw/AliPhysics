@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/06/09 20:33:30  morsch
+All coding rule violations except RS3 corrected
+
 Revision 1.16  2000/05/02 07:51:31  morsch
 - Control precision of pT sampling TF1::SetNpx(..)
 - Correct initialisation of child-cuts in all constructors.
@@ -60,44 +63,67 @@ ClassImp(AliGenParam)
 AliGenParam::AliGenParam()
                  :AliGenerator()
 {
-// Constructor
-  fPtPara = 0;
-  fYPara  = 0;
-  fParam  = jpsi_p;
-  fAnalog = analog;
-  SetCutOnChild();
-  SetChildMomentumRange();
-  SetChildPtRange();
-  SetChildPhiRange();
-  SetChildThetaRange();  
-  SetDeltaPt();
+// Deafault constructor
+    fPtPara = 0;
+    fYPara  = 0;
+    fParam  = jpsi_p;
+    fAnalog = analog;
+    SetCutOnChild();
+    SetChildMomentumRange();
+    SetChildPtRange();
+    SetChildPhiRange();
+    SetChildThetaRange();  
+    SetDeltaPt();
+}
+
+AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Param_t param, char* tname):AliGenerator(npart)
+{
+// Constructor using number of particles parameterisation id and library
+    
+    fPtParaFunc = Library->GetPt(param, tname);
+    fYParaFunc  = Library->GetY (param, tname);
+    fIpParaFunc = Library->GetIp(param, tname);
+    
+    fPtPara = 0;
+    fYPara  = 0;
+    fParam  = param;
+    fAnalog = analog;
+    fChildSelect.Set(5);
+    for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
+    SetForceDecay();
+    SetCutOnChild();
+    SetChildMomentumRange();
+    SetChildPtRange();
+    SetChildPhiRange();
+    SetChildThetaRange(); 
+    SetDeltaPt(); 
 }
 
 //____________________________________________________________
 
-AliGenParam::AliGenParam(Int_t npart, Param_t param) :AliGenerator(npart)
+AliGenParam::AliGenParam(Int_t npart, Param_t param, char* tname):AliGenerator(npart)
 {
-// Constructor
-  //
-  //  fName="HMESONpara";
-  //  fTitle="Heavy Mesons Parametrisation";
-  fPtParaFunc = AliGenMUONlib::GetPt(param);
-  fYParaFunc  = AliGenMUONlib::GetY(param);
-  fIpParaFunc = AliGenMUONlib::GetIp(param);
-  
-  fPtPara = 0;
-  fYPara  = 0;
-  fParam  = param;
-  fAnalog = analog;
-  fChildSelect.Set(5);
-  for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
-  SetForceDecay();
-  SetCutOnChild();
-  SetChildMomentumRange();
-  SetChildPtRange();
-  SetChildPhiRange();
-  SetChildThetaRange(); 
-  SetDeltaPt(); 
+// Constructor using parameterisation id and number of particles
+//      
+    AliGenLib* Library = new AliGenMUONlib();
+ 
+    fPtParaFunc = Library->GetPt(param, tname);
+    fYParaFunc  = Library->GetY (param, tname);
+    fIpParaFunc = Library->GetIp(param, tname);
+    
+    fPtPara = 0;
+    fYPara  = 0;
+    fParam  = param;
+    fAnalog = analog;
+    fChildSelect.Set(5);
+    for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
+    SetForceDecay();
+    SetCutOnChild();
+    SetChildMomentumRange();
+    SetChildPtRange();
+    SetChildPhiRange();
+    SetChildThetaRange(); 
+    SetDeltaPt(); 
 }
 
 AliGenParam::AliGenParam(Int_t npart, Param_t param,

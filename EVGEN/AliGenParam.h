@@ -11,6 +11,7 @@
 
 class AliPythia;
 class TParticle;
+class AliGenLib;
 class TF1;
 
 //-------------------------------------------------------------
@@ -18,7 +19,8 @@ class AliGenParam : public AliGenerator
 {
  public:
     AliGenParam();
-    AliGenParam(Int_t npart, Param_t param);
+    AliGenParam(Int_t npart, AliGenLib * Library, Param_t param, char* tname=0);
+    AliGenParam(Int_t npart, Param_t param, char* tname=0);
     AliGenParam(Int_t npart, Param_t param,
 		Double_t (*PtPara)(Double_t*, Double_t*),
 		Double_t (*YPara )(Double_t*, Double_t*),

@@ -5,10 +5,9 @@
 
 /* $Id$ */
 
-#include <TROOT.h>
-#include "GenTypeDefs.h"
+#include "AliGenLib.h"
 
-class AliGenGSIlib :public TObject{
+class AliGenGSIlib :public AliGenLib {
  public:
 
 // Upsilon RITMAN   
@@ -26,10 +25,11 @@ class AliGenGSIlib :public TObject{
 
 //
     typedef Double_t (*GenFunc)  (Double_t *, Double_t *);
-    typedef Int_t    (*GenFuncIp)();    
-    static GenFunc   GetPt(Param_t param,const char * tname=0);
-    static GenFunc   GetY(Param_t param,const char * tname=0);
-    static GenFuncIp GetIp(Param_t param,const char *tname=0);    
+    typedef Int_t    (*GenFuncIp)();
+    
+    GenFunc   GetPt(Param_t param, const char * tname=0);
+    GenFunc   GetY(Param_t param,  const char * tname=0);
+    GenFuncIp GetIp(Param_t param, const char * tname=0);    
     static void SetDebug(Bool_t debug){fgDebug=debug;}
 private:
     static Bool_t fgDebug;  // Debug flag 
