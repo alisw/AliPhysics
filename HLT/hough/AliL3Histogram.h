@@ -52,6 +52,7 @@ class AliL3Histogram {
   void Add(AliL3Histogram *h1,Double_t weight=1);
   void SetThreshold(Int_t i) {fThreshold = i;}
   void Draw(Char_t *option="hist");
+  void CreateRootHisto();
 
 #ifdef use_root
   TH2F *GetRootHisto();
