@@ -274,144 +274,144 @@ void AliLego::StepManager()
   // called from AliRun::Stepmanager from gustep.
   // Accumulate the 3 parameters step by step
   //
-  static Float_t t;
-  Float_t a,z,dens,radl,absl;
-  Int_t i, id, copy;
-  const char* vol;
-  static Float_t vect[3], dir[3];
+    static Float_t t;
+    Float_t a,z,dens,radl,absl;
+    Int_t i, id, copy;
+    const char* vol;
+    static Float_t vect[3], dir[3];
+    
+    TString tmp1, tmp2;
+    copy = 1;
+    id  = gMC->CurrentVolID(copy);
+    vol = gMC->VolName(id);
+    Float_t step  = gMC->TrackStep();
+    
+    TLorentzVector pos, mom; 
+    gMC->TrackPosition(pos);  
+    gMC->TrackMomentum(mom);
+    
+    Int_t status = 0;
+    if (gMC->IsTrackEntering()) status = 1;
+    if (gMC->IsTrackExiting())  status = 2; 
   
-  TString tmp1, tmp2;
-  copy = 1;
-  id  = gMC->CurrentVolID(copy);
-  vol = gMC->VolName(id);
-  Float_t step  = gMC->TrackStep();
-  
-  TLorentzVector pos, mom; 
-  gMC->TrackPosition(pos);  
-  gMC->TrackMomentum(mom);
-  
-  Int_t status = 0;
-  if (gMC->IsTrackEntering()) status = 1;
-  if (gMC->IsTrackExiting())  status = 2; 
-  
-  if (! fStepBack) {
+    if (! fStepBack) {
     //      printf("\n volume %s %d", vol, status);      
     //
     // Normal Forward stepping
     //
-    if (fDebug) {
+	if (fDebug) {
       //	  printf("\n steps fwd %d %s %d %f", fStepsForward, vol, fErrorCondition, step);	  
       
       //
       // store volume if different from previous
       //
 	  
-	  TClonesArray &lvols = *fVolumesFwd;
-	  if (fStepsForward > 0) {
-        AliDebugVolume* tmp = dynamic_cast<AliDebugVolume*>((*fVolumesFwd)[fStepsForward-1]);
-        if (tmp->IsVEqual(vol, copy) && gMC->IsTrackEntering()) {
-		  fStepsForward -= 2;
-		  fVolumesFwd->RemoveAt(fStepsForward);
-		  fVolumesFwd->RemoveAt(fStepsForward+1);		  
-        }
-	  }
-      
-	  new(lvols[fStepsForward++]) 
-        AliDebugVolume(vol,copy,step,pos[0], pos[1], pos[2], status);
-      
-    } // Debug
-    //
-    // Get current material properties
-    
-    gMC->CurrentMaterial(a,z,dens,radl,absl);
-    
-    if (z < 1) return;
-    
-    // --- See if we have to stop now
-    if (TMath::Abs(pos[2]) > fGener->ZMax()  || 
-        pos[0]*pos[0] +pos[1]*pos[1] > fGener->RadMax()*fGener->RadMax()) {
-      if (!gMC->IsNewTrack()) {
-        // Not the first step, add past contribution
-        fTotAbso += t/absl;
-        fTotRadl += t/radl;
-        fTotGcm2 += t*dens;
-        if (fDebug) {
-          //
-          //  generate "mirror" particle flying back
-          //
-          fStepsBackward = fStepsForward;
-          
-          Float_t pmom[3], orig[3];
-          Float_t polar[3] = {0.,0.,0.};
-          Int_t ntr;
-          pmom[0] = -dir[0];
-          pmom[1] = -dir[1];	   
-          pmom[2] = -dir[2];
-          orig[0] =  vect[0];
-          orig[1] =  vect[1];	   
-          orig[2] =  vect[2];
-          
-          gAlice->GetMCApp()->PushTrack(1, gAlice->GetMCApp()->GetCurrentTrackNumber(), 
-                           0, pmom, orig, polar, 0., kPNoProcess, ntr);
-        } // debug
-        
-      } // not a new track !
-      
-      if (fDebug) fStepBack = 1;
-      gMC->StopTrack();
-      return;
-    } // outside scoring region ?
-    
-    // --- See how long we have to go
-    for(i=0;i<3;++i) {
-      vect[i]=pos[i];
-      dir[i]=mom[i];
-    }
-    
-    t  = fGener->PropagateCylinder(vect,dir,fGener->RadMax(),fGener->ZMax());
-    
-    if(step) {
-      
-      fTotAbso += step/absl;
-      fTotRadl += step/radl;
-      fTotGcm2 += step*dens;
-    }
-    
-  } else {
-      if (fDebug) {
-        //
-        // Geometry debugging
-        // Fly back and compare volume sequence
-        //
-        TClonesArray &lvols = *fVolumesBwd;
-        if (fStepsBackward < fStepsForward) {
-	      AliDebugVolume* tmp = dynamic_cast<AliDebugVolume*>((*fVolumesBwd)[fStepsBackward]);
-	      if (tmp->IsVEqual(vol, copy) && gMC->IsTrackEntering()) {
-            fStepsBackward += 2;
-            fVolumesBwd->RemoveAt(fStepsBackward-1);
-            fVolumesBwd->RemoveAt(fStepsBackward-2);		  
-	      }
-        } 
-        
-        fStepsBackward--;
-        //	  printf("\n steps %d %s %d", fStepsBackward, vol, fErrorCondition);	  
-        if (fStepsBackward < 0) {
-	      gMC->StopTrack();
-	      fStepBack = 0;
-	      return;
-        }
-        
-        new(lvols[fStepsBackward]) AliDebugVolume(vol,copy,step,pos[0], pos[1], pos[2], status);
-        
-        AliDebugVolume* tmp = dynamic_cast<AliDebugVolume*>((*fVolumesFwd)[fStepsBackward]);
-        if (! (tmp->IsVEqual(vol, copy)) && (!fErrorCondition)) 
-          {
-            AliWarning(Form("Problem at (x,y,z): %d %f %f %f, volumes: %s %s step: %f\n", 
-			    fStepsBackward, pos[0], pos[1], pos[2], tmp->GetName(), vol, step));
-            fErrorCondition = 1;
-          } 
-      } // Debug
-  } // bwd/fwd
+	    TClonesArray &lvols = *fVolumesFwd;
+	    if (fStepsForward > 0) {
+		AliDebugVolume* tmp = dynamic_cast<AliDebugVolume*>((*fVolumesFwd)[fStepsForward-1]);
+		if (tmp->IsVEqual(vol, copy) && gMC->IsTrackEntering()) {
+		    fStepsForward -= 2;
+		    fVolumesFwd->RemoveAt(fStepsForward);
+		    fVolumesFwd->RemoveAt(fStepsForward+1);		  
+		}
+	    }
+	    
+	    new(lvols[fStepsForward++]) 
+		AliDebugVolume(vol,copy,step,pos[0], pos[1], pos[2], status);
+	    
+	} // Debug
+	//
+	// Get current material properties
+	
+	gMC->CurrentMaterial(a,z,dens,radl,absl);
+	
+	if (z < 1) return;
+	
+	// --- See if we have to stop now
+	if (TMath::Abs(pos[2]) > fGener->ZMax()  || 
+	    pos[0]*pos[0] +pos[1]*pos[1] > fGener->RadMax()*fGener->RadMax()) {
+	    if (!gMC->IsNewTrack()) {
+		// Not the first step, add past contribution
+		if (absl) fTotAbso += t/absl;
+		if (radl) fTotRadl += t/radl;
+		fTotGcm2 += t*dens;
+		if (fDebug) {
+		    //
+		    //  generate "mirror" particle flying back
+		    //
+		    fStepsBackward = fStepsForward;
+		    
+		    Float_t pmom[3], orig[3];
+		    Float_t polar[3] = {0.,0.,0.};
+		    Int_t ntr;
+		    pmom[0] = -dir[0];
+		    pmom[1] = -dir[1];	   
+		    pmom[2] = -dir[2];
+		    orig[0] =  vect[0];
+		    orig[1] =  vect[1];	   
+		    orig[2] =  vect[2];
+		    
+		    gAlice->GetMCApp()->PushTrack(1, gAlice->GetMCApp()->GetCurrentTrackNumber(), 
+						  0, pmom, orig, polar, 0., kPNoProcess, ntr);
+		} // debug
+		
+	    } // not a new track !
+	    
+	    if (fDebug) fStepBack = 1;
+	    gMC->StopTrack();
+	    return;
+	} // outside scoring region ?
+	
+	// --- See how long we have to go
+	for(i=0;i<3;++i) {
+	    vect[i]=pos[i];
+	    dir[i]=mom[i];
+	}
+	
+	t  = fGener->PropagateCylinder(vect,dir,fGener->RadMax(),fGener->ZMax());
+	
+	if(step) {
+	    
+	    if (absl) fTotAbso += step/absl;
+	    if (radl) fTotRadl += step/radl;
+	    fTotGcm2 += step*dens;
+	}
+	
+    } else {
+	if (fDebug) {
+	    //
+	    // Geometry debugging
+	    // Fly back and compare volume sequence
+	    //
+	    TClonesArray &lvols = *fVolumesBwd;
+	    if (fStepsBackward < fStepsForward) {
+		AliDebugVolume* tmp = dynamic_cast<AliDebugVolume*>((*fVolumesBwd)[fStepsBackward]);
+		if (tmp->IsVEqual(vol, copy) && gMC->IsTrackEntering()) {
+		    fStepsBackward += 2;
+		    fVolumesBwd->RemoveAt(fStepsBackward-1);
+		    fVolumesBwd->RemoveAt(fStepsBackward-2);		  
+		}
+	    } 
+	    
+	    fStepsBackward--;
+	    //	  printf("\n steps %d %s %d", fStepsBackward, vol, fErrorCondition);	  
+	    if (fStepsBackward < 0) {
+		gMC->StopTrack();
+		fStepBack = 0;
+		return;
+	    }
+	    
+	    new(lvols[fStepsBackward]) AliDebugVolume(vol,copy,step,pos[0], pos[1], pos[2], status);
+	    
+	    AliDebugVolume* tmp = dynamic_cast<AliDebugVolume*>((*fVolumesFwd)[fStepsBackward]);
+	    if (! (tmp->IsVEqual(vol, copy)) && (!fErrorCondition)) 
+	    {
+		AliWarning(Form("Problem at (x,y,z): %d %f %f %f, volumes: %s %s step: %f\n", 
+				fStepsBackward, pos[0], pos[1], pos[2], tmp->GetName(), vol, step));
+		fErrorCondition = 1;
+	    } 
+	} // Debug
+    } // bwd/fwd
 }
 
 //_______________________________________________________________________
