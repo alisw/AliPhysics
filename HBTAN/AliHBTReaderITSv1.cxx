@@ -185,8 +185,8 @@ Int_t AliHBTReaderITSv1::Read(AliHBTRun* particles, AliHBTRun *tracks)
         Int_t label = iotrack->GetLabel();
         if (label < 0) 
          {
-           continue;
            delete iotrack;
+           continue;
          }
         TParticle *p = (TParticle*)gAlice->Particle(label);
         if(!p)

@@ -14,7 +14,7 @@ class AliHBTReaderITSv1: public AliHBTReader
                       const Char_t* galicefilename="galice.root");
     AliHBTReaderITSv1(TObjArray* dirs,
                       const Char_t* tracksfilename="itstracks.root",
-                      const Char_t* tracksfilename="galice.root");    
+                      const Char_t* galicefilename="galice.root");    
     
     
     virtual ~AliHBTReaderITSv1();
