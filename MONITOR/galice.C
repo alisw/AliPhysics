@@ -1,4 +1,13 @@
-void galice()
+// In order to create galice.root follow the steps shown below
+//
+//  gAlice->Init("galice.C");
+//  gAlice->GetRunLoader()->Write();
+//  delete gAlice->GetRunLoader();
+//
+
+
+
+void Config()
 {
     AliRunLoader* runLoader = AliRunLoader::Open("galice.root", AliConfig::fgkDefaultEventFolderName, "recreate");
     runLoader->SetCompressionLevel(2);
@@ -114,7 +123,7 @@ void galice()
     //
     //AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     //
-	AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
+	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","New ITS PPR detailed version with asymmetric services");
 	ITS->SetMinorVersion(2);					 // don't touch this parameter if you're not an ITS developer
 	ITS->SetReadDet(kFALSE);					 // don't touch this parameter if you're not an ITS developer
     //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
@@ -287,11 +296,4 @@ void galice()
         AliVZERO *VZERO = new AliVZEROv2("VZERO", "normal VZERO");
     }
 
-     AliConfig::Instance()->Add(gMC);
-     gMC->Init();
-     gAlice->InitLoaders();
-     gAlice->Write();
-     runLoader->MakeTree("E");
-     runLoader->Write();
-     delete runLoader;
 }

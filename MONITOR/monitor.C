@@ -23,12 +23,9 @@ void monitor(const char* alienHost = "alien://", const char* alienDir = ".")
 
   // make sure galice.root and compression tables are there
   if (!gSystem->Which(".", "galice.root")) {
-//    gInterpreter->ExecuteMacro("$ALICE_ROOT/MONITOR/galice.C");
-    ::Error("monitor.C", "no galice.root file found.\n"
-	    "please copy a galice.root file with the correct TPC and ITS"
-	    "parameters\n and the correct magnetic field to the current" 
-	    "directory");
-    return;
+    gAlice->Init("$ALICE_ROOT/MONITOR/galice.C");
+    gAlice->GetRunLoader()->Write();
+    delete gAlice->GetRunLoader();
   }
   if (!gSystem->Which(".", "Table0.dat")) {
     gSystem->Exec("cp $ALICE_ROOT/RAW/Table*.dat .");
