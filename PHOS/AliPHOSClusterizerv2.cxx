@@ -12,15 +12,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:  */
 
-/* $Log:
- */
-//*-- Author: Boris Polichtchouk, IHEP
+/* $Id$ */
+
 //////////////////////////////////////////////////////////////////////////////
 //  Clusterization class for IHEP reconstruction.
 // Performs clusterization (collects neighbouring active cells)
 // It differs from AliPHOSClusterizerv1 in neighbour definition only
+//*-- Author: Boris Polichtchouk, IHEP
 
 // --- ROOT system ---
 #include "TBenchmark.h"

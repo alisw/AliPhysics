@@ -13,16 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1.2.1  2003/04/14 17:33:50  hristov
-Merging with v3-09-08 (part1)
-
-Revision 1.1  2003/03/24 16:49:23  morsch
-Slow nucleon generator and model.
-
-*/
-
+/* $Id$ */
 
 #include "AliSlowNucleonModel.h"
 #include "AliCollisionGeometry.h"

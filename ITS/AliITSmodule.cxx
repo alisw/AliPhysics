@@ -1,6 +1,6 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                          *
+ *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
@@ -13,19 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- $Id$ 
-*/
-/*
- $Log$
- Revision 1.9.8.4  2003/06/13 16:31:00  nilsen
- Introducing a backward incompatibility to hit files created before June 12
- 2002. The enterance hit is no longer recorded. The starting position of
- every hit is used instead. Added GetPositionL0 to AliITShit, fixed up
- AliITSmodule to use starting location of hit and not enterance hits, and
- StepManager in AliITSvPPRasymm no longer records enterence hit to hit file.
+/* $Id$ */
 
-*/
 #include <TArrayI.h>
 
 #include <stdlib.h>

@@ -13,9 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/
+/* $Id$ */
 
 #include "AliLhcBeam.h"
 #include "AliLHC.h"

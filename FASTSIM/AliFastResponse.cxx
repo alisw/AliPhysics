@@ -13,19 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3.4.1  2002/11/26 16:56:30  hristov
-Merging NewIO with v3-09-04
-
-Revision 1.3  2002/11/07 09:07:07  hristov
-Adding FASTSIM code (lost during the merge with VMC)
-
-Revision 1.1  2002/09/20 13:32:51  morsch
-Base classes for fast simulation. First commit.
-
-*/
-
+/* $Id$ */
 
 #include "AliFastResponse.h"
 #include "AliFastParticle.h"

@@ -13,12 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.1  2000/06/12 15:16:59  jbarbosa
-  Cleaned up version.
+/* $Id$ */
 
-*/
 #include "AliRICHCerenkov.h"
 
 ClassImp(AliRICHCerenkov)

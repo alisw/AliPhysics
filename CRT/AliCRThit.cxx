@@ -13,30 +13,7 @@
  * provided "as is" without express or implied warranty.                  * 
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.6.4.1  2002/11/26 16:32:24  hristov
-Merging NewIO with v3-09-04
-
-Revision 1.6  2002/10/14 14:55:34  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.1.4.3  2002/10/10 14:40:31  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.5  2002/10/09 15:34:23  gamez
-Bad Copy implementation on gcc-3.2 (Yves SCHUTZ)
-
-Revision 1.4  2002/10/09 15:00:17  gamez
-Bad operator= implementation on gcc-3.2 (Yves SCHUTZ)
-
-Revision 1.3  2002/10/07 11:19:18  gamez
-Changes requested by coding conventions
-
-Revision 1.2  2002/07/25 21:27:22  gamez
-Variables renamed to avoid floating exceptions
-
-*/
+/* $Id$ */
 
 #include "AliCRThit.h"
 

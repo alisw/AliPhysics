@@ -13,51 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.13.4.1  2002/05/31 09:37:59  hristov
-  First set of changes done by Piotr
-
-  Revision 1.13  2001/10/23 13:03:35  hristov
-  The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
-
-  Revision 1.12  2001/05/10 12:34:23  jbarbosa
-  Changed drwaing routines.
-
-  Revision 1.11  2001/03/14 18:21:24  jbarbosa
-  Corrected bug in digits loading.
-
-  Revision 1.10  2001/02/27 15:21:06  jbarbosa
-  Transition to SDigits.
-
-  Revision 1.9  2001/02/13 20:38:48  jbarbosa
-  Changes to make it work with new IO.
-
-  Revision 1.8  2000/11/01 15:37:18  jbarbosa
-  Updated to use its own rec. point object.
-
-  Revision 1.7  2000/10/03 21:44:09  morsch
-  Use AliSegmentation and AliHit abstract base classes.
-
-  Revision 1.6  2000/10/02 21:28:12  fca
-  Removal of useless dependecies via forward declarations
-
-  Revision 1.5  2000/10/02 15:50:25  jbarbosa
-  Fixed forward declarations.
-
-  Revision 1.4  2000/06/30 16:33:43  dibari
-  Several changes (ring drawing, fiducial selection, etc.)
-
-  Revision 1.3  2000/06/15 15:47:12  jbarbosa
-  Corrected compilation errors on HP-UX (replaced pow with TMath::Power)
-
-  Revision 1.2  2000/06/12 15:26:09  jbarbosa
-  Cleaned up version.
-
-  Revision 1.1  2000/06/09 14:53:01  jbarbosa
-  Bari's pattern recognition algorithm
-
-*/
+/* $Id$ */
 
 #include "AliRICHHit.h"
 #include "AliRICHCerenkov.h"

@@ -13,31 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:  */
-/*
-  $Log$
-  Revision 1.5.4.1  2003/07/08 17:16:50  schutz
-  NewIO
-
-  Revision 1.5  2003/03/17 17:29:54  hristov
-  Using Riostream.h instead of iostream.h
-
-  Revision 1.4  2003/03/17 14:26:06  morsch
-  Updates by M. Horner and J. Klay
-
-  Revision 1.3  2003/02/05 17:24:25  morsch
-  Modifiactions by M. Horner.
-
-  Revision 1.2  2002/10/14 14:55:35  hristov
-  Merging the VirtualMC branch to the main development branch (HEAD)
-
-  Revision 1.1.2.1  2002/08/28 15:06:50  alibrary
-  Updating to v3-09-01
-
-  Revision 1.1  2002/08/21 10:29:29  schutz
-  New classes (by Renan)
-
-*/
+/* $Id$ */
 
 //*-- Author: Renan Cabrera (Creighton U.)
 

@@ -13,34 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.8  2001/11/08 19:30:43  dibari
-  initialising of pad size added to ctor
-
-  Revision 1.7  2001/02/13 20:13:20  jbarbosa
-  Moved setting of variables to constructor. Init is now responsible for calculating padplane dimensions.
-  Corrected all calculations for padplane definition.
-
-  Revision 1.6  2001/01/24 21:00:29  jbarbosa
-  Redefinition of sectors and pad coordinates/real coordinates transformations.
-
-  Revision 1.5  2001/01/22 21:37:39  jbarbosa
-  Added parametrised definiton sectors
-
-  Revision 1.4  2001/01/22 21:35:39  jbarbosa
-  Added deadzone size to data members
-
-  Revision 1.3  2000/10/03 21:44:09  morsch
-  Use AliSegmentation and AliHit abstract base classes.
-
-  Revision 1.2  2000/10/02 15:48:55  jbarbosa
-  Fixed coding conventions.
-
-  Revision 1.1  2000/06/12 15:34:28  jbarbosa
-  Cleaned up version.
-
-*/
+/* $Id$ */
 
 #include "AliRICHSegmentationV1.h"
 

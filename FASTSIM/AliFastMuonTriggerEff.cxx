@@ -13,19 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2.2.1  2003/04/15 15:57:31  hristov
-Merging with v3-09-08
-
-Revision 1.2  2003/01/21 10:49:17  morsch
-Corrected path for vettotpara.root
-
-Revision 1.1  2003/01/06 10:13:09  morsch
-First commit.
-
-*/
-
+/* $Id$ */
 
 #include "AliFastMuonTriggerEff.h"
 #include <TFile.h>

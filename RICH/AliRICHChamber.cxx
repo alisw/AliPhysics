@@ -13,49 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.13  2001/11/06 18:29:36  dibari
-  minor correcttion of Taligent rules
-
-  Revision 1.12  2001/09/07 08:38:10  hristov
-  Pointers initialised to 0 in the default constructors
-
-  Revision 1.11  2001/05/10 12:35:39  jbarbosa
-  Update.
-
-  Revision 1.10  2001/02/23 17:21:17  jbarbosa
-  Re-definition of IntPH() to accomodate for wire sag effect.
-
-  Revision 1.9  2001/02/13 20:15:34  jbarbosa
-  Removed fNsec (number of cathodes - obsolete) related loops and calls.
-
-  Revision 1.8  2000/12/18 17:45:43  jbarbosa
-  Cleaned up PadHits object.
-
-  Revision 1.7  2000/10/03 21:44:09  morsch
-  Use AliSegmentation and AliHit abstract base classes.
-
-  Revision 1.6  2000/10/02 15:44:37  jbarbosa
-  Fixed forward declarations.
-
-  Revision 1.5  2000/07/13 16:19:45  fca
-  Mainly coding conventions + some small bug fixes
-
-  Revision 1.4  2000/06/30 16:48:58  dibari
-  New function GenerateTresholds() for pedestal simulation.
-
-  Revision 1.3  2000/06/12 15:17:58  jbarbosa
-  Cleaned up version.
-
-  Revision 1.2  2000/05/18 13:45:57  jbarbosa
-  Fixed feedback photon origin coordinates
-
-  Revision 1.1  2000/04/19 12:57:20  morsch
-  Newly structured and updated version (JB, AM)
-
-*/
-
+/* $Id$ */
 
 #include "AliRICHChamber.h"
 

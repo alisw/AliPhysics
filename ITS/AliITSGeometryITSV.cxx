@@ -13,10 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log:
-$Id$
-*/
+/* $Id$ */
 
 #include <Riostream.h>
 #include <stdio.h>

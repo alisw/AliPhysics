@@ -13,18 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3  2002/02/13 16:53:18  vicinanz
-Added AliTOFhitT0 class
-
-Revision 1.2  2001/11/22 11:30:30  hristov
-Correct log field
-
-Revision 1.1  2001/11/22 11:22:51  hristov
-Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
-
-*/
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////
 //

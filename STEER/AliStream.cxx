@@ -13,36 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4.4.4  2002/12/11 10:00:34  hristov
-Merging with v3-09-04 (P.Skowronski)
-
-Revision 1.4.4.3  2002/11/22 14:19:50  hristov
-Merging NewIO-01 with v3-09-04 (part one) (P.Skowronski)
-
-Revision 1.4.4.2  2002/06/18 10:18:32  hristov
-Important update (P.Skowronski)
-
-Revision 1.4.4.1  2002/05/31 09:37:59  hristov
-First set of changes done by Piotr
-
-Revision 1.5  2002/04/09 13:38:47  jchudoba
-Add const to the filename argument
-
-Revision 1.4  2001/12/03 07:10:13  jchudoba
-Default ctor cannot create new objects, create dummy default ctor which leaves object in not well defined state - to be used only by root for I/O
-
-Revision 1.3  2001/10/15 17:31:56  jchudoba
-Bug correction
-
-Revision 1.2  2001/10/04 15:58:52  jchudoba
-Option to open the stream in READ or UPDATE mode
-
-Revision 1.1  2001/09/19 06:20:50  jchudoba
-Class to manage input filenames, used by AliRunDigitizer
-
-*/
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////
 //

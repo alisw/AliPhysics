@@ -13,15 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2  2001/05/02 12:01:33  morsch
-Obsolete version removed.
-
-Revision 1.1  2001/03/28 08:43:19  morsch
-Temporary solution for beam-pipe until ITS geometry will have been updated.
-
-*/
+/* $Id$ */
 
 ////////////////////////////////////////////////
 //  Beam pipe class                            /

@@ -13,9 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/
+/* $Id$ */
 
 #include "AliLhcProcess.h"
 #include "AliLHC.h"

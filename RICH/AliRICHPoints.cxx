@@ -13,43 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.10.4.1  2002/05/31 09:37:59  hristov
-  First set of changes done by Piotr
-
-  Revision 1.10  2001/10/23 13:03:35  hristov
-  The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
-
-  Revision 1.9  2001/02/27 15:20:56  jbarbosa
-  Transition to SDigits.
-
-  Revision 1.8  2001/01/26 20:00:27  hristov
-  Major upgrade of AliRoot code
-
-  Revision 1.7  2000/11/02 09:10:57  jbarbosa
-  Removed AliRICHRecHit.h from include.
-
-  Revision 1.6  2000/10/03 21:44:09  morsch
-  Use AliSegmentation and AliHit abstract base classes.
-
-  Revision 1.5  2000/10/02 21:28:12  fca
-  Removal of useless dependecies via forward declarations
-
-  Revision 1.4  2000/10/02 15:50:43  jbarbosa
-  Fixed forward declarations.
-
-  Revision 1.3  2000/06/12 15:26:36  jbarbosa
-  Cleaned up version.
-
-  Revision 1.2  2000/05/18 13:43:54  jbarbosa
-  Added the ShowRing function.
-
-  Revision 1.1  2000/04/19 13:16:47  morsch
-  Minor changes on class names.
-
-*/
-
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

@@ -13,9 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-*/
+/* $Id$ */
+
 #include "AliRICHGeometry.h"
 
 ClassImp(AliRICHGeometry)

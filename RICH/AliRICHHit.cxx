@@ -13,13 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.1  2000/06/12 15:23:26  jbarbosa
-  Cleaned up version.
-
-*/
-
+/* $Id$ */
 
 #include "AliRICHHit.h"
 ClassImp(AliRICHHit)

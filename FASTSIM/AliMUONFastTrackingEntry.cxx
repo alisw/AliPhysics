@@ -13,15 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1.2.1  2003/04/15 15:57:31  hristov
-Merging with v3-09-08
-
-Revision 1.1  2003/01/07 08:41:02  morsch
-First commit.
-
-*/
+/* $Id$ */
 
 #include "AliMUONFastTrackingEntry.h"
 ClassImp(AliMUONFastTrackingEntry)

@@ -13,19 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.3  2001/08/30 09:51:23  hristov
-  The operator[] is replaced by At() or AddAt() in case of TObjArray.
-
-  Revision 1.2  2000/10/02 15:53:28  jbarbosa
-  Fixed memory leak (delete fTrackList).
-
-  Revision 1.1  2000/06/12 15:35:17  jbarbosa
-  Cleaned up version.
-
-*/
-
+/* $Id$ */
 
 #include "AliRICHTransientDigit.h"
 #include <TObjArray.h>

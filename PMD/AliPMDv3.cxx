@@ -12,27 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-$Log$
-Revision 1.2  2001/05/14 13:47:34  morsch
-Obsolete versions removed.
 
-Revision 1.1  2001/04/06 14:09:29  morsch
-Version 3 of the PMD. (Tapan K. Nayak)
+/* $Id$ */
 
-Revision  March 2001 new geometry for relocated PMD : Viyogi
-
-Revision 1.8  2000/06/09 10:31:36  hristov
-sqrt changed to TMath::Sqrt
-
-Revision 1.7  1999/11/03 18:01:40  fca
-Remove non orthogonal unused matrix
-
-Revision 1.6  1999/09/29 09:24:28  fca
-Introduction of the Copyright and cvs Log
-
-*/
-//
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Photon Multiplicity Detector Version 1                                   //

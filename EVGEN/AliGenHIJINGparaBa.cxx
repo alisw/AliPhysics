@@ -13,18 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1.4.1  2003/04/14 17:33:50  hristov
-Merging with v3-09-08 (part1)
+/* $Id$ */
 
-Revision 1.2  2003/01/14 10:50:18  alibrary
-Cleanup of STEER coding conventions
-
-Revision 1.1  2002/01/08 09:47:28  morsch
-HIJING parameterisation including baryons, first commit.
-
-*/
 ///////////////////////////////////////////////////////////////////
 // Parameterisation of pi, K, n and p eta and pt distributions   //
 // eta: according to HIJING (shadowing + quenching)              //

@@ -14,16 +14,7 @@
  **************************************************************************/
 
 /* $Id$ */
-/* $Log:
-   1 October 2000. Yuri Kharlov:
-     AreNeighbours()
-     PPSD upper layer is considered if number of layers>1
-   18 October 2000. Yuri Kharlov:
-     AliEMCALClusterizerv1()
-     CPV clusterizing parameters added
-     MakeClusters()
-     After first PPSD digit remove EMC digits only once
-*/
+
 //*-- Author: Yves Schutz (SUBATECH)  & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 //  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
 //                           of new  IO (à la PHOS)

@@ -13,17 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.2  2000/10/02 15:51:49  jbarbosa
-  Fixed forward declarations.
-  Moved constructor into implementation file.
-
-  Revision 1.1  2000/06/12 15:27:26  jbarbosa
-  Cleaned up version.
-
-*/
-
+/* $Id$ */
 
 #include "AliRICHRawCluster.h"
 

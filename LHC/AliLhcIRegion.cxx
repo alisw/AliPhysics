@@ -13,9 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/
+/* $Id$ */
 
 #include "AliLhcIRegion.h"
 #include "AliLhcBeam.h"

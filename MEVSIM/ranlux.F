@@ -1,15 +1,6 @@
 C*
 C* $Id$
 C*
-C* $Log$
-C* Revision 1.2  1997/09/22 13:45:47  mclareni
-C* Correct error in initializing RANLUX by using RLUXIN with the output of
-C* RLUXUT from a previous run.
-C*
-C* Revision 1.1.1.1  1996/04/01 15:02:55  mclareni
-C* Mathlib gen
-C*
-C*
 C#include "gen/pilot.h"
       SUBROUTINE RANLUX(RVEC,LENV)
 C         Subtract-and-borrow random number generator proposed by

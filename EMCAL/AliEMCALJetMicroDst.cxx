@@ -14,12 +14,7 @@
  **************************************************************************/
 
 
-/*
-$Log$
-Revision 1.1  2002/02/14 09:15:15  morsch
-ALiEMCALJetMicroDst first commit.
-
-*/
+/* $Id$ */
 
 //*-- Authors: Aleksei Pavlinov (WSU) 
 //*

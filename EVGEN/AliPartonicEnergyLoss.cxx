@@ -13,22 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2.4.1  2002/11/26 16:57:23  hristov
-Merging NewIO with v3-09-04
-
-Revision 1.2  2002/10/14 14:55:35  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.1.2.1  2002/07/24 08:56:29  alibrary
-Updating EVGEN on TVirtulaMC
-
-Revision 1.1  2002/07/15 13:12:33  morsch
-Library class for parton quenching calculations.
-
-*/
-
+/* $Id$ */
 
 #include "AliPartonicEnergyLoss.h"
 #include <TMath.h>

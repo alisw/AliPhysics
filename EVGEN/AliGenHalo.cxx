@@ -13,41 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.11.6.1  2003/04/14 17:33:50  hristov
-Merging with v3-09-08 (part1)
-
-Revision 1.12  2003/01/14 10:50:18  alibrary
-Cleanup of STEER coding conventions
-
-Revision 1.11  2001/07/27 17:09:36  morsch
-Use local SetTrack, KeepTrack and SetHighWaterMark methods
-to delegate either to local stack or to stack owned by AliRun.
-(Piotr Skowronski, A.M.)
-
-Revision 1.10  2000/12/21 16:24:06  morsch
-Coding convention clean-up
-
-Revision 1.9  2000/11/30 07:12:50  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.8  2000/10/02 15:20:40  morsch
-Direct reference to default input file removed.
-
-Revision 1.7  2000/06/30 12:19:07  morsch
-Type of fFileName changed to TString, fp has been !-ed.
-
-Revision 1.6  2000/06/09 20:36:01  morsch
-All coding rule violations except RS3 corrected
-
-Revision 1.5  1999/11/03 17:43:20  fca
-New version from G.Martinez & A.Morsch
-
-Revision 1.4  1999/09/29 09:24:14  fca
-Introduction of the Copyright and cvs Log
-
-*/
+/* $Id$ */
 
 // Read background particles from a boundary source
 // Very specialized generator to simulate background from beam halo.

@@ -1,32 +1,5 @@
-/*
- * $Id$
- *
- * $Log$
- * Revision 1.2.4.1  2002/11/26 16:46:57  hristov
- * Merging NewIO with v3-09-04
- *
- * Revision 1.2  2002/10/14 14:57:10  hristov
- * Merging the VirtualMC branch to the main development branch (HEAD)
- *
- * Revision 1.1.2.1  2002/07/11 17:15:24  alibrary
- * Adding MICROCERN
- *
- * Revision 1.1.1.1  1999/05/18 15:55:28  fca
- * AliRoot sources
- *
- * Revision 1.3  1997/09/02 14:26:36  mclareni
- * WINNT correction
- *
- * Revision 1.2  1997/02/04 17:34:17  mclareni
- * Merge Winnt and 97a versions
- *
- * Revision 1.1.1.1.2.1  1997/01/21 11:29:27  mclareni
- * All mods for Winnt 96a on winnt branch
- *
- * Revision 1.1.1.1  1996/02/15 17:49:22  mclareni
- * Kernlib
- *
- */
+/* $Id$ */
+
 #include "kerngen/pilot.h"
 #include "kerngen/fortranc.h"
 

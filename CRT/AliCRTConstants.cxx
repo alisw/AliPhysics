@@ -13,25 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3.4.1  2002/11/26 16:32:24  hristov
-Merging NewIO with v3-09-04
-
-Revision 1.3  2002/10/14 14:55:34  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.1.4.2  2002/10/10 14:40:31  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.2  2002/10/07 11:16:53  gamez
-Depth variable added
-
-Revision 1.1  2002/06/16 17:08:19  hristov
-First version of CRT
-
-
-*/
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////
 //

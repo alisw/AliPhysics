@@ -13,10 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log:
-
-*/
+/* $Id$ */
 
 /* 
  *  Version: 0

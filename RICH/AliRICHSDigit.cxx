@@ -13,16 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.2  2000/12/18 17:45:17  jbarbosa
-  Cleaned up PadHits object.
-
-  Revision 1.1  2000/06/12 15:25:31  jbarbosa
-  Cleaned up version.
-
-*/
-
+/* $Id$ */
 
 #include "AliRICHSDigit.h"
 

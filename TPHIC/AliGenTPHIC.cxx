@@ -16,16 +16,6 @@
 
 /* $Id$ */
 
-/*
-$Log$
-Revision 1.1.2.1  2003/05/20 17:27:07  hristov
-Merging with v3-09-09
-
-Revision 1.1  2003/05/09 09:18:11  hristov
-Adding TPHIC
-
-*/
-
 // Event generator of two-photon processes
 // in ultra-peripheral ion collisions.
 // 5 two-photon process are implemented, see comments to SetProcess().

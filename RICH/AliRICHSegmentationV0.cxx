@@ -13,24 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.5  2001/02/13 20:12:39  jbarbosa
-  Moved setting of variables to constructor. Init is now responsible for calculating padplane dimensions.
+/* $Id$ */
 
-  Revision 1.4  2001/01/22 21:38:46  jbarbosa
-  Dummy padplane dimensions
-
-  Revision 1.3  2000/10/03 21:44:09  morsch
-  Use AliSegmentation and AliHit abstract base classes.
-
-  Revision 1.2  2000/10/02 15:48:19  jbarbosa
-  Fixed coding conventions.
-
-  Revision 1.1  2000/06/12 15:31:54  jbarbosa
-  Cleaned up version.
-
-*/
 #include "AliRICHSegmentationV0.h"
 
 

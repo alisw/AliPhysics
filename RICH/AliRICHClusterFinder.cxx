@@ -13,51 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.11.4.1  2003/07/10 17:09:50  hristov
-  Merging to v3-10-00
-
-  Revision 1.12  2003/06/27 10:03:00  rdm
-  avoid assignment of TF1 objects. In SinoidalFit() pass TF1 by pointer.
-
-  Revision 1.11  2001/10/23 13:03:35  hristov
-  The access to several data members was changed from public to protected. The digitisation was adapted to the multi-event case (J.Chudoba)
-
-  Revision 1.10  2001/02/27 15:21:58  jbarbosa
-  Transition to SDigits.
-
-  Revision 1.9  2001/01/26 20:00:27  hristov
-  Major upgrade of AliRoot code
-
-  Revision 1.8  2000/11/02 09:11:12  jbarbosa
-  Removed AliRICHRecHit.h from include.
-
-  Revision 1.7  2000/10/03 21:44:09  morsch
-  Use AliSegmentation and AliHit abstract base classes.
-
-  Revision 1.6  2000/10/02 21:28:12  fca
-  Removal of useless dependecies via forward declarations
-
-  Revision 1.5  2000/10/02 15:45:58  jbarbosa
-  Fixed forward declarations.
-
-  Revision 1.4  2000/06/12 19:01:29  morsch
-  Clean-up bug in Centered() corrected.
-
-  Revision 1.3  2000/06/12 15:49:44  jbarbosa
-  Removed verbose output.
-
-  Revision 1.2  2000/06/12 15:18:19  jbarbosa
-  Cleaned up version.
-
-  Revision 1.1  2000/04/19 13:01:48  morsch
-  A cluster finder and hit reconstruction class for RICH (adapted from MUON).
-  Cluster Finders for MUON and RICH should derive from the same class in the
-  future (JB, AM).
-
-*/
-
+/* $Id$ */
 
 #include "AliRICHClusterFinder.h"
 #include "AliRun.h"

@@ -13,9 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log $
-*/
+/* $Id$ */
 
 // Entry for AliGenCocktail container class. 
 // See also comments there.

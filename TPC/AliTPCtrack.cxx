@@ -13,52 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.9.4.3  2003/07/10 17:09:51  hristov
-Merging to v3-10-00
-
-Revision 1.22  2003/05/22 13:48:21  hristov
-First implementation of ESD classes (Yu.Belikov)
-
-Revision 1.21  2003/05/22 10:46:46  hristov
-Using access methods instead of data members
-
-Revision 1.20  2003/04/10 10:36:54  hristov
-Code for unified TPC/TRD tracking (S.Radomski)
-
-Revision 1.19  2003/03/03 16:56:53  hristov
-Corrections to obey coding conventions
-
-Revision 1.18  2003/02/19 08:57:04  hristov
-Control^M removed
-
-Revision 1.17  2003/02/19 08:49:46  hristov
-Track time measurement (S.Radomski)
-
-Revision 1.16  2003/02/06 11:11:36  kowal2
-Added a few get methods by Jiri Chudoba
-
-Revision 1.15  2002/11/25 09:33:30  hristov
-Tracking of secondaries (M.Ivanov)
-
-Revision 1.14  2002/10/23 13:45:00  hristov
-Fatal if no magnetic field set for the reconstruction (Y.Belikov)
-
-Revision 1.13  2002/10/23 07:17:34  alibrary
-Introducing Riostream.h
-
-Revision 1.12  2002/10/14 14:57:43  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.9.6.1  2002/10/11 08:34:48  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.11  2002/07/19 07:34:42  kowal2
-Logs added
-
-*/
-
+/* $Id$ */
 
 //-----------------------------------------------------------------
 //           Implementation of the TPC track class

@@ -13,41 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.7.4.1  2003/04/14 17:33:49  hristov
-Merging with v3-09-08 (part1)
-
-Revision 1.8  2003/01/14 10:50:18  alibrary
-Cleanup of STEER coding conventions
-
-Revision 1.7  2001/10/30 11:27:35  morsch
-fExplicit member data correctly initialized.
-
-Revision 1.6  2001/07/27 17:09:36  morsch
-Use local SetTrack, KeepTrack and SetHighWaterMark methods
-to delegate either to local stack or to stack owned by AliRun.
-(Piotr Skowronski, A.M.)
-
-Revision 1.5  2001/02/24 11:41:59  morsch
-SetGun allows specify completely the particle kinematics and position in one go. (FCA)
-
-Revision 1.4  2000/12/21 16:24:06  morsch
-Coding convention clean-up
-
-Revision 1.3  2000/11/30 07:12:50  alibrary
-Introducing new Rndm and QA classes
-
-Revision 1.2  2000/10/02 15:17:54  morsch
-Unused includes removed.
-
-Revision 1.1  2000/06/09 20:24:00  morsch
-Same class as previously in AliSimpleGen.cxx
-All coding rule violations except RS3 corrected (AM)
-
-*/
-
-
+/* $Id$ */
 
 // Simple particle gun. 
 // Momentum, phi and theta of the partice as well as the particle type can be set.

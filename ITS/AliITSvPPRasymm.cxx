@@ -13,19 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* 
- $Id$ 
-*/
-/*
- $Log$
- Revision 1.53.4.6  2003/06/13 16:30:59  nilsen
- Introducing a backward incompatibility to hit files created before June 12
- 2002. The enterance hit is no longer recorded. The starting position of
- every hit is used instead. Added GetPositionL0 to AliITShit, fixed up
- AliITSmodule to use starting location of hit and not enterance hits, and
- StepManager in AliITSvPPRasymm no longer records enterence hit to hit file.
+/* $Id$ */
 
-*/
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Inner Traking System version PPR  asymmetric                             //

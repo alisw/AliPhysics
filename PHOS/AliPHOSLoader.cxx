@@ -13,13 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:  */
-
-/* $Log:
-   29.05.2001 Yuri Kharlov:
-              Everywhere reading the treese TTree->GetEvent(i)
-              is replaced by reading the branches TBranch->GetEntry(0)
-*/
+/* $Id$ */
 
 //_________________________________________________________________________
 //  A singleton. This class should be used in the analysis stage to get 

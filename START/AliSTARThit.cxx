@@ -12,12 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-$Log$
-Revision 1.1.1.1  2000/02/15 15:20:19  kir
-Initial import to mni CVS
 
-*/ 
+/* $Id$ */
+
 #include "AliSTARThit.h"
 
 ClassImp(AliSTARThit)

@@ -13,19 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.1.4.2  2003/04/16 07:51:47  hristov
-  Removing malloc.h
-
-  Revision 1.1.4.1  2002/11/26 16:59:29  hristov
-  Merging NewIO with v3-09-04
-
-  Revision 1.1  2002/10/29 14:09:45  morsch
-  Second reconstruction algorithm. (J. Barbosa)
-
- 
-*/
+/* $Id$ */
 
 #include <stdlib.h> 
 

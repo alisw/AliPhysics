@@ -13,18 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2.2.1  2003/04/15 15:57:31  hristov
-Merging with v3-09-08
-
-Revision 1.2  2003/01/08 10:29:33  morsch
-Path to data file changed.
-
-Revision 1.1  2003/01/06 10:13:33  morsch
-First commit.
-
-*/
+/* $Id$ */
 
 #include "AliMUONFastTracking.h"
 #include "AliMUONFastTrackingEntry.h"

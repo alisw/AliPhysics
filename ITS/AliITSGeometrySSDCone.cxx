@@ -13,26 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4.2.1  2003/05/19 16:24:39  hristov
-Merging with v3-09-09 (partial, AliITCclustererV2 is excluded from compilation and has to be adapted to NewIO, AliITStrackerV2 needs additional changes)
-
-Revision 1.4  2003/04/22 20:41:08  nilsen
-Finished geometry objects defninistions, and fixed bugs in SSD cone geometry.
-
-Revision 1.3  2003/04/17 22:29:23  nilsen
-Geometry bug fixes and the like. Work still progressing.
-
-Revision 1.2  2003/03/25 23:27:19  nilsen
-ITS new Geometry files. Not yet ready for uses, committed to allow additional
-development.
-
-Revision 1.1  2003/02/10 17:03:52  nilsen
-New version and structure of ITS V11 geometry. Work still in progress.
-
-$Id$
-*/
+/* $Id$ */
 
 #include <Riostream.h>
 #include <stdio.h>

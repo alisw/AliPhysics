@@ -15,18 +15,6 @@
 
 /* $Id$ */
 
-/* $Log:
-   1 October 2000. Yuri Kharlov:
-     AreNeighbours()
-     PPSD upper layer is considered if number of layers>1
-  
-   18 October 2000. Yuri Kharlov:
-     AliPHOSClusterizerv1()
-     CPV clusterizing parameters added
-
-     MakeClusters()
-     After first PPSD digit remove EMC digits only once
-*/
 //*-- Author: Yves Schutz (SUBATECH)  & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 //////////////////////////////////////////////////////////////////////////////
 //  Clusterization class. Performs clusterization (collects neighbouring active cells) and 

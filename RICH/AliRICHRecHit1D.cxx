@@ -13,16 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  $Log$
-  Revision 1.2  2000/06/30 16:36:58  dibari
-  Several new data members for Bari reconstruction
-
-  Revision 1.1  2000/06/12 15:28:06  jbarbosa
-  Cleaned up version.
-
-*/
-
+/* $Id$ */
 
 #include "AliRICHRecHit1D.h"
  

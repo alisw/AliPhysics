@@ -14,21 +14,7 @@
  **************************************************************************/
 
 
-/*
-$Log$
-Revision 1.2.4.2  2003/07/07 14:13:31  schutz
-NewIO
-
-Revision 1.4  2002/10/14 14:55:35  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.2.6.2  2002/07/24 10:06:16  alibrary
-Updating VirtualMC
-
-Revision 1.3  2002/05/22 13:48:43  morsch
-Pdg code added to track list.
-
-*/
+/* $Id$ */
 
 //*-- Author: Andreas Morsch (CERN)
 

@@ -13,18 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.1.4.1  2003/04/14 17:33:50  hristov
-Merging with v3-09-08 (part1)
+/* $Id$ */
 
-Revision 1.2  2003/01/14 10:50:19  alibrary
-Cleanup of STEER coding conventions
-
-Revision 1.1  2002/03/11 10:56:06  morsch
-AliGenThetaSlice, first commit. (Jiri Chudoba)
-
-*/
 ////////////////////////////////////////////////////////////////////////
 //
 // generates n particles with in the same phi angle, varies theta

@@ -13,31 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.3.6.2  2003/05/19 16:24:40  hristov
-Merging with v3-09-09 (partial, AliITCclustererV2 is excluded from compilation and has to be adapted to NewIO, AliITStrackerV2 needs additional changes)
+/* $Id$ */
 
-Revision 1.10  2003/01/22 01:58:38  nilsen
-Small patch to allow new Dubna modle to reproduce BS model.
-
-Revision 1.9  2002/10/22 14:45:45  alibrary
-Introducing Riostream.h
-
-Revision 1.8  2002/10/14 14:57:08  hristov
-Merging the VirtualMC branch to the main development branch (HEAD)
-
-Revision 1.3.8.2  2002/10/14 13:14:08  hristov
-Updating VirtualMC to v3-09-02
-
-Revision 1.7  2002/09/09 17:23:28  nilsen
-Minor changes in support of changes to AliITSdigitS?D class'.
-
-Revision 1.6  2002/08/21 22:09:58  nilsen
-Updated SPD simulation with difusion effects. ReWritten Hit to SDigits
-code.
-
-*/
 #include <Riostream.h>
 #include <TRandom.h>
 #include <TH1.h>
