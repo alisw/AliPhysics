@@ -87,6 +87,17 @@ AliModulesCompositionMessenger::AliModulesCompositionMessenger(
   fSetWriteGeometryCmd->SetParameterName("writeGeometry", false);
   fSetWriteGeometryCmd->AvailableForStates(PreInit);   
 
+  fPrintMaterialsCmd 
+    = new G4UIcmdWithoutParameter("/aliDet/printMaterials", this);
+  fPrintMaterialsCmd->SetGuidance("Prints all materials.");
+  fPrintMaterialsCmd->AvailableForStates(PreInit, Init, Idle);   
+
+  fGenerateXMLCmd 
+    = new G4UIcmdWithoutParameter("/aliDet/generateXML", this);
+  fGenerateXMLCmd->SetGuidance("Generate geometry XML file.");
+  fGenerateXMLCmd->AvailableForStates(Idle);   
+
+
   // set candidates list
   SetCandidates();
 
@@ -117,6 +128,8 @@ AliModulesCompositionMessenger::~AliModulesCompositionMessenger() {
   delete fSetAllSensitiveCmd;
   delete fSetReadGeometryCmd;
   delete fSetWriteGeometryCmd;
+  delete fPrintMaterialsCmd;
+  delete fGenerateXMLCmd;
 }
 
 // operators
@@ -168,6 +181,12 @@ void AliModulesCompositionMessenger::SetNewValue(G4UIcommand* command, G4String 
   else if (command == fSetWriteGeometryCmd) {
     fModulesComposition->SetWriteGeometry(
                          fSetWriteGeometryCmd->GetNewBoolValue(newValues));
+  }    
+  else if (command == fPrintMaterialsCmd) {
+    fModulesComposition->PrintMaterials();
+  }    
+  else if (command == fGenerateXMLCmd) {
+    fModulesComposition->GenerateXMLGeometry();
   }    
 }
 
