@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2003/02/19 08:49:46  hristov
+Track time measurement (S.Radomski)
+
 Revision 1.25  2003/01/28 16:43:35  hristov
 Additional protection: to be discussed with the Root team (M.Ivanov)
 
@@ -730,7 +733,9 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   LoadClusters();
 
   in->cd();
-  TTree *bckTree=(TTree*)in->Get("TreeT_ITSb_0");
+  char tName[100];
+  sprintf(tName,"TreeT_ITSb_%d",GetEventNumber());
+  TTree *bckTree=(TTree*)in->Get(tName);
   if (!bckTree) {
      cerr<<"AliTPCtracker::PropagateBack() ";
      cerr<<"can't get a tree with back propagated ITS tracks !\n";
@@ -739,7 +744,8 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   AliTPCtrack *bckTrack=new AliTPCtrack; 
   bckTree->SetBranchAddress("tracks",&bckTrack);
 
-  TTree *tpcTree=(TTree*)in->Get("TreeT_TPC_0");
+  sprintf(tName,"TreeT_TPC_%d",GetEventNumber());
+  TTree *tpcTree=(TTree*)in->Get(tName);
   if (!tpcTree) {
      cerr<<"AliTPCtracker::PropagateBack() ";
      cerr<<"can't get a tree with TPC tracks !\n";
@@ -835,8 +841,8 @@ Int_t AliTPCtracker::PropagateBack(const TFile *inp, TFile *out) {
   // discussed and decided in Strasbourg (May 2002)
   // [SR, GSI, 18.02.2003]
   
-  //TTree backTree("TreeT_TPCb_0","Tree with back propagated TPC tracks");
-  TTree backTree("seedsTPCtoTRD_0","Tree with back propagated TPC tracks");
+  sprintf(tName,"seedsTPCtoTRD_%d",GetEventNumber());
+  TTree backTree(tName,"Tree with back propagated TPC tracks");
   AliTPCtrack *otrack=0;
   backTree.Branch("tracks","AliTPCtrack",&otrack,32000,0);
 
