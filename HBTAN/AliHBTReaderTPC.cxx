@@ -1,5 +1,15 @@
 #include "AliHBTReaderTPC.h"
-
+//______________________________________________
+//
+// class AliHBTReaderTPC
+//
+// reader for TPC tracking
+// needs galice.root, AliTPCtracks.root, AliTPCclusters.root
+//
+// more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html
+// Piotr.Skowronski@cern.ch
+//
+///////////////////////////////////////////////////////////////////////////
 #include <TTree.h>
 #include <TFile.h>
 #include <TParticle.h>
@@ -21,21 +31,19 @@
 #include "AliHBTParticleCut.h"
 
 ClassImp(AliHBTReaderTPC)
-//______________________________________________
-//
-// class AliHBTReaderTPC
-//
-//reader for TPC tracking
-//needs galice.root, AliTPCtracks.root, AliTPCclusters.root
-//
-//more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
-//Piotr.Skowronski@cern.ch
+
 AliHBTReaderTPC::AliHBTReaderTPC():
  fFileName("galice.root"),
  fRunLoader(0x0),
  fTPCLoader(0x0),
  fMagneticField(0.0),
- fUseMagFFromRun(kTRUE)
+ fUseMagFFromRun(kTRUE),
+ fNClustMin(0),
+ fNClustMax(190),
+ fNChi2PerClustMin(0.0),
+ fNChi2PerClustMax(10e5),
+ fC44Min(0.0),
+ fC44Max(10e5)
 {
   //constructor, 
   //Defaults:
@@ -49,7 +57,13 @@ AliHBTReaderTPC::AliHBTReaderTPC(const Char_t* galicefilename):
  fRunLoader(0x0),
  fTPCLoader(0x0),
  fMagneticField(0.0),
- fUseMagFFromRun(kTRUE)
+ fUseMagFFromRun(kTRUE),
+ fNClustMin(0),
+ fNClustMax(190),
+ fNChi2PerClustMin(0.0),
+ fNChi2PerClustMax(10e5),
+ fC44Min(0.0),
+ fC44Max(10e5)
 {
   //constructor, 
   //Defaults:
@@ -64,7 +78,13 @@ AliHBTReaderTPC::AliHBTReaderTPC(TObjArray* dirs, const Char_t* galicefilename):
  fRunLoader(0x0),
  fTPCLoader(0x0),
  fMagneticField(0.0),
- fUseMagFFromRun(kTRUE)
+ fUseMagFFromRun(kTRUE),
+ fNClustMin(0),
+ fNClustMax(190),
+ fNChi2PerClustMin(0.0),
+ fNChi2PerClustMax(10e5),
+ fC44Min(0.0),
+ fC44Max(10e5)
 {
   //constructor, 
   //Defaults:
@@ -77,7 +97,18 @@ AliHBTReaderTPC::AliHBTReaderTPC(TObjArray* dirs, const Char_t* galicefilename):
 AliHBTReaderTPC::~AliHBTReaderTPC()
 {
  //desctructor
+   if (AliHBTParticle::GetDebug()) 
+    {
+      Info("~AliHBTReaderTPC","deleting Run Loader");
+      AliLoader::SetDebug(AliHBTParticle::GetDebug());
+    }
+   
    delete fRunLoader;
+   
+   if (AliHBTParticle::GetDebug()) 
+    {
+      Info("~AliHBTReaderTPC","deleting Run Loader Done");
+    }
 }
 /********************************************************************/
  
@@ -174,7 +205,9 @@ Int_t AliHBTReaderTPC::ReadNext()
        label = iotrack->GetLabel();
 
        if (label < 0) continue;
-
+       
+       if (CheckTrack(iotrack)) continue;
+       
        TParticle *p = (TParticle*)stack->Particle(label);
 
        if(p == 0x0) continue; //if returned pointer is NULL
@@ -192,6 +225,7 @@ Int_t AliHBTReaderTPC::ReadNext()
        iotrack->PropagateToVertex(50.,0.0353);
        
        iotrack->GetExternalParameters(xk,par);     //get properties of the track
+       
        phi=TMath::ASin(par[2]) + iotrack->GetAlpha(); 
        if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
        if (phi>=TMath::Pi()) phi-=2*TMath::Pi();
@@ -329,6 +363,67 @@ void AliHBTReaderTPC::DoOpenError( const char *va_(fmt), ...)
 }
 
 /********************************************************************/
+Bool_t AliHBTReaderTPC::CheckTrack(AliTPCtrack* t)
+{
+  //Performs check of the track
+  if ( (t->GetNumberOfClusters() > fNClustMax) || (t->GetNumberOfClusters() < fNClustMin) ) return kTRUE;
+
+  Double_t cc[15];
+  t->GetCovariance(cc);
+  if ( (cc[9] < fC44Min) || (cc[9] > fC44Max) ) return kTRUE;
+  
+  Float_t chisqpercl = t->GetChi2()/((Double_t)t->GetNumberOfClusters());
+  if ( (chisqpercl < fNChi2PerClustMin) || (chisqpercl > fNChi2PerClustMax) ) return kTRUE;
+  
+  return kFALSE;
+  
+}
+/********************************************************************/
+
+void AliHBTReaderTPC::SetNClustersRange(Int_t min,Int_t max)
+{
+ //sets range of Number Of Clusters that tracks have to have
+ fNClustMin = min;
+ fNClustMax = max;
+}
+/********************************************************************/
+
+void AliHBTReaderTPC::SetChi2PerCluserRange(Float_t min, Float_t max)
+{
+  //sets range of Chi2 per Cluster
+  fNChi2PerClustMin = min;
+  fNChi2PerClustMax = max;
+}
+/********************************************************************/
+
+void AliHBTReaderTPC::SetC44Range(Float_t min, Float_t max)
+{
+ //Sets range of C44 parameter of covariance matrix of the track
+ //it defines uncertainty of the momentum
+  fC44Min = min;
+  fC44Max = max;
+}
+
 /********************************************************************/
 /********************************************************************/
+/********************************************************************/
+
+/*
+void (AliTPCtrack* iotrack, Double_t curv)
+{
+  Double_t x[5];
+  iotrack->GetExternalPara
+  //xk is a 
+  Double_t fP4=iotrack->GetC();
+  Double_t fP2=iotrack->GetEta();
+  
+  Double_t x1=fX, x2=x1+(xk-x1), dx=x2-x1, y1=fP0, z1=fP1;
+  Double_t c1=fP4*x1 - fP2, r1=sqrt(1.- c1*c1);
+  Double_t c2=fP4*x2 - fP2, r2=sqrt(1.- c2*c2);
+  
+  fP0 += dx*(c1+c2)/(r1+r2);
+  fP1 += dx*(c1+c2)/(c1*r2 + c2*r1)*fP3;
+
+}
+*/
 

@@ -14,6 +14,7 @@
 class TFile;
 class AliRunLoader;
 class AliTPCLoader;
+class AliTPCtrack;
 
 class AliHBTReaderTPC: public AliHBTReader
 {
@@ -32,6 +33,10 @@ class AliHBTReaderTPC: public AliHBTReader
     void          SetMagneticField(Float_t mf){fMagneticField=mf;}
     void          UseMagneticFieldFromRun(Bool_t flag = kTRUE){fUseMagFFromRun=flag;}
     
+    void          SetNClustersRange(Int_t min,Int_t max);
+    void          SetChi2PerCluserRange(Float_t min, Float_t max);
+    void          SetC44Range(Float_t min, Float_t max);
+    
   protected:
     //in the future this class is will read global tracking
     Int_t         ReadNext();
@@ -44,8 +49,19 @@ class AliHBTReaderTPC: public AliHBTReader
     Float_t       fMagneticField;//magnetic field value that was enforced while reading
     Bool_t        fUseMagFFromRun;//flag indicating if using field specified in gAlice (kTRUE)
                                // or enforece other defined by fMagneticField
-
+    
+    Int_t fNClustMin;
+    Int_t fNClustMax;
+    
+    Float_t fNChi2PerClustMin;
+    Float_t fNChi2PerClustMax;
+    
+    Float_t fC44Min;
+    Float_t fC44Max;
+    
   private:
+    
+    Bool_t CheckTrack(AliTPCtrack* t);
   public:
     ClassDef(AliHBTReaderTPC,3)
 };
