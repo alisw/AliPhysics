@@ -12,7 +12,7 @@
 	@$(F77) $(FFLAGS) -c $*.F -o $*.o
  
 # Which makedepend
-MAKEDEPEND    = $(ROOTSYS)/bin/rmkdepend
+MAKEDEPEND    = $(ROOTSYS)/bin/makedepend
 
 # Root libraries
  
