@@ -61,6 +61,7 @@
 #include "TROOT.h"
 #include "TFolder.h"
 #include "TObjString.h"
+#include "TGeometry.h"
 #include "TBenchmark.h"
 
 // --- Standard library ---
@@ -69,6 +70,7 @@
 // --- AliRoot header files ---
 
 #include "AliRun.h"
+#include "AliHeader.h"
 #include "AliRunDigitizer.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOS.h"
@@ -211,10 +213,10 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
     Float_t noise = gRandom->Gaus(0., fPinNoise) ; 
     new((*digits)[absID-1]) AliPHOSDigit( -1,absID,sDigitizer->Digitize(noise), TimeOfNoise() ) ;
     //look if we have to add signal?
+    digit = (AliPHOSDigit *) digits->At(absID-1) ;
+ 
     if(absID==nextSig){
       //Add SDigits from all inputs 
-      digit = (AliPHOSDigit *) digits->At(absID-1) ;
-
       ticks->Clear() ;
       Int_t contrib = 0 ;
       Float_t a = digit->GetAmp() ;
@@ -400,42 +402,41 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     nevents = (Int_t) gAlice->TreeE()->GetEntries() ;
     treeD=gAlice->TreeD() ;
   }
-  if(treeD == 0 ){
-    cerr << " AliPHOSDigitizer :: Can not find TreeD " << endl ;
-    return ;
-  }
+
 
   //Check, if this branch already exits
-  TObjArray * lob = (TObjArray*)treeD->GetListOfBranches() ;
-  TIter next(lob) ; 
-  TBranch * branch = 0 ;  
-  Bool_t phosfound = kFALSE, digitizerfound = kFALSE ; 
-  
-  while ( (branch = (TBranch*)next()) && (!phosfound || !digitizerfound) ) {
-    if ( (strcmp(branch->GetName(), "PHOS")==0) && 
-	 (strcmp(branch->GetTitle(), GetName())==0) ) 
-      phosfound = kTRUE ;
+  if (treeD) { 
+    TObjArray * lob = (TObjArray*)treeD->GetListOfBranches() ;
+    TIter next(lob) ; 
+    TBranch * branch = 0 ;  
+    Bool_t phosfound = kFALSE, digitizerfound = kFALSE ; 
     
-    else if ( (strcmp(branch->GetName(), "AliPHOSDigitizer")==0) && 
-	      (strcmp(branch->GetTitle(), GetName())==0) ) 
-      digitizerfound = kTRUE ; 
+    while ( (branch = (TBranch*)next()) && (!phosfound || !digitizerfound) ) {
+      if ( (strcmp(branch->GetName(), "PHOS")==0) && 
+	   (strcmp(branch->GetTitle(), GetName())==0) ) 
+	phosfound = kTRUE ;
+      
+      else if ( (strcmp(branch->GetName(), "AliPHOSDigitizer")==0) && 
+		(strcmp(branch->GetTitle(), GetName())==0) ) 
+	digitizerfound = kTRUE ; 
+    }
+    
+    if ( phosfound ) {
+      cerr << "WARNING: AliPHOSDigitizer -> Digits branch with name " << GetName() 
+	   << " already exits" << endl ;
+      return ; 
+    }   
+    if ( digitizerfound ) {
+      cerr << "WARNING: AliPHOSDigitizer -> Digitizer branch with name " << GetName() 
+	   << " already exits" << endl ;
+      return ; 
+    }   
   }
 
-  if ( phosfound ) {
-    cerr << "WARNING: AliPHOSDigitizer -> Digits branch with name " << GetName() 
-	 << " already exits" << endl ;
-    return ; 
-  }   
-  if ( digitizerfound ) {
-    cerr << "WARNING: AliPHOSDigitizer -> Digitizer branch with name " << GetName() 
-	 << " already exits" << endl ;
-    return ; 
-  }   
-
   Int_t ievent ;
-
+  
   for(ievent = 0; ievent < nevents; ievent++){
-    
+  
     if(fManager){
       Int_t input ;
       for(input = 0 ; input < fManager->GetNinputs(); input ++){
@@ -592,6 +593,47 @@ void AliPHOSDigitizer::MixWith(const char* headerFile)
 }
 
 //__________________________________________________________________
+void AliPHOSDigitizer::SetSplitFile(const TString splitFileName) const
+{
+  // Diverts the Digits in a file separate from the hits file
+  
+  // I guess it is not going to work if we do merging
+  if (fManager) {
+    cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> Not yet available in case of merging activated " << endl ;  
+    return ; 
+  }
+
+  TDirectory * cwd = gDirectory ;
+  TFile * splitFile = gAlice->InitTreeFile("D",splitFileName.Data());
+  splitFile->cd() ; 
+  gAlice->Write();
+  
+  TTree *treeE  = gAlice->TreeE();
+  if (!treeE) {
+    cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> No TreeE found "<<endl;
+    abort() ;
+  }      
+  
+  // copy TreeE
+  AliHeader *header = new AliHeader();
+  treeE->SetBranchAddress("Header", &header);
+  treeE->SetBranchStatus("*",1);
+  TTree *treeENew =  treeE->CloneTree();
+  treeENew->Write();
+  
+  // copy AliceGeom
+  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+  if (!AliceGeom) {
+    cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
+    abort() ;
+  }
+  AliceGeom->Write();
+  cwd->cd() ; 
+  gAlice->MakeTree("D",splitFile);
+  cout << "INFO: AliPHOSDigitizer::SetSPlitMode -> Digits will be stored in " << splitFileName.Data() << endl ; 
+}
+
+//__________________________________________________________________
 void AliPHOSDigitizer::Print(Option_t* option)const {
   // Print Digitizer's parameters
   if( strcmp(GetName(), "") != 0 ){
@@ -729,50 +771,28 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
   const TClonesArray * digits = gime->Digits(GetName()) ; 
  TTree * treeD ;
 
-  if(fManager)
-    treeD = fManager->GetTreeD() ;
- else
-    treeD = gAlice->TreeD();
-  
-  // create new branches
-  // -- generate file name if necessary
-  char * file =0;
-  if(gSystem->Getenv("CONFIG_SPLIT_FILE")){ //generating file name
-    file = new char[strlen(gAlice->GetBaseFile())+20] ;
-    sprintf(file,"%s/PHOS.Digits.root",gAlice->GetBaseFile()) ;
-  }
+ 
+ if(fManager) 
+   treeD = fManager->GetTreeD() ;
+ else {
+   if (!gAlice->TreeD() ) 
+     gAlice->MakeTree("D");
+   treeD = gAlice->TreeD();
+ }
 
-  TDirectory *cwd = gDirectory;
+
   // -- create Digits branch
   Int_t bufferSize = 32000 ;    
   TBranch * digitsBranch = treeD->Branch("PHOS",&digits,bufferSize);
   digitsBranch->SetTitle(GetName());
-  if (file) {
-    digitsBranch->SetFile(file);
-    TIter next( digitsBranch->GetListOfBranches());
-    TBranch * sbr ;
-    while ((sbr=(TBranch*)next())) {
-      sbr->SetFile(file);
-    }   
-    cwd->cd();
-  } 
     
   // -- Create Digitizer branch
   Int_t splitlevel = 0 ;
   AliPHOSDigitizer * d = gime->Digitizer(GetName()) ;
   TBranch * digitizerBranch = treeD->Branch("AliPHOSDigitizer", "AliPHOSDigitizer", &d,bufferSize,splitlevel); 
   digitizerBranch->SetTitle(GetName());
-  if (file) {
-    digitizerBranch->SetFile(file);
-    TIter next( digitizerBranch->GetListOfBranches());
-    TBranch * sbr;
-    while ((sbr=(TBranch*)next())) {
-      sbr->SetFile(file);
-    }   
-    cwd->cd();
-  }
-  
+
   digitsBranch->Fill() ;
-  treeD->AutoSave() ; // Write(0,kOverwrite) ;  
+  treeD->AutoSave() ; 
  
 }

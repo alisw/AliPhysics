@@ -69,7 +69,7 @@ public:
   void    MixWith(const char* HeaderFile) ; // Add another one file to mix
   void    Print(Option_t* option)const ;
   void    Reset() ;   //restarts starts event processing from 0 event(s)
-
+  void    SetSplitFile(const TString splitFileName = "PHOS.Digits.root") const ;
   void    SetSDigitsBranch(const char* file) ;
 
   AliPHOSDigitizer & operator = (const AliPHOSDigitizer & rvalue)  {
