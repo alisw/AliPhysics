@@ -204,7 +204,7 @@ void AliHBTNonId3DCorrFctn::ProcessSameEventParticles(AliHBTPair* pair)
     pair = CheckPair(pair);
     if(pair == 0x0) return;
  
-    double tKStar = fabs(pair->GetKStar());
+    double tKStar = TMath::Abs(pair->GetKStar());
     double tKStarOut = pair->GetKStarOut();
     double tKStarSide = pair->GetKStarSide();
     double tKStarLong = pair->GetKStarLong();
@@ -274,7 +274,7 @@ void AliHBTNonId3DCorrFctn::Init()
 void AliHBTNonId3DCorrFctn::ProcessDiffEventParticles(AliHBTPair* pair)
 {
 
-    double tKStar = fabs(pair->GetKStar());
+    double tKStar = TMath::Abs(pair->GetKStar());
     double tKStarOut = pair->GetKStarOut();
     double tKStarSide = pair->GetKStarSide();
     double tKStarLong = pair->GetKStarLong();

@@ -144,7 +144,7 @@ void AliHBTWeightNonId3DTheorCorrFctn::ProcessSameEventParticles(AliHBTPair* par
     partpair = CheckPair(partpair);
     if(partpair == 0x0) return;
  
-    double tKStar = fabs(partpair->GetKStar());
+    double tKStar = TMath::Abs(partpair->GetKStar());
     double tKStarOut = partpair->GetKStarOut();
     double tKStarSide = partpair->GetKStarSide();
     double tKStarLong = partpair->GetKStarLong();
@@ -193,7 +193,7 @@ void AliHBTWeightNonId3DTheorCorrFctn::ProcessDiffEventParticles(AliHBTPair* par
 
   partpair  = CheckPair(partpair);
 
-  double tKStar = fabs(partpair->GetKStar());
+  double tKStar = TMath::Abs(partpair->GetKStar());
   double tKStarOut = partpair->GetKStarOut();
   double tKStarSide = partpair->GetKStarSide();
   double tKStarLong = partpair->GetKStarLong();
