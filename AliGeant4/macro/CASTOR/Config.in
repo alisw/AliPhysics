@@ -1,5 +1,3 @@
 # CASTOR
-
-#/aliDet/castor/setAllSensitive true
-/aliDet/castor/setFrame CAL
- 
+# no special settings
+#

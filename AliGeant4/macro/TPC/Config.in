@@ -1,5 +1,4 @@
 # TPC 
+# no special settings
+#
 
-/aliDet/tpc/setAllSensitive true
-/aliDet/tpc/setFrame TPC
- 
