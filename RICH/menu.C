@@ -1,64 +1,69 @@
-AliRICH * Rich() {return r;}
-
-Int_t countContrib[7][3];
+AliRICH * R() {return r;}
 
 void ControlPlots()
 {  
-  Int_t iChamber=1;
-  
-  TFile *pFile = new TFile("$(HOME)/plots.root","RECREATE");   
-  Bool_t isDig =!Rich()->GetLoader()->LoadDigits();
-  Bool_t isClus=!Rich()->GetLoader()->LoadRecPoints();
-  TH1F *pHxD,*pHyD,*pCqH1,*pCsH1,pCqMipH1,*pCsMipH1,*pCqCerH1,*pCsCerH1,*pCqFeeH1,*pCsFeeH1;  
+  TH1F *pHxD,*pHyD,*pCqH1,*pCsH1,*pCqMipH1,*pCsMipH1,*pCqCerH1,*pCsCerH1,*pCqFeeH1,*pCsFeeH1,*pNumClusH1;  
   TH2F *pCmH2,*pCmMipH2,*pCmCerH2,*pCmFeeH2;
+  
+  Bool_t isDig =!R()->GetLoader()->LoadDigits();
+  Bool_t isClus=!R()->GetLoader()->LoadRecPoints();
+
+  if(!isDig && !isClus){ Info("ControlPlots","No digits and clusters! Nothing to do.");return;}
+    
+  TFile *pFile = new TFile("$(HOME)/ControlPlots.root","RECREATE");   
+  
   if(isDig){
-    pHxD=new TH1F("HitDigitDiffX","Hit-Digits diff X all chambers;diff [cm]",20,-2,2); 
-    pHyD=new TH1F("HitDigitDiffY","Hit-Digits diff Y all chambers;diff [cm]",20,-2,2); 
+    cout<<"Digits available\n";
+    pHxD=new TH1F("HitDigitDiffX","Hit-Digits diff X all chambers;diff [cm]",100,-10,10); 
+    pHyD=new TH1F("HitDigitDiffY","Hit-Digits diff Y all chambers;diff [cm]",100,-10,10); 
   }//isDig
   
-  if(isClus){  
-    pCqH1=new TH1F("ClusQ",   "Cluster Charge all chambers;q [QDC]",Rich()->P()->MaxQdc(),0,Rich()->P()->MaxQdc());
+  if(isClus){ 
+    cout<<"Clusters available\n";
+    pNumClusH1=new TH1F("NumClusPerEvent","Number of clusters per event;number",50,0,49);
+    pCqH1=new TH1F("ClusQ",   "Cluster Charge all chambers;q [QDC]",R()->P()->MaxQdc(),0,R()->P()->MaxQdc());
     pCsH1=new TH1F("ClusSize","Cluster size all chambers;size [number of pads in cluster]",100,0,100);
-    pCmH2=new TH2F("ClusMap", "Cluster map;x [cm];y [cm]",1000,-Rich()->P()->PcSizeX()/2,Rich()->P()->PcSizeX()/2,
-                                                          1000,-Rich()->P()->PcSizeY()/2,Rich()->P()->PcSizeY()/2);
+    pCmH2=new TH2F("ClusMap", "Cluster map;x [cm];y [cm]",1000,-R()->P()->PcSizeX()/2,R()->P()->PcSizeX()/2,
+                                                          1000,-R()->P()->PcSizeY()/2,R()->P()->PcSizeY()/2);
   
-    pCqMipH1=new TH1F("MipClusQ",   "MIP Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
+    pCqMipH1=new TH1F("MipClusQ",   "MIP Cluster Charge all chambers;q [QDC]",R()->P()->MaxQdc(),0,R()->P()->MaxQdc());
     pCsMipH1=new TH1F("MipClusSize","MIP Cluster size all chambers;size [number of pads in cluster]",100,0,100);
-    pCmMipH2=new TH2F("MipClusMap", "MIP Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
-                                                                    1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
+    pCmMipH2=new TH2F("MipClusMap", "MIP Cluster map;x [cm];y [cm]",1000,-R()->P()->PcSizeX()/2,R()->P()->PcSizeX()/2,
+                                                                    1000,-R()->P()->PcSizeY()/2,R()->P()->PcSizeY()/2);
   
-    pCqCerH1=new TH1F("CerClusQ",   "Cerenkov Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
+    pCqCerH1=new TH1F("CerClusQ",   "Cerenkov Cluster Charge all chambers;q [QDC]",R()->P()->MaxQdc(),0,R()->P()->MaxQdc());
     pCsCerH1=new TH1F("CerClusSize","Cernekov Cluster size all chambers;size [number of pads in cluster]",100,0,100);
-    pCmCerH2=new TH2F("CerClusMap", "Cerenkov Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
-                                                                         1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
+    pCmCerH2=new TH2F("CerClusMap", "Cerenkov Cluster map;x [cm];y [cm]",1000,-R()->P()->PcSizeX()/2,R()->P()->PcSizeX()/2,
+                                                                         1000,-R()->P()->PcSizeY()/2,R()->P()->PcSizeY()/2);
     
-    pCqFeeH1=new TH1F("FeeClusQ",   "Feedback Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
+    pCqFeeH1=new TH1F("FeeClusQ",   "Feedback Cluster Charge all chambers;q [QDC]",R()->P()->MaxQdc(),0,R()->P()->MaxQdc());
     pCsFeeH1=new TH1F("FeeClusSize","Feedback Cluster size all chambers;size [number of pads in cluster]",100,0,100);
-    pCmFeeH2=new TH2F("FeeClusMap", "Feedback Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
-                                                                               1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
+    pCmFeeH2=new TH2F("FeeClusMap", "Feedback Cluster map;x [cm];y [cm]",1000,-R()->P()->PcSizeX()/2,R()->P()->PcSizeX()/2,
+                                                                         1000,-R()->P()->PcSizeY()/2,R()->P()->PcSizeY()/2);
   }//isClus
   
-  for(Int_t iEvtN=0;iEvtN<a->GetEventsPerRun();iEvtN++){//events loop
-    al->GetEvent(iEvtN);    
+  for(Int_t iEvtN=0;iEvtN<R()->GetLoader()->GetRunLoader()->GetAliRun()->GetEventsPerRun();iEvtN++){//events loop
+    R()->GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
+    if(isClus) R()->GetLoader()->TreeR()->GetEntry(0);
+    if(isDig)  R()->GetLoader()->TreeD()->GetEntry(0);  
+    
     for(Int_t iChamN=1;iChamN<=7;iChamN++){//chambers loop
       if(isClus){
-        Rich()->GetLoader()->TreeR()->GetEntry(0);
-        for(Int_t iClusN=0;iClusN<r->Clusters(iChamN)->GetEntries();iClusN++){//clusters loop
-          AliRICHcluster *pClus=(AliRICHcluster*)r->Clusters(iChamN)->At(iClusN);
-          countContrib[i-1][0] += pClus->Nmips();countContrib[i-1][1] += pClus->Ncerenkovs();countContrib[i-1][2] += pClus->Nfeedbacks();
+        Int_t iNclusCham=R()->Clusters(iChamN)->GetEntries();
+        if(iNclusCham) pNumClusH1->Fill(iNclusCham);//fill total number of clusters for a given event
+        for(Int_t iClusN=0;iClusN<iNclusCham;iClusN++){//clusters loop
+          AliRICHcluster *pClus=(AliRICHcluster*)R()->Clusters(iChamN)->At(iClusN);
                                       pCqH1->Fill(pClus->Q());   pCsH1->Fill(pClus->Size());   pCmH2->Fill(pClus->X(),pClus->Y());    //common        
-          if(pClus->IsPureMip())     {pCqMipH1->Fill(pClus->Q());pCsMipH1->Fill(pClus->Size());pCmMipH2->Fill(pClus->X(),pClus->Y());}//Pure Mips
-          if(pClus->IsPureCerenkov()){pCqCerH1->Fill(pClus->Q());pCsCerH1->Fill(pClus->Size());pCmCerH2->Fill(pClus->X(),pClus->Y());}//Pure Photons
-          if(pClus->IsPureFeedback()){pCqFeeH1->Fill(pClus->Q());pCsFeeH1->Fill(pClus->Size());pCmFeeH2->Fill(pClus->X(),pClus->Y());}//Pure Feedbacks
+           if(pClus->IsPureMip())     {pCqMipH1->Fill(pClus->Q());pCsMipH1->Fill(pClus->Size());pCmMipH2->Fill(pClus->X(),pClus->Y());}//Pure Mips
+           if(pClus->IsPureCerenkov()){pCqCerH1->Fill(pClus->Q());pCsCerH1->Fill(pClus->Size());pCmCerH2->Fill(pClus->X(),pClus->Y());}//Pure Photons
+           if(pClus->IsPureFeedback()){pCqFeeH1->Fill(pClus->Q());pCsFeeH1->Fill(pClus->Size());pCmFeeH2->Fill(pClus->X(),pClus->Y());}//Pure Feedbacks
         }//clusters loop
       }//isClus
       if(isDig){
-        Rich()->GetLoader()->TreeD()->GetEntry(0);  
         for(Int_t iDigN=0;iDigN<r->Digits(iChamN)->GetEntries();iDigN++){//digits loop
           AliRICHdigit *pDig=(AliRICHdigit*)r->Digits(iChamN)->At(iDigN);
           AliRICHhit   *pHit=hit(pDig->Tid(0));
-          cout<<"chamber "<<iChamN<<" digit "<<iDigN<<endl;
-          TVector2 hitV2=Rich()->C(iChamN)->Glob2Loc(pHit->OutX3()); TVector2 digV2=Rich()->P()->Pad2Loc(pDig->X(),pDig->Y());
+          TVector2 hitV2=R()->C(iChamN)->Glob2Loc(pHit->OutX3()); TVector2 digV2=R()->P()->Pad2Loc(pDig->X(),pDig->Y());
           pHxD->Fill(hitV2.X()-digV2.X()); pHyD->Fill(hitV2.Y()-digV2.Y());
         }//digits loop
       }//isDig
@@ -66,13 +71,10 @@ void ControlPlots()
     Info("ControlPlots","Event %i processed.",iEvtN);
   }//events loop 
   
-  if(isDig)  Rich()->GetLoader()->UnloadDigits();
-  if(isClus) Rich()->GetLoader()->UnloadRecPoints();
+  if(isDig)  R()->GetLoader()->UnloadDigits();
+  if(isClus) R()->GetLoader()->UnloadRecPoints();
   
-  pHxD->Draw(); pHyD->SetLineColor(kRed);pHyD->Draw("same");  
-  
-  pFile->Write();  delete pFile;
-  for(Int_t i=0;i<7;i++) cout<<" chamber "<<i+1<<" n. mips "<<countContrib[i][0]<<" n. ckovs "<<countContrib[i][1]<<" n. fdbks "<<countContrib[i][2]<<endl;
+  pFile->Write(); delete pFile;
 }//void ControlPlots()
 //__________________________________________________________________________________________________
 void MainTrank()
@@ -85,30 +87,30 @@ void MainTrank()
 }
 //__________________________________________________________________________________________________
 void sh()
-{
-  Rich()->GetLoader()->LoadHits();
+{//prints list of hits for a given event
+  R()->GetLoader()->LoadHits();
   
   Int_t iTotalHits=0;
   for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
-    Rich()->GetLoader()->TreeH()->GetEntry(iPrimN);      
-    Rich()->Hits()->Print();
-    iTotalHits+=r->Hits()->GetEntries();
+    R()->GetLoader()->TreeH()->GetEntry(iPrimN);      
+    R()->Hits()->Print();
+    iTotalHits+=R()->Hits()->GetEntries();
   }
   Info("sh","totally %i hits",iTotalHits);
-  Rich()->GetLoader()->UnloadHits();
+  R()->GetLoader()->UnloadHits();
 }
 //__________________________________________________________________________________________________
 AliRICHhit* hit(Int_t tid)
 {//print hits for given tid
-  Rich()->GetLoader()->LoadHits();
-  for(Int_t iPrimN=0;iPrimN<Rich()->GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop      
-    Rich()->GetLoader()->TreeH()->GetEntry(iPrimN);
-    for(Int_t iHitN=0;iHitN<Rich()->Hits()->GetEntries();iHitN++){
-      AliRICHhit *pHit=(AliRICHhit*)Rich()->Hits()->At(iHitN);
-      if(tid==pHit->Track()) {Rich()->GetLoader()->UnloadHits();return pHit;}
+  R()->GetLoader()->LoadHits();
+  for(Int_t iPrimN=0;iPrimN<R()->GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop      
+    R()->GetLoader()->TreeH()->GetEntry(iPrimN);
+    for(Int_t iHitN=0;iHitN<R()->Hits()->GetEntries();iHitN++){
+      AliRICHhit *pHit=(AliRICHhit*)R()->Hits()->At(iHitN);
+      if(tid==pHit->Track()) {R()->GetLoader()->UnloadHits();return pHit;}
     }//hits
   }//prims loop
-  Rich()->GetLoader()->UnloadHits();
+  R()->GetLoader()->UnloadHits();
 }
 //__________________________________________________________________________________________________
 void ss()
@@ -133,25 +135,32 @@ void sd()
   rl->UnloadDigits();
 }
 //__________________________________________________________________________________________________
-void sc()
+void sc(Int_t iEvtN=0)
 {
-  if(rl->LoadRecPoints()) return;
-  r->SetTreeAddress();
-  rl->TreeR()->GetEntry(0);
-  for(int i=1;i<=7;i++) r->Clusters(i)->Print();
-  rl->UnloadRecPoints();
+  Info("sc","List of clusters for event %i",iEvtN);
+  R()->GetLoader()->GetRunLoader()->GetEvent(iEvtN);    
+  if(R()->GetLoader()->LoadRecPoints()) return;
+//  r->SetTreeAddress();
+  R()->GetLoader()->TreeR()->GetEntry(0);
+  Int_t iTotalClusters=0;
+  for(Int_t iChamber=1;iChamber<=7;iChamber++){
+    R()->Clusters(iChamber)->Print();
+    iTotalClusters+=R()->Clusters(iChamber)->GetEntries();
+  }
+  R()->GetLoader()->UnloadRecPoints();
+  Info("sc","totally %i clusters",iTotalClusters);
 }
 //__________________________________________________________________________________________________
 void sp(int tid)
 {
-  Rich()->GetLoader()->GetRunLoader()->LoadHeader();  Rich()->GetLoader()->GetRunLoader()->LoadKinematics();
+  R()->GetLoader()->GetRunLoader()->LoadHeader();  R()->GetLoader()->GetRunLoader()->LoadKinematics();
   
-  if(tid<0||tid>=Rich()->GetLoader()->GetRunLoader()->Stack()->GetNtrack())
-    cout<<"Valid tid number is 0-"<<Rich()->GetLoader()->GetRunLoader()->Stack()->GetNtrack()-1<<" for this event.\n";
+  if(tid<0||tid>=R()->GetLoader()->GetRunLoader()->Stack()->GetNtrack())
+    cout<<"Valid tid number is 0-"<<R()->GetLoader()->GetRunLoader()->Stack()->GetNtrack()-1<<" for this event.\n";
   else
     PrintParticleInfo(tid);
   
-  Rich()->GetLoader()->GetRunLoader()->UnloadKinematics();  Rich()->GetLoader()->GetRunLoader()->UnloadHeader();
+  R()->GetLoader()->GetRunLoader()->UnloadKinematics();  R()->GetLoader()->GetRunLoader()->UnloadHeader();
 }
 //__________________________________________________________________________________________________
 void PrintParticleInfo(int tid)
@@ -164,20 +173,22 @@ void PrintParticleInfo(int tid)
 //__________________________________________________________________________________________________
 Int_t prim(Int_t tid)
 {
-  Rich()->GetLoader()->GetRunLoader()->LoadHeader();  Rich()->GetLoader()->GetRunLoader()->LoadKinematics();
+  R()->GetLoader()->GetRunLoader()->LoadHeader();  R()->GetLoader()->GetRunLoader()->LoadKinematics();
   
-  if(tid<0||tid>=Rich()->GetLoader()->GetRunLoader()->Stack()->GetNtrack())
-    cout<<"Valid tid number is 0-"<<Rich()->GetLoader()->GetRunLoader()->Stack()->GetNtrack()-1<<" for this event.\n";
+  if(tid<0||tid>=R()->GetLoader()->GetRunLoader()->Stack()->GetNtrack())
+    cout<<"Valid tid number is 0-"<<R()->GetLoader()->GetRunLoader()->Stack()->GetNtrack()-1<<" for this event.\n";
   else
     while(1){
-      TParticle *p=Rich()->GetLoader()->GetRunLoader()->GetAliRun()->Stack()->Particle(tid);
+      TParticle *p=R()->GetLoader()->GetRunLoader()->GetAliRun()->Stack()->Particle(tid);
       if(p->GetMother(0)==-1) break;
       tid=p->GetMother(0);
     }
   
-  Rich()->GetLoader()->GetRunLoader()->UnloadKinematics();  Rich()->GetLoader()->GetRunLoader()->UnloadHeader();
+  R()->GetLoader()->GetRunLoader()->UnloadKinematics();  R()->GetLoader()->GetRunLoader()->UnloadHeader();
   return tid;
 }
+
+
 //__________________________________________________________________________________________________
 
 Double_t r2d = TMath::RadToDeg();
@@ -216,21 +227,21 @@ void SD_D()
 {
   Info("SD_D","Start.");  
   extern Int_t kBad; 
-  Rich()->Param()->GenSigmaThMap();
+  R()->P()->GenSigmaThMap();
   rl->LoadSDigits();
   
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
     al->GetEvent(iEventN);    cout<<"Event "<<iEventN<<endl;  
-    rl->MakeTree("D");      Rich()->MakeBranch("D"); //create TreeD with RICH branches 
-    Rich()->ResetSDigits(); Rich()->ResetDigits();   //reset lists of sdigits and digits
+    rl->MakeTree("D");      R()->MakeBranch("D"); //create TreeD with RICH branches 
+    R()->ResetSDigits();    R()->ResetDigits();   //reset lists of sdigits and digits
     rl->TreeS()->GetEntry(0);                        //get sdigits to memory container
-    Rich()->SDigits()->Sort();
+    R()->SDigits()->Sort();
       
     Int_t combiPid=0,chamber=0,x=0,y=0,tid[3],id=0; Double_t q=0;
     Int_t iNdigitsPerPad;//how many sdigits for a given pad
     const int kBad=-101;//??? to be removed in code    
-    for(Int_t i=0;i<Rich()->SDigits()->GetEntries();i++){//sdigits loop (sorted)
-      AliRICHdigit *pSdig=(AliRICHdigit*)Rich()->SDigits()->At(i);
+    for(Int_t i=0;i<R()->SDigits()->GetEntries();i++){//sdigits loop (sorted)
+      AliRICHdigit *pSdig=(AliRICHdigit*)R()->SDigits()->At(i);
       if(pSdig->Id()==id){//still the same pad
         iNdigitsPerPad++; q+=pSdig->Q();  combiPid+=pSdig->CombiPid();
         if(iNdigitsPerPad<=3)
@@ -238,8 +249,8 @@ void SD_D()
         else
           Warning("SDigits2Digits","More then 3 sdigits for the given pad");
       }else{//new pad, add the pevious one
-        if(id!=kBad&&Rich()->Param()->IsOverTh(chamber,x,y,q)) {
-           Rich()->AddDigit(chamber,x,y,q,combiPid,tid);
+        if(id!=kBad&&R()->P()->IsOverTh(chamber,x,y,q)) {
+           R()->AddDigit(chamber,x,y,q,combiPid,tid);
          }
         combiPid=pSdig->CombiPid();chamber=pSdig->C();id=pSdig->Id();
         x=pSdig->X();y=pSdig->Y();
@@ -249,14 +260,14 @@ void SD_D()
       }
     }//sdigits loop (sorted)
   
-    if(Rich()->SDigits()->GetEntries() && Rich()->Param()->IsOverTh(chamber,x,y,q))
-      Rich()->AddDigit(chamber,x,y,q,combiPid,tid);//add the last digit
+    if(R()->SDigits()->GetEntries() && R()->P()->IsOverTh(chamber,x,y,q))
+      R()->AddDigit(chamber,x,y,q,combiPid,tid);//add the last digit
         
     rl->TreeD()->Fill();  
     rl->WriteDigits("OVERWRITE");
   }//events loop
   rl->UnloadSDigits();     rl->UnloadDigits();  
-  Rich()->ResetSDigits(); Rich()->ResetDigits();//reset lists of sdigits and digits
+  R()->ResetSDigits(); R()->ResetDigits();//reset lists of sdigits and digits
   Info("SD_D","Stop.");  
 }//SD_D()
 //__________________________________________________________________________________________________
@@ -283,23 +294,23 @@ void Show()
       if(iPrimN<10) Info("Show","Evt %4i prim %4i has %4i hits from %s (,%7.2f,%7.2f)",
                   iEventN,iPrimN, r->Hits()->GetEntries(), pPrim->GetName(), pPrim->Theta()*r2d,pPrim->Phi()*r2d);
     }//prims loop
-    Info("Show-HITS","Evt %i total:  %i particles %i primaries %i hits",
+    Info("Show-HIT","Evt %i total:  %i particles %i primaries %i hits",
                         iEventN,   iNparticles, iNprims,     iTotalHits);
     if(isSdigits){
       rl->TreeS()->GetEntry(0);
-      Info("Show-SDIGITS","Evt %i contains %5i sdigits",iEventN,r->SDigits()->GetEntries());
+      Info("Show-SDI","Evt %i contains %5i sdigits",iEventN,r->SDigits()->GetEntries());
     }
     if(isDigits){
       rl->TreeD()->GetEntry(0);
       for(int i=1;i<=7;i++)
-        Info("Show-DIGITS","Evt %i chamber %i contains %5i digits",
+        Info("Show-DIG","Evt %i chamber %i contains %5i digits",
                                  iEventN,   i,           r->Digits(i)->GetEntries());
     }else
-        Info("Show-DIGITS","There is no digits for this event");
+        Info("Show-DIG","There is no digits for this event");
     if(isClusters){
       rl->TreeR()->GetEntry(0);
       for(int i=1;i<=7;i++)
-        Info("Show-CLUSTERS","Evt %i chamber %i contains %5i clusters",
+        Info("Show-CLU","Evt %i chamber %i contains %5i clusters",
                                  iEventN,   i,           r->Clusters(i)->GetEntries());
     }
     cout<<endl;
@@ -391,18 +402,18 @@ void TestSD()
   Info("TestSD","Creating test sdigits.");
   TVector3 hit(426.55,246.28,17.21);        
   TVector2 x2=r->C(4)->Glob2Loc(hit);        
-  Int_t iTotQdc=r->Param()->TotQdc(x2,624e-9);        
+  Int_t iTotQdc=r->P()->TotQdc(x2,624e-9);        
   Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
   Int_t padx,pady;
-  Int_t sec=r->Param()->Loc2Pad(x2,padx,pady);
-  r->Param()->Loc2Area(x2,iPadXmin,iPadYmin,iPadXmax,iPadYmax);
+  Int_t sec=r->P()->Loc2Pad(x2,padx,pady);
+  r->P()->Loc2Area(x2,iPadXmin,iPadYmin,iPadXmax,iPadYmax);
   Info("TestSD","Initial hit (%7.2f,%7.2f,%7.2f)->(%7.2f,%7.2f)->(%4i,%4i,%4i) gives %i charge",
                           hit.X(),hit.Y(),hit.Z(),x2.X(),x2.Y(),sec,padx,pady,iTotQdc);
   
   cout<<"left-down=("<<iPadXmin<<","<<iPadYmin<<") right-up=("<<iPadXmax<<','<<iPadYmax<<')'<<endl;
   for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)
     for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++)
-       cout<<r->Param()->FracQdc(x2,iPadX,iPadY)<<endl;
+       cout<<r->P()->FracQdc(x2,iPadX,iPadY)<<endl;
   Info("TestSD","Stop.");
 }//void TestSdigits()
 //__________________________________________________________________________________________________
@@ -428,7 +439,7 @@ void TestC()
 //__________________________________________________________________________________________________
 void TestSeg()
 {
-  AliRICHParam *p=r->Param();
+  AliRICHParam *p=R()->P();
   Int_t padx,pady,sec;
   Double_t x,y;
   Double_t eps=0.0000001;
@@ -474,6 +485,38 @@ void TestSeg()
   sec=p->Loc2Pad(TVector2(x=x5,y=y1),padx,pady); v2=p->Pad2Loc(padx,pady); Info(" 97-  1","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)",x,y,sec,padx,pady,v2.X(),v2.Y());
   sec=p->Loc2Pad(TVector2(x=x6,y=y1),padx,pady); v2=p->Pad2Loc(padx,pady); Info("144-  1","(%7.2f,%7.2f)->(%5i,%5i,%5i) center=(%7.2f,%7.2f)\n",x,y,sec,padx,pady,v2.X(),v2.Y());
    
+  new TCanvas("name","title");
+  gPad->Range(-80,-80,80,80);
+  AliRICHDisplFast::DrawSectors();
+  AliRICHParam *p=new AliRICHParam;
+  
+  Double_t eps=0.0001;
+  Double_t x1=-0.5*p->PcSizeX()+eps; Double_t x2=-0.5*p->SectorSizeX()-p->DeadZone()-eps; Double_t x3=-0.5*p->SectorSizeX()+eps;
+  Double_t x6= 0.5*p->PcSizeX()-eps; Double_t x5= 0.5*p->SectorSizeX()+p->DeadZone()+eps; Double_t x4= 0.5*p->SectorSizeX()-eps;
+  Double_t y1=-0.5*p->PcSizeY()+eps; Double_t y2=-0.5*p->DeadZone()-eps;
+  Double_t y4= 0.5*p->PcSizeY()-eps; Double_t y3= 0.5*p->DeadZone()+eps;
+  
+  TLatex t; t.SetTextSize(0.02);
+  
+  TVector2 v2;
+  v2=AliRICHParam::Pad2Loc( 1,140); t.DrawLatex(v2.X(),v2.Y(),"Sector 1");  
+  v2=AliRICHParam::Pad2Loc(49,140); t.DrawLatex(v2.X(),v2.Y(),"Sector 2");  
+  v2=AliRICHParam::Pad2Loc(97,140); t.DrawLatex(v2.X(),v2.Y(),"Sector 3");  
+  v2=AliRICHParam::Pad2Loc( 1, 60); t.DrawLatex(v2.X(),v2.Y(),"Sector 4");  
+  v2=AliRICHParam::Pad2Loc(49, 60); t.DrawLatex(v2.X(),v2.Y(),"Sector 5");  
+  v2=AliRICHParam::Pad2Loc(97, 60); t.DrawLatex(v2.X(),v2.Y(),"Sector 6");  
+  
+  t.SetTextColor(kRed);
+  t.DrawLatex(-63.08,-70,"-63.08"); t.DrawLatex(-28.00,-70,"-22.76"); t.DrawLatex(-20.16,-70,"-20.16"); //x position        
+  t.DrawLatex( 58.00,-70," 63.08"); t.DrawLatex( 22.76,-70," 22.76"); t.DrawLatex( 15.00,-70," 20.16");       
+  t.DrawLatex(-70,-64,"-65.30"); t.DrawLatex(-70,-5,"-1.30"); //y position 
+  t.DrawLatex(-70, 63," 65.30"); t.DrawLatex(-70, 2," 1.30");        
+  
+  t.SetTextColor(kBlue);  
+  t.DrawLatex(-63.08,-75,"1");  t.DrawLatex(-25.00,-75,"48");  t.DrawLatex(-20.00,-75,"49");       //x pads
+  t.DrawLatex( 18.00,-75,"96"); t.DrawLatex( 23.00,-75,"97");  t.DrawLatex( 60.00,-75,"144");
+  t.DrawLatex(-75,-64,"1");   t.DrawLatex(-75,-5,"80"); //y pads
+  t.DrawLatex(-75, 63,"160"); t.DrawLatex(-75, 2,"81");        
 }//void TestSeg()
 //__________________________________________________________________________________________________
 void TestMenu()
@@ -495,17 +538,18 @@ void menu()
     pMenu->AddButton("hits->sdigits->digits->clusters","MainTrank()","Convert");
     
     pMenu->AddButton("sdigits->digits"  ,"SD_D()" ,"AliRICHDigitizer");
-    pMenu->AddButton("digits->clusters" ,"D_C()"  ,"AliRICHClusterFinder");
+    pMenu->AddButton("digits->resolved clusters" ,"cf=new AliRICHClusterFinder(r);cf->Exec();delete cf;","AliRICHClusterFinder");
+    pMenu->AddButton("digits->raw clusters" ,     "AliRICHParam::SetDeclustering(kFALSE);cf=new AliRICHClusterFinder(r);cf->Exec();delete cf;","AliRICHClusterFinder");
     pMenu->AddButton("clusters->recos"  ,"C_R()"  ,"AliRICHRecon");
 
     pMenu->AddButton("Show",            "Show()","Shows the structure of events in files");
     pMenu->AddButton("Display Fast",    "DisplFast()",           "Display Fast");
     pMenu->AddButton("Control Plots",   "ControlPlots()",        "Display some control histograms");
-    pMenu->AddButton("OLD specials->sdigits",          "OLD_S_SD()",       "Perform first phase converstion");
     
   }else{//it's aliroot, simulate
     pMenu->AddButton("Run",         "a->Run(1)",       "Process!");
     pMenu->AddButton("Geo GUI", "new G3GeometryGUI;","Create instance of G4GeometryGUI"); 
+    pMenu->AddButton("Read RAW","ReadRaw()","Read a list of digits from test beam file"); 
   }
   pMenu->AddButton("Test submenu",    "TestMenu()",            "Shows test submenu");
   pMenu->AddButton("Browser",         "new TBrowser;",         "Start ROOT TBrowser");
@@ -518,3 +562,19 @@ void menu()
 //__________________________________________________________________________________________________
 void DebugOFF(){  Info("DebugOFF","");  a->SetDebug(0);  r->SetDebug(0);  AliLoader::SetDebug(0);}
 void DebugON() {  Info("DebugON","");   a->SetDebug(1);  r->SetDebug(1);  AliLoader::SetDebug(1);}
+
+void ReadRaw()
+{
+  char *sRawFileName="beam/run1822_4sigma.dat";
+  FILE *pRawFile=fopen(sRawFileName,"r");
+  if(!pRawFile){Error("ReadRaw","Something wrong with raw data file %s",sRawFileName); return;}
+  
+  Int_t iNpads=0,q=0,x=0,y=0;
+  
+  while(fscanf(pRawFile,"%i",&iNpads)){
+    Info("ReadRaw","%i pads fired",iNpads);
+    for(Int_t i=0;i<iNpads;i++)
+      fscanf(pRawFile,"%i %i %i",&q,&x,&y);
+  }
+  fclose(pRawFile);
+}
