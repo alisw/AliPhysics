@@ -33,6 +33,7 @@ AliESD::AliESD():
   fTrigger(0),
   fRecoVersion(0),
   fMagneticField(0),
+  fT0zVertex(0),
   fPrimaryVertex(),
   fTracks("AliESDtrack",15000),
   fCaloTracks("AliESDCaloTrack",500),

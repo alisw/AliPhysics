@@ -32,33 +32,64 @@ Int_t AliESDpid::MakePID(AliESD *event)
   for (Int_t i=0; i<ntrk; i++) {
     Int_t ns=AliESDtrack::kSPECIES;
     Double_t p[10]={1.,1.,1.,1.,1.,1.,1.,1.,1.,1.};
+    const Double_t eps=1e-13;
 
     AliESDtrack *t=event->GetTrack(i);
 
     if ((t->GetStatus()&AliESDtrack::kITSpid )!=0) {
       Double_t d[10];
       t->GetITSpid(d);
-      for (Int_t j=0; j<ns; j++) p[j]*=d[j];
+      Int_t j, ok=0;
+      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      if (ok) 
+      for (j=0; j<ns; j++) p[j]*=d[j];
     }
 
     if ((t->GetStatus()&AliESDtrack::kTPCpid )!=0) {
       Double_t d[10];
       t->GetTPCpid(d);
-      for (Int_t j=0; j<ns; j++) p[j]*=d[j];
+      Int_t j, ok=0;
+      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      if (ok) 
+      for (j=0; j<ns; j++) p[j]*=d[j];
     }
 
     if ((t->GetStatus()&AliESDtrack::kTRDpid )!=0) {
       Double_t d[10];
       t->GetTRDpid(d);
-      for (Int_t j=0; j<ns; j++) p[j]*=d[j];
+      Int_t j, ok=0;
+      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      if (ok) 
+      for (j=0; j<ns; j++) p[j]*=d[j];
     }
 
     if (t->GetP()>0.7) // accept the TOF only for the high momenta
-      if ((t->GetStatus()&AliESDtrack::kTOFpid )!=0) {
-	Double_t d[10];
-	t->GetTOFpid(d);
-	for (Int_t j=0; j<ns; j++) p[j]*=d[j];
-      }
+    if ((t->GetStatus()&AliESDtrack::kTOFpid )!=0) {
+      Double_t d[10];
+      t->GetTOFpid(d);
+      Int_t j, ok=0;
+      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      if (ok) 
+      for (j=0; j<ns; j++) p[j]*=d[j];
+    }
+
+    if ((t->GetStatus()&AliESDtrack::kPHOSpid )!=0) {
+      Double_t d[10];
+      t->GetPHOSpid(d);
+      Int_t j, ok=0;
+      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      if (ok) 
+      for (j=0; j<ns; j++) p[j]*=d[j];
+    }
+
+    if ((t->GetStatus()&AliESDtrack::kRICHpid )!=0) {
+      Double_t d[10];
+      t->GetRICHpid(d);
+      Int_t j, ok=0;
+      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      if (ok) 
+      for (j=0; j<ns; j++) p[j]*=d[j];
+    }
 
     t->SetESDpid(p);
   }

@@ -55,19 +55,24 @@ fTRDncls(0),
 fTRDsignal(0),
 fTOFchi2(0),
 fTOFindex(0),
-fTOFsignal(-1)
+fTOFsignal(-1),
+fPHOSsignal(-1),
+fRICHsignal(-1)
 {
   //
   // The default ESD constructor 
   //
   for (Int_t i=0; i<kSPECIES; i++) {
-    fTrackTime[i]=0;
-    fR[i]=0;
-    fITSr[i]=0;
-    fTPCr[i]=0;
-    fTRDr[i]=0;
-    fTOFr[i]=0;
+    fTrackTime[i]=0.;
+    fR[i]=1.;
+    fITSr[i]=1.;
+    fTPCr[i]=1.;
+    fTRDr[i]=1.;
+    fTOFr[i]=1.;
+    fPHOSr[i]=1.;
+    fRICHr[i]=1.;
   }
+  fPHOSpos[0]=fPHOSpos[1]=fPHOSpos[2]=0.;
   Int_t i;
   for (i=0; i<5; i++)  { fRp[i]=0.; fCp[i]=0.; fIp[i]=0.; fOp[i]=0.;}
   for (i=0; i<15; i++) { fRc[i]=0.; fCc[i]=0.; fIc[i]=0.; fOc[i]=0.;   }
@@ -81,7 +86,7 @@ fTOFsignal(-1)
 }
 
 //_______________________________________________________________________
-Float_t AliESDtrack::GetMass() const {
+Double_t AliESDtrack::GetMass() const {
   // Returns the mass of the most probable particle type
   Float_t max=0.;
   Int_t k=-1;
@@ -484,6 +489,37 @@ void AliESDtrack::GetTOFpid(Double_t *p) const {
   // Gets probabilities of each particle type (in TOF)
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fTOFr[i];
 }
+
+
+
+//_______________________________________________________________________
+void AliESDtrack::SetPHOSpid(const Double_t *p) {  
+  // Sets the probability of each particle type (in PHOS)
+  for (Int_t i=0; i<kSPECIES; i++) fPHOSr[i]=p[i];
+  SetStatus(AliESDtrack::kPHOSpid);
+}
+
+//_______________________________________________________________________
+void AliESDtrack::GetPHOSpid(Double_t *p) const {
+  // Gets probabilities of each particle type (in PHOS)
+  for (Int_t i=0; i<kSPECIES; i++) p[i]=fPHOSr[i];
+}
+
+
+//_______________________________________________________________________
+void AliESDtrack::SetRICHpid(const Double_t *p) {  
+  // Sets the probability of each particle type (in RICH)
+  for (Int_t i=0; i<kSPECIES; i++) fRICHr[i]=p[i];
+  SetStatus(AliESDtrack::kRICHpid);
+}
+
+//_______________________________________________________________________
+void AliESDtrack::GetRICHpid(Double_t *p) const {
+  // Gets probabilities of each particle type (in RICH)
+  for (Int_t i=0; i<kSPECIES; i++) p[i]=fRICHr[i];
+}
+
+
 
 //_______________________________________________________________________
 void AliESDtrack::SetESDpid(const Double_t *p) {  

@@ -33,7 +33,7 @@ public:
   void GetExternalCovariance(Double_t cov[15]) const;
   Double_t GetIntegratedLength() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
-  Float_t GetMass() const;
+  Double_t GetMass() const;
   Double_t GetP() const;
   void GetPxPyPz(Double_t *p) const;
   void GetXYZ(Double_t *r) const;
@@ -91,13 +91,32 @@ public:
   void    GetTOFpid(Double_t *p) const;
   UInt_t  GetTOFcluster() const {return fTOFindex;}
   void  SetTOFcluster(UInt_t index) {fTOFindex=index;}
+  
+  void    SetRICHsignal(Double_t beta) {fRICHsignal=beta;}
+  Float_t GetRICHsignal() const {return fRICHsignal;}
+  void    SetRICHpid(const Double_t *p);
+  void    GetRICHpid(Double_t *p) const;
+  
+  void SetPHOSposition(const Double_t *pos)  {
+    fPHOSpos[0] = pos[0]; fPHOSpos[1]=pos[1]; fPHOSpos[2]=pos[2];
+  }
+  void SetPHOSsignal(Double_t ene) {fPHOSsignal = ene; }
+  void SetPHOSpid(const Double_t *p);
+  void GetPHOSposition(Double_t *pos) const {
+    pos[0]=fPHOSpos[0]; pos[1]=fPHOSpos[1]; pos[2]=fPHOSpos[2];
+  }
+  Float_t GetPHOSsignal() const {return fPHOSsignal;}
+  void GetPHOSpid(Double_t *p) const;  
+
   Bool_t IsOn(Int_t mask){ return (fFlags&mask)>0;}
+  Bool_t IsRICH(){ return fFlags&kRICHpid;}
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
     kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
     kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
     kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
-    kTRDStop=0x10000,
+    kPHOSpid=0x10000, kRICHpid=0x20000,
+    kTRDStop=0x20000000,
     kESDpid=0x40000000,
     kTIME=0x80000000
   }; 
@@ -145,6 +164,7 @@ protected:
   Float_t fTPCsignal;      // detector's PID signal
   Float_t fTPCr[kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTPCLabel;       // label according TPC
+
   // TRD related track information
   Float_t fTRDchi2;        // chi2 in the TRD
   Int_t   fTRDncls;        // number of clusters assigned in the TRD
@@ -159,8 +179,15 @@ protected:
   Float_t fTOFsignal;      // detector's PID signal
   Float_t fTOFr[kSPECIES]; // "detector response probabilities" (for the PID)
 
-  // HMPID related track information
+  // PHOS related track information 
+  Float_t fPHOSpos[3]; //position localised by PHOS in global coordinate system
+  Float_t fPHOSsignal; // energy measured by PHOS
+  Float_t fPHOSr[kSPECIES]; // PID information from PHOS
 
+  // HMPID related track information
+  Float_t fRICHsignal;     // detector's PID signal (beta for RICH)
+  Float_t fRICHr[kSPECIES];// "detector response probabilities" (for the PID)
+  	
   ClassDef(AliESDtrack,2)  //ESDtrack 
 };
 

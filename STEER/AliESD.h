@@ -87,6 +87,9 @@ public:
   Int_t GetNumberOfMuonTracks() const {return fMuonTracks.GetEntriesFast();}
   Int_t GetNumberOfV0s()      const {return fV0s.GetEntriesFast();}
   Int_t GetNumberOfCascades() const {return fCascades.GetEntriesFast();}
+  
+  Float_t GetT0zVertex() const {return fT0zVertex;}
+  void SetT0zVertex(Float_t z) {fT0zVertex=z;}
 
   void  Print(Option_t *option="") const;
    
@@ -99,7 +102,8 @@ protected:
   Int_t        fRecoVersion;     // Version of reconstruction 
   Float_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
 
-  AliESDVertex  fPrimaryVertex;  // Primary vertex
+  Float_t      fT0zVertex;       // vertex z position estimated by the START
+  AliESDVertex  fPrimaryVertex;  // Primary vertex estimated by the ITS
 
   TClonesArray  fTracks;         // ESD tracks
   TClonesArray  fCaloTracks;     // Calorimeters' ESD tracks
