@@ -75,5 +75,5 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
 
   fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, trsl) ;
 
-  fPID->GetParticleType(trsl, rpl) ; 
+  fPID->MakeParticles(trsl, rpl) ; 
 }

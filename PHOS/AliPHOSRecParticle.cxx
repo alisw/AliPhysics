@@ -40,19 +40,8 @@ ClassImp(AliPHOSRecParticle)
   fPx               = fE * momdir.X() ; 
   fPy               = fE * momdir.Y() ; 
   fPz               = fE * momdir.Z() ; 
-
-  fType = kUNDEFINED ; // undefined
-                            
-  if( ts->GetPpsdUp() == 0 ) {     // Neutral
-
-    if( ts->GetPpsdLow() == 0 )    // Neutral  
-      fType = kNEUTRAL ;   
-    else                           // Gamma
-      fType = kGAMMA ;               
-  }
-  else                            // Charged           
-    fType = kCHARGED ;   
-  
+  fType             = kUNDEFINED ;  
+                           
 }
 
 //____________________________________________________________________________

@@ -49,7 +49,7 @@ ClassImp( AliPHOSPIDv1)
 
 
 //____________________________________________________________________________
-void  AliPHOSPIDv1::GetParticleType(TrackSegmentsList * trsl, RecParticlesList * rpl)
+void  AliPHOSPIDv1::MakeParticles(TrackSegmentsList * trsl, RecParticlesList * rpl)
 {
   // main function, does the job
 
@@ -57,11 +57,26 @@ void  AliPHOSPIDv1::GetParticleType(TrackSegmentsList * trsl, RecParticlesList *
   AliPHOSTrackSegment * tracksegment ; 
   Int_t index = 0 ; 
   AliPHOSRecParticle * rp ; 
+  Int_t type ; 
+
   while ( (tracksegment = (AliPHOSTrackSegment *)next()) ) {
     new( (*rpl)[index] ) AliPHOSRecParticle(tracksegment) ;
     rp = (AliPHOSRecParticle *)(*rpl)[index] ; 
-    Int_t type =  rp->GetType() ;  
-    if ( type == kNEUTRAL ) { // resolve neutral baryon from photon
+
+    // try to figure out the type of particle:
+    //    1. just looking at the PPSD information 
+    if( tracksegment->GetPpsdUp() == 0 ) {     // Neutral
+      
+      if( tracksegment->GetPpsdLow() == 0 )    // Neutral  
+	type = kNEUTRAL ;   
+      else                           // Gamma
+	type = kGAMMA ;               
+    }
+    else                            // Charged           
+      type = kCHARGED ;   
+
+    //   2. from the shower profile analysis
+    if ( type == kNEUTRAL ) { 
       AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ; 
       Float_t * lambda = new Float_t[2]; 
       recp->GetElipsAxis(lambda) ; 
@@ -72,6 +87,8 @@ void  AliPHOSPIDv1::GetParticleType(TrackSegmentsList * trsl, RecParticlesList *
 	type = kNEUTRALHADRON ; 
       delete lambda ; 
    }
+
+    //   3. from the shower dispersion 
     if (type == kCHARGED) { 
       if( tracksegment->GetEmcRecPoint()->GetDispersion() > fCutOnDispersion)  // shower dispersion cut
 	type = kCHARGEDHADRON ;

@@ -249,7 +249,7 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 		      //fhNeutralEMPositionY->Fill(recpart. ) ; 
 		      //cout << "NEUTRAL EM" << endl;
 		      break ;
-		    case kCHARGEDHADRON :
+		    case kCHARGEDHADRON:
 		      fhChargedHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhChargedHadronPositionX->Fill(recpart. ) ;
 		      //fhChargedHadronPositionY->Fill(recpart. ) ; 
