@@ -11,7 +11,7 @@ class AliGenMUONlib :
   public AliGenLib
 {
  public:
-    enum constants{kPhi, kJpsi, kUpsilon, kCharm, kBeauty, kPion, kKaon};
+    enum constants{kPhi, kOmega, kEta, kJpsi, kUpsilon, kCharm, kBeauty, kPion, kKaon};
     
     
 // pions
@@ -27,6 +27,14 @@ class AliGenMUONlib :
     static Double_t PtPhi( Double_t *px, Double_t *dummy);
     static Double_t YPhi( Double_t *px, Double_t *dummy);
     static Int_t    IpPhi(TRandom *ran);
+// Omega
+    static Double_t PtOmega( Double_t *px, Double_t *dummy);
+    static Double_t YOmega( Double_t *px, Double_t *dummy);
+    static Int_t    IpOmega(TRandom *ran);
+// Eta
+    static Double_t PtEta( Double_t *px, Double_t *dummy);
+    static Double_t YEta( Double_t *px, Double_t *dummy);
+    static Int_t    IpEta(TRandom *ran);
 // J/Psi     
     static Double_t PtJpsi( Double_t *px, Double_t *dummy);
     static Double_t YJpsi(Double_t *py, Double_t *dummy);
