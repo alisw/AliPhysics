@@ -606,6 +606,7 @@ Double_t AliAODPair::GetRStar()
 
   return rstar;
 }
+/************************************************************************/
 
 void   AliAODPair::MirrorSecond()
 {
@@ -613,7 +614,9 @@ void   AliAODPair::MirrorSecond()
 //for its deletion is responsible who calls this method
   fPart2 = (AliVAODParticle*)fPart2->Clone();
   fPart2->SetMomentum(-fPart2->Px(),-fPart2->Py(),-fPart2->Pz(),fPart2->E());
+  Changed();
 }
+/************************************************************************/
 
 void   AliAODPair::DeleteSecond()
 {
