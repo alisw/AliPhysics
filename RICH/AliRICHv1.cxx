@@ -70,7 +70,8 @@ Bool_t AliRICHv1::IsLostByFresnel()
 {
   TLorentzVector p4;
   Double_t mom[3],localMom[3];
-  gMC->TrackMomentum(p4); mom[0]=p4(0);   mom[1]=p4(1);   mom[2]=p4(2);   mom[3]=p4(3);
+  gMC->TrackMomentum(p4);   mom[0]=p4(1);   mom[1]=p4(2);   mom[2]=p4(3);
+  localMom[0]=0; localMom[1]=0; localMom[2]=0;
   gMC->Gmtod(mom,localMom,2);
   Double_t localTc    = localMom[0]*localMom[0]+localMom[2]*localMom[2];
   Double_t localTheta = TMath::ATan2(TMath::Sqrt(localTc),localMom[1]);
