@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/01/26 21:47:21  morsch
+Use access functions to AliMUONDigit member data.
+
 Revision 1.7  2001/01/25 11:43:48  morsch
 Add a "real" default constructor.
 
@@ -104,7 +107,7 @@ Int_t AliMUONHitMapA1::CheckedIndex(Int_t ix, Int_t iy) const
 {
 // Return checked indices ix, iy
     Int_t index=2*fNpy*(ix+fNpx)+(iy+fNpy);
-    if (index > fMaxIndex) {
+    if (index >= fMaxIndex) {
 	printf("\n \n \n Try to read/write outside array !!!! \n \n %d %d %d %d %d %d",
 	       ix,iy, fMaxIndex, index, fNpx, fNpy);
 	return  fMaxIndex-1;
