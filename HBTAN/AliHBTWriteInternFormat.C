@@ -88,7 +88,7 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
    }
   else if(!intern)
    {
-    reader = new AliHBTReaderInternal("kine.root");
+    reader = new AliHBTReaderInternal("TPC.root");
    }
   else
    {
@@ -105,7 +105,7 @@ void AliHBTWriteInternFormat(Option_t* datatype, Option_t* processopt="TracksAnd
      dirs->SetOwner();
      for (Int_t i = first; i<=last; i++)
       { 
-        sprintf(buff,"%s/%s/%s/%05d",basedir,field,serie,i);
+        sprintf(buff,"%s/%s/%s/%d",basedir,field,serie,i);
         TObjString *odir= new TObjString(buff);
         dirs->Add(odir);
       }
