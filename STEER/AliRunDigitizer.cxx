@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/07/28 10:44:32  hristov
+Loop variable declared once; typos corrected
+
 Revision 1.1  2001/07/27 12:59:00  jchudoba
 Manager class for merging/digitization
 
@@ -109,7 +112,7 @@ ClassImp(AliRunDigitizer)
   }
   fkMASKSTEP = 10000000;
   fkMASK[0] = 0;
-  for (i=0;i<MAXFILESTOMERGE;i++) {
+  for (i=1;i<MAXFILESTOMERGE;i++) {
     fkMASK[i] = fkMASK[i-1] + fkMASKSTEP;
   }
   fInputFileNames = new TClonesArray("TObjString",1);
