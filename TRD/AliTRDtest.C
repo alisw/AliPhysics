@@ -10,7 +10,12 @@ Int_t AliTRDtest()
   gAlice->Init("$(ALICE_ROOT)/TRD/AliTRDconfig.C");
 
   // Run one event and create the hits
+  gAlice->SetDebug(2);
   gAlice->Run(1);
+
+  if (gAlice) delete gAlice;
+  TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
+  gAlice = (AliRun *) file->Get("gAlice");
 
   // Analyze the TRD hits
   gROOT->LoadMacro("$(ALICE_ROOT)/TRD/AliTRDanalyzeHits.C");
@@ -19,6 +24,10 @@ Int_t AliTRDtest()
   // Run the digitization
   gROOT->LoadMacro("$(ALICE_ROOT)/TRD/AliTRDcreateDigits.C");
   if (rc = AliTRDcreateDigits()) return rc;
+
+  if (gAlice) delete gAlice;
+  TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
+  gAlice = (AliRun *) file->Get("gAlice");
 
   // Analyze the digits
   gROOT->LoadMacro("$(ALICE_ROOT)/TRD/AliTRDanalyzeDigits.C");

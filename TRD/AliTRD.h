@@ -19,6 +19,7 @@ class AliDigit;
 class AliTRDhit;
 class AliTRDsim;
 class AliTRDgeometry;
+class AliTRDdataArrayI;
 
 //_____________________________________________________________________________
 class AliTRD : public AliDetector {
@@ -47,6 +48,7 @@ class AliTRD : public AliDetector {
   virtual void       Init();
   virtual Int_t      IsVersion() const = 0;
   virtual void       MakeBranch(Option_t* option, char *file=0);     
+  virtual void       ResetDigits();     
   virtual void       ResetRecPoints();
   virtual void       StepManager() = 0; 
   virtual void       SetTreeAddress();
@@ -70,6 +72,8 @@ class AliTRD : public AliDetector {
   virtual Int_t      GetSensSector() const      = 0;
   virtual Int_t      GetSensSectorRange() const = 0; 
 
+  virtual void       Hits2Digits();
+  virtual void       Hits2SDigits();
   virtual void       SDigits2Digits();
 
   virtual AliTRDsim *CreateTR()     = 0;
@@ -77,20 +81,23 @@ class AliTRD : public AliDetector {
 
  protected:
 
-  Int_t              fGasMix;            //  Gas mixture. 0: Xe/Isobutane 1: Xe/CO2
+  Int_t                fGasMix;             //  Gas mixture. 0: Xe/Isobutane 1: Xe/CO2
 
-  AliTRDgeometry    *fGeometry;          //  The TRD geometry
+  AliTRDgeometry      *fGeometry;           //  The TRD geometry
 
-  TObjArray         *fRecPoints;         //  Array of reconstructed points
-  Int_t              fNRecPoints;        //! Number of reconstructed points
+  TObjArray           *fRecPoints;          //  Array of reconstructed points
+  Int_t                fNRecPoints;         //! Number of reconstructed points
 
-  Float_t            fGasDensity;        //  The density of the drift gas
-  Float_t            fFoilDensity;       //  The density of the entrance window foil
+  Float_t              fGasDensity;         //  The density of the drift gas
+  Float_t              fFoilDensity;        //  The density of the entrance window foil
 
-  Int_t              fDrawTR;            //  Switches marking the TR photons in the display
-  Int_t              fDisplayType;       //  Display type (0: normal, 1: detailed) 
+  Int_t                fDrawTR;             //  Switches marking the TR photons in the display
+  Int_t                fDisplayType;        //  Display type (0: normal, 1: detailed) 
 
-  ClassDef(AliTRD,1)                     //  Transition Radiation Detector base class
+  AliTRDdataArrayI    *fDigitsArray;        //! Digits array
+  AliTRDdataArrayI    *fDictionaryArray[3]; //! Dictionary array 
+
+  ClassDef(AliTRD,2)                        //  Transition Radiation Detector base class
 
 };
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/01 14:53:21  cblume
+Merge with TRD-develop
+
 Revision 1.1.4.3  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -54,6 +57,7 @@ Add new TRD classes
 #include "AliTRD.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDsegmentArray.h"
+#include "AliTRDdataArray.h"
 
 ClassImp(AliTRDsegmentArray)
 

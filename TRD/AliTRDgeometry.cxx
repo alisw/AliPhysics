@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/02/14 18:22:26  cblume
+Change in the geometry of the padplane
+
 Revision 1.6  2000/11/01 14:53:20  cblume
 Merge with TRD-develop
 
@@ -212,8 +215,8 @@ void AliTRDgeometry::Init()
   // The pad column (rphi-direction)  
   SetNColPad(96);
 
-  // The time bucket
-  SetNTimeBin(30);
+  // The time bucket. Default is 100 ns timbin size
+  SetNTimeBin(15);
 
   // The rotation matrix elements
   Float_t phi = 0;

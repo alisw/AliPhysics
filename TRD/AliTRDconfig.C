@@ -120,7 +120,8 @@ void Config()
     // understandable to the CAD system EUCLID. The default (=0) means that you 
     // dont want to use this facility.
     //
-    AliITS *ITS  = new AliITSv5("ITS","normal ITS");
+    //AliITS *ITS  = new AliITSv5("ITS","normal ITS");
+    AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
     ITS->SetEUCLID(0);
   }
 
@@ -141,20 +142,25 @@ void Config()
     //
     //-----------------------------------------------------------------------------
 
-    gROOT->LoadMacro("SetTPCParam.C");
-    AliTPCParam *param = SetTPCParam();
-    AliTPC *TPC  = new AliTPCv1("TPC","Default"); //v1 is default
-    TPC->SetParam(param); // pass the parameter object to the TPC
-
+    //gROOT->LoadMacro("SetTPCParam.C");
+    //AliTPCParam *param = SetTPCParam();
+    //AliTPC *TPC  = new AliTPCv2("TPC","Default"); //v1 is default
+    //TPC->SetParam(param); // pass the parameter object to the TPC
+    //
     // set gas mixture
-    TPC->SetGasMixt(2,20,10,-1,0.9,0.1,0.);
-    TPC->SetSecAL(4);
-    TPC->SetSecAU(4);
-    TPC->SetSecLows(1,  2,  3, 19, 20, 21);
-    TPC->SetSecUps(37, 38, 39, 37+18, 38+18, 39+18, -1, -1, -1, -1, -1, -1);
-    TPC->SetSens(1);
+    //TPC->SetGasMixt(2,20,10,-1,0.9,0.1,0.);
+    //TPC->SetSecAL(4);
+    //TPC->SetSecAU(4);
+    //TPC->SetSecLows(1,  2,  3, 19, 20, 21);
+    //TPC->SetSecUps(37, 38, 39, 37+18, 38+18, 39+18, -1, -1, -1, -1, -1, -1);
+    //TPC->SetSens(1);
+    //
+    //if (TPC->IsVersion()==1) param->Write(param->GetTitle());
 
-    if (TPC->IsVersion()==1) param->Write(param->GetTitle());
+    AliTPC *TPC  = new AliTPCv2("TPC","Default");
+    // All sectors included 
+    TPC->SetSecAL(-1);
+    TPC->SetSecAU(-1);
 
   }
 

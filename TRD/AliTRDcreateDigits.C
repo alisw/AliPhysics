@@ -16,32 +16,25 @@ Int_t AliTRDcreateDigits()
   // Create the TRD digitzer 
   AliTRDdigitizer *Digitizer = new AliTRDdigitizer("digitizer","Digitizer class");
 
-  // Initialize the TRD and the geometry
-  if (!(Digitizer->InitDetector())) {
-    cout << "<AliTRDcreateDigits> No TRD geometry found" << endl;
-    rc = 2;
-    return rc;
-  }
-
   // Set the parameter
   Digitizer->SetDiffusion();
   Digitizer->SetVerbose(1);
 
   // Create the digits
   if (!(Digitizer->MakeDigits())) {
-    rc = 3;
+    rc = 2;
     return rc;
   }
 
   // Write the digits into the input file
   if (!(Digitizer->WriteDigits())) {
-    rc = 4;
+    rc = 3;
     return rc;
   }
 
   // Save the digitizer class in the AliROOT file
   if (!(Digitizer->Write())) {
-    rc = 5;
+    rc = 4;
     return rc;
   }
 

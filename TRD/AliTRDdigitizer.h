@@ -35,29 +35,37 @@ class AliTRDdigitizer : public TNamed {
   virtual void         Init();
   virtual Bool_t       Open(const Char_t *name, Int_t nEvent = 0);
   virtual Bool_t       MakeDigits();
+  virtual void         ReInit();
+  virtual Bool_t       SumSDigits();
   virtual Bool_t       WriteDigits();
   virtual Bool_t       InitDetector();
 
-  virtual void         SetGasGain(Float_t gasgain)      { fGasGain       = gasgain;  };
-  virtual void         SetNoise(Float_t noise)          { fNoise         = noise;    };
-  virtual void         SetChipGain(Float_t chipgain)    { fChipGain      = chipgain; };
-  virtual void         SetADCoutRange(Float_t range)    { fADCoutRange   = range;    };
-  virtual void         SetADCinRange(Float_t range)     { fADCinRange    = range;    };
-  virtual void         SetADCthreshold(Int_t thresh)    { fADCthreshold  = thresh;   };
-  virtual void         SetDiffusion(Int_t diffOn = 1)   { fDiffusionOn   = diffOn;   };
-  virtual void         SetDiffusionT(Float_t diff)      { fDiffusionT    = diff;     };
-  virtual void         SetDiffusionL(Float_t diff)      { fDiffusionL    = diff;     };
-  virtual void         SetElAttach(Int_t elOn = 1)      { fElAttachOn    = elOn;     };
-  virtual void         SetElAttachProp(Float_t prop)    { fElAttachProp  = prop;     };
-  virtual void         SetExB(Int_t exbOn = 1)          { fExBOn         = exbOn;    };
-  virtual void         SetOmegaTau(Float_t ot)          { fOmegaTau      = ot;       };
-  virtual void         SetPadResponse(Int_t prfOn = 1)  { fPRFOn         = prfOn;    };
+  virtual void         SetGasGain(Float_t gasgain)      { fGasGain        = gasgain;  };
+  virtual void         SetNoise(Float_t noise)          { fNoise          = noise;    };
+  virtual void         SetChipGain(Float_t chipgain)    { fChipGain       = chipgain; };
+  virtual void         SetADCoutRange(Float_t range)    { fADCoutRange    = range;    };
+  virtual void         SetADCinRange(Float_t range)     { fADCinRange     = range;    };
+  virtual void         SetADCthreshold(Int_t thresh)    { fADCthreshold   = thresh;   };
+  virtual void         SetDiffusion(Int_t diffOn = 1)   { fDiffusionOn    = diffOn;   };
+  virtual void         SetDiffusionT(Float_t diff)      { fDiffusionT     = diff;     };
+  virtual void         SetDiffusionL(Float_t diff)      { fDiffusionL     = diff;     };
+  virtual void         SetElAttach(Int_t elOn = 1)      { fElAttachOn     = elOn;     };
+  virtual void         SetElAttachProp(Float_t prop)    { fElAttachProp   = prop;     };
+  virtual void         SetExB(Int_t exbOn = 1)          { fExBOn          = exbOn;    };
+  virtual void         SetOmegaTau(Float_t ot)          { fOmegaTau       = ot;      
+                                                          ReInit();                   };
+  virtual void         SetPadResponse(Int_t prfOn = 1)  { fPRFOn          = prfOn;    };
   virtual void         SetPRF(TF1 *prf);
-  virtual void         SetTimeResponse(Int_t trfOn = 1) { fTRFOn         = trfOn;    };
+  virtual void         SetTimeResponse(Int_t trfOn = 1) { fTRFOn          = trfOn;   
+                                                          ReInit();                   };
   virtual void         SetTRF(TF1 *trf);
-  virtual void         SetDriftVelocity(Float_t v)      { fDriftVelocity = v;        };
-  virtual void         SetCompress(Int_t c = 1)         { fCompress      = c;        };
-  virtual void         SetVerbose(Int_t v = 1)          { fVerbose       = v;        };
+  virtual void         SetDriftVelocity(Float_t v)      { fDriftVelocity  = v;       
+                                                          ReInit();                   };
+  virtual void         SetPadCoupling(Float_t v)        { fPadCoupling    = v;        };
+  virtual void         SetTimeCoupling(Float_t v)       { fTimeCoupling   = v;        };
+  virtual void         SetCompress(Int_t c = 1)         { fCompress       = c;        };
+  virtual void         SetVerbose(Int_t v = 1)          { fVerbose        = v;        };
+  virtual void         SetSDigits(Int_t v = 1)          { fSDigits        = v;        };
 
   AliTRDdigitsManager *Digits() const                   { return fDigits;            };
 
@@ -74,7 +82,11 @@ class AliTRDdigitizer : public TNamed {
   virtual TF1         *GetPadResponse() const           { return fPRF;               };
   virtual TF1         *GetTimeResponse() const          { return fTRF;               };
   virtual Float_t      GetDriftVelocity() const         { return fDriftVelocity;     };
+  virtual Float_t      GetPadCoupling() const           { return fPadCoupling;       };
+  virtual Float_t      GetTimeCoupling() const          { return fTimeCoupling;      };
   virtual Bool_t       GetCompress() const              { return fCompress;          };
+  virtual Bool_t       GetSDigits() const               { return fSDigits;           };
+  virtual Float_t      GetTimeBinWidth() const          { return fTimeBinWidth;      };
 
  protected:
 
@@ -90,6 +102,8 @@ class AliTRDdigitizer : public TNamed {
   Float_t              fChipGain;        // Electronics gain
   Float_t              fADCoutRange;     // ADC output range (number of channels)
   Float_t              fADCinRange;      // ADC input range (input charge)
+  Float_t              fSinRange;        // Input range for summable digits 
+  Float_t              fSoutRange;       // Output range for summable digits 
   Int_t                fADCthreshold;    // ADC threshold in ADC channel
   Int_t                fDiffusionOn;     // Switch for the diffusion
   Float_t              fDiffusionT;      // Diffusion in transverse direction
@@ -115,8 +129,12 @@ class AliTRDdigitizer : public TNamed {
   Float_t              fTRFhi;           // Higher boundary of the TRF
   Float_t              fTRFwid;          // Bin width of the integrated TRF
   Float_t              fDriftVelocity;   // Drift velocity (cm / mus)
+  Float_t              fTimeBinWidth;    // Time bin width in ns
+  Float_t              fPadCoupling;     // Pad coupling factor
+  Float_t              fTimeCoupling;    // Time coupling factor (image charge of moving ions)
   Bool_t               fCompress;        // Switch to keep only compressed data in memory
   Int_t                fVerbose;         // Sets the verbose level
+  Bool_t               fSDigits;         // Switch for the summable digits
 
  private:
 
@@ -126,9 +144,9 @@ class AliTRDdigitizer : public TNamed {
   virtual Float_t      TimeResponse(Float_t time);  
   virtual Bool_t       CheckDetector(Int_t plane, Int_t chamber, Int_t sector);
   virtual void         SamplePRF();
-  virtual void         IntegrateTRF();
+  virtual void         SampleTRF();
 
-  ClassDef(AliTRDdigitizer,2)            // Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,3)            // Produces TRD-Digits
 
 };
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2001/02/25 20:19:00  hristov
+Minor correction: loop variable declared only once for HP, Sun
+
 Revision 1.19  2001/02/14 18:22:26  cblume
 Change in the geometry of the padplane
 
@@ -146,45 +149,51 @@ AliTRDdigitizer::AliTRDdigitizer():TNamed()
   // AliTRDdigitizer default constructor
   //
 
-  fInputFile     = NULL;
-  fDigits        = NULL;
-  fTRD           = NULL;
-  fGeo           = NULL;
-  fPRF           = NULL;
-  fPRFsmp        = NULL;
-  fTRF           = NULL;
-  fTRFint        = NULL;
+  fInputFile      = NULL;
+  fDigits         = NULL;
+  fTRD            = NULL;
+  fGeo            = NULL;
+  fPRF            = NULL;
+  fPRFsmp         = NULL;
+  fTRF            = NULL;
+  fTRFint         = NULL;
 
-  fEvent         = 0;
-  fGasGain       = 0.0;
-  fNoise         = 0.0;
-  fChipGain      = 0.0;
-  fADCoutRange   = 0.0;
-  fADCinRange    = 0.0;
-  fADCthreshold  = 0;
-  fDiffusionOn   = 0;
-  fDiffusionT    = 0.0;
-  fDiffusionL    = 0.0;
-  fElAttachOn    = 0;
-  fElAttachProp  = 0.0;
-  fExBOn         = 0;
-  fOmegaTau      = 0.0;
-  fPRFOn         = 0;
-  fTRFOn         = 0;
-  fDriftVelocity = 0.0;
+  fEvent          = 0;
+  fGasGain        = 0.0;
+  fNoise          = 0.0;
+  fChipGain       = 0.0;
+  fSinRange       = 0.0;
+  fSoutRange      = 0.0;
+  fADCoutRange    = 0.0;
+  fADCinRange     = 0.0;
+  fADCthreshold   = 0;
+  fDiffusionOn    = 0;
+  fDiffusionT     = 0.0;
+  fDiffusionL     = 0.0;
+  fElAttachOn     = 0;
+  fElAttachProp   = 0.0;
+  fExBOn          = 0;
+  fOmegaTau       = 0.0;
+  fPRFOn          = 0;
+  fTRFOn          = 0;
+  fDriftVelocity  = 0.0;
+  fPadCoupling    = 0.0;
+  fTimeCoupling   = 0.0;
+  fTimeBinWidth   = 0.0;
 
-  fPRFbin        = 0;
-  fPRFlo         = 0.0;
-  fPRFhi         = 0.0;
-  fPRFwid        = 0.0;
-  fPRFpad        = 0;
-  fTRFbin        = 0;
-  fTRFlo         = 0.0;
-  fTRFhi         = 0.0;
-  fTRFwid        = 0.0;
+  fPRFbin         = 0;
+  fPRFlo          = 0.0;
+  fPRFhi          = 0.0;
+  fPRFwid         = 0.0;
+  fPRFpad         = 0;
+  fTRFbin         = 0;
+  fTRFlo          = 0.0;
+  fTRFhi          = 0.0;
+  fTRFwid         = 0.0;
 
-  fCompress      = kTRUE;
-  fVerbose       = 1;
+  fCompress       = kTRUE;
+  fVerbose        = 1;
+  fSDigits        = kFALSE;
 
 }
 
@@ -209,6 +218,7 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
 
   fCompress      = kTRUE;
   fVerbose       = 1;
+  fSDigits       = kFALSE;
 
   Init();
 
@@ -267,56 +277,63 @@ void AliTRDdigitizer::Copy(TObject &d)
 
   Int_t iBin;
 
-  ((AliTRDdigitizer &) d).fInputFile     = NULL;
-  ((AliTRDdigitizer &) d).fDigits        = NULL;
-  ((AliTRDdigitizer &) d).fTRD           = NULL;
-  ((AliTRDdigitizer &) d).fGeo           = NULL;
+  ((AliTRDdigitizer &) d).fInputFile      = NULL;
+  ((AliTRDdigitizer &) d).fDigits         = NULL;
+  ((AliTRDdigitizer &) d).fTRD            = NULL;
+  ((AliTRDdigitizer &) d).fGeo            = NULL;
 
-  ((AliTRDdigitizer &) d).fEvent         = 0;
+  ((AliTRDdigitizer &) d).fEvent          = 0;
 
-  ((AliTRDdigitizer &) d).fGasGain       = fGasGain;
-  ((AliTRDdigitizer &) d).fNoise         = fNoise;
-  ((AliTRDdigitizer &) d).fChipGain      = fChipGain;
-  ((AliTRDdigitizer &) d).fADCoutRange   = fADCoutRange;
-  ((AliTRDdigitizer &) d).fADCinRange    = fADCinRange;
-  ((AliTRDdigitizer &) d).fADCthreshold  = fADCthreshold;
-  ((AliTRDdigitizer &) d).fDiffusionOn   = fDiffusionOn; 
-  ((AliTRDdigitizer &) d).fDiffusionT    = fDiffusionT;
-  ((AliTRDdigitizer &) d).fDiffusionL    = fDiffusionL;
-  ((AliTRDdigitizer &) d).fElAttachOn    = fElAttachOn;
-  ((AliTRDdigitizer &) d).fElAttachProp  = fElAttachProp;
-  ((AliTRDdigitizer &) d).fExBOn         = fExBOn;
-  ((AliTRDdigitizer &) d).fOmegaTau      = fOmegaTau;
-  ((AliTRDdigitizer &) d).fLorentzFactor = fLorentzFactor;
-  ((AliTRDdigitizer &) d).fPRFOn         = fPRFOn;
-  ((AliTRDdigitizer &) d).fTRFOn         = fTRFOn;
+  ((AliTRDdigitizer &) d).fGasGain        = fGasGain;
+  ((AliTRDdigitizer &) d).fNoise          = fNoise;
+  ((AliTRDdigitizer &) d).fChipGain       = fChipGain;
+  ((AliTRDdigitizer &) d).fSoutRange      = fSoutRange;
+  ((AliTRDdigitizer &) d).fSinRange       = fSinRange;
+  ((AliTRDdigitizer &) d).fADCoutRange    = fADCoutRange;
+  ((AliTRDdigitizer &) d).fADCinRange     = fADCinRange;
+  ((AliTRDdigitizer &) d).fADCthreshold   = fADCthreshold;
+  ((AliTRDdigitizer &) d).fDiffusionOn    = fDiffusionOn; 
+  ((AliTRDdigitizer &) d).fDiffusionT     = fDiffusionT;
+  ((AliTRDdigitizer &) d).fDiffusionL     = fDiffusionL;
+  ((AliTRDdigitizer &) d).fElAttachOn     = fElAttachOn;
+  ((AliTRDdigitizer &) d).fElAttachProp   = fElAttachProp;
+  ((AliTRDdigitizer &) d).fExBOn          = fExBOn;
+  ((AliTRDdigitizer &) d).fOmegaTau       = fOmegaTau;
+  ((AliTRDdigitizer &) d).fLorentzFactor  = fLorentzFactor;
+  ((AliTRDdigitizer &) d).fDriftVelocity  = fDriftVelocity;
+  ((AliTRDdigitizer &) d).fPadCoupling    = fPadCoupling;
+  ((AliTRDdigitizer &) d).fTimeCoupling   = fTimeCoupling;
+  ((AliTRDdigitizer &) d).fTimeBinWidth   = fTimeBinWidth;
+  ((AliTRDdigitizer &) d).fPRFOn          = fPRFOn;
+  ((AliTRDdigitizer &) d).fTRFOn          = fTRFOn;
 
-  ((AliTRDdigitizer &) d).fCompress      = fCompress;
-  ((AliTRDdigitizer &) d).fVerbose       = fVerbose;
+  ((AliTRDdigitizer &) d).fCompress       = fCompress;
+  ((AliTRDdigitizer &) d).fVerbose        = fVerbose;
+  ((AliTRDdigitizer &) d).fSDigits        = fSDigits;
 
   fPRF->Copy(*((AliTRDdigitizer &) d).fPRF);
   fTRF->Copy(*((AliTRDdigitizer &) d).fTRF);
 
-  ((AliTRDdigitizer &) d).fPRFbin        = fPRFbin;
-  ((AliTRDdigitizer &) d).fPRFlo         = fPRFlo;
-  ((AliTRDdigitizer &) d).fPRFhi         = fPRFhi;
-  ((AliTRDdigitizer &) d).fPRFwid        = fPRFwid;
-  ((AliTRDdigitizer &) d).fPRFpad        = fPRFpad;
+  ((AliTRDdigitizer &) d).fPRFbin         = fPRFbin;
+  ((AliTRDdigitizer &) d).fPRFlo          = fPRFlo;
+  ((AliTRDdigitizer &) d).fPRFhi          = fPRFhi;
+  ((AliTRDdigitizer &) d).fPRFwid         = fPRFwid;
+  ((AliTRDdigitizer &) d).fPRFpad         = fPRFpad;
   if (((AliTRDdigitizer &) d).fPRFsmp) delete ((AliTRDdigitizer &) d).fPRFsmp;
   ((AliTRDdigitizer &) d).fPRFsmp = new Float_t[fPRFbin];
   for (iBin = 0; iBin < fPRFbin; iBin++) {
     ((AliTRDdigitizer &) d).fPRFsmp[iBin] = fPRFsmp[iBin];
   }                                                                             
-  ((AliTRDdigitizer &) d).fTRFbin        = fTRFbin;
-  ((AliTRDdigitizer &) d).fTRFlo         = fTRFlo;
-  ((AliTRDdigitizer &) d).fTRFhi         = fTRFhi;
-  ((AliTRDdigitizer &) d).fTRFwid        = fTRFwid;
+  ((AliTRDdigitizer &) d).fTRFbin         = fTRFbin;
+  ((AliTRDdigitizer &) d).fTRFlo          = fTRFlo;
+  ((AliTRDdigitizer &) d).fTRFhi          = fTRFhi;
+  ((AliTRDdigitizer &) d).fTRFwid         = fTRFwid;
   if (((AliTRDdigitizer &) d).fTRFint) delete ((AliTRDdigitizer &) d).fTRFint;
   ((AliTRDdigitizer &) d).fTRFint = new Float_t[fTRFbin];
   for (iBin = 0; iBin < fTRFbin; iBin++) {
     ((AliTRDdigitizer &) d).fTRFint[iBin] = fTRFint[iBin];
-  }                                                                             
-
+  }                                      
+                                       
 }
 
 //_____________________________________________________________________________
@@ -406,74 +423,110 @@ void AliTRDdigitizer::Init()
   // Initializes the digitization procedure with standard values
   //
 
+  // Get the detector geometry
+  InitDetector();
+
   // The default parameter for the digitization
-  fGasGain       = 8.0E3;
-  fNoise         = 3000.;
-  fChipGain      = 10.;
-  fADCoutRange   = 255.;
-  fADCinRange    = 2000.;
-  fADCthreshold  = 1;
+  fGasGain        = 2.0E3;
+  fChipGain       = 20.;
+  fNoise          = 1000.;
+  fADCoutRange    = 1023.;          // 10-bit ADC
+  fADCinRange     = 2000.;          // 2V input range
+  fADCthreshold   = 1;
+
+  // For the summable digits
+  fSinRange       = 1000000.;
+  fSoutRange      = 1000000.;
 
   // Transverse and longitudinal diffusion coefficients (Xe/Isobutane)
-  fDiffusionOn   = 1;
-  fDiffusionT    = 0.060;
-  fDiffusionL    = 0.017;
+  fDiffusionOn    = 1;
+  fDiffusionT     = 0.060;
+  fDiffusionL     = 0.017;
 
   // Propability for electron attachment
-  fElAttachOn    = 0;
-  fElAttachProp  = 0.0;
+  fElAttachOn     = 0;
+  fElAttachProp   = 0.0;
 
   // E x B effects
-  fExBOn         = 0;
-  // omega * tau. (tau ~ 12 * 10^-12, B = 0.2T)
-  fOmegaTau      = 17.6 * 12.0 * 0.2 * 0.01;
+  fExBOn          = 0;
+  // omega * tau.= arctan(Lorentz-angle)
+  fOmegaTau       = 0.19438031;
 
   // The pad response function
-  fPRFOn         =  1;
-  fPRFlo         = -3.0;
-  fPRFhi         =  3.0;
-  fPRFbin        = 1200;
-  fPRFwid        = (fPRFhi - fPRFlo) / ((Float_t) fPRFbin);
-  fPRFpad        = ((Int_t) (1.0 / fPRFwid));
-  fPRF           = new TF1("PRF","[0]*([1]+exp(-x*x/(2.0*[2])))",fPRFlo,fPRFhi);
+  fPRFOn          =  1;
+  fPRFlo          = -3.0;
+  fPRFhi          =  3.0;
+  fPRFbin         = 120;
+  fPRFwid         = (fPRFhi - fPRFlo) / ((Float_t) fPRFbin);
+  fPRFpad         = ((Int_t) (1.0 / fPRFwid));
+  fPRF            = new TF1("PRF","[0]*([1]+exp(-x*x/(2.0*[2])))",fPRFlo,fPRFhi);
   fPRF->SetParameter(0, 0.8872);
   fPRF->SetParameter(1,-0.00573);
   fPRF->SetParameter(2, 0.454 * 0.454);
 
   // The drift velocity (cm / mus)
-  fDriftVelocity = 1.0;
+  fDriftVelocity  = 2.0;
 
-  // The time response function
-  fTRFOn         = 1;
-  Float_t loTRF  = -200.0;
-  Float_t hiTRF  = 1000.0;
-  fTRF           = new TF1("TRF",TRFlandau,loTRF,hiTRF,3);
-  fTRF->SetParameter(0,  1.0 / 24.24249);
-  fTRF->SetParameter(1,  0.0);
-  fTRF->SetParameter(2, 25.0);
-  fTRFbin        = 1200;
-  fTRFlo         = loTRF * fDriftVelocity / 1000.0;
-  fTRFhi         = hiTRF * fDriftVelocity / 1000.0;
-  fTRFwid        = (fTRFhi - fTRFlo) / ((Float_t) fTRFbin);
+  // The pad coupling factor (same number as for the TPC)
+  fPadCoupling    = 0.5;
+
+  // The time coupling factor (same number as for the TPC)
+  fTimeCoupling   = 0.4;
+
+  ReInit();
 
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitizer::IntegrateTRF()
+void AliTRDdigitizer::ReInit()
 {
   //
-  // Integrates the time response function over the time bin size
+  // Re-initializes the digitization procedure after a change in the parameter
+  //
+
+  // Calculate the time bin width in ns
+  fTimeBinWidth   = fGeo->GetTimeBinSize() / fDriftVelocity * 1000.0;
+
+  // The time response function (in ns)
+  // The FWHM of the TRF is automatically set equal to the time bin width
+  fTRFOn          =  1;
+  Float_t loTRF   = -2.0 * fTimeBinWidth;
+  Float_t hiTRF   = 10.0 * fTimeBinWidth;
+  fTRF            = new TF1("TRF",TRFlandau,loTRF,hiTRF,3);
+  //fTRF->SetParameter(0,  1.0 / 24.24249);
+  fTRF->SetParameter(0,  5.56);
+  fTRF->SetParameter(1,  0.0);
+  fTRF->SetParameter(2,  0.25 * fTimeBinWidth);
+  fTRFbin         = 120;
+  fTRFlo          = loTRF * fDriftVelocity / 1000.0;
+  fTRFhi          = hiTRF * fDriftVelocity / 1000.0;
+  fTRFwid         = (fTRFhi - fTRFlo) / ((Float_t) fTRFbin);
+
+  // The Lorentz factor
+  if (fExBOn) {
+    fLorentzFactor = 1.0 / (1.0 + fOmegaTau*fOmegaTau);
+  }
+  else {
+    fLorentzFactor = 1.0;
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdigitizer::SampleTRF()
+{
+  //
+  // Samples the time response function
   //
 
   if (fTRFint) delete fTRFint;
   fTRFint = new Float_t[fTRFbin];
-  Float_t hiTRF   = fTRFhi                 / fDriftVelocity * 1000.0;
-  Float_t loTRF   = fTRFlo                 / fDriftVelocity * 1000.0;
-  Float_t timeBin = fGeo->GetTimeBinSize() / fDriftVelocity * 1000.0;
+  Float_t loTRF    = fTRFlo / fDriftVelocity * 1000.0;
+  Float_t hiTRF    = fTRFhi / fDriftVelocity * 1000.0;
   Float_t binWidth = (hiTRF - loTRF) / ((Float_t) fTRFbin);
   for (Int_t iBin = 0; iBin < fTRFbin; iBin++) {
-    Float_t bin = iBin * binWidth + loTRF - 0.5 * timeBin;
-    fTRFint[iBin] = fTRF->Integral(bin,bin + timeBin);
+    Float_t bin = (((Float_t) iBin) + 0.5) * binWidth + loTRF;
+    fTRFint[iBin] = fTRF->Eval(bin);
   }
 
 }
@@ -548,14 +601,14 @@ Bool_t AliTRDdigitizer::InitDetector()
   // Get the pointer to the detector class and check for version 1
   fTRD = (AliTRD*) gAlice->GetDetector("TRD");
   if (fTRD->IsVersion() != 1) {
-    printf("AliTRDdigitizer::Open -- ");
+    printf("AliTRDdigitizer::InitDetector -- ");
     printf("TRD must be version 1 (slow simulator).\n");
     exit(1);
   }
 
   // Get the geometry
   fGeo = fTRD->GetGeometry();
-  printf("AliTRDdigitizer::Open -- ");
+  printf("AliTRDdigitizer::InitDetector -- ");
   printf("Geometry version %d\n",fGeo->IsVersion());
 
   return kTRUE;
@@ -563,10 +616,22 @@ Bool_t AliTRDdigitizer::InitDetector()
 }
 
 //_____________________________________________________________________________
+Bool_t AliTRDdigitizer::SumSDigits()
+{
+  //
+  // Sums up the summable digits and creates final digits
+  // Not yet implemented
+  //
+
+  return kFALSE;
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliTRDdigitizer::MakeDigits()
 {
   //
-  // Loops through the TRD-hits and creates the digits.
+  // Creates summable digits.
   //
 
   ///////////////////////////////////////////////////////////////
@@ -614,19 +679,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
   printf("Start creating digits.\n");
   if (fVerbose > 0) this->Dump();
 
-  // The Lorentz factor
-  if (fExBOn) {
-    fLorentzFactor = 1.0 / (1.0 + fOmegaTau*fOmegaTau);
-  }
-  else {
-    fLorentzFactor = 1.0;
-  }
-
   // Create the sampled PRF
   SamplePRF();
 
-  // Create the integrated TRF
-  IntegrateTRF();
+  // Create the sampled TRF
+  SampleTRF();
 
   // Get the pointer to the hit tree
   TTree *HitTree = gAlice->TreeH();
@@ -806,13 +863,12 @@ Bool_t AliTRDdigitizer::MakeDigits()
         // The electron position 
         // The pad row (z-direction)
         Int_t  rowE = (Int_t) ((xyz[2] -  row0) /  rowPadSize);
+        if (( rowE < 0) || ( rowE >=  nRowMax)) continue;
         // The pad column (rphi-direction)
         Int_t  colE = (Int_t) ((xyz[1] -  col0) /  colPadSize);
+        if (( colE < 0) || ( colE >=  nColMax)) continue;
         // The time bucket
         Int_t timeE = (Int_t) ((time0 - xyz[0]) / timeBinSize);
-
-        if (( rowE < 0) || ( rowE >=  nRowMax)) continue;
-        if (( colE < 0) || ( colE >=  nColMax)) continue;
         if ((timeE < 0) || (timeE >= nTimeMax)) continue;
 
         // Apply the gas gain including fluctuations
@@ -821,12 +877,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
           ggRndm = gRandom->Rndm();
 	} while (ggRndm <= 0);
         Int_t signal = (Int_t) (-fGasGain * TMath::Log(ggRndm));
-
-        if (fVerbose > 2) {
-          printf("  electron no. %d, signal = %d\n",iEl,signal);
-          printf("  rowE = %d, colE = %d, timeE = %d\n"
-	        ,rowE,colE,timeE);
-	}
 
         // Apply the pad response 
         Float_t padSignal[kNpad];
@@ -852,8 +902,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
           timeTRDend = 11;
 	}
         for (Int_t iTimeBin = TMath::Max(timeE - timeTRDbeg,       0)
-  	         ; iTimeBin < TMath::Min(timeE + timeTRDend,nTimeMax) 
-        	 ; iTimeBin++) {
+  	          ;iTimeBin < TMath::Min(timeE + timeTRDend,nTimeMax) 
+        	  ;iTimeBin++) {
 
    	  // Apply the time response
           Float_t timeResponse = 1.0;
@@ -871,12 +921,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
             signalOld[iPad]  = signals->GetData(rowE,colPos,iTimeBin);
             signalOld[iPad] += padSignal[iPad] * timeResponse;
             signals->SetData(rowE,colPos,iTimeBin,signalOld[iPad]);
-	  }
-          if (fVerbose > 3) {
-            printf("    iTimeBin = %d, timeResponse = %f\n"
-                  ,iTimeBin,timeResponse);
-            printf("    pad-signal = %f, %f, %f\n"
-		   ,signalOld[0],signalOld[1],signalOld[2]);
 	  }
 
           // Store the track index in the dictionary
@@ -904,18 +948,15 @@ Bool_t AliTRDdigitizer::MakeDigits()
                 //if (oldTrack ==      -1) break;
                 if (oldTrack ==       0) {
                   dictionary[iDict]->SetData(rowE,colPos,iTimeBin,track+1);
-                  if (fVerbose > 3) {
-                    printf("    track index = %d\n",track); 
-                  }
                   break;
                 }
               }
             }
           }
-          if ((fVerbose > 1) && (iDict == kNDict)) {
-            printf("AliTRDdigitizer::MakeDigits -- ");
-            printf("More than three tracks for one digit!\n");
-          }
+          //if ((fVerbose > 1) && (iDict == kNDict)) {
+          //  printf("AliTRDdigitizer::MakeDigits -- ");
+          //  printf("More than three tracks for one digit!\n");
+          //}
 
 	}
 
@@ -928,6 +969,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
   printf("AliTRDdigitizer::MakeDigits -- ");
   printf("Finished analyzing %d hits\n",countHits);
 
+  // The total conversion factor
+  Float_t convert = kEl2fC * fPadCoupling * fTimeCoupling * fChipGain;
+
   // Loop through all chambers to finalize the digits
   for (Int_t iDet = 0; iDet < AliTRDgeometry::Ndet(); iDet++) {
 
@@ -938,7 +982,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
     Int_t nColMax  = fGeo->GetColMax(plane);
     Int_t nTimeMax = fGeo->GetTimeMax();
 
-    //if (!(CheckDetector(plane,chamber,sector))) continue;
     if (fVerbose > 0) {
       printf("AliTRDdigitizer::MakeDigits -- ");
       printf("Digitization for chamber %d\n",iDet);
@@ -969,42 +1012,65 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
     Int_t nDigits = 0;
 
-    // Create the digits for this chamber
-    for (iRow  = 0; iRow  <  nRowMax; iRow++ ) {
-      for (iCol  = 0; iCol  <  nColMax; iCol++ ) {
-        for (iTime = 0; iTime < nTimeMax; iTime++) {         
+    // Don't create noise in detectors that are switched off
+    if (CheckDetector(plane,chamber,sector)) {
 
-          Float_t signalAmp = signals->GetData(iRow,iCol,iTime);
+      // Create the digits for this chamber
+      for (iRow  = 0; iRow  <  nRowMax; iRow++ ) {
+        for (iCol  = 0; iCol  <  nColMax; iCol++ ) {
+          for (iTime = 0; iTime < nTimeMax; iTime++) {         
 
-          // Add the noise
-          signalAmp  = TMath::Max((Double_t) gRandom->Gaus(signalAmp,fNoise),0.0);
-	  // Convert to fC
-          signalAmp *= kEl2fC;
-          // Convert to mV
-          signalAmp *= fChipGain;
-	  // Convert to ADC counts. Set the overflow-bit fADCoutRange if the 
-	  // signal is larger than fADCinRange
-          Int_t adc  = 0;
-          if (signalAmp >= fADCinRange) {
-            adc = ((Int_t) fADCoutRange);
-	  }
-          else {
-            adc = ((Int_t) (signalAmp * (fADCoutRange / fADCinRange)));
-	  }
+	    // Create summable digits
+            if (fSDigits) {
 
-          // Store the amplitude of the digit if above threshold
-          if (adc > fADCthreshold) {
-            if (fVerbose > 2) {
-              printf("  iRow = %d, iCol = %d, iTime = %d\n"
-                    ,iRow,iCol,iTime);
-              printf("  signal = %f, adc = %d\n",signalAmp,adc);
+              Float_t signalAmp = signals->GetData(iRow,iCol,iTime);
+              Int_t adc  = 0;
+              if (signalAmp >= fSinRange) {
+                adc = ((Int_t) fSoutRange);
+	      }
+              else {
+                adc = ((Int_t) (signalAmp * (fSoutRange / fSinRange)));
+	      }
+              nDigits++;
+              digits->SetData(iRow,iCol,iTime,adc);
+
 	    }
-            nDigits++;
-            digits->SetData(iRow,iCol,iTime,adc);
-	  }
+	    // Create normal digits
+            else {
 
-	}
+              Float_t signalAmp = signals->GetData(iRow,iCol,iTime);
+
+              // Add the noise
+              signalAmp  = TMath::Max((Double_t) gRandom->Gaus(signalAmp,fNoise),0.0);
+              // Convert to mV
+              signalAmp *= convert;
+	      // Convert to ADC counts. Set the overflow-bit fADCoutRange if the 
+	      // signal is larger than fADCinRange
+              Int_t adc  = 0;
+              if (signalAmp >= fADCinRange) {
+                adc = ((Int_t) fADCoutRange);
+	      }
+              else {
+                adc = ((Int_t) (signalAmp * (fADCoutRange / fADCinRange)));
+	      }
+
+              // Store the amplitude of the digit if above threshold
+              if (adc > fADCthreshold) {
+                if (fVerbose > 2) {
+                  printf("  iRow = %d, iCol = %d, iTime = %d\n"
+                        ,iRow,iCol,iTime);
+                  printf("  signal = %f, adc = %d\n",signalAmp,adc);
+	        }
+                nDigits++;
+                digits->SetData(iRow,iCol,iTime,adc);
+  	      }
+
+	    }
+
+	  }
+        }
       }
+
     }
 
     // Compress the arrays
@@ -1078,7 +1144,12 @@ Bool_t AliTRDdigitizer::WriteDigits()
 
   // Create the branches
   if (!(gAlice->TreeD()->GetBranch("TRDdigits"))) { 
-    if (!fDigits->MakeBranch()) return kFALSE;
+    return kFALSE;
+    //if (!fDigits->MakeBranch()) {
+    //  printf("AliTRDdigitizer::WriteDigits -- ");
+    //  printf("MakeBranch failed.\n");
+    //  return kFALSE;
+    //}
   }
 
   // Store the digits and the dictionary in the tree

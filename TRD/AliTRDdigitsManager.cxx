@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/01/26 19:56:57  hristov
+Major upgrade of AliRoot code
+
 Revision 1.9  2000/11/02 09:25:53  cblume
 Change also the dictionary to AliTRDdataArray
 
@@ -59,6 +62,7 @@ Add new class AliTRDdigitsManager
 //  AliTRDdataArray objects.                                                 //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
 #include <iostream.h>
  
 #include <TROOT.h>
@@ -198,10 +202,10 @@ Bool_t AliTRDdigitsManager::MakeBranch(char *file)
                                      &kDictionary,buffersize, 1,file) ;
           printf("AliTRDdigitsManager::MakeBranch -- ");
           printf("Making branch %s\n",branchname);
-	    }
+	}
         else {
           status = kFALSE;
-	    }
+	}
       }
       else {
         status = kFALSE;
@@ -254,6 +258,8 @@ Bool_t AliTRDdigitsManager::WriteDigits()
 
   // Create the branches
   if (!(gAlice->TreeD()->GetBranch("TRDdigits"))) { 
+    printf("AliTRDdigitsManager::WriteDigits -- ");
+    printf("Call MakeBranch\n");
     if (!MakeBranch()) return kFALSE;
   }
 

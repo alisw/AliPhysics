@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2001/01/26 19:56:49  hristov
+Major upgrade of AliRoot code
+
 Revision 1.23  2000/11/01 14:53:20  cblume
 Merge with TRD-develop
 
@@ -126,6 +129,8 @@ Introduction of the Copyright and cvs Log
 #include "AliTRDgeometryFull.h"
 #include "AliTRDrecPoint.h"
 #include "AliTRDdigitsManager.h"
+#include "AliTRDdataArrayI.h"
+#include "AliTRDsegmentArray.h"
 
 ClassImp(AliTRD)
  
@@ -136,21 +141,26 @@ AliTRD::AliTRD()
   // Default constructor
   //
 
-  fIshunt      = 0;
-  fGasMix      = 0;
-  fHits        = 0;
-  fDigits      = 0;
+  fIshunt        = 0;
+  fGasMix        = 0;
+  fHits          = 0;
+  fDigits        = 0;
 
-  fRecPoints   = 0;
-  fNRecPoints  = 0;
+  fRecPoints     = 0;
+  fNRecPoints    = 0;
 
-  fGeometry    = 0;
+  fGeometry      = 0;
 
-  fGasDensity  = 0;
-  fFoilDensity = 0;
+  fGasDensity    = 0;
+  fFoilDensity   = 0;
 
-  fDrawTR      = 0;
-  fDisplayType = 0; 
+  fDrawTR        = 0;
+  fDisplayType   = 0; 
+
+  fDigitsArray   = 0; 
+  for (Int_t iDict = 0; iDict < AliTRDdigitsManager::NDict(); iDict++) {
+    fDictionaryArray[iDict] = 0; 
+  }
 
 }
  
@@ -192,17 +202,22 @@ AliTRD::AliTRD(const char *name, const char *title)
   fDigits      = 0;
 
   // Allocate the rec point array
-  fRecPoints   = new TObjArray(400);
-  fNRecPoints  = 0;
+  fRecPoints     = new TObjArray(400);
+  fNRecPoints    = 0;
    
-  fIshunt      = 0;
-  fGasMix      = 0;
+  fIshunt        = 0;
+  fGasMix        = 1;
 
-  fGasDensity  = 0;
-  fFoilDensity = 0;
+  fGasDensity    = 0;
+  fFoilDensity   = 0;
 
-  fDrawTR      = 0;
-  fDisplayType = 0;
+  fDrawTR        = 0;
+  fDisplayType   = 0;
+
+  fDigitsArray   = 0; 
+  for (Int_t iDict = 0; iDict < AliTRDdigitsManager::NDict(); iDict++) {
+    fDictionaryArray[iDict] = 0; 
+  }
 
   SetMarkerColor(kWhite);   
 
@@ -231,6 +246,10 @@ AliTRD::~AliTRD()
   delete fGeometry;
   delete fHits;
   delete fRecPoints;
+  if (fDigitsArray) delete fDigitsArray;
+  for (Int_t iDict = 0; iDict < AliTRDdigitsManager::NDict(); iDict++) {
+    if (fDictionaryArray[iDict]) delete fDictionaryArray[iDict];
+  }
 
 }
 
@@ -257,38 +276,81 @@ void AliTRD::AddRecPoint(Float_t *pos, Int_t *digits, Int_t det, Float_t amp
   fRecPoints->Add(recPoint);
 
 }
-//___________________________________________
-void AliTRD::SDigits2Digits()
+
+//_____________________________________________________________________________
+void AliTRD::Hits2Digits()
 {
   //
   // Create digits
   //
-  AliTRDdigitizer *Digitizer = new AliTRDdigitizer("digitizer","TRD digitizer class");
+
+  AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
+                                                  ,"TRD digitizer class");
 
   // Set the parameter
-  Digitizer->SetDiffusion();
-  Digitizer->SetVerbose(1);
-  
-  //Digitizer->SetExB();
-  //Digitizer->SetElAttach();
-  //Digitizer->SetAttachProb();
+  digitizer->SetDiffusion();
+  digitizer->SetExB();
 
-  Digitizer->InitDetector();
+  // Initialization
+  //digitizer->InitDetector();
     
   // Create the digits
-  Digitizer->MakeDigits();
-  cout<<"After MakeDigits"<<endl;
+  digitizer->MakeDigits();
   
   // Write the digits into the input file
-  if (Digitizer->Digits()->MakeBranch(fDigitsFile))
-  {
-    Digitizer->WriteDigits();
-    cout<<"After write digits"<<endl;
+  if (digitizer->Digits()->MakeBranch(fDigitsFile)) {
+
+    digitizer->WriteDigits();
 
     // Save the digitizer class in the AliROOT 
-    Digitizer->Write();
-    cout<<"After write digitizer"<<endl;
+    digitizer->Write();
+
   }
+
+}
+
+//_____________________________________________________________________________
+void AliTRD::Hits2SDigits()
+{
+  //
+  // Create summable digits
+  //
+
+  AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
+                                                  ,"TRD digitizer class");
+
+  // For the summable digits
+  digitizer->SetSDigits(kTRUE);
+
+  // Set the parameter
+  digitizer->SetDiffusion();
+  digitizer->SetExB();
+
+  // Initialization
+  //digitizer->InitDetector();
+    
+  // Create the digits
+  digitizer->MakeDigits();
+  
+  // Write the digits into the input file
+  if (digitizer->Digits()->MakeBranch(fDigitsFile)) {
+
+    digitizer->WriteDigits();
+
+    // Save the digitizer class in the AliROOT 
+    digitizer->Write();
+
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRD::SDigits2Digits()
+{
+  //
+  // Create final digits from summable digits
+  //
+
 }
 
 //_____________________________________________________________________________
@@ -844,12 +906,51 @@ void AliTRD::MakeBranch(Option_t* option, char *file)
 
   AliDetector::MakeBranch(option,file);
 
+  Int_t buffersize = 64000;
+
+  fDigitsArray = new AliTRDdataArrayI();
+  gAlice->MakeBranchInTree(gAlice->TreeD() 
+                          ,"TRDdigits", fDigitsArray->IsA()->GetName()
+                          ,&fDigitsArray,buffersize,1,file);
+
+  for (Int_t iDict = 0; iDict < AliTRDdigitsManager::NDict(); iDict++) {
+    Char_t branchname[15];
+    sprintf(branchname,"TRDdictionary%d",iDict);
+    fDictionaryArray[iDict] = new AliTRDdataArrayI();
+    gAlice->MakeBranchInTree(gAlice->TreeD() 
+                            ,branchname,fDictionaryArray[iDict]->IsA()->GetName()
+                            ,&fDictionaryArray[iDict],buffersize,1,file) ;
+  }
+
   //Char_t *r = strstr(option,"R");
   //sprintf(branchname,"%srecPoints",GetName());
   //if (fRecPoints && gAlice->TreeR() && r) {
   //  MakeBranchInTree(gAlice->TreeR(), 
   //                  branchname, &fRecPoints,buffersize, file) ;
   //}
+
+}
+
+//_____________________________________________________________________________
+void AliTRD::ResetDigits()
+{
+  //
+  // Resets the digits
+  //
+
+  if (gAlice->TreeD()) {
+    TBranch *branch;
+    branch = gAlice->TreeD()->GetBranch("TRDdigits");
+    if (branch) {
+      branch->Reset();
+      for (Int_t iDict = 0; iDict < AliTRDdigitsManager::NDict(); iDict++) {
+        Char_t branchname[15];
+        sprintf(branchname,"TRDdictionary%d",iDict);
+        branch = gAlice->TreeD()->GetBranch(branchname);
+        branch->Reset();
+      }
+    }
+  }
 
 }
 
@@ -904,7 +1005,7 @@ void AliTRD::SetGasMix(Int_t imix)
   if ((imix < 0) || (imix > 1)) {
     printf("Wrong input value: %d\n",imix);
     printf("Use standard setting\n");
-    fGasMix = 0;
+    fGasMix = 1;
     return;
   }
 
