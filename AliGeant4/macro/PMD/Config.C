@@ -10,8 +10,4 @@ void Config(Int_t version)
   }  
 
 //=================== PMD parameters ============================
-PMD->SetPAR(1., 1., 0.8, 0.02);
-PMD->SetIN(6., 18., -580., 27., 27.);
-PMD->SetGEO(0.0, 0.2, 4.);
-PMD->SetPadSize(0.8, 1.0, 1.0, 1.5);
 }

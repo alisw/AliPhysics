@@ -7,6 +7,7 @@ void Config(Int_t version)
     case 0: RICH  = new AliRICHv0("RICH","normal RICH"); break;
     case 1: RICH  = new AliRICHv1("RICH","normal RICH"); break;
     case 2: RICH  = new AliRICHv2("RICH","normal RICH"); break;
+    case 3: RICH  = new AliRICHv3("RICH","normal RICH"); break;
   }  
 }
 

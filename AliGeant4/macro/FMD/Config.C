@@ -9,8 +9,8 @@ void Config(Int_t version)
   }  
   
 //=================== FMD parameters ============================
-  FMD->SetRingsSi1(128);
-  FMD->SetRingsSi2(64);
+  FMD->SetRingsSi1(256);
+  FMD->SetRingsSi2(128);
   FMD->SetSectorsSi1(20);
   FMD->SetSectorsSi2(24);
 }  

@@ -4,7 +4,7 @@ void Config(Int_t version)
 
   AliCRT* CRT = 0;
   switch (version) {
-    case 0: CRT  = new AliCRTv0("CRT", "normal CRT"); break;
+    case 0: CRT  = new AliCRTv0("CRT", "normal ACORDE"); break;
   }  
 
 //=================== EMCAL parameters ============================
