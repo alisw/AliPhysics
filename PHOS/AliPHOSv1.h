@@ -47,7 +47,6 @@ public:
   virtual void   MakeBranch(Option_t* opt, char *file=0 ) ;
   void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
   void           ResetClusters(){} ;
-  virtual void   ResetHits() ; 
   virtual void   SDigits2Digits() ;  
   virtual Int_t  IsVersion(void) const {
     // Gives the version number 
@@ -63,7 +62,6 @@ public:
   void           SetPpsdEnergyThreshold(Float_t enth)      { fPpsdEnergyThreshold = enth ; } 
   void           SetCpvEnergyThreshold(Float_t enth)       { fCpvEnergyThreshold = enth ; } 
 
-  virtual void   SetTreeAddress(); 
   virtual void   StepManager(void) ;                              
   virtual TString Version(void){ 
     // returns the version number 

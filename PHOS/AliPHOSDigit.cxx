@@ -150,22 +150,25 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
   fAmp += digit.fAmp ;
   
   Int_t max1 = fNprimary ; 
-  Int_t max2 = digit.fNprimary ; 
   
-  if ( fNprimary + digit.fNprimary < fNMaxPrimary ) {
-    fNprimary += digit.fNprimary ; 
-  
-    Int_t index ; 
-    for (index = 0 ; index < max2 ; index++)
-      fPrimary[index+max1] = (digit.fPrimary)[index] ; 
+  Int_t index ; 
+  for (index = 0 ; index < digit.fNprimary ; index++){
+    Bool_t deja = kTRUE ;
+    Int_t old ;
+    for ( old = 0 ; (old < max1) && deja; old++) { //already have this primary?
+      if(fPrimary[old] == (digit.fPrimary)[index])
+	deja = kFALSE;
+    }
+    if(deja){
+      fPrimary[fNprimary] = (digit.fPrimary)[index] ; 
+      fNprimary++ ;
+      if(fNprimary>fNMaxPrimary) {
+	cout << "AliPHOSDigit >> Increase NMaxPrimary "<< endl ;
+	return *this ;
+      }
+    }
   }
-  else{
-    cout << "AliPHOSDigit >> Increase NMaxPrimary"<< endl ;
-    Int_t index ; 
-    for (index = max1; index < fNMaxPrimary ; index++)
-      fPrimary[index] = (digit.fPrimary)[index-max1] ; 
-    fNprimary = fNMaxPrimary ;
-  }  
+  
   return *this ;
 }
 

@@ -320,15 +320,8 @@ void AliPHOSv1::Hits2SDigits(){
   }
 
   gAlice->TreeS()->Fill() ;
-  
-  TTree *ts = gAlice->TreeS();
-  TDirectory *dir = ts->GetDirectory() ; 
-  cout << "dir name is " << dir->GetName() << endl ;  
-  //  ts->Write(0,TObject::kOverwrite) ;
-
-gAlice->TreeS()->GetBranch("PHOS")->Fill();
-gAlice->TreeS()->GetBranch("PHOS")->Write();
-
+  gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
+ 
 
 }
 //____________________________________________________________________________
@@ -338,42 +331,33 @@ void AliPHOSv1::SDigits2Digits(){
 
 
   gAlice->TreeS()->GetEvent(0) ;
-
-  cout << "fSdigits " <<  fSDigits << " " << fSDigits->GetEntries() << endl ;
   
 
   // Noise induced by the PIN diode of the PbWO crystals
   Int_t iCurSDigit = 0 ;
   //we assume, that there is al least one EMC digit...
-  Int_t idCurSDigit = ((AliPHOSDigit *)fSDigits->At(0))->GetId() ;
+  if(fSDigits->GetEntries() == 0) {
+    cout << "PHOS::SDigits2Digits>  No SDigits !!! Do not produce Digits " << endl ;
+    return ;
+  }
 
-  cout << "fDigits " << fDigits << " " <<idCurSDigit<<  endl ;
+  Int_t idCurSDigit = ((AliPHOSDigit *)fSDigits->At(0))->GetId() ;
 
   Int_t absID ;
   for(absID = 1; absID < fGeom->GetNModules()*fGeom->GetNPhi()*fGeom->GetNZ(); absID++){
-    
-    cout << "absID " << absID << " " << idCurSDigit << endl ; 
-
     Float_t noise = gRandom->Gaus(0., fPinElectronicNoise) ; 
     if(absID < idCurSDigit ){ 
-      cout << "In < idC  " << noise << " " << fDigitThreshold << endl ;
       if(noise >fDigitThreshold ){
-	cout << "noise " << absID << " " << noise << endl;
 	new((*fDigits)[fNdigits]) AliPHOSDigit( -1,absID,Digitize(noise) ) ;
-	cout << "FN " << fNdigits << endl ;
 	fNdigits++ ;  
       }
     }
     else{ //add noise and may be remove the true hit
-      cout << "correcting digit " << iCurSDigit << endl ;
       Float_t signal = noise + Calibrate(((AliPHOSDigit *)fSDigits->At(iCurSDigit))->GetAmp()) ;
-      cout << "signal " << signal << endl ;
       if( signal >fDigitThreshold ){
-	cout << "signal " << signal << endl ;
 	AliPHOSDigit * digit = (AliPHOSDigit*) fSDigits->At(iCurSDigit) ;
 	new((*fDigits)[fNdigits]) AliPHOSDigit( *digit ) ;
 	((AliPHOSDigit *)fDigits->At(fNdigits))->SetAmp(Digitize(signal));
-	cout << "fNdigits " << fNdigits << endl ;
 	fNdigits++ ;  
       }
 
@@ -415,7 +399,6 @@ void AliPHOSv1::SDigits2Digits(){
     digit->SetIndexInList(i) ;     
   }
 
-
   gAlice->TreeD()->Fill() ;
 
   gAlice->TreeD()->Write(0,TObject::kOverwrite) ;
@@ -442,7 +425,6 @@ void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
     else
       fSDigits = new TClonesArray("AliPHOSDigit",1000);
     fnSdigits = 0 ;
-    cout << " AliPHOSv1::MakeBranch : " << file << endl ; 
     gAlice->MakeBranchInTree(gAlice->TreeS(),branchname,&fSDigits,fBufferSize,file);  
   }
   
@@ -496,8 +478,6 @@ void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
     }
     
   }
-
-
 
 }
 
@@ -553,19 +533,6 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 }
 
 //____________________________________________________________________________
-void AliPHOSv1::ResetHits() 
-{              
-  // Reset hit tree for EMC and CPV
-  // Yuri Kharlov, 28 September 2000
-
-  AliDetector::ResetHits();
-  //  for (Int_t i=0; i<fGeom->GetNModules(); i++) ((AliPHOSCPVModule*)(*fEMCModules)[i]) -> Clear();
-  //  if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
-  //    for (Int_t i=0; i<fGeom->GetNCPVModules(); i++) ((AliPHOSCPVModule*)(*fCPVModules)[i]) -> Clear();
-  //  }
-  
-}  
-//____________________________________________________________________________
 void AliPHOSv1::ResetReconstruction() 
 { 
   // Deleting reconstructed objects
@@ -575,39 +542,6 @@ void AliPHOSv1::ResetReconstruction()
   if ( fTrackSegments )  fTrackSegments->Delete();
   if ( fRecParticles  )  fRecParticles ->Delete();
   
-}
-
-//____________________________________________________________________________
-//void AliPHOSv1::SDigits2Digits() {
-//  // Adds the noise to the summable digits and keeps digits above a threshold 
-//  // To make a digit
-//}
-
-//____________________________________________________________________________
-void AliPHOSv1::SetTreeAddress()
-{ 
-  //  TBranch *branch;
-  AliPHOS::SetTreeAddress();
-
-//  //Branch address for TreeR: RecPpsdRecPoint
-//   TTree *treeR = gAlice->TreeR();
-//   if ( treeR && fPpsdRecPoints ) {
-//     branch = treeR->GetBranch("PHOSPpsdRP");
-//     if (branch) branch->SetAddress(&fPpsdRecPoints) ;
-//  }
-
-  // Set branch address for the Hits Tree for hits in EMC modules
-  // Yuri Kharlov, 23 November 2000.
-
-  //  for( Int_t i=0; i<fGeom->GetNModules(); i++ ) GetEMCModule(i).SetTreeAddress("EMC",i+1);
-
-  // Set branch address for the Hits Tree for hits in CPV modules for IHEP geometry
-  // Yuri Kharlov, 28 September 2000.
-
-  //  if ( strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0 ) {
-  //    for( Int_t i=0; i<fGeom->GetNCPVModules(); i++ ) GetCPVModule(i).SetTreeAddress("CPV",i+1);
-  //  }
-
 }
 
 //____________________________________________________________________________
