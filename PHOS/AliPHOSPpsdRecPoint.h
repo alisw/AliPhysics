@@ -47,9 +47,6 @@ public:
 private:
 
   Float_t        fDelta ;         // parameter used for sorting
-
-
-public: 
   
   ClassDef(AliPHOSPpsdRecPoint,1)  // PPSD RecPoint, version 1
 

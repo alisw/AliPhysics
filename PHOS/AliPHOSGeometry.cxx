@@ -46,37 +46,37 @@ AliPHOSGeometry::~AliPHOSGeometry(void)
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSGeometry::AbsToRelNumbering(const Int_t AbsId, Int_t * RelId)
+Bool_t AliPHOSGeometry::AbsToRelNumbering(const Int_t AbsId, Int_t * relid)
 {
-  // RelId[0] = PHOS Module number 1:fNModules 
-  // RelId[1] = 0 if PbW04
+  // relid[0] = PHOS Module number 1:fNModules 
+  // relid[1] = 0 if PbW04
   //          = PPSD Module number 1:fNumberOfModulesPhi*fNumberOfModulesZ*2 (2->up and bottom level)
-  // RelId[2] = Row number inside a PHOS or PPSD module
-  // RelId[3] = Column number inside a PHOS or PPSD module
+  // relid[2] = Row number inside a PHOS or PPSD module
+  // relid[3] = Column number inside a PHOS or PPSD module
 
   Bool_t rv  = kTRUE ; 
-  Float_t Id = AbsId ;
+  Float_t id = AbsId ;
 
-  Int_t PHOSModuleNumber = (Int_t)TMath:: Ceil( Id / ( GetNPhi() * GetNZ() ) ) ; 
+  Int_t phosmodulenumber = (Int_t)TMath:: Ceil( id / ( GetNPhi() * GetNZ() ) ) ; 
   
-  if ( PHOSModuleNumber >  GetNModules() ) { // its a PPSD pad
+  if ( phosmodulenumber >  GetNModules() ) { // its a PPSD pad
 
-    Id -=  GetNPhi() * GetNZ() *  GetNModules() ; 
+    id -=  GetNPhi() * GetNZ() *  GetNModules() ; 
     Float_t tempo = 2 *  GetNumberOfModulesPhi() * GetNumberOfModulesZ() *  GetNumberOfPadsPhi() * GetNumberOfPadsZ() ; 
-    RelId[0] = (Int_t)TMath::Ceil( Id / tempo ) ; 
-    Id -= ( RelId[0] - 1 ) * tempo ;
-    RelId[1] = (Int_t)TMath::Ceil( Id / ( GetNumberOfPadsPhi() * GetNumberOfPadsZ() ) ) ; 
-    Id -= ( RelId[1] - 1 ) * GetNumberOfPadsPhi() * GetNumberOfPadsZ() ;
-    RelId[2] = (Int_t)TMath::Ceil( Id / GetNumberOfPadsPhi() ) ;
-    RelId[3] = (Int_t) ( Id - ( RelId[2] - 1 )  * GetNumberOfPadsPhi() ) ; 
+    relid[0] = (Int_t)TMath::Ceil( id / tempo ) ; 
+    id -= ( relid[0] - 1 ) * tempo ;
+    relid[1] = (Int_t)TMath::Ceil( id / ( GetNumberOfPadsPhi() * GetNumberOfPadsZ() ) ) ; 
+    id -= ( relid[1] - 1 ) * GetNumberOfPadsPhi() * GetNumberOfPadsZ() ;
+    relid[2] = (Int_t)TMath::Ceil( id / GetNumberOfPadsPhi() ) ;
+    relid[3] = (Int_t) ( id - ( relid[2] - 1 )  * GetNumberOfPadsPhi() ) ; 
   } 
   else { // its a PW04 crystal
 
-    RelId[0] = PHOSModuleNumber ;
-    RelId[1] = 0 ;
-    Id -= ( PHOSModuleNumber - 1 ) *  GetNPhi() * GetNZ() ; 
-    RelId[2] = (Int_t)TMath::Ceil( Id / GetNPhi() ) ;
-    RelId[3] = (Int_t)( Id - ( RelId[2] - 1 ) * GetNPhi() ) ; 
+    relid[0] = phosmodulenumber ;
+    relid[1] = 0 ;
+    id -= ( phosmodulenumber - 1 ) *  GetNPhi() * GetNZ() ; 
+    relid[2] = (Int_t)TMath::Ceil( id / GetNPhi() ) ;
+    relid[3] = (Int_t)( id - ( relid[2] - 1 ) * GetNPhi() ) ; 
   } 
   return rv ; 
 }
@@ -96,21 +96,21 @@ void AliPHOSGeometry::EmcModuleCoverage(const Int_t mod, Double_t & tm, Double_t
       }
 
   Float_t phi =  GetPHOSAngle(mod) *  (TMath::Pi() / 180.)  ;  
-  Float_t Y0  =  GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
+  Float_t y0  =  GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
 		  + GetSecondUpperPlateThickness() + GetUpperCoolingPlateThickness()  ;  
   
-  Double_t angle = TMath::ATan( GetCrystalSize(0)*GetNPhi() / (2 * Y0) ) ;
+  Double_t angle = TMath::ATan( GetCrystalSize(0)*GetNPhi() / (2 * y0) ) ;
   phi = phi + 1.5 * TMath::Pi() ; // to follow the convention of the particle generator(PHOS is between 230 and 310 deg.)
-  Double_t m  = phi - angle ;
-  Double_t M  = phi + angle ;
-  pM = TMath::Max(M, m) * conv ;
-  pm = TMath::Min(M, m) * conv ; 
+  Double_t max  = phi - angle ;
+  Double_t min   = phi + angle ;
+  pM = TMath::Max(max, min) * conv ;
+  pm = TMath::Min(max, min) * conv ; 
   
-  angle =  TMath::ATan( GetCrystalSize(2)*GetNZ() / (2 * Y0) ) ;
-  M  = TMath::Pi() / 2.  + angle ; // to follow the convention of the particle generator(PHOS is at 90 deg.)
-  m  = TMath::Pi() / 2.  - angle ;
-  tM = TMath::Max(M, m) * conv ;
-  tm = TMath::Min(M, m) * conv ; 
+  angle =  TMath::ATan( GetCrystalSize(2)*GetNZ() / (2 * y0) ) ;
+  max  = TMath::Pi() / 2.  + angle ; // to follow the convention of the particle generator(PHOS is at 90 deg.)
+  min  = TMath::Pi() / 2.  - angle ;
+  tM = TMath::Max(max, min) * conv ;
+  tm = TMath::Min(max, min) * conv ; 
  
 }
 
@@ -129,10 +129,10 @@ void AliPHOSGeometry::EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t
     conv = 1. ;
       }
 
-  Float_t Y0   =  GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
+  Float_t y0   =  GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
     + GetSecondUpperPlateThickness() + GetUpperCoolingPlateThickness()  ;  
-  theta = 2 * TMath::ATan( GetCrystalSize(2) / (2 * Y0) ) * conv ;
-  phi   = 2 * TMath::ATan( GetCrystalSize(0) / (2 * Y0) ) * conv ;
+  theta = 2 * TMath::ATan( GetCrystalSize(2) / (2 * y0) ) * conv ;
+  phi   = 2 * TMath::ATan( GetCrystalSize(0) / (2 * y0) ) * conv ;
 }
  
 
@@ -154,12 +154,12 @@ void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_
   }
   if ( ModuleNumber != 0 ) {
     Float_t phi0 =  GetPHOSAngle(ModuleNumber) *  (TMath::Pi() / 180.) + 1.5 * TMath::Pi()  ;  
-    Float_t Y0  =  GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
+    Float_t y0  =  GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
       + GetSecondUpperPlateThickness() + GetUpperCoolingPlateThickness()  ;   
     Double_t angle = phi - phi0; 
-    x = Y0 * TMath::Tan(angle) ; 
+    x = y0 * TMath::Tan(angle) ; 
     angle = theta - TMath::Pi() / 2 ; 
-    z = Y0 * TMath::Tan(angle) ; 
+    z = y0 * TMath::Tan(angle) ; 
   }
 }
 
@@ -168,7 +168,7 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TM
 {
 
   AliPHOSRecPoint * tmpPHOS = (AliPHOSRecPoint *) RecPoint ;  
-  TVector3 LocalPosition ;
+  TVector3 localposition ;
 
   tmpPHOS->GetLocalPosition(gpos) ;
 
@@ -191,15 +191,15 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TM
 	gpos.SetY(-( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() / 2.0) ) ; 
     }  
 
-  Float_t Phi           = GetPHOSAngle( tmpPHOS->GetPHOSMod()) ; 
-  Double_t const RADDEG = 180.0 / kPI ;
-  Float_t rPhi          = Phi / RADDEG ; 
+  Float_t phi           = GetPHOSAngle( tmpPHOS->GetPHOSMod()) ; 
+  Double_t const kRADDEG = 180.0 / kPI ;
+  Float_t rphi          = phi / kRADDEG ; 
   
-  TRotation Rot ;
-  Rot.RotateZ(-rPhi) ; // a rotation around Z by angle  
+  TRotation rot ;
+  rot.RotateZ(-rphi) ; // a rotation around Z by angle  
   
-  TRotation dummy = Rot.Invert() ;  // to transform from original frame to rotate frame
-  gpos.Transform(Rot) ; // rotate the baby 
+  TRotation dummy = rot.Invert() ;  // to transform from original frame to rotate frame
+  gpos.Transform(rot) ; // rotate the baby 
 
 }
 
@@ -207,7 +207,7 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TM
 void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)
 {
   AliPHOSRecPoint * tmpPHOS = (AliPHOSRecPoint *) RecPoint ;  
-  TVector3 LocalPosition ;
+  TVector3 localposition ;
   tmpPHOS->GetLocalPosition(gpos) ;
 
 
@@ -228,15 +228,15 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos)
 	gpos.SetY(-( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() / 2.0) ) ; 
     }  
 
-  Float_t Phi           = GetPHOSAngle( tmpPHOS->GetPHOSMod()) ; 
-  Double_t const RADDEG = 180.0 / kPI ;
-  Float_t rPhi          = Phi / RADDEG ; 
+  Float_t phi           = GetPHOSAngle( tmpPHOS->GetPHOSMod()) ; 
+  Double_t const kRADDEG = 180.0 / kPI ;
+  Float_t rphi          = phi / kRADDEG ; 
   
-  TRotation Rot ;
-  Rot.RotateZ(-rPhi) ; // a rotation around Z by angle  
+  TRotation rot ;
+  rot.RotateZ(-rphi) ; // a rotation around Z by angle  
   
-  TRotation dummy = Rot.Invert() ;  // to transform from original frame to rotate frame
-  gpos.Transform(Rot) ; // rotate the baby 
+  TRotation dummy = rot.Invert() ;  // to transform from original frame to rotate frame
+  gpos.Transform(rot) ; // rotate the baby 
 }
 
 //____________________________________________________________________________
@@ -292,9 +292,9 @@ void AliPHOSGeometry::InitPHOS(void)
   fIPtoOuterCoverDistance = 447.0 ;      
   fIPtoCrystalSurface     = 460.0 ;  
   
-  fPinDiodeSize[0] = 1.0 ;    
-  fPinDiodeSize[1] = 0.1 ;    
-  fPinDiodeSize[2] = 1.0 ;    
+  fPinDiodeSize[0] = 1.71 ;   //Values given by Odd Harald feb 2000  
+  fPinDiodeSize[1] = 0.0280 ; // 0.0280 is the depth of active layer in the silicon     
+  fPinDiodeSize[2] = 1.61 ;    
   
   fUpperCoolingPlateThickness   = 0.06 ; 
   fSupportPlateThickness        = 10.0 ;
@@ -310,16 +310,16 @@ void AliPHOSGeometry::InitPHOS(void)
   fAirThickness[1] = 20.5175 ;  
   fAirThickness[2] =  2.48   ;  
   
-  Float_t XtalModulePhiSize =  fNPhi * ( fXtlSize[0] + 2 * fGapBetweenCrystals ) ; 
-  Float_t XtalModuleZSize   =  fNZ * ( fXtlSize[2] + 2 * fGapBetweenCrystals ) ;
+  Float_t xtalModulePhiSize =  fNPhi * ( fXtlSize[0] + 2 * fGapBetweenCrystals ) ; 
+  Float_t xtalModuleZSize   =  fNZ * ( fXtlSize[2] + 2 * fGapBetweenCrystals ) ;
   
   // The next dimensions are calculated from the above parameters
   
-  fOuterBoxSize[0] =  XtalModulePhiSize + 2 * ( fAirThickness[0] + fModuleBoxThickness
+  fOuterBoxSize[0] =  xtalModulePhiSize + 2 * ( fAirThickness[0] + fModuleBoxThickness
 						+ fTextolitBoxThickness[0] + fOuterBoxThickness[0] ) ; 
   fOuterBoxSize[1] = ( fXtlSize[1] + fCrystalSupportHeight + fCrystalWrapThickness + fCrystalHolderThickness )
     + 2 * (fAirThickness[1] +  fModuleBoxThickness + fTextolitBoxThickness[1] + fOuterBoxThickness[1] ) ;
-  fOuterBoxSize[2] =  XtalModuleZSize +  2 * ( fAirThickness[2] + fModuleBoxThickness 
+  fOuterBoxSize[2] =  xtalModuleZSize +  2 * ( fAirThickness[2] + fModuleBoxThickness 
 					       + fTextolitBoxThickness[2] + fOuterBoxThickness[2] ) ; 
   
   fTextolitBoxSize[0]  = fOuterBoxSize[0] - 2 * fOuterBoxThickness[0] ;
@@ -398,7 +398,7 @@ AliPHOSGeometry *  AliPHOSGeometry::GetInstance(const Text_t* name, const Text_t
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * RelId, Int_t &  AbsId)
+Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId)
 {
 
   // AbsId = 1:fNModules * fNPhi * fNZ  -> PbWO4
@@ -406,20 +406,20 @@ Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * RelId, Int_t &  AbsId)
 
   Bool_t rv = kTRUE ; 
  
-  if ( RelId[1] > 0 ) { // its a PPSD pad
+  if ( relid[1] > 0 ) { // its a PPSD pad
 
     AbsId =    GetNPhi() * GetNZ() *  GetNModules()                          // the offset to separate emcal crystals from PPSD pads
-      + ( RelId[0] - 1 ) * GetNumberOfModulesPhi() * GetNumberOfModulesZ()   // the pads offset of PHOS modules 
+      + ( relid[0] - 1 ) * GetNumberOfModulesPhi() * GetNumberOfModulesZ()   // the pads offset of PHOS modules 
                          * GetNumberOfPadsPhi() * GetNumberOfPadsZ() * 2
-      + ( RelId[1] - 1 ) * GetNumberOfPadsPhi() * GetNumberOfPadsZ()         // the pads offset of PPSD modules 
-      + ( RelId[2] - 1 ) * GetNumberOfPadsPhi()                              // the pads offset of a PPSD row
-      + RelId[3] ;                                                           // the column number
+      + ( relid[1] - 1 ) * GetNumberOfPadsPhi() * GetNumberOfPadsZ()         // the pads offset of PPSD modules 
+      + ( relid[2] - 1 ) * GetNumberOfPadsPhi()                              // the pads offset of a PPSD row
+      + relid[3] ;                                                           // the column number
   } 
   else {
-    if ( RelId[1] == 0 ) { // its a Phos crystal
-      AbsId =  ( RelId[0] - 1 ) *  GetNPhi() * GetNZ() // the offset of PHOS modules
-        + ( RelId[2] - 1 ) * GetNPhi()                 // the offset of a xtal row
-        + RelId[3] ;                                   // the column number
+    if ( relid[1] == 0 ) { // its a Phos crystal
+      AbsId =  ( relid[0] - 1 ) *  GetNPhi() * GetNZ() // the offset of PHOS modules
+        + ( relid[2] - 1 ) * GetNPhi()                 // the offset of a xtal row
+        + relid[3] ;                                   // the column number
     }
   }
 
@@ -428,51 +428,51 @@ Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * RelId, Int_t &  AbsId)
 
 //____________________________________________________________________________
 
-void AliPHOSGeometry::RelPosInAlice(const Int_t Id, TVector3 & pos ) 
+void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos ) 
 {
-   if (Id > 0) { 
+   if (id > 0) { 
 
-  Int_t RelId[4] ;
+  Int_t relid[4] ;
  
-  AbsToRelNumbering(Id , RelId) ;
+  AbsToRelNumbering(id , relid) ;
 
-  Int_t PHOSModule = RelId[0] ; 
+  Int_t phosmodule = relid[0] ; 
 
-  Float_t Y0 ; 
+  Float_t y0 = 0 ; 
 
-  if ( RelId[1] == 0 ) // it is a PbW04 crystal 
-  {  Y0 =  -(GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
+  if ( relid[1] == 0 ) // it is a PbW04 crystal 
+  {  y0 =  -(GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
       + GetSecondUpperPlateThickness() + GetUpperCoolingPlateThickness())  ;  
   }
-  if ( RelId[1] > 0 ) { // its a PPSD pad
-    if ( RelId[1] >  GetNumberOfModulesPhi() *  GetNumberOfModulesZ() ) // its an bottom module
+  if ( relid[1] > 0 ) { // its a PPSD pad
+    if ( relid[1] >  GetNumberOfModulesPhi() *  GetNumberOfModulesZ() ) // its an bottom module
      {
-       Y0 = -( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() / 2.0)  ;
+       y0 = -( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() / 2.0)  ;
      } 
     else // its an upper module
-      Y0 = -( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() - GetLeadToMicro2Gap()
+      y0 = -( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() - GetLeadToMicro2Gap()
 	-  GetLeadConverterThickness() -  GetMicro1ToLeadGap() - GetMicromegas1Thickness() / 2.0) ; 
   }
 
   Float_t x, z ; 
-  RelPosInModule(RelId, x, z) ; 
+  RelPosInModule(relid, x, z) ; 
 
   pos.SetX(x) ;
   pos.SetZ(z) ;
-  pos.SetY( TMath::Sqrt(x*x + z*z + Y0*Y0) ) ; 
+  pos.SetY( TMath::Sqrt(x*x + z*z + y0*y0) ) ; 
 
 
 
-   Float_t Phi           = GetPHOSAngle( PHOSModule) ; 
-   Double_t const RADDEG = 180.0 / kPI ;
-   Float_t rPhi          = Phi / RADDEG ; 
+   Float_t phi           = GetPHOSAngle( phosmodule) ; 
+   Double_t const kRADDEG = 180.0 / kPI ;
+   Float_t rphi          = phi / kRADDEG ; 
 
-   TRotation Rot ;
-   Rot.RotateZ(-rPhi) ; // a rotation around Z by angle  
+   TRotation rot ;
+   rot.RotateZ(-rphi) ; // a rotation around Z by angle  
   
-   TRotation dummy = Rot.Invert() ;  // to transform from original frame to rotate frame
+   TRotation dummy = rot.Invert() ;  // to transform from original frame to rotate frame
   
-   pos.Transform(Rot) ; // rotate the baby 
+   pos.Transform(rot) ; // rotate the baby 
   }
   else {
  pos.SetX(0.);
@@ -482,41 +482,41 @@ void AliPHOSGeometry::RelPosInAlice(const Int_t Id, TVector3 & pos )
 } 
 
 //____________________________________________________________________________
-void AliPHOSGeometry::RelPosInModule(const Int_t * RelId, Float_t & x, Float_t & z) 
+void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t & z) 
 {
-  Int_t PPSDModule  ; 
-  Int_t Row        = RelId[2] ; //offset along z axiz
-  Int_t Column     = RelId[3] ; //offset along x axiz
+  Int_t ppsdmodule  ; 
+  Int_t row        = relid[2] ; //offset along z axiz
+  Int_t column     = relid[3] ; //offset along x axiz
 
-  Float_t PadSizeZ = GetPPSDModuleSize(2)/ GetNumberOfPadsZ();
-  Float_t PadSizeX = GetPPSDModuleSize(0)/ GetNumberOfPadsPhi();
+  Float_t padsizeZ = GetPPSDModuleSize(2)/ GetNumberOfPadsZ();
+  Float_t padsizeX = GetPPSDModuleSize(0)/ GetNumberOfPadsPhi();
 
-  if ( RelId[1] == 0 ) { // its a PbW04 crystal 
-    x = -( GetNPhi()/2. - Row   + 0.5 ) *  GetCrystalSize(0) ; // position ox Xtal with respect
-    z = ( GetNZ() /2. - Column + 0.5 ) *  GetCrystalSize(2) ; // of center of PHOS module  
+  if ( relid[1] == 0 ) { // its a PbW04 crystal 
+    x = -( GetNPhi()/2. - row   + 0.5 ) *  GetCrystalSize(0) ; // position ox Xtal with respect
+    z = ( GetNZ() /2. - column + 0.5 ) *  GetCrystalSize(2) ; // of center of PHOS module  
    }  
    else  {    
-    if ( RelId[1] >  GetNumberOfModulesPhi() *  GetNumberOfModulesZ() )
-       PPSDModule =  RelId[1]-GetNumberOfModulesPhi() *  GetNumberOfModulesZ(); 
-    else PPSDModule =  RelId[1] ;
-    Int_t ModRow = 1+(Int_t)TMath::Ceil( (Float_t)PPSDModule / GetNumberOfModulesPhi()-1. ) ; 
-    Int_t ModCol = PPSDModule -  ( ModRow-1 ) * GetNumberOfModulesPhi() ;     
-    Float_t x0 = (  GetNumberOfModulesPhi() / 2.  - ModRow  + 0.5 ) * GetPPSDModuleSize(0) ;
-    Float_t z0 = (  GetNumberOfModulesZ() / 2.  - ModCol  + 0.5 ) * GetPPSDModuleSize(2)  ;     
-    x = - ( GetNumberOfPadsPhi()/2. - Row - 0.5 ) * PadSizeX + x0 ; // position of pad  with respect
-    z = ( GetNumberOfPadsZ()/2.   - Column - 0.5 ) * PadSizeZ - z0 ; // of center of PHOS module  
+    if ( relid[1] >  GetNumberOfModulesPhi() *  GetNumberOfModulesZ() )
+       ppsdmodule =  relid[1]-GetNumberOfModulesPhi() *  GetNumberOfModulesZ(); 
+    else ppsdmodule =  relid[1] ;
+    Int_t modrow = 1+(Int_t)TMath::Ceil( (Float_t)ppsdmodule / GetNumberOfModulesPhi()-1. ) ; 
+    Int_t modcol = ppsdmodule -  ( modrow - 1 ) * GetNumberOfModulesPhi() ;     
+    Float_t x0 = (  GetNumberOfModulesPhi() / 2.  - modrow  + 0.5 ) * GetPPSDModuleSize(0) ;
+    Float_t z0 = (  GetNumberOfModulesZ() / 2.  - modcol  + 0.5 ) * GetPPSDModuleSize(2)  ;     
+    x = - ( GetNumberOfPadsPhi()/2. - row - 0.5 ) * padsizeX + x0 ; // position of pad  with respect
+    z = ( GetNumberOfPadsZ()/2.   - column - 0.5 ) * padsizeZ - z0 ; // of center of PHOS module  
          }
 }
 
 //____________________________________________________________________________
 void AliPHOSGeometry:: SetPHOSAngles() 
 { 
-  Double_t const RADDEG = 180.0 / kPI ;
-  Float_t PPHI =  TMath::ATan( fOuterBoxSize[0]  / ( 2.0 * fIPtoOuterCoverDistance ) ) ;
-  PPHI *= RADDEG ;
+  Double_t const kRADDEG = 180.0 / kPI ;
+  Float_t pphi =  TMath::ATan( fOuterBoxSize[0]  / ( 2.0 * fIPtoOuterCoverDistance ) ) ;
+  pphi *= kRADDEG ;
   
   for( Int_t i = 1; i <= fNModules ; i++ ) {
-    Float_t angle = PPHI * 2 * ( i - fNModules / 2.0 - 0.5 ) ;
+    Float_t angle = pphi * 2 * ( i - fNModules / 2.0 - 0.5 ) ;
     fPHOSAngle[i-1] = -  angle ;
  } 
 }

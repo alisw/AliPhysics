@@ -62,9 +62,7 @@ private:
   Float_t * fEnergyList ;  // energy of digits
   Float_t fW0 ;            // logarithmic weight factor for center of gravity calculation
 
-public: 
-
-ClassDef(AliPHOSEmcRecPoint,1)  // EMC RecPoint, version 1
+  ClassDef(AliPHOSEmcRecPoint,1)  // EMC RecPoint, version 1
 
 };
 

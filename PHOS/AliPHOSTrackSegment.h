@@ -27,10 +27,10 @@
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSPpsdRecPoint.h"
 
-const static Int_t GAMMA         = 0 ; 
-const static Int_t ELECTRON      = 1 ;
-const static Int_t NEUTRAL       = 2 ;  
-const static Int_t CHARGEDHADRON = 3 ;  
+const static Int_t kGAMMA         = 0 ; 
+const static Int_t kELECTRON      = 1 ;
+const static Int_t kNEUTRAL       = 2 ;  
+const static Int_t kCHARGEDHADRON = 3 ;  
 
 class AliPHOSTrackSegment : public TObject  {
 
@@ -65,8 +65,6 @@ private:
   AliPHOSPpsdRecPoint * fPpsdUp ;
   
   Float_t fCutOnDispersion ;   
-  
-public:
 
   ClassDef(AliPHOSTrackSegment,1)  // description , version 1
 

@@ -30,12 +30,7 @@ public:
 
   void    GuessParticleType(TrackSegmentsList * trsl, RecParticlesList * rpl ) ; // does the job
 
-
-private:
-
-public: 
-
-ClassDef( AliPHOSParticleGuesserv1,1)  // particle guesser implementation , version 1
+  ClassDef( AliPHOSParticleGuesserv1,1)  // particle guesser implementation , version 1
 
 };
 

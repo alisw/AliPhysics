@@ -49,8 +49,6 @@ protected:
   
   Int_t      fPHOSMod ;
 
-public:
- 
   ClassDef(AliPHOSRecPoint,1)
  
 };

@@ -90,8 +90,8 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 
   //  static Int_t pxold, pyold;
 
-   static TGraph *  DigitGraph = 0 ;
-   static TPaveText* ClusterText = 0 ;
+   static TGraph *  digitgraph = 0 ;
+   static TPaveText* clustertext = 0 ;
 
    if (!gPad->IsEditable()) return;
 
@@ -100,7 +100,7 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 
    case kButton1Down:{
      AliPHOSDigit * digit ;
-     AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
+     AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
      Int_t iDigit;
      Int_t relid[4] ;
      Float_t xi[fMulDigit] ;
@@ -108,29 +108,29 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
  
      for(iDigit=0; iDigit<fMulDigit; iDigit++) {
        digit = (AliPHOSDigit *) fDigitsList[iDigit];
-       PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-       PHOSGeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]) ;
+       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+       phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]) ;
      }
 
-     if (!DigitGraph) {
-       DigitGraph = new TGraph(fMulDigit,xi,zi);
-       DigitGraph-> SetMarkerStyle(5) ; 
-       DigitGraph-> SetMarkerSize(1.) ;
-       DigitGraph-> SetMarkerColor(1) ;
-       DigitGraph-> Draw("P") ;
+     if (!digitgraph) {
+       digitgraph = new TGraph(fMulDigit,xi,zi);
+       digitgraph-> SetMarkerStyle(5) ; 
+       digitgraph-> SetMarkerSize(1.) ;
+       digitgraph-> SetMarkerColor(1) ;
+       digitgraph-> Draw("P") ;
      }
-     if (!ClusterText) {
+     if (!clustertext) {
   
        TVector3 pos(0.,0.,0.) ;
        GetLocalPosition(pos) ;
-       ClusterText = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+50,pos.Z()+35,"") ;
+       clustertext = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+50,pos.Z()+35,"") ;
        Text_t  line1[40] ;
        Text_t  line2[40] ;
        sprintf(line1,"Energy=%1.2f GeV",GetEnergy()) ;
        sprintf(line2,"%d Digits",GetDigitsMultiplicity()) ;
-       ClusterText ->AddText(line1) ;
-       ClusterText ->AddText(line2) ;
-       ClusterText ->Draw("");
+       clustertext ->AddText(line1) ;
+       clustertext ->AddText(line2) ;
+       clustertext ->Draw("");
      }
      gPad->Update() ; 
      Print() ;
@@ -139,13 +139,13 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
      break;
 
    case kButton1Up:
-     if (DigitGraph) {
-       delete DigitGraph  ;
-       DigitGraph = 0 ;
+     if (digitgraph) {
+       delete digitgraph  ;
+       digitgraph = 0 ;
      }
-     if (ClusterText) {
-       delete ClusterText ;
-       ClusterText = 0 ;
+     if (clustertext) {
+       delete clustertext ;
+       clustertext = 0 ;
      }
      
      break;
@@ -164,9 +164,9 @@ Int_t AliPHOSRecPoint::GetPHOSMod()
   
   AliPHOSDigit * digit   ;
   digit = (AliPHOSDigit *) fDigitsList[0] ;
-  AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
 
-  PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+  phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
   fPHOSMod = relid[0];
   return fPHOSMod ;
 }
@@ -180,15 +180,15 @@ void AliPHOSRecPoint::Paint(Option_t *)
    GetLocalPosition(pos)   ;
    Coord_t x = pos.X()     ;
    Coord_t y = pos.Z()     ;
-   Color_t MarkerColor = 1 ;
-   Size_t  MarkerSize = 1. ;
-   Style_t MarkerStyle = 5 ;
+   Color_t markercolor = 1 ;
+   Size_t  markersize = 1. ;
+   Style_t markerstyle = 5 ;
 
    if (!gPad->IsBatch()) {
-     gVirtualX->SetMarkerColor(MarkerColor) ;
-     gVirtualX->SetMarkerSize (MarkerSize)  ;
-     gVirtualX->SetMarkerStyle(MarkerStyle) ;
+     gVirtualX->SetMarkerColor(markercolor) ;
+     gVirtualX->SetMarkerSize (markersize)  ;
+     gVirtualX->SetMarkerStyle(markerstyle) ;
    }
-   gPad->SetAttMarkerPS(MarkerColor,MarkerStyle,MarkerSize) ;
+   gPad->SetAttMarkerPS(markercolor,markerstyle,markersize) ;
    gPad->PaintPolyMarker(1,&x,&y,"") ;
 }

@@ -49,16 +49,16 @@ TString AliPHOSRecParticle::Name()
 {
   TString  name ; 
   switch (fType) {
-  case GAMMA :
+  case kGAMMA :
     name = "PHOTON" ;
     break ; 
-   case ELECTRON :
+   case kELECTRON :
      name = "ELECTRON" ;
     break ; 
-  case NEUTRAL :
+  case kNEUTRAL :
     name = "NEUTRAL" ;
     break ; 
-   case CHARGEDHADRON:
+   case kCHARGEDHADRON:
     name = "CHARGED HADRON" ;
     break ; 
   }

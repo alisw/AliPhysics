@@ -9,7 +9,7 @@ PACKAGE = PHOS
 
 # C++ sources
 
-SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSHit.cxx \
+SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSHit.cxx \
                    AliPHOSGeometry.cxx \
                    AliPHOSDigit.cxx \
                    AliPHOSRecPoint.cxx AliPHOSEmcRecPoint.cxx AliPHOSPpsdRecPoint.cxx \
@@ -17,7 +17,7 @@ SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSHit.cxx \
 		   AliPHOSReconstructioner.cxx  AliPHOSTrackSegment.cxx \
                    AliPHOSTrackSegmentMaker.cxx AliPHOSTrackSegmentMakerv1.cxx \
                    AliPHOSRecParticle.cxx AliPHOSParticleGuesser.cxx AliPHOSParticleGuesserv1.cxx \
-                   AliPHOSAnalyze.cxx PHOSHistos.cxx 
+                   AliPHOSAnalyze.cxx 
 
 
 # C++ Headers

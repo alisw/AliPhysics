@@ -23,6 +23,7 @@
 
 // --- AliRoot header files ---
 
+#include "AliPHOSDigit.h"
 
 typedef TClonesArray    RecPointsList ; // a cluster has a variable size (see ROOT FAQ)  
 typedef TClonesArray    DigitsList ; //for digits saved on disk
@@ -35,6 +36,7 @@ public:
   virtual ~AliPHOSClusterizer() ; // dtor
 
   virtual Float_t Calibrate(Int_t Amp) = 0 ; 
+  virtual Bool_t IsInEmc(AliPHOSDigit * digit)= 0 ;   
   virtual void  GetNumberOfClustersFound(Int_t * numb) = 0 ; 
   virtual void  MakeClusters(const DigitsList * dl, RecPointsList * emccl, RecPointsList * ppsdl) = 0 ; 
   virtual void PrintParameters() = 0 ;  

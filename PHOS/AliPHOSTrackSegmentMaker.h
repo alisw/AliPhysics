@@ -1,5 +1,5 @@
-#ifndef ALIPHOSSUBTRACKER_H
-#define ALIPHOSSUBTRACKER_H
+#ifndef ALIPHOSTRACKSEGMENTMAKER_H
+#define ALIPHOSTRACKSEGMENTMAKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -42,10 +42,8 @@ private:
 
   Float_t fR0 ;
 
-public: 
-
-ClassDef( AliPHOSTrackSegmentMaker,1)  // subtracking implementation , version 1
+  ClassDef( AliPHOSTrackSegmentMaker,1)  // subtracking implementation , version 1
 
 };
 
-#endif // AliPHOSSUBTRACKER_H
+#endif // ALIPHOSTRACKSEGMENTMAKER_H

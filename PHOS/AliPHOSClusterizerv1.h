@@ -38,7 +38,7 @@ public:
   Float_t GetLogWeightCut(void){return  fW0 ; }
   Float_t GetLocalMaxCut(void) {return  fLocMaxCut ; }
   virtual void GetNumberOfClustersFound(Int_t * numb) ;   
-  Bool_t IsInEmc(AliPHOSDigit * digit) ;                      // Tells if id digit is in EMC
+  virtual Bool_t IsInEmc(AliPHOSDigit * digit) ;                      // Tells if id digit is in EMC
   virtual void MakeClusters(const DigitsList * dl, RecPointsList * emcl, RecPointsList * ppsdl) ; // does the job 
   virtual void PrintParameters() ;  
   virtual void SetCalibrationParameters(Float_t A,Float_t B){ fA = A ; fB = B;} 
@@ -61,9 +61,7 @@ private:
   Float_t fPpsdClusteringThreshold ; 
   Float_t fPpsdEnergyThreshold ;  
   Float_t fW0 ;   
-  
-public: 
-  
+    
   ClassDef(AliPHOSClusterizerv1,1)  // Clusterizer implementation , version 1
 
 };

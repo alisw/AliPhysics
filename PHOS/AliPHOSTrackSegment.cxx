@@ -126,7 +126,7 @@ void AliPHOSTrackSegment::ExecuteEvent(Int_t event, Int_t px, Int_t py)
   //  If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
   //  and switched off when the mouse button is released.
   //
-   static TPaveText* TrackSegmentText = 0 ;
+   static TPaveText* textTS = 0 ;
 
    if (!gPad->IsEditable()) 
      return;
@@ -135,23 +135,23 @@ void AliPHOSTrackSegment::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 
    case kButton1Down:{
     
-     if (!TrackSegmentText) {
+     if (!textTS) {
   
        TVector3 pos(0.,0.,0.) ;
        fEmcRecPoint->GetLocalPosition(pos) ;
-       TrackSegmentText = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+5,pos.Z()+15,"") ;
+       textTS = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+5,pos.Z()+15,"") ;
        Text_t  line1[40] ;
-       if (GetPartType() == GAMMA ) 
+       if (GetPartType() == kGAMMA ) 
 	 sprintf(line1,"PHOTON") ;
-       if (GetPartType() == ELECTRON ) 
+       if (GetPartType() == kELECTRON ) 
 	 sprintf(line1,"ELECTRON") ;
-       if (GetPartType() == NEUTRAL ) 
+       if (GetPartType() == kNEUTRAL ) 
 	 sprintf(line1,"NEUTRAL") ;
-       if (GetPartType() == CHARGEDHADRON ) 
+       if (GetPartType() == kCHARGEDHADRON ) 
 	 sprintf(line1,"CHARGED HADRON") ;
 
-       TrackSegmentText ->AddText(line1) ;
-       TrackSegmentText ->Draw("");
+       textTS ->AddText(line1) ;
+       textTS ->Draw("");
        gPad->Update() ; 
      }
    }
@@ -159,9 +159,9 @@ void AliPHOSTrackSegment::ExecuteEvent(Int_t event, Int_t px, Int_t py)
      break;
 
    case kButton1Up:
-     if (TrackSegmentText) {
-       delete TrackSegmentText ;
-       TrackSegmentText = 0 ;
+     if (textTS) {
+       delete textTS ;
+       textTS = 0 ;
      }
      break;  
    }
@@ -183,9 +183,9 @@ Float_t AliPHOSTrackSegment::GetDistanceInPHOSPlane()
   } 
   vecEmc -= vecPpsd ;
 
-  Float_t R = vecEmc.Mag();;
+  Float_t r = vecEmc.Mag();;
 
-  return R ;
+  return r ;
 }
 
 //____________________________________________________________________________
@@ -231,27 +231,27 @@ Int_t AliPHOSTrackSegment::GetPartType()
   //         2 - neutral   
   //         3 - charged hadron
 
-  Int_t PartType = GAMMA ;
+  Int_t typeofparticle = kGAMMA ;
                             
   if( fPpsdUp == 0 ) {     // Neutral
 
     if( fPpsdLow == 0 )    // Neutral  
-      PartType = NEUTRAL ;   
+      typeofparticle = kNEUTRAL ;   
     else                   // Gamma
-      PartType = GAMMA ;               
+      typeofparticle = kGAMMA ;               
 
   }
 
   else {             // Charged           
 
     if( fEmcRecPoint->GetDispersion() > fCutOnDispersion) 
-      PartType = CHARGEDHADRON ;
+      typeofparticle = kCHARGEDHADRON ;
     else  
-      PartType = ELECTRON ;  
+      typeofparticle = kELECTRON ;  
   
   }
   
-  return   PartType ;                     
+  return   typeofparticle ;                     
 
 }
 
@@ -259,8 +259,8 @@ Int_t AliPHOSTrackSegment::GetPartType()
 void AliPHOSTrackSegment::GetPosition( TVector3 & pos ) 
 {  
   // Returns positions of hits
-  TMatrix Dummy ;
-  fEmcRecPoint->GetGlobalPosition(pos, Dummy) ;
+  TMatrix dummy ;
+  fEmcRecPoint->GetGlobalPosition(pos, dummy) ;
 }
 
 //______________________________________________________________________________
@@ -287,45 +287,45 @@ void AliPHOSTrackSegment::Paint(Option_t *)
    Coord_t yppsdu = posppsdu.Z() ;
    Coord_t xppsdu = posppsdu.X() ;
 
-   Color_t MarkerColor = 1 ;
-   Size_t  MarkerSize  = 1.5 ;
-   Style_t MarkerStyle = 20 ;
+   Color_t markercolor = 1 ;
+   Size_t  markersize  = 1.5 ;
+   Style_t markerstyle = 20 ;
 
    if (!gPad->IsBatch()) {
-     gVirtualX->SetMarkerColor(MarkerColor) ;
-     gVirtualX->SetMarkerSize (MarkerSize)  ;
-     gVirtualX->SetMarkerStyle(MarkerStyle) ;
+     gVirtualX->SetMarkerColor(markercolor) ;
+     gVirtualX->SetMarkerSize (markersize)  ;
+     gVirtualX->SetMarkerStyle(markerstyle) ;
    }
-   gPad->SetAttMarkerPS(MarkerColor,MarkerStyle,MarkerSize) ;
+   gPad->SetAttMarkerPS(markercolor,markerstyle,markersize) ;
    gPad->PaintPolyMarker(1, &xemc, &yemc, "") ;
    
    if (xppsdl != 999. && yppsdl != 999. ) {
 
-     MarkerColor = 2 ;
-     MarkerSize  = 1.25 ;
-     MarkerStyle = 21 ;
+     markercolor = 2 ;
+     markersize  = 1.25 ;
+     markerstyle = 21 ;
      
      if (!gPad->IsBatch()) {
-       gVirtualX->SetMarkerColor(MarkerColor) ;
-       gVirtualX->SetMarkerSize (MarkerSize)  ;
-       gVirtualX->SetMarkerStyle(MarkerStyle) ;
+       gVirtualX->SetMarkerColor(markercolor) ;
+       gVirtualX->SetMarkerSize (markersize)  ;
+       gVirtualX->SetMarkerStyle(markerstyle) ;
      }
-     gPad->SetAttMarkerPS(MarkerColor,MarkerStyle,MarkerSize) ;
+     gPad->SetAttMarkerPS(markercolor,markerstyle,markersize) ;
      gPad->PaintPolyMarker(1, &xppsdl, &yppsdl, "") ;
    }
 
     if (xppsdu != 999. && yppsdu != 999. ) {
   
-      MarkerColor = 3 ;
-      MarkerSize  = 1. ;
-      MarkerStyle = 22 ;
+      markercolor = 3 ;
+      markersize  = 1. ;
+      markerstyle = 22 ;
       
       if (!gPad->IsBatch()) {
-	gVirtualX->SetMarkerColor(MarkerColor) ;
-	gVirtualX->SetMarkerSize (MarkerSize)  ;
-	gVirtualX->SetMarkerStyle(MarkerStyle) ;
+	gVirtualX->SetMarkerColor(markercolor) ;
+	gVirtualX->SetMarkerSize (markersize)  ;
+	gVirtualX->SetMarkerStyle(markerstyle) ;
       }
-      gPad->SetAttMarkerPS(MarkerColor,MarkerStyle,MarkerSize) ;
+      gPad->SetAttMarkerPS(markercolor,markerstyle,markersize) ;
       gPad->PaintPolyMarker(1, &xppsdu, &yppsdu, "") ;
     }
 }
@@ -338,22 +338,22 @@ void AliPHOSTrackSegment::Print()
   cout << "EMC Reconstructed Point: " << fEmcRecPoint << endl;
   
   TVector3 pos ;
-  TMatrix Dummy ;  
+  TMatrix dummy ;  
 
-  fEmcRecPoint->GetGlobalPosition( pos, Dummy ) ;
+  fEmcRecPoint->GetGlobalPosition( pos, dummy ) ;
  
   cout << "    position " << pos.X() << "   " << pos.Y() << "  " << pos.Z() << "      Energy " << fEmcRecPoint->GetTotalEnergy() << endl ;
   cout << "PPSD Low Reconstructed Point: " << endl;
   
   if(fPpsdLow){
-    fPpsdLow->GetGlobalPosition( pos , Dummy ) ;
+    fPpsdLow->GetGlobalPosition( pos , dummy ) ;
     cout << "    position " << pos.X() << "   " << pos.Y() << "  " << pos.Z() << endl ;
   }
 
   cout << "PPSD Up Reconstructed Point: " << endl;
   
   if(fPpsdUp ){
-    fPpsdUp->GetGlobalPosition( pos, Dummy ) ;
+    fPpsdUp->GetGlobalPosition( pos, dummy ) ;
     cout << "    position " << pos.X() << "   " << pos.Y() << "  " << pos.Z()  << endl ;
   }
 

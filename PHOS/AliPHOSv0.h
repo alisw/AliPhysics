@@ -52,7 +52,7 @@ public:
   virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
   TrackSegmentsList *    TrackSegments(){return fTrackSegments ;}
   
-private:
+protected:
 
   RecPointsList * fEmcClusters ;        //!  (!=do not stream)
   AliPHOSGeometry * fGeom ;             // geometry definition
@@ -63,8 +63,6 @@ private:
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ;
   TrackSegmentsList * fTrackSegments ;  //! idem
   RecParticlesList * fRecParticles ;    //! idem
-
-public:
 
   ClassDef(AliPHOSv0,1)  // PHOS main class , version subatech
 

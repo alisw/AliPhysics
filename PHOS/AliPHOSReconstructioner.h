@@ -48,10 +48,7 @@ private:
   AliPHOSClusterizer * fClusterizer ;             // Method for clusterization 
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Method for track segments finding
   AliPHOSParticleGuesser * fParticleGuesser ;     // Method for guessing the type of particle
-  
-
-public:
-  
+ 
   ClassDef(AliPHOSReconstructioner,1)  // Reconstruction interface , version 1
 
 }; 

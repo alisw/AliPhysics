@@ -71,6 +71,7 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
 				     TrackSegmentsList * trsl, RecParticlesList * rpl)
 {
   fClusterizer->MakeClusters(dl, emccl, ppsdl);
+  
 
   fTrackSegmentMaker->MakeTrackSegments(dl, emccl, ppsdl, trsl) ;
 

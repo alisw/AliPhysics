@@ -69,10 +69,10 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)
   geom->AbsToRelNumbering(d2->GetId(), relid2) ; 
  
   if ( (relid1[0] == relid2[0]) && (relid1[1]==relid2[1]) ) { // inside the same PHOS module and the same PPSD Module 
-    Int_t RowDiff = TMath::Abs( relid1[2] - relid2[2] ) ;  
-    Int_t ColDiff = TMath::Abs( relid1[3] - relid2[3] ) ;  
+    Int_t rowdiff = TMath::Abs( relid1[2] - relid2[2] ) ;  
+    Int_t coldiff = TMath::Abs( relid1[3] - relid2[3] ) ;  
     
-    if (( ColDiff<=1 )  && ( RowDiff <= 1 )){
+    if (( coldiff <= 1 )  && ( rowdiff <= 1 )){
       rv = 1 ; 
     }
     else {
@@ -150,18 +150,18 @@ Bool_t AliPHOSClusterizerv1::IsInEmc(AliPHOSDigit * digit)
 void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * emcl, RecPointsList * ppsdl)
 {
   // Fill and sort the working digits list
-  TObjArray TempoDigitsList( dl->GetEntries() ) ;
-  FillandSort(dl, &TempoDigitsList) ; 
+  TObjArray tempodigitslist( dl->GetEntries() ) ;
+  FillandSort(dl, &tempodigitslist) ; 
 
   // Clusterization starts  
-  TIter nextdigit(&TempoDigitsList) ; 
+  TIter nextdigit(&tempodigitslist) ; 
   AliPHOSDigit * digit ; 
-  Bool_t NotRemoved = kTRUE ;
+  Bool_t notremoved = kTRUE ;
 
   while ( (digit = (AliPHOSDigit *)nextdigit()) ) { // scan over the list of digits
     AliPHOSRecPoint * clu ; 
    
-    int * ClusterDigitsList[dl->GetEntries()] ;   
+    int * clusterdigitslist[dl->GetEntries()] ;   
     Int_t index ;
     if (( ( IsInEmc(digit) ) && ( Calibrate(digit->GetAmp() ) > fEmcClusteringThreshold ) ) || 
         ( ( !IsInEmc(digit) ) && ( Calibrate(digit->GetAmp() ) > fPpsdClusteringThreshold ) ) ) {
@@ -174,9 +174,9 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * e
 	fNumberOfEmcClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp())) ; 
 
-	ClusterDigitsList[iDigitInCluster] = (int* ) digit ;	
+	clusterdigitslist[iDigitInCluster] = (int* ) digit ;	
 	iDigitInCluster++ ; 
-	TempoDigitsList.Remove(digit) ; 
+	tempodigitslist.Remove(digit) ; 
       }
 
       else { 
@@ -184,25 +184,25 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * e
 	clu =  (AliPHOSPpsdRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
 	fNumberOfPpsdClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp()) ) ;	
-	ClusterDigitsList[iDigitInCluster] = (int* ) digit ;	
+	clusterdigitslist[iDigitInCluster] = (int* ) digit ;	
 	iDigitInCluster++ ; 
-	TempoDigitsList.Remove(digit) ; 
+	tempodigitslist.Remove(digit) ; 
         nextdigit.Reset() ;
 	
 	// Here we remove resting EMC digits, which cannot make cluster
 
-        if( NotRemoved ) { 
+        if( notremoved ) { 
 	  
 	  while( ( digit = (AliPHOSDigit *)nextdigit() ) ) {
 	    
             if( IsInEmc(digit) ) 
-	      TempoDigitsList.Remove(digit) ;
+	      tempodigitslist.Remove(digit) ;
             else 
 	      break ;
 	  
 	  } // while digit  
 	  
-	} // if NotRemoved 
+	} // if notremoved 
 	
       } // else        
       
@@ -211,7 +211,7 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * e
       AliPHOSDigit * digitN ; 
       index = 0 ;
       while (index < iDigitInCluster){ // scan over digits already in cluster 
-	digit = (AliPHOSDigit *) ClusterDigitsList[index]  ;      
+	digit = (AliPHOSDigit *) clusterdigitslist[index]  ;      
 	index++ ; 
         while ( (digitN = (AliPHOSDigit *)nextdigit()) ) { // scan over the reduced list of digits 
 	  Int_t ineb = AreNeighbours(digit, digitN);   //  call (digit,digitN) in THAT oder !!!!!
@@ -220,9 +220,9 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * e
 	    break ;	 
 	  case 1 :   // are neighbours 
 	    clu->AddDigit( *digitN, Calibrate( digitN->GetAmp() ) ) ;
-	    ClusterDigitsList[iDigitInCluster] =(int*) digitN ; 
+	    clusterdigitslist[iDigitInCluster] =(int*) digitN ; 
 	    iDigitInCluster++ ; 
-	    TempoDigitsList.Remove(digitN) ;
+	    tempodigitslist.Remove(digitN) ;
 	    break ;
           case 2 :   // too far from each other
 	    goto endofloop;   
@@ -239,7 +239,7 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, RecPointsList * e
   
   } // while digit
 
-  TempoDigitsList.Clear() ; 
+  tempodigitslist.Clear() ; 
 }
 
 //____________________________________________________________________________

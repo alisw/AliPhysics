@@ -45,8 +45,6 @@ private:
   Int_t fId ;                // absolute id
   Int_t fAmp ;               // digitalized energy
   
-public: 
-
   ClassDef(AliPHOSDigit,1)   // Digit in PHOS, version 1 
 
 } ;

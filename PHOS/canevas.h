@@ -27,9 +27,7 @@ public:
 
 private:
 
-public:
-
-ClassDef(AliPHOSxxx,1)  // description , version 1
+  ClassDef(AliPHOSxxx,1)  // description , version 1
 
 };
 

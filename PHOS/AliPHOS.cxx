@@ -56,49 +56,49 @@ void AliPHOS::CreateMaterials()
   // DEFINITION OF PHOS MATERIALS
 
   // --- The PbWO4 crystals ---
-  Float_t AX[3] = {207.19, 183.85, 16.0} ;
-  Float_t ZX[3] = {82.0, 74.0, 8.0} ;
-  Float_t WX[3] = {1.0, 1.0, 4.0} ;
-  Float_t DX = 8.28 ;
+  Float_t aX[3] = {207.19, 183.85, 16.0} ;
+  Float_t zX[3] = {82.0, 74.0, 8.0} ;
+  Float_t wX[3] = {1.0, 1.0, 4.0} ;
+  Float_t dX = 8.28 ;
 
-  AliMixture(0, "PbWO4$", AX, ZX, DX, -3, WX) ;
+  AliMixture(0, "PbWO4$", aX, zX, dX, -3, wX) ;
 
 
   // --- The polysterene scintillator (CH) ---
-  Float_t AP[2] = {12.011, 1.00794} ;
-  Float_t ZP[2] = {6.0, 1.0} ;
-  Float_t WP[2] = {1.0, 1.0} ;
-  Float_t DP = 1.032 ;
+  Float_t aP[2] = {12.011, 1.00794} ;
+  Float_t zP[2] = {6.0, 1.0} ;
+  Float_t wP[2] = {1.0, 1.0} ;
+  Float_t dP = 1.032 ;
 
-  AliMixture(1, "Polystyrene$", AP, ZP, DP, -2, WP) ;
+  AliMixture(1, "Polystyrene$", aP, zP, dP, -2, wP) ;
 
   // --- Aluminium ---
   AliMaterial(2, "Al$", 26.98, 13., 2.7, 8.9, 999., 0, 0) ;
   // ---         Absorption length is ignored ^
 
  // --- Tyvek (CnH2n) ---
-  Float_t AT[2] = {12.011, 1.00794} ;
-  Float_t ZT[2] = {6.0, 1.0} ;
-  Float_t WT[2] = {1.0, 2.0} ;
-  Float_t DT = 0.331 ;
+  Float_t aT[2] = {12.011, 1.00794} ;
+  Float_t zT[2] = {6.0, 1.0} ;
+  Float_t wT[2] = {1.0, 2.0} ;
+  Float_t dT = 0.331 ;
 
-  AliMixture(3, "Tyvek$", AT, ZT, DT, -2, WT) ;
+  AliMixture(3, "Tyvek$", aT, zT, dT, -2, wT) ;
 
   // --- Polystyrene foam ---
-  Float_t AF[2] = {12.011, 1.00794} ;
-  Float_t ZF[2] = {6.0, 1.0} ;
-  Float_t WF[2] = {1.0, 1.0} ;
-  Float_t DF = 0.12 ;
+  Float_t aF[2] = {12.011, 1.00794} ;
+  Float_t zF[2] = {6.0, 1.0} ;
+  Float_t wF[2] = {1.0, 1.0} ;
+  Float_t dF = 0.12 ;
 
-  AliMixture(4, "Foam$", AF, ZF, DF, -2, WF) ;
+  AliMixture(4, "Foam$", aF, zF, dF, -2, wF) ;
 
  // --- Titanium ---
-  Float_t ATIT[3] = {47.88, 26.98, 54.94} ;
-  Float_t ZTIT[3] = {22.0, 13.0, 25.0} ;
-  Float_t WTIT[3] = {69.0, 6.0, 1.0} ;
-  Float_t DTIT = 4.5 ;
+  Float_t aTIT[3] = {47.88, 26.98, 54.94} ;
+  Float_t zTIT[3] = {22.0, 13.0, 25.0} ;
+  Float_t wTIT[3] = {69.0, 6.0, 1.0} ;
+  Float_t dTIT = 4.5 ;
 
-  AliMixture(5, "Titanium$", ATIT, ZTIT, DTIT, -3, WTIT);
+  AliMixture(5, "Titanium$", aTIT, zTIT, dTIT, -3, wTIT);
 
  // --- Silicon ---
   AliMaterial(6, "Si$", 28.0855, 14., 2.33, 9.36, 42.3, 0, 0) ;
@@ -106,88 +106,88 @@ void AliPHOS::CreateMaterials()
 
 
   // --- Foam thermo insulation ---
-  Float_t ATI[2] = {12.011, 1.00794} ;
-  Float_t ZTI[2] = {6.0, 1.0} ;
-  Float_t WTI[2] = {1.0, 1.0} ;
-  Float_t DTI = 0.1 ;
+  Float_t aTI[2] = {12.011, 1.00794} ;
+  Float_t zTI[2] = {6.0, 1.0} ;
+  Float_t wTI[2] = {1.0, 1.0} ;
+  Float_t dTI = 0.1 ;
 
-  AliMixture(7, "Thermo Insul.$", ATI, ZTI, DTI, -2, WTI) ;
+  AliMixture(7, "Thermo Insul.$", aTI, zTI, dTI, -2, wTI) ;
 
   // --- Textolitn ---
-  Float_t ATX[4] = {16.0, 28.09, 12.011, 1.00794} ;
-  Float_t ZTX[4] = {8.0, 14.0, 6.0, 1.0} ;
-  Float_t WTX[4] = {292.0, 68.0, 462.0, 736.0} ;
-  Float_t DTX    = 1.75 ;
+  Float_t aTX[4] = {16.0, 28.09, 12.011, 1.00794} ;
+  Float_t zTX[4] = {8.0, 14.0, 6.0, 1.0} ;
+  Float_t wTX[4] = {292.0, 68.0, 462.0, 736.0} ;
+  Float_t dTX    = 1.75 ;
 
-  AliMixture(8, "Textolit$", ATX, ZTX, DTX, -4, WTX) ;
+  AliMixture(8, "Textolit$", aTX, zTX, dTX, -4, wTX) ;
 
   //--- FR4  ---
-  Float_t AFR[3] = {28.0855, 15.9994, 17.749} ; 
-  Float_t ZFR[3] = {14., 8., 8.875} ; 
-  Float_t WFR[3] = {.28, .32, .4} ;
-  Float_t DFR = 1.8 ; 
+  Float_t aFR[3] = {28.0855, 15.9994, 17.749} ; 
+  Float_t zFR[3] = {14., 8., 8.875} ; 
+  Float_t wFR[3] = {.28, .32, .4} ;
+  Float_t dFR = 1.8 ; 
 
-  AliMixture(9, "FR4$", AFR, ZFR, DFR, -3, WFR) ;
+  AliMixture(9, "FR4$", aFR, zFR, dFR, -3, wFR) ;
 
   // --- The Composite Material for  micromegas (so far polyetylene) ---                                       
-  Float_t ACM[2] = {12.01, 1.} ; 
-  Float_t ZCM[2] = {6., 1.} ; 
-  Float_t WCM[2] = {1., 2.} ; 
-  Float_t DCM = 0.935 ; 
+  Float_t aCM[2] = {12.01, 1.} ; 
+  Float_t zCM[2] = {6., 1.} ; 
+  Float_t wCM[2] = {1., 2.} ; 
+  Float_t dCM = 0.935 ; 
 
-  AliMixture(10, "Compo Mat$", ACM, ZCM, DCM, -2, WCM) ;
+  AliMixture(10, "Compo Mat$", aCM, zCM, dCM, -2, wCM) ;
 
   // --- Copper ---                                                                    
   AliMaterial(11, "Cu$", 63.546, 29, 8.96, 1.43, 14.8, 0, 0) ;
  
   // --- G10 : Printed Circuit material ---                                                  
-  Float_t AG10[4] = { 12., 1., 16., 28.} ;
-  Float_t ZG10[4] = { 6., 1., 8., 14.} ;
-  Float_t WG10[4] = { .259, .288, .248, .205} ;
-  Float_t DG10  = 1.7 ;
+  Float_t aG10[4] = { 12., 1., 16., 28.} ;
+  Float_t zG10[4] = { 6., 1., 8., 14.} ;
+  Float_t wG10[4] = { .259, .288, .248, .205} ;
+  Float_t dG10  = 1.7 ;
   
-  AliMixture(12, "G10$", AG10, ZG10, DG10, -4, WG10);
+  AliMixture(12, "G10$", aG10, zG10, dG10, -4, wG10);
 
   // --- Lead ---                                                                     
   AliMaterial(13, "Pb$", 207.2, 82, 11.35, 0.56, 0., 0, 0) ;
 
  // --- The gas mixture ---                                                                
  // Co2
-  Float_t ACO[2] = {12.0, 16.0} ; 
-  Float_t ZCO[2] = {6.0, 8.0} ; 
-  Float_t WCO[2] = {1.0, 2.0} ; 
-  Float_t DCO = 0.001977 ; 
+  Float_t aCO[2] = {12.0, 16.0} ; 
+  Float_t zCO[2] = {6.0, 8.0} ; 
+  Float_t wCO[2] = {1.0, 2.0} ; 
+  Float_t dCO = 0.001977 ; 
 
-  AliMixture(14, "CO2$", ACO, ZCO, DCO, -2, WCO);
+  AliMixture(14, "CO2$", aCO, zCO, dCO, -2, wCO);
 
  // Ar
-  Float_t DAr = 0.001782 ; 
-  AliMaterial(15, "Ar$", 39.948, 18.0, DAr, 14.0, 0., 0, 0) ;   
+  Float_t dAr = 0.001782 ; 
+  AliMaterial(15, "Ar$", 39.948, 18.0, dAr, 14.0, 0., 0, 0) ;   
  
  // ArCo2
   Char_t namate[21];
-  Float_t AGM[2] ; 
-  Float_t ZGM[2] ; 
-  Float_t WGM[2] ; 
-  Float_t DGM ; 
+  Float_t aGM[2] ; 
+  Float_t zGM[2] ; 
+  Float_t wGM[2] ; 
+  Float_t dGM ; 
 
-  Float_t AbsL, RadL, Density ;
+  Float_t absL, radL, density ;
   Float_t buf[1] ;
   Int_t nbuf ;
 
-  gMC->Gfmate((*fIdmate)[15], namate, AGM[0], ZGM[0], Density, RadL, AbsL, buf, nbuf) ; // Get properties of Ar 
-  gMC->Gfmate((*fIdmate)[14], namate, AGM[1], ZGM[1], Density, RadL, AbsL, buf, nbuf) ; // Get properties of CO2 
+  gMC->Gfmate((*fIdmate)[15], namate, aGM[0], zGM[0], density, radL, absL, buf, nbuf) ; // Get properties of Ar 
+  gMC->Gfmate((*fIdmate)[14], namate, aGM[1], zGM[1], density, radL, absL, buf, nbuf) ; // Get properties of CO2 
 
 
   // Create gas mixture 
 
-  Float_t ArContent    = 0.80 ;  // Ar-content of the Ar/CO2-mixture (80% / 20%) 
+  Float_t arContent    = 0.80 ;  // Ar-content of the Ar/CO2-mixture (80% / 20%) 
  
-  WGM[0] = ArContent;
-  WGM[1] = 1. - ArContent ;
-  DGM    = WGM[0] * DAr + WGM[1] * DCO;
+  wGM[0] = arContent;
+  wGM[1] = 1. - arContent ;
+  dGM    = wGM[0] * dAr + wGM[1] * dCO;
 
-  AliMixture(16, "ArCO2$", AGM, ZGM, DGM,  2, WGM) ;
+  AliMixture(16, "ArCO2$", aGM, zGM, dGM,  2, wGM) ;
 
  
   // --- Air ---
@@ -198,76 +198,76 @@ void AliPHOS::CreateMaterials()
 
   // for PHOS: idtmed[699->798] equivalent to fIdtmed[0->100]
   Int_t * idtmed = fIdtmed->GetArray() - 699 ; 
-  Int_t   ISXFLD = gAlice->Field()->Integ() ;
-  Float_t SXMGMX = gAlice->Field()->Max() ;
+  Int_t   isxfld = gAlice->Field()->Integ() ;
+  Float_t sxmgmx = gAlice->Field()->Max() ;
 
   // The scintillator of the calorimeter made of PBW04                              -> idtmed[699]
   AliMedium(0, "PHOS Xtal    $", 0, 1,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+	    isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
   // The scintillator of the CPV made of Polystyrene scintillator                   -> idtmed[700]
   AliMedium(1, "CPV scint.   $", 1, 1,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+	    isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
   // Various Aluminium parts made of Al                                             -> idtmed[701]
   AliMedium(2, "Al parts     $", 2, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
 
   // The Tywek which wraps the calorimeter crystals                                 -> idtmed[702]
   AliMedium(3, "Tyvek wrapper$", 3, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
 
   // The Polystyrene foam around the calorimeter module                             -> idtmed[703]
   AliMedium(4, "Polyst. foam $", 4, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
   // The Titanium around the calorimeter crystal                                    -> idtmed[704]
   AliMedium(5, "Titan. cover $", 5, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.0001, 0.0001, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.0001, 0.0001, 0, 0) ;
 
   // The Silicon of the pin diode to read out the calorimeter crystal               -> idtmed[705] 
  AliMedium(6, "Si PIN       $", 6, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.01, 0.01, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.01, 0.01, 0, 0) ;
 
  // The thermo insulating material of the box which contains the calorimeter module -> idtmed[706]
   AliMedium(7, "Thermo Insul.$", 7, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
   // The Textolit which makes up the box which contains the calorimeter module      -> idtmed[707]
   AliMedium(8, "Textolit     $", 8, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
   // FR4: The Plastic which makes up the frame of micromegas                        -> idtmed[708]
   AliMedium(9, "FR4 $", 9, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.0001, 0, 0) ; 
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.0001, 0, 0) ; 
 
 
   // The Composite Material for  micromegas                                         -> idtmed[709]
   AliMedium(10, "CompoMat   $", 10, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
   // Copper                                                                         -> idtmed[710]
   AliMedium(11, "Copper     $", 11, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.0001, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.0001, 0, 0) ;
 
   // G10: Printed Circuit material                                                  -> idtmed[711]
  
   AliMedium(12, "G10        $", 12, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.01, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.01, 0, 0) ;
 
   // The Lead                                                                       -> idtmed[712]
  
   AliMedium(13, "Lead      $", 13, 0,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
   // The gas mixture: ArCo2                                                         -> idtmed[715]
  
   AliMedium(16, "ArCo2      $", 16, 1,
-	    ISXFLD, SXMGMX, 10.0, 0.1, 0.1, 0.1, 0.01, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.01, 0, 0) ;
  
   // Air                                                                            -> idtmed[798] 
   AliMedium(99, "Air          $", 99, 0,
-	    ISXFLD, SXMGMX, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
+	     isxfld, sxmgmx, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
 
   // --- Set decent energy thresholds for gamma and electron tracking
 
@@ -278,25 +278,26 @@ void AliPHOS::CreateMaterials()
   // --- Generate explicitly delta rays in the titan cover ---
   gMC->Gstpar(idtmed[704], "LOSS",3.) ;
   gMC->Gstpar(idtmed[704], "DRAY",1.) ;
-
   // --- and in aluminium parts ---
   gMC->Gstpar(idtmed[701], "LOSS",3.) ;
   gMC->Gstpar(idtmed[701], "DRAY",1.) ;
-
-// Tracking threshold for photons and electrons in the gas ArC02 
-  //  TGeant3 *geant3 = (TGeant3*)gMC;
-  //geant3->SetERAN(5.e-8, 1.e1,90);
-
-  gMC->Gstpar(idtmed[715], "CUTGAM",1.E-8) ; 
-  gMC->Gstpar(idtmed[715], "CUTELE",1.E-8) ;
-  gMC->Gstpar(idtmed[715], "CUTNEU",1.E-8) ;
-  gMC->Gstpar(idtmed[715], "CUTHAD",1.E-8) ;
-  gMC->Gstpar(idtmed[715], "CUTMUO",1.E-8) ;
-  gMC->Gstpar(idtmed[715], "BCUTE",1.E-8) ;
-  gMC->Gstpar(idtmed[715], "BCUTM",1.E-8) ;
-  gMC->Gstpar(idtmed[715], "DCUTE",1.E-8) ;
-  gMC->Gstpar(idtmed[715], "DCUTM",1.E-8) ;
-  gMC->Gstpar(idtmed[715], "PPCUTM",1.E-8) ;
+  // --- and in PIN diode
+  gMC->Gstpar(idtmed[705], "LOSS",3) ;
+  gMC->Gstpar(idtmed[705], "DRAY",1) ;
+  // --- and in the passive convertor
+  gMC->Gstpar(idtmed[712], "LOSS",3) ;
+  gMC->Gstpar(idtmed[712], "DRAY",1) ;
+  // Tracking threshold for photons and electrons in the gas ArC02 
+  gMC->Gstpar(idtmed[715], "CUTGAM",5.E-7) ; 
+  gMC->Gstpar(idtmed[715], "CUTELE",5.E-7) ;
+  gMC->Gstpar(idtmed[715], "CUTNEU",5.E-7) ;
+  gMC->Gstpar(idtmed[715], "CUTHAD",5.E-7) ;
+  gMC->Gstpar(idtmed[715], "CUTMUO",5.E-7) ;
+  gMC->Gstpar(idtmed[715], "BCUTE",5.E-7) ;
+  gMC->Gstpar(idtmed[715], "BCUTM",5.E-7) ;
+  gMC->Gstpar(idtmed[715], "DCUTE",5.E-7) ;
+  gMC->Gstpar(idtmed[715], "DCUTM",5.E-7) ;
+  gMC->Gstpar(idtmed[715], "PPCUTM",5.E-7) ;
   gMC->Gstpar(idtmed[715], "LOSS",2.) ;
   gMC->Gstpar(idtmed[715], "DRAY",0.) ;
   gMC->Gstpar(idtmed[715], "STRA",2.) ;

@@ -45,8 +45,8 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(Float_t W0, Float_t LocMaxCut)
   fMulDigit   = 0 ;  
   fAmp   = 0. ;   
   fEnergyList = new Float_t[fMaxDigit]; 
-  AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
-  fDelta     =  PHOSGeom->GetCrystalSize(0) ; 
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+  fDelta     =  phosgeom->GetCrystalSize(0) ; 
   fW0        = W0 ;          
   fLocMaxCut = LocMaxCut ; 
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
@@ -101,17 +101,17 @@ Bool_t AliPHOSEmcRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * d
   
   Bool_t aren = kFALSE ;
   
-  AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
   Int_t relid1[4] ; 
-  PHOSGeom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
+  phosgeom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
 
   Int_t relid2[4] ; 
-  PHOSGeom->AbsToRelNumbering(digit2->GetId(), relid2) ; 
+  phosgeom->AbsToRelNumbering(digit2->GetId(), relid2) ; 
   
-  Int_t RowDiff = TMath::Abs( relid1[2] - relid2[2] ) ;  
-  Int_t ColDiff = TMath::Abs( relid1[3] - relid2[3] ) ;  
+  Int_t rowdiff = TMath::Abs( relid1[2] - relid2[2] ) ;  
+  Int_t coldiff = TMath::Abs( relid1[3] - relid2[3] ) ;  
 
-  if (( ColDiff<=1 )  && ( RowDiff <= 1 ) && (ColDiff+RowDiff > 0)) 
+  if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0)) 
     aren = kTRUE ;
   
   return aren ;
@@ -125,28 +125,28 @@ Int_t AliPHOSEmcRecPoint::Compare(TObject * obj)
   AliPHOSEmcRecPoint * clu = (AliPHOSEmcRecPoint *)obj ; 
 
  
-  Int_t PHOSMod1 = this->GetPHOSMod() ;
-  Int_t PHOSMod2 = clu->GetPHOSMod() ;
+  Int_t phosmod1 = this->GetPHOSMod() ;
+  Int_t phosmod2 = clu->GetPHOSMod() ;
 
-  TVector3 LocPos1; 
-  this->GetLocalPosition(LocPos1) ;
-  TVector3 LocPos2;  
-  clu->GetLocalPosition(LocPos2) ;  
+  TVector3 locpos1; 
+  this->GetLocalPosition(locpos1) ;
+  TVector3 locpos2;  
+  clu->GetLocalPosition(locpos2) ;  
 
-  if(PHOSMod1 == PHOSMod2 ) {
-    Int_t rowdif = (Int_t)TMath::Ceil(LocPos1.X()/fDelta)-(Int_t)TMath::Ceil(LocPos2.X()/fDelta) ;
+  if(phosmod1 == phosmod2 ) {
+    Int_t rowdif = (Int_t)TMath::Ceil(locpos1.X()/fDelta)-(Int_t)TMath::Ceil(locpos2.X()/fDelta) ;
     if (rowdif> 0) 
       rv = -1 ;
      else if(rowdif < 0) 
        rv = 1 ;
-    else if(LocPos1.Z()>LocPos2.Z()) 
+    else if(locpos1.Z()>locpos2.Z()) 
       rv = -1 ;
     else 
       rv = 1 ; 
      }
 
   else {
-    if(PHOSMod1 < PHOSMod2 ) 
+    if(phosmod1 < phosmod2 ) 
       rv = -1 ;
     else 
       rv = 1 ;
@@ -167,18 +167,18 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 
   //   static Int_t pxold, pyold;
 
-   static TGraph *  DigitGraph = 0 ;
+   static TGraph *  digitgraph = 0 ;
 
    if (!gPad->IsEditable()) return;
 
-   TH2F * Histo = 0 ;
-   TCanvas * HistoCanvas ; 
+   TH2F * histo = 0 ;
+   TCanvas * histocanvas ; 
    
    switch (event) {
    
    case kButton1Down: {
      AliPHOSDigit * digit ;
-     AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
+     AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
      Int_t iDigit;
      Int_t relid[4] ;
      Float_t xi[fMulDigit] ;
@@ -193,8 +193,8 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
  
      for(iDigit=0; iDigit<fMulDigit; iDigit++) {
        digit = (AliPHOSDigit *) fDigitsList[iDigit];
-       PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-       PHOSGeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]);
+       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+       phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]);
        if ( xi[iDigit] > ximax )
 	 ximax = xi[iDigit] ; 
        if ( xi[iDigit] < ximin )
@@ -204,52 +204,52 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
        if ( zi[iDigit] < zimin )
 	 zimin = zi[iDigit] ;     
      }
-     ximax += PHOSGeom->GetCrystalSize(0) / 2. ;
-     zimax += PHOSGeom->GetCrystalSize(2) / 2. ;
-     ximin -= PHOSGeom->GetCrystalSize(0) / 2. ;
-     zimin -= PHOSGeom->GetCrystalSize(2) / 2. ;
-     Int_t xdim = (int)( (ximax - ximin ) / PHOSGeom->GetCrystalSize(0) + 0.5  ) ; 
-     Int_t zdim = (int)( (zimax - zimin ) / PHOSGeom->GetCrystalSize(2) + 0.5 ) ;
+     ximax += phosgeom->GetCrystalSize(0) / 2. ;
+     zimax += phosgeom->GetCrystalSize(2) / 2. ;
+     ximin -= phosgeom->GetCrystalSize(0) / 2. ;
+     zimin -= phosgeom->GetCrystalSize(2) / 2. ;
+     Int_t xdim = (int)( (ximax - ximin ) / phosgeom->GetCrystalSize(0) + 0.5  ) ; 
+     Int_t zdim = (int)( (zimax - zimin ) / phosgeom->GetCrystalSize(2) + 0.5 ) ;
  
      // 2. gets the histogram title
 
      Text_t title[100] ; 
      sprintf(title,"Energy=%1.2f GeV ; Digits ; %d ", GetEnergy(), GetDigitsMultiplicity()) ;
   
-     if (!Histo) {
-       delete Histo ; 
-       Histo = 0 ; 
+     if (!histo) {
+       delete histo ; 
+       histo = 0 ; 
      }
-     Histo = new TH2F("cluster3D", title,  xdim, ximin, ximax, zdim, zimin, zimax)  ;
+     histo = new TH2F("cluster3D", title,  xdim, ximin, ximax, zdim, zimin, zimax)  ;
 
      Float_t x, z ; 
      for(iDigit=0; iDigit<fMulDigit; iDigit++) {
        digit = (AliPHOSDigit *) fDigitsList[iDigit];
-       PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-       PHOSGeom->RelPosInModule(relid, x, z);
-       Histo->Fill(x, z, fEnergyList[iDigit] ) ;
+       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+       phosgeom->RelPosInModule(relid, x, z);
+       histo->Fill(x, z, fEnergyList[iDigit] ) ;
      }
 
-     if (!DigitGraph) {
-       DigitGraph = new TGraph(fMulDigit,xi,zi);
-       DigitGraph-> SetMarkerStyle(5) ; 
-       DigitGraph-> SetMarkerSize(1.) ;
-       DigitGraph-> SetMarkerColor(1) ;
-       DigitGraph-> Paint("P") ;
+     if (!digitgraph) {
+       digitgraph = new TGraph(fMulDigit,xi,zi);
+       digitgraph-> SetMarkerStyle(5) ; 
+       digitgraph-> SetMarkerSize(1.) ;
+       digitgraph-> SetMarkerColor(1) ;
+       digitgraph-> Paint("P") ;
      }
 
      Print() ;
-     HistoCanvas = new TCanvas("cluser", "a single cluster", 600, 500) ; 
-     HistoCanvas->Draw() ; 
-     Histo->Draw("lego1") ; 
+     histocanvas = new TCanvas("cluser", "a single cluster", 600, 500) ; 
+     histocanvas->Draw() ; 
+     histo->Draw("lego1") ; 
 
      break;
    }
 
    case kButton1Up: 
-     if (DigitGraph) {
-       delete DigitGraph  ;
-       DigitGraph = 0 ;
+     if (digitgraph) {
+       delete digitgraph  ;
+       digitgraph = 0 ;
      }
      break;
   
@@ -259,17 +259,17 @@ void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 //____________________________________________________________________________
 Float_t  AliPHOSEmcRecPoint::GetDispersion() 
 {
-  Float_t D    = 0 ;
+  Float_t d    = 0 ;
   Float_t wtot = 0 ;
 
-  TVector3 LocPos;
-  GetLocalPosition(LocPos);
-  Float_t x = LocPos.X() ;
-  Float_t z = LocPos.Z() ;
+  TVector3 locpos;
+  GetLocalPosition(locpos);
+  Float_t x = locpos.X() ;
+  Float_t z = locpos.Z() ;
   //  Int_t i = GetPHOSMod() ;
 
   AliPHOSDigit * digit ;
-  AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
   
   Int_t iDigit;
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
@@ -277,16 +277,16 @@ Float_t  AliPHOSEmcRecPoint::GetDispersion()
     Int_t relid[4] ;
     Float_t xi ;
     Float_t zi ;
-    PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    PHOSGeom->RelPosInModule(relid, xi, zi);
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);
     Float_t w = TMath::Max(0.,fW0+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
-    D += w*((xi-x)*(xi-x) + (zi-z)*(zi-z) ) ; 
+    d += w*((xi-x)*(xi-x) + (zi-z)*(zi-z) ) ; 
     wtot+=w ;
   }
 
-  D /= wtot ;
+  d /= wtot ;
 
-  return TMath::Sqrt(D) ;
+  return TMath::Sqrt(d) ;
 }
 
 //____________________________________________________________________________
@@ -295,12 +295,12 @@ void  AliPHOSEmcRecPoint::GetElipsAxis(Float_t * lambda)
   Float_t wtot = 0. ;
   Float_t x    = 0.;
   Float_t z    = 0.;
-  Float_t Dxx  = 0.;
-  Float_t Dzz  = 0.;
-  Float_t Dxz  = 0.;
+  Float_t dxx  = 0.;
+  Float_t dzz  = 0.;
+  Float_t dxz  = 0.;
 
   AliPHOSDigit * digit ;
-  AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
   Int_t iDigit;
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
@@ -308,28 +308,28 @@ void  AliPHOSEmcRecPoint::GetElipsAxis(Float_t * lambda)
     Int_t relid[4] ;
     Float_t xi ;
     Float_t zi ;
-    PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    PHOSGeom->RelPosInModule(relid, xi, zi);
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);
     Float_t w = TMath::Max(0.,fW0+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
-    Dxx  += w * xi * xi ;
+    dxx  += w * xi * xi ;
     x    += w * xi ;
-    Dzz  += w * zi * zi ;
+    dzz  += w * zi * zi ;
     z    += w * zi ; 
-    Dxz  += w * xi * zi ; 
+    dxz  += w * xi * zi ; 
     wtot += w ;
   }
 
-  Dxx /= wtot ;
+  dxx /= wtot ;
   x   /= wtot ;
-  Dxx -= x * x ;
-  Dzz /= wtot ;
+  dxx -= x * x ;
+  dzz /= wtot ;
   z   /= wtot ;
-  Dzz -= z * z ;
-  Dxz /= wtot ;
-  Dxz -= x * z ;
+  dzz -= z * z ;
+  dxz /= wtot ;
+  dxz -= x * z ;
 
-  lambda[0] = TMath::Sqrt( 0.5 * (Dxx + Dzz) + TMath::Sqrt( 0.25 * (Dxx - Dzz) * (Dxx - Dzz) + Dxz * Dxz ) ) ;
-  lambda[1] = TMath::Sqrt( 0.5 * (Dxx + Dzz) - TMath::Sqrt( 0.25 * (Dxx - Dzz) * (Dxx - Dzz) + Dxz * Dxz ) ) ;
+  lambda[0] = TMath::Sqrt( 0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz ) ) ;
+  lambda[1] = TMath::Sqrt( 0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz ) ) ;
 }
 
 //____________________________________________________________________________
@@ -427,7 +427,7 @@ void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
   
   AliPHOSDigit * digit ;
 
-  AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
 
   Int_t iDigit;
 
@@ -437,8 +437,8 @@ void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
 
     Float_t xi ;
     Float_t zi ;
-    PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    PHOSGeom->RelPosInModule(relid, xi, zi);
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);
     Float_t w = TMath::Max( 0., fW0 + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
     x    += xi * w ;
     z    += zi * w ;
@@ -458,7 +458,7 @@ void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
 // //____________________________________________________________________________
 // AliPHOSEmcRecPoint& AliPHOSEmcRecPoint::operator = (AliPHOSEmcRecPoint Clu) 
 // {
-//   int * DL = Clu.GetDigitsList() ; 
+//   int * dl = Clu.GetDigitsList() ; 
  
 //  if(fDigitsList) 
 //     delete fDigitsList  ;
@@ -468,15 +468,15 @@ void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
 //   Int_t iDigit;
 
 //   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
-//     digit = (AliPHOSDigit *) DL[iDigit];
+//     digit = (AliPHOSDigit *) dl[iDigit];
 //     AddDigit(*digit) ;
 //   }
 
 //   fAmp       = Clu.GetTotalEnergy() ;
 //   fGeom      = Clu.GetGeom() ;
-//   TVector3 LocPos;
-//   Clu.GetLocalPosition(LocPos) ;
-//   fLocPos    = LocPos;
+//   TVector3 locpos;
+//   Clu.GetLocalPosition(locpos) ;
+//   fLocPos    = locpos;
 //   fMulDigit       = Clu.GetMultiplicity() ;
 //   fMaxDigit  = Clu.GetMaximumMultiplicity() ;
 //   fPHOSMod   = Clu.GetPHOSMod() ;
@@ -484,7 +484,7 @@ void AliPHOSEmcRecPoint::GetLocalPosition(TVector3 &LPos)
 //   fDelta     = Clu.GetDelta() ;
 //   fLocMaxCut = Clu.GetLocMaxCut() ;
   
-//   delete DL ; 
+//   delete dl ; 
  
 //   return *this ;
 // }
@@ -496,7 +496,7 @@ void AliPHOSEmcRecPoint::Print(Option_t * option)
 
   AliPHOSDigit * digit ; 
   Int_t iDigit;
-  AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
 
   Float_t xi ;
   Float_t zi ;
@@ -504,8 +504,8 @@ void AliPHOSEmcRecPoint::Print(Option_t * option)
  
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = (AliPHOSDigit *) fDigitsList[iDigit];
-    PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    PHOSGeom->RelPosInModule(relid, xi, zi);
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);
     cout << " Id = " << digit->GetId() ;  
     cout << "   module  = " << relid[0] ;  
     cout << "   x  = " << xi ;  

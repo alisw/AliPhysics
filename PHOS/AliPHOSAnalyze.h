@@ -15,6 +15,8 @@
 // --- ROOT system ---
 
 #include "TFile.h"
+#include "TH1.h"
+#include "TH2.h"
 
 // --- Standard library ---
 
@@ -32,12 +34,15 @@ public:
   virtual ~AliPHOSAnalyze() ;     // dtor
 
   void AnalyzeOneEvent(Int_t evt = -999) ;  // analyzes a single event ;
+  void AnalyzeManyEvents(Int_t Nevtents = 100, Int_t Module=0) ;  // analyzes many events   ;
+  void BookingHistograms() ;                // booking histograms for the ManyEvent analysis ;
   Bool_t Init(Int_t evt) ;                  // does various initialisations
   void DisplayKineEvent(Int_t evt = -999) ; // displays the Kine events in ALICE coordinate 
   void DisplayRecParticles() ;              // displays RecParticles in ALICE coordinate  
   void DisplayRecPoints() ;                 // displays RecPoints in module coordinate  
   void DisplayTrackSegments() ;             // displays TrackSegments in module coordinate  
   Bool_t OpenRootFile(Text_t * name) ;      // opens the root file
+  void SavingHistograms() ;                 // Save histograms in a root file
  
 private:
   
@@ -49,7 +54,26 @@ private:
   AliPHOSReconstructioner * fRec ;  // a reconstructioner  
   TFile * fRootFile ;               // the root file that contains the data
   AliPHOSTrackSegmentMaker * fTrs ; // a tracksegmentmaker ;
-public:
+  TH1F * fhEmcDigit        ;   // Histo of digit energies in the Emc 
+  TH1F * fhVetoDigit       ;   // Histo of digit energies in the Veto 
+  TH1F * fhConvertorDigit  ;   // Histo of digit energies in the Convertor
+  TH1F * fhEmcCluster      ;   // Histo of Cluster energies in Emc
+  TH1F * fhVetoCluster     ;   // Histo of Cluster energies in Veto
+  TH1F * fhConvertorCluster;   // Histo of Cluster energies in Convertor
+  TH2F * fhConvertorEmc    ;   // 2d Convertor versus Emc energies
+  TH1F * fhPhotonEnergy    ;   // Spectrum of detected photons
+  TH1F * fhElectronEnergy  ;   // Spectrum of detected electrons
+  TH1F * fhNeutralEnergy   ;   // Spectrum of detected neutrals
+  TH1F * fhChargedEnergy   ;   // Spectrum of detected charged
+  TH1F * fhPhotonPositionX ;   // X distribution of detected photons
+  TH1F * fhElectronPositionX ; // X distribution of detected electrons
+  TH1F * fhNeutralPositionX  ; // X distribution of detected neutrals
+  TH1F * fhChargedPositionX  ; // X distribution of detected charged
+  TH1F * fhPhotonPositionY   ; // Y distribution of detected photons
+  TH1F * fhElectronPositionY ; // Y distribution of detected electrons
+  TH1F * fhNeutralPositionY  ; // Y distribution of detected neutrals
+  TH1F * fhChargedPositionY  ; // Y distribution of detected charged
+
 
 ClassDef(AliPHOSAnalyze,1)  // PHOS event analyzis , version 1
 

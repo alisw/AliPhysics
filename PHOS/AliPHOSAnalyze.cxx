@@ -20,6 +20,9 @@
 
 // --- ROOT system ---
 
+#include "TFile.h"
+#include "TH1.h"
+#include "TPad.h"
 #include "TH2.h"
 #include "TParticle.h"
 #include "TClonesArray.h"
@@ -28,6 +31,9 @@
 #include "TCanvas.h" 
 
 // --- Standard library ---
+
+#include <iostream>
+#include <cstdio>
 
 // --- AliRoot header files ---
 
@@ -57,8 +63,8 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * name)
 {
   // ctor
   
-  Bool_t OK = OpenRootFile(name)  ; 
-  if ( !OK ) {
+  Bool_t ok = OpenRootFile(name)  ; 
+  if ( !ok ) {
     cout << " AliPHOSAnalyze > Error opening " << name << endl ; 
   }
   else { 
@@ -98,9 +104,9 @@ AliPHOSAnalyze::~AliPHOSAnalyze()
 //____________________________________________________________________________
 void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 {
-  Bool_t OK = Init(evt) ; 
+  Bool_t ok = Init(evt) ; 
   
-  if ( OK ) {
+  if ( ok ) {
     //=========== Get the number of entries in the Digits array
     
     Int_t nId = fPHOS->Digits()->GetEntries();    
@@ -115,17 +121,182 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
     // =========== End of reconstruction
     
     cout << "AnalyzeOneEvent > event # " << fEvt << " processed" << endl ;   
-  } // OK
+  } // ok
   else
     cout << "AnalyzeOneEvent > filed to process event # " << evt << endl ;   
 
 }
 
 //____________________________________________________________________________
+ void AliPHOSAnalyze::AnalyzeManyEvents(Int_t Nevents, Int_t module)   // analyzes many events   
+{
+
+  if ( fRootFile == 0 ) 
+    cout << "AnalyzeManyEvents > " << "Root File not openned" << endl ;  
+  else
+    {
+      //========== Get AliRun object from file 
+      gAlice = (AliRun*) fRootFile->Get("gAlice") ;
+      //=========== Get the PHOS object and associated geometry from the file      
+      fPHOS  = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ;
+      fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
+      //========== Booking Histograms
+      cout << "AnalyzeManyEvents > " << "Booking Histograms" << endl ; 
+      BookingHistograms();
+      Int_t ievent;
+      Int_t relid[4] ;
+      AliPHOSDigit * digit ;
+      AliPHOSEmcRecPoint * emc ;
+      AliPHOSPpsdRecPoint * ppsd ;
+      AliPHOSTrackSegment * tracksegment ;
+      for ( ievent=0; ievent<Nevents; ievent++)
+	{  
+          if (ievent==0)  cout << "AnalyzeManyEvents > " << "Starting Analyzing " << endl ; 
+	  //========== Create the Clusterizer
+	  fClu = new AliPHOSClusterizerv1() ; 
+	  fClu->SetEmcEnergyThreshold(0.025) ; 
+	  fClu->SetEmcClusteringThreshold(0.75) ; 
+	  fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
+	  fClu->SetPpsdClusteringThreshold(0.0000001) ; 
+	  fClu->SetLocalMaxCut(0.03) ;
+	  fClu->SetCalibrationParameters(0., 0.00000001) ;  
+	  //========== Creates the track segment maker
+	  fTrs = new AliPHOSTrackSegmentMakerv1()  ; 
+	  //========== Creates the particle guesser
+	  fPag = new AliPHOSParticleGuesserv1() ;
+	  //========== Creates the Reconstructioner  
+	  fRec = new AliPHOSReconstructioner(fClu, fTrs, fPag) ; 
+	  //========== Event Number
+	  if ( ( log10(ievent+1) - (Int_t)(log10(ievent+1)) ) == 0. ) cout <<  "AnalyzeManyEvents > " << "Event is " << ievent << endl ;  
+	  //=========== Connects the various Tree's for evt
+	  gAlice->GetEvent(ievent);
+	  //=========== Gets the Digit TTree
+	  gAlice->TreeD()->GetEvent(0) ;
+	  //=========== Gets the number of entries in the Digits array 
+	  TIter nextdigit(fPHOS->Digits()) ;
+	  while( ( digit = (AliPHOSDigit *)nextdigit() ) )
+	    {
+	      fGeom->AbsToRelNumbering(digit->GetId(), relid) ;         
+	      if (fClu->IsInEmc(digit)) fhEmcDigit->Fill(fClu->Calibrate(digit->GetAmp())) ; 
+	      else    
+		{  
+		  if (relid[1]<17) fhVetoDigit->Fill(fClu->Calibrate(digit->GetAmp())); 
+		  if (relid[1]>16) fhConvertorDigit->Fill(fClu->Calibrate(digit->GetAmp()));
+		}
+	    }
+	  //=========== Do the reconstruction
+	  fPHOS->Reconstruction(fRec);
+	  //=========== Cluster in module
+	  TIter nextEmc(fPHOS->EmcClusters()  ) ;
+	  while((emc = (AliPHOSEmcRecPoint *)nextEmc())) 
+	    {
+	      if ( emc->GetPHOSMod() == module )
+		{  
+		  fhEmcCluster->Fill(  emc->GetTotalEnergy()  ); 
+		  TIter nextPpsd( fPHOS->PpsdClusters()) ;
+		  while((ppsd = (AliPHOSPpsdRecPoint *)nextPpsd())) 
+		    {
+		      if ( ppsd->GetPHOSMod() == module )
+			{ 			  
+			  if (!ppsd->GetUp()) fhConvertorEmc->Fill(emc->GetTotalEnergy(),ppsd->GetTotalEnergy()) ;
+			}
+		    } 
+		}
+	    }
+	  //=========== Cluster in module PPSD Down
+	  TIter nextPpsd(fPHOS->PpsdClusters() ) ;
+	  while((ppsd = (AliPHOSPpsdRecPoint *)nextPpsd())) 
+	    {
+	      if ( ppsd->GetPHOSMod() == module )
+		{ 
+		  if (!ppsd->GetUp()) fhConvertorCluster->Fill(ppsd->GetTotalEnergy()) ;
+		  if (ppsd->GetUp())  fhVetoCluster     ->Fill(ppsd->GetTotalEnergy()) ;
+		}
+	    }
+	  //========== TRackSegments in the event
+	  TIter nextTrackSegment(fPHOS->TrackSegments() ) ; 
+	  while((tracksegment = (AliPHOSTrackSegment *)nextTrackSegment())) 
+	    {
+	      if ( tracksegment->GetPHOSMod() == module )
+		{ 
+		  switch(tracksegment->GetPartType())
+		    {
+		    case 0:
+		      fhPhotonEnergy->Fill(tracksegment->GetEnergy() ) ; 
+		      //		      fhPhotonPositionX->Fill(tracksegment-> ) ;
+		      //fhPhotonPositionY->Fill(tracksegment-> ) ;                 
+		      //cout << "PHOTON" << endl;
+		      break;
+		    case 1 :
+		      fhElectronEnergy->Fill(tracksegment->GetEnergy() ) ; 
+		      //fhElectronPositionX->Fill(tracksegment-> ) ;
+		      //fhElectronPositionY->Fill(tracksegment-> ) ; 
+		      //cout << "ELECTRON" << endl;
+		      break;
+		    case 2 :
+		      fhNeutralEnergy->Fill(tracksegment->GetEnergy() ) ; 
+		      //fhNeutralPositionX->Fill(tracksegment-> ) ;
+		      //fhNeutralPositionY->Fill(tracksegment-> ) ; 
+		      //cout << "NEUTRAL" << endl;
+		      break ;
+		    case 3 :
+		      fhChargedEnergy->Fill(tracksegment->GetEnergy() ) ; 
+		      //fhChargedPositionX->Fill(tracksegment-> ) ;
+		      //fhChargedPositionY->Fill(tracksegment-> ) ; 
+		      //cout << "CHARGED" << endl;
+		      break ;
+		      
+		    }
+		}
+	    }
+	  // Deleting fClu, fTrs, fPag et fRec
+	  fClu->Delete();
+	  fTrs->Delete();
+	  fPag->Delete();
+	  fRec->Delete();
+
+	}   // endfor
+      SavingHistograms();
+    }       // endif
+}           // endfunction
+
+
+//____________________________________________________________________________
+void  AliPHOSAnalyze::BookingHistograms()
+{
+  if (fhEmcDigit )         delete fhEmcDigit  ;
+  if (fhVetoDigit )        delete fhVetoDigit  ;
+  if (fhConvertorDigit )   delete fhConvertorDigit   ;
+  if (fhEmcCluster   )     delete  fhEmcCluster   ;
+  if (fhVetoCluster )      delete fhVetoCluster   ;
+  if (fhConvertorCluster ) delete fhConvertorCluster  ;
+  if (fhConvertorEmc )     delete fhConvertorEmc  ;
+  fhEmcDigit         = new TH1F("hEmcDigit",      "hEmcDigit",          500,  0. ,  5.);
+  fhVetoDigit        = new TH1F("hVetoDigit",     "hVetoDigit",         500,  0. ,  3.e-5);
+  fhConvertorDigit   = new TH1F("hConvertorDigit","hConvertorDigit",    500,  0. ,  3.e-5);
+  fhEmcCluster       = new TH1F("hEmcCluster",    "hEmcCluster",        500, -5. ,  5.);
+  fhVetoCluster      = new TH1F("hVetoCluster",   "hVetoCluster",       500,  0. ,  3.e-5);
+  fhConvertorCluster = new TH1F("hConvertorCluster","hConvertorCluster",500,  0. ,  3.e-5);
+  fhConvertorEmc     = new TH2F("hConvertorEmc",  "hConvertorEmc",      200,  1. ,  3., 200, 0., 3.e-5);
+  fhPhotonEnergy     = new TH1F("hPhotonEnergy",  "hPhotonEnergy",      500,  0. ,  5.);
+  fhElectronEnergy   = new TH1F("hElectronEnergy","hElectronEnergy",    500,  0. ,  5.);
+  fhNeutralEnergy    = new TH1F("hNeutralEnergy", "hNeutralEnergy",     500,  0. ,  5.);
+  fhChargedEnergy    = new TH1F("hChargedEnergy", "hChargedEnergy",     500,  0. ,  5.);
+  fhPhotonPositionX  = new TH1F("hPhotonPositionX","hPhotonPositionX",   500,-80. , 80.);
+  fhElectronPositionX= new TH1F("hElectronPositionX","hElectronPositionX",500,-80. , 80.);
+  fhNeutralPositionX  = new TH1F("hNeutralPositionX","hNeutralPositionX",500,-80. , 80.);
+  fhChargedPositionX  = new TH1F("hChargedPositionX","hChargedPositionX",500,-80. , 80.);
+  fhPhotonPositionY  = new TH1F("hPhotonPositionY","hPhotonPositionY",   500,-80. , 80.);
+  fhElectronPositionY= new TH1F("hElectronPositionY","hElectronPositionY",500,-80. , 80.);
+  fhNeutralPositionY  = new TH1F("hNeutralPositionY","hNeutralPositionY",500,-80. , 80.);
+  fhChargedPositionY  = new TH1F("hChargedPositionY","hChargedPositionY",500,-80. , 80.);
+
+}
+//____________________________________________________________________________
 Bool_t AliPHOSAnalyze::Init(Int_t evt)
 {
 
-  Bool_t OK = kTRUE ; 
+  Bool_t ok = kTRUE ; 
   
    //========== Open galice root file  
 
@@ -133,8 +304,8 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
     Text_t * name  = new Text_t[80] ; 
     cout << "AnalyzeOneEvent > Enter file root file name : " ;  
     cin >> name ; 
-    Bool_t OK = OpenRootFile(name) ; 
-    if ( !OK )
+    Bool_t ok = OpenRootFile(name) ; 
+    if ( !ok )
       cout << " AliPHOSAnalyze > Error opening " << name << endl ; 
     else { 
       //========== Get AliRun object from file 
@@ -145,20 +316,20 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
       
       fPHOS  = (AliPHOSv0 *)gAlice->GetDetector("PHOS") ;
       fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
-    } // else !OK
+    } // else !ok
   } // if fRootFile
   
-  if ( OK ) {
+  if ( ok ) {
     
     //========== Create the Clusterizer
 
     fClu = new AliPHOSClusterizerv1() ; 
-    fClu->SetEmcEnergyThreshold(0.01) ; 
-    fClu->SetEmcClusteringThreshold(0.1) ; 
-    fClu->SetPpsdEnergyThreshold(0.0000001) ; 
-    fClu->SetPpsdClusteringThreshold(0.0000002) ; 
+    fClu->SetEmcEnergyThreshold(0.025) ; 
+    fClu->SetEmcClusteringThreshold(0.75) ; 
+    fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
+    fClu->SetPpsdClusteringThreshold(0.0000001) ; 
     fClu->SetLocalMaxCut(0.03) ;
-    fClu->SetCalibrationParameters(0., 0.0000001) ;  
+    fClu->SetCalibrationParameters(0., 0.00000001) ;  
     cout <<  "AnalyzeOneEvent > using clusterizer " << fClu->GetName() << endl ; 
     fClu->PrintParameters() ; 
     
@@ -190,34 +361,35 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
     
     gAlice->TreeD()->GetEvent(0) ;     
     
-  } // OK
+  } // ok
   
-  return OK ; 
+  return ok ; 
 }
 
+
 //____________________________________________________________________________
-void AliPHOSAnalyze:: DisplayKineEvent(Int_t evt)
+void AliPHOSAnalyze::DisplayKineEvent(Int_t evt)
 {
   if (evt == -999) 
     evt = fEvt ;
 
-  Int_t Module ; 
+  Int_t module ; 
   cout <<  "DisplayKineEvent > which module (1-5,  -1: all) ? " ; 
-  cin >> Module ; cout << Module << endl ; 
+  cin >> module ; cout << module << endl ; 
 
-  Int_t TestParticle ; 
+  Int_t testparticle ; 
   cout << " 22      : PHOTON " << endl 
        << " (-)11   : (POSITRON)ELECTRON " << endl 
        << " (-)2112 : (ANTI)NEUTRON " << endl  
        << " -999    : Everything else " << endl ; 
   cout  <<  "DisplayKineEvent > enter PDG particle code to display " ; 
-  cin >> TestParticle ; cout << TestParticle << endl ; 
+  cin >> testparticle ; cout << testparticle << endl ; 
 
-  Text_t HistoName[80] ;
-  sprintf(HistoName,"Event %d: Incident particles in module %d", evt, Module) ; 
+  Text_t histoname[80] ;
+  sprintf(histoname,"Event %d: Incident particles in module %d", evt, module) ; 
 
-  Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by Module   
-  fGeom->EmcModuleCoverage(Module, tm, tM, pm, pM, kDegre) ;
+  Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by module   
+  fGeom->EmcModuleCoverage(module, tm, tM, pm, pM, kDegre) ;
 
   Double_t theta, phi ; 
   fGeom->EmcXtalCoverage(theta, phi, kDegre) ;
@@ -230,57 +402,57 @@ void AliPHOSAnalyze:: DisplayKineEvent(Int_t evt)
   pm -= phi ; 
   pM += phi ; 
 
-  TH2F * HistoParticle = new TH2F("HistoParticle",  HistoName, 
+  TH2F * histoparticle = new TH2F("histoparticle",  histoname, 
 				 	  pdim, pm, pM, tdim, tm, tM) ; 
-  HistoParticle->SetStats(kFALSE) ;
+  histoparticle->SetStats(kFALSE) ;
 
   // Get pointers to Alice Particle TClonesArray
 
-  TParticle * Particle;
-  TClonesArray * ArrayOfParticles  = gAlice->Particles();    
+  TParticle * particle;
+  TClonesArray * particlearray  = gAlice->Particles();    
 
-  Text_t CanvasName[80];
-  sprintf(CanvasName,"Particles incident in PHOS/EMC module # %d",Module) ;
-  TCanvas * KineCanvas = new TCanvas("KineCanvas", CanvasName, 650, 500) ; 
+  Text_t canvasname[80];
+  sprintf(canvasname,"Particles incident in PHOS/EMC module # %d",module) ;
+  TCanvas * kinecanvas = new TCanvas("kinecanvas", canvasname, 650, 500) ; 
 
   // get the KINE Tree
 
-  TTree * Kine =  gAlice->TreeK() ; 
-  Stat_t NumberOfParticles =  Kine->GetEntries() ; 
-  cout << "DisplayKineEvent > events in Kine " << NumberOfParticles << endl ; 
+  TTree * kine =  gAlice->TreeK() ; 
+  Stat_t nParticles =  kine->GetEntries() ; 
+  cout << "DisplayKineEvent > events in kine " << nParticles << endl ; 
   
   // loop over particles
 
-  Double_t raddeg = 180. / TMath::Pi() ; 
+  Double_t kRADDEG = 180. / TMath::Pi() ; 
   Int_t index1 ; 
   Int_t nparticlein = 0 ; 
-  for (index1 = 0 ; index1 < NumberOfParticles ; index1++){
-    Int_t nparticle = ArrayOfParticles->GetEntriesFast() ;
+  for (index1 = 0 ; index1 < nParticles ; index1++){
+    Int_t nparticle = particlearray->GetEntriesFast() ;
     Int_t index2 ; 
     for( index2 = 0 ; index2 < nparticle ; index2++) {         
-      Particle            = (TParticle*)ArrayOfParticles->UncheckedAt(index2) ;
-      Int_t  ParticleType = Particle->GetPdgCode() ;
-      if (TestParticle == -999 || TestParticle == ParticleType) { 
-	Double_t Phi        = Particle->Phi() ;
-	Double_t Theta      = Particle->Theta() ;
+      particle            = (TParticle*)particlearray->UncheckedAt(index2) ;
+      Int_t  particletype = particle->GetPdgCode() ;
+      if (testparticle == -999 || testparticle == particletype) { 
+	Double_t phi        = particle->Phi() ;
+	Double_t theta      = particle->Theta() ;
 	Int_t mod ; 
 	Double_t x, z ; 
-	fGeom->ImpactOnEmc(Theta, Phi, mod, z, x) ;
-	if ( mod == Module ) {
+	fGeom->ImpactOnEmc(theta, phi, mod, z, x) ;
+	if ( mod == module ) {
 	  nparticlein++ ; 
-	  HistoParticle->Fill(Phi*raddeg, Theta*raddeg, Particle->Energy() ) ; 
+	  histoparticle->Fill(phi*kRADDEG, theta*kRADDEG, particle->Energy() ) ; 
 	} 
       } 
     }
   }
-  KineCanvas->Draw() ; 
-  HistoParticle->Draw("color") ; 
-  TPaveText *  PaveText = new TPaveText(294, 100, 300, 101); 
+  kinecanvas->Draw() ; 
+  histoparticle->Draw("color") ; 
+  TPaveText *  pavetext = new TPaveText(294, 100, 300, 101); 
   Text_t text[40] ; 
   sprintf(text, "Particles: %d ", nparticlein) ;
-  PaveText->AddText(text) ; 
-  PaveText->Draw() ; 
-  KineCanvas->Update(); 
+  pavetext->AddText(text) ; 
+  pavetext->Draw() ; 
+  kinecanvas->Update(); 
 
 }
 //____________________________________________________________________________
@@ -295,13 +467,13 @@ void AliPHOSAnalyze::DisplayRecParticles()
   } 
     if (fEvt != -999) {
       
-      Int_t Module ; 
+      Int_t module ; 
       cout <<  "DisplayRecPoints > which module (1-5,  -1: all) ? " ; 
-      cin >> Module ; cout << Module << endl ;
-      Text_t HistoName[80] ; 
-      sprintf(HistoName,"Event %d: Reconstructed particles in module %d", fEvt, Module) ; 
-      Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by Module   
-      fGeom->EmcModuleCoverage(Module, tm, tM, pm, pM, kDegre) ;
+      cin >> module ; cout << module << endl ;
+      Text_t histoname[80] ; 
+      sprintf(histoname,"Event %d: Reconstructed particles in module %d", fEvt, module) ; 
+      Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by module   
+      fGeom->EmcModuleCoverage(module, tm, tM, pm, pM, kDegre) ;
       Double_t theta, phi ; 
       fGeom->EmcXtalCoverage(theta, phi, kDegre) ;
       Int_t tdim = (Int_t)( (tM - tm) / theta ) ; 
@@ -309,36 +481,36 @@ void AliPHOSAnalyze::DisplayRecParticles()
       tm -= theta ; 
       tM += theta ; 
       pm -= phi ; 
-      TH2F * HistoRParticle = new TH2F("HistoRParticle",  HistoName, 
+      TH2F * histoRparticle = new TH2F("histoRparticle",  histoname, 
 				       pdim, pm, pM, tdim, tm, tM) ; 
-      HistoRParticle->SetStats(kFALSE) ;
-      Text_t CanvasName[80] ; 
-      sprintf(CanvasName, "Reconstructed particles in PHOSmodule # %d", Module) ;
-      TCanvas * RParticleCanvas = new TCanvas("RparticleCanvas", CanvasName, 650, 500) ; 
+      histoRparticle->SetStats(kFALSE) ;
+      Text_t canvasname[80] ; 
+      sprintf(canvasname, "Reconstructed particles in PHOSmodule # %d", module) ;
+      TCanvas * rparticlecanvas = new TCanvas("RparticleCanvas", canvasname, 650, 500) ; 
       RecParticlesList * rpl = fPHOS->RecParticles() ; 
-      Int_t NRecParticles = rpl->GetEntries() ; 
-      Int_t NRecParticlesInModule = 0 ; 
+      Int_t nRecParticles = rpl->GetEntries() ; 
+      Int_t nRecParticlesInModule = 0 ; 
       TIter nextRecPart(rpl) ; 
       AliPHOSRecParticle * rp ; 
-      cout << "DisplayRecParticles > " << NRecParticles << " reconstructed particles " << endl ; 
-      Double_t raddeg = 180. / TMath::Pi() ; 
+      cout << "DisplayRecParticles > " << nRecParticles << " reconstructed particles " << endl ; 
+      Double_t kRADDEG = 180. / TMath::Pi() ; 
       while ( (rp = (AliPHOSRecParticle *)nextRecPart() ) ) {
 	AliPHOSTrackSegment * ts = rp->GetPHOSTrackSegment() ; 
-	if ( ts->GetPHOSMod() == Module ) {  
-	  NRecParticlesInModule++ ; 
-	  Double_t theta = rp->Theta() * raddeg ;
-	  Double_t phi   = rp->Phi() * raddeg ;
+	if ( ts->GetPHOSMod() == module ) {  
+	  nRecParticlesInModule++ ; 
+	  Double_t theta = rp->Theta() * kRADDEG ;
+	  Double_t phi   = rp->Phi() * kRADDEG ;
 	  Double_t energy = rp->Energy() ; 
-	  HistoRParticle->Fill(phi, theta, energy) ;
+	  histoRparticle->Fill(phi, theta, energy) ;
 	}
       }
-      HistoRParticle->Draw("color") ; 
+      histoRparticle->Draw("color") ; 
       Text_t text[80] ; 
-      sprintf(text, "reconstructed particles: %d", NRecParticlesInModule) ;
-      TPaveText *  PaveText = new TPaveText(292, 100, 300, 101); 
-      PaveText->AddText(text) ; 
-      PaveText->Draw() ; 
-      RParticleCanvas->Update() ; 
+      sprintf(text, "reconstructed particles: %d", nRecParticlesInModule) ;
+      TPaveText *  pavetext = new TPaveText(292, 100, 300, 101); 
+      pavetext->AddText(text) ; 
+      pavetext->Draw() ; 
+      rparticlecanvas->Update() ; 
     }
 }
 
@@ -354,134 +526,134 @@ void AliPHOSAnalyze::DisplayRecPoints()
   } 
     if (fEvt != -999) {
       
-      Int_t Module ; 
+      Int_t module ; 
       cout <<  "DisplayRecPoints > which module (1-5,  -1: all) ? " ; 
-      cin >> Module ; cout << Module << endl ; 
+      cin >> module ; cout << module << endl ; 
 
-      Text_t CanvasName[80];
-      sprintf(CanvasName,"Digits in PHOS/EMC module # %d",Module) ;
-      TCanvas * ModuleCanvas = new TCanvas("Module", CanvasName, 650, 500) ; 
-      ModuleCanvas->Draw() ;
+      Text_t canvasname[80];
+      sprintf(canvasname,"Digits in PHOS/EMC module # %d",module) ;
+      TCanvas * modulecanvas = new TCanvas("module", canvasname, 650, 500) ; 
+      modulecanvas->Draw() ;
 
-      //=========== Creating 2d-histogram of the PHOS Module
+      //=========== Creating 2d-histogram of the PHOS module
       // a little bit junkie but is used to test Geom functinalities
 
-      Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by Module   
+      Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by module   
       
-      fGeom->EmcModuleCoverage(Module, tm, tM, pm, pM); 
+      fGeom->EmcModuleCoverage(module, tm, tM, pm, pM); 
       // convert angles into coordinates local to the EMC module of interest
 
-      Int_t EmcModuleNumber ;
-      Double_t EmcModulexm, EmcModulezm ; // minimum local coordinate in a given EMCA module
-      Double_t EmcModulexM, EmcModulezM ; // maximum local coordinate in a given EMCA module
-      fGeom->ImpactOnEmc(tm, pm, EmcModuleNumber, EmcModulezm, EmcModulexm) ;
-      fGeom->ImpactOnEmc(tM, pM, EmcModuleNumber, EmcModulezM, EmcModulexM) ;
-      Int_t xdim = (Int_t)( ( EmcModulexM - EmcModulexm ) / fGeom->GetCrystalSize(0) ) ;  
-      Int_t zdim = (Int_t)( ( EmcModulezM - EmcModulezm ) / fGeom->GetCrystalSize(2) ) ;
-      Float_t xmin = EmcModulexm - fGeom->GetCrystalSize(0) ; 
-      Float_t xMax = EmcModulexM + fGeom->GetCrystalSize(0) ; 
-      Float_t zmin = EmcModulezm - fGeom->GetCrystalSize(2) ; 
-      Float_t zMax = EmcModulezM + fGeom->GetCrystalSize(2) ;     
-      Text_t HistoName[80];
-      sprintf(HistoName,"Event %d: Digits and RecPoints in module %d", fEvt, Module) ;
-      TH2F * hModule = new TH2F("HistoReconstructed", HistoName,
+      Int_t emcModuleNumber ;
+      Double_t emcModulexm, emcModulezm ; // minimum local coordinate in a given EMCA module
+      Double_t emcModulexM, emcModulezM ; // maximum local coordinate in a given EMCA module
+      fGeom->ImpactOnEmc(tm, pm, emcModuleNumber, emcModulezm, emcModulexm) ;
+      fGeom->ImpactOnEmc(tM, pM, emcModuleNumber, emcModulezM, emcModulexM) ;
+      Int_t xdim = (Int_t)( ( emcModulexM - emcModulexm ) / fGeom->GetCrystalSize(0) ) ;  
+      Int_t zdim = (Int_t)( ( emcModulezM - emcModulezm ) / fGeom->GetCrystalSize(2) ) ;
+      Float_t xmin = emcModulexm - fGeom->GetCrystalSize(0) ; 
+      Float_t xMax = emcModulexM + fGeom->GetCrystalSize(0) ; 
+      Float_t zmin = emcModulezm - fGeom->GetCrystalSize(2) ; 
+      Float_t zMax = emcModulezM + fGeom->GetCrystalSize(2) ;     
+      Text_t histoname[80];
+      sprintf(histoname,"Event %d: Digits and RecPoints in module %d", fEvt, module) ;
+      TH2F * hModule = new TH2F("HistoReconstructed", histoname,
 				xdim, xmin, xMax, zdim, zmin, zMax) ;  
       hModule->SetMaximum(2.0);
       hModule->SetMinimum(0.0);
       hModule->SetStats(kFALSE); 
 
       TIter next(fPHOS->Digits()) ;
-      Float_t Energy, y, z;
-      Int_t RelId[4]; Int_t NumberOfDigits = 0 ;
+      Float_t energy, y, z;
+      Float_t etot=0.;
+      Int_t relid[4]; Int_t nDigits = 0 ;
       AliPHOSDigit * digit ; 
-      Float_t Etot ; 
       while((digit = (AliPHOSDigit *)next())) 
 	{  
-	  fGeom->AbsToRelNumbering(digit->GetId(), RelId) ;
-	  if (RelId[0] == Module)  
+	  fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+	  if (relid[0] == module)  
 	    {  
-	      NumberOfDigits++ ;
-	      Energy = fClu->Calibrate(digit->GetAmp()) ;
-	      Etot += Energy ; 
-	      fGeom->RelPosInModule(RelId,y,z) ; 
-	      if (Energy > 0.01 )  
-		hModule->Fill(y, z, Energy) ;
+	      nDigits++ ;
+	      energy = fClu->Calibrate(digit->GetAmp()) ;
+	      etot += energy ; 
+	      fGeom->RelPosInModule(relid,y,z) ; 
+	      if (energy > 0.01 )  
+		hModule->Fill(y, z, energy) ;
 	    } 
 	}
-      cout <<"DrawRecPoints >  Found in Module " 
-	   << Module << " " << NumberOfDigits << "  digits with total energy " << Etot << endl ;
+      cout <<"DrawRecPoints >  Found in module " 
+	   << module << " " << nDigits << "  digits with total energy " << etot << endl ;
       hModule->Draw("col2") ;
 
-      //=========== Cluster in Module
+      //=========== Cluster in module
 
-      TClonesArray * EmcRP = fPHOS->EmcClusters() ;
-      Etot = 0.; 
-      Int_t TotalNumberOfClusters = 0 ; 
-      Int_t NumberOfClusters = 0 ;
-      TIter nextemc(EmcRP) ;
+      TClonesArray * emcRP = fPHOS->EmcClusters() ;
+      etot = 0.; 
+      Int_t totalnClusters = 0 ; 
+      Int_t nClusters = 0 ;
+      TIter nextemc(emcRP) ;
       AliPHOSEmcRecPoint * emc ;
       while((emc = (AliPHOSEmcRecPoint *)nextemc())) 
 	{
-	  TotalNumberOfClusters++ ;
-	  if ( emc->GetPHOSMod() == Module )
+	  totalnClusters++ ;
+	  if ( emc->GetPHOSMod() == module )
 	    { 
-	      NumberOfClusters++ ; 
-	      Energy = emc->GetTotalEnergy() ;   
-	      Etot+= Energy ;  
+	      nClusters++ ; 
+	      energy = emc->GetTotalEnergy() ;   
+	      etot+= energy ;  
 	      emc->Draw("P") ;
 	    }
 	}
-      cout << "DrawRecPoints > Found " << TotalNumberOfClusters << " EMC Clusters in PHOS" << endl ; 
-      cout << "DrawRecPoints > Found in Module " << Module << "  " << NumberOfClusters << " EMC Clusters " << endl ;
-      cout << "DrawRecPoints > Total energy  " << Etot << endl ; 
+      cout << "DrawRecPoints > Found " << totalnClusters << " EMC Clusters in PHOS" << endl ; 
+      cout << "DrawRecPoints > Found in module " << module << "  " << nClusters << " EMC Clusters " << endl ;
+      cout << "DrawRecPoints > total energy  " << etot << endl ; 
 
-      TPaveText *  PaveText = new TPaveText(22, 80, 83, 90); 
+      TPaveText *  pavetext = new TPaveText(22, 80, 83, 90); 
       Text_t text[40] ; 
-      sprintf(text, "digits: %d;  clusters: %d", NumberOfDigits, NumberOfClusters) ;
-      PaveText->AddText(text) ; 
-      PaveText->Draw() ; 
-      ModuleCanvas->Update(); 
+      sprintf(text, "digits: %d;  clusters: %d", nDigits, nClusters) ;
+      pavetext->AddText(text) ; 
+      pavetext->Draw() ; 
+      modulecanvas->Update(); 
  
-      //=========== Cluster in Module PPSD Down
+      //=========== Cluster in module PPSD Down
 
-      TClonesArray * PpsdRP = fPHOS->PpsdClusters() ;
-      Etot = 0.; 
-      TIter nextPpsd(PpsdRP) ;
-      AliPHOSPpsdRecPoint * Ppsd ;
-      while((Ppsd = (AliPHOSPpsdRecPoint *)nextPpsd())) 
+      TClonesArray * ppsdRP = fPHOS->PpsdClusters() ;
+      etot = 0.; 
+      TIter nextPpsd(ppsdRP) ;
+      AliPHOSPpsdRecPoint * ppsd ;
+      while((ppsd = (AliPHOSPpsdRecPoint *)nextPpsd())) 
 	{
-	  TotalNumberOfClusters++ ;
-	  if ( Ppsd->GetPHOSMod() == Module )
+	  totalnClusters++ ;
+	  if ( ppsd->GetPHOSMod() == module )
 	    { 
-	      NumberOfClusters++ ; 
-	      Energy = Ppsd->GetEnergy() ;   
-	      Etot+=Energy ;  
-	      if (!Ppsd->GetUp()) Ppsd->Draw("P") ;
+	      nClusters++ ; 
+	      energy = ppsd->GetEnergy() ;   
+	      etot+=energy ;  
+	      if (!ppsd->GetUp()) ppsd->Draw("P") ;
 	    }
 	}
-      cout << "DrawRecPoints > Found " << TotalNumberOfClusters << " Ppsd Down Clusters in PHOS" << endl ; 
-      cout << "DrawRecPoints > Found in Module " << Module << "  " << NumberOfClusters << " Ppsd Down Clusters " << endl ;
-      cout << "DrawRecPoints > Total energy  " << Etot << endl ; 
+      cout << "DrawRecPoints > Found " << totalnClusters << " Ppsd Down Clusters in PHOS" << endl ; 
+      cout << "DrawRecPoints > Found in module " << module << "  " << nClusters << " Ppsd Down Clusters " << endl ;
+      cout << "DrawRecPoints > total energy  " << etot << endl ; 
 
-      //=========== Cluster in Module PPSD Up
+      //=========== Cluster in module PPSD Up
   
-      PpsdRP = fPHOS->PpsdClusters() ;
-      Etot = 0.; 
-      TIter nextPpsdUp(PpsdRP) ;
-      while((Ppsd = (AliPHOSPpsdRecPoint *)nextPpsdUp())) 
+      ppsdRP = fPHOS->PpsdClusters() ;
+      etot = 0.; 
+      TIter nextPpsdUp(ppsdRP) ;
+      while((ppsd = (AliPHOSPpsdRecPoint *)nextPpsdUp())) 
 	{
-	  TotalNumberOfClusters++ ;
-	  if ( Ppsd->GetPHOSMod() == Module )
+	  totalnClusters++ ;
+	  if ( ppsd->GetPHOSMod() == module )
 	    { 
-	      NumberOfClusters++ ; 
-	      Energy = Ppsd->GetEnergy() ;   
-	      Etot+=Energy ;  
-	      if (Ppsd->GetUp()) Ppsd->Draw("P") ;
+	      nClusters++ ; 
+	      energy = ppsd->GetEnergy() ;   
+	      etot+=energy ;  
+	      if (ppsd->GetUp()) ppsd->Draw("P") ;
 	    }
 	}
-  cout << "DrawRecPoints > Found " << TotalNumberOfClusters << " Ppsd Up Clusters in PHOS" << endl ; 
-  cout << "DrawRecPoints > Found in Module " << Module << "  " << NumberOfClusters << " Ppsd Up Clusters " << endl ;
-  cout << "DrawRecPoints > Total energy  " << Etot << endl ; 
+  cout << "DrawRecPoints > Found " << totalnClusters << " Ppsd Up Clusters in PHOS" << endl ; 
+  cout << "DrawRecPoints > Found in module " << module << "  " << nClusters << " Ppsd Up Clusters " << endl ;
+  cout << "DrawRecPoints > total energy  " << etot << endl ; 
     
     } // if !-999
 }
@@ -498,60 +670,60 @@ void AliPHOSAnalyze::DisplayTrackSegments()
   } 
     if (fEvt != -999) {
 
-      Int_t Module ; 
+      Int_t module ; 
       cout <<  "DisplayTrackSegments > which module (1-5,  -1: all) ? " ; 
-      cin >> Module ; cout << Module << endl ; 
-      //=========== Creating 2d-histogram of the PHOS Module
+      cin >> module ; cout << module << endl ; 
+      //=========== Creating 2d-histogram of the PHOS module
       // a little bit junkie but is used to test Geom functinalities
       
-      Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by Module   
+      Double_t tm, tM, pm, pM ; // min and Max theta and phi covered by module   
       
-      fGeom->EmcModuleCoverage(Module, tm, tM, pm, pM); 
+      fGeom->EmcModuleCoverage(module, tm, tM, pm, pM); 
       // convert angles into coordinates local to the EMC module of interest
       
-      Int_t EmcModuleNumber ;
-      Double_t EmcModulexm, EmcModulezm ; // minimum local coordinate in a given EMCA module
-      Double_t EmcModulexM, EmcModulezM ; // maximum local coordinate in a given EMCA module
-      fGeom->ImpactOnEmc(tm, pm, EmcModuleNumber, EmcModulezm, EmcModulexm) ;
-      fGeom->ImpactOnEmc(tM, pM, EmcModuleNumber, EmcModulezM, EmcModulexM) ;
-      Int_t xdim = (Int_t)( ( EmcModulexM - EmcModulexm ) / fGeom->GetCrystalSize(0) ) ;  
-      Int_t zdim = (Int_t)( ( EmcModulezM - EmcModulezm ) / fGeom->GetCrystalSize(2) ) ;
-      Float_t xmin = EmcModulexm - fGeom->GetCrystalSize(0) ; 
-      Float_t xMax = EmcModulexM + fGeom->GetCrystalSize(0) ; 
-      Float_t zmin = EmcModulezm - fGeom->GetCrystalSize(2) ; 
-      Float_t zMax = EmcModulezM + fGeom->GetCrystalSize(2) ;     
-      Text_t HistoName[80];
-      sprintf(HistoName,"Event %d: Track Segments in module %d", fEvt, Module) ; 
-      TH2F * HistoTrack = new TH2F("HistoTrack",  HistoName, 
+      Int_t emcModuleNumber ;
+      Double_t emcModulexm, emcModulezm ; // minimum local coordinate in a given EMCA module
+      Double_t emcModulexM, emcModulezM ; // maximum local coordinate in a given EMCA module
+      fGeom->ImpactOnEmc(tm, pm, emcModuleNumber, emcModulezm, emcModulexm) ;
+      fGeom->ImpactOnEmc(tM, pM, emcModuleNumber, emcModulezM, emcModulexM) ;
+      Int_t xdim = (Int_t)( ( emcModulexM - emcModulexm ) / fGeom->GetCrystalSize(0) ) ;  
+      Int_t zdim = (Int_t)( ( emcModulezM - emcModulezm ) / fGeom->GetCrystalSize(2) ) ;
+      Float_t xmin = emcModulexm - fGeom->GetCrystalSize(0) ; 
+      Float_t xMax = emcModulexM + fGeom->GetCrystalSize(0) ; 
+      Float_t zmin = emcModulezm - fGeom->GetCrystalSize(2) ; 
+      Float_t zMax = emcModulezM + fGeom->GetCrystalSize(2) ;     
+      Text_t histoname[80];
+      sprintf(histoname,"Event %d: Track Segments in module %d", fEvt, module) ; 
+      TH2F * histotrack = new TH2F("histotrack",  histoname, 
 				   xdim, xmin, xMax, zdim, zmin, zMax) ;  
-      HistoTrack->SetStats(kFALSE); 
-      Text_t CanvasName[80];
-      sprintf(CanvasName,"Track segments in PHOS/EMC-PPSD module # %d", Module) ;
-      TCanvas * TrackCanvas = new TCanvas("TrackSegmentCanvas", CanvasName, 650, 500) ; 
-      HistoTrack->Draw() ; 
+      histotrack->SetStats(kFALSE); 
+      Text_t canvasname[80];
+      sprintf(canvasname,"Track segments in PHOS/EMC-PPSD module # %d", module) ;
+      TCanvas * trackcanvas = new TCanvas("TrackSegmentCanvas", canvasname, 650, 500) ; 
+      histotrack->Draw() ; 
 
       TrackSegmentsList * trsegl = fPHOS->TrackSegments() ;
       AliPHOSTrackSegment * trseg ;
  
-      Int_t NTrackSegments = trsegl->GetEntries() ;
+      Int_t nTrackSegments = trsegl->GetEntries() ;
       Int_t index ;
-      Float_t Etot = 0 ;
-      Int_t NTrackSegmentsInModule = 0 ; 
-      for(index = 0; index < NTrackSegments ; index++){
+      Float_t etot = 0 ;
+      Int_t nTrackSegmentsInModule = 0 ; 
+      for(index = 0; index < nTrackSegments ; index++){
 	trseg = (AliPHOSTrackSegment * )trsegl->At(index) ;
-	Etot+= trseg->GetEnergy() ;
-	if ( trseg->GetPHOSMod() == Module ) { 
-	  NTrackSegmentsInModule++ ; 
+	etot+= trseg->GetEnergy() ;
+	if ( trseg->GetPHOSMod() == module ) { 
+	  nTrackSegmentsInModule++ ; 
 	  trseg->Draw("P");
 	}
       } 
       Text_t text[80] ; 
-      sprintf(text, "track segments: %d", NTrackSegmentsInModule) ;
-      TPaveText *  PaveText = new TPaveText(22, 80, 83, 90); 
-      PaveText->AddText(text) ; 
-      PaveText->Draw() ; 
-      TrackCanvas->Update() ; 
-      cout << "DisplayTrackSegments > Found " << trsegl->GetEntries() << " Track segments with total energy "<< Etot << endl ;
+      sprintf(text, "track segments: %d", nTrackSegmentsInModule) ;
+      TPaveText *  pavetext = new TPaveText(22, 80, 83, 90); 
+      pavetext->AddText(text) ; 
+      pavetext->Draw() ; 
+      trackcanvas->Update() ; 
+      cout << "DisplayTrackSegments > Found " << trsegl->GetEntries() << " Track segments with total energy "<< etot << endl ;
     
    }
 }
@@ -560,4 +732,33 @@ Bool_t AliPHOSAnalyze::OpenRootFile(Text_t * name)
 {
   fRootFile   = new TFile(name) ;
   return  fRootFile->IsOpen() ; 
+}
+//____________________________________________________________________________
+void AliPHOSAnalyze::SavingHistograms()
+{
+
+  TFile output("test.root","RECREATE");
+  output.cd();
+  if (fhEmcDigit )         fhEmcDigit->Write()  ;
+  if (fhVetoDigit )        fhVetoDigit->Write()  ;
+  if (fhConvertorDigit )   fhConvertorDigit->Write()   ;
+  if (fhEmcCluster   )     fhEmcCluster->Write()   ;
+  if (fhVetoCluster )      fhVetoCluster->Write()   ;
+  if (fhConvertorCluster ) fhConvertorCluster->Write()  ;
+  if (fhConvertorEmc )     fhConvertorEmc->Write()  ;
+  if (fhPhotonEnergy)      fhPhotonEnergy->Write() ;
+  if (fhPhotonPositionX)   fhPhotonPositionX->Write() ;
+  if (fhPhotonPositionY)   fhPhotonPositionX->Write() ;
+  if (fhElectronEnergy)      fhElectronEnergy->Write() ;
+  if (fhElectronPositionX) fhElectronPositionX->Write() ;
+  if (fhElectronPositionY) fhElectronPositionX->Write() ;
+  if (fhNeutralEnergy)     fhNeutralEnergy->Write() ;
+  if (fhNeutralPositionX)  fhNeutralPositionX->Write() ;
+  if (fhNeutralPositionY)  fhNeutralPositionX->Write() ;
+  if (fhChargedEnergy)     fhChargedEnergy->Write() ;
+  if (fhChargedPositionX)  fhChargedPositionX->Write() ;
+  if (fhChargedPositionY)  fhChargedPositionX->Write() ;
+
+  output.Write();
+  output.Close();
 }

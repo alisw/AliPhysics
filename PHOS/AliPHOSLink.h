@@ -39,8 +39,6 @@ private:
   Int_t fEmcN ;  // Emc index
   Int_t fPpsdN ; // Ppsd index 
   Float_t fR ;   // Distance 
-
-public: 
   
   ClassDef(AliPHOSLink,1)  // description , version 1
 

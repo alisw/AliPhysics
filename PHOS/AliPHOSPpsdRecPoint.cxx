@@ -90,8 +90,8 @@ Int_t AliPHOSPpsdRecPoint::Compare(TObject * obj)
   Float_t x1 , z1 ;
   Float_t x2 , z2 ;
   
-  Int_t PhosMod1 ;
-  Int_t PhosMod2 ;
+  Int_t phosmod1 ;
+  Int_t phosmod2 ;
   
   Int_t up1 ;
   Int_t up2 ; 
@@ -106,17 +106,17 @@ Int_t AliPHOSPpsdRecPoint::Compare(TObject * obj)
   else            // lower layer
     up2 = 1 ;       
 
-  TVector3 PosLoc ;
-  this->GetLocalPosition(PosLoc) ;
-  x1 = PosLoc.X() ;
-  z1 = PosLoc.Z() ; 
-  PhosMod1 = this->GetPHOSMod();  
-  clu->GetLocalPosition(PosLoc) ;
-  x2 = PosLoc.X() ;
-  z2 = PosLoc.Z() ; 
-  PhosMod2 = clu->GetPHOSMod();
+  TVector3 posloc ;
+  this->GetLocalPosition(posloc) ;
+  x1 = posloc.X() ;
+  z1 = posloc.Z() ; 
+  phosmod1 = this->GetPHOSMod();  
+  clu->GetLocalPosition(posloc) ;
+  x2 = posloc.X() ;
+  z2 = posloc.Z() ; 
+  phosmod2 = clu->GetPHOSMod();
 
-  if(PhosMod1 == PhosMod2 ) {
+  if(phosmod1 == phosmod2 ) {
  
     if(up1 == up2 ){
       Int_t rowdif = (Int_t)TMath::Ceil(x1/fDelta) - (Int_t) TMath::Ceil(x2/fDelta) ;
@@ -139,11 +139,11 @@ Int_t AliPHOSPpsdRecPoint::Compare(TObject * obj)
 	rv = - 1 ;
     }
     
-  } // if PhosMod1 == PhosMod2
+  } // if phosmod1 == phosmod2
 
   else {
 
-    if(PhosMod1 < PhosMod2 ) 
+    if(phosmod1 < phosmod2 ) 
       rv = -1 ;
     else 
       rv = 1 ;
@@ -166,7 +166,7 @@ void AliPHOSPpsdRecPoint::GetLocalPosition(TVector3 &LPos){
   Float_t x = 0. ;
   Float_t z = 0. ;
 
-  AliPHOSGeometry * PHOSGeom = (AliPHOSGeometry *) fGeom ;
+  AliPHOSGeometry * phosgeom = (AliPHOSGeometry *) fGeom ;
   
   AliPHOSDigit * digit ;
   Int_t iDigit;
@@ -176,8 +176,8 @@ void AliPHOSPpsdRecPoint::GetLocalPosition(TVector3 &LPos){
  
     Float_t xi ;
     Float_t zi ;
-    PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    PHOSGeom->RelPosInModule(relid, xi, zi);
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);
     x += xi ;
     z += zi ;
   }
@@ -198,15 +198,15 @@ Bool_t AliPHOSPpsdRecPoint::GetUp()
 {
   Int_t relid[4] ;
   
-  AliPHOSGeometry * PHOSGeom = (AliPHOSGeometry *) fGeom ;
+  AliPHOSGeometry * phosgeom = (AliPHOSGeometry *) fGeom ;
   
   AliPHOSDigit *digit = (AliPHOSDigit *)fDigitsList[0] ; 
   
-  PHOSGeom->AbsToRelNumbering(digit->GetId(),relid);
+  phosgeom->AbsToRelNumbering(digit->GetId(),relid);
   Bool_t up ;
 
   if((Int_t)TMath::Ceil((Float_t)relid[1]/
-			(PHOSGeom->GetNumberOfModulesPhi()*PHOSGeom->GetNumberOfModulesZ())-0.0001 ) > 1) 
+			(phosgeom->GetNumberOfModulesPhi()*phosgeom->GetNumberOfModulesZ())-0.0001 ) > 1) 
     up = kFALSE ;
   else  
     up = kTRUE ;
@@ -222,18 +222,18 @@ void AliPHOSPpsdRecPoint::Paint(Option_t *)
    GetLocalPosition(pos) ;
    Coord_t x = pos.X() ;
    Coord_t y = pos.Z() ;
-   Color_t MarkerColor = 1 ;
-   Size_t  MarkerSize = 1. ;
-   Style_t MarkerStyle = 2 ;
+   Color_t markercolor = 1 ;
+   Size_t  markersize  = 1. ;
+   Style_t markerstyle = 2 ;
    if (GetUp()) 
-     MarkerStyle = 3 ;
+     markerstyle = 3 ;
 
    if (!gPad->IsBatch()) {
-     gVirtualX->SetMarkerColor(MarkerColor);
-     gVirtualX->SetMarkerSize (MarkerSize);
-     gVirtualX->SetMarkerStyle(MarkerStyle);
+     gVirtualX->SetMarkerColor(markercolor);
+     gVirtualX->SetMarkerSize (markersize);
+     gVirtualX->SetMarkerStyle(markerstyle);
    }
-   gPad->SetAttMarkerPS(MarkerColor,MarkerStyle,MarkerSize);
+   gPad->SetAttMarkerPS(markercolor,markerstyle,markersize);
    gPad->PaintPolyMarker(1,&x,&y,"");
 
 
@@ -246,7 +246,7 @@ void AliPHOSPpsdRecPoint::Print(Option_t * option)
   
   AliPHOSDigit * digit ; 
   Int_t iDigit;
-  AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
 
   Float_t xi ;
   Float_t zi ;
@@ -254,8 +254,8 @@ void AliPHOSPpsdRecPoint::Print(Option_t * option)
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = (AliPHOSDigit *) fDigitsList[iDigit];
-    PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    PHOSGeom->RelPosInModule(relid, xi, zi);
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);
     cout << " Id = " << digit->GetId() ;  
     cout << "  Phos mod = " << relid[0] ;  
     cout << "  PPSD mod = " << relid[1] ;  

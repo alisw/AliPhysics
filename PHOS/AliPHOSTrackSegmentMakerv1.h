@@ -64,9 +64,7 @@ private:
   Float_t fR0 ;       // Maximal distance between EMC and PPSD clusters of one Track Segment in module plane
   TMinuit * fMinuit ; // Minuit object needed by cluster unfolding
 
-public: 
-
-ClassDef( AliPHOSTrackSegmentMakerv1,1)  // track segment maker implementation , version 1
+  ClassDef( AliPHOSTrackSegmentMakerv1,1)  // track segment maker implementation , version 1
 
 };
 
