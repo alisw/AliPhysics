@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/09/19 06:20:50  jchudoba
+Class to manage input filenames, used by AliRunDigitizer
+
 */
 
 ////////////////////////////////////////////////////////////////////////
@@ -47,6 +50,20 @@ AliStream::AliStream()
   fCurrentFile = 0;
   fEvents = 0;
   fFileNames = new TObjArray(1);
+  fMode = "READ";
+}
+
+////////////////////////////////////////////////////////////////////////
+AliStream::AliStream(Option_t *option)
+{
+// ctor
+  fLastEventSerialNr = -1;
+  fLastEventNr = 0;
+  fCurrentFileIndex = -1;
+  fCurrentFile = 0;
+  fEvents = 0;
+  fFileNames = new TObjArray(1);
+  fMode = option;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -86,8 +103,28 @@ Bool_t AliStream::NextEventInStream(Int_t &serialNr)
 }
 
 ////////////////////////////////////////////////////////////////////////
+void AliStream::ChangeMode(Option_t* option)
+// set the mode to READ or UPDATE, reopen file with the new mode
+// only change from UPDATE to READ have sense in the current scheme,
+// other changes are possible but not usefull
+{
+  fMode = option;
+  if (fCurrentFile) {
+    fCurrentFile->Close();
+    fCurrentFileIndex--;
+    OpenNextFile();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////
 Bool_t AliStream::OpenNextFile()
 {
+  if (fCurrentFile) {
+    if (fCurrentFile->IsOpen()) {
+      fCurrentFile->Close();
+    }
+  }
+
   if (++fCurrentFileIndex > fFileNames->GetLast()) {
     cerr<<"No more files in the stream"<<endl;
     return kFALSE;
@@ -95,7 +132,7 @@ Bool_t AliStream::OpenNextFile()
 
   const char * filename = 
     static_cast<TObjString*>(fFileNames->At(fCurrentFileIndex))->GetName();
-  fCurrentFile = TFile::Open(filename,"READ");
+  fCurrentFile = TFile::Open(filename,fMode.Data());
   if (!fCurrentFile) {
 // cannot open file specified on input. Do not skip it silently.
     cerr<<"Cannot open file "<<filename<<endl;

@@ -26,18 +26,21 @@ class AliStream: public TNamed {
 
 public:
   AliStream();
+  AliStream(Option_t *option);
   virtual ~AliStream();
   void AddFile(char *fileName);
   Bool_t NextEventInStream(Int_t &eventNr);
   Bool_t OpenNextFile();
   Bool_t ImportgAlice();
   TFile* CurrentFile() { return fCurrentFile;}
+  void ChangeMode(Option_t* option);     // reset READ or UPDATE mode
   
 private:  
   Int_t fLastEventSerialNr;
   Int_t fLastEventNr;
   Int_t fCurrentFileIndex;
   Int_t fEvents;                //! nr. of events in the current file
+  TString fMode;                  // = 0 for READONLY, = 1 for READWRITE
   TFile *fCurrentFile;
   TObjArray * fFileNames;
   
