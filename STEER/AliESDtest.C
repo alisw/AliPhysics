@@ -251,6 +251,8 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
      }     
      tpcTracker.LoadClusters(tpcTree);
      rc+=tpcTracker.Clusters2Tracks(event);
+     tpcPID.MakePID(event);                 // preliminary PID
+     AliESDpid::MakePID(event);             // for the ITS tracker
 
      itsTracker.SetVertex(vtx,cvtx);
      TTree *itsTree=itsl->TreeR();
