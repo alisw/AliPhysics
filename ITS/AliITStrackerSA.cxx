@@ -861,7 +861,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
     for(Int_t i=0;i<fGeom->GetNlayers();i++){
       delete listlayer[i];
     }
-    delete listlayer;
+    delete [] listlayer;
     delete [] firstmod;
     return 0;
   }
@@ -872,7 +872,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
     for(Int_t i=0;i<fGeom->GetNlayers();i++){
       delete listlayer[i];
     }
-    delete listlayer; 
+    delete [] listlayer; 
     delete [] firstmod;
     return 0;
   }
@@ -917,7 +917,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   for(Int_t i=0;i<fGeom->GetNlayers();i++){
     delete listlayer[i];
   }
-  delete listlayer; 
+  delete [] listlayer; 
   delete [] firstmod;
   return otrack;
 
