@@ -64,6 +64,7 @@
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALv1.h"
+#include "AliEMCALGetter.h"
 
 ClassImp(AliEMCALSDigitizer)
 
@@ -83,34 +84,14 @@ ClassImp(AliEMCALSDigitizer)
 }
 
 //____________________________________________________________________________ 
-AliEMCALSDigitizer::AliEMCALSDigitizer(const char* headerFile, const char *sDigitsTitle):TTask("AliEMCALSDigitizer","")
+AliEMCALSDigitizer::AliEMCALSDigitizer(const char* headerFile, const char *sDigitsTitle):TTask(sDigitsTitle, headerFile)
 {
   // ctor
   fA = 0;
   fB = 10000000.;
   fPrimThreshold = 0.01 ;
-  fNevents = 0 ;      
-  fSDigitsTitle = sDigitsTitle ;
-  fHeadersFile = headerFile ;
-  fSDigits = new TClonesArray("AliEMCALDigit",30000);
-  fHits    = new TClonesArray("AliEMCALHit",1000);
-
-  TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data() ) ;
-  
-  //File was not opened yet
-  if(file == 0){
-    if(fHeadersFile.Contains("rfio"))
-      file =	TFile::Open(fHeadersFile,"update") ;
-    else
-      file = new TFile(fHeadersFile.Data(),"update") ;
-    gAlice = (AliRun *) file->Get("gAlice") ;
-  }
-  
-  //add Task to //root/Tasks folder
-  TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  roottasks->Add(this) ; 
-  
-  fIsInitialized = kTRUE ;
+  fNevents = 0 ; 
+  Init();
 }
 
 //____________________________________________________________________________ 
@@ -124,76 +105,98 @@ AliEMCALSDigitizer::~AliEMCALSDigitizer()
 }
 //____________________________________________________________________________ 
 void AliEMCALSDigitizer::Init(){
-  //Initialization can not be done in the default constructor
 
-  if(!fIsInitialized){
+  // Initialization: open root-file, allocate arrays for hits and sdigits,
+  // attach task SDigitizer to the list of PHOS tasks
+  // 
+  // Initialization can not be done in the default constructor
+  //============================================================= YS
+  //  The initialisation is now done by the getter
 
-    if(fHeadersFile.IsNull())
-      fHeadersFile="galice.root" ;
+if( strcmp(GetTitle(), "") == 0 )
+    SetTitle("galice.root") ;
+  
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance(GetTitle(), GetName(), "update") ;     
+  if ( gime == 0 ) {
+    cerr << "ERROR: AliEMCALSDigitizer::Init -> Could not obtain the Getter object !" << endl ; 
+    return ;
+  } 
+  
+  gime->PostSDigits( GetName(), GetTitle() ) ; 
 
-    TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data() ) ;
-    
-    //if file was not opened yet, read gAlice
-    if(file == 0){
-      file = new TFile(fHeadersFile.Data(),"update") ;
-      gAlice = (AliRun *) file->Get("gAlice") ;
-    }
-    
-    fHits    = new TClonesArray("AliEMCALHit",1000);
-    fSDigits = new TClonesArray("AliEMCALDigit",30000);
-    
-    // add Task to //root/Tasks folder
-    TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-    roottasks->Add(this) ; 
-    
-    fIsInitialized = kTRUE ;
-  }
-}
+  TString sdname(GetName() );
+  sdname.Append(":") ;
+  sdname.Append(GetTitle() ) ;
+  SetName(sdname) ;
+  gime->PostSDigitizer(this) ;
+ 
+  // create a folder on the white board //YSAlice/WhiteBoard/SDigits/EMCAL/headerFile/sdigitsTitle
+ 
+ }
 //____________________________________________________________________________
 void AliEMCALSDigitizer::Exec(Option_t *option) { 
-  //Collects all hits in the same active volume into digit
-  
-  if(!fIsInitialized)
-    Init() ;
 
+// Collects all hits in the same active volume into digit
+ 
+  if( strcmp(GetName(), "") == 0 )
+    Init() ;
+  
+  if (strstr(option, "print") ) {
+    Print("") ; 
+    return ; 
+  }
+  
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALSDigitizer");
-  
-  fNevents = (Int_t) gAlice->TreeE()->GetEntries() ; 
+  //Check, if this branch already exits
+  gAlice->GetEvent(0) ;
+  if(gAlice->TreeS() ) {
+    TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeS()->GetListOfBranches()) ;
+    TIter next(lob) ; 
+    TBranch * branch = 0 ;  
+    Bool_t emcalfound = kFALSE, sdigitizerfound = kFALSE ; 
+    
+    while ( (branch = (static_cast<TBranch*>(next()))) && (!emcalfound || !sdigitizerfound) ) {
+      if ( (strcmp(branch->GetName(), "EMCAL")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
+	emcalfound = kTRUE ;
+      
+      else if ( (strcmp(branch->GetName(), "AliEMCALSDigitizer")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
+	sdigitizerfound = kTRUE ; 
+    }
+    
+    if ( emcalfound || sdigitizerfound ) {
+      cerr << "WARNING: AliEMCALSDigitizer::Exec -> SDigits and/or SDigitizer branch with name " << GetName() 
+	   << " already exits" << endl ;
+      return ; 
+    }   
+  }  
+  TString sdname(GetName()) ;
+  sdname.Remove(sdname.Index(GetTitle())-1) ;
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;  
+  const AliEMCALGeometry *geom = gime->EMCALGeometry();
+  Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ; 
   
   Int_t ievent ;
-  for(ievent = 0; ievent < fNevents; ievent++){
-    gAlice->GetEvent(ievent) ;
-    gAlice->SetEvent(ievent) ;
-    
-    if(gAlice->TreeH()==0){
-      cout << "AliEMCALSDigitizer: There is no Hit Tree" << endl;
-      return ;
-    }
-    
-    //set address of the hits 
-    TBranch * branch = gAlice->TreeH()->GetBranch("EMCAL");
-    if (branch) 
-      branch->SetAddress(&fHits);
-    else{
-      cout << "ERROR in AliEMCALSDigitizer: "<< endl ;
-      cout << "      no branch EMCAL in TreeH"<< endl ;
-      cout << "      do nothing " << endl ;
-      return ;
-    }
-    
-    fSDigits->Clear();
+  for(ievent = 0; ievent < nevents; ievent++){
+    gime->Event(ievent,"H") ;
+    const TClonesArray * fHits = gime->Hits() ;
+    TClonesArray * sdigits = gime->SDigits(sdname.Data()) ;
+    sdigits->Clear();
     Int_t nSdigits = 0 ;
+
+  //Collects all hits in the same active volume into digit
+  
+  
     
     
     //Now made SDigits from hits, for EMCAL it is the same, so just copy    
-    Int_t itrack ;
-    for (itrack=0; itrack < gAlice->GetNtrack(); itrack++){
-      
+    //  Int_t itrack ;
+    // for (itrack=0; itrack < gAlice->GetNtrack(); itrack++){
+    //gime->Track(itrack);  
       //=========== Get the EMCAL branch from Hits Tree for the Primary track itrack
-      branch->GetEntry(itrack,0);
-      AliEMCALv0 * EMCAL = (AliEMCALv0 *) gAlice->GetDetector("EMCAL") ;
-      AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance( EMCAL->GetGeometry()->GetName(), EMCAL->GetGeometry()->GetTitle() );
+      
+      
+
  
       Int_t i;
       for ( i = 0 ; i < fHits->GetEntries() ; i++ ) {
@@ -201,147 +204,136 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
         AliEMCALDigit  * curSDigit = 0  ;
         AliEMCALDigit * sdigit ;
         Bool_t newsdigit = kTRUE; 
-// Assign primary number only if contribution is significant
+	// Assign primary number only if contribution is significant
         if( hit->GetEnergy() > fPrimThreshold)
-   curSDigit =  new AliEMCALDigit( hit->GetPrimary(), hit->GetIparent(), (((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1 ) * ((hit->GetId()-1)%(geom->GetNPhi())+1)), Digitize( hit->GetEnergy() ) ) ;
+	  curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
+					  hit->GetIparent(),Layer2TowerID(hit->GetId(),kFALSE), 
+					  Digitize( hit->GetEnergy() ) , 
+					  hit->GetTime()) ;
         else
-   curSDigit =  new AliEMCALDigit( -1               , -1               ,(((hit->GetId()/geom->GetNPhi())%geom->GetNZ() + 1 ) * ((hit->GetId()-1)%(geom->GetNPhi())+1)), Digitize( hit->GetEnergy() ) ) ;
-     //cout << "Hit ID = " <<hit->GetId() << endl ; 
-     //cout << "ID for detector = " << curSDigit->GetId() << endl ;  
-         //  cout << hit->GetEnergy() << " - hit energy   -   Digit Energy - " << curSDigit->GetAmp() << endl;
-      for(Int_t check= 0; check < nSdigits ; check++) {
-          sdigit = (AliEMCALDigit *)fSDigits->At(check);
+	  curSDigit =  new AliEMCALDigit( -1               , 
+					  -1               ,
+					  Layer2TowerID(hit->GetId(),kFALSE), 
+					  Digitize( hit->GetEnergy() ) , 
+					  hit->GetTime() ) ;
+	//cout << "Hit ID = " <<hit->GetId() << endl ; 
+	//cout << "ID for detector = " << curSDigit->GetId() << endl ;  
+	//  cout << hit->GetEnergy() << " - hit energy   -   Digit Energy - " << curSDigit->GetAmp() << endl;
+	for(Int_t check= 0; check < nSdigits ; check++) {
+          sdigit = (AliEMCALDigit *)sdigits->At(check);
           if( sdigit->GetId() == curSDigit->GetId())   
             {// cout << "SDigit - Get Amp  " << sdigit->GetAmp() << endl ; 
-             *sdigit = *sdigit + *curSDigit ;
+	      *sdigit = *sdigit + *curSDigit ;
               newsdigit = kFALSE;
-          //  cout << " and after addition " << sdigit->GetAmp() << endl ; 
-           }
-          }
-     if (newsdigit) 
-         { new((*fSDigits)[nSdigits])  AliEMCALDigit(*curSDigit);
+	      //  cout << " and after addition " << sdigit->GetAmp() << endl ; 
+	    }
+	}
+	if (newsdigit) 
+	  { new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
 	  nSdigits++ ;  
-	//cout << "Detector nsdigits = " << nSdigits << endl ;
-             }
+	  //cout << "Detector nsdigits = " << nSdigits << endl ;
+	  }
         newsdigit = kTRUE;  
-         
-
+	
+	
         if( hit->GetEnergy() > fPrimThreshold)
-      curSDigit =  new AliEMCALDigit( hit->GetPrimary(), hit->GetIparent(), ((geom->GetNZ() * geom->GetNPhi()) + ((hit->GetId()/geom->GetNPhi())%geom->GetNZ() + 1) * ((hit->GetId()-1)%(geom->GetNPhi())+1)), Digitize( hit->GetEnergy() ) ) ;
+	  curSDigit =  new AliEMCALDigit( hit->GetPrimary(), 
+					  hit->GetIparent(),
+					  Layer2TowerID(hit->GetId(),kTRUE) , 
+					  Digitize( hit->GetEnergy() ), 
+					  hit->GetTime( ) ) ;
         else
-    curSDigit =  new AliEMCALDigit( -1               , -1               ,((geom->GetNZ() * geom->GetNPhi()) + ((hit->GetId()/geom->GetNPhi())%geom->GetNZ()+1) * ((hit->GetId()-1)%(geom->GetNPhi())+1)), Digitize( hit->GetEnergy() ) ) ;
- 
-      if((hit->GetId()/geom->GetNPhi()) < (2*geom->GetNZ())) 
-       { //cout << "ID for Preshower = " << curSDigit->GetId()  << endl ;
-        for(Int_t check= 0; check < nSdigits; check++) {
-          sdigit = (AliEMCALDigit *)fSDigits->At(check);
-          if( sdigit->GetId() == curSDigit->GetId())   
-           { 
-             *sdigit = *sdigit + *curSDigit ;
-             newsdigit = kFALSE ;
-            }
-           }
-     if (newsdigit) 
-         { new((*fSDigits)[nSdigits])  AliEMCALDigit(*curSDigit);
-	  nSdigits++ ;  
-	//cout << "Preshower nsdigits = " << nSdigits << endl ;
-           }
-        newsdigit=kTRUE;	
+	  curSDigit =  new AliEMCALDigit( -1               , 
+					  -1               ,
+					  Layer2TowerID(hit->GetId(),kTRUE), 
+					  Digitize( hit->GetEnergy() ), 
+					  hit->GetTime() ) ;
+	
+	if((hit->GetId()/geom->GetNPhi()) < (2*geom->GetNZ())) 
+	  { //cout << "ID for Preshower = " << curSDigit->GetId()  << endl ;
+	    for(Int_t check= 0; check < nSdigits; check++) {
+	      sdigit = (AliEMCALDigit *)sdigits->At(check);
+	      if( sdigit->GetId() == curSDigit->GetId())   
+		{ 
+		  *sdigit = *sdigit + *curSDigit ;
+		  newsdigit = kFALSE ;
+		}
+	    }
+	    if (newsdigit) 
+	      { new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
+	      nSdigits++ ;  
+	      //cout << "Preshower nsdigits = " << nSdigits << endl ;
+	      }
+	    newsdigit=kTRUE;	
+	  } 
       } 
-     } 
-    } // loop over tracks
-    fSDigits->Sort() ;
-    
-    nSdigits = fSDigits->GetEntriesFast() ;
-    fSDigits->Expand(nSdigits) ;
-    
-    Int_t i ;
-    for (i = 0 ; i < nSdigits ; i++) { 
-      AliEMCALDigit * digit = (AliEMCALDigit *) fSDigits->At(i) ; 
-      digit->SetIndexInList(i) ;     
-    }
-
-    if(gAlice->TreeS() == 0)
-      gAlice->MakeTree("S") ;
-    
-    //check, if this branch already exits?
-    TBranch * sdigitsBranch = 0;
-    TBranch * sdigitizerBranch = 0;
-    
-    TObjArray * branches = gAlice->TreeS()->GetListOfBranches() ;
-    Int_t ibranch;
-    Bool_t emcalNotFound = kTRUE ;
-    Bool_t sdigitizerNotFound = kTRUE ;
-    
-    for(ibranch = 0;ibranch <branches->GetEntries();ibranch++){
+      //    } // loop over tracks
+      sdigits->Sort() ;
       
-      if(emcalNotFound){
-	sdigitsBranch=(TBranch *) branches->At(ibranch) ;
-	if( (strcmp("EMCAL",sdigitsBranch->GetName())==0 ) &&
-	    (fSDigitsTitle.CompareTo(sdigitsBranch->GetTitle()) == 0) )
-	  emcalNotFound = kFALSE ;
-      }
-      if(sdigitizerNotFound){
-	sdigitizerBranch = (TBranch *) branches->At(ibranch) ;
-	if( (strcmp(sdigitizerBranch->GetName(),"AliEMCALSDigitizer") == 0)&&
-	    (fSDigitsTitle.CompareTo(sdigitizerBranch->GetTitle()) == 0) )
-	  sdigitizerNotFound = kFALSE ;
-      }
-    }
-
-    if(!(sdigitizerNotFound && emcalNotFound)){
-      cout << "AliEMCALSdigitizer error:" << endl ;
-      cout << "Can not overwrite existing branches: do not write" << endl ;
-      return ;
-    }
-    
-    //Make (if necessary) branches    
-    char * file =0;
-    if(gSystem->Getenv("CONFIG_SPLIT_FILE")){ //generating file name
-      file = new char[strlen(gAlice->GetBaseFile())+20] ;
-      sprintf(file,"%s/EMCAL.SDigits.root",gAlice->GetBaseFile()) ;
-    }
-    
-    TDirectory *cwd = gDirectory;
-    
-    //First list of sdigits
-    Int_t bufferSize = 32000 ;    
-    sdigitsBranch = gAlice->TreeS()->Branch("EMCAL",&fSDigits,bufferSize);
-    sdigitsBranch->SetTitle(fSDigitsTitle.Data());
-    if (file) {
-      sdigitsBranch->SetFile(file);
-      TIter next( sdigitsBranch->GetListOfBranches());
-      TBranch * subbr;
-      while ((subbr=(TBranch*)next())) {
-	subbr->SetFile(file);
-      }   
-      cwd->cd();
-    } 
+      nSdigits = sdigits->GetEntriesFast() ;
+      sdigits->Expand(nSdigits) ;
       
-    //second - SDigitizer
-    Int_t splitlevel = 0 ;
-    AliEMCALSDigitizer * sd = this ;
-    sdigitizerBranch = gAlice->TreeS()->Branch("AliEMCALSDigitizer","AliEMCALSDigitizer",
-					       &sd,bufferSize,splitlevel); 
-    sdigitizerBranch->SetTitle(fSDigitsTitle.Data());
-    if (file) {
-      sdigitizerBranch->SetFile(file);
-      TIter next( sdigitizerBranch->GetListOfBranches());
-      TBranch * subbr ;
-      while ((subbr=(TBranch*)next())) {
-	subbr->SetFile(file);
-      }   
-      cwd->cd();
-      delete file;
-    }
-
-    sdigitsBranch->Fill() ;
-    sdigitizerBranch->Fill() ;
-    gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
-    
-    if(strstr(option,"deb"))
-      PrintSDigits(option) ;
-    
+      //  Int_t i ;
+      for (i = 0 ; i < nSdigits ; i++) { 
+	AliEMCALDigit * digit = (AliEMCALDigit *) sdigits->At(i) ; 
+	digit->SetIndexInList(i) ;     
+      }
+      
+      if(gAlice->TreeS() == 0)
+	gAlice->MakeTree("S") ;
+      
+      
+      
+      
+      //Make (if necessary) branches    
+      char * file =0;
+      if(gSystem->Getenv("CONFIG_SPLIT_FILE")){ //generating file name
+	file = new char[strlen(gAlice->GetBaseFile())+20] ;
+	sprintf(file,"%s/EMCAL.SDigits.root",gAlice->GetBaseFile()) ;
+      }
+      
+      TDirectory *cwd = gDirectory;
+      
+      //First list of sdigits
+      Int_t bufferSize = 32000 ;    
+      TBranch * sdigitsBranch = gAlice->TreeS()->Branch("EMCAL",&sdigits,bufferSize);
+      sdigitsBranch->SetTitle(sdname);
+      cout << " AliEMCALSDigitizer::Exec sdname " << sdname << endl ; 
+      
+      if (file) {
+	sdigitsBranch->SetFile(file);
+	TIter next( sdigitsBranch->GetListOfBranches());
+	TBranch * subbr;
+	while ((subbr=(TBranch*)next())) {
+	  subbr->SetFile(file);
+	}   
+	cwd->cd();
+      } 
+      
+      //second - SDigitizer
+      Int_t splitlevel = 0 ;
+      AliEMCALSDigitizer * sd = this ;
+      TBranch * sdigitizerBranch = gAlice->TreeS()->Branch("AliEMCALSDigitizer","AliEMCALSDigitizer",
+							   &sd,bufferSize,splitlevel); 
+      sdigitizerBranch->SetTitle(sdname);
+      if (file) {
+	sdigitizerBranch->SetFile(file);
+	TIter next( sdigitizerBranch->GetListOfBranches());
+	TBranch * subbr ;
+	while ((subbr=(TBranch*)next())) {
+	  subbr->SetFile(file);
+	}   
+	cwd->cd();
+	delete file;
+      }
+      
+      sdigitsBranch->Fill() ;
+      sdigitizerBranch->Fill() ;
+      gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
+      
+      if(strstr(option,"deb"))
+	PrintSDigits(option) ;
+      
   }
   
   if(strstr(option,"tim")){
@@ -356,15 +348,37 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
 }
 //__________________________________________________________________
 void AliEMCALSDigitizer::SetSDigitsBranch(const char * title ){
-  //Seting title to branch SDigits 
-  if(!fSDigitsTitle.IsNull())
-    cout << "AliEMCALSdigitizer: changing SDigits file from " <<fSDigitsTitle.Data() << " to " << title << endl ;
-  fSDigitsTitle=title ;
+ 
+  // Setting title to branch SDigits 
+
+  TString stitle(title) ;
+
+  // check if branch with title already exists
+  TBranch * sdigitsBranch    = 
+    static_cast<TBranch*>(gAlice->TreeS()->GetListOfBranches()->FindObject("EMCAL")) ; 
+  TBranch * sdigitizerBranch =  
+    static_cast<TBranch*>(gAlice->TreeS()->GetListOfBranches()->FindObject("AliEMCALSDigitizer")) ;
+  const char * sdigitsTitle    = sdigitsBranch ->GetTitle() ;  
+  const char * sdigitizerTitle = sdigitizerBranch ->GetTitle() ;
+  if ( stitle.CompareTo(sdigitsTitle)==0 || stitle.CompareTo(sdigitizerTitle)==0 ){
+    cerr << "ERROR: AliEMCALSdigitizer::SetSDigitsBranch -> Cannot overwrite existing branch with title " << title << endl ;
+    return ;
+  }
+  
+  cout << "AliEMCALSdigitizer::SetSDigitsBranch -> Changing SDigits file from " << GetName() << " to " << title << endl ;
+
+  SetName(title) ; 
+    
+  // Post to the WhiteBoard
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
+  gime->PostSDigits( title, GetTitle()) ; 
+
+
 }
 //__________________________________________________________________
 void AliEMCALSDigitizer::Print(Option_t* option)const{
   cout << "------------------- "<< GetName() << " -------------" << endl ;
-  cout << "   Writing SDigitis to branch with title  " << fSDigitsTitle.Data() << endl ;
+  cout << "   Writing SDigitis to branch with title  " << GetName() << endl ;
   cout << "   with digitization parameters  A = " << fA << endl ;
   cout << "                                 B = " << fB << endl ;
   cout << "   Threshold for Primary assignment= " << fPrimThreshold << endl ; 
@@ -382,27 +396,50 @@ Bool_t AliEMCALSDigitizer::operator==( AliEMCALSDigitizer const &sd )const{
 void AliEMCALSDigitizer::PrintSDigits(Option_t * option){
   //Prints list of digits produced at the current pass of AliEMCALDigitizer
   
-  cout << "AliEMCALSDigitizer: " << endl ;
-  cout << "       Number of entries in SDigits list  " << fSDigits->GetEntriesFast() << endl ;
-  cout << endl ;
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
+  TString sdname(GetName()) ;
+  sdname.Remove(sdname.Index(GetTitle())-1) ;
+  const TClonesArray * sdigits = gime->SDigits(sdname.Data()) ; 
   
-  if(strstr(option,"all")){// print all digits
-    
+  cout << "AliEMCALSDigitiser: event " << gAlice->GetEvNumber() << endl ;
+  cout << "      Number of entries in SDigits list " << sdigits->GetEntriesFast() << endl ;
+  cout << endl ;
+  if(strstr(option,"all")||strstr(option,"EMC")){
+
     //loop over digits
     AliEMCALDigit * digit;
-    cout << "SDigit Id " << " Amplitude " <<  " Index "  <<  " Nprim " << " Primaries list " <<  endl;    
+    cout << "SDigit Id " << " Amplitude " <<  " Time " << " Index "  <<  " Nprim " << " Primaries list " <<  endl;    
     Int_t index ;
-    for (index = 0 ; index < fSDigits->GetEntries() ; index++) {
-      digit = (AliEMCALDigit * )  fSDigits->At(index) ;
-      cout << setw(8)  <<  digit->GetId() << " "  << 	setw(3)  <<  digit->GetAmp() <<   "  "  
-	   << setw(6)  <<  digit->GetIndexInList() << "  "   
-	   << setw(5)  <<  digit->GetNprimary() <<"  ";
+    for (index = 0 ; index < sdigits->GetEntries() ; index++) {
+      digit = (AliEMCALDigit * )  sdigits->At(index) ;
+      cout << setw(6)  <<  digit->GetId() << "   "  << 	setw(10)  <<  digit->GetAmp() <<   "    "  << digit->GetTime()
+	   << setw(6)  <<  digit->GetIndexInList() << "    "   
+	   << setw(5)  <<  digit->GetNprimary() <<"    ";
       
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++)
-	cout << setw(5)  <<  digit->GetPrimary(iprimary+1) << "  ";
+	cout << " "  <<  digit->GetPrimary(iprimary+1) << "  ";
       cout << endl;  	 
     }
-    
+    cout <<endl;
   }
+}
+//________________________________________________________________________
+Int_t AliEMCALSDigitizer::Layer2TowerID(Int_t s, Bool_t preshower)
+{
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;
+  const AliEMCALGeometry * geom = gime->EMCALGeometry();
+  Int_t a  = (s/geom->GetNPhi())%geom->GetNZ()+1; // Phi Tower Index
+  Int_t b = (s-1)%(geom->GetNPhi())+1; //Eta Tower Index
+  Int_t t = -10;
+
+if (a > 0 && b > 0)
+{
+  t = a*b + preshower*geom->GetNPhi()*geom->GetNZ();
+  return t;
+}
+else
+{cerr << " AliEMCALSDigitizer::Layer2TowerID() -- there is an error "<< endl << "Phi number = "
+      << b << "Eta number = " << a << endl ;
+return t;}
 }

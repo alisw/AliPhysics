@@ -24,8 +24,7 @@
 //
 //*-- Author: Sahal Yacoob (LBL)
 // based on : AliPHOSDigit
-//__________________________________________________________________________ 
-
+//__________________________________________________________________________
 
 // --- ROOT system ---
 
@@ -36,6 +35,7 @@
 // --- AliRoot header files ---
 
 #include "AliEMCALDigit.h"
+#include "AliEMCALGeometry.h"
 
 
 ClassImp(AliEMCALDigit)
@@ -53,13 +53,14 @@ ClassImp(AliEMCALDigit)
 }
 
 //____________________________________________________________________________
-AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEnergy, Int_t index) 
+AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEnergy, Float_t time, Int_t index) 
 {  
   // ctor with all data 
 
   fNMaxPrimary = 21 ; 
   fNMaxiparent = fNMaxPrimary*10;
   fAmp         = DigEnergy ;
+  fTime        = time ;
   fId          = id ;
   fIndexInList = index ; 
   if( primary != -1){
@@ -99,6 +100,7 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
   for (j = 0; j< fNMaxiparent ; j++)
   fIparent[j]  = digit.fIparent[j] ;
   fAmp         = digit.fAmp ;
+  fTime        = digit.fTime ;
   fId          = digit.fId;
   fIndexInList = digit.fIndexInList ; 
   fNprimary    = digit.fNprimary ;
@@ -136,11 +138,27 @@ Int_t AliEMCALDigit::Compare(const TObject * obj) const
 }
 
 //____________________________________________________________________________
+const Float_t AliEMCALDigit::GetEta() const
+{
+  Float_t eta=-10., phi=-10.;
+  AliEMCALGeometry::GetInstance()->EtaPhiFromIndex(fId,eta,phi);
+  return eta ;
+}
+
+//____________________________________________________________________________
+const Float_t AliEMCALDigit::GetPhi() const
+{
+  Float_t eta=-10., phi=-10.;
+  AliEMCALGeometry::GetInstance()->EtaPhiFromIndex(fId,eta,phi);
+  return phi ;
+}
+
+//____________________________________________________________________________
 Int_t AliEMCALDigit::GetPrimary(Int_t index) const
 {
   // retrieves the primary particle number given its index in the list 
   Int_t rv = -1 ;
-  if ( index <= fNprimary ){
+  if ( index <= fNprimary && index > 0){
     rv = fPrimary[index-1] ;
   } 
 
@@ -189,6 +207,8 @@ AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit)
   // if amplitude is larger than 
   
   fAmp += digit.fAmp ;
+  if(fTime > digit.fTime)
+    fTime = digit.fTime ;
   
   Int_t max1 = fNprimary ; 
   Int_t max2 = fNiparent ;  
@@ -235,7 +255,7 @@ ostream& operator << ( ostream& out , const AliEMCALDigit & digit)
 {
   // Prints the data of the digit
   
-  out << "ID " << digit.fId << " Energy = " << digit.fAmp << endl ; 
+  out << "ID " << digit.fId << " Energy = " << digit.fAmp <<  " Time = " << digit.fTime << endl ; 
   Int_t i,j ;
   for(i=0;i<digit.fNprimary;i++)
     out << "Primary " << i+1 << " = " << digit.fPrimary[i] << endl ;

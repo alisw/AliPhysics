@@ -47,12 +47,12 @@ public:
 private:
   void     Init() ;
   void     PrintSDigits(Option_t * option) ;
-
+  Int_t    Layer2TowerID(Int_t,Bool_t) ;
 private:
   Float_t fA ;              //Pedestal parameter
   Float_t fB ;              //Slope Digitizition parameters
   Int_t   fNevents ;        // Number of events to digitize
-  Float_t fPrimThreshold ;  // To store primari if Elos > threshold
+  Float_t fPrimThreshold ;  // To store primary if Elos > threshold
   TString fSDigitsTitle ;   // title of SDigits branch
   TString fHeadersFile ;    //input file
   Bool_t         fIsInitialized ; 

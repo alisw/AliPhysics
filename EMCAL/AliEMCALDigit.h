@@ -22,7 +22,6 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
 #include "AliDigitNew.h"
 
 class AliEMCALDigit : public AliDigitNew {
@@ -32,7 +31,7 @@ class AliEMCALDigit : public AliDigitNew {
  public:
   
   AliEMCALDigit() ;
-  AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEnergy, Int_t index = -1) ;
+  AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEnergy, Float_t Time, Int_t index = -1) ;
   AliEMCALDigit(const AliEMCALDigit & digit) ;
   virtual ~AliEMCALDigit() ;
 
@@ -40,20 +39,25 @@ class AliEMCALDigit : public AliDigitNew {
   AliEMCALDigit& operator+(AliEMCALDigit const &rValue) ;
     
   Int_t   Compare(const TObject * obj) const ;  
+  const Float_t GetEta() const ; 
   Int_t   GetNprimary() const { 
     // returns the number of primaries
     return fNprimary ; }
   Int_t   GetPrimary(Int_t index) const ; 
   Int_t   GetNiparent() const {return fNiparent;}
   Int_t   GetIparent(Int_t index) const ;
+  const Float_t GetPhi() const;
+  Float_t GetTime(void) const {return fTime ;}
+
   Bool_t  IsSortable() const { 
     // says that AliEMCALDigits are sortable (needed for Sort method
     return kTRUE ; }
   void    SetAmp(Int_t Amp) { 
     // sets the amplitude data member 
     fAmp= Amp ; } 
+  void SetTime(Float_t Time) {fTime = Time ;}
   void ShiftPrimary(Int_t shift); // shift to semarate different TreeK in merging
-  
+ 
  private:
 
   Int_t fNprimary ;     // Number of primaries
@@ -62,8 +66,9 @@ class AliEMCALDigit : public AliDigitNew {
     
   Int_t fNiparent ;     // Number of initial parents 
   Int_t fNMaxiparent ;  //! Max Number of parents 
-  Int_t fIparent[50] ;   // Array of parents       
-    
+  Int_t fIparent[50] ;  // Array of parents       
+  Float_t fTime ;       // Calculated time  
+
   ClassDef(AliEMCALDigit,1)   // Digit in EMCAL 
 
 } ;
