@@ -186,6 +186,7 @@ endif
 	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
 	  \rm -f $(CURDIR)/$@ ;\
+	  TMPLIB=$(notdir $(@PACKAGE@LIB)); export TMPLIB;\
 	  $(SHLD) $(@PACKAGE@SOFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
 	  chmod a-w $(CURDIR)/$@ ;\
 	  cd $(ALICE_ROOT) ; \rm -rf $$TMPDIR
@@ -213,7 +214,8 @@ endif
 	  $(MUTE)TMPDIR=/tmp/@MODULE@$$$$.`date +%M%S` ; \
 	  export TMPDIR; mkdir $$TMPDIR ; cd $$TMPDIR ; \
 	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
-      \rm -f $(CURDIR)/$@ ;\
+	  \rm -f $(CURDIR)/$@ ;\
+	  TMPLIB=$(notdir $(@PACKAGE@LIB)); export TMPLIB;\
 	  $(ALLD) $(ALFLAGS) $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(ALLIB);\
       cd $(CURDIR) ; \rm -rf $$TMPDIR
 	  $(MUTE)chmod a-w $@
