@@ -14,6 +14,29 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.19  2001/03/20 13:32:10  egangler
+Code introduced to remove ghosts with the charge correlation between the 2
+cathods. A chi2 is performed for the 2 possibilities.
+If one gets good chi2 (with respect to the fGhostChi2Cut parameter) and the
+other wrong chi2, the ambiguity is solved
+If both gets good or both bad chi2, no choice is made
+By default the fGhostChi2Cut parameter is set to solve about 70% of ghost
+problems with about 2% errors, with the current version of the code.
+
+Implementation :
+fGhostChi2Cut is in AliMUONClusterFinderVS, with setters and getters.
+a fDebugLevel was also introduced to switch off some of the output.
+When an ambiguity is detected and not solved, the fGhost word in
+AliMUONRawCluster is set to 1 or 2, depending whether both charge chi2 are
+good or bad.
+a DumpIndex method was also added in AliMUONRawCluster to produce a printout
+of digit indexes.
+
+User incidences :
+By default, the code makes ghost check. If you want previous behaviour,
+put in MUONrawclusters the value of SetGhostChi2Cut to infinity (1e.6) is
+sufficient.
+
 Revision 1.18  2001/01/26 21:37:53  morsch
 Use access functions to AliMUONDigit member data.
 
@@ -301,7 +324,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
     } else if (fNLocal[0]==2 &&  fNLocal[1]==2) {
 //
 //  Let's look for ghosts first 
-//
+
 	Float_t xm[4][2], ym[4][2];
 	Float_t dpx, dpy, dx, dy;
 	Int_t ixm[4][2], iym[4][2];
@@ -331,10 +354,15 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 
 // Analyse the combinations and keep those that are possible !
 // For each combination check consistency in x and y	
-	Int_t iacc;
-	Bool_t accepted[4];
+	Int_t   iacc;
+	Bool_t  accepted[4];
+	Float_t dr[4] = {1.e4, 1.e4, 1.e4, 1.e4};
 	iacc=0;
-	
+
+// In case of staggering maxima are displaced by exactly half the pad-size in y. 
+// We have to take into account the numerical precision in the consistency check; 	
+	Float_t eps = 1.e-5;
+//
 	for (ico=0; ico<4; ico++) {
 	    accepted[ico]=kFALSE;
 // cathode one: x-coordinate
@@ -345,18 +373,54 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    isec=fSeg[1]->Sector(ixm[ico][1], iym[ico][1]);
 	    dpy=fSeg[1]->Dpy(isec)/2.;
 	    dy=TMath::Abs(ym[ico][0]-ym[ico][1]);
-	    if (fDebugLevel) 
-		printf("\n %i %f %f %f %f \n", ico, ym[ico][0], ym[ico][1], dy, dpy );
-	    if ((dx <= dpx) && (dy <= dpy)) {
+	    if (fDebugLevel>1) 
+		printf("\n %i %f %f %f %f %f %f \n", ico, ym[ico][0], ym[ico][1], dy, dpy, dx, dpx );
+	    if ((dx <= dpx) && (dy <= dpy+eps)) {
 		// consistent
 		accepted[ico]=kTRUE;
+		dr[ico] = TMath::Sqrt(dx*dx+dy*dy);
 		iacc++;
 	    } else {
 		// reject
 		accepted[ico]=kFALSE;
 	    }
 	}
+	printf("\n iacc= %d:\n", iacc);
+	if (iacc == 3) {
+	    if (accepted[0] && accepted[1]) {
+		if (dr[0] >= dr[1]) {
+		    accepted[0]=kFALSE;
+		} else {
+		    accepted[1]=kFALSE;
+		}
+	    }
 
+	    if (accepted[2] && accepted[3]) {
+		if (dr[2] >= dr[3]) {
+		    accepted[2]=kFALSE;
+		} else {
+		    accepted[3]=kFALSE;
+		}
+	    }
+/*	    
+// eliminate one candidate
+	    Float_t drmax = 0;
+	    Int_t icobad = -1;
+
+	    for (ico=0; ico<4; ico++) {
+		if (accepted[ico] && dr[ico] > drmax) {
+		    icobad = ico;
+		    drmax  = dr[ico];
+		}
+	    }
+	    
+	    accepted[icobad] = kFALSE;
+*/
+	    iacc = 2;
+	}
+	
+	
+	printf("\n iacc= %d:\n", iacc);
 	if (fDebugLevel) {
 	    if (iacc==2) {
 		fprintf(stderr,"\n iacc=2: No problem ! \n");
@@ -503,7 +567,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    if ((accepted[0]&&accepted[1]) || (accepted[2]&&accepted[3])) {
 		fprintf(stderr,"\n Maximum taken twice !!!\n");
 
-// Have a try !! with that 
+// Have a try !! with that
 		if (accepted[0]&&accepted[3]) {
 		    fXInit[0]=xm[0][1];
 		    fYInit[0]=ym[0][0];
@@ -673,7 +737,10 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	Int_t iacc;
 	Bool_t accepted[4];
 	iacc=0;
-	
+	// In case of staggering maxima are displaced by exactly half the pad-size in y. 
+        // We have to take into account the numerical precision in the consistency check; 	
+	Float_t eps = 1.e-5;
+
 	for (ico=0; ico<2; ico++) {
 	    accepted[ico]=kFALSE;
 	    isec=fSeg[0]->Sector(ixm[ico][0], iym[ico][0]);
@@ -682,9 +749,9 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    isec=fSeg[1]->Sector(ixm[ico][1], iym[ico][1]);
 	    dpy=fSeg[1]->Dpy(isec)/2.;
 	    dy=TMath::Abs(ym[ico][0]-ym[ico][1]);
-	    if (fDebugLevel)
+	    if (fDebugLevel>1)
 		printf("\n %i %f %f %f %f \n", ico, ym[ico][0], ym[ico][1], dy, dpy );
-	    if ((dx <= dpx) && (dy <= dpy)) {
+	    if ((dx <= dpx) && (dy <= dpy+eps)) {
 		// consistent
 		accepted[ico]=kTRUE;
 		iacc++;
@@ -696,8 +763,31 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	
 	Float_t chi21 = 100;
 	Float_t chi22 = 100;
+	Float_t chi23 = 100;
+
+	//  Initial value for charge ratios
+	fQrInit[0]=Float_t(fQ[fIndLocal[0][0]][0])/
+	    Float_t(fQ[fIndLocal[0][0]][0]+fQ[fIndLocal[1][0]][0]);
+	fQrInit[1]=fQrInit[0];
 	
-	if (accepted[0]) {
+	if (accepted[0] && accepted[1]) {
+	    
+	    fXInit[0]=0.5*(xm[0][1]+xm[0][0]);
+	    fYInit[0]=ym[0][0];
+	    fXInit[1]=0.5*(xm[0][1]+xm[1][0]);
+	    fYInit[1]=ym[1][0];
+	    fQrInit[0]=0.5;
+	    fQrInit[1]=0.5;
+	    chi23=CombiDoubleMathiesonFit(c);
+	    if (chi23<10) {
+		Split(c);
+		Float_t yst;
+		yst = fYFit[0];
+		fYFit[0] = fYFit[1];
+		fYFit[1] = yst;
+		Split(c);
+	    }
+	} else if (accepted[0]) {
 	    fXInit[0]=xm[0][1];
 	    fYInit[0]=ym[0][0];
 	    fXInit[1]=xm[1][0];
@@ -783,6 +873,10 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	Int_t iacc;
 	Bool_t accepted[4];
 	iacc=0;
+        // In case of staggering maxima are displaced by exactly half the pad-size in y. 
+        // We have to take into account the numerical precision in the consistency check; 	
+	Float_t eps = 1.e-5;
+
 	
 	for (ico=0; ico<2; ico++) {
 	    accepted[ico]=kFALSE;
@@ -792,9 +886,9 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    isec=fSeg[1]->Sector(ixm[ico][1], iym[ico][1]);
 	    dpy=fSeg[1]->Dpy(isec)/2.;
 	    dy=TMath::Abs(ym[ico][0]-ym[ico][1]);
-	    if (fDebugLevel)
+	    if (fDebugLevel>0)
 		printf("\n %i %f %f %f %f \n", ico, ym[ico][0], ym[ico][1], dy, dpy );
-	    if ((dx <= dpx) && (dy <= dpy)) {
+	    if ((dx <= dpx) && (dy <= dpy+eps)) {
 		// consistent
 		accepted[ico]=kTRUE;
 		fprintf(stderr,"ico %d\n",ico);
@@ -807,8 +901,31 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 
 	Float_t chi21 = 100;
 	Float_t chi22 = 100;
+	Float_t chi23 = 100;
 
-	if (accepted[0]) {
+	fQrInit[1]=Float_t(fQ[fIndLocal[0][1]][1])/
+	    Float_t(fQ[fIndLocal[0][1]][1]+fQ[fIndLocal[1][1]][1]);
+	
+	fQrInit[0]=fQrInit[1];
+
+	
+	if (accepted[0] && accepted[1]) {
+	    fXInit[0]=xm[0][1];
+	    fYInit[0]=0.5*(ym[0][0]+ym[0][1]);
+	    fXInit[1]=xm[1][1];
+	    fYInit[1]=0.5*(ym[0][0]+ym[1][1]);
+	    fQrInit[0]=0.5;
+	    fQrInit[1]=0.5;
+	    chi23=CombiDoubleMathiesonFit(c);
+	    if (chi23<10) {
+		Split(c);
+		Float_t yst;
+		yst = fYFit[0];
+		fYFit[0] = fYFit[1];
+		fYFit[1] = yst;
+		Split(c);
+	    }
+	} else if (accepted[0]) {
 	    fXInit[0]=xm[0][0];
 	    fYInit[0]=ym[0][1];
 	    fXInit[1]=xm[1][1];
@@ -836,7 +953,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    if (chi22<10) Split(c);
 	}
 
-	if (chi21 > 10 && chi22 > 10) {
+	if (chi21 > 10 && chi22 > 10 && chi23 > 10) {
 //We keep only the combination found (X->cathode 2, Y->cathode 1)
 	    for (Int_t ico=0; ico<2; ico++) {
 		if (accepted[ico]) {
@@ -1086,7 +1203,9 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* c)
 //  Two local maxima on cathode 1 and one maximum on cathode 2 
 //  Look for local maxima considering left and right neighbours on the 2nd cathode only
 	cath=1;
-	Int_t cath1=0;
+	Int_t cath1 = 0;
+	Float_t eps = 1.e-5;
+	
 //
 //  Loop over cluster digits
 	for (i=0; i<fMul[cath]; i++) {
@@ -1095,9 +1214,10 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* c)
 	    dpy=fSeg[cath]->Dpy(isec);
 	    if (isLocal[i][cath]) continue;
 // Pad position should be consistent with position of local maxima on the opposite cathode
-	    if ((TMath::Abs(fY[i][cath]-fY[fIndLocal[0][cath1]][cath1]) > dpy/2.) && 
-		(TMath::Abs(fY[i][cath]-fY[fIndLocal[1][cath1]][cath1]) > dpy/2.))
+	    if ((TMath::Abs(fY[i][cath]-fY[fIndLocal[0][cath1]][cath1]) > dpy/2.+eps) && 
+		(TMath::Abs(fY[i][cath]-fY[fIndLocal[1][cath1]][cath1]) > dpy/2.+eps))
  		continue;
+	    
 //
 // get neighbours for that digit and assume that it is local maximum	    
 	    isLocal[i][cath]=kTRUE;
@@ -1106,15 +1226,16 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* c)
 // iNN counts the number of neighbours with signal, it should be 1 or 2
 	    Int_t iNN=0;
  	    for (fSeg[cath]
-		     ->FirstPad(fX[i][cath], fY[i][cath], fZPlane, 0., dpx);
+		     ->FirstPad(fX[i][cath], fY[i][cath], fZPlane, dpx, 0.);
 		 fSeg[cath]
 		     ->MorePads();
 		 fSeg[cath]
 		     ->NextPad())
 	    {
+
 		ix = fSeg[cath]->Ix();
 		iy = fSeg[cath]->Iy();
-		
+
 		// skip the current pad
 		if (ix == fIx[i][cath]) continue;
 		
@@ -1182,7 +1303,7 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
 	} else  c->fPhysicsMap[i]=1;
 //
 // 
-	if (fDebugLevel)
+	if (fDebugLevel>1)
 	    fprintf(stderr,"q %d c->fPeakSignal[cath] %d\n",q,c->fPeakSignal[cath]);
 // peak signal and track list
 	if (q>c->fPeakSignal[cath]) {
@@ -1362,7 +1483,7 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
 	iy=yList[in];
 	
 	if (fHitMap[cath]->TestHit(ix,iy)==kUnused) {
-	    if (fDebugLevel)
+	    if (fDebugLevel>1)
 		printf("\n Neighbours %d %d %d", cath, ix, iy);
 	    FindCluster(ix, iy, cath, c);
 	}
@@ -1393,12 +1514,12 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     {
 	
 	ix = fSeg[iop]->Ix(); iy = fSeg[iop]->Iy();
-	if (fDebugLevel)
+	if (fDebugLevel > 1)
 	    printf("\n ix, iy: %f %f %f %d %d %d", x,y,z,ix, iy, fSector);
 	if (fHitMap[iop]->TestHit(ix,iy)==kUnused){
 	    iXopp[nOpp]=ix;
 	    iYopp[nOpp++]=iy;
-	    if (fDebugLevel)
+	    if (fDebugLevel > 1)
 		printf("\n Opposite %d %d %d", iop, ix, iy);
 	}
 	
@@ -1796,22 +1917,30 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster *c)
 	 fSeg[1]->MorePads(); fSeg[1]->NextPad())
     {
 	ix=fSeg[1]->Ix(); iy=fSeg[1]->Iy();
+//	if (fHitMap[1]->TestHit(ix, iy) == kEmpty) continue;
 	fSeg[1]->GetPadC(ix,iy,upper[0],ydum,zdum);	
 	if (icount ==0) lower[0]=upper[0];
 	icount++;
     }
     if (lower[0]>upper[0]) {xdum=lower[0]; lower[0]=upper[0]; upper[0]=xdum;}    
+//    vstart[0] = 0.5*(lower[0]+upper[0]);
+
+    
     icount=0;
     
     for (fSeg[0]->FirstPad(fXInit[0], fYInit[0], fZPlane, 0., dpy); 
 	 fSeg[0]->MorePads(); fSeg[0]->NextPad())
     {
 	ix=fSeg[0]->Ix(); iy=fSeg[0]->Iy();
+//	if (fHitMap[0]->TestHit(ix, iy) == kEmpty) continue;
 	fSeg[0]->GetPadC(ix,iy,xdum,upper[1],zdum);	
 	if (icount ==0) lower[1]=upper[1];
 	icount++;
     }
+    
     if (lower[1]>upper[1]) {xdum=lower[1]; lower[1]=upper[1]; upper[1]=xdum;}    
+//     vstart[1] = 0.5*(lower[1]+upper[1]);
+
 
     fSeg[1]->GetPadI(fXInit[1], fYInit[1], fZPlane, ix, iy);
     isec=fSeg[1]->Sector(ix, iy);
@@ -1829,11 +1958,13 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster *c)
 	 fSeg[1]->MorePads(); fSeg[1]->NextPad())
     {
 	ix=fSeg[1]->Ix(); iy=fSeg[1]->Iy();
+//	if (fHitMap[1]->TestHit(ix, iy) == kEmpty) continue;
 	fSeg[1]->GetPadC(ix,iy,upper[2],ydum,zdum);	
 	if (icount ==0) lower[2]=upper[2];
 	icount++;
     }
     if (lower[2]>upper[2]) {xdum=lower[2]; lower[2]=upper[2]; upper[2]=xdum;}    
+    //    vstart[2] = 0.5*(lower[2]+upper[2]);
 
     icount=0;
     
@@ -1841,12 +1972,17 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster *c)
 	 fSeg[0]-> MorePads(); fSeg[0]->NextPad())
     {
 	ix=fSeg[0]->Ix(); iy=fSeg[0]->Iy();
+//	if (fHitMap[0]->TestHit(ix, iy) != kEmpty) continue;
+	
 	fSeg[0]->GetPadC(ix,iy,xdum,upper[3],zdum);	
 	if (icount ==0) lower[3]=upper[3];
 	icount++;
+
     }
     if (lower[3]>upper[3]) {xdum=lower[3]; lower[3]=upper[3]; upper[3]=xdum;}    
-
+    
+//     vstart[3] = 0.5*(lower[3]+upper[3]);
+    
     lower[4]=0.;
     upper[4]=1.;
     lower[5]=0.;
