@@ -19,6 +19,7 @@
 #include <G4ThreeVector.hh>
 #include <globals.hh>
 
+#include <TArrayI.h>
 
 class G4Track;
 class G4SteppingManager;
@@ -99,7 +100,8 @@ class TG4StepManager
     Int_t NSecondaries() const;
     void GetSecondary(Int_t isec, Int_t& particleId,
                       TLorentzVector& position, TLorentzVector& momentum);      
-    AliMCProcess ProdProcess() const; 
+    AliMCProcess ProdProcess(Int_t isec) const; 
+    Int_t StepProcesses(TArrayI &proc) const;
 
   protected:
     TG4StepManager(const TG4StepManager& right);
@@ -115,7 +117,6 @@ class TG4StepManager
     void SetTLorentzVector(G4ThreeVector xyz, G4double t, 
                            TLorentzVector& lv) const;    
     G4VPhysicalVolume* GetCurrentOffPhysicalVolume(G4int off) const;
-    G4int GetVolumeID(G4VPhysicalVolume* volume) const;
 
     // static data members
     static TG4StepManager*  fgInstance;   //this instance
