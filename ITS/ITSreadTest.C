@@ -98,7 +98,7 @@ void ITSreadTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	      if (!nclust) continue;
 
               ITS->ResetRecPoints();
-              TR->GetEvent(mod+1);
+              TR->GetEvent(mod);
 	      Int_t nrecp = ITSrecpoints->GetEntries();
 	      if (nrecp) printf("Found %d recp for module %d  \n",nrecp,mod);
 
