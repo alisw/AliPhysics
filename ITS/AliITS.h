@@ -145,7 +145,8 @@ class AliITS : public AliDetector {
     Bool_t fEuclidOut;                       // Flag to write out geometry 
                                              //in euclid format
     Int_t  fIdN;                             // the number of layers
-    Int_t  *fIdSens; char **fIdName;         //layer identifier
+    Int_t  *fIdSens;                         //[fIdN] layer identifier
+    char **fIdName;                          //layer identifier
     // Geometry and Stepmanager version numbers used.
     Int_t fMajorVersion,fMinorVersion;       //detailed and coarse(minor) versions
     //
@@ -154,10 +155,10 @@ class AliITS : public AliDetector {
     Int_t                 fNDetTypes;          // Number of Detector types
 
     TObjArray            *fDtype;              // List of digits
-    Int_t                *fNdtype;             // Number of digits per type of
+    Int_t                *fNdtype;             //[fNDetTypes] Number of digits per type of
                                                // detector 
     TObjArray            *fCtype;              // List of clusters
-    Int_t                *fNctype;             // Number of clusters per type
+    Int_t                *fNctype;             //[fNDetTypes] Number of clusters per type
                                                // of detector
 
 
