@@ -70,14 +70,14 @@ AliHelix::AliHelix(const AliKalmanTrack &t)
   fHelix[5]=x*cs - fHelix[0]*sn;            // x0
   fHelix[0]=x*sn + fHelix[0]*cs;            // y0
   //fHelix[1]=                               // z0
-  fHelix[2]=TMath::ASin(fHelix[2]) + alpha; // phi0
+  fHelix[2]=TMath::ATan2(-(fHelix[5]-fHelix[6]),fHelix[0]-fHelix[7]); // phi0
+  if (fHelix[4]>0) fHelix[2]-=TMath::Pi();
+
   //fHelix[3]=                               // tgl
   //
   //
   fHelix[5]   = fHelix[6];
   fHelix[0]   = fHelix[7];
-  //fHelix[5]-=TMath::Sin(fHelix[2])/fHelix[4]; 
-  //fHelix[0]+=TMath::Cos(fHelix[2])/fHelix[4];  
 }
 
 
@@ -114,8 +114,6 @@ AliHelix::AliHelix(const AliExternalTrackParam &t)
   //
   fHelix[5]   = fHelix[6];
   fHelix[0]   = fHelix[7];
-  //fHelix[5]-=TMath::Sin(fHelix[2])/fHelix[4]; 
-  //fHelix[0]+=TMath::Cos(fHelix[2])/fHelix[4];  
 }
 
 AliHelix::AliHelix(Double_t x[3], Double_t p[3], Double_t charge, Double_t conversion)
@@ -191,15 +189,20 @@ void   AliHelix::GetAngle(Double_t t1, AliHelix &h, Double_t t2, Double_t angle[
   //
   angle[0]  = (g1[0]*g2[0]+g1[1]*g2[1])/(norm1r*norm2r);   // angle in phi projection
   if (TMath::Abs(angle[0])<1.) angle[0] = TMath::ACos(angle[0]);
-  else angle[0]=0;
+  else{ 
+    if (angle[0]>0) angle[0] = 0;
+    if (angle[0]<0) angle[0] = TMath::Pi();
+  }
   //
   angle[1]  = ((norm1r*norm2r)+g1[2]*g2[2])/(norm1*norm2); // angle in rz  projection
   if (TMath::Abs(angle[1])<1.) angle[1] = TMath::ACos(angle[1]);
-  else angle[1]=0;
+  else 
+    angle[1]=0;
 
   angle[2]  = (g1[0]*g2[0]+g1[1]*g2[1]+g1[2]*g2[2])/(norm1*norm2); //3D angle
   if (TMath::Abs(angle[2])<1.) angle[2] = TMath::ACos(angle[2]);
-  else angle[2]=0;
+  else 
+    angle[2]=0;
 
   
   
@@ -218,8 +221,6 @@ void AliHelix::Evaluate(Double_t t,
   Double_t phase=fHelix[4]*t+fHelix[2];
   Double_t sn=TMath::Sin(phase), cs=TMath::Cos(phase);
 
-  //r[0] = fHelix[5] + (sn - fHelix[6])/fHelix[4];
-  //r[1] = fHelix[0] - (cs - fHelix[7])/fHelix[4];  
   r[0] = fHelix[5] + sn/fHelix[4];
   r[1] = fHelix[0] - cs/fHelix[4];  
   r[2] = fHelix[1] + fHelix[3]*t;
@@ -229,34 +230,61 @@ void AliHelix::Evaluate(Double_t t,
   gg[0]=-fHelix[4]*sn; gg[1]=fHelix[4]*cs; gg[2]=0.;
 }
 
+Int_t     AliHelix::GetClosestPhases(AliHelix &h, Double_t phase[2][2])
+{
+  //
+  // get phases to minimize distances
+  //
+  Double_t xyz0[3];
+  Double_t xyz1[3];
+
+  for (Int_t i=0;i<2;i++){  
+    Evaluate(phase[i][0]  ,xyz0);	
+    h.Evaluate(phase[i][1],xyz1);
+    Double_t mindist = TMath::Sqrt((xyz0[0]-xyz1[0])*(xyz0[0]-xyz1[0])+
+				   (xyz0[1]-xyz1[1])*(xyz0[1]-xyz1[1])+
+				   (xyz0[2]-xyz1[2])*(xyz0[2]-xyz1[2]));  
+    Double_t tbest[2]={phase[i][0],phase[i][1]};
+    for (Int_t i0=-1;i0<=1;i0++){
+      Double_t t0 = ((phase[i][0]*fHelix[4])+i0*2.*TMath::Pi())/fHelix[4];
+      Evaluate(t0,xyz0);
+      for (Int_t i1=-1;i1<=1;i1++){
+	Double_t t1 = ((phase[i][1]*h.fHelix[4])+i1*2.*TMath::Pi())/h.fHelix[4];    
+	h.Evaluate(t1,xyz1);    
+	Double_t dist = TMath::Sqrt((xyz0[0]-xyz1[0])*(xyz0[0]-xyz1[0])+
+				    (xyz0[1]-xyz1[1])*(xyz0[1]-xyz1[1])+
+				    (xyz0[2]-xyz1[2])*(xyz0[2]-xyz1[2])); 
+	if (dist<=mindist){
+	  tbest[0] = t0;
+	  tbest[1] = t1;
+	  mindist=dist;
+	}
+      }
+    }
+    phase[i][0] = tbest[0];
+    phase[i][1] = tbest[1];
+  } 
+  return 1;
+}
+
 Double_t  AliHelix::GetPhase(Double_t x, Double_t y )
 			
 {
   //
   //calculate helix param at given x,y  point
   //
-  Double_t phase  =  (x-fHelix[5])*fHelix[4];
-  if (TMath::Abs(phase)>=1)
-    phase = TMath::Sign(0.99999999999,phase);
-  phase = TMath::ASin(phase);
+  //Double_t phase2 = TMath::ATan2((y-fHelix[0]), (x-fHelix[5]))- TMath::Pi()/2.;
+  Double_t phase2 = TMath::ATan2(-(x-fHelix[5]),(y-fHelix[0]));
+  Int_t sign = (fHelix[4]>0)? 1:-1;
+  if (sign>0) phase2 = phase2-TMath::Pi();
+  //
+  Float_t delta = TMath::Nint((phase2-fHelix[2])/(2.*TMath::Pi()));
+  phase2-= 2*TMath::Pi()*delta;
+  if ( (phase2-fHelix[2])>TMath::Pi()) phase2 -=2.*TMath::Pi();
+  if ( (phase2-fHelix[2])<-TMath::Pi()) phase2+=2.*TMath::Pi();
 
-  if ( ( ( fHelix[0]-y)*fHelix[4]) < 0.) {
-    if (phase>0) 
-      phase = TMath::Pi()-phase;
-    else
-      phase = -(TMath::Pi()+phase);
-  }
-  if ( (phase-fHelix[2])>TMath::Pi())  phase = phase-2.*TMath::Pi();
-  if ( (phase-fHelix[2])<-TMath::Pi()) phase = phase+2.*TMath::Pi();
-
-  Double_t t     = (phase-fHelix[2])/fHelix[4];
-  
-  //  Double_t r[3];
-  //Evaluate(t,r);
-  //if  ( (TMath::Abs(r[0]-x)>0.01) || (TMath::Abs(r[1]-y)>0.01)){
-  //     Double_t phase  =  (x-fHelix[5])*fHelix[4];
-  //  printf("problem\n");    
-  //}
+  Double_t t     = (phase2-fHelix[2]);
+  t/=fHelix[4];
   return t;
 }
 
@@ -356,85 +384,6 @@ Int_t    AliHelix::GetRPHIintersections(AliHelix &h, Double_t phase[2][2], Doubl
   return 2;
 } 
 
-/*
-
-Int_t    AliHelix::GetRPHIintersections(AliHelix &h, Double_t phase[2][2], Double_t ri[2], Double_t cut)
-{
-  //--------------------------------------------------------------------
-  // This function returns  phase vectors with intesection between helix (0, 1 or 2)
-  // in x-y plane projection  
-  //--------------------------------------------------------------------
-  //    
-  Double_t * c1 = &fHelix[6];
-  Double_t * c2 = &(h.fHelix[6]);
-  Double_t d  = TMath::Sqrt((c1[0]-c2[0])*(c1[0]-c2[0])+(c1[1]-c2[1])*(c1[1]-c2[1])); 
-  //
-  Double_t x0[2];
-  Double_t y0[2];
-  //  
-  if ( d>=(c1[2]+c2[2])){
-    if (d>=(c1[2]+c2[2]+cut)) return 0;
-    x0[0] = c1[0]+ (d+c1[2]-c2[2])*(c2[0]-c1[0])/(2*d);
-    y0[0] = c1[1]+ (d+c1[2]-c2[2])*(c2[1]-c1[1])/(2*d);
-    return 0;
-    phase[0][0] = GetPhase(x0[0],y0[0]);
-    phase[0][1] = h.GetPhase(x0[0],y0[0]);
-    ri[0] = x0[0]*x0[0]+y0[0]*y0[0];
-    return 1;
-  }
-  if ( (d+c2[2])<c1[2]){
-    if ( (d+c2[2])+cut<c1[2]) return 0;
-    //
-    Double_t xx = c2[0]+ (c2[0]-c1[0])*c2[2]/d;
-    Double_t yy = c2[1]+ (c2[1]-c1[1])*c2[2]/d; 
-    phase[0][1] = h.GetPhase(xx,yy);
-    //
-    Double_t xx2 = c1[0]- (c1[0]-c2[0])*c1[2]/d;
-    Double_t yy2 = c1[1]- (c1[1]-c2[1])*c1[2]/d; 
-    phase[0][0] = GetPhase(xx2,yy2);
-    //if ( (TMath::Abs(xx2-xx)>cut)||(TMath::Abs(yy2-yy)>cut)){
-    //  printf("problem\n");
-    //}
-    ri[0] = xx*xx+yy*yy;
-    return 1;
-  }
-
-  if ( (d+c1[2])<c2[2]){
-    if ( (d+c1[2])+cut<c2[2]) return 0;
-    //
-    Double_t xx = c1[0]+ (c1[0]-c2[0])*c1[2]/d;
-    Double_t yy = c1[1]+ (c1[1]-c2[1])*c1[2]/d; 
-    phase[0][1] = GetPhase(xx,yy);
-    //
-    Double_t xx2 = c2[0]- (c2[0]-c1[0])*c2[2]/d;
-    Double_t yy2 = c2[1]- (c2[1]-c1[1])*c2[2]/d; 
-    phase[0][0] = h.GetPhase(xx2,yy2);
-    //if ( (TMath::Abs(xx2-xx)>cut)||(TMath::Abs(yy2-yy)>cut)){
-    //  printf("problem\n");
-    //}
-    ri[0] = xx*xx+yy*yy;
-    return 1;
-  }
-
-  Double_t d1 = (d*d+c1[2]*c1[2]-c2[2]*c2[2])/(2.*d);
-  Double_t v1 = c1[2]*c1[2]-d1*d1;
-  if (v1<0) return 0;
-  v1 = TMath::Sqrt(v1);
-  //
-  x0[0] = c1[0]+ ((c2[0]-c1[0])*d1-(c1[1]-c2[1])*v1)/d;
-  y0[0] = c1[1]+ ((c2[1]-c1[1])*d1+(c1[0]-c2[0])*v1)/d;            
-  //
-  x0[1] = c1[0]+ ((c2[0]-c1[0])*d1+(c1[1]-c2[1])*v1)/d;
-  y0[1] = c1[1]+ ((c2[1]-c1[1])*d1-(c1[0]-c2[0])*v1)/d;      
-  //
-  for (Int_t i=0;i<2;i++){
-    phase[i][0] = GetPhase(x0[i],y0[i]);
-    phase[i][1] = h.GetPhase(x0[i],y0[i]);
-    ri[i] = x0[i]*x0[i]+y0[i]*y0[i];    
-  }      
-  return 2;
-} 
-*/
 
 
 Int_t   AliHelix::LinearDCA(AliHelix &h, Double_t &t1, Double_t &t2, 
@@ -478,9 +427,6 @@ Int_t   AliHelix::LinearDCA(AliHelix &h, Double_t &t1, Double_t &t2,
 }
 
 
-
-
-/*
 Int_t  AliHelix::ParabolicDCA(AliHelix&h,  //helixes
 			       Double_t &t1, Double_t &t2, 
 			       Double_t &R, Double_t &dist, Int_t iter)
@@ -505,63 +451,54 @@ Int_t  AliHelix::ParabolicDCA(AliHelix&h,  //helixes
 
  iter++;
  while (iter--) {
-
-     Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
-     Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
-     Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 + 
-                  (g1[1]*g1[1] - dy*gg1[1])/dy2 +
-                  (g1[2]*g1[2] - dz*gg1[2])/dz2;
-     Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 + 
-                  (g2[1]*g2[1] + dy*gg2[1])/dy2 +
-                  (g2[2]*g2[2] + dz*gg2[2])/dz2;
-     Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
-
-     Double_t det=h11*h22-h12*h12;
-
-     Double_t dt1,dt2;
-     if (TMath::Abs(det)<1.e-33) {
-        //(quasi)singular Hessian
-        dt1=-gt1; dt2=-gt2;
-     } else {
-        dt1=-(gt1*h22 - gt2*h12)/det; 
-        dt2=-(h11*gt2 - h12*gt1)/det;
-     }
-
-     if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
-
-     //check delta(phase1) ?
-     //check delta(phase2) ?
-
-     if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
-     if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
-       //if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2) 
-       //  Warning("GetDCA"," stopped at not a stationary point !\n");
-        Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
-        if (lmb < 0.) 
-	  //Warning("GetDCA"," stopped at not a minimum !\n");
-        break;
-     }
-
-     Double_t dd=dm;
-     for (Int_t div=1 ; ; div*=2) {
-        Evaluate(t1+dt1,r1,g1,gg1);
-        h.Evaluate(t2+dt2,r2,g2,gg2);
-        dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
-        dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
-	if (dd<dm) break;
-        dt1*=0.5; dt2*=0.5;
-        if (div>512) {
-	  //Warning("GetDCA"," overshoot !\n"); 
-	  break;
-        }   
-     }
-     dm=dd;
-
-     t1+=dt1;
-     t2+=dt2;
-
+    Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
+    Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
+    
+    Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 + 
+      (g1[1]*g1[1] - dy*gg1[1])/dy2 +
+      (g1[2]*g1[2] - dz*gg1[2])/dz2;
+    Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 + 
+      (g2[1]*g2[1] + dy*gg2[1])/dy2 +
+      (g2[2]*g2[2] + dz*gg2[2])/dz2;
+    Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
+    
+    Double_t det=h11*h22-h12*h12;
+    
+    Double_t dt1,dt2;
+    if (TMath::Abs(det)<1.e-33) {
+      //(quasi)singular Hessian
+      dt1=-gt1; dt2=-gt2;
+    } else {
+      dt1=-(gt1*h22 - gt2*h12)/det; 
+      dt2=-(h11*gt2 - h12*gt1)/det;
+    }
+    
+    if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
+    
+    //if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
+    //  if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
+    //	break;
+    //  }
+    
+    Double_t dd=dm;
+    for (Int_t div=1 ; div<512 ; div*=2) {
+      Evaluate(t1+dt1,r1,g1,gg1);
+      h.Evaluate(t2+dt2,r2,g2,gg2);
+      dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
+      dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+      if (dd<dm) break;
+      dt1*=0.5; dt2*=0.5;
+      if (div==0){
+	div =1;
+      }
+      if (div>512) {	  
+	break;
+      }   
+    }
+    dm=dd;
+    t1+=dt1;
+    t2+=dt2;
  }
-
  Evaluate(t1,r1,g1,gg1);
  h.Evaluate(t2,r2,g2,gg2);
  //
@@ -570,18 +507,14 @@ Int_t  AliHelix::ParabolicDCA(AliHelix&h,  //helixes
    (r1[2]-r2[2])*(r1[2]-r2[2]);    
  
  R = ((r1[0]+r2[0])*(r1[0]+r2[0])+(r1[1]+r2[1])*(r1[1]+r2[1]))/4;
+ return 0;
  
 }
-*/
 
 
-
-
-
-
-Int_t  AliHelix::ParabolicDCA(AliHelix&h,  //helixes
+Int_t  AliHelix::ParabolicDCA2(AliHelix&h,  //helixes
 			       Double_t &t1, Double_t &t2, 
-			       Double_t &R, Double_t &dist, Int_t iter)
+			       Double_t &R, Double_t &dist,  Double_t err[3], Int_t iter)
 {
   //
   //
@@ -593,9 +526,9 @@ Int_t  AliHelix::ParabolicDCA(AliHelix&h,  //helixes
   h.Evaluate(t2,r2,g2,gg2);
 
   //
-  Double_t dx2=1.;
-  Double_t dy2=1.;
-  Double_t dz2=1.;
+  Double_t dx2=err[0];
+  Double_t dy2=err[1];
+  Double_t dz2=err[2];
   //
   Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
   Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;

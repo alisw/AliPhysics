@@ -40,13 +40,18 @@ public:
   Double_t  GetPhaseZ(Double_t z0);               // return phase for given z
   Int_t     GetPhase(Double_t r0, Double_t t[2]);               //return phase for the nearest point
   Int_t     GetRPHIintersections(AliHelix &h, Double_t phase[2][2], Double_t ri[2], Double_t cut=3.);
+  Int_t     GetClosestPhases(AliHelix &h, Double_t phase[2][2]);
   Int_t     LinearDCA(AliHelix &h, Double_t &t1, Double_t &t2, 
 		      Double_t &R, Double_t &dist);
   //
   Int_t     ParabolicDCA(AliHelix&h,  //helixes
 			 Double_t &t1, Double_t &t2, 
 			 Double_t &R, Double_t &dist, Int_t iter=1);    
-
+  Int_t     ParabolicDCA2(AliHelix&h,  //helixes
+			 Double_t &t1, Double_t &t2, 
+			 Double_t &R, Double_t &dist, Double_t err[3], Int_t iter=1);    
+  Double_t GetHelix(Int_t i) const{return fHelix[i];}
+ public:
   Double_t fHelix[9];    //helix parameters
  private:  
   ClassDef(AliHelix,1)    // AliHelix
