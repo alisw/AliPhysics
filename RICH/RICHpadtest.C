@@ -184,7 +184,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 
        gAlice->ResetDigits();
        Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
-       gAlice->TreeD()->GetEvent(1);
+       gAlice->TreeD()->GetEvent(0);
 
 
 
@@ -196,7 +196,7 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	   Int_t nbytes += TH->GetEvent(track);
 	   if (RICH)  {
 	       //RICH->ResetRawClusters();
-	       TClonesArray *PadHits = RICH->PadHits();      // Cluster branch
+	       TClonesArray *SDigits = RICH->SDigits();      // Cluster branch
 	       TClonesArray *Hits = RICH->Hits();            // Hits branch
 	       TClonesArray *Cerenkovs = RICH->Cerenkovs();  // Cerenkovs branch
 	   }
@@ -614,9 +614,12 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	 c3_1->SetLogy();
 	 Clcharge->SetFillColor(5);
 	 Clcharge->SetXTitle("ADC counts");
-	 Clcharge->Fit("expo");
-	 expo->SetLineColor(2);
-	 expo->SetLineWidth(3);
+	 if (evNumber2>10)
+	   {
+	     Clcharge->Fit("expo");
+	     expo->SetLineColor(2);
+	     expo->SetLineWidth(3);
+	   }
 	 Clcharge->Draw();
 	 
 	 c3->cd(2);
@@ -627,9 +630,12 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 	 c3->cd(3);
 	 clusev->SetFillColor(5);
 	 clusev->SetXTitle("(counts)");
-	 clusev->Fit("gaus");
-	 gaus->SetLineColor(2);
-	 gaus->SetLineWidth(3);
+	 if (evNumber2>10)
+	   {
+	     clusev->Fit("gaus");
+	     gaus->SetLineColor(2);
+	     gaus->SetLineWidth(3);
+	   }
 	 clusev->Draw();
 
 	 c3->cd(4);
@@ -653,33 +659,45 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        c7->cd(1);
        totalphotonsevent->SetFillColor(5);
        totalphotonsevent->SetXTitle("Photons (counts)");
-       totalphotonsevent->Fit("gaus");
-       gaus->SetLineColor(2);
-       gaus->SetLineWidth(3);
+       if (evNumber2>10)
+	   {
+	     totalphotonsevent->Fit("gaus");
+	     gaus->SetLineColor(2);
+	     gaus->SetLineWidth(3);
+	   }
        totalphotonsevent->Draw();
        
        c7->cd(2);
        photev->SetFillColor(5);
        photev->SetXTitle("(counts)");
-       photev->Fit("gaus");
-       gaus->SetLineColor(2);
-       gaus->SetLineWidth(3);
+       if (evNumber2>10)
+	 {
+	   photev->Fit("gaus");
+	   gaus->SetLineColor(2);
+	   gaus->SetLineWidth(3);
+	 }
        photev->Draw();
        
        c7->cd(3);
        feedev->SetFillColor(5);
        feedev->SetXTitle("(counts)");
-       feedev->Fit("gaus");
-       gaus->SetLineColor(2);
-       gaus->SetLineWidth(3);
+       if (evNumber2>10)
+	 {
+	   feedev->Fit("gaus");
+	   gaus->SetLineColor(2);
+	   gaus->SetLineWidth(3);
+	 }
        feedev->Draw();
 
        c7->cd(4);
        padsev->SetFillColor(5);
        padsev->SetXTitle("(counts)");
-       padsev->Fit("gaus");
-       gaus->SetLineColor(2);
-       gaus->SetLineWidth(3);
+       if (evNumber2>10)
+	 {
+	   padsev->Fit("gaus");
+	   gaus->SetLineColor(2);
+	   gaus->SetLineWidth(3);
+	 }
        padsev->Draw();
 
        break;
