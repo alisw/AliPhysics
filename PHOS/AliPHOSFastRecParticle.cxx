@@ -36,25 +36,25 @@ ClassImp(AliPHOSFastRecParticle)
  AliPHOSFastRecParticle::AliPHOSFastRecParticle(const AliPHOSFastRecParticle & rp)
 {
   fType        = rp.fType ; 
-//   fPdgCode     = rp.fPdgCode;
-//   fStatusCode  = rp.fStatusCode;
-//   fMother[0]   = rp.fMother[0];
-//   fMother[1]   = rp.fMother[1];
-//   fDaughter[0] = rp.fDaughter[0];
-//   fDaughter[1] = rp.fDaughter[1];
-//   fWeight      = rp.fWeight;
-//   fCalcMass    = rp.fCalcMass;
-//   fPx          = rp.fPx;
-//   fPy          = rp.fPy;
-//   fPz          = rp.fPz;
-//   fE           = rp.fE;
-//   fVx          = rp.fVx;
-//   fVy          = rp.fVy;
-//   fVz          = rp.fVz;
-//   fVt          = rp.fVt;
-//   fPolarTheta  = rp.fPolarTheta;
-//   fPolarPhi    = rp.fPolarPhi;
-//   fParticlePDG = rp.fParticlePDG; 
+  fPdgCode     = rp.fPdgCode;
+  fStatusCode  = rp.fStatusCode;
+  fMother[0]   = rp.fMother[0];
+  fMother[1]   = rp.fMother[1];
+  fDaughter[0] = rp.fDaughter[0];
+  fDaughter[1] = rp.fDaughter[1];
+  fWeight      = rp.fWeight;
+  fCalcMass    = rp.fCalcMass;
+  fPx          = rp.fPx;
+  fPy          = rp.fPy;
+  fPz          = rp.fPz;
+  fE           = rp.fE;
+  fVx          = rp.fVx;
+  fVy          = rp.fVy;
+  fVz          = rp.fVz;
+  fVt          = rp.fVt;
+  fPolarTheta  = rp.fPolarTheta;
+  fPolarPhi    = rp.fPolarPhi;
+  fParticlePDG = rp.fParticlePDG; 
 }
 
 //____________________________________________________________________________
