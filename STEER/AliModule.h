@@ -121,7 +121,7 @@ public:
   virtual void        MakeBranch(Option_t * /*opt =" "*/) {}
   virtual void        MakeTree(Option_t *) {}//skowron 
 
-  virtual AliLoader*  MakeLoader(const char* topfoldername) const;//skowron   
+  virtual AliLoader*  MakeLoader(const char* topfoldername);  
   virtual AliLoader*  GetLoader() const {return 0x0;} //skowron
   
 

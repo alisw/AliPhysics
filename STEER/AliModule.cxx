@@ -735,10 +735,10 @@ void AliModule::ResetTrackReferences()
  
 //_____________________________________________________________________________
 
-AliLoader*  AliModule::MakeLoader(const char* /*topfoldername*/) const
- {
-   return 0x0;
- }//skowron   
+AliLoader*  AliModule::MakeLoader(const char* /*topfoldername*/)
+{
+  return 0x0;
+}
  
 //PH Merged with v3-09-08 |
 //                        V
