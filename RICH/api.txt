@@ -1,10 +1,25 @@
-How to work with the stack of particles?
-	pointer to the stack is returned by AliRun::Stack() or AliRunLoader::Stack()
-	total amount of particles in stack for a given event:         AliStack::GetNtrack() or AliRun::GetEvent()
-	total amount of primiry particles in stack for a given event: AliStack::GetNprimary() or TreeH()::GetEntries()
-
 How to open session?
-                     use static methode  AliRunLoader::Open(
+	use static methode  AliRunLoader::Open("galice.root","AlicE","update")
+How to retrive pointer to alice run loader:
+        use pRICH->GetLoader()->GetRunLoader() (all detector classes inherit from AliDetector wich has GetLoader())
+	use methode AliRun::GetRunLoader for gAlice (depricated)
+How to get pointers to deifferent root trees:
+	TreeE belongs to AliRunLoader, available after AliRunLoader::LoadHeader()
+	TreeK belongs to AliRunLoader, available after AliRunLoader::LoadKinematics()
+	TreeH belongs to AliLoader   , available after AliLoader::LoadHits()
+	TreeS belongs to AliLoader   , available after AliLoader::LoadSDigits()
+	TreeD belongs to AliLoader   , available after AliLoader::LoadDigits()
+	TreeR belongs to AliLoader   , available after AliLoader::LoadRecPoints()
+
+
+How to work with the stack of particles?
+	- pointer to the stack is returned by gAlice->Stack() (global gAlice of type AliRun) or AliRunLoader::Stack() but
+        before one needs to load event header by AliRunLoader::LoadHeader() otherwise both methods return 0.
+        Moreover loading header gives the information about number of particles only. 
+        To retrive the list of particle one also needs to load kinematics by AliRunLoader::LoadKinematics()        
+	- total amount of particles in stack for a given event:         AliRunLoader::Stack()->GetNtrack() or AliRun::GetEvent() (after LoadHeader())
+	- total amount of primiry particles in stack for a given event: AliRunLoader::Stack()->GetNprimary() or AliLoader::TreeH()->GetEntries() (after LoadHeader())
+
 
 
 How to retrive hits:
