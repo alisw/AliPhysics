@@ -27,6 +27,7 @@ class AliTRDdigitizer : public AliDigitizer {
   AliTRDdigitizer();
   AliTRDdigitizer(const Text_t* name, const Text_t* title);
   AliTRDdigitizer(AliRunDigitizer *manager, const Text_t* name, const Text_t* title);
+  AliTRDdigitizer(AliRunDigitizer *manager);
   AliTRDdigitizer(const AliTRDdigitizer &d);
   virtual ~AliTRDdigitizer();
   AliTRDdigitizer &operator=(const AliTRDdigitizer &d);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2002/02/11 14:27:11  cblume
+New pad plane design, new TRF+PRF, tail cancelation, cross talk
+
 Revision 1.30  2001/11/19 08:44:08  cblume
 Fix bugs reported by Rene
 
@@ -279,6 +282,38 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
 AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager
                                 , const Text_t *name, const Text_t *title)
                 :AliDigitizer(manager,name,title)
+{
+  //
+  // AliTRDdigitizer constructor
+  //
+
+  fInputFile          = NULL;
+
+  fDigitsManager      = NULL;
+  fSDigitsManager     = NULL;
+  fSDigitsManagerList = NULL;
+
+  fTRD                = NULL;
+  fGeo                = NULL;
+  fPRFsmp             = NULL;
+  fTRFsmp             = NULL;
+  fCTsmp              = NULL;
+
+  fMasks              = 0;
+
+  fEvent              = 0;
+
+  fCompress           = kTRUE;
+  fDebug              = 0;
+  fSDigits            = kFALSE;
+
+  Init();
+
+}
+
+//_____________________________________________________________________________
+AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager)
+                :AliDigitizer(manager,"AliTRDdigitizer","TRD digitizer")
 {
   //
   // AliTRDdigitizer constructor
