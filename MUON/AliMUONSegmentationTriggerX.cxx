@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/03 21:48:07  morsch
+Adopt to const declaration of some of the methods in AliSegmentation.
+
 Revision 1.6  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -60,12 +63,19 @@ Draft version from P. Crochet
 
 */
 
+#include <TMath.h>
+#include <TBRIK.h>
+#include <TNode.h>
+#include <TGeometry.h>
+
+#include "AliMUON.h"
 #include "AliMUONSegmentationTriggerX.h"
 #include "AliMUONTriggerConstants.h"
 #include "TMath.h"
 #include "TRandom.h"
 #include "TArc.h"
 #include "AliMUONChamber.h"
+#include "AliRun.h"  // gAlice
 #include <iostream.h> 
 ClassImp(AliMUONSegmentationTriggerX)
 
@@ -283,10 +293,71 @@ IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& width)
   width=StripSizeX(ix);   // width of the main strip 
 }
 
-
-
-
-
-
+//------------------------------------------------------------------   
+void AliMUONSegmentationTriggerX::Draw(const char* opt) const
+{
+  
+  if (!strcmp(opt,"eventdisplay")) { 
+    TNode *node, *nodeS;
+    char nameChamber[10], nameNode[10];
+    char nameSense1[10], nameSense2[10], nameSense3[10], nameSense4[10];
+    
+    TNode* top=gAlice->GetGeometry()->GetNode("alice"); 
+    sprintf(nameChamber,"C_MUON%d",fId+1);
+    new TBRIK(nameChamber,"Mother","void",340.,340.,0.25);
+    top->cd();
+    sprintf(nameNode,"MUON%d",100+fId+1);
+    node = new TNode(nameNode,"Chambernode",nameChamber,0,0,fChamber->Z(),"");
+    node->SetLineColor(kBlack);    
+    AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+    (pMUON->Nodes())->Add(node);
+    
+    sprintf(nameSense1,"S1_MUON%d",fId+1);
+    sprintf(nameSense2,"S2_MUON%d",fId+1);
+    sprintf(nameSense3,"S3_MUON%d",fId+1);
+    sprintf(nameSense4,"S4_MUON%d",fId+1);
+    
+    for (Int_t imodule=0; imodule<AliMUONTriggerConstants::Nmodule(); imodule++) {    
+      Int_t idModule=AliMUONTriggerConstants::ModuleId(imodule);
+      
+      if (TMath::Abs(idModule)!=51) {	 
+	
+	Int_t nStripX=AliMUONTriggerConstants::NstripX(imodule);
+	Float_t xmin=fXofxsmin[imodule][0];
+	Float_t xmax=fXofxsmax[imodule][nStripX-1];
+	Float_t ymin=fYofxsmin[imodule][0];
+	Float_t ymax=fYofxsmax[imodule][nStripX-1];
+	Float_t xpos=xmin+(xmax-xmin)/2.;
+	Float_t ypos=ymin+(ymax-ymin)/2.;
+	Float_t halfx=(xmax-xmin)/2.;
+	Float_t halfy=(ymax-ymin)/2.;
+	
+	if (idModule==11) 
+	  new TBRIK(nameSense1,"Module","void",halfx,halfy,0.25);   
+	if (idModule==17) 
+	  new TBRIK(nameSense2,"Module","void",halfx,halfy,0.25);   
+	if (idModule==41) 
+	  new TBRIK(nameSense3,"Module","void",halfx,halfy,0.25);   
+	if (idModule==52) 
+	  new TBRIK(nameSense4,"Module","void",halfx,halfy,0.25); 
+	node->cd();
+	sprintf(nameNode,"S_MUON%d",1000*fId+1+imodule);
+	
+	if (TMath::Abs(idModule)==41||TMath::Abs(idModule)==61) {
+	  nodeS = new TNode(nameNode,"Module",nameSense3,xpos,ypos,0,"");
+	} else if (TMath::Abs(idModule)==52) {
+	  nodeS = new TNode(nameNode,"Module",nameSense4,xpos,ypos,0,"");
+	} else if (TMath::Abs((idModule-Int_t(idModule/10)*10.))!=7) {
+	  nodeS = new TNode(nameNode,"Module",nameSense1,xpos,ypos,0,"");
+	} else {
+	  //	} else if (TMath::Abs((idModule-Int_t(idModule/10)*10.))==7) {
+	  nodeS = new TNode(nameNode,"Module",nameSense2,xpos,ypos,0,"");
+	}
+	nodeS->SetLineColor(kBlue);
+	node->cd();
+      }
+    }
+  }
+}
 
 

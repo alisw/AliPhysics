@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.4  2000/06/29 12:34:09  morsch
 AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
 it usable with any other geometry class. The link to the object to which it belongs is
@@ -57,7 +63,7 @@ Draft version from P. Crochet
 #include <TArc.h>
 #include "AliMUONChamber.h"
 #include <iostream.h>
- 
+
 ClassImp(AliMUONSegmentationTrigger)
 
 //------------------------------------------------------------------
@@ -181,6 +187,10 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
 
   fNpx=124;
   fNpy=64;  
+
+// Set parent chamber number
+  fChamber=&(pMUON->Chamber(chamber));
+  fId=chamber;
 
   cout << "---------------------------------------------------- \n";   
 

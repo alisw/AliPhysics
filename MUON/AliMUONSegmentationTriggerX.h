@@ -26,8 +26,8 @@ public AliMUONSegmentationTrigger {
   virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
   virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) 
       {z=0; GetPadC(ix, iy, x , y);}
-
-  virtual void Draw(const char *opt="") const {}
+  // Draw the segmentation zones
+  virtual void Draw(const char *opt = "") const;
 
   // Pad size Dx*Dy 
   virtual void SetPadSize(Float_t dp1, Float_t dp2);

@@ -25,17 +25,20 @@ public AliMUONSegmentationV0 {
     virtual void     SetHit(Float_t xhit, Float_t yhit);
     virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t zhit)
 	{SetHit(xhit, yhit);}
-    
+    // Draw the segmentation zones
     virtual void Draw(const char *opt="") const {}
-  
+ 
+  protected:
+    AliMUONChamber*      fChamber;               // Parent Chamber
+    Int_t                fId;                    // Identifier
 
  protected:
     Float_t StripSizeX(Int_t imodule);
     Float_t StripSizeY(Int_t imodule);    
  protected:
-  Float_t fYcmin[126];       // y min position of modules
-  Float_t fYcmax[126];       // y max position of modules
-  Float_t fZscale;            // scaling factor (Zx/Z1, x=1,2,3,4)
+    Float_t fYcmin[126];       // y min position of modules
+    Float_t fYcmax[126];       // y max position of modules
+    Float_t fZscale;            // scaling factor (Zx/Z1, x=1,2,3,4)
   
 // Current pad during integration (cursor for disintegration)
   Int_t fIx;  // pad coord.  x 

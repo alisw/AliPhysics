@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.38  2000/11/06 09:20:43  morsch
+AliMUON delegates part of BuildGeometry() to AliMUONSegmentation using the
+Draw() method. This avoids code and parameter replication.
+
 Revision 1.37  2000/10/26 09:53:37  pcrochet
 put back trigger chambers in the display (there was a problem in buildgeometry)
 
@@ -436,133 +440,13 @@ void AliMUON::AddLocalTrigger(Int_t *localtr)
 //___________________________________________
 void AliMUON::BuildGeometry()
 {
-    TNode *node, *top, *nodeS;
-    const int kColorMUON2 = kYellow;
-
-//
-    top=gAlice->GetGeometry()->GetNode("alice");
-// MUON
-//
-//  z-Positions of Chambers
-    const Float_t kCz[7]={511., 686., 971., 1245., 1445., 1600, 1700.};
-//  inner diameter (Xlenght for trigger chamber -> active area)
-    const Float_t kDmin[7]={ 35.,  47.,  67.,   86.,  100., 544., 544.};
-//  outer diameter (Ylenght for trigger chamber -> active area)
-    const Float_t kDmax[7]={183., 245., 346.,  520.,  520., 612., 612.};
-
-    Float_t xpos, ypos, zpos;
-    Float_t dzc1=4.;           // tracking chambers
-    Float_t dzc2=15.;          // trigger chambers
-    Float_t hole=102.;         // x-y hole around beam pipe for trig. chambers
-    Float_t zscale;            // scaling parameter trigger chambers
-    Float_t halfx, halfy;   
-    char nameChamber[9], nameSense[9], nameNode[9];
-    char nameSense1[9], nameSense2[9];    
-    for (Int_t i=0; i<7; i++) {
-	for (Int_t j=0; j<2; j++) {
-	    Int_t id=2*i+j+1;
-	    if (i<5) {               // tracking chambers
-	      if (j==0) {
-		zpos=kCz[i]-dzc1;
-	      } else {
-		zpos=kCz[i]+dzc1;
-	      }
-	    } else {
-	      if (j==0) {
-		zpos=kCz[i];
-	      } else {            
-		zpos=kCz[i]+dzc2;
-	      }
-	    }
-	    sprintf(nameChamber,"C_MUON%d",id);
-	    sprintf(nameSense,"S_MUON%d",id);
-	    sprintf(nameSense1,"S1_MUON%d",id);
-	    sprintf(nameSense2,"S2_MUON%d",id);
-	    if (i <= 4) {
-	      this->Chamber(id-1).SegmentationModel(1)->Draw("eventdisplay");		
-	    } else { 
-		zscale=zpos/kCz[5];
-		Float_t xsize=kDmin[i]*zscale;
-		Float_t ysize=kDmax[i]*zscale;
-		Float_t holeScaled=hole*zscale;
-		
-		halfx=xsize/2.+3.;
-		halfy=ysize/2.+3.;	    
-		new TBRIK(nameChamber,"Mother","void",halfx,halfy,0.25);
-		top->cd();
-		sprintf(nameNode,"MUON%d",100+id);
-		node = new TNode(nameNode,"Chambernode",nameChamber,0,0,zpos,"");
-		node->SetLineColor(kColorMUON2);
-		fNodes->Add(node);
-		
-// up/down of beam pipe
-		halfx=xsize/2.;
-		halfy=(ysize/2.-holeScaled/2.)/2.;	    
-		new TBRIK(nameSense,"Sens. region","void",halfx,halfy,0.25);
-		
-		node->cd();
-		ypos=holeScaled/2.+((ysize/2.-holeScaled/2.)/2.);
-		sprintf(nameNode,"MUON%d",200+id);
-		nodeS = new TNode(nameNode,"Sens. Region Node",nameSense,0,ypos,0,"");
-		nodeS->SetLineColor(kColorMUON2);
-		
-		node->cd();
-		ypos=-1.*ypos;
-		sprintf(nameNode,"MUON%d",300+id);
-		nodeS = new TNode(nameNode,"Sens. Region Node",nameSense,0,ypos,0,"");
-		nodeS->SetLineColor(kColorMUON2);
-		
-// left/right of beam pipe
-		halfx=(xsize/2.-holeScaled/2.)/2.;
-		halfy=holeScaled/2.;	
-		new TBRIK(nameSense1,"Sens. region","void",halfx,halfy,0.25);
-		
-		node->cd();
-		xpos=holeScaled/2.+((xsize/2.-holeScaled/2.)/2.);	    
-		sprintf(nameNode,"MUON%d",400+id);
-		nodeS = new TNode(nameNode,"Sens. Region Node",nameSense1,xpos,0,0,"");
-		nodeS->SetLineColor(kColorMUON2);
-		
-		node->cd();
-		xpos=-1.*xpos;
-		sprintf(nameNode,"MUON%d",500+id);
-		nodeS = new TNode(nameNode,"Sens. Region Node",nameSense1,xpos,0,0,"");
-		nodeS->SetLineColor(kColorMUON2);
-		
-// missing corners
-		halfx=17.*zscale/2.;
-		halfy=halfx;
-		new TBRIK(nameSense2,"Sens. region","void",halfx,halfy,0.25);
-		
-		node->cd();
-		xpos=holeScaled/2.-halfx;
-		ypos=xpos;
-		sprintf(nameNode,"MUON%d",600+id);
-		nodeS = new TNode(nameNode,"Sens. Region Node",nameSense2,xpos,ypos,0,"");
-		nodeS->SetLineColor(kColorMUON2);
-		
-		node->cd();
-		ypos=-1.*xpos;
-		sprintf(nameNode,"MUON%d",700+id);
-		nodeS = new TNode(nameNode,"Sens. Region Node",nameSense2,xpos,ypos,0,"");
-		nodeS->SetLineColor(kColorMUON2);
-		
-		node->cd();
-		xpos=-1.*xpos;
-		sprintf(nameNode,"MUON%d",800+id);
-		nodeS = new TNode(nameNode,"Sens. Region Node",nameSense2,xpos,ypos,0,"");
-		nodeS->SetLineColor(kColorMUON2);
-		
-		node->cd();
-		ypos=-1.*xpos;
-		sprintf(nameNode,"MUON%d",900+id);
-		nodeS = new TNode(nameNode,"Sens. Region Node",nameSense2,xpos,ypos,0,"");
-		nodeS->SetLineColor(kColorMUON2);
-	    } 
-	}
+  for (Int_t i=0; i<7; i++) {
+    for (Int_t j=0; j<2; j++) {
+      Int_t id=2*i+j+1;
+      this->Chamber(id-1).SegmentationModel(1)->Draw("eventdisplay");
     }
+  }
 }
-
 
 //___________________________________________
 Int_t AliMUON::DistancetoPrimitive(Int_t , Int_t )
