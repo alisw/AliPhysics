@@ -38,9 +38,9 @@ public:
     return 0.;
   }
 
-  virtual Double_t GetDCA(const AliKalmanTrack *,Double_t &,Double_t &) const; 
+  virtual Double_t GetDCA(const AliKalmanTrack *p,Double_t &xthis,Double_t &xp) const; 
   virtual 
-  Double_t PropagateToDCA(AliKalmanTrack *, Double_t d=0., Double_t x0=0.); 
+  Double_t PropagateToDCA(AliKalmanTrack *p, Double_t d=0., Double_t x0=0.); 
   virtual Double_t GetAlpha() const {
     Warning("GetAlpha()","Method must be overloaded !\n");
     return 0.;

@@ -81,6 +81,8 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
 //_______________________________________________________________________
 void AliKalmanTrack::SetConvConst()
 {
+  // Sets the conversion constants for the magnetic field 
+  // (Momentum in GeV/c -> curvature in mm)
   ::Info("SetConvConst()", "tryinig to get the magnetic field from the AliRun object..."); 
   AliRunLoader* loader = AliRunLoader::GetRunLoader();
   if (!loader) ::Fatal("SetConvConst()", "No run loader found"); 
@@ -96,12 +98,14 @@ void AliKalmanTrack::SetConvConst()
 //_______________________________________________________________________
 Double_t AliKalmanTrack::GetX() const
 {
+  // Returns the X coordinate of the current track position
   Warning("GetX()","Method must be overloaded !\n");
   return 0.;
 }
 //_______________________________________________________________________
 Double_t AliKalmanTrack::GetdEdx() const
 {
+  // Returns the dE/dx of the track
   Warning("GetdEdx()","Method must be overloaded !\n");
   return 0.;
 }
@@ -109,6 +113,7 @@ Double_t AliKalmanTrack::GetdEdx() const
 //_______________________________________________________________________
 Double_t AliKalmanTrack::GetY() const
 {
+  // Returns the Y coordinate of the current track position
   Double_t par[5];
   Double_t localX = GetX();
   GetExternalParameters(localX, par);
@@ -117,6 +122,7 @@ Double_t AliKalmanTrack::GetY() const
 //_______________________________________________________________________
 Double_t AliKalmanTrack::GetZ() const
 {
+  // Returns the Z coordinate of the current track position
   Double_t par[5];
   Double_t localX = GetX();
   GetExternalParameters(localX, par);
@@ -125,6 +131,8 @@ Double_t AliKalmanTrack::GetZ() const
 //_______________________________________________________________________
 Double_t AliKalmanTrack::GetSnp() const
 {
+  // Returns the Sin(phi), where phi is the angle between the transverse
+  // momentum (in xOy plane) and the X axis
   Double_t par[5];
   Double_t localX = GetX();
   GetExternalParameters(localX, par);
@@ -133,6 +141,8 @@ Double_t AliKalmanTrack::GetSnp() const
 //_______________________________________________________________________
 Double_t AliKalmanTrack::GetTgl() const
 {
+  // Returns the Tan(lambda), where lambda is the dip angle (between 
+  // the bending plane (xOy) and the momentum of the track
   Double_t par[5];
   Double_t localX = GetX();
   GetExternalParameters(localX, par);
@@ -141,6 +151,7 @@ Double_t AliKalmanTrack::GetTgl() const
 //_______________________________________________________________________
 Double_t AliKalmanTrack::Get1Pt() const
 {
+  // Returns 1/pT
   Double_t par[5];
   Double_t localX = GetX();
   GetExternalParameters(localX, par);
