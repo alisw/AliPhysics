@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////
 
 // --- ROOT system ---
-
+#include "TParticle.h"
 #include "TNamed.h"
 class TVector3;
 class TMatrix;
@@ -29,6 +29,7 @@ public:
  
   virtual void GetGlobal(const AliRecPoint * p, TVector3 & pos, TMatrix & mat) const = 0; 
   virtual void GetGlobal(const AliRecPoint * p, TVector3 & pos) const = 0; 
+  virtual Bool_t Impact(const TParticle * particle) const ;
 
 protected:
 
