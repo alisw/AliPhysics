@@ -33,7 +33,7 @@
 #include "AliTPCcluster.h"
 #include "AliComplexCluster.h"
 #include "AliTPCFast.h"
-
+#include "AliLog.h"
 
 ClassImp(AliTPCFast)
 
@@ -74,23 +74,23 @@ void AliTPCFast::Hits2Clusters(AliRunLoader* runLoader) const
 
   AliLoader* loader = runLoader->GetLoader("TPCLoader");
   if (!loader) {
-    Error("Hits2Clusters", "No TPC loader found");
+    AliError("No TPC loader found");
     return;
   }
   if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
   AliRun* aliRun = runLoader->GetAliRun();
   if (!aliRun) {
-    Error("Hits2Clusters", "Couldn't get AliRun object");
+    AliError("Couldn't get AliRun object");
     return;
   }
   AliTPC* tpc = (AliTPC*) aliRun->GetDetector("TPC");
   if (!tpc) {
-    Error("Hits2Clusters", "Couldn't get TPC detector");
+    AliError("Couldn't get TPC detector");
     return;
   }
   AliTPCParam* param = tpc->GetParam();
   if (!param) {
-    Error("Hits2Clusters", "No TPC parameters available");
+    AliError("No TPC parameters available");
     return;
   }
 
@@ -112,10 +112,8 @@ void AliTPCFast::Hits2Clusters(AliRunLoader* runLoader) const
   
   TTree *tH = loader->TreeH();
   if (tH == 0x0)
-   {
-     Fatal("Hits2Clusters","Can not find TreeH in folder");
-     return;
-   }
+    AliFatal("Can not find TreeH in folder");
+
   tpc->SetTreeAddress();
   
   Stat_t ntracks = tH->GetEntries();
@@ -124,7 +122,7 @@ void AliTPCFast::Hits2Clusters(AliRunLoader* runLoader) const
   
   if (loader->TreeR() == 0x0) loader->MakeTree("R");
   
-  cout<<"param->GetTitle() = "<<param->GetTitle()<<endl;
+  AliDebug(1,Form("param->GetTitle() = %s",param->GetTitle()));
   
   runLoader->CdGAFile();
   //param->Write(param->GetTitle());
@@ -271,23 +269,23 @@ void AliTPCFast::Hits2ExactClustersSector(AliRunLoader* runLoader,
   }
   AliLoader* loader = runLoader->GetLoader("TPCLoader");
   if (!loader) {
-    Error("Hits2ExactClustersSector", "No TPC loader found");
+    AliError("No TPC loader found");
     return;
   }
   if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
   AliRun* aliRun = runLoader->GetAliRun();
   if (!aliRun) {
-    Error("Hits2ExactClustersSector", "Couldn't get AliRun object");
+    AliError("Couldn't get AliRun object");
     return;
   }
   AliTPC* tpc = (AliTPC*) aliRun->GetDetector("TPC");
   if (!tpc) {
-    Error("Hits2ExactClustersSector", "Couldn't get TPC detector");
+    AliError("Couldn't get TPC detector");
     return;
   }
   AliTPCParam* param = tpc->GetParam();
   if (!param) {
-    Error("Hits2ExactClustersSector", "No TPC parameters available");
+    AliError("No TPC parameters available");
     return;
   }
   //
@@ -296,8 +294,8 @@ void AliTPCFast::Hits2ExactClustersSector(AliRunLoader* runLoader,
   //  Int_t sector,nhits;
   Int_t ipart;
   const Int_t kcmaxhits=30000;
-  AliTPCFastVector * xxxx = new AliTPCFastVector(kcmaxhits*4);
-  AliTPCFastVector & xxx = *xxxx;
+  TVector * xxxx = new TVector(kcmaxhits*4);
+  TVector & xxx = *xxxx;
   Int_t maxhits = kcmaxhits;
   //construct array for each padrow
   for (Int_t i=0; i<param->GetNRow(isec);i++) 
@@ -309,10 +307,8 @@ void AliTPCFast::Hits2ExactClustersSector(AliRunLoader* runLoader,
   
   TTree *tH = loader->TreeH();
   if (tH == 0x0)
-   {
-     Fatal("Hits2Clusters","Can not find TreeH in folder");
-     return;
-   }
+    AliFatal("Can not find TreeH in folder");
+
   tpc->SetTreeAddress();
 
   Stat_t ntracks = tH->GetEntries();
@@ -468,23 +464,23 @@ void AliTPCFast::FindTrackHitsIntersection(AliRunLoader* runLoader,
   //middle of the row
   AliLoader* loader = runLoader->GetLoader("TPCLoader");
   if (!loader) {
-    Error("FindTrackHitsIntersection", "No TPC loader found");
+    AliError("No TPC loader found");
     return;
   }
   if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
   AliRun* aliRun = runLoader->GetAliRun();
   if (!aliRun) {
-    Error("FindTrackHitsIntersection", "Couldn't get AliRun object");
+    AliError("Couldn't get AliRun object");
     return;
   }
   AliTPC* tpc = (AliTPC*) aliRun->GetDetector("TPC");
   if (!tpc) {
-    Error("FindTrackHitsIntersection", "Couldn't get TPC detector");
+    AliError("Couldn't get TPC detector");
     return;
   }
   AliTPCParam* param = tpc->GetParam();
   if (!param) {
-    Error("FindTrackHitsIntersection", "No TPC parameters available");
+    AliError("No TPC parameters available");
     return;
   }
 
@@ -492,8 +488,8 @@ void AliTPCFast::FindTrackHitsIntersection(AliRunLoader* runLoader,
   Int_t ipart;
   
   const Int_t kcmaxhits=30000;
-  AliTPCFastVector * xxxx = new AliTPCFastVector(kcmaxhits*4);
-  AliTPCFastVector & xxx = *xxxx;
+  TVector * xxxx = new TVector(kcmaxhits*4);
+  TVector & xxx = *xxxx;
   Int_t maxhits = kcmaxhits;
       
   //

@@ -15,8 +15,6 @@
 
 
 class TMatrix;
-class AliTPCFastMatrix;  //MI change
-class AliTPCFastVector;  //MI change
 
 class TTree;
 
@@ -140,9 +138,9 @@ protected:
   //
   void SetDefaults();
   void DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet);
-  Float_t GetSignal(TObjArray *p1, Int_t ntr, AliTPCFastMatrix *m1, 
-                   AliTPCFastMatrix *m2,Int_t *IndexRange);
-  void GetList (Float_t label,Int_t np,AliTPCFastMatrix *m,Int_t *IndexRange,
+  Float_t GetSignal(TObjArray *p1, Int_t ntr, TMatrix *m1, 
+                   TMatrix *m2,Int_t *IndexRange);
+  void GetList (Float_t label,Int_t np,TMatrix *m,Int_t *IndexRange,
                 Float_t **pList);
   void MakeSector(Int_t isec,Int_t nrows,TTree *TH,Stat_t ntracks,TObjArray **row);
   void TransportElectron(Float_t *xyz, Int_t *index);
@@ -178,14 +176,6 @@ public:
    ClassDef(AliTPChit,1)  // Time Projection Chamber hits
 };
 
-//_____________________________________________________________________________
-class AliTPCFastVector : public TVector {
-public :
-  AliTPCFastVector(Int_t size):TVector(size){};
-  virtual ~AliTPCFastVector(){;}
-  Float_t & UncheckedAt(Int_t index) const  {return  fElements[index];} //fast acces  
-  
-};
 
 #endif
 

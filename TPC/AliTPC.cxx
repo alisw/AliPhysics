@@ -75,30 +75,10 @@
 #include "AliTPCDigitizer.h"
 #include "AliTPCBuffer.h"
 #include "AliTPCDDLRawData.h"
+#include "AliLog.h"
 
 
 ClassImp(AliTPC) 
-
-//_____________________________________________________________________________
-// helper class for fast matrix and vector manipulation - no range checking
-// origin - Marian Ivanov
-
-class AliTPCFastMatrix : public TMatrix {
-public :
-  AliTPCFastMatrix(Int_t rowlwb, Int_t rowupb, Int_t collwb, Int_t colupb);
-#if ROOT_VERSION_CODE >= ROOT_VERSION(4,0,1)
-  Float_t & UncheckedAt(Int_t rown, Int_t coln) const  {return fElements[(rown-fRowLwb)*fNcols+(coln-fColLwb)];} //fast acces
-  Float_t   UncheckedAtFast(Int_t rown, Int_t coln) const  {return fElements[(rown-fRowLwb)*fNcols+(coln-fColLwb)];} //fast acces
-#else
-  Float_t & UncheckedAt(Int_t rown, Int_t coln) const  {return  (fIndex[coln])[rown];} //fast acces   
-  Float_t   UncheckedAtFast(Int_t rown, Int_t coln) const  {return  (fIndex[coln])[rown];} //fast acces   
-#endif
-};
-
-AliTPCFastMatrix::AliTPCFastMatrix(Int_t rowlwb, Int_t rowupb, Int_t collwb, Int_t colupb):
-  TMatrix(rowlwb, rowupb,collwb,colupb)
-   {
-   };
 //_____________________________________________________________________________
 AliTPC::AliTPC()
 {
@@ -113,7 +93,11 @@ AliTPC::AliTPC()
   fDefaults = 0;
   fTrackHits = 0; 
   fTrackHitsOld = 0;   
-  fHitType = 2; //default CONTAINERS - based on ROOT structure 
+#if ROOT_VERSION_CODE >= ROOT_VERSION(4,0,1)
+  fHitType = 4; // ROOT containers
+#else
+  fHitType = 2; //default CONTAINERS - based on ROOT structure
+#endif 
   fTPCParam = 0;    
   fNoiseTable = 0;
   fActiveSectors =0;
@@ -147,7 +131,11 @@ AliTPC::AliTPC(const char *name, const char *title)
 
   fNoiseTable =0;
 
+#if ROOT_VERSION_CODE >= ROOT_VERSION(4,0,1)
+  fHitType = 4; // ROOT containers
+#else
   fHitType = 2;
+#endif
   fActiveSectors = 0;
   //
   // Initialise counters
@@ -167,7 +155,7 @@ AliTPC::AliTPC(const char *name, const char *title)
   if (!strcmp(title,"Default")) {       
     fTPCParam = new AliTPCParamSR;
   } else {
-    cerr<<"AliTPC warning: in Config.C you must set non-default parameters\n";
+    AliWarning("In Config.C you must set non-default parameters.");
     fTPCParam=0;
   }
 
@@ -201,14 +189,12 @@ void AliTPC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   //
   // Add a hit to the list
   //
-  //  TClonesArray &lhits = *fHits;
-  //  new(lhits[fNhits++]) AliTPChit(fIshunt,track,vol,hits);
   if (fHitType&1){
     TClonesArray &lhits = *fHits;
     new(lhits[fNhits++]) AliTPChit(fIshunt,track,vol,hits);
   }
   if (fHitType>1)
-   AddHit2(track,vol,hits);
+    AddHit2(track,vol,hits);
 }
 
 //_____________________________________________________________________________
@@ -427,34 +413,32 @@ void AliTPC::CreateMaterials()
   Int_t nbuf;
   Float_t a,z;
 
-  for(nc = 0;nc<fNoComp;nc++)
-    {
+  for(nc = 0;nc<fNoComp;nc++) {
     
-      // retrive material constants
+    // retrive material constants
       
-      gMC->Gfmate((*fIdmate)[fMixtComp[nc]],namate,a,z,rho,x0,absl,buf,nbuf);
+    gMC->Gfmate((*fIdmate)[fMixtComp[nc]],namate,a,z,rho,x0,absl,buf,nbuf);
 
-      amat[nc] = a;
-      zmat[nc] = z;
-
-      Int_t nnc = (fMixtComp[nc]>=20) ? fMixtComp[nc]%20 : fMixtComp[nc]%10;
- 
-      am += fMixtProp[nc]*((fMixtComp[nc]>=20) ? apure[nnc] : amol[nnc]); 
-      density += fMixtProp[nc]*rho;  // density of the mixture
-      
-    }
-
+    amat[nc] = a;
+    zmat[nc] = z;
+    
+    Int_t nnc = (fMixtComp[nc]>=20) ? fMixtComp[nc]%20 : fMixtComp[nc]%10;
+    
+    am += fMixtProp[nc]*((fMixtComp[nc]>=20) ? apure[nnc] : amol[nnc]); 
+    density += fMixtProp[nc]*rho;  // density of the mixture
+    
+  }
+  
   // mixture proportions by weight!
+  
+  for(nc = 0;nc<fNoComp;nc++) {
 
-  for(nc = 0;nc<fNoComp;nc++)
-    {
+    Int_t nnc = (fMixtComp[nc]>=20) ? fMixtComp[nc]%20 : fMixtComp[nc]%10;
 
-      Int_t nnc = (fMixtComp[nc]>=20) ? fMixtComp[nc]%20 : fMixtComp[nc]%10;
+    wmat[nc] = fMixtProp[nc]*((fMixtComp[nc]>=20) ? 
+			      apure[nnc] : amol[nnc])/am;
 
-      wmat[nc] = fMixtProp[nc]*((fMixtComp[nc]>=20) ? 
-                 apure[nnc] : amol[nnc])/am;
-
-    } 
+  } 
 
   // Drift gases 1 - nonsensitive, 2 - sensitive
 
@@ -782,17 +766,16 @@ void    AliTPC::SetActiveSectors(Int_t flag)
   TBranch * branch=0;
   if (TreeH() == 0x0)
    {
-     Fatal("SetActiveSectors","Can not find TreeH in folder");
+     AliFatal("Can not find TreeH in folder");
      return;
    }
   if (fHitType>1) branch = TreeH()->GetBranch("TPC2");
   else branch = TreeH()->GetBranch("TPC");
   Stat_t ntracks = TreeH()->GetEntries();
   // loop over all hits
-  if (GetDebug()) cout<<"\nAliTPC::SetActiveSectors():  Got "<<ntracks<<" tracks\n";
+  AliDebug(1,Form("Got %d tracks",ntracks));
   
-  for(Int_t track=0;track<ntracks;track++)
-   {
+  for(Int_t track=0;track<ntracks;track++) {
     ResetHits();
     //
     if (fTrackHits && fHitType&4) {
@@ -831,7 +814,7 @@ void AliTPC::Digits2Raw()
   fLoader->LoadDigits();
   TTree* digits = fLoader->TreeD();
   if (!digits) {
-    Error("Digits2Raw", "no digits tree");
+    AliError("No digits tree");
     return;
   }
 
@@ -884,20 +867,20 @@ void AliTPC::Digits2Raw()
 	buffer->WriteRowBinary(kThreshold, digrow, 0, 0, 0,
 			       sector, subSector, row);
       } else if (row == 27) {
-	  //only the pads outside the range [43;46] are written into the output file
-	  buffer->WriteRowBinary(kThreshold, digrow, 43, 46, 2,
+	//only the pads outside the range [43;46] are written into the output file
+	buffer->WriteRowBinary(kThreshold, digrow, 43, 46, 2,
 				 sector, subSector, row);
-	  subSector = 1;
-	  //only the pads in the range [43;46] are written into the output file
-	  buffer->WriteRowBinary(kThreshold, digrow, 43, 46, 1,
+	subSector = 1;
+	//only the pads in the range [43;46] are written into the output file
+	buffer->WriteRowBinary(kThreshold, digrow, 43, 46, 1,
 				 sector, subSector, row);
       } else if (row == 76) {
-	  //only the pads outside the range [33;88] are written into the output file
-	  buffer->WriteRowBinary(kThreshold, digrow, 33, 88, 2,
-				 sector, subSector, row);
-	  subSector = 3;
-	  //only the pads in the range [33;88] are written into the output file
-	  buffer->WriteRowBinary(kThreshold, digrow, 33, 88, 1,
+	//only the pads outside the range [33;88] are written into the output file
+	buffer->WriteRowBinary(kThreshold, digrow, 33, 88, 2,
+			       sector, subSector, row);
+	subSector = 3;
+	//only the pads in the range [33;88] are written into the output file
+	buffer->WriteRowBinary(kThreshold, digrow, 33, 88, 1,
 				 sector, subSector, row);
       }
     }//end else
@@ -913,7 +896,7 @@ void AliTPC::Digits2Raw()
   gSystem->Unlink(fileName);
 
   if (kCompress) {
-    Info("Digits2Raw", "compressing raw data");
+    AliInfo("Compressing raw data");
     rawWriter.RawDataCompDecompress(kTRUE);
     gSystem->Unlink("Statistics");
   }
@@ -935,26 +918,23 @@ void AliTPC::SDigits2Digits2(Int_t /*eventnumber*/)
   //conect tree with sSDigits
   TTree *t = fLoader->TreeS();
 
-  if (t == 0x0) 
-   {
-     fLoader->LoadSDigits("READ");
-     t = fLoader->TreeS();
-     if (t == 0x0)
-      {
-        Error("SDigits2Digits2","Can not get input TreeS");
-        return;
-      }
-   }
+  if (t == 0x0) {
+    fLoader->LoadSDigits("READ");
+    t = fLoader->TreeS();
+    if (t == 0x0) {
+      AliError("Can not get input TreeS");
+      return;
+    }
+  }
   
   if (fLoader->TreeD() == 0x0) fLoader->MakeTree("D");
   
   AliSimDigits digarr, *dummy=&digarr;
   TBranch* sdb = t->GetBranch("Segment");
-  if (sdb == 0x0)
-   {
-     Error("SDigits2Digits2","Can not find branch with segments in TreeS.");
-     return;
-   }  
+  if (sdb == 0x0) {
+    AliError("Can not find branch with segments in TreeS.");
+    return;
+  }  
 
   sdb->SetAddress(&dummy);
       
@@ -983,18 +963,11 @@ void AliTPC::SDigits2Digits2(Int_t /*eventnumber*/)
     t->GetEvent(n);
     Int_t sec, row;
     if (!par->AdjustSectorRow(digarr.GetID(),sec,row)) {
-      cerr<<"AliTPC warning: invalid segment ID ! "<<digarr.GetID()<<endl;
+      AliWarning(Form("Invalid segment ID ! %d",digarr.GetID()));
       continue;
     }
-    if (!IsSectorActive(sec)) 
-     {
-//       cout<<n<<" NOT Active \n";
-       continue;
-     }
-    else
-     {
-//       cout<<n<<" Active \n";
-     }
+    if (!IsSectorActive(sec)) continue;
+    
     AliSimDigits * digrow =(AliSimDigits*) arr->CreateRow(sec,row);
     Int_t nrows = digrow->GetNRows();
     Int_t ncols = digrow->GetNCols();
@@ -1015,18 +988,11 @@ void AliTPC::SDigits2Digits2(Int_t /*eventnumber*/)
     //if you cahnge implementation
     //of the Alidigits - it must be rewriten -
     for (Int_t i= 0; i<nelems; i++){
-      //      Float_t q = *pamp0;
-      //q/=16.;  //conversion faktor
-      //Float_t noise= GetNoise(); 
-      //q+=noise;      
-      //q= TMath::Nint(q);
       Float_t q = TMath::Nint(Float_t(*pamp0)/16.+GetNoise());
       if (q>zerosup){
 	if (q>saturation) q=saturation;      
 	*pamp1=(Short_t)q;
-	//if (ptracks0[0]==0)
-	//  ptracks1[0]=1;
-	//else
+
 	ptracks1[0]=ptracks0[0];	
 	ptracks1[nelems]=ptracks0[nelems];
 	ptracks1[2*nelems]=ptracks0[2*nelems];
@@ -1039,7 +1005,6 @@ void AliTPC::SDigits2Digits2(Int_t /*eventnumber*/)
 
     arr->StoreRow(sec,row);
     arr->ClearRow(sec,row);   
-    // cerr<<sec<<"\t"<<row<<"\n";   
   }  
 
     
@@ -1054,8 +1019,6 @@ void AliTPC::SetDefaults(){
   // setting the defaults
   //
    
-  //   cerr<<"Setting default parameters...\n";
-
   // Set response functions
 
   //
@@ -1063,7 +1026,7 @@ void AliTPC::SetDefaults(){
   rl->CdGAFile();
   AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60");
   if(param){
-    printf("You are using 2 pad-length geom hits with 3 pad-lenght geom digits...\n");
+    AliInfo("You are using 2 pad-length geom hits with 3 pad-lenght geom digits...");
     delete param;
     param = new AliTPCParamSR();
   }
@@ -1071,8 +1034,7 @@ void AliTPC::SetDefaults(){
     param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60_150x60");
   }
   if(!param){
-    printf("No TPC parameters found\n");
-    exit(4);
+    AliFatal("No TPC parameters found");
   }
 
 
@@ -1086,10 +1048,8 @@ void AliTPC::SetDefaults(){
   
   TDirectory *savedir=gDirectory;
   TFile *f=TFile::Open("$ALICE_ROOT/TPC/AliTPCprf2d.root");
-  if (!f->IsOpen()) { 
-    cerr<<"Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !\n" ;
-     exit(3);
-  }
+  if (!f->IsOpen()) 
+    AliFatal("Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !");
 
   TString s;
   prfinner->Read("prf_07504_Gati_056068_d02");
@@ -1152,24 +1112,20 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
  //----------------------------------------------------
   AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::GetRunLoaderName());
   rl->GetEvent(eventnumber);
-  if (fLoader->TreeH() == 0x0)
-   {
-     if(fLoader->LoadHits())
-      {
-        Error("Hits2Digits","Can not load hits.");
-      }
-   }
+  if (fLoader->TreeH() == 0x0) {
+    if(fLoader->LoadHits()) {
+      AliError("Can not load hits.");
+    }
+  }
   SetTreeAddress();
   
-  if (fLoader->TreeD() == 0x0 ) 
-   {
-     fLoader->MakeTree("D");
-     if (fLoader->TreeD() == 0x0 ) 
-      {
-       Error("Hits2Digits","Can not get TreeD");
-       return;
-      }
-   }
+  if (fLoader->TreeD() == 0x0 ) {
+    fLoader->MakeTree("D");
+    if (fLoader->TreeD() == 0x0 ) {
+      AliError("Can not get TreeD");
+      return;
+    }
+  }
 
   if(fDefaults == 0) SetDefaults();  // check if the parameters are set
   GenerNoise(500000); //create teble with noise
@@ -1177,7 +1133,7 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
   //setup TPCDigitsArray 
 
   if(GetDigitsArray()) delete GetDigitsArray();
-
+  
   AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
   arr->SetClass("AliSimDigits");
   arr->Setup(fTPCParam);
@@ -1187,27 +1143,23 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
 
   fDigitsSwitch=0; // standard digits
 
-  //  cerr<<"Digitizing TPC -- normal digits...\n";
-
- for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
-  if (IsSectorActive(isec)) 
-   {
-    if (fDebug) Info("Hits2Digits","Sector %d is active.",isec);
-    Hits2DigitsSector(isec);
-   }
-  else
-   {
-    if (fDebug) Info("Hits2Digits","Sector %d is NOT active.",isec);
-   }
-
+  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
+    if (IsSectorActive(isec)) {
+      AliDebug(1,Form("Hits2Digits","Sector %d is active.",isec));
+      Hits2DigitsSector(isec);
+    }
+    else {
+      AliDebug(1,Form("Hits2Digits","Sector %d is NOT active.",isec));
+    }
+  
   fLoader->WriteDigits("OVERWRITE"); 
   
 //this line prevents the crash in the similar one
 //on the beginning of this method
 //destructor attempts to reset the tree, which is deleted by the loader
 //need to be redesign
- if(GetDigitsArray()) delete GetDigitsArray();
- SetDigitsArray(0x0);
+  if(GetDigitsArray()) delete GetDigitsArray();
+  SetDigitsArray(0x0);
   
 }
 
@@ -1219,29 +1171,25 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
   //   summable digits - 16 bit "ADC", no noise, no saturation
   //-----------------------------------------------------------
 
- //----------------------------------------------------
- // Loop over all sectors for a single event
- //----------------------------------------------------
-//  AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::fgkRunLoaderName);
+  //----------------------------------------------------
+  // Loop over all sectors for a single event
+  //----------------------------------------------------
 
   AliRunLoader* rl = fLoader->GetRunLoader();
 
   rl->GetEvent(eventnumber);
-  if (fLoader->TreeH() == 0x0)
-   {
-     if(fLoader->LoadHits())
-      {
-        Error("Hits2Digits","Can not load hits.");
-        return;
-      }
-   }
+  if (fLoader->TreeH() == 0x0) {
+    if(fLoader->LoadHits()) {
+      AliError("Can not load hits.");
+      return;
+    }
+  }
   SetTreeAddress();
 
 
-  if (fLoader->TreeS() == 0x0 ) 
-   {
-     fLoader->MakeTree("S");
-   }
+  if (fLoader->TreeS() == 0x0 ) {
+    fLoader->MakeTree("S");
+  }
   
   if(fDefaults == 0) SetDefaults();
   
@@ -1258,29 +1206,25 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
 
   SetDigitsArray(arr);
 
-  //  cerr<<"Digitizing TPC -- summable digits...\n"; 
-
   fDigitsSwitch=1; // summable digits
   
     // set zero suppression to "0"
 
   fTPCParam->SetZeroSup(0);
 
- for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
-  if (IsSectorActive(isec)) 
-   {
-//    cout<<"Sector "<<isec<<" is active\n";
-    Hits2DigitsSector(isec);
-   }
+  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
+    if (IsSectorActive(isec)) {
+      Hits2DigitsSector(isec);
+    }
 
- fLoader->WriteSDigits("OVERWRITE");
+  fLoader->WriteSDigits("OVERWRITE");
 
 //this line prevents the crash in the similar one
 //on the beginning of this method
 //destructor attempts to reset the tree, which is deleted by the loader
 //need to be redesign
- if(GetDigitsArray()) delete GetDigitsArray();
- SetDigitsArray(0x0);
+  if(GetDigitsArray()) delete GetDigitsArray();
+  SetDigitsArray(0x0);
 }
 //__________________________________________________________________
 
@@ -1327,11 +1271,10 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
   if(fDefaults == 0) SetDefaults();
 
   TTree *tH = TreeH(); // pointer to the hits tree
-  if (tH == 0x0)
-   {
-     Fatal("Hits2DigitsSector","Can not find TreeH in folder");
-     return;
-   }
+  if (tH == 0x0) {
+    AliFatal("Can not find TreeH in folder");
+    return;
+  }
 
   Stat_t ntracks = tH->GetEntries();
 
@@ -1343,52 +1286,50 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 
     TObjArray **row;
     
-    //printf("*** Processing sector number %d ***\n",isec);
+    Int_t nrows =fTPCParam->GetNRow(isec);
 
-      Int_t nrows =fTPCParam->GetNRow(isec);
-
-      row= new TObjArray* [nrows+2]; // 2 extra rows for cross talk
+    row= new TObjArray* [nrows+2]; // 2 extra rows for cross talk
     
-      MakeSector(isec,nrows,tH,ntracks,row);
+    MakeSector(isec,nrows,tH,ntracks,row);
 
-      //--------------------------------------------------------
-      //   Digitize this sector, row by row
-      //   row[i] is the pointer to the TObjArray of AliTPCFastVectors,
-      //   each one containing electrons accepted on this
-      //   row, assigned into tracks
-      //--------------------------------------------------------
+    //--------------------------------------------------------
+    //   Digitize this sector, row by row
+    //   row[i] is the pointer to the TObjArray of TVectors,
+    //   each one containing electrons accepted on this
+    //   row, assigned into tracks
+    //--------------------------------------------------------
 
-      Int_t i;
+    Int_t i;
 
-      if (fDigitsArray->GetTree()==0) 
-       {
-         Fatal("Hits2DigitsSector","Tree not set in fDigitsArray");
-       }
+    if (fDigitsArray->GetTree()==0) {
+      AliFatal("Tree not set in fDigitsArray");
+    }
 
-      for (i=0;i<nrows;i++){
+    for (i=0;i<nrows;i++){
+      
+      AliDigits * dig = fDigitsArray->CreateRow(isec,i); 
 
-	AliDigits * dig = fDigitsArray->CreateRow(isec,i); 
+      DigitizeRow(i,isec,row);
 
-	DigitizeRow(i,isec,row);
+      fDigitsArray->StoreRow(isec,i);
 
-	fDigitsArray->StoreRow(isec,i);
-
-	Int_t ndig = dig->GetDigitSize(); 
+      Int_t ndig = dig->GetDigitSize(); 
 	
-	if (gDebug > 10) 
-	printf("*** Sector, row, compressed digits %d %d %d ***\n",isec,i,ndig);        
+      AliDebug(10,
+	       Form("*** Sector, row, compressed digits %d %d %d ***\n",
+		    isec,i,ndig));        
  	
-        fDigitsArray->ClearRow(isec,i);  
+      fDigitsArray->ClearRow(isec,i);  
 
    
-       } // end of the sector digitization
+    } // end of the sector digitization
 
-      for(i=0;i<nrows+2;i++){
-        row[i]->Delete();  
-        delete row[i];   
-      }
+    for(i=0;i<nrows+2;i++){
+      row[i]->Delete();  
+      delete row[i];   
+    }
       
-       delete [] row; // delete the array of pointers to TObjArray-s
+    delete [] row; // delete the array of pointers to TObjArray-s
         
   } // ntracks >0
 
@@ -1408,9 +1349,8 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
   // Modified: Marian Ivanov GSI Darmstadt, m.ivanov@gsi.de
   //-----------------------------------------------------------------
  
-
   Float_t zerosup = fTPCParam->GetZeroSup();
-  //  Int_t nrows =fTPCParam->GetNRow(isec);
+
   fCurrentIndex[1]= isec;
   
 
@@ -1422,10 +1362,10 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
   //  and a single track signal
   //    
 
-  AliTPCFastMatrix *m1 = new AliTPCFastMatrix(0,nofPads,0,nofTbins); // integrated
-  AliTPCFastMatrix *m2 = new AliTPCFastMatrix(0,nofPads,0,nofTbins); // single
+  TMatrix *m1 = new TMatrix(0,nofPads,0,nofTbins); // integrated
+  TMatrix *m2 = new TMatrix(0,nofPads,0,nofTbins); // single
   //
-  AliTPCFastMatrix &total  = *m1;
+  TMatrix &total  = *m1;
 
   //  Array of pointers to the label-signal list
 
@@ -1438,8 +1378,6 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
   //
   //calculate signal 
   //
-  //Int_t row1 = TMath::Max(irow-fTPCParam->GetNCrossRows(),0);
-  //Int_t row2 = TMath::Min(irow+fTPCParam->GetNCrossRows(),nrows-1);
   Int_t row1=irow;
   Int_t row2=irow+2; 
   for (Int_t row= row1;row<=row2;row++){
@@ -1462,11 +1400,9 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
   Int_t gi=-1;
   Float_t fzerosup = zerosup+0.5;
   for(Int_t it=0;it<nofTbins;it++){
-    Float_t *pq = &(total.UncheckedAt(0,it));
     for(Int_t ip=0;ip<nofPads;ip++){
       gi++;
-      Float_t q=*pq;      
-      pq++;
+      Float_t q=total(ip,it);      
       if(fDigitsSwitch == 0){
 	q+=GetNoise();
         if(q <=fzerosup) continue; // do not fill zeros
@@ -1476,10 +1412,10 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
       }
 
       else {
-       if(q <= 0.) continue; // do not fill zeros
-       if(q>2000.) q=2000.;
-       q *= 16.;
-       q = TMath::Nint(q);
+	if(q <= 0.) continue; // do not fill zeros
+	if(q>2000.) q=2000.;
+	q *= 16.;
+	q = TMath::Nint(q);
       }
 
       //
@@ -1497,13 +1433,11 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 */
 //End_Html
       dig->SetDigitFast((Short_t)q,it,ip);
-      if (fDigitsArray->IsSimulated())
-	{
-	 ((AliSimDigits*)dig)->SetTrackIDFast(tracks[0],it,ip,0);
-	 ((AliSimDigits*)dig)->SetTrackIDFast(tracks[1],it,ip,1);
-	 ((AliSimDigits*)dig)->SetTrackIDFast(tracks[2],it,ip,2);
-	}
-     
+      if (fDigitsArray->IsSimulated()) {
+	((AliSimDigits*)dig)->SetTrackIDFast(tracks[0],it,ip,0);
+	((AliSimDigits*)dig)->SetTrackIDFast(tracks[1],it,ip,1);
+	((AliSimDigits*)dig)->SetTrackIDFast(tracks[2],it,ip,2);
+      }
     
     } // end of loop over time buckets
   }  // end of lop over pads 
@@ -1520,14 +1454,13 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 
   delete m1;
   delete m2;
-  //  delete m3;
 
 } // end of DigitizeRow
 
 //_____________________________________________________________________________
 
 Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, 
-             AliTPCFastMatrix *m1, AliTPCFastMatrix *m2,Int_t *indexRange)
+             TMatrix *m1, TMatrix *m2,Int_t *indexRange)
 {
 
   //---------------------------------------------------------------
@@ -1541,10 +1474,10 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
   // Modified: Marian Ivanov 
   //-----------------------------------------------------------------
 
-  AliTPCFastVector *tv;
+  TVector *tv;
 
-  tv = (AliTPCFastVector*)p1->At(ntr); // pointer to a track
-  AliTPCFastVector &v = *tv;
+  tv = (TVector*)p1->At(ntr); // pointer to a track
+  TVector &v = *tv;
   
   Float_t label = v(0);
   Int_t centralPad = (fTPCParam->GetNPads(fCurrentIndex[1],fCurrentIndex[3]-1)-1)/2;
@@ -1555,8 +1488,8 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
   indexRange[2]=9999; //min time
   indexRange[3]=-1; // max time
 
-  AliTPCFastMatrix &signal = *m1;
-  AliTPCFastMatrix &total = *m2;
+  TMatrix &signal = *m1;
+  TMatrix &total = *m2;
   //
   //  Loop over all electrons
   //
@@ -1571,23 +1504,23 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
     Float_t *weight = & (fTPCParam->GetResWeight(0));
 
     if (n>0) for (Int_t i =0; i<n; i++){       
-       Int_t pad=index[1]+centralPad;  //in digit coordinates central pad has coordinate 0
+      Int_t pad=index[1]+centralPad;  //in digit coordinates central pad has coordinate 0
 
-         if (pad>=0){
-	 Int_t time=index[2];	 
-         Float_t qweight = *(weight)*eltoadcfac;
-	 
-	 if (m1!=0) signal.UncheckedAt(pad,time)+=qweight;
-         total.UncheckedAt(pad,time)+=qweight;
-	 if (indexRange[0]>pad) indexRange[0]=pad;
-	 if (indexRange[1]<pad) indexRange[1]=pad;
-	 if (indexRange[2]>time) indexRange[2]=time;
-	 if (indexRange[3]<time) indexRange[3]=time;
+      if (pad>=0){
+	Int_t time=index[2];	 
+	Float_t qweight = *(weight)*eltoadcfac;
+	
+	if (m1!=0) signal(pad,time)+=qweight;
+	total(pad,time)+=qweight;
+	if (indexRange[0]>pad) indexRange[0]=pad;
+	if (indexRange[1]<pad) indexRange[1]=pad;
+	if (indexRange[2]>time) indexRange[2]=time;
+	if (indexRange[3]<time) indexRange[3]=time;
+	
+	index+=3;
+	weight++;	
 
-	 index+=3;
-	 weight++;	
-
-       }	 
+      }	 
     }
   } // end of loop over electrons
   
@@ -1595,7 +1528,7 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
 }
 
 //_____________________________________________________________________________
-void AliTPC::GetList(Float_t label,Int_t np,AliTPCFastMatrix *m,
+void AliTPC::GetList(Float_t label,Int_t np,TMatrix *m,
                      Int_t *indexRange, Float_t **pList)
 {
   //----------------------------------------------------------------------
@@ -1606,7 +1539,7 @@ void AliTPC::GetList(Float_t label,Int_t np,AliTPCFastMatrix *m,
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
   //-----------------------------------------------------------------
 
-  AliTPCFastMatrix &signal = *m;
+  TMatrix &signal = *m;
 
   // lop over nonzero digits
 
@@ -1614,76 +1547,72 @@ void AliTPC::GetList(Float_t label,Int_t np,AliTPCFastMatrix *m,
     for(Int_t ip=indexRange[0];ip<indexRange[1]+1;ip++){
 
 
-        // accept only the contribution larger than 500 electrons (1/2 s_noise)
+      // accept only the contribution larger than 500 electrons (1/2 s_noise)
 
-        if(signal(ip,it)<0.5) continue; 
+      if(signal(ip,it)<0.5) continue; 
 
-
-        Int_t globalIndex = it*np+ip; // globalIndex starts from 0!
+      Int_t globalIndex = it*np+ip; // globalIndex starts from 0!
         
-        if(!pList[globalIndex]){
+      if(!pList[globalIndex]){
         
-          // 
-	  // Create new list (6 elements - 3 signals and 3 labels),
-	  //
+	// 
+	// Create new list (6 elements - 3 signals and 3 labels),
+	//
 
-          pList[globalIndex] = new Float_t [6];
+	pList[globalIndex] = new Float_t [6];
 
-	  // set list to -1 
+	// set list to -1 
+	
+	*pList[globalIndex] = -1.;
+	*(pList[globalIndex]+1) = -1.;
+	*(pList[globalIndex]+2) = -1.;
+	*(pList[globalIndex]+3) = -1.;
+	*(pList[globalIndex]+4) = -1.;
+	*(pList[globalIndex]+5) = -1.;
 
-          *pList[globalIndex] = -1.;
-          *(pList[globalIndex]+1) = -1.;
-          *(pList[globalIndex]+2) = -1.;
-          *(pList[globalIndex]+3) = -1.;
-          *(pList[globalIndex]+4) = -1.;
-          *(pList[globalIndex]+5) = -1.;
+	*pList[globalIndex] = label;
+	*(pList[globalIndex]+3) = signal(ip,it);
+      }
+      else {
 
+	// check the signal magnitude
 
-          *pList[globalIndex] = label;
-          *(pList[globalIndex]+3) = signal(ip,it);
-        }
-        else{
+	Float_t highest = *(pList[globalIndex]+3);
+	Float_t middle = *(pList[globalIndex]+4);
+	Float_t lowest = *(pList[globalIndex]+5);
+	
+	//
+	//  compare the new signal with already existing list
+	//
+	
+	if(signal(ip,it)<lowest) continue; // neglect this track
 
-	  // check the signal magnitude
+	//
 
-          Float_t highest = *(pList[globalIndex]+3);
-          Float_t middle = *(pList[globalIndex]+4);
-          Float_t lowest = *(pList[globalIndex]+5);
-
-	  //
-	  //  compare the new signal with already existing list
-	  //
-
-          if(signal(ip,it)<lowest) continue; // neglect this track
-
-	  //
-
-          if (signal(ip,it)>highest){
-            *(pList[globalIndex]+5) = middle;
-            *(pList[globalIndex]+4) = highest;
-            *(pList[globalIndex]+3) = signal(ip,it);
-
-            *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
-            *(pList[globalIndex]+1) = *pList[globalIndex];
-            *pList[globalIndex] = label;
-	  }
-          else if (signal(ip,it)>middle){
-            *(pList[globalIndex]+5) = middle;
-            *(pList[globalIndex]+4) = signal(ip,it);
-
-            *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
-            *(pList[globalIndex]+1) = label;
-	  }
-          else{
-            *(pList[globalIndex]+5) = signal(ip,it);
-            *(pList[globalIndex]+2) = label;
-	  }
-        }
-
+	if (signal(ip,it)>highest){
+	  *(pList[globalIndex]+5) = middle;
+	  *(pList[globalIndex]+4) = highest;
+	  *(pList[globalIndex]+3) = signal(ip,it);
+	  
+	  *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
+	  *(pList[globalIndex]+1) = *pList[globalIndex];
+	  *pList[globalIndex] = label;
+	}
+	else if (signal(ip,it)>middle){
+	  *(pList[globalIndex]+5) = middle;
+	  *(pList[globalIndex]+4) = signal(ip,it);
+	  
+	  *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
+	  *(pList[globalIndex]+1) = label;
+	}
+	else{
+	  *(pList[globalIndex]+5) = signal(ip,it);
+	  *(pList[globalIndex]+2) = label;
+	}
+      }
+      
     } // end of loop over pads
   } // end of loop over time bins
-
-
 
 }//end of GetList
 //___________________________________________________________________
@@ -1714,12 +1643,12 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
  
   //----------------------------------------------
   // Create TObjArray-s, one for each row,
-  // each TObjArray will store the AliTPCFastVectors
-  // of electrons, one AliTPCFastVectors per each track.
+  // each TObjArray will store the TVectors
+  // of electrons, one TVectors per each track.
   //---------------------------------------------- 
     
   Int_t *nofElectrons = new Int_t [nrows+2]; // electron counter for each row
-  AliTPCFastVector **tracks = new AliTPCFastVector* [nrows+2]; //pointers to the track vectors
+  TVector **tracks = new TVector* [nrows+2]; //pointers to the track vectors
 
   for(i=0; i<nrows+2; i++){
     row[i] = new TObjArray;
@@ -1732,7 +1661,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   //--------------------------------------------------------------------
   //  Loop over tracks, the "track" contains the full history
   //--------------------------------------------------------------------
-
+  
   Int_t previousTrack,currentTrack;
   previousTrack = -1; // nothing to store so far!
 
@@ -1743,7 +1672,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
     if (!isInSector) continue;
     //MI change
     branch->GetEntry(track); // get next track
-
+    
     //M.I. changes
 
     tpcHit = (AliTPChit*)FirstHit(-1);
@@ -1761,133 +1690,131 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	continue; 
       }
 
-	currentTrack = tpcHit->Track(); // track number
+      currentTrack = tpcHit->Track(); // track number
 
-
-        if(currentTrack != previousTrack){
+      if(currentTrack != previousTrack){
                           
-           // store already filled fTrack
+	// store already filled fTrack
               
-	   for(i=0;i<nrows+2;i++){
-             if(previousTrack != -1){
-	       if(nofElectrons[i]>0){
-                 AliTPCFastVector &v = *tracks[i];
-		 v(0) = previousTrack;
-                 tracks[i]->ResizeTo(4*nofElectrons[i]+1); // shrink if necessary
-	         row[i]->Add(tracks[i]);                     
-	       }
-               else{
-                 delete tracks[i]; // delete empty AliTPCFastVector
-                 tracks[i]=0;
-	       }
-	     }
-
-             nofElectrons[i]=0;
-             tracks[i] = new AliTPCFastVector(481); // AliTPCFastVectors for the next fTrack
-
-	   } // end of loop over rows
-	       
-           previousTrack=currentTrack; // update track label 
-	}
-	   
-	Int_t qI = (Int_t) (tpcHit->fQ); // energy loss (number of electrons)
-
-       //---------------------------------------------------
-       //  Calculate the electron attachment probability
-       //---------------------------------------------------
-
-
-        Float_t time = 1.e6*(fTPCParam->GetZLength()-TMath::Abs(tpcHit->Z()))
-                                                        /fTPCParam->GetDriftV(); 
-	// in microseconds!	
-	Float_t attProb = fTPCParam->GetAttCoef()*
-	  fTPCParam->GetOxyCont()*time; //  fraction! 
-   
-	//-----------------------------------------------
-	//  Loop over electrons
-	//-----------------------------------------------
-	Int_t index[3];
-	index[1]=isec;
-        for(Int_t nel=0;nel<qI;nel++){
-          // skip if electron lost due to the attachment
-          if((gRandom->Rndm(0)) < attProb) continue; // electron lost!
-	  xyz[0]=tpcHit->X();
-	  xyz[1]=tpcHit->Y();
-	  xyz[2]=tpcHit->Z();	
-	  //
-	  // protection for the nonphysical avalanche size (10**6 maximum)
-	  //  
-          Double_t rn=TMath::Max(gRandom->Rndm(0),1.93e-22);
-	  xyz[3]= (Float_t) (-gasgain*TMath::Log(rn)); 
-	  index[0]=1;
-	  
-	  TransportElectron(xyz,index);    
-	  Int_t rowNumber;
-	  fTPCParam->GetPadRow(xyz,index); 
-	  // row 0 - cross talk from the innermost row
-	  // row fNRow+1 cross talk from the outermost row
-	  rowNumber = index[2]+1; 
-	  //transform position to local digit coordinates
-	  //relative to nearest pad row 
-	  if ((rowNumber<0)||rowNumber>fTPCParam->GetNRow(isec)+1) continue;
-          Float_t x1,y1;
-	  if (isec <fTPCParam->GetNInnerSector()) {
-	    x1 = xyz[1]*fTPCParam->GetInnerPadPitchWidth();
-	    y1 = fTPCParam->GetYInner(rowNumber);
-	  }
-	  else{
-	    x1=xyz[1]*fTPCParam->GetOuterPadPitchWidth();
-	    y1 = fTPCParam->GetYOuter(rowNumber);
-	  }
-	  // gain inefficiency at the wires edges - linear
-	  x1=TMath::Abs(x1);
-	  y1-=1.;
-          if(x1>y1) xyz[3]*=TMath::Max(1.e-6,(y1-x1+1.));	
-       
-	  nofElectrons[rowNumber]++;	  
-	  //----------------------------------
-	  // Expand vector if necessary
-	  //----------------------------------
-	  if(nofElectrons[rowNumber]>120){
-	    Int_t range = tracks[rowNumber]->GetNrows();
-	    if((nofElectrons[rowNumber])>(range-1)/4){
-        
-	      tracks[rowNumber]->ResizeTo(range+400); // Add 100 electrons
+	for(i=0;i<nrows+2;i++){
+	  if(previousTrack != -1){
+	    if(nofElectrons[i]>0){
+	      TVector &v = *tracks[i];
+	      v(0) = previousTrack;
+	      tracks[i]->ResizeTo(4*nofElectrons[i]+1); // shrink if necessary
+	      row[i]->Add(tracks[i]);                     
+	    }
+	    else {
+	      delete tracks[i]; // delete empty TVector
+	      tracks[i]=0;
 	    }
 	  }
-	  
-          AliTPCFastVector &v = *tracks[rowNumber];
-	  Int_t idx = 4*nofElectrons[rowNumber]-3;
-	  Real_t * position = &(((AliTPCFastVector&)v).UncheckedAt(idx)); //make code faster
-	  memcpy(position,xyz,4*sizeof(Float_t));
- 
-	} // end of loop over electrons
 
-        tpcHit = (AliTPChit*)NextHit();
-        
-      } // end of loop over hits
-    } // end of loop over tracks
+	  nofElectrons[i]=0;
+	  tracks[i] = new TVector(481); // TVectors for the next fTrack
+
+	} // end of loop over rows
+	       
+	previousTrack=currentTrack; // update track label 
+      }
+	   
+      Int_t qI = (Int_t) (tpcHit->fQ); // energy loss (number of electrons)
+
+      //---------------------------------------------------
+      //  Calculate the electron attachment probability
+      //---------------------------------------------------
+
+
+      Float_t time = 1.e6*(fTPCParam->GetZLength()-TMath::Abs(tpcHit->Z()))
+	/fTPCParam->GetDriftV(); 
+      // in microseconds!	
+      Float_t attProb = fTPCParam->GetAttCoef()*
+	fTPCParam->GetOxyCont()*time; //  fraction! 
+   
+      //-----------------------------------------------
+      //  Loop over electrons
+      //-----------------------------------------------
+      Int_t index[3];
+      index[1]=isec;
+      for(Int_t nel=0;nel<qI;nel++){
+	// skip if electron lost due to the attachment
+	if((gRandom->Rndm(0)) < attProb) continue; // electron lost!
+	xyz[0]=tpcHit->X();
+	xyz[1]=tpcHit->Y();
+	xyz[2]=tpcHit->Z();	
+	//
+	// protection for the nonphysical avalanche size (10**6 maximum)
+	//  
+	Double_t rn=TMath::Max(gRandom->Rndm(0),1.93e-22);
+	xyz[3]= (Float_t) (-gasgain*TMath::Log(rn)); 
+	index[0]=1;
+	
+	TransportElectron(xyz,index);    
+	Int_t rowNumber;
+	fTPCParam->GetPadRow(xyz,index); 
+	// row 0 - cross talk from the innermost row
+	// row fNRow+1 cross talk from the outermost row
+	rowNumber = index[2]+1; 
+	//transform position to local digit coordinates
+	//relative to nearest pad row 
+	if ((rowNumber<0)||rowNumber>fTPCParam->GetNRow(isec)+1) continue;
+	Float_t x1,y1;
+	if (isec <fTPCParam->GetNInnerSector()) {
+	  x1 = xyz[1]*fTPCParam->GetInnerPadPitchWidth();
+	  y1 = fTPCParam->GetYInner(rowNumber);
+	}
+	else{
+	  x1=xyz[1]*fTPCParam->GetOuterPadPitchWidth();
+	  y1 = fTPCParam->GetYOuter(rowNumber);
+	}
+	// gain inefficiency at the wires edges - linear
+	x1=TMath::Abs(x1);
+	y1-=1.;
+	if(x1>y1) xyz[3]*=TMath::Max(1.e-6,(y1-x1+1.));	
+	
+	nofElectrons[rowNumber]++;	  
+	//----------------------------------
+	// Expand vector if necessary
+	//----------------------------------
+	if(nofElectrons[rowNumber]>120){
+	  Int_t range = tracks[rowNumber]->GetNrows();
+	  if((nofElectrons[rowNumber])>(range-1)/4){
+	    
+	    tracks[rowNumber]->ResizeTo(range+400); // Add 100 electrons
+	  }
+	}
+	
+	TVector &v = *tracks[rowNumber];
+	Int_t idx = 4*nofElectrons[rowNumber]-3;
+	Real_t * position = &(((TVector&)v)(idx)); //make code faster
+	memcpy(position,xyz,4*sizeof(Float_t));
+	
+      } // end of loop over electrons
+
+      tpcHit = (AliTPChit*)NextHit();
+      
+    } // end of loop over hits
+  } // end of loop over tracks
 
     //
     //   store remaining track (the last one) if not empty
     //
-
-     for(i=0;i<nrows+2;i++){
-       if(nofElectrons[i]>0){
-          AliTPCFastVector &v = *tracks[i];
-	  v(0) = previousTrack;
-          tracks[i]->ResizeTo(4*nofElectrons[i]+1); // shrink if necessary
-	  row[i]->Add(tracks[i]);  
-	}
-	else{
-          delete tracks[i];
-          tracks[i]=0;
-	}  
-      }  
-
-          delete [] tracks;
-          delete [] nofElectrons;
- 
+  
+  for(i=0;i<nrows+2;i++){
+    if(nofElectrons[i]>0){
+      TVector &v = *tracks[i];
+      v(0) = previousTrack;
+      tracks[i]->ResizeTo(4*nofElectrons[i]+1); // shrink if necessary
+      row[i]->Add(tracks[i]);  
+    }
+    else{
+      delete tracks[i];
+      tracks[i]=0;
+    }  
+  }  
+  
+  delete [] tracks;
+  delete [] nofElectrons;
 
 } // end of MakeSector
 
@@ -1898,18 +1825,7 @@ void AliTPC::Init()
   //
   // Initialise TPC detector after definition of geometry
   //
-  Int_t i;
-  //
-  if(fDebug) {
-    printf("\n%s: ",ClassName());
-    for(i=0;i<35;i++) printf("*");
-    printf(" TPC_INIT ");
-    for(i=0;i<35;i++) printf("*");
-    printf("\n%s: ",ClassName());
-    //
-    for(i=0;i<80;i++) printf("*");
-    printf("\n");
-  }
+  AliDebug(1,"*********************************************");
 }
 
 //_____________________________________________________________________________
@@ -1918,23 +1834,22 @@ void AliTPC::MakeBranch(Option_t* option)
   //
   // Create Tree branches for the TPC.
   //
-  if(GetDebug()) Info("MakeBranch","");
+  AliDebug(1,"");
   Int_t buffersize = 4000;
   char branchname[10];
   sprintf(branchname,"%s",GetName());
   
   const char *h = strstr(option,"H");
-
+  
   if ( h && (fHitType<=1) && (fHits == 0x0)) fHits = new TClonesArray("AliTPChit", 176);//skowron 20.06.03
   
   AliDetector::MakeBranch(option);
-
+  
   const char *d = strstr(option,"D");
- 
-  if (fDigits   && fLoader->TreeD() && d) 
-   {
-      MakeBranchInTree(gAlice->TreeD(), branchname, &fDigits, buffersize, 0);
-   }	
+  
+  if (fDigits   && fLoader->TreeD() && d) {
+    MakeBranchInTree(gAlice->TreeD(), branchname, &fDigits, buffersize, 0);
+  }	
 
   if (fHitType>1) MakeBranch2(option,0); // MI change 14.09.2000
 }
@@ -2052,17 +1967,15 @@ void AliTPC::SetGasMixt(Int_t nc,Int_t c1,Int_t c2,Int_t c3,Float_t p1,
 
   // gax mixture definition
 
- fNoComp = nc;
+  fNoComp = nc;
  
- fMixtComp[0]=c1;
- fMixtComp[1]=c2;
- fMixtComp[2]=c3;
+  fMixtComp[0]=c1;
+  fMixtComp[1]=c2;
+  fMixtComp[2]=c3;
 
- fMixtProp[0]=p1;
- fMixtProp[1]=p2;
- fMixtProp[2]=p3; 
- 
- 
+  fMixtProp[0]=p1;
+  fMixtProp[1]=p2;
+  fMixtProp[2]=p3; 
 }
 //_____________________________________________________________________________
 
@@ -2124,7 +2037,7 @@ void AliTPC::MakeBranch2(Option_t *option,const char */*file*/)
   // Create a new branch in the current Root Tree
   // The branch of fHits is automatically split
   // MI change 14.09.2000
-  if(GetDebug()) Info("MakeBranch2","");
+  AliDebug(1,"");
   if (fHitType<2) return;
   char branchname[10];
   sprintf(branchname,"%s2",GetName());  
@@ -2132,29 +2045,26 @@ void AliTPC::MakeBranch2(Option_t *option,const char */*file*/)
   // Get the pointer to the header
   const char *cH = strstr(option,"H");
   //
-  if (fTrackHits   && TreeH() && cH && fHitType&4) 
-   {
-    if(GetDebug()) Info("MakeBranch2","Making branch for Type 4 Hits");
+  if (fTrackHits   && TreeH() && cH && fHitType&4) {
+    AliDebug(1,"Making branch for Type 4 Hits");
     TreeH()->Branch(branchname,"AliTPCTrackHitsV2",&fTrackHits,fBufferSize,99);
-   }	
+  }
 
-  if (fTrackHitsOld   && TreeH() && cH && fHitType&2) 
-   {    
-    if(GetDebug()) Info("MakeBranch2","Making branch for Type 2 Hits");
+  if (fTrackHitsOld   && TreeH() && cH && fHitType&2) {    
+    AliDebug(1,"Making branch for Type 2 Hits");
     AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHitsOld, 
                                                    TreeH(),fBufferSize,99);
     TreeH()->GetListOfBranches()->Add(branch);
-   }	
+  }	
 }
 
 void AliTPC::SetTreeAddress()
 {
-//Sets tree address for hits  
-  if (fHitType<=1)
-   {
-     if (fHits == 0x0 ) fHits = new TClonesArray("AliTPChit", 176);//skowron 20.06.03
-     AliDetector::SetTreeAddress();
-   }
+  //Sets tree address for hits  
+  if (fHitType<=1) {
+    if (fHits == 0x0 ) fHits = new TClonesArray("AliTPChit", 176);//skowron 20.06.03
+    AliDetector::SetTreeAddress();
+  }
   if (fHitType>1) SetTreeAddress2();
 }
 
@@ -2163,7 +2073,7 @@ void AliTPC::SetTreeAddress2()
   //
   // Set branch address for the TrackHits Tree
   // 
-  if(GetDebug()) Info("SetTreeAddress2","");
+  AliDebug(1,"");
   
   TBranch *branch;
   char branchname[20];
@@ -2173,27 +2083,25 @@ void AliTPC::SetTreeAddress2()
   TTree *treeH = TreeH();
   if ((treeH)&&(fHitType&4)) {
     branch = treeH->GetBranch(branchname);
-    if (branch) 
-     {
-       branch->SetAddress(&fTrackHits);
-       if (GetDebug()) Info("SetTreeAddress2","fHitType&4 Setting");
-     }
+    if (branch) {
+      branch->SetAddress(&fTrackHits);
+      AliDebug(1,"fHitType&4 Setting");
+    }
     else 
-    if (GetDebug()) Info("SetTreeAddress2","fHitType&4 Failed (can not find branch)");
+      AliDebug(1,"fHitType&4 Failed (can not find branch)");
     
   }
   if ((treeH)&&(fHitType&2)) {
     branch = treeH->GetBranch(branchname);
-    if (branch) 
-     {
-       branch->SetAddress(&fTrackHitsOld);
-       if (GetDebug()) Info("SetTreeAddress2","fHitType&2 Setting");
-     }
-    else if (GetDebug()) 
-      Info("SetTreeAddress2","fHitType&2 Failed (can not find branch)");
+    if (branch) {
+      branch->SetAddress(&fTrackHitsOld);
+      AliDebug(1,"fHitType&2 Setting");
+    }
+    else
+      AliDebug(1,"fHitType&2 Failed (can not find branch)");
   }
   //set address to TREETR
-
+  
   TTree *treeTR = TreeTR();
   if (treeTR && fTrackReferences) {
     branch = treeTR->GetBranch(GetName());
@@ -2222,9 +2130,6 @@ void AliTPC::AddHit2(Int_t track, Int_t *vol, Float_t *hits)
     rtrack=track;
     gAlice->GetMCApp()->FlagTrack(track);
   }  
-  //AliTPChit *hit = (AliTPChit*)fHits->UncheckedAt(fNhits-1);
-  //if (hit->fTrack!=rtrack)
-  //  cout<<"bad track number\n";
   if (fTrackHits && fHitType&4) 
     fTrackHits->AddHitKartez(vol[0],rtrack, hits[0],
                              hits[1],hits[2],(Int_t)hits[3]);
@@ -2312,14 +2217,9 @@ void AliTPC::LoadPoints(Int_t)
 {
   //
   Int_t a = 0;
-  /*  if(fHitType==1) return AliDetector::LoadPoints(a);
-  LoadPoints2(a);
-  */
+
   if(fHitType==1) AliDetector::LoadPoints(a);
   else LoadPoints2(a);
-   
-  // LoadPoints3(a);
-
 }
 
 
@@ -2370,7 +2270,7 @@ Bool_t   AliTPC::TrackInVolume(Int_t id,Int_t track)
     Int_t *volumes = fTrackHits->GetVolumes();
     Int_t nvolumes = fTrackHits->GetNVolumes();
     if (!volumes && nvolumes>0) {
-      printf("Problematic track\t%d\t%d",track,nvolumes);
+      AliWarning(Form("Problematic track\t%d\t%d",track,nvolumes));
       return kFALSE;
     }
     for (Int_t j=0;j<nvolumes; j++)
@@ -2498,11 +2398,9 @@ void AliTPC::LoadPoints3(Int_t)
   // Loop over all the hits and store their position
   //
   ahit = FirstHit2(-1);
-  //for (Int_t hit=0;hit<nhits;hit++) {
 
   Int_t lastrow = -1;
   while (ahit){
-    //    ahit = (AliHit*)fHits->UncheckedAt(hit);
     trk=ahit->GetTrack(); 
     Float_t  x[3]={ahit->X(),ahit->Y(),ahit->Z()};
     Int_t    index[3]={1,((AliTPChit*)ahit)->fSector,0};
@@ -2540,7 +2438,6 @@ void AliTPC::LoadPoints3(Int_t)
       points->SetMarkerSize(0.2);
       points->SetDetector(this);
       points->SetParticle(trk);
-      //      points->SetPolyMarker(ntrk[trk],coor[trk],GetMarkerStyle()20);
       points->SetPolyMarker(ntrk[trk],coor[trk],30);
       fPoints->AddAt(points,tracks+trk);
       delete [] coor[trk];
@@ -2556,9 +2453,9 @@ void AliTPC::LoadPoints3(Int_t)
 
 AliLoader* AliTPC::MakeLoader(const char* topfoldername)
 {
-//Makes TPC loader
- fLoader = new AliTPCLoader(GetName(),topfoldername);
- return fLoader;
+  //Makes TPC loader
+  fLoader = new AliTPCLoader(GetName(),topfoldername);
+  return fLoader;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -2573,10 +2470,9 @@ AliTPCParam* AliTPC::LoadTPCParam(TFile *file) {
   sprintf(paramName,"75x40_100x60_150x60");
   AliTPCParam *paramTPC=(AliTPCParam*)file->Get(paramName);
   if (paramTPC) {
-    //    cout<<"TPC parameters "<<paramName<<" found."<<endl;
+    AliDebugClass(1,Form("TPC parameters %s found.",paramName));
   } else {
-    cerr<<"TPC parameters not found. Create new (they may be incorrect)."
-	<<endl;    
+    AliWarningClass("TPC parameters not found. Create new (they may be incorrect)");
     paramTPC = new AliTPCParamSR;
   }
   return paramTPC;
