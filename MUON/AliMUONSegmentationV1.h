@@ -103,7 +103,8 @@ public AliSegmentation {
     // current sector
     virtual Int_t ISector();
     // calculate sector from pad coordinates
-    virtual Int_t Sector(Int_t ix, Int_t iy) {return 1;}
+    virtual Int_t Sector(Int_t ix, Int_t iy)   {return 1;}
+    virtual Int_t Sector(Float_t x, Float_t y) {return 1;}
     // Position of pad in perellel read-out
     virtual Int_t IsParallel2(Int_t iX, Int_t iY);
     virtual Int_t IsParallel3(Int_t iX, Int_t iY);

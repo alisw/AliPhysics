@@ -94,6 +94,7 @@ dummy);
     virtual Int_t  ISector() {return 1;}
     // calculate sector from pad coordinates
     virtual Int_t  Sector(Int_t ix, Int_t iy)  {return 1;}
+    virtual Int_t  Sector(Float_t x, Float_t y)  {return 1;}
     //
     // Signal Generation Condition during Stepping
     virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z) ;

@@ -88,6 +88,13 @@ public AliSegmentation {
     virtual Int_t ISector();
     // calculate sector from pad coordinates
     virtual Int_t Sector(Int_t ix, Int_t iy);
+    virtual Int_t Sector(Float_t  x, Float_t y)
+	{
+	    Int_t ix, iy;
+	    GetPadI(x,y,0.,ix,iy);
+	    Sector(ix,iy);
+	}
+    
     //
     // Signal Generation Condition during Stepping
     virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z);
