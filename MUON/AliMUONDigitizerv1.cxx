@@ -213,7 +213,7 @@ void AliMUONDigitizerv1::Exec(Option_t* option)
       if (treeH && fHits) {
 	branchHits = treeH->GetBranch("MUON");
 	if (branchHits) {
-	  fHits->Delete();
+	  fHits->Clear();
 	  branchHits->SetAddress(&fHits);
 	}
 	else
@@ -271,67 +271,72 @@ void AliMUONDigitizerv1::Exec(Option_t* option)
     } // end file loop
     if (GetDebug()>2) cerr<<"AliMUONDigitizer::Exec End of hits, track and file loops"<<endl;
 
-    //
-    // Filling Digit List
-    Int_t tracks[kMAXTRACKS];
-    Int_t charges[kMAXTRACKS];
-    Int_t nentries = fTDList->GetEntriesFast();
-    Int_t digits[6];
-    for (Int_t nent = 0; nent < nentries; nent++) {
-      AliMUONTransientDigit *address = (AliMUONTransientDigit*)fTDList->At(nent);
-      if (address == 0) continue; 
-      Int_t ich = address->Chamber();
-      Int_t   q = address->Signal(); 
-      chamber = &(pMUON->Chamber(ich));
+
+    // Loop on cathodes
+    Int_t icat;
+    for(icat=0; icat<2; icat++) {
       //
-      //  Digit Response (noise, threshold, saturation, ...)
-      AliMUONResponse * response = chamber->ResponseModel();
-      q = response->DigitResponse(q,address);
-      
-      if (!q) continue;
-      
-      digits[0] = address->PadX();
-      digits[1] = address->PadY();
-      digits[2] = address->Cathode();
-      digits[3] = q;
-      digits[4] = address->Physics();
-      digits[5] = address->Hit();
-      
-      Int_t nptracks = address->GetNTracks();
-      
-      if (nptracks > kMAXTRACKS) {
-	if (GetDebug() >0) {
-	  cerr<<"AliMUONDigitizer:Exec  nptracks > 10 "<<nptracks;
-	  cerr<<"reset to max value "<<kMAXTRACKS<<endl;
+      // Filling Digit List
+      Int_t tracks[kMAXTRACKS];
+      Int_t charges[kMAXTRACKS];
+      Int_t nentries = fTDList->GetEntriesFast();
+      Int_t digits[6];
+      for (Int_t nent = 0; nent < nentries; nent++) {
+	AliMUONTransientDigit *address = (AliMUONTransientDigit*)fTDList->At(nent);
+	if (address == 0) continue; 
+	Int_t ich = address->Chamber();
+	Int_t   q = address->Signal(); 
+	chamber = &(pMUON->Chamber(ich));
+	//
+	//  Digit Response (noise, threshold, saturation, ...)
+	AliMUONResponse * response = chamber->ResponseModel();
+	q = response->DigitResponse(q,address);
+	
+	if (!q) continue;
+	
+	digits[0] = address->PadX();
+	digits[1] = address->PadY();
+	digits[2] = address->Cathode()-1;
+	digits[3] = q;
+	digits[4] = address->Physics();
+	digits[5] = address->Hit();
+	
+	Int_t nptracks = address->GetNTracks();
+	
+	if (nptracks > kMAXTRACKS) {
+	  if (GetDebug() >0) {
+	    cerr<<"AliMUONDigitizer:Exec  nptracks > 10 "<<nptracks;
+	    cerr<<"reset to max value "<<kMAXTRACKS<<endl;
+	  }
+	  nptracks = kMAXTRACKS;
 	}
-	nptracks = kMAXTRACKS;
-      }
-      if (nptracks > 2 && GetDebug() >2) {
-	cerr<<"AliMUONDigitizer::Exec  nptracks > 2 "<<nptracks<<endl;
-	//	printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,digits[0],digits[1],q);
-      }
-      for (Int_t tr = 0; tr < nptracks; tr++) {
-	tracks[tr]   = address->GetTrack(tr);
-	charges[tr]  = address->GetCharge(tr);
-      }      //end loop over list of tracks for one pad
-      // Sort list of tracks according to charge
-      if (nptracks > 1) {
-	SortTracks(tracks,charges,nptracks);
-      }
-      if (nptracks < kMAXTRACKS ) {
-	for (Int_t i = nptracks; i < kMAXTRACKS; i++) {
-	  tracks[i]  = 0;
-	  charges[i] = 0;
+	if (nptracks > 2 && GetDebug() >2) {
+	  cerr<<"AliMUONDigitizer::Exec  nptracks > 2 "<<nptracks<<endl;
+	  //	printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,digits[0],digits[1],q);
 	}
+	for (Int_t tr = 0; tr < nptracks; tr++) {
+	  tracks[tr]   = address->GetTrack(tr);
+	  charges[tr]  = address->GetCharge(tr);
+	}      //end loop over list of tracks for one pad
+	// Sort list of tracks according to charge
+	if (nptracks > 1) {
+	  SortTracks(tracks,charges,nptracks);
+	}
+	if (nptracks < kMAXTRACKS ) {
+	  for (Int_t i = nptracks; i < kMAXTRACKS; i++) {
+	    tracks[i]  = 0;
+	    charges[i] = 0;
+	  }
+	}
+	
+	// fill digits
+	if (GetDebug()>2) cerr<<"AliMUONDigitzerv1::Exex TransientDigit to Digit"<<endl;
+	if ( digits[2] == icat ) pMUON->AddDigits(ich,tracks,charges,digits);
       }
-      
-      // fill digits
-      if (GetDebug()>2) cerr<<"AliMUONDigitzerv1::Exex TransientDigit to Digit"<<endl;
-      pMUON->AddDigits(ich,tracks,charges,digits);
-    }
-    fManager->GetTreeD()->Fill();
-    pMUON->ResetDigits();  //
-    fTDList->Delete();
+      fManager->GetTreeD()->Fill();
+      pMUON->ResetDigits();  //   
+    } // end loop cathode
+    fTDList->Delete();  
     
     for(Int_t ii = 0; ii < 2*AliMUONConstants::NCh(); ++ii) {
       if (fHitMap[ii]) {
