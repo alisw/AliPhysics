@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.12  2001/03/09 13:01:41  morsch
+- enum constants for paramterisation type (particle family) moved to AliGen*lib.h
+- use AliGenGSIlib::kUpsilon, AliGenPHOSlib::kEtaPrime to access the constants
+
 Revision 1.11  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -77,13 +81,15 @@ Double_t AliGenMUONlib::PtPion(Double_t *px, Double_t *dummy)
 Double_t AliGenMUONlib::YPion( Double_t *py, Double_t *dummy)
 {
 // Pion y
+  Double_t y=TMath::Abs(*py);
+/*
   const Double_t ka    = 7000.;
   const Double_t kdy   = 4.;
-
-  Double_t y=TMath::Abs(*py);
-  //
   Double_t ex = y*y/(2*kdy*kdy);
   return ka*TMath::Exp(-ex);
+*/
+  return 1.16526e+04+y*-3.79886e+03+y*y*4.31130e+02;
+  
 }
 //                 particle composition
 //
@@ -133,14 +139,16 @@ Double_t AliGenMUONlib::PtKaon( Double_t *px, Double_t *dummy)
 Double_t AliGenMUONlib::YKaon( Double_t *py, Double_t *dummy)
 {
 // Kaon y
+  Double_t y=TMath::Abs(*py);
+/*
   const Double_t ka    = 1000.;
   const Double_t kdy   = 4.;
-  
-
-  Double_t y=TMath::Abs(*py);
   //
   Double_t ex = y*y/(2*kdy*kdy);
   return ka*TMath::Exp(-ex);
+*/
+
+  return 1.16526e+04+y*-3.79886e+03+y*y*4.31130e+02;
 }
 
 //                 particle composition
@@ -273,9 +281,10 @@ Double_t AliGenMUONlib::PtCharm( Double_t *px, Double_t *dummy)
 // Charm pT
   const Double_t kpt0 = 4.08;
   const Double_t kxn  = 9.40;
+
   Double_t x=*px;
   //
-  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  Double_t pass1 = 1.+(x/kpt0);
   return x/TMath::Power(pass1,kxn);
 }
 //                  y-distribution
