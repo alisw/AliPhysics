@@ -34,7 +34,7 @@ void stupre()
 
   Int_t lbhabh = 0;
   if (EVTFLG.ldltry == 1) {
-    if (EMFSTK.iq[EMFSTK.np-1] * EMFSTK.iq[EMFSTK.np-2] < 0) lbhabh = 1;
+    if (EMFSTK.ichemf[EMFSTK.npemf-1] * EMFSTK.ichemf[EMFSTK.npemf-2] < 0) lbhabh = 1;
   }
 
 // mkbmx1 = dimension for kwb real spare array in fluka stack in DIMPAR
@@ -47,7 +47,7 @@ void stupre()
 // TRACKR.llouse = user defined flag for the current particle
 
   Int_t npnw, ispr;
-  for (npnw=EMFSTK.npstrt-1; npnw<=EMFSTK.np-1; npnw++) {
+  for (npnw=EMFSTK.npstrt-1; npnw<=EMFSTK.npemf-1; npnw++) {
 
     for (ispr=0; ispr<=mkbmx1-1; ispr++) 
       EMFSTK.espark[npnw][ispr] = TRACKR.spausr[ispr];
@@ -67,7 +67,7 @@ void stupre()
 // Increment the track number and put it into the last flag
 
   Int_t kp;
-  for (kp = EMFSTK.npstrt - 1; kp <= EMFSTK.np - 1; kp++) {
+  for (kp = EMFSTK.npstrt - 1; kp <= EMFSTK.npemf - 1; kp++) {
 
 //* save the parent track number and reset it at each loop
     Int_t done = 1;
@@ -75,11 +75,12 @@ void stupre()
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
     
     Int_t flukaid = 0;
-    if (EMFSTK.iq[kp] == -1) flukaid = 3;
-    else if (EMFSTK.iq[kp] == 0)  flukaid = 7;
-    else if (EMFSTK.iq[kp] == 0)  flukaid = 4;
+
+    if (EMFSTK.ichemf[kp] == -1) flukaid = 3;
+    else if (EMFSTK.ichemf[kp] == 0)  flukaid = 7;
+    else if (EMFSTK.ichemf[kp] == 0)  flukaid = 4;
     Int_t pdg       = fluka->PDGFromId(flukaid);
-    Double_t e      = EMFSTK.e[kp] * emvgev;
+    Double_t e      = EMFSTK.etemf[kp] * emvgev;
     Double_t p      = sqrt(e * e - PAPROP.am[flukaid+6] * PAPROP.am[flukaid+6]);
     Double_t px     = p * EMFSTK.u[kp];
     Double_t pz     = p * EMFSTK.v[kp];
@@ -91,7 +92,8 @@ void stupre()
     Double_t vx     = EMFSTK.x[kp];
     Double_t vy     = EMFSTK.y[kp];
     Double_t vz     = EMFSTK.z[kp];
-    Double_t weight = EMFSTK.wt[kp];
+    Double_t weight = EMFSTK.wtemf[kp];
+
     Int_t ntr;
     TMCProcess mech;
     Int_t is = 0;
@@ -114,7 +116,8 @@ void stupre()
     
 //* Compton: secondary is true only if charged (e+, e-)
     else if ((EVTFLG.lcmptn == 1)) {
-	if (EMFSTK.iq[kp] != 0) {
+
+	if (EMFSTK.ichemf[kp] != 0) {
 	    mech = kPCompton;
 	    cppstack->SetTrack(done, parent, pdg,
 			       px, py, pz, e, vx, vy, vz, tof,
@@ -126,7 +129,7 @@ void stupre()
     
 //* Bremsstrahlung: true secondary only if charge = 0 (photon)
     else if ((EVTFLG.lbrmsp == 1)) {
-	if (EMFSTK.iq[kp] == 0) {
+	if (EMFSTK.ichemf[kp] == 0) {
 	    mech = kPBrem;
 	    cppstack->SetTrack(done, parent, pdg,
 			       px, py, pz, e, vx, vy, vz, tof,
@@ -139,7 +142,7 @@ void stupre()
 //* Delta ray: If Bhabha, true secondary only if negative (electron)
     else if ((EVTFLG.ldltry == 1)) {
 	if (lbhabh == 1) {
-	    if (EMFSTK.iq[kp] == -1) {
+	    if (EMFSTK.ichemf[kp] == -1) {
 		mech = kPDeltaRay;
 		cppstack->SetTrack(done, parent, pdg,
 				   px, py, pz, e, vx, vy, vz, tof,
@@ -151,7 +154,7 @@ void stupre()
 	
 //* Delta ray: Otherwise Moller: true secondary is the electron with
 //*            lower energy, which has been put higher in the stack
-	else if (kp == EMFSTK.np-1) {
+	else if (kp == EMFSTK.npemf-1) {
 	    mech = kPDeltaRay;
 	    cppstack->SetTrack(done, parent, pdg,
 			       px, py, pz, e, vx, vy, vz, tof,
@@ -164,8 +167,6 @@ void stupre()
   } // end of loop
   
 // !!! TO BE CONFIRMED !!!
-//  EVTFLG.ntrcks = EMFSTK.iespak[EMFSTK.np-1][mkbmx2-1];
-  
 } // end of stupre
 } // end of extern "C"
 

@@ -1,5 +1,5 @@
 #include <Riostream.h>
-#include "AliRun.h"
+#include "TVirtualMCApplication.h"
 #include "TFluka.h"
 #include "Fdimpar.h"  //(DIMPAR) fluka include
 #include "Ftrackr.h"  //(TRACKR) fluka common

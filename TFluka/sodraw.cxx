@@ -1,5 +1,5 @@
 #include <Riostream.h>
-#include "AliRun.h"
+#include "TVirtualMCApplication.h"
 #include "TFluka.h"
 #ifndef WIN32
 # define sodraw sodraw_
