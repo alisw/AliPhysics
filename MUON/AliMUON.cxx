@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.39  2000/11/12 17:17:03  pcrochet
+BuildGeometry of AliMUON for trigger chambers delegated to AliMUONSegmentationTriggerX (same strategy as for tracking chambers)
+
 Revision 1.38  2000/11/06 09:20:43  morsch
 AliMUON delegates part of BuildGeometry() to AliMUONSegmentation using the
 Draw() method. This avoids code and parameter replication.
@@ -871,11 +874,14 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 	TTree *treeH = gAlice->TreeH();
 	Int_t ntracks =(Int_t) treeH->GetEntries();
 	Int_t jj;
+	Int_t nmaxmuon = 5;
 
 	Float_t ** xhit = new Float_t * [AliMUONConstants::NCh()];
-	for (jj=0; jj<AliMUONConstants::NCh(); jj++) xhit[jj] = new Float_t[2];
+	for (jj=0; jj<AliMUONConstants::NCh(); jj++)
+	  xhit[jj] = new Float_t[nmaxmuon];
 	Float_t ** yhit = new Float_t * [AliMUONConstants::NCh()];
-	for (jj=0; jj<AliMUONConstants::NCh(); jj++) yhit[jj] = new Float_t[2];
+	for (jj=0; jj<AliMUONConstants::NCh(); jj++)
+	  yhit[jj] = new Float_t[nmaxmuon];
 
 	for (Int_t track=0; track<ntracks; track++) {
 	    gAlice->ResetHits();
@@ -895,10 +901,14 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 
 		    if (mHit->fParticle == kMuonPlus 
 			|| mHit->fParticle == kMuonMinus) {
+		      // mark muon hits
+		      if (nmuon[nch] < nmaxmuon) {
 			xhit[nch][nmuon[nch]]=mHit->X();
 			yhit[nch][nmuon[nch]]=mHit->Y();
 			nmuon[nch]++;
-			if (nmuon[nch] >2) printf("nmuon %d\n",nmuon[nch]);
+		      }
+		      // ignore muon if too many compared to nmaxmuon
+		      else printf("AliMUON::Digitize: nmuon %d ==> ignored\n",nmuon[nch]);
 		    }
 		}
 		
@@ -1040,7 +1050,7 @@ void AliMUON::Digitise(Int_t nev,Int_t bgrEvent,Option_t *option,Option_t *opt,T
 			Int_t iqpad    = Int_t(mPad->fQpad);// charge per pad
 
 			if (cathode != (icat+1)) continue;
-			printf("\n Pad: %d %d %d", ipx, ipy, cathode);
+// 			printf("\n Pad: %d %d %d", ipx, ipy, cathode);
 			
 //			Float_t thex, they, thez;
 //			segmentation=iChamber->SegmentationModel(cathode);
