@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include <TMath.h>
+#include <TString.h>
 
 #include "AliITSresponseSSD.h"
 #include "AliITSgeom.h"

@@ -2,6 +2,7 @@
 #define ALIITSRESPONSESPD_H
 
 #include "AliITSresponse.h"
+#include <TString.h>
 
 //----------------------------------------------
 //

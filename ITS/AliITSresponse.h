@@ -3,11 +3,11 @@
 
 
 #include <TObject.h>
-#include <TF1.h>
-#include <TString.h>
 
 #include "AliITSsegmentation.h"
 
+class TF1;
+class TString;
 class AliITSgeom;
 
 //----------------------------------------------

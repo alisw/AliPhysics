@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.14.4.12  2000/10/02 16:04:03  barbera
+Forward declarations added
+
+Revision 1.22  2000/07/10 16:07:19  fca
+Release version of ITS code
+
 Revision 1.14.4.4  2000/05/19 10:10:21  nilsen
 fix for bug with HP and Sun unix + fix for event display in ITS-working branch
 
@@ -67,6 +73,7 @@ Introduction of the Copyright and cvs Log
 #include <TCanvas.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
+#include <TBRIK.h>
 
 #include "AliRun.h"
 #include "TSystem.h"

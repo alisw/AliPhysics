@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include <TMath.h>
+#include <TF1.h>
 
 #include "AliITSsegmentationSSD.h"
 #include "AliITSgeom.h"

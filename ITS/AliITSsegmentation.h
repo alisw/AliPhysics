@@ -3,8 +3,9 @@
 
 
 #include <TObject.h>
-#include <TF1.h>
 
+
+class TF1;
 class AliITSgeom;
 
 //----------------------------------------------

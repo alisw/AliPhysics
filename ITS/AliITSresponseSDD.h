@@ -3,6 +3,8 @@
 
 #include "AliITSresponse.h"
 
+class TString;
+
 // response for SDD
 
 class AliITSresponseSDD :

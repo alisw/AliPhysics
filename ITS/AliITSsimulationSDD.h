@@ -2,23 +2,28 @@
 #define ALIITSSIMULATIONSDD_H
 
 
-#include <TH1.h>
-#include <TFile.h>
+
 #include <TNtuple.h>
-#include <TVector.h>
-#include <TArrayI.h>
+#include <TArrayF.h>
+
 
 #include "AliITSsimulation.h"
 
 //___________________________________________________
 
 
+class TH1F;
+class TFile;
+class TVector;
+class TArrayI;
+class TArrayF;
 class AliITS;
 class AliITSMap;
 class AliITSMapA1;
 class AliITSMapA2;
 class AliITSetfSDD;
 class AliITSInStream;
+class AliITSresponse;
 
 //___________________________________________________
 

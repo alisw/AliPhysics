@@ -14,8 +14,10 @@
  **************************************************************************/
 
 #include <TMath.h>
+#include <TF1.h>
 
 #include "AliITSsegmentationSPD.h"
+#include "AliITSgeom.h"
 
 ClassImp(AliITSsegmentationSPD)
 

@@ -3,10 +3,10 @@
 
 
 #include "AliITSsegmentation.h"
-#include "AliITSresponse.h"
 
 // segmentation for SDD
 
+class AliITSresponse;
 class AliITSsegmentationSDD :
 public AliITSsegmentation {
  public:

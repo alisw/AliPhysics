@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <TObjArray.h>
+#include <TRandom.h>
 
 #include "AliITSsegmentationSSD.h"
 #include "AliITSresponseSSD.h"

@@ -9,9 +9,10 @@
 //     Manager and hits classes for  ITS version 5
 ////////////////////////////////////////////////////////////////////////
 
-#include "TBRIK.h"
+
 #include "AliITS.h"
 
+class TBRIK;
 class AliITSv5 : public AliITS {
 
  public:

@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <TF1.h>
 #include <TMath.h>
 
 #include "AliITSsegmentationSDD.h"

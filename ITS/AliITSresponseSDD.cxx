@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <TString.h>
+
 #include "AliITSresponseSDD.h"
 
 

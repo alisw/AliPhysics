@@ -3,6 +3,10 @@
 
 #include "AliITSsegmentation.h"
 
+#include <TF1.h>
+
+class AliITSgeom;
+
 // segmentation and response for SPD 
 
 class AliITSsegmentationSPD :

@@ -17,12 +17,17 @@
 #include <iostream.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+
 #include <TStopwatch.h>
 #include <TCanvas.h>
 #include <TF1.h>
 #include <TRandom.h>
-#include <string.h>
-
+#include <TH1.h>
+#include <TFile.h>
+#include <TVector.h>
+#include <TArrayI.h>
+#include <TArrayF.h>
 
 #include "AliRun.h"
 #include "AliITS.h"
@@ -31,12 +36,12 @@
 #include "AliITSmodule.h"
 #include "AliITSMapA1.h"
 #include "AliITSMapA2.h"
-#include "AliITSsimulationSDD.h"
 #include "AliITSetfSDD.h"
 #include "AliITSRawData.h"
 #include "AliITSHuffman.h"
 #include "AliITSsegmentation.h"
 #include "AliITSresponse.h"
+#include "AliITSsimulationSDD.h"
 
 ClassImp(AliITSsimulationSDD)
 ////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,8 @@
 //  Response class for set:ITS                //
 ////////////////////////////////////////////////
 
-
+#include <TF1.h>
+#include <TString.h>
 #include "AliITSresponse.h"
 
 ClassImp(AliITSresponse)
