@@ -16,8 +16,6 @@
 // 
 //*-- Author: Yves Schutz (SUBATECH)
 
-#include <assert.h> 
-
 // --- ROOT system ---
 
 #include "TString.h"
@@ -38,20 +36,11 @@ class AliPHOSGeometry : public AliGeometry {
 
 public: 
 
-  AliPHOSGeometry() {
-    // default ctor 
-    // must be kept public for root persistency purposes, but should never be called by the outside world
-    fPHOSAngle = 0 ;
-    fGeometryEMCA = 0;
-    fGeometrySUPP = 0;
-    fGeometryCPV  = 0;
-    fgGeom        = 0;
-    fRotMatrixArray = 0;  }  
+  AliPHOSGeometry() ;
 
   AliPHOSGeometry(const AliPHOSGeometry & geom) {
     // cpy ctor requested by Coding Convention but not yet needed
-    
-    assert(0==1) ;
+    Fatal("cpy ctor", "not implemented") ;
   } 
   
   virtual ~AliPHOSGeometry(void) ; 
@@ -63,8 +52,7 @@ public:
 
   AliPHOSGeometry & operator = (const AliPHOSGeometry  & rvalue) const {
     // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
-    return *(GetInstance()) ; 
+    Fatal("operator =", "not implemented") ; return *(GetInstance()) ; 
   }
  
   // General

@@ -106,6 +106,8 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* na
 //____________________________________________________________________________
   AliPHOSClusterizerv1::~AliPHOSClusterizerv1()
 {
+  // dtor
+
   delete fPedestals ;
   delete fGains ;
 
@@ -116,6 +118,8 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* na
 //____________________________________________________________________________
 const TString AliPHOSClusterizerv1::BranchName() const 
 {  
+  // Returns branch name of the AliPHOSClusterizer
+
   TString branchName(GetName() ) ;
   branchName.Remove(branchName.Index(Version())-1) ;
   return branchName ;
@@ -124,6 +128,8 @@ const TString AliPHOSClusterizerv1::BranchName() const
 //____________________________________________________________________________
 Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId) const
 { 
+  // Returns energy value in the cell absId with the digit amplitude amp
+
   if(fPedestals || fGains ){  //use calibration data
     if(!fPedestals || !fGains ){
       Error("Calibrate","Either Pedestals of Gains not set!") ;
@@ -324,6 +330,8 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit **
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::GetCalibrationParameters() 
 {
+  // Get calibration parameters from AliPHOSDigitizer
+
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
 
   const TTask * task = gime->Digitizer(BranchName()) ;
@@ -399,6 +407,7 @@ void AliPHOSClusterizerv1::Init()
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::InitParameters()
 {
+  // Set initial parameters for clusterization
 
   fNumberOfCpvClusters     = 0 ; 
   fNumberOfEmcClusters     = 0 ; 

@@ -24,6 +24,10 @@ public:
 
   AliPHOSClusterizer() ;        // default ctor
   AliPHOSClusterizer(const char * headerFile, const char * name, const Bool_t toSplit) ;
+  AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer) {
+    // copy ctor: no implementation yet
+    Fatal("cpy ctor", "not implemented") ;
+  }
   virtual ~AliPHOSClusterizer() ; // dtor
 
   virtual Float_t GetEmcClusteringThreshold()const {Warning("GetEmcClusteringThreshold", "Not Defined" ) ; return 0. ; }  
@@ -42,6 +46,7 @@ public:
 
   virtual void SetEmcClusteringThreshold(Float_t cluth) {Warning("SetEmcClusteringThreshold", "Not Defined" ) ; } 
   virtual void SetEmcLocalMaxCut(Float_t cut) {Warning("SetEmcLocalMaxCut", "Not Defined" ) ; } 
+    
   virtual void SetEmcLogWeight(Float_t w) {Warning("SetEmcLogWeight", "Not Defined" ) ; } 
   virtual void SetEmcTimeGate(Float_t gate) {Warning("SetEmcTimeGate", "Not Defined" ) ; } 
   virtual void SetCpvClusteringThreshold(Float_t cluth) {Warning("SetCpvClusteringThreshold", "Not Defined" ) ; } 
@@ -50,6 +55,10 @@ public:
   virtual void SetDigitsBranch(const char * title) {Warning("SetDigitsBranch", "Not Defined" ) ; }  
   virtual void SetRecPointsBranch(const char *title) {Warning("SetRecPointsBranch", "Not Defined" ) ; } 
   virtual void SetUnfolding(Bool_t toUnfold ){Warning("SetUnfolding", "Not Defined" ) ;}  
+  AliPHOSClusterizer & operator = (const AliPHOSClusterizer & rvalue)  {
+    // assignement operator requested by coding convention but not needed
+    Fatal("operator =", "not implemented") ; return *this ; 
+  }
   virtual const char * Version() const {Warning("Version", "Not Defined" ) ; return 0 ; }  
 
 protected:

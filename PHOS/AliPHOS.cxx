@@ -368,7 +368,7 @@ AliPHOSGeometry * AliPHOS::GetGeometry() const
 //____________________________________________________________________________
 void AliPHOS::SetTreeAddress()
 { 
-
+  // Set tree address to hit array
   TBranch *branch;
   char branchname[20];
   sprintf(branchname,"%s",GetName());

@@ -54,9 +54,9 @@ public:
   Int_t       GetMultiplicity(void) const { return fMulDigit ; }   // gets the number of digits making this recpoint
   Int_t       GetMultiplicityAtLevel(const Float_t level) const ;  // computes multiplicity of digits with 
                                                                    // energy above relative level
-  Short_t     GetNExMax(void){return fNExMax ;} //Number of maxima found in cluster in unfolding:
-                                                //0 : was no unfolging
-                                                //-1: unfolding failed
+  Short_t     GetNExMax(void) const {return fNExMax ;}             // Number of maxima found in cluster in unfolding:
+                                                                   // 0: was no unfolging
+                                                                   //-1: unfolding failed
   void        SetNExMax(Int_t nmax){fNExMax = static_cast<Short_t>(nmax) ;}
   virtual Int_t GetNumberOfLocalMax(AliPHOSDigit **  maxAt, Float_t * maxAtEnergy,
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 

@@ -1,3 +1,27 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+/* $Id:  */
+
+/* $Log:
+ */
+//*-- Author: Boris Polichtchouk, IHEP
+//////////////////////////////////////////////////////////////////////////////
+//  Clusterization class for IHEP reconstruction.
+// Performs clusterization (collects neighbouring active cells)
+// It differs from AliPHOSClusterizerv1 in neighbour definition only
+
 // --- ROOT system ---
 #include "TBenchmark.h"
 #include "TROOT.h"
@@ -23,6 +47,7 @@ AliPHOSClusterizerv1(headerFile,name,toSplit)
 
 void AliPHOSClusterizerv2::GetNumberOfClustersFound(int* numb) const
 {
+  // Returns the number of found EMC and CPV rec.points
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;   
   numb[0] = gime->EmcRecPoints()->GetEntries();  
@@ -31,6 +56,7 @@ void AliPHOSClusterizerv2::GetNumberOfClustersFound(int* numb) const
 
 void AliPHOSClusterizerv2::Exec(Option_t* option)
 {
+  // Steering method
 
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSClusterizer"); 

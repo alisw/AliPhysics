@@ -642,8 +642,10 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax( AliPHOSDigit **  maxAt, Float_t 
   return iDigitN ;
 }
 //____________________________________________________________________________
-void AliPHOSEmcRecPoint::EvalTime(TClonesArray * digits){
-  
+void AliPHOSEmcRecPoint::EvalTime(TClonesArray * digits)
+{
+  // Define a rec.point time as a time in the cell with the maximum energy
+
   Float_t maxE = 0;
   Int_t maxAt = 0;
   for(Int_t idig=0; idig < fMulDigit; idig++){

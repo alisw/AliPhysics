@@ -24,9 +24,9 @@ public:
            AliPHOSCPVDigit(Int_t x, Int_t y, Float_t q);
   
   void     SetQpad(Float_t q) { fQpad = q;     }
-  Int_t    GetXpad()          { return  fXpad; }
-  Int_t    GetYpad()          { return  fYpad; }
-  Float_t  GetQpad()          { return  fQpad; }
+  Int_t    GetXpad() const    { return  fXpad; }
+  Int_t    GetYpad() const    { return  fYpad; }
+  Float_t  GetQpad() const    { return  fQpad; }
 
 private:
   Int_t    fXpad;       // Digit's pad number in Phi

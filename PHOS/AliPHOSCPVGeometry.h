@@ -12,11 +12,11 @@
 // Author:  Yuri Kharlov (IHEP, Protvino)
 // 7 November 2000
 
-#include <assert.h> 
+//#include "AliPHOSCPVBaseGeometry.h"
+#include "TObject.h"
 
-#include "AliPHOSCPVBaseGeometry.h"
-
-class AliPHOSCPVGeometry : public AliPHOSCPVBaseGeometry {
+// class AliPHOSCPVGeometry : public AliPHOSCPVBaseGeometry {
+class AliPHOSCPVGeometry : public TObject {
 
 public: 
 
@@ -25,21 +25,21 @@ public:
 
   // CPV functions
 
-  virtual Int_t   GetNumberOfCPVLayers(void)        { return  fNumberOfCPVLayers;        }
-  virtual Int_t   GetNumberOfCPVPadsPhi(void)       { return  fNumberOfCPVPadsPhi ;      }
-  virtual Int_t   GetNumberOfCPVPadsZ(void)         { return  fNumberOfCPVPadsZ ;        }
-  virtual Float_t GetCPVPadSizePhi(void)            { return  fCPVPadSizePhi;            }
-  virtual Float_t GetCPVPadSizeZ(void)              { return  fCPVPadSizeZ;              }
-  virtual Float_t GetCPVBoxSize(Int_t index)        { return  fCPVBoxSize[index];        }
-  virtual Float_t GetCPVActiveSize(Int_t index)     { return  fCPVActiveSize[index];     }
-  virtual Int_t   GetNumberOfCPVChipsPhi(void)      { return  fNumberOfCPVChipsPhi;      }
-  virtual Int_t   GetNumberOfCPVChipsZ(void)        { return  fNumberOfCPVChipsZ;        }
-  virtual Float_t GetGassiplexChipSize(Int_t index) { return  fGassiplexChipSize[index]; }
-  virtual Float_t GetCPVGasThickness(void)          { return  fCPVGasThickness;          }
-  virtual Float_t GetCPVTextoliteThickness(void)    { return  fCPVTextoliteThickness;    }
-  virtual Float_t GetCPVCuNiFoilThickness(void)     { return  fCPVCuNiFoilThickness;     }
-  virtual Float_t GetFTPosition(Int_t index)        { return  fFTPosition[index];        }
-  virtual Float_t GetCPVFrameSize(Int_t index)      { return  fCPVFrameSize[index];      }
+  virtual Int_t   GetNumberOfCPVLayers(void)        const { return  fNumberOfCPVLayers;        }
+  virtual Int_t   GetNumberOfCPVPadsPhi(void)       const { return  fNumberOfCPVPadsPhi ;      }
+  virtual Int_t   GetNumberOfCPVPadsZ(void)         const { return  fNumberOfCPVPadsZ ;        }
+  virtual Float_t GetCPVPadSizePhi(void)            const { return  fCPVPadSizePhi;            }
+  virtual Float_t GetCPVPadSizeZ(void)              const { return  fCPVPadSizeZ;              }
+  virtual Float_t GetCPVBoxSize(Int_t index)        const { return  fCPVBoxSize[index];        }
+  virtual Float_t GetCPVActiveSize(Int_t index)     const { return  fCPVActiveSize[index];     }
+  virtual Int_t   GetNumberOfCPVChipsPhi(void)      const { return  fNumberOfCPVChipsPhi;      }
+  virtual Int_t   GetNumberOfCPVChipsZ(void)        const { return  fNumberOfCPVChipsZ;        }
+  virtual Float_t GetGassiplexChipSize(Int_t index) const { return  fGassiplexChipSize[index]; }
+  virtual Float_t GetCPVGasThickness(void)          const { return  fCPVGasThickness;          }
+  virtual Float_t GetCPVTextoliteThickness(void)    const { return  fCPVTextoliteThickness;    }
+  virtual Float_t GetCPVCuNiFoilThickness(void)     const { return  fCPVCuNiFoilThickness;     }
+  virtual Float_t GetFTPosition(Int_t index)        const { return  fFTPosition[index];        }
+  virtual Float_t GetCPVFrameSize(Int_t index)      const { return  fCPVFrameSize[index];      }
 
  
 private:

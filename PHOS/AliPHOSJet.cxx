@@ -13,9 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //_________________________________________________________________________
 // Class to calculate jet chararacteristics
 //
+// This class implements for PHOS a jet finder for PHOS. It depends on a 
+// energy seed
+// minimum energy, cone radius and movement of the cone.
 //*-- Author :  D.Peressounko
 //////////////////////////////////////////////////////////////////////////////
 
@@ -32,6 +37,7 @@ ClassImp(AliPHOSJet)
   
 //____________________________________________________________________________ 
 AliPHOSJet::AliPHOSJet():TObject() {
+  //Inicilize members
   fNpart = 0 ;
   fList = 0 ;
   //  fMode = 0 ;
@@ -52,6 +58,7 @@ AliPHOSJet::AliPHOSJet():TObject() {
 
 //____________________________________________________________________________ 
 AliPHOSJet::~AliPHOSJet(){
+  //dtor
   if(fList){
     delete fList ;
     fList = 0 ;
@@ -190,7 +197,8 @@ Bool_t AliPHOSJet::AcceptConeDeviation(const Double_t e,const Double_t eta,const
 }
 //____________________________________________________________________________ 
 Bool_t AliPHOSJet::IsInCone(const TParticle * p)const
-{//
+{
+  //Say if  particle is inside the defined cone
   Double_t dEta ;
   Double_t dPhi ;
   if(!fEnergy){ //Final values not calculated yet, use intermediate
@@ -216,7 +224,8 @@ Bool_t AliPHOSJet::IsInCone(const TParticle * p)const
 }
 //____________________________________________________________________________ 
 Bool_t AliPHOSJet::IsInCone(const Double_t e,const Double_t eta,const Double_t phi)const
-{//
+{
+  //Says if particle is inside the defined cone
   Double_t dEta ;
   Double_t dPhi ;
   if(!fEnergy){ //Final values not calculated yet, use intermediate
@@ -260,7 +269,7 @@ Double_t AliPHOSJet::DistanceToJet(const TParticle *p)const{
 }
 //____________________________________________________________________________ 
 void AliPHOSJet::CalculateAll(void){
-
+  //Calculate all jet parameters
   if(fSumEnergy==0)
     return  ; //Nothing to calculate    
   
@@ -274,6 +283,7 @@ void AliPHOSJet::CalculateAll(void){
 }
 //____________________________________________________________________________ 
 void AliPHOSJet::Print(Option_t * option){
+  //Print jet parameters
   printf("-------------- AliPHOSJet ------------\n") ;
   printf(" Energy............. %f \n",fEnergy) ;
   printf(" Eta................ %f \n",fEta ) ;
@@ -284,3 +294,6 @@ void AliPHOSJet::Print(Option_t * option){
   printf(" N particles in jet  %d \n",fNpart) ;
   printf("----------------------------------\n") ;
 }
+
+
+

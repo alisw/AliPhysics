@@ -51,6 +51,19 @@ AliPHOSGeometry * AliPHOSGeometry::fgGeom = 0 ;
 Bool_t            AliPHOSGeometry::fgInit = kFALSE ;
 
 //____________________________________________________________________________
+AliPHOSGeometry::AliPHOSGeometry(void)
+{
+  // default ctor 
+  // must be kept public for root persistency purposes,
+  // but should never be called by the outside world
+  fPHOSAngle      = 0 ;
+  fGeometryEMCA   = 0;
+  fGeometrySUPP   = 0;
+  fGeometryCPV    = 0;
+  fgGeom          = 0;
+  fRotMatrixArray = 0;
+}
+//____________________________________________________________________________
 AliPHOSGeometry::~AliPHOSGeometry(void)
 {
   // dtor
@@ -342,15 +355,18 @@ void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_
   }
 }
 
+//____________________________________________________________________________
 Bool_t  AliPHOSGeometry::Impact(const TParticle * particle) const 
 {
-  Bool_t In=kFALSE;
-  Int_t ModuleNumber=0;
+  // Check if a particle being propagates from IP along the straight line impacts EMC
+
+  Bool_t in=kFALSE;
+  Int_t moduleNumber=0;
   Double_t z,x;
-  ImpactOnEmc(particle->Theta(),particle->Phi(),ModuleNumber,z,x);
-  if(ModuleNumber) In=kTRUE;
-  else In=kFALSE;
-  return In;
+  ImpactOnEmc(particle->Theta(),particle->Phi(),moduleNumber,z,x);
+  if(moduleNumber) in=kTRUE;
+  else in=kFALSE;
+  return in;
 }
 
 //____________________________________________________________________________

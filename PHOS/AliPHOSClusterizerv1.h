@@ -33,6 +33,10 @@ public:
   
   AliPHOSClusterizerv1() ;         
   AliPHOSClusterizerv1(const char * headerFile, const char * name = "Default", const Bool_t toSplit=kFALSE);
+  AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clusterizer) {
+    // copy ctor: no implementation yet
+    Fatal("cpy ctor", "not implemented") ;
+  }
   virtual ~AliPHOSClusterizerv1()  ;
   
   virtual Int_t   AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
@@ -75,6 +79,11 @@ public:
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
                                             // Chi^2 of the fit. Should be static to be passes to MINUIT
+  AliPHOSClusterizerv1 & operator = (const AliPHOSClusterizerv1 & rvalue)  {
+    // assignement operator requested by coding convention but not needed
+    Fatal("operator =", "not implemented") ; return *this ; 
+  }
+
   virtual const char * Version() const { return "clu-v1" ; }  
 
 protected:
@@ -115,12 +124,12 @@ private:
   AliPHOSCalibrationData * fPedestals ; //!
   AliPHOSCalibrationData * fGains ;    //!
   TArrayS                * fPatterns ;// Array of trigger patterns of events to handle
-  TString fCalibrVersion ;          //Version of calibration Data  
-  Int_t   fCalibrRun ;              //Specification of Calibration data
+  TString fCalibrVersion ;          // Version of calibration Data  
+  Int_t   fCalibrRun ;              // Specification of Calibration data
   Float_t fADCchanelEmc ;           // width of one ADC channel in GeV
-  Float_t fADCpedestalEmc ;         //
+  Float_t fADCpedestalEmc ;         // value of the EMC ADC pedestal
   Float_t fADCchanelCpv ;           // width of one ADC channel in CPV 'popugais'
-  Float_t fADCpedestalCpv ;         // 
+  Float_t fADCpedestalCpv ;         // value of the CPV ADC pedestal
   
   Float_t fPurifyThreshold ;         // threshold for cell energies after unfolding
   Float_t fEmcClusteringThreshold ;  // minimum energy to include a EMC digit in a cluster

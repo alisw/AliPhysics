@@ -22,18 +22,15 @@
 //*-- Author: Maxime Volkov (RRC KI) & Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
 
 // --- ROOT system ---
+#include "TVector3.h"
 
 // --- Standard library ---
-#include <string.h>
-#include <stdlib.h>
 
 // --- AliRoot header files ---
 #include "AliPHOSHit.h"
 #include "AliRun.h"
-#include "AliConst.h"
-#include "AliPHOSGetter.h"
-#include "AliPHOSGeometry.h"
 #include "AliPHOS.h"
+#include "AliPHOSGeometry.h"
 
 ClassImp(AliPHOSHit)
   
@@ -145,6 +142,25 @@ ostream& operator << (ostream& out, const AliPHOSHit& hit)
   Warning("operator <<", "Implement differently") ; 
   return out ;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -114,7 +114,7 @@ class AliPHOSGetter : public TObject {
   
   //=========== SDigits ==============
   TTree *                    TreeS(TString filename="") ; 
-  TClonesArray *             SDigits(const char * name = 0, const char * file=0) { 
+  TClonesArray *             SDigits(const char * name = 0, const char * file=0) const { 
     return dynamic_cast<TClonesArray*>(ReturnO("SDigits", name, file)) ;   }
   //const AliPHOSDigit *  SDigit(Int_t index) { return static_cast<const AliPHOSDigit *>(SDigits()->At(index)) ;} !!! why no such method ?
   const AliPHOSSDigitizer *  SDigitizer(const char * name =0) const { 
@@ -221,7 +221,7 @@ private:
 
  private:
 
-  static TFile * fFile;           //! 
+  static TFile * fgFile;           //! 
   Bool_t         fToSplit ;              //! Do we work in the split mode
   AliPHOSBeamTestEvent * fBTE ;           //! Header if BeamTest Event
   TString        fHeaderFile ;           //! File in which gAlice lives

@@ -22,7 +22,10 @@ class AliPHOSJetFinder : public TNamed {
 
 public:
   AliPHOSJetFinder() ;          // ctor
-
+  AliPHOSJetFinder(const AliPHOSJetFinder & jet) {
+    // copy ctor: no implementation yet
+    Fatal("cpy ctor", "not implemented") ;
+  }
   virtual ~AliPHOSJetFinder() ; // dtor
 
   void FindJetsFromParticles(const TClonesArray * plist,TObjArray * jetslist) ; //Do the job
@@ -36,28 +39,32 @@ public:
   void SetMaxConeMove(Double_t move){fMaxConeMove=move ; } ;
   void SetMinConeMove(Double_t move){fMinConeMove=move ; } ;
   void SetStatusCode(Int_t stc = 1){fStatusCode=stc ;} ;
+  AliPHOSJetFinder & operator = (const AliPHOSJetFinder & rvalue)  {
+    // assignement operator requested by coding convention but not needed
+    Fatal("operator =", "not implemented") ; return *this ; 
+  }
   
 private:
   Double_t Calibrate(const AliPHOSDigit * digit) ;
   void    CalculateEEtaPhi(const AliPHOSDigit * d,Double_t &e, Double_t &Eta, Double_t &phi);
 
 private:
-  Int_t     fNJets ;
+  Int_t     fNJets ; //Number of jets
   Int_t     fStatusCode ; //Status code of particles to handle
   Int_t     fMode  ;   //Mode for background calculation
 
   Double_t  fConeRad ;   //Maximal radius of jet
-  Double_t  fMaxConeMove ;
-  Double_t  fMinConeMove ;
-  Double_t  fEtSeed ;
-  Double_t  fEtMin ;   
-  Double_t  fPrecBg ;
-  Double_t  fSimGain ;
-  Double_t  fSimPedestal ;
+  Double_t  fMaxConeMove ; //Maximal cone movement
+  Double_t  fMinConeMove ; //Minimum cone movement
+  Double_t  fEtSeed ;      //Transversal energy seed
+  Double_t  fEtMin ;       //Minimal transversal energy
+  Double_t  fPrecBg ;      //Precision due to background?  
+  Double_t  fSimGain ;     //Simulated digit gain
+  Double_t  fSimPedestal ; //Simulated digit pedestal
 
 
-  TClonesArray * fParticles ;
-  TObjArray *    fJets ;
+  TClonesArray * fParticles ; //Particles array
+  TObjArray *    fJets ;      //Jets array
 
   ClassDef(AliPHOSJetFinder,1)  //Class to find Jets
 

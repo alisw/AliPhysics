@@ -28,15 +28,15 @@ public:
     // dtor
   }
   Int_t   Compare(const TObject * obj) const;
-  Int_t   GetEmc(void) { 
+  const Int_t   GetEmc(void) const { 
     // returns the index of EMC
     return fEmcN; 
   }
-  Int_t   GetPpsd(void) { 
+  const Int_t   GetPpsd(void) const { 
     // returns the index of PPSD
     return fPpsdN ; 
   }
-  Float_t GetR(void) { 
+  const Float_t GetR(void) const { 
     // returns the distance between EMC and PPSD
     return fR ; 
   } 

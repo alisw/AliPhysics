@@ -15,8 +15,9 @@
 
 //_________________________________________________________________________
 // C++ version of UA2 and/or Lund jet finding algorithm
-//  UA1 jet algorithm from LUND JETSET (LUCELL)
-//
+// UA1 jet algorithm from LUND JETSET (LUCELL)
+// Find jets at the level of no detector and Digits.
+// Needs modifications. 
 //*-- Author : D.Peressounko after UA1 coll. etc
 //////////////////////////////////////////////////////////////////////////////
 
@@ -40,7 +41,8 @@ ClassImp(AliPHOSJetFinder)
 //____________________________________________________________________________ 
   AliPHOSJetFinder::AliPHOSJetFinder():TNamed("AliPHOSJetFinder","") 
 {
-  fNJets = 0 ;
+  //Initialize jet parameters
+  fNJets = 0 ; 
   fMode  = 0 ;   //No iterations 
   fStatusCode = -999 ; //no selection
 
@@ -61,6 +63,7 @@ ClassImp(AliPHOSJetFinder)
 //____________________________________________________________________________ 
   AliPHOSJetFinder::~AliPHOSJetFinder()
 {
+  //dtor
   if(fParticles){
     delete fParticles ;
     fParticles = 0 ;
@@ -74,7 +77,7 @@ ClassImp(AliPHOSJetFinder)
 //____________________________________________________________________________ 
 void  AliPHOSJetFinder::FindJetsFromParticles(const TClonesArray * plist,TObjArray * jetslist) 
 {
-
+  //Find jets in the case without detector.
   TIter next(plist) ;
 
   TIter nextJet(jetslist) ;
@@ -160,7 +163,7 @@ void  AliPHOSJetFinder::FindJetsFromParticles(const TClonesArray * plist,TObjArr
 }
 //____________________________________________________________________________ 
 void AliPHOSJetFinder::FindJetsFromDigits(const TClonesArray * digits, TObjArray * jets){
-
+  //Find jets in the case witht detector at the level of digits.
   if(digits->GetEntries()==0){
     Error("JetsFromDigits","No entries in digits list \n") ;
     return ;
@@ -314,6 +317,7 @@ Double_t AliPHOSJetFinder::Calibrate(const AliPHOSDigit * digit){
 }
 //____________________________________________________________________________ 
 void AliPHOSJetFinder::CalculateEEtaPhi(const AliPHOSDigit * d,Double_t &e, Double_t &eta, Double_t &phi){
+  //Calculate direction of the jet
   e=Calibrate(d) ;
   AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance("GPS2","") ;
   TVector3 pos ;
@@ -323,6 +327,7 @@ void AliPHOSJetFinder::CalculateEEtaPhi(const AliPHOSDigit * d,Double_t &e, Doub
 }
 //____________________________________________________________________________ 
 void AliPHOSJetFinder::Print(Option_t * option){	
+  //Print parameters of the found jet
   printf("\n --------------- AliPHOSJetFinder --------------- \n") ;
   printf(" Jets found .........%d \n",fNJets) ;
   printf(" Seed energy cut ....%f \n",fEtSeed) ;

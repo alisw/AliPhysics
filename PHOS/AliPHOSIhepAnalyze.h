@@ -24,21 +24,22 @@ class AliPHOSIhepAnalyze : public TObject {
 
   AliPHOSIhepAnalyze() ;              // ctor
   AliPHOSIhepAnalyze(Text_t * name) ; // ctor
-
+  virtual ~AliPHOSIhepAnalyze(void) ; // dtor 
+   
   void AnalyzeCPV1(Int_t Nevents); // resolutions, mult and cluster lengths for CPV
   void AnalyzeEMC1(Int_t Nevents); // resolutions, mult and cluster lengths for EMC
   void AnalyzeCPV2(Int_t Nevents); // delta(gen)/delta(rec) between hits 
   void CpvSingle(Int_t Nevents); // signle particle analysis
   virtual void HitsCPV(TClonesArray& hits, Int_t event); 
-  TString GetFileName() { return fFileName; }
+  const TString GetFileName() const { return fFileName; }
 
  private:
 
-  Bool_t IsCharged(Int_t pdg_code);
+  Bool_t IsCharged(Int_t pdgCode);
 
  private:
 
-  TString fFileName;
+  TString fFileName; //Name of file analyzed
 
 ClassDef(AliPHOSIhepAnalyze,1)  // PHOSv1 event analyzis algorithm
 
