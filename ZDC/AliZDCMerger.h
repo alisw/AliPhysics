@@ -26,9 +26,6 @@ public:
                          Int_t &nfreespn, Int_t &nfreespp);
    void    Mixing();
    void    ExtractSignal(Int_t SpecType);
-   void    Digitize(Int_t NMhits, TClonesArray *MHits);
-   Int_t   Phe2ADCch(Int_t Detector, Int_t Quadrant, Int_t Light);
-   Int_t   AddPedestal();
    
    // Inline functions to return TCA of MergerHits to Hits2SDigits()
    TClonesArray *MergedHits()   const {return fMHits;}

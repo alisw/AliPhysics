@@ -1207,7 +1207,7 @@ void AliZDCv2::StepManager()
         else if(xdet[1]<0.) vol[1]=4;
       }
       if((vol[1]!=1) && (vol[1]!=2) && (vol[1]!=3) && (vol[1]!=4))
-        printf("\n	StepManager->ERROR in ZN!!! vol[1] = %d, xdet[0] = %f,"
+        printf("\n	ZDC StepManager->ERROR in ZN!!! vol[1] = %d, xdet[0] = %f,"
 	"xdet[1] = %f\n",vol[1], xdet[0], xdet[1]);
     }
     
@@ -1226,7 +1226,7 @@ void AliZDCv2::StepManager()
  	 }
       }
       if((vol[1]!=1) && (vol[1]!=2) && (vol[1]!=3) && (vol[1]!=4))
-        printf("	StepManager->ERROR in ZP!!! vol[1] = %d, xdet[0] = %f,"
+        printf("	ZDC StepManager->ERROR in ZP!!! vol[1] = %d, xdet[0] = %f,"
 	"xdet[1] = %f",vol[1], xdet[0], xdet[1]);
     }
     
@@ -1261,8 +1261,6 @@ void AliZDCv2::StepManager()
         hits[8] = 0;
         hits[9] = 0;
 
-//	  Int_t PcID = gMC->TrackPid();
-//	  printf("Pc ID -> %d\n",PcID);
 	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 	
 	if(fNoShower==1){
@@ -1291,7 +1289,6 @@ void AliZDCv2::StepManager()
 	   hits[8] = 0.;
 	   AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 	   }
-//	 printf(" Dep. E = %f \n",hits[9]);
       }
   }// NB -> Questa parentesi (chiude il primo IF) io la sposterei al fondo!???
 

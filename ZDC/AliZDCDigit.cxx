@@ -32,11 +32,12 @@ ClassImp(AliZDCDigit)
   
   fSector[0]   = 0;
   fSector[1]   = 0;
-  fADCValue = 0;  
+  fADCValue[0] = 0;  
+  fADCValue[1] = 0;  
 }
 
 //____________________________________________________________________________
-AliZDCDigit::AliZDCDigit(Int_t *Sector, Int_t ADCValue) 
+AliZDCDigit::AliZDCDigit(Int_t *Sector, Int_t *ADCValue) 
 {  
   // Constructor 
  
@@ -44,7 +45,9 @@ AliZDCDigit::AliZDCDigit(Int_t *Sector, Int_t ADCValue)
   for(i=0; i<2; i++) {
      fSector[i] = Sector[i];
   }
-  fADCValue = ADCValue;  
+  for(i=0; i<2; i++) {
+    fADCValue[i] = ADCValue[i];  
+  }
 }
 
 //____________________________________________________________________________
@@ -54,6 +57,7 @@ AliZDCDigit::AliZDCDigit(const AliZDCDigit & digit):TObject(digit)
 
   fSector[0]   = digit.fSector[0];           
   fSector[1]   = digit.fSector[1];           
-  fADCValue = digit.fADCValue;             
+  fADCValue[0] = digit.fADCValue[0];             
+  fADCValue[1] = digit.fADCValue[1];             
 
 }

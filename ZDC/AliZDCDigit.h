@@ -17,13 +17,13 @@ class AliZDCDigit : public TObject {
  public:
   
   AliZDCDigit() ;
-  AliZDCDigit(Int_t *Sector, Int_t ADCValue);
+  AliZDCDigit(Int_t *Sector, Int_t *ADCValue);
   AliZDCDigit(const AliZDCDigit & digit);
   virtual ~AliZDCDigit() {}
 
   // Getters 
-  virtual Int_t   GetSector(Int_t i) {return fSector[i];}
-  virtual Int_t   GetADCValue()      {return fADCValue;}
+  virtual Int_t   GetSector(Int_t i)        {return fSector[i];}
+  virtual Int_t   GetADCValue(Int_t i)      {return fADCValue[i];}
 
   // Operators
   Int_t operator == (AliZDCDigit &digit) {
@@ -35,7 +35,9 @@ class AliZDCDigit : public TObject {
   }
   virtual AliZDCDigit& operator + (AliZDCDigit &digit) {
     // Adds the amplitude of digits 
-    fADCValue += digit.fADCValue ;
+    for(Int_t i = 0; i < 2; i++){
+      fADCValue[i] += digit.fADCValue[i] ;
+    } 
     return *this ;
   }
   
@@ -43,15 +45,15 @@ class AliZDCDigit : public TObject {
 
   //Data members
   Int_t  fSector[2];         // Detector and tower in which light is produced
-  Int_t  fADCValue;          // ADC channel value
+  Int_t  fADCValue[2];       // ADC channel value (0 = high gain, 1 = low gain)
 
   // Print method
   virtual void Print(Option_t *) {
-     printf(" -> DIGIT: Detector =  %d Quadrant =  %d ADCCh =  %d\n ",
-     fSector[0], fSector[1], fADCValue);
+     printf(" -> DIGIT: Detector =  %d Quadrant =  %d ADCCh high gain=  %d ADCCh low gain=  %d\n ",
+     fSector[0], fSector[1], fADCValue[0], fADCValue[1]);
   }
     
-  ClassDef(AliZDCDigit,3)   // Digits in ZDC 
+  ClassDef(AliZDCDigit,4)   // Digits in ZDC 
 
 } ;
 
