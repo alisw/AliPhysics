@@ -120,7 +120,7 @@ AliTPCclusterMI &c)
   Float_t vmatrix[5][5];
   vmatrix[2][2] = matrix[2][0];
   c.SetType(0);
-  c.SetMax(Short_t(vmatrix[2][2])); // write maximal amplitude
+  c.SetMax((UShort_t)(vmatrix[2][2])); // write maximal amplitude
   for (Int_t di =-1;di <=1;di++)
     for (Int_t dj =-1;dj <=1;dj++){
       Float_t amp = matrix[di+2][dj];

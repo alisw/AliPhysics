@@ -17,14 +17,14 @@
 class AliTPCclusterMI : public AliCluster {
 public:
   AliTPCclusterMI():AliCluster(){fQ=0; fUsed=0;}
-  AliTPCclusterMI(Int_t *lab, Float_t *hit) : AliCluster(lab,hit) {fQ = (Short_t)hit[4];}
+  AliTPCclusterMI(Int_t *lab, Float_t *hit) : AliCluster(lab,hit) {fQ = (UShort_t)hit[4];}
   virtual ~AliTPCclusterMI() {}
   virtual Bool_t IsSortable() const; 
   virtual Int_t Compare(const TObject* obj) const;
   inline  void Use(Int_t inc=10);
-  void SetQ(Float_t q) {fQ=(Short_t)q;}
+  void SetQ(Float_t q) {fQ=(UShort_t)q;}
   void SetType(Char_t type) {fType=type;}
-  void SetMax(Short_t max) {fMax=max;}
+  void SetMax(UShort_t max) {fMax=max;}
   Int_t IsUsed(Int_t th=10) const {return (fUsed>=th) ? 1 : 0;}
   Float_t GetQ() const {return TMath::Abs(fQ);}
   Float_t GetMax() const {return fMax;} 
@@ -58,12 +58,12 @@ public:
   Float_t  GetQ()            const {return fQ;}
   Int_t    GelLabel(Int_t i) const {return fLabel[i];}
   //
-  void     SetY(Float_t y){ fCY = Short_t(TMath::Nint(y*100.));} 
-  void     SetZ(Float_t z){ fCZ = Short_t(TMath::Nint(z*100.));} 
-  void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(TMath::Nint(sigmaz*50.));}
-  void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(TMath::Nint(sigmay*50.));}
-  void     SetQ(Float_t q) {fQ = UShort_t(q);}
-  void     SetMax(Float_t max) {fMax = UShort_t(max);}
+  void     SetY(Float_t y){ fCY = (UShort_t)(TMath::Nint(y*100.));} 
+  void     SetZ(Float_t z){ fCZ = (UShort_t)(TMath::Nint(z*100.));} 
+  void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = (UChar_t)(TMath::Nint(sigmaz*50.));}
+  void     SetSigmaY(Float_t sigmay) {fSigmaY = (UChar_t)(TMath::Nint(sigmay*50.));}
+  void     SetQ(Float_t q) {fQ = (UShort_t)q;}
+  void     SetMax(Float_t max) {fMax = (UShort_t)max;}
   void     SetType(Char_t type) {fCType = type;}
   void     SetLabels(Int_t labels[3]){fLabel[0] = labels[0];fLabel[1] = labels[1];fLabel[2] = labels[2];}
 
