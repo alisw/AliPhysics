@@ -36,7 +36,7 @@ SHLIB         = -lg2c
 SOEXT 	      = so
 
 # additional ROOT libraries
-ROOTLIBS  += -lEGPythia6 -lcrypt 
+ROOTLIBS  += -lcrypt 
 
 # rmkdepend flags for building dependencies of FORTRAN files
 DEPENDFFLAGS = $(FFLAGS)
