@@ -235,8 +235,8 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 	  if(fManager)
 	    primaryoffset = fManager->GetMask(i) ; 
 	  else
-	    primaryoffset = 10000000*i ;
-	  curSDigit->ShiftPrimary(primaryoffset) ;
+	    primaryoffset = i ;
+	  curSDigit->ShiftPrimary(i) ;
 	  
 	  a = curSDigit->GetAmp() ;
 	  b = a /fTimeSignalLength ;
@@ -510,8 +510,8 @@ Bool_t AliPHOSDigitizer::Init()
     
   if(fManager)
     SetTitle("aliroot") ;
-  else
-    SetTitle("galice.root") ;
+  //  else
+  //  SetTitle("galice.root") ;
 
   if( strcmp(GetName(), "") == 0 )
     SetName("Default") ;
@@ -525,10 +525,10 @@ Bool_t AliPHOSDigitizer::Init()
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
   fEmcCrystals = geom->GetNModules() *  geom->GetNCristalsInModule() ;
   
-  // create a folder on the white board //YSAlice/WhiteBoard/Digits/PHOS/headerFile/digitsTitle
+  // Post Digits to the white board
   gime->PostDigits(GetName() ) ;   
   
-  //add Task to //YSAlice/tasks/Digitizer/PHOS
+  // Post Digitizer to the white board
   gime->PostDigitizer(this) ;
   
   //Mark that we will use current header file
@@ -563,9 +563,9 @@ void AliPHOSDigitizer::MixWith(const char* headerFile)
   }
   
   // check if the specified SDigits do not already exist on the White Board:
-  // //YSAlice/WhiteBoard/SDigits/PHOS/headerFile/sDigitsTitle
+  // //Folders/RunMC/Event/Data/PHOS/SDigits/headerFile/sdigitsname
 
-  TString path = "YSAlice/WhiteBoard/SDigits/PHOS/" ; 
+  TString path = "Folders/RunMC/Event/Data/PHOS/SDigits" ; 
   path += headerFile ; 
   path += "/" ; 
   path += GetName() ;
@@ -597,7 +597,7 @@ void AliPHOSDigitizer::Print(Option_t* option)const {
     cout << "------------------- "<< GetName() << " -------------" << endl ;
     cout << "Digitizing sDigits from file(s): " <<endl ;
     
-     TCollection * folderslist = ((TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/SDigits/PHOS"))->GetListOfFolders() ; 
+     TCollection * folderslist = ((TFolder*)gROOT->FindObjectAny("Folders/RunMC/Event/Data/PHOS/SDigits"))->GetListOfFolders() ; 
     TIter next(folderslist) ; 
     TFolder * folder = 0 ; 
     
@@ -724,9 +724,8 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
   //      and names of files, from which digits are made.
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  TClonesArray * digits = gime->Digits(GetName()) ; 
-
-  TTree * treeD ;
+  const TClonesArray * digits = gime->Digits(GetName()) ; 
+ TTree * treeD ;
 
   if(fManager)
     treeD = fManager->GetTreeD() ;
