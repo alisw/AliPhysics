@@ -219,7 +219,7 @@ AliPHOSTrackSegment * AliPHOSIndexToObject::GimeTrackSegment(Int_t index)
       cout << "AliPHOSIndexToObject::GimeTrackSegment: index " << index << " larger than available entries " 
 	   <<  tsentries << endl ; 
   else 
-    rv =  (AliPHOSTrackSegment *) (fTrackSegmentsList->At(index) ) ; 
+    rv =  (AliPHOSTrackSegment *) (tslist->At(index) ) ; 
   
   return rv ;
   

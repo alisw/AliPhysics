@@ -53,13 +53,7 @@ public:
   AliPHOSIndexToObject(AliPHOS * det) ; 
 
   AliPHOS * fDetector ;                    // the detector 
-  TTree * fDigits     ;                    // the digits tree
-  //  RecPointsList * fEmcList ;               // array od EMC RecPoints 
-  TTree * fKine ;                          // the kine tree that contains primary particles
-  //  RecPointsList * fPpsdList ;              // array od PPSD reconstructed points 
-  RecParticlesList * fRecParticlesList ;   // array of reconstructed particles 
   TTree * fReconstruct ;                   // the reconstruction tree  
-  TrackSegmentsList * fTrackSegmentsList ; // array of track segments
 
   static AliPHOSIndexToObject * fObjGetter ; // pointer to the unique instance of the singleton 
 
