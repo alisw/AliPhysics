@@ -69,9 +69,17 @@ void  AliPHOSPIDv1::MakeParticles(TrackSegmentsList * trsl, RecParticlesList * r
       
       if( tracksegment->GetPpsdLow() == 0 )    // Neutral  
 	type = kNEUTRAL ;   
-      else                           // Gamma
-	type = kGAMMA ;               
-    }
+      else {    // check the shower profile       
+	AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ; 
+	Float_t * lambda = new Float_t[2]; 
+	recp->GetElipsAxis(lambda) ; 
+	if ( ( lambda[0] > fLambda1m && lambda[0] < fLambda1M ) && // shower profile cut
+	     ( lambda[1] > fLambda2m && lambda[1] < fLambda2M ) )	
+	  type = kGAMMA ;                      // a well identified photon 
+	else 
+	  type = kGAMMAHADRON ;                // looks like a photon but is a hadron (most likely)  
+      }
+    } // Neutral
     else                            // Charged           
       type = kCHARGED ;   
 

@@ -256,7 +256,12 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 		      //fhChargedHadronPositionY->Fill(recpart. ) ; 
 		      cout << "CHARGED HADRON" << endl;
 		      break ;
-		      
+		    case kGAMMAHADRON:
+		      fhPhotonHadronEnergy->Fill(recparticle->Energy() ) ; 
+		      //fhPhotonHadronPositionX->Fill(recpart. ) ;
+		      //fhPhotonHadronPositionY->Fill(recpart. ) ; 
+		      cout << "PHOTON HADRON" << endl;
+		      break ;		      
 		    }
 		}
 	    }
@@ -302,16 +307,19 @@ void  AliPHOSAnalyze::BookingHistograms()
   fhNeutralHadronEnergy     = new TH1F("hNeutralHadronEnergy", "hNeutralHadronEnergy",    1000,  0. ,  30.);
   fhNeutralEMEnergy         = new TH1F("hNeutralEMEnergy", "hNeutralEMEnergy",    1000,  0. ,  30.);
   fhChargedHadronEnergy     = new TH1F("hChargedHadronEnergy", "hChargedHadronEnergy",    1000,  0. ,  30.);
+  fhPhotonHadronEnergy      = new TH1F("hPhotonHadronEnergy","hPhotonHadronEnergy",500,-80. , 80.);
   fhPhotonPositionX         = new TH1F("hPhotonPositionX","hPhotonPositionX",   500,-80. , 80.);
   fhElectronPositionX       = new TH1F("hElectronPositionX","hElectronPositionX",500,-80. , 80.);
   fhNeutralHadronPositionX  = new TH1F("hNeutralHadronPositionX","hNeutralHadronPositionX",500,-80. , 80.);
   fhNeutralEMPositionX      = new TH1F("hNeutralEMPositionX","hNeutralEMPositionX",500,-80. , 80.);
   fhChargedHadronPositionX  = new TH1F("hChargedHadronPositionX","hChargedHadronPositionX",500,-80. , 80.);
+  fhPhotonHadronPositionX   = new TH1F("hPhotonHadronPositionX","hPhotonHadronPositionX",500,-80. , 80.);
   fhPhotonPositionY         = new TH1F("hPhotonPositionY","hPhotonPositionY",   500,-80. , 80.);
   fhElectronPositionY       = new TH1F("hElectronPositionY","hElectronPositionY",500,-80. , 80.);
   fhNeutralHadronPositionY  = new TH1F("hNeutralHadronPositionY","hNeutralHadronPositionY",500,-80. , 80.);
   fhNeutralEMPositionY      = new TH1F("hNeutralEMPositionY","hNeutralEMPositionY",500,-80. , 80.);
   fhChargedHadronPositionY  = new TH1F("hChargedHadronPositionY","hChargedHadronPositionY",500,-80. , 80.);
+  fhPhotonHadronPositionY   = new TH1F("hPhotonHadronPositionY","hPhotonHadronPositionY",500,-80. , 80.);
 
 }
 //____________________________________________________________________________
@@ -809,6 +817,12 @@ void AliPHOSAnalyze::SavingHistograms()
     fhChargedHadronPositionX->Write() ;
   if (fhChargedHadronPositionY)
     fhChargedHadronPositionX->Write() ;
+  if (fhPhotonHadronEnergy) 
+    fhPhotonHadronEnergy->Write() ;
+  if (fhPhotonHadronPositionX) 
+    fhPhotonHadronPositionX->Write() ;
+  if (fhPhotonHadronPositionY)
+    fhPhotonHadronPositionX->Write() ;
 
   output.Write();
   output.Close();

@@ -67,6 +67,10 @@ TString AliPHOSRecParticle::Name()
   case kNEUTRALEM:
     name = "NEUTRAL EM" ; 
     break ; 
+  case kGAMMAHADRON:
+    name = "PHOTON HADRON" ; 
+    break ; 
+
   }
   return name ; 
 }

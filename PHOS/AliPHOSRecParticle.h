@@ -31,6 +31,7 @@ const static Int_t kCHARGED       = 3 ;
 const static Int_t kCHARGEDHADRON = 4 ;  
 const static Int_t kNEUTRALHADRON = 5 ;  
 const static Int_t kNEUTRALEM     = 6 ;  
+const static Int_t kGAMMAHADRON   = 7 ; 
 
 class AliPHOSRecParticle : public TParticle {
 
