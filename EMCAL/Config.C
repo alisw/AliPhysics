@@ -756,8 +756,9 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 //
 //      Add all to cockail ...    
 //
+	gener->AddGenerator(jets,"Jets",1);
 	gener->AddGenerator(bg,"Underlying Event", 1);
-//	gener->AddGenerator(jets,"Jets",1);
+
      break;	
     case kGammaPlusBg:
 	AliGenCocktail *gener = new AliGenCocktail();
@@ -795,8 +796,9 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 //
 //      Add all to cockail ...    
 //
-	gener->AddGenerator(bg,"Underlying Event", 1);
 	gener->AddGenerator(jets,"Jets",1);
+	gener->AddGenerator(bg,"Underlying Event", 1);
+
 	break;
     case kJets_100:
 //  100 GeV Jets  
