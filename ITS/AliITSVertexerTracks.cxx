@@ -347,7 +347,15 @@ AliESDVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(AliESD *esdEvent)
     AliESDtrack *esdTrack = (AliESDtrack*)esdEvent->GetTrack(i);
     if(!esdTrack->GetStatus()&AliESDtrack::kITSin)
       { delete esdTrack; continue; }
-    itstrack = new AliITStrackV2(*esdTrack);
+    try {
+      itstrack = new AliITStrackV2(*esdTrack);
+    }
+    catch (const Char_t *msg) {
+        Warning("FindVertexForCurrentEvent",msg);
+        delete esdTrack;
+        continue;
+    }
+
     trkTree->Fill();
     itstrack = 0;
     delete esdTrack; 
@@ -375,6 +383,11 @@ AliESDVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(AliESD *esdEvent)
   // store vertex information in ESD
   fCurrentVertex->GetXYZ(vtx);
   fCurrentVertex->GetCovMatrix(cvtx);
+
+  Double_t tp[3];
+  esdEvent->GetVertex()->GetTruePos(tp);
+  fCurrentVertex->SetTruePos(tp);
+
   esdEvent->SetVertex(fCurrentVertex);
 
   cout<<"Vertex: "<<vtx[0]<<", "<<vtx[1]<<", "<<vtx[2]<<endl;
