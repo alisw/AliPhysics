@@ -40,6 +40,10 @@ class AliHBTPairCut: public TObject
     
     void SetQInvRange(Double_t min, Double_t max);
     void SetKtRange(Double_t min, Double_t max);
+    void SetQOutCMSLRange(Double_t min, Double_t max);
+    void SetQSideCMSLRange(Double_t min, Double_t max);
+    void SetQLongCMSLRange(Double_t min, Double_t max);
+    
   protected:
     AliHBTParticleCut*      fFirstPartCut;
     AliHBTParticleCut*      fSecondPartCut;

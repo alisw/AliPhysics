@@ -136,8 +136,32 @@ void AliHBTPairCut::SetQInvRange(Double_t min, Double_t max)
   AliHBTQInvCut* cut= (AliHBTQInvCut*)FindCut(kHbtPairCutPropQInv);
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTQInvCut(min,max);
-
 }
+/**********************************************************/
+void AliHBTPairCut::SetQOutCMSLRange(Double_t min, Double_t max)
+{
+  AliHBTQOutCMSLCCut* cut= (AliHBTQOutCMSLCCut*)FindCut(kHbtPairCutPropQOutCMSLC);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliHBTQOutCMSLCCut(min,max);
+}
+
+/**********************************************************/
+void AliHBTPairCut::SetQSideCMSLRange(Double_t min, Double_t max)
+{
+  AliHBTQSideCMSLCCut* cut= (AliHBTQSideCMSLCCut*)FindCut(kHbtPairCutPropQSideCMSLC);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliHBTQSideCMSLCCut(min,max);
+}
+
+/**********************************************************/
+void AliHBTPairCut::SetQLongCMSLRange(Double_t min, Double_t max)
+{
+  AliHBTQLongCMSLCCut* cut= (AliHBTQLongCMSLCCut*)FindCut(kHbtPairCutPropQLongCMSLC);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliHBTQLongCMSLCCut(min,max);
+}
+
+/**********************************************************/
 
 void AliHBTPairCut::SetKtRange(Double_t min, Double_t max)
 {
