@@ -28,19 +28,16 @@ class AliL3HoughTransformer : public AliL3HoughBaseTransformer {
 
   Int_t GetEtaIndex(Double_t eta);
   AliL3Histogram *GetHistogram(Int_t eta_index);
-  
+  Double_t GetEta(Int_t eta_index);
 
+  //void Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100);
+  
   ClassDef(AliL3HoughTransformer,1) //Normal Hough transformation class
 
 };
 
-inline AliL3Histogram *AliL3HoughTransformer::GetHistogram(Int_t eta_index)
-{
-  if(!fParamSpace || eta_index >= GetNEtaSegments() || eta_index < 0)
-    return 0;
-  if(!fParamSpace[eta_index])
-    return 0;
-  return fParamSpace[eta_index];
-}
-
 #endif
+
+
+
+

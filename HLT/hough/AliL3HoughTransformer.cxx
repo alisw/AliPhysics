@@ -35,6 +35,8 @@ AliL3HoughTransformer::~AliL3HoughTransformer()
   DeleteHistograms();
 }
 
+//void AliL3HoughTransformer::Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100){}
+
 void AliL3HoughTransformer::DeleteHistograms()
 {
   if(!fParamSpace)
@@ -95,7 +97,6 @@ void AliL3HoughTransformer::Reset()
     fParamSpace[i]->Reset();
 }
 
-
 Int_t AliL3HoughTransformer::GetEtaIndex(Double_t eta)
 {
   //Return the histogram index of the corresponding eta. 
@@ -103,6 +104,23 @@ Int_t AliL3HoughTransformer::GetEtaIndex(Double_t eta)
   Double_t etaslice = (GetEtaMax() - GetEtaMin())/GetNEtaSegments();
   Double_t index = (eta-GetEtaMin())/etaslice;
   return (Int_t)index;
+}
+
+inline AliL3Histogram *AliL3HoughTransformer::GetHistogram(Int_t eta_index)
+{
+  if(!fParamSpace || eta_index >= GetNEtaSegments() || eta_index < 0)
+    return 0;
+  if(!fParamSpace[eta_index])
+    return 0;
+  return fParamSpace[eta_index];
+}
+
+Double_t AliL3HoughTransformer::GetEta(Int_t eta_index)
+{
+  Double_t eta_slice = (GetEtaMax()-GetEtaMin())/GetNEtaSegments();
+  Double_t eta=(Double_t)((eta_index+0.5)*eta_slice);
+  if(GetSlice()>17) eta*=-1;
+  return eta;
 }
 
 void AliL3HoughTransformer::TransformCircle()
