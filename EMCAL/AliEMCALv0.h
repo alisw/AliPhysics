@@ -27,7 +27,7 @@ class AliEMCALv0 : public AliEMCAL {
 
   AliEMCALv0():AliEMCAL() {}
   AliEMCALv0(const char *name, const char *title="") ;
-  AliEMCALv0(const AliEMCALv0 & emcal) {
+  AliEMCALv0(const AliEMCALv0 & emcal):AliEMCAL(emcal) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;  
@@ -59,7 +59,7 @@ class AliEMCALv0 : public AliEMCAL {
   
  protected:
 
-  ClassDef(AliEMCALv0,1)  // Implementation of EMCAL manager class for midrapidity barrel layout between 0 and 120 degrees 
+  ClassDef(AliEMCALv0,2)  // Implementation of EMCAL manager class for midrapidity barrel layout between 0 and 120 degrees 
     
     };
     

@@ -27,7 +27,7 @@ public:
 
   AliEMCALTrackSegmentMakerv1() ;                     
   AliEMCALTrackSegmentMakerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName);                  
-  AliEMCALTrackSegmentMakerv1(const AliEMCALTrackSegmentMakerv1 & tsm) {
+  AliEMCALTrackSegmentMakerv1(const AliEMCALTrackSegmentMakerv1 & tsm):AliEMCALTrackSegmentMaker(tsm) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;
@@ -69,7 +69,7 @@ private:
   TClonesArray * fHCALinkArray  ;//! Contains the links ECAL-HCAL
   Int_t fTrackSegmentsInRun ;    //! Total number of track segments in one run
 
-  ClassDef( AliEMCALTrackSegmentMakerv1,2)  // Implementation version 1 of algorithm class to make EMCAL track segments 
+  ClassDef( AliEMCALTrackSegmentMakerv1,3)  // Implementation version 1 of algorithm class to make EMCAL track segments 
 
 };
 

@@ -30,7 +30,7 @@ public:
 
   AliEMCALTrackSegmentMaker() ;                     
   AliEMCALTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;                       
-  AliEMCALTrackSegmentMaker(const AliEMCALTrackSegmentMaker & tsmaker) { ; } 
+  AliEMCALTrackSegmentMaker(const AliEMCALTrackSegmentMaker & tsmaker):TTask(tsmaker) { ; } 
   virtual ~ AliEMCALTrackSegmentMaker() ;
 
   virtual void    Exec(Option_t * option){Warning("Exec", "Not Defined" ) ; } 
@@ -43,7 +43,7 @@ public:
 protected:
   TString fEventFolderName ;  // event folder name
   
-  ClassDef( AliEMCALTrackSegmentMaker,1)    // Algorithm class to make EMCAL track segments (Base Class)
+  ClassDef( AliEMCALTrackSegmentMaker,2)    // Algorithm class to make EMCAL track segments (Base Class)
 
 };
 
