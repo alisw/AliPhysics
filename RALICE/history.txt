@@ -548,3 +548,5 @@
                 so support for setting waveforms by specifying a slotname has been removed. 
                 Printout info in AliSignal::Data() and AliSignal::List() improved and memberfunctions
                 ListWaveform() and GetWaveformIndex() introduced in AliSignal.
+28-nov-2004 NvE User definable status word introduced in AliDevice to allow indication of different
+                versions of readout electronics etc... 

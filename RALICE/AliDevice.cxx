@@ -27,6 +27,8 @@
 // =========
 //
 // AliDevice m;
+// // Set user defined status word to indicate e.g. readout electronics version 
+// m.SetStatus(100201);
 // m.SetHitCopy(1);
 // m.SetName("OM123");
 //
@@ -85,9 +87,11 @@ ClassImp(AliDevice) // Class implementation to enable ROOT I/O
 AliDevice::AliDevice() : AliSignal()
 {
 // Default constructor.
+// The user definable status word is set to zero.
 // By default private copies of the recorded hits will be made.
 // This implies that by default the device will own the registered hits.
 // See the SetHitCopy() memberfunction for further details.
+ fStatus=0;
  fHitCopy=1;
  fHits=0;
  fOrdered=0;
@@ -136,6 +140,7 @@ AliDevice::AliDevice(const AliDevice& dev) : AliSignal(dev)
  fOrdered=0;
  fMarkers=0;
 
+ fStatus=dev.GetStatus();
  fHitCopy=dev.GetHitCopy();
 
  Int_t nhits=dev.GetNhits();
@@ -165,6 +170,8 @@ AliDevice::AliDevice(const AliDevice& dev) : AliSignal(dev)
 void AliDevice::Reset(Int_t mode)
 {
 // Reset registered hits and AliSignal attributes.
+// Note : The status word and HitCopy flag are NOT modified.
+//        Use SetStatus() and SetHitCopy() to modify these parameters. 
 // See AliSignal::Reset() for further details.
  RemoveHits();
  AliSignal::Reset(mode);
@@ -204,6 +211,18 @@ Int_t AliDevice::GetHitCopy() const
 // 0 ==> No private copies are made; pointers of original hits are stored.
 // 1 ==> Private copies of the hits are made and these pointers are stored.
  return fHitCopy;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliDevice::SetStatus(Int_t word)
+{
+// Set a user defined status word for this device.
+ fStatus=word;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliDevice::GetStatus() const
+{
+// Provide the user defined status word for this device.
+ return fStatus;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliDevice::AddHit(AliSignal& s)

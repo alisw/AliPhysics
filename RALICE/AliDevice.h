@@ -16,6 +16,8 @@ class AliDevice : public AliSignal
   virtual ~AliDevice();                              // Default destructor
   AliDevice(const AliDevice& dev);                   // Copy constructor
   virtual TObject* Clone(const char* name="") const; // Make a deep copy and provide its pointer
+  void SetStatus(Int_t word);                        // Set the status word (user definable)
+  Int_t GetStatus() const;                           // Provide the status word
   void SetHitCopy(Int_t j);                          // (De)activate creation of private copies of hits
   Int_t GetHitCopy() const;                          // Provide HitCopy flag value      
   void AddHit(AliSignal& s);                         // Register an AliSignal object as a hit to this module
@@ -38,11 +40,12 @@ class AliDevice : public AliSignal
   void DisplayHits(Int_t idx=1,Float_t scale=-1,TObjArray* hits=0,Int_t dp=0,Int_t mstyle=8,Int_t mcol=4); // Hit disp.
 
  protected:
+  Int_t fStatus;       // User definable status word
   Int_t fHitCopy;      // Flag to denote making private copies of added hits
   TObjArray* fHits;    // Array to hold the registered hits
   TObjArray* fOrdered; //! Temp. array to hold the ordered hits
   TObjArray* fMarkers; //! Temp. array to hold the 3D markers for the hit display
 
- ClassDef(AliDevice,5) // Signal (Hit) handling of a generic device.
+ ClassDef(AliDevice,6) // Signal (Hit) handling of a generic device.
 };
 #endif
