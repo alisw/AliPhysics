@@ -9,7 +9,7 @@
 #include <AliRndm.h>
 
 typedef enum
-{kPyCharm, kPyBeauty, kPyCharmUnforced, kPyBeautyUnforced, kPyJpsi, kPyJpsiChi, kPyMb, kPyJets, kPyDirectGamma, kPyCharmPbMNR}
+{kPyCharm, kPyBeauty, kPyCharmUnforced, kPyBeautyUnforced, kPyJpsi, kPyJpsiChi, kPyMb, kPyJets, kPyDirectGamma, kPyCharmPbMNR, kPyD0PbMNR}
 Process_t;
 
 typedef enum

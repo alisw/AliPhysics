@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.20  2002/03/03 13:48:50  morsch
+Option  kPyCharmPbMNR added. Produce charm pairs in agreement with MNR
+NLO calculations (Nicola Carrer).
+
 Revision 1.19  2002/02/20 08:52:20  morsch
 Correct documentation of SetNuclei method.
 
@@ -194,6 +198,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 	SetMSEL(10);
 	break;
     case kPyCharmPbMNR:
+    case kPyD0PbMNR:
       // Tuning of Pythia parameters aimed to get a resonable agreement
       // between with the NLO calculation by Mangano, Nason, Ridolfi for the
       // c-cbar single inclusive and double differential distributions.
