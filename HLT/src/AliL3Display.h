@@ -6,6 +6,7 @@
 
 class AliL3SpacePointData;
 class AliL3TrackArray;
+class AliL3Transform;
 
 class AliL3Display : public TObject {
 
@@ -14,6 +15,7 @@ class AliL3Display : public TObject {
   AliL3SpacePointData *fClusters[36][5]; //!
   AliL3TrackArray *fTracks; //!
   UInt_t fNcl[36][5];
+  AliL3Transform *fTransform; //!
 
   Int_t fMinSlice;
   Int_t fMaxSlice;
@@ -23,7 +25,7 @@ class AliL3Display : public TObject {
   AliL3Display(Int_t *slice);
   virtual ~AliL3Display();
 
-  void Setup(Char_t *trackfile);
+  void Setup(Char_t *trackfile,Char_t *path);
   void DisplayTracks(Int_t min_hits=10);
   void DisplayAll(Int_t min_hits=10);
   void DisplayClusters();

@@ -62,7 +62,7 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weigh
   //set nhits for sorting.
   SetNHits(weight);
     
-  SetCharge(copysign(1,kappa));
+  SetCharge((Int_t)copysign(1,kappa));
   Double_t charge = -1.*kappa;
   Double_t trackPhi0 = GetPhi0() + charge*0.5*Pi/fabs(charge);
 
