@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2003/03/04 07:36:15  kowal2
+Logs added
+
 */
 
 #include "AliTPCPid.h"
@@ -102,8 +105,8 @@ Int_t	AliTPCPid::wpik(Int_t nc,Float_t q)
     }
     Float_t dqpi=(q-qmpi)/sigpi;
     Float_t dqk =(q-qmk )/sigk;
-    dpi =fabs(dqpi);
-    dk  =fabs(dqk);
+    dpi =TMath::Abs(dqpi);
+    dk  =TMath::Abs(dqk);
     Double_t dn=appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk);
     if(dn>0.){
       ppi=appi*TMath::Gaus(q,qmpi,sigpi)/dn;
