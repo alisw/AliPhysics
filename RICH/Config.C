@@ -1,7 +1,7 @@
 enum gentype_t {hijing, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan, doublescan};
 
 gentype_t gentype=gun;
-ntracks=1;
+ntracks=20;
 
 void Config()
 {
@@ -15,7 +15,7 @@ TFile *rootfile = new TFile("galice.root","recreate");
 rootfile->SetCompressionLevel(2);
 TGeant3 *geant3 = (TGeant3*)gMC;
 
-//geant3->Grndmq(0,0,55," ");
+geant3->Grndmq(0,0,5," ");
  
 //=======================================================================
 // ******* GEANT STEERING parameters FOR ALICE SIMULATION *******
@@ -59,7 +59,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //*********************************************
      AliGenFixed *gener = new AliGenFixed(ntracks);
      gener->SetMomentum(3);
-     gener->SetPhiRange(92);
+     gener->SetPhiRange(88);
      gener->SetThetaRange(90);
      gener->SetOrigin(0,0,0);                 //vertex position
      gener->SetPart(kPiPlus);                 //GEANT particle type
@@ -70,8 +70,8 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //*********************************************
      AliGenBox *gener = new AliGenBox(ntracks);
      gener->SetMomentumRange(3,3);
-     gener->SetPhiRange(80,100);
-     gener->SetThetaRange(80,100);
+     gener->SetPhiRange(82,98);
+     gener->SetThetaRange(85,98);
      gener->SetOrigin(0,0,0);   
      gener->SetVertexSmear(kPerTrack); 
      //vertex position
@@ -367,46 +367,46 @@ if(iRICH) {
 //
 // Version 0
 // Default Segmentation
-    AliRICHSegmentationV1* SegmentationV0 = new AliRICHSegmentationV1;
+    AliRICHSegmentationV1* Segmentation = new AliRICHSegmentationV1;
 //
 //  Segmentation parameters
-    SegmentationV0->SetPadSize(0.8,0.84);
-    SegmentationV0->SetDAnod(0.84/2);
+    Segmentation->SetPadSize(0.8,0.84);
+    Segmentation->SetDAnod(0.84/2);
 
 //  Geometry parameters
-    AliRICHGeometry* GeometryV0 = new AliRICHGeometry;
-    GeometryV0->SetGapThickness(8);
-    GeometryV0->SetProximityGapThickness(.4);
-    GeometryV0->SetQuartzLength(133);
-    GeometryV0->SetQuartzWidth(127.9);
-    GeometryV0->SetQuartzThickness(.5);
-    GeometryV0->SetOuterFreonLength(133);
-    GeometryV0->SetOuterFreonWidth(41.3);
-    GeometryV0->SetInnerFreonLength(133);
-    GeometryV0->SetInnerFreonWidth(41.3);
-    GeometryV0->SetFreonThickness(1.5);
+    AliRICHGeometry* Geometry = new AliRICHGeometry;
+    Geometry->SetGapThickness(8);
+    Geometry->SetProximityGapThickness(.4);
+    Geometry->SetQuartzLength(133);
+    Geometry->SetQuartzWidth(127.9);
+    Geometry->SetQuartzThickness(.5);
+    Geometry->SetOuterFreonLength(133);
+    Geometry->SetOuterFreonWidth(41.3);
+    Geometry->SetInnerFreonLength(133);
+    Geometry->SetInnerFreonWidth(41.3);
+    Geometry->SetFreonThickness(1.5);
 
 //  Response parameters
-    AliRICHResponseV0*  Rresponse0   = new AliRICHResponseV0;
-    Rresponse0->SetSigmaIntegration(5.);
-    Rresponse0->SetChargeSlope(27.);
-    Rresponse0->SetChargeSpread(0.18, 0.18);
-    Rresponse0->SetMaxAdc(4096);
-    Rresponse0->SetAlphaFeedback(0.036);
-    Rresponse0->SetEIonisation(26.e-9);
-    Rresponse0->SetSqrtKx3(0.77459667);
-    Rresponse0->SetKx2(0.962);
-    Rresponse0->SetKx4(0.379);
-    Rresponse0->SetSqrtKy3(0.77459667);
-    Rresponse0->SetKy2(0.962);
-    Rresponse0->SetKy4(0.379);
-    Rresponse0->SetPitch(0.25);
+    AliRICHResponseV0*  Response   = new AliRICHResponseV0;
+    Response->SetSigmaIntegration(5.);
+    Response->SetChargeSlope(27.);
+    Response->SetChargeSpread(0.18, 0.18);
+    Response->SetMaxAdc(4096);
+    Response->SetAlphaFeedback(0.036);
+    Response->SetEIonisation(26.e-9);
+    Response->SetSqrtKx3(0.77459667);
+    Response->SetKx2(0.962);
+    Response->SetKx4(0.379);
+    Response->SetSqrtKy3(0.77459667);
+    Response->SetKy2(0.962);
+    Response->SetKy4(0.379);
+    Response->SetPitch(0.25);
 
       
   for (Int_t i=0; i<7; i++) {
-    RICH->SetGeometryModel(i,GeometryV0);
-    RICH->SetSegmentationModel(i, SegmentationV0);
-    RICH->SetResponseModel(i, Rresponse0);
+    RICH->SetGeometryModel(i,Geometry);
+    RICH->SetSegmentationModel(i, Segmentation);
+    RICH->SetResponseModel(i, Response);
     RICH->SetNsec(i,1);
   }  
   RICH->SetDebugLevel(0);
