@@ -24,7 +24,6 @@
 #include <TNode.h>
 #include "AliRun.h"
 #include "AliFMD.h"
-#include "TGeant3.h"
  
 ClassImp(AliFMD)
  

@@ -19,19 +19,19 @@ HDRS          = $(SRCS:.cxx=.h) FMDLinkDef.h
 
 DICT          = FMDCint.cxx
 DICTH         = $(DICT:.cxx=.h)
-DICTO         = $(DICT:.cxx=.o)
+DICTO         = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN Objectrs
 
-FOBJS         = $(FSRCS:.f=.o)
+FOBJS         = $(patsubst %.F,$(ALICE_TARGET)/%.o,$(FSRCS))
 
 # C Objects
 
-COBJS         = $(CSRCS:.c=.o)
+COBJS         = $(patsubst %.c,$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
-OBJS          = $(SRCS:.cxx=.o) $(DICTO)
+OBJS          = $(patsubst %.cxx,$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
@@ -45,12 +45,12 @@ FFLAGS      = $(FOPT)
  
 # Target
 
-SLIBRARY	= $(ALICE_ROOT)/lib/libFMD.$(SL)
-ALIBRARY	= $(ALICE_ROOT)/lib/libFMD.a
+SLIBRARY	= $(LIBDIR)/libFMD.$(SL)
+ALIBRARY	= $(LIBDIR)/libFMD.a
 
 default:	$(SLIBRARY)
 
-$(ALICE_ROOT)/lib/libFMD.$(SL):	$(OBJS)
+$(LIBDIR)/libFMD.$(SL):		$(OBJS)
 
 $(DICT):			$(HDRS)
 
