@@ -239,8 +239,8 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
      printf("det type %d first2, last2 %d %d \n",2,first2,last2);
 
      // module loop for the SSD
-     //for (mod=first2; mod<last2+1; mod++) {  // for the "ALL" option
-     for (mod=0; mod<last2-first2+1; mod++) { //for the "SSD" option
+     for (mod=first2; mod<last2+1; mod++) {  // for the "ALL" option
+       //for (mod=0; mod<last2-first2+1; mod++) { //for the "SSD" option
        
        TTree *TR = gAlice->TreeR();
        Int_t nentrec=TR->GetEntries();
@@ -264,10 +264,10 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
        totclust += nclusters;
        //if (nclusters) printf("Found %d clusters for module %d\n",nrecc,mod);
        
-       AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod+first2);
+       //AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod+first2);
        // for the "SSD" option
 
-       //AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod);
+       AliITSmodule *Mod = (AliITSmodule *)fITSmodules->At(mod);
        // for the "ALL" option
 
        //       printf("Mod: %X\n",Mod);

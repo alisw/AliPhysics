@@ -67,7 +67,7 @@ void ITSDigitsToClustersDubna (Int_t evNumber1=0,Int_t evNumber2=0)
    AliITSsegmentationSPD *seg0=(AliITSsegmentationSPD*)iDetType->GetSegmentationModel();
    TClonesArray *dig0  = ITS->DigitsAddress(0);
    TClonesArray *recp0  = ITS->ClustersAddress(0);
-   AliITSClusterFinderSPD *rec0=new AliITSClusterFinderSPD(seg0,dig0,recp0);
+   AliITSClusterFinderSPDdubna *rec0=new AliITSClusterFinderSPDdubna(seg0,dig0,recp0);
    ITS->SetReconstructionModel(0,rec0);
 
    // SDD
