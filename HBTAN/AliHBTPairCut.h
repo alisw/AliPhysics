@@ -257,7 +257,7 @@ class AliHBTOutSideSameSignCut: public AliHbtBasePairCut
   virtual ~AliHBTOutSideSameSignCut(){}
   virtual Bool_t Pass(AliHBTPair *p) const;
  protected:
-  virtual Double_t  GetValue(AliHBTPair* pair) const {return 0.0;}
+  virtual Double_t  GetValue(AliHBTPair* /*pair*/) const {return 0.0;}
   ClassDef(AliHBTOutSideSameSignCut,1)
 };
 /******************************************************************/
@@ -269,7 +269,7 @@ class AliHBTOutSideDiffSignCut: public AliHbtBasePairCut
   virtual ~AliHBTOutSideDiffSignCut(){}
   virtual Bool_t Pass(AliHBTPair *p) const;
  protected:
-  virtual Double_t  GetValue(AliHBTPair* pair) const {return 0.0;}
+  virtual Double_t  GetValue(AliHBTPair* /*pair*/) const {return 0.0;}
   ClassDef(AliHBTOutSideDiffSignCut,1)
 };
 /******************************************************************/
