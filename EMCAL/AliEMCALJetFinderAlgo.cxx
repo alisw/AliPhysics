@@ -40,7 +40,8 @@ AliEMCALJetFinderAlgo::AliEMCALJetFinderAlgo()
 }
 
 void AliEMCALJetFinderAlgo::InitInput(AliEMCALJetFinderInput* input)
-{	
+{
+// Take input data	
 if (fDebug>1) Info("InitInput","Beginning InitInput");		
 	fInputPointer = input; 
 	fOutputObject.Reset(kResetAll);	

@@ -22,7 +22,7 @@ class AliEMCALJetFinderAlgo : public TTask
 {
 public:
   AliEMCALJetFinderAlgo();
-  ~AliEMCALJetFinderAlgo();
+  virtual ~AliEMCALJetFinderAlgo();
   virtual void FindJets() = 0 ;
   void InitInput(AliEMCALJetFinderInput* input);
   void SetDebug(Int_t debug = 0){fDebug = debug; fOutputObject.SetDebug(debug);}
@@ -34,7 +34,7 @@ protected:
   AliEMCALJetFinderOutput        fOutputObject;  // output object for results
   Int_t				 fDebug; 	 // debug level
 
-  ClassDef(AliEMCALJetFinderAlgo,1)
+  ClassDef(AliEMCALJetFinderAlgo,2)
 
 };
 #endif
