@@ -489,9 +489,10 @@ void AliZDCv2::CreateBeamLine()
   // --  MQXL 
   // --  GAP (VACUUM WITH MAGNETIC FIELD) 
   tubpar[0] = 0.;
-  tubpar[1] = 4.5;
-  tubpar[2] = 170./2.;
-  gMC->Gsvolu("MCBW", "TUBE", idtmed[11], tubpar, 3);
+  tubpar[1] = 3.5;
+  tubpar[2] = 637./2.;
+  gMC->Gsvolu("MQXL", "TUBE", idtmed[11], tubpar, 3);
+  
   
   // --  YOKE 
   tubpar[0] = 3.5;
@@ -1215,9 +1216,9 @@ void AliZDCv2::StepManager()
         if(!strncmp(knamed,"MD1",3)) fpLostD1 += 1;
         if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
       }
-      printf("\n      # of p lost in Inner Triplet = %d\n",fpLostIT);
-      printf("\n      # of p lost in D1  = %d\n",fpLostD1);
-      printf("\n      # of p lost in TDI = %d\n\n",fpLostTDI);
+      printf("\n      # of spectators lost in IT = %d\n",fpLostIT);
+      printf("\n      # of spectators lost in D1  = %d\n",fpLostD1);
+      printf("\n      # of spectators lost in TDI = %d\n\n",fpLostTDI);
       gMC->StopTrack();
     }
     return;
@@ -1314,7 +1315,8 @@ void AliZDCv2::StepManager()
 	if(fNoShower==1){
 	  fpDetected += 1;
 	  gMC->StopTrack();
-	  if(vol[0]==2) printf("\n	# of detected p = %d\n\n",fpDetected);
+	  if(vol[0]==1) printf("\n	# of detected neutrons = %d\n\n",fpDetected);
+	  if(vol[0]==2) printf("\n	# of detected protons = %d\n\n",fpDetected);
 	  return;
 	}
       }
