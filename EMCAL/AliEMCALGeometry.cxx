@@ -87,8 +87,6 @@ void AliEMCALGeometry::Init(void){
     } // end if
 
     // geometry
-    //fAirGap         = 5.0; // cm, air gap between EMCAL mother volume and 
-                           // active material.
     fAlFrontThick   = 3.18; // cm, Thickness of front Al layer
     fGap2Active     = 1.0;  // cm, Gap between Al and 1st Scintillator
     fPbRadThickness = 0.5; // cm, Thickness of the Pb radiators.
