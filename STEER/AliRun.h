@@ -11,6 +11,7 @@
 #include <TStopwatch.h>
 #include <TVirtualMC.h>
 #include <TVirtualMCApplication.h>
+#include <TError.h>
 
 class TBranch;
 class TBrowser;
@@ -189,6 +190,15 @@ public:
    TTree         *TreeR() const {return fTreeR;}
 
    AliStack      *Stack() const {return fStack;}
+
+   static void Deprecated(TObject *obj, const char *method,
+			  const char *replacement) {
+     if (obj)
+       ::Warning(Form("%s::%s", obj->ClassName(), method),
+		 "method is depricated\nPlease use: %s", replacement);
+     else
+       ::Warning(method, "method is depricated\nPlease use: %s", replacement);
+   }
 
 protected:
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
