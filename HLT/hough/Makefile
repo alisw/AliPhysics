@@ -1,5 +1,5 @@
 #$Id$
-################################
+################## ##############
 # Makefile for HLT Hough code. #
 #                              #
 # Author: Anders Vestbo,       #                    
@@ -22,19 +22,17 @@ SRCS = AliL3HoughTransformer.cxx AliL3HoughClusterTransformer.cxx \
 
 ifeq ($(ARCH),macosx)
 ## AliL3HoughTrack put into src as symbolic link
-EXTRA_SRCS = AliL3HoughDisplay.cxx AliL3HoughTransformerNew.cxx
-else
-EXTRA_SRCS = AliL3HoughDisplay.cxx AliL3HoughTransformerNew.cxx  AliL3HoughTrack.cxx AliL3HoughTest.cxx
+SRCS +=  AliL3HoughTrack.cxx 
 endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ROOT)
-SRCS += $(EXTRA_SRCS)
+SRCS += AliL3HoughDisplay.cxx AliL3HoughTest.cxx AliL3HoughTransformerNew.cxx
 HDRS = $(SRCS:.cxx=.h) $(MODNAME)LinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
-SRCS += $(EXTRA_SRCS) AliL3HoughTransformerGlobal.cxx
+SRCS += AliL3HoughDisplay.cxx AliL3HoughTest.cxx AliL3HoughTransformerNew.cxx AliL3HoughTransformerGlobal.cxx
 HDRS = $(SRCS:.cxx=.h) $(MODNAME)LinkDef.h
 OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif
