@@ -11,7 +11,10 @@
 
 #include "TG4VRunConfiguration.h"
 
+#include <TString.h>
+
 class AliRunMessenger;
+class AliFiles;
 
 class G4RunManager;
 
@@ -22,6 +25,8 @@ class AliRunConfiguration : public TG4VRunConfiguration
     // --> protected
     // AliRunConfiguration(const AliRunConfiguration& right);
     virtual ~AliRunConfiguration();
+    void SetConfigName(const char* name);
+    void SetG3CallsName(const char* name);
 
   protected:
     AliRunConfiguration(const AliRunConfiguration& right);
@@ -33,7 +38,8 @@ class AliRunConfiguration : public TG4VRunConfiguration
     virtual void CreateUserConfiguration();
     
   private:
-    AliRunMessenger*  fRunMessenger;  //messenger  
+    AliRunMessenger*  fRunMessenger;  //messenger 
+    AliFiles*         fFiles;         //file paths  
 };
 
 #endif //ALI_RUN_CONFIGURATION_H
