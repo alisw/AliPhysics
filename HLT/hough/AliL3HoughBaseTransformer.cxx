@@ -25,7 +25,7 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer()
 {
   //Default constructor
   fDigitRowData = 0;
-  /*
+
   fSlice = 0;
   fPatch = 0;
   fNEtaSegments =0;
@@ -33,12 +33,19 @@ AliL3HoughBaseTransformer::AliL3HoughBaseTransformer()
   fEtaMax = 0;
   fLowerThreshold = 0;
   fUpperThreshold = 0;
-  */
 }
 
 AliL3HoughBaseTransformer::AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments)
 {
   fDigitRowData = 0;
+
+  fSlice = 0;
+  fPatch = 0;
+  fNEtaSegments =0;
+  fEtaMin = 0;
+  fEtaMax = 0;
+  fLowerThreshold = 0;
+  fUpperThreshold = 0;
 
   Init(slice,patch,n_eta_segments);
 }
