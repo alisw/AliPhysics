@@ -83,7 +83,14 @@ extern "C" {
 //*                   fission (used also for low energy neutrons)        *
 //*                                                                      *
 //*----------------------------------------------------------------------*
-//*                                                                      *
+//
+
+//
+// TFluka specific:
+// ispusr[mkbmx2 - 1] : track index in vmcstack
+// ispusr[mkbmx2 - 2] : flag for "interrupted" track
+//
+    
 const Int_t mxtrck = 2500;
 
 typedef struct {
