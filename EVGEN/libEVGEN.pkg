@@ -1,22 +1,20 @@
-SRCS          = AliGenHIJINGpara.cxx AliGenHIJINGparaBa.cxx \
-                AliGenBox.cxx AliGenFixed.cxx \
-                AliGenCocktail.cxx AliGenFLUKAsource.cxx \
-                AliGenLib.cxx \
+SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
+		AliGenCocktail.cxx AliGenFLUKAsource.cxx \
+		AliGenLib.cxx \
                 AliGenMUONlib.cxx AliGenParam.cxx AliGenPythia.cxx \
                 AliPythia.cxx AliDimuCombinator.cxx AliGenHalo.cxx \
                 AliGenHaloProtvino.cxx \
                 AliGenExtFile.cxx AliGenScan.cxx AliGenPHOSlib.cxx \
-                AliGenDoubleScan.cxx AliGenCocktailEntry.cxx \
-                AliGenGSIlib.cxx AliGenPMDlib.cxx AliGenSTRANGElib.cxx \
-                AliGenHijing.cxx \
-                AliGenHijingEventHeader.cxx AliGenPythiaEventHeader.cxx \
-                AliDecayer.cxx AliDecayerPythia.cxx \
+		AliGenDoubleScan.cxx AliGenCocktailEntry.cxx \
+		AliGenGSIlib.cxx AliGenPMDlib.cxx\
+	        AliGenHijing.cxx \
+		AliGenHijingEventHeader.cxx AliGenPythiaEventHeader.cxx \
+		AliDecayer.cxx AliDecayerPythia.cxx \
                 AliGenMevSim.cxx AliMevSimParticle.cxx AliMevSimConfig.cxx \
-                AliGenMC.cxx AliGenCocktailAfterBurner.cxx \
+	        AliGenMC.cxx AliGenCocktailAfterBurner.cxx \
                 AliGenHBTprocessor.cxx \
-                AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx \
-                AliGenReaderEcalHijing.cxx AliGenReaderEcalJets.cxx \
-                AliGeVSimParticle.cxx AliGenGeVSim.cxx AliGenThetaSlice.cxx
+		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx \
+		AliGenHIJINGparaBa.cxx AliGeVSimParticle.cxx AliGenGeVSim.cxx
 
 # Headerfiles for this particular package (Path respect to own directory)
 HDRS= $(SRCS:.cxx=.h) 

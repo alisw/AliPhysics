@@ -22,6 +22,7 @@
 #pragma link C++ class  AliGenCocktailAfterBurner+;
 #pragma link C++ class  AliGenCocktailEntry+;
 #pragma link C++ class  AliGenExtFile+;
+#pragma link C++ class  AliGenExtFileCH+;
 #pragma link C++ class  AliGenScan+;
 #pragma link C++ class  AliGenDoubleScan+;
 #pragma link C++ class  AliPythia+;
@@ -52,7 +53,6 @@
 #pragma link C++ class  AliGenReaderEcalJets++;
 #pragma link C++ class  AliGenGeVSim+;
 #pragma link C++ class  AliGeVSimParticle+;
-#pragma link C++ class  AliGenThetaSlice+; 
 #endif
 
 
