@@ -11,13 +11,13 @@
 #include "AliDigit.h"
 #include "AliCRT.h"
 
-//___________________________________________
 class AliCRTdigit: public TObject  {
 
- public:
+public:
             AliCRTdigit();
             AliCRTdigit(Int_t tracknum, Int_t* vol, Float_t* digit);
             AliCRTdigit(const AliCRTdigit & digit);
+    AliCRTdigit& operator= (const AliCRTdigit& digit);
     virtual ~AliCRTdigit() {}
 
 protected:
@@ -31,7 +31,6 @@ protected:
   TArrayF   *fAdc;     // adc values for sdigit
   TArrayI   *fTracks;  // contributing tracks, kMAXDIGITS entries per
                      // 1 tdc value
-
 
 private:
     ClassDef(AliCRTdigit,1)  //Digit (Header) object for set : CRT (ACORDE)

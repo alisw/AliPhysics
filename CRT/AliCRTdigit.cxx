@@ -82,3 +82,22 @@ AliCRTdigit::AliCRTdigit(const AliCRTdigit & digit)
   fTracks = new TArrayI(*digit.fTracks);
 
 }
+
+//_____________________________________________________________________________
+AliCRTdigit& AliCRTdigit::operator= (const AliCRTdigit & digit)
+{
+  //
+  //-- Asingment operator.
+  //
+  fSector = digit.fSector;
+  fPlate  = digit.fPlate;
+  fStrip  = digit.fStrip;
+  fPadx   = digit.fPadx;
+  fPadz   = digit.fPadz;
+  fNDigits = digit.fNDigits;
+  fTdc = new TArrayF(*digit.fTdc);  
+  fAdc = new TArrayF(*digit.fAdc);
+  fTracks = new TArrayI(*digit.fTracks);
+
+  return *this;
+}
