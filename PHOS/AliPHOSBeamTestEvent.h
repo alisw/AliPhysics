@@ -24,7 +24,8 @@ public:
   AliPHOSBeamTestEvent() ;          // ctor
 
   virtual ~AliPHOSBeamTestEvent() ; // dtor
- 
+
+  Float_t   GetBeamEnergy(void){return fBeamEnergy ;}
   UInt_t *  GetUserVector(void){return fUserVector ;}
   UInt_t *  GetHeader(void){return fHeader ;}
   UShort_t  GetPattern(void){return fPattern ;}
@@ -33,6 +34,7 @@ public:
   UInt_t *  GetScaler(void){return fScaler ;}
   UShort_t *GetTDC(void) {return fTDC2228 ;}
 
+  void SetBeamEnergy(Float_t energy ){fBeamEnergy = energy ;}
   void SetUserVector(UInt_t * uv){
 	  for(Int_t i=0;i<16;i++)fUserVector[i]=uv[i];}
   void SetHeader(UInt_t * h){
@@ -47,6 +49,7 @@ public:
   void SetTDC(UShort_t * tdc) {
 	  for(Int_t i=0;i<12;i++) fTDC2228[i]=tdc[i] ;}
 private:
+  Float_t  fBeamEnergy ;         //Beam energy 
   UInt_t   fUserVector[16] ;     //ZEBRA Event user vector
   UInt_t   fHeader[12] ;         //ZEBRA event header
   UInt_t   fScaler[12] ;         //Scalers, 1 module X 12 (4 byte) ch.

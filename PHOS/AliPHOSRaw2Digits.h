@@ -27,11 +27,12 @@ class AliPHOSRaw2Digits : public TTask {
 
 public:
   AliPHOSRaw2Digits() ;          // ctor
-  AliPHOSRaw2Digits(const char * inputFileName) ;         
+  AliPHOSRaw2Digits(const char * inputFileName,Bool_t toSplit = kTRUE) ;         
   virtual ~AliPHOSRaw2Digits() ; // dtor
 
   void Exec(Option_t *option) ;
 
+  void SetBeamEnergy(Float_t energy){fBeamEnergy = energy ;}
   void SetInputFile(TString inname="Run_1234.fz"){fInName=inname ; }
   void SetDebugLevel(Int_t idebug=1){fDebug=idebug ;}
 
@@ -43,7 +44,12 @@ public:
   void SetTargetPosition(Double_t * pos)
     {for(Int_t i=0;i<3;i++)fTarget[i]=pos[i] ;}
   void SetConTableDB(AliPHOSConTableDB * ctdb){fctdb = ctdb ;}
+  void SetMaxEventsPerFile(Int_t nev=20000){fMaxPerFile = nev ;}
   void Print(Option_t *option="")const ;
+
+private:
+  Bool_t StartRootFiles(void) ;
+  Bool_t CloseRootFiles(void) ;
 
 private:
   void FinishRun() ;
@@ -57,11 +63,16 @@ private:
   AliPHOSBeamTestEvent * fPHOSHeader ; //!
   AliPHOSConTableDB * fctdb ;          //!
   Double_t fTarget[3] ;                //!Position of the target
+  TFile * fHeaderFile ;                //!galice.root file
+  TFile * fDigitsFile ;                //!file with digits
+  Float_t fBeamEnergy ;    //BeamEnergy 
+  Int_t   fMaxPerFile ;    //!Maximal number  of events per root file
   Int_t   fEvent ;         //
   Int_t   fStatus ;        //status of input file: OK, not found etc.
   TString fInName ;        // FileName of the input file
   Bool_t  fDebug ;         //!
   Bool_t  fIsInitialized ; //!
+  Bool_t  fToSplit ;       //To produce splitted output
   UInt_t  fMK1 ;     //!ZEBRA markers
   UInt_t  fMK2 ;     //!
   UInt_t  fMK3 ;     //!

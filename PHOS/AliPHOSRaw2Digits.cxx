@@ -16,7 +16,35 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// Short description  
+// Class designed to convert raw data to aliroot format. We assume, that
+// prototype is situated in the center of 3 PHOS module and convert prototype
+// outpur to AliPHOSDigits. In addition, we fill branch of TreeE with 
+// AliPHOSBeamTestEvent, contaning description of event(triggers etc).
+// Note, that one byte per channel in raw data is transvormed to class 
+// AliPHOSDigit, so finale zise increase ~ 100 times. So output can be split 
+// into peases of reasonable size: each file can not contain more than 
+// fMaxPerFile: if there are still events in raw file, then new directory 
+// is created and header+digits files are written to it.
+// 
+// Use Case:
+//   AliPHOSRaw2Digits * r = new AliPHOSRaw2Digits("path/input.file") ;
+//                   //note, that it can be gzipped file!
+//   //Set position of the target in the given run.
+//   //Z axis along beam direction, from target to prototype (0-surface of prototype)
+//   //X axis along columns of prototype (0-center of prototype)
+//   //Y axis along raws of prototype    (0-center of prototype)
+//   Double_t pos[3]={0,0,-452.} ;
+//   r->SetTargetPosition(pos) ;
+//   //Read/create connection Table:
+//   TFile f("ConTableDB.root") ;
+//   AliPHOSConTableDB * cdb = f.Get("AliPHOSConTableDB") ;
+//   f.Close() ;
+//   r->SetConTableDB(cdb) ;
+//   r->ExecuteTask() ;
+//
+// As a result files galice.root and PHOS.Digits.root should be produced in 
+// current dir, and, possibly, dirs 1,2,3... each with galice.root and PHOS.Digits.root,
+// where the rest of data are written. 
 //
 /*-- Author: Maxim Volkov (RRC KI)
              Dmitri Peressounko (RRC KI & SUBATECH)
@@ -28,9 +56,10 @@
 #include "TClonesArray.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "TSystem.h"
+#include "Bytes.h"
 
 // --- Standard library ---
-//#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -63,23 +92,33 @@ ClassImp(AliPHOSRaw2Digits)
   fMK4 = 0x80618061 ;
   fCKW = 0x4640E400 ;
   fDebug = kFALSE;             //  Debug flag
+  fToSplit = kFALSE ;
   fIsInitialized = kFALSE ;
   fTarget[0] = 0 ;
   fTarget[1] = 0 ;
   fTarget[2] = 0 ;
   fDigits = 0 ;
+  fHeaderFile = 0 ;
+  fDigitsFile = 0 ;
   fPHOSHeader =0 ;
+  fMaxPerFile = 20000 ;
   fEvent = 0 ;
   fctdb = 0;
 }
 //____________________________________________________________________________ 
-  AliPHOSRaw2Digits::AliPHOSRaw2Digits(const char * filename):TTask("Default","") 
+  AliPHOSRaw2Digits::AliPHOSRaw2Digits(const char * filename,Bool_t toSplit):TTask("Default","") 
 {
   fInName=filename;
-  TString outname(fInName) ;
-  outname.ToLower() ;
-  outname.ReplaceAll(".fz",".root") ;
-  outname.ReplaceAll(".gz","") ;
+  fToSplit = toSplit ;
+  TString outname("") ;
+  if(fToSplit)
+    outname = "galice.root" ;
+  else{
+    outname =fInName ;
+    outname.ToLower() ;
+    outname.ReplaceAll(".fz",".root") ;
+    outname.ReplaceAll(".gz","") ;
+  }
   SetTitle(outname) ;
 
   fMK1 = 0x0123CDEF ;
@@ -94,6 +133,9 @@ ClassImp(AliPHOSRaw2Digits)
   fTarget[2] = 0 ;
   fDigits = 0 ;
   fPHOSHeader =0 ;
+  fHeaderFile = 0 ;
+  fDigitsFile = 0 ;
+  fMaxPerFile = 20000 ;
   fEvent = 0 ;
   fctdb = 0;
 }
@@ -123,26 +165,56 @@ void AliPHOSRaw2Digits::Exec(Option_t * option){
 } 
 //____________________________________________________________________________ 
 Bool_t AliPHOSRaw2Digits::Init(void){
-  //Create PHOS geometry, sets magnetic field to zero, 
-  //create Generator - to store target position, 
-  //opens out file, creates TreeE and make initialization of contaniers
-
+  //Makes initialization of contaniers
 
   if(fIsInitialized)
     return kTRUE;
 
+  //Make container for digits
+  fDigits = new TClonesArray("AliPHOSDigit",1000) ;
+  fPHOSHeader = new  AliPHOSBeamTestEvent() ;
+  fIsInitialized = kTRUE ;
+  return StartRootFiles() ;
+
+}
+//____________________________________________________________________________ 
+Bool_t AliPHOSRaw2Digits::StartRootFiles(void ){
+  //Create PHOS geometry, sets magnetic field to zero, 
+  //create Generator - to store target position, 
+  //opens out file, creates TreeE 
+
+  //create gAlice if nececcary
+  if(!gAlice)
+    new AliRun("gAlice","The ALICE Off-line Simulation Framework") ;
+
   //Create PHOS
-  new AliPHOSv1("PHOS","GPS2") ;
+  if(!gAlice->GetModule("PHOS"))
+    new AliPHOSv1("PHOS","GPS2") ;
 
   //Set Magnetic field
   gAlice->SetField(0,2);  
 
   //Set positin of the virtex
-  AliGenBox *gener = new AliGenBox(1);
+  AliGenerator * gener = gAlice->Generator() ; 
+  if(!gener)    
+    gener = new AliGenBox(1);
   Float_t ox = fTarget[1]; 
   Float_t oy = fTarget[2]-460.; 
   Float_t oz = fTarget[0];
   gener->SetOrigin(ox, oy, oz);
+
+  //make directory 
+  Int_t nRootFile = (fEvent+1)/fMaxPerFile ;	
+  if(nRootFile){
+    char dname[20];
+    sprintf(dname,"%d",nRootFile) ;
+    if(gSystem->AccessPathName(dname)) //strange return: 0 if exists
+      if(gSystem->MakeDirectory(dname)!=0)
+	Fatal("StartRootFiles","Can not make directory %s \n",dname) ;
+    
+    if(!gSystem->ChangeDirectory(dname))
+      Fatal("StartRootFiles","Can not cd to %s\n",dname) ;
+  }
 
   //  Create the output file
   TString outname("") ;
@@ -154,17 +226,14 @@ Bool_t AliPHOSRaw2Digits::Init(void){
     outname.ToLower() ;
     outname.ReplaceAll(".fz",".root") ;
   }
-  TFile *rootfile = new TFile(outname,"recreate");
-  rootfile->SetCompressionLevel(2);
 
+  fHeaderFile = new TFile(outname,"recreate");
+  fHeaderFile->SetCompressionLevel(2);
+  
   // Create the Root Trees
   gAlice->MakeTree("E") ;
-
-  //Make container for digits
-  fDigits = new TClonesArray("AliPHOSDigit",1000) ;
-
+  
   //Fill now TreeE
-  fPHOSHeader = new  AliPHOSBeamTestEvent() ;
   Int_t splitlevel = 0 ;
   Int_t bufferSize = 32000 ;    
   TBranch * headerBranch = gAlice->TreeE()->Branch("AliPHOSBeamTestEvent", 
@@ -172,19 +241,49 @@ Bool_t AliPHOSRaw2Digits::Init(void){
 						   &fPHOSHeader,bufferSize,splitlevel);
   headerBranch->SetName("AliPHOSBeamTestEvent") ;
 
-  fIsInitialized = kTRUE ;
+  if(fToSplit){
+    fDigitsFile = new TFile("PHOS.Digits.root","recreate") ;
+    fDigitsFile->SetCompressionLevel(2) ;
+  }
+  return kTRUE ;
+}
+//____________________________________________________________________________ 
+Bool_t AliPHOSRaw2Digits::CloseRootFiles(void ){
+  //cleans everething to start next root file
+
+  delete gAlice ;
+  
+  if(fHeaderFile){
+    fHeaderFile->Close() ;
+    delete fHeaderFile ;
+    fHeaderFile = 0;
+  }   
+	
+  if(fDigitsFile){
+    fDigitsFile->Close() ;
+    delete fDigitsFile ;
+    fDigitsFile = 0 ;
+  }
+  
+  Int_t nRootFile = (fEvent-1)/fMaxPerFile ;	
+  if(nRootFile){
+    if(!gSystem->ChangeDirectory("../")){
+     Fatal("CloseRootFile","Can not return to initial dir \n") ;      
+     return kFALSE ;
+    }
+  }
   return kTRUE ;
 }
 //____________________________________________________________________________ 
 Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
-
+  
   //Method opens zebra file and reads successively bytes from it,
   //filling corresponding fields in header and digits.
-
-
+  
+  
   fStatus= -3 ;
   //First of all, open file and check if it is a zebra file
-
+  
   char command[256];
   sprintf(command,"zcat %s",fInName.Data());
   FILE *dataFile = popen(command, "r");
@@ -194,7 +293,6 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
     fStatus = -1 ;
     return kFALSE ;
   }
-  printf("Open pipe: %s\n",command);
 
   // Check if byte ordering is little-endian 
   UInt_t w = 0x12345678;
@@ -276,7 +374,14 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
 
     //    StartNewEvent() ;
     fDigits->Delete() ;
-    gAlice->SetEvent(fEvent) ;
+    if((fEvent%fMaxPerFile == 0) && fEvent ){
+      CloseRootFiles() ;
+      StartRootFiles() ;
+    }
+    gAlice->SetEvent(fEvent%fMaxPerFile) ;
+
+    //Set Beam Energy
+    fPHOSHeader->SetBeamEnergy(fBeamEnergy) ;
 	  
     Int_t i ;
     for(i=0;i<16;i++)
@@ -356,7 +461,7 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
     UChar_t *byteptr=(UChar_t*)recptr;
     
     // Trigger bit register  
-    pattern=ntohs(*(UShort_t*)byteptr);
+    pattern=net2host(*(UShort_t*)byteptr);
     fPHOSHeader->SetPattern(pattern) ;
     byteptr+=sizeof(UShort_t);
     
@@ -364,7 +469,7 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
     //or Kurchatov 64+2 channel ADC 
     //(the rest of the channels padded with 0xffff) 
     for(i=0;i<80;i++){
-      Int_t peak = static_cast<Int_t>(ntohs(*(UShort_t*)byteptr));
+      Int_t peak = static_cast<Int_t>(net2host(*(UShort_t*)byteptr));
       //make digit
       Int_t absID = fctdb->Raw2AbsId(i) ;
       if(absID > 0)
@@ -378,28 +483,28 @@ Bool_t AliPHOSRaw2Digits::ProcessRawFile(){
     
     // Scanning ADCs, 4 modulesX8=32 channels
     for(i=0;i<32;i++){
-      scanning[i]=ntohs(*(UShort_t*)byteptr);
+      scanning[i]=net2host(*(UShort_t*)byteptr);
       byteptr+=sizeof(UShort_t);
     }
     fPHOSHeader->SetScanning(scanning) ;
     
     // Charge ADCs, 1 moduleX12=12 channels
     for(i=0;i<12;i++){
-      charge[i]=ntohs(*(UShort_t*)byteptr);
+      charge[i]=net2host(*(UShort_t*)byteptr);
       byteptr+=sizeof(UShort_t);
     }
     fPHOSHeader->SetCharge(charge) ;
     
     // Scalers, 1 moduleX12=12 (4 byte) channels
     for(i=0;i<12;i++){
-      scaler[i]=ntohl(*(UInt_t*)byteptr);
+      scaler[i]=net2host(*(UInt_t*)byteptr);
       byteptr+=sizeof(UInt_t);
     }
     fPHOSHeader->SetScaler(scaler) ;
     
     // LeCroy TDC 2228A, 4 moduleX8=32 channels
     for(i=0;i<8;i++){
-      tdc2228[i]=ntohs(*(UShort_t*)byteptr);
+      tdc2228[i]=net2host(*(UShort_t*)byteptr);
       byteptr+=sizeof(UShort_t);
     }
     fPHOSHeader->SetTDC(tdc2228) ;
@@ -482,7 +587,7 @@ void AliPHOSRaw2Digits::WriteDigits(void){
     static_cast<AliPHOSDigit*>(fDigits->At(i))->SetIndexInList(i) ;
 
   char hname[30];
-  sprintf(hname,"TreeD%d",fEvent);
+  sprintf(hname,"TreeD%d",fEvent%fMaxPerFile);
   TTree * treeD = new TTree(hname,"Digits");
   //treeD->Write(0,TObject::kOverwrite);
   
@@ -497,7 +602,9 @@ void AliPHOSRaw2Digits::WriteDigits(void){
   TBranch * digitizerBranch = treeD->Branch("AliPHOSRaw2Digits", 
 					    "AliPHOSRaw2Digits", &d,bufferSize,splitlevel); 
   digitizerBranch->SetTitle("Default");
-  
+
+  if(fDigitsFile)
+    fDigitsFile->cd() ;
   digitsBranch->Fill() ;
   digitizerBranch->Fill() ; 
   treeD->Write(0,TObject::kOverwrite);
@@ -505,39 +612,34 @@ void AliPHOSRaw2Digits::WriteDigits(void){
   delete treeD ;
 
   //Write header
+  fHeaderFile->cd() ;
   gAlice->TreeE()->Fill();
 }
 //____________________________________________________________________________ 
 void AliPHOSRaw2Digits::Print(Option_t * option)const{
   
-  TString message ;
-  message  = "----------AliPHOSRaw2Digits---------- \n" ;
-  message += "Input stream \n" ;
-  message += "Current input  File: %s\n" ; 
-  message += "Current output File: %s\n" ; 
-  message += "Events processes in the last file %d\n" ; 
-  message += "Input file status\n" ;
+
+  printf("----------AliPHOSRaw2Digits---------- \n") ;
+  printf("Current input  File: %s\n",fInName.Data()) ; 
+  printf("Current output File: %s\n", GetTitle()); 
+  printf("Events processes in the last file %d\n",fEvent) ; 
+  printf("Input file status\n") ;
   switch (fStatus){
-  case 0: message += "`Have not processed yet'\n" ;
+  case 0: printf("`Have not processed yet'\n") ;
     break ;
-  case 1: message += "`Processed normally'\n" ;
+  case 1: printf("`Processed normally'\n") ;
     break ;
-  case -1: message += "`File not found'\n" ;
+  case -1: printf("`File not found'\n") ;
     break ;
-  case -2: message += "`Error in reading'\n" ;
+  case -2: printf("`Error in reading'\n") ;
     break ;
-  case -3: message += "'Interupted'\n" ;
+  case -3: printf("'Interupted'\n") ;
   default: ;
   }
-  message += "Connection table: " ;
+  printf("Connection table: " );
   if(fctdb)
-    message += "%s %s \n" ; 
+    printf("%s %s \n",fctdb->GetName(), fctdb->GetTitle() ) ; 
   else
-    message += " no DB \n" ;
+    printf(" no DB \n" );
 
-  Info("Print", message.Data(),  
-       fInName.Data(), 
-       GetTitle(), 
-       fEvent, 
-       fctdb->GetName(), fctdb->GetTitle() ) ; 
 }
