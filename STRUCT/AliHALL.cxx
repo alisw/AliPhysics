@@ -111,17 +111,17 @@ void AliHALL::CreateGeometry()
   h   = 140.;
   phi = TMath::ACos(h / r);
   xl  = r * TMath::Sin(phi);
-  dr  = 100.;
+  dr  = 1600.;
   dh  = dr * TMath::Cos(phi);
   dl  = dr * TMath::Sin(phi);
   if (gAlice->GetModule("ZDC") == 0) {
     
     //     No ZDC 
-    hullen = 250.;
+    hullen = 370.;
   } else {
     
     //     ZDC is present 
-    hullen = 6400.;
+    hullen = 6520.;
   }
   trdpar[0] = xl + dl;
   trdpar[1] = xl;
@@ -130,7 +130,7 @@ void AliHALL::CreateGeometry()
   AliMatrix(idrotm[1900], 90., 0., 0., 0., 90., 90.);
   AliMatrix(idrotm[1901], 270., 0., 90., 90., 0., 0.);
   gMC->Gsvolu("HUFL", "TRD1", idtmed[1956], trdpar, 4);
-  r2 = hullen + 2020.;
+  r2 = hullen + 1900.;
   gMC->Gspos("HUFL", 1, "ALIC", 70.,-100-trdpar[3] , -r2, idrotm[1900], "ONLY");
   
   //     RB24/26 wall 
@@ -142,20 +142,20 @@ void AliHALL::CreateGeometry()
   tspar[3] = phid - 90.;
   tspar[4] = 270. - phid;
   gMC->Gsvolu("HUWA", "TUBS", idtmed[1956], tspar, 5);
-  gMC->Gspos("HUWA", 1, "ALIC", 70., 40., -2020 - hullen , 0, "ONLY");
+  gMC->Gspos("HUWA", 1, "ALIC", 70., 40., -1900 - hullen , 0, "ONLY");
   
   //     END WALL 
-  gMC->Gsvolu("HEW1", "BOX ", idtmed[1956], pbox, 0);
-  pbox[0] = 600.;
-  pbox[1] = 418.;
-  pbox[2] = 60.;
-  gMC->Gsposp("HEW1", 1, "ALIC", 0., -pbox[1]-60., -1960, 0, "ONLY", pbox, 3);
-  pbox[1] = 822.;
-  gMC->Gsposp("HEW1", 2, "ALIC", 0.,  pbox[1]+60., -1960, 0, "ONLY", pbox, 3);
-  pbox[0] = 270.;
-  pbox[1] =  60.;
-  gMC->Gsposp("HEW1", 3, "ALIC",  pbox[0]+60.,  0. , -1960, 0, "ONLY", pbox, 3);
-  gMC->Gsposp("HEW1", 4, "ALIC", -pbox[0]-60.,  0. , -1960, 0, "ONLY", pbox, 3);
+  //gMC->Gsvolu("HEW1", "BOX ", idtmed[1956], pbox, 0);
+  //pbox[0] = 600.;
+  //pbox[1] = 418.;
+  //pbox[2] = 60.;
+  //gMC->Gsposp("HEW1", 1, "ALIC", 0., -pbox[1]-60., -1960, 0, "ONLY", pbox, 3);
+  //pbox[1] = 822.;
+  //gMC->Gsposp("HEW1", 2, "ALIC", 0.,  pbox[1]+60., -1960, 0, "ONLY", pbox, 3);
+  //pbox[0] = 270.;
+  //pbox[1] =  60.;
+  //gMC->Gsposp("HEW1", 3, "ALIC",  pbox[0]+60.,  0. , -1960, 0, "ONLY", pbox, 3);
+  //gMC->Gsposp("HEW1", 4, "ALIC", -pbox[0]-60.,  0. , -1960, 0, "ONLY", pbox, 3);
 
   //     hall floor 
   
