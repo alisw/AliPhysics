@@ -867,9 +867,9 @@ Double_t AliQuenchingWeights::GetELossRandom(Int_t ipart, Double_t length, Doubl
     Int_t ws=0;
     while(ret>e){
       ret=fHistos[ipart-1][l-1]->GetRandom(); 
-      if(++ws==1e5){
-	Warning("GetELossRandomK",
-                "Aborted reweighting; maximum loss assigned after 1e5 trials.");
+      if(++ws==1e6){
+	Warning("GetELossRandom",
+                "Aborted reweighting; maximum loss assigned after 1e6 trials.");
 	return e;
       }
     }
@@ -952,9 +952,9 @@ Double_t AliQuenchingWeights::GetELossRandomK(Int_t ipart, Double_t I0, Double_t
     Int_t ws=0;
     while(ret>e){
       ret=fHisto->GetRandom(); 
-      if(++ws==1e5){
+      if(++ws==1e6){
 	Warning("GetELossRandomK",
-                "Aborted reweighting; maximum loss assigned after 1e5 trials.");
+                "Aborted reweighting; maximum loss assigned after 1e6 trials.");
 	return e;
       }
     }

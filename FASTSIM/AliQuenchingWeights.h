@@ -88,7 +88,10 @@ class AliQuenchingWeights : public TObject {
     {return CalcQk(fK,I0,I1);} 
 
   Double_t CalcQk(Double_t k, Double_t I0, Double_t I1) const
-      {return I0*I0/2/I1/fgkConvFmToInvGeV/fgkConvFmToInvGeV*k;}
+    {return I0*I0/2/I1/fgkConvFmToInvGeV/fgkConvFmToInvGeV*k;}
+
+  Double_t CalcLk(Double_t i0, Double_t i1) const
+    {return 2.*i1/i0;}
 
   Int_t CalcLengthMax(Double_t q) const
     {Double_t l3max=fgkRMax/.5/q/fgkConvFmToInvGeV/fgkConvFmToInvGeV;
