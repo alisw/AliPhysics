@@ -28,7 +28,8 @@ Int_t AliITSFindTracksV2(Int_t nev=1) {  //number of events to process
    for (Int_t i=0; i<nev; i++) {
      cerr<<"Processing event number : "<<i<<endl;
      tracker.SetEventNumber(i);
-     //Double_t xyz[]={0.,0.,0.}; tracker.SetVertex(xyz);  //primary vertex
+     //Double_t xyz[]={0.,0.,0.}, ers[]={0.,0.,0.01};//main vertex with errors
+     //tracker.SetVertex(xyz,ers);
      //Int_t flag[]={1};                                   //some default flags
      //flag[0]= 0; tracker.SetupFirstPass(flag);           //no constraint
      //flag[0]=-1; tracker.SetupSecondPass(flag);          //skip second pass

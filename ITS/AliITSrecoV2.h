@@ -24,10 +24,14 @@
      1.44e-4, 1.44e-4, 7.84e-6, 7.84e-6, 0.006889, 0.006889
    };
 
-   const Double_t kChi2PerCluster=5.;//7.;
-   const Double_t kMaxChi2=15.;//17.;
+   const Double_t kChi2PerCluster=7.;
+   const Double_t kMaxChi2=20.;
    const Double_t kMaxRoad=3.0;
 
+   const Double_t kXV=0.0e+0;
+   const Double_t kYV=0.0e+0;
+   const Double_t kZV=0.0e+0;
+   const Double_t kSigmaXV=0.005e+0;
    const Double_t kSigmaYV=0.005e+0;
    const Double_t kSigmaZV=0.010e+0;
 //}

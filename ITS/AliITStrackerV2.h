@@ -23,7 +23,7 @@ public:
   AliITStrackerV2():AliTracker(){}
   AliITStrackerV2(const AliITSgeom *geom);
   AliCluster *GetCluster(Int_t index) const;
-  void LoadClusters();
+  Int_t LoadClusters();
   void UnloadClusters();
   Int_t Clusters2Tracks(const TFile *in, TFile *out);
   Int_t PropagateBack(const TFile *in, TFile *out);
@@ -103,6 +103,8 @@ private:
   AliITStrackV2 fTrackToFollow;          // followed track
   Int_t fPass;                           // current pass through the data 
   Int_t fConstraint[2];                  // constraint flags
+
+  ClassDef(AliITStrackerV2,1)   //ITS tracker V2
 };
 
 

@@ -20,11 +20,9 @@
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //-------------------------------------------------------------------------
 
-#include <stdlib.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TRandom.h>
-#include <Riostream.h>
 
 #include "AliITSgeom.h"
 #include "AliITSRecPoint.h"
@@ -32,11 +30,7 @@
 #include "AliITSclusterV2.h"
 #include "AliITStrackerV2.h"
 
-//#define DEBUG
-
-#ifdef DEBUG
-Int_t LAB=38;
-#endif
+ClassImp(AliITStrackerV2)
 
 AliITStrackerV2::AliITSlayer AliITStrackerV2::fLayers[kMaxLayer]; // ITS layers
 
@@ -87,9 +81,12 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : AliTracker() {
 
   fPass=0;
   fConstraint[0]=1; fConstraint[1]=0;
+
+  Double_t xyz[]={kXV,kYV,kZV}, ers[]={kSigmaXV,kSigmaYV,kSigmaZV}; 
+  SetVertex(xyz,ers);
 }
 
-void AliITStrackerV2::LoadClusters() {
+Int_t AliITStrackerV2::LoadClusters() {
   //--------------------------------------------------------------------
   //This function loads ITS clusters
   //--------------------------------------------------------------------
@@ -97,13 +94,13 @@ void AliITStrackerV2::LoadClusters() {
   sprintf(cname,"TreeC_ITS_%d",GetEventNumber());
   TTree *cTree=(TTree*)gDirectory->Get(cname);
   if (!cTree) { 
-    cerr<<"AliITStrackerV2::LoadClusters can't get cTree !\n";
-    exit(1);
+    Error("LoadClusters"," can't get cTree !\n");
+    return 1;
   }
   TBranch *branch=cTree->GetBranch("Clusters");
   if (!branch) { 
-    cerr<<"AliITStrackerV2::LoadClusters can't get Clusters branch !\n";
-    exit(1);
+    Error("LoadClusters"," can't get Clusters branch !\n");
+    return 1;
   }
 
   TClonesArray dummy("AliITSclusterV2",10000), *clusters=&dummy;
@@ -118,16 +115,6 @@ void AliITStrackerV2::LoadClusters() {
       Int_t ncl=clusters->GetEntriesFast();
       while (ncl--) {
         AliITSclusterV2 *c=(AliITSclusterV2*)clusters->UncheckedAt(ncl);
-
-#ifdef DEBUG
-if (c->GetLabel(2)!=LAB)
-if (c->GetLabel(1)!=LAB)
-if (c->GetLabel(0)!=LAB) continue;
-Int_t idx=c->GetDetectorIndex();
-Int_t lay=i, lad=idx/ndet, det=idx-lad*ndet;
-cout<<lay<<' '<<lad<<' '<<det<<' '<<c->GetY()<<' '<<c->GetZ()<<endl;
-#endif
-
         fLayers[i].InsertCluster(new AliITSclusterV2(*c));
       }
       clusters->Delete();
@@ -135,6 +122,8 @@ cout<<lay<<' '<<lad<<' '<<det<<' '<<c->GetY()<<' '<<c->GetZ()<<endl;
     fLayers[i].ResetRoad(); //road defined by the cluster density
   }
   delete cTree; //Thanks to Mariana Bondila
+
+  return 0;
 }
 
 void AliITStrackerV2::UnloadClusters() {
@@ -144,10 +133,6 @@ void AliITStrackerV2::UnloadClusters() {
   for (Int_t i=0; i<kMaxLayer; i++) fLayers[i].ResetClusters();
 }
 
-//#ifdef DEBUG
-static Int_t lbl;
-//#endif
-
 Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
   //--------------------------------------------------------------------
   //This functions reconstructs ITS tracks
@@ -155,18 +140,16 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
   TFile *in=(TFile*)inp;
   TDirectory *savedir=gDirectory; 
 
-  LoadClusters();
+  if (LoadClusters()!=0) return 1;
 
   if (!in->IsOpen()) {
-     cerr<<"AliITStrackerV2::Clusters2Tracks(): ";
-     cerr<<"file with TPC tracks is not open !\n";
-     return 1;
+    Error("Clusters2Tracks","file with TPC tracks is not open !\n");
+    return 1;
   }
 
   if (!out->IsOpen()) {
-     cerr<<"AliITStrackerV2::Clusters2Tracks(): ";
-     cerr<<"file for ITS tracks is not open !\n";
-     return 2;
+    Error("Clusters2Tracks","file for ITS tracks is not open !\n");
+    return 2;
   }
 
   in->cd();
@@ -178,9 +161,8 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
     sprintf(tname,"TreeT_TPC_%d",GetEventNumber());
     TTree *tpcTree=(TTree*)in->Get(tname);
     if (!tpcTree) {
-       cerr<<"AliITStrackerV2::Clusters2Tracks(): "
-             "can't get a tree with TPC tracks !\n";
-       return 3;
+      Error("Clusters2Tracks","can't get a tree with TPC tracks !\n");
+      return 3;
     }
     AliTPCtrack *itrack=new AliTPCtrack; 
     tpcTree->SetBranchAddress("tracks",&itrack);
@@ -191,7 +173,7 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
        try {
            t=new AliITStrackV2(*itrack);
        } catch (const Char_t *msg) {
-           cerr<<msg<<endl;
+           Warning("Clusters2Tracks",msg);
            delete t;
            continue;
        }
@@ -222,17 +204,9 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
   for (fPass=0; fPass<2; fPass++) {
      Int_t &constraint=fConstraint[fPass]; if (constraint<0) continue;
      for (Int_t i=0; i<nentr; i++) {
-       if (i%10==0) cerr<<nentr-i<<" \r";
        AliITStrackV2 *t=(AliITStrackV2*)itsTracks.UncheckedAt(i);
        if (t==0) continue;           //this track has been already tracked
        Int_t tpcLabel=t->GetLabel(); //save the TPC track label
-
-lbl=tpcLabel;
-#ifdef DEBUG
-lbl=tpcLabel;
-if (TMath::Abs(tpcLabel)!=LAB) continue;
-cout<<tpcLabel<<" *****************\n";
-#endif
 
        ResetTrackToFollow(*t);
        ResetBestTrack();
@@ -241,34 +215,34 @@ cout<<tpcLabel<<" *****************\n";
           while (TakeNextProlongation()) FollowProlongation();
        }
 
-#ifdef DEBUG
-cout<<fBestTrack.GetNumberOfClusters()<<" number of clusters\n\n";
-#endif
+       if (fBestTrack.GetNumberOfClusters() < kMaxLayer-kLayersToSkip)continue;
 
-      if (fBestTrack.GetNumberOfClusters() < kMaxLayer-kLayersToSkip) continue;
+       if (fConstraint[fPass]) {
+	  Int_t index[kMaxLayer];
+          Int_t k;
+          for (k=0; k<kMaxLayer; k++) index[k]=-1;
+          Int_t nc=fBestTrack.GetNumberOfClusters();
+          for (k=0; k<nc; k++) { 
+             Int_t idx=fBestTrack.GetClusterIndex(k),nl=(idx&0xf0000000)>>28;
+             index[nl]=idx; 
+          }
+          fBestTrack.~AliITStrackV2(); new(&fBestTrack) AliITStrackV2(*t);
+	  if (!RefitAt(3.7, &fBestTrack, index)) continue;
+       }
 
-        if (fConstraint[fPass]) {
-	   Int_t index[kMaxLayer];
-           Int_t k;
-           for (k=0; k<kMaxLayer; k++) index[k]=-1;
-           Int_t nc=fBestTrack.GetNumberOfClusters();
-           for (k=0; k<nc; k++) { 
-              Int_t idx=fBestTrack.GetClusterIndex(k),nl=(idx&0xf0000000)>>28;
-              index[nl]=idx; 
-           }
-           fBestTrack.~AliITStrackV2(); new(&fBestTrack) AliITStrackV2(*t);
-	   if (!RefitAt(3.7, &fBestTrack, index)) continue;
-	}
-
-        fBestTrack.SetLabel(tpcLabel);
-	fBestTrack.CookdEdx();
-        CookLabel(&fBestTrack,0.); //For comparison only
-        itsTree.Fill();
-        UseClusters(&fBestTrack);
-        delete itsTracks.RemoveAt(i);
+       fBestTrack.SetLabel(tpcLabel);
+       fBestTrack.CookdEdx();
+       CookLabel(&fBestTrack,0.); //For comparison only
+       itsTree.Fill();
+       UseClusters(&fBestTrack);
+       delete itsTracks.RemoveAt(i);
 
      }
   }
+
+  Info("Clusters2Tracks","Number of TPC tracks: %d\n",nentr);
+  Info("Clusters2Tracks","Number of prolonged tracks: %d\n",
+        (Int_t)itsTree.GetEntries());
 
   itsTree.Write();
 
@@ -277,9 +251,6 @@ cout<<fBestTrack.GetNumberOfClusters()<<" number of clusters\n\n";
   UnloadClusters();
 
   savedir->cd();
-  cerr<<"Number of TPC tracks: "<<nentr<<endl;
-  cerr<<"Number of prolonged tracks: "<<itsTree.GetEntries()<<endl;
-
   return 0;
 }
 
@@ -290,18 +261,16 @@ Int_t AliITStrackerV2::PropagateBack(const TFile *inp, TFile *out) {
   TFile *in=(TFile*)inp;
   TDirectory *savedir=gDirectory; 
 
-  LoadClusters();
+  if (LoadClusters()!=0) return 1;
 
   if (!in->IsOpen()) {
-     cerr<<"AliITStrackerV2::PropagateBack(): ";
-     cerr<<"file with ITS tracks is not open !\n";
-     return 1;
+    Error("PropagateBack","file with ITS tracks is not open !\n");
+    return 1;
   }
 
   if (!out->IsOpen()) {
-     cerr<<"AliITStrackerV2::PropagateBack(): ";
-     cerr<<"file for back propagated ITS tracks is not open !\n";
-     return 2;
+  Error("PropagateBack","file for back propagated ITS tracks is not open !\n");
+  return 2;
   }
 
   in->cd();
@@ -310,9 +279,8 @@ Int_t AliITStrackerV2::PropagateBack(const TFile *inp, TFile *out) {
   sprintf(tname,"TreeT_ITS_%d",GetEventNumber());
   TTree *itsTree=(TTree*)in->Get(tname);
   if (!itsTree) {
-     cerr<<"AliITStrackerV2::PropagateBack() ";
-     cerr<<"can't get a tree with ITS tracks !\n";
-     return 3;
+    Error("PropagateBack","can't get a tree with ITS tracks !\n");
+    return 3;
   }
   AliITStrackV2 *itrack=new AliITStrackV2; 
   itsTree->SetBranchAddress("tracks",&itrack);
@@ -344,20 +312,8 @@ Int_t AliITStrackerV2::PropagateBack(const TFile *inp, TFile *out) {
 
     Int_t itsLabel=fTrackToFollow.GetLabel(); //save the ITS track label
 
-#ifdef DEBUG
-if (TMath::Abs(itsLabel)!=LAB) continue;
-cout<<itsLabel<<" *****************\n";
-#endif
-
     try {
        Int_t nc=itrack->GetNumberOfClusters();
-#ifdef DEBUG
-for (Int_t k=0; k<nc; k++) {
-    Int_t index=itrack->GetClusterIndex(k);
-    AliITSclusterV2 *c=(AliITSclusterV2*)GetCluster(index);
-    cout<<c->GetLabel(0)<<' '<<c->GetLabel(1)<<' '<<c->GetLabel(2)<<endl;
-}
-#endif       
        Int_t idx=0, l=0; 
        const  AliITSclusterV2 *c=0; 
        if (nc--) {
@@ -435,7 +391,7 @@ for (Int_t k=0; k<nc; k++) {
 
          if (cl) {
             if (!fTrackToFollow.Update(cl,maxchi2,index)) 
-              cerr<<"AliITStrackerV2::PropagateBack: filtering failed !\n";
+              Info("PropagateBack","filtering failed !\n");
          }
          {
           Double_t x0;
@@ -446,7 +402,8 @@ for (Int_t k=0; k<nc; k++) {
          // track time update [SR, GSI 17.02.2003]
          Double_t newX, newY, newZ;
 	 fTrackToFollow.GetGlobalXYZat(fTrackToFollow.GetX(),newX,newY,newZ);
-         Double_t dL2 = (oldX-newX)*(oldX-newX)+(oldY-newY)*(oldY-newY)+(oldZ-newZ)*(oldZ-newZ);
+         Double_t dL2 = (oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY) + 
+                        (oldZ-newZ)*(oldZ-newZ);
 	 fTrackToFollow.AddTimeStep(TMath::Sqrt(dL2));
          //
 
@@ -462,17 +419,17 @@ for (Int_t k=0; k<nc; k++) {
        otrack=new AliTPCtrack(fTrackToFollow,fTrackToFollow.GetAlpha()); 
        backTree.Fill(); delete otrack;
        UseClusters(&fTrackToFollow);
-       cerr << ++ntrk << "                \r";
+       ntrk++;
     }
     catch (const Char_t *msg) {
-       cerr<<msg<<endl;
+       Warning("PropagateBack",msg);
     }
   }
 
   backTree.Write();
 
-  cerr<<"Number of ITS tracks: "<<nentr<<endl;
-  cerr<<"Number of back propagated ITS tracks: "<<ntrk<<endl;
+  Info("PropagateBack","Number of ITS tracks: %d\n",nentr);
+  Info("PropagateBack","Number of back propagated ITS tracks: %d\n",ntrk);
 
   delete itrack;
 
@@ -503,9 +460,7 @@ void AliITStrackerV2::FollowProlongation() {
 
   while (fI) {
     Int_t i=fI-1;
-#ifdef DEBUG
-cout<<i<<' ';
-#endif
+
     AliITSlayer &layer=fLayers[i];
     AliITStrackV2 &track=fTracks[i];
 
@@ -516,8 +471,7 @@ cout<<i<<' ';
        Double_t d=0.0034, x0=38.6;
        if (i==1) {rs=9.; d=0.0097; x0=42;}
        if (!fTrackToFollow.PropagateTo(rs,d,x0)) {
-	 //cerr<<"AliITStrackerV2::FollowProlongation: "
-         //"propagation failed !\n";
+	 //Warning("FollowProlongation","propagation failed !\n");
          break;
        }
     }
@@ -525,15 +479,13 @@ cout<<i<<' ';
     //find intersection
     Double_t x,y,z;  
     if (!fTrackToFollow.GetGlobalXYZat(r,x,y,z)) {
-      //cerr<<"AliITStrackerV2::FollowProlongation: "
-      //"failed to estimate track !\n";
+      //Warning("FollowProlongation","failed to estimate track !\n");
       break;
     }
     Double_t phi=TMath::ATan2(y,x);
     Int_t idet=layer.FindDetectorIndex(phi,z);
     if (idet<0) {
-      //cerr<<"AliITStrackerV2::FollowProlongation: "
-      //"failed to find a detector !\n";
+      //Warning("FollowProlongation","failed to find a detector !\n");
       break;
     }
 
@@ -541,25 +493,25 @@ cout<<i<<' ';
     const AliITSdetector &det=layer.GetDetector(idet);
     phi=det.GetPhi();
     if (!fTrackToFollow.Propagate(phi,det.GetR())) {
-      //cerr<<"AliITStrackerV2::FollowProlongation: propagation failed !\n";
+      //Warning("FollowProlongation","propagation failed !\n");
       break;
     }
     fTrackToFollow.SetDetectorIndex(idet);
 
     //Select possible prolongations and store the current track estimation
     track.~AliITStrackV2(); new(&track) AliITStrackV2(fTrackToFollow);
- Double_t dz=7*TMath::Sqrt(track.GetSigmaZ2() + kSigmaZ2[i]);
- Double_t dy=7*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[i]);
- Double_t road=layer.GetRoad();
- if (dz*dy>road*road) {
-    Double_t dd=TMath::Sqrt(dz*dy), scz=dz/dd, scy=dy/dd;
-    dz=road*scz; dy=road*scy;
- } 
+    Double_t dz=7*TMath::Sqrt(track.GetSigmaZ2() + kSigmaZ2[i]);
+    Double_t dy=7*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[i]);
+    Double_t road=layer.GetRoad();
+    if (dz*dy>road*road) {
+       Double_t dd=TMath::Sqrt(dz*dy), scz=dz/dd, scy=dy/dd;
+       dz=road*scz; dy=road*scy;
+    } 
 
     //Double_t dz=4*TMath::Sqrt(track.GetSigmaZ2() + kSigmaZ2[i]);
     if (dz < 0.5*TMath::Abs(track.GetTgl())) dz=0.5*TMath::Abs(track.GetTgl());
     if (dz > kMaxRoad) {
-      //cerr<<"AliITStrackerV2::FollowProlongation: too broad road in Z !\n";
+      //Warning("FollowProlongation","too broad road in Z !\n");
       break;
     }
 
@@ -568,7 +520,7 @@ cout<<i<<' ';
     //Double_t dy=4*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[i]);
     if (dy < 0.5*TMath::Abs(track.GetSnp())) dy=0.5*TMath::Abs(track.GetSnp());
     if (dy > kMaxRoad) {
-      //cerr<<"AliITStrackerV2::FollowProlongation: too broad road in Y !\n";
+      //Warning("FollowProlongation","too broad road in Y !\n");
       break;
     }
 
@@ -611,33 +563,26 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
 
   Double_t dz=7*TMath::Sqrt(fTrackToFollow.GetSigmaZ2() + kSigmaZ2[fI]);
   Double_t dy=7*TMath::Sqrt(fTrackToFollow.GetSigmaY2() + kSigmaY2[fI]);
-Double_t road=layer.GetRoad();
-if (dz*dy>road*road) {
-   Double_t dd=TMath::Sqrt(dz*dy), scz=dz/dd, scy=dy/dd;
-   dz=road*scz; dy=road*scy;
-} 
+  Double_t road=layer.GetRoad();
+  if (dz*dy>road*road) {
+     Double_t dd=TMath::Sqrt(dz*dy), scz=dz/dd, scy=dy/dd;
+     dz=road*scz; dy=road*scy;
+  } 
 
   const AliITSclusterV2 *c=0; Int_t ci=-1;
   Double_t chi2=12345.;
   while ((c=layer.GetNextCluster(ci))!=0) {
-    //if (c->GetLabel(0)!=TMath::Abs(lbl)) continue; 
     Int_t idet=c->GetDetectorIndex();
 
     if (fTrackToFollow.GetDetectorIndex()!=idet) {
        const AliITSdetector &det=layer.GetDetector(idet);
        ResetTrackToFollow(fTracks[fI]);
        if (!fTrackToFollow.Propagate(det.GetPhi(),det.GetR())) {
-         //cerr<<"AliITStrackerV2::TakeNextProlongation: "
-         //"propagation failed !\n";
+         //Warning("TakeNextProlongation","propagation failed !\n");
          continue;
        }
        fTrackToFollow.SetDetectorIndex(idet);
        if (TMath::Abs(fTrackToFollow.GetZ()-GetZ())>layer.GetR()+dz) continue;
-
-#ifdef DEBUG
-cout<<fI<<" change detector !\n";
-#endif
-
     }
 
     if (TMath::Abs(fTrackToFollow.GetZ() - c->GetZ()) > dz) continue;
@@ -646,22 +591,11 @@ cout<<fI<<" change detector !\n";
     chi2=fTrackToFollow.GetPredictedChi2(c); if (chi2<kMaxChi2) break;
   }
 
-#ifdef DEBUG
-cout<<fI<<" chi2="<<chi2<<' '
-    <<fTrackToFollow.GetY()<<' '<<fTrackToFollow.GetZ()<<' '
-    <<dy<<' '<<dz<<endl;
-{
-Double_t phi=TMath::ATan(fTrackToFollow.GetY()/fTrackToFollow.GetX())
-            +fTrackToFollow.GetAlpha(); phi=phi*180./3.141593;
-cout<<phi<<endl;
-}
-#endif
-
   if (chi2>=kMaxChi2) return 0;
   if (!c) return 0;
 
   if (!fTrackToFollow.Update(c,chi2,(fI<<28)+ci)) {
-     //cerr<<"AliITStrackerV2::TakeNextProlongation: filtering failed !\n";
+     //Warning("TakeNextProlongation","filtering failed !\n");
      return 0;
   }
 
@@ -679,15 +613,10 @@ cout<<phi<<endl;
 
   if (fConstraint[fPass]) {
     Double_t d=GetEffectiveThickness(0,0); //Think of this !!!!
-    fTrackToFollow.Improve(d,GetY(),GetZ());
+    Double_t xyz[]={GetX(),GetY(),GetZ()};
+    Double_t ers[]={GetSigmaX(),GetSigmaY(),GetSigmaZ()};
+    fTrackToFollow.Improve(d,xyz,ers);
   }
-
-#ifdef DEBUG
-cout<<"accepted lab="<<c->GetLabel(0)<<' '
-    <<fTrackToFollow.GetNumberOfClusters()<<' '
-    <<fTrackToFollow.GetY()<<' '<<fTrackToFollow.GetZ()<<' '
-    <<fTrackToFollow.Get1Pt()<<endl<<endl;
-#endif
 
   return 1;
 }
@@ -749,9 +678,8 @@ Int_t AliITStrackerV2::AliITSlayer::InsertCluster(AliITSclusterV2 *c) {
   //This function adds a cluster to this layer
   //--------------------------------------------------------------------
   if (fN==kMaxClusterPerLayer) {
-     cerr<<"AliITStrackerV2::AliITSlayer::InsertCluster(): "
-           "Too many clusters !\n";
-     return 1;
+    ::Error("InsertCluster","Too many clusters !\n");
+    return 1;
   }
 
   if (fN==0) {fClusters[fN++]=c; return 0;}
@@ -829,10 +757,6 @@ FindDetectorIndex(Double_t phi, Double_t z) const {
   Int_t nz=Int_t(dz*(fNdetectors-1)*0.5/fZOffset+0.5);
   if (nz>=fNdetectors) return -1;
   if (nz<0)            return -1;
-
-#ifdef DEBUG
-cout<<np<<' '<<nz<<endl;
-#endif
 
   return np*fNdetectors + nz;
 }
@@ -935,10 +859,6 @@ const {
      //if (TMath::Abs(y+0.21)>0.45) d+=dd;
      if (TMath::Abs(y+0.10)<0.10) {d+=0.014;}
   }
-
-#ifdef DEBUG
-  cout<<"d="<<d<<endl;
-#endif
 
   return d;
 }

@@ -32,7 +32,7 @@
 class AliTPCtrack;
 
 //_____________________________________________________________________________
-class AliITStrackV2  : public AliKalmanTrack {
+class AliITStrackV2 : public AliKalmanTrack {
 public:
   AliITStrackV2();
   AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *);
@@ -42,7 +42,7 @@ public:
   Int_t CorrectForMaterial(Double_t d, Double_t x0=21.82);
   Int_t PropagateTo(Double_t xr, Double_t d, Double_t x0=21.82);
   Int_t Update(const AliCluster* cl,Double_t chi2,UInt_t i);
-  Int_t Improve(Double_t x0,Double_t yv,Double_t zv);
+  Int_t Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]);
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}
   void SetSampledEdx(Float_t q, Int_t i);
   void CookdEdx(Double_t low=0., Double_t up=0.51);
@@ -72,13 +72,7 @@ public:
   Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
   Int_t GetGlobalXYZat(Double_t r,Double_t &x,Double_t &y,Double_t &z) const;
   Double_t GetPredictedChi2(const AliCluster *cluster) const;
-  Double_t 
-  GetPredictedChi2(const AliCluster *cluster, Double_t *m, Double_t x0) const;
   Int_t Invariant() const;
-  static void SetSigmaYV(Double_t val){fSigmaYV = val;}
-  static void SetSigmaZV(Double_t val){fSigmaZV = val;}
-  static Double_t GetSigmaYV()  {return fSigmaYV;}
-  static Double_t GetSigmaZV()  {return fSigmaZV;}
  
 private:
   Double_t fX;              // X-coordinate of this track (reference plane)
@@ -101,8 +95,6 @@ private:
   UInt_t fIndex[kMaxLayer]; // indices of associated clusters 
 
   Float_t fdEdxSample[4];   // array of dE/dx samples b.b.
-  static Double_t fSigmaYV; //! uncert. on primary vert. pos. in rphi plane
-  static Double_t fSigmaZV; //!  uncert. on primary vert. pos. along beam axis
 
   ClassDef(AliITStrackV2,2)   //ITS reconstructed track
 };
