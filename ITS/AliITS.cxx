@@ -108,6 +108,12 @@ the AliITS class.
 #include "AliITSsimulationSSD.h"
 #include "AliMC.h"
 #include "AliITSDigitizer.h"
+#include "AliITSclustererV2.h"
+#include "AliITStrackerV2.h"
+#include "AliITSpidESD.h"
+#include "AliV0vertexer.h"
+#include "AliCascadeVertexer.h"
+#include "AliESD.h"
 
 ClassImp(AliITS)
 
@@ -1760,4 +1766,86 @@ AliLoader* AliITS::MakeLoader(const char* topfoldername)
   return fLoader;
 }
 
+
+//_____________________________________________________________________________
+void AliITS::Reconstruct() const
+{
+// reconstruct clusters
+
+  AliLoader* loader = GetLoader();
+  loader->LoadRecPoints("recreate");
+  loader->LoadDigits("read");
+
+  AliITSclustererV2 clusterer(GetITSgeom());
+  AliRunLoader* runLoader = loader->GetRunLoader();
+  Int_t nEvents = runLoader->GetNumberOfEvents();
+
+  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+    runLoader->GetEvent(iEvent);
+
+    TTree* treeClusters = loader->TreeR();
+    if (!treeClusters) {
+      loader->MakeTree("R");
+      treeClusters = loader->TreeR();
+    }
+    TTree* treeDigits = loader->TreeD();
+    if (!treeDigits) {
+      Error("Reconstruct", "Can't get digits tree !");
+      return;
+    }
+
+    clusterer.Digits2Clusters(treeDigits, treeClusters);
+         
+    loader->WriteRecPoints("OVERWRITE");
+  }
+
+  loader->UnloadRecPoints();
+  loader->UnloadDigits();
+}
+
+//_____________________________________________________________________________
+AliTracker* AliITS::CreateTracker() const
+{
+// create an ITS tracker
+
+  return new AliITStrackerV2(GetITSgeom());
+}
+
+//_____________________________________________________________________________
+void AliITS::FillESD(AliESD* esd) const
+{
+// make PID, find V0s and cascades
+
+  Double_t parITS[] = {34., 0.15, 10.};
+  AliITSpidESD itsPID(parITS);
+  itsPID.MakePID(esd);
+
+  // V0 finding
+  Double_t cuts[]={33,  // max. allowed chi2
+		   0.16,// min. allowed negative daughter's impact parameter 
+		   0.05,// min. allowed positive daughter's impact parameter 
+		   0.080,// max. allowed DCA between the daughter tracks
+		   0.998,// max. allowed cosine of V0's pointing angle
+		   0.9,  // min. radius of the fiducial volume
+		   2.9   // max. radius of the fiducial volume
+  };
+  AliV0vertexer vtxer(cuts);
+  Double_t vtx[3], cvtx[6];
+  esd->GetVertex(vtx, cvtx);
+  vtxer.SetVertex(vtx);
+  vtxer.Tracks2V0vertices(esd);
+
+  // cascade finding
+  Double_t cts[]={33.,    // max. allowed chi2
+		  0.05,   // min. allowed V0 impact parameter 
+		  0.008,  // window around the Lambda mass 
+		  0.035,  // min. allowed bachelor's impact parameter 
+		  0.10,   // max. allowed DCA between a V0 and a track
+		  0.9985, //max. allowed cosine of the cascade pointing angle
+		  0.9,    // min. radius of the fiducial volume
+		  2.9     // max. radius of the fiducial volume
+  };
+  AliCascadeVertexer cvtxer=AliCascadeVertexer(cts);
+  cvtxer.V0sTracks2CascadeVertices(esd);
+}
 

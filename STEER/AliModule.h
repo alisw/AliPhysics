@@ -90,9 +90,9 @@ public:
   virtual void        SDigits2Digits() {}
   virtual void        Hits2Digits() {}
   virtual void        Digits2Reco() {}
-  virtual void        Reconstruct() {}
-  virtual AliTracker* CreateTracker() {return NULL;}
-  virtual void        FillESD(AliESD* /*esd*/) {}
+  virtual void        Reconstruct() const {}
+  virtual AliTracker* CreateTracker() const {return NULL;}
+  virtual void        FillESD(AliESD* /*esd*/) const {}
   virtual void        Digits2Raw() {}
   virtual void        Raw2Digits() {}
   virtual void        Browse(TBrowser *) {}

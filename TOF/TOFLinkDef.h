@@ -36,5 +36,6 @@
 #pragma link C++ class  AliTOFDigitMap+;
 
 #pragma link C++ class  AliTOFpidESD+;
+#pragma link C++ class  AliTOFtracker+;
 
 #endif

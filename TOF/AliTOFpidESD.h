@@ -10,6 +10,7 @@
 //-------------------------------------------------------
 
 #include <TObject.h>
+#include <TMath.h>
 
 class AliTOFGeometry;
 class AliESD;

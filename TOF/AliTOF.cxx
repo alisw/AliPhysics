@@ -71,6 +71,7 @@
 #include "AliTOFhitT0.h"
 #include "AliMC.h"
 #include "AliTOFDigitizer.h"
+#include "AliTOFtracker.h"
  
 ClassImp(AliTOF)
  
@@ -983,3 +984,13 @@ void AliTOF::CreateSDigitsArray() {
 //
   fSDigits       = new TClonesArray("AliTOFSDigit",  1000);
 }
+
+////////////////////////////////////////////////////////////////////////
+AliTracker* AliTOF::CreateTracker() const
+{
+// create a TOF tracker
+
+  Double_t parPID[] = {130., 5.};
+  return new AliTOFtracker(GetGeometry(), parPID);
+}
+

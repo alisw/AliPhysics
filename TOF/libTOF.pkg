@@ -3,7 +3,7 @@ SRCS  = AliTOF.cxx  AliTOFGeometry.cxx AliTOFv4T0.cxx  AliTOFhit.cxx  AliTOFhitT
         AliTOFRawDigit.cxx  AliTOFDigitizer.cxx  AliTOFSDigitizer.cxx  AliTOFMerger.cxx  \
         AliTOFSDigit.cxx  AliTOFHitMap.cxx  AliTOFPad.cxx  AliTOFRecHit.cxx  AliTOFTrack.cxx  \
         AliTOFReconstructioner.cxx  AliTOFProb.cxx  AliTOFTrackV2.cxx  AliTOFReconstructionerV2.cxx  \
-        AliTOFDigitMap.cxx  AliTOFpidESD.cxx
+        AliTOFDigitMap.cxx  AliTOFpidESD.cxx  AliTOFtracker.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)

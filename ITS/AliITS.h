@@ -180,6 +180,10 @@ class AliITS : public AliDetector {
     void ResetRecPoints();
     // Return pointer to rec points 
     TClonesArray  *RecPoints()   {return fRecPoints;}
+
+    virtual void Reconstruct() const;
+    virtual AliTracker* CreateTracker() const;
+    virtual void FillESD(AliESD* esd) const;
      
  protected:
     //================== Data Members ==================================
