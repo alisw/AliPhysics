@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  1999/11/02 16:35:56  fca
+New version of TRD introduced
+
 Revision 1.12  1999/11/01 20:41:51  fca
 Added protections against using the wrong version of FRAME
 
@@ -59,6 +62,8 @@ AliTRD::AliTRD()
   // Default constructor
   //
 
+  Int_t iplan;
+
   fIshunt      = 0;
   fGasMix      = 0;
   fHits        = 0;
@@ -69,7 +74,7 @@ AliTRD::AliTRD()
   fNclusters   = 0;
 
   // The chamber dimensions
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+  for (iplan = 0; iplan < kNplan; iplan++) {
     fClengthI[iplan]  = 0.;
     fClengthM1[iplan] = 0.;
     fClengthM2[iplan] = 0.;
@@ -79,7 +84,7 @@ AliTRD::AliTRD()
     fCwidth[iplan]    = 0.;
   }
 
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+  for (iplan = 0; iplan < kNplan; iplan++) {
     for (Int_t icham = 0; icham < kNcham; icham++) {
       for (Int_t isect = 0; isect < kNsect; isect++) {
         fRowMax[iplan][icham][isect] = 0;
@@ -102,6 +107,8 @@ AliTRD::AliTRD(const char *name, const char *title)
   //
   // Standard constructor for the TRD
   //
+
+  Int_t iplan;
 
   // Check that FRAME is there otherwise we have no place where to
   // put TRD
@@ -133,7 +140,7 @@ AliTRD::AliTRD(const char *name, const char *title)
   fGasMix = 0;
 
   // The chamber dimensions
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+  for (iplan = 0; iplan < kNplan; iplan++) {
     fClengthI[iplan]  = 0.;
     fClengthM1[iplan] = 0.;
     fClengthM2[iplan] = 0.;
@@ -143,7 +150,7 @@ AliTRD::AliTRD(const char *name, const char *title)
     fCwidth[iplan]    = 0.;
   }
   
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+  for (iplan = 0; iplan < kNplan; iplan++) {
     for (Int_t icham = 0; icham < kNcham; icham++) {
       for (Int_t isect = 0; isect < kNsect; isect++) {
         fRowMax[iplan][icham][isect] = 0;
@@ -278,6 +285,8 @@ void AliTRD::CreateGeometry()
   AliModule* FRAME = gAlice->GetModule("FRAME");
   if (!FRAME) return;
 
+  Int_t iplan;
+
   const Int_t npar_trd = 4;
   const Int_t npar_cha = 3;
 
@@ -290,7 +299,7 @@ void AliTRD::CreateGeometry()
   Int_t *idtmed = fIdtmed->GetArray() - 1299;
 
   // The length of the inner chambers
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) 
+  for (iplan = 0; iplan < kNplan; iplan++) 
     fClengthI[iplan] = 110.0;
 
   // The length of the middle chambers
@@ -493,7 +502,7 @@ void AliTRD::CreateGeometry()
   gMC->Gspos("UL11",1,"UAIO",xpos,ypos,zpos,0,"ONLY");
 
   // Position the chambers in the TRD mother volume
-  for (Int_t iplan = 1; iplan <= kNplan; iplan++) {
+  for (iplan = 1; iplan <= kNplan; iplan++) {
 
     // The inner chambers ---------------------------------------------------------------
 
@@ -986,6 +995,7 @@ void AliTRD::Init()
   //
 
   Int_t i;
+  Int_t iplan;
   
   printf("\n");
   for(i=0;i<35;i++) printf("*");
@@ -1028,7 +1038,7 @@ void AliTRD::Init()
   //     +----------------------------+     +------>
   //                                             z
   //                                             
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
+  for (iplan = 0; iplan < kNplan; iplan++) {
 
     // The pad row (z-direction)
     for (Int_t isect = 0; isect < kNsect; isect++) {
