@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/02 21:28:15  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.9  2000/06/13 14:55:26  morsch
 Unused variables removed
 
@@ -358,15 +361,17 @@ void AliHALL::Init()
   //
   Int_t i;
   //
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" HALL_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  //
-  // Here the HALL initialisation code (if any!)
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
+  if(fDebug) {
+    printf("\n%s: ",ClassName());
+    for(i=0;i<35;i++) printf("*");
+    printf(" HALL_INIT ");
+    for(i=0;i<35;i++) printf("*");
+    printf("\n%s: ",ClassName());
+    //
+    // Here the HALL initialisation code (if any!)
+    for(i=0;i<80;i++) printf("*");
+    printf("\n");
+  }
 }
 
 //_____________________________________________________________________________

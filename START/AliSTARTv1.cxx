@@ -130,7 +130,7 @@ void AliSTARTv1::CreateGeometry()
     x=0;
     y=0;
     z=-pinstart[2]+ppmt[2];
-    printf(" is %d, z Divider %f\n",is,z);
+    if(fDebug) printf("%s: is %d, z Divider %f\n",ClassName(),is,z);
     gMC->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
     z=pinstart[2]-pdivider[2];
     gMC->Gspos("0DIV",1,"0INS",x,y,z,0,"ONLY");
@@ -159,7 +159,7 @@ void AliSTARTv1::CreateGeometry()
     // Bottom glass
     gMC->Gsvolu("0BOT","TUBE",idtmed[6],pbot,3);
     z=ppmt[2]-pbot[2];
-    printf("Z bottom %f\n",z);
+    if(fDebug) printf("%s: Z bottom %f\n",ClassName(),z);
     gMC->Gspos("0BOT",1,"0PMT",0,0,z,0,"ONLY");
     // Side cylinder glass
     gMC->Gsvolu("0OUT","TUBE",idtmed[6],pglass,3);
@@ -298,7 +298,7 @@ void AliSTARTv1::CreateMaterials()
    AliMedium(8, "Steel$", 0, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
    AliMedium(9, "Ribber  $", 7, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
    AliMedium(11, "Brass  $", 6, 0, isxfld, sxmgmx, 10., .01, .1, .003, .003);
-   cout<<"++++++++++++++Medium set++++++++++"<<endl;
+   if(fDebug) cout<<ClassName()<<": ++++++++++++++Medium set++++++++++"<<endl;
 
 //  geant3->Gsckov(idtmed[2105], 14, ppckov, absco_quarz, effic_all,rindex_quarz);
 
@@ -337,7 +337,7 @@ void AliSTARTv1::Init()
 //Int_t *idtmed  = gAlice->Idtmed();
   AliSTART::Init();
   fIdSens1=gMC->VolId("0TOP");
-  printf("*** START version 0 initialized ***\n");
+  if(fDebug) printf("%s: *** START version 0 initialized ***\n",ClassName());
  
 }
 

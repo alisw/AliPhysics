@@ -53,7 +53,7 @@ class AliMUON : public  AliDetector {
     TClonesArray  *PadHits() {return fPadHits;}
     TClonesArray  *LocalTrigger() {return fLocalTrigger;}
     TClonesArray  *GlobalTrigger() {return fGlobalTrigger;}
-    virtual void   MakeBranch(Option_t *opt=" ", char *file=0);
+    virtual void   MakeBranch(Option_t *opt=" ", const char *file=0);
     void           SetTreeAddress();
     virtual void   ResetHits();
     virtual void   ResetDigits();

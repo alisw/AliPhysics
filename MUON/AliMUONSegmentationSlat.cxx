@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/01/26 21:25:48  morsch
+Empty default constructors and.
+
 Revision 1.10  2001/01/23 18:58:19  hristov
 Initialisation of some pointers
 
@@ -468,7 +471,7 @@ void AliMUONSegmentationSlat::Init(Int_t chamber)
 // Initialize slat modules of quadrant +/+    
 // The other three quadrants are handled through symmetry transformations
 //
-    printf("\n Initialise Segmentation Slat \n");
+  //printf("\n Initialise Segmentation Slat \n");
 //
 
 // Initialize Slat modules

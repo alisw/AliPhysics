@@ -5,9 +5,28 @@
 #
 # modification history
 # $Log$
+# Revision 1.1  2001/02/23 17:33:40  buncic
+# Added alifs wrapper for CASTOR and alirun modified accordingly.
+#
 #
 # SYNOPSIS
-# alifs <command>
+# alifs [flags] <command [options]>
+#
+# File System implementation:
+#              ls [-cdilRu] path
+#              mv oldname newname...                   
+#              rm [-f] [-i] [-r] dirname...            
+#              mkdir [-m absolute_mode] [-p] dirname...
+#              cp f1 f2                   
+#              cp f1 <dir2>                            
+#
+# CASTOR implementation:
+#              ls [-cdilRTu] [--class] [--comment] path
+#              mv oldname newname...                   
+#              rm [-f] [-i] [-r] dirname...            
+#              mkdir [-m absolute_mode] [-p] dirname...
+#              cp [-s maxsize] f1 f2                   
+#              cp f1 <dir2>                            
 #
 # DESCRIPTION
 # This is an interface script to underlying mass storage manager. At present it supports CASTOR on RH6.1 and offers some basic Unix like commands:
@@ -23,9 +42,13 @@
 #
 # o) create directory
 #       alifs mkdir [-m absolute_mode] [-p] dirname...
+
+# o) copy files
+#       alifs cp [-s maxsize] f1 f2
+#       alifs cp f1 <dir2>
 # 
 #  CASTOR file system is accessible via RFIO (root must be configured configured with --enable-rfio switch and linked with appropriate libshift.a library). It provides experiment topl level directory (/castor/cern.ch/alice) and user directories following the AFS naming scheeme (like /castor/cern.ch/user/b/buncic).
-#For more info on CASTOR commands, see related man pages (nsls, nsrename, nsrm, nsmkdir).
+#For more info on CASTOR commands, see related man pages (nsls, nsrename, nsrm, nsmkdir,rfcp,rfstat).
 #   
 #
 # AUTHOR:
@@ -35,30 +58,32 @@
 # 15-Feb-2001
 #C<
 ###########################################################################
+ALIFSDIR=`dirname $0`; export ALIFSDIR
+###########################################################################
 Configure()
 {
-  if [ "$CASTOR_USER_POOL" = "" ]
-  then
-    CASTOR_USER_POOL=$STAGE_POOL 
-  fi
-
-  if [ "$CASTOR_BIN" = "" ]
-  then
-    case `uname` in
-      Linux)
-         CASTOR_BIN=/afs/cern.ch/asis/packages/CASTOR/castor-1.3.1.1/i386_redhat61/usr.local/bin
-         EXEC_SHELL=/bin/sh
-         ;;
-        *) 
-         ;;
-    esac
-  fi
-
-  if [ ! -d $CASTOR_BIN ] 
-  then
-    printf "CASTOR is not supported on this platform.\n"
-    exit 255
-  fi
+  case "$ALICE_MSS" in
+     CASTOR)
+        if [ -f $ALIFSDIR/castor.sh ]
+        then
+          . $ALIFSDIR/castor.sh
+        else
+          printf "Cannot find %s file. Terminating..." $ALIFSDIR/castor.sh
+          exit 1
+        fi
+        ;;
+     HPSS|RFIO)
+        if [ -f $ALIFSDIR/rfio.sh ]
+        then
+          . $ALIFSDIR/rfio.sh
+        else
+          printf "Cannot find %s file. Terminating...\n" $ALIFSDIR/rfio.sh
+          exit 1
+        fi
+        ;;
+      *) 
+        ;;
+  esac 
 
   if [ "$EXEC_SHELL" = "" ]
   then
@@ -79,13 +104,20 @@ Configure()
   fi
 }
 ###########################################################################
-ALIFS::Usage()
+ALIFS_Usage()
 {
-   printf "Usage: alifs <command [options]>\n"
-   exit 
+   printf "\nFile System Implementation:\n\n"
+   printf "Usage: alifs [-help][-p <pool>] <command [options]>   \n"
+   printf "              [-cdilRu] path                          \n" 
+   printf "              mv oldname newname...                   \n"
+   printf "              rm [-f] [-i] [-r] dirname...            \n"
+   printf "              mkdir [-m absolute_mode] [-p] dirname...\n"
+   printf "              cp f1 f2                                \n" 
+   printf "              cp f1 <dir2>                            \n"
+   exit
 }
 ###########################################################################
-ALIFS::Makeman()
+ALIFS_Makeman()
 ###########################################################################
 {
    mandir=../man/man4 
@@ -98,24 +130,29 @@ ALIFS::Makeman()
    fi
 }
 ###########################################################################
-ALIFS::ls()
+ALIFS_ls()
 {
-   $CASTOR_BIN/nsls $*
+   ls $*
 }
 ###########################################################################
-ALIFS::mkdir()
+ALIFS_mkdir()
 {
-   $CASTOR_BIN/nsmkdir $*
+   mkdir $*
 }
 ###########################################################################
-ALIFS::mv()
+ALIFS_mv()
 {
-   $CASTOR_BIN/nsrename $*
+   mv $*
 }
 ###########################################################################
-ALIFS::rm()
+ALIFS_rm()
 {
-   $CASTOR_BIN/nsrm $*
+   rm $*
+}
+###########################################################################
+ALIFS_cp()
+{
+   cp $*
 }
 ###########################################################################
 Configure $*
@@ -124,18 +161,19 @@ ALIFS()
 {
   cmd=$1; shift 1
 
-  case `type -t ALIFS::$cmd` in
+  case `type -t ALIFS_$cmd` in
      function)
-              ALIFS::$cmd $*
+              ALIFS_$cmd $*
               ;;
             *) 
-              ALIFS::Usage;
+              ALIFS_Usage;
               ;;
   esac 
 
   exit
 }
 ###########################################################################
+
 ###########################################################################
 
 for param in $*
@@ -151,7 +189,10 @@ do
             ;;
         -makeman)
             shift 1
-            ALIFS::Makeman
+            ALIFS_Makeman
+            ;;
+        -help)
+            ALIFS_Usage
             ;;
         -p)
             shift 1
@@ -162,5 +203,10 @@ do
             ;;
     esac
 done
+
+###########################################################################
+ALIFS_Usage
+###########################################################################
+
 
 

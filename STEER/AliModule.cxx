@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/03/20 06:36:28  alibrary
+100 parameters now allowed for geant shapes
+
 Revision 1.14  2001/01/26 19:58:48  hristov
 Major upgrade of AliRoot code
 
@@ -66,6 +69,7 @@ Introduction of the Copyright and cvs Log
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliMC.h"
+#include "AliConfig.h"
 
 ClassImp(AliModule)
  
@@ -79,6 +83,7 @@ AliModule::AliModule()
   fNodes      = 0;
   fIdtmed     = 0;
   fIdmate     = 0;
+  fDebug      = 0;
 }
  
 //_____________________________________________________________________________
@@ -118,6 +123,9 @@ AliModule::AliModule(const char* name,const char *title):TNamed(name,title)
   // Prepare to find the tracking media range
   fLoMedium = 65536;
   fHiMedium = 0;
+
+  AliConfig::Instance()->Add(this);    
+    
   SetDebug(gAlice->GetDebug());
 }
  
@@ -525,7 +533,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
     }
     if (istop[i] && !flag) {
       strcpy(topvol,volst[i]);
-      printf(" *** GREUCL *** volume %s taken as a top volume\n",topvol);
+      if(fDebug) printf("%s::ReadEuclid: volume %s taken as a top volume\n",ClassName(),topvol);
       flag=1;
     }
   }
@@ -535,7 +543,7 @@ void AliModule::ReadEuclid(const char* filnam, char* topvol)
   fclose (lun);
   //*
   //*     commented out only for the not cernlib version
-  printf(" *** GREUCL *** file: %s is now read in\n",filnam);
+  if(fDebug) printf("%s::ReadEuclid: file: %s is now read in\n",ClassName(),filnam);
   //
   return;
   //*
@@ -573,7 +581,7 @@ void AliModule::ReadEuclidMedia(const char* filnam)
   }
   //
   // *** The input filnam name will be with extension '.euc'
-  printf("The file name is %s\n",filnam); //Debug
+  if(fDebug) printf("%s::ReadEuclid: The file name is %s\n",ClassName(),filnam); //Debug
   filtmp=gSystem->ExpandPathName(filnam);
   lun=fopen(filtmp,"r");
   delete [] filtmp;
@@ -628,7 +636,8 @@ void AliModule::ReadEuclidMedia(const char* filnam)
   fclose (lun);
   //*
   //*     commented out only for the not cernlib version
-  Warning("ReadEuclidMedia","file: %s is now read in\n",filnam);
+  if(fDebug) printf("%s::ReadEuclidMedia: file %s is now read in\n",
+  	ClassName(),filnam);
   //*
   return;
   //*

@@ -838,39 +838,38 @@ protected:
   Int_t fNextVol;    // Iterator for GeomIter
 
 //--------------Declarations for ZEBRA--------------------- 
-  Int_t *fZiq;                // Good Old IQ of Zebra
-  Int_t *fZlq;                // Good Old LQ of Zebra
-  Float_t *fZq;               // Good Old Q of Zebra
+  Int_t *fZiq;                //! Good Old IQ of Zebra
+  Int_t *fZlq;                //! Good Old LQ of Zebra
+  Float_t *fZq;               //! Good Old Q of Zebra
 
-  Quest_t  *fQuest;           // QUEST common structure
-  Gcbank_t *fGcbank;          // GCBANK common structure
-  Gclink_t *fGclink;          // GCLINK common structure
-  Gccuts_t *fGccuts;          // GCCUTS common structure
-  Gcmulo_t *fGcmulo;          // GCMULO common structure
-  Gcmate_t *fGcmate;          // GCMATE common structure
-  Gctpol_t *fGctpol;          // GCTPOL common structure
-  Gcnum_t  *fGcnum;           // GCNUM common structure
-  Gcsets_t *fGcsets;          // GCSETS common structure
-  Gcopti_t *fGcopti;          // GCOPTI common structure
-  Gctlit_t *fGctlit;          // GCTLIT common structure
-  Gcvdma_t *fGcvdma;          // GCVDMA common structure
-  Gcvolu_t *fGcvolu;          // GCVOLU common structure
-  Gckine_t *fGckine;          // GCKINE common structure
-  Gcflag_t *fGcflag;          // GCFLAG common structure
-  Gctmed_t *fGctmed;          // GCTMED common structure
-  Gcphys_t *fGcphys;          // GCPHYS common structure
-  Gcphlt_t *fGcphlt;          // GCPHLT common structure
-  Gcking_t *fGcking;          // GCKING common structure
-  Gckin2_t *fGckin2;          // GCKIN2 common structure
-  Gckin3_t *fGckin3;          // GCKIN3 common structure
-  Gctrak_t *fGctrak;          // GCTRAK common structure
-
+  Quest_t  *fQuest;           //! QUEST common structure
+  Gcbank_t *fGcbank;          //! GCBANK common structure
+  Gclink_t *fGclink;          //! GCLINK common structure
+  Gccuts_t *fGccuts;          //! GCCUTS common structure
+  Gcmulo_t *fGcmulo;          //! GCMULO common structure
+  Gcmate_t *fGcmate;          //! GCMATE common structure
+  Gctpol_t *fGctpol;          //! GCTPOL common structure
+  Gcnum_t  *fGcnum;           //! GCNUM common structure
+  Gcsets_t *fGcsets;          //! GCSETS common structure
+  Gcopti_t *fGcopti;          //! GCOPTI common structure
+  Gctlit_t *fGctlit;          //! GCTLIT common structure
+  Gcvdma_t *fGcvdma;          //! GCVDMA common structure
+  Gcvolu_t *fGcvolu;          //! GCVOLU common structure
+  Gckine_t *fGckine;          //! GCKINE common structure
+  Gcflag_t *fGcflag;          //! GCFLAG common structure
+  Gctmed_t *fGctmed;          //! GCTMED common structure
+  Gcphys_t *fGcphys;          //! GCPHYS common structure
+  Gcphlt_t *fGcphlt;          //! GCPHLT common structure
+  Gcking_t *fGcking;          //! GCKING common structure
+  Gckin2_t *fGckin2;          //! GCKIN2 common structure
+  Gckin3_t *fGckin3;          //! GCKIN3 common structure
+  Gctrak_t *fGctrak;          //! GCTRAK common structure
 
   // commons for GEANE
-  Ertrio_t *fErtrio;          // ERTRIO common structure
-  Eropts_t *fEropts;          // EROPTS common structure
-  Eroptc_t *fEroptc;          // EROPTC common structure
-  Erwork_t *fErwork;          // ERWORK common structure
+  Ertrio_t *fErtrio;          //! ERTRIO common structure
+  Eropts_t *fEropts;          //! EROPTS common structure
+  Eroptc_t *fEroptc;          //! EROPTC common structure
+  Erwork_t *fErwork;          //! ERWORK common structure
 
   //Put here all volume names
 

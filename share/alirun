@@ -4,7 +4,12 @@
 #############################################################################
 #
 # modification history
+#
 # $Log$
+#
+# Revision 1.5  2001/02/23 17:33:40  buncic
+# Added alifs wrapper for CASTOR and alirun modified accordingly.
+#
 # Revision 1.4  2001/02/08 18:55:43  buncic
 # Support for writing to remote file systems (shift/castor).
 #
@@ -105,6 +110,9 @@
 #
 # -debugger <command_name>
 #    Execute AliRoot under debugger other than gdb. 
+#
+# -debuglevel <level>
+#    Set AliRoot debug flag to <level>.
 #
 # -break <breakpoint>
 #    Execute AliRoot under gdb and set <breakpoint>.
@@ -330,7 +338,9 @@ void Simulate()
    
    gAlice->Init(gSystem->Getenv("CONFIG"));
 
-   gAlice->Run(1);
+   $DEBUG_LEVEL;
+
+   gAlice->RunMC($NEVENTS);
 }
 ////////////////////////////////////////////////////////////////////////////
 
@@ -364,6 +374,8 @@ void $mode()
    
    AliRun *gAlice = (AliRun*)file->Get("gAlice");
   
+   $DEBUG_LEVEL;
+
    gAlice->$mode(gSystem->Getenv("CONFIG_DETECTOR"));
 }
 ////////////////////////////////////////////////////////////////////////////
@@ -401,12 +413,12 @@ AliRunHits()
 }
 
 ###########################################################################
-AliRunDigits()
+AliRunSplitCmd()
 ###########################################################################
 {
   if [ "$DETECTORS" = "" ]
   then
-    AliRoot Digits 
+    AliRoot $1
   else
     for det in $DETECTORS
     do
@@ -415,16 +427,30 @@ AliRunDigits()
       then
         if [ "$LSF_FORK" = "TRUE" ]
         then
-          lsrun AliRoot Digits $CONFIG_DETECTOR
+          lsrun AliRoot $1 $CONFIG_DETECTOR
         else
-          AliRoot Digits $CONFIG_DETECTOR &
+          AliRoot $1 $CONFIG_DETECTOR &
         fi
       else
-        AliRoot Digits $CONFIG_DETECTOR
+        AliRoot $1 $CONFIG_DETECTOR
       fi
     done
     wait
   fi
+}
+
+###########################################################################
+AliRunDigits()
+###########################################################################
+{
+  AliRunSplitCmd Digits
+}
+
+###########################################################################
+AliRunReco()
+###########################################################################
+{
+  AliRunSplitCmd Reco
 }
 
 ###########################################################################
@@ -442,13 +468,15 @@ ALIRUN_TMPDIR=`Mktemp`; export ALIRUN_TMPDIR
 ALIRUN_DEBUGGER=gdb
 
 DEBUG="FALSE"
+DEBUG_LEVEL=""
 BREAK=""
 VERBOSE="TRUE"
 OUTPUT=.
-CMDLIST="Usage"
+CMDLIST=""
 FORK="FALSE"
 FORK_LSF="FALSE"
 ECHO=""
+NEVENTS=1
 USE_CACHE="file->UseCache()"
 
 if [ -x /usr/local/lsf/bin/lsrun ] 
@@ -475,6 +503,10 @@ do
         -debugger)
             shift 1
             ALIRUN_DEBUGGER=$1
+            ;;
+        -debuglevel)
+            shift 1
+            DEBUG_LEVEL="gAlice->SetDebug($1)"
             ;;
         -break)
             shift 1
@@ -568,6 +600,11 @@ do
             ;;
     esac
 done
+
+if [ "$CMDLIST" = "" ]
+then
+  AliRun
+fi
 
 if [ `dirname $OUTPUT` = "." ]
 then

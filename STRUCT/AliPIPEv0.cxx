@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.15  2001/05/02 11:50:18  morsch
+New layout of the non-absorber side provided by Y. Viyogi. Not the final design
+but the prsent most realistic.
+
 Revision 1.14  2001/01/20 16:56:33  morsch
 Put air in connecting tubes and flanges of vacuum pump.
 
@@ -93,7 +97,7 @@ void AliPIPEv0::CreateGeometry()
 */
 //End_Html
 
-    printf("Create PIPEvTemp geometry \n");
+    if(fDebug) printf("%s: Create PIPEv0 geometry \n",ClassName());
   
 
     Int_t *idtmed = fIdtmed->GetArray();
@@ -767,7 +771,7 @@ void AliPIPEv0::CreateMaterials()
   // Define materials for beam pipe
   //
 
-  printf("Create PIPEvTemp materials \n");
+  if(fDebug) printf("%s: Create PIPEv0 materials \n",ClassName());
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
   // Steel (Inox)  

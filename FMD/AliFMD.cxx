@@ -123,6 +123,7 @@ void AliFMD::AddDigit( Int_t *digits)
 {
   // add a real digit - as coming from data
 
+  // printf("AddDigit\n");
 
    TClonesArray &ldigits = *fDigits;
    new(ldigits[fNdigits++]) AliFMDdigit(digits);
@@ -214,15 +215,17 @@ void AliFMD::Init()
   Int_t i;
   AliMC* pMC = AliMC::GetMC();
   //
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" FMD_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  //
-  // Here the FMD initialisation code (if any!)
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
+  if(fDebug) {
+    printf("\n%s: ",ClassName());
+    for(i=0;i<35;i++) printf("*");
+    printf(" FMD_INIT ");
+    for(i=0;i<35;i++) printf("*");
+    printf("\n%s: ",ClassName());
+    //
+    // Here the FMD initialisation code (if any!)
+    for(i=0;i<80;i++) printf("*");
+    printf("\n");
+  }
   //
   //
   if (IsVersion()!=0)
@@ -232,7 +235,7 @@ void AliFMD::Init()
 
 }
 //---------------------------------------------------------------------
-void AliFMD::MakeBranch(Option_t* option, char *file)
+void AliFMD::MakeBranch(Option_t* option, const char *file)
 {
   // Create Tree branches for the FMD.
   const Int_t kBufferSize = 4000;
@@ -245,8 +248,8 @@ void AliFMD::MakeBranch(Option_t* option, char *file)
  
   if (cD) {
     
-     gAlice->MakeBranchInTree(gAlice->TreeD(), 
-                                   branchname, &fDigits, kBufferSize, file) ; 	  
+    MakeBranchInTree(gAlice->TreeD(), 
+                     branchname, &fDigits, kBufferSize, file);
 
     printf("Making Branch %s for digits\n",branchname);
     gAlice->TreeD()->Print();
@@ -311,17 +314,15 @@ void AliFMD::Eta2Radius(Float_t eta, Float_t zDisk, Float_t *radius)
   Float_t rad=zDisk*(TMath::Tan(theta));
   *radius=rad;
    
-  printf(" eta %f radius %f\n", eta, rad);
+  if(fDebug) printf("%s: eta %f radius %f\n", ClassName(), eta, rad);
 }
 
 //---------------------------------------------------------------------
 
 void AliFMD::Hits2SDigits(){
-#ifdef DEBUG
-  cout<<"ALiFMD::Hits2SDigits> start...\n";
-#endif
-  char * fileSDigits = 0 ;
-  char * fileHeader=0 ;
+  if(fDebug) cout << ClassName() << ": ALiFMD::Hits2SDigits> start...\n";
+  //  char * fileSDigits = 0 ;
+  // char * fileHeader=0 ;
   AliFMDSDigitizer * sd = new AliFMDSDigitizer("mgalice.root","FMD.SDigit.root") ;
   sd->Exec("") ;
   sd->Print("");

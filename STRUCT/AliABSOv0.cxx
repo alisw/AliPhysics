@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.8  2001/01/12 13:16:09  morsch
+Store absorber composition information in fMLayers and fZLayers
+Rear 25 cm Fe + 35 cm Cu
+
 Revision 1.7  2000/10/02 21:28:15  fca
 Removal of useless dependecies via forward declarations
 
@@ -461,14 +465,16 @@ void AliABSOv0::Init()
   // Initialisation of the muon absorber after it has been built
   Int_t i;
   //
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" ABSOv0_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  //
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
+  if(fDebug) {
+    printf("\n%s: ",ClassName());
+    for(i=0;i<35;i++) printf("*");
+    printf(" ABSOv0_INIT ");
+    for(i=0;i<35;i++) printf("*");
+    printf("\n%s: ",ClassName());
+    //
+    for(i=0;i<80;i++) printf("*");
+    printf("\n");
+  }
 }
  
 

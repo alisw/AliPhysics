@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.38  2001/05/08 16:03:06  kowal2
+Geometry update according to the latest technical spec.
+
 Revision 1.37  2001/04/27 15:23:07  kowal2
 Correct materian in the central part of the inner containment vessel
 
@@ -213,18 +216,18 @@ void AliTPCv2::CreateGeometry()
     for (i = 0; i < 6; ++i) {
       if (fSecLows[i] >= 0 && fSecLows[i] < 2*nInnerSector) {
 	ifl1 = 1;
-	printf("*** SECTOR %d selected\n",fSecLows[i]);
+	printf("%s: *** SECTOR %d selected\n",ClassName(),fSecLows[i]);
       }
     }
 
   } else {
-    printf("*** ALL LOWER SECTORS SELECTED ***\n");
+    printf("%s: *** ALL LOWER SECTORS SELECTED ***\n",ClassName());
     ifl1 = 1;
   }
 
   if (ifl1 == 0) {
-    printf("*** ERROR: AT LEAST ONE LOWER SECTOR MUST BE SPECIFIED ***\n");
-    printf("!!! PROGRAM STOPPED !!!\n");
+    printf("%s: *** ERROR: AT LEAST ONE LOWER SECTOR MUST BE SPECIFIED ***\n",ClassName());
+    printf("%s: !!! PROGRAM STOPPED !!!\n",ClassName());
     exit(1);
   }
 
@@ -233,12 +236,12 @@ void AliTPCv2::CreateGeometry()
     for (i = 0; i < 12; ++i) {
       if (fSecUps[i] > 2*nInnerSector-1 && 
           fSecUps[i] < 2*(nInnerSector+nOuterSector)) {
-	printf("*** SECTOR %d selected\n",fSecUps[i]);
+	printf("%s: *** SECTOR %d selected\n",ClassName(),fSecUps[i]);
       }
     }
     
   } else {
-    printf("*** ALL UPPER SECTORS SELECTED ***\n");
+    printf("%s: *** ALL UPPER SECTORS SELECTED ***\n",ClassName());
   }
   
  
@@ -1908,8 +1911,8 @@ void AliTPCv2::Init()
 
   gMC->Gstpar(idtmed[2],"LOSS",5); // specific energy loss
 
-  printf("*** TPC version 2 initialized ***\n");
-  printf("Maximum number of steps = %d\n",gMC->GetMaxNStep());
+  printf("%s: *** TPC version 2 initialized ***\n",ClassName());
+  printf("%s: Maximum number of steps = %d\n",ClassName(),gMC->GetMaxNStep());
 
   //
   

@@ -45,6 +45,9 @@
 #pragma link C++ class  AliMCQA+;
 #pragma link C++ class  AliPDG+;
 #pragma link C++ class  AliDebugVolume+;
+#pragma link C++ class  AliStack+;
+#pragma link C++ class  AliConfig+;
+#pragma link C++ class  AliGenEventHeader+;
 #endif
 
 

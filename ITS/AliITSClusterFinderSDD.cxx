@@ -443,7 +443,7 @@ Int_t AliITSClusterFinderSDD::SearchPeak( Float_t *spect, Int_t xdim, Int_t zdim
 		{
 			if( i==j) continue;
 			if( Flag[j] > 0 ) continue;
-			if( peakAmp[i] == peakAmp[j] && abs(peakX[i]-peakX[j])<=1 && abs(peakZ[i]-peakZ[j])<=1 )
+			if( peakAmp[i] == peakAmp[j] && TMath::Abs(peakX[i]-peakX[j])<=1 && TMath::Abs(peakZ[i]-peakZ[j])<=1 )
 			{
 				if( Flag[i] == 0) Flag[i] = i+1;
 				Flag[j] = Flag[i];

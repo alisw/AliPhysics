@@ -15,9 +15,6 @@
 
 /*
 $Log$
-Revision 1.5  2001/03/21 18:22:30  hristov
-fParticleFileMap fix (I.Hrivnacova)
-
 Revision 1.4  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -44,6 +41,8 @@ AliHeader::AliHeader()
   fNprimary=0;
   fNtrack=0;
   fEvent=0;
+  fStack=0;
+  fGenHeader = 0;
 }
 
 AliHeader::AliHeader(Int_t run, Int_t event)
@@ -56,6 +55,8 @@ AliHeader::AliHeader(Int_t run, Int_t event)
   fNprimary=0;
   fNtrack=0;
   fEvent=event;
+  fStack=0;
+  fGenHeader = 0;
 }
 
 void AliHeader::Reset(Int_t run, Int_t event)
@@ -84,12 +85,29 @@ void AliHeader::Print(const char* option)
   printf(
   "=========== Header for run %d Event %d = end ============================================\n\n",
   fRun,fEvent);
-  
-  // print  particle file map
-  const char* oMap = strstr(option,"Map");
-  if (oMap) {
-    printf("\nParticle file map: \n");
-    for (Int_t i=0; i<fNtrack; i++) 
-      printf("   %d th entry: %d \n",i,fParticleFileMap[i]);
-  }    
+
+}
+
+inline AliStack* AliHeader::Stack() const
+{
+// Return pointer to stack
+    return fStack;
+}
+
+inline void AliHeader::SetStack(AliStack* stack)
+{
+// Set pointer to stack
+    fStack = stack;
+}
+
+inline void AliHeader::SetGenEventHeader(AliGenEventHeader* header)
+{
+// Set pointer to header for generated event
+    fGenHeader = header;
+}
+
+inline  AliGenEventHeader*  AliHeader::GenEventHeader() const
+{
+// Get pointer to header for generated event
+    return fGenHeader;
 }

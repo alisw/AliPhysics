@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.2  2001/03/14 18:16:08  jbarbosa
+Corrected bug (more to correct).
+File "points.dat" is no longer created.
+
 Revision 1.1  2001/02/27 22:13:34  jbarbosa
 Implementing merger class.
 
@@ -531,10 +535,10 @@ void AliRICHMerger::Digitise(Int_t nev, Int_t flag)
       printf ("Chamber %d digits %d \n",k,ndigit);
     }
     pRICH->ResetDigits();
-    char hname[30];
-    sprintf(hname,"TreeD%d",nev);
-    gAlice->TreeD()->Write(hname);
-    
+    // char hname[30];
+    // sprintf(hname,"TreeD%d",nev);
+    // gAlice->TreeD()->Write(hname);
+    gAlice->TreeD()->Write(0,TObject::kOverwrite);
     // reset tree
     //    gAlice->TreeD()->Reset();
     delete list;

@@ -8,6 +8,7 @@
 #include <AliModule.h>
 class AliHit;
 class TTree;
+class TBranch;
 
 class AliDetector : public AliModule {
 
@@ -32,10 +33,11 @@ public:
   {det.Copy(*this); return (*this);}
   
   // Other methods
+  virtual void        Publish(const char *dir, void *c, const char *name=0);
   virtual void        Browse(TBrowser *b);
   virtual void        FinishRun();
   virtual void        LoadPoints(Int_t track);
-  virtual void        MakeBranch(Option_t *opt=" ", char *file=0 );
+  virtual void        MakeBranch(Option_t *opt=" ", const char *file=0 );
   virtual void        ResetDigits();
   virtual void        ResetHits();
   virtual void        ResetPoints();
@@ -47,7 +49,9 @@ public:
   virtual AliHit*     FirstHit(Int_t track);
   virtual AliHit*     NextHit();
   virtual void        SetBufferSize(Int_t bufsize=8000) {fBufferSize = bufsize;}  
- 
+  virtual TBranch*    MakeBranchInTree(TTree *tree, const char* cname, void* address, Int_t size=32000, const char *file=0);
+  virtual TBranch*    MakeBranchInTree(TTree *tree, const char* cname, const char* name, void* address, Int_t size=32000, Int_t splitlevel=1, const char *file=0);
+   
   // Data members
 protected:      
   

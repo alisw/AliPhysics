@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/12 17:17:03  pcrochet
+BuildGeometry of AliMUON for trigger chambers delegated to AliMUONSegmentationTriggerX (same strategy as for tracking chambers)
+
 Revision 1.5  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -70,10 +73,10 @@ ClassImp(AliMUONSegmentationTrigger)
 void AliMUONSegmentationTrigger::Init(Int_t chamber)
 {
   // initialize Module geometry
-  cout << "Initialize Trigger Chamber Module Geometry " << "\n";    
-
   AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
   AliMUONChamber* iChamber=&(pMUON->Chamber(chamber));
+
+  if(pMUON->GetDebug()) cout << ClassName() << ": Initialize Trigger Chamber Module Geometry " << "\n";    
 
   Float_t zPos=iChamber->Z();
   Float_t z1Pos=1603.5;
@@ -89,7 +92,7 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
   Float_t z1pm=z1PosPlus/z1PosMinus;
   Float_t z1mp=z1PosMinus/z1PosPlus;
 
-  cout << " fZscale = " << fZscale << "\n";
+  if(pMUON->GetDebug()) cout << ClassName() << ": fZscale = " << fZscale << "\n";
   
 // calculate yCmin and fYcmax 
   Int_t i;  
@@ -192,7 +195,7 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
   fChamber=&(pMUON->Chamber(chamber));
   fId=chamber;
 
-  cout << "---------------------------------------------------- \n";   
+  if(pMUON->GetDebug()) cout << ClassName() << ": ---------------------------------------------------- \n";   
 
 }
 

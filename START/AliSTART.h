@@ -35,7 +35,7 @@ public:
    virtual void   Init();
    void Hit2digit(Int_t iEventNum);
    void Hit2digit(){return;}
-   virtual void   MakeBranch(Option_t *opt=" ", char *file=0);
+   virtual void   MakeBranch(Option_t *opt=" ", const char *file=0);
    virtual void   StepManager(){}
    
 protected:

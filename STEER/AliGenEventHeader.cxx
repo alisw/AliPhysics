@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.1  2000/06/15 15:47:48  morsch
 Proposal for an event header class for generated events.
 
@@ -32,15 +35,20 @@ ClassImp(AliGenEventHeader)
 
 
 //_____________________________________________________________________________
+AliGenEventHeader::AliGenEventHeader()
+{
+// Constructor
+    fNProduced      = -1;      
+    fImpactParameter= -1.;
+}
+
+
 AliGenEventHeader::AliGenEventHeader(const char * name)
     :TNamed(name, "Event Header")
 {
 // Constructor
-//    fDate=new TDatime;           
-    fRunNumber=-1;      
-    fEventNumber=-1;    
-    fNProduced=-1;      
-    fImpactParameter=-1.;
+    fNProduced      = -1;      
+    fImpactParameter= -1.;
 }
 
 

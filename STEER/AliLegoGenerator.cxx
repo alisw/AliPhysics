@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/11/30 07:12:49  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.3  2000/10/26 14:15:54  morsch
 - Base class now
 - Change from theta, phi to general coordinates Coor1, Coor2
@@ -140,7 +143,7 @@ void AliLegoGenerator::Generate()
    
    Float_t polar[3]={0.,0.,0.};
    Int_t ntr;
-   gAlice->SetTrack(1, 0, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
+   gAlice->SetTrack(1, -1, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
    
 }
 

@@ -112,10 +112,11 @@ void AliFMDv1::CreateGeometry()
   for (ifmd =0; ifmd < 4; ifmd++){
 
     sprintf(name,"FMD%d",ifmd);
-    printf(name);
+    if(fDebug) 
+      printf("%s: %s",ClassName(),name);
     
     zfmd=TMath::Abs(z[ifmd]);
-    printf("zfmd %f z[ifmd] %f",zfmd,z[ifmd]);
+    if(fDebug) printf("zfmd %f z[ifmd] %f",zfmd,z[ifmd]);
     AliFMD::Eta2Radius(etain[ifmd],zfmd,&rin[ifmd]);
     AliFMD::Eta2Radius(etaout[ifmd],zfmd,&rout[ifmd]);
     
@@ -124,7 +125,7 @@ void AliFMDv1::CreateGeometry()
     par[2]=zFMD/2;
     gMC->Gsvolu(name,"TUBE", idtmed[3], par, 3);
     
-    printf ("rin %f rout %f ZFMD %f\n",par[0],par[1],z[ifmd]);
+    if(fDebug) printf ("rin %f rout %f ZFMD %f\n",par[0],par[1],z[ifmd]);
     if (z[ifmd] < 0){  
       gMC->Gspos(name,1,"ALIC",0,0,z[ifmd],0, "ONLY");}
     else { 
@@ -227,10 +228,10 @@ void AliFMDv1::Init()
 {
 // Initialises version 0 of the Forward Multiplicity Detector
 //
-AliMC* gMC=AliMC::GetMC();
-AliFMD::Init();
-fIdSens1=gMC->VolId("GRIN");
-printf("*** FMD version 1 initialized ***\n");
+  AliMC* gMC=AliMC::GetMC();
+  AliFMD::Init();
+  fIdSens1=gMC->VolId("GRIN");
+  if(fDebug) printf("%s: *** FMD version 1 initialized ***\n",ClassName());
 }
 
 //-------------------------------------------------------------------

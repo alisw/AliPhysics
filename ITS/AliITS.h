@@ -71,7 +71,7 @@ class AliITS : public AliDetector {
     // create separate tree for clusters - declustering refining
     virtual  void  MakeTreeC(Option_t *option="C");
     void           GetTreeC(Int_t event);
-    virtual void   MakeBranch(Option_t *opt=" ", char *file=0);
+    virtual void   MakeBranch(Option_t *opt=" ", const char *file=0);
     void           SetTreeAddress();
     virtual void   SetEUCLID(Bool_t euclid=1) {fEuclidOut = euclid;}
     virtual void   StepManager() {}

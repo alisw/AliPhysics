@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/12/20 08:39:37  fca
+Support for Cerenkov and process list in Virtual MC
+
 Revision 1.3  1999/09/29 09:24:07  fca
 Introduction of the Copyright and cvs Log
 
@@ -42,6 +45,7 @@ Introduction of the Copyright and cvs Log
 #include <TRint.h>
 #include <TFile.h>
 #include <AliRun.h>
+#include <AliConfig.h>
 
 #if defined __linux
 //On linux Fortran wants this, so we give to it!
@@ -77,9 +81,12 @@ int main(int argc, char **argv)
   // in the run is stored in the same file in the tree TreeE, containing the
   // run and event number, the number of vertices, tracks and primary tracks
   // in the event.
-  //
-  new AliRun("gAlice","The ALICE Off-line Simulation Framework");
   
+  // Create new configuration 
+  new AliConfig ("Folders","Alice data exchange");
+  
+  new AliRun("gAlice","The ALICE Off-line Simulation Framework");
+    
   // Start interactive geant
   
   TRint *theApp = new TRint("aliroot", &argc, argv, 0, 0);

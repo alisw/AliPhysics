@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/12/04 08:48:15  alibrary
+Fixing problems in the HEAD
+
 Revision 1.8  2000/10/02 21:28:05  fca
 Removal of useless dependecies via forward declarations
 
@@ -227,7 +230,7 @@ void AliCASTORv1::CreateGeometry()
   const Float_t kDiamCladding = 0.045;
 
   Int_t i;
-  static Int_t debugFlag = 0;
+  static Int_t debugFlag = fDebug-1;
   
   Int_t *idtmed = fIdtmed->GetArray()-1499;
 
@@ -926,15 +929,17 @@ void AliCASTORv1::Init()
   //
   Int_t i;
   //
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" CASTOR_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  //
-  // Here the ABSO initialisation code (if any!)
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
+  if(fDebug) {
+    printf("\n%s: ",ClassName());
+    for(i=0;i<35;i++) printf("*");
+    printf(" CASTOR_INIT ");
+    for(i=0;i<35;i++) printf("*");
+    printf("\n%s: ",ClassName());
+    //
+    // Here the ABSO initialisation code (if any!)
+    for(i=0;i<80;i++) printf("*");
+    printf("\n");
+  }
 }
 
 ClassImp(AliCASTORhit)

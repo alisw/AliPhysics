@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.51  2001/05/14 10:18:55  hristov
+  Default arguments declared once
+
   Revision 1.50  2001/05/10 14:44:16  jbarbosa
   Corrected some overlaps (thanks I. Hrivnacovna).
 
@@ -1821,7 +1824,7 @@ Int_t AliRICH::DistancetoPrimitive(Int_t , Int_t )
 }
 
 //___________________________________________
-void AliRICH::MakeBranch(Option_t* option, char *file)
+void AliRICH::MakeBranch(Option_t* option, const char *file)
 {
   // Create Tree branches for the RICH.
     
@@ -1839,14 +1842,14 @@ void AliRICH::MakeBranch(Option_t* option, char *file)
     if (cH) {
       sprintf(branchname,"%sCerenkov",GetName());
       if (fCerenkovs   && gAlice->TreeH()) {
-	//TBranch* branch = gAlice->MakeBranchInTree(gAlice->TreeH(),branchname, &fCerenkovs, kBufferSize, file) ;
-	gAlice->MakeBranchInTree(gAlice->TreeH(),branchname, &fCerenkovs, kBufferSize, file) ;
+	//TBranch* branch = MakeBranchInTree(gAlice->TreeH(),branchname, &fCerenkovs, kBufferSize, file) ;
+	MakeBranchInTree(gAlice->TreeH(),branchname, &fCerenkovs, kBufferSize, file) ;
 	//branch->SetAutoDelete(kFALSE);
       } 
       sprintf(branchname,"%sSDigits",GetName());
       if (fSDigits   && gAlice->TreeH()) {
-	//TBranch* branch = gAlice->MakeBranchInTree(gAlice->TreeH(),branchname, &fSDigits, kBufferSize, file) ;
-	gAlice->MakeBranchInTree(gAlice->TreeH(),branchname, &fSDigits, kBufferSize, file) ;
+	//TBranch* branch = MakeBranchInTree(gAlice->TreeH(),branchname, &fSDigits, kBufferSize, file) ;
+	MakeBranchInTree(gAlice->TreeH(),branchname, &fSDigits, kBufferSize, file) ;
 	//branch->SetAutoDelete(kFALSE);
 	//printf("Making branch %sSDigits in TreeH\n",GetName());
       }
@@ -1855,8 +1858,8 @@ void AliRICH::MakeBranch(Option_t* option, char *file)
     if (cS) {  
       sprintf(branchname,"%sSDigits",GetName());
       if (fSDigits   && gAlice->TreeS()) {
-	//TBranch* branch = gAlice->MakeBranchInTree(gAlice->TreeS(),branchname, &fSDigits, kBufferSize, file) ;
-	gAlice->MakeBranchInTree(gAlice->TreeS(),branchname, &fSDigits, kBufferSize, file) ;
+	//TBranch* branch = MakeBranchInTree(gAlice->TreeS(),branchname, &fSDigits, kBufferSize, file) ;
+	MakeBranchInTree(gAlice->TreeS(),branchname, &fSDigits, kBufferSize, file) ;
 	//branch->SetAutoDelete(kFALSE);
 	//printf("Making branch %sSDigits in TreeS\n",GetName());
       }
@@ -1871,8 +1874,8 @@ void AliRICH::MakeBranch(Option_t* option, char *file)
       for (i=0; i<kNCH ;i++) {
 	sprintf(branchname,"%sDigits%d",GetName(),i+1);	
 	if (fDchambers   && gAlice->TreeD()) {
-	   //TBranch* branch = gAlice->MakeBranchInTree(gAlice->TreeD(),branchname, &((*fDchambers)[i]), kBufferSize, file) ;
-	   gAlice->MakeBranchInTree(gAlice->TreeD(),branchname, &((*fDchambers)[i]), kBufferSize, file) ;
+	   //TBranch* branch = MakeBranchInTree(gAlice->TreeD(),branchname, &((*fDchambers)[i]), kBufferSize, file) ;
+	  MakeBranchInTree(gAlice->TreeD(),branchname, &((*fDchambers)[i]), kBufferSize, file) ;
 	   //branch->SetAutoDelete(kFALSE);
 	  //printf("Making Branch %sDigits%d\n",GetName(),i+1);
 	}	
@@ -1891,8 +1894,8 @@ void AliRICH::MakeBranch(Option_t* option, char *file)
       for (i=0; i<kNCH ;i++) {
         sprintf(branchname,"%sRawClusters%d",GetName(),i+1);      
         if (fRawClusters && gAlice->TreeR()) {
-           //TBranch* branch = gAlice->MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRawClusters)[i]), kBufferSize, file) ;
-	  gAlice->MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRawClusters)[i]), kBufferSize, file) ;
+           //TBranch* branch = MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRawClusters)[i]), kBufferSize, file) ;
+	  MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRawClusters)[i]), kBufferSize, file) ;
 	   //branch->SetAutoDelete(kFALSE);	
         }	  
       }
@@ -1902,16 +1905,15 @@ void AliRICH::MakeBranch(Option_t* option, char *file)
      for (i=0; i<kNCH ;i++) {
        sprintf(branchname,"%sRecHits1D%d",GetName(),i+1);    
        if (fRecHits1D   && gAlice->TreeR()) {
-	 //TBranch* branch = gAlice->MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRecHits1D)[i]), kBufferSize, file) ;
-	 gAlice->MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRecHits1D)[i]), kBufferSize, file) ;
+	 //TBranch* branch = MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRecHits1D)[i]), kBufferSize, file) ;
+	 MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRecHits1D)[i]), kBufferSize, file) ;
 	 //branch->SetAutoDelete(kFALSE);
        }	
      }
      for (i=0; i<kNCH ;i++) {
        sprintf(branchname,"%sRecHits3D%d",GetName(),i+1);  
        if (fRecHits3D   && gAlice->TreeR()) {
-	 //TBranch* branch = gAlice->MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRecHits3D)[i]), kBufferSize, file) ;
-	 gAlice->MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRecHits3D)[i]), kBufferSize, file) ;
+	 MakeBranchInTree(gAlice->TreeR(),branchname, &((*fRecHits3D)[i]), kBufferSize, file) ;
 	 //branch->SetAutoDelete(kFALSE);
       }	
     }

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/03/12 17:47:03  hristov
+Changes needed on Sun with CC 5.0
+
 Revision 1.11  2001/01/26 19:58:46  hristov
 Major upgrade of AliRoot code
 
@@ -57,15 +60,20 @@ Introduction of the Copyright and cvs Log
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <assert.h>
+#include <iostream.h>
 
 #include <TTree.h>
 #include <TBrowser.h>
 #include <TFile.h>
+#include <TROOT.h>
+#include <TFolder.h>
 
+#include "AliConfig.h"
 #include "AliDetector.h"
 #include "AliRun.h"
 #include "AliHit.h"
 #include "AliPoints.h"
+
 // Static variables for the hit iterator routines
 static Int_t sMaxIterHit=0;
 static Int_t sCurIterHit=0;
@@ -106,6 +114,8 @@ AliDetector::AliDetector(const char* name,const char *title):AliModule(name,titl
   fPoints     = 0;
   fBufferSize = 16000;
   fDigitsFile = 0;
+
+  AliConfig::Instance()->Add(this);
 }
  
 //_____________________________________________________________________________
@@ -131,7 +141,91 @@ AliDetector::~AliDetector()
   }
   if (fDigitsFile) delete [] fDigitsFile;
 }
- 
+
+//_____________________________________________________________________________
+void AliDetector::Publish(const char *dir, void *address, const char *name)
+{
+  //
+  // Register pointer to detector objects. 
+  // 
+  TFolder *topFolder = (TFolder *)gROOT->FindObjectAny("/Folders");
+  TFolder *folder = (TFolder *)topFolder->FindObjectAny(dir);
+  // TFolder *folder = (TFolder *)gROOT->FindObjectAny(dir);
+  if (!folder)  {
+    cerr << "Cannot register: Missing folder: " << dir << endl;
+  } else {
+    TFolder *subfolder = (TFolder *) folder->FindObjectAny(this->GetName()); 
+
+    if(!subfolder)
+       subfolder = folder->AddFolder(this->GetName(),this->GetTitle());
+    if (address) {
+      TObject **obj = (TObject **) address;
+      if ((*obj)->InheritsFrom(TCollection::Class())) {
+         TCollection *collection = (TCollection *) (*obj); 
+         if (name)
+           collection->SetName(name);
+      } 
+      subfolder->Add(*obj);
+    }  
+  }
+}
+
+//_____________________________________________________________________________
+TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name, void* address, Int_t size,const char *file)
+{ 
+    return(MakeBranchInTree(tree,name,0,address,size,1,file));
+}
+
+//_____________________________________________________________________________
+TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name, const char *classname, void* address,Int_t size, Int_t splitlevel, const char *file)
+{ 
+    //
+    // Makes branch in given tree and diverts them to a separate file
+    //  
+    if (GetDebug()>1)
+      printf("* MakeBranch * Making Branch %s \n",name);
+      
+    TDirectory *cwd = gDirectory;
+    TBranch *branch = 0;
+    
+    if (classname) {
+      branch = tree->Branch(name,classname,address,size,splitlevel);
+    } else {
+      branch = tree->Branch(name,address,size);
+    }
+       
+    if (file) {
+        char * outFile = new char[strlen(gAlice->GetBaseFile())+strlen(file)+2];
+        sprintf(outFile,"%s/%s",gAlice->GetBaseFile(),file);
+        branch->SetFile(outFile);
+        TIter next( branch->GetListOfBranches());
+        while ((branch=(TBranch*)next())) {
+           branch->SetFile(outFile);
+        } 
+       delete outFile;
+        
+       cwd->cd();
+        
+       if (GetDebug()>1)
+           printf("* MakeBranch * Diverting Branch %s to file %s\n",name,file);
+    }
+    char *folder = 0;
+        
+    if (!strncmp(tree->GetName(),"TreeE",5)) folder = "RunMC/Event/Data";
+    if (!strncmp(tree->GetName(),"TreeK",5)) folder = "RunMC/Event/Data";
+    if (!strncmp(tree->GetName(),"TreeH",5)) folder = "RunMC/Event/Data";
+    if (!strncmp(tree->GetName(),"TreeD",5)) folder = "Run/Event/Data";
+    if (!strncmp(tree->GetName(),"TreeS",5)) folder = "Run/Event/Data";
+    if (!strncmp(tree->GetName(),"TreeR",5)) folder = "Run/Event/RecData";
+
+    if (folder) {
+      if (GetDebug())
+          printf("%15s: Publishing %s to %s\n",ClassName(),name,folder);
+      Publish(folder,address,name);
+    }  
+    return branch;
+}
+
 //_____________________________________________________________________________
 void AliDetector::Browse(TBrowser *b)
 {
@@ -277,7 +371,7 @@ void AliDetector::LoadPoints(Int_t)
 }
 
 //_____________________________________________________________________________
-void AliDetector::MakeBranch(Option_t *option, char *file)
+void AliDetector::MakeBranch(Option_t *option, const char *file)
 {
   //
   // Create a new branch in the current Root Tree
@@ -291,8 +385,8 @@ void AliDetector::MakeBranch(Option_t *option, char *file)
   const char *cH = strstr(option,"H");
   //
   if (fHits && gAlice->TreeH() && cH) {
-    gAlice->MakeBranchInTree(gAlice->TreeH(), 
-                             branchname, &fHits, fBufferSize, file) ;
+    MakeBranchInTree(gAlice->TreeH(), 
+                     branchname, &fHits, fBufferSize, file) ;              
   }	
   
   const char *cD = strstr(option,"D");

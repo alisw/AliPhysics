@@ -39,7 +39,8 @@ protected :
 private:     
   AliClassInfo      *fClassInfo;        //pointer to containg class info  
   // 
-  ClassDef(AliObjectArray,0) 
+  //ClassDef(AliObjectArray,0) 
+  ClassDef(AliObjectArray,1) 
 };
 
 

@@ -62,6 +62,7 @@ class AliTRDdigitizer : public TNamed {
   virtual void         SetCompress(Int_t c = 1)         { fCompress       = c;        };
   virtual void         SetVerbose(Int_t v = 1)          { fVerbose        = v;        };
   virtual void         SetSDigits(Int_t v = 1)          { fSDigits        = v;        };
+  virtual void         SetEvent(Int_t v = 0)            { fEvent          = v;        };
 
   AliTRDdigitsManager *Digits() const                   { return fDigits;             };
 

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.14  2001/05/14 06:21:49  barbera
+Some unuseful printout commented
+
 Revision 1.13  2001/05/14 05:44:11  barbera
 Version 1.11 reput in place to avoid problem with reconstruction
 
@@ -34,6 +37,8 @@ Remove dead and/or unused code and printout lines. i.e. cleaned it up a bit.
 #include <iostream.h>
 #include "AliITSsegmentationSSD.h"
 #include "AliITSgeom.h"
+#include "AliRun.h"
+#include "AliModule.h"
 
 ClassImp(AliITSsegmentationSSD)
 AliITSsegmentationSSD::AliITSsegmentationSSD(){

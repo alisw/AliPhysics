@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2001/05/07 08:03:22  cblume
+Generate also hits in the amplification region
+
 Revision 1.27  2001/03/30 14:40:15  cblume
 Update of the digitization parameter
 
@@ -371,7 +374,7 @@ void AliTRDv1::Init()
 
   AliTRD::Init();
 
-  printf("          Slow simulator\n\n");
+  if(fDebug) printf("%s: Slow simulator\n",ClassName());
   if (fSensSelect) {
     if (fSensPlane   >= 0)
       printf("          Only plane %d is sensitive\n",fSensPlane);
@@ -386,9 +389,9 @@ void AliTRDv1::Init()
     }
   }
   if (fTR) 
-    printf("          TR simulation on\n");
+    printf("%s: TR simulation on\n",ClassName());
   else
-    printf("          TR simulation off\n");
+    printf("%s: TR simulation off\n",ClassName());
   printf("\n");
 
   // First ionization potential (eV) for the gas mixture (90% Xe + 10% CO2)
@@ -410,8 +413,11 @@ void AliTRDv1::Init()
   fIdChamber2 = gMC->VolId("UCIM");
   fIdChamber3 = gMC->VolId("UCII");
 
-  for (Int_t i = 0; i < 80; i++) printf("*");
-  printf("\n");
+  if(fDebug) {
+    printf("%s: ",ClassName());
+    for (Int_t i = 0; i < 80; i++) printf("*");
+    printf("\n");
+  }
 
 }
 

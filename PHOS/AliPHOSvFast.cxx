@@ -248,7 +248,7 @@ Float_t AliPHOSvFast::GetBigBox(Int_t index)
 }
 
 //___________________________________________________________________________
-void AliPHOSvFast::MakeBranch(Option_t* opt, char *file)
+void AliPHOSvFast::MakeBranch(Option_t* opt, const char *file)
 {  
   // Create new branch in the current reconstructed Root Tree
  
@@ -259,8 +259,8 @@ void AliPHOSvFast::MakeBranch(Option_t* opt, char *file)
   char *cd = strstr(opt,"R");
   
   if (fFastRecParticles && gAlice->TreeR() && cd) {
-    gAlice->MakeBranchInTree(gAlice->TreeR(), 
-                             branchname, &fFastRecParticles, fBufferSize, file);
+    MakeBranchInTree(gAlice->TreeR(), 
+                     branchname, &fFastRecParticles, fBufferSize, file);
   }
 }
 

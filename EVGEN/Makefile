@@ -19,7 +19,7 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenDoubleScan.cxx AliGenCocktailEntry.cxx \
 		AliGenGSIlib.cxx AliGenPMDlib.cxx\
 	        AliGenHijing.cxx \
-		AliGenEventHeader.cxx AliGenHijingEventHeader.cxx \
+		AliGenHijingEventHeader.cxx \
 		AliDecayer.cxx AliDecayerPythia.cxx \
                 AliGenMevSim.cxx AliMevSimParticle.cxx AliMevSimConfig.cxx
 # C++ Headers
@@ -49,7 +49,7 @@ OBJS          = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(SRCS)) $(DICTO)
 
 # C++ compilation flags
 
-CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TMevSim
+CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TMevSim -I.
  
 # FORTRAN compilation flags
 

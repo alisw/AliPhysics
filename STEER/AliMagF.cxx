@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.8  2000/12/18 10:44:01  morsch
+Possibility to set field map by passing pointer to objet of type AliMagF via
+SetField().
+Example:
+gAlice->SetField(new AliMagFCM("Map2", "$(ALICE_ROOT)/data/field01.dat",2,1.,10.));
+
 Revision 1.7  2000/10/02 21:28:14  fca
 Removal of useless dependecies via forward declarations
 
@@ -62,6 +68,8 @@ AliMagF::AliMagF(const char *name, const char *title, const Int_t integ,
     fType = kUndef;
     fFactor = factor;
     fMax = fmax;
+    //
+    fDebug = 0;
 }
 
 //________________________________________

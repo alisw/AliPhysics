@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/01/26 21:25:48  morsch
+Empty default constructors and.
+
 Revision 1.6  2000/12/21 22:12:41  morsch
 Clean-up of coding rule violations,
 
@@ -237,7 +240,7 @@ void AliMUONSegmentationSlatModuleN::Init(Int_t chamber)
 //
 //  PCB module size in cm
 
-    printf("\n Initialise Segmentation SlatModuleN \n");
+  //    printf("\n Initialise Segmentation SlatModuleN \n");
 
 
     fDxPCB=40;

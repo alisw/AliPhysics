@@ -42,7 +42,7 @@ public:
   virtual void    CreateGeometry();
   virtual void    CreateMaterials();
   virtual void    Init();
-  virtual void    MakeBranch(Option_t* option, char *file=0);
+  virtual void    MakeBranch(Option_t*, const char *file=0);
   virtual void    FinishEvent();
   virtual Int_t   IsVersion() const =0;
   Int_t           DistancetoPrimitive(Int_t px, Int_t py);

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.27  2001/04/06 11:24:43  morsch
+Dependency on implementations of AliSegmentation and AliMUONResponse moved to AliMUONFactory class.
+Static method Build() builds the MUON system out of chambers, segmentation and response.
+
 Revision 1.26  2001/03/17 10:07:20  morsch
 Correct inconsistent variable name / method name / comments.
 
@@ -1971,7 +1975,7 @@ void AliMUONv1::Init()
    // Initialize Tracking Chambers
    //
 
-   printf("\n\n\n Start Init for version 1 - CPC chamber type\n\n\n");
+   if(fDebug) printf("\n%s: Start Init for version 1 - CPC chamber type\n\n",ClassName());
    Int_t i;
    for (i=0; i<AliMUONConstants::NCh(); i++) {
        ( (AliMUONChamber*) (*fChambers)[i])->Init();
@@ -2000,14 +2004,14 @@ void AliMUONv1::Init()
    ((AliMUONChamber*)(*fChambers)[12])->SetGid(gMC->VolId("CG3A"));
    ((AliMUONChamber*)(*fChambers)[13])->SetGid(gMC->VolId("CG4A"));
 
-   printf("\n\n\n Finished Init for version 0 - CPC chamber type\n\n\n");
+   if(fDebug) printf("\n%s: Finished Init for version 1 - CPC chamber type\n",ClassName());
 
    //cp 
-   printf("\n\n\n Start Init for Trigger Circuits\n\n\n");
+   if(fDebug) printf("\n%s: Start Init for Trigger Circuits\n",ClassName());
    for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) {
      ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
    }
-   printf(" Finished Init for Trigger Circuits\n\n\n");
+   if(fDebug) printf("%s: Finished Init for Trigger Circuits\n",ClassName());
    //cp
 
 }

@@ -40,7 +40,7 @@ public:
   virtual void  SetPadSize(Float_t, Float_t, Float_t, Float_t);
   virtual void  StepManager();
   virtual void  AddRecPoint(const AliPMDRecPoint &p);
-  virtual void  MakeBranch(Option_t* option, char *file=0);
+  virtual void  MakeBranch(Option_t* option, const char *file=0);
   virtual void  SetTreeAddress();
   virtual void  ResetHits();
   

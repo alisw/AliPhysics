@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/05/11 07:16:56  hristov
+Fix needed on Sun and Alpha
+
 Revision 1.8  2001/05/08 15:00:15  hristov
 Corrections for tracking in arbitrary magnenetic field. Changes towards a concept of global Alice track. Back propagation of reconstructed tracks (Yu.Belikov)
 
@@ -801,7 +804,7 @@ AliCluster *AliTPCtracker::GetCluster(Int_t index) const {
   Int_t row=(index&0x00ff0000)>>16; 
   Int_t ncl=(index&0x0000ffff)>>00;
 
-  AliTPCClustersRow *clrow=((AliTPCtracker*)this)->fClustersArray.GetRow(sec,row);;
+  AliTPCClustersRow *clrow=((AliTPCtracker *) this)->fClustersArray.GetRow(sec,row);
   return (AliCluster*)(*clrow)[ncl];      
 }
 

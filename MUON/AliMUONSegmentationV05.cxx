@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/12/21 22:12:41  morsch
+Clean-up of coding rule violations,
+
 Revision 1.5  2000/10/18 11:42:06  morsch
 - AliMUONRawCluster contains z-position.
 - Some clean-up of useless print statements during initialisations.
@@ -62,7 +65,7 @@ void AliMUONSegmentationV05::Init(Int_t chamber)
 //  concentric circles as shown below
 //
 
-    printf("\n Initialise Segmentation V05 \n");
+  //printf("\n Initialise Segmentation V05 \n");
 
 
 //  PCB module size in cm

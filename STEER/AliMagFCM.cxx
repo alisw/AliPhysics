@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.6  2000/12/18 10:44:01  morsch
+Possibility to set field map by passing pointer to objet of type AliMagF via
+SetField().
+Example:
+gAlice->SetField(new AliMagFCM("Map2", "$(ALICE_ROOT)/data/field01.dat",2,1.,10.));
+
 Revision 1.5  2000/12/01 11:20:27  alibrary
 Corrector dipole removed from ZDC
 
@@ -49,8 +55,8 @@ AliMagFCM::AliMagFCM(const char *name, const char *title, const Int_t integ,
   fType = kConMesh;
   fMap  = 2;
   
-  printf("Constant Mesh Field %s created: map= %d, factor= %f, file= %s\n",
-	 fName.Data(), fMap, factor,fTitle.Data());
+  if(fDebug>-1) printf("%s: Constant Mesh Field %s created: map= %d, factor= %f, file= %s\n",
+	 ClassName(),fName.Data(), fMap, factor,fTitle.Data());
 }
 
 //________________________________________
@@ -201,15 +207,15 @@ void AliMagFCM::ReadField()
   Int_t ix, iy, iz, ipx, ipy, ipz;
   Float_t bx, by, bz;
   char *fname;
-  printf("Reading Magnetic Field %s from file %s\n",fName.Data(),fTitle.Data());
+  if(fDebug) printf("%s: Reading Magnetic Field %s from file %s\n",ClassName(),fName.Data(),fTitle.Data());
   fname = gSystem->ExpandPathName(fTitle.Data());
   magfile=fopen(fname,"r");
   delete [] fname;
   if (magfile) {
     fscanf(magfile,"%d %d %d %f %f %f %f %f %f",
     	   &fXn, &fYn, &fZn, &fXdel, &fYdel, &fZdel, &fXbeg, &fYbeg, &fZbeg);
-    printf("fXn %d, fYn %d, fZn %d, fXdel %f, fYdel %f, fZdel %f, fXbeg %f, fYbeg %f, fZbeg %f\n",
-    	   fXn, fYn, fZn, fXdel, fYdel, fZdel, fXbeg, fYbeg, fZbeg);
+    if(fDebug>1) printf("%s: fXn %d, fYn %d, fZn %d, fXdel %f, fYdel %f, fZdel %f, fXbeg %f, fYbeg %f, fZbeg %f\n",
+			ClassName(),fXn, fYn, fZn, fXdel, fYdel, fZdel, fXbeg, fYbeg, fZbeg);
     fXdeli=1./fXdel;
     fYdeli=1./fYdel;
     fZdeli=1./fZdel;
@@ -228,7 +234,7 @@ void AliMagFCM::ReadField()
       }
     }
   } else { 
-    printf("File %s not found !\n",fTitle.Data());
+    printf("%s: File %s not found !\n",ClassName(),fTitle.Data());
     exit(1);
   }
 }

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/04/11 12:33:56  morsch
+Bug in GetPadC in case of staggered planes corrected. (Thanks to J.P. Cussonneau)
+
 Revision 1.17  2001/01/30 12:17:04  morsch
 Remove obolete print-statement.
 
@@ -197,7 +200,7 @@ void AliMUONSegmentationV01::Init(Int_t chamber)
 //  This version approximates concentric segmentation zones
 //
     Int_t isec;
-    printf("\n Initialise Segmentation V01\n");
+    //printf("\n Initialise Segmentation V01\n");
 
 
     fNpy=Int_t((*fRSec)[fNsec-1]/fDpy)+1;

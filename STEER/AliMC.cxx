@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/11/30 07:12:49  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.6  2000/07/13 16:19:09  fca
 Mainly coding conventions + some small bug fixes
 
@@ -34,6 +37,7 @@ Introduction of the Copyright and cvs Log
 #include <stdlib.h>
 
 #include "AliMC.h"
+#include "AliConfig.h"
 
 ClassImp(AliMC)
 
@@ -52,6 +56,7 @@ AliMC::AliMC(const char *name, const char *title) : TNamed(name,title)
   } else {
     fgMC=this;
     gMC=this;
+    AliConfig::Instance()->Add(this);    
   }
 }
 

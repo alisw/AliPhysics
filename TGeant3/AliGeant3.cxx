@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/03/20 06:28:49  alibrary
+New detector loop split in 2
+
 Revision 1.14  2000/12/20 08:39:39  fca
 Support for Cerenkov and process list in Virtual MC
 
@@ -65,6 +68,7 @@ ReadEuclid moved from AliRun to AliModule
 #include <stdlib.h>
 
 #include <TParticle.h>
+#include <TStopwatch.h>
 
 #include "AliDecayer.h"
 #include "AliGeant3.h"
@@ -79,10 +83,12 @@ ReadEuclid moved from AliRun to AliModule
 
 # define rxgtrak rxgtrak_
 # define rxouth  rxouth_
+# define rxinh   rxinh_
 #else
 
 # define rxgtrak RXGTRAK 
 # define rxouth  RXOUTH
+# define rxinh   RXINH
 #endif
 
 ClassImp(AliGeant3)
@@ -107,22 +113,31 @@ void AliGeant3::Init()
     //
     //=================Create Materials and geometry
     //
+    TStopwatch stw;
     TObjArray *modules = gAlice->Modules();
     TIter next(modules);
     AliModule *detector;
+    printf("Geometry creation:\n");
     while((detector = (AliModule*)next())) {
+      stw.Start();
       // Initialise detector materials and geometry
       detector->CreateMaterials();
       detector->CreateGeometry();
+      printf("%10s R:%.2fs C:%.2fs\n",
+	     detector->GetName(),stw.RealTime(),stw.CpuTime());
     }
     //Terminate building of geometry
     FinishGeometry();
     
+    printf("Initialisation:\n");
     next.Reset();
     while((detector = (AliModule*)next())) {
+      stw.Start();
       // Initialise detector and display geometry
       detector->Init();
       detector->BuildGeometry();
+      printf("%10s R:%.2fs C:%.2fs\n",
+	     detector->GetName(),stw.RealTime(),stw.CpuTime());
     }
 
 }
@@ -223,6 +238,15 @@ extern "C" void type_of_call  rxouth ()
   // Called by Gtreve at the end of each primary track
   //
   gAlice->FinishPrimary();
+}
+
+//_____________________________________________________________________________
+extern "C" void type_of_call  rxinh ()
+{
+  //
+  // Called by Gtreve at the beginning of each primary track
+  //
+  gAlice->BeginPrimary();
 }
 
 #ifndef WIN32

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1  2000/07/11 18:24:56  fca
+* Coding convention corrections + few minor bug fixes
+*
 * Revision 1.2  1999/07/01 14:45:34  fca
 * Modifications to allow Cherenkov transport
 *
@@ -70,15 +73,18 @@ C.    ------------------------------------------------------------------
          MPRIMA=MTRACK
       ENDIF
       IF(MTRACK.LE.MPRIMA) THEN
-         IF(ISWIT(4).GT.0.AND.MTRACK.GT.0) THEN
-            IF(ISWIT(4).EQ.1.OR.MOD(MTRACK,ISWIT(4)).EQ.0) THEN
-               WRITE(CHMAIL,10200) MTRACK
-               CALL GMAIL(0,0)
-            ENDIF
-         ENDIF
          IF(MTROLD.GT.0) THEN
 C --- Output root hits tree only for each primary MTRACK
             CALL RXOUTH
+         ENDIF
+         IF(MTRACK.GT.0) THEN
+            CALL RXINH
+            IF(ISWIT(4).GT.0) THEN
+               IF(ISWIT(4).EQ.1.OR.MOD(MTRACK,ISWIT(4)).EQ.0) THEN
+                  WRITE(CHMAIL,10200) MTRACK
+                  CALL GMAIL(0,0)
+               ENDIF
+            ENDIF
          ENDIF
       ENDIF
       IF(MTRACK.LE.0) GOTO 999

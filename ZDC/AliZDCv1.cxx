@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2001/05/14 09:51:50  coppedis
+Change in AddHit suggested by J. Chudoba
+
 Revision 1.22  2001/05/05 13:33:19  coppedis
 Changes in StepManager to speed simulation
 
@@ -1363,7 +1366,7 @@ void AliZDCv1::Hits2Digits(Int_t ntracks)
   
 }
 //_____________________________________________________________________________
- void AliZDCv1::MakeBranch(Option_t *opt, char *file)
+ void AliZDCv1::MakeBranch(Option_t *opt, const char *file)
 {
   //
   // Create a new branch in the current Root Tree
@@ -1383,8 +1386,8 @@ void AliZDCv1::Hits2Digits(Int_t ntracks)
     else fDigits = new TClonesArray ("AliZDCDigit",1000);
     char branchname[10];
     sprintf(branchname,"%s",GetName());
-    gAlice->MakeBranchInTree(gAlice->TreeD(), 
-                             branchname, &fDigits, fBufferSize, file) ;
+    MakeBranchInTree(gAlice->TreeD(), 
+                     branchname, &fDigits, fBufferSize, file) ;
     printf("* AliZDCv1::MakeBranch    * Making Branch %s for digits\n\n",branchname);
   }
        

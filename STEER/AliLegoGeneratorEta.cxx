@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/12/15 10:33:59  morsch
+Invert coordinates to make meaningful zylindrical plots.
+
 Revision 1.2  2000/11/30 07:12:49  alibrary
 Introducing new Rndm and QA classes
 
@@ -84,6 +87,6 @@ void AliLegoGeneratorEta::Generate()
    
    Float_t polar[3]={0.,0.,0.};
    Int_t ntr;
-   gAlice->SetTrack(1, 0, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
+   gAlice->SetTrack(1, -1, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
    
 }

@@ -26,11 +26,13 @@ class AliMC;
 class AliLego;
 class AliDisplay;
 class AliLegoGenerator;
-#include "AliHeader.h"
+class AliHeader;
 class AliGenerator;
 class AliLegoGenerator;
 #include "AliMCProcess.h"
 class AliMCQA;
+class AliStack;
+
 
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
 
@@ -49,10 +51,9 @@ public:
    virtual  void  Build();
    virtual  void  BuildSimpleGeometry();
    virtual  void  CleanDetectors();
-   virtual  void  CleanParents();
    TObjArray     *Detectors() const {return fModules;}
    TObjArray     *Modules() const {return fModules;}
-   Int_t          CurrentTrack() const {return fCurrent;}
+   Int_t          CurrentTrack() const;
    AliDisplay    *Display() { return fDisplay;}
    virtual  Int_t DistancetoPrimitive(Int_t px, Int_t py);
    virtual  void  DumpPart (Int_t i) const;
@@ -61,6 +62,7 @@ public:
    virtual  void  PreTrack();
    virtual  void  PostTrack();
    virtual  void  FinishPrimary();
+   virtual  void  BeginPrimary();
    virtual  void  FinishEvent();
    virtual  void  FinishRun();
    virtual  void  FlagTrack(Int_t track);
@@ -71,6 +73,7 @@ public:
    void           SetRunNumber(Int_t run) {fRun=run;}
    Int_t          GetDebug() const {return fDebug;}
    AliModule     *GetModule(const char *name) const;
+   TList*         GetHitLists() const {return fHitLists ;}
    AliDetector   *GetDetector(const char *name) const;
    AliMCQA       *GetMCQA() const {return fMCQA;}
    Int_t          GetModuleID(const char *name) const;
@@ -82,29 +85,24 @@ public:
    virtual  const char *GetConfigFunction() const 
     {return fConfigFunction.Data();}
    TGeometry     *GetGeometry();
-   AliHeader     *GetHeader() {return &fHeader;}
+   AliHeader*     GetHeader() {return fHeader;}
    virtual  void  GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
 			       Float_t &e, Float_t *vpos, Float_t *polar, 
 			       Float_t &tof);
-   Int_t          GetNtrack() const {return fNtrack;}
-   virtual  Int_t GetPrimary(Int_t track);
+   Int_t          GetNtrack() const;
+   virtual  Int_t GetPrimary(Int_t track) const;
    virtual  void  Hits2Digits(const char *detector=0); 
    virtual  void  Hits2SDigits(const char *detector=0)   {Tree2Tree("S",detector);}
    virtual  void  SDigits2Digits(const char *detector=0) {Tree2Tree("D",detector);}
    virtual  void  Digits2Reco(const char *detector=0)    {Tree2Tree("R",detector);}
-   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
    virtual  void  InitMC(const char *setup="Config.C");
    virtual  void  Init(const char *setup="Config.C") {InitMC(setup);}
    Bool_t         IsFolder() const {return kTRUE;}
    virtual AliLego* Lego() const {return fLego;}
-   virtual  void  MakeTree(Option_t *option="KH", char *file = 0);
-   virtual TBranch* MakeBranchInTree(TTree *tree, const char* cname, void* address, Int_t size=32000, char *file=0);
-   virtual TBranch* MakeBranchInTree(TTree *tree, const char* cname, const char* name, void* address, Int_t size=32000, Int_t splitlevel=1, char *file=0);
+   virtual  void  MakeTree(Option_t *option="KH", const char *file = 0);
 
-   TObjArray     *Particles() {return fParticleMap;};
+   TObjArray     *Particles();
    TParticle     *Particle(Int_t i);
-   virtual  void  PurifyKine();
-   virtual  Int_t PurifyKine(Int_t lastSavedTrack, Int_t nofTracks);
    virtual  void  BeginEvent();
    virtual  void  ResetDigits();
    virtual  void  ResetSDigits();
@@ -113,7 +111,6 @@ public:
    virtual  void  SetTransPar(char *filename="$(ALICE_ROOT)/data/galice.cuts");
    virtual  void  SetBaseFile(char *filename="galice.root");
    virtual  void  ReadTransPar();
-   virtual  void  ResetStack() {fCurrent=-1;fHgwmk=fNtrack=fLoadPoint=0;fParticles->Clear();}
    virtual  void  RunMC(Int_t nevent=1, const char *setup="Config.C");
    virtual  void  Run(Int_t nevent=1, const char *setup="Config.C") 
   {RunMC(nevent,setup);}
@@ -123,7 +120,7 @@ public:
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
    virtual  void  RunReco(const char *detector=0);
    virtual  void  SetCurrentTrack(Int_t track);                           
-   virtual  void  SetDebug(const Int_t level=1) {fDebug = level;}
+   virtual  void  SetDebug(const Int_t level=0) {fDebug = level;}
    virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}
    virtual  void  StepManager(Int_t id);
    virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, char*filename="$(ALICE_ROOT)/data/field01.dat");
@@ -156,26 +153,24 @@ public:
    TTree         *TreeS() {return fTreeS;}
    TTree         *TreeE() {return fTreeE;}
    TTree         *TreeH() {return fTreeH;}
-   TTree         *TreeK() {return fTreeK;}
+   TTree         *TreeK() ;
    TTree         *TreeR() {return fTreeR;}
 
+   AliStack      *Stack() {return fStack;}
+
 protected:
+  virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
+
   Int_t          fRun;               //! Current run number
   Int_t          fEvent;             //! Current event number (from 1)
-  Int_t          fNtrack;            //  Number of tracks
-  Int_t          fHgwmk;             //! Last track purified
-  Int_t          fLoadPoint;         //! Next free position in the particle buffer
-  Int_t          fCurrent;           //! Last track returned from the stack
   Int_t          fDebug;             //  Debug flag
-  AliHeader      fHeader;            //  Header information
+  AliHeader     *fHeader;            //  Header information
   TTree         *fTreeD;             //! Pointer to Tree for Digits
   TTree         *fTreeS;             //! Pointer to Tree for SDigits
-  TTree         *fTreeK;             //! Pointer to Tree for Kinematics
   TTree         *fTreeH;             //! Pointer to Tree for Hits
   TTree         *fTreeE;             //! Pointer to Tree for Header
   TTree         *fTreeR;             //! Pointer to Tree for Reconstructed Objects
   TObjArray     *fModules;           //  List of Detectors
-  TClonesArray  *fParticles;         //! Pointer to list of particles
   TGeometry     *fGeometry;          //  Pointer to geometry
   AliDisplay    *fDisplay;           //! Pointer to event display
   TStopwatch     fTimer;             //  Timer object
@@ -198,17 +193,12 @@ protected:
   AliMCQA       *fMCQA;              //  Pointer to MC Quality assurance class
   TString        fTransParName;      //  Name of the transport parameters file
   TString        fBaseFileName;      //  Name of the base root file
-  TParticle     *fParticleBuffer;    //! Pointer to current particle for writing
-  TObjArray     *fParticleMap;       //! Map of particles in the supporting TClonesArray
-  TArrayI&       fParticleFileMap;   //! Map of particles in the file
-
+  AliStack*      fStack;             //  ! Particle Stack
 private:
 
    AliRun(const AliRun &right) 
-     : fParticleFileMap(right.fParticleFileMap) {}  
-   AliRun& operator = (const AliRun &right) 
-      { fParticleFileMap= right.fParticleFileMap; return *this; }
-
+     {}  
+   AliRun& operator = (const AliRun &) {return *this;}
    ClassDef(AliRun,4)      //Supervisor class for all Alice detectors
 };
  

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.7  2001/05/10 12:28:26  jbarbosa
+  Repositioned the RICH modules.
+
   Revision 1.6  2001/02/13 20:10:45  jbarbosa
   Removed call to SetNSec() (obsolete). Fixed bug in chamber initialisation (not all chambers were initialised).
 
@@ -118,10 +121,12 @@ AliRICHv2::AliRICHv2(const char *name, const char *title)
 void AliRICHv2::Init()
 {
 
-  printf("*********************************** RICH_INIT ***********************************\n");
-  printf("*                                                                               *\n");
-  printf("*                    AliRICHv2 Configurable version started                     *\n");
-  printf("*                                                                               *\n");
+  if(fDebug) {
+    printf("%s: *********************************** RICH_INIT ***********************************\n",ClassName());
+    printf("%s: *                                                                               *\n",ClassName());
+    printf("%s: *                    AliRICHv2 Configurable version started                     *\n",ClassName());
+    printf("%s: *                                                                               *\n",ClassName());
+  }
 
   
   AliSegmentation*  segmentation;
@@ -176,18 +181,29 @@ void AliRICHv2::Init()
     Chamber(5).SetChamberTransform(pos6[0],pos6[1],pos6[2],new TRotMatrix("rot998","rot998",90., 0.               , 90 + deltaphi , 90.             , deltaphi, 90.            ));
     Chamber(6).SetChamberTransform(pos7[0],pos7[1],pos7[2],new TRotMatrix("rot999","rot999",90., deltatheta       , 108.2         , 90.+ deltatheta ,18.2     , 90 + deltatheta));
     
-  
-    printf("*                            Pads            : %3dx%3d                          *\n",segmentation->Npx(),segmentation->Npy());
-    printf("*                            Pad size        : %5.2f x%5.2f mm2                 *\n",segmentation->Dpx(),segmentation->Dpy()); 
-    printf("*                            Gap Thickness   : %5.1f cm                         *\n",geometry->GetGapThickness());
-    printf("*                            Radiator Width  : %5.1f cm                         *\n",geometry->GetQuartzWidth());
-    printf("*                            Radiator Length : %5.1f cm                         *\n",geometry->GetQuartzLength());
-    printf("*                            Freon Thickness : %5.1f cm                         *\n",geometry->GetFreonThickness());
-    printf("*                            Charge Slope    : %5.1f ADC                        *\n",response->ChargeSlope());
-    printf("*                            Feedback Prob.  : %5.2f %%                          *\n",response->AlphaFeedback()*100);
-    printf("*                            Debug Level     : %3d                              *\n",GetDebugLevel());
-    printf("*                                                                               *\n");
-    printf("*********************************************************************************\n");
-
+    if(fDebug) {    
+      printf("%s: *                            Pads            : %3dx%3d                          *\n",
+	     ClassName(),segmentation->Npx(),segmentation->Npy());
+      printf("%s: *                            Pad size        : %5.2f x%5.2f mm2                 *\n",
+	     ClassName(),segmentation->Dpx(),segmentation->Dpy()); 
+      printf("%s: *                            Gap Thickness   : %5.1f cm                         *\n",
+	     ClassName(),geometry->GetGapThickness());
+      printf("%s: *                            Radiator Width  : %5.1f cm                         *\n",
+	     ClassName(),geometry->GetQuartzWidth());
+      printf("%s: *                            Radiator Length : %5.1f cm                         *\n",
+	     ClassName(),geometry->GetQuartzLength());
+      printf("%s: *                            Freon Thickness : %5.1f cm                         *\n",
+	     ClassName(),geometry->GetFreonThickness());
+      printf("%s: *                            Charge Slope    : %5.1f ADC                        *\n",
+	     ClassName(),response->ChargeSlope());
+      printf("%s: *                            Feedback Prob.  : %5.2f %%                          *\n",
+	     ClassName(),response->AlphaFeedback()*100);
+      printf("%s: *                            Debug Level     : %3d                              *\n",
+	     ClassName(),GetDebugLevel());
+      printf("%s: *                                                                               *\n",
+	     ClassName());
+      printf("%s: *********************************************************************************\n",
+	     ClassName());
+    }
 }
 

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:49  cernlib
 * Geant
 *
@@ -32,6 +35,7 @@ C.    *****************************************************************
 C.
 #include "geant321/gcbank.inc"
 #include "geant321/gcunit.inc"
+#include "geant321/gcflag.inc"
 *
  
       DIMENSION CLOW(500),CHIGH(500),CORD(1000),ITYPE(1000),
@@ -183,17 +187,21 @@ C.    ------------------------------------------------------------------
  
       IF(IAXNOW.GT.0)THEN
  
-        WRITE (CHMAIL,1002) NAME,NIN,IAXOPT,NDIVB,RBEST,IAXNOW
-        CALL  GMAIL (0, 0)
+        IF(IDEBUG.NE.0) THEN
+           WRITE (CHMAIL,1002) NAME,NIN,IAXOPT,NDIVB,RBEST,IAXNOW
+           CALL  GMAIL (0, 0)
  1002   FORMAT(' GGORDQ : Volume ',A4,2X,'NIN=',I4,' IAX=',I2,2X,
      +    'NDIV=',I3,2X,'NVOL/DIV=',F5.1,2X,'IAX wanted by user:',I2)
+        ENDIF
  
       ELSE
- 
-        WRITE (CHMAIL,1003) NAME,NIN,IAXOPT,NDIVB,RBEST
-        CALL  GMAIL (0, 0)
+
+        IF(IDEBUG.NE.0) THEN
+           WRITE (CHMAIL,1003) NAME,NIN,IAXOPT,NDIVB,RBEST
+           CALL  GMAIL (0, 0)
  1003   FORMAT(' GGORDQ : Volume ',A4,2X,'NIN=',I4,' IAX=',I2,2X,
      +    'NDIV=',I3,2X,'NVOL/DIV=',F5.1)
+        ENDIF
  
       ENDIF
  

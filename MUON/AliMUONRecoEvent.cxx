@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/05/11 07:59:03  hristov
+Index corrected
+
 Revision 1.4  2001/01/26 20:00:53  hristov
 Major upgrade of AliRoot code
 
@@ -24,6 +27,9 @@ RN3 violations corrected
 Revision 1.2  2000/11/23 10:09:38  gosset
 Bug correction in AliMUONRecoDisplay.
 Copyright, $Log$
+Copyright, Revision 1.5  2001/05/11 07:59:03  hristov
+Copyright, Index corrected
+Copyright,
 Copyright, Revision 1.4  2001/01/26 20:00:53  hristov
 Copyright, Major upgrade of AliRoot code
 Copyright,
@@ -76,6 +82,7 @@ in AliMUONRecoEvent and AliMUONRecoDisplay
 #include "AliMUONTrackParam.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONTrackHit.h"
+#include "AliHeader.h"
 
 ClassImp(AliMUONRecoTrack)
 ClassImp(AliMUONRecoEvent)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.50  2001/05/11 09:15:21  barbera
+Corrected to make fast point creation working with PPR geometry
+
 Revision 1.49  2001/05/11 07:37:49  hristov
 Legacy lines commented
 
@@ -327,7 +330,7 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
 
   Int_t i;
   for(i=0;i<kNTYPES;i++) {
-    (*fDetTypes)[i]=new AliITSDetType(); 
+    fDetTypes->AddAt(new AliITSDetType(),i); 
     fNdtype[i]=0;
     fNctype[i]=0;
    }
@@ -657,7 +660,7 @@ void AliITS::SetDefaults()
 {
   // sets the default segmentation, response, digit and raw cluster classes
 
-  printf("SetDefaults\n");
+  if(fDebug) printf("%s: SetDefaults\n",ClassName());
 
   AliITSDetType *iDetType;
 
@@ -805,7 +808,7 @@ void AliITS::GetTreeC(Int_t event)
 
 }
 //_____________________________________________________________________________
-void AliITS::MakeBranch(Option_t* option, char *file)
+void AliITS::MakeBranch(Option_t* option, const char *file)
 {
   //
   // Creates Tree branches for the ITS.
@@ -842,7 +845,7 @@ void AliITS::MakeBranch(Option_t* option, char *file)
       if (kNTYPES==3) sprintf(branchname,"%sDigits%s",GetName(),det[i]);
       else  sprintf(branchname,"%sDigits%d",GetName(),i+1);      
       if (fDtype && gAlice->TreeD()) {
-        gAlice->MakeBranchInTree(gAlice->TreeD(), 
+        MakeBranchInTree(gAlice->TreeD(), 
                          branchname, &((*fDtype)[i]), buffersize, file);
 //	    cout << "Making Branch " << branchname;
 //	    cout << " for digits of type "<< i+1 << endl;
@@ -859,7 +862,7 @@ void AliITS::MakeBranch(Option_t* option, char *file)
     if(!fRecPoints) fRecPoints=new TClonesArray("AliITSRecPoint",10000);
 
     if (fRecPoints && gAlice->TreeR()) {
-      gAlice->MakeBranchInTree(gAlice->TreeR(), 
+      MakeBranchInTree(gAlice->TreeR(), 
                                branchname, &fRecPoints, buffersize, file) ;
 //      cout << "Making Branch " << branchname;
 //      cout << " for reconstructed space points" << endl;
@@ -1117,7 +1120,7 @@ void AliITS::SDigits2Digits()
  
   TStopwatch timer;
   timer.Start();
-  HitsToDigits(0,0,-1," ","All"," ");
+  HitsToDigits(gAlice->GetEvNumber(),0,-1," ","All"," ");
   timer.Stop(); timer.Print();
 
   delete sim0;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/02/02 11:12:50  morsch
+Add Vertex() method that allows to get vertex from merging manager, if needed.
+
 Revision 1.11  2001/01/26 19:58:48  hristov
 Major upgrade of AliRoot code
 
@@ -64,6 +67,7 @@ Introduction of the Copyright and cvs Log
 #include "AliGenerator.h"
 #include "TGenerator.h"
 #include "AliRun.h"
+#include "AliConfig.h"
 
 ClassImp(AliGenerator)
 
@@ -132,6 +136,8 @@ AliGenerator::AliGenerator(Int_t npart)
     fVMax[0]=fVMax[1]=fVMax[2]=10000;
 
     SetNumberParticles(npart);
+
+    AliConfig::Instance()->Add(this);    
 }
 
 //____________________________________________________________

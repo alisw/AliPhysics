@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.13  2001/05/09 01:00:19  nilsen
+Fixed up a typo in the cout of Init(). Now properly indecates which version
+of code is being used.
+
 Revision 1.12  2001/04/18 12:06:02  barbera
 Number of modules in layer 5 and 6 re-set to 23 and 26
 
@@ -591,14 +595,13 @@ void AliITSv5asymm::CreateGeometry(){
   delete [] filtmp;
   if(file) {
     fclose(file);
-    cout << "Ready to read Euclid geometry file" << endl;
+    if(fDebug) cout << ClassName() << ": Ready to read Euclid geometry file" << endl;
     ReadEuclid(fEuclidGeometry.Data(),topvol);
-    cout << "Read in euclid geometries" << endl;
-  } else {
-    Error("CreateGeometry"," THE GEOM FILE %s DOES NOT EXIST !",
+    if(fDebug) cout << ClassName() << ": Read in euclid geometries" << endl;
+  } else 
+    Fatal("CreateGeometry"," THE GEOM FILE %s DOES NOT EXIST !",
 	  fEuclidGeometry.Data());
-    exit(1);
-  } // end if(file)
+  // end if(file)
   //
   // Place the ITS ghost volume ITSV in its mother volume (ALIC) and make it
   // invisible
@@ -611,7 +614,7 @@ void AliITSv5asymm::CreateGeometry(){
       gMC->WriteEuclid("ITSgeometry", "ITSV", 1, 5);
     } // end if (fEuclidOut)
 
-    cout << "finished with euclid geometrys" << endl;
+    if(fDebug) cout << ClassName() << ": finished with euclid geometrys" << endl;
 }
 
 //______________________________________________________________________
@@ -655,7 +658,8 @@ void AliITSv5asymm::InitAliITSgeom(){
 		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
 	return;
     } // end if
-    cout << "Reading Geometry transformation directly from Geant 3." << endl;
+    if(fDebug) cout << ClassName() 
+		    << ": Reading Geometry transformation directly from Geant 3." << endl;
     const Int_t nlayers = 6;
     const Int_t ndeep = 7;
     Int_t itsGeomTreeNames[nlayers][ndeep],lnam[20],lnum[20];
@@ -682,7 +686,8 @@ void AliITSv5asymm::InitAliITSgeom(){
     // Sorry, but this is not very pritty code. It should be replaced
     // at some point with a version that can search through the geometry
     // tree its self.
-    cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
+    if(fDebug) cout << ClassName() 
+		    << ": Reading Geometry informaton from Geant3 common blocks" << endl;
     for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
     for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++) 
 	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
@@ -762,9 +767,11 @@ void AliITSv5asymm::Init(){
 ////////////////////////////////////////////////////////////////////////
     Int_t i;
 
-    cout << endl;
-    for(i=0;i<28;i++) cout << "*";cout << " ITSv5asymm_Init ";
-    for(i=0;i<27;i++) cout << "*";cout << endl;
+    if(fDebug) {
+      cout << endl << ClassName() << ": ";
+      for(i=0;i<28;i++) cout << "*";cout << " ITSv5_Init ";
+      for(i=0;i<27;i++) cout << "*";cout << endl;
+    }
 //
     if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
     if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
@@ -777,8 +784,11 @@ void AliITSv5asymm::Init(){
     if(fGeomDetOut) fITSgeom->WriteNewFile(fWrite);
     AliITS::Init();
 //
-    for(i=0;i<72;i++) cout << "*";
-    cout << endl;
+    if(fDebug) {
+      cout << ClassName() << ": ";
+      for(i=0;i<72;i++) cout << "*";
+      cout << endl;
+    }
 } 
 //_____________________________________________________________________________
 void AliITSv5asymm::StepManager(){

@@ -97,7 +97,7 @@ class AliITSgeomSDD256 : public AliITSgeomSDD {
     // file. This is good since there are no longer any data members to this
     // class. It is only designed to make it easer to define this standard
     // SDD detector geometry.
-    ClassDef(AliITSgeomSDD256,0) // ITS SDD detector geometry class for 256 anodes per side
+    ClassDef(AliITSgeomSDD256,1) // ITS SDD detector geometry class for 256 anodes per side
 
 };
 // Input and output function for standard C++ input/output.
@@ -126,7 +126,7 @@ class AliITSgeomSDD300 : public AliITSgeomSDD {
     // file. This is good since there are no longer any data members to this
     // class. It is only designed to make it easer to define this standard
     // SDD detector geometry.
-    ClassDef(AliITSgeomSDD300,0) // ITS SDD detector geometry class for 300 anodes per side
+    ClassDef(AliITSgeomSDD300,1) // ITS SDD detector geometry class for 300 anodes per side
 
 };
 // Input and output function for standard C++ input/output.

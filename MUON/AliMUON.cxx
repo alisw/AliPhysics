@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.49  2001/03/12 17:45:48  hristov
+Changes needed on Sun with CC 5.0
+
 Revision 1.48  2001/03/06 00:01:36  morsch
 Add  Digits2Reco() and FindClusters()
 Adapt call of cluster finder to new STEER.
@@ -396,7 +399,7 @@ AliMUON::AliMUON(const AliMUON& rMUON)
 AliMUON::~AliMUON()
 {
 // Destructor
-    printf("Calling AliMUON destructor !!!\n");
+    if(fDebug) printf("%s: Calling AliMUON destructor !!!\n",ClassName());
     
     Int_t i;
     fIshunt  = 0;
@@ -542,7 +545,7 @@ Int_t AliMUON::DistancetoPrimitive(Int_t , Int_t )
 }
 
 //___________________________________________
-void AliMUON::MakeBranch(Option_t* option, char *file)
+void AliMUON::MakeBranch(Option_t* option, const char *file)
 {
     //
     // Create Tree branches for the MUON.
@@ -558,9 +561,8 @@ void AliMUON::MakeBranch(Option_t* option, char *file)
     const char *cH = strstr(option,"H");
 
     if (fPadHits   && gAlice->TreeH() && cH) {
-      gAlice->MakeBranchInTree(gAlice->TreeH(), 
-                               branchname, &fPadHits, kBufferSize, file) ; 	  
-	  printf("Making Branch %s for clusters\n",branchname);
+      MakeBranchInTree(gAlice->TreeH(), 
+                       branchname, &fPadHits, kBufferSize, file);
     }
     
     if (cD) {
@@ -572,8 +574,8 @@ void AliMUON::MakeBranch(Option_t* option, char *file)
       for (i=0; i<AliMUONConstants::NCh() ;i++) {
 	    sprintf(branchname,"%sDigits%d",GetName(),i+1);	
 	    if (fDchambers   && gAlice->TreeD()) {
-          gAlice->MakeBranchInTree(gAlice->TreeD(), 
-                                   branchname, &((*fDchambers)[i]), kBufferSize, file) ; 	  
+            MakeBranchInTree(gAlice->TreeD(), 
+                             branchname, &((*fDchambers)[i]), kBufferSize, file);
 	      printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
         }
 	  }	
@@ -590,8 +592,8 @@ void AliMUON::MakeBranch(Option_t* option, char *file)
       for (i=0; i<AliMUONConstants::NTrackingCh() ;i++) {
 	    sprintf(branchname,"%sRawClusters%d",GetName(),i+1);	
 	    if (fRawClusters   && gAlice->TreeR()) {
-          gAlice->MakeBranchInTree(gAlice->TreeR(), 
-                                   branchname, &((*fRawClusters)[i]), kBufferSize, file) ; 	  
+              MakeBranchInTree(gAlice->TreeR(), 
+                               branchname, &((*fRawClusters)[i]), kBufferSize, file);
 	      printf("Making Branch %s for raw clusters in chamber %d\n",branchname,i+1);
    	    }	
       }
@@ -600,8 +602,8 @@ void AliMUON::MakeBranch(Option_t* option, char *file)
       //
       sprintf(branchname,"%sGlobalTrigger",GetName());
       if (fGlobalTrigger && gAlice->TreeR()) {  
-        gAlice->MakeBranchInTree(gAlice->TreeR(), 
-                                 branchname, &fGlobalTrigger, kBufferSize, file) ; 	  
+          MakeBranchInTree(gAlice->TreeR(), 
+                           branchname, &fGlobalTrigger, kBufferSize, file);
 	    printf("Making Branch %s for Global Trigger\n",branchname);
       }
       //
@@ -609,8 +611,8 @@ void AliMUON::MakeBranch(Option_t* option, char *file)
       //  
       sprintf(branchname,"%sLocalTrigger",GetName());
       if (fLocalTrigger && gAlice->TreeR()) {  
-        gAlice->MakeBranchInTree(gAlice->TreeR(), 
-                                 branchname, &fLocalTrigger, kBufferSize, file) ; 	  
+          MakeBranchInTree(gAlice->TreeR(), 
+                           branchname, &fLocalTrigger, kBufferSize, file);
 	    printf("Making Branch %s for Local Trigger\n",branchname);
       }
    }

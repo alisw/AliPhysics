@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/03/13 09:30:35  cblume
+Update of digitization. Moved digit branch definition to AliTRD
+
 Revision 1.10  2001/01/26 19:56:57  hristov
 Major upgrade of AliRoot code
 
@@ -76,6 +79,7 @@ Add new class AliTRDdigitsManager
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdigit.h"
 #include "AliTRDgeometry.h"
+#include "AliTRD.h"
 
 ClassImp(AliTRDdigitsManager)
 
@@ -168,6 +172,8 @@ Bool_t AliTRDdigitsManager::MakeBranch(char *file)
 
   //TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("TRD.Digits.root");
 
+  AliTRD * TRD = (AliTRD *) gAlice->GetDetector("TRD") ;
+
   if (gAlice->TreeD()) {
 
     // Make the branch for the digits
@@ -175,9 +181,9 @@ Bool_t AliTRDdigitsManager::MakeBranch(char *file)
       const AliTRDdataArray *kDigits = 
            (AliTRDdataArray *) fDigits->At(0);
       if (kDigits) {
-          gAlice->MakeBranchInTree(gAlice->TreeD(), 
-                                   "TRDdigits", kDigits->IsA()->GetName(),
-                                   &kDigits,buffersize, 1,file) ;
+           TRD->MakeBranchInTree(gAlice->TreeD(), 
+                                "TRDdigits", kDigits->IsA()->GetName(),
+                                &kDigits,buffersize, 1,file);
         printf("AliTRDdigitsManager::MakeBranch -- ");
         printf("Making branch TRDdigits\n");
       }
@@ -197,9 +203,9 @@ Bool_t AliTRDdigitsManager::MakeBranch(char *file)
         const AliTRDdataArray *kDictionary = 
              (AliTRDdataArray *) fDictionary[iDict]->At(0);
         if (kDictionary) {
-            gAlice->MakeBranchInTree(gAlice->TreeD(), 
-                                     branchname,kDictionary->IsA()->GetName(),
-                                     &kDictionary,buffersize, 1,file) ;
+            TRD->MakeBranchInTree(gAlice->TreeD(), 
+                             branchname,kDictionary->IsA()->GetName(),
+                             &kDictionary,buffersize, 1,file);
           printf("AliTRDdigitsManager::MakeBranch -- ");
           printf("Making branch %s\n",branchname);
 	}

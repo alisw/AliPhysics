@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/03/12 17:46:22  hristov
+Changes needed on Sun with CC 5.0
+
 Revision 1.13  2001/01/26 20:02:43  hristov
 Major upgrade of AliRoot code
 
@@ -265,7 +268,7 @@ void AliPMD::AddRecPoint(const AliPMDRecPoint &p)
     new(lrecpoints[fNRecPoints++]) AliPMDRecPoint(p);
 }
 
-void AliPMD::MakeBranch(Option_t* option, char *file)
+void AliPMD::MakeBranch(Option_t* option, const char *file)
 {
     // Create Tree branches for the PMD
     
@@ -281,8 +284,8 @@ void AliPMD::MakeBranch(Option_t* option, char *file)
       
       sprintf(branchname,"%sRecPoints",GetName());
       if (fRecPoints   && gAlice->TreeR()) {
-        gAlice->MakeBranchInTree(gAlice->TreeR(), 
-                                 branchname, &fRecPoints, kBufferSize, file) ;
+          MakeBranchInTree(gAlice->TreeR(), 
+                           branchname, &fRecPoints, kBufferSize, file);
       }
    }	
 }

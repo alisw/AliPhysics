@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/01/26 19:58:48  hristov
+Major upgrade of AliRoot code
+
 Revision 1.13  2000/12/21 15:30:18  fca
 Correcting coding convention violations
 
@@ -73,6 +76,7 @@ Introduction of the Copyright and cvs Log
 #include "AliPoints.h"
 #include "TParticle.h"
 #include "TGeometry.h"
+#include "AliHeader.h"
 
 static const Float_t kptcutmax  = 2;
 static const Float_t ketacutmax = 1.5;

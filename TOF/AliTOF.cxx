@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2001/05/04 10:09:47  vicinanz
+Major upgrades to the strip structure
+
 Revision 1.19  2001/03/12 17:47:25  hristov
 Changes needed on Sun with CC 5.0
 
@@ -406,7 +409,7 @@ void AliTOF::Init()
 }
 
 //____________________________________________________________________________
-void AliTOF::MakeBranch(Option_t* option, char *file)
+void AliTOF::MakeBranch(Option_t* option, const char *file)
 {
  //
  // Initializes the Branches of the TOF inside the 
@@ -425,7 +428,7 @@ void AliTOF::MakeBranch(Option_t* option, char *file)
   const char *D = strstr(option,"D");
 
   if (fDigits && gAlice->TreeD() && D){
-     gAlice->MakeBranchInTree(gAlice->TreeD(), 
+     MakeBranchInTree(gAlice->TreeD(), 
                               branchname, &fDigits,buffersize, file) ;
   }
 }

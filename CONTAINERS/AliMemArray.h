@@ -68,7 +68,8 @@ protected:
   // 
 private:  
   void *          fCont;             //!data buffer      
-  ClassDef(AliMemArray,0) 
+  //ClassDef(AliMemArray,0) 
+  ClassDef(AliMemArray,1) 
 };
 
 void *  AliMemArray::Unchecked1DAt(UInt_t i) const 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/02 21:28:15  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.9  2000/06/11 12:35:02  morsch
 Coding rule violations corrected
 
@@ -52,7 +55,7 @@ AliFRAMEv1::AliFRAMEv1(const char *name, const char *title)
   : AliFRAME(name,title)
 {
 // Constructor
-  printf("Create FRAMEv1 object\n");  
+  if(fDebug>1) printf("%s: Create FRAMEv1 object\n",ClassName());  
   fEuclidGeometry="$(ALICE_ROOT)/Euclid/frame1099i.euc";
   fEuclidMaterial="$(ALICE_ROOT)/Euclid/frame.tme";
 }
@@ -84,13 +87,11 @@ void AliFRAMEv1::CreateGeometry()
   delete [] filetmp;
   if(file) {
     fclose(file);
-    printf(" Reading FRAME geometry\n");
+    if(fDebug) printf("%s: Reading FRAME geometry\n",ClassName());
     ReadEuclid(fEuclidGeometry.Data(),topvol);
-  } else {
-    Warning("CreateGeometry","The Euclid file %s does not exist!\n",
-	    fEuclidGeometry.Data());
-    exit(1);
-  }
+  } else 
+    Fatal("CreateGeometry","The Euclid file %s does not exist!\n",
+	  fEuclidGeometry.Data());
 //
 // --- Place the FRAME ghost volume (B010) in its mother volume (ALIC)
 //    and make it invisible
@@ -108,7 +109,7 @@ void AliFRAMEv1::CreateMaterials()
 {
 // Create materials and media (from Euclid file)
   char *filetmp;
-  printf("Create FRAMEv1 materials\n");
+  if(fDebug) printf("%s: Create FRAMEv1 materials\n",ClassName());
   filetmp = gSystem->ExpandPathName(fEuclidMaterial.Data());
   FILE *file = fopen(filetmp,"r");
   delete [] filetmp;
@@ -129,12 +130,13 @@ void AliFRAMEv1::Init()
   // Initialise the module after the geometry has been defined
   //
 
-  printf("**************************************"
-	 " FRAME "
-	 "**************************************\n");
-  printf("\n     Version 1 of FRAME initialised, symmetric FRAME\n\n");
-  printf("**************************************"
-	 " FRAME "
-	 "**************************************\n");
-
+  if(fDebug) {
+    printf("%s: **************************************"
+	   " FRAME "
+	   "**************************************\n",ClassName());
+    printf("\n%s:      Version 1 of FRAME initialised, symmetric FRAME\n\n",ClassName());
+    printf("%s: **************************************"
+	   " FRAME "
+	   "**************************************\n",ClassName());
+  }
 }

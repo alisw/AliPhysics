@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/11/30 07:12:49  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.1  2000/10/26 14:18:05  morsch
 Add new AliLegoGenerator classes:
 AliLegoGeneratorXYZ: carthesian binning
@@ -128,7 +131,7 @@ void AliLegoGeneratorXYZ::Generate()
    
    Float_t polar[3]={0.,0.,0.};
    Int_t ntr;
-   gAlice->SetTrack(1, 0, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
+   gAlice->SetTrack(1, -1, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
    
 }
 

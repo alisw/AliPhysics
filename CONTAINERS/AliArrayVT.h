@@ -38,9 +38,10 @@ public:
   void    (*streamb)(TBuffer &, const void *,UInt_t);
   void    (*dump)(void*);  
   TString  fClassName;   //class name of the object
-  TClass * fClass;       //class type of the object
+  TClass * fClass;       //!class type of the object
   UInt_t   fSize;        //size of object
-  ClassDef(AliArrayVT,0) 
+  //ClassDef(AliArrayVT,0) 
+  ClassDef(AliArrayVT,1) 
 };
 
 #endif //ALIARRAYVT

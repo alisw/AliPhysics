@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:20  fca
+* AliRoot sources
+*
 * Revision 1.2  1996/09/30 13:28:58  ravndal
 * Medium name length checked
 *
@@ -52,22 +55,22 @@ C
       CALL GMAIL(0,0)
       WRITE(CHMAIL,10100)
       CALL GMAIL(0,0)
-      WRITE(CHMAIL,10200)GVERSN,IGDATE,IGTIME
+      WRITE(CHMAIL,10200)GVERSN,IGDATE,IGTIME,IDRUN
       CALL GMAIL(0,0)
-      WRITE(CHMAIL,10100)
-      CALL GMAIL(0,0)
-      WRITE(CHMAIL,10300)IDRUN
-      CALL GMAIL(0,0)
-      WRITE(CHMAIL,10100)
-      CALL GMAIL(0,0)
-      WRITE(CHMAIL,10400)
-      CALL GMAIL(0,0)
+*      WRITE(CHMAIL,10100)
+*      CALL GMAIL(0,0)
+*      WRITE(CHMAIL,10300)IDRUN
+*      CALL GMAIL(0,0)
+*      WRITE(CHMAIL,10100)
+*      CALL GMAIL(0,0)
+*      WRITE(CHMAIL,10400)
+*      CALL GMAIL(0,0)
       WRITE(CHMAIL,10100)
       CALL GMAIL(0,0)
       WRITE(CHMAIL,10500)
       CALL GMAIL(0,0)
-      WRITE(CHMAIL,10600)
-      CALL GMAIL(0,0)
+*      WRITE(CHMAIL,10600)
+*      CALL GMAIL(0,0)
       WRITE(CHMAIL,10100)
       CALL GMAIL(0,0)
 C
@@ -89,26 +92,26 @@ C
          WRITE(CHMAIL,10700) DNAME,IQ(JRUNG+11),IQ(JRUNG+12), Q(JRUNG+
      +   21), Q(JRUNG+22)
          CALL GMAIL(0,0)
-         WRITE(CHMAIL,10100)
-         CALL GMAIL(0,0)
+*         WRITE(CHMAIL,10100)
+*         CALL GMAIL(0,0)
          DNAME='KINE'
          WRITE(CHMAIL,10700) DNAME,IQ(JRUNG+13),IQ(JRUNG+14), Q(JRUNG+
      +   23), Q(JRUNG+24)
          CALL GMAIL(0,0)
-         WRITE(CHMAIL,10100)
-         CALL GMAIL(0,0)
+*         WRITE(CHMAIL,10100)
+*         CALL GMAIL(0,0)
          DNAME='HITS'
          WRITE(CHMAIL,10700) DNAME,IQ(JRUNG+15),IQ(JRUNG+16), Q(JRUNG+
      +   25), Q(JRUNG+26)
          CALL GMAIL(0,0)
-         WRITE(CHMAIL,10100)
-         CALL GMAIL(0,0)
+*         WRITE(CHMAIL,10100)
+*         CALL GMAIL(0,0)
          DNAME='DIGI'
          WRITE(CHMAIL,10700) DNAME,IQ(JRUNG+17),IQ(JRUNG+18), Q(JRUNG+
      +   27), Q(JRUNG+28)
          CALL GMAIL(0,0)
-         WRITE(CHMAIL,10100)
-         CALL GMAIL(0,0)
+*         WRITE(CHMAIL,10100)
+*         CALL GMAIL(0,0)
          IF(NRNDM(1).EQ.0.AND.NRNDM(2).EQ.0) THEN
 *
 *             The random number sequence has not been explicitely
@@ -121,10 +124,10 @@ C
             ENDIF
          ENDIF
          CALL GRNDMQ(IQ(JRUNG+19), IQ(JRUNG+20), 0, 'G')
-         WRITE(CHMAIL,10900) IQ(JRUNG+19), IQ(JRUNG+20)
-         CALL GMAIL(0,0)
-         WRITE(CHMAIL,11000)
-         CALL GMAIL(0,0)
+*         WRITE(CHMAIL,10900) IQ(JRUNG+19), IQ(JRUNG+20)
+*         CALL GMAIL(0,0)
+*         WRITE(CHMAIL,11000)
+*         CALL GMAIL(0,0)
          WRITE(CHMAIL,10100)
          CALL GMAIL(0,0)
       ENDIF
@@ -192,42 +195,42 @@ C
 C
       DO 20 K=1,10
    20 CALL GEVKEV(Q(JTMED+K),UCUT(K),KCUT(K))
-      WRITE(CHMAIL,10800)
-      CALL GMAIL(0,0)
+*      WRITE(CHMAIL,10800)
+*      CALL GMAIL(0,0)
       WRITE(CHMAIL,10100)
       CALL GMAIL(0,0)
       WRITE(CHMAIL,11100)
       CALL GMAIL(0,0)
-      WRITE(CHMAIL,11200)
-      CALL GMAIL(0,0)
+*      WRITE(CHMAIL,11200)
+*      CALL GMAIL(0,0)
       WRITE(CHMAIL,10100)
       CALL GMAIL(0,0)
-      WRITE(CHMAIL,11300) (UCUT(K),KCUT(K),K=1,3)
+      WRITE(CHMAIL,11300) (UCUT(K),KCUT(K),K=1,5)
       CALL GMAIL(0,0)
-      WRITE(CHMAIL,11400) (UCUT(K),KCUT(K),K=4,5)
+*      WRITE(CHMAIL,11400) (UCUT(K),KCUT(K),K=4,5)
+*      CALL GMAIL(0,0)
+      WRITE(CHMAIL,11500) (UCUT(K),KCUT(K),K=6,10)
       CALL GMAIL(0,0)
-      WRITE(CHMAIL,11500) (UCUT(K),KCUT(K),K=6,7)
-      CALL GMAIL(0,0)
-      WRITE(CHMAIL,11600) (UCUT(K),KCUT(K),K=8,10)
-      CALL GMAIL(0,0)
-      WRITE(CHMAIL,11700) (Q(JTMED+K),K=11,13)
-      CALL GMAIL(0,0)
-      WRITE(CHMAIL,11800) (Q(JTMED+K),K=14,16)
-      CALL GMAIL(0,0)
+*      WRITE(CHMAIL,11600) (UCUT(K),KCUT(K),K=8,10)
+*      CALL GMAIL(0,0)
       IF(Q(JTMED+18).EQ.3.) THEN
          NUCRIN = .TRUE.
          Q(JTMED+18)=1.
       ELSE
          NUCRIN = .FALSE.
       ENDIF
-      WRITE(CHMAIL,11900) (Q(JTMED+K),K=17,19)
+      WRITE(CHMAIL,11700) (Q(JTMED+K),K=11,18)
       CALL GMAIL(0,0)
-      WRITE(CHMAIL,12000) (Q(JTMED+K),K=20,22)
+*      WRITE(CHMAIL,11800) (Q(JTMED+K),K=14,16)
+*      CALL GMAIL(0,0)
+      WRITE(CHMAIL,11900) (Q(JTMED+K),K=19,23),(Q(JTMED+L),L=31,33)
       CALL GMAIL(0,0)
-      WRITE(CHMAIL,12100) Q(JTMED+23),Q(JTMED+31),Q(JTMED+32)
-      CALL GMAIL(0,0)
-      WRITE(CHMAIL,12110) Q(JTMED+33)
-      CALL GMAIL(0,0)
+*      WRITE(CHMAIL,12000) (Q(JTMED+K),K=20,22)
+*      CALL GMAIL(0,0)
+*      WRITE(CHMAIL,12100) Q(JTMED+23),Q(JTMED+31),Q(JTMED+32)
+*      CALL GMAIL(0,0)
+*      WRITE(CHMAIL,12110) Q(JTMED+33)
+*      CALL GMAIL(0,0)
       WRITE(CHMAIL,10100)
       CALL GMAIL(0,0)
       IF(NUCRIN) THEN
@@ -377,36 +380,36 @@ C
             CALL GMAIL(0,0)
             WRITE(CHMAIL,12300)ITM,CHTITL
             CALL GMAIL(0,0)
-            WRITE(CHMAIL,12400)
+*            WRITE(CHMAIL,12400)
+*            CALL GMAIL(0,0)
+            WRITE(CHMAIL,11300) (UCUT(K),KCUT(K),K=1,5)
             CALL GMAIL(0,0)
-            WRITE(CHMAIL,11300) (UCUT(K),KCUT(K),K=1,3)
+*            WRITE(CHMAIL,11400) (UCUT(K),KCUT(K),K=4,5)
+*            CALL GMAIL(0,0)
+            WRITE(CHMAIL,11500) (UCUT(K),KCUT(K),K=6,10)
             CALL GMAIL(0,0)
-            WRITE(CHMAIL,11400) (UCUT(K),KCUT(K),K=4,5)
-            CALL GMAIL(0,0)
-            WRITE(CHMAIL,11500) (UCUT(K),KCUT(K),K=6,7)
-            CALL GMAIL(0,0)
-            WRITE(CHMAIL,11600) (UCUT(K),KCUT(K),K=8,10)
-            CALL GMAIL(0,0)
-            WRITE(CHMAIL,11700) (Q(JTP+K),K=11,13)
-            CALL GMAIL(0,0)
-            WRITE(CHMAIL,11800) (Q(JTP+K),K=14,16)
-            CALL GMAIL(0,0)
+*            WRITE(CHMAIL,11600) (UCUT(K),KCUT(K),K=8,10)
+*            CALL GMAIL(0,0)
             IF(Q(JTP+18).EQ.3.) THEN
                NUCRIN = .TRUE.
                Q(JTP+18)=1.
             ELSE
                NUCRIN = .FALSE.
             ENDIF
-            WRITE(CHMAIL,11900) (Q(JTP+K),K=17,19)
+            WRITE(CHMAIL,11700) (Q(JTP+K),K=11,18)
             CALL GMAIL(0,0)
-            WRITE(CHMAIL,12000) (Q(JTP+K),K=20,22)
+*            WRITE(CHMAIL,11800) (Q(JTP+K),K=14,16)
+*            CALL GMAIL(0,0)
+            WRITE(CHMAIL,11900) (Q(JTP+K),K=19,23),(Q(JTP+L),L=31,33)
             CALL GMAIL(0,0)
-            WRITE(CHMAIL,12100) Q(JTP+23),Q(JTP+31),Q(JTP+32)
-            CALL GMAIL(0,0)
-            WRITE(CHMAIL,12110) Q(JTP+33)
-            CALL GMAIL(0,0)
-            WRITE(CHMAIL,10100)
-            CALL GMAIL(0,0)
+*            WRITE(CHMAIL,12000) (Q(JTP+K),K=20,22)
+*            CALL GMAIL(0,0)
+*            WRITE(CHMAIL,12100) Q(JTP+23),Q(JTP+31),Q(JTP+32)
+*            CALL GMAIL(0,0)
+*            WRITE(CHMAIL,12110) Q(JTP+33)
+*            CALL GMAIL(0,0)
+*            WRITE(CHMAIL,10100)
+*            CALL GMAIL(0,0)
             IF(NUCRIN) THEN
                WRITE(CHMAIL,10100)
                CALL GMAIL(0,0)
@@ -634,58 +637,49 @@ C
       WRITE(CHMAIL,10400)
       CALL GMAIL(0,2)
 C
-10000 FORMAT(
-     +'1************************************************************')
-10100 FORMAT(
-     +' *                                                          *')
+10000 FORMAT('1',99('*'))
+10100 FORMAT(' *',97X,'*')
 10200 FORMAT(
      +' *    G E A N T  Version',F7.4,'      DATE/TIME',I7,'/',
-     +   I4,2X,'*')
-10300 FORMAT(
-     +' *                      R U N  ',I5,10X,'              *')
-10400 FORMAT(
-     +' ************************************************************')
+     +   I4,10X,'R U N  ',I5,19X,'*')
+*10300 FORMAT(
+*     +' *                      R U N  ',I5,49X,'              *')
+10400 FORMAT(' ',99('*'))
 10500 FORMAT(
-     +' *      Data structure   Date   Time    GVERSN    ZVERSN    *')
+     +' *      Data structure   Date   Time    GVERSN    ZVERSN',
+     +43X,'*')
 10600 FORMAT(
      +' *      --------------   ----   ----    ------    ------    *')
-10700 FORMAT(' *',11X,A,6X,I7,2X,I4,3X,F7.4,2X,F7.2,5X,'*')
+10700 FORMAT(' *',11X,A,6X,I7,2X,I4,3X,F7.4,2X,F7.2,44X,'*')
 10800 FORMAT(
      +' *----------------------------------------------------------*')
-10900 FORMAT(' *     Random number seeds: ',3X,I10,3X,I10,6X,'*')
+10900 FORMAT(' *     Random number seeds: ',3X,I10,3X,I10,45X,'*')
 11000 FORMAT(
      +' *     --------------------                                 *')
 11100 FORMAT(
-     +' *              Standard TPAR for this run are              *')
+     +' *              Standard TPAR for this run are              ',
+     +39X,'*')
 11200 FORMAT(
      +' *              ------------------------------              *')
 11300 FORMAT(
-     +' *  CUTGAM=',F6.2,A4,'  CUTELE=',F6.2,A4,'  CUTNEU=',F6.2,A4,1X,
-     + '*')
-11400 FORMAT(
-     +' *  CUTHAD=',F6.2,A4,'  CUTMUO=',F6.2,A4,20X,'*')
+     +' *  CUTGAM=',F6.2,A4,'  CUTELE=',F6.2,A4,'  CUTNEU=',F6.2,A4,
+     +'  CUTHAD=',F6.2,A4,'  CUTMUO=',F6.2,A4,2X,'*')
 11500 FORMAT(
-     +' *  BCUTE =',F6.2,A4,'  BCUTM =',F6.2,A4,20X,'*')
-11600 FORMAT(
-     +' *  DCUTE =',F6.2,A4,'  DCUTM =',F6.2,A4,'  PPCUTM=',F6.2,A4,1X,
-     + '*')
+     +' *  BCUTE =',F6.2,A4,'  BCUTM =',F6.2,A4,'  DCUTE =',F6.2,A4,
+     +'  DCUTM =',F6.2,A4,'  PPCUTM=',F6.2,A4,2X,'*')
 11700 FORMAT(
-     +' *  IPAIR =',F10.0,'  ICOMP =',F10.0,'  IPHOT =',F10.0,1X,'*')
-11800 FORMAT(
-     +' *  IPFIS =',F10.0,'  IDRAY =',F10.0,'  IANNI =',F10.0,1X,'*')
+     +' *  IPAIR=',F4.0,'  ICOMP=',F4.0,'  IPHOT=',F4.0,'  IPFIS=',
+     +F4.0,'  IDRAY=',F4.0,'  IANNI=',F4.0,'  IBREM=',F4.0,'  IHADR=',
+     +F4.0,1X,'*')
 11900 FORMAT(
-     +' *  IBREM =',F10.0,'  IHADR =',F10.0,'  IMUNU =',F10.0,1X,'*')
-12000 FORMAT(
-     +' *  IDCAY =',F10.0,'  ILOSS =',F10.0,'  IMULS =',F10.0,1X,'*')
-12100 FORMAT(
-     +' *  IRAYL =',F10.0,'  ILABS =',F10.0,'  ISYNC =',F10.0,1X,'*')
-12110 FORMAT(
-     +' *  ISTRA =',F10.0, 39X,                                  '*')
+     +' *  IMUNU=',F4.0,'  IDCAY=',F4.0,'  ILOSS=',F4.0,'  IMULS=',
+     +F4.0,'  IRAYL=',F4.0,'  ILABS=',F4.0,'  ISYNC=',F4.0,'  ISTRA=',
+     +F4.0,1X,'*')
  
 12200 FORMAT(' ***** GPHYSI error, Material Nr=',I3,
      + ' referenced by Medium Nr=',I3)
 12300 FORMAT(
-     +' *     Special TPAR for TMED',I4,3X,A,5X,'*')
+     +' *     Special TPAR for TMED',I4,3X,A,44X,'*')
 12400 FORMAT(
      +' *     -------------------------                            *')
 12500 FORMAT(' ***** GPHYSI error, CUTS must be',

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/11/20 21:44:17  pcrochet
+some modifications to account for the new class AliMUONResponseTriggerV1
+
 Revision 1.7  2000/10/03 21:48:07  morsch
 Adopt to const declaration of some of the methods in AliSegmentation.
 
@@ -68,6 +71,8 @@ Draft version from P. Crochet
 #include "TRandom.h"
 #include "TArc.h"
 #include "AliMUONChamber.h"
+#include "AliMUON.h"
+#include "AliRun.h"
 #include <iostream.h> 
 ClassImp(AliMUONSegmentationTriggerY)
 
@@ -75,7 +80,8 @@ ClassImp(AliMUONSegmentationTriggerY)
 void AliMUONSegmentationTriggerY::Init(Int_t chamber)
 {
 // intialize Y segmentation 
-  cout << "Initialize Trigger Chamber Geometry Y " << "\n";    
+  AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+  if(pMUON->GetDebug()) cout << ClassName() <<": Initialize Trigger Chamber Geometry Y " << "\n";    
   AliMUONSegmentationTrigger::Init(chamber);
     
 // calculate x & y position of Y strips

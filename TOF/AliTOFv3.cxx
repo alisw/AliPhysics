@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2001/05/04 10:09:48  vicinanz
+Major upgrades to the strip structure
+
 Revision 1.18  2000/12/04 08:48:20  alibrary
 Fixing problems in the HEAD
 
@@ -324,8 +327,9 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 // Large not sensitive volumes with Insensitive Freon
   par[0] = xFLT*0.5;
   par[1] = yFLT*0.5;
-  
-  cout <<"************************* TOF geometry **************************"<<endl;
+
+  if (fDebug) cout << ClassName() << 
+    cout <<": ************************* TOF geometry **************************"<<endl;
 
   par[2] = (zFLTA *0.5);
   gMC->Gsvolu("FLTA", "BOX ", idtmed[512], par, 3); // Insensitive Freon
@@ -479,10 +483,10 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 
   AliMatrix (idrotm[0],  90.,  0.,90.,90.,0., 90.);   
   gMC->Gspos("FSTR",j,"FLTA",0.,ycoor, 0.,idrotm[0],"ONLY");
-
-     printf("%f,  St. %2i, Pl.3 ",ang*kRaddeg,i); 
+  if(fDebug) {
+     printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i); 
      printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
-
+  }
   zcoor -= zSenStrip;
   j++;
   Int_t upDown = -1; // upDown=-1 -> Upper strip
@@ -497,10 +501,10 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
      ycoor += (1-(upDown+1)/2)*gap;
      gMC->Gspos("FSTR",j  ,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
      gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
-
-     printf("%f,  St. %2i, Pl.3 ",ang*kRaddeg,i); 
-     printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
-
+     if(fDebug) {
+       printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i); 
+       printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
+     }
      j += 2;
      upDown*= -1; // Alternate strips 
      zcoor = zcoor-(zSenStrip/2)/TMath::Cos(ang)-
@@ -527,10 +531,10 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   ycoor += (1-(upDown+1)/2)*gap;
   gMC->Gspos("FSTR",j  ,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
   gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
-
-     printf("%f,  St. %2i, Pl.3 ",ang*kRaddeg,i); 
+  if(fDebug) {
+     printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i); 
      printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
-
+  }
   ycoor = -hTof/2.+ kspace;//2 cm over front plate
 
   // Plate  B
@@ -553,10 +557,10 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   ycoor += (1-(upDown+1)/2)*gap;
   zcoor = zpos+(zFLTA*0.5+zFLTB*0.5+db); // Moves to the system of the modulus FLTB
   gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-
-     printf("%f,  St. %2i, Pl.4 ",ang*kRaddeg,i); 
+   if(fDebug) {
+     printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i); 
      printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
-
+   }
   i++;
   upDown*=-1;
 
@@ -572,10 +576,10 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
      ycoor += (1-(upDown+1)/2)*gap;
      zcoor = zpos+(zFLTA*0.5+zFLTB*0.5+db); // Moves to the system of the modulus FLTB
      gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-
-     printf("%f,  St. %2i, Pl.4 ",ang*kRaddeg,i); 
-     printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
-
+     if(fDebug) {
+       printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i); 
+       printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
+     }
      upDown*=-1;
      i++;
   } while (TMath::Abs(ang*kRaddeg)<22.5);
@@ -592,8 +596,10 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
      zcoor = zpos+(zFLTB/2+zFLTA/2+db);
      gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
      zpos = zpos - zSenStrip/TMath::Cos(ang);
-     printf("%f,  St. %2i, Pl.4 ",ang*kRaddeg,i); 
-     printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
+     if(fDebug) {
+       printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i); 
+       printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
+     }
      i++;
 
   }  while (zpos-stripWidth*0.5/TMath::Cos(ang)>-t+zFLTC+db);
@@ -618,10 +624,10 @@ void AliTOFv3::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
      ang /= kRaddeg;
      zcoor = zpos+(zFLTC*0.5+zFLTB+zFLTA*0.5+db*2);
      gMC->Gspos("FSTR",i, "FLTC", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-
-     printf("%f,  St. %2i, Pl.5 ",ang*kRaddeg,i); 
-     printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
-
+     if(fDebug) {
+       printf("%s: %f,  St. %2i, Pl.5 ",ClassName(),ang*kRaddeg,i); 
+       printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
+     } 
      zpos = zpos - zSenStrip/TMath::Cos(ang);
   }  while (zpos-stripWidth*TMath::Cos(ang)*0.5>-t);
 
@@ -767,11 +773,13 @@ void AliTOFv3::Init()
   //
   // Initialise the detector after the geometry has been defined
   //
-  printf("**************************************"
-	 "  TOF  "
-	 "**************************************\n");
-  printf("\n   Version 3 of TOF initialing, "
-	      "TOF with holes for RICH detector\n");
+  if(fDebug) {
+    printf("%s: **************************************"
+	   "  TOF  "
+	   "**************************************\n",ClassName());
+    printf("\n%s   Version 3 of TOF initialing, "
+	        "TOF with holes for RICH detector\n",ClassName());
+  }
 
   AliTOF::Init();
 
@@ -782,9 +790,11 @@ void AliTOFv3::Init()
   fIdFLTB = gMC->VolId("FLTB");
   fIdFLTC = gMC->VolId("FLTC");
 
-  printf("**************************************"
-	 "  TOF  "
-	 "**************************************\n");
+ if(fDebug) {
+    printf("%s: **************************************"
+	   "  TOF  "
+  	   "**************************************\n",ClassName());
+ } 
 }
  
 //_____________________________________________________________________________

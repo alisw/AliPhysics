@@ -23,6 +23,8 @@ public:
   virtual Int_t Integ() const {return fInteg;}
   virtual Float_t Factor() const {return fFactor;}
   virtual void ReadField() {}
+  virtual void SetDebug(Int_t level=0) {fDebug=level;}
+  virtual Int_t GetDebug() const {return fDebug;}
   
 protected:
   Int_t     fMap;    // Field Map identifier
@@ -30,6 +32,7 @@ protected:
   Int_t     fInteg;  // Integration method as indicated in Geant
   Float_t   fFactor; // Multiplicative factor
   Float_t   fMax;    // Max Field as indicated in Geant
+  Int_t     fDebug;  // Debug flag
 
   ClassDef(AliMagF,1)  //Base class for all Alice MagField
 };

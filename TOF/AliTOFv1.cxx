@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2001/05/04 10:09:48  vicinanz
+Major upgrades to the strip structure
+
 Revision 1.19  2000/12/04 08:48:20  alibrary
 Fixing problems in the HEAD
 
@@ -328,9 +331,11 @@ void AliTOFv1::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 // Large not sensitive volumes with Insensitive Freon
   par[0] = xFLT*0.5;
   par[1] = yFLT*0.5;
-  
-  cout <<"************************* TOF geometry **************************"<<endl;
-   
+
+  if(fDebug) cout << ClassName()
+  << ": ************************* TOF geometry **************************"
+  <<endl;
+ 
   par[2] = (zFLTA *0.5);
   gMC->Gsvolu("FLTA", "BOX ", idtmed[512], par, 3); // Insensitive Freon
   gMC->Gspos ("FLTA", 0, "FTOA", 0., 0., 0., 0, "ONLY");

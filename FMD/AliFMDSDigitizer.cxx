@@ -120,12 +120,13 @@ void AliFMDSDigitizer::Exec(Option_t *option) {
 	cout<<" FILE =0 "<<endl;}
 	cout<<"After CONFIG_SPLIT_FILE "<<file<<endl; 
     
-    gAlice->MakeBranchInTree(gAlice->TreeS(),branchname,&sdigits,bufferSize,file);  
+    FMD->MakeBranchInTree(gAlice->TreeS(),branchname,&sdigits,bufferSize,file);
+  
     /*    
     Int_t splitlevel = 0 ;
     sprintf(branchname,"AliFMDSDigitizer");   
     AliFMDSDigitizer * sd = this ;
-    gAlice->MakeBranchInTree(gAlice->TreeS(),branchname,"AliFMDSDigitizer",&sd, bufferSize, splitlevel,file); 
+    FMD->MakeBranchInTree(gAlice->TreeS(),branchname,"AliFMDSDigitizer",&sd, bufferSize, splitlevel,file); 
     */
 
     //Now made SDigits from hits, for PHOS it is the same
@@ -206,6 +207,7 @@ void AliFMDSDigitizer::Exec(Option_t *option) {
     delete sdigits ;
     sdigits = 0;
   }
+
   if(file)
     file->Close() ;
 

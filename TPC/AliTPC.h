@@ -66,7 +66,7 @@ public:
   virtual void  Clusters2Tracks(TFile *of);
 
   Int_t         GetNsectors()       {return fNsectors;}
-  virtual void  MakeBranch(Option_t *opt=" ", char *file=0 );
+  virtual void  MakeBranch(Option_t *opt=" ", const char *file=0 );
   virtual void  ResetDigits();
   virtual void  SetSecAL(Int_t sec);
   virtual void  SetSecAU(Int_t sec);
@@ -90,7 +90,7 @@ public:
   void SetClustersArray(AliTPCClustersArray *clusters) {fClustersArray = clusters;} //MI change
 
 // additional function neccesary for the new hits 
-   virtual void MakeBranch2(Option_t *opt=" ", char *file=0);  //
+   virtual void MakeBranch2(Option_t *opt=" ", const char *file=0);  //
    virtual void SetTreeAddress();
    virtual void SetTreeAddress2();
    virtual void AddHit2(Int_t a1,  Int_t *a2, Float_t *a3);  //

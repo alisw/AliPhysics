@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/01/26 21:25:48  morsch
+Empty default constructors and.
+
 Revision 1.8  2001/01/17 20:53:40  hristov
 Destructors corrected to avoid memory leaks
 
@@ -375,7 +378,7 @@ void AliMUONSegmentationSlatModule::Init(Int_t chamber)
 //  concentric circles as shown below
 //
 //  PCB module size in cm
-    printf("\n Initialise Segmentation SlatModule \n");
+  // printf("\n Initialise Segmentation SlatModule \n");
 
     fDxPCB=40;
     fDyPCB=40;

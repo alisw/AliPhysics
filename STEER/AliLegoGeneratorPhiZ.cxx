@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/01/12 09:23:17  morsch
+Correct order of phi and z.
+
 Revision 1.3  2000/11/30 07:12:49  alibrary
 Introducing new Rndm and QA classes
 
@@ -83,6 +86,6 @@ void AliLegoGeneratorPhiZ::Generate()
    
    Float_t polar[3]={0.,0.,0.};
    Int_t ntr;
-   gAlice->SetTrack(1, 0, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
+   gAlice->SetTrack(1, -1, kMpart, pmom, orig, polar, 0, kPPrimary, ntr);
    
 }

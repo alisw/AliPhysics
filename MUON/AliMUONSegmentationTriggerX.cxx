@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/12/21 22:12:41  morsch
+Clean-up of coding rule violations,
+
 Revision 1.9  2000/11/20 21:44:17  pcrochet
 some modifications to account for the new class AliMUONResponseTriggerV1
 
@@ -89,7 +92,8 @@ ClassImp(AliMUONSegmentationTriggerX)
 void AliMUONSegmentationTriggerX::Init(Int_t chamber)
 {
 // intialize X segmentation 
-  cout << "Initialize Trigger Chamber Geometry X " << "\n";    
+  AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+  if(pMUON->GetDebug()) cout << ClassName() << ": Initialize Trigger Chamber Geometry X " << "\n";    
   AliMUONSegmentationTrigger::Init(chamber);
 
 // calculate x & y position of X strips

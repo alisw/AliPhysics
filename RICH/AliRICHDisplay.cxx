@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.13  2001/05/10 12:35:16  jbarbosa
+  Removed hit display, added rec. ring properties.
+
   Revision 1.12  2001/03/14 18:15:03  jbarbosa
   Changes to adapt to new IO.
   Removed verbose output.
@@ -95,6 +98,7 @@
 #include "AliRICHConst.h"
 #include "AliRICHDisplay.h"
 #include "AliRICHPoints.h"
+#include "AliHeader.h"
 
 #include "AliRICHHit.h"
 #include "AliRICHCerenkov.h"

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.14  2001/04/05 08:30:48  gosset
+Cleaning: suppression of Cpoints and (R2points + CoG2)
+Correction: TreeR->GetEvent(0) for raw clusters
+
 Revision 1.13  2001/03/30 13:01:50  gosset
 Centroid of raw clusters displayed for each cathode plane
 
@@ -155,6 +159,7 @@ it is now really the Z position of the chambers.
 #include "AliMUONPoints.h"
 #include "TParticle.h"
 #include "AliMUONTriggerDecision.h"
+#include "AliHeader.h"
 
 #include "AliMUONHit.h"
 #include "AliMUONPadHit.h"

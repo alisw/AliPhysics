@@ -314,7 +314,7 @@ void AliTRD::Hits2Digits()
   // Set the parameter
   digitizer->SetDiffusion();
   digitizer->SetExB();
-
+  digitizer->SetEvent(gAlice->GetEvNumber());
   // Initialization
   //digitizer->InitDetector();
     
@@ -349,6 +349,7 @@ void AliTRD::Hits2SDigits()
   // Set the parameter
   digitizer->SetDiffusion();
   digitizer->SetExB();
+  digitizer->SetEvent(gAlice->GetEvNumber());
 
   // Initialization
   //digitizer->InitDetector();
@@ -413,8 +414,6 @@ void AliTRD::BuildGeometry()
 
   Float_t rmin, rmax;
   Float_t zmax1, zmax2;
-
-  Int_t iPlan;
  
   const Int_t kColorTRD = 46;
   
@@ -455,7 +454,7 @@ void AliTRD::BuildGeometry()
     zmax2 = AliTRDgeometry::Zmax2() + slope * thickness;
     zmax1 = zmax2 + slope * AliTRDgeometry::DrThick();
 
-    for (iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+    for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
 
       sprintf(name,"S_TR1%d",iPlan);
       pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsect(),4);
@@ -482,7 +481,7 @@ void AliTRD::BuildGeometry()
     zmax2 = AliTRDgeometry::Zmax2() + slope * thickness;
     zmax1 = zmax2 + slope * AliTRDgeometry::AmThick();
 
-    for (iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+    for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
 
       sprintf(name,"S_TR2%d",iPlan);
       pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsect(),4);
@@ -790,29 +789,29 @@ void AliTRD::Init()
 
   Int_t i;
 
-  printf("\n");
-  for (i = 0; i < 35; i++) printf("*");
-  printf(" TRD_INIT ");
-  for (i = 0; i < 35; i++) printf("*");
-  printf("\n");
-  printf("\n");
-
-  if      (fGeometry->IsVersion() == 0) {
-    printf("          Geometry for spaceframe with holes initialized.\n\n");
-  }
-  else if (fGeometry->IsVersion() == 1) {
-    printf("          Geometry for spaceframe without holes initialized.\n");
-    if (fGeometry->GetPHOShole())
-      printf("          Leave space in front of PHOS free.\n");
-    if (fGeometry->GetRICHhole())
-      printf("          Leave space in front of RICH free.\n");
+  if(fDebug) {
+    printf("\n%s: ",ClassName());
+    for (i = 0; i < 35; i++) printf("*");
+    printf(" TRD_INIT ");
+    for (i = 0; i < 35; i++) printf("*");
     printf("\n");
   }
 
+  if      (fGeometry->IsVersion() == 0) {
+    printf("%s: Geometry for spaceframe with holes initialized\n",ClassName());
+  }
+  else if (fGeometry->IsVersion() == 1) {
+    printf("%s: Geometry for spaceframe without holes initialized\n",ClassName());
+    if (fGeometry->GetPHOShole())
+      printf("%s: Leave space in front of PHOS free\n",ClassName());
+    if (fGeometry->GetRICHhole())
+      printf("%s: Leave space in front of RICH free\n",ClassName());
+  }
+  
   if (fGasMix == 1)
-    printf("          Gas Mixture: 90%% Xe + 10%% CO2\n\n");
+    printf("%s: Gas Mixture: 90%% Xe + 10%% CO2\n",ClassName());
   else
-    printf("          Gas Mixture: 97%% Xe + 3%% Isobutane\n\n");
+    printf("%s: Gas Mixture: 97%% Xe + 3%% Isobutane\n",ClassName());
 
 }
 
@@ -953,7 +952,7 @@ void AliTRD::LoadPoints(Int_t track)
 }
 
 //_____________________________________________________________________________
-void AliTRD::MakeBranch(Option_t* option, char *file)
+void AliTRD::MakeBranch(Option_t* option, const char *file)
 {
   //
   // Create Tree branches for the TRD digits and cluster.
@@ -967,19 +966,18 @@ void AliTRD::MakeBranch(Option_t* option, char *file)
   Int_t buffersize = 64000;
 
   fDigitsArray = new AliTRDdataArrayI();
-  gAlice->MakeBranchInTree(gAlice->TreeD() 
-                          ,"TRDdigits", fDigitsArray->IsA()->GetName()
-                          ,&fDigitsArray,buffersize,1,file);
+  MakeBranchInTree(gAlice->TreeD() 
+                   ,"TRDdigits", fDigitsArray->IsA()->GetName()
+                   ,&fDigitsArray,buffersize,1,file);
 
   for (Int_t iDict = 0; iDict < AliTRDdigitsManager::NDict(); iDict++) {
     Char_t branchname[15];
     sprintf(branchname,"TRDdictionary%d",iDict);
     fDictionaryArray[iDict] = new AliTRDdataArrayI();
-    gAlice->MakeBranchInTree(gAlice->TreeD() 
-                            ,branchname,fDictionaryArray[iDict]->IsA()->GetName()
-                            ,&fDictionaryArray[iDict],buffersize,1,file) ;
+    MakeBranchInTree(gAlice->TreeD() 
+                     ,branchname,fDictionaryArray[iDict]->IsA()->GetName()
+                     ,&fDictionaryArray[iDict],buffersize,1,file);
   }
-
 }
 
 //_____________________________________________________________________________

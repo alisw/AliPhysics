@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2001/05/04 10:09:48  vicinanz
+Major upgrades to the strip structure
+
 Revision 1.18  2000/12/04 08:48:20  alibrary
 Fixing problems in the HEAD
 
@@ -317,7 +320,8 @@ void AliTOFv0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   par[0] = xFLT*0.5;
   par[1] = yFLT*0.5;   
   
-  cout <<"************************* TOF geometry **************************"<<endl;
+  if (fDebug) cout << ClassName() << 
+  ": ************************* TOF geometry **************************"<<endl;
   
   par[2] = (zFLTA *0.5);
   gMC->Gsvolu("FLTA", "BOX ", idtmed[512], par, 3); // Insensitive Freon
@@ -732,11 +736,13 @@ void AliTOFv0::Init()
   //
   // Initialise the detector after the geometry has been defined
   //
-  printf("**************************************"
-	 "  TOF  "
-	 "**************************************\n");
-  printf("\n   Version 0 of TOF initialing, "
-	      "symmetric TOF\n");
+  if(fDebug) {
+    printf("%s: **************************************"
+	   "  TOF  "
+	   "**************************************\n",ClassName());
+    printf("\n%s:   Version 0 of TOF initialing, "
+	      "symmetric TOF\n",ClassName());
+  }
 
   AliTOF::Init();
 
@@ -747,9 +753,11 @@ void AliTOFv0::Init()
   fIdFLTB = gMC->VolId("FLTB");
   fIdFLTC = gMC->VolId("FLTC");
 
-  printf("**************************************"
-	 "  TOF  "
-	 "**************************************\n");
+  if(fDebug) {
+    printf("%s: **************************************"
+	   "  TOF  "
+	   "**************************************\n",ClassName());
+  }
 }
  
 //_____________________________________________________________________________

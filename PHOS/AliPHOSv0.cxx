@@ -1468,21 +1468,23 @@ void AliPHOSv0::Init(void)
   
   Int_t i;
 
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" PHOS_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-
-  // Here the PHOS initialisation code (if any!)
-
-  if (fGeom!=0)  
-    cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
-  else
-    cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
-  
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
-  
+  if(fDebug) {
+    printf("\n%s: ",ClassName());
+    for(i=0;i<35;i++) printf("*");
+    printf(" PHOS_INIT ");
+    for(i=0;i<35;i++) printf("*");
+    printf("\n%s: ",ClassName());
+    
+    
+    // Here the PHOS initialisation code (if any!)
+    
+    if (fGeom!=0)  
+      cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << fGeom->GetName() << endl ;
+    else
+      cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
+    
+    for(i=0;i<80;i++) printf("*");
+    printf("\n");
+  }  
 }
 

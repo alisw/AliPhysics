@@ -19,6 +19,10 @@
 
 /*
 $Log$
+Revision 1.1  2001/04/06 11:24:43  morsch
+Dependency on implementations of AliSegmentation and AliMUONResponse moved to AliMUONFactory class.
+Static method Build() builds the MUON system out of chambers, segmentation and response.
+
 */
 #include "AliMUONFactory.h"
 #include "AliMUON.h"
@@ -49,12 +53,13 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
     strcpy(tmp, what);
 
     if (strcmp(tmp, "default")==0) {
-
-	printf("\n--------AliMUONFactory------------------------------");
-	printf("\n Non default version of MUON selected               ");
-	printf("\n You have to construct yourself the MUON elements !!");	
-	printf("\n----------------------------------------------------");
-
+      if(pMUON->GetDebug()) {
+	
+	printf("\nAliMUONFactory: --------AliMUONFactory------------------------------");
+	printf("\nAliMUONFactory:  Non default version of MUON selected               ");
+	printf("\nAliMUONFactory:  You have to construct yourself the MUON elements !!");	
+	printf("\nAliMUONFactory: ----------------------------------------------------");
+      }
 	pMUON->SetIshunt(0);
 	pMUON->SetMaxStepGas(0.1);
 	pMUON->SetMaxStepAlu(0.1);
@@ -487,10 +492,12 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 	pMUON->SetResponseModel(chamber-1, responseTrigger0); 
 	pMUON->Chamber(chamber-1).SetChargeCorrel(0); // same charge on cathodes
     } else {
-	printf("\n--------AliMUONFactory------------------------------");
-	printf("\n Non default version of MUON selected               ");
-	printf("\n You have to construct yourself the MUON elements !!");	
-	printf("\n----------------------------------------------------");
+      if(pMUON->GetDebug()) {
+	printf("\nAliMUONFactory: --------AliMUONFactory------------------------------");
+	printf("\nAliMUONFactory:  Non default version of MUON selected               ");
+	printf("\nAliMUONFactory:  You have to construct yourself the MUON elements !!");	
+	printf("\nAliMUONFactory: ----------------------------------------------------");
+      }
     }
 }
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.4  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -234,7 +237,8 @@ void AliGenHIJINGpara::Init()
     Float_t phiFrac = (fPhiMax-fPhiMin)/2/TMath::Pi();
     fParentWeight = Float_t(fNpart)/intETASel*ptFrac*phiFrac;
     
-    printf("\n The number of particles in the selected kinematic region corresponds to %f percent of a full event\n ", 100.*fParentWeight);
+    printf("%s: The number of particles in the selected kinematic region corresponds to %f percent of a full event\n ", 
+	   ClassName(),100.*fParentWeight);
     
 }
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/01/26 21:50:43  morsch
+Use access functions to AliMUONHit member data.
+
 Revision 1.5  2001/01/26 20:00:53  hristov
 Major upgrade of AliRoot code
 
@@ -27,6 +30,9 @@ RN3 violations corrected
 Revision 1.2  2000/11/23 10:09:39  gosset
 Bug correction in AliMUONRecoDisplay.
 Copyright, $Log$
+Copyright, Revision 1.6  2001/01/26 21:50:43  morsch
+Copyright, Use access functions to AliMUONHit member data.
+Copyright,
 Copyright, Revision 1.5  2001/01/26 20:00:53  hristov
 Copyright, Major upgrade of AliRoot code
 Copyright,
@@ -74,6 +80,7 @@ in AliMUONRecoEvent and AliMUONRecoDisplay
 #include <TClonesArray.h>
 #include "AliMUONRecoEvent.h"
 #include "AliMUONRecoDisplay.h"
+#include "AliHeader.h"
 #include <TROOT.h>
 #include <AliPoints.h>
 #include <TSlider.h>

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.35  2001/05/08 16:02:22  kowal2
+Updated material specifications
+
 Revision 1.34  2001/05/08 15:00:15  hristov
 Corrections for tracking in arbitrary magnenetic field. Changes towards a concept of global Alice track. Back propagation of reconstructed tracks (Yu.Belikov)
 
@@ -1264,13 +1267,13 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 
       for (i=0;i<nrows;i++){
 
-       	AliDigits * dig = fDigitsArray->CreateRow(isec,i); 
+		AliDigits * dig = fDigitsArray->CreateRow(isec,i); 
 
 	DigitizeRow(i,isec,row);
 
 	fDigitsArray->StoreRow(isec,i);
 
-	Int_t ndig = dig->GetDigitSize(); 
+		Int_t ndig = dig->GetDigitSize(); 
         
  
 	//printf("*** Sector, row, compressed digits %d %d %d ***\n",isec,i,ndig);
@@ -1776,18 +1779,20 @@ void AliTPC::Init()
   //
   Int_t i;
   //
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" TPC_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  //
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
+  if(fDebug) {
+    printf("\n%s: ",ClassName());
+    for(i=0;i<35;i++) printf("*");
+    printf(" TPC_INIT ");
+    for(i=0;i<35;i++) printf("*");
+    printf("\n%s: ",ClassName());
+    //
+    for(i=0;i<80;i++) printf("*");
+    printf("\n");
+  }
 }
 
 //_____________________________________________________________________________
-void AliTPC::MakeBranch(Option_t* option, char *file)
+void AliTPC::MakeBranch(Option_t* option, const char *file)
 {
   //
   // Create Tree branches for the TPC.
@@ -1801,8 +1806,8 @@ void AliTPC::MakeBranch(Option_t* option, char *file)
   const char *d = strstr(option,"D");
 
   if (fDigits   && gAlice->TreeD() && d) {
-    gAlice->MakeBranchInTree(gAlice->TreeD(), 
-                             branchname, &fDigits, buffersize, file) ;
+      MakeBranchInTree(gAlice->TreeD(), 
+                       branchname, &fDigits, buffersize, file);
   }	
 
   if (fHitType&2) MakeBranch2(option,file); // MI change 14.09.2000
@@ -2010,7 +2015,7 @@ AliHit(shunt,track)
 //________________________________________________________________________
 // Additional code because of the AliTPCTrackHits
 
-void AliTPC::MakeBranch2(Option_t *option,char *file)
+void AliTPC::MakeBranch2(Option_t *option,const char *file)
 {
   //
   // Create a new branch in the current Root Tree
@@ -2027,17 +2032,23 @@ void AliTPC::MakeBranch2(Option_t *option,char *file)
     AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHits, 
 						   gAlice->TreeH(),fBufferSize,1);
     gAlice->TreeH()->GetListOfBranches()->Add(branch);
-    printf("* AliDetector::MakeBranch * Making Branch %s for trackhits\n",branchname);
+    if (GetDebug()>1) 
+      printf("* AliDetector::MakeBranch * Making Branch %s for trackhits\n",branchname);
+    const char folder [] = "RunMC/Event/Data";
+    if (GetDebug())
+      printf("%15s: Publishing %s to %s\n",ClassName(),branchname,folder);
+    Publish(folder,&fTrackHits,branchname);
     if (file) {
         TBranch *b = gAlice->TreeH()->GetBranch(branchname);
         TDirectory *wd = gDirectory;
         b->SetFile(file);
         TIter next( b->GetListOfBranches());
         while ((b=(TBranch*)next())) {
-           b->SetFile(file);
+	  b->SetFile(file);
         }
         wd->cd(); 
-   	    cout << "Diverting branch " << branchname << " to file " << file << endl;  
+        if (GetDebug()>1) 
+	      cout << "Diverting branch " << branchname << " to file " << file << endl;  
     }
   }	
 }

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2001/04/04 12:10:18  alla
+changes according Coding Convension
+
 Revision 1.18  2001/03/12 17:46:43  hristov
 Changes needed on Sun with CC 5.0
 
@@ -207,20 +210,21 @@ void AliSTART::Init()
   // Initialis the START after it has been built
   Int_t i;
   //
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" START_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  //
-  // Here the START initialisation code (if any!)
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
-
+  if(fDebug) {
+    printf("\n%s: ",ClassName());
+    for(i=0;i<35;i++) printf("*");
+    printf(" START_INIT ");
+    for(i=0;i<35;i++) printf("*");
+    printf("\n%s: ",ClassName());
+    //
+    // Here the START initialisation code (if any!)
+    for(i=0;i<80;i++) printf("*");
+    printf("\n");
+  }
 }
 
 //---------------------------------------------------------------------------
-void AliSTART::MakeBranch(Option_t* option, char *file)
+void AliSTART::MakeBranch(Option_t* option, const char *file)
 {
   //
   // Specific START branches
@@ -236,15 +240,15 @@ void AliSTART::MakeBranch(Option_t* option, char *file)
   
   if (cD) {
     digits = new AliSTARTdigit();
-    gAlice->MakeBranchInTree(gAlice->TreeD(), 
-                             branchname, "AliSTARTdigit", digits, buffersize, 1, file) ;
+    MakeBranchInTree(gAlice->TreeD(), 
+                     branchname, "AliSTARTdigit", digits, buffersize, 1, file);
   } 
 /*
   char *cR = strstr(option,"R");
   
   if (cR)   {  
-    gAlice->MakeBranchInTree(gAlice->TreeR(), 
-                             branchname, "Int_t", &fZposit, buffersize, 1, file) ;
+    MakeBranchInTree(gAlice->TreeR(), 
+                     branchname, "Int_t", &fZposit, buffersize, 1, file);
   }
   */
 }    

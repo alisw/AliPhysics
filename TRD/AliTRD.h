@@ -47,7 +47,7 @@ class AliTRD : public AliDetector {
   TObjArray         *RecPoints() const              { return fRecPoints;   };
   virtual void       Init();
   virtual Int_t      IsVersion() const = 0;
-  virtual void       MakeBranch(Option_t* option, char *file=0);     
+  virtual void       MakeBranch(Option_t* option, const char *file=0);     
   virtual void       ResetDigits();     
   virtual void       ResetRecPoints();
   virtual void       StepManager() = 0; 
