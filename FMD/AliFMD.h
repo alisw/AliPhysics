@@ -41,7 +41,6 @@ public:
 
  
    // Digitisation
-  TClonesArray *ReconParticles() const {return fReconParticles;}   
   virtual const void SetHitsAddressBranch(TBranch *b){b->SetAddress(&fHits);}
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
@@ -55,10 +54,7 @@ public:
   Int_t   fNevents ;        // Number of events to digitize
   Int_t fEvNrSig;                 // signal     event number
 
-
-  TClonesArray *fReconParticles; //array of reconstructed multiplicity in 0.1eta
-
- ClassDef(AliFMD,6)  //Class for the FMD detector
+ ClassDef(AliFMD,7)  //Class for the FMD detector
 };
 #endif // AliFMD_H
 

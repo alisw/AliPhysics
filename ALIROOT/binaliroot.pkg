@@ -5,8 +5,9 @@ ELIBSDIR:=
 
 ELIBS:= MUON TPCbase TPCsim TPCrec TPCfast \
 	ITS PMD TRDbase TRDsim TRDrec TRDfast \
-	FMD TOF PHOS CRT RICH ZDC VZERO EMCAL \
-        STRUCT START EVGEN STEER CONTAINERS pythia6 AliPythia6 pdf THijing \
+	FMDbase FMDsim FMDrec TOF PHOS CRT RICH ZDC VZERO EMCAL \
+        STRUCT STARTbase STARTsim STARTrec EVGEN STEER CONTAINERS \
+        pythia6 AliPythia6 pdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN \
         TPHIC FASTSIM microcern RAW
 # g2c_sh

@@ -53,7 +53,6 @@
 #include <TVirtualMC.h>
 
 #include "AliDetector.h"
-#include "AliFMDReconstParticles.h"
 #include "AliFMDdigit.h"
 #include "AliFMDhit.h"
 #include "AliFMDv1.h"
@@ -72,7 +71,6 @@ AliFMD::AliFMD ():AliDetector ()
   fIshunt = 0;
   fHits     = 0;
   fDigits   = 0;
-  fReconParticles=0; 
 }
 
 //_____________________________________________________________________________
@@ -88,7 +86,6 @@ AliDetector (name, title)
   fHits = new TClonesArray ("AliFMDhit", 1000);
   // Digits for each Si disk
   fDigits = new TClonesArray ("AliFMDdigit", 1000);
-  fReconParticles=new TClonesArray("AliFMDReconstParticles",1000); 
   gAlice->GetMCApp()->AddHitList (fHits);
 
   fIshunt = 0;
@@ -111,12 +108,6 @@ AliFMD::~AliFMD ()
       fDigits->Delete ();
       delete fDigits;
       fDigits = 0;
-    }
-   if (fReconParticles)
-    {
-      fReconParticles->Delete ();
-      delete fReconParticles;
-      fReconParticles = 0;
     }
 
 }
@@ -248,7 +239,6 @@ void AliFMD::MakeBranch (Option_t * option)
   
   const char *cH = strstr(option,"H");
   const char *cD = strstr(option,"D");
-  const char *cR = strstr(option,"R");
   
   if (cH && (fHits == 0x0)) fHits = new TClonesArray ("AliFMDhit", 1000);
 
@@ -259,12 +249,6 @@ void AliFMD::MakeBranch (Option_t * option)
     MakeBranchInTree(fLoader->TreeD(), branchname,&fDigits, kBufferSize, 0);
   }
 
-  if (cR){
-    if (fReconParticles == 0x0) 
-      fReconParticles=new TClonesArray("AliFMDReconstParticles",1000); 
-    MakeBranchInTree(fLoader->TreeR(), branchname,&fReconParticles, kBufferSize, 0);
-  }
-  
 }
 
 //_____________________________________________________________________________
@@ -288,14 +272,6 @@ void AliFMD::SetTreeAddress ()
       if (branch)
        branch->SetAddress (&fDigits);
     }
-  
-  if (fLoader->TreeR() && fReconParticles) 
-    {
-      if (fReconParticles == 0x0) 
-        fReconParticles=new TClonesArray("AliFMDReconstParticles",1000); 
-      branch = fLoader->TreeR()->GetBranch("FMD"); 
-      if (branch) branch->SetAddress(&fReconParticles) ;
-    }   
 }
 
 

@@ -1,7 +1,0 @@
-SRCS= AliSTART.cxx AliSTARTv0.cxx AliSTARTv1.cxx AliSTARThit.cxx AliSTARTdigit.cxx AliSTARTReconstructor.cxx AliSTARTDigitizer.cxx AliSTARThitPhoton.cxx AliSTARTLoader.cxx 
-
-HDRS= $(SRCS:.cxx=.h)
-
-
-DHDR:= STARTLinkDef.h
-

@@ -28,6 +28,7 @@
 #include "TROOT.h"
 #include "TFolder.h"
 #include "TH2F.h"
+#include "TRandom.h"
 
 // --- Standard library ---
 #include <stdlib.h>
@@ -39,10 +40,7 @@
 #include "AliLoader.h"
 
 #include "AliFMDdigit.h"
-#include "AliFMDhit.h"
 #include "AliFMDReconstParticles.h"
-#include "AliFMD.h"
-#include "AliFMDv1.h"
 #include "AliFMDReconstructor.h"
 #include "AliRun.h"
 #include "AliConfig.h"
@@ -114,6 +112,9 @@ void AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
   gDirectory = cwd;
  
   plFMD->LoadRecPoints("RECREATE");
+  TClonesArray* reconParticles = new TClonesArray("AliFMDReconstParticles"); 
+  TClonesArray* digits = new TClonesArray("AliFMDDigit");
+ 
   Int_t retval=0;     
   Int_t nevents=Int_t (runLoader->TreeE()->GetEntries()); 
 #ifdef DEBUG
@@ -142,10 +143,6 @@ void AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 	  return;
 	}
       
-      AliFMD * fFMD = (AliFMD *)gAlice->GetDetector("FMD");
-      TClonesArray *fReconParticles=fFMD->ReconParticles();
-      TClonesArray *fDigits=fFMD->Digits();
- 
       TTree* treeD = plFMD->TreeD();
       if (treeD == 0x0)
 	{
@@ -158,7 +155,7 @@ void AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
       brDigits=treeD->GetBranch("FMD");
 
       if (brDigits) {
-	brDigits->SetAddress(&fDigits);
+	brDigits->SetAddress(&digits);
       }else{
 	cerr<<"EXEC Branch FMD digits not found"<<endl;
 	return;
@@ -167,17 +164,16 @@ void AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
       if(plFMD->TreeR()==0) plFMD->MakeTree("R");
 
       //Make branches
-      fFMD->MakeBranch("R");
+      const Int_t kBufferSize = 16000;
+      plFMD->TreeR()->Branch("FMD", &reconParticles, kBufferSize);
 
       
       Int_t zeroADC=6;
       // read Digits 
       AliFMDdigit  *fmdDigit;
-       if (fFMD)
-	{
-	  plFMD->TreeD()->GetEvent(0); 
-	  	  
-	  Int_t nDigits=fDigits->GetEntries();
+       if (plFMD->TreeD()->GetEvent(0))
+	{	  	  
+	  Int_t nDigits=digits->GetEntries();
 	  Int_t recParticles[6];
 	  Int_t nRecPart=0 ;
 	  Int_t zeroPads=0;
@@ -186,7 +182,7 @@ void AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 	  Float_t channelWidth=(22400*50)/1024;
 	  for (Int_t digit=0;digit<nDigits;digit++) 
 	    {
-	      fmdDigit=(AliFMDdigit*)fDigits->UncheckedAt(digit);    
+	      fmdDigit=(AliFMDdigit*)digits->UncheckedAt(digit);    
 	      ivol=fmdDigit->Volume();
 	      iSector=fmdDigit->NumberOfSector();
 	      iRing=fmdDigit->NumberOfRing();
@@ -247,13 +243,13 @@ void AliFMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 		  recParticles[3]=rmin;
 		  recParticles[4]=rmax;
 		  recParticles[5]= fRecon;
-		  new((*fReconParticles)[nRecPart++])   AliFMDReconstParticles(recParticles);             
+		  new((*reconParticles)[nRecPart++])   AliFMDReconstParticles(recParticles);             
 		  
 
 		 } // eta
 	     } // volume
 	   
-	}//if FMD
+	}//if (plFMD->TreeD()->GetEvent(0))
        plFMD->TreeR()->Reset();
        plFMD->TreeR()->Fill(); 
        plFMD->WriteRecPoints("OVERWRITE");

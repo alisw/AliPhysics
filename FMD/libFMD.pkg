@@ -1,7 +1,0 @@
-SRCS= AliFMD.cxx AliFMDv0.cxx AliFMDv1.cxx AliFMDhit.cxx AliFMDdigit.cxx  AliFMDReconstructor.cxx AliFMDReconstParticles.cxx AliFMDDigitizer.cxx
-
-
-HDRS= $(SRCS:.cxx=.h)
-
-DHDR:=FMDLinkDef.h
-

@@ -1,0 +1,10 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+SRCS= AliSTART.cxx AliSTARTv0.cxx AliSTARTv1.cxx AliSTARThit.cxx AliSTARTDigitizer.cxx AliSTARThitPhoton.cxx
+
+HDRS= $(SRCS:.cxx=.h)
+
+
+DHDR:= STARTsimLinkDef.h
+
