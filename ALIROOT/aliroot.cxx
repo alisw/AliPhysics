@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/10/04 15:32:36  hristov
+Instantiation of AliConfig removed
+
 Revision 1.7  2001/05/22 11:39:48  buncic
 Restored proper name for top level AliRoot folder.
 
@@ -68,7 +71,7 @@ int xargc=0;
   extern "C" int __mb_cur_max=0; 
 #endif 
 
-int gcbank_[3000000];
+int gcbank_[4000000];
 
 //Initialise the Root environment
  extern void InitGui();

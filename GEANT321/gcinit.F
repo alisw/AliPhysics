@@ -1,5 +1,5 @@
       SUBROUTINE GCINIT
-      PARAMETER (NWGEANT=3000000)
+      PARAMETER (NWGEANT=4000000)
       COMMON / GCBANK / GMEM(NWGEANT)
 *
 * Initialise geant system with a default dimension of NWGEANT
