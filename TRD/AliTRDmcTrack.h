@@ -8,7 +8,7 @@
 
 class AliTRDgeometry;
 
-const Int_t kMAX_CLUSTERS_PER_MC_TRACK=210;  
+const Int_t kMAX_TB=30;  
 
 class AliTRDmcTrack : public TObject {
 
@@ -17,7 +17,8 @@ class AliTRDmcTrack : public TObject {
 public:
 
   AliTRDmcTrack();
-  AliTRDmcTrack(Int_t label, Bool_t primary, Float_t mass, Int_t charge, Int_t pdg); 
+  AliTRDmcTrack(Int_t label, Int_t seedLabel, Bool_t primary, Float_t mass, 
+		Int_t charge, Int_t pdg); 
 
   void SetPin(Int_t plane, Double_t px, Double_t py, Double_t pz)
               { Pin[plane][0] = px; Pin[plane][1] = py; Pin[plane][2] = pz; }
@@ -44,28 +45,33 @@ public:
   void GetXYZout(Int_t plane, Double_t &x, Double_t &y, Double_t &z) const
     {x = XYZout[plane][0]; y = XYZout[plane][1]; z = XYZout[plane][2]; return;}
 
-  void Update(Int_t index) { 
-    if (fN < kMAX_CLUSTERS_PER_MC_TRACK-1) fIndex[fN++] = index; }
+  void Update(Int_t ltb, Int_t p, Int_t n, Int_t index) 
+                                              { fIndex[ltb][p][n] = index; }
 
   Int_t   GetTrackIndex()          const { return fLab;      }
+  Int_t   GetSeedLabel()           const { return fSeedLab;  }
+  void    SetSeedLabel(Int_t l)          { fSeedLab = l;     }
+  void    SetNumberOfClusters(Int_t n)   { fN = n;           }
   Bool_t  IsPrimary()              const { return fPrimary;  }
   Float_t GetMass()                const { return fMass;     }
   Int_t   GetCharge()              const { return fCharge;   }
   Int_t   GetPdgCode()             const { return fPDG;      }
 
   Int_t   GetNumberOfClusters()    const { return fN;        }
-  Int_t   GetClusterIndex(Int_t i) const { return fIndex[i]; }  
+  Int_t   GetClusterIndex(Int_t ltb, Int_t p, Int_t n) 
+                                   const { return fIndex[ltb][p][n]; }
 
 protected:
 
    Int_t    fLab;             // Track index  
+   Int_t    fSeedLab;         // Seed track index  
    Bool_t   fPrimary;         // TRUE if it's a primary particle
    Float_t  fMass;            // Mass of the MC track
    Int_t    fCharge;          // Charge of the MC track
    Int_t    fPDG;             // PDG code of the MC track
 
    Int_t  fN;               // Number of TRD clusters associated with the track
-   Int_t  fIndex[kMAX_CLUSTERS_PER_MC_TRACK]; // Indices of these clusters  
+   Int_t  fIndex[kMAX_TB][6][2]; // Indices of these clusters  
 			   
    Double_t Pin[6][3];        // Px,Py,Pz at the entrance of each TRD plane   
    Double_t Pout[6][3];       // Px,Py,Pz at the exit of each TRD plane

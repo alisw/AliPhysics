@@ -33,8 +33,13 @@ AliTRDmcTrack::AliTRDmcTrack()
   fCharge = 0;
   fN = 0; 
   
-  for(Int_t i=0; i<kMAX_CLUSTERS_PER_MC_TRACK; i++) fIndex[i]=-1;
-  
+  for(Int_t ltb=0; ltb<kMAX_TB; ltb++) {
+    for(Int_t plane=0; plane < 6; plane++) {
+      fIndex[ltb][plane][0] = -1;
+      fIndex[ltb][plane][1] = -1;
+    }
+  }
+
   for(Int_t i=0; i<6; i++) {
     for(Int_t j=0; j<3; j++) { 
       Pin[i][j]=0.; 
@@ -47,8 +52,8 @@ AliTRDmcTrack::AliTRDmcTrack()
 }
 
 //_____________________________________________________________________________
-AliTRDmcTrack::AliTRDmcTrack(Int_t label, Bool_t primary, Float_t mass
-			    ,Int_t charge, Int_t pdg) 
+AliTRDmcTrack::AliTRDmcTrack(Int_t label, Int_t seedLabel, Bool_t primary, 
+			     Float_t mass, Int_t charge, Int_t pdg) 
 { 
 
   //
@@ -56,13 +61,19 @@ AliTRDmcTrack::AliTRDmcTrack(Int_t label, Bool_t primary, Float_t mass
   //
 
   fLab = label; 
+  fSeedLab = seedLabel; 
   fPrimary = primary; 
   fMass = mass; 
   fCharge = charge;
   fPDG = pdg;
   fN = 0; 
   
-  for(Int_t i=0; i<kMAX_CLUSTERS_PER_MC_TRACK; i++) fIndex[i]=-1;
+  for(Int_t ltb=0; ltb<kMAX_TB; ltb++) {
+    for(Int_t plane=0; plane < 6; plane++) {
+      fIndex[ltb][plane][0] = -1;
+      fIndex[ltb][plane][1] = -1;
+    }
+  }
   
   for(Int_t i=0; i<6; i++) {
     for(Int_t j=0; j<3; j++) { 
@@ -125,5 +136,7 @@ void AliTRDmcTrack::GetPlanePxPyPz(Double_t& px, Double_t& py, Double_t& pz,
   }
   return;
 }
+
+
 
 
