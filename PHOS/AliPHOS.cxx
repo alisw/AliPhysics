@@ -45,7 +45,20 @@ class TFile;
 
 ClassImp(AliPHOS)
 //____________________________________________________________________________
+AliPHOS:: AliPHOS() : AliDetector()
+{
+  // Create folder and task hierarchy
+  fName="PHOS";
+  CreatePHOSFolders();
+}
+//____________________________________________________________________________
 AliPHOS:: AliPHOS(const char* name, const char* title=""): AliDetector(name, title) 
+{
+  // Create folder and task hierarchy
+  CreatePHOSFolders();
+}
+//____________________________________________________________________________
+void AliPHOS::CreatePHOSFolders()
 {
   // create the ALICE TFolder
   // create the ALICE TTasks

@@ -24,7 +24,7 @@ class AliPHOS : public AliDetector {
 
  public:
 
-  AliPHOS() : AliDetector() {fQATask=0;}
+  AliPHOS() ;
   AliPHOS(const char* name, const char* title="") ;  
   AliPHOS(const AliPHOS & phos) {
     // cpy ctor: no implementation yet
@@ -38,6 +38,7 @@ class AliPHOS : public AliDetector {
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ;   
   virtual void   CreateMaterials() ;                     
+  void CreatePHOSFolders();
   virtual  AliPHOSGeometry * GetGeometry() const = 0 ;
   Int_t   IsVersion(void) const { return -1 ; } 
   AliPHOSQAChecker * QAChecker() {return fQATask;}  
