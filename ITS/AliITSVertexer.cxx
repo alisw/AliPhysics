@@ -32,7 +32,7 @@ AliITSVertexer::AliITSVertexer(TFile *infile, TFile *outfile) {
     Int_t lst;
     if(gAlice->TreeE()){
       lst = static_cast<Int_t>(gAlice->TreeE()->GetEntries());
-      SetLastEvent(lst);
+      SetLastEvent(lst-1);
     }
   }
 }

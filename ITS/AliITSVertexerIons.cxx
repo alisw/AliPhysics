@@ -482,7 +482,7 @@ void AliITSVertexerIons::FindVertices(){
   }
   TDirectory *curdir = gDirectory;
   fInFile->cd();
-  for(Int_t i=fFirstEvent;i<fLastEvent;i++){
+  for(Int_t i=fFirstEvent;i<=fLastEvent;i++){
     gAlice->GetEvent(i);
     FindVertexForCurrentEvent(i);
     if(fCurrentVertex){

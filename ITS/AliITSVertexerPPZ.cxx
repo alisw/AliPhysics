@@ -350,7 +350,7 @@ void AliITSVertexerPPZ::FindVertices(){
   }
   TDirectory *curdir = gDirectory;
   fInFile->cd();
-  for(Int_t i=fFirstEvent;i<fLastEvent;i++){
+  for(Int_t i=fFirstEvent;i<=fLastEvent;i++){
     gAlice->GetEvent(i);
     FindVertexForCurrentEvent(i);
     if(fCurrentVertex){
@@ -381,7 +381,7 @@ void AliITSVertexerPPZ::PrintStatus() const {
   if(fInFile)cout <<" The input file is open\n";
   if(!fInFile)cout <<"The input file is not open\n";
   if(fOutFile)cout <<"The output file is open\n";
-  if(fOutFile)cout <<"The output file not is open\n";
+  if(!fOutFile)cout <<"The output file is not open\n";
   cout<<"First event to be processed "<<fFirstEvent;
   cout<<"\n Last event to be processed "<<fLastEvent<<endl;
 }
