@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2001/05/07 08:03:22  cblume
+Generate also hits in the amplification region
+
 Revision 1.25  2001/03/13 09:30:35  cblume
 Update of digitization. Moved digit branch definition to AliTRD
 
@@ -410,6 +413,8 @@ void AliTRD::BuildGeometry()
 
   Float_t rmin, rmax;
   Float_t zmax1, zmax2;
+
+  Int_t iPlan;
  
   const Int_t kColorTRD = 46;
   
@@ -450,7 +455,7 @@ void AliTRD::BuildGeometry()
     zmax2 = AliTRDgeometry::Zmax2() + slope * thickness;
     zmax1 = zmax2 + slope * AliTRDgeometry::DrThick();
 
-    for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+    for (iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
 
       sprintf(name,"S_TR1%d",iPlan);
       pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsect(),4);
@@ -477,7 +482,7 @@ void AliTRD::BuildGeometry()
     zmax2 = AliTRDgeometry::Zmax2() + slope * thickness;
     zmax1 = zmax2 + slope * AliTRDgeometry::AmThick();
 
-    for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+    for (iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
 
       sprintf(name,"S_TR2%d",iPlan);
       pgon  = new TPGON(name,"TRD","void",0,360,AliTRDgeometry::Nsect(),4);
