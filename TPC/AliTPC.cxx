@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2001/01/10 07:59:43  kowal2
+Corrections to load points from the noncompressed hits.
+
 Revision 1.25  2000/11/02 07:25:31  kowal2
 Changes due to the new hit structure.
 Memory leak removed.
@@ -2025,8 +2028,12 @@ void AliTPC::LoadPoints(Int_t)
 {
   //
   Int_t a = 0;
-  if(fHitType==1) return AliDetector::LoadPoints(a);
+  /*  if(fHitType==1) return AliDetector::LoadPoints(a);
   LoadPoints2(a);
+  */
+  if(fHitType==1) AliDetector::LoadPoints(a);
+  else LoadPoints2(a);
+   
   // LoadPoints3(a);
 
 }
