@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.50  2001/12/06 14:16:19  kowal2
+meaningfull printouts
+
 Revision 1.49  2001/11/30 11:55:37  hristov
 Noise table created in Hits2SDigits (M.Ivanov)
 
@@ -192,6 +195,7 @@ Introduction of the Copyright and cvs Log
 #include "AliDigits.h"
 #include "AliSimDigits.h"
 #include "AliTPCTrackHits.h"
+#include "AliTPCTrackHitsV2.h"
 #include "AliPoints.h"
 #include "AliArrayBranch.h"
 
@@ -223,14 +227,15 @@ AliTPC::AliTPC()
   fHits     = 0;
   fDigits   = 0;
   fNsectors = 0;
-  //MI changes
   fDigitsArray = 0;
   fClustersArray = 0;
   fDefaults = 0;
-  fTrackHits = 0;  
-  fHitType = 2;  
+  fTrackHits = 0; 
+  fTrackHitsOld = 0;   
+  fHitType = 4; //default CONTAINERS - based on ROOT structure 
   fTPCParam = 0;    
   fNoiseTable = 0;
+  fActiveSectors =0;
 
 }
  
@@ -245,19 +250,25 @@ AliTPC::AliTPC(const char *name, const char *title)
   //
   // Initialise arrays of hits and digits 
   fHits     = new TClonesArray("AliTPChit",  176);
-  gAlice->AddHitList(fHits);
-  //MI change  
+  gAlice->AddHitList(fHits); 
   fDigitsArray = 0;
   fClustersArray= 0;
   fDefaults = 0;
   //
-  fTrackHits = new AliTPCTrackHits;  //MI - 13.09.2000
+  fTrackHits = new AliTPCTrackHitsV2;  
   fTrackHits->SetHitPrecision(0.002);
   fTrackHits->SetStepPrecision(0.003);  
-  fTrackHits->SetMaxDistance(100); 
+  fTrackHits->SetMaxDistance(100);
+
+  fTrackHitsOld = new AliTPCTrackHits;  //MI - 13.09.2000
+  fTrackHitsOld->SetHitPrecision(0.002);
+  fTrackHitsOld->SetStepPrecision(0.003);  
+  fTrackHitsOld->SetMaxDistance(100); 
+
   fNoiseTable =0;
 
-  fHitType = 2;
+  fHitType = 4;
+  fActiveSectors = 0;
   //
   // Initialise counters
   fNsectors = 0;
@@ -294,6 +305,7 @@ AliTPC::~AliTPC()
   delete fDigits;
   delete fTPCParam;
   delete fTrackHits; //MI 15.09.2000
+  delete fTrackHitsOld; //MI 10.12.2001
   if (fNoiseTable) delete [] fNoiseTable;
 
 }
@@ -310,7 +322,7 @@ void AliTPC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
     TClonesArray &lhits = *fHits;
     new(lhits[fNhits++]) AliTPChit(fIshunt,track,vol,hits);
   }
-  if (fHitType&2)
+  if (fHitType>1)
    AddHit2(track,vol,hits);
 }
  
@@ -855,6 +867,67 @@ Float_t AliTPC::GetNoise()
 }
 
 
+Bool_t  AliTPC::IsSectorActive(Int_t sec)
+{
+  //
+  // check if the sector is active
+  if (!fActiveSectors) return kTRUE;
+  else return fActiveSectors[sec]; 
+}
+
+void    AliTPC::SetActiveSectors(Int_t * sectors, Int_t n)
+{
+  // activate interesting sectors
+  if (fActiveSectors) delete [] fActiveSectors;
+  fActiveSectors = new Bool_t[fTPCParam->GetNSector()];
+  for (Int_t i=0;i<fTPCParam->GetNSector();i++) fActiveSectors[i]=kFALSE;
+  for (Int_t i=0;i<n;i++) 
+    if ((sectors[i]>=0) && sectors[i]<fTPCParam->GetNSector())  fActiveSectors[sectors[i]]=kTRUE;
+    
+}
+
+void    AliTPC::SetActiveSectors()
+{
+  //
+  // activate sectors which were hitted by tracks 
+  //loop over tracks
+  if (fHitType==0) return;  // if Clones hit - not short volume ID information
+  if (fActiveSectors) delete [] fActiveSectors;
+  fActiveSectors = new Bool_t[fTPCParam->GetNSector()];
+  for (Int_t i=0;i<fTPCParam->GetNSector();i++) fActiveSectors[i]=kFALSE;
+  TBranch * branch=0;
+  if (fHitType>1) branch = gAlice->TreeH()->GetBranch("TPC2");
+  else branch = gAlice->TreeH()->GetBranch("TPC");
+  Stat_t ntracks = gAlice->TreeH()->GetEntries();
+  // loop over all hits
+  for(Int_t track=0;track<ntracks;track++){
+    ResetHits();
+    //
+    if (fTrackHits && fHitType&4) {
+      TBranch * br1 = gAlice->TreeH()->GetBranch("fVolumes");
+      TBranch * br2 = gAlice->TreeH()->GetBranch("fNVolumes");    
+      br1->GetEvent(track);
+      br2->GetEvent(track);
+      Int_t *volumes = fTrackHits->GetVolumes();
+      for (Int_t j=0;j<fTrackHits->GetNVolumes(); j++)
+	fActiveSectors[volumes[j]]=kTRUE;
+    }
+    
+    //
+    if (fTrackHitsOld && fHitType&2) {
+      TBranch * br = gAlice->TreeH()->GetBranch("fTrackHitsInfo");
+      br->GetEvent(track);
+      AliObjectArray * ar = fTrackHitsOld->fTrackHitsInfo;
+      for (UInt_t j=0;j<ar->GetSize();j++){
+	fActiveSectors[((AliTrackHitsInfo*)ar->At(j))->fVolumeID] =kTRUE;
+      } 
+    }    
+  }
+  
+}  
+
+
+
 
 void AliTPC::Digits2Clusters(TFile *of, Int_t eventnumber)
 {
@@ -962,17 +1035,11 @@ void AliTPC::Hits2Clusters(TFile *of, Int_t eventn)
       tH->GetEvent(track);
       //
       //  Get number of the TPC hits
-      //
-      // nhits=fHits->GetEntriesFast();
-      //
-     
+      //     
        tpcHit = (AliTPChit*)FirstHit(-1);
 
       // Loop over hits
       //
-       //   for(Int_t hit=0;hit<nhits;hit++){
-       //tpcHit=(AliTPChit*)fHits->UncheckedAt(hit);
-
        while(tpcHit){
  
 	 if (tpcHit->fQ == 0.) {
@@ -980,9 +1047,6 @@ void AliTPC::Hits2Clusters(TFile *of, Int_t eventn)
            continue; //information about track (I.Belikov)
 	 }
 	sector=tpcHit->fSector; // sector number
-
-
-	//	if(sector != isec) continue; //terminate iteration
 
        if(sector != isec){
 	 tpcHit = (AliTPChit*) NextHit();
@@ -1060,7 +1124,6 @@ void AliTPC::Hits2Clusters(TFile *of, Int_t eventn)
   } // end of loop over sectors  
 
   cerr<<"Number of made clusters : "<<nclusters<<"                        \n";
-
   carray.GetTree()->SetName(cname);
   carray.GetTree()->Write();
 
@@ -1103,39 +1166,25 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
   TTree *tH = gAlice->TreeH();
   Stat_t ntracks = tH->GetEntries();
   Int_t npart = gAlice->GetNtrack();
-  TBranch * br = tH->GetBranch("fTrackHitsInfo");
   //MI change
   TBranch * branch=0;
-  if (fHitType&2) branch = tH->GetBranch("TPC2");
+  if (fHitType>1) branch = tH->GetBranch("TPC2");
   else branch = tH->GetBranch("TPC");
 
   //------------------------------------------------------------
   // Loop over tracks
   //------------------------------------------------------------
-  
+
   for(Int_t track=0;track<ntracks;track++){ 
     Bool_t isInSector=kTRUE;
     ResetHits();
-        
-    if (fHitType&2) {
-      isInSector=kFALSE;    
-      br->GetEvent(track);
-      AliObjectArray * ar = fTrackHits->fTrackHitsInfo;
-      for (UInt_t j=0;j<ar->GetSize();j++){
-	if (  ((AliTrackHitsInfo*)ar->At(j))->fVolumeID==isec) isInSector=kTRUE;
-      }
-    }
+     isInSector = TrackInVolume(isec,track);
     if (!isInSector) continue;
     //MI change
     branch->GetEntry(track); // get next track
-
-
     //
     //  Get number of the TPC hits and a pointer
     //  to the particles
-    //
-    //nhits=fHits->GetEntriesFast();
-    //
     // Loop over hits
     //
     Int_t currentIndex=0;
@@ -1152,11 +1201,6 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
 	continue; 
       }
 
-      //for(Int_t hit=0;hit<nhits;hit++){
-      //tpcHit=(AliTPChit*)fHits->UncheckedAt(hit);
-      //if (tpcHit==0) continue;
-      //sector=tpcHit->fSector; // sector number
-      //if(sector != isec) continue; 
       ipart=tpcHit->Track();
       if (ipart<npart) particle=gAlice->Particle(ipart);
       
@@ -1302,6 +1346,7 @@ void AliTPC::SDigits2Digits2(Int_t eventnumber)
       cerr<<"AliTPC warning: invalid segment ID ! "<<digarr.GetID()<<endl;
       continue;
     }
+    if (!IsSectorActive(sec)) continue;
     AliSimDigits * digrow =(AliSimDigits*) arr->CreateRow(sec,row);
     Int_t nrows = digrow->GetNRows();
     Int_t ncols = digrow->GetNCols();
@@ -1456,7 +1501,7 @@ void AliTPC::Merge(TTree * intree, Int_t *mask, Int_t nin, Int_t outid)
       arr->StoreRow(sec,row);
 
       arr->ClearRow(sec,row);   
-      // cerr<<sec<<"\t"<<row<<"\n";  
+ 
   }  
   
   delete digarr;
@@ -1550,7 +1595,7 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
 
   cerr<<"Digitizing TPC -- normal digits...\n";
 
- for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) Hits2DigitsSector(isec);
+ for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) if (IsSectorActive(isec)) Hits2DigitsSector(isec);
 
   // write results
 
@@ -1599,7 +1644,7 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
 
   fTPCParam->SetZeroSup(0);
 
- for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) Hits2DigitsSector(isec);
+ for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) if (IsSectorActive(isec)) Hits2DigitsSector(isec);
 
 
   // write results
@@ -1646,7 +1691,7 @@ void AliTPC::Hits2SDigits()
 
   //  fDigitsSwitch=1; // summable digits  -for the moment direct
 
- for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) Hits2DigitsSector(isec);
+  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) if (IsSectorActive(isec)) Hits2DigitsSector(isec);
 
 
   // write results
@@ -1718,11 +1763,9 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 
 	fDigitsArray->StoreRow(isec,i);
 
-		Int_t ndig = dig->GetDigitSize(); 
-        
- 
-       //printf("*** Sector, row, compressed digits %d %d %d ***\n",isec,i,ndig);
-	
+	Int_t ndig = dig->GetDigitSize(); 
+	if (gDebug > 10) printf("*** Sector, row, compressed digits %d %d %d ***\n",isec,i,ndig);        
+ 	
         fDigitsArray->ClearRow(isec,i);  
 
    
@@ -1916,7 +1959,7 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, TMatrix *m1, TMatrix *m2,
     if (n>0) for (Int_t i =0; i<n; i++){
        Int_t *index = fTPCParam->GetResBin(i);        
        Int_t pad=index[1]+centralPad;  //in digit coordinates central pad has coordinate 0
-       if ( ( pad<(fTPCParam->GetNPads(fCurrentIndex[1],fCurrentIndex[3]))) && (pad>0)) {
+       if ( ( pad<(fTPCParam->GetNPads(fCurrentIndex[1],fCurrentIndex[3]))) && (pad>=0)) {
 	 Int_t time=index[2];	 
 	 Float_t weight = fTPCParam->GetResWeight(i); //we normalise response to ADC channel
 	 weight *= eltoadcfac;
@@ -2048,7 +2091,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   AliTPChit *tpcHit; // pointer to a sigle TPC hit    
   //MI change
   TBranch * branch=0;
-  if (fHitType&2) branch = TH->GetBranch("TPC2");
+  if (fHitType>1) branch = TH->GetBranch("TPC2");
   else branch = TH->GetBranch("TPC");
 
  
@@ -2078,16 +2121,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   for(Int_t track=0;track<ntracks;track++){
     Bool_t isInSector=kTRUE;
     ResetHits();
-
-    if (fHitType&2) {
-      isInSector=kFALSE;
-      TBranch * br = TH->GetBranch("fTrackHitsInfo");
-      br->GetEvent(track);
-      AliObjectArray * ar = fTrackHits->fTrackHitsInfo;
-      for (UInt_t j=0;j<ar->GetSize();j++){
-	if (  ((AliTrackHitsInfo*)ar->At(j))->fVolumeID==isec) isInSector=kTRUE;
-      }
-    }
+    isInSector = TrackInVolume(isec,track);
     if (!isInSector) continue;
     //MI change
     branch->GetEntry(track); // get next track
@@ -2104,7 +2138,6 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
     while(tpcHit){
       
       Int_t sector=tpcHit->fSector; // sector number
-      //      if(sector != isec) continue; 
       if(sector != isec){
 	tpcHit = (AliTPChit*) NextHit();
 	continue; 
@@ -2266,7 +2299,7 @@ void AliTPC::MakeBranch(Option_t* option, const char *file)
                        branchname, &fDigits, buffersize, file);
   }	
 
-  if (fHitType&2) MakeBranch2(option,file); // MI change 14.09.2000
+  if (fHitType>1) MakeBranch2(option,file); // MI change 14.09.2000
 }
  
 //_____________________________________________________________________________
@@ -2469,7 +2502,7 @@ AliHit(shunt,track)
  
 
 //________________________________________________________________________
-// Additional code because of the AliTPCTrackHits
+// Additional code because of the AliTPCTrackHitsV2
 
 void AliTPC::MakeBranch2(Option_t *option,const char *file)
 {
@@ -2477,17 +2510,21 @@ void AliTPC::MakeBranch2(Option_t *option,const char *file)
   // Create a new branch in the current Root Tree
   // The branch of fHits is automatically split
   // MI change 14.09.2000
-  if (fHitType&2==0) return;
+  if (fHitType<2) return;
   char branchname[10];
   sprintf(branchname,"%s2",GetName());  
   //
   // Get the pointer to the header
   const char *cH = strstr(option,"H");
   //
-  if (fTrackHits   && gAlice->TreeH() && cH) {    
-    AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHits, 
-						   gAlice->TreeH(),fBufferSize,99);
-    gAlice->TreeH()->GetListOfBranches()->Add(branch);
+  if (fTrackHits   && gAlice->TreeH() && cH && fHitType&4) {    
+    //    AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHitsV2",&fTrackHits, 
+    //						   gAlice->TreeH(),fBufferSize,99);
+    //TBranch * branch = 
+    gAlice->TreeH()->Branch(branchname,"AliTPCTrackHitsV2",&fTrackHits, 
+    						   fBufferSize,99);
+
+    // gAlice->TreeH()->GetListOfBranches()->Add(branch);
     if (GetDebug()>1) 
       printf("* AliDetector::MakeBranch * Making Branch %s for trackhits\n",branchname);
     const char folder [] = "RunMC/Event/Data";
@@ -2507,12 +2544,39 @@ void AliTPC::MakeBranch2(Option_t *option,const char *file)
 	      cout << "Diverting branch " << branchname << " to file " << file << endl;  
     }
   }	
+
+  if (fTrackHitsOld   && gAlice->TreeH() && cH && fHitType&2) {    
+    AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHitsOld, 
+    						   gAlice->TreeH(),fBufferSize,99);
+    //TBranch * branch = gAlice->TreeH()->Branch(branchname,"AliTPCTrackHitsV2",&fTrackHits, 
+    //    						   fBufferSize,99);
+
+    gAlice->TreeH()->GetListOfBranches()->Add(branch);
+    if (GetDebug()>1) 
+      printf("* AliDetector::MakeBranch * Making Branch %s for trackhits\n",branchname);
+    const char folder [] = "RunMC/Event/Data";
+    if (GetDebug())
+      printf("%15s: Publishing %s to %s\n",ClassName(),branchname,folder);
+    Publish(folder,&fTrackHitsOld,branchname);
+    if (file) {
+        TBranch *b = gAlice->TreeH()->GetBranch(branchname);
+        TDirectory *wd = gDirectory;
+        b->SetFile(file);
+        TIter next( b->GetListOfBranches());
+        while ((b=(TBranch*)next())) {
+	  b->SetFile(file);
+        }
+        wd->cd(); 
+        if (GetDebug()>1) 
+	      cout << "Diverting branch " << branchname << " to file " << file << endl;  
+    }
+  }	
 }
 
 void AliTPC::SetTreeAddress()
 {
-  if (fHitType&1) AliDetector::SetTreeAddress();
-  if (fHitType&2) SetTreeAddress2();
+  if (fHitType<=1) AliDetector::SetTreeAddress();
+  if (fHitType>1) SetTreeAddress2();
 }
 
 void AliTPC::SetTreeAddress2()
@@ -2526,15 +2590,21 @@ void AliTPC::SetTreeAddress2()
   //
   // Branch address for hit tree
   TTree *treeH = gAlice->TreeH();
-  if (treeH) {
+  if ((treeH)&&(fHitType&4)) {
     branch = treeH->GetBranch(branchname);
     if (branch) branch->SetAddress(&fTrackHits);
   }
+  if ((treeH)&&(fHitType&2)) {
+    branch = treeH->GetBranch(branchname);
+    if (branch) branch->SetAddress(&fTrackHitsOld);
+  }
+
 }
 
 void AliTPC::FinishPrimary()
 {
-  if (fTrackHits) fTrackHits->FlushHitStack();  
+  if (fTrackHits &&fHitType&4)      fTrackHits->FlushHitStack();  
+  if (fTrackHitsOld && fHitType&2)  fTrackHitsOld->FlushHitStack();  
 }
 
 
@@ -2554,32 +2624,39 @@ void AliTPC::AddHit2(Int_t track, Int_t *vol, Float_t *hits)
   //AliTPChit *hit = (AliTPChit*)fHits->UncheckedAt(fNhits-1);
   //if (hit->fTrack!=rtrack)
   //  cout<<"bad track number\n";
-  if (fTrackHits) 
+  if (fTrackHits && fHitType&4) 
     fTrackHits->AddHitKartez(vol[0],rtrack, hits[0],
 			     hits[1],hits[2],(Int_t)hits[3]);
+  if (fTrackHitsOld &&fHitType&2 ) 
+    fTrackHitsOld->AddHitKartez(vol[0],rtrack, hits[0],
+			     hits[1],hits[2],(Int_t)hits[3]);
+  
 }
 
 void AliTPC::ResetHits()
 {
   if (fHitType&1) AliDetector::ResetHits();
-  if (fHitType&2) ResetHits2();
+  if (fHitType>1) ResetHits2();
 }
 
 void AliTPC::ResetHits2()
 {
   //
   //reset hits
-  if (fTrackHits) fTrackHits->Clear();
+  if (fTrackHits && fHitType&4) fTrackHits->Clear();
+  if (fTrackHitsOld && fHitType&2) fTrackHitsOld->Clear();
+
 }   
 
 AliHit* AliTPC::FirstHit(Int_t track)
 {
-  if (fHitType&2) return FirstHit2(track);
+  if (fHitType>1) return FirstHit2(track);
   return AliDetector::FirstHit(track);
 }
 AliHit* AliTPC::NextHit()
 {
-  if (fHitType&2) return NextHit2();
+  if (fHitType>1) return NextHit2();
+  
   return AliDetector::NextHit();
 }
 
@@ -2597,10 +2674,15 @@ AliHit* AliTPC::FirstHit2(Int_t track)
     gAlice->TreeH()->GetEvent(track);
   }
   //
-  if (fTrackHits) {
+  if (fTrackHits && fHitType&4) {
     fTrackHits->First();
     return fTrackHits->GetHit();
   }
+  if (fTrackHitsOld && fHitType&2) {
+    fTrackHitsOld->First();
+    return fTrackHitsOld->GetHit();
+  }
+
   else return 0;
 }
 
@@ -2609,6 +2691,11 @@ AliHit* AliTPC::NextHit2()
   //
   //Return the next hit for the current track
 
+
+  if (fTrackHitsOld && fHitType&2) {
+    fTrackHitsOld->Next();
+    return fTrackHitsOld->GetHit();
+  }
   if (fTrackHits) {
     fTrackHits->Next();
     return fTrackHits->GetHit();
@@ -2635,14 +2722,64 @@ void AliTPC::LoadPoints(Int_t)
 void AliTPC::RemapTrackHitIDs(Int_t *map)
 {
   if (!fTrackHits) return;
-  AliObjectArray * arr = fTrackHits->fTrackHitsInfo;
-  for (UInt_t i=0;i<arr->GetSize();i++){
-    AliTrackHitsInfo * info = (AliTrackHitsInfo *)(arr->At(i));
-    info->fTrackID = map[info->fTrackID];
-  }
   
+  if (fTrackHitsOld && fHitType&2){
+    AliObjectArray * arr = fTrackHitsOld->fTrackHitsInfo;
+    for (UInt_t i=0;i<arr->GetSize();i++){
+      AliTrackHitsInfo * info = (AliTrackHitsInfo *)(arr->At(i));
+      info->fTrackID = map[info->fTrackID];
+    }
+  }
+  if (fTrackHitsOld && fHitType&4){
+    TClonesArray * arr = fTrackHits->GetArray();;
+    for (Int_t i=0;i<arr->GetEntriesFast();i++){
+      AliTrackHitsParamV2 * info = (AliTrackHitsParamV2 *)(arr->At(i));
+      info->fTrackID = map[info->fTrackID];
+    }
+  }
 }
 
+Bool_t   AliTPC::TrackInVolume(Int_t id,Int_t track)
+{
+  //return bool information - is track in given volume
+  //load only part of the track information 
+  //return true if current track is in volume
+  //
+  //  return kTRUE;
+  if (fTrackHitsOld && fHitType&2) {
+    TBranch * br = gAlice->TreeH()->GetBranch("fTrackHitsInfo");
+    br->GetEvent(track);
+    AliObjectArray * ar = fTrackHitsOld->fTrackHitsInfo;
+    for (UInt_t j=0;j<ar->GetSize();j++){
+      if (  ((AliTrackHitsInfo*)ar->At(j))->fVolumeID==id) return kTRUE;
+    } 
+  }
+
+  if (fTrackHits && fHitType&4) {
+    TBranch * br1 = gAlice->TreeH()->GetBranch("fVolumes");
+    TBranch * br2 = gAlice->TreeH()->GetBranch("fNVolumes");    
+    br2->GetEvent(track);
+    br1->GetEvent(track);    
+    Int_t *volumes = fTrackHits->GetVolumes();
+    Int_t nvolumes = fTrackHits->GetNVolumes();
+    if (!volumes && nvolumes>0) {
+      printf("Problematic track\t%d\t%d",track,nvolumes);
+      return kFALSE;
+    }
+    for (Int_t j=0;j<nvolumes; j++)
+      if (volumes[j]==id) return kTRUE;    
+  }
+
+  if (fHitType&1) {
+    TBranch * br = gAlice->TreeH()->GetBranch("fSector");
+    br->GetEvent(track);
+    for (Int_t j=0;j<fHits->GetEntriesFast();j++){
+      if (  ((AliTPChit*)fHits->At(j))->fSector==id) return kTRUE;
+    } 
+  }
+  return kFALSE;  
+
+}
 
 //_____________________________________________________________________________
 void AliTPC::LoadPoints2(Int_t)
@@ -2650,9 +2787,12 @@ void AliTPC::LoadPoints2(Int_t)
   //
   // Store x, y, z of all hits in memory
   //
-  if (fTrackHits == 0) return;
+  if (fTrackHits == 0 && fTrackHitsOld==0) return;
   //
-  Int_t nhits = fTrackHits->GetEntriesFast();
+  Int_t nhits =0;
+  if (fHitType&4) nhits = fTrackHits->GetEntriesFast();
+  if (fHitType&2) nhits = fTrackHitsOld->GetEntriesFast();
+  
   if (nhits == 0) return;
   Int_t tracks = gAlice->GetNtrack();
   if (fPoints == 0) fPoints = new TObjArray(tracks);
@@ -2675,9 +2815,7 @@ void AliTPC::LoadPoints2(Int_t)
   // Loop over all the hits and store their position
   //
   ahit = FirstHit2(-1);
-  //for (Int_t hit=0;hit<nhits;hit++) {
   while (ahit){
-    //    ahit = (AliHit*)fHits->UncheckedAt(hit);
     trk=ahit->GetTrack();
     if(ntrk[trk]==limi[trk]) {
       //
@@ -2698,6 +2836,9 @@ void AliTPC::LoadPoints2(Int_t)
     ntrk[trk]++;
     ahit = NextHit2();
   }
+
+
+
   //
   for(trk=0; trk<tracks; ++trk) {
     if(ntrk[trk]) {

@@ -20,7 +20,9 @@ class TFile;
 class AliTPCParam;
 class AliTPCDigitsArray;
 class AliTPCClustersArray;
-class AliTPCTrackHits; // M.I.
+class AliTPCTrackHitsV2; // M.I.
+class AliTPCTrackHits; // M.I.  -MI4 old hits - to be removed later
+
 
 class AliTPC : public AliDetector {
 protected:
@@ -35,9 +37,11 @@ protected:
   AliTPCDigitsArray * fDigitsArray;              //!detector digit object  
   AliTPCClustersArray * fClustersArray; //!detector cluster object
   AliTPCParam *fTPCParam;           // pointer to TPC parameters 
-  AliTPCTrackHits *fTrackHits;      //!hits for given track M.I.
-  Int_t  fHitType; // if fNewHit = 1 old data structure if 2 new hits
-  //  3 both types  
+  AliTPCTrackHitsV2 *fTrackHits;      //!hits for given track M.I.
+  AliTPCTrackHits *fTrackHitsOld;      //!hits for given track M.I. MIold -
+
+  Int_t  fHitType; // if fNewHit = 1 old data structure if 2 new hits  if 4  old MI stucture
+  //  3 both types 
   Int_t fDigitsSwitch; // digits type, 0->normal, 1->summable
 
   //MK changes
@@ -123,9 +127,13 @@ public:
    virtual void  Merge(TTree * intree, Int_t *mask, Int_t nin, Int_t outid);
    Float_t GetNoise();  //get Current noise  
    void    GenerNoise(Int_t tablasize);  // make noise table
+   Bool_t  IsSectorActive(Int_t sec);    // check if the sector is active
+   void    SetActiveSectors(Int_t * sectors, Int_t n);  //set active sectors
+   void    SetActiveSectors(); //loop over al hits and set active only hitted sectors
 
 private:
   //
+   Bool_t  TrackInVolume(Int_t id,Int_t track);  //return true if current track is in volume
   void SetDefaults();
   void DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet);
   Float_t GetSignal(TObjArray *p1, Int_t ntr, TMatrix *m1, TMatrix *m2,
@@ -141,9 +149,9 @@ private:
   Int_t      fNoiseDepth;  //!noise table
   Float_t *  fNoiseTable;  //![fNoiseDepth] table with noise
   Int_t      fCurrentNoise; //!index of the noise in  the noise table 
+  Bool_t*    fActiveSectors; //!bool indicating which sectors are active
 
-
-  ClassDef(AliTPC,4)  // Time Projection Chamber class
+  ClassDef(AliTPC,5)  // Time Projection Chamber class
 };
 
 
