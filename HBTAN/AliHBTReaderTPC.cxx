@@ -167,6 +167,7 @@ Int_t AliHBTReaderTPC::ReadNext()
     if (!tracktree) //check if we got the tree
       {//if not return with error
          Error("ReadNext","Can't get a tree with TPC tracks !\n"); 
+         fCurrentEvent++;//go to next dir
          continue;
       }
    
@@ -174,6 +175,7 @@ Int_t AliHBTReaderTPC::ReadNext()
     if (!trackbranch) ////check if we got the branch
       {//if not return with error
         Error("ReadNext","Can't get a branch with TPC tracks !\n"); 
+        fCurrentEvent++;//go to next dir
         continue;
       }
     Int_t ntpctracks=(Int_t)tracktree->GetEntries();//get number of TPC tracks 
