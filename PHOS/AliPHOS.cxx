@@ -66,7 +66,7 @@ AliPHOS::~AliPHOS()
 {  
   // remove the alice folder and alice QA task that PHOS creates instead of AliRun
 
-  delete fTreeQA ; 
+  //  delete fTreeQA ; 
 }
 
 //____________________________________________________________________________
