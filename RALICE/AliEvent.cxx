@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.16 2003/12/03 14:30:26 nick Exp $
+// $Id: AliEvent.cxx,v 1.17 2003/12/18 09:28:06 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -201,7 +201,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2003/12/03 14:30:26 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2003/12/18 09:28:06 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -365,7 +365,7 @@ void AliEvent::SetDayTime(TTimeStamp& stamp)
 {
 // Set the date and time stamp for this event.
 // An exact copy of the entered date/time stamp will be saved with an
-// accuracy of 1 second.
+// accuracy of 1 nanosecond.
  fDaytime=stamp;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -483,12 +483,18 @@ Int_t AliEvent::GetTargetId()
 void AliEvent::HeaderData()
 {
 // Provide event header information
- cout << " *" << ClassName() << "::Data* Name : " << GetName()
-      << " Title : " << GetTitle() << endl;
+ const char* name=GetName();
+ const char* title=GetTitle();
+ Int_t ndevs=GetNdevices();
+ cout << " *" << ClassName() << "::Data*";
+ if (strlen(name))  cout << " Name : " << GetName();
+ if (strlen(title)) cout << " Title : " << GetTitle();
+ cout << endl;
  cout << "  " << fDaytime.AsString() << endl;
- cout << "  Run : " << fRun << " Event : " << fEvent << endl;
+ cout << "  Run : " << fRun << " Event : " << fEvent
+      << " Number of devices : " << ndevs << endl;
 
- ShowDevices();
+ if (ndevs) ShowDevices();
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::Data(TString f)

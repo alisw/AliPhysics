@@ -465,3 +465,8 @@
                 in case the corresponding AliTrack object is deleted.
 19-dec-2003 NvE Slight modification in AliVertex.h and AliAttribObj.cxx to prevent gcc compiler
                 warning concerning an unused variable.
+22-dec-2003 NvE Event selection introduced in AliCollider.
+24-dec-2003 NvE Some cosmetics in printout of AliVertex, AliEvent and AliCollider.
+                Support for spectator tracks introduced in AliCollider.
+28-dec-2003 NvE Facility introduced in AliCollider to set minimal momentum for spectator tracks
+                to be stored. 

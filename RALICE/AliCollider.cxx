@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliCollider.cxx,v 1.7 2003/10/26 14:53:44 nick Exp $
+// $Id: AliCollider.cxx,v 1.8 2003/12/18 09:28:06 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCollider
@@ -53,6 +53,8 @@
 //
 //  gen->Init("fixt",zp,ap,zt,at,158);
 //
+//  gen->SetTitle("SPS Pb-Pb collision at 158A GeV/c beam energy");
+//
 //  Int_t nevents=5;
 //
 //  AliRandom rndm;
@@ -88,6 +90,8 @@
 //
 //  gen->Init("fixt","nu_mu","p",1e11);
 //
+//  gen->SetTitle("Atmospheric nu_mu-p interaction at 1e20 eV");
+//
 //  Int_t nevents=10;
 //
 //  for (Int_t i=0; i<nevents; i++)
@@ -104,7 +108,7 @@
 //
 //
 //--- Author: Nick van Eijndhoven 22-nov-2002 Utrecht University
-//- Modified: NvE $Date: 2003/10/26 14:53:44 $ Utrecht University
+//- Modified: NvE $Date: 2003/12/18 09:28:06 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCollider.h"
@@ -124,6 +128,8 @@ AliCollider::AliCollider() : TPythia6()
 
  fEvent=0;
 
+ fSpecpmin=0;
+
  fFrame="none";
  fWin=0;
 
@@ -139,6 +145,13 @@ AliCollider::AliCollider() : TPythia6()
 
  fOutFile=0;
  fOutTree=0;
+
+ fSelections=0;
+ fSelect=0;
+
+ TString s=GetName();
+ s+=" (AliCollider)";
+ SetName(s.Data());
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCollider::~AliCollider()
@@ -158,6 +171,11 @@ AliCollider::~AliCollider()
  {
   delete fOutTree;
   fOutTree=0;
+ }
+ if (fSelections)
+ {
+  delete fSelections;
+  fSelections=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -373,6 +391,13 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
 // Generate one event.
 // In case of a nucleus-nucleus interaction, the argument 'npt' denotes
 // the number of participant nucleons.
+// Normally also the spectator tracks will be stored into the event structure.
+// The spectator tracks have a negative user Id to distinguish them from the
+// ordinary generated tracks.
+// In case the user has selected the creation of vertex structures, the spectator
+// tracks will be linked to the primary vertex.
+// However, specification of npt<0 will suppress the storage of spectator tracks.
+// In the latter case abs(npt) will be taken as the number of participants.  
 // In case of a standard Pythia run for 'elementary' particle interactions,
 // the value of npt is totally irrelevant.
 //
@@ -391,11 +416,26 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
 // In case of a nucleus-nucleus interaction, the proper A and Z values for 
 // the projectile and target particles are set in the event structure.
 // However, in this case both particle ID's are set to zero.
+//
+// Note : Only in case an event passed the selection criteria as specified
+//        via SelectEvent(), the event will appear on the output file.
 
  fEventnum++; 
 
+ Int_t specmode=1;
+ if (npt<0)
+ {
+  specmode=0;
+  npt=abs(npt);
+ }
+
  // Counters for the various (proj,targ) combinations : p+p, n+p, p+n and n+n
  Int_t ncols[4]={0,0,0,0};
+
+ Int_t zp=0;
+ Int_t ap=0;
+ Int_t zt=0;
+ Int_t at=0;
 
  Int_t ncol=1;
  if (fNucl)
@@ -412,10 +452,10 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
   if (npt%2 && fRan.Uniform()>0.5) ncol+=1;
 
   // Determine the number of the various types of N+N interactions
-  Int_t zp=fZproj;
-  Int_t ap=fAproj;
-  Int_t zt=fZtarg;
-  Int_t at=fAtarg;
+  zp=fZproj;
+  ap=fAproj;
+  zt=fZtarg;
+  at=fAtarg;
   Int_t maxa=2; // Indicator whether proj (1) or target (2) has maximal A left
   if (ap>at) maxa=1;
   Float_t* rans=new Float_t[ncol];
@@ -497,6 +537,8 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
  {
   fEvent=new AliEvent();
   fEvent->SetOwner();
+  fEvent->SetName(GetName());
+  fEvent->SetTitle(GetTitle());
  }
 
  fEvent->Reset();
@@ -508,6 +550,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
  AliPosition r,rx;
  Float_t v[3];
  AliVertex vert;
+ Ali3Vector pproj,ptarg;
 
  if (fVertexmode)
  {
@@ -530,6 +573,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
 
  Int_t kf=0;
  Float_t charge=0,mass=0;
+ char* name="";
 
  Int_t ntypes=4;
 
@@ -541,7 +585,9 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
  }
 
  // Generate all the various collisions
- Int_t first=1; // Flag to indicate the first collision process
+ fSelect=0;      // Flag to indicate whether the total event is selected or not 
+ Int_t select=0; // Flag to indicate whether the sub-event is selected or not 
+ Int_t first=1;  // Flag to indicate the first collision process
  Double_t pnucl;
  Int_t npart=0,ntk=0;
  Double_t dist=0;
@@ -558,6 +604,9 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
   {
    GenerateEvent();
 
+   select=IsSelected();
+   if (select) fSelect=1;
+
    if (first) // Store projectile and target information in the event structure
    {
     if (fNucl)
@@ -565,12 +614,14 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
      v[0]=GetP(1,1);
      v[1]=GetP(1,2);
      v[2]=GetP(1,3);
-     pnucl=sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+     pproj.SetVector(v,"car");
+     pnucl=pproj.GetNorm();
      fEvent->SetProjectile(fAproj,fZproj,pnucl);
      v[0]=GetP(2,1);
      v[1]=GetP(2,2);
      v[2]=GetP(2,3);
-     pnucl=sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+     ptarg.SetVector(v,"car");
+     pnucl=ptarg.GetNorm();
      fEvent->SetTarget(fAtarg,fZtarg,pnucl);
     }
     else
@@ -593,13 +644,14 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
 
    if (medit >= 0) Pyedit(medit); // Define which particles are to be kept
 
-   if (mlist >= 0) Pylist(mlist);
+   if (mlist>=0 && select) Pylist(mlist);
 
    npart=GetN();
    for (Int_t jpart=1; jpart<=npart; jpart++)
    {
     kf=GetK(jpart,2);
     charge=Pychge(kf)/3.;
+    Pyname(kf,name);
     mass=GetP(jpart,5);
 
     // 3-momentum in GeV/c
@@ -619,6 +671,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
     t.Reset();
     t.SetId(ntk);
     t.SetParticleCode(kf);
+    t.SetName(name);
     t.SetCharge(charge);
     t.SetMass(mass);
     t.Set3Momentum(p);
@@ -694,14 +747,152 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
   }
  }
 
+ // Include the spectator tracks in the event structure.
+ if (fNucl && specmode)
+ {
+  Float_t pmass=0.938272;
+  Float_t nmass=0.93956533;
+  v[0]=0;
+  v[1]=0;
+  v[2]=0;
+  r.SetPosition(v,"car");
+
+  zp=fZproj-(ncols[0]+ncols[2]);
+  if (zp<0) zp=0;
+  ap=fAproj-(ncols[0]+ncols[1]+ncols[2]+ncols[3]);
+  if (ap<0) ap=0;
+  zt=fZtarg-(ncols[0]+ncols[1]);
+  if (zt<0) zt=0;
+  at=fAtarg-(ncols[0]+ncols[1]+ncols[2]+ncols[3]);
+  if (at<0) at=0;
+
+  Int_t nspec=0;
+
+  if (pproj.GetNorm() > fSpecpmin)
+  {
+   kf=2212; // Projectile spectator protons
+   charge=Pychge(kf)/3.;
+   mass=pmass;
+   Pyname(kf,name);
+   for (Int_t iprojp=1; iprojp<=zp; iprojp++)
+   {
+    nspec++;
+    t.Reset();
+    t.SetId(-nspec);
+    t.SetParticleCode(kf);
+    t.SetName(name);
+    t.SetTitle("Projectile spectator proton");
+    t.SetCharge(charge);
+    t.SetMass(mass);
+    t.Set3Momentum(pproj);
+    t.SetBeginPoint(r);
+
+    fEvent->AddTrack(t);
+   }
+
+   kf=2112; // Projectile spectator neutrons
+   charge=Pychge(kf)/3.;
+   mass=nmass;
+   Pyname(kf,name);
+   for (Int_t iprojn=1; iprojn<=(ap-zp); iprojn++)
+   {
+    nspec++;
+    t.Reset();
+    t.SetId(-nspec);
+    t.SetParticleCode(kf);
+    t.SetName(name);
+    t.SetTitle("Projectile spectator neutron");
+    t.SetCharge(charge);
+    t.SetMass(mass);
+    t.Set3Momentum(pproj);
+    t.SetBeginPoint(r);
+
+    fEvent->AddTrack(t);
+   }
+  }
+
+  if (ptarg.GetNorm() > fSpecpmin)
+  {
+   kf=2212; // Target spectator protons
+   charge=Pychge(kf)/3.;
+   mass=pmass;
+   Pyname(kf,name);
+   for (Int_t itargp=1; itargp<=zt; itargp++)
+   {
+    nspec++;
+    t.Reset();
+    t.SetId(-nspec);
+    t.SetParticleCode(kf);
+    t.SetName(name);
+    t.SetTitle("Target spectator proton");
+    t.SetCharge(charge);
+    t.SetMass(mass);
+    t.Set3Momentum(ptarg);
+    t.SetBeginPoint(r);
+
+    fEvent->AddTrack(t);
+   }
+
+   kf=2112; // Target spectator neutrons
+   charge=Pychge(kf)/3.;
+   mass=nmass;
+   Pyname(kf,name);
+   for (Int_t itargn=1; itargn<=(at-zt); itargn++)
+   {
+    nspec++;
+    t.Reset();
+    t.SetId(-nspec);
+    t.SetParticleCode(kf);
+    t.SetName(name);
+    t.SetTitle("Target spectator neutron");
+    t.SetCharge(charge);
+    t.SetMass(mass);
+    t.Set3Momentum(ptarg);
+    t.SetBeginPoint(r);
+
+    fEvent->AddTrack(t);
+   }
+  }
+
+ // Link the spectator tracks to the primary vertex.
+ if (fVertexmode)
+ {
+  AliVertex* vp=fEvent->GetIdVertex(1);
+  if (vp)
+  {
+   for (Int_t ispec=1; ispec<=nspec; ispec++)
+   {
+    AliTrack* tx=fEvent->GetIdTrack(-ispec);
+    if (tx) vp->AddTrack(tx);
+   }
+  }
+ }
+}
+
  if (mlist && !(fEventnum%fPrintfreq)) cout << endl; // Create empty output line after the event
- if (fOutTree) fOutTree->Fill();
+
+ if (fOutTree && fSelect) fOutTree->Fill();
 }
 ///////////////////////////////////////////////////////////////////////////
-AliEvent* AliCollider::GetEvent()
+AliEvent* AliCollider::GetEvent(Int_t select)
 {
 // Provide pointer to the generated event structure.
- return fEvent;
+//
+// select = 0 : Always return the pointer to the generated event.
+//          1 : Only return the pointer to the generated event in case
+//              the event passed the selection criteria as specified via
+//              SelectEvent(). Otherwise the value 0 will be returned.
+//
+// By invoking GetEvent() the default of select=0 will be used.
+
+ if (!select || fSelect)
+ {
+  return fEvent;
+ }
+ else
+ {
+  return 0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliCollider::EndRun()
@@ -757,5 +948,123 @@ void AliCollider::SetStable(Int_t id,Int_t mode)
  {
   cout << " *AliCollider::SetStable* Invalid parameter. mode = " << mode << endl;
  }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliCollider::SelectEvent(Int_t id)
+{
+// Add a particle to the event selection list.
+// The parameter "id" indicates the Pythia KF particle code, which
+// basically is the PDG particle identifier code.
+// In case the user has built a selection list via this procedure, only the
+// events in which one of the particles specified in the list was generated
+// will be kept. 
+// The investigation of the generated particles takes place when the complete
+// event is in memory, including all (shortlived) mother particles and resonances.
+// So, the settings of the various particle decay modes have no influence on
+// the event selection described here.
+//
+// If no list has been specified, all events will be accepted.  
+//
+// Note : id=0 will delete the selection list.
+//
+// Be aware of the fact that severe selection criteria (i.e. selecting only
+// rare events) may result in long runtimes before an event sample has been
+// obtained.
+//
+ if (!id)
+ {
+  if (fSelections)
+  {
+   delete fSelections;
+   fSelections=0;
+  }
+ }
+ else
+ {
+  Int_t kc=Pycomp(id);
+  if (!fSelections)
+  {
+   fSelections=new TArrayI(1);
+   fSelections->AddAt(kc,0);
+  }
+  else
+  {
+   Int_t exist=0;
+   Int_t size=fSelections->GetSize();
+   for (Int_t i=0; i<size; i++)
+   {
+    if (kc==fSelections->At(i))
+    {
+     exist=1;
+     break;
+    }
+   }
+  
+   if (!exist)
+   {
+    fSelections->Set(size+1);
+    fSelections->AddAt(kc,size);
+   }
+  }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliCollider::GetSelectionFlag()
+{
+// Return the value of the selection flag for the total event.
+// When the event passed the selection criteria as specified via
+// SelectEvent() the value 1 is returned, otherwise the value 0 is returned.
+ return fSelect;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliCollider::IsSelected()
+{
+// Check whether the generated (sub)event contains one of the particles
+// specified in the selection list via SelectEvent().
+// If this is the case or when no selection list is present, the value 1
+// will be returned, indicating the event is selected to be kept.
+// Otherwise the value 0 will be returned.
+
+ if (!fSelections) return 1; 
+
+ Int_t nsel=fSelections->GetSize();
+ Int_t npart=GetN();
+ Int_t kf,kc;
+
+ Int_t select=0;
+ for (Int_t jpart=1; jpart<=npart; jpart++)
+ {
+  kf=GetK(jpart,2);
+  kc=Pycomp(kf);
+  for (Int_t i=0; i<nsel; i++)
+  {
+   if (kc==fSelections->At(i))
+   {
+    select=1;
+    break;
+   }
+  }
+  if (select) break;
+ }
+ return select;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliCollider::SetSpectatorPmin(Float_t pmin)
+{
+// Set minimal momentum in GeV/c for spectator tracks to be stored.
+// Spectator tracks with a momentum below this threshold will not be stored
+// in the (output) event structure.
+// This facility allows to minimise the output file size.
+// Note that when the user wants to boost the event into another reference
+// frame these spectator tracks might have got momenta above the threshold.
+// However, when the spectator tracks were not stored in the event structure
+// in the original frame, there is no way to retreive them anymore. 
+ fSpecpmin=pmin;
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliCollider::GetSpectatorPmin()
+{
+// Provide the minimal spectator momentum in GeV/c.
+ return fSpecpmin;
 }
 ///////////////////////////////////////////////////////////////////////////
