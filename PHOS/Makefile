@@ -23,15 +23,9 @@ DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 
 # FORTRAN sources
 
-FSRCS = AliPHOSf.F AliPHOScommon.F
-
-# FORTRAN Objectrs
-
-FOBJS         = $(patsubst %.F,tgt_$(ALICE_TARGET)/%.o,$(FSRCS))
+# FORTRAN Objects
 
 # C Objects
-
-COBJS         = $(patsubst %.c,tgt_$(ALICE_TARGET)/%.o,$(CSRCS))
 
 # C++ Objects
 
@@ -43,44 +37,23 @@ CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/
  
 # FORTRAN compilation flags
 
-FFLAGS      = $(FOPT)
+ALSRCS  = $(SRCS)
 
-##### Other Libraries #####
-
-SHSRCS  = $(wildcard shaker/*.f)
-SHOBJS  = $(patsubst %.f,tgt_$(ALICE_TARGET)/%.o,$(SHSRCS))
-
-RCSRCS  = $(wildcard reconstruction/*.f)  
-RCOBJS  = $(patsubst %.f,tgt_$(ALICE_TARGET)/%.o,$(RCSRCS))
-
-DUSRCS	= libPHOSdummy.cxx
-DUOBJS	= $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DUSRCS))
-
-ALSRCS  = $(SRCS) $(SHSRCS) $(RCSRCS) $(DUSRCS) dummies.c
-
-ALOBJS  = $(SHOBJS) $(RCOBJS) $(DUOBJS)
+ALOBJS  = $(OBJS)
 
 ##### COMMANDS ##### 
 
-SLIBRARY     	= $(LIBDIR)/libPHOSdummy.$(SL) $(LIBDIR)/libPHOSshaker.$(SL) \
-                  $(LIBDIR)/libPHOSreconstruction.$(SL) $(LIBDIR)/libPHOS.$(SL)
+SLIBRARY     	= $(LIBDIR)/libPHOS.$(SL)
 
 default:	$(SLIBRARY)
-
-$(LIBDIR)/libPHOSdummy.$(SL):		$(DUOBJS)
-
-$(LIBDIR)/libPHOSshaker.$(SL):		$(SHOBJS)
-
-$(LIBDIR)/libPHOSreconstruction.$(SL):	$(RCOBJS)
 
 $(LIBDIR)/libPHOS.$(SL):			$(OBJS) $(FOBJS)
 
 $(DICT):					$(HDRS)
 
-depend:				$(SRCS) $(DUSRCS) $(SHSRCS) $(RCSRCS)
+depend:				$(SRCS) 
 
-TOCLEAN		=	$(DUOBJS) $(SHOBJS) $(RCOBJS) $(OBJS) $(FOBJS) \
-                        *Cint.cxx *Cint.h
+TOCLEAN		=	$(OBJS) *Cint.cxx *Cint.h
 
 ############################### General Macros ################################
 

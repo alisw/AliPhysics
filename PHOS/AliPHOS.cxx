@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/11/08 07:12:31  fca
+Minor corrections thanks to I.Hrivnacova
+
 Revision 1.8  1999/09/29 09:24:23  fca
 Introduction of the Copyright and cvs Log
 
@@ -888,7 +891,7 @@ Float_t AliPHOSCradle::GetDistortedValue(const TH2F *h, UInt_t n)
   #define common_for_event_storing common_for_event_storing_
 #endif
 
-extern "C" struct
+/* extern "C" */ struct
 {
   enum { crystals_matrix_amount_max=4, crystals_in_matrix_amount_max=40000 };
 
@@ -980,7 +983,7 @@ extern "C" struct
 #define rcgamma rcgamma_
 #endif
 
-extern "C" struct
+/* extern "C" */ struct
 {
   enum {NGP=1000, nsps=10, nvertmax=1000};
   int   recons_gammas_amount, mw[NGP],ID[NGP],JD[NGP];

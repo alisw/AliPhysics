@@ -21,5 +21,4 @@
       call gupara
       call gudtim
       call guplsh
-      call phos_data
       end
