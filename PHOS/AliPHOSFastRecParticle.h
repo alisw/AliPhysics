@@ -56,9 +56,9 @@ class AliPHOSFastRecParticle : public TParticle {
     else return kFALSE ;
   }
   
-  Bool_t IsPhoton           (const char* purity = "low") const;
-  Bool_t IsPi0              (const char* purity = "low") const;
-  Bool_t IsElectron         (const char* purity = "low") const;
+  Bool_t IsPhoton           (TString purity = "low") const;
+  Bool_t IsPi0              (TString purity = "low") const;
+  Bool_t IsElectron         (TString purity = "low") const;
   Bool_t IsHadron           () const;
   Bool_t IsChargedHadron    () const;
   Bool_t IsNeutralHadron    () const;
