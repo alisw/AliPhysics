@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2001/03/13 00:17:41  barbera
+New SDD geometry got grom F. Tosello and checked by the SDD engineers
+
 Revision 1.19  2001/02/28 18:23:13  barbera
 Setters and getters to set/get the detector and chip thickness on SPD layers added
 
@@ -1701,9 +1704,9 @@ void AliITSvPPRasymm::CreateGeometry(){
   // SDD ladder of layer 3 - F.T. March,7-2001
   I004dits[0] = I302dits[0]+0.005;
   I004dits[1] = 2*I302dits[1]+Y_SDD_sep/2.;
-  I004dits[2] = fabsf(Z_SDD_lay3[0]);
-  if (I004dits[2] < fabsf(Z_SDD_lay3[5])) {
-    I004dits[2] = fabsf(Z_SDD_lay3[5]);
+  I004dits[2] = TMath::Abs(Z_SDD_lay3[0]);
+  if (I004dits[2] < TMath::Abs(Z_SDD_lay3[5])) {
+    I004dits[2] = TMath::Abs(Z_SDD_lay3[5]);
   }
   I004dits[2] = I004dits[2] + I302dits[2];
   gMC->Gsvolu("I004", "BOX ", idtmed[209], I004dits, 3);  
@@ -1711,9 +1714,9 @@ void AliITSvPPRasymm::CreateGeometry(){
   // SDD ladder of layer 4 - F.T. March,7-2001
   I005dits[0] = I402dits[0]+0.005;
   I005dits[1] = 2*I402dits[1]+Y_SDD_sep/2.;
-  I005dits[2] = fabsf(Z_SDD_lay4[0]);
-  if (I005dits[2] < fabsf(Z_SDD_lay4[7])) {
-    I005dits[2] = fabsf(Z_SDD_lay4[7]);
+  I005dits[2] = TMath::Abs(Z_SDD_lay4[0]);
+  if (I005dits[2] < TMath::Abs(Z_SDD_lay4[7])) {
+    I005dits[2] = TMath::Abs(Z_SDD_lay4[7]);
   }
   I005dits[2] = I005dits[2] + I402dits[2];
   gMC->Gsvolu("I005", "BOX ", idtmed[209], I005dits, 3);  

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/03/13 00:43:43  barbera
+Updated version of the PPR detailed geometry with symmetric services. Of course, the central part of the detector (volume ITSD and its daughters) is the same of AliITSvPPRasymm.cxx
+
 Revision 1.6  2001/02/13 16:53:35  nilsen
 Fixed a but when trying to use GEANT4. Needed to replace
 if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
@@ -1742,9 +1745,9 @@ void AliITSvPPRsymm::CreateGeometry(){
   // SDD ladder of layer 3 - F.T. March,7-2001
   I004dits[0] = I302dits[0]+0.005;
   I004dits[1] = 2*I302dits[1]+Y_SDD_sep/2.;
-  I004dits[2] = fabsf(Z_SDD_lay3[0]);
-  if (I004dits[2] < fabsf(Z_SDD_lay3[5])) {
-    I004dits[2] = fabsf(Z_SDD_lay3[5]);
+  I004dits[2] = TMath::Abs(Z_SDD_lay3[0]);
+  if (I004dits[2] < TMath::Abs(Z_SDD_lay3[5])) {
+    I004dits[2] = TMath::Abs(Z_SDD_lay3[5]);
   }
   I004dits[2] = I004dits[2] + I302dits[2];
   gMC->Gsvolu("I004", "BOX ", idtmed[209], I004dits, 3);  
@@ -1752,9 +1755,9 @@ void AliITSvPPRsymm::CreateGeometry(){
   // SDD ladder of layer 4 - F.T. March,7-2001
   I005dits[0] = I402dits[0]+0.005;
   I005dits[1] = 2*I402dits[1]+Y_SDD_sep/2.;
-  I005dits[2] = fabsf(Z_SDD_lay4[0]);
-  if (I005dits[2] < fabsf(Z_SDD_lay4[7])) {
-    I005dits[2] = fabsf(Z_SDD_lay4[7]);
+  I005dits[2] = TMath::Abs(Z_SDD_lay4[0]);
+  if (I005dits[2] < TMath::Abs(Z_SDD_lay4[7])) {
+    I005dits[2] = TMath::Abs(Z_SDD_lay4[7]);
   }
   I005dits[2] = I005dits[2] + I402dits[2];
   gMC->Gsvolu("I005", "BOX ", idtmed[209], I005dits, 3);  
