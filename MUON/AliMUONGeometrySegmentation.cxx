@@ -22,10 +22,10 @@
 //
 // Author:Ivana Hrivnacova, IPN Orsay
 
-#include "AliSegmentation.h"
 #include "AliLog.h"
 
 #include "AliMUONGeometrySegmentation.h"
+#include "AliMUONVGeometryDESegmentation.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryStore.h"
@@ -119,8 +119,8 @@ Bool_t AliMUONGeometrySegmentation::Notify(Int_t detElemId) const
       return false;
     }     
 
-    AliSegmentation* segmentation 
-      = (AliSegmentation*) fDESegmentations->Get(detElemId);
+    AliMUONVGeometryDESegmentation* segmentation 
+      = (AliMUONVGeometryDESegmentation*) fDESegmentations->Get(detElemId);
     if (!segmentation) {
       AliError(Form("Segmentation for detection element %d not defined",
                      detElemId));
@@ -141,7 +141,7 @@ Bool_t AliMUONGeometrySegmentation::Notify(Int_t detElemId) const
 
 //______________________________________________________________________________
 void AliMUONGeometrySegmentation::Add(Int_t detElemId, 
-                                      AliSegmentation* segmentation)
+                                      AliMUONVGeometryDESegmentation* segmentation)
 {
 // Add detection element segmentation
 // ---
@@ -156,8 +156,8 @@ void AliMUONGeometrySegmentation::SetPadSize(Float_t p1, Float_t p2)
 // ---
 
   for (Int_t i=0; i<fDESegmentations->GetNofEntries(); i++) {
-     AliSegmentation* segmentation
-       = (AliSegmentation*)fDESegmentations->GetEntry(i);
+     AliMUONVGeometryDESegmentation* segmentation
+       = (AliMUONVGeometryDESegmentation*)fDESegmentations->GetEntry(i);
      segmentation->SetPadSize(p1, p2);
   }   
 }
@@ -169,8 +169,8 @@ void AliMUONGeometrySegmentation::SetDAnod(Float_t d)
 // ---
 
   for (Int_t i=0; i<fDESegmentations->GetNofEntries(); i++) {
-     AliSegmentation* segmentation
-       = (AliSegmentation*)fDESegmentations->GetEntry(i);
+     AliMUONVGeometryDESegmentation* segmentation
+       = (AliMUONVGeometryDESegmentation*)fDESegmentations->GetEntry(i);
      segmentation->SetDAnod(d);
   }   
 }
@@ -190,35 +190,41 @@ Float_t AliMUONGeometrySegmentation::GetAnod(Int_t detElemId, Float_t xhit) cons
 }
 
 //______________________________________________________________________________
-void  AliMUONGeometrySegmentation::GetPadI(Int_t detElemId,
+Bool_t  AliMUONGeometrySegmentation::GetPadI(Int_t detElemId,
                                         Float_t xg, Float_t yg, Float_t zg, 
                                         Int_t& ix, Int_t& iy)
 {					
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 // ---
 
-  if (!Notify(detElemId)) return;
+  if (!Notify(detElemId)) return false;
+  
+  if (!fCurrentSegmentation->HasPad(xg, yg, zg)) return false;
 
   Float_t xl, yl, zl;
   fCurrentDetElement->Global2Local(xg, yg, zg, xl, yl, zl); 
 
   fCurrentSegmentation->GetPadI(xl, yl, zl, ix, iy);
+  return true;
 }
 		       
 //______________________________________________________________________________
-void  AliMUONGeometrySegmentation::GetPadC(Int_t detElemId,
+Bool_t  AliMUONGeometrySegmentation::GetPadC(Int_t detElemId,
                                         Int_t ix, Int_t iy, 
                                         Float_t& xg, Float_t& yg, Float_t& zg)
 {					
 // Transform from pad to real coordinates
 // ---
 
-  if (!Notify(detElemId)) return;
+  if (!Notify(detElemId)) return false;
+
+  if (!fCurrentSegmentation->HasPad(ix, iy)) return false;
 
   Float_t xl, yl, zl;
   fCurrentSegmentation->GetPadC(ix, iy, xl , yl, zl);
 
   fGeometryModule->Local2Global(detElemId, xl, yl, zl, xg, yg, zg); 
+  return true;
 }
 
 

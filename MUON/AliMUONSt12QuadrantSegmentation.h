@@ -17,7 +17,7 @@
 #include "AliMpStationType.h"
 #include "AliMpPlaneType.h"
 
-#include "AliSegmentation.h"
+#include "AliMUONVGeometryDESegmentation.h"
 
 class TObjArray;
 
@@ -28,11 +28,11 @@ class AliMpPad;
 
 class AliMUONChamber;
 
-class AliMUONSt12QuadrantSegmentation : public AliSegmentation 
+class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation 
 {
   public:
     AliMUONSt12QuadrantSegmentation(AliMpStationType stationType,
-                                   AliMpPlaneType planeType);
+                                    AliMpPlaneType planeType);
     AliMUONSt12QuadrantSegmentation();
     
     virtual ~AliMUONSt12QuadrantSegmentation();
@@ -47,6 +47,13 @@ class AliMUONSt12QuadrantSegmentation : public AliSegmentation
                        // Pad size Dx*Dy 
     virtual void SetDAnod(Float_t D);
                        // Anode Pitch
+
+    // Check if pad exists
+    //
+    virtual Bool_t  HasPad(Float_t x, Float_t y, Float_t z); 
+                       // Returns true if a pad exists in the given position
+    virtual Bool_t  HasPad(Int_t ix, Int_t iy);
+                       // Returns true if a pad with given indices exists
 
     // Transform from pad (wire) to real coordinates and vice versa
     //

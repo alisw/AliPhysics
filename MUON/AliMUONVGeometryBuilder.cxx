@@ -129,7 +129,6 @@ AliMUONVGeometryBuilder::operator = (const AliMUONVGeometryBuilder& rhs)
   return path;
 }  
 
-/*
 //______________________________________________________________________________
 void AliMUONVGeometryBuilder::MapSV(const TString& path0, 
                                     const TString& volName, Int_t detElemId) const
@@ -147,8 +146,7 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
     TString volName(path0(npos1, npos2-npos1));  
     
     // Check if it is sensitive volume
-    Int_t moduleId = AliMUONVGeometryDEIndexing::Instance()
-                     ->GetModuleId(detElemId);
+    Int_t moduleId = AliMUONVGeometryDEIndexing::GetModuleId(detElemId);
     AliMUONGeometryModule* geometry = GetGeometry(moduleId);
     if (geometry->IsSensitiveVolume(volName)) {
       //cout << ".. adding to the map  " 
@@ -169,20 +167,6 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
     MapSV(path, newName, detElemId);
   }
 }     
-*/
-
-//______________________________________________________________________________
-void AliMUONVGeometryBuilder::MapSV(const TString& /*path0*/, 
-                                    const TString& /*volName*/, 
-				    Int_t /*detElemId*/) const
-{
-// Update the path with all daughters volumes recursively
-// and map it to the detection element Id if it is a sensitive volume
-// ---
-
-  AliWarning("Not yet available");
-}     
-
 
 //______________________________________________________________________________
 void AliMUONVGeometryBuilder::FillData(Int_t moduleId, Int_t nofDetElements,

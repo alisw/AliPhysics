@@ -13,12 +13,12 @@
 //  and the differents PCB densities. 
 //*********************************************************
 
-#include  "AliSegmentation.h"
+#include  "AliMUONVGeometryDESegmentation.h"
 
 class TArrayF;
 class TArrayI;
 
-class AliMUONSt345SlatSegmentation : public AliSegmentation 
+class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation 
 {
  public:
     AliMUONSt345SlatSegmentation();
@@ -33,6 +33,9 @@ class AliMUONSt345SlatSegmentation : public AliSegmentation
    
     virtual void     FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy);  // Initialisation for pad iteration
     virtual void     FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy);
+
+    virtual Bool_t   HasPad(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/) { return true; }
+    virtual Bool_t   HasPad(Int_t /*ix*/, Int_t /*iy*/) { return true; }
 
     virtual Float_t  GetAnod(Float_t xhit) const;  // Anod wire coordinate closest to xhit
     virtual void     GetPadI(Float_t x ,Float_t y ,Int_t   &ix,Int_t &iy);  // Transform from pad to real coordinates

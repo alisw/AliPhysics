@@ -49,7 +49,7 @@ const Float_t  AliMUONSt12QuadrantSegmentation::fgkLengthUnit = 0.1;
 AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
                                        AliMpStationType stationType,
 				       AliMpPlaneType planeType) 
-: AliSegmentation(),
+: AliMUONVGeometryDESegmentation(),
   fSector(0),
   fSectorSegmentation(0),
   fSectorIterator(0),
@@ -87,7 +87,7 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
 
 //______________________________________________________________________________
 AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation() 
-: AliSegmentation(),
+: AliMUONVGeometryDESegmentation(),
   fSector(0),
   fSectorSegmentation(0),
   fSectorIterator(0),
@@ -115,7 +115,7 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation()
 
 //______________________________________________________________________________
 AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(const AliMUONSt12QuadrantSegmentation& rhs) 
-  : AliSegmentation(rhs)
+  : AliMUONVGeometryDESegmentation(rhs)
 {
 // Copy constructor
   AliFatal("Copy constructor is not implemented.");
@@ -188,6 +188,29 @@ void AliMUONSt12QuadrantSegmentation::SetDAnod(Float_t d)
 }
 
 //______________________________________________________________________________
+Bool_t  AliMUONSt12QuadrantSegmentation::HasPad(Float_t x, Float_t y, Float_t /*z*/)
+{ 
+// Returns true if a pad exists in the given position
+
+  AliMpPad pad = fSectorSegmentation
+               ->PadByPosition(TVector2(x/fgkLengthUnit, y/fgkLengthUnit), false);
+
+  return pad.IsValid();
+}  
+
+
+//______________________________________________________________________________
+Bool_t  AliMUONSt12QuadrantSegmentation::HasPad(Int_t ix, Int_t iy)
+{
+// Returns true if a pad with given indices exists
+
+  AliMpPad pad = fSectorSegmentation->PadByIndices(AliMpIntPair(ix,iy), false);
+
+  return pad.IsValid();
+}  
+
+
+//______________________________________________________________________________
 Float_t AliMUONSt12QuadrantSegmentation::GetAnod(Float_t xhit) const
 {
 // Anod wire coordinate closest to xhit
@@ -220,7 +243,7 @@ void  AliMUONSt12QuadrantSegmentation::GetPadI(Float_t x, Float_t y,
 // ---
 
   AliMpPad pad = fSectorSegmentation
-               ->PadByPosition(TVector2(x/fgkLengthUnit, y/fgkLengthUnit), false);
+               ->PadByPosition(TVector2(x/fgkLengthUnit, y/fgkLengthUnit), true);
 
   ix = pad.GetIndices().GetFirst();
   iy = pad.GetIndices().GetSecond();
@@ -245,7 +268,7 @@ void  AliMUONSt12QuadrantSegmentation::GetPadC(Int_t ix, Int_t iy,
 // If there is no pad, x = 0., y = 0. are returned.
 // ---
 
-  AliMpPad pad = fSectorSegmentation->PadByIndices(AliMpIntPair(ix,iy));
+  AliMpPad pad = fSectorSegmentation->PadByIndices(AliMpIntPair(ix,iy), true);
 
   x = pad.Position().X() * fgkLengthUnit;
   y = pad.Position().Y() * fgkLengthUnit;
@@ -311,20 +334,38 @@ Float_t AliMUONSt12QuadrantSegmentation::Dpy(Int_t isector) const
 Int_t AliMUONSt12QuadrantSegmentation::Npx() const
 {
 // Maximum number of Pads in x
+// hard coded for the time being
 // ---
 
   //Fatal("Npx", "Not yet implemented.");
-  return 142; //hard coded for the time being
+  switch (fSector->GetDirection()) {
+    case kX:
+      return 142;
+    case kY:
+      return 108;
+    default:
+      AliError("Unknown sector direction");
+      return 0;  
+  }      
 }
 
 //______________________________________________________________________________
 Int_t AliMUONSt12QuadrantSegmentation::Npy() const
 {
 // Maximum number of Pads in y
+// hard coded for the time being
 // ---
 
   //Fatal("Npy", "Not yet implemented.");
-  return 213; //hard coded for the time being
+  switch (fSector->GetDirection()) {
+    case kX:
+      return 160;
+    case kY:
+      return 213;
+    default:
+      AliError("Unknown sector direction");
+      return 0;  
+  }    
 }
 
 //______________________________________________________________________________

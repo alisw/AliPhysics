@@ -35,7 +35,7 @@ ClassImp(AliMUONSt345SlatSegmentation)
 
 
 AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation() 
-  : AliSegmentation(),
+  : AliMUONVGeometryDESegmentation(),
     fId(0),
     fDpx(0),
     fDpy(0),
@@ -61,7 +61,7 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation()
   (*fDpxD)[0]=(*fDpxD)[1]=(*fDpxD)[2]=(*fDpxD)[3]=0;       
 }
 //----------------------------------------------------------------------
-AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& rhs) : AliSegmentation(rhs)
+AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& rhs) : AliMUONVGeometryDESegmentation(rhs)
 {
   AliFatal("Not implemented.");
 }

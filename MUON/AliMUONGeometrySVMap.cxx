@@ -134,13 +134,9 @@ void  AliMUONStringIntMap::Clear()
 // Deletes the elements
 // ---
 
-  cout << "######### clearing map " << endl;
-
   fNofItems = 0;
   fFirstArray.Delete();
   fSecondArray.Reset();
-
-  cout << "######### clearing map done " << endl;
 }  
     
 //______________________________________________________________________________
