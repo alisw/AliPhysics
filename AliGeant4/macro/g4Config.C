@@ -297,7 +297,7 @@ PMD->SetPadSize(0.8, 1.0, 1.0, 1.5);
 
 if(iSTART) {
 //=================== START parameters ============================
-AliSTART *START  = new AliSTARTv0("START","START Detector");
+AliSTART *START  = new AliSTARTv1("START","START Detector");
 }
 
 } // end (!isSetInteractively)
