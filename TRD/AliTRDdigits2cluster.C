@@ -31,21 +31,28 @@ void AliTRDdigits2cluster()
   // Set the parameter
   clusterizer->SetVerbose(1);
 
-  // Open the AliRoot file 
-  clusterizer->Open(infile,0);
-  //clusterizer->Open(infile,outfile,0);
+  //Number of events
+  TTree * te = (TTree*)parfile->Get("TE");
+  Int_t nev = (Int_t)te->GetEntries();
+
+  for(Int_t iev=0;iev<nev;iev++) {
+
+    // Open the AliRoot file 
+    clusterizer->Open(infile,iev);
+    //clusterizer->Open(infile,outfile,0);
 
 
-  // Load the digits
-  clusterizer->ReadDigits();
-  clusterizer->Dump();
+    // Load the digits
+    clusterizer->ReadDigits();
+    clusterizer->Dump();
  
-  // Find the cluster
-  clusterizer->MakeClusters();
+    // Find the cluster
+    clusterizer->MakeClusters();
 
-  // Write the cluster tree into file AliTRDclusters.root
-  clusterizer->WriteClusters(-1);
+    // Write the cluster tree into file AliTRDclusters.root
+    clusterizer->WriteClusters(-1);
 
+  }
   // Save the clusterizer class in the AliROOT file
   // clusterizer->Write();
 
