@@ -619,7 +619,6 @@ gtrak/gpgkin.F \
 gtrak/gpjxyz.F \
 gtrak/granor.F \
 gtrak/grkuta.F \
-gtrak/grndmq.F \
 gtrak/gsking.F \
 gtrak/gskpho.F \
 gtrak/gsstak.F \
