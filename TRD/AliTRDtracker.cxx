@@ -527,7 +527,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
     }
     //
     //Propagation to the TOF (I.Belikov)
-    
+    CookdEdxTimBin(*track);
     if (track->GetStop()==kFALSE){
       
       Double_t xtof=371.;
@@ -650,10 +650,10 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
 
     AliTRDtrack *pt = new AliTRDtrack(seed2,seed2.GetAlpha());
     UInt_t * indexes2 = seed2.GetIndexes();
-    for (Int_t i=0;i<kNPlane;i++) {
-      pt->SetPIDsignals(seed2.GetPIDsignals(i),i);
-      pt->SetPIDTimBin(seed2.GetPIDTimBin(i),i);
-    }
+//     for (Int_t i=0;i<kNPlane;i++) {
+//       pt->SetPIDsignals(seed2.GetPIDsignals(i),i);
+//       pt->SetPIDTimBin(seed2.GetPIDTimBin(i),i);
+//     }
 
     UInt_t * indexes3 = pt->GetBackupIndexes();
     for (Int_t i=0;i<200;i++) {
@@ -673,10 +673,10 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
 
     if(PropagateToTPC(t)) {
       seed->UpdateTrackParams(pt, AliESDtrack::kTRDrefit);
-      for (Int_t i=0;i<kNPlane;i++) {
-        seed->SetTRDsignals(pt->GetPIDsignals(i),i);
-        seed->SetTRDTimBin(pt->GetPIDTimBin(i),i);
-      }
+     //  for (Int_t i=0;i<kNPlane;i++) {
+//         seed->SetTRDsignals(pt->GetPIDsignals(i),i);
+//         seed->SetTRDTimBin(pt->GetPIDTimBin(i),i);
+//       }
     }else{
       //if not prolongation to TPC - propagate without update
       AliTRDtrack* seed2 = new AliTRDtrack(*seed);
@@ -687,10 +687,10 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
         pt2->CookdEdx(0.,1.);
         CookdEdxTimBin(*pt2);
 	seed->UpdateTrackParams(pt2, AliESDtrack::kTRDrefit);
-        for (Int_t i=0;i<kNPlane;i++) {
-          seed->SetTRDsignals(pt2->GetPIDsignals(i),i);
-          seed->SetTRDTimBin(pt2->GetPIDTimBin(i),i);
-        }
+       //  for (Int_t i=0;i<kNPlane;i++) {
+//           seed->SetTRDsignals(pt2->GetPIDsignals(i),i);
+//           seed->SetTRDTimBin(pt2->GetPIDTimBin(i),i);
+//         }
       }
       delete pt2;
     }  
