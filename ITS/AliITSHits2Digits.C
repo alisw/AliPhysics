@@ -1,7 +1,7 @@
 TFile* AccessFile(TString inFile="galice.root", TString acctype="R");
 void writeAR(TFile * fin, TFile *fou);
 
-Int_t AliITSHits2SDigits(Int_t evNumber1=0,Int_t evNumber2=0, TString inFile = "galice.root", TString outFile="galice.root"){
+Int_t AliITSHits2Digits(Int_t evNumber1=0,Int_t evNumber2=0, TString inFile = "galice.root", TString outFile="galice.root"){
 
   // Dynamically link some shared libs
   if (gClassTable->GetID("AliRun") < 0) {
@@ -19,11 +19,11 @@ Int_t AliITSHits2SDigits(Int_t evNumber1=0,Int_t evNumber2=0, TString inFile = "
     file = AccessFile(inFile);
   }
   
-  TFile *file2 = 0;  // possible output file for TreeS
+  TFile *file2 = 0;  // possible output file for TreeD
 
   if(!(outFile.Data() == inFile.Data())){
-    // open output file and create TreeS on it
-    file2 = gAlice->InitTreeFile("S",outFile);
+    // open output file and create TreeR on it
+    file2 = gAlice->InitTreeFile("D",outFile);
   }
 
   AliITS *ITS = (AliITS*)gAlice->GetDetector("ITS");      
@@ -50,20 +50,18 @@ Int_t AliITSHits2SDigits(Int_t evNumber1=0,Int_t evNumber2=0, TString inFile = "
   } // end if
   TStopwatch timer;
   timer.Start();
+
   for(Int_t nevent = evNumber1; nevent <= evNumber2; nevent++){
+    cout<<"Producing Digits for event n."<<nevent<<endl;
     gAlice->GetEvent(nevent);
-    if(!gAlice->TreeS() && file2 == 0){ 
-      cout << "Having to create the SDigits Tree." << endl;
-      gAlice->MakeTree("S");
-    } // end if !gAlice->TreeS()
-    if(file2)gAlice->MakeTree("S",file2);
-    //    make branch
-    ITS->MakeBranch("S");
-    ITS->SetTreeAddress();
-    cout<<"Making ITS SDigits for event "<<nevent<<endl;
-    TStopwatch timer;
-    Long_t size0 = file->GetSize();
-    ITS->Hits2SDigits();
+    if(!gAlice->TreeD() && file2 == 0){ 
+      cout << "Having to create the Digits Tree." << endl;
+      gAlice->MakeTree("D");
+    } 
+    if(file2)gAlice->MakeTree("D",file2);
+    ITS->MakeBranch("D");
+    ITS->SetTreeAddress();   
+    ITS->Hits2Digits();
   }
   timer.Stop();
   timer.Print();
@@ -71,7 +69,8 @@ Int_t AliITSHits2SDigits(Int_t evNumber1=0,Int_t evNumber2=0, TString inFile = "
   // write the AliRun object to the output file
   if(file2)writeAR(file,file2);
 
-  delete gAlice;   gAlice=0;
+  delete gAlice;   
+  gAlice=0;
   file->Close();
 }
 

@@ -107,16 +107,14 @@ void AliITSH2SD2Files(TFile *file2){
 	return ;
   }
 
-  // for old files
+  // these re-instantiations are necessary if the input file was created
+  // with aliroot version V3.07 or older
   AliITSresponseSDD *resp1 = (AliITSresponseSDD*)ITS->DetType(1)->GetResponseModel();
-  TDatime *ct0= new TDatime(2002,04,26,00,00,00),ct=file2->GetCreationDate();
-  if(ct0->GetDate()<ct.GetDate()){
-    resp1 = new AliITSresponseSDD();
-    ITS->SetResponseModel(1,resp1);
-    cout << "Changed response class for SDD: \n";
-    resp1->Print();
-  } // end if
-  // end mods for old files (<26/4/2002)
+  resp1 = new AliITSresponseSDD();
+  ITS->SetResponseModel(1,resp1);
+  cout << "Changed response class for SDD: \n";
+  resp1->Print();
+
   for (Int_t nevent=0; nevent<gAlice->TreeE()->GetEntries(); nevent++) {
     gAlice->GetEvent(nevent);
     gAlice->MakeTree("S",file2);
