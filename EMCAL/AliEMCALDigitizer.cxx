@@ -107,7 +107,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const char *headerFile,const char *name)
 AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
 {
   // ctor
-  SetName("");     //Will call init in the digitizing
+  SetName("Default");    
   SetTitle("aliroot") ;  
 }
 
@@ -155,16 +155,6 @@ void AliEMCALDigitizer::InitParameters()
 
   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
  
-
-
-  if(fManager)
-    SetTitle("aliroot") ;
-  else if (strcmp(GetTitle(),"")==0) 
-    SetTitle("galice.root") ;
-  
-  if( strcmp(GetName(), "") == 0 )
-    SetName("Default") ;
-  
 }
 
 //____________________________________________________________________________ 
@@ -244,7 +234,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
   TClonesArray * sdigits = 0 ;
   Int_t input = 0 ;
   TObjArray * sdigArray = new TObjArray(2) ;
-  while ( (folder = (TFolder*)next()) ) 
+  while ( (folder = (TFolder*)next()) ) {
     if ( (sdigits = (TClonesArray*)folder->FindObject(GetName()) ) ) {
       TString fileName(folder->GetName()) ;
       fileName.ReplaceAll("_","/") ;
@@ -253,7 +243,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event) {
       sdigArray->AddAt(sdigits, input) ;
       input++ ;
     }
-
+  }
 
   //Find the first tower with signal
   Int_t nextSig = 200000 ; 
