@@ -295,7 +295,6 @@ void AliPHOSv1::FinishEvent()
 void AliPHOSv1::MakeBranch(Option_t* opt)
 {  
   // Create new branche in the current Root Tree in the digit Tree
-
   AliDetector::MakeBranch(opt) ;
   
   char branchname[10];
@@ -315,7 +314,6 @@ void AliPHOSv1::MakeBranch(Option_t* opt)
   }
 
 }
-
 
 //_____________________________________________________________________________
 void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
