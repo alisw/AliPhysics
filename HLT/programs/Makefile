@@ -16,9 +16,11 @@ DEFSTR = -Dno_root
 INCLUDES = -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(TOPDIR)/misc
 LIBS = -L$(LIBDIR) -lAliL3 -lAliL3Hough -lAliL3Comp -lAliL3Misc 
 
+ifneq ($(USEPACKAGE),STANDALONE)
 ROOTCFLAGS := $(shell root-config --cflags)
 ROOTLIBS   := $(shell root-config --libs)
 ROOTGLIBS  := $(shell root-config --glibs)
+endif
 
 ifeq ($(USEPACKAGE),ROOT) 
 DEFSTR = -Duse_root
@@ -34,6 +36,12 @@ ALICELIBS = -L$(ALICE_ROOT)/lib/tgt_Linux -lTPC -lCONTAINERS -lSTEER
 INCLUDES += -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
 RLIBS = $(ROOTLIBS) -lMinuit -lEG
 LIBS += $(ALICELIBS) $(RLIBS)
+endif
+
+ifeq ($(USEPACKAGE),STANDALONE)
+DEFSTR = -Dno_root
+RLIBS =  -lpthread -lm -ldl -rdynamic
+LIBS += $(RLIBS)
 endif
 
 ifdef DO_MC
@@ -59,7 +67,7 @@ DEFSTR += $(EXTRADEF)
 CXXFLAGS = -O2 -Wall -ggdb $(EXTRACXXFLAGS) $(INCLUDES)
 LDFLAGS  = -O2 $(EXTRALDFLAGS) $(LIBS)
 
-PRGS	= runit read  runvhdlcf runhough runvhdlhough
+PRGS	= runit read  runvhdlcf runhough runvhdlhough runtracker
 UTILS   = convbin speedtest gettransform
 
 
@@ -91,6 +99,9 @@ convbin : ali2raw.o
 
 #get transform values
 gettransform : gettransform.o
+	$(LD) $< $(LDFLAGS) -o $@
+
+runtracker : runtracker.o
 	$(LD) $< $(LDFLAGS) -o $@
 
 speedtest : speedtest.cxx
