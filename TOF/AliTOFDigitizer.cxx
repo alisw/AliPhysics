@@ -127,10 +127,17 @@ void AliTOFDigitizer::Init()
     fDigits  = new TClonesArray("AliTOFdigit", 405);
     
     //add Task to //FPAlice/tasks/(S)Digitizer/TOF
-    TFolder * alice  = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("FPAlice") ;
-    TTask * aliceSD  = (TTask*)alice->FindObject("tasks/(S)Digitizer") ;
-    TTask * tofD   = (TTask*)aliceSD->GetListOfTasks()->FindObject("TOF") ;
-    tofD->Add(this) ;
+    TList * aList = gROOT->GetListOfBrowsables();
+    if (aList) {
+      TFolder * alice  = (TFolder*)aList->FindObject("FPAlice") ;
+      if (alice) {
+        TTask * aliceSD  = (TTask*)alice->FindObject("tasks/(S)Digitizer") ;
+        if (aliceSD) {
+          TTask * tofD   = (TTask*)aliceSD->GetListOfTasks()->FindObject("TOF") ;   
+          tofD->Add(this) ;
+        }
+      }
+    }
 
     fIsInitialized = kTRUE ;
   }
