@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/18 13:26:10  morsch
+New z-positions of chambers after Erice
+
 Revision 1.4  2000/10/06 09:09:56  morsch
 Outer radius of chambers adjusted to accomodate slat chambers (to be checked and updated).
 
@@ -42,10 +45,10 @@ Int_t   AliMUONConstants::fgNTrackingCh = 10;
 Int_t   AliMUONConstants::fgNTriggerCh = 4;
 Int_t   AliMUONConstants::fgNTriggerCircuit = 234;
 Float_t AliMUONConstants::fgDefaultChamberZ[14] =
-{530., 550., 672.5, 699.5, 960.1, 988.9, 1252.29, 1282.04, 1413.13, 1442.88,
+{533.5, 546.5, 678.5, 693.5, 964.0, 986.0, 1251.5, 1278.5, 1416.5, 1443.5,
 		   1610, 1625., 1710., 1725.}; 
 
-Float_t  AliMUONConstants::fgDmin[7] = {  35.,  47.,  66.0,   80.,   80., 100., 100.};    
+Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  66.0,   80.,   80., 100., 100.};    
 Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 316.6,  560.,  560., 830., 880.};  
 
 Int_t   AliMUONConstants::fgMaxZoom = 20;
