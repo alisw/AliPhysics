@@ -37,16 +37,16 @@ public:
 
   void DrawRecon(Int_t Nevent= 0,Int_t Nmod = 1,
 		 const char* branchName = "PHOSRP",
-		 const char* branchTitle = "") ; 
+		 const char* branchTitle = "Default") ; 
   // draws positions of entering of primaries and reconstructed objects in PHOS
 
-  void InvariantMass(const char* RecPartTitle = "") ;      // Photons invariant mass distributions
+  void InvariantMass(const char* RecPartTitle = "Default") ;      // Photons invariant mass distributions
 
-  void EnergyResolution (const char* RecPartTitle = "") ;  // analyzes Energy resolution ;
+  void EnergyResolution (const char* RecPartTitle = "Default") ;  // analyzes Energy resolution ;
 
-  void PositionResolution(const char* RecPartTitle = "") ; // analyzes Position resolution ;
+  void PositionResolution(const char* RecPartTitle = "Default") ; // analyzes Position resolution ;
 
-  void Contamination(const char* RecPartTitle = "") ;      // Counts contamination of photon spectrum
+  void Contamination(const char* RecPartTitle = "Default") ;      // Counts contamination of photon spectrum
 
   void Ls() ; //Prints PHOS-related contents of TreeS, TreeD and TreeR
 

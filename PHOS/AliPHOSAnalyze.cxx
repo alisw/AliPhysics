@@ -130,6 +130,10 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
 
   //========== Create ObjectGetter
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(ffileName.Data(),branchTitle) ;
+  if(Nevent >= gAlice->TreeE()->GetEntries() ) {
+    cout << "There is no event " << Nevent << ", only " << gAlice->TreeE()->GetEntries() << "events available " <<endl ;
+    return ;
+  }
   const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
   gime->Event(Nevent);
 
@@ -141,17 +145,39 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
   Int_t nxCPV = (Int_t) (nx*phosgeom->GetPadSizePhi()/(2.*cri[0])) ;
   Int_t nzCPV = (Int_t) (nz*phosgeom->GetPadSizeZ()/(2.*cri[2])) ;
   
-  TH2F * emcDigits    = new TH2F("emcDigits","EMC digits",  nx,-x,x,nz,-z,z);
-  TH2F * emcSdigits   = new TH2F("emcSdigits","EMC sdigits", nx,-x,x,nz,-z,z);
-  TH2F * emcRecPoints = new TH2F("emcRecPoints","EMC RecPoints",nx,-x,x,nz,-z,z);
-  TH2F * cpvSdigits   = new TH2F("cpvSdigits","CPV sdigits", nx,-x,x,nz,-z,z);
-  TH2F * cpvDigits    = new TH2F("cpvDigits","CPV digits",   nxCPV,-x,x,nzCPV,-z,z) ;
-  TH2F * cpvRecPoints = new TH2F("cpvCl","CPV RecPoints",    nxCPV,-x,x,nzCPV,-z,z) ;
-  TH2F * nbar         = new TH2F("nbar","Primary nbar",    nx,-x,x,nz,-z,z);
-  TH2F * phot         = new TH2F("phot","Primary Photon",  nx,-x,x,nz,-z,z);
-  TH2F * charg        = new TH2F("charg","Primary charged",nx,-x,x,nz,-z,z);
-  TH2F * recPhot      = new TH2F("recPhot","RecParticles with primary Photon",nx,-x,x,nz,-z,z);
-  TH2F * recNbar      = new TH2F("recNbar","RecParticles with primary Nbar",  nx,-x,x,nz,-z,z);
+  TH2F * emcDigits = (TH2F*) gROOT->FindObject("emcDigits") ;
+  if(emcDigits)
+    emcDigits->Delete() ;
+  emcDigits = new TH2F("emcDigits","EMC digits",  nx,-x,x,nz,-z,z);
+  TH2F * emcSdigits =(TH2F*) gROOT->FindObject("emcSdigits") ;  
+  if(emcSdigits)
+    emcSdigits->Delete() ;
+  emcSdigits = new TH2F("emcSdigits","EMC sdigits", nx,-x,x,nz,-z,z);
+  TH2F * emcRecPoints = (TH2F*)gROOT->FindObject("emcRecPoints") ; 
+  if(emcRecPoints)
+    emcRecPoints->Delete() ;
+  emcRecPoints = new TH2F("emcRecPoints","EMC RecPoints",nx,-x,x,nz,-z,z);
+  TH2F * cpvSdigits =(TH2F*) gROOT->FindObject("cpvSdigits") ;
+  if(cpvSdigits)
+    cpvSdigits->Delete() ;
+  cpvSdigits = new TH2F("cpvSdigits","CPV sdigits", nx,-x,x,nz,-z,z);
+  TH2F * cpvDigits = (TH2F*)gROOT->FindObject("cpvDigits") ;
+  if(cpvDigits)
+    cpvDigits->Delete() ;
+  cpvDigits = new TH2F("cpvDigits","CPV digits",   nxCPV,-x,x,nzCPV,-z,z) ;
+  TH2F * cpvRecPoints= (TH2F*)gROOT->FindObject("cpvRecPoints") ; 
+  if(cpvRecPoints)
+    cpvRecPoints->Delete() ;
+  cpvRecPoints = new TH2F("cpvRecPoints","CPV RecPoints",    nxCPV,-x,x,nzCPV,-z,z) ;
+
+  TH2F * phot = (TH2F*)gROOT->FindObject("phot") ;
+  if(phot)
+    phot->Delete() ;
+  phot = new TH2F("phot","Primary Photon",  nx,-x,x,nz,-z,z);
+  TH2F * recPhot = (TH2F*)gROOT->FindObject("recPhot") ; 
+  if(recPhot)
+    recPhot->Delete() ;
+  recPhot = new TH2F("recPhot","RecParticles with primary Photon",nx,-x,x,nz,-z,z);
   
   
   //Plot Primary Particles
@@ -161,14 +187,14 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
     {
       primary = gime->Primary(iPrimary) ;
       Int_t primaryType = primary->GetPdgCode() ;
-      if( (primaryType == 211)||(primaryType == -211)||(primaryType == 2212)||(primaryType == -2212)
-	  ||(primaryType == 11)||(primaryType == -11) ) {
-        Int_t moduleNumber ;
-        Double_t primX, primZ ;
-        phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-        if(moduleNumber==Nmod)
-          charg->Fill(primZ,primX,primary->Energy()) ;
-      }
+//       if( (primaryType == 211)||(primaryType == -211)||(primaryType == 2212)||(primaryType == -2212)
+// 	  ||(primaryType == 11)||(primaryType == -11) ) {
+//         Int_t moduleNumber ;
+//         Double_t primX, primZ ;
+//         phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+//         if(moduleNumber==Nmod)
+//           charg->Fill(primZ,primX,primary->Energy()) ;
+//       }
       if( primaryType == 22 ) {
         Int_t moduleNumber ;
         Double_t primX, primZ ;
@@ -176,21 +202,22 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
         if(moduleNumber==Nmod) 
           phot->Fill(primZ,primX,primary->Energy()) ;
       }
-      else{
-        if( primaryType == -2112 ) {
-          Int_t moduleNumber ;
-          Double_t primX, primZ ;
-          phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
-          if(moduleNumber==Nmod)
-            nbar->Fill(primZ,primX,primary->Energy()) ;
-        }
-      }
+//       else{
+//         if( primaryType == -2112 ) {
+//           Int_t moduleNumber ;
+//           Double_t primX, primZ ;
+//           phosgeom->ImpactOnEmc(primary->Theta(), primary->Phi(), moduleNumber, primX, primZ) ;
+//           if(moduleNumber==Nmod)
+//             nbar->Fill(primZ,primX,primary->Energy()) ;
+//         }
+//       }
     }  
 
   
   Int_t iSDigit ;
   AliPHOSDigit * sdigit ;
   TClonesArray * sdigits = gime->SDigits() ;
+  Int_t nsdig[5] = {0,0,0,0,0} ;
   if(sdigits){
     for(iSDigit = 0; iSDigit < sdigits->GetEntriesFast() ; iSDigit++)
       {
@@ -200,6 +227,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
 	Float_t x,z ;
 	phosgeom->RelPosInModule(relid,x,z) ;
   	Float_t e = gime->SDigitizer()->Calibrate(sdigit->GetAmp()) ;
+	nsdig[relid[0]-1]++ ;
 	if(relid[0]==Nmod){
 	  if(relid[1]==0)  //EMC
 	    emcSdigits->Fill(x,z,e) ;
@@ -208,6 +236,10 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
 	}
       }
   }
+  cout << "Number of EMC + CPV SDigits per module: " <<endl ;
+  cout << nsdig[0] << " " << nsdig[1] << " " << nsdig[2] << " " << nsdig[3]<< " " << nsdig[4] << endl ;
+  cout << endl ;
+
 
   //Plot digits
   Int_t iDigit ;
@@ -302,9 +334,9 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
 	    
 	    if(primaryType==22)
 	      recPhot->Fill(recZ,recX,recParticle->Energy()) ;
-	    else
-	      if(primaryType==-2112)
-		recNbar->Fill(recZ,recX,recParticle->Energy()) ; 
+// 	    else
+// 	      if(primaryType==-2112)
+// 		recNbar->Fill(recZ,recX,recParticle->Energy()) ; 
 	  }
 	}
       }
@@ -314,15 +346,11 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod,const char * branchName,c
   //Plot made histograms
   emcSdigits->Draw("box") ;
   emcDigits->SetLineColor(5) ;
-  emcDigits->Draw("box") ;
+  emcDigits->Draw("boxsame") ;
   emcRecPoints->SetLineColor(2) ;
   emcRecPoints->Draw("boxsame") ;
   cpvSdigits->SetLineColor(1) ;
-  cpvSdigits->Draw("box") ;
-  charg->SetLineColor(2) ;
-  charg->Draw("boxsame") ;
-  nbar->SetLineColor(6) ;
-  nbar->Draw("boxsame") ;
+  cpvSdigits->Draw("boxsame") ;
   
 }
 //____________________________________________________________________________
