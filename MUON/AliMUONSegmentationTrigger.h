@@ -28,7 +28,6 @@ public AliMUONSegmentationV0 {
     virtual void Draw(const char *opt="") const ;
  
   protected:
-    AliMUONChamber*      fChamber;               // Parent Chamber
     Int_t                fId;                    // Identifier
 
  protected:
