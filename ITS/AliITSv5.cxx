@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2000/10/05 20:50:00  nilsen
+Now using root generated streamers.
+
 Revision 1.14.4.12  2000/10/02 16:04:03  barbera
 Forward declarations added
 
@@ -72,6 +75,7 @@ Introduction of the Copyright and cvs Log
 #include <TFile.h>    // only required for Tracking function?
 #include <TCanvas.h>
 #include <TObjArray.h>
+#include <TLorentzVector.h>
 #include <TObjString.h>
 #include <TClonesArray.h>
 #include <TBRIK.h>

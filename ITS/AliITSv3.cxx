@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.20  2000/10/07 17:29:51  nilsen
+Blank Line added at end of file to remove a warning for hp compilers
+(Give me a Break!).
+
 Revision 1.19  2000/10/05 20:49:59  nilsen
 Now using root generated streamers.
 
@@ -85,6 +89,9 @@ Introduction of the Copyright and cvs Log
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TClonesArray.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
+
 
 #include "AliMC.h"
 #include "AliConst.h"

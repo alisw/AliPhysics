@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/10/07 15:46:29  barbera
+Version 5 of the geometry with symmetric services
+
 Revision 1.25  2000/10/05 20:50:00  nilsen
 Now using root generated streamers.
 
@@ -75,6 +78,7 @@ Introduction of the Copyright and cvs Log
 #include <TFile.h>    // only required for Tracking function?
 #include <TCanvas.h>
 #include <TObjArray.h>
+#include <TLorentzVector.h>
 #include <TObjString.h>
 #include <TClonesArray.h>
 #include <TBRIK.h>

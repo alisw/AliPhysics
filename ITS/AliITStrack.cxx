@@ -7,6 +7,7 @@
 #include "AliITS.h"
 #include "AliRun.h"
 #include "AliITStrack.h"
+#include "AliGenerator.h"
 
 
 ClassImp(AliITStrack)
