@@ -1,48 +1,48 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: Alberto Pulvirenti.                                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose.                *
- * It is provided "as is" without express or implied warranty.            *
- *                                                                        *
- * AN ITS STAND-ALONE "NEURAL" TRACK FINDER                               *
- * ----------------------------------------                               *
- * This class implements the Denby-Peterson algorithm for track finding   *
- * in the ITS stand-alone, by means of a neural network simulation.       *
- * Many parameters have to be set for the neural network to operate       *
- * correctly and with a good efficiency.                                  *
- * The neural tracker must be feeded with a TTree filled with objects     *
- * of the class "AliITSNeuralPoint", into a single branch called       *
- * "Points".                                                              *
- **************************************************************************/
+///**************************************************************************
+// * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+// *                                                                        *
+// * Author: Alberto Pulvirenti.                                            *
+// *                                                                        *
+// * Permission to use, copy, modify and distribute this software and its   *
+// * documentation strictly for non-commercial purposes is hereby granted   *
+// * without fee, provided that the above copyright notice appears in all   *
+// * copies and that both the copyright notice and this permission notice   *
+// * appear in the supporting documentation. The authors make no claims     *
+// * about the suitability of this software for any purpose.                *
+// * It is provided "as is" without express or implied warranty.            *
+// *                                                                        *
+// * AN ITS STAND-ALONE "NEURAL" TRACK FINDER                               *
+// * ----------------------------------------                               *
+// * This class implements the Denby-Peterson algorithm for track finding   *
+// * in the ITS stand-alone, by means of a neural network simulation.       *
+// * Many parameters have to be set for the neural network to operate       *
+// * correctly and with a good efficiency.                                  *
+// * The neural tracker must be feeded with a TTree filled with objects     *
+// * of the class "AliITSNeuralPoint", into a single branch called       *
+// * "Points".                                                              *
+// **************************************************************************/
 
-//#define NEURAL_LINEAR
-#include <fstream>
+//#include <fstream>
 #include <Riostream.h>
 #include <stdlib.h>
 
-#include <TROOT.h>
+//#include <TROOT.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TMath.h>
 #include <TLine.h>
-#include <TMarker.h>
+//#include <TMarker.h>
 #include <TRandom.h>
 #include <TString.h>
 #include <TCanvas.h>
 #include <TVector3.h>
-#include <TParticle.h>
+//#include <TParticle.h>
 #include <TObjArray.h>
-#include <TList.h>
+//#include <TList.h>
 
-#include "AliITSNeuralPoint.h"
 #include "AliITSNeuralTracker.h"
+
+class AliITSNeuralPoint;
 
 using namespace std;
 ClassImp(AliITSNeuralTracker)
@@ -113,25 +113,20 @@ AliITSNeuralTracker::~AliITSNeuralTracker()
 	// It Destroys all the dynamic arrays and
 	// clears the TCollections and the points tree
 	
-	cout << "Starting destructor..." << endl;
-	
 	delete [] fCurvCut;
 	
 	Int_t ilayer, itheta;
 	if (fStructureOK) {
-		cout << "Deleting points..." << endl;
 		for (ilayer = 0; ilayer < 6; ilayer++) {
 			for (itheta = 0; itheta < 180; itheta++) {
 				fPoints[ilayer][itheta]->SetOwner();
 				delete fPoints[ilayer][itheta];
 			}
 		}
-		cout << "Deleting neurons..." << endl;
 		fNeurons->SetOwner();
 		delete fNeurons;
 	}
 	
-	cout << "AliITSNeuralTracker destructed completely!" << endl;
 }
 //
 //--------------------------------------------------------------------------------------------
@@ -146,11 +141,11 @@ void AliITSNeuralTracker::Display(TCanvas*& canv) const
 	for (;;) {
 		AliITSneuron *unit = (AliITSneuron*)iter.Next();
 		if (!unit) break;
-		if (unit->fActivation < fActMinimum) continue;
-		x1 = unit->fInner->X();
-		x2 = unit->fOuter->X();
-		y1 = unit->fInner->Y();
-		y2 = unit->fOuter->Y();
+		if (unit->Activation() < fActMinimum) continue;
+		x1 = unit->Inner()->X();
+		x2 = unit->Outer()->X();
+		y1 = unit->Inner()->Y();
+		y2 = unit->Outer()->Y();
 		TLine *line = new TLine(x1, y1, x2, y2);
 		canv->cd();
 		line->Draw();
@@ -321,7 +316,7 @@ Int_t AliITSNeuralTracker::ArrangePoints(TTree* ptstree)
 		// creates the object
 		created = new AliITSNode(cursor, kTRUE);
 		created->SetUser(-1);
-		created->fPosInTree = pos;
+		created->PosInTree() = pos;
 		// finds the sector in phi
 		isector = created->GetSector(fSectorWidth);
 		itheta  = created->GetThetaCell();
@@ -531,7 +526,7 @@ void AliITSNeuralTracker::StoreAbsoluteMatches()
 				TObjArrayIter iter1(list1);
 				while ( (node1 = (AliITSNode*)iter1.Next()) ) {
 					if (node1->GetUser() >= 0) continue;
-					node1->fMatches->Clear();
+					node1->Matches()->Clear();
 					thetamin = node1->ThetaDeg() - fPolarInterval;
 					thetamax = node1->ThetaDeg() + fPolarInterval;
 					imin = (Int_t)thetamin;
@@ -545,7 +540,7 @@ void AliITSNeuralTracker::StoreAbsoluteMatches()
 							check = PassAllCuts(node1, node2, fCurvNum - 1, fVX, fVY, fVZ);
 							switch (check) {
 								case 0:
-									node1->fMatches->AddLast(node2);
+									node1->Matches()->AddLast(node2);
 									break;
 								case 1:
 									//Info("StoreAbsoluteMatches", "Layer %d: THETA 2D cut not passed", ilayer);
@@ -606,7 +601,7 @@ void AliITSNeuralTracker::PrintMatches(Bool_t stop)
 				TObjArrayIter points(sector);
 				while ( (node1 = (AliITSNode*)points.Next()) ) {
 					for (it = 0; it < 3; it++) id[it] = node1->GetLabel(it);
-					nF = (Int_t)node1->fMatches->GetSize();
+					nF = (Int_t)node1->Matches()->GetSize();
 					cout << "Node layer: " << node1->GetLayer() << ", labels: ";
 					cout << id[0] << " " << id[1] << " " << id[2] << " --> ";
 					if (!nF) {
@@ -620,7 +615,7 @@ void AliITSNeuralTracker::PrintMatches(Bool_t stop)
 						if (strU.Contains(Form("|%d|", id[it])))
 							cout << "Belongs to findable (post-Kalman) track " << id[it] << endl;
 					}
-					TObjArrayIter matches(node1->fMatches);
+					TObjArrayIter matches(node1->Matches());
 					while ( (node2 = (AliITSNode*)matches.Next()) ) {
 						cout << "Match with " << node2;
 						Int_t *sh = node1->SharedID(node2);
@@ -654,12 +649,12 @@ void AliITSNeuralTracker::ResetNodes(Int_t isector)
 			for (;;) {
 				node = (AliITSNode*)iter.Next();
 				if (!node) break;
-				node->fInnerOf->Clear();
-				node->fOuterOf->Clear();
-				delete node->fInnerOf;
-				delete node->fOuterOf;
-				node->fInnerOf = new TObjArray;
-				node->fOuterOf = new TObjArray;
+				node->InnerOf()->Clear();
+				node->OuterOf()->Clear();
+				delete node->InnerOf();
+				delete node->OuterOf();
+				node->InnerOf() = new TObjArray;
+				node->OuterOf() = new TObjArray;
 			}
 		}
 	}
@@ -765,82 +760,82 @@ Int_t AliITSNeuralTracker::CreateNeurons(Int_t sectoridx, Int_t curvidx)
 			vx[0] = fVX;
 			vy[0] = fVY;
 			vz[0] = fVZ;
-			TObjArrayIter lay1(p[0]->fMatches);
+			TObjArrayIter lay1(p[0]->Matches());
 			while ( (p[1] = (AliITSNode*)lay1.Next()) ) {
 				if (p[1]->GetUser() >= 0) continue;
 				if (!PassCurvCut(p[0], p[1], curvidx, fVX, fVY, fVZ)) continue;
 				unit = new AliITSneuron;
-				unit->fInner = p[0];
-				unit->fOuter = p[1];
-				unit->fActivation = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
-				unit->fGain = new TObjArray;
+				unit->Inner() = p[0];
+				unit->Outer() = p[1];
+				unit->Activation() = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
+				unit->Gain() = new TObjArray;
 				fNeurons->AddLast(unit);
-				p[0]->fInnerOf->AddLast(unit);
-				p[1]->fOuterOf->AddLast(unit);
+				p[0]->InnerOf()->AddLast(unit);
+				p[1]->OuterOf()->AddLast(unit);
 				neurons++;
 				vx[1] = p[0]->X();
 				vy[1] = p[0]->Y();
 				vz[1] = p[0]->Z();
-				TObjArrayIter lay2(p[1]->fMatches);
+				TObjArrayIter lay2(p[1]->Matches());
 				while ( (p[2] = (AliITSNode*)lay2.Next()) ) {
 					if (p[2]->GetUser() >= 0) continue;
 					if (!PassCurvCut(p[1], p[2], curvidx, vx[1], vy[1], vz[1])) continue;
 					unit = new AliITSneuron;
-					unit->fInner = p[1];
-					unit->fOuter = p[2];
-					unit->fActivation = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
-					unit->fGain = new TObjArray;
+					unit->Inner() = p[1];
+					unit->Outer() = p[2];
+					unit->Activation() = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
+					unit->Gain() = new TObjArray;
 					fNeurons->AddLast(unit);
-					p[1]->fInnerOf->AddLast(unit);
-					p[2]->fOuterOf->AddLast(unit);
+					p[1]->InnerOf()->AddLast(unit);
+					p[2]->OuterOf()->AddLast(unit);
 					neurons++;
 					vx[2] = p[1]->X();
 					vy[2] = p[1]->Y();
 					vz[2] = p[1]->Z();
-					TObjArrayIter lay3(p[2]->fMatches);
+					TObjArrayIter lay3(p[2]->Matches());
 					while ( (p[3] = (AliITSNode*)lay3.Next()) ) {
 						if (p[3]->GetUser() >= 0) continue;
 						if (!PassCurvCut(p[2], p[3], curvidx, vx[2], vy[2], vz[2])) continue;
 						unit = new AliITSneuron;
-						unit->fInner = p[2];
-						unit->fOuter = p[3];
-						unit->fActivation = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
-						unit->fGain = new TObjArray;
+						unit->Inner() = p[2];
+						unit->Outer() = p[3];
+						unit->Activation() = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
+						unit->Gain() = new TObjArray;
 						fNeurons->AddLast(unit);
-						p[2]->fInnerOf->AddLast(unit);
-						p[3]->fOuterOf->AddLast(unit);
+						p[2]->InnerOf()->AddLast(unit);
+						p[3]->OuterOf()->AddLast(unit);
 						neurons++;
 						vx[3] = p[2]->X();
 						vy[3] = p[2]->Y();
 						vz[3] = p[2]->Z();
-						TObjArrayIter lay4(p[3]->fMatches);
+						TObjArrayIter lay4(p[3]->Matches());
 						while ( (p[4] = (AliITSNode*)lay4.Next()) ) {
 							if (p[4]->GetUser() >= 0) continue;
 							if (!PassCurvCut(p[3], p[4], curvidx, vx[3], vy[3], vz[3])) continue;
 							unit = new AliITSneuron;
-							unit->fInner = p[3];
-							unit->fOuter = p[4];
-							unit->fActivation = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
-							unit->fGain = new TObjArray;
+							unit->Inner() = p[3];
+							unit->Outer() = p[4];
+							unit->Activation() = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
+							unit->Gain() = new TObjArray;
 							fNeurons->AddLast(unit);
-							p[3]->fInnerOf->AddLast(unit);
-							p[4]->fOuterOf->AddLast(unit);
+							p[3]->InnerOf()->AddLast(unit);
+							p[4]->OuterOf()->AddLast(unit);
 							neurons++;
 							vx[4] = p[3]->X();
 							vy[4] = p[3]->Y();
 							vz[4] = p[3]->Z();
-							TObjArrayIter lay5(p[4]->fMatches);
+							TObjArrayIter lay5(p[4]->Matches());
 							while ( (p[5] = (AliITSNode*)lay5.Next()) ) {
 								if (p[5]->GetUser() >= 0) continue;
 								if (!PassCurvCut(p[4], p[5], curvidx, vx[4], vy[4], vz[4])) continue;
 								unit = new AliITSneuron;
-								unit->fInner = p[4];
-								unit->fOuter = p[5];
-								unit->fActivation = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
-								unit->fGain = new TObjArray;
+								unit->Inner() = p[4];
+								unit->Outer() = p[5];
+								unit->Activation() = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
+								unit->Gain() = new TObjArray;
 								fNeurons->AddLast(unit);
-								p[4]->fInnerOf->AddLast(unit);
-								p[5]->fOuterOf->AddLast(unit);
+								p[4]->InnerOf()->AddLast(unit);
+								p[5]->OuterOf()->AddLast(unit);
 								neurons++;
 							} // while (p[5])
 						} // while (p[4])
@@ -858,18 +853,18 @@ Int_t AliITSNeuralTracker::CreateNeurons(Int_t sectoridx, Int_t curvidx)
 			TObjArrayIter inners(lstsector);
 			while ( (inner = (AliITSNode*)inners.Next()) ) {
 				if (inner->GetUser() >= 0) continue;
-				TObjArrayIter outers(inner->fMatches);
+				TObjArrayIter outers(inner->Matches());
 				while ( (outer = (AliITSNode*)outers.Next()) ) {
 					if (outer->GetUser() >= 0) continue;
 					if (!PassCurvCut(inner, outer, curvidx, fVX, fVY, fVZ)) continue;
 					unit = new AliITSneuron;
-					unit->fInner = inner;
-					unit->fOuter = outer;
-					unit->fActivation = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
-					unit->fGain = new TObjArray;
+					unit->Inner() = inner;
+					unit->Outer() = outer;
+					unit->Activation() = gRandom->Rndm() * (fEdge1 - fEdge2) + fEdge2;
+					unit->Gain() = new TObjArray;
 					fNeurons->AddLast(unit);
-					inner->fInnerOf->AddLast(unit);
-					outer->fOuterOf->AddLast(unit);
+					inner->InnerOf()->AddLast(unit);
+					outer->OuterOf()->AddLast(unit);
 					neurons++;
 				} // for (;;)
 			} // for (;;)
@@ -895,7 +890,7 @@ Int_t AliITSNeuralTracker::LinkNeurons() const
 		neuron = (AliITSneuron*)iter.Next();
 		if (!neuron) break;
 		// gain contributors
-		testiter = (TObjArrayIter*)neuron->fInner->fOuterOf->MakeIterator();
+		testiter = (TObjArrayIter*)neuron->Inner()->OuterOf()->MakeIterator();
 		for (;;) {
 			test = (AliITSneuron*)testiter->Next();
 			if (!test) break;
@@ -903,7 +898,7 @@ Int_t AliITSNeuralTracker::LinkNeurons() const
 			total++;
 		}
 		delete testiter;
-		testiter = (TObjArrayIter*)neuron->fOuter->fInnerOf->MakeIterator();
+		testiter = (TObjArrayIter*)neuron->Outer()->InnerOf()->MakeIterator();
 		for (;;) {
 			test = (AliITSneuron*)testiter->Next();
 			if (!test) break;
@@ -946,9 +941,9 @@ void AliITSNeuralTracker::CleanNetwork()
 	AliITSneuron *unit = 0;
 	TObjArrayIter neurons(fNeurons);
 	while ( (unit = (AliITSneuron*)neurons.Next()) ) {
-		if (unit->fActivation < fActMinimum) {
-			unit->fInner->fInnerOf->Remove(unit);
-			unit->fOuter->fOuterOf->Remove(unit);
+		if (unit->Activation() < fActMinimum) {
+			unit->Inner()->InnerOf()->Remove(unit);
+			unit->Outer()->OuterOf()->Remove(unit);
 			delete fNeurons->Remove(unit);
 		}
 	}
@@ -958,21 +953,21 @@ void AliITSNeuralTracker::CleanNetwork()
 	AliITSneuron *enemy = 0;
 	neurons.Reset();
 	while ( (unit = (AliITSneuron*)neurons.Next()) ) {
-		nIn = (Int_t)unit->fInner->fInnerOf->GetSize();
-		nOut = (Int_t)unit->fOuter->fOuterOf->GetSize();
+		nIn = (Int_t)unit->Inner()->InnerOf()->GetSize();
+		nOut = (Int_t)unit->Outer()->OuterOf()->GetSize();
 		if (nIn < 2 && nOut < 2) continue;
 		removed = kFALSE;
 		if (nIn > 1) {
-			TObjArrayIter competing(unit->fInner->fInnerOf);
+			TObjArrayIter competing(unit->Inner()->InnerOf());
 			while ( (enemy = (AliITSneuron*)competing.Next()) ) {
-				if (unit->fActivation > enemy->fActivation) {
-					enemy->fInner->fInnerOf->Remove(enemy);
-					enemy->fOuter->fOuterOf->Remove(enemy);
+				if (unit->Activation() > enemy->Activation()) {
+					enemy->Inner()->InnerOf()->Remove(enemy);
+					enemy->Outer()->OuterOf()->Remove(enemy);
 					delete fNeurons->Remove(enemy);
 				}
 				else {
-					unit->fInner->fInnerOf->Remove(unit);
-					unit->fOuter->fOuterOf->Remove(unit);
+					unit->Inner()->InnerOf()->Remove(unit);
+					unit->Outer()->OuterOf()->Remove(unit);
 					delete fNeurons->Remove(unit);
 					removed = kTRUE;
 					break;
@@ -981,16 +976,16 @@ void AliITSNeuralTracker::CleanNetwork()
 			if (removed) continue;
 		}
 		if (nOut > 1) {
-			TObjArrayIter competing(unit->fOuter->fOuterOf);
+			TObjArrayIter competing(unit->Outer()->OuterOf());
 			while ( (enemy = (AliITSneuron*)competing.Next()) ) {
-				if (unit->fActivation > enemy->fActivation) {
-					enemy->fInner->fInnerOf->Remove(enemy);
-					enemy->fOuter->fOuterOf->Remove(enemy);
+				if (unit->Activation() > enemy->Activation()) {
+					enemy->Inner()->InnerOf()->Remove(enemy);
+					enemy->Outer()->OuterOf()->Remove(enemy);
 					delete fNeurons->Remove(enemy);
 				}
 				else {
-					unit->fInner->fInnerOf->Remove(unit);
-					unit->fOuter->fOuterOf->Remove(unit);
+					unit->Inner()->InnerOf()->Remove(unit);
+					unit->Outer()->OuterOf()->Remove(unit);
 					delete fNeurons->Remove(unit);
 					removed = kTRUE;
 					break;
@@ -1032,30 +1027,30 @@ Int_t AliITSNeuralTracker::Save(Int_t sectorid)
 		for (i = 0; i < 6; i++) fPoint[i] = -1;
 		unit = (AliITSneuron*)iter.Next();
 		if (!unit) break;
-		if (unit->fInner->GetLayer() > 0) continue;
-		fPoint[unit->fInner->GetLayer()] = unit->fInner->fPosInTree;
-		fPoint[unit->fOuter->GetLayer()] = unit->fOuter->fPosInTree;
-		node = unit->fOuter;
+		if (unit->Inner()->GetLayer() > 0) continue;
+		fPoint[unit->Inner()->GetLayer()] = unit->Inner()->PosInTree();
+		fPoint[unit->Outer()->GetLayer()] = unit->Outer()->PosInTree();
+		node = unit->Outer();
 		removedUnits->AddLast(unit);
-		removedPoints->AddAt(unit->fInner, unit->fInner->GetLayer());
-		removedPoints->AddAt(unit->fOuter, unit->fOuter->GetLayer());
+		removedPoints->AddAt(unit->Inner(), unit->Inner()->GetLayer());
+		removedPoints->AddAt(unit->Outer(), unit->Outer()->GetLayer());
 		while (node) {
 			testact = fActMinimum;
-			fwditer = (TObjArrayIter*)node->fInnerOf->MakeIterator();
+			fwditer = (TObjArrayIter*)node->InnerOf()->MakeIterator();
 			fwd = 0;
 			for (;;) {
 				cursor = (AliITSneuron*)fwditer->Next();
 				if (!cursor) break;
-				if (cursor->fUsed) continue;
-				if (cursor->fActivation >= testact) {
-					testact = cursor->fActivation;
+				if (cursor->Used()) continue;
+				if (cursor->Activation() >= testact) {
+					testact = cursor->Activation();
 					fwd = cursor;
 				}
 			}
 			if (!fwd) break;
 			removedUnits->AddLast(fwd);
-			node = fwd->fOuter;
-			fPoint[node->GetLayer()] = node->fPosInTree;
+			node = fwd->Outer();
+			fPoint[node->GetLayer()] = node->PosInTree();
 			removedPoints->AddAt(node, node->GetLayer());
 		}
 		check = 0;
@@ -1071,7 +1066,7 @@ Int_t AliITSNeuralTracker::Save(Int_t sectorid)
 			for (;;) {
 				cursor = (AliITSneuron*)fwditer->Next();
 				if(!cursor) break;
-				cursor->fUsed = 1;
+				cursor->Used() = 1;
 			}
 		}
 	}
@@ -1105,19 +1100,19 @@ Int_t AliITSNeuralTracker::Save(Int_t sectoridx)
 			listsector = (TList*)fPoints[ilayer][itheta]->At(sectoridx);
 			TListIter iter(listsector);
 			while ( (node = (AliITSNode*)iter.Next()) ) {
-				TListIter fwditer(node->fInnerOf);
-				TListIter backiter(node->fOuterOf);
+				TListIter fwditer(node->InnerOf());
+				TListIter backiter(node->OuterOf());
 				testfwd = testback = fActMinimum;
 				while ( (fwd = (AliITSneuron*)fwditer.Next()) ) {
-					if (fwd->fActivation > testfwd) {
-						testfwd = fwd->fActivation;
-						node->fNext = fwd->fOuter;
+					if (fwd->Activation() > testfwd) {
+						testfwd = fwd->Activation();
+						node->fNext = fwd->Outer();
 					}
 				}
 				while ( (back = (AliITSneuron*)backiter.Next()) ) {
-					if (back->fActivation > testback) {
-						testback = back->fActivation;
-						node->fPrev = back->fInner;
+					if (back->Activation() > testback) {
+						testback = back->Activation();
+						node->fPrev = back->Inner();
 					}
 				}
 			}
@@ -1186,36 +1181,36 @@ Double_t AliITSNeuralTracker::Activate(AliITSneuron* &unit)
 	Double_t sumgain = 0.0, sumcost = 0.0, input, actOld, actNew;
 
 	// sum gain contributions
-	TObjArrayIter *iter = (TObjArrayIter*)unit->fGain->MakeIterator();
+	TObjArrayIter *iter = (TObjArrayIter*)unit->Gain()->MakeIterator();
 	AliITSlink *link;
 	for(;;) {
 		link = (AliITSlink*)iter->Next();
 		if (!link) break;
-		sumgain += link->fLinked->fActivation * link->fWeight;
+		sumgain += link->Linked()->Activation() * link->Weight();
 	}
 
 	// sum cost contributions
-	TObjArrayIter *testiter = (TObjArrayIter*)unit->fInner->fInnerOf->MakeIterator();
+	TObjArrayIter *testiter = (TObjArrayIter*)unit->Inner()->InnerOf()->MakeIterator();
 	AliITSneuron *linked = 0;
 	for (;;) {
 		linked = (AliITSneuron*)testiter->Next();
 		if (!linked) break;
 		if (linked == unit) continue;
-		sumcost += linked->fActivation;
+		sumcost += linked->Activation();
 	}
 	delete testiter;
-	testiter = (TObjArrayIter*)unit->fOuter->fOuterOf->MakeIterator();
+	testiter = (TObjArrayIter*)unit->Outer()->OuterOf()->MakeIterator();
 	for (;;) {
 		linked = (AliITSneuron*)testiter->Next();
 		if (!linked) break;
 		if (linked == unit) continue;
-		sumcost += linked->fActivation;
+		sumcost += linked->Activation();
 	}
 
 	//cout << "gain = " << sumgain << ", cost = " << sumcost << endl;
 
 	input = (sumgain - sumcost) / fTemperature;
-	actOld = unit->fActivation;
+	actOld = unit->Activation();
 #ifdef NEURAL_LINEAR
 	if (input <= -2.0 * fTemperature)
 		actNew = 0.0;
@@ -1226,7 +1221,7 @@ Double_t AliITSNeuralTracker::Activate(AliITSneuron* &unit)
 #else
 	actNew = 1.0 / (1.0 + TMath::Exp(-input));
 #endif
-	unit->fActivation = actNew;
+	unit->Activation() = actNew;
 	return TMath::Abs(actNew - actOld);
 }
 //
@@ -1237,9 +1232,9 @@ void AliITSNeuralTracker::AliITSneuron::Add2Gain(AliITSneuron *n, Double_t multc
 // Adds a neuron to the collection of sequenced ones of another neuron			
 
 	AliITSlink *link = new AliITSlink;
-	link->fLinked = n;
+	link->Linked() = n;
 	Double_t weight = Weight(n);
-	link->fWeight = multconst * TMath::Power(weight, exponent);
+	link->Weight() = multconst * TMath::Power(weight, exponent);
 	fGain->AddLast(link);
 }
 //
@@ -1248,10 +1243,72 @@ void AliITSNeuralTracker::AliITSneuron::Add2Gain(AliITSneuron *n, Double_t multc
 Double_t AliITSNeuralTracker::AliITSneuron::Weight(AliITSneuron *n)
 {
 // computes synaptic weight
-	TVector3 me(fOuter->X() - fInner->X(), fOuter->Y() - fInner->Y(), fOuter->Z() - fInner->Z());
-	TVector3 it(n->fOuter->X() - n->fInner->X(), n->fOuter->Y() - n->fInner->Y(), n->fOuter->Z() - n->fInner->Z());
+	TVector3 me(Outer()->X() - Inner()->X(), Outer()->Y() - Inner()->Y(), Outer()->Z() - Inner()->Z());
+	TVector3 it(n->Outer()->X() - n->Inner()->X(), n->Outer()->Y() - n->Inner()->Y(), n->Outer()->Z() - n->Inner()->Z());
 
 	Double_t angle = me.Angle(it);
 	Double_t weight = 1.0 - sin(angle);
 	return weight;
 }
+//
+//
+//
+//
+AliITSNeuralTracker::AliITSNeuralTracker(const AliITSNeuralTracker &t)
+: TObject((TObject&)t)
+{ 
+	// NO copy constructor
+	Fatal("AliITSNeuralTracker", "No copy constructor allowed!");
+	exit(0);
+}
+AliITSNeuralTracker& AliITSNeuralTracker::operator=(const AliITSNeuralTracker&)
+{ 
+	// NO assignment operator
+	Fatal("AliITSNeuralTracker", "No assignment allowed!");
+	return *this;
+}
+//
+AliITSNeuralTracker::AliITSNode::AliITSNode(const AliITSNode &t)
+: AliITSNeuralPoint((AliITSNeuralPoint&)t)
+{ 
+	// NO copy constructor
+	Fatal("AliITSNode", "No copy constructor allowed!");
+	exit(0);
+}
+AliITSNeuralTracker::AliITSNode& AliITSNeuralTracker::AliITSNode::operator=(const AliITSNode&)
+{ 
+	// NO assignment operator
+	Fatal("AliITSNode", "No assignment allowed!");
+	return *this;
+}
+//
+AliITSNeuralTracker::AliITSneuron::AliITSneuron(const AliITSneuron &t)
+: TObject((TObject&)t)
+{ 
+	// NO copy constructor
+	Fatal("AliITSneuron", "No copy constructor allowed!");
+	exit(0);
+}
+AliITSNeuralTracker::AliITSneuron& AliITSNeuralTracker::AliITSneuron::operator=(const AliITSneuron&)
+{ 
+	// NO assignment operator
+	Fatal("AliITSneuron", "No assignment allowed!");
+	return *this;
+}
+//
+AliITSNeuralTracker::AliITSlink::AliITSlink(const AliITSlink &t)
+: TObject((TObject&)t)
+{ 
+	// NO copy constructor
+	Fatal("AliITSlink", "No copy constructor allowed!");
+	exit(0);
+}
+AliITSNeuralTracker::AliITSlink& AliITSNeuralTracker::AliITSlink::operator=(const AliITSlink&)
+{ 
+	// NO assignment operator
+	Fatal("AliITSlink", "No assignment allowed!");
+	return *this;
+}
+
+
+
