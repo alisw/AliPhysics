@@ -27,9 +27,8 @@
 
 //_____________________________________________________________________________
 AliRunAction::AliRunAction()
-  : fMessenger(this),
-    fRunID(-1),
-    fVerboseLevel(0)
+  : AliVerbose("runAction"),
+    fRunID(-1) 
 {
 //
   fTimer = new G4Timer;
@@ -37,7 +36,7 @@ AliRunAction::AliRunAction()
 
 //_____________________________________________________________________________
 AliRunAction::AliRunAction(const AliRunAction& right) 
-  : fMessenger(this) {
+  : AliVerbose("runAction") {
 //
   AliGlobals::Exception("AliRunAction is protected from copying.");
 }
@@ -113,7 +112,10 @@ void AliRunAction::BeginOfRunAction(const G4Run* run)
     G4UImanager::GetUIpointer()->ApplyCommand("/vis/scene/notifyHandlers");
   } 
 
-  G4cout << "### Run " << run->GetRunID() << " start." << G4endl;
+  if (VerboseLevel() > 0) {
+    G4cout << "### Run " << run->GetRunID() << " start." << G4endl;
+  }
+    
   fTimer->Start();
 }
 
@@ -138,6 +140,8 @@ void AliRunAction::EndOfRunAction(const G4Run* run)
      G4UImanager::GetUIpointer()->ApplyCommand("/vis/viewer/update");
   }
 
-  G4cout << "Time of this run:   " << *fTimer << G4endl;
-  G4cout << "Number of events processed: " << run->GetNumberOfEvent() << G4endl;
+  if (VerboseLevel() > 0) {
+    G4cout << "Time of this run:   " << *fTimer << G4endl;
+    G4cout << "Number of events processed: " << run->GetNumberOfEvent() << G4endl;
+  }    
 }    

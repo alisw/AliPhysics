@@ -24,11 +24,10 @@
 
 //_____________________________________________________________________________
 AliStackingAction::AliStackingAction()
-  : fStage(0), 
-    fVerboseLevel(0),
+  : AliVerbose("stackingAction"),
+    fStage(0), 
     fSavePrimaries(true),
-    fTrackingAction(0),
-    fMessenger(this) 
+    fTrackingAction(0)
 {
 // 
   fPrimaryStack = new G4TrackStack();
@@ -36,7 +35,7 @@ AliStackingAction::AliStackingAction()
 
 //_____________________________________________________________________________
 AliStackingAction::AliStackingAction(const AliStackingAction& right) 
-  : fMessenger(this) {
+  : AliVerbose("stackingAction") {
 //
   AliGlobals::Exception("AliStackingAction is protected from copying.");
 }
@@ -115,8 +114,8 @@ void AliStackingAction::NewStage()
 // ---
 
   fStage++;
-  if (fVerboseLevel>0) 
-  {
+  
+  if (VerboseLevel() > 1) {
     G4cout << "AliStackingAction::NewStage " << fStage 
            << " has been started." << G4endl;
   }

@@ -10,7 +10,7 @@
 #ifndef ALI_RUN_ACTION_H
 #define ALI_RUN_ACTION_H
 
-#include "AliRunActionMessenger.h"
+#include "AliVerbose.h"
 
 #include <G4UserRunAction.hh>
 #include <globals.hh>
@@ -22,7 +22,8 @@ class G4Timer;
 class AliSDConstruction;
 class G4Run;
 
-class AliRunAction : public G4UserRunAction
+class AliRunAction : public G4UserRunAction,
+                     public AliVerbose
 {
   public:
     AliRunAction();
@@ -33,12 +34,6 @@ class AliRunAction : public G4UserRunAction
     // methods
     virtual void BeginOfRunAction(const G4Run* run);
     virtual void EndOfRunAction(const G4Run* run);
-
-    // set methods
-    void SetVerboseLevel(G4int level);
-
-    // get methods
-    G4int GetVerboseLevel() const;
 
   protected:
     AliRunAction(const AliRunAction& right);
@@ -51,19 +46,9 @@ class AliRunAction : public G4UserRunAction
     AliSDConstruction* GetSDConstruction() const;
 
     // data members
-    AliRunActionMessenger  fMessenger;    //messenger 
-    G4Timer*               fTimer;        //G4Timer
-    G4int                  fRunID;        //run ID
-    G4int                  fVerboseLevel; //verbose level
+    G4Timer*  fTimer; //G4Timer
+    G4int     fRunID; //run ID
 };
-
-// inline methods
-
-inline void AliRunAction::SetVerboseLevel(G4int level)
-{ fVerboseLevel = level; }
-
-inline G4int AliRunAction::GetVerboseLevel() const
-{ return fVerboseLevel; }
 
 #endif //ALI_RUN_ACTION_H
 
