@@ -83,7 +83,7 @@ class AliGenMC : public AliGenerator
     Int_t       fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
     Int_t       fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 
     
-    ClassDef(AliGenMC,4)       // AliGenerator implementation for generators using MC methods
+    ClassDef(AliGenMC,5)       // AliGenerator implementation for generators using MC methods
 };
 #endif
 
