@@ -27,6 +27,8 @@ class AliTRDgeometryHole : public AliTRDgeometry {
           void    SetPHOShole()       { };
           void    SetRICHhole()       { };
 
+  virtual void    SetOldGeometry();
+
           Bool_t  GetPHOShole() const { return kTRUE; };
           Bool_t  GetRICHhole() const { return kTRUE; };
 

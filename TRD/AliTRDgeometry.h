@@ -61,6 +61,8 @@ class AliTRDgeometry : public AliGeometry {
   virtual void     SetPHOShole() = 0;
   virtual void     SetRICHhole() = 0;
 
+  virtual void     SetOldGeometry();
+
   virtual Bool_t   GetPHOShole() const = 0;
   virtual Bool_t   GetRICHhole() const = 0;
 

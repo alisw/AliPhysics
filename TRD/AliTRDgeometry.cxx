@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.15.6.2  2002/07/24 10:09:30  alibrary
 Updating VirtualMC
 
@@ -290,12 +293,12 @@ void AliTRDgeometry::Init()
   fCwidth[5] = 117.8;
 
   // The outer lengths of the chambers
-  Float_t length[kNplan][kNcham]   = { { 123.5, 123.5, 110.0, 123.5, 123.5 }
-				     , { 131.0, 131.0, 110.0, 131.0, 131.0 }
-				     , { 134.5, 138.5, 110.0, 138.5, 134.5 }
-				     , { 142.0, 146.0, 110.0, 146.0, 142.0 }
-				     , { 142.0, 153.0, 110.0, 153.0, 142.0 }
-                                     , { 134.0, 160.5, 110.0, 160.5, 134.0 } };
+  Float_t length[kNplan][kNcham]   = { { 124.0, 124.0, 110.0, 124.0, 124.0 }
+                                     , { 131.0, 131.0, 110.0, 131.0, 131.0 }
+                                     , { 138.0, 138.0, 110.0, 138.0, 138.0 }
+                                     , { 145.0, 145.0, 110.0, 145.0, 145.0 }
+                                     , { 147.0, 147.0, 110.0, 147.0, 147.0 }
+                                     , { 147.0, 147.0, 110.0, 147.0, 147.0 } };
 
   for (icham = 0; icham < kNcham; icham++) {
     for (iplan = 0; iplan < kNplan; iplan++) {
@@ -482,3 +485,27 @@ Int_t AliTRDgeometry::GetSector(const Int_t d) const
 
 }
 
+//_____________________________________________________________________________
+void AliTRDgeometry::SetOldGeometry()
+{
+  //
+  // Use the old chamber lengths
+  //
+
+  Int_t icham;
+  Int_t iplan;
+
+  Float_t length[kNplan][kNcham]   = { { 123.5, 123.5, 110.0, 123.5, 123.5 }
+				     , { 131.0, 131.0, 110.0, 131.0, 131.0 }
+				     , { 134.5, 138.5, 110.0, 138.5, 134.5 }
+				     , { 142.0, 146.0, 110.0, 146.0, 142.0 }
+				     , { 142.0, 153.0, 110.0, 153.0, 142.0 }
+                                     , { 134.0, 160.5, 110.0, 160.5, 134.0 } };
+
+  for (icham = 0; icham < kNcham; icham++) {
+    for (iplan = 0; iplan < kNplan; iplan++) {
+      fClength[iplan][icham]   = length[iplan][icham];
+    }
+  }
+
+}

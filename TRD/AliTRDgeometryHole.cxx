@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2002/02/11 14:21:16  cblume
+Update of the geometry. Get rid of MANY
+
 Revision 1.6  2001/05/11 07:56:12  hristov
 Consistent declarations needed on Alpha
 
@@ -90,20 +93,20 @@ void AliTRDgeometryHole::Init()
   Int_t icham;
 
   // The outer lengths of the chambers for the sectors with holes for the PHOS
-  Float_t lengthPH[kNplan][kNcham] = { {   0.0,   0.0,   0.0, 116.5, 123.5 }
+  Float_t lengthPH[kNplan][kNcham] = { {   0.0,   0.0,   0.0, 117.0, 124.0 }
 				     , {   0.0,   0.0,   0.0, 124.0, 131.0 }
-				     , {   0.0,   0.0,   0.0, 131.5, 134.5 }
-				     , {   0.0,   0.0,   0.0, 139.0, 142.0 }
-				     , {   0.0,   0.0,   0.0, 146.0, 142.0 }
-                                     , {   0.0,   0.0,   0.0, 153.5, 134.5 } };
+				     , {   0.0,   0.0,   0.0, 131.0, 138.0 }
+				     , {   0.0,   0.0,   0.0, 138.0, 145.0 }
+				     , {   0.0,   0.0,   0.0, 140.0, 147.0 }
+                                     , {   0.0,   0.0,   0.0, 140.0, 147.0 } };
 
   // The outer lengths of the chambers for the sectors with holes for the RICH
-  Float_t lengthRH[kNplan][kNcham] = { {   0.0,   0.0,   0.0,   0.0,  86.5 }
+  Float_t lengthRH[kNplan][kNcham] = { {   0.0,   0.0,   0.0,   0.0,  87.5 }
 				     , {   0.0,   0.0,   0.0,   0.0, 101.5 }
-				     , {   0.0,   0.0,   0.0,   0.0, 112.5 }
-				     , {   0.0,   0.0,   0.0,   0.0, 127.5 }
-				     , {   0.0,   0.0,   0.0,   0.0, 134.5 }
-                                     , {   0.0,   0.0,   0.0,   0.0, 134.5 } };
+				     , {   0.0,   0.0,   0.0,   0.0, 115.5 }
+				     , {   0.0,   0.0,   0.0,   0.0, 129.5 }
+				     , {   0.0,   0.0,   0.0,   0.0, 133.5 }
+                                     , {   0.0,   0.0,   0.0,   0.0, 133.5 } };
 
   for (icham = 0; icham < kNcham; icham++) {
     for (iplan = 0; iplan < kNplan; iplan++) {
@@ -721,3 +724,43 @@ void AliTRDgeometryHole::CreateGeometry(Int_t *idtmed)
   gMC->Gspos("UTR3",3,"BTR3",xpos,ypos,zpos,0,"ONLY");
 
 }
+
+//_____________________________________________________________________________
+void AliTRDgeometryHole::SetOldGeometry()
+{
+  //
+  // Use the old chamber lengths
+  //
+
+  Int_t icham;
+  Int_t iplan;
+
+  AliTRDgeometry::SetOldGeometry();
+
+  // The outer lengths of the chambers for the sectors with holes for the PHOS
+  Float_t lengthPH[kNplan][kNcham] = { {   0.0,   0.0,   0.0, 116.5, 123.5 }
+				     , {   0.0,   0.0,   0.0, 124.0, 131.0 }
+				     , {   0.0,   0.0,   0.0, 131.5, 134.5 }
+				     , {   0.0,   0.0,   0.0, 139.0, 142.0 }
+				     , {   0.0,   0.0,   0.0, 146.0, 142.0 }
+                                     , {   0.0,   0.0,   0.0, 153.5, 134.5 } };
+
+  // The outer lengths of the chambers for the sectors with holes for the RICH
+  Float_t lengthRH[kNplan][kNcham] = { {   0.0,   0.0,   0.0,   0.0,  86.5 }
+				     , {   0.0,   0.0,   0.0,   0.0, 101.5 }
+				     , {   0.0,   0.0,   0.0,   0.0, 112.5 }
+				     , {   0.0,   0.0,   0.0,   0.0, 127.5 }
+				     , {   0.0,   0.0,   0.0,   0.0, 134.5 }
+                                     , {   0.0,   0.0,   0.0,   0.0, 134.5 } };
+
+  for (icham = 0; icham < kNcham; icham++) {
+    for (iplan = 0; iplan < kNplan; iplan++) {
+      fClengthPH[iplan][icham] = lengthPH[iplan][icham];
+      fClengthRH[iplan][icham] = lengthRH[iplan][icham];
+    }
+  }
+
+}
+
+
+
