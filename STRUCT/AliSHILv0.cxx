@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/10/26 08:36:19  morsch
+Geometry update.
+
 Revision 1.13  2001/04/23 23:12:41  morsch
 Overlap in closing cone corrected (thanks to Ivana Hrivnacova)
 
@@ -947,19 +950,22 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 //
   tpar[0]=0.;
   tpar[1]=R43;
-  tpar[2]=50.;
+  tpar[2]=60.;
   gMC->Gsvolu("YAEM", "TUBE", idtmed[kAir], tpar, 3);
   tpar[0]=rAbs;
   tpar[1]=R43;
-  tpar[2]=50.;
+  tpar[2]=60.;
   gMC->Gsvolu("YFEM", "TUBE", idtmed[kFe], tpar, 3);
   gMC->Gspos("YFEM", 1, "YAEM", 0., 0., 0., 0, "ONLY"); 
 
 //
 
-  dz=zvac12+50.;
-  gMC->Gspos("YAEM", 1, "ALIC", 0., 0., dz, 0, "ONLY"); 
-
+  if (gMC->VolId("HUP2")) {
+      gMC->Gspos("YAEM", 1, "HUP2", 0., 0., 0., 0, "ONLY");
+  } else {
+      dz=zvac12+60.;
+      gMC->Gspos("YAEM", 1, "ALIC", 0., 0., dz, 0, "ONLY"); 
+  }
 
 // 
 //
