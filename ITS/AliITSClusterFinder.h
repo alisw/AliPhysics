@@ -14,6 +14,7 @@ class AliITSresponse;
 class AliITSsegmentation;
 class AliITSRawCluster;
 class AliITS;
+class AliITSRecPoint;
 
 //---------------------------------------------------------------
 class AliITSClusterFinder :public TObject
@@ -47,15 +48,13 @@ public:
     return fNdigits;
   }
   
-  virtual void SetMap() {
-    // set map
-  }
   AliITSMap   *Map()  {
     // map
     return fMap;
   }
   //
   virtual void AddCluster(Int_t branch, AliITSRawCluster *c);
+  virtual void AddCluster(Int_t branch, AliITSRawCluster *c, AliITSRecPoint &rp);
   
   virtual void FindRawClusters() {
     // Search for raw clusters

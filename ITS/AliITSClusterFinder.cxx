@@ -107,6 +107,20 @@ void AliITSClusterFinder::AddCluster(Int_t branch, AliITSRawCluster *c)
     AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
     iTS->AddCluster(branch,c); 
     fNRawClusters++;
+
+}
+
+
+//----------------------------------------------------------
+void AliITSClusterFinder::AddCluster(Int_t branch, AliITSRawCluster *c, AliITSRecPoint &rp)
+{
+  //
+  // Add a raw cluster copy to the list
+  //
+    AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
+    iTS->AddCluster(branch,c); 
+    fNRawClusters++;
+    iTS->AddRecPoint(rp); 
 }
 
 
