@@ -5,6 +5,7 @@
 
 
 #include <string.h>
+#include <sys/time.h>
 
 #include "AliL3HoughMerger.h"
 #include "AliL3HoughIntMerger.h"
@@ -137,13 +138,15 @@ void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit
 	fHoughTransformer[i] = new AliL3HoughTransformerVhdl(1,i,fNEtaSegments);
 	fHoughTransformer[i]->CreateHistograms(180,0.1,180,-90,90);
 	fHoughTransformer[i]->SetLowerThreshold(3);
+	
 	break;
       default:
 	fHoughTransformer[i] = new AliL3HoughTransformer(1,i,fNEtaSegments);
 	fHoughTransformer[i]->CreateHistograms(64,0.1,64,-30,30);
 	fHoughTransformer[i]->SetLowerThreshold(3);
       }
-
+      LOG(AliL3Log::kInformational,"AliL3Hough::Init","Version")
+	<<"Initializing Hough transformer version "<<fversion<<ENDLOG;
       fEval[i] = new AliL3HoughEval();
       fTracks[i] = new AliL3TrackArray("AliL3HoughTrack");
       if(fUse8bits)
@@ -225,7 +228,9 @@ void AliL3Hough::Transform(Int_t row_range=-1)
 {
   //Transform all data given to the transformer within the given slice
   //(after ReadData(slice))
-
+  
+  Double_t initTime,cpuTime;
+  initTime = GetCpuTime();
   for(Int_t i=0; i<fNPatches; i++)
     {
       fHoughTransformer[i]->Reset();//Reset the histograms
@@ -234,6 +239,9 @@ void AliL3Hough::Transform(Int_t row_range=-1)
       else
 	fHoughTransformer[i]->TransformCircleC(row_range);
     }
+  cpuTime = GetCpuTime() - initTime;
+  LOG(AliL3Log::kInformational,"AliL3Hough::Transform()","Timing")
+    <<"Transform done in average per patch of "<<cpuTime*1000/fNPatches<<" ms"<<ENDLOG;
 }
 
 void AliL3Hough::MergePatches()
@@ -312,6 +320,8 @@ void AliL3Hough::AddAllHistograms()
   //Add the histograms within one etaslice.
   //Resulting histogram are in patch=0.
 
+  Double_t initTime,cpuTime;
+  initTime = GetCpuTime();
   for(Int_t i=0; i<fNEtaSegments; i++)
     {
       AliL3Histogram *hist0 = fHoughTransformer[0]->GetHistogram(i);
@@ -322,6 +332,9 @@ void AliL3Hough::AddAllHistograms()
 	}
     }
   fAddHistograms = kTRUE;
+  cpuTime = GetCpuTime() - initTime;
+  LOG(AliL3Log::kInformational,"AliL3Hough::AddAllHistograms()","Timing")
+    <<"Adding histograms in "<<cpuTime*1000<<" ms"<<ENDLOG;
 }
 
 void AliL3Hough::FindTrackCandidates()
@@ -333,8 +346,9 @@ void AliL3Hough::FindTrackCandidates()
     n_patches = 1; //Histograms have been added.
   else
     n_patches = fNPatches;
-
   
+  Double_t initTime,cpuTime;
+  initTime = GetCpuTime();
   for(Int_t i=0; i<n_patches; i++)
     {
       AliL3HoughBaseTransformer *tr = fHoughTransformer[i];
@@ -363,6 +377,9 @@ void AliL3Hough::FindTrackCandidates()
 	}
       fTracks[i]->QSort();
     }
+  cpuTime = GetCpuTime() - initTime;
+  LOG(AliL3Log::kInformational,"AliL3Hough::FindTrackCandidates()","Timing")
+    <<"Maxima finding done in "<<cpuTime*1000<<" ms"<<ENDLOG;
 }
 
 void AliL3Hough::InitEvaluate()
@@ -375,30 +392,47 @@ void AliL3Hough::InitEvaluate()
     fEval[i]->InitTransformer(fHoughTransformer[i]);
 }
 
-void AliL3Hough::Evaluate(Int_t road_width)
+Int_t AliL3Hough::Evaluate(Int_t road_width,Int_t nrowstomiss)
 {
   //Evaluate the tracks, by looking along the road in the raw data.
   //If track does not cross all padrows - rows2miss, it is removed from the arrray.
+  //If histograms were not added, the check is done locally in patch,
+  //meaning that nrowstomiss is the number of padrows the road can miss with respect
+  //to the number of rows in the patch.
+  //If the histograms were added, the comparison is done globally in the _slice_, 
+  //meaing that nrowstomiss is the number of padrows the road can miss with
+  //respect to the total number of padrows in the slice.
+  //
+  //Return value = number of tracks which were removed (only in case of fAddHistograms)
   
   if(!fTracks[0])
     {
       LOG(AliL3Log::kError,"AliL3Hough::Evaluate","Track Array")
 	<<"No tracks to work with..."<<ENDLOG;
-      return;
+      return 0;
     }
   
   InitEvaluate();
   
-  AliL3TrackArray *tracks;
+  Int_t removed_tracks=0;
+  AliL3TrackArray *tracks=0;
+  Int_t *total_rows=0;
+  if(fAddHistograms)
+    {    
+      tracks = fTracks[0];
+      total_rows = new Int_t[tracks->GetNTracks()];
+      for(Int_t i=0; i<tracks->GetNTracks(); i++)
+	total_rows[i]=0;
+    }
+
   for(Int_t i=0; i<fNPatches; i++)
     {
       fEval[i]->InitTransformer(fHoughTransformer[i]);
-      fEval[i]->SetNumOfRowsToMiss(2);
       fEval[i]->SetNumOfPadsToLook(road_width);
-      if(fAddHistograms)
-	tracks = fTracks[0];
-      else
+      fEval[i]->SetNumOfRowsToMiss(nrowstomiss);
+      if(!fAddHistograms)
 	tracks = fTracks[i];
+      
       for(Int_t j=0; j<tracks->GetNTracks(); j++)
 	{
 	  AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->GetCheckedTrack(j);
@@ -409,18 +443,39 @@ void AliL3Hough::Evaluate(Int_t road_width)
 	      continue;
 	    }
 	  
-	  if(!fEval[i]->LookInsideRoad(track,track->GetEtaIndex()))
-	    tracks->Remove(j);
-	  if(fAddHistograms)
-	    track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));//All rows included
+	  Bool_t result = fEval[i]->LookInsideRoad(track,total_rows[j]);
+	  if(!fAddHistograms)//the track crossed too few good padrows (padrows with signal) in the patch, so remove it
+	    {
+	      if(result == kFALSE)
+		tracks->Remove(j);
+	    }
 	}
-      tracks->Compress();
-      tracks->QSort(); //Sort the tracks according to weight
-      
       if(!fAddHistograms)
-	fMerger->FillTracks(tracks,i); //Copy tracks to the track merger
+	{
+	  tracks->Compress();
+	  tracks->QSort(); 
+	  fMerger->FillTracks(tracks,i); //Copy tracks to the track merger
+	}
     }
   
+  if(fAddHistograms) //Here we check the tracks globally; how many good rows (padrows with signal) did it cross in the slice
+    {
+      for(Int_t j=0; j<tracks->GetNTracks(); j++)
+	{
+	  if(total_rows[j] < AliL3Transform::GetNRows() - nrowstomiss)
+	    {
+	      tracks->Remove(j);
+	      removed_tracks++;
+	    }
+	}
+      tracks->Compress();
+      tracks->QSort();
+    }
+  
+  if(total_rows)
+    delete [] total_rows;
+  
+  return removed_tracks;
 }
 
 void AliL3Hough::EvaluateWithEta()
@@ -485,3 +540,11 @@ void AliL3Hough::WriteDigits(Char_t *outfile)
 #endif  
 }
 
+Double_t AliL3Hough::GetCpuTime()
+{
+  //Return the Cputime in seconds.
+ struct timeval tv;
+ gettimeofday( &tv, NULL );
+ return tv.tv_sec+(((Double_t)tv.tv_usec)/1000000.);
+ //return (Double_t)(clock()) / CLOCKS_PER_SEC;
+}

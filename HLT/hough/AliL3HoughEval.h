@@ -37,7 +37,7 @@ class AliL3HoughEval {
   void InitTransformer(AliL3HoughBaseTransformer *transformer);
   void GenerateLUT();
   void DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist);
-  Bool_t LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Bool_t remove=kFALSE);
+  Bool_t LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crossed,Bool_t remove=kFALSE);
 #ifdef use_root
   void CompareMC(AliL3TrackArray *tracks,Char_t *goodtracks="good_tracks",Int_t treshold=0);
 #endif

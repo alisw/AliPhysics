@@ -81,19 +81,21 @@ void AliL3HoughEval::GenerateLUT()
   
 }
 
-Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Bool_t remove)
+Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crossed,Bool_t remove)
 {
   //Look at rawdata along the road specified by the track candidates.
   //If track is good, return true, if not return false.
   
   Int_t sector,row;
   
-  Int_t nrow=0,npixs=0,rows_crossed=0;
+  Int_t nrow=0,npixs=0;//,rows_crossed=0;
   Float_t xyz[3];
   
   Int_t total_charge=0;//total charge along the road
-  
+    
+  /*
   //Check if the track is leaving the sector at some point
+  //This does not work, if the track is bending _in_ to the slice.....
   Float_t maxrow=300;
   Double_t angle=AliL3Transform::Pi()/18;
   track->CalculateEdgePoint(angle);
@@ -105,11 +107,13 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
     }
   else
     maxrow = track->GetPointX();
-
+  */
+  
   for(Int_t padrow = AliL3Transform::GetFirstRow(fPatch); padrow <= AliL3Transform::GetLastRow(fPatch); padrow++)
     {
-      if(AliL3Transform::Row2X(padrow) > maxrow) break;//The track has left this slice
-      rows_crossed++;
+      //if(AliL3Transform::Row2X(padrow) > maxrow) break;//The track has left this slice
+      //rows_crossed++;
+      
       Int_t prow = padrow - AliL3Transform::GetFirstRow(fPatch);
       if(!track->GetCrossingPoint(padrow,xyz))  
 	{
@@ -119,7 +123,6 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
       AliL3Transform::Slice2Sector(fSlice,padrow,sector,row);
       AliL3Transform::Local2Raw(xyz,sector,row);
       npixs=0;
-      
       
       //Get the timebins for this pad
       AliL3DigitRowData *tempPt = fRowPointers[prow];
@@ -136,13 +139,15 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
 	  for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	    {
 	      UChar_t pad = digPt[j].fPad;
+	      Int_t charge = digPt[j].fCharge;
+	      if(charge <= fHoughTransformer->GetLowerThreshold()) continue;
 	      if(pad < p) continue;
 	      if(pad > p) break;
 	      UShort_t time = digPt[j].fTime;
 	      Double_t eta = AliL3Transform::GetEta(padrow,pad,time);
 	      Int_t pixel_index = fHoughTransformer->GetEtaIndex(eta);
-	      if(pixel_index > eta_index) continue;
-	      if(pixel_index != eta_index) break;
+	      if(pixel_index > track->GetEtaIndex()) continue;
+	      if(pixel_index != track->GetEtaIndex()) break;
 	      total_charge += digPt[j].fCharge;
 	      if(remove)
 		digPt[j].fCharge = 0; //Erase the track from image
@@ -158,10 +163,15 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t eta_index,Boo
   if(remove)
     return kTRUE;
   
-  if(nrow >= rows_crossed - fNumOfRowsToMiss)//this was a good track
+  nrows_crossed += nrow; //Update the number of rows crossed.
+  
+  if(nrow >= AliL3Transform::GetNRows(fPatch) - fNumOfRowsToMiss)//this was a good track
     {
       if(fRemoveFoundTracks)
-	LookInsideRoad(track,eta_index,kTRUE);
+	{
+	  Int_t dummy=0;
+	  LookInsideRoad(track,dummy,kTRUE);
+	}
       return kTRUE;
     }
   else
@@ -217,7 +227,8 @@ void AliL3HoughEval::FindEta(AliL3TrackArray *tracks)
 	      for(UInt_t j=0; j<tempPt->fNDigit; j++)
 		{
 		  UChar_t pad = digPt[j].fPad;
-		  
+		  Int_t charge = digPt[j].fCharge;
+		  if(charge <= fHoughTransformer->GetLowerThreshold()) continue;
 		  if(pad < p) continue;
 		  if(pad > p) break;
 		  UShort_t time = digPt[j].fTime;
@@ -289,7 +300,7 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
 	  UChar_t pad = digPt[j].fPad;
 	  UChar_t charge = digPt[j].fCharge;
 	  UShort_t time = digPt[j].fTime;
-	  if((Int_t)charge < fHoughTransformer->GetLowerThreshold() || (Int_t)charge > fHoughTransformer->GetUpperThreshold()) continue;
+	  if((Int_t)charge <= fHoughTransformer->GetLowerThreshold() || (Int_t)charge >= fHoughTransformer->GetUpperThreshold()) continue;
 	  Float_t xyz[3];
 	  Int_t sector,row;
 	  AliL3Transform::Slice2Sector(fSlice,padrow,sector,row);

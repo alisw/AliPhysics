@@ -258,19 +258,19 @@ void AliL3HoughMaxFinder::FindMaxima(Double_t grad_x,Double_t grad_y)
 	      Float_t max_x = fCurrentHisto->GetBinCenterX(xbin);
 	      Float_t max_y = fCurrentHisto->GetBinCenterY(ybin);
 	      
-	      cout<<"Checking for threshols "<<value[4]<<" "<<fThreshold<<endl;
 	      if((Int_t)value[4] <= fThreshold) continue;//central bin below threshold
 	      
-	      if(fNPeaks > fNMax)
+	      if(fNPeaks >= fNMax)
 		{
 		  cerr<<"AliL3HoughMaxFinder::FindMaxima : Array out of range "<<fNPeaks<<endl;
 		  return;
 		}
-	      
+	      /*
 	      //Check the gradient:
 	      if(value[4]/value[3] < grad_x || value[4]/value[5] < grad_x ||
 		 value[4]/value[1] < grad_y || value[4]/value[7] < grad_y)
 		continue;
+	      */
 	      
 	      fXPeaks[fNPeaks] = max_x;
 	      fYPeaks[fNPeaks] = max_y;
