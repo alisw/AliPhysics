@@ -1,6 +1,5 @@
 #ifndef ALIFMDRECONSTRUCTOR_H
 #define ALIFMDRECONSTRUCTOR_H
-// -*- mode: c++ -*- 
 //
 //  Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
 //  reserved. 
@@ -21,8 +20,14 @@
   */
 /* $Id$ */
 
-#include <AliReconstructor.h>
-#include <AliFMDMap.h>
+// Header guards in the header files speeds up the compilation
+// considerably.  Please leave them in. 
+#ifndef ALIRECONSTRUCTOR_H
+# include <AliReconstructor.h>
+#endif
+#ifndef ALIFMDMAP_H
+# include <AliFMDMap.h>
+#endif
 
 //____________________________________________________________________
 class TClonesArray;
@@ -86,6 +91,10 @@ protected:
 }; 
 #endif
 //____________________________________________________________________
+//
+// Local Variables:
+//   mode: C++
+// End:
 //
 // EOF
 //

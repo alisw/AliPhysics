@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //____________________________________________________________________
 // This is a class that constructs ReconstParticles (reconstructed
 // particles) out of Digits

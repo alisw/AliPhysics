@@ -1,4 +1,3 @@
-// -*- mode: C++ -*-
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
  * reserved. 
  *
@@ -60,6 +59,11 @@ public:
 };
 
 #endif
+//____________________________________________________________________
+//
+// Local Variables:
+//   mode: C++
+// End:
 //
 // EOF
 //

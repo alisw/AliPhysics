@@ -1,4 +1,3 @@
-// -*- mode: c++ -*- 
 #ifndef ALIFMDDIGIT_H
 #define ALIFMDDIGIT_H
 
@@ -106,6 +105,11 @@ AliFMDSDigit::Counts() const
 
 #endif
 //____________________________________________________________________
+//
+// Local Variables:
+//   mode: C++
+// End:
+//
 //
 // EOF
 //

@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 2004, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2004, ALICE Experiment at CERN, All rights reserved.      *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -29,6 +29,9 @@
 
 #ifndef ALIFMDSUBDETECTOR_H
 # include "AliFMDSubDetector.h"
+#endif
+#ifndef ALIFMDRING_H
+# include <AliFMDRing.h>
 #endif
 #ifndef ALILOG_H
 # include "AliLog.h"

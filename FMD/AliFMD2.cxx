@@ -31,6 +31,9 @@
 #ifndef ALILOG_H
 # include "AliLog.h"
 #endif
+#ifndef ALIFMDRING_H
+# include "AliFMDRing.h"
+#endif 
 
 //____________________________________________________________________
 ClassImp(AliFMD2);

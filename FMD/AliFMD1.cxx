@@ -25,6 +25,9 @@
 #ifndef ALIFMD1_H
 # include "AliFMD1.h"
 #endif 
+#ifndef ALIFMDRING_H
+# include "AliFMDRing.h"
+#endif 
 #ifndef ROOT_TVirtualMC
 # include <TVirtualMC.h>
 #endif

@@ -1,4 +1,3 @@
-// -*- mode: c++ -*-
 #ifndef AliFMDhit_H
 #define AliFMDhit_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
@@ -128,6 +127,10 @@ private:
 };
 #endif
 //____________________________________________________________________
+//
+// Local Variables:
+//   mode: C++
+// End:
 //
 // EOF
 //

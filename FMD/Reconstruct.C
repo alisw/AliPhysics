@@ -20,13 +20,13 @@
 void 
 Reconstruct()
 {
-   AliReconstruction rec;   
-   rec.SetRunLocalReconstruction("FMD");
-   rec.SetRunVertexFinder(kFALSE);
-   rec.SetRunTracking(kFALSE); 
-   rec.SetFillESD(""); 
-   rec.SetInput("./");
-   rec.Run(); 
+  AliReconstruction rec;   
+  rec.SetRunLocalReconstruction("FMD");
+  rec.SetRunVertexFinder(kFALSE);
+  rec.SetRunTracking(kFALSE); 
+  rec.SetFillESD(""); 
+  rec.SetInput("./");
+  rec.Run(); 
 }
 
 //

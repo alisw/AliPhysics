@@ -1,4 +1,3 @@
-// -*- mode: c++ -*-
 #ifndef ALIFMDMAP_H
 #define ALIFMDMAP_H
 /* Copyright(c) 1998-2000, ALICE Experiment at CERN, All rights
@@ -128,6 +127,11 @@ AliFMDMap<Type>::operator()(size_t det, Char_t ring, size_t sec, size_t str)cons
 
 
 #endif 
+//____________________________________________________________________
+//
+// Local Variables:
+//   mode: C++
+// End:
 //
 // EOF
 //

@@ -1,4 +1,5 @@
-// -*- mode: c++ -*-
+#ifndef ALIFMDRING_H
+#define ALIFMDRING_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
  * reserved. 
  *
@@ -6,8 +7,6 @@
  *
  * See cxx source for full Copyright notice                               
  */
-#ifndef ALIFMDRING_H
-#define ALIFMDRING_H
 #ifndef ALIFMDPOLYGON_H
 # include <AliFMDPolygon.h>
 #endif
@@ -115,9 +114,14 @@ public:
   void SetModuleSpacing(Double_t       spacing)	  { fModuleSpacing = spacing; }
   void SetPrintboardThickness(Double_t thickness) { fPrintboardThickness = thickness; }
 
-  ClassDef(AliFMDRing, 1) // Ring volume parameters 
+  ClassDef(AliFMDRing, 1) // FMD Ring volume parameters 
 };
 #endif 
+//____________________________________________________________________
+//
+// Local Variables:
+//   mode: C++
+// End:
 //
 // EOF
 //

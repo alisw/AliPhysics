@@ -1,15 +1,19 @@
-// -*- mode: c++ -*-
 #ifndef ALIFMDSUBDETECTOR_H
 #define ALIFMDSUBDETECTOR_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
+ * reserved. 
+ *
+ * Latest changes by Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * See cxx source for full Copyright notice                               
+ */
 #ifndef ROOT_TObject
 # include <TObject.h>
-#endif
-#ifndef ALIFMDRING_H
-# include <AliFMDRing.h>
 #endif
 
 class TNode;
 class TList;
+class AliFMDRing;
 
 
 //__________________________________________________________________
@@ -30,7 +34,7 @@ protected:
   Int_t       fOuterHoneyTopId;    // Volume ID of top of outer honeycomb   
   Int_t       fOuterHoneyBottomId; // Volume ID of bottom of outer honeycomb
 
-  Int_t       fRotationId;
+  Int_t       fRotationId;         // The ID of the sub-detector rotation
   
   AliFMDRing* fInner;              // Reference to inner ring description
   AliFMDRing* fOuter;              // Reference to outer ring description
@@ -54,26 +58,34 @@ public:
   void   SetInnerZ(Double_t z)               { fInnerZ = z; }
   void   SetOuterZ(Double_t z)               { fOuterZ = z; }
   void   SetHoneycombThickness(Double_t t=1) { fHoneycombThickness = t; }
-  void   SetInnerHoneyLowR(Double_t r) { fInnerHoneyLowR = r; }
-  void   SetInnerHoneyHighR(Double_t r) { fInnerHoneyHighR = r; }
-  void   SetOuterHoneyLowR(Double_t r) { fOuterHoneyLowR = r; }
-  void   SetOuterHoneyHighR(Double_t r) { fOuterHoneyHighR = r; }
-  void   SetKaptionThickness(Double_t t=.1)   { fKaptionThickness = t; }
+  void   SetInnerHoneyLowR(Double_t r)       { fInnerHoneyLowR = r; }
+  void   SetInnerHoneyHighR(Double_t r)      { fInnerHoneyHighR = r; }
+  void   SetOuterHoneyLowR(Double_t r)       { fOuterHoneyLowR = r; }
+  void   SetOuterHoneyHighR(Double_t r)      { fOuterHoneyHighR = r; }
+  void   SetKaptionThickness(Double_t t=.1)  { fKaptionThickness = t; }
      
   Double_t    GetInnerZ()             const { return fInnerZ; }
   Double_t    GetOuterZ()             const { return fOuterZ; }
   AliFMDRing* GetInner()              const { return fInner; }
   AliFMDRing* GetOuter()              const { return fOuter; }
   Double_t    GetHoneycombThickness() const { return fHoneycombThickness; }
-  Double_t    GetInnerHoneyLowR() const { return fInnerHoneyLowR; }
-  Double_t    GetInnerHoneyHighR() const { return fInnerHoneyHighR; }
-  Double_t    GetOuterHoneyLowR() const { return fOuterHoneyLowR; }
-  Double_t    GetOuterHoneyHighR() const { return fOuterHoneyHighR; }
+  Double_t    GetInnerHoneyLowR()     const { return fInnerHoneyLowR; }
+  Double_t    GetInnerHoneyHighR()    const { return fInnerHoneyHighR; }
+  Double_t    GetOuterHoneyLowR()     const { return fOuterHoneyLowR; }
+  Double_t    GetOuterHoneyHighR()    const { return fOuterHoneyHighR; }
   Double_t    GetKaptionThickness()   const { return fKaptionThickness; }
   Int_t       GetId()                 const { return fId; }     
   Bool_t      IsFolder()              const { return kTRUE; }
 
-  ClassDef(AliFMDSubDetector, 1) // Sub detectors
+  ClassDef(AliFMDSubDetector, 1) // FMD Sub detector base class
 };
 
 #endif
+//____________________________________________________________________
+//
+// Local Variables:
+//   mode: C++
+// End:
+//
+// EOF
+//
