@@ -295,7 +295,9 @@ export G4LEVELGAMMADATA=$G4INSTALL/data/PhotonEvaporation
 SYSTEM=`uname`
 if [ "$SYSTEM" = "HP-UX" ]; then
   export G4SYSTEM="HP-aCC"
-  export G4USE_OSPACE=1
+  #export G4USE_OSPACE=1      # compiling with Object Space STL
+  export G4NO_STD_NAMESPACE=1 # required when compiling with native STL
+                              # (check if needed for geant4.2.0)
 fi  
 if [ "$SYSTEM" = "Linux" ]; then
   export G4SYSTEM="Linux-g++"
@@ -438,12 +440,8 @@ if [ $AG4_VISUALIZE ]; then
   export G4VIS_BUILD_OPENGLXM_DRIVER=1
   export G4VIS_USE_OPENGLX=1
   export G4VIS_USE_OPENGLXM=1
-  if [ "$SYSTEM" = "Linux" ]; then
-    export OGLHOME=/usr/local
-    export OGLLIBS="-L$OGLHOME/lib -lMesaGLU -lMesaGL"
-  else
-    export OGLHOME=$LHCXX_BASE/OpenGL/pro
-  fi
+  export OGLHOME=/usr/local
+  export OGLLIBS="-L$OGLHOME/lib -lMesaGLU -lMesaGL"
 
   if [ "$VERBOSE" = "YES" ]; then
     if [ $G4VIS_USE_OPENGLX ]; then
