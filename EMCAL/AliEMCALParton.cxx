@@ -59,7 +59,7 @@ void AliEMCALParton::SetTrackList(Int_t NTracks, Float_t* Energy,  Float_t* Eta,
   }
 }
 
-void AliEMCALParton::GetTrackList(Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG)
+void AliEMCALParton::GetTrackList(Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG) const
 {
 // retrieves the stored tracklist	
   for (Int_t i=0;i<fNTracks;i++)
