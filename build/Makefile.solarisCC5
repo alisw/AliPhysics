@@ -43,7 +43,7 @@ SOFLAGS       = -G $(LDFLAGS) $(SHLIB)
 ROOTLIBS += -lm -ldl -lnsl -lsocket
 
 # Additional flags and libraries for building aliroot executable
-EXEFLAGS += -O -Qoption ld -t -L/usr/dt/lib -L/usr/openwin/lib -L/usr/ccs/lib -lXm -lXt -lX11 -lm -lgen -ldl -lsocket -lsunmath 
+EXEFLAGS += -O -Qoption ld -t -L/usr/dt/lib -L/usr/openwin/lib -L/usr/ccs/lib -lXm -lXt -lX11 -lm -lgen -ldl -lsocket -lsunmath -lrtc
 
 
 
