@@ -64,6 +64,7 @@ class AliL3Transform {
   static Double_t GetBField() {return fBField;}
   static Double_t GetBFact() {return fBFACT;}
   static Double_t GetBFieldValue() {return (fBField*fBFACT);}
+  static Float_t Deg2Rad(Float_t angle) {return angle*fPi/180;}
   static Double_t Pi() {return fPi;}
   static Int_t GetVersion(){return fVersion;}
   static Double_t GetPadPitchWidthLow() {return fPadPitchWidthLow;}
