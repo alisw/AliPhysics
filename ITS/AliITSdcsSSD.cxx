@@ -18,7 +18,8 @@ AliITSdcsSSD::AliITSdcsSSD(AliITSsegmentation *seg, AliITSresponse *resp)
 {
   // constructor
 
-    fRandom = new TRandom();
+  //MI    fRandom = new TRandom();
+    fRandom = gRandom;
 
     fNstrips = seg->Npx();
     

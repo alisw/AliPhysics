@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/02/08 23:57:00  nilsen
+Fixed up some informational printouts.
+
 Revision 1.15  2001/02/07 20:23:21  nilsen
 Fixed bug with HP and no unget in iostream.h. Now using putback instead.
 Other changes and fixes also included.
@@ -968,7 +971,7 @@ void AliITSgeom::RandomChange(const Float_t *stran,const Float_t *srot){
 ////////////////////////////////////////////////////////////////////////
    Int_t    i,j;
    Double_t t[3],r[3];
-   TRandom ran;
+   //MI   TRandom ran;
    AliITSgeomMatrix *g;
 
    fTrans = (fTrans && 0xfffd) + 2;  // set bit 1 true.
@@ -977,8 +980,8 @@ void AliITSgeom::RandomChange(const Float_t *stran,const Float_t *srot){
          g->GetTranslation(t);
          g->GetAngles(r);
          for(j=0;j<3;j++){
-              t[j] += ran.Gaus(0.0,stran[j]);
-              r[j] += ran.Gaus(0.0, srot[j]);
+              t[j] += gRandom->Gaus(0.0,stran[j]);
+              r[j] += gRandom->Gaus(0.0, srot[j]);
          } // end for j
          g->SetTranslation(t);
          g->SetAngles(r);
