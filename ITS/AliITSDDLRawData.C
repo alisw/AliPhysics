@@ -29,7 +29,7 @@ void AliITSDDLRawData(char* DigitsFile="galiceD.root"){
 #endif
   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(DigitsFile);
   if (!file){
-    file = new TFile(DigitsFile);
+    file = TFile::Open(DigitsFile);
   }//end if
   file->ls();
 
@@ -90,7 +90,7 @@ void AliITSDDLRawData(char* DigitsFile="galiceD.root"){
     timer.Print();
     //ONLY FOR DEBUGGING 
     util->TestFormat();
-    
+
     //SILICON DRIFT DETECTOR
     cout<<"Formatting data for SDD"<<endl;
     timer.Start();

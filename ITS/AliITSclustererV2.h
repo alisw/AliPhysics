@@ -16,6 +16,7 @@ class TClonesArray;
 
 class AliITSgeom;
 class AliITSclusterV2;
+class AliITSRawStream;
 
 class AliITSclustererV2 {
 public:
@@ -24,9 +25,13 @@ public:
 
   void SetEvent(Int_t event) { fEvent=event; }
   void Digits2Clusters(const TFile *in, TFile *out);
+  void Digits2Clusters(TFile *out);
   void FindClustersSPD(const TClonesArray *dig, TClonesArray *cls);
+  void FindClustersSPD(AliITSRawStream* input, TClonesArray** clusters);
   void FindClustersSDD(const TClonesArray *dig, TClonesArray *cls);
+  void FindClustersSDD(AliITSRawStream* input, TClonesArray** clusters);
   void FindClustersSSD(const TClonesArray *dig, TClonesArray *cls);
+  void FindClustersSSD(AliITSRawStream* input, TClonesArray** clusters);
 
   void RecPoints2Clusters(const TClonesArray *p, Int_t idx, TClonesArray *c);
   void Hits2Clusters(const TFile *in, TFile *out);
@@ -72,6 +77,12 @@ private:
   static void MarkPeak(Int_t k, Int_t max, AliBin *bins, UInt_t m);
   static void MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,
    AliITSclusterV2 &c);
+  void FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nMaxZ,
+		       const TClonesArray *dig, TClonesArray *cls);
+  void FindClustersSSD(Ali1Dcluster* neg, Int_t nn, 
+		       Ali1Dcluster* pos, Int_t np,
+		       TClonesArray *clusters);
+
 
   static void FindCluster(Int_t k,Int_t maxz,AliBin *bins,Int_t &n,Int_t *idx);
 
@@ -82,6 +93,7 @@ private:
   Float_t fYshift[2200];       //y-shifts of detector local coor. systems 
   Float_t fZshift[2200];       //z-shifts of detector local coor. systems 
   Int_t fNdet[2200];            //detector index  
+  Int_t fNModules;             // total number of modules
 
   //SPD related values:
   Int_t fLastSPD1;       //index of the last SPD1 detector
