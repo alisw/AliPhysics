@@ -44,8 +44,8 @@ class AliHBTOutSideLongFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelFunc
 
   public:
     AliHBTOutSideLongFctn(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
-                             Int_t nYbins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0,
-	         Int_t nZbins = 100, Double_t maxZval = 0.15, Double_t minZval = 0.0);
+                          Int_t nYbins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0,
+	      Int_t nZbins = 100, Double_t maxZval = 0.15, Double_t minZval = 0.0);
     virtual  ~AliHBTOutSideLongFctn(){}
 
     TH1* GetResult();
@@ -130,6 +130,21 @@ class AliHBTTwoKStarCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelF
    Double_t GetValue(AliHBTPair * pair) { return 2.0*pair->GetKStar();}
  private:  
     ClassDef(AliHBTTwoKStarCorrelFctn,2)
+};
+
+/*************************************************************************************/ 
+
+class AliHBTAvSeparCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction
+{
+//   Correlation Function of 2*KStar
+ public:
+   AliHBTAvSeparCorrelFctn(Int_t nbins = 200, Double_t maxXval = 30, Double_t minXval = 0.0);
+   virtual ~AliHBTAvSeparCorrelFctn(){};
+   TH1* GetResult();
+ protected:
+   Double_t GetValue(AliHBTPair * pair) { return pair->GetAvarageDistance();}
+ private:  
+    ClassDef(AliHBTAvSeparCorrelFctn,2)
 };
 
 #endif

@@ -91,6 +91,7 @@
 #pragma link C++ class AliHBTQOutCMSLCCorrelFctn+;
 #pragma link C++ class AliHBTQLongCMSLCCorrelFctn+;
 #pragma link C++ class AliHBTQSideCMSLCCorrelFctn+;
+#pragma link C++ class AliHBTAvSeparCorrelFctn+;
 
 #pragma link C++ class AliHBTInvMassCorrelFctn+;
 #pragma link C++ class AliHBTCorrFitFctn+;

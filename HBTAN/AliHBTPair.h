@@ -46,6 +46,8 @@ class AliHBTPair: public TObject
    virtual Double_t GetKt();  //returns K transverse
    virtual Double_t GetKStar();
    
+   virtual Double_t GetAvarageDistance();//returns avarage distnace between two tracks
+   
    virtual Double_t GetDeltaP(); //return difference of momenta
    virtual Double_t GetDeltaPt();
    virtual Double_t GetDeltaPx();

@@ -174,3 +174,26 @@ TH1* AliHBTTwoKStarCorrelFctn::GetResult()
 }
 
 /*************************************************************************************/ 
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+ClassImp(AliHBTAvSeparCorrelFctn)
+
+AliHBTAvSeparCorrelFctn::AliHBTAvSeparCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+ AliHBTOnePairFctn1D(nbins,maxXval,minXval)
+{
+ //ctor 
+ fWriteNumAndDen = kTRUE;//change default behaviour
+ Rename("avsepcf","Avarage separation Correlation Function");
+}
+
+/*************************************************************************************/ 
+
+TH1* AliHBTAvSeparCorrelFctn::GetResult()
+{  
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
+}
+
+/*************************************************************************************/ 

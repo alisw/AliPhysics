@@ -13,6 +13,7 @@
 
 #include "AliHBTParticle.h"
 #include "AliHBTWeights.h"
+#include "AliHBTTrackPoints.h"
 
 ClassImp(AliHBTPair)
 
@@ -389,4 +390,28 @@ Double_t AliHBTPair::GetWeight()
       fWeightNotCalc = kFALSE;  
    }
   return fWeight; 
+}
+
+/************************************************************************/
+
+Double_t AliHBTPair::GetAvarageDistance()
+{
+  //returns avarage distance between two tracks in range 
+  //as defined in Track-Points of AliHBTParticle
+  //returns negative value if error uccured f.g. tracks do not have track-points
+  AliHBTTrackPoints* tpts1 = fPart1->GetTrackPoints();
+  if ( tpts1 == 0x0)
+   {//it could be simulated pair
+//     Warning("GetValue","Track 1 does not have Track Points. Pair NOT Passed.");
+     return -1.0;
+   }
+
+  AliHBTTrackPoints* tpts2 = fPart2->GetTrackPoints();
+  if ( tpts2 == 0x0)
+   {
+//     Warning("GetValue","Track 2 does not have Track Points. Pair NOT Passed.");
+     return -1.0;
+   }
+
+  return tpts1->AvarageDistance(*tpts2);
 }
