@@ -1,4 +1,4 @@
-void anaDigits() 
+ void anaDigits() 
 {
 
 /////////////////////////////////////////////////////////////////////////
@@ -62,16 +62,20 @@ void anaDigits()
 
   // Create the digits manager
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
-  digitsManager->SetVerbose(1);
+  digitsManager->SetDebug(1);
 
   // Read the digits from the file
   digitsManager->Open(alifile);
   digitsManager->ReadDigits();
 
+  // Get the detector number
+  Int_t iDet = 423;
+  cout << " iDet = " << iDet << endl;
+
   // Define the detector matrix for one chamber
-  const Int_t iSec = 11;
-  const Int_t iCha = 2;
-  const Int_t iPla = 0;
+  const Int_t iSec = geo->GetSector(iDet);
+  const Int_t iCha = geo->GetChamber(iDet);
+  const Int_t iPla = geo->GetPlane(iDet);
   Int_t  rowMax = geo->GetRowMax(iPla,iCha,iSec);
   Int_t  colMax = geo->GetColMax(iPla);
   Int_t timeMax = geo->GetTimeMax();
@@ -79,10 +83,6 @@ void anaDigits()
                 << " colMax = "  <<  colMax
                 << " timeMax = " << timeMax << endl;
   AliTRDmatrix *matrix = new AliTRDmatrix(rowMax,colMax,timeMax,iSec,iCha,iPla);
-
-  // Get the detector number
-  Int_t iDet = geo->GetDetector(iPla,iCha,iSec); 
-  cout << " iDet = " << iDet << endl;
 
   // Loop through the detector pixel
   for (Int_t time = 0; time < timeMax; time++) {

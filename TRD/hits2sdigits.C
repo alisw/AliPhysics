@@ -15,13 +15,14 @@ void hits2sdigits()
   }
 
   // Input (and output) file name
-  Char_t *alifile = "galice.root"; 
+  Char_t *alifile = "galice_signal.root"; 
 
   // Create the TRD digitzer 
-  AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer","Digitizer class");
+  AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer"
+                                                  ,"TRD digitizer class");
 
   // Set the parameter
-  digitizer->SetVerbose(1);
+  digitizer->SetDebug(1);
 
   // For the summable digits
   digitizer->SetSDigits(kTRUE);
