@@ -179,3 +179,20 @@ void AliITSsegmentationSDD::GetGlobal(Int_t module,Float_t *l ,Float_t *g){
     fGeom->LtoG(module,l,g);
 
 }
+//----------------------------------------------------------------------
+void AliITSsegmentationSDD::Print(){
+  // Print SDD segmentation Parameters
+
+   cout << "**************************************************" << endl;
+   cout << "  Silicon Drift Detector Segmentation Parameters  " << endl;
+   cout << "**************************************************" << endl;
+   cout << "Number of Time Samples: " << fNsamples << endl;
+   cout << "Number of Anodes: " << fNanodes << endl;
+   cout << "Time Step (ns): " << fTimeStep << endl;
+   cout << "Anode Pitch (um): " << fPitch << endl;
+   cout << "Full Detector Width     (x): " << fDx << endl;
+   cout << "Half Detector Length    (z): " << fDz << endl;
+   cout << "Full Detector Thickness (y): " << fDy << endl;
+   cout << "**************************************************" << endl;
+
+}
