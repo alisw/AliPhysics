@@ -11,8 +11,8 @@ PACKAGE = EVGEN
 
 SRCS          = AliSimpleGen.cxx AliGenCocktail.cxx AliGenFLUKAsource.cxx \
                 AliGenMUONlib.cxx AliGenParam.cxx AliGenPythia.cxx \
-                AliPythia.cxx DimuonCombinator.cxx AliGenHalo.cxx
-
+                AliPythia.cxx DimuonCombinator.cxx AliGenHalo.cxx \
+                AliGenExtFile.cxx AliGenScan.cxx
 # C++ Headers
 
 HDRS          = $(SRCS:.cxx=.h) EVGENLinkDef.h
