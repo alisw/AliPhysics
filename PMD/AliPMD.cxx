@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/05/16 14:57:19  alibrary
+New files for folders and Stack
+
 Revision 1.14  2001/03/12 17:46:22  hristov
 Changes needed on Sun with CC 5.0
 
@@ -115,7 +118,7 @@ AliPMD::AliPMD(const char *name, const char *title)
   fNRecPoints = 0;
   
 
-  fIshunt =  1;
+  fIshunt =  0;
   
   fPar[0] = 1;
   fPar[1] = 1;
