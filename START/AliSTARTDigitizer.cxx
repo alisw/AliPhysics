@@ -84,7 +84,7 @@ Bool_t AliSTARTDigitizer::Init()
 
 //---------------------------------------------------------------------
 
-void AliSTARTDigitizer::Exec(Option_t* option)
+void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 {
 
 
@@ -93,7 +93,6 @@ void AliSTARTDigitizer::Exec(Option_t* option)
 
   outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   outgime = outRL->GetLoader("STARTLoader");
-  cout<<" outgime "<<outgime<<endl;
 
 #ifdef DEBUG
   cout<<"AliSTARTDigitizer::>SDigits2Digits start...\n";
@@ -126,7 +125,8 @@ void AliSTARTDigitizer::Exec(Option_t* option)
   fPhotons = new TClonesArray ("AliSTARThitPhoton", 10000);			//!!!
   AliSTART *START  = (AliSTART*) gAlice->GetDetector("START");
   AliSTARThit  *startHit;
-  AliSTARThitPhoton  *startHitPhoton;						//!!!
+  //use if Cherenkov photons
+  //  AliSTARThitPhoton  *startHitPhoton;						//!!!
   TBranch *brHits=0;
   TBranch *brHitPhoton=0;
   fdigits= new AliSTARTdigit();
@@ -146,14 +146,11 @@ void AliSTARTDigitizer::Exec(Option_t* option)
       }
 
     inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
-    //   AliSTARTLoader *pSTARTloader = (AliSTARTLoader*)fLoader;
-    //  pSTARTLoader->LoadHits("READ");
     ingime = inRL->GetLoader("STARTLoader");
-    cout<<" ingime "<<ingime<<endl;
-    //    AliSTARTLoader *pSTARTLoader ;
     ingime->LoadHits("READ");//probably it is necessary to load them before
     ingime->LoadDigits("UPDATE");//probably it is necessary to load them before
-    TClonesArray *STARThitsPhotons = START->Photons ();
+    //use if Cherenkov photons
+    //  TClonesArray *STARThitsPhotons = START->Photons ();
     TClonesArray *fHits = START->Hits ();
     //    cout<<" Load  "<<AliSTARTLoader::LoadDigits()<<endl;
 
@@ -161,7 +158,6 @@ void AliSTARTDigitizer::Exec(Option_t* option)
     brHits = th->GetBranch("START");
     brHitPhoton = th->GetBranch("STARThitPhoton");
     if (brHits) {
-      cout<<" brHits "<<endl;
       START->SetHitsAddressBranch(brHits,brHitPhoton);
     }else{
       cerr<<"EXEC Branch START hit not found"<<endl;
@@ -193,7 +189,6 @@ void AliSTARTDigitizer::Exec(Option_t* option)
     } // was photons
     */
     // Start loop on tracks in the hits containers
-    cout<<" fHits "<<fHits<<endl;;
     for (Int_t track=0; track<ntracks;track++) {
       brHits->GetEntry(track);
       nhits = fHits->GetEntriesFast();
@@ -221,24 +216,24 @@ void AliSTARTDigitizer::Exec(Option_t* option)
 	}//time for left shoulder
       } //hit loop
     } //track loop
- 
+  
     // z position
     cout<<" right time  "<<besttimeright<<
       " right distance "<<besttimeright*30<<endl;;
     cout<<" left time  "<<besttimeleft<<
-      " right distance "<<besttimeleft*30<<endl;;
+      " left distance "<<besttimeleft*30<<endl;;
   
 
     //folding with experimental time distribution
     
-    besttimerightGaus=gRandom->Gaus(besttimeright,0.05);
-    //    cout<<" besttimerightGaus "<<besttimerightGaus<<endl;
-    bestRightADC=Int_t (besttimerightGaus*1000/channelWidth);
-    Float_t koef=69.7/350.;
-    besttimeleft=koef*besttimeleft;
-    besttimeleftGaus=gRandom->Gaus(besttimeleft,0.05);
-    
+    besttimeleftGaus=gRandom->Gaus(besttimeright,0.05);
+    cout<<" besttimeleftGaus "<<besttimeleftGaus<<endl;
     bestLeftADC=Int_t (besttimeleftGaus*1000/channelWidth);
+    Float_t koef=69.7/350.;
+    besttimeright=koef*besttimeleft;
+    besttimerightGaus=gRandom->Gaus(besttimeleft,0.05);
+    
+    bestRightADC=Int_t (besttimerightGaus*1000/channelWidth);
     timediff=besttimerightGaus-besttimeleftGaus;
     cout<<" timediff in ns "<<timediff<<" z= "<<timediff*30<<endl;
     meanTime=(besttimerightGaus+besttimeleftGaus)/2.;
@@ -309,10 +304,8 @@ void AliSTARTDigitizer::Exec(Option_t* option)
     cout<<nameDigits<<endl;
     wd->cd();
 */  
-    cout<<" outgime v konce "<<outgime<<endl;
-    outgime->Dump();
-    outgime->Print();
-    Char_t nameDigits[20];
+
+     Char_t nameDigits[20];
     sprintf(nameDigits,"START_D_%d",fManager->GetOutputEventNr());
     fdigits->Write(nameDigits);
 
@@ -322,7 +315,7 @@ void AliSTARTDigitizer::Exec(Option_t* option)
 
 
 //------------------------------------------------------------------------
-Bool_t AliSTARTDigitizer::RegisterPhotoE(AliSTARThitPhoton *hit)
+Bool_t AliSTARTDigitizer::RegisterPhotoE(/*AliSTARThitPhoton *hit*/)
 {
     Double_t    P = 0.2;    
     Double_t    p;
