@@ -374,13 +374,30 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
     if (fDebugLevel != 0 ||
 	(ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
       cout <<  "======= Analyze ======> Event " << ievent+1 << endl ;
+
+
+    gAlice->GetEvent(ievent) ;
+    gAlice->SetEvent(ievent) ;
+
+    if(gAlice->TreeS() == 0)      gAlice->MakeTree("S");
+    fPHOS->MakeBranch("S") ; 
     
-    fPHOS->Enable() ;
+    fPHOS->Hits2SDigits() ;  
     
-    gAlice->Hits2Digits() ;
-    
-    //=========== Do the reconstruction
+    if(gAlice->TreeD() == 0) gAlice->MakeTree("D");
+    fPHOS->MakeBranch("D") ; 
+
+    fPHOS->SDigits2Digits() ;
+
+    if(gAlice->TreeR() == 0) gAlice->MakeTree("R");
+        
     fPHOS->Reconstruction(fRec);    
+
+    gAlice->TreeS()->Fill() ;
+    gAlice->TreeS()->Write(0,TObject::kOverwrite); 
+
+    gAlice->TreeD()->Fill() ;
+    gAlice->TreeD()->Write(0,TObject::kOverwrite); 
     
   }
   
