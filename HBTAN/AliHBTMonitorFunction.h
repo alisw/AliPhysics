@@ -95,7 +95,7 @@ class AliHBTMonOneParticleFctn2D: public AliHBTMonOneParticleFctn
  public:
   AliHBTMonOneParticleFctn2D(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
                       Int_t nYbins = 200, Double_t maxYval = 1.5, Double_t minYval =-0.1);
-  ~AliHBTMonOneParticleFctn2D();
+  virtual ~AliHBTMonOneParticleFctn2D();
   
   TH1* GetResult(){return fResult;}
   
@@ -155,7 +155,7 @@ class AliHBTMonTwoParticleFctn1D: public AliHBTMonTwoParticleFctn
   AliHBTMonTwoParticleFctn1D(Int_t nbins = 200, Double_t maxval = 1.5, Double_t minval = 0.0);
   AliHBTMonTwoParticleFctn1D(const char*,const char*,
                       Int_t nbins = 200, Double_t maxval = 1.5, Double_t minval = 0.0);
-  ~AliHBTMonTwoParticleFctn1D();
+  virtual ~AliHBTMonTwoParticleFctn1D();
   
   TH1* GetResult(){return fResult;}
   
