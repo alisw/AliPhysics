@@ -1,0 +1,10 @@
+FSRCS:= tphic17.f
+
+SRCS= TPHICgen.cxx AliGenTPHIC.cxx
+
+HDRS= TPHICgen.h   AliGenTPHIC.h
+
+DHDR:=TPHICLinkDef.h
+
+FFLAGS += -fno-automatic
+#PACKFFLAGS := $(filter-out -O%,$(FFLAGS))
