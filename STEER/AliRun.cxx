@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.69  2001/06/28 16:27:50  morsch
+AliReco() with user control of event range.
+
 Revision 1.68  2001/06/11 13:14:40  morsch
 SetAliGenEventHeader() method added.
 
@@ -1430,7 +1433,7 @@ void AliRun::RunReco(const char *selected, Int_t first, Int_t last)
    Int_t nFirst = first;
    Int_t nLast  = (last < 0)? (Int_t) gAlice->TreeE()->GetEntries() : last;
    
-   for (Int_t nevent = nFirst; nevent < nLast; nevent++) {
+   for (Int_t nevent = nFirst; nevent <= nLast; nevent++) {
      cout << "Processing event "<< nevent << endl;
      GetEvent(nevent);
      // MakeTree("R");

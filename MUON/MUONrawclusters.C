@@ -58,6 +58,6 @@ void MUONrawclusters (Int_t evNumber1=0,Int_t evNumber2=0)
 //
     Int_t Nh=0;
     Int_t Nh1=0;
-    gAlice->RunReco("MUON", evNumber1, evNumber2+1);
+    gAlice->RunReco("MUON", evNumber1, evNumber2);
 }
 
