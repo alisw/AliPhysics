@@ -141,7 +141,7 @@ void AliSingleModuleConstruction::CreateSensitiveDetectors2()
 
 // public methods 
 
-void AliSingleModuleConstruction::Configure()
+void AliSingleModuleConstruction::Configure(const AliFiles& files)
 { 
 // Executes the detector setup Root macro
 // (extracted from AliRoot Config.C) and
@@ -149,67 +149,25 @@ void AliSingleModuleConstruction::Configure()
 // ---
    	  
   // filepaths and macro names 
-  G4String rootFilePath;
-  G4String g4FilePath;
-
-  if (fType == kDetector) {
-    // macro file path 
-    //$AG4_INSTALL/macro/XXX/Config.C
-    //$AG4_INSTALL/macro/XXX/Config.in
-    rootFilePath = AliFiles::DetConfig1();
-    rootFilePath.append(fModuleName);
-    rootFilePath.append(AliFiles::DetConfig2());
-    g4FilePath = rootFilePath;
-
-    rootFilePath.append(AliFiles::DetConfig3());
-    g4FilePath.append(AliFiles::DetConfig4());
-
-    // path to g3calls.dat file
-    //$AG4_INSTALL/macro/XXX/g3calls_vN.dat
-    fDataFilePath = AliFiles::DetData1();
-    fDataFilePath.append(fModuleName);
-    fDataFilePath.append(AliFiles::DetData2());
-    G4String version("v");
-    AliGlobals::AppendNumberToString(version,fVersion);
-    fDataFilePath.append(version);
-    fDataFilePath.append(AliFiles::DetData3());   	  
-  }  
-  else if (fType == kStructure) {    
-    // macro file path is set to 
-    //$AG4_INSTALL/macro/STRUCT/XXXConfig.C
-    //$AG4_INSTALL/macro/STRUCT/XXXConfig.in
-    rootFilePath = AliFiles::DetConfig1();
-    rootFilePath.append(AliFiles::STRUCT());
-    rootFilePath.append(AliFiles::DetConfig2());
-    rootFilePath.append(fModuleName);
-    g4FilePath = rootFilePath;
-
-    rootFilePath.append(AliFiles::DetConfig3());
-    g4FilePath.append(AliFiles::DetConfig4());
-
-    // path to g3calls.dat file
-    //$AG4_INSTALL/macro/STRUCT/g3calls_XXXvN.dat
-    fDataFilePath = AliFiles::DetData1();
-    fDataFilePath.append(AliFiles::STRUCT());
-    fDataFilePath.append(AliFiles::DetData2());
-    fDataFilePath.append(fModuleName);
-    G4String version("v");
-    AliGlobals::AppendNumberToString(version,fVersion);
-    fDataFilePath.append(version);
-    fDataFilePath.append(AliFiles::DetData3());
-  }  
+  G4bool isStructure = (fType == kStructure);
+  G4String rootFilePath 
+    = files.GetRootMacroPath(fModuleName, isStructure);
+  G4String g4FilePath
+    = files.GetG4MacroPath(fModuleName, isStructure);
+  fDataFilePath 
+    = files.GetG3CallsDatPath(fModuleName, fVersion, isStructure); 
   
+  // load and execute aliroot config macro
   if (fProcessConfig) {
-    // load and execute aliroot macro
     gROOT->LoadMacro(rootFilePath);
-    G4String macroName = AliFiles::DetConfigName1();
+    G4String macroName = files.GetDefaultMacroName();
+    macroName = macroName + "(";
     AliGlobals::AppendNumberToString(macroName, fVersion);
-    macroName.append(AliFiles::DetConfigName2());
+    macroName = macroName + ")";
     gInterpreter->ProcessLine(macroName);
   } 
   
-  // add process g4 config macro
-  // execute Geant4 macro if file is specified as an argument 
+  // process g4 config macro
   G4String command = "/control/execute ";
   G4UImanager* pUI = G4UImanager::GetUIpointer();  
   pUI->ApplyCommand(command + g4FilePath);
