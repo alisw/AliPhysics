@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2003/06/10 11:22:28  morsch
+Physics configuration via modified input cards. (E. Futo)
+
 Revision 1.17  2003/06/05 10:22:57  morsch
 All printout under verbosity level control.
 
@@ -623,9 +626,10 @@ void TFluka::InitPhysics()
 {
 // Last material number taken from the "corealice.inp" file, presently 31
 // !!! it should be available from Flugg !!!
+  Int_t i, j, k;
+  Double_t fCut;
   Float_t fLastMaterial = 31.0;
-  Float_t fLastRegion   = 692.;
-  
+ 
 // construct file names
   TString sAliceInp = getenv("ALICE_ROOT");
   sAliceInp +="/TFluka/input/";
@@ -669,34 +673,235 @@ fin:
   AliceInp << endl;
   AliceInp << "*----------------------------------------------------------------------------- "; 
     AliceInp << endl;
-  for (Int_t i=0; i<iNbOfProc; i++) {
+  for (i=0; i<iNbOfProc; i++) {
 
     // annihilation
     // G3 default value: 1
     // G4 processes: G4eplusAnnihilation/G4IeplusAnnihilation
     // Particles: e+
     // Physics:   EM
+    // flag = 0 no annihilation
+    // flag = 1 annihilation, decays processed
+    // flag = 2 annihilation, no decay product stored
     // gMC ->SetProcess("ANNI",1); // EMFCUT   -1.   0.  0. 3. lastmat 0. ANNH-THR
-    if ((strncmp(&sProcessFlag[i][0],"ANNI",4) == 0) && iProcessValue[i] == 1) {
-      AliceInp << "*Kinetic energy threshold (GeV) for e+ annihilation - resets to default=0."; 
+    if (strncmp(&sProcessFlag[i][0],"ANNI",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Kinetic energy threshold (GeV) for e+ annihilation - resets to default=0."; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('ANNI',1) or SetProcess('ANNI',2)"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "EMFCUT    "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << -1.0; // kinetic energy threshold (GeV) for e+ annihilation (resets to default=0)
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setw(10) << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 1.0;  // step length in assigning indices
+        AliceInp << setw(8)  << "ANNH-THR"; 
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*No annihilation - no FLUKA card generated"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('ANNI',0)"; 
+        AliceInp << endl;
+      }
+      else  {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('ANNI',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+    }
+    
+    // bremsstrahlung and pair production are both activated
+    // G3 default value: 1
+    // G4 processes: G4eBremsstrahlung/G4IeBremsstrahlung,
+    //               G4MuBremsstrahlung/G4IMuBremsstrahlung,
+    //               G4LowEnergyBremstrahlung
+    // Particles: e-/e+; mu+/mu-
+    // Physics:   EM
+    // flag = 0 no bremsstrahlung
+    // flag = 1 bremsstrahlung, photon processed
+    // flag = 2 bremsstrahlung, no photon stored
+    // gMC ->SetProcess("BREM",1); // PAIRBREM  2.   0.  0. 3. lastmat
+                                 // EMFCUT   -1.   0.  0. 3. lastmat 0. ELPO-THR
+    // G3 default value: 1
+    // G4 processes: G4GammaConversion,
+    //               G4MuPairProduction/G4IMuPairProduction
+    //               G4LowEnergyGammaConversion
+    // Particles: gamma, mu
+    // Physics:   EM
+    // flag = 0 no delta rays
+    // flag = 1 delta rays, secondaries processed
+    // flag = 2 delta rays, no secondaries stored
+    // gMC ->SetProcess("PAIR",1); // PAIRBREM  1.   0.  0. 3. lastmat
+                                 // EMFCUT    0.   0. -1. 3. lastmat 0. PHOT-THR
+    else if ((strncmp(&sProcessFlag[i][0],"PAIR",4) == 0) && (iProcessValue[i] == 1 || iProcessValue[i] == 2)) {
+      for (j=0; j<iNbOfProc; j++) {
+        if ((strncmp(&sProcessFlag[j][0],"BREM",4) == 0) && (iProcessValue[j] == 1 || iProcessValue[j] == 2)) {
+          AliceInp << "*"; 
+          AliceInp << endl;
+          AliceInp << "*Bremsstrahlung and pair production by muons and charged hadrons both activated"; 
+          AliceInp << endl;
+          AliceInp << "*Generated from call: SetProcess('BREM',1) and SetProcess('PAIR',1)"; 
+          AliceInp << endl;
+          AliceInp << "*Energy threshold set by call SetCut('BCUTM',cut) or set to 0."; 
+          AliceInp << endl;
+          AliceInp << "*Energy threshold set by call SetCut('PPCUTM',cut) or set to 0."; 
+          AliceInp << endl;
+          AliceInp << setw(10) << "PAIRBREM  "; 
+          AliceInp << setiosflags(ios::scientific) << setprecision(5);
+          AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+          AliceInp << setw(10) << 3.0; // bremsstrahlung and pair production by muons and charged hadrons both are activated
+          // direct pair production by muons
+          // G4 particles: "e-", "e+"
+          // G3 default value: 0.01 GeV
+          //gMC ->SetCut("PPCUTM",cut); // total energy cut for direct pair prod. by muons
+          fCut = 0.0;
+          for (k=0; k<iNbOfCut; k++) {
+            if (strncmp(&sCutFlag[k][0],"PPCUTM",6) == 0) fCut = fCutValue[k];
+          }
+          AliceInp << setiosflags(ios::scientific) << setprecision(5);
+          AliceInp << setw(10) << fCut; // e+, e- kinetic energy threshold (in GeV) for explicit pair production.
+          // muon and hadron bremsstrahlung
+          // G4 particles: "gamma"
+          // G3 default value: CUTGAM=0.001 GeV
+          //gMC ->SetCut("BCUTM",cut);  // cut for muon and hadron bremsstrahlung
+          fCut = 0.0;
+          for (k=0; k<iNbOfCut; k++) {
+            if (strncmp(&sCutFlag[k][0],"BCUTM",5) == 0) fCut = fCutValue[k];
+          }
+          AliceInp << setiosflags(ios::scientific) << setprecision(5);
+          AliceInp << setw(10) << fCut; // photon energy threshold (GeV) for explicit bremsstrahlung production
+          AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+          AliceInp << setw(10) << 3.0; // lower bound of the material indices in which the respective thresholds apply
+          AliceInp << setw(10) << setprecision(2);
+          AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+          AliceInp << endl;
+	  
+          // for e+ and e-
+          AliceInp << "*"; 
+          AliceInp << endl;
+          AliceInp << "*Kinetic energy threshold (GeV) for e+/e- bremsstrahlung - resets to default=0."; 
+          AliceInp << endl;
+          AliceInp << "*Generated from call: SetProcess('BREM',1);"; 
+          AliceInp << endl;
+          AliceInp << setw(10) << "EMFCUT    "; 
+          fCut = -1.0;
+          for (k=0; k<iNbOfCut; k++) {
+            if (strncmp(&sCutFlag[k][0],"BCUTE",5) == 0) fCut = fCutValue[k];
+          }
+          AliceInp << setiosflags(ios::scientific) << setprecision(5);
+          AliceInp << setw(10) << fCut; // kinetic energy threshold (GeV) for e+/e- bremsstrahlung (resets to default=0)
+          AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+          AliceInp << setw(10) << 0.0;  // not used
+          AliceInp << setw(10) << 0.0;  // not used
+          AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+          AliceInp << setw(10) << setprecision(2);
+          AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+          AliceInp << setprecision(1);
+          AliceInp << setw(10) << 1.0; // step length in assigning indices
+          AliceInp << setw(8)  << "ELPO-THR"; 
+          AliceInp << endl;
+      
+          // for e+ and e-
+          AliceInp << "*"; 
+          AliceInp << endl;
+          AliceInp << "*Pair production by electrons is activated"; 
+          AliceInp << endl;
+          AliceInp << "*Generated from call: SetProcess('PAIR',1);"; 
+          AliceInp << endl;
+          AliceInp << setw(10) << "EMFCUT    "; 
+          AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+          AliceInp << setw(10) << 0.0;  // energy threshold (GeV) for Compton scattering (= 0.0 : ignored)
+          AliceInp << setw(10) << 0.0;  // energy threshold (GeV) for Photoelectric (= 0.0 : ignored)
+          fCut = -1.0;
+          for (j=0; j<iNbOfCut; j++) {
+            if (strncmp(&sCutFlag[j][0],"CUTGAM",6) == 0) fCut = fCutValue[j];
+          }
+          AliceInp << setiosflags(ios::scientific) << setprecision(5);
+          AliceInp << setw(10) << fCut; // energy threshold (GeV) for gamma pair production (< 0.0 : resets to default, = 0.0 : ignored)
+          AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+          AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+          AliceInp << setprecision(2);
+          AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+          AliceInp << setprecision(1);
+          AliceInp << setw(10) << 1.0;  // step length in assigning indices
+          AliceInp << setw(8) << "PHOT-THR"; 
+          AliceInp << endl;
+	  goto BOTH;
+        } // end of if for BREM
+      } // end of loop for BREM
+
+      // only pair production by muons and charged hadrons is activated
+      AliceInp << "*"; 
       AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('ANNI',1);"; 
+      AliceInp << "*Pair production by muons and charged hadrons is activated"; 
       AliceInp << endl;
-      AliceInp << setw(10) << "EMFCUT    "; 
+      AliceInp << "*Generated from call: SetProcess('PAIR',1) or SetProcess('PAIR',2)"; 
+      AliceInp << endl;
+      AliceInp << "*Energy threshold set by call SetCut('PPCUTM',cut) or set to 0."; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "PAIRBREM  "; 
       AliceInp << setiosflags(ios::scientific) << setprecision(5);
       AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << -1.0; // kinetic energy threshold (GeV) for e+ annihilation (resets to default=0)
-      AliceInp << setw(10) << 0.0;  // not used
-      AliceInp << setw(10) << 0.0;  // not used
+      AliceInp << setw(10) << 1.0; // pair production by muons and charged hadrons is activated
+      // direct pair production by muons
+      // G4 particles: "e-", "e+"
+      // G3 default value: 0.01 GeV
+      //gMC ->SetCut("PPCUTM",cut); // total energy cut for direct pair prod. by muons
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 0.0; // e+, e- kinetic energy threshold (in GeV) for explicit pair production.
+      AliceInp << setw(10) << 0.0; // no explicit bremsstrahlung production is simulated
+      AliceInp << setw(10) << 3.0; // lower bound of the material indices in which the respective thresholds apply
+      AliceInp << setprecision(2);
+      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+      AliceInp << endl;
+      
+      // for e+ and e-
+      AliceInp << "*"; 
+      AliceInp << endl;
+      AliceInp << "*Pair production by electrons is activated"; 
+      AliceInp << endl;
+      AliceInp << "*Generated from call: SetProcess('PAIR',1) or SetProcess('PAIR',2)"; 
+      AliceInp << endl;
+      AliceInp << setw(10) << "EMFCUT    "; 
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+      AliceInp << setw(10) << 0.0;  // energy threshold (GeV) for Compton scattering (= 0.0 : ignored)
+      AliceInp << setw(10) << 0.0;  // energy threshold (GeV) for Photoelectric (= 0.0 : ignored)
+
+      fCut = -1.0;
+      for (j=0; j<iNbOfCut; j++) {
+        if (strncmp(&sCutFlag[j][0],"CUTGAM",6) == 0) fCut = fCutValue[j];
+      }
+      AliceInp << setiosflags(ios::scientific) << setprecision(5);
+      AliceInp << setw(10) << fCut; // energy threshold (GeV) for gamma pair production (< 0.0 : resets to default, = 0.0 : ignored)
+      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
       AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
-      AliceInp << setw(10) << setprecision(2);
+      AliceInp << setprecision(2);
       AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
       AliceInp << setprecision(1);
       AliceInp << setw(10) << 1.0;  // step length in assigning indices
-      AliceInp << setw(8)  << "ANNH-THR"; 
+      AliceInp << setw(8) << "PHOT-THR"; 
       AliceInp << endl;
-    }
-    
+
+BOTH:
+    k = 0;
+    } // end of if for PAIR
+
+
+
     // bremsstrahlung
     // G3 default value: 1
     // G4 processes: G4eBremsstrahlung/G4IeBremsstrahlung,
@@ -704,70 +909,199 @@ fin:
     //               G4LowEnergyBremstrahlung
     // Particles: e-/e+; mu+/mu-
     // Physics:   EM
+    // flag = 0 no bremsstrahlung
+    // flag = 1 bremsstrahlung, photon processed
+    // flag = 2 bremsstrahlung, no photon stored
     // gMC ->SetProcess("BREM",1); // PAIRBREM  2.   0.  0. 3. lastmat
                                  // EMFCUT   -1.   0.  0. 3. lastmat 0. ELPO-THR
-    else if ((strncmp(&sProcessFlag[i][0],"BREM",4) == 0) && iProcessValue[i] == 1) {
-      AliceInp << "*Bremsstrahlung by muons and charged hadrons is activated"; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('BREM',1);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "PAIRBREM  "; 
-      AliceInp << setiosflags(ios::scientific) << setprecision(5);
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << 2.0; // bremsstrahlung by muons and charged hadrons is activated
-      AliceInp << setw(10) << 0.0; // e+, e- kinetic energy threshold (in GeV) for explicit pair production. A value of 0.0 is meaningful.
-      AliceInp << setw(10) << 0.0; // no explicit bremsstrahlung production is simulated
-      AliceInp << setw(10) << 3.0; // lower bound of the material indices in which the respective thresholds apply
-      AliceInp << setw(10) << setprecision(2);
-      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << endl;
-      // for e+ and e-
-      AliceInp << "*Kinetic energy threshold (GeV) for e+/e- bremsstrahlung - resets to default=0."; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('BREM',1);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "EMFCUT    "; 
-      AliceInp << setiosflags(ios::scientific) << setprecision(5);
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << -1.0; // kinetic energy threshold (GeV) for e+/e- bremsstrahlung (resets to default=0)
-      AliceInp << setw(10) << 0.0;  // not used
-      AliceInp << setw(10) << 0.0;  // not used
-      AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
-      AliceInp << setw(10) << setprecision(2);
-      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 1.0; // step length in assigning indices
-      AliceInp << setw(8)  << "ELPO-THR"; 
-      AliceInp << endl;
-    }
+    else if (strncmp(&sProcessFlag[i][0],"BREM",4) == 0) {
+      for (j=0; j<iNbOfProc; j++) {
+        if ((strncmp(&sProcessFlag[j][0],"PAIR",4) == 0) && iProcessValue[j] == 1) goto NOBREM;
+      }
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) { 
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Bremsstrahlung by muons and charged hadrons is activated"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('BREM',1) or SetProcess('BREM',2)"; 
+        AliceInp << endl;
+        AliceInp << "*Energy threshold set by call SetCut('BCUTM',cut) or set to 0."; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "PAIRBREM  "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 2.0; // bremsstrahlung by muons and charged hadrons is activated
+        AliceInp << setw(10) << 0.0; // no meaning
+        // muon and hadron bremsstrahlung
+        // G4 particles: "gamma"
+        // G3 default value: CUTGAM=0.001 GeV
+        //gMC ->SetCut("BCUTM",cut);  // cut for muon and hadron bremsstrahlung
+        fCut = 0.0;
+        for (j=0; j<iNbOfCut; j++) {
+          if (strncmp(&sCutFlag[j][0],"BCUTM",5) == 0) fCut = fCutValue[j];
+        }
+        AliceInp << setw(10) << fCut; // photon energy threshold (GeV) for explicit bremsstrahlung production
+        AliceInp << setw(10) << 3.0; // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setw(10) << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << endl;
+ 
+        // for e+ and e-
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Kinetic energy threshold (GeV) for e+/e- bremsstrahlung - resets to default=0."; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('BREM',1);"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "EMFCUT    "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << -1.0; // kinetic energy threshold (GeV) for e+/e- bremsstrahlung (resets to default=0)
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setw(10) << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 1.0; // step length in assigning indices
+        AliceInp << setw(8)  << "ELPO-THR"; 
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*No bremsstrahlung - no FLUKA card generated"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('BREM',0)"; 
+        AliceInp << endl;
+      }
+      else  {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('BREM',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+NOBREM:
+      j = 0;
+    } // end of else if (strncmp(&sProcessFlag[i][0],"BREM",4) == 0)
+
     
+    // Cerenkov photon generation
+    // G3 default value: 0
+    // G4 process: G4Cerenkov
+    // 
+    // Particles: charged
+    // Physics:   Optical
+    // flag = 0 no Cerenkov photon generation
+    // flag = 1 Cerenkov photon generation
+    // flag = 2 Cerenkov photon generation with primary stopped at each step
+    //xx gMC ->SetProcess("CKOV",1); // ??? Cerenkov photon generation
+    else if (strncmp(&sProcessFlag[i][0],"CKOV",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) { 
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Cerenkov photon generation"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('CKOV',1) or SetProcess('CKOV',2)"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "OPT-PROD  "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setw(10) <<  2.07e-9 ; //  minimum Cerenkov photon emission energy (in GeV!). Default: 2.07E-9 GeV (corresponding to 600 nm)
+        AliceInp << setw(10) << 4.96e-9;  // maximum Cerenkov photon emission energy (in GeV!). Default: 4.96E-9 GeV (corresponding to 250 nm)
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 1.0; // step length in assigning indices
+        AliceInp << setw(8) << "CERENKOV"; 
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*No Cerenkov photon generation"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('CKOV',0)"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "OPT-PROD  "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 1.0; // step length in assigning indices
+        AliceInp << setw(8) << "CERE-OFF"; 
+        AliceInp << endl;
+      }
+      else  {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('CKOV',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"CKOV",4) == 0)
+	    
+
     // Compton scattering
     // G3 default value: 1
     // G4 processes: G4ComptonScattering,
     //               G4LowEnergyCompton,
     //               G4PolarizedComptonScattering
     // Particles: gamma
-    //                                                                               // Physics:   EM
+    // Physics:   EM
+    // flag = 0 no Compton scattering
+    // flag = 1 Compton scattering, electron processed
+    // flag = 2 Compton scattering, no electron stored
     // gMC ->SetProcess("COMP",1); // EMFCUT   -1.   0.  0. 3. lastmat 0. PHOT-THR
-    else if ((strncmp(&sProcessFlag[i][0],"COMP",4) == 0) && iProcessValue[i] == 1) {
-      AliceInp << "*Energy threshold (GeV) for Compton scattering - resets to default=0."; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('COMP',1);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "EMFCUT    "; 
-      AliceInp << setiosflags(ios::scientific) << setprecision(5);
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << -1.0; // energy threshold (GeV) for Compton scattering - resets to default=0.
-      AliceInp << setw(10) << 0.0;  // not used
-      AliceInp << setw(10) << 0.0;  // not used
-      AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(2);
-      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 1.0; // step length in assigning indices
-      AliceInp << setw(8) << "PHOT-THR"; 
-      AliceInp << endl;
-    }
+    else if (strncmp(&sProcessFlag[i][0],"COMP",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) { 
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Energy threshold (GeV) for Compton scattering - resets to default=0."; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('COMP',1);"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "EMFCUT    "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << -1.0; // energy threshold (GeV) for Compton scattering - resets to default=0.
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 1.0; // step length in assigning indices
+        AliceInp << setw(8) << "PHOT-THR"; 
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*No Compton scattering - no FLUKA card generated"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('COMP',0)"; 
+        AliceInp << endl;
+      }
+      else  {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('COMP',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"COMP",4) == 0)
 
     // decay
     // G3 default value: 1
@@ -775,6 +1109,9 @@ fin:
     // 
     // Particles: all which decay is applicable for
     // Physics:   General
+    // flag = 0 no decays
+    // flag = 1 decays, secondaries processed
+    // flag = 2 decays, no secondaries stored
     //gMC ->SetProcess("DCAY",1); // not available
     else if ((strncmp(&sProcessFlag[i][0],"DCAY",4) == 0) && iProcessValue[i] == 1) 
       cout << "SetProcess for flag=" << &sProcessFlag[i][0] << " value=" << iProcessValue[i] << " not avaliable!" << endl;
@@ -785,225 +1122,124 @@ fin:
     // G4 processes: G4eIonisation/G4IeIonization,
     //               G4MuIonisation/G4IMuIonization,
     //               G4hIonisation/G4IhIonisation
-    //                                                                               // Particles: charged
-    // Physics:   EM
-    // gMC ->SetProcess("DRAY",0); // DELTARAY 1.E+6 0.  0. 3. lastmat 0.
-    else if ((strncmp(&sProcessFlag[i][0],"DRAY",4) == 0) && iProcessValue[i] == 0) {
-      AliceInp << "*Kinetic energy threshold (GeV) for delta ray production"; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('DRAY',1);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "DELTARAY  "; 
-      AliceInp << setiosflags(ios::scientific) << setprecision(5);
-      AliceInp << setw(10) << 1.0e+6; // kinetic energy threshold (GeV) for delta ray production (discrete energy transfer)
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << 0.0; // ignored
-      AliceInp << setw(10) << 0.0; // ignored
-      AliceInp << setw(10) << 3.0; // lower bound of the material indices in which the respective thresholds apply
-      AliceInp << setw(10) << setprecision(2);
-      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 1.0; // step length in assigning indices
-      AliceInp << endl;
-    }
-    
-    // muon nuclear interaction
-    // G3 default value: 0
-    // G4 processes: G4MuNuclearInteraction,
-    // G4MuonMinusCaptureAtRest
-    // 
-    // Particles: mu
-    // Physics:   Not set
-    // gMC ->SetProcess("MUNU",1); // MUPHOTON  1.   0.  0. 3. lastmat
-    else if ((strncmp(&sProcessFlag[i][0],"MUNU",4) == 0) && iProcessValue[i] == 1) {
-      AliceInp << "*Muon nuclear interactions with production of secondary hadrons"; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('MUNU',1);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "MUPHOTON  "; 
-      AliceInp << setiosflags(ios::scientific) << setprecision(5);
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << 1.0;  // full simulation of muon nuclear interactions and production of secondary hadrons
-      AliceInp << setw(10) << 0.0; // ratio of longitudinal to transverse virtual photon cross-section - Default = 0.25.
-      AliceInp << setw(10) << 0.0; // fraction of rho-like interactions ( must be < 1) - Default = 0.75.
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
-      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 1.0;  // step length in assigning indices
-      AliceInp << endl;
-    }
-
-    // muon nuclear interaction
-    // G3 default value: 0
-    // G4 processes: G4MuNuclearInteraction,
-    // G4MuonMinusCaptureAtRest
-    // 
-    // Particles: mu
-    // Physics:   Not set
-    // gMC ->SetProcess("MUNU",1); // MUPHOTON  1.   0.  0. 3. lastmat
-    else if ((strncmp(&sProcessFlag[i][0],"MUNU",4) == 0) && iProcessValue[i] == 2) {
-      AliceInp << "*Muon nuclear interactions without production of secondary hadrons"; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('MUNU',2);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "MUPHOTON  "; 
-      AliceInp << setiosflags(ios::scientific) << setprecision(5);
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << 2.0; // full simulation of muon nuclear interactions and production of secondary hadrons
-      AliceInp << setw(10) << 0.0; // ratio of longitudinal to transverse virtual photon cross-section - Default = 0.25.
-      AliceInp << setw(10) << 0.0; // fraction of rho-like interactions ( must be < 1) - Default = 0.75.
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
-      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 1.0;  // step length in assigning indices
-      AliceInp << endl;
-    }
-
-  // pair production
-    // G3 default value: 1
-    // G4 processes: G4GammaConversion,
-    //               G4MuPairProduction/G4IMuPairProduction
-    //               G4LowEnergyGammaConversion
-    // Particles: gamma, mu
-    // Physics:   EM
-  // gMC ->SetProcess("PAIR",1); // PAIRBREM  1.   0.  0. 3. lastmat
-                                 // EMFCUT    0.   0. -1. 3. lastmat 0. PHOT-THR
-    else if ((strncmp(&sProcessFlag[i][0],"PAIR",4) == 0) && iProcessValue[i] == 1) {
-      AliceInp << "*Pair production by muons and charged hadrons is activated"; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('PAIR',1);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "PAIRBREM  "; 
-      AliceInp << setiosflags(ios::scientific) << setprecision(5);
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << 1.0; // pair production by muons and charged hadrons is activated
-      AliceInp << setw(10) << 0.0; // e+, e- kinetic energy threshold (in GeV) for explicit pair production.
-      AliceInp << setw(10) << 0.0; // no explicit bremsstrahlung production is simulated
-      AliceInp << setw(10) << 3.0; // lower bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(2);
-      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << endl;
-      // for e+ and e-
-      AliceInp << "*Pair production by electrons is activated"; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('PAIR',1);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "EMFCUT    "; 
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << 0.0;  // ignored
-      AliceInp << setw(10) << 0.0;  // ignored
-      AliceInp << setw(10) << -1.0; // resets to default=0.
-      AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(2);
-      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 1.0;  // step length in assigning indices
-      AliceInp << setw(8) << "PHOT-THR"; 
-      AliceInp << endl;
-    }
-
-    // photofission
-    // G3 default value: 0
-    // G4 process: ??
-    //
-    // Particles: gamma
-    // Physics:   ??
-    // gMC ->SetProcess("PFIS",0); // PHOTONUC -1.   0.  0. 3. lastmat 0.
-    else if ((strncmp(&sProcessFlag[i][0],"PFIS",4) == 0) && iProcessValue[i] == 0) {
-      AliceInp << "*No photonuclear interactions";
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('PFIS',0);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "PHOTONUC  "; 
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << -1.0; // no photonuclear interactions
-      AliceInp << setw(10) << 0.0;  // not used
-      AliceInp << setw(10) << 0.0;  // not used
-      AliceInp << setw(10) << 3.0;  // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(2); 
-      AliceInp << setw(10) << fLastMaterial;
-      AliceInp << setprecision(1);  // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 1.0;  // step length in assigning indices
-      AliceInp << endl;
-    }
-
-    else if ((strncmp(&sProcessFlag[i][0],"PFIS",4) == 0) && iProcessValue[i] == 1) {
-      AliceInp << "*Photon nuclear interactions are activated at all energies";
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('PFIS',1);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "PHOTONUC  "; 
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << 1.0; // photonuclear interactions are activated at all energies
-      AliceInp << setw(10) << 0.0; // not used
-      AliceInp << setw(10) << 0.0; // not used
-      AliceInp << setprecision(2); 
-      AliceInp << setw(10) << 3.0; // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setw(10) << fLastMaterial;
-      AliceInp << setprecision(1); // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 1.0; // step length in assigning indices
-      AliceInp << endl;
-    }
-
-    // photo electric effect
-    // G3 default value: 1
-    // G4 processes: G4PhotoElectricEffect
-    //               G4LowEnergyPhotoElectric
-    // Particles: gamma
-    // Physics:   EM
-    // gMC ->SetProcess("PHOT",1); // EMFCUT    0.  -1.  0. 3. lastmat 0. PHOT-THR
-    else if ((strncmp(&sProcessFlag[i][0],"PHOT",4) == 0) && iProcessValue[i] == 1) {
-      AliceInp << "*Photo electric effect is activated"; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetProcess('PHOT',1);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "EMFCUT    "; 
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << 0.0;  // ignored
-      AliceInp << setw(10) << -1.0; // resets to default=0.
-      AliceInp << setw(10) << 0.0;  // ignored
-      AliceInp << setw(10) << 3.0;  // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(2);
-      AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 1.0;  // step length in assigning indices
-      AliceInp << setw(8) << "PHOT-THR"; 
-      AliceInp << endl;
-    }
-
-    else { // processes not yet treated
-    //xx gMC ->SetProcess("AUTO",1); // ??? automatic computation of the tracking medium parameters
-	    
-    // Cerenkov photon generation
-    // G3 default value: 0
-    // G4 process: G4Cerenkov
-    // 
     // Particles: charged
-    // Physics:   Optical
-    //xx gMC ->SetProcess("CKOV",1); // ??? Cerenkov photon generation
-	    
-    //Select pure GEANH (HADR 1) or GEANH/NUCRIN (HADR 3)
-
+    // Physics:   EM
+    // flag = 0 no energy loss
+    // flag = 1 restricted energy loss fluctuations
+    // flag = 2 complete energy loss fluctuations
+    // flag = 3 same as 1
+    // flag = 4 no energy loss fluctuations
+    // gMC ->SetProcess("DRAY",0); // DELTARAY 1.E+6 0.  0. 3. lastmat 0.
+    else if (strncmp(&sProcessFlag[i][0],"DRAY",4) == 0) {
+      if (iProcessValue[i] == 0 || iProcessValue[i] == 4) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Kinetic energy threshold (GeV) for delta ray production"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('DRAY',0) or SetProcess('DRAY',4)"; 
+        AliceInp << endl;
+        AliceInp << "*No delta ray production by muons - threshold set artificially high"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "DELTARAY  "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setw(10) << 1.0e+6; // kinetic energy threshold (GeV) for delta ray production (discrete energy transfer)
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 0.0; // ignored
+        AliceInp << setw(10) << 0.0; // ignored
+        AliceInp << setw(10) << 3.0; // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setw(10) << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 1.0; // step length in assigning indices
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 1 || iProcessValue[i] == 2 || iProcessValue[i] == 3) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Kinetic energy threshold (GeV) for delta ray production"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('DRAY',flag), flag=1,2,3"; 
+        AliceInp << endl;
+        AliceInp << "*Delta ray production by muons switched on"; 
+        AliceInp << endl;
+        AliceInp << "*Energy threshold set by call SetCut('DCUTM',cut) or set to 0."; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "DELTARAY  "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        fCut = 1.0e+6;
+        for (j=0; j<iNbOfCut; j++) {
+          if (strncmp(&sCutFlag[j][0],"DCUTM",5) == 0) fCut = fCutValue[j];
+        }
+        AliceInp << setw(10) << fCut; // kinetic energy threshold (GeV) for delta ray production (discrete energy transfer)
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 0.0; // ignored
+        AliceInp << setw(10) << 0.0; // ignored
+        AliceInp << setw(10) << 3.0; // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setw(10) << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 1.0; // step length in assigning indices
+        AliceInp << endl;
+      }
+      else  {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('DRAY',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"DRAY",4) == 0)
+    
     // hadronic process
     // G3 default value: 1
     // G4 processes: all defined by TG4PhysicsConstructorHadron
     //  
     // Particles: hadrons
     // Physics:   Hadron
+    // flag = 0 no multiple scattering
+    // flag = 1 hadronic interactions, secondaries processed
+    // flag = 2 hadronic interactions, no secondaries stored
     // gMC ->SetProcess("HADR",1); // ??? hadronic process
+    //Select pure GEANH (HADR 1) or GEANH/NUCRIN (HADR 3) ?????
+    else if (strncmp(&sProcessFlag[i][0],"HADR",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Hadronic interaction is ON by default in FLUKA"; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Hadronic interaction is set OFF"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('HADR',0);"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "MULSOPT  "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 0.0;  // ignored
+        AliceInp << setw(10) << 3.0;  // multiple scattering for hadrons and muons is completely suppressed
+        AliceInp << setw(10) << 0.0;  // no spin-relativistic corrections
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << endl;
 
-    // light photon absorption
-    // it is turned on when Cerenkov process is turned on
-    // G3 default value: 0
-    // G4 process: G4OpAbsorption, G4OpBoundaryProcess
-    // 
-    // Particles: optical photon
-    // Physics:   Optical
-    // gMC ->SetProcess("LABS",2); // ??? Cerenkov light absorption
+      }
+      else  {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('HADR',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"HADR",4) == 0)
+
 
     // energy loss
     // G3 default value: 2
@@ -1013,15 +1249,306 @@ fin:
     // 
     // Particles: charged
     // Physics:   EM
+    // flag=0 no energy loss
+    // flag=1 restricted energy loss fluctuations
+    // flag=2 complete energy loss fluctuations
+    // flag=3 same as 1
+    // flag=4 no energy loss fluctuations
+    // If the value ILOSS is changed, then (in G3) cross-sections and energy
+    // loss tables must be recomputed via the command 'PHYSI'
     // gMC ->SetProcess("LOSS",2); // ??? IONFLUCT ? energy loss
+    else if (strncmp(&sProcessFlag[i][0],"LOSS",4) == 0) {
+      if (iProcessValue[i] == 2) { // complete energy loss fluctuations
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Complete energy loss fluctuations do not exist in FLUKA"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('LOSS',2);"; 
+        AliceInp << endl;
+        AliceInp << "*flag=2=complete energy loss fluctuations"; 
+        AliceInp << endl;
+        AliceInp << "*No input card generated"; 
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 1 || iProcessValue[i] == 3) { // restricted energy loss fluctuations
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Restricted energy loss fluctuations"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('LOSS',1) or SetProcess('LOSS',3)"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "IONFLUCT  "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 1.0;  // restricted energy loss fluctuations (for hadrons and muons) switched on
+        AliceInp << setw(10) << 1.0;  // restricted energy loss fluctuations (for e+ and e-) switched on
+        AliceInp << setw(10) << 1.0;  // minimal accuracy
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 4) { // no energy loss fluctuations
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*No energy loss fluctuations"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('LOSS',4)"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << -1.0;  // restricted energy loss fluctuations (for hadrons and muons) switched off
+        AliceInp << setw(10) << -1.0;  // restricted energy loss fluctuations (for e+ and e-) switched off
+        AliceInp << setw(10) << 1.0;  // minimal accuracy
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << endl;
+      }
+      else  {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('LOSS',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"LOSS",4) == 0)
 	
+ 
     // multiple scattering
     // G3 default value: 1
     // G4 process: G4MultipleScattering/G4IMultipleScattering
     // 
     // Particles: charged
     // Physics:   EM
-    // gMC ->SetProcess("MULS",1); // ??? MULSOPT  ? multiple scattering
+    // flag = 0 no multiple scattering
+    // flag = 1 Moliere or Coulomb scattering
+    // flag = 2 Moliere or Coulomb scattering
+    // flag = 3 Gaussian scattering
+    // gMC ->SetProcess("MULS",1); // MULSOPT multiple scattering
+    else if (strncmp(&sProcessFlag[i][0],"MULS",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2 || iProcessValue[i] == 3) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Multiple scattering is ON by default for e+e- and for hadrons/muons"; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Multiple scattering is set OFF"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('MULS',0);"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "MULSOPT  "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 0.0;  // ignored
+        AliceInp << setw(10) << 3.0;  // multiple scattering for hadrons and muons is completely suppressed
+        AliceInp << setw(10) << 3.0;  // multiple scattering for e+ and e- is completely suppressed
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << endl;
+      }
+      else  {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('MULS',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"MULS",4) == 0)
+
+
+    // muon nuclear interaction
+    // G3 default value: 0
+    // G4 processes: G4MuNuclearInteraction,
+    // G4MuonMinusCaptureAtRest
+    // 
+    // Particles: mu
+    // Physics:   Not set
+    // flag = 0 no muon-nuclear interaction
+    // flag = 1 nuclear interaction, secondaries processed
+    // flag = 2 nuclear interaction, secondaries not processed
+    // gMC ->SetProcess("MUNU",1); // MUPHOTON  1.   0.  0. 3. lastmat
+    else if (strncmp(&sProcessFlag[i][0],"MUNU",4) == 0) {
+      if (iProcessValue[i] == 1) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Muon nuclear interactions with production of secondary hadrons"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('MUNU',1);"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "MUPHOTON  "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 1.0;  // full simulation of muon nuclear interactions and production of secondary hadrons
+        AliceInp << setw(10) << 0.0; // ratio of longitudinal to transverse virtual photon cross-section - Default = 0.25.
+        AliceInp << setw(10) << 0.0; // fraction of rho-like interactions ( must be < 1) - Default = 0.75.
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 2) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Muon nuclear interactions without production of secondary hadrons"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('MUNU',2);"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "MUPHOTON  "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 2.0; // full simulation of muon nuclear interactions and production of secondary hadrons
+        AliceInp << setw(10) << 0.0; // ratio of longitudinal to transverse virtual photon cross-section - Default = 0.25.
+        AliceInp << setw(10) << 0.0; // fraction of rho-like interactions ( must be < 1) - Default = 0.75.
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*No muon nuclear interaction - no FLUKA card generated"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('MUNU',0)"; 
+        AliceInp << endl;
+      }
+      else  {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('MUNU',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"MUNU",4) == 0)
+
+
+    // photofission
+    // G3 default value: 0
+    // G4 process: ??
+    //
+    // Particles: gamma
+    // Physics:   ??
+    // gMC ->SetProcess("PFIS",0); // PHOTONUC -1.   0.  0. 3. lastmat 0.
+    // flag = 0 no photon fission
+    // flag = 1 photon fission, secondaries processed
+    // flag = 2 photon fission, no secondaries stored
+    else if (strncmp(&sProcessFlag[i][0],"PFIS",4) == 0) {
+      if (iProcessValue[i] == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*No photonuclear interactions";
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('PFIS',0);"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "PHOTONUC  "; 
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << -1.0; // no photonuclear interactions
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 0.0;  // not used
+        AliceInp << setw(10) << 3.0;  // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(2); 
+        AliceInp << setw(10) << fLastMaterial;
+        AliceInp << setprecision(1);  // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 1.0;  // step length in assigning indices
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 1) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Photon nuclear interactions are activated at all energies";
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('PFIS',1);"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "PHOTONUC  "; 
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 1.0; // photonuclear interactions are activated at all energies
+        AliceInp << setw(10) << 0.0; // not used
+        AliceInp << setw(10) << 0.0; // not used
+        AliceInp << setprecision(2); 
+        AliceInp << setw(10) << 3.0; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setw(10) << fLastMaterial;
+        AliceInp << setprecision(1); // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 1.0; // step length in assigning indices
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*No photofission - no FLUKA card generated"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('PFIS',0)"; 
+        AliceInp << endl;
+      }
+      else {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('PFIS',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+    }
+
+ 
+    // photo electric effect
+    // G3 default value: 1
+    // G4 processes: G4PhotoElectricEffect
+    //               G4LowEnergyPhotoElectric
+    // Particles: gamma
+    // Physics:   EM
+    // flag = 0 no photo electric effect
+    // flag = 1 photo electric effect, electron processed
+    // flag = 2 photo electric effect, no electron stored
+    // gMC ->SetProcess("PHOT",1); // EMFCUT    0.  -1.  0. 3. lastmat 0. PHOT-THR
+    else if (strncmp(&sProcessFlag[i][0],"PHOT",4) == 0) {
+      if (iProcessValue[i] == 1 || iProcessValue[i] == 2) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Photo electric effect is activated"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('PHOT',1);"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "EMFCUT    "; 
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << 0.0;  // ignored
+        AliceInp << setw(10) << -1.0; // resets to default=0.
+        AliceInp << setw(10) << 0.0;  // ignored
+        AliceInp << setw(10) << 3.0;  // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(1);
+        AliceInp << setw(10) << 1.0;  // step length in assigning indices
+        AliceInp << setw(8) << "PHOT-THR"; 
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*No photo electric effect - no FLUKA card generated"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('PHOT',0)"; 
+        AliceInp << endl;
+      }
+      else {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('PHOT',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+    } // else if (strncmp(&sProcessFlag[i][0],"PHOT",4) == 0)
 
     // Rayleigh scattering
     // G3 default value: 0
@@ -1029,8 +1556,69 @@ fin:
     // 
     // Particles: optical photon
     // Physics:   Optical
+    // flag = 0 Rayleigh scattering off
+    // flag = 1 Rayleigh scattering on
     //xx gMC ->SetProcess("RAYL",1);
+    else if (strncmp(&sProcessFlag[i][0],"RAYL",4) == 0) {
+      if (iProcessValue[i] == 1) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Rayleigh scattering is ON by default in FLUKA"; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+      else if (iProcessValue[i] == 0) {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Rayleigh scattering is set OFF"; 
+        AliceInp << endl;
+        AliceInp << "*Generated from call: SetProcess('RAYL',0);"; 
+        AliceInp << endl;
+        AliceInp << setw(10) << "EMFRAY    "; 
+        AliceInp << setiosflags(ios::scientific) << setprecision(5);
+        AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
+        AliceInp << setw(10) << -1.0;  // no Rayleigh scattering and no binding corrections for Compton
+        AliceInp << setw(10) << 3.0;  // lower bound of the material indices in which the respective thresholds apply
+        AliceInp << setprecision(2);
+        AliceInp << setw(10) << fLastMaterial; // upper bound of the material indices in which the respective thresholds apply
+        AliceInp << endl;
+      }
+      else  {
+        AliceInp << "*"; 
+        AliceInp << endl;
+        AliceInp << "*Illegal flag value in SetProcess('RAYL',?) call."; 
+        AliceInp << endl;
+        AliceInp << "*No FLUKA card generated"; 
+        AliceInp << endl;
+      }
+    } // end of else if (strncmp(&sProcessFlag[i][0],"RAYL",4) == 0)
 	
+
+    else { // processes not yet treated
+
+    // Automatic calculation of tracking medium parameters
+    // flag = 0 no automatic calculation
+    // flag = 1 automatic calculation
+    //xx gMC ->SetProcess("AUTO",1); // ??? automatic computation of the tracking medium parameters
+	    
+
+    // light photon absorption (Cerenkov photons)
+    // it is turned on when Cerenkov process is turned on
+    // G3 default value: 0
+    // G4 process: G4OpAbsorption, G4OpBoundaryProcess
+    // 
+    // Particles: optical photon
+    // Physics:   Optical
+    // flag = 0 no absorption of Cerenkov photons
+    // flag = 1 absorption of Cerenkov photons
+    // gMC ->SetProcess("LABS",2); // ??? Cerenkov light absorption
+
+
+    // To control energy loss fluctuation model
+    // flag = 0 Urban model
+    // flag = 1 PAI model
+    // flag = 2 PAI+ASHO model (not active at the moment)
     //xx gMC ->SetProcess("STRA",1); // ??? energy fluctuation model
 
     // synchrotron radiation in magnetic field
@@ -1039,6 +1627,8 @@ fin:
     // 
     // Particles: ??
     // Physics:   Not set
+    // flag = 0 no synchrotron radiation
+    // flag = 1 synchrotron radiation
     //xx gMC ->SetProcess("SYNC",1); // ??? synchrotron radiation generation
 
       cout << "SetProcess for flag=" << &sProcessFlag[i][0] << " value=" << iProcessValue[i] << " not yet implemented!" << endl;
@@ -1049,11 +1639,19 @@ fin:
 // Loop over number of SetCut calls  
   for (Int_t i=0; i<iNbOfCut; i++) {
 
+    // cuts used in SetProcess calls
+    if (strncmp(&sCutFlag[i][0],"BCUTM",5) == 0) continue;
+    else if (strncmp(&sCutFlag[i][0],"BCUTE",5) == 0) continue;
+    else if (strncmp(&sCutFlag[i][0],"DCUTM",5) == 0) continue;
+    else if (strncmp(&sCutFlag[i][0],"PPCUTM",6) == 0) continue;
+
     // gammas
     // G4 particles: "gamma"
     // G3 default value: 0.001 GeV
     //gMC ->SetCut("CUTGAM",cut); // cut for gammas
-    if (strncmp(&sCutFlag[i][0],"CUTGAM",6) == 0) {
+    else if (strncmp(&sCutFlag[i][0],"CUTGAM",6) == 0) {
+      AliceInp << "*"; 
+      AliceInp << endl;
       AliceInp << "*Cut for gamma"; 
       AliceInp << endl;
       AliceInp << "*Generated from call: SetCut('CUTGAM',cut);"; 
@@ -1072,6 +1670,8 @@ fin:
     // G3 default value: 0.001 GeV
     //gMC ->SetCut("CUTELE",cut); // cut for e+,e-
     else if (strncmp(&sCutFlag[i][0],"CUTELE",6) == 0) {
+      AliceInp << "*"; 
+      AliceInp << endl;
       AliceInp << "*Cut for electrons"; 
       AliceInp << endl;
       AliceInp << "*Generated from call: SetCut('CUTELE',cut);"; 
@@ -1091,6 +1691,8 @@ fin:
     // G3 default value: 0.01 GeV
     //gMC ->SetCut("CUTNEU",cut); // cut for neutral hadrons
     else if (strncmp(&sCutFlag[i][0],"CUTNEU",6) == 0) {
+      AliceInp << "*"; 
+      AliceInp << endl;
       AliceInp << "*Cut for neutral hadrons"; 
       AliceInp << endl;
       AliceInp << "*Generated from call: SetCut('CUTNEU',cut);"; 
@@ -1179,6 +1781,8 @@ fin:
     // G3 default value: 0.01 GeV
     //gMC ->SetCut("CUTHAD",cut); // cut for charged hadrons
     else if (strncmp(&sCutFlag[i][0],"CUTHAD",6) == 0) {
+      AliceInp << "*"; 
+      AliceInp << endl;
       AliceInp << "*Cut for charged hadrons"; 
       AliceInp << endl;
       AliceInp << "*Generated from call: SetCut('CUTHAD',cut);"; 
@@ -1257,6 +1861,8 @@ fin:
     // G3 default value: 0.01 GeV
     //gMC ->SetCut("CUTMUO",cut); // cut for mu+, mu-
     else if (strncmp(&sCutFlag[i][0],"CUTMUO",6) == 0) {
+      AliceInp << "*"; 
+      AliceInp << endl;
       AliceInp << "*Cut for muons"; 
       AliceInp << endl;
       AliceInp << "*Generated from call: SetCut('CUTMUO',cut);"; 
@@ -1270,87 +1876,20 @@ fin:
       AliceInp << setw(10) << 11.0;
       AliceInp << endl;
     }
-
-    // electron bremsstrahlung
-    // G4 particles: "gamma"
-    // G3 default value: CUTGAM=0.001 GeV
-    //gMC ->SetCut("BCUTE",cut);  // cut for electron bremsstrahlung
-    else if (strncmp(&sCutFlag[i][0],"BCUTE",5) == 0) {
-      AliceInp << "*Cut for electron bremsstrahlung"; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetCut('BCUTE',cut);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "EMFCUT    "; 
-      AliceInp << setiosflags(ios::scientific) << setprecision(5);
-      AliceInp << setw(10) << -fCutValue[i];
-      AliceInp << setw(10) << setiosflags(ios::fixed);
-      AliceInp << setw(10) << setprecision(1);
-      AliceInp << setw(10) << 0.0; // photon cut-off is unchanged
-      AliceInp << setw(10) << 0.0; // ignored
-      AliceInp << setw(10) << 2.0;
-      AliceInp << setprecision(4);
-      AliceInp << setw(10) << fLastRegion; // upper bound of the material indices in which the respective thresholds apply
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 1.0; // step length in assigning indices
-      AliceInp << endl;
-    }
-
-    // muon and hadron bremsstrahlung
-    // G4 particles: "gamma"
-    // G3 default value: CUTGAM=0.001 GeV
-    //gMC ->SetCut("BCUTM",cut);  // cut for muon and hadron bremsstrahlung ????????????
-    else if (strncmp(&sCutFlag[i][0],"BCUTM",5) == 0) {
-      AliceInp << "*Cut for muon and hadron bremsstrahlung ????????????"; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetCut('BCUTM',cut);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "PAIRBREM  "; 
-      AliceInp << setiosflags(ios::scientific) << setprecision(5);
-      AliceInp << setw(10) << -fCutValue[i];
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << 0.0;
-      AliceInp << setw(10) << 2.0;
-      AliceInp << setw(10) << 2.0;
-      AliceInp << setw(10) << 2.0;
-      AliceInp << setw(10) << 1.0;
-      AliceInp << endl;
-    }
-
     // delta-rays by electrons
     // G4 particles: "e-"
     // G3 default value: 10**4 GeV
-    //gMC ->SetCut("DCUTE",cut);  // cut for deltarays by electrons ???????????????
+    // gMC ->SetCut("DCUTE",cut);  // cut for deltarays by electrons ???????????????
     else if (strncmp(&sCutFlag[i][0],"DCUTE",5) == 0) {
-      AliceInp << "*Cut for deltarays by electrons ????????????"; 
+      AliceInp << "*"; 
       AliceInp << endl;
-      AliceInp << "*Generated from call: SetCut('DCUTE',cut);"; 
+      AliceInp << "*Cut for delta rays by electrons ????????????";
       AliceInp << endl;
-      AliceInp << setw(10) << "EMFCUT    "; 
+      AliceInp << "*Generated from call: SetCut('DCUTE',cut);";
+      AliceInp << endl;
+      AliceInp << setw(10) << "EMFCUT    ";
       AliceInp << setiosflags(ios::scientific) << setprecision(5);
       AliceInp << setw(10) << -fCutValue[i];
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << 0.0;
-      AliceInp << setw(10) << 0.0;
-      AliceInp << setw(10) << 2.0;
-      AliceInp << setprecision(4);
-      AliceInp << setw(10) << fLastRegion;
-      AliceInp << setprecision(1);
-      AliceInp << setw(10) << 1.0;
-      AliceInp << endl;
-    }
-    
-    // delta-rays by muons
-    // G4 particles: "e-"
-    // G3 default value: 10**4 GeV
-    //gMC ->SetCut("DCUTM",cut);  // cut for deltarays by muons
-    else if (strncmp(&sCutFlag[i][0],"DCUTM",5) == 0) {
-      AliceInp << "*Cut for deltarays by muons ????????????"; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetCut('DCUTM',cut);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "DELTARAY  "; 
-      AliceInp << setiosflags(ios::scientific) << setprecision(5);
-      AliceInp << setw(10) << fCutValue[i];
       AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
       AliceInp << setw(10) << 0.0;
       AliceInp << setw(10) << 0.0;
@@ -1362,32 +1901,14 @@ fin:
       AliceInp << endl;
     }
     
-    // direct pair production by muons
-    // G4 particles: "e-", "e+"
-    // G3 default value: 0.01 GeV
-    //gMC ->SetCut("PPCUTM",cut); // total energy cut for direct pair prod. by muons ?????????????????????????
-    else if (strncmp(&sCutFlag[i][0],"PPCUTM",6) == 0) {
-      AliceInp << "*Total energy cut for direct pair prod. by muons ????????????"; 
-      AliceInp << endl;
-      AliceInp << "*Generated from call: SetCut('PPCUTM',cut);"; 
-      AliceInp << endl;
-      AliceInp << setw(10) << "PAIRBREM  "; 
-      AliceInp << setiosflags(ios::scientific) << setprecision(5);
-      AliceInp << setw(10) << -fCutValue[i];
-      AliceInp << setiosflags(ios::fixed) << setiosflags(ios::showpoint) << setprecision(1);
-      AliceInp << setw(10) << 0.0;
-      AliceInp << setw(10) << 2.0;
-      AliceInp << setw(10) << 2.0;
-      AliceInp << setw(10) << 2.0;
-      AliceInp << setw(10) << 1.0;
-      AliceInp << endl;
-    }
-
+    //
     // time of flight cut in seconds
     // G4 particles: all
     // G3 default value: 0.01 GeV
     //gMC ->SetCut("TOFMAX",tofmax); // time of flight cuts in seconds
     else if (strncmp(&sCutFlag[i][0],"TOFMAX",6) == 0) {
+      AliceInp << "*"; 
+      AliceInp << endl;
       AliceInp << "*Time of flight cuts in seconds"; 
       AliceInp << endl;
       AliceInp << "*Generated from call: SetCut('TOFMAX',tofmax);"; 
@@ -1421,12 +1942,7 @@ fin:
 
 }
 
-//_____________________________________________________________________________
-// methods for step management
-//____________________________________________________________________________ 
-//
-// set methods
-//
+
 void TFluka::SetMaxStep(Double_t)
 {
 // SetMaxStep is dummy procedure in TFluka !
@@ -1717,6 +2233,7 @@ Bool_t   TFluka::IsTrackInside() const
 Bool_t   TFluka::IsTrackEntering() const
 {
 // True if this is the first step of the track in the current volume
+
   Int_t caller = GetCaller();
   if (caller == 11 || caller == 4)  // bxdraw entering
     return 1;
