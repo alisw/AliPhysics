@@ -35,7 +35,7 @@ public:
 public:
   TClonesArray * fClusters;  
   Int_t  fNclusters;  
-  ClassDef(AliTPCClustersRow,1) 
+  ClassDef(AliTPCClustersRow,1) // Cluster manager 
 };
 
 
@@ -53,7 +53,7 @@ private:
   AliSegmentID * NewSegment(){ return (AliSegmentID*)new AliTPCClustersRow;}
   AliTPCParam * fParam;      //pointer to TPC parameters
   //AliTPCClustersRow ** fRow;  //pointer to array of pointers to cluster row
-  ClassDef(AliTPCClustersArray,1) 
+  ClassDef(AliTPCClustersArray,1) // Cluster manager
 };
   
 #endif
