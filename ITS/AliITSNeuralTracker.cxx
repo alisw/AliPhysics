@@ -44,7 +44,7 @@
 
 class AliITSNeuralPoint;
 
-using namespace std;
+//using namespace std;
 ClassImp(AliITSNeuralTracker)
 
 //--------------------------------------------------------------------------------------------
@@ -399,7 +399,7 @@ Bool_t AliITSNeuralTracker::PassCurvCut
 	*/
 	// NEW VERSION
 	if (den != 0.) {
-		curv = fabs(num / den);
+		curv = TMath::Abs(num / den);
 		if (curv > fCurvCut[curvindex]) return kFALSE;
 	}
 	else
@@ -415,7 +415,7 @@ Bool_t AliITSNeuralTracker::PassCurvCut
 	arc1 /= 2.0 * curv;
 	arc2 /= 2.0 * curv;
 	if (arc1 == 0.0 || arc2 == 0.0) return kFALSE;
-	helmatch = fabs(z1 / arc1 - z2 / arc2);
+	helmatch = TMath::Abs(z1 / arc1 - z2 / arc2);
 	return (helmatch >= fHelixMatchCutMin[reflayer] && helmatch <= fHelixMatchCutMax[reflayer]);
 	// END NEW VERSION
 }
@@ -481,7 +481,7 @@ Int_t AliITSNeuralTracker::PassAllCuts
 	Double_t den = r1*r2*sqrt(dx*dx + dy*dy);
 	Double_t curv = 0.;
 	if (den != 0.) {
-		curv = fabs(num / den);
+		curv = TMath::Abs(num / den);
 		if (curv > fCurvCut[curvindex]) return 3;
 	}
 	else
@@ -498,7 +498,7 @@ Int_t AliITSNeuralTracker::PassAllCuts
 	arc1 /= 2.0 * curv;
 	arc2 /= 2.0 * curv;
 	if (arc1 == 0.0 || arc2 == 0.0) return kFALSE;
-	helmatch = fabs(z1 / arc1 - z2 / arc2);
+	helmatch = TMath::Abs(z1 / arc1 - z2 / arc2);
 	if (helmatch < fHelixMatchCutMin[reflayer] || helmatch > fHelixMatchCutMax[reflayer]) return 5;
 	
 	return 0;

@@ -347,7 +347,7 @@ Int_t AliITSNeuralTrack::PropagateTo(Double_t rk)
 	// and the multiple scattering effects, which respectively have the effect
 	// of changing the curvature and widening the covariance matrix.
 
-	if (rk < fabs(fDt)) {
+	if (rk < TMath::Abs(fDt)) {
 		Error("PropagateTo", Form("Impossible propagation to r (=%17.15g) < Dt (=%17.15g)", rk, fDt));
 		return 0;
 	}
@@ -1101,7 +1101,7 @@ Double_t AliITSNeuralTrack::ArgZ(Double_t r) const
 	Double_t arg;
 	arg = (r * r - fDt * fDt) / (1. + fC * fDt);
 	if (arg < 0.) {
-		if (fabs(arg) < 1.E-6) arg = 0.;
+		if (TMath::Abs(arg) < 1.E-6) arg = 0.;
 		else {
 			Error("ArgZ", "Square root argument error: %17.15g < 0", arg);
 			return 10.;

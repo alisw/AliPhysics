@@ -327,7 +327,7 @@ Double_t AliITSVertexerIons::FindMaxAround(Double_t point, TH1F *h, Double_t dis
   for(Int_t i=0;i<h->GetNbinsX();i++) {
     Int_t content=(Int_t)h->GetBinContent(i);
     Double_t center=(Double_t)h->GetBinCenter(i);
-    if(fabs(center-point)>distance) continue;
+    if(TMath::Abs(center-point)>distance) continue;
     if(content>max_content) {max_content=content;max_bin=i;}
   }
   Double_t max=h->GetBinCenter(max_bin);

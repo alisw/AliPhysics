@@ -60,10 +60,10 @@ public:
 	Double_t GetZ(Double_t r) const;    // z = dz + (tanl / C) * asin(argz(rho))
 
 	Double_t GetP()       {return GetPt() * (1.0 + fTanL * fTanL);}
-	Double_t GetPt()      {return 0.299792658 * 0.2 * fField * fabs(1./fC/100.);}
+	Double_t GetPt()      {return 0.299792658 * 0.2 * fField * TMath::Abs(1./fC/100.);}
 	Double_t GetPz()      {return GetPt() * fTanL;}
-	Double_t GetE()       {return sqrt(fMass*fMass + GetPt()*GetPt());}
-	Double_t GetLambda()  {return atan(fTanL);}
+	Double_t GetE()       {return TMath::Sqrt(fMass*fMass + GetPt()*GetPt());}
+	Double_t GetLambda()  {return TMath::ATan(fTanL);}
 	Int_t    GetPDGcode() const {return fPDG;}
 	Double_t GetdEdX();
 
