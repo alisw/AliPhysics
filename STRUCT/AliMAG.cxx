@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/10/17 16:14:05  hristov
+MAG geometry with resolved MANY (I.Hrivnacova)
+
 Revision 1.9  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -213,7 +216,7 @@ void AliMAG::CreateGeometry()
   gMC->Gspos("L3FX", 1, "L3DX", 0., 0., 0., 0, "MANY");
   gMC->Gspos("L3IX", 1, "L3DX", 0., 0., 0., 0, "MANY");
 
-  if (gMC->GetMCGeomType() == kGeant3) {
+  if(strcmp(gMC->GetName(),"TGeant3")) {
 
     gMC->Gspos("L3O1", 1, "L3FR", 0., 30., 0., 0, "MANY");
     gMC->Gspos("L3O2", 1, "L3IR", 0., 30., 0., 0, "MANY");
