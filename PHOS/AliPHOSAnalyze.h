@@ -14,18 +14,18 @@
 
 // --- ROOT system ---
 
-#include "TFile.h"
-#include "TH1.h"
-#include "TH2.h"
+class TFile ;
+class TH1F ;
+class TH2F ;
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-#include "AliPHOSv1.h"
-#include "AliPHOSGeometry.h"
-#include "AliPHOSPID.h"
-#include "AliPHOSIndexToObject.h"
+class AliPHOSv1 ;
+class AliPHOSGeometry ;
+class AliPHOSPID ;
+class AliPHOSIndexToObject ;
 
 class AliPHOSAnalyze : public TObject {
 
@@ -44,7 +44,7 @@ public:
   void AnalyzeCPV(Int_t Nevents);           // analyzes various CPV characteristics
   void AnalyzeEMC(Int_t Nevents);           // analyzes EMC resolution
   void InvariantMass(Int_t Nevents = 100) ; 
-  void Reconstruct(Int_t Nevtents = 100,Int_t FirstEvent = 0) ;
+  //  void Reconstruct(Int_t Nevtents = 100,Int_t FirstEvent = 0) ;
   void BookingHistograms() ;                // booking histograms for the ManyEvent analysis ;
   void BookResolutionHistograms() ;         // booking histograms for the Resoluion analysis ;
   void Copy(TObject & obj) ;                // copies an analysis into an other one   
@@ -55,22 +55,22 @@ public:
   AliPHOSAnalyze & operator = (const AliPHOSAnalyze & rvalue)  {
     // assignement operator requested by coding convention
     // but not needed
-    assert(0==1) ;
+    abort() ;
     return *this ; 
   }
   void SetDebugLevel(Int_t flag) { fDebugLevel = flag; }
  
  private:
   
-  AliPHOSClusterizer * fClu ;         // a clusterizer 
+  //  AliPHOSClusterizer * fClu ;         // a clusterizer 
   Int_t fEvt ;                        // the evt number being processed 
   AliPHOSGeometry * fGeom ;           // the PHOS Geometry object
   AliPHOSIndexToObject * fObjGetter ; // provides methods to retrieve objects from their index in a list
   AliPHOSv1 * fPHOS ;                 // the PHOS object from the root file 
-  AliPHOSPID * fPID ;                 // a particle identifier
-  AliPHOSReconstructioner * fRec ;    // a reconstructioner  
+  //  AliPHOSPID * fPID ;                 // a particle identifier
+  //  AliPHOSReconstructioner * fRec ;    // a reconstructioner  
   TFile * fRootFile ;                 // the root file that contains the data
-  AliPHOSTrackSegmentMaker * fTrs ;   // a tracksegmentmaker ;
+  //  AliPHOSTrackSegmentMaker * fTrs ;   // a tracksegmentmaker ;
 
   Int_t fDebugLevel;                  // debug level for analysis
 

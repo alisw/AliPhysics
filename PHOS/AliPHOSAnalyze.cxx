@@ -29,6 +29,7 @@
 #include "TH1.h"
 #include "TPad.h"
 #include "TH2.h"
+#include "TH2.h"
 #include "TParticle.h"
 #include "TClonesArray.h"
 #include "TTree.h"
@@ -44,6 +45,7 @@
 // --- AliRoot header files ---
 
 #include "AliRun.h"
+#include "AliPHOSv1.h"
 #include "AliPHOSAnalyze.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
@@ -55,6 +57,7 @@
 #include "AliPHOSIndexToObject.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSCpvRecPoint.h"
+#include "AliPHOSPpsdRecPoint.h"
 
 ClassImp(AliPHOSAnalyze)
 
@@ -84,16 +87,16 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * name)
       fGeom  = AliPHOSGeometry::GetInstance( fPHOS->GetGeometry()->GetName(), fPHOS->GetGeometry()->GetTitle() );
  
       //========== Initializes the Index to Object converter
-      fObjGetter = AliPHOSIndexToObject::GetInstance(fPHOS) ; 
+      fObjGetter = AliPHOSIndexToObject::GetInstance() ; // <--- To be redone
       //========== Current event number 
       fEvt = -999 ; 
 
   }
   fDebugLevel = 0;
-  fClu = 0 ;
-  fPID = 0 ;
-  fTrs = 0 ;
-  fRec = 0 ;
+  //  fClu = 0 ;
+  //  fPID = 0 ;
+  //  fTrs = 0 ;
+  //  fRec = 0 ;
   ResetHistograms() ;
 }
 
@@ -120,10 +123,10 @@ AliPHOSAnalyze::~AliPHOSAnalyze()
   if(fRootFile->IsOpen()) fRootFile->Close() ; 
   if(fRootFile)   {delete fRootFile ; fRootFile=0 ;}
   if(fPHOS)       {delete fPHOS     ; fPHOS    =0 ;}
-  if(fClu)        {delete fClu      ; fClu     =0 ;}
-  if(fPID)        {delete fPID      ; fPID     =0 ;}
-  if(fRec)        {delete fRec      ; fRec     =0 ;}
-  if(fTrs)        {delete fTrs      ; fTrs     =0 ;}
+  //  if(fClu)        {delete fClu      ; fClu     =0 ;}
+  //  if(fPID)        {delete fPID      ; fPID     =0 ;}
+  //  if(fRec)        {delete fRec      ; fRec     =0 ;}
+  //  if(fTrs)        {delete fTrs      ; fTrs     =0 ;}
 
 }
 //____________________________________________________________________________
@@ -146,7 +149,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
   TH2F * recNbar         = new TH2F("recNbar","RecParticles with primary Nbar",  64,-71.,71.,64,-71.,71.);
 
   //========== Create the Clusterizer
-  fClu = new AliPHOSClusterizerv1() ; 
+  // fClu = new AliPHOSClusterizerv1() ; 
   
   gAlice->GetEvent(Nevent);
   
@@ -181,7 +184,8 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
       }
     }  
 
-  //  fPHOS->SetTreeAddress() ;
+  //Set TreeS here and get AliPHOSSdigitizer
+
 
   gAlice->TreeS()->GetEvent(0) ;
 
@@ -196,7 +200,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
 	fGeom->AbsToRelNumbering(sdigit->GetId(), relid) ;
 	Float_t x,z ;
 	fGeom->RelPosInModule(relid,x,z) ;
-	Float_t e = fPHOS->Calibrate(sdigit->GetAmp()) ;
+	Float_t e = 1 ; //<---  fPHOS->Calibrate(sdigit->GetAmp()) ;
 	if(relid[0]==Nmod){
 	  if(relid[1]==0)  //EMC
 	    sdigitOccupancy->Fill(x,z,e) ;
@@ -223,7 +227,7 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
 	fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
 	Float_t x,z ;
 	fGeom->RelPosInModule(relid,x,z) ;
-	Float_t e = fClu->Calibrate(digit->GetAmp()) ;
+	Float_t e = 1;   //<--- fClu->Calibrate(digit->GetAmp()) ;
 	if(relid[0]==Nmod){
 	  if(relid[1]==0)  //EMC
 	    digitOccupancy->Fill(x,z,e) ;
@@ -264,6 +268,10 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
   if(ppsdRecPoints ){
     for(irecp = 0; irecp < ppsdRecPoints->GetEntries() ; irecp ++){
       AliPHOSPpsdRecPoint * ppsd= (AliPHOSPpsdRecPoint *)ppsdRecPoints->At(irecp) ;
+
+      ppsd->GetLocalPosition(pos) ;
+      cout << "PPSD " << irecp << " " << ppsd->GetPHOSMod() << "  " << pos.X() << "  " << pos.Z() << endl ;
+
       if(ppsd->GetPHOSMod()==Nmod){
 	ppsd->GetLocalPosition(pos) ;
 	if(ppsd->GetUp())
@@ -344,69 +352,69 @@ void AliPHOSAnalyze::DrawRecon(Int_t Nevent,Int_t Nmod){
   nbar->Draw("boxsame") ;
   
 }
-//____________________________________________________________________________
- void AliPHOSAnalyze::Reconstruct(Int_t nevents,Int_t firstEvent )    
-{     
+// //____________________________________________________________________________
+//  void AliPHOSAnalyze::Reconstruct(Int_t nevents,Int_t firstEvent )    
+// {     
 
-  // Performs reconstruction of EMC and CPV (GPS2, IHEP or MIXT)
-  // for events from FirstEvent to Nevents
+//   // Performs reconstruction of EMC and CPV (GPS2, IHEP or MIXT)
+//   // for events from FirstEvent to Nevents
 
-  Int_t ievent ;   
-  for ( ievent=firstEvent; ievent<nevents; ievent++) {  
-    if (ievent==firstEvent) {
-      cout << "Analyze > Starting Reconstructing " << endl ; 
-      //========== Create the Clusterizer
-      fClu = new AliPHOSClusterizerv1() ; 
+//   Int_t ievent ;   
+//   for ( ievent=firstEvent; ievent<nevents; ievent++) {  
+//     if (ievent==firstEvent) {
+//       cout << "Analyze > Starting Reconstructing " << endl ; 
+//       //========== Create the Clusterizer
+//       fClu = new AliPHOSClusterizerv1() ; 
       
-      //========== Creates the track segment maker
-      fTrs = new AliPHOSTrackSegmentMakerv1()  ;
-      //	  fTrs->UnsetUnfoldFlag() ; 
+//       //========== Creates the track segment maker
+//       fTrs = new AliPHOSTrackSegmentMakerv1()  ;
+//       //	  fTrs->UnsetUnfoldFlag() ; 
      
-      //========== Creates the particle identifier
-      fPID = new AliPHOSPIDv1() ;
-      fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ;       
+//       //========== Creates the particle identifier
+//       fPID = new AliPHOSPIDv1() ;
+//       fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ;       
       
-      //========== Creates the Reconstructioner
-      fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
-      if (fDebugLevel != 0) fRec -> SetDebugReconstruction(kTRUE);     
-    }
+//       //========== Creates the Reconstructioner
+//       fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
+//       if (fDebugLevel != 0) fRec -> SetDebugReconstruction(kTRUE);     
+//     }
     
-    if (fDebugLevel != 0 ||
-	(ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
-      cout <<  "======= Analyze ======> Event " << ievent+1 << endl ;
+//     if (fDebugLevel != 0 ||
+// 	(ievent+1) % (Int_t)TMath::Power( 10, (Int_t)TMath::Log10(ievent+1) ) == 0)
+//       cout <<  "======= Analyze ======> Event " << ievent+1 << endl ;
 
 
-    gAlice->GetEvent(ievent) ;
-    gAlice->SetEvent(ievent) ;
+//     gAlice->GetEvent(ievent) ;
+//     gAlice->SetEvent(ievent) ;
 
-    if(gAlice->TreeS() == 0)      gAlice->MakeTree("S");
-    fPHOS->MakeBranch("S") ; 
+//     if(gAlice->TreeS() == 0)      gAlice->MakeTree("S");
+//     fPHOS->MakeBranch("S") ; 
     
-    fPHOS->Hits2SDigits() ;  
+//     fPHOS->Hits2SDigits() ;  
     
-    if(gAlice->TreeD() == 0) gAlice->MakeTree("D");
-    fPHOS->MakeBranch("D") ; 
+//     if(gAlice->TreeD() == 0) gAlice->MakeTree("D");
+//     fPHOS->MakeBranch("D") ; 
 
-    fPHOS->SDigits2Digits() ;
+//     fPHOS->SDigits2Digits() ;
 
-    if(gAlice->TreeR() == 0) gAlice->MakeTree("R");
+//     if(gAlice->TreeR() == 0) gAlice->MakeTree("R");
         
-    fPHOS->Reconstruction(fRec);    
+//     fPHOS->Reconstruction(fRec);    
 
-    gAlice->TreeS()->Fill() ;
-    gAlice->TreeS()->Write(0,TObject::kOverwrite); 
+//     gAlice->TreeS()->Fill() ;
+//     gAlice->TreeS()->Write(0,TObject::kOverwrite); 
 
-    gAlice->TreeD()->Fill() ;
-    gAlice->TreeD()->Write(0,TObject::kOverwrite); 
+//     gAlice->TreeD()->Fill() ;
+//     gAlice->TreeD()->Write(0,TObject::kOverwrite); 
     
-  }
+//   }
   
-  if(fClu)      {delete fClu      ; fClu     =0 ;}
-  if(fPID)      {delete fPID      ; fPID     =0 ;}
-  if(fRec)      {delete fRec      ; fRec     =0 ;}
-  if(fTrs)      {delete fTrs      ; fTrs     =0 ;}
+//   if(fClu)      {delete fClu      ; fClu     =0 ;}
+//   if(fPID)      {delete fPID      ; fPID     =0 ;}
+//   if(fRec)      {delete fRec      ; fRec     =0 ;}
+//   if(fTrs)      {delete fTrs      ; fTrs     =0 ;}
   
-}
+// }
 
 //-------------------------------------------------------------------------------------
 void AliPHOSAnalyze::ReadAndPrintCPV(Int_t EvFirst, Int_t EvLast)
