@@ -12,34 +12,33 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
-//************************************************
-//Piotr Krzysztof Skowronski
-//Warsaw University of Technology
-//skowron@if.pw.edu.pl
-//
 
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include "AliITSpackageSSD.h"
+#include "AliITSclusterSSD.h"
 
 const Bool_t AliITSpackageSSD::fgkSIDEP=kTRUE;
 const Bool_t AliITSpackageSSD::fgkSIDEN=kFALSE;
 
-static const Int_t debug=0;
-
 ClassImp(AliITSpackageSSD)
-
+////////////////////////////////////////////////////////////////////////////
+//Class describing set of AliITSoneSideClusterSSDs, which contact each other.
+//Piotr Krzysztof Skowronski
+//Warsaw University of Technology
+//skowron@if.pw.edu.pl
+//
+//--------------------------------------------------------------------------
 AliITSpackageSSD::AliITSpackageSSD()
 {
+  // constructor
   fNclustersN=0;
   fClusterNIndexes = 0; 
 		
   fNclustersP=0;
   fClusterPIndexes = 0;
-  if (debug) cout<<"Default Ctor was used\n>>>>>>>>>>>>>><<<<<<<<<<<<<";
+  if (fgkDebug) cout<<"Default Ctor was used\n>>>>>>>>>>>>>><<<<<<<<<<<<<";
 }
 
 
@@ -48,6 +47,7 @@ AliITSpackageSSD::AliITSpackageSSD()
 AliITSpackageSSD::AliITSpackageSSD
   (TClonesArray *clustersP, TClonesArray *clustersN)
 {
+  // constructor
   fClustersP=clustersP;
   fClustersN=clustersN;
   	
@@ -63,8 +63,8 @@ AliITSpackageSSD::AliITSpackageSSD
 
 AliITSpackageSSD::AliITSpackageSSD
   ( Int_t len, TClonesArray *clustersP, TClonesArray *clustersN)
-
 {	
+  // constructor
   fClustersP=clustersP;
   fClustersN=clustersN;
 
@@ -84,6 +84,7 @@ AliITSpackageSSD::~AliITSpackageSSD()
   delete fClusterNIndexes;
   delete fClusterPIndexes;		
 }
+
 /*******************************************************/
 
 AliITSpackageSSD::AliITSpackageSSD(const AliITSpackageSSD &package) : 
@@ -108,7 +109,7 @@ AliITSpackageSSD::AliITSpackageSSD(const AliITSpackageSSD &package) :
       fClusterPIndexes[i]= package.fClusterPIndexes[i]; 
     }
   
-  if (debug) cout << "Copying function was used\n<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>";
+  if (fgkDebug) cout << "Copying function was used\n<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>";
   
   return; 
   
@@ -118,153 +119,156 @@ AliITSpackageSSD::AliITSpackageSSD(const AliITSpackageSSD &package) :
 AliITSpackageSSD&  
 AliITSpackageSSD::operator=( const AliITSpackageSSD & package)
 {
-
-Int_t i;  //iterator
- 
-if (this == &package) return *this;
-fClustersN = package.fClustersN;
-fClustersP = package.fClustersP;
-
-fNclustersN= package.fNclustersN;
-fNclustersP= package.fNclustersP;
-
-for ( i =0; i<fNclustersN;i++)
-  {
-    fClusterNIndexes[i]= package.fClusterNIndexes[i]; 
-  }
-
-for ( i =0; i<fNclustersP;i++)
-  {
-    fClusterPIndexes[i]= package.fClusterPIndexes[i]; 
-  }
-
-if (debug) cout << "Copying function was used\n<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>";
-
-return *this; 
+  //  assignment operator
+  //
+  Int_t i;  //iterator
+  
+  if (this == &package) return *this;
+  fClustersN = package.fClustersN;
+  fClustersP = package.fClustersP;
+  
+  fNclustersN= package.fNclustersN;
+  fNclustersP= package.fNclustersP;
+  
+  for ( i =0; i<fNclustersN;i++)
+    {
+      fClusterNIndexes[i]= package.fClusterNIndexes[i]; 
+    }
+  
+  for ( i =0; i<fNclustersP;i++)
+    {
+      fClusterPIndexes[i]= package.fClusterPIndexes[i]; 
+    }
+  
+  if (fgkDebug) cout << "Copying function was used\n<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>";
+  
+  return *this; 
   
 }
 
-
 /*******************************************************/
 
-Int_t 
-AliITSpackageSSD::GetNSideClusterIdx(Int_t index)
-
+Int_t AliITSpackageSSD::GetNSideClusterIdx(const Int_t index) const
 {
+  // get N-side cluster
+  // 
   if ((index>-1)&&(index<fNclustersN))
     return (*fClusterNIndexes)[index];
   else 
-   {
-    cout << "AliITSpackageSSD::GetNSideClusterIdx  : Out of Range\n";
-    return -1;
-   }
+    {
+      cout << "AliITSpackageSSD::GetNSideClusterIdx  : Out of Range\n";
+      return -1;
+    }
 }
 /*******************************************************/
 
 
-Int_t AliITSpackageSSD::GetPSideClusterIdx(Int_t index)
+Int_t AliITSpackageSSD::GetPSideClusterIdx(const Int_t index) const
 {
+  // get P-side cluster
+  //
   if ((index>-1)&&(index<fNclustersP))
     return (*fClusterPIndexes)[index];
   else 
-  {
-  cout << "AliITSpackageSSD::GetPSideClusterIdx  : Out of Range\n";
-   return -1;
-  } 
+    {
+      cout << "AliITSpackageSSD::GetPSideClusterIdx  : Out of Range\n";
+      return -1;
+    } 
 }
 /*******************************************************/
 AliITSclusterSSD*  
-AliITSpackageSSD::GetPSideCluster(Int_t index)
+AliITSpackageSSD::GetPSideCluster(const Int_t index)
 {
-
-return (AliITSclusterSSD*)((*fClustersP)[GetPSideClusterIdx(index)]);
+  // get Pside cluster from the TClonesArray of SSD clusters
+  //
+  return (AliITSclusterSSD*)((*fClustersP)[GetPSideClusterIdx(index)]);
 }
 
 /*******************************************************/
 
 AliITSclusterSSD*  
-AliITSpackageSSD::GetNSideCluster(Int_t index)
+AliITSpackageSSD::GetNSideCluster(const Int_t index)
 {
-return (AliITSclusterSSD*)((*fClustersN)[GetNSideClusterIdx(index)]);
+  // get Nside cluster from the TClonesArray of SSD clusters
+  //
+  return (AliITSclusterSSD*)((*fClustersN)[GetNSideClusterIdx(index)]);
 }
 
 
 /*******************************************************/
 
-
-
-Bool_t 
-AliITSpackageSSD::GetClusterWithOneCross
-  (Int_t & index, Bool_t& side)
+Bool_t AliITSpackageSSD::GetClusterWithOneCross
+(Int_t & index, Bool_t& side)
 {
+  // select clusters with on cross 
+  //
+  if((fNclustersP==0)||(fNclustersN==0) )
+    {
+      printf("Empty package ((fNclustersP==0)||(fNclustersN==0))\n");
+      index = -2;
+      return kFALSE;
+    } 
+  Int_t ind;
   
- 
- if((fNclustersP==0)||(fNclustersN==0) )
-  {
-    printf("Empty package ((fNclustersP==0)||(fNclustersN==0))\n");
-    index = -2;
-    return kFALSE;
-  } 
- Int_t ind;
-
- ind =(*fClusterPIndexes)[fNclustersP-1]; 
- if (  ( ((AliITSclusterSSD*)(*fClustersP)[ind]  )->GetCrossNo()  ) ==1 )
-  {
-    //index=ind;
-    index =fNclustersP-1; 
-    side=fgkSIDEP;
-    return kTRUE;
-  }
- 
- ind =(*fClusterNIndexes)[fNclustersN-1]; 
- if (  (  ((AliITSclusterSSD*)(*fClustersN)[ind]  )->GetCrossNo() ) ==1  )
-  {
-    //index=ind;
-    index = fNclustersN-1;
-    side=fgkSIDEN;
-    return kTRUE;
-  }
+  ind =(*fClusterPIndexes)[fNclustersP-1]; 
+  if (  ( ((AliITSclusterSSD*)(*fClustersP)[ind]  )->GetCrossNo()  ) ==1 )
+    {
+      //index=ind;
+      index =fNclustersP-1; 
+      side=fgkSIDEP;
+      return kTRUE;
+    }
   
-
- ind =(*fClusterPIndexes)[0];
- if (  ( ((AliITSclusterSSD*)(*fClustersP)[ind]  )->GetCrossNo() ) ==1 )
-  {
-    //index=ind;
-    index = 0;
-    side=fgkSIDEP;
-    return kTRUE;
-  }
-  
-
- ind =(*fClusterNIndexes)[0];
- if (  ( ((AliITSclusterSSD*)(*fClustersN)[ind]  )->GetCrossNo()  ) ==1  )
-  {
-//    index=ind;
-    index = 0;  
-    side=fgkSIDEN;
-    return kTRUE;
-  }
+  ind =(*fClusterNIndexes)[fNclustersN-1]; 
+  if (  (  ((AliITSclusterSSD*)(*fClustersN)[ind]  )->GetCrossNo() ) ==1  )
+    {
+      //index=ind;
+      index = fNclustersN-1;
+      side=fgkSIDEN;
+      return kTRUE;
+    }
   
   
- //Add for to be shure 
- index = -1;
- return kFALSE;
+  ind =(*fClusterPIndexes)[0];
+  if (  ( ((AliITSclusterSSD*)(*fClustersP)[ind]  )->GetCrossNo() ) ==1 )
+    {
+      //index=ind;
+      index = 0;
+      side=fgkSIDEP;
+      return kTRUE;
+    }
+  
+  
+  ind =(*fClusterNIndexes)[0];
+  if (  ( ((AliITSclusterSSD*)(*fClustersN)[ind]  )->GetCrossNo()  ) ==1  )
+    {
+      //    index=ind;
+      index = 0;  
+      side=fgkSIDEN;
+      return kTRUE;
+    }
+  
+  
+  //Add for to be shure 
+  index = -1;
+  return kFALSE;
   
 }
 /*******************************************************/
 
 void AliITSpackageSSD::DelCluster(Int_t index, Bool_t side)
 {
+  // call DelPCluster or DelNCluster depending on side
+  //
   if(side==fgkSIDEP) DelPCluster(index); else DelNCluster(index);
 }
 /*******************************************************/
 void AliITSpackageSSD::DelPCluster(Int_t index)
 {
-
-//it not deletes delete given cluster physically, 
-//but only complytely erase it from package
-//all clusters are deleted automatically when TClonesArray is deleted
-
+  //it not deletes delete given cluster physically, 
+  //but only complytely erase it from package
+  //all clusters are deleted automatically when TClonesArray is deleted
+  
   Int_t i;
   Int_t idx;
   Int_t clToDelIdx = GetPSideClusterIdx(index); //Index of cluster in TClonesArray 
@@ -272,24 +276,24 @@ void AliITSpackageSSD::DelPCluster(Int_t index)
   Int_t ncr = clToDel->GetCrossNo();
   
   for (i =0;i<ncr;i++)
-   {
-    idx = clToDel->GetCross(i);
-    ((AliITSclusterSSD *)((*fClustersN)[idx])   )->DelCross(clToDelIdx);
-   }
- 
- 
- for (i=index;i<fNclustersP-1;i++)
-  {
-       (*fClusterPIndexes)[i]=(*fClusterPIndexes)[i+1];
-  }
- fNclustersP--; 
- if (debug) cout<<"Cluster P ("<<index<<") deleted\n";
-
-
- for (i=0;i<fNclustersN;i++)
-  {
-    if ( (GetNSideCluster(i)->GetCrossNo())==0) DelNCluster(i);
-  }
+    {
+      idx = clToDel->GetCross(i);
+      ((AliITSclusterSSD *)((*fClustersN)[idx])   )->DelCross(clToDelIdx);
+    }
+  
+  
+  for (i=index;i<fNclustersP-1;i++)
+    {
+      (*fClusterPIndexes)[i]=(*fClusterPIndexes)[i+1];
+    }
+  fNclustersP--; 
+  if (fgkDebug) cout<<"Cluster P ("<<index<<") deleted\n";
+  
+  
+  for (i=0;i<fNclustersN;i++)
+    {
+      if ( (GetNSideCluster(i)->GetCrossNo())==0) DelNCluster(i);
+    }
 }
 
 
@@ -297,11 +301,10 @@ void AliITSpackageSSD::DelPCluster(Int_t index)
 /*******************************************************/
 void AliITSpackageSSD::DelNCluster(Int_t index)
 {
-
-//it not deletes delete given cluster physically, 
-//but only complytely erase it from package
-//all clusters are deleted automatically when TClonesArray is deleted
-
+  //it not deletes delete given cluster physically, 
+  //but only complytely erase it from package
+  //all clusters are deleted automatically when TClonesArray is deleted
+  
   Int_t i;
   Int_t idx;
   Int_t clToDelIdx = GetNSideClusterIdx(index); //Index of cluster in TClonesArray 
@@ -309,24 +312,24 @@ void AliITSpackageSSD::DelNCluster(Int_t index)
   Int_t ncr = clToDel->GetCrossNo();
   
   for (i =0;i<ncr;i++)
-   {
-    idx = clToDel->GetCross(i);
-    ((AliITSclusterSSD *)((*fClustersP)[idx])   )->DelCross(clToDelIdx);
-   }
- 
- 
- for (i=index;i<fNclustersN-1;i++)
-  {
-       (*fClusterNIndexes)[i]=(*fClusterNIndexes)[i+1];
-  }
- fNclustersN--; 
- if (debug) cout<<"Cluster N ("<<index<<") deleted\n";
-
- for (i=0;i<fNclustersP;i++)
-  {
-    if ( (GetPSideCluster(i)->GetCrossNo())==0) DelPCluster(i);
-  }
-
+    {
+      idx = clToDel->GetCross(i);
+      ((AliITSclusterSSD *)((*fClustersP)[idx])   )->DelCross(clToDelIdx);
+    }
+  
+  
+  for (i=index;i<fNclustersN-1;i++)
+    {
+      (*fClusterNIndexes)[i]=(*fClusterNIndexes)[i+1];
+    }
+  fNclustersN--; 
+  if (fgkDebug) cout<<"Cluster N ("<<index<<") deleted\n";
+  
+  for (i=0;i<fNclustersP;i++)
+    {
+      if ( (GetPSideCluster(i)->GetCrossNo())==0) DelPCluster(i);
+    }
+  
 }
 
 
@@ -334,7 +337,7 @@ void AliITSpackageSSD::DelNCluster(Int_t index)
 
 void AliITSpackageSSD::DelPClusterOI(Int_t index)
 {
-//This function looks like this, 
+  //This function looks like this, 
 //because probably cut cluster is 
 //on the beginning or on the end of package 
  Int_t i;
@@ -410,6 +413,7 @@ void AliITSpackageSSD::DelNClusterOI(Int_t index)
 
 void AliITSpackageSSD::DelClusterOI(Int_t index, Bool_t side)
 {
+  // delete cluster
  if (side == fgkSIDEP)
   {    
     DelPClusterOI(index);
@@ -427,19 +431,19 @@ void AliITSpackageSSD::DelClusterOI(Int_t index, Bool_t side)
 
 void  AliITSpackageSSD::GetAllCombinations(Int_t**array,Int_t &num,Int_t sizet)
 {
-  
+  // get all combinations
   Int_t *takenNcl = new Int_t[fNclustersN];
   
   num=0;
   
-  if (debug) PrintClusters();
+  if (fgkDebug) PrintClusters();
 
   for (Int_t i=0;i<fNclustersP;i++)
    {
      takenNcl[i]=-1;
    }
   //see comment on the beginning of MakeCombin
-  if (debug) cout<<"GetAllCombinations entered";
+  if (fgkDebug) cout<<"GetAllCombinations entered";
   MakeCombin (array,num,0,takenNcl,sizet);
 
   delete []takenNcl; 
@@ -451,7 +455,6 @@ void  AliITSpackageSSD::MakeCombin
    (Int_t**arr,Int_t& nu, Int_t np, Int_t *occup, Int_t sizet)
 
 {
-
 //ATTENTION: anybody watching this function
 //AliITSclusterSSD::GetCrossNo() returns index of cluster in main array belonging to AliITSmodulesSSD
 //however, we have pointer to that array (TClonesArray)
@@ -463,12 +466,12 @@ void  AliITSpackageSSD::MakeCombin
  //this cluster
  AliITSclusterSSD *cl=GetPSideCluster(np);
 
- Int_t NC = cl->GetCrossNo();  //number of crosses for this cluster
+ Int_t nc = cl->GetCrossNo();  //number of crosses for this cluster
  Int_t indcro;                 //index of given cluster on side N that 
                                // this cluster crosses with
    
  if (np == fNclustersP-1) {
-   for (i=0;i<NC;i++) {
+   for (i=0;i<nc;i++) {
      indcro=cl->GetCross(i);
      if(IsFree(indcro,np,occup)) {
         occup[np]=indcro;
@@ -484,7 +487,7 @@ void  AliITSpackageSSD::MakeCombin
      }
    }
   } else {
-    for (i=0;i<NC;i++) {
+    for (i=0;i<nc;i++) {
        indcro=cl->GetCross(i);
        if(IsFree(indcro,np,occup)) {
       	  occup[np]=indcro;
@@ -498,9 +501,9 @@ void  AliITSpackageSSD::MakeCombin
 }
 
 /**********************************************/
-Bool_t  AliITSpackageSSD::IsFree(Int_t idx, Int_t nn, Int_t *lis)
+Bool_t  AliITSpackageSSD::IsFree(const Int_t idx, const Int_t nn, const Int_t *lis) const
 {
-
+  // 
   for (Int_t i=0;i<nn;i++)
     {
       if (lis[i]==idx) return kFALSE;
@@ -511,7 +514,7 @@ Bool_t  AliITSpackageSSD::IsFree(Int_t idx, Int_t nn, Int_t *lis)
 /**********************************************/
 void AliITSpackageSSD::PrintClusters()
 {
-
+  // print cluster info
 Int_t i,j;
 cout<<"SIDE P\n";
 for (i=0;i<fNclustersP;i++)
@@ -540,29 +543,29 @@ for (i=0;i<fNclustersN;i++)
     cout<<"\n";   
  }
  
- 
- 
 }
+
 /**********************************************/
 void AliITSpackageSSD::ConsumeClusters()
 {
-register Int_t i;
-
-for(i=0;i<fNclustersP;i++)
- {
-   GetPSideCluster(i)->Consume();
- }
-
-for(i=0;i<fNclustersN;i++)
- {
-   GetNSideCluster(i)->Consume();
- }
-
+  // consume cluster
+  register Int_t i;
+  
+  for(i=0;i<fNclustersP;i++)
+    {
+      GetPSideCluster(i)->Consume();
+    }
+  
+  for(i=0;i<fNclustersN;i++)
+    {
+      GetNSideCluster(i)->Consume();
+    }
+  
 }
 
 /**********************************************/
 
-Int_t AliITSpackageSSD::GetNextPIdx(Int_t OI)
+Int_t AliITSpackageSSD::GetNextPIdx(Int_t OI) const
 {
  //Returns index of next P cluster OI in package; OI == Original Inedx (in TClonesArray)
  //if not egsist return -1;
@@ -573,8 +576,9 @@ Int_t AliITSpackageSSD::GetNextPIdx(Int_t OI)
   }
  return -1;
 }
+
 /**********************************************/
-Int_t AliITSpackageSSD::GetPrvPIdx(Int_t OI)
+Int_t AliITSpackageSSD::GetPrvPIdx(Int_t OI) const
 {
  //Returns index of previous P cluster  OI in package; OI == Original Inedx (in TClonesArray)
  //if not egsist return -1;
@@ -587,7 +591,7 @@ Int_t AliITSpackageSSD::GetPrvPIdx(Int_t OI)
   return -1;
 }
 /**********************************************/
-Int_t AliITSpackageSSD::GetNextNIdx(Int_t OI)
+Int_t AliITSpackageSSD::GetNextNIdx(Int_t OI) const
 {
 //Returns index of next N cluster OI in package; OI == Original Inedx (in TClonesArray)
  //if not egsist return -1;
@@ -600,7 +604,7 @@ Int_t AliITSpackageSSD::GetNextNIdx(Int_t OI)
 
 }
 /**********************************************/
-Int_t  AliITSpackageSSD::GetPrvNIdx(Int_t OI)
+Int_t  AliITSpackageSSD::GetPrvNIdx(Int_t OI) const
 {
  //Returns index of previous N cluster OI in package; OI == Original Inedx (in TClonesArray)
  //if not egsist return -1;
@@ -636,7 +640,7 @@ void  AliITSpackageSSD::SplitPackage(Int_t pi, Int_t ni, AliITSpackageSSD* pkg)
 	break;
       }
     }  
-  if (debug) {
+  if (fgkDebug) {
     cout<<" p = "<<p<<"  n = "<<n;
   }
   if ((p==-1)||(n==-1)) return;

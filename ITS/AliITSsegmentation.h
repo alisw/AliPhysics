@@ -12,100 +12,99 @@ class AliITSgeom;
 class AliITSsegmentation :
 public TObject {
  public:
-    virtual ~AliITSsegmentation() {}
+  AliITSsegmentation();
+  AliITSsegmentation(const AliITSsegmentation& source);
+  virtual ~AliITSsegmentation();
+  AliITSsegmentation& operator=(const AliITSsegmentation &source);
     // Set Detector Segmentation Parameters
     //
     // Detector size  
-    virtual void    SetDetSize(Float_t,Float_t,Float_t) {}
+    virtual void    SetDetSize(Float_t p1,Float_t p2,Float_t p3) 
+                    {fDx=p1; fDz=p2; fDy=p3;}
     // Cell size   
-    virtual void    SetPadSize(Float_t,Float_t) {}
+    virtual void    SetPadSize(Float_t,Float_t) {MayNotUse("SetPadSize");}
     // Maximum number of cells along the two coordinates  
-    virtual void    SetNPads(Int_t,Int_t) {}
+    virtual void    SetNPads(Int_t,Int_t) = 0;
     // Returns the maximum number of cells (digits) posible
-    virtual Int_t   GetNPads(){return 0;}
-    // Set angles - find a generic name fit for other detectors as well
-    // might be useful for beam test setups (3 angles ?)
-    virtual void    SetAngles(Float_t, Float_t) {}
+    virtual Int_t   GetNPads() const = 0;
     // Set layer
-    virtual void SetLayer(Int_t) {}
+    virtual void SetLayer(Int_t) {MayNotUse("SetLayer");}
     // Transform from real to cell coordinates
-    virtual void    GetPadIxz(Float_t,Float_t,Int_t &,Int_t &) {}
+    virtual void    GetPadIxz(Float_t,Float_t,Int_t &,Int_t &) const = 0;
     // Transform from cell to real coordinates
-    virtual void    GetPadCxz(Int_t,Int_t,Float_t &,Float_t &) {}
+    virtual void    GetPadCxz(Int_t,Int_t,Float_t &,Float_t &) const = 0;
     // Transform from real global to local coordinates
-    virtual void    GetLocal(Int_t,Float_t *,Float_t *) {}
+    virtual void    GetLocal(Int_t,Float_t *,Float_t *) const 
+                                                  {MayNotUse("GetLocal");}
     // Transform from real local to global coordinates
-    virtual void    GetGlobal(Int_t,Float_t *,Float_t *) {}
+    virtual void    GetGlobal(Int_t,Float_t *,Float_t *) const 
+                                                  {MayNotUse("GetGlobal");}
     // Local transformation of real local coordinates -
-    virtual void    GetPadTxz(Float_t &,Float_t &) {}
+    virtual void    GetPadTxz(Float_t &,Float_t &) const = 0;
     // Transformation from Geant cm detector center local coordinates
     // to detector segmentation/cell coordiantes starting from (0,0).
-    virtual void    LocalToDet(Float_t,Float_t,Int_t &,Int_t &){}
+    virtual void    LocalToDet(Float_t,Float_t,Int_t &,Int_t &) const = 0;
     // Transformation from detector segmentation/cell coordiantes starting
     // from (0,0) to Geant cm detector center local coordinates.
-    virtual void    DetToLocal(Int_t,Int_t,Float_t &,Float_t &){}
+    virtual void    DetToLocal(Int_t,Int_t,Float_t &,Float_t &) const = 0;
     // Initialisation
-    virtual void Init() {}
+    virtual void Init() = 0;
     //
     // Get member data
     //
     // Detector type geometry
-    virtual AliITSgeom* Geometry() {return 0;}
+    virtual AliITSgeom* Geometry() const {return fGeom;}
     // Detector length
-    virtual Float_t Dx() {return 0.;}
+    virtual Float_t Dx() const {return fDx;}
     // Detector width
-    virtual Float_t Dz() {return 0.;}
+    virtual Float_t Dz() const {return fDz;}
     // Detector thickness
-    virtual Float_t Dy() {return 0.;}
+    virtual Float_t Dy() const {return fDz;}
     // Cell size in x
-    virtual Float_t Dpx(Int_t) {return 0.;}
+    virtual Float_t Dpx(Int_t) const = 0;
     // Cell size in z 
-    virtual Float_t Dpz(Int_t) {return 0.;}
+    virtual Float_t Dpz(Int_t) const = 0;
     // Maximum number of Cells in x
-    virtual Int_t    Npx() {return 0;}
+    virtual Int_t    Npx() const = 0;
     // Maximum number of Cells in z
-    virtual Int_t    Npz() {return 0;}
+    virtual Int_t    Npz() const = 0;
     // Layer
-    virtual Int_t GetLayer() const {return 0;}
-    // Angles 
-    virtual void Angles(Float_t &, Float_t&) {}
-    // Set cell position
-    virtual void     SetPad(Int_t, Int_t) {}
+    virtual Int_t GetLayer() const {MayNotUse("GetLayer"); return 0;}
     // Set hit position
-    virtual void     SetHit(Float_t, Float_t) {}
-    
-    //
-    // Iterate over cells 
-    // Initialiser
-    virtual void  FirstPad(Float_t,Float_t,Float_t,Float_t) {}
-    // Stepper
-    virtual void  NextPad() {}
-    // Condition
-    virtual Int_t MorePads() {return 0;}
+    //    virtual void     SetHit(Float_t, Float_t) {}
+    // angles
+    virtual void Angles(Float_t& /* p */, Float_t& /* n */) const
+                                          {MayNotUse("Angles");}
+
     //
     // Get next neighbours 
-    virtual void Neighbours(Int_t,Int_t,Int_t*,Int_t[10],Int_t[10]) {}
-    //
-    // Current cell cursor during disintegration
-    // x-coordinate
-    virtual Int_t  Ix() {return 0;}
-    // z-coordinate
-    virtual Int_t  Iz() {return 0;}
-    //
-    // Signal Generation Condition during Stepping
-    virtual Int_t SigGenCond(Float_t,Float_t,Float_t) {return 0;}
-    // Initialise signal generation at coord (x,y,z)
-    virtual void  SigGenInit(Float_t,Float_t,Float_t) {}
-    // Current integration limits 
-    virtual void  IntegrationLimits(Float_t&,Float_t&,Float_t&,Float_t&) {}
-    // Test points for auto calibration
-    virtual void GiveTestPoints(Int_t &,Float_t *,Float_t *) {}
+    virtual void Neighbours(Int_t,Int_t,Int_t*,Int_t[10],Int_t[10]) const
+                     {MayNotUse("Neighbours");}
+
     // Function for systematic corrections
     // Set the correction function
-    virtual void SetCorrFunc(Int_t, TF1*) {}
+    virtual void SetCorrFunc(TF1* fc) {fCorr = fc;}
     // Get the correction Function
-    virtual TF1* CorrFunc(Int_t) {return 0;}
-	    
-    ClassDef(AliITSsegmentation,1) //Segmentation virtual base class 
+    virtual TF1* CorrFunc() {return fCorr;}
+    // Print Default parameters
+    virtual void PrintDefaultParameters() const = 0;
+
+ protected:
+
+    virtual void Copy(TObject &obj) const;
+
+    Float_t fDx;    //SPD: Full width of the detector (x axis)- microns
+                    //SDD: Drift distance of the 1/2detector (x axis)-microns
+                    //SSD: Full length of the detector (x axis)- microns
+    Float_t fDz;    //SPD: Full length of the detector (z axis)- microns
+                    //SDD: Length of half-detector (z axis) - microns
+                    //SSD: Full width of the detector (z axis)- microns
+    Float_t fDy;    //SPD:  Full thickness of the detector (y axis) -um 
+                    //SDD: Full thickness of the detector (y axis) - microns
+                    //SSD: Full thickness of the detector (y axis) -um 
+    AliITSgeom *fGeom;  //! pointer to the geometry class
+    TF1*       fCorr;   // correction function
+
+    ClassDef(AliITSsegmentation,2) //Segmentation virtual base class 
 };
 #endif

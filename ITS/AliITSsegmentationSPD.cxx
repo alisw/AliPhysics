@@ -13,16 +13,28 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <TMath.h>
-#include <TF1.h>
-
 #include "AliITSsegmentationSPD.h"
-#include "AliITSgeom.h"
-
+//#include "AliITSgeom.h"
+//////////////////////////////////////////////////////
+// Segmentation class for                           //
+// pixels                                           //
+//                                                  //
+//////////////////////////////////////////////////////
 ClassImp(AliITSsegmentationSPD)
 
+//_____________________________________________________________________________
+  AliITSsegmentationSPD::AliITSsegmentationSPD(): AliITSsegmentation(){
+  // Default constructor
+  fNpx = 0;
+  fNpz = 0;
+  for(Int_t k=0; k<256; k++){
+    fCellSizeX[k] = 0.;
+    fCellSizeZ[k] = 0.;
+  }
+}
 
-Float_t AliITSsegmentationSPD::ColFromZ300(Float_t z) {
+//_____________________________________________________________________________
+Float_t AliITSsegmentationSPD::ColFromZ300(Float_t z) const {
 // Get column number for each z-coordinate taking into account the 
 // extra pixels in z direction assuming 300 micron sized pixels.
      Float_t col = 0.0;
@@ -31,7 +43,7 @@ Float_t AliITSsegmentationSPD::ColFromZ300(Float_t z) {
      return col;
 }
 //_____________________________________________________________________________
-Float_t AliITSsegmentationSPD::ZFromCol300(Int_t col) {
+Float_t AliITSsegmentationSPD::ZFromCol300(Int_t col) const {
 // same comments as above
 // Get z-coordinate for each colunm number
   Float_t pitchz = 300.0;
@@ -40,14 +52,14 @@ Float_t AliITSsegmentationSPD::ZFromCol300(Int_t col) {
   return z;
 }
 //_____________________________________________________________________________
-Float_t AliITSsegmentationSPD::ZpitchFromCol300(Int_t col) {
+Float_t AliITSsegmentationSPD::ZpitchFromCol300(Int_t col) const {
   // returns Z pixel pitch for 300 micron pixels.
 
     col = 0; // done to remove unused variable warning.
     return 300.0;
 }
 //_____________________________________________________________________________
-Float_t AliITSsegmentationSPD::ColFromZ(Float_t z) {
+Float_t AliITSsegmentationSPD::ColFromZ(Float_t z) const {
     // hard-wired - keep it like this till we can parametrise 
     // and get rid of AliITSgeomSPD425
     // Get column number for each z-coordinate taking into account the 
@@ -104,7 +116,7 @@ Float_t AliITSsegmentationSPD::ColFromZ(Float_t z) {
 }
 
 //_____________________________________________________________________________
-Float_t AliITSsegmentationSPD::ZFromCol(Int_t col) {
+Float_t AliITSsegmentationSPD::ZFromCol(Int_t col) const {
     // same comments as above
     // Get z-coordinate for each colunm number
     Int_t i;
@@ -154,7 +166,7 @@ Float_t AliITSsegmentationSPD::ZFromCol(Int_t col) {
   return z;*/
 }
 //______________________________________________________________________
-Float_t AliITSsegmentationSPD::ZpitchFromCol(Int_t col) {
+Float_t AliITSsegmentationSPD::ZpitchFromCol(Int_t col) const {
     // Get pitch size in z direction for each colunm
 
    Float_t pitchz = 425.;
@@ -176,15 +188,6 @@ Float_t AliITSsegmentationSPD::ZpitchFromCol(Int_t col) {
     return pitchz;
 }
 //______________________________________________________________________
-AliITSsegmentationSPD::AliITSsegmentationSPD(){
-  // Default constructor
-   fNpx = 0;
-   fNpz = 0;
-   fCorr=0;
-   fGeom = 0;
-
-}
-//______________________________________________________________________
 AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSgeom *gm){
   // Constructor
    fCorr=0;
@@ -195,25 +198,30 @@ AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSgeom *gm){
 
 }
 //______________________________________________________________________
-AliITSsegmentationSPD& AliITSsegmentationSPD::operator=(AliITSsegmentationSPD &source){
+void AliITSsegmentationSPD::Copy(TObject &obj) const {
+  // protected method. copy this to obj
+  AliITSsegmentation::Copy(obj);
+  ((AliITSsegmentationSPD& ) obj).fNpx  = fNpx;
+  ((AliITSsegmentationSPD& ) obj).fNpz  = fNpz;
+  Int_t i;
+  for(i=0;i<256;i++) 
+         ((AliITSsegmentationSPD& ) obj).fCellSizeX[i] = fCellSizeX[i];
+  for(i=0;i<280;i++) 
+         ((AliITSsegmentationSPD& ) obj).fCellSizeZ[i] = fCellSizeZ[i];
+}
+
+//______________________________________________________________________
+AliITSsegmentationSPD& AliITSsegmentationSPD::operator=(const AliITSsegmentationSPD &source){
    // = operator
    if(this==&source) return *this;
-   this->fNpx  = source.fNpx;
-   this->fNpz  = source.fNpz;
-   this->fDx   = source.fDx;
-   this->fDy   = source.fDy;
-   Int_t i;
-   for(i=0;i<256;i++) this->fCellSizeX[i] = source.fCellSizeX[i];
-   for(i=0;i<280;i++) this->fCellSizeZ[i] = source.fCellSizeZ[i];
-   this->fCorr = new TF1(*(source.fCorr));// make a proper copy of the function
-   this->fGeom = source.fGeom; // copy only the pointers.
+   source.Copy(*this);
    return *this;
 }
 //____________________________________________________________________________
-AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSsegmentationSPD &source) :
+AliITSsegmentationSPD::AliITSsegmentationSPD(const AliITSsegmentationSPD &source) :
     AliITSsegmentation(source){
   // copy constructor
-   *this = source;
+  source.Copy(*this);
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSPD::SetBinSize(Float_t *x,Float_t *z){
@@ -277,30 +285,21 @@ void AliITSsegmentationSPD::SetNPads(Int_t p1, Int_t p2){
     fNpz=p2;
 
 }
-//------------------------------
-void AliITSsegmentationSPD::SetDetSize(Float_t p1, Float_t p2, Float_t p3){
-  // for SPD this function should be used ONLY when a beam test setup 
-  // configuration is studied
 
-    fDx=p1;
-    fDz=p2;
-    fDy=p3;
-
-}
 //------------------------------
-Float_t AliITSsegmentationSPD::Dpx(Int_t i){
+Float_t AliITSsegmentationSPD::Dpx(Int_t i) const {
     //returs x pixel pitch for a give pixel
     if(i<0||i>=256) return 0.0;
     return fCellSizeX[i];
 }
 //------------------------------
-Float_t AliITSsegmentationSPD::Dpz(Int_t i){
+Float_t AliITSsegmentationSPD::Dpz(Int_t i) const {
     // returns z pixel pitch for a give pixel
     if(i<0||i>=280) return 0.0;
     return fCellSizeZ[i];
 }
 //------------------------------
-void AliITSsegmentationSPD::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz){
+void AliITSsegmentationSPD::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const {
 //  Returns pixel coordinates (ix,iz) for given real local coordinates (x,z)
 //
 
@@ -322,7 +321,7 @@ void AliITSsegmentationSPD::GetPadIxz(Float_t x,Float_t z,Int_t &ix,Int_t &iz){
 }
 
 //------------------------------
-void AliITSsegmentationSPD::GetPadTxz(Float_t &x,Float_t &z){
+void AliITSsegmentationSPD::GetPadTxz(Float_t &x,Float_t &z) const{
 //  local transformation of real local coordinates (x,z)
 //
 
@@ -336,7 +335,7 @@ void AliITSsegmentationSPD::GetPadTxz(Float_t &x,Float_t &z){
 
 }
 //------------------------------
-void AliITSsegmentationSPD::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z){
+void AliITSsegmentationSPD::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z) const {
     // Transform from pixel to real local coordinates
 
     // returns x, z in microns
@@ -350,7 +349,7 @@ void AliITSsegmentationSPD::GetPadCxz(Int_t ix,Int_t iz,Float_t &x,Float_t&z){
 }
 //------------------------------
 void AliITSsegmentationSPD::
-Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[8], Int_t Zlist[8]){
+Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[8], Int_t Zlist[8]) const {
   // returns the neighbouring pixels for use in Cluster Finders and the like.
   /*
     *Nlist=4;Xlist[0]=Xlist[1]=iX;Xlist[2]=iX-1;Xlist[3]=iX+1;
@@ -380,7 +379,7 @@ Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[8], Int_t Zlist[8]){
     Zlist[7]=iZ-1;
 }
 //______________________________________________________________________
-void AliITSsegmentationSPD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz){
+void AliITSsegmentationSPD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const {
 // Transformation from Geant detector centered local coordinates (cm) to
 // Pixel cell numbers ix and iz.
 // Input:
@@ -418,7 +417,7 @@ void AliITSsegmentationSPD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz){
     return; // Found ix and iz, return.
 }
 //______________________________________________________________________
-void AliITSsegmentationSPD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
+void AliITSsegmentationSPD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const
 {
 // Transformation from Detector cell coordiantes to Geant detector centerd 
 // local coordinates (cm).
@@ -448,7 +447,7 @@ void AliITSsegmentationSPD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
 //______________________________________________________________________
 void AliITSsegmentationSPD::CellBoundries(Int_t ix,Int_t iz,
 					  Double_t &xl,Double_t &xu,
-					  Double_t &zl,Double_t &zu)
+					  Double_t &zl,Double_t &zu) const
 {
 // Transformation from Detector cell coordiantes to Geant detector centerd 
 // local coordinates (cm).

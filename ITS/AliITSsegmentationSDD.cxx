@@ -13,15 +13,27 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <Riostream.h>
-#include <TF1.h>
 #include <TMath.h>
 
 #include "AliITSsegmentationSDD.h"
-#include "AliITS.h"
+// #include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITSgeomSDD.h"
-#include "AliRun.h"
 #include "AliITSresponse.h"
+
+//////////////////////////////////////////////////////
+// Segmentation class for                           //
+// drift detectors                                  //
+//                                                  //
+//////////////////////////////////////////////////////
+
+const Float_t AliITSsegmentationSDD::fgkDxDefault = 35085.;
+const Float_t AliITSsegmentationSDD::fgkDzDefault = 75264.;
+const Float_t AliITSsegmentationSDD::fgkDyDefault = 300.;
+const Float_t AliITSsegmentationSDD::fgkPitchDefault = 294.;
+const Float_t AliITSsegmentationSDD::fgkClockDefault = 40.;
+const Int_t AliITSsegmentationSDD::fgkHalfNanodesDefault = 256; 
+const Int_t AliITSsegmentationSDD::fgkNsamplesDefault = 256;
 
 ClassImp(AliITSsegmentationSDD)
 //----------------------------------------------------------------------
@@ -31,29 +43,54 @@ AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom,
    fGeom=geom;
    fDriftSpeed=resp->DriftSpeed();
    fCorr=0;
-   SetDetSize();
-   SetPadSize();
-   SetNPads();
+   SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
+   SetPadSize(fgkPitchDefault,fgkClockDefault);
+   SetNPads(fgkHalfNanodesDefault,fgkNsamplesDefault);
 
 }
 //______________________________________________________________________
-AliITSsegmentationSDD::AliITSsegmentationSDD(){
-  // standard constructor
-   fGeom=0;
+AliITSsegmentationSDD::AliITSsegmentationSDD() : AliITSsegmentation(){
+  // Default constructor
    fDriftSpeed=0;  
-   fCorr=0;
-   SetDetSize();
-   SetPadSize();
-   SetNPads();
+   SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
+   SetPadSize(fgkPitchDefault,fgkClockDefault);
+   SetNPads(fgkHalfNanodesDefault,fgkNsamplesDefault);
 
 }
+
+//______________________________________________________________________
+void AliITSsegmentationSDD::Copy(TObject &obj) const {
+  // protected method. copy this to obj
+  AliITSsegmentation::Copy(obj);
+  ((AliITSsegmentationSDD& ) obj).fNsamples = fNsamples;
+  ((AliITSsegmentationSDD& ) obj).fNanodes = fNanodes;
+  ((AliITSsegmentationSDD& ) obj).fPitch = fPitch;
+  ((AliITSsegmentationSDD& ) obj).fTimeStep = fTimeStep;
+  ((AliITSsegmentationSDD& ) obj).fDriftSpeed = fDriftSpeed;
+}
+
+//______________________________________________________________________
+AliITSsegmentationSDD& AliITSsegmentationSDD::operator=(const AliITSsegmentationSDD &source){
+   // = operator
+   if(this==&source) return *this;
+   source.Copy(*this);
+   return *this;
+}
+
+//____________________________________________________________________________
+AliITSsegmentationSDD::AliITSsegmentationSDD(const AliITSsegmentationSDD &source) :
+    AliITSsegmentation(source){
+  // copy constructor
+  source.Copy(*this);
+}
+
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::Init(){
   // Standard initilisation routine
 
    if(!fGeom) {
+     Fatal("Init","the pointer to the ITS geometry class (AliITSgeom) is null\n");
      return;
-     //fGeom = ((AliITS*)gAlice->GetModule("ITS"))->GetITSgeom();
    }
    AliITSgeomSDD *gsdd = (AliITSgeomSDD *) (fGeom->GetShape(3,1,1));
 
@@ -65,7 +102,7 @@ void AliITSsegmentationSDD::Init(){
 
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::
-Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[8], Int_t Zlist[8]){
+Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[8], Int_t Zlist[8]) const {
   // returns neighbours for use in Cluster Finder routines and the like
 
     if(iX >= fNanodes) printf("iX > fNanodes %d %d\n",iX,fNanodes);
@@ -84,7 +121,7 @@ Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[8], Int_t Zlist[8]){
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::GetPadIxz(Float_t x,Float_t z,
-				      Int_t &timebin,Int_t &anode){
+				      Int_t &timebin,Int_t &anode) const {
 // Returns cell coordinates (time sample,anode) incremented by 1 !!!!! 
 // for given real local coordinates (x,z)
 
@@ -106,7 +143,7 @@ void AliITSsegmentationSDD::GetPadIxz(Float_t x,Float_t z,
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::GetPadCxz(Int_t timebin,Int_t anode,
-				      Float_t &x ,Float_t &z){
+				      Float_t &x ,Float_t &z) const{
     // Transform from cell to real local coordinates
     // returns x, z in cm
 
@@ -123,7 +160,7 @@ void AliITSsegmentationSDD::GetPadCxz(Int_t timebin,Int_t anode,
 
 }
 //----------------------------------------------------------------------
-void AliITSsegmentationSDD::GetPadTxz(Float_t &x,Float_t &z){
+void AliITSsegmentationSDD::GetPadTxz(Float_t &x,Float_t &z) const{
     // Get anode and time bucket as floats - numbering from 0
 
     // expects x, z in cm
@@ -139,20 +176,19 @@ void AliITSsegmentationSDD::GetPadTxz(Float_t &x,Float_t &z){
 
 }
 //----------------------------------------------------------------------
-void AliITSsegmentationSDD::GetLocal(Int_t module,Float_t *g ,Float_t *l){
+void AliITSsegmentationSDD::GetLocal(Int_t module,Float_t *g ,Float_t *l) const {
   // returns local coordinates from global
     if(!fGeom) {
+      Fatal("GetLocal","the pointer to the ITS geometry class (AliITSgeom) is null\n");
         return;
-        //fGeom = ((AliITS*)gAlice->GetModule("ITS"))->GetITSgeom();
     }
     fGeom->GtoL(module,g,l);
 }
 //----------------------------------------------------------------------
-void AliITSsegmentationSDD::GetGlobal(Int_t module,Float_t *l ,Float_t *g){
+void AliITSsegmentationSDD::GetGlobal(Int_t module,Float_t *l ,Float_t *g) const {
   // return global coordinates from local
     if(!fGeom) {
-        return;
-        //fGeom = ((AliITS*)gAlice->GetModule("ITS"))->GetITSgeom();
+      Fatal("GetGlobal","the pointer to the ITS geometry class (AliITSgeom) is null\n");
     }
 
     fGeom->LtoG(module,l,g);
@@ -169,16 +205,38 @@ void AliITSsegmentationSDD::Print(Option_t *opt) const {
    cout << "Number of Anodes: " << fNanodes << endl;
    cout << "Time Step (ns): " << fTimeStep << endl;
    cout << "Anode Pitch (um): " << fPitch << endl;
-   cout << "Full Detector Width     (x): " << fDx << endl;
-   cout << "Half Detector Length    (z): " << fDz << endl;
-   cout << "Full Detector Thickness (y): " << fDy << endl;
+   cout << "Full Detector Width     (x): " << fDx;
+   cout<<" (Default is "<<fgkDxDefault<<") "<<endl;
+   cout << "Half Detector Length    (z): " << fDz;
+   cout<<" (Default is "<<fgkDzDefault<<") "<<endl;
+   cout << "Full Detector Thickness (y): " << fDy;
+   cout<<" (Default is "<<fgkDyDefault<<") "<<endl;
    cout << "**************************************************" << endl;
 
 }
-//______________________________________________________________________
+
+//----------------------------------------------------------------------
+void AliITSsegmentationSDD::PrintDefaultParameters() const {
+  // print SDD parameters defined as static const data members
+
+  cout << "**************************************************" << endl;
+  cout << "  Silicon Drift Detector Segmentation Parameters  " << endl;
+  cout << " Default values defined as static const data members"<< endl;
+  cout << " Actual values can be set with the relevant setters"<< endl; 
+  cout << "**************************************************" << endl;
+  cout<<"fgkDxDefault = "<<fgkDxDefault<<endl;
+  cout<<"fgkDzDefault = "<<fgkDzDefault<<endl;
+  cout<<"fgkDyDefault = "<<fgkDyDefault<<endl;
+  cout<<"fgkPitchDefault = "<<fgkPitchDefault<<endl;
+  cout<<"fgkClockDefault = "<<fgkClockDefault<<endl;
+  cout<<"fgkHalfNanodesDefault = "<<fgkHalfNanodesDefault<<endl;
+  cout<<"fgkNsamplesDefault = "<<fgkNsamplesDefault<<endl;
+  cout << "**************************************************" << endl;
+
+}
 
 //______________________________________________________________________
-void AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz){
+void AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const {
 // Transformation from Geant detector centered local coordinates (cm) to
 // time bucket numbers ix and anode number iz.
 // Input:
@@ -233,7 +291,7 @@ void AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz){
     return; // Found ix and iz, return.
 }
 //______________________________________________________________________
-void AliITSsegmentationSDD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
+void AliITSsegmentationSDD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const
 {
 // Transformation from Detector time bucket and anode coordiantes to Geant 
 // detector centerd local coordinates (cm).
