@@ -181,7 +181,7 @@ TH1F *hInvMassRes;
       thetaY = muonTrack->GetThetaY();
 
       pYZ     =  1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
-      fPzRec1  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaX));
+      fPzRec1  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaY));
       fPxRec1  = fPzRec1 * TMath::Tan(thetaX);
       fPyRec1  = fPzRec1 * TMath::Tan(thetaY);
       fCharge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
@@ -231,7 +231,7 @@ TH1F *hInvMassRes;
 	  thetaY = muonTrack->GetThetaY();
 
 	  pYZ     =  1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
-	  fPzRec2  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaX));
+	  fPzRec2  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaY));
 	  fPxRec2  = fPzRec2 * TMath::Tan(thetaX);
 	  fPyRec2  = fPzRec2 * TMath::Tan(thetaY);
 	  fCharge2 = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
