@@ -22,11 +22,11 @@
 //       if ( nevents % x == 0 ) 
 //       {
 //       // take a sample every x events
-//         memwatcher.watch(nevents);
+//         memwatcher.Watch(nevents);
 //       }
 //     }
 //     TFile f("out.root","RECREATE");
-//     memwatcher.write();
+//     memwatcher.Write();
 //     f.Close();
 //     In the output root file you'll get 3 graphs representing
 //     the evolAliPHOSon, as a function of the number of events, of :
@@ -52,6 +52,7 @@ class assert ;
 #include "TGraph.h"
 #include "TH2.h"
 #include "TStopwatch.h"
+#include "TError.h"
 
 ClassImp(AliMemoryWatcher)
 
