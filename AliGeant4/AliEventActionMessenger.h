@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliEventActionMessenger
+// -----------------------------
 // Messenger class that defines commands for AliEventAction.
 
 #ifndef ALI_EVENT_ACTION_MESSENGER_H

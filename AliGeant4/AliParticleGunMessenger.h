@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliParticleGunMessenger
+// -----------------------------
 // Messenger class that defines commands for AliParticleGun.
 
 #ifndef ALI_PARTICLE_GUN_MESSENGER_H

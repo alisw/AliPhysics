@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class AliPrimaryGeneratorAction
+// -------------------------------
 // Class that defines primary generator action. 
 // Available primary generators (AliPrimaryGenerator):
 //  kGun,               // gun (can be set interactively) 
@@ -12,12 +16,13 @@
 #define ALI_PRIMARY_GENERATOR_ACTION_H
 
 #include "AliPrimaryGenerator.h"
+#include "AliPrimaryGeneratorMessenger.h"
+#include "AliParticleGun.h"
 
 #include <G4VUserPrimaryGeneratorAction.hh>
 #include <globals.hh>
 
 class AliParticleGun;
-class AliPrimaryGeneratorMessenger;
 class G4ParticleGun;
 class G4Event;
 
@@ -25,8 +30,6 @@ class AliPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
     AliPrimaryGeneratorAction();
-    // --> protected
-    // AliPrimaryGeneratorAction(const AliPrimaryGeneratorAction& right);
     virtual ~AliPrimaryGeneratorAction();
 
     // methods
@@ -42,13 +45,6 @@ class AliPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4int GetNofGunParticles() const;
     G4int GetVerboseLevel() const;
     
-  protected:
-    AliPrimaryGeneratorAction(const AliPrimaryGeneratorAction& right);
-
-    // operators
-    AliPrimaryGeneratorAction& operator=(
-                              const AliPrimaryGeneratorAction& right);
-
   private:
     // methods
     void ConstructGenerator();
@@ -60,8 +56,8 @@ class AliPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     AliPrimaryGenerator  fGenerator;       //selected AliPrimaryGenerator
     G4int                fNofGunParticles; //number of gun particles
     G4int                fVerboseLevel;    //verbose level
-    AliParticleGun*      fParticleGun;     //AliParticleGun
-    AliPrimaryGeneratorMessenger*  fMessenger; //messenger
+    AliParticleGun       fParticleGun;     //AliParticleGun
+    AliPrimaryGeneratorMessenger  fMessenger; //messenger
 };
 
 // inline methods

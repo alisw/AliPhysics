@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliTrackingActionMessenger
+// --------------------------------
 // Messenger class that defines commands for AliTrackingAction.
  
 #ifndef ALI_TRACKING_ACTION_MESSENGER_H

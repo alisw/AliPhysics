@@ -1,6 +1,10 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliLVStructure
+// --------------------
 // Class that associates the name tree with logical volumes tree. 
 // Used for printing volumes trees.  
 

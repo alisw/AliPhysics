@@ -1,6 +1,10 @@
 // $Id$
 // Category: visualization
 //
+// Author: I. Hrivnacova
+//
+// Class AliColour
+// ---------------
 // Data type class that defines colours with names.
 
 #ifndef ALI_COLOUR_H

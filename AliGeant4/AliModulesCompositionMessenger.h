@@ -1,6 +1,10 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliModulesCompositionMessenger
+// ------------------------------------
 // Messenger class that defines commands for AliModulesComposition.
 
 #ifndef ALI_MODULES_COMPOSITION_MESSENGER_H

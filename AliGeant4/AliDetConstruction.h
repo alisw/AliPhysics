@@ -1,10 +1,14 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliDetConstruction
+// ------------------------
 // Detector construction class with interactive setting of detectors setup 
 // available.  
 // In case the detector setup is not defined in Root macro Config.C
-// commands /alDet/switchOn/Off can be used either interactively or
+// the commands /alDet/switchOn/Off can be used either interactively or
 // in Geant4 macro.
 
 #ifndef ALI_DET_CONSTRUCTION_H

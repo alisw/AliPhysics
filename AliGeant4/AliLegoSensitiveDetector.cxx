@@ -1,6 +1,10 @@
 // $Id$ //
 // Category: digits+hits
 //
+// Author: I. Hrivnacova
+//
+// Class AliLegoSensitiveDetector
+// ------------------------------
 // See the class description in the header file.
 
 #include "AliLegoSensitiveDetector.h"

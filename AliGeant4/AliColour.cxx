@@ -1,6 +1,10 @@
 // $Id$
 // Category: visualization
 //
+// Author: I. Hrivnacova
+//
+// Class AliColour
+// ---------------
 // See the class description in the header file.
 
 #include "AliColour.h"

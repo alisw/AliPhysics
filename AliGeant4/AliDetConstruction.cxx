@@ -1,6 +1,10 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliDetConstruction
+// ------------------------
 // See the class description in the header file.
 
 #include "AliDetConstruction.h"
@@ -145,7 +149,7 @@ void AliDetConstruction::CreateDetectors()
   AddSingleModuleConstruction("BODY", 0, kStructure);
 
   // add modules constructions
-  for (G4int id=0; id<fDetSwitchVector.entries(); id++)
+  for (G4int id=0; id<fDetSwitchVector.size(); id++)
   {
     G4String detName = fDetSwitchVector[id]->GetDetName();
     G4int version = fDetSwitchVector[id]->GetSwitchedVersion();

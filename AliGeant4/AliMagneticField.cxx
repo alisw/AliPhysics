@@ -1,6 +1,11 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class TG4ParticlesManager
+// -------------------------
+// See the class description in the header file.
 // According to:
 // Id: ExN02MagneticField.cc,v 1.1 1999/01/07 16:05:49 gunter Exp 
 // GEANT4 tag Name: geant4-00-01

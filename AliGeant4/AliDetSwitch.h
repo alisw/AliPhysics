@@ -1,7 +1,11 @@
 // $Id$
 // Category: geometry
 //
-// Data type class that stores available detector option.
+// Author: I. Hrivnacova
+//
+// Class AliDetSwitch
+// ------------------
+// Data type class that stores available detector options.
 // Used in interactive detector setup.
 
 #ifndef ALI_DET_SWITCH_H

@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class AliRunActionMessenger
+// ---------------------------
 // See the class description in the header file.
 
 #include "AliRunActionMessenger.h"

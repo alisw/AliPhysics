@@ -1,4 +1,11 @@
 // $Id$
+// Category: run
+//
+// Author: I. Hrivnacova
+//
+// Enum AliPrimaryGenerator
+// ------------------------
+// Enumaration of available primary generators.
 
 #ifndef ALI_PRIMARY_GENERATOR_H
 #define ALI_PRIMARY_GENERATOR_H

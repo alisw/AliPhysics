@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliTrackingActionMessenger
+// --------------------------------
 // See the class description in the header file.
  
 #include "AliTrackingActionMessenger.h"

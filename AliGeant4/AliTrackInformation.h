@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliTrackInformation
+// -------------------------
 // Class with additional track information.
 
 #ifndef ALI_TRACK_INFORMATION_H

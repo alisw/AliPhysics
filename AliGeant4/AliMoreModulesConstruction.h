@@ -1,8 +1,12 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliMoreModulesConstruction
+// --------------------------------
 // Class for geometry construction of a set of dependent
-// modules (AliModule). 
+// AliRoot modules. 
 
 
 #ifndef ALI_MORE_MODULES_CONSTRUCTION_H

@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class AliPrimaryGeneratorAction
+// -------------------------------
 // See the class description in the header file.
 
 #include "AliPrimaryGeneratorAction.h"
@@ -26,41 +30,15 @@
 AliPrimaryGeneratorAction::AliPrimaryGeneratorAction()
   : fGenerator(kAliGenerator),
     fNofGunParticles(1),
-    fVerboseLevel(0)
-{
+    fVerboseLevel(0),
+    fMessenger(this),
+    fParticleGun() {
 //
-  fParticleGun = new AliParticleGun();
-  fMessenger = new AliPrimaryGeneratorMessenger(this);
-}
-
-//_____________________________________________________________________________
-AliPrimaryGeneratorAction::AliPrimaryGeneratorAction(
-                                    const AliPrimaryGeneratorAction& right) {
-//				    
-  AliGlobals::Exception(
-    "AliPrimaryGeneratorAction is protected from copying.");
 }
 
 //_____________________________________________________________________________
 AliPrimaryGeneratorAction::~AliPrimaryGeneratorAction() {
 //
-  delete fMessenger;
-  delete fParticleGun;
-}
-
-// operators
-
-//_____________________________________________________________________________
-AliPrimaryGeneratorAction& 
-AliPrimaryGeneratorAction::operator=(const AliPrimaryGeneratorAction &right)
-{
-  // check assignement to self
-  if (this == &right) return *this;
-  
-  AliGlobals::Exception(
-    "AliPrimaryGeneratorAction is protected from assigning.");
-
-  return *this;
 }
 
 // private methods
@@ -95,7 +73,7 @@ void AliPrimaryGeneratorAction::ConstructGeantinoGenerator(G4bool isCharged)
 // ---
 
   // reset gun
-  fParticleGun->Reset();     
+  fParticleGun.Reset();     
 
   G4ParticleTable* particleTable 
     = G4ParticleTable::GetParticleTable();
@@ -130,7 +108,7 @@ void AliPrimaryGeneratorAction::ConstructGeantinoGenerator(G4bool isCharged)
       = new AliGunParticle(particleDef, momentumDir, energy, position, time, 
               polarization);
 
-    fParticleGun->AddParticle(gunParticle);     
+    fParticleGun.AddParticle(gunParticle);     
   } 
   if (fVerboseLevel>1) { 
     G4cout << "Geantino generator has been built." << G4endl; 
@@ -271,7 +249,7 @@ void AliPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   }  
   else {
     // use particle gun otherwise
-    fParticleGun->GeneratePrimaryVertex(event);
+    fParticleGun.GeneratePrimaryVertex(event);
 
     // primary particles have to be saved
     AliTrackingAction* trackingAction

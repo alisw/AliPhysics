@@ -1,6 +1,10 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliDetSwitch
+// ------------------
 // See the class description in the header file.
 
 #include "AliDetSwitch.h"

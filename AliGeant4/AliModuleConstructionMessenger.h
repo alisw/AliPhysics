@@ -1,8 +1,12 @@
 // $Id$
 // Category: geometry
 //
-// Messenger class that defines command directory for each
-// AliModuleConstruction instance.
+// Author: I. Hrivnacova
+//
+// Class AliModuleConstructionMessenger
+// ------------------------------------
+// Messenger class that defines command directory and
+// commands for each AliModuleConstruction instance.
 
 #ifndef ALI_MODULE_CONSTRUCTION_MESSENGER_H
 #define ALI_MODULE_CONSTRUCTION_MESSENGER_H
@@ -22,7 +26,7 @@ class AliModuleConstructionMessenger: public G4UImessenger
 {
   public:
     AliModuleConstructionMessenger(
-       AliModuleConstruction* moduleConstruction, G4String moduleName);
+       AliModuleConstruction* moduleConstruction, const G4String& moduleName);
     // --> protected   
     // AliModuleConstructionMessenger();
     // AliModuleConstructionMessenger(

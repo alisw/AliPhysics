@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class AliRunMessenger
+// ---------------------
 // See the class description in the header file.
 
 #include "AliRunMessenger.h"
@@ -96,6 +100,7 @@ void AliRunMessenger::SetNewValue(G4UIcommand* command,
     gAlice->Run(fBeamOnCmd->GetNewIntValue(newValue)); 
   }   
   else if(command == fLegoCmd) { 
+    //gAlice->SetDebug(1); 
     gAlice->RunLego(); 
   }   
 }

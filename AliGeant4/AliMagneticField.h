@@ -1,6 +1,10 @@
 //  $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliMagneticField
+// ----------------------
 // Uniform magnetic field.
 // According to:
 // Id: ExN02MagneticField.hh,v 1.1 1999/01/07 16:05:47 gunter Exp 

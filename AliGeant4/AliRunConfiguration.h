@@ -1,9 +1,13 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class AliRunConfiguration
+// -------------------------
 // This class creates all Ali* specific action classes
-// that will be initialized and managed by Geant4 kernel (G4RunManager)
-// and creates AliRunMessenger that implements commands for
+// that will be initialized and managed by Geant4 kernel (G4RunManager).
+// It creates also AliRunMessenger that implements commands for
 // AliRun methods.
 
 #ifndef ALI_RUN_CONFIGURATION_H

@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliParticleGunMessenger
+// -----------------------------
 // See the class description in the header file.
 
 #include "AliParticleGunMessenger.h"

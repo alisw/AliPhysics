@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliStackingActionMessenger
+// --------------------------------
 // Messenger class that defines commands for AliStackingAction.
 
 #ifndef ALI_STACKING_ACTION_MESSENGER_H

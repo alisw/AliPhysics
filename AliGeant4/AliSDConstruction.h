@@ -1,7 +1,11 @@
 // $Id$
 // Category: digits+hits
 //
-// Mandatory (TGeant4) class providing method for creating 
+// Author: I. Hrivnacova
+//
+// Class AliSDConstruction
+// -----------------------
+/// Mandatory (TGeant4) class providing method for creating 
 // sensitive detectors.
 // It provides also methods for switching between lego 
 // sensitive detectors and the standard ones.

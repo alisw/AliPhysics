@@ -1,6 +1,10 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliSingleModuleConstruction
+// ---------------------------------
 // See the class description in the header file.
 
 #include "AliSingleModuleConstruction.h"

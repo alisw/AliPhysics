@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliEventAction
+// ---------------------
 // See the class description in the header file.
 
 #include <G4Timer.hh>
@@ -8,7 +12,6 @@
    // times system function this include must be the first
 
 #include "AliEventAction.h"
-#include "AliEventActionMessenger.h"
 #include "AliTrackingAction.h"
 #include "AliGlobals.h"
 #include "AliRun.h"
@@ -22,16 +25,17 @@
 
 //_____________________________________________________________________________
 AliEventAction::AliEventAction()
-  : fVerboseLevel(1), 
+  : fMessenger(this),
+    fVerboseLevel(1), 
     fDrawFlag("CHARGED")
 {
 //
-  fMessenger = new AliEventActionMessenger(this);
   fTimer = new G4Timer();
 }
 
 //_____________________________________________________________________________
-AliEventAction::AliEventAction(const AliEventAction& right) {
+AliEventAction::AliEventAction(const AliEventAction& right)
+  : fMessenger(this) {
 //
   AliGlobals::Exception("AliEventAction is protected from copying.");
 }
@@ -39,7 +43,6 @@ AliEventAction::AliEventAction(const AliEventAction& right) {
 //_____________________________________________________________________________
 AliEventAction::~AliEventAction() {
 //
-  delete fMessenger;
   delete fTimer;
 }
 

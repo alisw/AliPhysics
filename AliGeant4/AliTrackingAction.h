@@ -1,16 +1,21 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliTrackingAction
+// -----------------------
 // Class that takes care of storing kinematics.
 
 #ifndef ALI_TRACKING_ACTION_H
 #define ALI_TRACKING_ACTION_H
 
+#include "AliTrackingActionMessenger.h"
+
 #include "TG4TrackingAction.h"
 
 #include <globals.hh>
 
-class AliTrackingActionMessenger;
 class AliTrackInformation;
 
 class G4Track;
@@ -59,16 +64,17 @@ class AliTrackingAction : public TG4TrackingAction
                                              const G4String& method) const;
   
     // static data members
-    static AliTrackingAction*    fgInstance; //this instance
+    static AliTrackingAction*   fgInstance; //this instance
 
     // data members
-    AliTrackingActionMessenger*  fMessenger; //messenger
-    G4int   fPrimaryTrackID;   //current primary track ID 
-    G4bool  fSavePrimaries;    //control of saving primaries
-    G4int   fVerboseLevel;     //verbose level
-    G4int   fNewVerboseLevel;  //new /tracking/verbose level
-    G4int   fNewVerboseTrackID;//track ID for which new /tracking/verbose level is applied
-    G4int   fTrackCounter;     //tracks counter
+    AliTrackingActionMessenger  fMessenger; //messenger
+    G4int   fPrimaryTrackID;    //current primary track ID 
+    G4bool  fSavePrimaries;     //control of saving primaries
+    G4int   fVerboseLevel;      //verbose level
+    G4int   fNewVerboseLevel;   //new /tracking/verbose level
+    G4int   fNewVerboseTrackID; //track ID for which new /tracking/verbose level
+                                // is applied
+    G4int   fTrackCounter;      //tracks counter
 };
 
 // inline methods

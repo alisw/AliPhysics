@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class AliRunActionMessenger
+// ---------------------------
 // Messenger class that defines commands for AliRunAction.
 
 #ifndef ALI_RUN_ACTION_MESSENGER_H

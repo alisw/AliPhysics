@@ -1,6 +1,10 @@
 // $Id$
 // Category: global
 //
+// Author: I. Hrivnacova
+//
+// Class AliFiles
+// --------------
 // See the class description in the header file.
 
 #include "AliFiles.h"

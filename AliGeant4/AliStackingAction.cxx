@@ -1,10 +1,13 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliStackingAction
+// -----------------------
 // See the class description in the header file.
 
 #include "AliStackingAction.h"
-#include "AliStackingActionMessenger.h"
 #include "AliTrackingAction.h"
 #include "AliGlobals.h"
 
@@ -24,15 +27,16 @@ AliStackingAction::AliStackingAction()
   : fStage(0), 
     fVerboseLevel(0),
     fSavePrimaries(true),
-    fTrackingAction(0) 
+    fTrackingAction(0),
+    fMessenger(this) 
 {
 // 
   fPrimaryStack = new G4TrackStack();
-  fMessenger = new AliStackingActionMessenger(this);
 }
 
 //_____________________________________________________________________________
-AliStackingAction::AliStackingAction(const AliStackingAction& right) {
+AliStackingAction::AliStackingAction(const AliStackingAction& right) 
+  : fMessenger(this) {
 //
   AliGlobals::Exception("AliStackingAction is protected from copying.");
 }
@@ -41,7 +45,6 @@ AliStackingAction::AliStackingAction(const AliStackingAction& right) {
 AliStackingAction::~AliStackingAction() {
 // 
   delete fPrimaryStack;
-  delete fMessenger; 
 }
 
 // operators
@@ -93,7 +96,7 @@ AliStackingAction::ClassifyNewTrack(const G4Track* track)
 
         return fKill;	 
      }	
-     
+
      G4int parentID = track->GetParentID();
      if (parentID ==0) { 
         return fUrgent; 

@@ -1,10 +1,13 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliTrackingAction
+// -----------------------
 // See the class description in the header file.
 
 #include "AliTrackingAction.h"
-#include "AliTrackingActionMessenger.h"
 #include "AliTrackInformation.h"
 #include "AliRun.h"
 #include "AliGlobals.h"  
@@ -28,19 +31,20 @@ AliTrackingAction::AliTrackingAction()
     fNewVerboseLevel(0),
     fNewVerboseTrackID(-1),
     fSavePrimaries(true),
-    fTrackCounter(0)
+    fTrackCounter(0),
+    fMessenger(this)
 {
 //
   if (fgInstance) { 
     AliGlobals::Exception("AliTrackingAction constructed twice."); 
   }
 
-  fMessenger = new AliTrackingActionMessenger(this);
   fgInstance = this;
 }
 
 //_____________________________________________________________________________
-AliTrackingAction::AliTrackingAction(const AliTrackingAction& right) {
+AliTrackingAction::AliTrackingAction(const AliTrackingAction& right) 
+  : fMessenger(this) {
 //
   AliGlobals::Exception("AliTrackingAction is protected from copying.");
 }
@@ -48,7 +52,6 @@ AliTrackingAction::AliTrackingAction(const AliTrackingAction& right) {
 //_____________________________________________________________________________
 AliTrackingAction::~AliTrackingAction() {
 //
-  delete fMessenger;
 }
 
 // operators
@@ -75,6 +78,7 @@ AliTrackInformation* AliTrackingAction::GetTrackInformation(
 // Returns user track information.
 // ---
  
+#ifdef TGEANT4_DEBUG
   G4VUserTrackInformation* trackInfo = track->GetUserInformation();
   if (!trackInfo) return 0;  
 
@@ -87,6 +91,9 @@ AliTrackInformation* AliTrackingAction::GetTrackInformation(
   }
   
   return aliTrackInfo;
+#else  
+  return (AliTrackInformation*)track->GetUserInformation();
+#endif  
 }    
   
 // public methods

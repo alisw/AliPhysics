@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class AliPrimaryGeneratorMessenger
+// ----------------------------------
 // Messenger class that defines commands for AliPrimaryGeneratorAction.
 
 #ifndef ALI_PRIMARY_GENERATOR_MESSENGER_H

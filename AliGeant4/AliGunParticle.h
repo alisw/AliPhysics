@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliGunParticle
+// --------------------
 // Data type class that stores properties of a gun particle.
 // Used in AliParticleGun.
 
@@ -17,11 +21,17 @@ class AliGunParticle
 {
   public:
     AliGunParticle();
-    AliGunParticle(G4ParticleDefinition* particleDef, G4ParticleMomentum momentum, 
-       G4ThreeVector position, G4double time, G4ThreeVector polarization );
-    AliGunParticle( G4ParticleDefinition* particleDef, G4ParticleMomentum momentumDir, 
-      G4double kinEnergy, G4ThreeVector position, G4double time, 
-      G4ThreeVector polarization );
+    AliGunParticle(G4ParticleDefinition* particleDef,
+                   G4ParticleMomentum momentum, 
+                   G4ThreeVector position,
+		   G4double time, 
+		   G4ThreeVector polarization );
+    AliGunParticle(G4ParticleDefinition* particleDef, 
+                   G4ParticleMomentum momentumDir, 
+                   G4double kinEnergy,
+		   G4ThreeVector position,
+		   G4double time, 
+                   G4ThreeVector polarization );
     AliGunParticle(const AliGunParticle& right);
     ~AliGunParticle();     
 

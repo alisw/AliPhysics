@@ -1,9 +1,13 @@
 // $Id$
 // Category: digits+hits
 //
-// Sensitive detector class,
-// that implements G4VSensitiveDetector::ProcessHits()
-// with AliDetector:: StepManager().
+// Author: I. Hrivnacova
+//
+// Class AliSensitiveDetector
+// --------------------------
+// The sensitive detector class,
+// it implements G4VSensitiveDetector::ProcessHits()
+// with AliDetector::StepManager().
 
 #ifndef ALI_SENSITIVE_DETECTOR_H
 #define ALI_SENSITIVE_DETECTOR_H

@@ -1,6 +1,10 @@
 // $Id$
 // Category: global
 //
+// Author: I. Hrivnacova
+//
+// Class AliFiles
+// --------------
 // Class for generating file names and paths.
 // The input files:
 // Config.C    - the basic AliRoot configuration file (Root macro)

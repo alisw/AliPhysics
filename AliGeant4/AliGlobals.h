@@ -1,7 +1,11 @@
 // $Id$
 // Category: global
 //
-// Class for generally used basic functions.
+// Author: I. Hrivnacova
+//
+// Class AliGlobals
+// ----------------
+// Class provides the functions of general use. 
 // It is protected from instantiating (only static data members
 // and static methods are defined).
 

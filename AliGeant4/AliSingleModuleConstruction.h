@@ -1,8 +1,12 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliSingleModuleConstruction
+// ---------------------------------
 // Class for geometry construction of a standalone
-// module (AliModule). 
+// AliRoot module. 
 
 #ifndef ALI_SINGLE_MODULE_CONSTRUCTION_H
 #define ALI_SINGLE_MODULE_CONSTRUCTION_H

@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliGunParticle
+// --------------------
 // See the class description in the header file.
 
 #include "AliGunParticle.h"
@@ -20,8 +24,10 @@ AliGunParticle::AliGunParticle()
 
 //_____________________________________________________________________________
 AliGunParticle::AliGunParticle(G4ParticleDefinition* particleDef,
-                   G4ParticleMomentum momentum, G4ThreeVector position, 
-                   G4double time, G4ThreeVector polarization )
+                               G4ParticleMomentum momentum, 
+			       G4ThreeVector position, 
+                               G4double time, 
+			       G4ThreeVector polarization )
   : fParticleDefinition(particleDef),
     fParticleMomentum(momentum),
     fPosition(position),
@@ -32,10 +38,12 @@ AliGunParticle::AliGunParticle(G4ParticleDefinition* particleDef,
 }
 
 //_____________________________________________________________________________
-AliGunParticle::AliGunParticle( G4ParticleDefinition* particleDef, 
-                   G4ParticleMomentum momentumDir, G4double kinEnergy,
-		   G4ThreeVector position, G4double time, 
-		   G4ThreeVector polarization )
+AliGunParticle::AliGunParticle(G4ParticleDefinition* particleDef, 
+                               G4ParticleMomentum momentumDir,
+			       G4double kinEnergy,
+		               G4ThreeVector position,
+			       G4double time, 
+		               G4ThreeVector polarization )
   : fParticleDefinition(particleDef),
     fPosition(position),
     fTime(time),

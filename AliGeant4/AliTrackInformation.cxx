@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliTrackInformation
+// -------------------------
 // See the class description in the header file.
 
 #include "AliTrackInformation.h"

@@ -1,6 +1,10 @@
 // $Id$ //
 // Category: digits+hits
 //
+// Author: I. Hrivnacova
+//
+// Class AliSensitiveDetector
+// --------------------------
 // See the class description in the header file.
 
 #include "AliSensitiveDetector.h"

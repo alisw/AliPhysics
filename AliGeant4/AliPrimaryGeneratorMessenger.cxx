@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class AliPrimaryGeneratorMessenger
+// ----------------------------------
 // See the class description in the header file.
 
 #include "AliPrimaryGeneratorMessenger.h"
