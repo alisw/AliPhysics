@@ -19,7 +19,7 @@
 #include "AliHBTFunction.h"
 #include "AliHBTMonitorFunction.h"
 
-class AliHBTMonPIDPurityVsPtFctn: public AliHBTMonTwoParticleFctn1D
+class AliHBTMonPIDPurityVsPtFctn: public AliHBTMonTwoParticleFctn1D, public AliHBTCorrelFunction
 {
   public: 
     AliHBTMonPIDPurityVsPtFctn(Int_t nbins = 20, Double_t maxXval = 2.0, Double_t minXval = 0.0);
