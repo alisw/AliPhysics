@@ -312,6 +312,7 @@ Int_t AliEMCALLoader::LoadRecParticles(Option_t* opt)
 //____________________________________________________________________________ 
 Int_t AliEMCALLoader::PostHits()
 {
+  // Post Hits
   Int_t reval = AliLoader::PostHits();
   if (reval)
     {
@@ -714,7 +715,8 @@ AliEMCALLoader* AliEMCALLoader::GetEMCALLoader(const  char* eventfoldername)
 
 //____________________________________________________________________________ 
 Bool_t AliEMCALLoader::BranchExists(const TString& recName)
-{
+{ 
+  // Check is branch exists
   if (fBranchTitle.IsNull()) return kFALSE;
   TString dataname, zername ;
   TTree* tree;
@@ -783,6 +785,7 @@ void AliEMCALLoader::SetBranchTitle(const TString& btitle)
 //____________________________________________________________________________ 
 void AliEMCALLoader::CleanHits()
 {
+  // Clean hits	
   AliLoader::CleanHits();
   //Clear an array 
   TClonesArray* hits = Hits();
@@ -901,6 +904,7 @@ void AliEMCALLoader::MakeDigitsArray()
 //____________________________________________________________________________ 
 void AliEMCALLoader::MakeRecPointsArray()
 {
+  // Make recpoints array
   if ( ECARecPoints() == 0x0) {
     if (GetDebug()>9) 
       printf("MakeRecPointsArray: Making array for ECA");
