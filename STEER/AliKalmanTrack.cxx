@@ -31,6 +31,7 @@ Double_t AliKalmanTrack::fgConvConst;
 //_______________________________________________________________________
 AliKalmanTrack::AliKalmanTrack():
   fLab(-3141593),
+  fFakeRatio(0),
   fChi2(0),
   fMass(AliPID::ParticleMass(AliPID::kPion)),
   fN(0)
