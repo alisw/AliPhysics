@@ -270,13 +270,7 @@ class AliHBTPairPhiResolVsQInvFctn: public AliHBTTwoPairFctn2D
    virtual ~AliHBTPairPhiResolVsQInvFctn(){}
    
    TH1* GetResult(){return fNumerator;}  
-   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
-    {
-     Double_t partPhi = partpair->Particle1()->Phi() - partpair->Particle2()->Phi();
-     Double_t trackPhi = trackpair->Particle1()->Phi() - trackpair->Particle2()->Phi();
-     y = partPhi - trackPhi;
-     x = partpair->GetQInv();
-    }
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTPairPhiResolVsQInvFctn,1)
  };
 
@@ -291,13 +285,7 @@ class AliHBTPairThetaResolVsKtFctn: public AliHBTTwoPairFctn2D
    virtual ~AliHBTPairThetaResolVsKtFctn(){}
    
    TH1* GetResult(){return fNumerator;}  
-   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
-    {
-     Double_t partTheta = partpair->Particle1()->Theta() - partpair->Particle2()->Theta();
-     Double_t trackTheta = trackpair->Particle1()->Theta() - trackpair->Particle2()->Theta();
-     y = partTheta - trackTheta;
-     x = partpair->GetKt();
-    }
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTPairThetaResolVsKtFctn,1)
  };
 
@@ -312,17 +300,10 @@ class AliHBTPairPhiResolVsKtFctn: public AliHBTTwoPairFctn2D
    virtual ~AliHBTPairPhiResolVsKtFctn(){}
    
    TH1* GetResult(){return fNumerator;}  
-   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
-    {
-     Double_t partPhi = partpair->Particle1()->Phi() - partpair->Particle2()->Phi();
-     Double_t trackPhi = trackpair->Particle1()->Phi() - trackpair->Particle2()->Phi();
-     y = partPhi - trackPhi;
-     x = partpair->GetKt();
-    }
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTPairPhiResolVsKtFctn,1)
  };
 
-#endif
 /***********************************************************************/
 /***********************************************************************/
 class AliHBTPairPhiResolVsPairPhiFctn: public AliHBTTwoPairFctn2D
@@ -334,13 +315,9 @@ class AliHBTPairPhiResolVsPairPhiFctn: public AliHBTTwoPairFctn2D
    virtual ~AliHBTPairPhiResolVsPairPhiFctn(){}
    
    TH1* GetResult(){return fNumerator;}  
-   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
-    {
-     Double_t partPhi = partpair->Particle1()->Phi() - partpair->Particle2()->Phi();
-     Double_t trackPhi = trackpair->Particle1()->Phi() - trackpair->Particle2()->Phi();
-     y = partPhi - trackPhi;
-     x = trackPhi;
-    }
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y);
    ClassDef(AliHBTPairPhiResolVsPairPhiFctn,1)
  };
 
+
+#endif

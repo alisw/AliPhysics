@@ -289,7 +289,7 @@ AliHBTPairThetaResolVsPairThetaFctn(Int_t nXbins, Double_t maxXval, Double_t min
  Rename("PairThetaResolVsPairTheta","Pair Theta Angle Resolution vs. Pair Theta ");
 }
 /******************************************************************/
-void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+void AliHBTPairThetaResolVsPairThetaFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
 {
   //returns Pair Theta sim - Pair Theta rec for y
   //returns Pair Theta sim for x
@@ -314,6 +314,18 @@ AliHBTPairPhiResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
  Rename("PairPhiResolVsQInv","Pair Phi Angle Resolution vs. Q_{Inv} ");
 }
 /******************************************************************/
+
+void AliHBTPairPhiResolVsQInvFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+ {
+  //returns Pair Phi sim - Pair Phi rec for y
+  //returns QInv sim for x
+  Double_t partPhi = partpair->Particle1()->Phi() - partpair->Particle2()->Phi();
+  Double_t trackPhi = trackpair->Particle1()->Phi() - trackpair->Particle2()->Phi();
+  y = partPhi - trackPhi;
+  x = partpair->GetQInv();
+ }
+
+/******************************************************************/
 /******************************************************************/
 /******************************************************************/
 
@@ -327,6 +339,17 @@ AliHBTPairThetaResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 {
 //ctor
  Rename("PairThetaResolVsKt","Pair Theta Angle Resolution vs. K_{t} ");
+}
+/******************************************************************/
+
+void AliHBTPairThetaResolVsKtFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+  //returns Pair Theta sim - Pair Theta rec for y
+  //returns Kt sim for x
+  Double_t partTheta = partpair->Particle1()->Theta() - partpair->Particle2()->Theta();
+  Double_t trackTheta = trackpair->Particle1()->Theta() - trackpair->Particle2()->Theta();
+  y = partTheta - trackTheta;
+  x = partpair->GetKt();
 }
 /******************************************************************/
 /******************************************************************/
@@ -343,6 +366,18 @@ AliHBTPairPhiResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
  Rename("PairPhiResolVsKt","Pair Phi Angle Resolution vs. K_{t} ");
 }
 /******************************************************************/
+
+void AliHBTPairPhiResolVsKtFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+  //returns Pair Phi sim - Pair Phi rec for y
+  //returns Kt sim for x
+  Double_t partPhi = partpair->Particle1()->Phi() - partpair->Particle2()->Phi();
+  Double_t trackPhi = trackpair->Particle1()->Phi() - trackpair->Particle2()->Phi();
+  y = partPhi - trackPhi;
+  x = partpair->GetKt();
+}
+
+/******************************************************************/
 /******************************************************************/
 /******************************************************************/
 
@@ -356,6 +391,17 @@ AliHBTPairPhiResolVsPairPhiFctn(Int_t nXbins, Double_t maxXval, Double_t minXval
 {
 //ctor
  Rename("PairPhiResolVsPairPhi","Pair Phi Angle Resolution vs. Pair Phi ");
+}
+/******************************************************************/
+
+void AliHBTPairPhiResolVsPairPhiFctn::GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+{
+  //returns Pair Phi sim - Pair Phi rec for y
+  //returns Pair Phi sim for x
+  Double_t partPhi = partpair->Particle1()->Phi() - partpair->Particle2()->Phi();
+  Double_t trackPhi = trackpair->Particle1()->Phi() - trackpair->Particle2()->Phi();
+  y = partPhi - trackPhi;
+  x = trackPhi;
 }
 
 /******************************************************************/
