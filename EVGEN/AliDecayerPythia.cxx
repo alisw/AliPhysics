@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/09/16 10:40:48  morsch
+Use correct pdg codes for Upsilon(2S) = 100553 and Upsilon(3S) = 200553.
+
 Revision 1.12  2002/06/05 14:05:46  morsch
 Decayer option kPhiKK for forced phi->K+K- decay added.
 
@@ -183,7 +186,7 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay(  223,13,2); // omega
 	ForceParticleDecay(  333,13,2); // phi
 	ForceParticleDecay(  443,13,2); // J/Psi
-	ForceParticleDecay(20443,13,2); // Psi'
+	ForceParticleDecay(100443,13,2); // Psi'
 	ForceParticleDecay(  553,13,2); // Upsilon
 	ForceParticleDecay(100553,13,2); // Upsilon'
 	ForceParticleDecay(200553,13,2); // Upsilon''
@@ -209,7 +212,7 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay(  221,11,2); // eta
 	ForceParticleDecay(  223,11,2); // omega
 	ForceParticleDecay(  443,11,2); // J/Psi
-	ForceParticleDecay(30443,11,2); // Psi'
+	ForceParticleDecay(100443,11,2); // Psi'
 	ForceParticleDecay(  553,11,2); // Upsilon
 	ForceParticleDecay(100553,11,2); // Upsilon'
 	ForceParticleDecay(200553,11,2); // Upsilon''
@@ -226,7 +229,7 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay(  521,30443,1); // B+/-     
 	ForceParticleDecay(  531,30443,1); // B_s     
 	ForceParticleDecay( 5122,30443,1); // Lambda_b 
-	ForceParticleDecay(30443,13,2);    // Psi'   
+	ForceParticleDecay(100443,13,2);    // Psi'   
 	break;
     case kBJpsiDiElectron:
 	ForceParticleDecay(  511,443,1); // B0     
@@ -240,7 +243,7 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay(  521,30443,1); // B+/-     
 	ForceParticleDecay(  531,30443,1); // B_s     
 	ForceParticleDecay( 5122,30443,1); // Lambda_b 
-	ForceParticleDecay(30443,11,2);    // Psi'   
+	ForceParticleDecay(100443,11,2);    // Psi'   
 	break;
     case kPiToMu:
 	ForceParticleDecay(211,13,1); // pi->mu     
