@@ -1127,7 +1127,8 @@ void AliITSsimulationSDD::Init1D(){
 
     Int_t na,pos,tempTh;
     Float_t mu,sigma;
-    Float_t savemu[fNofMaps], savesigma[fNofMaps];
+	 Float_t *savemu = new Float_t [fNofMaps];
+	 Float_t *savesigma = new Float_t [fNofMaps];
     const char *kinput,*kbasel,*kpar;
     char *filtmp;
 
@@ -1170,7 +1171,10 @@ void AliITSsimulationSDD::Init1D(){
     
     fclose(param);
     delete [] filtmp;
-
+    delete [] savemu;
+	 delete [] savesigma;
+	 delete savemu;
+	 delete savesigma;
 
 }
  
