@@ -86,20 +86,18 @@ Bool_t AliHoughFilter::Filter(AliRawEvent* event, AliESD* esd)
   TStopwatch globaltimer;
   globaltimer.Start();
 
-  const char *dir = gROOT->GetPath();
-  gROOT->cd();
-
   TStopwatch timer;
   timer.Start();
 
   TTree *treeITSclusters = new TTree("TreeL3ITSclusters"," "); //make a tree
+  treeITSclusters->SetDirectory(0);
+
   RunITSclusterer(event,treeITSclusters);
   RunITSvertexer(esd,treeITSclusters);
   RunTPCtracking(event,esd);
   RunITStracking(esd,treeITSclusters);
   delete treeITSclusters;
 
-  gROOT->cd(dir);
   AliInfo(Form("Event filter has finished in %f seconds\n\n\n\n\n\n",globaltimer.RealTime()));
 
   return kTRUE;
