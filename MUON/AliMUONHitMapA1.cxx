@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/03/20 13:34:05  egangler
+Obvious small bug
+
 Revision 1.8  2001/01/26 21:47:21  morsch
 Use access functions to AliMUONDigit member data.
 
@@ -59,27 +62,23 @@ ClassImp(AliMUONHitMapA1)
     AliMUONHitMapA1::AliMUONHitMapA1()
 {
     // Default constructor
-    fSegmentation = 0;
     fNpx          = 0;
     fNpy          = 0;
     fMaxIndex     = 0;
     
     fHitMap       = 0;
     fDigits       = 0;
-    fNdigits      = 0;
 }
 
 AliMUONHitMapA1::AliMUONHitMapA1(AliSegmentation *seg, TObjArray *dig)
 {
 // Constructor
-    fSegmentation = seg;
-    fNpx  = fSegmentation->Npx()+1;
-    fNpy  = fSegmentation->Npy()+1;
+    fNpx  = seg->Npx()+1;
+    fNpy  = seg->Npy()+1;
     fMaxIndex=2*(fNpx+1)*2*(fNpy+1)+2*fNpy;
     
     fHitMap = new Int_t[fMaxIndex];
     fDigits =  dig;
-    fNdigits = fDigits->GetEntriesFast();
     Clear();
 }
 
@@ -93,7 +92,6 @@ AliMUONHitMapA1::AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap)
 AliMUONHitMapA1::~AliMUONHitMapA1()
 {
 // Destructor
-//    if (fDigits) delete   fDigits;
     if (fHitMap) delete[] fHitMap;
 }
 
@@ -125,7 +123,7 @@ void  AliMUONHitMapA1::FillHits()
     //printf("FindRawClusters -- ndigits %d \n",ndigits);
     if (!ndigits) return;
     AliMUONDigit *dig;
-    for (Int_t ndig=0; ndig<fNdigits; ndig++) {
+    for (Int_t ndig=0; ndig<ndigits; ndig++) {
 	dig = (AliMUONDigit*)fDigits->UncheckedAt(ndig);
 	SetHit(dig->PadX(),dig->PadY(),ndig);
     }

@@ -44,14 +44,12 @@ public AliHitMap
     // Check index
     Int_t CheckedIndex(Int_t ix, Int_t iy) const;
  private:
-    AliSegmentation *fSegmentation;       // Chamber segmentation
     Int_t fNpx;                           // Maximum number of pads in x
     Int_t fNpy;                           // Maximum number of pads in y
     TObjArray *fDigits;                   // Pointer to digits
-    Int_t fNdigits;                       // Number of digits
     Int_t fMaxIndex;                      // maximum index in hit map
     Int_t *fHitMap;                       // ! [fMaxIndex]         
 
-    ClassDef(AliMUONHitMapA1,1) // Implements HitMap as a 1-dim array
+    ClassDef(AliMUONHitMapA1,0) // Implements HitMap as a 1-dim array
 };
 #endif	
