@@ -1,0 +1,42 @@
+//////////////////////////////////////////////////////////////////////////////////////
+//                                History of updates                                //
+//////////////////////////////////////////////////////////////////////////////////////
+09-mar-1999 NvE First release of the package
+17-mar-1999 NvE Non-existing LEDA modules declared as dead in Wa98Filter
+                to obtain correct treatment of the edges.
+19-mar-1999 NvE Wa98Data updated to match new (reduced) data format.
+                Also Wa98Filter::Leda() modified to take UInt_t values
+                properly into account.
+23-mar-1999 NvE Wa98Filter::Select() updated to accept only physics events with
+                combined LEDA and CPV activity. Also beam triggers are accepted now.
+                Slight format modification in Wa98Filter::Print() and Wa98Filter::Glob()
+                removed. Also Glob() and Print() removed from Wa98Display.
+25-mar-1999 NvE ClusterLeda() of class Wa98Filter split in ClusterLeda() and VetoLeda().
+                Also confidence level histos removed from Wa98Filter; info will be
+                provided via the new Wa98Dst class.
+26-mar-1999 NvE Wa98Dst class introduced and several memberfunctions of Wa98Filter
+                declared virtual in view of base class functionality.
+21-apr-1999 NvE Wa98Dst memberfunctions SetLab() and SetCms() introduced and filling of
+                DST data updated accordingly.
+15-jul-1999 NvE TChain::GetEvent() calls replaced by TChain::GetEntry() in Wa98Filter
+                and Wa98Display to adopt new ROOT convention.
+28-oct-1999 NvE AliBoost::SetGamma() replaced by SetBeta() invokation in
+                Wa98Dst::SetCms since SetGamma() memberfunction has been removed.
+                Wa98Filter::SetCpv() added to enable CPV processing selection.  
+22-feb-2001 NvE File RWA98LinkDef.h updated to allow the automatic schema evolution
+                as introduced in ROOT 3.00/05. 
+25-jun-2002 NvE Class Wa98Event introduced.
+                This makes all the previously defined classes obsolete.
+18-feb-2003 NvE Date/time format changed and ShowCalorimeters() invoked in Wa98Event::HeaderData().
+06-mar-2003 NvE Copy ctor introduced for Wa98Event.
+25-oct-2003 NvE ShowCalorimeters() replaced by ShowDevices() in Wa98Event::HeaderData().
+26-oct-2003 NvE Memberfunctions HeaderData() and Data() removed from Wa98Event, since the
+                corresponding functions of AliEvent now use the ClassName in the printout.
+06-nov-2003 NvE Include of AliCalorimeter.h added in Wa98Event.h since AliEvent.h doesn't have
+                this include anymore.
+06-jul-2004 NvE New class Wa98Convert introduced and support for sorting mode introduced 
+                in Wa98Event::ClusterLeda().
+29-nov-2004 NvE Package containing the classes Wa98Event, Wa98Convert and the usual files
+                RWA98Headers.h, RWA98LinkDef.h, history.txt and the sub-directory /scripts
+                introduced as a sub-directory /wa98 in the Ralice repository at CERN. 
+
