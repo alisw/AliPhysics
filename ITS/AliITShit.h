@@ -6,9 +6,8 @@
 /* $Id$ */
 
 #include "AliHit.h" 
+#include <iostream.h>
 
-class ostream;
-class istream;
 class TParticle;
 
 class AliITShit : public AliHit {
