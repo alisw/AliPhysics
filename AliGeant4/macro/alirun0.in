@@ -10,10 +10,8 @@
 # switch off detectors with errors
 /aliDet/switchOff CASTOR
 /aliDet/switchOff RICH
-/aliDet/switchOff ZDC
 
-# detectors with temporary problem
-/aliDet/switchOff MUON
+#/g4mc/setHadron true
 
 /aliRun/initialize
 /aliRun/beamOn 1
