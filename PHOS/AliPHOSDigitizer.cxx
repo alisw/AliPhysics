@@ -493,8 +493,8 @@ Float_t AliPHOSDigitizer::FrontEdgeTime(TClonesArray * ticks)
 //____________________________________________________________________________ 
 Bool_t AliPHOSDigitizer::Init()
 {
-  fPinNoise           = 0.01 ;
-  fEMCDigitThreshold  = 0.01 ;
+  fPinNoise           = 0.004 ;
+  fEMCDigitThreshold  = 0.012 ;
   fCPVNoise           = 0.01;
   fCPVDigitThreshold  = 0.09 ;
   fTimeResolution     = 0.5e-9 ;
