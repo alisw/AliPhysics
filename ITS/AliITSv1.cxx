@@ -15,9 +15,8 @@
 
 /*
 $Log$
-Revision 1.15  2000/03/07 18:50:19  nilsen
-Merged ITS-working with HEAD. Improved some of the documentation and
-compatibility.
+Revision 1.14.2.2  2000/05/19 10:09:21  nilsen
+fix for bug with HP and Sun unix + fix for event display in ITS-working branch
 
 Revision 1.14.2.1  2000/03/04 23:45:19  nilsen
 Fixed up the comments/documentation.
@@ -69,6 +68,11 @@ Introduction of the Copyright and cvs Log
 #include <TGeometry.h>
 #include <TNode.h>
 #include <TTUBE.h>
+#include <TFile.h>    // only required for Tracking function?
+#include <TCanvas.h>
+#include <TObjArray.h>
+#include <TClonesArray.h>
+
 
 #include "AliMC.h"
 #include "AliConst.h"
@@ -108,54 +112,79 @@ AliITSv1::AliITSv1(const char *name, const char *title) : AliITS(name, title){
     fId1Name[4] = "ITS5";
     fId1Name[5] = "ITS6";
 }
+//____________________________________________________________________________
+AliITSv1::AliITSv1(const AliITSv1 &source){
+////////////////////////////////////////////////////////////////////////
+//     Copy Constructor for ITS version 1.
+////////////////////////////////////////////////////////////////////////
+    if(&source == this) return;
+    this->fId1N = source.fId1N;
+    this->fId1Name = new char*[fId1N];
+	 for(Int_t i=0;i<6;i++) strcpy(this->fId1Name[i],source.fId1Name[i]);
+	return;
+}
+//_____________________________________________________________________________
+AliITSv1& AliITSv1::operator=(const AliITSv1 &source){
+////////////////////////////////////////////////////////////////////////
+//    Assignment operator for the ITS version 1.
+////////////////////////////////////////////////////////////////////////
+	if(&source == this) return *this;
+    this->fId1N = source.fId1N;
+    this->fId1Name = new char*[fId1N];
+	 for(Int_t i=0;i<6;i++) strcpy(this->fId1Name[i],source.fId1Name[i]);
+	return *this;
+}
 //_____________________________________________________________________________
 AliITSv1::~AliITSv1() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard destructor for the ITS version 1.
 ////////////////////////////////////////////////////////////////////////
   delete [] fId1Name;
-}
-//__________________________________________________________________________
+}//__________________________________________________________________________
 void AliITSv1::BuildGeometry(){
-    TNode *Node, *Top;
+////////////////////////////////////////////////////////////////////////
+//    Geometry builder for the ITS version 1.
+////////////////////////////////////////////////////////////////////////
+    TNode *node, *top;
     const int kColorITS=kYellow;
     //
-    Top = gAlice->GetGeometry()->GetNode("alice");
+    top = gAlice->GetGeometry()->GetNode("alice");
 
     new TTUBE("S_layer1","Layer1 of ITS","void",3.9,3.9+0.05475,12.25);
-    Top->cd();
-    Node = new TNode("Layer1","Layer1","S_layer1",0,0,0,"");
-    Node->SetLineColor(kColorITS);  fNodes->Add(Node);
+    top->cd();
+    node = new TNode("Layer1","Layer1","S_layer1",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 
     new TTUBE("S_layer2","Layer2 of ITS","void",7.6,7.6+0.05475,16.3);
-    Top->cd();
-    Node = new TNode("Layer2","Layer2","S_layer2",0,0,0,"");
-    Node->SetLineColor(kColorITS);
-    fNodes->Add(Node);
+    top->cd();
+    node = new TNode("Layer2","Layer2","S_layer2",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 
     new TTUBE("S_layer3","Layer3 of ITS","void",14,14+0.05288,21.1);
-    Top->cd();
-    Node = new TNode("Layer3","Layer3","S_layer3",0,0,0,"");
-    Node->SetLineColor(kColorITS);
-    fNodes->Add(Node);
+    top->cd();
+    node = new TNode("Layer3","Layer3","S_layer3",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 
     new TTUBE("S_layer4","Layer4 of ITS","void",24,24+0.05288,29.6);
-    Top->cd();
-    Node = new TNode("Layer4","Layer4","S_layer4",0,0,0,"");
-    Node->SetLineColor(kColorITS);  fNodes->Add(Node);
+    top->cd();
+    node = new TNode("Layer4","Layer4","S_layer4",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 
     new TTUBE("S_layer5","Layer5 of ITS","void",40,40+0.05382,45.1);
-    Top->cd();
-    Node = new TNode("Layer5","Layer5","S_layer5",0,0,0,"");
-    Node->SetLineColor(kColorITS);
-    fNodes->Add(Node);
+    top->cd();
+    node = new TNode("Layer5","Layer5","S_layer5",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 
     new TTUBE("S_layer6","Layer6 of ITS","void",45,45+0.05382,50.4);
-    Top->cd();
-    Node = new TNode("Layer6","Layer6","S_layer6",0,0,0,"");
-    Node->SetLineColor(kColorITS);
-    fNodes->Add(Node);
-
+    top->cd();
+    node = new TNode("Layer6","Layer6","S_layer6",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 }
 //_____________________________________________________________________________
 void AliITSv1::CreateGeometry(){
@@ -177,7 +206,7 @@ void AliITSv1::CreateGeometry(){
 
   Float_t drca, dzfc;
   Int_t i, nsec;
-  Float_t rend, drca_tpc, dzco, zend, dits[3], rlim, drsu, zmax;
+  Float_t rend, drcatpc, dzco, zend, dits[3], rlim, drsu, zmax;
   Float_t zpos, dzco1, dzco2;
   Float_t drcac[6], acone, dphii;
   Float_t pcits[15], xltpc;
@@ -197,7 +226,7 @@ void AliITSv1::CreateGeometry(){
   
   //     CONE BELOW TPC 
   
-  drca_tpc = 1.2/4.;
+  drcatpc = 1.2/4.;
   
   //     CABLE THICKNESS (CONICAL CABLES CONNECTING THE LAYERS) 
 
@@ -228,7 +257,7 @@ void AliITSv1::CreateGeometry(){
   }
   drca     /= 2.;
   acone    /= 2.;
-  drca_tpc /= 2.;
+  drcatpc /= 2.;
   rzcone   /= 2.;
   dzfc     /= 2.;
   zmax     /= 2.;
@@ -238,7 +267,7 @@ void AliITSv1::CreateGeometry(){
   
   
   //     EQUAL DISTRIBUTION INTO THE 6 LAYERS 
-  rstep = drca_tpc / 6.;
+  rstep = drcatpc / 6.;
   for (i = 0; i < 6; ++i) {
     drcac[i] = (i+1) * rstep;
   }
@@ -496,10 +525,10 @@ void AliITSv1::CreateGeometry(){
   pcits[2] = 2.;
   pcits[3] = zend;
   pcits[5] = rend;
-  pcits[4] = pcits[5] - drca_tpc;
+  pcits[4] = pcits[5] - drcatpc;
   pcits[6] = xltpc;
   pcits[8] = pcits[4] + (pcits[6] - pcits[3]) * TMath::Tan(acable * kDegrad);
-  pcits[7] = pcits[8] - drca_tpc;
+  pcits[7] = pcits[8] - drcatpc;
   AliMatrix(idrotm[200], 90., 0., 90., 90., 180., 0.);
   gMC->Gsvolu("ICCM", "PCON", idtmed[275], pcits, 9);
   gMC->Gspos("ICCM", 1, "ALIC", 0., 0., 0., 0, "ONLY");
@@ -524,10 +553,10 @@ void AliITSv1::CreateGeometry(){
     pcits[1] = dphii;
     pcits[3] = zi - dz / 2.;
     pcits[5] = r0 + (pcits[3] - z0) * TMath::Tan(acable * kDegrad);
-    pcits[4] = pcits[5] - drca_tpc;
+    pcits[4] = pcits[5] - drcatpc;
     pcits[6] = zi + dz / 2.;
     pcits[8] = r0 + (pcits[6] - z0) * TMath::Tan(acable * kDegrad);
-    pcits[7] = pcits[8] - drca_tpc;
+    pcits[7] = pcits[8] - drcatpc;
     
     gMC->Gsposp("ITTT", i+1, "ITMD", 0., 0., 0., 0, "ONLY", pcits, 9);
   }
@@ -544,7 +573,8 @@ void AliITSv1::CreateMaterials(){
   //
   // Create ITS materials
   //     This function defines the default materials used in the Geant
-  // Monte Carlo simulations. In general it is automatically replaced by
+  // Monte Carlo simulations for the geometries AliITSv1 and AliITSv3.
+  // In general it is automatically replaced by
   // the CreatMaterials routine defined in AliITSv?. Should the function
   // CreateMaterials not exist for the geometry version you are using this
   // one is used. See the definition found in AliITSv5 or the other routine
@@ -582,8 +612,8 @@ void AliITSv1::CreateMaterials(){
   Float_t aserv[4] = { 1.,12.,55.8,63.5 };
   Float_t wserv[4] = { .014,.086,.42,.48 };
   
-  Int_t  ISXFLD  = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
+  Int_t  isxfld  = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
   
   
   // --- Define the various materials for GEANT --- 
@@ -601,15 +631,15 @@ void AliITSv1::CreateMaterials(){
   AliMixture( 7, "SPD Water $", awat, zwat, denswat, -2, wwat);
   AliMixture( 8, "SPD Freon$",  afre, zfre, densfre, -2, wfre);
   // ** 
-  AliMedium(0, "SPD Si$",      0, 1,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(1, "SPD Si chip$", 1, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(2, "SPD Si bus$",  2, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(3, "SPD C$",       3, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(4, "SPD Air$",     4, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(5, "SPD Vacuum$",  5, 0,ISXFLD,SXMGMX, 10.,1.00, .1, .100,10.00);
-  AliMedium(6, "SPD Al$",      6, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(7, "SPD Water $",  7, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(8, "SPD Freon$",   8, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(0, "SPD Si$",      0, 1,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(1, "SPD Si chip$", 1, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(2, "SPD Si bus$",  2, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(3, "SPD C$",       3, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(4, "SPD Air$",     4, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(5, "SPD Vacuum$",  5, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
+  AliMedium(6, "SPD Al$",      6, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(7, "SPD Water $",  7, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(8, "SPD Freon$",   8, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   
   //  225-249 --> Silicon Drift Detectors (detectors, chips, buses, cooling,..)
   
@@ -637,19 +667,19 @@ void AliITSv1::CreateMaterials(){
   AliMaterial(37, "SDD Kapton$", 12.011, 6., 1.3, 31.27, 999);
   // ** 
   // check A and Z 
-  AliMedium(25, "SDD Si$",      25, 1,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(26, "SDD Si chip$", 26, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(27, "SDD Si bus$",  27, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(28, "SDD C$",       28, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(29, "SDD Air$",     29, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(30, "SDD Vacuum$",  30, 0,ISXFLD,SXMGMX, 10.,1.00, .1, .100,10.00);
-  AliMedium(31, "SDD Al$",      31, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(32, "SDD Water $",  32, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(33, "SDD Freon$",   33, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(34, "SDD PCB$",     34, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(35, "SDD Copper$",  35, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(36, "SDD Ceramics$",36, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(37, "SDD Kapton$",  37, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(25, "SDD Si$",      25, 1,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(26, "SDD Si chip$", 26, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(27, "SDD Si bus$",  27, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(28, "SDD C$",       28, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(29, "SDD Air$",     29, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(30, "SDD Vacuum$",  30, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
+  AliMedium(31, "SDD Al$",      31, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(32, "SDD Water $",  32, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(33, "SDD Freon$",   33, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(34, "SDD PCB$",     34, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(35, "SDD Copper$",  35, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(36, "SDD Ceramics$",36, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(37, "SDD Kapton$",  37, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   
   //  250-274 --> Silicon Strip Detectors (detectors, chips, buses, cooling,..)
   
@@ -682,20 +712,20 @@ void AliITSv1::CreateMaterials(){
   // check A and Z 
   AliMaterial(63, "SDD G10FR4$", 17.749, 8.875, 1.8, 21.822, 999.);
   // ** 
-  AliMedium(50, "SSD Si$",      50, 1,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(51, "SSD Si chip$", 51, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(52, "SSD Si bus$",  52, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(53, "SSD C$",       53, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(54, "SSD Air$",     54, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(55, "SSD Vacuum$",  55, 0,ISXFLD,SXMGMX, 10.,1.00, .1, .100,10.00);
-  AliMedium(56, "SSD Al$",      56, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(57, "SSD Water $",  57, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(58, "SSD Freon$",   58, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(59, "SSD PCB$",     59, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(60, "SSD Copper$",  60, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(61, "SSD Ceramics$",61, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(62, "SSD Kapton$",  62, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(63, "SSD G10FR4$",  63, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(50, "SSD Si$",      50, 1,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(51, "SSD Si chip$", 51, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(52, "SSD Si bus$",  52, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(53, "SSD C$",       53, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(54, "SSD Air$",     54, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(55, "SSD Vacuum$",  55, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
+  AliMedium(56, "SSD Al$",      56, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(57, "SSD Water $",  57, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(58, "SSD Freon$",   58, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(59, "SSD PCB$",     59, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(60, "SSD Copper$",  60, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(61, "SSD Ceramics$",61, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(62, "SSD Kapton$",  62, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(63, "SSD G10FR4$",  63, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   
   //     275-299 --> General (end-caps, frames, cooling, cables, etc.) 
   
@@ -712,13 +742,13 @@ void AliITSv1::CreateMaterials(){
   // positive 
   AliMixture(81, "GEN Water $", awat, zwat, denswat, 2, wwat);
   // ** 
-  AliMedium(75,"GEN C$",        75, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(76,"GEN Air$",      76, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(77,"GEN Vacuum$",   77, 0,ISXFLD,SXMGMX, 10., .10, .1, .100,10.00);
-  AliMedium(78,"GEN POLYETHYL$",78, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(79,"GEN SERVICES$", 79, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(80,"GEN Copper$",   80, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(81,"GEN Water $",   81, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(75,"GEN C$",        75, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(76,"GEN Air$",      76, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(77,"GEN Vacuum$",   77, 0,isxfld,sxmgmx, 10., .10, .1, .100,10.00);
+  AliMedium(78,"GEN POLYETHYL$",78, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(79,"GEN SERVICES$", 79, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(80,"GEN Copper$",   80, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(81,"GEN Water $",   81, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
 }
 //_____________________________________________________________________________
 void AliITSv1::Init(){
@@ -870,6 +900,7 @@ void AliITSv1::Streamer(TBuffer &R__b){
 // dosen't contain any "real" data to be saved, it doesn't.
 ////////////////////////////////////////////////////////////////////////
 
+    printf("AliITSv1Streamer Starting\n");
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       AliITS::Streamer(R__b);
@@ -885,4 +916,5 @@ void AliITSv1::Streamer(TBuffer &R__b){
       //R__b << fId1N;
       //R__b.WriteArray(fId1Name, __COUNTER__);
    } // end if R__b.IsReading()
+    printf("AliITSv1Streamer Finishing\n");
 }

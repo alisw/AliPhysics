@@ -13,22 +13,30 @@
  
 class AliITSv1 : public AliITS {
 
- private:
-    Int_t fId1N; // The number of layers for geometry version 5
-    // The name of the layers as defined in the Geant tree.
-    char  **fId1Name;
- 
  public:
     AliITSv1();
     AliITSv1(const char *name, const char *title);
+    AliITSv1(const AliITSv1 &source); // copy constructor
+    AliITSv1& operator=(const AliITSv1 &source); // assignment operator
     virtual       ~AliITSv1() ;
-    virtual void   BuildGeometry();   // for event display
-    virtual void   CreateGeometry();  // for Geant simulation
-    virtual void   CreateMaterials(); // for Geant simulation
+    virtual void   BuildGeometry();
+    virtual void   CreateGeometry();
+    virtual void   CreateMaterials();
     virtual void   Init(); 
-    virtual Int_t  IsVersion() const {return 1;}
+    virtual Int_t  IsVersion() const {
+	                                   // returns the ITS version number 
+	                                   return 1;
+												 } 
     virtual void   DrawModule();
     virtual void   StepManager();
+
+ private:
+    Int_t fId1N; // The number of layers for geometry version 5
+                 // The name of the layers as defined in the Geant tree.
+
+	 char **fId1Name; // They are the names of the sensitive volumes
+ 
+
   
     ClassDef(AliITSv1,1)  //Hits manager for set:ITS version 1 cource Geometry
 };
