@@ -1,5 +1,5 @@
 GLOBAL        10000.
-DEFAULTS                                                              NEWDEFA
+DEFAULTS                                                              NEW-DEFA
 OPEN             97.                                                  UNKNOWN
 ran_abs.new
 OPEN              8.                                                  SCRATCH  
