@@ -15,8 +15,6 @@ class AliL3RandomPointData;
 class AliL3MemHandler{
  private:
   
-  FILE *fInBinary;//!
-  FILE *fOutBinary;//!
   Byte_t *fPt;//!
   UInt_t fSize;
 
@@ -43,6 +41,7 @@ class AliL3MemHandler{
                       UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
   void AddDataRandom(AliL3DigitData *data,UInt_t & ndata,
                       UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
+  
 
  protected:
   Int_t fRowMin;
@@ -52,7 +51,10 @@ class AliL3MemHandler{
 
   Int_t fEtaMinTimeBin[176];
   Int_t fEtaMaxTimeBin[176];
-
+  
+  FILE *fInBinary;//!
+  FILE *fOutBinary;//!
+  
  public:
   AliL3MemHandler();
   virtual ~AliL3MemHandler();
@@ -89,8 +91,9 @@ class AliL3MemHandler{
   Bool_t CompMemory2CompBinary(UInt_t nrow,UInt_t *comp, UInt_t size=0);
   Bool_t CompBinary2CompMemory(UInt_t & nrow,UInt_t *comp);
 
-  AliL3DigitRowData *CompBinary2Memory(UInt_t & nrow);
-  Bool_t Memory2CompBinary(UInt_t nrow,AliL3DigitRowData *data);
+  virtual AliL3DigitRowData *CompBinary2Memory(UInt_t & nrow);
+  virtual Bool_t Memory2CompBinary(UInt_t nrow,AliL3DigitRowData *data);
+  
   UInt_t GetNRow(UInt_t *comp,UInt_t size);
 
   //Point IO

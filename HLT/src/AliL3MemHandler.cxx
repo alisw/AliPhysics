@@ -216,7 +216,7 @@ void AliL3MemHandler::CloseBinaryInput()
 Bool_t AliL3MemHandler::SetBinaryOutput(char *name)
 {
   //Set the binary output file.
-  fOutBinary = fopen(name,"w");
+    fOutBinary = fopen(name,"w");
   if(!fOutBinary){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::SetBinaryOutput","File Open")
       <<"Pointer to File = 0x0 "<<ENDLOG;

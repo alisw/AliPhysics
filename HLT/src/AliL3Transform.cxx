@@ -1,8 +1,8 @@
-/* $Id$
+// $Id$
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ASV
 // changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
-*/
+
 
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
