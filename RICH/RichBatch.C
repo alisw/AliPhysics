@@ -6,7 +6,11 @@ void RichBatch(const Int_t iNevents,const Bool_t isDebug,const char *sConfigFile
   TStopwatch sw;TDatime time;	
 
   AliSimulation     *pSim=new AliSimulation;     pSim->Run(iNevents); delete pSim;
-  AliReconstruction *pRec=new AliReconstruction; pRec->Run();         delete pRec; 
+  AliReconstruction *pRec=new AliReconstruction; pRec->Run();         delete pRec;
+  AliRunLoader* runLoader = AliRunLoader::Open();
+  runLoader->LoadgAlice();
+  ((AliRICH*)runLoader->GetAliRun()->GetDetector("RICH"))->ControlPlots();
+ 
   cout<<"\nInfo in <my/RichBatch.C>: Start time: ";time.Print();
     cout<<"Info in <my/RichBatch.C>: Stop  time: ";time.Set();  time.Print();
     cout<<"Info in <my/RichBatch.C>: Time  used: ";sw.Print();
