@@ -31,3 +31,8 @@ AliRICHSDigit::AliRICHSDigit(Int_t *clhits)
   fRSec=clhits[4];
 }
 
+void AliRICHSDigit::Print(Option_t*)const
+{
+  Info("","PadX=%3i, PadY=%3i, Qdc=%4i, Sector=%2i, Hit=%9i",
+           fPadX,    fPadY,    fQpad,   fRSec,      fHitNumber);
+}//void AliRICHdigit::Print(Option_t *option)const

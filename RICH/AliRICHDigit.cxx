@@ -48,3 +48,9 @@ AliRICHDigit::AliRICHDigit(Int_t *tracks, Int_t *charges, Int_t *digits)
 	fTracks[i]    = tracks[i];
     }
 }
+
+void AliRICHDigit::Print(Option_t*)const
+{
+  Info("","PadX=%3i, PadY=%3i, Signal=%4i, Phys=%4i, Hit=%5i TID1=%5i, TID2=%5i, TID3=%5i TC1=%4i TC2=%4i",
+           fPadX,    fPadY,    fSignal,    fPhysics, fHit,   fTracks[0],fTracks[1],fTracks[2],fTcharges[0],fTcharges[1]);
+}//void AliRICHdigit::Print(Option_t *option)const

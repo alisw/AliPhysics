@@ -28,6 +28,7 @@ class AliRICHSDigit : public TObject {
     Int_t   PadY() const      {return fPadY;}
     Int_t   QPad() const      {return fQpad;}
     Int_t   RSec() const      {return fRSec;}
+    void    Print(Option_t *option)const;      //virtual
     
     virtual ~AliRICHSDigit() {}
        
