@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2000/12/21 16:41:06  morsch
+Coding convention clean-up (RS3)
+
 Revision 1.14  2000/10/02 21:28:15  fca
 Removal of useless dependecies via forward declarations
 
@@ -42,7 +45,6 @@ Introduction of the Copyright and cvs Log
 
 #include "AliFRAMEv0.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "TSystem.h"
  
 ClassImp(AliFRAMEv0)

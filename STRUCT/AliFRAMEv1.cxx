@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.10  2000/10/02 21:28:15  fca
 Removal of useless dependecies via forward declarations
 
@@ -39,7 +42,6 @@ Introduction of the Copyright and cvs Log
 
 #include "AliFRAMEv1.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "TSystem.h"
  
 ClassImp(AliFRAMEv1)

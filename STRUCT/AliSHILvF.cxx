@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2002/10/29 17:20:38  hristov
+Corrections for subscript out of range (Alpha)
+
 Revision 1.18  2002/10/29 09:53:40  morsch
 Constants start with k. Warnings corrected.
 
@@ -71,7 +74,6 @@ Update to geometry defined for the Muon Spectrometer Addendum to the TDR.
 
 #include "AliSHILvF.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
 #include "AliALIFE.h"
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2002/10/29 17:20:38  hristov
+Corrections for subscript out of range (Alpha)
+
 Revision 1.20  2002/10/29 09:53:40  morsch
 Constants start with k. Warnings corrected.
 
@@ -102,7 +105,6 @@ Standard version of SHIL
 
 #include "AliSHILv0.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
 
 ClassImp(AliSHILv0)

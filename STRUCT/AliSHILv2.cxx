@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2002/11/12 17:06:13  morsch
+Update on recess between stations 4 and 5.
+
 Revision 1.6  2002/10/29 09:53:40  morsch
 Constants start with k. Warnings corrected.
 
@@ -38,7 +41,6 @@ New shield geometry.
 
 #include "AliSHILv2.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
 #include "AliALIFE.h"
 

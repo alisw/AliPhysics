@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/11/06 15:20:32  hristov
+Corrected logics (I.Hrivnacova)
+
 Revision 1.12  2002/11/01 10:59:49  hristov
 Correcting geometry (corresponds to version 1.9)
 
@@ -59,7 +62,6 @@ Introduction of the Copyright and cvs Log
  
 #include "AliMAG.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
  
 ClassImp(AliMAG)

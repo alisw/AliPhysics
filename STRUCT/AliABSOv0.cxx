@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2002/10/29 09:53:40  morsch
+Constants start with k. Warnings corrected.
+
 Revision 1.14  2002/10/21 09:09:33  alibrary
 Removing unused variables
 
@@ -88,7 +91,6 @@ Standard version of ABSO
 
 #include "AliABSOv0.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
 
 ClassImp(AliABSOv0)

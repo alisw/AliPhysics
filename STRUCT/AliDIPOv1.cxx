@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/02 21:28:15  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.7  2000/06/11 12:33:34  morsch
 Coding rule violations corrected
 
@@ -45,7 +48,6 @@ Introduction of the Copyright and cvs Log
 
 #include "AliDIPOv1.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
  
 ClassImp(AliDIPOv1)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/02 21:28:15  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.7  2000/06/11 12:37:25  morsch
 Coding rule violations corrected
 
@@ -38,7 +41,6 @@ Introduction of the Copyright and cvs Log
 #include "AliPIPEv1.h"
 #include "AliRun.h"
 #include "AliMagF.h"
-#include "AliMC.h"
  
 ClassImp(AliPIPEv1)
  

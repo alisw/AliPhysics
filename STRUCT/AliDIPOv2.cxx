@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/06/21 14:16:43  morsch
+Use absolute coordinates for mother volume PCON.
+
 Revision 1.17  2001/06/21 11:59:25  morsch
 Some more details in compensator geometry.
 
@@ -73,7 +76,6 @@ Introduction of the Copyright and cvs Log
 
 #include "AliDIPOv2.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliConst.h"
  
@@ -115,8 +117,6 @@ void AliDIPOv2::CreateSpectrometerDipole()
   //
   // Creation of the geometry of the magnetic DIPOLE version 2
   //
-
-  //  AliMC* gMC = AliMC::GetMC();
 
   Float_t cpar[5], tpar[18], ypar[12];
   Float_t dz, dx, dy;
@@ -807,8 +807,6 @@ void AliDIPOv2::DrawModule()
   // Draw a shaded view of the muon absorber
   //
 
-  AliMC* gMC = AliMC::GetMC();
-  
   // Set everything unseen
   gMC->Gsatt("*", "seen", -1);
   // 

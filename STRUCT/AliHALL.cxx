@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/10/14 14:57:39  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.14.6.2  2002/06/14 10:29:54  hristov
 Merged with v3-08-03
 
@@ -76,7 +79,6 @@ Introduction of the Copyright and cvs Log
 
 #include "AliHALL.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliConst.h"
  
