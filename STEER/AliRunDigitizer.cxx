@@ -220,8 +220,6 @@ void AliRunDigitizer::Copy(TObject&) const
 
 AliRunDigitizer::~AliRunDigitizer() {
 // dtor
-  if (GetListOfTasks()) 
-    GetListOfTasks()->Clear("nodelete");
   delete fInputStreams;
   delete fCombi;
   delete fOutRunLoader;

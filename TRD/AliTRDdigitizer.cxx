@@ -213,12 +213,10 @@ AliTRDdigitizer::~AliTRDdigitizer()
     fDigitsManager = 0;
   }
 
-  if (fSDigitsManager) {
-    delete fSDigitsManager;
-    fSDigitsManager = 0;
-  }
+  fSDigitsManager = 0;
 
   if (fSDigitsManagerList) {
+    fSDigitsManagerList->Delete();
     delete fSDigitsManagerList;
     fSDigitsManagerList = 0;
   }
@@ -406,7 +404,7 @@ void AliTRDdigitizer::Exec(Option_t* option)
 
   //Write parameters
   orl->CdGAFile();
-  GetParameter()->Write();
+  if (!gFile->Get("TRDParameter")) GetParameter()->Write();
 
   if (fDebug > 0) {
     printf("<AliTRDdigitizer::Exec> ");
@@ -519,6 +517,7 @@ Bool_t AliTRDdigitizer::InitDetector()
   }
 
   // Create a digits manager
+  delete fDigitsManager;
   fDigitsManager = new AliTRDdigitsManager();
   fDigitsManager->SetSDigits(fSDigits);
   fDigitsManager->CreateArrays();
@@ -526,7 +525,11 @@ Bool_t AliTRDdigitizer::InitDetector()
   fDigitsManager->SetDebug(fDebug);
 
   // The list for the input s-digits manager to be merged
-  fSDigitsManagerList = new TList();
+  if (fSDigitsManagerList) {
+    fSDigitsManagerList->Delete();
+  } else {
+    fSDigitsManagerList = new TList();
+  }
 
   return kTRUE;
 
