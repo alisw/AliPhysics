@@ -26,6 +26,8 @@
 #include <AliKalmanTrack.h>
 #include <TMath.h>
 
+#include "AliTPCreco.h"
+
 class AliTPCClustersArray;
 class AliTPCcluster;
 
@@ -35,11 +37,11 @@ public:
   AliTPCtrack():AliKalmanTrack(){}
   AliTPCtrack(UInt_t index, const Double_t xx[5], 
               const Double_t cc[15], Double_t xr, Double_t alpha); 
+  AliTPCtrack(const AliKalmanTrack& t, Double_t alpha);
   AliTPCtrack(const AliTPCtrack& t);
   Int_t PropagateToVertex(
                     Double_t x0=36.66,Double_t rho=1.2e-3,Double_t pm=0.139);
   Int_t Rotate(Double_t angle);
-  void CookLabel(AliTPCClustersArray *carray);
   void SetdEdx(Float_t dedx) {fdEdx=dedx;}
 
   Double_t GetX()     const {return fX;}
@@ -48,9 +50,9 @@ public:
 
   Double_t GetY()   const {return fP0;}
   Double_t GetZ()   const {return fP1;}
-  Double_t GetSnp() const {return fX*fP3 - fP2;}             
-  Double_t Get1Pt() const {return fP3*GetConvConst();}             
-  Double_t GetTgl() const {return fP4;}
+  Double_t GetSnp() const {return fX*fP4 - fP2;}             
+  Double_t Get1Pt() const {return fP4*GetConvConst();}             
+  Double_t GetTgl() const {return fP3;}
 
   Double_t GetSigmaY2() const {return fC00;}
   Double_t GetSigmaZ2() const {return fC11;}
@@ -60,24 +62,25 @@ public:
   void GetExternalParameters(Double_t& xr, Double_t x[5]) const ;
   void GetExternalCovariance(Double_t cov[15]) const ;
 
+  Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
+
 //******** To be removed next release !!! **************
   Double_t GetEta() const {return fP2;}
-  Double_t GetC()   const {return fP3;}
+  Double_t GetC()   const {return fP4;}
   void GetCovariance(Double_t cc[15]) const {
     cc[0 ]=fC00;
     cc[1 ]=fC10;  cc[2 ]=fC11;
     cc[3 ]=fC20;  cc[4 ]=fC21;  cc[5 ]=fC22;
-    cc[6 ]=fC30;  cc[7 ]=fC31;  cc[8 ]=fC32;  cc[9 ]=fC33;
-    cc[10]=fC40;  cc[11]=fC41;  cc[12]=fC42;  cc[13]=fC43;  cc[14]=fC44;
+    cc[6 ]=fC40;  cc[7 ]=fC41;  cc[8 ]=fC42;  cc[9 ]=fC44;
+    cc[10]=fC30;  cc[11]=fC31;  cc[12]=fC32;  cc[13]=fC43;  cc[14]=fC33;
   }  
 //****************************************************** 
-
-  void GetCluster(Int_t i, Int_t &sec, Int_t &row, Int_t &ncl) const;
 
   virtual Double_t GetPredictedChi2(const AliCluster *cluster) const;
   Int_t PropagateTo(Double_t xr,
                     Double_t x0=28.94,Double_t rho=0.9e-3,Double_t pm=0.139);
   Int_t Update(const AliCluster* c, Double_t chi2, UInt_t i);
+  void ResetCovariance();
 
 private: 
   Double_t fX;              // X-coordinate of this track (reference plane)
@@ -89,8 +92,8 @@ private:
   Double_t fP0;             // Y-coordinate of a track
   Double_t fP1;             // Z-coordinate of a track
   Double_t fP2;             // C*x0
-  Double_t fP3;             // track curvature
-  Double_t fP4;             // tangent of the track momentum dip angle
+  Double_t fP3;             // tangent of the track momentum dip angle
+  Double_t fP4;             // track curvature
 
   Double_t fC00;                         // covariance
   Double_t fC10, fC11;                   // matrix
@@ -98,20 +101,10 @@ private:
   Double_t fC30, fC31, fC32, fC33;       // track
   Double_t fC40, fC41, fC42, fC43, fC44; // parameters
  
-  UInt_t fIndex[200];       // indices of associated clusters 
+  UInt_t fIndex[kMaxRow];       // indices of associated clusters 
 
   ClassDef(AliTPCtrack,1)   // Time Projection Chamber reconstructed tracks
 };
-
-
-inline 
-void AliTPCtrack::GetCluster(Int_t i,Int_t &sec,Int_t &row,Int_t &ncl) const {
-  //return sector, pad row and the index of the i-th cluster of this track 
-  Int_t index=fIndex[i];
-  sec=(index&0xff000000)>>24; 
-  row=(index&0x00ff0000)>>16; 
-  ncl=(index&0x0000ffff)>>00;
-}
 
 inline 
 void AliTPCtrack::GetExternalParameters(Double_t& xr, Double_t x[5]) const {

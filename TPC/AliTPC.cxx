@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2001/04/03 12:40:43  kowal2
+Removed printouts
+
 Revision 1.32  2001/03/12 17:47:36  hristov
 Changes needed on Sun with CC 5.0
 
@@ -351,7 +354,8 @@ void AliTPC::Clusters2Tracks(TFile *of) {
   //-----------------------------------------------------------------
   // This is a track finder.
   //-----------------------------------------------------------------
-  AliTPCtracker::Clusters2Tracks(fTPCParam,of);
+  AliTPCtracker tracker(fTPCParam);
+  tracker.Clusters2Tracks(gFile,of);
 }
 
 //_____________________________________________________________________________

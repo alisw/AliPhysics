@@ -10,18 +10,35 @@
 //
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------
-
+#include "AliTracker.h"
 #include "AliTPCtrack.h"
-#include "AliTPCParam.h"
+#include "AliTPCClustersArray.h"
 
-#define kMAXCLUSTER 2500
+#include "AliTPCreco.h"
 
 class TFile;
+class AliTPCParam;
 
-class AliTPCtracker {
+class AliTPCtracker : public AliTracker {
 public:
-   static Int_t Clusters2Tracks(const AliTPCParam *par, TFile *of);
+   AliTPCtracker():AliTracker(),fkNIS(0),fkNOS(0) {}
+   AliTPCtracker(const AliTPCParam *par);
+  ~AliTPCtracker();
 
+   Int_t ReadSeeds(const TFile *in);
+
+   void LoadInnerSectors();
+   void UnloadInnerSectors();
+   void LoadOuterSectors();
+   void UnloadOuterSectors();
+
+   AliCluster *GetCluster(Int_t index) const;
+   Int_t Clusters2Tracks(const TFile *in, TFile *out);
+   Int_t PropagateBack(const TFile *in, TFile *out);
+
+   virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 
+
+public:
 //**************** Internal tracker class ********************** 
    class AliTPCRow {
    public:
@@ -31,11 +48,14 @@ public:
      const AliTPCcluster* operator[](Int_t i) const {return fClusters[i];}
      UInt_t GetIndex(Int_t i) const {return fIndex[i];}
      Int_t Find(Double_t y) const; 
+     void SetX(Double_t x) {fX=x;}
+     Double_t GetX() const {return fX;}
 
    private:
-     unsigned fN;                                 //number of clusters 
-     const AliTPCcluster *fClusters[kMAXCLUSTER]; //pointers to clusters
-     UInt_t fIndex[kMAXCLUSTER];                  //indeces of clusters
+     Int_t fN;                                          //number of clusters 
+     const AliTPCcluster *fClusters[kMaxClusterPerRow]; //pointers to clusters
+     UInt_t fIndex[kMaxClusterPerRow];                  //indeces of clusters
+     Double_t fX;                                 //X-coordinate of this row
 
    private:
      AliTPCRow(const AliTPCRow& r);            //dummy copy constructor
@@ -46,21 +66,34 @@ public:
    class AliTPCSector {
    public:
      AliTPCSector() { fN=0; fRow = 0; }
-     virtual ~AliTPCSector() { delete[] fRow; }
-     static void SetParam(const AliTPCParam *p) { fgParam=p; }
+    ~AliTPCSector() { delete[] fRow; }
      AliTPCRow& operator[](Int_t i) const { return *(fRow+i); }
      Int_t GetNRows() const { return fN; }
-     virtual Double_t GetX(Int_t l) const = 0;
-     virtual Double_t GetMaxY(Int_t l) const = 0;
-     virtual Double_t GetAlpha() const = 0;
-     virtual Double_t GetAlphaShift() const = 0;
-     virtual Int_t GetRowNumber(Double_t x) const = 0;
-     virtual Double_t GetPadPitchWidth() const = 0;
+     void Setup(const AliTPCParam *par, Int_t flag);
+     Double_t GetX(Int_t l) const {return fRow[l].GetX();}
+     Double_t GetMaxY(Int_t l) const {
+         return GetX(l)*TMath::Tan(0.5*GetAlpha());
+     } 
+     Double_t GetAlpha() const {return fAlpha;}
+     Double_t GetAlphaShift() const {return fAlphaShift;}
+     Int_t GetRowNumber(Double_t x) const {
+        //return pad row number for this x
+        Double_t r=fRow[fN-1].GetX();
+        if (x > r) return fN;
+        r=fRow[0].GetX();
+        if (x < r) return -1;
+        return Int_t((x-r)/fPadPitchLength + 0.5);
+     }
+     Double_t GetPadPitchWidth()  const {return fPadPitchWidth;}
+     Double_t GetPadPitchLength() const {return fPadPitchLength;}
 
-   protected:
-     unsigned fN;                        //number of pad rows 
+   private:
+     Int_t fN;                        //number of pad rows 
      AliTPCRow *fRow;                    //array of pad rows
-     static const AliTPCParam *fgParam;  //TPC parameters
+     Double_t fAlpha;                    //opening angle
+     Double_t fAlphaShift;               //shift angle;
+     Double_t fPadPitchWidth;            //pad pitch width
+     Double_t fPadPitchLength;           //pad pitch length
 
    private:
      AliTPCSector(const AliTPCSector &s);           //dummy copy contructor
@@ -68,41 +101,11 @@ public:
    };
 
 //**************** Internal tracker class ********************** 
-   class AliTPCSSector : public AliTPCSector {
-   public:
-      AliTPCSSector();
-      Double_t GetX(Int_t l) const { return fgParam->GetPadRowRadiiLow(l); }
-      Double_t GetMaxY(Int_t l) const { 
-         return GetX(l)*TMath::Tan(0.5*GetAlpha()); 
-      }
-      Double_t GetAlpha() const {return fgParam->GetInnerAngle();}
-      Double_t GetAlphaShift() const {return fgParam->GetInnerAngleShift();}
-      Double_t GetPadPitchWidth() const {
-         return fgParam->GetInnerPadPitchWidth();
-      }
-      Int_t GetRowNumber(Double_t x) const;
-   };
-
-//**************** Internal tracker class ********************** 
-   class AliTPCLSector : public AliTPCSector {
-   public:
-      AliTPCLSector();
-      Double_t GetX(Int_t l) const { return fgParam->GetPadRowRadiiUp(l); }
-      Double_t GetMaxY(Int_t l) const { 
-         return GetX(l)*TMath::Tan(0.5*GetAlpha()); 
-      }
-      Double_t GetAlpha() const {return fgParam->GetOuterAngle();}
-      Double_t GetAlphaShift() const {return fgParam->GetOuterAngleShift();}
-      Double_t GetPadPitchWidth() const {
-         return fgParam->GetOuterPadPitchWidth();
-      }
-      Int_t GetRowNumber(Double_t x) const;
-   };
-
-//**************** Internal tracker class ********************** 
    class AliTPCseed : public AliTPCtrack {
    public:
      AliTPCseed():AliTPCtrack(){}
+     AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){}
+     AliTPCseed(const AliKalmanTrack &t, Double_t a):AliTPCtrack(t,a){}
      AliTPCseed(UInt_t index, const Double_t xx[5], 
                 const Double_t cc[15], Double_t xr, Double_t alpha): 
                 AliTPCtrack(index, xx, cc, xr, alpha) {}
@@ -111,7 +114,6 @@ public:
         q *= TMath::Sqrt((1-s*s)/(1+t*t));
         fdEdxSample[i]=q;
      }
-     void UseClusters(AliTPCClustersArray *ca, Int_t n=0);
      void CookdEdx(Double_t low=0.05, Double_t up=0.70);
 
    private:
@@ -119,53 +121,24 @@ public:
    };
 
 private:
-   static Int_t 
-   FindProlongation(AliTPCseed& t,const AliTPCSector *sec,Int_t s,Int_t rf=0);
-   static void
-   MakeSeeds(TObjArray &sd,const AliTPCSector *s,Int_t max,Int_t i1,Int_t i2);
+   void MakeSeeds(Int_t i1, Int_t i2);
+   Int_t FollowProlongation(AliTPCseed& t, Int_t rf=0);
+   Int_t FollowBackProlongation(AliTPCseed &s, const AliTPCtrack &t);
+
+   AliTPCtracker(const AliTPCtracker& r);           //dummy copy constructor
+   AliTPCtracker &operator=(const AliTPCtracker& r);//dummy assignment operator
+
+   const Int_t fkNIS;        //number of inner sectors
+   AliTPCSector *fInnerSec;  //array of inner sectors;
+   const Int_t fkNOS;        //number of outer sectors
+   AliTPCSector *fOuterSec;  //array of outer sectors;
+
+   Int_t fN;               //number of loaded sectors
+   AliTPCSector *fSectors; //pointer to loaded sectors;
+
+   AliTPCClustersArray fClustersArray; //array of TPC clusters
+   TObjArray *fSeeds;                  //array of track seeds 
 };
-
-inline AliTPCtracker::AliTPCSSector::AliTPCSSector() {
-  //default constructor
-  if (!fgParam) {
-     fprintf(stderr,"AliTPCSSector: parameters are not set !\n");
-     return;
-  }
-  fN=fgParam->GetNRowLow();
-  fRow=new AliTPCRow[fN];
-}
-
-inline 
-Int_t AliTPCtracker::AliTPCSSector::GetRowNumber(Double_t x) const {
-  //return pad row number for this x
-  Double_t r=fgParam->GetPadRowRadiiLow(fgParam->GetNRowLow()-1);
-  if (x > r) return fgParam->GetNRowLow();
-  r=fgParam->GetPadRowRadiiLow(0);
-  if (x < r) return -1;
-  return Int_t((x-r)/fgParam->GetInnerPadPitchLength() + 0.5);
-}
-
-inline AliTPCtracker::AliTPCLSector::AliTPCLSector(){
-  //default constructor
-  if (!fgParam) {
-     fprintf(stderr,"AliTPCLSector: parameters are not set !\n");
-     return;
-  }
-  fN=fgParam->GetNRowUp();
-  fRow=new AliTPCRow[fN];
-}
-
-inline 
-Int_t AliTPCtracker::AliTPCLSector::GetRowNumber(Double_t x) const {
-  //return pad row number for this x
-  Double_t r=fgParam->GetPadRowRadiiUp(fgParam->GetNRowUp()-1);
-  if (x > r) return fgParam->GetNRowUp();
-  r=fgParam->GetPadRowRadiiUp(0);
-  if (x < r) return -1;
-  return Int_t((x-r)/fgParam->GetOuterPadPitchLength() + 0.5);
-}
-
-//-----------------------------------------------------------------
 
 #endif
 

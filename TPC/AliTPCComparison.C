@@ -1,5 +1,6 @@
 #ifndef __CINT__
   #include "alles.h"
+  #include "AliTPCtracker.h"
 #endif
 
 struct GoodTrack {
@@ -19,34 +20,33 @@ Int_t AliTPCComparison() {
    if (!cf->IsOpen()) {cerr<<"Can't open AliTPCclusters.root !\n"; return 1;}
    AliTPCParam *digp= (AliTPCParam*)cf->Get("75x40_100x60");
    if (!digp) { cerr<<"TPC parameters have not been found !\n"; return 2; }
+   AliTPCtracker *tracker = new AliTPCtracker(digp);
 
 // Load clusters
-   AliTPCClustersArray *ca=new AliTPCClustersArray;
-   ca->Setup(digp);
-   ca->SetClusterType("AliTPCcluster");
-   ca->ConnectTree("Segment Tree");
-   Int_t nentr=Int_t(ca->GetTree()->GetEntries());
-   for (i=0; i<nentr; i++) ca->LoadEntry(i);
+   tracker->LoadInnerSectors();
+   tracker->LoadOuterSectors();
 
 // Load tracks
    TFile *tf=TFile::Open("AliTPCtracks.root");
    if (!tf->IsOpen()) {cerr<<"Can't open AliTPCtracks.root !\n"; return 3;}
    TObjArray tarray(2000);
-   TTree *tracktree=(TTree*)tf->Get("TreeT");
+   TTree *tracktree=(TTree*)tf->Get("TPCf");
+   if (!tracktree) {cerr<<"Can't get a tree with TPC tracks !\n"; return 4;}
    TBranch *tbranch=tracktree->GetBranch("tracks");
-   nentr=(Int_t)tracktree->GetEntries();
+   Int_t nentr=(Int_t)tracktree->GetEntries();
    
    AliTPCtrack *iotrack=0;
    for (i=0; i<nentr; i++) {
        iotrack=new AliTPCtrack;
        tbranch->SetAddress(&iotrack);
        tracktree->GetEvent(i);
-       iotrack->CookLabel(ca);
+       tracker->CookLabel(iotrack,0.1);
        tarray.AddLast(iotrack);
    }   
-   tf->Close();
 
-   delete ca;
+   delete tracker;
+
+   tf->Close();
    cf->Close();
 
 /////////////////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ Int_t AliTPCComparison() {
       cerr<<"Preparing tracks for matching with the ITS...\n";
       tarray.Sort();
       tf=TFile::Open("AliTPCtracks.root","recreate");
-      tracktree=new TTree("TreeT","Tree with TPC tracks");
+      tracktree=new TTree("TPCf","Tree with TPC tracks");
       tracktree->Branch("tracks","AliTPCtrack",&iotrack,32000,0);
       for (i=0; i<nentr; i++) {
           iotrack=(AliTPCtrack*)tarray.UncheckedAt(i);
@@ -89,7 +89,6 @@ Int_t AliTPCComparison() {
       }
       tracktree->Write();
       tf->Close();
-
    }
    cerr<<"Number of good tracks : "<<ngood<<endl;
 
@@ -100,12 +99,16 @@ Int_t AliTPCComparison() {
    TH1F *hmpt=new TH1F("hmpt","Relative Pt resolution (pt>4GeV/c)",30,-60,60); 
    hmpt->SetFillColor(6);
 
-   TH1F *hgood=new TH1F("hgood","Good tracks",30,0.1,6.1);    
-   TH1F *hfound=new TH1F("hfound","Found tracks",30,0.1,6.1);
-   TH1F *hfake=new TH1F("hfake","Fake tracks",30,0.1,6.1);
-   TH1F *hg=new TH1F("hg","",30,0.1,6.1); //efficiency for good tracks
+   AliTPCtrack *trk=(AliTPCtrack*)tarray.UncheckedAt(0);
+   Double_t pmin=0.1*(100/0.299792458/0.2/trk->GetConvConst());
+   Double_t pmax=6.0+pmin;
+
+   TH1F *hgood=new TH1F("hgood","Good tracks",30,pmin,pmax);    
+   TH1F *hfound=new TH1F("hfound","Found tracks",30,pmin,pmax);
+   TH1F *hfake=new TH1F("hfake","Fake tracks",30,pmin,pmax);
+   TH1F *hg=new TH1F("hg","",30,pmin,pmax); //efficiency for good tracks
    hg->SetLineColor(4); hg->SetLineWidth(2);
-   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",30,0.1,6.1);
+   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",30,pmin,pmax);
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
 
    TH1F *he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
@@ -126,6 +129,8 @@ Int_t AliTPCComparison() {
       Int_t lab=gt[ngood].lab,tlab=-1;
       Float_t ptg=
       TMath::Sqrt(gt[ngood].px*gt[ngood].px + gt[ngood].py*gt[ngood].py);
+
+      if (ptg<pmin) continue;
 
       hgood->Fill(ptg);
 
@@ -257,9 +262,9 @@ Int_t AliTPCComparison() {
    hg->SetXTitle("Pt (GeV/c)");
    hg->Draw();
 
-   TLine *line1 = new TLine(0.1,1.0,6.1,1.0); line1->SetLineStyle(4);
+   TLine *line1 = new TLine(pmin,1.0,pmax,1.0); line1->SetLineStyle(4);
    line1->Draw("same");
-   TLine *line2 = new TLine(0.1,0.9,6.1,0.9); line2->SetLineStyle(4);
+   TLine *line2 = new TLine(pmin,0.9,pmax,0.9); line2->SetLineStyle(4);
    line2->Draw("same");
 
    hf->SetFillColor(1);
@@ -300,7 +305,6 @@ Int_t AliTPCComparison() {
 Int_t good_tracks(GoodTrack *gt, Int_t max) {
    Int_t nt=0;
 
-   //TFile *file=TFile::Open("rfio:galice.root");
    TFile *file=TFile::Open("galice.root");
    if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; exit(4);}
 

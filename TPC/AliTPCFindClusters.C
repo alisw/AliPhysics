@@ -1,3 +1,14 @@
+#ifndef __CINT__
+  #include <iostream.h>
+  #include "AliRun.h"
+  #include "AliTPCv1.h"
+  #include "AliTPCv2.h"
+  #include "AliTPCParam.h"
+
+  #include "TFile.h"
+  #include "TStopwatch.h"
+#endif
+
 Int_t AliTPCFindClusters() {
    TFile *out=TFile::Open("AliTPCclusters.root","new");
    if (!out->IsOpen()) {cerr<<"Delete old AliTPCclusters.root !\n"; return 1;}

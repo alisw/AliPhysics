@@ -1,3 +1,11 @@
+#ifndef __CINT__
+  #include <iostream.h>
+  #include "AliTPCtracker.h"
+
+  #include "TFile.h"
+  #include "TStopwatch.h"
+#endif
+
 Int_t AliTPCFindTracks() {
    cerr<<"Looking for tracks...\n";
 
@@ -7,17 +15,17 @@ Int_t AliTPCFindTracks() {
    TFile *in=TFile::Open("AliTPCclusters.root");
    if (!in->IsOpen()) {cerr<<"Can't open AliTPCclusters.root !\n"; return 2;}
 
-   AliTPCv2 TPC;
-   AliTPCParam *digp= (AliTPCParam*)in->Get("75x40_100x60");
-   if (!digp) {cerr<<"TPC parameters have not been found !\n"; return 3;}
-   TPC.SetParam(digp);
-
+   AliTPCParam *par=(AliTPCParam*)in->Get("75x40_100x60");
+   if (!par) {cerr<<"Can't get TPC parameters !\n"; return 3;}
+ 
    TStopwatch timer;
-   TPC.Clusters2Tracks(out);
+   AliTPCtracker *tracker = new AliTPCtracker(par);
+   Int_t rc=tracker->Clusters2Tracks(0,out);
+   delete tracker;
    timer.Stop(); timer.Print();
-
+ 
    in->Close();
    out->Close();
 
-   return 0;
+   return rc;
 }
