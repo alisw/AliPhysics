@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/08/29 13:31:42  morsch
+Protection against (fTreeK == 0) in destructor.
+
 Revision 1.12  2001/07/27 13:03:13  hristov
 Default Branch split level set to 99
 
@@ -466,7 +469,9 @@ void AliStack::FinishEvent()
       fParticleBuffer = (TParticle*) part;
       fParticleFileMap[i]= (Int_t) fTreeK->GetEntries();
       fTreeK->Fill();
-      (*fParticleMap)[i]=fParticleBuffer=0;      
+      //PH      (*fParticleMap)[i]=fParticleBuffer=0;      
+      fParticleBuffer=0;      
+      fParticleMap->AddAt(0,i);      
       
       // When all primaries were filled no particle!=0
       // should be left => to be removed later.
@@ -566,7 +571,8 @@ TParticle* AliStack::Particle(Int_t i)
   //
   // Return particle with specified ID
   
-  if(!(*fParticleMap)[i]) {
+  //PH  if(!(*fParticleMap)[i]) {
+  if(!fParticleMap->At(i)) {
     Int_t nentries = fParticles->GetEntriesFast();
     // algorithmic way of getting entry index
     // (primary particles are filled after secondaries)
@@ -588,7 +594,8 @@ TParticle* AliStack::Particle(Int_t i)
     new ((*fParticles)[nentries]) TParticle(*fParticleBuffer);
     fParticleMap->AddAt((*fParticles)[nentries],i);
   }
-  return (TParticle *) (*fParticleMap)[i];
+  //PH  return (TParticle *) (*fParticleMap)[i];
+  return (TParticle *) fParticleMap->At(i);
 }
 
 //_____________________________________________________________________________
@@ -617,7 +624,8 @@ void AliStack::DumpPart (Int_t i) const
   // Dumps particle i in the stack
   //
   
-  ((TParticle*) (*fParticleMap)[i])->Print();
+  //PH  ((TParticle*) (*fParticleMap)[i])->Print();
+  ((TParticle*) fParticleMap->At(i))->Print();
 }
 
 //_____________________________________________________________________________

@@ -12,6 +12,7 @@
 #pragma link C++ global gMC;
  
 #pragma link C++ enum VertexSmear_t;
+#pragma link C++ enum VertexSource_t;
 #pragma link C++ enum PDG_t;
 
 #pragma link C++ class  AliGenerator+;
