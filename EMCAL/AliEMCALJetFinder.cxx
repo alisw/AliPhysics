@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.17  2002/02/14 08:52:53  morsch
+Major updates by Aleksei Pavlinov:
+FillFromPartons, FillFromTracks, jetfinder configuration.
+
 Revision 1.16  2002/02/08 11:43:05  morsch
 SetOutputFileName(..) allows to specify an output file to which the
 reconstructed jets are written. If not set output goes to input file.
@@ -873,8 +877,8 @@ void AliEMCALJetFinder::FillFromHitFlaggedTracks(Int_t flag)
 
 //
 // Access particle information    
-    TTree *treeH = gAlice->TreeH();
-    Int_t ntracks = (Int_t) treeH->GetEntries();
+    TTree *treeK = gAlice->TreeK();
+    Int_t ntracks = (Int_t) treeK->GetEntries();
 
     if (fPtT)       delete[] fPtT;   
     if (fEtaT)      delete[] fEtaT;    
