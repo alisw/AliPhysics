@@ -10,13 +10,15 @@
 #ifndef TG4_STEP_MANAGER_H
 #define TG4_STEP_MANAGER_H
 
+#include <Rtypes.h>
+#include "AliMCProcess.h"
+
 #include "TG4StepStatus.h"
 
 #include <G4Step.hh>
 #include <G4ThreeVector.hh>
 #include <globals.hh>
 
-#include <Rtypes.h>
 
 class G4Track;
 class G4SteppingManager;
@@ -97,7 +99,7 @@ class TG4StepManager
     Int_t NSecondaries() const;
     void GetSecondary(Int_t isec, Int_t& particleId,
                       TLorentzVector& position, TLorentzVector& momentum);      
-    const char* ProdProcess() const; 
+    AliMCProcess ProdProcess() const; 
 
   protected:
     TG4StepManager(const TG4StepManager& right);
