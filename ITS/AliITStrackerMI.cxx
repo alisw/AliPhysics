@@ -3026,7 +3026,7 @@ void  AliITStrackerMI::FindV0(AliESD *event)
   // fast V0 finder
   //
   //fV0Array->Clean();
-  AliHelix helixes[30000];
+  AliHelix * helixes = new AliHelix[30000];
   TObjArray trackarray(30000);
   Float_t dist[30000];
   Float_t mindist[30000];
@@ -3202,6 +3202,7 @@ void  AliITStrackerMI::FindV0(AliESD *event)
       }
     }
   }
+  delete[] helixes;
   delete[] vertexarray;
   delete[] oldvertexarray;
 }
