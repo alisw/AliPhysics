@@ -305,9 +305,6 @@ AliITSpListItem::~AliITSpListItem(){
     // Return:
     //    A properly destroyed AliITSpListItem class.
 
-    if(!fTrack)  delete [] fTrack;
-    if(!fHits)   delete [] fHits;
-    if(!fSignal) delete [] fSignal;
 }
 //______________________________________________________________________
 AliITSpListItem& AliITSpListItem::operator=(const AliITSpListItem &source){

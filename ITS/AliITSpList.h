@@ -79,7 +79,7 @@ class AliITSpListItem: public TObject {
     Double_t fNoise;          // Total noise, coupling, ...
     Double_t fSignalAfterElect; // Signal after electronics
 
-    ClassDef(AliITSpListItem,2) // Item list of signals and track numbers
+    ClassDef(AliITSpListItem,3) // Item list of signals and track numbers
 };	
 // Input and output functions for standard C++ input/output.
 ostream & operator<<(ostream &os,AliITSpListItem &source);
