@@ -2557,11 +2557,13 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
     case 32:
     case 40:
     case 51:
-	iproc =  kPStop;
+	iproc = kPStop;
 	break;
     case 50:
 	iproc = kPLightAbsorption;
 	break;
+    case 59:
+	iproc = kPLightRefraction;
     case 20: 
 	iproc = kPPhotoelectric;
 	break;
