@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.14  2004/04/02 17:11:33  mhorner
+Marco's bug - fixes implemented
+
 Revision 1.13  2004/03/26 01:00:38  mhorner
 Implementing Marco's optimisations
 
@@ -334,7 +337,7 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 		     fUnit[j].SetUnitFlag(kOutJet);
 		     fUnit[j].SetUnitEta(myPart->Eta());
 		     fUnit[j].SetUnitPhi(myPart->Phi());
-		     if (myPart->Energy()*TMath::Sin(myPart->Theta()) > fPtCut)
+		     if (myPart->Energy()*TMath::Sin(myPart->Theta()) > fPtCut || myPart->GetPDG()->Charge() == 0.0  )
 		     {
 			     fUnit[j].SetUnitEnergy(myPart->Energy()*TMath::Sin(myPart->Theta()));
 		     }else
