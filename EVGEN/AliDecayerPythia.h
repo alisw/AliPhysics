@@ -27,6 +27,8 @@ public AliDecayer
     virtual void    Decay(Int_t idpart, TLorentzVector *p);
     virtual Int_t   ImportParticles(TClonesArray *particles);
     virtual void    SetForceDecay(Decay_t decay) {fDecay=decay;}
+    virtual void    SetForceDecay(Int_t decay)
+      {SetForceDecay((Decay_t) decay);}
     virtual void    ForceDecay();
     
     virtual Float_t GetPartialBranchingRatio(Int_t ipart);
