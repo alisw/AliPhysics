@@ -25,13 +25,19 @@ void loadlibs ()
   gSystem->Load("libSTRUCT");
   gSystem->Load("libPHOS");
   gSystem->Load("libMUON");
-  gSystem->Load("libFMD");
+  gSystem->Load("libFMDbase");
+  gSystem->Load("libFMDsim");
+  gSystem->Load("libFMDrec");
   gSystem->Load("libPMD");
   gSystem->Load("libRICH");
-  gSystem->Load("libSTART");
+  gSystem->Load("libSTARTbase");
+  gSystem->Load("libSTARTsim");
+  gSystem->Load("libSTARTrec");
   gSystem->Load("libZDC");
   gSystem->Load("libCRT");
-  gSystem->Load("libVZERO");
+  gSystem->Load("libVZERObase");
+  gSystem->Load("libVZEROsim");
+  gSystem->Load("libVZEROrec");
   gSystem->Load("libEMCAL");
   gSystem->Load("libCONTAINERS");
 
@@ -42,7 +48,6 @@ void loadlibs ()
   gSystem->Load("libTPCsim");
   gSystem->Load("libTPCfast");
   gSystem->Load("libITS");
-  gSystem->Load("libTPCBarrel");
   gSystem->Load("libTRDbase");
   gSystem->Load("libTRDsim");
   gSystem->Load("libTRDrec");
