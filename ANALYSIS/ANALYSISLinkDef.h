@@ -91,6 +91,6 @@
 #pragma link C++ class AliAODOrPairCut+;
 #pragma link C++ class AliAODAndPairCut+;
     
-
+#pragma link C++ class AliAODv0+;
 
 #endif
