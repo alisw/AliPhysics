@@ -62,15 +62,22 @@ void AliITSplotSPDClusters(const char* filename="galice_80.root"){
     } // end if ITS==0
     AliITSresponseSPDdubna *resp0 = ITS->DetType(0)->GetResponseModel();
     Float_t diffCoeff= resp0->DistanceOverVoltage();//Get Value of Diffusion Coefficient parameter d/v.
+    diffCoeff *= resp0->Temperature();
+    diffCoeff = TMath::Sqrt(diffCoeff*8.6173376e-5);// K_Boltzman/e_Coulumb
+    char    aDiffCoeff[100];            //Character array for sprintf
 
-    TH1D *hclx1 = new TH1D("hclx1","Number of SPD Clusters in x, layer 1",
-			   15,0.5,15.5);
-    TH1D *hclz1 = new TH1D("hclz1","Number of SPD Clusters in z, layer 1",
-			   5,0.5,5.5);
-    TH1D *hclx2 = new TH1D("hclx2","Number of SPD Clusters in x, layer 2",
-			   15,0.5,15.5);
-    TH1D *hclz2 = new TH1D("hclz2","Number of SPD Clusters in z, layer 2",
-			   5,0.5,5.5);
+    sprintf(aDiffCoeff,"Number of SPD Clusters in x, layer 1, DiffCoeff=%f #sqrt{cm}",
+	    diffCoeff);
+    TH1D *hclx1 = new TH1D("hclx1",aDiffCoeff,15,0.5,15.5);
+    sprintf(aDiffCoeff,"Number of SPD Clusters in z, layer 1, DiffCoeff=%f #sqrt{cm}",
+	    diffCoeff);
+    TH1D *hclz1 = new TH1D("hclz1",aDiffCoeff,5,0.5,5.5);
+    sprintf(aDiffCoeff,"Number of SPD Clusters in x, layer 2, DiffCoeff=%f #sqrt{cm}",
+	    diffCoeff);
+    TH1D *hclx2 = new TH1D("hclx2",aDiffCoeff,15,0.5,15.5);
+    sprintf(aDiffCoeff,"Number of SPD Clusters in z, layer 2, DiffCoeff=%f #sqrt{cm}",
+	    diffCoeff);
+    TH1D *hclz2 = new TH1D("hclz2",aDiffCoeff,5,0.5,5.5);
     // Create Arrays with clusters from:  Data, Ba/Sa Model, old version of
     // Dubna
     Float_t dataX1[9] = {0.493, 0.493, 0.0273, 0.00617, 0.00112, 0.000257,
@@ -208,66 +215,85 @@ void AliITSplotSPDClusters(const char* filename="galice_80.root"){
     integral = hclz2->Integral();
     if(integral>0.0) hclz2->Scale(1./integral);
 
-    hdataX1->SetMinimum(0.000257);
-    hdataX1->SetMaximum(1.01);
-    hdataZ1->SetMinimum(0.000274);
-    hdataZ1->SetMaximum(1.01);
-    hdataX2->SetMinimum(0.000257);
-    hdataX2->SetMaximum(1.01);
-    hdataZ2->SetMinimum(0.000257);
-    hdataZ2->SetMaximum(1.01);
+    hclx1->SetMinimum(0.000257);
+    hclx1->SetMaximum(1.01);
+    hclz1->SetMinimum(0.000274);
+    hclz1->SetMaximum(1.01);
+    hclx2->SetMinimum(0.000257);
+    hclx2->SetMaximum(1.01);
+    hclz2->SetMinimum(0.000257);
+    hclz2->SetMaximum(1.01);
 
-    char    aDiffCoeff[50];            //Character array for sprintf
     sprintf(aDiffCoeff,"SPD Clusters with Diffusion Coefficent=%f",diffCoeff);
-    
     TCanvas *cSPDclusters = new TCanvas("cSPDclusters",aDiffCoeff,
-				       400,10,600,700);
+				       400,10,600,776);
     cSPDclusters->Divide(2, 2);
 
     cSPDclusters->cd(1);
-    cSPDclusters->SetLogy();
-    hdataX1->Draw("e1p");
-    hclx1->Draw("same");
+    cSPDclusters->SetLogy(1);
+    hclx1->Draw("hist");
+    hdataX1->Draw("same e1p");
     hbaSaX1->SetLineColor(4);
     hbaSaX1->SetLineStyle(2);    
     hbaSaX1->Draw("same");
     hdubnaX1->SetLineColor(3);
     hdubnaX1->SetLineStyle(4);
     hdubnaX1->Draw("same");
+    TLegend *l1 = new TLegend(0.55,0.65,0.76,0.82);
+    l1->AddEntry(hclx1,"New simulation","l");
+    l1->AddEntry(hdataX1,"Test Beam Results","p");
+    l1->AddEntry(hbaSaX1,"Bari/Selero simulation","l");
+    l1->AddEntry(hdubnaX1,"Dubna simulation","l");
+    l1->Draw();
 
     cSPDclusters->cd(2);
-    cSPDclusters->SetLogy();
-    hdataZ1->Draw("e1p");
-    hclz1->Draw("same");
+    cSPDclusters->SetLogy(1);
+    hclz1->Draw("hist");
+    hdataZ1->Draw("same e1p");
     hbaSaZ2->SetLineColor(4);
     hbaSaZ1->SetLineStyle(2);
     hbaSaZ1->Draw("same");
     hdubnaZ1->SetLineColor(3);
     hdubnaZ1->SetLineStyle(4);
     hdubnaZ1->Draw("same");
+    TLegend *l2 = new TLegend(0.55,0.65,0.76,0.82);
+    l2->AddEntry(hclz1,"New simulation","l");
+    l2->AddEntry(hdataZ1,"Test Beam Results","p");
+    l2->AddEntry(hbaSaZ1,"Bari/Selero simulation","l");
+    l2->AddEntry(hdubnaZ1,"Dubna simulation","l");
+    l2->Draw();
 
     cSPDclusters->cd(3);
-    cSPDclusters->SetLogy();
+    cSPDclusters->SetLogy(1);
+    hclx2->Draw("hist");
+    TLegend *l3 = new TLegend(0.55,0.65,0.76,0.82);
+    l3->AddEntry(hclx2,"New simulation","l");
+    l3->Draw();
+/*
     hdataX2->Draw("e1p");
-    hclx2->Draw("same");
     hbaSaX2->SetLineColor(4);
     hbaSaX2->SetLineStyle(2);
     hbaSaX2->Draw("same");
     hdubnaX2->SetLineColor(3);
     hdubnaX2->SetLineStyle(4);
     hdubnaX2->Draw("same");
-
+*/
     cSPDclusters->cd(4);
-    cSPDclusters->SetLogy();
+    cSPDclusters->SetLogy(1);
+    hclz2->Draw("hist");
+    TLegend *l4 = new TLegend(0.55,0.65,0.76,0.82);
+    l4->AddEntry(hclz2,"New simulation","l");
+    l4->Draw();
+/*
     hdataZ2->Draw("e1p");
-    hclz2->Draw("same");
     hbaSaZ2->SetLineColor(4);
     hbaSaZ2->SetLineStyle(2);
     hbaSaZ2->Draw("same");
     hdubnaZ2->SetLineColor(3);
     hdubnaZ2->SetLineStyle(4);
     hdubnaZ2->Draw("same");
-    cSPDclusters->cd();
+*/
+    cSPDclusters->Update();
 
     if(gROOT->IsBatch()){
 	cSPDclusters->Print("SPDClusters.eps");
