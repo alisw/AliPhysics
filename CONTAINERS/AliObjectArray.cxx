@@ -109,7 +109,7 @@ void   AliObjectArray::Dump(Int_t i) const
 void   AliObjectArray::Dump() const
 {
   //dump all objects 
-  for (Int_t i=0;i<fSize;i++) {
+  for (UInt_t i=0;i<fSize;i++) {
     if (At(i)) fClassInfo->ObjectDump(At(i));
     else printf("index %d - out of range\n",i);
   }
