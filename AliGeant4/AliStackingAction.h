@@ -11,7 +11,9 @@
 
 class AliStackingActionMessenger;
 class AliTrackingAction;
+
 class G4Track;
+class G4TrackStack;
 
 class AliStackingAction : public G4UserStackingAction
 {
