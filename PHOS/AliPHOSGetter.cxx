@@ -109,21 +109,17 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
   if ( fHeaderFile != "aliroot"  ) { // to call the getter without a file
 
     //open headers file
-    TFile * file = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
-    if(file == 0){    //if file was not opened yet, read gAlice
-      if(fHeaderFile.Contains("rfio")) // if we read file using HPSS
-	file =	TFile::Open(fHeaderFile.Data(),"update") ;
-      else
-	file = new TFile(fHeaderFile.Data(),"update") ;
+    fFile = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
+    if(!fFile) {    //if file was not opened yet, read gAlice
+      fFile = TFile::Open(fHeaderFile.Data(),"update") ;
       
-      if (!file->IsOpen()) {
+      if (!fFile->IsOpen()) {
 	cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot open " << fHeaderFile.Data() << endl ; 
 	fFailed = kTRUE ;
         return ;  
       }
-      
-      gAlice = static_cast<AliRun *>(file->Get("gAlice")) ;
-    }
+      gAlice = static_cast<AliRun *>(fFile->Get("gAlice")) ;
+    } 
   }
 
   if (!gAlice) {
@@ -134,9 +130,13 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
   if (!PHOS()) {
     if (fDebug)
       cout << "INFO: AliPHOSGetter -> Posting PHOS to Folders" << endl ; 
-    AliConfig * conf = AliConfig::Instance() ; 
-    conf->Add(static_cast<AliDetector*>(gAlice->GetDetector("PHOS"))) ; 
-    conf->Add(static_cast<AliModule*>(gAlice->GetDetector("PHOS"))) ; 
+    if (gAlice->GetDetector("PHOS")) {
+      AliConfig * conf = AliConfig::Instance() ; 
+      conf->Add(static_cast<AliDetector*>(gAlice->GetDetector("PHOS"))) ; 
+      conf->Add(static_cast<AliModule*>(gAlice->GetDetector("PHOS"))) ; 
+    }
+    else 
+      cerr << "ERROR: AliPHOSGetter -> detector PHOS not found" << endl ;  
   }
   
   fDebug=0;
@@ -148,7 +148,10 @@ AliPHOSGetter::~AliPHOSGetter(){
     fPrimaries->Delete() ; 
     delete fPrimaries ; 
   }
-
+  fFile->Close() ;  
+  delete fFile ;
+  fFile = 0 ;
+    
 }
 
 //____________________________________________________________________________ 
@@ -182,9 +185,9 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
     if((fgObjGetter->fBranchTitle.CompareTo(branchTitle) == 0) && 
        (fgObjGetter->fHeaderFile.CompareTo(headerFile)==0))
       return fgObjGetter ;
-    else
+    else 
       fgObjGetter->~AliPHOSGetter() ;  // delete it already exists another version
-  
+ 
   fgObjGetter = new AliPHOSGetter(headerFile,branchTitle) ; 
   
   // Posts a few item to the white board (folders)
@@ -616,8 +619,8 @@ Bool_t AliPHOSGetter::PostRecPoints(const char * name) const
   
   if ( !phosFolder ) {
     if (fDebug) {
-      cout << "WARNING: AliPHOSGetter::Post RPo -> Folder //" << fRecoFolder << "/PHOS/ not found!" << endl;
-      cout << "INFO:    AliPHOSGetter::Post Rpo -> Adding Folder //" << fRecoFolder << "/PHOS/" << endl;
+      cout << "WARNING: AliPHOSGetter::Post RPo -> Folder //" << fRecoFolder->GetName() << "/PHOS/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post Rpo -> Adding Folder //" << fRecoFolder->GetName() << "/PHOS/" << endl;
     }
     phosFolder = fRecoFolder->AddFolder("PHOS", "Reconstructed data from PHOS") ;  
   }    
@@ -626,8 +629,8 @@ Bool_t AliPHOSGetter::PostRecPoints(const char * name) const
   TFolder * phosRPoEMCAFolder  = dynamic_cast<TFolder*>(phosFolder->FindObject("EMCARecPoints")) ;
   if ( !phosRPoEMCAFolder ) {
     if (fDebug) {
-      cout << "WARNING: AliPHOSGetter::Post RPo -> Folder //" << fRecoFolder << "/PHOS/EMCARecPoints/ not found!" << endl;
-      cout << "INFO:    AliPHOSGetter::Post Rpo -> Adding Folder //" << fRecoFolder << "/PHOS/EMCARecPoints not found!" << endl;
+      cout << "WARNING: AliPHOSGetter::Post RPo -> Folder //" << fRecoFolder->GetName() << "/PHOS/EMCARecPoints/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post Rpo -> Adding Folder //" << fRecoFolder->GetName() << "/PHOS/EMCARecPoints" << endl;
     }
     phosRPoEMCAFolder = phosFolder->AddFolder("EMCARecPoints", "EMCA RecPoints from PHOS") ;  
   }    
@@ -643,8 +646,8 @@ Bool_t AliPHOSGetter::PostRecPoints(const char * name) const
   TFolder * phosRPoCPVFolder  = dynamic_cast<TFolder*>(phosFolder->FindObject("CPVRecPoints")) ;
   if ( !phosRPoCPVFolder ) {
     if (fDebug) {
-      cout << "WARNING: AliPHOSGetter::Post RPo -> Folder //" << fRecoFolder << "/PHOS/CPVRecPoints/ not found!" << endl;
-      cout << "INFO:    AliPHOSGetter::Post Rpo -> Adding Folder //" << fRecoFolder << "/PHOS/CPVRecPoints/" << endl;
+      cout << "WARNING: AliPHOSGetter::Post RPo -> Folder //" << fRecoFolder->GetName() << "/PHOS/CPVRecPoints/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post Rpo -> Adding Folder //" << fRecoFolder->GetName() << "/PHOS/CPVRecPoints/" << endl;
     }
     phosRPoCPVFolder = phosFolder->AddFolder("CPVRecPoints", "CPV RecPoints from PHOS") ;  
   }    
@@ -665,13 +668,13 @@ TObject** AliPHOSGetter::EmcRecPointsRef(const char * name) const
   // the hierarchy is //Folders/Run/Event/RecData/PHOS/EMCARecPoints/name
    
   if ( !fRecoFolder ) {
-    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder << " not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder->GetName() << " not found!" << endl;
     return 0 ; 
   }    
 
   TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/EMCARecPoints")) ; 
   if ( !phosFolder ) {
-    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder << "/PHOS/EMCARecPoints/ not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder->GetName() << "/PHOS/EMCARecPoints/ not found!" << endl;
     return 0;
   }    
 
@@ -691,13 +694,13 @@ TObject** AliPHOSGetter::CpvRecPointsRef(const char * name) const
   // the hierarchy is //Folders/Run/Event/RecData/PHOS/CPVRecPoints/name
    
   if ( !fRecoFolder ) {
-    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder << " not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder->GetName() << " not found!" << endl;
     return 0 ; 
   }    
 
   TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/CPVRecPoints")) ; 
   if ( !phosFolder ) {
-    cerr << "ERROR: AliPHOSGetter::CpvRecPointsRef -> Folder //" << fRecoFolder << "/PHOS/CPVRecPoints/" << endl;
+    cerr << "ERROR: AliPHOSGetter::CpvRecPointsRef -> Folder //" << fRecoFolder->GetName() << "/PHOS/CPVRecPoints/" << endl;
     return 0;
   }    
 
@@ -823,7 +826,7 @@ Bool_t AliPHOSGetter::PostTrackSegments(const char * name) const
   if ( !phosFolder ) {
     if (fDebug) {
       cout << "WARNING: AliPHOSGetter::Post TS -> Folder //" << fRecoFolder << "/PHOS/ not found!" << endl;
-      cout << "INFO:    AliPHOSGetter::Post TS -> Adding Folder //" << fRecoFolder << "/PHOS" << endl;
+      cout << "INFO:    AliPHOSGetter::Post TS -> Adding Folder //" << fRecoFolder->GetName() << "/PHOS" << endl;
     }
     phosFolder = fRecoFolder->AddFolder("PHOS", "Reconstructed data from PHOS") ;  
   }    
@@ -831,8 +834,8 @@ Bool_t AliPHOSGetter::PostTrackSegments(const char * name) const
   TFolder * phosTSFolder  = dynamic_cast<TFolder*>(phosFolder->FindObject("TrackSegments")) ;
   if ( !phosTSFolder ) {
     if (fDebug) {
-      cout << "WARNING: AliPHOSGetter::Post TS -> Folder//" << fRecoFolder << "/PHOS/TrackSegments/ not found!" << endl; 
-      cout << "INFO:    AliPHOSGetter::Post TS -> Adding Folder //" << fRecoFolder << "/PHOS/TrackSegments/" << endl; 
+      cout << "WARNING: AliPHOSGetter::Post TS -> Folder//" << fRecoFolder->GetName() << "/PHOS/TrackSegments/ not found!" << endl; 
+      cout << "INFO:    AliPHOSGetter::Post TS -> Adding Folder //" << fRecoFolder->GetName() << "/PHOS/TrackSegments/" << endl; 
     }
     phosTSFolder = phosFolder->AddFolder("TrackSegments", "TrackSegments from PHOS") ;  
   }    
@@ -853,13 +856,13 @@ TObject** AliPHOSGetter::TrackSegmentsRef(const char * name) const
   // the hierarchy is //Folders/Run/Event/RecData/PHOS/TrackSegments/name
 
  if ( !fRecoFolder ) {
-    cerr << "ERROR: AliPHOSGetter::TrackSegmentsRef -> Folder //" << fRecoFolder << "not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::TrackSegmentsRef -> Folder //" << fRecoFolder->GetName() << "not found!" << endl;
     return 0 ; 
   }    
 
   TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/TrackSegments")) ; 
   if ( !phosFolder ) {
-    cerr << "ERROR: AliPHOSGetter::TrackSegmentsRef -> Folder //" << fRecoFolder << "/PHOS/TrackSegments/ not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::TrackSegmentsRef -> Folder //" << fRecoFolder->GetName() << "/PHOS/TrackSegments/ not found!" << endl;
     return 0;
   }    
   
@@ -988,8 +991,8 @@ Bool_t AliPHOSGetter::PostRecParticles(const char * name) const
   
   if ( !phosFolder ) {
     if (fDebug) {
-      cout << "WARNING: AliPHOSGetter::Post RPa -> Folder //" << fRecoFolder << "/PHOS/ not found!" << endl;
-      cout << "INFO:    AliPHOSGetter::Post Rpa -> Adding Folder //" << fRecoFolder << "/PHOS/" << endl;
+      cout << "WARNING: AliPHOSGetter::Post RPa -> Folder //" << fRecoFolder->GetName() << "/PHOS/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post Rpa -> Adding Folder //" << fRecoFolder->GetName() << "/PHOS/" << endl;
     }
     phosFolder = fRecoFolder->AddFolder("PHOS", "Reconstructed data from PHOS") ;  
   }    
@@ -997,8 +1000,8 @@ Bool_t AliPHOSGetter::PostRecParticles(const char * name) const
  TFolder * phosRPaFolder  = dynamic_cast<TFolder*>(phosFolder->FindObject("RecParticles")) ;
   if ( !phosRPaFolder ) {
     if (fDebug) {
-      cout << "WARNING: AliPHOSGetter::Post RPa -> Folder //" << fRecoFolder << "/PHOS/RecParticles/ not found!" << endl;
-      cout << "INFO:    AliPHOSGetter::Post RPa -> Adding Folder //" << fRecoFolder << "/PHOS/RecParticles/" << endl;
+      cout << "WARNING: AliPHOSGetter::Post RPa -> Folder //" << fRecoFolder->GetName() << "/PHOS/RecParticles/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post RPa -> Adding Folder //" << fRecoFolder->GetName() << "/PHOS/RecParticles/" << endl;
     }
     phosRPaFolder = phosFolder->AddFolder("RecParticles", "RecParticles from PHOS") ;  
   } 
@@ -1019,13 +1022,13 @@ TObject** AliPHOSGetter::RecParticlesRef(const char * name) const
   // the hierarchy is //Folders/Run/Event/RecData/PHOS/TrackSegments/name
 
  if ( !fRecoFolder ) {
-    cerr << "ERROR: AliPHOSGetter::RecParticlesRef -> Folder//" << fRecoFolder << " not found!" << endl; 
+    cerr << "ERROR: AliPHOSGetter::RecParticlesRef -> Folder//" << fRecoFolder->GetName() << " not found!" << endl; 
     return 0 ; 
   }    
 
   TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/RecParticles")) ; 
   if ( !phosFolder ) {
-    cerr << "ERROR: AliPHOSGetter::RecParticlesRef -> Folder //" << fRecoFolder << "/PHOS/RecParticles/ not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::RecParticlesRef -> Folder //" << fRecoFolder->GetName() << "/PHOS/RecParticles/ not found!" << endl;
     return 0;
   }    
 
@@ -1383,9 +1386,17 @@ void AliPHOSGetter::ReadTreeQA()
 }
 
 //____________________________________________________________________________ 
-Int_t AliPHOSGetter::ReadTreeR()
+Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
 {
   // Read the reconstrunction tree gAlice->TreeR()
+  // A particularity has been introduced here :
+  //  if gime->Event(ievent,"R") is called branches with the current title are read, the current title
+  //   being for example give in AliPHOSPID(fileName, title)
+  //  if gime(Event(ievent, "RA") is called the title of the branches is not checked anymore, "A" stands for any
+  // This is a feature needed by PID to be able to reconstruct several times particles (each time a ther title is given)
+  // from a given set of TrackSegments (with a given name)
+  // This is why any is NOT used to read the branch of RecParticles
+  // See AliPHOSPIDv2    
 
   if(gAlice->TreeR()== 0){
     cerr <<   "WARNING: AliPHOSGetter::ReadTreeR: can not read TreeR " << endl ;
@@ -1402,7 +1413,7 @@ Int_t AliPHOSGetter::ReadTreeR()
   Bool_t phosemcrpfound = kFALSE, phoscpvrpfound = kFALSE, clusterizerfound = kFALSE ; 
   
   while ( (branch = static_cast<TBranch*>(next())) && (!phosemcrpfound || !phoscpvrpfound || !clusterizerfound) ) 
-    if(strcmp(branch->GetTitle(), fRecPointsTitle)==0) {
+    if(strcmp(branch->GetTitle(), fRecPointsTitle)==0 || any) {
       if ( strcmp(branch->GetName(), "PHOSEmcRP")==0) {
 	emcbranch = branch ; 
 	phosemcrpfound = kTRUE ;
@@ -1460,7 +1471,7 @@ Int_t AliPHOSGetter::ReadTreeR()
   Bool_t phostsfound = kFALSE, tsmakerfound = kFALSE ; 
     
   while ( (branch = static_cast<TBranch*>(next())) && (!phostsfound || !tsmakerfound) ) 
-    if(strcmp(branch->GetTitle(), fTrackSegmentsTitle)==0)  {
+    if(strcmp(branch->GetTitle(), fTrackSegmentsTitle)==0 || any)  {
       if ( strcmp(branch->GetName(), "PHOSTS")==0){
 	tsbranch = branch ; 
 	phostsfound = kTRUE ;
@@ -1711,11 +1722,16 @@ void AliPHOSGetter::ReadPrimaries()
 void AliPHOSGetter::Event(const Int_t event, const char* opt)
 {
   // Reads the content of all Tree's S, D and R
-  
+ 
   if (event >= gAlice->TreeE()->GetEntries() ) {
     cerr << "ERROR: AliPHOSGetter::Event -> " << event << " not found in TreeE!" << endl ; 
     return ; 
   }
+
+  Bool_t any = kFALSE ; 
+  if (strstr(opt,"A") ) // do not check the title of the branches
+    any = kTRUE; 
+
   gAlice->GetEvent(event) ; 
 
   Int_t rvRH = 0 ;
@@ -1733,7 +1749,7 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
     rvRD = ReadTreeD() ;
 
   if( strstr(opt,"R") )
-    rvRR = ReadTreeR() ;
+    rvRR = ReadTreeR(any) ;
 
   if( strstr(opt,"Q") )
     ReadTreeQA() ;
@@ -1790,7 +1806,7 @@ TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const
     if (folder) { 
       if (name.IsNull())
 	name = fRecPointsTitle ; 
-      phosO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
+      phosO  = dynamic_cast<TObject *>(folder->FindObject(name)) ;
     } 
   }
   else if ( what.CompareTo("CpvRecPoints") == 0 ) {
@@ -1830,7 +1846,7 @@ TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const
   }
   if (!phosO) {
     if(fDebug)
-      cerr << "ERROR : AliPHOSGetter::ReturnO -> Object " << what << " not found in " << folder->GetName() << endl ; 
+      cerr << "ERROR : AliPHOSGetter::ReturnO -> Object " << what << " not found in " << fQAFolder->GetName() << endl ; 
     return 0 ;
   }
 

@@ -183,6 +183,8 @@ class AliPHOSGetter : public TObject {
   }
   
   TFolder * SDigitsFolder() { return dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("PHOS")) ; }
+
+  void SetRecParticlesTitle(const TString title) { fRecParticlesTitle = title ; }
   
 private:
   
@@ -193,7 +195,7 @@ private:
   void DefineBranchTitles(char* branch, char* branchTitle) ;
   Int_t ReadTreeD() ;
   Int_t ReadTreeH() ;
-  Int_t ReadTreeR() ;
+  Int_t ReadTreeR(Bool_t any=kFALSE) ;
   Int_t ReadTreeS(Int_t event) ;
   void ReadTreeQA() ;
   void ReadPrimaries() ;
@@ -216,6 +218,7 @@ private:
 
  private:
 
+  TFile *        fFile;               //! 
   TString        fHeaderFile ;        //! File in which gAlice lives
   TString        fBranchTitle ;       //!
   TString        fTrackSegmentsTitle ;//! 

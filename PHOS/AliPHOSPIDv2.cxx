@@ -34,18 +34,22 @@
 //  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
 //  root [1] p1->SetIdentificationMethod("disp ellipse")
 //  root [2] p1->ExecuteTask()
-//  root [3] AliPHOSPIDv2 * p2 = new AliPHOSPIDv2("galice1.root","ts1")
+//  root [3] AliPHOSPIDv2 * p2 = new AliPHOSPIDv2("galice1.root","v2")
 //  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-//                // reading headers from file galice1.root and TrackSegments 
-//                // with title "ts1"
-//  root [4] p2->SetRecParticlesBranch("rp1")
+//                // reading headers from file galice1.root and create  RecParticles with title v2
+                  // TrackSegments and RecPoints with title "v2" are used 
 //                // set file name for the branch RecParticles
-//  root [5] p2->ExecuteTask("deb all time")
+//  root [4] p2->ExecuteTask("deb all time")
 //                // available options
 //                // "deb" - prints # of reconstructed particles
 //                // "deb all" -  prints # and list of RecParticles
 //                // "time" - prints benchmarking results
 //                  
+//  root [5] AliPHOSPIDv2 * p3 = new AliPHOSPIDv2("galice1.root","v2","v0")
+//  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
+//                // reading headers from file galice1.root and create  RecParticles with title v2
+                  // RecPoints and TrackSegments with title "v0" are used 
+//  root [6] p3->ExecuteTask()
 //*-- Author: Yves Schutz (SUBATECH)  & Gines Martinez (SUBATECH) & 
 //            Gustavo Conesa April 2002
 
@@ -93,11 +97,12 @@ AliPHOSPIDv2::AliPHOSPIDv2():AliPHOSPID()
   fRecParticlesInRun = 0 ;
   fClusterizer       = 0 ; 
   fTSMaker           = 0 ;
+  fFrom              = "" ;  
   
 }
 
 //____________________________________________________________________________
-AliPHOSPIDv2::AliPHOSPIDv2(const char * headerFile,const char * name) : AliPHOSPID(headerFile, name)
+AliPHOSPIDv2::AliPHOSPIDv2(const char * headerFile,const char * name, const char * from) : AliPHOSPID(headerFile, name)
 { 
   //ctor with the indication on where to look for the track segments
  
@@ -110,7 +115,10 @@ AliPHOSPIDv2::AliPHOSPIDv2(const char * headerFile,const char * name) : AliPHOSP
   tempo.Append(Version()) ; 
   SetName(tempo) ; 
   fRecParticlesInRun = 0 ; 
-
+  if ( from == 0 ) 
+    fFrom = name ; 
+  else
+    fFrom = from ; 
   Init() ;
 
 }
@@ -221,7 +229,10 @@ void  AliPHOSPIDv2::Exec(Option_t * option)
     return ; 
   }
 
+  cout << gDirectory->GetName() << endl ; 
+
   gAlice->GetEvent(0) ;
+
   //check, if the branch with name of this" already exits?
   TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
   TIter next(lob) ; 
@@ -247,11 +258,10 @@ void  AliPHOSPIDv2::Exec(Option_t * option)
   
   Int_t nevents = (Int_t) gAlice->TreeE()->GetEntries() ;
   Int_t ievent ;
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
-  
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;  
   for(ievent = 0; ievent < nevents; ievent++){
-    gime->Event(ievent,"R") ;
-    
+    gime->Event(ievent,"RA") ;
+ 
     MakeRecParticles() ;
     
     WriteRecParticles(ievent);
@@ -260,7 +270,7 @@ void  AliPHOSPIDv2::Exec(Option_t * option)
       PrintRecParticles(option) ;
 
     //increment the total number of rec particles per run 
-    fRecParticlesInRun += gime->RecParticles()->GetEntriesFast() ; 
+    fRecParticlesInRun += gime->RecParticles(taskName)->GetEntriesFast() ; 
 
   }
   
@@ -294,7 +304,7 @@ void AliPHOSPIDv2::Init()
   fFileName       = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root" ; 
   TFile f( fFileName.Data(), "read" ) ;
   fPrincipal      = dynamic_cast<TPrincipal*> (f.Get("principal")) ; 
- 
+  f.Close() ; 
   // Ellipse parameters 
   fX_center          = 2.0 ; 
   fY_center          = -0.35 ; 
@@ -303,7 +313,9 @@ void AliPHOSPIDv2::Init()
   fB                 = 1.0 ; 
   fAngle             = -60. ;
  
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), taskName.Data()) ; 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), fFrom.Data()) ; 
+
+  gime->SetRecParticlesTitle(taskName) ;
   if ( gime == 0 ) {
     cerr << "ERROR: AliPHOSPIDv2::Init -> Could not obtain the Getter object !" << endl ; 
     return ;
@@ -319,13 +331,19 @@ void AliPHOSPIDv2::Init()
 void  AliPHOSPIDv2::MakeRecParticles(){
 
   // Makes a RecParticle out of a TrackSegment
+
   TString taskName(GetName()) ; 
   taskName.Remove(taskName.Index(Version())-1) ;
-
+  
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  TObjArray * emcRecPoints = gime->EmcRecPoints(taskName) ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints(taskName) ; 
-  TClonesArray * trackSegments = gime->TrackSegments(taskName) ; 
+  TObjArray * emcRecPoints = gime->EmcRecPoints(fFrom) ; 
+  TObjArray * cpvRecPoints = gime->CpvRecPoints(fFrom) ; 
+  TClonesArray * trackSegments = gime->TrackSegments(fFrom) ; 
+  if ( !emcRecPoints || !cpvRecPoints || !trackSegments ) {
+    cerr << "ERROR:  AliPHOSPIDv2::MakeRecParticles -> RecPoints or TrackSegments with name " 
+	 << fFrom << " not found ! " << endl ; 
+    abort() ; 
+  }
   TClonesArray * recParticles  = gime->RecParticles(taskName) ; 
   recParticles->Clear();
  

@@ -31,7 +31,7 @@ class  AliPHOSPIDv2 : public AliPHOSPID {
 public:
 
   AliPHOSPIDv2() ;          // ctor            
-  AliPHOSPIDv2(const char* headerFile, const char * tsBranch = "Default") ;
+  AliPHOSPIDv2(const char* headerFile, const char * tsBranch = "Default", const char * from = 0) ;
   virtual ~AliPHOSPIDv2() ; // dtor
 
   virtual void Exec(Option_t * option);
@@ -68,6 +68,7 @@ public:
 
  private:
 
+  TString                fFrom ;              // name of Recpoints and TrackSegments 
   TString                fHeaderFileName ;    // file name with event header
   TString                fTrackSegmentsTitle; // branch name with track segments
   TString                fRecPointsTitle ;    // branch name with rec points
