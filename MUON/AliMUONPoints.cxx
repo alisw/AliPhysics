@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.5  2000/10/02 21:28:09  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.4  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -69,7 +72,7 @@ Log messages included
 #include <TPaveText.h>
 #include <TView.h>
 #include <TMath.h>
-
+#include <TMarker3DBox.h>
  
 ClassImp(AliMUONPoints)
 

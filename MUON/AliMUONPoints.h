@@ -10,8 +10,8 @@ class AliMUONDigit;
 class AliMUONHit;
 
 class TMatrix;
+class TMarker3DBox;
 
-#include <TMarker3DBox.h> // needed for Cint compilation of Streamer
 #include "AliPoints.h"
 
 class AliMUONPoints : public AliPoints {

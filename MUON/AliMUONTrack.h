@@ -5,10 +5,9 @@
 
 /*$Id$*/
 
-#include <TROOT.h>
-#include <TObjArray.h>
-#include "AliMUONTrackParam.h"
+#include "AliMUONTrackParam.h" // object belongs to the class
 
+class TObjArray;
 class TClonesArray;
 class TVirtualFitter;
 class AliMUONEventReconstructor;

@@ -7,7 +7,7 @@
 
 #include "AliSegmentation.h"
 
-#include "TF1.h"
+class TF1;
 
 //----------------------------------------------
 //

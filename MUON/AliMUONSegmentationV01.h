@@ -10,15 +10,12 @@
 //  Segmentation and Response classes version 01   //
 /////////////////////////////////////////////////////
 class AliMUON;
-class TArrayF;
-class TArrayI;
 class TObjArray;
 
-
-
 #include "AliMUONSegmentationV0.h"
-#include "TArrayI.h"
-#include "TArrayF.h"
+#include "TArrayI.h" // because the object, and not the pointer,
+#include "TArrayF.h" // belongs to the class
+
 
 class AliMUONSegmentationV01 :
 public AliMUONSegmentationV0 {

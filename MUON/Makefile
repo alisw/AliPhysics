@@ -36,8 +36,13 @@ SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
 
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) $(ROOTSYS)/include/TTree.h \
-		$(ROOTSYS)/include/TMatrix.h MUONLinkDef.h
+HDRS          = $(SRCS:.cxx=.h) \
+		$(ROOTSYS)/include/TF1.h \
+		$(ROOTSYS)/include/TH3.h \
+		$(ROOTSYS)/include/TMarker3DBox.h \
+		$(ROOTSYS)/include/TMatrix.h \
+		$(ROOTSYS)/include/TTree.h \
+		MUONLinkDef.h
 
 # Library dictionary
 

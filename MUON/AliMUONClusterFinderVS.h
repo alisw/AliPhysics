@@ -8,10 +8,11 @@
 ////////////////////////////////////////////////
 //  MUON Cluster Finder Class                 //
 ////////////////////////////////////////////////
-#include <TObject.h>
-#include "AliMUONHitMapA1.h"
-#include "AliMUONClusterInput.h"
 
+#include <TObject.h>
+
+class AliMUONClusterInput;
+class AliMUONHitMapA1;
 class AliMUONResponse;
 class AliSegmentation;
 class TClonesArray;

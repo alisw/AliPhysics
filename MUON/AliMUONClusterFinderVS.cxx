@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.9  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.8  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -73,6 +79,7 @@ Revised and extended SplitByLocalMaxima method (Isabelle Chevrot):
 #include "AliMUONRawCluster.h"
 #include "AliSegmentation.h"
 #include "AliMUONResponse.h"
+#include "AliMUONClusterInput.h"
 #include "AliMUONHitMapA1.h"
 #include "AliRun.h"
 #include "AliMUON.h"
