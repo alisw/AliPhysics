@@ -512,11 +512,14 @@ void AliSignal::List(Int_t j)
    obj=GetLink(i);
    if (obj)
    {
-    const char* lname=obj->GetName();
-    const char* ltitle=obj->GetTitle();
     cout << "    Link to : " << obj->ClassName();
-    if (strlen(lname))  cout << " Name : " << lname;
-    if (strlen(ltitle)) cout << " Title : " << ltitle;
+    if (obj->InheritsFrom("TNamed"))
+    {
+     const char* lname=obj->GetName();
+     const char* ltitle=obj->GetTitle();
+     if (strlen(lname))  cout << " Name : " << lname;
+     if (strlen(ltitle)) cout << " Title : " << ltitle;
+    }
     cout << endl;
    }
   }
@@ -543,11 +546,14 @@ void AliSignal::List(Int_t j)
    obj=GetLink(j);
    if (obj)
    {
-    const char* lnamej=obj->GetName();
-    const char* ltitlej=obj->GetTitle();
     cout << "    Link to : " << obj->ClassName();
-    if (strlen(lnamej))  cout << " Name : " << lnamej;
-    if (strlen(ltitlej)) cout << " Title : " << ltitlej;
+    if (obj->InheritsFrom("TNamed"))
+    {
+     const char* lnamej=obj->GetName();
+     const char* ltitlej=obj->GetTitle();
+     if (strlen(lnamej))  cout << " Name : " << lnamej;
+     if (strlen(ltitlej)) cout << " Title : " << ltitlej;
+    }
     cout << endl;
    }
   }
