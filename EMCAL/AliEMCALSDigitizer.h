@@ -64,7 +64,7 @@ private:
   TFile * fSplitFile ;             //! file in which SDigits will eventually be stored
   Bool_t  fToSplit ;               //! Says that sigits should be written into splip file
 
-  ClassDef(AliEMCALSDigitizer,2)  // description 
+  ClassDef(AliEMCALSDigitizer,3)  // description 
 
 };
 

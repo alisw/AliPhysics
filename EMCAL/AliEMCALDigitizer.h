@@ -101,7 +101,7 @@ private:
   Bool_t  fToSplit ;                 //! Do we work in the split mode
   TFile * fSplitFile ;               //! file in which Digits will eventually be stored
 
-  ClassDef(AliEMCALDigitizer,1)  // description 
+  ClassDef(AliEMCALDigitizer,2)  // description 
 
 };
 
