@@ -22,6 +22,7 @@
 //
 /////////////////////////////////////////////////////////////
 
+#include <TROOT.h>
 #include <TParticle.h>
 #include <TClass.h>
 #include <TString.h>
