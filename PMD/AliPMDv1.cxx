@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.24  2003/10/01 08:32:51  hristov
+CurrentTrack replaced by GetCurrentTrackNumber
+
 Revision 1.23  2003/10/01 05:07:51  bnandi
 New geometry in new Alice Coordinate system
 
@@ -38,7 +41,8 @@ June 2003
 #include "AliRun.h"
 #include "AliConst.h" 
 #include "AliMagF.h" 
-#include "iostream.h"
+#include "Riostream.h"
+#include <TVirtualMC.h>
  
 static Int_t     ncol_um1,ncol_um2, nrow_um1, nrow_um2;
 static Int_t     kdet;
