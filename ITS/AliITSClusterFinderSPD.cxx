@@ -13,6 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/*
+$Log$
+*/
+
 #include <iostream.h>
 #include "AliITSClusterFinderSPD.h"
 #include "AliITSMapA1.h"
@@ -288,7 +292,7 @@ void AliITSClusterFinderSPD::TracksInCluster()
   nofClusters -= fNclusters;
 
   Int_t i, ix, iz, jx, jz, xstart, xstop, zstart, zstop, nclx, nclz;
-  Int_t trmax = 100;
+  const Int_t trmax = 100;
   Int_t cltracks[trmax], itr, tracki, ii, is, js, ie, ntr, tr0, tr1, tr2;
 
   for(i=0; i<nofClusters; i++) { 
