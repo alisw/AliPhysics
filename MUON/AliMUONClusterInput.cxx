@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.4  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -62,7 +68,7 @@ AliMUONClusterInput* AliMUONClusterInput::Instance()
 // return pointer to the singleton instance
     if (fgClusterInput == 0) {
 	fgClusterInput = new AliMUONClusterInput();
-	fgMinuit = new TMinuit(5);
+	fgMinuit = new TMinuit(8);
     }
     
     return fgClusterInput;
@@ -134,6 +140,9 @@ void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
 	    fiy[i][cath]=iy;
 	    // total charge per cluster
 	    qtot+=fCharge[i][cath];
+	    // Current z
+	    Float_t xc, yc;
+	    fSegmentation[cath]->GetPadC(ix,iy,xc,yc,fZ);
 	} // loop over cluster digits
 	fQtot[cath]=qtot;
 	fChargeTot[cath]=Int_t(qtot);  
@@ -149,7 +158,7 @@ Float_t AliMUONClusterInput::DiscrChargeS1(Int_t i,Double_t *par)
 
    fSegmentation[0]->SetPad(fix[i][0], fiy[i][0]);
 //  First Cluster
-   fSegmentation[0]->SetHit(par[0],par[1],0);
+   fSegmentation[0]->SetHit(par[0],par[1],fZ);
    Float_t q1=fResponse->IntXY(fSegmentation[0]);
     
    Float_t value = fQtot[0]*q1;
@@ -163,7 +172,7 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS1(Int_t i,Double_t *par, Int_t cat
 
    fSegmentation[cath]->SetPad(fix[i][cath], fiy[i][cath]);
 //  First Cluster
-   fSegmentation[cath]->SetHit(par[0],par[1],0);
+   fSegmentation[cath]->SetHit(par[0],par[1],fZ);
    Float_t q1=fResponse->IntXY(fSegmentation[cath]);
     
    Float_t value = fQtot[cath]*q1;
@@ -182,11 +191,11 @@ Float_t AliMUONClusterInput::DiscrChargeS2(Int_t i,Double_t *par)
 
    fSegmentation[0]->SetPad(fix[i][0], fiy[i][0]);
 //  First Cluster
-   fSegmentation[0]->SetHit(par[0],par[1],0);
+   fSegmentation[0]->SetHit(par[0],par[1],fZ);
    Float_t q1=fResponse->IntXY(fSegmentation[0]);
     
 //  Second Cluster
-   fSegmentation[0]->SetHit(par[2],par[3],0);
+   fSegmentation[0]->SetHit(par[2],par[3],fZ);
    Float_t q2=fResponse->IntXY(fSegmentation[0]);
     
    Float_t value = fQtot[0]*(par[4]*q1+(1.-par[4])*q2);
@@ -204,11 +213,11 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cat
 
    fSegmentation[cath]->SetPad(fix[i][cath], fiy[i][cath]);
 //  First Cluster
-   fSegmentation[cath]->SetHit(par[0],par[1],0);
+   fSegmentation[cath]->SetHit(par[0],par[1],fZ);
    Float_t q1=fResponse->IntXY(fSegmentation[cath]);
     
 //  Second Cluster
-   fSegmentation[cath]->SetHit(par[2],par[3],0);
+   fSegmentation[cath]->SetHit(par[2],par[3],fZ);
    Float_t q2=fResponse->IntXY(fSegmentation[cath]);
    Float_t value;
    if (cath==0) {
