@@ -2035,6 +2035,15 @@ void TFluka::SetMaxStep(Double_t step)
     STEPSZ.stepmx[mreg - 1] = step;
 }
 
+
+Double_t TFluka::MaxStep() const
+{
+// Return the maximum for current medium
+    Int_t mreg, latt;
+    fGeom->GetCurrentRegion(mreg, latt);
+    return (STEPSZ.stepmx[mreg - 1]);
+}
+
 //______________________________________________________________________________ 
 void TFluka::SetMaxNStep(Int_t)
 {

@@ -169,10 +169,9 @@ class TFluka : public TVirtualMC {
   
   virtual void     Gdtom(Double_t* xd, Double_t* xm, Int_t iflag);
   
-  virtual Double_t MaxStep() const
-    {printf("WARNING: MaxStep not yet implemented !\n"); return -1.;}
+  virtual Double_t MaxStep() const;
   virtual Int_t    GetMaxNStep() const
-    {printf("WARNING: GetMaxNStep not yet implemented !\n"); return -1;}
+      {printf("WARNING: GetMaxNStep not yet implemented !\n"); return -1;}
   virtual Int_t    GetMedium() const;
   
   // Tracking particle 
