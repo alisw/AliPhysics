@@ -1,5 +1,8 @@
 #include <Riostream.h>
+#include "AliRun.h"
 #include "TFluka.h"
+#include "Fdimpar.h"  //(DIMPAR) fluka include
+#include "Ftrackr.h"  //(TRACKR) fluka common
 #ifndef WIN32
 # define usdraw usdraw_
 #else
@@ -9,13 +12,13 @@ extern "C" {
 void usdraw(Int_t& icode, Int_t& mreg, 
             Double_t& xsco, Double_t& ysco, Double_t& zsco)
 {
+  ((TFluka*) gMC)->SetCaller(6);
   ((TFluka*) gMC)->SetIcode(icode);
   ((TFluka*) gMC)->SetMreg(mreg);
   ((TFluka*) gMC)->SetXsco(xsco);
   ((TFluka*) gMC)->SetYsco(ysco);
   ((TFluka*) gMC)->SetZsco(zsco);
-  ((TFluka*) gMC)->FutoTest();
-//  cout << endl << " !!! I am in usdraw - calling Stepping()" << mreg << endl;
+  (TVirtualMCApplication::Instance())->Stepping();
 } // end of usdraw
 } // end of extern "C"
 

@@ -1,4 +1,5 @@
 #include <Riostream.h>
+#include "AliRun.h"
 #include "TFluka.h"
 #ifndef WIN32
 # define sodraw sodraw_
@@ -8,8 +9,8 @@
 extern "C" {
 void sodraw()
 {
+  ((TFluka*) gMC)->SetCaller(5);
   ((TFluka*) gMC)->SetIcode(0);
-  ((TFluka*) gMC)->FutoTest();
 } // end of sodraw
 } // end of extern "C"
 
