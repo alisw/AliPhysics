@@ -131,7 +131,7 @@ void AliRICH::Hits2SDigits()
       GetLoader()->TreeH()->GetEntry(iPrimN);
       for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop 
         AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);//get current hit                
-        TVector2 x2 = C(pHit->C())->Mrs2Pc(pHit->OutX3());//hit position in photocathode plane
+        TVector2 x2 = C(pHit->C())->Mrs2Pc(0.5*(pHit->InX3()+pHit->OutX3()));//hit position in the anod plane
         Int_t iTotQdc=P()->TotQdc(x2,pHit->Eloss());//total charge produced by hit, 0 if hit in dead zone
         if(iTotQdc==0) continue;
         //

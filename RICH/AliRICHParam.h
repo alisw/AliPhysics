@@ -106,6 +106,9 @@ public:
   inline static Int_t    Pad2Sec(const TVector &pad);              //return sector
          static Bool_t   IsAccepted(const TVector2 &x2) {return ( x2.X()>=0 && x2.X()<=PcSizeX() && x2.Y()>=0 && x2.Y()<=PcSizeY() ) 
 ? kTRUE:kFALSE;}
+  inline static Double_t CogCorr(Double_t x) {return 3.31267e-2*TMath::Sin(2*TMath::Pi()/PadSizeX()*x)
+                                                    -2.66575e-3*TMath::Sin(4*TMath::Pi()/PadSizeX()*x)
+                                                    +2.80553e-3*TMath::Sin(6*TMath::Pi()/PadSizeX()*x);}
 protected:
          TObjArray *fpChambers;                             //list of chambers    
   static Bool_t     fgIsWireSag;                            //wire sagitta ON/OFF flag

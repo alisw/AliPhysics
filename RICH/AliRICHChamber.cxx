@@ -29,7 +29,7 @@ AliRICHChamber::AliRICHChamber(Int_t iChamber):TNamed()
 //  horizontal angle between chambers  19.5 grad
 //  vertical angle between chambers    20   grad     
   RotY(90);//rotate around y
-  fCenterX3.SetXYZ(490,0,0);fPcX3.SetXYZ(490+8-0.4,0,0);fRadX3.SetXYZ(490-2,0,0); //shift center along x by 490 cm
+  fCenterX3.SetXYZ(490,0,0);fPcX3.SetXYZ(490+8-0.2,0,0);fRadX3.SetXYZ(490-2,0,0); //shift center along x by 490 cm
   
   switch(iChamber){
     case 0:                    //special test beam configuration without rotation.

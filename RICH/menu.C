@@ -518,11 +518,15 @@ void CheckPR()
 //Pattern recognition wirh Stack particles
   TFile *pFile = new TFile("$(HOME)/RPR.root","RECREATE","RICH Pattern Recognition");
   TNtupleD *hn = new TNtupleD("hn","ntuple","Pmod:Charge:TrackTheta:TrackPhi:TrackX:TrackY:MinX:MinY:ChargeMIP:ThetaCerenkov:NPhotons:MipIndex");
+  printf("\n\n");
+    printf("Pattern Recognition done for event %5i",0);
   for(Int_t iEvtN=0;iEvtN<R()->GetLoader()->GetRunLoader()->GetNumberOfEvents();iEvtN++) {
     R()->GetLoader()->GetRunLoader()->GetEvent(iEvtN);
     AliRICHTracker *tr = new AliRICHTracker();
     tr->RecWithStack(hn);
-    Info("CheckPR","Pattern Recognition done for event %i",iEvtN);
+//    Info("CheckPR","Pattern Recognition done for event %i \b",iEvtN);
+    printf("\b\b\b\b\b%5i",iEvtN+1);
   }
+  printf("\n\n");
   pFile->Write();pFile->Close();
 }

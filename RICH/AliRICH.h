@@ -152,6 +152,10 @@ void AliRICHcluster::CoG(Int_t nLocals)
     if(pad[0]<xmin)xmin=pad[0];if(pad[0]>xmax)xmax=pad[0];if(pad[1]<ymin)ymin=pad[1];if(pad[1]>ymax)ymax=pad[1];
    }
    fX/=fQdc;fY/=fQdc;//Center of Gravity
+
+   TVector2 center = AliRICHParam::Pad2Loc(AliRICHParam::Loc2Pad(TVector2(fX,fY)));
+   fX -= AliRICHParam::CogCorr(fX-center.X());
+
    fShape=Int_t(100*(xmax-xmin+1)+ymax-ymin+1);//find box containing cluster
    fSize+=nLocals;
    fStatus=kRaw;

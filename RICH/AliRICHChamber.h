@@ -21,7 +21,7 @@ public:
   virtual ~AliRICHChamber()                                              {;}
            AliRICHChamber& operator=(const AliRICHChamber&)              {return *this;}
 
-  static Double_t AlphaFeedback(Int_t )      {return 0.030;}                              //determines number of feedback photons
+  static Double_t AlphaFeedback(Int_t )      {return 0.020;}                              //determines number of feedback photons updated to 9/11/04 by Di Mauro
  
   TRotMatrix* RotMatrix()          const{return fpRotMatrix;}
   TString     RotMatrixName()      const{return "rot"+fName;}
