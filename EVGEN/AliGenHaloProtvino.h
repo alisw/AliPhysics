@@ -28,6 +28,7 @@ public:
     virtual void SetSide(Int_t flag = 1) {fSide = flag;}
     virtual void SetNskip(Int_t nskip) {fNskip = nskip;}
     virtual void SetRunPeriod(Int_t t = kY3D90) {fRunPeriod = t;}
+    virtual void SetTimePerEvent(Float_t t = 1.e-4) {fTimePerEvent = t;}
     
 
     AliGenHaloProtvino & operator=(const AliGenHaloProtvino & rhs);
@@ -36,10 +37,11 @@ protected:
   FILE*    fFile;                       // ! Pointer to file
   TString  fFileName;                   //   Choose the file
   Int_t    fSide;                       //   Muon arm side (1) / Castor side (-1)
-  Int_t    fRunPeriod;                  //   LHC Running Period 
+  Int_t    fRunPeriod;                  //   LHC Running Period
+  Float_t  fTimePerEvent;               //   Time corresponding to one event [s]
   Int_t    fNskip;                      //   Number of entries to skip
-  Float_t  fZ1[20],    fZ2[21];         // ! z-positions for gas pressure tables
-  Float_t  fG1[20][5], fG2[21][5];      // ! gas pressures
+  Float_t  fZ1[21],    fZ2[21];         // ! z-positions for gas pressure tables
+  Float_t  fG1[21][5], fG2[21][5];      // ! gas pressures
   ClassDef(AliGenHaloProtvino,1)        //   LHC background boundary source (Protvino Group results)
 };
 #endif

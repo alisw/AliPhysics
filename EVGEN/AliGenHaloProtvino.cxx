@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/03/22 13:00:25  morsch
+Initialize sum to 0. (Jiri Chudoba).
+
 Revision 1.7  2002/02/21 16:09:45  morsch
 Move SetHighwaterMark() after last possible SetTrack()
 
@@ -70,6 +73,8 @@ Generator to read beam halo file from Protvino group.
     fSide  =  1;
 //
     SetRunPeriod();
+    SetTimePerEvent();
+    SetAnalog(0);
 }
 
 AliGenHaloProtvino::AliGenHaloProtvino(Int_t npart)
@@ -84,6 +89,8 @@ AliGenHaloProtvino::AliGenHaloProtvino(Int_t npart)
     fSide    = 1;
 //
     SetRunPeriod();
+    SetTimePerEvent();
+    SetAnalog(0);
 }
 
 AliGenHaloProtvino::AliGenHaloProtvino(const AliGenHaloProtvino & HaloProtvino)
@@ -122,7 +129,7 @@ void AliGenHaloProtvino::Init()
 //
 //  Ring 1   
 // 
-    for (i = 0; i < 20; i++)
+    for (i = 0; i < 21; i++)
     {
 	fscanf(file, "%f %f %f %f %f %f", &z, 
 	       &fG1[i][0], &fG1[i][1], &fG1[i][2], &fG1[i][3], &fG1[i][4]);
@@ -154,23 +161,27 @@ void AliGenHaloProtvino::Init()
     for (j = 0; j <  5; j++) {
 	for (i = 0; i < 21; i++)  
 	{
-	    if (i <20)
-		fG1[i][j] = fG1[i][j] * crossSection * pFlux; // 1/m/s 
-	        fG2[i][j] = fG2[i][j] * crossSection * pFlux; // 1/m/s 
+	    fG1[i][j] = fG1[i][j] * crossSection * pFlux; // 1/m/s 
+	    fG2[i][j] = fG2[i][j] * crossSection * pFlux; // 1/m/s
 	}
     }
-
-
-    Float_t sum = 0.;
     
-    for (Int_t i = 0; i < 250; i++) {
+
+    Float_t sum1 = 0.;
+    Float_t sum2 = 0.;
+    
+    for (Int_t i = 0; i < 300; i++) {
 	Float_t z = 20.+i*1.;
 	z*=100;
-	Float_t wgt = GassPressureWeight(z);
-	sum+=wgt;
+	Float_t wgt1 = GassPressureWeight(z);
+	Float_t wgt2 = GassPressureWeight(-z);
+//	printf("weight: %f %f %f %f %f \n", z, wgt1, wgt2, fZ1[20], fZ2[20]);
+	sum1 += wgt1;
+	sum2 += wgt2;
     }
-    sum/=250.;
-    printf("\n %f \n \n", sum);
+    sum1/=250.;
+    sum2/=250.;
+    printf("\n %f %f \n \n", sum1, sum2);
 }
 
 //____________________________________________________________
@@ -181,52 +192,82 @@ void AliGenHaloProtvino::Generate()
   Float_t polar[3]= {0,0,0};
   Float_t origin[3];
   Float_t p[3], p0;
-  Float_t ekin, wgt, tx, ty, tz, txy;
-  Float_t zPrimary;
+  Float_t tz, txy;
   Float_t amass;
-  Int_t   inuc;
   //
-  Int_t ipart, ncols, nt;
+  Int_t ncols, nt;
   Int_t nskip = 0;
   Int_t nread = 0;
+
+  Float_t* zPrimary = new Float_t [fNpart];
+  Int_t  * inuc     = new Int_t   [fNpart];
+  Int_t  * ipart    = new Int_t   [fNpart];
+  Float_t* wgt      = new Float_t [fNpart]; 
+  Float_t* ekin     = new Float_t [fNpart];
+  Float_t* vx       = new Float_t [fNpart];
+  Float_t* vy       = new Float_t [fNpart];
+  Float_t* tx       = new Float_t [fNpart];
+  Float_t* ty       = new Float_t [fNpart];
+  
+  Float_t zVertexOld = -1.e10;
+  Int_t   nInt       = 0;        // Counts number of interactions
+  
   while(1) {
+//
+// Load event into array
+//
       ncols = fscanf(fFile,"%f %d %d %f %f %f %f %f %f",
-		     &zPrimary, &inuc, &ipart, &wgt, 
-		     &ekin, &origin[0], &origin[1],
-		     &tx, &ty);
-/*
-      printf(" \n %f %d %d %f %f %f %f %f %f",
-             zPrimary, inuc, ipart, wgt, 
-             ekin, origin[0], origin[1],
-             tx, ty);
-*/
+		     &zPrimary[nread], &inuc[nread], &ipart[nread], &wgt[nread], 
+		     &ekin[nread], &vx[nread], &vy[nread],
+		     &tx[nread], &ty[nread]);
       
       if (ncols < 0) break;
-
+// Skip fNskip events
       nskip++;
       if (fNpart !=-1 && nskip <= fNskip) continue;
-      
+// Count interactions
+      if (zPrimary[nread] != zVertexOld) {
+	  nInt++;
+	  zVertexOld = zPrimary[nread];
+      }
+// Count tracks      
       nread++;
       if (fNpart !=-1 && nread > fNpart) break;
-
-      amass = TDatabasePDG::Instance()->GetParticle(ipart)->Mass();
+  }
+//
+// Mean time between interactions
+//
+  Float_t dT = fTimePerEvent/nInt;   // sec 
+  Float_t t  = 0;                    // sec
+  
+//
+// Loop over primaries
+//
+  zVertexOld   = -1.e10;
+  Double_t arg = 0.;
+  
+  for (Int_t nprim = 0; nprim < fNpart; nprim++) 
+  {
+      amass = TDatabasePDG::Instance()->GetParticle(ipart[nprim])->Mass();
 
       //
       // Momentum vector
       //
-      p0=sqrt(ekin*ekin + 2.*amass*ekin);
+      p0=sqrt(ekin[nprim]*ekin[nprim] + 2.*amass*ekin[nprim]);
       
-      txy=TMath::Sqrt(tx*tx+ty*ty);
+      txy=TMath::Sqrt(tx[nprim]*tx[nprim]+ty[nprim]*ty[nprim]);
       if (txy == 1.) {
 	  tz=0;
       } else {
 	  tz=-TMath::Sqrt(1.-txy);
       }
     
-      p[0]=p0*tx;
-      p[1]=p0*ty;
-      p[2]=-p0*tz;
+      p[0] = p0*tx[nprim];
+      p[1] = p0*ty[nprim];
+      p[2] =-p0*tz;
       
+      origin[0] = vx[nprim];
+      origin[1] = vy[nprim];
       origin[2] = -2196.5;
 
       //
@@ -234,33 +275,64 @@ void AliGenHaloProtvino::Generate()
       // Particle weight
 
       Float_t originP[3] = {0., 0., 0.};
-      originP[2] = zPrimary;
+      originP[2] = zPrimary[nprim];
       
       Float_t pP[3] = {0., 0., 0.};
       Int_t ntP;
       
       if (fSide == -1) {
-	  originP[2] = -zPrimary;
+	  originP[2] = -zPrimary[nprim];
 	  origin[2]  = -origin[2];
 	  p[2]       = -p[2];
       }
 
-      SetTrack(0,-1,kProton,pP,originP,polar,0,kPNoProcess,ntP);
-      KeepTrack(ntP);
-      fParentWeight=wgt*GassPressureWeight(zPrimary);
-      SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
       //
-      // Assume particles come from two directions with same probability
+      // Time
+      //
+      if (zPrimary[nprim] != zVertexOld) {
+	  while(arg==0.) arg = gRandom->Rndm();
+	  t -= dT*TMath::Log(arg);              // (sec)   
+	  zVertexOld = zPrimary[nprim];
+      }
 
-      // Both Side are considered
+//    Get statistical weight according to local gas-pressure
+//
+      fParentWeight=wgt[nprim]*GassPressureWeight(zPrimary[nprim]);
+
+      if (!fAnalog || gRandom->Rndm() < fParentWeight) {
+//    Pass parent particle
+//
+	  SetTrack(0,-1,kProton,pP,originP,polar,t,kPNoProcess,ntP, fParentWeight);
+	  KeepTrack(ntP);
+	  SetTrack(fTrackIt,ntP,ipart[nprim],p,origin,polar,t,kPNoProcess,nt,fParentWeight);
+      }
+
+      //
+      // Both sides are considered
+      //
+
       if (fSide > 1) {
-          origin[2]=-origin[2];
-          p[2]=-p[2];
-          fParentWeight=wgt*GassPressureWeight(-zPrimary);
-          SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
+	  fParentWeight=wgt[nprim]*GassPressureWeight(-zPrimary[nprim]);
+	  if (!fAnalog || gRandom->Rndm() < fParentWeight) {
+	      origin[2]  = -origin[2];
+	      originP[2] = -originP[2];
+	      p[2]=-p[2];
+	      SetTrack(0,-1,kProton,pP,originP,polar,t,kPNoProcess,ntP, fParentWeight);
+	      KeepTrack(ntP);
+	      SetTrack(fTrackIt,ntP,ipart[nprim],p,origin,polar,t,kPNoProcess,nt,fParentWeight);
+	  }
       }
       SetHighWaterMark(nt);
   }
+  delete [] zPrimary;
+  delete [] inuc;    
+  delete [] ipart;   
+  delete [] wgt;     
+  delete [] ekin;    
+  delete [] vx;      
+  delete [] vy;      
+  delete [] tx;      
+  delete [] ty;      
 }
  
 
@@ -280,14 +352,12 @@ Float_t AliGenHaloProtvino::GassPressureWeight(Float_t zPrimary)
     Float_t weight = 0.;
     zPrimary/=100.;        // m
     Float_t zAbs = TMath::Abs(zPrimary);
-    zPrimary = TMath::Abs(zPrimary);
-    
-    if (zPrimary < 0.) 
+    if (zPrimary > 0.) 
     {
-	if (zAbs > fZ1[19]) {
+	if (zAbs > fZ1[20]) {
 	    weight = 2.e4;
 	} else {
-	    for (Int_t i = 1; i < 20; i++) {
+	    for (Int_t i = 1; i < 21; i++) {
 		if (zAbs < fZ1[i]) {
 		    weight = fG1[i][fRunPeriod];
 		    break;
@@ -306,7 +376,6 @@ Float_t AliGenHaloProtvino::GassPressureWeight(Float_t zPrimary)
 	    }
 	}
     }
-    
     return weight;
 }
 
