@@ -20,8 +20,14 @@ class AliRunDigitizer;
 class AliDigitizer: public TTask {
 
  public:
-    AliDigitizer();                               // default ctor - dummy
-    AliDigitizer(AliRunDigitizer *manager);       // ctor to be used          
+// ctor with name and title
+    AliDigitizer(const Text_t* name="AliDigitizer",
+		 const Text_t* title="AliDigitizer");
+// ctor to be used with name and title
+    AliDigitizer(AliRunDigitizer *manager,
+		 const Text_t* name="AliDigitizer",
+		 const Text_t* title="AliDigitizer");
+      
     virtual ~AliDigitizer();
     virtual Bool_t Init() {return kTRUE;}
 //    virtual void Digitize() = 0;
@@ -29,7 +35,7 @@ class AliDigitizer: public TTask {
  protected:
     AliRunDigitizer *fManager;
     
-    ClassDef(AliDigitizer,1)
+    ClassDef(AliDigitizer,1) // Base class for detector digitizers
 };
 
 #endif // ALIDIGITIZER_H

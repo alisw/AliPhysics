@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 //
-//  Pure Virtual Base Class for Detector specific Merging/Digitization   
+//  Base Class for Detector specific Merging/Digitization   
 //                  
 //  Author: Jiri Chudoba (CERN)
 //
@@ -23,6 +23,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/10/04 15:56:34  jchudoba
+TTask inheritance
+
 Revision 1.1  2001/07/27 13:02:06  jchudoba
 ABC for detector digits merging/digitization
 
@@ -39,17 +42,26 @@ ABC for detector digits merging/digitization
 
 ClassImp(AliDigitizer)
 
-AliDigitizer::AliDigitizer() :TTask("AliDigitizer","")
+AliDigitizer::AliDigitizer(const Text_t* name, const Text_t* title)
+  :TTask(name,title) 
 {
-// dummy default ctor
+//
+// dummy default ctor with name and title
+//
   fManager = 0;
 }
 
-AliDigitizer::AliDigitizer(AliRunDigitizer* manager) 
-  :TTask("AliDigitizer","")
+AliDigitizer::AliDigitizer(AliRunDigitizer *manager, 
+			   const Text_t* name, const Text_t* title)
+  :TTask(name,title)
 {
+//
+// ctor with name and title
+//
   fManager = manager;
   manager->AddDigitizer(this);
 }
+
+
 
 AliDigitizer::~AliDigitizer() {;}
