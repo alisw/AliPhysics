@@ -140,7 +140,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 // Example for a FLUKA Boundary Source                  *
 //*******************************************************
      AliGenFLUKAsource *gener = new AliGenFLUKAsource(-1);
-     gener->AddFile("$(ALICE_ROOT)/data/all32.root"); 
+     gener->SetFileName("$(ALICE_ROOT)/data/all32.root"); 
      gener->SetPartFlag(9);
      gener->SetAgeMax(1.e-5);
 //  31.7 events     
