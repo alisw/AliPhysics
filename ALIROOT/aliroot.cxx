@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/05/21 17:22:50  buncic
+Fixed problem with missing AliConfig while reading galice.root
+
 Revision 1.5  2001/05/16 14:57:07  alibrary
 New files for folders and Stack
 
@@ -86,7 +89,7 @@ int main(int argc, char **argv)
   // in the event.
   
   // Create new configuration 
-  new AliConfig ();
+  new AliConfig ("Folders","Alice data exchange");
   
   new AliRun("gAlice","The ALICE Off-line Simulation Framework");
     
