@@ -7,13 +7,13 @@
 /* $Id$ */
 
 //-------------------------------------------------------
-//                       TPC trackerMI
+//                       TPC tracker
+//   Parallel tracker 
 //
 //   Origin: 
 //-------------------------------------------------------
 #include "AliTracker.h"
 #include "AliTPCtrack.h"
-#include "AliComplexCluster.h"
 
 class TFile;
 class AliTPCParam;
@@ -22,7 +22,7 @@ class AliTPCclusterMI;
 class AliTPCTrackerPoint;
 class AliESD;   
 class TTree;
-
+class AliComplexCluster;
 
 class AliTPCseed : public AliTPCtrack {
   friend class AliTPCtrackerMI;
@@ -66,8 +66,8 @@ class AliTPCseed : public AliTPCtrack {
      void Desactivate(Int_t reason){ fRemoval = reason;} 
      //
      //
-     AliESDtrack * fEsd; //!
  private:
+     AliESDtrack * fEsd; //!
      AliTPCclusterMI*   fClusterPointer[160];  //! array of cluster pointers  - 
      TClonesArray * fPoints;              // array with points along the track
      TClonesArray * fEPoints;             // array with exact points - calculated in special macro not used in tracking
@@ -157,7 +157,7 @@ public:
    Int_t PropagateForward2(TObjArray * arr);
 
    Int_t CheckKinkPoint(AliTPCseed*seed, Float_t th);
-   void SortTracks(TObjArray * arr, Int_t mode);
+   void SortTracks(TObjArray * arr, Int_t mode) const;
   
 
    virtual Double_t ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl = 0);
@@ -228,27 +228,7 @@ public:
      Double_t GetAlpha() const {return fAlpha;}
      Double_t GetAlphaShift() const {return fAlphaShift;}     
      //Int_t GetFirst(){return fFirstRow;}
-     Int_t GetRowNumber(Double_t x) const {
-        //return pad row number for this x
-       Double_t r;
-       if (fN < 64){
-         r=fRow[fN-1].GetX();
-         if (x > r) return fN;
-         r=fRow[0].GetX();
-         if (x < r) return -1;
-         return Int_t((x-r)/fPadPitchLength + 0.5);}
-       else{    
-           r=fRow[fN-1].GetX();
-           if (x > r) return fN;
-           r=fRow[0].GetX();
-           if (x < r) return -1;
-          Double_t r1=fRow[64].GetX();
-          if(x<r1){       
-            return Int_t((x-r)/f1PadPitchLength + 0.5);}
-          else{
-            return (Int_t((x-r1)/f2PadPitchLength + 0.5)+64);} 
-       }
-     }
+     Int_t GetRowNumber(Double_t x) const;
      Double_t GetPadPitchWidth()  const {return fPadPitchWidth;}
      Double_t GetPadPitchLength() const {return fPadPitchLength;}
      Double_t GetPadPitchLength(Float_t x) const {return (x<200) ? fPadPitchLength:f2PadPitchLength ;}
@@ -276,17 +256,17 @@ public:
    void  RemoveUsed(TObjArray * arr, Float_t factor1, Float_t factor2,  Int_t removalindex);
    void  RemoveDouble(TObjArray * arr, Float_t factor1, Float_t factor2,  Int_t removalindex);
 
-   void  StopNotActive(TObjArray * arr, Int_t row0, Float_t th0, Float_t th1, Float_t th2);
-   void  StopNotActive(AliTPCseed * seed, Int_t row0, Float_t th0, Float_t th1, Float_t th2);
+   void  StopNotActive(TObjArray * arr, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const;
+   void  StopNotActive(AliTPCseed * seed, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const;
    Int_t AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster, Float_t factor, Float_t cory=1., Float_t corz=1.);
 
 private:
    inline AliTPCRow &GetRow(Int_t sec, Int_t row);
-   inline Double_t  GetXrow(Int_t row);
-   inline Double_t  GetMaxY(Int_t row);
-   inline Int_t GetRowNumber(Double_t x);
-   inline Double_t GetPadPitchLength(Double_t x);
-   inline Double_t GetPadPitchLength(Int_t row);
+   inline Double_t  GetXrow(Int_t row) const;
+   inline Double_t  GetMaxY(Int_t row) const;
+   inline Int_t GetRowNumber(Double_t x) const;
+   inline Double_t GetPadPitchLength(Double_t x) const;
+   inline Double_t GetPadPitchLength(Int_t row) const;
 
    Float_t  GetSigmaY(AliTPCseed * seed);
    Float_t  GetSigmaZ(AliTPCseed * seed);
@@ -315,9 +295,9 @@ private:
    void Tracking(TObjArray * arr);
    TObjArray * Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_t cuts[4], Float_t dy=-1, Int_t dsec=0);
    TObjArray * Tracking();
-   void SumTracks(TObjArray *arr1,TObjArray *arr2);
-   void PrepareForBackProlongation(TObjArray * arr, Float_t fac);
-   void PrepareForProlongation(TObjArray * arr, Float_t fac);
+   void SumTracks(TObjArray *arr1,TObjArray *arr2) const;
+   void PrepareForBackProlongation(TObjArray * arr, Float_t fac) const;
+   void PrepareForProlongation(TObjArray * arr, Float_t fac) const;
 
    void SetSampledEdx(AliTPCseed *t, Float_t q, Int_t i) {;}
    Int_t UpdateTrack(AliTPCseed *t, Int_t accept); //update trackinfo
@@ -360,30 +340,30 @@ AliTPCtrackerMI::AliTPCRow & AliTPCtrackerMI::GetRow(Int_t sec, Int_t row)
   return (row>=fInnerSec->GetNRows()) ? fOuterSec[sec][row-fInnerSec->GetNRows()]:fInnerSec[sec][row];
 }
 
-Double_t  AliTPCtrackerMI::GetXrow(Int_t row) {
+Double_t  AliTPCtrackerMI::GetXrow(Int_t row) const {
   //  return (row>=fInnerSec->GetNRows()) ? fOuterSec->GetX(row-fInnerSec->GetNRows()):fInnerSec->GetX(row);
   return fXRow[row];
 }
 
-Double_t  AliTPCtrackerMI::GetMaxY(Int_t row)  {
+Double_t  AliTPCtrackerMI::GetMaxY(Int_t row) const {
   //return (row>=fInnerSec->GetNRows()) ? fOuterSec->GetMaxY(row-fInnerSec->GetNRows()):fInnerSec->GetMaxY(row);
   return fYMax[row];
 }
 
-Int_t AliTPCtrackerMI::GetRowNumber(Double_t x)
+Int_t AliTPCtrackerMI::GetRowNumber(Double_t x) const
 {
   //
   return (x>133.) ? fOuterSec->GetRowNumber(x)+fInnerSec->GetNRows():fInnerSec->GetRowNumber(x);
 }
 
-Double_t  AliTPCtrackerMI::GetPadPitchLength(Double_t x)
+Double_t  AliTPCtrackerMI::GetPadPitchLength(Double_t x) const
 {
   //
   return (x>133.) ? fOuterSec->GetPadPitchLength(x):fInnerSec->GetPadPitchLength(x);
   //return fPadLength[row];
 }
 
-Double_t  AliTPCtrackerMI::GetPadPitchLength(Int_t row)
+Double_t  AliTPCtrackerMI::GetPadPitchLength(Int_t row) const
 {
   //
   return fPadLength[row];

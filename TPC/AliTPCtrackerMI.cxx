@@ -13,68 +13,24 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.19  2003/10/21 11:11:52  kowal2
-Removed compiler warning (Bool_t accept  changed to Int_t accept)
-
-Revision 1.18  2003/10/17 15:42:14  kowal2
-Back to the previous version. The warning was erronously generated
-by the compiler
-
-Revision 1.17  2003/10/17 12:28:02  kowal2
-Removed "always true" comparison
-
-Revision 1.16  2003/10/17 12:01:16  kowal2
-Removed compiler warning.
-
-Revision 1.15  2003/09/29 11:56:58  kowal2
-bug fix2
-
-Revision 1.14  2003/09/29 11:39:43  kowal2
-bug fix
-
-Revision 1.13  2003/09/29 11:28:19  kowal2
-completly rewritten
-
-Revision 1.9.4.3  2003/06/23 14:47:10  hristov
-Minor fix
-
-Revision 1.9.4.2  2003/06/23 10:06:13  hristov
-Updated information about the overlapping clusters (M.Ivanov)
-
-Revision 1.9.4.1  2003/06/19 06:59:58  hristov
-Updated version of parallel tracking (M.Ivanov)
-
-Revision 1.9  2003/03/19 17:14:11  hristov
-Load/UnloadClusters added to the base class and the derived classes changed correspondingly. Possibility to give 2 input files for ITS and TPC tracks in PropagateBack. TRD tracker uses fEventN from the base class (T.Kuhr)
-
-Revision 1.8  2003/03/05 11:16:15  kowal2
-Logs added
-
-*/
-
-
-
-
-
-
-
-/*
-  AliTPC parallel tracker - 
-  How to use?  - 
-  run AliTPCFindClusters.C macro - clusters neccessary for tracker are founded
-  run AliTPCFindTracksMI.C macro - to find tracks
-  tracks are written to AliTPCtracks.root file
-  for comparison also seeds are written to the same file - to special branch
-*/
 
 //-------------------------------------------------------
 //          Implementation of the TPC tracker
 //
 //   Origin: Marian Ivanov   Marian.Ivanov@cern.ch
 // 
+//  AliTPC parallel tracker - 
+//  How to use?  - 
+//  run AliTPCFindClusters.C macro - clusters neccessary for tracker are founded
+//  run AliTPCFindTracksMI.C macro - to find tracks
+//  tracks are written to AliTPCtracks.root file
+//  for comparison also seeds are written to the same file - to special branch
 //-------------------------------------------------------
+
+
+/* $Id$ */
+
+
 #include <TObjArray.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -83,6 +39,7 @@ Logs added
 #include "Riostream.h"
 
 #include "AliTPCclusterMI.h"
+#include "AliComplexCluster.h"
 #include "AliTPCParam.h"
 #include "AliTPCClustersRow.h"
 #include "AliComplexCluster.h"
@@ -381,6 +338,9 @@ void AliTPCtrackerMI::SetIO(TTree * input, TTree * output, AliESD * event)
 
 void AliTPCtrackerMI::FillESD(TObjArray* arr)
 {
+  //
+  //
+  //fill esds using updated tracks
   if (fEvent){
     // write tracks to the event
     // store index of the track
@@ -399,8 +359,10 @@ void AliTPCtrackerMI::FillESD(TObjArray* arr)
   }
 }
 
-void AliTPCtrackerMI::WriteTracks(TTree * tree){
+void AliTPCtrackerMI::WriteTracks(TTree * tree)
+{
   //
+  // write tracks from seed array to selected tree
   //
   fOutput  = tree;
   if (fOutput){
@@ -2107,7 +2069,7 @@ void  AliTPCtrackerMI::RemoveDouble(TObjArray * arr, Float_t factor1, Float_t fa
 
 
 
-void AliTPCtrackerMI::SortTracks(TObjArray * arr, Int_t mode)
+void AliTPCtrackerMI::SortTracks(TObjArray * arr, Int_t mode) const
 {
   //
   //sort tracks in array according mode criteria
@@ -2381,7 +2343,7 @@ void AliTPCtrackerMI::SignClusters(TObjArray * arr, Float_t fnumber, Float_t fde
 }
 
 
-void  AliTPCtrackerMI::StopNotActive(TObjArray * arr, Int_t row0, Float_t th0, Float_t th1, Float_t th2)
+void  AliTPCtrackerMI::StopNotActive(TObjArray * arr, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const
 {
   // stop not active tracks
   // take th1 as threshold for number of founded to number of foundable on last 10 active rows
@@ -2401,7 +2363,7 @@ void  AliTPCtrackerMI::StopNotActive(TObjArray * arr, Int_t row0, Float_t th0, F
 
 
 void  AliTPCtrackerMI::StopNotActive(AliTPCseed * seed, Int_t row0, Float_t th0, Float_t th1,
- Float_t th2)
+ Float_t th2) const
 {
   // stop not active tracks
   // take th1 as threshold for number of founded to number of foundable on last 10 active rows
@@ -2522,7 +2484,7 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
     ULong_t status=esd->GetStatus();    
     AliTPCtrack t(*esd);
     AliTPCseed *seed = new AliTPCseed(t,t.GetAlpha());
-    if (status==AliESDtrack::kTPCin) seed->Modify(0.8);
+    if (status==AliESDtrack::kTPCin&&direction==1) seed->Modify(0.8);
     //
     //
     // rotate to the local coordinate system
@@ -2549,6 +2511,7 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
     //	seed = seed2;
     //  }
     //}
+    
     fSeeds->AddLast(seed);
   }
 }
@@ -3557,7 +3520,7 @@ AliTPCseed *AliTPCtrackerMI::ReSeed(AliTPCseed *track, Float_t r0, Float_t r1, F
     AliTPCclusterMI * cl = GetClusterMI(clindex);
     if (cl==0) {
       printf("Bug\n");
-      AliTPCclusterMI * cl = GetClusterMI(clindex);
+      //      AliTPCclusterMI * cl = GetClusterMI(clindex);
       return 0;
     }
     sec[ipoint]     = ((clindex&0xff000000)>>24)%18;
@@ -4292,7 +4255,7 @@ TObjArray * AliTPCtrackerMI::Tracking()
 }
 
 
-void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *arr2)
+void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *arr2) const
 {
   //
   //sum tracks to common container
@@ -4376,7 +4339,7 @@ void  AliTPCtrackerMI::ParallelTracking(TObjArray * arr, Int_t rfirst, Int_t rla
   }    
 }
 
-void AliTPCtrackerMI::PrepareForBackProlongation(TObjArray * arr,Float_t fac)
+void AliTPCtrackerMI::PrepareForBackProlongation(TObjArray * arr,Float_t fac) const
 {
   //
   //
@@ -4412,7 +4375,7 @@ void AliTPCtrackerMI::PrepareForBackProlongation(TObjArray * arr,Float_t fac)
 
 
 }
-void AliTPCtrackerMI::PrepareForProlongation(TObjArray * arr, Float_t fac)
+void AliTPCtrackerMI::PrepareForProlongation(TObjArray * arr, Float_t fac) const
 {
   //
   //
@@ -4687,6 +4650,30 @@ void AliTPCtrackerMI::CookLabel(AliTPCseed *t, Float_t wrong) const {
   //  delete[] lb;
   //delete[] mx;
   //delete[] clusters;
+}
+
+
+Int_t  AliTPCtrackerMI::AliTPCSector::GetRowNumber(Double_t x) const 
+{
+  //return pad row number for this x
+  Double_t r;
+  if (fN < 64){
+    r=fRow[fN-1].GetX();
+    if (x > r) return fN;
+    r=fRow[0].GetX();
+    if (x < r) return -1;
+    return Int_t((x-r)/fPadPitchLength + 0.5);}
+  else{    
+    r=fRow[fN-1].GetX();
+    if (x > r) return fN;
+    r=fRow[0].GetX();
+    if (x < r) return -1;
+    Double_t r1=fRow[64].GetX();
+    if(x<r1){       
+      return Int_t((x-r)/f1PadPitchLength + 0.5);}
+    else{
+      return (Int_t((x-r1)/f2PadPitchLength + 0.5)+64);} 
+  }
 }
 
 //_________________________________________________________________________

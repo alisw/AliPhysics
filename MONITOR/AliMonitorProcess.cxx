@@ -37,6 +37,7 @@
 #include "AliRun.h"
 #include "AliTPC.h"
 #include "AliTPCclustererMI.h"
+#include "AliComplexCluster.h"
 #include "AliTPCtrackerMI.h"
 #include "AliITS.h"
 #include "AliITSclustererV2.h"
