@@ -501,9 +501,9 @@ void AliITSvSPD02::InitAliITSgeom(){
     cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
     for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
     for(i=0;i<ltypess;i++)for(j=0;j<ndeep;j++) 
-	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
+        strncpy((char*) &itsGeomTreeNames[i][j],names[i][j],4);
+    //	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
     mod = 5;
-
     if(fITSgeom!=0) delete fITSgeom;
     nlad[0]=1;nlad[1]=1;nlad[2]=1;nlad[3]=1;nlad[4]=1;
     ndet[0]=1;ndet[1]=1;ndet[2]=1;ndet[3]=1;ndet[4]=1;

@@ -607,8 +607,9 @@ void AliITSv5::InitAliITSgeom(){
     // at some point with a version that can search through the geometry
     // tree its self.
     for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
-    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++) 
-	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
+    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++)
+        strncpy((char*) &itsGeomTreeNames[i][j],names[i][j],4); 
+    //	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
     mod = 0;
     for(i=0;i<nlayers;i++){
 	k = 1;
