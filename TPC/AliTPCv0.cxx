@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2001/04/27 15:23:06  kowal2
+Correct materian in the central part of the inner containment vessel
+
 Revision 1.24  2001/04/26 06:15:11  kowal2
 Corrected bug in the inner containment vessel (cones)
 
@@ -296,13 +299,13 @@ void AliTPCv0::CreateGeometry()
   //
 
   dm[9]=-247.6;
-  dm[10]=274.81;
+  dm[10]=274.8124;
   dm[11]=278.;
 
   //
 
   dm[12]=253.6;
-  dm[13]=274.81;
+  dm[13]=274.8124;
   dm[14]=278.;
 
   //
@@ -323,7 +326,7 @@ void AliTPCv0::CreateGeometry()
 
   // Tpc SAndwich 1 - Al
 
-  dm[0]=274.81;
+  dm[0]=274.8124;
   dm[1]=278.;
   dm[2]=252.1;
 
@@ -346,8 +349,8 @@ void AliTPCv0::CreateGeometry()
 
   // Tpc SAndwich 4 - fiber glass (G10)
 
-  dm[0] += 5.e-3;
-  dm[1] -= 5.e-3;
+  dm[0] += 3.8e-3;
+  dm[1] -= 3.8e-3;
 
   gMC->Gsvolu("TSA4","TUBE",idtmed[12],dm,3);  
 
@@ -397,13 +400,13 @@ void AliTPCv0::CreateGeometry()
 
   dm[9]=-250.6;
   dm[10]=258.;
-  dm[11]=260.05;
+  dm[11]=260.0476;
 
   //
 
   dm[12]=250.6;
   dm[13]=258.;
-  dm[14]=260.05;
+  dm[14]=260.0476;
 
   //
 
@@ -424,15 +427,15 @@ void AliTPCv0::CreateGeometry()
   // Tpc SAndwich 6 - Tedlar
 
   dm[0]= 258.;
-  dm[1]= 260.05;
+  dm[1]= 260.0476;
   dm[2]= 252.1;
 
   gMC->Gsvolu("TSA6","TUBE",idtmed[9],dm,3);
 
   // Tpc SAndwich 7 - fiber glass
 
-  dm[0] += 5.e-3;
-  dm[1] -= 5.e-3;
+  dm[0] += 3.8e-3;
+  dm[1] -= 3.8e-3;
 
   gMC->Gsvolu("TSA7","TUBE",idtmed[12],dm,3);
 
@@ -529,37 +532,37 @@ void AliTPCv0::CreateGeometry()
   //
 
   dm[9]=-250.6;
-  dm[10]=77.05;
+  dm[10]=77.0524;
   dm[11]=79.2;
 
   //
 
   dm[12]=-88.;
-  dm[13]=77.05;
+  dm[13]=77.0524;
   dm[14]=79.2;
 
   //
 
   dm[15]=-88.;
-  dm[16]=77.09;
+  dm[16]=77.0924;
   dm[17]=79.16;
 
   //
 
   dm[18]=88.;
-  dm[19]=77.09;
+  dm[19]=77.0924;
   dm[20]=79.16;
 
   //
 
   dm[21]=88.;
-  dm[22]=77.05;
+  dm[22]=77.0524;
   dm[23]=79.2;
 
   //
 
   dm[24]=250.6;
-  dm[25]=77.05;
+  dm[25]=77.0524;
   dm[26]=79.2;
 
   //
@@ -580,7 +583,7 @@ void AliTPCv0::CreateGeometry()
 
   // Tpc Sandwich 9 -Tedlar
 
-  dm[0]=77.09;
+  dm[0]=77.0924;
   dm[1]=79.16;
   dm[2]=88.;
 
@@ -588,8 +591,8 @@ void AliTPCv0::CreateGeometry()
 
   // Tpc Sandwich 10 - fiber glass (G10) 
 
-  dm[0] += 5.e-3;
-  dm[1] -= 5.e-3;
+  dm[0] += 3.8e-3;
+  dm[1] -= 3.8e-3;
 
   gMC->Gsvolu("TS10","TUBE",idtmed[12],dm,3);
 
@@ -611,7 +614,7 @@ void AliTPCv0::CreateGeometry()
 
   // Tpc Sandwich 12 -Tedlar
 
-  dm[0]=77.05;
+  dm[0]=77.0524;
   dm[1]=79.2;
   dm[2]=82.05;
 
@@ -619,8 +622,8 @@ void AliTPCv0::CreateGeometry()
 
   // Tpc Sandwich 13 - fiber glass (G10) 
 
-  dm[0] += 5.e-3;
-  dm[1] -= 5.e-3;
+  dm[0] += 3.8e-3;
+  dm[1] -= 3.8e-3;
 
   gMC->Gsvolu("TS13","TUBE",idtmed[12],dm,3);
 
@@ -745,13 +748,13 @@ void AliTPCv0::CreateGeometry()
   //
 
   dm[9]=-69.1;
-  dm[10]=60.64;
+  dm[10]=60.6224;
   dm[11]=61.2;  
 
   //
 
   dm[12]=69.1;
-  dm[13]=60.64;
+  dm[13]=60.6224;
   dm[14]=61.2;
 
   //
@@ -770,7 +773,7 @@ void AliTPCv0::CreateGeometry()
 
   // Tpc Sandwich 15 - Al
 
-  dm[0]=60.64;
+  dm[0]=60.6224;
   dm[1]=61.2;
   dm[2]=70.1;
 
@@ -790,17 +793,17 @@ void AliTPCv0::CreateGeometry()
 
   gMC->Gsvolu("TS17","TUBE",idtmed[9],dm,3);
 
-  // Tpc Sandwich 18 - fiber glass
+  // Tpc Sandwich 18 - carbon fiber 
 
-  dm[0] += 5.e-3;
-  dm[1] -= 5.e-3;
+  dm[0] += 3.8e-3;
+  dm[1] -= 3.8e-3;
 
-  gMC->Gsvolu("TS18","TUBE",idtmed[12],dm,3);  
+  gMC->Gsvolu("TS18","TUBE",idtmed[15],dm,3);  
 
   // Tpc Sandwich 19 - Nomex
 
-  dm[0] += 0.01;
-  dm[1] -= 0.01;
+  dm[0] += 0.02;
+  dm[1] -= 0.02;
 
   gMC->Gsvolu("TS19","TUBE",idtmed[6],dm,3); 
 
