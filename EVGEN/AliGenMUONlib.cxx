@@ -202,7 +202,7 @@ Double_t AliGenMUONlib::PtPhi( Double_t *px, Double_t *)
 //    y-distribution
 Double_t AliGenMUONlib::YPhi( Double_t *px, Double_t *)
 {
-    Double_t *dummy;
+    Double_t *dummy=0;
     return YJpsi(px,dummy);
 }
 //                 particle composition
@@ -230,7 +230,7 @@ Double_t AliGenMUONlib::PtCharm( Double_t *px, Double_t *)
 //                  y-distribution
 Double_t AliGenMUONlib::YCharm( Double_t *px, Double_t *)
 {
-    Double_t *dummy;
+    Double_t *dummy=0;
     return YJpsi(px,dummy);
 }
 
@@ -274,7 +274,7 @@ Double_t AliGenMUONlib::PtBeauty( Double_t *px, Double_t *)
 //                     y-distribution
 Double_t AliGenMUONlib::YBeauty( Double_t *px, Double_t *)
 {
-    Double_t *dummy;
+    Double_t *dummy=0;
     return YJpsi(px,dummy);
 }
 
