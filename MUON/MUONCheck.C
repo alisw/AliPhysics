@@ -50,14 +50,15 @@
 
 void MUONkine(char * filename="galice.root",Int_t event2Check=0)
 {
-  //  TClonesArray * ListOfParticles = new TClonesArray("TParticle",1000);
-  TParticle * particle = new TParticle();
+  // Stack of particle for each event
+  AliStack* stack;
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
   if (RunLoader ==0x0) {
     printf(">>> Error : Error Opening %s file \n",filename);
     return;
   }
+
   RunLoader->LoadKinematics("READ");
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
@@ -67,12 +68,11 @@ void MUONkine(char * filename="galice.root",Int_t event2Check=0)
     Int_t iparticle, nparticles;
     // Getting event ievent
     RunLoader->GetEvent(ievent); 
-    RunLoader->TreeK()->GetBranch("Particles")->SetAddress(&particle);
-    nparticles = (Int_t)RunLoader->TreeK()->GetEntries();
+    stack = RunLoader->Stack();
+    nparticles = (Int_t) stack->GetNtrack();
     printf(">>> Event %d, Number of particles is %d \n",ievent, nparticles);
     for(iparticle=0; iparticle<nparticles; iparticle++) {
-      RunLoader->TreeK()->GetEvent(iparticle);
-      particle->Print("");  
+      stack->Particle(iparticle)->Print("");  
     }
     if (event2Check!=0) ievent=nevents;
   }
