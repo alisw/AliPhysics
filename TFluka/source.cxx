@@ -206,7 +206,8 @@ extern "C" {
     //STACK.tz [STACK.lstack] = BEAM.tinz;
     Double_t cosx = particle->Px()/particle->P();
     Double_t cosy = particle->Py()/particle->P();
-    Double_t cosz = sqrt(oneone - cosx*cosx - cosy*cosy);
+    Double_t cosz = TMath::Sqrt(oneone - cosx*cosx - cosy*cosy);
+    if (particle->Pz() < 0.) cosz = -cosz;
     STACK.tx [STACK.lstack] = cosx;
     STACK.ty [STACK.lstack] = cosy;
     STACK.tz [STACK.lstack] = cosz;
