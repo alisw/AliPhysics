@@ -9,7 +9,6 @@
 
 #ifdef use_newio
 #include <AliRunLoader.h>
-#include <AliTPC.h>
 #endif
 #include <AliTPCParamSR.h>
 #include <AliTPCDigitsArray.h>
@@ -230,7 +229,7 @@ Bool_t AliL3FileHandler::SetAliInput()
   //set ali input
 #ifdef use_newio
   fInAli->CdGAFile();
-  fParam = AliTPC::LoadTPCParam(gFile);
+  fParam = (AliTPCParam*)gFile->Get("75x40_100x60_150x60");
   if(!fParam){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File")
       <<"No TPC parameters found in \""<<gFile->GetName()
