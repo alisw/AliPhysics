@@ -495,7 +495,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     // The method can be called by a macro. It preforms the tracking for
     // all good TPC tracks
 
-    printf("begin DoTracking - file %p\n",file);
+    printf("begin DoTracking - file %p\n",(void*)file);
 
     gAlice->GetEvent(evNumber);  //modificato per gestire hbt
  

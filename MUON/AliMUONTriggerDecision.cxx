@@ -232,7 +232,7 @@ void AliMUONTriggerDecision::SetBit(){
       TClonesArray *muonDigits = fMUONData->Digits(chamber-1);
       Int_t ndigits = muonDigits->GetEntriesFast();
       if (fDebug>3)
-	printf("\n 1 Found %d digits in %p %d \n ", ndigits, muonDigits,chamber-1);
+	printf("\n 1 Found %d digits in %p %d \n ", ndigits, (void*)muonDigits,chamber-1);
 
       AliMUONDigit  *mdig;
       

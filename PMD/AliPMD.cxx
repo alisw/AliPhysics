@@ -272,7 +272,7 @@ void AliPMD::MakeBranch(Option_t* option)
     AliDetector::MakeBranch(option);
 
     if (cR  && fLoader->TreeR()) {
-      printf("Make Branch - TreeR address %p\n",fLoader->TreeR());
+      printf("Make Branch - TreeR address %p\n",(void*)fLoader->TreeR());
     
       const Int_t kBufferSize = 4000;
       char branchname[30];

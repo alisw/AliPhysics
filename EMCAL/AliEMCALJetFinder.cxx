@@ -540,7 +540,7 @@ void AliEMCALJetFinder::WriteJets()
       file = (pK->GetCurrentFile())->GetName();
       TBranch * jetBranch ;  
 	if (fDebug > 1)
-	    printf("Make Branch - TreeR address %p %p\n",gAlice->TreeR(), pEMCAL);
+	    printf("Make Branch - TreeR address %p %p\n",(void*)gAlice->TreeR(), (void*)pEMCAL);
 	//if (fJets && gAlice->TreeR()) {
 	if (fJets && gime->TreeR()) {
 	  // pEMCAL->MakeBranchInTree(gAlice->TreeR(), 

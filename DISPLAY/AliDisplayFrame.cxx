@@ -246,7 +246,7 @@ void AliDisplayFrame::Draw(Float_t theta, Float_t phi, Float_t psi)
   //t2 = clock();
   time(&t2);
   //	printf("\nDrawn in....%f sec", ((double)t2-t1)/(10000*CLK_TCK));
-  printf("\nDrawn in....%2lf sec", difftime(t2,t1));
+  printf("\nDrawn in....%f sec", difftime(t2,t1));
   timer.Stop();
   timer.Print("m");
 }

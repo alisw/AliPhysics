@@ -88,9 +88,9 @@ void AliGenHaloProtvino::Init()
 // Initialisation
     fFile = fopen(fFileName,"r");
     if (fFile) {
-	printf("\n File %s opened for reading, %p ! \n ",  fFileName.Data(), fFile);
+	printf("\n File %s opened for reading, %p ! \n ",  fFileName.Data(), (void*)fFile);
     } else {
-	printf("\n Opening of file %s failed,  %p ! \n ",  fFileName.Data(), fFile);
+	printf("\n Opening of file %s failed,  %p ! \n ",  fFileName.Data(), (void*)fFile);
     }
 //
 //

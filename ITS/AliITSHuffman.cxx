@@ -142,7 +142,7 @@ AliITSHTable&
 void AliITSHTable::GetFrequencies(Int_t len, UChar_t *stream)
 {
   // get frequencies
-  printf("Get Frequencies: sym %p \n",fSym);
+  printf("Get Frequencies: sym %p \n",(void*)fSym);
 
   // use temporarily the fCode array to store the frequencies
   for (Int_t i=0; i< len; i++) {
@@ -191,7 +191,7 @@ void AliITSHTable::BuildHTable()
      fHNodes->RemoveAt(nindex-1);
      fHNodes->AddAt(aux,nindex-1);
      nindex--;
-     printf("nindex, obj at nindex %d %p \n",nindex,(AliITSHNode*)fHNodes->UncheckedAt(nindex));
+     printf("nindex, obj at nindex %d %p \n",nindex,(void*)fHNodes->UncheckedAt(nindex));
 
     }
 
