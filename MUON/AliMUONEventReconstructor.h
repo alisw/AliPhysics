@@ -22,10 +22,6 @@ class AliMUONData;
 class AliRunLoader;
 class AliLoader;
 
-// Constants which should be elsewhere ????
-const Int_t kMaxMuonTrackingChambers = 10;
-const Int_t kMaxMuonTrackingStations = kMaxMuonTrackingChambers / 2;
-
 class AliMUONEventReconstructor : public TObject {
 
  public:
@@ -105,6 +101,32 @@ class AliMUONEventReconstructor : public TObject {
 
  private:
 
+  // Constants which should be elsewhere ????
+  static const Int_t fgkMaxMuonTrackingChambers = 10; // Max number of Muon tracking chambers
+  static const Int_t kMaxMuonTrackingStations = 5; // Max number of Muon tracking stations
+
+  // Defaults parameters for reconstruction
+  static const Double_t fgkDefaultMinBendingMomentum;
+  static const Double_t fgkDefaultMaxBendingMomentum;
+  static const Double_t fgkDefaultMaxChi2;
+  static const Double_t fgkDefaultMaxSigma2Distance;
+  static const Double_t fgkDefaultBendingResolution;
+  static const Double_t fgkDefaultNonBendingResolution;
+  static const Double_t fgkDefaultChamberThicknessInX0;
+  // Simple magnetic field:
+  // Value taken from macro MUONtracking.C: 0.7 T, hence 7 kG
+  // Length and Position from reco_muon.F, with opposite sign:
+  // Length = ZMAGEND-ZCOIL
+  // Position = (ZMAGEND+ZCOIL)/2
+  // to be ajusted differently from real magnetic field ????
+  static const Double_t fgkDefaultSimpleBValue;
+  static const Double_t fgkDefaultSimpleBLength;
+  static const Double_t fgkDefaultSimpleBPosition;
+  static const Int_t fgkDefaultRecGeantHits;
+  static const Double_t fgkDefaultEfficiency;
+
+  static const Int_t fgkDefaultPrintLevel;
+
   Int_t fTrackMethod; // AZ - tracking method
 
   // Parameters for event reconstruction
@@ -113,8 +135,8 @@ class AliMUONEventReconstructor : public TObject {
   Double_t fMaxBendingMomentum; // maximum value (GeV/c) of momentum in bending plane
   Double_t fMaxChi2; // maximum Chi2 per degree of Freedom
   Double_t fMaxSigma2Distance; // maximum square distance in units of the variance (maximum chi2)
-  Double_t fRMin[kMaxMuonTrackingChambers]; // minimum radius (cm)
-  Double_t fRMax[kMaxMuonTrackingChambers]; // maximum radius (cm)
+  Double_t fRMin[fgkMaxMuonTrackingChambers]; // minimum radius (cm)
+  Double_t fRMax[fgkMaxMuonTrackingChambers]; // maximum radius (cm)
   Double_t fSegmentMaxDistBending[kMaxMuonTrackingStations]; // maximum distance (cm) for segments in bending plane
   Double_t fSegmentMaxDistNonBending[kMaxMuonTrackingStations]; // maximum distance (cm) for segments in non bending plane
   Double_t fBendingResolution; // chamber resolution (cm) in bending plane
@@ -141,8 +163,8 @@ class AliMUONEventReconstructor : public TObject {
   TClonesArray *fHitsForRecPtr; // pointer to the array of hits for reconstruction
   Int_t fNHitsForRec; // number of hits for reconstruction
   // Information per chamber (should be in AliMUONChamber ????)
-  Int_t fNHitsForRecPerChamber[kMaxMuonTrackingChambers]; // number of HitsForRec
-  Int_t fIndexOfFirstHitForRecPerChamber[kMaxMuonTrackingChambers]; // index (0...) of first HitForRec
+  Int_t fNHitsForRecPerChamber[fgkMaxMuonTrackingChambers]; // number of HitsForRec
+  Int_t fIndexOfFirstHitForRecPerChamber[fgkMaxMuonTrackingChambers]; // index (0...) of first HitForRec
 
   // Segments inside a station
   TClonesArray *fSegmentsPtr[kMaxMuonTrackingStations]; // array of pointers to the segments for each station

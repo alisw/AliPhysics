@@ -7,10 +7,6 @@
 
 #include "AliSegmentation.h"
 
-const Int_t kNzone = 3;                // Specific for chamber with equal pads
-const Int_t kNzonem1 = 2;              // kNzone - 1
-const Int_t kNzoneCUT = 30;            
-
 class AliMUONSegmentationV1 :
 public AliSegmentation {
  public:
@@ -143,13 +139,17 @@ public AliSegmentation {
     // Version This models rectangular pads with the same dimensions all
     // over the cathode plane but let the possibilit for different design.
     //
+    static const Int_t fgkNzone = 3;     // Specific for chamber with equal pads
+    static const Int_t fgkNzonem1 = 2;   // fgkNzone - 1
+    static const Int_t fgkNzoneCUT = 30; // NzoneCUT           
+
     //  geometry
     Int_t fNzone; // Number of differents sensitive zones
     Float_t fDpx;         // X pad width
     Float_t fDpy;         // Y pad width
-    Int_t   fNZoneCut[kNzonem1];    // Number of cuts for given zone 
-    Int_t fZoneX[kNzonem1][kNzoneCUT]; // X descriptor of zone segmentations
-    Int_t fZoneY[kNzonem1][kNzoneCUT]; // Y descriptor of zone segmentations
+    Int_t   fNZoneCut[fgkNzonem1];    // Number of cuts for given zone 
+    Int_t fZoneX[fgkNzonem1][fgkNzoneCUT]; // X descriptor of zone segmentations
+    Int_t fZoneY[fgkNzonem1][fgkNzoneCUT]; // Y descriptor of zone segmentations
     Float_t frSensMax2; // square of maximum sensitive radius
     Float_t frSensMin2; // square of minimum sensitive radius
     Int_t   fNpx;         // Maximum number of pads along x

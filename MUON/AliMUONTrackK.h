@@ -12,12 +12,6 @@ class AliMUONSegment;
 class AliMUON;
 class AliMUONHitForRec;
 
-// Some constants
- static const Int_t kSize = 5; // number of track parameters
-static const Int_t kNSigma = 4; //4; // acceptance window width in sigmas
- static const Int_t kTriesMax = 10000; // max number of attempts to find exact position during tracking
- static const Double_t kEpsilon = 0.002; // tracking precision (cm)
-
 class AliMUONTrackK : public TObject {
 
  public:
@@ -97,6 +91,13 @@ class AliMUONTrackK : public TObject {
   void SetGeantParam(Double_t *VGeant3, Int_t iFB);
   void GetFromGeantParam(Double_t *VGeant3, Int_t iFB);
   void Recover(void);
+
+  private:
+   // Some constants
+   static const Int_t fgkSize; // number of track parameters
+   static const Int_t fgkNSigma; //4; // acceptance window width in sigmas
+   static const Int_t fgkTriesMax; // max number of attempts to find exact position during tracking
+   static const Double_t fgkEpsilon; // tracking precision (cm)
 
   ClassDef(AliMUONTrackK,0) // Kalman track in MUON arm of ALICE
     };

@@ -11,7 +11,8 @@
 
 #include "AliMUONTrackParam.h" // object belongs to the class
 
-const Int_t kMaxTrackingChamber=10;
+//const Int_t kMaxTrackingChamber=10;
+        // not used
 
 class TObjArray;
 class TClonesArray;

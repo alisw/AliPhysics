@@ -47,6 +47,7 @@ class AliMUONClusterReconstructor : public TObject {
  protected:
 
  private:
+  static const Int_t fgkDefaultPrintLevel;     // Default print level
 
   Int_t                   fNCh;                // Number of chambers   
   Int_t                   fNTrackingCh;        // Number of tracking chambers*

@@ -14,10 +14,6 @@ class TMatrixD;
 class AliMUONPixel;
 #include "AliMUONClusterFinderVS.h"
 
-// Some constants
- static const Int_t kDim = 2000; // array size
- static const Double_t kCouplMin = 1.e-3; // threshold on coupling 
-
 //class AliMUONClusterFinderAZ : public TObject {
 class AliMUONClusterFinderAZ : public AliMUONClusterFinderVS {
 
@@ -38,10 +34,14 @@ protected:
  
 
  private:
+  // Some constants
+  static const Int_t fgkDim = 2000; // array size
+  static const Double_t fgkCouplMin; // threshold on coupling 
+
 
   Int_t      fnPads[2];        // ! number of pads in the cluster on 2 cathodes
-  Float_t    fXyq[6][kDim];    // ! pad information
-  Int_t      fPadIJ[2][kDim];  // ! pad information
+  Float_t    fXyq[6][fgkDim];    // ! pad information
+  Int_t      fPadIJ[2][fgkDim];  // ! pad information
   AliSegmentation *fSegmentation[2]; // ! segmentation
   AliMUONResponse *fResponse;// ! response
   Float_t    fZpad;            // ! z-coordinate of the hit
@@ -50,7 +50,7 @@ protected:
   Int_t      fReco;            // ! =1 if run reco with writing to TreeR 
 
   static     TMinuit* fgMinuit; // ! Fitter
-  Bool_t     fUsed[2][kDim]; // ! flags for used pads
+  Bool_t     fUsed[2][fgkDim]; // ! flags for used pads
   TH2F*      fHist[4]; // ! histograms
   TClonesArray *fMuonDigits; // ! pointer to digits
   Bool_t     fDraw; // ! draw flag

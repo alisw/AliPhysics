@@ -33,6 +33,7 @@
 
 ClassImp(AliMUONClusterFinderAZ)
  
+ const Double_t AliMUONClusterFinderAZ::fgkCouplMin = 1.e-3; // threshold on coupling 
  AliMUONClusterFinderAZ* AliMUONClusterFinderAZ::fgClusterFinder = 0x0;
  TMinuit* AliMUONClusterFinderAZ::fgMinuit = 0x0;
 
@@ -170,7 +171,7 @@ newchamber:
 
   Int_t ndigits[2]={9,9}, nShown[2]={0};
   for (Int_t i=0; i<2; i++) {
-    for (Int_t j=0; j<kDim; j++) {fUsed[i][j]=kFALSE;}
+    for (Int_t j=0; j<fgkDim; j++) {fUsed[i][j]=kFALSE;}
   }
 
 next:
@@ -186,7 +187,7 @@ next:
   Bool_t first = kTRUE;
   cout << " *** Event # " << nev << " chamber: " << ch << endl;
   fnPads[0] = fnPads[1] = 0;
-  for (Int_t i=0; i<kDim; i++) {fPadIJ[1][i] = 0;}
+  for (Int_t i=0; i<fgkDim; i++) {fPadIJ[1][i] = 0;}
   //for (Int_t iii = 0; iii<999; iii++) { 
   for (Int_t iii = 0; iii<2; iii++) { 
     Int_t cath = TMath::Odd(iii);
@@ -1582,7 +1583,7 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
       for (Int_t j=0; j<npad; j++) {
 	// Exclude overflows
 	if (fPadIJ[1][j] < 0) continue;
-	if (coef[j*nPix+indx] < kCouplMin) continue;
+	if (coef[j*nPix+indx] < fgkCouplMin) continue;
 	(*aijclupad)(iclust,j) += coef[j*nPix+indx];
       }
     }
@@ -1594,9 +1595,9 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
     for (Int_t j=0; j<npad; j++) {
       // Exclude overflows
       if (fPadIJ[1][j] < 0) continue;
-      if ((*aijclupad)(iclust,j) < kCouplMin) continue;
+      if ((*aijclupad)(iclust,j) < fgkCouplMin) continue;
       for (Int_t iclust1=iclust+1; iclust1<nclust; iclust1++) {
-	if ((*aijclupad)(iclust1,j) < kCouplMin) continue;
+	if ((*aijclupad)(iclust1,j) < fgkCouplMin) continue;
 	(*aijcluclu)(iclust,iclust1) += 
 	  TMath::Sqrt ((*aijclupad)(iclust,j)*(*aijclupad)(iclust1,j));
       }
@@ -1701,10 +1702,10 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
 	  if (fPadIJ[1][j] != -1) continue;
 	  for (Int_t iclust=0; iclust<nCoupled; iclust++) {
 	    indx = clustNumb[iclust];
-	    if ((*aijclupad)(indx,j) < kCouplMin) continue;
+	    if ((*aijclupad)(indx,j) < fgkCouplMin) continue;
 	    for (Int_t iclust1=iclust+1; iclust1<nCoupled; iclust1++) {
 	      indx1 = clustNumb[iclust1];
-	      if ((*aijclupad)(indx1,j) < kCouplMin) continue;
+	      if ((*aijclupad)(indx1,j) < fgkCouplMin) continue;
 	      // Check this
 	      (*aijcluclu)(indx,indx1) -= 
 		TMath::Sqrt ((*aijclupad)(indx,j)*(*aijclupad)(indx1,j));
@@ -1784,7 +1785,7 @@ void AliMUONClusterFinderAZ::AddCluster(Int_t ic, Int_t nclust, TMatrixD *aijclu
 
   for (Int_t i=0; i<nclust; i++) {
     if (used[i]) continue;
-    if ((*aijcluclu)(i,ic) < kCouplMin) continue;
+    if ((*aijcluclu)(i,ic) < fgkCouplMin) continue;
     used[i] = kTRUE;
     clustNumb[nCoupled++] = i;
     AddCluster(i, nclust, aijcluclu, used, clustNumb, nCoupled);
@@ -1892,7 +1893,7 @@ Int_t AliMUONClusterFinderAZ::SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *cl
     indx = clustFit[iclust];
     for (Int_t j=0; j<npad; j++) {
       if (fPadIJ[1][j] < 0) continue; // exclude overflows and used pads
-      if ((*aijclupad)(indx,j) < kCouplMin) continue;
+      if ((*aijclupad)(indx,j) < fgkCouplMin) continue;
       fPadIJ[1][j] = 1; // pad to be used in fit
       nOK++;
       if (nCoupled > 3) {
@@ -1900,7 +1901,7 @@ Int_t AliMUONClusterFinderAZ::SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *cl
 	for (Int_t iclust1=0; iclust1<nCoupled; iclust1++) {
 	  indx1 = clustNumb[iclust1];
 	  if (indx1 < 0) continue;
-	  if ((*aijclupad)(indx1,j) < kCouplMin) continue;
+	  if ((*aijclupad)(indx1,j) < fgkCouplMin) continue;
 	  padpix[j] += (*aijclupad)(indx1,j);
 	}
       } // if (nCoupled > 3)
@@ -1910,7 +1911,7 @@ Int_t AliMUONClusterFinderAZ::SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *cl
 
   Double_t aaa = 0;
   for (Int_t j=0; j<npad; j++) {
-    if (padpix[j] < kCouplMin) continue;
+    if (padpix[j] < fgkCouplMin) continue;
     cout << j << " " << padpix[j] << " "; 
     cout << fXyq[0][j] << " " << fXyq[1][j] << endl;
     aaa += padpix[j];
@@ -1943,7 +1944,7 @@ void AliMUONClusterFinderAZ::Merge(Int_t nForFit, Int_t nCoupled, Int_t *clustNu
 	imax = indx1;
       }
     } // for (Int_t icl1=0;
-    /*if (couplMax < kCouplMin) {
+    /*if (couplMax < fgkCouplMin) {
       cout << " Oops " << couplMax << endl;
       aijcluclu->Print();
       cout << icl << " " << indx << " " << npxclu << " " << nLinks << endl;

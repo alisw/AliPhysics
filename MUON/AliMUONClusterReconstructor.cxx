@@ -51,7 +51,7 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 
-static const Int_t kDefaultPrintLevel = 0;
+const Int_t AliMUONClusterReconstructor::fgkDefaultPrintLevel = 0;
 
 ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
 
@@ -67,7 +67,7 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliLoader* loader)
   fMUONData        = 0;
   fChambers = new TObjArray(AliMUONConstants::NCh());
 
-  fPrintLevel = kDefaultPrintLevel;
+  fPrintLevel = fgkDefaultPrintLevel;
 
   // initialize loader's
   fLoader = loader;
