@@ -74,6 +74,7 @@
 #include "AliGenerator.h"
 #include "AliPHOS.h"
 #include "AliPHOSPIDv0.h"
+#include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSTrackSegmentMakerv1.h"

@@ -132,8 +132,9 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
   
 }
 //____________________________________________________________________________
-void AliPHOSDigit::Print(Option_t *) const
+void AliPHOSDigit::Print() const
 {
+  // Print the digit together with list of primaries
   printf("PHOS digit: Amp=%d, Id=%d, Time=%f, NPrim=%d ",fAmp,fId,fTime,fNprimary);
   for(Int_t index = 0; index <fNprimary; index ++ )
     printf(" %d ",fPrimary[index]); 

@@ -16,13 +16,14 @@
 // --- ROOT system ---
 
 #include "TObject.h"
+class TClonesArray ; 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
-#include "AliPHOSEmcRecPoint.h"
-#include "AliPHOSRecPoint.h"
+class AliPHOSRecPoint ; 
+class AliPHOSEmcRecPoint ; 
+class AliPHOSCpvRecPoint ; 
 
 class AliPHOSTrackSegment : public TObject  {
 
@@ -40,7 +41,7 @@ public:
   Int_t   GetEmcIndex()    const {  return fEmcRecPoint ;   }
   Int_t   GetCpvIndex()    const {  return fPpsdUpRecPoint; }
 
-  virtual void  Print(Option_t *) const;
+  virtual void  Print() const;
   void    SetIndexInList(Int_t val){ fIndexInList = val ;     } 
   void    SetCpvRecPoint(AliPHOSRecPoint * PpsdUpRecPoint ); //sets PPSD up Rec Point
 

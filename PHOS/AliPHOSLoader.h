@@ -18,35 +18,32 @@
 
 // --- ROOT system ---
 #include "TClonesArray.h"
-#include "TFolder.h"  
-#include "TTree.h"
 class TString ;
 class TParticle ;
 class TTask ;
 
 // --- Standard library ---
-#include <stdlib.h>
-#include <Riostream.h>
 
 // --- AliRoot header files ---
 
 #include "AliRun.h"
 #include "AliLoader.h"
 #include "AliRunLoader.h"
-#include "AliPHOS.h" 
-#include "AliPHOSHit.h" 
-#include "AliPHOSDigit.h"
-#include "AliPHOSEmcRecPoint.h"
-#include "AliPHOSCpvRecPoint.h"
-#include "AliPHOSTrackSegment.h"
-#include "AliPHOSRecParticle.h"
-class AliPHOSGeometry ;
-#include "AliPHOSDigitizer.h"
-#include "AliPHOSSDigitizer.h"
 #include "AliPHOSClusterizer.h"
 #include "AliPHOSTrackSegmentMaker.h"
 #include "AliPHOSPID.h"
+class AliPHOS ; 
+class AliPHOSGeometry ;
+class AliPHOSHit ; 
+class AliPHOSDigit ; 
+class AliPHOSEmcRecPoint ; 
+class AliPHOSCpvRecPoint ; 
+class AliPHOSTrackSegment ;
+class AliPHOSRecParticle ;  
 class AliPHOSCalibrationDB ;
+class AliPHOSSDigitizer ; 
+class AliPHOSDigitizer ;
+  
 
 
 //

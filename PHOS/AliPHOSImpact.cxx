@@ -72,6 +72,7 @@ AliPHOSImpact::AliPHOSImpact(Int_t shunt, Int_t primary, Int_t track, Int_t pid,
 //____________________________________________________________________________
 void AliPHOSImpact::Print()
 {
+  // Prints particle info
   printf("Impact Pid=%4d, p=(%6.2f,%6.2f,%6.2f,%6.2f) GeV, x=(%6.1f,%6.1f,%6.1f) cm\n",
 	 fPid,fMomentum.Px(),fMomentum.Py(),fMomentum.Pz(),fMomentum.E(),
 	 fX,fY,fZ);

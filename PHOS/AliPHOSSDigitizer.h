@@ -21,7 +21,6 @@ class TFile ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliConfig.h"
 
 class AliPHOSSDigitizer: public TTask {
 

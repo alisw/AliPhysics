@@ -34,7 +34,6 @@
 //!
 // Author: Yuri Kharlov. 17 April 2003
 
-#include "AliRun.h"
 #include "AliGenerator.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSFastGlobalReconstruction.h"
@@ -48,7 +47,7 @@ AliPHOSFastGlobalReconstruction::AliPHOSFastGlobalReconstruction(const char* hea
   // create an instance of the PHOS getter,
   // create an array or reconstructed particles.
 
-  gime = AliPHOSGetter::Instance(headerFile);
+  fgime = AliPHOSGetter::Instance(headerFile);
   fGenerator = gAlice->Generator();
   fParticles = new TClonesArray("TParticle",100);
   fNParticles = 0;
@@ -76,11 +75,11 @@ void AliPHOSFastGlobalReconstruction::FastReconstruction(Int_t event)
   TLorentzVector p,v;
   Int_t kf,ks,imom1,imom2,idaug1,idaug2;
 
-  gime->Event(event,"X") ;
+  fgime->Event(event,"X") ;
   fParticles  ->Clear();
   fNParticles = 0;
-  Int_t        nPrimaries = gime->NPrimaries();
-  TClonesArray *primaries = gime->Primaries();
+  Int_t        nPrimaries = fgime->NPrimaries();
+  TClonesArray *primaries = fgime->Primaries();
 
   for (Int_t iprim=0; iprim<nPrimaries; iprim++) {
     primary = (TParticle*)primaries->At(iprim);

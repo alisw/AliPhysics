@@ -23,14 +23,11 @@
 
 
 // --- ROOT system ---
+#include "TRandom.h"
 
-#include "TString.h"
-#include "TFile.h"
 #include "TLorentzVector.h"
 #include "TList.h"
-#include "TTree.h"
 #include "TParticle.h"
-#include "AliRun.h"
 #include "AliPHOSGammaJet.h" 
 #include "AliPHOSGetter.h" 
 
@@ -56,10 +53,13 @@ AliPHOSGammaJet::~AliPHOSGammaJet() {
 }
 
 //____________________________________________________________________________
-void AliPHOSGammaJet::Exec(Option_t *) 
+void AliPHOSGammaJet::Exec(Option_t * opt) 
 {
   // does the job
   
+  if (! opt) 
+    return ; 
+
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   Int_t nEvent1 = gime->MaxEvent() ;   
   Int_t iEvent = 0 ; 
@@ -114,14 +114,14 @@ void AliPHOSGammaJet::Exec(Option_t *)
       }//final particle etacut
     }//for (iParticle<nParticle)
     TLorentzVector gamma,charge,pi0, gammapair;
-    Int_t id_g = -1;
-    GetGammaJet(particleList,gamma, id_g);
-    GetLeadingCharge(particleList,charge, id_g);
+    Int_t idg = -1;
+    GetGammaJet(particleList,gamma, idg);
+    GetLeadingCharge(particleList,charge, idg);
     GetLeadingPi0(particleList,pi0);
-    Info("Pi0Decay", "Gamma: %f %d", gamma.Energy(), id_g) ;
+    Info("Pi0Decay", "Gamma: %f %d", gamma.Energy(), idg) ;
     Info("Pi0Decay", "Charge: %f", charge.Energy()) ;
     Info("Pi0Decay", "Pi0: %f", pi0.Energy()) ;
-    //    GetLeadingGammaPair(particleList, gammapair, id_g, 
+    //    GetLeadingGammaPair(particleList, gammapair, idg, 
     //			0.04,0.2, 1.0,0.13,0.14);
     Info("Pi0Decay", "Pair: %f", gammapair.Energy()) ;
   }//loop: events
@@ -169,6 +169,7 @@ void AliPHOSGammaJet::Pi0Decay(Double_t mPi0, TLorentzVector &p0,
 //____________________________________________________________________________
 void AliPHOSGammaJet::GetGammaJet(TList &particleList, TLorentzVector &gamma, Int_t & id) 
 {
+  // Get the lists of jet particles and gamma
   TParticle *particle = 0x0;
   
   Int_t iPrimary=-1, id_motherg = -1;
@@ -198,10 +199,11 @@ void AliPHOSGammaJet::GetGammaJet(TList &particleList, TLorentzVector &gamma, In
 //____________________________________________________________________________
 void AliPHOSGammaJet::GetLeadingCharge(TList &particleList, TLorentzVector &charge, Int_t & id) 
 {
+  // Gets the leading particle from the list of charged particles
   TParticle *particle = 0x0;
   
   Int_t iPrimary=-1;
-  Double_t pt_max = 0, pt_i = 0;
+  Double_t ptmax = 0, pti = 0;
   TIter next(&particleList);
   while ( (particle = (TParticle*)next()) ) {
     iPrimary++;  
@@ -209,11 +211,11 @@ void AliPHOSGammaJet::GetLeadingCharge(TList &particleList, TLorentzVector &char
     
     if((ksCode == 1)&&(id != iPrimary)
        &&(particle->GetPDG(0)->Charge()!=0)){
-      pt_i = particle->Pt(); 
-      if(pt_i> pt_max){
-	pt_max = pt_i;
+      pti = particle->Pt(); 
+      if(pti> ptmax){
+	ptmax = pti;
  	particle->Momentum(charge);
-      }//pt_max   
+      }//ptmax   
     }// kscode == 1
   }// while
 }
@@ -221,10 +223,11 @@ void AliPHOSGammaJet::GetLeadingCharge(TList &particleList, TLorentzVector &char
 //____________________________________________________________________________
 void AliPHOSGammaJet::GetLeadingPi0(TList &particleList, TLorentzVector &pi0) 
 {
+  // Gets the leading pi0 from the list of particles
   TParticle *particle = 0x0;
   
   Int_t iPrimary=-1;
-  Double_t pt_max = 0, pt_i = 0;
+  Double_t ptmax = 0, pti = 0;
   TIter next(&particleList);
   while ( (particle = (TParticle*)next()) ) {
     iPrimary++;  
@@ -232,11 +235,11 @@ void AliPHOSGammaJet::GetLeadingPi0(TList &particleList, TLorentzVector &pi0)
     
     if((ksCode == 2))
       {
-	pt_i = particle->Pt(); 
-	if(pt_i> pt_max){
-	  pt_max = pt_i;
+	pti = particle->Pt(); 
+	if(pti> ptmax){
+	  ptmax = pti;
 	  particle->Momentum(pi0);
-	}//pt_max   
+	}//ptmax   
       }// kscode == 1
   }// while
 }

@@ -15,7 +15,7 @@
 
 
 // --- ROOT system ---
-#include "TObjString.h"
+//#include "TObjString.h"
 class TArrayI ;
 class TClonesArray ; 
 

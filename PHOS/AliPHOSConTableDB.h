@@ -53,7 +53,7 @@ public:
   //Transforms AbsId number in PHOS into channel number in prototype 
   Int_t AbsId2Raw(Int_t AbsId)const ;
 
-  virtual void Print(Option_t *) const ;
+  virtual void Print() const ;
 
 
   AliPHOSConTableDB& operator=(const AliPHOSConTableDB& cdb) ;

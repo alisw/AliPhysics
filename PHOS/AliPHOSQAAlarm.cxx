@@ -28,6 +28,7 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSQAAlarm.h"
+#include "AliRun.h"
 
 ClassImp(AliPHOSQAAlarm)
 

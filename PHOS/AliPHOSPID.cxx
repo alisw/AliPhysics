@@ -27,15 +27,11 @@
 
 
 // --- ROOT system ---
-#include "TGeometry.h"
-#include "TDirectory.h"
-#include "TFile.h"
-#include "TTree.h"
- 
+
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliRun.h" 
+#include "AliConfig.h"
 #include "AliPHOSPID.h"
 
 ClassImp(AliPHOSPID)

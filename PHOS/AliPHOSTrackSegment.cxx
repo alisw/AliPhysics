@@ -27,7 +27,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliPHOSEmcRecPoint.h" 
 #include "AliPHOSTrackSegment.h" 
 
 ClassImp(AliPHOSTrackSegment)
@@ -74,7 +74,7 @@ void AliPHOSTrackSegment::Copy(TObject & obj)
 }
 
 //____________________________________________________________________________
-void AliPHOSTrackSegment::Print(Option_t *) const
+void AliPHOSTrackSegment::Print() const
 {
   // Print all information on this track Segment
   

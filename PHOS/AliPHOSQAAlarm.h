@@ -19,11 +19,7 @@
 
 // --- Standard library ---
 
-#include <assert.h>
-
 // --- AliRoot header files ---
-
-#include "AliRun.h"
 
 class AliPHOSQAAlarm : public TObject {
 

@@ -13,16 +13,16 @@
 //  30 October 2000 
 // --- ROOT system ---
 
-#include "TObject.h"
-#include "TArrayI.h"
+//#include "TObject.h"
+//#include "TArrayI.h"
  
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-#include "AliPHOSDigit.h"
+//#include "AliPHOSDigit.h"
 #include "AliPHOSEmcRecPoint.h"
-#include "AliPHOSGeometry.h"
+//#include "AliPHOSGeometry.h"
 
 class AliPHOSCpvRecPoint : public AliPHOSEmcRecPoint  {
 
@@ -31,9 +31,7 @@ public:
   AliPHOSCpvRecPoint() ;
   AliPHOSCpvRecPoint(const char * opt) ;
   AliPHOSCpvRecPoint(const AliPHOSCpvRecPoint & rp) : AliPHOSEmcRecPoint(rp) {
-    // cpy ctor requested by Coding Convention 
-    // but not yet needed
-    assert(0==1) ; 
+    Fatal("cpy ctor", "not implemented") ; 
   } 
  
   virtual ~AliPHOSCpvRecPoint() ;  
@@ -49,12 +47,10 @@ public:
   Bool_t IsEmc(void) const {return kFALSE ; }        // tells that this is not a EMC
   Bool_t IsCPV(void) const {return kTRUE  ; }        // true if the recpoint is in CPV
   Bool_t IsSortable() const { return kTRUE ; }    // tells that this is a sortable object
-  void   Print(Option_t *) ; 
+  void   Print() ; 
 
   AliPHOSCpvRecPoint & operator = (const AliPHOSCpvRecPoint & /*rvalue*/)  {
-    // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
-    return *this ; 
+   Fatal("operator =", "not implemented") ; return *this ; 
   }
 
  protected:

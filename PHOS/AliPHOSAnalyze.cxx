@@ -69,24 +69,23 @@
 #include "TH2.h"
 #include "TParticle.h"
 #include "TClonesArray.h"
-#include "TTree.h"
 #include "TMath.h"
 #include "TROOT.h"
-#include "TFolder.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-#include "AliRun.h"
+//#include "AliRun.h"
 #include "AliStack.h"
-#include "AliPHOSv1.h"
+#include "AliPHOSGeometry.h"
 #include "AliPHOSAnalyze.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSSDigitizer.h"
+#include "AliPHOSEmcRecPoint.h"
+#include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSRecParticle.h"
-#include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSLoader.h"
 
 

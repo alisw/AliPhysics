@@ -43,7 +43,7 @@ public:
   AliPHOSClusterizer* GetClusterizer();
   AliPHOSRecManager* GetReconstructionManager() const;
   
-  void PrintPoint(Option_t* opt);
+  void PrintPoint();
 
   AliPHOSRecPoint* Parent();
   Float_t Chi2Dof() const;

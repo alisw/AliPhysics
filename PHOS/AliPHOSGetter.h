@@ -18,13 +18,8 @@
 
 // --- ROOT system ---
 #include "TObject.h"  
-#include "TClonesArray.h" 
-// #include "TFolder.h"  
-// #include "TTree.h"
-// #include "TFile.h"
-// class TString ;
- class TParticle ;
-// class TTask ;
+class TParticle ;
+class TTree ; 
 
 // --- Standard library ---
 
@@ -32,17 +27,21 @@
 #include "AliConfig.h" 
 
 // #include "AliRun.h"
-class AliPHOS ; 
-#include "AliPHOSHit.h"   
-
-class AliPHOSGeometry ;
-#include "AliPHOSDigitizer.h"
-#include "AliPHOSSDigitizer.h" 
-// //class AliPHOSCalibrationDB ;
-// class AliPHOSConTableDB ;
-class AliPHOSBeamTestEvent ;
-
 #include "AliPHOSLoader.h" 
+#include "AliPHOSHit.h" 
+#include "AliPHOSDigit.h"
+#include "AliPHOSEmcRecPoint.h" 
+#include "AliPHOSCpvRecPoint.h" 
+#include "AliPHOSTrackSegment.h" 
+#include "AliPHOSRecParticle.h" 
+#include "AliPHOSDigitizer.h"
+#include "AliPHOSSDigitizer.h"
+class AliPHOS ;  
+class AliPHOSGeometry ;
+class AliPHOSClusterizer ;
+class AliPHOSTrackSegmentMaker ;  
+class AliPHOSPID ; 
+class AliPHOSBeamTestEvent ;
 
 class AliPHOSGetter : public TObject {
   
@@ -94,7 +93,7 @@ class AliPHOSGetter : public TObject {
 
   //=========== Primaries ============
 //   TTree *           TreeK(TString filename="") ; 
-  TClonesArray *    Primaries(void)  ;
+  TClonesArray *    Primaries(void) ;
   TParticle * Primary(Int_t index) const ;
   Int_t       NPrimaries()const { return fNPrimaries; }
   TParticle * Secondary(const TParticle * p, const Int_t index=1) const ;  
@@ -111,11 +110,11 @@ class AliPHOSGetter : public TObject {
   TTree *             TreeS() const ; 
   AliPHOSSDigitizer * SDigitizer() ;  
 
-  TString             GetSDigitsFileName() { return PhosLoader()->GetSDigitsFileName() ; }  
-  Int_t               LoadSDigits(Option_t* opt="") { return PhosLoader()->LoadSDigits(opt) ; }
-  Int_t               LoadSDigitizer(Option_t* opt=""){ return  PhosLoader()->LoadSDigitizer(opt) ; }
-  Int_t               WriteSDigits(Option_t* opt="") { return PhosLoader()->WriteSDigits(opt) ; }
-  Int_t               WriteSDigitizer(Option_t* opt=""){
+  TString             GetSDigitsFileName() const { return PhosLoader()->GetSDigitsFileName() ; }  
+  Int_t               LoadSDigits(Option_t* opt="") const { return PhosLoader()->LoadSDigits(opt) ; }
+  Int_t               LoadSDigitizer(Option_t* opt="") const { return  PhosLoader()->LoadSDigitizer(opt) ; }
+  Int_t               WriteSDigits(Option_t* opt="") const  { return PhosLoader()->WriteSDigits(opt) ; }
+  Int_t               WriteSDigitizer(Option_t* opt="") const {
     return  PhosLoader()->WriteSDigitizer(opt) ; }
   
   //========== Digits ================
@@ -123,12 +122,12 @@ class AliPHOSGetter : public TObject {
   AliPHOSDigit * Digit(const Int_t index) { return static_cast<AliPHOSDigit *>(Digits()->At(index)) ;} 
   TTree *        TreeD() const ; 
   AliPHOSDigitizer * Digitizer() ;
-  TString             GetDigitsFileName() { return PhosLoader()->GetDigitsFileName() ; }  
-  Int_t               LoadDigits(Option_t* opt="") { return PhosLoader()->LoadDigits(opt) ; }
-  Int_t               LoadDigitizer(Option_t* opt=""){
+  TString             GetDigitsFileName() const { return PhosLoader()->GetDigitsFileName() ; }  
+  Int_t               LoadDigits(Option_t* opt="") const { return PhosLoader()->LoadDigits(opt) ; }
+  Int_t               LoadDigitizer(Option_t* opt="") const {
     return  PhosLoader()->LoadDigitizer(opt) ; }
-  Int_t               WriteDigits(Option_t* opt="") { return PhosLoader()->WriteDigits(opt) ; }
-  Int_t               WriteDigitizer(Option_t* opt=""){
+  Int_t               WriteDigits(Option_t* opt="") const { return PhosLoader()->WriteDigits(opt) ; }
+  Int_t               WriteDigitizer(Option_t* opt="") const {
     return  PhosLoader()->WriteDigitizer(opt) ; }
   
   //========== RecPoints =============
@@ -137,13 +136,13 @@ class AliPHOSGetter : public TObject {
   TObjArray *           CpvRecPoints() ; 
   AliPHOSCpvRecPoint *  CpvRecPoint(const Int_t index) { return static_cast<AliPHOSCpvRecPoint *>(CpvRecPoints()->At(index)) ;} 
   TTree *               TreeR() const ;
-  AliPHOSClusterizer * Clusterizer()  ;
-  TString               GetRecPointsFileName() { return PhosLoader()->GetRecPointsFileName() ; } 
-  Int_t                 LoadRecPoints(Option_t* opt="") { return PhosLoader()->LoadRecPoints(opt) ; }
-  Int_t                 LoadClusterizer(Option_t* opt=""){
+  AliPHOSClusterizer * Clusterizer() ;
+  TString               GetRecPointsFileName() const { return PhosLoader()->GetRecPointsFileName() ; } 
+  Int_t                 LoadRecPoints(Option_t* opt="") const { return PhosLoader()->LoadRecPoints(opt) ; }
+  Int_t                 LoadClusterizer(Option_t* opt="") const {
     return  PhosLoader()->LoadClusterizer(opt) ; }
-  Int_t                 WriteRecPoints(Option_t* opt="") { return PhosLoader()->WriteRecPoints(opt) ; }
-  Int_t                 WriteClusterizer(Option_t* opt=""){
+  Int_t                 WriteRecPoints(Option_t* opt="") const { return PhosLoader()->WriteRecPoints(opt) ; }
+  Int_t                 WriteClusterizer(Option_t* opt="") const {
     return  PhosLoader()->WriteClusterizer(opt) ; }
 
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
@@ -151,12 +150,12 @@ class AliPHOSGetter : public TObject {
   AliPHOSTrackSegment *  TrackSegments(const Int_t index) { return static_cast<AliPHOSTrackSegment *>(TrackSegments()->At(index)) ;} 
   TTree *               TreeT() const ;
   AliPHOSTrackSegmentMaker * TrackSegmentMaker() ;
-  TString               GetTracksFileName() { return PhosLoader()->GetTracksFileName() ; } 
-  Int_t                 LoadTracks(Option_t* opt="") { return PhosLoader()->LoadTracks(opt) ; }
-  Int_t                 LoadTrackSegementMaker(Option_t* opt=""){
+  TString               GetTracksFileName() const { return PhosLoader()->GetTracksFileName() ; } 
+  Int_t                 LoadTracks(Option_t* opt="") const { return PhosLoader()->LoadTracks(opt) ; }
+  Int_t                 LoadTrackSegementMaker(Option_t* opt="") const {
     return  PhosLoader()->LoadTrackSegmentMaker(opt) ; }
-  Int_t                 WriteTracks(Option_t* opt="") { return PhosLoader()->WriteTracks(opt) ; }
-  Int_t                 WriteTrackSegmentMaker(Option_t* opt=""){
+  Int_t                 WriteTracks(Option_t* opt="") const { return PhosLoader()->WriteTracks(opt) ; }
+  Int_t                 WriteTrackSegmentMaker(Option_t* opt="") const {
     return  PhosLoader()->WriteTracker(opt) ; }
   //========== RecParticles ===========
 
@@ -164,12 +163,12 @@ class AliPHOSGetter : public TObject {
   AliPHOSRecParticle *   RecPaticles(const Int_t index) { return static_cast<AliPHOSRecParticle *>(RecParticles()->At(index)) ;} 
   TTree *               TreeP() const ;
   AliPHOSPID * PID() ;
-  TString               GetRecParticlesFileName() { return PhosLoader()->GetRecParticlesFileName() ; } 
-  Int_t                 LoadRecParticles(Option_t* opt="") { return PhosLoader()->LoadRecParticles(opt) ; }
-  Int_t                 LoadPID(Option_t* opt=""){
+  TString               GetRecParticlesFileName() const { return PhosLoader()->GetRecParticlesFileName() ; } 
+  Int_t                 LoadRecParticles(Option_t* opt="") const { return PhosLoader()->LoadRecParticles(opt) ; }
+  Int_t                 LoadPID(Option_t* opt="") const {
     return  PhosLoader()->LoadPID(opt) ; }
-  Int_t                 WriteRecParticles(Option_t* opt="") { return PhosLoader()->WriteRecParticles(opt) ; }
-  Int_t                 WritePID(Option_t* opt=""){
+  Int_t                 WriteRecParticles(Option_t* opt="") const { return PhosLoader()->WriteRecParticles(opt) ; }
+  Int_t                 WritePID(Option_t* opt="") const {
     return  PhosLoader()->WritePID(opt) ; }
 
 
@@ -218,7 +217,7 @@ private:
 
 //  AliPHOSCalibrationDB * fcdb ;       //!
    
-  static AliPHOSLoader * fgPhosLoader ;
+  static AliPHOSLoader * fgPhosLoader ; // the loader for the NewIO
   static AliPHOSGetter * fgObjGetter; // pointer to the unique instance of the singleton 
   
   enum EDataTypes{kHits,kSDigits,kDigits,kRecPoints,kTracks,kNDataTypes};

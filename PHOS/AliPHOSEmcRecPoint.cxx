@@ -23,7 +23,6 @@
 
 
 // --- ROOT system ---
-#include "TPad.h"
 #include "TH2.h"
 #include "TMath.h" 
 #include "TCanvas.h" 
@@ -32,13 +31,12 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliPHOSLoader.h"
 #include "AliGenerator.h"
 #include "AliPHOSGeometry.h"
+#include "AliPHOSDigit.h"
 #include "AliPHOSEmcRecPoint.h"
-#include "AliRun.h"
-#include "AliPHOSGetter.h"
-
+ 
 ClassImp(AliPHOSEmcRecPoint)
 
 //____________________________________________________________________________
@@ -645,7 +643,7 @@ void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
   EvalDispersion(logWeight, digits) ;
   EvalCoreEnergy(logWeight, digits);
   EvalTime(digits) ;
-  AliPHOSRecPoint::EvalAll(logWeight,digits) ;
+  AliPHOSRecPoint::EvalAll(digits) ;
 }
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digits)

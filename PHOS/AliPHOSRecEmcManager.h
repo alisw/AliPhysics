@@ -9,7 +9,6 @@
 // 6 March 2001
 
 #include "AliPHOSRecManager.h"
-#include "AliPHOSGeometry.h"
 
 class AliPHOSRecEmcManager : public AliPHOSRecManager {
 

@@ -22,6 +22,8 @@
 
 // --- ROOT system ---
 #include "TPad.h"
+#include "TGraph.h"
+#include "TPaveText.h"
 #include "TClonesArray.h"
 
 // --- Standard library ---
@@ -171,7 +173,7 @@ break;
   }
 }
 //____________________________________________________________________________
-void AliPHOSRecPoint::EvalAll(Float_t,TClonesArray * digits) 
+void AliPHOSRecPoint::EvalAll(TClonesArray * digits) 
 {
   //evaluates (if necessary) all RecPoint data members 
 

@@ -31,6 +31,7 @@
 
 // --- AliRoot header files ---
 #include "AliConfig.h"
+#include "AliPHOSDigit.h" 
 #include "AliPHOSClusterizer.h"
 #include "AliPHOSEvalRecPoint.h"
 #include "AliRun.h"
@@ -38,6 +39,7 @@
 #include "AliPHOSRecCpvManager.h"
 #include "AliPHOSRecEmcManager.h"
 #include "AliPHOSDigitizer.h"
+#include "AliPHOSGeometry.h" 
 
 // --- Standard library ---
 
@@ -62,8 +64,7 @@ AliPHOSEvalRecPoint::AliPHOSEvalRecPoint(Bool_t cpv, AliPHOSEvalRecPoint* parent
 //    fParent=parent;
   TObjArray* wPool = (TObjArray*)GetWorkingPool();
   if(!wPool) {
-    Error("AliPHOSEvalRecPoint", "Couldn't find working pool. Exit.") ; 
-    exit(1);
+    Fatal("ctor", "Couldn't find working pool") ; 
   }
 
   fParent = wPool->IndexOf((TObject*)parent);
@@ -130,8 +131,7 @@ AliPHOSClusterizer* AliPHOSEvalRecPoint::GetClusterizer()
   TFolder* wPoolF = (TFolder*)aliceF->FindObject("WhiteBoard/RecPoints/PHOS/SmP");
   AliPHOSClusterizer* clu = (AliPHOSClusterizer*)wPoolF->FindObject("PHOS:clu-v1");
   if(!clu) { 
-    Error("GetClusterizer", "Couldn't find Clusterizer. Exit.") ; 
-    exit(1); 
+    Fatal("GetClusterizer", "Couldn't find Clusterizer") ; 
   }
 
   return clu;
@@ -222,8 +222,7 @@ void AliPHOSEvalRecPoint::Init()
   // initialization
   AliPHOSClusterizer* clusterizer = GetClusterizer();
   if(!clusterizer) {
-    Error("Init", "Cannot get clusterizer. Exit.") ;
-    exit(1);
+    Fatal("Init", "Cannot get clusterizer") ;
   }
 
   TClonesArray* digits = AliPHOSLoader::GetPHOSLoader(fEventFolderName)->Digits();
@@ -661,7 +660,7 @@ void AliPHOSEvalRecPoint::UnfoldTwoMergedPoints(Float_t* gamma1, Float_t* gamma2
 	  newRP->AddDigit(*digit,eDigit);
 	}
       Info("UnfoldTwoMergedPoints", "======= Split: daughter rec point %d =================", iMax) ;
-      newRP->Print("");
+      newRP->Print();
 
     }
 
@@ -867,9 +866,9 @@ void AliPHOSEvalRecPoint::MergeClosePoint()
 	      if(TooClose(rp))
 		{
 		  Info("MergeClosePoint", "+++++++ Merging point 1: ++++++") ;
-		  this->Print("");
+		  this->Print();
 		  Info("MergeClosePoint", "+++++++ and point 2: ++++++++++") ;
-		  ((AliPHOSEvalRecPoint*)rp)->Print("");
+		  ((AliPHOSEvalRecPoint*)rp)->Print();
 
 		  //merge two rec. points
 		  TVector3 lpos1;
@@ -898,7 +897,7 @@ void AliPHOSEvalRecPoint::MergeClosePoint()
 		  delete rp;
 		  
 		  Info("MergeClosePoint", "++++++ Resulting point: ++++++++") ;
-		  this->Print("");
+		  this->Print();
 
 		  break;
 		} 
@@ -925,8 +924,7 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
 
   AliPHOSClusterizer* clusterizer = GetClusterizer();
   if(!clusterizer) {
-    Error("UnfoldLocalMaxima", "Cannot get clusterizer. Exit.") ;
-    exit(1);
+    Fatal("UnfoldLocalMaxima", "Cannot get clusterizer") ;
   }
 
   if(this->IsEmc()) {
@@ -1017,7 +1015,7 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
 
       newRP->EvalLocalPosition(logWeight,digits);
       Info("UnfoldLocalMaxima", "======= Unfold: daughter rec point %d =================", iMax) ;
-      newRP->Print("");
+      newRP->Print();
     }
 
 //    RemoveFromWorkingPool(this);
@@ -1028,10 +1026,10 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
 
 }
 
-void AliPHOSEvalRecPoint::PrintPoint(Option_t* opt)
+void AliPHOSEvalRecPoint::PrintPoint()
 {
   // print rec.point to stdout
-  AliPHOSCpvRecPoint::Print(opt);
+  AliPHOSCpvRecPoint::Print();
 
   TVector3 lpos;
   GetLocalPosition(lpos);
@@ -1050,8 +1048,7 @@ AliPHOSRecManager* AliPHOSEvalRecPoint::GetReconstructionManager() const
   TFolder* wPoolF = (TFolder*)aliceF->FindObject("WhiteBoard/RecPoints/PHOS/SmP");
   AliPHOSRecManager* recMng = (AliPHOSRecManager*)wPoolF->FindObject("AliPHOSRecManager");
   if(!recMng) { 
-    Error("GetReconstructionManager", "Couldn't find Reconstruction Manager. Exit.") ; 
-    exit(1); 
+    Fatal("GetReconstructionManager", "Couldn't find Reconstruction Manager") ;  
   }
 
   return recMng;
@@ -1080,8 +1077,7 @@ const TObject* AliPHOSEvalRecPoint::GetWorkingPool()
   TFolder* wPoolF = (TFolder*)aliceF->FindObject("WhiteBoard/RecPoints/PHOS/SmP");
   TObject* wPool = wPoolF->FindObject("SmartPoints");
   if(!wPool) { 
-    Error("GetWorkingPool", "Couldn't find Working Pool. Exit.") ; 
-    exit(1); 
+    Fatal("GetWorkingPool", "Couldn't find Working Pool") ;  
   }
 
   return wPool;
@@ -1116,5 +1112,5 @@ void AliPHOSEvalRecPoint::RemoveFromWorkingPool(TObject* obj)
 void AliPHOSEvalRecPoint::PrintWorkingPool()
 {
   // print pool of rec.points to stdout
-  ((TObjArray*)GetWorkingPool())->Print("");
+  ((TObjArray*)GetWorkingPool())->Print();
 }

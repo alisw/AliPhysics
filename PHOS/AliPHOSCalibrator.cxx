@@ -48,6 +48,7 @@
 #include "TROOT.h"
 #include "TF1.h"
 #include "TObjString.h"
+
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -634,7 +635,7 @@ void AliPHOSCalibrator::WriteGains(const char * version,
   cmngr->WriteData(&gains) ;
 }	
 //_____________________________________________________________________________
-void AliPHOSCalibrator::Print(const Option_t *)const 
+void AliPHOSCalibrator::Print()const 
 {
   // prints everything
   printf("--------------AliPHOSCalibrator-----------------\n") ;

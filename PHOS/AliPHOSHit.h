@@ -12,7 +12,6 @@
 //*-- Author: Maxime Volkov (RRC KI) & Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
-#include <TLorentzVector.h>
 
 // --- AliRoot header files ---
 #include "AliHit.h"

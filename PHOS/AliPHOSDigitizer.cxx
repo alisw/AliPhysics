@@ -56,24 +56,17 @@
 //
 
 // --- ROOT system ---
-#include "TFile.h"
 #include "TTree.h"
 #include "TSystem.h"
-#include "TROOT.h"
-#include "TFolder.h"
-#include "TObjString.h"
-#include "TGeometry.h"
 #include "TBenchmark.h"
+#include "TRandom.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliRun.h"
-#include "AliHeader.h"
-#include "AliStream.h"
+
 #include "AliRunDigitizer.h"
 #include "AliPHOSDigit.h"
-#include "AliPHOS.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"

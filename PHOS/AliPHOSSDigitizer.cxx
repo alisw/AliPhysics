@@ -51,14 +51,13 @@
 
 
 // --- ROOT system ---
-#include "TFile.h"
-#include "TROOT.h"
 #include "TBenchmark.h"
+#include "TRandom.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliRun.h"
+#include "AliPHOSGeometry.h" 
 #include "AliPHOSDigit.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSHit.h"
@@ -335,6 +334,7 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
 //____________________________________________________________________________ 
 void AliPHOSSDigitizer::Unload() const
 {
+  // Unloads the objects from the folder
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   AliPHOSLoader * loader = gime->PhosLoader() ; 
   loader->UnloadHits() ; 

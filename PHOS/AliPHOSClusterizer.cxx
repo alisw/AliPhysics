@@ -22,21 +22,11 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TGeometry.h"
-#include "TDirectory.h"
-#include "TFile.h"
-#include "TTree.h"
 
 // --- Standard library ---
-#include <stdlib.h>   
 
 // --- AliRoot header files ---
-#include "AliRun.h" 
 #include "AliPHOSClusterizer.h"
-#include "AliHeader.h" 
-#include "AliPHOSGetter.h"
-#include "AliPHOSSDigitizer.h"
-#include "AliPHOSDigitizer.h"
 
 ClassImp(AliPHOSClusterizer)
 

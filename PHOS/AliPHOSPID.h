@@ -43,11 +43,11 @@ class AliPHOSPID : public TTask {
   virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
   virtual void WriteRecParticles() = 0;
 
-private: 
-  virtual void Init() { Warning("Init", "not defined" ) ; } 
-
 protected:
   TString fEventFolderName ;  // event folder name
+
+private: 
+  virtual void Init() { Warning("Init", "not defined" ) ; } 
 
   ClassDef(AliPHOSPID,3)  // Particle Identifier algorithm (base class)
 

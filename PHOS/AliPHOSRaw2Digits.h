@@ -50,7 +50,7 @@ public:
   AliPHOSRaw2Digits & operator = ( AliPHOSRaw2Digits & /*r2d*/ ) { return *this ; } 
   
 private:
-  Bool_t StartRootFiles(void) ;
+  Bool_t StartRootFiles(void) const ;
   Bool_t CloseRootFiles(void) ;
   Bool_t ProcessRawFile() ;
   void Swab4(void *from, void *to, size_t nwords) const ;

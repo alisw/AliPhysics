@@ -36,21 +36,21 @@ public:
     return *this ; 
   }
 
-  Float_t * GetStripHalfSize()   {return fStripHalfSize ;}
-  Float_t   GetStripWallWidthOut() {return fStripWallWidthOut ;}
+  Float_t * GetStripHalfSize() {return fStripHalfSize ;}
+  Float_t   GetStripWallWidthOut() const {return fStripWallWidthOut ;}
   Float_t * GetAirCellHalfSize() {return fAirCellHalfSize ;}
   Float_t * GetWrappedHalfSize() {return fWrappedHalfSize ;}
   Float_t   GetAirGapLed() const {return fAirGapLed ;}
   Float_t * GetCrystalHalfSize() {return fCrystalHalfSize ;}
   Float_t * GetSupportPlateHalfSize() { return fSupportPlateHalfSize ;}
-  Float_t * GetSupportPlateInHalfSize() {return fSupportPlateInHalfSize ;}
+  Float_t * GetSupportPlateInHalfSize()  {return fSupportPlateInHalfSize ;}
   Float_t   GetSupportPlateThickness(void)   const { return fSupportPlateThickness ; }    
 
   Float_t * GetPreampHalfSize() {return fPreampHalfSize ;}
   Float_t * GetAPDHalfSize(void) {return fPinDiodeHalfSize ; }
   Float_t * GetOuterThermoParams(void) {return  fOuterThermoParams ; }
-  Float_t * GetCoolerHalfSize(void) {return fCoolerHalfSize ;}
-  Float_t * GetAirGapHalfSize(void) {return fAirGapHalfSize; }
+  Float_t * GetCoolerHalfSize(void)  {return fCoolerHalfSize ;}
+  Float_t * GetAirGapHalfSize(void)  {return fAirGapHalfSize; }
   Float_t * GetInnerThermoHalfSize(void) {return  fInnerThermoHalfSize ; }
   Float_t * GetAlCoverParams() {return fAlCoverParams ; }
   Float_t * GetFiberGlassHalfSize() {return fFiberGlassHalfSize ; }
@@ -60,7 +60,7 @@ public:
   Float_t * GetTSupport2HalfSize() {return fTSupport2HalfSize ;}
   Float_t * GetTCables1HalfSize() {return fTCables1HalfSize ; }
   Float_t * GetTCables2HalfSize() {return fTCables2HalfSize ; }
-  Float_t   GetTSupportDist() {return fTSupportDist ; }
+  Float_t   GetTSupportDist() const {return fTSupportDist ; }
   Float_t * GetFrameXHalfSize() {return fFrameXHalfSize ;}
   Float_t * GetFrameZHalfSize() {return fFrameZHalfSize ;}
   Float_t * GetFrameXPosition() {return fFrameXPosition ;}

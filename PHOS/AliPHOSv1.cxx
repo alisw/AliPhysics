@@ -27,22 +27,13 @@
 
 
 // --- ROOT system ---
-
-#include <TBRIK.h>
-#include <TNode.h>
 #include <TParticle.h>
-#include <TRandom.h>
-#include <TTree.h>
 #include <TVirtualMC.h>
 
 // --- Standard library ---
 
-#include <string.h>
-#include <stdlib.h>
 
 // --- AliRoot header files ---
-
-#include "AliConst.h"
 #include "AliPHOSCPVDigit.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSHit.h"

@@ -44,24 +44,17 @@
 //
 
 // --- ROOT system ---
-#include "TROOT.h"
-#include "TFile.h"
-#include "TFolder.h"
 #include "TTree.h"
-#include "TSystem.h"
 #include "TBenchmark.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliPHOSGeometry.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
-#include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegment.h"
-#include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSLink.h"
 #include "AliPHOSGetter.h"
-#include "AliPHOS.h"
 
 ClassImp( AliPHOSTrackSegmentMakerv1) 
 
@@ -181,6 +174,7 @@ void  AliPHOSTrackSegmentMakerv1::Init()
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::InitParameters()
 {
+  //Initializes parameters
   fRcpv      = 10. ;   
   fEmcFirst  = 0 ;    
   fEmcLast   = 0 ;   
@@ -365,6 +359,7 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
 //____________________________________________________________________________
 void AliPHOSTrackSegmentMakerv1::Unload() 
 {
+  // Unloads the task from the folder
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ;  
   gime->PhosLoader()->UnloadRecPoints() ;
   gime->PhosLoader()->UnloadTracks() ;

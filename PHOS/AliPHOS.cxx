@@ -28,20 +28,17 @@
 // --- ROOT system ---
 class TFile;
 #include <TFolder.h> 
-#include <TROOT.h>
 #include <TTree.h>
 #include <TVirtualMC.h> 
 
 // --- Standard library ---
-#include <Riostream.h>
 
 // --- AliRoot header files ---
 #include "AliMagF.h"
 #include "AliPHOS.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSLoader.h"
-#include "AliPHOSQAChecker.h"
-#include "AliRun.h"
+
 
 ClassImp(AliPHOS)
 //____________________________________________________________________________
@@ -371,7 +368,7 @@ AliPHOSGeometry * AliPHOS::GetGeometry() const
 //____________________________________________________________________________
 void AliPHOS::SetTreeAddress()
 { 
-
+  // Links Hits in the Tree to Hits array
   TBranch *branch;
   char branchname[20];
   sprintf(branchname,"%s",GetName());

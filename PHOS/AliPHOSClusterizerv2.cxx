@@ -23,7 +23,6 @@
 
 // --- ROOT system ---
 #include "TBenchmark.h"
-#include "TROOT.h"
 
 // --- Standard library ---
 
@@ -34,6 +33,7 @@
 #include "AliPHOSEvalRecPoint.h"
 #include "AliPHOSRecCpvManager.h"
 #include "AliPHOSRecEmcManager.h"
+#include "AliPHOSGeometry.h"
 
 ClassImp(AliPHOSClusterizerv2)
 

@@ -13,14 +13,11 @@
 
 // --- ROOT system ---
 
-//#include "TObject.h"
-#include "TArrayI.h"
- 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-#include "AliPHOSDigit.h"
+//#include "AliPHOSDigit.h"
 #include "AliPHOSRecPoint.h"
 
 class AliPHOSEmcRecPoint : public AliPHOSRecPoint  {

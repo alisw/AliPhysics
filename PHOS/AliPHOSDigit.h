@@ -17,7 +17,7 @@
 
 // --- ROOT system ---
 
-#include "TObject.h" 
+//#include "TObject.h" 
 
 // --- Standard library ---
 
@@ -39,13 +39,14 @@ class AliPHOSDigit : public AliDigitNew {
   Bool_t operator==(const AliPHOSDigit &rValue) const;
   AliPHOSDigit& operator+(AliPHOSDigit const &rValue) ;
   AliPHOSDigit& operator*(Float_t factor) ; 
-
+  AliPHOSDigit& operator=(const AliPHOSDigit) {
+    Fatal("operator = ", "not implemented") ; return *this ; } 
   Int_t   Compare(const TObject * obj) const ;  
   Int_t   GetNprimary() const { return fNprimary ; }
   Int_t   GetPrimary(Int_t index) const ; 
   Float_t GetTime(void) const {return fTime ;}
   Bool_t  IsSortable() const { return kTRUE ; }
-  void    Print(Option_t *) const;
+  void    Print() const;
   void    SetAmp(Int_t Amp) { fAmp=Amp ; } 
   void    SetTime(Float_t Time) {fTime = Time ;}
   void    ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging

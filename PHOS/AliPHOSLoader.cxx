@@ -43,30 +43,14 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TROOT.h"
-#include "TObjString.h"
-#include "TFolder.h"
-#include "TParticle.h"
 
 // --- Standard library ---
-#include <Riostream.h>
 
 // --- AliRoot header files ---
 
-#include "AliRun.h"
-#include "AliConfig.h"
-#include "AliDataLoader.h"
 #include "AliPHOSLoader.h"
 #include "AliPHOS.h"
-#include "AliPHOSDigitizer.h"
-#include "AliPHOSSDigitizer.h"
-#include "AliPHOSClusterizer.h"
-#include "AliPHOSClusterizerv1.h"
-#include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOSTrackSegmentMakerv1.h"
-#include "AliPHOSTrackSegment.h"
-#include "AliPHOSPID.h" 
-#include "AliPHOSPIDv1.h" 
-#include "AliPHOSGeometry.h"
+#include "AliPHOSHit.h"
 #include "AliPHOSCalibrationDB.h"
 
 ClassImp(AliPHOSLoader)

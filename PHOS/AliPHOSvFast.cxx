@@ -27,17 +27,15 @@
 // --- ROOT system ---
  
 #include <TBRIK.h>
-#include <TFile.h>
 #include <TGeometry.h>
 #include <TNode.h>
 #include <TParticle.h>
-#include <TTree.h>
+#include "TClonesArray.h" 
 #include <TVirtualMC.h>
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliConst.h"
 #include "AliPHOSFastRecParticle.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSLoader.h"

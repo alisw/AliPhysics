@@ -71,7 +71,7 @@ class AliPHOSFastRecParticle : public TParticle {
 
   TString Name() const ; 
   virtual void Paint(Option_t * option="");
-  virtual void Print(Option_t *) const ; 
+  virtual void Print() const ; 
   
   void SetType(Int_t type) ;
   

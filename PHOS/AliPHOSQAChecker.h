@@ -18,8 +18,6 @@ class TString ;
 
 // --- Standard library ---
 
-#include <assert.h>
-
 // --- AliRoot header files ---
 
 #include "AliPHOSQAVirtualCheckable.h"

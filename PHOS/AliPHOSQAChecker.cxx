@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TROOT.h"
+#include "TDatime.h"
 #include "TFolder.h" 
 
 // --- Standard library ---
@@ -31,7 +31,6 @@
 #include "AliConfig.h"
 
 #include "AliPHOSQAChecker.h"
-#include "AliPHOSQAVirtualCheckable.h"
 
 ClassImp(AliPHOSQAChecker)
 

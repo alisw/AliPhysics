@@ -23,18 +23,18 @@
 //  30 October 2000 
 
 // --- ROOT system ---
-#include "TPad.h"
-#include "TH2.h"
+
 #include "TMath.h" 
-#include "TCanvas.h" 
 #include "TClonesArray.h" 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliPHOSGeometry.h" 
+#include "AliPHOSDigit.h"
 #include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSLoader.h"
+
 ClassImp(AliPHOSCpvRecPoint)
 
 //____________________________________________________________________________
@@ -340,7 +340,7 @@ void AliPHOSCpvRecPoint::EvalClusterLengths(TClonesArray * digits)
 
 
 //____________________________________________________________________________
-void AliPHOSCpvRecPoint::Print(Option_t *) 
+void AliPHOSCpvRecPoint::Print() 
 {
   // Print the list of digits belonging to the cluster
   

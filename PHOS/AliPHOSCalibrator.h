@@ -48,7 +48,7 @@ public:
   void PlotGain(Int_t channel) ; //Plot histo with gains for a channel
   void PlotGains() ;             //Plot all gains
 
-  virtual void Print(const Option_t *) const ;
+  virtual void Print() const ;
 
   TH1F * PedestalHisto(Int_t channel)
     {return dynamic_cast<TH1F* >(fPedHistos->At(channel)) ;} ;

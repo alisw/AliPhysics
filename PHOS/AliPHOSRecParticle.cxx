@@ -31,7 +31,6 @@
 // --- AliRoot header files ---
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSGetter.h" 
-#include "TParticle.h"
 
 ClassImp(AliPHOSRecParticle)
 
@@ -78,7 +77,7 @@ const Int_t AliPHOSRecParticle::GetNPrimaries() const
 //____________________________________________________________________________
 const Int_t AliPHOSRecParticle::GetNPrimariesToRecParticles() const  
 { 
-
+  // Get the number of primaries at the origine of the RecParticle
   Int_t rv = 0 ;
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
   Int_t emcRPindex = dynamic_cast<AliPHOSTrackSegment*>(gime->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
@@ -89,6 +88,7 @@ const Int_t AliPHOSRecParticle::GetNPrimariesToRecParticles() const
 //____________________________________________________________________________
 const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const  
 {
+  // Get the list of primary particles at the origine of the RecParticle
   if ( index > GetNPrimariesToRecParticles() ) { 
     if (fDebug) 
       Warning("GetPrimary", "AliPHOSRecParticle::GetPrimary -> %d is larger that the number of primaries %d", 

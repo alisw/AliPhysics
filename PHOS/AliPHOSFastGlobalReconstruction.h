@@ -33,7 +33,7 @@ private:
   void    SmearMomentum(TLorentzVector &p);
 
 private:
-  AliPHOSGetter *gime;        //! Instance of the PHOS getter
+  AliPHOSGetter *fgime;        //! Instance of the PHOS getter
   AliGenerator  *fGenerator;  //! MC generator used in simulation
   TClonesArray  *fParticles;  //! Array of reconstructed particles
   Int_t          fNParticles; //! Number of reconstructed particles

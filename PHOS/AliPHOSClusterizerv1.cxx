@@ -45,27 +45,21 @@
 
 // --- ROOT system ---
 
-#include "TROOT.h" 
-#include "TFile.h" 
-#include "TFolder.h" 
 #include "TMath.h" 
 #include "TMinuit.h"
 #include "TTree.h" 
-#include "TSystem.h" 
 #include "TBenchmark.h"
 
 // --- Standard library ---
-//#include <iostream.h> 
 
 // --- AliRoot header files ---
 #include "AliPHOSGetter.h"
+#include "AliPHOSGeometry.h" 
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSDigitizer.h"
-#include "AliPHOS.h"
-#include "AliPHOSCalibrationDB.h"
 
 ClassImp(AliPHOSClusterizerv1)
   
@@ -436,7 +430,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   
   //Now the same for CPV
   for(index = 0; index < cpvRecPoints->GetEntries(); index++)
-    dynamic_cast<AliPHOSRecPoint *>( cpvRecPoints->At(index) )->EvalAll(fW0CPV,digits)  ;
+    dynamic_cast<AliPHOSRecPoint *>( cpvRecPoints->At(index) )->EvalAll(digits)  ;
   
   cpvRecPoints->Sort() ;
   

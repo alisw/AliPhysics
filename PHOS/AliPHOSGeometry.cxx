@@ -30,25 +30,33 @@
 
 #include "TVector3.h"
 #include "TRotation.h" 
-#include "TFolder.h" 
-#include "TROOT.h" 
+#include "TParticle.h"
 
 // --- Standard library ---
-
-#include <stdlib.h>
 
 // --- AliRoot header files ---
 
 #include "AliPHOSGeometry.h"
 #include "AliPHOSEMCAGeometry.h" 
 #include "AliPHOSRecPoint.h"
-#include "AliConst.h"
 
 ClassImp(AliPHOSGeometry) ;
 
 // these initialisations are needed for a singleton
 AliPHOSGeometry * AliPHOSGeometry::fgGeom = 0 ;
 Bool_t            AliPHOSGeometry::fgInit = kFALSE ;
+
+//____________________________________________________________________________
+AliPHOSGeometry::AliPHOSGeometry() {
+    // default ctor 
+    // must be kept public for root persistency purposes, but should never be called by the outside world
+    fPHOSAngle      = 0 ;
+    fGeometryEMCA   = 0 ;
+    fGeometrySUPP   = 0 ;
+    fGeometryCPV    = 0 ;
+    fgGeom          = 0 ;
+    fRotMatrixArray = 0 ;  
+}  
 
 //____________________________________________________________________________
 AliPHOSGeometry::~AliPHOSGeometry(void)
@@ -342,15 +350,19 @@ void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_
   }
 }
 
+//____________________________________________________________________________
 Bool_t  AliPHOSGeometry::Impact(const TParticle * particle) const 
 {
-  Bool_t In=kFALSE;
-  Int_t ModuleNumber=0;
+  // Tells if a particle enters PHOS
+  Bool_t in=kFALSE;
+  Int_t moduleNumber=0;
   Double_t z,x;
-  ImpactOnEmc(particle->Theta(),particle->Phi(),ModuleNumber,z,x);
-  if(ModuleNumber) In=kTRUE;
-  else In=kFALSE;
-  return In;
+  ImpactOnEmc(particle->Theta(),particle->Phi(),moduleNumber,z,x);
+  if(moduleNumber) 
+    in=kTRUE;
+  else 
+    in=kFALSE;
+  return in;
 }
 
 //____________________________________________________________________________

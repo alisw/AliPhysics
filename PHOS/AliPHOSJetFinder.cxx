@@ -30,6 +30,7 @@
 
 // --- AliRoot header files ---
 #include "AliPHOSJet.h"
+#include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOSJetFinder.h"

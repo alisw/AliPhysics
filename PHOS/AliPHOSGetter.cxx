@@ -41,20 +41,17 @@
 // --- ROOT system ---
 
 #include "TSystem.h"
-#include "TFile.h"
 #include "TROOT.h"
 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
 #include "AliPHOSGetter.h"
+#include "AliPHOS.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"  
 #include "AliPHOSLoader.h"
-// #include "AliPHOSRaw2Digits.h"
-//#include "AliPHOSCalibrationDB.h"
 #include "AliPHOSBeamTestEvent.h"
 #include "AliMC.h"
 
@@ -112,6 +109,7 @@ AliPHOSGetter::~AliPHOSGetter()
 //____________________________________________________________________________ 
 AliPHOSClusterizer * AliPHOSGetter::Clusterizer()
 { 
+  // Returns pointer to the Clusterizer task 
   AliPHOSClusterizer * rv ; 
   rv =  dynamic_cast<AliPHOSClusterizer *>(PhosLoader()->Reconstructioner()) ;
   if (!rv) {
@@ -154,6 +152,7 @@ TClonesArray * AliPHOSGetter::Digits()
 //____________________________________________________________________________ 
 AliPHOSDigitizer * AliPHOSGetter::Digitizer() 
 { 
+  // Returns pointer to the Digitizer task 
   AliPHOSDigitizer * rv ; 
   rv =  dynamic_cast<AliPHOSDigitizer *>(PhosLoader()->Digitizer()) ;
   if (!rv) {
@@ -195,8 +194,9 @@ TClonesArray * AliPHOSGetter::TrackSegments()
 }
 
 //____________________________________________________________________________ 
-AliPHOSTrackSegmentMaker * AliPHOSGetter::TrackSegmentMaker() 
+AliPHOSTrackSegmentMaker * AliPHOSGetter::TrackSegmentMaker()
 { 
+  // Returns pointer to the TrackSegmentMaker task 
   AliPHOSTrackSegmentMaker * rv ; 
   rv =  dynamic_cast<AliPHOSTrackSegmentMaker *>(PhosLoader()->TrackSegmentMaker()) ;
   if (!rv) {
@@ -386,8 +386,9 @@ AliPHOS * AliPHOSGetter:: PHOS() const
 
 
 //____________________________________________________________________________ 
-AliPHOSPID * AliPHOSGetter::PID() 
+AliPHOSPID * AliPHOSGetter::PID()
 { 
+  // Returns pointer to the PID task 
   AliPHOSPID * rv ; 
   rv =  dynamic_cast<AliPHOSPID *>(PhosLoader()->PIDTask()) ;
   if (!rv) {
@@ -562,8 +563,9 @@ TClonesArray * AliPHOSGetter::SDigits()
 }
 
 //____________________________________________________________________________ 
-AliPHOSSDigitizer * AliPHOSGetter::SDigitizer() 
+AliPHOSSDigitizer * AliPHOSGetter::SDigitizer()
 { 
+  // Returns pointer to the SDigitizer task 
   AliPHOSSDigitizer * rv ; 
   rv =  dynamic_cast<AliPHOSSDigitizer *>(PhosLoader()->SDigitizer()) ;
   if (!rv) {
@@ -615,6 +617,7 @@ void AliPHOSGetter::Track(const Int_t itrack)
 //____________________________________________________________________________ 
 TTree * AliPHOSGetter::TreeD() const 
 {
+  // Returns pointer to the Digits Tree
   TTree * rv = 0 ; 
   rv = PhosLoader()->TreeD() ; 
   if ( !rv ) {
@@ -628,6 +631,7 @@ TTree * AliPHOSGetter::TreeD() const
 //____________________________________________________________________________ 
 TTree * AliPHOSGetter::TreeH() const 
 {
+  // Returns pointer to the Hits Tree
   TTree * rv = 0 ; 
   rv = PhosLoader()->TreeH() ; 
   if ( !rv ) {
@@ -641,6 +645,7 @@ TTree * AliPHOSGetter::TreeH() const
 //____________________________________________________________________________ 
 TTree * AliPHOSGetter::TreeR() const 
 {
+  // Returns pointer to the RecPoints Tree
   TTree * rv = 0 ; 
   rv = PhosLoader()->TreeR() ; 
   if ( !rv ) {
@@ -654,6 +659,7 @@ TTree * AliPHOSGetter::TreeR() const
 //____________________________________________________________________________ 
 TTree * AliPHOSGetter::TreeT() const 
 {
+  // Returns pointer to the TrackSegments Tree
   TTree * rv = 0 ; 
   rv = PhosLoader()->TreeT() ; 
   if ( !rv ) {
@@ -666,6 +672,7 @@ TTree * AliPHOSGetter::TreeT() const
 //____________________________________________________________________________ 
 TTree * AliPHOSGetter::TreeP() const 
 {
+  // Returns pointer to the RecParticles  Tree
   TTree * rv = 0 ; 
   rv = PhosLoader()->TreeP() ; 
   if ( !rv ) {
@@ -678,7 +685,8 @@ TTree * AliPHOSGetter::TreeP() const
 
 //____________________________________________________________________________ 
 TTree * AliPHOSGetter::TreeS() const 
-{
+{ 
+ // Returns pointer to the SDigits Tree
   TTree * rv = 0 ; 
   rv = PhosLoader()->TreeS() ; 
   if ( !rv ) {

@@ -59,15 +59,10 @@
 
 // --- ROOT system ---
 
-#include "TClonesArray.h"
-#include "TROOT.h"
-#include "TTree.h"
-#include "TFile.h"
-
 // --- Standard library ---
+#include "Riostream.h"
 
 // --- AliRoot header files ---
-#include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSClusterizerv1.h"
@@ -75,8 +70,7 @@
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSPIDv1.h"
-#include "AliPHOSFastRecParticle.h"
-#include "AliPHOSCpvRecPoint.h"
+
 #include "AliPHOSLoader.h"
 
 ClassImp(AliPHOSReconstructioner)
@@ -166,10 +160,12 @@ TTask("AliPHOSReconstructioner",evFoldName)
   fIsInitialized = kTRUE ;
 } 
 //____________________________________________________________________________
-void AliPHOSReconstructioner::Exec(Option_t)
+void AliPHOSReconstructioner::Exec(Option_t opt)
 {
   //check, if the names of branches, which should be made conicide with already
   //existing
+  if (!opt) 
+    return ; 
   if(!fIsInitialized)
     Init() ;
 }

@@ -22,15 +22,15 @@
 
 
 // --- ROOT system ---
-#include "TGeometry.h"
-#include "TFile.h"
-#include "TTree.h"
+//#include "TGeometry.h"
+  //#include "TFile.h"
+  //#include "TTree.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliPHOSTrackSegmentMaker.h"
-#include "AliHeader.h" 
+  //#include "AliHeader.h" 
 
 ClassImp( AliPHOSTrackSegmentMaker) 
 

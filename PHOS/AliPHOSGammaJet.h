@@ -21,8 +21,8 @@ public:
   AliPHOSGammaJet() ; // default ctor
   AliPHOSGammaJet(const TString inputfilename) ; //ctor 
   AliPHOSGammaJet(const AliPHOSGammaJet & gj) ; // cpy ctor
-  ~AliPHOSGammaJet() ; // dtor
-  virtual void   Exec(Option_t *); 
+  virtual ~AliPHOSGammaJet() ; // dtor
+  virtual void   Exec(Option_t * = ""); 
   void GetGammaJet(TList & particleList, TLorentzVector & gamma, Int_t & id) ; 
   void GetLeadingCharge(TList & particleList, TLorentzVector & charge, Int_t & id) ;
   void GetLeadingPi0(TList & particleList, TLorentzVector & pi0) ;

@@ -26,7 +26,8 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSRecCpvManager.h"
-#include "AliPHOSGetter.h"
+#include "AliPHOSGeometry.h" 
+#include "AliPHOSLoader.h"
 
 ClassImp(AliPHOSRecCpvManager) 
 

@@ -61,15 +61,13 @@
 
 // --- Standard library ---
 
-#include <unistd.h>
+//#include <unistd.h>
 
 // --- AliRoot header files ---
 #include "AliPHOSDigit.h"
 #include "AliPHOSConTableDB.h"
 #include "AliPHOSBeamTestEvent.h"
 #include "AliPHOSRaw2Digits.h"
-#include "AliPHOSv1.h"
-#include "../EVGEN/AliGenBox.h"
 #include "AliRun.h"
 
 ClassImp(AliPHOSRaw2Digits)
@@ -133,6 +131,7 @@ ClassImp(AliPHOSRaw2Digits)
 //____________________________________________________________________________ 
 AliPHOSRaw2Digits::AliPHOSRaw2Digits(AliPHOSRaw2Digits & r2d):TTask(r2d.GetName(), r2d.GetTitle()) 
 {
+  // cpy ctor
   fInName=r2d.fInName ;
 
   fMK1 =  r2d.fMK1 ;
@@ -192,7 +191,7 @@ Bool_t AliPHOSRaw2Digits::Init(void){
 
 }
 //____________________________________________________________________________ 
-Bool_t AliPHOSRaw2Digits::StartRootFiles(void ){
+Bool_t AliPHOSRaw2Digits::StartRootFiles(void ) const {
 //   //Create PHOS geometry, sets magnetic field to zero, 
 //   //create Generator - to store target position, 
 //   //opens out file, creates TreeE 
