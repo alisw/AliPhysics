@@ -99,55 +99,61 @@ void fcnrecon(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t ifla
 
 //
 
-TFile *outputfile;
+static TFile *outputfile;
 
-TH1F *h1_photons,*h1_photacc,*h1_hough;
-TH2F *h2_tvsppos, *h2_tvspneg,*h2_func;
+static TH1F *h1_photons,*h1_photacc,*h1_hough;
+static TH2F *h2_tvsppos, *h2_tvspneg,*h2_func;
 
-TH2F *h2_disp;
+static TH2F *h2_disp;
 
-TH2F *h2_test1, *h2_test2, *h2_test4, *h2_testmap; 
-TH2F *h2_dist_p;
+static TH2F *h2_test2, *h2_testmap; 
+//static TH2F *h2_test1, *h2_test4; 
+static TH2F *h2_dist_p;
 
-TH1F *h1_photons1, *h1_photons2;
-TH1F *h1_houghpos, *h1_houghneg;
-TH1F *h1_mass;
-TH2F *h2_mvsp;
+static TH1F *h1_photons1, *h1_photons2;
+static TH1F *h1_houghpos, *h1_houghneg;
+static TH1F *h1_mass;
+static TH2F *h2_mvsp;
 
-TH1F *h1_hcs, *h1_hcsw;
+static TH1F *h1_hcs, *h1_hcsw;
 
-TH1F *h1_nprotons;
+static TH1F *h1_nprotons;
 
-TProfile *hp_1pos, *hp_1neg;
-TProfile *hp_1posnorm, *hp_1negnorm;
-TH2F *h2_1pos, *h2_1neg;
-TH2F *h2_1posnorm, *h2_1negnorm;
-TH2F *h2_mvst;
+static TProfile *hp_1pos, *hp_1neg;
+static TProfile *hp_1posnorm, *hp_1negnorm;
+static TH2F *h2_1pos, *h2_1neg;
+static TH2F *h2_1posnorm, *h2_1negnorm;
+static TH2F *h2_mvst;
 
-TH1F *h1_deltap, *h1_deltapop;
-TH1F *h1_diffTrackTheta, *h1_diffTrackPhi;
-TH1F *h1_photaccspread;
+static TH1F *h1_deltap, *h1_deltapop;
+static TH1F *h1_diffTrackTheta, *h1_diffTrackPhi;
+static TH1F *h1_photaccspread;
 
-TH2F *h2_diffpos, *h2_diffneg;
-TH2F *h2_map, *h2_mapw;
+static TH2F *h2_diffpos, *h2_diffneg;
+static TH2F *h2_map, *h2_mapw;
 
-TH1F *photris;
+static TH1F *photris;
 
-TNtuple *hn;
+static TH1F *gChargeMipH1, *gMultMipH1;
 
-TCanvas *StarCanvas,*Display,*Displayhcs;
-TGraph *gra;
-TLine *line;
-TPolyLine *poll;
-TPolyMarker *polm;
-TMarker *Point, *TrackPoints, *Photon, *PhotonAcc;
-TText *text;
+static TNtuple *hn;
 
+static TCanvas *StarCanvas,*Display;
+//static TCanvas *Displayhcs;
+static TGraph *gra;
+/*
+static TLine *line;
+static TPolyLine *poll;
+static TPolyMarker *polm;
+static TMarker *Point, *TrackPoints, *Photon, *PhotonAcc;
+static TText *text;
+*/
+    
 AliRICHRecon::AliRICHRecon(const char*, const char*)
 {
 
   fRich = (AliRICH*)gAlice->GetDetector("RICH");
-
+  InitRecon();
 }
 
 void AliRICHRecon::InitRecon()
@@ -212,7 +218,10 @@ void AliRICHRecon::InitRecon()
    photris = new TH1F("photris","photris",1000,0.,1.);
    h2_diffneg = new TH2F("h2_diffneg","diff neg",100,-2.5,2.5,100,-2.5,2.5);
    h2_diffpos = new TH2F("h2_diffpos","diff pos",100,-2.5,2.5,100,-2.5,2.5);
-
+   gChargeMipH1 = new TH1F("gChargeMipH1"," Charge Mip ",2000,0.,2000.);
+   gMultMipH1 = new TH1F("gMultMipH1"," Cluster Size Mip ",50,0.,50.);
+   
+   
    hn = new TNtuple("hn","ntuple",
 "Run:Trig:VertZ:Pmod:Pt:Eta:TrackTheta:TrackPhi:TrackThetaFit:TrackPhiFit:Charge:ThetaCerenkov:NPhotons:NPhotonsFit:InRing:MassOfParticle:HoughArea:Multiplicity:TPCLastZ");
 }
@@ -227,8 +236,6 @@ void AliRICHRecon::StartProcessEvent()
   
   SetFreonScaleFactor(0.994);
 
-  InitRecon();
-  
   if(kDISPLAY) 
     {
       DrawEvent(0);
@@ -244,7 +251,7 @@ void AliRICHRecon::StartProcessEvent()
     Rich()->GetLoader()->TreeR()->GetEntry(0);
 
     Float_t clusX[7][500],clusY[7][500];
-    Int_t clusQ[7][500];    
+    Int_t clusQ[7][500],clusMul[7][500];    
     Int_t nClusters[7];
     
     for (Int_t ich=0;ich<7;ich++) {
@@ -254,7 +261,8 @@ void AliRICHRecon::StartProcessEvent()
         clusX[ich][k] = pCluster->fX;
         clusY[ich][k] = pCluster->fY;
         clusQ[ich][k] = pCluster->fQ;
-//        pCluster->Print();
+        clusMul[ich][k] = pCluster->fMultiplicity;
+        pCluster->Print();
       }
     }
         
@@ -278,9 +286,13 @@ void AliRICHRecon::StartProcessEvent()
         iPrim++;
       }
 
-      cout << " iPrim " << iPrim << endl;
+      cout << " iPrim " << iPrim << " pHit " << pHit << endl;
 //      if(iPrim==0) return;
 //      if(iPrim>1) Fatal("StartProcessEvent"," problems with prim to hit!!! = %3i", iPrim);
+      
+      if (!pHit) return;
+      
+      pHit->Print();
       
       TParticle *pParticle = gAlice->GetRunLoader()->Stack()->Particle(pHit->GetTrack());
       Float_t pmod     = pParticle->P();
@@ -310,7 +322,7 @@ void AliRICHRecon::StartProcessEvent()
       Float_t TrackTheta = pLocal.Theta();
       Float_t TrackPhi = pLocal.Phi();
 
-      cout << " TrackTheta " << TrackTheta << " TrackPhi " << TrackPhi << endl;
+//      cout << " TrackTheta " << TrackTheta << " TrackPhi " << TrackPhi << endl;
       
       SetTrackTheta(TrackTheta);
       SetTrackPhi(TrackPhi);
@@ -318,15 +330,15 @@ void AliRICHRecon::StartProcessEvent()
       Int_t MaxInd = 0;
       Float_t MinDist =  999.;
 
-      cout << " n Clusters " << nClusters[pHit->Chamber()-1] << " for chamber n. " << pHit->Chamber() << endl;
+//      cout << " n Clusters " << nClusters[pHit->Chamber()-1] << " for chamber n. " << pHit->Chamber() << endl;
       
       for(Int_t j=0;j<nClusters[pHit->Chamber()-1];j++)
 	{
 	  Float_t diffx = primLocal.X() - clusX[pHit->Chamber()-1][j];
 	  Float_t diffy = primLocal.Y() - clusY[pHit->Chamber()-1][j];
 
-          cout << " cluster x " << clusX[pHit->Chamber()-1][j] << " hit track x " << primLocal.X();
-          cout << " cluster y " << clusY[pHit->Chamber()-1][j] << " hit track y " << primLocal.Y() << endl;
+//          cout << " cluster x " << clusX[pHit->Chamber()-1][j] << " hit track x " << primLocal.X();
+//          cout << " cluster y " << clusY[pHit->Chamber()-1][j] << " hit track y " << primLocal.Y() << endl;
           
           Float_t diff = sqrt(diffx*diffx + diffy*diffy);
 
@@ -368,6 +380,9 @@ void AliRICHRecon::StartProcessEvent()
 
       Int_t qch = clusQ[pHit->Chamber()-1][MaxInd];
 
+      gChargeMipH1->Fill(qch);
+      gMultMipH1->Fill((Float_t)clusMul[pHit->Chamber()-1][MaxInd]);
+       
       if(MinDist < 3.0 && qch > 120 && MaxInd !=0) 
 	{
 	  
@@ -462,6 +477,8 @@ void AliRICHRecon::EndProcessEvent()
 void AliRICHRecon::PatRec()
 {
 
+  cout << " in PatRec:: " << endl;
+  
   Float_t TrackTheta = GetTrackTheta();
   Float_t TrackPhi   = GetTrackPhi();
   Float_t pmod       = GetTrackMomentum();

@@ -14,7 +14,7 @@ class AliRICHRecon : public TTask {
    public :
  
    AliRICHRecon(const char*, const char*);
-   ~AliRICHRecon(){;}
+   ~AliRICHRecon(){EndProcessEvent();}
 
    AliRICH* Rich() {return fRich;}
    void StartProcessEvent();
