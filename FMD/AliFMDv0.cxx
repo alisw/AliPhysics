@@ -35,7 +35,7 @@
 #include "AliMC.h"
 #include <iostream.h>
 #include <fstream.h>
-#include "/afs/cern.ch/alice/offline/new/RALICE/AliRandom.h"
+#include "AliRndm.h"
 #include "AliMagF.h"
 #include "AliFMDhit.h"
 #include <stdlib.h>
