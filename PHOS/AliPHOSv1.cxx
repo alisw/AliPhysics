@@ -406,12 +406,20 @@ void AliPHOSv1::StepManager(void)
       Float_t xyzd[3] ;
       gMC -> Gmtod (xyzte, xyzd, 1);    // transform coordinate from master to daughter system    
       if (xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2.+0.1){   //Entered close to forward surface  
-	TParticle * part = 0 ; 
 	Int_t parent = gAlice->GetMCApp()->GetCurrentTrackNumber() ; 
-	while ( parent != -1 ) {
-	  part = gAlice->GetMCApp()->Particle(parent) ; 
-	  part->SetBit(kKeepBit);
-	  parent = part->GetFirstMother() ; 
+	TParticle * part = gAlice->GetMCApp()->Particle(parent) ; 
+	Float_t vert[3],vertd[3] ;
+	vert[0]=part->Vx() ;
+	vert[1]=part->Vy() ;
+	vert[2]=part->Vz() ;
+	gMC -> Gmtod (vert, vertd, 1);    // transform coordinate from master to daughter system
+	if(vertd[1]<-GetGeometry()->GetCrystalSize(1)/2.-0.1){ //Particle is created in foront of PHOS 0.1 to get rid of numerical errors 
+	  while ( parent != -1 ) {
+	    part = gAlice->GetMCApp()->Particle(parent) ; 
+	    part->Print() ;
+	    part->SetBit(kKeepBit);
+	    parent = part->GetFirstMother() ; 
+	  }
 	}
       }
     }
