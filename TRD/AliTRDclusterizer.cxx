@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/11/14 10:50:45  cblume
+Changes in digits IO. Add merging of summable digits
+
 Revision 1.9  2001/10/21 18:30:02  hristov
 Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -236,7 +239,7 @@ Bool_t AliTRDclusterizer::OpenOutput(const Char_t *name)
   sprintf(treeName,"TreeR%d_TRD",fEvent);
   fClusterTree = new TTree(treeName,"TRD cluster");
   TObjArray *ioArray = 0;
-  fClusterTree->BranchOld("TRDcluster","TObjArray",&ioArray,32000,0);
+  fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
 
   if (savedir) {
     savedir->cd();
