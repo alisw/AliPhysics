@@ -8,6 +8,8 @@
 #USEPACKAGE = ROOT
 USEPACKAGE = ALIROOT
 
+DEFSTR = -Dno_root
+
 CXX         = g++
 LD          = g++
 CXXFLAGS    = -O2 -Wall -fPIC
@@ -20,16 +22,21 @@ LIBDIR = $(LEVEL3)/lib_$(USERNAME)
 
 ifeq ($(USEPACKAGE),ROOT) 
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp
+DEFSTR = -Duse_root
 endif
 
 ifeq ($(USEPACKAGE),ALIROOT)
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
+DEFSTR = -Duse_aliroot -Duse_root
 endif
+
+#Save the particle id's
+#DEFSTR += -Ddo_mc
 
 SRCS	= AliL3HoughTransformer.cxx AliL3Hough.cxx AliL3HoughTrack.cxx\
 	  AliL3HoughMaxFinder.cxx AliL3HoughEval.cxx AliL3HoughMerger.cxx \
 	  AliL3Histogram.cxx AliL3Histogram1D.cxx \
-	  AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx 
+	  AliL3HoughIntMerger.cxx AliL3HoughGlobalMerger.cxx GetGoodParticles.cxx
 
 DICT = AliL3HoughCint.cxx
 DICTH = AliL3HoughCint.h
@@ -52,7 +59,7 @@ $(DICT) : $(HDRS)
 
 
 $(OBJDIR)/%.o : %.cxx 
-	$(CXX) $(CXXFLAGS) -c $(INCLUDES) -o $@ $<
+	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
 
 $(OBJDIR) : 
 	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)

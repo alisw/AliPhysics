@@ -5,8 +5,10 @@
 # Author: Anders Vestbo   #                    
 ###########################
 
-USEPACKAGE = ROOT
-#USEPACKAGE = ALIROOT
+#USEPACKAGE = ROOT
+USEPACKAGE = ALIROOT
+
+DEFSTR = -Dno_root
 
 CXX         = g++
 LD          = g++
@@ -21,11 +23,16 @@ LIBDIR = $(LEVEL3)/lib_$(USERNAME)
 
 ifeq ($(USEPACKAGE),ROOT) 
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp
+DEFSTR = -Duse_root
 endif
 
 ifeq ($(USEPACKAGE),ALIROOT)
 INCLUDES = -I$(ROOTSYS)/include -I$(TOPDIR)/hough -I$(TOPDIR)/src -I$(TOPDIR)/comp -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
+DEFSTR = -Duse_aliroot -Duse_root
 endif
+
+#Save the particle id's
+#DEFSTR += -Ddo_mc
 
 SRCS	= AliL3Modeller.cxx AliL3ModelTrack.cxx AliL3Compress.cxx
 
@@ -51,7 +58,7 @@ $(DICT) : $(HDRS)
 
 
 $(OBJDIR)/%.o : %.cxx 
-	$(CXX) $(CXXFLAGS) -c $(INCLUDES) -o $@ $<
+	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
 
 $(OBJDIR) : 
 	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
