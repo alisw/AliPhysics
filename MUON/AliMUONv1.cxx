@@ -629,10 +629,22 @@ void AliMUONv1::StepManager()
     }
     
     // One hit per chamber
-    GetMUONData()->AddHit(fIshunt, gAlice->GetMCApp()->GetCurrentTrackNumber(), iChamber, ipart, 
-                          fTrackPosition.X(), fTrackPosition.Y()+yAngleEffect, fTrackPosition.Z(), 0.0, 
-                          fTrackMomentum.P(),theta, phi, fStepSum[idvol], fDestepSum[idvol],
-                          fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z());
+    GetMUONData()->AddHit(fIshunt, 
+			  gAlice->GetMCApp()->GetCurrentTrackNumber(), 
+			  iChamber, ipart,
+			  fTrackPosition.X(), 
+			  fTrackPosition.Y()+yAngleEffect, 
+			  fTrackPosition.Z(), 
+			  gMC->TrackTime(),
+			  fTrackMomentum.P(),
+			  theta, 
+			  phi, 
+			  fStepSum[idvol], 
+			  fDestepSum[idvol],                        
+			  fTrackPosition.X(),
+			  fTrackPosition.Y(),
+			  fTrackPosition.Z());
+
 //     if (GetDebug()){
 //       Info("StepManager Exit","Particle exiting from chamber %d",iChamber);
 //       Info("StepManager Exit","StepSum %f eloss geant %g ",fStepSum[idvol],fDestepSum[idvol]);
