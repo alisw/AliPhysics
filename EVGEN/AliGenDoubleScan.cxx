@@ -15,11 +15,14 @@
 
 /*
 $Log$
+Revision 1.1  2000/02/23 16:25:14  morsch
+First commit of this file
+
 */
 
 #include "AliGenDoubleScan.h"
-#include <stdlib.h>
 #include "AliRun.h"
+
  ClassImp(AliGenDoubleScan)
     
  AliGenDoubleScan::AliGenDoubleScan()
@@ -30,48 +33,51 @@ $Log$
 AliGenDoubleScan::AliGenDoubleScan(Int_t npart)
     :AliGenScan(npart)
 {
+// Constructor
 }
 
 //____________________________________________________________
 AliGenDoubleScan::~AliGenDoubleScan()
-{}
+{
+// Destructor
+}
 
 //____________________________________________________________
 void AliGenDoubleScan::Generate()
 {
-  //
-  // Generate one trigger
-  //
+    //
+    // Generate one trigger
+    //
   
-  Float_t polar[3]= {0,0,0};
-  //
-  Float_t origin[3];
-  Float_t p[3];
-  Int_t nt;
-  Float_t pmom, theta, phi;
-  //
-  Float_t random[6];
-  Float_t dx,dy,dz;
-  
-  //
-  if (fNy > 0) {
-      dx=(fXmax-fXmin)/fNx;
-  } else {
-      dx=1e10;
-  }
+    Float_t polar[3]= {0,0,0};
+    //
+    Float_t origin[3];
+    Float_t p[3];
+    Int_t nt;
+    Float_t pmom, theta, phi;
+    //
+    Float_t random[6];
+    Float_t dx,dy,dz;
+    
+    //
+    if (fNy > 0) {
+	dx=(fXmax-fXmin)/fNx;
+    } else {
+	dx=1e10;
+    }
 
-  if (fNy > 0) {
-      dy=(fYmax-fYmin)/fNy;
-  } else {
-      dy=1e10;
-  }
-
-  if (fNz > 0) {
+    if (fNy > 0) {
+	dy=(fYmax-fYmin)/fNy;
+    } else {
+	dy=1e10;
+    }
+    
+    if (fNz > 0) {
       dz=(fZmax-fZmin)/fNz;
-  } else {
-      dz=1e10;
-  }
-  for (Int_t ix=0; ix<fNx; ix++) {
+    } else {
+	dz=1e10;
+    }
+    for (Int_t ix=0; ix<fNx; ix++) {
       for (Int_t iy=0; iy<fNy; iy++) {
 	  for (Int_t iz=0; iz<fNz; iz++){
 	      gMC->Rndm(random,6);

@@ -15,26 +15,26 @@
 
 /*
 $Log$
+Revision 1.5  1999/11/03 17:43:20  fca
+New version from G.Martinez & A.Morsch
+
 Revision 1.4  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 
 */
 
 #include "AliGenHalo.h"
-#include "AliGenMUONlib.h"
-#include "AliMC.h"
 #include "AliRun.h"
 #include "AliPDG.h"
 
-#include <TDirectory.h>
 #include <TDatabasePDG.h>
-#include <TFile.h>
-#include <TTree.h>
 #include <stdlib.h>
+
  ClassImp(AliGenHalo)
      AliGenHalo::AliGenHalo()
 	 :AliGenerator(-1)
 {
+// Constructor
     fName="Halo";
     fTitle="Halo from LHC Tunnel";
     // Set the default file 
@@ -48,6 +48,7 @@ Introduction of the Copyright and cvs Log
 AliGenHalo::AliGenHalo(Int_t npart)
     :AliGenerator(npart)
 {
+// Constructor
     fName="Halo";
     fTitle="Halo from LHC Tunnel";
     // Set the default file 
@@ -58,18 +59,28 @@ AliGenHalo::AliGenHalo(Int_t npart)
     fp=0;
 }
 
+AliGenHalo::AliGenHalo(const AliGenHalo & Halo)
+{
+// copy constructor
+}
+
+
 //____________________________________________________________
 AliGenHalo::~AliGenHalo()
 {
+// Destructor
 }
 
 //____________________________________________________________
 void AliGenHalo::Init() 
-{}
+{
+// Initialisation
+}
 
 //____________________________________________________________
 void AliGenHalo::Generate()
 {
+// Generate from input file
     FILE *fp = fopen(fFileName,"r");
     if (fp) {
 	printf("\n File %s opened for reading ! \n ", fFileName);
@@ -78,8 +89,7 @@ void AliGenHalo::Generate()
     }
 //
 // MARS particle codes
-    // const Int_t imars[12]={0,14, 13, 8, 9, 11, 12, 5, 6, 1, 3, 2};
-  const Int_t imars[12]={0,kProton,kNeutron,kPiPlus,kPiMinus,kKPlus,kKMinus,
+  const Int_t kmars[12]={0,kProton,kNeutron,kPiPlus,kPiMinus,kKPlus,kKMinus,
 			 kMuonPlus,kMuonMinus,kGamma,kElectron,kPositron};
  
   Float_t polar[3]= {0,0,0};
@@ -101,7 +111,7 @@ void AliGenHalo::Generate()
       if (ncols < 0) break;
       nread++;
       if (fNpart !=-1 && nread > fNpart) break;
-      ipart = imars[ipart];
+      ipart = kmars[ipart];
       amass = TDatabasePDG::Instance()->GetParticle(ipart)->Mass();
       p0=sqrt(ekin*ekin + 2.*amass);
       
@@ -124,6 +134,12 @@ void AliGenHalo::Generate()
   }
 }
  
+
+AliGenHalo& AliGenHalo::operator=(const  AliGenHalo& rhs)
+{
+// Assignment operator
+    return *this;
+}
 
 
 

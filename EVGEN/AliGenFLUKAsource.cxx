@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/03/07 13:52:54  morsch
+static Int_t irwn=0;
+
 Revision 1.8  2000/02/14 14:49:38  morsch
 Correct particle type for gamma and neutrons
 More consistent calculation of momentum from kin. energy and mass
@@ -35,12 +38,13 @@ Introduction of the Copyright and cvs Log
 #include <TDirectory.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TChain.h>
 #include <stdlib.h>
  ClassImp(AliGenFLUKAsource)
      AliGenFLUKAsource::AliGenFLUKAsource()
 	 :AliGenerator(-1)
 {
-    //
+    // Constructor
     fName="FLUKA";
     fTitle="FLUKA Boundary Source";
     // Read in all particle types by default
@@ -63,13 +67,14 @@ Introduction of the Copyright and cvs Log
 //
 //  Read all particles
     fNpart=-1;
+
     
 }
 
 AliGenFLUKAsource::AliGenFLUKAsource(Int_t npart)
     :AliGenerator(npart)
 {
-    //
+    // Constructor
     fName="FLUKA";
     fTitle="FLUKA Boundary Source";
     // Read in all particle types by default
@@ -89,18 +94,26 @@ AliGenFLUKAsource::AliGenFLUKAsource(Int_t npart)
 
     fTreeFluka=0;
     fTreeChain = new TChain("h1"); 
+    fSourceId=-1;
 }
+
+AliGenFLUKAsource::AliGenFLUKAsource(const AliGenFLUKAsource & FLUKAsource)
+{
+// copy constructor
+}
+
 
 //____________________________________________________________
 AliGenFLUKAsource::~AliGenFLUKAsource()
 {
+// Destructor
  if (fTreeFluka) delete fTreeFluka;
  if (fTreeChain) delete fTreeChain;
- // if (fFileName)  delete fFileName;
 }
 
 void AliGenFLUKAsource::AddFile(const Text_t *filename)
 {
+// Add a file to the chain
     fTreeChain->Add(filename);
     
 }
@@ -109,33 +122,35 @@ void AliGenFLUKAsource::AddFile(const Text_t *filename)
 //____________________________________________________________
 void AliGenFLUKAsource::FlukaInit() 
 {
+// Set branch addresses of data entries
     TChain *h2=fTreeChain;
 //Set branch addresses
-    h2->SetBranchAddress("Ip",&Ip);
-    h2->SetBranchAddress("Ipp",&Ipp);
-    h2->SetBranchAddress("Xi",&Xi);
-    h2->SetBranchAddress("Yi",&Yi);
-    h2->SetBranchAddress("Zi",&Zi);
-    h2->SetBranchAddress("Px",&Px);
-    h2->SetBranchAddress("Py",&Py);
-    h2->SetBranchAddress("Pz",&Pz);
-    h2->SetBranchAddress("Ekin",&Ekin);
-    h2->SetBranchAddress("Zv",&Zv);
-    h2->SetBranchAddress("Rv",&Rv);
-    h2->SetBranchAddress("Itra",&Itra);
-    h2->SetBranchAddress("Igas",&Igas);
-    h2->SetBranchAddress("Wgt",&Wgt);
-    h2->SetBranchAddress("Etag",&Etag);
-    h2->SetBranchAddress("Ptg",&Ptg);
-    h2->SetBranchAddress("Age",&Age);
+    h2->SetBranchAddress("Ip",&fIp);
+    h2->SetBranchAddress("Ipp",&fIpp);
+    h2->SetBranchAddress("Xi",&fXi);
+    h2->SetBranchAddress("Yi",&fYi);
+    h2->SetBranchAddress("Zi",&fZi);
+    h2->SetBranchAddress("Px",&fPx);
+    h2->SetBranchAddress("Py",&fPy);
+    h2->SetBranchAddress("Pz",&fPz);
+    h2->SetBranchAddress("Ekin",&fEkin);
+    h2->SetBranchAddress("Zv",&fZv);
+    h2->SetBranchAddress("Rv",&fRv);
+    h2->SetBranchAddress("Itra",&fItra);
+    h2->SetBranchAddress("Igas",&fIgas);
+    h2->SetBranchAddress("Wgt",&fWgt);
+    h2->SetBranchAddress("Etag",&fEtag);
+    h2->SetBranchAddress("Ptg",&fPtg);
+    h2->SetBranchAddress("Age",&fAge);
 }
 
 //____________________________________________________________
 void AliGenFLUKAsource::Generate()
-{ 
+{
+// Generate one event 
     AliMC* gMC = AliMC::GetMC();
 
-    const Int_t ifluge[28]={kProton, kProtonBar, kElectron, kPositron,
+    const Int_t kIfluge[28]={kProton, kProtonBar, kElectron, kPositron,
 			  kNuE, kNuEBar, kGamma, kNeutron, kNeutronBar,
 			  kMuonPlus, kMuonMinus, kK0Long , kPiPlus, kPiMinus,
 			  kKPlus, kKMinus, kLambda0, kLambda0Bar, kK0Short,
@@ -170,34 +185,40 @@ void AliGenFLUKAsource::Generate()
 	nb = (Int_t)h2->GetEvent(entry); 
 	if (irwn > nentries) {
 	    printf("No more entries in the FLUKA boundary source file\n");
-	    TFile *File=0;
+	    TFile *pFile=0;
 	    // Get AliRun object or create it 
 	    if (!gAlice) {
-		gAlice = (AliRun*)File->Get("gAlice");
+		gAlice = (AliRun*)pFile->Get("gAlice");
 		if (gAlice) printf("AliRun object found on file\n");
 		if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
 	    }
 	    TTree *fAli=gAlice->TreeK();
-	    if (fAli) File =fAli->GetCurrentFile();
-	    File->cd();
+	    if (fAli) pFile =fAli->GetCurrentFile();
+	    pFile->cd();
 	    printf("Generate - I'm out \n");
 	    return;
 	}   
-	if (Ip > 28 || Ip < 0) {
+
+	if (fSourceId != -1 && fIgas !=fSourceId) {
 	    irwn++;
 	    continue;
 	}
 	
-	if ((Ip != fIkine && fIkine != 6 && fIkine != 9 && fIkine != 10) || Age > fAgeMax){
+	if (fIp > 28 || fIp < 0) {
+	    irwn++;
+	    continue;
+	}
+	
+	if ((fIp != fIkine && fIkine != 6 && fIkine != 9 && fIkine != 10) || fAge > fAgeMax){
 	    irwn++;
 	    continue;
 	} else if (fIkine == 9) {
-	    if (Ip == 7 || Ip == 8 || Age > fAgeMax) { 
+	    if (fIp == 7 || fIp == 8 || fAge > fAgeMax) { 
 		irwn++;
 		continue;
 	    }
 	} else if (fIkine == 10) {
-	    if (Ip == 8 || Age > fAgeMax) { 
+	    if (fIp == 8 || fAge > fAgeMax) { 
 		irwn++;
 		continue;
 	    }
@@ -206,25 +227,25 @@ void AliGenFLUKAsource::Generate()
 
 	irwn++;
 //
-// PDG code from FLUKA particle type (Ip)
-	part=ifluge[int(Ip)-1];	
+// PDG code from FLUKA particle type (fIp)
+	part=kIfluge[int(fIp)-1];	
 //
 // Calculate momentum from kinetic energy and mass of the particle
 	gMC->Gfpart(part, name, itrtyp,  
 		    amass, charge, tlife); 
-	prwn=Ekin*sqrt(1. + 2.*amass/Ekin);
+	prwn=fEkin*sqrt(1. + 2.*amass/fEkin);
 
 
-	origin[0]=Yi;
-	origin[1]=Xi;
-	origin[2]=Zi;
+	origin[0]=fYi;
+	origin[1]=fXi;
+	origin[2]=fZi;
 	
-	p[0]=Py*prwn;
-	p[1]=Px*prwn;
-	p[2]=Pz*prwn;
+	p[0]=fPy*prwn;
+	p[1]=fPx*prwn;
+	p[2]=fPz*prwn;
 
 	//handle particle weight correctly
-	wgt = (part == 13) ? Wgt*fAddWeight : Wgt;
+	wgt = (part == 13) ? fWgt*fAddWeight : fWgt;
 	iwgt=Int_t(wgt);
 	fwgt=wgt-Float_t(iwgt);
 	gMC->Rndm(random,2);
@@ -232,7 +253,7 @@ void AliGenFLUKAsource::Generate()
 	if (part==1 && iwgt>100) iwgt=100;
 	Int_t nstack=0;
 	for (j=0; j<iwgt; j++) {
-	    gAlice->SetTrack(fTrackIt,-1,part,p,origin,polar,Age,"Primary",nt);
+	    gAlice->SetTrack(fTrackIt,-1,part,p,origin,polar,fAge,"Primary",nt);
 	    gMC->Rndm(random,2);
 	    phi=2*random[1]*TMath::Pi();
 	    Float_t pn1=p[0]*TMath::Sin(phi) - p[1]*TMath::Cos(phi);
@@ -248,20 +269,24 @@ void AliGenFLUKAsource::Generate()
 	if (nstack == 0) continue;
     }
     
-    TFile *File=0;
+    TFile *pFile=0;
 // Get AliRun object or create it 
     if (!gAlice) {
-	gAlice = (AliRun*)File->Get("gAlice");
+	gAlice = (AliRun*)pFile->Get("gAlice");
 	if (gAlice) printf("AliRun object found on file\n");
 	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
     }
     TTree *fAli=gAlice->TreeK();
-    if (fAli) File =fAli->GetCurrentFile();
-    File->cd();
+    if (fAli) pFile =fAli->GetCurrentFile();
+    pFile->cd();
 }
 
 
-
+AliGenFLUKAsource& AliGenFLUKAsource::operator=(const  AliGenFLUKAsource& rhs)
+{
+// Assignment operator
+    return *this;
+}
 
 
 

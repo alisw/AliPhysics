@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/11/09 07:38:48  fca
+Changes for compatibility with version 2.23 of ROOT
+
 Revision 1.5  1999/11/03 17:43:20  fca
 New version from G.Martinez & A.Morsch
 
@@ -25,7 +28,8 @@ Introduction of the Copyright and cvs Log
 
 
 #include "AliPythia.h"
-#include "AliMC.h"
+#include "AliRun.h"
+
 ClassImp(AliPythia)
 
 #ifndef WIN32
@@ -47,6 +51,7 @@ Int_t AliPythia::fgInit=0;
 
 AliPythia::AliPythia()
 {
+// Constructor
     for (Int_t i=0; i<501; i++) {
 	fGPCode[i][0]=0; 
 	fGPCode[i][1]=0;
@@ -56,6 +61,7 @@ AliPythia::AliPythia()
 void  AliPythia::Lu1Ent(Int_t flag, Int_t idpart, 
 		      Float_t mom, Float_t theta,Float_t phi)
 {
+// Wrap of Pythia lu1ent subroutine
   printf("%d %d %f %f %f\n",flag, idpart, mom, theta, phi);
   lu1ent(flag, idpart, mom, theta, phi);
 
@@ -63,12 +69,14 @@ void  AliPythia::Lu1Ent(Int_t flag, Int_t idpart,
 void AliPythia::DecayParticle(Int_t idpart, 
 			      Float_t mom, Float_t theta,Float_t phi)
 {
+// Decay a particle
     Lu1Ent(0, idpart, mom, theta, phi);
     GetPrimaries();
 }
 
 void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfunc)
 {
+// Initialise the process to generate 
     fProcess = process;
     fEcms = energy;
     fStrucFunc = strucfunc;
@@ -168,6 +176,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
 
 Int_t AliPythia::CountProducts(Int_t channel, Int_t particle)
 {
+// Count number of decay products
     Int_t np=0;
     for (Int_t i=1; i<=5; i++) {
 	if (TMath::Abs(GetKFDP(channel,i)) == particle) np++;
@@ -177,6 +186,7 @@ Int_t AliPythia::CountProducts(Int_t channel, Int_t particle)
 
 void AliPythia::AllowAllDecays()
 {
+// Reset decay flags
     Int_t i;
     for (i=1; i<= 2000; i++) {
 	SetMDME(i,1,1);
@@ -211,6 +221,7 @@ void AliPythia::ForceParticleDecay(Int_t particle, Int_t product, Int_t mult)
 
 void AliPythia::ForceDecay(Decay_t decay)
 {
+// Force a particle decay mode
     fDecay=decay;
 //
 // Make clean
@@ -304,6 +315,7 @@ void AliPythia::ForceDecay(Decay_t decay)
 
     void AliPythia::DefineParticles()
 {
+// Define new particles
     if (fgInit) return;
     fgInit=1;
     
@@ -552,17 +564,25 @@ void AliPythia::ForceDecay(Decay_t decay)
     
 Int_t  AliPythia::GetGeantCode(Int_t kf)
 {
+// Get geant code
     Int_t kc=Lucomp(TMath::Abs(kf));
     return (kf > 0) ? fGPCode[kc][0] : fGPCode[kc][1];
 }
     
 Float_t  AliPythia::GetBraPart(Int_t kf)
 {
+// Get branching ratio
     Int_t kc=Lucomp(TMath::Abs(kf));
     return fBraPart[kc];
 }
 
-    
+Int_t AliPythia::CheckedLuComp(Int_t kf)
+{
+// Check Lund particle code (for debugging)
+    Int_t kc=Lucomp(kf);
+    printf("\n Lucomp kf,kc %d %d",kf,kc);
+    return kc;
+}
 
 
 

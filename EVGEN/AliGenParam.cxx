@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.16  2000/05/02 07:51:31  morsch
+- Control precision of pT sampling TF1::SetNpx(..)
+- Correct initialisation of child-cuts in all constructors.
+- Most coding rule violations corrected.
+
 Revision 1.15  2000/04/03 15:42:12  morsch
 Cuts on primary particles are separated from those on the decay products. Methods
 SetChildMomentumRange, SetChildPtRange, SetChildPhiRange, SetChildThetaRange added.
@@ -35,10 +40,10 @@ Introduction of the Copyright and cvs Log
 
 #include "AliGenParam.h"
 #include "AliGenMUONlib.h"
-#include "AliGenPHOSlib.h"
 #include "AliRun.h"
 #include "AliPythia.h"
 #include <TParticle.h>
+#include <TF1.h>
 
 ClassImp(AliGenParam)
 
@@ -120,6 +125,12 @@ AliGenParam::AliGenParam(Int_t npart, Param_t param,
     SetChildPhiRange();
     SetChildThetaRange();  
     SetDeltaPt();
+}
+
+
+AliGenParam::AliGenParam(const AliGenParam & Paramd)
+{
+// copy constructor
 }
 
 //____________________________________________________________
@@ -361,7 +372,7 @@ void AliGenParam::Generate()
 		  gAlice->
 		      SetTrack(0,-1,iPart,p,origin0,polar,0,"Primary",nt,wgtp);
 		  iparent=nt;
-
+		  gAlice->KeepTrack(nt); 
 		  for (i=0; i< ncsel; i++) {
 		      gAlice->SetTrack(fTrackIt,iparent,kfch[i],
 				       &pch[i][0],och,polar,
@@ -419,6 +430,12 @@ Bool_t AliGenParam::KinematicSelection(TParticle *particle)
     return kTRUE;
 }
 
+
+AliGenParam& AliGenParam::operator=(const  AliGenParam& rhs)
+{
+// Assignment operator
+    return *this;
+}
 
 
 

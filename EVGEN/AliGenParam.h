@@ -6,10 +6,13 @@
 /* $Id$ */
 
 #include "AliGenerator.h"
-#include "TF1.h"
 #include "TArrayI.h"
-#include "AliPythia.h"
 #include "GenTypeDefs.h"
+
+class AliPythia;
+class TParticle;
+class TF1;
+
 //-------------------------------------------------------------
 class AliGenParam : public AliGenerator
 {
@@ -19,7 +22,9 @@ class AliGenParam : public AliGenerator
     AliGenParam(Int_t npart, Param_t param,
 		Double_t (*PtPara)(Double_t*, Double_t*),
 		Double_t (*YPara )(Double_t*, Double_t*),
-		Int_t    (*IpPara)()                      ); 
+		Int_t    (*IpPara)()                      );
+    AliGenParam(const AliGenParam &Param);
+     
     virtual ~AliGenParam();
     virtual void Generate();
     virtual void Init();
@@ -41,7 +46,7 @@ class AliGenParam : public AliGenerator
 	fChildThetaMax = TMath::Pi()*thetamax/180;}
     virtual void SetDeltaPt(Float_t delta=0.01) {fDeltaPt=delta;}
     
-	    
+    AliGenParam & operator=(const AliGenParam & rhs);
  protected:
     Double_t (*fPtParaFunc)(Double_t*, Double_t*); //! Pointer to Pt parametrisation function
     Double_t (*fYParaFunc )(Double_t*, Double_t*); //! Pointer to Y parametrisation function

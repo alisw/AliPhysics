@@ -5,7 +5,7 @@
 
 /* $Id$ */
 
-#include <TROOT.h>
+#include <TObject.h>
 #include "GenTypeDefs.h"
 
 class AliGenMUONlib :
@@ -49,7 +49,7 @@ public TObject
     static GenFunc   GetPt(Param_t param);
     static GenFunc   GetY(Param_t param);
     static GenFuncIp GetIp(Param_t param);    
-    ClassDef(AliGenMUONlib,1)
+    ClassDef(AliGenMUONlib,1) // Library providing y and pT parameterisations
 };
 #endif
 

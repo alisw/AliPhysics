@@ -15,20 +15,23 @@
 
 /*
 $Log$
+Revision 1.4  1999/11/03 17:43:20  fca
+New version from G.Martinez & A.Morsch
+
 Revision 1.3  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 
 */
 
 #include "AliGenScan.h"
-#include <stdlib.h>
 #include "AliRun.h"
+
  ClassImp(AliGenScan)
     
  AliGenScan::AliGenScan()
 	 :AliGenerator(-1)
 {
-//
+// Constructor
     fXmin=0;
     fXmax=0;
     fNx=1;
@@ -46,6 +49,7 @@ Introduction of the Copyright and cvs Log
 AliGenScan::AliGenScan(Int_t npart)
     :AliGenerator(npart)
 {
+// Constructor
     fXmin=0;
     fXmax=0;
     fNx=1;
@@ -59,12 +63,15 @@ AliGenScan::AliGenScan(Int_t npart)
 
 //____________________________________________________________
 AliGenScan::~AliGenScan()
-{}
+{
+// Destructor
+}
 
 void AliGenScan::SetRange(Int_t nx, Float_t xmin, Float_t xmax,
 		     Int_t ny, Float_t ymin, Float_t ymax,
 		     Int_t nz, Float_t zmin, Float_t zmax)
 {
+// Define the grid
     fXmin=xmin;
     fXmax=xmax;
     fNx=nx;

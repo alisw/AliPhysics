@@ -15,13 +15,16 @@
 
 /*
 $Log$
+Revision 1.7  2000/05/02 08:12:13  morsch
+Coding rule violations corrected.
+
 Revision 1.6  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 
 */
 
 #include "AliGenMUONlib.h"
-#include "AliRun.h"
+#include "AliMC.h"
 ClassImp(AliGenMUONlib)
 //
 //  Pions

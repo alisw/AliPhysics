@@ -5,23 +5,20 @@
 
 /* $Id$ */
 
-/////////////////////////////////////////////////////////
-//  Manager and hits classes for set:MUON version 0    //
-/////////////////////////////////////////////////////////
+
 #include "AliGenerator.h"
-#include "TNamed.h"
-#include "TF1.h"
-#include "TArrayF.h"
-#include "TTree.h"
-#include "AliPythia.h"
-#include "TArrayI.h"
-#include "TParticle.h"
+#include "GenTypeDefs.h"
+#include <TArrayI.h>    
+
+class AliPythia;
+class TParticle;
 
 class AliGenPythia : public AliGenerator
 {
  public:
     AliGenPythia();
     AliGenPythia(Int_t npart);
+    AliGenPythia(const AliGenPythia &Pythia);
     virtual ~AliGenPythia();
     virtual void    Generate();
     virtual void    Init();
@@ -40,7 +37,8 @@ class AliGenPythia : public AliGenerator
     virtual Float_t GetXsection() {return fXsection;}
     // Check PDG code
     virtual Int_t CheckPDGCode(Int_t pdgcode);
-
+    // Assignment Operator
+    AliGenPythia & operator=(const AliGenPythia & rhs);
  protected:
     Process_t   fProcess;       // Process type
     StrucFunc_t fStrucFunc;     // Structure Function
@@ -65,7 +63,7 @@ class AliGenPythia : public AliGenerator
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
 
-    ClassDef(AliGenPythia,1)
+    ClassDef(AliGenPythia,1) // AliGenerator interface to Pythia
 };
 #endif
 

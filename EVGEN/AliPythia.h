@@ -1,5 +1,5 @@
-#ifndef _AliPythia_H
-#define _AliPythia_H
+#ifndef ALIPYTHIA_H
+#define ALIPYTHIA_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -10,25 +10,11 @@
 
 class AliPythia:public TPythia
 {
- protected:
-    Process_t     fProcess;
-    Decay_t       fDecay;
-    Float_t       fEcms;
-    StrucFunc_t   fStrucFunc;
-    Int_t         fGPCode[501][2];
-    Float_t       fBraPart[501];
-    
  public:
-    static Int_t fgInit;
     AliPythia();
     virtual ~AliPythia(){;}
     // convert to compressed code and print result (for debugging only)
-    virtual Int_t CheckedLuComp(Int_t kf)
-	{
-	    Int_t kc=Lucomp(kf);
-	    printf("\n Lucomp kf,kc %d %d",kf,kc);
-	    return kc;
-	}
+    virtual Int_t CheckedLuComp(Int_t kf);
     // entry to the corresponding lujet function
     virtual void Lu1Ent(int flag, int idpart, 
 			float mom, float theta,float phi);
@@ -64,6 +50,16 @@ class AliPythia:public TPythia
     //
     // Get sum of branching ratios for forced decays
     virtual Float_t GetBraPart(Int_t kf);
+ protected:
+    Process_t     fProcess;         // Process type
+    Decay_t       fDecay;           // Decay channel 
+    Float_t       fEcms;            // Centre of mass energy
+    StrucFunc_t   fStrucFunc;       // Structure function
+    Int_t         fGPCode[501][2];  // Particle codes
+    Float_t       fBraPart[501];    // Branching ratios
+    static        Int_t fgInit;     // Make sure that only one object of type
+                                    // AliPythia is ceated
+
     ClassDef(AliPythia,1) //ALICE UI to PYTHIA
 };
 

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.16  2000/05/15 15:04:20  morsch
+The full event is written for fNtrack = -1
+Coding rule violations corrected.
+
 Revision 1.15  2000/04/26 10:14:24  morsch
 Particles array has one entry more than pythia particle list. Upper bound of
 particle loop changed to np-1 (R. Guernane, AM)
@@ -33,17 +37,11 @@ Revision 1.11  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 */
 
-#include "AliGenerator.h"
 #include "AliGenPythia.h"
 #include "AliRun.h"
 #include "AliPythia.h"
-#include <TDirectory.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <stdlib.h>
-#include <AliPythia.h>
 #include <TParticle.h>
-//#include <GParticle.h>
+
  ClassImp(AliGenPythia)
 
 AliGenPythia::AliGenPythia()
@@ -68,6 +66,11 @@ AliGenPythia::AliGenPythia(Int_t npart)
     SetForceDecay();
     SetPtHard();
     SetEnergyCMS();
+}
+
+AliGenPythia::AliGenPythia(const AliGenPythia & Pythia)
+{
+// copy constructor
 }
 
 AliGenPythia::~AliGenPythia()
@@ -190,7 +193,7 @@ void AliGenPythia::Generate()
     while(1)
     {
 	fPythia->Pyevnt();
-	fPythia->Lulist(1);
+//	fPythia->Lulist(1);
 	fTrials++;
 	fPythia->ImportParticles(particles,"All");
 	Int_t np = particles->GetEntriesFast();
@@ -377,7 +380,7 @@ Bool_t AliGenPythia::KinematicSelection(TParticle *particle)
 
 //
 // phi cut
-    Float_t phi=Float_t(TMath::ATan2(Double_t(py),Double_t(px)))+TMath::Pi();
+    Float_t phi=Float_t(TMath::ATan2(Double_t(py),Double_t(px)));
     if (phi > fPhiMax || phi < fPhiMin)
     {
 //	printf("\n failed phi cut %f %f %f \n",phi,fPhiMin,fPhiMax);
@@ -430,7 +433,11 @@ Int_t AliGenPythia::CheckPDGCode(Int_t pdgcode)
   return pdgcode;
 }
 		  
-
+AliGenPythia& AliGenPythia::operator=(const  AliGenPythia& rhs)
+{
+// Assignment operator
+    return *this;
+}
 
 
 

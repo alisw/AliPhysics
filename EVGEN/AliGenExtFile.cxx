@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/02/16 14:56:27  morsch
+Convert geant particle code into pdg code before putting particle on the stack.
+
 Revision 1.6  1999/11/09 07:38:48  fca
 Changes for compatibility with version 2.23 of ROOT
 
@@ -37,7 +40,7 @@ Introduction of the Copyright and cvs Log
      AliGenExtFile::AliGenExtFile()
 	 :AliGenerator(-1)
 {
-    //
+//  Constructor
     fName="ExtFile";
     fTitle="Primaries from ext. File";
     fFileName="dtujet93.root";
@@ -51,7 +54,7 @@ Introduction of the Copyright and cvs Log
 AliGenExtFile::AliGenExtFile(Int_t npart)
     :AliGenerator(npart)
 {
-    //
+//  Constructor
     fName="ExtFile";
     fTitle="Primaries from ext. File";
     fFileName="dtujet93.root";
@@ -59,9 +62,14 @@ AliGenExtFile::AliGenExtFile(Int_t npart)
     fNcurrent=0;
 }
 
+AliGenExtFile::AliGenExtFile(const AliGenExtFile & ExtFile)
+{
+// copy constructor
+}
 //____________________________________________________________
 AliGenExtFile::~AliGenExtFile()
 {
+// Destructor
     delete fTreeNtuple;
 }
 
@@ -72,38 +80,39 @@ void AliGenExtFile::NtupleInit()
 // reset the existing file environment and open a new root file if
 // the pointer to the Fluka tree is null
     
-    TFile *File=0;
+    TFile *pFile=0;
     if (fTreeNtuple==0) {
-        if (!File) {
-	    File = new TFile(fFileName);
-	    File->cd();
+        if (!pFile) {
+	    pFile = new TFile(fFileName);
+	    pFile->cd();
 	    cout<<"I have opened "<<fFileName<<" file "<<endl;
         }
 // get the tree address in the Fluka boundary source file
 	fTreeNtuple = (TTree*)gDirectory->Get("h888");
     } else {
-        File = fTreeNtuple->GetCurrentFile();
-        File->cd();
+        pFile = fTreeNtuple->GetCurrentFile();
+        pFile->cd();
     }
 
     TTree *h2=fTreeNtuple;
 //Set branch addresses
 //Set branch addresses
-    h2->SetBranchAddress("Nihead",&Nihead);
-    h2->SetBranchAddress("Ihead",Ihead);
-    h2->SetBranchAddress("Nrhead",&Nrhead);
-    h2->SetBranchAddress("Rhead",Rhead);
-    h2->SetBranchAddress("Idpart",&Idpart);
-    h2->SetBranchAddress("Theta",&Theta);
-    h2->SetBranchAddress("Phi",&Phi);
-    h2->SetBranchAddress("P",&P);
-    h2->SetBranchAddress("E",&E);
+    h2->SetBranchAddress("Nihead",&fNihead);
+    h2->SetBranchAddress("Ihead",fIhead);
+    h2->SetBranchAddress("Nrhead",&fNrhead);
+    h2->SetBranchAddress("Rhead",fRhead);
+    h2->SetBranchAddress("Idpart",&fIdpart);
+    h2->SetBranchAddress("Theta",&fTheta);
+    h2->SetBranchAddress("Phi",&fPhi);
+    h2->SetBranchAddress("P",&fP);
+    h2->SetBranchAddress("E",&fE);
 }
 
 
 //____________________________________________________________
 void AliGenExtFile::Generate()
 {
+// Generate particles
 
   Float_t polar[3]= {0,0,0};
   //
@@ -111,15 +120,15 @@ void AliGenExtFile::Generate()
   Float_t p[3];
   Float_t random[6];
   Float_t prwn;
-  Int_t i, j, nt, Ntracks=0;
+  Int_t i, j, nt, nTracks=0;
   //
   NtupleInit();
   TTree *h2=fTreeNtuple;
   Int_t nentries = (Int_t) h2->GetEntries();
   // loop over number of particles
   Int_t nb = (Int_t)h2->GetEvent(fNcurrent);
-  Int_t i5=Ihead[4];
-  Int_t i6=Ihead[5];
+  Int_t i5=fIhead[4];
+  Int_t i6=fIhead[5];
 
   for (j=0;j<3;j++) origin[j]=fOrigin[j];
   if(fVertexSmear==perEvent) {
@@ -140,30 +149,30 @@ void AliGenExtFile::Generate()
       printf("\n This should never happen !\n");
   } else {
       printf("\n Next event contains %d tracks! \n", i6);
-      Ntracks=i6;
+      nTracks=i6;
   }
-  for (i=0; i<Ntracks; i++) {
-      Idpart=gMC->PDGFromId(Idpart);
-      Double_t amass = TDatabasePDG::Instance()->GetParticle(Idpart)->Mass();
-      if(E<=amass) {
+  for (i=0; i<nTracks; i++) {
+      fIdpart=gMC->PDGFromId(fIdpart);
+      Double_t amass = TDatabasePDG::Instance()->GetParticle(fIdpart)->Mass();
+      if(fE<=amass) {
 	Warning("Generate","Particle %d no %d E = %f mass = %f\n",
-		Idpart,i,E,amass);
+		fIdpart,i,fE,amass);
 	prwn=0;
       } else {
-	prwn=sqrt((E+amass)*(E-amass));
+	prwn=sqrt((fE+amass)*(fE-amass));
       }
 
-      Theta *= TMath::Pi()/180.;
-      Phi    = (Phi-180)*TMath::Pi()/180.;      
-      if(Theta<fThetaMin || Theta>fThetaMax ||
-	 Phi<fPhiMin || Phi>fPhiMax         ||
+      fTheta *= TMath::Pi()/180.;
+      fPhi    = (fPhi-180)*TMath::Pi()/180.;      
+      if(fTheta<fThetaMin || fTheta>fThetaMax ||
+	 fPhi<fPhiMin || fPhi>fPhiMax         ||
 	 prwn<fPMin || prwn>fPMax)          
       {
 	  ;
       } else {
-	  p[0]=prwn*TMath::Sin(Theta)*TMath::Cos(Phi);
-	  p[1]=prwn*TMath::Sin(Theta)*TMath::Sin(Phi);      
-	  p[2]=prwn*TMath::Cos(Theta);
+	  p[0]=prwn*TMath::Sin(fTheta)*TMath::Cos(fPhi);
+	  p[1]=prwn*TMath::Sin(fTheta)*TMath::Sin(fPhi);      
+	  p[2]=prwn*TMath::Cos(fTheta);
 	  
 	  if(fVertexSmear==perTrack) {
 	      gMC->Rndm(random,6);
@@ -173,24 +182,30 @@ void AliGenExtFile::Generate()
 		      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	      }
 	  }
-	  gAlice->SetTrack(fTrackIt,-1,Idpart,p,origin,polar,0,"Primary",nt);
+	  gAlice->SetTrack(fTrackIt,-1,fIdpart,p,origin,polar,0,"Primary",nt);
       }
       fNcurrent++;
       nb = (Int_t)h2->GetEvent(fNcurrent); 
   }
  
-    TFile *File=0;
+    TFile *pFile=0;
 // Get AliRun object or create it 
     if (!gAlice) {
-	gAlice = (AliRun*)File->Get("gAlice");
+	gAlice = (AliRun*)pFile->Get("gAlice");
 	if (gAlice) printf("AliRun object found on file\n");
 	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
     }
     TTree *fAli=gAlice->TreeK();
-    if (fAli) File =fAli->GetCurrentFile();
-    File->cd();
+    if (fAli) pFile =fAli->GetCurrentFile();
+    pFile->cd();
 }
 
+
+AliGenExtFile& AliGenExtFile::operator=(const  AliGenExtFile& rhs)
+{
+// Assignment operator
+    return *this;
+}
 
 
 
