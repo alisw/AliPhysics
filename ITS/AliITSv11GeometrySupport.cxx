@@ -31,6 +31,7 @@
 #include <TGeoCone.h>
 #include <TGeoTube.h> // contaings TGeoTubeSeg
 #include <TGeoArb8.h>
+#include <TGeoXtru.h>
 #include <TGeoCompositeShape.h>
 #include <TGeoMatrix.h>
 #include "AliITSv11GeometrySupport.h"
@@ -557,7 +558,7 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     TGeoVolume *vB1,*vB2,*vB3,*vBh1,*vBh2,*vBh3;
     TGeoVolume *vC1,*vC2,*vC3,*vCh1,*vCh2,*vCh3;
     TGeoVolume *vD,*vDs,*vDw,*vDws,*vM;
-    vM = new TGeoVolume("ITSspdThermalSheald",sM,medSPDair);
+    vM = new TGeoVolume("ITSspdThermalShealdMotherM",sM,medSPDair);
     vM->SetVisibility(kTRUE);
     vM->SetLineColor(7); // light Blue
     vM->SetLineWidth(1);
@@ -2226,8 +2227,10 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     medSUPwater = mgr->GetMedium("ITSssdWater");
     //
     Int_t i,j;
-    Double_t x,y,z,t,t0,dt,di,r;
-    // RB 24 side
+    Double_t x,y,z,t,t0,dt,di,r,l,local[3],master[3];
+    Char_t name[100];
+    Double_t r1,r2,m;
+    // RB 24, Open Side.
     const Double_t kfrm24Z0           = 900*fgkmm;//SSup_203A.jpg
     const Double_t kfrm24Thss         = 5.0*fgkmm;
     const Double_t kfrm24Rss          = 444.5*fgkmm-kfrm24Thss; //SSup_204A.jpg
@@ -2239,40 +2242,83 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     const Int_t    kfrm24NZsections   = 4;
     const Int_t    kfrm24NPhiSections = 4;
     const Int_t    kfrm24NPhi         = 4;
+    // These numbers are guessed at.
+    const Double_t kfrm24ZfracAngle   =  0.55; // frational z length to brack
+    const Double_t kfrm24Angle        =  10.0*fgkDegree; // Guessed at
     //
-    TGeoTubeSeg *sM24,*sA24;
-    TGeoBBox *sB24;
-    sM24 = new TGeoTubeSeg("ITS sup Cable tray support frame mother volume "
-                           "M24",kfrm24Rss,kfrm24Rss+kfrm24Thss,
-                           0.5*(4.*kfrm24ZssSection+5*kfrm24Width),
-                           kfrm24Phi0,kfrm24Phi1);
-    sA24 = new TGeoTubeSeg("ITS sup Cable tray support frame radial section "
-                           "A24",kfrm24Rss,kfrm24Rss+kfrm24Thss,
-                           0.5*kfrm24Width,kfrm24Phi0,kfrm24Phi1);
-    sB24 = new TGeoBBox("ITS sup Cable tray support frame Z section B24",
-                        0.5*kfrm24Thss,0.5*kfrm24Hight,0.5*kfrm24ZssSection);
+    TGeoTubeSeg *sA24[kfrm24NZsections+1];
+    TGeoArb8    *sB24[kfrm24NZsections+1];
+    TGeoPcon    *sM24;
+    Double_t zA24[kfrm24NZsections+1];
+    l = 4.*kfrm24ZssSection+5*kfrm24Width;
+    j = 0;
+    for(i=0;i<kfrm24NZsections+1;i++){
+        sprintf(name,"ITS sup Cable tray support frame radial section A24[%d]",
+                i);
+        r1 = kfrm24Rss;
+        if(i==0) zA24[i] = kfrm24Width;
+        else zA24[i] = zA24[i-1] + kfrm24ZssSection + kfrm24Width;
+        if(zA24[i]>l*kfrm24ZfracAngle){ // break, radii get larger
+            r1 = kfrm24Rss + (zA24[i]-kfrm24ZfracAngle*l)*SinD(kfrm24Angle);
+        } // end if
+        r2 = r1+kfrm24Thss;
+        sA24[i] = new TGeoTubeSeg(name,r1,r2,0.5*kfrm24Width,kfrm24Phi0,
+                                  kfrm24Phi1);
+        if(i>0)if(sA24[i-1]->GetRmin()==sA24[i]->GetRmin()) j = i;
+    } // end for i
+    for(i=0;i<kfrm24NZsections;i++){
+        sprintf(name,"ITS sup Cable tray support frame Z section B24[%d]",i);
+        sB24[i] = new TGeoArb8(name,0.5*kfrm24ZssSection);
+        sB24[i]->SetVertex(0,sA24[i]->GetRmin(),0.5*kfrm24Hight);
+        sB24[i]->SetVertex(1,sA24[i]->GetRmax(),0.5*kfrm24Hight);
+        sB24[i]->SetVertex(2,sA24[i]->GetRmin(),-0.5*kfrm24Hight);
+        sB24[i]->SetVertex(3,sA24[i]->GetRmax(),-0.5*kfrm24Hight);
+        sB24[i]->SetVertex(4,sA24[i+1]->GetRmin(),0.5*kfrm24Hight);
+        sB24[i]->SetVertex(5,sA24[i+1]->GetRmax(),0.5*kfrm24Hight);
+        sB24[i]->SetVertex(6,sA24[i+1]->GetRmin(),-0.5*kfrm24Hight);
+        sB24[i]->SetVertex(7,sA24[i+1]->GetRmax(),-0.5*kfrm24Hight);
+    } // end for i
+    sM24 = new TGeoPcon("ITS sup Cable tray support frame mother volume M24",
+                        kfrm24Phi0,kfrm24Phi1,3);
+    sM24->Z(0)    = zA24[0] -kfrm24Width;
+    sM24->Rmin(0) = sA24[0]->GetRmin();
+    sM24->Rmax(0) = sA24[0]->GetRmax();
+    sM24->Z(1)    = zA24[j];
+    sM24->Rmin(1) = sA24[j]->GetRmin();
+    sM24->Rmax(1) = sA24[j]->GetRmax();
+    sM24->Z(2)    = zA24[kfrm24NZsections] + kfrm24Width;
+    sM24->Rmin(2) = sA24[kfrm24NZsections]->GetRmin();
+    sM24->Rmax(2) = sA24[kfrm24NZsections]->GetRmax();
     if(GetDebug()){
         sM24->InspectShape();
-        sA24->InspectShape();
-        sB24->InspectShape();
+        for(i=0;i<kfrm24NZsections+1;i++) sA24[i]->InspectShape();
+        for(i=0;i<kfrm24NZsections;i++)   sB24[i]->InspectShape();
     } // end if GetDebug()
-    TGeoVolume *vA24,*vB24,*vM24;
+    TGeoVolume *vA24[kfrm24NZsections+1],*vB24[kfrm24NZsections],*vM24;
     TGeoTranslation *tran;
-    TGeoRotation    *rot;
+    TGeoRotation    *rot,*rot1;
     TGeoCombiTrans  *tranrot;
     //
-    vA24 = new TGeoVolume("ITSsupFrameA24",sA24,medSUPss);
-    vA24->SetVisibility(kTRUE);
-    vA24->SetLineColor(1); // black
-    vA24->SetLineWidth(1);
-    vA24->SetFillColor(vA24->GetLineColor());
-    vA24->SetFillStyle(4000); // 0% transparent
-    vB24 = new TGeoVolume("ITSsupFrameB24",sB24,medSUPss);
-    vB24->SetVisibility(kTRUE);
-    vB24->SetLineColor(1); // black
-    vB24->SetLineWidth(1);
-    vB24->SetFillColor(vB24->GetLineColor());
-    vB24->SetFillStyle(4000); // 0% transparent
+    for(i=0;i<kfrm24NZsections+1;i++){
+        vA24[i] = 0;
+        sprintf(name,"ITSsupFrameA24[%d]",i);
+        vA24[i] = new TGeoVolume(name,sA24[i],medSUPss);
+        vA24[i]->SetVisibility(kTRUE);
+        vA24[i]->SetLineColor(1); // black
+        vA24[i]->SetLineWidth(1);
+        vA24[i]->SetFillColor(vA24[i]->GetLineColor());
+        vA24[i]->SetFillStyle(4000); // 0% transparent
+    } // end for i
+    for(i=0;i<kfrm24NZsections;i++){
+        vB24[i] = 0;
+        sprintf(name,"ITSsupFrameB24[%d]",i);
+        vB24[i] = new TGeoVolume(name,sB24[i],medSUPss);
+        vB24[i]->SetVisibility(kTRUE);
+        vB24[i]->SetLineColor(1); // black
+        vB24[i]->SetLineWidth(1);
+        vB24[i]->SetFillColor(vB24[i]->GetLineColor());
+        vB24[i]->SetFillStyle(4000); // 0% transparent
+    } // end for i
     vM24 = new TGeoVolume("ITSsupFrameM24",sM24,medSUPair);
     vM24->SetVisibility(kTRUE);
     vM24->SetLineColor(7); // light blue
@@ -2280,192 +2326,572 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     vM24->SetFillColor(vM24->GetLineColor());
     vM24->SetFillStyle(4090); // 90% transparent
     //
-    Int_t ncopyA24=1,ncopyB24=1;
+    Int_t ncopyB24[kfrm24NPhiSections];
     t0 = kfrm24Phi0;
     dt = (kfrm24Phi1-kfrm24Phi0)/((Double_t)kfrm24NPhiSections);
     for(i=0;i<=kfrm24NZsections;i++){
-        di = (Double_t) i;
-        z = -sM24->GetDz()+sA24->GetDz() + di*(kfrm24ZssSection+kfrm24Width);
+        z = zA24[i];
         tran = new TGeoTranslation("",0.0,0.0,z);
-        vM24->AddNode(vA24,ncopyA24++,tran);
-        r = kfrm24Rss+sB24->GetDX();
-        z = z + sA24->GetDz()+sB24->GetDZ();
-       if(i<kfrm24NZsections) for(j=0;j<=kfrm24NPhiSections;j++){
-            t = t0 + ((Double_t)j)*dt;
-            rot = new TGeoRotation("",0.0,0.0,t);
-            y = r*SinD(t);
-            x = r*CosD(t);
-            tranrot = new TGeoCombiTrans("",x,y,z,rot);
-            delete rot;// rot not explicity used in AddNode functions.
-            vM24->AddNode(vB24,ncopyB24++,tranrot);
-        } // end for j
+        vM24->AddNode(vA24[i],1,tran);
+       if(i<kfrm24NZsections){
+           ncopyB24[i] = 1;
+           for(j=0;j<=kfrm24NPhiSections;j++){
+               t = t0 + ((Double_t)j)*dt;
+               rot = new TGeoRotation("",0.0,0.0,t);
+               tranrot = new TGeoCombiTrans("",0.0,0.0,z+sB24[i]->GetDz(),rot);
+               delete rot;// rot not explicity used in AddNode functions.
+               vM24->AddNode(vB24[i],ncopyB24[i]++,tranrot);
+           } // end for j
+       } // end if
     } // end for i
-    tran = new TGeoTranslation("",0.0,0.0,kfrm24Z0+sM24->GetDz());
+    tran = new TGeoTranslation("",0.0,0.0,kfrm24Z0);
     moth->AddNode(vM24,1,tran);
     for(i=1;i<kfrm24NPhi;i++){
         di = (Double_t) i;
         rot = new TGeoRotation("",0.0,0.0,90.0*di);
-        tranrot = new TGeoCombiTrans("",0.0,0.0,kfrm24Z0+sM24->GetDz(),rot);
+        tranrot = new TGeoCombiTrans("",0.0,0.0,kfrm24Z0,rot);
         delete rot;// rot not explicity used in AddNode functions.
         moth->AddNode(vM24,i+1,tranrot);
     } // end for i
     if(GetDebug()){
-        vA24->PrintNodes();
-        vB24->PrintNodes();
+        for(i=0;i<kfrm24NZsections+1;i++) vA24[i]->PrintNodes();
+        for(i=0;i<kfrm24NZsections;i++) vB24[i]->PrintNodes();
         vM24->PrintNodes();
     } // end if
-    // Cable support tray 
-    // Material is Aluminum
-    //const Double_t kcsb24RSin       = TMath::Max(kfrm24Rss,444.5*fgkmm);
-                                           // SSup_204A & SSup_206A
-    //const Double_t kcb24RSAirout   = 459.5*fgkmm; // SSup_204A & SSup_206A
-    //const Double_t kcb24RSout      = 494.5*fgkmm; // SSup_206A & SSup_204A
-    //const Double_t kcb24RSPPout    = 550.0*fgkmm; // SSup_206A
-    const Double_t kcb24LSPP       = 350.0*fgkmm; // SSup_202A
-    const Double_t kcb24LS         = (2693.0-900.0)*fgkmm;//SSup_205A&SSup_207A
-    const Double_t kcb24ThSwall    = 1.0*fgkmm; // SSup_209A & SSup_210A
-    const Double_t kcb24WbS        = 42.0*fgkmm; // SSup_209A & SSup_210A
-    //const Double_t kcb24WtS        = 46.9*fgkmm; // SSup_209A & SSup_210A
-    const Double_t kcb24WcapS      = 50.0*fgkmm; // SSup_209A & SSup_210A
-    //const Double_t kcb24WdS   = 41.0*fgkmm; //SSup_209A ? should be 41.469387
-    const Double_t kcb24HS         = 50.0*fgkmm; // SSup_209A & SSup_210A
-    const Double_t kcb24OutDcoolTub= 12.0*fgkmm; // SSup_209A
-    const Double_t kcb24InDcoolTub = 10.0*fgkmm; // SSup_209A
-    const Double_t kcbBlkNozInDS   = 6.0*fgkmm; // SSup_209A
-    // The following are deduced or guessed at
-    //const Double_t kcb24LtopLipS   = 6.0*fgkmm; // Guessed at.
-    //const Double_t kcb24LdLipS     = 6.0*fgkmm; // Guessed at.
-    //const Double_t kcb24HdS        = kcb24OutDcoolTub; //
-    const Double_t kcb24BlkNozZS   = 6.0*fgkmm; // Guessed at.
-    // Simplifided exterior shape. The side wall size is 2.5*thicker than
-    // it should be (due to simplification).
-    TGeoArb8 *sC24,*sD24,*sF24,*sH24;
-    TGeoTube *sE24,*sG24;
+    //==================================================================
+    // RB24 Cable Tray
+    const Double_t kct24WidthBottom   = 44.0*fgkmm; // Serv-C_208.jpg
+    const Double_t kct24WidthTop      = 46.0*fgkmm; // Serv-C_208.jpg
+    const Double_t kct24Hight         = 51.0*fgkmm; // Serv-C_208.jpg
+    const Double_t kct24AlThick       = 1.0*fgkmm; // Serv-C_208.jpg
+    const Double_t kct24CapWidth      = 46.0*fgkmm; // Serv-C_208.jpg
+    const Double_t kct24CapEar        = 5.0*fgkmm; // Guess
+    const Double_t kct24Rmin          = 455.0*fgkmm; // Serv-C_203.jpg
+    const Double_t kct24CoolSectionH  = 470.0*fgkmm-kct24Rmin;// Serv-C_203.jpg
+    const Double_t kct24CoolCableDivEar = 2.0*fgkmm; // Guess
+    const Int_t kct24Ntrays           = 48; // Serv-C_205.jpg
+    //const Int_t kct24Ntubes           = 3; // Serv-C_208.jpg
+    // Patch Pannels for RB 24 side
+    const Double_t kft24PPHightSPDFMD = 72.0*fgkmm; // Serv-C_SPD/FMD.jpg
+    const Double_t kft24PPHightSDDSSD = 104.0*fgkmm; // Serv-C_SDD/SSD.jpg
+    const Double_t kft24PPlength      = 350.0*fgkmm;//Serv-C_SPD/SDD/SSD/FMD_1.jpg
+    const Double_t kft24Theta         = 2.0*TMath::ATan2(kct24WidthBottom,
+                                                 2.0*kct24Rmin)*fgkRadian; //
+    const Int_t    kft24NPatchPannels = 20; //
     //
-    sC24 = new TGeoArb8("ITS Sup Cable Tray Element C24",0.5*kcb24LS);
-    sC24->SetVertex(0,-0.5*kcb24WcapS,kcb24HS+kcb24ThSwall);
-    sC24->SetVertex(1,+0.5*kcb24WcapS,kcb24HS+kcb24ThSwall);
-    sC24->SetVertex(2,+0.5*kcb24WbS,0.0);
-    sC24->SetVertex(3,-0.5*kcb24WbS,0.0);
-    sC24->SetVertex(4,-0.5*kcb24WcapS,kcb24HS+kcb24ThSwall);
-    sC24->SetVertex(5,+0.5*kcb24WcapS,kcb24HS+kcb24ThSwall);
-    sC24->SetVertex(6,+0.5*kcb24WbS,0.0);
-    sC24->SetVertex(7,-0.5*kcb24WbS,0.0);
-    sD24 = new TGeoArb8("ITS Sup Cable Tray lower Element D24",0.5*kcb24LS);
-    // Because of question about the value of WdS24, compute what it
-    // should be assuming cooling tube fixes hight of volume.
-    x = kcb24OutDcoolTub*(0.5*kcb24WcapS-0.5*kcb24WbS-kcb24ThSwall)/
-                                              (kcb24HS-kcb24ThSwall);
-    sD24->SetVertex(0,-x,kcb24OutDcoolTub+kcb24ThSwall);
-    sD24->SetVertex(1,+x,kcb24OutDcoolTub+kcb24ThSwall);
-    sD24->SetVertex(2,+0.5*kcb24WbS-kcb24ThSwall,kcb24ThSwall);
-    sD24->SetVertex(3,-0.5*kcb24WbS+kcb24ThSwall,kcb24ThSwall);
-    sD24->SetVertex(4,-x,kcb24OutDcoolTub+kcb24ThSwall);
-    sD24->SetVertex(5,+x,kcb24OutDcoolTub+kcb24ThSwall);
-    sD24->SetVertex(6,+0.5*kcb24WbS-kcb24ThSwall,kcb24ThSwall);
-    sD24->SetVertex(7,-0.5*kcb24WbS+kcb24ThSwall,kcb24ThSwall);
-    sE24 = new TGeoTube("ITS Sup Cooling Tube E24",0.5*kcb24InDcoolTub,
-                        0.5*kcb24OutDcoolTub,0.5*kcb24LS-kcb24BlkNozZS);
-    sF24 = new TGeoArb8("ITS Sup Cable Tray lower Element block F24",
-                        0.5*kcb24BlkNozZS);
-    for(i=0;i<8;i++) sF24->SetVertex(i,sD24->GetVertices()[i*2+0],
-                                      sD24->GetVertices()[i*2+1]); //
-    sG24 = new TGeoTube("ITS Sup Cooling Tube hole in block G24",
-                        0.0,0.5*kcbBlkNozInDS,0.5*kcb24BlkNozZS);
-    sH24 = new TGeoArb8("ITS Sup Cable Tray upper Element H24",
-                        0.5*(kcb24LS- kcb24LSPP));
-    sH24->SetVertex(0,sC24->GetVertices()[0*2+0]+2.*kcb24ThSwall,
-                     sC24->GetVertices()[0*2+1]-kcb24ThSwall);
-    sH24->SetVertex(1,sC24->GetVertices()[1*2+0]-2.*kcb24ThSwall,
-                     sC24->GetVertices()[1*2+1]-kcb24ThSwall);
-    sH24->SetVertex(2,sD24->GetVertices()[1*2+0]-kcb24ThSwall,
-                     sD24->GetVertices()[1*2+1]+kcb24ThSwall);
-    sH24->SetVertex(3,sD24->GetVertices()[0*2+0]+kcb24ThSwall,
-                     sD24->GetVertices()[0*2+1]+kcb24ThSwall);
-    for(i=4;i<8;i++) sH24->SetVertex(i,sH24->GetVertices()[(i-4)*2+0],
-                                      sH24->GetVertices()[(i-4)*2+1]); //
+    Double_t xp[12],yp[12];
+    TGeoPcon *sMT24;
+    TGeoXtru *sT24,*sTs24,*sTl24,*sTt24,*sU24,*sVl24,*sVs24,*sW24;
+    TGeoXtru *s3PP24,*s2PP24,*sV3PP24,*sV2PP24;
+    // Outer Tray Full
+    sT24 = new TGeoXtru(3);
+    sT24->SetName("ITS sup Full Cable Tray for RB24 Side T24");
+    xp[0]  = -0.5*kct24WidthBottom;
+    yp[0]  = sM24->GetRmax(0);
+    yp[1]  = yp[0] + kct24Hight-kct24CapEar;
+    xp[1]  = Xfrom2Points(xp[0],yp[0],-0.5*kct24WidthTop+kct24AlThick,
+                          yp[0]+kct24Hight,yp[1]);
+    yp[2]  = yp[1];
+    xp[2]  = xp[1]-kct24AlThick;
+    xp[3]  = -0.5*kct24CapWidth;
+    yp[3]  = yp[0] + kct24Hight;
+    xp[4]  = -xp[3];
+    yp[4]  =  yp[3];
+    xp[5]  = -xp[2];
+    yp[5]  =  yp[2];
+    xp[6]  = -xp[1];
+    yp[6]  =  yp[1];
+    xp[7]  = -xp[0];
+    yp[7]  =  yp[0];
+    sT24->DefinePolygon(8,xp,yp);
+    sT24->DefineSection(0,sM24->GetZ(0));
+    sT24->DefineSection(1,sM24->GetZ(1));
+    sT24->DefineSection(2,zA24[kfrm24NZsections],0.0,
+                      sA24[kfrm24NZsections]->GetRmin()-sA24[0]->GetRmin());
+    // RB 24 full tray no divider (for ALG and T0-V0 cables?)
+    sW24 = new TGeoXtru(3);
+    sW24->SetName("ITS sup Cable Tray No Divider for RB24 Side W24");
+    xp[0] = sT24->GetX(0) + kct24AlThick;
+    yp[0] = sT24->GetY(0) - kct24AlThick;
+    yp[1] = sT24->GetY(3) - kct24AlThick;
+    xp[1] = Xfrom2Points(sT24->GetX(0),sT24->GetY(0),sT24->GetX(1),
+                         sT24->GetY(1),yp[1]) + kct24AlThick;
+    xp[2] = -xp[1];
+    yp[2] =  yp[1];
+    xp[3] = -xp[0];
+    yp[3] =  yp[0];
+    sW24->DefinePolygon(4,xp,yp);
+    for(i=0;i<sT24->GetNz();i++){
+        sW24->DefineSection(i,sT24->GetZ(i),sT24->GetXOffset(i),
+                            sT24->GetYOffset(i),sT24->GetScale(i));
+    } // end for i
+    // Outer Tray Short
+    sTs24 = new TGeoXtru(3);
+    sTs24->SetName("ITS sup Short Cable Tray for RB24 Side Ts24");
+    yp[0]  = sT24->GetY(0) + kct24CoolSectionH;
+    xp[0]  = Xfrom2Points(sT24->GetX(0),sT24->GetY(0),sT24->GetX(1),
+                         sT24->GetY(1),yp[0]);
+    for(i=1;i<7;i++){
+        xp[i]  = sT24->GetX(i);
+        yp[i]  = sT24->GetY(i);
+    } // end for i
+    xp[7]  = -xp[0];
+    yp[7]  =  yp[0];
+    sTs24->DefinePolygon(8,xp,yp);
+    sTs24->DefineSection(0,sM24->GetZ(0)+kft24PPlength);
+    sTs24->DefineSection(1,sM24->GetZ(1));
+    sTs24->DefineSection(2,zA24[kfrm24NZsections],sT24->GetXOffset(2),
+                         sT24->GetYOffset(2),sT24->GetScale(2));
+    // Outer Tray Long
+    sTl24 = new TGeoXtru(3);
+    sTl24->SetName("ITS sup Long Cable Tray for RB24 Side Tl24");
+    for(i=0;i<8;i++){
+    xp[i]  = sTs24->GetX(i);
+    yp[i]  = sTs24->GetY(i);
+    } // End for i
+    sTl24->DefinePolygon(8,xp,yp);
+    sTl24->DefineSection(0,sM24->GetZ(0));
+    sTl24->DefineSection(1,sM24->GetZ(1));
+    sTl24->DefineSection(2,zA24[kfrm24NZsections],0.0,
+                         sA24[kfrm24NZsections]->GetRmin()-sA24[0]->GetRmin());
+    // Outer Tray for air Tubes
+    sTt24 = new TGeoXtru(3);
+    sTt24->SetName("ITS sup Long Air Tube Tray for RB24 Side Tt24");
+    xp[0]  = sT24->GetX(0);
+    yp[0]  = sT24->GetY(0);
+    xp[1]  = sTl24->GetX(0);
+    yp[1]  = sTl24->GetY(0);
+    xp[2]  = -xp[1];
+    yp[2]  =  yp[1];
+    xp[3]  = -xp[0];
+    yp[3]  =  yp[1];
+    sTt24->DefinePolygon(4,xp,yp);
+    sTt24->DefineSection(0,sM24->GetZ(0));
+    sTt24->DefineSection(1,sM24->GetZ(1));
+    sTt24->DefineSection(2,zA24[kfrm24NZsections],0.0,
+                         sA24[kfrm24NZsections]->GetRmin()-sA24[0]->GetRmin());
+    // Inner opening for cooling (lower) {inside sTt24}
+    sU24 = new TGeoXtru(3);
+    sU24->SetName("ITS sup Cable Tray Cooling tube space RB24 Side U24");
+    xp[0] = sTt24->GetX(0) + kct24AlThick;
+    yp[0] = sTt24->GetY(0) + kct24AlThick;
+    xp[1] = sTt24->GetX(1) + kct24AlThick;
+    yp[1] = sTt24->GetY(1) - kct24AlThick;
+    xp[2] = -xp[1];
+    yp[2] =  yp[1];
+    xp[3] = -xp[0];
+    yp[3] =  yp[0];
+    sU24->DefinePolygon(4,xp,yp);
+    for(i=0;i<sTt24->GetNz();i++){
+        sU24->DefineSection(i,sTt24->GetZ(i),sTt24->GetXOffset(i),
+                            sTt24->GetYOffset(i),sTt24->GetScale(i));
+    } // end for i
+    // Inner opening for cables (upper) {inside sTl24}
+    sVl24 = new TGeoXtru(3);
+    sVl24->SetName("ITS sup Cable Tray Cable space RB24 Side Vl24");
+    xp[0] = sTl24->GetX(0)+2.0*kct24AlThick;
+    yp[0] = sTl24->GetY(0);
+    yp[1] = yp[0] + kct24CoolCableDivEar;
+    xp[1] = Xfrom2Points(sTl24->GetX(0),sTl24->GetY(0),
+                         sTl24->GetX(1),sTl24->GetY(1),yp[1])+2.0*kct24AlThick;
+    yp[2] = yp[1];
+    xp[2] = xp[1] - kct24AlThick;
+    yp[3] = sTl24->GetY(3) - kct24AlThick;
+    xp[3] = Xfrom2Points(sTl24->GetX(0),sTl24->GetY(0),sTl24->GetX(1),
+                         sTl24->GetY(1),yp[3]) + kct24AlThick;
+    xp[4] = -xp[3];
+    yp[4] =  yp[3];
+    xp[5] = -xp[2];
+    yp[5] =  yp[2];
+    xp[6] = -xp[1];
+    yp[6] =  yp[1];
+    xp[7] = -xp[0];
+    yp[7] =  yp[0];
+    sVl24->DefinePolygon(8,xp,yp);
+    for(i=0;i<sTl24->GetNz();i++){
+        sVl24->DefineSection(i,sTl24->GetZ(i),sTl24->GetXOffset(i),
+                            sTl24->GetYOffset(i),sTl24->GetScale(i));
+    } // end for i
+    // Inner opening for cables (upper) {inside sTs24}
+    sVs24 = new TGeoXtru(3);
+    sVs24->SetName("ITS sup Cable Tray Cable space RB24 Side Vs24");
+    sVs24->DefinePolygon(8,xp,yp);
+    for(i=0;i<8;i++){
+    xp[i]  = sVl24->GetX(i);
+    yp[i]  = sVl24->GetY(i);
+    } // end for i
+    for(i=0;i<sTl24->GetNz();i++){
+        sVs24->DefineSection(i,sTs24->GetZ(i),sTs24->GetXOffset(i),
+                            sTs24->GetYOffset(i),sTs24->GetScale(i));
+    } // end for i
+    //------------------------------------------------------------------
+    // Patch Pannels on RB 24 Side
+    rot  = new TGeoRotation("",0.0,0.0,-kft24Theta); // Gets Used later as well
+    rot1 = new TGeoRotation("",0.0,0.0,kft24Theta);  // Gets Used later as well
+    s3PP24 = new TGeoXtru(2);
+    s3PP24->SetName("ITS sup 3 bay pach pannel RB24 side 3PP24");
+    yp[5]  = sT24->GetY(7) + kct24CoolSectionH;
+    xp[5]  = Xfrom2Points(sT24->GetX(7),sT24->GetY(7),sT24->GetX(6),
+                          sT24->GetY(6),yp[6]);
+    yp[6]  = sT24->GetY(0) + kct24CoolSectionH;
+    xp[6]  =  Xfrom2Points(sT24->GetX(0),sT24->GetY(0),sT24->GetX(1),
+                          sT24->GetY(1),yp[9]);
+    local[0] = xp[6]; local[1] = yp[6]; local[2] = 0.0;
+    rot1->LocalToMaster(local,master);
+    xp[0]  = master[0];
+    yp[0]  = master[1];
+    local[0] = xp[6]; local[1] = yp[6] + kft24PPHightSDDSSD; local[2] = 0.0;
+    rot1->LocalToMaster(local,master);
+    xp[1]  = master[0];
+    yp[1]  = master[1];
+    xp[2]  = -xp[1];
+    yp[2]  =  yp[1];
+    xp[3]  = -xp[0];
+    yp[3]  =  yp[0];
+    local[0] = xp[6]; local[1] = yp[6]; local[2] = 0.0;
+    rot1->MasterToLocal(local,master);
+    xp[4]  = master[0];
+    yp[4]  = master[1];
+    local[0] = xp[5]; local[1] = yp[5]; local[2] = 0.0;
+    rot1->LocalToMaster(local,master);
+    xp[7]  = master[0];
+    yp[7]  = master[1];
+    s3PP24->DefinePolygon(8,xp,yp);
+    s3PP24->DefineSection(0,0.0);
+    s3PP24->DefineSection(1,kft24PPlength);
+    //
+    s2PP24 = new TGeoXtru(2);
+    s2PP24->SetName("ITS sup 2 bay pach pannel RB24 side 2PP24");
+    local[1] = sTl24->GetY(3); local[2] = 0.0;
+    local[0] = Xfrom2Points(sTl24->GetX(0),sTl24->GetY(0),
+                            sTl24->GetX(1),sTl24->GetY(1),local[1]);
+    rot1->LocalToMaster(local,master);
+    xp[0]  = master[0];
+    yp[0]  = master[1];
+    local[1] = sTl24->GetY(3) + kft24PPHightSPDFMD; local[2] = 0.0;
+    local[0] = Xfrom2Points(sTl24->GetX(0),sTl24->GetY(0),
+                            sTl24->GetX(1),sTl24->GetY(1),local[1]);
+    rot1->LocalToMaster(local,master);
+    xp[1]  = master[0];
+    yp[1]  = master[1];
+    yp[2]  = sTl24->GetY(4) + kft24PPHightSPDFMD;
+    xp[2]  = Xfrom2Points(sTl24->GetX(6),sTl24->GetY(6),
+                          sTl24->GetX(7),sTl24->GetY(7),yp[2]);
+    yp[3]  = sTl24->GetY(7);
+    xp[3]  = Xfrom2Points(sTl24->GetX(6),sTl24->GetY(6),
+                          sTl24->GetX(7),sTl24->GetY(7),yp[3]);
+    xp[4]  = sTl24->GetX(3);
+    yp[4]  = sTl24->GetY(3);
+    local[0] = sTl24->GetX(4);local[1] = sTl24->GetY(4); local[2] = 0.0;
+    rot1->LocalToMaster(local,master);
+    xp[5]  = master[0];
+    yp[5]  = master[1];
+    s2PP24->DefinePolygon(6,xp,yp);
+    s2PP24->DefineSection(0,0.0);
+    s2PP24->DefineSection(1,kft24PPlength);
+    //
+    sV3PP24 = new TGeoXtru(2);
+    sV3PP24->SetName("ITS sup Patch Pannel 3 Bay inside Rb24 side V3PP24");
+    xp[0] = s3PP24->GetX(0) + kct24AlThick;
+    yp[0] = s3PP24->GetY(0);
+    local[1] = s3PP24->GetY(6) + kft24PPHightSDDSSD - kct24AlThick;local[2]=0.;
+    local[0] = Xfrom2Points(sTl24->GetX(0),sTl24->GetY(0),
+                           sTl24->GetX(1),sTl24->GetY(1),local[1]);
+    rot1->LocalToMaster(local,master);
+    xp[1] = master[0];
+    yp[1] = master[1];
+    xp[2] = -xp[1];
+    yp[2] =  yp[1];
+    xp[3] = -xp[0];
+    yp[3] =  yp[0];
+    xp[4] = s3PP24->GetX(4);
+    yp[4] = s3PP24->GetY(4);
+    xp[5] = s3PP24->GetX(5);
+    yp[5] = s3PP24->GetY(5);
+    xp[6] = s3PP24->GetX(6);
+    yp[6] = s3PP24->GetY(6);
+    xp[7] = s3PP24->GetX(7);
+    yp[7] = s3PP24->GetY(7);
+    sV3PP24->DefinePolygon(8,xp,yp);
+    sV3PP24->DefineSection(0,s3PP24->GetZ(0),s3PP24->GetXOffset(0),
+                           s3PP24->GetYOffset(0),s3PP24->GetScale(0));
+    sV3PP24->DefineSection(1,s3PP24->GetZ(1),s3PP24->GetXOffset(1),
+                           s3PP24->GetYOffset(1),s3PP24->GetScale(1));
+    //
+    sV2PP24 = new TGeoXtru(2);
+    sV2PP24->SetName("ITS sup Patch Pannel 2 Bay inside Rb24 side V2PP24");
+    xp[0] = s2PP24->GetX(0) + kct24AlThick;
+    yp[0] = s2PP24->GetY(0);
+    local[1] = sTl24->GetY(3) + kft24PPHightSPDFMD - kct24AlThick;local[2]=0.;
+    local[0] = Xfrom2Points(sTl24->GetX(0),sTl24->GetY(0),
+                           sTl24->GetX(1),sTl24->GetY(1),local[1]);
+    rot1->LocalToMaster(local,master);
+    xp[1] = master[0];
+    yp[1] = master[1];
+    yp[2] = sTl24->GetY(4) + kft24PPHightSPDFMD - kct24AlThick;
+    xp[2] = Xfrom2Points(sTl24->GetX(6),sTl24->GetY(6),
+                           sTl24->GetX(7),sTl24->GetY(7),yp[2]);
+    yp[3] = sTl24->GetY(4);
+    xp[3] = Xfrom2Points(sTl24->GetX(6),sTl24->GetY(6),
+                           sTl24->GetX(7),sTl24->GetY(7),yp[3]);;
+    xp[4] = s2PP24->GetX(4);
+    yp[4] = s2PP24->GetY(4);
+    xp[5] = s2PP24->GetX(5);
+    yp[5] = s2PP24->GetY(5);
+    sV2PP24->DefinePolygon(6,xp,yp);
+    sV2PP24->DefineSection(0,s2PP24->GetZ(0),s2PP24->GetXOffset(0),
+                           s2PP24->GetYOffset(0),s2PP24->GetScale(0));
+    sV2PP24->DefineSection(1,s2PP24->GetZ(1),s2PP24->GetXOffset(1),
+                           s2PP24->GetYOffset(1),s2PP24->GetScale(1));
+    // RB 24 Tray Mother Volume
+    sMT24 = new TGeoPcon("ITS sup Cable Tray Mother Volume RB24 MT24",
+                         0.0,360.0,5);
+    sMT24->Z(0)    = 0.0;
+    sMT24->Rmin(0) = sM24->GetRmax(0);
+    sMT24->Rmax(0) = TMath::Max(TMath::Hypot(s3PP24->GetX(1),s3PP24->GetY(1)),
+                                TMath::Hypot(s2PP24->GetX(1),s2PP24->GetY(1)));
+
+    sMT24->Z(1)    = sMT24->GetZ(0) + kft24PPlength;
+    sMT24->Rmin(1) = sMT24->GetRmin(0);
+    sMT24->Rmax(1) = sMT24->GetRmax(0);
+    sMT24->Z(2)    = sMT24->GetZ(1);
+    sMT24->Rmin(2) = sMT24->GetRmin(0);
+    sMT24->Rmax(2) = sMT24->GetRmax(0) - kft24PPHightSPDFMD;
+
+    sMT24->Z(3)    = sMT24->GetZ(0) + sM24->GetZ(1) - sM24->GetZ(0);
+    sMT24->Rmin(3) = sM24->GetRmax(1);
+    sMT24->Rmax(3) = TMath::Hypot(sT24->GetX(3),sT24->GetY(3));
+    sMT24->Z(4)    = sMT24->GetZ(0) + sM24->GetZ(2)  - sM24->GetZ(0);
+    sMT24->Rmin(4) = sM24->GetRmax(2);
+    sMT24->Rmax(4) = TMath::Hypot(sT24->GetX(3)+sT24->GetXOffset(2),
+                                  sT24->GetY(3)+sT24->GetYOffset(2));
+    //
     if(GetDebug()){
-        sC24->InspectShape();
-        sD24->InspectShape();
-        sF24->InspectShape();
-        sH24->InspectShape();
-        sE24->InspectShape();
-        sG24->InspectShape();
+        sT24->InspectShape();
+        sW24->InspectShape();
+        sTl24->InspectShape();
+        sTs24->InspectShape();
+        sTt24->InspectShape();
+        sU24->InspectShape();
+        sVl24->InspectShape();
+        sVs24->InspectShape();
+        s3PP24->InspectShape();
+        s2PP24->InspectShape();
+        sV3PP24->InspectShape();
+        sV2PP24->InspectShape();
+        sMT24->InspectShape();
     } // end if GetDebug()
-    TGeoVolume *vC24,*vD24,*vE24,*vF24,*vGa24,*vGw24,*vH24;
     //
-    vC24 = new TGeoVolume("ITSsupCableTrayC24",sC24,medSUPal);
-    vC24->SetVisibility(kTRUE);
-    vC24->SetLineColor(6); //
-    vC24->SetLineWidth(1);
-    vC24->SetFillColor(vC24->GetLineColor());
-    vC24->SetFillStyle(4000); // 0% transparent
-    vD24 = new TGeoVolume("ITSsupCableTrayLowerD24",sD24,medSUPair);
-    vD24->SetVisibility(kTRUE);
-    vD24->SetLineColor(6); //
-    vD24->SetLineWidth(1);
-    vD24->SetFillColor(vD24->GetLineColor());
-    vD24->SetFillStyle(4000); // 0% transparent
-    vE24 = new TGeoVolume("ITSsupCableTrayCoolTubeE24",sE24,medSUPss);
-    vE24->SetVisibility(kTRUE);
-    vE24->SetLineColor(6); //
-    vE24->SetLineWidth(1);
-    vE24->SetFillColor(vE24->GetLineColor());
-    vE24->SetFillStyle(4000); // 0% transparent
-    vF24 = new TGeoVolume("ITSsupCableTrayBlockF24",sF24,medSUPal);
-    vF24->SetVisibility(kTRUE);
-    vF24->SetLineColor(6); //
-    vF24->SetLineWidth(1);
-    vF24->SetFillColor(vF24->GetLineColor());
-    vF24->SetFillStyle(4000); // 0% transparent
-    vGw24 = new TGeoVolume("ITSsupCableTrayCoolantWaterG24",sG24,medSUPwater);
-    vGw24->SetVisibility(kTRUE);
-    vGw24->SetLineColor(6); //
-    vGw24->SetLineWidth(1);
-    vGw24->SetFillColor(vGw24->GetLineColor());
-    vGw24->SetFillStyle(4000); // 0% transparent
-    vGa24 = new TGeoVolume("ITSsupCableTrayCoolantAirG24",sG24,medSUPair);
-    vGa24->SetVisibility(kTRUE);
-    vGa24->SetLineColor(6); //
-    vGa24->SetLineWidth(1);
-    vGa24->SetFillColor(vGa24->GetLineColor());
-    vGa24->SetFillStyle(4000); // 0% transparent
-    vH24 = new TGeoVolume("ITSsupCableTrayUpperC24",sH24,medSUPair);
-    vH24->SetVisibility(kTRUE);
-    vH24->SetLineColor(6); //
-    vH24->SetLineWidth(1);
-    vH24->SetFillColor(vH24->GetLineColor());
-    vH24->SetFillStyle(4000); // 0% transparent
+    TGeoVolume *vC24[kct24Ntrays],*vT24[kct24Ntrays],*vPP24[kft24NPatchPannels];
+    TGeoVolume *vWTV024,*vW24,*vU24,*vUFMD24,*vVl24,*vVlFMD24,*vVs24,*vMT24;
+    TGeoVolume *vV3PP24,*vV2PP24,*vV2PPFMD24;
+    vMT24 = new TGeoVolume("ITSsupCableTrayMotherMT24",sMT24,medSUPair);
+    vMT24->SetVisibility(kTRUE);
+    vMT24->SetLineColor(8); // white
+    vMT24->SetLineWidth(1);
+    vMT24->SetFillColor(vMT24->GetLineColor());
+    vMT24->SetFillStyle(4100); // 100% transparent
     //
-    tran = new TGeoTranslation("",-kcb24OutDcoolTub,
-                               kcb24OutDcoolTub+kcb24ThSwall,0.0);
-    vF24->AddNode(vGw24,1,tran);
-    vD24->AddNode(vE24,1,tran);
-    tran = new TGeoTranslation("",0.0,kcb24OutDcoolTub+kcb24ThSwall,0.0);
-    vF24->AddNode(vGw24,2,tran);
-    vD24->AddNode(vE24,2,tran);
-    tran = new TGeoTranslation("",+kcb24OutDcoolTub,
-                               kcb24OutDcoolTub+kcb24ThSwall,0.0);
-    vF24->AddNode(vGw24,3,tran);
-    vD24->AddNode(vE24,3,tran);
-    tran = new TGeoTranslation("",0.0,0.0,0.5*kcb24LS-0.5*kcb24BlkNozZS);
-    vD24->AddNode(vF24,1,tran);
-    tran = new TGeoTranslation("",0.0,0.0,-(0.5*kcb24LS-0.5*kcb24BlkNozZS));
-    vD24->AddNode(vF24,2,tran);
-    vC24->AddNode(vD24,1,0);
-    vC24->AddNode(vH24,1,0);
+    vU24 = new TGeoVolume("ITSsupCableTrayLowerU24",sU24,medSUPair);
+    vU24->SetVisibility(kTRUE);
+    vU24->SetLineColor(7); // light blue
+    vU24->SetLineWidth(1);
+    vU24->SetFillColor(vU24->GetLineColor());
+    vU24->SetFillStyle(4090); // 90% transparent
+    vUFMD24 = new TGeoVolume("FMDsupCableTrayLowerU24",sU24,medSUPair);
+    vUFMD24->SetVisibility(kTRUE);
+    vUFMD24->SetLineColor(7); // light blue
+    vUFMD24->SetLineWidth(1);
+    vUFMD24->SetFillColor(vUFMD24->GetLineColor());
+    vUFMD24->SetFillStyle(4090); // 90% transparent
+    vVl24 = new TGeoVolume("ITSsupCableTrayUpperV24",sVl24,medSUPair);
+    vVl24->SetVisibility(kTRUE);
+    vVl24->SetLineColor(7); // light blue
+    vVl24->SetLineWidth(1);
+    vVl24->SetFillColor(vVl24->GetLineColor());
+    vVl24->SetFillStyle(4090); // 90% transparent
+    vVlFMD24 = new TGeoVolume("FMDsupCableTrayUpperVl24",sVl24,medSUPair);
+    vVlFMD24->SetVisibility(kTRUE);
+    vVlFMD24->SetLineColor(7); // light blue
+    vVlFMD24->SetLineWidth(1);
+    vVlFMD24->SetFillColor(vVlFMD24->GetLineColor());
+    vVlFMD24->SetFillStyle(4090); // 90% transparent
+    vVs24 = new TGeoVolume("ITSsupCableTrayUpperVs24",sVs24,medSUPair);
+    vVs24->SetVisibility(kTRUE);
+    vVs24->SetLineColor(7); // light blue
+    vVs24->SetLineWidth(1);
+    vVs24->SetFillColor(vVs24->GetLineColor());
+    vVs24->SetFillStyle(4090); // 90% transparent
+    vW24 = new TGeoVolume("ITSsupCableTrayUpperW24",sW24,medSUPair);
+    vW24->SetVisibility(kTRUE);
+    vW24->SetLineColor(7); // light blue
+    vW24->SetLineWidth(1);
+    vW24->SetFillColor(vW24->GetLineColor());
+    vW24->SetFillStyle(4090); // 90% transparent
+    //
+    vWTV024 = new TGeoVolume("V0supCableTrayUpperWTV024",sW24,medSUPair);
+    vWTV024->SetVisibility(kTRUE);
+    vWTV024->SetLineColor(7); // light blue
+    vWTV024->SetLineWidth(1);
+    vWTV024->SetFillColor(vWTV024->GetLineColor());
+    vWTV024->SetFillStyle(4090); // 90% transparent
+    //
+    vV3PP24 = new TGeoVolume("ITSsup3BayPachPannelInsideV3PP24",sV3PP24,medSUPair);
+    vV3PP24->SetVisibility(kTRUE);
+    vV3PP24->SetLineColor(8); // white
+    vV3PP24->SetLineWidth(1);
+    vV3PP24->SetFillColor(vV3PP24->GetLineColor());
+    vV3PP24->SetFillStyle(4100); // 100% transparent
+    vV2PP24 = new TGeoVolume("ITSsup2BayPachPannelInsideV2PP24",sV2PP24,medSUPair);
+    vV2PP24->SetVisibility(kTRUE);
+    vV2PP24->SetLineColor(8); // white
+    vV2PP24->SetLineWidth(1);
+    vV2PP24->SetFillColor(vV2PP24->GetLineColor());
+    vV2PP24->SetFillStyle(4100); // 100% transparent
+    vV2PPFMD24 = new TGeoVolume("FMDsup2BayPachPannelInsideV2PP24",sV2PP24,medSUPair);
+    vV2PPFMD24->SetVisibility(kTRUE);
+    vV2PPFMD24->SetLineColor(8); // white
+    vV2PPFMD24->SetLineWidth(1);
+    vV2PPFMD24->SetFillColor(vV2PPFMD24->GetLineColor());
+    vV2PPFMD24->SetFillStyle(4100); // 100% transparent
+    //
+    delete rot;
+    delete rot1;
+    //
+    Double_t tha[kct24Ntrays],thb[kft24NPatchPannels];
+    for(i=0;i<kct24Ntrays/4;i++) {
+        if(i==0) tha[0] = 17.0+0.5*kft24Theta;
+        else tha[i] = tha[i-1] + kft24Theta;
+        tha[i+  kct24Ntrays/4] =  90.0 + tha[i];
+        tha[i+  kct24Ntrays/2] = 180.0 + tha[i];
+        tha[i+3*kct24Ntrays/4] = 270.0 + tha[i];
+    } // end for i
+    if(GetDebug()) for(i=0;i<kct24Ntrays;i++) Info("ServicesCableSupport",
+                                                  "tha[%d]=%f",i,tha[i]);
+    Char_t *airName[kct24Ntrays]={"FMD0","SDD0","SSD0","SSD1","SPD0","SPD1",
+                                  "TV00","SDD1","SDD2","SPD2","SPD3","ALG0",
+                                  "SPD4","SPD5","SSD2","SSD3","SPD6","SPD7",
+                                  "TV01","SDD3","SDD4","SPD8","SPD9","ALG1",
+                                  "FMD1","SDD5","SSD4","SSD5","SPDA","SPDB",
+                                  "TV02","SDD6","SDD7","SPDC","SPDD","ALG2",
+                                  "SPDE","SPDF","SSD6","SSD7","SPDG","SPDH",
+                                  "TV03","SDD8","SDD9","SPDI","SPDJ","ALG3"};
+    Char_t *trayName[kct24Ntrays]={"FMD0","SSD0","SSD1","SSD2","SSD3","SPD0",
+                                   "TV00","SDD0","SDD1","SDD2","SPD1","ALG0",
+                                   "SPD2","SSD4","SSD5","SSD6","SSD7","SPD3",
+                                   "TV01","SDD3","SDD4","SDD5","SPD4","ALG1",
+                                   "FMD1","SSD8","SSD9","SSDA","SSDB","SPD5",
+                                   "TV02","SDD6","SDD7","SDD8","SPD6","ALG2",
+                                   "SPD7","SSDC","SSDD","SSDE","SSDF","SPD8",
+                                   "TV03","SDD9","SDDA","SDDB","SPD9","ALG3"};
+    //
+    //Int_t ncopyW24=1,ncopyU24=1,ncopyV24=1;
+    j = 0;
+    for(i=0;i<kct24Ntrays;i++){
+        if(strncmp(trayName[i],"FMD",3)==0){
+            sprintf(name,"FMDsupCableTrayT24[%s]",trayName[i]);
+            vT24[i] = new TGeoVolume(name,sTl24,medSUPal);
+            vT24[i]->AddNode(vVlFMD24,1,0);
+        }else if(strncmp(trayName[i],"TV0",3)==0){
+            sprintf(name,"V0supCableTrayT24[%s]",trayName[i]);
+            vT24[i] = new TGeoVolume(name,sT24,medSUPal);
+            vT24[i]->AddNode(vWTV024,1,0);
+        }else if(strncmp(trayName[i],"ALG",3)==0){ // ITS Alignment Channel
+            sprintf(name,"ITSsupCableTrayT24[%s]",trayName[i]);
+            vT24[i] = new TGeoVolume(name,sT24,medSUPal);
+            vT24[i]->AddNode(vW24,1,0);
+        }else  if(strncmp(trayName[i],"SPD",3)==0){ /*ITS SPD*/
+            sprintf(name,"ITSsupCableTrayT24[%s]",trayName[i]);
+            vT24[i] = new TGeoVolume(name,sTl24,medSUPal);
+            vT24[i]->AddNode(vVl24,1,0);
+        }else { /*ITS*/
+            sprintf(name,"ITSsupCableTrayT24[%s]",trayName[i]);
+            vT24[i] = new TGeoVolume(name,sTs24,medSUPal); /// replace solid
+            vT24[i]->AddNode(vVs24,1,0);
+        } // end if
+        vT24[i]->SetVisibility(kTRUE);
+        vT24[i]->SetLineColor(6); // purple
+        vT24[i]->SetLineWidth(1);
+        vT24[i]->SetFillColor(vT24[i]->GetLineColor());
+        vT24[i]->SetFillStyle(4000); // 0% transparent
+        rot = new TGeoRotation("",0.0,0.0,tha[i]-90.0);
+        if(GetDebug()) rot->Print();
+        vMT24->AddNode(vT24[i],1,rot);
+        //
+        if(strncmp(trayName[i],"FMD",3)==0){
+            sprintf(name,"FMDsupAirTubeTrayT24[%s]",airName[i]);
+            vC24[j] = new TGeoVolume(name,sTt24,medSUPair);
+            vC24[j]->AddNode(vUFMD24,1,0);
+        }else if(strncmp(trayName[i],"TV0",3)==0){
+            continue;
+        }else if(strncmp(trayName[i],"ALG",3)==0){
+            continue;
+        }else{ /*ITS*/
+            sprintf(name,"ITSsupAirTubTrayT24[%s]",airName[i]);
+            vC24[j] = new TGeoVolume(name,sTt24,medSUPair);
+            vC24[j]->AddNode(vU24,1,0);
+        } // end if
+        vC24[j]->SetVisibility(kTRUE);
+        vC24[j]->SetLineColor(6); // purple
+        vC24[j]->SetLineWidth(1);
+        vC24[j]->SetFillColor(vC24[j]->GetLineColor());
+        vC24[j]->SetFillStyle(4000); // 0% transparent
+        vMT24->AddNode(vC24[j++],1,rot);
+    } // end for i
+    for(i=0;i<kft24NPatchPannels/4;i++) {
+        if(i==0) thb[0] = 17.0+0.5*kft24Theta;
+        else{
+            if(i%2) thb[i] = thb[i-1] + 3.0*kft24Theta;
+            else thb[i] = thb[i-1] + 2.0*kft24Theta;
+        } // end if-else
+        thb[i+  kft24NPatchPannels/4] =  90.0 + thb[i];
+        thb[i+  kft24NPatchPannels/2] = 180.0 + thb[i];
+        thb[i+3*kft24NPatchPannels/4] = 270.0 + thb[i];
+    } // end for i
+    Char_t *pachName[kft24NPatchPannels]={"FMD0","SSD0","SPD0","SDD0","SPD1",
+                                          "SPD2","SSD1","SPD3","SDD1","SPD4",
+                                          "FMD1","SSD2","SPD5","SDD2","SPD6",
+                                          "SPD7","SSD3","SPD8","SDD3","SPD9"};
+    for(i=0;i<kft24NPatchPannels;i++){
+        if(strncmp(pachName[i],"FMD",3)==0){
+            sprintf(name,"FMDsupPatchPannelPP24[%s]",pachName[i]);
+            vPP24[i] = new TGeoVolume(name,s2PP24,medSUPal);
+            vPP24[i]->AddNode(vV2PPFMD24,1,0);
+        }else if(strncmp(pachName[i],"SPD",3)==0){ /*ITS SPD*/
+            sprintf(name,"ITSsupPathcPannelPP24[%s]",pachName[i]);
+            vPP24[i] = new TGeoVolume(name,s2PP24,medSUPal);
+            vPP24[i]->AddNode(vV2PP24,1,0);
+        }else { /*ITS*/
+            sprintf(name,"ITSsupPathcPannelPP24[%s]",pachName[i]);
+            vPP24[i] = new TGeoVolume(name,s3PP24,medSUPal); /// replace solid
+            vPP24[i]->AddNode(vV3PP24,1,0);
+        } // end if
+        vPP24[i]->SetVisibility(kTRUE);
+        vPP24[i]->SetLineColor(6); // purple
+        vPP24[i]->SetLineWidth(1);
+        vPP24[i]->SetFillColor(vPP24[i]->GetLineColor());
+        vPP24[i]->SetFillStyle(4000); // 0% transparent
+        rot = new TGeoRotation("",0.0,0.0,thb[i]-90.0);
+        if(GetDebug()) rot->Print();
+        vMT24->AddNode(vPP24[i],1,rot);
+    } // end for i
+    tran = new TGeoTranslation("",0.0,0.0,kfrm24Z0);
+    moth->AddNode(vMT24,1,tran);
     if(GetDebug()){
-        vC24->PrintNodes();
-        vD24->PrintNodes();
-        vE24->PrintNodes();
-        vF24->PrintNodes();
-        vGa24->PrintNodes();
-        vGw24->PrintNodes();
-        vH24->PrintNodes();
-    } // end if GetDebug()
+        for(i=0;i<kct24Ntrays;i++) vT24[i]->PrintNodes();
+        for(i=0;i<kct24Ntrays-8;i++) vC24[i]->PrintNodes();
+        vU24->PrintNodes();
+        vUFMD24->PrintNodes();
+        vVl24->PrintNodes();
+        vVlFMD24->PrintNodes();
+        vVs24->PrintNodes();
+        vW24->PrintNodes();
+        vWTV024->PrintNodes();
+        vMT24->PrintNodes();
+    } // end if
     //==================================================================
     //
-    // RB 26 side
+    // RB 26, Muon Absober side
     const Double_t kfrm26Z0           = -900*fgkmm;//SSup_203A.jpg
     const Double_t kfrm26Thss         = 5.0*fgkmm;
     const Double_t kfrm26R0ss         = 444.5*fgkmm-kfrm26Thss; //SSup_204A.jpg
@@ -2480,8 +2906,6 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     const Int_t    kfrm26NPhi         = 4;
     TGeoConeSeg *sA26[kfrm26NZsections+1],*sM26;//Cylinderial support structure
     TGeoArb8     *sB26; // Cylinderial support structure
-    Char_t name[100];
-    Double_t r1,r2,m;
 
     sM26 = new TGeoConeSeg("ITS sup Cable tray support frame mother volume "
                           "M26",0.5*(4.*kfrm26ZssSection+5*kfrm26Width),

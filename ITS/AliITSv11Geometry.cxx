@@ -31,6 +31,11 @@
 
 #include <Riostream.h>
 #include <TMath.h>
+#include <TArc.h>
+#include <TLine.h>
+#include <TArrow.h>
+#include <TCanvas.h>
+#include <TText.h>
 #include <TGeoPcon.h>
 #include <TGeoCone.h>
 #include <TGeoTube.h> // contaings TGeoTubeSeg
@@ -41,7 +46,7 @@
 
 ClassImp(AliITSv11Geometry)
 
-
+const Double_t AliITSv11Geometry::fgkmicron = 1.0E-4;
 const Double_t AliITSv11Geometry::fgkmm = 0.10;
 const Double_t AliITSv11Geometry::fgkcm = 1.00;
 const Double_t AliITSv11Geometry::fgkDegree = 1.0;
@@ -657,4 +662,290 @@ void AliITSv11Geometry::DrawCrossSection(const TGeoPcon *p,
     delete pts;
     return;
 }
+//______________________________________________________________________
+Bool_t AliITSv11Geometry::AngleOfIntersectionWithLine(Double_t x0,Double_t y0,
+                                                      Double_t x1,Double_t y1,
+                                                      Double_t xc,Double_t yc,
+                                                      Double_t rc,Double_t &t0,
+                                                      Double_t &t1)const{
+    // Computes the angles, t0 and t1 corresponding to the intersection of
+    // the line, defined by {x0,y0} {x1,y1}, and the circle, defined by
+    // its center {xc,yc} and radius r. If the line does not intersect the
+    // line, function returns kFALSE, otherwise it returns kTRUE. If the
+    // line is tangent to the circle, the angles t0 and t1 will be the same.
+    // Inputs:
+    //   Double_t x0   X of first point defining the line
+    //   Double_t y0   Y of first point defining the line
+    //   Double_t x1   X of Second point defining the line
+    //   Double_t y1   Y of Second point defining the line
+    //   Double_t xc   X of Circle center point defining the line
+    //   Double_t yc   Y of Circle center point defining the line
+    //   Double_t r    radius of circle
+    // Outputs:
+    //   Double_t &t0  First angle where line intersects circle
+    //   Double_t &t1  Second angle where line intersects circle
+    // Return:
+    //    kTRUE, line intersects circle, kFALSE line does not intersect circle
+    //           or the line is not properly defined point {x0,y0} and {x1,y1}
+    //           are the same point.
+    Double_t dx,dy,cx,cy,s2,t[4];
+    Double_t a0,b0,c0,a1,b1,c1,sinthp,sinthm,costhp,costhm;
+    Int_t i,j;
+
+    t0 = 400.0;
+    t1 = 400.0;
+    dx = x1-x0;
+    dy = y1-y0;
+    cx = xc-x0;
+    cy = yc-y0;
+    s2 = dx*dx+dy*dy;
+    if(s2==0.0) return kFALSE;
+
+    a0 = rc*rc*s2;
+    if(a0==0.0) return kFALSE;
+    b0 = 2.0*rc*dx*(dx*cy-cx*dy);
+    c0 = dx*dx*cy*cy-2.0*dy*dx*cy*cx+cx*cx*dy*dy-rc*rc*dy*dy;
+    c0 = 0.25*b0*b0/(a0*a0)-c0/a0;
+    if(c0<0.0) return kFALSE;
+    sinthp = -0.5*b0/a0+TMath::Sqrt(c0);
+    sinthm = -0.5*b0/a0-TMath::Sqrt(c0);
+
+    a1 = rc*rc*s2;
+    if(a1==0.0) return kFALSE;
+    b1 = 2.0*rc*dy*(dy*cx-dx*cy);
+    c1 = dy*dy*cx*cx-2.0*dy*dx*cy*cx+dx*dx*cy*cy-rc*rc*dx*dx;
+    c1 = 0.25*b1*b1/(a1*a1)-c1/a1;
+    if(c1<0.0) return kFALSE;
+    costhp = -0.5*b1/a1+TMath::Sqrt(c1);
+    costhm = -0.5*b1/a1-TMath::Sqrt(c1);
+
+    t[0] = t[1] = t[2] = t[3] = 400.;
+    a0 = TMath::ATan2(sinthp,costhp); if(a0<0.0) a0 += 2.0*TMath::Pi();
+    a1 = TMath::ATan2(sinthp,costhm); if(a1<0.0) a1 += 2.0*TMath::Pi();
+    b0 = TMath::ATan2(sinthm,costhp); if(b0<0.0) b0 += 2.0*TMath::Pi();
+    b1 = TMath::ATan2(sinthm,costhm); if(b1<0.0) b1 += 2.0*TMath::Pi();
+    x1 = xc+rc*TMath::Cos(a0);
+    y1 = yc+rc*TMath::Sin(a0);
+    s2 = dx*(y1-y0)-dy*(x1-x0);
+    if(s2*s2<DBL_EPSILON) t[0] = a0*TMath::RadToDeg();
+    x1 = xc+rc*TMath::Cos(a1);
+    y1 = yc+rc*TMath::Sin(a1);
+    s2 = dx*(y1-y0)-dy*(x1-x0);
+    if(s2*s2<DBL_EPSILON) t[1] = a1*TMath::RadToDeg();
+    x1 = xc+rc*TMath::Cos(b0);
+    y1 = yc+rc*TMath::Sin(b0);
+    s2 = dx*(y1-y0)-dy*(x1-x0);
+    if(s2*s2<DBL_EPSILON) t[2] = b0*TMath::RadToDeg();
+    x1 = xc+rc*TMath::Cos(b1);
+    y1 = yc+rc*TMath::Sin(b1);
+    s2 = dx*(y1-y0)-dy*(x1-x0);
+    if(s2*s2<DBL_EPSILON) t[3] = b1*TMath::RadToDeg();
+    for(i=0;i<4;i++)for(j=i+1;j<4;j++){
+        if(t[i]>t[j]) {t0 = t[i];t[i] = t[j];t[j] = t0;}
+    } // end for i,j
+    t0 = t[0];
+    t1 = t[1];
+    //
+    return kTRUE;
+}
+//______________________________________________________________________
+Double_t AliITSv11Geometry::AngleForRoundedCorners0(Double_t dx,Double_t dy,
+                                                    Double_t sdr)const{
+    // Basic function used to determine the ending angle and starting angles
+    // for rounded corners given the relative distance between the centers
+    // of the circles and the difference/sum of their radii. Case 0.
+    // Inputs:
+    //   Double_t dx    difference in x locations of the circle centers
+    //   Double_t dy    difference in y locations of the circle centers
+    //   Double_t sdr   difference or sum of the circle radii
+    // Outputs:
+    //   none.
+    // Return:
+    //   the angle in Degrees
+    Double_t a,b;
+
+    b = dy*dy+dx*dx-sdr*sdr;
+    if(b<0.0) Error("AngleForRoundedCorners0",
+                    "dx^2(%e)+dy^2(%e)-sdr^2(%e)=b=%e<0",dx,dy,sdr,b);
+    b = TMath::Sqrt(b);
+    a = -sdr*dy+dx*b;
+    b = -sdr*dx-dy*b;
+    return TMath::ATan2(a,b)*TMath::RadToDeg();
+    
+}
+//______________________________________________________________________
+Double_t AliITSv11Geometry::AngleForRoundedCorners1(Double_t dx,Double_t dy,
+                                                    Double_t sdr)const{
+    // Basic function used to determine the ending angle and starting angles
+    // for rounded corners given the relative distance between the centers
+    // of the circles and the difference/sum of their radii. Case 1.
+    // Inputs:
+    //   Double_t dx    difference in x locations of the circle centers
+    //   Double_t dy    difference in y locations of the circle centers
+    //   Double_t sdr   difference or sum of the circle radii
+    // Outputs:
+    //   none.
+    // Return:
+    //   the angle in Degrees
+    Double_t a,b;
+
+    b = dy*dy+dx*dx-sdr*sdr;
+    if(b<0.0) Error("AngleForRoundedCorners1",
+                    "dx^2(%e)+dy^2(%e)-sdr^2(%e)=b=%e<0",dx,dy,sdr,b);
+    b = TMath::Sqrt(b);
+    a = -sdr*dy-dx*b;
+    b = -sdr*dx+dy*b;
+    return TMath::ATan2(a,b)*TMath::RadToDeg();
+    
+}
 //----------------------------------------------------------------------
+void AliITSv11Geometry::AnglesForRoundedCorners(Double_t x0,Double_t y0,
+                                                Double_t r0,Double_t x1,
+                                                Double_t y1,Double_t r1,
+                                                Double_t &t0,Double_t &t1)
+    const{
+    // Function to compute the ending angle, for arc 0, and starting angle,
+    // for arc 1, such that a straight line will connect them with no
+    // discontinuities.
+    //Begin_Html
+    /*
+      <img src="picts/ITS/AliITSv11Geometry_AnglesForRoundedCorners.gif">
+     */
+    //End_Html
+    // Inputs:
+    //    Double_t x0  X Coordinate of arc 0 center.
+    //    Double_t y0  Y Coordinate of arc 0 center.
+    //    Double_t r0  Radius of curvature of arc 0. For signe see figure.
+    //    Double_t x1  X Coordinate of arc 1 center.
+    //    Double_t y1  Y Coordinate of arc 1 center.
+    //    Double_t r1  Radius of curvature of arc 1. For signe see figure.
+    // Outputs:
+    //    Double_t t0  Ending angle of arch 0, with respect to x axis, Degrees.
+    //    Double_t t1  Starting angle of arch 1, with respect to x axis, 
+    //                 Degrees.
+    // Return:
+    //    none.
+    Double_t t;
+
+    if(r0>=0.0&&r1>=0.0) { // Inside to inside    ++
+        t = AngleForRoundedCorners1(x1-x0,y1-y0,r1-r0);
+        t0 = t1 = t;
+        return;
+    }else if(r0>=0.0&&r1<=0.0){ // Inside to Outside  +-
+        r1 = -r1; // make positive
+        t = AngleForRoundedCorners0(x1-x0,y1-y0,r1+r0);
+        t0 = 180.0 + t;
+        if(t0<0.0) t += 360.;
+        if(t<0.0) t += 360.;
+        t1 = t;
+        return;
+    }else if(r0<=0.0&&r1>=0.0){ // Outside to Inside  -+
+        r0 = - r0; // make positive
+        t = AngleForRoundedCorners1(x1-x0,y1-y0,r1+r0);
+        t0 = 180.0 + t;
+        if(t0>180.) t0 -= 360.;
+        if(t >180.) t  -= 360.;
+        t1 = t;
+        return;
+    }else if(r0<=0.0&&r1<=0.0) { // Outside to outside --
+        r0 = -r0; // make positive
+        r1 = -r1; // make positive
+        t = AngleForRoundedCorners0(x1-x0,y1-y0,r1-r0);
+        t0 = t1 = t;
+        return;
+    } // end if
+    return;
+}
+//----------------------------------------------------------------------
+void AliITSv11Geometry::MakeFigure1(Double_t x0,Double_t y0,Double_t r0,
+                                    Double_t x1,Double_t y1,Double_t r1){
+    // Function to create the figure discribing how the function 
+    // AnglesForRoundedCorners works.
+    //
+    // Inputs:
+    //    Double_t x0  X Coordinate of arc 0 center.
+    //    Double_t y0  Y Coordinate of arc 0 center.
+    //    Double_t r0  Radius of curvature of arc 0. For signe see figure.
+    //    Double_t x1  X Coordinate of arc 1 center.
+    //    Double_t y1  Y Coordinate of arc 1 center.
+    //    Double_t r1  Radius of curvature of arc 1. For signe see figure.
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+    Double_t t0[4],t1[4],xa0[4],ya0[4],xa1[4],ya1[4],ra0[4],ra1[4];
+    Double_t xmin,ymin,xmax,ymax,h;
+    Int_t j;
+
+    for(j=0;j<4;j++) {
+        ra0[j] = r0; if(j%2) ra0[j] = -r0;
+        ra1[j] = r1; if(j>1) ra1[j] = -r1;
+        AnglesForRoundedCorners(x0,y0,ra0[j],x1,y1,ra1[j],t0[j],t1[j]);
+        xa0[j] = TMath::Abs(r0)*CosD(t0[j])+x0;
+        ya0[j] = TMath::Abs(r0)*SinD(t0[j])+y0;
+        xa1[j] = TMath::Abs(r1)*CosD(t1[j])+x1;
+        ya1[j] = TMath::Abs(r1)*SinD(t1[j])+y1;
+    } // end for j
+    if(r0<0.0) r0 = -r0;
+    if(r1<0.0) r1 = -r1;
+    xmin = TMath::Min(x0 - r0,x1-r1);
+    ymin = TMath::Min(y0 - r0,y1-r1);
+    xmax = TMath::Max(x0 + r0,x1+r1);
+    ymax = TMath::Max(y0 + r0,y1+r1);
+    for(j=1;j<4;j++) {
+        xmin = TMath::Min(xmin,xa0[j]);
+        xmin = TMath::Min(xmin,xa1[j]);
+        ymin = TMath::Min(ymin,ya0[j]);
+        ymin = TMath::Min(ymin,ya1[j]);
+
+        xmax = TMath::Max(xmax,xa0[j]);
+        xmax = TMath::Max(xmax,xa1[j]);
+        ymax = TMath::Max(ymax,ya0[j]);
+        ymax = TMath::Max(ymax,ya1[j]);
+    } // end for j
+    if(xmin<0.0) xmin *= 1.1; else xmin *= 0.9;
+    if(ymin<0.0) ymin *= 1.1; else ymin *= 0.9;
+    if(xmax<0.0) xmax *= 0.9; else xmax *= 1.1;
+    if(ymax<0.0) ymax *= 0.9; else ymax *= 1.1;
+    j = (Int_t)(500.0*(ymax-ymin)/(xmax-xmin));
+    TCanvas *can = new TCanvas("AliITSv11Geometry_AnglesForRoundedCorners",
+                               "Figure for AliITSv11Geometry",500,j);
+    h = ymax-ymin; if(h<0) h = -h;
+    can->Range(xmin,ymin,xmax,ymax);
+    TArc *c0 = new TArc(x0,y0,r0);
+    TArc *c1 = new TArc(x1,y1,r1);
+    TLine *line[4];
+    TArrow *ar0[4];
+    TArrow *ar1[4];
+    for(j=0;j<4;j++){
+        ar0[j] = new TArrow(x0,y0,xa0[j],ya0[j]);
+        ar1[j] = new TArrow(x1,y1,xa1[j],ya1[j]);
+        line[j] = new TLine(xa0[j],ya0[j],xa1[j],ya1[j]);
+        ar0[j]->SetLineColor(j+1);
+        ar0[j]->SetArrowSize(0.1*r0/h);
+        ar1[j]->SetLineColor(j+1);
+        ar1[j]->SetArrowSize(0.1*r1/h);
+        line[j]->SetLineColor(j+1);
+    } // end for j
+    c0->Draw();
+    c1->Draw();
+    for(j=0;j<4;j++){
+        ar0[j]->Draw();
+        ar1[j]->Draw();
+        line[j]->Draw();
+    } // end for j
+    TText *t = new TText();
+    t->SetTextSize(0.02);
+    Char_t txt[100];
+    sprintf(txt,"(x0=%5.2f,y0=%5.2f)",x0,y0);
+    t->DrawText(x0,y0,txt);
+    sprintf(txt,"(x1=%5.2f,y1=%5.2f)",x1,y1);
+    for(j=0;j<4;j++) {
+        t->SetTextColor(j+1);
+        t->DrawText(x1,y1,txt);
+        sprintf(txt,"r0=%5.2f",ra0[j]);
+        t->DrawText(0.5*(x0+xa0[j]),0.5*(y0+ya0[j]),txt);
+        sprintf(txt,"r1=%5.2f",ra1[j]);
+        t->DrawText(0.5*(x1+xa1[j]),0.5*(y1+ya1[j]),txt);
+    } // end for j
+}

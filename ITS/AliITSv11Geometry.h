@@ -21,15 +21,15 @@ class TGeoBBox;
 class AliITSv11Geometry : public TObject {
   public:
     AliITSv11Geometry(){fDebug=kTRUE;};
-    AliITSv11Geometry(Bool_t debug){fDebug=debug;};
+    AliITSv11Geometry(Int_t debug){fDebug=debug;};
     virtual ~AliITSv11Geometry(){};
     //
     // Sets the debug flag for debugging output
-    void SetDebug(){fDebug=kTRUE;}
+    void SetDebug(Int_t level=5){fDebug=level;}
     // Clears the debug flag so no debugging output will be generated
-    void SetNoDebug(){fDebug=kFALSE;}
+    void SetNoDebug(){fDebug=0;}
     // Returns the debug flag value
-    Bool_t GetDebug()const {return fDebug;}
+    Bool_t GetDebug(Int_t level=1)const {return fDebug>=level;}
     //
     // Static functions
     //
@@ -136,16 +136,33 @@ class AliITSv11Geometry : public TObject {
                           Int_t linec=3,Int_t lines=1,Int_t linew=4,
                           Int_t markc=2,Int_t marks=4,
                           Float_t marksize=1.0) const;
+    // Compute the angles where a line intersects a circle.
+    Bool_t AngleOfIntersectionWithLine(Double_t x0,Double_t y0,
+                                       Double_t x1,Double_t y1,
+                                       Double_t xc,Double_t yc,
+                                       Double_t rc,Double_t &t0,
+                                       Double_t &t1)const;
+    void AnglesForRoundedCorners(Double_t x0,Double_t y0,Double_t r0,
+                                 Double_t x1,Double_t y1,Double_t r1,
+                                 Double_t &t0,Double_t &t1)const;
+    // Function to create figure needed for this class' documentation
+     void MakeFigure1(Double_t x0=0.0,Double_t y0=0.0,Double_t r0=2.0,
+                      Double_t x1=-4.0,Double_t y1=-2.0,Double_t r1=1.0);
   protected:
 
     // Units, Convert from k?? to cm,degree,GeV,seconds,
+    static const Double_t fgkmicron; // Convert micron to TGeom's cm.
     static const Double_t fgkmm; // Convert mm to TGeom's cm.
-    static const Double_t fgkcm; // Convert cv to TGeom's cm.
+    static const Double_t fgkcm; // Convert cm to TGeom's cm.
     static const Double_t fgkDegree; //Convert degrees to TGeom's degrees
     static const Double_t fgkRadian; //To Radians
 
   private:
-    Bool_t fDebug; //! Debug flag
+    Double_t AngleForRoundedCorners0(Double_t dx,Double_t dy,
+                                     Double_t sdr)const;
+    Double_t AngleForRoundedCorners1(Double_t dx,Double_t dy,
+                                     Double_t sdr)const;
+    Int_t fDebug; //! Debug flag/level
     ClassDef(AliITSv11Geometry,1) // Base class for ITS v11 geometry
 };
 

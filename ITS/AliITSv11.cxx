@@ -71,6 +71,8 @@
 #include "AliITSsimulationSDD.h"
 #include "AliITSClusterFinderSSD.h"
 #include "AliITSv11.h"
+#include "AliITSv11GeometrySPD.h"
+#include "AliITSv11GeometrySDD.h"
 #include "AliITSv11GeometrySupport.h"
 
 ClassImp(AliITSv11)
@@ -82,17 +84,20 @@ ClassImp(AliITSv11)
 */
 
 //______________________________________________________________________
-AliITSv11::AliITSv11() : AliITS(),
-fGeomDetOut(kFALSE),
-fGeomDetIn(kFALSE),
-fMajorVersion(11),
-fMinorVersion(0),
-fDet1(0.0),
-fDet2(0.0),
-fChip1(0.0),
-fChip2(0.0),
-fRails(0),
-fFluid(1){
+AliITSv11::AliITSv11() : 
+    AliITS(),
+    fGeomDetOut(kFALSE),
+    fGeomDetIn(kFALSE),
+    fMajorVersion(11),
+    fMinorVersion(0),
+    fDet1(0.0),
+    fDet2(0.0),
+    fChip1(0.0),
+    fChip2(0.0),
+    fRails(0),
+    fFluid(1),
+    fSPDgeom(0),
+    fSupgeom(0){
     // Standard default constructor for the ITS version 11.
     // Inputs:
     //   none.
@@ -105,20 +110,58 @@ fFluid(1){
     //fcS = 0;
 //   fcD = 0;
 
-   SetEUCLID(kFALSE);
+    SetEUCLID(kFALSE);
 }
 //______________________________________________________________________
-AliITSv11::AliITSv11(const char *title) : AliITS("ITS", title),
-fGeomDetOut(kFALSE),
-fGeomDetIn(kFALSE),
-fMajorVersion(11),
-fMinorVersion(0),
-fDet1(0.0),
-fDet2(0.0),
-fChip1(0.0),
-fChip2(0.0),
-fRails(0),
-fFluid(1){
+AliITSv11::AliITSv11(Int_t debugITS,Int_t debugSPD,Int_t debugSDD,
+                     Int_t debugSSD,Int_t debugSUP) : 
+    AliITS(),
+    fGeomDetOut(kFALSE),
+    fGeomDetIn(kFALSE),
+    fMajorVersion(11),
+    fMinorVersion(0),
+    fDet1(0.0),
+    fDet2(0.0),
+    fChip1(0.0),
+    fChip2(0.0),
+    fRails(0),
+    fFluid(1),
+    fSPDgeom(0),
+    fSupgeom(0){
+    // Standard default constructor for the ITS version 11.
+    // Inputs:
+    //   Int_t    debugITS  Debug flag for ITS code (required).
+    //   Int_t    debugSPD  Debug flag for SPD geometry (default = 0).
+    //   Int_t    debugSDD  Debug flag for SDD geometry (default = 0).
+    //   Int_t    debugSSD  Debug flag for SSD geometry (default = 0).
+    //   Int_t    debugSUP  Debug flag for SUPort geometry (default = 0).
+    // Outputs:
+    //   none.
+    // Return
+    //   A Constructor for ITS geometry version 11 useful for Geometry display.
+
+    SetEUCLID(kFALSE);
+    debugSSD = debugSDD; // remove waring for unused variables.
+    SetDebug(debugITS);
+    fSPDgeom = new AliITSv11GeometrySPD(debugSPD);
+    fSDDgeom = new AliITSv11GeometrySDD(debugSDD);
+    fSupgeom = new AliITSv11GeometrySupport(debugSUP);
+}
+//______________________________________________________________________
+AliITSv11::AliITSv11(const char *title) : 
+    AliITS("ITS", title),
+    fGeomDetOut(kFALSE),
+    fGeomDetIn(kFALSE),
+    fMajorVersion(11),
+    fMinorVersion(0),
+    fDet1(0.0),
+    fDet2(0.0),
+    fChip1(0.0),
+    fChip2(0.0),
+    fRails(0),
+    fFluid(1),
+    fSPDgeom(0),
+    fSupgeom(0){
     // Standard constructor for the ITS version 11.
     // Inputs:
     //   const char *title  The title of for this geometry.
@@ -126,7 +169,9 @@ fFluid(1){
     //   none.
     // Return
     //   A Standard constructed AliITSv11 class.
-   SetEUCLID(kFALSE);
+    SetEUCLID(kFALSE);
+    fSPDgeom = new AliITSv11GeometrySPD(GetDebug());
+    fSupgeom = new AliITSv11GeometrySupport(GetDebug());
 }
 //______________________________________________________________________
 AliITSv11::~AliITSv11() {
@@ -215,12 +260,15 @@ void AliITSv11::CreateGeometry(){
     vITS->SetVisibility(kFALSE);
     vALIC->AddNode(vITS,1,0);
     //
-    AliITSv11GeometrySupport *sup = new AliITSv11GeometrySupport(GetDebug());
-    sup->SPDCone(vITS);
-    sup->SPDThermalSheald(vITS);
-    sup->SDDCone(vITS);
-    sup->SSDCone(vITS);
-    sup->ServicesCableSupport(vITS);
+    fSPDgeom->CarbonFiberSector(vITS);
+    fSDDgeom->SetGeomParameters(); // needed
+    fSDDgeom->Layer3(vITS);
+    fSDDgeom->Layer4(vITS);
+    fSupgeom->SPDCone(vITS);
+    fSupgeom->SPDThermalSheald(vITS);
+    fSupgeom->SDDCone(vITS);
+    fSupgeom->SSDCone(vITS);
+    fSupgeom->ServicesCableSupport(vITS);
 }
 //______________________________________________________________________
 void AliITSv11::CreateMaterials(){

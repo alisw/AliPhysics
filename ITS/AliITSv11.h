@@ -14,11 +14,16 @@
 #include "AliITS.h"
 class TGeoVolume;
 class TGeoPcon;
+class AliITSv11GeometrySPD;
+class AliITSv11GeometrySDD;
+class AliITSv11GeometrySupport;
  
 class AliITSv11 : public AliITS {
 
  public:
     AliITSv11();
+    AliITSv11(Int_t debugITS,Int_t debugSPD=0,Int_t debugSDD=0,
+              Int_t debugSSD=0,Int_t debugSUP=0);
     AliITSv11(const char *title);
     AliITSv11(const AliITSv11 &source); // copy constructor
     AliITSv11& operator=(const AliITSv11 &source); // assignment operator
@@ -31,6 +36,9 @@ class AliITSv11 : public AliITS {
     virtual void   SetDefaults();
     virtual void   DrawModule();
     virtual void   StepManager();
+    // Getters for different parts of the geometry initilization
+    virtual AliITSv11GeometrySPD*     GetSPDGeometry(){return fSPDgeom;} // SPD
+    virtual AliITSv11GeometrySupport* GetSupGeometry(){return fSupgeom;} //Sup.
   private:
     void InitAliITSgeom();
 
@@ -45,6 +53,10 @@ class AliITSv11 : public AliITS {
     Float_t  fChip2;	      // thickness of chip in SPD layer 2   
     Int_t    fRails;          // switch rails on (=1) and off (=0)
     Int_t    fFluid;          // switch between water(=1) and freon(=0)
+    //
+    AliITSv11GeometrySPD     *fSPDgeom;  //! Pointer to SPD Geometry
+    AliITSv11GeometrySDD     *fSDDgeom;  //! Pointer to SDD Geometry
+    AliITSv11GeometrySupport *fSupgeom;  //! Pointer to ITS support Geometry
 
     ClassDef(AliITSv11,1)  //Hits manager for set:ITS version 11
 };
