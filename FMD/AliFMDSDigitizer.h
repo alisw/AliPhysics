@@ -28,7 +28,7 @@ public:
   AliFMDSDigitizer(char* HeaderFile,char *SdigitsFile = 0) ; 
 
   virtual ~AliFMDSDigitizer() ; // dtor
-  Int_t    Digitize(Float_t Energy);
+  // Int_t    Digitize(Float_t Energy);
 
   char *GetSDigitsFile()const{return (char*) fSDigitsFile.Data();}  
   virtual void  Exec(Option_t *option); 
