@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.9  2002/10/23 07:24:56  alibrary
+Introducing Riostream.h
+
 Revision 1.8  2001/03/20 13:32:37  egangler
 includes cleanup
 
@@ -382,7 +385,7 @@ void AliMUONTriggerCircuit::LoadXPos(){
 // second case : mixing 8 and 16 strips within same circuit      
   } else {
     for (istrip=0; istrip<nStrY; istrip++) {
-      if (nStrY!=8) { cout << " bug in LoadXpos " << "\n";}
+      if (nStrY!=8) { printf(" bug in LoadXpos \n");}
       segmentation->GetPadC(idModule,istrip,x,y,z); 
       fXpos11[2*istrip]=x-width/4.;
       fXpos11[2*istrip+1]=fXpos11[2*istrip]+width/2.;

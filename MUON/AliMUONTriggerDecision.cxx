@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.10  2002/10/23 07:24:56  alibrary
+Introducing Riostream.h
+
 Revision 1.9  2001/03/23 17:31:32  pcrochet
 correct access to digits in SetBit()
 
@@ -147,7 +150,6 @@ AliMUONTriggerDecision::~AliMUONTriggerDecision()
 //----------------------------------------------------------------------
 void AliMUONTriggerDecision::Trigger(){
 // main method of the class which calls the overall Trigger procedure
-//  cout << " In AliMUONTriggerDecision::Trigger " << "\n";
 
   ResetBit();
   SetBit();
@@ -191,7 +193,6 @@ void AliMUONTriggerDecision::Trigger(){
 
 // call Global Trigger
   GlobalTrigger();
-  //  cout << " Leaving AliMUONTriggerDecision::Trigger " << "\n";
 }
 
 //----------------------------------------------------------------------
@@ -549,18 +550,18 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
 
 //--- 
   if(fDebug==3||fDebug==5) {
-    cout << "===============================================================" << "\n";
-    cout << " X plane after sgle and dble " << " \n";
-    cout << "                       0987654321098765432109876543210";
-    cout << "\n SGLE1                 ";
-    for (istrip=30; istrip>=0; istrip--) { cout << (!sgleHit1[istrip]); }
-    cout << "\n DBLE1                 ";
-    for (istrip=30; istrip>=0; istrip--) { cout << dbleHit1[istrip]; }
-    cout << "\n SGLE2 ";
-    for (istrip=62; istrip>=0; istrip--) { cout << (!sgleHit2[istrip]); }
-    cout << "\n DBLE2 ";
-    for (istrip=62; istrip>=0; istrip--) { cout << dbleHit2[istrip]; }
-    cout << "\n       210987654321098765432109876543210987654321098765432109876543210" << "\n";
+    printf("===============================================================\n");
+    printf(" X plane after sgle and dble \n");
+    printf("                       0987654321098765432109876543210");
+    printf("\n SGLE1                 ");
+    for (istrip=30; istrip>=0; istrip--) printf("%i",(!sgleHit1[istrip]));
+    printf("\n DBLE1                 ");
+    for (istrip=30; istrip>=0; istrip--) printf("%i",dbleHit1[istrip]);
+    printf("\n SGLE2 ");
+    for (istrip=62; istrip>=0; istrip--) printf("%i",(!sgleHit2[istrip]));
+    printf("\n DBLE2 ");
+    for (istrip=62; istrip>=0; istrip--) printf("%i",dbleHit2[istrip]);
+    printf("\n       210987654321098765432109876543210987654321098765432109876543210\n");
   }
   
 //---------------------------------------------------------
@@ -624,16 +625,13 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
 
   //-----------
  if(fDebug==3||fDebug==5) {
-    cout << "===============================================================" << "\n";
+   printf("===============================================================\n");
    for (i=30; i>=0; i--) {
-     cout << i << "\t ";
-     for (istrip=31; istrip>=0; istrip--) {
-       cout << rearImage[i][istrip];
-     }
-     cout << " " << "\n";
+   printf("%i \t",i);
+   for (istrip=31; istrip>=0; istrip--) printf("%i",rearImage[i][istrip]);
+   printf("\n");   
    }
  }
-  
 
 //---------------------------------------------------------
 // step # 3 : calculate deviation
@@ -723,14 +721,14 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
   }
   
 //---
-  if(fDebug==3||fDebug==5) {
-    cout << "===============================================================" << "\n";
-    for (i=30; i>=0; i--) {
-      cout << i << "\t ";
-      for (istrip=5; istrip>=0; istrip--) { cout << dev[i][istrip]; }
-      cout << " " << "\n";
-    }
-  }
+ if(fDebug==3||fDebug==5) {
+   printf("===============================================================\n");
+   for (i=30; i>=0; i--) {
+     printf("%i \t",i);
+     for (istrip=5; istrip>=0; istrip--) printf("%i",dev[i][istrip]);
+     printf(" \n");
+   }
+ }
 
 //---------------------------------------------------------
 // step # 4 : sort deviation
@@ -746,14 +744,12 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
 
 //--    
   if(fDebug==3||fDebug==5) {
-    cout << "===============================================================" << "\n";
-    cout << " sorting : 1st level " << "\n";
+    printf("===============================================================\n");
+    printf(" sorting : 1st level \n");
     for (i=15; i>=0; i--) {
-      cout << i << "\t " << bga1[i] << "\t"; 	
-      for (j=5; j>=0; j--) {
-	cout << tmpbga1[i][j]; 
-      }
-      cout << " " << "\n";
+      printf("\t %i \t",bga1[i]); 	
+      for (j=5; j>=0; j--) printf("%i",tmpbga1[i][j]); 
+     printf(" \n");
     }
   }
 
@@ -763,31 +759,27 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
 
 //--    
   if(fDebug==3||fDebug==5) {
-    cout << "===============================================================" << "\n";
-    cout << " sorting : 2nd level " << "\n";
+    printf("===============================================================\n");
+    printf(" sorting : 2nd level \n");
     for (i=7; i>=0; i--) {
-      cout << i << "\t " << bga2[i] << "\t"; 	
-      for (j=5; j>=0; j--) {
-	cout << tmpbga2[i][j]; 
-      }
-      cout << " " << "\n";
+      printf("\t %i \t",bga2[i]); 	
+      for (j=5; j>=0; j--) printf("%i",tmpbga1[i][j]); 	
+      printf(" \n");
     }
   }
-    
+  
   for (i=0; i<4; i++) {  
     Sort2x5(tmpbga2[2*i],tmpbga2[2*i+1],tmpbga3[i],bga3[i]);
   }
 
 //--    
   if(fDebug==3||fDebug==5) {
-    cout << "===============================================================" << "\n";
-    cout << " sorting : 3rd level " << "\n";
+    printf("===============================================================\n");
+    printf(" sorting : 3rd level \n");
     for (i=3; i>=0; i--) {
-      cout << i << "\t " << bga3[i] << "\t"; 	
-      for (j=5; j>=0; j--) {
-	cout << tmpbga3[i][j]; 
-      }
-      cout << " " << "\n";
+      printf("\t %i \t",bga3[i]); 	
+      for (j=5; j>=0; j--) printf("%i",tmpbga3[i][j]); 
+      printf(" \n");
     }
   }
 
@@ -797,14 +789,12 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
 
 //--    
   if(fDebug==3||fDebug==5) {
-    cout << "===============================================================" << "\n";
-    cout << " sorting : 4th level " << "\n";
+    printf("===============================================================\n");
+    printf(" sorting : 4th level \n");
     for (i=1; i>=0; i--) {
-      cout << i << "\t " << bga4[i] << "\t"; 	
-      for (j=5; j>=0; j--) {
-	cout << tmpbga4[i][j]; 
-      }
-      cout << " " << "\n";
+      printf("\t %i \t",bga4[i]); 	
+      for (j=5; j>=0; j--) printf("%i",tmpbga4[i][j]);
+      printf(" \n");
     }
   }
   
@@ -829,14 +819,14 @@ void AliMUONTriggerDecision::TrigX(Int_t ch1q[16], Int_t ch2q[16],
     tmpAd=minDevStrip[1]+minDevStrip[2]*2+minDevStrip[3]*4+minDevStrip[4]*8;
     if (tmpAd<=15) minDevStrip[0]=bga1[tmpAd];
 
-  if(fDebug==3||fDebug==5) {
-    cout << "===============================================================" << "\n";
-    cout << "minDevStrip = ";
-    for  (i=4; i>=0; i--) {cout << minDevStrip[i];}
-    cout << " minDev = ";
-    for  (i=4; i>=0; i--) {cout << minDev[i];} 
-    cout << " " << "\n";
-    cout << "===============================================================" << "\n";
+    if(fDebug==3||fDebug==5) {
+    printf("===============================================================\n");
+    printf("minDevStrip = ");
+    for  (i=4; i>=0; i--) printf("%i",minDevStrip[i]);
+    printf(" minDev = ");
+    for  (i=4; i>=0; i--) printf("%i",minDev[i]); 
+    printf(" \n");
+    printf("===============================================================\n");
   }
 
 }
@@ -939,31 +929,23 @@ void AliMUONTriggerDecision::TrigY(Int_t y1[16], Int_t y2[16],
 
 // debug
   if(fDebug==4||fDebug==5) {
-    cout << "===============================================================" << "\n";  
-    cout << " Y plane after PreHandling x2m x2ud orMud " 
-	 << x2m << " , " << x2ud << " , " << orMud[0] << orMud[1] << "\n"; 
-    cout << "                            ";
+    printf("===============================================================\n");  
+    printf(" Y plane after PreHandling x2m x2ud orMud %i %i %i %i \n",
+	   x2m,x2ud,orMud[0],orMud[1]);
+    printf("                            ");
     for (istrip=15; istrip>=0; istrip--) {
-      if (istrip>9) cout << istrip-10*Int_t(istrip/10);
-      if (istrip<10) cout << istrip;
+      if (istrip>9)  printf("%i",istrip-10*Int_t(istrip/10));
+      if (istrip<10) printf("%i",istrip);
     }  
-    cout << "\n YMC11                      ";
-    for (istrip=15; istrip>=0; istrip--) {
-      cout << ch1[istrip]; 
-    }
-    cout << "\n YMC12                      ";
-    for (istrip=15; istrip>=0; istrip--) {
-      cout << ch2[istrip]; 
-    }
-    cout << "\n YMC21                      ";
-    for (istrip=15; istrip>=0; istrip--) {
-      cout << ch3[istrip]; 
-    }
-    cout << "\n YMC22                      ";
-    for (istrip=15; istrip>=0; istrip--) {
-      cout << ch4[istrip]; 
-    }
-    cout << " \n"; 
+    printf("\n YMC11                      ");
+    for (istrip=15; istrip>=0; istrip--) printf("%i",ch1[istrip]); 
+    printf("\n YMC12                      ");
+    for (istrip=15; istrip>=0; istrip--) printf("%i",ch2[istrip]); 
+    printf("\n YMC21                      ");
+    for (istrip=15; istrip>=0; istrip--) printf("%i",ch3[istrip]); 
+    printf("\n YMC22                      ");
+    for (istrip=15; istrip>=0; istrip--) printf("%i",ch4[istrip]); 
+    printf(" \n"); 
   }
 //debug
   
@@ -984,30 +966,22 @@ void AliMUONTriggerDecision::TrigY(Int_t y1[16], Int_t y2[16],
 
   //debug
   if(fDebug==4||fDebug==5) {
-    cout << "===============================================================" << "\n";
-    cout << " Y plane after sgle dble " << "\n"; 
-    cout << "                            ";
+    printf("===============================================================\n");
+    printf(" Y plane after sgle dble \n"); 
+    printf("                            ");
     for (istrip=15; istrip>=0; istrip--) {
-      if (istrip>9) { cout << istrip-10*Int_t(istrip/10);}
-      if (istrip<10) { cout << istrip;}
+      if (istrip>9)  printf("%i",istrip-10*Int_t(istrip/10));
+      if (istrip<10) printf("%i",istrip);
     }  
-    cout << "\n SGLE1                      ";
-    for (istrip=15; istrip>=0; istrip--) {
-      cout << sgle1[istrip]; 
-    }
-    cout << "\n DBLE1                      ";
-    for (istrip=15; istrip>=0; istrip--) {
-      cout << dble1[istrip]; 
-    }
-    cout << "\n SGLE2                      ";
-    for (istrip=15; istrip>=0; istrip--) {
-      cout << sgle2[istrip]; 
-    }
-    cout << "\n DBLE2                      ";
-    for (istrip=15; istrip>=0; istrip--) {
-      cout << dble2[istrip]; 
-    }
-    cout << " \n"; 
+    printf("\n SGLE1                      ");
+    for (istrip=15; istrip>=0; istrip--) printf("%i",sgle1[istrip]); 
+    printf("\n DBLE1                      ");
+    for (istrip=15; istrip>=0; istrip--) printf("%i",dble1[istrip]); 
+    printf("\n SGLE2                      ");
+    for (istrip=15; istrip>=0; istrip--) printf("%i",sgle2[istrip]); 
+    printf("\n DBLE2                      ");
+    for (istrip=15; istrip>=0; istrip--) printf("%i",dble2[istrip]); 
+    printf(" \n"); 
   }
   //debug
 
@@ -1048,18 +1022,16 @@ void AliMUONTriggerDecision::TrigY(Int_t y1[16], Int_t y2[16],
 
 //debug
   if(fDebug==4||fDebug==5) {
-    cout << "===============================================================" << "\n";
-    cout << " Y plane frontImage\n";
-    cout << "                            ";
+    printf("===============================================================\n");
+    printf(" Y plane frontImage\n");
+    printf("                            ");
   for (istrip=15; istrip>=0; istrip--) {
-    if (istrip>9) cout << istrip-10*Int_t(istrip/10);
-    if (istrip<10) cout << istrip;
+    if (istrip>9)  printf("%i",istrip-10*Int_t(istrip/10));
+    if (istrip<10) printf("%i",istrip);
   }
-    cout << "\n                            ";
-    for (istrip=15; istrip>=0; istrip--) {
-      cout << frontImage[istrip]; 
-    }
-    cout << "\n";
+  printf("\n                            ");
+  for (istrip=15; istrip>=0; istrip--) printf("%i",frontImage[istrip]); 
+  printf("\n");
   }
 //debug
 
@@ -1162,22 +1134,21 @@ void AliMUONTriggerDecision::LocalTrigger(Int_t icirc,
     if (fDebug>1) {
       Float_t pt= // get ptCal corresponding to istripX1Circ/idev/iStripY
       triggerCircuit->PtCal(fStripX11[icirc],fDev[icirc],fStripY11[icirc]);
-      cout << "-------------------------------------------" << "\n";
-      cout << " Local Trigger info for circuit Id " << idCircuit 
-	   << " (number " << icirc << ")" << "\n";
-      cout << " istripX1 signDev deviation istripY = " 
-	   << istripX1Circ << " , " << signDev 
-	   << " , " << deviation << " , " << iStripY << "\n";      
-      cout << " pt = " << pt << " (GeV/c) " << "\n";
-      cout << "-------------------------------------------" << "\n";
-      cout << " Local Trigger Lut Output = Lpt : " ;
-      for (i=1; i>=0; i--) { cout << fLutLpt[icirc][i] ; }
-      cout << " Hpt : ";
-      for (i=1; i>=0; i--) { cout << fLutHpt[icirc][i] ; }
-      cout << " Apt : ";
-      for (i=1; i>=0; i--) { cout << fLutApt[icirc][i] ; }	  
-      cout << "\n";
-      cout << "-------------------------------------------" << "\n";
+      printf("-------------------------------------------\n");
+      printf(" Local Trigger info for circuit Id %i (number %i ) \n",
+	     idCircuit,icirc);
+      printf(" istripX1 signDev deviation istripY = %i %i %i %i \n", 
+	     istripX1Circ,signDev,deviation,iStripY);      
+      printf(" pt = %f  (GeV/c) \n",pt);
+      printf("-------------------------------------------\n");
+      printf(" Local Trigger Lut Output = Lpt : ");
+      for (i=1; i>=0; i--) printf("%i",fLutLpt[icirc][i]);
+      printf(" Hpt : ");
+      for (i=1; i>=0; i--) printf("%i",fLutHpt[icirc][i]);
+      printf(" Apt : ");
+      for (i=1; i>=0; i--) printf("%i",fLutApt[icirc][i]);
+      printf("\n");
+      printf("-------------------------------------------\n");
     } // fDebug > 1    
   }  // local trigger = 1
 }
@@ -1228,25 +1199,25 @@ void AliMUONTriggerDecision::GlobalTrigger(){
   }
   
   if (fDebug>=1) {
-    cout << "\n";
-    cout << "===================================================" << "\n";
-    cout << " Global Trigger output       " << "Low pt  High pt   All"  << "\n";
-    cout << " number of Single Plus      :\t";
-    for (i=0; i<3; i++) { cout << fGlobalSinglePlus[i] <<"\t";}
-    cout << "\n";
-    cout << " number of Single Minus     :\t";
-    for (i=0; i<3; i++) { cout << fGlobalSingleMinus[i] <<"\t";}
-    cout << "\n";
-    cout << " number of Single Undefined :\t"; 
-    for (i=0; i<3; i++) { cout << fGlobalSingleUndef[i] <<"\t";}
-    cout << "\n";
-    cout << " number of UnlikeSign pair  :\t"; 
-    for (i=0; i<3; i++) { cout << fGlobalPairUnlike[i] <<"\t";}
-    cout << "\n";
-    cout << " number of LikeSign pair    :\t";  
-    for (i=0; i<3; i++) { cout << fGlobalPairLike[i] <<"\t";}
-    cout << "\n";
-    cout << "===================================================" << "\n";
+    printf("\n");
+    printf("===================================================\n");
+    printf(" Global Trigger output       Low pt  High pt   All\n");
+    printf(" number of Single Plus      :\t");
+    for (i=0; i<3; i++) printf("%i\t",fGlobalSinglePlus[i]);
+    printf("\n");
+    printf(" number of Single Minus     :\t");
+    for (i=0; i<3; i++) printf("%i\t",fGlobalSingleMinus[i]);
+    printf("\n");
+    printf(" number of Single Undefined :\t"); 
+    for (i=0; i<3; i++) printf("%i\t",fGlobalSingleUndef[i]);
+    printf("\n");
+    printf(" number of UnlikeSign pair  :\t"); 
+    for (i=0; i<3; i++) printf("%i\t",fGlobalPairUnlike[i]);
+    printf("\n");
+    printf(" number of LikeSign pair    :\t");  
+    for (i=0; i<3; i++) printf("%i\t",fGlobalPairLike[i]);
+    printf("\n");
+    printf("===================================================\n");
   }
 }
 
@@ -1256,27 +1227,19 @@ void AliMUONTriggerDecision::PrintBitPatXInput(Int_t icirc){
 
     Int_t istrip;
 
-  cout << "-------- TRIGGER INPUT ---------" << "\n";
-  cout << "===============================================================" << "\n";
-  cout << "                            5432109876543210";
-  cout << "\n XMC11                      ";
-  for (istrip=15; istrip>=0; istrip--) {
-    cout << fXbit11[icirc][istrip]; 
-  }
-  cout << "\n XMC12                      ";
-  for (istrip=15; istrip>=0; istrip--) {
-    cout << fXbit12[icirc][istrip]; 
-  }
-  cout << "\n XMC21              ";
-  for (istrip=31; istrip>=0; istrip--) {
-    cout << fXbit21[icirc][istrip]; 
-  }
-  cout << "\n XMC22              ";
-  for (istrip=31; istrip>=0; istrip--) {
-    cout << fXbit22[icirc][istrip]; 
-  }
-  cout << "\n                    ";
-  cout << "10987654321098765432109876543210" << "\n";
+  printf("-------- TRIGGER INPUT ---------\n");
+  printf("===============================================================\n");
+  printf("                            5432109876543210");
+  printf("\n XMC11                      ");
+  for (istrip=15; istrip>=0; istrip--) printf("%i",fXbit11[icirc][istrip]); 
+  printf("\n XMC12                      ");
+  for (istrip=15; istrip>=0; istrip--) printf("%i",fXbit12[icirc][istrip]);
+  printf("\n XMC21              ");
+  for (istrip=31; istrip>=0; istrip--) printf("%i",fXbit21[icirc][istrip]); 
+  printf("\n XMC22              ");
+  for (istrip=31; istrip>=0; istrip--) printf("%i",fXbit22[icirc][istrip]); 
+  printf("\n                    ");
+  printf("10987654321098765432109876543210\n");
 }
 
 //----------------------------------------------------------------------
@@ -1291,52 +1254,40 @@ void AliMUONTriggerDecision::PrintBitPatYInput(Int_t icirc){
   Int_t idCircuit=triggerCircuit->GetIdCircuit();
   Int_t nStrip=triggerCircuit->GetNstripY();
 
-  cout << "---------------------------------------------------------------" << "\n";
-  cout << "                            ";
+  printf("---------------------------------------------------------------\n");
+  printf("                            ");
   for (istrip=nStrip-1; istrip>=0; istrip--) {
-    if (istrip>9) { cout << istrip-10*Int_t(istrip/10);}
-    if (istrip<10) { cout << istrip;}
+    if (istrip>9)  printf("%i",istrip-10*Int_t(istrip/10));
+    if (istrip<10) printf("%i",istrip);
   }
-  cout << "\n YMC11                      ";
-  for (istrip=nStrip-1; istrip>=0; istrip--) {
-    cout << fYbit11[icirc][istrip]; 
-  }
-  cout << "\n YMC12                      ";
-  for (istrip=nStrip-1; istrip>=0; istrip--) {
-    cout << fYbit12[icirc][istrip]; 
-  }
-  cout << "\n YMC21                      ";
-  for (istrip=nStrip-1; istrip>=0; istrip--) {
-    cout << fYbit21[icirc][istrip]; 
-  }
-  cout << "\n YMC22                      ";
-  for (istrip=nStrip-1; istrip>=0; istrip--) {
-    cout << fYbit22[icirc][istrip]; 
-  }
-  cout << "\n";
+  printf("\n YMC11                      ");
+  for (istrip=nStrip-1; istrip>=0; istrip--) 
+    printf("%i",fYbit11[icirc][istrip]); 
+  printf("\n YMC12                      ");
+  for (istrip=nStrip-1; istrip>=0; istrip--)
+    printf("%i",fYbit12[icirc][istrip]); 
+  printf("\n YMC21                      ");
+  for (istrip=nStrip-1; istrip>=0; istrip--)
+    printf("%i",fYbit21[icirc][istrip]); 
+  printf("\n YMC22                      ");
+  for (istrip=nStrip-1; istrip>=0; istrip--)
+    printf("%i",fYbit22[icirc][istrip]); 
+  printf("\n");
 // tmp
-  cout << "---------------------------------------------------------------";
-  cout << "\n upper part of circuit " << idCircuit ;
-  cout << "\n UMC21                      ";
-  for (istrip=15; istrip>=0; istrip--) {
-    cout << fYbit21U[icirc][istrip]; 
-  }
-  cout << "\n UMC22                      ";
-  for (istrip=15; istrip>=0; istrip--) {
-    cout << fYbit22U[icirc][istrip]; 
-  }
+  printf("---------------------------------------------------------------");
+  printf("\n upper part of circuit %i",idCircuit);
+  printf("\n UMC21                      ");
+  for (istrip=15; istrip>=0; istrip--) printf("%i",fYbit21U[icirc][istrip]); 
+  printf("\n UMC22                      ");
+  for (istrip=15; istrip>=0; istrip--) printf("%i", fYbit22U[icirc][istrip]); 
 
-  cout << "\n lower part of circuit " << idCircuit ;
-  cout << "\n LMC21                      ";
-  for (istrip=15; istrip>=0; istrip--) {
-    cout << fYbit21D[icirc][istrip]; 
-  }
-  cout << "\n LMC22                      ";
-  for (istrip=15; istrip>=0; istrip--) {
-    cout << fYbit22D[icirc][istrip]; 
-  }
-  cout << "\n";
-  cout << "===============================================================" << "\n";
+  printf("\n lower part of circuit %i",idCircuit);
+  printf("\n LMC21                      ");
+  for (istrip=15; istrip>=0; istrip--) printf("%i",fYbit21D[icirc][istrip]);
+  printf("\n LMC22                      ");
+  for (istrip=15; istrip>=0; istrip--) printf("%i",fYbit22D[icirc][istrip]); 
+  printf("\n");
+  printf("===============================================================\n");
 }
 //----------------------------------------------------------------------
 void AliMUONTriggerDecision::PrintLocalOutput(Int_t minDevStrip[5], 
@@ -1346,15 +1297,15 @@ void AliMUONTriggerDecision::PrintLocalOutput(Int_t minDevStrip[5],
 
     Int_t i;
 
-  cout << "===============================================================" << "\n";
-  cout << "-------- TRIGGER OUTPUT --------" << "\n";
-  cout << "minDevStrip = ";
-  for  (i=4; i>=0; i--) {cout << minDevStrip[i];}
-  cout << " minDev = ";
-  for  (i=4; i>=0; i--) {cout << minDev[i];} 
-  cout << " coordY = ";
-  for  (i=4; i>=0; i--) {cout << coordY[i];} 
-  cout << " " << "\n";  
+  printf("===============================================================\n");
+  printf("-------- TRIGGER OUTPUT --------\n");
+  printf("minDevStrip = ");
+  for  (i=4; i>=0; i--) printf("%i",minDevStrip[i]);
+  printf(" minDev = ");
+  for  (i=4; i>=0; i--) printf("%i",minDev[i]);
+  printf(" coordY = ");
+  for  (i=4; i>=0; i--) printf("%i",coordY[i]); 
+  printf(" \n");
 }
 
 //----------------------------------------------------------------------

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/10/23 07:24:56  alibrary
+Introducing Riostream.h
+
 Revision 1.8  2000/11/20 21:44:17  pcrochet
 some modifications to account for the new class AliMUONResponseTriggerV1
 
@@ -99,8 +102,6 @@ void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof,
     twentyNano=100;
   }
 
-  //  cout << " time = " << tof << " , " << twentyNano << "\n";
-
   Float_t qp;
   nnew=0;
   for (Int_t i=1; i<=fnsec; i++) {
@@ -116,7 +117,7 @@ void AliMUONChamberTrigger::DisIntegration(Float_t eloss, Float_t tof,
 // treatment of GEANT hits w/o corresponding strip (due to the fact that
 // the 2 geometries are computed in a very slightly different way) 
     if (ix==0&&iy==0) {
-      cout << " AliMUONChamberTrigger hit w/o strip " << xhit << " , " << yhit << "\n";
+      printf("AliMUONChamberTrigger hit w/o strip %f %f \n",xhit,yhit);
     } else {          
       // --- store signal information for this strip
       newclust[0][nnew]=1.;                       // total charge

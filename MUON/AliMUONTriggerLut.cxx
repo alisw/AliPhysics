@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.7  2002/10/23 07:24:57  alibrary
+Introducing Riostream.h
+
 Revision 1.6  2001/03/20 13:32:37  egangler
 includes cleanup
 
@@ -90,7 +93,7 @@ void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
   static TFile *fileLut;
   static Bool_t first=kTRUE;  
   if(first) {
-    cout << " opening MUONTriggerLut.root " << "\n";
+    printf(" opening MUONTriggerLut.root \n");
     fileLut = new TFile("$(ALICE_ROOT)/MUON/MUONTriggerLut.root","READ");
     first=kFALSE;
   }
@@ -180,7 +183,7 @@ void AliMUONTriggerLut::LoadLut(){
 
   char fileName[60];
   sprintf(fileName,"$(ALICE_ROOT)/MUON/MUONTriggerLut.root");
-  cout << " file name is " << fileName << "\n";
+  printf(" file name is %s\n",fileName);
 
 // open output file containing histos  
   TFile *hfile = new TFile(fileName,"RECREATE","Trigger Look Up Table");
@@ -205,7 +208,7 @@ void AliMUONTriggerLut::LoadLut(){
   AliMUONTriggerCircuit* triggerCircuit;
 
   for (Int_t icirc=0; icirc<234; icirc++) {
-    cout << " Loading LuT for circuit " << icirc << " of 234 " << "\n";
+    printf(" Loading LuT for circuit %d \n",icirc);
     triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	      
 
     for (Int_t istripX=0; istripX<31; istripX++) {
