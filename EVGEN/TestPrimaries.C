@@ -36,7 +36,7 @@ void TestPrimaries(Int_t evNumber1=0, Int_t evNumber2=0)
     TH1F *etaH     =  new TH1F("etaH","Pseudorapidity",120,-12,12);
     TH1F *yH       =  new TH1F("yH","Rapidity distribution",120,-12,12);
     TH1F *eH       =  new TH1F("eH","Energy distribution",100,0,100);
-    TH1F *eetaH    =  new TH1F("eetaH","Pseudorapidity",120,-12,12);
+    TH1F *eetaH    =  new TH1F("eetaH","Pseudorapidity",120,0,12);
     TH1F *ptH      =  new TH1F("ptH","Pt distribution",150,0,15);
 //
 //   Loop over events 
@@ -67,15 +67,18 @@ void TestPrimaries(Int_t evNumber1=0, Int_t evNumber2=0)
 	    Float_t theta = MPart->Theta();
 	    Float_t phi   = MPart->Phi()-TMath::Pi();
 	    Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
-	    Float_t y     = TMath::Log((E+Pz)/(E-Pz+1.e-13));
-
-	    thetaH->Fill(theta*180./TMath::Pi(),1.);
-	    phiH->Fill(phi*180./TMath::Pi(),1.);
-	    etaH->Fill(eta,1.);    
+	    Float_t y     = 0.5*TMath::Log((E+Pz)/(E-Pz+1.e-13));
+	    
+	    if (child1 >= 0) continue;
+	    if (mpart == kPi0 || mpart == kGamma) continue;
+	    Float_t wgt = 1./(Float_t ((evNumber2-evNumber1)+1.));
+	    thetaH->Fill(theta*180./TMath::Pi(),wgt);
+	    phiH->Fill(phi*180./TMath::Pi(),wgt);
+	    etaH->Fill(eta,5.*wgt);    
 	    eetaH->Fill(eta,E);    
-	    yH->Fill(y,1.);      
-	    eH->Fill(E,1.);      
-	    ptH->Fill(pT,1.);     
+	    yH->Fill(y,5.*wgt);      
+	    eH->Fill(E,wgt);      
+	    ptH->Fill(pT,wgt);     
 	} // primary loop
     }
     
@@ -96,6 +99,23 @@ void TestPrimaries(Int_t evNumber1=0, Int_t evNumber2=0)
     c2->cd(1); phiH->Draw();
     c2->cd(2); thetaH->Draw();
     c2->cd(3); eetaH->Draw();
+    Float_t i0,i1,i2,i3,i4,i5;
+    Float_t ne = Float_t ((evNumber2-evNumber1)+1.);
+    
+    i0=eetaH->Integral(01,25)/1000./ne;
+    i1=eetaH->Integral(25,40)/1000./ne;
+    i2=eetaH->Integral(40,50)/1000./ne;
+    i3=eetaH->Integral(50,60)/1000./ne;
+    i4=eetaH->Integral(60,70)/1000./ne;
+    i5=eetaH->Integral(70,120)/1000./ne;
+
+    printf("  0 < eta < 2.5 %f \n",i0);
+    printf("2.5 < eta < 4.0 %f \n",i1);
+    printf("4.0 < eta < 5.0 %f \n",i2);
+    printf("5.0 < eta < 6.0 %f \n",i3);
+    printf("6.0 < eta < 7.0 %f \n",i4);
+    printf("7.0 < eta <12.0 %f \n",i5);
+
 }
 
 
