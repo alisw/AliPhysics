@@ -83,7 +83,7 @@ SLIBRARY	= $(ALICE_ROOT)/lib/libTGeant3.$(SL) \
 		  $(ALICE_ROOT)/lib/libTGeant3Dummy.$(SL) 
 ALIBRARY	= $(ALICE_ROOT)/lib/libTGeant3.a
 
-default:	$(SLIBRARY) headers
+default:	headers $(SLIBRARY)
 
 $(ALICE_ROOT)/lib/libTGeant3.$(SL):		$(GOBJS)
 
