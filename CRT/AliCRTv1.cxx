@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2002/10/23 06:47:56  alibrary
+Introducing Riostream.h
+
 Revision 1.2  2002/10/14 14:55:34  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -65,7 +68,6 @@ First version, stand alone detector
 #include <TLorentzVector.h>
 
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliConst.h"
 #include "AliPDG.h"

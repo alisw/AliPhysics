@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/10/14 14:55:34  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.4.2.2  2002/10/10 14:40:31  hristov
 Updating VirtualMC to v3-09-02
 
@@ -63,7 +66,6 @@ First version of CRT
 
 #include <TTree.h>
 
-#include "AliMC.h"
 #include "AliRun.h"
 #include "AliMagF.h"
 

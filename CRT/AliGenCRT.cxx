@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2002/10/23 06:47:56  alibrary
+Introducing Riostream.h
+
 Revision 1.2  2002/10/14 14:55:34  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -48,11 +51,11 @@ First version, generation of cosmic muons on the surface
 /////////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include "TMCProcess.h"
 
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliPDG.h"
-#include "AliMCProcess.h"
 
 #include "AliGenCRT.h"
 

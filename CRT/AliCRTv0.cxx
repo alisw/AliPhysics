@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/10/29 17:20:37  hristov
+Corrections for subscript out of range (Alpha)
+
 Revision 1.9  2002/10/23 06:47:56  alibrary
 Introducing Riostream.h
 
@@ -89,7 +92,6 @@ First version of CRT
 #include <TLorentzVector.h>
 
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliMagF.h"
 #include "AliConst.h"
 #include "AliPDG.h"
