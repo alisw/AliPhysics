@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.14  2000/04/05 08:36:13  morsch
+Check status code of particles in Pythia event
+to avoid double counting as partonic state and final state particle.
+
 Revision 1.13  1999/11/09 07:38:48  fca
 Changes for compatibility with version 2.23 of ROOT
 
@@ -178,6 +182,7 @@ void AliGenPythia::Generate()
     while(1)
     {
 	fPythia->Pyevnt();
+	fPythia->Lulist(1);
 	fTrials++;
 	fPythia->ImportParticles(particles,"All");
 	Int_t np = particles->GetEntriesFast();
@@ -185,11 +190,12 @@ void AliGenPythia::Generate()
 	Int_t nc=0;
 	if (np == 0 ) continue;
 	if (fProcess != mb) {
-	    for (Int_t i = 0; i<np; i++) {
+	    for (Int_t i = 0; i<np-1; i++) {
 		TParticle *  iparticle = (TParticle *) particles->At(i);
 		Int_t ks = iparticle->GetStatusCode();
-		if (ks==21) continue;
 		kf = CheckPDGCode(iparticle->GetPdgCode());
+		if (ks==21) continue;
+
 		fChildWeight=(fPythia->GetBraPart(kf))*fParentWeight;	  
 //
 // Parent
@@ -260,10 +266,11 @@ void AliGenPythia::Generate()
 		} // select particle
 	    } // particle loop
 	} else {
-	    for (Int_t i = 0; i<np; i++) {
+	    for (Int_t i = 0; i<np-1; i++) {
 		TParticle *  iparticle = (TParticle *) particles->At(i);
 		kf = CheckPDGCode(iparticle->GetPdgCode());
 		Int_t ks = iparticle->GetStatusCode();
+
 		if (ks==1 && kf!=0 && KinematicSelection(iparticle)) {
 			nc++;
 //
