@@ -61,7 +61,9 @@ class AliMUONClusterFinderVS : public TObject
 
  protected:
     AliMUONClusterInput*    fInput;              // AliMUONClusterInput instance
-    AliMUONHitMapA1*        fHitMap[2];          // Hit Map cathode 1
+    AliMUONHitMapA1*        fHitMap[2];          // Hit Maps for cathode 1 and 2
+    AliSegmentation*        fSeg[2];             // Segmentations for cathode 1 and 2
+    
 // Configuration    
     Int_t                   fDeclusterFlag;      // flag for declusterin
     Int_t                   fClusterSize;        // cluster size 
@@ -76,9 +78,13 @@ class AliMUONClusterFinderVS : public TObject
     Int_t                   fIy[100][2];         // current list of y-pad-coord.
     Float_t                 fX[100][2];          // current list of x-coord.
     Float_t                 fY[100][2];          // current list of y-coord.
+    Float_t                 fZ[100][2];          // current list of z-coord.
     Int_t                   fIndLocal[100][2];   // indices of local maxima
     Int_t                   fNLocal[2];          // Number of local maxima
     Int_t                   fQ[100][2];          // current list of charges
+    Float_t                 fZPlane;             // currenz z-plane position
+    Int_t                   fSector;             // current sector
+    
 // Current Fit
     Double_t                 fXFit[2];         // x-coordinate
     Double_t                 fYFit[2];         // y-coordinate
