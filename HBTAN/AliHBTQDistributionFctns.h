@@ -1,8 +1,22 @@
 #ifndef ALIHBTQOUTDISTRIBUTIONVSKTLFCTN_H
 #define ALIHBTQOUTDISTRIBUTIONVSKTLFCTN_H
 
+/////////////////////////////////////////////////////////////////////////////
+// 
+// class AliHBTQInvDistributionVsKtFctn;    //QInvCMSLC   Distribution Vs   Kt
+// class AliHBTQOutDistributionVsKtFctn;    //QOutCMSLC   Distribution Vs   Kt
+// class AliHBTQSideDistributionVsKtFctn;   //QSideCMSLC  Distribution Vs   Kt
+// class AliHBTQLongDistributionVsKtFctn;   //QLongCMSLC  Distribution Vs   Kt
+
+// class AliHBTQOutDistributionVsQInvFctn;    //QOutCMSLC   Distribution Vs   QInv
+// class AliHBTQSideDistributionVsQInvFctn;   //QSideCMSLC  Distribution Vs   QInv
+// class AliHBTQLongDistributionVsQInvFctn;   //QLongCMSLC  Distribution Vs   QInv
+// class AliHBTPtDiffDistributionVsQInvFctn;
+//
 // added by Zbigniew.Chajecki@cern.ch
 // this classes create distribution functions of pair momentum 
+//
+/////////////////////////////////////////////////////////////////////////////
 
 class AliHBTQInvDistributionVsKtFctn;    //QInvCMSLC   Distribution Vs   Kt
 class AliHBTQOutDistributionVsKtFctn;    //QOutCMSLC   Distribution Vs   Kt
@@ -31,8 +45,6 @@ class AliHBTQOutDistributionVsKtFctn: public AliHBTOnePairFctn2D
      x = partpair->GetKt();
     }
   protected:
-  private:
-  public:
     ClassDef(AliHBTQOutDistributionVsKtFctn,1)
  };
 /***********************************************************************/
@@ -50,8 +62,6 @@ class AliHBTQSideDistributionVsKtFctn: public AliHBTOnePairFctn2D
      x = partpair->GetKt();
     }
   protected:
-  private:
-  public:
     ClassDef(AliHBTQSideDistributionVsKtFctn,1)
  };
 /***********************************************************************/
@@ -70,8 +80,6 @@ class AliHBTQLongDistributionVsKtFctn: public AliHBTOnePairFctn2D
      x = partpair->GetKt();
     }
   protected:
-  private:
-  public:
     ClassDef(AliHBTQLongDistributionVsKtFctn,1)
  };
 /***********************************************************************/
@@ -90,8 +98,6 @@ class AliHBTQInvDistributionVsKtFctn: public AliHBTOnePairFctn2D
      x = partpair->GetKt();
     }
   protected:
-  private:
-  public:
     ClassDef(AliHBTQInvDistributionVsKtFctn,1)
  };
 
@@ -110,8 +116,6 @@ class AliHBTQOutDistributionVsQInvFctn: public AliHBTOnePairFctn2D
      x = partpair->GetQInv();
     }
   protected:
-  private:
-  public:
     ClassDef(AliHBTQOutDistributionVsQInvFctn,1)
  };
 /***********************************************************************/
@@ -129,8 +133,6 @@ class AliHBTQSideDistributionVsQInvFctn: public AliHBTOnePairFctn2D
      x = partpair->GetQInv();
     }
   protected:
-  private:
-  public:
     ClassDef(AliHBTQSideDistributionVsQInvFctn,1)
  };
 /***********************************************************************/
@@ -149,8 +151,6 @@ class AliHBTQLongDistributionVsQInvFctn: public AliHBTOnePairFctn2D
      x = partpair->GetQInv();
     }
   protected:
-  private:
-  public:
     ClassDef(AliHBTQLongDistributionVsQInvFctn,1)
  };
 /***********************************************************************/
@@ -168,8 +168,6 @@ class AliHBTPtDiffDistributionVsQInvFctn: public AliHBTOnePairFctn2D
      x = partpair->GetQInv();
     }
   protected:
-  private:
-  public:
     ClassDef(AliHBTPtDiffDistributionVsQInvFctn,1)
  };
 /***********************************************************************/
