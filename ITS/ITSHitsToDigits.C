@@ -124,7 +124,7 @@ void ITSHitsToDigits (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25, In
 
    Int_t nparticles=gAlice->GetEvent(0);
    printf("Create TreeD \n");
-   gAlice->MakeTree("D");
+   if(!gAlice->TreeD()) gAlice->MakeTree("D");
    printf("TreeD %p\n",gAlice->TreeD());
    //make branch
    ITS->MakeBranch("D");
@@ -135,7 +135,7 @@ void ITSHitsToDigits (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25, In
        if(nev>0) {
 	 nparticles = gAlice->GetEvent(nev);
 	 gAlice->SetEvent(nev);
-	 gAlice-> MakeTree("D");
+	 if(!gAlice->TreeD()) gAlice-> MakeTree("D");
 	 ITS->MakeBranch("D");
        }
        cout << "nparticles  " <<nparticles<<endl;
