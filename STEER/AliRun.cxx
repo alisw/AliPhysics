@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.66  2001/05/22 14:32:40  hristov
+Weird inline removed
+
 Revision 1.65  2001/05/21 17:22:51  buncic
 Fixed problem with missing AliConfig while reading galice.root
 
@@ -968,7 +971,7 @@ void AliRun::InitMC(const char *setup)
 
    fMCQA = new AliMCQA(fNdets);
 
-   AliConfig *config = AliConfig::Instance();
+   AliConfig::Instance();
    //
    // Save stuff at the beginning of the file to avoid file corruption
    Write();
@@ -1416,8 +1419,10 @@ void AliRun::RunReco(const char *selected)
 {
   //
   // Main function to be called to reconstruct Alice event
-  //  
+  // 
+   cout << "Found "<< gAlice->TreeE()->GetEntries() << "events" << endl; 
    for (Int_t nevent=0; nevent<gAlice->TreeE()->GetEntries(); nevent++) {
+     cout << "Processing event "<< nevent << endl;
      GetEvent(nevent);
      // MakeTree("R");
      Digits2Reco(selected);
