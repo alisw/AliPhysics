@@ -126,7 +126,7 @@ class AliQuenchingWeights : public TObject {
   void PlotContWeightsVsL(Int_t itype,Double_t medval) const;
   void PlotAvgELoss(Double_t len ,Double_t e=1.e10)    const;
   void PlotAvgELoss(TH1F *hEll,Double_t e=1.e10)       const;
-  void PlotAvgELossVsEll(Double_t e=1.e10)             const;
+  void PlotAvgELossVsL(Double_t e=1.e10)               const;
   void PlotAvgELossVsPt(Double_t medval,Double_t len)  const;
   void PlotAvgELossVsPt(Double_t medval,TH1F *hEll)    const;
 

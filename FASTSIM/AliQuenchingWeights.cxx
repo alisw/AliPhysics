@@ -119,7 +119,7 @@ void AliQuenchingWeights::Reset()
   //reset tables if there were used
 
   if(!fHistos) return;
-  for(Int_t l=0;l<2*fLengthMaxOld;l++){
+  for(Int_t l=0;l<4*fLengthMaxOld;l++){
     delete fHistos[0][l];
     delete fHistos[1][l];
   }
@@ -1012,8 +1012,8 @@ Int_t AliQuenchingWeights::SampleEnergyLoss()
 
   Reset();
   fHistos=new TH1F**[2];
-  fHistos[0]=new TH1F*[2*fLengthMax];
-  fHistos[1]=new TH1F*[2*fLengthMax];
+  fHistos[0]=new TH1F*[4*fLengthMax];
+  fHistos[1]=new TH1F*[4*fLengthMax];
   fLengthMaxOld=fLengthMax; //remember old value in case 
                             //user wants to reset
 
@@ -1028,10 +1028,10 @@ Int_t AliQuenchingWeights::SampleEnergyLoss()
   }
 
   for(Int_t ipart=1;ipart<=2;ipart++){
-    for(Int_t l=1;l<=2*fLengthMax;l++){
+    for(Int_t l=1;l<=4*fLengthMax;l++){
       Char_t hname[100];
       sprintf(hname,"hDisc-ContQW_%s_%d_%d_%d_%d",meddesc,fInstanceNumber,ipart,medvalue,l);
-      Double_t len=l/2.;
+      Double_t len=l/4.;
       Double_t wc = CalcWC(len);
       fHistos[ipart-1][l-1] = new TH1F(hname,hname,fgBins,0.,fgMaxBin*wc);
       fHistos[ipart-1][l-1]->SetXTitle("#Delta E [GeV]");
@@ -1761,7 +1761,7 @@ void AliQuenchingWeights::PlotAvgELoss(TH1F *hEll,Double_t e) const
   c->Update();
 }
 
-void AliQuenchingWeights::PlotAvgELossVsEll(Double_t e)  const
+void AliQuenchingWeights::PlotAvgELossVsL(Double_t e)  const
 {
   // plot average energy loss versus ell
 
@@ -1975,8 +1975,8 @@ Int_t AliQuenchingWeights::GetIndex(Double_t len) const
 {
   if(len>fLengthMax) len=fLengthMax;
 
-  Int_t l=Int_t(len/0.5);
-  if((len-l*0.5)>0.25) l++;
+  Int_t l=Int_t(len/0.25);
+  if((len-l*0.5)>0.125) l++;
   return l;
 }
 
