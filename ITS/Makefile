@@ -25,6 +25,7 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
 		AliITSetfSDD.cxx AliITSsimulationSSD.cxx AliITSdcsSSD.cxx \
 		AliITSdigit.cxx AliITSRawCluster.cxx AliITSRecPoint.cxx \
 		AliITSMap.cxx AliITSMapA1.cxx AliITSMapA2.cxx \
+		AliITSpList.cxx \
 		AliITSsegmentation.cxx AliITSsegmentationSPD.cxx \
 		AliITSsegmentationSDD.cxx AliITSsegmentationSSD.cxx\
 		AliITSresponse.cxx AliITSresponseSPD.cxx \

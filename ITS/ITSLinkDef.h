@@ -68,6 +68,8 @@
 #pragma link C++ class  AliITSsimulationSPDdubna+;
 #pragma link C++ class  AliITSsimulationSDD+;
 #pragma link C++ class  AliITSsimulationSSD+;
+#pragma link C++ class  AliITSpList+;
+#pragma link C++ class  AliITSpListItem+;
 #pragma link C++ class  AliITSsimulationFastPoints+;
 #pragma link C++ class  AliITSsimulationFastPointsV0+;
 #pragma link C++ class  AliITSClusterFinder+;
