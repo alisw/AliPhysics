@@ -6,7 +6,7 @@
 
 # IRST coding rule check
 STRIP=$(ALICE)/local/IRST/syntax/strip-cpp.prl
-CODE_CHECK=java syntax.CPPParser
+CODE_CHECK=java rules.RuleChecker
 export CLASSPATH=$(ALICE)/local/IRST
 
 $(ALICE_ROOT)/include/%.h : %.h
