@@ -14,7 +14,7 @@ OPT	      = -O
 SL	      = sl
 
 # AWK
-AWK	      = /usr/xpg4/bin/awk
+AWK	      = awk
 
 # The options
 CXXOPTS       = $(OPT) +a1 +z
