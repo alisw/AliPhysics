@@ -8,10 +8,11 @@
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libSTEER");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libCONTAINERS");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libTPC");
-  gSystem->Load("/prog/alice/MLUC/lib/linux-i386/libMLUC.so");
+  gSystem->Load("$(LEVEL3)/kip/MLUC/lib/linux-i386/libMLUC.so");
   
   gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliL3");
   gSystem->Load("$(LEVEL3)/lib_$(USERNAME)/libAliL3Hough");
+  gROOT->LoadMacro("$(HOME)/alirootcode/XFunct.C");
   gStyle->SetStatBorderSize(1);
   gStyle->SetTitleBorderSize(0);
   printf("TPC libraries loaded\n");
