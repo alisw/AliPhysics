@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/06/15 15:47:12  jbarbosa
+  Corrected compilation errors on HP-UX (replaced pow with TMath::Power)
+
   Revision 1.2  2000/06/12 15:26:09  jbarbosa
   Cleaned up version.
 
@@ -76,22 +79,13 @@ void AliRICHPatRec::PatRec()
   Int_t x,y,q;
   Float_t rx,ry;
   Int_t nent,status;
+  Int_t padsUsedX[100];
+  Int_t padsUsedY[100];
 
-  Float_t gamma,massCer,betaCer;
-
-  Float_t rechit[5];
+  Float_t rechit[7];
 
   printf("PatRec started\n");
 
-  TCanvas *c1    = new TCanvas("c1","Alice RICH pad hits",50,10,700,700);
-
-  TH2F *ring     = new TH2F("ring","map",90,-30.,30.,90,-30.,30.);
-  TH2F *ringband = new TH2F("ringband","map",90,-65.,65.,90,-65.,65.);
-  TH1F *cerangle = new TH1F("cerangle","phot",300,0.45,0.75);
-  TH1F *ceranglew= new TH1F("ceranglew","phot",300,0.45,0.75);
-  TH1F *hough    = new TH1F("hough","hough",75,0.45,0.75);
-  TH1F *mass     = new TH1F("mass","mass",100,50.,1050.); 
- 
   AliRICH *pRICH  = (AliRICH*)gAlice->GetDetector("RICH");
   TTree *treeH = gAlice->TreeH();
 
@@ -101,7 +95,7 @@ void AliRICHPatRec::PatRec()
  
     status = TrackParam(itr,ich);    
     if(status==1) continue;
-    printf(" theta %f phi %f track \n",fTrackTheta,fTrackPhi);
+    //printf(" theta %f phi %f track \n",fTrackTheta,fTrackPhi);
     //    ring->Fill(fTrackLoc[0],fTrackLoc[1],100.);
 
     iChamber = &(pRICH->Chamber(ich));
@@ -111,7 +105,7 @@ void AliRICHPatRec::PatRec()
     gAlice->TreeD()->GetEvent(nent-1);
     TClonesArray *pDigitss = pRICH->DigitsAddress(ich);
     ndigits[ich] = pDigitss->GetEntriesFast();
-    printf("ndigits %d in chamber %d\n",ndigits[ich],ich);
+    printf("Digits in chamber %d: %d\n",ich,ndigits[ich]);
     AliRICHDigit *padI = 0;
 
     goodPhotons = 0;
@@ -123,49 +117,48 @@ void AliRICHPatRec::PatRec()
       q=padI->fSignal;
       segmentation->GetPadCxy(x,y,rx,ry);      
 
+      //printf("Pad coordinates x:%d, Real coordinates x:%f\n",x,rx);
+      //printf("Pad coordinates y:%d, Real coordinates y:%f\n",y,ry);
+
       fXpad = rx-fXshift;
       fYpad = ry-fYshift;
       fQpad = q;
     
-      ringband->Fill(x,y,1.);
       fCerenkovAnglePad = PhotonCerenkovAngle();
       if(fCerenkovAnglePad==-999) continue;
 
       if(!PhotonInBand()) continue;
 
-      ring->Fill(fXpad,fYpad,1.);
-      cerangle->Fill(fCerenkovAnglePad,1.);
+      Int_t xpad;
+      Int_t ypad;
 
+      segmentation->GetPadIxy(fXpad,fYpad,xpad,ypad);
+
+      padsUsedX[goodPhotons]=xpad;
+      padsUsedY[goodPhotons]=ypad;
+      
       goodPhotons++;
-      fEtaPhotons[goodPhotons] = fCerenkovAnglePad;
+      fEtaPhotons[goodPhotons-1] = fCerenkovAnglePad;
     }
     fNumEtaPhotons = goodPhotons;
 
     BackgroundEstimation();
 
-    for(i=0;i<goodPhotons;i++) {
-      ceranglew->Fill(fEtaPhotons[i],fWeightPhotons[i]);
-      //      printf(" Eta %f weight %f \n",fEtaPhotons[i],fWeightPhotons[i]);
-    }
-
     HoughResponse();
+    //CerenkovRingDrawing();
 
     rechit[0] = 0;
     rechit[1]   = 0;
     rechit[2] = fThetaCerenkov;
-    rechit[3] = 0;
-    rechit[4] = 0;
+    rechit[3] = fXshift + fTrackLoc[0];
+    rechit[4] = fYshift + fTrackLoc[1];
+    rechit[5] = fEmissPoint;
+    rechit[6] = goodPhotons;
 
-
-    hough->Fill(fThetaCerenkov,1.);
+    //printf("Center coordinates:%f %f\n",rechit[3],rechit[4]);
     
-    pRICH->AddRecHit(ich,rechit);
+    pRICH->AddRecHit(ich,rechit,fEtaPhotons,padsUsedX,padsUsedY);
     
-    betaCer = BetaCerenkov(1.29,fThetaCerenkov);
-    gamma  = 1./sqrt(1.-TMath::Power(betaCer,2));
-    massCer = fTrackMom/(betaCer*gamma);
-    //    printf(" mass %f \n",massCer);
-    mass->Fill(massCer*1000,1.);
   }    
 
   gAlice->TreeR()->Fill();
@@ -177,17 +170,6 @@ void AliRICHPatRec::PatRec()
   }
   pRICH->ResetRecHits();
   
-
-  c1->Divide(2,2);
-  c1->cd(1);
-  ring->Draw("box");
-  c1->cd(2);
-  ringband->Draw("box");
-  c1->cd(3);
-  cerangle->Draw();
-  c1->cd(4);
-  hough->Draw();
-
 }     
 
 
@@ -223,7 +205,7 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich)
     pY = mHit->fMomY;
     pZ = mHit->fMomZ;
     fTrackMom = sqrt(TMath::Power(pX,2)+TMath::Power(pY,2)+TMath::Power(pZ,2));
-    thetatr = (180 - mHit->fTheta)*(Float_t)kDegrad;
+    thetatr = (mHit->fTheta)*(Float_t)kDegrad;
     phitr = mHit->fPhi*(Float_t)kDegrad;
     iloss = mHit->fLoss;
     part  = mHit->fParticle;
@@ -239,13 +221,18 @@ Int_t AliRICHPatRec::TrackParam(Int_t itr, Int_t &ich)
     
     fRw   = fGeometry->GetFreonThickness();
     fQw   = fGeometry->GetQuartzThickness();
-    fTgap = fGeometry->GetGapThickness() 
-            + fGeometry->GetProximityGapThickness();  
+    fTgap = fGeometry->GetGapThickness(); 
+    Float_t radiatorToPads= fGeometry->GetRadiatorToPads(); 
+      //+ fGeometry->GetProximityGapThickness();
 
-    Float_t apar = (fRw + fQw + fTgap)*tan(thetatr);  
+    //printf("Distance to pads. From geometry:%f, From calculations:%f\n",radiatorToPads,fRw + fQw + fTgap); 
+
+    //Float_t apar = (fRw + fQw + fTgap)*tan(thetatr);
+    Float_t apar = radiatorToPads*tan(thetatr);
     fTrackLoc[0] = apar*cos(phitr);
     fTrackLoc[1] = apar*sin(phitr);
-    fTrackLoc[2] = fRw + fQw + fTgap;
+    //fTrackLoc[2] = fRw + fQw + fTgap;
+    fTrackLoc[2] = radiatorToPads;
     fTrackTheta  = thetatr;
     fTrackPhi    = phitr;
    
@@ -505,7 +492,7 @@ Int_t AliRICHPatRec::PhotonInBand()
   Float_t e1, e2, f1, f2;
   Float_t nfreon[2], nquartz[2]; 
   Int_t times;
-
+  Float_t pointsOnCathode[3];
 
   Float_t phpad, thetacer[2]; 
   Float_t bandradius[2], padradius;
@@ -535,12 +522,12 @@ Int_t AliRICHPatRec::PhotonInBand()
   f1  = 46.411;
   f2  = 228.71;
 
-
   phpad = PhiPad();  
 
   for (times=0; times<=1; times++) {
   
     nfreon[times]   = a+b*energy[times];
+    //nfreon[times]   = 1;
 
     nquartz[times] = sqrt(1+(f1/(TMath::Power(e1,2)-TMath::Power(energy[times],2)))+
 			  (f2/(TMath::Power(e2,2)-TMath::Power(energy[times],2))));
@@ -550,9 +537,10 @@ Int_t AliRICHPatRec::PhotonInBand()
     thetacer[times] =  CherenkovAngle( nfreon[times], beta[times]);
 
     bandradius[times] = DistanceFromMip( nfreon[times], nquartz[times],
-					emissPointLength[times], 
-                                        thetacer[times], phpad);
-  }
+    				emissPointLength[times], 
+                                      thetacer[times], phpad, pointsOnCathode);
+    //printf(" ppp %f %f %f \n",pointsOnCathode);  
+}
 
   bandradius[0] -= 1.6;
   bandradius[1] += 1.6;
@@ -565,7 +553,7 @@ Int_t AliRICHPatRec::PhotonInBand()
 
 Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz, 
 		       Float_t emissPointLength, Float_t thetacer, 
-		       Float_t phpad)
+		       Float_t phpad, Float_t pointsOnCathode[3])
 { 
 
 // Find the distance to MIP impact
@@ -589,7 +577,7 @@ Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz,
   TVector3 gapExitPhot(1,1,1) ;
   Float_t magGapExitPhot;
   //
-  TVector3 fPhotocatExitPhot(1,1,1);
+  TVector3 PhotocatExitPhot(1,1,1);
   Double_t theta2;
   Double_t thetarad , phirad ;
   Double_t thetaquar, phiquar;
@@ -629,7 +617,6 @@ Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz,
 
   radExitPhot = vectEmissPointLength + radExitPhot2;
   thetarad    = radExitPhot.Theta();
-
   phirad  =  radExitPhot.Phi(); //check on the original file //
 
   thetaquar   = SnellAngle( nfreon, nquartz, theta2); 
@@ -648,12 +635,19 @@ Float_t AliRICHPatRec::DistanceFromMip(Float_t nfreon, Float_t nquartz,
   gapExitPhot.SetTheta(thetagap);
   gapExitPhot.SetPhi(phigap);
 
-  fPhotocatExitPhot =  radExitPhot + quarExitPhot + gapExitPhot; 
+  PhotocatExitPhot =  radExitPhot + quarExitPhot + gapExitPhot; 
 
-  distanceValue = sqrt(TMath::Power(fPhotocatExitPhot(0),2)
-                           +TMath::Power(fPhotocatExitPhot(1),2)); 
-  return  distanceValue ;
-}
+  distanceValue = sqrt(TMath::Power(PhotocatExitPhot(0),2)
+                           +TMath::Power(PhotocatExitPhot(1),2)); 
+  pointsOnCathode[0] = (Float_t) PhotocatExitPhot(0) + fXshift - fTrackLoc[0];
+  pointsOnCathode[1] = (Float_t) PhotocatExitPhot(1) + fYshift - fTrackLoc[1];
+  pointsOnCathode[2] = (Float_t) PhotocatExitPhot(2);
+
+  //printf(" point in Distance.2. %f %f %f \n",pointsOnCathode[0],pointsOnCathode[1],pointsOnCathode[2]);
+
+  return distanceValue;
+
+ }
 
 Float_t AliRICHPatRec::PhiPad()
 {
@@ -850,29 +844,27 @@ void AliRICHPatRec::HoughFiltering(float hcs[])
    }
 }
 
-Float_t AliRICHPatRec::CherenkovRingDrawing(Float_t fixedthetacer)
+/*void AliRICHPatRec::CerenkovRingDrawing()
 {
 
 //to draw Cherenkov ring by known Cherenkov angle
 
-    Int_t nmaxdegrees, nstepdegrees;
-    Float_t phpad, thetacer;
+    Int_t nmaxdegrees;
+    Int_t Nphpad;
+    Float_t phpad;
     Float_t nfreonave, nquartzave;
     Float_t aveEnerg;
     Float_t energy[2];
     Float_t e1, e2, f1, f2;
     Float_t bandradius;
-    Float_t coordPadRing;
-    
+
 //parameters to calculate freon window refractive index vs. energy
+
     Float_t a = 1.177;
     Float_t b = 0.0172;
     
 //parameters to calculate quartz window refractive index vs. energy
-/*
-   Energ[0]  = 5.6;
-   Energ[1]  = 7.7;
-*/	
+
     energy[0]  = 5.0;
     energy[1]  = 8.0;
     e1  = 10.666;
@@ -881,11 +873,11 @@ Float_t AliRICHPatRec::CherenkovRingDrawing(Float_t fixedthetacer)
     f2  = 228.71;
    
 
-    nmaxdegrees = 360;
-    
-   nstepdegrees = 36;
+   nmaxdegrees = 36;
    
-   for (phpad=0; phpad<nmaxdegrees;phpad++) { 
+   for (Nphpad=0; Nphpad<nmaxdegrees;Nphpad++) { 
+
+       phpad = (360./(Float_t)nmaxdegrees)*(Float_t)Nphpad;
       
        aveEnerg =  (energy[0]+energy[1])/2.;
        
@@ -893,19 +885,15 @@ Float_t AliRICHPatRec::CherenkovRingDrawing(Float_t fixedthetacer)
        nquartzave = sqrt(1+(f1/(TMath::Power(e1,2)-TMath::Power(aveEnerg,2)))+
 			 (f2/(TMath::Power(e2,2)-TMath::Power(aveEnerg,2))));
        
-       thetacer =  fixedthetacer;
-       
        bandradius = DistanceFromMip(nfreonave, nquartzave,
-				   fEmissPoint,thetacer, phpad); 
+				   fEmissPoint,fThetaCerenkov, phpad);
 
-       coordPadRing=fPhotocatExitPhot;
+       fCoordEllipse[0][Nphpad] = fOnCathode[0];
+       fCoordEllipse[1][Nphpad] = fOnCathode[1];
+       printf(" values %f %f \n",fOnCathode[0],fOnCathode[1]);
        
-       phpad = (nmaxdegrees/nstepdegrees)*phpad;
-       
-       return coordPadRing;
    }
 
-    return coordPadRing;
-}
+}*/
 
 

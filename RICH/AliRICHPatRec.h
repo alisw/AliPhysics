@@ -43,7 +43,7 @@ class AliRICHPatRec : public TObject {
   Int_t PhotonInBand();
   //Old RADII
   Float_t DistanceFromMip(Float_t nf,Float_t nq,
-				    Float_t Em,Float_t th, Float_t ph);
+				    Float_t Em,Float_t th, Float_t ph, Float_t pointsOnCathode[3]);
   //Old GIME_PHI
   Float_t PhiPad();
   //Old THREECOORD
@@ -59,7 +59,7 @@ class AliRICHPatRec : public TObject {
   //new
   Float_t BetaCerenkov(Float_t n, Float_t theta);  
   //new
-  Float_t CherenkovRingDrawing(Float_t fixedthetacer);
+  //void CerenkovRingDrawing();
 
  public:
   Int_t   fNumEtaPhotons;                 // Number of photons
@@ -86,8 +86,7 @@ private:
   Float_t fXshift,fYshift;                // Shifts in x and y
   Float_t fEmissPoint;                    // Emission point for Cerenkov photons
   Float_t fCerenkovAnglePad;              // Cerenkov angle of single pad
-  Float_t fPhotocatExitPhot;              // Point of exit from photocathode 
-
+  Float_t fOnCathode[3];                 // Point of exit from photocathode 
 
 
   ClassDef(AliRICHPatRec,1)                //Pat Rec module for :RICH version 0
