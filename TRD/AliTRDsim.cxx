@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/15 23:40:01  cblume
+Remove AliTRDconst
+
 Revision 1.4  2000/10/06 16:49:46  cblume
 Made Getters const
 
@@ -58,6 +61,8 @@ AliTRDsim::AliTRDsim():TObject()
   // AliTRDsim default constructor
   // 
 
+  fSpectrum = 0;
+
   Init();
 
 }
@@ -76,6 +81,8 @@ AliTRDsim::AliTRDsim(AliModule *mod, Int_t foil, Int_t gap)
   Float_t aGap,  zGap,  rhoGap;
   Float_t rad, abs;
   Char_t  name[21];
+
+  fSpectrum = 0;
 
   Init();
 
