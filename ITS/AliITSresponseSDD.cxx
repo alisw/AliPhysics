@@ -49,74 +49,74 @@ const Int_t AliITSresponseSDD::fgkNcompsDefault = 121;
 //______________________________________________________________________
 ClassImp(AliITSresponseSDD)
 
-AliITSresponseSDD::AliITSresponseSDD(){
+  AliITSresponseSDD::AliITSresponseSDD(){
   // default constructor
-   fGaus = 0;
-   SetDeadChannels();
-   SetMaxAdc(fgkMaxAdcDefault);
-   SetDiffCoeff(fgkDiffCoeffDefault,fgkDiffCoeff1Default);
-   SetDriftSpeed(fgkDriftSpeedDefault);
-   SetNSigmaIntegration(fgkNsigmasDefault);
-   SetNLookUp(fgkNcompsDefault);
-   // SetClock();
-   SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
-   SetNoiseAfterElectronics();
-   SetJitterError();
-   SetElectronics();
-   SetDynamicRange(fgkDynamicRangeDefault);
-   SetChargeLoss(fgkfChargeLossDefault);
-   SetThresholds(fgkMinValDefault,0.);
-   SetParamOptions(fgkParam1Default.Data(),fgkParam2Default.Data());
-   SetTemperature(fgkTemperatureDefault);
-   SetZeroSupp(fgkOptionDefault);
-   SetDataType();
-   SetFilenames();
-   SetOutputOption();
-   SetDo10to8();
-   // set the default zero suppression parameters
-   fCPar[0]=0;
-   fCPar[1]=0;
-   fCPar[2]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.5);
-   fCPar[3]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.5);
-   fCPar[4]=0;
-   fCPar[5]=0;
-   fCPar[6]=0;
-   fCPar[7]=0;
+  fGaus = 0;
+  SetDeadChannels();
+  SetMaxAdc(fgkMaxAdcDefault);
+  SetDiffCoeff(fgkDiffCoeffDefault,fgkDiffCoeff1Default);
+  SetDriftSpeed(fgkDriftSpeedDefault);
+  SetNSigmaIntegration(fgkNsigmasDefault);
+  SetNLookUp(fgkNcompsDefault);
+  // SetClock();
+  SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
+  SetNoiseAfterElectronics();
+  SetJitterError();
+  SetElectronics();
+  SetDynamicRange(fgkDynamicRangeDefault);
+  SetChargeLoss(fgkfChargeLossDefault);
+  SetThresholds(fgkMinValDefault,0.);
+  SetParamOptions(fgkParam1Default.Data(),fgkParam2Default.Data());
+  SetTemperature(fgkTemperatureDefault);
+  SetZeroSupp(fgkOptionDefault);
+  SetDataType();
+  SetFilenames();
+  SetOutputOption();
+  SetDo10to8();
+  // set the default zero suppression parameters
+  fCPar[0]=(Int_t) fBaseline;
+  fCPar[1]=(Int_t) fBaseline;
+  fCPar[2]=(Int_t)(2.*fNoiseAfterEl + 0.5);
+  fCPar[3]=(Int_t)(2.*fNoiseAfterEl + 0.5);
+  fCPar[4]=0;
+  fCPar[5]=0;
+  fCPar[6]=0;
+  fCPar[7]=0;
 }
 //______________________________________________________________________
 AliITSresponseSDD::AliITSresponseSDD(const char *dataType){
   // constructor
-   fGaus = 0;
-   SetDeadChannels();
-   SetMaxAdc(fgkMaxAdcDefault);
-   SetDiffCoeff(fgkDiffCoeffDefault,fgkDiffCoeff1Default);
-   SetDriftSpeed(fgkDriftSpeedDefault);
-   SetNSigmaIntegration(fgkNsigmasDefault);
-   SetNLookUp(fgkNcompsDefault);
-   // SetClock();
-   SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
-   SetNoiseAfterElectronics();
-   SetJitterError();
-   SetElectronics();
-   SetDynamicRange(fgkDynamicRangeDefault);
-   SetChargeLoss(fgkfChargeLossDefault);
-   SetThresholds(fgkMinValDefault,0.);
-   SetParamOptions(fgkParam1Default.Data(),fgkParam2Default.Data());
-   SetTemperature(fgkTemperatureDefault);
-   SetZeroSupp(fgkOptionDefault);
-   SetDataType(dataType);
-   SetFilenames();
-   SetOutputOption();
-   SetDo10to8();
-   // set the default zero suppression parameters
-   fCPar[0]=0;
-   fCPar[1]=0;
-   fCPar[2]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.5);
-   fCPar[3]=(Int_t)(fBaseline + 2.*fNoiseAfterEl + 0.5);
-   fCPar[4]=0;
-   fCPar[5]=0;
-   fCPar[6]=0;
-   fCPar[7]=0;
+  fGaus = 0;
+  SetDeadChannels();
+  SetMaxAdc(fgkMaxAdcDefault);
+  SetDiffCoeff(fgkDiffCoeffDefault,fgkDiffCoeff1Default);
+  SetDriftSpeed(fgkDriftSpeedDefault);
+  SetNSigmaIntegration(fgkNsigmasDefault);
+  SetNLookUp(fgkNcompsDefault);
+  // SetClock();
+  SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
+  SetNoiseAfterElectronics();
+  SetJitterError();
+  SetElectronics();
+  SetDynamicRange(fgkDynamicRangeDefault);
+  SetChargeLoss(fgkfChargeLossDefault);
+  SetThresholds(fgkMinValDefault,0.);
+  SetParamOptions(fgkParam1Default.Data(),fgkParam2Default.Data());
+  SetTemperature(fgkTemperatureDefault);
+  SetZeroSupp(fgkOptionDefault);
+  SetDataType(dataType);
+  SetFilenames();
+  SetOutputOption();
+  SetDo10to8();
+  // set the default zero suppression parameters
+  fCPar[0]=(Int_t) fBaseline;
+  fCPar[1]=(Int_t) fBaseline;
+  fCPar[2]=(Int_t)(2.*fNoiseAfterEl + 0.5);
+  fCPar[3]=(Int_t)(2.*fNoiseAfterEl + 0.5);
+  fCPar[4]=0;
+  fCPar[5]=0;
+  fCPar[6]=0;
+  fCPar[7]=0;
 }
 //______________________________________________________________________
 AliITSresponseSDD::AliITSresponseSDD(const AliITSresponseSDD &ob) : AliITSresponse(ob) {
@@ -170,20 +170,20 @@ Int_t AliITSresponseSDD::Convert8to10(Int_t signal) const {
 void AliITSresponseSDD::SetCompressParam(Int_t  cp[8]){
   // set compression param
 
-    Int_t i;
-    for (i=0; i<8; i++) {
-        fCPar[i]=cp[i];
-        //printf("\n CompressPar %d %d \n",i,fCPar[i]);    
-    } // end for i
+  Int_t i;
+  for (i=0; i<8; i++) {
+    fCPar[i]=cp[i];
+    //printf("\n CompressPar %d %d \n",i,fCPar[i]);    
+  } // end for i
 }
 //______________________________________________________________________
 void AliITSresponseSDD::GiveCompressParam(Int_t  cp[8]) const {
   // give compression param
 
-    Int_t i;
-    for (i=0; i<8; i++) {
-        cp[i]=fCPar[i];
-    } // end for i
+  Int_t i;
+  for (i=0; i<8; i++) {
+    cp[i]=fCPar[i];
+  } // end for i
 }
 //______________________________________________________________________
 void AliITSresponseSDD::SetNLookUp(Int_t p1){
@@ -198,127 +198,127 @@ void AliITSresponseSDD::SetNLookUp(Int_t p1){
 }
 //______________________________________________________________________
 void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan){
-    // Set fGain to zero to simulate a random distribution of 
-    // dead modules, dead chips and single dead channels
+  // Set fGain to zero to simulate a random distribution of 
+  // dead modules, dead chips and single dead channels
 
-    for( Int_t m=0; m<fgkModules; m++ ) 
-        for( Int_t n=0; n<fgkChips; n++ ) 
-            for( Int_t p=0; p<fgkChannels; p++ ) 
-                 fGain[m][n][p] = 1.;
+  for( Int_t m=0; m<fgkModules; m++ ) 
+    for( Int_t n=0; n<fgkChips; n++ ) 
+      for( Int_t p=0; p<fgkChannels; p++ ) 
+	fGain[m][n][p] = 1.;
                  
-    fDeadModules  = nmod;  
-    fDeadChips    = nchip;  
-    fDeadChannels = nchan; 
+  fDeadModules  = nmod;  
+  fDeadChips    = nchip;  
+  fDeadChannels = nchan; 
     
-    // nothing to do
-    if( nmod == 0 && nchip == 0 && nchan == 0 ) return;
+  // nothing to do
+  if( nmod == 0 && nchip == 0 && nchan == 0 ) return;
 
-    if( nmod < 0 || nmod > fgkModules ) 
+  if( nmod < 0 || nmod > fgkModules ) 
     { 
-        cout << "Wrong number of dead modules: " << nmod << endl; 
-        return; 
+      cout << "Wrong number of dead modules: " << nmod << endl; 
+      return; 
     }
-    Int_t nmax = (fgkModules-nmod)*fgkChips; 
-    if( nchip < 0 || nchip > nmax ) 
+  Int_t nmax = (fgkModules-nmod)*fgkChips; 
+  if( nchip < 0 || nchip > nmax ) 
     { 
-        cout << "Wrong number of dead chips: " << nchip << endl; 
-        return; 
+      cout << "Wrong number of dead chips: " << nchip << endl; 
+      return; 
     }
-    nmax = ((fgkModules - nmod)*fgkChips - nchip)*fgkChannels; 
-    if( nchan < 0 || nchan > nmax ) 
+  nmax = ((fgkModules - nmod)*fgkChips - nchip)*fgkChannels; 
+  if( nchan < 0 || nchan > nmax ) 
     { 
-        cout << "Wrong number of dead channels: " << nchan << endl; 
-        return; 
+      cout << "Wrong number of dead channels: " << nchan << endl; 
+      return; 
     }
   
-    TRandom *gran = new TRandom();
+  TRandom *gran = new TRandom();
   
-    //  cout << "modules" << endl;
-    Int_t * mod = new Int_t [nmod];
-    Int_t i; //loop variable
-    for( i=0; i<nmod; i++ ) 
+  //  cout << "modules" << endl;
+  Int_t * mod = new Int_t [nmod];
+  Int_t i; //loop variable
+  for( i=0; i<nmod; i++ ) 
     {
-        mod[i] = (Int_t) (1.+fgkModules*gran->Uniform());
-        cout << i+1 << ": Dead module nr: " << mod[i] << endl;
-        for(Int_t n=0; n<fgkChips; n++)
-            for(Int_t p=0; p<fgkChannels; p++)
-                fGain[mod[i]-1][n][p] = 0.;
+      mod[i] = (Int_t) (1.+fgkModules*gran->Uniform());
+      cout << i+1 << ": Dead module nr: " << mod[i] << endl;
+      for(Int_t n=0; n<fgkChips; n++)
+	for(Int_t p=0; p<fgkChannels; p++)
+	  fGain[mod[i]-1][n][p] = 0.;
     }
 
-    //  cout << "chips" << endl;
-    Int_t * chip     = new Int_t[nchip];
-    Int_t * chipMod = new Int_t[nchip];
-    i = 0;
-    while( i < nchip ) 
+  //  cout << "chips" << endl;
+  Int_t * chip     = new Int_t[nchip];
+  Int_t * chipMod = new Int_t[nchip];
+  i = 0;
+  while( i < nchip ) 
     {
-        Int_t module = (Int_t) (fgkModules*gran->Uniform() + 1.);
-        if( module <=0 || module > fgkModules ) 
-            cout << "Wrong module: " << module << endl;
-        Int_t flagMod = 0;
-        for( Int_t k=0; k<nmod; k++ ) 
-            if( module == mod[k] ) { flagMod = 1; break; }
-        if( flagMod == 1 ) continue;
+      Int_t module = (Int_t) (fgkModules*gran->Uniform() + 1.);
+      if( module <=0 || module > fgkModules ) 
+	cout << "Wrong module: " << module << endl;
+      Int_t flagMod = 0;
+      for( Int_t k=0; k<nmod; k++ ) 
+	if( module == mod[k] ) { flagMod = 1; break; }
+      if( flagMod == 1 ) continue;
         
-        Int_t chi = (Int_t) (fgkChips*gran->Uniform() + 1.);
-        if( chi <=0 || chi > fgkChips ) cout << "Wrong chip: " << chi << endl;
-        i++;
-        chip[i-1] = chi; 
-        chipMod[i-1] = module;
-        for( Int_t m=0; m<fgkChannels; m++ ) 
-            fGain[module-1][chi-1][m] = 0.;
-        cout << i << ": Dead chip nr. " << chip[i-1] << " in module nr: " 
-	     << chipMod[i-1] << endl;
+      Int_t chi = (Int_t) (fgkChips*gran->Uniform() + 1.);
+      if( chi <=0 || chi > fgkChips ) cout << "Wrong chip: " << chi << endl;
+      i++;
+      chip[i-1] = chi; 
+      chipMod[i-1] = module;
+      for( Int_t m=0; m<fgkChannels; m++ ) 
+	fGain[module-1][chi-1][m] = 0.;
+      cout << i << ": Dead chip nr. " << chip[i-1] << " in module nr: " 
+	   << chipMod[i-1] << endl;
     }
 
-    //  cout << "channels" << endl;
-    Int_t * channel      = new Int_t[nchan];
-    Int_t * channelChip = new Int_t[nchan];
-    Int_t * channelMod  = new Int_t[nchan];
-    i = 0;
-    while( i < nchan ) 
+  //  cout << "channels" << endl;
+  Int_t * channel      = new Int_t[nchan];
+  Int_t * channelChip = new Int_t[nchan];
+  Int_t * channelMod  = new Int_t[nchan];
+  i = 0;
+  while( i < nchan ) 
     {
-        Int_t k; //loop variable
-        Int_t module = (Int_t) (fgkModules*gran->Uniform() + 1.);
-        if( module <=0 || module > fgkModules ) 
-            cout << "Wrong module: " << module << endl;
-        Int_t flagMod = 0;
-        for( k=0; k<nmod; k++ ) 
-            if( module == mod[k] ) { flagMod = 1; break; }
-        if( flagMod == 1 ) continue;
-        Int_t chipp = (Int_t) (fgkChips*gran->Uniform() + 1.);
-        if( chipp <=0 || chipp > fgkChips ) cout << "Wrong chip: "<< chipp<<endl;
-        Int_t flagChip = 0;
-        for( k=0; k<nchip; k++) 
-            if( chipp == chip[k] && module == chipMod[k] ) { 
-		flagChip = 1; break; }
-        if( flagChip == 1 ) continue;
-        i++;
-        channel[i-1] = (Int_t) (fgkChannels*gran->Uniform() + 1.); 
-        if( channel[i-1] <=0 || channel[i-1] > fgkChannels ) 
-            cout << "Wrong channel: " << channel[i-1] << endl;
-        channelChip[i-1] = chipp;
-        channelMod[i-1] = module;
-        fGain[module-1][chipp-1][channel[i-1]-1] = 0.;
-        cout << i << ": Dead channel nr. " << channel[i-1] << " in chip nr. " 
-	     << channelChip[i-1] << " in module nr: " << channelMod[i-1] 
-	     << endl;
+      Int_t k; //loop variable
+      Int_t module = (Int_t) (fgkModules*gran->Uniform() + 1.);
+      if( module <=0 || module > fgkModules ) 
+	cout << "Wrong module: " << module << endl;
+      Int_t flagMod = 0;
+      for( k=0; k<nmod; k++ ) 
+	if( module == mod[k] ) { flagMod = 1; break; }
+      if( flagMod == 1 ) continue;
+      Int_t chipp = (Int_t) (fgkChips*gran->Uniform() + 1.);
+      if( chipp <=0 || chipp > fgkChips ) cout << "Wrong chip: "<< chipp<<endl;
+      Int_t flagChip = 0;
+      for( k=0; k<nchip; k++) 
+	if( chipp == chip[k] && module == chipMod[k] ) { 
+	  flagChip = 1; break; }
+      if( flagChip == 1 ) continue;
+      i++;
+      channel[i-1] = (Int_t) (fgkChannels*gran->Uniform() + 1.); 
+      if( channel[i-1] <=0 || channel[i-1] > fgkChannels ) 
+	cout << "Wrong channel: " << channel[i-1] << endl;
+      channelChip[i-1] = chipp;
+      channelMod[i-1] = module;
+      fGain[module-1][chipp-1][channel[i-1]-1] = 0.;
+      cout << i << ": Dead channel nr. " << channel[i-1] << " in chip nr. " 
+	   << channelChip[i-1] << " in module nr: " << channelMod[i-1] 
+	   << endl;
     }
     
-    delete [] mod;
-    delete [] chip;
-    delete [] chipMod;
-    delete [] channel;
-    delete [] channelMod;
-    delete [] channelChip;
+  delete [] mod;
+  delete [] chip;
+  delete [] chipMod;
+  delete [] channel;
+  delete [] channelMod;
+  delete [] channelChip;
 }
 //______________________________________________________________________
 void AliITSresponseSDD::PrintGains(){
-    //
+  //
 
   if( GetDeadModules() == 0 && 
       GetDeadChips() == 0 && 
       GetDeadChannels() == 0 )
-      return;  
+    return;  
 
   // Print Electronics Gains
   cout << "**************************************************" << endl; 
@@ -329,40 +329,40 @@ void AliITSresponseSDD::PrintGains(){
   for(Int_t t=0; t<fgkModules;t++)
     for(Int_t u=0; u<fgkChips;u++)
       for(Int_t v=0; v<fgkChannels;v++)
-      {
-        if( fGain[t][u][v] != 1.0 )
-           cout << "Gain for Module: " << t+1 << ", Chip " << u+1 << 
-                   ", Channel " << v+1 << " = " << fGain[t][u][v] << endl;
-      }
+	{
+	  if( fGain[t][u][v] != 1.0 )
+	    cout << "Gain for Module: " << t+1 << ", Chip " << u+1 << 
+	      ", Channel " << v+1 << " = " << fGain[t][u][v] << endl;
+	}
 }
 //______________________________________________________________________
 void AliITSresponseSDD::Print(){
   // Print SDD response Parameters
 
-   cout << "**************************************************" << endl;
-   cout << "   Silicon Drift Detector Response Parameters    " << endl;
-   cout << "**************************************************" << endl;
-   cout << "Diffusion Coefficients: "<< fDiffCoeff<< ", "<<fDiffCoeff1 << endl;
+  cout << "**************************************************" << endl;
+  cout << "   Silicon Drift Detector Response Parameters    " << endl;
+  cout << "**************************************************" << endl;
+  cout << "Diffusion Coefficients: "<< fDiffCoeff<< ", "<<fDiffCoeff1 << endl;
 
-   cout << "Hardware compression parameters: " << endl; 
-   for(Int_t i=0; i<8; i++) cout << "fCPar[" << i << "] = " << fCPar[i] <<endl;
-   cout << "Noise before electronics (arbitrary units): " << fNoise << endl;
-   cout << "Baseline (ADC units): " << fBaseline << endl;
-   cout << "Noise after electronics (ADC units): " << fNoiseAfterEl << endl;
+  cout << "Hardware compression parameters: " << endl; 
+  for(Int_t i=0; i<8; i++) cout << "fCPar[" << i << "] = " << fCPar[i] <<endl;
+  cout << "Noise before electronics (arbitrary units): " << fNoise << endl;
+  cout << "Baseline (ADC units): " << fBaseline << endl;
+  cout << "Noise after electronics (ADC units): " << fNoiseAfterEl << endl;
 
-   cout << "Dynamic Range: " << fDynamicRange << endl;
-   cout << "Charge Loss: " << fChargeLoss << endl;
-   cout << "Temperature: " << Temperature() << " K " << endl;
-   cout << "Drift Speed: " << fDriftSpeed << endl;
-   cout << "Electronics (1=PASCAL, 2=OLA): " << fElectronics << endl;
+  cout << "Dynamic Range: " << fDynamicRange << endl;
+  cout << "Charge Loss: " << fChargeLoss << endl;
+  cout << "Temperature: " << Temperature() << " K " << endl;
+  cout << "Drift Speed: " << fDriftSpeed << endl;
+  cout << "Electronics (1=PASCAL, 2=OLA): " << fElectronics << endl;
 
-   cout << "N. of Sigma for signal integration: " << fNsigmas << endl;
-   cout << "N. of bins in lookup table: " << fNcomps << endl;
+  cout << "N. of Sigma for signal integration: " << fNsigmas << endl;
+  cout << "N. of bins in lookup table: " << fNcomps << endl;
 
-   cout << "Max. ADC Value: " << fMaxAdc << endl;
-   cout << "Min. Value: " << fMinVal << endl;
+  cout << "Max. ADC Value: " << fMaxAdc << endl;
+  cout << "Min. Value: " << fMinVal << endl;
 
-   PrintGains();
+  PrintGains();
 
 }
 
