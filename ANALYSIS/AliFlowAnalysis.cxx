@@ -53,6 +53,12 @@ Int_t AliFlowAnalysis::Finish()
 Double_t AliFlowAnalysis::GetEventPlane(AliESD* esd)
 {
   //returns event plane
+  if (esd == 0x0)
+   {
+     ::Error("GetFlow","Pointer to ESD is NULL");
+     return -1.0;
+   }
+
   Double_t psi;
   Int_t mult = esd->GetNumberOfTracks();
   
@@ -80,4 +86,38 @@ Double_t AliFlowAnalysis::GetEventPlane(AliESD* esd)
   
   return psi;
 
+}
+
+void AliFlowAnalysis::GetFlow(AliESD* esd,Double_t& v2,Double_t& psi)
+{
+//returns flow parameters: v2 and event plane
+  if (esd == 0x0)
+   {
+     ::Error("GetFlow","Pointer to ESD is NULL");
+     return;
+   }
+   
+  psi = GetEventPlane(esd);
+  Int_t mult = esd->GetNumberOfTracks();
+  
+  Double_t ssin = 0, scos = 0;
+
+  for (Int_t i=0; i<mult; i++) 
+   {
+     AliESDtrack* esdtrack = esd->GetTrack(i);
+     if (esdtrack == 0x0)
+      {
+        ::Error("GetEventPlane","Can not get track %d", i);
+        continue;
+      }
+      
+     Double_t mom[3];//momentum
+     esdtrack->GetPxPyPz(mom); 
+     Double_t phi = TMath::Pi()+TMath::ATan2(-mom[1],-mom[0]); 
+     
+     ssin += TMath::Sin( 2.0 * (phi - psi));
+     scos += TMath::Cos( 2.0 * (phi - psi));
+   }
+   
+  v2 = TMath::Hypot(ssin,scos);
 }

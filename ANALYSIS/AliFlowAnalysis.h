@@ -29,7 +29,7 @@ class AliFlowAnalysis: public AliAnalysis
     Int_t Finish();
    
     static Double_t GetEventPlane(AliESD* esd);
-       
+    static void     GetFlow(AliESD* esd,Double_t& v2,Double_t& psi);
   protected:
 
   private:
