@@ -103,6 +103,7 @@ ClassImp(AliEMCALDigitizer)
   fNADCPreSho = 0;      // number of channels in Pre Shower ADC
   fTimeThreshold = 0.0; //Means 1 MeV in terms of SDigits amplitude
   fManager = 0 ;
+  fSplitFile= 0 ; 
 
 
 
@@ -172,6 +173,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const char *headerFile,const char *name)
   SetName(name) ;
   SetTitle(headerFile) ;
   fManager = 0 ;                     // We work in the standalong mode
+  fSplitFile= 0 ; 
   Init() ;
   
 
@@ -190,7 +192,12 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
 {
   // dtor
 
+  if (fSplitFile)       
+    if ( fSplitFile->IsOpen() )
+      fSplitFile->Close() ;
+
 }
+
 //____________________________________________________________________________
 void AliEMCALDigitizer::Reset() { 
   //sets current event number to the first simulated event
@@ -486,6 +493,10 @@ if(strcmp(GetName(), "") == 0 )
     fDigitsInRun += gime->Digits()->GetEntriesFast() ;  
   }
   
+  if (fSplitFile) 
+    if ( fSplitFile->IsOpen() ) 
+      fSplitFile->Close() ; 
+
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALDigitizer");
     cout << "AliEMCALDigitizer:" << endl ;
@@ -620,7 +631,7 @@ void AliEMCALDigitizer::WriteDigits(Int_t event)
    treeD = fManager->GetTreeD() ;
  else {
    if (!gAlice->TreeD() ) 
-     gAlice->MakeTree("D");
+     gAlice->MakeTree("D",fSplitFile);
    treeD = gAlice->TreeD();
  }
  
@@ -635,7 +646,8 @@ void AliEMCALDigitizer::WriteDigits(Int_t event)
  TBranch * digitizerBranch = treeD->Branch("AliEMCALDigitizer", "AliEMCALDigitizer", &d,bufferSize,splitlevel); 
  digitizerBranch->SetTitle(GetName());
  
- treeD->Fill() ; 
+ digitsBranch->Fill() ;
+ digitizerBranch->Fill() ; 
  treeD->AutoSave() ;  
  
 }
@@ -676,7 +688,7 @@ void AliEMCALDigitizer::SetSDigitsBranch(const char* title)
 }
 
 //__________________________________________________________________
-void AliEMCALDigitizer::SetSplitFile(const TString splitFileName) const
+void AliEMCALDigitizer::SetSplitFile(const TString splitFileName)
 {
   // Diverts the Digits in a file separate from the hits file
   
@@ -687,9 +699,15 @@ void AliEMCALDigitizer::SetSplitFile(const TString splitFileName) const
   }
 
   TDirectory * cwd = gDirectory ;
-  TFile * splitFile = gAlice->InitTreeFile("D",splitFileName.Data());
-  splitFile->cd() ; 
-  gAlice->Write();
+  if ( !(gAlice->GetTreeDFileName() == splitFileName) ) {
+    if (gAlice->GetTreeDFile() )  
+      gAlice->GetTreeDFile()->Close() ; 
+  }
+
+  fSplitFile = gAlice->InitTreeFile("D",splitFileName.Data());
+  fSplitFile->cd() ; 
+  if ( !fSplitFile->Get("gAlice") ) 
+    gAlice->Write();
   
   TTree *treeE  = gAlice->TreeE();
   if (!treeE) {
@@ -698,20 +716,25 @@ void AliEMCALDigitizer::SetSplitFile(const TString splitFileName) const
   }      
   
   // copy TreeE
-  AliHeader *header = new AliHeader();
-  treeE->SetBranchAddress("Header", &header);
-  treeE->SetBranchStatus("*",1);
-  TTree *treeENew =  treeE->CloneTree();
-  treeENew->Write();
-  
-  // copy AliceGeom
-  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-  if (!AliceGeom) {
-    cerr << "ERROR: AliEMCALDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
-    abort() ;
+  if ( !fSplitFile->Get("TreeE") ) {
+    AliHeader *header = new AliHeader();
+    treeE->SetBranchAddress("Header", &header);
+    treeE->SetBranchStatus("*",1);
+    TTree *treeENew =  treeE->CloneTree();
+    treeENew->Write();
   }
-  AliceGeom->Write();
+
+  // copy AliceGeom
+  if ( !fSplitFile->Get("AliceGeom") ) {
+    TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+    if (!AliceGeom) {
+      cerr << "ERROR: AliEMCALDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
+      abort() ;
+    }
+    AliceGeom->Write();
+  }
+  
+  gAlice->MakeTree("D",fSplitFile);
   cwd->cd() ; 
-  gAlice->MakeTree("D",splitFile);
   cout << "INFO: AliEMCALDigitizer::SetSPlitMode -> Digits will be stored in " << splitFileName.Data() << endl ; 
 }

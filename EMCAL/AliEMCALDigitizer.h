@@ -57,7 +57,7 @@ public:
   void    SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
 
   void    SetSDigitsBranch(const char* file) ;
-  void    SetSplitFile(const TString splitFileName = "EMCAL.Digits.root") const ;
+  void    SetSplitFile(const TString splitFileName = "EMCAL.Digits.root") ;
  
 
  AliEMCALDigitizer & operator = (const AliEMCALDigitizer & rvalue)  {
@@ -102,6 +102,7 @@ private:
   Float_t fADCchannelPreSho ;           // width of one ADC channel in Pre Shower (GeV)
   Float_t fADCpedestalPreSho ;                   // 
   Int_t fNADCPreSho ;                // number of channels in Pre Shower ADC
+  TFile * fSplitFile ;               //! file in which Digits will eventually be stored
 
   ClassDef(AliEMCALDigitizer,1)  // description 
 

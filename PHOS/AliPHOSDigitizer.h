@@ -69,7 +69,7 @@ public:
   void    MixWith(const char* HeaderFile) ; // Add another one file to mix
   void    Print(Option_t* option)const ;
   void    Reset() ;   //restarts starts event processing from 0 event(s)
-  void    SetSplitFile(const TString splitFileName = "PHOS.Digits.root") const ;
+  void    SetSplitFile(const TString splitFileName = "PHOS.Digits.root") ;
   void    SetSDigitsBranch(const char* file) ;
 
   AliPHOSDigitizer & operator = (const AliPHOSDigitizer & rvalue)  {
@@ -112,6 +112,7 @@ private:
   Float_t fADCchanelCpv ;           // width of one ADC channel in CPV 'popugais'
   Float_t fADCpedestalCpv ;         // 
   Int_t   fNADCcpv ;                // number of channels in CPV ADC
+  TFile * fSplitFile ;             //! file in which Digits will eventually be stored
 
 
   ClassDef(AliPHOSDigitizer,1)  // description 

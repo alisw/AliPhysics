@@ -105,6 +105,7 @@ ClassImp(AliPHOSDigitizer)
 
   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
   fManager = 0 ;                        // We work in the standalong mode
+  fSplitFile= 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -114,6 +115,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
   SetName(name) ;
   SetTitle(headerFile) ;
   fManager = 0 ;                     // We work in the standalong mode
+  fSplitFile= 0 ; 
   Init() ;
   
 }
@@ -131,6 +133,9 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
 {
   // dtor
 
+ if (fSplitFile)       
+   if ( fSplitFile->IsOpen() )         
+     fSplitFile->Close() ;
 
 }
 
@@ -462,6 +467,10 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     fDigitsInRun += gime->Digits()->GetEntriesFast() ;  
   }
   
+  if (fSplitFile) 
+    if ( fSplitFile->IsOpen() ) 
+      fSplitFile->Close() ; 
+ 
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSDigitizer");
     cout << "AliPHOSDigitizer:" << endl ;
@@ -593,7 +602,7 @@ void AliPHOSDigitizer::MixWith(const char* headerFile)
 }
 
 //__________________________________________________________________
-void AliPHOSDigitizer::SetSplitFile(const TString splitFileName) const
+void AliPHOSDigitizer::SetSplitFile(const TString splitFileName)
 {
   // Diverts the Digits in a file separate from the hits file
   
@@ -604,9 +613,14 @@ void AliPHOSDigitizer::SetSplitFile(const TString splitFileName) const
   }
 
   TDirectory * cwd = gDirectory ;
-  TFile * splitFile = gAlice->InitTreeFile("D",splitFileName.Data());
-  splitFile->cd() ; 
-  if ( !splitFile->Get("gAlice") ) 
+  if ( !(gAlice->GetTreeDFileName() == splitFileName) ) {
+    if (gAlice->GetTreeDFile() )  
+      gAlice->GetTreeDFile()->Close() ; 
+  }
+
+  fSplitFile = gAlice->InitTreeFile("D",splitFileName.Data());
+  fSplitFile->cd() ; 
+  if ( !fSplitFile->Get("gAlice") ) 
     gAlice->Write();
   
   TTree *treeE  = gAlice->TreeE();
@@ -616,7 +630,7 @@ void AliPHOSDigitizer::SetSplitFile(const TString splitFileName) const
   }      
   
   // copy TreeE
-  if ( !splitFile->Get("TreeE") ) {
+  if ( !fSplitFile->Get("TreeE") ) {
     AliHeader *header = new AliHeader();
     treeE->SetBranchAddress("Header", &header);
     treeE->SetBranchStatus("*",1);
@@ -625,7 +639,7 @@ void AliPHOSDigitizer::SetSplitFile(const TString splitFileName) const
   }
 
   // copy AliceGeom
-  if ( !splitFile->Get("AliceGeom") ) {
+  if ( !fSplitFile->Get("AliceGeom") ) {
     TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
     if (!AliceGeom) {
       cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
@@ -634,8 +648,8 @@ void AliPHOSDigitizer::SetSplitFile(const TString splitFileName) const
     AliceGeom->Write();
   }
   
+  gAlice->MakeTree("D",fSplitFile);
   cwd->cd() ; 
-  gAlice->MakeTree("D",splitFile);
   cout << "INFO: AliPHOSDigitizer::SetSPlitMode -> Digits will be stored in " << splitFileName.Data() << endl ; 
 }
 
@@ -782,7 +796,7 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
    treeD = fManager->GetTreeD() ;
  else {
    if (!gAlice->TreeD() ) 
-     gAlice->MakeTree("D");
+     gAlice->MakeTree("D", fSplitFile);
    treeD = gAlice->TreeD();
  }
 
@@ -799,6 +813,7 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
   digitizerBranch->SetTitle(GetName());
 
   digitsBranch->Fill() ;
+  digitizerBranch->Fill() ; 
   treeD->AutoSave() ; 
  
 }
