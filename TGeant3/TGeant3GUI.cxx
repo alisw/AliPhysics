@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.6  2000/04/14 11:07:46  morsch
+Correct volume to medium assignment in case several media are asigned to the
+same material.
+
 Revision 1.5  2000/03/20 15:11:03  fca
 Mods to make the code compile on HP
 
@@ -86,6 +90,7 @@ ClassImp(AliGeant3GeometryGUI)
 
     AliGeant3GeometryGUI::AliGeant3GeometryGUI()
 {
+// Constructor
     fPanel  =   new AliGuiGeomMain(gClient->GetRoot(), 500, 500);
     fNstack = 0;
     fVolumes =   new TClonesArray("AliDrawVolume",1000);
@@ -106,6 +111,7 @@ ClassImp(AliGeant3GeometryGUI)
 }
 void AliGeant3GeometryGUI::Streamer(TBuffer &)
 {
+// Dummy Streamer
 ;
 }
 
@@ -120,11 +126,11 @@ void AliGeant3GeometryGUI::ReadGeometryTree()
     char namec[30];
 //  Icons for 
 //  Closed folder (=volume containing children)
-    const TGPicture* Folder     = gClient->GetPicture("folder_t.xpm");
+    const TGPicture* kFolder     = gClient->GetPicture("folder_t.xpm");
 //  Open folder   (=volume containing children)
-    const TGPicture* OpenFolder = gClient->GetPicture("ofolder_t.xpm");
+    const TGPicture* kOpenFolder = gClient->GetPicture("ofolder_t.xpm");
 //  Empty object
-    const TGPicture* Document   = gClient->GetPicture("doc_t.xpm");
+    const TGPicture* kDocument   = gClient->GetPicture("doc_t.xpm");
 
     AliDrawVolume  *volume;
 
@@ -191,10 +197,10 @@ void AliGeant3GeometryGUI::ReadGeometryTree()
 	    
 	    if (nch!=0) {
 		item2 = fPanel->AddItem(new AliDrawVolume(vname), 
-				    itemi, namec, OpenFolder, Folder);
+				    itemi, namec, kOpenFolder, kFolder);
 	    } else {
 		item2 = fPanel->AddItem(new AliDrawVolume(vname), 
-				    itemi, namec, Document, Document);
+				    itemi, namec, kDocument, kDocument);
 	    }
 //
 // Add medium information to list tree item
@@ -294,12 +300,12 @@ void AliGeant3GeometryGUI::ReadMaterials()
     char natmed[21], namate[21];
 //
 // Loop over media
-    Int_t NEntries=0;
+    Int_t nEntries=0;
     
     for(Int_t itm=1;itm<=fGcnum->ntmed;itm++) {
 	Int_t jtm  = fZlq[fGclink->jtmed-itm];
 	if (jtm > 0) {
-	    NEntries++;
+	    nEntries++;
 // 
 // Get medium parameters
 	    ((TGeant3*)(gMC))->Gftmed(itm, natmed, imat, isvol, ifield, fieldm, 
@@ -311,7 +317,7 @@ void AliGeant3GeometryGUI::ReadMaterials()
 	    AliGUIMedium * medium = 
 		new AliGUIMedium(itm, imat, natmed, isvol, ifield, fieldm, 
 				      tmaxfd, stemax, deemax, epsil, stmin);
-	    (*fMedia)[NEntries-1]=medium;
+	    (*fMedia)[nEntries-1]=medium;
         { //Begin local scope for j
           for (Int_t j=1; j<=22; j++) {
             medium->SetPar(j,Cut(itm,j));
@@ -329,7 +335,7 @@ void AliGeant3GeometryGUI::ReadMaterials()
         } //End local scope for j
 //
 // Add to ComboBox
-	    fPanel->AddMedium(medium, NEntries);
+	    fPanel->AddMedium(medium, nEntries);
 //
 // Associated material
 	    imat =  Int_t (fZq[jtm+6]);
@@ -343,11 +349,11 @@ void AliGeant3GeometryGUI::ReadMaterials()
 // Create new material object
 	    AliGUIMaterial * material = 
 		new AliGUIMaterial(imat,namate,a,z,dens,radl,absl);
-	    (*fMaterials)[NEntries-1]=material;
+	    (*fMaterials)[nEntries-1]=material;
 	    material->Dump();
 //
 // Add to combo box
-	    fPanel->AddMaterial(material, NEntries);
+	    fPanel->AddMaterial(material, nEntries);
 	    gCurrentMaterial=material;
 	}
     }
@@ -432,29 +438,30 @@ ClassImp(AliDrawVolume)
 //
 // Drawing parameter tags
 enum AliDrawParamId {
-   P_Theta,
-   P_Phi,
-   P_Psi,
-   P_U,
-   P_V,
-   P_Uscale,
-   P_Vscale,
-   P_Shadow,
-   P_Hide,
-   P_Fill,
-   P_Seen,
-   P_Clip,
-   P_ClipXmin,
-   P_ClipXmax,
-   P_ClipYmin,
-   P_ClipYmax,
-   P_ClipZmin,
-   P_ClipZmax
+   kTheta,
+   kPhi,
+   kPsi,
+   kU,
+   kV,
+   kUscale,
+   kVscale,
+   kShadow,
+   kHide,
+   kFill,
+   kSeen,
+   kClip,
+   kClipXmin,
+   kClipXmax,
+   kClipYmin,
+   kClipYmax,
+   kClipZmin,
+   kClipZmax
 };
 
 
 AliDrawVolume::AliDrawVolume(char* name)
 {
+// Constructor
     fName   = name;
     fTheta  = 30;
     fPhi    = 30;
@@ -486,6 +493,7 @@ char* AliDrawVolume::Name()
     
 void AliDrawVolume::Streamer(TBuffer &)
 {
+// Dummy Streamer
 ;
 }
 
@@ -493,6 +501,7 @@ void AliDrawVolume::Streamer(TBuffer &)
 
 void AliDrawVolume::Draw(Option_t *)
 {
+// Wraps the geant Gdraw
     gMC->Gsatt(fName,"seen", fSeen);
     
     if (fHide) {
@@ -524,6 +533,7 @@ void AliDrawVolume::Draw(Option_t *)
 
 void AliDrawVolume::DrawSpec()
 {
+// Wraps the Geant DrawSpec
     gMC->Gsatt(fName,"seen", fSeen);
     
     if (fHide) {
@@ -554,59 +564,60 @@ void AliDrawVolume::DrawSpec()
 
 void AliDrawVolume::SetParam(Int_t ip, Float_t param)
 {
+// Set drawing parameters
     switch (ip) {
-    case P_Theta:
+    case kTheta:
 	fTheta=param;
 	break;
-    case P_Phi:
+    case kPhi:
 	fPhi=param;
 	break;
-    case P_Psi:
+    case kPsi:
 	fPsi=param;
 	break;
-    case P_U:
+    case kU:
 	fU=param;
 	break;
-    case P_V:
+    case kV:
 	fV=param;
 	break;
-    case P_Uscale:
+    case kUscale:
 	fUscale=param;
 	break;
-    case P_Vscale:
+    case kVscale:
 	fVscale=param;
 	break;
-    case P_Hide:
+    case kHide:
 	fHide=Int_t(param);
 	break;
-    case P_Shadow:
+    case kShadow:
 	fShadow=Int_t(param);
 	break;
-    case P_Fill:
+    case kFill:
 	fFill=Int_t(param);
 	break;
-    case P_Seen:
+    case kSeen:
 	fSeen=Int_t(param);
 	break;
-    case P_Clip:
+    case kClip:
 	fClip=Int_t(param);
 	break;
-    case P_ClipXmin:
+    case kClipXmin:
 	fClipXmin=param;
 	break;
-    case P_ClipXmax:
+    case kClipXmax:
 	fClipXmax=param;
 	break;
-    case P_ClipYmin:
+    case kClipYmin:
 	fClipYmin=param;
 	break;
-    case P_ClipYmax:
+    case kClipYmax:
 	fClipYmax=param;
 	break;
-    case P_ClipZmin:
+    case kClipZmin:
 	fClipZmin=param;
 	break;
-    case P_ClipZmax:
+    case kClipZmax:
 	fClipZmax=param;
 	break;
     }
@@ -614,42 +625,43 @@ void AliDrawVolume::SetParam(Int_t ip, Float_t param)
 
 Float_t  AliDrawVolume::GetParam(Int_t ip)
 {
+// Get drawing parameters
     switch (ip) {
-    case P_Theta:
+    case kTheta:
 	return fTheta;
-    case P_Phi:
+    case kPhi:
 	return fPhi;
-    case P_Psi:
+    case kPsi:
 	return fPsi;
-    case P_U:
+    case kU:
 	return fU;
-    case P_V:
+    case kV:
 	return fV;
-    case P_Uscale:
+    case kUscale:
 	return fUscale;
-    case P_Vscale:
+    case kVscale:
 	return fVscale;
-    case P_Hide:
+    case kHide:
 	return Float_t(fHide);
-    case P_Shadow:
+    case kShadow:
 	return Float_t(fShadow);
-    case P_Fill:
+    case kFill:
 	return Float_t(fFill);
-    case P_Seen:
+    case kSeen:
 	return Float_t(fSeen);
-    case P_Clip:
+    case kClip:
 	return Float_t(fClip);
-    case P_ClipXmin:
+    case kClipXmin:
 	return fClipXmin;
-    case P_ClipXmax:
+    case kClipXmax:
 	return fClipXmax;
-    case P_ClipYmin:
+    case kClipYmin:
 	return fClipYmin;
-    case P_ClipYmax:
+    case kClipYmax:
 	return fClipYmax;
-    case P_ClipZmin:
+    case kClipZmin:
 	return fClipZmin;
-    case P_ClipZmax:
+    case kClipZmax:
 	return fClipZmax;
     default:
 	return 0.;
@@ -660,23 +672,23 @@ Float_t  AliDrawVolume::GetParam(Int_t ip)
 
 ClassImp(AliGuiGeomMain)
 
- const Text_t* LabelTextP[19]  = 
+ const Text_t* kLabelTextP[19]  = 
 {"PAIR  ", "COMP  ", "PHOT  ", "PFIS  ", "DRAY  ", "ANNI  ", "BREM  ", 
  "HADR  ", "MUNU  ", "DCAY  ", "LOSS  ", "MULS  ", "GHCOR1", "BIRK1 ", 
  "BIRK2 ", "BIRK3 ", "LABS  ", "SYNC  ", "STRA  "};
 
 
- const Text_t* LabelTextC[10]  = 
+ const Text_t* kLabelTextC[10]  = 
  {"CUTGAM", "CUTELE", "CUTNEU", "CUTHAD", "CUTMUO", "BCUTE", "BCUTM",
   "DCUTE ", "DCUTM ", "PPCUTM"};
 
-const Text_t* LabelTextPart[24]  = 
+const Text_t* kLabelTextPart[24]  = 
 {"Photon", "Positron", "Electron", "Neutrino", "Muon+", "Muon-", 
  "Pi0", "Pi+", "Pi-", "Kaon_L", "Kaon+", "Kaon-", "Neutron", "Proton", 
  "Anti Proton", "Kaon_S", "Eta", "Lambda", "Sigma+", "Sigma0", "Sigma-",
  "Xi0", "Xi-", "Omega-"};
 
-const Text_t* LabelTextMechanism[24]  = 
+const Text_t* kLabelTextMechanism[24]  = 
 {"HADF", "INEF", "ELAF", "FISF", "CAPF",
  "HADG", "INEG", "ELAG", "FISG", "CAPG",
  "LOSS", "PHOT", "ANNI", "COMP", "BREM",
@@ -687,38 +699,38 @@ const Text_t* LabelTextMechanism[24]  =
 
 
 enum ETestCommandIdentifiers {
-   M_FILE_OPEN,
-   M_FILE_SAVE,
-   M_FILE_SAVEAS,
-   M_FILE_EXIT,
+   kFileOpen,
+   kFileSave,
+   kFileSaveAs,
+   kFileExit,
 
-   M_TEST_DLG,
+   kTestDlg,
 
-   M_HELP_CONTENTS,
-   M_HELP_SEARCH,
-   M_HELP_ABOUT,
+   kHelpContents,
+   kHelpSearch,
+   kHelpAbout,
 
 
-   VId1,
-   HId1,
-   VId2,
-   HId2,
+   kVId1,
+   kHId1,
+   kVId2,
+   kHId2,
 
-   VSId1,
-   HSId1,
-   VSId2,
-   HSId2
+   kVSId1,
+   kHSId1,
+   kVSId2,
+   kHSId2
 };
 
 
-Int_t mb_button_id[9] = { kMBYes, kMBNo, kMBOk, kMBApply,
+Int_t mbButtonId[9] = { kMBYes, kMBNo, kMBOk, kMBApply,
                           kMBRetry, kMBIgnore, kMBCancel,
                           kMBClose, kMBDismiss };
 
-EMsgBoxIcon mb_icon[4] = { kMBIconStop, kMBIconQuestion,
+EMsgBoxIcon mbIcon[4] = { kMBIconStop, kMBIconQuestion,
                            kMBIconExclamation, kMBIconAsterisk };
 
-const char *filetypes[] = { "All files",     "*",
+const char *kFileTypes[] = { "All files",     "*",
                             "ROOT files",    "*.root",
                             "ROOT macros",   "*.C",
                             0,               0 };
@@ -729,52 +741,54 @@ const char *filetypes[] = { "All files",     "*",
 TGListTreeItem*  AliGuiGeomMain::
 AddItem(TObject * obj, TGListTreeItem *parent, const char* name, const TGPicture *open, const TGPicture *closed)
 {
+// Add item to the list tree
     return fLt->AddItem(parent, name, obj, open, closed);
 }
 
 AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
       : TGMainFrame(p, w, h)
 {
+    // Create test main frame. A TGMainFrame is a top level window.
+    // Create menubar and popup menus. The hint objects are used to place
+    // and group the different menu widgets with respect to eachother.
+    
     fDialog=0;
-   // Create test main frame. A TGMainFrame is a top level window.
-   // Create menubar and popup menus. The hint objects are used to place
-   // and group the different menu widgets with respect to eachother.
-   fMenuBarLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX,
-                                      0, 0, 1, 1);
-   fMenuBarItemLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0);
-   fMenuBarHelpLayout = new TGLayoutHints(kLHintsTop | kLHintsRight);
-
-   fMenuFile = new TGPopupMenu(gClient->GetRoot());
-   fMenuFile->AddEntry("&Open...", M_FILE_OPEN);
-   fMenuFile->AddEntry("&Save", M_FILE_SAVE);
-   fMenuFile->AddEntry("S&ave as...", M_FILE_SAVEAS);
-   fMenuFile->AddEntry("&Close", -1);
-   fMenuFile->AddSeparator();
-   fMenuFile->AddEntry("E&xit", M_FILE_EXIT);
-
-   fMenuFile->DisableEntry(M_FILE_SAVEAS);
-   fMenuFile->DisableEntry(M_FILE_OPEN);
-   fMenuFile->DisableEntry(M_FILE_SAVE);
-
+    fMenuBarLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX,
+				       0, 0, 1, 1);
+    fMenuBarItemLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0);
+    fMenuBarHelpLayout = new TGLayoutHints(kLHintsTop | kLHintsRight);
+    
+    fMenuFile = new TGPopupMenu(gClient->GetRoot());
+    fMenuFile->AddEntry("&Open...", kFileOpen);
+    fMenuFile->AddEntry("&Save", kFileSave);
+    fMenuFile->AddEntry("S&ave as...", kFileSaveAs);
+    fMenuFile->AddEntry("&Close", -1);
+    fMenuFile->AddSeparator();
+    fMenuFile->AddEntry("E&xit", kFileExit);
+    
+    fMenuFile->DisableEntry(kFileSaveAs);
+    fMenuFile->DisableEntry(kFileOpen);
+    fMenuFile->DisableEntry(kFileSave);
+    
 
 
    fMenuTest = new TGPopupMenu(this);
    fMenuTest->AddLabel("Draw");
    fMenuTest->AddSeparator();
-   fMenuTest->AddEntry("&Volume Draw Control", M_TEST_DLG);
+   fMenuTest->AddEntry("&Volume Draw Control", kTestDlg);
    fMenuTest->AddSeparator();
    fMenuTest->Associate(this);
    
    
    fMenuHelp = new TGPopupMenu(gClient->GetRoot());
-   fMenuHelp->AddEntry("&Contents", M_HELP_CONTENTS);
-   fMenuHelp->AddEntry("&Search...", M_HELP_SEARCH);
+   fMenuHelp->AddEntry("&Contents", kHelpContents);
+   fMenuHelp->AddEntry("&Search...", kHelpSearch);
    fMenuHelp->AddSeparator();
-   fMenuHelp->AddEntry("&About", M_HELP_ABOUT);
+   fMenuHelp->AddEntry("&About", kHelpAbout);
 
-   fMenuFile->DisableEntry(M_HELP_CONTENTS);
-   fMenuFile->DisableEntry(M_HELP_SEARCH);
-   fMenuFile->DisableEntry(M_HELP_ABOUT);
+   fMenuFile->DisableEntry(kHelpContents);
+   fMenuFile->DisableEntry(kHelpSearch);
+   fMenuFile->DisableEntry(kHelpAbout);
    // Menu button messages are handled by the main frame (i.e. "this")
    // ProcessMessage() method.
    fMenuFile->Associate(this);
@@ -820,7 +834,7 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
 // 
 // text labels with material properties 
 //
-   Text_t* LabelText[6]  = 
+   Text_t* labelText[6]  = 
    {"Material Number  ", 
     "Atomic Weight    ",
     "Atomic Number    ", 
@@ -828,22 +842,22 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
     "Radiation Length ", 
     "Absorption Length"};
 
-   TGLayoutHints* Bly   = 
+   TGLayoutHints* bly   = 
        new TGLayoutHints(kLHintsTop | kLHintsExpandY, 5, 5, 5, 5);
-   TGLayoutHints* Bfly1 = 
+   TGLayoutHints* bFly1 = 
        new TGLayoutHints(kLHintsLeft | kLHintsExpandX );
    fF21 = new TGCompositeFrame(fF2, 60, 20, kVerticalFrame);
    fF2->AddFrame(fF21,fL2);
    for (Int_t i=0; i<6; i++) {
        Int_t idT=i+1;       
        fHframe[i] = new TGHorizontalFrame(fF21, 400, 100, kFixedWidth);
-       fF21->AddFrame(fHframe[i], Bly);
+       fF21->AddFrame(fHframe[i], bly);
        fTbh[i] = new TGTextBuffer(10);
        fTeh[i] = new TGTextEntry(fHframe[i], fTbh[i],idT);
        fTeh[i]->Associate(this);
-       fLabel[i] = new TGLabel(fHframe[i], LabelText[i]);
-       fHframe[i]->AddFrame(fLabel[i], Bfly1);
-       fHframe[i]->AddFrame(fTeh[i], Bfly1);
+       fLabel[i] = new TGLabel(fHframe[i], labelText[i]);
+       fHframe[i]->AddFrame(fLabel[i], bFly1);
+       fHframe[i]->AddFrame(fTeh[i], bFly1);
    }
   tf->AddFrame(fF2, fL2);
   fMaterialCombo->Resize(200, 20);
@@ -860,7 +874,7 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
 // 
 // text labels with material properties 
 //
-   Text_t* LabelTextM[8]  = 
+   Text_t* labelTextM[8]  = 
    {"Sensitivity Flag      ", 
     "Magnetic Field Flag   ",
     "Maximum Field         ", 
@@ -876,13 +890,13 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
      for (Int_t i=0; i<8; i++) {
        Int_t idT=i+1;       
        fHframeM[i] = new TGHorizontalFrame(fF31, 400, 100, kFixedWidth);
-       fF31->AddFrame(fHframeM[i], Bly);
+       fF31->AddFrame(fHframeM[i], bly);
        fTbhM[i] = new TGTextBuffer(10);
        fTehM[i] = new TGTextEntry(fHframeM[i], fTbhM[i],idT);
        fTehM[i]->Associate(this);
-       fLabelM[i] = new TGLabel(fHframeM[i], LabelTextM[i]);
-       fHframeM[i]->AddFrame(fLabelM[i], Bfly1);
-       fHframeM[i]->AddFrame(fTehM[i], Bfly1);
+       fLabelM[i] = new TGLabel(fHframeM[i], labelTextM[i]);
+       fHframeM[i]->AddFrame(fLabelM[i], bFly1);
+       fHframeM[i]->AddFrame(fTehM[i], bFly1);
      }
    } //End local scope for i
   tf->AddFrame(fF3, fL2);
@@ -920,7 +934,7 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
    { //Begin local scope for i
      for (Int_t i = 0; i < 24; i++) {
        char tmp[20];
-       sprintf(tmp, "%s", LabelTextPart[i]);
+       sprintf(tmp, "%s", kLabelTextPart[i]);
        fParticleCombo->AddEntry(tmp, i+1);
      }
    } //End local scope for i
@@ -936,7 +950,7 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
    { //Begin local scope for i
      for (Int_t i = 0; i < 24; i++) {
        char tmp[20];
-       sprintf(tmp, "%s", LabelTextMechanism[i]);
+       sprintf(tmp, "%s", kLabelTextMechanism[i]);
        fMechanismCombo->AddEntry(tmp, i+1);
      }
    } //End local scope for i
@@ -967,11 +981,11 @@ AliGuiGeomMain::AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h)
    fNbins=100;
    
    fSLabel61 = new TGLabel(fF61, "Nbins-Emin-Emax");
-   Bfly1 = new TGLayoutHints(kLHintsLeft | kLHintsExpandX );
-   fF61->AddFrame(fSLabel61, Bfly1);
-   fF61->AddFrame(fTeh61, Bfly1);
-   fF61->AddFrame(fTeh62, Bfly1);
-   fF61->AddFrame(fTeh63, Bfly1);
+   bFly1 = new TGLayoutHints(kLHintsLeft | kLHintsExpandX );
+   fF61->AddFrame(fSLabel61, bFly1);
+   fF61->AddFrame(fTeh61, bFly1);
+   fF61->AddFrame(fTeh62, bFly1);
+   fF61->AddFrame(fTeh63, bFly1);
 //
 // Plot Button
    fF62 = new TGCompositeFrame(fF6, 60, 20, kHorizontalFrame);
@@ -994,7 +1008,6 @@ AliGuiGeomMain::~AliGuiGeomMain()
 {
    // Delete all created widgets.
 
-   delete fContainer;
    delete fCanvasWindow;
 
    delete fMenuBarLayout;
@@ -1008,12 +1021,14 @@ AliGuiGeomMain::~AliGuiGeomMain()
 
 void AliGuiGeomMain::Streamer(TBuffer &)
 {
+// Dummy streamer
 ;
 }
 
 void AliGuiGeomMain::Plot()
 {
-    const Float_t avo=0.60221367;
+// plot de/dx or cross-sections
+    const Float_t kAvo=0.60221367;
     Float_t *tkin  = new Float_t[fNbins];
     Float_t *value = new Float_t[fNbins];
     Float_t *pcut  = new Float_t[fNbins];
@@ -1024,10 +1039,10 @@ void AliGuiGeomMain::Plot()
     Float_t density=gCurrentMaterial->Density();
     
     Int_t ipart=gCurrentParticle;
-    const char *chmeca= LabelTextMechanism[gCurrentProcess-1];
+    const char *kChMeca= kLabelTextMechanism[gCurrentProcess-1];
     char* tmp;
     tmp = new char[5];
-    strncpy(tmp, chmeca, 4);
+    strncpy(tmp, kChMeca, 4);
     tmp[4]='\0';
     Int_t kdim=fNbins;
     Float_t de=(fEmax-fEmin)/fNbins;
@@ -1035,19 +1050,19 @@ void AliGuiGeomMain::Plot()
 	tkin[i]=fEmin+Float_t(i)*de;
 	value[i]=0.;
     }
-    if (chmeca!="MUON") {
+    if (kChMeca!="MUON") {
 	((TGeant3*) gMC)->Gftmat(imate, ipart, tmp, kdim, tkin, value, pcut, ixst);
     } else {
 	for (Int_t i=0; i<kdim; i++) {
 	    Float_t ekin=tkin[i];
 	    value[i]+=((TGeant3*) gMC)->Gbrelm(z,ekin,1.e10);
 	    value[i]+=((TGeant3*) gMC)->Gprelm(z,ekin,1.e10);
-	    value[i]*=1000.*avo*density/a;
+	    value[i]*=1000.*kAvo*density/a;
 	}
     }
     
     
-    printf("\n %d %d %s %d \n",imate, ipart, chmeca, kdim);
+    printf("\n %d %d %s %d \n",imate, ipart, kChMeca, kdim);
     if (ixst) {
 	TGraph *graph = new TGraph(kdim,tkin,value);
 	TCanvas *c1 = new TCanvas("c1"," ",400,10,600,700);
@@ -1059,10 +1074,10 @@ void AliGuiGeomMain::Plot()
 	graph->SetMarkerStyle(21);
 	graph->Draw("AC");
 	graph->GetHistogram()->SetXTitle("Energy (GeV)");
-	if (chmeca == "RANG" || chmeca == "STEP") {
+	if (kChMeca == "RANG" || kChMeca == "STEP") {
 	    graph->GetHistogram()->SetYTitle
 		("Distance (cm)");   
-	} else if (chmeca == "LOSS" || chmeca == "MUON") {
+	} else if (kChMeca == "LOSS" || kChMeca == "MUON") {
 	    graph->GetHistogram()->SetYTitle("dE/dx (MeV/cm)");   
 	} else {
 	    graph->GetHistogram()->SetYTitle
@@ -1079,6 +1094,7 @@ void AliGuiGeomMain::Plot()
 
 void AliGuiGeomMain::Update()
 {
+// Update widgets
     if (fDialog) {
 	fDialog->Update();
     }
@@ -1106,6 +1122,7 @@ void AliGuiGeomMain::Update()
 
 void AliGuiGeomMain::UpdateCombo()
 {
+// Update combos
 
     Int_t   imat = gCurrentMaterial->Id();
     Float_t    a = gCurrentMaterial->A();
@@ -1194,12 +1211,13 @@ void AliGuiGeomMain::UpdateCombo()
 
 void AliGuiGeomMain::UpdateListBox()
 {
+// Update the list box
     Int_t i;
     fProcessLB->RemoveEntries(1,19);
     for (i=11; i < 30; i++) {
 	Float_t p=gCurrentMedium->GetPar(i);
 	char tmp[20];
-	sprintf(tmp, "%6s%5d", LabelTextP[i-11], Int_t(p));
+	sprintf(tmp, "%6s%5d", kLabelTextP[i-11], Int_t(p));
 	fProcessLB->AddEntry(tmp, i-10);
     }
     fProcessLB->MapSubwindows();
@@ -1209,7 +1227,7 @@ void AliGuiGeomMain::UpdateListBox()
     for (i=1; i < 11; i++) {
 	Float_t p=gCurrentMedium->GetPar(i);
 	char tmp[20];
-	sprintf(tmp, "%6s%10.3e", LabelTextC[i-1], p);
+	sprintf(tmp, "%6s%10.3e", kLabelTextC[i-1], p);
 	fCutsLB->AddEntry(tmp,i);
     }
     fCutsLB->MapSubwindows();
@@ -1230,6 +1248,7 @@ void AliGuiGeomMain::CloseWindow()
 
 Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 {
+// Process messages to widgets
     switch (GET_MSG(msg)) {
 //
 //  Text entries for binning of cross-section plots
@@ -1358,24 +1377,24 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 	case kCM_MENU:
 	    switch (parm1) {
 		
-	    case M_FILE_OPEN:
+	    case kFileOpen:
 	    {
 		TGFileInfo fi;
-		fi.fFileTypes = (char **)filetypes;
+		fi.fFileTypes = (char **)kFileTypes;
 		new TGFileDialog(gClient->GetRoot(), this, kFDOpen,&fi);
 	    }
 	    break;
 	    
-	    case M_TEST_DLG:
+	    case kTestDlg:
 		fDialog = new AliGuiGeomDialog
 		    (gClient->GetRoot(), this, 400, 200);
 		break;
 		
-	    case M_FILE_SAVE:
-		printf("M_FILE_SAVE\n");
+	    case kFileSave:
+		printf("kFileSave\n");
 		break;
 		
-	    case M_FILE_EXIT:
+	    case kFileExit:
 		CloseWindow();   // this also terminates theApp
 		break;
 	    default:
@@ -1392,6 +1411,7 @@ Bool_t AliGuiGeomMain::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 
 void AliGuiGeomMain::AddMaterial(AliGUIMaterial *Material, Int_t i)
 {
+// Add material to material combo
     char* tmp;
     tmp=Material->Name();
     Material->SetItemId(i);
@@ -1402,6 +1422,7 @@ void AliGuiGeomMain::AddMaterial(AliGUIMaterial *Material, Int_t i)
 
 void AliGuiGeomMain::AddMedium(AliGUIMedium *Medium, Int_t i)
 {
+// Add medium to medium combo
     char* tmp;
     tmp=Medium->Name();
     Medium->SetItemId(i);
@@ -1641,6 +1662,7 @@ AliGuiGeomDialog::~AliGuiGeomDialog()
 
 void AliGuiGeomDialog::Update()
 {
+// Update widgets
     
     Float_t param;
 //  Update Sliders
@@ -1649,12 +1671,12 @@ void AliGuiGeomDialog::Update()
     }
 //  Seen
     if (fCombo2) {
-	param=gCurrentVolume->GetParam(P_Seen);
+	param=gCurrentVolume->GetParam(kSeen);
 	fCombo2->Select(Int_t(param)+3);
     }
 //  Hide, Shadow, Clip
     if (fChk1) {
-	if (Int_t(gCurrentVolume->GetParam(P_Shadow))) {
+	if (Int_t(gCurrentVolume->GetParam(kShadow))) {
 	    fChk1->SetState(kButtonDown);
 	} else {
 	    fChk1->SetState(kButtonUp);
@@ -1662,7 +1684,7 @@ void AliGuiGeomDialog::Update()
     }
 
     if (fChk2) {
-	if (Int_t(gCurrentVolume->GetParam(P_Hide))) {
+	if (Int_t(gCurrentVolume->GetParam(kHide))) {
 	    fChk2->SetState(kButtonDown);
 	} else {
 	    fChk2->SetState(kButtonUp);
@@ -1670,7 +1692,7 @@ void AliGuiGeomDialog::Update()
     }
 
     if (fChk3) {
-	if (Int_t(gCurrentVolume->GetParam(P_Clip))) {
+	if (Int_t(gCurrentVolume->GetParam(kClip))) {
 	    fChk3->SetState(kButtonDown);
 	} else {
 	    fChk3->SetState(kButtonUp);
@@ -1706,8 +1728,8 @@ Bool_t AliGuiGeomDialog::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 		fTbh12->AddText(0, buf);
 		gClient->NeedRedraw(fTeh11);
 		gClient->NeedRedraw(fTeh12);
-		gCurrentVolume->SetParam(P_ClipXmin,min);
-		gCurrentVolume->SetParam(P_ClipXmax,max);
+		gCurrentVolume->SetParam(kClipXmin,min);
+		gCurrentVolume->SetParam(kClipXmax,max);
 		break;
 	    case 2:
 		min=fDslider2->GetMinPosition();
@@ -1720,8 +1742,8 @@ Bool_t AliGuiGeomDialog::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 		fTbh22->AddText(0, buf);
 		gClient->NeedRedraw(fTeh21);
 		gClient->NeedRedraw(fTeh22);
-		gCurrentVolume->SetParam(P_ClipYmin,min);
-		gCurrentVolume->SetParam(P_ClipYmax,max);
+		gCurrentVolume->SetParam(kClipYmin,min);
+		gCurrentVolume->SetParam(kClipYmax,max);
 		break;
 	    case 3:
 		min=fDslider3->GetMinPosition();
@@ -1734,8 +1756,8 @@ Bool_t AliGuiGeomDialog::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 		fTbh32->AddText(0, buf);
 		gClient->NeedRedraw(fTeh31);
 		gClient->NeedRedraw(fTeh32);
-		gCurrentVolume->SetParam(P_ClipZmin,min);
-		gCurrentVolume->SetParam(P_ClipZmax,max);
+		gCurrentVolume->SetParam(kClipZmin,min);
+		gCurrentVolume->SetParam(kClipZmax,max);
 		break;
 	    default:
 		break;
@@ -1757,11 +1779,11 @@ Bool_t AliGuiGeomDialog::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 	case kCM_COMBOBOX:
 	    switch(parm1) {
 	    case 89:
-		gCurrentVolume->SetParam(P_Fill, Float_t(parm2));
+		gCurrentVolume->SetParam(kFill, Float_t(parm2));
 		gCurrentVolume->Draw();
 		break;
 	    case 90:
-		gCurrentVolume->SetParam(P_Seen, Float_t(parm2-3));
+		gCurrentVolume->SetParam(kSeen, Float_t(parm2-3));
 		gCurrentVolume->Draw();
 		break;
 	    }
@@ -1769,26 +1791,26 @@ Bool_t AliGuiGeomDialog::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 	case kCM_CHECKBUTTON:
 	    switch (parm1) {
 	    case 86:
-		if (Int_t(gCurrentVolume->GetParam(P_Shadow))) {
-		    gCurrentVolume->SetParam(P_Shadow, 0.);
+		if (Int_t(gCurrentVolume->GetParam(kShadow))) {
+		    gCurrentVolume->SetParam(kShadow, 0.);
 		} else {
-		    gCurrentVolume->SetParam(P_Shadow, 1.);
+		    gCurrentVolume->SetParam(kShadow, 1.);
 		}
 		gCurrentVolume->Draw();
 		break;
 	    case 87:
-		if (Int_t(gCurrentVolume->GetParam(P_Hide))) {
-		    gCurrentVolume->SetParam(P_Hide, 0.);
+		if (Int_t(gCurrentVolume->GetParam(kHide))) {
+		    gCurrentVolume->SetParam(kHide, 0.);
 		} else {
-		    gCurrentVolume->SetParam(P_Hide, 1.);
+		    gCurrentVolume->SetParam(kHide, 1.);
 		}
 		gCurrentVolume->Draw();
 		break;
 	    case 88:
-		if (Int_t(gCurrentVolume->GetParam(P_Clip))) {
-		    gCurrentVolume->SetParam(P_Clip, 0.);
+		if (Int_t(gCurrentVolume->GetParam(kClip))) {
+		    gCurrentVolume->SetParam(kClip, 0.);
 		} else {
-		    gCurrentVolume->SetParam(P_Clip, 1.);
+		    gCurrentVolume->SetParam(kClip, 1.);
 		}
 		gCurrentVolume->Draw();
 		break;
@@ -1809,7 +1831,7 @@ Bool_t AliGuiGeomDialog::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
     return kTRUE;
 }
 
-static Text_t* LabelText[7]  = 
+static Text_t* kLabelText[7]  = 
 {"Theta  ", "Phi    ", "Psi    ", "U      ", "V      ", "UScale", "VScale"};
 static Int_t   IRangeMin[7]  = {    0,     0,     0,    0,    0,   0,   0};
 static Int_t   IRangeMax[7]  = {36000, 36000, 36000, 2000, 2000, 10, 10};
@@ -1819,6 +1841,7 @@ AliGUISliders::AliGUISliders(const TGWindow *p, const TGWindow *,
                          UInt_t w, UInt_t h) :
     TGCompositeFrame(p, w, h,kVerticalFrame)
 {
+// Constructor
     ChangeOptions((GetOptions() & ~kHorizontalFrame) | kVerticalFrame);
    //--- layout for buttons: top align, equally expand horizontally
     fBly = new TGLayoutHints(kLHintsTop | kLHintsExpandY, 5, 5, 5, 5);
@@ -1844,7 +1867,7 @@ AliGUISliders::AliGUISliders(const TGWindow *p, const TGWindow *,
        fHslider[i]->SetRange(IRangeMin[i], IRangeMax[i]);
        fHslider[i]->SetPosition(DefaultPos[i]);
 
-       fLabel[i] = new TGLabel(fHframe[i], LabelText[i]);
+       fLabel[i] = new TGLabel(fHframe[i], kLabelText[i]);
        
        
        fHframe[i]->AddFrame(fLabel[i], fBfly1);
@@ -1856,6 +1879,7 @@ AliGUISliders::AliGUISliders(const TGWindow *p, const TGWindow *,
 
 AliGUISliders::~AliGUISliders()
 {
+// Destructor
     delete fBfly1; delete fBly;
    // Delete dialog.
     for (Int_t i=1; i<7; i++) {
@@ -1868,6 +1892,7 @@ AliGUISliders::~AliGUISliders()
 
 void AliGUISliders::Update()
 {
+// Update sliders
     char buf[10];
     
     for (Int_t i=0; i<7; i++) {
@@ -1930,6 +1955,7 @@ ClassImp(AliGUIMaterial)
 
 AliGUIMaterial::AliGUIMaterial()
 { 
+// Constructor
     fId=-1;
     fName = 0; 
     fA=-1; 
@@ -1942,6 +1968,7 @@ AliGUIMaterial::AliGUIMaterial()
 AliGUIMaterial::AliGUIMaterial(Int_t imat, char* name, Float_t a, Float_t z,
 		   Float_t dens, Float_t radl, Float_t absl)
 { 
+// Constructor
     fId=imat;
     fName=name;
     fA=a; 
@@ -1952,6 +1979,7 @@ AliGUIMaterial::AliGUIMaterial(Int_t imat, char* name, Float_t a, Float_t z,
 }
 void AliGUIMaterial::Dump()
 {
+// Dump material information
     printf("\n *****************************************");
     printf("\n Material Number:   %10d", fId);
     printf("\n %s", fName);
@@ -1964,47 +1992,56 @@ void AliGUIMaterial::Dump()
 
 Int_t AliGUIMaterial::Id()
 {
+// return material id
     return fId;
 }
 
 char*  AliGUIMaterial::Name()
 {
+// return material name 
     return fName;
 }
 
 Float_t  AliGUIMaterial::A()
 {
+// return atomic number
     return fA;
 }
 
 Float_t  AliGUIMaterial::Z()
 {
+// return charge number
     return fZ;
 }
 
 Float_t  AliGUIMaterial::Density()
 {
+// return density
     return fDensity;
 }
 
 Float_t  AliGUIMaterial::RadiationLength()
 {
+// return radiation length
     return fRadl;
 }
 
 Float_t  AliGUIMaterial::AbsorptionLength()
 {
+// return absorption length
     return fAbsl;
 }
 
 
 void AliGUIMaterial::Plot()
 {
+// dummy plot routine
     ;
 }
 
 void AliGUIMaterial::Streamer(TBuffer &)
 {
+// dummy streamner
 ;
 }
 
@@ -2012,6 +2049,7 @@ ClassImp(AliGUIMedium)
 
 AliGUIMedium::AliGUIMedium()
 { 
+// constructor
     fId=-1;
     fName = 0; 
 }
@@ -2021,6 +2059,7 @@ AliGUIMedium::AliGUIMedium(Int_t imed, Int_t imat, char* name, Int_t isvol,
 			   Float_t fieldm, Float_t tmaxfd, Float_t stemax, Float_t deemax,
 			   Float_t epsil, Float_t stmin)
 {
+// constructor
     fId=imed;
     fIdMat=imat;
     fName=name;
@@ -2036,21 +2075,25 @@ AliGUIMedium::AliGUIMedium(Int_t imed, Int_t imat, char* name, Int_t isvol,
 
 void AliGUIMedium::Dump()
 {
+// Dummy dump
     ;
 }
 
 Int_t AliGUIMedium::Id()
 {
+// return medium id
     return fId;
 }
 
 char*  AliGUIMedium::Name()
 {
+// return medium name
     return fName;
 }
 
 Float_t AliGUIMedium::GetPar(Int_t ipar)
 { 
+// Get parameter number ipar
     Float_t p;
     if (ipar < 23) {
 	p= fPars[ipar-1];   
@@ -2065,6 +2108,7 @@ Float_t AliGUIMedium::GetPar(Int_t ipar)
  
 void AliGUIMedium::Streamer(TBuffer &)
 {
+// dummy streamer
 ;
 }
 

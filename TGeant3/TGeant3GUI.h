@@ -1,5 +1,5 @@
-#ifndef ROOT_guitest
-#define ROOT_guitest
+#ifndef TGEANT3GUI
+#define TGEANT3GUI
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -39,26 +39,29 @@ class AliGUIMedium;
 
 
 class AliGeant3GeometryGUI : public TObject {
- private:
-    AliGuiGeomMain *fPanel;     // the main gui panel
-    Int_t          fNstack;      // number of volumes
-    TClonesArray   *fVolumes;    // array of volumes  
-    Int_t          fNMaterials;  // number of materials and media
-    TClonesArray   *fMaterials;  // array of materials
-    TClonesArray   *fMedia;  // array of materials    
-// Zebra bank related information	
-    Int_t*    fZlq;              
-    Float_t*  fZq;
-    Int_t*    fZiq;
-    Gclink_t* fGclink;
-    Gcnum_t*  fGcnum;
  public:
     AliGeant3GeometryGUI();
+    virtual ~AliGeant3GeometryGUI(){;}
+    
     // Reads the zebra geometry tree and put it into the ListTree
     void  ReadGeometryTree();
     // Read material and media information and put it into ComboBox 
     void  ReadMaterials();
     Float_t Cut(Int_t idmed, Int_t icut);
+ private:
+    AliGuiGeomMain *fPanel;      // the main gui panel
+    Int_t          fNstack;      // number of volumes
+    TClonesArray   *fVolumes;    // array of volumes  
+    Int_t          fNMaterials;  // number of materials and media
+    TClonesArray   *fMaterials;  // array of materials
+    TClonesArray   *fMedia;      // array of materials    
+// Zebra bank related information	
+    Int_t*    fZlq;              // pointer to Zebra bank lq
+    Float_t*  fZq;               // pointer to Zebra bank q
+    Int_t*    fZiq;              // pointer to Zebra bank iq
+    Gclink_t* fGclink;           // pointer to Geant common block 
+    Gcnum_t*  fGcnum;            // pointer to Geant common block 
+
  private:
     virtual AliDrawVolume* Volume(Int_t id)
 	{return (AliDrawVolume *) (fVolumes->UncheckedAt(id));}
@@ -78,34 +81,6 @@ class AliGeant3GeometryGUI : public TObject {
 
 
 class AliGuiGeomMain : public TGMainFrame {
-
-private:
-    TGTab              *fTab;     
-    TGCanvas           *fCanvasWindow;
-    TGCompositeFrame   *fContainer, *fF2, *fF21, *fF3, *fF31, *fF4, *fF5;
-    TGCompositeFrame   *fF6, *fF61, *fF62, *fF63;
-    TGListTree         *fLt;
-    TGMenuBar          *fMenuBar;
-    TGPopupMenu        *fMenuFile, *fMenuTest, *fMenuHelp;
-    TGLayoutHints      *fMenuBarItemLayout, *fMenuBarHelpLayout,
-	               *fMenuBarLayout, fLTab;
-    TGLayoutHints      *fL2;
-    AliGuiGeomDialog   *fDialog;                   //! no output please
-    TGComboBox         *fMaterialCombo;
-    TGComboBox         *fMechanismCombo;
-    TGComboBox         *fMediaCombo, *fParticleCombo;
-    TGListBox          *fProcessLB, *fCutsLB;
-    TClonesArray       *fComboEntries;
-    TClonesArray       *fComboMediaEntries;    
-    TGHorizontalFrame  *fHframe[6],*fHframeM[8];
-    TGTextBuffer       *fTbh[6], *fTbhM[8], *fTbh61, *fTbh62, *fTbh63;
-    TGTextEntry        *fTeh[6], *fTehM[8], *fTeh61, *fTeh62, *fTeh63;
-    TGLabel            *fLabel[6], *fLabelM[8], *fSLabel61;
-    TGTextButton       *fPlotButton;
-    Float_t            fEmin;
-    Float_t            fEmax;
-    Int_t              fNbins;
-    
  public:
     AliGuiGeomMain(const TGWindow *p, UInt_t w, UInt_t h);
     virtual ~AliGuiGeomMain();
@@ -113,14 +88,15 @@ private:
     virtual void CloseWindow();
     // Add item to ListTree
     virtual TGListTreeItem *
-	AddItem(TObject *, TGListTreeItem* ,
-		const char*, const TGPicture*, const TGPicture*);
+	AddItem(TObject *obj, TGListTreeItem* parent,
+		const char* name,
+		const TGPicture* open, const TGPicture* closed);
     // Add Material to ComboBox
     virtual void AddMaterial(AliGUIMaterial *Material, Int_t i);
     // Add Medium to ComboBox
     virtual void AddMedium(AliGUIMedium *Medium, Int_t i);
     // Process messages from this window
-    virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t);
+    virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
     // Update widgets
     virtual void Update();
     // Update ComboBoxes
@@ -132,27 +108,39 @@ private:
     virtual void SetMediaComboEntries(TClonesArray *entries)
 	{fComboMediaEntries=entries;}
     virtual void Plot();
+private:
+    TGTab              *fTab;           // Contains Tab entries: volumes, materials..
+    TGCanvas           *fCanvasWindow;  // Canvas window for list tree
+    TGCompositeFrame   *fF2, *fF21, *fF3, *fF31, *fF4, *fF5;      // Frames for combos
+    TGCompositeFrame   *fF6, *fF61, *fF62, *fF63;                 // Frames for combos
+    TGListTree         *fLt;                                      // Volumes list tree
+    TGMenuBar          *fMenuBar;                                 // Menu bar: File, Draw Control ...
+    TGPopupMenu        *fMenuFile, *fMenuTest, *fMenuHelp;        // Pop-up menus
+    TGLayoutHints      *fMenuBarItemLayout, *fMenuBarHelpLayout,  // Lay-out hints
+	               *fMenuBarLayout, fLTab;                    // Lay-out hints
+    TGLayoutHints      *fL2;                                      // Lay-out hints
+    AliGuiGeomDialog   *fDialog;                                  //! no output please
+    TGComboBox         *fMaterialCombo;                           // Material  combo box
+    TGComboBox         *fMechanismCombo;                          // Mechanism combo box
+    TGComboBox         *fMediaCombo, *fParticleCombo;             // Media and particle combo boxes
+    TGListBox          *fProcessLB, *fCutsLB;                     // List boxes for cuts and processes
+    TClonesArray       *fComboEntries;                            // List of materials
+    TClonesArray       *fComboMediaEntries;                       // List of media
+    TGHorizontalFrame  *fHframe[6],*fHframeM[8];                  // sub frames 
+    TGTextBuffer       *fTbh[6], *fTbhM[8], *fTbh61, *fTbh62, *fTbh63;  // text frames
+    TGTextEntry        *fTeh[6], *fTehM[8], *fTeh61, *fTeh62, *fTeh63;  // text entries
+    TGLabel            *fLabel[6], *fLabelM[8], *fSLabel61;             // labels
+    TGTextButton       *fPlotButton;                                    // Plot-Button
+    Float_t            fEmin;         // minimum energy for de/dx plot
+    Float_t            fEmax;         // maximum energy for de/dx plot
+    Int_t              fNbins;        // number of bins for de/dx plot
+    
+
     ClassDef(AliGuiGeomMain,1)  // MainFrame for Geometry Browser
 };
 
 
 class AliGuiGeomDialog : public TGTransientFrame {
-
-private:
-    AliGUISliders       *fF1;
-    TGCompositeFrame    *fFrame1, *fF2, *fF3, *fF4;
-    TGButton            *fOkButton, *fCancelButton;
-    TGButton            *fChk1, *fChk2, *fChk3;
-    TGComboBox          *fCombo, *fCombo2;
-    TGLabel             *fLabel1, *fLabel2;
-    TGTab               *fTab;
-    TGLayoutHints       *fL1, *fL2, *fL3, *fL4, *fBly, *fBfly1;
-    TGHorizontalFrame   *fHSframe1, *fHSframe2, *fHSframe3;
-    TGTextBuffer        *fTbh11, *fTbh12, *fTbh21, *fTbh22, *fTbh31, *fTbh32;
-    TGTextEntry         *fTeh11, *fTeh12, *fTeh21, *fTeh22, *fTeh31, *fTeh32;
-    TGDoubleHSlider     *fDslider1, *fDslider2, *fDslider3;
-    TGLabel             *fSLabel1,  *fSLabel2,  *fSLabel3;
-    
 public:
    AliGuiGeomDialog(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
                UInt_t options = kMainFrame | kVerticalFrame);
@@ -163,25 +151,38 @@ public:
    virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
 // Update widgets   
    virtual void Update();
+private:
+    AliGUISliders       *fF1;                                          // Slider for Draw Control
+    TGCompositeFrame    *fFrame1, *fF2, *fF3, *fF4;                            // Outer frames
+    TGButton            *fOkButton, *fCancelButton;                            // Buttons
+    TGButton            *fChk1, *fChk2, *fChk3;                                // Buttons
+    TGComboBox          *fCombo, *fCombo2;                                     // Combo Boxes
+    TGLabel             *fLabel1, *fLabel2;                                    // Labels
+    TGTab               *fTab;                                                 // Tab Entries
+    TGLayoutHints       *fL1, *fL2, *fL3, *fL4, *fBly, *fBfly1;                // Layout hints
+    TGHorizontalFrame   *fHSframe1, *fHSframe2, *fHSframe3;                    // Horizontal frames
+    TGTextBuffer        *fTbh11, *fTbh12, *fTbh21, *fTbh22, *fTbh31, *fTbh32;  // Text buffers
+    TGTextEntry         *fTeh11, *fTeh12, *fTeh21, *fTeh22, *fTeh31, *fTeh32;  // Text Entries
+    TGDoubleHSlider     *fDslider1, *fDslider2, *fDslider3;                    // Sliders for clip box
+    TGLabel             *fSLabel1,  *fSLabel2,  *fSLabel3;                     // Labels
 };
 
 class AliGUISliders : public  TGCompositeFrame {
-
-private:
-//
-    TGHorizontalFrame *fHframe[8];
-    TGLayoutHints     *fBly, *fBfly1;
-    TGHSlider         *fHslider[8];
-    TGTextEntry       *fTeh[8];
-    TGTextBuffer      *fTbh[8];
-    TGLabel           *fLabel[8];
-    Text_t            fLabelText[8];
 public:
    AliGUISliders(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h);
    virtual ~AliGUISliders();
    virtual void CloseWindow();
    virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
    virtual void Update();
+private:
+//
+    TGHorizontalFrame *fHframe[8];       // 8 Horizontal frames for sliders
+    TGLayoutHints     *fBly, *fBfly1;    // Lay-out hints
+    TGHSlider         *fHslider[8];      // 8 Sliders
+    TGTextEntry       *fTeh[8];          // Text entries for slider position
+    TGTextBuffer      *fTbh[8];          // Text buffer  
+    TGLabel           *fLabel[8];        // Slider labels
+    Text_t            fLabelText[8];     // Label text 
       
    //   ClassDef(AliGUISliders,1)  // Window containing sliders 
 };
@@ -192,13 +193,13 @@ public:
     AliDrawVolume(char* name);
     virtual ~AliDrawVolume(){;}
     // Draw the volume
-    virtual void    Draw(Option_t * =0);
+    virtual void    Draw(Option_t * option =0);
     // Draw volume specs
     virtual void    DrawSpec();
     // Return volume name
     virtual char*   Name();
     // Set volume parameter i
-    virtual void    SetParam(Int_t i, Float_t);
+    virtual void    SetParam(Int_t i, Float_t param);
     // Get volume parameters i
     virtual Float_t GetParam(Int_t i);
     // Set volume id
@@ -248,7 +249,7 @@ private:
     Int_t   fIdMedium;    // geant medium id
     Int_t   fIdMaterial;  // geant material id    
     Int_t   fIdCopy;      // copy flag
-    TGListTreeItem        *fItem;
+    TGListTreeItem        *fItem; // current item
     ClassDef(AliDrawVolume,1) // Volume Object for Drawing 
 };
 
