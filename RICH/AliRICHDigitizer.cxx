@@ -64,7 +64,10 @@ void AliRICHDigitizer::Exec(Option_t*)
     AliRICH* rich=(AliRICH*)pInAL->GetAliRun()->GetDetector("RICH");
     pInRL->LoadSDigits(); pInRL->TreeS()->GetEntry(0);
     Info("Exec","input %i has %i sdigits",inFileN,rich->SDigits()->GetEntries());
-    for(Int_t i=0;i<rich->SDigits()->GetEntries();i++) new(tmpCA[total++]) AliRICHdigit(*(AliRICHdigit*)rich->SDigits()->At(i)); 
+    for(Int_t i=0;i<rich->SDigits()->GetEntries();i++) {
+      new(tmpCA[total++]) AliRICHdigit(*(AliRICHdigit*)rich->SDigits()->At(i)); 
+      ((AliRICHdigit*)tmpCA[total-1])->AddTidOffset(fManager->GetMask(inFileN));
+    }
     pInRL->UnloadSDigits();   rich->ResetSDigits();
   }//files loop
   

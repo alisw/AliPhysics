@@ -58,6 +58,8 @@ public:
   Int_t    Id()                         const{return fChamber*10000000+fPadX*1000+fPadY;} //absolute id of this pad
   Double_t Q()                          const{return fQdc;}                               //charge in terms of ADC channels
   Int_t    Tid(Int_t i)                 const{return fTracks[i];}                         //track reference produced this digit
+  void     AddTidOffset(Int_t offset) 
+    {for (Int_t i=0; i<3; i++) if (fTracks[i]>0) fTracks[i]+=offset;};
 protected:
   Int_t    fChFbMip;  //1000000*Ncerenkovs+1000*Nfeedbacks+Nmips  
   Int_t    fChamber;  //10*chamber number+ sector number 
@@ -215,10 +217,12 @@ public:
   void AddDigit(int c,int x,int y,int q,int cfm,int *tid)
        {TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(c-1));new(tmp[fNdigitsNew[c-1]++])AliRICHdigit(c,x,y,q,cfm,tid[0],tid[1],tid[2]);}  
   void AddCluster(AliRICHcluster &cl)                     
-       {Int_t c=cl.C()-1;cout<<c<<endl;TClonesArray &tmp=*((TClonesArray*)fClusters->At(c));new(tmp[fNclusters[c]++])AliRICHcluster(cl);}
+       {Int_t c=cl.C()-1;/*cout<<c<<endl*/;TClonesArray &tmp=*((TClonesArray*)fClusters->At(c));new(tmp[fNclusters[c]++])AliRICHcluster(cl);}
   void AddReco(Int_t tid,Double_t thetaCherenkov,Int_t nPhotons) 
        {TClonesArray &tmp=*(TClonesArray*)fRecos;new(tmp[fNrecos++])AliRICHreco(tid,thetaCherenkov,nPhotons);}  
           
+  virtual void Reconstruct() const;
+
 protected:  
   enum                  {kCSI=6,kGAP=9};
   AliRICHParam         *fpParam;             //main RICH parametrization     

@@ -76,7 +76,7 @@ void AliRICHClusterFinder::FindLocalMaxima()
 //__________________________________________________________________________________________________
 void AliRICHClusterFinder::Exec()
 {
-  Info("Exec","Start.");
+  if(GetDebug()) Info("Exec","Start.");
   
   
   Rich()->GetLoader()->LoadDigits(); 
@@ -85,7 +85,7 @@ void AliRICHClusterFinder::Exec()
   Rich()->GetLoader()->GetRunLoader()->LoadKinematics();
 
   for(Int_t iEventN=0;iEventN<gAlice->GetEventsPerRun();iEventN++){//events loop
-    Info("Exec","Event %i processed.",iEventN+1);
+    if(GetDebug()) Info("Exec","Event %i processed.",iEventN+1);
 //    gAlice->GetRunLoader()->GetEvent(iEventN);
     Rich()->GetLoader()->GetRunLoader()->GetEvent(iEventN);
     
@@ -105,7 +105,7 @@ void AliRICHClusterFinder::Exec()
   Rich()->GetLoader()->GetRunLoader()->UnloadHeader();
   Rich()->GetLoader()->GetRunLoader()->UnloadKinematics();
 
-  Info("Exec","Stop.");      
+  if(GetDebug()) Info("Exec","Stop.");      
 }//Exec()
 //__________________________________________________________________________________________________
 void AliRICHClusterFinder::FindClusters(Int_t iChamber)
@@ -152,14 +152,19 @@ void AliRICHClusterFinder::FindClusterContribs(AliRICHcluster *pCluster)
   Int_t *pindex = new Int_t[3*pCluster->Size()];
   for(Int_t iDigN=0;iDigN<pCluster->Size();iDigN++) {//loop on digits of a given cluster
     contribs[3*iDigN]  =((AliRICHdigit*)pDigits->At(iDigN))->Tid(0);
+    if (contribs[3*iDigN] >= 10000000) contribs[3*iDigN] = 0;
     contribs[3*iDigN+1]=((AliRICHdigit*)pDigits->At(iDigN))->Tid(1);
+    if (contribs[3*iDigN+1] >= 10000000) contribs[3*iDigN+1] = 0;
     contribs[3*iDigN+2]=((AliRICHdigit*)pDigits->At(iDigN))->Tid(2);
+    if (contribs[3*iDigN+2] >= 10000000) contribs[3*iDigN+2] = 0;
   }//loop on digits of a given cluster
   TMath::Sort(contribs.GetSize(),contribs.GetArray(),pindex);
   for(Int_t iDigN=0;iDigN<3*pCluster->Size()-1;iDigN++) {//loop on digits to sort Tid
     if(contribs[pindex[iDigN]]!=contribs[pindex[iDigN+1]]) {
-      Int_t code   = Rich()->GetLoader()->GetRunLoader()->Stack()->Particle(contribs[pindex[iDigN]])->GetPdgCode();
-      Double_t charge = Rich()->GetLoader()->GetRunLoader()->Stack()->Particle(contribs[pindex[iDigN]])->GetPDG()->Charge();
+      TParticle* particle = Rich()->GetLoader()->GetRunLoader()->Stack()->Particle(contribs[pindex[iDigN]]);
+      Int_t code   = particle->GetPdgCode();
+      Double_t charge = 0;
+      if (particle->GetPDG()) particle->GetPDG()->Charge();
 
       if(code==50000050) iNckovs++;
       else if(code==50000051) iNfeeds++;
@@ -202,10 +207,10 @@ void AliRICHClusterFinder::ResolveCluster()
 void AliRICHClusterFinder::WriteRawCluster()
 {
 // out the current raw cluster
-  Info("WriteRawCluster","Start.");
+  if(GetDebug()) Info("WriteRawCluster","Start.");
   
   FindClusterContribs(&fRawCluster);
-  fRawCluster.Dump();
+  if(GetDebug()>1) fRawCluster.Dump();
   Rich()->AddCluster(fRawCluster);
 //  fRawCluster.Print();
 }//WriteRawCluster()
@@ -213,7 +218,7 @@ void AliRICHClusterFinder::WriteRawCluster()
 void AliRICHClusterFinder::WriteResolvedCluster()
 {
 // out the current resolved cluster
-  Info("WriteResolvedCluster","Start.");
+  if(GetDebug()) Info("WriteResolvedCluster","Start.");
   
 //  FindClusterContribs(&fResolvedCluster);
   Rich()->AddCluster(fResolvedCluster);
@@ -222,7 +227,7 @@ void AliRICHClusterFinder::WriteResolvedCluster()
 //__________________________________________________________________________________________________
 void AliRICHClusterFinder::FitCoG()
 {// Fit cluster size 2 by single Mathieson
-  Info("FitCoG","Start with size %3i and local maxima %3i",fRawCluster.Size(),fNlocals);
+  if(GetDebug()) Info("FitCoG","Start with size %3i and local maxima %3i",fRawCluster.Size(),fNlocals);
   
   Double_t arglist;
   Int_t ierflag = 0;
@@ -269,7 +274,6 @@ void AliRICHClusterFinder::FitCoG()
   }
   
   arglist = -1;
-  
   pMinuit->mnexcm("SET NOGR",&arglist, 1, ierflag);
   pMinuit->mnexcm("SET NOW",&arglist, 1, ierflag);
   arglist = 1;
