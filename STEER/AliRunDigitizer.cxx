@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/09/20 14:35:25  jchudoba
+Temporary disable GetParticle and GetNParticles functions
+
 Revision 1.4  2001/09/19 06:23:50  jchudoba
 Move some tasks to AliStream and AliMergeCombi classes
 
@@ -411,7 +414,7 @@ Int_t* AliRunDigitizer::GetInputEventNumbers(Int_t event)
 // merged in the output event event
 
 // simplified for now, implement later
-  Int_t a[MAXSTREAMSTOMERGE];
+  Int_t * a = new Int_t[MAXSTREAMSTOMERGE];
   for (Int_t i = 0; i < fNinputs; i++) {
     a[i] = event;
   }
