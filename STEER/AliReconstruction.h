@@ -31,21 +31,31 @@ public:
   void           SetRunTracking(Bool_t run) {fRunTracking = run;};
   void           SetFillESD(const char* detectors) {fFillESD = detectors;};
 
+  void           SetStopOnError(Bool_t stopOnError) 
+    {fStopOnError = stopOnError;}
+  void           SetCheckPointLevel(Int_t checkPointLevel)
+    {fCheckPointLevel = checkPointLevel;}
+
   virtual Bool_t Run();
 
 private:
   Bool_t         RunReconstruction(const TString& detectors);
-  Bool_t         RunTracking(AliESD* esd);
-  Bool_t         FillESD(AliESD* esd, const TString& detectors);
+  Bool_t         RunTracking(AliESD*& esd);
+  Bool_t         FillESD(AliESD*& esd, const TString& detectors);
 
   Bool_t         IsSelected(TString detName, TString& detectors) const;
+  Bool_t         CreateTrackers();
   void           CleanUp(TFile* file = NULL);
+
+  Bool_t         ReadESD(AliESD*& esd, const char* recStep) const;
+  void           WriteESD(AliESD* esd, const char* recStep) const;
 
   TString        fRunReconstruction;  // run the reconstr. for these detectors
   Bool_t         fRunTracking;        // run the barrel tracking
   TString        fFillESD;            // fill ESD for these detectors
   TString        fGAliceFileName;     // name of the galice file
   Bool_t         fStopOnError;        // stop or continue on errors
+  Int_t          fCheckPointLevel;    // level of ESD check points
 
   AliRunLoader*  fRunLoader;          //! current run loader object
   AliLoader*     fITSLoader;          //! loader for ITS

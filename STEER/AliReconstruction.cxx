@@ -54,6 +54,17 @@
 // The reconstruction requires digits as input. For the creation of digits   //
 // have a look at the class AliSimulation.                                   //
 //                                                                           //
+// For debug purposes the method SetCheckPointLevel can be used. If the      //
+// argument is greater than 0, files with ESD events will be written after   //
+// selected steps of the reconstruction for each event:                      //
+//   level 1: after tracking and after filling of ESD (final)                //
+//   level 2: in addition after each tracking step                           //
+//   level 3: in addition after the filling of ESD for each detector         //
+// If a final check point file exists for an event, this event will be       //
+// skipped in the reconstruction. The tracking and the filling of ESD for    //
+// a detector will be skipped as well, if the corresponding check point      //
+// file exists. The ESD event will then be loaded from the file instead.     //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -69,6 +80,8 @@
 #include "AliESDpid.h"
 #include "AliMagF.h"
 #include <TArrayF.h>
+#include <TSystem.h>
+#include <TROOT.h>
 
 
 ClassImp(AliReconstruction)
@@ -84,6 +97,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fFillESD("ALL"),
   fGAliceFileName(gAliceFilename),
   fStopOnError(kFALSE),
+  fCheckPointLevel(0),
 
   fRunLoader(NULL),
   fITSLoader(NULL),
@@ -108,6 +122,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fFillESD(rec.fFillESD),
   fGAliceFileName(rec.fGAliceFileName),
   fStopOnError(rec.fStopOnError),
+  fCheckPointLevel(0),
 
   fRunLoader(NULL),
   fITSLoader(NULL),
@@ -182,64 +197,14 @@ Bool_t AliReconstruction::Run()
   }
   if (!fRunTracking && fFillESD.IsNull()) return kTRUE;
 
-  if (fRunTracking) {
-    // get loaders and trackers
-    fITSLoader = fRunLoader->GetLoader("ITSLoader");
-    if (!fITSLoader) {
-      Error("Run", "no ITS loader found");
-      if (fStopOnError) {CleanUp(); return kFALSE;}
-    }
-    fITSTracker = NULL;
-    if (aliRun->GetDetector("ITS")) {
-      fITSTracker = aliRun->GetDetector("ITS")->CreateTracker();
-    }
-    if (!fITSTracker) {
-      Error("Run", "couldn't create a tracker for ITS");
-      if (fStopOnError) {CleanUp(); return kFALSE;}
-    }
-    
-    fTPCLoader = fRunLoader->GetLoader("TPCLoader");
-    if (!fTPCLoader) {
-      Error("Run", "no TPC loader found");
-      if (fStopOnError) {CleanUp(); return kFALSE;}
-    }
-    fTPCTracker = NULL;
-    if (aliRun->GetDetector("TPC")) {
-      fTPCTracker = aliRun->GetDetector("TPC")->CreateTracker();
-    }
-    if (!fTPCTracker) {
-      Error("Run", "couldn't create a tracker for TPC");
-      if (fStopOnError) {CleanUp(); return kFALSE;}
-    }
-    
-    fTRDLoader = fRunLoader->GetLoader("TRDLoader");
-    if (!fTRDLoader) {
-      Error("Run", "no TRD loader found");
-      if (fStopOnError) {CleanUp(); return kFALSE;}
-    }
-    fTRDTracker = NULL;
-    if (aliRun->GetDetector("TRD")) {
-      fTRDTracker = aliRun->GetDetector("TRD")->CreateTracker();
-    }
-    if (!fTRDTracker) {
-      Error("Run", "couldn't create a tracker for TRD");
-      if (fStopOnError) {CleanUp(); return kFALSE;}
-    }
-    
-    fTOFLoader = fRunLoader->GetLoader("TOFLoader");
-    if (!fTOFLoader) {
-      Error("Run", "no TOF loader found");
-      if (fStopOnError) {CleanUp(); return kFALSE;}
-    }
-    fTOFTracker = NULL;
-    if (aliRun->GetDetector("TOF")) {
-      fTOFTracker = aliRun->GetDetector("TOF")->CreateTracker();
-    }
-    if (!fTOFTracker) {
-      Error("Run", "couldn't create a tracker for TOF");
-      if (fStopOnError) {CleanUp(); return kFALSE;}
-    }
+  // get loaders and trackers
+  if (fRunTracking && !CreateTrackers()) {
+    if (fStopOnError) {
+      CleanUp(); 
+      return kFALSE;
+    }      
   }
+
   // create the ESD output file
   TFile* file = TFile::Open("AliESDs.root", "RECREATE");
   if (!file->IsOpen()) {
@@ -250,16 +215,25 @@ Bool_t AliReconstruction::Run()
   // loop over events
   for (Int_t iEvent = 0; iEvent < fRunLoader->GetNumberOfEvents(); iEvent++) {
     Info("Run", "processing event %d", iEvent);
-    AliESD* esd = new AliESD;
     fRunLoader->GetEvent(iEvent);
+
+    char fileName[256];
+    sprintf(fileName, "ESD_%d.%d_final.root", 
+	    aliRun->GetRunNumber(), aliRun->GetEvNumber());
+    if (!gSystem->AccessPathName(fileName)) continue;
+
+    AliESD* esd = new AliESD;
     esd->SetRunNumber(aliRun->GetRunNumber());
     esd->SetEventNumber(aliRun->GetEvNumber());
     esd->SetMagneticField(aliRun->Field()->SolenoidField());
 
     // barrel tracking
     if (fRunTracking) {
-      if (!RunTracking(esd)) {
-	if (fStopOnError) {CleanUp(file); return kFALSE;}
+      if (!ReadESD(esd, "tracking")) {
+	if (!RunTracking(esd)) {
+	  if (fStopOnError) {CleanUp(file); return kFALSE;}
+	}
+	if (fCheckPointLevel > 0) WriteESD(esd, "tracking");
       }
     }
 
@@ -272,6 +246,7 @@ Bool_t AliReconstruction::Run()
 
     // combined PID
     AliESDpid::MakePID(esd);
+    if (fCheckPointLevel > 1) WriteESD(esd, "PID");
 
     // write ESD
     char name[100]; 
@@ -281,6 +256,9 @@ Bool_t AliReconstruction::Run()
       Error("Run", "writing ESD failed");
       if (fStopOnError) {CleanUp(file); return kFALSE;}
     }
+    file->Flush();
+
+    if (fCheckPointLevel > 0) WriteESD(esd, "final");
     delete esd;
   }
 
@@ -327,7 +305,7 @@ Bool_t AliReconstruction::RunReconstruction(const TString& detectors)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::RunTracking(AliESD* esd)
+Bool_t AliReconstruction::RunTracking(AliESD*& esd)
 {
 // run the barrel tracking
 
@@ -345,9 +323,15 @@ Bool_t AliReconstruction::RunTracking(AliESD* esd)
   };
   Double_t vtxErr[3] = {vtxCov[0], vtxCov[2], vtxCov[5]}; // diag. elements
   esd->SetVertex(vtxPos, vtxCov);
-  fITSTracker->SetVertex(vtxPos, vtxErr);
-  fTPCTracker->SetVertex(vtxPos, vtxErr);
-  fTRDTracker->SetVertex(vtxPos, vtxErr);
+  if (fITSTracker) fITSTracker->SetVertex(vtxPos, vtxErr);
+  if (fTPCTracker) fTPCTracker->SetVertex(vtxPos, vtxErr);
+  if (fTRDTracker) fTRDTracker->SetVertex(vtxPos, vtxErr);
+  if (fCheckPointLevel > 1) WriteESD(esd, "vertex");
+
+  if (!fTPCTracker) {
+    Error("RunTracking", "no TPC tracker");
+    return kFALSE;
+  }
 
   // TPC tracking
   Info("RunTracking", "TPC tracking");
@@ -356,100 +340,124 @@ Bool_t AliReconstruction::RunTracking(AliESD* esd)
   if (!tpcTree) {
     Error("RunTracking", "Can't get the TPC cluster tree");
     return kFALSE;
-  }     
+  }
   fTPCTracker->LoadClusters(tpcTree);
   if (fTPCTracker->Clusters2Tracks(esd) != 0) {
     Error("RunTracking", "TPC Clusters2Tracks failed");
     return kFALSE;
   }
+  if (fCheckPointLevel > 1) WriteESD(esd, "TPC.tracking");
 
-  fRunLoader->GetAliRun()->GetDetector("TPC")->FillESD(esd); // preliminary PID
-  AliESDpid::MakePID(esd);                  // for the ITS tracker
+  if (!fITSTracker) {
+    Warning("RunTracking", "no ITS tracker");
+  } else {
 
-  // ITS tracking
-  Info("RunTracking", "ITS tracking");
-  fITSLoader->LoadRecPoints("read");
-  TTree* itsTree = fITSLoader->TreeR();
-  if (!itsTree) {
-    Error("RunTracking", "Can't get the ITS cluster tree");
-    return kFALSE;
-  }     
-  fITSTracker->LoadClusters(itsTree);
-  if (fITSTracker->Clusters2Tracks(esd) != 0) {
-    Error("RunTracking", "ITS Clusters2Tracks failed");
-    return kFALSE;
-  }
+    fRunLoader->GetAliRun()->GetDetector("TPC")->FillESD(esd); // preliminary
+    AliESDpid::MakePID(esd);                  // PID for the ITS tracker
 
-  // ITS back propagation
-  Info("RunTracking", "ITS back propagation");
-  if (fITSTracker->PropagateBack(esd) != 0) {
-    Error("RunTracking", "ITS backward propagation failed");
-    return kFALSE;
-  }
+    // ITS tracking
+    Info("RunTracking", "ITS tracking");
+    fITSLoader->LoadRecPoints("read");
+    TTree* itsTree = fITSLoader->TreeR();
+    if (!itsTree) {
+      Error("RunTracking", "Can't get the ITS cluster tree");
+      return kFALSE;
+    }
+    fITSTracker->LoadClusters(itsTree);
+    if (fITSTracker->Clusters2Tracks(esd) != 0) {
+      Error("RunTracking", "ITS Clusters2Tracks failed");
+      return kFALSE;
+    }
+    if (fCheckPointLevel > 1) WriteESD(esd, "ITS.tracking");
 
-  // TPC back propagation
-  Info("RunTracking", "TPC back propagation");
-  if (fTPCTracker->PropagateBack(esd) != 0) {
-    Error("RunTracking", "TPC backward propagation failed");
-    return kFALSE;
-  }
+    if (!fTRDTracker) {
+      Warning("RunTracking", "no TRD tracker");
+    } else {
+      // ITS back propagation
+      Info("RunTracking", "ITS back propagation");
+      if (fITSTracker->PropagateBack(esd) != 0) {
+	Error("RunTracking", "ITS backward propagation failed");
+	return kFALSE;
+      }
+      if (fCheckPointLevel > 1) WriteESD(esd, "ITS.back");
 
-  // TRD back propagation
-  Info("RunTracking", "TRD back propagation");
-  fTRDLoader->LoadRecPoints("read");
-  TTree* trdTree = fTRDLoader->TreeR();
-  if (!trdTree) {
-    Error("RunTracking", "Can't get the TRD cluster tree");
-    return kFALSE;
-  }     
-  fTRDTracker->LoadClusters(trdTree);
-  if (fTRDTracker->PropagateBack(esd) != 0) {
-    Error("RunTracking", "TRD backward propagation failed");
-    return kFALSE;
-  }
+      // TPC back propagation
+      Info("RunTracking", "TPC back propagation");
+      if (fTPCTracker->PropagateBack(esd) != 0) {
+	Error("RunTracking", "TPC backward propagation failed");
+	return kFALSE;
+      }
+      if (fCheckPointLevel > 1) WriteESD(esd, "TPC.back");
 
-  // TOF back propagation
-  Info("RunTracking", "TOF back propagation");
-  fTOFLoader->LoadDigits("read");
-  TTree* tofTree = fTOFLoader->TreeD();
-  if (!tofTree) {
-    Error("RunTracking", "Can't get the TOF digits tree");
-    return kFALSE;
-  }     
-  fTOFTracker->LoadClusters(tofTree);
-  if (fTOFTracker->PropagateBack(esd) != 0) {
-    Error("RunTracking", "TOF backward propagation failed");
-    return kFALSE;
-  }
-  fTOFTracker->UnloadClusters();
-  fTOFLoader->UnloadDigits();
+      // TRD back propagation
+      Info("RunTracking", "TRD back propagation");
+      fTRDLoader->LoadRecPoints("read");
+      TTree* trdTree = fTRDLoader->TreeR();
+      if (!trdTree) {
+	Error("RunTracking", "Can't get the TRD cluster tree");
+	return kFALSE;
+      }
+      fTRDTracker->LoadClusters(trdTree);
+      if (fTRDTracker->PropagateBack(esd) != 0) {
+	Error("RunTracking", "TRD backward propagation failed");
+	return kFALSE;
+      }
+      if (fCheckPointLevel > 1) WriteESD(esd, "TRD.back");
 
-  // TRD inward refit
-  Info("RunTracking", "TRD inward refit");
-  if (fTRDTracker->RefitInward(esd) != 0) {
-    Error("RunTracking", "TRD inward refit failed");
-    return kFALSE;
-  }
-  fTRDTracker->UnloadClusters();
-  fTRDLoader->UnloadRecPoints();
+      if (!fTOFTracker) {
+	Warning("RunTracking", "no TOF tracker");
+      } else {
+	// TOF back propagation
+	Info("RunTracking", "TOF back propagation");
+	fTOFLoader->LoadDigits("read");
+	TTree* tofTree = fTOFLoader->TreeD();
+	if (!tofTree) {
+	  Error("RunTracking", "Can't get the TOF digits tree");
+	  return kFALSE;
+	}
+	fTOFTracker->LoadClusters(tofTree);
+	if (fTOFTracker->PropagateBack(esd) != 0) {
+	  Error("RunTracking", "TOF backward propagation failed");
+	  return kFALSE;
+	}
+	if (fCheckPointLevel > 1) WriteESD(esd, "TOF.back");
+	fTOFTracker->UnloadClusters();
+	fTOFLoader->UnloadDigits();
+      }
+
+      // TRD inward refit
+      Info("RunTracking", "TRD inward refit");
+      if (fTRDTracker->RefitInward(esd) != 0) {
+	Error("RunTracking", "TRD inward refit failed");
+	return kFALSE;
+      }
+      if (fCheckPointLevel > 1) WriteESD(esd, "TRD.refit");
+      fTRDTracker->UnloadClusters();
+      fTRDLoader->UnloadRecPoints();
     
-  // TPC inward refit
-  Info("RunTracking", "TPC inward refit");
-  if (fTPCTracker->RefitInward(esd) != 0) {
-    Error("RunTracking", "TPC inward refit failed");
-    return kFALSE;
-  }
+      // TPC inward refit
+      Info("RunTracking", "TPC inward refit");
+      if (fTPCTracker->RefitInward(esd) != 0) {
+	Error("RunTracking", "TPC inward refit failed");
+	return kFALSE;
+      }
+      if (fCheckPointLevel > 1) WriteESD(esd, "TPC.refit");
+    
+      // ITS inward refit
+      Info("RunTracking", "ITS inward refit");
+      if (fITSTracker->RefitInward(esd) != 0) {
+	Error("RunTracking", "ITS inward refit failed");
+	return kFALSE;
+      }
+      if (fCheckPointLevel > 1) WriteESD(esd, "ITS.refit");
+
+    }  // if TRD tracker
+    fITSTracker->UnloadClusters();
+    fITSLoader->UnloadRecPoints();
+
+  }  // if ITS tracker
   fTPCTracker->UnloadClusters();
   fTPCLoader->UnloadRecPoints();
-    
-  // ITS inward refit
-  Info("RunTracking", "ITS inward refit");
-  if (fITSTracker->RefitInward(esd) != 0) {
-    Error("RunTracking", "ITS inward refit failed");
-    return kFALSE;
-  }
-  fITSTracker->UnloadClusters();
-  fITSLoader->UnloadRecPoints();
 
   Info("RunTracking", "execution time:");
   stopwatch.Print();
@@ -458,7 +466,7 @@ Bool_t AliReconstruction::RunTracking(AliESD* esd)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::FillESD(AliESD* esd, const TString& detectors)
+Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
 {
 // fill the event summary data
 
@@ -471,9 +479,12 @@ Bool_t AliReconstruction::FillESD(AliESD* esd, const TString& detectors)
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
     if (IsSelected(det->GetName(), detStr)) {
-      Info("FillESD", "filling ESD for %s", 
-	   det->GetName());
-      det->FillESD(esd);
+      if (!ReadESD(esd, det->GetName())) {
+	Info("FillESD", "filling ESD for %s", 
+	     det->GetName());
+	det->FillESD(esd);
+	if (fCheckPointLevel > 2) WriteESD(esd, det->GetName());
+      }
     }
   }
 
@@ -524,6 +535,76 @@ Bool_t AliReconstruction::IsSelected(TString detName, TString& detectors) const
 }
 
 //_____________________________________________________________________________
+Bool_t AliReconstruction::CreateTrackers()
+{
+// get the loaders and create the trackers
+
+  AliRun* aliRun = fRunLoader->GetAliRun();
+
+  fITSTracker = NULL;
+  fITSLoader = fRunLoader->GetLoader("ITSLoader");
+  if (!fITSLoader) {
+    Warning("CreateTrackers", "no ITS loader found");
+    if (fStopOnError) return kFALSE;
+  } else {
+    if (aliRun->GetDetector("ITS")) {
+      fITSTracker = aliRun->GetDetector("ITS")->CreateTracker();
+    }
+    if (!fITSTracker) {
+      Warning("CreateTrackers", "couldn't create a tracker for ITS");
+      if (fStopOnError) return kFALSE;
+    }
+  }
+    
+  fTPCTracker = NULL;
+  fTPCLoader = fRunLoader->GetLoader("TPCLoader");
+  if (!fTPCLoader) {
+    Error("CreateTrackers", "no TPC loader found");
+    if (fStopOnError) return kFALSE;
+  } else {
+    if (aliRun->GetDetector("TPC")) {
+      fTPCTracker = aliRun->GetDetector("TPC")->CreateTracker();
+    }
+    if (!fTPCTracker) {
+      Error("CreateTrackers", "couldn't create a tracker for TPC");
+      if (fStopOnError) return kFALSE;
+    }
+  }
+    
+  fTRDTracker = NULL;
+  fTRDLoader = fRunLoader->GetLoader("TRDLoader");
+  if (!fTRDLoader) {
+    Warning("CreateTrackers", "no TRD loader found");
+    if (fStopOnError) return kFALSE;
+  } else {
+    if (aliRun->GetDetector("TRD")) {
+      fTRDTracker = aliRun->GetDetector("TRD")->CreateTracker();
+    }
+    if (!fTRDTracker) {
+      Warning("CreateTrackers", "couldn't create a tracker for TRD");
+      if (fStopOnError) return kFALSE;
+    }
+  }
+    
+  fTOFTracker = NULL;
+  fTOFLoader = fRunLoader->GetLoader("TOFLoader");
+  if (!fTOFLoader) {
+    Warning("CreateTrackers", "no TOF loader found");
+    if (fStopOnError) return kFALSE;
+  } else {
+    if (aliRun->GetDetector("TOF")) {
+      fTOFTracker = aliRun->GetDetector("TOF")->CreateTracker();
+    }
+    if (!fTOFTracker) {
+      Warning("CreateTrackers", "couldn't create a tracker for TOF");
+      if (fStopOnError) return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 void AliReconstruction::CleanUp(TFile* file)
 {
 // delete trackers and the run loader and close and delete the file
@@ -544,4 +625,53 @@ void AliReconstruction::CleanUp(TFile* file)
     file->Close();
     delete file;
   }
+}
+
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::ReadESD(AliESD*& esd, const char* recStep) const
+{
+// read the ESD event from a file
+
+  if (!esd) return kFALSE;
+  char fileName[256];
+  sprintf(fileName, "ESD_%d.%d_%s.root", 
+	  esd->GetRunNumber(), esd->GetEventNumber(), recStep);
+  if (gSystem->AccessPathName(fileName)) return kFALSE;
+
+  Info("ReadESD", "reading ESD from file %s", fileName);
+  TFile* file = TFile::Open(fileName);
+  if (!file || !file->IsOpen()) {
+    Error("ReadESD", "opening %s failed", fileName);
+    delete file;
+    return kFALSE;
+  }
+
+  gROOT->cd();
+  delete esd;
+  esd = (AliESD*) file->Get("ESD");
+  file->Close();
+  delete file;
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::WriteESD(AliESD* esd, const char* recStep) const
+{
+// write the ESD event to a file
+
+  if (!esd) return;
+  char fileName[256];
+  sprintf(fileName, "ESD_%d.%d_%s.root", 
+	  esd->GetRunNumber(), esd->GetEventNumber(), recStep);
+
+  Info("WriteESD", "writing ESD to file %s", fileName);
+  TFile* file = TFile::Open(fileName, "recreate");
+  if (!file || !file->IsOpen()) {
+    Error("WriteESD", "opening %s failed", fileName);
+  } else {
+    esd->Write("ESD");
+    file->Close();
+  }
+  delete file;
 }
