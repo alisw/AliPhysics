@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.6  2001/10/19 05:29:38  alla
+bug in meduim fixed
+
 Revision 1.5  2001/07/27 13:03:12  hristov
 Default Branch split level set to 99
 
@@ -30,7 +33,7 @@ Revision 1.1  2000/03/24 17:46:58  alla
 Vertex reconstruction
 
 */ 
-#include <TObject.h>
+#include "TObject.h"
 #include "AliSTARTvertex.h"
 #include "AliSTARTdigit.h"
 #include "AliSTARThit.h"
@@ -40,6 +43,9 @@ Vertex reconstruction
 
 //#include "TTree.h"
 #include "TDirectory.h"
+#include <stdlib.h>
+#include <iostream.h>
+#include <fstream.h>
 
 ClassImp(AliSTARTvertex)
 
@@ -65,28 +71,27 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
   Float_t timePs;
   char nameTD[8],nameTR[8];
 
-  TBranch *bRec=0;
-  TBranch *bd;
   AliSTARTdigit *digits;
-  AliSTARTvertex *vertex;
+  AliSTARTvertex *fvertex;
  
-  Int_t buffersize=256;
- 
-  // TParticle *particle;
   digits = new AliSTARTdigit();
-  vertex = new AliSTARTvertex();
+  fvertex = new AliSTARTvertex();
 
  // Event ------------------------- LOOP  
    
-  sprintf(nameTD,"TreeD%d",evNumber);
+  gAlice->GetEvent(evNumber);
+
+  sprintf(nameTD,"START_D_%d",evNumber);
+  TObject *td = (TObject*)gDirectory->Get(nameTD);
   printf("%s\n",nameTD);
-  TTree *td = (TTree*)gDirectory->Get(nameTD);
-  bd = td->GetBranch("START");
-  bd->SetAddress(&digits);
-  bd->GetEvent(0);
-  sprintf(nameTR,"TreeR%d",evNumber);
-  TTree *tr = new TTree(nameTR,"START");
-  bRec = tr->Branch("START","AliSTARTvertex",&vertex,buffersize);
+  
+  if (!td) {
+    cerr<<"something wrong with output...."<<exit;
+    return;
+  }
+  td->Read(nameTD);
+  digits->Read(nameTD);
+  digits->Dump();
   if(digits->GetTime()!=999999)
     {
       timediff=digits->GetTime();     //time in number of channels
@@ -94,12 +99,28 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
       Float_t c = 299792458/1.e9;  //speed of light cm/ps
       //Float_t c = 0.3;  //speed of light mm/ps
       Float_t Zposit=timePs*c;// for 0 vertex
-      vertex->Set((Int_t) Zposit);
-      tr->Fill();
-      tr->Write();
+      cout<<" Zposit "<<Zposit<<endl;
+      fvertex->Set((Int_t) Zposit);
       }
-
+    TTree *outTree = gAlice->TreeR();
+    if (!outTree) {
+      cerr<<"something wrong with output...."<<exit;
+      return;
+    }
+    TTree *outTreeR = gAlice->TreeR();
+    if (!outTreeR) {
+      cerr<<"something wrong with output...."<<exit;
+      return;
+    }
+  sprintf(nameTR,"START_R_%d",evNumber);
+  printf("%s\n",nameTR);
+    TDirectory *wd = gDirectory;
+    outTreeR->GetDirectory()->cd();
+    fvertex->Write(nameTR);
+    wd->cd();
 }
+
+
 
 
 

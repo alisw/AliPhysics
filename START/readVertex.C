@@ -10,7 +10,7 @@ void readVertex(Int_t evNumber=1)
   // Connect the Root Galice file containing Geometry, Kine and Hits
 
   TFile *file =  (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-  if (!file) file = new TFile("galice.root","UPDATE");
+  if (!file) file = new TFile("production.root","UPDATE");
   
   // Get AliRun object from file or create it if not on file
   if (!gAlice) {
@@ -21,46 +21,45 @@ void readVertex(Int_t evNumber=1)
   char nameTD[8],nameTR[8];
 
   TH1F *hVertex = new TH1F("hVertex","Z position of vertex",100,-350,350);
+  TH1F *hRealVertex = new TH1F("hRealVertex","Z position of vertex",100,-350,350);
   
   digits = new AliSTARTdigit();
   vertex = new AliSTARTvertex();
-  TBranch *bd;
-  TBranch *bRec;
-
  // Event ------------------------- LOOP  
-  for (j=0; j<evNumber; j++){
-    sprintf(nameTD,"TreeD%d",j);
-    printf("%s\n",nameTD);
-    TTree *TD = (TTree*)gDirectory->Get(nameTD);
-    bd = TD->GetBranch("START");
-    bd->SetAddress(&digits);
-    bd->GetEvent(0); 
-    printf(" Digits: %d \n ",digits->GetTime()); 
+  for (Int_t j=0; j<evNumber; j++){
     
-    
-    sprintf(nameTR,"TreeR%d",j);
+    sprintf(nameTR,"START_R_%d",j);
     printf("%s\n",nameTR);
-    TTree *TR = (TTree*)gDirectory->Get(nameTR);
-    bRec = TR->GetBranch("START");
-    bRec->SetAddress(&vertex);
-    bRec->GetEvent(0);
-    if(digits->GetTime()!=999999){
-      hVertex->Fill(vertex->GetVertex());
-      // printf(" Z position %f\n",vertex->GetVertex());
-    }
+    TObject *tr = (TObject*)gDirectory->Get(nameTR);
+    cout<<" tr "<<tr<<endl;
+    vertex->Read(nameTR);
+    
+    hVertex->Fill(vertex->GetVertex());
+    printf(" Z position %f\n",vertex->GetVertex());
+    gAlice->GetEvent(j);
+    AliHeader *header = gAlice->GetHeader();
+    AliGenEventHeader* genHeader = header->GenEventHeader();
+    TArrayF *o = new TArrayF(3); 
+    genHeader->PrimaryVertex(*o);
+    cout<<" o "<<o<<endl;
+    Float_t zRealVertex=o->At(2);
+    cout<<" zRealVertex "<<zRealVertex<<endl;
+    hRealVertex->Fill(zRealVertex);
+       
   }
-    Hfile = new TFile("figs1.root","RECREATE","Histograms for START Vertex");
+    Hfile = new TFile("figs.root","UPDATE","Histograms for START Vertex");
    printf("Writting histograms to root file \n");
    Hfile->cd();
 
  //Create a canvas, set the view range, show histograms
    
   gStyle->SetOptStat(111111);
-  TCanvas *c1 = new TCanvas("c1","Alice START Time (vertex)",400,10,600,600);
-
   hVertex->SetXTitle("vertex position, mm");
   hVertex->SetYTitle("number of events");
   hVertex->Write();
+  hRealVertex->SetXTitle("vertex position, mm");
+  hRealVertex->SetYTitle("number of events");
+  hRealVertex->Write();
 
 } // end of macro
 

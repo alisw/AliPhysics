@@ -137,7 +137,6 @@ void AliSTARTDigitizer::Exec(Option_t* option)
 	}//time for right shoulder
 	if(volume==2){            
 	  timeleft = startHit->fTime;
-	  //                printf("timeleft %f\n",timeleft);
 	  if(timeleft<besttimeleft) {
 	    besttimeleft=timeleft;
 	  } //timeleftbest
@@ -147,10 +146,12 @@ void AliSTARTDigitizer::Exec(Option_t* option)
  
     //folding with experimental time distribution
     Float_t besttimerightGaus=gRandom->Gaus(besttimeright,0.05);
+    Float_t koef=69.7/350.;
+    besttimeleft=koef*besttimeleft;
     Float_t besttimeleftGaus=gRandom->Gaus(besttimeleft,0.05);
     timediff=besttimerightGaus-besttimeleftGaus;
     meanTime=(besttimerightGaus+besttimeleftGaus)/2.;
-    if ( TMath::Abs(timediff)<TMath::Abs(10.) && meanTime<TMath::Abs(7.1)) 
+    if ( TMath::Abs(timediff)<TMath::Abs(3.) && meanTime<TMath::Abs(5.)) 
      {
        //we assume centre of bunch is 5ns after TTS signal
        //TOF values are relative of the end of bunch
@@ -161,7 +162,6 @@ void AliSTARTDigitizer::Exec(Option_t* option)
        Float_t t2=1000.*besttimerightGaus;
        t1=t1/channelWidth+ppBunch; //time in ps to channelWidth
        t2=t2/channelWidth+ppBunch; //time in ps to channelWidth
-     
        timeav=(t1+t2)/2.;
      
        // Time to TDC signal
@@ -172,7 +172,7 @@ void AliSTARTDigitizer::Exec(Option_t* option)
        timeAv = (Int_t)(timeav);   // time (ps) channel numbres
        timeDiff = (Int_t)(timediff); // time ( ps) channel numbres
        fdigits->Set(timeAv,timeDiff);
-      fdigits->Print();
+       fdigits->Print();
      }
     else
       {timeAv=999999; timeDiff=99999;}
