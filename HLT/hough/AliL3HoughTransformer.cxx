@@ -1,6 +1,7 @@
 //Author:        Anders Strand Vestbo
 //Last Modified: 14.09.01
 
+#include "AliL3Logging.h"
 #include "AliL3HoughTransformer.h"
 #include "AliL3Defs.h"
 #include "AliL3Transform.h"
@@ -46,6 +47,18 @@ void AliL3HoughTransformer::DeleteHistograms()
   delete [] fParamSpace;
 }
 
+void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t pt_min,
+					     Int_t nybin,Double_t phimin,Double_t phimax)
+{
+  //Set the minimum absolute pt value, and phi0 angles given in degrees.
+
+  Double_t torad = 3.1415/180;
+  Double_t bfact = 0.0029980;
+  Double_t bfield = 0.2;
+  Double_t x = bfact*bfield/pt_min;
+  CreateHistograms(nxbin,-1.*x,x,nybin,phimin*torad,phimax*torad);
+}
+
 void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,
 					     Int_t nybin,Double_t ymin,Double_t ymax)
 {
@@ -58,6 +71,23 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t 
       sprintf(histname,"paramspace_%d",i);
       fParamSpace[i] = new AliL3Histogram(histname,"",nxbin,xmin,xmax,nybin,ymin,ymax);
     }
+}
+
+void AliL3HoughTransformer::Reset()
+{
+  //Reset all the histograms, and memory
+
+  if(!fParamSpace)
+    {
+      LOG(AliL3Log::kWarning,"AliL3HoughTransformer::Reset","Histograms")
+	<<"No histograms to reset"<<ENDLOG;
+      return;
+    }
+  
+  for(Int_t i=0; i<fNEtaSegments; i++)
+    fParamSpace[i]->Reset();
+  fNDigitRowData = 0;
+  fDigitRowData = 0;
 }
 
 void AliL3HoughTransformer::SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr)
@@ -114,7 +144,7 @@ void AliL3HoughTransformer::TransformCircle()
 	  if(eta_index < 0 || eta_index >= fNEtaSegments)
 	    continue;
 	  
-	  //Get the correct histogram:
+	  //Get the correct histogrampointer:
 	  AliL3Histogram *hist = fParamSpace[eta_index];
 	  if(!hist)
 	    {
@@ -123,7 +153,7 @@ void AliL3HoughTransformer::TransformCircle()
 	    }
 
 	  //Start transformation
-	  Float_t R = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2]);
+	  Float_t R = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]); // + xyz[2]*xyz[2]);
 	  Float_t phi = fTransform->GetPhi(xyz);
 	  
 	  //Fill the histogram along the phirange
