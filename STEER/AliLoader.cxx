@@ -186,6 +186,19 @@ Int_t AliLoader::SetEvent()
 }
 /******************************************************************/
 
+void AliLoader::UnloadAll()
+{
+ //calls UnloadAll for all base laoders
+ //Unloads everything
+ TIter next(fDataLoaders);
+ AliDataLoader* dl;
+ while ((dl = (AliDataLoader*)next()))
+  {
+    dl->UnloadAll();
+  }
+}
+/******************************************************************/
+
 Int_t AliLoader::GetEvent()
 {
  //changes to proper root  directory and tries to load data from files to folders

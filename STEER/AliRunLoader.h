@@ -111,7 +111,15 @@ class AliRunLoader: public TNamed
     Int_t       LoadDigits(Option_t* detectors = "all",Option_t* opt = "RAED");
     Int_t       LoadRecPoints(Option_t* detectors = "all",Option_t* opt = "RAED");
     Int_t       LoadTracks(Option_t* detectors = "all",Option_t* opt = "RAED");
+    Int_t       LoadRecParticles(Option_t* detectors = "all",Option_t* opt = "RAED");
     
+    void        UnloadHits(Option_t* detectors = "all");
+    void        UnloadSDigits(Option_t* detectors = "all");
+    void        UnloadDigits(Option_t* detectors = "all");
+    void        UnloadRecPoints(Option_t* detectors = "all");
+    void        UnloadTracks(Option_t* detectors = "all");
+    void        UnloadRecParticles(Option_t* detectors = "all");
+    void        UnloadAll(Option_t* detectors = "all");    
     
     void        AddLoader(AliLoader* loader);
     void        AddLoader(AliDetector* det);
@@ -144,6 +152,14 @@ class AliRunLoader: public TNamed
     Int_t GetDebug() const {return AliLoader::GetDebug();}
     void cd(){fgRunLoader = this;}
     void Synchronize();
+    
+    AliLoader*    GetDetectorLoader(const char* detname);
+    TTree*        GetTreeH(const char* detname, Bool_t maketree);
+    TTree*        GetTreeS(const char* detname, Bool_t maketree);
+    TTree*        GetTreeD(const char* detname, Bool_t maketree);
+    TTree*        GetTreeR(const char* detname, Bool_t maketree);
+    TTree*        GetTreeT(const char* detname, Bool_t maketree);
+    TTree*        GetTreeP(const char* detname, Bool_t maketree);
     
   protected:
     /**********************************************/
@@ -199,13 +215,13 @@ class AliRunLoader: public TNamed
   /******************************************/
     static AliRunLoader* GetRunLoader(const char* eventfoldername);
     static AliRunLoader* GetRunLoader(){return fgRunLoader;}
-    static AliLoader*    GetDetectorLoader(const char* detname);
-    static TTree*        GetTreeH(const char* detname, Bool_t maketree);
-    static TTree*        GetTreeS(const char* detname, Bool_t maketree);
-    static TTree*        GetTreeD(const char* detname, Bool_t maketree);
-    static TTree*        GetTreeR(const char* detname, Bool_t maketree);
-    static TTree*        GetTreeT(const char* detname, Bool_t maketree);
-    static TTree*        GetTreeP(const char* detname, Bool_t maketree);
+    static AliLoader*    GetDetectorLoader(const char* detname, const char* eventfoldername);
+    static TTree*        GetTreeH(const char* detname, Bool_t maketree, const char* eventfoldername);
+    static TTree*        GetTreeS(const char* detname, Bool_t maketree, const char* eventfoldername);
+    static TTree*        GetTreeD(const char* detname, Bool_t maketree, const char* eventfoldername);
+    static TTree*        GetTreeR(const char* detname, Bool_t maketree, const char* eventfoldername);
+    static TTree*        GetTreeT(const char* detname, Bool_t maketree, const char* eventfoldername);
+    static TTree*        GetTreeP(const char* detname, Bool_t maketree, const char* eventfoldername);
 
 //    static AliRunDigitizer* GetRunDigitizer();
 //  Tasks are supposed to be singletons, that is why following methods are static

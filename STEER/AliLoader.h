@@ -133,6 +133,7 @@ class AliLoader: public TNamed
     void           UnloadRecPoints(){GetRecPointsDataLoader()->Unload();}
     void           UnloadTracks(){GetTracksDataLoader()->Unload();}
     void           UnloadRecParticles(){GetRecParticlesDataLoader()->Unload();}
+    void           UnloadAll();
 
     virtual Int_t  ReloadHits(){return GetHitsDataLoader()->Reload();}  //unload and load again Hits
     virtual Int_t  ReloadSDigits(){return GetSDigitsDataLoader()->Reload();} //unload and load again 

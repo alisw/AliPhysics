@@ -1739,14 +1739,14 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
   //-----------------------------------------------------------------
   // This is a track finder.
   //-----------------------------------------------------------------
-  TTree* clustersTree = AliRunLoader::GetTreeR("TPC", kFALSE);
+  TTree* clustersTree = AliRunLoader::GetTreeR("TPC", kFALSE,AliConfig::fgkDefaultEventFolderName);
   if (!clustersTree) {
     Error("Clusters2Tracks", "no clusters found");
     return 1;
   }
   fClustersArray.ConnectTree(clustersTree);
 
-  TTree* tracksTree = AliRunLoader::GetTreeT("TPC", kTRUE);
+  TTree* tracksTree = AliRunLoader::GetTreeT("TPC", kTRUE,AliConfig::fgkDefaultEventFolderName);
   TTree& tracktree = *tracksTree;
 //  TTree seedtree("Seeds","Seeds");
   AliTPCtrack *iotrack=0;
@@ -1852,7 +1852,7 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
 //  seedtree.Write();
   cerr<<"Number of found tracks : "<<"\t"<<found<<endl;
   
-  AliRunLoader::GetDetectorLoader("TPC")->WriteTracks("OVERWRITE");
+  AliRunLoader::GetDetectorLoader("TPC",AliConfig::fgkDefaultEventFolderName)->WriteTracks("OVERWRITE");
 
   return 0;
 }

@@ -25,22 +25,22 @@
 //////////////////////////////////////////////////////////////////////////////////////
 /**************************************************************************/
 
+#include <TROOT.h>
 #include <TString.h>
 #include <TFolder.h>
+#include <TTask.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TROOT.h>
 #include <TBranch.h>
 #include <TGeometry.h>
-#include <TTask.h>
 #include <TError.h>
+#include <TObjArray.h>
 
 #include "AliRun.h"
 #include "AliConfig.h"
 #include "AliLoader.h"
 #include "AliHeader.h"
 #include "AliStack.h"
-#include "TObjArray.h"
 #include "AliDetector.h"
 #include "AliRunDigitizer.h"
 
@@ -97,6 +97,8 @@ AliRunLoader::AliRunLoader(const char* eventfoldername):
 AliRunLoader::~AliRunLoader()
 {
 //dtor
+  if (fgRunLoader == this) fgRunLoader = 0x0;
+  
   UnloadHeader();
   UnloadgAlice();
   
@@ -1108,7 +1110,7 @@ Int_t AliRunLoader::LoadSDigits(Option_t* detectors,Option_t* opt)
   else
    {
      GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
-     loaders = &arr;//get the pointer array
+     loaders = &arr;//get the pointer to array
    }   
 
   TIter next(loaders);
@@ -1148,7 +1150,6 @@ Int_t AliRunLoader::LoadDigits(Option_t* detectors,Option_t* opt)
    }
   return 0;
 } 
-
 /**************************************************************************/
 
 Int_t AliRunLoader::LoadRecPoints(Option_t* detectors,Option_t* opt)
@@ -1177,7 +1178,34 @@ Int_t AliRunLoader::LoadRecPoints(Option_t* detectors,Option_t* opt)
    }
   return 0;
 } 
+/**************************************************************************/
 
+Int_t AliRunLoader::LoadRecParticles(Option_t* detectors,Option_t* opt)
+{
+//LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
+
+  TObjArray* Loaders;
+  TObjArray arr;
+
+  const char* oAll = strstr(detectors,"all");
+  if (oAll)
+   {
+     Loaders = fLoaders;
+   }
+  else
+   {
+     GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
+     Loaders = &arr;//get the pointer array
+   }   
+
+  TIter next(Loaders);
+  AliLoader *Loader;
+  while((Loader = (AliLoader*)next())) 
+   {
+    Loader->LoadRecParticles(opt);
+   }
+  return 0;
+} 
 /**************************************************************************/
 
 Int_t AliRunLoader::LoadTracks(Option_t* detectors,Option_t* opt)
@@ -1206,7 +1234,189 @@ Int_t AliRunLoader::LoadTracks(Option_t* detectors,Option_t* opt)
    }
   return 0;
 } 
+/**************************************************************************/
 
+void AliRunLoader::UnloadHits(Option_t* detectors)
+{
+  //unloads hits for detectors specified in parameter
+  TObjArray* loaders;
+  TObjArray arr;
+
+  const char* oAll = strstr(detectors,"all");
+  if (oAll)
+   {
+     loaders = fLoaders;
+   }
+  else
+   {
+     GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
+     loaders = &arr;//get the pointer to array
+   }   
+
+  TIter next(loaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
+   {
+    loader->UnloadHits();
+   }
+}
+/**************************************************************************/
+
+void AliRunLoader::UnloadSDigits(Option_t* detectors)
+{
+  //unloads SDigits for detectors specified in parameter
+  TObjArray* loaders;
+  TObjArray arr;
+
+  const char* oAll = strstr(detectors,"all");
+  if (oAll)
+   {
+     loaders = fLoaders;
+   }
+  else
+   {
+     GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
+     loaders = &arr;//get the pointer to array
+   }   
+
+  TIter next(loaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
+   {
+    loader->UnloadSDigits();
+   }
+}
+/**************************************************************************/
+
+void AliRunLoader::UnloadDigits(Option_t* detectors)
+{
+  //unloads Digits for detectors specified in parameter
+  TObjArray* loaders;
+  TObjArray arr;
+
+  const char* oAll = strstr(detectors,"all");
+  if (oAll)
+   {
+     loaders = fLoaders;
+   }
+  else
+   {
+     GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
+     loaders = &arr;//get the pointer to array
+   }   
+
+  TIter next(loaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
+   {
+    loader->UnloadDigits();
+   }
+}
+/**************************************************************************/
+
+void AliRunLoader::UnloadRecPoints(Option_t* detectors)
+{
+  //unloads RecPoints for detectors specified in parameter
+  TObjArray* loaders;
+  TObjArray arr;
+
+  const char* oAll = strstr(detectors,"all");
+  if (oAll)
+   {
+     loaders = fLoaders;
+   }
+  else
+   {
+     GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
+     loaders = &arr;//get the pointer to array
+   }   
+
+  TIter next(loaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
+   {
+    loader->UnloadRecPoints();
+   }
+}
+/**************************************************************************/
+
+void AliRunLoader::UnloadAll(Option_t* detectors)
+{
+  //calls UnloadAll for detectors names specified in parameter
+  // option "all" passed can be passed
+  TObjArray* loaders;
+  TObjArray arr;
+
+  const char* oAll = strstr(detectors,"all");
+  if (oAll)
+   {
+     loaders = fLoaders;
+   }
+  else
+   {
+     GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
+     loaders = &arr;//get the pointer to array
+   }   
+
+  TIter next(loaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
+   {
+    loader->UnloadAll();
+   }
+}
+/**************************************************************************/
+
+void AliRunLoader::UnloadTracks(Option_t* detectors)
+{
+  //unloads Tracks for detectors specified in parameter
+  TObjArray* loaders;
+  TObjArray arr;
+
+  const char* oAll = strstr(detectors,"all");
+  if (oAll)
+   {
+     loaders = fLoaders;
+   }
+  else
+   {
+     GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
+     loaders = &arr;//get the pointer to array
+   }   
+
+  TIter next(loaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
+   {
+    loader->UnloadTracks();
+   }
+}
+/**************************************************************************/
+
+void AliRunLoader::UnloadRecParticles(Option_t* detectors)
+{
+  //unloads Particles for detectors specified in parameter
+  TObjArray* loaders;
+  TObjArray arr;
+
+  const char* oAll = strstr(detectors,"all");
+  if (oAll)
+   {
+     loaders = fLoaders;
+   }
+  else
+   {
+     GetListOfDetectors(detectors,arr);//this method looks for all Loaders corresponding to names (many) specified in detectors option
+     loaders = &arr;//get the pointer to array
+   }   
+
+  TIter next(loaders);
+  AliLoader *loader;
+  while((loader = (AliLoader*)next())) 
+   {
+    loader->UnloadRecParticles();
+   }
+}
 /**************************************************************************/
 
 AliRunLoader* AliRunLoader::GetRunLoader(const char* eventfoldername)
@@ -1223,23 +1433,43 @@ AliRunLoader* AliRunLoader::GetRunLoader(const char* eventfoldername)
 }
 /**************************************************************************/
 
+AliLoader* AliRunLoader::GetDetectorLoader(const char* detname, const char* eventfoldername)
+{
+//get the loader of the detector with the given name from the global
+//run loader object
+  AliRunLoader* runLoader = GetRunLoader(eventfoldername);
+  if (!runLoader) {
+    ::Error("AliRunLoader::GetDetectorLoader","No run loader found");
+    return NULL;
+  }
+  return runLoader->GetDetectorLoader(detname);
+}
+/**************************************************************************/
+
 AliLoader* AliRunLoader::GetDetectorLoader(const char* detname)
 {
 //get the loader of the detector with the given name from the global
 //run loader object
-  AliRunLoader* runLoader = GetRunLoader();
-  if (!runLoader) {
-    cerr << "AliRunLoader::GetDetectorLoader: no run loader found\n";
-    return NULL;
-  }
+  
   char loadername[256];
   sprintf(loadername, "%sLoader", detname);
-  AliLoader* loader = runLoader->GetLoader(loadername);
+  AliLoader* loader = GetLoader(loadername);
   if (!loader) {
-    runLoader->Error("GetDetectorLoader", "no loader for %s found", detname);
+    Error("GetDetectorLoader", "No loader for %s found", detname);
     return NULL;
   }
   return loader;
+}
+/**************************************************************************/
+
+TTree* AliRunLoader::GetTreeH(const char* detname, Bool_t maketree, const char* eventfoldername)
+{
+//get the tree with hits of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname,eventfoldername);
+  if (!loader) return NULL;
+  if (!loader->TreeH() && maketree) loader->MakeTree("H");
+  return loader->TreeH();
 }
 
 /**************************************************************************/
@@ -1253,7 +1483,17 @@ TTree* AliRunLoader::GetTreeH(const char* detname, Bool_t maketree)
   if (!loader->TreeH() && maketree) loader->MakeTree("H");
   return loader->TreeH();
 }
+/**************************************************************************/
 
+TTree* AliRunLoader::GetTreeS(const char* detname, Bool_t maketree,const char* eventfoldername)
+{
+//get the tree with summable digits of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname,eventfoldername);
+  if (!loader) return NULL;
+  if (!loader->TreeS() && maketree) loader->MakeTree("S");
+  return loader->TreeS();
+}
 /**************************************************************************/
 
 TTree* AliRunLoader::GetTreeS(const char* detname, Bool_t maketree)
@@ -1265,7 +1505,17 @@ TTree* AliRunLoader::GetTreeS(const char* detname, Bool_t maketree)
   if (!loader->TreeS() && maketree) loader->MakeTree("S");
   return loader->TreeS();
 }
+/**************************************************************************/
 
+TTree* AliRunLoader::GetTreeD(const char* detname, Bool_t maketree,const char* eventfoldername)
+{
+//get the tree with digits of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname,eventfoldername);
+  if (!loader) return NULL;
+  if (!loader->TreeD() && maketree) loader->MakeTree("D");
+  return loader->TreeD();
+}
 /**************************************************************************/
 
 TTree* AliRunLoader::GetTreeD(const char* detname, Bool_t maketree)
@@ -1277,7 +1527,16 @@ TTree* AliRunLoader::GetTreeD(const char* detname, Bool_t maketree)
   if (!loader->TreeD() && maketree) loader->MakeTree("D");
   return loader->TreeD();
 }
-
+/**************************************************************************/
+TTree* AliRunLoader::GetTreeR(const char* detname, Bool_t maketree,const char* eventfoldername)
+{
+//get the tree with clusters of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname,eventfoldername);
+  if (!loader) return NULL;
+  if (!loader->TreeR() && maketree) loader->MakeTree("R");
+  return loader->TreeR();
+}
 /**************************************************************************/
 
 TTree* AliRunLoader::GetTreeR(const char* detname, Bool_t maketree)
@@ -1289,7 +1548,17 @@ TTree* AliRunLoader::GetTreeR(const char* detname, Bool_t maketree)
   if (!loader->TreeR() && maketree) loader->MakeTree("R");
   return loader->TreeR();
 }
+/**************************************************************************/
 
+TTree* AliRunLoader::GetTreeT(const char* detname, Bool_t maketree,const char* eventfoldername)
+{
+//get the tree with tracks of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname,eventfoldername);
+  if (!loader) return NULL;
+  if (!loader->TreeT() && maketree) loader->MakeTree("T");
+  return loader->TreeT();
+}
 /**************************************************************************/
 
 TTree* AliRunLoader::GetTreeT(const char* detname, Bool_t maketree)
@@ -1301,7 +1570,17 @@ TTree* AliRunLoader::GetTreeT(const char* detname, Bool_t maketree)
   if (!loader->TreeT() && maketree) loader->MakeTree("T");
   return loader->TreeT();
 }
+/**************************************************************************/
 
+TTree* AliRunLoader::GetTreeP(const char* detname, Bool_t maketree,const char* eventfoldername)
+{
+//get the tree with particles of the detector with the given name
+//if maketree is true and the tree does not exist, the tree is created
+  AliLoader* loader = GetDetectorLoader(detname,eventfoldername);
+  if (!loader) return NULL;
+  if (!loader->TreeP() && maketree) loader->MakeTree("P");
+  return loader->TreeP();
+}
 /**************************************************************************/
 
 TTree* AliRunLoader::GetTreeP(const char* detname, Bool_t maketree)

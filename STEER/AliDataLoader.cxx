@@ -245,6 +245,8 @@ void AliDataLoader::Unload()
 void AliDataLoader::UnloadAll()
 {
 //Unloads all data and tasks
+ if ( fFile == 0x0 ) return; //nothing loaded
+ 
  TIter next(fBaseLoaders);
  AliBaseLoader* bl;
  while ((bl = (AliBaseLoader*)next()))
