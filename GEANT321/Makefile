@@ -57,7 +57,9 @@ CFLAGS      := $(COPT) $(CLIBCOPT) $(CLIBDEFS) -I.
 # FORTRAN compilation flags
 
 FFLAGS      := $(FOPT) $(CLIBFOPT) $(CLIBDEFS) -I.
-FFLAGS      := $(filter-out -O%,$(FFLAGS))  
+ifeq ($(PLATFORM),linux)
+   FFLAGS      := $(filter-out -O%,$(FFLAGS))  
+endif
  
 ##### TARGETS #####
  
