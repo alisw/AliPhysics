@@ -29,7 +29,7 @@ class AliEMCALJetFinderInputPrep : public TTask
 	Int_t FillFromFile(TString *filename, AliEMCALJetFinderFileType_t filetype, Int_t EventNumber);
 	AliEMCALJetFinderInput* GetJetFinderInput()  {return &fInputObject;}
 	void SetPythiaComparison(Bool_t value) {fPythiaComparison = value;}
-	Bool_t GetPythiaComparison(Bool_t value) {return fPythiaComparison;}
+	Bool_t GetPythiaComparison() {return fPythiaComparison;}
 	protected:
 	Int_t 		fDebug; // The debug flag to be used for messages
 	AliEMCALJetFinderInput 	fInputObject;	// The JetFinder input object to be filled
