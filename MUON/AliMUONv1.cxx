@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.28  2001/05/16 14:57:17  alibrary
+New files for folders and Stack
+
 Revision 1.27  2001/04/06 11:24:43  morsch
 Dependency on implementations of AliSegmentation and AliMUONResponse moved to AliMUONFactory class.
 Static method Build() builds the MUON system out of chambers, segmentation and response.
@@ -665,11 +668,26 @@ void AliMUONv1::CreateGeometry()
      tpar[0] = iChamber->RInner()-dframep; 
      tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
      tpar[2] = dstation/5;
-     gMC->Gsvolu("C05M", "TUBE", idAir, tpar, 3);
-     gMC->Gsvolu("C06M", "TUBE", idAir, tpar, 3);
-     gMC->Gspos("C05M", 1, "ALIC", 0., 0., zpos1 , 0, "MANY");
-     gMC->Gspos("C06M", 1, "ALIC", 0., 0., zpos2 , 0, "MANY");
- 
+
+     char *slats5Mother = "C05M";
+     char *slats6Mother = "C06M";
+     Float_t zoffs5 = 0;
+     Float_t zoffs6 = 0;
+
+     if (gMC->VolId("DDIP")) {
+       slats5Mother="DDIP";
+       slats6Mother="DDIP";
+
+       zoffs5 = zpos1;
+       zoffs6 = zpos2;
+     }
+     else {
+       gMC->Gsvolu("C05M", "TUBE", idAir, tpar, 3);
+       gMC->Gsvolu("C06M", "TUBE", idAir, tpar, 3);
+       gMC->Gspos("C05M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
+       gMC->Gspos("C06M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
+     }
+
      // volumes for slat geometry (xx=5,..,10 chamber id): 
      // Sxx0 Sxx1 Sxx2 Sxx3  -->   Slat Mother volumes 
      // SxxG                          -->   Sensitive volume (gas)
@@ -730,20 +748,20 @@ void AliMUONv1::CreateGeometry()
        Float_t zSlat = (i%2 ==0)? -spar[2] : spar[2]; 
        sprintf(volNam5,"S05%d",i);
        gMC->Gsvolu(volNam5,"BOX",slatMaterial,spar2,3);
-       gMC->Gspos(volNam5, i*4+1,"C05M", xSlat32, ySlat31, zSlat+2.*dzCh3, 0, "ONLY");
-       gMC->Gspos(volNam5, i*4+2,"C05M",-xSlat32, ySlat31, zSlat-2.*dzCh3, 0, "ONLY");
+       gMC->Gspos(volNam5, i*4+1,slats5Mother, xSlat32, ySlat31, zoffs5+zSlat+2.*dzCh3, 0, "ONLY");
+       gMC->Gspos(volNam5, i*4+2,slats5Mother,-xSlat32, ySlat31, zoffs5+zSlat-2.*dzCh3, 0, "ONLY");
        
        if (i>0) { 
-	 gMC->Gspos(volNam5, i*4+3,"C05M", xSlat32, ySlat32, zSlat+2.*dzCh3, 0, "ONLY");
-	 gMC->Gspos(volNam5, i*4+4,"C05M",-xSlat32, ySlat32, zSlat-2.*dzCh3, 0, "ONLY");
+	 gMC->Gspos(volNam5, i*4+3,slats5Mother, xSlat32, ySlat32, zoffs5+zSlat+2.*dzCh3, 0, "ONLY");
+	 gMC->Gspos(volNam5, i*4+4,slats5Mother,-xSlat32, ySlat32, zoffs5+zSlat-2.*dzCh3, 0, "ONLY");
        }
        sprintf(volNam6,"S06%d",i);
        gMC->Gsvolu(volNam6,"BOX",slatMaterial,spar,3);
-       gMC->Gspos(volNam6, i*4+1,"C06M", xSlat3, ySlat31, zSlat+2.*dzCh3, 0, "ONLY");
-       gMC->Gspos(volNam6, i*4+2,"C06M",-xSlat3, ySlat31, zSlat-2.*dzCh3, 0, "ONLY");
+       gMC->Gspos(volNam6, i*4+1,slats6Mother, xSlat3, ySlat31, zoffs6+zSlat+2.*dzCh3, 0, "ONLY");
+       gMC->Gspos(volNam6, i*4+2,slats6Mother,-xSlat3, ySlat31, zoffs6+zSlat-2.*dzCh3, 0, "ONLY");
        if (i>0) { 
-	 gMC->Gspos(volNam6, i*4+3,"C06M", xSlat3, ySlat32, zSlat+2.*dzCh3, 0, "ONLY");
-	 gMC->Gspos(volNam6, i*4+4,"C06M",-xSlat3, ySlat32, zSlat-2.*dzCh3, 0, "ONLY");
+	 gMC->Gspos(volNam6, i*4+3,slats6Mother, xSlat3, ySlat32, zoffs6+zSlat+2.*dzCh3, 0, "ONLY");
+	 gMC->Gspos(volNam6, i*4+4,slats6Mother,-xSlat3, ySlat32, zoffs6+zSlat-2.*dzCh3, 0, "ONLY");
        }
      }
 
@@ -900,18 +918,17 @@ void AliMUONv1::CreateGeometry()
        Float_t xvol=(pcbLength+xdiv)/2.+1.999;
        Float_t yvol=ydiv + dydiv/2.; 
        //printf ("y ll = %f y ur = %f \n",yvol - divpar[1], yvol + divpar[1]); 
-       gMC->Gsposp("S05G",imax+4*idiv+1,"C05M", xvol, yvol, z1+z2, 0, "ONLY",divpar,3);
-       gMC->Gsposp("S06G",imax+4*idiv+1,"C06M", xvol, yvol, z1+z2, 0, "ONLY",divpar,3);
-       gMC->Gsposp("S05G",imax+4*idiv+2,"C05M", xvol,-yvol, z1+z2, 0, "ONLY",divpar,3);
-       gMC->Gsposp("S06G",imax+4*idiv+2,"C06M", xvol,-yvol, z1+z2, 0, "ONLY",divpar,3);
-       gMC->Gsposp("S05G",imax+4*idiv+3,"C05M",-xvol, yvol, z1-z2, 0, "ONLY",divpar,3);
-       gMC->Gsposp("S06G",imax+4*idiv+3,"C06M",-xvol, yvol, z1-z2, 0, "ONLY",divpar,3);
-       gMC->Gsposp("S05G",imax+4*idiv+4,"C05M",-xvol,-yvol, z1-z2, 0, "ONLY",divpar,3);
-       gMC->Gsposp("S06G",imax+4*idiv+4,"C06M",-xvol,-yvol, z1-z2, 0, "ONLY",divpar,3);
+       gMC->Gsposp("S05G",imax+4*idiv+1,slats5Mother, xvol, yvol, zoffs5+z1+z2, 0, "ONLY",divpar,3);
+       gMC->Gsposp("S06G",imax+4*idiv+1,slats6Mother, xvol, yvol, zoffs6+z1+z2, 0, "ONLY",divpar,3);
+       gMC->Gsposp("S05G",imax+4*idiv+2,slats5Mother, xvol,-yvol, zoffs5+z1+z2, 0, "ONLY",divpar,3);
+       gMC->Gsposp("S06G",imax+4*idiv+2,slats6Mother, xvol,-yvol, zoffs6+z1+z2, 0, "ONLY",divpar,3);
+       gMC->Gsposp("S05G",imax+4*idiv+3,slats5Mother,-xvol, yvol, zoffs5+z1-z2, 0, "ONLY",divpar,3);
+       gMC->Gsposp("S06G",imax+4*idiv+3,slats6Mother,-xvol, yvol, zoffs6+z1-z2, 0, "ONLY",divpar,3);
+       gMC->Gsposp("S05G",imax+4*idiv+4,slats5Mother,-xvol,-yvol, zoffs5+z1-z2, 0, "ONLY",divpar,3);
+       gMC->Gsposp("S06G",imax+4*idiv+4,slats6Mother,-xvol,-yvol, zoffs6+z1-z2, 0, "ONLY",divpar,3);
      }
      }
      
-
  if (stations[3]) {
 
 //********************************************************************
@@ -931,7 +948,7 @@ void AliMUONv1::CreateGeometry()
 //   Mother volume
      tpar[0] = iChamber->RInner()-dframep; 
      tpar[1] = (iChamber->ROuter()+dframep)/TMath::Cos(phi);
-     tpar[2] = dstation/5;
+     tpar[2] = dstation/4;
 
      gMC->Gsvolu("C07M", "TUBE", idAir, tpar, 3);
      gMC->Gsvolu("C08M", "TUBE", idAir, tpar, 3);
@@ -954,7 +971,7 @@ void AliMUONv1::CreateGeometry()
      for (i = 0; i<nSlats4; i++){
        slatLength4[i] = pcbLength * nPCB4[i] + 2. * dSlatLength; 
        xSlat4 = slatLength4[i]/2. - vFrameLength/2. + xpos4[i]; 
-       if (i==1 || i==0) slatLength4[i] -=  2. *dSlatLength; // frame out in PCB with circular border 
+       if (i==1) slatLength4[i] -=  2. *dSlatLength; // frame out in PCB with circular border 
        ySlat4 =  sensHeight * i - yOverlap *i;
        
        spar[0] = slatLength4[i]/2.; 
