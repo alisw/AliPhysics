@@ -343,6 +343,17 @@ void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_
   }
 }
 
+Bool_t  AliPHOSGeometry::Impact(const TParticle * particle) const 
+{
+  Bool_t In=kFALSE;
+  Int_t ModuleNumber=0;
+  Double_t z,x;
+  ImpactOnEmc(particle->Theta(),particle->Phi(),ModuleNumber,z,x);
+  if(ModuleNumber) In=kTRUE;
+  else In=kFALSE;
+  return In;
+}
+
 //____________________________________________________________________________
 Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId) const
 {
