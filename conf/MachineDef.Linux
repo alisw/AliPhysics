@@ -52,4 +52,5 @@ SHLIB         = -lg2c
 LIBS          = $(ROOTLIBS) 
 LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib/ -l/'`
 GLIBS         = $(ROOTLIBS) -L/usr/X11R6/lib -lX11 -lg2c -lcrypt $(LIBNOVER)
+GLIBS        += -L/usr/local/lib -lXm -lXt
 
