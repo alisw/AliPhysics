@@ -5,5 +5,5 @@ ELIBSDIR:= $(ALICE)/geant3/lib/tgt_$(ALICE_TARGET)
 
 ELIBS:= MUON TPC ITS PMD TRD FMD TOF PHOS CRT RICH ZDC VZERO EMCAL STRUCT \
 START EVGEN STEER CONTAINERS pythia6 pdf THijing hijing TMEVSIM \
-mevsim THbtp HBTP THerwig herwig TEPEMGEN epemgen FASTSIM microcern
+mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN FASTSIM microcern
 
