@@ -5,7 +5,8 @@ ClassImp(TFlukaCerenkov);
 
 TFlukaCerenkov::TFlukaCerenkov()
     : fSamples(0), 
-      fIsMetal(0),
+      fIsMetal(kFALSE),
+      fIsSensitive(kFALSE),
       fEnergy(0),
       fWaveLength(0),
       fAbsorptionCoefficient(0),
@@ -20,11 +21,11 @@ TFlukaCerenkov::TFlukaCerenkov(Int_t npckov, Float_t *ppckov, Float_t *absco, Fl
 {
 // Constructor    
     fSamples = npckov;
-    fEnergy             = new Float_t[fSamples];
-    fWaveLength         = new Float_t[fSamples];
-    fAbsorptionCoefficient   = new Float_t[fSamples];
-    fRefractionIndex    = new Float_t[fSamples];
-    fQuantumEfficiency  = new Float_t[fSamples];
+    fEnergy                = new Float_t[fSamples];
+    fWaveLength            = new Float_t[fSamples];
+    fAbsorptionCoefficient = new Float_t[fSamples];
+    fRefractionIndex       = new Float_t[fSamples];
+    fQuantumEfficiency     = new Float_t[fSamples];
     for (Int_t i = 0; i < fSamples; i++) {
 	fEnergy[i]             = ppckov[i];
 	fWaveLength[i]         = khc / ppckov[i];
@@ -35,7 +36,9 @@ TFlukaCerenkov::TFlukaCerenkov(Int_t npckov, Float_t *ppckov, Float_t *absco, Fl
 	}
 	fRefractionIndex[i]    = rindex[i];
 	fQuantumEfficiency[i]  = effic[i];
-	if (effic[i] < 1. && effic[i] > 0.) fIsMetal = 1;
+	//
+	// Flag is sensitive if quantum efficiency 0 < eff < 1 for at least one value.
+	if (effic[i] < 1. && effic[i] > 0.) fIsSensitive = 1;
     }
 }
 

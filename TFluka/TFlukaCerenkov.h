@@ -41,13 +41,15 @@ public:
     virtual Float_t   GetMaximumWavelength() {return khc / fEnergy[0];}
     virtual Int_t     GetNSamples()          {return fSamples;}
     virtual Bool_t    IsMetal()              {return fIsMetal;}
+    virtual Bool_t    IsSensitive()          {return fIsSensitive;}
     
  protected:
     virtual Float_t  Interpolate(Float_t energy, Float_t* array1, Float_t* array2);
     
  protected:
     Int_t        fSamples;               // Number of sampling points
-    Bool_t       fIsMetal;               // Flag for metals  
+    Bool_t       fIsMetal;               // Flag for metals
+    Bool_t       fIsSensitive;           // Flag for metals  
     Float_t*     fEnergy;                // [fSamples] Energy                 (GeV) 
     Float_t*     fWaveLength;            // [fSamples] Wafelength             (cm)
     Float_t*     fAbsorptionCoefficient; // [fSamples] Absorption Coefficient (1/cm)
