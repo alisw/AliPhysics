@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.3  2001/12/19 09:33:32  hristov
+Index corrected
+
 Revision 1.2  2001/11/22 11:30:30  hristov
 Correct log field
 
@@ -182,7 +185,7 @@ FlagType AliTOFHitMap::TestHit(Int_t *vol) const
 // Check if hit cell is empty, used or unused
 //
     Int_t inf=fHitMap[CheckedIndex(vol)];
-    if (inf < 0) {
+    if (inf > 0) {
 	return kUsed;
     } else if (inf == 0) {
 	return kEmpty;

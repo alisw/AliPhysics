@@ -19,7 +19,6 @@ class AliTOFTrackV2 : public TObject{
 
  public:
   AliTOFTrackV2();
-  AliTOFTrackV2(Int_t trackLabel, Float_t tpcMom, Float_t dEdX, Float_t* tpcXYZ, Float_t* tpcPtPz, Float_t* trdXYZ, Float_t* trdPxPyPz);
   AliTOFTrackV2(Int_t trackLabel, Int_t matchingStatus, Float_t tpcMom, Float_t dEdX, Float_t* tpcXYZ, Float_t* tpcPtPz, Float_t* trdXYZ, Float_t* trdPxPyPz);
   ~AliTOFTrackV2(){};
 

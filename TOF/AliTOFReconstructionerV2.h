@@ -27,7 +27,7 @@ public:
   AliTOFReconstructionerV2(const AliTOFReconstructionerV2 & rec);
   virtual ~AliTOFReconstructionerV2() ; // dtor   
   Bool_t        BackPropagation(){return kTRUE;};
-  void          CreateNTuple();
+  //void          CreateNTuple();
   void          Comparison(Int_t* rtIndex); // for MC comparison
   virtual void  Exec(Option_t* option); // do the main work
   Int_t         GetDbgFlag()           const   {return fdbg;}

@@ -997,3 +997,15 @@ void AliTOFReconstructionerV2::Comparison(Int_t* rtIndex)
     } // if(TOF)
   } // end loop on primary tracks
 }
+
+//__________________________________________________________________
+Bool_t AliTOFReconstructionerV2::operator==(const AliTOFReconstructionerV2 & tofrecv2)const
+{
+  // Equal operator.
+  // Reconstructioner are equal if their fField, fNDummyTracks, fScaleSigmaFactor and fStep are equal
+ 
+  if( (fField==tofrecv2.fField)&&(fNDummyTracks==tofrecv2.fNDummyTracks)&&(fScaleSigmaFactor==tofrecv2.fScaleSigmaFactor)&&(fStep==tofrecv2.fStep))
+    return kTRUE ;
+  else
+    return kFALSE ;
+}

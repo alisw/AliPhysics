@@ -172,7 +172,7 @@ FlagType AliTOFDigitMap::TestHit(Int_t *vol) const
 // Check if hit cell is empty, used or unused
 //
     Int_t inf=fDigitMap[CheckedIndex(vol)];
-    if (inf < 0) {
+    if (inf > 0) {
 	return kUsed;
     } else if (inf == 0) {
 	return kEmpty;
