@@ -1,6 +1,10 @@
 // $Id$
 // Category: global
 //
+// Author: I. Hrivnacova
+//
+// Class TG4NameMap
+// ----------------
 // The map container for associated names. 
 // The names can be added into map either in pairs (Add() method)
 // or standalone - then they are paired with the fSecond data member 
@@ -14,6 +18,10 @@
 
 class TG4NameMap
 {
+  typedef G4std::map<G4String, G4String, G4std::less<G4String> >  Map;
+  typedef Map::iterator        MapIterator;
+  typedef Map::const_iterator  MapConstIterator;
+
   public:
     TG4NameMap();
     // --> protected
@@ -24,7 +32,7 @@ class TG4NameMap
     G4bool Add(const G4String& first, const G4String& second);  
     G4bool AddName(const G4String& name);  
     const G4String& GetSecond(const G4String& name);
-    void PrintAll();
+    void PrintAll() const;
     void Clear();
 
     // set methods
@@ -41,8 +49,8 @@ class TG4NameMap
     static G4String fgUndefined;  //the value of undefined second
 
     // data members
-    G4std::map<G4String, G4String, G4std::less<G4String> > fMap; //map container
-    G4String  fSecond;            //the current second
+    Map       fMap;    //map container
+    G4String  fSecond; //the current second
 };
 
 // inline methods

@@ -1,6 +1,10 @@
 // $Id$
 // Category: global
 //
+// Author: I. Hrivnacova
+//
+// Class TG4IntMap
+// ---------------
 // See the class description in the header file.
 
 #include "TG4IntMap.h"
@@ -8,9 +12,6 @@
 
 #include "g4std/iomanip"
 #include "globals.hh"
-
-typedef G4std::map<G4String, G4int, G4std::less<G4String> >
-  :: iterator IntMapIterator;
 
 //_____________________________________________________________________________
 TG4IntMap::TG4IntMap(){
@@ -49,7 +50,7 @@ G4bool TG4IntMap::IsDefined(const G4String& first)
 // Returns true if the first is already in the map.
 // ---
 
-  IntMapIterator i = fMap.find(first);
+  MapIterator i = fMap.find(first);
   if (i == fMap.end()) 
     return false;
   else                 
@@ -79,7 +80,7 @@ G4int TG4IntMap::GetSecond(const G4String& name)
 // Gets second name associated with given name.
 // ---
 
-  IntMapIterator i = fMap.find(name);
+  MapIterator i = fMap.find(name);
   if (i == fMap.end()) {
     G4String text = "   TG4IntMap::GetSecond: ";
     text = text + name + " is not defined.";
@@ -92,7 +93,7 @@ G4int TG4IntMap::GetSecond(const G4String& name)
 }
 
 //_____________________________________________________________________________
-void TG4IntMap::PrintAll()
+void TG4IntMap::PrintAll() const
 {
 // Dumps all map.
 // ---
@@ -100,7 +101,7 @@ void TG4IntMap::PrintAll()
   if (fMap.size()) {
     G4cout << "Dump of TG4IntMap - " << fMap.size() << " entries:" << G4endl;
     G4int counter = 0;
-    for (IntMapIterator i=fMap.begin(); i != fMap.end(); i++) {
+    for (MapConstIterator i=fMap.begin(); i != fMap.end(); i++) {
       const G4String& first  = (*i).first;
       G4int second = (*i).second;
       G4cout << "Map element " << G4std::setw(3) << counter++ << "   " 

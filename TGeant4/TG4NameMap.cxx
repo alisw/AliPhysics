@@ -1,6 +1,10 @@
 // $Id$
 // Category: global
 //
+// Author: I. Hrivnacova
+//
+// Class TG4NameMap
+// ----------------
 // See the class description in the header file.
 
 #include "TG4NameMap.h"
@@ -10,9 +14,6 @@
 #include "globals.hh"
 
 G4String TG4NameMap::fgUndefined = "Undefined";
-
-typedef G4std::map<G4String, G4String, G4std::less<G4String> >
-  :: iterator MapIterator;
 
 //_____________________________________________________________________________
 TG4NameMap::TG4NameMap() 
@@ -91,7 +92,7 @@ const G4String& TG4NameMap::GetSecond(const G4String& name)
 }
 
 //_____________________________________________________________________________
-void TG4NameMap::PrintAll()
+void TG4NameMap::PrintAll() const
 {
 // Dumps all map.
 // ---
@@ -99,7 +100,7 @@ void TG4NameMap::PrintAll()
   if (fMap.size()) {
     G4cout << "Dump of TG4NameMap - " << fMap.size() << " entries:" << G4endl;
     G4int counter = 0;
-    for (MapIterator i=fMap.begin(); i != fMap.end(); i++) {
+    for (MapConstIterator i=fMap.begin(); i != fMap.end(); i++) {
       const G4String& first  = (*i).first;
       const G4String& second = (*i).second;
       G4cout << "Map element " << G4std::setw(3) << counter++ << "   " 
