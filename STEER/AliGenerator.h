@@ -19,6 +19,7 @@ class TGenerator;
 #include "AliRndm.h"
 
 typedef enum { kNoSmear, kPerEvent, kPerTrack } VertexSmear_t;
+typedef enum { kExternal, kInternal}            VertexSource_t;
 
 class AliGenerator : public TNamed, public AliRndm
 {
@@ -48,8 +49,12 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void SetChildWeight(Float_t wgt)  {fChildWeight=wgt;}    
     virtual void SetAnalog(Int_t flag=1) {fAnalog=flag;}	
     virtual void SetVertexSmear(VertexSmear_t smear) {fVertexSmear = smear;}
+    virtual void SetVertexSource(VertexSource_t smear) {fVertexSource = kInternal;}    
     virtual void SetTrackingFlag(Int_t flag=1) {fTrackIt=flag;}
- 	    
+    void Vertex();
+    void VertexExternal();
+    virtual void VertexInternal();
+	    
     virtual void SetMC(TGenerator *theMC) 
 	{if (!fgMCEvGen) fgMCEvGen =theMC;}
 
@@ -82,11 +87,13 @@ protected:
     Int_t       fTrackit;      // Track the generated final state particle if 1
     Int_t       fAnalog;       //Flaf for anolog or pt-weighted generation
    //
-    VertexSmear_t     fVertexSmear; //Vertex Smearing mode
+    VertexSmear_t     fVertexSmear;  //Vertex Smearing mode
+    VertexSource_t    fVertexSource; //Vertex source (internal/external)    
     Int_t       fTrackIt;    // if 1 Track final state particles 
-    TArrayF     fOrigin;     //Origin of event
-    TArrayF     fOsigma;     //Sigma of the Origin of event
-
+    TArrayF     fOrigin;     // Origin of event
+    TArrayF     fOsigma;     // Sigma of the Origin of even
+    TArrayF     fVertex;     //! Vertex of current event
+    
     enum {kThetaRange=1, kVertexRange=2, kPhiRange=4, kPtRange=8,
 	  kYRange=32, kMomentumRange=16};
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/01/26 19:58:48  hristov
+Major upgrade of AliRoot code
+
 Revision 1.10  2000/12/21 15:30:18  fca
 Correcting coding convention violations
 
@@ -86,8 +89,12 @@ AliGenerator::AliGenerator()
 
     fOrigin.Set(3);
     fOsigma.Set(3);
+    fVertex.Set(3);
+
     fOrigin[0]=fOrigin[1]=fOrigin[2]=0;
     fOsigma[0]=fOsigma[1]=fOsigma[2]=0;
+    fVertex[0]=fVertex[1]=fVertex[2]=0;
+
     fVMin.Set(3);
     fVMin[0]=fVMin[1]=fVMin[2]=0;
     fVMax.Set(3);
@@ -113,8 +120,12 @@ AliGenerator::AliGenerator(Int_t npart)
 
     fOrigin.Set(3);
     fOsigma.Set(3);
+    fVertex.Set(3);
+
     fOrigin[0]=fOrigin[1]=fOrigin[2]=0;
     fOsigma[0]=fOsigma[1]=fOsigma[2]=0;
+    fVertex[0]=fVertex[1]=fVertex[2]=0;
+
     fVMin.Set(3);
     fVMin[0]=fVMin[1]=fVMin[2]=0;
     fVMax.Set(3);
@@ -267,3 +278,42 @@ void AliGenerator::SetThetaRange(Float_t thetamin, Float_t thetamax)
   fThetaMin = TMath::Pi()*thetamin/180;
   fThetaMax = TMath::Pi()*thetamax/180; SetBit(kThetaRange);
 }
+
+void AliGenerator::Vertex()
+{
+  //
+  // Obtain vertex for current event from external source or calculated (internal)
+  //
+    if (fVertexSource == kInternal) {
+	VertexInternal();
+    } else {
+	VertexExternal();
+    }
+}
+
+
+void AliGenerator::VertexExternal()
+{
+    // Dummy !!!!!!
+    // Obtain vertex from external source 
+    //
+    // Should be something like fVertex = gAlice->GetVertex()
+    
+    fVertex[0]=fVertex[1]=fVertex[2]=0;  
+}
+
+void AliGenerator::VertexInternal()
+{
+    // 
+    // Obtain calculated vertex 
+    // Default is gaussian smearing
+    Float_t random[6];
+    Rndm(random,6);
+    for (Int_t j = 0; j<3 ; j++) {
+	fVertex[j]=
+	    fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
+	    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+    }
+}
+
+
