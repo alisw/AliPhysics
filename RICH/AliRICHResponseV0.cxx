@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.5  2001/02/23 17:25:08  jbarbosa
+  Re-definition of IntPH() to accomodate for wire sag effect.
+
   Revision 1.4  2000/12/01 17:37:44  morsch
   Replace in argument of SetTrack(..) string constant by  kPFeedBackPhoton.
 
@@ -72,7 +75,7 @@ Float_t AliRICHResponseV0::IntPH(Float_t eloss, Float_t yhit)
 	//printf("Yhit:%f, Gain variation:%f\n",yhit,gain_var);
 
 	Float_t gain = (fChargeSlope + fChargeSlope*gain_var)*.9; 
-	printf(" Yhit:%f, Gain variation:%f\n",yhit, gain);
+	//printf(" Yhit:%f, Gain variation:%f\n",yhit, gain);
 
 	for (Int_t i=1;i<=nel;i++) {
 	  charge -= gain*TMath::Log(gRandom->Rndm());    
@@ -116,7 +119,7 @@ Float_t AliRICHResponseV0::IntPH(Float_t yhit)
 	Float_t gain = (fChargeSlope + fChargeSlope*gain_var)*.9; 
 	
 	charge -= gain*TMath::Log(gRandom->Rndm());
-	printf(" Yhit:%f, Gain variation:%f\n",yhit, gain);
+	//printf(" Yhit:%f, Gain variation:%f\n",yhit, gain);
       }
    else
      {
