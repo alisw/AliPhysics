@@ -7,6 +7,18 @@
 #include <TNtuple.h>
 #include "AliSimDigits.h"
 
+
+struct GoodTrack 
+{
+
+  Int_t label;
+  Int_t code;
+  Double_t px,py,pz;
+  Double_t pt;
+};
+typedef struct GoodTrack GoodTrack;
+
+
 class AliL3Track;
 class TClonesArray;
 class TFile;
@@ -24,8 +36,10 @@ class AliL3Evaluate : public TObject {
 
  private:
 
-  TFile *fMCFile;
+  TFile *fDigitsFile;
   TFile *fMCclusterfile;  //If you run the fast simulator.
+  TFile *fEventFile;
+  GoodTrack fGoodTracks[15000]; //!
   TObjArray *fParticles;
   AliL3TrackArray *fTracks; //!
   AliTPCParam *fParam;
@@ -60,20 +74,18 @@ class AliL3Evaluate : public TObject {
   TH1F *fTrackEffEta;
   TH1F *fFakeTrackEffEta;
   
-  void FillEffHistos(TObjArray *good_particles,Int_t *particle_id);
+  void FillEffHistos();
   void CalcEffHistos();
   void AssignIDs();
-  Bool_t SetDigitsTree();
-  Bool_t SetMCParticleArray();
-  TObjArray *DefineGoodTracks(Int_t slice,Int_t *padrow,Int_t good_number,Int_t *particle_id);
+  Bool_t InitMC();
+  void DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_number);
   Int_t GetMCTrackLabel(AliL3Track *track);
   Int_t **GetClusterIDs(AliL3Track *track);
   void GetFastClusterIDs(Char_t *path);
-  //void Setup(Char_t *trackfile,Char_t *path);
-
+  
  public:
   AliL3Evaluate();
-  AliL3Evaluate(Char_t *mcfile,Int_t *slice);
+  AliL3Evaluate(Char_t *mcfile,Char_t *digitsfile,Int_t *slice);
   AliL3Evaluate(Int_t *slice);
 
   virtual ~AliL3Evaluate();
@@ -97,9 +109,9 @@ class AliL3Evaluate : public TObject {
   Int_t GetNFoundTracks() {return fGoodFound;}
   
   TNtuple *CalculateResiduals();
-  TNtuple *EvaluatePoints();
+  TNtuple *EvaluatePoints(Char_t *rootfile);
   Bool_t GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t padrow,Float_t *xyz);
-  TNtuple *EvaluateGEANT();
+  //TNtuple *EvaluateGEANT();
 
   ClassDef(AliL3Evaluate,1) 
 };
