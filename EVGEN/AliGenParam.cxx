@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.34  2001/11/27 13:13:07  morsch
+Maximum lifetime for long-lived particles to be put on the stack is parameter.
+It can be set via SetMaximumLifetime(..).
+
 Revision 1.33  2001/10/21 18:35:56  hristov
 Several pointers were set to zero in the default constructors to avoid memory management problems
 
@@ -295,7 +299,7 @@ void AliGenParam::Generate()
   Float_t phi, theta;         // Phi and theta spherical angles of the parent particle momentum
   Float_t p[3], pc[3], 
           och[3];             // Momentum, polarisation and origin of the children particles from lujet
-  Float_t ty, xmt;
+  Double_t ty, xmt;
   Int_t nt, i, j;
   Float_t  wgtp, wgtch;
   Double_t dummy;
@@ -333,7 +337,7 @@ void AliGenParam::Generate()
 	  phi=fPhiMin+random[0]*(fPhiMax-fPhiMin);
 //
 // y
-	  ty=Float_t(TMath::TanH(fYPara->GetRandom()));
+	  ty = TMath::TanH(fYPara->GetRandom());
 //
 // pT
 	  if (fAnalog == kAnalog) {
@@ -347,7 +351,12 @@ void AliGenParam::Generate()
 	      wgtch=fChildWeight*fPtParaFunc(& ptd, &dummy);
 	  }
 	  xmt=sqrt(pt*pt+am*am);
-	  if (TMath::Abs(ty)==1.) ty=0.;
+	  if (TMath::Abs(ty)==1.) {
+	      ty=0.;
+	      Fatal("AliGenParam", 
+		    "Division by 0: Please check you rapidity range !");
+	  }
+	  
 	  pl=xmt*ty/sqrt(1.-ty*ty);
 	  theta=TMath::ATan2(pt,pl);
 // Cut on theta
@@ -416,11 +425,11 @@ void AliGenParam::Generate()
 // flag decay products of particles with long life-time (c tau > .3 mum)		      
 		      
 		      if (ks != 1) { 
-			  TParticlePDG *particle = pDataBase->GetParticle(kf);
+//			  TParticlePDG *particle = pDataBase->GetParticle(kf);
 			  
 			  Double_t lifeTime = fDecayer->GetLifetime(kf);
-			  Double_t mass     = particle->Mass();
-			  Double_t width    = particle->Width();
+//			  Double_t mass     = particle->Mass();
+//			  Double_t width    = particle->Width();
 			  if (lifeTime > (Double_t) fMaxLifeTime) {
 			      ipF = iparticle->GetFirstDaughter();
 			      ipL = iparticle->GetLastDaughter();	
