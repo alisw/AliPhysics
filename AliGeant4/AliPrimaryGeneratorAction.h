@@ -20,7 +20,6 @@ class AliParticleGun;
 class AliPrimaryGeneratorMessenger;
 class G4ParticleGun;
 class G4Event;
-class TClonesArray;
 
 class AliPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
@@ -62,7 +61,6 @@ class AliPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4int                fNofGunParticles; //number of gun particles
     G4int                fVerboseLevel;    //verbose level
     AliParticleGun*      fParticleGun;     //AliParticleGun
-    TClonesArray*        fParticleArray;   //AliRun::fParticles
     AliPrimaryGeneratorMessenger*  fMessenger; //messenger
 };
 
