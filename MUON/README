@@ -37,8 +37,11 @@ root [0] gAlice->SetConfigFunction("Config( \"/home/martinez/aliroot/work_NewIO/
 ============================================================
  How to run MUON Hits to SDigits
 ============================================================
-.L ALICE_ROOT/MUON/MUONHit2SDigit.C
-MUONHit2SDigit(0,99999,"galice.root")
+AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
+manager->SetInputStream(0,"galice.root");
+AliMUONDigitizer * dMUON   = new AliMUONSDigitizerv1(manager);
+manager->AddDigitizer(dMUON);
+manager->Exec("deb");
 
 
 ============================================================
@@ -258,16 +261,18 @@ gAlice->Run(NumberOfEvents,"YourConfig.C");
 EOF
 
 aliroot -b << EOF
-.L ALICE_ROOT/MUON/MUONHit2SDigit.C
-MUONHit2SDigit(0,99999,"galice.root")
-.q
+AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
+manager->SetInputStream(0,"galice.root");
+AliMUONDigitizer * dMUON   = new AliMUONSDigitizerv1(manager);
+manager->AddDigitizer(dMUON);
+manager->Exec("deb");
+.q.
 EOF
-
 
 aliroot -b << EOF
 AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
 manager->SetInputStream(0,"galice.root");
-AliMUONDigitizerv2* dMUON   = new AliMUONDigitizerv2(manager);
+AliMUONDigitizer* dMUON   = new AliMUONDigitizerv2(manager);
 manager->AddDigitizer(dMUON);
 manager->Exec("deb");
 .q
