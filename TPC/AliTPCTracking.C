@@ -12,14 +12,16 @@
 // input parameters: 
 //        Int_t nEvents      ... nr of events to process
 //        Int_t firstEventNr ... first event number (starts from 0)
-//        Char_t* fileNameHits ... name of file with hits
-//        Char_t* fileNameDigits .. name of file with TPC digits
-//        Char_t* fileNameClusters .. name of file with TPC clusters (output)
-//        Char_t* fileNameTracks .. name of file with TPC tracks (output)
+//        const char* fileNameHits ... name of file with hits
+//        const char* fileNameDigits .. name of file with TPC digits
+//        const char* fileNameClusters .. name of file with TPC clusters (output)
+//        const char* fileNameTracks .. name of file with TPC tracks (output)
 //
 //        default file names correspond to pp production (2002-04)
 //
 // History:
+//
+//     18.03.2003 ... Char_t* replaced by const char*
 //
 //     03.03.2003 ... SetFieldFactor moved to AliTracker class and
 //                    LoadTPCParam moved to AliTPC class
@@ -34,64 +36,78 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "Riostream.h"
+#include "TFile.h"
 #include "TTree.h"
-#include "TSystem.h"
-#include "TArrayF.h"
-#include "TPC/alles.h"
-#include "TPC/AliTPCtracker.h"
-#include "TPC/AliTPCclusterer.h"
-#include "TPC/AliTPC.h"
-#include "STEER/AliRun.h"
-#include "STEER/AliHeader.h"
-#include "STEER/AliGenEventHeader.h"
-#include "STEER/AliMagF.h"
-#include "STEER/AliTracker.h"
+#include "TBenchmark.h"
+#include "AliTPCtracker.h"
+#include "AliTPCtrackerMI.h"
+#include "AliTPCclusterer.h"
+#include "AliTPCclustererMI.h"
+#include "AliTPC.h"
+#include "AliRun.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliTracker.h"
 
 #endif
 
 Int_t gDEBUG = 2;
 
+Int_t AliTPCTracking(Int_t nEvents=1, Int_t firstEvent=0,
+		     const char* fileNameHits="galice.root",
+		     const char* fileNameDigits="tpc.digits.root",
+		     const char* fileNameClusters="tpc.clusters.root",
+		     const char* fileNameTracks="tpc.tracks.root",
+		     Bool_t versionMI = kFALSE);
+
 Int_t TPCFindClusters(Int_t nEvents=1, Int_t firstEvent=0,
-		      Char_t* fileNameDigits="rfio:galiceSDR.root", 
-		      Char_t* fileNameClusters="tpc.clusters.root");
+		      const char* fileNameDigits="tpc.digits.root", 
+		      const char* fileNameClusters="tpc.clusters.root",
+		      Bool_t versionMI = kFALSE);
 Int_t TPCFindClusters(Int_t nEvents, Int_t firstEvent,
 		      TFile* fileDigits, TFile* fileClusters, 
 		      AliTPCParam* paramTPC=0);
+Int_t TPCFindClustersMI(Int_t nEvents, Int_t firstEvent,
+			TFile* fileDigits, TFile* fileClusters, 
+			AliTPCParam* paramTPC=0);
 Int_t TPCFindTracks(Int_t nEvents=1, Int_t firstEvent=0,
-		    Char_t* fileNameClusters="tpc.clusters.root",
-		    Char_t* fileNameTracks="tpc.tracks.root");
+		    const char* fileNameClusters="tpc.clusters.root",
+		    const char* fileNameTracks="tpc.tracks.root",
+		    Bool_t versionMI = kFALSE);
 Int_t TPCFindTracks(Int_t nEvents, Int_t firstEvent,
 		    TFile* fileClusters, TFile* fileTracks,
 		    AliTPCParam* paramTPC=0);
+Int_t TPCFindTracksMI(Int_t nEvents, Int_t firstEvent,
+		      TFile* fileClusters, TFile* fileTracks,
+		      AliTPCParam* paramTPC=0);
 
 void FindVertex(Int_t iEvent, Double_t *vertex);
 void PrintVertex(TArrayF &primaryVertex);
 
-Int_t AliTPCTracking(Int_t nEvents=1, Int_t firstEvent=0,
-		     Char_t* fileNameHits="rfio:galice.root",
-		     Char_t* fileNameDigits="rfio:galiceSDR.root",
-		     Char_t* fileNameClusters="tpc.clusters.root",
-		     Char_t* fileNameTracks="tpc.tracks.root");
-
 ////////////////////////////////////////////////////////////////////////
 Int_t AliTPCTracking( Int_t nEvents, Int_t firstEvent,
-		      Char_t* fileNameHits,
-		      Char_t* fileNameDigits,
-		      Char_t* fileNameClusters,
-		      Char_t* fileNameTracks) {
+		      const char* fileNameHits,
+		      const char* fileNameDigits,
+		      const char* fileNameClusters,
+		      const char* fileNameTracks,
+		      Bool_t versionMI) {
 
   AliTracker::SetFieldFactor(fileNameHits,kFALSE);
 
 // ********** Find TPC clusters *********** //
-  if (TPCFindClusters(nEvents,firstEvent,fileNameDigits,fileNameClusters)) {
-    cerr<<"Failed to get TPC clusters: !\n";
-    return 1;
+  if (fileNameDigits && fileNameClusters) {
+    if (TPCFindClusters(nEvents,firstEvent,fileNameDigits,fileNameClusters,versionMI)) {
+      cerr<<"Failed to get TPC clusters: !\n";
+      return 1;
+    }
   }      
 
 // ********** Find TPC tracks *********** //
-  if (TPCFindTracks(nEvents,firstEvent,fileNameClusters,fileNameTracks)) {
-    cerr<<"Failed to get TPC tracks !\n";
-    return 2;
+  if (fileNameClusters && fileNameTracks) {
+    if (TPCFindTracks(nEvents,firstEvent,fileNameClusters,fileNameTracks,versionMI)) {
+      cerr<<"Failed to get TPC tracks !\n";
+      return 2;
+    }
   }
 
   return 0;
@@ -99,7 +115,8 @@ Int_t AliTPCTracking( Int_t nEvents, Int_t firstEvent,
 
 ////////////////////////////////////////////////////////////////////////
 Int_t TPCFindClusters(Int_t nEvents, Int_t firstEvent,
-		      Char_t* fileNameDigits, Char_t* fileNameClusters) {
+		      const char* fileNameDigits, const char* fileNameClusters,
+		      Bool_t versionMI) {
   
   Int_t rc;
   const Char_t *name="TPCFindClusters";
@@ -116,7 +133,11 @@ Int_t TPCFindClusters(Int_t nEvents, Int_t firstEvent,
     return 1;
   }
 
-  rc = TPCFindClusters(nEvents,firstEvent,fileDigits,fileClusters);
+  if (versionMI) {
+    rc = TPCFindClustersMI(nEvents,firstEvent,fileDigits,fileClusters);
+  } else {
+    rc = TPCFindClusters(nEvents,firstEvent,fileDigits,fileClusters);
+  }
 
   fileDigits->Close();
   fileClusters->Close();
@@ -143,8 +164,34 @@ Int_t TPCFindClusters(Int_t nEvents, Int_t firstEvent,
   return 0;
 }
 ////////////////////////////////////////////////////////////////////////
+Int_t TPCFindClustersMI(Int_t nEvents, Int_t firstEvent,
+			TFile* fileDigits, TFile* fileClusters, 
+			AliTPCParam* paramTPC) {
+
+  fileDigits->cd();
+  if (!paramTPC) paramTPC = AliTPC::LoadTPCParam(fileDigits);
+  if (!paramTPC) return 1;
+
+  AliTPCclustererMI clusterer;
+  for (Int_t iEvent = firstEvent; iEvent < firstEvent+nEvents; iEvent++){
+    if (gDEBUG > 2) cout<<"TPCFindClustersMI: event "<<iEvent<<endl;
+    char treeName[100];
+    sprintf(treeName, "TreeD_75x40_100x60_150x60_%d", iEvent);
+    TTree* input = (TTree*) fileDigits->Get(treeName);
+    fileClusters->cd();
+    sprintf(treeName, "TreeC_TPC_%d", iEvent);
+    TTree* output = new TTree(treeName, treeName); 
+    clusterer.SetInput(input);
+    clusterer.SetOutput(output);
+    clusterer.Digits2Clusters(paramTPC, iEvent);
+  }
+
+  return 0;
+}
+////////////////////////////////////////////////////////////////////////
 Int_t TPCFindTracks(Int_t nEvents, Int_t firstEvent,
-		    Char_t* fileNameClusters, Char_t* fileNameTracks) {
+		    const char* fileNameClusters, const char* fileNameTracks,
+		    Bool_t versionMI) {
 
   Int_t rc = 0;
   const Char_t *name="TPCFindTracks";
@@ -153,7 +200,11 @@ Int_t TPCFindTracks(Int_t nEvents, Int_t firstEvent,
   TFile *fileTracks = TFile::Open(fileNameTracks,"recreate");
   TFile *fileClusters =TFile::Open(fileNameClusters);
 
-  rc = TPCFindTracks(nEvents, firstEvent, fileClusters, fileTracks);
+  if (versionMI) {
+    rc = TPCFindTracksMI(nEvents, firstEvent, fileClusters, fileTracks);
+  } else {
+    rc = TPCFindTracks(nEvents, firstEvent, fileClusters, fileTracks);
+  }
 
   fileClusters->Close();
   fileTracks->Close();
@@ -183,6 +234,22 @@ Int_t TPCFindTracks(Int_t nEvents, Int_t firstEvent,
     fileClusters->cd();
     rc = tracker->Clusters2Tracks(0,fileTracks);
     delete tracker;
+  }
+  return rc;
+}
+////////////////////////////////////////////////////////////////////////
+Int_t TPCFindTracksMI(Int_t nEvents, Int_t firstEvent,
+		      TFile *fileClusters, TFile * fileTracks,
+		      AliTPCParam* paramTPC) {
+
+  Int_t rc = 0;
+  if (!paramTPC) paramTPC = AliTPC::LoadTPCParam(fileClusters);
+  if (!paramTPC) return 1;
+
+  for (Int_t iEvent = firstEvent; iEvent < firstEvent+nEvents; iEvent++){
+    if (gDEBUG > 2) cout<<"TPCFindTracksMI: event "<<iEvent<<endl;
+    AliTPCtrackerMI tracker(paramTPC, iEvent);
+    rc = tracker.Clusters2Tracks(0, fileTracks);
   }
   return rc;
 }
@@ -226,6 +293,5 @@ void PrintVertex(TArrayF &primaryVertex)
        <<primaryVertex[0]<<" "
        <<primaryVertex[1]<<" "
        <<primaryVertex[2]<<" "<<endl;
-  exit;
 } 
 ////////////////////////////////////////////////////////////////////////
