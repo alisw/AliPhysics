@@ -32,7 +32,6 @@
 #include <TFile.h>
 #include <TString.h>
 #include <TBits.h>
-#include <TList.h>
 
 #include "AliRunLoader.h"
 

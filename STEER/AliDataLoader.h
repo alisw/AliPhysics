@@ -15,20 +15,21 @@
 //                                        //
 //                                        //
 ////////////////////////////////////////////
+
+#include <TDirectory.h>
 #include <TNamed.h>
 #include <TString.h>
-#include <TTree.h>
 #include <TTask.h>
-#include <TDirectory.h>
-
-class AliLoader;
+#include <TTree.h>
 class TFile;
 class TFolder;
-class AliRunLoader;
+
 class AliBaseLoader;
+class AliLoader;
 class AliObjectLoader;
-class AliTreeLoader;
+class AliRunLoader;
 class AliTaskLoader;
+class AliTreeLoader;
 
 class AliDataLoader: public TNamed
  {
@@ -61,7 +62,7 @@ class AliDataLoader: public TNamed
    const TString&     GetFileOption() const {return fFileOption;}
    const Int_t&       GetCompressionLevel() const {return fCompressionLevel;}
    
-   Bool_t             cd(){return (fDirectory)?fDirectory->cd():kFALSE;}
+   Bool_t             Cd(){return (fDirectory)?fDirectory->cd():kFALSE;}
    
    virtual void       SetFileName(const TString& filename){fFileName = filename;}
    virtual void       SetFileOption(const Option_t* fileopt);
