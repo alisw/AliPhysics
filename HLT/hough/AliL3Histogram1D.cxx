@@ -9,6 +9,10 @@
 #include "AliL3Logging.h"
 #include "AliL3Histogram1D.h"
 
+#ifdef use_root
+#include <TH1.h>
+#endif
+
 #if __GNUC__ == 3
 using namespace std;
 #endif
@@ -22,6 +26,7 @@ ClassImp(AliL3Histogram1D)
 
 AliL3Histogram1D::AliL3Histogram1D()
 {
+  //default ctor
   fNbins = 0;
   fNcells = 0;
   fEntries = 0;
@@ -38,7 +43,7 @@ AliL3Histogram1D::AliL3Histogram1D()
 AliL3Histogram1D::AliL3Histogram1D(Char_t *name,Char_t */*id*/,Int_t nxbin,Double_t xmin,Double_t xmax)
 
 {
-  
+  //normal ctor
   strcpy(fName,name);
   fNbins = nxbin;
   fNcells = fNbins + 2;
@@ -68,6 +73,7 @@ AliL3Histogram1D::~AliL3Histogram1D()
 
 void AliL3Histogram1D::Reset()
 {
+  //Reset histogram contents
 #if defined(__DECCXX)
   bzero((char *)fContent,fNcells*sizeof(Double_t));
 #else
@@ -78,13 +84,15 @@ void AliL3Histogram1D::Reset()
 
 void AliL3Histogram1D::Fill(Double_t x,Int_t weight)
 {
+  //Fill a given bin with weight
   Int_t bin = FindBin(x);
   AddBinContent(bin,weight);
 }
 
 
-Int_t AliL3Histogram1D::FindBin(Double_t x)
+Int_t AliL3Histogram1D::FindBin(Double_t x) const
 {
+  //Find a given bin
   if(x < fXmin || x > fXmax)
     return 0;
   
@@ -92,23 +100,25 @@ Int_t AliL3Histogram1D::FindBin(Double_t x)
 
 }
 
-Int_t AliL3Histogram1D::GetMaximumBin()
+Int_t AliL3Histogram1D::GetMaximumBin() const
 {
-  Double_t max_value=0;
-  Int_t max_bin=0;
+  //Find the bin with the largest content
+  Double_t maxvalue=0;
+  Int_t maxbin=0;
   for(Int_t i=0; i<fNcells; i++)
     {
-      if(fContent[i] > max_value)
+      if(fContent[i] > maxvalue)
 	{
-	  max_value=fContent[i];
-	  max_bin = i;
+	  maxvalue=fContent[i];
+	  maxbin = i;
 	}
     }
-  return max_bin;
+  return maxbin;
 }
 
-Double_t AliL3Histogram1D::GetBinContent(Int_t bin)
+Double_t AliL3Histogram1D::GetBinContent(Int_t bin) const
 {
+  //Get bin content
   if(bin >= fNcells)
     {
       LOG(AliL3Log::kError,"AliL3Histogram::GetBinContent","array")<<AliL3Log::kDec<<
@@ -124,7 +134,7 @@ Double_t AliL3Histogram1D::GetBinContent(Int_t bin)
 
 void AliL3Histogram1D::SetBinContent(Int_t bin,Int_t value)
 {
-
+  //Set bin content
   if(bin >= fNcells)
     {
       LOG(AliL3Log::kError,"AliL3Histogram::SetBinContent","array")<<AliL3Log::kDec<<
@@ -139,6 +149,7 @@ void AliL3Histogram1D::SetBinContent(Int_t bin,Int_t value)
 
 void AliL3Histogram1D::AddBinContent(Int_t bin,Int_t weight)
 {
+  //Add weight to bin content
   if(bin < 0 || bin > fNcells)
     {
       LOG(AliL3Log::kError,"AliL3Histogram::AddBinContent","array")<<AliL3Log::kDec<<
@@ -151,9 +162,9 @@ void AliL3Histogram1D::AddBinContent(Int_t bin,Int_t weight)
   fContent[bin] += weight;
 }
 
-Double_t AliL3Histogram1D::GetBinCenter(Int_t bin)
+Double_t AliL3Histogram1D::GetBinCenter(Int_t bin) const
 {
-  
+  //Get bin center  
   Double_t binwidth = (fXmax - fXmin) / fNbins;
   return fXmin + (bin-1) * binwidth + 0.5*binwidth;
   
@@ -162,6 +173,7 @@ Double_t AliL3Histogram1D::GetBinCenter(Int_t bin)
 #ifdef use_root
 void AliL3Histogram1D::Draw(Char_t *option)
 {
+  //Draw the histogram
   fRootHisto = new TH1F(fName,"",fNbins,fXmin,fXmax);
   for(Int_t bin=0; bin<fNcells; bin++)
     fRootHisto->AddBinContent(bin,GetBinContent(bin));

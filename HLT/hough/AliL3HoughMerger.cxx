@@ -41,11 +41,12 @@ AliL3HoughMerger::AliL3HoughMerger(Int_t nsubsectors)
 
 AliL3HoughMerger::~AliL3HoughMerger()
 {
- 
+  //dtor 
 }
 
 void AliL3HoughMerger::FillTracks(AliL3TrackArray *tracks,Int_t patch)
 {
+  //Fills tracks into merger
   if(tracks->GetNTracks()==0)
     LOG(AliL3Log::kWarning,"AliL3HoughMerger::FillTracks","Track Array")
       <<"Adding empty track array"<<ENDLOG;
@@ -56,6 +57,7 @@ void AliL3HoughMerger::FillTracks(AliL3TrackArray *tracks,Int_t patch)
 
 void AliL3HoughMerger::SetParameters(Double_t maxkappa,Double_t maxpsi,Double_t maxphi0)
 {
+  //Set merger params
   fMaxKappa = maxkappa;
   fMaxPsi = maxpsi;
   fMaxPhi0 = maxphi0;
@@ -88,6 +90,7 @@ Bool_t AliL3HoughMerger::IsTrack(AliL3Track *innertrack,AliL3Track *outertrack)
 
 void AliL3HoughMerger::AddTrack(AliL3TrackArray *mergedtrack,AliL3Track *track)
 {
+  //Adds track to an already merged one
   AliL3Track *t[1];
   t[0] = track;
   MultiMerge(mergedtrack,t,1);
@@ -145,6 +148,7 @@ void AliL3HoughMerger::MergePatches(Bool_t slow)
 
 void AliL3HoughMerger::Merge()
 {
+  //Merging of tracks
   Double_t edge0 = AliL3Transform::Pi()/18;
   //Double_t edge1 = 2*PI - edge0;
   AliL3TrackArray *ttt = GetOutTracks();
@@ -205,7 +209,7 @@ void AliL3HoughMerger::Merge()
 
 Int_t AliL3HoughMerger::Merge(AliL3TrackArray* mergedtrack,AliL3TrackArray *tracksin,AliL3TrackArray *tracksout)
 {
-  
+  //Merging of tracks  
   AliL3Track *tracks[2];
   const Int_t  kNOut=tracksout->GetNTracks();
   const Int_t  kNIn =tracksin->GetNTracks();
@@ -252,6 +256,7 @@ Int_t AliL3HoughMerger::Merge(AliL3TrackArray* mergedtrack,AliL3TrackArray *trac
 
 void AliL3HoughMerger::SlowMerge(AliL3TrackArray *mergedtrack,AliL3TrackArray *tracksin,AliL3TrackArray *tracksout,Double_t xval)
 {
+  //Slow merging of tracks??
   void *ntuple=GetNtuple();
   const Int_t  kNOut=tracksout->GetNTracks();
   const Int_t  kNIn =tracksin->GetNTracks();
@@ -305,6 +310,7 @@ void AliL3HoughMerger::SlowMerge(AliL3TrackArray *mergedtrack,AliL3TrackArray *t
 
 void AliL3HoughMerger::Print(AliL3Track **tracks)
 {
+  //Print merging results
   AliL3HoughTrack *tr1 = (AliL3HoughTrack*)tracks[0];
   AliL3HoughTrack *tr2 = (AliL3HoughTrack*)tracks[1];
   Double_t kappadiff = fabs(tr1->GetKappa()-tr2->GetKappa());

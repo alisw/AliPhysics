@@ -59,7 +59,7 @@ class AliL3HoughBaseTransformer {
 
   AliL3DigitRowData *GetDataPointer() {return fDigitRowData;}
  
-  virtual Int_t GetEtaIndex(Double_t eta) = 0;
+  virtual Int_t GetEtaIndex(Double_t eta) const = 0;
   virtual void GetEtaIndexes(Double_t /*eta*/,Int_t */*indexes*/) const
     {STDCERR<<"GetEtaIndexes not implemented for this Transformer class"<<STDENDL;}
   virtual AliL3Histogram *GetHistogram(Int_t etaindex) = 0;

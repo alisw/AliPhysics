@@ -1,27 +1,12 @@
 // @(#) $Id$
 
-#ifndef ALIL3_HOUGH_Track
-#define ALIL3_HOUGH_Track
+#ifndef ALIL3HOUGHTRACK_H
+#define ALIL3HOUGHTRACK_H
 
 #include "AliL3Track.h"
 
 class AliL3HoughTrack : public AliL3Track {
   
- private:
-  
-  Double_t fMinDist;
-  Int_t fWeight;
-  Int_t fEtaIndex;
-  Double_t fEta;
-  Int_t fSlice; //The slice where this track was found
-
-  Double_t fDLine;
-  Double_t fPsiLine;
- 
-  Bool_t fIsHelix;
-
-  Float_t fBinX,fBinY,fSizeX,fSizeY;
-
  public:
   AliL3HoughTrack(); 
   virtual ~AliL3HoughTrack();
@@ -29,10 +14,10 @@ class AliL3HoughTrack : public AliL3Track {
   virtual void Set(AliL3Track *track);
   virtual Int_t Compare(const AliL3Track *track) const;
   
-  Bool_t IsHelix() {return fIsHelix;}
+  Bool_t IsHelix() const {return fIsHelix;}
   void UpdateToFirstRow();
   void SetTrackParameters(Double_t kappa,Double_t eangle,Int_t weight);  
-  void SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int_t *rowrange,Int_t ref_row);
+  void SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int_t *rowrange,Int_t refrow);
 
   Int_t GetWeight()  const {return fWeight;}
   Double_t GetPsiLine() const {return fPsiLine;}
@@ -53,11 +38,26 @@ class AliL3HoughTrack : public AliL3Track {
   void SetEta(Double_t f);
   void SetWeight(Int_t i,Bool_t update=kFALSE) {if(update) fWeight+= i; else fWeight = i;}
   void SetEtaIndex(Int_t f) {fEtaIndex = f;}
-  void SetBestMCid(Int_t f,Double_t min_dist);
+  void SetBestMCid(Int_t f,Double_t mindist);
   void SetDLine(Double_t f) {fDLine=f;}
   void SetPsiLine(Double_t f) {fPsiLine=f;}
 
   void SetBinXY(Float_t binx,Float_t biny,Float_t sizex,Float_t sizey) {fBinX = binx; fBinY = biny; fSizeX = sizex; fSizeY = sizey;}
+
+ private:
+  
+  Double_t fMinDist;//Minimum distance to a generated track while associating mc label 
+  Int_t fWeight;//Track weight
+  Int_t fEtaIndex;//Eta slice index
+  Double_t fEta;//Track Eta
+  Int_t fSlice; //The slice where this track was found
+
+  Double_t fDLine;//??
+  Double_t fPsiLine;//??
+ 
+  Bool_t fIsHelix;//Is the track helix or not?
+
+  Float_t fBinX,fBinY,fSizeX,fSizeY;//Size and position of the hough space peak 
 
   ClassDef(AliL3HoughTrack,1) //Track class for Hough tracklets
 

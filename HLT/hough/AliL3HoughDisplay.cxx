@@ -33,7 +33,7 @@ ClassImp(AliL3HoughDisplay)
 
 AliL3HoughDisplay::AliL3HoughDisplay()
 {
-
+  //default ctor
   fTracks = 0;
   fDigitRowData = 0;
   fNDigitRowData = 0;
@@ -43,12 +43,14 @@ AliL3HoughDisplay::AliL3HoughDisplay()
 
 AliL3HoughDisplay::~AliL3HoughDisplay()
 {
+  //dtor
   if(fTracks)
     delete fTracks;
 }
 
 void AliL3HoughDisplay::Init(Char_t *trackfile, Char_t *gfile)
 {
+  //Init hough display
   TFile *file = TFile::Open(gfile);
   if(!file->IsOpen())
     cerr<<"AliL3HoughDisplay::AliL3HoughDisplay : Geometry file " << gfile << " does not exist"<<endl;
@@ -65,6 +67,7 @@ void AliL3HoughDisplay::Init(Char_t *trackfile, Char_t *gfile)
 
 void AliL3HoughDisplay::GenerateHits(AliL3Track *track,Float_t *x,Float_t *y,Float_t *z,Int_t &n)
 {
+  //Generate hits according to the track parameters
   n=0;
   Float_t xyz[3];
   for(Int_t i=AliL3Transform::GetFirstRow(0); i<AliL3Transform::GetLastRow(5); i++)
@@ -84,7 +87,7 @@ void AliL3HoughDisplay::GenerateHits(AliL3Track *track,Float_t *x,Float_t *y,Flo
 
 TPolyMarker3D *AliL3HoughDisplay::LoadDigits()
 {
-  
+  //Load digits  
   AliL3DigitRowData *tempPt = fDigitRowData;
   if(!tempPt)
     {
@@ -161,10 +164,10 @@ void AliL3HoughDisplay::DisplayEvent()
       
       pm->SetMarkerColor(2);
       pm->Draw();
-      TPolyLine3D *current_line = &(line[j]);
-      current_line = new TPolyLine3D(n,x,y,z,"");
-      current_line->SetLineColor(4);
-      current_line->Draw("same");
+      TPolyLine3D *currentline = &(line[j]);
+      currentline = new TPolyLine3D(n,x,y,z,"");
+      currentline->SetLineColor(4);
+      currentline->Draw("same");
       
     }
   

@@ -313,7 +313,7 @@ void AliL3HoughTransformerLUT::Reset()
     fParamSpace[i]->Reset();
 }
 
-Int_t AliL3HoughTransformerLUT::GetEtaIndex(Double_t eta)
+Int_t AliL3HoughTransformerLUT::GetEtaIndex(Double_t eta) const
 {
   //Return the histogram index of the corresponding eta. 
   

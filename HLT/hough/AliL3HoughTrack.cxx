@@ -43,10 +43,12 @@ ClassImp(AliL3HoughTrack)
 
 AliL3HoughTrack::~AliL3HoughTrack()
 {
+  //dtor
 }
 
 void AliL3HoughTrack::Set(AliL3Track *track)
 {
+  //Basically copy constructor
   AliL3HoughTrack *tpt = (AliL3HoughTrack*)track;
   SetTrackParameters(tpt->GetKappa(),tpt->GetPsi(),tpt->GetWeight());
   SetEtaIndex(tpt->GetEtaIndex());
@@ -76,6 +78,7 @@ void AliL3HoughTrack::Set(AliL3Track *track)
 
 Int_t AliL3HoughTrack::Compare(const AliL3Track *tpt) const
 {
+  //Compare 2 hough tracks according to their weight
   AliL3HoughTrack *track = (AliL3HoughTrack*)tpt;
   if(track->GetWeight() < GetWeight()) return 1;
   if(track->GetWeight() > GetWeight()) return -1;
@@ -171,6 +174,7 @@ void AliL3HoughTrack::UpdateToFirstRow()
 
 void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t eangle,Int_t weight)
 {
+  //Set track parameters - sort of ctor
   fWeight = weight;
   fMinDist = 100000;
   SetKappa(kappa);
@@ -210,17 +214,19 @@ void AliL3HoughTrack::SetLineParameters(Double_t psi,Double_t D,Int_t weight,Int
   fIsHelix = false;
 }
 
-void AliL3HoughTrack::SetBestMCid(Int_t mcid,Double_t min_dist)
+void AliL3HoughTrack::SetBestMCid(Int_t mcid,Double_t mindist)
 {
-  if(min_dist < fMinDist)
+  //Finds and set the closest mc label
+  if(mindist < fMinDist)
     {
-      fMinDist = min_dist;
+      fMinDist = mindist;
       SetMCid(mcid);
     }
 }
 
 void AliL3HoughTrack::GetLineCrossingPoint(Int_t padrow,Float_t *xy)
 {
+  //Returns the crossing point of the track with a given padrow
   if(fIsHelix)
     {
       printf("AliL3HoughTrack::GetLineCrossingPoint : Track is not a line\n");

@@ -150,10 +150,10 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xm
     {
       AliL3Histogram *hist = fParamSpace[0];
       Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
-      cout<<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(TrackIndex)<<" bytes to fTrackID"<<endl;
-      fTrackID = new TrackIndex*[GetNEtaSegments()];
+      cout<<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(AliL3TrackIndex)<<" bytes to fTrackID"<<endl;
+      fTrackID = new AliL3TrackIndex*[GetNEtaSegments()];
       for(Int_t i=0; i<GetNEtaSegments(); i++)
-	fTrackID[i] = new TrackIndex[ncells];
+	fTrackID[i] = new AliL3TrackIndex[ncells];
     }
 #endif
 }
@@ -178,12 +178,12 @@ void AliL3HoughTransformer::Reset()
       AliL3Histogram *hist = fParamSpace[0];
       Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
       for(Int_t i=0; i<GetNEtaSegments(); i++)
-	memset(fTrackID[i],0,ncells*sizeof(TrackIndex));
+	memset(fTrackID[i],0,ncells*sizeof(AliL3TrackIndex));
     }
 #endif
 }
 
-Int_t AliL3HoughTransformer::GetEtaIndex(Double_t eta)
+Int_t AliL3HoughTransformer::GetEtaIndex(Double_t eta) const
 {
   //Return the histogram index of the corresponding eta. 
 
@@ -192,7 +192,7 @@ Int_t AliL3HoughTransformer::GetEtaIndex(Double_t eta)
   return (Int_t)index;
 }
 
-void AliL3HoughTransformer::GetEtaIndexes(Double_t eta,Int_t *indexes)
+void AliL3HoughTransformer::GetEtaIndexes(Double_t eta,Int_t *indexes) const
 {
   //Return histogram indexes in case of overlapping etaslices.
   

@@ -10,14 +10,6 @@ class AliL3Track;
 class AliL3TrackArray;
 
 class AliL3HoughIntMerger : public AliL3Merger {
-
- private:
-  Int_t fPatch;
-  Int_t fRowMin;
-  Int_t fRowMax;
-  Double_t fMaxKappa;
-  Double_t fMaxPhi0;
-  Double_t fMaxTgl;
  
  public:
   AliL3HoughIntMerger();
@@ -33,6 +25,14 @@ class AliL3HoughIntMerger : public AliL3Merger {
   void SetParameters(Double_t maxkappa=0.001, Double_t maxpsi=0.05, Double_t maxtgl=0.1);
   void SortTracks(AliL3Track **tracks, Int_t ntrack);
   void Print(AliL3Track **tracks);
+
+ private:
+  Int_t fPatch;//Index of the current patch
+  Int_t fRowMin;//First padrow inside the patch
+  Int_t fRowMax;//Last padrow inside the patch
+  Double_t fMaxKappa;//Maximum track curvature
+  Double_t fMaxPhi0;//Maximum phi0??
+  Double_t fMaxTgl;//??
 
   ClassDef(AliL3HoughIntMerger,1) 
 };

@@ -27,7 +27,7 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   void Reset();
   void TransformCircle();
 
-  Int_t GetEtaIndex(Double_t eta);
+  Int_t GetEtaIndex(Double_t eta) const;
   AliL3Histogram *GetHistogram(Int_t etaindex);
   Double_t GetEta(Int_t etaindex,Int_t slice) const;
   Int_t GetTrackID(Int_t etaindex,Double_t kappa,Double_t psi);

@@ -30,7 +30,7 @@ UChar_t **AliL3HoughTransformerRow::fgRowCount = 0;
 UChar_t **AliL3HoughTransformerRow::fgGapCount = 0;
 UChar_t **AliL3HoughTransformerRow::fgCurrentRowCount = 0;
 #ifdef do_mc
-TrackIndex **AliL3HoughTransformerRow::fgTrackID = 0;
+AliL3TrackIndex **AliL3HoughTransformerRow::fgTrackID = 0;
 #endif
 UChar_t *AliL3HoughTransformerRow::fgTrackNRows = 0;
 UChar_t *AliL3HoughTransformerRow::fgTrackFirstRow = 0;
@@ -198,10 +198,10 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
       if(!fgTrackID)
 	{
 	  LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
-	    <<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(TrackIndex)<<" bytes to fgTrackID"<<ENDLOG;
-	  fgTrackID = new TrackIndex*[GetNEtaSegments()];
+	    <<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(AliL3TrackIndex)<<" bytes to fgTrackID"<<ENDLOG;
+	  fgTrackID = new AliL3TrackIndex*[GetNEtaSegments()];
 	  for(Int_t i=0; i<GetNEtaSegments(); i++)
-	    fgTrackID[i] = new TrackIndex[ncells];
+	    fgTrackID[i] = new AliL3TrackIndex[ncells];
 	}
     }
 #endif
@@ -350,7 +350,7 @@ void AliL3HoughTransformerRow::Reset()
       Int_t ncellsy = (hist->GetNbinsY()+3)/2;
       Int_t ncells = ncellsx*ncellsy;
       for(Int_t i=0; i<GetNEtaSegments(); i++)
-	memset(fgTrackID[i],0,ncells*sizeof(TrackIndex));
+	memset(fgTrackID[i],0,ncells*sizeof(AliL3TrackIndex));
     }
 #endif
   AliL3Histogram *hist = fParamSpace[0];
@@ -364,7 +364,7 @@ void AliL3HoughTransformerRow::Reset()
     }
 }
 
-Int_t AliL3HoughTransformerRow::GetEtaIndex(Double_t eta)
+Int_t AliL3HoughTransformerRow::GetEtaIndex(Double_t eta) const
 {
   //Return the histogram index of the corresponding eta. 
 

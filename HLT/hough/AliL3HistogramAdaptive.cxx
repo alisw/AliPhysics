@@ -25,6 +25,7 @@ ClassImp(AliL3HistogramAdaptive)
 
 AliL3HistogramAdaptive::AliL3HistogramAdaptive() : AliL3Histogram()
 {
+  //default ctor
   fKappaBins=0;
 }
 
@@ -32,6 +33,7 @@ AliL3HistogramAdaptive::AliL3HistogramAdaptive() : AliL3Histogram()
 AliL3HistogramAdaptive::AliL3HistogramAdaptive(Char_t *name,Double_t minpt,Double_t maxpt,Double_t ptres,
 					       Int_t nybins,Double_t ymin,Double_t ymax)
 {
+  //normal ctor
   strcpy(fName,name);
   
   fPtres = ptres;
@@ -58,6 +60,7 @@ AliL3HistogramAdaptive::AliL3HistogramAdaptive(Char_t *name,Double_t minpt,Doubl
 
 AliL3HistogramAdaptive::~AliL3HistogramAdaptive()
 {
+  //dtor
   if(fKappaBins)
     delete [] fKappaBins;
 }
@@ -70,14 +73,14 @@ Int_t AliL3HistogramAdaptive::InitKappaBins()
   //Since the kappa values are symmetric about origo, the size of the
   //LUT is half of the total number of bins in kappa direction.
   
-  Double_t pt = fMinPt,delta_pt,local_pt;
+  Double_t pt = fMinPt,deltapt,localpt;
   Int_t bin=0;
   
   while(pt < fMaxPt)
     {
-      local_pt = pt;
-      delta_pt = fPtres*local_pt*local_pt;
-      pt += 2*delta_pt;
+      localpt = pt;
+      deltapt = fPtres*localpt*localpt;
+      pt += 2*deltapt;
       bin++;
     }
   fKappaBins = new Double_t[bin+1];
@@ -86,9 +89,9 @@ Int_t AliL3HistogramAdaptive::InitKappaBins()
   fKappaBins[bin] = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/fMinPt; 
   while(pt < fMaxPt)
     {
-      local_pt = pt;
-      delta_pt = fPtres*local_pt*local_pt;
-      pt += 2*delta_pt;                      //*2 because pt +- 1/2*deltapt is one bin
+      localpt = pt;
+      deltapt = fPtres*localpt*localpt;
+      pt += 2*deltapt;                      //*2 because pt +- 1/2*deltapt is one bin
       bin++;
       fKappaBins[bin] = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/pt;
     }
@@ -98,6 +101,7 @@ Int_t AliL3HistogramAdaptive::InitKappaBins()
 
 void AliL3HistogramAdaptive::Fill(Double_t x,Double_t y,Int_t weight)
 {
+  //Fill a given bin in the histogram
   Int_t bin = FindBin(x,y);
   if(bin < 0)
     return;
@@ -107,7 +111,7 @@ void AliL3HistogramAdaptive::Fill(Double_t x,Double_t y,Int_t weight)
 
 Int_t AliL3HistogramAdaptive::FindBin(Double_t x,Double_t y) const
 {
-  
+  //Find a bin in the histogram  
   Int_t xbin = FindXbin(x);
   Int_t ybin = FindYbin(y);
   
@@ -118,7 +122,7 @@ Int_t AliL3HistogramAdaptive::FindBin(Double_t x,Double_t y) const
 
 Int_t AliL3HistogramAdaptive::FindXbin(Double_t x) const
 {
-
+  //Find X bin in the histogram
   if(x < fXmin || x > fXmax || fabs(x) < fKappaBins[(fNxbins/2-1)])
     return 0;
   
@@ -142,6 +146,7 @@ Int_t AliL3HistogramAdaptive::FindXbin(Double_t x) const
 
 Int_t AliL3HistogramAdaptive::FindYbin(Double_t y) const
 {
+  //Find Y bin in the histogram
   if(y < fYmin || y > fYmax)
     return 0;
   
@@ -150,6 +155,7 @@ Int_t AliL3HistogramAdaptive::FindYbin(Double_t y) const
 
 Double_t AliL3HistogramAdaptive::GetBinCenterX(Int_t xbin) const
 {
+  //Returns bin center in X
   if(xbin < fFirstXbin || xbin > fLastXbin)
     {
       LOG(AliL3Log::kWarning,"AliL3HistogramAdaptive::GetBinCenterX","Bin-value")
@@ -179,6 +185,7 @@ Double_t AliL3HistogramAdaptive::GetBinCenterX(Int_t xbin) const
 
 Double_t AliL3HistogramAdaptive::GetBinCenterY(Int_t ybin) const
 {
+  //Returns bin center in Y
   if(ybin < fFirstYbin || ybin > fLastYbin)
     {
       LOG(AliL3Log::kError,"AliL3HistogramAdaptive::GetBinCenterY","ybin")
@@ -193,6 +200,7 @@ Double_t AliL3HistogramAdaptive::GetBinCenterY(Int_t ybin) const
 
 void AliL3HistogramAdaptive::Draw(Char_t *option)
 {
+  //Draw the histogram
 #ifdef use_root
   if(!fRootHisto)
     CreateRootHisto();
@@ -216,8 +224,9 @@ void AliL3HistogramAdaptive::Draw(Char_t *option)
   cerr<<"AliL3HistogramAdaptive::Draw : You need to compile with ROOT in order to draw histogram"<<endl;
 }
 
-void AliL3HistogramAdaptive::Print()
+void AliL3HistogramAdaptive::Print() const
 {
+  //Print the contents of the histogram
   cout<<"Printing content of histogram "<<fName<<endl;
   for(Int_t i=0; i<fNcells; i++)
     {

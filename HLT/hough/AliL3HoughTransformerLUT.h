@@ -26,7 +26,7 @@ class AliL3HoughTransformerLUT : public AliL3HoughBaseTransformer {
 
   void TransformCircle();
 
-  Int_t GetEtaIndex(Double_t eta);
+  Int_t GetEtaIndex(Double_t eta) const;
   AliL3Histogram *GetHistogram(Int_t etaIndex);
   Double_t GetEta(Int_t etaIndex,Int_t slice) const;
   

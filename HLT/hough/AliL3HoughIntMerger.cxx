@@ -40,6 +40,7 @@ AliL3HoughIntMerger::~AliL3HoughIntMerger()
 
 void AliL3HoughIntMerger::SetParameters(Double_t maxkappa, Double_t maxphi0, Double_t maxtgl)
 {
+  //Set merger params
   fMaxKappa = maxkappa;
   fMaxPhi0 = maxphi0;
   fMaxTgl = maxtgl;
@@ -47,6 +48,7 @@ void AliL3HoughIntMerger::SetParameters(Double_t maxkappa, Double_t maxphi0, Dou
 
 void AliL3HoughIntMerger::FillTracks(AliL3TrackArray *tracks)
 {
+  //Fills tracks into merger
   if(tracks->GetNTracks()==0)
     LOG(AliL3Log::kWarning,"AliL3HoughIntMerger::FillTracks","Track Array")
       <<"Adding empty track array"<<ENDLOG;
@@ -87,6 +89,7 @@ AliL3Track *AliL3HoughIntMerger::MultiMerge(AliL3TrackArray *mergedtrack,AliL3Tr
 
 void AliL3HoughIntMerger::MMerge()
 {
+  //Track merging??
   GetInTracks(0)->QSort();
   while(Merge());
   GetOutTracks()->AddTracks(GetInTracks(0));
@@ -94,7 +97,7 @@ void AliL3HoughIntMerger::MMerge()
 
 Int_t AliL3HoughIntMerger::Merge()
 {
-  
+  //Track merging??  
   AliL3TrackArray * tracks = GetInTracks(0);
   const Int_t  kNIn =tracks->GetNTracks();
   AliL3Track *tr[2];
@@ -133,6 +136,7 @@ Int_t AliL3HoughIntMerger::Merge()
 
 void AliL3HoughIntMerger::Print(AliL3Track **tracks)
 {
+  //Prints merger results
   AliL3HoughTrack *tr1 = (AliL3HoughTrack*)tracks[0];
   AliL3HoughTrack *tr2 = (AliL3HoughTrack*)tracks[1];
   Double_t kappadiff = fabs(tr1->GetKappa()-tr2->GetKappa());

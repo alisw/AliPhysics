@@ -38,7 +38,7 @@ class AliL3Histogram {
   void SetThreshold(Int_t i) {fThreshold = i;}
   void CreateRootHisto();
   virtual void Draw(Char_t *option="hist");
-  virtual void Print() {};
+  virtual void Print() const {};
 
   friend ofstream& operator<< (ofstream &o, const AliL3Histogram &h);
 

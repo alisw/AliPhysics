@@ -1,20 +1,12 @@
 // @(#) $Id$
 
-#ifndef ALIL3_HISTOGRAMADAPTIVE
-#define ALIL3_HISTOGRAMADAPTIVE
+#ifndef ALIL3HISTOGRAMADAPTIVE_H
+#define ALIL3HISTOGRAMADAPTIVE_H
 
 #include "AliL3RootTypes.h"
 #include "AliL3Histogram.h"
 
 class AliL3HistogramAdaptive : public AliL3Histogram {
-  
- private:
-  Double_t fPtres;
-  Double_t fMinPt;
-  Double_t fMaxPt;
-  Double_t *fKappaBins; //!
-  
-  Int_t InitKappaBins();
   
  public:
   AliL3HistogramAdaptive();
@@ -27,11 +19,19 @@ class AliL3HistogramAdaptive : public AliL3Histogram {
   Int_t FindXbin(Double_t x) const;
   Int_t FindYbin(Double_t x) const;
   void Draw(Char_t *option = "hist");
-  void Print();
+  void Print() const;
 
   Double_t GetBinCenterX(Int_t xbin) const;
   Double_t GetBinCenterY(Int_t ybin) const;
 
+ private:
+  Double_t fPtres;//The desired Pt resolution
+  Double_t fMinPt;//Minimum Pt
+  Double_t fMaxPt;//Maximum Pt
+  Double_t *fKappaBins; //!
+  
+  Int_t InitKappaBins();
+  
   ClassDef(AliL3HistogramAdaptive,1) //2D histogram class
     
 };
