@@ -86,8 +86,11 @@ Bool_t AnaESD(TString fileName)
   // Analyze ESD from file fileName
   // calo track histograms ;
   
-  TFile * out = new TFile("out.root", "RECREATE") ; 
-  TH1D * hCaloEnergy = 0 ; 
+  TFile * out = new TFile("AOD.root", "RECREATE") ; 
+  TH1D * hCaloEnergyA = 0 ; 
+  TH1D * hCaloEnergyE = 0 ; 
+  TH1D * hCaloEnergyG = 0 ; 
+  TH1D * hCaloEnergyP = 0 ; 
   TH1D * heta = 0 ;
   TH1D * hphi = 0 ; 
   Double_t dist[3] ; 
@@ -113,11 +116,42 @@ Bool_t AnaESD(TString fileName)
       if ( !ct->IsPHOS() ) 
 	continue ; 
       Double_t energy = ct->GetPHOSsignal() ; 
-      if(!hCaloEnergy) {
-	out->cd() ; 
-	hCaloEnergy = new TH1D("CaloEnergy", "Energy in calorimeter", 1500, 0., 150.) ;
+      // check if CPV bit is set (see AliPHOSFastRecParticle) 
+      Double_t type[AliESDtrack::kSPECIES+4] ;
+      ct->GetPHOSpid(type) ; 
+      
+      if ( (type[AliESDtrack::kElectron] == 1.0) || (type[AliESDtrack::kPhoton] == 1.0) ) {
+	if(!hCaloEnergyA) {
+	  out->cd() ; 
+	  hCaloEnergyA = new TH1D("CaloEnergyA", "Energy in calorimeter Electron/Photon like", 500, 0., 50.) ;
+	}
+	hCaloEnergyA->Fill(energy) ;  
       }
-      hCaloEnergy->Fill(energy) ;  
+      
+      if ( type[AliESDtrack::kElectron] == 1.0 ) {
+	if(!hCaloEnergyE) {
+	  out->cd() ; 
+	  hCaloEnergyE = new TH1D("CaloEnergyE", "Energy in calorimeter Electron like", 500, 0., 50.) ;
+	}
+	hCaloEnergyE->Fill(energy) ;  
+      } 
+  
+      if ( type[AliESDtrack::kPhoton] == 1.0 ) {
+	if(!hCaloEnergyG) {
+	  out->cd() ; 
+	  hCaloEnergyG = new TH1D("CaloEnergyG", "Energy in calorimeter Gamma like", 500, 0., 50.) ;
+	}
+	hCaloEnergyG->Fill(energy) ;
+      }  
+     
+      if ( type[AliESDtrack::kPi0] == 1.0 ) {
+	if(!hCaloEnergyP) {
+	  out->cd() ; 
+	  hCaloEnergyP = new TH1D("CaloEnergyP", "Energy in calorimeter Pi0 like", 500, 0., 100.) ;
+	}
+	hCaloEnergyP->Fill(energy) ;
+      }  
+      
       AliESDtrack * cp ; 
       Int_t cpindex ; 
       for (cpindex = 0 ; cpindex < esd->GetNumberOfTracks() ; cpindex++) {
@@ -135,7 +169,7 @@ Bool_t AnaESD(TString fileName)
       }
     }
   }
-  TBrowser * bs = new TBrowser("Root Memory Bowser", gROOT->FindObjectAny("out.root") ) ;
+  TBrowser * bs = new TBrowser("Root Memory Bowser", gROOT->FindObjectAny("AOD.root") ) ;
   bs->Show() ;
   out->Write() ; 
   return kTRUE ; 
