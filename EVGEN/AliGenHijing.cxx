@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.32  2001/11/28 13:51:11  morsch
+Introduce kinematic biasing (etamin, etamax) of jet trigger. Bookkeeping
+(number of trials) done in AliGenHijingEventHeader.
+
 Revision 1.31  2001/11/06 12:30:34  morsch
 Add Boost() method to boost all particles to LHC lab frame. Needed for asymmetric collision systems.
 
@@ -610,6 +614,7 @@ void AliGenHijing::MakeHeader()
 					      fHijing->GetHINT1(38),
 					      fHijing->GetHINT1(39));
     ((AliGenHijingEventHeader*) header)->SetJets(jet1, jet2, jet3, jet4);
+// Bookkeeping for kinematic bias
     ((AliGenHijingEventHeader*) header)->SetTrials(fTrials);
 // Event Vertex
     header->SetPrimaryVertex(fEventVertex);
@@ -631,12 +636,19 @@ Bool_t AliGenHijing::CheckTrigger()
 					      fHijing->GetHINT1(39));
     Double_t eta1      = jet1->Eta();
     Double_t eta2      = jet2->Eta();
+    Double_t phi1      = jet1->Phi();
+    Double_t phi2      = jet2->Phi();
     Bool_t   triggered = kFALSE;
-    
+    //Check eta range first...    
     if ((eta1 < fEtaMaxJet && eta1 > fEtaMinJet) ||
 	(eta2 < fEtaMaxJet && eta2 > fEtaMinJet))
     {
-	triggered = kTRUE;
+	//Eta is okay, now check phi range
+        if ((phi1 < fPhiMaxJet && phi1 > fPhiMinJet) ||
+            (phi2 < fPhiMaxJet && phi2 > fPhiMinJet))
+        {
+	    triggered = kTRUE;
+        }
     }
     return triggered;
 }

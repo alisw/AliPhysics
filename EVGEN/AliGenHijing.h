@@ -43,8 +43,8 @@ class AliGenHijing : public AliGenMC
 			      Int_t a=208, Int_t z=82)
 	{fTarget = tar;
 	fATarget = a;
-	fZTarget =z;}    
-    virtual void    SetImpactParameterRange(Float_t bmin = 0, Float_t bmax =15.)
+	fZTarget = z;}    
+    virtual void    SetImpactParameterRange(Float_t bmin = 0, Float_t bmax = 15.)
 	{ fMinImpactParam=bmin;
 	fMaxImpactParam=bmax;
 	}
@@ -61,6 +61,8 @@ class AliGenHijing : public AliGenMC
     virtual void    SetPtMinJet(Float_t ptmin)        {fPtMinJet   = ptmin;}
     virtual void    SetJetEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
 	{fEtaMinJet = etamin; fEtaMaxJet = etamax;}
+    virtual void    SetJetPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
+	{fPhiMinJet = phimin; fPhiMaxJet = phimax;}
     virtual void    SetBoostLHC(Int_t flag=0)         {fLHC        = flag;}
     
 	    
@@ -109,6 +111,8 @@ class AliGenHijing : public AliGenMC
     Float_t     fPtMinJet;       // Minimum Pt of triggered Jet
     Float_t     fEtaMinJet;      // Minimum eta of triggered Jet
     Float_t     fEtaMaxJet;      // Maximum eta of triggered Jet
+    Float_t     fPhiMinJet;      // At least one of triggered Jets must be in this
+    Float_t     fPhiMaxJet;      // phi range
     Int_t       fRadiation;      // Flag to switch on/off initial and final state radiation
     
 // ZDC proposal (by Chiara) to store num. of SPECTATORS protons and neutrons
