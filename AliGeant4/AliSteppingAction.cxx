@@ -140,6 +140,7 @@ void AliSteppingAction::UserSteppingAction(const G4Step* step)
     // detect looping track
     G4ThreeVector newStepPoint = step->GetPreStepPoint()->GetPosition();
     G4double trajectory = (newStepPoint-fKeptStepPoint).mag();
+    G4bool kill = false;
     if (trajectory < fgkTolerance) {
 
       // print looping info
@@ -147,6 +148,22 @@ void AliSteppingAction::UserSteppingAction(const G4Step* step)
         G4cout << "*** Particle is looping. ***" << G4endl;
 	if (fStandardVerboseLevel == 0) PrintTrackInfo(track);
       }	
+      kill = true;
+    }
+    
+    if (stepNumber> kMaxNofSteps) { 
+      
+      // print looping info
+      if (fLoopVerboseLevel > 0) {
+        G4cout << "*** Particle reached max step number ("
+	       << kMaxNofSteps << "). ***" << G4endl;
+	if (fStandardVerboseLevel == 0) PrintTrackInfo(track);
+      }	
+      kill = true;
+    }
+    
+    if (kill) {
+
       // set loop verbose level 
       fpSteppingManager->SetVerboseLevel(fLoopVerboseLevel);
       
