@@ -82,7 +82,7 @@ void stupre()
 
     if (EMFSTK.ichemf[kp] == -1) flukaid = 3;
     else if (EMFSTK.ichemf[kp] == 0)  flukaid = 7;
-    else if (EMFSTK.ichemf[kp] == 0)  flukaid = 4;
+    else if (EMFSTK.ichemf[kp] == 1)  flukaid = 4;
     Int_t pdg       = fluka->PDGFromId(flukaid);
     Double_t e      = EMFSTK.etemf[kp] * emvgev;
     Double_t p      = sqrt(e * e - PAPROP.am[flukaid+6] * PAPROP.am[flukaid+6]);
