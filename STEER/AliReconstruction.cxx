@@ -238,23 +238,8 @@ Bool_t AliReconstruction::Run(const char* input)
     fRawReader->SelectEvents(7);
   }
 
-  // open the run loader
-  fRunLoader = AliRunLoader::Open(fGAliceFileName.Data());
-  if (!fRunLoader) {
-    AliError(Form("no run loader found in file %s", fGAliceFileName.Data()));
-    CleanUp();
-    return kFALSE;
-  }
-  fRunLoader->LoadgAlice();
-  AliRun* aliRun = fRunLoader->GetAliRun();
-  if (!aliRun) {
-    AliError(Form("no gAlice object found in file %s",
-                  fGAliceFileName.Data()));
-    CleanUp();
-    return kFALSE;
-  }
-  gAlice = aliRun;
-  AliTracker::SetFieldMap(gAlice->Field());
+  // get the run loader
+  if (!InitRunLoader()) return kFALSE;
 
   // local reconstruction
   if (!fRunLocalReconstruction.IsNull()) {
@@ -273,7 +258,7 @@ Bool_t AliReconstruction::Run(const char* input)
     }
   }
 
-  // get loaders and trackers
+  // get trackers
   if (!fRunTracking.IsNull() && !CreateTrackers(fRunTracking)) {
     if (fStopOnError) {
       CleanUp(); 
@@ -295,6 +280,7 @@ Bool_t AliReconstruction::Run(const char* input)
 
   // loop over events
   if (fRawReader) fRawReader->RewindEvents();
+  
   for (Int_t iEvent = 0; iEvent < fRunLoader->GetNumberOfEvents(); iEvent++) {
     AliInfo(Form("processing event %d", iEvent));
     fRunLoader->GetEvent(iEvent);
@@ -302,13 +288,18 @@ Bool_t AliReconstruction::Run(const char* input)
 
     char fileName[256];
     sprintf(fileName, "ESD_%d.%d_final.root", 
-	    aliRun->GetRunNumber(), aliRun->GetEvNumber());
+	    fRunLoader->GetHeader()->GetRun(), 
+	    fRunLoader->GetHeader()->GetEventNrInRun());
     if (!gSystem->AccessPathName(fileName)) continue;
 
     esd = new AliESD;
-    esd->SetRunNumber(aliRun->GetRunNumber());
-    esd->SetEventNumber(aliRun->GetEvNumber());
-    esd->SetMagneticField(aliRun->Field()->SolenoidField());
+    esd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
+    esd->SetEventNumber(fRunLoader->GetHeader()->GetEventNrInRun());
+    if (gAlice) {
+      esd->SetMagneticField(gAlice->Field()->SolenoidField());
+    } else {
+      // ???
+    }
 
     // vertex finder
     if (fRunVertexFinder) {
@@ -621,9 +612,70 @@ Bool_t AliReconstruction::IsSelected(TString detName, TString& detectors) const
 }
 
 //_____________________________________________________________________________
+Bool_t AliReconstruction::InitRunLoader()
+{
+// get or create the run loader
+
+  if (gAlice) delete gAlice;
+  gAlice = NULL;
+
+  if (!gSystem->AccessPathName(fGAliceFileName.Data())) {
+    fRunLoader = AliRunLoader::Open(fGAliceFileName.Data());
+    if (!fRunLoader) {
+      AliError(Form("no run loader found in file %s", fGAliceFileName.Data()));
+      CleanUp();
+      return kFALSE;
+    }
+    if (fRunLoader->LoadgAlice() == 0) {
+      gAlice = fRunLoader->GetAliRun();
+      AliTracker::SetFieldMap(gAlice->Field());
+    }
+    if (!gAlice && !fRawReader) {
+      AliError(Form("no gAlice object found in file %s",
+		    fGAliceFileName.Data()));
+      CleanUp();
+      return kFALSE;
+    }
+
+  } else {               // galice.root does not exist
+    if (!fRawReader) {
+      AliError(Form("the file %s does not exist", fGAliceFileName.Data()));
+      CleanUp();
+      return kFALSE;
+    }
+    fRunLoader = AliRunLoader::Open(fGAliceFileName.Data(),
+				    AliConfig::GetDefaultEventFolderName(),
+				    "recreate");
+    if (!fRunLoader) {
+      AliError(Form("could not create run loader in file %s", 
+		    fGAliceFileName.Data()));
+      CleanUp();
+      return kFALSE;
+    }
+    fRunLoader->MakeTree("E");
+    Int_t iEvent = 0;
+    while (fRawReader->NextEvent()) {
+      fRunLoader->SetEventNumber(iEvent);
+      fRunLoader->GetHeader()->Reset(fRawReader->GetRunNumber(), 
+				     iEvent, iEvent);
+      fRunLoader->MakeTree("H");
+      fRunLoader->TreeE()->Fill();
+      iEvent++;
+    }
+    fRawReader->RewindEvents();
+    fRunLoader->WriteHeader("OVERWRITE");
+    fRunLoader->CdGAFile();
+    fRunLoader->Write(0, TObject::kOverwrite);
+//    AliTracker::SetFieldMap(???);
+  }
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
 {
-// get the reconstructor object for a detector
+// get the reconstructor object and the loader for a detector
 
   if (fReconstructor[iDet]) return fReconstructor[iDet];
 
@@ -631,7 +683,7 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   TPluginManager* pluginManager = gROOT->GetPluginManager();
   TString detName = fgkDetectorName[iDet];
   TString recName = "Ali" + detName + "Reconstructor";
-  if (!gAlice->GetDetector(detName) && (detName != "HLT")) return NULL;
+  if (gAlice && !gAlice->GetDetector(detName) && (detName != "HLT")) return NULL;
 
   if (detName == "HLT") {
     if (!gROOT->GetClass("AliLevel3")) {
@@ -646,8 +698,8 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   // first check if a plugin is defined for the reconstructor
   TPluginHandler* pluginHandler = 
     pluginManager->FindHandler("AliReconstructor", detName);
-  // if not, but the reconstructor class is implemented, add a plugin for it
-  if (!pluginHandler && gROOT->GetClass(recName.Data())) {
+  // if not, add a plugin for it
+  if (!pluginHandler) {
     AliDebug(1, Form("defining plugin for %s", recName.Data()));
     if (gSystem->Load("lib" + detName + "base.so") == 0) {
       pluginManager->AddHandler("AliReconstructor", detName, 
@@ -667,6 +719,45 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
     fReconstructor[iDet] = reconstructor;
   }
 
+  // get or create the loader
+  if (detName != "HLT") {
+    fLoader[iDet] = fRunLoader->GetLoader(detName + "Loader");
+    if (!fLoader[iDet]) {
+      AliConfig::Instance()
+	->CreateDetectorFolders(fRunLoader->GetEventFolder(), 
+				detName, detName);
+      // first check if a plugin is defined for the loader
+      TPluginHandler* pluginHandler = 
+	pluginManager->FindHandler("AliLoader", detName);
+      // if not, add a plugin for it
+      if (!pluginHandler) {
+	TString loaderName = "Ali" + detName + "Loader";
+	AliDebug(1, Form("defining plugin for %s", loaderName.Data()));
+	pluginManager->AddHandler("AliLoader", detName, 
+				  loaderName, detName + "base", 
+				  loaderName + "(const char*, TFolder*)");
+	pluginHandler = pluginManager->FindHandler("AliLoader", detName);
+      }
+      if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) {
+	fLoader[iDet] = 
+	  (AliLoader*) pluginHandler->ExecPlugin(2, detName.Data(), 
+						 fRunLoader->GetEventFolder());
+      }
+      if (!fLoader[iDet]) {   // use default loader
+	fLoader[iDet] = new AliLoader(detName, fRunLoader->GetEventFolder());
+      }
+      if (!fLoader[iDet]) {
+	AliWarning(Form("couldn't get loader for %s", detName.Data()));
+	if (fStopOnError) return kFALSE;
+      } else {
+	fRunLoader->AddLoader(fLoader[iDet]);
+	fRunLoader->CdGAFile();
+	if (gFile && !gFile->IsWritable()) gFile->ReOpen("UPDATE");
+	fRunLoader->Write(0, TObject::kOverwrite);
+      }
+    }
+  }
+      
   return reconstructor;
 }
 
@@ -691,7 +782,7 @@ Bool_t AliReconstruction::CreateVertexer()
 //_____________________________________________________________________________
 Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
 {
-// get the loaders and create the trackers
+// create the trackers
 
   TString detStr = detectors;
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
@@ -700,16 +791,11 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
     if (!reconstructor) continue;
     TString detName = fgkDetectorName[iDet];
     if (detName == "HLT") continue;
-    fLoader[iDet] = fRunLoader->GetLoader(detName + "Loader");
-    if (!fLoader[iDet]) {
-      AliWarning(Form("no %s loader found", detName.Data()));
+
+    fTracker[iDet] = reconstructor->CreateTracker(fRunLoader);
+    if (!fTracker[iDet] && (iDet < 7)) {
+      AliWarning(Form("couldn't create a tracker for %s", detName.Data()));
       if (fStopOnError) return kFALSE;
-    } else {
-      fTracker[iDet] = reconstructor->CreateTracker(fRunLoader);
-      if (!fTracker[iDet] && (iDet < 7)) {
-	AliWarning(Form("couldn't create a tracker for %s", detName.Data()));
-	if (fStopOnError) return kFALSE;
-      }
     }
   }
 

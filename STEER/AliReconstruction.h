@@ -69,6 +69,7 @@ private:
   Bool_t         FillESD(AliESD*& esd, const TString& detectors);
 
   Bool_t         IsSelected(TString detName, TString& detectors) const;
+  Bool_t         InitRunLoader();
   AliReconstructor* GetReconstructor(Int_t iDet);
   Bool_t         CreateVertexer();
   Bool_t         CreateTrackers(const TString& detectors);
