@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/05/10 16:52:18  vicinanz
+New TOF version with holes for PHOS/RICH
+
 */
 
 #include "AliTOF.h"
@@ -87,7 +90,7 @@ void AliTOFRoc::SetTime(UInt_t Item, UInt_t Error, Float_t RealTime)
 {
    UInt_t Itime;
    Itime = (UInt_t)(RealTime/50.);
-   if (Itime >= pow(2,24)) Itime = 2^24-1;
+   if (Itime >= TMath::Power(2,24)) Itime = 2^24-1;
    Error <<= 24;
    TimeRow[Item]= Error+Itime;
 }
@@ -100,14 +103,14 @@ void AliTOFRoc::SetCharge(UInt_t Item, UInt_t Fec, UInt_t Tdc, Float_t RealCharg
 //
 {
    UInt_t ICharge;
-   if (NRoc>=pow(2,4)) NRoc = 0;
+   if (NRoc>=TMath::Power(2,4)) NRoc = 0;
    NRoc <<= 28;
-   if (Fec >=pow(2,6))  Fec = 0;
+   if (Fec >=TMath::Power(2,6))  Fec = 0;
    Fec  <<= 22;
-   if (Tdc >=pow(2,6))  Tdc = 0;
+   if (Tdc >=TMath::Power(2,6))  Tdc = 0;
    Tdc  <<= 16;
    ICharge = (UInt_t)(RealCharge/50.);
-   if(ICharge>=pow(2,16)) ICharge = (UInt_t)pow(2,16)-1;
+   if(ICharge>=TMath::Power(2,16)) ICharge = (UInt_t)TMath::Power(2,16)-1;
    ChrgRow[Item] = ICharge+NRoc+Fec+Tdc;
 }
 
@@ -245,7 +248,7 @@ void AliTOFRawSector::WriteSector()
     
     for(nRoc=1; nRoc<=14; nRoc++){
        AliTOFRoc* currentRoc = (AliTOFRoc*)fRocData->UncheckedAt(nRoc);
-       currentRoc->SetHeader;
+       currentRoc->SetHeader();
        UInt_t RocHeader = currentRoc->Header;
 //      fprintf(rawfile,RocHeader);
     }

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/05/15 19:32:36  fca
+Add AddHitList !!
+
 Revision 1.13  2000/05/10 16:52:18  vicinanz
 New TOF version with holes for PHOS/RICH
 
@@ -547,7 +550,7 @@ void AliTOF::Digits2Raw(Int_t evNumber)
         AliTOFRoc* currentRoc = (AliTOFRoc*)RocData->UncheckedAt(iRoc); 
 	RocSize  = currentRoc->Items*2+1;
 	TotSize += RocSize*4;
-	if (RocSize>=pow(2,16)) RocSize=0;
+	if (RocSize>=TMath::Power(2,16)) RocSize=0;
 	RocHead[iRoc]   = iRoc<<28;
 	RocHead[iRoc]  += RocSize;
 	RocChek[iRoc]   = currentRoc->GetCheckSum();
@@ -558,7 +561,7 @@ void AliTOF::Digits2Raw(Int_t evNumber)
      
      AliTOFRoc* DummyRoc = new AliTOFRoc();
      TotSize *= 4;
-     if (TotSize>=pow(2,24)) TotSize=0;
+     if (TotSize>=TMath::Power(2,24)) TotSize=0;
      UInt_t Header = TotSize;
      UInt_t SectId = ((UInt_t)isect)<<24;
      Header += SectId;
