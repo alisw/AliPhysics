@@ -13,12 +13,21 @@ void TestPrimaries(Int_t evNumber1=0, Int_t evNumber2=0)
 //  Create some histograms
 
     TH1F *thetaH   =  new TH1F("thetaH","Theta distribution",180,0,180);
+    thetaH->Sumw2();
     TH1F *phiH     =  new TH1F("phiH","Phi distribution"  ,180,-180,180);
+    phiH->Sumw2();
+    TH1F *phiH1    =  new TH1F("phiH1","Phi distribution"  ,180,-180,180);
+    phiH1->Sumw2();
     TH1F *etaH     =  new TH1F("etaH","Pseudorapidity",120,-12,12);
+    etaH->Sumw2();
     TH1F *yH       =  new TH1F("yH","Rapidity distribution",120,-12,12);
+    yH->Sumw2();
     TH1F *eH       =  new TH1F("eH","Energy distribution",100,0,100);
+    eH->Sumw2();
     TH1F *eetaH    =  new TH1F("eetaH","Pseudorapidity",120,0,12);
+    eetaH->Sumw2();
     TH1F *ptH      =  new TH1F("ptH","Pt distribution",150,0,15);
+    ptH->Sumw2();
 //
 //   Loop over events 
 //
@@ -55,6 +64,10 @@ void TestPrimaries(Int_t evNumber1=0, Int_t evNumber2=0)
 	    if (DataBase->GetParticle(mpart)->Charge() == 0) continue;
 	    Float_t wgt = 1./(Float_t ((evNumber2-evNumber1)+1.));
 	    thetaH->Fill(theta*180./TMath::Pi(),wgt);
+	    if (pT<2)
+	      phiH->Fill(phi*180./TMath::Pi(),wgt);
+	    else
+	      phiH1->Fill(phi*180./TMath::Pi(),wgt);
 	    phiH->Fill(phi*180./TMath::Pi(),wgt);
 	    etaH->Fill(eta,5.*wgt);    
 	    eetaH->Fill(eta,E);    
@@ -75,14 +88,16 @@ void TestPrimaries(Int_t evNumber1=0, Int_t evNumber2=0)
     TCanvas *c2 = new TCanvas("c2","Canvas 1",400,10,600,700);
     c2->Divide(2,2);
     c2->cd(1); phiH->Draw();
-    c2->cd(2); thetaH->Draw();
-    c2->cd(3); eetaH->Draw();
+    c2->cd(2); phiH1->Draw();
+    c2->cd(3); thetaH->Draw();
+    c2->cd(4); eetaH->Draw();
 
     TFile* f = new TFile("kineH.root", "update");
     ptH->Write();
     etaH->Write();
     yH->Write();
     phiH->Write();
+    phiH1->Write();
     f->Close();
     
 
