@@ -23,10 +23,10 @@ class TObjArray;
 class AliMUONGeometryEnvelope : public TNamed
 {
   public:
-    AliMUONGeometryEnvelope(const TString& name, Bool_t isVirtual, 
-                            const char* only); 
-    AliMUONGeometryEnvelope(const TString& name, Int_t copyNo,
-                            const char* only); 
+    AliMUONGeometryEnvelope(const TString& name, Int_t id,  
+                            Bool_t isVirtual, const char* only); 
+    AliMUONGeometryEnvelope(const TString& name,  Int_t id,
+                            Int_t copyNo, const char* only); 
     AliMUONGeometryEnvelope();
     virtual ~AliMUONGeometryEnvelope();
   
@@ -37,6 +37,8 @@ class AliMUONGeometryEnvelope : public TNamed
     void  AddConstituent(const TString& name, Int_t copyNo,
                          const TGeoTranslation& translation, 
 	  	         const TGeoRotation& rotation);
+    void  AddConstituent(const TString& name, Int_t copyNo,
+                         const TGeoCombiTrans& transform); 
 
     void  AddConstituentParam(const TString& name, Int_t copyNo, 
                          Int_t npar, Double_t* param);
@@ -47,9 +49,13 @@ class AliMUONGeometryEnvelope : public TNamed
                          const TGeoTranslation& translation, 
 	  	         const TGeoRotation& rotation,
 			 Int_t npar, Double_t* param);
+    void  AddConstituentParam(const TString& name, Int_t copyNo, 
+                         const TGeoCombiTrans& transform,
+			 Int_t npar, Double_t* param);
 
     void  SetTranslation(const TGeoTranslation& translation);
     void  SetRotation(const TGeoRotation& rotation);
+    void  SetTransform(const TGeoCombiTrans& transform);
 
     // get methods
     Bool_t                 IsVirtual() const;  

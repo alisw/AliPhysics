@@ -32,12 +32,13 @@ ClassImp(AliMUONGeometryEnvelope)
 
 //______________________________________________________________________________
 AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(const TString& name, 
+                                                 Int_t id, 
                                                  Bool_t isVirtual,
 						 const char* only)
  : TNamed(name, name),
    fIsVirtual(isVirtual),
    fIsMANY(false),
-   fCopyNo(0),
+   fCopyNo(1),
    fTransformation(0),
    fConstituents(0)
 {
@@ -48,11 +49,15 @@ AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(const TString& name,
   // Create the envelope transformation
   fTransformation = new TGeoCombiTrans("");
   fConstituents = new TObjArray(20);
+  
+  // Set id
+  SetUniqueID(id);
 }
 
 
 //______________________________________________________________________________
-AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(const TString& name, 
+AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(const TString& name,   
+                                                 Int_t id,
                                                  Int_t copyNo, 
 						 const char* only)
  : TNamed(name, name),
@@ -69,6 +74,9 @@ AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(const TString& name,
   // Create the envelope transformation
   fTransformation = new TGeoCombiTrans("");
   fConstituents = new TObjArray(20);
+  
+  // Set id
+  SetUniqueID(id);
 }
 
 
@@ -76,6 +84,8 @@ AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(const TString& name,
 AliMUONGeometryEnvelope::AliMUONGeometryEnvelope()
  : TNamed(),
    fIsVirtual(0),
+   fIsMANY(false),
+   fCopyNo(0),
    fTransformation(0),
    fConstituents(0)
 {
@@ -160,6 +170,19 @@ void  AliMUONGeometryEnvelope::AddConstituent(const TString& name, Int_t copyNo,
 }
 
 //______________________________________________________________________________
+void  AliMUONGeometryEnvelope::AddConstituent(const TString& name, Int_t copyNo,
+                                          const TGeoCombiTrans& transform )
+{
+// Adds the volume with the specified name and transformation
+// to the list of envelopes.
+// ---  					   
+
+  fConstituents
+    ->Add(new AliMUONGeometryConstituent(
+                     name, copyNo, transform, 0, 0));
+}
+
+//______________________________________________________________________________
 void  AliMUONGeometryEnvelope::AddConstituentParam(const TString& name, 
                                   Int_t copyNo, Int_t npar, Double_t* param) 
 {
@@ -201,9 +224,24 @@ void  AliMUONGeometryEnvelope::AddConstituentParam(const TString& name,
 }
 
 //______________________________________________________________________________
+void  AliMUONGeometryEnvelope::AddConstituentParam(const TString& name, 
+                                  Int_t copyNo, 
+				  const TGeoCombiTrans& transform, 
+				  Int_t npar, Double_t* param)
+{
+// Adds the volume with the specified name and transformation
+// to the list of envelopes.
+// ---  					   
+
+  fConstituents
+    ->Add(new AliMUONGeometryConstituent(
+                     name, copyNo, transform, npar, param));
+}
+
+//______________________________________________________________________________
 void  AliMUONGeometryEnvelope::SetTranslation(const TGeoTranslation& translation)
 {
-// Sets the chamber position wrt ALIC.
+// Sets the envelope position
 // ---
 
   fTransformation
@@ -213,11 +251,26 @@ void  AliMUONGeometryEnvelope::SetTranslation(const TGeoTranslation& translation
 //______________________________________________________________________________
 void  AliMUONGeometryEnvelope::SetRotation(const TGeoRotation& rotation)
 {
-// Sets the chamber rotation wrt ALIC.
+// Sets the enevlope rotation
 // ---
 
   TGeoRotation* rot = new TGeoRotation();
   rot->SetMatrix(const_cast<Double_t*>(rotation.GetRotationMatrix()));
+
+  fTransformation->SetRotation(rot);
+}  
+
+//______________________________________________________________________________
+void  AliMUONGeometryEnvelope::SetTransform(const TGeoCombiTrans& transform)
+{
+// Sets the enevlope transformation
+// ---
+
+  fTransformation
+    ->SetTranslation(const_cast<Double_t*>(transform.GetTranslation()));
+
+  TGeoRotation* rot = new TGeoRotation();
+  rot->SetMatrix(const_cast<Double_t*>(transform.GetRotationMatrix()));
 
   fTransformation->SetRotation(rot);
 }  
