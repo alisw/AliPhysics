@@ -22,7 +22,7 @@ public:
   AliTOF();
   AliTOF(const char *name, const char *title);
   virtual        ~AliTOF() {}
-  virtual void    AddHit(Int_t, Int_t*, Float_t*);
+  virtual void    AddHit(Int_t, Int_t, Int_t, Int_t, Int_t, Float_t*);
   virtual void    BuildGeometry();
   virtual void    CreateGeometry();
   virtual void    CreateMaterials();
@@ -40,7 +40,10 @@ public:
  
 class AliTOFhit : public AliHit {
 public:
-  Int_t      fVolume[3];  //array of volumes
+  Int_t      fSector;  // number of sector 
+  Int_t      fPlate;   // number of plate
+  Int_t      fPad_x;   // number of pad along x
+  Int_t      fPad_z;   // number of pad along z
   Float_t    fPx;         // px in TOF
   Float_t    fPy;         // py in TOF
   Float_t    fPz;         // pz in TOF
@@ -49,7 +52,7 @@ public:
  
 public:
   AliTOFhit() {}
-  AliTOFhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
+  AliTOFhit(Int_t shunt, Int_t track, Int_t sector, Int_t plate, Int_t pad_x, Int_t pad_z, Float_t *hits);
   virtual ~AliTOFhit() {}
  
   ClassDef(AliTOFhit,1)  // Hits for Time Of Flight

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  1999/11/01 20:41:57  fca
+Added protections against using the wrong version of FRAME
+
 Revision 1.9  1999/10/15 15:35:19  fca
 New version for frame1099 with and without holes
 
@@ -48,10 +51,11 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <iostream.h>
+
 #include "AliTOF.h"
-#include <TNode.h>
-#include <TTUBE.h>
-#include <TBRIK.h>
+#include "TNode.h"
+#include "TBRIK.h"
 #include "AliRun.h"
 #include "AliConst.h"
  
@@ -83,14 +87,15 @@ AliTOF::AliTOF(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-void AliTOF::AddHit(Int_t track, Int_t *vol, Float_t *hits)
+void AliTOF::AddHit(Int_t track, Int_t sector, Int_t plate, Int_t pad_x,Int_t pad_z, Float_t *hits)
 {
   //
   // Add a TOF hit
   //
   TClonesArray &lhits = *fHits;
-  new(lhits[fNhits++]) AliTOFhit(fIshunt,track,vol,hits);
+  new(lhits[fNhits++]) AliTOFhit(fIshunt,track,sector,plate,pad_x,pad_z,hits);
 }
+ 
  
 //_____________________________________________________________________________
 void AliTOF::BuildGeometry()
@@ -796,14 +801,17 @@ void AliTOF::Init()
 ClassImp(AliTOFhit)
  
 //___________________________________________
-AliTOFhit::AliTOFhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
+AliTOFhit::AliTOFhit(Int_t shunt, Int_t track, Int_t sector, Int_t plate, Int_t pad_x, Int_t pad_z, Float_t *hits):
   AliHit(shunt, track)
 {
   //
   // Store a TOF hit
   //
-  Int_t i;
-  for (i=0;i<3;i++) fVolume[i] = vol[i];
+  
+  fSector=sector;
+  fPlate=plate;
+  fPad_x=pad_x;
+  fPad_z=pad_z;
   //
   // Position
   fX=hits[0];

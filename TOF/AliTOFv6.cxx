@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/11/01 20:41:58  fca
+Added protections against using the wrong version of FRAME
+
 Revision 1.2  1999/10/16 19:21:57  fca
 Corrected Rotation Matrix and CVS logAliTOFv4.cxx
 
@@ -50,6 +53,7 @@ New version for frame1099 with and without holes
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <iostream.h>
 #include <stdlib.h>
 
 #include "AliTOFv6.h"
@@ -425,37 +429,44 @@ void AliTOFv6::StepManager()
   // Procedure called at each step in the Time Of Flight
   //
   TLorentzVector mom, pos;
-  Float_t hits[8];
-  Int_t vol[3];
-  Int_t copy, id, i;
+  Float_t hits[8],rho,z,phi,phid;
+  Int_t sector, plate, pad_x, pad_z;
+  Int_t copy, pad_x_id, pad_z_id, i;
   Int_t *idtmed = fIdtmed->GetArray()-499;
   if(gMC->GetMedium()==idtmed[514-1] && 
      gMC->IsTrackEntering() && gMC->TrackCharge()
      && gMC->CurrentVolID(copy)==fIdSens) {
     TClonesArray &lhits = *fHits;
-    //
-    // Record only charged tracks at entrance
-    gMC->CurrentVolOffID(1,copy);
-    vol[2]=copy;
-    gMC->CurrentVolOffID(3,copy);
-    vol[1]=copy;
-    id=gMC->CurrentVolOffID(8,copy);
-    vol[0]=copy;
-    if(id==fIdFTO3) {
-      vol[0]+=22;
-      id=gMC->CurrentVolOffID(5,copy);
-      if(id==fIdFLT3) vol[1]+=6;
-    } else if (id==fIdFTO2) {
-      vol[0]+=20;
-      id=gMC->CurrentVolOffID(5,copy);
-      if(id==fIdFLT2) vol[1]+=8;
-    } else {
-      id=gMC->CurrentVolOffID(5,copy);
-      if(id==fIdFLT1) vol[1]+=14;
-    }
-    gMC->TrackPosition(pos);
-    gMC->TrackMomentum(mom);
-    //
+
+
+    //_________getting information about hit volumes_____________
+    
+    pad_z_id=gMC->CurrentVolOffID(3,copy);
+    pad_z=copy;  
+    
+    pad_x_id=gMC->CurrentVolOffID(2,copy);
+    pad_x=copy;  
+    
+   gMC->TrackPosition(pos);
+   gMC->TrackMomentum(mom);
+
+   rho = sqrt(pos[0]*pos[0]+pos[1]*pos[1]);
+   phi = TMath::ACos(pos[0]/rho);
+   Float_t as = TMath::ASin(pos[1]/rho);
+   if (as<0) phi = 2*3.141592654-phi;
+
+   z = pos[2];
+   
+   if (z<=62. && z>=-62)  plate = 3;
+   if (z<=216. && z>62.)   plate = 4;
+   if (z>=-216. && z<-62.) plate = 2;
+   if (z>216.)  plate = 5;
+   if (z<-216.) plate = 1;
+
+   phid = phi*kRaddeg;
+   sector = Int_t (phid/20.);
+   sector++;
+
     Double_t ptot=mom.Rho();
     Double_t norm=1/ptot;
     for(i=0;i<3;++i) {
@@ -464,7 +475,6 @@ void AliTOFv6::StepManager()
     }
     hits[6]=ptot;
     hits[7]=pos[3];
-    new(lhits[fNhits++]) AliTOFhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
+    new(lhits[fNhits++]) AliTOFhit(fIshunt,gAlice->CurrentTrack(),sector,plate,pad_x,pad_z,hits);
   }
 }
-

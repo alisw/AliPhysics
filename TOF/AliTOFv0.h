@@ -34,7 +34,7 @@ public:
   virtual void   StepManager();
   virtual void   DrawModule();
  
-   ClassDef(AliTOFv0,1)  //Time Of Flight version 1
+   ClassDef(AliTOFv0,1)  //Time Of Flight version 0
 };
  
 #endif
