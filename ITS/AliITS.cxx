@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.66  2001/11/28 01:35:45  nilsen
+Using standard constructors instead of default constructors for Clusterfinder,
+Response, and FastSimulator.
+
 Revision 1.65  2001/11/27 16:27:28  nilsen
 Adding AliITSDigitizer class to do merging and digitization . Based on the
 TTask method. AliITSDigitizer class added to the Makefile and ITSLinkDef.h
@@ -1004,6 +1008,7 @@ void AliITS::SetTreeAddressS(TTree *treeS){
 void AliITS::MakeBranchInTreeD(TTree *treeD,const char *file){
     // Creates Tree branches for the ITS.
     // Inputs:
+    //      TTree     *treeD Pointer to the Digits Tree.
     //      cont char *file  File name where Digits branch is to be written
     //                       to. If blank it write the SDigits to the same
     //                       file in which the Hits were found.
@@ -1073,7 +1078,7 @@ void AliITS::Hits2SDigits(){
     // Outputs:
     //      none.
 
-    return; // Using Hits in place of the larger sDigits.
+//    return; // Using Hits in place of the larger sDigits.
     AliHeader *header=gAlice->GetHeader(); // Get event number from this file.
     // Do the Hits to Digits operation. Use Standard input values.
     // Event number from file, no background hit merging , use size from
@@ -1095,14 +1100,70 @@ void AliITS::Hits2PreDigits(){
     HitsToPreDigits(header->GetEvent(),0,-1," ",fOpt," ");
 }
 //______________________________________________________________________
-void AliITS::SDigits2Digits(){
+void AliITS::SDigitsToDigits(Option_t *opt){
     // Standard Summable digits to Digits function.
     // Inputs:
     //      none.
     // Outputs:
     //      none.
+    char name[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    Hits2Digits();
+    if(!GetITSgeom()) return; // need transformations to do digitization.
+    AliITSgeom *geom = GetITSgeom();
+
+    const char *all = strstr(opt,"All");
+    const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
+			  strstr(opt,"SSD")};
+    if( !det[0] && !det[1] && !det[2] ) all = "All";
+    else all = 0;
+    static Bool_t setDef=kTRUE;
+    if (setDef) SetDefaultSimulation();
+    setDef=kFALSE;
+
+    AliITSsimulation *sim      = 0;
+    AliITSDetType    *iDetType = 0;
+    TTree            *trees    = gAlice->TreeS();
+    if( !(trees && this->GetSDigits()) ){
+	Error("SDigits2Digits","Error: No trees or SDigits. Returning.");
+	return;
+    } // end if
+    sprintf( name, "%s", this->GetName() );
+    TBranch *brchSDigits = trees->GetBranch( name );
+    
+    Int_t id,module;
+    for(module=0;module<geom->GetIndexMax();module++){
+	id       = geom->GetModuleType(module);
+        if (!all && !det[id]) continue;
+	iDetType = DetType(id);
+	sim      = (AliITSsimulation*)iDetType->GetSimulationModel();
+	if (!sim) {
+	    Error("SDigit2Digits",
+		  "The simulation class was not instanciated!");
+	    exit(1);
+	} // end if !sim
+	sim->InitSimulationModule(module,gAlice->GetEvNumber());
+//
+	// add summable digits to module
+	this->GetSDigits()->Clear();
+	brchSDigits->GetEvent(module);
+	sim->AddSDigitsToModule(GetSDigits(),0);
+//
+        // Digitise current module sum(SDigits)->Digits
+        sim->FinishSDigitiseModule();
+
+        // fills all branches - wasted disk space
+        gAlice->TreeD()->Fill();
+        this->ResetDigits();
+    } // end for module
+
+    gAlice->TreeD()->GetEntries();
+
+    char hname[30];
+    sprintf(hname,"TreeD%d",gAlice->GetEvNumber());
+    gAlice->TreeD()->Write(hname,TObject::kOverwrite);
+    // reset tree
+    gAlice->TreeD()->Reset();
+    
 }
 //______________________________________________________________________
 void AliITS::Hits2Digits(){
@@ -1139,7 +1200,9 @@ void AliITS::HitsToSDigits(Int_t evNumber,Int_t bgrev,Int_t size,
     //      none.
     // Return:
     //      none.
-    return; // using Hits instead of the larger sdigits.
+//    return; // using Hits instead of the larger sdigits.
+
+    HitsToPreDigits(evNumber,bgrev,size,option,opt,filename);
 }
 //______________________________________________________________________
 void AliITS::HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,

@@ -112,7 +112,8 @@ class AliITS : public AliDetector {
     void SetTreeAddressD(TTree *treeD);
     void Hits2SDigits(); // Turn hits into SDigits
     void Hits2PreDigits(); // Turn hits into SDigits
-    void SDigits2Digits(); // Turn SDigits to Digits
+    void SDigits2Digits(){SDigitsToDigits("All");} // Turn SDigits to Digits
+    void SDigitsToDigits(Option_t *opt="All"); // Turn SDigits to Digits
     void Hits2Digits(); // Turn hits straight into Digits.
     //------------------ Internal functions ----------------------------
     // Standard Hits To SDigits function
@@ -174,18 +175,18 @@ class AliITS : public AliDetector {
  protected:
     //================== Data Members ==================================
     AliITSgeom   *fITSgeom;    // Pointer to ITS geometry
-    Bool_t       fEuclidOut;   // Flag to write geometry in euclid format
+    Bool_t        fEuclidOut;  // Flag to write geometry in euclid format
     TObjArray    *fITSmodules; //! Pointer to ITS modules
     Option_t     *fOpt;        //! Detector option ="All" unless changed.
 
-    Int_t        fIdN;         // the number of layers
+    Int_t         fIdN;        // the number of layers
     Int_t        *fIdSens;     //[fIdN] layer identifier
     TString      *fIdName;     //[fIdN] layer identifier
 
-    Int_t        fNDetTypes;   // Number of detector types
+    Int_t         fNDetTypes;  // Number of detector types
     TObjArray    *fDetTypes;   // List of detector types
 
-    TClonesArray    *fSDigits;    // List of Summable digits.
+    TClonesArray  *fSDigits;    // List of Summable digits.
     Int_t         fNSDigits;   // Number of Summable Digits.
 
     TObjArray    *fDtype;      // List of digits
