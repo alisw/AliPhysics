@@ -29,6 +29,7 @@
 //  Detailed information in Alice Technical Note xxxxxxxx (2004)
 //===========================================================
 
+#include <stdlib.h>
 #include <Riostream.h>
 #include <stdlib.h> 
 
