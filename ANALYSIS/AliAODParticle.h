@@ -46,6 +46,8 @@ public:
   
   AliAODParticle& operator=(const AliAODParticle& in); 
   
+  void           Clear(Option_t*);//Must be implemented in order to store this object in Clones Array
+  
   TLorentzVector FourMomentum() const {TLorentzVector v(fPx,fPy,fPz,fE);return v;}
   TVector3       ProductionVertex() const {TVector3 v(fVx,fVy,fVz);return v;}
   

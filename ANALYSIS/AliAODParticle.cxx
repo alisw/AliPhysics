@@ -148,6 +148,23 @@ AliAODParticle::~AliAODParticle()
 }
 //______________________________________________________________________________
 
+void AliAODParticle::Clear(Option_t*)
+{
+//Must be implemented in order to store this object in Clones Array
+  delete [] fPids;
+  delete [] fPidProb;
+  delete fTPCTrackPoints;
+  delete fITSTrackPoints;
+  delete fClusterMap;
+  
+  fPids = 0x0;
+  fPidProb = 0x0;
+  fTPCTrackPoints = 0x0;
+  fITSTrackPoints = 0x0;
+  fClusterMap = 0x0;
+}
+//______________________________________________________________________________
+
 AliAODParticle& AliAODParticle::operator=(const AliAODParticle& in)
 {
 //assigment operator
