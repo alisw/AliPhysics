@@ -121,8 +121,8 @@ protected:
   // variables for time integration (S.Radomski@gsi.de)
   static const Int_t fgkTypes = 5;  // Number of track types (e,mu,pi,k,p)
   Bool_t  fStartTimeIntegral;       // indicator wether integrate time
-  Float_t fIntegratedTime[5];       // integrated time
-  Float_t fIntegratedLength;        // integrated length
+  Double_t fIntegratedTime[5];       // integrated time
+  Double_t fIntegratedLength;        // integrated length
   
   ClassDef(AliKalmanTrack,2)    // Reconstructed track
 };

@@ -57,7 +57,7 @@ class AliBarrelTrack : public TObject {
   void SetX(Double_t x, Double_t alpha);
   void SetRefPlane(Int_t nRefPlane, Int_t isIn);
   void SetNClusters(Int_t nClusters, Double_t chi2);
-  void SetTime(Float_t time[5], Double_t length);
+  void SetTime(Double_t time[5], Double_t length);
   void SetStateVector(Double_t vec[5]);             // external parameters
   void SetCovarianceMatrix(Double_t vec[15]);       // external parameters
  

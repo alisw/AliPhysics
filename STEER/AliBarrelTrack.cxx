@@ -83,7 +83,7 @@ void AliBarrelTrack::SetNClusters(Int_t nClusters, Double_t chi2) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void AliBarrelTrack::SetTime(Float_t time[5], Double_t length) {
+void AliBarrelTrack::SetTime(Double_t time[5], Double_t length) {
 
   for(Int_t i=0; i<5; i++)
     fTimeHypothesis[i] = time[i];
