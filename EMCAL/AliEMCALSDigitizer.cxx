@@ -78,7 +78,7 @@ ClassImp(AliEMCALSDigitizer)
   fA = fB =  fNevents = 0 ; 
   fTowerPrimThreshold = fPreShowerPrimThreshold = fPhotonElectronFactor  = 0. ;
   fHits = fSDigits = fSDigits = 0 ;
-
+  fSplitFile = 0 ; 
   fIsInitialized = kFALSE ;
 
 
@@ -94,6 +94,7 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char* headerFile, const char *sDigi
   fPreShowerPrimThreshold = 0.0001 ; 
   fNevents = 0 ; 
   fPhotonElectronFactor = 5000. ; // photoelectrons per GeV 
+  fSplitFile = 0 ; 
   Init();
 }
 
@@ -101,24 +102,26 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char* headerFile, const char *sDigi
 AliEMCALSDigitizer::~AliEMCALSDigitizer()
 {
   // dtor
-  if(fSDigits)
-    delete fSDigits ;
-  if(fHits)
-    delete fHits ;
+
+  if (fSplitFile) 
+    if ( fSplitFile->IsOpen() ) 
+      fSplitFile->Close() ; 
+
 }
+
 //____________________________________________________________________________ 
 void AliEMCALSDigitizer::Init(){
 
   // Initialization: open root-file, allocate arrays for hits and sdigits,
-  // attach task SDigitizer to the list of PHOS tasks
+  // attach task SDigitizer to the list of EMCAL tasks
   // 
   // Initialization can not be done in the default constructor
   //============================================================= YS
   //  The initialisation is now done by the getter
 
-if( strcmp(GetTitle(), "") == 0 )
+  if( strcmp(GetTitle(), "") == 0 )
     SetTitle("galice.root") ;
-  
+    
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance(GetTitle(), GetName(), "update") ;     
   if ( gime == 0 ) {
     cerr << "ERROR: AliEMCALSDigitizer::Init -> Could not obtain the Getter object !" << endl ; 
@@ -165,10 +168,13 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
     Bool_t emcalfound = kFALSE, sdigitizerfound = kFALSE ; 
     
      while ( (branch = (static_cast<TBranch*>(next()))) && (!emcalfound || !sdigitizerfound) ) {
-      if ( (strcmp(branch->GetName(), "EMCAL")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
+      TString thisName( GetName() ) ; 
+      TString branchName( branch->GetTitle() ) ; 
+      branchName.Append(":") ; 
+      if ( (strcmp(branch->GetName(), "EMCAL")==0) && thisName.BeginsWith(branchName) )  
 	emcalfound = kTRUE ;
       
-      else if ( (strcmp(branch->GetName(), "AliEMCALSDigitizer")==0) && (strcmp(branch->GetTitle(), sdname)==0) ) 
+      else if ( (strcmp(branch->GetName(), "AliEMCALSDigitizer")==0) && thisName.BeginsWith(branchName) )  
 	sdigitizerfound = kTRUE ; 
     }
     
@@ -306,8 +312,8 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
 	}
       }
 	if(gAlice->TreeS() == 0)
-	gAlice->MakeTree("S") ;      
-      
+	  gAlice->MakeTree("S",fSplitFile);
+
       //First list of sdigits
       Int_t bufferSize = 32000 ;    
       TBranch * sdigitsBranch = gAlice->TreeS()->Branch("EMCAL",&sdigits,bufferSize);
@@ -320,13 +326,18 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
 							   &sd,bufferSize,splitlevel); 
       sdigitizerBranch->SetTitle(sdname);
       
-      gAlice->TreeS()->Fill() ; 
+      sdigitsBranch->Fill() ; 
+      sdigitizerBranch->Fill() ; 
       gAlice->TreeS()->AutoSave() ;
-      
+           
       if(strstr(option,"deb"))
 	PrintSDigits(option) ;
       
   }
+  
+  if (fSplitFile) 
+    if ( fSplitFile->IsOpen() ) 
+      fSplitFile->Close() ; 
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALSDigitizer");
@@ -369,38 +380,50 @@ void AliEMCALSDigitizer::SetSDigitsBranch(const char * title ){
 }
 
 //__________________________________________________________________
-void AliEMCALSDigitizer::SetSplitFile(const TString splitFileName) const
+void AliEMCALSDigitizer::SetSplitFile(const TString splitFileName) 
 {
   // Diverts the SDigits in a file separate from the hits file
   
   TDirectory * cwd = gDirectory ;
-  TFile * splitFile = gAlice->InitTreeFile("S",splitFileName.Data());
-  splitFile->cd() ; 
-  gAlice->Write();
+
+  if ( !(gAlice->GetTreeSFileName() == splitFileName) ) {
+    if (gAlice->GetTreeSFile() )  
+      gAlice->GetTreeSFile()->Close() ; 
+  }
+
+  fSplitFile = gAlice->InitTreeFile("S",splitFileName.Data());
+  fSplitFile->cd() ; 
+  if ( !fSplitFile->Get("gAlice") ) 
+    gAlice->Write();
   
   TTree *treeE  = gAlice->TreeE();
   if (!treeE) {
-    cerr<<"No TreeE found "<<endl;
-    abort() ;
+    cerr << "ERROR: AliEMCALSDigitizer::SetSPlitFile -> No TreeE found "<<endl;
+   abort() ;
   }      
   
   // copy TreeE
-  AliHeader *header = new AliHeader();
-  treeE->SetBranchAddress("Header", &header);
-  treeE->SetBranchStatus("*",1);
-  TTree *treeENew =  treeE->CloneTree();
-  treeENew->Write();
+  if ( !fSplitFile->Get("TreeE") ) {
+    AliHeader *header = new AliHeader();
+    treeE->SetBranchAddress("Header", &header);
+    treeE->SetBranchStatus("*",1);
+    TTree *treeENew =  treeE->CloneTree();
+    treeENew->Write();
+  }
   
   // copy AliceGeom
-  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-  if (!AliceGeom) {
-    cerr<<"AliceGeom was not found in the input file "<<endl;
-    abort() ;
+  if ( !fSplitFile->Get("AliceGeom") ) {
+    TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+    if (!AliceGeom) {
+      cerr << "ERROR: AliEMCALSDigitizer::SetSPlitFile -> AliceGeom was not found in the input file "<<endl;
+      abort() ;
+    }
+    AliceGeom->Write();
   }
-  AliceGeom->Write();
+  
+  gAlice->MakeTree("S",fSplitFile);
   cwd->cd() ; 
-  gAlice->MakeTree("S",splitFile);
-  cout << "INFO: AliEMCALSDigitizer::SetSPlitMode -> SDigits will be stored in " << splitFileName.Data() << endl ; 
+  cout << "INFO: AliEMCALSDigitizer::SetSPlitFile -> SDigits will be stored in " << splitFileName.Data() << endl ; 
 }
 
 //__________________________________________________________________

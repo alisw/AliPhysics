@@ -36,7 +36,7 @@ public:
   Float_t  GetPedestalParameter()const {return fA;}
   Float_t  GetCalibrationParameter()const{return fB;}
   char *   GetSDigitsBranch()const{return (char*) fSDigitsTitle.Data();}  
-  void     SetSplitFile(const TString splitFileName = "EMCAL.SDigits.root" ) const ;
+  void     SetSplitFile(const TString splitFileName = "EMCAL.SDigits.root" ) ;
   virtual void Print(Option_t* option) const ;
 
   void     SetPedestalParameter(Float_t A){fA = A ;}
@@ -68,6 +68,7 @@ private:
   Bool_t         fIsInitialized ; 
   TClonesArray * fSDigits ; //! list of SDigits
   TClonesArray * fHits ;    //! 
+  TFile * fSplitFile ;      //! file in which SDigits will eventually be stored
 
   ClassDef(AliEMCALSDigitizer,2)  // description 
 
