@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/05/16 14:57:16  alibrary
+New files for folders and Stack
+
 Revision 1.13  2001/05/09 01:00:19  nilsen
 Fixed up a typo in the cout of Init(). Now properly indecates which version
 of code is being used.
@@ -725,9 +728,16 @@ void AliITSv5asymm::InitAliITSgeom(){
 			    if(fMinorVersion==1){
                              fITSgeom->ReSetShape(kSPD,
 						  new AliITSgeomSPD300());
-			    } else if(fMinorVersion==2)
+			    } else if(fMinorVersion==2){
                              fITSgeom->ReSetShape(kSPD,
 						  new AliITSgeomSPD300());
+			    }else if(fMinorVersion==3){
+                             fITSgeom->ReSetShape(kSPD,
+						  new AliITSgeomSPD425Long());
+			    }else{
+                             fITSgeom->ReSetShape(kSPD,
+						  new AliITSgeomSPD300());
+			    } // end if
 		    } // end for det
 		} // end for k
             } // end for j

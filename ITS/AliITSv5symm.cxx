@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/04/18 12:07:37  barbera
+Number of modules in layer 5 and 6 re-set to 23 and 26
+
 Revision 1.8  2001/03/23 00:12:23  nilsen
 Set Reading of AliITSgeom data from Geant3 common blocks as the default and
 not a .det file. Removed redundent calls to BuildGeometry.
@@ -706,9 +709,16 @@ void AliITSv5symm::InitAliITSgeom(){
 			    if(fMinorVersion==1){
                              fITSgeom->ReSetShape(kSPD,
 						  new AliITSgeomSPD300());
-			    } else if(fMinorVersion==2)
+			    } else if(fMinorVersion==2){
                              fITSgeom->ReSetShape(kSPD,
 						  new AliITSgeomSPD300());
+			    }else if(fMinorVersion==3){
+                             fITSgeom->ReSetShape(kSPD,
+						  new AliITSgeomSPD425Long());
+			    }else{
+                             fITSgeom->ReSetShape(kSPD,
+						  new AliITSgeomSPD300());
+			    } // end if
 		    } // end for det
 		} // end for k
             } // end for j
