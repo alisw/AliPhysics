@@ -792,7 +792,7 @@ void AliL3Hough::FindTrackCandidatesRow()
   
       for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	{
-	  if(fPeakFinder->GetWeight(k) < 0) continue;
+	  //	  if(fPeakFinder->GetWeight(k) < 0) continue;
 	  AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[i]->NextTrack();
 	  Float_t psi = atan((fPeakFinder->GetXPeak(k)-fPeakFinder->GetYPeak(k))/(AliL3HoughTransformerRow::GetBeta1()-AliL3HoughTransformerRow::GetBeta2()));
 	  Float_t kappa = 2.0*(fPeakFinder->GetXPeak(k)*cos(psi)-AliL3HoughTransformerRow::GetBeta1()*sin(psi));
