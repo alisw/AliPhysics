@@ -13,50 +13,56 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliITSDetType.h"
+/*
+ $Log$
+*/
 
+#include "AliITSDetType.h"
 #include "AliITSClusterFinder.h"
 #include "AliITSsimulation.h"
 
 ClassImp(AliITSDetType)	 
 
-AliITSDetType::AliITSDetType() 
-{
-  // constructor
-    fSegmentation=0;
-    fResponse=0;
-    fSimulation=0;
-    fReconst=0;
-}
+AliITSDetType::AliITSDetType(){
+    // constructor
 
-AliITSDetType::~AliITSDetType() 
-{
-  // destructor
+    fSegmentation = 0;
+    fResponse     = 0;
+    fSimulation   = 0;
+    fReconst      = 0;
 }
-//__________________________________________________________________________
+//----------------------------------------------------------------------
+AliITSDetType::~AliITSDetType(){
+    // destructor
+
+    if(fSegmentation!=0) delete fSegmentation; fSegmentation = 0;
+    if(fResponse!=0)     delete fResponse;     fResponse     = 0;
+    if(fSimulation!=0)   delete fSimulation;   fSimulation   = 0;
+    if(fReconst!=0)      delete fReconst;      fReconst      = 0;
+}
+//______________________________________________________________________
 AliITSDetType::AliITSDetType(const AliITSDetType &source){
   //     Copy Constructor 
 
   if(&source == this) return;
-  this->fReconst = source.fReconst;
-  this->fSimulation = source.fSimulation;
-  this->fResponse = source.fResponse;
-  this->fSegmentation = source.fSegmentation;
-  this->fDigClassName = source.fDigClassName;
+  this->fReconst        = source.fReconst;
+  this->fSimulation     = source.fSimulation;
+  this->fResponse       = source.fResponse;
+  this->fSegmentation   = source.fSegmentation;
+  this->fDigClassName   = source.fDigClassName;
   this->fClustClassName = source.fClustClassName;
   return;
 }
-
-//_________________________________________________________________________
+//______________________________________________________________________
 AliITSDetType& AliITSDetType::operator=(const AliITSDetType &source){
   //    Assignment operator
+
   if(&source == this) return *this;
-  this->fReconst = source.fReconst;
-  this->fSimulation = source.fSimulation;
-  this->fResponse = source.fResponse;
-  this->fSegmentation = source.fSegmentation;
-  this->fDigClassName = source.fDigClassName;
+  this->fReconst        = source.fReconst;
+  this->fSimulation     = source.fSimulation;
+  this->fResponse       = source.fResponse;
+  this->fSegmentation   = source.fSegmentation;
+  this->fDigClassName   = source.fDigClassName;
   this->fClustClassName = source.fClustClassName;
-  return *this;
-  
+  return *this;  
 }
