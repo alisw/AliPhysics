@@ -1438,17 +1438,17 @@ void AliSHILv2::CreateGeometry()
 //
   tpar[0]=0.;
   tpar[1]=kR43;
-  tpar[2]=50.;
+  tpar[2]=85.;
   gMC->Gsvolu("YAEM", "TUBE", idtmed[kAir], tpar, 3);
-  tpar[0]=kRAbs;
+  tpar[0]=6.3/2.;
   tpar[1]=kR43;
-  tpar[2]=50.;
+  tpar[2]=85.;
   gMC->Gsvolu("YFEM", "TUBE", idtmed[kFe], tpar, 3);
   gMC->Gspos("YFEM", 1, "YAEM", 0., 0., 0., 0, "ONLY"); 
 
 //
 
-  dz=kZvac12+50.;
+  dz=1921.6 + tpar[2];
   gMC->Gspos("YAEM", 1, "ALIC", 0., 0., dz, 0, "ONLY"); 
 
 
