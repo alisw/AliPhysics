@@ -445,7 +445,7 @@ void AliModulesComposition::SetMagField(G4double fieldValue)
 {
 // Sets uniform magnetic field to specified value.
 // ---
-
-  fMagneticField->SetFieldValue(fieldValue);
+  if (fMagneticField)
+    fMagneticField->SetFieldValue(fieldValue);
 }
 
