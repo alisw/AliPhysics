@@ -39,17 +39,13 @@ class AliPHOS : public AliDetector {
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, 
 			 Int_t id, Float_t *hits ) = 0 ;   
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  CreateMaterials() ;            
-  virtual void  FillESD(AliESD* esd) const ;          
   virtual void  FinishRun() {WriteQA();}
   virtual AliPHOSGeometry * GetGeometry() const 
   {return AliPHOSGeometry::GetInstance(GetTitle(),"") ;  }
-  virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;  
   virtual AliLoader* MakeLoader(const char* topfoldername);
   AliPHOSQAChecker * QAChecker() {return fQATask;}  
-  virtual void Reconstruct() const; 
   void    SetDebug() { fDebug = kTRUE ; }
   void    ResetDebug() { fDebug = kFALSE ; }
   Bool_t  Debug() const { return fDebug ; } 

@@ -8,12 +8,14 @@
 //_________________________________________________________________________
 //  Wrapping class for reconstruction
 //*--
-//*-- Author: Gines Martinez & Yves Schutz (SUBATECH) 
-//*--         Dmitri Peressounko (SUBATECH & Kurchatov Institute)
+//*-- Author: Yves Schutz (SUBATECH) 
+// Reconstruction class. Redesigned from the old AliReconstructionner class and 
+// derived from STEER/AliReconstructor. 
+//_________________________________________________________________________
 
 // --- ROOT system ---
 
-#include "TTask.h"
+#include "AliReconstructor.h" 
 class AliPHOSDigitizer ;
 class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;
@@ -25,29 +27,22 @@ class AliESD ;
 
 // --- AliRoot header files ---
 
-class AliPHOSReconstructor : public TTask {
+class AliPHOSReconstructor : public AliReconstructor {
 
 public:
 
   AliPHOSReconstructor() ; //ctor            
-  AliPHOSReconstructor(const char * headerFile, const char * branchName = "Default",const TString taskName="CTP");
-  AliPHOSReconstructor(const AliPHOSReconstructor & rec) : TTask(rec) {
+  AliPHOSReconstructor(const AliPHOSReconstructor & rec) : AliReconstructor(rec) {
     // cpy ctor: 
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;
   }
    
-  virtual ~AliPHOSReconstructor() ;
+  virtual ~AliPHOSReconstructor() {} ;
 
-  virtual void Exec(Option_t *) ;
-  void Clusters2Tracks(Int_t ievent, AliESD *event);
-
-  AliPHOSClusterizer       * GetClusterizer()const { return fClusterizer ; }
-  AliPHOSPID               * GetPID()        const { return fPID;          }
-  AliPHOSTrackSegmentMaker * GetTSMaker()    const { return fTSMaker ;     }
-  void SetEventRange(Int_t first=0, Int_t last=-1) ; 
-
-  void Print()const ;
+  Bool_t                     Debug() const { return fDebug ; }
+  virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
+  virtual void               Reconstruct(AliRunLoader* runLoader) const ;
 
   AliPHOSReconstructor & operator = (const AliPHOSReconstructor & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
@@ -55,25 +50,11 @@ public:
     return *this ; 
   }
   
-
-private:
-  void Init() ;  
-
 private:
   
-  TString  fRecPointBranch ;    // Title of RecPoints branch   
-  TString  fTSBranch  ;         // Title of TrackSegments branch
-  TString  fRecPartBranch ;     // Title of RecParticles branch 
+  Bool_t fDebug; //! verbosity controller
 
-
-  AliPHOSClusterizer       * fClusterizer ; //! Pointer to AliPHOSClusterizer
-  AliPHOSPID               * fPID ;         //! Pointer to AliPHOSPID
-  AliPHOSTrackSegmentMaker * fTSMaker ;     //! Pointer to AliPHOSTrackSegmentMaker
-  Bool_t  fIsInitialized ; // kTRUE if reconstructioner is initialized
-  Int_t   fFirstEvent;        // first event to process
-  Int_t   fLastEvent;         // last  event to process
- 
-  ClassDef(AliPHOSReconstructor,1)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliPHOSReconstructor,2)  // Reconstruction algorithm class (Base Class)
 
 }; 
 

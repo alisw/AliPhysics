@@ -80,12 +80,6 @@ void AliPHOS::Copy(AliPHOS & phos)
 }
 
 //____________________________________________________________________________
-AliDigitizer* AliPHOS::CreateDigitizer(AliRunDigitizer* manager) const
-{
-  return new AliPHOSDigitizer(manager);
-}
-
-//____________________________________________________________________________
 void AliPHOS::CreateMaterials()
 {
   // Definitions of materials to build PHOS and associated tracking media.
@@ -377,67 +371,6 @@ void AliPHOS::CreateMaterials()
 }
 
 //____________________________________________________________________________
-void AliPHOS::FillESD(AliESD* esd) const 
-{
-  // Called by AliReconstruct after Reconstruct() and global tracking and vertxing
-
-  //Creates the tracksegments and Recparticles
-  AliPHOSReconstructor * rec = new AliPHOSReconstructor((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
-  TList * taskslist = rec->GetListOfTasks() ; 
-  Int_t index ;
-  TTask * task ; 
-  TString name ; 
- // set clusterizer task inactive 
-  for (index = 0; index < taskslist->GetSize(); index++) {
-    task = dynamic_cast<TTask *>(taskslist->At(index)) ; 
-    name = task->GetName() ; 
-    if ( name.Contains(AliConfig::Instance()->GetReconstructionerTaskName()))
-      task->SetActive(kFALSE) ; 
-    if ( name.Contains(AliConfig::Instance()->GetTrackerTaskName()))
-      (dynamic_cast<AliPHOSTrackSegmentMaker *> (task))->SetESD(esd) ; 
-  }
-
-  AliPHOSGetter *gime = AliPHOSGetter::Instance( (fLoader->GetRunLoader()->GetFileName()).Data() ) ;
-  Int_t eventNumber = gime->EventNumber();
-  rec->SetEventRange(eventNumber, eventNumber) ; // do current event; the loop over events is done by AliReconstruction::Run()
-  if ( Debug() ) 
-    rec->ExecuteTask("deb all") ;
-  else 
-    rec->ExecuteTask("") ;
-
-  // Creates AliESDtrack from AliPHOSRecParticles 
-  gime->Event(eventNumber, "P") ; 
-  TClonesArray *recParticles = gime->RecParticles();
-  Int_t nOfRecParticles = recParticles->GetEntries();
-  for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
-    AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
-    if (Debug()) 
-      rp->Print();
-    AliESDtrack * et = new AliESDtrack() ; 
-    // fills the ESDtrack
-    Double_t xyz[3];
-    for (Int_t ixyz=0; ixyz<3; ixyz++) xyz[ixyz] = rp->GetPos()[ixyz];
-    et->SetPHOSposition(xyz) ; 
-    et->SetPHOSsignal  (rp->Energy()) ; 
-    et->SetPHOSpid     (rp->GetPID()) ;
-    // add the track to the esd object
-    esd->AddTrack(et);
-    delete et;
-  }
-}       
-
-//____________________________________________________________________________
-void AliPHOS::Hits2SDigits()  
-{ 
-// create summable digits
-
-  AliPHOSSDigitizer* phosDigitizer = 
-    new AliPHOSSDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
-  phosDigitizer->SetEventRange(0, -1) ; // do all the events
-  phosDigitizer->ExecuteTask("all") ;
-}
-
-//____________________________________________________________________________
 AliLoader* AliPHOS::MakeLoader(const char* topfoldername)
 {
 //different behaviour than standard (singleton getter)
@@ -465,35 +398,6 @@ void AliPHOS::SetTreeAddress()
        branch->SetAddress(&fHits);
      }
   }
-}
-
-//____________________________________________________________________________
-void AliPHOS::Reconstruct() const 
-{ 
-  // method called by AliReconstruction; it should not be called otherwise but the AliPHOSReconstructionner 
-  // should be called for stand alone reconstruction.
-  // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
-  // segment maker needs access to the AliESD object to retrieve the tracks reconstructed by 
-  // the global tracking.
- 
-  AliPHOSReconstructor * rec = new AliPHOSReconstructor((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
-  TList * taskslist = rec->GetListOfTasks() ; 
-  Int_t index ;
-  TTask * task ; 
-  TString name ; 
-  // set all tasks inactive except clusterizer
-  for (index = 0; index < taskslist->GetSize(); index++) {
-    task = dynamic_cast<TTask *>(taskslist->At(index)) ; 
-    name = task->GetName() ; 
-    if ( !name.Contains(AliConfig::Instance()->GetReconstructionerTaskName()))
-      task->SetActive(kFALSE) ; 
-  }
-  rec->SetEventRange(0, -1) ; // do all the events
-  if ( Debug() ) 
-    rec->ExecuteTask("deb all") ; 
-  else 
-    rec->ExecuteTask("") ; 
-  
 }
 
 //____________________________________________________________________________
