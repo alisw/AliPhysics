@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/06/20 16:08:56  morsch
+Remove some shielding to accomodate compensator magnet.
+
 Revision 1.11  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -279,21 +282,22 @@ void AliHALL::CreateGeometry()
   gMC->Gspos("HPIL", 1, "ALIC", 165.,-706+pbox[1] , 1350., 0, "ONLY");
   gMC->Gspos("HPIL", 2, "ALIC",-165.,-706+pbox[1] , 1350., 0, "ONLY");
   
-  //     concrete beam shield 
+  //     simple concrete beam shield 
   
-  pbox[0] = 402.5;
-  pbox[1] = 260.;
-  pbox[2] = 120.;
-  gMC->Gsvolu("HMBS", "BOX ", idtmed[1956], pbox, 3);
-  pbox[0] = 85.;
-  pbox[1] = 120.;
-  gMC->Gsvolu("HBBS", "BOX ", idtmed[1956], pbox, 3);
-  gMC->Gspos("HBBS", 1, "HMBS", -157.5, 0., 0., 0, "ONLY");
-  pbox[0] = 40.;
-  pbox[1] = 130.;
-  gMC->Gsvolu("HPBS", "BOX ", idtmed[1956], pbox, 3);
-  gMC->Gspos("HPBS", 1, "HMBS", 202.5,  30.,    0., 0, "ONLY");
-  gMC->Gspos("HMBS", 1, "ALIC", 157.5, -50., -820., 0, "ONLY");
+  Float_t ppgon[10];
+  ppgon[0] =    45.;
+  ppgon[1] =   360.;
+  ppgon[2] =     4.;
+  ppgon[3] =     2.;
+  ppgon[4] =  -720.;
+  ppgon[5] =   150.;
+  ppgon[6] =   250.;
+  ppgon[7] = -1800.;
+  ppgon[8] =   150.;
+  ppgon[9] =   250.;
+
+  gMC->Gsvolu("HMBS", "PGON", idtmed[1956], ppgon, 10);
+  gMC->Gspos("HMBS", 1, "ALIC", 0., 70., 0., 0, "ONLY");
   
 }
 
