@@ -196,3 +196,104 @@ void AliITSsegmentationSDD::Print(){
    cout << "**************************************************" << endl;
 
 }
+//______________________________________________________________________
+
+//______________________________________________________________________
+void AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz){
+// Transformation from Geant detector centered local coordinates (cm) to
+// time bucket numbers ix and anode number iz.
+// Input:
+// Float_t   x      detector local coordinate x in cm with respect to the
+//                  center of the sensitive volume.
+// Float_t   z      detector local coordinate z in cm with respect to the
+//                  center of the sensitive volulme.
+// Output:
+// Int_t    ix      detector x time coordinate. Has the range 0<=ix<fNsamples.
+// Int_t    iz      detector z anode coordinate. Has the range 0<=iz<fNandoes.
+//   A value of -1 for ix or iz indecates that this point is outside of the
+// detector segmentation as defined.
+//     This segmentation geometry can be discribed as the following:
+// {assumes 2*Dx()=7.0cm Dz()=7.5264cm, Dpx()=25ns,
+//  res->DeriftSpeed()=7.3mic/ns, Dpz()=512. For other values a only the 
+//  specific numbers will change not their layout.}
+//
+//        0                     191                    0
+//      0 |----------------------|---------------------| 256
+//        | a     time-bins      |     time-bins     a |
+//        | n                    |                   n |
+//        | o                    |___________________o_|__> X
+//        | d                    |                   d |
+//        | e                    |                   e |
+//        | s                    |                   s |
+//    255 |----------------------|---------------------| 511
+//                               |
+//                               V
+//                               Z
+    Float_t dx,dz,tb;
+    const Float_t kconv = 1.0E-04; // converts microns to cm.
+
+    ix = -1; // default values
+    iz = -1; // default values
+    dx = -kconv*Dx(); // lower left edge in cm.
+    dz = -0.5*kconv*Dz(); // lower left edge in cm.
+    if(x<dx || x>-dx) return; // outside of defined volume.
+    if(z<dz || z>-dz) return; // outside of defined volume.
+    tb = fResponse->DriftSpeed()*fTimeStep*kconv; // compute size of time bin.
+    if(x>0) dx = -(dx + x)/tb; // distance from + side in time bin units
+    else dx = (x - dx)/tb;     // distance from - side in time bin units
+    dz = (z - dz)/(kconv*fPitch); // distance in z in anode pitch units
+    ix = (Int_t) dx;   // time bin
+    iz = (Int_t) dz;   // anode
+    if(x>0) iz += Npz()/2; // if x>0 then + side anodes values.
+    return; // Found ix and iz, return.
+}
+//______________________________________________________________________
+void AliITSsegmentationSDD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
+{
+// Transformation from Detector time bucket and anode coordiantes to Geant 
+// detector centerd local coordinates (cm).
+// Input:
+// Int_t    ix      detector x time coordinate. Has the range 0<=ix<fNsamples.
+// Int_t    iz      detector z anode coordinate. Has the range 0<=iz<fNandoes.
+// Output:
+// Float_t   x      detector local coordinate x in cm with respect to the
+//                  center of the sensitive volume.
+// Float_t   z      detector local coordinate z in cm with respect to the
+//                  center of the sensitive volulme.
+// If ix and or iz is outside of the segmentation range a value of -Dx()
+// or -0.5*Dz() is returned.
+//     This segmentation geometry can be discribed as the following:
+// {assumes 2*Dx()=7.0cm Dz()=7.5264cm, Dpx()=25ns,
+//  res->DeriftSpeed()=7.3mic/ns, Dpz()=512. For other values a only the 
+//  specific numbers will change not their layout.}
+//
+//        0                     191                    0
+//      0 |----------------------|---------------------| 256
+//        | a     time-bins      |     time-bins     a |
+//        | n                    |                   n |
+//        | o                    |___________________o_|__> X
+//        | d                    |                   d |
+//        | e                    |                   e |
+//        | s                    |                   s |
+//    255 |----------------------|---------------------| 511
+//                               |
+//                               V
+//                               Z
+    Int_t i,j;
+    Float_t tb;
+    const Float_t kconv = 1.0E-04; // converts microns to cm.
+
+    if(iz>=Npz()/2) x = kconv*Dx(); // default value for +x side.
+    else x = -kconv*Dx(); // default value for -x side.
+    z = -0.5*kconv*Dz(); // default value.
+    if(ix<0 || ix>=Npx()) return; // outside of detector
+    if(iz<0 || iz>=Npz()) return; // outside of detctor
+    tb = fResponse->DriftSpeed()*fTimeStep*kconv; // compute size of time bin.
+    if(iz>=Npz()/2) tb *= -1.0; // for +x side decrement frmo Dx().
+    for(i=0;i<ix;i++) x += tb; // sum up to cell ix-1
+    x += 0.5*tb; // add 1/2 of cell ix for center location.
+    if(iz>=Npz()/2) iz -=Npz()/2;// If +x side don't count anodes from -x side.
+    for(j=0;j<iz;j++) z += kconv*fPitch; // sum up cell iz-1
+    z += 0.5*kconv*fPitch; // add 1/2 of cell iz for center location.
+    return; // Found x and z, return.
+}

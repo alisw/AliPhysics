@@ -45,7 +45,7 @@ Float_t ZpitchFromCol300(Int_t col) {
   return 300.0;
 }
 //_____________________________________________________________________________
-Float_t ColFromZ(Float_t z) {
+Float_t  AliITSsegmentationSPD::ColFromZ(Float_t z) {
 // hard-wired - keep it like this till we can parametrise 
 // and get rid of AliITSgeomSPD425
 // Get column number for each z-coordinate taking into account the 
@@ -85,7 +85,7 @@ Float_t ColFromZ(Float_t z) {
 }
 
 //_____________________________________________________________________________
-Float_t ZFromCol(Int_t col) {
+Float_t  AliITSsegmentationSPD::ZFromCol(Int_t col) {
 // same comments as above
 // Get z-coordinate for each colunm number
 
@@ -118,29 +118,33 @@ Float_t ZFromCol(Int_t col) {
     z = 69175 + (col -159 + 0.5)*pitchz;    
   } else if( col >= 161 && col <= 191) {  
     z = 70425 + (col -161 + 0.5)*pitchz;    
-  }   
+  }
 
   return z;
 }
-
-Float_t ZpitchFromCol(Int_t col) {
+//______________________________________________________________________
+Float_t AliITSsegmentationSPD::ZpitchFromCol(Int_t col) {
 // Get pitch size in z direction for each colunm
 
-  Float_t pitchz = 425;
-  if( col >=32 && col <= 33 ) {  
-    pitchz = 625;
-  } else if( col >= 64 && col <= 65) {  
-    pitchz = 625;
-  } else if( col >= 96 && col <= 97) {  
-    pitchz = 625;
-  } else if( col >= 128 && col <= 129) {  
-    pitchz = 625;
-  } else if( col >= 160 && col <= 161) {  
-    pitchz = 625;
-  }   
-  return pitchz;
+    Float_t pitchz = 425;
+    if(col < 0){
+	pitchz = 0.0;
+    } else if(col >=  31 && col <=  32) {  
+	pitchz = 625;
+    } else if(col >=  63 && col <=  64) {  
+	pitchz = 625;
+    } else if(col >=  95 && col <=  96) {  
+	pitchz = 625;
+    } else if(col >= 127 && col <= 128) {  
+	pitchz = 625;
+    } else if(col >= 159 && col <= 160) {  
+	pitchz = 625;
+    } else if(col>=192){
+	pitchz = 0.0;
+    }
+    return pitchz;
 }
-
+//______________________________________________________________________
 AliITSsegmentationSPD::AliITSsegmentationSPD(){
   // Default constructor
    fNpx = 0;
@@ -149,7 +153,7 @@ AliITSsegmentationSPD::AliITSsegmentationSPD(){
    fGeom = 0;
 
 }
-//____________________________________________________________________________
+//______________________________________________________________________
 AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSgeom *gm){
   // Constructor
    fCorr=0;
@@ -159,7 +163,7 @@ AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSgeom *gm){
    fGeom = gm;
 
 }
-//____________________________________________________________________________
+//______________________________________________________________________
 AliITSsegmentationSPD& AliITSsegmentationSPD::operator=(AliITSsegmentationSPD &source){
    // = operator
    if(this==&source) return *this;
@@ -330,4 +334,70 @@ Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[8], Int_t Zlist[8]){
 
     Xlist[7]=iX+1;
     Zlist[7]=iZ-1;
+}
+//______________________________________________________________________
+void AliITSsegmentationSPD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz){
+// Transformation from Geant detector centered local coordinates (cm) to
+// Pixel cell numbers ix and iz.
+// Input:
+// Float_t   x        detector local coordinate x in cm with respect to the
+//                    center of the sensitive volume.
+// Float_t   z        detector local coordinate z in cm with respect to the
+//                    center of the sensitive volulme.
+// Output:
+// Int_t    ix        detector x cell coordinate. Has the range 0<=ix<fNpx.
+// Int_t    iz        detector z cell coordinate. Has the range 0<=iz<fNpz.
+//   A value of -1 for ix or iz indecates that this point is outside of the
+// detector segmentation as defined.
+    Int_t i,j;
+    Float_t dx,dz;
+    const Float_t kconv = 1.0E-04; // converts microns to cm.
+
+    dx = -0.5*kconv*Dx();
+    dz = -0.5*kconv*Dz();
+    ix = -1;
+    iz = -1;
+    if(x<dx) return; // outside x range.
+    if(z<dz) return; // outside z range.
+    for(i=0;i<Npx();i++){
+	dx += kconv*fCellSizeX[i];
+	if(x<dx) break;
+    } // end for i
+    if(i>=Npx()) return; // outside x range.
+    for(j=0;j<Npz();j++){
+	dz += kconv*fCellSizeZ[j];
+	if(z<dz) break;
+    } // end for j
+    if(j>=Npz()) return; // outside z range.
+    ix = i;
+    iz = j;
+    return; // Found ix and iz, return.
+}
+//______________________________________________________________________
+void AliITSsegmentationSPD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
+{
+// Transformation from Detector cell coordiantes to Geant detector centerd 
+// local coordinates (cm).
+// Input:
+// Int_t    ix        detector x cell coordinate. Has the range 0<=ix<fNpx.
+// Int_t    iz        detector z cell coordinate. Has the range 0<=iz<fNpz.
+// Output:
+// Float_t   x        detector local coordinate x in cm with respect to the
+//                    center of the sensitive volume.
+// Float_t   z        detector local coordinate z in cm with respect to the
+//                    center of the sensitive volulme.
+// If ix and or iz is outside of the segmentation range a value of -0.5*Dx()
+// or -0.5*Dz() is returned.
+    Int_t i,j;
+    const Float_t kconv = 1.0E-04; // converts microns to cm.
+
+    x = -0.5*kconv*Dx(); // default value.
+    z = -0.5*kconv*Dz(); // default value.
+    if(ix<0 || ix>=Npx()) return; // outside of detector
+    if(iz<0 || iz>=Npz()) return; // outside of detctor
+    for(i=0;i<ix;i++) x += kconv*fCellSizeX[i]; // sum up to cell ix-1
+    x += 0.5*kconv*fCellSizeX[ix]; // add 1/2 of cell ix for center location.
+    for(j=0;j<iz;j++) z += kconv*fCellSizeZ[j]; // sum up cell iz-1
+    z += 0.5*kconv*fCellSizeZ[iz]; // add 1/2 of cell iz for center location.
+    return; // Found x and z, return.
 }

@@ -32,6 +32,8 @@ public AliITSsegmentation {
     // Maximum number of cells along the two coordinates z,x (anodes,samples) 
     virtual void    SetNPads(Int_t p1=256, Int_t p2=256) 
                          {fNanodes=2*p1;fNsamples=p2;}
+    // Returns the maximum number of cells (digits) posible
+    virtual Int_t   GetNPads(){return fNandoes*fNsamples;}
 
     // Transform from real local to cell coordinates
     virtual void    GetPadIxz(Float_t x ,Float_t z ,Int_t   &ix,Int_t   &iz);
@@ -43,6 +45,12 @@ public AliITSsegmentation {
     virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g);
     // Get anode and time bucket as floats - numbering from 0
     virtual void    GetPadTxz(Float_t &x ,Float_t &z);
+    // Transformation from Geant cm detector center local coordinates
+    // to detector segmentation/cell coordiantes starting from (0,0).
+    virtual void    LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz);
+    // Transformation from detector segmentation/cell coordiantes starting
+    // from (0,0) to Geant cm detector center local coordinates.
+    virtual void    DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z);
     //
     // Initialisation
     virtual void Init();
@@ -53,7 +61,7 @@ public AliITSsegmentation {
     virtual AliITSgeom* Geometry() {return fGeom;}
     // Detector length
     virtual Float_t Dx() {return fDx;}
-    // Detector width
+    // Detector drift distance or detector active area half width
     virtual Float_t Dz()  {return fDz;}  
     // Detector thickness
     virtual Float_t Dy() {return fDy;}
@@ -112,13 +120,13 @@ public AliITSsegmentation {
 	    
   protected:
 
-    Int_t      fNsamples;      // Number of time samples in x
-    Int_t      fNanodes;       // Summed # of anodes in the two det halves (z)
-    Float_t    fPitch;         // Anode pitch - microns
-    Float_t    fTimeStep;      // Sampling time - ns
-    Float_t    fDx   ;         // Full width of the detector (x axis) - microns
-    Float_t    fDz    ;        // Length of half-detector (z axis) - microns
-    Float_t    fDy;            // Full thickness of the detector (y axis)
+    Int_t      fNsamples; // Number of time samples in x
+    Int_t      fNanodes;  // Summed # of anodes in the two det halves (z)
+    Float_t    fPitch;    // Anode pitch - microns
+    Float_t    fTimeStep; // Sampling time - ns
+    Float_t    fDx;       // Drift distance of the 1/2detector (x axis)-microns
+    Float_t    fDz;       // Length of half-detector (z axis) - microns
+    Float_t    fDy;       // Full thickness of the detector (y axis) - microns
 
     AliITSgeom *fGeom;         //! pointer to the geometry class
     AliITSresponse *fResponse; // pointer to the response class

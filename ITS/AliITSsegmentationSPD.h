@@ -26,6 +26,8 @@ public AliITSsegmentation {
 
     // Maximum number of pixels along the two coordinates  
     virtual void    SetNPads(Int_t p1, Int_t p2);
+    // Returns the maximum number of cells (digits) posible
+    virtual Int_t   GetNPads(){return fNpx*fNpz;}
 
     // Transform from real to pixel coordinates
     virtual void    GetPadIxz
@@ -39,6 +41,12 @@ public AliITSsegmentation {
     virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g) {}
     // Local transformation of real local coordinates -
     virtual void    GetPadTxz(Float_t &x ,Float_t &z);
+    // Transformation from Geant cm detector center local coordinates
+    // to detector segmentation/cell coordiantes starting from (0,0).
+    virtual void    LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz);
+    // Transformation from detector segmentation/cell coordiantes starting
+    // from (0,0) to Geant cm detector center local coordinates.
+    virtual void    DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z);
     //
     // Initialisation
     virtual void Init();
@@ -67,7 +75,11 @@ public AliITSsegmentation {
     // Get next neighbours 
     virtual void Neighbours
        (Int_t iX,Int_t iZ,Int_t* Nlist,Int_t Xlist[10],Int_t Zlist[10]);
+    Float_t ColFromZ(Float_t z);
+    Float_t ZFromCol(Int_t col);
+    Float_t ZpitchFromCol(Int_t col);
 
+    
   protected:
 
     Int_t   fNpx;           // Number of pixels in x

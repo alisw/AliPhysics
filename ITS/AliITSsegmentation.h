@@ -27,6 +27,8 @@ public TObject {
 
     // Maximum number of cells along the two coordinates  
     virtual void    SetNPads(Int_t p1, Int_t p2) {}
+    // Returns the maximum number of cells (digits) posible
+    virtual Int_t   GetNPads(){return 0;}
 
     // Set angles - find a generic name fit for other detectors as well
     // might be useful for beam test setups (3 angles ?)
@@ -42,7 +44,12 @@ public TObject {
     virtual void    GetGlobal(Int_t module,Float_t *l ,Float_t *g) {}
     // Local transformation of real local coordinates -
     virtual void    GetPadTxz(Float_t &x ,Float_t &z) {}
-     //
+    // Transformation from Geant cm detector center local coordinates
+    // to detector segmentation/cell coordiantes starting from (0,0).
+    virtual void    LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz){}
+    // Transformation from detector segmentation/cell coordiantes starting
+    // from (0,0) to Geant cm detector center local coordinates.
+    virtual void    DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z){}
     // Initialisation
     virtual void Init() {}
     //
