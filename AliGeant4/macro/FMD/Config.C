@@ -4,9 +4,13 @@ void Config(Int_t version)
 
   AliFMD* FMD = 0;
   switch (version) {
-    case 0: FMD =  new AliFMDv0("FMD", "normal FMD");     break;
-    case 1: FMD  = new AliFMDv1("FMD", "FMDv1 detector"); break;
+    case 0: FMD =  new AliFMDv0("FMD", "FMDv0 detector"); break;
+    case 1: FMD  = new AliFMDv1("FMD", "normal FMD");     break;
   }  
-
+  
 //=================== FMD parameters ============================
+  FMD->SetRingsSi1(128);
+  FMD->SetRingsSi2(64);
+  FMD->SetSectorsSi1(20);
+  FMD->SetSectorsSi2(24);
 }  
