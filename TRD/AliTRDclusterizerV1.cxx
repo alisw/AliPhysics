@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/02/28 18:58:54  cblume
+Add new TRD classes
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -275,7 +278,7 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                   // method 1: simply center of mass
                   clusterPads[0] = row + 0.5;
                   clusterPads[1] = col - 0.5 + (clusterSignal[2] - clusterSignal[0]) /
-                                   (clusterSignal[1] + clusterSignal[2] + clusterSignal[3]);
+                                   (clusterSignal[0] + clusterSignal[1] + clusterSignal[2]);
                   clusterPads[2] = time + 0.5;
 
                   nClusters++;
