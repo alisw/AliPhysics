@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2000/06/30 12:07:49  kowal2
+Updated from the TPC-PreRelease branch
+
 Revision 1.19.2.4  2000/06/26 07:39:42  kowal2
 Changes to obey the coding rules
 
@@ -1321,11 +1324,13 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   // of electrons, one TVector per each track.
   //---------------------------------------------- 
     
-  for(i=0; i<nrows; i++){
-    row[i] = new TObjArray;
-  }
   Int_t *nofElectrons = new Int_t [nrows]; // electron counter for each row
   TVector **tracks = new TVector* [nrows]; //pointers to the track vectors
+  for(i=0; i<nrows; i++){
+    row[i] = new TObjArray;
+    nofElectrons[i]=0;
+    tracks[i]=0;
+  }
 
   //--------------------------------------------------------------------
   //  Loop over tracks, the "track" contains the full history
