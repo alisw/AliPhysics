@@ -59,10 +59,10 @@ hlt:            $(ALIRAW) $(ALIMDC)
 
 $(ALIRAW):      $(DICT) $(OBJS)
 		rm -f $(ALIRAW)
-                ifeq ($(PLATFORM),aix)
+                ifeq ($(ALICE_ARCH),aix)
 		   $(SHLD) -o $(ALIRAW) $(LIBS) -p 0 $(OBJS)
                 else
-                   ifeq ($(PLATFORM),alpha)
+                   ifeq ($(ALICE_ARCH),alpha)
 		      $(SHLD) -o $(ALIRAW) $(OBJS) -lcxxstd -lcxx -lexc -lots -lc
                    else
 		      $(LD) $(SOFLAGS) $(LDFLAGS) $(OBJS) -o $(ALIRAW)
@@ -73,7 +73,7 @@ $(ALIRAW):      $(DICT) $(OBJS)
 
 
 $(ALIMDC):      $(MAINO) $(ALIRAW)
-                ifeq ($(PLATFORM),aix)
+                ifeq ($(ALICE_ARCH),aix)
 		   ln -fs $(ALILRAW) libAliRaw.a
 		   $(LD) $(LDFLAGS) $(MAINO) libAliRaw.a \
 		   $(LIBS) -o $(ALIMDC)

@@ -1,36 +1,34 @@
 # Makefile to build AliRoot on HP-UX
 
-PLATFORM      = hpux
-
 # The compilers
 CXX           = aCC
 F77	      = f77
 CC	      = cc
 
 # Global optimisation
-OPT           = -O
+OPT           = -g -O
+NOOPT         = -g
 
-CXXOPTS       = $(OPT) -Wc,-ansi_for_scope,on +Z -z +W70,495,740,749,823,829 -Dextname
-COPT          = $(OPT) +Z -Ae
-FOPT          = $(OPT) +ppu +Z
-
-
-
-CXXFLAGS      = $(CXXOPTS)
-CFLAGS	      = $(COPT)
-
-# rootcint flags
-CINTFLAGS     = 
+CXXOPT        = $(OPT)
+CXXNOOPT      = $(NOOPT)
+COPT          = $(OPT)
+FOPT          = $(OPT)
 
 # CERNLIB defines
-
 CLIBDEFS      = -DCERNLIB_HPUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
 CLIBCXXOPTS   =
 CLIBCOPT      = +z -Ae 
-CLIBFOPT      = -WF,-P
+CLIBFOPT      = $(CLIBDEFS) -WF,-P
 
-# Common Fortran compilation flags
-FFLAGS = $(CLIBFOPT)  $(CLIBDEFS) $(FOPT)
+CXXFLAGS      = $(CXXOPT)   -Wc,-ansi_for_scope,on +Z -z +W70,495,740,749,823,829 -Dextname
+CXXFLAGSNO    = $(CXXNOOPT) -Wc,-ansi_for_scope,on +Z -z +W70,495,740,749,823,829 -Dextname
+CFLAGS	      = $(COPT) +Z -Ae
+FFLAGS        = $(CLIBFOPT) $(FOPT) +ppu +Z
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS  = $(FFLAGS)
+
+# rootcint flags
+CINTFLAGS     = 
 
 LD            = aCC
 LDFLAGS       = $(OPT) -z -Wl,+s -Wl,-E
@@ -43,13 +41,9 @@ SOEXT 	      = sl
 # additional ROOT libraries
 ROOTLIBS  += -lcrypt 
 
-# rmkdepend flags for building dependencies of FORTRAN files
-DEPENDFFLAGS = $(FFLAGS)
-
 GLIBS         = -L/usr/lib/X11R6 -lX11 
 
 # System libraries
-
 
 
 

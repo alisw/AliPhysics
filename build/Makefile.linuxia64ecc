@@ -1,7 +1,5 @@
 # Makefile for AliRoot for Itanium/Linux with Intel icc compiler
 
-PLATFORM      = linux
-
 # The compilers
 CXX           = ecc 
 F77	      = efc
@@ -9,25 +7,29 @@ CC	      = ecc
 
 # Global optimisation
 OPT           = -g #-O
+NOOPT         = -g
 
-CXXOPTS       = $(OPT)
+CXXOPT        = $(OPT)
+CXXNOOPT      = $(OPT)
 COPT	      = $(OPT)
 FOPT	      = $(OPT)
-CXXFLAGS      = $(CXXOPTS)
-CFLAGS	      = $(COPT)
-
-# rootcint flags
-CINTFLAGS     = 
 
 # CERNLIB defines
-
 CLIBDEFS      = -DCERNLIB_LXIA64 -DCERNLIB_BLDLIB -DCERNLIB_CZ
 CLIBCXXOPTS   =
 CLIBCOPT      =
-CLIBFOPT      =
+CLIBFOPT      = $(CLIBDEFS)
 
-# Common Fortran compilation flags
-FFLAGS = $(CLIBFOPT)  $(CLIBDEFS) $(FOPT)
+# Compiler flags
+CXXFLAGS      = $(CXXOPT)
+CXXFLAGSNO    = $(CXXNOOPT)
+CFLAGS	      = $(COPT)
+FFLAGS        = $(CLIBFOPT) $(FOPT)
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS  = $(FFLAGS)
+
+# rootcint flags
+CINTFLAGS     = 
 
 LD            = ecc
 LDFLAGS       = $(OPT) 
@@ -44,9 +46,6 @@ AEXT 	      = a
 
 # additional ROOT libraries
 ROOTLIBS  += -lcrypt 
-
-# rmkdepend flags for building dependencies of FORTRAN files
-DEPENDFFLAGS = $(FFLAGS)
 
 LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib/ -l/'`
 GLIBS         = $(LIBNOVER)

@@ -6,24 +6,31 @@ CC	      = /opt/SUNWspro/bin/cc
 F77	      = f77
 
 # Global optimisation
-OPT           = -O 
+OPT           = -g -O 
+NOOPT         = -g
 
-CXXOPTS       = $(OPT) +w -KPIC -features=rtti
-COPT	      = $(OPT) -KPIC -erroff=%none
-FOPT	      = $(OPT) -KPIC
-CXXFLAGS      = $(CXXOPTS)
-CFLAGS	      = 
+CXXOPT        = $(OPT)
+CXXNOOPT      = $(NOOPT)
+COPT	      = $(OPT)
+FOPT	      = $(OPT)
+
+# CERNLIB defines
+CLIBDEFS      = -DCERNLIB_SUN -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      = $(CLIBDEFS) -xpp=cpp
+		
+# Compiler flags
+CXXFLAGS      = $(CXXOPT) +w -KPIC -features=rtti
+CXXFLAGSNO    = $(CXXNOOPT) +w -KPIC -features=rtti
+CFLAGS	      = $(COPT) -KPIC -erroff=%none
+FFLAGS        = $(FOPT) $(CLIBFOPT) $(CLIBDEFS)  -KPIC
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS  = $(FFLAGS) 
 
 # rootcint flags
 CINTFLAGS     = 
 
-# CERNLIB defines
-
-CLIBDEFS      = -DCERNLIB_SUN -DCERNLIB_BLDLIB -DCERNLIB_CZ
-CLIBCXXOPTS   =
-CLIBCOPT      =
-CLIBFOPT      = -xpp=cpp
-		
 SHLIB         =  -L/opt/SUNWspro/lib -lF77 -lM77 /opt/SUNWspro/lib/libsunmath.so.1
 SOEXT 	      = so
 
@@ -32,12 +39,6 @@ LDFLAGS       = $(OPT) -Qoption ld -t
 
 SHLD	      = $(LD)
 SOFLAGS       = -G $(LDFLAGS) $(SHLIB)  
-
-# Common Fortran compilation flags
-FFLAGS = $(FOPT) $(CLIBFOPT) $(CLIBDEFS) 
-
-# rmkdepend flags for building dependencies of FORTRAN files
-DEPENDFFLAGS = $(FFLAGS) 
 
 ROOTLIBS += -lm -ldl -lnsl -lsocket
 

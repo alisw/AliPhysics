@@ -1,7 +1,5 @@
 # Makefile for AliRoot for MacOS X with gcc
 
-PLATFORM      = macosx
-
 # The compilers
 CXX           = g++ 
 F77	      = g77
@@ -9,26 +7,30 @@ CC	      = gcc
 
 # Global optimisation
 OPT           = -O -g
+NOOPT         = -g
 
-CXXOPTS       = $(OPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0
-COPT	      = $(OPT) -Wall -W -fno-common -fweak-coalesced
+CXXOPT        = $(OPT) 
+CXXNOOPT      = $(NOOPT) 
+COPT	      = $(OPT)
 FOPT	      = $(OPT) -fno-second-underscore 
-CXXFLAGS      = $(CXXOPTS) -I/sw/include
-CFLAGS	      = -Wall -pipe -I/sw/include
+
+# CERNLIB defines
+CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      = $(CLIBDEFS)
+
+# Compiler flags
+CXXFLAGS      = $(CXXOPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I/sw/include
+CXXFLAGSNO    = $(CXXNOOPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0 -I/sw/include
+CFLAGS	      = $(COPT) -Wall -W -fno-common -fweak-coalesced -pipe -I/sw/include
+FFLAGS        = $(CLIBFOPT) $(FOPT)
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS  = $(FFLAGS)
 
 # rootcint flags
 CINTFLAGS     = 
 
-# CERNLIB defines
-
-CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
-CLIBCXXOPTS   =
-CLIBCOPT      =
-CLIBFOPT      =
-
-# Common Fortran compilation flags
-FFLAGS = $(CLIBFOPT)  $(CLIBDEFS) $(FOPT)
-		
 LD            = export MACOSX_DEPLOYMENT_TARGET=10.3 ; \
 		unset LD_PREBIND ; \
 		g++
@@ -49,10 +51,6 @@ ALLD	      = ar
 ALFLAGS       = cr
 ALLIB         = 
 AEXT 	      = a
-
-
-# rmkdepend flags for building dependencies of FORTRAN files
-DEPENDFFLAGS = $(FFLAGS)
 
 DEPENDCXXFLAGS = $(CXXFLAGS) -I/usr/include/sys
 

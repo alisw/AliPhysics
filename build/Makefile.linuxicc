@@ -1,18 +1,14 @@
 # Makefile for AliRoot for Linux with the Intel icc compiler
 
-PLATFORM      = linux
-
-# The C/C++ compilers
-CXX           = icc
-CC            = icc
-
 # Compiler version:
 ICC_MAJOR    := $(shell $(CXX) -V 2>&1 | awk '{ if (NR==1) print $$8 }' | \
                 cut -d'.' -f1)
 ICC_MINOR    := $(shell $(CXX) -V 2>&1 | awk '{ if (NR==1) print $$8 }' | \
                 cut -d'.' -f2)
 
-# The Fortran compiler
+# The compilers
+CXX           = icc
+CC            = icc
 ifeq ($(ICC_MAJOR),8)
 F77           = ifort
 else
@@ -21,25 +17,29 @@ endif
 
 # Global optimisation
 OPT           = -O -g
+NOOPT         = -g -O0
 
-CXXOPTS       = $(OPT)
+CXXOPT        = $(OPT)
+CXXNOOPT      = $(NOOPT)
 COPT          = $(OPT)
 FOPT          = $(OPT)
-CXXFLAGS      = $(CXXOPTS)
-CFLAGS        = $(COPT)
-
-# rootcint flags
-CINTFLAGS     =
 
 # CERNLIB defines
-
 CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
 CLIBCXXOPTS   =
 CLIBCOPT      =
-CLIBFOPT      =
+CLIBFOPT      = $(CLIBDEFS)
 
-# Common Fortran compilation flags
-FFLAGS = $(CLIBFOPT) $(CLIBDEFS) $(FOPT)
+# Compiler flags
+CXXFLAGS      = $(CXXOPT)
+CXXFLAGSNO    = $(CXXNOOPT)
+CFLAGS        = $(COPT)
+FFLAGS        = $(CLIBFOPT) $(FOPT)
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS  = $(FFLAGS)
+
+# rootcint flags
+CINTFLAGS     =
 
 LD            = icc
 LDFLAGS       = $(OPT)
@@ -56,9 +56,6 @@ AEXT 	      = a
 
 # additional ROOT libraries
 ROOTLIBS     += -lcrypt
-
-# rmkdepend flags for building dependencies of FORTRAN files
-DEPENDFFLAGS  = $(FFLAGS)
 
 LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib/ -l/'`
 GLIBS         = $(LIBNOVER)

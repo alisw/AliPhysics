@@ -1,39 +1,43 @@
 # Makefile to build AliRoot for Linux
 
-PLATFORM      = linux
-
 # The compilers
 CXX           = g++ 
 F77	      = g77
 CC	      = gcc
 CCMAJORV      = $(shell $(CC) -dumpversion | cut -d. -f1)
+CCMINORV      = $(shell $(CC) -dumpversion | cut -d. -f2)
 
 # Global optimisation
 OPT           = -O -g
+NOOPT         = -g
 
-ifeq ($(CCMAJORV),2)
-CXXOPTS       = $(OPT) -W -Wall -fPIC -pipe
-else
-CXXOPTS       = $(OPT) -W -Wall -Werror -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
-endif
+CXXOPT        = $(OPT)
+CXXNOOPT      = $(NOOPT)
 COPT	      = $(OPT)
-FOPT	      = $(OPT) -fno-second-underscore
-CXXFLAGS      = $(CXXOPTS)
-CFLAGS	      = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
+FOPT	      = $(OPT)
+
+# CERNLIB defines
+CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      = $(CLIBDEFS)
+
+# Compiler flags
+ifeq ($(CCMAJORV),2)
+CXXFLAGS       = $(OPT) -W -Wall -fPIC -pipe
+CXXFLAGSNO     = $(NOOPT) -W -Wall -fPIC -pipe
+else
+CXXFLAGS       = $(OPT) -W -Wall -Werror -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
+CXXFLAGSNO     = $(NOOPT) -W -Wall -Werror -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
+endif
+CFLAGS	       = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
+FFLAGS         = $(CLIBFOPT) $(FOPT) -fno-second-underscore
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS   = $(FFLAGS)
 
 # rootcint flags
 CINTFLAGS     = 
 
-# CERNLIB defines
-
-CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
-CLIBCXXOPTS   =
-CLIBCOPT      =
-CLIBFOPT      =
-
-# Common Fortran compilation flags
-FFLAGS = $(CLIBFOPT)  $(CLIBDEFS) $(FOPT)
-		
 LD            = g++
 LDFLAGS       = $(OPT) 
 
@@ -49,9 +53,6 @@ AEXT 	      = a
 
 # additional ROOT libraries
 ROOTLIBS  += -lcrypt 
-
-# rmkdepend flags for building dependencies of FORTRAN files
-DEPENDFFLAGS = $(FFLAGS)
 
 LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {} .so | sed -e 's/lib/ -l/'`
 GLIBS         = -L/usr/X11R6/lib -lX11  $(LIBNOVER)

@@ -1,7 +1,5 @@
 # Makefile for AliRoot for MacOS X using the IBM xlc compiler
 
-PLATFORM      = macosx
-
 # The compilers
 CXX           = xlC
 F77	      = xlf
@@ -9,28 +7,34 @@ CC	      = xlc
 
 # Global optimisation
 OPT           = -qnoopt #-O3 -g
+NOOPT         = -qnoopt
 
-CXXOPTS       = $(OPT) -qpic \
-                -qflttrap=overflow:zerodivide:invalid:inexact:enable
-COPT	      = $(OPT) -qpic \
-                -qflttrap=overflow:zerodivide:invalid:inexact:enable
-FOPT	      = $(OPT) -qpic -qextname \
-                -qflttrap=overflow:zerodivide:invalid:inexact:enable
-CXXFLAGS      = $(CXXOPTS) -I/sw/include
-CFLAGS	      = 
-
-# rootcint flags
-CINTFLAGS     = 
+CXXOPT        = $(OPT) 
+CXXNOOPT      = $(NOOPT) 
+COPT	      = $(OPT)
+FOPT	      = $(OPT) 
 
 # CERNLIB defines
-
 CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ
 CLIBCXXOPTS   =
 CLIBCOPT      =
-CLIBFOPT      =
+CLIBFOPT      = $(shell echo $(CLIBDEFS) | sed -e's/-D/-WF,-D/g')
 
-# Common Fortran compilation flags
-FFLAGS = $(CLIBFOPT)  $(shell echo $(CLIBDEFS) | sed -e's/-D/-WF,-D/g') $(FOPT)
+# Compiler flags
+CXXFLAGS      = $(CXXOPT) -qpic -I/sw/include \
+                -qflttrap=overflow:zerodivide:invalid:inexact:enable
+CXXFLAGSNO    = $(CXXNOOPT) -qpic -I/sw/include \
+                -qflttrap=overflow:zerodivide:invalid:inexact:enable
+CFLAGS	      = -qpic -qextname \
+                -qflttrap=overflow:zerodivide:invalid:inexact:enable
+FFLAGS        = $(CLIBFOPT)  $(FOPT) -qpic \
+                -qflttrap=overflow:zerodivide:invalid:inexact:enable
+# rmkdepend flags for building dependencies 
+DEPENDFFLAGS  = $(FFLAGS)
+DEPENDCXXFLAGS = $(CXXFLAGS) -I/usr/include/sys
+
+# rootcint flags
+CINTFLAGS     = 
 		
 LD            = xlC
 LDFLAGS       = $(OPT) 
@@ -54,12 +58,6 @@ ALLD	      = ar
 ALFLAGS       = cr
 ALLIB         = 
 AEXT 	      = a
-
-
-# rmkdepend flags for building dependencies of FORTRAN files
-DEPENDFFLAGS = $(FFLAGS)
-
-DEPENDCXXFLAGS = $(CXXFLAGS) -I/usr/include/sys
 
 GLIBS         = -L/usr/X11R6/lib -lX11
 
