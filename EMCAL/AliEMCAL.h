@@ -15,6 +15,7 @@
 class TString ;
 class TTask ;
 class TFolder ;
+class TRandom ; 
 
 // --- AliRoot header files ---
 
@@ -35,9 +36,10 @@ class AliEMCAL : public AliDetector {
   virtual void   AddHit(Int_t, Int_t*, Float_t *) const{
     Fatal("AddHit(Int_t, Int_t*, Float_t *", "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
   }
-  void Copy(AliEMCAL & emcal) ; 
-  virtual void  CreateMaterials() ;   
+  virtual void  Copy(AliEMCAL & emcal) ; 
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+  virtual void  CreateMaterials() ;   
+  virtual void  Digits2Raw();
   virtual void  FinishRun() {}                  
   virtual AliEMCALGeometry * GetGeometry() const 
   {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
@@ -52,10 +54,12 @@ class AliEMCAL : public AliDetector {
   
 
 protected:
-  AliEMCALGeometry * fGeom ;   // the geometry object
-  Int_t fBirkC0;         // constants for Birk's Law implementation
-  Double_t fBirkC1;
-  Double_t fBirkC2;
+
+  //AliEMCALGeometry * fGeom ;   // the geometry object
+  Int_t fBirkC0;    // constants for Birk's Law implementation
+  Double_t fBirkC1; // constants for Birk's Law implementation
+  Double_t fBirkC2; // constants for Birk's Law implementation
+  TRandom * fRan ;             //! random number generator
 
   ClassDef(AliEMCAL,6) // Electromagnetic calorimeter (base class)
 

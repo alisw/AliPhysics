@@ -36,10 +36,11 @@ class TFile;
 // --- AliRoot header files ---
 #include "AliMagF.h"
 #include "AliEMCAL.h"
-#include "AliEMCALLoader.h"
+#include "AliEMCALGetter.h"
 #include "AliRun.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALDigitizer.h"
+#include "AliAltroBuffer.h"
 
 ClassImp(AliEMCAL)
 //____________________________________________________________________________
@@ -47,14 +48,16 @@ AliEMCAL::AliEMCAL():AliDetector()
 {
   // Default ctor 
   fName="EMCAL";
-  fGeom = 0 ; 
+  //  fGeom = 0 ; 
+  fRan    = new TRandom(123456) ; 
 }
 
 //____________________________________________________________________________
 AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
 {
   //   ctor : title is used to identify the layout
-  fGeom = 0;
+  // fGeom = 0;
+  fRan    = new TRandom(123456) ; 
 }
 
 //____________________________________________________________________________
@@ -161,6 +164,132 @@ void AliEMCAL::CreateMaterials()
 
 }
       
+//____________________________________________________________________________
+void AliEMCAL::Digits2Raw()
+{
+// convert digits of the current event to raw data
+
+  // get the digits
+  AliEMCALGetter * gime = AliEMCALGetter::Instance(AliRunLoader::GetGAliceName()) ; 
+  if (!gime) {
+    Error("Digits2Raw", "EMCAL Getter not instantiated") ;
+    return ; 
+  }
+  gime->Event(gime->EventNumber(), "D") ; 
+  TClonesArray* digits = gime->Digits() ;
+
+  if (!digits) {
+    Error("Digits2Raw", "no digits found !");
+    return;
+  }
+
+  // get the geometry
+  AliEMCALGeometry* geom = gime->EMCALGeometry();
+  if (!geom) {
+    Error("Digits2Raw", "no geometry found !");
+    return;
+  }
+
+  // some digitization constants
+  const Int_t    kDDLOffset = 0x800;
+  const Double_t kTimeMax = 1.28E-5;
+  const Int_t    kTimeBins = 256;
+  const Double_t kTimePeak = 2.0E-6;
+  const Double_t kTimeRes = 1.5E-6;
+  const Int_t    kThreshold = 3;
+  const Int_t    kHighGainFactor = 40;
+  const Int_t    kHighGainOffset = 0x200;
+  // PHOS has 4 DDL per module; I assume therefore that kChannelsperDDL=896+1 EMCAL channel go to one DDL
+  const Int_t    kChannelsperDDL = 897 ; 
+
+  AliAltroBuffer* buffer = NULL;
+  Int_t prevDDL = -1;
+  Int_t adcValuesLow[kTimeBins];
+  Int_t adcValuesHigh[kTimeBins];
+
+  // loop over digits (assume ordered digits)
+  for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
+    AliEMCALDigit* digit = gime->Digit(iDigit);
+    if (digit->GetAmp() < kThreshold) 
+      continue;
+    Int_t iDDL = digit->GetId() / kChannelsperDDL ;
+    // for each DDL id is numbered from 1 to  kChannelsperDDL -1 
+    Int_t idDDL = digit->GetId() - iDDL * ( kChannelsperDDL - 1 ) ;  
+    // new DDL
+    if (iDDL != prevDDL) {
+      // write real header and close previous file
+      if (buffer) {
+	buffer->Flush();
+	buffer->WriteDataHeader(kFALSE, kFALSE);
+	delete buffer;
+      }
+
+      // open new file and write dummy header
+      TString fileName("EMCAL_") ;
+      fileName += (iDDL + kDDLOffset) ; 
+      fileName += ".ddl" ; 
+      buffer = new AliAltroBuffer(fileName.Data(), 1);
+      buffer->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
+
+      prevDDL = iDDL;
+    }
+
+    // out of time range signal (?)
+    if (digit->GetTime() > kTimeMax) {
+      buffer->FillBuffer(digit->GetAmp());
+      buffer->FillBuffer(kTimeBins);  // time bin
+      buffer->FillBuffer(3);          // bunch length
+      buffer->WriteTrailer(3, idDDL, 0, 0);  // trailer
+      
+    // simulate linear rise and gaussian decay of signal
+    } else {
+      Bool_t highGain = kFALSE;
+
+      // fill time bin values :
+      // 1. the signal starts at the time given by the digit
+      // 2. the rise is linear and the maximum is reached kTimePeak after start
+      // 3. the decay is gaussian with a sigma of kTimeRes
+      // 4. the signal is binned into kTimeBins bins 
+      for (Int_t iTime = 0; iTime < kTimeBins; iTime++) {
+	Double_t time = iTime * kTimeMax/kTimeBins;
+	Int_t signal = 0;
+	if (time < digit->GetTime() + kTimePeak) {	// signal is rising
+	  signal = static_cast<Int_t>(fRan->Rndm() + digit->GetAmp() * 
+			 (time - digit->GetTime()) / kTimePeak);
+	} else {                                        // signal is decaying
+	  signal = static_cast<Int_t>(fRan->Rndm() + digit->GetAmp() * 
+                 TMath::Gaus(time, digit->GetTime() + kTimePeak, kTimeRes));
+	}
+	if (signal < 0) 
+	  signal = 0;
+	adcValuesLow[iTime] = signal;
+	if (signal > 0x3FF) // larger than 10 bits 
+	  adcValuesLow[iTime] = 0x3FF;
+	adcValuesHigh[iTime] = signal / kHighGainFactor;
+	if (adcValuesHigh[iTime] > 0) 
+	  highGain = kTRUE;
+      }
+
+      // write low and eventually high gain channel
+      buffer->WriteChannel(idDDL, 0, 0, 
+			   kTimeBins, adcValuesLow, kThreshold);
+      if (highGain) {
+	buffer->WriteChannel(idDDL, 0, kHighGainOffset, 
+			     kTimeBins, adcValuesHigh, 1);
+      }
+    }
+  }
+
+  // write real header and close last file
+  if (buffer) {
+    buffer->Flush();
+    buffer->WriteDataHeader(kFALSE, kFALSE);
+    delete buffer;
+  }
+
+  gime->EmcalLoader()->UnloadDigits();
+}
+
 //____________________________________________________________________________
 void AliEMCAL::Hits2SDigits()  
 { 
