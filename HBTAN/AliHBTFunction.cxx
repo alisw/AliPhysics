@@ -33,6 +33,9 @@
 */
 /////////////////////////////////////////////////////////////////////// 
 
+#include <TH2.h>
+#include <TH3.h>
+
 /******************************************************************/
 /******************************************************************/
 
@@ -302,7 +305,7 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
 
   Double_t ratio;
   Double_t sum = 0;
-  Int_t N = 0;
+  Int_t n = 0;
   
   Int_t offset = nbins - fNBinsToScale - 1; 
 
@@ -312,14 +315,14 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
      {
        ratio = den->GetBinContent(i)/num->GetBinContent(i);
        sum += ratio;
-       N++;
+       n++;
      }
    }
   
-  if(gDebug > 0) Info("Scale","sum=%f fNBinsToScale=%d N=%d",sum,fNBinsToScale,N);
+  if(gDebug > 0) Info("Scale","sum=%f fNBinsToScale=%d n=%d",sum,fNBinsToScale,n);
   
-  if (N == 0) return 0.0;
-  Double_t ret = sum/((Double_t)N);
+  if (n == 0) return 0.0;
+  Double_t ret = sum/((Double_t)n);
 
   if(gDebug > 0) Info("Scale","returning %f",ret);
   return ret;
@@ -479,7 +482,7 @@ Double_t AliHBTFunction2D::Scale()
 
   Double_t ratio;
   Double_t sum = 0;
-  Int_t N = 0;
+  Int_t n = 0;
   
   for (UInt_t j = offsetY; j< nbinsY; j++)
     for (UInt_t i = offsetX; i< nbinsX; i++)
@@ -488,14 +491,14 @@ Double_t AliHBTFunction2D::Scale()
        {
          ratio = fDenominator->GetBinContent(i,j)/fNumerator->GetBinContent(i,j);
          sum += ratio;
-         N++;
+         n++;
        }
      }
   
-  if(gDebug > 0) Info("Scale","sum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d N=%d",sum,fNBinsToScaleX,fNBinsToScaleY,N);
+  if(gDebug > 0) Info("Scale","sum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d n=%d",sum,fNBinsToScaleX,fNBinsToScaleY,n);
   
-  if (N == 0) return 0.0;
-  Double_t ret = sum/((Double_t)N);
+  if (n == 0) return 0.0;
+  Double_t ret = sum/((Double_t)n);
 
   if(gDebug > 0) Info("Scale","returning %f",ret);
   return ret;
@@ -674,7 +677,7 @@ Double_t AliHBTFunction3D::Scale()
 
   Double_t ratio;
   Double_t sum = 0;
-  Int_t N = 0;
+  Int_t n = 0;
   
   for (UInt_t k = offsetZ; k<nbinsZ; k++)
     for (UInt_t j = offsetY; j<nbinsY; j++)
@@ -684,16 +687,16 @@ Double_t AliHBTFunction3D::Scale()
          {
            ratio = fDenominator->GetBinContent(i,j,k)/fNumerator->GetBinContent(i,j,k);
            sum += ratio;
-           N++;
+           n++;
          }
        }
   
   if(gDebug > 0) 
-    Info("Scale","sum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d fNBinsToScaleZ=%d N=%d",
-          sum,fNBinsToScaleX,fNBinsToScaleY,fNBinsToScaleZ,N);
+    Info("Scale","sum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d fNBinsToScaleZ=%d n=%d",
+          sum,fNBinsToScaleX,fNBinsToScaleY,fNBinsToScaleZ,n);
   
-  if (N == 0) return 0.0;
-  Double_t ret = sum/((Double_t)N);
+  if (n == 0) return 0.0;
+  Double_t ret = sum/((Double_t)n);
 
   if(gDebug > 0) Info("Scale","returning %f",ret);
   return ret;

@@ -1,17 +1,5 @@
-//Piotr Skowronski@cern.ch
-
 #ifndef ALIHBTFUNCTION_H
 #define ALIHBTFUNCTION_H
-
-#include "AliHBTParticleCut.h"
-#include "AliHBTPairCut.h"
-#include "AliHBTPair.h"
-
-#include <TH2.h>
-#include <TH3.h>
-
-class AliHBTAnalysis;
-
 //____________________
 ///////////////////////////////////////////////////////
 //                                                   //
@@ -23,6 +11,17 @@ class AliHBTAnalysis;
 // http://alisoft.cern.ch/people/skowron/analyzer    //
 //                                                   //
 ///////////////////////////////////////////////////////
+
+#include <TH1.h>
+
+#include "AliHBTPairCut.h"
+#include "AliHBTPair.h"
+
+class TH2D;
+class TH3D;
+
+class AliHBTAnalysis;
+class AliHBTParticleCut;
 
 class AliHBTFunction: public TNamed
 {
@@ -42,13 +41,13 @@ class AliHBTFunction: public TNamed
     void Rename(const Char_t * name); //renames the function and histograms ==title is the same that name
     void Rename(const Char_t * name, const Char_t * title); //renames and retitle the function and histograms
     
-    void SetPairCut(AliHBTPairCut*);
+    void SetPairCut(AliHBTPairCut* cut);
     
     virtual AliHBTPair* CheckPair(AliHBTPair* pair);
     
   protected:
     virtual void BuildHistos() = 0;//builds default histograms
-    AliHBTPairCut*      fPairCut;
+    AliHBTPairCut*   fPairCut;     //pair cut
     
   public:  
    ClassDef(AliHBTFunction,2)

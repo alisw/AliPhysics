@@ -1,32 +1,35 @@
 #include "AliHBTEvent.h"
 #include "AliHBTParticle.h"
+//_________________________________________________________________________
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// class AliHBTEvent                                                     //
+//                                                                       //
+// This class stores HBT perticles for one event                         //
+// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html  //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 ClassImp(AliHBTEvent)
 
 const UInt_t AliHBTEvent::fgkInitEventSize = 10000;
 
 
-
 /**************************************************************************/ 
  
-AliHBTEvent::AliHBTEvent()
+AliHBTEvent::AliHBTEvent():
+  fSize(fgkInitEventSize),
+  fParticles(new AliHBTParticle* [fSize]),
+  fNParticles(0),
+  fOwner(kTRUE)
  {
-    if(fgkInitEventSize<1) 
-     {
-      Fatal("AliHBTEvent::AliHBTEvent()",
-            "fgkInitEventSize has a stiupid value (%d). Change it to positive number and recompile",
-             fgkInitEventSize);
-      
-     }
-    fSize=fgkInitEventSize;
-    fParticles = new AliHBTParticle* [fSize];
-    fNParticles = 0;
-    fOwner = kTRUE;
+ //default constructor    
  }
 /**************************************************************************/ 
 
 AliHBTEvent::~AliHBTEvent()
  {
+ //destructor
    this->Reset();//delete all particles
    if(fParticles)
     { 
@@ -37,7 +40,7 @@ AliHBTEvent::~AliHBTEvent()
 /**************************************************************************/ 
 void  AliHBTEvent::Reset()
 {
-  //deletes all particles from the event
+ //deletes all particles from the event
   if(fParticles && fOwner)
     {
       for(Int_t i =0; i<fNParticles; i++)
@@ -45,9 +48,11 @@ void  AliHBTEvent::Reset()
     }
    fNParticles = 0;
 } 
+/**************************************************************************/ 
 
 AliHBTParticle* AliHBTEvent::GetParticleSafely(Int_t n)
  {
+ //returns nth particle  with range check
    if( (n<0) || (fNParticles<=n) ) return 0x0;
    else return fParticles[n];
    
@@ -56,7 +61,7 @@ AliHBTParticle* AliHBTEvent::GetParticleSafely(Int_t n)
 
 void  AliHBTEvent:: AddParticle(AliHBTParticle* hbtpart)
  {
-   //Adds new perticle to the event
+ //Adds new perticle to the event
    if ( fNParticles+1 >= fSize) Expand(); //if there is no space in array, expand it
    fParticles[fNParticles++] = hbtpart; //add a pointer
  }
@@ -64,6 +69,7 @@ void  AliHBTEvent:: AddParticle(AliHBTParticle* hbtpart)
 /**************************************************************************/ 
 void  AliHBTEvent::AddParticle(TParticle* part)
  {
+ //Adds TParticle to event
    AddParticle( new AliHBTParticle(*part) );
  }
 /**************************************************************************/ 
@@ -71,6 +77,7 @@ void  AliHBTEvent::
 AddParticle(Int_t pdg, Double_t px, Double_t py, Double_t pz, Double_t etot,
             Double_t vx, Double_t vy, Double_t vz, Double_t time)
  {
+ //adds particle to event
    AddParticle(new  AliHBTParticle(pdg,px,py,pz,etot,vx,vy,vz,time) );
  }
 /**************************************************************************/ 
@@ -95,6 +102,5 @@ void AliHBTEvent::Expand()
    fParticles = tmpParticles; //copy new pointer to the array of pointers to particles
   
  }
- 
  
  
