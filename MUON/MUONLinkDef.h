@@ -54,11 +54,6 @@
 #pragma link C++ class  AliMUONMerger+;
 #pragma link C++ class  AliMUONFactory+;
 #pragma link C++ class  AliMUONDigitizer+;
+#pragma link C++ class  AliMUONPixel+;
+#pragma link C++ class  AliMUONClusterFinderAZ+;
 #endif
-
-
-
-
-
-
-
