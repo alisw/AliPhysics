@@ -204,7 +204,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   Double_t x, p[5]; t.GetExternalParameters(x,p);
   //Conversion of the covariance matrix
   Double_t c[15]; t.GetExternalCovariance(c);
-  if (t.GetStatus()&AliESDtrack::AliESDtrack::kTRDbackup){
+  if (t.GetStatus()&AliESDtrack::kTRDbackup){
     t.GetTRDExternalParameters(x,p,c);
   }
 
