@@ -8,6 +8,9 @@
 #
 # modification history
 # $Log$
+# Revision 1.8  2004/06/03 23:41:51  rdm
+# wrap some insanely long lines into mulitple lines.
+#
 # Revision 1.7  2003/11/10 15:02:38  rdm
 # re-direct warnings of rmkdepend about not found system include files
 # to /dev/null. Only generate dependencies on ROOT and AliRoot, not on
@@ -36,7 +39,7 @@
 #
 #
 # SYNOPSIS
-# alirun <command> <commandparameters>
+# alibtool <command> <commandparameters>
 #
 # command must be one of the following:
 #
