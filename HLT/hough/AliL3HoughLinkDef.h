@@ -10,6 +10,7 @@
 #pragma link C++ class AliL3HoughEval;
 #pragma link C++ class AliL3HoughMerge;
 #pragma link C++ class AliL3Histogram;
+#pragma link C++ function GetGoodParticles(Int_t,char *,char *);
 
 #endif
 

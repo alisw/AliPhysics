@@ -12,12 +12,12 @@ PACKAGE = AliL3Hough
 
 SRCS	       = AliL3HoughTransformer.cxx AliL3Hough.cxx \
 		 AliL3HoughMaxFinder.cxx AliL3HoughEval.cxx AliL3HoughMerge.cxx \
-		 AliL3Histogram.cxx
+		 AliL3Histogram.cxx GetGoodParticles.cxx
 
 
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) AliL3Defs.h AliL3HoughLinkDef.h
+HDRS          = $(SRCS:.cxx=.h) AliL3Defs.h GetGoodParticles.h AliL3HoughLinkDef.h
 # Library dictionary
 
 DICT          = AliL3HoughCint.cxx
