@@ -21,7 +21,7 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
 		AliITSsimulationFastPoints.cxx \
 		AliITSsimulationFastPointsV0.cxx AliITSsimulation.cxx \
 		AliITSsimulationSPD.cxx AliITSsimulationSPDdubna.cxx \
-		AliITSsimulationSDD.cxx \
+		AliITSsimulationSDD.cxx AliITSTable.cxx \
 		AliITSetfSDD.cxx AliITSsimulationSSD.cxx AliITSdcsSSD.cxx \
 		AliITSdigit.cxx AliITSRawCluster.cxx AliITSRecPoint.cxx \
 		AliITSMap.cxx AliITSMapA1.cxx AliITSMapA2.cxx \
