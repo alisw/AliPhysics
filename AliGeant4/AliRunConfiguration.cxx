@@ -5,7 +5,6 @@
 
 #include "AliRunConfiguration.h"
 #include "AliRunMessenger.h"
-
 #include "AliDetConstruction.h"
 #include "AliPrimaryGeneratorAction.h"
 #include "AliRunAction.h"
@@ -15,11 +14,7 @@
 #include "AliSteppingAction.h"
 #include "AliFiles.h"
 
-#ifdef ALICE_EMPTY_PHYSICS_LIST
-#include "AliEmptyPhysicsList.h"
-#else
-#include "TG4PhysicsList.h"
-#endif
+#include "TG4ModularPhysicsList.h"
 
 AliRunConfiguration::AliRunConfiguration(){
 //
@@ -69,11 +64,7 @@ void AliRunConfiguration::CreateUserConfiguration()
 
   // create mandatory Geant4 classes
   fDetectorConstruction = new AliDetConstruction();
-#ifndef ALICE_EMPTY_PHYSICS_LIST
-  fPhysicsList = new TG4PhysicsList();
-#else
-  fPhysicsList = new AliEmptyPhysicsList();
-#endif
+  fPhysicsList = new TG4ModularPhysicsList();
   fPrimaryGenerator = new AliPrimaryGeneratorAction();
 
   // create the other user action classes
@@ -81,9 +72,7 @@ void AliRunConfiguration::CreateUserConfiguration()
   fEventAction = new AliEventAction();
   fTrackingAction = new AliTrackingAction();
   fSteppingAction = new AliSteppingAction();
-#ifdef ALICE_STACKING
   fStackingAction = new AliStackingAction();
-#endif
 }
 
 // public methods
