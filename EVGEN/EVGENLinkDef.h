@@ -30,6 +30,7 @@
 #pragma link C++ class  AliGenHalo;
 #pragma link C++ class  AliDimuCombinator;
 #pragma link C++ class  AliGenPHOSlib;
+#pragma link C++ class  AliGenGSIlib;
 #endif
 
 
