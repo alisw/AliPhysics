@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2001/03/07 12:36:35  barbera
+A change added in the tracking part to manage delta rays
+
 Revision 1.36  2001/03/02 19:44:11  barbera
  modified to taking into account new version tracking v1
 
@@ -1399,7 +1402,7 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
   AliTPCParam *digp = (AliTPCParam*)file->Get(pname);
   if (digp!=0) TPC->SetParam(digp);
   
-  GoodTrack gt[7000];
+  GoodTrack gt[15000];
   Int_t ngood=0;
   ifstream in("itsgood_tracks");
 
@@ -1411,7 +1414,7 @@ void AliITS::DoTracking(Int_t evNumber, Int_t min_t, Int_t max_t, TFile *file, B
 	  >>gt[ngood].ptg >>gt[ngood].flag) {
     ngood++;
     cerr<<ngood<<'\r';
-    if (ngood==7000) {
+    if (ngood==15000) {
       cerr<<"Too many good tracks !\n";
       break;
     }
