@@ -1,5 +1,5 @@
-#ifndef ALIRICHSEGMENTATIONV1_H
-#define ALIRICHSEGMENTATIONV1_H
+#ifndef AliRICHSegmentationV1_h
+#define AliRICHSegmentationV1_h
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -7,12 +7,15 @@
 /* $Id$ */
 
 #include "AliRICHSegmentationV0.h"
+#include <iostream.h>
 
-class AliRICHSegmentationV1 : public AliRICHSegmentationV0 {
+class AliRICHSegmentationV1 : public AliRICHSegmentationV0 
+{
     
- public:
-    AliRICHSegmentationV1();
-    virtual ~AliRICHSegmentationV1() {}
+public:
+            AliRICHSegmentationV1();
+   virtual ~AliRICHSegmentationV1() {}
+   inline void Print();
 
     // Initialisation
     virtual void Init(Int_t id);
@@ -39,13 +42,19 @@ class AliRICHSegmentationV1 : public AliRICHSegmentationV0 {
  private:
     ClassDef(AliRICHSegmentationV1,1)
 };
+
+inline void AliRICHSegmentationV1::Print()
+{
+   TObject::Print();
+   cout<<"Pad width in cm:         "<<fDpx<<endl;
+   cout<<"Pad heights in cm:       "<<fDpy<<endl;
+   cout<<"Pad number along x:      "<<fNpx<<endl;
+   cout<<"Pad number along y:      "<<fNpy<<endl;
+   cout<<"Sector:                  "<<fSector<<endl;
+   cout<<"Wire pitch:              "<<fWireD<<endl; 
+   cout<<"Dead zone in cm:         "<<fDeadZone<<endl;
+   cout<<"Pad plane width in cm:   "<<fPadPlane_Width<<endl;
+   cout<<"Pad plane heights in cm: "<<fPadPlane_Length<<endl;
+}//void AliRICHSegmentationV1::Print()
 	
-#endif
-
-
-
-
-
-
-
-
+#endif//AliRICHSegmentationV1_h
