@@ -1,8 +1,8 @@
 !
 !      Tracking Medium
 !
-TMED 5 'AIR' 5 'AIR'
-TMED 65 'INOX' 65 'INOX'
+!TMED 5 'AIR' 5 'AIR'
+!TMED 65 'INOX' 65 'INOX'
 !
 !      Reperes
 !
