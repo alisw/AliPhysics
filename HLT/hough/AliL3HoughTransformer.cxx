@@ -8,7 +8,7 @@
 #include "AliL3HoughTransformer.h"
 #include "AliL3Transform.h"
 #include "AliL3DigitData.h"
-#include "AliL3Histogram.h"
+#include "AliL3HistogramAdaptive.h"
 
 //_____________________________________________________________
 // AliL3HoughTransformer
@@ -93,6 +93,7 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t 
   for(Int_t i=0; i<GetNEtaSegments(); i++)
     {
       sprintf(histname,"paramspace_%d",i);
+      //fParamSpace[i] = new AliL3HistogramAdaptive(histname,0.1,1,0.05,64,ymin,ymax);
       fParamSpace[i] = new AliL3Histogram(histname,"",nxbin,xmin,xmax,nybin,ymin,ymax);
     }
   
@@ -302,9 +303,11 @@ void AliL3HoughTransformer::TransformCircleC(Int_t row_range)
 	  digits[counter].phi = atan2(xyz[1],xyz[0]);
 	  digits[counter].eta_index = GetEtaIndex(eta);
 	  digits[counter].charge = charge;
+#ifdef do_mc
 	  digits[counter].trackID[0] = digPt[di].fTrackID[0];
 	  digits[counter].trackID[1] = digPt[di].fTrackID[1];
 	  digits[counter].trackID[2] = digPt[di].fTrackID[2];
+#endif
 	  counter++;
 	}
       AliL3MemHandler::UpdateRowPointer(tempPt);
