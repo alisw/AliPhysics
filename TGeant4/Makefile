@@ -27,10 +27,13 @@ HDRS          =  $(wildcard *.icc) $(wildcard *.h)
 
 # Library Root dictionary
 # only for selected classes
+# (temporarily excluded for OSF1 due to compilation errors)
 
+ifneq ($(ALICE_TARGET),OSF1)
 DICT          = TGeant4Cint.cxx
 DICTH         = TGeant4.h TG4VRunConfiguration.h TGeant4LinkDef.h
 DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
+endif
 
 # C++ Objects
 
@@ -46,11 +49,12 @@ CXXFLAGS      = $(CXXOPTS) -I$(ROOTSYS)/include -I. -I$(ALICE_ROOT)/include/
 # Target
 
 SLIBRARY	= $(LIBDIR)/libTGeant4.$(SL)
-ALIBRARY	= $(LIBDIR)/lib/libTGeant4.a
+ALIBRARY	= $(LIBDIR)/libTGeant4.a
 
 default:	$(SLIBRARY)
 
 $(LIBDIR)/libTGeant4.$(SL):		$(OBJS)
+$(LIBDIR)/libTGeant4.a:			$(OBJS)
 
 $(DICT):	                        $(DICTH)
 
