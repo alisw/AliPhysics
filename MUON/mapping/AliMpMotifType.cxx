@@ -167,9 +167,9 @@ AliMpConnection *AliMpMotifType::FindConnectionByPadNum(Int_t padNum) const
 AliMpConnection *AliMpMotifType::FindConnectionByLocalIndices(
                                        const AliMpIntPair& localIndices) const
 {
+  // Retrieve the AliMpConnection pointer from its position (in pad unit)
   if (!localIndices.IsValid()) return 0;
 
-  // Retrieve the AliMpConnection pointer from its position (in pad unit)
 #ifdef WITH_STL
   ConnectionMapCIterator i = fConnections.find(localIndices);
  if (i != fConnections.end())
@@ -189,7 +189,7 @@ AliMpConnection *AliMpMotifType::FindConnectionByLocalIndices(
 //______________________________________________________________________________
 AliMpConnection *AliMpMotifType::FindConnectionByGassiNum(Int_t gassiNum) const
 {
-  // return the connection for the given gassiplex number
+  // Return the connection for the given gassiplex number
 #ifdef WITH_STL
  for(ConnectionMapCIterator i = fConnections.begin();
   i!=fConnections.end();++i)
@@ -382,10 +382,10 @@ Int_t  AliMpMotifType::GetNofPads() const
 //______________________________________________________________________________
 Bool_t AliMpMotifType::HasPad(const AliMpIntPair& localIndices) const
 {
+  // Return true if the pad indexed by <localIndices> has a connection
   if (!localIndices.IsValid()) return false;
 
 #ifdef WITH_STL
-  // return true if the pad indexed by <localIndices> has a connection
   return fConnections.find(localIndices)!=fConnections.end();
 #endif
 

@@ -167,6 +167,9 @@ Int_t AliMpPadRow::GetNofPadRowSegments() const
 //_____________________________________________________________________________
 AliMpVPadRowSegment* AliMpPadRow::GetPadRowSegment(Int_t i) const 
 {
+// Returns pad row segment with specified number.
+// ---
+
   if (i<0 || i>=GetNofPadRowSegments()) {
     Warning("GetRowSegment", "Index outside range");
     return 0;

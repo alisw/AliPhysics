@@ -77,6 +77,7 @@ AliMpSubZone* AliMpZone::FindSubZone(AliMpVMotif* motif) const
 Int_t AliMpZone::GetNofSubZones() const 
 {
 // Returns number of row segments.
+// ---
 
 #ifdef WITH_STL
   return fSubZones.size();
@@ -90,6 +91,9 @@ Int_t AliMpZone::GetNofSubZones() const
 //_____________________________________________________________________________
 AliMpSubZone* AliMpZone::GetSubZone(Int_t i) const 
 {
+// Returns i-th sub zone.
+// ---
+
   if (i<0 || i>=GetNofSubZones()) {
     Warning("GetSubZone", "Index outside range");
     return 0;
