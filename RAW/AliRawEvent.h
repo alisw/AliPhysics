@@ -1,16 +1,12 @@
+#ifndef ALIRAWEVENT_H
+#define ALIRAWEVENT_H
 // @(#)alimdc:$Name$:$Id$
 // Author: Fons Rademakers  26/11/99
 // Updated: Dario Favretto  15/04/2003
 
-#ifndef ALIRAWEVENT_H
-#define ALIRAWEVENT_H
 
 #ifndef ROOT_TObject
 #include <TObject.h>
-#endif
-
-#ifndef ROOT_Bytes
-#include <Bytes.h>
 #endif
 
 #ifndef ROOT_TDatime
@@ -67,20 +63,6 @@ const Int_t kAttributeWords = 3;
 
 class AliRawEventHeader : public TObject {
 
-private:
-   UInt_t fSize;          // size of event in bytes
-   UInt_t fMagic;         // magic number used for consistency check
-   UInt_t fHeadLen;       // size of header in bytes
-   UInt_t fVersion;       // unique version identifier
-   UInt_t fType;          // event type
-   UInt_t fRunNb;         // run number
-   UInt_t fId[kIdWords];  // id field
-   UInt_t fTriggerPattern[kTriggerWords];   // trigger pattern
-   UInt_t fDetectorPattern[kDetectorWords]; // detector pattern
-   UInt_t fTypeAttribute[kAttributeWords];  // system (0,1) and user (2) attributes
-   UInt_t fLDCId;         // LDC id
-   UInt_t fGDCId;         // GDC id
-
 public:
    AliRawEventHeader() { fSize = 0; }
    virtual ~AliRawEventHeader() { }
@@ -107,18 +89,25 @@ public:
    UInt_t        GetLDCId() const { return fLDCId; }
    UInt_t        GetGDCId() const { return fGDCId; }
 
+private:
+   UInt_t fSize;          // size of event in bytes
+   UInt_t fMagic;         // magic number used for consistency check
+   UInt_t fHeadLen;       // size of header in bytes
+   UInt_t fVersion;       // unique version identifier
+   UInt_t fType;          // event type
+   UInt_t fRunNb;         // run number
+   UInt_t fId[kIdWords];  // id field
+   UInt_t fTriggerPattern[kTriggerWords];   // trigger pattern
+   UInt_t fDetectorPattern[kDetectorWords]; // detector pattern
+   UInt_t fTypeAttribute[kAttributeWords];  // system (0,1) and user (2) attributes
+   UInt_t fLDCId;         // LDC id
+   UInt_t fGDCId;         // GDC id
+
    ClassDef(AliRawEventHeader,1)  // Alice raw event header
 };
 
 
 class AliRawEquipmentHeader : public TObject {
-
-private:
-   UInt_t fSize;                            // number of raw data bytes
-   UInt_t fEquipmentType;                   // equipment type
-   UInt_t fEquipmentID;                     // equipment ID
-   UInt_t fTypeAttribute[kAttributeWords];  // system (0,1) and user (2) attributes
-   UInt_t fBasicElementSizeType;            // basic element size type
 
 public:
    AliRawEquipmentHeader() { fSize = 0; }
@@ -134,11 +123,33 @@ public:
    const UInt_t *GetTypeAttribute() const { return fTypeAttribute; }
    UInt_t        GetBasicSizeType() const { return fBasicElementSizeType; }
 
+private:
+   UInt_t fSize;                            // number of raw data bytes
+   UInt_t fEquipmentType;                   // equipment type
+   UInt_t fEquipmentID;                     // equipment ID
+   UInt_t fTypeAttribute[kAttributeWords];  // system (0,1) and user (2) attributes
+   UInt_t fBasicElementSizeType;            // basic element size type
+
    ClassDef(AliRawEquipmentHeader,1) //Alice equipment header
 };
 
 
 class AliRawData : public TObject {
+
+public:
+   AliRawData() { fSize = fBufSize = 0; fRawData = 0; fOwner = kTRUE; }
+   AliRawData(const AliRawData& rawData): TObject(rawData) 
+     {Fatal("AliRawData", "copy constructor not implemented");};
+   AliRawData& operator = (const AliRawData& /*rawData*/) {
+     Fatal("operator =", "assignment operator not implemented"); 
+     return *this;
+   };
+   virtual ~AliRawData() { if (fOwner) delete [] fRawData; }
+
+   inline void SetSize(Int_t size);
+   inline void  SetBuffer(void *buf, Int_t size);
+   Int_t    GetSize() const { return fSize; }
+   void    *GetBuffer() { return fRawData; }
 
 private:
    Int_t   fSize;         // number of raw data bytes
@@ -146,44 +157,40 @@ private:
    char   *fRawData;      //[fSize] raw event data
    Bool_t  fOwner;        //!if true object owns fRawData buffer
 
-public:
-   AliRawData() { fSize = fBufSize = 0; fRawData = 0; fOwner = kTRUE; }
-   virtual ~AliRawData() { if (fOwner) delete [] fRawData; }
-
-   void  SetSize(Int_t size) {
-      if (size > fBufSize) {
-         if (fOwner) delete [] fRawData;
-         fRawData = new char [size];
-         fBufSize = size;
-         fOwner   = kTRUE;
-      }
-      fSize = size;
-   }
-   void  SetBuffer(void *buf, Int_t size) {
-      if (fOwner) delete [] fRawData;
-      fRawData = (char *) buf;
-      fBufSize = size;
-      fSize    = size;
-      fOwner   = kFALSE;
-   }
-   Int_t    GetSize() const { return fSize; }
-   void    *GetBuffer() { return fRawData; }
-
    ClassDef(AliRawData,1)  // Alice raw event buffer
 };
+
+void AliRawData::SetSize(Int_t size) 
+{
+  if (size > fBufSize) {
+    if (fOwner) delete [] fRawData;
+    fRawData = new char [size];
+    fBufSize = size;
+    fOwner   = kTRUE;
+  }
+  fSize = size;
+}
+
+void AliRawData::SetBuffer(void *buf, Int_t size) 
+{
+  if (fOwner) delete [] fRawData;
+  fRawData = (char *) buf;
+  fBufSize = size;
+  fSize    = size;
+  fOwner   = kFALSE;
+}
 
 
 class AliRawEvent : public TObject {
 
-private:
-   Int_t                  fNSubEvents;  // number of valid sub-events
-   AliRawEventHeader     *fEvtHdr;      // event header object
-   AliRawEquipmentHeader *fEqpHdr;      // equipment header
-   AliRawData            *fRawData;     // raw data container
-   TObjArray             *fSubEvents;   // sub AliRawEvent's
-
 public:
    AliRawEvent();
+   AliRawEvent(const AliRawEvent& rawEvent): TObject(rawEvent) 
+     {Fatal("AliRawEvent", "copy constructor not implemented");};
+   AliRawEvent& operator = (const AliRawEvent& /*rawEvent*/) {
+     Fatal("operator =", "assignment operator not implemented"); 
+     return *this;
+   };
    virtual ~AliRawEvent();
 
    AliRawEventHeader     *GetHeader();
@@ -194,30 +201,23 @@ public:
    AliRawEvent           *GetSubEvent(Int_t index) const;
    void                   Reset();
 
+private:
+   Int_t                  fNSubEvents;  // number of valid sub-events
+   AliRawEventHeader     *fEvtHdr;      // event header object
+   AliRawEquipmentHeader *fEqpHdr;      // equipment header
+   AliRawData            *fRawData;     // raw data container
+   TObjArray             *fSubEvents;   // sub AliRawEvent's
+
    ClassDef(AliRawEvent,1)  // ALICE raw event object
 };
 
 
 class AliStats : public TObject {
 
-private:
-   Int_t    fEvents;     // number of events in this file
-   Int_t    fFirstRun;   // run number of first event in file
-   Int_t    fFirstEvent; // event number of first event in file
-   Int_t    fLastRun;    // run number of last event in file
-   Int_t    fLastEvent;  // event number of last event in file
-   TDatime  fBegin;      // begin of filling time
-   TDatime  fEnd;        // end of filling time
-   TString  fFileName;   // name of file containing this data
-   Double_t fFileSize;   // size of file
-   Float_t  fCompFactor; // tree compression factor
-   Int_t    fCompMode;   // compression mode
-   Bool_t   fFilter;     // 3rd level filter on/off
-   TH1F    *fRTHist;     // histogram of real-time to process chunck of data
-   Float_t  fChunk;      //!chunk to be histogrammed
-
 public:
    AliStats(const char *filename = "", Int_t compmode = 0, Bool_t filter = kFALSE);
+   AliStats(const AliStats& stats): TObject(stats) 
+     {Fatal("AliStats", "copy constructor not implemented");};
    virtual ~AliStats();
    AliStats &operator=(const AliStats &rhs);
 
@@ -245,27 +245,38 @@ public:
    const char *GetFileName() const { return fFileName; }
    TH1F       *GetRTHist() const { return fRTHist; }
 
+private:
+   Int_t    fEvents;     // number of events in this file
+   Int_t    fFirstRun;   // run number of first event in file
+   Int_t    fFirstEvent; // event number of first event in file
+   Int_t    fLastRun;    // run number of last event in file
+   Int_t    fLastEvent;  // event number of last event in file
+   TDatime  fBegin;      // begin of filling time
+   TDatime  fEnd;        // end of filling time
+   TString  fFileName;   // name of file containing this data
+   Double_t fFileSize;   // size of file
+   Float_t  fCompFactor; // tree compression factor
+   Int_t    fCompMode;   // compression mode
+   Bool_t   fFilter;     // 3rd level filter on/off
+   TH1F    *fRTHist;     // histogram of real-time to process chunck of data
+   Float_t  fChunk;      //!chunk to be histogrammed
+
    ClassDef(AliStats,1)  // Statistics object
 };
 
 
 class AliRawDB : public TObject {
 
-protected:
-   TFile         *fRawDB;         // DB to store raw data
-   TTree         *fTree;          // tree used to store raw data
-   AliRawEvent   *fEvent;         // AliRawEvent via which data is stored
-   Int_t          fCompress;      // compression mode (1 default)
-   Double_t       fMaxSize;       // maximum size in bytes of the raw DB
-
-   virtual const char *GetFileName();
-   virtual Bool_t      FSHasSpace(const char *fs);
-   virtual void        MakeTree();
-
 public:
    AliRawDB(AliRawEvent *event, Double_t maxsize, Int_t compress,
             Bool_t create = kTRUE);
-   ~AliRawDB() { Close(); }
+   AliRawDB(const AliRawDB& rawDB): TObject(rawDB) 
+     {Fatal("AliRawDB", "copy constructor not implemented");};
+   AliRawDB& operator = (const AliRawDB& /*rawDB*/) {
+     Fatal("operator =", "assignment operator not implemented"); 
+     return *this;
+   };
+   virtual ~AliRawDB() { Close(); }
 
    virtual const char *GetOpenOption() const { return "RECREATE"; }
    virtual Bool_t      Create();
@@ -284,14 +295,22 @@ public:
    Float_t      GetCompressionFactor() const;
    Int_t        GetCompressionMode() const { return fRawDB->GetCompressionLevel(); }
 
+protected:
+   TFile         *fRawDB;         // DB to store raw data
+   TTree         *fTree;          // tree used to store raw data
+   AliRawEvent   *fEvent;         // AliRawEvent via which data is stored
+   Int_t          fCompress;      // compression mode (1 default)
+   Double_t       fMaxSize;       // maximum size in bytes of the raw DB
+
+   virtual const char *GetFileName() const;
+   virtual Bool_t      FSHasSpace(const char *fs) const;
+   virtual void        MakeTree();
+
    ClassDef(AliRawDB,0)  // Raw DB
 };
 
 
 class AliRawRFIODB : public AliRawDB {
-
-private:
-   const char *GetFileName();
 
 public:
    AliRawRFIODB(AliRawEvent *event, Double_t maxsize, Int_t compress);
@@ -299,14 +318,14 @@ public:
 
    void Close();
 
+private:
+   const char *GetFileName() const;
+
    ClassDef(AliRawRFIODB,0)  // Raw DB via RFIO
 };
 
 
 class AliRawCastorDB : public AliRawDB {
-
-private:
-   const char *GetFileName();
 
 public:
    AliRawCastorDB(AliRawEvent *event, Double_t maxsize, Int_t compress);
@@ -315,14 +334,14 @@ public:
    const char *GetOpenOption() const { return "-RECREATE"; }
    void        Close();
 
+private:
+   const char *GetFileName() const;
+
    ClassDef(AliRawCastorDB,0)  // Raw DB via CASTOR and rootd
 };
 
 
 class AliRawRootdDB : public AliRawDB {
-
-private:
-   const char *GetFileName();
 
 public:
    AliRawRootdDB(AliRawEvent *event, Double_t maxsize, Int_t compress);
@@ -330,14 +349,14 @@ public:
 
    void Close();
 
+private:
+   const char *GetFileName() const;
+
    ClassDef(AliRawRootdDB,0)  // Raw DB via rootd
 };
 
 
 class AliRawNullDB : public AliRawDB {
-
-private:
-   const char *GetFileName();
 
 public:
    AliRawNullDB(AliRawEvent *event, Double_t maxsize, Int_t compress);
@@ -345,23 +364,24 @@ public:
 
    void Close();
 
+private:
+   const char *GetFileName() const;
+
    ClassDef(AliRawNullDB,0)  // Raw DB to /dev/null
 };
 
 
 class AliTagDB : public TObject {
 
-protected:
-   TFile             *fTagDB;     // DB to store header information only (tag)
-   TTree             *fTree;      // tree use to store header
-   AliRawEventHeader *fHeader;    // header via which data is stored
-   Double_t           fMaxSize;   // maximum size in bytes of tag DB
-
-   virtual const char *GetFileName();
-
 public:
    AliTagDB(AliRawEventHeader *header, Double_t maxsize, Bool_t create = kTRUE);
-   ~AliTagDB() { Close(); }
+   AliTagDB(const AliTagDB& tagDB): TObject(tagDB) 
+     {Fatal("AliTagDB", "copy constructor not implemented");};
+   AliTagDB& operator = (const AliTagDB& /*tagDB*/) {
+     Fatal("operator =", "assignment operator not implemented"); 
+     return *this;
+   };
+   virtual ~AliTagDB() { Close(); }
 
    Bool_t          Create();
    virtual void    Close();
@@ -378,14 +398,19 @@ public:
    Int_t              GetEvents() const { return (Int_t) fTree->GetEntries(); }
    Float_t            GetCompressionFactor() const;
 
+protected:
+   TFile             *fTagDB;     // DB to store header information only (tag)
+   TTree             *fTree;      // tree use to store header
+   AliRawEventHeader *fHeader;    // header via which data is stored
+   Double_t           fMaxSize;   // maximum size in bytes of tag DB
+
+   virtual const char *GetFileName() const;
+
    ClassDef(AliTagDB,0)  // Tag DB
 };
 
 
 class AliTagNullDB : public AliTagDB {
-
-private:
-   const char *GetFileName();
 
 public:
    AliTagNullDB(AliRawEventHeader *header, Double_t maxsize);
@@ -393,23 +418,32 @@ public:
 
    void Close();
 
+private:
+   const char *GetFileName() const;
+
    ClassDef(AliTagNullDB,0)   // Tag DB to /dev/null
 };
 
 
 class AliRunDB : public TObject {
 
-private:
-   TFile  *fRunDB;     // run database
-
 public:
    AliRunDB(Bool_t noLocalDB = kFALSE);
+   AliRunDB(const AliRunDB& runDB): TObject(runDB) 
+     {Fatal("AliRunDB", "copy constructor not implemented");};
+   AliRunDB& operator = (const AliRunDB& /*runDB*/) {
+     Fatal("operator =", "assignment operator not implemented"); 
+     return *this;
+   };
    ~AliRunDB() { Close(); }
 
    void Update(AliStats *stats);
    void UpdateRDBMS(AliStats *stats);
    void UpdateAliEn(AliStats *stats);
    void Close();
+
+private:
+   TFile  *fRunDB;     // run database
 
    ClassDef(AliRunDB,0)  // Run (bookkeeping) DB
 };
@@ -419,6 +453,19 @@ class AliMDC : public TObject {
 
 public:
    enum EWriteMode { kLOCAL, kRFIO, kROOTD, kCASTOR, kDEVNULL };
+
+   AliMDC(Int_t fd, Int_t compress, Double_t maxFileSize, Bool_t useFilter,
+          EWriteMode mode, Bool_t useLoop, Bool_t delFiles);
+   ~AliMDC() { }
+
+   Int_t  Run();
+   void   SetStopLoop() { fStopLoop = kTRUE; }
+   Bool_t StopLoop() const { return fStopLoop; }
+
+   void   SetDebugLevel(Int_t level) { fDebugLevel = level; }
+   Int_t  GetDebugLevel() const { return fDebugLevel; }
+
+   static Bool_t DeleteFiles() { return fgDeleteFiles; }
 
 private:
    Int_t      fFd;          // DATE input stream
@@ -433,7 +480,7 @@ private:
    Bool_t     fUseLoop;     // loop on input source (must be file)
    Bool_t     fStopLoop;    // break from endless loop (triggered by SIGUSR1)
 
-   static Bool_t fgDeleteFiles;
+   static Bool_t fgDeleteFiles;  // flag for deletion of files
 
    Int_t     Read(const char *name) { return TObject::Read(name); }
    Int_t     Read(void *buffer, Int_t length);
@@ -443,20 +490,6 @@ private:
    Int_t     ReadRawData(AliRawData &raw, Int_t size, void *eb = 0);
    Int_t     DumpEvent(Int_t toRead);
    Int_t     Filter(AliRawData &raw);
-
-public:
-   AliMDC(Int_t fd, Int_t compress, Double_t maxFileSize, Bool_t useFilter,
-          EWriteMode mode, Bool_t useLoop, Bool_t delFiles);
-   ~AliMDC() { }
-
-   Int_t  Run();
-   void   SetStopLoop() { fStopLoop = kTRUE; }
-   Bool_t StopLoop() const { return fStopLoop; }
-
-   void   SetDebugLevel(Int_t level) { fDebugLevel = level; }
-   Int_t  GetDebugLevel() const { return fDebugLevel; }
-
-   static Bool_t DeleteFiles() { return fgDeleteFiles; }
 
    ClassDef(AliMDC,0)  // MDC processor
 };

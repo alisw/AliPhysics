@@ -62,25 +62,25 @@ const Int_t kMDC = 5;
 
 // Fixed file system locations for the different DB's
 #ifdef USE_RDM
-const char *kFifo       = "/tmp/alimdc.fifo";
-const char *kRawDBFS[2] = { "/tmp/mdc1", "/tmp/mdc2" };
-const char *kTagDBFS    = "/tmp/mdc1/tags";
-const char *kRunDBFS    = "/tmp/mdc1/meta";
-const char *kRFIOFS     = "rfio:/castor/cern.ch/user/r/rdm";
-const char *kCastorFS   = "castor:/castor/cern.ch/user/r/rdm";
-const char *kRootdFS    = "root://localhost//tmp/mdc1";
-const char *kAlienHost  = "alien://aliens7.cern.ch:15000/?direct";
-const char *kAlienDir   = "/alice_mdc/DC";
+const char* const kFifo       = "/tmp/alimdc.fifo";
+const char* const kRawDBFS[2] = { "/tmp/mdc1", "/tmp/mdc2" };
+const char* const kTagDBFS    = "/tmp/mdc1/tags";
+const char* const kRunDBFS    = "/tmp/mdc1/meta";
+const char* const kRFIOFS     = "rfio:/castor/cern.ch/user/r/rdm";
+const char* const kCastorFS   = "castor:/castor/cern.ch/user/r/rdm";
+const char* const kRootdFS    = "root://localhost//tmp/mdc1";
+const char* const kAlienHost  = "alien://aliens7.cern.ch:15000/?direct";
+const char* const kAlienDir   = "/alice_mdc/DC";
 #else
-const char *kFifo       = "/tmp/alimdc.fifo";
-const char *kRawDBFS[2] = { "/data1/mdc", "/data2/mdc" };
-const char *kTagDBFS    = "/data1/mdc/tags";
-const char *kRunDBFS    = "/data1/mdc/meta";
-const char *kRFIOFS     = "rfio:/castor/cern.ch/lcg/dc5";
-const char *kCastorFS   = "castor:/castor/cern.ch/lcg/dc5";
-const char *kRootdFS    = "root://localhost//tmp/mdc1";
-const char *kAlienHost  = "alien://aliens7.cern.ch:15000/?direct";
-const char *kAlienDir   = "/alice_mdc/DC";
+const char* const kFifo       = "/tmp/alimdc.fifo";
+const char* const kRawDBFS[2] = { "/data1/mdc", "/data2/mdc" };
+const char* const kTagDBFS    = "/data1/mdc/tags";
+const char* const kRunDBFS    = "/data1/mdc/meta";
+const char* const kRFIOFS     = "rfio:/castor/cern.ch/lcg/dc5";
+const char* const kCastorFS   = "castor:/castor/cern.ch/lcg/dc5";
+const char* const kRootdFS    = "root://localhost//tmp/mdc1";
+const char* const kAlienHost  = "alien://aliens7.cern.ch:15000/?direct";
+const char* const kAlienDir   = "/alice_mdc/DC";
 #endif
 
 // Maximum size of tag db files
@@ -419,7 +419,7 @@ AliRawDB::AliRawDB(AliRawEvent *event, Double_t maxsize, Int_t compress,
 }
 
 //______________________________________________________________________________
-Bool_t AliRawDB::FSHasSpace(const char *fs)
+Bool_t AliRawDB::FSHasSpace(const char *fs) const
 {
    // Check for at least fMaxSize bytes of free space on the file system.
    // If the space is not available return kFALSE, kTRUE otherwise.
@@ -441,7 +441,7 @@ Bool_t AliRawDB::FSHasSpace(const char *fs)
 }
 
 //______________________________________________________________________________
-const char *AliRawDB::GetFileName()
+const char *AliRawDB::GetFileName() const
 {
    // Return filename based on hostname and date and time. This will make
    // each file unique. Also makes sure (via FSHasSpace()) that there is
@@ -487,9 +487,9 @@ Bool_t AliRawDB::Create()
 {
    // Create a new raw DB.
 
-   const Int_t maxRetry = 200;
-   const Int_t maxSleep = 1;      // seconds
-   const Int_t maxSleepLong = 10; // seconds
+   const Int_t kMaxRetry = 200;
+   const Int_t kMaxSleep = 1;      // seconds
+   const Int_t kMaxSleepLong = 10; // seconds
    Int_t retry = 0;
 
 again:
@@ -507,13 +507,13 @@ again:
    fRawDB = TFile::Open(fname, GetOpenOption(),
                         Form("ALICE MDC%d raw DB", kMDC), fCompress);
    if (!fRawDB) {
-      if (retry < maxRetry) {
+      if (retry < kMaxRetry) {
          Warning("Create", "failure to open file, sleeping %d %s before retrying...",
-                 maxSleep, maxSleep==1 ? "second" : "seconds");
-         gSystem->Sleep(maxSleep*1000);
+                 kMaxSleep, kMaxSleep==1 ? "second" : "seconds");
+         gSystem->Sleep(kMaxSleep*1000);
          goto again;
       }
-      Error("Create", "failure to open file %s after %d tries", fname, maxRetry);
+      Error("Create", "failure to open file %s after %d tries", fname, kMaxRetry);
       return kFALSE;
    }
    if (fRawDB->IsZombie()) {
@@ -523,21 +523,21 @@ again:
          fRawDB->ResetErrno();
          delete fRawDB;
          Warning("Create", "file is a zombie (no space), sleeping %d %s before retrying...",
-                 maxSleepLong, maxSleepLong==1 ? "second" : "seconds");
-         gSystem->Sleep(maxSleepLong*1000);   // sleep 10 seconds before retrying
+                 kMaxSleepLong, kMaxSleepLong==1 ? "second" : "seconds");
+         gSystem->Sleep(kMaxSleepLong*1000);   // sleep 10 seconds before retrying
          goto again;
       }
       Error("Create", "file %s is zombie", fname);
       fRawDB->ResetErrno();
       delete fRawDB;
       fRawDB = 0;
-      if (retry < maxRetry) {
+      if (retry < kMaxRetry) {
          Warning("Create", "file is a zombie, sleeping %d %s before retrying...",
-                 maxSleep, maxSleep==1 ? "second" : "seconds");
-         gSystem->Sleep(maxSleep*1000);
+                 kMaxSleep, kMaxSleep==1 ? "second" : "seconds");
+         gSystem->Sleep(kMaxSleep*1000);
          goto again;
       }
-      Error("Create", "failure to open file %s after %d tries", fname, maxRetry);
+      Error("Create", "failure to open file %s after %d tries", fname, kMaxRetry);
       return kFALSE;
    }
 
@@ -642,7 +642,7 @@ AliRawRFIODB::AliRawRFIODB(AliRawEvent *event, Double_t maxsize, Int_t compress)
 }
 
 //______________________________________________________________________________
-const char *AliRawRFIODB::GetFileName()
+const char *AliRawRFIODB::GetFileName() const
 {
    // Return filename based on hostname and date and time. This will make
    // each file unique. Also the directory will be made unique for each
@@ -734,7 +734,7 @@ AliRawCastorDB::AliRawCastorDB(AliRawEvent *event, Double_t maxsize, Int_t compr
 }
 
 //______________________________________________________________________________
-const char *AliRawCastorDB::GetFileName()
+const char *AliRawCastorDB::GetFileName() const
 {
    // Return filename based on hostname and date and time. This will make
    // each file unique. Also the directory will be made unique for each
@@ -817,7 +817,7 @@ AliRawRootdDB::AliRawRootdDB(AliRawEvent *event, Double_t maxsize, Int_t compres
 }
 
 //______________________________________________________________________________
-const char *AliRawRootdDB::GetFileName()
+const char *AliRawRootdDB::GetFileName() const
 {
    // Return filename based on hostname and date and time. This will make
    // each file unique. Also the directory will be made unique for each
@@ -897,7 +897,7 @@ AliRawNullDB::AliRawNullDB(AliRawEvent *event, Double_t maxsize, Int_t compress)
 }
 
 //______________________________________________________________________________
-const char *AliRawNullDB::GetFileName()
+const char *AliRawNullDB::GetFileName() const
 {
    // Return /dev/null as filename.
 
@@ -1008,7 +1008,7 @@ Float_t AliTagDB::GetCompressionFactor() const
 }
 
 //______________________________________________________________________________
-const char *AliTagDB::GetFileName()
+const char *AliTagDB::GetFileName() const
 {
    // Return filename based on hostname and date and time. This will make
    // each file unique. The tags will be stored in the /data1/tags directory.
@@ -1046,7 +1046,7 @@ AliTagNullDB::AliTagNullDB(AliRawEventHeader *header, Double_t maxsize) :
 }
 
 //______________________________________________________________________________
-const char *AliTagNullDB::GetFileName()
+const char *AliTagNullDB::GetFileName() const
 {
    // Return /dev/null as filename.
 
@@ -1206,15 +1206,21 @@ void AliRunDB::Close()
 
 //----------------- Use SIGUSR1 to interupt endless loop -----------------------
 class AliMDCInterruptHandler : public TSignalHandler {
-private:
-   AliMDC *fMDC;   // alimdc to signal
 public:
    AliMDCInterruptHandler(AliMDC *mdc) : TSignalHandler(kSigUser1, kFALSE), fMDC(mdc) { }
+   AliMDCInterruptHandler(const AliMDCInterruptHandler& handler): TSignalHandler(handler) 
+     {Fatal("AliMDCInterruptHandler", "copy constructor not implemented");};
+   AliMDCInterruptHandler& operator = (const AliMDCInterruptHandler& /*rawDB*/) {
+     Fatal("operator =", "assignment operator not implemented"); 
+     return *this;
+   };
    Bool_t Notify() {
       Info("Notify", "received a SIGUSR1 signal");
       fMDC->SetStopLoop();
       return kTRUE;
    }
+private:
+   AliMDC *fMDC;   // alimdc to signal
 };
 
 //______________________________________________________________________________
