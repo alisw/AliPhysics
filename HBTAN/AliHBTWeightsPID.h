@@ -1,5 +1,5 @@
-#ifndef ALIHBTLLWEIGHTSPID_H
-#define ALIHBTLLWEIGHTSPID_H
+#ifndef ALIHBTWeightSPID_H
+#define ALIHBTWeightSPID_H
 /////////////////////////////////////////////////////////////
 //
 //This class introduces the weights calculated according 
@@ -14,21 +14,21 @@
 class TF1;
 class TH1;
 class AliHBTPair;
-class AliHBTLLWeightsPID: public TObject
+class AliHBTWeightsPID: public TObject
  {
  public:
-   AliHBTLLWeightsPID();
-   AliHBTLLWeightsPID(const AliHBTLLWeightsPID &source):TObject(source) {
+   AliHBTWeightsPID();
+   AliHBTWeightsPID(const AliHBTWeightsPID &source):TObject(source) {
      //Copy ctor needed by the coding conventions but not used
-     Fatal("AliHBTLLWeightsPID","copy ctor not implemented");
+     Fatal("AliHBTWeightsPID","copy ctor not implemented");
    }
-   AliHBTLLWeightsPID & operator=(const AliHBTLLWeightsPID &/*source*/) {
+   AliHBTWeightsPID & operator=(const AliHBTWeightsPID &/*source*/) {
      //Assignment operator needed by the coding conventions but not used
-     Fatal("AliHBTLLWeightsPID","assignment operator not implemented");
+     Fatal("AliHBTWeightsPID","assignment operator not implemented");
      return * this;
    }
-   virtual ~AliHBTLLWeightsPID(){;}
-   static AliHBTLLWeightsPID* Instance();
+   virtual ~AliHBTWeightsPID(){;}
+   static AliHBTWeightsPID* Instance();
    
    Double_t GetWeightPID(const AliHBTPair* trackpair); //get weight calculated Batyunia's  algorithm
    
@@ -38,7 +38,7 @@ class AliHBTLLWeightsPID: public TObject
    Float_t fEfficTOF1; // ...?
    Float_t fEfficTOF2; // ...?
    
-   static AliHBTLLWeightsPID *fgWeightsPID;// pointer to wrapper of Fortran Lednicky code   
+   static AliHBTWeightsPID *fgWeightsPID;// pointer to wrapper of Fortran Lednicky code   
    TH1 *fPtK;   //comment?
    TH1 *fPtKefftpc;//comment?
    TH1 *fPtKefftpcboth;//comment?
@@ -52,7 +52,7 @@ class AliHBTLLWeightsPID: public TObject
    TF1 *fEffic3polTOF;//comment?
    TF1 *fEffic4polTOF;//comment?
    
-   ClassDef(AliHBTLLWeightsPID,1)
+   ClassDef(AliHBTWeightsPID,1)
  };
 
 #endif  

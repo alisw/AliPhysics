@@ -7,18 +7,17 @@
 // Author: Ludmila Malinina, JINR (malinina@sunhe.jinr.ru)
 //-----------------------------------------------------------
 
-#include "AliHBTLLWeightTheorFctn.h"
+#include "AliHBTWeightTheorFctn.h"
 
-//--for test--AliHBTLLWeightQInvFctn* yyy= new AliHBTLLWeightQInvFctn();
+//--for test--AliHBTWeightQInvFctn* yyy= new AliHBTWeightQInvFctn();
 /*************************************************************/
 /*************************************************************/
-/*************************************************************/
-
-ClassImp(AliHBTLLWeightTheorQInvFctn)  
 /*************************************************************/
 
-AliHBTLLWeightTheorQInvFctn::
-AliHBTLLWeightTheorQInvFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+ClassImp(AliHBTWeightTheorQInvFctn)  
+/*************************************************************/
+
+AliHBTWeightTheorQInvFctn::AliHBTWeightTheorQInvFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
   AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
   //ctor
@@ -26,17 +25,17 @@ AliHBTLLWeightTheorQInvFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  Rename("wqinvtheorcf","Q_{inv} Weight Theoretical Correlation Function");
 }
 /****************************************************************/
-void  AliHBTLLWeightTheorQInvFctn::ProcessSameEventParticles(AliHBTPair* partpair)
+void  AliHBTWeightTheorQInvFctn::ProcessSameEventParticles(AliHBTPair* partpair)
 {
-  //Processes Particles and tracks Same different even
+  //Processes Particles and tracks Same different event
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
-  Double_t weight = partpair->GetLLWeight();
+  Double_t weight = partpair->GetWeight();
   if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQInv(),weight);
 } 
 
 /**************************************************************/
-TH1* AliHBTLLWeightTheorQInvFctn::GetResult() 
+TH1* AliHBTWeightTheorQInvFctn::GetResult() 
 {
   //returns ratio of numerator and denominator
   return GetRatio(Scale());
@@ -46,11 +45,10 @@ TH1* AliHBTLLWeightTheorQInvFctn::GetResult()
 /*************************************************************/
 /*************************************************************/
 
-ClassImp(AliHBTLLWeightTheorQOutFctn)  
+ClassImp(AliHBTWeightTheorQOutFctn)  
 /*************************************************************/
 
-AliHBTLLWeightTheorQOutFctn::
-AliHBTLLWeightTheorQOutFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+AliHBTWeightTheorQOutFctn::AliHBTWeightTheorQOutFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
   AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
   //ctor
@@ -58,17 +56,17 @@ AliHBTLLWeightTheorQOutFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  Rename("wqouttheorcf","Q_{out} Weight Theoretical Correlation Function");
 }
 /****************************************************************/
-void  AliHBTLLWeightTheorQOutFctn::ProcessSameEventParticles(AliHBTPair* partpair)
+void  AliHBTWeightTheorQOutFctn::ProcessSameEventParticles(AliHBTPair* partpair)
 {
   //Processes Particles and tracks Same different even
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
-  Double_t weight = partpair->GetLLWeight();
+  Double_t weight = partpair->GetWeight();
   if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQOutCMSLC(),weight);
 } 
 
 /**************************************************************/
-TH1* AliHBTLLWeightTheorQOutFctn::GetResult() 
+TH1* AliHBTWeightTheorQOutFctn::GetResult() 
 {
   //returns ratio of numerator and denominator
   return GetRatio(Scale());
@@ -78,11 +76,10 @@ TH1* AliHBTLLWeightTheorQOutFctn::GetResult()
 /*************************************************************/
 /*************************************************************/
 
-ClassImp(AliHBTLLWeightTheorQSideFctn)  
+ClassImp(AliHBTWeightTheorQSideFctn)  
 /*************************************************************/
 
-AliHBTLLWeightTheorQSideFctn::
-AliHBTLLWeightTheorQSideFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+AliHBTWeightTheorQSideFctn::AliHBTWeightTheorQSideFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
   AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
   //ctor
@@ -90,17 +87,17 @@ AliHBTLLWeightTheorQSideFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  Rename("wqsidetheorcf","Q_{side} Weight Theoretical Correlation Function");
 }
 /****************************************************************/
-void  AliHBTLLWeightTheorQSideFctn::ProcessSameEventParticles(AliHBTPair* partpair)
+void  AliHBTWeightTheorQSideFctn::ProcessSameEventParticles(AliHBTPair* partpair)
 {
   //Processes Particles and tracks Same different even
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
-  Double_t weight = partpair->GetLLWeight();
+  Double_t weight = partpair->GetWeight();
   if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQSideCMSLC(),weight);
 } 
 
 /**************************************************************/
-TH1* AliHBTLLWeightTheorQSideFctn::GetResult() 
+TH1* AliHBTWeightTheorQSideFctn::GetResult() 
 {
   //returns ratio of numerator and denominator
   return GetRatio(Scale());
@@ -110,11 +107,10 @@ TH1* AliHBTLLWeightTheorQSideFctn::GetResult()
 /*************************************************************/
 /*************************************************************/
 
-ClassImp(AliHBTLLWeightTheorQLongFctn)  
+ClassImp(AliHBTWeightTheorQLongFctn)  
 /*************************************************************/
 
-AliHBTLLWeightTheorQLongFctn::
-AliHBTLLWeightTheorQLongFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+AliHBTWeightTheorQLongFctn::AliHBTWeightTheorQLongFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
   AliHBTOnePairFctn1D(nbins,maxXval,minXval)
 {
   //ctor
@@ -122,17 +118,52 @@ AliHBTLLWeightTheorQLongFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  Rename("wqlongtheorcf","Q_{long} Weight Theoretical Correlation Function");
 }
 /****************************************************************/
-void  AliHBTLLWeightTheorQLongFctn::ProcessSameEventParticles(AliHBTPair* partpair)
+void  AliHBTWeightTheorQLongFctn::ProcessSameEventParticles(AliHBTPair* partpair)
 {
   //Processes Particles and tracks Same different even
   partpair  = CheckPair(partpair);
   if (partpair == 0x0) return;
-  Double_t weight = partpair->GetLLWeight();
+  Double_t weight = partpair->GetWeight();
   if(TMath::Abs(weight)<=10.) fNumerator->Fill(partpair->GetQLongCMSLC(),weight);
 } 
 
 /**************************************************************/
-TH1* AliHBTLLWeightTheorQLongFctn::GetResult() 
+TH1* AliHBTWeightTheorQLongFctn::GetResult() 
+{
+  //returns ratio of numerator and denominator
+  return GetRatio(Scale());
+}                    
+
+/*************************************************************/
+/*************************************************************/
+/*************************************************************/
+
+ClassImp(AliHBTWeightTheorOSLFctn)
+
+AliHBTWeightTheorOSLFctn::AliHBTWeightTheorOSLFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
+                                                   Int_t nYbins, Double_t maxYval, Double_t minYval,
+                                                   Int_t nZbins, Double_t maxZval, Double_t minZval):
+ AliHBTOnePairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
+{
+  fWriteNumAndDen = kTRUE;//change default behaviour
+  Rename("wqosltheorcf","Q_{out}-Q_{side}-Q_{long} Weight Theoretical Correlation Fctn");
+}
+/*************************************************************/
+
+void AliHBTWeightTheorOSLFctn::ProcessSameEventParticles(AliHBTPair* partpair)
+{
+//Fills numerator
+  partpair  = CheckPair(partpair);
+  if (partpair == 0x0) return;
+  Double_t weight = partpair->GetWeight();
+  Double_t out = TMath::Abs(partpair->GetQOutCMSLC());
+  Double_t side = TMath::Abs(partpair->GetQSideCMSLC());
+  Double_t lon = TMath::Abs(partpair->GetQLongCMSLC());
+  fNumerator->Fill(out,side,lon,weight);
+}
+/*************************************************************/
+
+TH1* AliHBTWeightTheorOSLFctn::GetResult()
 {
   //returns ratio of numerator and denominator
   return GetRatio(Scale());

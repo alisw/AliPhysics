@@ -156,21 +156,26 @@
 #pragma link C++ class AliHBTTwoTrackEffFctn+;
 #pragma link C++ class AliHBTTwoTrackEffFctn3D+;
 
+#pragma link C++ class AliHBTWeights+;
+#pragma link C++ class AliHBTCrab+;
 #pragma link C++ class AliHBTLLWeights+;
-#pragma link C++ class AliHBTLLWeightQInvFctn+;
-#pragma link C++ class AliHBTLLWeightQOutFctn+;
-#pragma link C++ class AliHBTLLWeightQSideFctn+;
-#pragma link C++ class AliHBTLLWeightQLongFctn+;
-#pragma link C++ class AliHBTLLWeightTwoKStarFctn+;
-#pragma link C++ class AliHBTLLWeightQOutQSideFctn+;
-#pragma link C++ class AliHBTLLWeightQOutQLongFctn+;
-#pragma link C++ class AliHBTLLWeightQSideQLongFctn+;
 
-#pragma link C++ class AliHBTLLWeightTheorQInvFctn+;
-#pragma link C++ class AliHBTLLWeightTheorQOutFctn+;
-#pragma link C++ class AliHBTLLWeightTheorQSideFctn+;
-#pragma link C++ class AliHBTLLWeightTheorQLongFctn+;
-#pragma link C++ class AliHBTLLWeightsPID+;
+#pragma link C++ class AliHBTWeightQInvFctn+;
+#pragma link C++ class AliHBTWeightQOutFctn+;
+#pragma link C++ class AliHBTWeightQSideFctn+;
+#pragma link C++ class AliHBTWeightQLongFctn+;
+#pragma link C++ class AliHBTWeightTwoKStarFctn+;
+#pragma link C++ class AliHBTWeightQOutQSideFctn+;
+#pragma link C++ class AliHBTWeightQOutQLongFctn+;
+#pragma link C++ class AliHBTWeightQSideQLongFctn+;
+
+#pragma link C++ class AliHBTWeightTheorQInvFctn+;
+#pragma link C++ class AliHBTWeightTheorQOutFctn+;
+#pragma link C++ class AliHBTWeightTheorQSideFctn+;
+#pragma link C++ class AliHBTWeightTheorQLongFctn+;
+#pragma link C++ class AliHBTWeightTheorOSLFctn+;
+#pragma link C++ class AliHBTWeightsPID+;
+
 #pragma link C++ class AliHBTPositionRandomizer+;
 #pragma link C++ class AliHBTRndm+;
 #pragma link C++ class AliHBTRndmGaussBall+;
@@ -178,6 +183,4 @@
 #pragma link C++ class AliHBTMonVyDistributionVsVxFctn+;
 #pragma link C++ class AliHBTMonRtDistributionVsVzFctn+;
 //#pragma link C++ class AliHBTGoComPair+;
-//#pragma link C++ class AliHBTCorrectQ3DCorrelFctn+;
-//#pragma link C++ class AliHBTCorrectQInvCorrelFctn+;
 #endif

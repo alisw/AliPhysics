@@ -7,7 +7,7 @@
 //Author: Ludmila Malinina, JINR (malinina@sunhe.jinr.ru)
 //-----------------------------------------------------------
 
-#include "AliHBTLLWeightsPID.h"
+#include "AliHBTWeightsPID.h"
 #include "AliHBTPair.h"
 #include "AliHBTParticle.h"
 #include <TRandom.h>
@@ -15,11 +15,11 @@
 #include <TH1.h>
 #include <TF1.h>
 
-ClassImp(AliHBTLLWeightsPID)  
+ClassImp(AliHBTWeightsPID)  
  
-AliHBTLLWeightsPID* AliHBTLLWeightsPID::fgWeightsPID=NULL; 
+AliHBTWeightsPID* AliHBTWeightsPID::fgWeightsPID=NULL; 
 
-AliHBTLLWeightsPID::AliHBTLLWeightsPID()
+AliHBTWeightsPID::AliHBTWeightsPID()
 {
   //ctor
   //initial parameters of model
@@ -101,20 +101,20 @@ AliHBTLLWeightsPID::AliHBTLLWeightsPID()
 
 }                                            
 
-AliHBTLLWeightsPID* AliHBTLLWeightsPID::Instance()
+AliHBTWeightsPID* AliHBTWeightsPID::Instance()
 {
   //Creates an instance of the class 
   //or returns pointer to already existing one
   if (fgWeightsPID) {
     return fgWeightsPID;
   } else {
-    fgWeightsPID = new AliHBTLLWeightsPID();
+    fgWeightsPID = new AliHBTWeightsPID();
     return fgWeightsPID;
   }
 }
 
 
-Double_t AliHBTLLWeightsPID::GetWeightPID(const AliHBTPair* trackpair)
+Double_t AliHBTWeightsPID::GetWeightPID(const AliHBTPair* trackpair)
 {
   //Calculates the weight of "trackpair"
   AliHBTParticle *track1 = trackpair->Particle1();

@@ -9,14 +9,15 @@
 #ifndef ALIHBTLLWEIGHTS_H
 #define ALIHBTLLWEIGHTS_H
 
-#include <TObject.h>
+#include "AliHBTWeights.h"
 
 class AliHBTPair;
-class AliHBTLLWeights: public TObject
+class AliHBTLLWeights: public AliHBTWeights
  {
    public:
      virtual ~AliHBTLLWeights(){;}
      static AliHBTLLWeights* Instance();
+     void Set();
      
      Double_t GetWeight(const AliHBTPair* partpair); //get weight calculated by Lednicky's algorithm
 

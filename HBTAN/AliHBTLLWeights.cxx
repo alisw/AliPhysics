@@ -197,7 +197,7 @@ AliHBTLLWeights::AliHBTLLWeights():
 /**************************************************************/
 
 AliHBTLLWeights::AliHBTLLWeights(const AliHBTLLWeights &/*source*/):
- TObject(),
+ AliHBTWeights(),
  fTest(kTRUE),
  fColoumbSwitch(kTRUE),
  fQuantStatSwitch(kTRUE),
@@ -238,6 +238,22 @@ AliHBTLLWeights* AliHBTLLWeights::Instance()
    return fgLLWeights; 
   } 
 }     
+/************************************************************/
+
+void AliHBTLLWeights::Set()
+{
+ //sets this as weighitng class
+ Info("Set","Setting Lednicky-Lyuboshitz as Weighing Class");
+ 
+ if ( fgWeights == 0x0 )  
+  {
+    fgWeights = AliHBTLLWeights::Instance();
+    return;
+  }  
+ if ( fgWeights == AliHBTLLWeights::Instance() ) return;
+ delete fgWeights;
+ fgWeights = AliHBTLLWeights::Instance();
+}
 /************************************************************/
 
 Double_t AliHBTLLWeights::GetWeight(const AliHBTPair* partpair)

@@ -41,7 +41,7 @@ class AliHBTPair: public TObject
    virtual Double_t GetDeltaPz();
    
    virtual Double_t GetGammaToCMSLC();
-   Double_t GetLLWeight();
+   Double_t GetWeight();
  protected:
    AliHBTParticle* fPart1;  //pointer to first particle
    AliHBTParticle* fPart2;  //pointer to second particle
@@ -92,8 +92,8 @@ class AliHBTPair: public TObject
    Bool_t   fQInvLNotCalc;
    void     CalculateQInvL();
 
-   Double_t fLLWeight;
-   Bool_t   ffLLWeightNotCalc;
+   Double_t fWeight;
+   Bool_t   fWeightNotCalc;
    
    Double_t fPxSum;
    Double_t fPySum;
@@ -153,7 +153,7 @@ void AliHBTPair::Changed()
  fKStarNotCalc      = kTRUE;
  fQInvLNotCalc      = kTRUE;
  fGammaCMSLCNotCalc = kTRUE;
- ffLLWeightNotCalc = kTRUE;
+ fWeightNotCalc = kTRUE;
 }
 /****************************************************************/
 inline 

@@ -323,8 +323,8 @@ class AliHBTFunction3D: public AliHBTFunction
 	       Int_t nzbins, Float_t zmax, Float_t zmin);
   virtual void BuildHistos();
   
-  TH3D* fNumerator; // Numerator histogram
-  TH3D* fDenominator; // Denominator histogram
+  TH3F* fNumerator; // Numerator histogram
+  TH3F* fDenominator; // Denominator histogram
   
   //definition of area used for scaling -> Scale is calculated this 
   //way that after division tale is on 1

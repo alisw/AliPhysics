@@ -1,5 +1,5 @@
-#ifndef ALIHBTLLWEIGHTQINVFCTN_H
-#define ALIHBTLLWEIGHTQINVFCTN_H
+#ifndef ALIHBTWeightQINVFCTN_H
+#define ALIHBTWeightQINVFCTN_H
 
 /* $Id$ */
 
@@ -7,12 +7,12 @@
 #include "AliHBTFunction.h"
 
 
-class AliHBTLLWeights;
-class AliHBTLLWeightQInvFctn: public AliHBTTwoPairFctn1D
+class AliHBTWeights;
+class AliHBTWeightQInvFctn: public AliHBTTwoPairFctn1D
 {
  public:
-  AliHBTLLWeightQInvFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
-  virtual  ~AliHBTLLWeightQInvFctn(){};
+  AliHBTWeightQInvFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
+  virtual  ~AliHBTWeightQInvFctn(){};
   TH1* GetResult(); 
   
   void   ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
@@ -21,17 +21,17 @@ class AliHBTLLWeightQInvFctn: public AliHBTTwoPairFctn1D
  protected:
   Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair)
     { return trackpair->GetQInv()-partpair->GetQInv();} //isn't use                                                                    
-  ClassDef(AliHBTLLWeightQInvFctn,1)
+  ClassDef(AliHBTWeightQInvFctn,1)
 };
 /*************************************************************************************/ 
 
-class AliHBTLLWeightQOutFctn: public AliHBTTwoPairFctn1D
+class AliHBTWeightQOutFctn: public AliHBTTwoPairFctn1D
 {
 
   //  friend class AliHBTOnePairFctn1D;
  public:
-  AliHBTLLWeightQOutFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
-  virtual ~AliHBTLLWeightQOutFctn(){};
+  AliHBTWeightQOutFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
+  virtual ~AliHBTWeightQOutFctn(){};
   TH1* GetResult();
   void   ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
@@ -39,17 +39,17 @@ class AliHBTLLWeightQOutFctn: public AliHBTTwoPairFctn1D
  protected:
   Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair)         
     { return trackpair->GetQOutCMSLC()-partpair->GetQOutCMSLC();} //isn't use                                                                    
-  ClassDef(AliHBTLLWeightQOutFctn,1)
+  ClassDef(AliHBTWeightQOutFctn,1)
  
 };
 /*************************************************************************************/ 
   
-class AliHBTLLWeightQLongFctn: public AliHBTTwoPairFctn1D
+class AliHBTWeightQLongFctn: public AliHBTTwoPairFctn1D
 {
   //  friend class AliHBTOnePairFctn1D;
  public:
-  AliHBTLLWeightQLongFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
-  virtual ~AliHBTLLWeightQLongFctn(){};
+  AliHBTWeightQLongFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
+  virtual ~AliHBTWeightQLongFctn(){};
   TH1* GetResult();
   void   ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
@@ -58,17 +58,17 @@ class AliHBTLLWeightQLongFctn: public AliHBTTwoPairFctn1D
   Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair)
     { return trackpair->GetQLongCMSLC()-partpair->GetQLongCMSLC();} //isn't used
 
-  ClassDef(AliHBTLLWeightQLongFctn,1)
+  ClassDef(AliHBTWeightQLongFctn,1)
  
 };
 /*************************************************************************************/ 
   
-class AliHBTLLWeightQSideFctn: public AliHBTTwoPairFctn1D
+class AliHBTWeightQSideFctn: public AliHBTTwoPairFctn1D
 {
   // friend class AliHBTOnePairFctn1D;
  public:
-  AliHBTLLWeightQSideFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
-  virtual ~AliHBTLLWeightQSideFctn(){};
+  AliHBTWeightQSideFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
+  virtual ~AliHBTWeightQSideFctn(){};
   TH1* GetResult();
   void   ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
@@ -77,16 +77,16 @@ class AliHBTLLWeightQSideFctn: public AliHBTTwoPairFctn1D
   Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair)         
     { return trackpair->GetQLongCMSLC()-partpair->GetQLongCMSLC();} //isn't used
 
-  ClassDef(AliHBTLLWeightQSideFctn,1) 
+  ClassDef(AliHBTWeightQSideFctn,1) 
 };
 /*************************************************************************************/ 
   
-class AliHBTLLWeightTwoKStarFctn: public AliHBTTwoPairFctn1D
+class AliHBTWeightTwoKStarFctn: public AliHBTTwoPairFctn1D
 {
   // friend class AliHBTOnePairFctn1D;
  public:
-  AliHBTLLWeightTwoKStarFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
-  virtual ~AliHBTLLWeightTwoKStarFctn(){};
+  AliHBTWeightTwoKStarFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
+  virtual ~AliHBTWeightTwoKStarFctn(){};
   TH1* GetResult();
   void   ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
@@ -94,65 +94,65 @@ class AliHBTLLWeightTwoKStarFctn: public AliHBTTwoPairFctn1D
  protected:
   Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair)         
     { return trackpair->GetKStar()-partpair->GetKStar();} //isn't used
-  ClassDef(AliHBTLLWeightTwoKStarFctn,1) 
+  ClassDef(AliHBTWeightTwoKStarFctn,1) 
 
 };
 /*************************************************************************************/ 
 
-class AliHBTLLWeightQOutQSideFctn: public AliHBTTwoPairFctn2D
+class AliHBTWeightQOutQSideFctn: public AliHBTTwoPairFctn2D
 {
 
   //  friend class AliHBTOnePairFctn1D;
  public:
-  AliHBTLLWeightQOutQSideFctn(Int_t nxbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+  AliHBTWeightQOutQSideFctn(Int_t nxbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
                               Int_t nybins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0);
-  virtual ~AliHBTLLWeightQOutQSideFctn(){};
+  virtual ~AliHBTWeightQOutQSideFctn(){};
   TH1* GetResult();
   void   ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
       
  protected:
   void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/){}
-  ClassDef(AliHBTLLWeightQOutQSideFctn,1)
+  ClassDef(AliHBTWeightQOutQSideFctn,1)
  
 };
 /*************************************************************************************/ 
 
-class AliHBTLLWeightQOutQLongFctn: public AliHBTTwoPairFctn2D
+class AliHBTWeightQOutQLongFctn: public AliHBTTwoPairFctn2D
 {
 
   //  friend class AliHBTOnePairFctn1D;
  public:
-  AliHBTLLWeightQOutQLongFctn(Int_t nxbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+  AliHBTWeightQOutQLongFctn(Int_t nxbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
                               Int_t nybins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0);
-  virtual ~AliHBTLLWeightQOutQLongFctn(){};
+  virtual ~AliHBTWeightQOutQLongFctn(){};
   TH1* GetResult();
   void   ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
       
  protected:
   void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/){}
-  ClassDef(AliHBTLLWeightQOutQLongFctn,1)
+  ClassDef(AliHBTWeightQOutQLongFctn,1)
  
 };
 
 /*************************************************************************************/ 
 
-class AliHBTLLWeightQSideQLongFctn: public AliHBTTwoPairFctn2D
+class AliHBTWeightQSideQLongFctn: public AliHBTTwoPairFctn2D
 {
 
   //  friend class AliHBTOnePairFctn1D;
  public:
-  AliHBTLLWeightQSideQLongFctn(Int_t nxbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+  AliHBTWeightQSideQLongFctn(Int_t nxbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
                               Int_t nybins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0);
-  virtual ~AliHBTLLWeightQSideQLongFctn(){};
+  virtual ~AliHBTWeightQSideQLongFctn(){};
   TH1* GetResult();
   void   ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
       
  protected:
   void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/){}
-  ClassDef(AliHBTLLWeightQSideQLongFctn,1)
+  ClassDef(AliHBTWeightQSideQLongFctn,1)
  
 };
 

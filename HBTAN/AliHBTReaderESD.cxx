@@ -198,7 +198,8 @@ Int_t AliHBTReaderESD::ReadNext()
 
         for (Int_t s = 0; s<kNSpecies; s++)
          {
-           if (w[s] == 0.0) continue;
+           Float_t pp = w[s];
+           if (pp == 0.0) continue;
 
            Int_t pdgcode = charge*GetSpeciesPdgCode((ESpecies)s);
            if(Pass(pdgcode)) continue; //check if we are intersted with particles of this type 
@@ -239,7 +240,7 @@ Int_t AliHBTReaderESD::ReadNext()
       }//for (Int_t i = 0;i<ntr; i++)  -- loop over tracks
      
      Info("ReadNext","Read %d tracks and %d particles from event %d (event %d in dir %d).",
-            fParticlesEvent->GetNumberOfParticles(), fTracksEvent->GetNumberOfParticles(),
+            fTracksEvent->GetNumberOfParticles(), fParticlesEvent->GetNumberOfParticles(),
             fNEventsRead,fCurrentEvent,fCurrentDir);
       
      fCurrentEvent++;

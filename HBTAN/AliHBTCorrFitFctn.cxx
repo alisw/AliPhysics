@@ -34,7 +34,7 @@ void AliHBTCorrFitFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTP
    Double_t q = trackpair->GetQInv();
    Bool_t fill = kFALSE;
    
-   Double_t weight = partpair->GetLLWeight();
+   Double_t weight = partpair->GetWeight();
    fNumerator->Fill(q,weight);
    
    if ( (q < 0.15) && (fNPairsFitArea < 2.e+5))

@@ -99,6 +99,9 @@ public:
   void           SetProductionVertex(const TLorentzVector& v)
                              {SetProductionVertex(v.X(),v.Y(),v.Z(),v.T());}
   void           SetCalcMass(Double_t mass) {fCalcMass = mass;}
+  
+  void           SetUID(Int_t id){fIdxInEvent = id;}
+  
   const Char_t*  GetName() const; 
   void           Print() const;
 

@@ -342,9 +342,8 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
    }
   if (AliHBTParticle::GetDebug()>0) Info("Scale","No errors detected");
 
-  Double_t ratio;
-  Double_t sum = 0;
-  Int_t n = 0;
+  Double_t densum = 0.0;
+  Double_t numsum = 0.0;
   
   Int_t offset = nbins - fNBinsToScale - 1; 
 
@@ -352,16 +351,16 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
    {
     if ( num->GetBinContent(i) > 0.0 )
      {
-       ratio = den->GetBinContent(i)/num->GetBinContent(i);
-       sum += ratio;
-       n++;
+       densum = fDenominator->GetBinContent(i);
+       numsum = fNumerator->GetBinContent(i);
      }
    }
   
-  if(AliHBTParticle::GetDebug() > 0) Info("Scale","sum=%f fNBinsToScale=%d n=%d",sum,fNBinsToScale,n);
+  if(AliHBTParticle::GetDebug() > 0)
+    Info("Scale","numsum=%f densum=%f fNBinsToScaleX=%d",numsum,densum,fNBinsToScale);
   
-  if (n == 0) return 0.0;
-  Double_t ret = sum/((Double_t)n);
+  if (numsum == 0) return 0.0;
+  Double_t ret = densum/numsum;
 
   if(AliHBTParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
   return ret;
@@ -538,25 +537,24 @@ Double_t AliHBTFunction2D::Scale()
   Int_t offsetX = nbinsX - fNBinsToScaleX - 1; //bin that we start loop over bins in axis X
   Int_t offsetY = nbinsY - fNBinsToScaleY - 1; //bin that we start loop over bins in axis X
 
-  Double_t ratio;
-  Double_t sum = 0;
-  Int_t n = 0;
+  Double_t densum = 0.0;
+  Double_t numsum = 0.0;
   
   for (UInt_t j = offsetY; j< nbinsY; j++)
     for (UInt_t i = offsetX; i< nbinsX; i++)
      {
       if ( fNumerator->GetBinContent(i,j) > 0.0 )
        {
-         ratio = fDenominator->GetBinContent(i,j)/fNumerator->GetBinContent(i,j);
-         sum += ratio;
-         n++;
+           densum = fDenominator->GetBinContent(i,j);
+           numsum = fNumerator->GetBinContent(i,j);
        }
      }
   
-  if(AliHBTParticle::GetDebug() > 0) Info("Scale","sum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d n=%d",sum,fNBinsToScaleX,fNBinsToScaleY,n);
+  if(AliHBTParticle::GetDebug() > 0) 
+    Info("Scale","numsum=%f densum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d",numsum,densum,fNBinsToScaleX,fNBinsToScaleY);
   
-  if (n == 0) return 0.0;
-  Double_t ret = sum/((Double_t)n);
+  if (numsum == 0) return 0.0;
+  Double_t ret = densum/numsum;
 
   if(AliHBTParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
   return ret;
@@ -692,10 +690,10 @@ void AliHBTFunction3D::BuildHistos(Int_t nxbins, Float_t xmax, Float_t xmin,
    TString denstr = fName + " Denominator";//title and name of the 
                                            //denominator histogram
          
-   fNumerator   = new TH3D(numstr.Data(),numstr.Data(),
+   fNumerator   = new TH3F(numstr.Data(),numstr.Data(),
                            nxbins,xmin,xmax,nybins,ymin,ymax,nzbins,zmin,zmax);
 	       
-   fDenominator = new TH3D(denstr.Data(),denstr.Data(),
+   fDenominator = new TH3F(denstr.Data(),denstr.Data(),
                            nxbins,xmin,xmax,nybins,ymin,ymax,nzbins,zmin,zmax);
    
    fNumerator->Sumw2();
@@ -753,9 +751,8 @@ Double_t AliHBTFunction3D::Scale()
   Int_t offsetY = nbinsY - fNBinsToScaleY - 1; //bin that we start loop over bins in axis Y
   Int_t offsetZ = nbinsZ - fNBinsToScaleZ - 1; //bin that we start loop over bins in axis Z
 
-  Double_t ratio;
-  Double_t sum = 0;
-  Int_t n = 0;
+  Double_t densum = 0.0;
+  Double_t numsum = 0.0;
   
   for (UInt_t k = offsetZ; k<nbinsZ; k++)
     for (UInt_t j = offsetY; j<nbinsY; j++)
@@ -763,18 +760,18 @@ Double_t AliHBTFunction3D::Scale()
        {
         if ( fNumerator->GetBinContent(i,j,k) > 0.0 )
          {
-           ratio = fDenominator->GetBinContent(i,j,k)/fNumerator->GetBinContent(i,j,k);
-           sum += ratio;
-           n++;
+           
+           densum = fDenominator->GetBinContent(i,j,k);
+           numsum = fNumerator->GetBinContent(i,j,k);
          }
        }
   
   if(AliHBTParticle::GetDebug() > 0) 
-    Info("Scale","sum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d fNBinsToScaleZ=%d n=%d",
-          sum,fNBinsToScaleX,fNBinsToScaleY,fNBinsToScaleZ,n);
+    Info("Scale","numsum=%f densum=%f fNBinsToScaleX=%d fNBinsToScaleY=%d fNBinsToScaleZ=%d",
+          numsum,densum,fNBinsToScaleX,fNBinsToScaleY,fNBinsToScaleZ);
   
-  if (n == 0) return 0.0;
-  Double_t ret = sum/((Double_t)n);
+  if (numsum == 0) return 0.0;
+  Double_t ret = densum/numsum;
 
   if(AliHBTParticle::GetDebug() > 0) Info("Scale","returning %f",ret);
   return ret;

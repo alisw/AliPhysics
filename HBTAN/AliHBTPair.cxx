@@ -1,6 +1,6 @@
 #include "AliHBTPair.h"
 #include "AliHBTParticle.h"
-#include "AliHBTLLWeights.h"
+#include "AliHBTWeights.h"
 
 ClassImp(AliHBTPair)
 
@@ -33,8 +33,8 @@ AliHBTPair::AliHBTPair(Bool_t rev):
  fMassSqrNotCalc(kTRUE),
  fQInvL(0.0),
  fQInvLNotCalc(kTRUE),
- fLLWeight(0.0),
- ffLLWeightNotCalc(kTRUE),
+ fWeight(0.0),
+ fWeightNotCalc(kTRUE),
  fPxSum(0.0),
  fPySum(0.0),
  fPzSum(0.0),
@@ -86,8 +86,8 @@ AliHBTPair::AliHBTPair(AliHBTParticle* part1, AliHBTParticle* part2, Bool_t rev)
  fMassSqrNotCalc(kTRUE),
  fQInvL(0.0),
  fQInvLNotCalc(kTRUE),
- fLLWeight(0.0),
- ffLLWeightNotCalc(kTRUE),
+ fWeight(0.0),
+ fWeightNotCalc(kTRUE),
  fPxSum(0.0),
  fPySum(0.0),
  fPzSum(0.0),
@@ -305,12 +305,12 @@ Double_t AliHBTPair::GetMt()
 }
 /************************************************************************/
 
-Double_t AliHBTPair::GetLLWeight()
+Double_t AliHBTPair::GetWeight()
 {
-  if (ffLLWeightNotCalc)
+  if (fWeightNotCalc)
    {
-      fLLWeight = AliHBTLLWeights::Instance()->GetWeight(this);
-      ffLLWeightNotCalc = kFALSE;
+      fWeight = AliHBTWeights::Weight(this);
+      fWeightNotCalc = kFALSE;  
    }
-  return fLLWeight; 
+  return fWeight; 
 }
