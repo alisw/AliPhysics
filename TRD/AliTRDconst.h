@@ -28,6 +28,9 @@ const Float_t kCcthick =   1.0;   // Thickness of the carbon frame
 const Float_t kCwidcha = (kSwidth2 - kSwidth1) / kSheight * (kCheight + kCspace);
 const Float_t kCcframe = kCheight - kCaframe;
 
+// Number of Radiator foils
+const Int_t   kRaFoils = 100;
+
 // Thicknesses of the the material layers
 const Float_t kSeThick = 0.02;                // Radiator seal
 const Float_t kRaThick = 4.8;                 // Radiator
