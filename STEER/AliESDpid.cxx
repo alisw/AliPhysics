@@ -13,9 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-----------------------------------------------------------------
 //           Implementation of the combined PID class
-//
+//           For the Event Summary Data Class
+//           produced by the reconstruction process
+//           and containing information on the particle identification
 //      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
 
@@ -28,11 +32,15 @@ ClassImp(AliESDpid)
 //_________________________________________________________________________
 Int_t AliESDpid::MakePID(AliESD *event)
 {
+  //
+  // Combine the information of various detectors
+  // to determine the Particle Identification
+  //
   Int_t ntrk=event->GetNumberOfTracks();
   for (Int_t i=0; i<ntrk; i++) {
     Int_t ns=AliESDtrack::kSPECIES;
     Double_t p[10]={1.,1.,1.,1.,1.,1.,1.,1.,1.,1.};
-    const Double_t eps=1e-13;
+    const Double_t keps=1e-13;
 
     AliESDtrack *t=event->GetTrack(i);
 
@@ -40,7 +48,7 @@ Int_t AliESDpid::MakePID(AliESD *event)
       Double_t d[10];
       t->GetITSpid(d);
       Int_t j, ok=0;
-      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
       if (ok) 
       for (j=0; j<ns; j++) p[j]*=d[j];
     }
@@ -49,7 +57,7 @@ Int_t AliESDpid::MakePID(AliESD *event)
       Double_t d[10];
       t->GetTPCpid(d);
       Int_t j, ok=0;
-      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
       if (ok) 
       for (j=0; j<ns; j++) p[j]*=d[j];
     }
@@ -58,7 +66,7 @@ Int_t AliESDpid::MakePID(AliESD *event)
       Double_t d[10];
       t->GetTRDpid(d);
       Int_t j, ok=0;
-      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
       if (ok) 
       for (j=0; j<ns; j++) p[j]*=d[j];
     }
@@ -68,7 +76,7 @@ Int_t AliESDpid::MakePID(AliESD *event)
       Double_t d[10];
       t->GetTOFpid(d);
       Int_t j, ok=0;
-      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
       if (ok) 
       for (j=0; j<ns; j++) p[j]*=d[j];
     }
@@ -77,7 +85,7 @@ Int_t AliESDpid::MakePID(AliESD *event)
       Double_t d[10];
       t->GetPHOSpid(d);
       Int_t j, ok=0;
-      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
       if (ok) 
       for (j=0; j<ns; j++) p[j]*=d[j];
     }
@@ -86,7 +94,7 @@ Int_t AliESDpid::MakePID(AliESD *event)
       Double_t d[10];
       t->GetRICHpid(d);
       Int_t j, ok=0;
-      for (j=0; j<ns; j++) if (d[j]>eps) ok=1;
+      for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
       if (ok) 
       for (j=0; j<ns; j++) p[j]*=d[j];
     }

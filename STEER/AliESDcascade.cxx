@@ -13,15 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-------------------------------------------------------------------------
 //               Implementation of the cascade vertex class
-//
+//              This is part of the Event Summary Data 
+//              which contains the result of the reconstruction
+//              and is the main set of classes for analaysis
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
 //-------------------------------------------------------------------------
+
 #include <TMath.h>
 
 #include "AliESDcascade.h"
-#include "AliESDv0.h"
 
 ClassImp(AliESDcascade)
 

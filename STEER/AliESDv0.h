@@ -4,9 +4,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
 //-------------------------------------------------------------------------
 //                          ESD V0 Vertex Class
-//
+//          This class is part of the Event Summary Data set of classes
 //    Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 
