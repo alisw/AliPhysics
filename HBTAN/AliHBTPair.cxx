@@ -310,6 +310,7 @@ Double_t AliHBTPair::GetLLWeight()
   if (ffLLWeightNotCalc)
    {
       fLLWeight = AliHBTLLWeights::Instance()->GetWeight(this);
+      ffLLWeightNotCalc = kFALSE;
    }
   return fLLWeight; 
 }
