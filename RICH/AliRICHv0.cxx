@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.18  2000/12/20 14:07:36  jbarbosa
+  Removed dependencies on TGeant3 (thanks to F. Carminati and I. Hrivnacova)
+
   Revision 1.17  2000/12/18 17:44:29  jbarbosa
   Took two lines out of output.
 
@@ -154,7 +157,6 @@ AliRICHv0::AliRICHv0(const char *name, const char *title)
       SetGeometryModel(i,geometry);
       SetSegmentationModel(i, segmentationV0);
       SetResponseModel(i, responseV0);
-      SetNsec(i,1);
       SetDebugLevel(0);
     }
 }
@@ -180,7 +182,7 @@ void AliRICHv0::Init()
     // 
     // Initialize Tracking Chambers
     //
-    for (Int_t i=1; i<kNCH; i++) {
+    for (Int_t i=0; i<kNCH; i++) {
 	//printf ("i:%d",i);
 	( (AliRICHChamber*) (*fChambers)[i])->Init(i);  
     }  
@@ -229,7 +231,7 @@ void AliRICHv0::Init()
     printf("*                            Radiator Length : %5.1f cm                         *\n",geometry->GetQuartzLength());
     printf("*                            Freon Thickness : %5.1f cm                         *\n",geometry->GetFreonThickness());
     printf("*                            Charge Slope    : %5.1f ADC                        *\n",response->ChargeSlope());
-    printf("*                            Feedback Prob.  : %5.2f %%                         *\n",response->AlphaFeedback()*100);
+    printf("*                            Feedback Prob.  : %5.2f %%                          *\n",response->AlphaFeedback()*100);
     printf("*                                                                               *\n");
     printf("*********************************************************************************\n");
 
