@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2001/01/30 12:17:04  morsch
+Remove obolete print-statement.
+
 Revision 1.16  2001/01/30 09:23:14  hristov
 Streamers removed (R.Brun)
 
@@ -307,10 +310,11 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 {
 //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
-    y = (iy>0) ? 
-      Float_t(iy*fDpy)-fDpy/2.+fOffsetY 
-      : 
-      Float_t(iy*fDpy)+fDpy/2.-fOffsetY;
+    y = (iy>0) ?
+      Float_t(iy*fDpy)-fDpy/2.+fOffsetY
+      :
+      Float_t(iy*fDpy)+fDpy/2.+fOffsetY; 
+
 //
 //  Find sector isec
     Int_t isec=AliMUONSegmentationV01::Sector(ix,iy);
