@@ -30,6 +30,9 @@ echo .
 echo === Automatic ROOT library production of files ralice.lib and ralice.dll ===
 echo .
 
+rem --- Prevent linking of the standard ROOT library libNew.lib
+if exist %ROOTSYS%\lib\libNew.lib rename %ROOTSYS%\lib\libNew.lib libNew.lix
+
 rem --- The option strings for MSVC++ DLL compilation and linking ---
 set mscomp=/nologo /c /Ze /TP /MD /GR /GX /I%ROOTSYS%\include
 set msdll=/nologo /Ze /TP /MD /LD /GD /GR /GX /I%ROOTSYS%\include

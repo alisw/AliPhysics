@@ -784,10 +784,21 @@ Int_t AliSignal::GetNerrors() const
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliSignal::GetNwaveforms() const
 {
-// Provide the number specified waveforms for this signal.
- Int_t n=0;
- if (fWaveforms) n=fWaveforms->GetSize();
- return n;
+// Provide the number of specified waveforms for this signal.
+// Actually the return value is the highest index of the stored waveforms.
+// This allows an index dependent meaning of waveform info (e.g. waveforms
+// with various gain values).
+// So, when all waveforms are stored in consequetive positions (e.g. 1,2,3),
+// this memberfunction returns 3, being both the highest filled position
+// and the actual number of waveforms.
+// In case only waveforms are stored at positions 1,2,5,7 this memberfunction
+// returns a value 7 whereas only 4 actual waveforms are present.
+// This implies that when looping over the various waveform slots, one
+// always has to check whether the returned pointer value is non-zero
+// (which is a good practice anyhow).
+ Int_t n=-1;
+ if (fWaveforms) n=fWaveforms->GetLast();
+ return (n+1);
 }
 ///////////////////////////////////////////////////////////////////////////
 TH1F* AliSignal::GetWaveform(Int_t j) const

@@ -555,3 +555,9 @@
 01-dec-2004 NvE Install scripts like e.g. "gcclib" renamed to "gcclib.sh" etc... in /scripts.
                 The old scripts (i.e. without the .sh extension) will be deleted in due time.
 12-jan-2005 NvE Bug fix in AliAttrib::GetSlotIndex() by exiting as soon as matching name is found.
+20-jan-2005 NvE Modification in AliSignal::GetNwaveforms() to return last index instead of array
+                size to take into account the fact that a TObjArray always gets a default size
+                of 16 when reading data from a file.
+                Also the standard ROOT file libNew.lib is now automatically renamed to libNew.lix
+                in the Ralice windows installation script mklibs.bat to prevent linking with
+                this libNew.lib which is inconsistent with the binary ROOT executable release.
