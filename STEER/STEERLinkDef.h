@@ -74,4 +74,8 @@
 #pragma link C++ class  AliVertexGenFile+;
 #pragma link C++ class  AliVertexer+;
 #pragma link C++ class  AliDetectorEventHeader+;
+
+#pragma link C++ class  TTreeDataElement+;
+#pragma link C++ class  TTreeStream+;
+#pragma link C++ class  TTreeSRedirector+;
 #endif
