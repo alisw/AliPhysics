@@ -103,10 +103,11 @@ void AliMUONRecoCheck::MakeTrackRef()
   TBranch* branch = treeTR->GetBranch("MUON");
   if (branch == NULL) return;
 
-  TClonesArray* trackRefs = new TClonesArray("AliTrackReference", 10);
+  TClonesArray* trackRefs = 0;
   branch->SetAddress(&trackRefs);
+  branch->SetAutoDelete(kTRUE);  
 
-  Int_t nTrackRef = (Int_t)treeTR->GetEntries();
+  Int_t nTrackRef = (Int_t)branch->GetEntries();
  
   track = trackSave = -999;
   Bool_t isNewTrack;
@@ -117,7 +118,7 @@ void AliMUONRecoCheck::MakeTrackRef()
   muonTrack = new AliMUONTrack();
 
   for (Int_t iTrackRef  = 0; iTrackRef < nTrackRef; iTrackRef++) {
-    treeTR->GetEntry(iTrackRef);
+    branch->GetEntry(iTrackRef);
     
     iHitMin = 0;
     isNewTrack = kTRUE;
@@ -217,8 +218,6 @@ void AliMUONRecoCheck::MakeTrackRef()
   delete muonTrack;
   delete trackParam;
   delete hitForRec;
-  trackRefs->Delete();
-  delete trackRefs;
 
 }
 
@@ -318,7 +317,9 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
       zRec   = zRec1;
       bendingSlope1 = trackParam1->GetBendingSlope();
       nonBendingSlope1 = trackParam1->GetNonBendingSlope();
-      bendingMomentum1 = 1./trackParam1->GetInverseBendingMomentum();
+      bendingMomentum1 = 0;
+      if (TMath::Abs(trackParam1->GetInverseBendingMomentum()) > 0)
+	bendingMomentum1 = 1./trackParam1->GetInverseBendingMomentum();
       bendingSlope = bendingSlope1;
       nonBendingSlope = nonBendingSlope1;
       bendingMomentum = bendingMomentum1;
@@ -331,7 +332,9 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
 	zRec2  = hitForRec2->GetZ();	  
 	bendingSlope2 = trackParam2->GetBendingSlope();
 	nonBendingSlope2 = trackParam2->GetNonBendingSlope();
-	bendingMomentum2 = 1./trackParam2->GetInverseBendingMomentum();
+	bendingMomentum2 = 0;
+	if (TMath::Abs(trackParam2->GetInverseBendingMomentum()) > 0)
+	  bendingMomentum2 = 1./trackParam2->GetInverseBendingMomentum();
 	
 	if ( TMath::Abs(zRec2-zRec1) < maxGasGap ) {
 	  nRec++;
@@ -364,7 +367,8 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
       trackParam->SetZ(zRec);
       trackParam->SetNonBendingSlope(nonBendingSlope);
       trackParam->SetBendingSlope(bendingSlope);
-      trackParam->SetInverseBendingMomentum(1./bendingMomentum);
+      if (TMath::Abs(bendingMomentum) > 0)
+	trackParam->SetInverseBendingMomentum(1./bendingMomentum);
 
       trackNew->AddHitForRecAtHit(hitForRec);
       trackNew->AddTrackParamAtHit(trackParam);
