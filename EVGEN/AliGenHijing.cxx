@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/17 12:46:31  morsch
+Protect EvaluateCrossSections() against division by zero.
+
 Revision 1.7  2000/10/02 21:28:06  fca
 Removal of useless dependecies via forward declarations
 
@@ -223,14 +226,14 @@ void AliGenHijing::Generate()
 Bool_t AliGenHijing::KinematicSelection(TParticle *particle)
 {
 // Perform kinematic selection
-    Float_t px=particle->Px();
-    Float_t py=particle->Py();
-    Float_t pz=particle->Pz();
-    Float_t  e=particle->Energy();
+    Double_t px=particle->Px();
+    Double_t py=particle->Py();
+    Double_t pz=particle->Pz();
+    Double_t  e=particle->Energy();
 
 //
 //  transverse momentum cut    
-    Float_t pt=TMath::Sqrt(px*px+py*py);
+    Double_t pt=TMath::Sqrt(px*px+py*py);
     if (pt > fPtMax || pt < fPtMin) 
     {
 //	printf("\n failed pt cut %f %f %f \n",pt,fPtMin,fPtMax);
@@ -238,7 +241,7 @@ Bool_t AliGenHijing::KinematicSelection(TParticle *particle)
     }
 //
 // momentum cut
-    Float_t p=TMath::Sqrt(px*px+py*py+pz*pz);
+    Double_t p=TMath::Sqrt(px*px+py*py+pz*pz);
     if (p > fPMax || p < fPMin) 
     {
 //	printf("\n failed p cut %f %f %f \n",p,fPMin,fPMax);
@@ -247,7 +250,7 @@ Bool_t AliGenHijing::KinematicSelection(TParticle *particle)
     
 //
 // theta cut
-    Float_t  theta = Float_t(TMath::ATan2(Double_t(pt),Double_t(pz)));
+    Double_t  theta = Double_t(TMath::ATan2(Double_t(pt),Double_t(pz)));
     if (theta > fThetaMax || theta < fThetaMin) 
     {
 	
@@ -257,7 +260,10 @@ Bool_t AliGenHijing::KinematicSelection(TParticle *particle)
 
 //
 // rapidity cut
-    Float_t y = 0.5*TMath::Log((e+pz)/(e-pz));
+    Double_t y;
+    if(e<=pz) y = 99;
+    else if (e<=-pz)  y = -99;
+    else y = 0.5*TMath::Log((e+pz)/(e-pz));
     if (y > fYMax || y < fYMin)
     {
 //	printf("\n failed y cut %f %f %f \n",y,fYMin,fYMax);
@@ -266,7 +272,7 @@ Bool_t AliGenHijing::KinematicSelection(TParticle *particle)
 
 //
 // phi cut
-    Float_t phi=Float_t(TMath::ATan2(Double_t(py),Double_t(px)));
+    Double_t phi=Double_t(TMath::ATan2(Double_t(py),Double_t(px)));
     if (phi > fPhiMax || phi < fPhiMin)
     {
 //	printf("\n failed phi cut %f %f %f \n",phi,fPhiMin,fPhiMax);
@@ -315,9 +321,8 @@ void AliGenHijing::EvaluateCrossSections()
 	    xPart+=gb;
 	    xPartHard+=gbh;
 	}
-	if (xTot == 0.) continue;
 	
-	if ((xTot-oldvalue)/xTot<0.0001) break;
+	if(oldvalue) if ((xTot-oldvalue)/oldvalue<0.0001) break;
 	oldvalue=xTot;
 	printf("\n Total cross section (barn): %d %f %f \n",i, xb, xTot);
 	printf("\n Hard  cross section (barn): %d %f %f \n\n",i, xb, xTotHard);
