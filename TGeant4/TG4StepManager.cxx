@@ -1003,24 +1003,54 @@ void TG4StepManager::GetSecondary(Int_t index, Int_t& particleId,
   }
 }
 
-const char* TG4StepManager::ProdProcess() const
+AliMCProcess TG4StepManager::ProdProcess() const
 {
-// Returns the name of the process that defined current step
-// (and may produce the secondary particles).
+// The process that has produced the secondary particles
+// in the current step
 // ---
-  
-  if (fStepStatus == kVertex) return "NONE";
 
   G4int nofSecondaries = NSecondaries();
-  if (nofSecondaries == 0) return "NONE";
-  
+  if (fStepStatus == kVertex || !nofSecondaries) return kPNoProcess;
+
 #ifdef TGEANT4_DEBUG
   CheckStep("ProdProcess");
 #endif
 
+/*
   const G4VProcess* curProcess 
-    = fStep->GetPostStepPoint()->GetProcessDefinedStep(); 
+    = fStep->GetPostStepPoint()->GetProcessDefinedStep();     
+*/
 
-  G4String g4Name = curProcess->GetProcessName(); 
-  return g4Name;
+  G4TrackVector* secondaryTracks = fSteppingManager->GetSecondary();
+ 
+  // should never happen
+  if (!secondaryTracks) {
+    TG4Globals::Exception(
+      "TG4StepManager::ProdProcess(): secondary tracks vector is empty.");
+  }    
+
+  G4Track* firstSecTrack = (*secondaryTracks)[0]; 
+  G4Track* lastSecTrack = (*secondaryTracks)[secondaryTracks->entries()-1]; 
+  
+  const G4VProcess* firstProcess = firstSecTrack->GetCreatorProcess();  
+  const G4VProcess* lastProcess = lastSecTrack->GetCreatorProcess();
+       
+  // check if all secondaries comes from the same process
+  if (firstProcess != lastProcess) {
+    G4String text = "TG4StepManager: ProdProcess():\n";
+    text = text + "   More than one process has created secondary particles.\n";  
+    text = text + "   The creator of the last secondary is returned.";
+    G4cout << "The first process:" <<  firstProcess->GetProcessName(); 
+    TG4Globals::Warning(text);
+  }
+  
+  G4String g4Name = lastProcess->GetProcessName(); 
+
+  TG4PhysicsManager* pPhysicsManager = TG4PhysicsManager::Instance();
+  AliMCProcess mcProcess = pPhysicsManager->GetMCProcess(g4Name);
+  
+  // distinguish kPDeltaRay from kPEnergyLoss  
+  if (mcProcess == kPEnergyLoss) mcProcess = kPDeltaRay;
+  
+  return mcProcess;
 }
