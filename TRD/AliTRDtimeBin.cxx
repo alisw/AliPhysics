@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/10/06 16:49:46  cblume
+Made Getters const
+
 Revision 1.1.2.2  2000/10/04 16:34:58  cblume
 Replace include files by forward declarations
 
@@ -24,7 +27,6 @@ Add the tracking code
 */                        
                                 
 #include "AliTRDcluster.h" 
-#include "AliTRDconst.h"
 #include "AliTRDtimeBin.h" 
 
 ClassImp(AliTRDtimeBin)

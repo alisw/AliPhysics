@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/10/06 16:49:46  cblume
+Made Getters const
+
 Revision 1.1.2.1  2000/09/22 14:47:52  cblume
 Add the tracking code
 
@@ -25,7 +28,6 @@ Add the tracking code
 #include <TObject.h>
 
 #include "AliTRD.h" 
-#include "AliTRDconst.h"
 #include "AliTRDgeometry.h" 
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"

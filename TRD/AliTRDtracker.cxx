@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.2  2000/10/06 16:49:46  cblume
+Made Getters const
+
 Revision 1.1.2.2  2000/10/04 16:34:58  cblume
 Replace include files by forward declarations
 
@@ -31,7 +34,6 @@ Add the tracking code
 #include "AliRun.h"
 
 #include "AliTRD.h"
-#include "AliTRDconst.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDrecPoint.h" 
 #include "AliTRDcluster.h" 
@@ -181,7 +183,7 @@ static Int_t FindProlongation(AliTRDseed& t, AliTRDtrackingSector *sec,
   const Double_t MAX_CHI2=12.;
   Int_t try_again=TIME_BINS_TO_SKIP;
 
-  Double_t alpha=sec->GetAlpha();
+  Double_t alpha=AliTRDgeometry::GetAlpha();
 
   Int_t ns=Int_t(2*TMath::Pi()/alpha+0.5);
 
@@ -335,7 +337,7 @@ void AliTRDtracker::SetUpSectors(AliTRDtrackingSector *sec)
   // Note that the numbering scheme for the TRD tracking_sectors 
   // differs from that of TRD sectors
 
-  for (Int_t i=0; i<kNsect; i++) sec[i].SetUp();
+  for (Int_t i=0; i<AliTRDgeometry::Nsect(); i++) sec[i].SetUp();
 
   //  Sort clusters into AliTRDtimeBin's within AliTRDtrackSector's 
 
@@ -350,7 +352,7 @@ void AliTRDtracker::SetUpSectors(AliTRDtrackingSector *sec)
     Int_t sector=fGeom->GetSector(detector);
 
     Int_t tracking_sector=sector;
-    if(sector > 0) tracking_sector = kNsect - sector;
+    if(sector > 0) tracking_sector = AliTRDgeometry::Nsect() - sector;
 
     Int_t tb=sec[sector].GetTimeBin(detector,local_time_bin); 
     index=ncl;
@@ -369,16 +371,16 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer)
 
   if (!fClusters) return; 
 
-  AliTRDtrackingSector fTrSec[kNsect];
+  AliTRDtrackingSector fTrSec[AliTRDgeometry::Nsect()];
   SetUpSectors(fTrSec);
 
   // find seeds
 
   Double_t x[5], c[15];
-  Int_t max_sec=kNsect;
+  Int_t max_sec=AliTRDgeometry::Nsect();
 
-  Double_t alpha=fTrSec[0].GetAlpha();
-  Double_t shift=fTrSec[0].GetAlpha()/2.;
+  Double_t alpha=AliTRDgeometry::GetAlpha();
+  Double_t shift=AliTRDgeometry::GetAlpha()/2.;
   Double_t cs=cos(alpha), sn=sin(alpha);  
 
   Double_t x1 =fTrSec[0].GetX(i1);
@@ -499,7 +501,7 @@ void AliTRDtracker::FindTracks()
 {
   if (!fClusters) return; 
 
-  AliTRDtrackingSector fTrSec[kNsect];
+  AliTRDtrackingSector fTrSec[AliTRDgeometry::Nsect()];
   SetUpSectors(fTrSec);
 
   // find tracks
@@ -514,11 +516,11 @@ void AliTRDtracker::FindTracks()
     AliTRDseed& t=*((AliTRDseed*)fSeeds->UncheckedAt(i));
 
     nSeedClusters = t.GetNclusters();
-    Double_t alpha=t.GetAlpha();
+    Double_t alpha=AliTRDgeometry::GetAlpha();
 
     if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();
     if (alpha < 0.            ) alpha += 2.*TMath::Pi();
-    Int_t ns=Int_t(alpha/fTrSec[0].GetAlpha())%kNsect;
+    Int_t ns=Int_t(alpha/AliTRDgeometry::GetAlpha())%AliTRDgeometry::Nsect();
 
     if (FindProlongation(t,fTrSec,ns)) {
       cerr<<"No of clusters in the track = "<<t.GetNclusters()<<endl; 

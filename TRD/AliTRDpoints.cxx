@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/10/06 16:49:46  cblume
+Made Getters const
+
 Revision 1.1.2.1  2000/09/18 13:44:21  cblume
 New class AliTRDpoints to display the TR photon hits
 
@@ -26,11 +29,13 @@ New class AliTRDpoints to display the TR photon hits
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDpoints.h"
+#include <TPad.h>
+#include <TView.h>
+
 #include "AliRun.h"
 #include "AliDetector.h"
-#include "TPad.h"
-#include "TView.h"
+
+#include "AliTRDpoints.h"
  
 ClassImp(AliTRDpoints)
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/06 16:49:46  cblume
+Made Getters const
+
 Revision 1.3.2.1  2000/09/18 13:45:30  cblume
 New class AliTRDsim that simulates TR photons
 
@@ -37,14 +40,14 @@ Introduction of the Copyright and cvs Log
 
 #include <stdlib.h>
 
-#include "TH1.h"
-#include "TRandom.h"
-#include "TMath.h"
-#include "TParticle.h"
+#include <TH1.h>
+#include <TRandom.h>
+#include <TMath.h>
+#include <TParticle.h>
+
+#include "AliModule.h"
 
 #include "AliTRDsim.h"
-#include "AliTRDconst.h"
-#include "AliModule.h"
 
 ClassImp(AliTRDsim)
 

@@ -30,7 +30,7 @@ public:
   Int_t GetNtimeBins() const { return fN; }
   Double_t GetX(Int_t l) const;
   Double_t GetMaxY(Int_t l) const; 
-  Double_t GetAlpha() const { return 2*TMath::Pi()/kNsect; } 
+  //Double_t GetAlpha() const { return 2*TMath::Pi()/kNsect; } 
   Int_t GetTimeBinNumber(Double_t x) const;
   Int_t GetTimeBin(Int_t det, Int_t local_tb) const;
   Float_t GetPitch() const {return fTimeBinSize;}   
