@@ -203,7 +203,6 @@ void TG4PhysicsList::PrintAllProcesses() const
 #include <G4MuPairProduction.hh>
 
 #include <G4hIonisation.hh>
-#include <G4ionIonisation.hh>
 
 void TG4PhysicsList::ConstructEM()
 {
@@ -287,7 +286,7 @@ void TG4PhysicsList::ConstructEM()
      pmanager->SetProcessOrdering(aPairProduction, idxPostStep, 4);
      
     } else if( particleName == "GenericIon" ) {
-     G4VProcess* aionIonization = new G4ionIonisation;
+     G4VProcess* aionIonization = new G4hIonisation;
      G4VProcess* aMultipleScattering = new G4MultipleScattering();
      pmanager->AddProcess(aionIonization);
      pmanager->AddProcess(aMultipleScattering);
