@@ -1,11 +1,12 @@
 // $Id$ //
-// Category: geometry
+// Category: digits+hits
 //
 // See the class description in the header file.
 
 #include "AliLegoSensitiveDetector.h"
 #include "AliLego.h"
 
+//_____________________________________________________________________________
 AliLegoSensitiveDetector::AliLegoSensitiveDetector(
                              G4String name, AliLego* lego, 
 			     G4VSensitiveDetector* standardSD)
@@ -16,6 +17,7 @@ AliLegoSensitiveDetector::AliLegoSensitiveDetector(
 //
 }
 
+//_____________________________________________________________________________
 AliLegoSensitiveDetector::AliLegoSensitiveDetector(
                                  const AliLegoSensitiveDetector& right)
   : TG4VSensitiveDetector(right)			     
@@ -25,16 +27,19 @@ AliLegoSensitiveDetector::AliLegoSensitiveDetector(
   *this = right;
 }
 
+//_____________________________________________________________________________
 AliLegoSensitiveDetector::AliLegoSensitiveDetector() {
 //
 }
 
+//_____________________________________________________________________________
 AliLegoSensitiveDetector::~AliLegoSensitiveDetector() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 AliLegoSensitiveDetector& 
 AliLegoSensitiveDetector::operator=(const AliLegoSensitiveDetector &right)
 {
@@ -52,6 +57,7 @@ AliLegoSensitiveDetector::operator=(const AliLegoSensitiveDetector &right)
 
 // public methods
 
+//_____________________________________________________________________________
 void AliLegoSensitiveDetector::UserProcessHits(const G4Track* track,
                                                const G4Step* step)
 {
