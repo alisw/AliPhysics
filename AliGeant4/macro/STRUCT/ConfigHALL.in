@@ -1,6 +1,3 @@
 # HALL
-
-#/aliDet/hall/setAllSensitive true
-#/aliDet/hall/setFrame HALL
-/aliDet/hall/setConfigDir STRUCT
- 
+# no special settings
+#

@@ -1,5 +1,3 @@
 # BODY
-
-#/aliDet/body/setAllSensitive true
-/aliDet/body/setFrame ALIC
-/aliDet/body/setConfigDir STRUCT
+# no special settings
+#
