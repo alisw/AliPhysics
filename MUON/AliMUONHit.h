@@ -8,7 +8,26 @@
 #include "AliHit.h"
 
 class AliMUONHit : public AliHit {
+
  public:
+    
+    AliMUONHit() {}
+    AliMUONHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
+    virtual ~AliMUONHit() {}
+    Int_t   Chamber()  {return fChamber;}
+    Float_t Particle() {return fParticle;}    
+    Float_t Theta()    {return fTheta;}
+    Float_t Phi()      {return fPhi;}
+    Float_t Tlength()  {return fTlength;}
+    Float_t Eloss()    {return fEloss;}
+    Float_t Age()      {return fAge;}
+    Int_t   PHfirst()  {return fPHfirst;}
+    Int_t   PHlast()   {return fPHlast;}
+    Float_t Momentum() {return fPTot;}
+    Float_t Cx()       {return fCxHit;}
+    Float_t Cy()       {return fCyHit;}
+    Float_t Cz()       {return fCzHit;}
+ private:
     Int_t     fChamber;       // Chamber number
     Float_t   fParticle;      // Geant3 particle type
     Float_t   fTheta ;        // Incident theta angle in degrees      
@@ -23,12 +42,7 @@ class AliMUONHit : public AliHit {
     Float_t   fCxHit;         // Px/P
     Float_t   fCyHit;         // Py/P
     Float_t   fCzHit;         // Pz/P
-
- public:
-    AliMUONHit() {}
-    AliMUONHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
-    virtual ~AliMUONHit() {}
     
-    ClassDef(AliMUONHit,1)  //Hit object for MUON
+    ClassDef(AliMUONHit,1)    //Hit object for MUON
 };
 #endif

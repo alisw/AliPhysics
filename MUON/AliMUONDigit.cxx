@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.1  2000/06/09 22:03:22  morsch
 Was before in DataStructures.cxx
 
@@ -31,9 +34,10 @@ AliMUONDigit::AliMUONDigit(Int_t *digits)
   //
     fPadX        = digits[0];
     fPadY        = digits[1];
-    fSignal      = digits[2];
-    fPhysics     = digits[3];
-    fHit         = digits[4];
+    fCathode     = digits[2];
+    fSignal      = digits[3];
+    fPhysics     = digits[4];
+    fHit         = digits[5];
 
 }
 //_____________________________________________________________________________
@@ -44,9 +48,11 @@ AliMUONDigit::AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits)
     //
     fPadX        = digits[0];
     fPadY        = digits[1];
-    fSignal      = digits[2];
-    fPhysics     = digits[3];
-    fHit       = digits[4];
+    fCathode     = digits[2];
+    fSignal      = digits[3];
+    fPhysics     = digits[4];
+    fHit         = digits[5];
+
     for(Int_t i=0; i<10; i++) {
 	fTcharges[i]  = charges[i];
 	fTracks[i]    = tracks[i];
