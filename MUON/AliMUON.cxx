@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.55  2001/09/07 08:38:30  hristov
+Pointers initialised to 0 in the default constructors
+
 Revision 1.54  2001/08/30 09:52:12  hristov
 The operator[] is replaced by At() or AddAt() in case of TObjArray.
 
@@ -281,7 +284,6 @@ AliMUON::AliMUON()
     fNCh             = 0;
     fNTrackingCh     = 0;
     fIshunt          = 0;
-    fHits            = 0;
     fPadHits         = 0;
     fNPadHits        = 0;
     fChambers        = 0;
@@ -299,9 +301,6 @@ AliMUON::AliMUON()
     fAccCut          = kFALSE;
     fMerger          = 0;
     fFileName        = 0;
-    fTrH1            = 0;
-    fHits2           = 0;
-    fPadHits2        = 0;
 }
  
 //___________________________________________
@@ -447,9 +446,8 @@ AliMUON::~AliMUON()
       fRawClusters->Delete();
       delete fRawClusters;
     }
-    for (i=0;i<AliMUONConstants::NTrackingCh();i++) {
-      fNrawch[i]=0;
-    }
+
+    if (fNrawch) delete [] fNrawch;
  
     // Delete TClonesArrays
  
@@ -470,29 +468,14 @@ AliMUON::~AliMUON()
     }
     fNLocalTrigger = 0;
 
-    if (fHits2){
-      fHits2->Delete();
-      delete fHits2;
-    }
-
-    if (fPadHits2){
-      fPadHits2->Delete();
-      delete fPadHits2;
-    }
-
     if (fHits) {
       fHits->Delete();
       delete fHits;
     }
 
-    // Delete hits tree for background event
-
-    if (fTrH1) {
-      fTrH1->Delete();
-      delete fTrH1;
-    }
-
     if (fMerger) delete fMerger;
+    if (fNdch) delete [] fNdch;
+
 }
  
 //___________________________________________
@@ -1278,7 +1261,7 @@ void AliMUON::MakeBranchInTreeD(TTree *treeD, const char *file)
     if (fDchambers && treeD) {
       MakeBranchInTree(treeD, 
 		       branchname, &((*fDchambers)[i]), kBufferSize, file);
-      printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
+//      printf("Making Branch %s for digits in chamber %d\n",branchname,i+1);
     }
   }
 }
