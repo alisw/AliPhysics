@@ -39,8 +39,8 @@ include build/Makefile.config
 ifeq ($(ALIDEBUG),YES)
 override ALICE_TARGET := $(ALICE_TARGET)DEBUG
 FFLAGS   := -g $(filter-out -O%,$(FFLAGS))
-CXXFLAGS := -g $(filter-out -O%,$(CXXLAGS))
-CFLAGS   := -g $(filter-out -O%,$(CLAGS))
+CXXFLAGS := -g $(filter-out -O%,$(CXXFLAGS))
+CFLAGS   := -g $(filter-out -O%,$(CFLAGS))
 SOFLAGS  := -g $(filter-out -O%,$(SOFLAGS))
 LDFLAGS  := -g $(filter-out -O%,$(LDFLAGS))
 endif
