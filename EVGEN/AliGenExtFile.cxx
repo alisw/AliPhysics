@@ -142,7 +142,8 @@ void AliGenExtFile::Generate()
     for (i = 0; i < nTracks; i++) {
 
       TParticle* iparticle = fReader->NextParticle();
-      if (!KinematicSelection(iparticle,0)) {
+      Bool_t selected = KinematicSelection(iparticle,0); 
+      if (!selected) {
 	Double_t  pz   = iparticle->Pz();
 	Double_t  e    = iparticle->Energy();
 	Double_t  y;
@@ -160,7 +161,7 @@ void AliGenExtFile::Generate()
 	       iparticle->Pt(),
 	       y);
 	//PH	delete iparticle;
-	continue;
+	//	continue;
       }
       p[0] = iparticle->Px();
       p[1] = iparticle->Py();
@@ -176,7 +177,7 @@ void AliGenExtFile::Generate()
       }
       Int_t decayed = iparticle->GetFirstDaughter();
       Int_t doTracking = fTrackIt && (decayed < 0) &&
-	                 (TMath::Abs(idpart) > 10);
+	                 (TMath::Abs(idpart) > 10) && selected;
       // printf("*** pdg, first daughter, trk = %d, %d, %d\n",
       //   idpart,decayed, doTracking);
       //PH      SetTrack(doTracking,-1,idpart,p,origin,polar,0,kPPrimary,nt);
