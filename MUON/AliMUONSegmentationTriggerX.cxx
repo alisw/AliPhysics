@@ -278,10 +278,11 @@ IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& x4)
 }
 
 //------------------------------------------------------------------   
-void AliMUONSegmentationTriggerX::Draw(const char* opt) const
+void AliMUONSegmentationTriggerX::Draw(const char* opt)
 {
 // Draw method for event display  
   if (!strcmp(opt,"eventdisplay")) { 
+      
     TNode *node, *nodeS;
     char nameChamber[10], nameNode[11];
     char nameSense1[10], nameSense2[10], nameSense3[10], nameSense4[10];

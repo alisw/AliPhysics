@@ -29,7 +29,7 @@ class AliMUONSegmentationTriggerX : public AliMUONSegmentationTrigger
   virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) 
       {z=-10000.; GetPadC(ix, iy, x , y);}
   // Draw the segmentation zones
-  virtual void Draw(const char *opt = "") const;
+    virtual void Draw(const char *opt = "");
 
   // Pad size Dx*Dy 
   virtual void SetPadSize(Float_t dp1, Float_t dp2);
