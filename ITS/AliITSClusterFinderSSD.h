@@ -4,13 +4,11 @@
  * See cxx source for full Copyright notice                               */
 
 
-#include <TArrayS.h>
-#include <TRandom.h>
 #include <TMath.h>
 
-//#include "AliITSclusterSSD.h"
-//#include "AliITSpackageSSD.h"
 #include "AliITSClusterFinder.h"
+
+class TArrayI;
 
 class AliITSclusterSSD;
 class AliITSpackageSSD;
@@ -21,7 +19,7 @@ class AliITSClusterFinderSSD: public AliITSClusterFinder
     
 public:       
     
-  AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesArray *digits, TClonesArray *recp);
+  AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesArray *digits);
 		
   virtual ~AliITSClusterFinderSSD();
 
@@ -106,8 +104,6 @@ public:
 
   AliITS          *fITS;          //!Pointer to AliITS object
 
-  TClonesArray    *fRecPoints;    //!Pointer to TClonesArray of rec points  
-	
   TClonesArray    *fClusterP;     //!
   Int_t            fNClusterP;    //!Number of P side clusters in the array
 		

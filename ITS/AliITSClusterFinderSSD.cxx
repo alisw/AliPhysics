@@ -33,6 +33,7 @@ Automatic combination routines improved (traps)
 */
 
 #include <iostream.h>
+#include <TArrayI.h>
 
 
 #include "AliRun.h"
@@ -60,15 +61,14 @@ ClassImp(AliITSClusterFinderSSD)
 //                                     
 
 
-AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesArray *digits, TClonesArray *recp)   
+AliITSClusterFinderSSD::AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesArray *digits)   
 {
 //Standard constructor
 
     fSegmentation=seg;
-    this->SetDigits(digits);
-    fRecPoints=recp;
+    fDigits=digits;
     
-    fMap = new AliITSMapA1(fSegmentation,Digits());  
+    fMap = new AliITSMapA1(fSegmentation,fDigits);  
   
     fITS=(AliITS*)gAlice->GetModule("ITS");
     
@@ -436,7 +436,7 @@ void AliITSClusterFinderSSD::FillDigitsIndex()
  Int_t N;
  Int_t i;
  
- N = NDigits();
+ N = fDigits->GetEntriesFast();
 
  Int_t* PSidx = new Int_t [N*sizeof(Int_t)];
  Int_t* NSidx = new Int_t [N*sizeof(Int_t)]; 
@@ -1497,6 +1497,7 @@ CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,
 {
 // create the recpoints
 
+
   const Float_t kdEdXtoQ = 2.778e+8;
   const Float_t kconv = 1.0e-4; 
   const Float_t kRMSx = 20.0*kconv; // microns->cm ITS TDR Table 1.3
@@ -1539,7 +1540,7 @@ CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,
      fSegmentation->GetPadIxz(P,N,stripP,stripN);
      digP = (AliITSdigitSSD*)fMap->GetHit(1,stripP);
      digN = (AliITSdigitSSD*)fMap->GetHit(0,stripN);
-     printf("SSD: digP digN %p %p\n",digP,digN);
+     //printf("SSD: digP digN %p %p\n",digP,digN);
      if(digP) sigP = digP->fSignal;
      else sigP=0;
      if(digN) sigN = digN->fSignal;
@@ -1842,6 +1843,8 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
 {
 // reconstruct remaining non-crossing clusters
 
+  //printf("ReconstructNotConsumedClusters !!!\n");
+
   Int_t i;
   AliITSclusterSSD *cluster;
   Float_t pos;
@@ -1880,6 +1883,7 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
               GetCrossing (x2,z2);
 	      fSegmentation->GetPadIxz((x1+x2)/2,(z1+z2)/2,stripP,stripN);
 	      dig = (AliITSdigitSSD*)fMap->GetHit(1,stripP);
+	      //printf("dig %p\n",dig);
 	      if (!dig) printf("SSD: check the digit!  dig %p\n",dig);
 	      if(!dig) continue;
 	      AliITSRawClusterSSD cnew;
@@ -1899,6 +1903,7 @@ void AliITSClusterFinderSSD::ReconstructNotConsumedClusters()
 	      */
 	      cnew.fQErr=sigerr;
 	      //cnew.fProbability=0.75; 
+	      //printf("AddCluster: %p nstripsP %d\n",&cnew,nstripsP);
 	      fITS->AddCluster(2,&cnew);
 	      // add the rec point info
 	      AliITSRecPoint rnew;
