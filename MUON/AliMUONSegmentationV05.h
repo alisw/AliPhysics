@@ -19,7 +19,7 @@ public AliMUONSegmentationV02 {
     // Initialisation
     virtual void Init(Int_t chamber);
     // Test points for auto calibration
-    void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y);
+    void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const;
     ClassDef(AliMUONSegmentationV05,1)// Segmentation zones are rectangular modules 
 };
 #endif

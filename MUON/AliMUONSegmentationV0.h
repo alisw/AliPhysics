@@ -29,14 +29,14 @@ public AliSegmentation {
     // Transform from pad (wire) to real coordinates and vice versa
     //
     // Anod wire coordinate closest to xhit
-    virtual Float_t GetAnod(Float_t xhit);
+    virtual Float_t GetAnod(Float_t xhit) const;
     // Transform from pad to real coordinates
-    virtual void    GetPadI(Float_t x, Float_t y , Int_t &ix, Int_t &iy);
-    virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)
+    virtual void    GetPadI(Float_t x, Float_t y , Int_t &ix, Int_t &iy) ;
+    virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)  
 	{GetPadI(x, y, ix, iy);}
     // Transform from real to pad coordinates
-    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
-    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
+    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) ;
+    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) 
 	{z=0; GetPadC(ix, iy, x , y);}
     //
     // Initialisation
@@ -82,34 +82,34 @@ dummy);
         Int_t *Nparallel, Int_t *Offset) {*Nparallel=1;*Offset=0;}
     // Get next neighbours 
     virtual void Neighbours
-	(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]);
+	(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]) ;
     //
     // Current Pad during Integration
     // x-coordinaten
-    virtual Int_t  Ix() const {return fIx;}
+    virtual Int_t  Ix() {return fIx;}
     // y-coordinate
-    virtual Int_t  Iy() const {return fIy;}
+    virtual Int_t  Iy() {return fIy;}
     // current sector
     virtual Int_t  ISector() const {return 1;}
     // calculate sector from pad coordinates
-    virtual Int_t  Sector(Int_t ix, Int_t iy) const {return 1;}
+    virtual Int_t  Sector(Int_t ix, Int_t iy)  {return 1;}
     //
     // Signal Generation Condition during Stepping
-    virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z);
+    virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z) ;
     // Initialise signal gneration at coord (x,y,z)
     virtual void  SigGenInit(Float_t x, Float_t y, Float_t z);
     // Current integration limits
     virtual void IntegrationLimits
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
     // Test points for auto calibration
-    virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y);
+    virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const;
     // Draw segmentation zones
-    virtual void Draw(const char *opt="");
+    virtual void Draw(const char *opt="") const;
     // Function for systematic corrections
     // Set the correction function
     virtual void SetCorrFunc(Int_t dum, TF1* func) {fCorr=func;}
     // Get the correction Function
-    virtual TF1* CorrFunc(Int_t) {return fCorr;}
+    virtual TF1* CorrFunc(Int_t) const {return fCorr;}
     // assignment operator
     AliMUONSegmentationV0& operator=(const AliMUONSegmentationV0& rhs);
     

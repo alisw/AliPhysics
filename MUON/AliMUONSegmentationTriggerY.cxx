@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.5  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -92,7 +98,8 @@ void AliMUONSegmentationTriggerY::Init(Int_t chamber)
 }
 
 //------------------------------------------------------------------
-void AliMUONSegmentationTriggerY::GetPadI(Float_t x,Float_t y,Int_t &ix,Int_t &iy){
+void AliMUONSegmentationTriggerY::GetPadI(Float_t x,Float_t y,Int_t &ix,Int_t &iy) 
+{
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //  x,y = real coordinates; ix = module number , iy = strip number
 
@@ -112,7 +119,8 @@ void AliMUONSegmentationTriggerY::GetPadI(Float_t x,Float_t y,Int_t &ix,Int_t &i
 }
 
 //------------------------------------------------------------------
-void AliMUONSegmentationTriggerY::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y){
+void AliMUONSegmentationTriggerY::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
+{
 //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //  ix = module number , iy = strip number;  x,y = center of strip
   x = 0.;    
@@ -137,7 +145,8 @@ void AliMUONSegmentationTriggerY::SetPadSize(Float_t p1, Float_t p2)
 
 //------------------------------------------------------------------
 void AliMUONSegmentationTriggerY::
-Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[2], Int_t Ylist[2]){
+Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[2], Int_t Ylist[2])
+{
 // Returns list of next neighbours for given Pad (ix, iy)  
   Int_t absiX=TMath::Abs(iX); 
   *Nlist = 0;
@@ -186,19 +195,21 @@ void AliMUONSegmentationTriggerY::SetPad(Int_t ix, Int_t iy)
 }
 
 //------------------------------------------------------------------   
-Int_t AliMUONSegmentationTriggerY::ISector()
+Int_t AliMUONSegmentationTriggerY::ISector() 
 { return fSector;}
 
 //------------------------------------------------------------------   
+
 Int_t AliMUONSegmentationTriggerY::Ix()
 { return fIx;}
 
 //------------------------------------------------------------------   
+
 Int_t AliMUONSegmentationTriggerY::Iy()
 { return fIy;}
 
 //------------------------------------------------------------------
-Float_t AliMUONSegmentationTriggerY::Dpx(Int_t isec)
+Float_t AliMUONSegmentationTriggerY::Dpx(Int_t isec) const
 { 
 // returns x size of y strips for sector isec
   if (isec==1) {
@@ -215,7 +226,7 @@ Float_t AliMUONSegmentationTriggerY::Dpx(Int_t isec)
 }
 
 //------------------------------------------------------------------
-Float_t AliMUONSegmentationTriggerY::Dpy(Int_t isec)
+Float_t AliMUONSegmentationTriggerY::Dpy(Int_t isec) const
 { 
 // returns y size of y strips for sector isec
   if (isec==1) {

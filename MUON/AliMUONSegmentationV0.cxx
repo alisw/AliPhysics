@@ -14,6 +14,12 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.6  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.5  2000/07/13 16:19:44  fca
 Mainly coding conventions + some small bug fixes
 
@@ -66,11 +72,10 @@ ClassImp(AliMUONSegmentationV0)
     fRmin=iChamber->RInner();
     fRmax=iChamber->ROuter();    
     fCorr=0;
-    
 }
 
 
-Float_t AliMUONSegmentationV0::GetAnod(Float_t xhit)
+Float_t AliMUONSegmentationV0::GetAnod(Float_t xhit) const
 {
 // Returns for a hit position xhit the position of the nearest anode wire    
     Float_t wire= (xhit>0)? Int_t(xhit/fWireD)+0.5:Int_t(xhit/fWireD)-0.5;
@@ -84,8 +89,9 @@ void AliMUONSegmentationV0::SetPadSize(Float_t p1, Float_t p2)
     fDpx=p1;
     fDpy=p2;
 }
+
 void AliMUONSegmentationV0::
-    GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
+    GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy) 
 {
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //
@@ -96,8 +102,9 @@ void AliMUONSegmentationV0::
     if (ix >  fNpx) ix= fNpx;
     if (ix < -fNpx) ix=-fNpx;
 }
+
 void AliMUONSegmentationV0::
-GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
+GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) 
 {
 //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
@@ -202,8 +209,8 @@ void AliMUONSegmentationV0::SigGenInit(Float_t x,Float_t y,Float_t z)
     GetPadI(x,y,fIxt,fIyt);
     fIwt= (x>0) ? Int_t(x/fWireD)+1 : Int_t(x/fWireD)-1 ;
 }
-
-Int_t AliMUONSegmentationV0::SigGenCond(Float_t x,Float_t y,Float_t z)
+ 
+Int_t AliMUONSegmentationV0::SigGenCond(Float_t x,Float_t y,Float_t z) 
 {
 //  Signal generation condition during stepping 
 //  0: don't generate signal
@@ -239,7 +246,7 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
 }
 
 void AliMUONSegmentationV0::
-Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
+Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]) 
 {
 // Returns list of next neighbours for given Pad (iX, iY)
 //
@@ -267,7 +274,7 @@ Float_t AliMUONSegmentationV0::Distance2AndOffset(Int_t iX, Int_t iY, Float_t X,
 }
 
 
-void  AliMUONSegmentationV0::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
+void  AliMUONSegmentationV0::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const
 {
 // Returns test point on the pad plane.
 // Used during determination of the segmoid correction of the COG-method
@@ -276,7 +283,7 @@ void  AliMUONSegmentationV0::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
     y[0]=x[0];
 }
 
-void AliMUONSegmentationV0::Draw(const char *)
+void AliMUONSegmentationV0::Draw(const char *) const
 {
 // Draws the segmentation zones
 //

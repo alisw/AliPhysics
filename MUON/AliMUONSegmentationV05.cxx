@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/29 12:34:09  morsch
+AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
+it usable with any other geometry class. The link to the object to which it belongs is
+established via an index. This assumes that there exists a global geometry manager
+from which the pointer to the parent object can be obtained (in our case gAlice).
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -82,11 +88,11 @@ void AliMUONSegmentationV05::Init(Int_t chamber)
     fNpy=7*nPyPCB;
 //
 //  Calculate padsize along x
-    fDpxD[fNsec-1]=fDpx;
+    (*fDpxD)[fNsec-1]=fDpx;
     if (fNsec > 1) {
 	for (Int_t i=fNsec-2; i>=0; i--){
-	    fDpxD[i]=fDpxD[fNsec-1]/fNDiv[i];
-	    printf("\n test ---dx %d %f \n",i,fDpxD[i]);
+	    (*fDpxD)[i]=(*fDpxD)[fNsec-1]/(*fNDiv)[i];
+	    printf("\n test ---dx %d %f \n",i,(*fDpxD)[i]);
 	}
     }
 //
@@ -103,11 +109,11 @@ void AliMUONSegmentationV05::Init(Int_t chamber)
 //  Loop over sectors (isec=0 is the dead space surounding the beam pipe)
 	    for (Int_t isec=0; isec<4; isec++) {
 		if (isec==0) {
-		    fNpxS[0][iy]=kpcb[irow][0]*Int_t(kDxPCB/fDpxD[0]);
+		    fNpxS[0][iy]=kpcb[irow][0]*Int_t(kDxPCB/(*fDpxD)[0]);
 		    fCx[0][iy]=kpcb[irow][0]*kDxPCB;
 		} else {
 		    fNpxS[isec][iy]=fNpxS[isec-1][iy]
-			+kpcb[irow][isec]*Int_t(kDxPCB/fDpxD[isec]);
+			+kpcb[irow][isec]*Int_t(kDxPCB/(*fDpxD)[isec]);
 
 		    fCx[isec][iy]=fCx[isec-1][iy]
 		    +kpcb[irow][isec]*kDxPCB;
@@ -127,7 +133,7 @@ void AliMUONSegmentationV05::Init(Int_t chamber)
 */
 }
 
-void AliMUONSegmentationV05::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
+void AliMUONSegmentationV05::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const
 {
 // Returns test point on the pad plane.
 // Used during determination of the segmoid correction of the COG-method

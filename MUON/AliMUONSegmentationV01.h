@@ -35,11 +35,11 @@ public AliMUONSegmentationV0 {
     //
     // Transform from pad to real coordinates
     virtual void    GetPadI(Float_t x ,Float_t y ,Int_t   &ix,Int_t &iy);
-    virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)
+    virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy) 
 	{GetPadI(x, y, ix, iy);}
     // Transform from real to pad coordinates
     virtual void    GetPadC(Int_t   ix,Int_t   iy,Float_t &x ,Float_t &y );
-    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
+    virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) 
 	{z=0; GetPadC(ix, iy, x , y);}
     //
     // Initialisation
@@ -80,25 +80,25 @@ public AliMUONSegmentationV0 {
      virtual void IntegrationLimits
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
     // Test points for auto calibration
-    void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y);
+    void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const;
     //
     // Draw segmentation zones
-    virtual void Draw(const char *opt="");
+    virtual void Draw(const char *opt="") const;
     // Function for systematic corrections
     // Set the correction function
     virtual void SetCorrFunc(Int_t dum, TF1* func);
     // Get the correction function
-    virtual TF1* CorrFunc(Int_t iZone);
+    virtual TF1* CorrFunc(Int_t iZone) const;
     // assignment operator
     AliMUONSegmentationV01& operator=(const AliMUONSegmentationV01& rhs);
     ClassDef(AliMUONSegmentationV01,1) // Segmentation approximating circular zones with different pad size
  protected:
     //  Geometry
     //
-    Int_t      fNsec;           // Number of sectors
-    TArrayF    fRSec;           // Sector outer radia
-    TArrayI    fNDiv;           // Pad size division
-    TArrayF    fDpxD;           // y pad width per sector
+    Int_t       fNsec;           // Number of sectors
+    TArrayF*    fRSec;           // Sector outer radia
+    TArrayI*    fNDiv;           // Pad size division
+    TArrayF*    fDpxD;           // y pad width per sector
     // Segmentation map
     Int_t      fNpxS[10][1000]; // Number of pads per sector in x
     Float_t    fCx[10][1000];   // pad-sector contour x vs y  

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 21:28:09  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.6  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -68,12 +71,12 @@ AliMUONSegmentationV01::AliMUONSegmentationV01()
 {
 // Default constructor
     fNsec=4;
-    fRSec.Set(fNsec);    
-    fNDiv.Set(fNsec);      
-    fDpxD.Set(fNsec);      
-    fRSec[0]=fRSec[1]=fRSec[2]=fRSec[3]=0;     
-    fNDiv[0]=fNDiv[1]=fNDiv[2]=fNDiv[3]=0;     
-    fDpxD[0]=fDpxD[1]=fDpxD[2]=fDpxD[3]=0;     
+    fRSec = new TArrayF(fNsec);
+    fNDiv = new TArrayI(fNsec);      
+    fDpxD = new TArrayF(fNsec);      
+    (*fRSec)[0]=(*fRSec)[1]=(*fRSec)[2]=(*fRSec)[3]=0;     
+    (*fNDiv)[0]=(*fNDiv)[1]=(*fNDiv)[2]=(*fNDiv)[3]=0;     
+    (*fDpxD)[0]=(*fDpxD)[1]=(*fDpxD)[2]=(*fDpxD)[3]=0;     
     fCorr = new TObjArray(3);
     (*fCorr)[0]=0;
     (*fCorr)[1]=0;
@@ -84,7 +87,8 @@ Float_t AliMUONSegmentationV01::Dpx(Int_t isec) const
 {
 //
 // Returns x-pad size for given sector isec
-   return fDpxD.At(isec);
+   Float_t dpx = (*fDpxD)[isec];
+   return dpx;
 }
 
 Float_t AliMUONSegmentationV01::Dpy(Int_t isec) const
@@ -99,8 +103,8 @@ void   AliMUONSegmentationV01::SetSegRadii(Float_t  r[4])
 //
 // Set the radii of the segmentation zones 
     for (Int_t i=0; i<4; i++) {
-	fRSec[i]=r[i];
-	printf("\n R %d %f \n",i,fRSec[i]);
+	(*fRSec)[i]=r[i];
+	printf("\n R %d %f \n",i,(*fRSec)[i]);
 	
     }
 }
@@ -114,8 +118,8 @@ void AliMUONSegmentationV01::SetPadDivision(Int_t ndiv[4])
 // fDpx
 // 
     for (Int_t i=0; i<4; i++) {
-	fNDiv[i]=ndiv[i];
-	printf("\n Ndiv %d %d \n",i,fNDiv[i]);
+	(*fNDiv)[i]=ndiv[i];
+	printf("\n Ndiv %d %d \n",i,(*fNDiv)[i]);
     }
     ndiv[0]=ndiv[1];
 }
@@ -131,13 +135,13 @@ void AliMUONSegmentationV01::Init(Int_t chamber)
 //
     Int_t isec;
     printf("\n Initialise segmentation v01 -- test !!!!!!!!!!!!!! \n");
-    fNpy=Int_t(fRSec[fNsec-1]/fDpy)+1;
+    fNpy=Int_t((*fRSec)[fNsec-1]/fDpy)+1;
 
-    fDpxD[fNsec-1]=fDpx;
+    (*fDpxD)[fNsec-1]=fDpx;
     if (fNsec > 1) {
 	for (Int_t i=fNsec-2; i>=0; i--){
-	    fDpxD[i]=fDpxD[fNsec-1]/fNDiv[i];
-	    printf("\n test ---dx %d %f \n",i,fDpxD[i]);
+	    (*fDpxD)[i]=(*fDpxD)[fNsec-1]/(*fNDiv)[i];
+	    printf("\n test ---dx %d %f \n",i,(*fDpxD)[i]);
 	}
     }
 //
@@ -153,29 +157,29 @@ void AliMUONSegmentationV01::Init(Int_t chamber)
 	for (Int_t iy=1; iy<=fNpy; iy++) {
 //
 	    Float_t x=iy*fDpy-fDpy/2;
-	    if (x > fRSec[isec]) {
+	    if (x > (*fRSec)[isec]) {
 		fNpxS[isec][iy]=0;
 		fCx[isec][iy]=0;
 	    } else {
-		ry=TMath::Sqrt(fRSec[isec]*fRSec[isec]-x*x);
+		ry=TMath::Sqrt((*fRSec)[isec]*(*fRSec)[isec]-x*x);
 		if (isec > 1) {
-		    dnx= Int_t((ry-fCx[isec-1][iy])/fDpxD[isec]);
+		    dnx= Int_t((ry-fCx[isec-1][iy])/(*fDpxD)[isec]);
 		    if (isec < fNsec-1) {
 			if (TMath::Odd((Long_t)dnx)) dnx++;    		
 		    }
                     fNpxS[isec][iy]=fNpxS[isec-1][iy]+dnx;
-          	    fCx[isec][iy]=fCx[isec-1][iy]+dnx*fDpxD[isec];
+          	    fCx[isec][iy]=fCx[isec-1][iy]+dnx*(*fDpxD)[isec];
 		} else if (isec == 1) {
-		    dnx= Int_t((ry-fCx[isec-1][iy])/fDpxD[isec]);
+		    dnx= Int_t((ry-fCx[isec-1][iy])/(*fDpxD)[isec]);
 		    fNpxS[isec][iy]=fNpxS[isec-1][iy]+dnx;
                     add=4 - (fNpxS[isec][iy])%4;
                     if (add < 4) fNpxS[isec][iy]+=add; 
 		    dnx=fNpxS[isec][iy]-fNpxS[isec-1][iy];
-		    fCx[isec][iy]=fCx[isec-1][iy]+dnx*fDpxD[isec];
+		    fCx[isec][iy]=fCx[isec-1][iy]+dnx*(*fDpxD)[isec];
 		} else {
-		    dnx=Int_t(ry/fDpxD[isec]);
+		    dnx=Int_t(ry/(*fDpxD)[isec]);
                     fNpxS[isec][iy]=dnx;
-		    fCx[isec][iy]=dnx*fDpxD[isec];
+		    fCx[isec][iy]=dnx*(*fDpxD)[isec];
 		}
 	    }
 	} // y-pad loop
@@ -218,10 +222,10 @@ GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 	}
     }
     if (isec>0) {
-	ix= Int_t((absx-fCx[isec-1][absiy])/fDpxD[isec])
+	ix= Int_t((absx-fCx[isec-1][absiy])/(*fDpxD)[isec])
 	    +fNpxS[isec-1][absiy]+1;
     } else if (isec == 0) {
-	ix= Int_t(absx/fDpxD[isec])+1;
+	ix= Int_t(absx/(*fDpxD)[isec])+1;
     } else {
 	ix=fNpxS[fNsec-1][absiy]+1;	
     }
@@ -241,8 +245,8 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
     Int_t absix=TMath::Abs(ix);
     Int_t absiy=TMath::Abs(iy);
     if (isec) {
-	x=fCx[isec-1][absiy]+(absix-fNpxS[isec-1][absiy])*fDpxD[isec];
-	x=(ix>0) ?  x-fDpxD[isec]/2 : -x+fDpxD[isec]/2;
+	x=fCx[isec-1][absiy]+(absix-fNpxS[isec-1][absiy])*(*fDpxD)[isec];
+	x=(ix>0) ?  x-(*fDpxD)[isec]/2 : -x+(*fDpxD)[isec]/2;
     } else {
 	x=y=0;
     }
@@ -278,6 +282,7 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     Float_t y02=yhit + dy;
     //
     // find the pads over which the charge distributes
+
     GetPadI(x01,y01,fIxmin,fIymin);
     GetPadI(x02,y02,fIxmax,fIymax);
     fXmin=x01;
@@ -306,6 +311,7 @@ void AliMUONSegmentationV01::NextPad()
     Int_t   iyc;
     
 //  step from left to right    
+
     if (fX < fXmax && fX != 0) {
 	if (fIx==-1) fIx++;
 	fIx++;
@@ -452,21 +458,21 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
     *Nlist=i;
 }
 
-void AliMUONSegmentationV01::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
+void AliMUONSegmentationV01::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const
 {
 // Returns test point on the pad plane.
 // Used during determination of the segmoid correction of the COG-method
 
     n=3;
-    x[0]=(fRSec[0]+fRSec[1])/2/TMath::Sqrt(2.);
+    x[0]=((*fRSec)[0]+(*fRSec)[1])/2/TMath::Sqrt(2.);
     y[0]=x[0];
-    x[1]=(fRSec[1]+fRSec[2])/2/TMath::Sqrt(2.);
+    x[1]=((*fRSec)[1]+(*fRSec)[2])/2/TMath::Sqrt(2.);
     y[1]=x[1];
-    x[2]=(fRSec[2]+fRSec[3])/2/TMath::Sqrt(2.);
+    x[2]=((*fRSec)[2]+(*fRSec)[3])/2/TMath::Sqrt(2.);
     y[2]=x[2];
 }
 
-void AliMUONSegmentationV01::Draw(const char *)
+void AliMUONSegmentationV01::Draw(const char *) const
 {
 // Draws the segmentation zones
 //
@@ -513,7 +519,7 @@ void AliMUONSegmentationV01::SetCorrFunc(Int_t isec, TF1* func)
     (*fCorr)[isec]=func;
 }
 
-TF1* AliMUONSegmentationV01::CorrFunc(Int_t isec)
+TF1* AliMUONSegmentationV01::CorrFunc(Int_t isec) const
 { 
     return (TF1*) (*fCorr)[isec];
 }

@@ -58,7 +58,7 @@ public AliSegmentation {
     // Transform from pad (wire) to real coordinates and vice versa  
     virtual Int_t GetiAnod(Float_t xhit);
     // Anod wire coordinate closest to xhit
-    virtual Float_t GetAnod(Float_t xhit);
+    virtual Float_t GetAnod(Float_t xhit) const;
     // Transform from pad to real coordinates
     virtual void    GetPadI(Float_t x ,Float_t y , Int_t &ix, Int_t &iy);
     virtual void    GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy)
@@ -99,7 +99,7 @@ public AliSegmentation {
     virtual Int_t Ix(Int_t trueX, Int_t trueY);
     virtual Int_t Ix();
     // y-coordinate
-    virtual Int_t Iy(){return fIy;}
+    virtual Int_t Iy() {return fIy;}
     // current sector
     virtual Int_t ISector();
     // calculate sector from pad coordinates
@@ -122,17 +122,17 @@ public AliSegmentation {
     // Initialise signal generation at coord (x,y,z)
     void  SigGenInit(Float_t x, Float_t y, Float_t z);
     // Test points for auto calibration
-    void  GiveTestPoints(Int_t &n, Float_t *x, Float_t *y);
+    void  GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const;
     // Current integration limits 
     virtual void IntegrationLimits
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2);
     // Draw the segmentation zones
-    virtual void Draw(const char * = ""){}
+    virtual void Draw(const char * = "") const {}
     // Function for systematic corrections
     // Set the correction function
     virtual void SetCorrFunc(Int_t dum, TF1* func) {fCorr=func;}
     // Get the correction function
-    virtual TF1* CorrFunc(Int_t) {return fCorr;}
+    virtual TF1* CorrFunc(Int_t) const {return fCorr;}
     //
     AliMUONSegmentationV1& operator=(const AliMUONSegmentationV1& rhs);
     ClassDef(AliMUONSegmentationV1,1) // Implementation of the Lyon type chamber segmentation with parallel read-out

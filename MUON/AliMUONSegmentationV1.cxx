@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.4  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -110,7 +116,7 @@ Int_t AliMUONSegmentationV1::GetiAnod(Float_t xhit)
     return (xhit>0) ? kwire : -kwire ;
 }
 
-Float_t AliMUONSegmentationV1::GetAnod(Float_t xhit)
+Float_t AliMUONSegmentationV1::GetAnod(Float_t xhit) const
 {
 // Get anode position
     Int_t kwire=Int_t((TMath::Abs(xhit)-fSensOffset)/fDAnod)+1; // to be compatible ...
@@ -359,14 +365,14 @@ Int_t AliMUONSegmentationV1::Ix(Int_t trueX, Int_t trueY)
     return -1;
 }
 
-Int_t AliMUONSegmentationV1::Ix()
+Int_t AliMUONSegmentationV1::Ix() 
 {
 // returns the X number of pad which has to increment charge
 // due to parallel read-out
-return Ix(fIx,fIy);
+    return Ix(fIx,fIy);
 }
 
-Int_t AliMUONSegmentationV1::ISector()
+Int_t AliMUONSegmentationV1::ISector() 
 {
 // This function is of no use for this kind of segmentation.
     return GetZone(fIx,fIy);
@@ -548,7 +554,7 @@ NeighboursDiag(iX,iY,Nlist,Xlist,Ylist);
 }
 
 
-void AliMUONSegmentationV1::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
+void AliMUONSegmentationV1::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const
 {
 // Return a test point
     n=1;

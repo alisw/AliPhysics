@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.3  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -48,39 +54,39 @@ void AliMUONSegmentationV02::SetPadSize(Float_t p1, Float_t p2)
     fDpx=p2;
 }
 
-Int_t AliMUONSegmentationV02::Npx()
+Int_t AliMUONSegmentationV02::Npx() const
 // Returns maximum number if pads in x
 {return AliMUONSegmentationV01::Npy();}
 
-Int_t AliMUONSegmentationV02::Npy()
+Int_t AliMUONSegmentationV02::Npy() const
 // Returns maximum number if pads in y
 {return AliMUONSegmentationV01::Npx();}
 
 
-Float_t AliMUONSegmentationV02::Dpx(Int_t isec)
+Float_t AliMUONSegmentationV02::Dpx(Int_t isec) const
 // Returns pad-size in x
 {return fDpy;}
 
-Float_t AliMUONSegmentationV02::Dpy(Int_t isec)
+Float_t AliMUONSegmentationV02::Dpy(Int_t isec) const
 // Returns pad-size in y
-{return fDpxD[isec];}
-Int_t AliMUONSegmentationV02::Sector(Int_t ix, Int_t iy)
+{return (*fDpxD)[isec];}
+
+Int_t AliMUONSegmentationV02::Sector(Int_t ix, Int_t iy) 
 // Returns sector number for given pad position
 //
 {return AliMUONSegmentationV01::Sector(iy, ix);}
 
 void AliMUONSegmentationV02::
-
-GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
+GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy) 
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //
 {
-AliMUONSegmentationV01::GetPadI(y, x, iy, ix);
+AliMUONSegmentationV01::GetPadI(y, x, iy, ix); 
 // printf("\n x,y,ix,iy %f %f %d %d", x,y,ix,iy);
 }
 
 void AliMUONSegmentationV02::
-GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
+GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) 
 //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
 {
@@ -144,7 +150,7 @@ Int_t AliMUONSegmentationV02::MorePads()
 }
 
 void AliMUONSegmentationV02::
-Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
+Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]) 
 {
 // Returns list of next neighbours for given Pad (iX, iY)
 //

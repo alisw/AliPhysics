@@ -20,20 +20,20 @@ public AliMUONSegmentationTrigger {
   virtual ~AliMUONSegmentationTriggerX(){}
   // Transform from pad to real coordinates
   virtual void    GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy);
-  virtual void    GetPadI(Float_t x, Float_t y, Float_t z, Int_t &ix, Int_t &iy)
+  virtual void    GetPadI(Float_t x, Float_t y, Float_t z, Int_t &ix, Int_t &iy) 
       {GetPadI(x, y, ix, iy);}
   // Transform from real to pad coordinates
   virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
-  virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
+  virtual void    GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) 
       {z=0; GetPadC(ix, iy, x , y);}
 
-  virtual void Draw(const char *opt="") {}
+  virtual void Draw(const char *opt="") const {}
 
   // Pad size Dx*Dy 
   virtual void SetPadSize(Float_t dp1, Float_t dp2);
   // Strip size 
-  virtual Float_t Dpx(Int_t imodule);
-  virtual Float_t Dpy(Int_t imodule);
+  virtual Float_t Dpx(Int_t imodule) const;
+  virtual Float_t Dpy(Int_t imodule) const;
   // Set pad position
   virtual void     SetPad(Int_t ix, Int_t iy);
   // Set hit position

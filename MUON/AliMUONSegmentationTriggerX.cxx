@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/02 16:58:29  egangler
+Cleaning of the code :
+-> coding conventions
+-> void Streamers
+-> some useless includes removed or replaced by "class" statement
+
 Revision 1.5  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -86,7 +92,8 @@ void AliMUONSegmentationTriggerX::Init(Int_t chamber)
 }
 
 //------------------------------------------------------------------
-void AliMUONSegmentationTriggerX::GetPadI(Float_t x,Float_t y,Int_t &ix,Int_t &iy){
+void AliMUONSegmentationTriggerX::GetPadI(Float_t x,Float_t y,Int_t &ix,Int_t &iy) 
+{
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //  x,y = real coordinates; ix = module number , iy = strip number
   ix = 0;    
@@ -105,7 +112,8 @@ void AliMUONSegmentationTriggerX::GetPadI(Float_t x,Float_t y,Int_t &ix,Int_t &i
 }
 
 //------------------------------------------------------------------
-void AliMUONSegmentationTriggerX::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y){
+void AliMUONSegmentationTriggerX::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) 
+{
 //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //  ix = module number , iy = strip number;  x,y = center of strip
   x = 0.;    
@@ -131,7 +139,8 @@ void AliMUONSegmentationTriggerX::SetPadSize(Float_t p1, Float_t p2)
 
 //------------------------------------------------------------------
 void AliMUONSegmentationTriggerX::
-Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[2], Int_t Ylist[2]){
+Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[2], Int_t Ylist[2]) 
+{
 // Returns list of next neighbours for given Pad (ix, iy)  
 
   Int_t absiX=TMath::Abs(iX); 
@@ -169,7 +178,7 @@ void AliMUONSegmentationTriggerX::SetPad(Int_t ix, Int_t iy)
 }
 
 //------------------------------------------------------------------   
-Int_t AliMUONSegmentationTriggerX::ISector()
+Int_t AliMUONSegmentationTriggerX::ISector() 
 { return fSector;}
 
 //------------------------------------------------------------------   
@@ -177,11 +186,12 @@ Int_t AliMUONSegmentationTriggerX::Ix()
 { return fIx;}
 
 //------------------------------------------------------------------   
+
 Int_t AliMUONSegmentationTriggerX::Iy()
 { return fIy;}
 
 //------------------------------------------------------------------
-Float_t AliMUONSegmentationTriggerX::Dpx(Int_t isec)
+Float_t AliMUONSegmentationTriggerX::Dpx(Int_t isec) const
 { 
 // returns x size of x strips for sector isec
     
@@ -203,7 +213,7 @@ Float_t AliMUONSegmentationTriggerX::Dpx(Int_t isec)
 }
 
 //------------------------------------------------------------------
-Float_t AliMUONSegmentationTriggerX::Dpy(Int_t isec)
+Float_t AliMUONSegmentationTriggerX::Dpy(Int_t isec) const
 { 
 // returns y size of x strips for sector isec
 
@@ -232,7 +242,7 @@ AliMUONSegmentationTrigger::SetHit(xhit,yhit);
 }
 
 //------------------------------------------------------------------   
-Int_t AliMUONSegmentationTriggerX::Sector(Int_t ix, Int_t iy)
+Int_t AliMUONSegmentationTriggerX::Sector(Int_t ix, Int_t iy) 
 {
 // Returns sector number for given module
 // 
