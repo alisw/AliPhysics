@@ -15,10 +15,6 @@ void FGeometryInit::setDetector() {
 }
 
 void FGeometryInit::setMotherVolume() {
-  cout << "\t\t+ fTransportationManager = " << fTransportationManager << endl;
-  cout << "\t\t+ myTopNode = " << myTopNode << endl;
-  cout << "\t\t+ NavigatorForTracking = " 
-       << getNavigatorForTracking() << endl;
   getNavigatorForTracking()->SetWorldVolume(myTopNode);
 }
 

@@ -11,7 +11,9 @@
 
 inline NavHistWithCount::NavHistWithCount(const G4NavigationHistory &history)
    {
+#ifdef G4GEOMETRY_DEBUG
    G4cout << "NavHistWithCount::NavHistWithCount created" << G4endl;
+#endif
    fhistory = new G4NavigationHistory(history);
    fDelate=0;
    count=0;
@@ -19,7 +21,9 @@ inline NavHistWithCount::NavHistWithCount(const G4NavigationHistory &history)
 
 inline NavHistWithCount::~NavHistWithCount()
    {
+#ifdef G4GEOMETRY_DEBUG
    G4cout << "NavHistWithCount::NavHistWithCount deleted" << G4endl;
+#endif
    delete fhistory;
    fDelate=1;
    fhistory=0;

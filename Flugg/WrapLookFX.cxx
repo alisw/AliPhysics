@@ -24,8 +24,6 @@
 #include "G4PhysicalVolumeStore.hh"
 #include "globals.hh"
 
-#define G4GEOMETRY_DEBUG 1
-
 void lkfxwr(G4double& pSx, G4double& pSy, G4double& pSz,
             G4double* pV, const G4int& oldReg, const G4int& oldLttc,
 	    G4int& newReg, G4int& flagErr, G4int& newLttc)

@@ -28,8 +28,6 @@
 #define isvhwr isvhwr_
 
 
-#define G4GEOMETRY_DEBUG 1
-
 // WrapDN
 
 extern "C" G4int idnrwr(const G4int & nreg, const G4int & mlat);

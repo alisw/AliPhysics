@@ -11,13 +11,17 @@
 FGeometryInit * FGeometryInit::flagInstance=0;
 
 FGeometryInit* FGeometryInit::GetInstance()  {
-  cout << "==> Flugg::FGeometryInit::GetInstance(), instance=" << flagInstance
-       << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg::FGeometryInit::GetInstance(), instance=" 
+	 << flagInstance << G4endl;
+#endif
   if (!flagInstance) 
     flagInstance = new FGeometryInit();
   
-  cout << "<== Flugg::FGeometryInit::GetInstance(), instance=" << flagInstance
-       << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg::FGeometryInit::GetInstance(), instance=" 
+	 << flagInstance << G4endl;
+#endif
   return flagInstance;
 }  
 
@@ -34,26 +38,30 @@ FGeometryInit::FGeometryInit():
   ptrJrLtGeant(0),
   fTransportationManager(G4TransportationManager::GetTransportationManager()){
 
-  cout << "==> Flugg FGeometryInit::FGeometryInit()" << endl;
-  cout << "\t+ Changing the G4Navigator for FluggNavigator..." << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::FGeometryInit()" << G4endl;
+  G4cout << "\t+ Changing the G4Navigator for FluggNavigator..." << G4endl;
+#endif
   G4Navigator* actualnav = fTransportationManager->GetNavigatorForTracking();
   if (actualnav) {
     FluggNavigator* newnav = new FluggNavigator();
     fTransportationManager->SetNavigatorForTracking(newnav);
   }
   else {
-    cerr << "ERROR: Could not find the actual G4Navigator" << endl;
+    cerr << "ERROR: Could not find the actual G4Navigator" << G4endl;
     abort();
   }
 
   
-  cout << "<== Flugg FGeometryInit::FGeometryInit()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::FGeometryInit()" << G4endl;
+#endif
 
 }
 
 
 FGeometryInit::~FGeometryInit() {
-  cout << "==> Flugg FGeometryInit::~FGeometryInit()" << endl;
+  G4cout << "==> Flugg FGeometryInit::~FGeometryInit()" << G4endl;
   DeleteHistories();
   ptrGeoMan->OpenGeometry();  
   if (fTransportationManager)
@@ -63,12 +71,14 @@ FGeometryInit::~FGeometryInit() {
   DelHistArray();
   
   //keep ATTENTION: never delete a pointer twice!
-  cout << "<== Flugg FGeometryInit::FGeometryInit()" << endl;
+  G4cout << "<== Flugg FGeometryInit::FGeometryInit()" << G4endl;
 }
 
 
 void FGeometryInit::closeGeometry() {
-  cout << "==> Flugg FGeometryInit::closeGeometry()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::closeGeometry()" << G4endl;
+#endif
 
   ptrGeoMan = G4GeometryManager::GetInstance();
   if (ptrGeoMan) {
@@ -85,17 +95,23 @@ void FGeometryInit::closeGeometry() {
 	   << G4endl;
   }
 
-  cout << "<== Flugg FGeometryInit::closeGeometry()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::closeGeometry()" << G4endl;
+#endif
 }
 
 //*************************************************************************
 
 void FGeometryInit::InitHistArray() {
-  cout << "==> Flugg FGeometryInit::InitHistArray()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::InitHistArray()" << G4endl;
+#endif
   ptrArray = new G4int[1000000];
   for(G4int i=0;i<1000000;i++) 
     ptrArray[i]=0;
-  cout << "<== Flugg FGeometryInit::InitHistArray()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::InitHistArray()" << G4endl;
+#endif
 }
 
 
@@ -104,20 +120,24 @@ void FGeometryInit::InitHistArray() {
 //jrLtGeant stores all crossed lattice volume histories.
 
 void FGeometryInit::InitJrLtGeantArray() {
-  cout << "==> Flugg FGeometryInit::InitJrLtGeantArray()" << endl;
 #ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::InitJrLtGeantArray()" << G4endl;
   G4cout << "Initializing JrLtGeant array" << G4endl;
 #endif
   ptrJrLtGeant = new G4int[10000];
   for(G4int x=0;x<10000;x++) 
     ptrJrLtGeant[x]=-1;
   flagLttcGeant = -1;
-  cout << "<== Flugg FGeometryInit::InitJrLtGeantArray()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::InitJrLtGeantArray()" << G4endl;
+#endif
 }
 
 
 void FGeometryInit::SetLttcFlagGeant(G4int newFlagLttc) {
-  cout << "==> Flugg FGeometryInit::SetLttcFlagGeant()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::SetLttcFlagGeant()" << G4endl;
+#endif
   // Added by A.Solodkov
   if (newFlagLttc >= 10000) {
     G4cout << "Problems in FGeometryInit::SetLttcFlagGeant" << G4endl;
@@ -127,7 +147,9 @@ void FGeometryInit::SetLttcFlagGeant(G4int newFlagLttc) {
     exit(1);
   }
   flagLttcGeant = newFlagLttc;
-  cout << "<== Flugg FGeometryInit::SetLttcFlagGeant()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::SetLttcFlagGeant()" << G4endl;
+#endif
 }
 
 void FGeometryInit::PrintJrLtGeant() {
@@ -157,32 +179,41 @@ void FGeometryInit::PrintHistories() {
 
 
 void FGeometryInit::InitHistories() {  
-  cout << "==> Flugg FGeometryInit::InitHistories()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::InitHistories()" << G4endl;
+#endif
   //init utility histories with navigator history
   ptrTouchHist = 
     fTransportationManager->GetNavigatorForTracking()->CreateTouchableHistory();
   ptrTempNavHist = 
     fTransportationManager->GetNavigatorForTracking()->CreateTouchableHistory();   
   ptrOldNavHist = new G4TouchableHistory();
-  cout << "<== Flugg FGeometryInit::InitHistories()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::InitHistories()" << G4endl;
+#endif
 }
 
 void FGeometryInit::DeleteHistories() {
-  cout << "==> Flugg FGeometryInit::DeleteHistories()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::DeleteHistories()" << G4endl;
+#endif
+
   delete ptrTouchHist;
   delete ptrOldNavHist;
   delete ptrTempNavHist;
   
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "Deleting step-history objects at end of run!" << G4endl;
+  G4cout << "<== Flugg FGeometryInit::DeleteHistories()" << G4endl;
 #endif
-  cout << "<== Flugg FGeometryInit::DeleteHistories()" << endl;
 }
 
 
 void FGeometryInit::UpdateHistories(const G4NavigationHistory * history,
 				    G4int flagHist) {
-  cout << "==> Flugg FGeometryInit::UpdateHistories()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::UpdateHistories()" << G4endl;
+#endif
   PrintHistories();
   
 #ifdef G4GEOMETRY_DEBUG
@@ -238,14 +269,15 @@ void FGeometryInit::UpdateHistories(const G4NavigationHistory * history,
   } //default
   } //switch
   
-  cout << "<== Flugg FGeometryInit::UpdateHistories()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::UpdateHistories()" << G4endl;
+#endif
 }
 
 //*****************************************************************************
 
 
 void FGeometryInit::createFlukaMatFile() {
-  cout << "==> Flugg FGeometryInit::createFlukaMatFile()" << endl;
   // last modification Sara Vanini 1/III/99
   // NAMES OF ELEMENTS AND COMPOUNDS: the names must be written in upper case,
   // according to the fluka standard. In addition,. they must be equal to the
@@ -255,6 +287,7 @@ void FGeometryInit::createFlukaMatFile() {
   // own .pemf, in order to get the right cross sections loaded in memory.
 
 #ifdef G4GEOMETRY_DEBUG
+  G4cout << "==> Flugg FGeometryInit::createFlukaMatFile()" << G4endl;
   G4cout << "================== FILEWR =================" << G4endl;
 #endif 
   
@@ -527,13 +560,13 @@ void FGeometryInit::createFlukaMatFile() {
 	if(treCount==1) 
 	  fout << setw10 << " " << setw10 << " "
 	       << setw10 << " " << setw10 << " "
-	       << nameMat << endl;
+	       << nameMat << G4endl;
 	if(treCount==2) 
 	  fout << setw10 << " " << setw10 << " "
-	       << nameMat << endl;
+	       << nameMat << G4endl;
 	if(treCount==3) 
-	  fout << nameMat << endl;
-	fout << "*" << endl;
+	  fout << nameMat << G4endl;
+	fout << "*" << G4endl;
       }
       
       
@@ -559,9 +592,9 @@ void FGeometryInit::createFlukaMatFile() {
   ofstream vout("Volumes_index.inp");
   
   //... and write title
-  vout << "*" << endl;
+  vout << "*" << G4endl;
   vout << "********************  GEANT4 VOLUMES *******************\n";
-  vout << "*" << endl;
+  vout << "*" << G4endl;
   
   //loop over all volumes...
   for(unsigned int l=0;l<numVol;l++) {
@@ -585,7 +618,7 @@ void FGeometryInit::createFlukaMatFile() {
       vout.setf(G4std::ios::left,G4std::ios::adjustfield);
       vout << setw10 << "Repetion Nb: " << G4std::setw(3) << nRep;
     }
-    vout << endl;
+    vout << G4endl;
     
     //check if Magnetic Field is present in the region
     G4FieldManager * pMagFieldMan = ptrLogVol->GetFieldManager();
@@ -616,7 +649,7 @@ void FGeometryInit::createFlukaMatFile() {
 	fout << setw10 << G4double(indexRegFlukaTo);
 	fout << setw10 << "0.0";
 	fout << setw10 << G4double(flagField);
-	fout << setw10 << "0.0" << endl;
+	fout << setw10 << "0.0" << G4endl;
       }
       
     }
@@ -629,14 +662,14 @@ void FGeometryInit::createFlukaMatFile() {
 	  fout << setw10 << "0.0";
 	  fout << setw10 << "0.0";
 	  fout << setw10 << G4double(lastFlagField);
-	  fout << setw10 << "0.0" << endl;
+	  fout << setw10 << "0.0" << G4endl;
 	}
       }
       else {
 	fout << setw10 <<  G4double(indexRegFlukaTo);
 	fout << setw10 << "0.0";
 	fout << setw10 << G4double(lastFlagField);
-	fout << setw10 << "0.0" << endl;
+	fout << setw10 << "0.0" << G4endl;
       }
       
       // begin material card		
@@ -653,7 +686,7 @@ void FGeometryInit::createFlukaMatFile() {
 	fout << setw10 << "0.0";
 	fout << setw10 << "0.0";
 	fout << setw10 << G4double(flagField);
-	fout << setw10 << "0.0" << endl;
+	fout << setw10 << "0.0" << G4endl;
       }
     }
     lastFlagField = flagField;
@@ -667,7 +700,7 @@ void FGeometryInit::createFlukaMatFile() {
   fout << setw10 << "0.0";
   fout << setw10 << "0.0";
   fout << setw10 << "0.0";
-  fout << setw10 << "0.0" << endl;
+  fout << setw10 << "0.0" << G4endl;
   
   // *** magnetic field ***
   if(fTransportationManager->GetFieldManager()->DoesFieldExist()) {
@@ -713,11 +746,13 @@ void FGeometryInit::createFlukaMatFile() {
 	 << G4std::setprecision(4) << Bx
 	 << setw10 << By
 	 << setw10 << Bz 
-	 << endl;
+	 << G4endl;
   } // end if magnetic field
   
   vout.close();
   fout.close();
   delete [] indexMatFluka;
-  cout << "<== Flugg FGeometryInit::createFlukaMatFile()" << endl;
+#ifdef G4GEOMETRY_DEBUG
+  G4cout << "<== Flugg FGeometryInit::createFlukaMatFile()" << G4endl;
+#endif
 }
