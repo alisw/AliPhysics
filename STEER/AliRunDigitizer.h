@@ -86,7 +86,7 @@ public:
 // which was merged to create output event event
   Int_t GetInputEventNumber(Int_t event, Int_t input) const;
   
-  AliStream * GetInputStream(const Int_t index) const { return dynamic_cast<AliStream *>(fInputStreams->At(index)) ; }
+  AliStream * GetInputStream(Int_t index) const { return dynamic_cast<AliStream *>(fInputStreams->At(index)) ; }
 // return pointer to particle with index i (index with mask)
   TParticle* GetParticle(Int_t i, Int_t event) const;
 
@@ -95,7 +95,7 @@ public:
   TParticle* GetParticle(Int_t i, Int_t input, Int_t event) const;
 
 // return TString with input file name  
-  TString GetInputFileName(const Int_t input, const Int_t order) const;
+  TString GetInputFileName(Int_t input, Int_t order) const;
   
   Int_t     GetDebug() const {return fDebug;}
   void      SetDebug(Int_t level) {fDebug = level;}

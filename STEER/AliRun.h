@@ -87,7 +87,7 @@ public:
                           Float_t rmax=430,Float_t zmax=10000, AliLegoGenerator* gener=NULL);
    virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
    virtual  void  RunReco(const char *detector=0, Int_t first = 0, Int_t last = 0);
-   virtual  void  SetDebug(const Int_t level=0) {fDebug = level;}
+   virtual  void  SetDebug(Int_t level=0) {fDebug = level;}
    virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}
    virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, char*filename="$(ALICE_ROOT)/data/field01.dat");
    virtual  void  SetField(AliMagF* magField);

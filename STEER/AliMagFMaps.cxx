@@ -45,9 +45,9 @@ AliMagFMaps::AliMagFMaps():
 }
 
 //_______________________________________________________________________
-AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ, 
-                         const Float_t factor, const Float_t fmax, const Int_t map, 
-                         const Int_t l3):
+AliMagFMaps::AliMagFMaps(const char *name, const char *title, Int_t integ, 
+                         Float_t factor, Float_t fmax, Int_t map, 
+                         Int_t l3):
   AliMagFC(name,title,integ,factor,fmax),
   fSolenoid(0),
   fSolenoidUser(0),

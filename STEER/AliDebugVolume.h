@@ -22,7 +22,7 @@ public:
   char*   Status()     const;
   
   
-  Bool_t  IsVEqual(const char* name, const Int_t copy) const;
+  Bool_t  IsVEqual(const char* name, Int_t copy) const;
 private:
    Int_t      fCopy;             //!Volume copy number
    Float_t    fStep;             //!Stepsize to volume boundary

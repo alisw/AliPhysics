@@ -39,7 +39,7 @@ public:
  
   const TString& GetFolderName() const{return fEventFolderName;}
   Int_t GetNInputFiles() const {return fFileNames->GetLast()+1;}
-  TString GetFileName(const Int_t order) const;
+  TString GetFileName(Int_t order) const;
   void SetFolderName(const TString name) { fEventFolderName = name ; }    
 private:  
   Int_t      fLastEventSerialNr;

@@ -19,9 +19,9 @@ class AliMagFMaps : public AliMagFC
 public:
     enum constants {k2kG, k4kG, k5kG};
     AliMagFMaps();
-    AliMagFMaps(const char *name, const char *title, const Int_t integ,
-		const Float_t factor, const Float_t fmax, const Int_t map = k2kG,
-		const Int_t l3 = 1);
+    AliMagFMaps(const char *name, const char *title, Int_t integ,
+		Float_t factor, Float_t fmax, Int_t map = k2kG,
+		Int_t l3 = 1);
     AliMagFMaps(const AliMagFMaps &mag);
     virtual ~AliMagFMaps();
     virtual void    Field(Float_t *x, Float_t *b);

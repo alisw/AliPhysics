@@ -40,8 +40,8 @@ AliMagF::AliMagF():
 }
 
 //_______________________________________________________________________
-AliMagF::AliMagF(const char *name, const char *title, const Int_t integ, 
-                 const Float_t factor, const Float_t fmax):
+AliMagF::AliMagF(const char *name, const char *title, Int_t integ, 
+                 Float_t factor, Float_t fmax):
   TNamed(name,title),
   fMap(0),
   fType(0),

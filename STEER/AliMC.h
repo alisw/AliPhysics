@@ -59,7 +59,7 @@ public:
    virtual  void  TrackingLimits( Float_t rmax=1.e10, Float_t zmax=1.e10)
     {fTrRmax=rmax; fTrZmax=zmax;}
    Int_t          GetDebug() const {return fDebug;}
-   virtual  void  SetDebug(const Int_t level=0) {fDebug = level;}
+   virtual  void  SetDebug(Int_t level=0) {fDebug = level;}
    virtual  void  Init();
    virtual  void  SetTransPar(const char *filename="$(ALICE_ROOT)/data/galice.cuts");
    virtual  void  Browse(TBrowser *b);
@@ -86,9 +86,9 @@ public:
 			   Double_t polx, Double_t poly, Double_t polz,
 			   TMCProcess mech, Int_t &ntr, Float_t weight=1,
 			   Int_t is = 0);
-   virtual  void  SetHighWaterMark(const Int_t nt);
+   virtual  void  SetHighWaterMark(Int_t nt);
    
-   virtual  void  KeepTrack(const Int_t itra);
+   virtual  void  KeepTrack(Int_t itra);
    virtual  void  FlagTrack(Int_t track);
    virtual  void  SetCurrentTrack(Int_t track);                           
 // Track reference related 

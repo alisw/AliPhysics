@@ -64,8 +64,8 @@ AliMagFDM::AliMagFDM():
 }
 
 //_______________________________________________________________________
-AliMagFDM::AliMagFDM(const char *name, const char *title, const Int_t integ,
-                     const Float_t factor, const Float_t fmax):
+AliMagFDM::AliMagFDM(const char *name, const char *title, Int_t integ,
+                     Float_t factor, Float_t fmax):
   AliMagFC(name,title,integ,factor,fmax),
   fSolenoid(0),
   fInd(0),

@@ -28,8 +28,8 @@
 ClassImp(AliMagFC)
 
 //________________________________________
-AliMagFC::AliMagFC(const char *name, const char *title, const Int_t integ, 
-		   const Float_t factor, const Float_t fmax)
+AliMagFC::AliMagFC(const char *name, const char *title, Int_t integ, 
+		   Float_t factor, Float_t fmax)
   : AliMagF(name,title,integ,factor,fmax)
 {
   // 

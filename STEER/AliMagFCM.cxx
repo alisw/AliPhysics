@@ -54,8 +54,8 @@ AliMagFCM::AliMagFCM():
 }
 
 //_______________________________________________________________________
-AliMagFCM::AliMagFCM(const char *name, const char *title, const Int_t integ, 
-                     const Float_t factor, const Float_t fmax):
+AliMagFCM::AliMagFCM(const char *name, const char *title, Int_t integ, 
+                     Float_t factor, Float_t fmax):
   AliMagFC(name,title,integ,factor,fmax),
   fXbeg(0),
   fYbeg(0),

@@ -13,8 +13,8 @@ class AliMagFC  : public AliMagF
 
 public:
   AliMagFC(){}
-  AliMagFC(const char *name, const char *title, const Int_t integ, 
-	   const Float_t factor, const Float_t fmax);
+  AliMagFC(const char *name, const char *title, Int_t integ, 
+	   Float_t factor, Float_t fmax);
   virtual ~AliMagFC() {}
   virtual void Field(Float_t *x, Float_t *b);
   virtual void ReadField() {}

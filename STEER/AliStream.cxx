@@ -201,7 +201,7 @@ Bool_t AliStream::ImportgAlice()
 }
 
 //_______________________________________________________________________
-TString AliStream::GetFileName(const Int_t order) const
+TString AliStream::GetFileName(Int_t order) const
 // returns name of the order-th file
 // returns empty string if such file does not exist
 // first file in the input stream is 0

@@ -14,8 +14,8 @@ class AliMagFCM : public AliMagFC
 
 public:
   AliMagFCM();
-  AliMagFCM(const char *name, const char *title, const Int_t integ,
-	   const Float_t factor, const Float_t fmax);
+  AliMagFCM(const char *name, const char *title, Int_t integ,
+	   Float_t factor, Float_t fmax);
   AliMagFCM(const AliMagFCM &mag);
   virtual ~AliMagFCM() {delete fB;}
   virtual void Field(Float_t *x, Float_t *b);
@@ -27,13 +27,13 @@ public:
   virtual AliMagFCM & operator=(const AliMagFCM &magf)
     {magf.Copy(*this); return *this;}
 
-  Float_t Bx(const Int_t ix, const Int_t iy, const Int_t iz) {
+  Float_t Bx(Int_t ix, Int_t iy, Int_t iz) const {
     return (*fB)(3*(iz*(fXn*fYn)+iy*fXn+ix));
   }
-  Float_t By(const Int_t ix, const Int_t iy, const Int_t iz) {
+  Float_t By(Int_t ix, Int_t iy, Int_t iz) const {
     return (*fB)(3*(iz*(fXn*fYn)+iy*fXn+ix)+1);
   }
-  Float_t Bz(const Int_t ix, const Int_t iy, const Int_t iz) {
+  Float_t Bz(Int_t ix, Int_t iy, Int_t iz) const {
     return (*fB)(3*(iz*(fXn*fYn)+iy*fXn+ix)+2);
   }
 

@@ -28,7 +28,7 @@ public:
   else fRandom=gRandom;}
 
   virtual TRandom* GetRandom() const {return fRandom;}
-  virtual void Rndm(Float_t* array, const Int_t size) const; 
+  virtual void Rndm(Float_t* array, Int_t size) const; 
 #ifdef CKNONE
   virtual Float_t Rndm() const {return fRandom->Rndm();}
 #else

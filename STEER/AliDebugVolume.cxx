@@ -58,7 +58,7 @@ AliDebugVolume::AliDebugVolume(const char *name, Int_t copy, Float_t step,
 
 
 //_______________________________________________________________________
-Bool_t  AliDebugVolume::IsVEqual(const char* name, const Int_t copy) const
+Bool_t  AliDebugVolume::IsVEqual(const char* name, Int_t copy) const
 {
   return (copy == fCopy && strcmp(name, fName) == 0);
 }

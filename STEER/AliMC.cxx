@@ -930,7 +930,7 @@ void AliMC::PushTrack(Int_t done, Int_t parent, Int_t pdg,
 }
 
 //_______________________________________________________________________
-void AliMC::SetHighWaterMark(const Int_t nt)
+void AliMC::SetHighWaterMark(Int_t nt)
 {
     //
     // Set high water mark for last track in event
@@ -941,7 +941,7 @@ void AliMC::SetHighWaterMark(const Int_t nt)
 }
 
 //_______________________________________________________________________
-void AliMC::KeepTrack(const Int_t track)
+void AliMC::KeepTrack(Int_t track)
 { 
   //
   // Delegate to stack
