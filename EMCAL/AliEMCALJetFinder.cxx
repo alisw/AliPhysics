@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -16,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/01/21 16:28:42  morsch
+Correct sign of dphi.
+
 Revision 1.8  2002/01/21 16:05:31  morsch
 - different phi-bin for hadron correction
 - provisions for background mixing.
@@ -385,13 +387,21 @@ void AliEMCALJetFinder::BookLego()
     fNbinPhi = geom->GetNPhi();
     const Float_t  phiMin  = geom->GetArm1PhiMin()*TMath::Pi()/180.;
     const Float_t  phiMax  = geom->GetArm1PhiMax()*TMath::Pi()/180.;
+    const Float_t  etaMin  = geom->GetArm1EtaMin()*TMath::Pi()/180.;
+    const Float_t  etaMax  = geom->GetArm1EtaMax()*TMath::Pi()/180.;
     fDphi   = (phiMax-phiMin)/fNbinEta;
     fDeta   = 1.4/fNbinEta;
     fNtot   = fNbinPhi*fNbinEta;
     
 //    
+//  Signal map
     fLego = new TH2F("legoH","eta-phi",
-			   fNbinEta, -0.7,  0.7, 
+			   fNbinEta, etaMin, etaMax, 
+			   fNbinPhi, phiMin, phiMax);
+//
+//  Background map
+    fLegoB = new TH2F("legoB","eta-phi",
+			   fNbinEta, etaMin, etaMax, 
 			   fNbinPhi, phiMin, phiMax);
 }
 
@@ -404,6 +414,8 @@ void AliEMCALJetFinder::DumpLego()
     for (Int_t i = 1; i < fNbinEta; i++) {
 	for (Int_t j = 1; j < fNbinPhi; j++) {
 	    Float_t e    = fLego->GetBinContent(i,j);
+	    if (e <=0.) continue;
+	    
 	    TAxis* Xaxis = fLego->GetXaxis();
 	    TAxis* Yaxis = fLego->GetYaxis();
 	    Float_t eta  = Xaxis->GetBinCenter(i);
@@ -472,7 +484,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	Float_t p     = MPart->P();
 	Float_t phi   = MPart->Phi();
 	Float_t eta   = MPart->Eta();
-
+	
 	if (fDebug > 0) {
 	    if (part == 6 || part == 7)
 	    {
@@ -561,7 +573,7 @@ void AliEMCALJetFinder::FillFromTracks(Int_t flag, Int_t ich)
 	fNtS++;
 	
 	fLego->Fill(eta, phi, p);
-	if (fHCorrection) fLego->Fill(eta, phiHC, dpH);
+	if (fHCorrection) fLego->Fill(eta, phiHC, -dpH);
     } // primary loop
     DumpLego();
 }
@@ -765,9 +777,6 @@ void AliEMCALJetFinder::BuildTrackFlagTable() {
 //
 // --Author: J.L. Klay
 //
-    printf("\n Building track flag table.\n");
-    
-    
 // Access hit information    
     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
     
@@ -881,9 +890,9 @@ void AliEMCALJetFinder::SaveBackgroundEvent()
 {
 // Saves the eta-phi lego and the tracklist
 //
-    if (fLegoB) delete fLegoB;
+    if (fLegoB) fLegoB->Reset();
     
-    fLegoB = new TH2F(*fLego);
+    fLego->Copy(*fLegoB);
     
     if (fPtB)        delete[] fPtB;   
     if (fEtaB)       delete[] fEtaB;    
@@ -894,13 +903,15 @@ void AliEMCALJetFinder::SaveBackgroundEvent()
     fEtaB         = new Float_t[fNtS];
     fPhiB         = new Float_t[fNtS];
     fTrackListB   = new Int_t  [fNtS];
-
+    
+    fNtB = 0;
+    
     for (Int_t i = 0; i < fNt; i++) {
 	if (!fTrackList[i]) continue;
 	fPtB [fNtB]      = fPtT [i];
 	fEtaB[fNtB]      = fEtaT[i];
 	fPhiB[fNtB]      = fPhiT[i];
-	fTrackList[fNtB] = 1;
+	fTrackListB[fNtB] = 1;
 	fNtB++;
     }
 }
@@ -909,8 +920,10 @@ void AliEMCALJetFinder::InitFromBackground()
 {
 //
 //    
-    if (fLego) delete fLego;
-    fLego = new TH2F(*fLegoB);
+    if (fDebug) printf("\n Initializing from Background");
+    
+    if (fLego) fLego->Reset(); 
+    fLegoB->Copy(*fLego);
 }
 
 
