@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.5  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -111,16 +114,16 @@ AliTRDclusterizerV1 &AliTRDclusterizerV1::operator=(const AliTRDclusterizerV1 &c
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizerV1::Copy(AliTRDclusterizerV1 &c)
+void AliTRDclusterizerV1::Copy(TObject &c)
 {
   //
   // Copy function
   //
 
-  c.fClusMaxThresh = fClusMaxThresh;
-  c.fClusSigThresh = fClusSigThresh;
-  c.fClusMethod    = fClusMethod;
-  c.fDigitsManager = NULL;
+  ((AliTRDclusterizerV1 &) c).fClusMaxThresh = fClusMaxThresh;
+  ((AliTRDclusterizerV1 &) c).fClusSigThresh = fClusSigThresh;
+  ((AliTRDclusterizerV1 &) c).fClusMethod    = fClusMethod;
+  ((AliTRDclusterizerV1 &) c).fDigitsManager = NULL;
 
   AliTRDclusterizer::Copy(c);
 

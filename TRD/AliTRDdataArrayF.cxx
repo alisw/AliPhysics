@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.3  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -102,15 +105,15 @@ void AliTRDdataArrayF::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
 }
 
 //_____________________________________________________________________________
-void AliTRDdataArrayF::Copy(AliTRDdataArrayF &a)
+void AliTRDdataArrayF::Copy(TObject &a)
 {
   //
   // Copy function
   //
 
-  fElements->Copy(*a.fElements);
+  fElements->Copy(*((AliTRDdataArrayF &) a).fElements);
 
-  a.fThreshold = fThreshold;
+  ((AliTRDdataArrayF &) a).fThreshold = fThreshold;
 
   AliTRDdataArray::Copy(a);
 

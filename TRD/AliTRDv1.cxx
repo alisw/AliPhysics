@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2000/06/09 11:10:07  cblume
+Compiler warnings and coding conventions, next round
+
 Revision 1.20  2000/06/08 18:32:58  cblume
 Make code compliant to coding conventions
 
@@ -168,25 +171,25 @@ AliTRDv1 &AliTRDv1::operator=(const AliTRDv1 &trd)
 }
  
 //_____________________________________________________________________________
-void AliTRDv1::Copy(AliTRDv1 &trd)
+void AliTRDv1::Copy(TObject &trd)
 {
   //
   // Copy function
   //
 
-  trd.fIdSens          = fIdSens;
+  ((AliTRDv1 &) trd).fIdSens          = fIdSens;
 
-  trd.fIdChamber1      = fIdChamber1;
-  trd.fIdChamber2      = fIdChamber2;
-  trd.fIdChamber3      = fIdChamber3;
+  ((AliTRDv1 &) trd).fIdChamber1      = fIdChamber1;
+  ((AliTRDv1 &) trd).fIdChamber2      = fIdChamber2;
+  ((AliTRDv1 &) trd).fIdChamber3      = fIdChamber3;
 
-  trd.fSensSelect      = fSensSelect;
-  trd.fSensPlane       = fSensPlane;
-  trd.fSensChamber     = fSensChamber;
-  trd.fSensSector      = fSensSector;
-  trd.fSensSectorRange = fSensSectorRange;
+  ((AliTRDv1 &) trd).fSensSelect      = fSensSelect;
+  ((AliTRDv1 &) trd).fSensPlane       = fSensPlane;
+  ((AliTRDv1 &) trd).fSensChamber     = fSensChamber;
+  ((AliTRDv1 &) trd).fSensSector      = fSensSector;
+  ((AliTRDv1 &) trd).fSensSectorRange = fSensSectorRange;
 
-  trd.fDeltaE          = NULL;
+  ((AliTRDv1 &) trd).fDeltaE          = NULL;
 
 }
 

@@ -23,7 +23,7 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   virtual ~AliTRDclusterizerV1();
   AliTRDclusterizerV1 &operator=(const AliTRDclusterizerV1 &c);
 
-  virtual void    Copy(AliTRDclusterizerV1 &c);
+  virtual void    Copy(TObject &c);
   virtual void    Init();
   virtual Bool_t  MakeCluster();
   virtual Bool_t  ReadDigits();

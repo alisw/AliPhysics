@@ -27,7 +27,7 @@ class AliTRDv1 : public AliTRD {
   virtual ~AliTRDv1();
   AliTRDv1 &operator=(const AliTRDv1 &trd);
 
-  virtual void    Copy(AliTRDv1 &trd);
+  virtual void    Copy(TObject &trd);
   virtual void    CreateGeometry();
   virtual void    CreateMaterials();
   virtual Int_t   IsVersion() const    { return 1; };

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
 Revision 1.2  2000/05/08 16:17:27  cblume
 Merge TRD-develop
 
@@ -83,7 +86,7 @@ AliTRDsegmentArray::~AliTRDsegmentArray()
 }
 
 //_____________________________________________________________________________
-void AliTRDsegmentArray::Copy(AliTRDsegmentArray &a)
+void AliTRDsegmentArray::Copy(TObject &a)
 {
   //
   // Copy function

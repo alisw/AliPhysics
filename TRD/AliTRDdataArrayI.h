@@ -27,7 +27,7 @@ class AliTRDdataArrayI : public AliTRDdataArray {
   AliTRDdataArrayI &operator=(const AliTRDdataArrayI &a);
 
   virtual void   Allocate(Int_t nrow, Int_t ncol, Int_t ntime);
-  virtual void   Copy(AliTRDdataArrayI &a);
+  virtual void   Copy(TObject &a);
   virtual void   Compress(Int_t bufferType, Int_t threshold);
   virtual void   Compress(Int_t bufferType); 
   virtual void   Expand();
