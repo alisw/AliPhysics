@@ -23,6 +23,7 @@ class AliGenCocktail : public AliGenerator
      
     virtual ~AliGenCocktail();
     virtual void Init();
+    virtual void FinishRun();
     virtual void Generate();
     //
     // Add a new generator to the list

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2003/01/14 10:50:18  alibrary
+Cleanup of STEER coding conventions
+
 Revision 1.15  2003/01/07 14:13:22  morsch
 Communication between generators provising and requesting collision
 geometries.
@@ -68,6 +71,7 @@ Introduction of the Copyright and cvs Log
 
 #include "AliGenCocktail.h"
 #include "AliGenCocktailEntry.h"
+#include "AliCollisionGeometry.h"
 #include "AliRun.h"
 
 ClassImp(AliGenCocktail)
@@ -138,6 +142,18 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
     }  
 }
 
+  void AliGenCocktail::FinishRun()
+{
+// Initialisation
+    TIter next(fEntries);
+    AliGenCocktailEntry *entry;
+    //
+    // Loop over generators and initialize
+    while((entry = (AliGenCocktailEntry*)next())) {
+	entry->Generator()->FinishRun();
+    }  
+}
+
  void AliGenCocktail::Generate()
 {
 //
@@ -146,9 +162,7 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
     AliGenCocktailEntry *entry = 0;
     AliGenCocktailEntry *preventry = 0;
     AliGenerator* gen = 0;
-    
-//    AliGenCocktailEntry *e1;
-//    AliGenCocktailEntry *e2;
+
     TObjArray *partArray = gAlice->Particles();
     //
     // Loop over generators and generate events
@@ -169,6 +183,8 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
 	{
 	    if (preventry && preventry->Generator()->ProvidesCollisionGeometry())
 	    {
+		       (preventry->Generator()->CollisionGeometry())->NN());
+		
 		gen->SetCollisionGeometry(preventry->Generator()->CollisionGeometry());
 	    } else {
 		Fatal("Generate()", "No Collision Geometry Provided");
@@ -180,25 +196,6 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
 	preventry = entry;
     }  
     next.Reset();
-/*
-    while((entry = (AliGenCocktailEntry*)next())) {
-	entry->PrintInfo();
-    }
-    for (entry=FirstGenerator();
-	 entry;
-	 entry=NextGenerator()
-	) {
-	entry->PrintInfo();
-    }
-    for (FirstGeneratorPair(e1,e2);
-	 (e1&&e2);
-	 NextGeneratorPair(e1,e2)
-	){
-	printf("\n -----------------------------");
-	e1->PrintInfo();
-	e2->PrintInfo();
-    }
-*/
 }
 
 AliGenCocktailEntry *  AliGenCocktail::FirstGenerator()
