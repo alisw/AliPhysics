@@ -3,19 +3,6 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include "AliL3StandardIncludes.h"
-
-#ifndef no_root
-#include <TFile.h>
-#include <TGraphAsymmErrors.h>
-#include <TString.h>
-#include <TStopwatch.h>
-#include <TMath.h>
-#endif
-
-#include "AliL3Logging.h"
-#include "AliL3Benchmark.h"
-
 /** \class AliL3Benchmark
 </pre>
 //_____________________________________________________________
@@ -28,11 +15,23 @@
 </pre>
 */
 
+#ifndef no_root
+#include <TFile.h>
+#include <TGraphAsymmErrors.h>
+#include <TString.h>
+#include <TStopwatch.h>
+#include <TMath.h>
+#endif
+#include "AliL3StandardIncludes.h"
+#include "AliL3RootTypes.h"
+#include "AliL3Logging.h"
+#include "AliL3Benchmark.h"
+
 ClassImp(AliL3Benchmark)
+
 AliL3Benchmark::AliL3Benchmark()
 {
   //Constructor
-
   fNbench = 0;
   fNmax   = 20;
   fNames  = 0;
@@ -41,11 +40,11 @@ AliL3Benchmark::AliL3Benchmark()
   fMin    = 0;
   fMax    = 0;
   fCount  = 0;
-  //fStopwatch = 0;
 }
 
 AliL3Benchmark::~AliL3Benchmark()
 {
+  //deconstructor
    fNbench   = 0;
    if (fNames)  {delete [] fNames; fNames  = 0;}
    if (fTimer)  {delete [] fTimer; fTimer  = 0;}
@@ -53,20 +52,21 @@ AliL3Benchmark::~AliL3Benchmark()
    if (fMin)    {delete [] fMin;   fMin   = 0;}
    if (fMax)    {delete [] fMax;   fMax   = 0;}
    if (fCount)  {delete [] fCount; fCount =0;}
-   //if(fStopwatch) {delete fStopwatch; fStopwatch =0;}
 }
 
-Int_t AliL3Benchmark::GetBench(const char *name)
+Int_t AliL3Benchmark::GetBench(const Char_t *name)
 {
+  //get bench with name
    for (Int_t i=0;i<fNbench;i++) {
-      if (!strcmp(name,(const char*)fNames[i])) return i;
+      if (!strcmp(name,(const Char_t*)fNames[i])) return i;
    }
    return -1;
 }
 
 
-void AliL3Benchmark::Start(const char *name)
+void AliL3Benchmark::Start(const Char_t *name)
 {
+  //start the benchmark with name
    if (!fNbench) {
 #ifdef no_root
      fNames=new Char_t*[fNmax];
@@ -100,18 +100,10 @@ void AliL3Benchmark::Start(const char *name)
       fNbench++;
       fTimer[bench].Reset();
       fTimer[bench].Start();
-      //if(fStopwatch) {delete fStopwatch; fStopwatch =0;}
-      //fStopwatch = new TStopwatch();
-      //fStopwatch->Reset();
-      //fStopwatch->Start();
    } else if (bench >=0) {
    // Resume the existent benchmark
       fTimer[bench].Reset();
       fTimer[bench].Start();
-      //if(fStopwatch) {delete fStopwatch; fStopwatch =0;}
-      //fStopwatch = new TStopwatch();
-      //fStopwatch->Reset();
-      //fStopwatch->Start();
    }
    else
      LOG(AliL3Log::kWarning,"AliL3Benchmark::Start","Start")
@@ -120,13 +112,12 @@ void AliL3Benchmark::Start(const char *name)
 
 void AliL3Benchmark::Stop(const char *name)
 {
+  //stop the benchmark with name
    Int_t bench = GetBench(name);
    if (bench < 0) return;
 
    fTimer[bench].Stop();
    Float_t val = fTimer[bench].CpuTime();
-   //fStopwatch->Stop();
-   //Float_t val = fStopwatch->CpuTime();
    
    fSum[bench] += val; 
    fCount[bench]++;
@@ -140,12 +131,14 @@ void AliL3Benchmark::Stop(const char *name)
    }
 }
 
-void AliL3Benchmark::Analyze(const Char_t* name){
+void AliL3Benchmark::Analyze(const Char_t* name)
+{
+  //get results of benchmark
   Float_t *x = new Float_t[fNbench]; 
   Float_t *y = new Float_t[fNbench];
   Float_t *eyl = new Float_t[fNbench]; 
   Float_t *eyh = new Float_t[fNbench];
-  char filename[256];
+  Char_t filename[256];
   sprintf(filename,"%s.dat",name);
   FILE *f= fopen(filename,"w");
   for (Int_t i=0;i<fNbench;i++) {
@@ -193,5 +186,6 @@ void AliL3Benchmark::Analyze(const Char_t* name){
 
 Double_t AliL3Benchmark::GetCpuTime()
 {
+  //get cpu time
   {return (Double_t)(clock()) / CLOCKS_PER_SEC;}
 }

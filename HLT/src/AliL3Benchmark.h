@@ -1,35 +1,24 @@
 // @(#) $Id$
 
-#ifndef AliL3_Benchmark
-#define AliL3_Benchmark
+#ifndef AliL3BenchmarkH
+#define AliL3BenchmarkH
+
+//_____________________________________________________________
+//
+// AliL3Benchmark
+//
+//   Benchmark class for level3 code
+//  
+//
 
 #ifndef no_root
-#include <Rtypes.h>
 class TStopwatch;
 class TString;
 #else
-#include "AliL3RootTypes.h"
-#include "AliL3Stopwatch.h"
+class  AliL3Stopwatch;
 #endif
 
 class AliL3Benchmark {
-
-private:
-
-   Int_t      fNbench;          //Number of active benchmarks
-   Int_t      fNmax;            //Maximum number of benchmarks initialized
-#ifndef no_root
-   TString    *fNames;          //Names of benchmarks
-   TStopwatch *fTimer;          //Timers
-#else
-   Char_t **fNames;
-   AliL3Stopwatch *fTimer;
-#endif
-   Float_t    *fSum;
-   Float_t    *fMin;
-   Float_t    *fMax;
-   Int_t      *fCount;
-   //TStopwatch *fStopwatch;    //Stopwatch
 
 public:
    AliL3Benchmark();
@@ -40,7 +29,23 @@ public:
    void       Analyze(const char* name);
    
    static Double_t GetCpuTime();
-   
+
+private:
+
+   Int_t      fNbench;          //Number of active benchmarks
+   Int_t      fNmax;            //Maximum number of benchmarks initialized
+#ifndef no_root
+   TString    *fNames;          //Names of benchmarks
+   TStopwatch *fTimer;          //Timers
+#else
+   Char_t **fNames;             //Names of benchmarks
+   AliL3Stopwatch *fTimer;      //Timers
+#endif
+   Float_t    *fSum;  //sum of time
+   Float_t    *fMin;  //min of time
+   Float_t    *fMax;  //max of time
+   Int_t      *fCount;// counter
+
    ClassDef(AliL3Benchmark,0)  //L3 benchmark
 };
 

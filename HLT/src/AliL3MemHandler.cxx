@@ -3,20 +3,6 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>, Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
 //*-- Copyright &copy ALICE HLT Group 
 
-#include "AliL3RootTypes.h"
-#include "AliL3StandardIncludes.h"
-#include "AliL3DigitData.h"
-#include "AliL3Logging.h"
-#include "AliL3Transform.h"
-#include "AliL3TrackSegmentData.h"
-#include "AliL3SpacePointData.h"
-#include "AliL3TrackArray.h"
-#include "AliL3MemHandler.h"
-
-#if __GNUC__ == 3
-using namespace std;
-#endif
-
 /** \class AliL3MemHandler 
 <pre>
 //_____________________________________________________________
@@ -75,6 +61,20 @@ using namespace std;
 // The data is RLE encoded and currently using _10_ bit range for the ADC-values.
 </pre>
 */  
+
+#include "AliL3RootTypes.h"
+#include "AliL3StandardIncludes.h"
+#include "AliL3DigitData.h"
+#include "AliL3Logging.h"
+#include "AliL3Transform.h"
+#include "AliL3TrackSegmentData.h"
+#include "AliL3SpacePointData.h"
+#include "AliL3TrackArray.h"
+#include "AliL3MemHandler.h"
+
+#if __GNUC__ == 3
+using namespace std;
+#endif
   
 ClassImp(AliL3MemHandler)
   
@@ -1220,6 +1220,7 @@ void AliL3MemHandler::UpdateRowPointer(AliL3DigitRowData *&tempPt)
 
 Int_t  AliL3MemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_t time) const
 {
+  //compare two points
   if(fNUsed>=fNDigits) return -2;
 
   if(pad==fDPt[fNUsed]->fPad&&time==fDPt[fNUsed]->fTime) return 0;
@@ -1232,6 +1233,7 @@ Int_t  AliL3MemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_t time)
 
 Int_t AliL3MemHandler::CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b) const
 {
+  //compare two digits
   if(a->fPad==b->fPad && a->fTime == b->fTime) return 0;
 
   if(a->fPad<b->fPad) return -1;

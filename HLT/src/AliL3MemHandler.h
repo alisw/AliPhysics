@@ -3,8 +3,17 @@
 #ifndef ALIL3_MEMHANDLER_H
 #define ALIL3_MEMHANDLER_H
 
-//#include "AliL3RootTypes.h"
-//#include "AliL3DigitData.h"
+//_____________________________________________________________
+// AliL3MemHandler
+//
+// The HLT Binary File handler 
+//
+//  This class does all the memory I/O handling of HLT binary files.
+//  
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, 
+//         Anders Vestbo <mailto:vestbo$fi.uib.no>, 
+//         Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
+//*-- Copyright &copy ALICE HLT Group 
 
 class AliL3DigitData;
 class AliL3SpacePointData;
@@ -19,47 +28,7 @@ class AliRunLoader;
 #endif
 
 class AliL3MemHandler { 
- private:
-  
-  Byte_t *fPt;//!
-  UInt_t fSize; //size of allocated data structure
 
-  AliL3RandomDigitData **fDPt;//!
-  AliL3RandomDigitData *fRandomDigits;//!
-  Bool_t fIsRandom; //random data generated
-  Int_t fNRandom;   //count random digits 
-  Int_t fNGenerate; //count generated digits
-  Int_t fNUsed;     //count used digits
-  Int_t fNDigits;   //count digits from digitstree
-
-  void Write(UInt_t *comp, UInt_t & index, UInt_t & subindex, UShort_t value) const;
-  UShort_t Read(UInt_t *comp, UInt_t & index, UInt_t & subindex) const;
-  UShort_t Test(UInt_t *comp, UInt_t index, UInt_t subindex) const; 
-  
-  void DigitizePoint(Int_t row,Int_t pad, Int_t time,Int_t charge);
-  void QSort(AliL3RandomDigitData **a, Int_t first, Int_t last);
-  Int_t ComparePoints(UInt_t row,UShort_t pad,UShort_t time) const ;
-  Int_t CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b) const;
-  void AddData(AliL3DigitData *data,UInt_t & ndata,
-                      UInt_t row,UShort_t pad,UShort_t time,UShort_t charge) const;
-  void AddRandom(AliL3DigitData *data,UInt_t & ndata);
-  void MergeDataRandom(AliL3DigitData *data,UInt_t & ndata,
-                      UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
-  void AddDataRandom(AliL3DigitData *data,UInt_t & ndata,
-                      UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
-
- protected:
-  Int_t fRowMin; //min row
-  Int_t fRowMax; //max row
-  Int_t fSlice;  //slice
-  Int_t fPatch;  //patch
-
-  Int_t fEtaMinTimeBin[159]; //for ROI in eta only
-  Int_t fEtaMaxTimeBin[159]; //for ROI in eta only
-  
-  FILE *fInBinary;//!
-  FILE *fOutBinary;//!
-  
  public:
   AliL3MemHandler();
   virtual ~AliL3MemHandler();
@@ -190,6 +159,48 @@ class AliL3MemHandler {
 
   virtual AliL3DigitRowData* DDLData2Memory(UInt_t &/*nrow*/,Int_t /*event*/=-1){return 0;}
   virtual Bool_t DDLData2CompBinary(Int_t /*event*/=-1){return 0;}
+
+ protected:
+  Int_t fRowMin; //min row
+  Int_t fRowMax; //max row
+  Int_t fSlice;  //slice
+  Int_t fPatch;  //patch
+
+  Int_t fEtaMinTimeBin[159]; //for ROI in eta only
+  Int_t fEtaMaxTimeBin[159]; //for ROI in eta only
+  
+  FILE *fInBinary;//!
+  FILE *fOutBinary;//!
+
+ private:
+  
+  Byte_t *fPt;//!
+  UInt_t fSize; //size of allocated data structure
+
+  AliL3RandomDigitData **fDPt;//!
+  AliL3RandomDigitData *fRandomDigits;//!
+  Bool_t fIsRandom; //random data generated
+  Int_t fNRandom;   //count random digits 
+  Int_t fNGenerate; //count generated digits
+  Int_t fNUsed;     //count used digits
+  Int_t fNDigits;   //count digits from digitstree
+
+  void Write(UInt_t *comp, UInt_t & index, UInt_t & subindex, UShort_t value) const;
+  UShort_t Read(UInt_t *comp, UInt_t & index, UInt_t & subindex) const;
+  UShort_t Test(UInt_t *comp, UInt_t index, UInt_t subindex) const; 
+  
+  void DigitizePoint(Int_t row,Int_t pad, Int_t time,Int_t charge);
+  void QSort(AliL3RandomDigitData **a, Int_t first, Int_t last);
+  Int_t ComparePoints(UInt_t row,UShort_t pad,UShort_t time) const ;
+  Int_t CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b) const;
+  void AddData(AliL3DigitData *data,UInt_t & ndata,
+                      UInt_t row,UShort_t pad,UShort_t time,UShort_t charge) const;
+  void AddRandom(AliL3DigitData *data,UInt_t & ndata);
+  void MergeDataRandom(AliL3DigitData *data,UInt_t & ndata,
+                      UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
+  void AddDataRandom(AliL3DigitData *data,UInt_t & ndata,
+                      UInt_t row,UShort_t pad,UShort_t time,UShort_t charge);
+
 
   ClassDef(AliL3MemHandler,1) // Memory handler class
 };

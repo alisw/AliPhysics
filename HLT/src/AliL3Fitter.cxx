@@ -3,6 +3,15 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group 
 
+/** \class AliL3Fitter
+<pre>
+//_____________________________________________________________
+// AliL3Fitter
+//
+// Fit class HLT for helix
+</pre>
+*/
+
 #include "AliL3StandardIncludes.h"
 #include <math.h>
 
@@ -15,20 +24,13 @@
 #include "AliL3Transform.h"
 #include "AliLevel3.h"
 
-/** \class AliL3Fitter
-<pre>
-//_____________________________________________________________
-// AliL3Fitter
-//
-// Fit class HLT
-</pre>
-*/
 
 ClassImp(AliL3Fitter)
 
 
 AliL3Fitter::AliL3Fitter()
 {
+  //constructor
   fTrack=0;
   fVertex=0;
   memset(fClusters,0,36*6*sizeof(AliL3SpacePointData*));
@@ -45,6 +47,7 @@ AliL3Fitter::AliL3Fitter(AliL3Vertex *vertex,Bool_t vertexconstraint)
 
 AliL3Fitter::~AliL3Fitter()
 {
+  //destructor
   for(Int_t i=0; i<36; i++)
     {
       for(Int_t j=0; j<6; j++)
@@ -57,6 +60,7 @@ AliL3Fitter::~AliL3Fitter()
 
 void AliL3Fitter::LoadClusters(Char_t *path,Int_t event,Bool_t sp)
 {
+  //load clusters
   Char_t fname[256];
   AliL3MemHandler *clusterfile[36][6];
   for(Int_t s=0; s<=35; s++)
@@ -88,7 +92,7 @@ void AliL3Fitter::LoadClusters(Char_t *path,Int_t event,Bool_t sp)
     }
 }
 
-void AliL3Fitter::SortTrackClusters(AliL3Track *track)
+void AliL3Fitter::SortTrackClusters(AliL3Track *track) const
 {
   //Sort the internal cluster list in each track with respect to row numbering.
   //This may be necessary when no conventional track follower has been
@@ -136,6 +140,7 @@ void AliL3Fitter::SortTrackClusters(AliL3Track *track)
 
 Int_t AliL3Fitter::FitHelix(AliL3Track *track)
 {
+  //fit helix parameters
   fTrack = track;
   if(FitCircle())
     {
@@ -356,7 +361,7 @@ Int_t AliL3Fitter::FitCircle()
   rrrrav  = rrrrav / wsum ;
   xyav    = xyav   / wsum ;
 
-  Int_t const ntry = 5 ;
+  Int_t const kntry = 5 ;
 //
 //-->  USE THESE TO GET THE COEFFICIENTS OF THE 4-TH ORDER POLYNIMIAL
 //-->  DON'T PANIC - THE THIRD ORDER TERM IS ZERO !
@@ -386,7 +391,7 @@ Int_t AliL3Fitter::FitCircle()
   Double_t dlamax = 0.001 / chiscl ;   
    
   Double_t p, pd ;
-  for ( int itry = 1 ; itry <= ntry ; itry++ ) {
+  for ( int itry = 1 ; itry <= kntry ; itry++ ) {
      p      = c0 + lamda * (c1 + lamda * (c2 + lamda * lamda * c4 )) ;
      pd     = (c1 + lamda * (c2d + lamda * lamda * c4d)) ;
      dlamda = -p / pd ;
@@ -540,15 +545,15 @@ Int_t AliL3Fitter::FitLine ( )
     }
 
   Double_t localPsi = 0.5F * sqrt ( dx*dx + dy*dy ) / radius ;
-  Double_t total_s ;
+  Double_t totals ;
   
   if ( fabs(localPsi) < 1. ) 
     {
-      total_s = 2.0 * radius * asin ( localPsi ) ;
+      totals = 2.0 * radius * asin ( localPsi ) ;
     } 
   else 
     { 
-      total_s = 2.0 * radius * AliL3Transform::Pi() ;
+      totals = 2.0 * radius * AliL3Transform::Pi() ;
     } 
   
   Double_t dpsi,s;
@@ -579,7 +584,7 @@ Int_t AliL3Fitter::FitLine ( )
 	  fS[i]=s;
 	}
       else
-	fS[i]=total_s;
+	fS[i]=totals;
       
       sum += fZWeight[i];
       ss  += fZWeight[i] * fS[i];
