@@ -141,7 +141,9 @@ AliHBTWeightNonId3DCorrFctn::~AliHBTWeightNonId3DCorrFctn()
 void AliHBTWeightNonId3DCorrFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
     //Fills the numerator using pair from the same event
-    partpair = CheckPair(partpair);
+    
+//    partpair = CheckPair(partpair);//why checking cuts on simulated?
+
     trackpair = CheckPair(trackpair);
     if(partpair == 0x0) return;
     if(trackpair == 0x0) return;
@@ -198,7 +200,7 @@ void AliHBTWeightNonId3DCorrFctn::ProcessDiffEventParticles(AliHBTPair* trackpai
 {
 
   trackpair = CheckPair(trackpair);
-  partpair  = CheckPair(partpair);
+//  partpair  = CheckPair(partpair);
 
   double tKStar = TMath::Abs(partpair->GetKStar());
   double tKStarOut = trackpair->GetKStarOut();

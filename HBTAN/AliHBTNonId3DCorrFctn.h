@@ -31,11 +31,11 @@ class AliHBTNonId3DCorrFctn: public AliHBTOnePairFctn1D
 
    void WriteFunction();
    
-      TH1*     GetResult();
+   TH1*     GetResult();
    
  protected:
 
-   Double_t GetValue(AliHBTPair* pair) {return pair->GetQInv();}
+   Double_t GetValue(AliHBTPair* pair) const {return pair->GetQInv();}
    void BuildHistos(Int_t nbins, Float_t max, Float_t min);
    
    TH1D* fNumOutP;

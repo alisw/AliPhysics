@@ -26,7 +26,7 @@ AliHBTCorrFitFctn::AliHBTCorrFitFctn(Int_t nbins, Double_t maxXval, Double_t min
 void AliHBTCorrFitFctn::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
  //Fills the numerator using pair from the same event
-   partpair = CheckPair(partpair);
+//   partpair = CheckPair(partpair);
    if(partpair == 0x0) return; 
    trackpair = CheckPair(trackpair);
    if(trackpair == 0x0) return; 
@@ -63,7 +63,7 @@ void  AliHBTCorrFitFctn::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBT
 {
   // Fills the denominator using mixed pairs
   trackpair = CheckPair(trackpair);
-  partpair  = CheckPair(partpair);
+//  partpair  = CheckPair(partpair);
   if ( trackpair && partpair)
   {
      fDenominator->Fill(trackpair->GetQInv());

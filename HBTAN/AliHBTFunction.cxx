@@ -1078,8 +1078,8 @@ AliHBTTwoPairFctn1D::AliHBTTwoPairFctn1D(const Char_t *name, const Char_t *title
 void AliHBTTwoPairFctn1D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   // Fills the numerator using pairs from the same event
-  partpair  = CheckPair(partpair);
-  if( partpair == 0x0) return;
+  trackpair  = CheckPair(trackpair);
+  if( trackpair == 0x0) return;
     
   Double_t x = GetValue(trackpair,partpair);
   fNumerator->Fill(x);
@@ -1089,8 +1089,8 @@ void AliHBTTwoPairFctn1D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
 void AliHBTTwoPairFctn1D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   // Fills the denumerator usin mixed pairs
-  partpair  = CheckPair(partpair);
-  if( partpair == 0x0) return;
+  trackpair  = CheckPair(trackpair);
+  if( trackpair == 0x0) return;
   
   Double_t x = GetValue(trackpair,partpair);
   fDenominator->Fill(x);
@@ -1144,8 +1144,8 @@ AliHBTTwoPairFctn2D::AliHBTTwoPairFctn2D(const Char_t *name, const Char_t *title
 void AliHBTTwoPairFctn2D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //processes pair of particles coming from a same events (real pair)
-  partpair  = CheckPair(partpair);  //check cuts
-  if (partpair == 0x0) return;
+  trackpair  = CheckPair(trackpair);
+  if( trackpair == 0x0) return;
   
   Double_t x,y;
   GetValues(trackpair,partpair,x,y);
@@ -1156,8 +1156,8 @@ void AliHBTTwoPairFctn2D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
 void AliHBTTwoPairFctn2D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
 //processes pair of particles coming from a different events (mixed pair)
-  partpair  = CheckPair(partpair);
-  if (partpair == 0x0) return;
+  trackpair  = CheckPair(trackpair);
+  if( trackpair == 0x0) return;
   
   Double_t x,y;
   GetValues(trackpair,partpair,x,y);
@@ -1215,8 +1215,8 @@ AliHBTTwoPairFctn3D::AliHBTTwoPairFctn3D(const Char_t *name, const Char_t *title
 void AliHBTTwoPairFctn3D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   // Fills th numerator using pairs from the same event
-  partpair  = CheckPair(partpair);
-  if( partpair == 0x0) return;
+  trackpair  = CheckPair(trackpair);
+  if( trackpair == 0x0) return;
   
   Double_t x,y,z;
   GetValues(trackpair,partpair,x,y,z);
@@ -1228,8 +1228,8 @@ void AliHBTTwoPairFctn3D::ProcessSameEventParticles(AliHBTPair* trackpair, AliHB
 void AliHBTTwoPairFctn3D::ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair)
 {
   // Fills the denumerator using mixed pairs
-  partpair  = CheckPair(partpair);
-  if( partpair == 0x0) return;
+  trackpair  = CheckPair(trackpair);
+  if( trackpair == 0x0) return;
   
   Double_t x,y,z;
   GetValues(trackpair,partpair,x,y,z);

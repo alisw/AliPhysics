@@ -63,7 +63,7 @@ inline AliHBTPair* AliHBTFunction::CheckPair(AliHBTPair* pair)
   //check if pair and both particles meets the cut criteria
   if(fPairCut->Rejected(pair)) return 0x0; //if the pair is BAD
 
-//   It is notallowed to change the order here beacause analysis enforce the order
+//   It is not allowed to change the order here beacause analysis enforce the order
 
 //   {//it is BAD 
 //    pair = pair->GetSwappedPair();

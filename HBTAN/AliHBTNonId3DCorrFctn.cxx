@@ -11,6 +11,8 @@
 //                                                   //
 ///////////////////////////////////////////////////////
 
+AliHBTNonId3DCorrFctn x;
+
 ClassImp(AliHBTNonId3DCorrFctn)
 
 AliHBTNonId3DCorrFctn::AliHBTNonId3DCorrFctn(const char* name, const char* title):
