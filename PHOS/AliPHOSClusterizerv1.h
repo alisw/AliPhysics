@@ -37,7 +37,16 @@ public:
   void FillandSort(const DigitsList * dl, TObjArray * tl) ;   // Sorts the list according to increasing id
   Float_t GetLogWeightCut(void){return  fW0 ; }
   Float_t GetLocalMaxCut(void) {return  fLocMaxCut ; }
-  virtual void GetNumberOfClustersFound(Int_t * numb) ;   
+  virtual void GetNumberOfClustersFound(Int_t * numb) ; 
+ 
+  virtual void GetCalibrationParameters(Float_t & A, Float_t &B) { A = fA; B = fB; } 
+  virtual void GetEmcClusteringThreshold(Float_t & cluth) { cluth = fEmcClusteringThreshold;}
+  virtual void GetEmcEnergyThreshold(Float_t & enth) { enth =  fEmcEnergyThreshold; }  
+  virtual void GetLocalMaxCut(Float_t & cut) { cut =  fLocMaxCut;} 
+  virtual void GetLogWeightCut(Float_t & w) { w =fW0;}  
+  virtual void GetPpsdClusteringThreshold(Float_t & cluth) { cluth =  fPpsdClusteringThreshold;  } 
+  virtual void GetPpsdEnergyThreshold(Float_t & enth) { enth = fPpsdEnergyThreshold;  }
+
   virtual Bool_t IsInEmc(AliPHOSDigit * digit) ;                      // Tells if id digit is in EMC
   virtual void MakeClusters(const DigitsList * dl, RecPointsList * emcl, RecPointsList * ppsdl) ; // does the job 
   virtual void PrintParameters() ;  
