@@ -172,6 +172,10 @@ Int_t AliPHOSRecPoint::GetPHOSMod()
 
   phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
   fPHOSMod = relid[0];
+  if (fPHOSMod<0 || fPHOSMod>phosgeom->GetNModules() ) {
+    cout << "Wrong PHOS module number is found: " << fPHOSMod << endl;
+    return 0;
+  }
   return fPHOSMod ;
 }
 
