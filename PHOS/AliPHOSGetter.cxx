@@ -66,12 +66,12 @@
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSClusterizer.h"
-#include "AliPHOSClusterizerv1.h"
+#include "AliPHOSClusterizer.h"
 #include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOSTrackSegmentMakerv1.h"
+#include "AliPHOSTrackSegmentMaker.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSPID.h" 
-#include "AliPHOSPIDv1.h" 
+#include "AliPHOSPID.h" 
 #include "AliPHOSGeometry.h"
 
 ClassImp(AliPHOSGetter)
@@ -803,9 +803,9 @@ Bool_t AliPHOSGetter::PostClusterizer(const char * name) const
     tasks->Add(phos) ; 
   } 
 
-  AliPHOSClusterizer * phoscl = new AliPHOSClusterizerv1() ;
+  AliPHOSClusterizer * phoscl = new AliPHOSClusterizer() ;
   TString clun(name) ;
-  clun+=":clu-v1" ;
+  clun+=":clusterizer" ; 
   phoscl->SetName(clun) ;
   phos->Add(phoscl) ;
   return kTRUE; 
@@ -930,9 +930,9 @@ Bool_t AliPHOSGetter::PostTrackSegmentMaker(const char * name) const
   AliPHOSTrackSegmentMaker * phosts = 
     dynamic_cast<AliPHOSTrackSegmentMaker*>(phos->GetListOfTasks()->FindObject(name)) ; 
   if (!phosts) { 
-    phosts = new AliPHOSTrackSegmentMakerv1() ;
+    phosts = new AliPHOSTrackSegmentMaker() ;
     TString tsn(name);
-    tsn+=":tsm-v1" ;
+    tsn+=":tracksegmentmaker" ; 
     phosts->SetName(tsn) ;
     phos->Add(phosts) ;      
   }
@@ -1102,9 +1102,8 @@ Bool_t AliPHOSGetter::PostPID(const char * name) const
       return kTRUE ;
   }
  
-  AliPHOSPIDv1 * phospid = new AliPHOSPIDv1() ;
-  pidname+="-v1" ;
-  phospid->SetName(pidname) ;
+  AliPHOSPID * phospid = new AliPHOSPID() ;
+  phospid->SetName(pidname) ; 
   phos->Add(phospid) ;      
   
   return kTRUE; 

@@ -37,7 +37,6 @@ public:
   virtual char * GetTrackSegmentsBranch()const{return (char*) fTrackSegmentsTitle.Data(); }
   virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
 
-  virtual void Init() ;
   virtual void PlotDispersionCuts()const ;
   virtual void Print(Option_t * option)const ; 
   virtual void SetIdentificationMethod(char * option = "CPV DISP" ){fIDOptions = option ;} 
@@ -50,7 +49,8 @@ public:
   virtual const char * Version() const { return "pid-v1" ; }  
                      
  private:
-
+  
+  virtual void Init() ;
   void     MakeRecParticles(void ) ;
   Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; // Relative Distance CPV-EMC
   TVector3 GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const ;

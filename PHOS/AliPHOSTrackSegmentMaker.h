@@ -17,6 +17,7 @@
 
 
 // --- Standard library ---
+#include <iostream>
 
 // --- AliRoot header files ---
 
@@ -35,19 +36,19 @@ public:
     // dtor 
   } 
 
-  virtual void    Exec(Option_t * option) = 0 ;
-  virtual char*   GetRecPointsBranch ()const = 0 ;
-  virtual char*   GetTrackSegmentsBranch ()const = 0 ;
-  virtual const Int_t GetTrackSegmentsInRun()  const = 0 ; 
+  virtual void    Exec(Option_t * option){cout << "Not Defined" << endl ; } 
+  virtual char*   GetRecPointsBranch ()const{cout << "Not Defined" << endl ; return 0 ; } 
+  virtual char*   GetTrackSegmentsBranch ()const{cout << "Not Defined" << endl ; return 0 ; } 
+  virtual const Int_t GetTrackSegmentsInRun()  const {cout << "Not Defined" << endl ; return 0 ; } 
 
-  virtual void    Print(Option_t * option)const = 0;
+  virtual void    Print(Option_t * option)const {cout << "Not Defined" << endl ; }  
   //  virtual void Set...   // method to choose recPoints: along z only, along x ...???
-  //  virtual void SetChoosingAlgirithm() = 0 ;
-  //  virtual void SetMaxEmcCpvDistance(Float_t r) = 0 ; 
-  virtual void SetRecPointsBranch(const char * title) = 0 ;
-  virtual void SetTrackSegmentsBranch(const char * title) = 0 ;
-  virtual const char * Version() const = 0 ;   
-  virtual void WriteTrackSegments(Int_t event) = 0 ;
+  //  virtual void SetChoosingAlgirithm(){cout << "Not Defined" << endl ; return 0 ; } 
+  //  virtual void SetMaxEmcCpvDistance(Float_t r) {cout << "Not Defined" << endl ; return 0 ; } 
+  virtual void SetRecPointsBranch(const char * title){cout << "Not Defined" << endl ; } 
+  virtual void SetTrackSegmentsBranch(const char * title){cout << "Not Defined" << endl ; } 
+  virtual const char * Version() const {cout << "Not Defined" << endl ; return 0 ; }   
+  virtual void WriteTrackSegments(Int_t event){cout << "Not Defined" << endl ; } 
   
   ClassDef( AliPHOSTrackSegmentMaker,1)    // Algorithm class to make PHOS track segments (Base Class)
 
