@@ -70,6 +70,32 @@ extern "C" {
     Field[0] = b[0]; Field[1] = b[1]; Field[2] = b[2];
   }
 }
+  //_________________________________________________________________________
+
+AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& MUONTrackParam)
+{
+  if (this == &MUONTrackParam)
+    return *this;
+
+  fInverseBendingMomentum =  MUONTrackParam.fInverseBendingMomentum; 
+  fBendingSlope           =  MUONTrackParam.fBendingSlope; 
+  fNonBendingSlope        =  MUONTrackParam.fNonBendingSlope; 
+  fZ                      =  MUONTrackParam.fZ; 
+  fBendingCoor            =  MUONTrackParam.fBendingCoor; 
+  fNonBendingCoor         =  MUONTrackParam.fNonBendingCoor;
+
+  return *this;
+}
+  //_________________________________________________________________________
+AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& MUONTrackParam):TObject(MUONTrackParam)
+{
+  fInverseBendingMomentum =  MUONTrackParam.fInverseBendingMomentum; 
+  fBendingSlope           =  MUONTrackParam.fBendingSlope; 
+  fNonBendingSlope        =  MUONTrackParam.fNonBendingSlope; 
+  fZ                      =  MUONTrackParam.fZ; 
+  fBendingCoor            =  MUONTrackParam.fBendingCoor; 
+  fNonBendingCoor         =  MUONTrackParam.fNonBendingCoor;
+}
 
   //__________________________________________________________________________
 void AliMUONTrackParam::ExtrapToZ(Double_t Z)

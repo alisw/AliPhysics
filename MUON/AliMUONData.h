@@ -22,6 +22,10 @@ class TTree;
 class AliMUONConstants;
 class AliMUONRawCluster;
 class AliMUONTrack;
+class AliMUONDigit;
+class AliMUONHit;
+class AliMUONLocalTrigger;
+class AliMUONGlobalTrigger;
 
 //__________________________________________________________________
 /////////////////////////////////////////////////////////////////////
@@ -38,6 +42,7 @@ class AliMUONData : public TNamed {
     virtual ~AliMUONData();  
     virtual void   AddDigit(Int_t id, Int_t* tracks, Int_t* charges,
 			     Int_t* digits); 
+    virtual void   AddDigit(Int_t, const AliMUONDigit& ); // use copy constructor
     virtual void   AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
 			  Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
 			  Float_t tof, Float_t momentum, Float_t theta, 
@@ -47,10 +52,16 @@ class AliMUONData : public TNamed {
 			  Float_t tof, Float_t momentum, Float_t theta, 
 			  Float_t phi, Float_t length, Float_t destep, 
 			  Float_t Xref,Float_t Yref,Float_t Zref);
+    virtual void   AddHit(const AliMUONHit& ); // use copy constructor
+    
     virtual void   AddGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
 				    Int_t *singleUndef, Int_t *pairUnlike, 
 				    Int_t *pairLike);
+    virtual void   AddGlobalTrigger(const AliMUONGlobalTrigger& trigger); // use copy constructor
+
     virtual void   AddLocalTrigger(Int_t* ltrigger);
+    virtual void   AddLocalTrigger(const AliMUONLocalTrigger& trigger); // use copy constructor
+
     virtual void   AddRawCluster(Int_t id, const AliMUONRawCluster& clust);
     virtual void   AddRecTrack(const AliMUONTrack& track);
 

@@ -139,6 +139,15 @@ void AliMUONData::AddDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digit
   new(ldigits[fNdigits[id]++]) AliMUONDigit(tracks,charges,digits);
 }
 //_____________________________________________________________________________
+void AliMUONData::AddDigit(Int_t id, const AliMUONDigit& digit)
+{
+  //
+  // Add a MUON digit to the list of Digits of the detection plane id
+  //
+  TClonesArray &ldigits = * Digits(id) ; 
+  new(ldigits[fNdigits[id]++]) AliMUONDigit(digit);
+}
+//_____________________________________________________________________________
 void AliMUONData::AddGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
 				   Int_t *singleUndef,
 				   Int_t *pairUnlike, Int_t *pairLike)
@@ -147,6 +156,13 @@ void AliMUONData::AddGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
   TClonesArray &globalTrigger = *fGlobalTrigger;
   new(globalTrigger[fNglobaltrigger++]) 
     AliMUONGlobalTrigger(singlePlus, singleMinus,  singleUndef, pairUnlike, pairLike);
+}
+//_____________________________________________________________________________
+void AliMUONData::AddGlobalTrigger(const AliMUONGlobalTrigger& trigger )
+{
+  // add a MUON Global Trigger to the list (only one GlobalTrigger per event !)
+  TClonesArray &globalTrigger = *fGlobalTrigger;
+  new(globalTrigger[fNglobaltrigger++]) AliMUONGlobalTrigger(trigger);
 }
 //_____________________________________________________________________________
 void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
@@ -177,11 +193,24 @@ void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber,
 				  Xref,Yref,Zref);
 }
 //____________________________________________________________________________
+void AliMUONData::AddHit(const AliMUONHit& hit)
+{
+  TClonesArray &lhits = *fHits;
+  new(lhits[fNhits++]) AliMUONHit(hit);
+}
+//____________________________________________________________________________
 void AliMUONData::AddLocalTrigger(Int_t *localtr)
 {
   // add a MUON Local Trigger to the list
   TClonesArray &localTrigger = *fLocalTrigger;
   new(localTrigger[fNlocaltrigger++]) AliMUONLocalTrigger(localtr);
+}
+//____________________________________________________________________________
+void AliMUONData::AddLocalTrigger(const  AliMUONLocalTrigger& trigger)
+{
+  // add a MUON Local Trigger to the list
+  TClonesArray &localTrigger = *fLocalTrigger;
+  new(localTrigger[fNlocaltrigger++]) AliMUONLocalTrigger(trigger);
 }
 //_____________________________________________________________________________
 void AliMUONData::AddRawCluster(Int_t id, const AliMUONRawCluster& c)
@@ -200,6 +229,7 @@ void AliMUONData::AddRecTrack(const AliMUONTrack& track)
   //
   TClonesArray &lrectracks = *fRecTracks;
   new(lrectracks[fNrectracks++]) AliMUONTrack(track);
+  //  printf("TTTTTT %d ,\n",((AliMUONTrack*)fRecTracks->At(fNrectracks-1))->GetNTrackHits());
 }
 //____________________________________________________________________________
 TClonesArray*  AliMUONData::Digits(Int_t DetectionPlane) 
@@ -253,6 +283,7 @@ void AliMUONData::Fill(Option_t* option)
   const char *cRC  = strstr(option,"RC");  // RawCluster branches in TreeR
   const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeR
   const char *cRT  = strstr(option,"RT");  // Reconstructed Track in TreeT
+
   //const char *cRP  = strstr(option,"RP");  // Reconstructed Particle in TreeP
   
   char branchname[30];
@@ -303,6 +334,10 @@ void AliMUONData::Fill(Option_t* option)
     sprintf(branchname,"%sTrack",GetName());  
     TreeT()->Fill();
   }
+//   if ( TreeT() && cRTT ) {
+//     sprintf(branchname,"%sTrackTrig",GetName());  
+//     TreeT()->Fill();
+//   }
 }
 //_____________________________________________________________________________
 void AliMUONData::MakeBranch(Option_t* option)
@@ -318,7 +353,7 @@ void AliMUONData::MakeBranch(Option_t* option)
   const char *cRC  = strstr(option,"RC");  // RawCluster branches in TreeR
   const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeR
   const char *cRT  = strstr(option,"RT");  // Reconstructed Track in TreeT
-  const char *cRP  = strstr(option,"RP");  // Reconstructed Particle in TreeP
+  //const char *cRP  = strstr(option,"RP");  // Reconstructed Particle in TreeP
   
   TBranch * branch = 0x0;
   
@@ -446,10 +481,6 @@ void AliMUONData::MakeBranch(Option_t* option)
     branch = TreeT()->Branch(branchname,&fRecTracks,kBufferSize);
     Info("MakeBranch","Making Branch %s for tracks \n",branchname);
   }  
-
-  if (TreeP() && cRP ) {
-    Info("MakeBranch","Making Branch for TreeP is not yet ready. \n");
-  }
 }
 //____________________________________________________________________________
 TClonesArray*  AliMUONData::RawClusters(Int_t DetectionPlane)
@@ -606,9 +637,10 @@ void AliMUONData::SetTreeAddress(Option_t* option)
   }
 
   if ( TreeT() ) {
-    if (fRecTracks == 0x0 && cRT )  {
+    if (fRecTracks == 0x0 && cRT)  {
       fRecTracks  = new TClonesArray("AliMUONTrack",100);
     }
+
   }
   if ( TreeT() && fRecTracks && cRT ) {
     sprintf(branchname,"%sTrack",GetName());  
@@ -616,5 +648,6 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     if (branch) branch->SetAddress(&fRecTracks);
     else Warning("SetTreeAddress","(%s) Failed for Tracks. Can not find branch in tree.",GetName());
   }
+
 }
 //_____________________________________________________________________________

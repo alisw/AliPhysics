@@ -19,6 +19,24 @@
 
 ClassImp(AliMUONDigit)
 //_____________________________________________________________________________
+ AliMUONDigit::AliMUONDigit(const AliMUONDigit& digits):TObject(digits)
+{
+// copy constructor
+  
+    fPadX        = digits.fPadX;
+    fPadY        = digits.fPadY;
+    fCathode     = digits.fCathode;
+    fSignal      = digits.fSignal;
+    fPhysics     = digits.fPhysics;
+    fHit         = digits.fHit;
+
+    for(Int_t i=0; i<kMAXTRACKS; i++) {
+	fTcharges[i]  = digits.fTcharges[i];
+	fTracks[i]    = digits.fTracks[i];
+    }
+}
+
+//_____________________________________________________________________________
 AliMUONDigit::AliMUONDigit(Int_t *digits)
 {
   //
@@ -54,4 +72,25 @@ AliMUONDigit::AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits)
 AliMUONDigit::~AliMUONDigit()
 {
     // Destructor 
+}
+
+//_____________________________________________________________________________
+AliMUONDigit& AliMUONDigit::operator=(const AliMUONDigit& digits)
+{
+    if (this == &digits)
+      return *this;
+ 
+    fPadX        = digits.fPadX;
+    fPadY        = digits.fPadY;
+    fCathode     = digits.fCathode;
+    fSignal      = digits.fSignal;
+    fPhysics     = digits.fPhysics;
+    fHit         = digits.fHit;
+
+    for(Int_t i=0; i<kMAXTRACKS; i++) {
+	fTcharges[i]  = digits.fTcharges[i];
+	fTracks[i]    = digits.fTracks[i];
+    }
+
+    return *this;
 }

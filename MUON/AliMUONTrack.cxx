@@ -105,20 +105,31 @@ AliMUONTrack::~AliMUONTrack()
   //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack (const AliMUONTrack& MUONTrack):TObject(MUONTrack)
 {
-  fEventReconstructor =  MUONTrack.fEventReconstructor;
-  fTrackHitsPtr =  MUONTrack.fTrackHitsPtr;
+  fEventReconstructor = new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor);
   fTrackParamAtVertex = MUONTrack.fTrackParamAtVertex;
+  fTrackHitsPtr =  new TObjArray(*MUONTrack.fTrackHitsPtr);
   fNTrackHits =  MUONTrack.fNTrackHits;
   fFitMCS     =  MUONTrack.fFitMCS;
   fFitNParam  =  MUONTrack.fFitNParam;
   fFitFMin    =  MUONTrack.fFitFMin;
+  fFitStart   =  MUONTrack.fFitStart;
 }
 
   //__________________________________________________________________________
-AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& /*MUONTrack*/)
+AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& MUONTrack)
 {
-// Dummy assignment operator
+  if (this == &MUONTrack)
     return *this;
+
+  fEventReconstructor = new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor);
+  fTrackParamAtVertex = MUONTrack.fTrackParamAtVertex;
+  fTrackHitsPtr =  new TObjArray(*MUONTrack.fTrackHitsPtr);
+  fNTrackHits =  MUONTrack.fNTrackHits;
+  fFitMCS     =  MUONTrack.fFitMCS;
+  fFitNParam  =  MUONTrack.fFitNParam;
+  fFitFMin    =  MUONTrack.fFitFMin;
+  fFitStart   =  MUONTrack.fFitStart;
+  return *this;
 }
 
   //__________________________________________________________________________

@@ -19,7 +19,9 @@ class AliMUONTrackParam : public TObject {
   virtual ~AliMUONTrackParam(){
     // Destructor
     ;} // Destructor
-
+  
+  AliMUONTrackParam(const AliMUONTrackParam& );// copy constructor (should be added per default !)
+  AliMUONTrackParam& operator=(const  AliMUONTrackParam& );// (should be added per default !)
   // Get and Set methods for data
   Double_t GetInverseBendingMomentum(void) const {return fInverseBendingMomentum;}
   void SetInverseBendingMomentum(Double_t InverseBendingMomentum) {fInverseBendingMomentum = InverseBendingMomentum;}
@@ -38,7 +40,8 @@ class AliMUONTrackParam : public TObject {
   void ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackParam);
   void ExtrapToVertex();  // extrapolation to vertex through the absorber
   void BransonCorrection(); // makes Branson correction
-  Double_t TotalMomentumEnergyLoss(Double_t thetaLimit, Double_t pTotal, Double_t theta); // returns total momentum after energy loss correction in the absorber
+  // returns total momentum after energy loss correction in the absorber
+  Double_t TotalMomentumEnergyLoss(Double_t thetaLimit, Double_t pTotal, Double_t theta);
   void FieldCorrection(Double_t Z); // makes simple magnetic field correction through the absorber 
 
  protected:
