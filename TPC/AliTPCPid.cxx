@@ -21,6 +21,7 @@
 #include <TF1.h>
 #include <TClonesArray.h>
 //#include "AliITSIOTrack.h"
+#include "AliKalmanTrack.h"
 #include "Riostream.h"
 ClassImp(AliTPCPid)
 // Correction 13.01.2003 Z.S.,Dubna
@@ -201,7 +202,7 @@ Int_t   AliTPCPid::GetPcode(AliTPCtrack *track)
     return pcode?pcode:211;
     }
 //-----------------------------------------------------------
-Int_t   AliTPCPid::GetPcode(AliITStrackV2 *track)
+Int_t   AliTPCPid::GetPcode(AliKalmanTrack *track)
 {
   //
   // get particle code

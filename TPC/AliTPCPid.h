@@ -12,7 +12,7 @@
 #include <TVector.h>
 #include "../TPC/AliTPCtrack.h"
 //#include "../ITS/AliITSIOTrack.h"
-#include "../ITS/AliITStrackV2.h"
+class AliKalmanTrack;
 #include <assert.h>
 
 class TF1;
@@ -37,7 +37,7 @@ public:
 	Int_t	GetPcode(Float_t q,Float_t pm);
 	Int_t   GetPcode(AliTPCtrack*track);
 //        Int_t   GetPcode(AliITSIOTrack*); 
-        Int_t   GetPcode(AliITStrackV2* track);
+        Int_t   GetPcode(AliKalmanTrack* track);
 	void	SetCut(Int_t n, Float_t pm, Float_t pilo, Float_t pihi,
 			    Float_t klo, Float_t khi, Float_t plo, 
                             Float_t phi);
