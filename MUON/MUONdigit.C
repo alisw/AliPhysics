@@ -1,4 +1,4 @@
-void MUONdigit (Int_t evNumber1=0, Int_t evNumber2=0, Int_t ibg=1, Int_t bgr=10) 
+void MUONdigit (Int_t evNumber1=0, Int_t evNumber2=0, Int_t ibg=0, Int_t bgr=10) 
 {
 // Dynamically link some shared libs
 
@@ -25,12 +25,11 @@ void MUONdigit (Int_t evNumber1=0, Int_t evNumber2=0, Int_t ibg=1, Int_t bgr=10)
 // creation
        AliMUONMerger* merger = new AliMUONMerger();
 // configuration
-       merger->SetMode(0);
-       merger->SetSignalEventNumber(0);
-       merger->SetBackgroundEventNumber(0);
-       merger->SetBackgroundFileName("bg.root");
-       
-// pass
+       if (ibg) {
+	 merger->SetMode(ibg);
+	 merger->SetBackgroundFileName("bg.root");
+       }
+       // pass
        pMUON->SetMerger(merger);
    }
 // Action !
@@ -43,6 +42,12 @@ void MUONdigit (Int_t evNumber1=0, Int_t evNumber2=0, Int_t ibg=1, Int_t bgr=10)
 	cout << "nparticles  " << nparticles <<endl;
 	if (nev < evNumber1) continue;
 	if (nparticles <= 0) return;
+	Int_t nbgr_ev = Int_t(nev*bgr/(evNumber2+1));
+	
+	if (ibg) {
+	    merger->SetBackgroundEventNumber(nbgr_ev);
+	}
+
 	gAlice->SDigits2Digits();
 
 	char hname[30];
