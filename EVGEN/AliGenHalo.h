@@ -22,8 +22,8 @@ public:
     virtual void Generate();
     AliGenHalo & operator=(const AliGenHalo & rhs);
 protected:
-  FILE *fp;                             // Pointer to file
-  const Text_t     *fFileName;          // Choose the file
+  FILE *fp;                             //   Pointer to file
+  const Text_t     *fFileName;          // ! Choose the file
   ClassDef(AliGenHalo,1) // LHC background boundary source (MARS input)
 };
 #endif
