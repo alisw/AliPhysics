@@ -14,6 +14,7 @@
 #include <vector>
 
 #include <TVector2.h>
+#include <TString.h>
 
 #include "AliMpIntPair.h"
 
@@ -24,6 +25,7 @@ class AliMpMotifPosition;
 
 #ifdef __HP_aCC
   typedef map<AliMpIntPair, AliMpConnection*> ConnectionMap_t;
+  typedef ConnectionMap_t::const_iterator     ConnectionMapCIterator;
   typedef map<TString, AliMpVMotif*> MotifMap;
   typedef MotifMap::const_iterator   MotifMapIterator;
   typedef map<TString, AliMpMotifType*>  MotifTypeMap;
@@ -35,6 +37,7 @@ class AliMpMotifPosition;
   typedef vector<TVector2> DimensionsMap;
 #else
   typedef std::map< AliMpIntPair, AliMpConnection* > ConnectionMap_t;
+  typedef ConnectionMap_t::const_iterator     ConnectionMapCIterator;
   typedef std::map<TString, AliMpVMotif*> MotifMap;
   typedef MotifMap::const_iterator        MotifMapIterator;
   typedef std::map<TString, AliMpMotifType*> MotifTypeMap;
