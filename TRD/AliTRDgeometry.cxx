@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/05/21 16:45:47  hristov
+Last minute changes (C.Blume)
+
 Revision 1.11  2001/05/11 07:56:12  hristov
 Consistent declarations needed on Alpha
 
@@ -156,10 +159,12 @@ ClassImp(AliTRDgeometry)
   const Float_t AliTRDgeometry::fgkAmZpos  =  3.9100;
   const Float_t AliTRDgeometry::fgkCuZpos  = -1.3370; 
   const Float_t AliTRDgeometry::fgkSuZpos  =  0.0000;
-  const Float_t AliTRDgeometry::fgkFeZpos  =  1.3053;
-  const Float_t AliTRDgeometry::fgkCoZpos  =  1.3175;
-//const Float_t AliTRDgeometry::fgkWaZpos  =  1.3325; 
-  const Float_t AliTRDgeometry::fgkWaZpos  =  1.3375; 
+//const Float_t AliTRDgeometry::fgkFeZpos  =  1.3053;
+//const Float_t AliTRDgeometry::fgkCoZpos  =  1.3175;
+//const Float_t AliTRDgeometry::fgkWaZpos  =  1.3325;
+  const Float_t AliTRDgeometry::fgkFeZpos  =  1.2853;
+  const Float_t AliTRDgeometry::fgkCoZpos  =  1.2975;
+  const Float_t AliTRDgeometry::fgkWaZpos  =  1.3175;
 
 //_____________________________________________________________________________
 AliTRDgeometry::AliTRDgeometry():AliGeometry()
