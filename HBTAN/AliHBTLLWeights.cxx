@@ -192,6 +192,8 @@ AliHBTLLWeights::AliHBTLLWeights():
  fSigma(0.0)
 {
 // Default Constructor 
+  if (fgLLWeights)
+   Fatal("AliHBTLLWeights","LLWeights already instatiated. Use AliHBTLLWeights::Instance()");
 }
 /**************************************************************/
 
