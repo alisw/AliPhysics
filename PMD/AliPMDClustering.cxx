@@ -114,6 +114,7 @@ void AliPMDClustering::DoClust(Int_t idet, Int_t ismn, Double_t celladc[48][96],
 
   //  if (nmx1 == 0 | nmx1 == -1) return;
 
+  if (nmx1 == 0) nmx1 = 1;
   ave=ave/nmx1;
   if (fDebug == 1)
     {
