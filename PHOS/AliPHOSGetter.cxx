@@ -345,8 +345,18 @@ const Bool_t AliPHOSGetter::BranchExists(const TString recName) const
       return kTRUE ; 
     }
   }
-  tree->Delete();
-  
+  //We can't delete three if gAlice points to it... To be redisigned somehow???!!!
+  if(!fToSplit){
+    if(name.Contains("TreeS"))
+      if(tree!=gAlice->TreeS())
+	tree->Delete();
+    if(name.Contains("TreeD"))
+      if(tree!=gAlice->TreeD())
+	tree->Delete();
+    if(name.Contains("TreeR"))
+      if(tree!=gAlice->TreeR())
+	tree->Delete();    
+  }
   return kFALSE ;
   
 }
