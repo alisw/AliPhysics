@@ -971,7 +971,7 @@ AliFMD::Digits2Raw()
   }
   digitBranch->SetAddress(&digits);
   
-  Int_t nEvents = digitTree->GetEntries();
+  Int_t nEvents = (Int_t)digitTree->GetEntries();
   for (Int_t event = 0; event < nEvents; event++) {
     fmd->ResetDigits();
     digitTree->GetEvent(event);
