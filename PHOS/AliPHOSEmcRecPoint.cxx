@@ -49,6 +49,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() : AliPHOSRecPoint()
   fAmp   = 0. ;   
   fCoreEnergy = 0 ; 
   fEnergyList = 0 ;
+  fNExMax     = 0 ;   //Not unfolded yet
   fTime = -1. ;
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
    
@@ -61,6 +62,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const char * opt) : AliPHOSRecPoint(opt)
   
   fMulDigit   = 0 ;  
   fAmp   = 0. ;   
+  fNExMax     = 0 ;   //Not unfolded yet
   fCoreEnergy = 0 ; 
   fEnergyList = 0 ;
   fTime = -1. ;

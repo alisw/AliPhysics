@@ -54,6 +54,10 @@ public:
   Int_t       GetMultiplicity(void) const { return fMulDigit ; }   // gets the number of digits making this recpoint
   Int_t       GetMultiplicityAtLevel(const Float_t level) const ;  // computes multiplicity of digits with 
                                                                    // energy above relative level
+  Short_t     GetNExMax(void){return fNExMax ;} //Number of maxima found in cluster in unfolding:
+                                                //0 : was no unfolging
+                                                //-1: unfolding failed
+  void        SetNExMax(Int_t nmax){fNExMax = static_cast<Short_t>(nmax) ;}
   virtual Int_t GetNumberOfLocalMax(AliPHOSDigit **  maxAt, Float_t * maxAtEnergy,
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 
                                                                    // searches for the local maxima 
@@ -83,6 +87,7 @@ public:
   Float_t fDispersion ;       // shower dispersion
   Float_t *fEnergyList ;      //[fMulDigit] energy of digits
   Float_t fTime ;             // Time of the digit with maximal energy deposition
+  Short_t fNExMax ;           //number of (Ex-)maxima before unfolding
   
   ClassDef(AliPHOSEmcRecPoint,1)  // EMC RecPoint (cluster)
 
