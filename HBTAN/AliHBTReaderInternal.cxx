@@ -127,6 +127,8 @@ Int_t AliHBTReaderInternal::ReadNext()
     counter = 0;  
     if (fPartBranch && fTrackBranch)
      {
+       Info("ReadNext","Found %d tracks in total.",fTrackBuffer->GetEntries());	
+       Info("ReadNext","Found %d particles in total.",fPartBuffer->GetEntries());
        for(i = 0; i < fPartBuffer->GetEntries(); i++)
          {
            tpart = dynamic_cast<AliHBTParticle*>(fPartBuffer->At(i));
@@ -134,17 +136,30 @@ Int_t AliHBTReaderInternal::ReadNext()
 
            if( tpart == 0x0 ) continue; //if returned pointer is NULL
            if( ttrack == 0x0 ) continue; //if returned pointer is NULL
-
+           
+           if (AliHBTParticle::GetDebug() > 9)
+            {
+              Info("ReadNext","Particle:");
+              tpart->Print();
+              Info("ReadNext","Track:");
+              ttrack->Print();
+            }
            if (ttrack->GetUID() != tpart->GetUID())
              {
                Error("ReadNext","Sth. is wrong: Track and Particle has different UID.");
                Error("ReadNext","They probobly do not correspond to each other.");
              }
-
+           
            for (Int_t s = 0; s < ttrack->GetNumberOfPids(); s++)
             {
-              if( Pass(ttrack->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
-                                                         //if not take next partilce
+              //check if we are intersted with particles of this type
+              //if not take next partilce
+              if( Pass(ttrack->GetNthPid(s)) ) 
+               {
+                 if (AliHBTParticle::GetDebug() > 9)
+                  Info("ReadNext","Track Incarnation %d did not pass PID cut.",ttrack->GetNthPid(s));
+                 continue; 
+               }
               TParticlePDG* pdgp = pdgdb->GetParticle(ttrack->GetNthPid(s));
               if (pdgp == 0x0)//PDG part corresponding to new incarnation
                {
@@ -169,6 +184,8 @@ Int_t AliHBTReaderInternal::ReadNext()
               
               if( Pass(track) )
                 {
+                  if (AliHBTParticle::GetDebug() > 9)
+                   Info("ReadNext","Track Incarnation %d did not pass cut.",ttrack->GetNthPid(s));
                   delete track;
                   continue; 
                 }
@@ -213,6 +230,7 @@ Int_t AliHBTReaderInternal::ReadNext()
 
      if (fTrackBranch)
       {
+        Info("ReadNext","Found %d tracks in total.",fTrackBuffer->GetEntries());	
         for(i = 0; i < fTrackBuffer->GetEntries(); i++)
          {
            ttrack =  dynamic_cast<AliHBTParticle*>(fTrackBuffer->At(i));
