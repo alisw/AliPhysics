@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2001/09/26 16:03:41  coppedis
+Merging implemented
+
 Revision 1.23  2001/05/15 13:44:57  coppedis
 Changes in AddHit method
 
@@ -89,6 +92,7 @@ Introduction of the Copyright and cvs Log
 // --- AliRoot header files
 #include "AliZDC.h"
 #include "AliZDCHit.h"
+#include "AliZDCMergedHit.h"
 #include "AliZDCDigit.h"
 #include "AliZDCMerger.h"
 #include "AliDetector.h"
@@ -135,6 +139,8 @@ AliZDC::AliZDC(const char *name, const char *title)
   // Allocate the hits array  
   fHits   = new TClonesArray("AliZDCHit",1000);
   gAlice->AddHitList(fHits);
+  // Allocate the merged hits array  
+  fMergedHits = new TClonesArray("AliZDCMergedHit",1000);
 
   // Allocate the digits array  
   fDigits = new TClonesArray("AliZDCDigit",1000);
@@ -150,7 +156,7 @@ AliZDC::~AliZDC()
 
   fIshunt   = 0;
   
-//  if(fMerger) delete fMerger;
+  if(fMerger) delete fMerger;
 
 //  if(fHits){
 //    fHits->Delete();
@@ -312,8 +318,10 @@ Float_t AliZDC::ZMax(void) const
   const char *cS = strstr(opt,"S");
 
   if (gAlice->TreeS() && cS) {
+    if(fMergedHits!=0) fMergedHits->Clear();
+    else fMergedHits = new TClonesArray ("AliZDCMergedHit",1000);
     MakeBranchInTree(gAlice->TreeS(), 
-                     branchname, &fHits, fBufferSize, file) ;
+                     branchname, &fMergedHits, fBufferSize, file) ;
     printf("* AliZDC::MakeBranch    * Making Branch %s for SDigits\n\n",branchname);
   }
 
@@ -339,32 +347,117 @@ Float_t AliZDC::ZMax(void) const
 }
 
 //_____________________________________________________________________________
+ void AliZDC::MakeBranchInTreeSD(TTree *treeSD, const char *file)
+{
+  // MakeBranchInTree
+  const Int_t kBufferSize = 4000;
+  char  branchname[20];
+  sprintf(branchname,"%s",GetName());
+  MakeBranchInTree(treeSD, branchname, &fMergedHits, kBufferSize, file) ;
+  printf("* AliZDC::MakeBranch    * Making Branch %s for SDigits\n\n",branchname);
+
+}
+//_____________________________________________________________________________
+ void AliZDC::MakeBranchInTreeD(TTree *treeD, const char *file)
+{
+  // MakeBranchInTree
+  const Int_t kBufferSize = 4000;
+  char  branchname[20];
+  sprintf(branchname,"%s",GetName());
+  MakeBranchInTree(treeD, branchname, &fDigits, kBufferSize, file) ;
+  printf("* AliZDC::MakeBranch    * Making Branch %s for Digits\n\n",branchname);
+
+}
+//_____________________________________________________________________________
 void AliZDC::Hits2SDigits()
 {
-
+  printf("\n	Entering AliZDC::SDigits2Digits()\n");
+  
+  //----------------------------------------------------------------
   if(!fMerger){ 
-    // ### Copy of TreeH in TreeS
-    // Pointer to TreeH
-//    printf("\n 	ZDC digitization (without merging)\n");
+    printf("\n 	ZDC digitization (without merging)\n");
+
+    AliZDCMergedHit *MHit;
+    Int_t j, sector[2];
+    Float_t MHits[7];
+    fNMergedhits = 0;
+
     TTree *treeH = gAlice->TreeH();
     Int_t ntracks = (Int_t) treeH->GetEntries();
-    Int_t fNhits = 0;
     gAlice->ResetHits();
   
     // Tracks loop
     for(Int_t itrack=0; itrack<ntracks; itrack++){
        treeH->GetEvent(itrack);
-       // Hits loop
        for(AliZDCHit* zdcHit=(AliZDCHit*)this->FirstHit(-1); zdcHit;
-           zdcHit = (AliZDCHit*)this->NextHit()){ 
-	  TClonesArray &sdigits = *fHits;
-	  new (sdigits[fNhits++]) AliZDCHit(zdcHit);
-       }
+                      zdcHit = (AliZDCHit*)this->NextHit()){ 
+		      
+	   for(j=0; j<2; j++) sector[j] = zdcHit->GetVolume(j);
+	   MHits[0] = zdcHit->GetPrimKinEn();
+	   MHits[1] = zdcHit->GetXImpact();
+	   MHits[2] = zdcHit->GetYImpact();
+	   MHits[3] = zdcHit->GetSFlag();
+	   MHits[4] = zdcHit->GetLightPMQ();
+	   MHits[5] = zdcHit->GetLightPMC();
+	   MHits[6] = zdcHit->GetEnergy();
+       }//Hits loop
+       
+	  MHit = new AliZDCMergedHit(sector, MHits);
+	  new((*fMergedHits)[fNMergedhits]) AliZDCMergedHit(*MHit);	  
+	  TClonesArray &sdigits = *fMergedHits;
+	  new (sdigits[fNMergedhits]) AliZDCMergedHit(*MHit);
+	  fNMergedhits++;
+	  delete MHit;
     }
-  
+    printf("\n	### Filling SDigits tree\n");
     gAlice->TreeS()->Fill();
     gAlice->TreeS()->Write(0,TObject::kOverwrite);  
     gAlice->TreeS()->Reset();  
+  }
+  //----------------------------------------------------------------
+  else if(fMerger){
+    printf("\n         ZDC merging and digitization\n");
+    // ### Initialise merging
+    fMerger -> InitMerging();
+
+    TFile *bgrFile  = fMerger->BgrFile();
+    bgrFile->cd();
+    // SDigits tree
+    Int_t fNEvBgr = fMerger->EvNum();
+    char treeSDBgrName[20];
+    sprintf(treeSDBgrName,"TreeS%d",fNEvBgr);
+    fTreeSD = (TTree*)gDirectory->Get(treeSDBgrName); // TreeH
+    if(!fTreeSD){
+      printf("\n ERROR -> Can't find TreeS%d in background file\n",fNEvBgr);
+    }	 
+    // Branch address
+    TBranch *branchSD;
+    char branchSDname[20];
+    sprintf(branchSDname,"%s",GetName());
+    if(fTreeSD && fMergedHits){
+//      printf("\n	fTreeSD!=0 && fMergedHits!=0\n");
+      branchSD = fTreeSD->GetBranch(branchSDname);
+      if(branchSD) branchSD->SetAddress(&fMergedHits);
+    }
+    if(!branchSD) MakeBranchInTreeSD(fTreeSD);
+
+    // ### Get TCA of MergedHits from AliZDCMerger
+    fMergedHits  = fMerger->MergedHits();
+    fNMergedhits = fMerger->GetNMhits();
+    printf("\n         fNMergedhits (from AliZDCMerger) = %d\n", fNMergedhits);   
+    AliZDCMergedHit *MHit;
+    TClonesArray &sdigits = *fMergedHits;
+    Int_t imhit;
+    //Merged Hits loop
+    for(imhit=0; imhit<fNMergedhits; imhit++){
+       MHit = (AliZDCMergedHit*) fMergedHits->UncheckedAt(imhit);
+       new (sdigits[imhit]) AliZDCMergedHit(*MHit);
+    }
+
+//    printf("\n ### Filling SDigits tree\n");
+    bgrFile->cd();
+    fTreeSD->Fill();
+    fTreeSD->Write(0,TObject::kOverwrite);
   }
   
 }
@@ -372,22 +465,48 @@ void AliZDC::Hits2SDigits()
 //_____________________________________________________________________________
 void AliZDC::SDigits2Digits()
 {
+  printf("\n	Entering AliZDC::SDigits2Digits()\n");
   if(!fMerger){ // Only digitization
-//    printf("\n        ZDC digitization (without merging) \n");
+    printf("\n        ZDC digitization (without merging) \n");
     fMerger = new AliZDCMerger();    
-    fMerger->Digitize();
+    fMerger->Digitize(fNMergedhits, fMergedHits);
+
+    char hname[30];
+    sprintf(hname,"TreeD%d",gAlice->GetHeader()->GetEvent());
+    gAlice->TreeD()->Fill();
+    gAlice->TreeD()->Write(0,TObject::kOverwrite);
+    gAlice->TreeD()->Reset();  
   }
-  else{	// Merging and digitization
+  else if(fMerger){	// Merging and digitization
     printf("\n        ZDC merging and digitization\n");
-    fMerger -> InitMerging();
+    fMerger->Digitize(fNMergedhits, fMergedHits);
+
+    TFile *bgrFile = fMerger->BgrFile();
+    bgrFile->cd();
+    // Digits tree
+    Int_t fNEvBgr = fMerger->EvNum();
+    char treeDBgrName[20];
+    sprintf(treeDBgrName,"TreeD%d",fNEvBgr);
+    fTreeMD = (TTree*)gDirectory->Get(treeDBgrName); // TreeH
+    if(!fTreeMD){
+      printf("\n ERROR -> Can't find TreeD%d in background file\n",fNEvBgr);
+    }	 
+    // Branch address
+    TBranch *branchD;
+    char branchDname[20];
+    sprintf(branchDname,"%s",GetName());
+    if(fTreeMD && fDigits){
+      printf("\n	fTreeMD!=0 && fDigits!=0\n");
+      branchD = fTreeMD->GetBranch(branchDname);
+      if(branchD) branchD->SetAddress(&fDigits);
+    }
+    if(!branchD) MakeBranchInTreeD(fTreeMD);
+    
+//    printf("\n ### Filling Digits tree\n");
+    fTreeMD->Fill();
+    fTreeMD->Write(0,TObject::kOverwrite);
   }
-
-  char hname[30];
-  sprintf(hname,"TreeD%d",gAlice->GetHeader()->GetEvent());
-
-  gAlice->TreeD()->Fill();
-  gAlice->TreeD()->Write(0,TObject::kOverwrite);
-  gAlice->TreeD()->Reset();  
+  
   
 }
 //_____________________________________________________________________________
