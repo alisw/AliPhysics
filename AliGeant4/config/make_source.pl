@@ -19,6 +19,7 @@
 @CATLIST = (@CATLIST,"event");
 @CATLIST = (@CATLIST,"run");
 @CATLIST = (@CATLIST,"visualization");
+@CATLIST = (@CATLIST,"interfaces");
 
 # create source dir structure
 for( $i = 0 ; $i < $#DIRLIST+1 ; $i++ ) {
