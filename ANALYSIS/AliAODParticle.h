@@ -95,7 +95,7 @@ public:
     
   Double_t         Pt    () const  //transverse momentum
     { return TMath::Sqrt(fPx*fPx+fPy*fPy); }
-  Double_t         Energy() const { return fE; }
+  Double_t         E() const { return fE; }
   
                                    //Pseudo Rapidity
   Double_t         Eta   () const { if (P() != fPz) return 0.5*TMath::Log((P()+fPz)/(P()-fPz)); 

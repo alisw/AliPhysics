@@ -76,7 +76,7 @@ AliAODParticle::AliAODParticle(const AliAODParticle& in):
    fPdgIdx(in.fPdgIdx), fIdxInEvent(in.fIdxInEvent),
    fNPids(in.fNPids),fPids(new Int_t[fNPids]),fPidProb(new Float_t[fNPids]),
    fCalcMass(in.GetCalcMass()),
-   fPx(in.Px()),fPy(in.Py()),fPz(in.Pz()),fE(in.Energy()), 
+   fPx(in.Px()),fPy(in.Py()),fPz(in.Pz()),fE(in.E()), 
    fVx(in.Vx()),fVy(in.Vy()),fVz(in.Vz()),fVt(in.T()),
    fTPCTrackPoints(0x0),fITSTrackPoints(0x0),fClusterMap(0x0)
 {
@@ -186,7 +186,7 @@ AliAODParticle& AliAODParticle::operator=(const AliAODParticle& in)
   fPx = in.Px();
   fPy = in.Py();
   fPz = in.Pz();
-  fE = in.Energy(); 
+  fE = in.E(); 
   fVx = in.Vx();
   fVy = in.Vy();
   fVz = in.Vz();
@@ -357,7 +357,7 @@ void AliAODParticle::Print() const
    }
   
   printf("Px: %+f Py: %+f Pz: %+f E: %+f Calculated Mass: %f\nVx: %+f Vy: %+f Vz: %+f T: %+f\n",
-          Px(),Py(),Pz(),Energy(),GetCalcMass(),Vx(),Vy(),Vz(),T());
+          Px(),Py(),Pz(),E(),GetCalcMass(),Vx(),Vy(),Vz(),T());
 
   for (Int_t i = 0; i < fNPids; i++)
    {
