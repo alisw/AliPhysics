@@ -24,13 +24,13 @@
 // Author: Andrei Gheata 10/07/2003
 
 #include "Riostream.h"
-
 #include "TCallf77.h"
 #include "TFluka.h"
 #include "TFlukaMCGeometry.h"
 #include "TGeoManager.h" 
 #include "TGeoVolume.h" 
 #include "TObjString.h"
+
 
 #ifndef WIN32 
 # define idnrwr idnrwr_
@@ -608,6 +608,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       matname = element->GetTitle();
       ToFlukaString(matname);
       rho = 0.999;
+
       mat = new TGeoMaterial(matname, element->A(), element->Z(), rho);
       mat->SetIndex(nfmater+3);
       mat->SetUsed(kTRUE);
@@ -621,7 +622,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    // Adjust material names and add them to FLUKA list
    for (i=0; i<nmater; i++) {
       mat = (TGeoMaterial*)matlist->At(i);
-      if (!mat->IsUsed()) continue;
+      if (!mat->IsUsed()) continue;      
       z = mat->GetZ();
       a = mat->GetA();
       rho = mat->GetDensity();
@@ -772,49 +773,35 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    
    PrintHeader(out, "TGEO MATERIAL ASSIGNMENTS");   
    for (i=1; i<=nvols; i++) {
+       
       vol = gGeoManager->GetVolume(i);
       mat = vol->GetMedium()->GetMaterial();
-//      mat->SetUsed(kTRUE);
       idmat = mat->GetIndex();
       for (Int_t j=0; j<nfmater; j++) {
          mat = (TGeoMaterial*)fMatList->At(j);
          if (mat->GetIndex() == idmat) mat->SetUsed(kTRUE);
       }   
+
+      Float_t hasfield  = (vol->GetMedium()->GetParam(1) > 0) ? flagfield : 0.;
+      
       out << setw(10) << "ASSIGNMAT ";
       out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
       out << setw(10) << setiosflags(ios::fixed) << Double_t(idmat);
       out << setw(10) << setiosflags(ios::fixed) << Double_t(i);
       out << setw(10) << "0.0";
       out << setw(10) << "0.0";
-      out << setw(10) << setiosflags(ios::fixed) << flagfield;
+      out << setw(10) << setiosflags(ios::fixed) <<  hasfield;
       out << setw(10) << "0.0";
       out << endl;
    }
    out.close();
    fLastMaterial = nfmater+2;
-/*   
-   TGeoMaterial *mat1 = 0;
-   for (i=1; i<=nvols; i++) {
-      vol = gGeoManager->GetVolume(i);
-      med = vol->GetMedium();
-      mat = med->GetMaterial();
-      printf("Region %d: %s\n", i, vol->GetName());
-      printf("   medium %d: %s\n", med->GetId(), med->GetName());
-      for (j=0; j<nfmater; j++) {
-         mat1 = (TGeoMaterial*)fMatList->At(j);
-         if (mat1 != mat) continue;
-         objstr = (TObjString*)fMatNames->At(j);
-         matname = objstr->GetString();
-         break;
-      } 
-      if (mat1 != mat) printf("   (*) material not found in Fluka list\n");
-      printf("   material %s (at ind=%d): FlukaID=%d FlukaName=%s\n", 
-             mat->GetName(), j, mat->GetIndex(), matname.Data());
-      if (mat->GetCerenkovProperties()) printf("     Cerenkov properties found\n");      
-   }   
-*/   
    
-   if (!gFluka->IsGeneratePemf()) return;
+   if (!gFluka->IsGeneratePemf()) {
+       if (gSystem->AccessPathName("FlukaVmc.pemf")) Fatal("CreateFlukaMatFile", "No pemf file in working directory");
+       return;
+   }
+   
    // Write peg files
    char number[20];
    Int_t countMatOK = 0;
