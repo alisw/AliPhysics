@@ -127,7 +127,7 @@ void AliITSMapA1::SetArray(TObjArray *obj){
     if (fObjects) fNobjects = fObjects->GetEntriesFast();
 }
 //______________________________________________________________________
-Int_t AliITSMapA1::CheckedIndex(Int_t iz, Int_t ix){
+Int_t AliITSMapA1::CheckedIndex(Int_t iz, Int_t ix) const {
     //check boundaries and return an index in array
     Int_t index=fNpx*iz+ix;
 
@@ -175,7 +175,7 @@ void AliITSMapA1::FlagHit(Int_t iz, Int_t ix){
     fHitMap[CheckedIndex(iz, ix)] = -TMath::Abs(fHitMap[CheckedIndex(iz, ix)]);
 }
 //______________________________________________________________________
-Int_t AliITSMapA1::GetHitIndex(Int_t iz, Int_t ix){
+Int_t AliITSMapA1::GetHitIndex(Int_t iz, Int_t ix) const {
     // return the digit index from a specific entry in array
 
     return TMath::Abs(fHitMap[CheckedIndex(iz, ix)])-1;

@@ -30,7 +30,7 @@ class AliITSMap : public TObject {
     // Flag a hit as used
     virtual  void  FlagHit(Int_t iz, Int_t ix)                     =0;    
     // Get index of hit in the list of digits
-    virtual Int_t  GetHitIndex(Int_t iz, Int_t ix)                 =0;
+    virtual Int_t  GetHitIndex(Int_t iz, Int_t ix) const           =0;
     // Get pointer to digit
     virtual TObject * GetHit(Int_t iz, Int_t ix)                   =0;
     // Test hit status

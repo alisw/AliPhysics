@@ -49,7 +49,7 @@ class AliITSMapA2 : public AliITSMapA1{
     virtual  void  DeleteHit(Int_t iz, Int_t ix){
 	fHitMapD[CheckedIndex(iz, ix)]=0;}
     //return the index of an entry in array
-    virtual Int_t  GetHitIndex(Int_t iz, Int_t ix){
+    virtual Int_t  GetHitIndex(Int_t iz, Int_t ix) const {
 	return CheckedIndex(iz, ix);};
     // Get object (1D histogram)
     virtual TObject *GetHit(Int_t iz, Int_t dummy);

@@ -40,7 +40,7 @@ class AliITSMapA1 : public AliITSMap{
     // Delete a single hit
     virtual  void  DeleteHit(Int_t iz, Int_t ix);
     // Get index of hit in the list of digits
-    virtual Int_t  GetHitIndex(Int_t iz, Int_t ix);
+    virtual Int_t  GetHitIndex(Int_t iz, Int_t ix) const ;
     // Get pointer to digit
     virtual TObject* GetHit(Int_t iz, Int_t ix);
     // Flag a hit as used
@@ -56,7 +56,7 @@ class AliITSMapA1 : public AliITSMap{
 
  protected:
     // Check index
-    Int_t   CheckedIndex(Int_t iz, Int_t ix);
+    Int_t   CheckedIndex(Int_t iz, Int_t ix) const;
 
     // Data members
     AliITSsegmentation *fSegmentation;   // segmentation class
