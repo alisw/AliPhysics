@@ -744,62 +744,7 @@ AliMUON *MUON  = new AliMUONv0("MUON","normal MUON");
 }
  
 if(iPHOS) {
-AliPHOS *PHOS  = new AliPHOSv1("PHOS","normal PHOS");
-// * PHOSflags:    YES: X<>0   NO: X=0
-// * PHOSflags(1) : -----X  Create branch for TObjArray of AliPHOSCradle
-// *                ----X-  Create file (ftn03 on HP-UX) with list of SHAKER particles (7Mb/event)
-// *                
-PHOS->SetFlags(000001);
-PHOS->SetRadius(460); //Distance from beam to PHOS crystals.
-// (crystal_side_size,crystal_length,wrap_thikness,air_thikness,PIN_size,PIN length)
-PHOS->SetCell(2.2,          18.,         0.01,        0.01,        1.,      0.1);
-PHOS->SetCradleSize(48, 90, 4); // Nz (along beam), Nphi, Ncradles
-PHOS->SetCradleA(0);   //Angle between Cradles
-// *  ===============
-// * PHOS extra parameters (contact Maxim Volkov volkov@mail.cern.ch)
-// * 1. STE_THICK         Steel cover thickness
-// * 2. SUP_Y             Crystal support height
-// * 3. FTIU_THICK        Thermo Insulating outer cover Upper plate thickness
-// * 4. UFP_Y             Upper Polystyrene Foam plate thickness
-// * 5. TCB_THICK         Thermo insulating Crystal Block wall thickness
-// * 6. UCP_Y             Upper Cooling Plate thickness
-// * 7. ASP_Y             Al Support Plate thickness
-// * 8. TIP_Y             Lower Thermo Insulating Plate thickness
-// * 9. TXP_Y             Lower Textolit Plate thickness
-PHOS->SetExtra(0.001, 6.95, 4., 5., 2., 0.06, 10., 3., 1.);   
-PHOS->SetTextolitWall(209., 71., 250.);    //Textolit Wall box dimentions
-PHOS->SetInnerAir(206.,    66.,     244.); //Inner AIR volume dimensions
-// *  ===============================
-// * 1. FTI_X             Foam Thermo Insulating outer cover dimensions
-// * 2. FTI_Y             ==//==
-// * 3. FTI_Z             ==//==
-// * 4. FTI_R             Distance from IP to Foam Thermo Insulating top plate
-PHOS->SetFoam(214.6,  80.,  260., 467.); 
-//    =================================
-// *******************************************************************************
-// * KINE 700  - SHAKER generator
-// * KINE 700 x y z NDNDY YLIM PTLIM ChargeFlag
-// *     JWEAK=0
-// *     JPI0=JETA=1
-// *     JPIC=JPRO=JKAC=JKA0=JRHO=JOME=JPHI=JPSI=JDRY=ChargeFlag
-// *     Int_t               JWEI;           // Unweighted generation
-// *     Int_t               NDNDY;          // Density of charged particles
-// *     Float_t             YLIM;           // Rapidity Limit
-// *     Float_t             PTLIM;          // Pt limit in GeV/c
-// *     Int_t               JWEAK;          // Disable weak decays
-// *     Int_t               JPI0;           // pi0 generation
-// *     Int_t               JETA;           // eta generation
-// *     Int_t               JPIC;           // pi+/- generation
-// *     Int_t               JPRO;           // proton generation
-// *     Int_t               JKAC;           // K+/- generation
-// *     Int_t               JKA0;           // K0 generation
-// *     Int_t               JRHO;           // rho generation
-// *     Int_t               JOME;           // omega generation
-// *     Int_t               JPHI;           // phi generation
-// *     Int_t               JPSI;           // J/psi generation
-// *     Int_t               JDRY;           // Drell-Yan generation
-// * KINE  700     5.    175.    0.          800. 1.5 5. 1.
-// *******************************************************************************
+AliPHOS *PHOS  = new AliPHOSv0("PHOS","normal PHOS");
 }
 
 if(iPMD) {
