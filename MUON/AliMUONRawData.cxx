@@ -17,13 +17,16 @@
 //
 // MUON Raw Data generator in ALICE-MUON
 //
-// This class v-1:
-// * generates raw data for MUON tracker only (for the moment)
+// This class version 1 (further details could be found in Alice-note coming soon right in our direction)
+// Generates raw data for MUON tracker and finally for trigger
 // * a simple mapping is used (see below)
 // * the bus patch id is calculated with an absolute number 0 - 999
-// one DDL per 1/2 chamber is created for both cathode.
-//
+// * one DDL per 1/2 chamber is created for both cathode.
+// For trigger there is no mapping (mapping could be found in AliMUONTriggerCircuit)
+// don't need for digits2raw but needed in raw2Reco
+// the position are given per local card
 ////////////////////////////////////
+
 #include <TClonesArray.h>
 #include "AliMUONRawData.h"
 #include "AliMUONDigit.h"
@@ -37,10 +40,10 @@
 #include "AliMUONDDLTracker.h"
 #include "AliMUONDDLTrigger.h"
 
-// #include "AliMUON.h"
-// #include "AliMUONLocalTrigger.h"
-// #include "AliMUONGlobalTrigger.h"
-// #include "AliMUONTriggerCircuit.h"
+#include "AliMUON.h"
+#include "AliMUONLocalTrigger.h"
+#include "AliMUONGlobalTrigger.h"
+#include "AliMUONTriggerCircuit.h"
 
 const Int_t AliMUONRawData::fgkDefaultPrintLevel = 0;
 
@@ -131,8 +134,6 @@ AliMUONRawData::~AliMUONRawData(void)
   if (fDDLTrigger)
     delete fDDLTrigger;
 
-//   if (fTrigDec)
-//     delete fTrigDec;
   return;
 }
 //____________________________________________________________________
@@ -145,11 +146,13 @@ Int_t AliMUONRawData::WriteRawData()
 
   fLoader->LoadDigits("READ");
 
-  fMUONData->SetTreeAddress("D");
+  fMUONData->SetTreeAddress("D,GLT");
+
+
+  // tracking chambers
 
   for (Int_t ich = 0; ich < AliMUONConstants::NTrackingCh(); ich++) {
-  //  for (Int_t ich = 0; ich < 2; ich++) {
-
+ 
     // open files
     DDLId = ich * 2  + 0x900;
     sprintf(name, "MUON_%d.ddl",DDLId);
@@ -168,23 +171,24 @@ Int_t AliMUONRawData::WriteRawData()
   }
  
   // trigger chambers
-
-  
+ 
   // open files
-//   DDLId = 0xA00;
-//   sprintf(name, "MUTR_%d.ddl",DDLId);
-//   fFile1 = fopen(name,"w");
+  DDLId = 0xA00;
+  sprintf(name, "MUTR_%d.ddl",DDLId);
+  fFile1 = fopen(name,"w");
 
-//   DDLId = 0xA00 + 1;
-//   sprintf(name, "MUTR_%d.ddl",DDLId);
-//   fFile2 = fopen(name,"w");
+  DDLId = 0xA00 + 1;
+  sprintf(name, "MUTR_%d.ddl",DDLId);
+  fFile2 = fopen(name,"w");
 
-//   WriteTriggerDDL();
+  WriteTriggerDDL();
   
-//   // reset and close
-//   fclose(fFile1);
-//   fclose(fFile2);
-   fLoader->UnloadDigits();
+  // reset and close
+  fclose(fFile1);
+  fclose(fFile2);
+  fMUONData->ResetTrigger();
+  
+  fLoader->UnloadDigits();
 
   return kTRUE;
 }
@@ -229,7 +233,7 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
   Int_t nDigits;
   const AliMUONDigit* digit;
 
-   if (fPrintLevel > 0)
+   if (fPrintLevel == 1)
       printf("WriteDDL chamber %d\n", iCh+1);
 
   for (Int_t iCath = 0; iCath < 2; iCath++) {
@@ -396,61 +400,160 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
 Int_t AliMUONRawData::WriteTriggerDDL()
 {
 
-//   Long_t gloTrigPat;
-//   TClonesArray *localTrigger;
-//   TClonesArray *globalTrigger;
-//   AliMUONLocalTrigger *locTrg;
-//   AliMUONGlobalTrigger *gloTrg;
-//   AliMUONTriggerCircuit *circuit;
+ // DDL event one per half chamber
+  AliMUONSubEventTrigger* subEvent = 0x0;
 
-//   fTrigData->SetTreeAddress("D,GLT");
-//   fTrigDec->Digits2Trigger(); 
-  
 
-//   AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
+  // stored local id number 
+  TArrayI isFired(256);
+  isFired.Reset();
 
-//   // global trigger for trigger pattern
-//   gloTrigPat = 0;
- 
-//   globalTrigger = fMUONData->GlobalTrigger(); 
 
-//   gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);
-//   if (gloTrg->SinglePlusLpt())  gloTrigPat|= 0x1;
-//   if (gloTrg->SinglePlusHpt())  gloTrigPat|= 0x2;
-//   if (gloTrg->SinglePlusApt())  gloTrigPat|= 0x4;
- 
-//   if (gloTrg->SingleMinusLpt()) gloTrigPat|= 0x8;
-//   if (gloTrg->SingleMinusHpt()) gloTrigPat|= 0x10;
-//   if (gloTrg->SingleMinusApt()) gloTrigPat|= 0x20;
- 
-//   if (gloTrg->SingleUndefLpt()) gloTrigPat|= 0x40;
-//   if (gloTrg->SingleUndefHpt()) gloTrigPat|= 0x80;
-//   if (gloTrg->SingleUndefApt()) gloTrigPat|= 0x100;
- 
-//   if (gloTrg->PairUnlikeLpt())  gloTrigPat|= 0x200;
-//   if (gloTrg->PairUnlikeHpt())  gloTrigPat|= 0x400;
-//   if (gloTrg->PairUnlikeApt())  gloTrigPat|= 0x800;
+ // DDL header
+  AliRawDataHeader header = fDDLTrigger->GetHeader();
+  Int_t headerSize = fDDLTrigger->GetHeaderSize();
 
-//   if (gloTrg->PairLikeLpt())    gloTrigPat|= 0x1000;
-//   if (gloTrg->PairLikeHpt())    gloTrigPat|= 0x2000;
-//   if (gloTrg->PairLikeApt())    gloTrigPat|= 0x4000;
+  TClonesArray* localTrigger;
+  TClonesArray* globalTrigger;
+  AliMUONGlobalTrigger* gloTrg;
+  AliMUONLocalTrigger* locTrg = 0x0;
 
-//   // local trigger 
-//   localTrigger = fMUONData->LocalTrigger();    
-//   Int_t nlocals = (Int_t) (localTrigger->GetEntries());// 234 local cards
+  fMUONData->GetTriggerD();
 
-//   for (Int_t i=0; i<nlocals; i++) { // loop on Local Trigger
-//     locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
-//     circuit = &(pMUON->TriggerCircuit(locTrg->LoCircuit()));
-//     Float_t y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-//     Int_t stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
-//     Float_t y21 = circuit->GetY21Pos(stripX21);	
-//     Float_t x11 = circuit->GetX11Pos(locTrg->LoStripY());
-//     y11 = y21 = x11 = 0.;
-//   }
+  // global trigger for trigger pattern
+  globalTrigger = fMUONData->GlobalTrigger(); 
+  gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);
+  Int_t gloTrigPat = GetGlobalTriggerPattern(gloTrg);
 
-//   fTrigData->ResetTrigger();
-//   fTrigData->ResetDigits();
+  // local trigger 
+  localTrigger = fMUONData->LocalTrigger();    
+
+  UInt_t word;
+  Int_t* buffer = 0;
+  Int_t index;
+  Int_t iEntries = 0;
+  Int_t iLocCard, locCard;
+  Char_t locDec, trigY, posY, devX, posX;
+  Int_t version = 1; // software version
+  Int_t eventType =1; // trigger type: 1 for physics ?
+  Int_t serialNb = 0xF; // serial nb of card: all bits on for the moment
+
+  Int_t nEntries = (Int_t) (localTrigger->GetEntries());// 234 local cards
+  // stored the local card id that's fired
+  for (Int_t i = 0; i <  nEntries; i++) {
+    locTrg = (AliMUONLocalTrigger*)localTrigger->At(i);
+    isFired[locTrg->LoCircuit()] = 1;
+  }
+
+  if (!nEntries)
+    Error("AliMUONRawData::WriteTriggerDDL","No Trigger information available");
+
+  buffer = new Int_t [680]; // [16(local)*5 words + 4 words]*8(reg) + 7 words = 679
+
+  for (Int_t iDDL = 0; iDDL < 2; iDDL++) {
+    
+    index = 0; 
+
+    // DDL enhanced header
+    word =0;
+    AliBitPacking::PackWord((UInt_t)iDDL+1,word,30,31); //see AliMUONDDLTrigger.h for details
+    AliBitPacking::PackWord((UInt_t)version,word,22,29);
+    AliBitPacking::PackWord((UInt_t)serialNb,word,18,21);
+    AliBitPacking::PackWord((UInt_t)eventType,word,14,17);
+
+    fDDLTrigger->SetDDLWord(word);
+    fDDLTrigger->SetGlobalOutput(gloTrigPat);
+    memcpy(&buffer[index],fDDLTrigger->GetEnhancedHeader(),24);
+    index += 6; 
+
+    for (Int_t iReg = 0; iReg < 8; iReg++) {
+
+      subEvent = new AliMUONSubEventTrigger();
+
+      // Regional card header
+      word = 0;
+      AliBitPacking::PackWord((UInt_t)serialNb,word,27,31); //see  AliMUONSubEventTrigger.h for details
+      AliBitPacking::PackWord((UInt_t)iReg,word,22,26);
+      AliBitPacking::PackWord((UInt_t)version,word,14,21);
+      subEvent->SetRegWord(word);
+      memcpy(&buffer[index++],subEvent->GetAddress(),4);
+
+      for (Int_t iLoc = 0; iLoc < 16; iLoc++) {
+
+	iLocCard = iLoc + iReg*16 + iDDL*128;
+
+	if (isFired[iLocCard]) {
+	  locTrg = (AliMUONLocalTrigger*)localTrigger->At(iEntries);
+	  locCard = locTrg->LoCircuit();
+	  locDec = locTrg->GetLoDecision();
+	  trigY = 0;
+	  posY = locTrg->LoStripY();
+	  posX = locTrg->LoStripX();
+	  devX = locTrg->LoDev();
+	  if (fPrintLevel == 4) 
+	    printf("loctrg %d, posX %d, posY %d, devX %d\n", 
+		   locTrg-> LoCircuit(),locTrg->LoStripX(),locTrg->LoStripY(),locTrg->LoDev());
+	} else { //no trigger (see PRR chpt 3.4)
+	  locCard = -1;
+	  locDec = 0;
+	  trigY = 1;
+	  posY = 15;
+	  posX = 0;
+	  devX = 0x8000;
+	}
+
+	//packing word
+	word = 0;
+	AliBitPacking::PackWord((UInt_t)(iLocCard % 16),word,19,22); //card id number in crate
+	AliBitPacking::PackWord((UInt_t)locDec,word,15,18);
+	AliBitPacking::PackWord((UInt_t)trigY,word,14,14);
+	AliBitPacking::PackWord((UInt_t)posY,word,10,13);
+	AliBitPacking::PackWord((UInt_t)devX,word,5,9);
+	AliBitPacking::PackWord((UInt_t)posX,word,0,4);
+
+	if (locCard == iLocCard) {
+	  // add local cards structure
+	  buffer[index++] = (locTrg->GetX1Pattern() | (locTrg->GetX2Pattern() << 16));
+	  buffer[index++] = (locTrg->GetX3Pattern() | (locTrg->GetX4Pattern() << 16));
+	  buffer[index++] = (locTrg->GetY1Pattern() | (locTrg->GetY2Pattern() << 16));
+	  buffer[index++] = (locTrg->GetY3Pattern() | (locTrg->GetY4Pattern() << 16));
+	  buffer[index++] = (Int_t)word; // data word
+	  if (iEntries < nEntries-1)
+	    iEntries++;
+	} else {
+	  buffer[index++] = 0; // 4 words for x1, x2, y1, y2
+	  buffer[index++] = 0; 
+	  buffer[index++] = 0; 
+	  buffer[index++] = 0; 
+	  buffer[index++] = (Int_t)word; // data word
+
+	}
+      } // local card 
+      buffer[index++] = 0;// 2 words of regional input
+      buffer[index++] = 0;
+      buffer[index++] = 0;// regional output
+
+      delete subEvent;	
+
+    } // Regional card
+    
+    buffer[index++] = fDDLTrigger->GetEoD(); // End of DDL word
+
+    
+    if (iDDL == 0) {
+      // write DDL 1
+      header.fSize = index + headerSize;// total length in word
+      fwrite((char*)(&header),headerSize*4,1,fFile1);
+      fwrite(buffer,sizeof(int),index,fFile1);
+    } 
+    if (iDDL == 1) {
+      // write DDL 2
+      header.fSize = index + headerSize;// total length in word
+      fwrite((char*)(&header),headerSize*4,1,fFile2);
+      fwrite(buffer,sizeof(int),index,fFile2);
+    }
+  }
+  delete[] buffer;
 
   return kTRUE;
 }
@@ -532,4 +635,32 @@ void AliMUONRawData::GetDummyMapping(Int_t iCh, Int_t iCath, const AliMUONDigit*
 	printf("id: %d, busPatchId %d, manuId: %d, channelId: %d, padx: %d pady %d, charge %d\n",
 	       id, busPatchId, manuId, channelId, digit->PadX(), digit->PadY(), digit->Signal());
 
+}
+
+//____________________________________________________________________
+Int_t AliMUONRawData::GetGlobalTriggerPattern(AliMUONGlobalTrigger* gloTrg)
+{
+  Int_t gloTrigPat = 0;
+
+  if (gloTrg->SinglePlusLpt())  gloTrigPat|= 0x1;
+  if (gloTrg->SinglePlusHpt())  gloTrigPat|= 0x2;
+  if (gloTrg->SinglePlusApt())  gloTrigPat|= 0x4;
+ 
+  if (gloTrg->SingleMinusLpt()) gloTrigPat|= 0x8;
+  if (gloTrg->SingleMinusHpt()) gloTrigPat|= 0x10;
+  if (gloTrg->SingleMinusApt()) gloTrigPat|= 0x20;
+ 
+  if (gloTrg->SingleUndefLpt()) gloTrigPat|= 0x40;
+  if (gloTrg->SingleUndefHpt()) gloTrigPat|= 0x80;
+  if (gloTrg->SingleUndefApt()) gloTrigPat|= 0x100;
+ 
+  if (gloTrg->PairUnlikeLpt())  gloTrigPat|= 0x200;
+  if (gloTrg->PairUnlikeHpt())  gloTrigPat|= 0x400;
+  if (gloTrg->PairUnlikeApt())  gloTrigPat|= 0x800;
+
+  if (gloTrg->PairLikeLpt())    gloTrigPat|= 0x1000;
+  if (gloTrg->PairLikeHpt())    gloTrigPat|= 0x2000;
+  if (gloTrg->PairLikeApt())    gloTrigPat|= 0x4000;
+
+  return gloTrigPat;
 }

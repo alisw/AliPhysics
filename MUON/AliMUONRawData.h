@@ -13,8 +13,7 @@ class AliMUONData;
 class AliMUONDigit;
 class AliMUONDDLTracker;
 class AliMUONDDLTrigger;
-
-//class AliMUONTriggerDecision;
+class AliMUONGlobalTrigger;
 
 class AliMUONRawData : public TObject 
 {
@@ -43,6 +42,7 @@ class AliMUONRawData : public TObject
   void GetDummyMapping(Int_t iCh, Int_t iCath, const AliMUONDigit* digit, Int_t &busPatchId,
 		       UShort_t &manuId, UChar_t &channelId, UShort_t &charge);
 
+  Int_t GetGlobalTriggerPattern(AliMUONGlobalTrigger* gloTrg);
 
  protected:
   AliMUONRawData();                  // Default constructor

@@ -5,6 +5,7 @@
 
 
 #include <TObject.h>
+#include "AliRawDataHeader.h"
 
 class AliMUONDDLTrigger : public TObject {
  
@@ -29,7 +30,10 @@ public:
    void    SetGlobalOutput(Int_t out) {fGlobalOutput = out;}
    void    SetEoD(Int_t e) {fEndOfDDL = e;}  
 
-   UInt_t* GetAddress() {return &fddlWord;}
+   UInt_t* GetEnhancedHeader() {return &fddlWord;}
+
+   AliRawDataHeader GetHeader(){return fHeader;}
+   Int_t GetHeaderSize() {return sizeof(AliRawDataHeader)/4;} // in words
 
  private:
 
@@ -38,7 +42,8 @@ public:
    Int_t     fGlobalOutput;      // global ouput
    Int_t     fEndOfDDL;          // end of DDL
 
- 
+   AliRawDataHeader fHeader;   // header of DDL
+
    ClassDef(AliMUONDDLTrigger,1)  // MUON DDL Trigger
 };
 #endif

@@ -18,7 +18,7 @@ public:
    Int_t   GetRegOutput() const {return fRegOutput;}
    Int_t   GetLocalData(Int_t n)  const {return fLocalData[n];}
 
-   //serialNB:5,DarcId:5,Version:8,MBZ:14
+   //serialNB:5,RegId:5,Version:8,MBZ:14
    Char_t   GetSerialNb()  {return (Char_t)(fRegWord >> 27) &  0x1F;}
    Char_t   GetRegId()     {return (Char_t)(fRegWord >> 22) &  0x1F;}
    Char_t   GetVersion()   {return (Char_t)(fRegWord >> 14) &  0xFF;}
