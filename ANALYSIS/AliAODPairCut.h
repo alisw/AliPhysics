@@ -42,9 +42,9 @@ class AliAODPairCut: public TNamed
   void SetQInvRange(Double_t min, Double_t max);
   void SetKtRange(Double_t min, Double_t max);
   void SetKStarRange(Double_t min, Double_t max);
-  void SetQOutCMSLRange(Double_t min, Double_t max);
-  void SetQSideCMSLRange(Double_t min, Double_t max);
-  void SetQLongCMSLRange(Double_t min, Double_t max);
+  void SetQOutLCMSRange(Double_t min, Double_t max);
+  void SetQSideLCMSRange(Double_t min, Double_t max);
+  void SetQLongLCMSRange(Double_t min, Double_t max);
   void SetAvSeparationRange(Double_t min,Double_t max = 10e5);//Anti-Merging Cut
   void SetITSSeparation(Int_t layer, Double_t drphi=0.01,Double_t dz = 0.08);//Anti-Merging Cut for first pixel layer
   void SetClusterOverlapRange(Double_t min,Double_t max);//Anti-Splitting Max range -0.5 1.0

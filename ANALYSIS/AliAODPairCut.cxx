@@ -198,7 +198,7 @@ void AliAODPairCut::SetQInvRange(Double_t min, Double_t max)
 }
 /**********************************************************/
 
-void AliAODPairCut::SetQOutCMSLRange(Double_t min, Double_t max)
+void AliAODPairCut::SetQOutLCMSRange(Double_t min, Double_t max)
 {
   // set range of accepted QOut in CMS
   AliAODQOutLCMSCut* cut= (AliAODQOutLCMSCut*)FindCut(AliAODPairBaseCut::kHbtPairCutPropQOutLCMS);
@@ -207,7 +207,7 @@ void AliAODPairCut::SetQOutCMSLRange(Double_t min, Double_t max)
 }
 /**********************************************************/
 
-void AliAODPairCut::SetQSideCMSLRange(Double_t min, Double_t max)
+void AliAODPairCut::SetQSideLCMSRange(Double_t min, Double_t max)
 {
   // set range of accepted QSide in CMS
   AliAODQSideLCMSCut* cut= (AliAODQSideLCMSCut*)FindCut(AliAODPairBaseCut::kHbtPairCutPropQSideLCMS);
@@ -217,7 +217,7 @@ void AliAODPairCut::SetQSideCMSLRange(Double_t min, Double_t max)
 
 /**********************************************************/
 
-void AliAODPairCut::SetQLongCMSLRange(Double_t min, Double_t max)
+void AliAODPairCut::SetQLongLCMSRange(Double_t min, Double_t max)
 {
   // set range of accepted QLong in CMS
   AliAODQLongLCMSCut* cut= (AliAODQLongLCMSCut*)FindCut(AliAODPairBaseCut::kHbtPairCutPropQLongLCMS);
