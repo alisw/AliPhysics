@@ -31,11 +31,11 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
     Float_t dpt       = 0.1;   // GeV
 //    
 //  For b = 0
-//  (factor 1.35 to scale from 10% most central to b=0)
+//  (factor 1.28 to scale from 10% most central to b=0)
 //    
-    Float_t scaleC0 = 1.35 * ptUp / dpt;
-    Float_t scaleB0 = 1.35 * ptUp / dpt;
-    Float_t scaleD0 = 1.35 * etar * ptUp / 1.35; // scaled by 1.35 to match ALICE-INT-2002-6
+    Float_t scaleC0 = 1.28 * ptUp / dpt;
+    Float_t scaleB0 = 1.28 * ptUp / dpt;
+    Float_t scaleD0 = 1.28 * etar * ptUp / 1.35; // scaled by 1.35 to match ALICE-INT-2002-6
     
 //
 //
@@ -167,12 +167,12 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 	Float_t wgtB1, wgtB2;
 	Float_t wgtC1, wgtC2;
 
-	if (pT1 > 2.0) {
+	if (pT1 > 1.5) {
 	    wgtC1 = ptCCHf->Eval(pT1) * scaleC;
 	} else {
 	    wgtC1 = ptCCLf->Eval(pT1) * scaleC;
 	}
-	if (pT2 > 2.0) {
+	if (pT2 > 1.5) {
 	    wgtC2 = ptCCHf->Eval(pT2) * scaleC;
 	} else {
 	    wgtC2 = ptCCLf->Eval(pT2) * scaleC;
