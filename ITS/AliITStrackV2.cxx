@@ -34,7 +34,7 @@ ClassImp(AliITStrackV2)
 const Int_t kWARN=5;
 
 //____________________________________________________________________________
-AliITStrackV2::AliITStrackV2():
+AliITStrackV2::AliITStrackV2():AliKalmanTrack(),
   fX(0),
   fAlpha(0),
   fdEdx(0),
@@ -57,8 +57,8 @@ AliITStrackV2::AliITStrackV2():
   fC41(0),
   fC42(0),
   fC43(0),
-  fC44(0),
-  AliKalmanTrack(){
+  fC44(0)
+  {
   for(Int_t i=0; i<kMaxLayer; i++) fIndex[i]=0;
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
 }
