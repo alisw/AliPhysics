@@ -650,7 +650,7 @@ TObject ** AliEMCALGetter::PreShoRecPointsRef(const char * name) const
 } 
 
 //____________________________________________________________________________ 
-Bool_t AliEMCALGetter::PostClusterizer(AliEMCALClusterizer * clu) const 
+Bool_t AliEMCALGetter::PostClusterizer(AliEMCALClusterizerv1 * clu) const 
 { // ------------------ AliEMCALClusterizer ------------------------
   
   // the hierarchy is //Folders/Tasks/Reconstructioner/EMCAL/sdigitsname
@@ -672,7 +672,7 @@ Bool_t AliEMCALGetter::PostClusterizer(AliEMCALClusterizer * clu) const
     tasks->Add(emcal) ; 
   } 
 
-  AliEMCALClusterizer * emcalcl = dynamic_cast<AliEMCALClusterizer*>(emcal->GetListOfTasks()->FindObject(clu->GetName())) ; 
+  AliEMCALClusterizerv1 * emcalcl = dynamic_cast<AliEMCALClusterizerv1*>(emcal->GetListOfTasks()->FindObject(clu->GetName())) ; 
   if (emcalcl) { 
     if (fDebug)
       cout << "INFO: AliEMCALGetter::Post Rer -> Task " << clu->GetName() << " already exists" << endl ; 
@@ -743,7 +743,7 @@ Bool_t AliEMCALGetter::PostClusterizer(const char * name) const
     tasks->Add(emcal) ; 
   } 
 
-  AliEMCALClusterizer * emcalcl = new AliEMCALClusterizerv1() ;
+  AliEMCALClusterizerv1 * emcalcl = new AliEMCALClusterizerv1() ;
   TString clun(name) ;
   clun+=":clu-v1" ;
   emcalcl->SetName(clun) ;

@@ -38,7 +38,7 @@ class TTask ;
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALTowerRecPoint.h"
 class AliEMCALGeometry ;
-class AliEMCALClusterizer ;
+class AliEMCALClusterizerv1 ;
 //class AliEMCALTrackSegment ;
 //class AliEMCALTrackSegmentMaker ;
 //class AliEMCALRecParticle ;
@@ -69,7 +69,7 @@ class AliEMCALGetter : public TObject {
   //Bool_t PostRecParticles( const char * name) const ;  
 
   Bool_t PostClusterizer( const char * name) const ;  
-  Bool_t PostClusterizer(AliEMCALClusterizer * clu) const ;  
+  Bool_t PostClusterizer(AliEMCALClusterizerv1 * clu) const ;  
   Bool_t PostSDigitizer (AliEMCALSDigitizer * sdigitizer) const ;  
   Bool_t PostSDigitizer ( const char * name, const char * file ) const ;  
   Bool_t PostDigitizer (AliEMCALDigitizer * digitizer) const ;  
@@ -139,8 +139,8 @@ class AliEMCALGetter : public TObject {
   const AliEMCALTowerRecPoint *  PreShowerRecPoint(Int_t index) { 
     return static_cast<const AliEMCALTowerRecPoint *>(PreShowerRecPoints()->At(index)) ;}
 
-  AliEMCALClusterizer * Clusterizer (const char * name =0) const { 
-    return (AliEMCALClusterizer*)(ReturnT("Clusterizer", name)) ; }
+    AliEMCALClusterizerv1 * Clusterizer (const char * name =0) const { 
+    return (AliEMCALClusterizerv1*)(ReturnT("Clusterizer", name)) ; }
 
   // TrackSegments
   //TClonesArray * TrackSegments(const char * name = 0) const 
