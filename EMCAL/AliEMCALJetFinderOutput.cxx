@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 /* $Id$ */
 
 //_________________________________________________________________________
@@ -23,9 +24,7 @@
 //
 
 
-
 #include <stdio.h>
-#include <TClonesArray.h>
 #include <TParticle.h>
 #include <TTree.h>
 
@@ -38,28 +37,23 @@
 ClassImp(AliEMCALJetFinderOutput)
 
 //________________________________________________________________________
-AliEMCALJetFinderOutput::AliEMCALJetFinderOutput()
-{
+AliEMCALJetFinderOutput::AliEMCALJetFinderOutput(){ 
+	fNMaxJets=10;
+	fNMaxParticles=2000;
+	fNMaxPartons=4;
+	fInitialised=kFALSE;
+	fNPartons=0;
+	fNJets=0;    
+	fNParticles=0;
+								
+
 if (fDebug>0) Info("AliEMCALJetFinderOutput","Beginning Constructor");
 
-        fNMaxJets=10;
-        fNMaxParticles=2000;
-        fNMaxPartons=4;
-	fInitialised = kFALSE;
-	InitArrays();
-} 
+} //________________________________________________________________________
 void AliEMCALJetFinderOutput::InitArrays()
 {
 	
 if (fDebug>1) Info("AliEMCALJetFinderOutput","Beginning InitArrays");
-
-	fJetsArray 	= new TClonesArray("AliEMCALJet",fNMaxJets);
-	fNJets = 0;
-	fPartonsArray 	= new TClonesArray("AliEMCALParton",fNMaxPartons);
-	fNPartons = 0;
-	fParticlesArray = new TClonesArray("TParticle",fNMaxParticles); 
-	fNParticles =0;
-	fInitialised = kTRUE;
 
 }
 
@@ -67,16 +61,6 @@ if (fDebug>1) Info("AliEMCALJetFinderOutput","Beginning InitArrays");
 AliEMCALJetFinderOutput::~AliEMCALJetFinderOutput()
 {
 if (fDebug>0) Info("~AliEMCALJetFinderOutput","Beginning Destructor");
-if (fInitialised)
-{
- fJetsArray->Delete();
- fPartonsArray->Delete();
- fParticlesArray->Delete();
-
- delete fJetsArray;
- delete fPartonsArray;
- delete fParticlesArray;
-}
 }
 
 //_______________________________________________________________________
@@ -87,19 +71,16 @@ if (!fInitialised) InitArrays();
  if (	resettype == kResetAll ||
 	resettype == kResetJets||
 	resettype == kResetData ){
-	 fJetsArray->Delete();
 	 fNJets = 0;
  }
  if (   resettype == kResetAll ||
         resettype == kResetPartons||              
         resettype == kResetData ){
-	 fPartonsArray->Delete();
 	 fNPartons = 0;
  }
  if (   resettype == kResetAll ||    
         resettype == kResetParticles||              
         resettype == kResetData ){
-	 fParticlesArray->Delete();
 	 fNParticles = 0;
  }
 }
@@ -109,13 +90,15 @@ void AliEMCALJetFinderOutput::AddJet(AliEMCALJet* jet)
 if (fDebug>1) Info("AddJet","Beginning AddJet");
 if (!fInitialised) InitArrays();
 
-	if (fNJets < fNMaxJets){
-		new( (*fJetsArray)[fNJets] )  AliEMCALJet( *jet );
+
+  	if (fNJets < fNMaxJets){
+		new( &fJetsArray[fNJets])   AliEMCALJet( *jet );
 		fNJets++;
 	}else
 	{
 		Error("AddJet","Cannot AddJet - maximum exceeded");
-	}
+                }
+   
 }
 
 
@@ -126,13 +109,13 @@ if (fDebug>1) Info("AddParton","Beginning AddParton");
 if (!fInitialised) InitArrays();
 
 	if (fNPartons < fNMaxPartons){
-		new( (*fPartonsArray)[fNPartons] )  AliEMCALParton( *parton );
+		new( &fPartonsArray[fNPartons] )  AliEMCALParton( *parton );
 		fNPartons++;
 	}else
 	{
                 Error("AddParton","Cannot AddParton - maximum exceeded");
 	}
-
+ 
 }
 
 //_______________________________________________________________________
@@ -142,13 +125,12 @@ if (fDebug>1) Info("AddParticle","Beginning AddParticle");
 if (!fInitialised) InitArrays();
 
 	if (fNParticles < fNMaxParticles){
-		new( (*fParticlesArray)[fNParticles] )  TParticle( *particle );
+		new( &fParticlesArray[fNParticles] )  TParticle( *particle );
 		fNParticles++;
 	}else
 	{
 		Error("AddParticle","Cannot AddParticle - maximum exceeded");
-	}
-
+                }
 }
 
 //______________________________________________________________________
@@ -157,9 +139,8 @@ AliEMCALJet* AliEMCALJetFinderOutput::GetJet(Int_t jetID)
 if (fDebug>1) Info("GetJet","Beginning GetJet");
 	
   if (jetID >= fNJets) return 0;
-  return (AliEMCALJet*)((*fJetsArray)[jetID]);
+  return &(fJetsArray[jetID]);
   
-
 }
 
 //______________________________________________________________________
@@ -168,9 +149,7 @@ AliEMCALParton* AliEMCALJetFinderOutput::GetParton(Int_t partonID)
 if (fDebug>1) Info("GetParton","Beginning GetParton");
 
   if (partonID >= fNPartons) return 0;
-  return (AliEMCALParton*)((*fPartonsArray)[partonID]);
-
-
+  return &(fPartonsArray[partonID]);
 }
 
 //______________________________________________________________________
@@ -179,8 +158,7 @@ TParticle* AliEMCALJetFinderOutput::GetParticle(Int_t particleID)
 if (fDebug>1) Info("GetParticle","Beginning GetParticle");
 
   if (particleID >= fNParticles) return 0;
-  return (TParticle*)((*fParticlesArray)[particleID]);
-
+return &(fParticlesArray[particleID]);
 
 }
 

@@ -16,7 +16,6 @@
 
 #include "TObject.h"
 #include "TParticle.h"
-#include "TClonesArray.h"
 #include "AliEMCALParton.h"
 #include "AliEMCALJet.h"
 #include "AliEMCALJetFinderTypes.h"
@@ -41,18 +40,18 @@ class AliEMCALJetFinderOutput : public TObject
 
 	private:
 		void InitArrays();
-		TClonesArray*	fJetsArray;     //-> 
-		Int_t		fNJets; 	// Number of jets actually stored
-		TClonesArray*	fPartonsArray;  //-> 
-		Int_t		fNPartons;	// Number of Partons actually stored
-		TClonesArray*  fParticlesArray; //-> 
-		Int_t		fNParticles;	// Number of particles actually stored
-                Int_t           fNMaxJets;      // Maximum number of jets 
-                Int_t           fNMaxParticles; // Maximum number of primary particles
-                Int_t           fNMaxPartons;   // Maximum number of primary particles
-                Int_t           fDebug;		// Debug level
-		Bool_t 		fInitialised;	// stores whether or not the arrays have been initialised
+		AliEMCALJet	fJetsArray[10];     	// 
+		AliEMCALParton	fPartonsArray[4];  	// 
+		Int_t		fNPartons;		// Number of Partons actually stored
+		Int_t		fNJets; 		// Number of jets actually stored
+		TParticle   fParticlesArray[2000];	//
+		Int_t		fNParticles;		// Number of particles actually stored
+                Int_t           fNMaxJets;      	// Maximum number of jets 
+                Int_t           fNMaxParticles; 	// Maximum number of primary particles
+                Int_t           fNMaxPartons;   	// Maximum number of primary particles
+                Int_t           fDebug;			// Debug level
+		Bool_t 		fInitialised;		// stores whether or not the arrays have been initialised
 		
-	ClassDef(AliEMCALJetFinderOutput,1)
+	ClassDef(AliEMCALJetFinderOutput,2)
 };
 #endif
