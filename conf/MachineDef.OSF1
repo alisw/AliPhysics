@@ -39,4 +39,4 @@ G3LIBS        = -lgeant321
 CLIBS         = -lminicern
 
 LIBS          = $(ROOTLIBS) -lNew -lm
-GLIBS         = $(ROOTLIBS) $(ROOTGLIBS)  -lXm -lXt -lX11 -lm -lPW
+GLIBS         = $(ROOTLIBS) $(ROOTGLIBS)  -lXm -lXt -lX11 -lm -lPW -lUfor -lfor -lFutil -lm -lots
