@@ -8,8 +8,7 @@
 //_________________________________________________________________________
 //  Track segment in PHOS
 //  Can be : 1 EmcRecPoint
-//           1 EmcRecPoint + 1 PPSD
-//           1 EmcRecPoint + 1 PPSD + 1 PPSD     
+//           1 EmcRecPoint + 1 CPV
 //                  
 //*-- Author:  Dmitri Peressounko (RRC KI & SUBATECH)
 
@@ -24,6 +23,7 @@ class TClonesArray ;
 class AliPHOSRecPoint ; 
 class AliPHOSEmcRecPoint ; 
 class AliPHOSCpvRecPoint ; 
+class AliESDtrack ; 
 
 class AliPHOSTrackSegment : public TObject  {
 
@@ -31,7 +31,9 @@ public:
 
   AliPHOSTrackSegment() {} 
   AliPHOSTrackSegment(AliPHOSEmcRecPoint * EmcRecPoint , 
-		      AliPHOSRecPoint * PpsdUp) ;
+		      AliPHOSRecPoint * Cpv) ;
+  AliPHOSTrackSegment(AliPHOSEmcRecPoint * EmcRecPoint , 
+		      AliPHOSRecPoint * Cpv, Int_t track) ;
   AliPHOSTrackSegment(const AliPHOSTrackSegment & ts) ;  // ctor                   
   virtual ~AliPHOSTrackSegment() {  } 
 
@@ -39,11 +41,12 @@ public:
 
   Int_t   GetIndexInList() const {  return fIndexInList ;   } 
   Int_t   GetEmcIndex()    const {  return fEmcRecPoint ;   }
-  Int_t   GetCpvIndex()    const {  return fPpsdUpRecPoint; }
+  Int_t   GetCpvIndex()    const {  return fCpvRecPoint; }
+  Int_t   GetTrackIndex()  const {  return fTrack; }
 
   virtual void  Print() const;
   void    SetIndexInList(Int_t val){ fIndexInList = val ;     } 
-  void    SetCpvRecPoint(AliPHOSRecPoint * PpsdUpRecPoint ); //sets PPSD up Rec Point
+  void    SetCpvRecPoint(AliPHOSRecPoint * CpvRecPoint ); //sets CPV Rec Point
 
   typedef TClonesArray TrackSegmentsList ; 
  
@@ -51,8 +54,9 @@ public:
   
   Int_t fEmcRecPoint ;     // The EMC reconstructed point index in array stored in TreeR/PHOSEmcRP
   Int_t fIndexInList ;     // the index of this TrackSegment in the list stored in TreeR (to be set by analysis)
-  Int_t fPpsdUpRecPoint ;  // The CPV reconstructed point from the upper layer index in array stored in TreeR/PHOSPpsdRP
-  
+  Int_t fCpvRecPoint ;     // The CPV reconstructed point in array stored in TreeR/PHOSCpvRP
+  Int_t fTrack ;           // The charged track index (from global tracking) in ESD file 
+
   ClassDef(AliPHOSTrackSegment,1)  // Track segment in PHOS
 
 };

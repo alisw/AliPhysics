@@ -7,7 +7,7 @@
 
 //_________________________________________________________________________
 // Algorithm Base class to construct PHOS track segments
-// Associates EMC and PPSD clusters
+// Associates EMC and CPV clusters
 // Unfolds the EMC cluster   
 //                  
 //*-- Author: Dmitri Peressounko (RRC Kurchatov Institute  & SUBATECH)

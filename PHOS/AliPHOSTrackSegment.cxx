@@ -16,8 +16,8 @@
 //_________________________________________________________________________
 //  Track segment in PHOS
 //  Can be : 1 EmcRecPoint
-//           1 EmcRecPoint + 1 PPSD
-//           1 EmcRecPoint + 1 PPSD + 1 PPSD     
+//           1 EmcRecPoint + 1 CPV
+//           1 EmcRecPoint + 1 CPV + 1 charged track
 //                  
 //*-- Author:  Dmitri Peressounko (RRC KI & SUBATECH)
 
@@ -29,12 +29,13 @@
 // --- AliRoot header files ---
 #include "AliPHOSEmcRecPoint.h" 
 #include "AliPHOSTrackSegment.h" 
+#include "AliESDtrack.h" 
 
 ClassImp(AliPHOSTrackSegment)
 
 //____________________________________________________________________________
 AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , 
-					  AliPHOSRecPoint * ppsdrp1)
+					  AliPHOSRecPoint * cpvrp1)
 {
   // ctor
 
@@ -43,11 +44,34 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc ,
   else 
     fEmcRecPoint = -1 ;
 
-  if( ppsdrp1 )  
-    fPpsdUpRecPoint = ppsdrp1->GetIndexInList() ;
+  if( cpvrp1 )  
+    fCpvRecPoint = cpvrp1->GetIndexInList() ;
  else 
-    fPpsdUpRecPoint = -1 ;
+    fCpvRecPoint = -1 ;
 
+  fTrack = -1 ; 
+
+  fIndexInList = -1 ;
+}
+
+//____________________________________________________________________________
+AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , 
+					  AliPHOSRecPoint * cpvrp1, 
+					  Int_t track)
+{
+  // ctor
+
+  if( emc )   
+    fEmcRecPoint =  emc->GetIndexInList() ;
+  else 
+    fEmcRecPoint = -1 ;
+
+  if( cpvrp1 )  
+    fCpvRecPoint = cpvrp1->GetIndexInList() ;
+ else 
+    fCpvRecPoint = -1 ;
+  
+  fTrack = track ; 
 
   fIndexInList = -1 ;
 }
@@ -69,9 +93,11 @@ void AliPHOSTrackSegment::Copy(TObject & obj)
 
    TObject::Copy(obj) ;
    ( (AliPHOSTrackSegment &)obj ).fEmcRecPoint     = fEmcRecPoint ; 
-   ( (AliPHOSTrackSegment &)obj ).fPpsdUpRecPoint  = fPpsdUpRecPoint ; 
+   ( (AliPHOSTrackSegment &)obj ).fCpvRecPoint     = fCpvRecPoint ; 
    ( (AliPHOSTrackSegment &)obj ).fIndexInList     = fIndexInList ; 
-}
+   ( (AliPHOSTrackSegment &)obj ).fTrack           = fTrack ;
+} 
+
 
 //____________________________________________________________________________
 void AliPHOSTrackSegment::Print() const
@@ -79,25 +105,26 @@ void AliPHOSTrackSegment::Print() const
   // Print all information on this track Segment
   
 
-  Info("Print", "--------AliPHOSTrackSegment-------- ");
-  Info("Print", "Stored at position %d", fIndexInList) ;
-  Info("Print", "Emc RecPoint #     %d", fEmcRecPoint) ;
-  if(fPpsdUpRecPoint >= 0)
-    Info("Print", "CPV RecPoint #     %d", fPpsdUpRecPoint) ;
+  Info("Print", "");
+  printf("Stored at position %d\n", fIndexInList) ;
+  printf(" Emc RecPoint #     %d\n", fEmcRecPoint) ;
+  if(fCpvRecPoint >= 0)
+    printf(" CPV RecPoint #     %d\n", fCpvRecPoint) ;
   else
-    Info("Print", "No CPV RecPoint ");
-
-  
-  Info("Print", "------------------------------------ ") ; 
-  
+    printf(" No CPV RecPoint\n");
+  if (fTrack >= 0) 
+    printf(" Charged track #     %d\n", fTrack) ;
+  else
+    printf(" No Charged track\n");
 }
+
 //____________________________________________________________________________
-void AliPHOSTrackSegment::SetCpvRecPoint(AliPHOSRecPoint * PpsdUpRecPoint) 
+void AliPHOSTrackSegment::SetCpvRecPoint(AliPHOSRecPoint * cpvRecPoint) 
 {
   // gives an id from its position in the list
-  if( PpsdUpRecPoint )  
-    fPpsdUpRecPoint = PpsdUpRecPoint->GetIndexInList() ;
+  if( cpvRecPoint )  
+    fCpvRecPoint = cpvRecPoint->GetIndexInList() ;
  else 
-    fPpsdUpRecPoint = -1 ;
+    fCpvRecPoint = -1 ;
 }
 
