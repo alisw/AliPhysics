@@ -42,6 +42,13 @@
 #include <AliL3HoughBaseTransformer.h>
 #include <AliL3Hough.h>
 #include <AliL3Benchmark.h>
+#include <AliKalmanTrack.h>
+#include "AliITSgeom.h"
+#include "AliMagF.h"
+#include "AliMagFMaps.h"
+#include <AliL3ITSclusterer.h>
+#include <AliL3ITSVertexerZ.h>
+#include <AliL3ITStracker.h>
 #endif
 
 
@@ -97,6 +104,15 @@ int main(int argc, char** argv)
   if (!AliL3Transform::Init("./", kFALSE)) {
     ::Fatal("AliL3Transform::Init", "HLT initialization failed");
   }
+  AliESD *esd = new AliESD;
+  AliKalmanTrack::SetConvConst(
+     1000/0.299792458/AliL3Transform::GetSolenoidField()
+  );
+  AliITSgeom *geom = new AliITSgeom();
+  geom->ReadNewFile("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det");
+  if (!geom) return 1;
+  AliMagF* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
+  AliTracker::SetFieldMap(field);
 
   // create the signal handler
   AliGDCInterruptHandler* handler = new AliGDCInterruptHandler;
@@ -135,7 +151,25 @@ int main(int argc, char** argv)
 	AliL3Benchmark *fBenchmark = new AliL3Benchmark();
 	fBenchmark->Start("Overall timing");
 
+	// ITS clusterer and vertexer
+	fBenchmark->Start("ITS Clusterer");
+	AliL3ITSclusterer clusterer(geom);
+	AliRawReader *itsrawreader=new AliRawReaderDate(ptr);
+	TTree* treeClusters = new TTree("TreeL3ITSclusters"," "); //make a tree
+	clusterer.Digits2Clusters(itsrawreader,treeClusters);
+	fBenchmark->Stop("ITS Clusterer");
+	
+	AliL3ITSVertexerZ vertexer;
+	AliESDVertex *vertex = vertexer.FindVertexForCurrentEvent(geom,treeClusters);
+	Double_t vtxPos[3];
+	Double_t vtxErr[3]={0.005,0.005,0.010};
+	vertex->GetXYZ(vtxPos);
+	//	vertex->GetSigmaXYZ(vtxErr);
+	esd->SetVertex(vertex);
+
+	// TPC Hough reconstruction
 	Float_t ptmin = 0.1*AliL3Transform::GetSolenoidField();
+	Float_t zvertex = vtxPos[2];
 
 	// Run the Hough Transformer
 	fBenchmark->Start("Init");
@@ -145,7 +179,7 @@ int main(int argc, char** argv)
 	hough1->CalcTransformerParams(ptmin);
 	hough1->SetPeakThreshold(70,-1);
 	//	printf("Pointer is %x\n",ptr);
-	hough1->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,0.0);
+	hough1->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,zvertex);
 	hough1->SetAddHistograms();
 	fBenchmark->Stop("Init");
 
@@ -156,11 +190,12 @@ int main(int argc, char** argv)
 	hough2->CalcTransformerParams(ptmin);
 	hough2->SetPeakThreshold(70,-1);
 	//	printf("Pointer is %x\n",ptr);
-	hough2->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,0.0);
+	hough2->Init("./", kFALSE, 100, kFALSE,4,0,(Char_t*)ptr,zvertex);
 	hough2->SetAddHistograms();
 	fBenchmark->Stop("Init");
 
-	Int_t n_global_tracks = 0;
+	Int_t nglobaltracks = 0;
+	/*
 	hough1->StartProcessInThread(0,17);
 	hough2->StartProcessInThread(18,35);
 
@@ -174,27 +209,56 @@ int main(int argc, char** argv)
 	hough1->WriteTracks("./hough1");
 	gSystem->MakeDirectory("hough2");
 	hough2->WriteTracks("./hough2");
+	*/
 
-	/*
-	for(int slice=0; slice<=35; slice++)
+	for(int slice=0; slice<=17; slice++)
 	{
 	  //	  cout<<"Processing slice "<<slice<<endl;
 	  fBenchmark->Start("ReadData");
-	  hough->ReadData(slice,0);
+	  hough1->ReadData(slice,0);
 	  fBenchmark->Stop("ReadData");
 	  fBenchmark->Start("Transform");
-	  hough->Transform();
+	  hough1->Transform();
 	  fBenchmark->Stop("Transform");
-	  hough->AddAllHistogramsRows();
-	  hough->FindTrackCandidatesRow();
+	  hough1->AddAllHistogramsRows();
+	  hough1->FindTrackCandidatesRow();
 	  fBenchmark->Start("AddTracks");
-	  hough->AddTracks();
+	  hough1->AddTracks();
 	  fBenchmark->Stop("AddTracks");
 
-	  AliL3TrackArray* tracks = (AliL3TrackArray*)hough->GetTracks(0);
-	  n_global_tracks += tracks->GetNTracks();
+	  //	  AliL3TrackArray* tracks = (AliL3TrackArray*)hough1->GetTracks(0);
+	  //	  nglobaltracks += tracks->GetNTracks();
 	}
-	*/
+	for(int slice=18; slice<=35; slice++)
+	{
+	  //	  cout<<"Processing slice "<<slice<<endl;
+	  fBenchmark->Start("ReadData");
+	  hough2->ReadData(slice,0);
+	  fBenchmark->Stop("ReadData");
+	  fBenchmark->Start("Transform");
+	  hough2->Transform();
+	  fBenchmark->Stop("Transform");
+	  hough2->AddAllHistogramsRows();
+	  hough2->FindTrackCandidatesRow();
+	  fBenchmark->Start("AddTracks");
+	  hough2->AddTracks();
+	  fBenchmark->Stop("AddTracks");
+
+	  //	  AliL3TrackArray* tracks = (AliL3TrackArray*)hough2->GetTracks(0);
+	  //	  nglobaltracks += tracks->GetNTracks();
+	}
+
+	nglobaltracks += hough1->FillESD(esd);
+	nglobaltracks += hough2->FillESD(esd);
+
+	// ITS tracker
+	AliL3ITStracker itsTracker(geom);
+	itsTracker.SetVertex(vtxPos,vtxErr);
+
+	itsTracker.LoadClusters(treeClusters);
+	itsTracker.Clusters2Tracks(esd);
+	itsTracker.UnloadClusters();
+
 	fBenchmark->Stop("Overall timing");
 	time.Set();
 	if (file) fprintf(file, "%s\n", time.AsString());
@@ -204,7 +268,7 @@ int main(int argc, char** argv)
 			  rawReader.GetEventId()[1]);
 	if (errorCode) fprintf(file, "ERROR: %d\n", errorCode);
 
-	if (file) fprintf(file, "Hough Transformer found %d tracks\n",n_global_tracks);
+	if (file) fprintf(file, "Hough Transformer found %d tracks\n",nglobaltracks);
 
 	hough1->DoBench("hough1");
 	hough2->DoBench("hough2");
@@ -240,6 +304,8 @@ int main(int argc, char** argv)
 
 	delete hough1;
 	delete hough2;
+
+	esd->Reset();
       }
     //    }
 
