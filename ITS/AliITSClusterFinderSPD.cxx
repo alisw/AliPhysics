@@ -17,6 +17,11 @@
 #include "AliITSClusterFinderSPD.h"
 #include "AliITSMapA1.h"
 #include "AliITS.h"
+#include "AliITSdigit.h"
+#include "AliITSRawCluster.h"
+#include "AliITSRecPoint.h"
+#include "AliITSsegmentation.h"
+#include "AliITSresponse.h"
 #include "AliRun.h"
 
 
@@ -34,7 +39,7 @@ AliITSClusterFinderSPD::AliITSClusterFinderSPD
     fNclusters= fClusters->GetEntriesFast();
     SetDx();
     SetDz();
-    SetMap();
+    fMap=new AliITSMapA1(fSegmentation,fDigits);
     SetNCells();
 }
 
@@ -247,8 +252,8 @@ void  AliITSClusterFinderSPD::GroupClusters()
       if(pair) {     
 	
 	//    if((clusterI->XStop() == clusterJ->XStart()-1)||(clusterI->XStart()==clusterJ->XStop()+1)) cout<<"!! Diagonal cluster"<<endl;
-	/*    
-	      cout << "clusters " << i << "," << j << " before grouping" << endl;
+	/*    	
+      cout << "clusters " << i << "," << j << " before grouping" << endl;
 	      clusterI->PrintInfo();
 	      clusterJ->PrintInfo();
 	*/    
@@ -285,6 +290,8 @@ void AliITSClusterFinderSPD::TracksInCluster()
   Int_t nofClusters = fClusters->GetEntriesFast();
   nofClusters -= fNclusters;
 
+  //printf("nofClusters fNclusters %d %d\n",nofClusters,fNclusters);   //commented 18-09-00
+
   Int_t i, ix, iz, jx, jz, xstart, xstop, zstart, zstop, nclx, nclz;
   //  Int_t signal, track0, track1, track2;
   const Int_t trmax = 100;
@@ -293,9 +300,10 @@ void AliITSClusterFinderSPD::TracksInCluster()
   for(i=0; i<nofClusters; i++) { 
     ii = 0;
     memset(cltracks,-1,sizeof(int)*trmax);
-    tr0=tr1=tr2=-1;
+    tr0=tr1=tr2=-3;
 
     AliITSRawClusterSPD *clusterI = (AliITSRawClusterSPD*) fClusters->At(i);
+    //printf("clusterI %p\n",clusterI);               //commented 18-09-00
 
     nclx = clusterI->NclX();
     nclz = clusterI->NclZ();
@@ -311,6 +319,11 @@ void AliITSClusterFinderSPD::TracksInCluster()
        for(ix=0; ix<nclx; ix++) { 
 	 jx = xstart + ix;
 	 ind = fMap->GetHitIndex(jz,jx);
+	 //printf("ind %d\n",ind);                              // commented 18-09-00
+	 // this part must be wrong - the index of the digit 
+	 // can be zero but not -1 !!! comment out this part
+	 // and replace it - see below
+	 /*
 	 if(ind == 0 && iz >= 0 && ix > 0) {
           continue;
          }
@@ -320,8 +333,12 @@ void AliITSClusterFinderSPD::TracksInCluster()
 	 if(ind == 0 && iz == 0 && ix == 0 && i > 0) {
           continue;
          }
+	 */
+	 // change the conditions above to :
+	 if (ind < 0) continue;
 
         AliITSdigitSPD *dig = (AliITSdigitSPD*)fMap->GetHit(jz,jx);
+	if (!dig) printf("SPD: something wrong ! dig %p\n",dig);
 	/*
          signal=dig->fSignal;
          track0=dig->fTracks[0];
@@ -330,6 +347,7 @@ void AliITSClusterFinderSPD::TracksInCluster()
 	*/
           for(itr=0; itr<3; itr++) { 
 	    tracki = dig->fTracks[itr];
+	    //printf("tracki %d\n",tracki);                        //commented 18-09-00
             if(tracki >= 0) {
 	      ii += 1;
              cltracks[ii-1] = tracki;
