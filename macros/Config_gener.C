@@ -4,7 +4,7 @@ enum gentype_t {hijing, hijingParam, gun, box, pythia,
 
 gentype_t gentype=param4;
 
-ntracks=1;
+Int_t ntracks=1;
 
 void Config()
 {
