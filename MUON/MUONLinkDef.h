@@ -44,6 +44,7 @@
 #pragma link C++ class  AliMUONTrack;
 #pragma link C++ class  AliMUONTrackHit;
 #pragma link C++ class  AliMUONTrackParam;
+#pragma link C++ class  AliMUONTriggerConstants;
 #endif
 
 
