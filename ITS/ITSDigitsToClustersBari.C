@@ -50,8 +50,7 @@ void ITSDigitsToClustersBari (Int_t evNumber1=0,Int_t evNumber2=0)
    // simulation but in cluster finder as well, please set them via your
    // local Config.C - the streamer will take care of writing the correct
    // info and you'll no longer be obliged to set them again for your cluster
-   // finder as it's done in this macro (ugly and impractical, no? )
-
+   // finder as it's done in this macro 
 
 
    // Set the models for cluster finding
@@ -71,11 +70,6 @@ void ITSDigitsToClustersBari (Int_t evNumber1=0,Int_t evNumber2=0)
 
    // SDD
 
-   Float_t baseline = 10.;
-   Float_t noise = 1.67;
-   Float_t thres = baseline+3*noise;
-   printf("thresh %d\n",thres);
-
    AliITSDetType *iDetType=ITS->DetType(1);
    AliITSgeom *geom = ITS->GetITSgeom();
 
@@ -83,58 +77,64 @@ void ITSDigitsToClustersBari (Int_t evNumber1=0,Int_t evNumber2=0)
    if (!seg1) seg1 = new AliITSsegmentationSDD(geom);
    AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
    if (!res1) res1=new AliITSresponseSDD();
-   res1->SetMagicValue(900.);
-   Float_t magic = res1->MagicValue();
-   Float_t top = res1->MaxAdc();
-   thres *= top/magic;
-   res1->SetNoiseParam(noise,baseline);
-   Float_t n,b;
-   res1->GetNoiseParam(n,b);
-    printf("SDD: noise baseline %f %f zs option %s data type %s\n",n,b,res1->ZeroSuppOption(),res1->DataType());
-   printf("SDD: DriftSpeed %f TopValue %f\n",res1->DriftSpeed(),res1->MagicValue());
-   Float_t dif0,dif1;
-   res1->DiffCoeff(dif0,dif1);
-   printf("SDD: dif0 %f dif1 %f\n",dif0,dif1);
+
+   Float_t baseline,noise;
+   res1->GetNoiseParam(noise,baseline);
+   Float_t noise_after_el = res1->GetNoiseAfterElectronics();
+   Float_t thres = baseline;
+   thres += (4.*noise_after_el);  // TB // (4.*noise_after_el);
+   printf("thres %f\n",thres);
+   res1->Print();
+
    TClonesArray *dig1  = ITS->DigitsAddress(1);
    TClonesArray *recp1  = ITS->ClustersAddress(1);
    AliITSClusterFinderSDD *rec1=new AliITSClusterFinderSDD(seg1,res1,dig1,recp1);
-   rec1->SetMinNCells(6);
-   rec1->SetTimeCorr(70.);
    rec1->SetCutAmplitude((int)thres);
    ITS->SetReconstructionModel(1,rec1);
+   rec1->Print();
+
 
    // SSD
 
    AliITSDetType *iDetType=ITS->DetType(2);
    AliITSsegmentationSSD *seg2=(AliITSsegmentationSSD*)iDetType->GetSegmentationModel();
+   seg2->SetDetSize(72960.,40000.,303.);
    TClonesArray *dig2  = ITS->DigitsAddress(2);
-   TClonesArray *recp2  = ITS->ClustersAddress(2);
-   AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2,recp2);
+   AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2);
    ITS->SetReconstructionModel(2,rec2);
    // test
    //printf("SSD dimensions %f %f \n",seg2->Dx(),seg2->Dz());
    //printf("SSD nstrips %d %d \n",seg2->Npz(),seg2->Npx());
 
 
-
 //
 // Event Loop
 //
 
+   cout << "Looking for clusters...\n";
+   
+   TStopwatch timer;
+
+   if(!gAlice->TreeR()) gAlice->MakeTree("R");
+   //make branch
+   ITS->MakeBranch("R");
+
    for (int nev=evNumber1; nev<= evNumber2; nev++) {
-       Int_t nparticles = gAlice->GetEvent(nev);
+       if(nev>0) {
+	 nparticles = gAlice->GetEvent(nev);
+	 gAlice->SetEvent(nev);
+	 if(!gAlice->TreeR()) gAlice-> MakeTree("R");
+	 ITS->MakeBranch("R");
+       }     
        cout << "nev         " <<nev<<endl;
        cout << "nparticles  " <<nparticles<<endl;
        if (nev < evNumber1) continue;
        if (nparticles <= 0) return;
 
-       TTree *TD = gAlice->TreeD();
-       Int_t nent=TD->GetEntries();
-       printf("Found %d entries in the tree (must be one per module per event!)\n",nent);
-       //Int_t nmodules=geom->GetLastSSD();
-       //Int_t last_entry=nent-(nmodules+1);
-       Int_t last_entry=1;
+       Int_t last_entry=0;
+       timer.Start();
        ITS->DigitsToRecPoints(nev,last_entry,"All");
+       timer.Stop(); timer.Print(); 
    } // event loop 
 
    delete rec0;
