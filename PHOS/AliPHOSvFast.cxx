@@ -76,26 +76,25 @@ AliPHOSvFast::AliPHOSvFast(const char *name, const char *title):
   // ctor
 
   
-  // create the geometry parameters object  
-  // and post it to a folder (Post retrieves the correct geometry)
-  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0)->PostGeometry() ;    
-    
-    SetBigBox(0, GetGeometry()->GetOuterBoxSize(0) ) ;
-    SetBigBox(1, GetGeometry()->GetOuterBoxSize(3) + GetGeometry()->GetCPVBoxSize(1) ) ; 
-    SetBigBox(2, GetGeometry()->GetOuterBoxSize(2) ); 
-    
-    fNRecParticles = 0 ; 
-    fFastRecParticles = new AliPHOSFastRecParticle::FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
-
-    fResPara1 = 0.030 ;    // GeV
-    fResPara2 = 0.00003 ; 
-    fResPara3 = 0.00001 ; 
-    
-    fPosParaA0 = 2.87 ;    // mm
-    fPosParaA1 = -0.0975 ;  
-    fPosParaB0 = 0.257 ;   
-    fPosParaB1 = 0.137 ; 
-    fPosParaB2 = 0.00619 ; 
+  // create the Getter 
+  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0) ; 
+  
+  SetBigBox(0, GetGeometry()->GetOuterBoxSize(0) ) ;
+  SetBigBox(1, GetGeometry()->GetOuterBoxSize(3) + GetGeometry()->GetCPVBoxSize(1) ) ; 
+  SetBigBox(2, GetGeometry()->GetOuterBoxSize(2) ); 
+  
+  fNRecParticles = 0 ; 
+  fFastRecParticles = new AliPHOSFastRecParticle::FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
+  
+  fResPara1 = 0.030 ;    // GeV
+  fResPara2 = 0.00003 ; 
+  fResPara3 = 0.00001 ; 
+  
+  fPosParaA0 = 2.87 ;    // mm
+  fPosParaA1 = -0.0975 ;  
+  fPosParaB0 = 0.257 ;   
+  fPosParaB1 = 0.137 ; 
+  fPosParaB2 = 0.00619 ; 
 }
 
 //____________________________________________________________________________
@@ -468,7 +467,7 @@ Double_t AliPHOSvFast::SigmaE(Double_t energy)
 }
 
 //____________________________________________________________________________
-Double_t AliPHOSvFast::SigmaP(Double_t energy, Int_t incidence)
+Double_t AliPHOSvFast::SigmaP(Double_t energy, Double_t incidence)
 {
   // Calculates the energy dependent position resolution 
 

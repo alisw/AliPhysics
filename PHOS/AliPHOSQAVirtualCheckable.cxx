@@ -51,10 +51,10 @@ ClassImp(AliPHOSQAVirtualCheckable)
   fChange = kFALSE ; 
   // create a new folder that will hold the list of alarms
   //  the folder that contains the alarms for PHOS   
-  fAlarms = (TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/QAAlarms/PHOS");   
+  fAlarms = (TFolder*)gROOT->FindObjectAny("Folders/Run/Conditions/QA/PHOS");   
   //  make it the owner of the objects that it contains
   fAlarms->SetOwner() ;
-  //  add the alarms list to //YSAlice/WhiteBoard/QAAlarms/PHOS
+  //  add the alarms list to //Folders/Run/Conditions/QA/PHOS
   TObjArray * alarms = new TObjArray() ; // deleted when fAlarms is deleted
   alarms->SetName(name) ; 
   fAlarms->Add(alarms) ; 
@@ -105,7 +105,7 @@ void AliPHOSQAVirtualCheckable::CheckMe()
 //____________________________________________________________________________ 
 void AliPHOSQAVirtualCheckable::RaiseAlarm(const char * time, const char * checked, const char * checker, const char * message)
 {
-  // Raise an alarm and store it in the appropriate folder : //YSAlice/WhiteBoard/QAAlarms/PHOS/..
+  // Raise an alarm and store it in the appropriate folder : //Folders/Run/Conditions/QA/PHOS..
   // cout << message ; 
   AliPHOSQAAlarm * alarm = new AliPHOSQAAlarm(time, checked, checker, message)  ;   
   GetAlarms()->Add(alarm) ; 

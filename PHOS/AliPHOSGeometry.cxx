@@ -100,16 +100,6 @@ void AliPHOSGeometry::Init(void)
   this->SetPHOSAngles() ; 
   fRotMatrixArray = new TObjArray(fNModules) ; 
   
-  // post the geometry into the appropriate folder
-  TFolder * folder = (TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/Geometry/PHOS"); 
-  if ( !folder ) {
-    cerr << "ERROR: AliPHOSGeometry::Init -> No WhiteBoard/Geometry/PHOS found !" << endl ; 
-    abort();
-  } else {
-    folder->SetOwner() ;
-    folder->Add(this) ; 
-  }
-  
 }
 
 

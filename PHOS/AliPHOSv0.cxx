@@ -59,9 +59,8 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
 {
   // ctor : title is used to identify the layout
  
-  // create the geometry parameters object  
-  // and post it to a folder (Post retrieves the correct geometry)
-  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0)->PostGeometry() ; 
+  // create the getter
+  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0);
   
 }
 
@@ -301,7 +300,7 @@ void AliPHOSv0::CreateGeometry()
 {
   // Create the PHOS geometry for Geant
 
-  AliPHOSv0 *phostmp = (AliPHOSv0*)gAlice->GetModule("PHOS") ;
+  AliPHOSv0 *phostmp = dynamic_cast<AliPHOSv0*>(gAlice->GetModule("PHOS")) ;
 
   if ( phostmp == NULL ) {
     

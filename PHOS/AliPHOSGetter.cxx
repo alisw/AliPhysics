@@ -59,6 +59,7 @@
 // --- AliRoot header files ---
 
 #include "AliRun.h"
+#include "AliConfig.h"
 #include "AliPHOSGetter.h"
 #include "AliPHOS.h"
 #include "AliPHOSDigitizer.h"
@@ -91,10 +92,18 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
 
   fPrimaries = new TObjArray(1) ;
 
+  fModuleFolder  = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Configuration/Modules")); 
+  fHitsFolder    = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data/Hits")); 
+  fSDigitsFolder = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/RunMC/Event/Data/SDigits")); 
+  fDigitsFolder  = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/Data")); 
+  fRecoFolder    = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Event/RecData")); 
+  fQAFolder      = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Run/Conditions/QA")); 
+  fTasksFolder   = dynamic_cast<TFolder*>(gROOT->FindObjectAny("Folders/Tasks")) ; 
+
   if ( fHeaderFile != "aliroot"  ) { // to call the getter without a file
 
     //open headers file
-    TFile * file = (TFile*) gROOT->GetFile(fHeaderFile.Data() ) ;
+    TFile * file = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
     
     if(file == 0){    //if file was not opened yet, read gAlice
       if(fHeaderFile.Contains("rfio")) // if we read file using HPSS
@@ -107,48 +116,33 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
 	abort() ; 
       }
       
-      gAlice = (AliRun *) file->Get("gAlice") ;
+      gAlice = static_cast<AliRun *>(file->Get("gAlice")) ;
       
       if (!gAlice) {
 	cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot find gAlice in " << fHeaderFile.Data() << endl ; 
 	abort() ; 
       }
+      if (!PHOS()) {
+	if (fDebug)
+	  cout << "INFO: AliPHOSGetter -> Posting PHOS to Folders" << endl ; 
+	AliConfig * conf = AliConfig::Instance() ; 
+	conf->Add(static_cast<AliDetector*>(gAlice->GetDetector("PHOS"))) ; 
+ 	conf->Add(static_cast<AliModule*>(gAlice->GetDetector("PHOS"))) ; 
+     }
     }
+
   }
   fDebug=0;
 }
 //____________________________________________________________________________ 
 AliPHOSGetter::~AliPHOSGetter(){
-  //Here we remove all TFolders and TTasks with current title and file name
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  if(aliceF){
-    //Hits:  the hierarchy is //YSALICE/WhiteBoard/Hits/PHOS/...
-    TFolder * hitsF  = (TFolder*)aliceF->FindObject("WhiteBoard/Hits/PHOS") ; 
-    if(hitsF){
-      TObject * h = hitsF->FindObject("hits") ;
-      hitsF->Remove(h) ;
-    }
-    
-    //SDigits:  the hierarchy is //YSALICE/WhiteBoard/SDigits/PHOS/...
-    TFolder * sdigitsF  = (TFolder*)aliceF->FindObject("WhiteBoard/SDigits/PHOS") ; 
-    if(sdigitsF){
-      TCollection* l = sdigitsF->GetListOfFolders() ;
-      TIter it(l) ;
-      TObject * sf ;
-      while((sf = it.Next()) )
-	sdigitsF->RecursiveRemove(sf) ;
-    }
-  }
+
 }
+
 //____________________________________________________________________________ 
 void AliPHOSGetter::CreateWhiteBoard() const
 {
-  // Posts a few item to the white board (folders)
-  
-  // -- the geometry
-  if(!PostGeometry() ) abort() ; 
-  
+
 }
 
 //____________________________________________________________________________ 
@@ -182,106 +176,101 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
   fgObjGetter = new AliPHOSGetter(headerFile,branchTitle) ; 
   
   // Posts a few item to the white board (folders)
-  fgObjGetter->CreateWhiteBoard() ;
+  // fgObjGetter->CreateWhiteBoard() ;
     
   return fgObjGetter ; 
   
 }
 
 //____________________________________________________________________________ 
- const  AliPHOS * AliPHOSGetter::PHOS() const 
+const AliPHOS * AliPHOSGetter::PHOS() 
 {
   // returns the PHOS object 
-  return ( (AliPHOS*)gAlice->GetDetector("PHOS") ); 
+  AliPHOS * phos = dynamic_cast<AliPHOS*>(fModuleFolder->FindObject("PHOS")) ;  
+  if (!phos) 
+    if (fDebug)
+      cout << "WARNING: AliPHOSGetter::PHOS -> PHOS module not found in Folders" << endl ; 
+  return phos ; 
 }  
 
 //____________________________________________________________________________ 
-  const AliPHOSGeometry *  AliPHOSGetter::PHOSGeometry() const 
+const AliPHOSGeometry * AliPHOSGetter::PHOSGeometry() 
 {
-  // retrieves the geometr from the folder
+  AliPHOSGeometry * rv = 0 ; 
+  if (PHOS() )
+    rv =  PHOS()->GetGeometry() ;
+  return rv ; 
+} 
 
-  TString path("YSAlice/WhiteBoard/Geometry/PHOS/") ;
-  path += PHOS()->GetTitle() ;
-  return (AliPHOSGeometry*)gROOT->FindObjectAny(path.Data()) ; 
-}
-
-//____________________________________________________________________________ 
-Bool_t AliPHOSGetter::PostGeometry() const 
-{  //--------Geometry --------------
-  
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  // the hierarchy is //YSALICE/WhiteBoard/Geometry/PHOS/
-  TFolder * geomF  = (TFolder*)aliceF->FindObject("WhiteBoard/Geometry/PHOS") ; 
-  if ( !geomF ) {
-    cerr << "ERROR: AliPHOSGetter::Post G -> Folder WhiteBoard/Geometry/PHOS/" << " not found!" << endl;
-    return kFALSE ;
-  }    
-  else {
-    AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance(PHOS()->GetTitle(),"") ;  
-    geomF->Add((TObject*)geom) ; 
-  }
-  return kTRUE;   
-}
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostHits(void) const 
 {  //------- Hits ----------------------
 
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
+  // the hierarchy is //Folders/RunMC/Event/Data/PHOS/Hits
   
-  // the hierarchy is //YSALICE/WhiteBoard/SDigits/PHOS/Hits
-  TFolder * hitsF  = (TFolder*)aliceF->FindObject("WhiteBoard/Hits/PHOS") ; 
-  if ( !hitsF ) {
-    cerr << "ERROR: AliPHOSGetter::Post H -> Folder WhiteBoard/Hits/PHOS/" << " not found!" << endl;
-    return kFALSE ;
+  TFolder * phosFolder = dynamic_cast<TFolder*>(fHitsFolder->FindObject("PHOS")) ; 
+  if ( !phosFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post H -> Folder //" << fHitsFolder << "/PHOS/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post H -> Adding Folder //" << fHitsFolder << "/PHOS/"  << endl;
+    }
+    phosFolder = fHitsFolder->AddFolder("PHOS", "Hits from PHOS") ; 
   }    
- 
-  TObject * h = hitsF->FindObject("Hits") ;
-
-  if(!h){
-    TClonesArray *hits=  new TClonesArray("AliPHOSHit",1000) ;
-    hits->SetName("Hits") ;
-    hitsF->Add(hits) ; 
-  }
- 
+  TClonesArray *hits=  new TClonesArray("AliPHOSHit",1000) ;
+  hits->SetName("Hits") ;
+  phosFolder->Add(hits) ; 
+  
   return kTRUE;
 } 
+
 //____________________________________________________________________________ 
-TClonesArray ** AliPHOSGetter::HitsRef(void) const 
+void * AliPHOSGetter::HitsRef(void) const 
 {  //------- Hits ----------------------
 
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
   
-  // the hierarchy is //YSALICE/WhiteBoard/SDigits/PHOS/Hits
-  TFolder * hitsF  = (TFolder*)aliceF->FindObject("WhiteBoard/Hits/PHOS") ; 
-  if ( !hitsF ) {
-    cerr << "ERROR: AliPHOSGetter::Post H -> Folder WhiteBoard/Hits/PHOS/" << " not found!" << endl;
+  // the hierarchy is //Folders/RunMC/Event/Data/PHOS/Hits
+  if ( !fHitsFolder ) {
+    cerr << "ERROR: AliPHOSGetter::Post H -> Folder //" << fHitsFolder << " not found!" << endl;
     return 0;
   }    
  
-  TObject * h = hitsF->FindObject("Hits") ;
-  if(!h)
+  TFolder * phosFolder = dynamic_cast<TFolder *>(fHitsFolder->FindObject("PHOS")) ;
+  if ( !phosFolder ) {
+    cerr << "ERROR: AliPHOSGetter::Post HRef -> Folder //" << fHitsFolder << "/PHOS/ not found!" << endl;  
+    return 0;
+  }
+ 
+  TObject * h = phosFolder->FindObject("Hits") ;
+  if(!h) {
+    cerr << "ERROR: AliPHOSGetter::HRef -> " << phosFolder->GetName() << "/Hits not found !" << endl ; 
     return 0 ;
+  }
   else
-    return (TClonesArray **) hitsF->GetListOfFolders()->GetObjectRef(h) ;
-
+    return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(h)) ;
 }
+
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostSDigits(const char * name, const char * headerFile) const 
 {  //---------- SDigits -------------------------
 
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
   
-  // the hierarchy is //YSALICE/WhiteBoard/SDigits/PHOS/headerFile/sdigitsname
+  // the hierarchy is //Folders/RunMC/Event/Data/PHOS/SDigits/headerFile/sdigitsname
   // because you can have sdigits from several hit files for mixing
-
-  TFolder * sdigitsF  = (TFolder*)aliceF->FindObject("WhiteBoard/SDigits/PHOS") ;
+  
+  TFolder * phosFolder = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("PHOS")) ;
+  if ( !phosFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post S -> Folder //" << fSDigitsFolder << "/PHOS/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post S -> Adding Folder //" << fHitsFolder << "/PHOS/" << endl;
+    }
+    phosFolder = fSDigitsFolder->AddFolder("PHOS", "SDigits from PHOS") ; 
+  }    
   TString subdir(headerFile) ;
-  TFolder * sdigitsF2 = (sdigitsF2=(TFolder*)sdigitsF->FindObject(subdir)) ; 
-  if ( !sdigitsF2 ) 
-    sdigitsF2 = sdigitsF->AddFolder(subdir, ""); 
-
-  TObject * sd  = sdigitsF2->FindObject(name ); 
+  TFolder * phosSubFolder = dynamic_cast<TFolder*>(phosFolder->FindObject(subdir)) ; 
+  if ( !phosSubFolder ) 
+    phosSubFolder = phosFolder->AddFolder(subdir, ""); 
+  
+  TObject * sd  = phosSubFolder->FindObject(name); 
   if ( sd ) {
     if (fDebug)
       cerr <<"INFO: AliPHOSGetter::Post S -> Folder " << subdir 
@@ -289,58 +278,70 @@ Bool_t AliPHOSGetter::PostSDigits(const char * name, const char * headerFile) co
   }else{
     TClonesArray * sdigits = new TClonesArray("AliPHOSDigit",1000) ;
     sdigits->SetName(name) ;
-    sdigitsF2->Add(sdigits) ;
+    phosSubFolder->Add(sdigits) ;
   }
   
   return kTRUE;
 } 
 //____________________________________________________________________________ 
-TClonesArray ** AliPHOSGetter::SDigitsRef(const char * name, const char * file) const 
-{  //------- Hits ----------------------
-
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
+void * AliPHOSGetter::SDigitsRef(const char * name, const char * file) const 
+{  //------- SDigits ----------------------
   
-  // the hierarchy is //YSALICE/WhiteBoard/SDigits/PHOS/Hits
-  TFolder * sdisF  = (TFolder*)aliceF->FindObject("WhiteBoard/SDigits/PHOS") ; 
-  if ( !sdisF ) {
-    cerr << "ERROR: AliPHOSGetter::SDRef -> Folder WhiteBoard/SDigits/PHOS/" << " not found!" << endl;
+  // the hierarchy is //Folders/RunMC/Event/Data/PHOS/SDigits/filename/SDigits
+
+  if ( !fSDigitsFolder ) {
+    cerr << "ERROR: AliPHOSGetter::Post SRef -> Folder //" << fSDigitsFolder << " not found!" << endl;
     return 0;
   }    
-  TFolder * fileF ;
+ 
+  TFolder * phosFolder = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject("PHOS")) ;
+  if ( !phosFolder ) {
+    cerr << "ERROR: AliPHOSGetter::Post SRef -> Folder //" << fSDigitsFolder << "/PHOS/ not found!" << endl;
+    return 0;
+  }
+
+  TFolder * phosSubFolder = 0 ;
   if(file)
-    fileF = (TFolder *) sdisF->FindObject(file) ;
+    phosSubFolder = dynamic_cast<TFolder *>(phosFolder->FindObject(file)) ;
   else
-    fileF = (TFolder *) sdisF->FindObject(fHeaderFile) ;
+    phosSubFolder = dynamic_cast<TFolder *>(phosFolder->FindObject(fHeaderFile)) ;
+  
+  if(!phosSubFolder) {
+    cerr << "ERROR: AliPHOSGetter::Post SRef -> Folder //Folders/RunMC/Event/Data/PHOS/" << file << "not found!" << endl;
+    return 0;
+  }
 
-  if(!fileF)
-    abort() ;
-
-  TObject * dis = fileF->FindObject(name) ;
+  TObject * dis = phosSubFolder->FindObject(name) ;
   if(!dis)
     return 0 ;
   else
-    return (TClonesArray **) fileF->GetListOfFolders()->GetObjectRef(dis) ;
+    return static_cast<void *>(phosSubFolder->GetListOfFolders()->GetObjectRef(dis)) ;
 
 }
 
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostSDigitizer(AliPHOSSDigitizer * sdigitizer) const 
 {  //---------- SDigitizer -------------------------
-  
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  // the hierarchy is //YSALICE/tasks/Digitizer/PHOS/sdigitsname
-  TTask * sdigitsF  = (TTask*)aliceF->FindObject("tasks/SDigitizer") ; 
-  if ( !sdigitsF ) {
-    cerr << "ERROR: AliPHOSGetter::Post Ser -> Task tasks/SDigitizer" << " not found!" << endl;
+    
+  // the hierarchy is //Folders/Tasks/SDigitizer/PHOS/sdigitsname
+
+
+  TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ; 
+
+  if ( !sd ) {
+    cerr << "ERROR: AliPHOSGetter::Post Ser -> Task //" << fTasksFolder << "/SDigitizer not found!" << endl;
     return kFALSE ;
   }        
-  TTask * phos = (TTask*)sdigitsF->GetListOfTasks()->FindObject("PHOS") ; 
+  TTask * phos = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"ERROR: AliPHOSGetter::Post Ser -> tasks/SDigitizer/PHOS" << " not found!" << endl; 
-    return kFALSE ; 
+    if (fDebug) {
+      cout <<"WARNING: AliPHOSGetter::Post Ser ->//" << fTasksFolder << "/SDigitizer/PHOS/ not found!" << endl;  
+      cout <<"INFO: AliPHOSGetter::Post Ser -> Adding //" << fTasksFolder << "/SDigitizer/PHOS/" << endl;
+    }
+    phos = new TTask("PHOS", "") ; 
+    sd->Add(phos) ; 
   } 
-  AliPHOSSDigitizer * phossd  = (AliPHOSSDigitizer *) phos->GetListOfTasks()->FindObject( sdigitizer->GetName() ); 
+  AliPHOSSDigitizer * phossd  = dynamic_cast<AliPHOSSDigitizer *>(phos->GetListOfTasks()->FindObject( sdigitizer->GetName() )); 
   if (phossd) { 
     if (fDebug)
       cout << "INFO: AliPHOSGetter::Post Ser -> Task " << sdigitizer->GetName() << " already exists" << endl ; 
@@ -350,55 +351,56 @@ Bool_t AliPHOSGetter::PostSDigitizer(AliPHOSSDigitizer * sdigitizer) const
   return kTRUE; 
   
 }
+
 //____________________________________________________________________________ 
-AliPHOSSDigitizer ** AliPHOSGetter::SDigitizerRef(const char * name) const 
+void * AliPHOSGetter::SDigitizerRef(const char * name) const 
 {  
 
-  TString path("tasks/SDigitizer") ;
- 
-  TFolder * aliceF  = (TFolder*)gROOT ->FindObjectAny("YSAlice") ; 
-  TTask   * aliceT  = (TTask*)  aliceF->FindObject(path) ; 
+  TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ; 
+  if ( !sd ) {
+    cerr << "ERROR: AliPHOSGetter::Post SerRef -> Task //" << fTasksFolder << "/SDigitizer not found!" << endl;
+    abort();
+  }        
 
-  if (!aliceT) {
-    cerr << "ERROR: AliPHOSGetter::ReturnT -> Task " << path << " not found!" << endl ;  
-    abort() ;
-  }
+  TTask * phos = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("PHOS")) ; 
+  if ( !phos )  {
+    cerr <<"ERROR: AliPHOSGetter::Post SerRef ->  //" << fTasksFolder << "/SDigitizer/PHOS not found!" << endl;
+    abort();
+  }        
 
-  TTask   * phosT   = (TTask*)  aliceT->GetListOfTasks()->FindObject("PHOS") ; 
-  if (!phosT) { 
-    cerr << "ERROR: AliPHOSGetter::ReturnT -> Task " << path << "/PHOS not found!" << endl ;  
-    abort() ;
-  }
-  TList * l = phosT->GetListOfTasks() ; 
+  TTask * task = dynamic_cast<TTask*>(phos->GetListOfTasks()->FindObject(name)) ; 
 
-  TTask * task = (TTask*)l->FindObject(name) ; 
-
-  return (AliPHOSSDigitizer **) l->GetObjectRef(task) ;
+  return static_cast<void *>(phos->GetListOfTasks()->GetObjectRef(task)) ;
 
 }
-
 
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostSDigitizer(const char * name, const char * file) const 
 {  //---------- SDigitizer -------------------------
   
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  // the hierarchy is //YSALICE/tasks/Digitizer/PHOS/sdigitsname
-  TTask * sdigitsF  = (TTask*)aliceF->FindObject("tasks/SDigitizer") ; 
-  if ( !sdigitsF ) {
-    cerr << "ERROR: AliPHOSGetter::Post Ser -> Task tasks/SDigitizer" << " not found!" << endl;
+ // the hierarchy is //Folders/Tasks/SDigitizer/PHOS/sdigitsname
+
+
+  TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("SDigitizer")) ; 
+  if ( !sd ) {
+    cerr << "ERROR: AliPHOSGetter::Post Ser -> Task //" << fTasksFolder << "/SDigitizer not found!" << endl;
     return kFALSE ;
   }        
-  TTask * phos = (TTask*)sdigitsF->GetListOfTasks()->FindObject("PHOS") ; 
+
+  TTask * phos = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"ERROR: AliPHOSGetter::Post Ser -> tasks/SDigitizer/PHOS" << " not found!" << endl; 
-    return kFALSE ; 
+    if (fDebug) {
+      cout <<"WARNING: AliPHOSGetter::Post Ser ->  //" << fTasksFolder << "/SDigitizer/PHOS/ not found!" << endl;
+      cout <<"INFO: AliPHOSGetter::Post Ser -> Adding  //" << fTasksFolder << "/SDigitizer/PHOS" << endl;
+    }
+    phos = new TTask("PHOS", "") ; 
+    sd->Add(phos) ; 
   } 
+
   TString sdname(name) ;
   sdname.Append(":") ;
   sdname.Append(file);
-  AliPHOSSDigitizer * phossd  = (AliPHOSSDigitizer *) phos->GetListOfTasks()->FindObject( sdname ); 
+  AliPHOSSDigitizer * phossd  = dynamic_cast<AliPHOSSDigitizer *>(phos->GetListOfTasks()->FindObject( sdname )); 
   if (!phossd) {
     phossd = new AliPHOSSDigitizer() ;  
     //Note, we can not call constructor with parameters: it will call Getter and scrud up everething
@@ -409,92 +411,109 @@ Bool_t AliPHOSGetter::PostSDigitizer(const char * name, const char * file) const
   return kTRUE; 
   
 }
+
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostDigits(const char * name) const 
 {  //---------- Digits -------------------------
 
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  // the hierarchy is //YSALICE/WhiteBoard/Digits/PHOS/digitsname
-  TFolder * digitsF  = (TFolder*)aliceF->FindObject("WhiteBoard/Digits/PHOS") ;
-  if ( !digitsF ) {
-    cerr << "ERROR: AliPHOSGetter::Post D -> Folder WhiteBoard/Digits/PHOS/" << " not found!" << endl;
-    return kFALSE ; 
+  // the hierarchy is //Folders/Run/Event/Data/PHOS/SDigits/name
+
+  TFolder * phosFolder  = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("PHOS")) ;
+
+  if ( !phosFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post D -> Folder //" << fDigitsFolder << "/PHOS/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post D -> Adding Folder //" << fDigitsFolder << "/PHOS/" << endl;
+    }
+    phosFolder = fDigitsFolder->AddFolder("PHOS", "Digits from PHOS") ;  
   }    
-  digitsF->SetTitle("") ; 
-  TObject*  dig = digitsF->FindObject( name ) ;
+ 
+  TObject*  dig = phosFolder->FindObject( name ) ;
   if ( !dig ) {
     TClonesArray * digits = new TClonesArray("AliPHOSDigit",1000) ;
     digits->SetName(name) ;
-    digitsF->Add(digits) ;  
+    phosFolder->Add(digits) ;  
   }
   return kTRUE; 
 }
-//____________________________________________________________________________ 
-TClonesArray ** AliPHOSGetter::DigitsRef(const char * name) const 
-{  
 
-  TFolder * digitsF  = (TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/Digits/PHOS") ; 
+//____________________________________________________________________________ 
+void * AliPHOSGetter::DigitsRef(const char * name) const 
+{ //------- Digits ----------------------
   
-   if ( !digitsF ) {
-    cerr << "ERROR: AliPHOSGetter::DRef -> Folder WhiteBoard/Digits/PHOS/" << " not found!" << endl;
+  // the hierarchy is //Folders/Run/Event/Data/PHOS/Digits/name
+
+  if ( !fDigitsFolder ) {
+    cerr << "ERROR: AliPHOSGetter::Post DRef -> Folder //" << fDigitsFolder << " not found!" << endl;
+    return 0;
+  }    
+  
+  TFolder * phosFolder  = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("PHOS")) ; 
+  if ( !phosFolder ) {
+    cerr << "ERROR: AliPHOSGetter::DRef -> Folder //" << fDigitsFolder << "/PHOS/ not found!" << endl;
     return 0;
   }    
 
-  TObject * d = digitsF->FindObject(name) ;
+  TObject * d = phosFolder->FindObject(name) ;
   if(!d)
     return 0 ;
   else
-    return (TClonesArray **) digitsF->GetListOfFolders()->GetObjectRef(d) ;
+    return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(d)) ;
 
 }
 
- 
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostDigitizer(AliPHOSDigitizer * digitizer) const 
 {  //---------- Digitizer -------------------------
   
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  // the hierarchy is //YSALICE/tasks/Digitizer/PHOS/digitsname
-  TTask * digitsF  = (TTask*)aliceF->FindObject("tasks/Digitizer") ; 
-  if ( !digitsF ) {
-    cerr << "ERROR: AliPHOSGetter::Post Der -> Task tasks/Digitizer" << " not found!" << endl;
-    return kFALSE ; 
+  TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ; 
+
+  if ( !sd ) {
+    cerr << "ERROR: AliPHOSGetter::Post Der -> Task //" << fTasksFolder << "/Digitizer not found!" << endl;
+    return kFALSE ;
   }        
-  TTask * phos = (TTask*)digitsF->GetListOfTasks()->FindObject("PHOS") ; 
+  TTask * phos = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"ERROR: AliPHOSGetter::Post Der -> tasks/Digitizer/PHOS" << " not found!" << endl; 
-    return kFALSE ; 
-  } else {
-    AliPHOSDigitizer * phosd = (AliPHOSDigitizer*)phos->GetListOfTasks()->FindObject(digitizer->GetName()) ; 
+    if (fDebug) {
+      cout <<"WARNING: AliPHOSGetter::Post Der ->  //" << fTasksFolder << "/Digitizer/PHOS not found!" << endl;
+      cout <<"INFO: AliPHOSGetter::Post Der -> Adding //" << fTasksFolder << "/Digitizer/PHOS" << endl; 
+    }
+    phos = new TTask("PHOS", "") ; 
+    sd->Add(phos) ; 
+  } 
+
+    AliPHOSDigitizer * phosd = dynamic_cast<AliPHOSDigitizer*>(phos->GetListOfTasks()->FindObject(digitizer->GetName())) ; 
     if (phosd) { 
       phosd->Delete() ;
       phos->GetListOfTasks()->Remove(phosd) ;
     }
-    phos->Add((TTask*)digitizer) ; 
+    phos->Add(digitizer) ; 
     return kTRUE; 
-  } 
-} 
+}  
+
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostDigitizer(const char * name) const 
 {  //---------- Digitizer -------------------------
   
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  // the hierarchy is //YSALICE/tasks/Digitizer/PHOS/digitsname
-  TTask * digitsF  = (TTask*)aliceF->FindObject("tasks/Digitizer") ; 
-  if ( !digitsF ) {
-    cerr << "ERROR: AliPHOSGetter::Post Der -> Task tasks/Digitizer" << " not found!" << endl;
-    return kFALSE ; 
-  }        
-  TTask * phos = (TTask*)digitsF->GetListOfTasks()->FindObject("PHOS") ; 
-  if ( !phos )  {
-    cerr <<"ERROR: AliPHOSGetter::Post Der -> tasks/Digitizer/PHOS" << " not found!" << endl; 
-    return kFALSE ; 
-  }
+ // the hierarchy is //Folders/Tasks/SDigitizer/PHOS/sdigitsname
 
-  AliPHOSDigitizer * phosd = (AliPHOSDigitizer*)phos->GetListOfTasks()->FindObject(name) ; 
+  TTask * d  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ; 
+  if ( !d ) {
+    cerr << "ERROR: AliPHOSGetter::Post Der -> Task //" << fTasksFolder << "/Digitizer not found!" << endl;
+    return kFALSE ;
+  }        
+
+  TTask * phos = dynamic_cast<TTask*>(d->GetListOfTasks()->FindObject("PHOS")) ; 
+  if ( !phos )  {
+    if (fDebug) {
+      cout <<"WARNING: AliPHOSGetter::Post Der -> //" << fTasksFolder << "/Digitizer/PHOS not found!" << endl; 
+      cout <<"INFO: AliPHOSGetter::Post Der -> Adding //" << fTasksFolder << "/Digitizer/PHOS" << endl;
+    }
+    phos = new TTask("PHOS", "") ; 
+    d->Add(phos) ; 
+} 
+
+  AliPHOSDigitizer * phosd = dynamic_cast<AliPHOSDigitizer*>(phos->GetListOfTasks()->FindObject(name)) ; 
   if (!phosd) { 
     phosd = new AliPHOSDigitizer() ;
     phosd->SetName(fDigitsTitle) ;
@@ -505,29 +524,23 @@ Bool_t AliPHOSGetter::PostDigitizer(const char * name) const
 }
 
 //____________________________________________________________________________ 
-AliPHOSDigitizer ** AliPHOSGetter::DigitizerRef(const char * name) const 
+void * AliPHOSGetter::DigitizerRef(const char * name) const 
 {  
+  TTask * sd  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Digitizer")) ; 
+  if ( !sd ) {
+    cerr << "ERROR: AliPHOSGetter::Post DerRef -> Task //" << fTasksFolder << "/Digitizer not found!" << endl;
+    abort();
+  }        
 
-  TString path("tasks/Digitizer") ;
- 
-  TFolder * aliceF  = (TFolder*)gROOT ->FindObjectAny("YSAlice") ; 
-  TTask   * aliceT  = (TTask*)  aliceF->FindObject(path) ; 
+  TTask * phos = dynamic_cast<TTask*>(sd->GetListOfTasks()->FindObject("PHOS")) ; 
+  if ( !phos )  {
+    cerr <<"ERROR: AliPHOSGetter::Post DerRef ->  //" << fTasksFolder << "/Digitizer/PHOS" << endl;
+    abort();
+  }        
 
-  if (!aliceT) {
-    cerr << "ERROR: AliPHOSGetter::ReturnT -> Task " << path << " not found!" << endl ;  
-    abort() ;
-  }
+  TTask * task = dynamic_cast<TTask*>(phos->GetListOfTasks()->FindObject(name)) ; 
 
-  TTask   * phosT   = (TTask*)  aliceT->GetListOfTasks()->FindObject("PHOS") ; 
-  if (!phosT) { 
-    cerr << "ERROR: AliPHOSGetter::ReturnT -> Task " << path << "/PHOS not found!" << endl ;  
-    abort() ;
-  }
-  TList * l = phosT->GetListOfTasks() ; 
-
-  TTask * task = (TTask*)l->FindObject(name) ; 
-
-  return (AliPHOSDigitizer **) l->GetObjectRef(task) ;
+  return static_cast<void *>(phos->GetListOfTasks()->GetObjectRef(task)) ;
 
 }
  
@@ -535,76 +548,103 @@ AliPHOSDigitizer ** AliPHOSGetter::DigitizerRef(const char * name) const
 Bool_t AliPHOSGetter::PostRecPoints(const char * name) const 
 { // -------------- RecPoints -------------------------------------------
   
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
+  // the hierarchy is //Folders/Run/Event/RecData/PHOS/EMCARecPoints/name
+  // the hierarchy is //Folders/Run/Event/RecData/PHOS/CPVRecPoints/name
+
+  TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS")) ; 
   
-  // the hierarchy is //YSALICE/WhiteBoard/RecPoints/PHOS/emc/recpointsname  
-  TFolder * emcrpF  = (TFolder*)aliceF->FindObject("WhiteBoard/RecPoints/PHOS/emc") ; 
-  
-  if ( !emcrpF ) {
-    cerr << "ERROR: AliPHOSGetter::Post R -> Folder WhiteBoard/RecPoints/PHOS/emc" 
-	 << " not found!" << endl;
-    return kFALSE ; 
+  if ( !phosFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post RPo -> Folder //" << fRecoFolder << "/PHOS/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post Rpo -> Adding Folder //" << fRecoFolder << "/PHOS/" << endl;
+    }
+    phosFolder = fRecoFolder->AddFolder("PHOS", "Reconstructed data from PHOS") ;  
   }    
-  emcrpF->SetTitle("") ;
-  TObject * erp = emcrpF->FindObject(name ) ;
+  
+  // EMCA RecPoints 
+  TFolder * phosRPoEMCAFolder  = dynamic_cast<TFolder*>(phosFolder->FindObject("EMCARecPoints")) ;
+  if ( !phosRPoEMCAFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post RPo -> Folder //" << fRecoFolder << "/PHOS/EMCARecPoints/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post Rpo -> Adding Folder //" << fRecoFolder << "/PHOS/EMCARecPoints not found!" << endl;
+    }
+    phosRPoEMCAFolder = phosFolder->AddFolder("EMCARecPoints", "EMCA RecPoints from PHOS") ;  
+  }    
+  
+  TObject * erp = phosFolder->FindObject( name ) ;
   if ( !erp )   {
     TObjArray * emcrp = new TObjArray(100) ;
     emcrp->SetName(name) ;
-    emcrpF->Add(emcrp) ;  
+    phosRPoEMCAFolder->Add(emcrp) ;  
   }
 
-  TFolder * cpvrpF  = (TFolder*)aliceF->FindObject("WhiteBoard/RecPoints/PHOS/cpv") ; 
-  
-  if ( !cpvrpF ) {
-    cerr << "ERROR: AliPHOSGetter::Post R -> Folder WhiteBoard/RecPoints/PHOS/cpv" 
-	 << " not found!" << endl;
-    return kFALSE ; 
+  // CPV RecPoints 
+  TFolder * phosRPoCPVFolder  = dynamic_cast<TFolder*>(phosFolder->FindObject("CPVRecPoints")) ;
+  if ( !phosRPoCPVFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post RPo -> Folder //" << fRecoFolder << "/PHOS/CPVRecPoints/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post Rpo -> Adding Folder //" << fRecoFolder << "/PHOS/CPVRecPoints/" << endl;
+    }
+    phosRPoCPVFolder = phosFolder->AddFolder("CPVRecPoints", "CPV RecPoints from PHOS") ;  
   }    
-  cpvrpF->SetTitle("") ; 
-  TObject * crp =  cpvrpF->FindObject( name ) ;
+  
+  TObject * crp =  phosRPoCPVFolder->FindObject( name ) ;
   if ( !crp )   {
     TObjArray * cpvrp = new TObjArray(100) ;
     cpvrp->SetName(name) ;
-    cpvrpF->Add(cpvrp) ;  
+    phosRPoCPVFolder->Add(cpvrp) ;  
   }
   return kTRUE; 
 }
 
 //____________________________________________________________________________ 
-TObjArray ** AliPHOSGetter::EmcRecPointsRef(const char * name) const 
+void * AliPHOSGetter::EmcRecPointsRef(const char * name) const 
 { // -------------- RecPoints -------------------------------------------
   
-  TFolder * emcrpF  = (TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/RecPoints/PHOS/emc") ; 
+  // the hierarchy is //Folders/Run/Event/RecData/PHOS/EMCARecPoints/name
    
-  if ( !emcrpF ) {
-    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder WhiteBoard/RecPoints/PHOS/emc" 
-	 << " not found!" << endl;
+  if ( !fRecoFolder ) {
+    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder << " not found!" << endl;
     return 0 ; 
   }    
 
-  TObject * erp = emcrpF->FindObject(name ) ;
+  TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/EMCARecPoints")) ; 
+  if ( !phosFolder ) {
+    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder << "/PHOS/EMCARecPoints/ not found!" << endl;
+    return 0;
+  }    
+
+
+  TObject * erp = phosFolder->FindObject(name ) ;
   if ( !erp )   {
     return 0 ;
   }
-  return (TObjArray **) emcrpF->GetListOfFolders()->GetObjectRef(erp) ;
+  return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(erp)) ;
 
 } 
+
 //____________________________________________________________________________ 
-TObjArray ** AliPHOSGetter::CpvRecPointsRef(const char * name) const 
+void * AliPHOSGetter::CpvRecPointsRef(const char * name) const 
 { // -------------- RecPoints -------------------------------------------
   
-  TFolder * cpvrpF  = (TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/RecPoints/PHOS/cpv") ; 
+  // the hierarchy is //Folders/Run/Event/RecData/PHOS/CPVRecPoints/name
    
-  if ( !cpvrpF ) {
-    cerr << "ERROR: AliPHOSGetter::CpvRecPointsRef -> Folder WhiteBoard/RecPoints/PHOS/cpv" 
-	 << " not found!" << endl;
+  if ( !fRecoFolder ) {
+    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder << " not found!" << endl;
     return 0 ; 
   }    
-  TObject * crp = cpvrpF->FindObject(name ) ;
+
+  TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/CPVRecPoints")) ; 
+  if ( !phosFolder ) {
+    cerr << "ERROR: AliPHOSGetter::CpvRecPointsRef -> Folder //" << fRecoFolder << "/PHOS/CPVRecPoints/" << endl;
+    return 0;
+  }    
+
+  TObject * crp = phosFolder->FindObject(name ) ;
   if ( !crp )   {
     return 0 ;
   }
-  return (TObjArray **) cpvrpF->GetListOfFolders()->GetObjectRef(crp) ;
+  return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(crp)) ;
 
 } 
 
@@ -612,58 +652,60 @@ TObjArray ** AliPHOSGetter::CpvRecPointsRef(const char * name) const
 Bool_t AliPHOSGetter::PostClusterizer(AliPHOSClusterizer * clu) const 
 { // ------------------ AliPHOSClusterizer ------------------------
   
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  // the hierarchy is //YSALICE/tasks/Reconstructionner/PHOS/recpointsname
-  TTask * reF  = (TTask*)aliceF->FindObject("tasks/Reconstructioner") ; 
-  if ( !reF ) {
-    cerr << "ERROR: AliPHOSGetter::Post Rer -> Task tasks/Reconstructioner" << " not found!" << endl;
-    return kFALSE ; 
-  } 
-       
-  TTask * phos = (TTask*)reF->GetListOfTasks()->FindObject("PHOS") ; 
-  
+  // the hierarchy is //Folders/Tasks/Reconstructioner/PHOS/sdigitsname
+
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+
+  if ( !tasks ) {
+    cerr << "ERROR: AliPHOSGetter::Post Rer -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    return kFALSE ;
+  }        
+        
+  TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"ERROR: AliPHOSGetter::Post Rer -> tasks/Reconstructioner/PHOS" << " not found!" << endl; 
-    return kFALSE ; 
-  } else {
-    AliPHOSClusterizer * phoscl = (AliPHOSClusterizer*)phos->GetListOfTasks()->FindObject(clu->GetName()) ; 
-    if (phoscl) { 
-      if (fDebug)
-	cout << "INFO: AliPHOSGetter::Post Rer -> Task " << clu->GetName() << " already exists" << endl ; 
-      phos->GetListOfTasks()->Remove(phoscl) ;
+    if (fDebug) {
+      cout <<"WARNING: AliPHOSGetter::Post Rer -> //" << fTasksFolder << "/ReconstructionerPHOS not found!" << endl; 
+      cout <<"INFO: AliPHOSGetter::Post Rer -> Adding //" << fTasksFolder << "/Reconstructioner/PHOS" << endl; 
     }
-    phos->Add(clu) ;      
-    return kTRUE; 
+    phos = new TTask("PHOS", "") ; 
+    tasks->Add(phos) ; 
   } 
-}
+
+  AliPHOSClusterizer * phoscl = dynamic_cast<AliPHOSClusterizer*>(phos->GetListOfTasks()->FindObject(clu->GetName())) ; 
+  if (phoscl) { 
+    if (fDebug)
+      cout << "INFO: AliPHOSGetter::Post Rer -> Task " << clu->GetName() << " already exists" << endl ; 
+    phoscl->Delete() ; 
+    phos->GetListOfTasks()->Remove(phoscl) ;
+  }
+  phos->Add(clu) ;      
+  return kTRUE; 
+} 
 
 //____________________________________________________________________________ 
-AliPHOSClusterizer ** AliPHOSGetter::ClusterizerRef(const char * name) const 
+void * AliPHOSGetter::ClusterizerRef(const char * name) const 
 { // ------------------ AliPHOSClusterizer ------------------------
   
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  // the hierarchy is //YSALICE/tasks/Reconstructionner/PHOS/recpointsname
-  TTask * reF  = (TTask*)aliceF->FindObject("tasks/Reconstructioner") ; 
-  if ( !reF ) {
-    cerr << "ERROR: AliPHOSGetter::Post Rer -> Task tasks/Reconstructioner" << " not found!" << endl;
-    return kFALSE ; 
-  } 
-       
-  TTask * phos = (TTask*)reF->GetListOfTasks()->FindObject("PHOS") ; 
-  
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+
+  if ( !tasks ) {
+    cerr << "ERROR: AliPHOSGetter::Post RerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    return kFALSE ;
+  }        
+        
+  TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"ERROR: AliPHOSGetter::Post Rer -> tasks/Reconstructioner/PHOS" << " not found!" << endl; 
+    cerr <<"WARNING: AliPHOSGetter::Post RerRef -> //" << fTasksFolder << "/Reconstructioner/PHOS" << endl; 
     return 0 ; 
-  }
+  }   
+
   TList * l = phos->GetListOfTasks() ; 
   TIter it(l) ;
   TTask * task ;
   TTask * clu = 0 ;
   TString cluname(name) ;
   cluname+=":clu-" ;
-  while((task = (TTask *)it.Next()) ){
+  while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
     if(taskname.BeginsWith(cluname)){
       clu = task ;
@@ -672,7 +714,7 @@ AliPHOSClusterizer ** AliPHOSGetter::ClusterizerRef(const char * name) const
   }
 
   if(clu) 
-    return (AliPHOSClusterizer **) l->GetObjectRef(clu) ;
+    return static_cast<void *>(l->GetObjectRef(clu)) ;
   else
     return 0 ;
 }
@@ -680,22 +722,26 @@ AliPHOSClusterizer ** AliPHOSGetter::ClusterizerRef(const char * name) const
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostClusterizer(const char * name) const 
 { // ------------------ AliPHOSClusterizer ------------------------
+
+  // the hierarchy is //Folders/Tasks/Reconstructioner/PHOS/sdigitsname
   
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+
+  if ( !tasks ) {
+    cerr << "ERROR: AliPHOSGetter::Post Rer -> Task//" << fTasksFolder << "/Reconstructioner not found!" << endl; 
+    return kFALSE ;
+  }        
   
-  // the hierarchy is //YSALICE/tasks/Reconstructionner/PHOS/recpointsname
-  TTask * reF  = (TTask*)aliceF->FindObject("tasks/Reconstructioner") ; 
-  if ( !reF ) {
-    cerr << "ERROR: AliPHOSGetter::Post Rer -> Task tasks/Reconstructioner" << " not found!" << endl;
-    return kFALSE ; 
-  } 
-       
-  TTask * phos = (TTask*)reF->GetListOfTasks()->FindObject("PHOS") ; 
-  
+  TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"ERROR: AliPHOSGetter::Post Rer -> tasks/Reconstructioner/PHOS" << " not found!" << endl; 
-    return kFALSE ; 
+    if (fDebug) {
+      cout <<"WARNING: AliPHOSGetter::Post Rer -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl;
+      cout <<"INFO: AliPHOSGetter::Post Rer -> Adding //" << fTasksFolder << "/Reconstructioner/PHOS" << endl;
+    }
+    phos = new TTask("PHOS", "") ; 
+    tasks->Add(phos) ; 
   } 
+
   AliPHOSClusterizer * phoscl = new AliPHOSClusterizerv1() ;
   TString clun(name) ;
   clun+=":clu-v1" ;
@@ -704,64 +750,90 @@ Bool_t AliPHOSGetter::PostClusterizer(const char * name) const
   return kTRUE; 
   
 }
+
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostTrackSegments(const char * name) const 
 { // ---------------TrackSegments -----------------------------------
   
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  // the hierarchy is //YSALICE/WhiteBoard/TrackSegments/PHOS/tracksegmentsname  
-  TFolder * tracksegmentsF  = (TFolder*)aliceF->FindObject("WhiteBoard/TrackSegments/PHOS") ; 
-  tracksegmentsF->SetTitle("") ;  
-  if ( !tracksegmentsF) {
-    cerr << "ERROR: AliPHOSGetter::Post T -> Folder WhiteBoard/TrackSegments/PHOS" << " not found!" << endl;
-    return kFALSE ; 
+  // the hierarchy is //Folders/Run/Event/RecData/PHOS/TrackSegments/name
+
+  TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS")) ; 
+  
+  if ( !phosFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post TS -> Folder //" << fRecoFolder << "/PHOS/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post TS -> Adding Folder //" << fRecoFolder << "/PHOS" << endl;
+    }
+    phosFolder = fRecoFolder->AddFolder("PHOS", "Reconstructed data from PHOS") ;  
   }    
-  TObject * tss =  tracksegmentsF->FindObject(name  ) ;
+
+  TFolder * phosTSFolder  = dynamic_cast<TFolder*>(phosFolder->FindObject("TrackSegments")) ;
+  if ( !phosTSFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post TS -> Folder//" << fRecoFolder << "/PHOS/TrackSegments/ not found!" << endl; 
+      cout << "INFO:    AliPHOSGetter::Post TS -> Adding Folder //" << fRecoFolder << "/PHOS/TrackSegments/" << endl; 
+    }
+    phosTSFolder = phosFolder->AddFolder("TrackSegments", "TrackSegments from PHOS") ;  
+  }    
+  
+  TObject * tss =  phosTSFolder->FindObject( name ) ;
   if (!tss) {
     TClonesArray * ts = new TClonesArray("AliPHOSTrackSegment",100) ;
     ts->SetName(name) ;
-    tracksegmentsF->Add(ts) ;  
+    phosTSFolder->Add(ts) ;  
   }
   return kTRUE; 
 } 
 
 //____________________________________________________________________________ 
-TClonesArray ** AliPHOSGetter::TrackSegmentsRef(const char * name) const 
+void * AliPHOSGetter::TrackSegmentsRef(const char * name) const 
 { // ---------------TrackSegments -----------------------------------
   
-  TFolder * phosF  = (TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/TrackSegments/PHOS") ; 
-  if ( !phosF) {
-    cerr << "ERROR: AliPHOSGetter::TrackSegmentsRef -> Folder WhiteBoard/TrackSegments/PHOS" << " not found!" << endl;
+  // the hierarchy is //Folders/Run/Event/RecData/PHOS/TrackSegments/name
+
+ if ( !fRecoFolder ) {
+    cerr << "ERROR: AliPHOSGetter::TrackSegmentsRef -> Folder //" << fRecoFolder << "not found!" << endl;
     return 0 ; 
   }    
+
+  TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/TrackSegments")) ; 
+  if ( !phosFolder ) {
+    cerr << "ERROR: AliPHOSGetter::TrackSegmentsRef -> Folder //" << fRecoFolder << "/PHOS/TrackSegments/ not found!" << endl;
+    return 0;
+  }    
   
-  TObject * tss =  phosF->FindObject(name) ;
+  TObject * tss =  phosFolder->FindObject(name) ;
   if (!tss) {
     return 0 ;  
   }
-  return (TClonesArray **) phosF->GetListOfFolders()->GetObjectRef(tss) ;
+  return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(tss)) ;
 } 
 
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostTrackSegmentMaker(AliPHOSTrackSegmentMaker * tsmaker) const 
 { //------------Track Segment Maker ------------------------------
   
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  // the hierarchy is //YSALICE/tasks/Reconstructionner/PHOS/tracksegmentsname
-  TTask * reF  = (TTask*)aliceF->FindObject("tasks/Reconstructioner") ; 
-  if ( !reF ) {
-    cerr << "ERROR: AliPHOSGetter::Post Ter -> Task tasks/Reconstructioner" << " not found!" << endl;
-    return kFALSE ; 
+  // the hierarchy is //Folders/Tasks/Reconstructioner/PHOS/sdigitsname
+
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+
+  if ( !tasks ) {
+    cerr << "ERROR: AliPHOSGetter::Post Ter -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    return kFALSE ;
   }        
-  TTask * phos = (TTask*)reF->GetListOfTasks()->FindObject("PHOS") ; 
+        
+  TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"ERROR: AliPHOSGetter::Post Ter -> tasks/Reconstructioner/PHOS" << " not found!" << endl; 
-    return kFALSE ; 
-  }
-  
+    if (fDebug) {
+      cout <<"WARNING: AliPHOSGetter::Post Rer -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
+      cout <<"INFO: AliPHOSGetter::Post Rer -> Adding //" << fTasksFolder << "/Reconstructioner/PHOS" << endl;
+    }
+    phos = new TTask("PHOS", "") ; 
+    tasks->Add(phos) ; 
+  } 
+
   AliPHOSTrackSegmentMaker * phosts = 
-    (AliPHOSTrackSegmentMaker*)phos->GetListOfTasks()->FindObject(tsmaker->GetName()) ; 
+    dynamic_cast<AliPHOSTrackSegmentMaker*>(phos->GetListOfTasks()->FindObject(tsmaker->GetName())) ; 
   if (phosts) { 
     phosts->Delete() ;
     phos->GetListOfTasks()->Remove(phosts) ;
@@ -774,21 +846,28 @@ Bool_t AliPHOSGetter::PostTrackSegmentMaker(AliPHOSTrackSegmentMaker * tsmaker) 
 Bool_t AliPHOSGetter::PostTrackSegmentMaker(const char * name) const 
 { //------------Track Segment Maker ------------------------------
   
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
+  // the hierarchy is //Folders/Tasks/Reconstructioner/PHOS/sdigitsname
   
-  // the hierarchy is //YSALICE/tasks/Reconstructionner/PHOS/tracksegmentsname
-  TTask * reF  = (TTask*)aliceF->FindObject("tasks/Reconstructioner") ; 
-  if ( !reF ) {
-    cerr << "ERROR: AliPHOSGetter::Post Ter -> Task tasks/Reconstructioner" << " not found!" << endl;
-    return kFALSE ; 
+  
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+  
+  if ( !tasks ) {
+    cerr << "ERROR: AliPHOSGetter::Post Ter -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    return kFALSE ;
   }        
-  TTask * phos = (TTask*)reF->GetListOfTasks()->FindObject("PHOS") ; 
+  
+  TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"ERROR: AliPHOSGetter::Post Ter -> tasks/Reconstructioner/PHOS" << " not found!" << endl; 
-    return kFALSE ; 
+    if (fDebug) {
+      cout <<"WARNING: AliPHOSGetter::Post Rer -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
+      cout <<"INFO: AliPHOSGetter::Post Rer -> Adding //" << fTasksFolder << "/Reconstructioner/PHOS" << endl;
+    }
+    phos = new TTask("PHOS", "") ; 
+    tasks->Add(phos) ; 
   } 
+
   AliPHOSTrackSegmentMaker * phosts = 
-    (AliPHOSTrackSegmentMaker*)phos->GetListOfTasks()->FindObject(name) ; 
+    dynamic_cast<AliPHOSTrackSegmentMaker*>(phos->GetListOfTasks()->FindObject(name)) ; 
   if (!phosts) { 
     phosts = new AliPHOSTrackSegmentMakerv1() ;
     TString tsn(name);
@@ -799,30 +878,31 @@ Bool_t AliPHOSGetter::PostTrackSegmentMaker(const char * name) const
   return kTRUE; 
   
 } 
+
 //____________________________________________________________________________ 
-AliPHOSTrackSegmentMaker ** AliPHOSGetter::TSMakerRef(const char * name) const 
+void * AliPHOSGetter::TSMakerRef(const char * name) const 
 { //------------Track Segment Maker ------------------------------
   
-  TTask * reF  = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/Reconstructioner") ; 
-  if ( !reF ) {
-    cerr << "ERROR: AliPHOSGetter::TrackSegmentMakerRef -> Task tasks/Reconstructioner" 
-	 << " not found!" << endl;
-    return 0 ; 
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+
+  if ( !tasks ) {
+    cerr << "ERROR: AliPHOSGetter::Post TerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    return kFALSE ;
   }        
-  
-  TTask * phos = (TTask*)reF->GetListOfTasks()->FindObject("PHOS") ;   
-  if ( !phos ) {
-    cerr << "ERROR: AliPHOSGetter::TrackSegmentMakerRef -> Task tasks/Reconstructioner/PHOS" 
-	 << " not found!" << endl;
+        
+  TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
+  if ( !phos )  {
+    cerr <<"WARNING: AliPHOSGetter::Post TerRef -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
     return 0 ; 
-  }        
+  }   
+
   TList * l = phos->GetListOfTasks() ; 
   TIter it(l) ;
   TTask * task ;
   TTask * tsm = 0 ;
   TString tsmname(name) ;
   tsmname+=":tsm-" ;
-  while((task = (TTask *)it.Next()) ){
+  while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
     if(taskname.BeginsWith(tsmname)){
       tsm = task ;
@@ -831,7 +911,7 @@ AliPHOSTrackSegmentMaker ** AliPHOSGetter::TSMakerRef(const char * name) const
   }
   
   if(tsm) 
-    return (AliPHOSTrackSegmentMaker **) l->GetObjectRef(tsm) ;
+    return static_cast<void *>(l->GetObjectRef(tsm)) ;
   else
     return 0 ;
   
@@ -841,57 +921,82 @@ AliPHOSTrackSegmentMaker ** AliPHOSGetter::TSMakerRef(const char * name) const
 Bool_t AliPHOSGetter::PostRecParticles(const char * name) const 
 {  // -------------------- RecParticles ------------------------
   
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
+  // the hierarchy is //Folders/Run/Event/RecData/PHOS/TrackSegments/name
+
+  TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS")) ; 
   
-  // the hierarchy is //YSALICE/WhiteBoard/RecParticles/PHOS/recparticlesname  
-  TFolder * recparticlesF  = (TFolder*)aliceF->FindObject("WhiteBoard/RecParticles/PHOS") ; 
-  recparticlesF->SetTitle("") ;  
-  if ( !recparticlesF) {
-    cerr << "ERROR: AliPHOSGetter::Post P -> Folder WhiteBoard/RecParticles/PHOS" << " not found!" << endl;
-    return kFALSE ; 
+  if ( !phosFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post RPa -> Folder //" << fRecoFolder << "/PHOS/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post Rpa -> Adding Folder //" << fRecoFolder << "/PHOS/" << endl;
+    }
+    phosFolder = fRecoFolder->AddFolder("PHOS", "Reconstructed data from PHOS") ;  
   }    
-  TObject * rps = recparticlesF->FindObject( name )  ;
+
+ TFolder * phosRPaFolder  = dynamic_cast<TFolder*>(phosFolder->FindObject("RecParticles")) ;
+  if ( !phosRPaFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post RPa -> Folder //" << fRecoFolder << "/PHOS/RecParticles/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post RPa -> Adding Folder //" << fRecoFolder << "/PHOS/RecParticles/" << endl;
+    }
+    phosRPaFolder = phosFolder->AddFolder("RecParticles", "RecParticles from PHOS") ;  
+  } 
+
+  TObject * rps = phosRPaFolder->FindObject( name )  ;
   if ( !rps ) {
     TClonesArray * rp = new TClonesArray("AliPHOSRecParticle",100) ;
     rp->SetName(name) ;    
-    recparticlesF->Add(rp) ;  
+    phosRPaFolder->Add(rp) ;  
   }
   return kTRUE; 
 } 
+
 //____________________________________________________________________________ 
-TClonesArray ** AliPHOSGetter::RecParticlesRef(const char * name) const 
+void * AliPHOSGetter::RecParticlesRef(const char * name) const 
 { // ---------------TrackSegments -----------------------------------
   
-  TFolder * tsF  = (TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/RecParticles/PHOS") ; 
-  if ( !tsF) {
-    cerr << "ERROR: AliPHOSGetter::RecParticlesRef -> Folder WhiteBoard/RecParticles/PHOS" << " not found!" << endl;
+  // the hierarchy is //Folders/Run/Event/RecData/PHOS/TrackSegments/name
+
+ if ( !fRecoFolder ) {
+    cerr << "ERROR: AliPHOSGetter::RecParticlesRef -> Folder//" << fRecoFolder << " not found!" << endl; 
     return 0 ; 
   }    
-  TObject * tss =  tsF->FindObject(name  ) ;
+
+  TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/RecParticles")) ; 
+  if ( !phosFolder ) {
+    cerr << "ERROR: AliPHOSGetter::RecParticlesRef -> Folder //" << fRecoFolder << "/PHOS/RecParticles/ not found!" << endl;
+    return 0;
+  }    
+
+  TObject * tss =  phosFolder->FindObject(name  ) ;
   if (!tss) {
     return 0 ;  
   }
-  return (TClonesArray **) tsF->GetListOfFolders()->GetObjectRef(tss) ;
+  return static_cast<void *>(phosFolder->GetListOfFolders()->GetObjectRef(tss)) ;
 }
 
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostPID(AliPHOSPID * pid) const 
-{     
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  // ------------AliPHOS PID -----------------------------
-  // the hierarchy is //YSALICE/tasks/Reconstructionner/PHOS/recparticlesname
-  TTask * reF  = (TTask*)aliceF->FindObject("tasks/Reconstructioner") ; 
-  if ( !reF ) {
-    cerr << "ERROR: AliPHOSGetter::Post Per -> Task tasks/Reconstructioner" << " not found!" << endl;
-    return kFALSE ; 
+{      // ------------AliPHOS PID -----------------------------
+
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+
+  if ( !tasks ) {
+    cerr << "ERROR: AliPHOSGetter::Post Per -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    return kFALSE ;
   }        
-  TTask * phos = (TTask*)reF->GetListOfTasks()->FindObject("PHOS") ; 
+  
+  TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"ERROR: AliPHOSGetter::Post Per -> tasks/Reconstructioner/PHOS" << " not found!" << endl; 
-    return kFALSE ; 
+    if (fDebug) {
+      cout <<"WARNING: AliPHOSGetter::Post Per -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
+      cout <<"INFO: AliPHOSGetter::Post Per -> Adding //" << fTasksFolder << "/Reconstructioner/PHOS" << endl;
+    }
+    phos = new TTask("PHOS", "") ; 
+    tasks->Add(phos) ; 
   } 
-  AliPHOSPID * phospid = (AliPHOSPID*)phos->GetListOfTasks()->FindObject(pid->GetName()) ; 
+
+  AliPHOSPID * phospid = dynamic_cast<AliPHOSPID*>(phos->GetListOfTasks()->FindObject(pid->GetName())) ; 
   if (phospid) { 
     if (fDebug)
       cout << "INFO: AliPHOSGetter::Post Per -> Task " << pid->GetName()
@@ -902,30 +1007,35 @@ Bool_t AliPHOSGetter::PostPID(AliPHOSPID * pid) const
   phos->Add(pid) ;      
   return kTRUE; 
 } 
+
 //____________________________________________________________________________ 
 Bool_t AliPHOSGetter::PostPID(const char * name) const 
 {     
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
+  // the hierarchy is //Folders/Tasks/Reconstructioner/PHOS/sdigitsname
   
-  // ------------AliPHOS PID -----------------------------
-  // the hierarchy is //YSALICE/tasks/Reconstructionner/PHOS/recparticlesname
-  TTask * reF  = (TTask*)aliceF->FindObject("tasks/Reconstructioner") ; 
-  if ( !reF ) {
-    cerr << "ERROR: AliPHOSGetter::Post Per -> Task tasks/Reconstructioner" << " not found!" << endl;
-    return kFALSE ; 
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+
+  if ( !tasks ) {
+    cerr << "ERROR: AliPHOSGetter::Post Per -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    return kFALSE ;
   }        
-  TTask * phos = (TTask*)reF->GetListOfTasks()->FindObject("PHOS") ; 
+  
+  TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"ERROR: AliPHOSGetter::Post Per -> tasks/Reconstructioner/PHOS" << " not found!" << endl; 
-    return kFALSE ; 
-  }
+    if (fDebug) {
+      cout <<"WARNING: AliPHOSGetter::Post Per -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
+      cout <<"INFO: AliPHOSGetter::Post Per -> Adding //" << fTasksFolder << "/Reconstructioner/PHOS" << endl;
+    }
+    phos = new TTask("PHOS", "") ; 
+    tasks->Add(phos) ; 
+  } 
 
   TList * l = phos->GetListOfTasks() ;   
   TIter it(l) ;
   TString pidname(name) ;
   pidname+=":pid" ; 
   TTask * task ;
-  while((task = (TTask *)it.Next()) ){
+  while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
     if(taskname.BeginsWith(pidname))
       return kTRUE ;
@@ -938,31 +1048,31 @@ Bool_t AliPHOSGetter::PostPID(const char * name) const
   
   return kTRUE; 
 } 
+
 //____________________________________________________________________________ 
-AliPHOSPID ** AliPHOSGetter::PIDRef(const char * name) const 
+void * AliPHOSGetter::PIDRef(const char * name) const 
 { //------------PID ------------------------------
 
-  TTask * reF  = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/Reconstructioner") ; 
-  if ( !reF ) {
-    cerr << "ERROR: AliPHOSGetter::PIDRef -> Task tasks/Reconstructioner" 
-	 << " not found!" << endl;
-    return 0 ; 
+  TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
+
+  if ( !tasks ) {
+    cerr << "ERROR: AliPHOSGetter::Post PerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    return kFALSE ;
   }        
-  
-  TTask * phos = (TTask*)reF->GetListOfTasks()->FindObject("PHOS") ;   
-  
-  if ( !phos ) {
-    cerr << "ERROR: AliPHOSGetter::PIDRef -> Task tasks/Reconstructioner/PHOS" 
-	 << " not found!" << endl;
+        
+  TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
+  if ( !phos )  {
+    cerr <<"WARNING: AliPHOSGetter::Post PerRef -> //" << fTasksFolder << "/ReconstructionerPHOS not found!" << endl; 
     return 0 ; 
-  }        
+  }   
+  
   TList * l = phos->GetListOfTasks() ; 
   TIter it(l) ;
   TTask * task ;
   TTask * pid = 0 ;
   TString pidname(name) ;
   pidname+=":pid-" ;
-  while((task = (TTask *)it.Next()) ){
+  while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
     if(taskname.BeginsWith(pidname)){
       pid = task ;
@@ -971,39 +1081,48 @@ AliPHOSPID ** AliPHOSGetter::PIDRef(const char * name) const
   }
   
   if(pid) 
-    return (AliPHOSPID **) l->GetObjectRef(pid) ;
+    return static_cast<void *>(l->GetObjectRef(pid)) ;
   else
     return 0 ;
   
 } 
 
 //____________________________________________________________________________ 
-Bool_t AliPHOSGetter::PostQA( const char * name) const 
-{     
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  
-  // ------------------ QA ---------------------------------
-  // the hierarchy is //YSALICE/WhiteBoard/Alarms/PHOS/
-  
-  TFolder * alarmsF  = new TFolder() ;
-  TString alarmsName ; 
-  if (name) 
-    alarmsName = name ;
-  else       
-    alarmsName = "Alarm with no name" ;	
-  alarmsF->SetName( alarmsName.Data() ) ; 
-  alarmsF->SetTitle("") ;  
-  TFolder * qaaF  = (TFolder*)aliceF->FindObject("WhiteBoard/QAAlarms") ; 
-  if ( !qaaF) {
-    cerr << "ERROR: AliPHOSGetter::Post QA -> Folder WhiteBoard/QAAlarms/" << " not found!" << endl;
-    return kFALSE; 
-  }    
-  if ( qaaF->FindObject( alarmsName.Data() ) ) 
-    qaaF->RecursiveRemove(  qaaF->FindObject( alarmsName.Data() ) ) ; 
-  
-  qaaF->Add(alarmsF) ;  
-  
+Bool_t AliPHOSGetter::PostQA(void) const 
+{ // ------------------ QA ---------------------------------
+
+  // the hierarchy is //Folders/Run/Conditions/QA/PHOS/alarmsName
+
+  TFolder * phosFolder = dynamic_cast<TFolder*>(fQAFolder->FindObject("PHOS")) ; 
+  if ( !phosFolder ) {
+    if (fDebug) {
+      cout << "WARNING: AliPHOSGetter::Post Q -> Folder //" << fQAFolder << "/PHOS/ not found!" << endl;
+      cout << "INFO:    AliPHOSGetter::Post Q -> Adding Folder //" << fQAFolder << "/PHOS/" << endl;
+    }
+    phosFolder = fQAFolder->AddFolder("PHOS", "QA from PHOS") ; 
+  }      
+
   return kTRUE;
+}
+
+//____________________________________________________________________________ 
+void * AliPHOSGetter::AlarmsRef(void) const 
+{  //------- Alarms ----------------------
+
+  
+  // the hierarchy is //Folders/Run/Conditions/QA/PHOS
+  if ( !fQAFolder ) {
+    cerr << "ERROR: AliPHOSGetter::Post QRef -> Folder //" << fQAFolder << " not found!" << endl;
+    return 0;
+  }    
+ 
+  TFolder * phosFolder = dynamic_cast<TFolder *>(fQAFolder->FindObject("PHOS")) ;
+  if ( !phosFolder ) {
+    cerr << "ERROR: AliPHOSGetter::Post QRef -> Folder //" << fQAFolder << "/PHOS/ not found!" << endl;
+    return 0;
+  }
+   
+  return static_cast<void *>(fQAFolder->GetListOfFolders()->GetObjectRef(phosFolder)) ;
 }
 
 //____________________________________________________________________________ 
@@ -1018,8 +1137,10 @@ const TParticle * AliPHOSGetter::Primary(Int_t index) const
   Int_t primaryList = (Int_t ) ((index-primaryIndex)/10000000.)  ;
   
   if ( primaryList > 0  ) {
-    cout << " Getter does not support currently Mixing of primary " << endl ;
-    cout << "   can not return primary: " << index<< " (list "<< primaryList<< " primary # " << primaryIndex << " )"<<endl ;
+    if (fDebug) {
+      cout << " Getter does not support currently Mixing of primary " << endl ;
+      cout << "   can not return primary: " << index<< " (list "<< primaryList<< " primary # " << primaryIndex << " )"<<endl ;
+    }
     return 0;
   }
   
@@ -1036,14 +1157,14 @@ void AliPHOSGetter::ReadTreeD()
   return ;
   }
   
-  TObjArray * lob = (TObjArray*)gAlice->TreeD()->GetListOfBranches() ;
+  TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeD()->GetListOfBranches()) ;
   TIter next(lob) ; 
   TBranch * branch = 0 ; 
   TBranch * digitsbranch = 0 ; 
   TBranch * digitizerbranch = 0 ; 
   Bool_t phosfound = kFALSE, digitizerfound = kFALSE ; 
   
-  while ( (branch = (TBranch*)next()) && (!phosfound || !digitizerfound) ) {
+  while ( (branch = static_cast<TBranch*>(next())) && (!phosfound || !digitizerfound) ) {
     if ( (strcmp(branch->GetName(), "PHOS")==0) && (strcmp(branch->GetTitle(), fDigitsTitle)==0) ) {
       digitsbranch = branch ; 
       phosfound = kTRUE ;
@@ -1055,8 +1176,9 @@ void AliPHOSGetter::ReadTreeD()
   }
 
   if ( !phosfound || !digitizerfound ) {
-    cout << "WARNING: AliPHOSGetter::ReadTreeD -> Cannot find Digits and/or Digitizer with name " 
-	 << fDigitsTitle << endl ;
+    if (fDebug)
+      cout << "WARNING: AliPHOSGetter::ReadTreeD -> Cannot find Digits and/or Digitizer with name " 
+	   << fDigitsTitle << endl ;
     return ; 
   }   
  
@@ -1086,9 +1208,10 @@ void AliPHOSGetter::ReadTreeH()
     return ;
   }
   
-  TBranch * hitsbranch = (TBranch*)gAlice->TreeH()->GetBranch("PHOS") ;
+  TBranch * hitsbranch = static_cast<TBranch*>(gAlice->TreeH()->GetBranch("PHOS")) ;
   if ( !hitsbranch ) {
-    cout << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
+    if (fDebug)
+      cout << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
     return ;
   }
   if(!Hits())
@@ -1110,9 +1233,10 @@ void AliPHOSGetter::Track(Int_t itrack)
     return ;
   }
   
-  TBranch * hitsbranch = (TBranch*)gAlice->TreeH()->GetListOfBranches()->FindObject("PHOS") ;
+  TBranch * hitsbranch = dynamic_cast<TBranch*>(gAlice->TreeH()->GetListOfBranches()->FindObject("PHOS")) ;
   if ( !hitsbranch ) {
-    cout << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
+    if (fDebug)
+      cout << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
     return ;
   }  
   if(!Hits())
@@ -1135,16 +1259,23 @@ void AliPHOSGetter::ReadTreeQA()
   
   TBranch * qabranch = PHOS()->TreeQA()->GetBranch("PHOS") ; 
   if (!qabranch) { 
-    cout << "WARNING: AliPHOSGetter::ReadTreeQA -> Cannot find QA Alarms for PHOS" << endl ;
+    if (fDebug)
+      cout << "WARNING: AliPHOSGetter::ReadTreeQA -> Cannot find QA Alarms for PHOS" << endl ;
     return ; 
   }   
   
-  // Post the QA Alarms
-  PostQA("PHOS") ; 
-  TFolder * alarmsF = Alarms() ; 
-  alarmsF->Clear() ; 
-  qabranch->SetAddress(&alarmsF) ;
+  if(!Alarms())
+    PostQA() ; 
+
+  qabranch->SetAddress(AlarmsRef()) ;
+
   qabranch->GetEntry(0) ;
+ 
+//   PostQA("PHOS") ; 
+//   TFolder * alarmsF = Alarms() ; 
+//   alarmsF->Clear() ; 
+//   qabranch->SetAddress(&alarmsF) ;
+//   qabranch->GetEntry(0) ;
   
 }
 
@@ -1154,12 +1285,12 @@ void AliPHOSGetter::ReadTreeR()
   // Read the reconstrunction tree gAlice->TreeR()
 
   if(gAlice->TreeR()== 0){
-    cout <<   "ERROR: AliPHOSGetter::ReadTreeR: can not read TreeR " << endl ;
+    cerr <<   "ERROR: AliPHOSGetter::ReadTreeR: can not read TreeR " << endl ;
     return ;
   }
   
   // RecPoints 
-  TObjArray * lob = (TObjArray*)gAlice->TreeR()->GetListOfBranches() ;
+  TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeR()->GetListOfBranches()) ;
   TIter next(lob) ; 
   TBranch * branch = 0 ; 
   TBranch * emcbranch = 0 ; 
@@ -1167,7 +1298,7 @@ void AliPHOSGetter::ReadTreeR()
   TBranch * clusterizerbranch = 0 ; 
   Bool_t phosemcrpfound = kFALSE, phoscpvrpfound = kFALSE, clusterizerfound = kFALSE ; 
   
-  while ( (branch = (TBranch*)next()) && (!phosemcrpfound || !phoscpvrpfound || !clusterizerfound) ) 
+  while ( (branch = static_cast<TBranch*>(next())) && (!phosemcrpfound || !phoscpvrpfound || !clusterizerfound) ) 
     if(strcmp(branch->GetTitle(), fRecPointsTitle)==0) {
       if ( strcmp(branch->GetName(), "PHOSEmcRP")==0) {
 	emcbranch = branch ; 
@@ -1184,18 +1315,21 @@ void AliPHOSGetter::ReadTreeR()
     }
 
   if ( !phosemcrpfound ) {
-    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find EmcRecPoints with title " 
-	 << fRecPointsTitle << endl ;
+    if (fDebug)
+      cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find EmcRecPoints with title " 
+	   << fRecPointsTitle << endl ;
     return ; 
   }   
   if ( !phoscpvrpfound ) {
-    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find CpvRecPoints with title " 
-	 << fRecPointsTitle << endl ;
+    if (fDebug)
+      cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find CpvRecPoints with title " 
+	   << fRecPointsTitle << endl ;
     return ; 
   }   
   if ( !clusterizerfound ) {
-    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Can not find Clusterizer with title " 
-	 << fRecPointsTitle << endl ;
+    if (fDebug)
+      cout << "WARNING: AliPHOSGetter::ReadTreeR -> Can not find Clusterizer with title " 
+	   << fRecPointsTitle << endl ;
     return ; 
   }   
   
@@ -1220,7 +1354,7 @@ void AliPHOSGetter::ReadTreeR()
   TBranch * tsmakerbranch = 0 ; 
   Bool_t phostsfound = kFALSE, tsmakerfound = kFALSE ; 
     
-  while ( (branch = (TBranch*)next()) && (!phostsfound || !tsmakerfound) ) 
+  while ( (branch = static_cast<TBranch*>(next())) && (!phostsfound || !tsmakerfound) ) 
     if(strcmp(branch->GetTitle(), fTrackSegmentsTitle)==0)  {
       if ( strcmp(branch->GetName(), "PHOSTS")==0){
 	tsbranch = branch ; 
@@ -1233,8 +1367,9 @@ void AliPHOSGetter::ReadTreeR()
     }
   
   if ( !phostsfound || !tsmakerfound ) {
-    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find TrackSegments and/or TrackSegmentMaker with name "
-	 << fTrackSegmentsTitle << endl ;
+    if (fDebug)
+      cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find TrackSegments and/or TrackSegmentMaker with name "
+	   << fTrackSegmentsTitle << endl ;
     return ; 
   } 
   
@@ -1257,7 +1392,7 @@ void AliPHOSGetter::ReadTreeR()
   TBranch * pidbranch = 0 ; 
   Bool_t phosrpafound = kFALSE, pidfound = kFALSE ; 
   
-  while ( (branch = (TBranch*)next()) && (!phosrpafound || !pidfound) ) 
+  while ( (branch = static_cast<TBranch*>(next())) && (!phosrpafound || !pidfound) ) 
     if(strcmp(branch->GetTitle(), fRecParticlesTitle)==0) {   
       if ( strcmp(branch->GetName(), "PHOSRP")==0) {   
 	rpabranch = branch ; 
@@ -1270,8 +1405,9 @@ void AliPHOSGetter::ReadTreeR()
     }
   
   if ( !phosrpafound || !pidfound ) {
-    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find RecParticles and/or PID with name " 
-	 << fRecParticlesTitle << endl ;
+    if (fDebug)
+      cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find RecParticles and/or PID with name " 
+	   << fRecParticlesTitle << endl ;
     return ; 
   } 
   
@@ -1296,30 +1432,32 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
   // Read the summable digits tree gAlice->TreeS()  
   
   // loop over all opened files and read their SDigits to the White Board
-  TFolder * phosF = (TFolder *)gROOT->FindObjectAny("YSAlice/WhiteBoard/SDigits/PHOS") ;
+  TFolder * phosF = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject("PHOS")) ;
+  if (!phosF) 
+    phosF = fSDigitsFolder->AddFolder("PHOS", "SDigits from PHOS") ; 
   TCollection * folderslist = phosF->GetListOfFolders() ; 
   
   //Add current file to list if it is not there yet
   if ( (fHeaderFile != "aliroot") && ( !folderslist->Contains(fHeaderFile) ) ){
     phosF->AddFolder(fHeaderFile, ""); 
-    folderslist = phosF->GetListOfFolders() ;
   }
-  
+    
   TIter next(folderslist) ; 
   TFolder * folder = 0 ; 
   TFile * file; 
   TTree * treeS = 0;
-  while ( (folder = (TFolder*)next()) ) {
+  while ( (folder = static_cast<TFolder*>(next())) ) {
     if(fHeaderFile.CompareTo(folder->GetName()) == 0 ) 
       treeS=gAlice->TreeS() ;
     else{
-      file = (TFile*)gROOT->GetFile(folder->GetName()); 
+     cout << " AliPHOSGetter::ReadTreeS 2 " <<  folder->GetName() << endl ; 
+     file = static_cast<TFile*>(gROOT->GetFile(folder->GetName())); 
       file->cd() ;
       
       // Get SDigits Tree header from file
       TString treeName("TreeS") ;
       treeName += event ; 
-      treeS = (TTree*)gDirectory->Get(treeName.Data());
+      treeS = dynamic_cast<TTree*>(gDirectory->Get(treeName.Data()));
     }
     if(treeS==0){
       cerr << "ERROR: AliPHOSGetter::ReadTreeS There is no SDigit Tree" << endl;
@@ -1330,11 +1468,11 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
     TBranch   * sdigitsBranch    = 0;
     TBranch   * sdigitizerBranch = 0;
     TBranch   * branch           = 0 ;  
-    TObjArray * lob = (TObjArray*)treeS->GetListOfBranches() ;
+    TObjArray * lob = static_cast<TObjArray*>(treeS->GetListOfBranches()) ;
     TIter next(lob) ; 
     Bool_t phosfound = kFALSE, sdigitizerfound = kFALSE ; 
     
-    while ( (branch = (TBranch*)next()) && (!phosfound || !sdigitizerfound) ) {
+    while ( (branch = static_cast<TBranch*>(next())) && (!phosfound || !sdigitizerfound) ) {
       if ( (strcmp(branch->GetName(), "PHOS")==0) && (strcmp(branch->GetTitle(), fSDigitsTitle)==0) ) {
 	phosfound = kTRUE ;
 	sdigitsBranch = branch ; 
@@ -1346,8 +1484,9 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
       }
     }
     if ( !phosfound || !sdigitizerfound ) {
-      cout << "WARNING: AliPHOSDigitizer::ReadSDigits -> Digits and/or Digitizer branch with name " << GetName() 
-	   << " not found" << endl ;
+      if (fDebug)
+	cout << "WARNING: AliPHOSDigitizer::ReadSDigits -> Digits and/or Digitizer branch with name " << GetName() 
+	     << " not found" << endl ;
       return ; 
     }   
     
@@ -1369,9 +1508,9 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
   // After SDigits have been read from all files, return to the first one
   
   next.Reset();
-  folder = (TFolder*)next();
+  folder = static_cast<TFolder*>(next());
   if(folder){
-    file   = (TFile*)gROOT->GetFile(folder->GetName()); 
+    file   = static_cast<TFile*>(gROOT->GetFile(folder->GetName())); 
     file   ->cd() ;
   }
   
@@ -1380,10 +1519,15 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
 void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
 {  // Read the summable digits fron treeS()  
 
+
   TString filename("mergefile") ;
   filename+= input ;
-  TFolder * phosF =(TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/SDigits/PHOS")  ;   
-  TFolder * folder=(TFolder*)phosF->FindObject(filename) ;
+
+  TFolder * phosFolder = dynamic_cast<TFolder*>(fSDigitsFolder->FindObject("PHOS")) ; 
+  if ( !phosFolder ) { 
+   phosFolder = fSDigitsFolder->AddFolder("PHOS", "SDigits from PHOS") ; 
+  } 
+  TFolder * folder=(TFolder*)phosFolder->FindObject(filename) ;
   //set address of the SDigits and SDigitizer
   TBranch   * sdigitsBranch    = 0;
   TBranch   * sdigitizerBranch = 0;
@@ -1404,7 +1548,8 @@ void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
     }
   }
   if ( !phosfound || !sdigitizerfound ) {
-    cout << "WARNING: AliPHOSGetter::ReadTreeS -> Digits and/or Digitizer branch not found" << endl ;
+    if (fDebug)
+      cout << "WARNING: AliPHOSGetter::ReadTreeS -> Digits and/or Digitizer branch not found" << endl ;
     return ; 
   }   
   
@@ -1507,12 +1652,10 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
 {
   // Reads the content of all Tree's S, D and R
   
-  if ( event > gAlice->TreeE()->GetEntries() ) {
-    cerr << "ERROR: AliPHOSGetter::Event -> There are only " 
-	 << gAlice->TreeE()->GetEntries() << " events in this file" << endl ; 
-    return ;
+  if (event >= gAlice->TreeE()->GetEntries() ) {
+    cerr << "ERROR: AliPHOSGetter::Event -> " << event << " not found in TreeE!" << endl ; 
+    return ; 
   }
-  
   gAlice->GetEvent(event) ;
 
   if(strstr(opt,"H") )
@@ -1539,92 +1682,83 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
 const TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const 
 {
   // get the object named "what" from the folder
-  // folders are named like //YSAlice/WhiteBoard/what/PHOS/name
+  // folders are named like //Folders
 
   if ( file.IsNull() ) 
     file = fHeaderFile ; 
-  TString path("WhiteBoard/") ;
-  if ( name.IsNull() ) {
-    if ( what.CompareTo("Hits") == 0 ) {
-      path += what ; 
-      path += "/PHOS/"; 
-      path += what ; 
+
+  TFolder * folder = 0 ;
+  TObject * phosO  = 0 ; 
+
+  //  if ( name.IsNull() ) {
+  if ( what.CompareTo("Hits") == 0 ) {
+    folder = dynamic_cast<TFolder *>(fHitsFolder->FindObject("PHOS")) ; 
+    if (folder) 
+      phosO  = dynamic_cast<TObject *>(folder->FindObject("Hits")) ;  
+  }
+  else if ( what.CompareTo("SDigits") == 0 ) { 
+    TString path = "PHOS/" + file  ; 
+    folder = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject(path.Data())) ; 
+    if (folder) { 
+      if (name.IsNull())
+	name = fSDigitsTitle ; 
+      phosO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
     }
-    else if ( what.CompareTo("SDigits") == 0 ) { 
-      path += what ; 
-      path += "/PHOS/"; 
-      path += file ; 
-      path += "/" ; 
-      path += fSDigitsTitle ; 
-    }
-    else if ( what.CompareTo("Digits") == 0 ){
-      path += what ; 
-      path += "/PHOS/"; 
-      path += fDigitsTitle ;
-    } 
-    else if ( what.CompareTo("EmcRecPoints") == 0 ) {
-      path += "RecPoints/PHOS/";  
-      path += "emc/" ; 
-      path += fRecPointsTitle ; 
-    }
-    else if ( what.CompareTo("CpvRecPoints") == 0 ) {
-      path += "RecPoints/PHOS/";  
-      path += "cpv/" ; 
-      path += fRecPointsTitle ; 
-    }
-    else if ( what.CompareTo("TrackSegments") == 0 ) {
-      path += "TrackSegments/PHOS/";  
-      path += fTrackSegmentsTitle ; 
-    }  
-    else if ( what.CompareTo("RecParticles") == 0 ) {
-      path += "RecParticles/PHOS/";  
-      path += fRecParticlesTitle ; 
-    }  
-     else if ( what.CompareTo("Alarms") == 0 ) {
-      path += "QAAlarms/PHOS";   
-    }  
-  } 
-  else {
-    if ( what.CompareTo("SDigits") == 0 ) { 
-      path += what ; 
-      path += "/PHOS/"; 
-      path += file ; 
-      path += "/" ; 
-      path += name ;
-    } 
-    else if ( what.CompareTo("Digits") == 0 ) {
-      path += what ; 
-      path += "/PHOS/"; 
-      path += name ; 
-    }
-    else if ( what.CompareTo("EmcRecPoints") == 0 ) {
-      path += "RecPoints/PHOS/";  
-      path += "emc/" ; 
-      path += name ; 
-    }
-    else if ( what.CompareTo("CpvRecPoints") == 0 ) {
-      path += "RecPoints/PHOS/";  
-      path += "cpv/" ; 
-      path += name ; 
-    }  
-    else if ( what.CompareTo("TrackSegments") == 0 ) {
-      path += "TrackSegments/PHOS/";  
-      path += name ; 
-    } 
-    else if ( what.CompareTo("RecParticles") == 0 ) {
-      path += "RecParticles/PHOS/";  
-      path += name ; 
-    } 
-    else if ( what.CompareTo("Alarms") == 0 ) {
-      path += "QAAlarms/PHOS/";  
-      path += name ; 
+  }
+  else if ( what.CompareTo("Digits") == 0 ){
+    folder = dynamic_cast<TFolder *>(fDigitsFolder->FindObject("PHOS")) ; 
+    if (folder) { 
+      if (name.IsNull())
+	name = fDigitsTitle ; 
+      phosO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
     } 
   }
-  path.Prepend("YSAlice/") ;
-  TObject * phosO  = (TObject*)gROOT->FindObjectAny(path) ; 
+  else if ( what.CompareTo("EmcRecPoints") == 0 ) {
+    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("PHOS/EMCARecPoints")) ; 
+    if (folder) { 
+      if (name.IsNull())
+	name = fRecPointsTitle ; 
+      phosO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
+    } 
+  }
+  else if ( what.CompareTo("CpvRecPoints") == 0 ) {
+    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("PHOS/CPVRecPoints")) ; 
+    if (folder) { 
+      if (name.IsNull())
+	name = fRecPointsTitle ; 
+      phosO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
+    }   
+  }
+  else if ( what.CompareTo("TrackSegments") == 0 ) {
+    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("PHOS/TrackSegments")) ; 
+    if (folder) { 
+      if (name.IsNull())
+	name = fTrackSegmentsTitle ; 
+      phosO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
+    }   
+  }
+  else if ( what.CompareTo("RecParticles") == 0 ) {
+    folder = dynamic_cast<TFolder *>(fRecoFolder->FindObject("PHOS/RecParticles")) ; 
+   if (folder) { 
+      if (name.IsNull())
+	name = fRecParticlesTitle ; 
+      phosO  = dynamic_cast<TObject *>(folder->FindObject(name)) ; 
+    }   
+ }
+  else if ( what.CompareTo("Alarms") == 0 ){ 
+    if (name.IsNull() ) 
+      phosO = dynamic_cast<TObject *>(fQAFolder->FindObject("PHOS")) ;  
+    else {
+      folder = dynamic_cast<TFolder *>(fQAFolder->FindObject("PHOS")) ; 
+      if (!folder) 
+	phosO = 0 ; 
+      else 
+	phosO = dynamic_cast<TObject *>(folder->FindObject(name)) ;  
+    }
+  }
   if (!phosO) {
     if(fDebug)
-      cerr << "ERROR : AliPHOSGetter::ReturnO -> Object " << path << " not found!" << endl ; 
+      cerr << "ERROR : AliPHOSGetter::ReturnO -> Object " << what << " not found in " << folder->GetName() << endl ; 
     return 0 ;
   }
   return phosO ;
@@ -1634,37 +1768,32 @@ const TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file)
 const TTask * AliPHOSGetter::ReturnT(TString what, TString name) const 
 {
   // get the TTask named "what" from the folder
-  // folders are named like //YSAlice/Tasks/what/PHOS/name
+  // folders are named like //Folders/Tasks/what/PHOS/name
 
-  TString path("tasks") ;
- 
-  if ( what.CompareTo("SDigitizer") == 0 ) 
-    path += "/SDigitizer" ;
-  else if ( what.CompareTo("Digitizer") == 0 ) 
-    path += "/Digitizer" ; 
-  else if ( what.CompareTo("Clusterizer") == 0 ) 
-    path += "/Reconstructioner" ; 
+  TString search(what) ; 
+  if ( what.CompareTo("Clusterizer") == 0 ) 
+    search = "Reconstructioner" ; 
   else if ( what.CompareTo("TrackSegmentMaker") == 0 ) 
-    path += "/Reconstructioner" ; 
+    search = "Reconstructioner" ; 
   else if ( what.CompareTo("PID") == 0 ) 
-    path += "/Reconstructioner" ; 
+    search = "Reconstructioner" ; 
   else if ( what.CompareTo("QATasks") == 0 ) 
-    path += "/QA" ; 
+    search = "QA" ; 
 
-  TFolder * aliceF  = (TFolder*)gROOT ->FindObjectAny("YSAlice") ; 
-  TTask   * aliceT  = (TTask*)  aliceF->FindObject(path) ; 
+  TTask * tasks = dynamic_cast<TTask*>(fTasksFolder->FindObject(search)) ; 
 
-  if (!aliceT) {
-    cerr << "ERROR: AliPHOSGetter::ReturnT -> Task " << path << " not found!" << endl ;  
-    abort() ;
+  if (!tasks) {
+    cerr << "ERROR: AliPHOSGetter::ReturnT -> Task " << what << " not found!" << endl ;  
+    return 0 ; 
   }
 
-  TTask   * phosT   = (TTask*)  aliceT->GetListOfTasks()->FindObject("PHOS") ; 
+  TTask * phosT = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if (!phosT) { 
-    cerr << "ERROR: AliPHOSGetter::ReturnT -> Task " << path << "/PHOS not found!" << endl ;  
-    abort() ;
+    cerr << "ERROR: AliPHOSGetter::ReturnT -> Task " << what << "/PHOS not found!" << endl ;  
+    return 0 ; 
   }
-  TList * l = phosT->GetListOfTasks() ; 
+  
+  TList * list = phosT->GetListOfTasks() ; 
  
   if (what.CompareTo("SDigitizer") == 0) {  
     if ( name.IsNull() )
@@ -1692,15 +1821,15 @@ const TTask * AliPHOSGetter::ReturnT(TString what, TString name) const
       return phosT ;
   }
   
-  TIter it(l) ;
+  TIter it(list) ;
   TTask * task = 0 ; 
-  while((task = (TTask *)it.Next()) ){
+  while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
     if(taskname.BeginsWith(name))
       return task ;
   }
   
   if(fDebug)
-    cout << "WARNING: AliPHOSGetter::ReturnT -> Task " << path << "/" << name << " not found!" << endl ; 
+    cout << "WARNING: AliPHOSGetter::ReturnT -> Task " << search << "/" << name << " not found!" << endl ; 
   return 0 ;
 }

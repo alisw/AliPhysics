@@ -99,7 +99,7 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
   case kButton1Down:{
     AliPHOSDigit * digit ;
     AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-    AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+    AliPHOSGeometry * phosgeom =  const_cast<AliPHOSGeometry*>(gime->PHOSGeometry());
 
     Int_t iDigit;
     Int_t relid[4] ;
@@ -109,7 +109,9 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     Float_t * zi = new Float_t [kMulDigit] ;
     
     for(iDigit = 0; iDigit < kMulDigit; iDigit++) {
-      digit = (AliPHOSDigit *) fDigitsList[iDigit];
+      cout << " AliPHOSRecPoint::ExecuteEvent -> Something wromg with the code" << endl ; 
+      abort() ; 
+      digit = 0 ; //dynamic_cast<AliPHOSDigit *>((fDigitsList)[iDigit]);
       phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
       phosgeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]) ;
     }
@@ -171,7 +173,7 @@ void AliPHOSRecPoint::EvalPHOSMod(AliPHOSDigit * digit)
   Int_t relid[4] ; 
   
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+  AliPHOSGeometry * phosgeom =  const_cast<AliPHOSGeometry*>(gime->PHOSGeometry());
 
   phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
   fPHOSMod = relid[0];
@@ -188,7 +190,7 @@ void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
 
   Int_t index ;  
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
-    digit = (AliPHOSDigit *) digits->At( fDigitsList[index] ) ; 
+    digit = dynamic_cast<AliPHOSDigit *>(digits->At( fDigitsList[index] )) ; 
     Int_t nprimaries = digit->GetNprimary() ;
     Int_t * newprimaryarray = new Int_t[nprimaries] ;
     Int_t ii ; 

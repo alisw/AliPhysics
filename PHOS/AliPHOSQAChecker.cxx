@@ -40,12 +40,12 @@ ClassImp(AliPHOSQAChecker)
   AliPHOSQAChecker::AliPHOSQAChecker(const char * name, const char * title) : TTask(name,title) 
 {
   // ctor
-  // stores checkers in the PHOS QA TTask folder //YSAlice/tasks/QA/PHOS
-  TTask * aliceQA  = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/QA") ; 
+  // stores checkers in the PHOS QA TTask folder //Folders/Task/QA
+  TTask * aliceQA  = (TTask*)gROOT->FindObjectAny("Folders/Tasks/QA") ; 
   TTask * phosQA   = (TTask*)aliceQA->GetListOfTasks()->FindObject("PHOS") ;
   if (phosQA)  // PHOS QA Tasks container exists
    phosQA->Add(this) ;
-   else    // create //YSAlice/tasks/QA/PHOS
+   else    // create  //Folders/Task/QA/PHOS
      aliceQA->Add(this) ; 
   
   fCheckablesList = new TList() ; 

@@ -112,12 +112,6 @@ void AliPHOSSDigitizer::Init()
     return ;
   } 
   
-  //  //add Task to //YSAlice/tasks/SDiditizer/PHOS
-  //  TTask * aliceSD  = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/SDigitizer") ; 
-  //  TTask * phosSD   = (TTask*)aliceSD->GetListOfTasks()->FindObject("PHOS") ;
-  //  if ( ! phosSD->GetListOfTasks()->FindObject(GetName()) ) 
-  //   phosSD->Add(this) ;
-
   gime->PostSDigits( GetName(), GetTitle() ) ; 
 
   TString sdname(GetName() );
@@ -148,12 +142,12 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   //Check, if this branch already exits
   gAlice->GetEvent(0) ;
   if(gAlice->TreeS() ) {
-    TObjArray * lob = (TObjArray*)gAlice->TreeS()->GetListOfBranches() ;
+    TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeS()->GetListOfBranches()) ;
     TIter next(lob) ; 
     TBranch * branch = 0 ;  
     Bool_t phosfound = kFALSE, sdigitizerfound = kFALSE ; 
     
-    while ( (branch = (TBranch*)next()) && (!phosfound || !sdigitizerfound) ) {
+    while ( (branch = (static_cast<TBranch*>(next()))) && (!phosfound || !sdigitizerfound) ) {
       if ( (strcmp(branch->GetName(), "PHOS")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
 	phosfound = kTRUE ;
       
@@ -193,7 +187,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
       TClonesArray * hits = gime->Hits() ;
       Int_t i;
       for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
-	AliPHOSHit * hit = (AliPHOSHit *) hits->At(i) ;
+	AliPHOSHit * hit = dynamic_cast<AliPHOSHit *>(hits->At(i)) ;
 	// Assign primary number only if contribution is significant
 	
 	if( hit->GetEnergy() > fPrimThreshold)
@@ -214,7 +208,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     sdigits->Expand(nSdigits) ;
     Int_t i ;
     for (i = 0 ; i < nSdigits ; i++) { 
-      AliPHOSDigit * digit = (AliPHOSDigit *) sdigits->At(i) ; 
+      AliPHOSDigit * digit = dynamic_cast<AliPHOSDigit *>(sdigits->At(i)) ; 
       digit->SetIndexInList(i) ;     
     }
 
@@ -238,7 +232,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
       sdigitsBranch->SetFile(file);
       TIter next( sdigitsBranch->GetListOfBranches());
       TBranch * subbr;
-      while ((subbr=(TBranch*)next())) {
+      while ((subbr=static_cast<TBranch*>(next()))) {
 	subbr->SetFile(file);
       }   
       cwd->cd();
@@ -254,7 +248,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
       sdigitizerBranch->SetFile(file);
       TIter next( sdigitizerBranch->GetListOfBranches());
       TBranch * subbr ;
-      while ((subbr=(TBranch*)next())) {
+      while ((subbr=static_cast<TBranch*>(next()))) {
 	subbr->SetFile(file);
       }   
       cwd->cd();
@@ -288,8 +282,10 @@ void AliPHOSSDigitizer::SetSDigitsBranch(const char * title )
   TString stitle(title) ;
 
   // check if branch with title already exists
-  TBranch * sdigitsBranch    =  (TBranch*)gAlice->TreeS()->GetListOfBranches()->FindObject("PHOS") ; 
-  TBranch * sdigitizerBranch =  (TBranch*)gAlice->TreeS()->GetListOfBranches()->FindObject("AliPHOSSDigitizer") ;
+  TBranch * sdigitsBranch    = 
+    static_cast<TBranch*>(gAlice->TreeS()->GetListOfBranches()->FindObject("PHOS")) ; 
+  TBranch * sdigitizerBranch =  
+    static_cast<TBranch*>(gAlice->TreeS()->GetListOfBranches()->FindObject("AliPHOSSDigitizer")) ;
   const char * sdigitsTitle    = sdigitsBranch ->GetTitle() ;  
   const char * sdigitizerTitle = sdigitizerBranch ->GetTitle() ;
   if ( stitle.CompareTo(sdigitsTitle)==0 || stitle.CompareTo(sdigitizerTitle)==0 ){
@@ -311,7 +307,7 @@ void AliPHOSSDigitizer::Print(Option_t* option)const
 {
   // Prints parameters of SDigitizer
   cout << "------------------- "<< GetName() << " -------------" << endl ;
-  cout << "   Writing SDigitis to branch with title  " << GetName() << endl ;
+  cout << "   Writing SDigits to branch with title  " << GetName() << endl ;
   cout << "   with digitization parameters  A = " << fA << endl ;
   cout << "                                 B = " << fB << endl ;
   cout << "   Threshold for Primary assignment= " << fPrimThreshold << endl ; 

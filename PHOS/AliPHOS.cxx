@@ -49,138 +49,20 @@ AliPHOS:: AliPHOS() : AliDetector()
 {
   // Create folder and task hierarchy
   fName="PHOS";
-  CreatePHOSWhiteBoard();
 
 }
 
 //____________________________________________________________________________
 AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title) 
 {
-  // Create folder and task hierarchy
-  CreatePHOSWhiteBoard(); 
 }
 
-//____________________________________________________________________________
-void AliPHOS::CreatePHOSWhiteBoard()
-{
-  // create the ALICE TFolder
-  // create the ALICE TTasks
-  //  add the Alice QA TTAsks 
-  // create the ALICE main TFolder
-  //  add the Alice QA Alarms
-  // this should be done of course by AliRun
-  //==================== BEG TO BE DONE BY AliRUN ===========================
-  TFolder *alice = gROOT->GetRootFolder()->AddFolder("YSAlice","Alice Folder") ;  
-  gROOT->GetListOfBrowsables()->Add(alice, "YSAlice") ;
 
-  TFolder * aliceF  = alice->AddFolder("WhiteBoard", "Alice memory Folder") ; 
-  //  make it the owner of the objects that it contains
-  aliceF->SetOwner() ;
-  // geometry folder 
-  TFolder * geomF = aliceF->AddFolder("Geometry", "Geometry objects") ; 
-  // alarms folder
-  TFolder * alarmsF = aliceF->AddFolder("QAAlarms", "Alarms raised by QA check") ; 
-  // Hits folder
-  TFolder * hitsF = aliceF->AddFolder("Hits", "Hits") ; 
-  // SDigits folder
-  TFolder * sdigitsF = aliceF->AddFolder("SDigits", "Summable Digits") ; 
-  // Digits folder
-  TFolder * digitsF = aliceF->AddFolder("Digits", "Digits") ; 
-  // RecPoints folder
-  TFolder * rpointsF = aliceF->AddFolder("RecPoints", "RecPoints") ; 
-  // TrackSegments folder
-  TFolder * tsF = aliceF->AddFolder("TrackSegments", "TrackSegments") ; 
-  // RecParticles folder
-  TFolder * rparticlesF = aliceF->AddFolder("RecParticles", "RecParticles") ; 
-  //  make it the owner of the objects that it contains
-  alarmsF->SetOwner() ;
-  hitsF->SetOwner() ;
-  sdigitsF->SetOwner() ;
-  digitsF->SetOwner() ;
-  rpointsF->SetOwner() ;
-  tsF->SetOwner() ;
-  rparticlesF->SetOwner() ;
-
-  // Tasks folder
-  TFolder * aliceT  = alice->AddFolder("tasks", "Alice tasks Folder") ; 
-  //  make it the owner of the objects that it contains
-  aliceT->SetOwner() ;
-
-  TTask * aliceQA = new TTask("QA", "Alice QA tasks") ;
-  aliceT->Add(aliceQA); 
- 
-  TTask * aliceSD = new TTask("SDigitizer", "Alice SDigitizer") ;
-  aliceT->Add(aliceSD); 
-
-  TTask * aliceDi = new TTask("Digitizer", "Alice Digitizer") ;
-  aliceT->Add(aliceDi); 
-
-  TTask * aliceRe = new TTask("Reconstructioner", "Alice Reconstructioner") ;
-  aliceT->Add(aliceRe); 
-
-  //==================== END TO BE DONE BY AliRUN ===========================
-
-  // =================== Creating PHOS related folders
-  char * tempo = new char[80] ; 
-
-  // creates the PHOSQA (QAChecker knows how to add itself in the tasks list)
-  sprintf(tempo, "%sCheckers container",GetName() ) ; 
-  fQATask = new AliPHOSQAChecker(GetName(), tempo);  
-
-  // creates the PHOS SDigitizer and adds it to alice main SDigitizer task 
-  sprintf(tempo, "%sSDigitizers container",GetName() ) ; 
-  TTask * sdT = new TTask(GetName(), tempo);   
-  aliceSD->Add(sdT) ; 
-
-  // creates the PHOS Digitizer and adds it to alice main Digitizer task 
-  sprintf(tempo, "%sDigitizers container",GetName() ) ; 
-  TTask * dT = new TTask(GetName(), tempo);   
-  aliceDi->Add(dT) ; 
-
-  // creates the PHOS reconstructioner and adds it to alice main Reconstructioner task 
-  sprintf(tempo, "%s Reconstructioner container",GetName() ) ; 
-  TTask * reT = new TTask(GetName(), tempo); 
-  aliceRe->Add(reT) ; 
-
-  // creates the PHOS clusterizer, tracksegment maker and PID and adds it to the PHOS Reconstructioner task
-
-  delete tempo ;  
-
-  // creates the PHOS geometry  folder
-  geomF->AddFolder("PHOS", "Geometry for PHOS") ; 
-  // creates the PHOSQA alarm folder
-  alarmsF->AddFolder("PHOS", "QA alarms from PHOS") ; 
-  // creates the PHOS Hits folder
-  hitsF->AddFolder("PHOS", "Hits for PHOS") ; 
-  // creates the PHOS Summable Digits folder
-  sdigitsF->AddFolder("PHOS", "Summable Digits for PHOS") ; 
-  // creates the PHOS Digits folder
-  digitsF->AddFolder("PHOS", "Digits for PHOS") ; 
-  // creates the PHOS RecPoints folder
-  TFolder * prpF = rpointsF->AddFolder("PHOS", "RecPoints for PHOS") ;
-  // creates the PHOS EMC RecPoints folder
-  prpF->AddFolder("emc", "EMC RecPoints for PHOS") ;
-  // creates the PHOS CPV RecPoints folder
-  prpF->AddFolder("cpv", "CPV RecPoints for PHOS") ;
-  
-  // creates the PHOS TrackSegments folder
-  tsF->AddFolder("PHOS", "Track Segments for PHOS") ; 
-  // creates the PHOS RecParticles folder
-  rparticlesF->AddFolder("PHOS", "RecParticles for PHOS") ;
- 
-}
 //____________________________________________________________________________
 AliPHOS::~AliPHOS() 
 {  
   // remove the alice folder and alice QA task that PHOS creates instead of AliRun
   
-  // remove and delete the PHOS QA tasks
-  TTask * aliceQA = (TTask*)gROOT->FindObjectAny("YSAlice/tasks/QA") ; 
-  fQATask->GetListOfTasks()->Delete() ;
-  aliceQA->GetListOfTasks()->Remove(fQATask) ; 
-  delete fQATask ;  
-  
-  // remove and delete aliceQA (should be done by AliRun) 
 }
 
 //____________________________________________________________________________
@@ -476,14 +358,10 @@ void AliPHOS::CreateMaterials()
 //____________________________________________________________________________
 AliPHOSGeometry * AliPHOS::GetGeometry() const 
 {  
-  // gets the pointer to the AliPHOSGeometry unique instance from the folder
+  // gets the pointer to the AliPHOSGeometry unique instance 
   
-  AliPHOSGeometry * rv = 0 ; 
-  
-  TString path("YSAlice/WhiteBoard/Geometry/PHOS/") ; 
-  path += GetTitle() ; 
-  rv = (AliPHOSGeometry*)gROOT->FindObjectAny(path) ; 
-  return rv ; 
+  return AliPHOSGeometry::GetInstance(GetTitle(),"") ;  
+
 }
 
 //____________________________________________________________________________
@@ -517,13 +395,13 @@ void AliPHOS::WriteQA()
   // Create Alarms branches
   Int_t bufferSize = 32000 ;    
   Int_t splitlevel = 0 ; 
-  TFolder * alarmsF = (TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/QAAlarms/PHOS") ; 
+  TFolder * alarmsF = (TFolder*)gROOT->FindObjectAny("Folders/Run/Conditions/QA/PHOS") ; 
   TString branchName(alarmsF->GetName());  
   TBranch * alarmsBranch = fTreeQA->Branch(branchName,"TFolder", &alarmsF, bufferSize, splitlevel);
   TString branchTitle = branchName + " QA alarms" ; 
   alarmsBranch->SetTitle(branchTitle);
   alarmsBranch->Fill() ; 
 
-  // fTreeQA->Fill() ; 
+  //fTreeQA->Fill() ; 
 }
 

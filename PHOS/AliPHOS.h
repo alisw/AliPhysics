@@ -41,7 +41,6 @@ class AliPHOS : public AliDetector {
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ;   
   virtual void   CreateMaterials() ;                     
-  void CreatePHOSWhiteBoard();
   virtual  void  FinishRun() {WriteQA();}
   virtual  AliPHOSGeometry * GetGeometry() const ;
   virtual Int_t   IsVersion(void) const = 0 ;  

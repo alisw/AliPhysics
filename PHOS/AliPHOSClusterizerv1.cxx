@@ -583,7 +583,7 @@ void AliPHOSClusterizerv1::MakeClusters()
 
     if (( IsInEmc (digit) && Calibrate(digit->GetAmp(),digit->GetId()) > fEmcClusteringThreshold  ) || 
         ( IsInCpv (digit) && Calibrate(digit->GetAmp(),digit->GetId()) > fCpvClusteringThreshold  ) ) {
-      
+         
       Int_t iDigitInCluster = 0 ; 
       
       if  ( IsInEmc(digit) ) {   

@@ -179,7 +179,7 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   }
     
   // loop through the sdigits posted to the White Board and add them to the noise
-  TCollection * folderslist = ((TFolder*)gROOT->FindObjectAny("YSAlice/WhiteBoard/SDigits/PHOS"))->GetListOfFolders() ; 
+  TCollection * folderslist = gime->SDigitsFolder()->GetListOfFolders() ; 
   TIter next(folderslist) ; 
   TFolder * folder = 0 ; 
   TClonesArray * sdigits = 0 ;
@@ -193,15 +193,21 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
       input++ ;
     }
 
-  //Find the first crystall with sygnal
+  //Find the first crystall with signal
   Int_t nextSig = 200000 ; 
   Int_t i;
   for(i=0; i<input; i++){
     sdigits = (TClonesArray *)sdigArray->At(i) ;
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // if there are no SDigits in this event ===> Dmitri should check
+    if ( !sdigits->GetEntries() )
+      continue ; 
     Int_t curNext = ((AliPHOSDigit *)sdigits->At(0))->GetId() ;
-    if(curNext < nextSig) nextSig = curNext ;
+     if(curNext < nextSig) 
+       nextSig = curNext ;
   }
 
+  cout << " AliPHOSDigitizer::Digitize 2" << endl ;  
   TArrayI index(input) ;
   index.Reset() ;  //Set all indexes to zero
 
