@@ -90,6 +90,7 @@ void AliSHILv2::CreateGeometry()
 //
 // begin Fluka
   AliALIFE* flukaGeom = new AliALIFE("beamshield.alife", "beamshield_vol.inp");
+  
   Int_t i=0,ifl=0;
   Float_t posfluka[3]={0., 0., 0.};
   Float_t zfluka[12], rfluka1[12], rfluka2[12], rfluka3[12] ;  
@@ -314,6 +315,7 @@ void AliSHILv2::CreateGeometry()
 
 //
 // begin Fluka
+       
   for (ifl=0; ifl<14; ifl++) {
       zfluka[ifl]=par1[3+3*ifl]+dl+kZRear-kDRear;
       rfluka1[ifl] = par1[4+3*ifl];
@@ -1720,7 +1722,7 @@ void AliSHILv2::CreateGeometry()
 	          kZch22, kZvac6, posfluka,"NIW", "MF", "$SHS");
 
 */
-  if (fWriteGeometry) flukaGeom->Finish();
+  flukaGeom->Finish(!fWriteGeometry);
 
 // 
 // end Fluka
