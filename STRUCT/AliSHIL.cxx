@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/01/12 15:37:57  morsch
+Base class only
+
 Revision 1.6  1999/09/29 09:24:30  fca
 Introduction of the Copyright and cvs Log
 
@@ -96,10 +99,11 @@ void AliSHIL::CreateMaterials()
   Float_t wniwcu[3] ={0.015,0.95,0.035};
 //
 // Insulation powder
-  Float_t ains[3] ={28.0855, 15.9994};
-  Float_t zins[3] ={14.,      8.};
-  Float_t wins[3] ={1.,       2.};
-  
+//                    Si         O       Ti     Al
+  Float_t ains[4] ={28.0855, 15.9994, 47.867,  26.982};
+  Float_t zins[4] ={14.,      8.    , 22.   ,  13.   };
+  Float_t wins[4] ={ 0.3019,  0.4887,  0.1914,  0.018};
+
   Float_t epsil, stmin, tmaxfd, deemax, stemax;
   
   //     STEEL 
@@ -118,6 +122,12 @@ void AliSHIL::CreateMaterials()
   AliMaterial(10, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
   AliMaterial(30, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
   AliMaterial(50, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
+
+  //
+  //     Copper
+  AliMaterial(11, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(31, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
+  AliMaterial(51, "COPPER$   ", 63.55, 29., 8.96, 1.43, 15.1);
   
   //     Tungsten 
   AliMaterial(12, "TUNGSTEN$ ", 183.85, 74., 19.3, .35, 10.3);
@@ -160,9 +170,9 @@ void AliSHIL::CreateMaterials()
   AliMixture(57, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
 
   //     Insulation powder 
-  AliMixture(14, "INSULATION$", ains, zins, 0.41, -2, wins);
-  AliMixture(34, "INSULATION$", ains, zins, 0.41, 2, wins);
-  AliMixture(54, "INSULATION$", ains, zins, 0.41, 2, wins);
+  AliMixture(14, "INSULATION$", ains, zins, 0.41, 4, wins);
+  AliMixture(34, "INSULATION$", ains, zins, 0.41, 4, wins);
+  AliMixture(54, "INSULATION$", ains, zins, 0.41, 4, wins);
   
   // **************** 
   //     Defines tracking media parameters. 
@@ -184,6 +194,11 @@ void AliSHIL::CreateMaterials()
   AliMedium(10, "FE_C0           ", 10, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(30, "FE_C1           ", 30, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(50, "FE_C2           ", 50, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+
+  //    Iron 
+  AliMedium(11, "Cu_C0           ", 11, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(31, "Cu_C1           ", 31, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(51, "Cu_C2           ", 51, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Tungsten 
   AliMedium(12, "W_C0            ", 12, 0, ISXFLD, SXMGMX, tmaxfd, stemax, deemax, epsil, stmin);
