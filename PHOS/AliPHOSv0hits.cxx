@@ -88,10 +88,10 @@ void AliPHOSv0hits::AddHit(Int_t primary, Int_t tracknumber, Int_t Id, Float_t *
   // In this version of AliPHOSv0, a PHOS hit is real geant 
   // hits in a single crystal or in a single PPSD gas cell
 
-  cout << "Primary is " << primary << endl;
-  cout << "Tracknumber is " << tracknumber << endl;
-  cout << "Vol Id is " << Id << endl;
-  cout << "hits is " << hits[0] << "  " << hits[1] << "  " << hits[2] << "   " << hits[3] <<endl;
+  // cout << "Primary is " << primary << endl;
+  //cout << "Tracknumber is " << tracknumber << endl;
+  //cout << "Vol Id is " << Id << endl;
+  //cout << "hits is " << hits[0] << "  " << hits[1] << "  " << hits[2] << "   " << hits[3] <<endl;
 
   //  cout << " Adding a hit number " << fNhits << endl ;
 
