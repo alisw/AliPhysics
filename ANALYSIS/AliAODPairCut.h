@@ -14,7 +14,7 @@
 class AliAODParticleCut;
 class AliAODPairBaseCut;
 
-enum AliAODPairCutProperty
+enum EAODPairCutProperty
 {
   kHbtPairCutPropQInv, //Q invariant
   kHbtPairCutPropKt,
@@ -76,7 +76,7 @@ class AliAODPairCut: public TNamed
   Int_t fNCuts;//Number of cuts in fCuts array
   
   
-  AliAODPairBaseCut* FindCut(AliAODPairCutProperty cut);
+  AliAODPairBaseCut* FindCut(EAODPairCutProperty cut);
  private:
   static const Int_t fgkMaxCuts; // Max number of cuts
   ClassDef(AliAODPairCut,2)
@@ -113,7 +113,7 @@ class AliAODPairBaseCut: public TObject
    
  public:
      
-  AliAODPairBaseCut(Double_t min = 0.0, Double_t max = 0.0, AliAODPairCutProperty prop= kHbtPairCutPropNone):
+  AliAODPairBaseCut(Double_t min = 0.0, Double_t max = 0.0, EAODPairCutProperty prop= kHbtPairCutPropNone):
     fMin(min),fMax(max),fProperty(prop){}
   
   virtual   ~AliAODPairBaseCut(){}
@@ -128,7 +128,7 @@ class AliAODPairBaseCut: public TObject
   Double_t  GetMinimum() const {return fMin;}
   Double_t  GetMaximum() const {return fMax;}
   
-  AliAODPairCutProperty GetProperty() const {return fProperty;}
+  EAODPairCutProperty GetProperty() const {return fProperty;}
   
  protected:
   virtual Double_t  GetValue(AliAODPair* pair) const = 0;
@@ -136,7 +136,7 @@ class AliAODPairBaseCut: public TObject
   Double_t fMin; // Lower boundary of the range
   Double_t fMax; // Upper boundary of the range
   
-  AliAODPairCutProperty fProperty; // The property itself
+  EAODPairCutProperty fProperty; // The property itself
   
   ClassDef(AliAODPairBaseCut,1)
  

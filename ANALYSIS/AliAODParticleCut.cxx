@@ -120,7 +120,7 @@ void AliAODParticleCut::AddBasePartCut(AliAODParticleBaseCut* basecut)
 }
 
 /******************************************************************/
-AliAODParticleBaseCut* AliAODParticleCut::FindCut(AliAODCutProperty property)
+AliAODParticleBaseCut* AliAODParticleCut::FindCut(EAODCutProperty property)
 {
  //returns pointer to the cut checking the given property
  for (Int_t i = 0;i<fNCuts;i++)

@@ -36,7 +36,7 @@ class AliAODParticleBaseCut;
 /******************************************************************/
 /******************************************************************/
 
-enum AliAODCutProperty
+enum EAODCutProperty
  {
 //codes particle property
   kAODP,  //Momentum
@@ -96,7 +96,7 @@ class AliAODParticleCut: public TObject
     void Print(void) const;
   protected:
      
-    AliAODParticleBaseCut* FindCut(AliAODCutProperty property);
+    AliAODParticleBaseCut* FindCut(EAODCutProperty property);
 
     AliAODParticleBaseCut ** fCuts;//! Array with cuts
     Int_t fNCuts; //number of base cuts stored in fCuts
@@ -138,7 +138,7 @@ class AliAODParticleBaseCut: public TObject
    
    public:
      
-     AliAODParticleBaseCut(Double_t min = 0.0, Double_t max = 0.0,AliAODCutProperty prop = kAODNone):
+     AliAODParticleBaseCut(Double_t min = 0.0, Double_t max = 0.0,EAODCutProperty prop = kAODNone):
                    fProperty(prop),fMin(min),fMax(max){}
 
      virtual           ~AliAODParticleBaseCut(){}
@@ -153,13 +153,13 @@ class AliAODParticleBaseCut: public TObject
      Double_t          GetMinimum() const {return fMin;}
      Double_t          GetMaximum() const {return fMax;}
      
-     AliAODCutProperty GetProperty() const {return fProperty;}
+     EAODCutProperty GetProperty() const {return fProperty;}
      virtual void Print(void) const;
      
    protected:
      virtual Double_t  GetValue(AliVAODParticle *) const = 0;
 
-     AliAODCutProperty fProperty; //property that this cut describes
+     EAODCutProperty fProperty; //property that this cut describes
      Double_t fMin;//minimum value
      Double_t fMax;//maximum value
      

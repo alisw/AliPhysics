@@ -14,15 +14,17 @@ ClassImp(AliEventBaseCut)
 
 AliEventBaseCut::AliEventBaseCut():
  fMin(0.0),
- fMax(0.0)
+ fMax(0.0),
+ fProperty(kNone)
 {
 //ctor  
 }
 /**********************************************************/
 
-AliEventBaseCut::AliEventBaseCut(Double_t min, Double_t max):
+AliEventBaseCut::AliEventBaseCut(Double_t min, Double_t max, EEventCutProperty prop):
  fMin(min),
- fMax(max)
+ fMax(max),
+ fProperty(prop)
 {
  //ctor
 }

@@ -286,7 +286,7 @@ void AliAODPairCut::SetClusterOverlapRange(Double_t min,Double_t max)
 }
 /**********************************************************/
 
-AliAODPairBaseCut* AliAODPairCut::FindCut(AliAODPairCutProperty property)
+AliAODPairBaseCut* AliAODPairCut::FindCut(EAODPairCutProperty property)
 {
   // Find the cut corresponding to "property"
   for (Int_t i = 0;i<fNCuts;i++)
