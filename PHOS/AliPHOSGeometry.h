@@ -79,6 +79,7 @@ public:
 		         Double_t & z, Double_t & x) const ; 
                                          // calculates the impact coordinates of a neutral particle  
                                          // emitted in direction theta and phi in ALICE
+  Bool_t IsInEMC(const Int_t id) const { if (id > GetNModules() *  GetNCristalsInModule() ) return kFALSE; return kTRUE; } 
   void RelPosInModule(const Int_t * RelId, Float_t & y, Float_t & z) const ; 
                                          // gets the position of element (pad or Xtal) relative to 
                                          // center of PHOS module  
