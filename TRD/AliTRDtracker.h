@@ -30,7 +30,7 @@ class AliTRDtracker : public AliTracker {
 
  public:
 
-  AliTRDtracker():AliTracker() {} 
+  AliTRDtracker();
   AliTRDtracker(const TFile *in);
   virtual ~AliTRDtracker(); 
 

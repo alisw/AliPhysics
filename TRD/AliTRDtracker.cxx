@@ -70,6 +70,28 @@ const Int_t AliTRDtracker::fgkLastPlane = 17;
 
 
 //____________________________________________________________________
+AliTRDtracker::AliTRDtracker():AliTracker(),
+			       fGeom(0),
+			       fPar(0),
+			       fNclusters(0),
+			       fClusters(0),
+			       fNseeds(0),
+			       fSeeds(0),
+			       fNtracks(0),
+			       fTracks(0),
+			       fSY2corr(0),
+			       fSZ2corr(0),
+			       fTimeBinsPerPlane(0),
+			       fMaxGap(0),
+			       fVocal(kFALSE),
+			       fAddTRDseeds(kFALSE),
+			       fNoTilt(kFALSE)
+{
+  for(Int_t i=0;i<kTrackingSectors;i++) fTrSec[i]=0;
+  for(Int_t j=0;j<5;j++)
+    for(Int_t k=0;k<18;k++) fHoles[j][k]=kFALSE;
+} 
+//____________________________________________________________________
 AliTRDtracker::AliTRDtracker(const TFile *geomfile):AliTracker()
 {
   // 
@@ -185,9 +207,18 @@ AliTRDtracker::~AliTRDtracker()
   // Destructor of AliTRDtracker 
   //
 
-  delete fClusters;
-  delete fTracks;
-  delete fSeeds;
+  if (fClusters) {
+    fClusters->Delete();
+    delete fClusters;
+  }
+  if (fTracks) {
+    fTracks->Delete();
+    delete fTracks;
+  }
+  if (fSeeds) {
+    fSeeds->Delete();
+    delete fSeeds;
+  }
   delete fGeom;  
   delete fPar;  
 
