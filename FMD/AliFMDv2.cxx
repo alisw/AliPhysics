@@ -88,8 +88,7 @@ void AliFMDv2::CreateGeometry()
    
   Int_t ifmd;
   Int_t idrotm[999];
-  Float_t zFMD,par[3],ppcon[5];
-    //ppcon1[15],ppcon2[15],ppcon3[15],ppcon4[15],ppcon5[15];
+  Float_t zFMD,par[3],ppcon[15];
   Float_t z[5]={62.8, 75.2, -83.4, -75.2, -340.};
   Float_t NylonTube[3]={0.2,0.6,0.45};
   Float_t zPCB=0.12; Float_t zHoneyComb=0.5; 
