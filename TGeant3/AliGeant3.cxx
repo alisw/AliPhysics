@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/07/13 16:19:10  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.6  2000/07/11 18:24:59  fca
 Coding convention corrections + few minor bug fixes
 
@@ -38,6 +41,7 @@ ReadEuclid moved from AliRun to AliModule
 
 #include <TParticle.h>
 
+#include "AliDecayer.h"
 #include "AliGeant3.h"
 #include "AliRun.h"
 #include "TGeant3.h"
@@ -428,6 +432,68 @@ void gudcay()
 //
 //    ------------------------------------------------------------------
 //
+    
+    TGeant3* geant3=(TGeant3*) gMC;
+// Initialize 4-momentum vector    
+    Int_t ipart = geant3->Gckine()->ipart;
+    TLorentzVector p;
+    
+    p[0]=geant3->Gctrak()->vect[3];
+    p[1]=geant3->Gctrak()->vect[4];
+    p[2]=geant3->Gctrak()->vect[5];
+    p[3]=geant3->Gctrak()->vect[6];    
+//    printf("\n Theta: %f\n", TMath::ATan2(TMath::Sqrt(p[0]*p[0]+p[1]*p[1]), p[2]));
+    
+// Convert from geant to lund particle code
+    Int_t iplund=gMC->PDGFromId(ipart);
+// Particle list
+    static TClonesArray *particles;
+    if(!particles) particles=new TClonesArray("TParticle",1000);
+// Decay
+    geant3->Decayer()->Decay(iplund, &p);
+    
+// Fetch Particles
+    Int_t np = geant3->Decayer()->ImportParticles(particles);
+    if (np <=1) return;
+    
+    for (Int_t i=0; i< np; i++) 
+    {
+	TParticle *  iparticle = (TParticle *) particles->At(i);
+	Int_t ks = iparticle->GetStatusCode();
+// Final state particles only
+	if (ks < 1 || ks >  10) continue;
+// Skip neutrinos
+	Int_t  kf=iparticle->GetPdgCode();
+	if (kf==12 || kf ==-12) continue;
+	if (kf==14 || kf ==-14) continue;
+	if (kf==16 || kf ==-16) continue;
+	
+	Int_t index=geant3->Gcking()->ngkine;
+// Put particle on geant stack
+// momentum vector
+//	printf("\n Theta: %f\n", TMath::ATan2(TMath::Sqrt(
+//	    iparticle->Px()*iparticle->Px()+
+//	    iparticle->Py()*iparticle->Py()), iparticle->Pz()));
+
+	(geant3->Gcking()->gkin[index][0]) = iparticle->Px();
+	(geant3->Gcking()->gkin[index][1]) = iparticle->Py();
+	(geant3->Gcking()->gkin[index][2]) = iparticle->Pz();
+	(geant3->Gcking()->gkin[index][3]) = iparticle->Energy();
+	Int_t ilu = gMC->IdFromPDG(kf);
+//	printf("\n Put Particle %d %d %d %f %f %d on stack\n ",kf,  ilu, index, 
+//	    (geant3->Gcking()->gkin[index][0]), iparticle->T(),ks);
+// particle type	
+	(geant3->Gcking()->gkin[index][4]) = Float_t(ilu);
+// position
+	(geant3->Gckin3()->gpos[index][0]) = geant3->Gctrak()->vect[0];
+	(geant3->Gckin3()->gpos[index][1]) = geant3->Gctrak()->vect[1];
+	(geant3->Gckin3()->gpos[index][2]) = geant3->Gctrak()->vect[2];
+// time of flight offset (mm)
+	(geant3->Gcking()->tofd[index])    = 0.;
+//	(geant3->Gcking()->tofd[index])    = iparticle->T()/(10*kSpeedOfLight);
+// increase stack counter
+	(geant3->Gcking()->ngkine)=index+1;
+    }
 }
 
 //______________________________________________________________________
