@@ -74,7 +74,7 @@ G4int TG4IntMap::GetSecond(const G4String& name)
 
   IntMapIterator i = fMap.find(name);
   if (i == fMap.end()) {
-    G4String text = "G4IntMap::GetSecond: ";
+    G4String text = "   TG4IntMap::GetSecond: ";
     text = text + name + " is not defined.";
     TG4Globals::Warning(text);
     return 0;
