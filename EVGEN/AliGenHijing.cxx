@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.22  2001/06/11 13:09:23  morsch
+- Store cross-Section and number of binary collisions as a function of impact parameter
+- Pass AliGenHijingEventHeader to gAlice.
+
 Revision 1.21  2001/02/28 17:35:24  morsch
 Consider elastic interactions (ks = 1 and ks = 11) as spectator (Chiara Oppedisano)
 
@@ -106,13 +110,13 @@ AliGenerator interface class to HIJING using THijing (test version)
  ClassImp(AliGenHijing)
 
 AliGenHijing::AliGenHijing()
-                 :AliGenerator()
+                 :AliGenMC()
 {
 // Constructor
 }
 
 AliGenHijing::AliGenHijing(Int_t npart)
-    :AliGenerator(npart)
+    :AliGenMC(npart)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
@@ -244,7 +248,7 @@ void AliGenHijing::Generate()
         ks        = iparticle->GetStatusCode();
         if (kf == 92) continue;
 	    
-        if (!fSelectAll) selected = KinematicSelection(iparticle)&&SelectFlavor(kf);
+        if (!fSelectAll) selected = KinematicSelection(iparticle, 0)&&SelectFlavor(kf);
         hasSelectedDaughters = DaughtersSelection(iparticle, particles);
 //
 // Put particle on the stack if it is either selected or it is the mother of at least one seleted particle
@@ -289,7 +293,7 @@ void AliGenHijing::Generate()
         kf        = iparticle->GetPdgCode();
         ks        = iparticle->GetStatusCode();
         if (!fSelectAll) {
-	    selected = KinematicSelection(iparticle)&&SelectFlavor(kf);
+	    selected = KinematicSelection(iparticle,0)&&SelectFlavor(kf);
 	    if (!fSpectators && selected) selected = (ks != 0 && ks != 1 && ks != 10
 						      && ks != 11);
         }
@@ -335,65 +339,6 @@ void AliGenHijing::Generate()
   MakeHeader();
   
   gAlice->SetHighWaterMark(nt);
-}
-
-Bool_t AliGenHijing::KinematicSelection(TParticle *particle)
-{
-// Perform kinematic selection
-    Double_t px = particle->Px();
-    Double_t py = particle->Py();
-    Double_t pz = particle->Pz();
-    Double_t  e = particle->Energy();
-
-//
-//  transverse momentum cut    
-    Double_t pt = TMath::Sqrt(px*px+py*py);
-    if (pt > fPtMax || pt < fPtMin) 
-    {
-//	printf("\n failed pt cut %f %f %f \n",pt,fPtMin,fPtMax);
-	return kFALSE;
-    }
-//
-// momentum cut
-    Double_t p = TMath::Sqrt(px*px+py*py+pz*pz);
-    if (p > fPMax || p < fPMin) 
-    {
-//	printf("\n failed p cut %f %f %f \n",p,fPMin,fPMax);
-	return kFALSE;
-    }
-    
-//
-// theta cut
-    Double_t  theta = Double_t(TMath::ATan2(Double_t(pt),Double_t(pz)));
-    if (theta > fThetaMax || theta < fThetaMin) 
-    {
-	
-//    	printf("\n failed theta cut %f %f %f \n",theta,fThetaMin,fThetaMax);
-	return kFALSE;
-    }
-
-//
-// rapidity cut
-    Double_t y;
-    if(e <= pz) y = 99;
-    else if (e <= -pz)  y = -99;
-    else y = 0.5*TMath::Log((e+pz)/(e-pz));
-    if (y > fYMax || y < fYMin)
-    {
-//	printf("\n failed y cut %f %f %f \n",y,fYMin,fYMax);
-	return kFALSE;
-    }
-
-//
-// phi cut
-    Double_t phi=Double_t(TMath::ATan2(Double_t(py),Double_t(px)));
-    if (phi > fPhiMax || phi < fPhiMin)
-    {
-//	printf("\n failed phi cut %f %f %f \n",phi,fPhiMin,fPhiMax);
-	return kFALSE;
-    }
-
-    return kTRUE;
 }
 
 void AliGenHijing::KeepFullEvent()
@@ -482,7 +427,7 @@ Bool_t AliGenHijing::DaughtersSelection(TParticle* iparticle, TClonesArray* part
 	for (i = imin; i <= imax; i++){
 	    TParticle *  jparticle = (TParticle *) particles->At(i);	
 	    Int_t ip = jparticle->GetPdgCode();
-	    if (KinematicSelection(jparticle)&&SelectFlavor(ip)) {
+	    if (KinematicSelection(jparticle,0)&&SelectFlavor(ip)) {
 		selected=kTRUE; break;
 	    }
 	    if (DaughtersSelection(jparticle, particles)) {selected=kTRUE; break; }
@@ -514,7 +459,6 @@ Bool_t AliGenHijing::Stable(TParticle*  particle)
     Int_t kf = TMath::Abs(particle->GetPdgCode());
     
     if ( (particle->GetFirstDaughter() < 0 ) || (kf == 1000*fFlavor+122))
-	 
     {
 	return kTRUE;
     } else {

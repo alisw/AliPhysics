@@ -9,7 +9,7 @@
 // The main HIJING options are accessable for the user through this interface.
 // andreas.morsch@cern.ch
 
-#include "AliGenerator.h"
+#include "AliGenMC.h"
 #include <TString.h>
 #include <TArrayI.h>
 
@@ -19,7 +19,7 @@ class TParticle;
 class TClonesArray;
 class TGraph;
 
-class AliGenHijing : public AliGenerator
+class AliGenHijing : public AliGenMC
 {
     enum {kNoTrigger, kHardProcesses, kDirectPhotons};
 
@@ -97,12 +97,6 @@ class AliGenHijing : public AliGenerator
     TGraph*     fDsigmaDb;       // dSigma/db for the system
     TGraph*     fDnDb;           // dNBinaryCollisions/db    
  private:
-    // check if particle is selected as parent particle
-    Bool_t ParentSelected(Int_t ip);
-    // check if particle is selected as child particle
-    Bool_t ChildSelected(Int_t ip);
-    // all kinematic selection cuts go here 
-    Bool_t KinematicSelection(TParticle *particle);
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
     // check seleted daughters
