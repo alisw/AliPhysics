@@ -234,7 +234,7 @@ void AliSTARTv0::CreateMaterials()
  AliMaterial(1, "START Vacuum$", 1.e-16,1.e-16,1.e-16,1.e16,999);
  AliMaterial(2, "START Air$", 14.61, 7.3, .001205, 30423.,999); 
 
- AliMixture( 3, "Al2O3   $", aal2o3, zal2o3, denscer, -2, wcer);
+ AliMixture( 3, "Al2O3   $", aal2o3, zal2o3, denscer, -2, wal2o3);
  AliMixture( 4, "PMT glass   $",aglass,zglass,dglass,-2,wglass);
   char namate[21];
   gMC->Gfmate((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
