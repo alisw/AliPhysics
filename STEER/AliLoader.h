@@ -142,14 +142,22 @@ class AliLoader: public TNamed
       SetTAddrInDet();
       return status;
     }
-    Int_t          LoadRecPoints(Option_t* opt="") const {
-      return GetRecPointsDataLoader()->Load(opt);
+    
+
+    Int_t          LoadRecPoints(Option_t* opt="") {
+      Int_t status = GetRecPointsDataLoader()->Load(opt);
+      SetTAddrInDet();
+      return status;
     }
-    Int_t          LoadTracks(Option_t* opt="") const {
-      return GetTracksDataLoader()->Load(opt);
+    Int_t          LoadTracks(Option_t* opt="") {
+      Int_t status = GetTracksDataLoader()->Load(opt);
+      SetTAddrInDet();
+      return status;
     }
-    Int_t          LoadRecParticles(Option_t* opt="") const {
-      return GetRecParticlesDataLoader()->Load(opt);
+    Int_t          LoadRecParticles(Option_t* opt="") {
+      Int_t status = GetRecParticlesDataLoader()->Load(opt);
+      SetTAddrInDet();
+      return status;
     }
     
     Int_t          LoadSDigitizer(Option_t* opt="") const {
