@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 21:28:12  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.6  2000/01/19 17:17:06  fca
 Introducing a list of lists of hits -- more hits allowed for detector now
 
@@ -143,7 +146,7 @@ void AliPMD::BuildGeometry()
   // PMD
   new TBRIK("S_PMD","PMD box","void",300,300,5);
   Top->cd();
-  Node = new TNode("PMD","PMD","S_PMD",0,0,600,"");
+  Node = new TNode("PMD","PMD","S_PMD",0,0,-600,"");
   Node->SetLineColor(kColorPMD);
   fNodes->Add(Node);
 }
