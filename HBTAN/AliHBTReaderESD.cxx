@@ -345,11 +345,14 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
            Error("ReadNext","Can not find track with such label.");
            continue;
          }
-        if(Pass(p->GetPdgCode())) 
+        if (fCheckParticlePID)
          {
-           if ( AliHBTParticle::GetDebug() > 5 )
-             Info("ReadNext","Simulated Particle PID (%d) did not pass the cut.",p->GetPdgCode());
-           continue; //check if we are intersted with particles of this type 
+           if(Pass(p->GetPdgCode())) 
+            {
+              if ( AliHBTParticle::GetDebug() > 5 )
+                Info("ReadNext","Simulated Particle PID (%d) did not pass the cut.",p->GetPdgCode());
+              continue; //check if we are intersted with particles of this type 
+            }
          }
 //           if(p->GetPdgCode()<0) charge = -1;
         particle = new AliHBTParticle(*p,i);
