@@ -41,20 +41,20 @@ public:
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, int * MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) ; //Used in UnfoldClusters, calls TMinuit
   void    FillOneModule(AliPHOSRecPoint::RecPointsList * emcIn, 
-			TObjArray * emcOut, 
+			TArrayI * emcOut, 
 			AliPHOSRecPoint::RecPointsList * ppsdIn, 
-			TObjArray * ppsdOutUp, 
-			TObjArray * ppsdOutLow, 
+			TArrayI * ppsdOutUp, 
+			TArrayI * ppsdOutLow, 
 			Int_t &PHOSModule, 
 			Int_t & emcStopedAt, 
 			Int_t & ppsdStopedAt) ; // Fills temporary arrais with clusters from one module  
   Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSPpsdRecPoint * Ppsd , Bool_t & TooFar ) ; // see R0
 
-  void    MakeLinks(TObjArray * EmcRecPoints, TObjArray * PpsdRecPointsUp, TObjArray * PpsdRecPointsLow, 
+  void    MakeLinks(TArrayI * EmcRecPoints, TArrayI * PpsdRecPointsUp, TArrayI * PpsdRecPointsLow, 
 		    TClonesArray * LinkLowArray, TClonesArray *LinkUpArray) ; //Evaluates distances(links) between EMC and PPSD
-  void    MakePairs(TObjArray * EmcRecPoints, 
-		    TObjArray * PpsdRecPointsUp, 
-		    TObjArray * PpsdRecPointsLow, 
+  void    MakePairs(TArrayI * EmcRecPoints, 
+		    TArrayI * PpsdRecPointsUp, 
+		    TArrayI * PpsdRecPointsLow, 
 		    TClonesArray * LinkLowArray, 
 		    TClonesArray * LinkUpArray, 
 		    AliPHOSTrackSegment::TrackSegmentsList * trsl) ; //Finds pairs(triplets) with smallest link

@@ -78,6 +78,7 @@ public:
     // sets the index value  of this in the list 
     fIndexInList = val ; 
   } 
+  void    SetPpsdUpRecPoint(AliPHOSPpsdRecPoint * PpsdUpRecPoint ); //sets PPSD up Rec Point
 
   typedef TClonesArray TrackSegmentsList ; 
  

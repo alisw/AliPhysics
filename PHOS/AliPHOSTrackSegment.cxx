@@ -516,4 +516,12 @@ void AliPHOSTrackSegment::Print(const char * opt)
    }
    
 }
+//____________________________________________________________________________
+void AliPHOSTrackSegment::SetPpsdUpRecPoint(AliPHOSPpsdRecPoint * PpsdUpRecPoint) 
+{
+  if( PpsdUpRecPoint )  
+    fPpsdUpRecPoint = PpsdUpRecPoint->GetIndexInList() ;
+ else 
+    fPpsdUpRecPoint = -1 ;
+}
 

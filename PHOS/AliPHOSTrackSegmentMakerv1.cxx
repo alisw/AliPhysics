@@ -52,7 +52,7 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
 {
   // ctor
 
-  fR0 = 4. ;   
+  fR0 = 10. ;   
   //clusters are sorted in "rows" and "columns" of width geom->GetCrystalSize(0),
   fDelta = fR0 + fGeom->GetCrystalSize(0) ;
   fMinuit = new TMinuit(100) ;
@@ -147,10 +147,10 @@ Bool_t  AliPHOSTrackSegmentMakerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * ma
 
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::FillOneModule(AliPHOSRecPoint::RecPointsList * emcIn, 
-						TObjArray * emcOut, 
+						TArrayI * emcOut, 
 						AliPHOSRecPoint::RecPointsList * ppsdIn, 
-						TObjArray * ppsdOutUp,
-						TObjArray * ppsdOutLow, 
+						TArrayI * ppsdOutUp,
+						TArrayI * ppsdOutLow, 
 						Int_t & phosmod, 
 						Int_t & emcStopedAt, 
 						Int_t & ppsdStopedAt)
@@ -162,6 +162,8 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(AliPHOSRecPoint::RecPointsList *
   Int_t index ;
   
   Int_t nEmcUnfolded = emcIn->GetEntries() ;
+  emcOut->Set(nEmcUnfolded);
+  Int_t inEmcOut = 0 ;
   for(index = emcStopedAt; index < nEmcUnfolded; index++){
 
     emcRecPoint = (AliPHOSEmcRecPoint *) emcIn->At(index) ;
@@ -169,24 +171,30 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule(AliPHOSRecPoint::RecPointsList *
     if(emcRecPoint->GetPHOSMod() != phosmod )  
       break ;
     
-    emcOut->Add(emcRecPoint) ;
+    emcOut->AddAt(emcRecPoint->GetIndexInList(),inEmcOut) ;
+    inEmcOut++ ; 
   }
+  emcOut->Set(inEmcOut) ;
+
   emcStopedAt = index ;
 
+  ppsdOutLow->Set(ppsdIn->GetEntries()) ;
+  ppsdOutUp->Set(ppsdIn->GetEntries()) ;
+  Int_t inPpsdLow = 0;
+  Int_t inPpsdUp = 0;
   for(index = ppsdStopedAt; index < ppsdIn->GetEntries(); index++){
     ppsdRecPoint = (AliPHOSPpsdRecPoint *) ppsdIn->At(index) ;
     if(ppsdRecPoint->GetPHOSMod() != phosmod )   
       break ;
     if(ppsdRecPoint->GetUp() ) 
-      ppsdOutUp->Add(ppsdRecPoint) ;
+      ppsdOutUp->AddAt(index,inPpsdUp++) ;
     else  
-      ppsdOutLow->Add(ppsdRecPoint) ;
+      ppsdOutLow->AddAt(index,inPpsdLow++) ;
   }
+  ppsdOutLow->Set(inPpsdLow);
+  ppsdOutUp->Set(inPpsdUp);
   ppsdStopedAt = index ;
    
-  emcOut->Sort() ;
-  ppsdOutUp->Sort() ;
-  ppsdOutLow->Sort() ;   
 }
 //____________________________________________________________________________
 Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * emcclu,AliPHOSPpsdRecPoint * PpsdClu, Bool_t &toofar)
@@ -223,66 +231,62 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::MakeLinks(TObjArray * emcRecPoints, TObjArray * ppsdRecPointsUp, 
-				     TObjArray * ppsdRecPointsLow, TClonesArray * linklowArray, 
+void  AliPHOSTrackSegmentMakerv1::MakeLinks(TArrayI * emcRecPoints, TArrayI * ppsdRecPointsUp, 
+				     TArrayI * ppsdRecPointsLow, TClonesArray * linklowArray, 
 				     TClonesArray *linkupArray) 
 { 
   // Finds distances (links) between all EMC and PPSD clusters, which are not further apart from each other than fR0 
   
-  TIter nextEmc(emcRecPoints) ;
-  Int_t iEmcClu = 0 ; 
   
   AliPHOSPpsdRecPoint * ppsdlow ; 
   AliPHOSPpsdRecPoint * ppsdup ;
   AliPHOSEmcRecPoint * emcclu ;
-  
+
   Int_t iLinkLow = 0 ;
   Int_t iLinkUp  = 0 ;
   
-  while( (emcclu = (AliPHOSEmcRecPoint*)nextEmc() ) ) {
+  Int_t iEmcRP;
+  
+  for(iEmcRP = 0; iEmcRP < emcRecPoints->GetSize(); iEmcRP++ ) {
+    emcclu = (AliPHOSEmcRecPoint *) fPlease->GimeRecPoint(emcRecPoints->At(iEmcRP),"emc") ;
     Bool_t toofar ;
-    TIter nextPpsdLow(ppsdRecPointsLow ) ;
-    Int_t iPpsdLow = 0 ;
     
-    while( (ppsdlow = (AliPHOSPpsdRecPoint*)nextPpsdLow() ) ) { 
+    Int_t iPpsdLow ;
+    
+    for(iPpsdLow = 0; iPpsdLow < ppsdRecPointsLow->GetSize();iPpsdLow++ ) {
+      
+      ppsdlow = (AliPHOSPpsdRecPoint *) fPlease->GimeRecPoint(ppsdRecPointsLow->At(iPpsdLow),"ppsd") ;
       Float_t r = GetDistanceInPHOSPlane(emcclu, ppsdlow, toofar) ;
       
       if(toofar) 
 	break ;	 
       if(r < fR0){
-	new( (*linklowArray)[iLinkLow++]) AliPHOSLink(r, iEmcClu, iPpsdLow) ;
-     }
-      iPpsdLow++ ;
-      
+	new( (*linklowArray)[iLinkLow++]) AliPHOSLink(r, iEmcRP, iPpsdLow) ;
+      }
     }
     
-    TIter nextPpsdUp(ppsdRecPointsUp ) ;
-    Int_t iPpsdUp = 0 ;
-    
-    while( (ppsdup = (AliPHOSPpsdRecPoint*)nextPpsdUp() ) ) { 
+    Int_t iPpsdUp = 0 ;    
+    for(iPpsdUp = 0; iPpsdUp < ppsdRecPointsUp->GetSize();iPpsdUp++ ) { 
+      
+      ppsdup = (AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdRecPointsUp->At(iPpsdUp),"ppsd") ;
       Float_t r = GetDistanceInPHOSPlane(emcclu, ppsdup, toofar) ;
       
       if(toofar)
 	break ;	 
       if(r < fR0) { 
-	new( (*linkupArray)[iLinkUp++]) AliPHOSLink(r, iEmcClu, iPpsdUp) ;
-      }
-      iPpsdUp++ ;
-      
+	new( (*linkupArray)[iLinkUp++]) AliPHOSLink(r, iEmcRP, iPpsdUp) ;
+      }      
     }
-    
-    iEmcClu++ ; 
-    
-  } // while nextEmC
+  } 
   
   linklowArray->Sort() ; //first links with smallest distances
   linkupArray->Sort() ;
 }
-    
+
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::MakePairs(TObjArray * emcRecPoints, 
-					    TObjArray * ppsdRecPointsUp, 
-					    TObjArray * ppsdRecPointsLow, 
+void  AliPHOSTrackSegmentMakerv1::MakePairs(TArrayI * emcRecPoints, 
+					    TArrayI * ppsdRecPointsUp, 
+					    TArrayI * ppsdRecPointsLow, 
 					    TClonesArray * linklowArray, 
 					    TClonesArray * linkupArray, 
 					    AliPHOSTrackSegment::TrackSegmentsList * trsl) 
@@ -296,66 +300,69 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TObjArray * emcRecPoints,
   AliPHOSLink * linkLow ;
   AliPHOSLink * linkUp ;
 
-  AliPHOSEmcRecPoint * emc ;
-  AliPHOSPpsdRecPoint * ppsdLow ;
-  AliPHOSPpsdRecPoint * ppsdUp ;
+  Int_t emc ;
+  Int_t ppsdLow ;
+  Int_t ppsdUp ;
 
-  AliPHOSRecPoint * nullpointer = 0 ;
+  AliPHOSPpsdRecPoint * nullpointer = 0 ;
+  ppsdUp = 0 ;
 
   while ( (linkLow =  (AliPHOSLink *)nextLow() ) ){
-    emc = (AliPHOSEmcRecPoint *) emcRecPoints->At(linkLow->GetEmc()) ;
-    ppsdLow = (AliPHOSPpsdRecPoint *) ppsdRecPointsLow->At(linkLow->GetPpsd()) ;
-    if( (emc) && (ppsdLow) ){ // RecPoints not removed yet 
-	 ppsdUp = 0 ;
-	 
-	 while ( (linkUp =  (AliPHOSLink *)nextUp() ) ){  
-	   if(linkLow->GetEmc() == linkUp->GetEmc() ){
-	     ppsdUp = (AliPHOSPpsdRecPoint *) ppsdRecPointsUp->At(linkUp->GetPpsd()) ;
-	     break ;
-	   }
-	
-	 } // while nextUp
-	 
-	 nextUp.Reset();
-//          AliPHOSTrackSegment * subtr = new AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
-// 	 trsl->Add(subtr) ; 
-	 fNTrackSegments = trsl->GetEntries() ; 
-	 new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
-	 fNTrackSegments++ ;
-	 emcRecPoints->AddAt(nullpointer,linkLow->GetEmc()) ;	  
-	 ppsdRecPointsLow->AddAt(nullpointer,linkLow->GetPpsd()) ;
-	 
-	 if(ppsdUp)  
-	   ppsdRecPointsUp->AddAt(nullpointer,linkUp->GetPpsd()) ;
-	 
+  
+    emc = emcRecPoints->At(linkLow->GetEmc()) ;
+    ppsdLow = ppsdRecPointsLow->At(linkLow->GetPpsd()) ;
+    if( (emc >= 0) && (ppsdLow >= 0) ){    // RecPoints not removed yet 
+
+      new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment((AliPHOSEmcRecPoint *)fPlease->GimeRecPoint(emc,"emc"), 
+							  nullpointer, 
+							  (AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdLow,"ppsd") ) ;
+      ((AliPHOSTrackSegment* )trsl->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);    
+      //replace index of emc to negative and shifted index of TS      
+      emcRecPoints->AddAt(-2 - fNTrackSegments,linkLow->GetEmc()) ;  
+      //replace index of emc to negative and shifted index of TS      
+      ppsdRecPointsLow->AddAt(-2 - fNTrackSegments,linkLow->GetPpsd()) ; 
+      fNTrackSegments++ ;
+
     } 
   } 
-   
-  TIter nextEmc(emcRecPoints) ;          
-  nextEmc.Reset() ;
+	 
+  while ( (linkUp =  (AliPHOSLink *)nextUp() ) ){  
+    emc = emcRecPoints->At(linkUp->GetEmc()) ;
+    if(emc != -1){ //without ppsd Up yet 
 
-  while( (emc = (AliPHOSEmcRecPoint*)nextEmc()) ){ //to create pairs if no ppsdlow
-    ppsdLow = 0 ; 
-    ppsdUp  = 0 ;
-    
-    while ( (linkUp =  (AliPHOSLink *)nextUp() ) ){
-      
-      if(emcRecPoints->IndexOf(emc) == linkUp->GetEmc() ){
-	ppsdUp = (AliPHOSPpsdRecPoint *) ppsdRecPointsUp->At(linkUp->GetPpsd()) ;
-	break ;
+      ppsdUp = ppsdRecPointsUp->At(linkUp->GetPpsd()) ;
+
+      if(emc >= 0){ //without ppsd Low => create new TS
+
+	fNTrackSegments = trsl->GetEntries() ; 
+	new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment((AliPHOSEmcRecPoint *) fPlease->GimeRecPoint(emc,"emc"), 
+							    (AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdUp,"ppsd"), 
+							    nullpointer) ;
+	((AliPHOSTrackSegment *) trsl->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);
+	fNTrackSegments++ ;
       }
+      else{ // append ppsd Up to existing TS
+	((AliPHOSTrackSegment *)trsl->At(-2-emc))->SetPpsdUpRecPoint((AliPHOSPpsdRecPoint *)fPlease->GimeRecPoint(ppsdUp,"ppsd"));
+      }
+      emcRecPoints->AddAt(-1,linkUp->GetEmc()) ; //Mark that PPSD Up found 
       
+    } 
+  }	 
+
+  Int_t iEmcRP ;
+  for(iEmcRP = 0; iEmcRP <emcRecPoints->GetSize() ; iEmcRP++ ){
+    emc = emcRecPoints->At(iEmcRP) ;
+    if(emc >=0 ){
+      ppsdUp = 0;
+      ppsdLow = 0;
+      new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment((AliPHOSEmcRecPoint *) fPlease->GimeRecPoint(emc,"emc"), 
+							  nullpointer, nullpointer ) ;
+      ((AliPHOSTrackSegment *) trsl->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);
+      fNTrackSegments++;    
     }
-
-    fNTrackSegments = trsl->GetEntries() ; 
-    new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
-    fNTrackSegments++ ;
     
-
-    if(ppsdUp)  
-      ppsdRecPointsUp->AddAt(nullpointer,linkUp->GetPpsd()) ;
   }
-     
+  
 }
 
 //____________________________________________________________________________
@@ -369,18 +376,23 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl,
   Int_t phosmod      = 1 ;
   Int_t emcStopedAt  = 0 ; 
   Int_t ppsdStopedAt = 0 ; 
+
+  fNTrackSegments = 0 ; 
+
   
-  TObjArray * emcRecPoints     = new TObjArray(100) ;  // these arrays keep pointers 
-  TObjArray * ppsdRecPointsUp  = new TObjArray(100) ;  // to RecPoints, which are 
-  TObjArray * ppsdRecPointsLow = new TObjArray(100) ;  // kept in TClonesArray's emcl and ppsdl
+  TArrayI * emcRecPoints     = new TArrayI(1000) ;  // these arrays keep indexes 
+  TArrayI * ppsdRecPointsUp  = new TArrayI(1000) ;  // of RecPoints, which are 
+  TArrayI * ppsdRecPointsLow = new TArrayI(1000) ;  // kept in TClonesArray's emcl and ppsdl
   
   
   TClonesArray * linklowArray = new TClonesArray("AliPHOSLink", 100);
   TClonesArray * linkupArray  = new TClonesArray("AliPHOSLink", 100); 
 
+
   if(fUnfoldFlag){
     UnfoldAll(dl, emcl) ; // Unfolds all EMC clusters
   }
+
 
   while(phosmod <= fGeom->GetNModules() ){
     
@@ -390,11 +402,11 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl,
     
     MakePairs(emcRecPoints, ppsdRecPointsUp, ppsdRecPointsLow, linklowArray, linkupArray, trsl) ;
     
-    emcRecPoints->Clear() ;
+    emcRecPoints->Reset() ;
     
-    ppsdRecPointsUp->Clear() ;
+    ppsdRecPointsUp->Reset() ;
     
-    ppsdRecPointsLow->Clear() ;
+    ppsdRecPointsLow->Reset() ;
     
     linkupArray->Clear() ;
     
@@ -402,6 +414,7 @@ void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl,
     
     phosmod++ ; 
   }
+
   delete emcRecPoints ; 
   emcRecPoints = 0 ; 
   
@@ -464,11 +477,13 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldAll(DigitsList * dl, AliPHOSRecPoint::Re
   emcIn->Sort() ;
 
   // to set index to new and correct index of old RecPoints
-  for( index = 0 ; index < emcIn->GetEntriesFast() ; index++){
+  for( index = 0 ; index < emcIn->GetEntries() ; index++){
     
     ((AliPHOSEmcRecPoint *) emcIn->At(index))->SetIndexInList(index) ;   
     
   }
+
+  emcIn->Sort() ;
 
 }
 //____________________________________________________________________________
@@ -543,8 +558,10 @@ void  AliPHOSTrackSegmentMakerv1::UnfoldClusters(DigitsList * dl,
     epar = fitparameters[iparam+2] ;
     iparam += 3 ;
 
-   (*emcIn)[iRecPoint] = new AliPHOSEmcRecPoint( iniEmc->GetLogWeightCut(), iniEmc->GetLocMaxCut() ) ;
-
+    if(iRecPoint >= emcIn->GetSize())
+      emcIn->Expand(2*iRecPoint) ;
+    (*emcIn)[iRecPoint] = new AliPHOSEmcRecPoint( iniEmc->GetLogWeightCut(), iniEmc->GetLocMaxCut() ) ;
+    
     emcRP = (AliPHOSEmcRecPoint *) emcIn->At(iRecPoint);
     iRecPoint++ ;
 
