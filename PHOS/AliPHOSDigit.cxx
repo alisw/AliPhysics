@@ -128,6 +128,11 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
   
 }
 //____________________________________________________________________________
+void AliPHOSDigit::Print(Option_t *option) const
+{
+  printf("PHOS digit: Amp=%d, Id=%d\n",fAmp,fId);
+}
+//____________________________________________________________________________
 void AliPHOSDigit::ShiftPrimary(Int_t shift)
 {
   //shifts primary number to BIG offset, to separate primary in different TreeK

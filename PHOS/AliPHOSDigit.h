@@ -47,6 +47,7 @@ class AliPHOSDigit : public AliDigitNew {
   Bool_t  IsSortable() const { 
     // says that AliPHOSDigits are sortable (needed for Sort method
     return kTRUE ; }
+  void    Print(Option_t *option) const;
   void    SetAmp(Int_t Amp) { 
     // sets the amplitude data member 
     fAmp=Amp ; } 
