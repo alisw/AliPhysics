@@ -32,7 +32,7 @@
 #include "AliDetector.h"
 #include "AliDisplay.h"
 #include "AliPoints.h"
-#include "GParticle.h"
+#include "TParticle.h"
 
 const Float_t ptcutmax  = 2;
 const Float_t etacutmax = 1.5;
@@ -258,12 +258,12 @@ void AliDisplay::ShowTrack(Int_t idx) {
 //       fPad->Update();
 //       fPad->Modified();
          TClonesArray *particles=gAlice->Particles();
-         GParticle *p = (GParticle*)particles->UncheckedAt(idx);
+         TParticle *p = (TParticle*)particles->UncheckedAt(idx);
          printf("\nTrack index %d\n",idx);
-         printf("Particle ID %d\n",p->GetKF());
-         printf("Parent %d\n",p->GetParent());
-         printf("First child %d\n",p->GetFirstChild());
-         printf("Px,Py,Pz %f %f %f\n",p->GetPx(),p->GetPy(),p->GetPz());
+         printf("Particle ID %d\n",p->GetPdgCode());
+         printf("Parent %d\n",p->GetFirstMother());
+         printf("First child %d\n",p->GetFirstDaughter());
+         printf("Px,Py,Pz %f %f %f\n",p->Px(),p->Py(),p->Pz());
          return;
       }
    }
@@ -463,7 +463,7 @@ void AliDisplay::DrawHits()
    Float_t cutmin, cutmax, etamin, etamax, pmom, smin, smax, eta, theta, r;
    Float_t *pxyz;
    Int_t ntracks,track;
-   GParticle *particle;
+   TParticle *particle;
    TObjArray *points;
    AliPoints *pm;
       
@@ -495,7 +495,7 @@ void AliDisplay::DrawHits()
          if (!pm) continue;
          particle = pm->GetParticle();
          if (!particle) continue;
-         pmom = particle->GetMomentum();
+         pmom = particle->P();
          if (pmom < cutmin) continue;
          if (pmom > cutmax) continue;
          // as a first approximation, take eta of first point

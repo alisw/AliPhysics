@@ -297,7 +297,7 @@ class AliMUONlist : public AliMUONdigit {
 class AliMUONhit : public AliHit {
  public:
     Int_t     fChamber;       // Chamber number
-    Float_t   fParticle;      // Geant3 particle type
+    Int_t     fParticle;      // PDG particle type
     Float_t   fTheta ;        // Incident theta angle in degrees      
     Float_t   fPhi   ;        // Incident phi angle in degrees
     Float_t   fTlength;       // Track length inside the chamber

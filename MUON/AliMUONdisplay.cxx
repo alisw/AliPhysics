@@ -36,7 +36,7 @@
 #include "AliMUONConst.h"
 #include "AliMUONdisplay.h"
 #include "AliMUONpoints.h"
-#include "GParticle.h"
+#include "TParticle.h"
 
 
 ClassImp(AliMUONdisplay)

@@ -7,7 +7,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <stdlib.h>
-#include <TMCParticle.h>
+#include <TParticle.h>
 
 ClassImp(AliGenParam)
 
@@ -202,12 +202,11 @@ void AliGenParam::Generate()
 	      }
 	  }
 	  
-	  Int_t kg=fPythia->GetGeantCode(Ipart);
 //
 // parent
 
 	  gAlice->
-	      SetTrack(0,-1,kg,p,origin,polar,0,"Primary",nt,wgtp);
+	      SetTrack(0,-1,Ipart,p,origin,polar,0,"Primary",nt,wgtp);
 	  Int_t iparent=nt;
 //
 // use lujet to decay particle
@@ -218,22 +217,22 @@ void AliGenParam::Generate()
 	  
 //
 // select muons
-	  TObjArray* particles = fPythia->GetPrimaries() ;
+	  TObjArray* particles = fPythia->ImportParticles() ;
 	  Int_t np = particles->GetEntriesFast();
 	  for (Int_t i = 0; i<np; i++) {
-	      TMCParticle *  iparticle = (TMCParticle *) particles->At(i);
-	      Int_t kf = iparticle->GetKF();
+	      TParticle *  iparticle = (TParticle *) particles->At(i);
+	      Int_t kf = iparticle->GetPdgCode();
 //
 // children
 	      if (ChildSelected(TMath::Abs(kf)))
 	      {
-		  p[0]=iparticle->GetPx();
-		  p[1]=iparticle->GetPy();
-		  p[2]=iparticle->GetPz();
-		  origin[0]=origin0[0]+iparticle->GetVx()/10;
-		  origin[1]=origin0[1]+iparticle->GetVy()/10;
-		  origin[2]=origin0[2]+iparticle->GetVz()/10;
-		  gAlice->SetTrack(fTrackIt,iparent,fPythia->GetGeantCode(kf),
+		  p[0]=iparticle->Px();
+		  p[1]=iparticle->Py();
+		  p[2]=iparticle->Pz();
+		  origin[0]=origin0[0]+iparticle->Vx()/10;
+		  origin[1]=origin0[1]+iparticle->Vy()/10;
+		  origin[2]=origin0[2]+iparticle->Vz()/10;
+		  gAlice->SetTrack(fTrackIt,iparent,kf,
 				   p,origin,polar,
   				   0,"Decay",nt,wgtch);
 		  gAlice->KeepTrack(nt);
@@ -253,11 +252,11 @@ Bool_t AliGenParam::ChildSelected(Int_t ip)
     return kFALSE;
 }
 
-Bool_t AliGenParam::KinematicSelection(TMCParticle *particle)
+Bool_t AliGenParam::KinematicSelection(TParticle *particle)
 {
-    Float_t px=particle->GetPx();
-    Float_t py=particle->GetPy();
-    Float_t pz=particle->GetPz();
+    Float_t px=particle->Px();
+    Float_t py=particle->Py();
+    Float_t pz=particle->Pz();
 //
 // momentum cut
     Float_t p=TMath::Sqrt(px*px+py*py+pz*pz);

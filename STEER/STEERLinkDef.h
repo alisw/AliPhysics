@@ -13,7 +13,6 @@
 #pragma link C++ class  AliRun-;
 #pragma link C++ class  AliModule-;
 #pragma link C++ class  AliDetector-;
-#pragma link C++ class  GParticle;
 #pragma link C++ class  AliDigit;
 #pragma link C++ class  AliHit;
 #pragma link C++ class  AliHeader;

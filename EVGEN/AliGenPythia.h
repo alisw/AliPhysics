@@ -10,7 +10,7 @@
 #include "TTree.h"
 #include "AliPythia.h"
 #include "TArrayI.h"
-#include "TMCParticle.h"
+#include "TParticle.h"
 
 class AliGenPythia : public AliGenerator
 {
@@ -34,7 +34,7 @@ class AliGenPythia : public AliGenerator
     // check if particle is selected as child particle
     Bool_t ChildSelected(Int_t ip);
     // all kinematic selection cuts go here 
-    Bool_t KinematicSelection(TMCParticle *particle);
+    Bool_t KinematicSelection(TParticle *particle);
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
  public:

@@ -726,7 +726,7 @@ ClassImp(AliMUONhit)
 	AliHit(shunt, track)
 {
     fChamber=vol[0];
-    fParticle=hits[0];
+    fParticle=(Int_t) hits[0];
     fX=hits[1];
     fY=hits[2];
     fZ=hits[3];

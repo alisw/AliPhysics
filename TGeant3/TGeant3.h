@@ -421,7 +421,11 @@ private:
   Gckin3_t *fGckin3; 
   Gctrak_t *fGctrak; 
 
+  enum {kMaxParticles = 100};
 
+  Int_t fNPDGCodes;
+
+  Int_t fPDGCode[kMaxParticles];
 
 public: 
   TGeant3(); 
@@ -444,6 +448,9 @@ public:
   Int_t CurrentVol(Text_t *name, Int_t &copy) const;
   Int_t CurrentVolOff(Int_t off, Text_t *name, Int_t &copy) const;
   Int_t VolId(Text_t *name) const;
+  Int_t IdFromPDG(Int_t pdg) const;
+  Int_t PDGFromId(Int_t pdg) const;
+  void  DefineParticles();
   const char* VolName(Int_t id) const;
   void  TrackPosition(Float_t *xyz) const;
   void  TrackMomentum(Float_t *xyz) const;  
@@ -472,7 +479,7 @@ public:
   void  SetMaxStep(Float_t maxstep);
   void  SetMaxNStep(Int_t maxnstp);
   Int_t GetMaxNStep() const;
-  void GetParticle(const Int_t ipart, char *name, Float_t &mass) const;
+  void GetParticle(const Int_t pdg, char *name, Float_t &mass) const;
   virtual Int_t GetMedium() const;
   virtual Float_t Edep() const;
   virtual Float_t Etot() const;
@@ -578,6 +585,7 @@ public:
    virtual  void  Gsxyz(); 
    virtual  void  Gtrack(); 
    virtual  void  Gtreve(); 
+   virtual  void  Gtreve_root(); 
    virtual  void  Grndm(Float_t *rvec, const Int_t len) const; 
    virtual  void  Grndmq(Int_t &is1, Int_t &is2, const Int_t iseq, const Text_t *chopt); 
  

@@ -9,7 +9,7 @@ PACKAGE = STEER
 
 # C++ sources
 
-SRCS          = AliDetector.cxx  AliHeader.cxx    AliMagF.cxx GParticle.cxx \
+SRCS          = AliDetector.cxx  AliHeader.cxx    AliMagF.cxx \
                 AliDigit.cxx     AliHit.cxx       AliPoints.cxx \
                 AliDisplay.cxx   AliMC.cxx        AliRun.cxx AliGenerator.cxx \
 		AliLego.cxx AliModule.cxx

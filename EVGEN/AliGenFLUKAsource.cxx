@@ -2,6 +2,8 @@
 #include "AliGenMUONlib.h"
 #include "AliMC.h"
 #include "AliRun.h"
+#include "AliConst.h"
+
 #include <TDirectory.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -114,8 +116,12 @@ void AliGenFLUKAsource::Generate()
 
   AliMC* pMC = AliMC::GetMC();
 
-  const Int_t ifluge[28]={14, 15, 3, 2, 4, 4, 1, 13, 25, 5, 6, 10, 8, 9,
-                         11, 12,18, 26, 16, 21, 19, 20, 7, 16,16,0,0,0};
+  const Int_t ifluge[28]={kProton, kProtonBar, kElectron, kPositron,
+			  kNuE, kNuEBar, kGamma, kNeutron, kNeutronBar,
+			  kMuonPlus, kMuonMinus, kK0Long , kPiPlus, kPiMinus,
+			  kKPlus, kKMinus, kLambda0, kLambda0Bar, kK0Short,
+			  kSigmaMinus, kSigmaPlus, kSigma0, kPi0, kK0, kK0Bar,
+			  0,kNuMu,kNuMuBar};
   Float_t polar[3]= {0,0,0};
   //
   Float_t origin[3];

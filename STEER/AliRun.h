@@ -6,12 +6,16 @@
 #include <TStopwatch.h>
 #include <TTree.h>
 #include <TGeometry.h>
+#include <TDatabasePDG.h>
+
 #include "AliDetector.h"
 #include "AliHeader.h"
 #include "AliMagF.h"
 #include "AliMC.h"
 #include "AliGenerator.h"
 #include "AliLego.h"
+
+enum {Keep_Bit=1, Daughters_Bit=2, Done_Bit=4};
 
 enum {kMaxModules = 25, kLenModuleName=7};
 
@@ -49,6 +53,7 @@ protected:
   Int_t        *fIdtmed;       //Array to contain media numbers
   Bool_t        fInitDone;     //true when initialisation done
   AliLego      *fLego;         //pointer to aliLego object if it exists
+  TDatabasePDG *fPDGDB;        //Particle factory object!
   
 public:
    // Creators - distructors
@@ -110,7 +115,7 @@ public:
    virtual  void  SetDisplay(AliDisplay *display) {fDisplay = display;}
    virtual  void  StepManager(Int_t id) const;
    virtual  void  SetField(Int_t type=2, Int_t version=1, Float_t scale=1, Float_t maxField=10, char*filename="$(ALICE_ROOT)/data/field01.dat");
-   virtual  void  SetTrack(Int_t done, Int_t parent, Int_t ipart, 
+   virtual  void  SetTrack(Int_t done, Int_t parent, Int_t pdg, 
   			       Float_t *pmom, Float_t *vpos, Float_t *polar, 
                                Float_t tof, const char *mecha, Int_t &ntr,
                                Float_t weight=1);
@@ -124,6 +129,7 @@ public:
    virtual  void SetGenerator(AliGenerator *generator);
    virtual  void EnergySummary();
    virtual  Int_t* Idtmed() {return fIdtmed;}
+   virtual  const TDatabasePDG* PDGDB() const {return fPDGDB;}
 
   // Functions from GEOCAD
   //_______________________________________________________________________

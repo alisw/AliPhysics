@@ -15,6 +15,7 @@
 #include "TROOT.h" 
 #include "THIGZ.h" 
 #include "ctype.h" 
+#include <TDatabasePDG.h>
 #include "AliCallf77.h" 
  
 #ifndef WIN32 
@@ -57,6 +58,7 @@
 # define gsxyz   gsxyz_ 
 # define gtrack  gtrack_ 
 # define gtreve  gtreve_ 
+# define gtreve_root  gtreve_root_ 
 # define grndm   grndm_ 
 # define grndmq  grndmq_ 
 # define gdtom   gdtom_ 
@@ -147,6 +149,7 @@
 # define gsxyz   GSXYZ 
 # define gtrack  GTRACK 
 # define gtreve  GTREVE 
+# define gtreve_root  GTREVE_ROOT
 # define grndm   GRNDM
 # define grndmq  GRNDMQ
 # define gdtom   GDTOM 
@@ -267,6 +270,8 @@ extern "C"
   void type_of_call gtrack(); 
 
   void type_of_call gtreve(); 
+
+  void type_of_call gtreve_root(); 
 
   void type_of_call grndm(Float_t *, const Int_t &); 
 
@@ -414,7 +419,7 @@ static Int_t defSize = 600;
 ClassImp(TGeant3) 
  
 //____________________________________________________________________________ 
-TGeant3::TGeant3() : AliMC()
+TGeant3::TGeant3()
 { 
   //
   // Default constructor
@@ -439,6 +444,9 @@ TGeant3::TGeant3(const char *title, Int_t nwgeant)
   //
   // Load Address of Geant3 commons    
   LoadAddress(); 
+  //
+  // Zero number of particles
+  fNPDGCodes=0;
 } 
 
 //____________________________________________________________________________ 
@@ -595,6 +603,282 @@ Int_t TGeant3::CurrentVolOff(Int_t off, Text_t *name, Int_t &copy) const
     else printf("CurrentVolOff: Volume %s not found in bank\n",name);
   }
   return 0;
+}
+
+//_____________________________________________________________________________
+Int_t TGeant3::IdFromPDG(Int_t pdg) const 
+{
+  //
+  // Return Geant3 code from PDG and pseudo ENDF code
+
+  for(Int_t i=0;i<fNPDGCodes;++i)
+    if(pdg==fPDGCode[i]) return i;
+  return -1;
+}
+
+//_____________________________________________________________________________
+Int_t TGeant3::PDGFromId(Int_t id) const 
+{
+  if(id>0 && id<fNPDGCodes) return fPDGCode[id];
+  else return -1;
+}
+
+//_____________________________________________________________________________
+void TGeant3::DefineParticles() 
+{
+  //
+  // Define standard Geant 3 particles
+  Gpart();
+  //
+  // Load standard numbers for GEANT particles and PDG conversion
+  fPDGCode[fNPDGCodes++]=-99;   //  0 = unused location
+  fPDGCode[fNPDGCodes++]=22;    //  1 = photon
+  fPDGCode[fNPDGCodes++]=-11;   //  2 = positron
+  fPDGCode[fNPDGCodes++]=11;    //  3 = electron
+  fPDGCode[fNPDGCodes++]=12;    //  4 = neutrino e
+  fPDGCode[fNPDGCodes++]=-13;   //  5 = muon +
+  fPDGCode[fNPDGCodes++]=13;    //  6 = muon -
+  fPDGCode[fNPDGCodes++]=111;   //  7 = pi0
+  fPDGCode[fNPDGCodes++]=211;   //  8 = pi+
+  fPDGCode[fNPDGCodes++]=-211;  //  9 = pi-
+  fPDGCode[fNPDGCodes++]=130;   // 10 = Kaon Long
+  fPDGCode[fNPDGCodes++]=321;   // 11 = Kaon +
+  fPDGCode[fNPDGCodes++]=-321;  // 12 = Kaon -
+  fPDGCode[fNPDGCodes++]=2112;  // 13 = Neutron
+  fPDGCode[fNPDGCodes++]=2212;  // 14 = Proton
+  fPDGCode[fNPDGCodes++]=-2212; // 15 = Anti Proton
+  fPDGCode[fNPDGCodes++]=310;   // 16 = Kaon Short
+  fPDGCode[fNPDGCodes++]=221;   // 17 = Eta
+  fPDGCode[fNPDGCodes++]=3122;  // 18 = Lambda
+  fPDGCode[fNPDGCodes++]=3222;  // 19 = Sigma +
+  fPDGCode[fNPDGCodes++]=3212;  // 20 = Sigma 0
+  fPDGCode[fNPDGCodes++]=3112;  // 21 = Sigma -
+  fPDGCode[fNPDGCodes++]=3322;  // 22 = Xi0
+  fPDGCode[fNPDGCodes++]=3312;  // 23 = Xi-
+  fPDGCode[fNPDGCodes++]=3334;  // 24 = Omega-
+  fPDGCode[fNPDGCodes++]=-2112; // 25 = Anti Proton
+  fPDGCode[fNPDGCodes++]=-3122; // 26 = Anti Proton
+  fPDGCode[fNPDGCodes++]=-3222; // 27 = Anti Sigma -
+  fPDGCode[fNPDGCodes++]=-3212; // 28 = Anti Sigma 0
+  fPDGCode[fNPDGCodes++]=-3112; // 29 = Anti Sigma 0
+  fPDGCode[fNPDGCodes++]=-3322; // 30 = Anti Xi 0
+  fPDGCode[fNPDGCodes++]=-3312; // 31 = Anti Xi +
+  fPDGCode[fNPDGCodes++]=-3334; // 32 = Anti Omega +
+
+
+  Int_t mode[6];
+  Int_t kz, ipa;
+  Float_t bratio[6];
+
+  /* --- Define additional particles */
+  Gspart(33, "OMEGA(782)", 3, 0.782, 0., 7.836e-23);
+  fPDGCode[fNPDGCodes++]=223;   // 33 = Omega(782)
+  
+  Gspart(34, "PHI(1020)", 3, 1.019, 0., 1.486e-22);
+  fPDGCode[fNPDGCodes++]=333;   // 34 = PHI (1020)
+
+  Gspart(35, "D +", 4, 1.87, 1., 1.066e-12);
+  fPDGCode[fNPDGCodes++]=411;   // 35 = D+
+
+  Gspart(36, "D -", 4, 1.87, -1., 1.066e-12);
+  fPDGCode[fNPDGCodes++]=-411;  // 36 = D-
+
+  Gspart(37, "D 0", 3, 1.865, 0., 4.2e-13);
+  fPDGCode[fNPDGCodes++]=421;   // 37 = D0
+
+  Gspart(38, "ANTI D 0", 3, 1.865, 0., 4.2e-13);
+  fPDGCode[fNPDGCodes++]=-421;  // 38 = D0 bar
+
+  fPDGCode[fNPDGCodes++]=-99;  // 39 = unassigned
+
+  fPDGCode[fNPDGCodes++]=-99;  // 40 = unassigned
+
+  fPDGCode[fNPDGCodes++]=-99;  // 41 = unassigned
+
+  Gspart(42, "RHO +", 4, 0.768, 1., 4.353e-24);
+  fPDGCode[fNPDGCodes++]=213;   // 42 = RHO+
+
+  Gspart(43, "RHO -", 4, 0.768, -1., 4.353e-24);
+  fPDGCode[fNPDGCodes++]=-213;   // 40 = RHO-
+
+  Gspart(44, "RHO 0", 3, 0.768, 0., 4.353e-24);
+  fPDGCode[fNPDGCodes++]=113;   // 37 = D0
+
+  //
+  // Use ENDF-6 mapping for ions = 10000*z+10*a+iso
+  // and add 1 000 000
+  // and numbers above 5 000 000 for special applications
+  //
+
+  const Int_t kion=10000000;
+
+  const Int_t kspe=50000000;
+
+  TDatabasePDG *pdgDB = TDatabasePDG::Instance();
+
+  const Double_t autogev=0.9314943228;
+  const Double_t hslash = 1.0545726663e-27;
+  const Double_t erggev = 1/1.6021773349e-3;
+  const Double_t hshgev = hslash*erggev;
+  const Double_t yearstosec = 3600*24*365.25;
+
+
+  pdgDB->AddParticle("Deuteron","Deuteron",2*autogev+8.071e-3,kTRUE,
+		     0,1,"Ion",kion+10020);
+  fPDGCode[fNPDGCodes++]=kion+10020;   // 45 = Deuteron
+
+  pdgDB->AddParticle("Triton","Triton",3*autogev+14.931e-3,kFALSE,
+		     hshgev/(12.33*yearstosec),1,"Ion",kion+10030);
+  fPDGCode[fNPDGCodes++]=kion+10030;   // 46 = Triton
+
+  pdgDB->AddParticle("Alpha","Alpha",4*autogev+2.424e-3,kTRUE,
+		     hshgev/(12.33*yearstosec),2,"Ion",kion+20040);
+  fPDGCode[fNPDGCodes++]=kion+20040;   // 47 = Alpha
+
+  fPDGCode[fNPDGCodes++]=0;   // 48 = geantino mapped to rootino
+
+  pdgDB->AddParticle("HE3","HE3",3*autogev+14.931e-3,kFALSE,
+		     0,2,"Ion",kion+20030);
+  fPDGCode[fNPDGCodes++]=kion+20030;   // 49 = HE3
+
+  pdgDB->AddParticle("Cherenkov","Cherenkov",0,kFALSE,
+		     0,0,"Special",kspe+50);
+  fPDGCode[fNPDGCodes++]=kspe+50;   // 50 = Cherenkov
+
+/* --- Define additional decay modes --- */
+/* --- omega(783) --- */
+    for (kz = 0; kz < 6; ++kz) {
+	bratio[kz] = 0.;
+	mode[kz] = 0;
+    }
+    ipa = 33;
+    bratio[0] = 89.;
+    bratio[1] = 8.5;
+    bratio[2] = 2.5;
+    mode[0] = 70809;
+    mode[1] = 107;
+    mode[2] = 908;
+    Gsdk(ipa, bratio, mode);
+/* --- phi(1020) --- */
+    for (kz = 0; kz < 6; ++kz) {
+	bratio[kz] = 0.;
+	mode[kz] = 0;
+    }
+    ipa = 34;
+    bratio[0] = 49.;
+    bratio[1] = 34.4;
+    bratio[2] = 12.9;
+    bratio[3] = 2.4;
+    bratio[4] = 1.3;
+    mode[0] = 1112;
+    mode[1] = 1610;
+    mode[2] = 4407;
+    mode[3] = 90807;
+    mode[4] = 1701;
+    Gsdk(ipa, bratio, mode);
+/* --- D+ --- */
+    for (kz = 0; kz < 6; ++kz) {
+	bratio[kz] = 0.;
+	mode[kz] = 0;
+    }
+    ipa = 35;
+    bratio[0] = 25.;
+    bratio[1] = 25.;
+    bratio[2] = 25.;
+    bratio[3] = 25.;
+    mode[0] = 80809;
+    mode[1] = 120808;
+    mode[2] = 111208;
+    mode[3] = 110809;
+    Gsdk(ipa, bratio, mode);
+/* --- D- --- */
+    for (kz = 0; kz < 6; ++kz) {
+	bratio[kz] = 0.;
+	mode[kz] = 0;
+    }
+    ipa = 36;
+    bratio[0] = 25.;
+    bratio[1] = 25.;
+    bratio[2] = 25.;
+    bratio[3] = 25.;
+    mode[0] = 90908;
+    mode[1] = 110909;
+    mode[2] = 121109;
+    mode[3] = 120908;
+    Gsdk(ipa, bratio, mode);
+/* --- D0 --- */
+    for (kz = 0; kz < 6; ++kz) {
+	bratio[kz] = 0.;
+	mode[kz] = 0;
+    }
+    ipa = 37;
+    bratio[0] = 33.;
+    bratio[1] = 33.;
+    bratio[2] = 33.;
+    mode[0] = 809;
+    mode[1] = 1208;
+    mode[2] = 1112;
+    Gsdk(ipa, bratio, mode);
+/* --- Anti D0 --- */
+    for (kz = 0; kz < 6; ++kz) {
+	bratio[kz] = 0.;
+	mode[kz] = 0;
+    }
+    ipa = 38;
+    bratio[0] = 33.;
+    bratio[1] = 33.;
+    bratio[2] = 33.;
+    mode[0] = 809;
+    mode[1] = 1109;
+    mode[2] = 1112;
+    Gsdk(ipa, bratio, mode);
+/* --- rho+ --- */
+    for (kz = 0; kz < 6; ++kz) {
+	bratio[kz] = 0.;
+	mode[kz] = 0;
+    }
+    ipa = 42;
+    bratio[0] = 100.;
+    mode[0] = 807;
+    Gsdk(ipa, bratio, mode);
+/* --- rho- --- */
+    for (kz = 0; kz < 6; ++kz) {
+	bratio[kz] = 0.;
+	mode[kz] = 0;
+    }
+    ipa = 43;
+    bratio[0] = 100.;
+    mode[0] = 907;
+    Gsdk(ipa, bratio, mode);
+/* --- rho0 --- */
+    for (kz = 0; kz < 6; ++kz) {
+	bratio[kz] = 0.;
+	mode[kz] = 0;
+    }
+    ipa = 44;
+    bratio[0] = 100.;
+    mode[0] = 707;
+    Gsdk(ipa, bratio, mode);
+    /*
+// --- jpsi ---
+    for (kz = 0; kz < 6; ++kz) {
+	bratio[kz] = 0.;
+	mode[kz] = 0;
+    }
+    ipa = 113;
+    bratio[0] = 50.;
+    bratio[1] = 50.;
+    mode[0] = 506;
+    mode[1] = 605;
+    Gsdk(ipa, bratio, mode);
+// --- upsilon --- 
+    ipa = 114;
+    Gsdk(ipa, bratio, mode);
+// --- phi --- 
+    ipa = 115;
+    Gsdk(ipa, bratio, mode);
+    */
+
 }
 
 //_____________________________________________________________________________
@@ -1088,8 +1372,16 @@ void TGeant3::Matrix(Int_t& krot, Float_t thex, Float_t phix, Float_t they,
 }
 
 //_____________________________________________________________________________
-void TGeant3::GetParticle(const Int_t ipart, char *name, Float_t &mass) const
+void TGeant3::GetParticle(const Int_t pdg, char *name, Float_t &mass) const
 {
+  Int_t ipart = IdFromPDG(pdg);
+  if(ipart<0) {
+    printf("Particle %d not in geant\n",pdg);
+    name=new char[7];
+    strcpy(name,"Unknown");
+    mass=-1;
+    return;
+  }
   //
   // Return name and mass of particle code ipart
   // Geant321 conventions
@@ -1702,6 +1994,15 @@ void  TGeant3::Gtreve()
   //   Controls tracking of all particles belonging to the current event
   //
   gtreve(); 
+} 
+
+//_____________________________________________________________________________
+void  TGeant3::Gtreve_root() 
+{ 
+  //
+  //   Controls tracking of all particles belonging to the current event
+  //
+  gtreve_root(); 
 } 
 
 //_____________________________________________________________________________
@@ -2957,13 +3258,18 @@ void TGeant3::SetTRIG(Int_t nevents)
 }
  
 //_____________________________________________________________________________
-void TGeant3::SetUserDecay(Int_t ipart)
+void TGeant3::SetUserDecay(Int_t pdg)
 {
   //
   // Force the decays of particles to be done with Pythia
   // and not with the Geant routines. 
   // just kill pointers doing mzdrop
   //
+  Int_t ipart = IdFromPDG(pdg);
+  if(ipart<0) {
+    printf("Particle %d not in geant\n",pdg);
+    return;
+  }
   Int_t jpart=fGclink->jpart;
   Int_t jpa=fZlq[jpart-ipart];
   //
@@ -3462,10 +3768,14 @@ void TGeant3::Streamer(TBuffer &R__b)
     Version_t R__v = R__b.ReadVersion(); if (R__v) { }
     AliMC::Streamer(R__b);
     R__b >> fNextVol;
+    R__b >> fNPDGCodes;
+    R__b.ReadStaticArray(fPDGCode);
   } else {
     R__b.WriteVersion(TGeant3::IsA());
     AliMC::Streamer(R__b);
     R__b << fNextVol;
+    R__b << fNPDGCodes;
+    R__b.WriteArray(fPDGCode, fNPDGCodes);
   }
 }
 

@@ -613,7 +613,7 @@ void AliRICH::StepManager()
 	stwght = geant3->Gctrak()->upwght;
 	geant3->Gctrak()->upwght = (Float_t) sNphoton;
 	geant3->Gskpho(i);
-	gAlice->SetTrack(0, gAlice->CurrentTrack(), 50, 
+	gAlice->SetTrack(0, gAlice->CurrentTrack(), 20000050, 
 			 &geant3->Gckin2()->xphot[i-1][3],geant3->Gckin2()->xphot[i-1],
 			 polar,geant3->Gctrak()->tofg,"Cherenkov", ncher);
 	sMckov[sNphoton - 1] = ncher;

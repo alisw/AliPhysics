@@ -1,5 +1,4 @@
 #include "AliDigit.h"
-#include "GParticle.h"
  
 ClassImp(AliDigit)
 

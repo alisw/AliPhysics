@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////
 
 #include "TMath.h"
-#include "TGeant3.h"
+#include "AliLego.h"
 #include "AliRun.h"
 #include "AliConst.h"
 
@@ -70,7 +70,9 @@ void AliLego::GenerateKinematics()
 // Create a geantino with kinematics corresponding to the current
 // bins in theta and phi.
    
-   const Int_t mpart = 48;
+  //
+  // Rootinos are 0
+   const Int_t mpart = 0;
    Float_t orig[3], pmom[3];
    Float_t t, cost, sint, cosp, sinp;
    
@@ -192,7 +194,7 @@ void AliLego::Run()
          pMC->Gtrigi();
          pMC->Gtrigc();
          GenerateKinematics();
-         pMC->Gtreve();
+         pMC->Gtreve_root();
 
          thed = fCurTheta*kRaddeg;
          phid = fCurPhi*kRaddeg;

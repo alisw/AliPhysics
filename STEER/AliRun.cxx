@@ -27,13 +27,11 @@
 #include <TRandom.h>
 #include <TBRIK.h> 
 #include <TNode.h> 
-#include <AliMC.h> 
 #include <TCint.h> 
 #include <TSystem.h>
 
-#include "GParticle.h"
+#include "TParticle.h"
 #include "AliRun.h"
-#include "AliModule.h"
 #include "AliDisplay.h"
 
 #include "AliCallf77.h" 
@@ -52,21 +50,17 @@ static AliHeader *header;
 # define rxstrak rxstrak_
 # define rxkeep  rxkeep_ 
 # define rxouth  rxouth_
-# define sxpart  sxpart_
 #else
 
 # define rxgtrak RXGTRAK 
 # define rxstrak RXSTRAK 
 # define rxkeep  RXKEEP  
 # define rxouth  RXOUTH
-# define sxpart  SXPART
 #endif
 
 static TArrayF sEventEnergy;
 static TArrayF sSummEnergy;
 static TArrayF sSum2Energy;
-
-extern "C" void type_of_call sxpart();
 
 ClassImp(AliRun)
 
@@ -99,6 +93,7 @@ AliRun::AliRun()
   fIdtmed    = 0;
   fInitDone  = kFALSE;
   fLego      = 0;
+  fPDGDB     = 0;        //Particle factory object!
 }
 
 //_____________________________________________________________________________
@@ -144,7 +139,7 @@ AliRun::AliRun(const char *name, const char *title)
   fEvent     = 0;
   //
   // Create the particle stack
-  fParticles = new TClonesArray("GParticle",100);
+  fParticles = new TClonesArray("TParticle",100);
   
   fDisplay = 0;
   //
@@ -184,6 +179,9 @@ AliRun::AliRun(const char *name, const char *title)
   for(i=0;i<1000;i++) (*fImedia)[i]=-99;
   fIdtmed = new Int_t[fNdets*100];
   for(i=0;i<fNdets*100;i++) fIdtmed[i]=0;
+  //
+  // Make particles
+  fPDGDB     = TDatabasePDG::Instance();        //Particle factory object!
 }
 
 //_____________________________________________________________________________
@@ -298,16 +296,16 @@ void AliRun::CleanParents()
 {
   //
   // Clean Particles stack.
-  // Set parent/child relations
+  // Set parent/daughter relations
   //
   TClonesArray &particles = *(gAlice->Particles());
-  GParticle *part;
+  TParticle *part;
   int i;
   for(i=0; i<fNtrack; i++) {
-    part = (GParticle *)particles.UncheckedAt(i);
-    if(!part->TestBit(Children_Bit)) {
-      part->SetFirstChild(-1);
-      part->SetLastChild(-1);
+    part = (TParticle *)particles.UncheckedAt(i);
+    if(!part->TestBit(Daughters_Bit)) {
+      part->SetFirstDaughter(-1);
+      part->SetLastDaughter(-1);
     }
   }
 }
@@ -329,7 +327,7 @@ void AliRun::DumpPart (Int_t i)
   // Dumps particle i in the stack
   //
   TClonesArray &particles = *fParticles;
-  ((GParticle*) particles[i])->Dump();
+  ((TParticle*) particles[i])->Print();
 }
 
 //_____________________________________________________________________________
@@ -343,7 +341,7 @@ void AliRun::DumpPStack ()
 	 "\n\n=======================================================================\n");
   for (Int_t i=0;i<fNtrack;i++) 
     {
-      printf("-> %d ",i); ((GParticle*) particles[i])->Dump();
+      printf("-> %d ",i); ((TParticle*) particles[i])->Print();
       printf("--------------------------------------------------------------\n");
     }
   printf(
@@ -516,11 +514,11 @@ void AliRun::FlagTrack(Int_t track)
   // Flags a track and all its family tree to be kept
   //
   int curr;
-  GParticle *particle;
+  TParticle *particle;
 
   curr=track;
   while(1) {
-    particle=(GParticle*)fParticles->UncheckedAt(curr);
+    particle=(TParticle*)fParticles->UncheckedAt(curr);
     
     // If the particle is flagged the three from here upward is saved already
     if(particle->TestBit(Keep_Bit)) return;
@@ -529,7 +527,7 @@ void AliRun::FlagTrack(Int_t track)
     particle->SetBit(Keep_Bit);
     
     // Move to father if any
-    if((curr=particle->GetParent())==-1) return;
+    if((curr=particle->GetFirstMother())==-1) return;
   }
 }
  
@@ -736,26 +734,28 @@ void AliRun::GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
   //
   // Return next track from stack of particles
   //
+  const TVector3 *pol;
   fCurrent=-1;
-  GParticle *track;
+  TParticle *track;
   for(Int_t i=fNtrack-1; i>=0; i--) {
-    track=(GParticle*) fParticles->UncheckedAt(i);
+    track=(TParticle*) fParticles->UncheckedAt(i);
     if(!track->TestBit(Done_Bit)) {
       //
       // The track has not yet been processed
       fCurrent=i;
-      ipart=track->GetKF();
-      pmom[0]=track->GetPx();
-      pmom[1]=track->GetPy(); 
-      pmom[2]=track->GetPz();
-      e     =track->GetEnergy();
-      vpos[0]=track->GetVx();
-      vpos[1]=track->GetVy();
-      vpos[2]=track->GetVz();
-      polar[0]=track->GetPolx();
-      polar[1]=track->GetPoly();
-      polar[2]=track->GetPolz();
-      tof=track->GetTime();
+      ipart=track->GetPdgCode();
+      pmom[0]=track->Px();
+      pmom[1]=track->Py(); 
+      pmom[2]=track->Pz();
+      e     =track->Energy();
+      vpos[0]=track->Vx();
+      vpos[1]=track->Vy();
+      vpos[2]=track->Vz();
+      pol = track->GetPolarisation();
+      polar[0]=pol->X();
+      polar[1]=pol->Y();
+      polar[2]=pol->Z();
+      tof=track->T();
       track->SetBit(Done_Bit);
       break;
     }
@@ -767,8 +767,8 @@ void AliRun::GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
   if (fCurrent >= nprimaries) return;
   if (fCurrent < nprimaries-1) {
     fTimer.Stop();
-    track=(GParticle*) fParticles->UncheckedAt(fCurrent+1);
-    track->SetProcessTime(fTimer.CpuTime());
+    track=(TParticle*) fParticles->UncheckedAt(fCurrent+1);
+    //    track->SetProcessTime(fTimer.CpuTime());
   }
   fTimer.Start();
 }
@@ -780,13 +780,13 @@ Int_t AliRun::GetPrimary(Int_t track)
   // return number of primary that has generated track
   //
   int current, parent;
-  GParticle *part;
+  TParticle *part;
   //
   parent=track;
   while (1) {
     current=parent;
-    part = (GParticle *)fParticles->UncheckedAt(current);
-    parent=part->GetParent();
+    part = (TParticle *)fParticles->UncheckedAt(current);
+    parent=part->GetFirstMother();
     if(parent<0) return current;
   }
 }
@@ -803,8 +803,7 @@ void AliRun::Init(const char *setup)
 
   AliMC* pMC = AliMC::GetMC();
 
-  pMC->Gpart();  //Create standard Geant particles
-  sxpart();        //Define additional particles
+  pMC->DefineParticles();  //Create standard MC particles
 
   TObject *objfirst, *objlast;
 
@@ -1072,7 +1071,7 @@ void AliRun::PurifyKine()
   //
   TClonesArray &particles = *fParticles;
   int nkeep=fHgwmk+1, parent, i;
-  GParticle *part, *partnew, *father;
+  TParticle *part, *partnew, *father;
   AliHit *OneHit;
   int *map = new int[particles.GetEntries()];
 
@@ -1084,7 +1083,7 @@ void AliRun::PurifyKine()
     if(i<=fHgwmk) map[i]=i ; else map[i] = -99 ;}
   // Second pass, build map between old and new numbering
   for(i=fHgwmk+1; i<fNtrack; i++) {
-    part = (GParticle *)particles.UncheckedAt(i);
+    part = (TParticle *)particles.UncheckedAt(i);
     if(part->TestBit(Keep_Bit)) {
       
       // This particle has to be kept
@@ -1092,35 +1091,35 @@ void AliRun::PurifyKine()
       if(i!=nkeep) {
 	
 	// Old and new are different, have to copy
-	partnew = (GParticle *)particles.UncheckedAt(nkeep);
+	partnew = (TParticle *)particles.UncheckedAt(nkeep);
 	*partnew = *part;
       } else partnew = part;
       
       // as the parent is always *before*, it must be already
       // in place. This is what we are checking anyway!
-      if((parent=partnew->GetParent())>fHgwmk) {
+      if((parent=partnew->GetFirstMother())>fHgwmk) {
 	if(map[parent]==-99) printf("map[%d] = -99!\n",parent);
-	partnew->SetParent(map[parent]);
+	partnew->SetFirstMother(map[parent]);
       }
       nkeep++;
     }
   }
   fNtrack=nkeep;
   
-  // Fix children information
+  // Fix daughters information
   for (i=fHgwmk+1; i<fNtrack; i++) {
-    part = (GParticle *)particles.UncheckedAt(i);
-    parent = part->GetParent();
-    father = (GParticle *)particles.UncheckedAt(parent);
-    if(father->TestBit(Children_Bit)) {
+    part = (TParticle *)particles.UncheckedAt(i);
+    parent = part->GetFirstMother();
+    father = (TParticle *)particles.UncheckedAt(parent);
+    if(father->TestBit(Daughters_Bit)) {
       
-      if(i<father->GetFirstChild()) father->SetFirstChild(i);
-      if(i>father->GetLastChild())  father->SetLastChild(i);
+      if(i<father->GetFirstDaughter()) father->SetFirstDaughter(i);
+      if(i>father->GetLastDaughter())  father->SetLastDaughter(i);
     } else {
-      // Iitialise children info for first pass
-      father->SetFirstChild(i);
-      father->SetLastChild(i);
-      father->SetBit(Children_Bit);
+      // Iitialise daughters info for first pass
+      father->SetFirstDaughter(i);
+      father->SetLastDaughter(i);
+      father->SetBit(Daughters_Bit);
     }
   }
   
@@ -1305,7 +1304,7 @@ void AliRun::SetCurrentTrack(Int_t track)
 }
  
 //_____________________________________________________________________________
-void AliRun::SetTrack(Int_t done, Int_t parent, Int_t ipart, Float_t *pmom,
+void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 		      Float_t *vpos, Float_t *polar, Float_t tof,
 		      const char *mecha, Int_t &ntr, Float_t weight)
 { 
@@ -1315,7 +1314,7 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t ipart, Float_t *pmom,
   // done     0 if the track has to be transported
   //          1 if not
   // parent   identifier of the parent track. -1 for a primary
-  // ipart    particle code
+  // pdg    particle code
   // pmom     momentum GeV/c
   // vpos     position 
   // polar    polarisation 
@@ -1324,32 +1323,40 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t ipart, Float_t *pmom,
   // ntr      on output the number of the track stored
   //
   TClonesArray &particles = *fParticles;
-  GParticle *particle;
+  TParticle *particle;
   Float_t mass;
-  char pname[21];
-  const Int_t firstchild=-1;
-  const Int_t lastchild=-1;
+  const Int_t firstdaughter=-1;
+  const Int_t lastdaughter=-1;
   const Int_t KS=0;
-  const Float_t tlife=0;
+  //  const Float_t tlife=0;
   
-  AliMC::GetMC()->GetParticle(ipart,pname,mass);
+  //
+  // Here we get the static mass
+  // For MC is ok, but a more sophisticated method could be necessary
+  // if the calculated mass is required
+  // also, this method is potentially dangerous if the mass
+  // used in the MC is not the same of the PDG database
+  //
+  mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
   Float_t e=TMath::Sqrt(mass*mass+pmom[0]*pmom[0]+
 			pmom[1]*pmom[1]+pmom[2]*pmom[2]);
   
   //printf("Loading particle %s mass %f ene %f No %d ip %d pos %f %f %f mom %f %f %f KS %d m %s\n",
-  //pname,mass,e,fNtrack,ipart,vpos[0],vpos[1],vpos[2],pmom[0],pmom[1],pmom[2],KS,mecha);
+  //pname,mass,e,fNtrack,pdg,vpos[0],vpos[1],vpos[2],pmom[0],pmom[1],pmom[2],KS,mecha);
   
-  particle=new(particles[fNtrack]) GParticle(KS,ipart,parent,firstchild,
-					     lastchild,pmom[0],pmom[1],pmom[2],
-					     e,mass,vpos[0],vpos[1],vpos[2],
-					     polar[0],polar[1],polar[2],tof,
-					     tlife,mecha,weight);
+  particle=new(particles[fNtrack]) TParticle(pdg,KS,parent,-1,firstdaughter,
+					     lastdaughter,pmom[0],pmom[1],pmom[2],
+					     e,vpos[0],vpos[1],vpos[2],tof);
+  //					     polar[0],polar[1],polar[2],tof,
+  //					     mecha,weight);
+  ((TParticle*)particles[fNtrack])->SetPolarisation(TVector3(polar[0],polar[1],polar[2]));
+  ((TParticle*)particles[fNtrack])->SetWeight(weight);
   if(!done) particle->SetBit(Done_Bit);
   
   if(parent>=0) {
-    particle=(GParticle*) fParticles->UncheckedAt(parent);
-    particle->SetLastChild(fNtrack);
-    if(particle->GetFirstChild()<0) particle->SetFirstChild(fNtrack);
+    particle=(TParticle*) fParticles->UncheckedAt(parent);
+    particle->SetLastDaughter(fNtrack);
+    if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
   } else { 
     //
     // This is a primary track. Set high water mark for this event
@@ -1369,7 +1376,7 @@ void AliRun::KeepTrack(const Int_t track)
   // flags a track to be kept
   //
   TClonesArray &particles = *fParticles;
-  ((GParticle*)particles[track])->SetBit(Keep_Bit);
+  ((TParticle*)particles[track])->SetBit(Keep_Bit);
 }
  
 //_____________________________________________________________________________
@@ -1672,6 +1679,7 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b >> fTrRmax;
     R__b >> fTrZmax;
     R__b >> fGenerator;
+    R__b >> fPDGDB;        //Particle factory object!
   } else {
     R__b.WriteVersion(AliRun::IsA());
     TNamed::Streamer(R__b);
@@ -1687,6 +1695,7 @@ void AliRun::Streamer(TBuffer &R__b)
     R__b << fTrRmax;
     R__b << fTrZmax;
     R__b << fGenerator;
+    R__b << fPDGDB;        //Particle factory object!
   }
 } 
 
@@ -1714,7 +1723,9 @@ extern "C" void type_of_call  rxgtrak (Int_t &mtrack, Int_t &ipart, Float_t *pmo
   //      tof     Particle time of flight in seconds
   //
   Float_t polar[3];
-  gAlice->GetNextTrack(mtrack, ipart, pmom, e, vpos, polar, tof);
+  Int_t pdg;
+  gAlice->GetNextTrack(mtrack, pdg, pmom, e, vpos, polar, tof);
+  ipart = gMC->IdFromPDG(pdg);
   mtrack++;
 }
 
@@ -1753,7 +1764,8 @@ rxstrak (Int_t &keep, Int_t &parent, Int_t &ipart, Float_t *pmom,
   Float_t polar[3]={0.,0.,0.};
   for(int i=0; i<10 && i<cmlen; i++) mecha[i]=cmech[i];
   mecha[10]=0;
-  gAlice->SetTrack(keep, parent-1, ipart, pmom, vpos, polar, tof, mecha, ntr);
+  Int_t pdg=gMC->PDGFromId(ipart);
+  gAlice->SetTrack(keep, parent-1, pdg, pmom, vpos, polar, tof, mecha, ntr);
   ntr++;
 }
 
@@ -1769,7 +1781,7 @@ extern "C" void type_of_call  rxkeep(const Int_t &n)
       exit(1);
     }
   
-  ((GParticle*)(gAlice->Particles()->UncheckedAt(n-1)))->SetBit(Keep_Bit);
+  ((TParticle*)(gAlice->Particles()->UncheckedAt(n-1)))->SetBit(Keep_Bit);
 }
 
 //_____________________________________________________________________________

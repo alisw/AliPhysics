@@ -8,7 +8,7 @@
 #include "TArrayF.h"
 #include "TArrayI.h"
 #include "TTree.h"
-#include "TMCParticle.h"
+#include "TParticle.h"
 
 //-------------------------------------------------------------
 class AliGenParam : public AliGenerator
@@ -33,7 +33,7 @@ protected:
     // check if particle is selected as child
     Bool_t ChildSelected(Int_t ip);
     // all kinematic selection goes here
-    Bool_t KinematicSelection(TMCParticle *particle);
+    Bool_t KinematicSelection(TParticle *particle);
  public:
   AliGenParam();
   AliGenParam(Int_t npart, Param_t param);

@@ -1,6 +1,6 @@
 #ifndef _AliDimuCombinator_H
 #define _AliDimuCombinator_H
-#include "GParticle.h"
+#include "TParticle.h"
 #include <TBrowser.h>
 #include <TList.h>
 #include <TTree.h>
@@ -32,17 +32,17 @@ public:
 //    
 //  Iterators
 //  Single muons
-    GParticle* FirstMuon();
-    GParticle* NextMuon();
+    TParticle* FirstMuon();
+    TParticle* NextMuon();
 //  Single muons selected
-    GParticle* FirstMuonSelected();
-    GParticle* NextMuonSelected();
+    TParticle* FirstMuonSelected();
+    TParticle* NextMuonSelected();
 //  Dimuons    
-    void FirstMuonPair(GParticle* & muon1, GParticle* & muon2);
-    void NextMuonPair(GParticle* & muon1, GParticle* & muon2);
+    void FirstMuonPair(TParticle* & muon1, TParticle* & muon2);
+    void NextMuonPair(TParticle* & muon1, TParticle* & muon2);
 //  Dimuons selected    
-    void FirstMuonPairSelected(GParticle* & muon1, GParticle* & muon2);
-    void NextMuonPairSelected(GParticle* & muon1, GParticle* & muon2);
+    void FirstMuonPairSelected(TParticle* & muon1, TParticle* & muon2);
+    void NextMuonPairSelected(TParticle* & muon1, TParticle* & muon2);
 //  Loop over all prticles    
     void ResetRange();
 //  Set two ranges for dimuon loop    
@@ -50,32 +50,32 @@ public:
     void SetSecondRange(Int_t from, Int_t to);    
 //  Cuts
     void SetPtMin(Float_t ptmin) {fPtMin=ptmin;}
-    void SetEtaCut(Float_t etamin, Float_t etamax){fEtaMin=etamin; fEtaMax=etamax;}      Bool_t Selected(GParticle* part);
-    Bool_t Selected(GParticle* part1, GParticle* part2);
+    void SetEtaCut(Float_t etamin, Float_t etamax){fEtaMin=etamin; fEtaMax=etamax;}      Bool_t Selected(TParticle* part);
+    Bool_t Selected(TParticle* part1, TParticle* part2);
 // Kinematics
-    Float_t Mass(GParticle* part1, GParticle* part);
-    Float_t PT(GParticle* part1, GParticle* part);
-    Float_t Pz(GParticle* part1, GParticle* part);
-    Float_t Y(GParticle* part1, GParticle* part);
+    Float_t Mass(TParticle* part1, TParticle* part);
+    Float_t PT(TParticle* part1, TParticle* part);
+    Float_t Pz(TParticle* part1, TParticle* part);
+    Float_t Y(TParticle* part1, TParticle* part);
 // Response
     void SmearGauss(Float_t width, Float_t & value);
 // Weight
-    Bool_t  Correlated(GParticle* part1, GParticle* part2);
+    Bool_t  Correlated(TParticle* part1, TParticle* part2);
     void    SetRate(Float_t rate){fRate1=rate;}
     void    SetRate(Float_t rate1, Float_t rate2 ){fRate1=rate1; fRate2=rate2;}
-    Float_t Weight(GParticle* part);
-    Float_t Weight(GParticle* part1, GParticle* part);
-    Float_t Decay_Prob(GParticle* part);
+    Float_t Weight(TParticle* part);
+    Float_t Weight(TParticle* part1, TParticle* part);
+    Float_t Decay_Prob(TParticle* part);
     
  private:
     void FirstPartner();
     void NextPartner();
     void FirstPartnerSelected();
     void NextPartnerSelected();
-    Int_t Origin(GParticle* part);
-    GParticle* Parent(GParticle* part);
-    GParticle* Partner();
-    Int_t Type(GParticle *part){return part->GetKF();}
+    Int_t Origin(TParticle* part);
+    TParticle* Parent(TParticle* part);
+    TParticle* Partner();
+    Int_t Type(TParticle *part){return part->GetPdgCode();}
 private:
     TClonesArray *fPartArray;
     Int_t fNParticle;
@@ -87,8 +87,8 @@ private:
     Int_t fimax2;
     Float_t fRate1;
     Float_t fRate2;
-    GParticle *fmuon1;
-    GParticle *fmuon2;
+    TParticle *fmuon1;
+    TParticle *fmuon2;
     Float_t fPtMin;
     Float_t fEtaMin;
     Float_t fEtaMax;

@@ -33,6 +33,9 @@ Int_t   TGeant3::NofVolumes() const {return 0;}
 Int_t   TGeant3::CurrentVolOff(Int_t, Text_t*, Int_t&) const {return 0;}
 void    TGeant3::TrackPosition(Float_t*) const {}
 void    TGeant3::TrackMomentum(Float_t*) const {}
+Int_t   TGeant3::IdFromPDG(Int_t pdg) const {return -1;}
+Int_t   TGeant3::PDGFromId(Int_t pdg) const {return -1;}
+void    TGeant3::DefineParticles() {}
 Int_t   TGeant3::VolId(Text_t*) const {return 0;}
 const char*   TGeant3::VolName(Int_t ) const {return 0;}
 Float_t TGeant3::TrackCharge() const {return 0;}
@@ -135,6 +138,7 @@ void  TGeant3::Gsstak(Int_t) {}
 void  TGeant3::Gsxyz() {}
 void  TGeant3::Gtrack() {}
 void  TGeant3::Gtreve() {}
+void  TGeant3::Gtreve_root() {}
 void  TGeant3::Grndm(Float_t*, const Int_t) const {}
 void  TGeant3::Grndmq(Int_t&, Int_t&, const Int_t, const Text_t*) {}
 

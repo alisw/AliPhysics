@@ -488,7 +488,7 @@ void gustep()
       ipp = Int_t (geant3->Gcking()->gkin[jk][4]+0.5);
       // --- Skip neutrinos! 
       if (ipp != 4) {
-	gAlice->SetTrack(1,gAlice->CurrentTrack(),ipp, geant3->Gcking()->gkin[jk], 
+	gAlice->SetTrack(1,gAlice->CurrentTrack(),gMC->PDGFromId(ipp), geant3->Gcking()->gkin[jk], 
 			 geant3->Gckin3()->gpos[jk], polar,geant3->Gctrak()->tofg, chproc, nt);
       }
     }

@@ -77,7 +77,7 @@ void AliPoints::DumpParticle()
   //
   //   Dump particle corresponding to this point
   //
-  GParticle *particle = GetParticle();
+  TParticle *particle = GetParticle();
   if (particle) particle->Dump();
 }
 
@@ -106,7 +106,7 @@ const Text_t *AliPoints::GetName() const
   //
   // Return name of the Geant3 particle corresponding to this point
   //
-  GParticle *particle = GetParticle();
+  TParticle *particle = GetParticle();
   if (!particle) return "Particle";
   return particle->GetName();
 }
@@ -125,7 +125,7 @@ Text_t *AliPoints::GetObjectInfo(Int_t, Int_t)
 }
 
 //_____________________________________________________________________________
-GParticle *AliPoints::GetParticle() const
+TParticle *AliPoints::GetParticle() const
 {
   //
   //   Returns pointer to particle index in AliRun::fParticles
@@ -133,7 +133,7 @@ GParticle *AliPoints::GetParticle() const
   TClonesArray *particles = gAlice->Particles();
   Int_t nparticles = particles->GetEntriesFast();
   if (fIndex < 0 || fIndex >= nparticles) return 0;
-  return (GParticle*)particles->UncheckedAt(fIndex);
+  return (TParticle*)particles->UncheckedAt(fIndex);
 }
 
 //_____________________________________________________________________________
@@ -142,7 +142,7 @@ void AliPoints::InspectParticle()
   //
   //   Inspect particle corresponding to this point
   //
-  GParticle *particle = GetParticle();
+  TParticle *particle = GetParticle();
   if (particle) particle->Inspect();
 }
 

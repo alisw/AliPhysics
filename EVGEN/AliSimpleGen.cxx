@@ -20,6 +20,7 @@
 
 #include "AliSimpleGen.h"
 #include "AliRun.h"
+#include "AliConst.h"
 
 ClassImp(AliGenHIJINGpara)
 
@@ -205,16 +206,8 @@ void AliGenHIJINGpara::Generate()
   const Float_t borne=1/(1+raKpic);
   Float_t polar[3]= {0,0,0};
   //
-  const Int_t pi0=7;
-  const Int_t piplus=8;
-  const Int_t piminus=9;
-  const Int_t k0l=10;
-  const Int_t k0s=16;
-  const Int_t kplus=11;
-  const Int_t kminus=12;
-  //
-  const Int_t pions[3] = {pi0, piplus, piminus};
-  const Int_t kaons[4] = {k0l, k0s, kplus, kminus};
+  const Int_t pions[3] = {kPi0, kPiPlus, kPiMinus};
+  const Int_t kaons[4] = {kK0Long, kK0Short, kKPlus, kKMinus};
   //
   Float_t origin[3];
   Float_t pt, pl, ptot;
@@ -293,7 +286,7 @@ AliGenFixed::AliGenFixed(Int_t npart)
   fName="Fixed";
   fTitle="Fixed Particle Generator";
   // Generate Proton by default
-  fIpart=14;
+  fIpart=kProton;
 }
 
 //_____________________________________________________________________________
@@ -345,7 +338,7 @@ AliGenBox::AliGenBox(Int_t npart)
   fName="Box";
   fTitle="Box particle generator";
   // Generate Proton by default
-  fIpart=14;
+  fIpart=kProton;
 }
 
 //_____________________________________________________________________________

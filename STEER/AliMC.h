@@ -28,6 +28,9 @@ public:
   virtual Int_t   CurrentVolOff(Int_t, Text_t*, Int_t& ) const =0;
   virtual Int_t   NofVolumes() const =0;
   virtual Int_t   VolId(Text_t*) const =0;
+  virtual Int_t   IdFromPDG(Int_t) const =0;
+  virtual Int_t   PDGFromId(Int_t) const =0;
+  virtual void    DefineParticles() = 0;
   virtual void    TrackPosition(Float_t*) const =0;
   virtual void    TrackMomentum(Float_t*) const =0;
   virtual Float_t TrackCharge() const =0;
@@ -102,12 +105,12 @@ public:
   virtual  void  Gdhead(Int_t, const char*, Float_t=0)=0;   
   virtual  void  Gdman(Float_t, Float_t, const char*)=0;
   virtual  void  Gsord(const char *name, Int_t iax)=0;
-  virtual  void  Gpart()=0;
   virtual  void  Ggclos()=0;
   virtual  void  SetColors()=0;
   virtual  void  Gphysi()=0;
   virtual  void  Gtrigi()=0;
   virtual  void  Gtreve()=0;
+  virtual  void  Gtreve_root()=0;
   virtual  void  Gtrigc()=0;
   virtual  void  Gtrig()=0;
   virtual  void  Gckmat(Int_t, char*)=0;

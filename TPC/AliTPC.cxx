@@ -22,7 +22,7 @@
 #include <TNode.h>
 #include <TTUBS.h>
 #include <TObjectTable.h>
-#include "GParticle.h"
+#include "TParticle.h"
 #include "AliTPC.h"
 #include "AliRun.h"
 #include <iostream.h>
@@ -885,7 +885,7 @@ void AliTPC::Hits2Clusters()
   AliTPCParam * fTPCParam = &(fDigParam->GetParam());
   Float_t sigma_rphi,sigma_z,cl_rphi,cl_z;
   //
-  GParticle *particle; // pointer to a given particle
+  TParticle *particle; // pointer to a given particle
   AliTPChit *tpcHit; // pointer to a sigle TPC hit
   TClonesArray *Particles; //pointer to the particle list
   Int_t sector,nhits;
@@ -938,9 +938,9 @@ void AliTPC::Hits2Clusters()
 	sector=tpcHit->fSector; // sector number
 	if(sector != isec) continue; //terminate iteration
 	ipart=tpcHit->fTrack;
-	particle=(GParticle*)Particles->UncheckedAt(ipart);
-	pl=particle->GetPz();
-	pt=particle->GetPT();
+	particle=(TParticle*)Particles->UncheckedAt(ipart);
+	pl=particle->Pz();
+	pt=particle->Pt();
 	if(pt < 1.e-9) pt=1.e-9;
 	tanth=pl/pt;
 	tanth = TMath::Abs(tanth);
