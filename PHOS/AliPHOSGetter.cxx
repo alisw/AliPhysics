@@ -1684,109 +1684,20 @@ void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
 //____________________________________________________________________________ 
 void AliPHOSGetter::ReadPrimaries()
 {
+  // a lot simplified.... if 2 files are opened then we have a problem
 
-  
-  // Read the first entry of PHOS branch in hit tree gAlice->TreeH()
-  TTree * particleTree = gAlice->TreeK()  ; 
-  if( ! particleTree ){
-    cerr <<   "ERROR: AliPHOSGetter::ReadTreePrimaries: -> Cannot read TreeK " << endl ;
-    return ;
-  }
-  
-  TBranch * particlesbranch = static_cast<TBranch*>(particleTree->GetBranch("Particles")) ;
-  if ( !particlesbranch ) {
-    if (fDebug)
-      cout << "WARNING:  AliPHOSGetter::ReadTreePrimaries -> Cannot find branch Particles" << endl ; 
-    return ;
-  }
-
-  TParticle * particle = 0; 
-  TClonesArray * ar ; 
+  TClonesArray * ar = 0  ; 
   if(! (ar = Primaries()) ) { 
     PostPrimaries() ;
     ar = Primaries() ; 
   }
   ar->Delete() ; 
-  particlesbranch->SetAddress(&particle) ;
   
+  fNPrimaries = gAlice->GetNtrack() ; 
   Int_t index = 0 ; 
-  for (index = 0 ; index < particleTree->GetEntries(); index++) { 
-    particlesbranch->GetEntry(index) ;
-    new ((*ar)[index]) TParticle(*particle);
+  for (index = 0 ; index < fNPrimaries; index++) { 
+    new ((*ar)[index]) TParticle(*(Primary(index)));
   }
-  fNPrimaries= ar->GetEntries() ; 
-  
-  // Reads specific branches of primaries
-  // fNPrimaries = gAlice->GetNtrack();
-  
-  //Check, is it necessary to open new files
- //  TArrayI* events = fDigitizer->GetCurrentEvents() ; 
-//   TClonesArray * filenames = fDigitizer->GetHeadersFiles() ;
-//   Int_t input ;
-//   for(input = 0; input < filenames->GetEntriesFast(); input++){
-    
-//     TObjString * filename = (TObjString *) filenames->At(input) ;
-
-//     //Test, if this file already open
-//     TFile *file = (TFile*) gROOT->GetFile( filename->GetString() ) ;
-//     if(file == 0)
-//       file = new TFile( filename->GetString()) ;
-//     file->cd() ;
-    
-//     // Get Kine Tree from file
-//     char treeName[20];
-//     sprintf(treeName,"TreeK%d",events->At(input));
-//     TTree * treeK = (TTree*)gDirectory->Get(treeName);
-//     if (treeK) 
-//       treeK->SetBranchAddress("Particles", &fParticleBuffer);
-//     else    
-//       cout << "AliPHOSGetter: cannot find Kine Tree for event:" << events->At(input) << endl;
-
-//     // Create the particle stack
-//     if(!fParticles) fParticles = new TClonesArray("TParticle",1000);
-//     // Build the pointer list
-//     if(fParticleMap) {     <----
-//       fParticleMap->Clear();
-//       fParticleMap->Expand(treeK->GetEntries());
-//     } else
-//       fParticleMap = new TObjArray(treeK->GetEntries());
-    
-//     // From gAlice->Particle(i) 
-
-
-//   if(!(*fParticleMap)[i]) {
-//     Int_t nentries = fParticles->GetEntries();
-    
-//     // algorithmic way of getting entry index
-//     // (primary particles are filled after secondaries)
-//     Int_t entry;
-//     if (i<fHeader.GetNprimary())
-//       entry = i+fHeader.GetNsecondary();
-//     else 
-//       entry = i-fHeader.GetNprimary();
-      
-//     // only check the algorithmic way and give
-//     // the fatal error if it is wrong
-//     if (entry != fParticleFileMap[i]) {
-//       Fatal("Particle",
-//         "!!!! The algorithmic way is WRONG: !!!\n entry: %d map: %d",
-// 	entry, fParticleFileMap[i]); 
-//     }  
-      
-//     fTreeK->GetEntry(fParticleFileMap[i]);
-//     new ((*fParticles)[nentries]) TParticle(*fParticleBuffer);
-//     fParticleMap->AddAt((*fParticles)[nentries],i);
-//   }
-//   return (TParticle *) (*fParticleMap)[i];
-
-   
-    
-// //   }
-
-
-// //   //scan over opened files and read corresponding TreeK##
-
-//   return ;
 }
 //____________________________________________________________________________ 
 void AliPHOSGetter::Event(const Int_t event, const char* opt)
@@ -1814,7 +1725,7 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
   if( strstr(opt,"Q") )
     ReadTreeQA() ;
 
-    if( strstr(opt,"P") || (strcmp(opt,"")==0) )
+  if( strstr(opt,"P") || (strcmp(opt,"")==0) )
     ReadPrimaries() ;
 
 }
