@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2001/01/30 09:23:12  hristov
+Streamers removed (R.Brun)
+
 Revision 1.32  2001/01/26 19:55:51  hristov
 Major upgrade of AliRoot code
 
@@ -370,7 +373,7 @@ void AliGenPythia::Generate()
 			Float_t tof=kconv*iparticle->T();
 			gAlice->SetTrack(fTrackIt,-1,kf,p,origin,polar,
 					 tof,kPPrimary,nt);
-			gAlice->KeepTrack(nt);
+            gAlice->KeepTrack(nt);
 		} // select particle
 	    } // particle loop 
 	    printf("\n I've put %i particles on the stack \n",nc);
@@ -386,6 +389,7 @@ void AliGenPythia::Generate()
 	    }
 	}
     } // event loop
+    gAlice->SetHighWaterMark(nt);
 //  adjust weight due to kinematic selection
     AdjustWeights();
 //  get cross-section
