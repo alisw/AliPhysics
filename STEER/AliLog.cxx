@@ -903,6 +903,7 @@ void AliLog::RestoreStdout(Int_t original)
 
   fflush(stdout);
   dup2(original, fileno(stdout));  
+  close(original);
 }
 
 //_____________________________________________________________________________
@@ -912,6 +913,7 @@ void AliLog::RestoreStderr(Int_t original)
 
   fflush(stderr);
   dup2(original, fileno(stderr));  
+  close(original);
 }
 
 
