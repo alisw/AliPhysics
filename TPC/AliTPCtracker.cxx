@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/05/08 15:00:15  hristov
+Corrections for tracking in arbitrary magnenetic field. Changes towards a concept of global Alice track. Back propagation of reconstructed tracks (Yu.Belikov)
+
 Revision 1.5  2000/12/20 07:51:59  kowal2
 Changes suggested by Alessandra and Paolo to avoid overlapped
 data fields in encapsulated classes.
@@ -798,7 +801,7 @@ AliCluster *AliTPCtracker::GetCluster(Int_t index) const {
   Int_t row=(index&0x00ff0000)>>16; 
   Int_t ncl=(index&0x0000ffff)>>00;
 
-  AliTPCClustersRow *clrow=fClustersArray.GetRow(sec,row);
+  AliTPCClustersRow *clrow=((AliTPCtracker*)this)->fClustersArray.GetRow(sec,row);;
   return (AliCluster*)(*clrow)[ncl];      
 }
 
