@@ -39,9 +39,8 @@ class TG4StepManager
     static TG4StepManager* Instance();
         
     // methods
-    void StopTrack(); //new
-    void StopEvent(); //new
-    void Rndm(Float_t* array, const Int_t size) const;
+    void StopTrack();
+    void StopEvent();
     
     // set methods
     void SetStep(G4Step* step, TG4StepStatus status);    // G4 specific
@@ -64,11 +63,11 @@ class TG4StepManager
     const char* CurrentVolOffName(Int_t off) const;
     Int_t CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens, 
                     Float_t &radl, Float_t &absl) const;
-    void Gmtod(Float_t* xm, Float_t* xd, Int_t iflag);  //new
-    void Gdtom(Float_t* xd, Float_t* xm, Int_t iflag); //new
+    void Gmtod(Float_t* xm, Float_t* xd, Int_t iflag);
+    void Gdtom(Float_t* xd, Float_t* xm, Int_t iflag);
     Float_t MaxStep() const;
     Int_t GetMaxNStep() const;  //??                       
-    Int_t GetMedium() const;  //??
+    Int_t GetMedium() const;
 
         // tracking particle 
         // dynamic properties
