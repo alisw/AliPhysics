@@ -1,10 +1,14 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class TG4VRunConfiguration
+// --------------------------
 // Abstract class that takes care of creating  all user defined classes 
 // that will be initialized and managed by Geant4 kernel (G4RunManager).
 // It has one pure virtual method CreateUserConfiguration()
-// that has to be be implemented by derived class.
+// that has to be be implemented by a derived class.
 
 #ifndef TG4V_RUN_CONFIGURATION_H
 #define TG4V_RUN_CONFIGURATION_H
@@ -13,9 +17,9 @@ class TG4TrackingAction;
 class TG4SteppingAction;
 class TG4VSDConstruction;
 class TG4SDManager;
+class TG4ModularPhysicsList;
 
 class G4VUserDetectorConstruction;
-class G4VModularPhysicsList;
 class G4VUserPrimaryGeneratorAction;
 class G4UserRunAction;
 class G4UserEventAction;
@@ -34,7 +38,7 @@ class TG4VRunConfiguration
     void ConfigureRunManager(G4RunManager* runManager);
 
     // get methods
-    G4VModularPhysicsList* GetPhysicsList() const;
+    TG4ModularPhysicsList* GetPhysicsList() const;
     TG4VSDConstruction* GetSDConstruction() const;
 
   protected:
@@ -50,7 +54,7 @@ class TG4VRunConfiguration
     G4VUserDetectorConstruction*    fDetectorConstruction; //det construction
     TG4VSDConstruction*             fSDConstruction;       //sensitive detectors 
                                                            //construction
-    G4VModularPhysicsList*          fPhysicsList;          //physics list
+    TG4ModularPhysicsList*          fPhysicsList;          //physics list
     G4VUserPrimaryGeneratorAction*  fPrimaryGenerator;     //primary generator
     G4UserRunAction*                fRunAction;            //run action
     G4UserEventAction*              fEventAction;          //event action

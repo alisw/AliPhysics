@@ -1,16 +1,20 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class TG4VRunConfiguration
+// --------------------------
 // See the class description in the header file.
 
 #include "TG4VRunConfiguration.h"
 #include "TG4VSDConstruction.h"
+#include "TG4ModularPhysicsList.h"
 #include "TG4TrackingAction.h"
 #include "TG4SteppingAction.h"
 #include "TG4Globals.h"
 
 #include <G4VUserDetectorConstruction.hh>
-#include <G4VModularPhysicsList.hh>
 #include <G4VUserPrimaryGeneratorAction.hh>
 #include <G4UserRunAction.hh>
 #include <G4UserEventAction.hh>
@@ -83,7 +87,7 @@ void TG4VRunConfiguration::ConfigureRunManager(G4RunManager* runManager)
 }
 
 //_____________________________________________________________________________
-G4VModularPhysicsList* TG4VRunConfiguration::GetPhysicsList() const
+TG4ModularPhysicsList* TG4VRunConfiguration::GetPhysicsList() const
 {
 // Returns the modular physics list.
 // ---
