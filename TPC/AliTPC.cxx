@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.51  2002/01/21 17:13:21  kowal2
+New track hits using root containers. Setting active sectors added.
+
 Revision 1.50  2001/12/06 14:16:19  kowal2
 meaningfull printouts
 
@@ -1487,8 +1490,8 @@ void AliTPC::Merge(TTree * intree, Int_t *mask, Int_t nin, Int_t outid)
 
         if (q> zerosup){
 
-          if(q > fTPCParam->GetADCSat()) q = (Short_t)(fTPCParam->GetADCSat());
-          digrow->SetDigitFast(q,rows,col);  
+          if(q > fTPCParam->GetADCSat()) q = fTPCParam->GetADCSat();
+          digrow->SetDigitFast((Short_t)q,rows,col);  
           for (Int_t tr=0;tr<3;tr++){
             if (tr<labptr)
               ((AliSimDigits*)digrow)->SetTrackIDFast(label[tr],rows,col,tr);
