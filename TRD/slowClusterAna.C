@@ -13,7 +13,7 @@ void slowClusterAna() {
   }
 
   // Input file name
-  Char_t *alifile = "galice_r_v1.root"; 
+  Char_t *alifile = "galice.root"; 
 
   // Event number
   Int_t   nEvent  = 0;
@@ -43,7 +43,9 @@ void slowClusterAna() {
   if (nparticles <= 0) break;
   
   // Get the pointer to the hit-tree
-  TTree          *RecTree       = gAlice->TreeR();
+  Char_t treeName[14];
+  sprintf(treeName,"TRDrecPoints%d", nEvent);
+  TTree          *RecTree       = gafl->Get(treeName);
   RecTree->Print();
   // Get the pointer to the detector classes
   AliTRDv1       *TRD           = (AliTRDv1*) gAlice->GetDetector("TRD");
@@ -61,14 +63,11 @@ void slowClusterAna() {
   Int_t nbytes;
   for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) {
 
-    cout << "iEntry = " << iEntry << endl;
-
     // Import the tree
     nbytes += RecTree->GetEvent(iEntry);
 
     // Get the number of points in the detector 
     Int_t nRecPoint = RecPointArray->GetEntriesFast();
-    cout << " nRecPoint = " << nRecPoint << endl;    
 
     // Loop through all TRD digits
     for (Int_t iRecPoint = 0; iRecPoint < nRecPoint; iRecPoint++) {
