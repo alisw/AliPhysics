@@ -14,12 +14,14 @@
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliMUONChamberGeometry.h"
+#include "AliMUONGeometryEnvelopeStore.h"
 
 ClassImp(AliMUONSt1GeometryBuilder)
 
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilder::AliMUONSt1GeometryBuilder(AliMUON* muon)
- : AliMUONVGeometryBuilder(&muon->Chamber(0), &muon->Chamber(1)),
+ : AliMUONVGeometryBuilder("st1.dat",
+                           &muon->Chamber(0), &muon->Chamber(1)),
    fMUON(muon)
 {
 // Standard constructor
@@ -141,9 +143,11 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
 
      // CHANGED
      //gMC->Gspos("S01M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
-     //gMC->Gspos("S02M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");     
-     GetChamber(0)->GetGeometry()->AddEnvelope("S01M", false);
-     GetChamber(1)->GetGeometry()->AddEnvelope("S02M", false);
+     //gMC->Gspos("S02M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
+     
+     GetEnvelopes(0)->AddEnvelope("S01M", 100, false);
+     GetEnvelopes(1)->AddEnvelope("S02M", 200, false);
+         
 
 // // Aluminium frames
 // // Outer frames

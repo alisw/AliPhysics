@@ -52,6 +52,7 @@
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliMUONChamberGeometry.h"
+#include "AliMUONGeometryEnvelopeStore.h"
 #include "AliRun.h"
 #include "AliMagF.h"
 
@@ -110,7 +111,8 @@ const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantFLayerName="SQF";
 
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(AliMUON* muon)
-  : AliMUONVGeometryBuilder(&muon->Chamber(0), &muon->Chamber(1)),
+  : AliMUONVGeometryBuilder("st1V2.dat",
+                            &muon->Chamber(0), &muon->Chamber(1)),
     fMUON(muon)
 {
    // set path to mapping data files
@@ -2467,6 +2469,12 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
   scale[2] = TVector3(-1, -1,  1);  // quadrant III
   scale[3] = TVector3( 1, -1, -1);  // quadrant IV
   
+  Int_t  detElemId[4];  
+  detElemId[0] =  0;  // quadrant I
+  detElemId[1] = 51;  // quadrant II
+  detElemId[2] = 50;  // quadrant III
+  detElemId[3] =  1;  // quadrant IV
+  
   // Shift in Z of the middle layer
   Double_t deltaZ = 6.5/2.;         
 
@@ -2491,26 +2499,28 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
     for (Int_t i=0; i<4; i++) {
 
       // Middle layer
-      GReal_t posx = pos0.X() * scale[i].X();
-      GReal_t posy = pos0.Y() * scale[i].Y();
-      //GReal_t posz = pos0.Z() * scale[i].Z() + AliMUONConstants::DefaultChamberZ(ich-1);
+      GReal_t posx, posy, posz;
+      posx = pos0.X() * scale[i].X();
+      posy = pos0.Y() * scale[i].Y();
+      //posz = pos0.Z() * scale[i].Z() + AliMUONConstants::DefaultChamberZ(ich-1);
       //gMC->Gspos(QuadrantMLayerName(ich), i+1, "ALIC", posx, posy, posz, rotm[i], "ONLY");
-      GReal_t posz = pos0.Z() * scale[i].Z();
-      GetChamber(ich-1)->GetGeometry()
-        ->AddEnvelope(QuadrantMLayerName(ich), i+1, TGeoTranslation(posx, posy, posz), rotm[i]); 
+      posz = pos0.Z() * scale[i].Z();
+      GetEnvelopes(ich-1)
+        ->AddEnvelope(QuadrantMLayerName(ich), detElemId[i] + ich*100, i+1,
+	              TGeoTranslation(posx, posy, posz), rotm[i]);
 
       // Near/far layers
       Real_t  posx2 = posx + shiftXY * scale[i].X();
       Real_t  posy2 = posy + shiftXY * scale[i].Y();
       Real_t  posz2 = posz - scale[i].Z()*shiftZ;
       //gMC->Gspos(QuadrantNLayerName(ich), i+1, "ALIC", posx2, posy2, posz2, rotm[i],"ONLY");
-      GetChamber(ich-1)->GetGeometry()
-        ->AddEnvelope(QuadrantNLayerName(ich), i+1, TGeoTranslation(posx2, posy2, posz2), rotm[i]); 
+      GetEnvelopes(ich-1)
+        ->AddEnvelope(QuadrantNLayerName(ich), 0, i+1, TGeoTranslation(posx2, posy2, posz2), rotm[i]); 
     
       posz2 = posz + scale[i].Z()*shiftZ;      
       //gMC->Gspos(QuadrantFLayerName(ich), i+1, "ALIC", posx2, posy2, posz2, rotm[i],"ONLY");
-      GetChamber(ich-1)->GetGeometry()
-        ->AddEnvelope(QuadrantFLayerName(ich), i+1, TGeoTranslation(posx2, posy2, posz2), rotm[i]); 
+      GetEnvelopes(ich-1)
+        ->AddEnvelope(QuadrantFLayerName(ich), 0, i+1, TGeoTranslation(posx2, posy2, posz2), rotm[i]); 
    }
  }     
 }
