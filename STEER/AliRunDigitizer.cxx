@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/12/10 16:40:52  jchudoba
+Import gAlice from the signal file before InitGlobal() to allow detectors to use it during initialization
+
 Revision 1.11  2001/12/03 07:10:13  jchudoba
 Default ctor cannot create new objects, create dummy default ctor which leaves object in not well defined state - to be used only by root for I/O
 
@@ -198,7 +201,9 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb) : TTask("AliR
   fTreeD = 0;
   fTreeDTPC = 0;
   fTreeDTRD = 0;
-  
+  fTreeDTPCBaseName = "TreeD_75x40_100x60_";
+  fTreeTPCSBaseName = "TreeS_75x40_100x60_";
+
   for (i=0; i<kMaxStreamsToMerge; i++) fInputFiles[i]=0;
 }
 
@@ -241,10 +246,13 @@ void AliRunDigitizer::Digitize(Option_t* option)
 
 // take gAlice from the first input file. It is needed to access
 //  geometry data
-  if (!static_cast<AliStream*>(fInputStreams->At(0))->ImportgAlice()) {
-    cerr<<"gAlice object not found in the first file of "
-	<<"the 1st stream"<<endl;
-    return;
+// If gAlice is already in memory, use it
+  if (!gAlice) {
+    if (!static_cast<AliStream*>(fInputStreams->At(0))->ImportgAlice()) {
+      cerr<<"gAlice object not found in the first file of "
+	  <<"the 1st stream"<<endl;
+      return;
+    }
   }
   if (!InitGlobal()) {
     cerr<<"False from InitGlobal"<<endl;
@@ -256,7 +264,7 @@ void AliRunDigitizer::Digitize(Option_t* option)
     if (!ConnectInputTrees()) break;
     InitEvent();
 // loop over all registered digitizers and let them do the work
-    ExecuteTasks("");
+    ExecuteTasks(option);
     CleanTasks();
     FinishEvent();
   }
@@ -282,15 +290,31 @@ Bool_t AliRunDigitizer::ConnectInputTrees()
       fInputFiles[i]=iStream->CurrentFile();
       sprintf(treeName,"TreeS%d",serialNr);
       tree = static_cast<TTree*>(iStream->CurrentFile()->Get(treeName));
+      if (fArrayTreeS[i]) {
+	delete fArrayTreeS[i];
+	fArrayTreeS[i] = 0;
+      }
       fArrayTreeS[i] = tree;
       sprintf(treeName,"TreeH%d",serialNr);
       tree = static_cast<TTree*>(iStream->CurrentFile()->Get(treeName));
+      if (fArrayTreeH[i]) {
+	delete fArrayTreeH[i];
+	fArrayTreeH[i] = 0;
+      }
       fArrayTreeH[i] = tree;
-      sprintf(treeName,"TreeS_75x40_100x60_%d",serialNr);
+      sprintf(treeName,"%s%d",fTreeTPCSBaseName,serialNr);
       tree = static_cast<TTree*>(iStream->CurrentFile()->Get(treeName));
+      if (fArrayTreeTPCS[i]) {
+	delete fArrayTreeTPCS[i];
+	fArrayTreeTPCS[i] = 0;
+      }
       fArrayTreeTPCS[i] = tree;
       sprintf(treeName,"TreeS%d_TRD",serialNr);
       tree = static_cast<TTree*>(iStream->CurrentFile()->Get(treeName));
+      if (fArrayTreeTRDS[i]) {
+	delete fArrayTreeTRDS[i];
+	fArrayTreeTRDS[i] = 0;
+      }
       fArrayTreeTRDS[i] = tree;
     } else if (delta[i] != 0) {
       Error("ConnectInputTrees","Only delta 0 or 1 is implemented");
@@ -362,7 +386,7 @@ void AliRunDigitizer::InitEvent()
   }
 
 // special tree for TPC
-  sprintf(treeName,"TreeD_75x40_100x60_%d",fEvent);
+  sprintf(treeName,"%s%d",fTreeDTPCBaseName,fEvent);
   fTreeDTPC = static_cast<TTree*>(fOutput->Get(treeName));
   if (!fTreeDTPC) {
     fTreeDTPC = new TTree(treeName,"TPC_Digits");
@@ -384,10 +408,11 @@ void AliRunDigitizer::FinishEvent()
 {
 // called at the end of loop over digitizers
 
+  Int_t i;
   fOutput->cd();
   if (fCopyTreesFromInput > -1) {
     char treeName[20];
-    Int_t i = fCopyTreesFromInput; 
+    i = fCopyTreesFromInput; 
     sprintf(treeName,"TreeK%d",fCombination[i]);
     fInputFiles[i]->Get(treeName)->Clone()->Write();
     sprintf(treeName,"TreeH%d",fCombination[i]);

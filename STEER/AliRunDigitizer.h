@@ -52,13 +52,17 @@ public:
   Int_t     GetMask(Int_t i) const {return fkMASK[i];}
   TTree*    GetInputTreeS(Int_t i) const {return fArrayTreeS[i];}
   TTree*    GetInputTreeH(Int_t i) const {return fArrayTreeH[i];}
+  void      SetInputTreeTPCSBaseName(char * name) {
+    fTreeTPCSBaseName = name;}
   TTree*    GetInputTreeTPCS(Int_t i) const {return fArrayTreeTPCS[i];}
   TTree*    GetInputTreeTRDS(Int_t i) const {return fArrayTreeTRDS[i];}
   TTree*    GetTreeD() const {return fTreeD;}
+  void      SetTreeDTPCBaseName(char * name) {
+    fTreeDTPCBaseName = name;}
   TTree*    GetTreeDTPC() const {return fTreeDTPC;} 
   TTree*    GetTreeDTRD() const {return fTreeDTRD;} 
   void      Digitize(Option_t* option = 0);
-  void      Exec(Option_t *option) {this->Digitize();}
+  void      Exec(Option_t *option) {this->Digitize(option);}
   void      ExecuteTask(Option_t* option = 0);
 
   
@@ -113,6 +117,8 @@ private:
   TTree *           fArrayTreeTPCS[kMaxStreamsToMerge];   //! array with p. to TreeD_75x40_100x60_x (TPC Sdigits)
   TTree *           fArrayTreeTRDS[kMaxStreamsToMerge];   //! array with p. to TreeSx_TRD (TRD Sdigits)
   TTree *           fArrayTreeH[kMaxStreamsToMerge];   //! array with p. to TreeH
+  char *            fTreeDTPCBaseName;    //! basename of output TreeD for TPC
+  char *            fTreeTPCSBaseName;    //! basename of output TreeS for TPC
   AliMergeCombi *   fCombi;               // pointer to the combination object
   TArrayI           fCombination;         //! combination of events from
   TString           fCombinationFileName; // fn with combinations (used
@@ -125,7 +131,7 @@ private:
   void              FinishGlobal();
   Int_t             fDebug;                //! specifies debug level, 0 is min
   
-  ClassDef(AliRunDigitizer,3)
+  ClassDef(AliRunDigitizer,4)
 };
 
 #endif // ALIRUNDIGITIZER_H
