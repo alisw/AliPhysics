@@ -64,9 +64,24 @@ class AliLog: public TObject {
                      const char* module, const char* className,
                      const char* function, const char* file, Int_t line);
 
+  static Int_t RedirectStdoutTo(EType type, UInt_t level, const char* module, 
+                                const char* className, const char* function,
+                                const char* file, Int_t line, Bool_t print);
+  static Int_t RedirectStderrTo(EType type, UInt_t level, const char* module, 
+                                const char* className, const char* function,
+                                const char* file, Int_t line, Bool_t print);
+  static void  RestoreStdout(Int_t original);
+  static void  RestoreStderr(Int_t original);
+
+  static ostream& Stream(EType type, UInt_t level,
+                         const char* module, const char* className,
+                         const char* function, const char* file, Int_t line);
+
  private:
   AliLog(const AliLog& log);
   AliLog& operator = (const AliLog& log);
+
+  void           ReadEnvSettings();
 
   static void    RootErrorHandler(Int_t level, Bool_t abort, 
 				  const char* location, const char* message);
@@ -75,6 +90,19 @@ class AliLog: public TObject {
   FILE*          GetOutputStream(Int_t type);
 
   UInt_t         GetLogLevel(const char* module, const char* className) const;
+  void           PrintMessage(UInt_t type, const char* message, 
+                              const char* module, const char* className,
+                              const char* function, 
+                              const char* file, Int_t line);
+
+  Int_t          RedirectTo(FILE* stream, EType type, UInt_t level,
+                            const char* module, const char* className,
+                            const char* function,
+                            const char* file, Int_t line, Bool_t print);
+
+  ostream&       GetStream(EType type, UInt_t level,
+                           const char* module, const char* className,
+                           const char* function, const char* file, Int_t line);
 
   enum {kDebugOffset = kDebug-1};
 
@@ -89,6 +117,7 @@ class AliLog: public TObject {
   Int_t          fOutputTypes[kMaxType];     // types of output streams
   TString        fFileNames[kMaxType];       // file names
   FILE*          fOutputFiles[kMaxType];     //! log output files
+  ofstream*      fOutputStreams[kMaxType];   //! log output streams
 
   Bool_t         fPrintType[kMaxType];       // print type on/off
   Bool_t         fPrintModule[kMaxType];     // print module on/off
@@ -98,58 +127,149 @@ class AliLog: public TObject {
   ClassDef(AliLog, 1)   // class for logging debug, info and error messages
 };
 
-#ifndef __GNUC__
-#ifndef __APPLE__
-#define __FUNCTION__ "???"
-#endif
+
+// module name
+#ifdef __MODULE__
+#define MODULENAME() __MODULE__
+#else
+#define MODULENAME() "NoModule"
 #endif
 
+// function name
+#if defined(__GNUC__) || defined(__ICC) || defined(__ECC) || defined(__APPLE__)
+#define FUNCTIONNAME() __FUNCTION__
+#elif defined(__HP_aCC) || defined(__alpha) || defined(__DECCXX)
+#define FUNCTIONNAME() __FUNC__
+#else
+#define FUNCTIONNAME() "???"
+#endif
+
+// redirection
+#define REDIRECTSTDOUT(type, level, scope, whatever) {Int_t originalStdout = AliLog::RedirectStdoutTo(type, level, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__, kFALSE); whatever; AliLog::RestoreStdout(originalStdout);}
+#define REDIRECTSTDERR(type, level, scope, whatever) {Int_t originalStderr = AliLog::RedirectStderrTo(type, level, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__, kFALSE); whatever; AliLog::RestoreStderr(originalStderr);}
+#define REDIRECTSTDOUTANDSTDERR(type, level, scope, whatever) {Int_t originalStdout = AliLog::RedirectStdoutTo(type, level, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__, kFALSE); Int_t originalStderr = AliLog::RedirectStderrTo(type, level, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__, kFALSE); whatever; AliLog::RestoreStderr(originalStderr); AliLog::RestoreStdout(originalStdout);}
+
+
+// debug level
 #ifdef LOG_NO_DEBUG
 #define AliDebugLevel() -1
 #define AliDebugLevelClass() -1
 #define AliDebugLevelGeneral(scope) -1
 #else
-#define AliDebugLevel() ((AliLog::IsDebugEnabled()) ? AliLog::GetDebugLevel(__MODULE__, ClassName()) : -1)
-#define AliDebugLevelClass() ((AliLog::IsDebugEnabled()) ? AliLog::GetDebugLevel(__MODULE__, Class()->GetName()) : -1)
-#define AliDebugLevelGeneral(scope) ((AliLog::IsDebugEnabled()) ? AliLog::GetDebugLevel(__MODULE__, scope) : -1)
+#define AliDebugLevel() ((AliLog::IsDebugEnabled()) ? AliLog::GetDebugLevel(MODULENAME(), ClassName()) : -1)
+#define AliDebugLevelClass() ((AliLog::IsDebugEnabled()) ? AliLog::GetDebugLevel(MODULENAME(), Class()->GetName()) : -1)
+#define AliDebugLevelGeneral(scope) ((AliLog::IsDebugEnabled()) ? AliLog::GetDebugLevel(MODULENAME(), scope) : -1)
 #endif
 
+// debug messages
 #ifdef LOG_NO_DEBUG
 #define AliDebug(level, message)
 #define AliDebugClass(level, message)
 #define AliDebugGeneral(scope, level, message)
 #else
-#define AliDebug(level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, __MODULE__, ClassName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliDebugClass(level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, __MODULE__, Class()->GetName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliDebugGeneral(scope, level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, __MODULE__, scope, __FUNCTION__, __FILE__, __LINE__);}
+#define AliDebug(level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliDebugClass(level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliDebugGeneral(scope, level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__);}
 #endif
 
+// redirection to debug
+#define StdoutToAliDebug(level, whatever) REDIRECTSTDOUT(AliLog::kDebug, level, ClassName(), whatever)
+#define StderrToAliDebug(level, whatever) REDIRECTSTDERR(AliLog::kDebug, level, ClassName(), whatever)
+#define ToAliDebug(level, whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kDebug, level, ClassName(), whatever)
+#define StdoutToAliDebugClass(level, whatever) REDIRECTSTDOUT(AliLog::kDebug, level, Class()->GetName(), whatever)
+#define StderrToAliDebugClass(level, whatever) REDIRECTSTDERR(AliLog::kDebug, level, Class()->GetName(), whatever)
+#define ToAliDebugClass(level, whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kDebug, level, Class()->GetName(), whatever)
+#define StdoutToAliDebugGeneral(scope, level, whatever) REDIRECTSTDOUT(AliLog::kDebug, level, scope, whatever)
+#define StderrToAliDebugGeneral(scope, level, whatever) REDIRECTSTDERR(AliLog::kDebug, level, scope, whatever)
+#define ToAliDebugGeneral(scope, level, whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kDebug, level, scope, whatever)
+
+// debug stream objects
+#define AliDebugStream(level) AliLog::Stream(AliLog::kDebug, level, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__)
+#define AliDebugClassStream(level) AliLog::Stream(AliLog::kDebug, level, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__)
+#define AliDebugGeneralStream(scope, level) AliLog::Stream(AliLog::kDebug, level, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__)
+
+
+// info messages
 #ifdef LOG_NO_INFO
 #define AliInfo(message)
 #define AliInfoClass(message)
 #define AliInfoGeneral(scope, message)
 #else
-#define AliInfo(message) {AliLog::Message(AliLog::kInfo, message, __MODULE__, ClassName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliInfoClass(message) {AliLog::Message(AliLog::kInfo, message, __MODULE__, Class()->GetName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliInfoGeneral(scope, message) {AliLog::Message(AliLog::kInfo, message, __MODULE__, scope, __FUNCTION__, __FILE__, __LINE__);}
+#define AliInfo(message) {AliLog::Message(AliLog::kInfo, message, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliInfoClass(message) {AliLog::Message(AliLog::kInfo, message, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliInfoGeneral(scope, message) {AliLog::Message(AliLog::kInfo, message, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__);}
 #endif
 
+// redirection to info
+#define StdoutToAliInfo(whatever) REDIRECTSTDOUT(AliLog::kInfo, 0, ClassName(), whatever)
+#define StderrToAliInfo(whatever) REDIRECTSTDERR(AliLog::kInfo, 0, ClassName(), whatever)
+#define ToAliInfo(whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kInfo, 0, ClassName(), whatever)
+#define StdoutToAliInfoClass(whatever) REDIRECTSTDOUT(AliLog::kInfo, 0, Class()->GetName(), whatever)
+#define StderrToAliInfoClass(whatever) REDIRECTSTDERR(AliLog::kInfo, 0, Class()->GetName(), whatever)
+#define ToAliInfoClass(whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kInfo, 0, Class()->GetName(), whatever)
+#define StdoutToAliInfoGeneral(scope, whatever) REDIRECTSTDOUT(AliLog::kInfo, 0, scope, whatever)
+#define StderrToAliInfoGeneral(scope, whatever) REDIRECTSTDERR(AliLog::kInfo, 0, scope, whatever)
+#define ToAliInfoGeneral(scope, whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kInfo, 0, scope, whatever)
+
+// info stream objects
+#define AliInfoStream() AliLog::Stream(AliLog::kInfo, 0, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__)
+#define AliInfoClassStream() AliLog::Stream(AliLog::kInfo, 0, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__)
+#define AliInfoGeneralStream(scope) AliLog::Stream(AliLog::kInfo, 0, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__)
+
+
+// warning messages
 #ifdef LOG_NO_WARNING
 #define AliWarning(message)
 #define AliWarningClass(message)
 #define AliWarningGeneral(scope, message)
 #else
-#define AliWarning(message) {AliLog::Message(AliLog::kWarning, message, __MODULE__, ClassName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliWarningClass(message) {AliLog::Message(AliLog::kWarning, message, __MODULE__, Class()->GetName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliWarningGeneral(scope, message) {AliLog::Message(AliLog::kWarning, message, __MODULE__, scope, __FUNCTION__, __FILE__, __LINE__);}
+#define AliWarning(message) {AliLog::Message(AliLog::kWarning, message, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliWarningClass(message) {AliLog::Message(AliLog::kWarning, message, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliWarningGeneral(scope, message) {AliLog::Message(AliLog::kWarning, message, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__);}
 #endif
 
-#define AliError(message) {AliLog::Message(AliLog::kError, message, __MODULE__, ClassName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliErrorClass(message) {AliLog::Message(AliLog::kError, message, __MODULE__, Class()->GetName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliErrorGeneral(scope, message) {AliLog::Message(AliLog::kError, message, __MODULE__, scope, __FUNCTION__, __FILE__, __LINE__);}
+// redirection to warning
+#define StdoutToAliWarning(whatever) REDIRECTSTDOUT(AliLog::kWarning, 0, ClassName(), whatever)
+#define StderrToAliWarning(whatever) REDIRECTSTDERR(AliLog::kWarning, 0, ClassName(), whatever)
+#define ToAliWarning(whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kWarning, 0, ClassName(), whatever)
+#define StdoutToAliWarningClass(whatever) REDIRECTSTDOUT(AliLog::kWarning, 0, Class()->GetName(), whatever)
+#define StderrToAliWarningClass(whatever) REDIRECTSTDERR(AliLog::kWarning, 0, Class()->GetName(), whatever)
+#define ToAliWarningClass(whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kWarning, 0, Class()->GetName(), whatever)
+#define StdoutToAliWarningGeneral(scope, whatever) REDIRECTSTDOUT(AliLog::kWarning, 0, scope, whatever)
+#define StderrToAliWarningGeneral(scope, whatever) REDIRECTSTDERR(AliLog::kWarning, 0, scope, whatever)
+#define ToAliWarningGeneral(scope, whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kWarning, 0, scope, whatever)
 
-#define AliFatal(message) {AliLog::Message(AliLog::kFatal, message, __MODULE__, ClassName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliFatalClass(message) {AliLog::Message(AliLog::kFatal, message, __MODULE__, Class()->GetName(), __FUNCTION__, __FILE__, __LINE__);}
-#define AliFatalGeneral(scope, message) {AliLog::Message(AliLog::kFatal, message, __MODULE__, scope, __FUNCTION__, __FILE__, __LINE__);}
+// warning stream objects
+#define AliWarningStream() AliLog::Stream(AliLog::kWarning, 0, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__)
+#define AliWarningClassStream() AliLog::Stream(AliLog::kWarning, 0, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__)
+#define AliWarningGeneralStream(scope) AliLog::Stream(AliLog::kWarning, 0, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__)
+
+
+// error messages
+#define AliError(message) {AliLog::Message(AliLog::kError, message, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliErrorClass(message) {AliLog::Message(AliLog::kError, message, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliErrorGeneral(scope, message) {AliLog::Message(AliLog::kError, message, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__);}
+
+// redirection to error
+#define StdoutToAliError(whatever) REDIRECTSTDOUT(AliLog::kError, 0, ClassName(), whatever)
+#define StderrToAliError(whatever) REDIRECTSTDERR(AliLog::kError, 0, ClassName(), whatever)
+#define ToAliError(whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kError, 0, ClassName(), whatever)
+#define StdoutToAliErrorClass(whatever) REDIRECTSTDOUT(AliLog::kError, 0, Class()->GetName(), whatever)
+#define StderrToAliErrorClass(whatever) REDIRECTSTDERR(AliLog::kError, 0, Class()->GetName(), whatever)
+#define ToAliErrorClass(whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kError, 0, Class()->GetName(), whatever)
+#define StdoutToAliErrorGeneral(scope, whatever) REDIRECTSTDOUT(AliLog::kError, 0, scope, whatever)
+#define StderrToAliErrorGeneral(scope, whatever) REDIRECTSTDERR(AliLog::kError, 0, scope, whatever)
+#define ToAliErrorGeneral(scope, whatever) REDIRECTSTDOUTANDSTDERR(AliLog::kError, 0, scope, whatever)
+
+// error stream objects
+#define AliErrorStream() AliLog::Stream(AliLog::kError, 0, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__)
+#define AliErrorClassStream() AliLog::Stream(AliLog::kError, 0, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__)
+#define AliErrorGeneralStream(scope) AliLog::Stream(AliLog::kError, 0, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__)
+
+
+// fatal messages
+#define AliFatal(message) {AliLog::Message(AliLog::kFatal, message, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliFatalClass(message) {AliLog::Message(AliLog::kFatal, message, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliFatalGeneral(scope, message) {AliLog::Message(AliLog::kFatal, message, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__);}
 
 #endif
