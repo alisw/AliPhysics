@@ -38,6 +38,7 @@ AliESDv0::AliESDv0() :
   TObject(),
   fPdgCode(kK0Short),
   fEffMass(TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass()),
+  fDcaDaughters(0),
   fChi2(1.e+33),
   fNidx(0),
   fPidx(0)
