@@ -248,10 +248,22 @@ AliCASTOR *CASTOR  = new AliCASTORv1("CASTOR","normal CASTOR");
 
 if(iTRD) {
 //=================== TRD parameters ============================
-
-AliTRD *TRD  = new AliTRDv1("TRD","TRD version 0");
-// Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
-TRD->SetGasMix(0);
+  
+  AliTRD *TRD  = new AliTRDv0("TRD","TRD fast simulator");
+  //TRD->SetHits();
+  
+  //AliTRD *TRD  = new AliTRDv1("TRD","TRD slow simulator");
+  //TRD->SetSensPlane(0);
+  //TRD->SetSensChamber(2);
+  //TRD->SetSensSector(17);
+  
+  // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
+  TRD->SetGasMix(1);
+  
+  // With hole in front of PHOS
+  TRD->SetPHOShole();
+  // With hole in front of RICH
+  TRD->SetRICHhole();
 }
 
 if(iFMD) {

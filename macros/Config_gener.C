@@ -8,7 +8,7 @@ ntracks=1;
 void Config()
 {
 
-new TGeant3("C++ Interface to Geant3");
+new AliGeant3("C++ Interface to Geant3");
 
 //=======================================================================
 //  Create the output file
@@ -233,11 +233,11 @@ Int_t iHALL=1;
 Int_t iFRAME=1;
 Int_t iSHIL=1;
 Int_t iPIPE=1;
-Int_t iFMD=1;
+Int_t iFMD=0;
 Int_t iMUON=1;
 Int_t iPHOS=1;
 Int_t iPMD=1;
-Int_t iSTART=0;
+Int_t iSTART=1;
 
 //=================== Alice BODY parameters =============================
 AliBODY *BODY = new AliBODY("BODY","Alice envelop");
@@ -253,7 +253,7 @@ AliMAG *MAG  = new AliMAG("MAG","Magnet");
 
 if(iABSO) {
 //=================== ABSO parameters ============================
-AliABSO *ABSO  = new AliABSO("ABSO","Muon Absorber");
+AliABSO *ABSO  = new AliABSOv0("ABSO","Muon Absorber");
 }
 
 if(iDIPO) {
@@ -272,13 +272,14 @@ AliHALL *HALL  = new AliHALL("HALL","Alice Hall");
 if(iFRAME) {
 //=================== FRAME parameters ============================
 
-AliFRAME *FRAME  = new AliFRAMEv0("FRAME","Space Frame");
+AliFRAME *FRAME  = new AliFRAMEv1("FRAME","Space Frame");
+
 }
 
 if(iSHIL) {
 //=================== SHIL parameters ============================
 
-AliSHIL *SHIL  = new AliSHIL("SHIL","Shielding");
+AliSHIL *SHIL  = new AliSHILv0("SHIL","Shielding");
 }
 
 
@@ -301,6 +302,7 @@ AliITS *ITS  = new AliITSv5("ITS","normal ITS");
 ITS->SetEUCLID(0);
 }
 
+
 if(iTPC) {
 //============================ TPC parameters ================================
 // --- This allows the user to specify sectors for the SLOW (TPC geometry 2)
@@ -318,40 +320,21 @@ if(iTPC) {
 //
 //-----------------------------------------------------------------------------
 
-AliTPC *TPC  = new AliTPCv2("TPC","Normal TPC");
-AliTPCD *paramd = TPC->GetDigParam();
-AliTPCParam *param = &(paramd->GetParam());
-
-// Set geometrical parameters
-
-param->SetSectorAngles(20.,0.,20.,0.);
-param->SetInnerRadiusLow(83.9);
-param->SetInnerRadiusUp(141.3);
-param->SetOuterRadiusLow(146.9);
-param->SetOuterRadiusUp(249.4);
-param->SetInSecLowEdge(81.6);
-param->SetInSecUpEdge(143.6);
-param->SetOuSecLowEdge(144.2);
-param->SetOuSecUpEdge(252.1);
-param->SetEdge(1.5);
-param->SetDeadZone(1.15);
-param->SetPadLength(2.0);
-param->SetPadWidth(0.3);
-param->SetPadPitchLength(2.05);
-param->SetPadPitchWidth(0.35);
-param->Update();
-
-if (TPC->IsVersion() != 2) paramd->Write("Param1");
+  gROOT->LoadMacro("SetTPCParam.C");
+  AliTPCParam *param = SetTPCParam();
+  AliTPC *TPC  = new AliTPCv1("TPC","Normal TPC"); //v1 is default
+  TPC->SetParam(param); // pass the parameter object to the TPC
 
 // set gas mixture
 
 TPC->SetGasMixt(2,20,10,-1,0.9,0.1,0.);
-TPC->SetSecAL(1);
-TPC->SetSecAU(1);
-TPC->SetSecLows(1, 2, 3, 1+18, 2+18, 3+18);
-TPC->SetSecUps(1+36, 2+36, 3+36, 1+38+18, 2+38+18, 3+38+18, -1,-1,-1,-1,-1,-1);
+TPC->SetSecAL(4);
+TPC->SetSecAU(4);
+TPC->SetSecLows(1,  2,  3, 19, 20, 21);
+TPC->SetSecUps(37, 38, 39, 37+18, 38+18, 39+18, -1, -1, -1, -1, -1, -1);
 TPC->SetSens(1);
 
+if (TPC->IsVersion()==1) param->Write(param->GetTitle());
 }
 
 if(iTOF) {
@@ -361,40 +344,55 @@ AliTOF *TOF  = new AliTOFv1("TOF","normal TOF");
 
 if(iRICH) {
 //=================== RICH parameters ===========================
-
-  AliRICH *RICH  = new AliRICHv0("RICH","normal RICH");
-
-  RICH->SetSMAXAR(0.03);
-  RICH->SetSMAXAL(-1);
+    AliRICH *RICH  = new AliRICHv0("RICH","normal RICH");
+    
 //
 // Version 0
 // Default Segmentation
-  AliRICHsegmentationV0* RsegV0 = new AliRICHsegmentationV0;
-  RsegV0->SetPADSIZ(.8, .8);
-  RsegV0->SetDAnod(0.8/3);
-// Default response
-  AliRICHresponseV0* Rresponse0 = new AliRICHresponseV0;
-  AliRICHresponseCkv* RresponseCkv = new AliRICHresponseCkv;
-
-//------------------------Chambers 0-6 ----------------------------
+    AliRICHSegmentationV0* SegmentationV0 = new AliRICHSegmentationV0;
+//
+//  Segmentation parameters
+    SegmentationV0->SetPadSize(0.84,0.80);
+    SegmentationV0->SetDAnod(0.84/2);
+//
+//  Geometry parameters
+    AliRICHGeometry* GeometryV0 = new AliRICHGeometryV0;
+    GeometryV0->SetGapThickness(7.6);
+    GeometryV0->SetProximityGapThickness(.4);
+    GeometryV0->SetQuartzLength(131);
+    GeometryV0->SetQuartzWidth(126.2);
+    GeometryV0->SetQuartzThickness(.5);
+    GeometryV0->SetOuterFreonLength(131);
+    GeometryV0->SetOuterFreonWidth(40.3);
+    GeometryV0->SetInnerFreonLength(131);
+    GeometryV0->SetInnerFreonWidth(40.3);
+    GeometryV0->SetFreonThickness(1);
+//
+//  Response parameters
+    AliRICHResponseV0*  Rresponse0   = new AliRICHResponseV0;
+    Rresponse0->SetSigmaIntegration(5.);
+    Rresponse0->SetChargeSlope(41.);
+    Rresponse0->SetChargeSpread(0.18, 0.18);
+    Rresponse0->SetMaxAdc(1024);
+    Rresponse0->SetAlphaFeedback(0.05);
+    Rresponse0->SetEIonisation(26.e-9);
+    Rresponse0->SetSqrtKx3(0.77459667);
+    Rresponse0->SetKx2(0.962);
+    Rresponse0->SetKx4(0.379);
+    Rresponse0->SetSqrtKy3(0.77459667);
+    Rresponse0->SetKy2(0.962);
+    Rresponse0->SetKy4(0.379);
+    Rresponse0->SetPitch(0.25);
+//
+//      
   for (Int_t i=0; i<7; i++) {
-    RICH->SetSegmentationModel(i, 1, RsegV0);
-    RICH->SetResponseModel(i, mip     , Rresponse0);
-    RICH->SetResponseModel(i, cerenkov, RresponseCkv);
-    RICH->Chamber(i).SetRSIGM(5.);
-    RICH->Chamber(i).SetMUCHSP(43.);
-    RICH->Chamber(i).SetMUSIGM(0.18, 0.18);
-    RICH->Chamber(i).SetMAXADC( 1024);
-    RICH->Chamber(i).SetSqrtKx3(0.77459667);
-    RICH->Chamber(i).SetKx2(0.962);
-    RICH->Chamber(i).SetKx4(0.379);
-    RICH->Chamber(i).SetSqrtKy3(0.77459667);
-    RICH->Chamber(i).SetKy2(0.962);
-    RICH->Chamber(i).SetKy4(0.379);
-    RICH->Chamber(i).SetPitch(0.25);
+    RICH->SetGeometryModel(i,GeometryV0);
+    RICH->SetSegmentationModel(i, SegmentationV0);
+    RICH->SetResponseModel(i, Rresponse0);
     RICH->SetNsec(i,1);
   }
 }
+
 
 if(iZDC) {
 //=================== ZDC parameters ============================
@@ -410,11 +408,22 @@ AliCASTOR *CASTOR  = new AliCASTORv1("CASTOR","normal CASTOR");
 
 if(iTRD) {
 //=================== TRD parameters ============================
-
-AliTRD *TRD  = new AliTRDv0("TRD","TRD version 0");
-// Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
-TRD->SetGasMix(0);
-TRD->SetHits(1);
+  
+  AliTRD *TRD  = new AliTRDv0("TRD","TRD fast simulator");
+  //TRD->SetHits();
+  
+  //AliTRD *TRD  = new AliTRDv1("TRD","TRD slow simulator");
+  //TRD->SetSensPlane(0);
+  //TRD->SetSensChamber(2);
+  //TRD->SetSensSector(17);
+  
+  // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
+  TRD->SetGasMix(1);
+  
+  // With hole in front of PHOS
+  TRD->SetPHOShole();
+  // With hole in front of RICH
+  TRD->SetRICHhole();
 }
 
 if(iFMD) {
@@ -743,9 +752,12 @@ AliMUON *MUON  = new AliMUONv0("MUON","normal MUON");
  MUON->SetPADSIZ(station, 1, 0.75, 0.5);
 }
  
+//=================== PHOS parameters ===========================
+
 if(iPHOS) {
   AliPHOS *PHOS  = new AliPHOSv0("PHOS","GPS2");
 }
+
 
 if(iPMD) {
 //=================== PMD parameters ============================
@@ -757,10 +769,11 @@ PMD->SetGEO(0.0, 0.2, 4.);
 PMD->SetPadSize(0.8, 1.0, 1.0, 1.5);
 
 }
-         
+
 if(iSTART) {
 //=================== START parameters ============================
 AliSTART *START  = new AliSTARTv0("START","START Detector");
 }
 
+         
 }
