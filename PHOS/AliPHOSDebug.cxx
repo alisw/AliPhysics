@@ -47,7 +47,6 @@
 #include "AliPHOSReconstructioner.h"
 #include "AliRun.h"
 #include "AliConst.h"
-#include "AliMC.h"
 
 ClassImp(AliPHOSv1)
 
