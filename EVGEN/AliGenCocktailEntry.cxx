@@ -18,13 +18,13 @@ $Log $
 */
 
 #include "AliGenCocktailEntry.h"
-#include "AliRun.h"
-#include <stdlib.h>
+#include "AliGenerator.h"
+
 
 ClassImp(AliGenCocktailEntry)
 
 
-AliGenCocktailEntry::AliGenCocktailEntry()
+    AliGenCocktailEntry::AliGenCocktailEntry()
 {
 // Default constructor
     fGenerator =0;
@@ -34,11 +34,10 @@ AliGenCocktailEntry::AliGenCocktailEntry()
     fRate=0;
     fKineBias=1;
     fBias=1;
-    fName="unknown";
 }
 
 AliGenCocktailEntry:: AliGenCocktailEntry
-(AliGenerator* Generator, TString Name, Float_t RateExp)
+(AliGenerator* Generator, char * Name, Float_t RateExp):TNamed(Name, "Generator Cocktail Entry")
 {
 // Constructor using generator type, name and rate per event
     fGenerator=Generator;
@@ -46,7 +45,6 @@ AliGenCocktailEntry:: AliGenCocktailEntry
     fFirst=-1;
     fLast=-1;
     fRate=RateExp;
-    fName=Name;
 // 	    
     fKineBias=1;
     fBias=1;
@@ -61,8 +59,8 @@ AliGenCocktailEntry::AliGenCocktailEntry(const AliGenCocktailEntry &entry)
 void AliGenCocktailEntry::PrintInfo()
 {
 // Print out information about generator entry
-printf("\n Generator: %s Generated Events: %d First: %d Last: %d",
-       (const char *) fName, fGenerator->NumberParticles(), fFirst, fLast);
+    printf("\n Generator: %s Generated Events: %d First: %d Last: %d",
+	   (const char *) fName, fGenerator->NumberParticles(), fFirst, fLast);
 }
  
 AliGenCocktailEntry& AliGenCocktailEntry::operator

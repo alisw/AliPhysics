@@ -6,19 +6,19 @@
 /* $Id$ */
 
 
-#include <TObject.h>
+#include <TNamed.h>
 #include <TString.h>
 
 class AliGenerator;
 
 
-class AliGenCocktailEntry : public TObject
+class AliGenCocktailEntry : public TNamed
 {
  public:
     AliGenCocktailEntry();
     AliGenCocktailEntry(const AliGenCocktailEntry &entry);
     AliGenCocktailEntry
-	(AliGenerator* Generator, TString Name, Float_t RateExp);
+	(AliGenerator* Generator, char* Name, Float_t RateExp);
     ~AliGenCocktailEntry(){;}
     AliGenerator* Generator() {return fGenerator;}
     void SetGenerator(AliGenerator* generator){fGenerator=generator;}
@@ -37,7 +37,6 @@ class AliGenCocktailEntry : public TObject
     Float_t fRate;              // Rate per event
     Float_t fKineBias;          // Bias due to kinematic selecion
     Float_t fBias;              // Bias
-    TString fName;              // Name of generator
  private:
     ClassDef(AliGenCocktailEntry,1) // Generator entry of AliGenCocktail
 };
