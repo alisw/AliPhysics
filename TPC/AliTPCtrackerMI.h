@@ -56,7 +56,9 @@ class AliTPCseed : public AliTPCtrack {
        return fIndex[row];
      }
      Int_t GetClusterSector(Int_t row){
-       return fIndex[row]>=0 ? ((fIndex[row]&0xff000000)>>24) :-1;
+       Int_t pica = -1;
+       if (fIndex[row]>=0) pica =  ((fIndex[row]&0xff000000)>>24);
+       return pica;
      }
     
      void SetErrorY2(Float_t sy2){fErrorY2=sy2;}
