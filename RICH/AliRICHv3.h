@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliRICH.h"
-
+#include "AliRICHChamber.h"
 class AliRICHSDigit;
 
 class AliRICHv3 : public AliRICH 

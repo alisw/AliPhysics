@@ -1,30 +1,33 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//  Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+//                                                                         *
+//  Author: The ALICE Off-line Project.                                    *
+//  Contributors are mentioned in the code where appropriate.              *
+//                                                                         *
+//  Permission to use, copy, modify and distribute this software and its   *
+//  documentation strictly for non-commercial purposes is hereby granted   *
+//  without fee, provided that the above copyright notice appears in all   *
+//  copies and that both the copyright notice and this permission notice   *
+//  appear in the supporting documentation. The authors make no claims     *
+//  about the suitability of this software for any purpose. It is          *
+//  provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
 #include "AliRICHv0.h"
+#include "AliRICHConst.h"
+#include "AliRICHChamber.h" 
+#include <AliRun.h>
+#include <AliMC.h>
 #include <TVirtualMC.h>
 #include <TPDGCode.h>
-#include "AliRICHConst.h" 
-#include <AliRun.h>
 #include <TLorentzVector.h>
-#include "AliMC.h"
+#include <TMath.h>
 
 ClassImp(AliRICHv0)
 
 void AliRICHv0::StepManager()
 {
+//This StepManager is a provision for different test-learn activities on the current MC layer  
   char *sParticle;
   switch(gMC->TrackPid()){
     case kProton:
@@ -85,7 +88,7 @@ void AliRICHv0::StepManager()
   glo[0]=x4.X();glo[1]=x4.Y();glo[2]=x4.Z();  
   gMC->Gmtod(glo,loc,1);
   Info("","glo(%+8.3f,%+8.3f,%+8.3f) r=%8.3f theta=%8.3f phi=%8.3f",
-                      glo[0],glo[1],glo[2],x4.Rho(),x4.Theta()*kR2d,x4.Phi()*kR2d);  
+                      glo[0],glo[1],glo[2],x4.Rho(),x4.Theta()*TMath::RadToDeg(),x4.Phi()*TMath::RadToDeg());  
   Info("","loc(%+8.3f,%+8.3f,%8.3f) by gMC->Gmtod()",         loc[0],loc[1],loc[2]);  
   if(gMC->VolId("CSI ")==gMC->CurrentVolID(copy0)){
     Int_t iChamber;
@@ -96,5 +99,5 @@ void AliRICHv0::StepManager()
     Info("","loc(%+8.3f,%+8.3f,%8.3f) by Global2Local",         x3.X(),x3.Y(),x3.Z());  
   }
   Info("","end of current step\n");
-}//AliRICHv0::StepManager()
+}//StepManager()
 //__________________________________________________________________________________________________

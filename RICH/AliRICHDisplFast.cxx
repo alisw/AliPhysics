@@ -12,9 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-#include "AliRICH.h"
 #include "AliRICHDisplFast.h"
+#include "AliRICH.h"
+#include "AliRICHChamber.h"
 #include "AliRICHParam.h"
 #include <AliLoader.h>
 #include <TCanvas.h>

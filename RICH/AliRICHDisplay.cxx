@@ -49,7 +49,7 @@
 #include <TRandom.h>
 #include <X3DBuffer.h>
 #include <TParticle.h>
-
+#include "AliRICHChamber.h"
 #include "AliRun.h"
 #include "AliPDG.h"
 #include "AliDetector.h"

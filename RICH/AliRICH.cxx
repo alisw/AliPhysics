@@ -1,18 +1,21 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//  **************************************************************************
+//  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+//  *                                                                        *
+//  * Author: The ALICE Off-line Project.                                    *
+//  * Contributors are mentioned in the code where appropriate.              *
+//  *                                                                        *
+//  * Permission to use, copy, modify and distribute this software and its   *
+//  * documentation strictly for non-commercial purposes is hereby granted   *
+//  * without fee, provided that the above copyright notice appears in all   *
+//  * copies and that both the copyright notice and this permission notice   *
+//  * appear in the supporting documentation. The authors make no claims     *
+//  * about the suitability of this software for any purpose. It is          *
+//  * provided "as is" without express or implied warranty.                  *
+//  **************************************************************************
 
+#include "AliRICH.h"
+#include "AliRICHParam.h"
+#include "AliRICHChamber.h"
 #include <TArrayF.h>
 #include <TGeometry.h>
 #include <TBRIK.h>
@@ -21,11 +24,9 @@
 #include <TNode.h> 
 #include <TObjArray.h>
 #include <AliMagF.h>
-#include "AliRICH.h"
-#include "AliRICHParam.h"
 #include <AliRun.h>
 #include <AliRunDigitizer.h>
-#include "AliMC.h"
+#include <AliMC.h>
 #include <TVirtualMC.h>
  
 ClassImp(AliRICHhit)
@@ -39,7 +40,7 @@ ClassImp(AliRICHdigit)
 //__________________________________________________________________________________________________
 void AliRICHdigit::Print(Option_t*)const
 {
-  Info("","ID=%6i, chamber=%2i, PadX=%3i, PadY=%3i, Q=%6.2f, TID1=%5i, TID2=%5i, TID3=%5i",
+  Info("","ID=%6i, chamber=%2i, PadX=%3i, PadY=%3i, Q=%8.2f, TID1=%5i, TID2=%5i, TID3=%5i",
          Id(),fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]);
 }
 //__________________________________________________________________________________________________
@@ -62,7 +63,8 @@ ClassImp(AliRICH)
 //__________________________________________________________________________________________________
 AliRICH::AliRICH()
         :AliDetector() 
-{//Default ctor should not contain any new operators
+{
+//Default ctor should not contain any new operators
   fpParam     =0;
   fChambers   =0;   
 //AliDetector ctor deals with Hits and Digits  
@@ -77,10 +79,10 @@ AliRICH::AliRICH()
 //__________________________________________________________________________________________________
 AliRICH::AliRICH(const char *name, const char *title)
         :AliDetector(name,title)
-{//Named ctor
+{
+//Named ctor
   if(GetDebug())Info("named ctor","Start.");
   fpParam     =   new AliRICHParam;
-  Param()->GenSigmaThMap();
   fChambers = 0;  CreateChambers();
 //AliDetector ctor deals with Hits and Digits (reset them to 0, does not create them)
   fHits=       0;     CreateHits();          gAlice->GetMCApp()->AddHitList(fHits);
@@ -96,7 +98,8 @@ AliRICH::AliRICH(const char *name, const char *title)
 }//AliRICH::AliRICH(const char *name, const char *title)
 //__________________________________________________________________________________________________
 AliRICH::~AliRICH()
-{//dtor
+{
+//dtor
   if(GetDebug()) Info("dtor","Start.");
 
   if(fpParam)    delete fpParam;
@@ -114,7 +117,8 @@ AliRICH::~AliRICH()
 }//AliRICH::~AliRICH()
 //__________________________________________________________________________________________________
 void AliRICH::Hits2SDigits()
-{//Create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
+{
+//Create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
   if(GetDebug()) Info("Hit2SDigits","Start.");
   GetLoader()->LoadHits(); 
   
@@ -155,7 +159,8 @@ void AliRICH::Hits2SDigits()
 }//void AliRICH::Hits2SDigits()
 //__________________________________________________________________________________________________
 void AliRICH::SDigits2Digits()
-{//Generate digits from sdigits.
+{
+//Generate digits from sdigits.
   if(GetDebug()) Info("SDigits2Digits","Start.");
 
   GetLoader()->LoadSDigits();
@@ -199,16 +204,11 @@ void AliRICH::SDigits2Digits()
   GetLoader()->UnloadSDigits();  GetLoader()->UnloadDigits();  
   ResetSDigits();                ResetDigits();
   if(GetDebug()) Info("SDigits2Digits","Stop.");
-}//void AliRICH::SDigits2Digits()
-//__________________________________________________________________________________________________
-void AliRICH::Digits2Reco()
-{//Generate clusters from digits then generate recos from clusters or digits
-  if(GetDebug()) Info("Digits2reco","Start.");
-
-}//void AliRICH::Digits2Reco()  
+}//SDigits2Digits()
 //__________________________________________________________________________________________________
 void AliRICH::BuildGeometry() 
-{//Builds a TNode geometry for event display
+{
+//Builds a TNode geometry for event display
   if(GetDebug())Info("BuildGeometry","Start.");
   
   TNode *node, *subnode, *top;
@@ -248,8 +248,6 @@ void AliRICH::BuildGeometry()
   if(GetDebug())Info("BuildGeometry","Stop.");    
 }//void AliRICH::BuildGeometry()
 
-static Int_t kCSI=6;
-static Int_t kGAP=9;
 //______________________________________________________________________________
 void AliRICH::CreateMaterials()
 {
@@ -418,7 +416,7 @@ void AliRICH::CreateMaterials()
   gMC->SetCerenkov(idtmed[1010], 26, ppckov, abscoOpaqueQuarz, efficAll,  rIndexOpaqueQuarz);
 }//void AliRICH::CreateMaterials()
 //__________________________________________________________________________________________________
-Float_t AliRICH::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
+Float_t AliRICH::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)const
 {
 
     //ENE(EV), PDOTI=COS(INC.ANG.), PDOTR=COS(POL.PLANE ROT.ANG.)
@@ -473,26 +471,27 @@ Float_t AliRICH::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
       
     fresn = fresn*rO;
     return(fresn);
-}//Float_t AliRICH::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
+}//Fresnel()
 //__________________________________________________________________________________________________
-Float_t AliRICH::AbsoCH4(Float_t x)
-{//Evaluate the absorbtion lenght of CH4
+Float_t AliRICH::AbsoCH4(Float_t x)const
+{
+//Evaluate the absorbtion lenght of CH4
   Float_t sch4[9] = {.12,.16,.23,.38,.86,2.8,7.9,28.,80.};              //MB X 10^22
   Float_t em[9] = {8.1,8.158,8.212,8.267,8.322,8.378,8.435,8.493,8.55};
   const Float_t kLoschmidt=2.686763e19;                                      // LOSCHMIDT NUMBER IN CM-3
   const Float_t kPressure=750.,kTemperature=283.;                                      
-  const Float_t pn=kPressure/760.;
-  const Float_t tn=kTemperature/273.16;
-  const Float_t c0=-1.655279e-1;
-  const Float_t c1=6.307392e-2;
-  const Float_t c2=-8.011441e-3;
-  const Float_t c3=3.392126e-4;
+  const Float_t kPn=kPressure/760.;
+  const Float_t kTn=kTemperature/273.16;
+  const Float_t kC0=-1.655279e-1;
+  const Float_t kC1=6.307392e-2;
+  const Float_t kC2=-8.011441e-3;
+  const Float_t kC3=3.392126e-4;
     		
   Float_t crossSection=0;                        
   if (x<7.75) 
     crossSection=.06e-22;
   else if(x>=7.75 && x<=8.1){                 //------ METHANE CROSS SECTION cm-2 ASTROPH. J. 214, L47 (1978)                                               
-	crossSection=(c0+c1*x+c2*x*x+c3*x*x*x)*1.e-18;
+	crossSection=(kC0+kC1*x+kC2*x*x+kC3*x*x*x)*1.e-18;
   }else if (x> 8.1){
     Int_t j=0;
     while (x<=em[j] || x>=em[j+1]){
@@ -502,12 +501,13 @@ Float_t AliRICH::AbsoCH4(Float_t x)
     }
   }//if
     
-    Float_t density=kLoschmidt*pn/tn; //CH4 molecular density 1/cm-3
+    Float_t density=kLoschmidt*kPn/kTn; //CH4 molecular density 1/cm-3
     return 1./(density*crossSection);
 }//AbsoCH4()
 //__________________________________________________________________________________________________
 void AliRICH::MakeBranch(Option_t* option)
-{//Create Tree branches for the RICH.
+{
+//Create Tree branches for the RICH.
   if(GetDebug())Info("MakeBranch","Start with option= %s.",option);
     
   const Int_t kBufferSize = 4000;
@@ -544,7 +544,8 @@ void AliRICH::MakeBranch(Option_t* option)
 }//void AliRICH::MakeBranch(Option_t* option)
 //__________________________________________________________________________________________________
 void AliRICH::SetTreeAddress()
-{//Set branch address for the Hits and Digits Tree.
+{
+//Set branch address for the Hits and Digits Tree.
   if(GetDebug())Info("SetTreeAddress","Start.");
       
   TBranch *branch;
@@ -582,16 +583,18 @@ void AliRICH::SetTreeAddress()
 //__________________________________________________________________________________________________
 void AliRICH::Print(Option_t *option)const
 {
+//Debug printout
   TObject::Print(option);
   Param()->Dump();
   fChambers->Print(option);  
 }//void AliRICH::Print(Option_t *option)const
 //__________________________________________________________________________________________________
 void AliRICH::CreateGeometry()
-{//Creates detailed geometry simulation (currently GEANT volumes tree)         
+{
+//Creates detailed geometry simulation (currently GEANT volumes tree)         
   if(GetDebug())Info("CreateGeometry","Start.");
 //Opaque quartz thickness
-  Float_t oqua_thickness = .5;
+  Float_t oquaThickness = .5;
 //CsI dimensions
   Float_t pcX=Param()->PcSizeX();
   Float_t pcY=Param()->PcSizeY();
@@ -632,14 +635,14 @@ void AliRICH::CreateGeometry()
   par[0]=Param()->InnerFreonWidth()/2;par[1]=Param()->FreonThickness()/2;par[2]=Param()->InnerFreonLength()/2; 
   gMC->Gsvolu("OQF2", "BOX ", idtmed[1007], par, 3);
 //Freon 
-  par[0]=Param()->OuterFreonWidth()/2 - oqua_thickness;
+  par[0]=Param()->OuterFreonWidth()/2 - oquaThickness;
   par[1]=Param()->FreonThickness()/2;
-  par[2]=Param()->OuterFreonLength()/2 - 2*oqua_thickness; 
+  par[2]=Param()->OuterFreonLength()/2 - 2*oquaThickness; 
   gMC->Gsvolu("FRE1", "BOX ", idtmed[1003], par, 3);
 
-  par[0]=Param()->InnerFreonWidth()/2 - oqua_thickness;
+  par[0]=Param()->InnerFreonWidth()/2 - oquaThickness;
   par[1]=Param()->FreonThickness()/2;
-  par[2]=Param()->InnerFreonLength()/2 - 2*oqua_thickness; 
+  par[2]=Param()->InnerFreonLength()/2 - 2*oquaThickness; 
   gMC->Gsvolu("FRE2", "BOX ", idtmed[1003], par, 3);    
 //Methane 
   par[0]=pcX/2;par[1]=Param()->GapThickness()/2;par[2]=pcY/2;         gMC->Gsvolu("META","BOX ",idtmed[1004], par, 3);
@@ -725,11 +728,11 @@ void AliRICH::CreateGeometry()
   gMC->Gspos("SMSH", 1, "SRIC", 0., 1.276 + .25, pcY/2 + (68.35 - pcY/2)/2, 0, "ONLY");
   gMC->Gspos("SMSH", 2, "SRIC", 0., 1.276 + .25, - pcY/2 - (68.35 - pcY/2)/2, 0, "ONLY");
 //Freon supports
-  Float_t supp_y = 1.276 - Param()->GapThickness()/2- Param()->QuartzThickness() -Param()->FreonThickness() - .2 + .3; //y position of freon supports
-  gMC->Gspos("SFLG", 1, "SRIC", Param()->QuartzWidth()/2 + (66.3 - Param()->QuartzWidth()/2)/2, supp_y, 0., 0, "ONLY");
-  gMC->Gspos("SFLG", 2, "SRIC", - Param()->QuartzWidth()/2 - (66.3 - Param()->QuartzWidth()/2)/2, supp_y, 0., 0, "ONLY");
-  gMC->Gspos("SFSH", 1, "SRIC", 0., supp_y, Param()->QuartzLength()/2 + (68.35 - Param()->QuartzLength()/2)/2, 0, "ONLY");
-  gMC->Gspos("SFSH", 2, "SRIC", 0., supp_y, - Param()->QuartzLength()/2 - (68.35 - Param()->QuartzLength()/2)/2, 0, "ONLY");
+  Float_t suppY = 1.276 - Param()->GapThickness()/2- Param()->QuartzThickness() -Param()->FreonThickness() - .2 + .3; //y position of freon supports
+  gMC->Gspos("SFLG", 1, "SRIC", Param()->QuartzWidth()/2 + (66.3 - Param()->QuartzWidth()/2)/2, suppY, 0., 0, "ONLY");
+  gMC->Gspos("SFLG", 2, "SRIC", - Param()->QuartzWidth()/2 - (66.3 - Param()->QuartzWidth()/2)/2, suppY, 0., 0, "ONLY");
+  gMC->Gspos("SFSH", 1, "SRIC", 0., suppY, Param()->QuartzLength()/2 + (68.35 - Param()->QuartzLength()/2)/2, 0, "ONLY");
+  gMC->Gspos("SFSH", 2, "SRIC", 0., suppY, - Param()->QuartzLength()/2 - (68.35 - Param()->QuartzLength()/2)/2, 0, "ONLY");
   AliMatrix(idrotm[1019], 0., 0., 90., 0., 90., 90.);
 //Place spacers
   Int_t nspacers = 30;
@@ -793,7 +796,8 @@ void AliRICH::CreateGeometry()
 }//void AliRICH::CreateGeometry()
 //__________________________________________________________________________________________________
 void AliRICH::CreateChambers()
-{//create all RICH Chambers on each call. Previous chambers deleted
+{
+//create all RICH Chambers on each call. Previous chambers deleted
   if(fChambers) delete fChambers;
   if(GetDebug())Info("CreateChambers","Creating RICH chambers.");
   fChambers=new TObjArray(kNCH);
@@ -802,7 +806,8 @@ void AliRICH::CreateChambers()
 }//void AliRICH::CreateChambers()
 //__________________________________________________________________________________________________
 void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
-{// Generate FeedBack photons
+{
+// Generate FeedBack photons
   Int_t j;
   Float_t cthf, phif, enfp = 0, sthf;
   Float_t e1[3], e2[3], e3[3];

@@ -67,8 +67,6 @@ public:
   inline static Int_t   Loc2TotQdc(TVector3 locX3,Double_t eloss,Int_t iPid, Int_t &sector);
   inline static Double_t Loc2PadFrac(TVector3 locX3,Int_t padx,Int_t pady);
   
-         void   SigGenInit(Double_t,Double_t){;}
-         Bool_t SigGenCond(Double_t,Double_t){return kFALSE;}
   inline static Int_t   Loc2Sec(Double_t &x,Double_t &y); 
   inline static Int_t   Pad2Sec(Int_t &padx,Int_t &pady); 
   inline Bool_t IsOverTh(Int_t iChamber, Int_t x, Int_t y, Double_t q);
@@ -214,14 +212,14 @@ Double_t AliRICHParam::Loc2PadFrac(TVector3 hitX3,Int_t padx,Int_t pady)
 //__________________________________________________________________________________________________
 Double_t AliRICHParam::Mathieson(Double_t xMin,Double_t yMin,Double_t xMax,Double_t yMax)
 {//see NIM A370(1988)602-603 
-  const Double_t SqrtKx3=0.77459667;const Double_t Kx2=0.962;const Double_t Kx4=0.379;
-  const Double_t SqrtKy3=0.77459667;const Double_t Ky2=0.962;const Double_t Ky4=0.379;
+  const Double_t kSqrtKx3=0.77459667;const Double_t kX2=0.962;const Double_t kX4=0.379;
+  const Double_t kSqrtKy3=0.77459667;const Double_t kY2=0.962;const Double_t kY4=0.379;
 
-  Double_t ux1=SqrtKx3*TMath::TanH(Kx2*xMin);
-  Double_t ux2=SqrtKx3*TMath::TanH(Kx2*xMax);    
-  Double_t uy1=SqrtKy3*TMath::TanH(Ky2*yMin);
-  Double_t uy2=SqrtKy3*TMath::TanH(Ky2*yMax);
-  return 4*Kx4*(TMath::ATan(ux2)-TMath::ATan(ux1))*Ky4*(TMath::ATan(uy2)-TMath::ATan(uy1));
+  Double_t ux1=kSqrtKx3*TMath::TanH(kX2*xMin);
+  Double_t ux2=kSqrtKx3*TMath::TanH(kX2*xMax);    
+  Double_t uy1=kSqrtKy3*TMath::TanH(kY2*yMin);
+  Double_t uy2=kSqrtKy3*TMath::TanH(kY2*yMax);
+  return 4*kX4*(TMath::ATan(ux2)-TMath::ATan(ux1))*kY4*(TMath::ATan(uy2)-TMath::ATan(uy1));
 }  
 //__________________________________________________________________________________________________
 void AliRICHParam::Loc2Area(TVector3 hitX3,Int_t &iPadXmin,Int_t &iPadYmin,Int_t &iPadXmax,Int_t &iPadYmax)

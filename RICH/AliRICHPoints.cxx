@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  This class contains the points for the ALICE event display               //
@@ -27,20 +25,21 @@
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+#include "AliRICHPoints.h"
+#include "AliRICHDisplay.h"
+#include "AliRICHChamber.h"
+#include "AliRICH.h"
+#include "AliRICHSDigit.h"
 #include <TPad.h>
 #include <TTree.h>
 #include <TView.h>
 #include <TMath.h>
 #include <TPolyMarker3D.h>
 #include <TMarker3DBox.h>
-
-#include "AliRICH.h"
 #include <TParticle.h>
-#include "AliRICHDisplay.h"
-#include "AliRICHPoints.h"
 #include <AliRun.h>
-#include "AliRICHSDigit.h"
 #include <AliMC.h>
+#include <TRotMatrix.h>
 
 const Int_t kMaxNipx=400, kMaxNipy=800;
  

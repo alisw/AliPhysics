@@ -12,7 +12,7 @@
 #include <AliDigit.h>
 
 #include "AliRICHConst.h"
-#include "AliRICHChamber.h"
+class AliRICHChamber;
 #include "AliRICHParam.h"
 
 #include "AliRICHSDigit.h"
@@ -28,24 +28,24 @@ public:
   inline   AliRICHhit(Int_t track,Int_t iPID,Int_t iChamber,TLorentzVector x4,Float_t eloss);
   virtual ~AliRICHhit()         {;}
     
-  Int_t   C()                   {return fChamber;}
-  Int_t   Chamber()             {return fChamber;}
-  Int_t   Pid()                 {return fPid;}    
-  Int_t   Particle()            {return fPid;}
-  Float_t Theta()               {return fTheta;}
-  Float_t Phi()                 {return fPhi;}
-  Float_t Tlength()             {return fTlength;}
-  Float_t Eloss()               {return fEloss;}
-  Float_t Loss()                {return fLoss;}
-  Float_t PHfirst()             {return fPHfirst;}
-  Float_t PHlast()              {return fPHlast;}
-  Float_t MomX()                {return fMomX;}
-  Float_t MomY()                {return fMomY;}
-  Float_t MomZ()                {return fMomZ;}
-  Float_t CerenkovAngle()       {return fCerenkovAngle;}
-  Float_t MomFreoX()            {return fMomFreoX;}
-  Float_t MomFreoY()            {return fMomFreoY;}
-  Float_t MomFreoZ()            {return fMomFreoZ;}
+  Int_t   C()                   const{return fChamber;}
+  Int_t   Chamber()             const{return fChamber;}
+  Int_t   Pid()                 const{return fPid;}    
+  Int_t   Particle()            const{return fPid;}
+  Float_t Theta()               const{return fTheta;}
+  Float_t Phi()                 const{return fPhi;}
+  Float_t Tlength()             const{return fTlength;}
+  Float_t Eloss()               const{return fEloss;}
+  Float_t Loss()                const{return fLoss;}
+  Float_t PHfirst()             const{return fPHfirst;}
+  Float_t PHlast()              const{return fPHlast;}
+  Float_t MomX()                const{return fMomX;}
+  Float_t MomY()                const{return fMomY;}
+  Float_t MomZ()                const{return fMomZ;}
+  Float_t CerenkovAngle()       const{return fCerenkovAngle;}
+  Float_t MomFreoX()            const{return fMomFreoX;}
+  Float_t MomFreoY()            const{return fMomFreoY;}
+  Float_t MomFreoZ()            const{return fMomFreoZ;}
   void    Print(Option_t *option="")const;      //virtual
 protected:
   Int_t     fChamber;                      //chamber number
@@ -108,7 +108,7 @@ public:
   inline   AliRICHCerenkov();
   inline   AliRICHCerenkov(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *Cerenkovs);
   virtual ~AliRICHCerenkov() {;}
-public:
+protected:
   Int_t     fChamber;          //chamber number
   Float_t   fTheta,fPhi;       //incident theta phi angles in degrees      
   Float_t   fTlength;          //track length inside the chamber
@@ -207,8 +207,9 @@ enum ClusterStatus {kOK,kEdge,kShape,kSize,kRaw};
 class AliRICHcluster :public TObject
 {
 public:
-           AliRICHcluster()                                     {fSize=fQdc=fStatus=fChamber=fDimXY=kBad;fX=fY=kBad;fDigits=0;}
-  virtual ~AliRICHcluster() {delete fDigits;}  
+                    AliRICHcluster()                                 {fSize=fQdc=fStatus=fChamber=fDimXY=kBad;fX=fY=kBad;fDigits=0;}
+  virtual          ~AliRICHcluster()                                 {delete fDigits;}  
+  AliRICHcluster&   operator=(const AliRICHcluster&)                 {return *this;}
          Int_t      Size()                                      const{return fSize;}                       //
          Int_t      DimXY()                                     const{return fDimXY;}                      //
          Int_t      C()                                         const{return fChamber/10;}                 //
@@ -279,7 +280,6 @@ public:
   virtual Int_t   IsVersion()                                            const =0;            
           void    Hits2SDigits();                                                                                 //virtual
           void    SDigits2Digits();                                                                               //virtual
-          void    Digits2Reco();                                                                                  //virtual
   
   inline  void    CreateHits();    
   inline  void    CreateSDigits();  
@@ -300,16 +300,12 @@ public:
           
   AliRICHChamber* C(Int_t iC)           const{return (AliRICHChamber*)fChambers->At(iC-1);}
   AliRICHParam*   Param()               const{return fpParam;}
-  
-  //  AliRICHhit*     FirstHit(Int_t iTrkN)      {return (AliRICHhit*)AliDetector::FirstHit(iTrkN);}                   //virtual
-  //  AliRICHhit*     NextHit()                  {return (AliRICHhit*)AliDetector::NextHit();}                         //virtual 
-  
           void    CreateChambers();         
           void    CreateMaterials(); //virtual
   virtual void    BuildGeometry();   //virtual
   virtual void    CreateGeometry();  //virtual
-          Float_t AbsoCH4(Float_t x);
-          Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola);
+          Float_t AbsoCH4(Float_t x)const;
+          Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)const;
   
   virtual void    StepManager()=0;
           void    GenerateFeedbacks(Int_t iChamber,Float_t eloss);
@@ -318,7 +314,7 @@ public:
           void    SetTreeAddress();//virtual
 // OLD staff OLD staff    
   inline  void    AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs);
-  inline  void    AddSpecialOld(Int_t *);      
+  inline  void    AddSpecialOld(Int_t *array);      
           
   inline  void    CreateCerenkovsOld();  
   inline  void    CreateSpecialsOld();   
@@ -332,6 +328,7 @@ public:
 //          Int_t DistancetoPrimitive(Int_t /*px*/, Int_t /*py*/)      {return 9999;}
     
 protected:  
+  enum       {kCSI=6,kGAP=9};
   AliRICHParam         *fpParam;             //main RICH parametrization     
   TObjArray            *fChambers;           //list of RICH chambers
                 //fHits and fDigits belong to AliDetector

@@ -1,45 +1,42 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//  **************************************************************************
+//  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+//  *                                                                        *
+//  * Author: The ALICE Off-line Project.                                    *
+//  * Contributors are mentioned in the code where appropriate.              *
+//  *                                                                        *
+//  * Permission to use, copy, modify and distribute this software and its   *
+//  * documentation strictly for non-commercial purposes is hereby granted   *
+//  * without fee, provided that the above copyright notice appears in all   *
+//  * copies and that both the copyright notice and this permission notice   *
+//  * appear in the supporting documentation. The authors make no claims     *
+//  * about the suitability of this software for any purpose. It is          *
+//  * provided "as is" without express or implied warranty.                  *
+//  **************************************************************************
 
 #include "AliRICHChamber.h"
-#include "AliRICHConst.h" //for kR2d
 #include "AliRICHParam.h"
-#include <TRandom.h>
-#include <TRotMatrix.h>
-#include "AliRICHTresholdMap.h"
 #include "AliSegmentation.h"
 #include "AliRICHSegmentationV0.h"
 #include "AliRICHGeometry.h"
 #include "AliRICHResponse.h"
+#include <TRotMatrix.h>
 
 ClassImp(AliRICHChamber)	
 //______________________________________________________________________________    
 AliRICHChamber::AliRICHChamber() 
-{//default ctor
+{
+//default ctor
   fpParam=0;    
   fpRotMatrix=0;
   
     fSegmentation = 0;
     fResponse = 0;
     fGeometry = 0;
-    fTresh = 0;
-    for(Int_t i=0; i<50; ++i) fIndexMap[i] = 0;
 }
 //______________________________________________________________________________
 AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
-{//main ctor. Defines all geometry parameters for the given module.
+{
+//main ctor. Defines all geometry parameters for the given module.
   SetToZenith();//put to up position   
   switch(iModuleN){
     case 1:
@@ -75,19 +72,19 @@ AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
       Fatal("named ctor","Wrong chamber number %i, check CreateChamber ctor",iModuleN);
   }//switch(iModuleN)
   RotateZ(pParam->AngleRot());//apply common rotation  
-  fpRotMatrix=new TRotMatrix("rot"+fName,"rot"+fName, Rot().ThetaX()*kR2d, Rot().PhiX()*kR2d,
-                                                      Rot().ThetaY()*kR2d, Rot().PhiY()*kR2d,
-                                                      Rot().ThetaZ()*kR2d, Rot().PhiZ()*kR2d);
+  fpRotMatrix=new TRotMatrix("rot"+fName,"rot"+fName, Rot().ThetaX()*TMath::RadToDeg(), Rot().PhiX()*TMath::RadToDeg(),
+                                                      Rot().ThetaY()*TMath::RadToDeg(), Rot().PhiY()*TMath::RadToDeg(),
+                                                      Rot().ThetaZ()*TMath::RadToDeg(), Rot().PhiZ()*TMath::RadToDeg());
   fpParam=pParam;
   fX=fCenterV3.X();fY=fCenterV3.Y();fZ=fCenterV3.Z();
   
   fSegmentation = 0;  fResponse = 0;    fGeometry = 0;
-  fTresh = 0;    for(Int_t i=0; i<50; ++i) fIndexMap[i] = 0;
 }
 //______________________________________________________________________________
 
 void AliRICHChamber::LocaltoGlobal(Float_t local[3],Float_t global[3])
-{//Local coordinates to global coordinates transformation
+{
+//Local coordinates to global coordinates transformation
 
     Double_t *pMatrix;
     pMatrix =  fpRotMatrix->GetMatrix();
@@ -100,7 +97,8 @@ void AliRICHChamber::LocaltoGlobal(Float_t local[3],Float_t global[3])
 }
 
 void AliRICHChamber::GlobaltoLocal(Float_t global[3],Float_t local[3])
-{// Global coordinates to local coordinates transformation
+{
+// Global coordinates to local coordinates transformation
     TMatrix matrixCopy(3,3);
     Double_t *pMatrixOrig = fpRotMatrix->GetMatrix();
     for(Int_t i=0;i<3;i++)
@@ -119,7 +117,8 @@ void AliRICHChamber::GlobaltoLocal(Float_t global[3],Float_t local[3])
 
 void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 				    Int_t& iNpads,Float_t cluster[5][500],ResponseType res) 
-{//Generates pad hits (simulated cluster) using the segmentation and the response model
+{
+//Generates pad hits (simulated cluster) using the segmentation and the response model
 
   Float_t local[3],global[3];
 // Width of the integration area
@@ -169,26 +168,13 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
       iNpads++;
     }
   }//pad loop
-}//void AliRICHChamber::DisIntegration(...
-//__________________________________________________________________________________________________
-void AliRICHChamber::GenerateTresholds()
-{//Generates random treshold charges for all pads
-  Int_t nx = fSegmentation->Npx();
-  Int_t ny = fSegmentation->Npy();
-
-  fTresh = new AliRICHTresholdMap(fSegmentation);
-  for(Int_t i=-nx/2;i<nx/2;i++){
-    for(Int_t j=-ny/2;j<ny/2;j++){
-      Int_t pedestal = (Int_t)(gRandom->Gaus(50, 10));
-      fTresh->SetHit(i,j,pedestal);
-    }
-  }      
-}//void AliRICHChamber::GenerateTresholds()
+}//DisIntegration(...
 //__________________________________________________________________________________________________
 void AliRICHChamber::Print(Option_t *) const
 {
+//debug printout method 
   printf("%s r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f  %6.2f,%6.2f %6.2f,%6.2f %6.2f,%6.2f\n",fName.Data(),
                      Rho(), ThetaD(),PhiD(),   X(),    Y(),    Z(),
                      ThetaXd(),PhiXd(),ThetaYd(),PhiYd(),ThetaZd(),PhiZd());
-}//void AliRICHChamber::Print(Option_t *option)const
+}//Print()
 //__________________________________________________________________________________________________

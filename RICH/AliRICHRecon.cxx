@@ -25,6 +25,7 @@
 #include "AliRICH.h"
 #include "AliRICHRecon.h"
 #include "AliRICHParam.h"
+#include "AliRICHChamber.h"
 #include <AliLoader.h>
 #include <AliRun.h>
 #include <AliStack.h>

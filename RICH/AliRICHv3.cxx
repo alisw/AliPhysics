@@ -40,7 +40,6 @@
 #include "AliRun.h"
 #include "AliMC.h"
 
-
 ClassImp(AliRICHv3)
 
 //______________________________________________________________

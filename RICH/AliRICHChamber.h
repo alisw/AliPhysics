@@ -4,28 +4,21 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <TRotMatrix.h>
 #include <TVector3.h>
 #include <TMath.h>
 #include <TRotation.h>
 #include <TLorentzVector.h>
-#include "AliRICHConst.h"
 #include "AliRICHParam.h"
-#include "AliRICHTresholdMap.h"
 #include "AliSegmentation.h"
-#include "AliRICHGeometry.h"
-#include "AliRICHResponse.h"
+class AliRICHGeometry;
+class AliRICHResponse;
+class TRotMatrix;
 
 typedef enum {kMip, kPhoton} ResponseType;
 class AliRICHParam;
 
 class AliRICHChamber : public TNamed
 {
-public:
-    
-   Int_t                fIndexMap[50];   //indeces of tresholds
-   AliRICHTresholdMap*  fTresh;          //map of tresholds
-
 public:
            AliRICHChamber();
            AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam);
@@ -35,7 +28,7 @@ public:
   
   TRotMatrix* RotMatrix()          const{return fpRotMatrix;}
   const char* RotMatrixName()      const{return "rot"+fName;}
-  TRotation   Rot()                     {return fRot;}
+  TRotation   Rot()                const{return fRot;}
   Double_t    Rho()                const{return fCenterV3.Mag();} 
   Double_t    ThetaD()             const{return fCenterV3.Theta()*TMath::RadToDeg();}    
   Double_t    PhiD()               const{return fCenterV3.Phi()*TMath::RadToDeg();}    
@@ -44,7 +37,7 @@ public:
   Double_t    ThetaYd()            const{return fRot.ThetaY()*TMath::RadToDeg();}    
   Double_t    PhiYd()              const{return fRot.PhiY()*TMath::RadToDeg();}    
   Double_t    ThetaZd()            const{return fRot.ThetaZ()*TMath::RadToDeg();}    
-  Double_t    PhiZd()              const{return fRot.PhiZ()*kR2d;}    
+  Double_t    PhiZd()              const{return fRot.PhiZ()*TMath::RadToDeg();}    
   void        RotateX(Double_t a)       {fRot.RotateX(a);fCenterV3.RotateX(a);fPcX3.RotateX(a);}
   void        RotateY(Double_t a)       {fRot.RotateY(a);fCenterV3.RotateY(a);fPcX3.RotateY(a);}
   void        RotateZ(Double_t a)       {fRot.RotateZ(a);fCenterV3.RotateZ(a);fPcX3.RotateZ(a);}
@@ -65,7 +58,6 @@ public:
    
   void LocaltoGlobal(Float_t pos[3],Float_t Localpos[3]);//Transformation from local to global coordinates, chamber-dependant
   void GlobaltoLocal(Float_t pos[3],Float_t localpos[3]);//Transformation from Global to local coordinates, chamber-dependant 
-  void GenerateTresholds();                              //Generate pad dependent tresholds
   void DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit, Int_t&x, Float_t newclust[6][500], ResponseType res);// Cluster formation method
   void    Init(Int_t id)           {fSegmentation->Init(id);} // Recalculates all the values after some of them have been changed
   void              SetGeometryModel(AliRICHGeometry* pRICHGeometry)            {fGeometry=pRICHGeometry;}        

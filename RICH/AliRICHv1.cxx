@@ -1,26 +1,27 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+// **************************************************************************
+// * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+// *                                                                        *
+// * Author: The ALICE Off-line Project.                                    *
+// * Contributors are mentioned in the code where appropriate.              *
+// *                                                                        *
+// * Permission to use, copy, modify and distribute this software and its   *
+// * documentation strictly for non-commercial purposes is hereby granted   *
+// * without fee, provided that the above copyright notice appears in all   *
+// * copies and that both the copyright notice and this permission notice   *
+// * appear in the supporting documentation. The authors make no claims     *
+// * about the suitability of this software for any purpose. It is          *
+// * provided "as is" without express or implied warranty.                  *
+// **************************************************************************
 
 
+#include "AliRICHv1.h"
+#include "AliRICHParam.h"
+#include "AliRICHChamber.h"
 #include <TParticle.h> 
 #include <TRandom.h> 
 #include <TVirtualMC.h>
 #include <TPDGCode.h>
 
-#include "AliRICHv1.h"
-#include "AliRICHParam.h"
 #include <AliConst.h>
 #include <AliPDG.h>
 #include <AliRun.h>
@@ -28,21 +29,9 @@
 
 ClassImp(AliRICHv1)    
 //______________________________________________________________________________
-AliRICHv1::AliRICHv1(const char *name, const char *title)
-          :AliRICH(name,title)
-{// Full version of RICH with hits and diagnostics
-  if(GetDebug())Info("named ctor","Start.");
-  if(GetDebug())Info("named ctor","Stop.");  
-}//named ctor
-//______________________________________________________________________________
-void AliRICHv1::Init()
-{//nothing to do here, all the work in ctor or CreateGeometry()
-  if(GetDebug())Info("Init","Start.");
-  if(GetDebug())Info("Init","Stop.");    
-}//void AliRICHv1::Init()
-//______________________________________________________________________________
 void AliRICHv1::StepManager()
-{//Full Step Manager
+{
+//Full Step Manager
 
   Int_t          copy, id;
   static Int_t   iCurrentChamber;
@@ -198,7 +187,7 @@ void AliRICHv1::StepManager()
 	
         gMC->Gmtod(pos,localPos,1);     gMC->Gmtod(mom,localMom,2);
 
-	Param()->SigGenInit(localPos[0],localPos[2]);
+	//Param()->SigGenInit(localPos[0],localPos[2]);
         ckovData[0]=gMC->TrackPid();   
         ckovData[1]=pos[0];      ckovData[2]=pos[1];    ckovData[3]=pos[2];            
         ckovData[4]=theta;       ckovData[5]=phi;       //theta-phi angles of incidence 
@@ -271,7 +260,7 @@ void AliRICHv1::StepManager()
         tlength = 0;        eloss   = 0;        fFreonProd = 0;
         C(iCurrentChamber)->LocaltoGlobal(localPos,hits+1);
           
-        Param()->SigGenInit(localPos[0], localPos[2]);
+        //Param()->SigGenInit(localPos[0], localPos[2]);
       }/*MIP+GAP+Enter*/else if(gMC->IsTrackExiting()||gMC->IsTrackStop()||gMC->IsTrackDisappeared()){//MIP+GAP+Exit
         gMC->SetMaxStep(kBig);
 	eloss   += destep;
@@ -288,8 +277,8 @@ void AliRICHv1::StepManager()
         }
 	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);//MIP HIT MIP+GAP+Exit
 	eloss = 0; 
-      }/*MIP+GAP+Exit*/else if(Param()->SigGenCond(localPos[0], localPos[2])){//MIP+GAP+Spec
-        Param()->SigGenInit(localPos[0], localPos[2]);
+      }/*MIP+GAP+Exit*/else if(1/*Param()->SigGenCond(localPos[0], localPos[2])*/){//MIP+GAP+Spec
+        //Param()->SigGenInit(localPos[0], localPos[2]);
         if(eloss>0){
           if(gMC->TrackPid() == kNeutron) printf("\n\n\n\n\n Neutron Making Pad Hit!!! \n\n\n\n");
           GenerateFeedbacks(iCurrentChamber,eloss);//MIP+GAP+Spec
