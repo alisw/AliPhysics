@@ -142,7 +142,7 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
      ULong_t cmptest=(kesdtrack->GetStatus() & fPassFlag);
      if (cmptest!=fPassFlag)
       {
-	cout << i << " "; PrintESDtrack(kesdtrack); cout << endl;
+	//cout << i << " "; PrintESDtrack(kesdtrack); cout << endl;
 	Info("ReadNext","Particle %d skipped: %u.",i,kesdtrack->GetStatus());
         continue;
       }
