@@ -1,6 +1,6 @@
 void Config(){
     // 7-DEC-2000 09:00
-    // Switch on Transition Radiation simulation. 6/12/00 18:00
+    // Switch on Transition Radiation simulation. 6/12/00 18:00  
     // iZDC=1  7/12/00 09:00
     // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
     // Theta range given through pseudorapidity limits 22/6/2001
@@ -246,7 +246,7 @@ void Config(){
     }
     if (iEMCAL){
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
+        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "G56_2_55_19_104_14");
     }
     if (iSTART){
         //=================== START parameters ============================
