@@ -23,11 +23,13 @@ class AliL3HoughTest {
   AliL3HoughTest(); 
   virtual ~AliL3HoughTest();
   
-  void GenerateTrackData(Double_t pt,Double_t psi,Int_t patch);
+  Bool_t GenerateTrackData(Double_t pt,Double_t psi,Int_t sign,Int_t patch,Int_t minhits);
   void FillImage(TH2 *hist);
-  void Transform(AliL3Histogram *hist);
-  void TransformC(AliL3Histogram *hist);
-
+  void Transform2Circle(AliL3Histogram *hist);
+  void Transform2CircleC(AliL3Histogram *hist);
+  void Transform2Line(AliL3Histogram *hist,Int_t *rowrange);
+  void Transform2LineC(AliL3Histogram *hist,Int_t *rowrange);
+  
   ClassDef(AliL3HoughTest,1) //Hough transform base class
 };
 
