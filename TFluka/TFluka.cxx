@@ -457,13 +457,15 @@ Int_t TFluka::GetMedium() const {
 //_____________________________________________________________________________
 Int_t TFluka::IdFromPDG(Int_t pdg) const 
 {
-  //
-  // Return Fluka code from PDG and pseudo ENDF code
-
-  // MCIHAD() goes from pdg to fluka internal.
-  Int_t intfluka = mcihad(pdg);
-  // KPTOIP array goes from internal to official
-  return GetFlukaKPTOIP(intfluka);
+    //
+    // Return Fluka code from PDG and pseudo ENDF code
+    
+    // Catch the feedback photons
+    if (pdg == 50000051) return (-1);
+    // MCIHAD() goes from pdg to fluka internal.
+    Int_t intfluka = mcihad(pdg);
+    // KPTOIP array goes from internal to official
+    return GetFlukaKPTOIP(intfluka);
 }
 
 Int_t TFluka::PDGFromId(Int_t id) const 
@@ -2523,10 +2525,7 @@ void TFluka::Gmtod(Double_t* xm, Double_t* xd, Int_t iflag)
 //           IFLAG=2  convert direction cosinus
 //
 // ---
-	Double_t xmD[3], xdD[3];	
-	xdD[0] = xd[0]; xdD[1] = xd[1]; xdD[2] = xd[2];	
-	(FGeometryInit::GetInstance())->Gdtom(xmD, xdD, iflag);
-	xm[0] = xmD[0]; xm[1] = xmD[1]; xm[2] = xmD[2];	
+	(FGeometryInit::GetInstance())->Gmtod(xm, xd, iflag);
     }
 
 void TFluka::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag)
@@ -2547,8 +2546,10 @@ void TFluka::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag)
 //      IFLAG=2  convert direction cosinus
 //
 // ---
-
-
+	Double_t xmD[3], xdD[3];	
+	xdD[0] = xd[0]; xdD[1] = xd[1]; xdD[2] = xd[2];	
+	(FGeometryInit::GetInstance())->Gdtom(xdD, xmD, iflag);
+	xm[0] = xmD[0]; xm[1] = xmD[1]; xm[2] = xmD[2];	
     }
 void TFluka::Gdtom(Double_t* xd, Double_t* xm, Int_t iflag)
     {
@@ -2569,7 +2570,7 @@ void TFluka::Gdtom(Double_t* xd, Double_t* xm, Int_t iflag)
 //
 // ---
 
-	(FGeometryInit::GetInstance())->Gdtom(xm, xd, iflag);
+	(FGeometryInit::GetInstance())->Gdtom(xd, xm, iflag);
     }
 
 // ===============================================================
