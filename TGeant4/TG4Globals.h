@@ -8,8 +8,6 @@
 #ifndef TG4_GLOBALS_H
 #define TG4_GLOBALS_H
 
-#include "TG3Flag.h"
-
 #include <globals.hh>
 #include <g4std/vector>
 #include <g4std/set>
@@ -26,7 +24,6 @@ typedef G4std::vector<const G4RotationMatrix*> TG4RotationMatrixVector;
 typedef G4std::set <G4String, G4std::less<G4String> > TG4StringSet; 
 typedef G4RWTValOrderedVector<G4double> TG4doubleVector;
 typedef G4RWTValOrderedVector<G4String> TG4StringVector;
-typedef G4RWTValOrderedVector<TG3FlagValue> TG3FlagVector;
 typedef G4RWTPtrOrderedVector<G4Material>   TG4MaterialVector;
 typedef G4RWTPtrOrderedVector<G4Element>    TG4ElementVector;  
 
