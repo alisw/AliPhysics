@@ -635,6 +635,12 @@ AliRawRFIODB::AliRawRFIODB(AliRawEvent *event, Double_t maxsize, Int_t compress)
       // WHATEVER HAS BEEN SET IN THE DATE SITE
       //gSystem->Setenv("STAGE_POOL", "lcg00");
       //gSystem->Setenv("STAGE_HOST", "stage013");
+
+      // however for sanity we check if they are really set
+      if (!gSystem->Getenv("STAGE_POOL"))
+         Error("AliRawRFIODB", "STAGE_POOL not set");
+      if (!gSystem->Getenv("STAGE_HOST"))
+         Error("AliRawRFIODB", "STAGE_HOST not set");
       init = 1;
    }
 #endif
@@ -727,6 +733,12 @@ AliRawCastorDB::AliRawCastorDB(AliRawEvent *event, Double_t maxsize, Int_t compr
       // WHATEVER HAS BEEN SET IN THE DATE SITE
       //gSystem->Setenv("STAGE_POOL", "lcg00");
       //gSystem->Setenv("STAGE_HOST", "stage013");
+
+      // however for sanity we check if they are really set
+      if (!gSystem->Getenv("STAGE_POOL"))
+         Error("AliRawRFIODB", "STAGE_POOL not set");
+      if (!gSystem->Getenv("STAGE_HOST"))
+         Error("AliRawRFIODB", "STAGE_HOST not set");
       init = 1;
    }
 #endif
@@ -1191,14 +1203,14 @@ void AliRunDB::UpdateAliEn(AliStats *stats)
    lfn += dt.GetDate();
 
    // check if directory exists, if not create it
-   Grid_ResultHandle_t res;
-   if (!(res = g->OpenDir(lfn))) {
+   Grid_ResultHandle_t res = 0;
+   //if (!(res = g->OpenDir(lfn))) {
       // directory does not exist, create it
       if (g->Mkdir(lfn, kTRUE) == -1) {
          Error("UpdateAliEn", "cannot create directory %s", lfn.Data());
          lfn = kAlienDir;
       }
-   }
+   //}
    if (res) g->CloseResult(res);
 
    lfn += "/";
