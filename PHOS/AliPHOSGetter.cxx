@@ -109,6 +109,10 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
     //open headers file
     fFile = static_cast<TFile*>(gROOT->GetFile(fHeaderFile.Data() ) ) ;
     if(!fFile) {    //if file was not opened yet, read gAlice
+      if ( fHeaderFile.Contains("_") ) {
+	cerr << "AliPHOSGetter::AliPHOSGetter -> Invalid file name (_ not allowed) " << fHeaderFile.Data() << endl ;
+	abort() ; 
+      }
       fFile = TFile::Open(fHeaderFile.Data(),"update") ;
       
       if (!fFile->IsOpen()) {
