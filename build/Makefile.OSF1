@@ -10,9 +10,9 @@ F77	      = f77
 # Global optimisation
 OPT           = -g 
 
-CXXOPTS       = $(OPT) -nostdnew -rtti
+CXXOPTS       = $(OPT) -nostdnew -rtti -taso
 COPT	      = $(OPT)
-FOPT	      = $(OPT) -nofor_main -warn noinformational
+FOPT	      = $(OPT) -nofor_main -warn noinformational -taso
 CXXFLAGS      = $(CXXOPTS)
 CFLAGS	      = -fPIC -pipe -mcpu=ev5 -D__osf__ -D__alpha
 
