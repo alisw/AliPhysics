@@ -23,13 +23,6 @@ AliTrackingActionMessenger::AliTrackingActionMessenger(
   fTrackingDirectory = new G4UIdirectory("/aliTracking/");
   fTrackingDirectory->SetGuidance("AliTrackingAction control commands.");
 
-  fVerboseCmd = new G4UIcmdWithAnInteger("/aliTracking/verbose", this);
-  fVerboseCmd->SetGuidance("Set verbose level for AliTrackingAction");
-  fVerboseCmd->SetParameterName("VerboseLevel", true);
-  fVerboseCmd->SetDefaultValue(2);
-  fVerboseCmd->SetRange("VerboseLevel >= 0 && VerboseLevel <= 3");
-  fVerboseCmd->AvailableForStates(Idle);
-
   fNewVerboseCmd = new G4UIcmdWithAnInteger("/aliTracking/newVerbose", this);
   fNewVerboseCmd->SetGuidance("Set new verbose level (/tracking/verbose)");
   fNewVerboseCmd->SetGuidance("when a track with specified track ID ");
@@ -63,7 +56,6 @@ AliTrackingActionMessenger::AliTrackingActionMessenger(
 AliTrackingActionMessenger::~AliTrackingActionMessenger() {
 //
   delete fTrackingDirectory;
-  delete fVerboseCmd;
   delete fNewVerboseCmd;
   delete fNewVerboseTrackCmd;
 }
@@ -92,11 +84,7 @@ void AliTrackingActionMessenger::SetNewValue(G4UIcommand* command,
 // Applies command to the associated object.
 // ---
 
-  if(command == fVerboseCmd) { 
-    fTrackingAction
-      ->SetVerboseLevel(fVerboseCmd->GetNewIntValue(newValue)); 
-  }   
-  else if(command == fNewVerboseCmd) { 
+  if(command == fNewVerboseCmd) { 
     fTrackingAction
       ->SetNewVerboseLevel(fNewVerboseCmd->GetNewIntValue(newValue)); 
   }   

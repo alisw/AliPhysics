@@ -30,13 +30,6 @@ AliEventActionMessenger::AliEventActionMessenger(AliEventAction* eventAction)
   fDrawTracksCmd->SetDefaultValue("CHARGED");
   fDrawTracksCmd->SetCandidates("NONE CHARGED ALL");
   fDrawTracksCmd->AvailableForStates(Idle);
- 
-  fVerboseCmd = new G4UIcmdWithAnInteger("/aliEvent/verbose", this);
-  fVerboseCmd->SetGuidance("Set verbose level for AliEventAction");
-  fVerboseCmd->SetParameterName("VerboseLevel", true);
-  fVerboseCmd->SetDefaultValue(0);
-  fVerboseCmd->SetRange("VerboseLevel >= 0 && VerboseLevel <= 2");
-  fVerboseCmd->AvailableForStates(Idle);
 }
 
 //_____________________________________________________________________________
@@ -56,7 +49,6 @@ AliEventActionMessenger::~AliEventActionMessenger() {
 //
   delete fEventDirectory;
   delete fDrawTracksCmd;
-  delete fVerboseCmd;
 }
 
 // operators
@@ -85,10 +77,5 @@ void AliEventActionMessenger::SetNewValue(G4UIcommand* command,
   if(command == fDrawTracksCmd)
   { 
     fEventAction->SetDrawFlag(newValue); 
-  }   
-  else if(command == fVerboseCmd)
-  { 
-    fEventAction
-      ->SetVerboseLevel(fVerboseCmd->GetNewIntValue(newValue)); 
   }   
 }

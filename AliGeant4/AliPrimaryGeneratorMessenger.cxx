@@ -43,13 +43,6 @@ AliPrimaryGeneratorMessenger::AliPrimaryGeneratorMessenger(
   fNofParticlesCmd->SetDefaultValue(1);
   fNofParticlesCmd->SetRange("NofParticles >= 0");
   fNofParticlesCmd->AvailableForStates(PreInit,Idle);
-
-  fVerboseCmd = new G4UIcmdWithAnInteger("/aliGenerator/verbose", this);
-  fVerboseCmd->SetGuidance("Set verbose level for AliPrimaryGeneratorAction");
-  fVerboseCmd->SetParameterName("VerboseLevel", true);
-  fVerboseCmd->SetDefaultValue(0);
-  fVerboseCmd->SetRange("VerboseLevel >= 0 && VerboseLevel <= 2");
-  fVerboseCmd->AvailableForStates(Idle);
 }
 
 //_____________________________________________________________________________
@@ -71,7 +64,6 @@ AliPrimaryGeneratorMessenger::~AliPrimaryGeneratorMessenger() {
   delete fPrimariesDirectory;
   delete fGeneratorCmd;
   delete fNofParticlesCmd;
-  delete fVerboseCmd;
 }
 
 // operators
@@ -113,9 +105,5 @@ void AliPrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,
     fPrimaryGenAction
       ->SetNofGunParticles(fNofParticlesCmd->GetNewIntValue(newValue)); 
   }   
-  else if(command == fVerboseCmd) { 
-    fPrimaryGenAction
-      ->SetVerboseLevel(fVerboseCmd->GetNewIntValue(newValue)); 
-  }
 }
 

@@ -42,7 +42,6 @@ class AliTrackingActionMessenger: public G4UImessenger
     // data members
     AliTrackingAction*     fTrackingAction;    //associated class 
     G4UIdirectory*         fTrackingDirectory; //command directory
-    G4UIcmdWithAnInteger*  fVerboseCmd;        //command: verbose
     G4UIcmdWithAnInteger*  fNewVerboseCmd;     //command: newVerbose
     G4UIcmdWithAnInteger*  fNewVerboseTrackCmd;//command: newVerboseTrack
 };

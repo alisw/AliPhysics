@@ -43,7 +43,6 @@ class AliEventActionMessenger: public G4UImessenger
     AliEventAction*        fEventAction;    //associated class
     G4UIdirectory*         fEventDirectory; //command directory
     G4UIcmdWithAString*    fDrawTracksCmd;  //command: drawTracks
-    G4UIcmdWithAnInteger*  fVerboseCmd;     //command: verbose
 };
 
 #endif //ALI_EVENT_ACTION_MESSENGER_H

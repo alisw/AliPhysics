@@ -45,7 +45,6 @@ class AliPrimaryGeneratorMessenger: public G4UImessenger
     G4UIdirectory*              fPrimariesDirectory; //command directory
     G4UIcmdWithAString*         fGeneratorCmd;       //command: set
     G4UIcmdWithAnInteger*       fNofParticlesCmd;    //command: nofParticles
-    G4UIcmdWithAnInteger*       fVerboseCmd;         //command: verbose
 };
 
 #endif //ALI_PRIMARY_GENERATOR_MESSENGER_H
