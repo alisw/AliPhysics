@@ -108,7 +108,7 @@ void AliAOD::SetPrimaryVertex(Double_t x, Double_t y, Double_t z)
 Int_t AliAOD::GetNumberOfCharged(Double_t etamin, Double_t etamax) const
 {
   //reurns number of charged particles within given pseudorapidity range
-  Int_t n;
+  Int_t n = 0;
   Int_t npart = fParticles.GetEntries();
   for (Int_t i = 0; i < npart; i++)
    {
@@ -117,7 +117,7 @@ Int_t AliAOD::GetNumberOfCharged(Double_t etamin, Double_t etamax) const
      if ( (eta < etamin) || (eta > etamax) ) continue;
      if (p->Charge() != 0.0) n++;
    }
-  return 0;  
+  return n;
 }
 /**************************************************************************/
 
