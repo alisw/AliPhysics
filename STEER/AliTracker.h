@@ -11,21 +11,20 @@
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include <TObject.h>
+#include "TError.h"
 
 class AliKalmanTrack;
 class AliCluster;
-class TFile;
 class TTree;
 class AliESD;
+class AliMagF;
 
 class AliTracker : public TObject {
-
-
 public:
 
   enum {kTrackInward, kTrackBack, kTrackRefit} Propagation_t;
   
-  AliTracker() { fX=fY=fZ=0.; fSigmaX=fSigmaY=fSigmaZ=0.; fEventN=0; fStoreBarrel = 1;}
+  AliTracker();
   virtual ~AliTracker(){}
   virtual Int_t Clusters2Tracks(AliESD *event)=0;
   virtual Int_t PropagateBack(AliESD *event)=0;
@@ -35,8 +34,6 @@ public:
      if (ers) { fSigmaX=ers[0]; fSigmaY=ers[1]; fSigmaZ=ers[2]; } 
   }
   void SetEventNumber(Int_t ev) { fEventN=ev; }
-
-  
 
 //protected:
   virtual Int_t LoadClusters(TTree *)=0;
@@ -52,14 +49,14 @@ public:
   Double_t GetSigmaZ() const {return fSigmaZ;}
   Int_t GetEventNumber() const {return fEventN;}
 
-  static Int_t SetFieldFactor(const char* fileName, Bool_t closeFile = kTRUE);
-  static Int_t SetFieldFactor(TFile* file, Bool_t deletegAlice = kTRUE);
-  static Int_t SetFieldFactor();
+  static void SetFieldMap(const AliMagF* map);
+  static const AliMagF *GetFieldMap() {return fgkFieldMap;}
   
   Int_t IsStoringBarrel() const {return fStoreBarrel;}
   void  SetStoreBarrel(Int_t s) {fStoreBarrel = s;}
 
 private:
+  static const AliMagF *fgkFieldMap; //field map
   Int_t fEventN;//event number
 
   Int_t fStoreBarrel;
