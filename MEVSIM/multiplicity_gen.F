@@ -1521,6 +1521,8 @@ C-OUT      Close(Unit=10)
       integer reac_plane_cntrl,iphi
       integer n_integ_pts
 
+      external ran
+
       do i = 1,factorial_max
       do j = 1,4
          pout(pid,j,i) = 0.0
