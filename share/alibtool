@@ -8,6 +8,11 @@
 #
 # modification history
 # $Log$
+# Revision 1.7  2003/11/10 15:02:38  rdm
+# re-direct warnings of rmkdepend about not found system include files
+# to /dev/null. Only generate dependencies on ROOT and AliRoot, not on
+# system or compiler specific files.
+#
 # Revision 1.6  2003/07/13 09:26:14  hristov
 # Transition to NewIO
 #
@@ -42,34 +47,68 @@
 #
 # DESCRIPTION
 #
-# This scipts is called with a primary command and a commandparameter. It generates output on stdout, so normally it is called with a redirection like
+# This scipts is called with a primary command and a command parameter.
+# It generates output on stdout, so normally it is called with a redirection,
+# like:
 #
 #   alibtool mkmodule STEER > STEER/module.mk
 #
-# The command is one of the following
+# The command is one of the following:
 #
 # depend
-#        Makes the dependencies for the file specified as second argument (c and cxx files)
+#     Makes the dependencies for the file specified as second argument
+#     (for c and cxx files)
 #
 # dependF
-#        Makes the dependencies for the file specified as second argument (fortran files)
+#     Makes the dependencies for the file specified as second argument
+#     (for fortran files)
 #
 # mkmodule
-#        Creates the module.mk for the the given directory specified as the second argument.
+#     Creates the module.mk for the the given directory specified as
+#     the second argument
 #
-# MKMOUDLE
+# MKMODULE
 #
-# When alibtool is called with the mkmodule command it searches the directory given as the second argument for files called *.pkg. If a file (possibly several) is found, it will create a file called module.mk based on these files. For example if running alibtool mkmodule STEER, it will search the STEER directory and create STEER/module.mk based on all .pkg files is STEER directory. If a file called libSTEER.pkg is found, then module.mk will have a section devoted to makeing library libSTEER.so with alle the sourcefiles specified in libSTEER.pkg. If a file called binSTEER.pkg is found the module.mk file will create an executable called STEER. Several *.pkg files can be placed in the same directory. The module.mk files is created on background of build/header.tpl and build/module.mk by variable substituion of variables @MODULE@ @PACKAGE@ and @TYPE@.
+# When alibtool is called with the mkmodule command it searches the directory
+# given as the second argument for files called *.pkg. If a file (possibly
+# several) is found, it will create a file called module.mk based on these
+# files. For example if running alibtool mkmodule STEER, it will search the
+# STEER directory and create STEER/module.mk based on all .pkg files is
+# STEER directory. If a file called libSTEER.pkg is found, then module.mk
+# will have a section devoted to makeing library libSTEER.so with alle the
+# sourcefiles specified in libSTEER.pkg. If a file called binSTEER.pkg is
+# found the module.mk file will create an executable called STEER. Several
+# *.pkg files can be placed in the same directory. The module.mk files is
+# created on background of build/header.tpl and build/module.mk by variable
+# substituion of variables @MODULE@ @PACKAGE@ and @TYPE@.
 #
 # PKG FILES
 #
 #
-# The syntax for the pkg file is very simple. You specify the sources, headers and possibly extra include or link options. The *.pkg files is just inserted "as is" in the module.mk file, so normal Makefile syntax can be used. These variables can be specified: SRCS, FSRCS, CSRCS, HDRS, CHDRS, DHDR, EINCLUDE, ELIBS, ELIBSDIR, PACKFFLAGS, PACKCFLAGS, PACKCXXFLAGS. The first five is just the c++ sources, fortran sources, c sources, c++ headers and c headers. DHDR is the dictionary header and is the LinkDef file. EINCLUDE, ELIBS and ELIBSDIR is extra includedirs, libraries and library search paths. If for example a binary is to be linked against the variable ELIBSDIR would be set to lib/tgt_$ALICE_TARGET. Notice that -L and -l is not needed. If the PACKFFLAGS, PACKCFLAGS or PACKCXXFLAGS is not set it will be set to the default options (Set in config/Makefile.$ALICE_TARGET. For example on Linux GEANT321 has to be compiled without -O options, so a line like PACKFFLAGS := $(filter-out -O%,$(FFLAGS)) is needed.
+# The syntax for the pkg file is very simple. You specify the sources, headers
+# and possibly extra include or link options. The *.pkg files is just
+# inserted "as is" in the module.mk file, so normal Makefile syntax can
+# be used. These variables can be specified: SRCS, FSRCS, CSRCS, HDRS, CHDRS,
+# DHDR, EINCLUDE, ELIBS, ELIBSDIR, PACKFFLAGS, PACKCFLAGS, PACKCXXFLAGS.
+# The first five is just the C++ sources, fortran sources, C sources,
+# C++ headers and C headers. DHDR is the dictionary header and is the
+# LinkDef file. EINCLUDE, ELIBS and ELIBSDIR is extra includedirs,
+# libraries and library search paths. If for example a binary is to be
+# linked against the variable ELIBSDIR would be set to lib/tgt_$ALICE_TARGET.
+# Notice that -L and -l is not needed. If the PACKFFLAGS, PACKCFLAGS or
+# PACKCXXFLAGS is not set it will be set to the default options (set in
+# config/Makefile.$ALICE_TARGET. For example on Linux GEANT321 has to be
+# compiled without -O options, so a line like
+# PACKFFLAGS := $(filter-out -O%,$(FFLAGS))
+# is needed.
 #
 #
 # DEPEND
 # 
-# If alibtool is called with the depend command it will generate a dependecy file for the sourcefile given as second argument. This only goes for c++ and c files. If dependencies for fortran-fiels is needed, call alibtool with command dependF. The dependencies is made with rmkdepend.
+# If alibtool is called with the depend command it will generate a dependecy
+# file for the sourcefile given as second argument. This only goes for C++
+# and C files. If dependencies for fortran-fiels is needed, call alibtool
+# with command dependF. The dependencies are made with rmkdepend.
 #
 #
 # DEPENDF
@@ -141,21 +180,3 @@ mkmodule)
     MkModule $2
     ;;
 esac;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
