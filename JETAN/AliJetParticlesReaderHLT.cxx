@@ -24,7 +24,7 @@
 ClassImp(AliJetParticlesReaderHLT)
 
 AliJetParticlesReaderHLT::AliJetParticlesReaderHLT(Bool_t bMapper, const Char_t* esdfilename) :
-  AliJetParticlesReaderESD(esdfilename),
+  AliJetParticlesReaderESD(0,esdfilename),
   fTrackerType(bMapper),
   fMinHits(0),
   fMinWeight(0)
@@ -38,7 +38,7 @@ AliJetParticlesReaderHLT::AliJetParticlesReaderHLT(
 				      Bool_t bMapper,
                                       TObjArray* dirs,
                                       const Char_t* esdfilename) :
-  AliJetParticlesReaderESD(dirs,esdfilename),
+  AliJetParticlesReaderESD(0,dirs,esdfilename),
   fTrackerType(bMapper),
   fMinHits(0),
   fMinWeight(0)

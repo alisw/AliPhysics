@@ -9,12 +9,7 @@
 // loizides@ikf.uni-frankfurt.de                                           //
 /////////////////////////////////////////////////////////////////////////////
 
-//#include <TString.h>
-//#include <AliESDtrack.h>
 #include "AliJetParticlesReaderESD.h"
-
-//class TFile;
-//class AliESD;
 
 class AliJetParticlesReaderHLT: public AliJetParticlesReaderESD
 {

@@ -11,6 +11,7 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
+#include <Riostream.h>
 #include <TMath.h>
 #include <TPDGCode.h>
 #include <TString.h>
@@ -70,6 +71,127 @@ AliJetParticlesReaderESD::~AliJetParticlesReaderESD()
   if(fFile) delete fFile;
 }
 
+/**********************************************************/
+
+Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
+{
+  //Reads one ESD
+
+  if (esd == 0)
+   {
+     Error("ReadESD","ESD is NULL");
+     return kFALSE;
+   }
+
+  //TDatabasePDG* pdgdb = TDatabasePDG::Instance();
+  //if (pdgdb == 0)
+  //{
+  //   Error("ReadESD","Can not get PDG Database Instance.");
+  //   return kFALSE;
+  // }
+   
+  Float_t mf = esd->GetMagneticField(); 
+  if (mf <= 0.0)  
+  {
+     Error("ReadESD","Magnetic Field is 0. Skipping to next event.");
+     return kFALSE;
+  }
+  AliKalmanTrack::SetMagneticField(mf/10.);
+
+  Info("ReadESD","Reading Event %d",fCurrentEvent);
+  if((!fOwner) || (fEventParticles==0)) 
+    fEventParticles = new AliJetEventParticles();
+
+  const Int_t kntr = esd->GetNumberOfTracks();
+  Info("ReadESD","Found %d tracks.",kntr);
+  fEventParticles->Reset(kntr);
+
+  TString headdesc="";
+  headdesc+="Run ";
+  headdesc+=esd->GetRunNumber();
+  headdesc+=": Ev ";
+  headdesc+=esd->GetEventNumber();
+  fEventParticles->SetHeader(headdesc);
+
+  Double_t vertexpos[3];//vertex position
+  const AliESDVertex* kvertex = esd->GetVertex();
+  if (kvertex == 0)
+   {
+     Info("ReadESD","ESD returned NULL pointer to vertex - assuming (0.0,0.0,0.0)");
+     vertexpos[0] = 0.0;
+     vertexpos[1] = 0.0;
+     vertexpos[2] = 0.0;
+   }
+  else
+   {
+     kvertex->GetXYZ(vertexpos);
+   }
+  fEventParticles->SetVertex(vertexpos[0],vertexpos[1],vertexpos[2]);
+
+  //loop over tracks
+  for (Int_t i = 0;i<kntr; i++)
+   {
+     const AliESDtrack *kesdtrack = esd->GetTrack(i);
+     if (kesdtrack == 0)
+      {
+        Error("ReadESD","Can't get track %d", i);
+        continue;
+      }
+
+     if ((kesdtrack->GetStatus() & fPassFlag)) // != fPassFlag)
+      {
+	Info("ReadNext","Particle skipped: %ud.",kesdtrack->GetStatus());
+        continue;
+      }
+
+     Double_t mom[3];  //momentum
+     Double_t xyz[3];  //position
+     if (fConstrained) {
+       if (kesdtrack->GetConstrainedChi2() > 25) continue;
+       kesdtrack->GetConstrainedPxPyPz(mom);
+       kesdtrack->GetConstrainedXYZ(xyz);
+     } else {
+       kesdtrack->GetPxPyPz(mom);
+       kesdtrack->GetXYZ(xyz);
+     }
+     const Float_t kmass=kesdtrack->GetMass();
+     const Float_t kp2=mom[0]*mom[0]+mom[1]*mom[1]+mom[2]*mom[2];
+     const Float_t ketot=TMath::Sqrt(kmass*kmass+kp2);
+     const Float_t kpt=TMath::Sqrt(mom[0]*mom[0]+mom[1]*mom[1]);
+     const Float_t kp=TMath::Sqrt(kp2);
+     const Float_t keta=0.5*TMath::Log((kp+mom[2]+1e-30)/(kp-mom[2]+1e-30)); 
+     const Float_t kphi=TMath::Pi()+TMath::ATan2(-mom[1],-mom[0]);
+     //Double_t dx = xyz[0]-vertexpos[0];
+     //Double_t dy = xyz[1]-vertexpos[1];
+     //Float_t dca = TMath::Sqrt(dx*dx + dy*dy);
+     //Float_t dz = xyz[2]-vertexpos[2];
+     UInt_t index[6];
+     const Int_t kncl=kesdtrack->GetITSclusters(index)
+                      +kesdtrack->GetTPCclusters(NULL)
+                      +kesdtrack->GetTRDclusters(NULL);
+     if(IsAcceptedParticle(kpt,kphi,keta))
+       fEventParticles->AddParticle(mom[0],mom[1],mom[2],ketot,i,kesdtrack->GetLabel(),kncl,kpt,kphi,keta);
+
+   } // loop over tracks
+
+  return kTRUE;
+}
+
+/**********************************************************/
+
+void AliJetParticlesReaderESD::Rewind()
+{
+  //rewinds reading 
+
+  if(fFile) delete fFile;
+  if(fKeyIterator) delete fKeyIterator;
+  fKeyIterator = 0;
+  fFile = 0;
+  fCurrentDir = 0;
+  fNEventsRead = 0;
+}
+
+/**********************************************************/
 
 Int_t AliJetParticlesReaderESD::ReadNext()
 {
@@ -147,126 +269,6 @@ Int_t AliJetParticlesReaderESD::ReadNext()
     }  while(fCurrentDir < GetNumberOfDirs());
       //end of loop over directories specified in fDirs Obj Array  
   return kFALSE; //no more directories to read
-}
-
-/**********************************************************/
-
-Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
-{
-  //Reads one ESD
-
-  if (esd == 0)
-   {
-     Error("ReadESD","ESD is NULL");
-     return kFALSE;
-   }
-
-  //TDatabasePDG* pdgdb = TDatabasePDG::Instance();
-  //if (pdgdb == 0)
-  //{
-  //   Error("ReadESD","Can not get PDG Database Instance.");
-  //   return kFALSE;
-  // }
-   
-  Float_t mf = esd->GetMagneticField(); 
-  if (mf <= 0.0)  
-  {
-     Error("ReadESD","Magnetic Field is 0. Skipping to next event.");
-     return kFALSE;
-  }
-  AliKalmanTrack::SetMagneticField(mf/10.);
-
-  Info("ReadESD","Reading Event %d",fCurrentEvent);
-  if((!fOwner) || (fEventParticles==0)) 
-    fEventParticles = new AliJetEventParticles();
-
-  const Int_t kntr = esd->GetNumberOfTracks();
-  Info("ReadESD","Found %d tracks.",kntr);
-  fEventParticles->Reset(kntr);
-
-  TString headdesc="";
-  headdesc+="Run ";
-  headdesc+=esd->GetRunNumber();
-  headdesc+=": Ev ";
-  headdesc+=esd->GetEventNumber();
-  fEventParticles->SetHeader(headdesc);
-
-  Double_t vertexpos[3];//vertex position
-  const AliESDVertex* kvertex = esd->GetVertex();
-  if (kvertex == 0)
-   {
-     Info("ReadESD","ESD returned NULL pointer to vertex - assuming (0.0,0.0,0.0)");
-     vertexpos[0] = 0.0;
-     vertexpos[1] = 0.0;
-     vertexpos[2] = 0.0;
-   }
-  else
-   {
-     kvertex->GetXYZ(vertexpos);
-   }
-  fEventParticles->SetVertex(vertexpos[0],vertexpos[1],vertexpos[2]);
-
-  //loop over tracks
-  for (Int_t i = 0;i<kntr; i++)
-   {
-     const AliESDtrack *kesdtrack = esd->GetTrack(i);
-     if (kesdtrack == 0)
-      {
-        Error("ReadESD","Can't get track %d", i);
-        continue;
-      }
-
-     if ((kesdtrack->GetStatus() & fPassFlag) != fPassFlag)
-      {
-	Info("ReadNext","Particle skipped: %ud.",kesdtrack->GetStatus());
-        continue;
-      }
-
-     Double_t mom[3];  //momentum
-     Double_t xyz[3];  //position
-     if (fConstrained) {
-       if (kesdtrack->GetConstrainedChi2() > 25) continue;
-       kesdtrack->GetConstrainedPxPyPz(mom);
-       kesdtrack->GetConstrainedXYZ(xyz);
-     } else {
-       kesdtrack->GetPxPyPz(mom);
-       kesdtrack->GetXYZ(xyz);
-     }
-     const Float_t kmass=kesdtrack->GetMass();
-     const Float_t kp2=mom[0]*mom[0]+mom[1]*mom[1]+mom[2]*mom[2];
-     const Float_t ketot=TMath::Sqrt(kmass*kmass+kp2);
-     const Float_t kpt=TMath::Sqrt(mom[0]*mom[0]+mom[1]*mom[1]);
-     const Float_t kp=TMath::Sqrt(kp2);
-     const Float_t keta=0.5*TMath::Log((kp+mom[2]+1e-30)/(kp-mom[2]+1e-30)); 
-     const Float_t kphi=TMath::Pi()+TMath::ATan2(-mom[1],-mom[0]);
-     //Double_t dx = xyz[0]-vertexpos[0];
-     //Double_t dy = xyz[1]-vertexpos[1];
-     //Float_t dca = TMath::Sqrt(dx*dx + dy*dy);
-     //Float_t dz = xyz[2]-vertexpos[2];
-     UInt_t index[6];
-     const Int_t kncl=kesdtrack->GetITSclusters(index)
-                      +kesdtrack->GetTPCclusters(NULL)
-                      +kesdtrack->GetTRDclusters(NULL);
-     if(IsAcceptedParticle(kpt,kphi,keta))
-       fEventParticles->AddParticle(mom[0],mom[1],mom[2],ketot,i,kesdtrack->GetLabel(),kncl,kpt,kphi,keta);
-
-   } // loop over tracks
-
-  return kTRUE;
-}
-
-/**********************************************************/
-
-void AliJetParticlesReaderESD::Rewind()
-{
-  //rewinds reading 
-
-  if(fFile) delete fFile;
-  if(fKeyIterator) delete fKeyIterator;
-  fKeyIterator = 0;
-  fFile = 0;
-  fCurrentDir = 0;
-  fNEventsRead = 0;
 }
 
 /**********************************************************/
