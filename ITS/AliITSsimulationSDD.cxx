@@ -186,94 +186,99 @@ AliITSsimulationSDD& AliITSsimulationSDD::operator=(AliITSsimulationSDD &source)
 
 AliITSsimulationSDD::AliITSsimulationSDD(AliITSsegmentation *seg,AliITSresponse *resp) 
 {
-  // Standard Constructor
+    // Standard Constructor
 
-      fHis=0;
-      fTreeB=0;
-      fResponse = resp;
-      fSegmentation = seg;
-      SetScaleFourier();
-      SetPerpendTracksFlag();
-      SetDoFFT();
-      SetCheckNoise();
+    fHitMap1      = 0;     // zero just in case of an error
+    fHitMap2      = 0;     // zero just in case of an error
+    fElectronics  = 0;     // zero just in case of an error
+    fStream       = 0;     // zero just in case of an error
+    fHis          = 0;
+    fTreeB        = 0;
+    fResponse     = resp;
+    fSegmentation = seg;
+    SetScaleFourier();
+    SetPerpendTracksFlag();
+    SetDoFFT();
+    SetCheckNoise();
 
-      fHitMap2 = new AliITSMapA2(fSegmentation,fScaleSize,1);
-      fHitMap1 = new AliITSMapA1(fSegmentation);
+    fHitMap2 = new AliITSMapA2(fSegmentation,fScaleSize,1);
+    fHitMap1 = new AliITSMapA1(fSegmentation);
 
-      //
-      fNofMaps=fSegmentation->Npz();
-      fMaxNofSamples=fSegmentation->Npx();
+    //
+    fNofMaps=fSegmentation->Npz();
+    fMaxNofSamples=fSegmentation->Npx();
+    
+    Float_t sddLength = fSegmentation->Dx();
+    Float_t sddWidth = fSegmentation->Dz();
 
-      Float_t sddLength = fSegmentation->Dx();
-      Float_t sddWidth = fSegmentation->Dz();
+    Int_t dummy=0;
+    Float_t anodePitch = fSegmentation->Dpz(dummy);
+    Double_t timeStep = (Double_t)fSegmentation->Dpx(dummy);
+    Float_t driftSpeed=fResponse->DriftSpeed();
 
-      Int_t dummy=0;
-      Float_t anodePitch = fSegmentation->Dpz(dummy);
-      Double_t timeStep = (Double_t)fSegmentation->Dpx(dummy);
-      Float_t driftSpeed=fResponse->DriftSpeed();    
+    if(anodePitch*(fNofMaps/2) > sddWidth) {
+	Warning("AliITSsimulationSDD",
+		"Too many anodes %d or too big pitch %f \n",
+		fNofMaps/2,anodePitch);
+    } // end if
 
-      if(anodePitch*(fNofMaps/2) > sddWidth) {
-         Warning("AliITSsimulationSDD",
-           "Too many anodes %d or too big pitch %f \n",fNofMaps/2,anodePitch);
-      }
+    if(timeStep*fMaxNofSamples < sddLength/driftSpeed) {
+	Error("AliITSsimulationSDD",
+	      "Time Interval > Allowed Time Interval: exit\n");
+	return;
+    } // end if
 
-      if(timeStep*fMaxNofSamples < sddLength/driftSpeed) {
-         Error("AliITSsimulationSDD",
-                             "Time Interval > Allowed Time Interval: exit\n");
-         return;
-      }
+    fElectronics = new AliITSetfSDD(timeStep/fScaleSize,
+				    fResponse->Electronics());
 
-      fElectronics = new AliITSetfSDD(timeStep/fScaleSize,fResponse->Electronics());
+    char opt1[20], opt2[20];
+    fResponse->ParamOptions(opt1,opt2);
+    fParam=opt2;
+    char *same = strstr(opt1,"same");
+    if (same) {
+	fNoise.Set(0);
+	fBaseline.Set(0);
+    } else {
+	fNoise.Set(fNofMaps);
+	fBaseline.Set(fNofMaps);
+    } // end if
 
-      char opt1[20], opt2[20];
-      fResponse->ParamOptions(opt1,opt2);
-      fParam=opt2;
-      char *same = strstr(opt1,"same");
-      if (same) {
-         fNoise.Set(0);
-         fBaseline.Set(0);
-      } else {
-         fNoise.Set(fNofMaps);
-         fBaseline.Set(fNofMaps);
-      }
-      
-      //
-      const char *kopt=fResponse->ZeroSuppOption();
-        if (strstr(fParam,"file") ) {
-	  fD.Set(fNofMaps);
-	  fT1.Set(fNofMaps);
-          if (strstr(kopt,"2D")) {
+    //
+    const char *kopt=fResponse->ZeroSuppOption();
+    if (strstr(fParam,"file") ) {
+	fD.Set(fNofMaps);
+	fT1.Set(fNofMaps);
+	if (strstr(kopt,"2D")) {
 	    fT2.Set(fNofMaps);
             fTol.Set(0);
             Init2D();       // desactivate if param change module by module
-          } else if(strstr(kopt,"1D"))  {
+	} else if(strstr(kopt,"1D"))  {
             fT2.Set(2);
             fTol.Set(2);
             Init1D();      // desactivate if param change module by module
-	  }
-	} else {
-          fD.Set(2);
-	  fTol.Set(2);
-	  fT1.Set(2);
-	  fT2.Set(2);
-	  SetCompressParam();
-	}
+	} // end if strstr
+    } else {
+	fD.Set(2);
+	fTol.Set(2);
+	fT1.Set(2);
+	fT2.Set(2);
+	SetCompressParam();
+    } // end if else strstr
 
+    Bool_t write=fResponse->OutputOption();
+    if(write && strstr(kopt,"2D")) MakeTreeB();
 
-	Bool_t write=fResponse->OutputOption();
-	if(write && strstr(kopt,"2D")) MakeTreeB();
+    // call here if baseline does not change by module
+    // ReadBaseline();
 
-        // call here if baseline does not change by module
-        // ReadBaseline();
+    fITS = (AliITS*)gAlice->GetModule("ITS");
+    Int_t size=fNofMaps*fMaxNofSamples;
+    fStream = new AliITSInStream(size);
 
-        fITS = (AliITS*)gAlice->GetModule("ITS");
-        Int_t size=fNofMaps*fMaxNofSamples;
-	fStream = new AliITSInStream(size); 
-	
-	fInZR = new Double_t [fScaleSize*fMaxNofSamples];
-	fInZI = new Double_t [fScaleSize*fMaxNofSamples];
-	fOutZR = new Double_t [fScaleSize*fMaxNofSamples];
-	fOutZI = new Double_t [fScaleSize*fMaxNofSamples];  
+    fInZR  = new Double_t [fScaleSize*fMaxNofSamples];
+    fInZI  = new Double_t [fScaleSize*fMaxNofSamples];
+    fOutZR = new Double_t [fScaleSize*fMaxNofSamples];
+    fOutZI = new Double_t [fScaleSize*fMaxNofSamples];  
 
 }
 
