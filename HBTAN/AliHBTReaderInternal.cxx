@@ -15,8 +15,6 @@
 #include "AliHBTParticleCut.h"
 
 
-AliHBTReaderInternal nnn;
-
 ClassImp(AliHBTReaderInternal)
 /********************************************************************/
 
@@ -108,9 +106,13 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
  //
   cout<<"AliHBTReaderInternal::Read()"<<endl;
   Int_t i; //iterator and some temprary values
+  Int_t totalNevents = 0; //total number of read events
   Int_t Nevents = 0;
+  Int_t currentdir = 0;
+  Int_t Ndirs;
+  
   TFile *aFile;//file with tracks
-  AliHBTParticle* p = 0x0;
+  AliHBTParticle* tpart = 0x0, *ttrack = 0x0;
   
   if (!particles) //check if an object is instatiated
    {
@@ -123,9 +125,6 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
   particles->Reset();//clear runs == delete all old events
   tracks->Reset();
  
-  Int_t currentdir = 0;
-
-  Int_t Ndirs;
   if (fDirs) //if array with directories is supplied by user
    {
      Ndirs = fDirs->GetEntries(); //get the number if directories
@@ -182,44 +181,69 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
      cout<<"Found "<<Nevents<<" event(s) in directory "<<GetDirName(currentdir)<<endl;
      
      for (Int_t currentEvent =0; currentEvent<Nevents;currentEvent++)
-       {
-         tree->GetEvent(currentEvent);
+      {
+       cout<<"Event "<<currentEvent<<"\n";
+       tree->GetEvent(currentEvent);
+         
+       if (partbranch && trackbranch)
+        {
+           for(i = 0; i < pbuffer->GetEntries(); i++)
+             {
+               cout<<i<<"\r";
+               tpart = dynamic_cast<AliHBTParticle*>(pbuffer->At(i));
+               ttrack =  dynamic_cast<AliHBTParticle*>(tbuffer->At(i));
+
+               if( (tpart == 0x0) || (ttrack == 0x0) ) continue; //if returned pointer is NULL
+               if( (tpart->GetPDG()==0x0)||(ttrack->GetPDG()==0x0) ) continue; //if particle has crezy PDG code (not known to our database)
+               if((Pass(tpart))||(Pass(ttrack))) continue; //check if we are intersted with particles of this type 
+                                                          //if not take next partilce
+               AliHBTParticle* part = new AliHBTParticle(*tpart);
+               AliHBTParticle* track = new AliHBTParticle(*ttrack);
+               particles->AddParticle(totalNevents,part);//put track and particle on the run
+               tracks->AddParticle(totalNevents,track);
+             }
+            cout<<"Read: "<<particles->GetNumberOfParticlesInEvent(totalNevents)<<" particles and tracks \n";
+        }
+       else
+        { 
          if (partbranch)
           {
             for(i = 0; i < pbuffer->GetEntries(); i++)
              {
-               p = dynamic_cast<AliHBTParticle*>(pbuffer->At(i));
-               if(p == 0x0) continue; //if returned pointer is NULL
-               if(p->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
-               if(Pass(p)) continue; //check if we are intersted with particles of this type 
-                                                   //if not take next partilce
-               AliHBTParticle* part = new AliHBTParticle(*p);
-               particles->AddParticle(currentEvent,part);//put track and particle on the run
+               cout<<i<<"\r";
+               tpart = dynamic_cast<AliHBTParticle*>(pbuffer->At(i));
+               if(tpart == 0x0) continue; //if returned pointer is NULL
+               if(tpart->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
+               if(Pass(tpart)) continue; //check if we are intersted with particles of this type 
+                                         //if not take next partilce
+ 
+               AliHBTParticle* part = new AliHBTParticle(*tpart);
+               particles->AddParticle(totalNevents,part);//put track and particle on the run
              }
-            cout<<"Read: "<<particles->GetNumberOfParticlesInEvent(currentEvent)<<" particles  ";
+            cout<<"\nRead: "<<particles->GetNumberOfParticlesInEvent(totalNevents)<<" particles  \n";
           }
-         else cout<<"Read: 0 particles  ";
+         else cout<<"Read: 0 particles  \n";
          
          if (trackbranch)
           {
             for(i = 0; i < tbuffer->GetEntries(); i++)
              {
-               p = dynamic_cast<AliHBTParticle*>(tbuffer->At(i));
-               if(p == 0x0) continue; //if returned pointer is NULL
-               if(p->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
-               if(Pass(p)) continue; //check if we are intersted with particles of this type 
+               cout<<i<<"\r";
+               tpart = dynamic_cast<AliHBTParticle*>(tbuffer->At(i));
+               if(tpart == 0x0) continue; //if returned pointer is NULL
+               if(tpart->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
+               if(Pass(tpart)) continue; //check if we are intersted with particles of this type 
                                                    //if not take next partilce
-               AliHBTParticle* part = new AliHBTParticle(*p);
-               tracks->AddParticle(currentEvent,part);//put track and particle on the run
+               AliHBTParticle* part = new AliHBTParticle(*tpart);
+               tracks->AddParticle(totalNevents,part);//put track and particle on the run
              }
-            cout<<tracks->GetNumberOfParticlesInEvent(currentEvent)<<" tracks"<<endl;
+            cout<<"\nRead: "<<tracks->GetNumberOfParticlesInEvent(totalNevents)<<" tracks"<<endl;
           }
          else cout<<" 0 tracks"<<endl;
-
+        }
+        totalNevents++;
          
-
        }
-    
 
    /***************************/
    /***************************/
@@ -227,6 +251,7 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
    currentdir++;
    aFile->Close();
    aFile = 0x0;
+
    }while(currentdir < Ndirs);
 
   fIsRead = kTRUE;
@@ -269,6 +294,10 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
     Int_t i,j;
   
   
+  cout<<"________________________________________________________\n";
+  cout<<"________________________________________________________\n";
+  cout<<"________________________________________________________\n";
+
   TFile *histoOutput = TFile::Open(outfile,"recreate");
   
   if (!histoOutput->IsOpen())
@@ -282,8 +311,6 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
 
   TClonesArray* pbuffer = new TClonesArray("AliHBTParticle",15000);
   TClonesArray* tbuffer = new TClonesArray("AliHBTParticle",15000);
-  tbuffer->SetOwner();
-  pbuffer->SetOwner();
 
   TClonesArray &particles = *pbuffer;
   TClonesArray &tracks = *tbuffer;
@@ -315,41 +342,51 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
 
   for ( i =0;i< N; i++)
     {
+      cout<<"Event "<<i+1<<"\n";
       if (trck && (i<=NT))
        {
+         cout<<"Tracks: \n";
          AliHBTEvent* trackev = reader->GetTrackEvent(i);
          for ( j = 0; j< trackev->GetNumberOfParticles();j++)
           {
             cout<<j<<"\r";
-	    new (tracks[j]) AliHBTParticle(*(trackev->GetParticle(j)));
+            const AliHBTParticle& t= *(trackev->GetParticle(j));
+            new (tracks[j]) AliHBTParticle(t);
           }
 
-       }
+       }else cout<<"NO TRACKS";
+      
       cout<<endl;
       
       if (part && (i<=NP))
        {
+        cout<<"Particles: \n";
         AliHBTEvent* partev = reader->GetParticleEvent(i);
         for ( j = 0; j< partev->GetNumberOfParticles();j++)
          {
+           const AliHBTParticle& part= *(partev->GetParticle(j));
            cout<<j<<"\r";
-           new (particles[j]) AliHBTParticle(*(partev->GetParticle(j)));
+           new (particles[j]) AliHBTParticle(part);
          }
-       
-       }
+       }else cout<<"NO PARTICLES";
+      cout<<endl;
 
       histoOutput->cd();
       tracktree->Fill();
+      tracktree->AutoSave();
       tbuffer->Delete();
       pbuffer->Delete();
-
      }
 
-  
-  
   histoOutput->cd();
   tracktree->Write(0,TObject::kOverwrite);
-  histoOutput->Close();
+  delete tracktree;
 
+  tbuffer->SetOwner();
+  pbuffer->SetOwner();
+  delete pbuffer;
+  delete tbuffer;
+
+  histoOutput->Close();
   return 0;
  }
