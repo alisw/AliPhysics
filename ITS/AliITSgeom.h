@@ -73,10 +73,10 @@ class AliITSgeom : public TObject {
 	return (AliITSgeomMatrix*)(fGm->At(index));}
     //     This function returns the number of detectors/ladder for a give 
     // layer. In particular it returns fNdet[layer-1].
-    Int_t GetNdetectors(Int_t lay) const;
+    Int_t GetNdetectors(Int_t lay) const {return fNdet[lay-1];}
     //     This function returns the number of ladders for a give layer. In
     // particular it returns fNlad[layer-1].
-    Int_t GetNladders(Int_t lay)   const;
+    Int_t GetNladders(Int_t lay)   const {return fNdet[lay-1];};
     //     This function returns the number of layers defined in the ITS
     // geometry. In particular it returns fNlayers.
     Int_t GetNlayers()                   const {return fNlayers;}
@@ -188,7 +188,11 @@ class AliITSgeom : public TObject {
     //      This function returns the Cartesian translation [cm] and the
     // 6 GEANT rotation angles [degrees]for a given layer ladder and
     // detector number, in the TVector x (at least 9 elements large).
-    void  GetCenterThetaPhi(Int_t lay,Int_t lad,Int_t det,TVector &x);
+    // This function is required to be inlined for speed.
+    void  GetCenterThetaPhi(Int_t lay,Int_t lad,Int_t det,TVector &x){
+    Double_t t[3],a[6];Int_t i=GetModuleIndex(lay,lad,det);GetTrans(i,t);
+    GetGeantAngles(i,a);x(0)=t[0];x(1)=t[1];x(2)=t[2];x(3)=a[0];x(4)=a[1];
+    x(5)=a[2];x(6)=a[3];x(7)=a[4];x(8)=a[5];}
 //
     //     This function returns the rotation matrix in Double
     // precision for a given module.
