@@ -149,6 +149,14 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* na
 {
 }
 //____________________________________________________________________________
+Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId) const
+{
+  if(absId <= fEmcCrystals) //calibrate as EMC 
+    return fADCpedestalEmc + amp*fADCchanelEmc ;       
+  else //Digitize as CPV
+    return fADCpedestalCpv+ amp*fADCchanelCpv ;       
+}
+//____________________________________________________________________________
 void AliPHOSClusterizerv1::Exec(Option_t * option)
 {
   // Steering method
@@ -196,10 +204,7 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
 
   for(ievent = 0; ievent < nevents; ievent++){
 
-
-    fPedestal = gime->Digitizer(branchname)->GetPedestal() ;
-    fSlope    = gime->Digitizer(branchname)->GetSlope() ;
-
+    if(ievent == 0) GetCalibrationParameters() ;
 
     fNumberOfEmcClusters  = 0 ;
     fNumberOfCpvClusters  = 0 ;
@@ -321,6 +326,20 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * maxAt, Fl
 }
 
 //____________________________________________________________________________
+void AliPHOSClusterizerv1::GetCalibrationParameters() 
+{
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
+  TString branchname = GetName() ;
+  branchname.Remove(branchname.Index(Version())-1) ;
+  AliPHOSDigitizer * dig = gime->Digitizer(branchname) ;
+  fADCchanelEmc   = dig->GetEMCchannel() ;
+  fADCpedestalEmc = dig->GetEMCpedestal();
+
+  fADCchanelCpv   = dig->GetCPVchannel() ;
+  fADCpedestalCpv = dig->GetCPVpedestal() ; 
+
+}
+//____________________________________________________________________________
 void AliPHOSClusterizerv1::Init()
 {
   // Make all memory allocations which can not be done in default constructor.
@@ -338,6 +357,9 @@ void AliPHOSClusterizerv1::Init()
     return ;
   } 
     
+  const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
+  fEmcCrystals = geom->GetNModules() *  geom->GetNCristalsInModule() ;
+
   if(!gMinuit) 
     gMinuit = new TMinuit(100) ;
 
@@ -559,8 +581,8 @@ void AliPHOSClusterizerv1::MakeClusters()
     TArrayI clusterdigitslist(1500) ;   
     Int_t index ;
 
-    if (( IsInEmc (digit) && Calibrate(digit->GetAmp()) > fEmcClusteringThreshold  ) || 
-        ( IsInCpv (digit) && Calibrate(digit->GetAmp()) > fCpvClusteringThreshold  ) ) {
+    if (( IsInEmc (digit) && Calibrate(digit->GetAmp(),digit->GetId()) > fEmcClusteringThreshold  ) || 
+        ( IsInCpv (digit) && Calibrate(digit->GetAmp(),digit->GetId()) > fCpvClusteringThreshold  ) ) {
       
       Int_t iDigitInCluster = 0 ; 
       
@@ -572,7 +594,7 @@ void AliPHOSClusterizerv1::MakeClusters()
 	emcRecPoints->AddAt(new  AliPHOSEmcRecPoint(), fNumberOfEmcClusters) ;
 	clu = (AliPHOSEmcRecPoint *) emcRecPoints->At(fNumberOfEmcClusters) ; 
   	fNumberOfEmcClusters++ ; 
-	clu->AddDigit(*digit, Calibrate(digit->GetAmp())) ; 
+	clu->AddDigit(*digit, Calibrate(digit->GetAmp(),digit->GetId())) ; 
 	clusterdigitslist[iDigitInCluster] = digit->GetIndexInList() ;	
 	iDigitInCluster++ ; 
 	digitsC->Remove(digit) ; 
@@ -587,7 +609,7 @@ void AliPHOSClusterizerv1::MakeClusters()
 
 	clu =  (AliPHOSCpvRecPoint *) cpvRecPoints->At(fNumberOfCpvClusters)  ;  
 	fNumberOfCpvClusters++ ; 
-	clu->AddDigit(*digit, Calibrate(digit->GetAmp()) ) ;	
+	clu->AddDigit(*digit, Calibrate(digit->GetAmp(),digit->GetId()) ) ;	
 	clusterdigitslist[iDigitInCluster] = digit->GetIndexInList()  ;	
 	iDigitInCluster++ ; 
 	digitsC->Remove(digit) ; 
@@ -620,7 +642,7 @@ void AliPHOSClusterizerv1::MakeClusters()
           case 0 :   // not a neighbour
 	    break ;
 	  case 1 :   // are neighbours 
-	    clu->AddDigit(*digitN, Calibrate( digitN->GetAmp() ) ) ;
+	    clu->AddDigit(*digitN, Calibrate( digitN->GetAmp(), digitN->GetId() ) ) ;
 	    clusterdigitslist[iDigitInCluster] = digitN->GetIndexInList() ; 
 	    iDigitInCluster++ ; 
 	    digitsC->Remove(digitN) ;

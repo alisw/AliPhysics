@@ -93,10 +93,16 @@ ClassImp(AliPHOSDigitizer)
   fTimeResolution     = 1.0e-9 ;
   fTimeSignalLength   = 1.0e-9 ;
   fDigitsInRun  = 0 ; 
-  fPedestal = 0.;                // Calibration parameters 
-  fSlope = 10000000. ;
-  fTimeThreshold = 0.001*fSlope ; //Means 1 MeV in terms of SDigits amplitude
-  fARD = 0 ;                     // We work in the standalong mode
+  fADCchanelEmc = 0.0015;        // width of one ADC channel in GeV
+  fADCpedestalEmc = 0.005 ;      //
+  fNADCemc = (Int_t) TMath::Power(2,16) ;  // number of channels in EMC ADC
+
+  fADCchanelCpv = 0.0012 ;          // width of one ADC channel in CPV 'popugais'
+  fADCpedestalCpv = 0.012 ;         // 
+  fNADCcpv = (Int_t) TMath::Power(2,12);      // number of channels in CPV ADC
+
+  fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
+  fARD = 0 ;                        // We work in the standalong mode
 }
 
 //____________________________________________________________________________ 
@@ -105,17 +111,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
   // ctor
   SetName(name) ;
   SetTitle(headerFile) ;
-  fPinNoise           = 0.01 ;
-  fEMCDigitThreshold  = 0.01 ;
-  fCPVNoise           = 0.01;
-  fCPVDigitThreshold  = 0.09 ;
-  fDigitsInRun  = 0 ; 
-  fPedestal = 0.;                // Calibration parameters 
-  fSlope = 10000000. ;
-  fTimeSignalLength   = 1.0e-9 ;
-  fTimeThreshold = 0.001*fSlope ; //Means 1 MeV in terms of SDigits amplitude
   fARD = 0 ;                     // We work in the standalong mode
-
   Init() ;
   
 }
@@ -127,15 +123,6 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard)
   fARD = ard ;
   SetName("Default");
   SetTitle("aliroot") ;
-
-  fPinNoise           = 0.01 ;
-  fEMCDigitThreshold  = 0.01 ;
-  fCPVNoise           = 0.01;
-  fCPVDigitThreshold  = 0.09 ;
-  fDigitsInRun  = 0 ; 
-  fPedestal = 0.;                // Calibration parameters 
-  fSlope = 10000000. ;
-
   Init() ;
   
 }
@@ -164,6 +151,7 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   TClonesArray * digits = gime->Digits(GetName()) ; 
+  AliPHOSSDigitizer * sdiz = gime->SDigitizer(GetName()) ; 
 
   digits->Clear() ;
 
@@ -337,14 +325,29 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   Int_t ndigits = digits->GetEntriesFast() ;
   digits->Expand(ndigits) ;
 
-  //Set indexes in list of digits
+  //Set indexes in list of digits and make true digitization of the energy
   for (i = 0 ; i < ndigits ; i++) { 
     AliPHOSDigit * digit = (AliPHOSDigit *) digits->At(i) ; 
     digit->SetIndexInList(i) ;     
+    Float_t energy = sdiz->Calibrate(digit->GetAmp()) ;
+    digit->SetAmp(DigitizeEnergy(energy,digit->GetId()) ) ;
   }
 
 }
-
+//____________________________________________________________________________
+Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
+{
+  Int_t chanel ;
+  if(absId <= fEmcCrystals){ //digitize as EMC 
+    chanel = (Int_t) TMath::Ceil((energy - fADCpedestalEmc)/fADCchanelEmc) ;       
+    if(chanel > fNADCemc ) chanel =  fNADCemc ;
+  }
+  else{ //Digitize as CPV
+    chanel = (Int_t) TMath::Ceil((energy - fADCpedestalCpv)/fADCchanelCpv) ;       
+    if(chanel > fNADCcpv ) chanel =  fNADCcpv ;
+  }
+  return chanel ;
+}
 //____________________________________________________________________________
 void AliPHOSDigitizer::Exec(Option_t *option) 
 { 
@@ -466,8 +469,26 @@ Float_t AliPHOSDigitizer::FrontEdgeTime(TClonesArray * ticks)
 //____________________________________________________________________________ 
 Bool_t AliPHOSDigitizer::Init()
 {
+  fPinNoise           = 0.01 ;
+  fEMCDigitThreshold  = 0.01 ;
+  fCPVNoise           = 0.01;
+  fCPVDigitThreshold  = 0.09 ;
+  fTimeResolution     = 1.0e-9 ;
+  fTimeSignalLength   = 1.0e-9 ;
+  fDigitsInRun  = 0 ; 
+  fADCchanelEmc = 0.0015;        // width of one ADC channel in GeV
+  fADCpedestalEmc = 0.005 ;      //
+  fNADCemc = (Int_t) TMath::Power(2,16) ;  // number of channels in EMC ADC
+
+  fADCchanelCpv = 0.0012 ;          // width of one ADC channel in CPV 'popugais'
+  fADCpedestalCpv = 0.012 ;         // 
+  fNADCcpv = (Int_t) TMath::Power(2,12);      // number of channels in CPV ADC
+
+  fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
+
   // Makes all memory allocations
   // Adds Digitizer task to the folder of PHOS tasks
+
    //============================================================= YS
   //  The initialisation is now done by AliPHOSGetter
     
@@ -482,6 +503,9 @@ Bool_t AliPHOSDigitizer::Init()
     cerr << "ERROR: AliPHOSDigitizer::Init -> Could not obtain the Getter object !" << endl ; 
     return kFALSE;
   } 
+  
+  const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
+  fEmcCrystals = geom->GetNModules() *  geom->GetNCristalsInModule() ;
      
   // create a folder on the white board //YSAlice/WhiteBoard/Digits/PHOS/headerFile/digitsTitle
   gime->PostDigits(GetName() ) ;   

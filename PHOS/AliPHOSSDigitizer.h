@@ -32,15 +32,11 @@ public:
 
   virtual void  Exec(Option_t *option); 
   
-  const Float_t  GetPedestalParameter()const {return fA;}
-  const Float_t  GetCalibrationParameter()const{return fB;}
   const char *   GetSDigitsBranch()const{return GetName();}  
   const Int_t    GetSDigitsInRun() const {return fSDigitsInRun ;}  
 
   virtual void Print(Option_t* option) const ;
 
-  void     SetPedestalParameter(Float_t A){fA = A ;}
-  void     SetSlopeParameter(Float_t B){fB = B ;}
   void     SetSDigitsBranch(const char * title ) ;
 
   void  UseHitsFrom(const char * filename) ;      

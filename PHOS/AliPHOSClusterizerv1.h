@@ -37,6 +37,9 @@ public:
   
   Int_t           AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
+
+  virtual Float_t Calibrate(Int_t amp, Int_t absId)const ;  // Tranforms Amp to energy 
+
   virtual void    GetNumberOfClustersFound(int * numb )const{  numb[0] = fNumberOfEmcClusters ; 
                                                                numb[1] = fNumberOfCpvClusters ; }
 
@@ -74,7 +77,8 @@ public:
   
 private:
 
-  virtual Float_t Calibrate(Int_t amp)const {  return (amp-fPedestal)/fSlope ;}  // Tranforms Amp to energy 
+  void    GetCalibrationParameters(void) ;
+  
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, int * MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
   void Init() ;
@@ -95,13 +99,17 @@ private:
   TString fDigitsBranchTitle ;       // name of the file, where digits branch is stored
   TString fRecPointsBranchTitle ;    // name of the file, where RecPoints branchs are stored
 
+  Int_t   fEmcCrystals ;             // number of EMC cristalls in PHOS
+
   Bool_t  fToUnfold ;                // To perform unfolding 
 
   Int_t   fNumberOfEmcClusters ;     // number of EMC clusters found 
   Int_t   fNumberOfCpvClusters ;     // number of CPV clusters found
  
-  Float_t fPedestal ;                // Calibration parameters 
-  Float_t fSlope ;                   // read from Digitizer
+  Float_t fADCchanelEmc ;           // width of one ADC channel in GeV
+  Float_t fADCpedestalEmc ;         //
+  Float_t fADCchanelCpv ;           // width of one ADC channel in CPV 'popugais'
+  Float_t fADCpedestalCpv ;         // 
 
   Float_t fEmcClusteringThreshold ;  // minimum energy to include a EMC digit in a cluster
   Float_t fCpvClusteringThreshold ;  // minimum energy to include a CPV digit in a cluster
