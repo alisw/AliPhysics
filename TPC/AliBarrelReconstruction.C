@@ -268,8 +268,9 @@ Int_t ITSFindClusters(const Char_t *inname, const Char_t *outname, Int_t n) {
        //if not reconstructed ITS branch do reconstruction 
        ITS->MakeBranch("R",0);
        //////////////// Taken from ITSHitsToFastPoints.C ///////////////////////
-       AliITSsimulationFastPoints *sim = new AliITSsimulationFastPoints();
-       for (Int_t i=0;i<3;i++) { ITS->SetSimulationModel(i,sim); }
+       for (Int_t i=0;i<3;i++) { 
+         ITS->SetSimulationModel(i,new AliITSsimulationFastPoints()); 
+       }
        Int_t nsignal=25;
        Int_t size=-1;
        Int_t bgr_ev=Int_t(ev/nsignal);
