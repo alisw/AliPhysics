@@ -224,18 +224,18 @@ void RichConfig::CreateConfigFile()
       fprintf(fp,"  pGen->Init();\n");
     break;
     case kGun1:     
-      fprintf(fp,"  AliGenFixed *pGen=new AliGenFixed(1);\n");  
+      fprintf(fp,"  AliGenBox *pGen=new AliGenBox(1);\n");  
       fprintf(fp,"  pGen->SetPart(%i); pGen->SetOrigin(0,0,0);\n",fGenPartIdCombo->GetSelected());  
-      fprintf(fp,"  pGen->SetMomentumRange(%3.1f,%3.1f); pGen->SetTheta(pRICH->C(%i)->ThetaD()-2); pGen->SetPhi(pRICH->C(%i)->PhiD()); \n",
-                    float(fGenMinMomCombo->GetSelected())/10,   float(fGenMaxMomCombo->GetSelected())/10,
-                    fGenChamberCombo->GetSelected(),fGenChamberCombo->GetSelected());            
+      fprintf(fp,"  pGen->SetMomentumRange(%3.1f,%3.1f); \n",float(fGenMinMomCombo->GetSelected())/10,   float(fGenMaxMomCombo->GetSelected())/10);
+      fprintf(fp,"  pGen->SetThetaRange(pRICH->C(%i)->ThetaD()-3,pRICH->C(%i)->ThetaD()-1); \n",fGenChamberCombo->GetSelected(),fGenChamberCombo->GetSelected());
+      fprintf(fp,"  pGen->SetPhiRange(pRICH->C(%i)->PhiD()-1,pRICH->C(%i)->PhiD()+1); \n",fGenChamberCombo->GetSelected(),fGenChamberCombo->GetSelected());    
       fprintf(fp,"  pGen->Init();\n");
     break;    
     case kGun7:   
       fprintf(fp,"  AliGenCocktail *pCocktail=new AliGenCocktail();\n");
       fprintf(fp,"  for(int i=1;i<=7;i++){\n");
       fprintf(fp,"    AliGenFixed *pFixed=new AliGenFixed(1);\n");
-      fprintf(fp,"    pFixed->SetPart(%i); pFixed->SetMomentum(2.5+i*0.4); pFixed->SetOrigin(0,0,0);\n",fGenPartIdCombo->GetSelected());
+      fprintf(fp,"    pFixed->SetPart(%i); pFixed->SetMomentum(1.0+i*0.5); pFixed->SetOrigin(0,0,0);\n",fGenPartIdCombo->GetSelected());
       fprintf(fp,"    pFixed->SetPhi(pRICH->C(i)->PhiD()); pFixed->SetTheta(pRICH->C(i)->ThetaD()-2);\n");                             
       fprintf(fp,"    pCocktail->AddGenerator(pFixed,Form(\"Fixed %i\",i),1);\n  }\n");  
       fprintf(fp,"  pCocktail->Init();\n");
@@ -320,8 +320,11 @@ void RichConfig::CreateRichBatch()
   fprintf(fp,"  TStopwatch sw;TDatime time;\n\n");
   
   fprintf(fp,"  AliSimulation     *pSim=new AliSimulation;\n");
-  if(fGenTypeCombo->GetSelected()==kGun1)
-    fprintf(fp,"  pSim->SetRegionOfInterest(kTRUE); pSim->SetMakeDigitsFromHits(\"ITS TPC TRD TOF\");\n");
+  if(fGenTypeCombo->GetSelected()==kGun1||fGenTypeCombo->GetSelected()==kGun7) {
+    fprintf(fp,"  pSim->SetRegionOfInterest(kTRUE);\n");
+    fprintf(fp,"  pSim->SetMakeSDigits(\"TOF RICH\");\n");
+    fprintf(fp,"  pSim->SetMakeDigitsFromHits(\"ITS TPC TRD\");\n");
+  }
   fprintf(fp,"  pSim->Run(iNevents); delete pSim;\n\n");
   
   fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
