@@ -361,6 +361,11 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 	  ,fClusterTree->GetName(),fEvent);
 
     fClusterTree->Write();
+
+    AliTRDgeometry *geo = fTRD->GetGeometry();
+    geo->SetName("TRDgeometry");
+    geo->Write();
+    fPar->Write();
      
     return kTRUE;  
 
