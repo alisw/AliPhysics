@@ -363,13 +363,12 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
     const Float_t kconv=1.0e+6;  // GeV->KeV
     Int_t ii;
     Int_t idhit=-1;
+    Float_t xL[3];
+    Float_t xL1[3];
     for(ii=0; ii<nhits; ii++) {
       //      cout << "hit: " << ii+1 << " of " << nhits << endl;
       AliITShit *hit = (AliITShit*) fHits->At(ii);
-      Float_t xL[3];
-      hit = (AliITShit*) fHits->At(ii);
-      hit->GetPositionL(xL[0],xL[1],xL[2]);
-      Int_t hitDetector = hit->GetDetector();
+      AliITShit *hit1 = 0;
       
       // Take into account all hits when several GEANT steps are carried out
       // inside the silicon
@@ -379,42 +378,44 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
       // 68  - for exiting hit,
       // 33  - for stopping hit.
 
-      Int_t status = hit->GetTrackStatus();  // Boris
-
-      if(hit->StatusEntering()) idhit=ii;
+      Int_t status = hit->GetTrackStatus(); 
+      Int_t status1 = 0;
+      Int_t hitDetector = hit->GetDetector();
+      Float_t depEnergy = 0.;
+      if(hit->StatusEntering()) { // to be coupled to following hit
+	idhit=ii;
+	hit->GetPositionL(xL[0],xL[1],xL[2]);
+	if(ii<nhits-1) ii++;
+	hit1 = (AliITShit*) fHits->At(ii);
+	hit1->GetPositionL(xL1[0],xL1[1],xL1[2]);
+	status1 = hit1->GetTrackStatus();
+	depEnergy = kconv*hit1->GetIonization(); 	  
+      } else {
+	depEnergy = kconv*hit->GetIonization();  // Deposited energy in keV
+	hit->GetPositionL(xL1[0],xL1[1],xL1[2]);
+      }
+      //      cout << "status: " << status << ", status1: " << status1 << ", dE: " << depEnergy << endl;
+      if(fFlag && status1 == 33) continue;
       
       Int_t nOfSplits = 1;
-      // Deposited energy in keV
-      Float_t depEnergy = kconv*hit->GetIonization();
-      AliITShit *hit1 = 0;
-      Float_t xL1[3];
-      if(fFlag && (depEnergy != 0.)) continue;
 
       //      hit->Print();
 
+//     Int_t status1 = -1;
+//      Int_t ctr = 0;
       //Take now the entering and inside hits only
-      if(status != 66 && status != 65) continue;  // Boris
+//     if(status == 66) {
+//	do  {
+//	  if(ii<nhits-1) ii++;
+//	  hit1 = (AliITShit*) fHits->At(ii);
+//	  hit1->GetPositionL(xL1[0],xL1[1],xL1[2]);
+//	  status1 = hit1->GetTrackStatus();
+//	  depEnergy += kconv*hit1->GetIonization(); 	  
+//	  if(fFlag && status1 == 65) ctr++;
+//	} while(status1 != 68 && status1 != 33);
+//      }
 
-      if(depEnergy == 0.) {	
-	  if(ii<nhits-1) ii++;
-	  hit1 = (AliITShit*) fHits->At(ii);
-	  hit1->GetPositionL(xL1[0],xL1[1],xL1[2]);
-      } else {
-	  xL1[0] = xL[0];
-	  xL1[1] = xL[1];
-	  xL1[2] = xL[2];
-      }
-      /*
-      Int_t status1 = hit1->GetTrackStatus();  // Boris
-      hit1->Print();
-      */
-      if(depEnergy == 0.) depEnergy = kconv*hit1->GetIonization();
-      /*
-      if(depEnergy < 0.001) {
-	cout<<" Warning !: for the hit status ="<<status1<<" the depEnergy ="<<depEnergy<<endl;
-	continue;
-      }
-      */
+
       // scale path to simulate a perpendicular track
       // continue if the particle did not lose energy
       // passing through detector
@@ -592,6 +593,7 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
 	  } // end if anodeAmplitude
 	} // loop over anodes in window
       } // end loop over "sub-hits"
+      for(Int_t ki=0; ki<3; ki++) xL[ki] = xL1[ki];
     } // end loop over hits
     
     //    timer.Stop(); timer.Print(); 
