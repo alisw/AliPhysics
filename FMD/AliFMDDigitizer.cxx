@@ -75,7 +75,7 @@ Bool_t AliFMDDigitizer::Init()
 
 //---------------------------------------------------------------------
 
-void AliFMDDigitizer::Exec(Option_t* option)
+void AliFMDDigitizer::Exec(Option_t * option)
 {
 
   /*
@@ -162,8 +162,9 @@ void AliFMDDigitizer::Exec(Option_t* option)
           fFMD->SetHitsAddressBranch(brHits);
       }else{
         Fatal("Exec","EXEC Branch FMD hit not found");
-      } 
+      }
       TClonesArray *FMDhits = fFMD->Hits ();
+      
       Int_t ntracks    = (Int_t) TH->GetEntries();
       cout<<"Number of tracks TreeH"<<ntracks<<endl;
       for (Int_t track = 0; track < ntracks; track++)

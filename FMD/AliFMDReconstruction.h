@@ -28,7 +28,7 @@ class AliFMDReconstruction: public TTask
   AliFMDReconstruction() ; 
   AliFMDReconstruction(AliRunLoader* rl) ; 
   virtual ~AliFMDReconstruction();
-  virtual void  Exec(Option_t *option); 
+  virtual void  Exec(); 
   void SetNEvents(Int_t Nevents){fNevents = Nevents;}
   Stat_t GetNEvents()  {return fNevents;}
   TClonesArray *Digits() {return fDigits;}

@@ -64,7 +64,7 @@ AliFMDv1::AliFMDv1(const char *name, const char *title):
   fIdSens4=0;
   fIdSens5=0;
 //  setBufferSize(128000);
-}
+ }
 //-------------------------------------------------------------------------
 void AliFMDv1::CreateGeometry()
 {
@@ -92,98 +92,183 @@ void AliFMDv1::CreateGeometry()
    */
   //
 
-  
+
+
   Int_t *idtmed = fIdtmed->GetArray();
    
   Int_t ifmd;
   Int_t idrotm[999];
-  Float_t zfmd,par[3];
-  char name[5], nameSi[5], nameSector[5], nameRing[5];
+  Float_t zFMD,par[3],ppcon[15];
+  Float_t z[5]={62.8, 75.2, -83.4, -75.2, -340.};
+  Float_t NylonTube[3]={0.2,0.6,0.45};
+  Float_t zPCB=0.12; Float_t zHoneyComb=0.5; 
+  Float_t zSi=0.03;
+ 
+  char nameFMD[5], nameSi[5], nameSector[5], nameRing[5];
+  Char_t nameHoney[5], nameHoneyIn[5], nameHoneyOut[5];
+  Char_t namePCB[5], nameCopper[5], nameChips[5], nameG10[5];
+  Char_t nameLPCB[5], nameLCopper[5], nameLChips[5], nameGL10[5];;
+  Float_t rin[5]={4.2,15.4,4.2,15.4,4.2};
+  Float_t rout[5]={17.4,28.4,17.4,28.4,17.4};
+  Float_t RinHoneyComb[5] ={ 5.15,16.4,  5.15,16.4,  5.15};
+  Float_t RoutHoneyComb[5]={20.63,34.92,22.3, 32.02,20.63};
+  Float_t zInside;
+  Float_t zCooper=0.01; Float_t zChips=0.01;
+  Float_t yNylonTube[5]={10,20,10,20,10};
 
-  Float_t rin[6], rout[6],zpos;
-
-  Float_t etain[5]= {3.40, 2.29, 3.68, 2.29, 5.09};
-  Float_t etaout[6]={2.01, 1.70, 2.28, 1.70, 3.68};
-  //  Float_t z[6]={64., 85., -64., -85., -270., -630};
-  Float_t z[6]={62.8, 75.2, -83.4, -75.2, -340.};
-  Float_t zDet=0.03;
-  Float_t zElectronic=0.1;
-  Float_t zSupport=1.;
-
-  Float_t zFMD=1.;
-//-------------------------------------------------------------------
- //  FMD 
- //------------------------------------------------------------------
-	cout<<" !!!!!!!!!!!New FMD geometry !!!!!!!!!"<<endl;
 
   AliMatrix(idrotm[901], 90, 0, 90, 90, 180, 0);
+  
+  
+  // Nylon tubes
+   gMC->Gsvolu("GNYL","TUBE", idtmed[1], NylonTube, 3);  //support nylon tube
+   Float_t wideSupport=zSi+3*zPCB+2*NylonTube[2]+zHoneyComb;
+     cout<<" wideSupport "<<wideSupport<<endl;
 
-  //  gMC->Gsvolu("GSI","TUBE", idtmed[1], par, 0);
-  gMC->Gsvolu("GEL ","TUBE", idtmed[4], par, 0);
-  gMC->Gsvolu("GSUP","TUBE", idtmed[2], par, 0);
+ for (ifmd=0; ifmd<5; ifmd++)
+    {
+      sprintf(nameFMD,"FMD%d",ifmd+1);
+      ppcon[0]=0;
+      ppcon[1]=360;
+      ppcon[2]=4;
+      
+      ppcon[3]=-wideSupport;
+      ppcon[4]=rin[ifmd]+0.1;
+      ppcon[5]=rout[ifmd]+0.1;
+      
+      ppcon[6]=ppcon[3]+2*zSi+2*zPCB+2*NylonTube[2];
+      ppcon[7]=rin[ifmd]+0.1;
+      ppcon[8]=rout[ifmd]+0.1;
+      
+      ppcon[9]=ppcon[6];
+      ppcon[10]=RinHoneyComb[ifmd]+0.1;
+      ppcon[11]=RoutHoneyComb[ifmd]+0.1;
 
-  for (ifmd =0; ifmd < 5; ifmd++){
-
-    sprintf(name,"FMD%d",ifmd+1);
-    sprintf(nameSi,"GSI%d",ifmd+1);
-    sprintf(nameSector,"GSC%d",ifmd+1);
-    sprintf(nameRing,"GRN%d",ifmd+1);
-
-    zfmd=TMath::Abs(z[ifmd]);
-
-    AliFMD::Eta2Radius(etain[ifmd],zfmd,&rin[ifmd]);
-    AliFMD::Eta2Radius(etaout[ifmd],zfmd,&rout[ifmd]);
-    
-    par[0]=rin[ifmd]; // pipe size
-    par[1]=rout[ifmd];
-    par[2]=zFMD/2;
-    gMC->Gsvolu(name,"TUBE", idtmed[3], par, 3);
-    gMC->Gsvolu(nameSi,"TUBE", idtmed[1], par, 0);
-    
-    if (z[ifmd] < 0){  
-      gMC->Gspos(name,1,"ALIC",0,0,z[ifmd],0, "ONLY");}
-    else { 
-      gMC->Gspos(name,1,"ALIC",0,0,z[ifmd],idrotm[901], "ONLY");}
-  //Silicon detector
-    par[2]=zDet/2;
-    zpos=zFMD/2 -par[2];
-    gMC->Gsposp(nameSi,ifmd+1,name,0,0,zpos,0, "ONLY",par,3);
-
-    //Granularity
+      ppcon[12]=ppcon[9]+2*zHoneyComb+zPCB;
+      ppcon[13]=RinHoneyComb[ifmd]+0.1;
+      ppcon[14]=RoutHoneyComb[ifmd]+0.1;
+      gMC->Gsvolu(nameFMD,"PCON",idtmed[0],ppcon,15);
+      if (z[ifmd] >0){  
+        zFMD=z[ifmd]+wideSupport;
+        gMC->Gspos(nameFMD,1,"ALIC",0,0,zFMD,0, "ONLY");}
+      else {
+        zFMD=z[ifmd]-wideSupport;
+        gMC->Gspos(nameFMD,1,"ALIC",0,0,zFMD,idrotm[901], "ONLY");}
+     //silicon
+      sprintf(nameSi,"GSI%d",ifmd+1);
+      sprintf(nameSector,"GSC%d",ifmd+1);
+      sprintf(nameRing,"GRN%d",ifmd+1);
+      
+      //honeycomb support
+      sprintf(nameHoney,"GSU%d",ifmd+1);
+      gMC->Gsvolu(nameHoney,"TUBE", idtmed[0], par, 0);  //honeycomb 
+      sprintf(nameHoneyIn,"GHI%d",ifmd+1);
+      gMC->Gsvolu(nameHoneyIn,"TUBE", idtmed[7], par, 0);  //honey comb inside 
+      sprintf(nameHoneyOut,"GHO%d",ifmd+1);
+      gMC->Gsvolu(nameHoneyOut,"TUBE", idtmed[6], par, 0);  //honey comb skin
+      //PCB
+      sprintf(namePCB,"GPC%d",ifmd+1);
+      gMC->Gsvolu(namePCB,"TUBE", idtmed[0], par, 0); //PCB
+      sprintf(nameCopper,"GCO%d",ifmd+1);
+      gMC->Gsvolu(nameCopper,"TUBE", idtmed[3], par, 0);  // Cooper
+      sprintf(nameChips,"GCH%d",ifmd+1);
+      gMC->Gsvolu(nameChips,"TUBE", idtmed[5], par, 0); // Si chips
+      sprintf(nameG10,"G10%d",ifmd+1);
+      gMC->Gsvolu(nameG10,"TUBE", idtmed[2], par, 0);  //G10 plate
+      //last PCB
+      sprintf(nameLPCB,"GPL%d",ifmd+1);
+      gMC->Gsvolu(nameLPCB,"TUBE", idtmed[0], par, 0); //PCB
+      sprintf(nameLCopper,"GCL%d",ifmd+1);
+      gMC->Gsvolu(nameLCopper,"TUBE", idtmed[3], par, 0);  // Cooper
+      sprintf(nameLChips,"GHL%d",ifmd+1);
+      gMC->Gsvolu(nameLChips,"TUBE", idtmed[5], par, 0); // Si chips
+      sprintf(nameGL10,"G1L%d",ifmd+1);
+      gMC->Gsvolu(nameGL10,"TUBE", idtmed[2], par, 0); // Last G10
+      par[0]=rin[ifmd]; // pipe size
+      par[1]=rout[ifmd];
+      par[2]=zSi/2;
+      gMC->Gsvolu(nameSi,"TUBE", idtmed[4], par, 3);
+      zInside=ppcon[3]+par[2];
+       gMC->Gspos(nameSi,ifmd+1,nameFMD,0,0,zInside,0, "ONLY");
+      //PCB 1
+      zInside += par[2]+zPCB/2;
+      par[2]=zPCB/2;
+      gMC->Gsposp(namePCB,1,nameFMD,0,0,zInside,0, "ONLY",par,3);
+      zInside += zPCB;
+      gMC->Gsposp(namePCB,2,nameFMD,0,0,zInside,0, "ONLY",par,3);
+      Float_t NulonTubeBegin=zInside+2.5*zPCB;
+      par[2]=zPCB/2-0.02;
+      Float_t zInPCB = -zPCB/2+par[2];
+      gMC->Gsposp(nameG10,1,namePCB,0,0,zInPCB,0, "ONLY",par,3);
+      zInPCB+=par[2]+zCooper/2 ;
+      par[2]=zCooper/2;
+      gMC->Gsposp(nameCopper,1,namePCB,0,0,zInPCB,0, "ONLY",par,3);
+      zInPCB += zCooper/2 + zChips/2;
+      par[2]=zChips/2;
+      gMC->Gsposp(nameChips,1,namePCB,0,0,zInPCB,0, "ONLY",par,3);
+      //HoneyComb
+      zHoneyComb=0.8;   
+      par[0] = RinHoneyComb[ifmd];
+      par[1] = RoutHoneyComb[ifmd];
+      par[2] = zHoneyComb/2;
+      zInside += 2*NylonTube[2]+par[2];
+      gMC->Gsposp(nameHoney,1,nameFMD,0,0,zInside,0, "ONLY",par,3);
+      par[2]=0.1/2;
+      Float_t zHoney=-zHoneyComb/2+par[2];
+      gMC->Gsposp(nameHoneyOut,1,nameHoney,0,0,zHoney,0,
+                  "ONLY",par,3); //shkurki
+      zHoney=zHoneyComb/2-par[2];
+      gMC->Gsposp(nameHoneyOut,2,nameHoney,0,0,zHoney,0, "ONLY",par,3);
+      par[2]=(zHoneyComb-2.*0.1)/2; //soty vnutri
+      gMC->Gsposp(nameHoneyIn,1,nameHoney,0,0,0,0, "ONLY",par,3);
+      
+      gMC->Gspos("GNYL",1,nameFMD,0,yNylonTube[ifmd],
+                 NulonTubeBegin+NylonTube[2]/2.,0, "ONLY");
+      gMC->Gspos("GNYL",2,nameFMD,0,-yNylonTube[ifmd],
+                 NulonTubeBegin+NylonTube[2]/2.,0, "ONLY");
+         
+      //last PCB
+      par[0]=RoutHoneyComb[ifmd]-9;
+      par[1]=RoutHoneyComb[ifmd];
+      par[2]=zPCB/2;
+      zInside += zHoneyComb/2+par[2];
+      gMC->Gsposp(nameLPCB,1,nameFMD,0,0,zInside,0, "ONLY",par,3);
+      
+       par[2]=zPCB/2-0.02;
+       zInPCB = -zPCB/2+par[2];
+       gMC->Gsposp(nameGL10,1,nameLPCB,0,0,zInPCB,0, "ONLY",par,3);
+       zInPCB+=par[2]+zCooper/2 ;
+       par[2]=zCooper/2;
+       gMC->Gsposp(nameLCopper,1,nameLPCB,0,0,zInPCB,0, "ONLY",par,3);
+       zInPCB += zCooper/2 + zChips/2;
+       par[2]=zChips/2;
+       gMC->Gsposp(nameLChips,1,nameLPCB,0,0,zInPCB,0, "ONLY",par,3);
+      
+           
+     //Granularity
     fSectorsSi1=20;
-    fRingsSi1=256;
+    fRingsSi1=256*2;
+    // fRingsSi1=3; // for drawing only
     fSectorsSi2=40;
-    fRingsSi2=128;
-   if(ifmd==1||ifmd==3)
+     fRingsSi2=128*2;
+     //  fRingsSi2=3; //for  drawing onl
+    if(ifmd==1||ifmd==3)
       { 
-	gMC->Gsdvn(nameSector, nameSi , fSectorsSi2, 2);
-	gMC->Gsdvn(nameRing, nameSector, fRingsSi2, 1);
+        gMC->Gsdvn(nameSector, nameSi , fSectorsSi2, 2);
+        gMC->Gsdvn(nameRing, nameSector, fRingsSi2, 1);
       }
     else
       {
-	gMC->Gsdvn(nameSector, nameSi , fSectorsSi1, 2);
-	gMC->Gsdvn(nameRing, nameSector , fRingsSi1, 1);
+        gMC->Gsdvn(nameSector, nameSi , fSectorsSi1, 2);
+        gMC->Gsdvn(nameRing, nameSector , fRingsSi1, 1);
       }
-
-    //Plastic slice for electronics
-    par[2]=zElectronic/2;
-    zpos=zpos-zDet/2-par[2];
-    gMC->Gsposp("GEL ",ifmd+1,name,0,0,zpos,0, "ONLY",par,3);
-
-   //Simple Al support
-   par[1]=rout[ifmd];
-   par[0]=rout[ifmd]-2;
-   par[2]=zSupport/2;
-   zpos=zpos-zElectronic/2-par[2];
-   //   gMC->Gsposp("GSUP",ifmd+1,name,0,0,zpos,0, "ONLY",par,3);
-   
-
-  }  
-
+    
+    }
 }    
 
+
 //------------------------------------------------------------------------
-void AliFMDv1::CreateMaterials()
+void AliFMDv1::CreateMaterials() 
 {
  Int_t isxfld   = gAlice->Field()->Integ();
  Float_t sxmgmx = gAlice->Field()->Max();
@@ -194,19 +279,35 @@ void AliFMDv1::CreateMaterials()
  Float_t wPlastic[2]={1,1};
  Float_t denPlastic=1.03;
    //
- 
+  //     60% SiO2 , 40% G10FR4 
+ // PC board
+ Float_t apcb[3]  = { 28.0855,15.9994,17.749 };
+ Float_t zpcb[3]  = { 14.,8.,8.875 };
+ Float_t wpcb[3]  = { .28,.32,.4 };
+ Float_t denspcb  = 1.8;
+   //
  //*** Definition Of avaible FMD materials ***
- AliMaterial(0, "Si chip$", 28.0855,14.,2.33,9.36,999);
- AliMaterial(1, "Al supprt$", 26.980,13.,2.70,8.9,999);
- AliMaterial(2, "FMD Air$", 14.61, 7.3, .001205, 30423.,999); 
- AliMixture( 5, "Plastic$",aPlastic,zPlastic,denPlastic,-2,wPlastic);
- 
+ AliMaterial(0, "FMD Air$", 14.61, 7.3, .001205, 30423.,999); 
+ AliMixture(1, "Plastic$",aPlastic,zPlastic,denPlastic,-2,wPlastic);
+ AliMixture(2, "SSD PCB$",   apcb, zpcb, denspcb, 3, wpcb);
+ AliMaterial(3, "SSD Copper$", 63.546, 29., 8.96, 1.43, 999.);
+ AliMaterial(4, "SSD Si$",      28.0855, 14., 2.33, 9.36, 999.);
+ AliMaterial(5, "SSD Si chip$", 28.0855, 14., 2.33, 9.36, 999.);
+ AliMaterial(6, "SSD C$",       12.011,   6., 2.265,18.8, 999.);
+ AliMaterial(7, "SSD Kapton$", 12.011, 6., 0.01, 31.27, 999.);//honeycomb
+  AliMaterial(8, "SSD G10FR4$", 17.749, 8.875, 1.8, 21.822, 999.);
+   
 
 //**
- AliMedium(1, "Si chip$", 0, 1, isxfld, sxmgmx, 1., .001, 1., .001, .001);
- AliMedium(2, "Al support$", 1, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
- AliMedium(3, "FMD air$", 2, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
- AliMedium(4, "Plastic$", 5, 0,isxfld, sxmgmx,  10., .01, 1., .003, .003);
+ AliMedium(0, "FMD air$", 0, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
+ AliMedium(1, "Plastic$", 1, 0,isxfld, sxmgmx,  10., .01, 1., .003, .003);
+ AliMedium(2, "SSD PCB$", 2, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
+ AliMedium(3, "SSD Copper$", 3, 0,isxfld, sxmgmx,  10., .01, 1., .003, .003);
+ AliMedium(4, "SSD Si$", 4, 1, isxfld, sxmgmx, 1., .001, 1., .001, .001);
+ AliMedium(5, "SSD Si chip$", 5, 0,isxfld, sxmgmx,  10., .01, 1., .003, .003);
+ AliMedium(6, "SSD C$", 6, 0,isxfld, sxmgmx,  10., .01, 1., .003, .003);
+ AliMedium(7, "SSD Kapton$", 7, 0, isxfld, sxmgmx, 1., .001, 1., .001, .001);
+ AliMedium(8, "SSD G10FR4$", 8, 0,isxfld, sxmgmx,  10., .01, 1., .003, .003);
  
 
 

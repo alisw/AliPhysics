@@ -31,11 +31,6 @@ public:
   virtual void   ResetDigits();
   virtual void   DrawDetector()=0;
   virtual void   StepManager() {}
-   // Granularity
-  virtual void SetRingsSi1(Int_t ringsSi1=256);
-  virtual void SetSectorsSi1(Int_t sectorsSi1=20);
-  virtual void SetRingsSi2(Int_t ringsSi2=128);
-  virtual void SetSectorsSi2(Int_t sectorsSi2=40);
    
   void SetEventNumber(Int_t i)     {fEvNrSig = i;}
   void  Eta2Radius(Float_t, Float_t, Float_t*);
@@ -46,19 +41,15 @@ public:
   virtual void SetHitsAddressBranch(TBranch *b){b->SetAddress(&fHits);}
 
  protected:
-  Int_t fIdSens1;     //Si sensetive volume
-  Int_t fIdSens2;     //Si sensetive volume
-  Int_t fIdSens3;     //Si sensetive volume
-  Int_t fIdSens4;     //Si sensetive volume
-  Int_t fIdSens5;     //Si sensetive volume
- //Granularity
+//Granularity
   Int_t fRingsSi1;       // Number of rings
   Int_t fSectorsSi1;    // Number of sectors
   Int_t fRingsSi2;       // Number of rings
   Int_t fSectorsSi2;    // Number of sectors
 
-  Int_t   fNevents ;        // Number of events to digitize
+ Int_t   fNevents ;        // Number of events to digitize
   Int_t fEvNrSig;                 // signal     event number
+
 
   TClonesArray *fReconParticles;
 

@@ -94,11 +94,6 @@ AliDetector (name, title)
   gAlice->AddHitList (fHits);
 
   fIshunt = 0;
-  fIdSens1 = 0;
-  fIdSens2 = 0;
-  fIdSens3 = 0;
-  fIdSens4 = 0;
-  fIdSens5 = 0;
   //  fMerger = 0;
   SetMarkerColor (kRed);
 }
@@ -193,7 +188,7 @@ void AliFMD::BuildGeometry ()
 }
 
 //_____________________________________________________________________________
-Int_t AliFMD::DistanceToPrimitive (Int_t px, Int_t py)
+Int_t AliFMD::DistanceToPrimitive (Int_t /*px*/, Int_t /*py*/)
 {
   //
   // Calculate the distance from the mouse to the FMD on the screen
@@ -242,12 +237,7 @@ void  AliFMD::Init ()
     }
   //
   //
-    fIdSens1 = gMC->VolId ("GRN1");	//Si sensetive volume
-    fIdSens2 = gMC->VolId ("GRN2");	//Si sensetive volume
-    fIdSens3 = gMC->VolId ("GRN3");	//Si sensetive volume
-    fIdSens4 = gMC->VolId ("GRN4");	//Si sensetive volume
-    fIdSens5 = gMC->VolId ("GRN5");	//Si sensetive volume
-
+ 
 }
 //---------------------------------------------------------------------
 void AliFMD::MakeBranch (Option_t * option)
@@ -309,25 +299,6 @@ void AliFMD::SetTreeAddress ()
     }   
 }
 
-//---------------------------------------------------------------------
-
-void AliFMD::SetRingsSi1(Int_t ringsSi1)
-{
-   fRingsSi1=512;
-}
-void AliFMD::SetSectorsSi1(Int_t sectorsSi1)
-{
-  fSectorsSi1=20;
-}
-void AliFMD::SetRingsSi2(Int_t ringsSi2)
-{
-  fRingsSi2=256;
-}
-void AliFMD::SetSectorsSi2(Int_t sectorsSi2)
-{
-  fSectorsSi2=40;
-}
-
 
 
 void
@@ -350,7 +321,7 @@ void AliFMD::Digits2Reco()
 {
   AliFMDReconstruction * reconstruction =  new AliFMDReconstruction(fLoader->GetRunLoader());
   cout<<" AliFMD::Digits2Reco >> "<<reconstruction<<endl;
-  reconstruction->Exec("");
+  reconstruction->Exec();
   delete  reconstruction;
 }
 //-----------------------------------------------------------------------
