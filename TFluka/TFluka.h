@@ -191,52 +191,31 @@ class TFluka : public TVirtualMC {
   
   // tracking particle 
   // dynamic properties
-  virtual void     TrackPosition(TLorentzVector& position) const
-    {printf("WARNING: TrackPosition not yet implemented !\n");}
-  virtual void     TrackMomentum(TLorentzVector& momentum) const
-    {printf("WARNING: TrackMomentum not yet implemented !\n");}
-  virtual Double_t TrackStep() const
-    {printf("WARNING: TrackStep not yet implemented !\n"); return -1.;}
-  virtual Double_t TrackLength() const
-    {printf("WARNING: TrackLength not yet implemented !\n"); return -1.;} 
-  virtual Double_t TrackTime() const
-    {printf("WARNING: TrackTime not yet implemented !\n"); return -1.;}
-  virtual Double_t Edep() const
-    {printf("WARNING: Edep not yet implemented !\n"); return -1.;}
+  virtual void     TrackPosition(TLorentzVector& position) const;
+  virtual void     TrackMomentum(TLorentzVector& momentum) const;
+  virtual Double_t TrackStep() const;
+  virtual Double_t TrackLength() const;
+  virtual Double_t TrackTime() const;
+  virtual Double_t Edep() const;
   // static properties
-  virtual Int_t    TrackPid() const
-    {printf("WARNING: TrackPid not yet implemented !\n"); return -1;}
-  virtual Double_t TrackCharge() const
-    {printf("WARNING: TrackCharge not yet implemented !\n"); return -1.;}
-  virtual Double_t TrackMass() const
-    {printf("WARNING: TrackMass not yet implemented !\n"); return -1.;}
-  virtual Double_t Etot() const
-    {printf("WARNING: Etot not yet implemented !\n"); return -1.;}
-  
+  virtual Int_t    TrackPid() const;
+  virtual Double_t TrackCharge() const;
+  virtual Double_t TrackMass() const;
+  virtual Double_t Etot() const;
   // track status
-  virtual Bool_t   IsNewTrack() const
-    {printf("WARNING: IsNewTrack not yet implemented !\n"); return 0;}
-  virtual Bool_t   IsTrackInside() const
-    {printf("WARNING: IsTrackInside not yet implemented !\n"); return 0;}
-  virtual Bool_t   IsTrackEntering() const
-    {printf("WARNING: IsTrackEntering not yet implemented !\n"); return 0;}
-  virtual Bool_t   IsTrackExiting() const
-    {printf("WARNING: IsTrackExiting not yet implemented !\n"); return 0;}
-  virtual Bool_t   IsTrackOut() const
-    {printf("WARNING: IsTrackOut not yet implemented !\n"); return 0;}
-  virtual Bool_t   IsTrackDisappeared() const
-    {printf("WARNING: IsTrackDisappeared not yet implemented !\n"); return 0;}
-  virtual Bool_t   IsTrackStop() const
-    {printf("WARNING: IsTrackStop not yet implemented !\n"); return 0;}
-  virtual Bool_t   IsTrackAlive() const
-    {printf("WARNING: IsTrackAlive not yet implemented !\n"); return 0;}
+  virtual Bool_t   IsNewTrack() const;
+  virtual Bool_t   IsTrackInside() const;
+  virtual Bool_t   IsTrackEntering() const;
+  virtual Bool_t   IsTrackExiting() const;
+  virtual Bool_t   IsTrackOut() const;
+  virtual Bool_t   IsTrackDisappeared() const;
+  virtual Bool_t   IsTrackStop() const;
+  virtual Bool_t   IsTrackAlive() const;
  
   // secondaries
-  virtual Int_t    NSecondaries() const
-    {printf("WARNING: NSecondaries not yet implemented !\n"); return -1;}
+  virtual Int_t    NSecondaries() const ;
   virtual void     GetSecondary(Int_t isec, Int_t& particleId, 
-				TLorentzVector& position, TLorentzVector& momentum)
-    {printf("WARNING: GetSecondary not yet implemented !\n");}
+			TLorentzVector& position, TLorentzVector& momentum);
   virtual TMCProcess ProdProcess(Int_t isec) const
     {printf("WARNING: StepProcesses not yet implemented !\n"); return kPNoProcess;} 
   virtual Int_t    StepProcesses(TArrayI &proc) const
@@ -295,8 +274,37 @@ class TFluka : public TVirtualMC {
   // - Verbosity level
   Int_t GetVerbosityLevel() const {return fVerbosityLevel;}
   void SetVerbosityLevel(Int_t l) {fVerbosityLevel = l;}
+
+  // - Fluka Draw procedures formal parameters
+  Int_t GetIcode() const {return fIcode;}
+  void SetIcode(Int_t l) {fIcode = l;}
+
+  Int_t GetMreg() const {return fCurrentFlukaRegion;}
+  void SetMreg(Int_t l) {fCurrentFlukaRegion = l;}
+
+  Int_t GetNewreg() const {return fNewreg;}
+  void SetNewreg(Int_t l) {fNewreg = l;}
+
+  Double_t GetRull() const {return fRull;}
+  void SetRull(Double_t r) {fRull = r;}
+
+  Double_t GetXsco() const {return fXsco;}
+  void SetXsco(Double_t x) {fXsco = x;}
+
+  Double_t GetYsco() const {return fYsco;}
+  void SetYsco(Double_t y) {fYsco = y;}
+
+  Double_t GetZsco() const {return fZsco;}
+  void SetZsco(Double_t z) {fZsco = z;}
+
   void SetCurrentFlukaRegion(Int_t reg) {fCurrentFlukaRegion=reg;}
   Int_t GetCurrentFlukaRegion() const {return fCurrentFlukaRegion;}
+
+  //
+  // test
+  // ------------------------------------------------
+  //
+  virtual void     FutoTest() ;
 
  private:
   TFluka(const TFluka &mc){}
@@ -304,13 +312,26 @@ class TFluka : public TVirtualMC {
 
  protected:
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
-  TString fInputFileName; //Name of the input file (f.e. alice.inp)
-  
+
+  TString fInputFileName; //Name of the input file (f.e. mu.inp)
+
+  Int_t    fIcode;  //Fluka Draw procedures formal parameter 
+//  Int_t    fMreg;   //Fluka Draw procedures formal parameter
+  Int_t    fNewreg; //Fluka Draw procedures formal parameter
+  Double_t fRull;   //Fluka Draw procedures formal parameter
+  Double_t fXsco;   //Fluka Draw procedures formal parameter
+  Double_t fYsco;   //Fluka Draw procedures formal parameter
+  Double_t fZsco;   //Fluka Draw procedures formal parameter
+
 
 
   //Geometry through Geant4 for the time being!!!
   TG4GeometryManager*  fGeometryManager; //geometry manager
   TG4DetConstruction*  fDetector;        //Detector
+
+
+
+
 
   //Index of fluka region at each step
   Int_t fCurrentFlukaRegion;
@@ -320,7 +341,10 @@ class TFluka : public TVirtualMC {
   std::vector<Int_t> fMediaByRegion;
 
 
+
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo
+
+
 };
 
 #endif //TFLUKA

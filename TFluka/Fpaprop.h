@@ -86,4 +86,18 @@ typedef struct {
 COMMON_BLOCK_DEF(chpprpCommon,CHPPRP);
 }
 
+//Get functions
+//inline Double_t GetFlukaAM(unsigned int i) {return PAPROP.am[i+6];}
+//inline Double_t GetFlukaAMDISC(unsigned int i) {return PAPROP.amdisc[i+6];}
+//inline Double_t GetFlukaTHALH(unsigned int i) {return PAPROP.thalf[i+6];}
+//inline Double_t GetFlukaBIASDC(unsigned int i) {return PAPROP.biasdc[i+6];}
+//inline Double_t GetFlukaBIASIN(unsigned int i) {return PAPROP.biasin[i+6];}
+//inline Int_t    GetFlukaICHRGE(unsigned int i) {return PAPROP.ichrge[i+6];}
+//inline Int_t    GetFlukaIBARCH(unsigned int i) {return PAPROP.ibarch[i+6];}
+//inline Int_t    GetFlukaIJDISC(unsigned int i) {return PAPROP.ijdisc[i+6];}
+//inline Int_t    GetFlukaJSPINP(unsigned int i) {return PAPROP.jspinp[i+6];}
+//inline Int_t    GetFlukaIPARTY(unsigned int i) {return PAPROP.iparty[i+6];}
+//inline Int_t    GetFlukaIPARID(unsigned int i) {return PAPROP.iparid[i+6];}
+//inline Int_t    GetFlukaLHADRO(unsigned int i) {return PAPROP.lhadro[i+6];}
+//inline Int_t    GetFlukaLBSDCY(unsigned int i) {return PAPROP.lbsdcy[i+6];}
 #endif

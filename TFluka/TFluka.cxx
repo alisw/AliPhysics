@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/11/21 18:40:06  iglez2
+Media handling added
+
 Revision 1.5  2002/11/07 17:59:10  iglez2
 Included the geometry through geant4_vmc/FLUGG
 
@@ -63,15 +66,20 @@ First commit of Fluka interface.
 #include "TFluka.h"
 #include "TCallf77.h"      //For the fortran calls
 #include "Fdblprc.h"       //(DBLPRC) fluka common
-#include "Fiounit.h"       //(IOUNIT) fluka common
 #include "Fepisor.h"       //(EPISOR) fluka common
+#include "Ffinuc.h"        //(FINUC) fluka common
+#include "Fiounit.h"       //(IOUNIT) fluka common
+#include "Fpaprop.h"       //(PAPROP) fluka common
 #include "Fpart.h"         //(PART)   fluka common
-#include "TVirtualMC.h"
+#include "Ftrackr.h"       //(TRACKR) fluka common
+#include "Ffheavy.h"       //(FHEAVY) fluka common
 
+#include "TVirtualMC.h"
 #include "TG4GeometryManager.h" //For the geometry management
 #include "TG4DetConstruction.h" //For the detector construction
 
 #include "FGeometryInit.hh"
+#include "TLorentzVector.h"
 
 // Fluka methods that may be needed.
 #ifndef WIN32 
@@ -190,6 +198,7 @@ void TFluka::Init() {
 
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::Init() called." << endl;
+
 }
 
 void TFluka::FinishGeometry() {
@@ -447,3 +456,473 @@ Int_t TFluka::PDGFromId(Int_t id) const
   return mpdgha(intfluka);
   
 }
+
+
+
+//_____________________________________________________________________________
+// methods for step management
+//____________________________________________________________________________ 
+//
+// dynamic properties
+//
+void TFluka::TrackPosition(TLorentzVector& position) const
+{
+// Return the current position in the master reference frame of the
+// track being transported
+// TRACKR.atrack = age of the particle
+// TRACKR.xtrack = x-position of the last point
+// TRACKR.ytrack = y-position of the last point
+// TRACKR.ztrack = z-position of the last point
+  position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
+  position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
+  position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
+  position.SetT(TRACKR.atrack);
+}
+
+void TFluka::TrackMomentum(TLorentzVector& momentum) const
+{
+// Return the direction and the momentum (GeV/c) of the track
+// currently being transported
+// TRACKR.ptrack = momentum of the particle (not always defined, if
+//               < 0 must be obtained from etrack) 
+// TRACKR.cx,y,ztrck = direction cosines of the current particle
+// TRACKR.etrack = total energy of the particle
+// TRACKR.jtrack = identity number of the particle
+// PAPROP.am[TRACKR.jtrack] = particle mass in gev
+  if (TRACKR.ptrack >= 0) {
+    momentum.SetPx(TRACKR.ptrack*TRACKR.cxtrck);
+    momentum.SetPy(TRACKR.ptrack*TRACKR.cytrck);
+    momentum.SetPz(TRACKR.ptrack*TRACKR.cztrck);
+    momentum.SetE(TRACKR.etrack);
+    return;
+  }
+  else {
+    Double_t p = sqrt(TRACKR.etrack*TRACKR.etrack - PAPROP.am[TRACKR.jtrack]*PAPROP.am[TRACKR.jtrack]);
+    momentum.SetPx(p*TRACKR.cxtrck);
+    momentum.SetPy(p*TRACKR.cytrck);
+    momentum.SetPz(p*TRACKR.cztrck);
+    momentum.SetE(TRACKR.etrack);
+    return;
+  }
+}
+
+Double_t TFluka::TrackStep() const
+{
+// Return the length in centimeters of the current step
+// TRACKR.ctrack = total curved path
+    return TRACKR.ctrack;
+}
+
+Double_t TFluka::TrackLength() const
+{
+// It is wrong
+// should be the sum of all steps starting from the beginning of the track
+// for the time being returns only the length in centimeters of the current step
+    return TRACKR.ctrack;
+}
+
+Double_t TFluka::TrackTime() const
+{
+// Return the current time of flight of the track being transported
+// TRACKR.atrack = age of the particle
+  return TRACKR.atrack;
+}
+
+Double_t TFluka::Edep() const
+{
+// Energy deposition
+// if TRACKR.ntrack = 0, TRACKR.mtrack = 0:
+// -->local energy deposition (the value and the point are not recorded in TRACKR)
+//    but in the variable "rull" of the procedure "endraw.cxx"
+// if TRACKR.ntrack > 0, TRACKR.mtrack = 0:
+// -->no energy loss along the track
+// if TRACKR.ntrack > 0, TRACKR.mtrack > 0:
+// -->energy loss distributed along the track
+// TRACKR.dtrack = energy deposition of the jth deposition even
+  if (TRACKR.ntrack == 0 && TRACKR.mtrack == 0)
+    return fRull;
+  else {
+    Double_t sum = 0;
+    for ( Int_t j=0;j<TRACKR.mtrack;j++) {
+      sum +=TRACKR.dtrack[j];  
+    }
+    return sum;
+  }
+}
+
+Int_t TFluka::TrackPid() const
+{
+// Return the id of the particle transported
+// TRACKR.jtrack = identity number of the particle
+  return PDGFromId(TRACKR.jtrack);
+}
+
+Double_t TFluka::TrackCharge() const
+{
+// Return charge of the track currently transported
+// PAPROP.ichrge = electric charge of the particle
+  return PAPROP.ichrge[TRACKR.jtrack+6];
+}
+
+Double_t TFluka::TrackMass() const
+{
+// PAPROP.am = particle mass in GeV
+  return PAPROP.am[TRACKR.jtrack+6];
+}
+
+Double_t TFluka::Etot() const
+{
+// TRACKR.etrack = total energy of the particle
+  return TRACKR.etrack;
+}
+
+//
+// track status
+//
+Bool_t   TFluka::IsNewTrack() const
+{
+// ???????????????,
+// True if the track is not at the boundary of the current volume
+// Not true in some cases in bxdraw - to be solved
+  return 1;
+}
+
+Bool_t   TFluka::IsTrackInside() const
+{
+// True if the track is not at the boundary of the current volume
+// In Fluka a step is always inside one kind of material
+// If the step would go behind the region of one material,
+// it will be shortened to reach only the boundary.
+// Therefore IsTrackInside() is always true.
+// Not true in some cases in bxdraw - to be solved
+  return 1;
+}
+
+Bool_t   TFluka::IsTrackEntering() const
+{
+// True if this is the first step of the track in the current volume
+// Boundary- (X) crossing
+// Icode = 19: boundary crossing - call from Kaskad
+// Icode = 29: boundary crossing - call from Emfsco
+// Icode = 39: boundary crossing - call from Kasneu
+// Icode = 49: boundary crossing - call from Kashea
+// Icode = 59: boundary crossing - call from Kasoph
+  if (fIcode == 19 ||
+      fIcode == 29 ||
+      fIcode == 39 ||
+      fIcode == 49 ||
+      fIcode == 59) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackExiting() const
+{
+// True if this is the last step of the track in the current volume
+// Boundary- (X) crossing
+// Icode = 19: boundary crossing - call from Kaskad
+// Icode = 29: boundary crossing - call from Emfsco
+// Icode = 39: boundary crossing - call from Kasneu
+// Icode = 49: boundary crossing - call from Kashea
+// Icode = 59: boundary crossing - call from Kasoph
+  if (fIcode == 19 ||
+      fIcode == 29 ||
+      fIcode == 39 ||
+      fIcode == 49 ||
+      fIcode == 59) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackOut() const
+{
+// True if the track is out of the setup
+// means escape
+// Icode = 14: escape - call from Kaskad
+// Icode = 23: escape - call from Emfsco
+// Icode = 32: escape - call from Kasneu
+// Icode = 40: escape - call from Kashea
+// Icode = 51: escape - call from Kasoph
+  if (fIcode == 14 ||
+      fIcode == 23 ||
+      fIcode == 32 ||
+      fIcode == 40 ||
+      fIcode == 51) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackDisappeared() const
+{
+// means all inelastic interactions and decays
+// fIcode from usdraw
+  if (fIcode == 101 || // inelastic interaction
+      fIcode == 102 || // particle decay
+      fIcode == 214 || // in-flight annihilation
+      fIcode == 215 || // annihilation at rest
+      fIcode == 217 || // pair production
+      fIcode == 221) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackStop() const
+{
+// True if the track energy has fallen below the threshold
+// means stopped by signal or below energy threshold
+// Icode = 12: stopping particle       - call from Kaskad
+// Icode = 15: time kill               - call from Kaskad
+// Icode = 21: below threshold, iarg=1 - call from Emfsco
+// Icode = 22: below threshold, iarg=2 - call from Emfsco
+// Icode = 24: time kill               - call from Emfsco
+// Icode = 31: below threshold         - call from Kasneu
+// Icode = 33: time kill               - call from Kasneu
+// Icode = 41: time kill               - call from Kashea
+// Icode = 52: time kill               - call from Kasoph
+  if (fIcode == 12 ||
+      fIcode == 15 ||
+      fIcode == 21 ||
+      fIcode == 22 ||
+      fIcode == 24 ||
+      fIcode == 31 ||
+      fIcode == 33 ||
+      fIcode == 41 ||
+      fIcode == 52) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackAlive() const
+{
+// means not disappeared or not out
+  if (IsTrackDisappeared() || IsTrackOut() ) return 0;
+  else return 1;
+}
+
+//
+// secondaries
+//
+
+Int_t TFluka::NSecondaries() const
+// Number of secondary particles generated in the current step
+// fIcode = 100 = elastic interaction
+// fIcode = 101 = inelastic interaction
+// fIcode = 102 = particle decay
+// fIcode = 103 = delta ray
+// fIcode = 104 = pair production
+// fIcode = 105 = bremsstrahlung
+{
+  if (fIcode >= 100 && fIcode <= 105)
+    return FINUC.np + FHEAVY.npheav;
+  else 
+    return -1;
+}
+
+void     TFluka::GetSecondary(Int_t isec, Int_t& particleId,
+		TLorentzVector& position, TLorentzVector& momentum)
+// 
+// fIcode = 100 = elastic interaction
+// fIcode = 101 = inelastic interaction
+// fIcode = 102 = particle decay
+// fIcode = 103 = delta ray
+// fIcode = 104 = pair production
+// fIcode = 105 = bremsstrahlung
+{
+  if (fIcode >= 100 && fIcode <= 105) {
+    if (isec >= 0 && isec < FINUC.np) {
+      particleId = PDGFromId(FINUC.kpart[isec]);
+      position.SetX(fXsco);
+      position.SetY(fYsco);
+      position.SetZ(fZsco);
+      position.SetT(FINUC.agesec[isec]);
+      momentum.SetPx(FINUC.plr[isec]*FINUC.cxr[isec]);
+      momentum.SetPy(FINUC.plr[isec]*FINUC.cyr[isec]);
+      momentum.SetPz(FINUC.plr[isec]*FINUC.czr[isec]);
+      momentum.SetE(FINUC.tki[isec] + PAPROP.am[FINUC.kpart[isec]+6]);
+    }
+    if (isec >= FINUC.np && isec < FINUC.np + FHEAVY.npheav) {
+      Int_t jsec = isec - FINUC.np;
+      particleId = FHEAVY.kheavy[jsec]; // this is Fluka id !!!
+      position.SetX(fXsco);
+      position.SetY(fYsco);
+      position.SetZ(fZsco);
+      position.SetT(FHEAVY.agheav[jsec]);
+      momentum.SetPx(FHEAVY.pheavy[jsec]*FHEAVY.cxheav[jsec]);
+      momentum.SetPy(FHEAVY.pheavy[jsec]*FHEAVY.cyheav[jsec]);
+      momentum.SetPz(FHEAVY.pheavy[jsec]*FHEAVY.czheav[jsec]);
+      if (FHEAVY.tkheav[jsec] >= 3 && FHEAVY.tkheav[jsec] <= 6) 
+        momentum.SetE(FHEAVY.tkheav[jsec] + PAPROP.am[jsec+6]);
+      else if (FHEAVY.tkheav[jsec] > 6)
+        momentum.SetE(FHEAVY.tkheav[jsec] + FHEAVY.amnhea[jsec]); // to be checked !!!
+    }
+  }
+}
+
+//TMCProcess ProdProcess(Int_t isec) const
+// Name of the process that has produced the secondary particles
+// in the current step
+//{
+// will come from FINUC when called from USDRAW
+//}
+
+//Int_t StepProcesses(TArrayI &proc) const
+// Return processes active in the current step
+//{
+//ck = total energy of the particl ???????????????? 
+//}
+
+
+// ===============================================================
+void TFluka::FutoTest() 
+{
+  Int_t icode, mreg, newreg, particleId;
+//  Int_t medium;
+  Double_t rull, xsco, ysco, zsco;
+  TLorentzVector position, momentum;
+  icode = GetIcode();
+  if (icode == 0) {
+    cout << " icode=" << icode << endl;
+    /*
+    cout << "TLorentzVector positionX=" << position.X()
+       << "positionY=" << position.Y()
+       << "positionZ=" << position.Z()
+       << "timeT=" << position.T() << endl;
+    cout << "TLorentzVector momentumX=" << momentum.X()
+       << "momentumY=" << momentum.Y()
+       << "momentumZ=" << momentum.Z()
+       << "energyE=" << momentum.E() << endl;
+    cout << "TrackPid=" << TrackPid() << endl;
+    */
+  }
+
+  else if (icode > 0 && icode <= 5) {
+// mgdraw
+    mreg = GetMreg();
+//    medium = GetMedium();
+    cout << " icode=" << icode
+	 << " mreg=" << mreg
+//	 << " medium=" << medium
+	 << endl;
+  TrackPosition(position);
+  TrackMomentum(momentum);
+  cout << "TLorentzVector positionX=" << position.X()
+       << "positionY=" << position.Y()
+       << "positionZ=" << position.Z()
+       << "timeT=" << position.T() << endl;
+  cout << "TLorentzVector momentumX=" << momentum.X()
+       << "momentumY=" << momentum.Y()
+       << "momentumZ=" << momentum.Z()
+       << "energyE=" << momentum.E() << endl;
+  cout << "TrackStep=" << TrackStep() << endl;
+  cout << "TrackLength=" << TrackLength() << endl;
+  cout << "TrackTime=" << TrackTime() << endl;
+  cout << "Edep=" << Edep() << endl;
+  cout << "TrackPid=" << TrackPid() << endl;
+  cout << "TrackCharge=" << TrackCharge() << endl;
+  cout << "TrackMass=" << TrackMass() << endl;
+  cout << "Etot=" << Etot() << endl;
+  cout << "IsNewTrack=" << IsNewTrack() << endl;
+  cout << "IsTrackInside=" << IsTrackInside() << endl;
+  cout << "IsTrackEntering=" << IsTrackEntering() << endl;
+  cout << "IsTrackExiting=" << IsTrackExiting() << endl;
+  cout << "IsTrackOut=" << IsTrackOut() << endl;
+  cout << "IsTrackDisappeared=" << IsTrackDisappeared() << endl;
+  cout << "IsTrackAlive=" << IsTrackAlive() << endl;
+  }
+
+  else if((icode >= 10 && icode <= 15) ||
+          (icode >= 20 && icode <= 24) ||
+          (icode >= 30 && icode <= 33) ||
+          (icode >= 40 && icode <= 41) ||
+          (icode >= 50 && icode <= 52)) {
+// endraw
+    mreg = GetMreg();
+//    medium = GetMedium();
+    rull = GetRull();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+//	 << " medium=" << medium
+	 << " rull=" << rull
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  TrackPosition(position);
+  TrackMomentum(momentum);
+  cout << "Edep=" << Edep() << endl;
+  cout << "Etot=" << Etot() << endl;
+  cout << "TrackPid=" << TrackPid() << endl;
+  cout << "TrackCharge=" << TrackCharge() << endl;
+  cout << "TrackMass=" << TrackMass() << endl;
+  cout << "IsTrackOut=" << IsTrackOut() << endl;
+  cout << "IsTrackDisappeared=" << IsTrackDisappeared() << endl;
+  cout << "IsTrackStop=" << IsTrackStop() << endl;
+  cout << "IsTrackAlive=" << IsTrackAlive() << endl;
+  }
+
+  else if((icode >= 100 && icode <= 105) ||
+           (icode == 208) ||
+           (icode == 210) ||
+           (icode == 212) ||
+           (icode >= 214 && icode <= 215) ||
+           (icode == 217) ||
+           (icode == 219) ||
+           (icode == 221) ||
+           (icode == 225) ||
+           (icode == 300) ||
+           (icode == 400)) {
+// usdraw
+    mreg = GetMreg();
+//    medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+//	 << " medium=" << medium
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+    cout << "TrackPid=" << TrackPid() << endl;
+    cout << "NSecondaries=" << NSecondaries() << endl;
+    for (Int_t isec=0; isec< NSecondaries(); isec++) {
+//void     TFluka::GetSecondary(Int_t isec, Int_t& particleId,
+//                 TLorentzVector& position, TLorentzVector& momentum)
+      TFluka::GetSecondary(isec, particleId, position, momentum);
+      cout << "TLorentzVector positionX=" << position.X()
+           << "positionY=" << position.Y()
+           << "positionZ=" << position.Z()
+           << "timeT=" << position.T() << endl;
+      cout << "TLorentzVector momentumX=" << momentum.X()
+           << "momentumY=" << momentum.Y()
+           << "momentumZ=" << momentum.Z()
+           << "energyE=" << momentum.E() << endl;
+      cout << "TrackPid=" << particleId << endl;
+
+    }
+  }
+
+  else if((icode == 19) ||
+          (icode == 29) ||
+          (icode == 39) ||
+          (icode == 49) ||
+          (icode == 59)) {
+    mreg = GetMreg();
+//    medium = GetMedium();
+    newreg = GetNewreg();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+//	 << " medium=" << medium
+	 << " newreg=" << newreg
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+//
+// ====================================================================
+//
+
+  
+
+} // end of FutoTest
+
