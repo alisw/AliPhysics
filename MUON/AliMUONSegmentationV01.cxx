@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/01/26 21:25:48  morsch
+Empty default constructors and.
+
 Revision 1.14  2000/12/21 22:12:41  morsch
 Clean-up of coding rule violations,
 
@@ -104,7 +107,8 @@ AliMUONSegmentationV01::AliMUONSegmentationV01()
     printf("\n Calling Default Constructor");
     fRSec = 0;
     fNDiv = 0;      
-    fDpxD = 0;   
+    fDpxD = 0;
+    fCorrA = 0;
 }
 
 AliMUONSegmentationV01::AliMUONSegmentationV01(Int_t nsec) 

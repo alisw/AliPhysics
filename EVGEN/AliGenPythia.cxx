@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.32  2001/01/26 19:55:51  hristov
+Major upgrade of AliRoot code
+
 Revision 1.31  2001/01/17 10:54:31  hristov
 Better protection against FPE
 
@@ -532,6 +535,7 @@ AliGenPythia& AliGenPythia::operator=(const  AliGenPythia& rhs)
 
 
 
+#ifdef never
 void AliGenPythia::Streamer(TBuffer &R__b)
 {
    // Stream an object of class AliGenPythia.
@@ -570,5 +574,5 @@ void AliGenPythia::Streamer(TBuffer &R__b)
       //     fDecayer->Streamer(R__b);
    }
 }
-
+#endif
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/01/23 20:08:03  barbera
+Option B for pixels implemented and set as default
+
 Revision 1.3  2001/01/17 08:08:20  barbera
 Some media parameters modified
 
@@ -3920,21 +3923,4 @@ void AliITSvPPRasymm::StepManager(){
   return;
 
 }
-/*
-//____________________________________________________________________________
-void AliITSvPPRasymm::Streamer(TBuffer &R__b){
-////////////////////////////////////////////////////////////////////////
-//    A dummy Streamer function for this class AliITSvPPRasymm. By default it
-// only streams the AliITS class as it is required. Since this class
-// dosen't contain any "real" data to be saved, it doesn't.
-////////////////////////////////////////////////////////////////////////
 
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliITS::Streamer(R__b);
-   } else {
-      R__b.WriteVersion(AliITSvPPRasymm::IsA());
-      AliITS::Streamer(R__b);
-   } // end if R__b.IsReading()
-}
-*/

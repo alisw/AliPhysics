@@ -72,12 +72,12 @@ protected:
   void Update1(); 
   virtual void UpdateSigma();  //recalculate sigma of PRF
   Float_t GetPRFActiv(Float_t xin); //return PRF in point xin and actual y
-  Float_t  * fcharge; //field with PRF 
+  Float_t  * fcharge; //!field with PRF 
   Float_t fY1;        //position of first "virtual" vire 
   Float_t fY2;        //position of last virtual vire
   Int_t fNYdiv;       //number of wires
-  Float_t * fChargeArray;  //pointer to array of arrays
   Int_t fNChargeArray;  //number of charge interpolation points
+  Float_t * fChargeArray;  //[fNChargeArray]pointer to array of arrays
  
   void DrawComment(TPaveText * comment);  //draw comments to picture
   //chevron parameters

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/01/17 15:41:27  barbera
+Some corrections suggested by Peter Hristov added
+
 Revision 1.11  2000/10/02 16:32:35  barbera
 Forward declaration added
 
@@ -640,93 +643,7 @@ ifstream & AliITSgeom::ReadGeom(ifstream &R__b){
       } // end for i
       return R__b;
 }
-//___________________________________________________________________________
-void AliITSgeom::Streamer(TBuffer &R__b){
-////////////////////////////////////////////////////////////////////////
-//     The default Streamer function "written by ROOT" doesn't write out
-// the arrays referenced by pointers. Therefore, a specific Streamer function
-// has to be written. This function should not be modified but instead added
-// on to so that older versions can still be read. The proper handling of
-// the version dependent streamer function hasn't been written do to the lack
-// of finding an example at the time of writing.
-////////////////////////////////////////////////////////////////////////
-    // Stream an object of class AliITSgeom.
-    Int_t  i,j,k,l;
-    UInt_t R__s=0, R__c=0;
 
-    if (R__b.IsReading()) {
-	Version_t R__v = R__b.ReadVersion();
-	if (R__v==1) {
-	    if(fNlad!=0) delete[] fNlad;
-	    if(fNdet!=0) delete[] fNdet;
-	    if(fGm!=0){
-		for(i=0;i<fNlayers;i++) delete[] fGm[i];
-		delete[] fGm;
-	    } // end if fGm!=0
-	    Int_t    idt,id[3],inmax;
-	    Double_t t[3],r[3],m[9],s[3][3];
-	    TObject::Streamer(R__b);
-	    fTrans = 0;
-	    R__b >> fNlayers;
-	    fNlad = new Int_t[fNlayers];
-	    fNdet = new Int_t[fNlayers];
-	    for(i=0;i<fNlayers;i++) R__b >> fNlad[i];
-	    for(i=0;i<fNlayers;i++) R__b >> fNdet[i];
-	    fNmodules = GetModuleIndex(fNlayers,fNlad[fNlayers-1],
-				       fNdet[fNlayers-1]);
-	    fGm = new AliITSgeomMatrix*[fNmodules];
-	    inmax = 0;
-	    for(i=0;i<fNlayers;i++){
-		for(j=0;j<fNlad[i]*fNdet[i];j++){
-		    R__b >> idt;
-		    R__b >> t[0];
-		    R__b >> t[1];
-		    R__b >> t[2];
-		    R__b >> r[0];
-		    R__b >> r[1];
-		    R__b >> r[2];
-		    for(k=0;k<9;k++) R__b >> m[k];
-		    for(k=0;k<3;k++)for(l=0;l<3;l++) s[k][l] = m[3*k+l];
-		    GetModuleId(inmax,id[0],id[1],id[2]);
-		    fGm[inmax++] = new AliITSgeomMatrix(idt,id,s,t);
-		} // end for j
-	    } // end for i
-	    R__b >> fShape;
-	} else if(R__v==2){
-	    if(fNlad!=0) delete[] fNlad;
-	    if(fNdet!=0) delete[] fNdet;
-	    if(fGm!=0){for(i=0;i<fNmodules;i++) delete fGm[i];delete[] fGm;}
-	    TObject::Streamer(R__b);
-	    R__b >> fTrans;
-	    R__b >> fNlayers;
-	    R__b.ReadArray(fNlad);
-	    R__b.ReadArray(fNdet);
-	    R__b >> fShape;
-	    R__b >> fNmodules;
-	    fGm = new AliITSgeomMatrix*[fNmodules];
-	    for(i=0;i<fNmodules;i++){
-		fGm[i] = new AliITSgeomMatrix;
-		fGm[i]->Streamer(R__b);
-	    } // end for i
-	    //R__b.ReadArray(fGm);
-	    R__b.CheckByteCount(R__s, R__c, AliITSgeom::IsA());
-	} // end if R__v==?
-    } else { // Writing.
-	R__c = R__b.WriteVersion(AliITSgeom::IsA(), kTRUE);
-	TObject::Streamer(R__b);
-	R__b << fTrans;
-	R__b << fNlayers;
-	R__b.WriteArray(fNlad, fNlayers);
-	R__b.WriteArray(fNdet, fNlayers);
-	R__b << fShape;
-	R__b << fNmodules;
-	//R__b.WriteArray(fGm, __COUNTER__);
-	for(i=0;i<fNmodules;i++){
-	    fGm[i]->Streamer(R__b);
-	} // end for i
-	R__b.SetByteCount(R__c, kTRUE);
-    } // end if reading/writing.
-}
 //______________________________________________________________________
 //     The following routines modify the transformation of "this"
 // geometry transformations in a number of different ways.

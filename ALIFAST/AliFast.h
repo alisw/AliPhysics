@@ -46,12 +46,12 @@ private:
    Int_t               fVersionDate;       //AliFast version date
    Int_t               fMode;              //Run mode
    Int_t               fTestTrack;         //Test mode for TrackMaker
-   TTree              *fTree;              //Pointer to the Root tree
+   TTree              *fTree;              //!Pointer to the Root tree
    TList              *fMakers;            //List of Makers
 //    pointers to standard Makers
-   AliFMCMaker        *fMCMaker;           //Pointer to MCMaker
-   AliFTrackMaker     *fTrackMaker;        //Pointer to TrackMaker
-   AliFDet            *fDet;               //Pointer to Detector
+   AliFMCMaker        *fMCMaker;           //!Pointer to MCMaker
+   AliFTrackMaker     *fTrackMaker;        //!Pointer to TrackMaker
+   AliFDet            *fDet;               //!Pointer to Detector
 //    flags and switches
    Int_t               fLuminosity;        //Luminosity option (low=1, high=2)
    Bool_t              fBfield;            //B-field (on=1,off=0)

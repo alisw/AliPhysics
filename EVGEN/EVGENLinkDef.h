@@ -18,7 +18,7 @@
 #pragma link C++ class  AliGenFixed+;
 #pragma link C++ class  AliGenBox+;
 #pragma link C++ class  AliGenParam+;
-#pragma link C++ class  AliGenPythia-;
+#pragma link C++ class  AliGenPythia+;
 #pragma link C++ class  AliGenCocktail+;
 #pragma link C++ class  AliGenCocktailEntry+;
 #pragma link C++ class  AliGenExtFile+;
@@ -39,7 +39,7 @@
 #pragma link C++ class  AliGenHijingEventHeader+;
 #pragma link C++ class  AliGenHijing+;
 #pragma link C++ class  AliDecayer+;
-#pragma link C++ class  AliDecayerPythia-;
+#pragma link C++ class  AliDecayerPythia+;
 #pragma link C++ class  AliGenMuonHits+;
 #endif
 

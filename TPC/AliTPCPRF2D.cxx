@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/09/07 11:23:27  kowal2
+Improved algoritms, coding convensions applied.
+
 Revision 1.5  2000/06/30 12:07:50  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -679,99 +682,25 @@ void AliTPCPRF2D::Streamer(TBuffer &R__b)
    // Stream an object of class AliTPCPRF2D
 
    if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);     
-      //read chewron parameters
-      R__b >> fHeightFull;
-      R__b >> fHeightS;
-      R__b >> fShiftY;
-      R__b >> fWidth;
-      R__b >> fK;
-      R__b >> fSigmaX;
-      R__b >> fSigmaY;
-      R__b >> fMeanX;
-      R__b >> fMeanY;
-      //read charge parameters     
-      R__b.ReadFastArray(fType,5);
-      R__b >> fOrigSigmaX;
-      R__b >> fOrigSigmaY;
-      R__b >> fKNorm;
-      R__b >> fK3X;
-      R__b >> fK3Y;
-      R__b >> fPadDistance;
-      R__b >> fInteg;   
-      //read angle parameters
-      R__b >> fChargeAngle;
-      R__b >> fPadAngle;
+      UInt_t R__s, R__c;
+      Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
+      AliTPCPRF2D::Class()->ReadBuffer(R__b, this, R__v, R__s, R__c);
       //read functions
-      if (fGRF!=0) { 
-	fGRF->Delete();  
-	fGRF=0;
+      if (strncmp(fType,"User",3)!=0){
+	delete fGRF;  
+        if (strncmp(fType,"Gauss",3)==0) 
+	  fGRF = new TF2("fun",funGauss2D,-5.,5.,-5.,5.,4);
+        if (strncmp(fType,"Cosh",3)==0) 
+	  fGRF = new TF2("fun",funCosh2D,-5.,5.,-5.,5.,4);
+        if (strncmp(fType,"Gati",3)==0) 
+	  fGRF = new TF2("fun",funGati2D,-5.,5.,-5.,5.,5);      
+        if (fGRF!=0) fGRF->SetParameters(funParam);
       }
-      if (strncmp(fType,"User",3)==0){
-	fGRF= new TF2;
-	R__b>>fGRF;   
-      }
-      if (strncmp(fType,"Gauss",3)==0) 
-	fGRF = new TF2("fun",funGauss2D,-5.,5.,-5.,5.,4);
-      if (strncmp(fType,"Cosh",3)==0) 
-	fGRF = new TF2("fun",funCosh2D,-5.,5.,-5.,5.,4);
-       if (strncmp(fType,"Gati",3)==0) 
-	fGRF = new TF2("fun",funGati2D,-5.,5.,-5.,5.,5);      
-      //read interpolation parameters
-      R__b >>fY1;
-      R__b >>fY2;
-      R__b >>fNYdiv;  
-      R__b >>fDStep;  
-      R__b >>fNPRF;
-      R__b >>fNChargeArray;
-      if (fChargeArray!=0) delete [] fChargeArray;
-      if (fNChargeArray>0) {
-	fChargeArray = new Float_t[fNChargeArray];
-	R__b.ReadFastArray(fChargeArray,fNChargeArray); 
-      }
-      //
-      R__b.ReadFastArray(funParam,5); 
-      if (fGRF!=0) fGRF->SetParameters(funParam);
       //calculate conversion coefitient to convert position to virtual wire
       fDYtoWire=Float_t(fNYdiv-1)/(fY2-fY1);
       fDStepM1=1/fDStep;
    } else {
-      R__b.WriteVersion(AliTPCPRF2D::IsA());
-      TObject::Streamer(R__b);      
-      //write chewron parameters
-      R__b << fHeightFull;
-      R__b << fHeightS;
-      R__b << fShiftY;
-      R__b << fWidth;
-      R__b << fK;
-      R__b << fSigmaX;
-      R__b << fSigmaY;
-      R__b << fMeanX;
-      R__b << fMeanY;
-      //write charge parameters
-      R__b.WriteFastArray(fType,5);
-      R__b << fOrigSigmaX;
-      R__b << fOrigSigmaY;
-      R__b << fKNorm;
-      R__b << fK3X;
-      R__b << fK3Y;
-      R__b << fPadDistance;  
-      R__b << fInteg;
-      //angle parameters
-      R__b << fChargeAngle;
-      R__b << fPadAngle;
-      if (strncmp(fType,"User",3)==0)	R__b <<fGRF;         
-      //write interpolation parameters
-      R__b <<fY1;
-      R__b <<fY2;
-      R__b <<fNYdiv;   
-      R__b <<fDStep;
-      R__b <<fNPRF;    
-      R__b <<fNChargeArray;
-      if (fNChargeArray>0) 
-	R__b.WriteFastArray(fChargeArray,fNPRF*fNYdiv); 
-      R__b.WriteFastArray(funParam,5); 
+      AliTPCPRF2D::Class()->WriteBuffer(R__b,this);
    }
 }
 

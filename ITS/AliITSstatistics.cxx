@@ -188,25 +188,3 @@ Double_t AliITSstatistics::GetErrorRMS(){
     s   = (m4-(n-3.)*m2*m2/(n-1.))/n;
     return TMath::Sqrt(s);
 }
-/*
-//_______________________________________________________________________
-void AliITSstatistics::Streamer(TBuffer &R__b){
-   // Stream an object of class AliITSstatistics.
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);
-      R__b >> fN;
-      R__b >> fOrder;
-      R__b.ReadArray(fX);
-      R__b.ReadArray(fW);
-   } else {
-      R__b.WriteVersion(AliITSstatistics::IsA());
-      TObject::Streamer(R__b);
-      R__b << fN;
-      R__b << fOrder;
-      R__b.WriteArray(fX,fOrder);
-      R__b.WriteArray(fW,fOrder);
-   }
-}
-*/

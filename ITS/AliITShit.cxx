@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/01/26 20:01:19  hristov
+Major upgrade of AliRoot code
+
 Revision 1.9  2000/10/02 16:32:51  barbera
 Automatic streamer used and forward declarations added
 
@@ -464,40 +467,3 @@ TParticle * AliITShit::GetParticle(){
 ////////////////////////////////////////////////////////////////////////
     return gAlice->Particle(GetTrack());
 }
-/*
-//___________________________________________________________________________
-void AliITShit::Streamer(TBuffer &R__b){
-////////////////////////////////////////////////////////////////////////
-//     The streamer function for this AliITShit class. This has been set
-// up so that future changes to this class can be easly incorporated.
-////////////////////////////////////////////////////////////////////////
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); 
-      if (R__v==1) {
-	  AliHit::Streamer(R__b);
-	  R__b >> fStatus;
-	  R__b >> fLayer;
-	  R__b >> fLadder;
-	  R__b >> fDet;
-	  R__b >> fPx;
-	  R__b >> fPy;
-	  R__b >> fPz;
-	  R__b >> fDestep;
-	  R__b >> fTof;
-      }else{ // for futrue changes to this class.
-      } // end if R__v==1
-   } else {
-      R__b.WriteVersion(AliITShit::IsA());
-      AliHit::Streamer(R__b);
-      R__b << fStatus;
-      R__b << fLayer;
-      R__b << fLadder;
-      R__b << fDet;
-      R__b << fPx;
-      R__b << fPy;
-      R__b << fPz;
-      R__b << fDestep;
-      R__b << fTof;
-   } // end if R__b.IsReading()
-}
-*/

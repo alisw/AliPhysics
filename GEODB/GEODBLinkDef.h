@@ -14,7 +14,7 @@
 #pragma link C++ class  AliGBox+;
 #pragma link C++ class  AliGSphere-;
 #pragma link C++ class  AliGTransform+;
-#pragma link C++ class  AliGMaterial-;
+#pragma link C++ class  AliGMaterial+;
 #pragma link C++ class  AliGSuperShape+;
 #pragma link C++ class  AliGConfig+;
 #pragma link C++ class  AliGNode+;

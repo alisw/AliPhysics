@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/01/26 19:55:49  hristov
+Major upgrade of AliRoot code
+
 Revision 1.9  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -207,37 +210,6 @@ NextGeneratorPair(AliGenCocktailEntry*& e1, AliGenCocktailEntry*& e2)
 	}
     }
 }
-
-/*
-void AliGenCocktail::Streamer(TBuffer &R__b)
-{
-    // Stream an object of class AliGenCocktail.
-
-    AliGenCocktailEntry *entry;
-    
-    if (R__b.IsReading()) {
-	Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-	AliGenerator::Streamer(R__b);
-	R__b >> fNGenerators;
-	R__b >> fEntries;
-	TIter next(fEntries);
-// Stream generation related information
-	while((entry = (AliGenCocktailEntry*)next())) {
-	    entry->Streamer(R__b);
-	}  
-    } else {
-	R__b.WriteVersion(AliGenCocktail::IsA());
-	AliGenerator::Streamer(R__b);
-	R__b << fNGenerators;
-	R__b << fEntries;
-	TIter next(fEntries); 
-// Stream generation related information
-	while((entry = (AliGenCocktailEntry*)next())) {
-	    entry->Streamer(R__b);
-	}  
-    }
-}
-*/
 
 AliGenCocktail& AliGenCocktail::operator=(const  AliGenCocktail& rhs)
 {

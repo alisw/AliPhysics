@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/01/18 06:25:09  barbera
+ITS geometry using test Euclid files
+
 Revision 1.1.2.8  2000/10/05 20:28:18  nilsen
 Now using root generated streamer function.
 
@@ -335,18 +338,4 @@ void AliITSvtest::StepManager(){
   new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
   return;
 }
-/*
-//____________________________________________________________________________
-void AliITSvtest::Streamer(TBuffer &R__b)
-{
-   // Stream an object of class AliITSvtest.
 
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliITS::Streamer(R__b);
-   } else {
-      R__b.WriteVersion(AliITSvtest::IsA());
-      AliITS::Streamer(R__b);
-   }
-}
-*/

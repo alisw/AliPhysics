@@ -19,7 +19,7 @@ AliITSInStream::AliITSInStream()
 }
 //_____________________________________________________________________________
 
-AliITSInStream::AliITSInStream(ULong_t length)
+AliITSInStream::AliITSInStream(UInt_t length)
 {
   //
   // Creates a stream of unsigned chars
@@ -67,37 +67,14 @@ void AliITSInStream::ClearStream()
 
 
 //_____________________________________________________________________________
-Bool_t AliITSInStream::CheckCount(ULong_t count) {
+Bool_t AliITSInStream::CheckCount(UInt_t count) {
   //check boundaries
-  if (count <= (ULong_t)fStreamLen) return kTRUE;
+  if (count <= (UInt_t)fStreamLen) return kTRUE;
   else {
     Error("CheckCount", "actual size is %d, the necessary size is %d",fStreamLen,count);
     return kFALSE;
   }
 }
-
-//____________________________________________________________________________
-void AliITSInStream::Streamer(TBuffer &R__b){
-  // Stream an object of class AliITSInStream.
-  
-  static unsigned char *array;
-  static Bool_t make=kTRUE;
-  
-  if (R__b.IsReading()) {
-	  R__b >> fStreamLen;
-	  //printf("Streamer: fStreamLen %d\n",fStreamLen);
-          if (make) array=new unsigned char[fStreamLen];
-          make=kFALSE;
-          memset(array,0,sizeof(UChar_t)*fStreamLen);
-          fInStream=array;
-	  R__b.ReadFastArray(fInStream,fStreamLen);
-	  
-  } else {
-    R__b << fStreamLen;
-    R__b.WriteFastArray(fInStream,fStreamLen);
-  }
-}
-
 
 
 ClassImp(AliITSOutStream)
@@ -112,13 +89,13 @@ ClassImp(AliITSOutStream)
 
 //__________________________________________________________________________
 
-AliITSOutStream::AliITSOutStream(ULong_t length) {
+AliITSOutStream::AliITSOutStream(UInt_t length) {
   //
   // Creates a stream of unsigned chars
   //
   
   fStreamLen = length;
-  fOutStream = new ULong_t[length];  
+  fOutStream = new UInt_t[length];  
   ClearStream(); 
   
 }
@@ -153,11 +130,11 @@ AliITSOutStream&
 void AliITSOutStream::ClearStream()
 {
   // clear stream
-  memset(fOutStream,0,sizeof(ULong_t)*fStreamLen);
+  memset(fOutStream,0,sizeof(UInt_t)*fStreamLen);
 }
 
 //_____________________________________________________________________________
-Bool_t AliITSOutStream::CheckCount(ULong_t count)
+Bool_t AliITSOutStream::CheckCount(UInt_t count)
 {
   //check boundaries
   if (count < fStreamLen) return kTRUE;
@@ -166,27 +143,3 @@ Bool_t AliITSOutStream::CheckCount(ULong_t count)
     return kFALSE;
   }
 }
-
-//____________________________________________________________________________
-void AliITSOutStream::Streamer(TBuffer &R__b){
-  
-  // Stream an object of class AliITSOutStream.
-  
-  static unsigned long *array;
-  static Bool_t make=kTRUE;
-  
-  if (R__b.IsReading()) {
-	  R__b >> fStreamLen;
-	  //printf("Streamer: fStreamLen %d\n",fStreamLen);
-          if (make) array=new unsigned long[fStreamLen];
-          make=kFALSE;
-          memset(array,0,sizeof(ULong_t)*fStreamLen);
-          fOutStream=array;
-	  R__b.ReadFastArray(fOutStream,fStreamLen);
-	  
-  } else {
-    R__b << fStreamLen;
-    R__b.WriteFastArray(fOutStream,fStreamLen);
-  }
-}
-

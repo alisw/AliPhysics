@@ -33,6 +33,7 @@ class AliITSRawCluster;
 class AliITSmodule;
 class AliITStrack;
 
+const Int_t kNTYPES=3;
 
 
 class AliITS : public AliDetector {
@@ -147,9 +148,8 @@ class AliITS : public AliDetector {
 
  protected:
 
-    static const Int_t fgkNTYPES;  // Number of detector types
     AliITSgeom *fITSgeom;      // Pointer to ITS geometry
-    TObjArray  *fITSmodules;   //! Pointer to ITS modules
+    TObjArray  *fITSmodules;   // Pointer to ITS modules
     Bool_t      fEuclidOut;    // Flag to write geometry in euclid format
     Int_t       fIdN;          // the number of layers
     Int_t      *fIdSens;       //[fIdN] layer identifier
@@ -159,13 +159,13 @@ class AliITS : public AliDetector {
     Int_t fMajorVersion;      // detailed and coarse(minor) versions
     Int_t fMinorVersion;      // detailed and coarse(minor) versions
     //
-    // Int_t       fNDetTypes;   // Number of detector types
+    Int_t          fNDetTypes;   // Number of detector types
     TObjArray     *fDetTypes;    // List of detector types
 
-    TObjArray     *fDtype;       //[fgkNTYPES]  List of digits
-    Int_t         *fNdtype;      //[fgkNTYPES] Num. of digits per type of det. 
-    TObjArray     *fCtype;       //[fgkNTYPES] List of clusters
-    Int_t         *fNctype;      //[fgkNTYPES] Num. of clust. per type of det.
+    TObjArray     *fDtype;       // List of digits
+    Int_t         *fNdtype;      //[fNDetTypes] Num. of digits per type of det. 
+    TObjArray     *fCtype;       // List of clusters
+    Int_t         *fNctype;      //[fNDetTypes] Num. of clust. per type of det.
 
     TClonesArray  *fRecPoints;   // List of reconstructed points
     Int_t          fNRecPoints;  // Number of rec points

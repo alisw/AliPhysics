@@ -52,7 +52,7 @@ class AliGenPythia : public AliGenerator
     TArrayI     fParentSelect;  // Parent particles to be selected 
     TArrayI     fChildSelect;   // Decay products to be selected
     Float_t     fXsection;      // Cross-section
-    AliPythia   *fPythia;       // Pythia 
+    AliPythia   *fPythia;       //! Pythia 
     Float_t     fPtHardMin;     // lower pT-hard cut 
     Float_t     fPtHardMax;     // higher pT-hard cut
     Int_t       fNucA1;         // mass number nucleus side 1

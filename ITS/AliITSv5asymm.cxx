@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/11/30 11:13:11  barbera
+ Added changes suggested by Federico Carminati on nov, 30, 2000
+
 Revision 1.1  2000/10/07 15:46:38  barbera
 Version 5 of the geometry with asymmetric services
 
@@ -759,25 +762,3 @@ void AliITSv5asymm::StepManager(){
 #endif
   return;
 }
-/*
-//____________________________________________________________________________
-void AliITSv5asymm::Streamer(TBuffer &R__b){
-////////////////////////////////////////////////////////////////////////
-//    A dummy Streamer function for this class AliITSv5asymm. By default it
-// only streams the AliITS class as it is required. Since this class
-// dosen't contain any "real" data to be saved, it doesn't.
-////////////////////////////////////////////////////////////////////////
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); 
-      if (R__v==1) {
-	  AliITS::Streamer(R__b);
-      }else{
-	  AliITS::Streamer(R__b);
-      } // end if R__v==1
-   } else {
-      R__b.WriteVersion(AliITSv5asymm::IsA());
-      AliITS::Streamer(R__b);
-   } // end if R__b.IsReading()
-}
-*/

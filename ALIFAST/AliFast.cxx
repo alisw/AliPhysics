@@ -513,47 +513,17 @@ void AliFast::Streamer(TBuffer &R__b)
    // Stream an object of class AliFast.
 
    if (R__b.IsReading()) {
-      R__b.ReadVersion(); //  Version_t R__v = R__b.ReadVersion();
-      TNamed::Streamer(R__b);
+      UInt_t R__s, R__c;
       if (!gAliFast) gAliFast = this;
       gROOT->GetListOfBrowsables()->Add(this,"AliFast");
-      R__b >> fVersion;
-      R__b >> fVersionDate;
-      R__b >> fRun;
-      R__b >> fEvent;
-      R__b >> fMode;
+      
+      Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
+      
+      AliFast::Class()->ReadBuffer(R__b, this, R__v, R__s, R__c);
+
       fTree = (TTree*)gDirectory->Get("T");
-      R__b >> fMakers;
-      //      R__b >> fMCMaker;
-      R__b >> fTrackMaker;
-      R__b >> fLuminosity;
-      R__b >> fBfield;
-      R__b >> fSmearing;
-      R__b >> fSUSYcodeLSP;
-      R__b >> fTrackFinding;
-      // fca
-      fHistBrowser.Streamer(R__b);
-      // fca
    } else {
-      R__b.WriteVersion(AliFast::IsA());
-      TNamed::Streamer(R__b);
-      R__b << fVersion;
-      R__b << fVersionDate;
-      R__b << fRun;
-      R__b << fEvent;
-      R__b << fMode;
-      fTree->Write();
-      R__b << fMakers;
-      //R__b << fMCMaker;
-      R__b << fTrackMaker;
-      R__b << fLuminosity;
-      R__b << fBfield;
-      R__b << fSmearing;
-      R__b << fSUSYcodeLSP;
-      R__b << fTrackFinding;
-      // fca
-      fHistBrowser.Streamer(R__b);
-      // fca
+       AliFast::Class()->WriteBuffer(R__b,this);
    }
 }
 

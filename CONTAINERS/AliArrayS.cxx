@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/11/01 15:57:13  kowal2
+Moved from the TPC directory
+
 Revision 1.2  2000/04/17 09:37:33  kowal2
 removed obsolete AliTPCDigitsDisplay.C
 
@@ -48,31 +51,3 @@ void AliArrayS::Expand(Int_t n)
   if (fArray!=0) fN= n; 
   else fN =0;
 }
-
-
-/*
-void AliArrayS::Streamer(TBuffer &R__b)
-{
-   // Stream an object of class AliTPC.
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);     
-      //read pad parameters
-      R__b >> fN;
-      if (fArray!=0){
-	delete [] fArray;
-	fArray =0;
-      }
-      if (fN>0){
-	fArray = new Short_t[fN];
-	R__b.ReadFastArray(fArray,fN); 
-      }
-   } else {
-      R__b.WriteVersion(AliArrayS::IsA());
-      TObject::Streamer(R__b);   
-      R__b << fN;      
-      if (fN>0) R__b.WriteFastArray(fArray,fN); 
-   }
-}
- */

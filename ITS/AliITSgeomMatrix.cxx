@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2000/10/02 16:32:35  barbera
+Forward declaration added
+
 Revision 1.1.2.6  2000/10/02 15:52:05  barbera
 Forward declaration added
 
@@ -651,31 +654,3 @@ istream &operator>>(istream &is,AliITSgeomMatrix &r){
     r.read(&is);
     return is;
 }
-//----------------------------------------------------------------------
-void AliITSgeomMatrix::Streamer(TBuffer &R__b){
-////////////////////////////////////////////////////////////////////////
-// Stream an object of class AliITSgeomMatrix.
-////////////////////////////////////////////////////////////////////////
-
-   UInt_t R__s, R__c;
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
-      if (R__v==1) {
-         R__b >> fDetectorIndex;
-         R__b.ReadStaticArray(fid);
-         R__b.ReadStaticArray(frot);
-         R__b.ReadStaticArray(ftran);
-         R__b.ReadStaticArray((double*)fm);
-         R__b.CheckByteCount(R__s, R__c, AliITSgeomMatrix::IsA());
-      } // end if R__v
-   } else { // R__b.IsWriting()
-      R__c = R__b.WriteVersion(AliITSgeomMatrix::IsA(), kTRUE);
-      R__b << fDetectorIndex;
-      R__b.WriteArray(fid, 3);
-      R__b.WriteArray(frot, 3);
-      R__b.WriteArray(ftran, 3);
-      R__b.WriteArray((double*)fm, 9);
-      R__b.SetByteCount(R__c, kTRUE);
-   } // end if R__b.IsReading()||IsWriting()
-}
-//______________________________________________________________________

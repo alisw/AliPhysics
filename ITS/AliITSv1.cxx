@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2000/10/05 20:49:59  nilsen
+Now using root generated streamers.
+
 Revision 1.14.2.9  2000/10/05 07:49:27  nilsen
 Removed hit generation from step manager.
 
@@ -907,21 +910,3 @@ void AliITSv1::StepManager(){
     new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 */
 }
-/*
-//____________________________________________________________________________
-void AliITSv1::Streamer(TBuffer &R__b){
-////////////////////////////////////////////////////////////////////////
-//    A dummy Streamer function for this class AliITSv1. By default it
-// only streams the AliITS class as it is required. Since this class
-// dosen't contain any "real" data to be saved, it doesn't.
-////////////////////////////////////////////////////////////////////////
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliITS::Streamer(R__b);
-   } else {
-      R__b.WriteVersion(AliITSv1::IsA());
-      AliITS::Streamer(R__b);
-   } // end if R__b.IsReading()
-}
-*/

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/01/17 07:41:29  barbera
+Some media parameters modified
+
 Revision 1.14  2001/01/15 13:13:53  barbera
 Some comments added
 
@@ -1095,21 +1098,4 @@ void AliITSvPPRcoarseasymm::StepManager(){
 //
 */
 }
-/*
-//____________________________________________________________________________
-void AliITSvPPRcoarseasymm::Streamer(TBuffer &R__b){
-////////////////////////////////////////////////////////////////////////
-//    A dummy Streamer function for this class AliITSvPPRcoarseasymm. By default it
-// only streams the AliITS class as it is required. Since this class
-// dosen't contain any "real" data to be saved, it doesn't.
-////////////////////////////////////////////////////////////////////////
 
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliITS::Streamer(R__b);
-   } else {
-      R__b.WriteVersion(AliITSvPPRcoarseasymm::IsA());
-      AliITS::Streamer(R__b);
-   } // end if R__b.IsReading()
-}
-*/

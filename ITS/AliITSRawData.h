@@ -30,14 +30,14 @@ class AliITSInStream: public TObject{
 
  public:
   AliITSInStream();
-  AliITSInStream(ULong_t length);
+  AliITSInStream(UInt_t length);
   virtual   ~AliITSInStream();
   AliITSInStream(const AliITSInStream &source); // copy constructor
   AliITSInStream& operator=(const AliITSInStream &source); // ass. operator
     
   void ClearStream();
-  Bool_t CheckCount(ULong_t count);
-  ULong_t  StreamLength() {
+  Bool_t CheckCount(UInt_t count);
+  UInt_t  StreamLength() {
     // stream length
     return fStreamLen;
   }
@@ -50,8 +50,8 @@ protected:
   
   // input stream of unsigned chars
   
-  ULong_t     fStreamLen;       // Length of the array
-  UChar_t    *fInStream;        // Pointer to an array of input unsigned chararacters
+  UInt_t     fStreamLen;       // Length of the array
+  UChar_t    *fInStream;        //[fStreamLen] Pointer to an array of input unsigned chararacters
   
   
   
@@ -64,18 +64,18 @@ class AliITSOutStream: public TObject{
 public:
   AliITSOutStream();
   
-  AliITSOutStream(ULong_t length);
+  AliITSOutStream(UInt_t length);
   virtual   ~AliITSOutStream();
   AliITSOutStream(const AliITSOutStream &source); // copy constructor
   AliITSOutStream& operator=(const AliITSOutStream &source); // assignment operator
     
   void ClearStream();
-  Bool_t CheckCount(ULong_t count);
-  ULong_t  StreamLength() {
+  Bool_t CheckCount(UInt_t count);
+  UInt_t  StreamLength() {
     // stream length
     return fStreamLen;
   }
-  ULong_t *Stream() {
+  UInt_t *Stream() {
     // stream
     return fOutStream;
   }
@@ -84,8 +84,8 @@ protected:
   
   // output stream of unsigned chars
   
-  ULong_t     fStreamLen;        // Length of the array
-  ULong_t    *fOutStream;        // Pointer to an array of unsigned long
+  UInt_t     fStreamLen;        // Length of the array
+  UInt_t    *fOutStream;        //[fStreamLen] Pointer to an array of unsigned long
   
   
 

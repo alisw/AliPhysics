@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.29  2001/01/26 20:01:09  hristov
+Major upgrade of AliRoot code
+
 Revision 1.28  2000/12/18 14:02:00  barbera
 new version of the ITS tracking to take into account the new TPC track parametrization
 
@@ -168,7 +171,6 @@ the AliITS class.
 #include "../TPC/AliTPC.h"
 #include "../TPC/AliTPCParam.h"
 
-const Int_t AliITS::fgkNTYPES=3;
 
 ClassImp(AliITS)
  
@@ -187,7 +189,7 @@ AliITS::AliITS() : AliDetector() {
   fIshunt     = 0;
   fEuclidOut  = 0;
 
-  //fNDetTypes = fgkNTYPES;
+  fNDetTypes = kNTYPES;
   fIdN        = 0;
   fIdName     = 0;
   fIdSens     = 0;
@@ -225,13 +227,13 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
   fHits       = new TClonesArray("AliITShit", 1560);
   gAlice->AddHitList(fHits);
 
-  //fNDetTypes = fgkNTYPES;
+  fNDetTypes = kNTYPES;
 
-  fNdtype = new Int_t[fgkNTYPES];
-  fDtype = new TObjArray(fgkNTYPES);
+  fNdtype = new Int_t[kNTYPES];
+  fDtype = new TObjArray(kNTYPES);
 
-  fNctype = new Int_t[fgkNTYPES];
-  fCtype = new TObjArray(fgkNTYPES);
+  fNctype = new Int_t[kNTYPES];
+  fCtype = new TObjArray(kNTYPES);
 
 
   fRecPoints = 0;
@@ -247,10 +249,10 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
   fIdName     = 0;
   fIdSens     = 0;
  
-  fDetTypes = new TObjArray(fgkNTYPES);  
+  fDetTypes = new TObjArray(kNTYPES);  
 
   Int_t i;
-  for(i=0;i<fgkNTYPES;i++) {
+  for(i=0;i<kNTYPES;i++) {
     (*fDetTypes)[i]=new AliITSDetType(); 
     fNdtype[i]=0;
     fNctype[i]=0;
@@ -490,7 +492,7 @@ void AliITS::ResetDigits()
     if (!fDtype) return;
 
     Int_t i;
-    for (i=0;i<fgkNTYPES;i++ ) {
+    for (i=0;i<kNTYPES;i++ ) {
 	if ((*fDtype)[i])    ((TClonesArray*)(*fDtype)[i])->Clear();
 	if (fNdtype)  fNdtype[i]=0;
     }
@@ -515,7 +517,7 @@ void AliITS::ResetClusters()
     //
 
     Int_t i;
-    for (i=0;i<fgkNTYPES;i++ ) {
+    for (i=0;i<kNTYPES;i++ ) {
 	if ((*fCtype)[i])    ((TClonesArray*)(*fCtype)[i])->Clear();
 	if (fNctype)  fNctype[i]=0;
     }
@@ -640,7 +642,7 @@ void AliITS::SetDefaults()
       iDetType->ClassNames("AliITSdigit","AliITSRawClusterSSD");
   } else iDetType->ClassNames("AliITSdigitSSD","AliITSRawClusterSSD");
 
-  if (fgkNTYPES>3) {
+  if (kNTYPES>3) {
     Warning("SetDefaults","Only the three basic detector types are initialised!");
   } 
 
@@ -679,8 +681,8 @@ void AliITS::MakeTreeC(Option_t *option)
 
      // one branch for Clusters per type of detector
      Int_t i;
-     for (i=0; i<fgkNTYPES ;i++) {
-        if (fgkNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
+     for (i=0; i<kNTYPES ;i++) {
+        if (kNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
 	else  sprintf(branchname,"%sClusters%d",GetName(),i+1);
 	if (fCtype   && fTreeC) {
 	   TreeC()->Branch(branchname,&((*fCtype)[i]), buffersize);
@@ -715,8 +717,8 @@ void AliITS::GetTreeC(Int_t event)
     TBranch *branch;
     if (fTreeC) {
         Int_t i;
-	for (i=0; i<fgkNTYPES; i++) {
-	   if (fgkNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
+	for (i=0; i<kNTYPES; i++) {
+	   if (kNTYPES==3) sprintf(branchname,"%sClusters%s",GetName(),det[i]);
 	   else  sprintf(branchname,"%sClusters%d",GetName(),i+1);
 	   if (fCtype) {
 		branch = fTreeC->GetBranch(branchname);
@@ -755,7 +757,7 @@ void AliITS::MakeBranch(Option_t* option, char *file)
    char clclass[40];
 
    Int_t i;
-   for (i=0; i<fgkNTYPES ;i++) {
+   for (i=0; i<kNTYPES ;i++) {
        AliITSDetType *iDetType=DetType(i); 
        iDetType->GetClassNames(digclass,clclass);
        //printf("i, digclass, recclass %d %s %s\n",i,digclass,clclass); 
@@ -765,8 +767,8 @@ void AliITS::MakeBranch(Option_t* option, char *file)
        (*fCtype)[i] = new TClonesArray(clclass,10000); 
    }
 
-   for (i=0; i<fgkNTYPES ;i++) {
-      if (fgkNTYPES==3) sprintf(branchname,"%sDigits%s",GetName(),det[i]);
+   for (i=0; i<kNTYPES ;i++) {
+      if (kNTYPES==3) sprintf(branchname,"%sDigits%s",GetName(),det[i]);
       else  sprintf(branchname,"%sDigits%d",GetName(),i+1);      
       if (fDtype && gAlice->TreeD()) {
         gAlice->MakeBranchInTree(gAlice->TreeD(), 
@@ -811,8 +813,8 @@ void AliITS::SetTreeAddress()
 
   Int_t i;
   if (treeD) {
-      for (i=0; i<fgkNTYPES; i++) {
-	  if (fgkNTYPES==3) sprintf(branchname,"%sDigits%s",GetName(),det[i]);
+      for (i=0; i<kNTYPES; i++) {
+	  if (kNTYPES==3) sprintf(branchname,"%sDigits%s",GetName(),det[i]);
 	  else  sprintf(branchname,"%sDigits%d",GetName(),i+1);
 	  if (fDtype) {
 	      branch = treeD->GetBranch(branchname);
@@ -1097,7 +1099,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size, Option_t *optio
 
    Int_t id,module;
    Int_t first,last;
-   for (id=0;id<fgkNTYPES;id++) {
+   for (id=0;id<kNTYPES;id++) {
         if (!all && !det[id]) continue;
 	//branch = (TBranch*)branches->UncheckedAt(id);
 	AliITSDetType *iDetType=DetType(id); 
@@ -1167,7 +1169,7 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
    AliITSgeom *geom = GetITSgeom();
 
    Int_t id,module;
-   for (id=0;id<fgkNTYPES;id++) {
+   for (id=0;id<kNTYPES;id++) {
         if (!all && !det[id]) continue;
 	//branch = (TBranch*)branches->UncheckedAt(id);
 	AliITSDetType *iDetType=DetType(id); 
@@ -1255,7 +1257,7 @@ Option_t *option,Option_t *opt,Text_t *filename)
 
 
    Int_t id,module;
-   for (id=0;id<fgkNTYPES;id++) {
+   for (id=0;id<kNTYPES;id++) {
         if (!all && !det[id]) continue;
 	AliITSDetType *iDetType=DetType(id); 
 	sim = (AliITSsimulation*)iDetType->GetSimulationModel();
@@ -1286,63 +1288,6 @@ Option_t *option,Option_t *opt,Text_t *filename)
    gAlice->TreeR()->Reset();
 
    delete [] random;
-
-}
-
-
-//____________________________________________________________________________
-void AliITS::Streamer(TBuffer &R__b){
-   // Stream an object of class AliITS.
-
-   Int_t i;
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion();
-      if (R__v) {
-	  AliDetector::Streamer(R__b);
-	  R__b >> fIdN;
-	  R__b.ReadArray(fIdSens); 
-  	  if(fIdName!=0) delete[] fIdName;  // Array of TStrings
-    	  fIdName    = new TString[fIdN];
-	  for(i=0;i<fIdN;i++) fIdName[i].Streamer(R__b);
-	  R__b >> fITSgeom;
-	  R__b >> fITSmodules;
-	  R__b >> fEuclidOut;
-	  R__b >> fMajorVersion;
-	  R__b >> fMinorVersion;
-	  R__b >> fDetTypes;
-	  R__b >> fDtype;
-	  delete []fNdtype; 
-	  fNdtype = new Int_t[fgkNTYPES];
-	  R__b.ReadFastArray(fNdtype,fgkNTYPES);
-	  R__b >> fCtype;
-	  delete []fNctype; 
-	  fNctype = new Int_t[fgkNTYPES];
-	  R__b.ReadFastArray(fNctype,fgkNTYPES);
-	  R__b >> fRecPoints;
-	  R__b >> fNRecPoints;
-	  R__b >> fTreeC;
-      } // end if R__v
-   } else { // writing
-      R__b.WriteVersion(AliITS::IsA());
-      AliDetector::Streamer(R__b);
-      R__b << fIdN;
-      R__b.WriteArray(fIdSens,fIdN); 
-      for(i=0;i<fIdN;i++) fIdName[i].Streamer(R__b);
-      R__b << fITSgeom;
-      R__b << fITSmodules;
-      R__b << fEuclidOut;
-      R__b << fMajorVersion;
-      R__b << fMinorVersion;
-      R__b << fDetTypes;
-      R__b << fDtype;
-      R__b.WriteFastArray(fNdtype,fgkNTYPES);
-      R__b << fCtype;
-      R__b.WriteFastArray(fNctype,fgkNTYPES);
-      R__b << fRecPoints;
-      R__b << fNRecPoints;
-      R__b << fTreeC;
-   } // end if
 
 }
 

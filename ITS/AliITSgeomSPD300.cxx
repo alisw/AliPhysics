@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 16:32:35  barbera
+Forward declaration added
+
 Revision 1.1.2.8  2000/10/02 15:52:05  barbera
 Forward declaration added
 
@@ -171,50 +174,3 @@ void AliITSgeomSPD300::ReSetBins(Float_t dy,Int_t nx,Float_t *bx,
     fShapeSPD = new TBRIK("ActiveSPD","Active volume of SPD","SPD SI DET",
 			  fDx,fDy,fDz);
 }
-/*
-//----------------------------------------------------------------------
-void AliITSgeomSPD300::Streamer(TBuffer &R__b){
-    // Streamer function for the class AliItSgeomSPD300.
-    Int_t i;
-    UInt_t R__s, R__c;
-
-    if(R__b.IsReading()){
-	Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
-	if(R__v==1){
-	    TObject::Streamer(R__b);
-	    fShapeSPD->Streamer(R__b);
-	    R__b >> fDx;
-	    R__b >> fDy;
-	    R__b >> fDz;
-	}else if (R__v==2){
-	    AliITSgeomSPD::Streamer(R__b);
-	    fShapeSPD->Streamer(R__b);
-	    R__b >> fDx;
-	    R__b >> fDy;
-	    R__b >> fDz;
-	    R__b >> fNbinx;
-	    if(fBinSizeX!=0) delete[] fBinSizeX;
-	    fBinSizeX = new Float_t[fNbinx];
-	    for(i=0;i<fNbinx;i++) R__b >> fBinSizeX[i];
-	    R__b >> fNbinz;
-	    if(fBinSizeZ!=0) delete[] fBinSizeZ;
-	    fBinSizeZ = new Float_t[fNbinz];
-	    for(i=0;i<fNbinz;i++) R__b >> fBinSizeZ[i];
-	    R__b.CheckByteCount(R__s, R__c, AliITSgeomSPD300::IsA());
-	} // end if R__v==1
-    } else { // IsWriting.
-	R__c = R__b.WriteVersion(AliITSgeomSPD300::IsA(), kTRUE);
-	AliITSgeomSPD::Streamer(R__b);
-	fShapeSPD->Streamer(R__b);
-	R__b << fDx;
-	R__b << fDy;
-	R__b << fDz;
-	R__b << fNbinx;
-	for(i=0;i<fNbinx;i++) R__b << fBinSizeX[i];
-	R__b << fNbinz;
-	for(i=0;i<fNbinz;i++) R__b << fBinSizeZ[i];
-	R__b.SetByteCount(R__c, kTRUE);
-    } // end if R__b.IsReading()
-}
-//----------------------------------------------------------------------
-*/

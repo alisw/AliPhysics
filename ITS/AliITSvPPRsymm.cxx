@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/01/26 20:01:19  hristov
+Major upgrade of AliRoot code
+
 Revision 1.1.2.1  2001/01/15 13:38:32  barbera
 New ITS detailed geometry to be used for the PPR
 
@@ -2737,21 +2740,3 @@ void AliITSvPPRsymm::StepManager(){
 //
 */
 }
-/*
-//____________________________________________________________________________
-void AliITSvPPRsymm::Streamer(TBuffer &R__b){
-////////////////////////////////////////////////////////////////////////
-//    A dummy Streamer function for this class AliITSvPPRsymm. By default it
-// only streams the AliITS class as it is required. Since this class
-// dosen't contain any "real" data to be saved, it doesn't.
-////////////////////////////////////////////////////////////////////////
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliITS::Streamer(R__b);
-   } else {
-      R__b.WriteVersion(AliITSvPPRsymm::IsA());
-      AliITS::Streamer(R__b);
-   } // end if R__b.IsReading()
-}
-*/

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.2  2000/09/12 13:58:45  morsch
 SetForceDcay(..) sets the member data storing the forced decay information.
 ForceDecay() executes the change of the decay table.
@@ -370,6 +373,7 @@ Float_t  AliDecayerPythia::GetPartialBranchingRatio(Int_t kf)
     return fBraPart[kc];
 }
 
+#ifdef never
 void AliDecayerPythia::Streamer(TBuffer &R__b)
 {
    // Stream an object of class AliDecayerPythia.
@@ -388,7 +392,7 @@ void AliDecayerPythia::Streamer(TBuffer &R__b)
       R__b.WriteArray(fBraPart, 501);
    }
 }
-
+#endif
 
 void AliDecayerPythia::Copy(AliDecayerPythia &decayer) const
 {

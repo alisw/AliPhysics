@@ -342,29 +342,3 @@ Double_t AliITSstatistics2::FitToLine(Double_t &a,Double_t &b){
     h /= (Double_t)fN - 2.0;
     return h;
 }
-/*
-//_______________________________________________________________________
-void AliITSstatistics2::Streamer(TBuffer &R__b){
-   // Stream an object of class AliITSstatistics2.
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);
-      R__b >> fN;
-      R__b >> fOrder;
-      R__b.ReadArray(fY);
-      R__b.ReadArray(fX);
-      R__b.ReadArray(fYx);
-      R__b.ReadArray(fW);
-   } else {
-      R__b.WriteVersion(AliITSstatistics2::IsA());
-      TObject::Streamer(R__b);
-      R__b << fN;
-      R__b << fOrder;
-      R__b.WriteArray(fY,fOrder);
-      R__b.WriteArray(fX,fOrder);
-      R__b.WriteArray(fYx,fOrder);
-      R__b.WriteArray(fW,fOrder);
-   }
-}
-*/

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:19  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 // -*- C++ -*-
@@ -173,59 +176,3 @@ AliGMaterial* AliGMaterial::operator=( const AliGMaterial* Mat )
 
     return this;
 }
-
-//-------------------------------------------------------------------------
-
-void AliGMaterial::Streamer(TBuffer &R__b)
-{
-   // Stream an object of class AliGMaterial.
-
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TNamed::Streamer(R__b);
-      R__b >> fImat;
-      R__b >> fIsvol;
-      R__b >> fIfield;
-      R__b >> fFieldm;
-      R__b >> fTmaxfd;
-      R__b >> fStemax;
-      R__b >> fDeemax;
-      R__b >> fEpsil;
-      R__b >> fStmin;
-      R__b.ReadArray(fUbuf); //
-      R__b >> fNbuf;
-      R__b >> fA;
-      R__b >> fZ;
-      R__b >> fDens;
-      R__b >> fRadl;
-      R__b >> fAbsl;
-      R__b.ReadArray(fBuf); //
-      R__b >> fNwbuf;
-      R__b >> fRho;
-   } else {
-      R__b.WriteVersion(AliGMaterial::IsA());
-      TNamed::Streamer(R__b);
-      R__b << fImat;
-      R__b << fIsvol;
-      R__b << fIfield;
-      R__b << fFieldm;
-      R__b << fTmaxfd;
-      R__b << fStemax;
-      R__b << fDeemax;
-      R__b << fEpsil;
-      R__b << fStmin;
-      R__b.WriteArray(fUbuf, fNbuf); //
-      R__b << fNbuf;
-      R__b << fA;
-      R__b << fZ;
-      R__b << fDens;
-      R__b << fRadl;
-      R__b << fAbsl;
-      R__b.WriteArray(fBuf, fNbuf); //
-      R__b << fNwbuf;
-      R__b << fRho;
-   }
-}
-
-//-------------------------------------------------------------------------
-

@@ -179,12 +179,10 @@ void AliFMaker::Streamer(TBuffer &R__b)
    // Stream an object of class AliFMaker.
 
    if (R__b.IsReading()) {
-      R__b.ReadVersion(); // Version_t R__v = R__b.ReadVersion();
-      TNamed::Streamer(R__b);
-      R__b >> fSave;
-      R__b >> fFruits;
-      fBranchName.Streamer(R__b);
-      R__b >> fHistograms;
+      UInt_t R__s, R__c;
+      Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
+      
+      AliFMaker::Class()->ReadBuffer(R__b, this, R__v, R__s, R__c);
           //this is an addition to the standard rootcint version of Streamer
           //branch address for this maker is set automatically
       TTree *tree = gAliFast->Tree();
@@ -192,12 +190,7 @@ void AliFMaker::Streamer(TBuffer &R__b)
       TBranch *branch = tree->GetBranch(fBranchName.Data());
       if (branch)  branch->SetAddress(&fFruits);
    } else {
-      R__b.WriteVersion(AliFMaker::IsA());
-      TNamed::Streamer(R__b);
-      R__b << fSave;
-      R__b << fFruits;
-      fBranchName.Streamer(R__b);
-      R__b << fHistograms;
+      AliFMaker::Class()->WriteBuffer(R__b,this);
    }
 }
 
