@@ -15,10 +15,14 @@
 
 /*
 $Log$
+Revision 1.11  1999/09/29 09:24:14  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 #include "AliGenParam.h"
 #include "AliGenMUONlib.h"
+#include "AliGenPHOSlib.h"
 #include "AliRun.h"
 #include "AliPythia.h"
 #include <TDirectory.h>
@@ -50,10 +54,8 @@ AliGenParam::AliGenParam()
 }
 
 //____________________________________________________________
-AliGenParam::AliGenParam(Int_t npart, Param_t param) 
-//				   Double_t (*PtPara)(Double_t*, Double_t*), 
-//				   Double_t (*YPara) (Double_t* ,Double_t*))
-    :AliGenerator(npart)
+
+AliGenParam::AliGenParam(Int_t npart, Param_t param) :AliGenerator(npart)
 {
   //
   //  fName="HMESONpara";
@@ -68,8 +70,30 @@ AliGenParam::AliGenParam(Int_t npart, Param_t param)
   fAnalog = analog;
   fChildSelect.Set(5);
   for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
-  ForceDecay();
+  SetForceDecay();
   SetCutOnChild();
+}
+
+AliGenParam::AliGenParam(Int_t npart, Param_t param,
+                         Double_t (*PtPara) (Double_t*, Double_t*),
+                         Double_t (*YPara ) (Double_t* ,Double_t*),
+		         Int_t    (*IpPara) ())			 
+    :AliGenerator(npart)
+{
+// Gines Martinez 1/10/99
+    fPtParaFunc = PtPara; 
+    fYParaFunc  = YPara;  
+    fIpParaFunc = IpPara;
+//
+  
+    fPtPara = 0;
+    fYPara  = 0;
+    fParam  = param;
+    fAnalog = analog;
+    fChildSelect.Set(5);
+    for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
+    SetForceDecay();
+    SetCutOnChild();
 }
 
 //____________________________________________________________
@@ -144,8 +168,11 @@ void AliGenParam::Init()
     case katomu:
 	fChildSelect[0]=13;
 	break;
+    case nodecay:
+	break;
+    case all:
+	break;
     }
-
 }
 
 //____________________________________________________________
@@ -160,7 +187,7 @@ void AliGenParam::Generate()
 
   Float_t polar[3]= {0,0,0};
   //
-  Float_t origin[3], origin0[3];
+  Float_t origin0[3];
   Float_t pt, pl, ptot;
   Float_t phi, theta;
   Float_t p[3], pc[3], och[3], pch[10][3];
@@ -227,79 +254,79 @@ void AliGenParam::Generate()
 	  }
 //
 // use lujet to decay particle
-
-	  Float_t energy=TMath::Sqrt(ptot*ptot+am*am);
-	  fPythia->DecayParticle(Ipart,energy,theta,phi);
-	  //	  fPythia->LuList(1);
-
-
-	  //printf("origin0 %f %f %f\n",origin0[0],origin0[1],origin0[2]);
-	  //printf("fCutOnChild %d \n",fCutOnChild);
+	  if (fForceDecay != nodecay) {
+	      Float_t energy=TMath::Sqrt(ptot*ptot+am*am);
+	      fPythia->DecayParticle(Ipart,energy,theta,phi);
+	      //	  fPythia->LuList(1);
+	      //printf("origin0 %f %f %f\n",origin0[0],origin0[1],origin0[2]);
+	      //printf("fCutOnChild %d \n",fCutOnChild);
 //
 // select muons
-	  Int_t np=fPythia->ImportParticles(particles,"All");
-          //printf("np     %d \n",np);
-	  Int_t ncsel=0;
-	  for (i = 1; i<np; i++) {
-	      TParticle *  iparticle = (TParticle *) particles->At(i);
-	      Int_t kf = iparticle->GetPdgCode();
-              //printf("kf %d\n",kf);
+	      Int_t np=fPythia->ImportParticles(particles,"All");
+	      //printf("np     %d \n",np);
+	      Int_t ncsel=0;
+	      for (i = 1; i<np; i++) {
+		  TParticle *  iparticle = (TParticle *) particles->At(i);
+		  Int_t kf = iparticle->GetPdgCode();
 //
 // children
-	      if (ChildSelected(TMath::Abs(kf)))
-	      {
-		  pc[0]=iparticle->Px();
-		  pc[1]=iparticle->Py();
-		  pc[2]=iparticle->Pz();
-		  och[0]=origin0[0]+iparticle->Vx()/10;
-		  och[1]=origin0[1]+iparticle->Vy()/10;
-		  och[2]=origin0[2]+iparticle->Vz()/10;
-		  if (fCutOnChild) {
-		    Float_t PtChild=TMath::Sqrt(pc[0]*pc[0]+pc[1]*pc[1]);
-		    Float_t PChild=TMath::Sqrt(PtChild*PtChild+pc[2]*pc[2]);
-		    Float_t ThetaChild=TMath::ATan2(PtChild,pc[2]);
-		    Float_t PhiChild=TMath::ATan2(pc[1],pc[0])+TMath::Pi();
-		    Bool_t childok = 
-		      ((PtChild   > fPtMin   && PtChild   <fPtMax)      &&
-			(PChild    > fPMin    && PChild    <fPMax)       &&
-			(ThetaChild>fThetaMin && ThetaChild<fThetaMax)   &&
-			(PhiChild  >  fPhiMin && PhiChild  <fPhiMax));
-		    if(childok)
-		      {
-			pch[ncsel][0]=pc[0];
-			pch[ncsel][1]=pc[1];
-			pch[ncsel][2]=pc[2];
-			kfch[ncsel]=kf;
-			ncsel++;
+		  if (ChildSelected(TMath::Abs(kf)))
+		  {
+		      pc[0]=iparticle->Px();
+		      pc[1]=iparticle->Py();
+		      pc[2]=iparticle->Pz();
+		      och[0]=origin0[0]+iparticle->Vx()/10;
+		      och[1]=origin0[1]+iparticle->Vy()/10;
+		      och[2]=origin0[2]+iparticle->Vz()/10;
+		      if (fCutOnChild) {
+			  Float_t PtChild=TMath::Sqrt(pc[0]*pc[0]+pc[1]*pc[1]);
+			  Float_t PChild=TMath::Sqrt(PtChild*PtChild+pc[2]*pc[2]);
+			  Float_t ThetaChild=TMath::ATan2(PtChild,pc[2]);
+			  Float_t PhiChild=TMath::ATan2(pc[1],pc[0])+TMath::Pi();
+			  Bool_t childok = 
+			      ((PtChild   > fPtMin   && PtChild   <fPtMax)      &&
+			       (PChild    > fPMin    && PChild    <fPMax)       &&
+			       (ThetaChild>fThetaMin && ThetaChild<fThetaMax)   &&
+			       (PhiChild  >  fPhiMin && PhiChild  <fPhiMax));
+			  if(childok)
+			  {
+			      pch[ncsel][0]=pc[0];
+			      pch[ncsel][1]=pc[1];
+			      pch[ncsel][2]=pc[2];
+			      kfch[ncsel]=kf;
+			      ncsel++;
+			  } else {
+			      ncsel=-1;
+			      break;
+			  } // child kine cuts
 		      } else {
-			ncsel=-1;
-			break;
-		      } // child kine cuts
-		  } else {
-		    pch[ncsel][0]=pc[0];
-		    pch[ncsel][1]=pc[1];
-		    pch[ncsel][2]=pc[2];
-		    kfch[ncsel]=kf;
-		    ncsel++;
-		  } // if child selection
-	      } // select muon
-	  } // decay particle loop
-	  Int_t iparent;
-	  if ((fCutOnChild && ncsel >0) || !fCutOnChild){
-	      ipa++;
+			  pch[ncsel][0]=pc[0];
+			  pch[ncsel][1]=pc[1];
+			  pch[ncsel][2]=pc[2];
+			  kfch[ncsel]=kf;
+			  ncsel++;
+		      } // if child selection
+		  } // select muon
+	      } // decay particle loop
+	      Int_t iparent;
+	      if ((fCutOnChild && ncsel >0) || !fCutOnChild){
+		  ipa++;
 //
 // parent
-	      gAlice->
-		  SetTrack(0,-1,Ipart,p,origin,polar,0,"Primary",nt,wgtp);
-	      iparent=nt;
+		  gAlice->
+		      SetTrack(0,-1,Ipart,p,origin0,polar,0,"Primary",nt,wgtp);
+		  iparent=nt;
 
-	      for (i=0; i< ncsel; i++) {
-		  gAlice->SetTrack(fTrackIt,iparent,kfch[i],
-				   &pch[i][0],och,polar,
-				   0,"Decay",nt,wgtch);
-		  gAlice->KeepTrack(nt); 
-	      }
-	      
+		  for (i=0; i< ncsel; i++) {
+		      gAlice->SetTrack(fTrackIt,iparent,kfch[i],
+				       &pch[i][0],och,polar,
+				       0,"Decay",nt,wgtch);
+		      gAlice->KeepTrack(nt); 
+		  }
+	      } else {
+		  gAlice->
+		      SetTrack(fTrackIt,-1,Ipart,p,origin0,polar,0,"Primary",nt,wgtp);
+	      } // Decays by Lujet
 	  } // kinematic selection
 	  break;
     } // while

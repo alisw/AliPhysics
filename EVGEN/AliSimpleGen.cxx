@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  1999/09/29 09:24:14  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////
@@ -258,8 +261,7 @@ void AliGenHIJINGpara::Generate()
 	ptf=fPtka;
 	etaf=fETAkac;
       }
-      phi=2*random[2]*TMath::Pi();
-      if(phi<fPhiMin || phi>fPhiMax) continue;
+      phi=fPhiMin+random[2]*(fPhiMax-fPhiMin);
       theta=2*TMath::ATan(TMath::Exp(-etaf->GetRandom()));
       if(theta<fThetaMin || theta>fThetaMax) continue;
       pt=ptf->GetRandom();
@@ -276,7 +278,7 @@ void AliGenHIJINGpara::Generate()
 	    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	}
       }
-      gAlice->SetTrack(1,-1,part,p,origin,polar,0,"Primary",nt,fParentWeight);
+      gAlice->SetTrack(fTrackIt,-1,part,p,origin,polar,0,"Primary",nt,fParentWeight);
       break;
     }
   }
@@ -320,7 +322,7 @@ void AliGenFixed::Generate()
   Int_t i, nt;
   //
   for(i=0;i<fNpart;i++) {
-    gAlice->SetTrack(1,-1,fIpart,p,fOrigin.GetArray(),polar,0,"Primary",nt);
+    gAlice->SetTrack(fTrackIt,-1,fIpart,p,fOrigin.GetArray(),polar,0,"Primary",nt);
   }
 }
   
@@ -398,7 +400,7 @@ void AliGenBox::Generate()
 	  TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
       }
     }
-    gAlice->SetTrack(1,-1,fIpart,p,origin,polar,0,"Primary",nt);
+    gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,"Primary",nt);
   }
 }
 

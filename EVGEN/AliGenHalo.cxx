@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  1999/09/29 09:24:14  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 #include "AliGenHalo.h"
@@ -112,10 +115,10 @@ void AliGenHalo::Generate()
       p[1]=p0*ty;
       p[2]=p0*tz;
       fParentWeight=wgt;
-      gAlice->SetTrack(1,-1,ipart,p,origin,polar,0,"Halo+",nt,fParentWeight);
+      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,"Halo+",nt,fParentWeight);
       origin[2]=-origin[2];
       p[2]=-p[2];
-      gAlice->SetTrack(1,-1,ipart,p,origin,polar,0,"Halo-",nt,fParentWeight);
+      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,"Halo-",nt,fParentWeight);
       origin[2]=-origin[2];
       p[2]=-p[2];
   }

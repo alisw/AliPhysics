@@ -12,12 +12,13 @@
 //                                                       //
 ///////////////////////////////////////////////////////////
 
-#include "TNamed.h"
-#include "TF1.h"
-#include "TArrayF.h"
-#include "TTree.h"
 #include "AliGenerator.h"
+
 #include <TClass.h>
+#include <TNamed.h>
+#include <TF1.h>
+#include <TArrayF.h>
+#include <TTree.h>
 
 class AliGenCocktailEntry : public TObject
 {

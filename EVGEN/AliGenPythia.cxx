@@ -15,6 +15,8 @@
 
 /*
 $Log$
+Revision 1.11  1999/09/29 09:24:14  fca
+Introduction of the Copyright and cvs Log
 */
 
 #include "AliGenerator.h"
@@ -48,7 +50,7 @@ AliGenPythia::AliGenPythia(Int_t npart)
     for (Int_t i=0; i<5; i++) fParentSelect[i]=fChildSelect[i]=0;
     SetProcess();
     SetStrucFunc();
-    ForceDecay();
+    SetForceDecay();
     SetPtHard();
     SetEnergyCMS();
 }
@@ -124,6 +126,9 @@ void AliGenPythia::Init()
     case pitomu:
     case katomu:
 	fChildSelect[0]=13;
+	break;
+    case all:
+    case nodecay:
 	break;
     }
 }

@@ -58,7 +58,7 @@ class AliGenPythia : public AliGenerator
     // set centre of mass energy
     virtual void    SetEnergyCMS(Float_t energy=5500) {fEnergyCMS=energy;}
     // force decay type
-    virtual void    ForceDecay(Decay_t decay=semimuonic) {fForceDecay=decay;}
+    virtual void    SetForceDecay(Decay_t decay=semimuonic) {fForceDecay=decay;}
     // get cross section of process
     virtual Float_t GetXsection() {return fXsection;}
     // Check PDG code

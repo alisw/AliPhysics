@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/09/29 09:24:14  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 #include "AliGenScan.h"
@@ -121,7 +124,7 @@ void AliGenScan::Generate()
 	      p[0] = pmom*TMath::Cos(phi)*TMath::Sin(theta);
 	      p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
 	      p[2] = pmom*TMath::Cos(theta);
-	      gAlice->SetTrack(1,-1,fIpart,p,origin,polar,0,"Primary",nt);
+	      gAlice->SetTrack(fTrackIt,-1,fIpart,p,origin,polar,0,"Primary",nt);
 	  }
       }
   }

@@ -5,7 +5,7 @@
 
 /* $Id$ */
 
-typedef enum {pion_p, kaon_p, phi_p, jpsi_p, upsilon_p, charm_p, beauty_p}
+typedef enum {Pion, Kaon, Eta, Omega, Etaprime, Phi, Baryon, pion_p, kaon_p, phi_p, jpsi_p, upsilon_p, charm_p, beauty_p}
 Param_t;
 
 typedef enum
@@ -15,7 +15,7 @@ Process_t;
 typedef enum
 { semielectronic, dielectron, semimuonic, dimuon,
   b_jpsi_dimuon, b_jpsi_dielectron, 
-  b_psip_dimuon, b_psip_dielectron, pitomu, katomu }
+  b_psip_dimuon, b_psip_dielectron, pitomu, katomu, nodecay, all}
 Decay_t;
 
 typedef enum

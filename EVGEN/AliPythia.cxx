@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  1999/09/29 09:24:14  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 
@@ -288,6 +291,9 @@ void AliPythia::ForceDecay(Decay_t decay)
 	break;
     case katomu:
 	ForceParticleDecay(321,13,1); // K->mu     
+	break;
+    case all:
+    case nodecay:
 	break;
     }
 }

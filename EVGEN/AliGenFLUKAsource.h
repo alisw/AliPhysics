@@ -13,7 +13,7 @@
 #include "TF1.h"
 #include "TArrayF.h"
 #include "TTree.h"
-
+#include "TChain.h"
 // Read background particles from a FLUKA boundary source file
 
 class AliGenFLUKAsource : public AliGenerator
@@ -31,8 +31,8 @@ protected:
   Float_t     fZshift;        //Shift the Z of impact point by this quantity
   Float_t     fFrac;
   
-  const Text_t     *fFileName;          //!Choose the file
-   
+  const Text_t    *fFileName;          //!Choose the file
+  TChain          *fTreeChain;
   TTree           *fTreeFluka;        //pointer to the TTree
 //Declaration of variables read from the file -- TTree type
    Float_t         Ip;
@@ -71,6 +71,7 @@ public:
   virtual void SetZshift(Float_t zshift) {fZshift=zshift;}
   // set file name of data file
   virtual void SetFileName(const Text_t *filname) {fFileName=filname;}
+  virtual void AddFile(const Text_t *filname) ;  
   // read only fraction of data  
   virtual void SetFraction(Float_t frac=1.){fFrac=frac;}
   // generate event
