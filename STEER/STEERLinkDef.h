@@ -8,6 +8,7 @@
 #pragma link C++ global gMC;
  
 #pragma link C++ enum VertexSmear_t;
+#pragma link C++ enum PDG_t;
 
 #pragma link C++ class  AliGenerator;
 #pragma link C++ class  AliRun-;

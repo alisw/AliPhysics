@@ -8,6 +8,7 @@
 ///////////////////////////////////////////////////////////
 
 #include "AliGenerator.h"
+#include "AliPDG.h"
 #include "TF1.h"
 
 

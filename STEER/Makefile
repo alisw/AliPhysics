@@ -17,7 +17,7 @@ SRCS          = AliDetector.cxx  AliHeader.cxx    AliMagF.cxx \
 
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) STEERLinkDef.h
+HDRS          = $(SRCS:.cxx=.h) AliPDG.h STEERLinkDef.h
 
 # Library dictionary
 

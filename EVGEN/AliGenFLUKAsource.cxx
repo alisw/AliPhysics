@@ -2,7 +2,7 @@
 #include "AliGenMUONlib.h"
 #include "AliMC.h"
 #include "AliRun.h"
-#include "AliConst.h"
+#include "AliPDG.h"
 
 #include <TDirectory.h>
 #include <TFile.h>
