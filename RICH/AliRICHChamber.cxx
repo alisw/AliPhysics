@@ -80,6 +80,9 @@ AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
                                                       Rot().ThetaZ()*kR2d, Rot().PhiZ()*kR2d);
   fpParam=pParam;
   fX=fCenterV3.X();fY=fCenterV3.Y();fZ=fCenterV3.Z();
+  
+  fSegmentation = 0;  fResponse = 0;    fGeometry = 0;
+  fTresh = 0;    for(Int_t i=0; i<50; ++i) fIndexMap[i] = 0;
 }
 //______________________________________________________________________________
 
