@@ -1,4 +1,4 @@
-void testsim (Int_t nevent=1, const char *config="testconfig.C")
+void testsim (Int_t nevent=100, const char *config="testconfig.C")
 {
   //
   // Simple macro to run aliroot in a batch mode

@@ -138,7 +138,7 @@ Bool_t sim_exam()
   gime->Event(0,"Q") ;
   
   // Examine the alarms
-  TObjArray * alahm = dynamic_cast<TObjArray*>(gime->Alarms()->FindObject("HitsM")) ;
+  TObjArray * alahm = dynamic_cast<TObjArray*>(dynamic_cast<TFolder*>(gime->Alarms())->FindObject("HitsM")) ;
   Float_t ratiohm = 100.0*static_cast<Float_t>(alahm->GetEntries())/static_cast<Float_t>(maxevent) ;
   
   TObjArray * alaet = dynamic_cast<TObjArray*>(gime->Alarms()->FindObject("TotEn")) ;
@@ -179,13 +179,16 @@ Bool_t sim_exam()
   
   if (ratiohm > maxAlaHitsM){
     error = kTRUE ;
-    mess = "Examination detected an error in HitsM." ;
+    mess = "Examination detected an error in HitsM: "; 
+    mess += ratiohm ; 
+    mess += " > " ; 
+    mess += maxAlaHitsM ;  
     write_info(mess) ;
   }
   
   if (ratioet>maxAlaTotEn){
     error = kTRUE ;
-    mess = "Examination detected an error in TotEn." ;
+    sprintf(mess.Data(), "Examination detected an error in TotEn: %f > %f", ratioet, maxAlaTotEn) ;
     write_info(mess) ;
   }
   
@@ -283,7 +286,7 @@ Bool_t sim_exam()
 Bool_t sdigit()
 {
   //SDigits process
-  
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance("testPHOS.root") ;  
   const Float_t maxSDigits = 62.89 ;
   const Float_t widSDigits = TMath::Sqrt(maxSDigits) ;
 
@@ -291,11 +294,10 @@ Bool_t sdigit()
   TString reconame = "test suite" ;
   
   AliPHOSSDigitizer *sd = new AliPHOSSDigitizer("testPHOS.root",reconame.Data()) ;
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
   
   sd->ExecuteTask("deb") ;
   
-  Float_t nSDigits =  static_cast<Float_t>(gime->SDigitizer()->GetSDigitsInRun()) / static_cast<Float_t>(gime->MaxEvent()) ;
+  Float_t nSDigits =  static_cast<Float_t>((dynamic_cast<AliPHOSSDigitizer*>(gime->SDigitizer()))->GetSDigitsInRun()) / static_cast<Float_t>(gime->MaxEvent()) ;
   if ( nSDigits < maxSDigits-widSDigits ||
        nSDigits > maxSDigits+widSDigits ) {
     mess = "Error detected in the SDigits process. Sending error file to PHOS director." ;
@@ -316,7 +318,7 @@ Bool_t digit()
   //Digits process
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance("testPHOS.root") ;
   TString reconame = "test suite" ;
-  const Float_t maxDigits = 2860. ;
+  const Float_t maxDigits = 40. ;
   const Float_t widDigits = TMath::Sqrt(maxDigits) ;
   
   TString mess("") ;
@@ -325,7 +327,7 @@ Bool_t digit()
   
   d->ExecuteTask("deb") ;
   
-  Float_t nDigits = static_cast<Float_t>(gime->Digitizer()->GetDigitsInRun()) / static_cast<Float_t>(gime->MaxEvent()) ;
+  Float_t nDigits = static_cast<Float_t>((dynamic_cast<AliPHOSDigitizer*>(gime->Digitizer()))->GetDigitsInRun()) / static_cast<Float_t>(gime->MaxEvent()) ;
   
   if ( nDigits < maxDigits-widDigits || nDigits > maxDigits+widDigits ) {
     cout <<  "digit() : nDigits = " << nDigits 

@@ -11,11 +11,11 @@ void Config()
   TDatime dat ; 
   gRandom->SetSeed(dat.GetTime());
   
-  new     AliGeant3("C++ Interface to Geant3");
+  gSystem->Load("libgeant321.so") ; 
+  new     TGeant3("C++ Interface to Geant3");
   
   TFile  *rootfile = new TFile("testPHOS.root", "recreate");
   rootfile->SetCompressionLevel(2);
-  
   
   TGeant3 *geant3 = (TGeant3 *) gMC;
   
@@ -92,7 +92,7 @@ void Config()
   
   
   AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance("aliroot") ;
   AliPHOSQAMeanChecker * hm  = static_cast<AliPHOSQAMeanChecker *>gime->QATasks("HitsMul");
   AliPHOSQAMeanChecker * te  = static_cast<AliPHOSQAMeanChecker *>gime->QATasks("TotEner");
   AliPHOSQAMeanChecker * hmB = static_cast<AliPHOSQAMeanChecker *>gime->QATasks("HitsMulB");
@@ -102,7 +102,7 @@ void Config()
   te->Set(8.092, 3.06) ;
   hmB->Set(63.498, 24.348) ;
   teB->Set(8.363, 3.44) ;
-       
+  hm->Print("") ;      
 }
 
 Float_t EtaToTheta(Float_t arg){
