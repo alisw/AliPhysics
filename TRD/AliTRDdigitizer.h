@@ -41,6 +41,7 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual Bool_t       MakeBranch(const Char_t *file = 0);
   virtual Bool_t       MakeDigits();
   virtual void         AddSDigitsManager(AliTRDdigitsManager *manager);
+  virtual void         DeleteSDigitsManager();
   virtual Bool_t       ConvertSDigits();
   virtual Bool_t       MergeSDigits();
   virtual Bool_t       SDigits2Digits();

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.32  2002/02/12 16:07:21  cblume
+Add new constructor
+
 Revision 1.31  2002/02/11 14:27:11  cblume
 New pad plane design, new TRF+PRF, tail cancelation, cross talk
 
@@ -378,7 +381,6 @@ AliTRDdigitizer::~AliTRDdigitizer()
   }
 
   if (fSDigitsManagerList) {
-    fSDigitsManagerList->Delete();
     delete fSDigitsManagerList;
     fSDigitsManagerList = NULL;
   }
@@ -680,6 +682,8 @@ void AliTRDdigitizer::Exec(Option_t* option)
     printf("<AliTRDdigitizer::Exec> ");
     printf("Done\n");
   }
+
+  DeleteSDigitsManager();
 
 }
 
@@ -1799,6 +1803,17 @@ void AliTRDdigitizer::AddSDigitsManager(AliTRDdigitsManager *man)
   //
 
   fSDigitsManagerList->Add(man);
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdigitizer::DeleteSDigitsManager()
+{
+  //
+  // Removes digits manager from the input list.
+  //
+
+  fSDigitsManagerList->Delete();
 
 }
 
