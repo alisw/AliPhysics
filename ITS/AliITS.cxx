@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.57  2001/07/24 14:26:11  mariana
+Introduce the function Digits2Reco() and write the defaults for simulation and reconstruction
+
 Revision 1.56  2001/07/05 12:49:49  mariana
 Temporary patches required by root.v3.01.05
 
@@ -1348,7 +1351,7 @@ Option_t *option,Option_t *opt,Text_t *filename)
 
    AliITSsimulation* sim;
    AliITSgeom *geom = GetITSgeom();
-
+/* MI change 
    TRandom *random=new TRandom[9];
    random[0].SetSeed(111);
    random[1].SetSeed(222);
@@ -1359,7 +1362,7 @@ Option_t *option,Option_t *opt,Text_t *filename)
    random[6].SetSeed(777);
    random[7].SetSeed(888);
    random[8].SetSeed(999);		
-
+   */
 
    Int_t id,module;
    for (id=0;id<kNTYPES;id++) {
@@ -1381,7 +1384,9 @@ Option_t *option,Option_t *opt,Text_t *filename)
         printf("first module - last module %d %d\n",first,last);
 	for(module=first;module<=last;module++) {
 	    AliITSmodule *mod = (AliITSmodule *)fITSmodules->At(module);
-	    sim->CreateFastRecPoints(mod,module,random);
+        // sim->CreateFastRecPoints(mod,module,random);
+        sim->CreateFastRecPoints(mod,module,gRandom); //MI change
+	   
 	    gAlice->TreeR()->Fill(); 
 	    ResetRecPoints();
 	} // loop over modules
@@ -1398,7 +1403,8 @@ Option_t *option,Option_t *opt,Text_t *filename)
    // reset tree
    gAlice->TreeR()->Reset();
 
-   delete [] random;
+   //   delete [] random; //MI change 
 
 
 }
+
