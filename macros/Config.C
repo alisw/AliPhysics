@@ -1,3 +1,4 @@
+static Int_t    eventsPerRun = 100;
 void Config()
 {
     // 7-DEC-2000 09:00
