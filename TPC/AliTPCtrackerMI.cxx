@@ -256,7 +256,11 @@ AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
   fEvent     =0;
 }
 //________________________________________________________________________
-AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCtrackerMI &t):AliTracker(t){
+AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCtrackerMI &t):
+  AliTracker(t),
+  fkNIS(t.fkNIS),
+  fkNOS(t.fkNOS)
+{
   //------------------------------------
   // dummy copy constructor
   //------------------------------------------------------------------
