@@ -202,7 +202,7 @@ void AliSDManager::SetLego(AliLego* lego) const
   }  
 
   G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  G4int nofLV = pLVStore->entries();
+  G4int nofLV = pLVStore->size();
   
   for (G4int i=0; i<nofLV; i++) {
     G4LogicalVolume* lv = (*pLVStore)[i];
@@ -218,7 +218,7 @@ void AliSDManager::UnsetLego() const
 
   G4SDManager* pSDManager = G4SDManager::GetSDMpointer();
   G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  G4int nofLV = pLVStore->entries();
+  G4int nofLV = pLVStore->size();
   
   // set back standard sensitive detectors
   for (G4int i=0; i<nofLV; i++) {

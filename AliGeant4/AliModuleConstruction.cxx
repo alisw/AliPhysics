@@ -230,8 +230,8 @@ G4LogicalVolume* AliModuleConstruction::FindLogicalVolume(
 
   G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
   
-  for (G4int i=0; i<pLVStore->entries(); i++) {
-    G4LogicalVolume* lv = pLVStore->at(i);
+  for (G4int i=0; i<pLVStore->size(); i++) {
+    G4LogicalVolume* lv = (*pLVStore)[i];
     if (lv->GetName() == name) return lv;
   }
   

@@ -77,7 +77,7 @@ void AliMoreModulesConstruction::CreateSensitiveDetectors(
 
   // set static number of logical volumes already processed
   G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  fSDManager->SetNofLVWithSD(pLVStore->entries());  
+  fSDManager->SetNofLVWithSD(pLVStore->size());  
 }    
 
 void AliMoreModulesConstruction::CreateSensitiveDetectors1()
@@ -87,7 +87,7 @@ void AliMoreModulesConstruction::CreateSensitiveDetectors1()
 // ---
 
   G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  G4int nofLV = pLVStore->entries();
+  G4int nofLV = pLVStore->size();
   
   G4int nofLVWithSD = fSDManager->GetNofLVWithSD();
   for (G4int i=nofLVWithSD; i<nofLV; i++) {
