@@ -12,7 +12,7 @@ AliEMCALDigitizer.cxx \
 AliEMCALTick.cxx \
 AliEMCALGetter.cxx \
 AliEMCALJet.cxx \
-AliEMCALJetFinder.cxx \ 
+AliEMCALJetFinder.cxx \
 AliEMCALFast.cxx 
 
 HDRS= \
@@ -27,7 +27,7 @@ AliEMCALDigitizer.h \
 AliEMCALTick.h \
 AliEMCALGetter.h \
 AliEMCALJet.h \
-AliEMCALJetFinder.h \ 
+AliEMCALJetFinder.h \
 AliEMCALFast.h
 
 DHDR:=EMCALLinkDef.h
