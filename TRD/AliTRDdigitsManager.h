@@ -35,6 +35,7 @@ class AliTRDdigitsManager : public TObject {
   virtual Bool_t              Open(const Char_t *file);
   virtual Bool_t              MakeBranch(const Char_t *file = 0);
   virtual Bool_t              MakeBranch(TTree *tree, const Char_t *file = 0);
+          void                MakeTreeAndBranches(TFile *treeFile, Int_t iEvent);
   virtual Bool_t              ReadDigits(TTree *tree = 0);
   virtual Bool_t              WriteDigits();
 

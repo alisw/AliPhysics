@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/03/28 14:59:07  cblume
+Coding conventions
+
 Revision 1.16  2002/02/12 11:42:08  cblume
 Remove fTree from destructor
 
@@ -247,6 +250,21 @@ Bool_t AliTRDdigitsManager::Open(const Char_t *file)
 }
 
 //_____________________________________________________________________________
+void AliTRDdigitsManager::MakeTreeAndBranches(TFile *file, Int_t iEvent)
+{
+  //
+  // Creates tree for (s)digits in the specified file
+  //
+
+  fEvent = iEvent;
+  TDirectory *wd = gDirectory;
+  file->cd();
+  MakeBranch();
+  wd->cd();
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliTRDdigitsManager::MakeBranch(const Char_t *file)
 {
   //
@@ -430,7 +448,8 @@ Bool_t AliTRDdigitsManager::WriteDigits()
   }
 
   // Write the new tree to the output file
-  fTree->Write();
+  //fTree->Write();
+  fTree->AutoSave();  // Modification by Jiri
 
   return kTRUE;
 

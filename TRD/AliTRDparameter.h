@@ -200,7 +200,7 @@ class AliTRDparameter : public TNamed {
   virtual void         SampleTRF();
   virtual void         FillLUT();
 
-  ClassDef(AliTRDparameter,1)                               //  TRD parameter class
+  ClassDef(AliTRDparameter,2)                               //  TRD parameter class
 
 };
 

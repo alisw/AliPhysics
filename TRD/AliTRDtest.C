@@ -1,3 +1,4 @@
+
 Int_t AliTRDtest() 
 {
   //
@@ -5,6 +6,8 @@ Int_t AliTRDtest()
   //
 
   Int_t rc = 0;
+
+  TFile *file;
 
   // Initialize the test setup 
   gAlice->Init("$(ALICE_ROOT)/TRD/AliTRDconfig.C");
@@ -14,7 +17,7 @@ Int_t AliTRDtest()
   gAlice->Run(1);
 
   if (gAlice) delete gAlice;
-  TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
+  file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
   gAlice = (AliRun *) file->Get("gAlice");
 
   // Analyze the TRD hits
@@ -24,7 +27,7 @@ Int_t AliTRDtest()
   if (rc = AliTRDcreateDigits()) return rc;
 
   if (gAlice) delete gAlice;
-  TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
+  file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
   gAlice = (AliRun *) file->Get("gAlice");
 
   // Analyze the digits
@@ -34,11 +37,17 @@ Int_t AliTRDtest()
   if (rc = AliTRDcreateCluster()) return rc;
 
   if (gAlice) delete gAlice;
-  TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
+  file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
   gAlice = (AliRun *) file->Get("gAlice");
 
-  // Analyze the digits
+  // Analyze the cluster
   if (rc = AliTRDanalyzeCluster()) return rc;
+
+  //file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
+  //file->Close();
+
+  // Find the tracks
+  //if (rc = AliTRDcreateTracks()) return rc;
 
   return rc;
 
@@ -352,6 +361,7 @@ Int_t AliTRDanalyzeDigits()
 
   // Create the digits manager
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
+  digitsManager->SetDebug(1);
 
   digitsManager->Open("TRD_test.root");
 
@@ -719,5 +729,32 @@ Int_t AliTRDanalyzeCluster()
   cout << endl;
 
   return rc;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDcreateTracks()
+{
+  //
+  // Creates the tracks
+  //
+
+  Int_t rc = 0;
+
+  // Create the tracker
+  AliTRDtracker *tracker = new AliTRDtracker("TRDtracker","TRD tracker");
+
+  // Read in the kine tree and the cluster
+  tracker->GetEvent("TRD_test.root","TRD_test.root");
+ 
+  // Find the tracks
+  TH1F *hs = new TH1F("hs","hs",100,0.0,1.0);
+  TH1F *hd = new TH1F("hd","hd",100,0.0,1.0);
+  tracker->Clusters2Tracks(hs,hd);
+ 
+  // Store the tracks
+  tracker->WriteTracks("TRD_test.root");
+
+  return rc;                                                                    
 
 }

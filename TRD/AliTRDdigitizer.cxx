@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.35  2002/03/28 14:59:07  cblume
+Coding conventions
+
 Revision 1.34  2002/03/25 20:00:44  cblume
 Introduce parameter class and regions of interest for merging
 
@@ -1520,3 +1523,14 @@ void AliTRDdigitizer::DeConvExp(Double_t *source, Double_t *target
   
 }
 
+//_____________________________________________________________________________
+void AliTRDdigitizer::InitOutput(TFile *file, Int_t iEvent)
+{
+  //
+  // Initializes the output branches
+  //
+
+  fEvent = iEvent;
+  fDigitsManager->MakeTreeAndBranches(file,iEvent);
+
+}

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2002/03/28 14:59:07  cblume
+Coding conventions
+
 Revision 1.2  2002/03/28 10:00:36  hristov
 Some additional initialisation
 
@@ -1048,14 +1051,21 @@ void AliTRDparameter::SamplePRF()
       diff  = 0;
       do {
         diff = bin - pad[ipos2++];
-      } while (diff > 0);
-      ipos2--;
-      if (ipos2 >= kPRFbin) ipos2 = kPRFbin - 1;
-      ipos1 = ipos2 - 1;
-
-      fPRFsmp[iPla*fPRFbin+iBin] = prf[iPla][ipos2] 
-                                 + diff * (prf[iPla][ipos2] - prf[iPla][ipos1]) 
-                                        / sPRFwid;
+      } while ((diff > 0) && (ipos2 < kPRFbin));
+      if      (ipos2 == kPRFbin) {
+        fPRFsmp[iPla*fPRFbin+iBin] = prf[iPla][ipos2-1];
+      }
+      else if (ipos2 == 1) {
+        fPRFsmp[iPla*fPRFbin+iBin] = prf[iPla][ipos2-1];
+      }
+      else {
+        ipos2--;
+        if (ipos2 >= kPRFbin) ipos2 = kPRFbin - 1;
+        ipos1 = ipos2 - 1;
+        fPRFsmp[iPla*fPRFbin+iBin] = prf[iPla][ipos2] 
+                                   + diff * (prf[iPla][ipos2] - prf[iPla][ipos1]) 
+                                          / sPRFwid;
+      }
 
     }
   } 
