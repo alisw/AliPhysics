@@ -165,8 +165,8 @@ Double_t AliGenMUONlib::PtJpsi( Double_t *px, Double_t */*dummy*/)
 Double_t AliGenMUONlib::PtJpsiCDFscaled( Double_t *px, Double_t */*dummy*/)
 {
 // J/Psi pT
-  const Double_t kpt0 = 4.657;
-  const Double_t kxn  = 3.776;
+  const Double_t kpt0 = 4.703;
+  const Double_t kxn  = 3.826;
   Double_t x=*px;
   //
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
@@ -396,8 +396,8 @@ Double_t AliGenMUONlib::PtUpsilon( Double_t *px, Double_t */*dummy*/ )
 Double_t AliGenMUONlib::PtUpsilonCDFscaled( Double_t *px, Double_t */*dummy*/ )
 {
 // Upsilon pT
-  const Double_t kpt0 = 8.624;
-  const Double_t kxn  = 3.499;
+  const Double_t kpt0 = 7.753;
+  const Double_t kxn  = 3.042;
   Double_t x=*px;
   //
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
