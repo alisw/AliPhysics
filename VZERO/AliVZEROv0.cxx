@@ -155,7 +155,7 @@ void AliVZEROv0::CreateGeometry()
 //     pflange[2] = 0.9;        
 // 
 //     gMC->Gsvolu("QFA0","TUBE", idtmed[3003], pflange, 3);
-//     gMC->Gspos("QFA0", 1 ,"alic", 0.0, 0.0, 85.0+0.9, 0, "ONLY");
+//     gMC->Gspos("QFA0", 1 ,"ALIC", 0.0, 0.0, 85.0+0.9, 0, "ONLY");
      
 //............................................................................
 
@@ -646,8 +646,7 @@ void AliVZEROv0::CreateGeometry()
 	n_detec_R++;
        }
 
-
-  gMC->Gspos("V0RI",1,"alic",0.0,0.0,zdet,0,"ONLY");
+  gMC->Gspos("V0RI",1,"ALIC",0.0,0.0,zdet,0,"ONLY");
  
   n_cells_R = (n_detec_R - 1) * 5;
   printf(" \n\n\n"); 
@@ -665,7 +664,7 @@ void AliVZEROv0::CreateGeometry()
        }
 
 
-  gMC->Gspos("V0LE",1,"alic",0.0,0.0,-350.0-fThickness1/2.0,0,"ONLY");
+  gMC->Gspos("V0LE",1,"ALIC",0.0,0.0,-350.0-fThickness1/2.0,0,"ONLY");
  
   n_cells_L = (n_detec_L - 1) * 5;
   printf(" \n\n\n"); 

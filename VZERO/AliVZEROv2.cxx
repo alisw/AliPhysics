@@ -361,7 +361,7 @@ void AliVZEROv2::CreateGeometry()
        }
 
 
-  gMC->Gspos("V0RI",1,"alic",0.0,0.0,zdet,0,"ONLY");
+  gMC->Gspos("V0RI",1,"ALIC",0.0,0.0,zdet,0,"ONLY");
  
   n_cells_R = (n_detec_R - 1) * 5;
   printf(" \n\n\n"); 
@@ -378,7 +378,7 @@ void AliVZEROv2::CreateGeometry()
        }
 
 
-  gMC->Gspos("V0LE",1,"alic",0.0,0.0,-350.0-fThickness1/2.0,0,"ONLY");
+  gMC->Gspos("V0LE",1,"ALIC",0.0,0.0,-350.0-fThickness1/2.0,0,"ONLY");
  
   n_cells_L = (n_detec_L - 1) * 5;
   printf(" \n\n\n"); 
