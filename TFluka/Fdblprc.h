@@ -355,6 +355,8 @@ const Double_t expebn = 2.39e+00;
 const Double_t bexc12 = fertho*72.40715579499394e+00;
 const Double_t amunmu = hlfhlf*amelct-bexc12/12.e+00;
 const Double_t amuc12 = amugev-amunmu;
+//*  Old MeV units:
+const Double_t amemev = gevmev * amelct;
 //*
 
 typedef struct {
