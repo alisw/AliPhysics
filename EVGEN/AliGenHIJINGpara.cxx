@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.11.4.1  2002/07/24 08:56:28  alibrary
 Updating EVGEN on TVirtulaMC
 
@@ -88,10 +91,15 @@ All coding rule violations except RS3 corrected (AM)
 #include "AliGenEventHeader.h"
 #include "AliRun.h"
 #include "AliConst.h"
+#include "AliDecayer.h"
+#include "AliDecayerPythia.h"
 #include "AliPDG.h"
 
 #include <TF1.h>
 #include <TArrayF.h>
+#include <TDatabasePDG.h>
+#include <TClonesArray.h>
+#include <TParticle.h>
 
 ClassImp(AliGenHIJINGpara)
 
@@ -203,12 +211,14 @@ AliGenHIJINGpara::AliGenHIJINGpara()
     //
     // Default constructor
     //
-    fPtpi = 0;
-    fPtka = 0;
-    fETApic = 0;
-    fETAkac = 0;
+    fPtpi    = 0;
+    fPtka    = 0;
+    fETApic  = 0;
+    fETAkac  = 0;
+    fDecayer = 0;
     SetCutVertexZ();
     SetPtRange();
+    SetPi0Decays();
 }
 
 //_____________________________________________________________________________
@@ -220,12 +230,14 @@ AliGenHIJINGpara::AliGenHIJINGpara(Int_t npart)
   //
     fName="HIGINGpara";
     fTitle="HIJING Parametrisation Particle Generator";
-    fPtpi = 0;
-    fPtka = 0;
-    fETApic = 0;
-    fETAkac = 0;
+    fPtpi    = 0;
+    fPtka    = 0;
+    fETApic  = 0;
+    fETAkac  = 0;
+    fDecayer = 0;
     SetCutVertexZ();
     SetPtRange();
+    SetPi0Decays();
 }
 
 //_____________________________________________________________________________
@@ -292,7 +304,11 @@ void AliGenHIJINGpara::Init()
 	printf("\n THE ALLOWED PSEUDORAPIDITY RANGE (-8. - 8.)");	    
 	printf("\n YOUR LIMITS: %f %f \n \n ", etaMin, etaMax);
     }
+//
+//
+    if (fPi0Decays) fDecayer = new AliDecayerPythia();
 }
+
 
 //_____________________________________________________________________________
 void AliGenHIJINGpara::Generate()
@@ -346,7 +362,7 @@ void AliGenHIJINGpara::Generate()
 	    if(random[0]<kBorne) {
 		part=kPions[Int_t (random[1]*3)];
 		ptf=fPtpi;
-	      etaf=fETApic;
+		etaf=fETApic;
 	    } else {
 		part=kKaons[Int_t (random[1]*4)];
 		ptf=fPtka;
@@ -370,6 +386,9 @@ void AliGenHIJINGpara::Generate()
 		}
 	    }
 	    SetTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
+//
+//          Decay pi0 if requested
+	    if (part == kPi0 && fPi0Decays) DecayPi0(origin, p);
 	    break;
 	}
     }
@@ -387,6 +406,38 @@ AliGenHIJINGpara& AliGenHIJINGpara::operator=(const  AliGenHIJINGpara& rhs)
 }
 
 void AliGenHIJINGpara::SetPtRange(Float_t ptmin, Float_t ptmax) {
-  AliGenerator::SetPtRange(ptmin, ptmax);
+    AliGenerator::SetPtRange(ptmin, ptmax);
 }
 
+void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p) 
+{
+//
+//    Decay the pi0
+//    and put decay products on the stack
+//
+    static TClonesArray *particles;
+    if(!particles) particles = new TClonesArray("TParticle",1000);
+//    
+    const Float_t kMass = TDatabasePDG::Instance()->GetParticle(kPi0)->Mass();
+    Float_t       e     = TMath::Sqrt(p[0] * p[0] + p[1] * p[1] +p[2] * p[2] * kMass * kMass);
+//
+//  Decay the pi0    
+    TLorentzVector pmom(p[0], p[1], p[2], e);
+    fDecayer->Decay(kPi0, &pmom);
+//
+// Put decay particles on the stack
+//
+    Int_t nt = 0;
+    Float_t polar[3] = {0., 0., 0.};
+    Int_t np = fDecayer->ImportParticles(particles);
+    
+    for (Int_t i = 1; i < np; i++)
+    {
+	TParticle* iParticle =  (TParticle *) particles->At(1);
+	p[0]=iParticle->Px();
+	p[1]=iParticle->Py();
+	p[2]=iParticle->Pz();
+	Int_t part = iParticle->GetPdgCode();
+	SetTrack(fTrackIt, 0, part, p, orig, polar, 0, kPDecay, nt, fParentWeight);
+    }
+}
