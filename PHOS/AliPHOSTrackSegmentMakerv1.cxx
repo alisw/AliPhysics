@@ -75,12 +75,7 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
 {
   // default ctor (to be used mainly by Streamer)
 
-  fR0                       = 10. ;   
-  fEmcFirst                 = 0 ;    
-  fEmcLast                  = 0 ;   
-  fCpvFirst                 = 0 ;   
-  fCpvLast                  = 0 ;   
-  fLinkUpArray              = 0 ;
+  InitParameters() ; 
   fHeaderFileName           = "" ;
   fRecPointsBranchTitle     = "" ;
   fTrackSegmentsBranchTitle = "" ; 
@@ -94,22 +89,12 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
 {
   // ctor
 
-  fR0        = 10. ;   
-  fEmcFirst  = 0 ;    
-  fEmcLast   = 0 ;   
-  fCpvFirst  = 0 ;   
-  fCpvLast   = 0 ;   
-  fLinkUpArray = 0 ;
-
+  InitParameters() ; 
   fHeaderFileName           = GetTitle() ;
   fRecPointsBranchTitle     = GetName() ;
   fTrackSegmentsBranchTitle = GetName() ; 
   fTrackSegmentsInRun       = 0 ; 
 
-  TString tsmName( GetName()) ; 
-  tsmName.Append(":") ; 
-  tsmName.Append(Version()) ; 
-  SetName(tsmName) ;
   if ( from == 0 ) 
     fFrom = name ; 
   else
@@ -123,7 +108,27 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
 { 
   // dtor
   delete fLinkUpArray  ;
+
+ AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+
+ // remove the task from the folder list
+ gime->RemoveTask("T",GetName()) ;
+ TString name(GetName()) ; 
+ name.ReplaceAll("tsm", "clu") ; 
+ gime->RemoveTask("C",name) ;
+
+ // remove the data from the folder list
+ name = GetName() ; 
+ name.Remove(name.Index(":")) ; 
+ gime->RemoveObjects("RE", name) ; // EMCARecPoints
+ gime->RemoveObjects("RC", name) ; // CPVRecPoints
+ gime->RemoveObjects("T", name) ;  // TrackSegments
+
+ // Delete gAlice
+ gime->CloseFile() ; 
+
 }
+
 
 //____________________________________________________________________________
 const TString AliPHOSTrackSegmentMakerv1::BranchName() const 
@@ -217,6 +222,24 @@ void  AliPHOSTrackSegmentMakerv1::Init()
   gime->PostTrackSegments(BranchName()) ; 
 
 }
+
+//____________________________________________________________________________
+void  AliPHOSTrackSegmentMakerv1::InitParameters()
+{
+  fR0        = 10. ;   
+  fEmcFirst  = 0 ;    
+  fEmcLast   = 0 ;   
+  fCpvFirst  = 0 ;   
+  fCpvLast   = 0 ;   
+  fLinkUpArray = 0 ;
+  TString tsmName( GetName()) ; 
+  if (tsmName.IsNull() ) 
+    tsmName = "Default" ; 
+  tsmName.Append(":") ; 
+  tsmName.Append(Version()) ; 
+  SetName(tsmName) ;
+}
+
 
 //____________________________________________________________________________
 void  AliPHOSTrackSegmentMakerv1::MakeLinks()const
@@ -348,27 +371,29 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
 
   gAlice->GetEvent(0) ;
   //check, if the branch with name of this" already exits?
-  TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeR()->GetListOfBranches()) ;
-  TIter next(lob) ; 
-  TBranch * branch = 0 ;  
-  Bool_t phostsfound = kFALSE, tracksegmentmakerfound = kFALSE ; 
-  
-  TString branchname = GetName() ;
-  branchname.Remove(branchname.Index(Version())-1) ;
-
-  while ( (branch = static_cast<TBranch*>(next())) && (!phostsfound || !tracksegmentmakerfound) ) {
-    if ( (strcmp(branch->GetName(), "PHOSTS")==0) && (strcmp(branch->GetTitle(), branchname.Data())==0) ) 
-      phostsfound = kTRUE ;
+  if (gAlice->TreeR()) { 
+    TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeR()->GetListOfBranches()) ;
+    TIter next(lob) ; 
+    TBranch * branch = 0 ;  
+    Bool_t phostsfound = kFALSE, tracksegmentmakerfound = kFALSE ; 
     
-    else if ( (strcmp(branch->GetName(), "AliPHOSTrackSegmentMaker")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
-      tracksegmentmakerfound = kTRUE ; 
+    TString branchname = GetName() ;
+    branchname.Remove(branchname.Index(Version())-1) ;
+    
+    while ( (branch = static_cast<TBranch*>(next())) && (!phostsfound || !tracksegmentmakerfound) ) {
+      if ( (strcmp(branch->GetName(), "PHOSTS")==0) && (strcmp(branch->GetTitle(), branchname.Data())==0) ) 
+	phostsfound = kTRUE ;
+      
+      else if ( (strcmp(branch->GetName(), "AliPHOSTrackSegmentMaker")==0) && (strcmp(branch->GetTitle(), GetName())==0) ) 
+	tracksegmentmakerfound = kTRUE ; 
+    }
+    
+    if ( phostsfound || tracksegmentmakerfound ) {
+      cerr << "WARNING: AliPHOSTrackSegmentMakerv1::Exec -> TrackSegments and/or TrackSegmentMaker branch with name " 
+	   << branchname.Data() << " already exits" << endl ;
+      return ; 
+    }       
   }
-
-  if ( phostsfound || tracksegmentmakerfound ) {
-    cerr << "WARNING: AliPHOSTrackSegmentMakerv1::Exec -> TrackSegments and/or TrackSegmentMaker branch with name " 
-	 << branchname.Data() << " already exits" << endl ;
-    return ; 
-  }       
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
@@ -452,52 +477,29 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(Int_t event)
 
   TClonesArray * trackSegments = gime->TrackSegments(BranchName()) ; 
   trackSegments->Expand(trackSegments->GetEntriesFast()) ;
+  TTree * treeR = gAlice->TreeR();
 
-  //Make branch in TreeR for TrackSegments 
-  char * filename = 0;
-  if(gSystem->Getenv("CONFIG_SPLIT_FILE")!=0){   //generating file name
-    filename = new char[strlen(gAlice->GetBaseFile())+20] ;
-    sprintf(filename,"%s/PHOS.Reco.root",gAlice->GetBaseFile()) ; 
-  }
+  if (!treeR) 
+    gAlice->MakeTree("R", fSplitFile);
+  treeR = gAlice->TreeR(); 
 
-  TDirectory *cwd = gDirectory;
-  
   //First TS
   Int_t bufferSize = 32000 ;    
-  TBranch * tsBranch = gAlice->TreeR()->Branch("PHOSTS",&trackSegments,bufferSize);
+  TBranch * tsBranch = treeR->Branch("PHOSTS",&trackSegments,bufferSize);
   tsBranch->SetTitle(BranchName());
-  if (filename) {
-    tsBranch->SetFile(filename);
-    TIter next( tsBranch->GetListOfBranches());
-    TBranch * sb ;
-    while ((sb=static_cast<TBranch*>(next()))) {
-      sb->SetFile(filename);
-    }   
-    cwd->cd();
-  } 
-  
+
   //Second -TSMaker
   Int_t splitlevel = 0 ;
   AliPHOSTrackSegmentMakerv1 * ts = this ;
-  TBranch * tsMakerBranch = gAlice->TreeR()->Branch("AliPHOSTrackSegmentMaker","AliPHOSTrackSegmentMakerv1",
+  TBranch * tsMakerBranch = treeR->Branch("AliPHOSTrackSegmentMaker","AliPHOSTrackSegmentMakerv1",
 					  &ts,bufferSize,splitlevel);
   tsMakerBranch->SetTitle(BranchName());
-  if (filename) {
-    tsMakerBranch->SetFile(filename);
-    TIter next( tsMakerBranch->GetListOfBranches());
-    TBranch * sb;
-    while ((sb=static_cast<TBranch*>(next()))) {
-      sb->SetFile(filename);
-    }   
-    cwd->cd();
-  } 
-  
+
   tsBranch->Fill() ;  
   tsMakerBranch->Fill() ;
 
-  gAlice->TreeR()->Write(0,kOverwrite) ;  
+  treeR->AutoSave() ; //Write(0,kOverwrite) ;  
   
-  delete [] filename ; 
 }
 
 

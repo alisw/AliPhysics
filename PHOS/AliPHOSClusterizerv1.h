@@ -90,6 +90,7 @@ private:
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit ** MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
   void Init() ;
+  void InitParameters() ;
 
   virtual void   MakeUnfolding() ;
   void           UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,Int_t Nmax, 

@@ -71,6 +71,7 @@ public:
 
   const TString AliPHOSPIDv1::BranchName() const ; 
   virtual void Init() ;
+  virtual void InitParameters() ;
   void     MakeRecParticles(void ) ;
   Float_t  GetDistance(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * Axis)const ; // Relative Distance CPV-EMC
   Int_t    GetPrincipalSign(Double_t* P, Int_t ell, Int_t eff_pur)const ; //Principal cut

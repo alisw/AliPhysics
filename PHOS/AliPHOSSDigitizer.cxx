@@ -77,49 +77,43 @@ ClassImp(AliPHOSSDigitizer)
 
            
 //____________________________________________________________________________ 
-  AliPHOSSDigitizer::AliPHOSSDigitizer():TTask("","") 
-{
+  AliPHOSSDigitizer::AliPHOSSDigitizer():TTask("","") {
   // ctor
-  fA             = 0;
-  fB             = 10000000.;
-  fPrimThreshold = 0.01 ;
-  fSDigitsInRun  = 0 ; 
-  fSplitFile     = 0 ; 
+  InitParameters() ; 
 }
 
 //____________________________________________________________________________ 
 AliPHOSSDigitizer::AliPHOSSDigitizer(const char * headerFile, const char * sDigitsTitle):TTask(sDigitsTitle, headerFile)
 {
   // ctor
-  fA             = 0;
-  fB             = 10000000.;
-  fPrimThreshold = 0.01 ;
-  fSDigitsInRun  = 0 ;
-  fSplitFile     = 0 ; 
+  InitParameters() ; 
   Init();
 }
 
 //____________________________________________________________________________ 
 AliPHOSSDigitizer::~AliPHOSSDigitizer()
 {
-  if (fSplitFile) 
-    if ( fSplitFile->IsOpen() ) 
-      fSplitFile->Close() ; 
+
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
- // Close the root file
-  gime->CloseFile() ; 
-
- // remove the task from the folder list
-  gime->RemoveTask("S",GetName()) ;
-
-  TString name(GetName()) ; 
-  name.Remove(name.Index(":")) ; 
-
- // remove the Hits from the folder list
-  gime->RemoveObjects("H",name) ;
-
- // remove the SDigits from the folder list
-  gime->RemoveObjects("S", name) ;
+  if (gime) {
+    // remove the task from the folder list
+    gime->RemoveTask("S",GetName()) ;
+    
+    TString name(GetName()) ; 
+    if (! name.IsNull() ) 
+      name.Remove(name.Index(":")) ; 
+    
+    // remove the Hits from the folder list
+    gime->RemoveObjects("H",name) ;
+    
+    // remove the SDigits from the folder list
+    gime->RemoveObjects("S", name) ;
+    
+    // Delete gAlice
+    gime->CloseFile() ; 
+    
+  }
+  fSplitFile = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -148,6 +142,16 @@ void AliPHOSSDigitizer::Init()
   sdname.Append(GetTitle() ) ;
   SetName(sdname) ;
   gime->PostSDigitizer(this) ;
+}
+
+//____________________________________________________________________________ 
+void AliPHOSSDigitizer::InitParameters()
+{ 
+  fA             = 0;
+  fB             = 10000000.;
+  fPrimThreshold = 0.01 ;
+  fSDigitsInRun  = 0 ;
+  fSplitFile     = 0 ; 
 }
 
 //____________________________________________________________________________
@@ -268,11 +272,6 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   
   }
 
-  if (fSplitFile) 
-    if ( fSplitFile->IsOpen() ) 
-      fSplitFile->Close() ; 
-  
-
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSSDigitizer");
     cout << "AliPHOSSDigitizer:" << endl ;
@@ -326,8 +325,7 @@ void AliPHOSSDigitizer::SetSplitFile(const TString splitFileName)
   
   fSplitFile = gAlice->InitTreeFile("S",splitFileName.Data());
   fSplitFile->cd() ; 
-  if ( !fSplitFile->Get("gAlice") ) 
-    gAlice->Write();
+  gAlice->Write(0, TObject::kOverwrite);
   
   TTree *treeE  = gAlice->TreeE();
   if (!treeE) {
@@ -336,27 +334,25 @@ void AliPHOSSDigitizer::SetSplitFile(const TString splitFileName)
   }      
   
   // copy TreeE
-  if ( !fSplitFile->Get("TreeE") ) {
     AliHeader *header = new AliHeader();
     treeE->SetBranchAddress("Header", &header);
     treeE->SetBranchStatus("*",1);
     TTree *treeENew =  treeE->CloneTree();
-    treeENew->Write();
-  }
+    treeENew->Write(0, TObject::kOverwrite);
+  
 
   // copy AliceGeom
-  if ( !fSplitFile->Get("AliceGeom") ) {
     TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
     if (!AliceGeom) {
       cerr << "ERROR: AliPHOSSDigitizer::SetSPlitFile -> AliceGeom was not found in the input file "<<endl;
       abort() ;
     }
-    AliceGeom->Write();
-  }
+    AliceGeom->Write(0, TObject::kOverwrite);
 
   gAlice->MakeTree("S",fSplitFile);
   cwd->cd() ; 
   cout << "INFO: AliPHOSSDigitizer::SetSPlitMode -> SDigits will be stored in " << splitFileName.Data() << endl ; 
+
 }
 
 //__________________________________________________________________

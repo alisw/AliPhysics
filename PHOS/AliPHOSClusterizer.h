@@ -6,7 +6,7 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Base class for the clusterization algorithm (pure abstract)
+//  Base class for the clusterization algorithm 
 //*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 // --- ROOT system ---
 
@@ -50,8 +50,13 @@ public:
   virtual void SetCpvLogWeight(Float_t w) {cout << "Not Defined" << endl ;  } 
   virtual void SetDigitsBranch(const char * title) {cout << "Not Defined" << endl ; }  
   virtual void SetRecPointsBranch(const char *title) {cout << "Not Defined" << endl ; } 
+  virtual void SetSplitFile(const TString splitFileName = "PHOS.RecData.root") ; 
   virtual void SetUnfolding(Bool_t toUnfold ){cout << "Not Defined" << endl ;}  
   virtual const char * Version() const {cout << "Not Defined" << endl ; return 0 ; }  
+
+protected:
+
+  TFile * fSplitFile ;             //! file in which RecPoints will eventually be stored
 
   ClassDef(AliPHOSClusterizer,2)  // Clusterization algorithm class 
 

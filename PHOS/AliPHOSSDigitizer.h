@@ -42,6 +42,7 @@ public:
 
 private:
   void     Init() ;
+  void     InitParameters() ;
   void     PrintSDigits(Option_t * option) ;
 
 private:

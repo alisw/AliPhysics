@@ -64,6 +64,7 @@ private:
   const TString BranchName() const ; 
   Float_t GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliPHOSRecPoint * Ppsd , Bool_t & TooFar )const ; // see R0
   void    Init() ;
+  void    InitParameters() ;
   void    PrintTrackSegments(Option_t *option) ;
   virtual void   WriteTrackSegments(Int_t event) ;
 

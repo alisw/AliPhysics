@@ -88,24 +88,7 @@ ClassImp(AliPHOSDigitizer)
 {
   // ctor
 
-  fPinNoise           = 0.004 ;
-  fEMCDigitThreshold  = 0.012 ;
-  fCPVNoise           = 0.01;
-  fCPVDigitThreshold  = 0.09 ;
-  fTimeResolution     = 0.5e-9 ;
-  fTimeSignalLength   = 1.0e-9 ;
-  fDigitsInRun  = 0 ; 
-  fADCchanelEmc = 0.0015;        // width of one ADC channel in GeV
-  fADCpedestalEmc = 0.005 ;      //
-  fNADCemc = (Int_t) TMath::Power(2,16) ;  // number of channels in EMC ADC
-
-  fADCchanelCpv = 0.0012 ;          // width of one ADC channel in CPV 'popugais'
-  fADCpedestalCpv = 0.012 ;         // 
-  fNADCcpv = (Int_t) TMath::Power(2,12);      // number of channels in CPV ADC
-
-  fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
-  fManager = 0 ;                        // We work in the standalong mode
-  fSplitFile= 0 ; 
+  InitParameters() ; 
 }
 
 //____________________________________________________________________________ 
@@ -116,6 +99,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
   SetTitle(headerFile) ;
   fManager = 0 ;                     // We work in the standalong mode
   fSplitFile= 0 ; 
+  InitParameters() ; 
   Init() ;
   
 }
@@ -125,7 +109,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
 {
   // ctor
   SetName("");     //Will call init in the digitizing
-  SetTitle("aliroot") ;  
+  SetTitle("aliroot") ;
 }
 
 //____________________________________________________________________________ 
@@ -133,20 +117,23 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
 {
   // dtor
 
- if (fSplitFile)       
-   if ( fSplitFile->IsOpen() )         
-     fSplitFile->Close() ;
  
  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
- // Close the root file
- gime->CloseFile() ; 
+
  // remove the task from the folder list
+ gime->RemoveTask("S",GetName()) ;
  gime->RemoveTask("D",GetName()) ;
+
  // remove the Digits from the folder list
  gime->RemoveObjects("D", GetName()) ;
+
  // remove the SDigits from the folder list
  gime->RemoveSDigits() ;
 
+ // Delete gAlice
+ gime->CloseFile() ; 
+
+ fSplitFile = 0 ; 
 }
 
 //____________________________________________________________________________
@@ -476,11 +463,7 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     //increment the total number of Digits per run 
     fDigitsInRun += gime->Digits()->GetEntriesFast() ;  
   }
-  
-  if (fSplitFile) 
-    if ( fSplitFile->IsOpen() ) 
-      fSplitFile->Close() ; 
- 
+   
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSDigitizer");
     cout << "AliPHOSDigitizer:" << endl ;
@@ -510,8 +493,36 @@ Float_t AliPHOSDigitizer::FrontEdgeTime(TClonesArray * ticks)
   }
   return time ;
 }
+
 //____________________________________________________________________________ 
 Bool_t AliPHOSDigitizer::Init()
+{
+
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), GetName()) ; 
+  if ( gime == 0 ) {
+    cerr << "ERROR: AliPHOSDigitizer::Init -> Could not obtain the Getter object !" << endl ; 
+    return kFALSE;
+  } 
+  
+  const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
+  fEmcCrystals = geom->GetNModules() *  geom->GetNCristalsInModule() ;
+  
+  // Post Digits to the white board
+  gime->PostDigits(GetName() ) ;   
+  
+  // Post Digitizer to the white board
+  gime->PostDigitizer(this) ;
+  
+  //Mark that we will use current header file
+  if(!fManager){
+    gime->PostSDigits(GetName(),GetTitle()) ;
+    gime->PostSDigitizer(GetName(),GetTitle()) ;
+  }
+  return kTRUE ;
+}
+
+//____________________________________________________________________________ 
+void AliPHOSDigitizer::InitParameters()
 {
   fPinNoise           = 0.004 ;
   fEMCDigitThreshold  = 0.012 ;
@@ -537,28 +548,6 @@ Bool_t AliPHOSDigitizer::Init()
 
   if( strcmp(GetName(), "") == 0 )
     SetName("Default") ;
-  
-  AliPHOSGetter * gime = AliPHOSGetter::GetInstance(GetTitle(), GetName()) ; 
-  if ( gime == 0 ) {
-    cerr << "ERROR: AliPHOSDigitizer::Init -> Could not obtain the Getter object !" << endl ; 
-    return kFALSE;
-  } 
-  
-  const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
-  fEmcCrystals = geom->GetNModules() *  geom->GetNCristalsInModule() ;
-  
-  // Post Digits to the white board
-  gime->PostDigits(GetName() ) ;   
-  
-  // Post Digitizer to the white board
-  gime->PostDigitizer(this) ;
-  
-  //Mark that we will use current header file
-  if(!fManager){
-    gime->PostSDigits(GetName(),GetTitle()) ;
-    gime->PostSDigitizer(GetName(),GetTitle()) ;
-  }
-  return kTRUE ;
 }
 
 //__________________________________________________________________
@@ -630,9 +619,8 @@ void AliPHOSDigitizer::SetSplitFile(const TString splitFileName)
 
   fSplitFile = gAlice->InitTreeFile("D",splitFileName.Data());
   fSplitFile->cd() ; 
-  if ( !fSplitFile->Get("gAlice") ) 
-    gAlice->Write();
-  
+  gAlice->Write(0, TObject::kOverwrite);
+
   TTree *treeE  = gAlice->TreeE();
   if (!treeE) {
     cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> No TreeE found "<<endl;
@@ -640,23 +628,19 @@ void AliPHOSDigitizer::SetSplitFile(const TString splitFileName)
   }      
   
   // copy TreeE
-  if ( !fSplitFile->Get("TreeE") ) {
-    AliHeader *header = new AliHeader();
-    treeE->SetBranchAddress("Header", &header);
-    treeE->SetBranchStatus("*",1);
-    TTree *treeENew =  treeE->CloneTree();
-    treeENew->Write();
-  }
-
+  AliHeader *header = new AliHeader();
+  treeE->SetBranchAddress("Header", &header);
+  treeE->SetBranchStatus("*",1);
+  TTree *treeENew =  treeE->CloneTree();
+  treeENew->Write(0, TObject::kOverwrite);
+  
   // copy AliceGeom
-  if ( !fSplitFile->Get("AliceGeom") ) {
-    TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-    if (!AliceGeom) {
-      cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
-      abort() ;
+  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+  if (!AliceGeom) {
+    cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
+    abort() ;
     }
-    AliceGeom->Write();
-  }
+  AliceGeom->Write(0, TObject::kOverwrite);
   
   gAlice->MakeTree("D",fSplitFile);
   cwd->cd() ; 
@@ -799,7 +783,7 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   const TClonesArray * digits = gime->Digits(GetName()) ; 
- TTree * treeD ;
+  TTree * treeD ;
 
  
  if(fManager) 

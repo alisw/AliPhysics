@@ -27,17 +27,20 @@
 
 
 // --- ROOT system ---
-
+#include "TGeometry.h"
+#include "TDirectory.h"
+#include "TFile.h"
+#include "TTree.h"
  
-
 // --- Standard library ---
 #include <iostream.h>
 #include <stdlib.h>
 
 
 // --- AliRoot header files ---
-
+#include "AliRun.h" 
 #include "AliPHOSPID.h"
+#include "AliHeader.h" 
 
 ClassImp(AliPHOSPID)
 
@@ -45,16 +48,60 @@ ClassImp(AliPHOSPID)
   AliPHOSPID::AliPHOSPID():TTask("","")
 {
   // ctor
+  fSplitFile= 0 ; 
+
 }
+
 
 //____________________________________________________________________________
 AliPHOSPID::AliPHOSPID(const char* headerFile, const char * name ):TTask(name, headerFile)
 {
   // ctor
+
+  fSplitFile= 0 ; 
 }
 
 //____________________________________________________________________________
 AliPHOSPID::~AliPHOSPID()
 {
   // dtor
+        
+  fSplitFile = 0 ;
+}
+
+//____________________________________________________________________________
+void AliPHOSPID::SetSplitFile(const TString splitFileName) const
+{
+  // Diverts the Digits in a file separate from the hits file
+  
+
+  TDirectory * cwd = gDirectory ;
+  TFile * splitFile = gAlice->InitTreeFile("R",splitFileName.Data());
+  splitFile->cd() ; 
+  gAlice->Write(0, TObject::kOverwrite);
+  
+  TTree *treeE  = gAlice->TreeE();
+  if (!treeE) {
+    cerr << "ERROR: AliPHOSPID::SetSplitFile -> No TreeE found "<<endl;
+    abort() ;
+  }      
+  
+  // copy TreeE
+  AliHeader *header = new AliHeader();
+  treeE->SetBranchAddress("Header", &header);
+  treeE->SetBranchStatus("*",1);
+  TTree *treeENew =  treeE->CloneTree();
+  treeENew->Write(0, TObject::kOverwrite);
+  
+  // copy AliceGeom
+  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+  if (!AliceGeom) {
+    cerr << "ERROR: AliPHOSPID::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
+    abort() ;
+    }
+  AliceGeom->Write(0, TObject::kOverwrite) ;
+  
+  gAlice->MakeTree("R",splitFile);
+  cwd->cd() ; 
+  cout << "INFO: AliPHOSPID::SetSPlitMode -> RecParticles will be stored in " << splitFileName.Data() << endl ;   
 }
