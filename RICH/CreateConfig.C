@@ -10,8 +10,8 @@ public:
   
           KirConfig(const char*sFileName);
          ~KirConfig()                    {Info("ctor","");fMain->Cleanup(); delete fMain;}
-  void    AddDetector(Int_t id)          {fDetectors+=id; if(id==kTRD) fDetButGrp->SetButton(kFRAME);}
-  void    RemoveDetector(Int_t id)       {fDetectors-=id; if(id==kFRAME&&IsDetectorOn(kTRD)) fDetButGrp->SetButton(kTRD,kFALSE);}
+  void    AddDetector(Int_t id)          {fDetectors+=id; if(id==kTRD || id==kTOF) fDetButGrp->SetButton(kFRAME);}
+  void    RemoveDetector(Int_t id)       {fDetectors-=id; if(id==kFRAME) {fDetButGrp->SetButton(kTRD,kFALSE);fDetButGrp->SetButton(kTOF,kFALSE);}}
   void    AddProcess(Int_t id)           {fProcesses+=id;}
   void    RemoveProcess(Int_t id)        {fProcesses-=id;}
   Bool_t  IsDetectorOn(Int_t id)    const{return fDetectors&id;}
@@ -20,7 +20,7 @@ public:
   void    CreateConfigFile();
 protected:
   TGMainFrame  *fMain;//main window poiter
-  TGComboBox   *fRichVersionCombo;  TGButton *fRichTopChkBtn;//RICH
+  TGComboBox   *fRichVersionCombo;  TGButton *fRichTopChkBtn,*fRichDeclusterChkBtn;//RICH
   TGButton     *fMagFldChkBtn;                               //MAG
   TGComboBox   *fGenTypeCombo,*fGenPartIdCombo,*fGenMomCombo,*fGenChamberCombo; TGNumberEntry *fGenNprimEntry;//GEN
   Int_t         fDetectors; TGButtonGroup *fDetButGrp;       //DETECTORS
@@ -45,6 +45,7 @@ KirConfig::KirConfig(const char *sFileName)
   fRichVersionCombo->AddEntry("version 1",1);
   fRichVersionCombo->Select(1);  fRichVersionCombo->Resize(160,20);
   pRichGrpFrm->AddFrame(fRichTopChkBtn=new TGCheckButton(pRichGrpFrm,"Rotate to Top?"));
+  pRichGrpFrm->AddFrame(fRichDeclusterChkBtn=new TGCheckButton(pRichGrpFrm,"Declustering")); fRichDeclusterChkBtn->SetState(kButtonDown);
 //Generator  
   pVerFrame->AddFrame(pGenGrpFrm=new TGGroupFrame(pHorFrame,"Generator"));
   pGenGrpFrm->AddFrame(fGenTypeCombo=new TGComboBox(pGenGrpFrm,100));
@@ -153,7 +154,7 @@ void KirConfig::CreateConfigFile()
 //File
   fprintf(fp,"  AliRunLoader *pAL=AliRunLoader::Open(\"galice.root\",AliConfig::fgkDefaultEventFolderName,\"recreate\");\n");    
   fprintf(fp,"  pAL->SetCompressionLevel(2);\n");
-  fprintf(fp,"  pAL->SetNumberOfEventsPerFile(50);\n");
+  fprintf(fp,"  pAL->SetNumberOfEventsPerFile(1000);\n");
   fprintf(fp,"  gAlice->SetRunLoader(pAL);\n\n");
 //Decayer  
   fprintf(fp,"  TVirtualMCDecayer *pDecayer=new AliDecayerPythia();\n");
@@ -189,7 +190,8 @@ void KirConfig::CreateConfigFile()
   fprintf(fp,"  new AliBODY(\"BODY\",\"Alice envelop\");\n\n");
 //RICH
   if(fRichVersionCombo->GetSelected() != -1){  
-    if(fRichTopChkBtn->GetState()==kButtonDown) fprintf(fp,"  AliRICHParam::AngleRot(0);\n");
+    if(fRichTopChkBtn->GetState()==kButtonDown)       fprintf(fp,"  AliRICHParam::AngleRot(0);\n");
+    if(fRichDeclusterChkBtn->GetState()!=kButtonDown) fprintf(fp,"  AliRICHParam::SetDeclustering(kFALSE);\n");
     switch(fRichVersionCombo->GetSelected()){//RICH
       case 0:   fprintf(fp,"  pRICH=new AliRICHv0(\"RICH\",\"RICH version 0\");\n"); break;   
       case 1:   fprintf(fp,"  pRICH=new AliRICHv1(\"RICH\",\"RICH version 1\");\n"); break;   
