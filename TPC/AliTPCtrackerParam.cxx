@@ -25,8 +25,7 @@
  * Output file contains sorted tracks, ready for matching with ITS.       *
  *                                                                        *
  * For details:                                                           *
- * Alice Internal Note (submitted - get it from andrea.dainese@pd.infn.it)*  
- * http://www.pd.infn.it/alipd/talks/soft/adIII02/TPCtrackingParam.htm    *
+ * Alice Internal Note 2003-011                                           *
  *                                                                        *
  * Test macro is: AliBarrelRec_TPCparam.C                                 *   
  *                                                                        *
@@ -55,6 +54,11 @@
  *  Origin: Andrea Dainese, Padova - e-mail: andrea.dainese@pd.infn.it    *
  *                                                                        *
  **************************************************************************/
+//  *
+// This is a dummy comment
+//
+//
+// *
 //------- Root headers --------
 #include <TChain.h>
 #include <TF1.h>
@@ -109,16 +113,16 @@ typedef struct {
 ClassImp(AliTPCtrackerParam)
 
 //-----------------------------------------------------------------------------
-AliTPCtrackerParam::AliTPCtrackerParam(const Int_t coll,const Double_t Bz,
-				       const Int_t n, const char* evfoldname):
+AliTPCtrackerParam::AliTPCtrackerParam(const Int_t kcoll,const Double_t kBz,
+				       const Int_t kn, const char* evfoldname):
   fEvFolderName(evfoldname) {
 //-----------------------------------------------------------------------------
 // This is the class conctructor 
 //-----------------------------------------------------------------------------
 
-  fNevents = n;         // events to be processed
-  fBz = Bz;             // value of the z component of L3 field (Tesla)
-  fColl = coll;         // collision code (0: PbPb6000; 1: pp)
+  fNevents = kn;         // events to be processed
+  fBz = kBz;             // value of the z component of L3 field (Tesla)
+  fColl = kcoll;         // collision code (0: PbPb6000; 1: pp)
   fSelAndSmear = kTRUE; // by default selection and smearing are done
 
   if(fBz!=0.4) {
@@ -140,6 +144,28 @@ AliTPCtrackerParam::AliTPCtrackerParam(const Int_t coll,const Double_t Bz,
 }
 //-----------------------------------------------------------------------------
 AliTPCtrackerParam::~AliTPCtrackerParam() {}
+//----------------------------------------------------------------------------
+AliTPCtrackerParam::AliTPCseedGeant::AliTPCseedGeant(
+		    Double_t x,Double_t y,Double_t z,
+		    Double_t px,Double_t py,Double_t pz,
+		    Int_t lab) {
+//----------------------------------------------------------------------------
+// Constructor of the geant seeds
+//----------------------------------------------------------------------------
+      fXg = x;
+      fYg = y;
+      fZg = z;
+      fPx = px;
+      fPy = py;
+      fPz = pz;
+      fLabel = lab;
+      Double_t a = TMath::ATan2(y,x)*180./TMath::Pi();
+      if(a<0) a += 360.;
+      fSector = (Int_t)(a/20.);
+      fAlpha = 10.+20.*fSector;
+      fAlpha /= 180.;
+      fAlpha *= TMath::Pi();
+}
 //-----------------------------------------------------------------------------
 Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
 //-----------------------------------------------------------------------------
@@ -251,8 +277,8 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
   }
 
   // Get TPC detector 
-  AliTPC *TPC=(AliTPC*)gAlice->GetDetector("TPC");
-  Int_t ver = TPC->IsVersion(); 
+  AliTPC *tpc=(AliTPC*)gAlice->GetDetector("TPC");
+  Int_t ver = tpc->IsVersion(); 
   cerr<<"+++ TPC version "<<ver<<" has been found !\n";
 
   rl->CdGAFile();
@@ -264,12 +290,12 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
   else digp=(AliTPCParam*)infile->Get("75x40_100x60_150x60");
   
   if(!digp) { cerr<<"TPC parameters have not been found !\n"; return 1; }
-  TPC->SetParam(digp);
+  tpc->SetParam(digp);
 
   // Set the conversion constant between curvature and Pt
   AliKalmanTrack::SetConvConst(100/0.299792458/fBz);
 
-  TParticle       *Part=0;
+  TParticle       *part=0;
   AliTPCseedGeant *seed=0;
   AliTPCtrack     *tpctrack=0;
   Double_t     sPt,sEta;
@@ -306,10 +332,10 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
 
     // loop on particles and store pdg codes
     for(Int_t l=0; l<nParticles; l++) {
-      Part        = (TParticle*)gAlice->GetMCApp()->Particle(l);
-      pdgCodes[l] = Part->GetPdgCode();
-      ptkine[l]   = Part->Pt();
-      pzkine[l]   = Part->Pz();
+      part        = (TParticle*)gAlice->GetMCApp()->Particle(l);
+      pdgCodes[l] = part->GetPdgCode();
+      ptkine[l]   = part->Pt();
+      pzkine[l]   = part->Pz();
       done[l]     = kFALSE;
     }
     cerr<<"+++\n+++ Number of particles in event "<<evt<<":  "<<nParticles<<
@@ -321,12 +347,12 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
     // Create the seeds for the TPC tracks at the inner radius of TPC
     if(fColl==0) {
       // Get TreeH with hits
-      TTree *TH = tpcloader->TreeH(); 
-      MakeSeedsFromHits(TPC,TH,sArray);
+      TTree *th = tpcloader->TreeH(); 
+      MakeSeedsFromHits(tpc,th,sArray);
     } else {
       // Get TreeTR with track references
-      TTree *TTR = rl->TreeTR();
-      MakeSeedsFromRefs(TTR,sArray);
+      TTree *ttr = rl->TreeTR();
+      MakeSeedsFromRefs(ttr,sArray);
     }
 
 
@@ -504,18 +530,18 @@ void AliTPCtrackerParam::AnalyzedEdx(const Char_t *outName,Int_t pdg) {
 
   SetParticle(pdg);
 
-  const Int_t nTotBins = fDBgrid->GetTotBins(); 
+  const Int_t knTotBins = fDBgrid->GetTotBins(); 
 
-  cerr<<" Fit bins: "<<nTotBins<<endl;
+  cerr<<" Fit bins: "<<knTotBins<<endl;
 
   Int_t bin=0;
-  Int_t        *n = new Int_t[nTotBins];
-  Double_t     *p = new Double_t[nTotBins];
-  Double_t    *ep = new Double_t[nTotBins];
-  Double_t  *mean = new Double_t[nTotBins];
-  Double_t *sigma = new Double_t[nTotBins];
+  Int_t        *n = new Int_t[knTotBins];
+  Double_t     *p = new Double_t[knTotBins];
+  Double_t    *ep = new Double_t[knTotBins];
+  Double_t  *mean = new Double_t[knTotBins];
+  Double_t *sigma = new Double_t[knTotBins];
 
-  for(Int_t l=0; l<nTotBins; l++) {
+  for(Int_t l=0; l<knTotBins; l++) {
     n[l] = 1; // set to 1 to avoid divisions by 0
     p[l] = mean[l] = sigma[l] = ep[l] = 0.; 
   }
@@ -530,7 +556,7 @@ void AliTPCtrackerParam::AnalyzedEdx(const Char_t *outName,Int_t pdg) {
     n[bin]++;
   } // loop on chain entries
 
-  for(Int_t l=0; l<nTotBins; l++) {
+  for(Int_t l=0; l<knTotBins; l++) {
     p[l] /= n[l];
     mean[l] /= n[l];
     n[l] = 1; // set to 1 to avoid divisions by 0
@@ -546,7 +572,7 @@ void AliTPCtrackerParam::AnalyzedEdx(const Char_t *outName,Int_t pdg) {
     sigma[bin] += (cmptrk.dEdx-mean[bin])*(cmptrk.dEdx-mean[bin]);
   } // loop on chain entries
   
-  for(Int_t l=0; l<nTotBins; l++) {
+  for(Int_t l=0; l<knTotBins; l++) {
     sigma[l] = TMath::Sqrt(sigma[l]/n[l]);
   }
 
@@ -554,7 +580,7 @@ void AliTPCtrackerParam::AnalyzedEdx(const Char_t *outName,Int_t pdg) {
   TCanvas *canv = new TCanvas("canv","dEdx",0,0,900,700); 
 
   // create the graph for dEdx vs p
-  TGraphErrors *gr = new TGraphErrors(nTotBins,p,mean,ep,sigma);
+  TGraphErrors *gr = new TGraphErrors(knTotBins,p,mean,ep,sigma);
   TString title("  : dE/dx vs momentum"); title.Prepend(part);
   TH2F *frame = new TH2F("frame1",title.Data(),2,0.1,50,2,0,ymax);
   frame->SetXTitle("p [GeV/c]");
@@ -565,31 +591,31 @@ void AliTPCtrackerParam::AnalyzedEdx(const Char_t *outName,Int_t pdg) {
 
   switch(pdg) {
   case 211:
-    for(Int_t i=0; i<nTotBins; i++) {
+    for(Int_t i=0; i<knTotBins; i++) {
       fdEdxMeanPi.SetParam(i,mean[i]);
       fdEdxRMSPi.SetParam(i,sigma[i]);
     }    
     break;
   case 321:
-    for(Int_t i=0; i<nTotBins; i++) {
+    for(Int_t i=0; i<knTotBins; i++) {
       fdEdxMeanKa.SetParam(i,mean[i]);
       fdEdxRMSKa.SetParam(i,sigma[i]);
     }    
     break;
   case 2212:
-    for(Int_t i=0; i<nTotBins; i++) {
+    for(Int_t i=0; i<knTotBins; i++) {
       fdEdxMeanPr.SetParam(i,mean[i]);
       fdEdxRMSPr.SetParam(i,sigma[i]);
     }    
     break;
   case 11:
-    for(Int_t i=0; i<nTotBins; i++) {
+    for(Int_t i=0; i<knTotBins; i++) {
       fdEdxMeanEl.SetParam(i,mean[i]);
       fdEdxRMSEl.SetParam(i,sigma[i]);
     }    
     break;
   case 13:
-    for(Int_t i=0; i<nTotBins; i++) {
+    for(Int_t i=0; i<knTotBins; i++) {
       fdEdxMeanMu.SetParam(i,mean[i]);
       fdEdxRMSMu.SetParam(i,sigma[i]);
     }    
@@ -640,7 +666,7 @@ void AliTPCtrackerParam::AnalyzePulls(const Char_t *outName) {
 
   AliTPCkineGrid  pulls[5];
   TH1F *hDum = new TH1F("name","title",100,-7.,7.);
-  TF1 g("g","gaus");
+  TF1 *g = new TF1("g","gaus");
 
   InitializeKineGrid("pulls");
   InitializeKineGrid("DB");
@@ -683,40 +709,40 @@ void AliTPCtrackerParam::AnalyzePulls(const Char_t *outName) {
     cerr<<"nTotBins = "<<nTotBins<<endl; 
 
     // create histograms for the all the bins
-    TH1F *hPulls0_=NULL;
-    TH1F *hPulls1_=NULL;
-    TH1F *hPulls2_=NULL;
-    TH1F *hPulls3_=NULL;
-    TH1F *hPulls4_=NULL;
+    TH1F *hPulls0=NULL;
+    TH1F *hPulls1=NULL;
+    TH1F *hPulls2=NULL;
+    TH1F *hPulls3=NULL;
+    TH1F *hPulls4=NULL;
 
-    hPulls0_ = new TH1F[nTotBins]; 
-    hPulls1_ = new TH1F[nTotBins]; 
-    hPulls2_ = new TH1F[nTotBins]; 
-    hPulls3_ = new TH1F[nTotBins]; 
-    hPulls4_ = new TH1F[nTotBins]; 
+    hPulls0 = new TH1F[nTotBins]; 
+    hPulls1 = new TH1F[nTotBins]; 
+    hPulls2 = new TH1F[nTotBins]; 
+    hPulls3 = new TH1F[nTotBins]; 
+    hPulls4 = new TH1F[nTotBins]; 
 
 
     for(Int_t i=0; i<nTotBins; i++) {
-      sprintf(hname,"hPulls0_%d",i);
+      sprintf(hname,"hPulls0%d",i);
       sprintf(htitle,"P0 pulls for bin %d",i);
       hDum->SetName(hname); hDum->SetTitle(htitle);
-      hPulls0_[i] = *hDum;
-      sprintf(hname,"hPulls1_%d",i);
+      hPulls0[i] = *hDum;
+      sprintf(hname,"hPulls1%d",i);
       sprintf(htitle,"P1 pulls for bin %d",i);
       hDum->SetName(hname); hDum->SetTitle(htitle);
-      hPulls1_[i] = *hDum;
-      sprintf(hname,"hPulls2_%d",i);
+      hPulls1[i] = *hDum;
+      sprintf(hname,"hPulls2%d",i);
       sprintf(htitle,"P2 pulls for bin %d",i);
       hDum->SetName(hname); hDum->SetTitle(htitle);
-      hPulls2_[i] = *hDum;
-      sprintf(hname,"hPulls3_%d",i);
+      hPulls2[i] = *hDum;
+      sprintf(hname,"hPulls3%d",i);
       sprintf(htitle,"P3 pulls for bin %d",i);
       hDum->SetName(hname); hDum->SetTitle(htitle);
-      hPulls3_[i] = *hDum;
-      sprintf(hname,"hPulls4_%d",i);
+      hPulls3[i] = *hDum;
+      sprintf(hname,"hPulls4%d",i);
       sprintf(htitle,"P4 pulls for bin %d",i);
       hDum->SetName(hname); hDum->SetTitle(htitle);
-      hPulls4_[i] = *hDum;
+      hPulls4[i] = *hDum;
     }
 
     // loop on chain entries 
@@ -726,39 +752,39 @@ void AliTPCtrackerParam::AnalyzePulls(const Char_t *outName) {
       // fill histograms with the pulls
       bin = fDBgrid->GetBin(cmptrk.pt,cmptrk.eta);
       //cerr<<" pt "<<cmptrk.pt<<"   eta "<<cmptrk.eta<<"   bin "<<bin<<endl; 
-      hPulls0_[bin].Fill(cmptrk.dP0/TMath::Sqrt(cmptrk.c00));
-      hPulls1_[bin].Fill(cmptrk.dP1/TMath::Sqrt(cmptrk.c11));
-      hPulls2_[bin].Fill(cmptrk.dP2/TMath::Sqrt(cmptrk.c22));
-      hPulls3_[bin].Fill(cmptrk.dP3/TMath::Sqrt(cmptrk.c33));
-      hPulls4_[bin].Fill(cmptrk.dP4/TMath::Sqrt(cmptrk.c44));
+      hPulls0[bin].Fill(cmptrk.dP0/TMath::Sqrt(cmptrk.c00));
+      hPulls1[bin].Fill(cmptrk.dP1/TMath::Sqrt(cmptrk.c11));
+      hPulls2[bin].Fill(cmptrk.dP2/TMath::Sqrt(cmptrk.c22));
+      hPulls3[bin].Fill(cmptrk.dP3/TMath::Sqrt(cmptrk.c33));
+      hPulls4[bin].Fill(cmptrk.dP4/TMath::Sqrt(cmptrk.c44));
     } // loop on chain entries
 
     // compute the sigma of the distributions
     for(Int_t i=0; i<nTotBins; i++) {
-      if(hPulls0_[i].GetEntries()>10) {
-	g.SetRange(-3.*hPulls0_[i].GetRMS(),3.*hPulls0_[i].GetRMS());
-	hPulls0_[i].Fit("g","R,Q,N");
-	pulls[0].SetParam(i,g.GetParameter(2));
+      if(hPulls0[i].GetEntries()>10) {
+	g->SetRange(-3.*hPulls0[i].GetRMS(),3.*hPulls0[i].GetRMS());
+	hPulls0[i].Fit("g","R,Q,N");
+	pulls[0].SetParam(i,g->GetParameter(2));
       } else pulls[0].SetParam(i,-1.);
-      if(hPulls1_[i].GetEntries()>10) {
-	g.SetRange(-3.*hPulls1_[i].GetRMS(),3.*hPulls1_[i].GetRMS());
-	hPulls1_[i].Fit("g","R,Q,N");
-	pulls[1].SetParam(i,g.GetParameter(2));
+      if(hPulls1[i].GetEntries()>10) {
+	g->SetRange(-3.*hPulls1[i].GetRMS(),3.*hPulls1[i].GetRMS());
+	hPulls1[i].Fit("g","R,Q,N");
+	pulls[1].SetParam(i,g->GetParameter(2));
       } else pulls[1].SetParam(i,-1.);
-      if(hPulls2_[i].GetEntries()>10) {
-	g.SetRange(-3.*hPulls2_[i].GetRMS(),3.*hPulls2_[i].GetRMS());
-	hPulls2_[i].Fit("g","R,Q,N");
-	pulls[2].SetParam(i,g.GetParameter(2));
+      if(hPulls2[i].GetEntries()>10) {
+	g->SetRange(-3.*hPulls2[i].GetRMS(),3.*hPulls2[i].GetRMS());
+	hPulls2[i].Fit("g","R,Q,N");
+	pulls[2].SetParam(i,g->GetParameter(2));
       } else pulls[2].SetParam(i,-1.);
-      if(hPulls3_[i].GetEntries()>10) {
-	g.SetRange(-3.*hPulls3_[i].GetRMS(),3.*hPulls3_[i].GetRMS());
-	hPulls3_[i].Fit("g","R,Q,N");
-	pulls[3].SetParam(i,g.GetParameter(2));
+      if(hPulls3[i].GetEntries()>10) {
+	g->SetRange(-3.*hPulls3[i].GetRMS(),3.*hPulls3[i].GetRMS());
+	hPulls3[i].Fit("g","R,Q,N");
+	pulls[3].SetParam(i,g->GetParameter(2));
       } else pulls[3].SetParam(i,-1.);
-      if(hPulls4_[i].GetEntries()>10) {
-	g.SetRange(-3.*hPulls4_[i].GetRMS(),3.*hPulls4_[i].GetRMS());
-	hPulls4_[i].Fit("g","R,Q,N");
-	pulls[4].SetParam(i,g.GetParameter(2));
+      if(hPulls4[i].GetEntries()>10) {
+	g->SetRange(-3.*hPulls4[i].GetRMS(),3.*hPulls4[i].GetRMS());
+	hPulls4[i].Fit("g","R,Q,N");
+	pulls[4].SetParam(i,g->GetParameter(2));
       } else pulls[4].SetParam(i,-1.);
     } // loop on bins
 
@@ -797,11 +823,11 @@ void AliTPCtrackerParam::AnalyzePulls(const Char_t *outName) {
       break;
     }
 
-    delete [] hPulls0_;
-    delete [] hPulls1_;
-    delete [] hPulls2_;
-    delete [] hPulls3_;
-    delete [] hPulls4_;
+    delete [] hPulls0;
+    delete [] hPulls1;
+    delete [] hPulls2;
+    delete [] hPulls3;
+    delete [] hPulls4;
     
   } // loop on particle species
 
@@ -848,12 +874,12 @@ void AliTPCtrackerParam::AnalyzeResolutions(Int_t pdg) {
 
   SetParticle(pdg);
 
-  const Int_t nPtBins = fEff->GetPointsPt();
-  cerr<<"nPtBins = "<<nPtBins<<endl; 
-  Double_t *dP0     = new Double_t[nPtBins];
-  Double_t *dP4     = new Double_t[nPtBins];
-  Double_t *dPtToPt = new Double_t[nPtBins];
-  Double_t *pt      = new Double_t[nPtBins];
+  const Int_t knPtBins = fEff->GetPointsPt();
+  cerr<<"knPtBins = "<<knPtBins<<endl; 
+  Double_t *dP0     = new Double_t[knPtBins];
+  Double_t *dP4     = new Double_t[knPtBins];
+  Double_t *dPtToPt = new Double_t[knPtBins];
+  Double_t *pt      = new Double_t[knPtBins];
   fEff->GetArrayPt(pt);
 
 
@@ -861,21 +887,21 @@ void AliTPCtrackerParam::AnalyzeResolutions(Int_t pdg) {
   TH1F *hDumP4 = new TH1F("nameP4","dC",100,-0.0005,0.0005);
   TH1F *hDumPt = new TH1F("namePt","dp_{T}/p_{T}",100,-0.5,0.5);
 
-  TF1 g("g","gaus");
+  TF1 *g = new TF1("g","gaus");
 
   // create histograms for the all the bins
-  TH1F *hP0_=NULL;
-  TH1F *hP4_=NULL;
-  TH1F *hPt_=NULL;
+  TH1F *hP0=NULL;
+  TH1F *hP4=NULL;
+  TH1F *hPt=NULL;
 
-  hP0_ = new TH1F[nPtBins]; 
-  hP4_ = new TH1F[nPtBins]; 
-  hPt_ = new TH1F[nPtBins]; 
+  hP0 = new TH1F[knPtBins]; 
+  hP4 = new TH1F[knPtBins]; 
+  hPt = new TH1F[knPtBins]; 
 
-  for(Int_t i=0; i<nPtBins; i++) {
-    hP0_[i] = *hDumP0;
-    hP4_[i] = *hDumP4;
-    hPt_[i] = *hDumPt;
+  for(Int_t i=0; i<knPtBins; i++) {
+    hP0[i] = *hDumP0;
+    hP4[i] = *hDumP4;
+    hPt[i] = *hDumPt;
   }
 
   // loop on chain entries 
@@ -885,9 +911,9 @@ void AliTPCtrackerParam::AnalyzeResolutions(Int_t pdg) {
     // fill histograms with the residuals
     bin = (Int_t)fDBgrid->GetBin(cmptrk.pt,cmptrk.eta)/fDBgrid->GetBinsEta();
     //cerr<<" pt "<<cmptrk.pt<<"   eta "<<cmptrk.eta<<"   bin "<<bin<<endl; 
-    hP0_[bin].Fill(cmptrk.dP0);
-    hP4_[bin].Fill(cmptrk.dP4);
-    hPt_[bin].Fill(cmptrk.dpt/cmptrk.pt);
+    hP0[bin].Fill(cmptrk.dP0);
+    hP4[bin].Fill(cmptrk.dP4);
+    hPt[bin].Fill(cmptrk.dpt/cmptrk.pt);
   } // loop on chain entries
 
 
@@ -899,36 +925,36 @@ void AliTPCtrackerParam::AnalyzeResolutions(Int_t pdg) {
   cPtres->Divide(5,2);
 
   // Draw histograms
-  for(Int_t i=0; i<nPtBins; i++) {
-    cP0res->cd(i+1); hP0_[i].Draw();
-    cP4res->cd(i+1); hP4_[i].Draw();
-    cPtres->cd(i+1); hPt_[i].Draw();
+  for(Int_t i=0; i<knPtBins; i++) {
+    cP0res->cd(i+1); hP0[i].Draw();
+    cP4res->cd(i+1); hP4[i].Draw();
+    cPtres->cd(i+1); hPt[i].Draw();
   }
 
 
   // compute the sigma of the distributions
-  for(Int_t i=0; i<nPtBins; i++) {
-    if(hP0_[i].GetEntries()>10) {
-      g.SetRange(-3.*hP0_[i].GetRMS(),3.*hP0_[i].GetRMS());
-      hP0_[i].Fit("g","R,Q,N");
-      dP0[i] = g.GetParameter(2);
+  for(Int_t i=0; i<knPtBins; i++) {
+    if(hP0[i].GetEntries()>10) {
+      g->SetRange(-3.*hP0[i].GetRMS(),3.*hP0[i].GetRMS());
+      hP0[i].Fit("g","R,Q,N");
+      dP0[i] = g->GetParameter(2);
     } else dP0[i] = 0.;
-    if(hP4_[i].GetEntries()>10) {
-      g.SetRange(-3.*hP4_[i].GetRMS(),3.*hP4_[i].GetRMS());
-      hP4_[i].Fit("g","R,Q,N");
-      dP4[i] = g.GetParameter(2);
+    if(hP4[i].GetEntries()>10) {
+      g->SetRange(-3.*hP4[i].GetRMS(),3.*hP4[i].GetRMS());
+      hP4[i].Fit("g","R,Q,N");
+      dP4[i] = g->GetParameter(2);
     } else dP4[i] = 0.;
-    if(hPt_[i].GetEntries()>10) {
-      g.SetRange(-3.*hPt_[i].GetRMS(),3.*hPt_[i].GetRMS());
-      hPt_[i].Fit("g","R,Q,N");
-      dPtToPt[i] = 100.*g.GetParameter(2);
+    if(hPt[i].GetEntries()>10) {
+      g->SetRange(-3.*hPt[i].GetRMS(),3.*hPt[i].GetRMS());
+      hPt[i].Fit("g","R,Q,N");
+      dPtToPt[i] = 100.*g->GetParameter(2);
     } else dPtToPt[i] = 0.;
   } // loop on bins
 
   
-  TGraph *grdP0 = new TGraph(nPtBins,pt,dP0);
-  TGraph *grdP4 = new TGraph(nPtBins,pt,dP4);
-  TGraph *grdPtToPt = new TGraph(nPtBins,pt,dPtToPt);
+  TGraph *grdP0 = new TGraph(knPtBins,pt,dP0);
+  TGraph *grdP4 = new TGraph(knPtBins,pt,dP4);
+  TGraph *grdPtToPt = new TGraph(knPtBins,pt,dPtToPt);
 
   grdP0->SetMarkerStyle(20); grdP0->SetMarkerColor(2); grdP0->SetMarkerSize(1.5);
   grdP4->SetMarkerStyle(21); grdP4->SetMarkerColor(3); grdP4->SetMarkerSize(1.5);
@@ -978,9 +1004,9 @@ void AliTPCtrackerParam::AnalyzeResolutions(Int_t pdg) {
   delete [] pt;
 
   
-  delete [] hP0_;
-  delete [] hP4_;
-  delete [] hPt_;
+  delete [] hP0;
+  delete [] hP4;
+  delete [] hPt;
   
   return;
 }
@@ -1103,7 +1129,7 @@ void AliTPCtrackerParam::CompareTPCtracks(
   Double_t    *pt = new Double_t[effBinsPt];
   fEffPi.GetArrayPt(pt);
 
-  TParticle *Part;
+  TParticle *part;
   Double_t ptgener;
   Bool_t   usethis;
   Int_t    label;
@@ -1139,10 +1165,10 @@ void AliTPCtrackerParam::CompareTPCtracks(
     sprintf(tname,"TreeT_TPC_%d",evt);
     
     // particles from TreeK
-    const Int_t nparticles = gAlice->GetEvent(evt);
+    const Int_t knparticles = gAlice->GetEvent(evt);
 
-    Int_t *kalLab = new Int_t[nparticles];
-    for(Int_t i=0; i<nparticles; i++) kalLab[i] = -1; 
+    Int_t *kalLab = new Int_t[knparticles];
+    for(Int_t i=0; i<knparticles; i++) kalLab[i] = -1; 
  
 
     // tracks from Kalman
@@ -1180,8 +1206,8 @@ void AliTPCtrackerParam::CompareTPCtracks(
     // Read the labels of the seeds
     char sname[100];
     Int_t sLabel,ncol;
-    Bool_t *hasSeed = new Bool_t[nparticles];
-    for(Int_t i=0; i<nparticles; i++) hasSeed[i] = kFALSE; 
+    Bool_t *hasSeed = new Bool_t[knparticles];
+    for(Int_t i=0; i<knparticles; i++) hasSeed[i] = kFALSE; 
     sprintf(sname,"seedLabels.%d.dat",evt);
     FILE *seedFile = fopen(sname,"r");
     while(1) {
@@ -1198,10 +1224,10 @@ void AliTPCtrackerParam::CompareTPCtracks(
       geatree->GetEvent(j);
       
       label = geatrack->GetLabel();
-      Part = (TParticle*)gAlice->GetMCApp()->Particle(label);
+      part = (TParticle*)gAlice->GetMCApp()->Particle(label);
       
       // use only injected tracks with fixed values of pT
-      ptgener = Part->Pt();
+      ptgener = part->Pt();
       usethis = kFALSE;
       for(Int_t l=0; l<fEffPi.GetPointsPt(); l++) {
 	if(TMath::Abs(ptgener-pt[l])<0.01) usethis = kTRUE;
@@ -1230,9 +1256,9 @@ void AliTPCtrackerParam::CompareTPCtracks(
       if(out) continue;      
       */
 
-      cmptrk.pdg = Part->GetPdgCode();
-      cmptrk.eta = Part->Eta();
-      cmptrk.r = TMath::Sqrt(Part->Vx()*Part->Vx()+Part->Vy()*Part->Vy());
+      cmptrk.pdg = part->GetPdgCode();
+      cmptrk.eta = part->Eta();
+      cmptrk.r = TMath::Sqrt(part->Vx()*part->Vx()+part->Vy()*part->Vy());
       
       cmptrk.pt   = 1/TMath::Abs(geatrack->Get1Pt());
       cmptrk.cosl = TMath::Cos(TMath::ATan(geatrack->GetTgl()));
@@ -1491,22 +1517,22 @@ void AliTPCtrackerParam::DrawEffs(const Char_t* inName,Int_t pdg) {
   ReadEffs(inName);
   SetParticle(pdg);
 
-  const Int_t n = fEff->GetPointsPt();
-  Double_t *effsA = new Double_t[n];
-  Double_t *effsB = new Double_t[n];
-  Double_t *effsC = new Double_t[n];
-  Double_t *pt    = new Double_t[n];
+  const Int_t kn = fEff->GetPointsPt();
+  Double_t *effsA = new Double_t[kn];
+  Double_t *effsB = new Double_t[kn];
+  Double_t *effsC = new Double_t[kn];
+  Double_t *pt    = new Double_t[kn];
 
   fEff->GetArrayPt(pt);
-  for(Int_t i=0;i<n;i++) {
+  for(Int_t i=0;i<kn;i++) {
     effsA[i] = fEff->GetParam(i,0);
     effsB[i] = fEff->GetParam(i,1);
     effsC[i] = fEff->GetParam(i,2);
   }
   
-  TGraph *grA = new TGraph(n,pt,effsA);
-  TGraph *grB = new TGraph(n,pt,effsB);
-  TGraph *grC = new TGraph(n,pt,effsC);
+  TGraph *grA = new TGraph(kn,pt,effsA);
+  TGraph *grB = new TGraph(kn,pt,effsB);
+  TGraph *grC = new TGraph(kn,pt,effsC);
 
   grA->SetMarkerStyle(20); grA->SetMarkerColor(2); grA->SetMarkerSize(1.5);
   grB->SetMarkerStyle(21); grB->SetMarkerColor(3); grB->SetMarkerSize(1.5);
@@ -1569,21 +1595,21 @@ void AliTPCtrackerParam::DrawPulls(const Char_t* inName,Int_t pdg,
   ReadPulls(inName);
   SetParticle(pdg);
 
-  const Int_t n = (fPulls+par)->GetPointsPt();
-  Double_t *pullsA = new Double_t[n];
-  Double_t *pullsB = new Double_t[n];
-  Double_t *pullsC = new Double_t[n];
-  Double_t *pt     = new Double_t[n];
+  const Int_t kn = (fPulls+par)->GetPointsPt();
+  Double_t *pullsA = new Double_t[kn];
+  Double_t *pullsB = new Double_t[kn];
+  Double_t *pullsC = new Double_t[kn];
+  Double_t *pt     = new Double_t[kn];
   (fPulls+par)->GetArrayPt(pt);  
-  for(Int_t i=0;i<n;i++) {
+  for(Int_t i=0;i<kn;i++) {
     pullsA[i] = (fPulls+par)->GetParam(i,0);
     pullsB[i] = (fPulls+par)->GetParam(i,1);
     pullsC[i] = (fPulls+par)->GetParam(i,2);
   }
 
-  TGraph *grA = new TGraph(n,pt,pullsA);
-  TGraph *grB = new TGraph(n,pt,pullsB);
-  TGraph *grC = new TGraph(n,pt,pullsC);
+  TGraph *grA = new TGraph(kn,pt,pullsA);
+  TGraph *grB = new TGraph(kn,pt,pullsB);
+  TGraph *grC = new TGraph(kn,pt,pullsC);
 
   grA->SetMarkerStyle(20); grA->SetMarkerColor(2); grA->SetMarkerSize(1.5);
   grB->SetMarkerStyle(21); grB->SetMarkerColor(3); grB->SetMarkerSize(1.5);
@@ -1705,7 +1731,7 @@ void AliTPCtrackerParam::InitializeKineGrid(Option_t* which) {
 //         "dEdx"   -> initialize fdEdx... members
 //-----------------------------------------------------------------------------
 
-  const char *DB     = strstr(which,"DB");
+  const char *db     = strstr(which,"DB");
   const char *eff    = strstr(which,"eff");
   const char *pulls  = strstr(which,"pulls");
   const char *dEdx   = strstr(which,"dEdx");
@@ -1722,7 +1748,7 @@ void AliTPCtrackerParam::InitializeKineGrid(Option_t* which) {
 
   Double_t *eta=0,*pt=0;
 
-  if(DB) {
+  if(db) {
     nEta = 2;
     nPt  = 9;
     eta  = etaPoints;
@@ -1736,7 +1762,7 @@ void AliTPCtrackerParam::InitializeKineGrid(Option_t* which) {
 
   AliTPCkineGrid *dummy=0;
 
-  if(DB) {    
+  if(db) {    
     dummy = new AliTPCkineGrid(nPt,nEta,pt,eta);
     new(&fDBgridPi) AliTPCkineGrid(*dummy);
     new(&fDBgridKa) AliTPCkineGrid(*dummy);
@@ -1849,63 +1875,63 @@ void AliTPCtrackerParam::MakeDataBase() {
   //
   InitializeKineGrid("DB");
 
-  const Int_t nBinsPi = fDBgridPi.GetTotBins();
-  const Int_t nBinsKa = fDBgridKa.GetTotBins();
-  const Int_t nBinsPr = fDBgridPr.GetTotBins();
-  const Int_t nBinsEl = fDBgridEl.GetTotBins();
-  const Int_t nBinsMu = fDBgridMu.GetTotBins();
+  const Int_t knBinsPi = fDBgridPi.GetTotBins();
+  const Int_t knBinsKa = fDBgridKa.GetTotBins();
+  const Int_t knBinsPr = fDBgridPr.GetTotBins();
+  const Int_t knBinsEl = fDBgridEl.GetTotBins();
+  const Int_t knBinsMu = fDBgridMu.GetTotBins();
 
 
   // create the trees for cov. matrices
   // trees for pions
-  TTree *CovTreePi_ = NULL;
-  CovTreePi_ = new TTree[nBinsPi]; 
+  TTree *covTreePi_ = NULL;
+  covTreePi_ = new TTree[knBinsPi]; 
   // trees for kaons
-  TTree *CovTreeKa_ = NULL;
-  CovTreeKa_ = new TTree[nBinsKa]; 
+  TTree *covTreeKa_ = NULL;
+  covTreeKa_ = new TTree[knBinsKa]; 
   // trees for protons
-  TTree *CovTreePr_ = NULL;
-  CovTreePr_ = new TTree[nBinsPr]; 
+  TTree *covTreePr_ = NULL;
+  covTreePr_ = new TTree[knBinsPr]; 
   // trees for electrons
-  TTree *CovTreeEl_ = NULL;
-  CovTreeEl_ = new TTree[nBinsEl]; 
+  TTree *covTreeEl_ = NULL;
+  covTreeEl_ = new TTree[knBinsEl]; 
   // trees for muons
-  TTree *CovTreeMu_ = NULL;
-  CovTreeMu_ = new TTree[nBinsMu]; 
+  TTree *covTreeMu_ = NULL;
+  covTreeMu_ = new TTree[knBinsMu]; 
 
   Char_t hname[100], htitle[100];
   COVMATRIX covmat;
 
   
-  for(Int_t i=0; i<nBinsPi; i++) {
+  for(Int_t i=0; i<knBinsPi; i++) {
     sprintf(hname,"CovTreePi_bin%d",i);
     sprintf(htitle,"Tree with cov matrix elements for bin %d",i);
-    CovTreePi_[i].SetName(hname); CovTreePi_[i].SetTitle(htitle);
-    CovTreePi_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",5000000);
+    covTreePi_[i].SetName(hname); covTreePi_[i].SetTitle(htitle);
+    covTreePi_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",5000000);
   }
-  for(Int_t i=0; i<nBinsKa; i++) {
+  for(Int_t i=0; i<knBinsKa; i++) {
     sprintf(hname,"CovTreeKa_bin%d",i);
     sprintf(htitle,"Tree with cov matrix elements for bin %d",i);
-    CovTreeKa_[i].SetName(hname); CovTreeKa_[i].SetTitle(htitle);
-    CovTreeKa_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
+    covTreeKa_[i].SetName(hname); covTreeKa_[i].SetTitle(htitle);
+    covTreeKa_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
   }
-  for(Int_t i=0; i<nBinsPr; i++) {
+  for(Int_t i=0; i<knBinsPr; i++) {
     sprintf(hname,"CovTreePr_bin%d",i);
     sprintf(htitle,"Tree with cov matrix elements for bin %d",i);
-    CovTreePr_[i].SetName(hname); CovTreePr_[i].SetTitle(htitle);
-    CovTreePr_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
+    covTreePr_[i].SetName(hname); covTreePr_[i].SetTitle(htitle);
+    covTreePr_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
   }
-  for(Int_t i=0; i<nBinsEl; i++) {
+  for(Int_t i=0; i<knBinsEl; i++) {
     sprintf(hname,"CovTreeEl_bin%d",i);
     sprintf(htitle,"Tree with cov matrix elements for bin %d",i);
-    CovTreeEl_[i].SetName(hname); CovTreeEl_[i].SetTitle(htitle);
-    CovTreeEl_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
+    covTreeEl_[i].SetName(hname); covTreeEl_[i].SetTitle(htitle);
+    covTreeEl_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
   }
-  for(Int_t i=0; i<nBinsMu; i++) {
+  for(Int_t i=0; i<knBinsMu; i++) {
     sprintf(hname,"CovTreeMu_bin%d",i);
     sprintf(htitle,"Tree with cov matrix elements for bin %d",i);
-    CovTreeMu_[i].SetName(hname); CovTreeMu_[i].SetTitle(htitle);
-    CovTreeMu_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
+    covTreeMu_[i].SetName(hname); covTreeMu_[i].SetTitle(htitle);
+    covTreeMu_[i].Branch("matrix",&covmat,"c00/D:c10:c11:c20:c21:c22:c30:c31:c32:c33:c40:c41:c42:c43:c44",1000000);
   }
 
   /*  
@@ -1926,16 +1952,16 @@ void AliTPCtrackerParam::MakeDataBase() {
 
   Int_t trkPdg,trkBin;
   Double_t trkKine[1],trkRegPar[3]; 
-  Int_t *nPerBinPi = new Int_t[nBinsPi];
-  for(Int_t k=0;k<nBinsPi;k++) nPerBinPi[k]=0;
-  Int_t *nPerBinKa = new Int_t[nBinsKa];
-  for(Int_t k=0;k<nBinsKa;k++) nPerBinKa[k]=0;
-  Int_t *nPerBinMu = new Int_t[nBinsMu];
-  for(Int_t k=0;k<nBinsMu;k++) nPerBinMu[k]=0;
-  Int_t *nPerBinEl = new Int_t[nBinsEl];
-  for(Int_t k=0;k<nBinsEl;k++) nPerBinEl[k]=0;
-  Int_t *nPerBinPr = new Int_t[nBinsPr];
-  for(Int_t k=0;k<nBinsPr;k++) nPerBinPr[k]=0;
+  Int_t *nPerBinPi = new Int_t[knBinsPi];
+  for(Int_t k=0;k<knBinsPi;k++) nPerBinPi[k]=0;
+  Int_t *nPerBinKa = new Int_t[knBinsKa];
+  for(Int_t k=0;k<knBinsKa;k++) nPerBinKa[k]=0;
+  Int_t *nPerBinMu = new Int_t[knBinsMu];
+  for(Int_t k=0;k<knBinsMu;k++) nPerBinMu[k]=0;
+  Int_t *nPerBinEl = new Int_t[knBinsEl];
+  for(Int_t k=0;k<knBinsEl;k++) nPerBinEl[k]=0;
+  Int_t *nPerBinPr = new Int_t[knBinsPr];
+  for(Int_t k=0;k<knBinsPr;k++) nPerBinPr[k]=0;
 
   // loop on chain entries 
   for(Int_t l=0; l<entries; l++) {
@@ -1987,31 +2013,31 @@ void AliTPCtrackerParam::MakeDataBase() {
     // fill the tree
     switch (trkPdg) {
     case 211: // pions
-      CovTreePi_[trkBin].Fill();
+      covTreePi_[trkBin].Fill();
       nPerBinPi[trkBin]++;
       break;
     case 321: // kaons
-      CovTreeKa_[trkBin].Fill();
+      covTreeKa_[trkBin].Fill();
       nPerBinKa[trkBin]++;
       break;
     case 2212: // protons
-      CovTreePr_[trkBin].Fill();
+      covTreePr_[trkBin].Fill();
       nPerBinPr[trkBin]++;
       break;
     case 11: // electrons
-      CovTreeEl_[trkBin].Fill();
+      covTreeEl_[trkBin].Fill();
       nPerBinEl[trkBin]++;
       break;
     case 13: // muons
-      CovTreeMu_[trkBin].Fill();
+      covTreeMu_[trkBin].Fill();
       nPerBinMu[trkBin]++;
       break;
     }
   } // loop on chain entries
 
   // store all trees the DB file
-  TFile *DBfile = new TFile(fDBfileName.Data(),"update");
-  DBfile->mkdir("CovMatrices");
+  TFile *dbfile = new TFile(fDBfileName.Data(),"update");
+  dbfile->mkdir("CovMatrices");
   gDirectory->cd("/CovMatrices");
   gDirectory->mkdir("Pions");
   gDirectory->mkdir("Kaons");
@@ -2021,25 +2047,25 @@ void AliTPCtrackerParam::MakeDataBase() {
   // store pions
   gDirectory->cd("/CovMatrices/Pions");
   fDBgridPi.SetName("DBgridPi"); fDBgridPi.Write();
-  for(Int_t i=0;i<nBinsPi;i++) CovTreePi_[i].Write();
+  for(Int_t i=0;i<knBinsPi;i++) covTreePi_[i].Write();
   // store kaons
   gDirectory->cd("/CovMatrices/Kaons");
   fDBgridKa.SetName("DBgridKa"); fDBgridKa.Write();
-  for(Int_t i=0;i<nBinsKa;i++) CovTreeKa_[i].Write();
+  for(Int_t i=0;i<knBinsKa;i++) covTreeKa_[i].Write();
   // store kaons
   gDirectory->cd("/CovMatrices/Protons");
   fDBgridPr.SetName("DBgridPr"); fDBgridPr.Write();
-  for(Int_t i=0;i<nBinsPr;i++) CovTreePr_[i].Write();
+  for(Int_t i=0;i<knBinsPr;i++) covTreePr_[i].Write();
   // store electrons
   gDirectory->cd("/CovMatrices/Electrons");
   fDBgridEl.SetName("DBgridEl"); fDBgridEl.Write();
-  for(Int_t i=0;i<nBinsEl;i++) CovTreeEl_[i].Write();
+  for(Int_t i=0;i<knBinsEl;i++) covTreeEl_[i].Write();
   // store kaons
   gDirectory->cd("/CovMatrices/Muons");
   fDBgridMu.SetName("DBgridMu"); fDBgridMu.Write();
-  for(Int_t i=0;i<nBinsMu;i++) CovTreeMu_[i].Write();
+  for(Int_t i=0;i<knBinsMu;i++) covTreeMu_[i].Write();
 
-  DBfile->Close();
+  dbfile->Close();
   delete [] nPerBinPi;
   delete [] nPerBinKa;
   delete [] nPerBinPr;
@@ -2049,7 +2075,7 @@ void AliTPCtrackerParam::MakeDataBase() {
   return;
 }
 //-----------------------------------------------------------------------------
-void AliTPCtrackerParam::MakeSeedsFromHits(AliTPC *TPC,TTree *TH,
+void AliTPCtrackerParam::MakeSeedsFromHits(AliTPC *tpc,TTree *th,
 					   TObjArray &seedArray) const {
 //-----------------------------------------------------------------------------
 // This function makes the seeds for tracks from the 1st hits in the TPC
@@ -2057,7 +2083,7 @@ void AliTPCtrackerParam::MakeSeedsFromHits(AliTPC *TPC,TTree *TH,
 
   Double_t xg,yg,zg,px,py,pz,pt;
   Int_t label;
-  Int_t nTracks=(Int_t)TH->GetEntries();
+  Int_t nTracks=(Int_t)th->GetEntries();
 
   cerr<<"+++\n+++ Number of \"primary tracks\"(entries in TreeH): "<<nTracks<<
          "\n+++\n\n";
@@ -2068,11 +2094,11 @@ void AliTPCtrackerParam::MakeSeedsFromHits(AliTPC *TPC,TTree *TH,
   for(Int_t l=0; l<nTracks; l++) {
     if(l%1000==0) cerr<<"  --- Processing primary track "
 		      <<l<<" of "<<nTracks<<" ---\r";
-    TPC->ResetHits();
-    TH->GetEvent(l);
+    tpc->ResetHits();
+    th->GetEvent(l);
     // Get FirstHit
-    tpcHit=(AliTPChit*)TPC->FirstHit(-1);
-    for( ; tpcHit; tpcHit=(AliTPChit*)TPC->NextHit() ) {
+    tpcHit=(AliTPChit*)tpc->FirstHit(-1);
+    for( ; tpcHit; tpcHit=(AliTPChit*)tpc->NextHit() ) {
       if(tpcHit->fQ !=0.) continue;
       // Get particle momentum at hit
       px=tpcHit->X(); py=tpcHit->Y(); pz=tpcHit->Z();
@@ -2084,7 +2110,7 @@ void AliTPCtrackerParam::MakeSeedsFromHits(AliTPC *TPC,TTree *TH,
       // Get track label
       label=tpcHit->Track();
       
-      if((tpcHit=(AliTPChit*)TPC->NextHit())==0) break;
+      if((tpcHit=(AliTPChit*)tpc->NextHit())==0) break;
       if(tpcHit->fQ != 0.) continue;
       // Get global coordinates of hit
       xg=tpcHit->X(); yg=tpcHit->Y(); zg=tpcHit->Z();
@@ -2105,7 +2131,7 @@ void AliTPCtrackerParam::MakeSeedsFromHits(AliTPC *TPC,TTree *TH,
   return;
 }
 //-----------------------------------------------------------------------------
-void AliTPCtrackerParam::MakeSeedsFromRefs(TTree *TTR,
+void AliTPCtrackerParam::MakeSeedsFromRefs(TTree *ttr,
 					   TObjArray &seedArray) const {
 //-----------------------------------------------------------------------------
 // This function makes the seeds for tracks from the track references
@@ -2117,7 +2143,7 @@ void AliTPCtrackerParam::MakeSeedsFromRefs(TTree *TTR,
 
   TClonesArray *tkRefArray = new TClonesArray("AliTrackReference");
 
-  TBranch *b =(TBranch*)TTR->GetBranch("TPC");
+  TBranch *b =(TBranch*)ttr->GetBranch("TPC");
   if(!b) {cerr<<"TPC branch of TreeTR not found"<<endl; return; }
   b->SetAddress(&tkRefArray);
   Int_t nTkRef = (Int_t)b->GetEntries();
@@ -2568,8 +2594,8 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
 
   InitializeKineGrid("DB");
   SetParticle(pdg);
-  const Int_t fitbins = fDBgrid->GetBinsPt();
-  cerr<<" Fit bins:  "<<fitbins<<endl;
+  const Int_t kfitbins = fDBgrid->GetBinsPt();
+  cerr<<" Fit bins:  "<<kfitbins<<endl;
 
   switch (pdg) {
   case 211: // pions
@@ -2619,41 +2645,41 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
 
     
   Int_t pbin;
-  Int_t    *n       = new Int_t[fitbins];
-  Int_t    *n00     = new Int_t[fitbins];
-  Int_t    *n11     = new Int_t[fitbins];
-  Int_t    *n20     = new Int_t[fitbins];
-  Int_t    *n22     = new Int_t[fitbins];
-  Int_t    *n31     = new Int_t[fitbins];
-  Int_t    *n33     = new Int_t[fitbins];
-  Int_t    *n40     = new Int_t[fitbins];
-  Int_t    *n42     = new Int_t[fitbins];
-  Int_t    *n44     = new Int_t[fitbins];
-  Double_t *p       = new Double_t[fitbins];
-  Double_t *ep      = new Double_t[fitbins];
-  Double_t *mean00  = new Double_t[fitbins];
-  Double_t *mean11  = new Double_t[fitbins];
-  Double_t *mean20  = new Double_t[fitbins];
-  Double_t *mean22  = new Double_t[fitbins];
-  Double_t *mean31  = new Double_t[fitbins];
-  Double_t *mean33  = new Double_t[fitbins];
-  Double_t *mean40  = new Double_t[fitbins];
-  Double_t *mean42  = new Double_t[fitbins];
-  Double_t *mean44  = new Double_t[fitbins];
-  Double_t *sigma00 = new Double_t[fitbins];
-  Double_t *sigma11 = new Double_t[fitbins];
-  Double_t *sigma20 = new Double_t[fitbins];
-  Double_t *sigma22 = new Double_t[fitbins];
-  Double_t *sigma31 = new Double_t[fitbins];
-  Double_t *sigma33 = new Double_t[fitbins];
-  Double_t *sigma40 = new Double_t[fitbins];
-  Double_t *sigma42 = new Double_t[fitbins];
-  Double_t *sigma44 = new Double_t[fitbins];
-  Double_t *rmean   = new Double_t[fitbins];
-  Double_t *rsigma  = new Double_t[fitbins];
+  Int_t    *n       = new Int_t[kfitbins];
+  Int_t    *n00     = new Int_t[kfitbins];
+  Int_t    *n11     = new Int_t[kfitbins];
+  Int_t    *n20     = new Int_t[kfitbins];
+  Int_t    *n22     = new Int_t[kfitbins];
+  Int_t    *n31     = new Int_t[kfitbins];
+  Int_t    *n33     = new Int_t[kfitbins];
+  Int_t    *n40     = new Int_t[kfitbins];
+  Int_t    *n42     = new Int_t[kfitbins];
+  Int_t    *n44     = new Int_t[kfitbins];
+  Double_t *p       = new Double_t[kfitbins];
+  Double_t *ep      = new Double_t[kfitbins];
+  Double_t *mean00  = new Double_t[kfitbins];
+  Double_t *mean11  = new Double_t[kfitbins];
+  Double_t *mean20  = new Double_t[kfitbins];
+  Double_t *mean22  = new Double_t[kfitbins];
+  Double_t *mean31  = new Double_t[kfitbins];
+  Double_t *mean33  = new Double_t[kfitbins];
+  Double_t *mean40  = new Double_t[kfitbins];
+  Double_t *mean42  = new Double_t[kfitbins];
+  Double_t *mean44  = new Double_t[kfitbins];
+  Double_t *sigma00 = new Double_t[kfitbins];
+  Double_t *sigma11 = new Double_t[kfitbins];
+  Double_t *sigma20 = new Double_t[kfitbins];
+  Double_t *sigma22 = new Double_t[kfitbins];
+  Double_t *sigma31 = new Double_t[kfitbins];
+  Double_t *sigma33 = new Double_t[kfitbins];
+  Double_t *sigma40 = new Double_t[kfitbins];
+  Double_t *sigma42 = new Double_t[kfitbins];
+  Double_t *sigma44 = new Double_t[kfitbins];
+  Double_t *rmean   = new Double_t[kfitbins];
+  Double_t *rsigma  = new Double_t[kfitbins];
   Double_t fitpar[3];
 
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     n[l]=1;
     n00[l]=n11[l]=n20[l]=n22[l]=n31[l]=n33[l]=n40[l]=n42[l]=n44[l]=1;
     p[l ]=ep[l]=0.;
@@ -2679,7 +2705,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
     mean44[pbin]+=cmptrk.c44;
   } // loop on chain entries
 
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     p[l]/=n[l];
     mean00[l]/=n[l];
     mean11[l]/=n[l];
@@ -2717,7 +2743,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
       sigma44[pbin]+=(cmptrk.c44-mean44[pbin])*(cmptrk.c44-mean44[pbin]); }
   } // loop on chain entries
  
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     sigma00[l] = TMath::Sqrt(sigma00[l]/n00[l]);
     sigma11[l] = TMath::Sqrt(sigma11[l]/n11[l]);
     sigma20[l] = TMath::Sqrt(sigma20[l]/n20[l]);
@@ -2748,7 +2774,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   TCanvas *canv00 = new TCanvas("canv00","c00",0,0,700,900); 
   canv00->Divide(1,2);
   // create the graph for cov matrix
-  TGraphErrors *gr00 = new TGraphErrors(fitbins,p,mean00,ep,sigma00);
+  TGraphErrors *gr00 = new TGraphErrors(kfitbins,p,mean00,ep,sigma00);
   TString title00("C(y,y)"); title00.Prepend(part);
   TH2F *frame00 = new TH2F("frame00",title00.Data(),2,0.1,50,2,0,5e-3);
   frame00->SetXTitle("p [GeV/c]");
@@ -2761,12 +2787,12 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   gr00->Fit("RegFunc","R,Q");
   func->GetParameters(fitpar);
   for(Int_t i=0; i<3; i++) fitRes(0,i)=fitpar[i];
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     rmean[l]  = mean00[l]/RegFunc(&p[l],fitpar);
     rsigma[l] = sigma00[l]/RegFunc(&p[l],fitpar);
   }
   // create the graph the regularized cov. matrix
-  TGraphErrors *gr00reg = new TGraphErrors(fitbins,p,rmean,ep,rsigma);
+  TGraphErrors *gr00reg = new TGraphErrors(kfitbins,p,rmean,ep,rsigma);
   TString regtitle00("C(y,y)/(A_meas+A_scatt/p^{B})"); 
   regtitle00.Prepend(part);
   TH2F *frame00reg = new TH2F("frame00reg",regtitle00.Data(),2,0.1,50,2,0,2);
@@ -2783,7 +2809,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   TCanvas *canv11 = new TCanvas("canv11","c11",0,0,700,900); 
   canv11->Divide(1,2);
   // create the graph for cov matrix
-  TGraphErrors *gr11 = new TGraphErrors(fitbins,p,mean11,ep,sigma11);
+  TGraphErrors *gr11 = new TGraphErrors(kfitbins,p,mean11,ep,sigma11);
   TString title11("C(z,z)"); title11.Prepend(part);
   TH2F *frame11 = new TH2F("frame11",title11.Data(),2,0.1,50,2,0,6e-3);
   frame11->SetXTitle("p [GeV/c]");
@@ -2796,12 +2822,12 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   gr11->Fit("RegFunc","R,Q");
   func->GetParameters(fitpar);
   for(Int_t i=0; i<3; i++) fitRes(1,i)=fitpar[i];
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     rmean[l]  = mean11[l]/RegFunc(&p[l],fitpar);
     rsigma[l] = sigma11[l]/RegFunc(&p[l],fitpar);
   }
   // create the graph the regularized cov. matrix
-  TGraphErrors *gr11reg = new TGraphErrors(fitbins,p,rmean,ep,rsigma);
+  TGraphErrors *gr11reg = new TGraphErrors(kfitbins,p,rmean,ep,rsigma);
   TString regtitle11("C(z,z)/(A_meas+A_scatt/p^{B})"); 
   regtitle11.Prepend(part);
   TH2F *frame11reg = new TH2F("frame11reg",regtitle11.Data(),2,0.1,50,2,0,2);
@@ -2818,7 +2844,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   TCanvas *canv20 = new TCanvas("canv20","c20",0,0,700,900); 
   canv20->Divide(1,2);
   // create the graph for cov matrix
-  TGraphErrors *gr20 = new TGraphErrors(fitbins,p,mean20,ep,sigma20);
+  TGraphErrors *gr20 = new TGraphErrors(kfitbins,p,mean20,ep,sigma20);
   TString title20("C(#eta, y)"); title20.Prepend(part);
   TH2F *frame20 = new TH2F("frame20",title20.Data(),2,0.1,50,2,0,2.5e-4);
   frame20->SetXTitle("p [GeV/c]");
@@ -2831,12 +2857,12 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   gr20->Fit("RegFunc","R,Q");
   func->GetParameters(fitpar);
   for(Int_t i=0; i<3; i++) fitRes(2,i)=fitpar[i];
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     rmean[l]  = mean20[l]/RegFunc(&p[l],fitpar);
     rsigma[l] = sigma20[l]/RegFunc(&p[l],fitpar);
   }
   // create the graph the regularized cov. matrix
-  TGraphErrors *gr20reg = new TGraphErrors(fitbins,p,rmean,ep,rsigma);
+  TGraphErrors *gr20reg = new TGraphErrors(kfitbins,p,rmean,ep,rsigma);
   TString regtitle20("C(#eta, y)/(A_meas+A_scatt/p^{B})"); 
   regtitle20.Prepend(part);
   TH2F *frame20reg = new TH2F("frame20reg",regtitle20.Data(),2,0.1,50,2,0,2);
@@ -2853,7 +2879,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   TCanvas *canv22 = new TCanvas("canv22","c22",0,0,700,900); 
   canv22->Divide(1,2);
   // create the graph for cov matrix
-  TGraphErrors *gr22 = new TGraphErrors(fitbins,p,mean22,ep,sigma22);
+  TGraphErrors *gr22 = new TGraphErrors(kfitbins,p,mean22,ep,sigma22);
   TString title22("C(#eta, #eta)"); title22.Prepend(part);
   TH2F *frame22 = new TH2F("frame22",title22.Data(),2,0.1,50,2,0,3e-5);
   frame22->SetXTitle("p [GeV/c]");
@@ -2866,12 +2892,12 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   gr22->Fit("RegFunc","R,Q");
   func->GetParameters(fitpar);
   for(Int_t i=0; i<3; i++) fitRes(3,i)=fitpar[i];
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     rmean[l]  = mean22[l]/RegFunc(&p[l],fitpar);
     rsigma[l] = sigma22[l]/RegFunc(&p[l],fitpar);
   }
   // create the graph the regularized cov. matrix
-  TGraphErrors *gr22reg = new TGraphErrors(fitbins,p,rmean,ep,rsigma);
+  TGraphErrors *gr22reg = new TGraphErrors(kfitbins,p,rmean,ep,rsigma);
   TString regtitle22("C(#eta, #eta)/(A_meas+A_scatt/p^{B})"); 
   regtitle22.Prepend(part);
   TH2F *frame22reg = new TH2F("frame22reg",regtitle22.Data(),2,0.1,50,2,0,2);
@@ -2888,7 +2914,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   TCanvas *canv31 = new TCanvas("canv31","c31",0,0,700,900); 
   canv31->Divide(1,2);
   // create the graph for cov matrix
-  TGraphErrors *gr31 = new TGraphErrors(fitbins,p,mean31,ep,sigma31);
+  TGraphErrors *gr31 = new TGraphErrors(kfitbins,p,mean31,ep,sigma31);
   TString title31("C(tg #lambda,z)"); title31.Prepend(part);
   TH2F *frame31 = new TH2F("frame31",title31.Data(),2,0.1,50,2,-2e-4,0);
   frame31->SetXTitle("p [GeV/c]");
@@ -2901,12 +2927,12 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   gr31->Fit("RegFunc","R,Q");
   func->GetParameters(fitpar);
   for(Int_t i=0; i<3; i++) fitRes(4,i)=fitpar[i];
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     rmean[l]  = mean31[l]/RegFunc(&p[l],fitpar);
     rsigma[l] = -sigma31[l]/RegFunc(&p[l],fitpar);
   }
   // create the graph the regularized cov. matrix
-  TGraphErrors *gr31reg = new TGraphErrors(fitbins,p,rmean,ep,rsigma);
+  TGraphErrors *gr31reg = new TGraphErrors(kfitbins,p,rmean,ep,rsigma);
   TString regtitle31("C(tg #lambda,z)/(A_meas+A_scatt/p^{B})"); 
   regtitle31.Prepend(part);
   TH2F *frame31reg = new TH2F("frame31reg",regtitle31.Data(),2,0.1,50,2,0,2);
@@ -2923,7 +2949,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   TCanvas *canv33 = new TCanvas("canv33","c33",0,0,700,900); 
   canv33->Divide(1,2);
   // create the graph for cov matrix
-  TGraphErrors *gr33 = new TGraphErrors(fitbins,p,mean33,ep,sigma33);
+  TGraphErrors *gr33 = new TGraphErrors(kfitbins,p,mean33,ep,sigma33);
   TString title33("C(tg #lambda,tg #lambda)"); title33.Prepend(part);
   TH2F *frame33 = new TH2F("frame33",title33.Data(),2,0.1,50,2,0,1e-5);
   frame33->SetXTitle("p [GeV/c]");
@@ -2936,12 +2962,12 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   gr33->Fit("RegFunc","R,Q");
   func->GetParameters(fitpar);
   for(Int_t i=0; i<3; i++) fitRes(5,i)=fitpar[i];
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     rmean[l]  = mean33[l]/RegFunc(&p[l],fitpar);
     rsigma[l] = sigma33[l]/RegFunc(&p[l],fitpar);
   }
   // create the graph the regularized cov. matrix
-  TGraphErrors *gr33reg = new TGraphErrors(fitbins,p,rmean,ep,rsigma);
+  TGraphErrors *gr33reg = new TGraphErrors(kfitbins,p,rmean,ep,rsigma);
   TString regtitle33("C(tg #lambda,tg #lambda)/(A_meas+A_scatt/p^{B})"); 
   regtitle33.Prepend(part);
   TH2F *frame33reg = new TH2F("frame33reg",regtitle33.Data(),2,0.1,50,2,0,2);
@@ -2958,7 +2984,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   TCanvas *canv40 = new TCanvas("canv40","c40",0,0,700,900); 
   canv40->Divide(1,2);
   // create the graph for cov matrix
-  TGraphErrors *gr40 = new TGraphErrors(fitbins,p,mean40,ep,sigma40);
+  TGraphErrors *gr40 = new TGraphErrors(kfitbins,p,mean40,ep,sigma40);
   TString title40("C(C,y)"); title40.Prepend(part);
   TH2F *frame40 = new TH2F("frame40",title40.Data(),2,0.1,50,2,0,1e-6);
   frame40->SetXTitle("p [GeV/c]");
@@ -2971,12 +2997,12 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   gr40->Fit("RegFunc","R,Q");
   func->GetParameters(fitpar);
   for(Int_t i=0; i<3; i++) fitRes(6,i)=fitpar[i];
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     rmean[l]  = mean40[l]/RegFunc(&p[l],fitpar);
     rsigma[l] = sigma40[l]/RegFunc(&p[l],fitpar);
   }
   // create the graph the regularized cov. matrix
-  TGraphErrors *gr40reg = new TGraphErrors(fitbins,p,rmean,ep,rsigma);
+  TGraphErrors *gr40reg = new TGraphErrors(kfitbins,p,rmean,ep,rsigma);
   TString regtitle40("C(C,y)/(A_meas+A_scatt/p^{B})"); 
   regtitle40.Prepend(part);
   TH2F *frame40reg = new TH2F("frame40reg",regtitle40.Data(),2,0.1,50,2,0,2);
@@ -2993,7 +3019,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   TCanvas *canv42 = new TCanvas("canv42","c42",0,0,700,900); 
   canv42->Divide(1,2);
   // create the graph for cov matrix
-  TGraphErrors *gr42 = new TGraphErrors(fitbins,p,mean42,ep,sigma42);
+  TGraphErrors *gr42 = new TGraphErrors(kfitbins,p,mean42,ep,sigma42);
   TString title42("C(C, #eta)"); title42.Prepend(part);
   TH2F *frame42 = new TH2F("frame42",title42.Data(),2,0.1,50,2,0,2.2e-7);
   frame42->SetXTitle("p [GeV/c]");
@@ -3006,12 +3032,12 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   gr42->Fit("RegFunc","R,Q");
   func->GetParameters(fitpar);
   for(Int_t i=0; i<3; i++) fitRes(7,i)=fitpar[i];
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     rmean[l]  = mean42[l]/RegFunc(&p[l],fitpar);
     rsigma[l] = sigma42[l]/RegFunc(&p[l],fitpar);
   }
   // create the graph the regularized cov. matrix
-  TGraphErrors *gr42reg = new TGraphErrors(fitbins,p,rmean,ep,rsigma);
+  TGraphErrors *gr42reg = new TGraphErrors(kfitbins,p,rmean,ep,rsigma);
   TString regtitle42("C(C, #eta)/(A_meas+A_scatt/p^{B})"); 
   regtitle42.Prepend(part);
   TH2F *frame42reg = new TH2F("frame42reg",regtitle42.Data(),2,0.1,50,2,0,2);
@@ -3028,7 +3054,7 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   TCanvas *canv44 = new TCanvas("canv44","c44",0,0,700,900); 
   canv44->Divide(1,2);
   // create the graph for cov matrix
-  TGraphErrors *gr44 = new TGraphErrors(fitbins,p,mean44,ep,sigma44);
+  TGraphErrors *gr44 = new TGraphErrors(kfitbins,p,mean44,ep,sigma44);
   TString title44("C(C,C)"); title44.Prepend(part);
   TH2F *frame44 = new TH2F("frame44",title44.Data(),2,0.1,50,2,0,2e-9);
   frame44->SetXTitle("p [GeV/c]");
@@ -3041,12 +3067,12 @@ void AliTPCtrackerParam::RegularizeCovMatrix(const Char_t *outName,Int_t pdg) {
   gr44->Fit("RegFunc","R,Q");
   func->GetParameters(fitpar);
   for(Int_t i=0; i<3; i++) fitRes(8,i)=fitpar[i];
-  for(Int_t l=0; l<fitbins; l++) {
+  for(Int_t l=0; l<kfitbins; l++) {
     rmean[l]  = mean44[l]/RegFunc(&p[l],fitpar);
     rsigma[l] = sigma44[l]/RegFunc(&p[l],fitpar);
   }
   // create the graph the regularized cov. matrix
-  TGraphErrors *gr44reg = new TGraphErrors(fitbins,p,rmean,ep,rsigma);
+  TGraphErrors *gr44reg = new TGraphErrors(kfitbins,p,rmean,ep,rsigma);
   TString regtitle44("C(C,C)/(A_meas+A_scatt/p^{B})"); 
   regtitle44.Prepend(part);
   TH2F *frame44reg = new TH2F("frame44reg",regtitle44.Data(),2,0.1,50,2,0,2);
@@ -3208,7 +3234,7 @@ Int_t AliTPCtrackerParam::WritedEdx(const Char_t *outName,Int_t pdg) {
   Option_t *opt;
   Char_t *dirName="Pions";
   Char_t *meanName="dEdxMeanPi";
-  Char_t *RMSName="dEdxRMSPi";
+  Char_t *rmsName="dEdxRMSPi";
 
   SetParticle(pdg);
 
@@ -3219,27 +3245,27 @@ Int_t AliTPCtrackerParam::WritedEdx(const Char_t *outName,Int_t pdg) {
   case 211:
     dirName="Pions";
     meanName="dEdxMeanPi";
-    RMSName="dEdxRMSPi";
+    rmsName="dEdxRMSPi";
     break;
   case 321:
     dirName="Kaons";
     meanName="dEdxMeanKa";
-    RMSName="dEdxRMSKa";
+    rmsName="dEdxRMSKa";
     break;
   case 2212:
     dirName="Protons";
     meanName="dEdxMeanPr";
-    RMSName="dEdxRMSPr";
+    rmsName="dEdxRMSPr";
     break;
   case 11:
     dirName="Electrons";
     meanName="dEdxMeanEl";
-    RMSName="dEdxRMSEl";
+    rmsName="dEdxRMSEl";
     break;
   case 13:
     dirName="Muons";
     meanName="dEdxMeanMu";
-    RMSName="dEdxRMSMu";
+    rmsName="dEdxRMSMu";
     break;
   }
 
@@ -3251,7 +3277,7 @@ Int_t AliTPCtrackerParam::WritedEdx(const Char_t *outName,Int_t pdg) {
   TDirectory *dir2 = gDirectory->mkdir(dirName);
   dir2->cd();
   fdEdxMean->SetName(meanName); fdEdxMean->Write();
-  fdEdxRMS->SetName(RMSName);  fdEdxRMS->Write();
+  fdEdxRMS->SetName(rmsName);  fdEdxRMS->Write();
 
   outFile->Close();
   delete outFile;

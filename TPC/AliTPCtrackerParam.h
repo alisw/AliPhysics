@@ -10,17 +10,21 @@
 //                    TPC Tracking Parameterization Class
 //
 //   Origin: Andrea Dainese, Padova - e-mail: andrea.dainese@pd.infn.it
+//
+//
+//
 //-----------------------------------------------------------------------------
 
 //----- Root headers ---------
 #include <TMatrixD.h>
 //---- AliRoot headers -------
-#include "alles.h"
-#include "AliGausCorr.h"
-#include "AliMagF.h"
+//#include "alles.h"
+#include "AliRun.h"
+//#include "AliGausCorr.h"
+//#include "AliMagF.h"
 #include "AliTPCkineGrid.h"
 #include "AliTPCtrack.h"
-#include "AliTrackReference.h"
+//#include "AliTrackReference.h"
 //----------------------------
 
 class AliTPCtrackerParam {
@@ -45,8 +49,12 @@ class AliTPCtrackerParam {
   virtual ~AliTPCtrackerParam();
 
   // this function performs the parameterized tracking
+  //
+  AliTPCtrackerParam(const AliTPCtrackerParam  &p){
+    // dummy copy constructor
+  }
+  //
   Int_t BuildTPCtracks(const TFile *inp, TFile *out);
-
   // these functions are used to create a DB of cov. matrices,
   // including regularization, efficiencies and dE/dx
   void  AllGeantTracks() { fSelAndSmear=kFALSE; return; }
@@ -82,49 +90,38 @@ class AliTPCtrackerParam {
   //********* Internal class definition *******
   class AliTPCseedGeant : public TObject {
   public:
-    AliTPCseedGeant(Double_t x,Double_t y,Double_t z,
-		    Double_t px,Double_t py,Double_t pz,
-		    Int_t lab) {
-      fXg = x;
-      fYg = y;
-      fZg = z;
-      fPx = px;
-      fPy = py;
-      fPz = pz;
-      fLabel = lab;
-      Double_t a = TMath::ATan2(y,x)*180./TMath::Pi();
-      if(a<0) a += 360.;
-      fSector = (Int_t)(a/20.);
-      fAlpha = 10.+20.*fSector;
-      fAlpha /= 180.;
-      fAlpha *= TMath::Pi();
-    }
-    Int_t    GetLabel() { return fLabel; }
-    Double_t GetAlpha() { return fAlpha; }      
-    Double_t GetXL() { return fXg*TMath::Cos(fAlpha)+fYg*TMath::Sin(fAlpha); }
-    Double_t GetYL() { return -fXg*TMath::Sin(fAlpha)+fYg*TMath::Cos(fAlpha); }
-    Double_t GetZL() { return fZg; }
-    Double_t GetPx() { return fPx; } 
-    Double_t GetPy() { return fPy; } 
-    Double_t GetPz() { return fPz; } 
-    Double_t GetPt() { return TMath::Sqrt(fPx*fPx+fPy*fPy); }
-    Double_t GetEta() { return -TMath::Log(TMath::Tan(0.25*TMath::Pi()-0.5*TMath::ATan(fPz/GetPt()))); }
+    AliTPCseedGeant(Double_t x=0.,Double_t y=0.,Double_t z=0.,
+		    Double_t px=0.,Double_t py=0.,Double_t pz=0.,
+		    Int_t lab=0);
+    Int_t    GetLabel() const { return fLabel; }
+    Double_t GetAlpha() const { return fAlpha; }      
+    Double_t GetXL() const 
+      { return fXg*TMath::Cos(fAlpha)+fYg*TMath::Sin(fAlpha); }
+    Double_t GetYL() const 
+      { return -fXg*TMath::Sin(fAlpha)+fYg*TMath::Cos(fAlpha); }
+    Double_t GetZL() const { return fZg; }
+    Double_t GetPx() const { return fPx; } 
+    Double_t GetPy() const { return fPy; } 
+    Double_t GetPz() const { return fPz; } 
+    Double_t GetPt() const { return TMath::Sqrt(fPx*fPx+fPy*fPy); }
+    Double_t GetEta() const 
+      { return -TMath::Log(TMath::Tan(0.25*TMath::Pi()-0.5*TMath::ATan(fPz/GetPt()))); }
     void     SetLabel(Int_t lab) { fLabel=lab; return; }
-    Bool_t   InTPCAcceptance() {
+    Bool_t   InTPCAcceptance() const {
       if(TMath::Abs(GetZL()+(244.-GetXL())*fPz/GetPt())>252.) return kFALSE;
       return kTRUE;
     }
 
   private:
-    Double_t fXg;
-    Double_t fYg;
-    Double_t fZg;
-    Double_t fPx;
-    Double_t fPy;
-    Double_t fPz;
-    Double_t fAlpha;
-    Int_t    fLabel;
-    Int_t    fSector;
+    Double_t fXg;     // global x of seed 
+    Double_t fYg;     // global y of seed
+    Double_t fZg;     // global z of seed
+    Double_t fPx;     // global px
+    Double_t fPy;     // global py
+    Double_t fPz;     // global pz
+    Double_t fAlpha;  // alpha angle
+    Int_t    fLabel;  // track label
+    Int_t    fSector; // TPC sector
   };
   //******* end of internal class ****************
   
@@ -193,8 +190,8 @@ class AliTPCtrackerParam {
   void     CookTrack(Double_t pt,Double_t eta);
   TMatrixD GetSmearingMatrix(Double_t *cc, Double_t pt,Double_t eta) const;
   void     InitializeKineGrid(Option_t *which);    
-  void     MakeSeedsFromHits(AliTPC *TPC,TTree *TH,TObjArray &seedArray) const;
-  void     MakeSeedsFromRefs(TTree *TTR,
+  void     MakeSeedsFromHits(AliTPC *tpc,TTree *th,TObjArray &seedArray) const;
+  void     MakeSeedsFromRefs(TTree *ttr,
 			     TObjArray &seedArray) const;
   Int_t    ReadAllData(const Char_t *inName);
   Int_t    ReadDBgrid(const Char_t *inName);
