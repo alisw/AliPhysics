@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2003/04/08 10:23:03  morsch
+Rapidity shift calculated in AliGenMC::Init()
+
 Revision 1.2  2003/04/04 08:14:02  morsch
 Boost() moved to AliGenMC
 
@@ -318,6 +321,7 @@ void AliGenHijing::Init()
     }
     
     
+    AliGenMC::Init();
     
 //
 //  Initialize Hijing  
