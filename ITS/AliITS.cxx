@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2000/06/28 14:41:12  fca
+Corrections to the custom Streamer
+
 Revision 1.14  2000/06/15 09:27:52  barbera
 Problems with the HP compiler fixed
 
@@ -1150,46 +1153,50 @@ void AliITS::Streamer(TBuffer &R__b)
   Int_t i, j, l;
 
    if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliDetector::Streamer(R__b);
-      R__b >> fITSgeom;
-      R__b >> fITSmodules;
-      R__b >> fEuclidOut;
-      R__b >> fIdN;
-      delete []fIdSens; 
-      fIdSens = new Int_t[fIdN]; 
-      R__b.ReadFastArray(fIdSens,fIdN); 
-      for(i=0;i<fIdN;i++){
-	R__b >> l;
-	fIdName[i] = new char[l+1]; // add room for null character.
-	for(j=0;j<l;j++) R__b >> fIdName[i][j];
-	fIdName[i][l] = '\0'; // Null terminate this string.
-      } // end for i
-      //R__b.ReadArray(fIdName);
-      R__b >> fMajorVersion;
-      R__b >> fMinorVersion;
-      R__b >> fDetTypes;
-      R__b >> fNDetTypes;
-      R__b >> fDtype;
-      delete []fNdtype; 
-      fNdtype = new Int_t[fNDetTypes]; 
-      R__b.ReadFastArray(fNdtype,fNDetTypes); 
-      R__b >> fCtype;
-      delete []fNctype; 
-      fNctype = new Int_t[fNDetTypes]; 
-      R__b.ReadFastArray(fNctype,fNDetTypes); 
-      fRecPoints->Streamer(R__b);
-      R__b >> fNRecPoints;
-      fTracks->Streamer(R__b);
-      R__b >> fTreeC;
-   } else {
+      Version_t R__v = R__b.ReadVersion();
+      if (R__v) {
+	  AliDetector::Streamer(R__b);
+	  R__b >> fITSgeom;
+	  R__b >> fITSmodules;
+	  R__b >> fEuclidOut;
+	  R__b >> fIdN;
+	  delete []fIdSens; 
+	  fIdSens = new Int_t[fIdN];
+	  R__b.ReadFastArray(fIdSens,fIdN);
+	  if(fIdName!=0) delete[] fIdName;
+	  fIdName = new char*[fIdN];
+	  for(i=0;i<fIdN;i++){
+	      R__b >> l;
+	      fIdName[i] = new char[l+1]; // add room for null character.
+	      for(j=0;j<l;j++) R__b >> fIdName[i][j];
+	      fIdName[i][l] = '\0'; // Null terminate this string.
+	  } // end for i
+	  //R__b.ReadArray(fIdName);
+	  R__b >> fMajorVersion;
+	  R__b >> fMinorVersion;
+	  R__b >> fDetTypes;
+	  R__b >> fNDetTypes;
+	  R__b >> fDtype;
+	  delete []fNdtype; 
+	  fNdtype = new Int_t[fNDetTypes];
+	  R__b.ReadFastArray(fNdtype,fNDetTypes);
+	  R__b >> fCtype;
+	  delete []fNctype; 
+	  fNctype = new Int_t[fNDetTypes];
+	  R__b.ReadFastArray(fNctype,fNDetTypes);
+	  R__b >> fRecPoints;
+	  R__b >> fNRecPoints;
+	  R__b >> fTracks;
+	  R__b >> fTreeC;
+      } // end if R__v
+   } else { // writing
       R__b.WriteVersion(AliITS::IsA());
       AliDetector::Streamer(R__b);
       R__b << fITSgeom;
       R__b << fITSmodules;
       R__b << fEuclidOut;
       R__b << fIdN;
-      R__b.WriteFastArray(fIdSens,fIdN); 
+      R__b.WriteFastArray(fIdSens,fIdN);
       for(i=0;i<fIdN;i++){
 	  l = strlen(fIdName[i]);
 	  R__b << l;
@@ -1201,16 +1208,16 @@ void AliITS::Streamer(TBuffer &R__b)
       R__b << fDetTypes;
       R__b << fNDetTypes;
       R__b << fDtype;
-      R__b.WriteFastArray(fNdtype,fNDetTypes); 
+      R__b.WriteFastArray(fNdtype,fNDetTypes);
       R__b << fCtype;
-      R__b.WriteFastArray(fNctype,fNDetTypes); 
+      R__b.WriteFastArray(fNctype,fNDetTypes);
       R__b << fRecPoints;
       // fRecPoints->Streamer(R__b);
       R__b << fNRecPoints;
       R__b << fTracks;
       //      fTracks->Streamer(R__b);
       R__b << fTreeC;
-   }
+   } // end if
 }
 
 ClassImp(AliITSRecPoint)
