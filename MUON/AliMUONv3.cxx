@@ -16,6 +16,9 @@
 // AliMUONv3 Addapted for AliMUONv1 
 // This was the last revision of AliMUONv1
 // $Log$
+// Revision 1.1  2003/02/07 15:40:53  morsch
+// New class for testing new Stepmanager added. (G. Martinez)
+//
 // Revision 1.40  2003/01/28 13:21:06  morsch
 // Improved response simulation for station 1.
 // (M. Mac Cormick, I. Hrivnacova, D. Guez)
@@ -111,9 +114,11 @@ void AliMUONv3::StepManager()
   // momentum loss and steplength in last step
   destep = gMC->Edep();
   step   = gMC->TrackStep();
-  //    new hit       
-  new(lhits[fNhits++]) 
-    AliMUONHit(fIshunt, gAlice->CurrentTrack(), iChamber, ipart, pos.X(), pos.Y(), pos.Z(), tof, mom.P(), theta, phi, step, destep);
+ //new hit
+  if (destep>0.)  new(lhits[fNhits++]) 
+		    AliMUONHit(fIshunt, gAlice->CurrentTrack(), iChamber, ipart, 
+			       pos.X(), pos.Y(), pos.Z(), tof, mom.P(), 
+			       theta, phi, step, destep);
 }
 
 
