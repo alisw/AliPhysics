@@ -16,6 +16,15 @@
 /*
   $Id$
 */
+
+// A set of classes/routines that can read the SPD test beam data of 2002
+// and create AliITSdigits. The posibility to use these routines to do the
+// same for later and other detectors has yet to be demonstrated. At present
+// there remains a bug in that the TreeE of event headders isn't created
+// properly. See the macro AliITSspdTestBeam2Digits.C. The geometry from
+// the class AliITSvSPD002 must be read in, one way or the other, so that
+// the Geometry transoformation class AliITSgeom will prpoerly be inilized.
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <iomanip>
@@ -334,7 +343,7 @@ Int_t AliITSspdTestBeam::Decode(){
     return stat;
 }
 //============================================================================
-void AliITSspdTestBeamHeader::Print(ostream *os){
+void AliITSspdTestBeamHeader::Print(ostream *os)const{
     // print out the header information
     // Inputs:
     //    ostream *os  Pointer to the output stream.
@@ -384,7 +393,7 @@ ostream &operator<<(ostream &os,AliITSspdTestBeamHeader &p){
     return os;
 }
 //============================================================================
-void AliITSspdTestBeamTail::Print(ostream *os){
+void AliITSspdTestBeamTail::Print(ostream *os)const{
     // print out the Tail information
     // Inputs:
     //    ostream *os  Pointer to the output stream.
@@ -428,7 +437,7 @@ ostream &operator<<(ostream &os,AliITSspdTestBeamTail &p){
     return os;
 }
 //============================================================================
-void AliITSspdTestBeamBurst::Print(ostream *os){
+void AliITSspdTestBeamBurst::Print(ostream *os)const{
     // print out the Burst information
     // Inputs:
     //    ostream *os  Pointer to the output stream.
@@ -470,7 +479,7 @@ ostream &operator<<(ostream &os,AliITSspdTestBeamBurst &p){
     return os;
 }
 //======================================================================
-void AliITSspdTestBeamData::Print(ostream *os){
+void AliITSspdTestBeamData::Print(ostream *os)const{
     // print out the the Test Beam Data information
     // Inputs:
     //    ostream *os  Pointer to the output stream.

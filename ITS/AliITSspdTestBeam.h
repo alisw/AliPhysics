@@ -19,13 +19,15 @@ class AliITSspdTestBeam : public TTask{
     AliITSspdTestBeam();
     AliITSspdTestBeam(const Char_t *filename,const Char_t *opt="2002",
                       AliITS *its=0);
+    AliITSspdTestBeam(const AliITSspdTestBeam &s):TTask(s){if(this==&s) return;Error("Copy constructor","You are not allowed to make a copy of AliITSspdTestBeam");exit(1);} //Not to be used!
+    AliITSspdTestBeam& operator=(AliITSspdTestBeam &s){if(this==&s) return *this;Error("operator=","You are not allowed to make a copy of AliITSspdTestBeam");exit(1);return *this;} //Not to be used!
     virtual ~AliITSspdTestBeam();
     //
     virtual Int_t OpenInputFile(const Char_t *filename,Int_t start=0,
                                 Int_t end=-1);
     virtual Int_t Read(Int_t i=0);
     virtual Int_t Decode();
-    virtual Int_t GetNumberOfPilots(){return 3;}
+    virtual Int_t GetNumberOfPilots()const{return 3;}
   private:
     void SetTerminationWord(){fTermination=0xffffd9f0;}
     //
@@ -48,6 +50,7 @@ class AliITSspdTestBeam : public TTask{
     ifstream **fFiles;        //! Array of Pointer to the input streams
     Int_t     *fNeventsStart; // Starting event number for each file
     Int_t     *fNeventsEnd;   // Ending number of events for each file.
+
     ClassDef(AliITSspdTestBeam,1) // Task to read SPD test beam data
 };
 #endif
@@ -67,7 +70,7 @@ class AliITSTestBeamData{
   public:
     AliITSTestBeamData(){};
     virtual ~AliITSTestBeamData(){};
-    virtual Int_t SizeOf(){return 0;}
+    virtual Int_t SizeOf()const{return 0;}
     enum {kData,kHead,kTail,kAbort,kFail};
   private:
 };
@@ -76,6 +79,8 @@ class AliITSTestBeamData{
 //======================================================================
 #ifndef ALIITSSPDTESTBEAMHEADER_H
 #define ALIITSSPDTESTBEAMHEADER_H
+
+#include <Riostream.h>
 
 //class ostream;
 
@@ -86,10 +91,10 @@ class AliITSspdTestBeamHeader : public AliITSTestBeamData{
   public:
     AliITSspdTestBeamHeader(){};
     virtual ~AliITSspdTestBeamHeader(){};
-    virtual void Print(ostream *os);
-    virtual Int_t GetNumberOfEvents(){return fUnion.fHead.fNEvents;};
-    virtual Int_t GetBurstSize(Int_t i=0){return fUnion.fHead.fBuffSize[i];};
-    virtual Int_t SizeOf(){return sizeof(AliITSspdTestBeamHeader);};
+    virtual void Print(ostream *os)const;
+    virtual Int_t GetNumberOfEvents()const{return fUnion.fHead.fNEvents;};
+    virtual Int_t GetBurstSize(Int_t i=0)const{return fUnion.fHead.fBuffSize[i];};
+    virtual Int_t SizeOf()const{return sizeof(AliITSspdTestBeamHeader);};
   private:
     union headder{
          struct {
@@ -104,12 +109,12 @@ class AliITSspdTestBeamHeader : public AliITSTestBeamData{
             UInt_t   fTriggerMode; // Trigger mode flag
             UInt_t   fBurstSize;   // Burst Size
             UInt_t   fNEvents;     // Number of event to write
-            UInt_t   fRes[16];            //
-            UChar_t  fMBDACS[3][20];      //
-            UChar_t  fA1DACS[3][44];      //
-            UChar_t  fA12Matrix[3][8192]; //
+            UInt_t   fRes[16];            // not sure
+            UChar_t  fMBDACS[3][20];      // not sure
+            UChar_t  fA1DACS[3][44];      // not sure
+            UChar_t  fA12Matrix[3][8192]; // not sure
         } fHead;
-        UChar_t fBuf[24904];
+        UChar_t fBuf[24904]; // Equivalent char buffer
     } fUnion;
 };
 ostream &operator<<(ostream &os,AliITSspdTestBeamHeader &source);
@@ -120,14 +125,17 @@ ostream &operator<<(ostream &os,AliITSspdTestBeamHeader &source);
 
 /* Copyright (c) 1998-2001, ALICE Experiment at CERN, All rights reserved *
  * See cxx source for full Copyright notice                               */
+
+#include <Riostream.h>
+
 //class ostream;
 
 class AliITSspdTestBeamTail : public AliITSTestBeamData{
   public:
     AliITSspdTestBeamTail(){};
     virtual ~AliITSspdTestBeamTail(){};
-    virtual Int_t SizeOf(){return sizeof(AliITSspdTestBeamTail);}
-    virtual void Print(ostream *os);
+    virtual Int_t SizeOf()const{return sizeof(AliITSspdTestBeamTail);}
+    virtual void Print(ostream *os)const;
   private:
     union tail{
         struct {
@@ -138,7 +146,7 @@ class AliITSspdTestBeamTail : public AliITSTestBeamData{
             Char_t   fDate[12];// Date Field
             Char_t   fTime[12];// Time Field
         } fTail;
-        UChar_t fBuf[32];
+        UChar_t fBuf[32]; //Equivalent char buffer
     } fUnion;
 };
 ostream &operator<<(ostream &os,AliITSspdTestBeamTail &source);
@@ -149,14 +157,17 @@ ostream &operator<<(ostream &os,AliITSspdTestBeamTail &source);
 
 /* Copyright (c) 1998-2001, ALICE Experiment at CERN, All rights reserved *
  * See cxx source for full Copyright notice                               */
+
+#include <Riostream.h>
+
 //class ostream;
 
 class AliITSspdTestBeamBurst : public AliITSTestBeamData{
   public:
     AliITSspdTestBeamBurst(){};
     virtual ~AliITSspdTestBeamBurst(){};
-    virtual Int_t SizeOf(){return sizeof(AliITSspdTestBeamBurst);}
-    virtual void Print(ostream *os);
+    virtual Int_t SizeOf()const{return sizeof(AliITSspdTestBeamBurst);}
+    virtual void Print(ostream *os)const;
   private:
     union tail{
         struct {
@@ -175,6 +186,9 @@ ostream &operator<<(ostream &os,AliITSspdTestBeamBurst &source);
 
 /* Copyright (c) 1998-2001, ALICE Experiment at CERN, All rights reserved *
  * See cxx source for full Copyright notice                               */
+
+#include <Riostream.h>
+
 //class ostream;
 
 class AliITSspdTestBeamData : public AliITSTestBeamData {
@@ -182,31 +196,21 @@ class AliITSspdTestBeamData : public AliITSTestBeamData {
     //
     AliITSspdTestBeamData(){};
     //AliITSspdTestBeamData(UInt_t *i){SetAddress(i);}
-    virtual Int_t SizeOf(){return sizeof(AliITSspdTestBeamData);}
+    virtual Int_t SizeOf()const{return sizeof(AliITSspdTestBeamData);}
     virtual ~AliITSspdTestBeamData(){};
     //
-    virtual Bool_t IsHeader(){return (fUnion.fDataH.fFlag==2||
-                                      fUnion.fDataH.fFlag==3);}
-    virtual Bool_t IsData(){return (fUnion.fDataD.fFlag>3)&&
-                                   (fUnion.fDataD.fFlag<8);}
-    virtual Bool_t IsTrailer(){return (fUnion.fDataT.fFlag==0);}
-    virtual Bool_t IsAbort(){return (fUnion.fDataA.fFlag==1);}
-    virtual Int_t  Mode(){if(IsData()) return kData;
-                          else if(IsHeader()) return kHead;
-                          else if(IsTrailer()) return kTail;
-                          else if(IsAbort()) return kAbort;
-                          else return kFail;}
-    virtual Int_t  TransWordCount(){if(IsTrailer()||IsAbort()) 
-                                    return fUnion.fDataT.fTrans;
-                                    else return -1;}
-    virtual Int_t  EventCounter(){
-        if(IsHeader()) return fUnion.fDataH.fEventSync;else return -1;}
-    virtual Int_t Chip(){if(IsData()) return fUnion.fDataD.fChip;else return -1;}
-    virtual Int_t Row() {if(IsData()) return fUnion.fDataD.fRow; else return -1;}
-    virtual Int_t Colm(){if(IsData()) return fUnion.fDataD.fColm;else return -1;}
-    virtual void  Data(Int_t &ch,Int_t &rw,Int_t &cl){ch=Chip();rw=Row();
-                                                      cl=Colm();}
-    virtual void Print(ostream *os);
+    virtual Bool_t IsHeader()const{return (fUnion.fDataH.fFlag==2||fUnion.fDataH.fFlag==3);}
+    virtual Bool_t IsData()const{return (fUnion.fDataD.fFlag>3)&&(fUnion.fDataD.fFlag<8);}
+    virtual Bool_t IsTrailer()const{return (fUnion.fDataT.fFlag==0);}
+    virtual Bool_t IsAbort()const{return (fUnion.fDataA.fFlag==1);}
+    virtual Int_t  Mode()const{if(IsData()) return kData;else if(IsHeader()) return kHead;else if(IsTrailer()) return kTail;else if(IsAbort()) return kAbort;else return kFail;}
+    virtual Int_t  TransWordCount()const{if(IsTrailer()||IsAbort()) return fUnion.fDataT.fTrans;else return -1;}
+    virtual Int_t  EventCounter()const{if(IsHeader()) return fUnion.fDataH.fEventSync;else return -1;}
+    virtual Int_t Chip()const{if(IsData()) return fUnion.fDataD.fChip;else return -1;}
+    virtual Int_t Row() const{if(IsData()) return fUnion.fDataD.fRow; else return -1;}
+    virtual Int_t Colm()const{if(IsData()) return fUnion.fDataD.fColm;else return -1;}
+    virtual void  Dataconst(Int_t &ch,Int_t &rw,Int_t &cl)const{ch=Chip();rw=Row();cl=Colm();}
+    virtual void Print(ostream *os)const;
   private:
     union data{
         struct {
@@ -232,7 +236,7 @@ class AliITSspdTestBeamData : public AliITSTestBeamData {
             unsigned fFlag:3;     // =1 Abort
             unsigned fPadding:12; // Not used
         } fDataA;
-        UChar_t fBuf[4];
+        UChar_t fBuf[4]; // Equivalent char buffer
     } fUnion;
 };
 ostream &operator<<(ostream &os,AliITSspdTestBeamData &source);
