@@ -83,6 +83,7 @@ void RICHMerger (Int_t evNumber1=0,Int_t evNumber2=0)
 // pass
    RICH->SetMerger(merger);
    
+   merger->Init();
 //
 // Event Loop
 //
