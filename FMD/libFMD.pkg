@@ -1,4 +1,4 @@
-SRCS= AliFMD.cxx AliFMDv0.cxx AliFMDv1.cxx AliFMDhit.cxx AliFMDdigit.cxx AliFMDMerger.cxx AliFMDReconstruction.cxx AliFMDReconstParticles.cxx AliFMDDigitizer.cxx AliFMDSDigitizer.cxx
+SRCS= AliFMD.cxx AliFMDv0.cxx AliFMDv1.cxx AliFMDv2.cxx AliFMDhit.cxx AliFMDdigit.cxx AliFMDMerger.cxx AliFMDReconstruction.cxx AliFMDReconstParticles.cxx AliFMDDigitizer.cxx AliFMDSDigitizer.cxx
 
 
 HDRS= $(SRCS:.cxx=.h)
