@@ -250,11 +250,15 @@ UInt_t AliRawReaderDate::GetGDCId() const
 
 Int_t AliRawReaderDate::GetEquipmentSize() const
 {
-// get the size of the equipment
+// get the size of the equipment (without header)
 
 #ifdef ALI_DATE
   if (!fEquipment) return 0;
-  return fEquipment->equipmentSize;
+  if (fSubEvent->eventVersion <= 0x00030001) {
+    return fEquipment->equipmentSize;
+  } else {
+    return fEquipment->equipmentSize - sizeof(equipmentHeaderStruct);
+  }
 #else
   return 0;
 #endif
@@ -374,7 +378,7 @@ Bool_t AliRawReaderDate::ReadHeader()
 
       fCount = 0;
       fPosition = ((UChar_t*)fEquipment) + sizeof(equipmentHeaderStruct);
-      if (fSubEvent->eventVersion <= 0x00030002) {
+      if (fSubEvent->eventVersion <= 0x00030001) {
         fEnd = fPosition + fEquipment->equipmentSize;
       } else {
         fEnd = ((UChar_t*)fEquipment) + fEquipment->equipmentSize;
