@@ -44,7 +44,7 @@ if (! grep(/tmpdoc/, `ls`)) {
 
 # copy everything for documentation to tmpdoc
 @FILELIST = `find . -name "*.ddl"`;
-@FILELIST = (@FILELIST, `find . -name "*.h"`);
+#@FILELIST = (@FILELIST, `find . -name "*.h"`);
 @FILELIST = (@FILELIST, `find . -name "*.hh"`);
 @FILELIST = (@FILELIST, `find . -name "*.cc"`);
 @FILELIST = (@FILELIST, `find . -name "*.icc"`);
