@@ -1,10 +1,10 @@
 // $Id$
 // Category: physics
 
-#ifndef TG3_PARTICLE_WSP_H
-#define TG3_PARTICLE_WSP_H
+#ifndef TG4_G3_PARTICLE_WSP_H
+#define TG4_G3_PARTICLE_WSP_H
 
-enum TG3ParticleWSP
+enum TG4G3ParticleWSP
 // particle with special process
 {
   kGamma,           // kPAIR, kCOMP, kPHOT, kPHIS
@@ -17,5 +17,5 @@ enum TG3ParticleWSP
   kNofParticlesWSP
 };
    
-#endif //TG3_PARTICLE_WSP_H
+#endif //TG4_G3_PARTICLE_WSP_H
 

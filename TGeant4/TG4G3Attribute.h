@@ -1,10 +1,10 @@
 // $Id$
 // Category: visualization
 
-#ifndef TG3_ATTRIBUTE_H
-#define TG3_ATTRIBUTE_H
+#ifndef TG4_G3_VIS_ATTRIBUTE_H
+#define TG4_G3_VIS_ATTRIBUTE_H
 
-enum TG3Attribute
+enum TG4G3Attribute
 {
   kWORK,	// Set the volume active/inactive for tracking (not used!)
   kSEEN,	// Set visibility : 0-invisible , 1-visible,
@@ -33,4 +33,4 @@ enum TG3Attribute
   kUNKNOWN
 };
 
-#endif //TG3_ATTRIBUTE_H
+#endif //TG4_G3_VIS_ATTRIBUTE_H

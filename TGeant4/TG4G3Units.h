@@ -4,17 +4,17 @@
 // Class defines the G3 default units of physical quantities; 
 // all physical quantities returned by MC are expressed in these units.
 
-#ifndef TG3_UNITS_H
-#define TG3_UNITS_H
+#ifndef TG4_G3_UNITS_H
+#define TG4_G3_UNITS_H
 
 #include <globals.hh>
 
-class TG3Units
+class TG4G3Units
 {
   public:
     // --> protected
-    // TG3Units();  
-    virtual ~TG3Units();
+    // TG4G3Units();  
+    virtual ~TG4G3Units();
 
     // static get methods
     static G4double Length(); 
@@ -28,7 +28,7 @@ class TG3Units
     static G4double Field(); 
       
   protected:
-    TG3Units();      
+    TG4G3Units();      
         // only static data members and methods
 
   private:
@@ -46,14 +46,14 @@ class TG3Units
 
 // inline methods
 
-inline G4double TG3Units::Length() { return fgkLength; }
-inline G4double TG3Units::Angle()  { return fgkAngle; }
-inline G4double TG3Units::Time()   { return fgkTime; }
-inline G4double TG3Units::Charge() { return fgkCharge; }
-inline G4double TG3Units::Energy() { return fgkEnergy; }
-inline G4double TG3Units::Mass()   { return fgkMass; }
-inline G4double TG3Units::MassDensity()  { return fgkMassDensity; }
-inline G4double TG3Units::AtomicWeight() { return fgkAtomicWeight; }
-inline G4double TG3Units::Field()  { return fgkField; }
+inline G4double TG4G3Units::Length() { return fgkLength; }
+inline G4double TG4G3Units::Angle()  { return fgkAngle; }
+inline G4double TG4G3Units::Time()   { return fgkTime; }
+inline G4double TG4G3Units::Charge() { return fgkCharge; }
+inline G4double TG4G3Units::Energy() { return fgkEnergy; }
+inline G4double TG4G3Units::Mass()   { return fgkMass; }
+inline G4double TG4G3Units::MassDensity()  { return fgkMassDensity; }
+inline G4double TG4G3Units::AtomicWeight() { return fgkAtomicWeight; }
+inline G4double TG4G3Units::Field()  { return fgkField; }
 
-#endif //TG3_UNITS_H
+#endif //TG4_G3_UNITS_H

@@ -1,10 +1,10 @@
 // $Id$
-// Category: physics
+// Category: global
 
-#ifndef TG3_CUT_H
-#define TG3_CUT_H
+#ifndef TG4_G3_CUT_H
+#define TG4_G3_CUT_H
 
-enum TG3Cut
+enum TG4G3Cut
 {
   kCUTGAM, // gammas 
                // G4 particles: "gamma"         
@@ -43,4 +43,4 @@ enum TG3Cut
   kNoG3Cuts    
 };
 
-#endif //TG3_CUT_H
+#endif //TG4_G3_CUT_H
