@@ -32,7 +32,6 @@ AliL3HistogramAdaptive::AliL3HistogramAdaptive(Char_t *name,Double_t minpt,Doubl
   fXmin = -1*AliL3Transform::GetBFact()*AliL3Transform::GetBField()/minpt;
   fXmax = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/minpt;
 
-  fPtstep = 0.1;
   fMinPt = minpt;
   fMaxPt = maxpt;
   fNxbins = InitPtBins();
@@ -63,19 +62,14 @@ Int_t AliL3HistogramAdaptive::InitPtBins()
   Double_t pt = fMinPt,delta_pt,local_pt;
   Int_t bin=0;
 
-  while(pt < fMaxPt + fPtstep)
+  while(pt < fMaxPt)
     {
       local_pt = pt;
-      delta_pt = fPtres*(local_pt+0.5*fPtstep);
-      
-      while(local_pt < pt + fPtstep)
-	{
-	  if(local_pt > fMaxPt) break;
-	  local_pt += delta_pt;
-	  bin++;
-	}
-      //cout<<"Setting "<<bin<<" at step "<<pt<<endl;
-      pt += fPtstep;
+            
+      delta_pt = fPtres*local_pt;
+      pt += delta_pt;
+      bin++;
+      //      cout<<"Setting "<<bin<<" at step "<<local_pt<<" "<<pt<<" interval "<<delta_pt<<endl;
     }
 
   return (bin+1)*2; //Both negative and positive kappa.
@@ -104,37 +98,34 @@ Int_t AliL3HistogramAdaptive::FindBin(Double_t x,Double_t y)
 
 Int_t AliL3HistogramAdaptive::FindXbin(Double_t x)
 {
-  
   Double_t ptfind = fabs(AliL3Transform::GetBFact()*AliL3Transform::GetBField()/x);
   if(ptfind < fMinPt || ptfind > fMaxPt) return -1;
-  
-  Double_t delta_pt,ptplus1,pt = fMinPt,local_pt;
-  Bool_t found=kFALSE;
+  //  cout<<"Looking for pt "<<ptfind<<endl;
+  Double_t pt = fMinPt;
+  Double_t delta_pt,local_pt;
   Int_t bin=0;
-  while(pt < fMaxPt + fPtstep)
+  while(pt < fMaxPt)
     {
       local_pt = pt;
-      delta_pt = fPtres*(local_pt+0.5*fPtstep);
+      delta_pt = fPtres*local_pt;
+      pt += delta_pt;
       
-      while(local_pt < pt + fPtstep)
+      if(ptfind >= local_pt && ptfind < pt)
 	{
-	  ptplus1 = local_pt + delta_pt;
-	  if(ptfind >= local_pt && ptfind < ptplus1)
-	    {
-	      found=kTRUE;
-	      break;
-	    }
-	  local_pt = ptplus1;
-	  bin++;
+	  //	  cout<<"Found in range "<<local_pt<<" "<<pt<<endl;
+	  break;
 	}
-      if(found) break;
-      pt += fPtstep;
+      bin++;
     }
   if(bin >= fNxbins/2)
     cerr<<"AliL3HistogramAdaptive::FindXbin : Bin out of range : "<<bin<<endl;
   
+  //  cout<<"Found xbin "<<bin<<" and x is "<<x<<endl;
   if(x < 0)
-    return bin;
+    {
+      //        cout<<"returning xbin "<<bin<<endl;
+      return bin;
+    }
   else
     return fNxbins - 1 - bin;
 }
@@ -150,35 +141,29 @@ Int_t AliL3HistogramAdaptive::FindYbin(Double_t y)
 
 Double_t AliL3HistogramAdaptive::GetBinCenterX(Int_t xbin)
 {
+  //    cout<<"Looking for bin "<<xbin<<endl;
   if(xbin < 0 || xbin > fNxbins)
     {
       cerr<<"AliL3HistogramAdaptive::GetBinCenterX : Xbin out of range "<<xbin<<endl;
       return 0;
     }
-  Double_t delta_pt,ptplus1,local_pt,pt=fMinPt;
-  Bool_t found=kFALSE;
+  Double_t pt = fMinPt;
+  Double_t delta_pt,local_pt;
   Int_t bin=0;
-  while(pt < fMaxPt + fPtstep)
+  while(pt < fMaxPt)
     {
       local_pt = pt;
-      delta_pt = fPtres*(local_pt+0.5*fPtstep);
-      while(local_pt < pt + fPtstep)
-	{
-	  ptplus1 = local_pt + delta_pt;
-	  if(xbin == bin || xbin == fNxbins - bin) 
-	    {
-	      found=kTRUE;
-	      break;
-	    }
-	  local_pt = ptplus1;
-	  bin++;
-	}
-      if(found) break;
-      pt += fPtstep;
+      delta_pt = fPtres*local_pt;
+      pt += delta_pt;
+      if(xbin == bin || xbin == fNxbins - 1 - bin)
+	break;
+      bin++;
     }
-  Double_t binwidth = ptplus1 - local_pt;
-  Double_t kappa = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/(local_pt + binwidth*0.5);
-  if(xbin <= fNxbins/2 - 1)
+  //    cout<<"get center at ptinterval "<<local_pt<<" "<<pt;
+  
+  Double_t kappa = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/(local_pt + 0.5*delta_pt);
+  //    cout<<" found pt "<<local_pt+delta_pt*0.5<<" kappa "<<kappa<<" xbin "<<xbin<<" fNxbins/2-1 "<<fNxbins/2-1<<endl;
+  if(xbin == bin)
     return -1.*kappa;
   else
     return kappa;

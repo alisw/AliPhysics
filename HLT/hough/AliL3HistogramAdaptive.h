@@ -10,7 +10,6 @@ class AliL3HistogramAdaptive : public AliL3Histogram {
   Double_t fPtres;
   Double_t fMinPt;
   Double_t fMaxPt;
-  Float_t fPtstep;
   
   Int_t InitPtBins();
   
