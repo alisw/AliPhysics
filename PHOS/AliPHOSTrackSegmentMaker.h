@@ -29,7 +29,9 @@ public:
 
   AliPHOSTrackSegmentMaker() ;                     
   
-  virtual ~ AliPHOSTrackSegmentMaker(){}  // dtor
+  virtual ~ AliPHOSTrackSegmentMaker(){
+    // dtor 
+  } 
 
   virtual void MakeTrackSegments(DigitsList * DL, 
 				 AliPHOSRecPoint::RecPointsList * emcl, 

@@ -365,6 +365,9 @@ void AliPHOSv0:: BuildGeometryforPHOS(void)
    crystalsboxnode->SetLineColor(kColorXTAL) ; 
    fNodes->Add(crystalsboxnode) ; 
   }
+
+  delete[] rotname ;  
+  delete[] nodename ;
 }
 
 //____________________________________________________________________________

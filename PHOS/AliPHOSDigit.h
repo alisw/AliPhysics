@@ -38,7 +38,7 @@ class AliPHOSDigit : public AliDigitNew {
     // dtor 
   } 
 
-  Bool_t operator==(AliPHOSDigit const &rValue) const;
+  Bool_t operator==(const AliPHOSDigit &rValue) const;
   AliPHOSDigit& operator+(AliPHOSDigit const &rValue) ;
     
   Int_t   Compare(TObject * obj) ;  
