@@ -55,8 +55,9 @@ public:
   Float_t GetXSectionCurrent     ();
   Float_t GetXSection            ();
   Float_t GetXSectionError       ();
-
-protected:
+ private:
+  void Copy(AliGenTPHIC&) const;
+ protected:
   TPHICgen     *fTPHICgen;          //!generator TPHIC17
   AliPythia    *fPythia;            //!generator PYTHIA6
   TClonesArray *fParticles;         // Particle  List
