@@ -34,6 +34,7 @@ class AliRunAnalysis: public TTask
     void          EventCutOnRec(Bool_t flag){fCutOnRec = flag;}
     void          EventCutOnSim(Bool_t flag){fCutOnSim = flag;}
     void          SetEventCut(AliEventCut* evcut);
+    void          SetOwner(Bool_t owner=kTRUE){fAnalysies.SetOwner(owner);}
     
   protected:
     TObjArray     fAnalysies;//arry with analysies
