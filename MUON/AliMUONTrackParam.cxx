@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/10/02 21:28:09  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.7  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -427,6 +430,7 @@ Double_t AliMUONTrackParam::TotalMomentumEnergyLoss(Double_t rLimit, Double_t pT
       deltaP = 2.407 + 0.00702 * pTotal;
     }
   }
+  deltaP = 0.88 * deltaP; // !!!! changes in the absorber composition ????
   pTotalCorrected = pTotal + deltaP / TMath::Cos(theta);
   return pTotalCorrected;
 }
