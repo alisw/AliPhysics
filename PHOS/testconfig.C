@@ -103,6 +103,7 @@ void Config()
   hmB->Set(63.498, 24.348) ;
   teB->Set(8.363, 3.44) ;
   hm->Print("") ;      
+  delete gime;
 }
 
 Float_t EtaToTheta(Float_t arg){

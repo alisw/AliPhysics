@@ -188,7 +188,10 @@ Bool_t sim_exam()
   
   if (ratioet>maxAlaTotEn){
     error = kTRUE ;
-    sprintf(mess.Data(), "Examination detected an error in TotEn: %f > %f", ratioet, maxAlaTotEn) ;
+    mess = "Examination detected an error in TotEn: ";
+    mess += ratioet;
+    mess += " > ";
+    mess += maxAlaTotEn;
     write_info(mess) ;
   }
   
@@ -297,7 +300,7 @@ Bool_t sdigit()
   
   sd->ExecuteTask("deb") ;
   
-  Float_t nSDigits =  static_cast<Float_t>((dynamic_cast<AliPHOSSDigitizer*>(gime->SDigitizer()))->GetSDigitsInRun()) / static_cast<Float_t>(gime->MaxEvent()) ;
+  Float_t nSDigits =  static_cast<Float_t>((dynamic_cast<const AliPHOSSDigitizer*>(gime->SDigitizer()))->GetSDigitsInRun()) / static_cast<Float_t>(gime->MaxEvent()) ;
   if ( nSDigits < maxSDigits-widSDigits ||
        nSDigits > maxSDigits+widSDigits ) {
     mess = "Error detected in the SDigits process. Sending error file to PHOS director." ;
@@ -327,7 +330,7 @@ Bool_t digit()
   
   d->ExecuteTask("deb") ;
   
-  Float_t nDigits = static_cast<Float_t>((dynamic_cast<AliPHOSDigitizer*>(gime->Digitizer()))->GetDigitsInRun()) / static_cast<Float_t>(gime->MaxEvent()) ;
+  Float_t nDigits = static_cast<Float_t>((dynamic_cast<const AliPHOSDigitizer*>(gime->Digitizer()))->GetDigitsInRun()) / static_cast<Float_t>(gime->MaxEvent()) ;
   
   if ( nDigits < maxDigits-widDigits || nDigits > maxDigits+widDigits ) {
     cout <<  "digit() : nDigits = " << nDigits 
