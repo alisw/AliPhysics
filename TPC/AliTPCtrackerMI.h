@@ -26,7 +26,7 @@ class TTree;
 
 class AliTPCseed : public AliTPCtrack {
   friend class AliTPCtrackerMI;
-  public:
+  public:  
      AliTPCseed();
      virtual ~AliTPCseed();
      AliTPCseed(const AliTPCtrack &t);
@@ -66,6 +66,7 @@ class AliTPCseed : public AliTPCtrack {
      void Desactivate(Int_t reason){ fRemoval = reason;} 
      //
      //
+     AliESDtrack * fEsd; //!
  private:
      AliTPCclusterMI*   fClusterPointer[160];  //! array of cluster pointers  - 
      TClonesArray * fPoints;              // array with points along the track
@@ -106,25 +107,28 @@ class AliTPCseed : public AliTPCtrack {
 
 class AliTPCtrackerMI : public AliTracker {
 public:
-   AliTPCtrackerMI():AliTracker(),fkNIS(0),fkNOS(0) {
-      fInnerSec=fOuterSec=0; fSeeds=0; 
-   }
-   AliTPCtrackerMI(const AliTPCParam *par); 
+  AliTPCtrackerMI():AliTracker(),fkNIS(0),fkNOS(0) {
+    fInnerSec=fOuterSec=0; fSeeds=0; 
+  }
+  AliTPCtrackerMI(const AliTPCParam *par); 
   virtual ~AliTPCtrackerMI();
   //
-  //to be implemented later
-  virtual Int_t Clusters2Tracks (AliESD *){return 0;}
-  virtual Int_t RefitInward (AliESD *){return 0;}
-  virtual Int_t LoadClusters (TTree *){return 0;}
+  void SetIteration(Int_t iteration){fIteration = iteration;}
+  virtual Int_t Clusters2Tracks (AliESD *esd);
+  virtual Int_t RefitInward (AliESD *esd);
+  virtual Int_t LoadClusters (TTree * tree);
+  Int_t  LoadClusters();
+  void   UnloadClusters();
+
   //
   void SetIO();  //set default IO from folders
   void SetIO(TTree * input, TTree * output, AliESD * event);
+  void FillESD(TObjArray* arr);
   void WriteTracks();
+  void WriteTracks(TTree * tree);  
   void DeleteSeeds();
   void SetDebug(Int_t debug){ fDebug = debug;}
    Int_t ReadSeeds(const TFile *in);
-   Int_t  LoadClusters();
-   void   UnloadClusters();
    TObjArray * GetSeeds(){return fSeeds;}
    //   
    AliCluster * GetCluster (int) const {return 0;}
@@ -288,7 +292,7 @@ private:
    Float_t  GetSigmaZ(AliTPCseed * seed);
    void GetShape(AliTPCseed * seed, Int_t row);
  
-   void ReadSeeds(AliESD *event);  //read seeds from the event
+   void ReadSeeds(AliESD *event, Int_t direction);  //read seeds from the event
 
    void MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
    void MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1);
@@ -297,6 +301,7 @@ private:
   
 
    AliTPCseed *MakeSeed(AliTPCseed *t, Float_t r0, Float_t r1, Float_t r2); //reseed
+   AliTPCseed *ReSeed(AliTPCseed *t, Float_t r0, Float_t r1, Float_t r2); //reseed
 
 
   
