@@ -16,7 +16,6 @@
   #include <vector>
   #include <map>
   #include <set>
-  #include <string>
 #endif
 
 #ifdef WITH_ROOT
@@ -25,6 +24,8 @@
   #include <TList.h>
   #include <TExMap.h>
 #endif
+
+#include <string>
 
 #include <TVector2.h>
 
@@ -75,6 +76,9 @@ class AliMpRow;
 #endif
 
 #ifdef WITH_ROOT
+#ifndef __HP_aCC
+  using std::string;
+#endif
   typedef TArrayI    MotifPositionIdVector;
   typedef TObjArray  PadVector;
   typedef TObjArray  PadRowVector;

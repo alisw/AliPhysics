@@ -10,7 +10,6 @@
 #ifndef ALI_MP_READER_H
 #define ALI_MP_READER_H
 
-#include <string>
 #include <fstream>
 
 #include <TObject.h>
