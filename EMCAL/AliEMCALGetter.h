@@ -118,6 +118,7 @@ class AliEMCALGetter : public TObject {
   const AliEMCALTowerRecPoint *  TowerRecPoint(Int_t index) { return static_cast<const AliEMCALTowerRecPoint *>(TowerRecPoints()->At(index)) ;}
   TObjArray * PreShowerRecPoints(const char * name = 0) const { 
     return (dynamic_cast<TObjArray*>(ReturnO("PreShowerRecPoints", name))) ; }
+  const AliEMCALRecPoint *  PreShowerRecPoint(Int_t index) { return static_cast<const AliEMCALRecPoint *>(PreShowerRecPoints()->At(index)) ;}
   const AliEMCALClusterizer * Clusterizer (const char * name =0) const { 
     return (const AliEMCALClusterizer*)(ReturnT("Clusterizer", name)) ;// here static or dynamic cast does not work ! why ?
   }
