@@ -12,9 +12,8 @@
 //    Origin: Marian Ivanov marian.ivanov@cern.ch
 //-------------------------------------------------------------------------
 
-#include <AliESDv0.h>
+#include "AliESDv0.h"
 #include "AliExternalTrackParam.h"
-#include <TPDGCode.h>
 
 class AliESDtrack;
 
@@ -29,7 +28,37 @@ public:
   Float_t GetProb(UInt_t p1, UInt_t p2);
   void Update(Float_t vertex[3]);            //update
   void SetID(Int_t id){fID =id;}
-  Int_t GetID(){ return fID;}
+  Int_t GetID() const { return fID;}
+  Int_t GetIndex(Int_t i) const {return fIndex[i];}
+  void SetIndex(Int_t i, Int_t ind) {fIndex[i]=ind;}
+  void SetDist1(Double_t d1) {fDist1=d1;}
+  void SetDist2(Double_t d2) {fDist2=d2;}
+  Double_t GetDist1() const {return fDist1;}
+  Double_t GetDist2() const {return fDist2;}
+  Double_t *GetAnglep() {return fAngle;}
+  Double_t GetRr() const {return fRr;}
+  void SetRr(Double_t rr) {fRr=rr;}
+  Double_t *GetPMp() {return fPM;}
+  Double_t *GetPPp() {return fPP;}
+  Double_t *GetXrp() {return fXr;}
+  Double_t GetXr(Int_t i) const {return fXr[i];}
+  Double_t GetDistSigma() const {return fDistSigma;}
+  void SetDistSigma(Double_t ds) {fDistSigma=ds;}
+  Double_t GetDistNorm() const {return fDistNorm;}
+  void SetDistNorm(Double_t ds) {fDistNorm=ds;}
+  Float_t GetChi2Before() const {return fChi2Before;}
+  void SetChi2Before(Float_t cb) {fChi2Before=cb;}
+  Float_t GetChi2After() const {return fChi2After;}
+  void SetChi2After(Float_t ca) {fChi2After=ca;}
+  Float_t GetPointAngle() const {return fPointAngle;}
+  void SetOrder(Int_t i, Int_t ord) {fOrder[i]=ord;}
+  Float_t GetNAfter() const {return fNAfter;}
+  void SetNAfter(Float_t na) {fNAfter=na;}
+  Float_t GetNBefore() const {return fNBefore;}
+  void SetNBefore(Float_t nb) {fNBefore=nb;}  
+  void SetLab(Int_t i, Int_t lab) {fLab[i]=lab;}
+
+private:
   AliExternalTrackParam fParamP;
   AliExternalTrackParam fParamM;
   Float_t        fRP[5];         // combined pid positive

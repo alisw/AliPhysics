@@ -21,7 +21,7 @@
 
 #include <Riostream.h>
 #include <TMath.h>
-#include <TPDGCode.h>
+
 #include "AliESDV0MI.h"
 #include "AliHelix.h"
 
@@ -87,12 +87,12 @@ Float_t AliESDV0MI::GetEffMass(UInt_t p1, UInt_t p2){
   //
   // calculate effective mass
   //
-  const Float_t pmass[5] = {5.10000000000000037e-04,1.05660000000000004e-01,1.39570000000000000e-01,
+  const Float_t kpmass[5] = {5.10000000000000037e-04,1.05660000000000004e-01,1.39570000000000000e-01,
 		      4.93599999999999983e-01, 9.38270000000000048e-01};
   if (p1>4) return -1;
   if (p2>4) return -1;
-  Float_t mass1 = pmass[p1]; 
-  Float_t mass2 = pmass[p2];   
+  Float_t mass1 = kpmass[p1]; 
+  Float_t mass2 = kpmass[p2];   
   Double_t *m1 = fPP;
   Double_t *m2 = fPM;
   //

@@ -79,8 +79,8 @@ void AliESD::UpdateV0PIDs()
   Int_t nV0 = GetNumberOfV0MIs();
   for (Int_t i=0;i<nV0;i++){
     AliESDV0MI * v0 = GetV0MI(i);
-    AliESDtrack* tp = GetTrack(v0->fIndex[0]);
-    AliESDtrack* tm = GetTrack(v0->fIndex[1]);
+    AliESDtrack* tp = GetTrack(v0->GetIndex(0));
+    AliESDtrack* tm = GetTrack(v0->GetIndex(1));
     if (!tm || !tp){
       printf("BBBUUUUUUUGGGG\n");
     }
