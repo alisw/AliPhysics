@@ -11,18 +11,18 @@ PACKAGE = RICH
 
 SRCS   = AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx AliRICHv2.cxx\
 	 AliRICHDisplay.cxx AliRICHPoints.cxx AliRICHGeometry.cxx\
-	 AliRICHHitMapA1.cxx \
 	 AliRICHSegmentationV0.cxx AliRICHTresholdMap.cxx\
 	 AliRICHSegmentationV1.cxx AliRICHResponse.cxx AliRICHResponseV0.cxx \
-	 AliRICHClusterFinder.cxx \
+	 AliRICHClusterFinder.cxx AliRICHHitMapA1.cxx\
 	 AliRICHChamber.cxx AliRICHDetect.cxx AliRICHPatRec.cxx \
          AliRICHHit.cxx AliRICHCerenkov.cxx AliRICHPadHit.cxx \
 	 AliRICHDigit.cxx AliRICHTransientDigit.cxx \
-	 AliRICHRawCluster.cxx AliRICHRecHit.cxx AliRICHEllipse.cxx 
+	 AliRICHRawCluster.cxx AliRICHRecHit1D.cxx AliRICHRecHit3D.cxx AliRICHEllipse.cxx 
 
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) RICHLinkDef.h
+#HDRS          = $(SRCS:.cxx=.h) $(ROOTSYS)/include/TClonesArray.h RICHLinkDef.h
+HDRS          = $(SRCS:.cxx=.h)  RICHLinkDef.h
 
 # Library dictionary
 
