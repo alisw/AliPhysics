@@ -123,7 +123,10 @@ void AliITSVertexerTracks::FindVertices() {
     }
 
     if(fDebug) fCurrentVertex->PrintStatus();
-
+    TString vtxName = "Vertex_";
+    vtxName += ev;
+    fCurrentVertex->SetName(vtxName.Data()); 
+    fCurrentVertex->SetTitle("VertexerTracks");
     WriteCurrentVertex();
   } // loop over events
 
@@ -228,7 +231,7 @@ AliITSVertex* AliITSVertexerTracks::FindVertexForCurrentEvent(Int_t evnumb) {
   if(fDebug) printf(" vertex fit completed\n");
 
   TString vtxName;
-  vtxName = "VertexTracks_";
+  vtxName = "Vertex_";
   vtxName += evnumb;
   fCurrentVertex->SetName(vtxName.Data());
   return fCurrentVertex;
