@@ -13,7 +13,7 @@
 #include "AliGenerator.h"
 #include "AliLego.h"
 
-const enum {kMaxModules = 25, kLenModuleName=7};
+enum {kMaxModules = 25, kLenModuleName=7};
 
 class AliDisplay;
 
