@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2000/01/18 17:49:56  morsch
+Serious overlap of ABSM with shield corrected
+Small error in ARPB parameters corrected
+
 Revision 1.2  2000/01/13 11:23:59  morsch
 Last layer of Pb outer angle corrected
 
@@ -127,7 +131,9 @@ void AliABSOv0::CreateGeometry()
   par[22] =  abs_l* TMath::Tan(acc_min);
   par[23] = par[20] + (par[21] - par[18]) * TMath::Tan(acc_max);
   gMC->Gsvolu("ABSS", "PCON", idtmed[1612], par, 24);
-  for (Int_t i=4; i<18; i+=3) par[i]  = 0;
+  { // Begin local scope for i
+    for (Int_t i=4; i<18; i+=3) par[i]  = 0;
+  } // End local scope for i
   gMC->Gsvolu("ABSM", "PCON", idtmed[1655], par, 24);
   gMC->Gspos("ABSS", 1, "ABSM", 0., 0., 0., 0, "ONLY");
 
@@ -253,7 +259,8 @@ void AliABSOv0::CreateGeometry()
   Float_t dr_max=TMath::Tan(acc_max) * 5;
   gMC->Gsvolu("ARPE", "CONE", idtmed[1617], cpar, 0);
   cpar[0]=2.5;
-  for (Int_t i=0; i<3; i++) {
+  { // Begin local scope for i
+    for (Int_t i=0; i<3; i++) {
       zr=abs_l-d_rear+5+i*10.;
       cpar[1] = zr * TMath::Tan(theta_r);
       cpar[2] = zr * TMath::Tan(acc_max);
@@ -261,7 +268,8 @@ void AliABSOv0::CreateGeometry()
       cpar[4] = cpar[2] + dr_max;
       dz=(abs_l-abs_d)/2.-cpar[0]-5.-(2-i)*10;
       gMC->Gsposp("ARPE", i+1, "AITR", 0., 0., dz, 0, "ONLY",cpar,5);
-  }
+    }
+  } // End local scope for i
   gMC->Gspos("AITR", 1, "ABSS", 0., 0., 0., 0, "ONLY");	
   dz = (abs_l-abs_d)/2.+abs_d;
   gMC->Gspos("ABSM", 1, "ALIC", 0., 0., dz, 0, "ONLY");	

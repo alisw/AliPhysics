@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2000/01/17 10:29:30  morsch
+Overlap between Shield and Absorber due to limited numerical precision removed
+by displacing the Shield by epsilon = 0.01 cm.
+
 Revision 1.2  2000/01/13 11:27:51  morsch
 Overlaps corrected: YCS3, YCS4; Inner radius YS21 corrected
 
@@ -222,7 +226,9 @@ void AliSHILv0::CreateGeometry()
   
   gMC->Gsvolu("YGO1", "PCON", idtmed[1760], par1, 39);
 
-  for (Int_t i=4; i<38; i+=3) par1[i]  = 0;
+  { // Begin local scope for i
+    for (Int_t i=4; i<38; i+=3) par1[i]  = 0;
+  } // End local scope for i
   gMC->Gsvolu("YMO1", "PCON", idtmed[1755], par1, 39);
 
   gMC->Gspos("YGO1", 1, "YMO1", 0., 0., 0., 0, "ONLY");  
@@ -292,10 +298,12 @@ void AliSHILv0::CreateGeometry()
   tpar[2]=10.*lB1/2.;
   gMC->Gsvolu("YBM1", "TUBE", idtmed[1755], tpar, 3);
   dz=-tpar[2]+lB1/2.;
-  for (Int_t i=0; i<10; i++) {
+  { // Begin local scope for i
+    for (Int_t i=0; i<10; i++) {
       gMC->Gspos("YBU1", i+1 , "YBM1", 0., 0.,dz , 0, "ONLY"); 
       dz+=lB1;
-  }
+    }
+  } // End local scope for i
   dz=-dl+(zvac1-zstart)+dr11+tpar[2];
   gMC->Gspos("YBM1", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
@@ -434,7 +442,9 @@ void AliSHILv0::CreateGeometry()
   
   gMC->Gsvolu("YGO2", "PCON", idtmed[1760], par2, 21);
 
-  for (Int_t i=4; i<20; i+=3) par2[i]  = 0;
+  { // Begin local scope for i
+    for (Int_t i=4; i<20; i+=3) par2[i]  = 0;
+  } // End local scope for i
       
   gMC->Gsvolu("YMO2", "PCON", idtmed[1755], par2, 21);
   gMC->Gspos("YGO2", 1, "YMO2", 0., 0., 0., 0, "ONLY");  
@@ -565,7 +575,9 @@ void AliSHILv0::CreateGeometry()
   
   gMC->Gsvolu("YGO3", "PCON", idtmed[1760], par3, 27);
 
-  for (Int_t i=4; i<26; i+=3) par3[i]  = 0;
+  { // Begin local scope for i
+    for (Int_t i=4; i<26; i+=3) par3[i]  = 0;
+  } // End local scope for i
       
   gMC->Gsvolu("YMO3", "PCON", idtmed[1755], par3, 27);
   gMC->Gspos("YGO3", 1, "YMO3", 0., 0., 0., 0, "ONLY");  
@@ -632,10 +644,12 @@ void AliSHILv0::CreateGeometry()
   tpar[2]=7.*lB2/2.;
   gMC->Gsvolu("YBM2", "TUBE", idtmed[1755], tpar, 3);
   dz=-tpar[2]+lB2/2.;
-  for (Int_t i=0; i<7; i++) {
+  { // Begin local scope for i
+    for (Int_t i=0; i<7; i++) {
       gMC->Gspos("YBU2", i+1 , "YBM2", 0., 0.,dz , 0, "ONLY"); 
       dz+=lB2;
-  }
+    }
+  } // End local scope for i
 
   dz=-dl+dr21+tpar[2];
   gMC->Gspos("YBM2", 1, "YMO3", 0., 0., dz, 0, "ONLY"); 
@@ -714,7 +728,9 @@ void AliSHILv0::CreateGeometry()
   par4[20] = R43;
 
   gMC->Gsvolu("YGO4", "PCON", idtmed[1760], par4, 21);
-  for (Int_t i=4; i<20; i+=3) par4[i]  = 0;
+  { // Begin local scope for i
+    for (Int_t i=4; i<20; i+=3) par4[i]  = 0;
+  } // End local scope for i
       
 
   gMC->Gsvolu("YMO4", "PCON", idtmed[1755], par4, 21);
