@@ -481,7 +481,7 @@ public:
   void  SetMaxStep(Float_t maxstep);
   void  SetMaxNStep(Int_t maxnstp);
   Int_t GetMaxNStep() const;
-  void GetParticle(const Int_t pdg, char *name, Float_t &mass) const;
+  //  void GetParticle(const Int_t pdg, char *name, Float_t &mass) const;
   virtual Int_t GetMedium() const;
   virtual Float_t Edep() const;
   virtual Float_t Etot() const;

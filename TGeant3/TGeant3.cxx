@@ -1412,31 +1412,6 @@ void TGeant3::Matrix(Int_t& krot, Float_t thex, Float_t phix, Float_t they,
 }
 
 //_____________________________________________________________________________
-void TGeant3::GetParticle(const Int_t pdg, char *name, Float_t &mass) const
-{
-  Int_t ipart = IdFromPDG(pdg);
-  if(ipart<0) {
-    printf("Particle %d not in geant\n",pdg);
-    name=new char[7];
-    strcpy(name,"Unknown");
-    mass=-1;
-    return;
-  }
-  //
-  // Return name and mass of particle code ipart
-  // Geant321 conventions
-  //
-  Int_t hname[6];
-  Int_t jpart=fGclink->jpart;
-  Int_t jpa=fZlq[jpart-ipart];
-  //
-  for(Int_t i=1; i<6; i++) hname[i-1]=fZiq[jpa+i];
-  hname[5]=0;
-  strncpy(name,(char *)hname, 21);
-  mass=fZq[jpa+7];
-}
-
-//_____________________________________________________________________________
 Int_t TGeant3::GetMedium() const
 {
   //

@@ -53,7 +53,6 @@ void    TGeant3::ProdProcess(char*) const {}
 void    TGeant3::GetSecondary(Int_t, Int_t&, Float_t*, Float_t*){}
 Float_t TGeant3::MaxStep() const {return 0;}
 void    TGeant3::SetMaxStep(Float_t ) {}
-void    TGeant3::GetParticle(const Int_t, char*, Float_t&) const {}
 Int_t   TGeant3::CurrentEvent() const {return 0;}
 Int_t   TGeant3::GetMedium() const {return 0;}
 Float_t TGeant3::Edep() const {return 0;}
