@@ -90,9 +90,13 @@ AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
     Generator->SetTrackingFlag(fTrackIt);
 //
 //  Add generator to list   
-    
+    char theName[256];
+    sprintf(theName, "%s_%d",Name, fNGenerators);
+    Generator->SetName(theName);
+
     AliGenCocktailEntry *entry = 
 	new AliGenCocktailEntry(Generator, Name, RateExp);
+    
      fEntries->Add(entry);
      fNGenerators++;
  }

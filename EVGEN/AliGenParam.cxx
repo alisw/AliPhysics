@@ -166,16 +166,22 @@ void AliGenParam::Init()
     <img src="picts/AliGenParam.gif">
   */
   //End_Html
- 
-    fPtPara = new TF1("Pt-Parametrization",fPtParaFunc,fPtMin,fPtMax,0);
+    char name[256];
+    sprintf(name, "pt-parameterisation for %s", GetName());
+    
+    fPtPara = new TF1(name, fPtParaFunc, fPtMin, fPtMax,0);
 //  Set representation precision to 10 MeV
-    Int_t npx= Int_t((fPtMax-fPtMin)/fDeltaPt);
+    Int_t npx= Int_t((fPtMax - fPtMin) / fDeltaPt);
     
     fPtPara->SetNpx(npx);
+
+    sprintf(name, "y-parameterisation  for %s", GetName());
+    fYPara  = new TF1(name, fYParaFunc, fYMin, fYMax, 0);
     
-    fYPara  = new TF1("Y-Parametrization",fYParaFunc,fYMin,fYMax,0);
-    TF1 ptPara("Pt-Parametrization(0,15)",fPtParaFunc,0,15,0);
-    TF1 yPara("Y-Parametrization(-6,6)",fYParaFunc,-6,6,0);
+    sprintf(name, "pt-for-%s", GetName());
+    TF1 ptPara(name ,fPtParaFunc, 0, 15, 0);
+    sprintf(name, "y-for-%s", GetName());
+    TF1 yPara(name, fYParaFunc, -6, 6, 0);
 
 //
 // dN/dy| y=0
