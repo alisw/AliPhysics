@@ -87,7 +87,7 @@ public:
 			       Float_t &e, Float_t *vpos, Float_t *polar, 
 			       Float_t &tof);
    Int_t          GetNtrack() const {return fNtrack;}
-   virtual  Int_t GetPrimary(Int_t track) const;
+   virtual  Int_t GetPrimary(Int_t track);
    virtual  void  Hits2Digits(const char *detector=0); 
    virtual  void  Hits2SDigits(const char *detector=0)   {Tree2Tree("S",detector);}
    virtual  void  SDigits2Digits(const char *detector=0) {Tree2Tree("D",detector);}

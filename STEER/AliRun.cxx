@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.62  2001/04/06 11:12:33  morsch
+Clear fParticles after each event. (Ivana Hrivnacova)
+
 Revision 1.61  2001/03/30 07:04:10  morsch
 Call fGenerator->FinishRun() for final print-outs, cross-section and weight calculations.
 
@@ -1023,7 +1026,7 @@ void AliRun::GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
 }
 
 //_____________________________________________________________________________
-Int_t AliRun::GetPrimary(Int_t track) const
+Int_t AliRun::GetPrimary(Int_t track) 
 {
   //
   // return number of primary that has generated track
@@ -1035,6 +1038,7 @@ Int_t AliRun::GetPrimary(Int_t track) const
   while (1) {
     current=parent;
     part = (TParticle *)fParticleMap->At(current);
+    if(!part) part = Particle(current);
     parent=part->GetFirstMother();
     if(parent<0) return current;
   }
