@@ -944,7 +944,7 @@ void AliRunDB::Update(AliStats *stats)
    fRunDB->cd();
 
    char sname[64];
-   char *s = strrchr(stats->GetFileName(), '/');
+   char *s = (char*)strrchr(stats->GetFileName(), '/');
    if (s) {
       s++;
       strcpy(sname, s);
