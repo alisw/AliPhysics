@@ -20,6 +20,7 @@
 #include "TClonesArray.h"
 #include "TFolder.h"  
 #include "TTree.h"
+#include "TFile.h"
 class TString ;
 class TParticle ;
 class TTask ;
@@ -61,6 +62,7 @@ class AliEMCALGetter : public TObject {
   
   virtual ~AliEMCALGetter() ; 
   
+  void CloseFile() { fFile->Close() ; } 
   const Bool_t HasFailed(void) const {return fFailed ;} 
   Bool_t PostHits(void ) const ;  
   Bool_t PostSDigits(      const char * name,  const char * file = 0) const ;  

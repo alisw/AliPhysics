@@ -20,6 +20,7 @@
 #include "TClonesArray.h"
 #include "TFolder.h"  
 #include "TTree.h"
+#include "TFile.h"
 class TString ;
 class TParticle ;
 class TTask ;
@@ -61,6 +62,7 @@ class AliPHOSGetter : public TObject {
   
   virtual ~AliPHOSGetter() ; 
   
+  void CloseFile() { fFile->Close() ; } 
   void ListBranches(Int_t event=0) const ;
   void NewBranch(TString name, Int_t event = 0) ; 
   Bool_t AliPHOSGetter::NewFile(TString name) ;
