@@ -30,6 +30,15 @@ class AliL3Transform {
   static Int_t fRows[6][2];
   static Int_t fNRows[6];
   static Int_t fNPatches;
+  
+  static Double_t fDiffT; //Transversal diffusion constant
+  static Double_t fDiffL; //Longitudinal diffusion constant
+  static Double_t fAnodeWireSpacing; 
+  static Double_t fInnerPadLength;
+  static Double_t fOuterPadLength;
+  static Double_t fInnerPRFSigma;
+  static Double_t fOuterPRFSigma;
+  static Double_t fTimeSigma; //Minimal longitudinal width
 
  public:
   
@@ -49,6 +58,12 @@ class AliL3Transform {
   static Double_t GetZWidth() {return fZWidth;}
   static Double_t GetZLength() {return fZLength;}
   static Double_t GetZOffset() {return fZOffset;}
+  static Double_t GetDiffT() {return fDiffT;}
+  static Double_t GetDiffL() {return fDiffL;}
+  static Double_t GetAnodeWireSpacing() {return fAnodeWireSpacing;}
+  static Double_t GetPadLength(Int_t patch) {return patch < 2 ? fInnerPadLength : fOuterPadLength;}
+  static Double_t GetPRFSigma(Int_t patch) {return patch < 2 ? fInnerPRFSigma : fOuterPRFSigma;}
+  static Double_t GetTimeSigma() {return fTimeSigma;}
   static Int_t GetNSectorLow() {return fNSectorLow;}
   static Int_t GetNSectorUp() {return fNSectorUp;}
   

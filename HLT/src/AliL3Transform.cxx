@@ -47,6 +47,14 @@ Double_t AliL3Transform::fPadPitchWidthUp = 0.600000 ;
 Double_t AliL3Transform::fZWidth = 0.56599998474121093750 ;
 Double_t AliL3Transform::fZSigma = 0.22880849748219134199 ;
 Double_t AliL3Transform::fZOffset = 0.68642549244657402596;
+Double_t AliL3Transform::fDiffT = 0.0219999998807907104;
+Double_t AliL3Transform::fDiffL = 0.0219999998807907104;
+Double_t AliL3Transform::fAnodeWireSpacing = 0.25;
+Double_t AliL3Transform::fInnerPadLength = 0.75;
+Double_t AliL3Transform::fOuterPadLength = 1.;
+Double_t AliL3Transform::fInnerPRFSigma = 0.203811079263687134;
+Double_t AliL3Transform::fOuterPRFSigma = 0.299324512481689453;
+Double_t AliL3Transform::fTimeSigma = 0.228808626532554626;
 Double_t AliL3Transform::fZLength = 250.;
 Int_t AliL3Transform::fNSlice = 36 ;
 Int_t AliL3Transform::fNRow = 176 ;
@@ -438,6 +446,9 @@ void AliL3Transform::Init(const Char_t* path)
 
     if(strcmp(d1,"fNTimeBins")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNTimeBins=(Int_t)dummy;}
     else if(strcmp(d1,"fNRowLow")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowLow=(Int_t)dummy;}    
+    if(fNRowLow != 64)
+      LOG(AliL3Log::kError,"AliL3Transform::Init","Overflow")
+	<<"Number of inner PadRows should be 64! Check and fgrep the code for 64 to see the consequences of this major change!"<<ENDLOG;
     else if(strcmp(d1,"fNRowUp")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowUp=(Int_t)dummy;}
     else if(strcmp(d1,"fNSectorLow")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNSectorLow=(Int_t)dummy;}
     else if(strcmp(d1,"fNSectorUp")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNSectorUp=(Int_t)dummy;}
@@ -449,6 +460,13 @@ void AliL3Transform::Init(const Char_t* path)
     else if(strcmp(d1,"fZLength")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fZLength=(Double_t)ddummy;}
     else if(strcmp(d1,"fZOffset")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fZOffset=(Double_t)ddummy;}
     else if(strcmp(d1,"fNSlice")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNSlice=(Int_t)dummy;}
+    else if(strcmp(d1,"fDiffT")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fDiffT=(Double_t)ddummy;}
+    else if(strcmp(d1,"fDiffL")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fDiffL=(Double_t)ddummy;}
+    else if(strcmp(d1,"fInnerPadLength")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fInnerPadLength=(Double_t)ddummy;}
+    else if(strcmp(d1,"fOuterPadLength")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fOuterPadLength=(Double_t)ddummy;}
+    else if(strcmp(d1,"fInnerPRFSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fInnerPRFSigma=(Double_t)ddummy;}
+    else if(strcmp(d1,"fOuterPRFSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fOuterPRFSigma=(Double_t)ddummy;}
+    else if(strcmp(d1,"fTimeSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fTimeSigma=(Double_t)ddummy;}
     else if(strcmp(d1,"fNRow")==0){
       fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRow=(Int_t)dummy;
       if(fNRow!=176){
