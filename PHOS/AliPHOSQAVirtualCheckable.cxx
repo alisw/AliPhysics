@@ -40,7 +40,6 @@
 
 ClassImp(AliPHOSQAVirtualCheckable)
 
-
 //____________________________________________________________________________ 
   AliPHOSQAVirtualCheckable::AliPHOSQAVirtualCheckable(const char * name) : TNamed(name, name) 
 {
@@ -57,6 +56,7 @@ ClassImp(AliPHOSQAVirtualCheckable)
   TList * alarms = new TList() ; // deleted when fAlarms is deleted
   alarms->SetName(name) ; 
   fAlarms->Add(alarms) ; 
+  fChecker = 0 ; 
 
 }
 
