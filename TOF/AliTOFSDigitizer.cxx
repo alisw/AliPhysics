@@ -236,14 +236,14 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
     //Make branch for digits
     TOF->MakeBranch("S");
     
-    TOF->SetTreeAddress();
-
     // recreate TClonesArray fSDigits - for backward compatibility
     if (TOF->SDigits() == 0) {
       TOF->CreateSDigitsArray();
     } else {
       TOF->RecreateSDigitsArray();
     }
+
+    TOF->SetTreeAddress();
 
     Int_t version=TOF->IsVersion();
 
