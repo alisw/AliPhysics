@@ -12,16 +12,15 @@
 #include "AliGlobals.h"
 #include "AliFiles.h"
 
-#include "TG4GeometryManager.h"
 #include "TG4XMLGeometryGenerator.h"
+#include "TG4GeometryManager.h"
 
 #include <G4Material.hh>
 #include <G4VPhysicalVolume.hh>
 
+//_____________________________________________________________________________
 AliModulesComposition::AliModulesComposition()
-  : fAllLVSensitive(false),
-    fForceAllLVSensitive(true),
-    fReadGeometry(false),
+  : fReadGeometry(false),
     fWriteGeometry(false),
     fMagneticField(0)    
 {
@@ -30,12 +29,14 @@ AliModulesComposition::AliModulesComposition()
   fMessenger = new AliModulesCompositionMessenger(this);
 }
 
+//_____________________________________________________________________________
 AliModulesComposition::AliModulesComposition(const AliModulesComposition& right)
 {
 //
   AliGlobals::Exception("AliModulesComposition is protected from copying.");  
 }
 
+//_____________________________________________________________________________
 AliModulesComposition::~AliModulesComposition() {
 //   
   delete fMoreModulesConstruction;
@@ -51,6 +52,7 @@ AliModulesComposition::~AliModulesComposition() {
 
 // operators
 
+//_____________________________________________________________________________
 AliModulesComposition& 
 AliModulesComposition::operator=(const AliModulesComposition& right)
 {
@@ -64,6 +66,7 @@ AliModulesComposition::operator=(const AliModulesComposition& right)
           
 // protected methods
 
+//_____________________________________________________________________________
 void AliModulesComposition::AddDetSwitch(AliDetSwitch* detSwitch)
 {
 // Adds detSwitch to the detSwitch vector.
@@ -73,6 +76,7 @@ void AliModulesComposition::AddDetSwitch(AliDetSwitch* detSwitch)
   fMessenger->SetCandidates();
 }  
   
+//_____________________________________________________________________________
 void AliModulesComposition::AddSingleModuleConstruction(G4String moduleName, 
                                G4int version, AliModuleType moduleType)
 {
@@ -84,6 +88,7 @@ void AliModulesComposition::AddSingleModuleConstruction(G4String moduleName,
   fModuleConstructionVector.insert(moduleConstruction);
 }  
 		  
+//_____________________________________________________________________________
 void AliModulesComposition::AddMoreModuleConstruction(G4String moduleName, 
                                G4int version, AliModuleType moduleType)
 {
@@ -94,6 +99,7 @@ void AliModulesComposition::AddMoreModuleConstruction(G4String moduleName,
   fMoreModulesConstruction->AddModule(moduleName, version, moduleType);
 }  
 		  		  
+//_____________________________________________________________________________
 void AliModulesComposition::ConstructModules()
 {
 // Construct geometry of all modules (both standalone and dependent.)
@@ -102,9 +108,6 @@ void AliModulesComposition::ConstructModules()
   // set common options
   SetReadGeometryToModules(fReadGeometry);
   SetWriteGeometryToModules(fWriteGeometry);
-  SetAllLVSensitiveToModules(fAllLVSensitive);
-     // common setAllLVSensitive is overridden by Config.in
-     // macro
   
   // configure single modules
   G4int nofDets = fModuleConstructionVector.entries();
@@ -114,19 +117,11 @@ void AliModulesComposition::ConstructModules()
     cout << "Module " << fModuleConstructionVector[i]->GetDetName() 
          << " configured." << endl;
   }  
-  if (fForceAllLVSensitive)
-    SetAllLVSensitiveToModules(fForceAllLVSensitive);
-      // override the setAllLVSensitive by Config.in macro
-      // if required
      
   // configure dependent modules
   G4int nofModules = fMoreModulesConstruction->GetNofModules();
   if (nofModules>0) {
     fMoreModulesConstruction->Configure(*AliFiles::Instance());
-    if (fForceAllLVSensitive)
-      SetAllLVSensitiveToModules(fForceAllLVSensitive);
-        // override the setAllLVSensitive by Config.in macro
-        // if required
   }  
 
   // construct single modules
@@ -141,13 +136,9 @@ void AliModulesComposition::ConstructModules()
     G4cout << "Dependent modules will be constructed now." << G4endl;
     fMoreModulesConstruction->Construct();
   }  
-    
-  // fill medium Id vector
-  TG4GeometryManager::Instance()->FillMediumIdVector();
-        // this step can be done only after the sensitive
-        // detectors have been created
 }  
 
+//_____________________________________________________________________________
 AliDetSwitch* AliModulesComposition::GetDetSwitch(const G4String& detName)
 {
 // Returns the detector switch with given detector name.
@@ -162,7 +153,7 @@ AliDetSwitch* AliModulesComposition::GetDetSwitch(const G4String& detName)
   return detSwitch;  
 } 
 
-
+//_____________________________________________________________________________
 void AliModulesComposition::SetReadGeometryToModules(G4bool readGeometry)
 {
 // Sets readGeometry control to all modules.
@@ -183,6 +174,7 @@ void AliModulesComposition::SetReadGeometryToModules(G4bool readGeometry)
   }  
 }    
   
+//_____________________________________________________________________________
 void AliModulesComposition::SetWriteGeometryToModules(G4bool writeGeometry)
 {
 // Sets writeGeometry control to all modules.
@@ -203,26 +195,7 @@ void AliModulesComposition::SetWriteGeometryToModules(G4bool writeGeometry)
   }  
 }    
 
-void AliModulesComposition::SetAllLVSensitiveToModules(G4bool allSensitive)
-{
-// Sets setAllSensitive control to all modules.
-// ---
-
-  // single module constructions
-  G4int nofDets = fModuleConstructionVector.entries();
-  G4int i;
-  for (i=0; i<nofDets; i++)
-    fModuleConstructionVector[i]->SetAllLVSensitive(allSensitive);
-
-  // more modules construction
-  nofDets = fMoreModulesConstruction->GetNofModules();
-  for (i=0; i<nofDets; i++) { 
-    AliSingleModuleConstruction* moduleConstruction
-      = fMoreModulesConstruction->GetModuleConstruction(i);
-    moduleConstruction->SetAllLVSensitive(allSensitive);
-  }  
-}    
-
+//_____________________________________________________________________________
 void AliModulesComposition::SetProcessConfigToModules(G4bool processConfig)
 {
 // Sets processConfig control to all modules.
@@ -245,6 +218,7 @@ void AliModulesComposition::SetProcessConfigToModules(G4bool processConfig)
 
 // public methods
 
+//_____________________________________________________________________________
 void AliModulesComposition::SwitchDetOn(G4String moduleNameVer)
 { 
 // Switchs on module specified by name and version.
@@ -279,6 +253,7 @@ void AliModulesComposition::SwitchDetOn(G4String moduleNameVer)
   }
 }
 
+//_____________________________________________________________________________
 void AliModulesComposition::SwitchDetOn(G4String moduleName, G4int version)
 { 
 // Switchs on module specified by name and version.
@@ -296,6 +271,7 @@ void AliModulesComposition::SwitchDetOn(G4String moduleName, G4int version)
     "AliModulesComposition: Wrong detector name for " + moduleName + ".");
 }
 
+//_____________________________________________________________________________
 void AliModulesComposition::SwitchDetOnDefault(G4String moduleName)
 { 
 // Switchs on module specified by name with default version.
@@ -313,6 +289,7 @@ void AliModulesComposition::SwitchDetOnDefault(G4String moduleName)
     "AliModulesComposition: Wrong detector name for " + moduleName + ".");
 }
 
+//_____________________________________________________________________________
 void AliModulesComposition::SwitchDetOnPPR(G4String moduleName)
 { 
 // Switchs on module specified by name with PPR version.
@@ -330,6 +307,7 @@ void AliModulesComposition::SwitchDetOnPPR(G4String moduleName)
     "AliModulesComposition: Wrong detector name for " + moduleName + ".");
 }
 
+//_____________________________________________________________________________
 void AliModulesComposition::SwitchDetOff(G4String moduleName)
 { 
 // Switchs off module specified by name.
@@ -353,6 +331,7 @@ void AliModulesComposition::SwitchDetOff(G4String moduleName)
     "AliModulesComposition: Wrong detector name for " + moduleName + ".");
 }
 
+//_____________________________________________________________________________
 void AliModulesComposition::PrintSwitchedDets() const
 { 
 // Lists switched detectors.
@@ -365,6 +344,7 @@ void AliModulesComposition::PrintSwitchedDets() const
   G4cout << svList << G4endl;
 }
 
+//_____________________________________________________________________________
 void AliModulesComposition::PrintAvailableDets() const
 { 
 // Lists available detectors.
@@ -377,6 +357,7 @@ void AliModulesComposition::PrintAvailableDets() const
   G4cout << avList << G4endl;
 }
 
+//_____________________________________________________________________________
 void AliModulesComposition::PrintMaterials() const
 {
 // Prints all materials.
@@ -386,6 +367,7 @@ void AliModulesComposition::PrintMaterials() const
   G4cout << *matTable;
 }
 
+//_____________________________________________________________________________
 void AliModulesComposition::GenerateXMLGeometry() const 
 {
 // Generates XML geometry file from the top volume.
@@ -434,7 +416,7 @@ void AliModulesComposition::GenerateXMLGeometry() const
          << G4endl;
 }  
 
-
+//_____________________________________________________________________________
 G4String AliModulesComposition::GetSwitchedDetsList() const
 { 
 // Returns list of switched detectors.
@@ -461,6 +443,7 @@ G4String AliModulesComposition::GetSwitchedDetsList() const
   return svList;
 }
 
+//_____________________________________________________________________________
 G4String AliModulesComposition::GetAvailableDetsList() const
 { 
 // Returns list of available detectors.
@@ -482,6 +465,7 @@ G4String AliModulesComposition::GetAvailableDetsList() const
   return svList;
 }
 
+//_____________________________________________________________________________
 G4String AliModulesComposition::GetAvailableDetsListWithCommas() const
 { 
 // Returns list of available detectors with commas.
@@ -504,6 +488,7 @@ G4String AliModulesComposition::GetAvailableDetsListWithCommas() const
   return svList;
 }
 
+//_____________________________________________________________________________
 G4String AliModulesComposition::GetDetNamesList() const
 { 
 // Returns list of detector names.
@@ -520,6 +505,7 @@ G4String AliModulesComposition::GetDetNamesList() const
   return svList;
 }
 
+//_____________________________________________________________________________
 G4String AliModulesComposition::GetDetNamesListWithCommas() const
 { 
 // Returns list of detector names with commas.
@@ -536,6 +522,7 @@ G4String AliModulesComposition::GetDetNamesListWithCommas() const
   return svList;
 }
 
+//_____________________________________________________________________________
 void AliModulesComposition::SetMagField(G4double fieldValue)
 {
 // Sets uniform magnetic field to specified value.
