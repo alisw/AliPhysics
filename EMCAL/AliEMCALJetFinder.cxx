@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2002/01/23 13:40:23  morsch
+Fastidious debug print statement removed.
+
 Revision 1.11  2002/01/22 17:25:47  morsch
 Some corrections for event mixing and bg event handling.
 
@@ -130,6 +133,25 @@ AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
     SetHadronCorrection();
     SetSamplingFraction();
     SetIncludeK0andN();
+//
+//
+//  Get geometry parameters from EMCAL
+// 
+    AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
+    AliEMCALGeometry* geom = 
+	AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
+    fNbinEta = geom->GetNZ();
+    fNbinPhi = geom->GetNPhi();
+    fPhiMin  = geom->GetArm1PhiMin()*TMath::Pi()/180.;
+    fPhiMax  = geom->GetArm1PhiMax()*TMath::Pi()/180.;
+    fEtaMin  = geom->GetArm1EtaMin();
+    fEtaMax  = geom->GetArm1EtaMax();
+    fDphi    = (fPhiMax-fPhiMin)/fNbinEta;
+    fDeta    = (fEtaMax-fEtaMin)/fNbinEta;
+    fNtot    = fNbinPhi*fNbinEta;
+//
+    SetCellSize(fDeta, fDphi);
+    
 }
 
 
@@ -257,8 +279,6 @@ void AliEMCALJetFinder::SetCellSize(Float_t eta, Float_t phi)
 // Set grid cell size
     EMCALCELLGEO.etaCellSize = eta;
     EMCALCELLGEO.phiCellSize = phi;    
-    fDeta = eta;
-    fDphi = phi;
 }
 
 void AliEMCALJetFinder::SetConeRadius(Float_t par)
@@ -384,33 +404,20 @@ void AliEMCALJetFinder::BookLego()
 //
 //  Book histo for discretisation
 //
-//
-//  Get geometry parameters from 
-    AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
-    AliEMCALGeometry* geom = 
-	AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
-    fNbinEta = geom->GetNZ();
-    fNbinPhi = geom->GetNPhi();
-    const Float_t  phiMin  = geom->GetArm1PhiMin()*TMath::Pi()/180.;
-    const Float_t  phiMax  = geom->GetArm1PhiMax()*TMath::Pi()/180.;
-    const Float_t  etaMin  = geom->GetArm1EtaMin();
-    const Float_t  etaMax  = geom->GetArm1EtaMax();
-    fDphi   = (phiMax-phiMin)/fNbinEta;
-    fDeta   = 1.4/fNbinEta;
-    fNtot   = fNbinPhi*fNbinEta;
+
 //
 //  Don't add histos to the current directory
     TH2::AddDirectory(0);
 //    
 //  Signal map
     fLego = new TH2F("legoH","eta-phi",
-			   fNbinEta, etaMin, etaMax, 
-			   fNbinPhi, phiMin, phiMax);
+			   fNbinEta, fEtaMin, fEtaMax, 
+			   fNbinPhi, fPhiMin, fPhiMax);
 //
 //  Background map
     fLegoB = new TH2F("legoB","eta-phi",
-			   fNbinEta, etaMin, etaMax, 
-			   fNbinPhi, phiMin, phiMax);
+			   fNbinEta, fEtaMin, fEtaMax, 
+			   fNbinPhi, fPhiMin, fPhiMax);
     
 }
 

@@ -96,6 +96,10 @@ class AliEMCALJetFinder : public TTask {
     Int_t                          fNtot;            //! total number of cells
     Int_t                          fNbinEta;         //! number of cells in eta
     Int_t                          fNbinPhi;         //! number of cells in phi
+    Float_t                        fEtaMin;          //! minimum eta  
+    Float_t                        fEtaMax;          //! maximum eta
+    Float_t                        fPhiMin;          //! minimun phi
+    Float_t                        fPhiMax;          //! maximum phi
     Float_t                        fEtCell[30000];   //! Cell Energy
     Float_t                        fEtaCell[30000];  //! Cell eta
     Float_t                        fPhiCell[30000];  //! Cell phi
