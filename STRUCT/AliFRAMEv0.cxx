@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/09/29 09:24:30  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ////////////////////////////////////////////////
@@ -43,7 +46,7 @@ AliFRAMEv0::AliFRAMEv0(const char *name, const char *title)
   : AliFRAME(name,title)
 {
   printf("Create FRAMEv0 object\n");  
-  fEuclidGeometry="$(ALICE_ROOT)/Euclid/frame0799nobar.euc";
+  fEuclidGeometry="$(ALICE_ROOT)/Euclid/frame1099h.euc";
   fEuclidMaterial="$(ALICE_ROOT)/Euclid/frame.tme";
 }
 
