@@ -675,11 +675,11 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		    }
 		} // column loop
 	    } // row    loop
+	  treeD->Fill();
+	  ResetDigit();
 	} // supermodule loop
-      treeD->Fill();
-      ResetDigit();
     } // detector loop
-
+  
   fPMDLoader->WriteDigits("OVERWRITE");
   ResetCellADC();
   
