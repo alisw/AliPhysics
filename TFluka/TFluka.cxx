@@ -706,7 +706,8 @@ Int_t TFluka::PDGFromId(Int_t id) const
 {
   //
   // Return PDG code and pseudo ENDF code from Fluka code
-
+  //                      Alpha     He3       Triton    Deuteron  gen. ion  opt. photon   
+    Int_t idSpecial[6] = {10020040, 10020030, 10010030, 10010020, 10000000, 50000050};
   // IPTOKP array goes from official to internal
 
     if (id == -1) {
@@ -717,25 +718,30 @@ Int_t TFluka::PDGFromId(Int_t id) const
     }
 // Error id    
     if (id == 0 || id < -6 || id > 250) {
-	if (fVerbosityLevel >= 1)
+	if (fVerbosityLevel >= 3)
 	    printf("PDGFromId: Error id = 0\n");
 	return -1;
     }
 // Good id    
-    Int_t intfluka = GetFlukaIPTOKP(id);
-    if (intfluka == 0) {
-	if (fVerbosityLevel >= 1)
-	    printf("PDGFromId: Error intfluka = 0: %d\n", id);
-	return -1;
-    } else if (intfluka < 0) {
-	if (fVerbosityLevel >= 1)
-	    printf("PDGFromId: Error intfluka < 0: %d\n", id);
-	return -1;
+    if (id > 0) {
+	Int_t intfluka = GetFlukaIPTOKP(id);
+	if (intfluka == 0) {
+	    if (fVerbosityLevel >= 3)
+		printf("PDGFromId: Error intfluka = 0: %d\n", id);
+	    return -1;
+	} else if (intfluka < 0) {
+	    if (fVerbosityLevel >= 3)
+		printf("PDGFromId: Error intfluka < 0: %d\n", id);
+	    return -1;
+	}
+	if (fVerbosityLevel >= 3)
+	    printf("mpdgha called with %d %d \n", id, intfluka);
+	// MPDGHA() goes from fluka internal to pdg.
+	return mpdgha(intfluka);
+    } else {
+	// ions and optical photons
+	return idSpecial[id + 6];
     }
-    if (fVerbosityLevel >= 3)
-	printf("mpdgha called with %d %d \n", id, intfluka);
-    // MPDGHA() goes from fluka internal to pdg.
-    return mpdgha(intfluka);
 }
 
 void TFluka::StopTrack()
@@ -2157,8 +2163,9 @@ Int_t TFluka::TrackPid() const
 // Return the id of the particle transported
 // TRACKR.jtrack = identity number of the particle
   Int_t caller = GetCaller();
-  if (caller != 2)  // not eedraw 
-    return PDGFromId(TRACKR.jtrack);
+  if (caller != 2) { // not eedraw 
+      return PDGFromId(TRACKR.jtrack);
+  }
   else
     return -1000;
 }
