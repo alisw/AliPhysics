@@ -50,7 +50,7 @@ LIBNOVER      = `find /lib -name 'libNoVersion*.so' | xargs --replace basename {
 GLIBS         = -L/usr/X11R6/lib -lX11  $(LIBNOVER)
 
 #System libraries
-SYSLIBS = -ldl -lbsd
+SYSLIBS = -ldl
 
 EXEFLAGS+= -lg2c
 
