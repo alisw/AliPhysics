@@ -58,6 +58,11 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
 
    // SPD
 
+
+
+   ITS->MakeTreeC();
+   Int_t nparticles=gAlice->GetEvent(0);
+
    AliITSDetType *iDetType=ITS->DetType(0);
    AliITSsegmentationSPD *seg0=(AliITSsegmentationSPD*)iDetType->GetSegmentationModel();
    TClonesArray *dig0  = ITS->DigitsAddress(0);
@@ -65,8 +70,8 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
    AliITSClusterFinderSPD *rec0=new AliITSClusterFinderSPD(seg0,dig0,recp0);
    ITS->SetReconstructionModel(0,rec0);
    // test
-   //printf("SPD dimensions %f %f \n",seg0->Dx(),seg0->Dz());
-   //printf("SPD npixels %d %d \n",seg0->Npz(),seg0->Npx());
+   printf("SPD dimensions %f %f \n",seg0->Dx(),seg0->Dz());
+   printf("SPD npixels %d %d \n",seg0->Npz(),seg0->Npx());
 
 
    // SDD
@@ -108,8 +113,7 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
    AliITSDetType *iDetType=ITS->DetType(2);
    AliITSsegmentationSSD *seg2=(AliITSsegmentationSSD*)iDetType->GetSegmentationModel();
    TClonesArray *dig2  = ITS->DigitsAddress(2);
-   TClonesArray *recp2  = ITS->ClustersAddress(2);
-   AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2,recp2);
+   AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2);
    ITS->SetReconstructionModel(2,rec2);
    // test
    //printf("SSD dimensions %f %f \n",seg2->Dx(),seg2->Dz());
@@ -122,7 +126,9 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
 //
 
    for (int nev=evNumber1; nev<= evNumber2; nev++) {
-       Int_t nparticles = gAlice->GetEvent(nev);
+       if(nev>0) {
+	 nparticles = gAlice->GetEvent(nev);
+       }     
        cout << "nev         " <<nev<<endl;
        cout << "nparticles  " <<nparticles<<endl;
        if (nev < evNumber1) continue;
@@ -132,8 +138,9 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
        Int_t nent=TD->GetEntries();
        printf("Found %d entries in the tree (must be one per module per event!)\n",nent);
        //Int_t nmodules=geom->GetLastSSD();
-       //Int_t last_entry=nent-(nmodules+1);
-       Int_t last_entry=1;
+       //Int_t last_entry=nent-nmodules;
+       //Int_t last_entry=1;
+       Int_t last_entry=0;
        ITS->DigitsToRecPoints(nev,last_entry,"All");
    } // event loop 
 
