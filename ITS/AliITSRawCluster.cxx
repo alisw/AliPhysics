@@ -15,6 +15,10 @@
  
 /*
 $Log$
+Revision 1.7  2001/10/19 21:32:35  nilsen
+Minor changes to remove compliation warning on gcc 2.92.2 compiler, and
+cleanded up a little bit of code.
+
 */
 #include <iostream.h>
 #include <TMath.h>
@@ -128,7 +132,6 @@ Bool_t AliITSRawClusterSDD::Brother(AliITSRawClusterSDD* cluster,
 				    Float_t danode,Float_t dtime) {
 
     Bool_t brother = kFALSE;
-
     Bool_t test2 = kFALSE;
     Bool_t test3 = kFALSE;
     Bool_t test4 = kFALSE;
@@ -164,10 +167,9 @@ ClassImp(AliITSRawClusterSPD)
 AliITSRawClusterSPD::AliITSRawClusterSPD(Float_t clz,Float_t clx,
 					 Float_t Charge,Int_t ClusterSizeZ,
 					 Int_t ClusterSizeX,Int_t xstart,
-					 Int_t xstop,Int_t xstartf,
-					 Int_t xstopf,
+					 Int_t xstop,
 					 Float_t zstart,Float_t zstop,
-					 Int_t zend) {
+					 Int_t zend,Int_t module) {
     // constructor
 
     fZ       = clz;
@@ -177,11 +179,10 @@ AliITSRawClusterSPD::AliITSRawClusterSPD(Float_t clz,Float_t clx,
     fNClX    = ClusterSizeX;
     fXStart  = xstart;
     fXStop   = xstop;
-    fXStartf = xstartf;
-    fXStopf  = xstopf;
     fZStart  = zstart;
     fZStop   = zstop;
     fZend    = zend;
+    fModule  = module;
 }
 //______________________________________________________________________
 void AliITSRawClusterSPD::Add(AliITSRawClusterSPD* clJ) {
@@ -194,10 +195,8 @@ void AliITSRawClusterSPD::Add(AliITSRawClusterSPD* clJ) {
     this->fQ      = this->fQ + clJ->Q();
     this->fXStart = clJ->XStart(); // for a comparison with the next
     this->fXStop  = clJ->XStop();  // z column
-    if(this->fXStartf > clJ->XStartf()) this->fXStartf = clJ->XStartf();
-    if(this->fXStopf < clJ->XStopf())   this->fXStopf  = clJ->XStopf();
     if(this->fZend < clJ->Zend())       this->fZend    = clJ->Zend();
-    this->fNClX   = this->fXStopf - this->fXStartf + 1; 
+    this->fNClX   = this->fXStop - this->fXStart + 1; 
     (this->fNClZ)++;
 
     return;
@@ -232,8 +231,8 @@ void AliITSRawClusterSPD::PrintInfo(){
 
     cout << ", Z: " << fZ << ", X: " << fX << ", Charge: " << fQ<<endl;
     cout << " Z cluster size: " << fNClZ <<", X cluster size "<< fNClX <<endl;
-    cout <<" XStart, XStop, XStartf,XStopf,Zend ="<<fXStart<<","
-	 <<fXStop<<","<<fXStartf<<","<<fXStopf<<","<<fZend<<endl;
+    cout <<" XStart, XStop,Zend, Module ="<<fXStart<<","
+	 <<fXStop<<","<<fZend << "," << fModule<<endl;
 }
 //======================================================================
 ClassImp(AliITSRawClusterSSD)
