@@ -46,19 +46,19 @@ class AliITSstatistics2 : public TObject {
 						  };
     Double_t GetXN (Int_t order){
 	                              // returns x^n
-	                              return fx[order-1];
+	                              return fX[order-1];
 										  };
     Double_t GetYN (Int_t order){
 	                              // returns y^n
-	                              return fy[order-1];
+	                              return fY[order-1];
 										  };
     Double_t GetYXN(Int_t order){
 	                              // returns (yx)^n
-	                              return fyx[order-1];
+	                              return fYx[order-1];
 										  };
     Double_t GetWN (Int_t order){
 	                              // returns w^n (weight)
-	                              return fw[order-1];
+	                              return fW[order-1];
 										  };
     Double_t GetRMSY();
     Double_t GetRMSX();
@@ -72,14 +72,14 @@ class AliITSstatistics2 : public TObject {
     Double_t FitToLine(Double_t &a,Double_t &b);
 
  private:
-    Double_t *fx;    // array of sums of x^n
-    Double_t *fyx;   // array of sums of (xy)^n
-    Double_t *fy;    // array of sums of y^n
-    Double_t *fw;    // array of sums of w^n (weights)
     Int_t  fN;       // number of enetries
     Int_t  fOrder;   // maximum moment of distributions (^n)
+    Double_t *fX;    //[fOrder] array of sums of x^n
+    Double_t *fYx;   //[fOrder] array of sums of (xy)^n
+    Double_t *fY;    //[fOrder] array of sums of y^n
+    Double_t *fW;    //[fOrder] array of sums of w^n (weights)
 
 
-    ClassDef(AliITSstatistics2,1)  //
+    ClassDef(AliITSstatistics2,1)  //compute usueful statistics in 2D
 };
 #endif

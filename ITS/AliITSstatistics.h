@@ -34,20 +34,20 @@ class AliITSstatistics : public TObject {
     return fOrder;
   };
   Double_t GetXN(Int_t order){// returns X^N
-    return fx[order-1];
+    return fX[order-1];
   };
   Double_t GetWN(Int_t order){// returns W^N
-    return fw[order-1];
+    return fW[order-1];
   };
   Double_t GetRMS();
   Double_t GetErrorMean();
   Double_t GetErrorRMS();
 
  private:
-  Double_t *fx;   // fx array of x moments
-  Double_t *fw;   // fw array of weight by moment
-  Int_t    fN;    // fN number of enetries
-  Int_t    fOrder;// fOrder maximum allowed moment
+  Int_t    fN;    //fN number of enetries
+  Int_t    fOrder;//fOrder maximum allowed moment
+  Double_t *fX;   //[fOrder] fX array of x moments
+  Double_t *fW;   //[fOrder] fW array of weight by moment
 
   ClassDef(AliITSstatistics,1)// A class to do simple statistics calculations
 };
