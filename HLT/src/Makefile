@@ -85,7 +85,7 @@ $(LEVELSO) : $(OBJS)
 
 $(DICT) : $(HDRS)
 	@echo "Generating dictionary..."
-	@rootcint -f $(DICT) -c $(INCLUDES) $(HDRS)
+	@rootcint -f $(DICT) -c $(INCLUDES) -DGCCVERSION=$(GCCVERSION) -include AliL3StandardIncludes.h $(HDRS)
 
 $(OBJDIR)/%.o : %.cxx 
 	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
