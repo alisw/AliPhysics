@@ -117,7 +117,7 @@ Int_t ITSReadPlotData(char *filename = "galice.root", Int_t evNum = 0) {
 				
 				// Detector type: 0 --> SPD, 1 --> SDD, 2 --> SSD.
 				// Layer 1,2 --> 0 / Layer 3,4 --> 1 / Layer 5,6 --> 2
-				dtype = ID[1] / 3;
+				dtype = (ID[1] - 1) / 2;
 				
 				// Once fixed the layer number, the macro calculates the max number
 				// for ladder and detector from geometry, and accepts only suitable values.
@@ -159,7 +159,8 @@ Int_t ITSReadPlotData(char *filename = "galice.root", Int_t evNum = 0) {
 				
 		// Defines the histograms inside the `for' cycle, so they are destroyed at the end
 		// of every read sequqnce, in order to mek another withour segmentation faults
-		Text_t msg[250], xm = 0.0, ym = 0.0;
+		Text_t msg[250];
+		Float_t xm = 0.0, ym = 0.0, zm = 0.0;
 		switch (dtype) {
 			case 0: xm = 1.5; zm = 7.0; break;
 			case 1: xm = 7.5; zm = 8.0; break;
@@ -322,6 +323,12 @@ Int_t GetModuleDigits(TObject *its, Int_t ID, Int_t dtype, Float_t*& X, Float_t*
 	// while, if it doesn't, the first thing to do is dimensioning
 	// the coordinate and energy loss arrays, and then the loop can start.
 
+        if(dtype==2){
+           Int_t layer, ladder, detec;
+           gm->GetModuleId(ID,layer,ladder,detec);
+           seg->SetLayer(layer);
+        }
+
 	if (!digits_num)
 		return 0;
 	else {
@@ -345,7 +352,7 @@ Int_t GetModuleDigits(TObject *its, Int_t ID, Int_t dtype, Float_t*& X, Float_t*
 		Int_t ix=digit->fCoord2;  // cell number x
     // Get local coordinates of the element (microns)
 		if(dtype < 2)
-    	seg->GetPadCxz(ix, iz, X[j], Z[j]);
+    	seg->DetToLocal(ix, iz, X[j], Z[j]);
     else {
 			// SSD: if iz==0 ---> N side; if iz==1 P side
       if (ssdone[j] == 0) {
@@ -368,16 +375,9 @@ Int_t GetModuleDigits(TObject *its, Int_t ID, Int_t dtype, Float_t*& X, Float_t*
 					}
 				}
         if (!impaired) seg->GetPadCxz(pstrip, nstrip, X[j], Z[j]);
+	X[j] /= 10000.0;  // convert microns to cm
+	Z[j] /= 10000.0;  // convert microns to cm
 			}
-		}
-		if (dtype == 0) {
-			// !!!THIS CONVERSION TO HIT LRS SHOULD BE REMOVED AS SOON AS THE CODE IS FIXED
-			X[j] = X[j]-seg->Dx() / 2.0;
-			Z[j] = Z[j]-seg->Dz() / 2.0;
-		}
-		if (dtype != 1) {
-			X[j] /= 10000.0;
-			Z[j] /= 10000.0;
 		}
 	}
 	return digits_num;

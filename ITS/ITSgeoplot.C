@@ -64,7 +64,8 @@ Int_t ITSgeoplot (char *opt="All+Rec", char *filename="galice.root") {
    *                 ---  .L ITSgeoplot.C++
    *                 ---  ITSgeoplot("ListOfParametersIfAny");
    *     
-   *  M.Masera  04/05/2001 19:00
+   *  M.Masera  14/05/2001 18:30
+   *            Use DetToLocal instead of GetCxz for SPD and SDD
    ********************************************************************/
 
   extern void GetHitsCoor(TObject *its, Int_t mod, TObjArray & histos, Int_t subd,Bool_t verb);
@@ -444,9 +445,9 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
       Int_t iz=digs->fCoord1;  // cell number z
       Int_t ix=digs->fCoord2;  // cell number x
-      // Get local coordinates of the element (microns)
+      // Get local coordinates of the element 
       if(subd<2){
-        seg->GetPadCxz(ix,iz,lcoor[0],lcoor[2]);
+        seg->DetToLocal(ix,iz,lcoor[0],lcoor[2]);
       }
       else{
         // SSD: if iz==0 ---> N side; if iz==1 P side
@@ -474,11 +475,6 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
           if(!impaired)seg->GetPadCxz(pstrip,nstrip,lcoor[0],lcoor[2]);
         }
       }
-      if(subd==0){
-        // !!!THIS CONVERSION TO HIT LRS SHOULD BE REMOVED AS SOON AS THE CODE IS FIXED
-        lcoor[0]=lcoor[0]-seg->Dx()/2;
-        lcoor[2]=lcoor[2]-seg->Dz()/2;
-      }
       if(subd<2 || (subd==2 && ssdone[digit]==1)){
         Int_t coor1=digs->fCoord1;
         Int_t coor2=digs->fCoord2;
@@ -504,8 +500,8 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
         }
         if(subd<2 || (subd==2 && pair[digit]!=-1)){
           // Global coordinates of the element
-          //SDD uses cm, SPD and SSD microns
-          if(subd!=1)for(Int_t j=0;j<3;j++)lcoor[j]=lcoor[j]/10000.;
+          //SDD and SPD use cm, SSD microns (GetPadCxz)
+          if(subd==2)for(Int_t j=0;j<3;j++)lcoor[j]=lcoor[j]/10000.;
           lcoor[1]=0.;
           geom->LtoG(mod,lcoor,gcoor);  // global coord. in cm
           ragdig=sqrt(gcoor[0]*gcoor[0]+gcoor[1]*gcoor[1]);
