@@ -91,12 +91,10 @@ TTask("AliEMCALReconstructioner",evFoldName)
   AliEMCALGetter::Instance(evFoldName) ; 
 
   fRecPointBranch=branchName ; 
-  Info("ctor", "Creating Clusterizer") ;
   fClusterizer = new AliEMCALClusterizerv1(evFoldName, GetTitle());
   Add(fClusterizer);
   
   fRecPartBranch=branchName ; 
-  Info("ctor", "Creating PID") ;
   fPID         = new AliEMCALPIDv1(evFoldName, GetTitle());
   Add(fPID);
   
@@ -180,4 +178,14 @@ void AliEMCALReconstructioner::Print()const {
        GetTitle(), 
        fClusterizer->GetName(), fRecPointBranch.Data(), 
        fPID->GetName(), fRecPartBranch.Data() ) ; 
+}
+
+//____________________________________________________________________________
+void AliEMCALReconstructioner::SetEventRange(Int_t first, Int_t last)
+{
+  // Set the event range to process
+  fFirstEvent=first; 
+  fLastEvent=last; 
+  fClusterizer->SetEventRange(fFirstEvent, fLastEvent) ; 
+  fPID->SetEventRange(fFirstEvent, fLastEvent) ;
 }

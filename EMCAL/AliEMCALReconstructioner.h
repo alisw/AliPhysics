@@ -44,6 +44,7 @@ public:
 
   AliEMCALClusterizer       * GetClusterizer()const { return fClusterizer ; }
   AliEMCALPID               * GetPID()        const { return fPID;          }
+  void SetEventRange(Int_t first=0, Int_t last=-1) ; 
 
   void Print()const ;
 
@@ -64,9 +65,10 @@ private:
 
   AliEMCALClusterizer       * fClusterizer ; //! Pointer to AliEMCALClusterizer
   AliEMCALPID               * fPID ;         //! Pointer to AliEMCALPID
+  Bool_t  fIsInitialized ; // kTRUE if reconstructioner is initialized
+  Int_t   fFirstEvent;        // first event to process
+  Int_t   fLastEvent;         // last  event to process
 
-  Bool_t   fIsInitialized ; // kTRUE if reconstructioner is initialized
- 
   ClassDef(AliEMCALReconstructioner,1)  // Reconstruction algorithm class (Base Class)
 
 }; 

@@ -37,6 +37,7 @@ public:
   Int_t         GetSDigitsInRun() const {return fSDigitsInRun ;}  
   virtual void  Print() const ;
   void          SetEventFolderName(TString name) { fEventFolderName = name ; }
+  void          SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
 
   Bool_t operator == (const AliEMCALSDigitizer & sd) const ;
   const AliEMCALSDigitizer & operator = (const AliEMCALSDigitizer & /*sd*/) {return *this ;}
@@ -56,6 +57,8 @@ private:
   TString fEventFolderName;        // event folder name
   Bool_t  fInit ;                  //! tells if initialisation wennt OK, will revent exec if not
   Int_t   fSDigitsInRun ;          //! Total number of sdigits in one run
+  Int_t   fFirstEvent;             // first event to process
+  Int_t   fLastEvent;              // last  event to process
 
   ClassDef(AliEMCALSDigitizer,5)  // description 
 
