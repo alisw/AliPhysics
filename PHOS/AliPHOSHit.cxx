@@ -59,7 +59,6 @@ AliPHOSHit::AliPHOSHit(Int_t Shunt, Int_t primary, Int_t Track, Int_t id, Float_
   // ctor
   
    fId         = id ;
-   fTrack      = Track;
    fX          = hits[0] ;
    fY          = hits[1] ;
    fZ          = hits[2] ;

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/11/20 09:50:03  schutz
+  AliPHOSCPVHit inherits from AliHit
+
   Revision 1.1  2000/11/03 16:49:53  schutz
   New class AliPHOSCPVHit
 
@@ -51,6 +54,7 @@ AliPHOSCPVHit::AliPHOSCPVHit(Int_t shunt, Int_t track, TLorentzVector p, Float_t
   fMomentum  = p;
   fX         = xy[0];
   fY         = xy[1];
+  fZ         = 9999.; //Fake Z to avoid FPE
   fIpart     = ipart;
 }
 
