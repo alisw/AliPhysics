@@ -100,7 +100,7 @@ void AliVZERO::CreateMaterials()
 
 
 //_____________________________________________________________________________
-Int_t AliVZERO::DistanceToPrimitive(Int_t px, Int_t py)
+Int_t AliVZERO::DistanceToPrimitive(Int_t /*px*/, Int_t /*py*/)
 {
   //
   // Calculate the distance from the mouse to the VZERO on the screen
