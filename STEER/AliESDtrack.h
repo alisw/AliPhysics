@@ -11,6 +11,16 @@
 //      
 //         Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
+/*****************************************************************************
+ *  Use GetExternalParameters() and GetExternalCovariance() to access the    *
+ *      track information regardless of its internal representation.         *
+ * This formation is now fixed in the following way:                         *
+ *      external param0:   local Y-coordinate of a track (cm)                *
+ *      external param1:   local Z-coordinate of a track (cm)                *
+ *      external param2:   local sine of the track momentum azimuthal angle  *
+ *      external param3:   tangent of the track momentum dip angle           *
+ *      external param4:   1/pt (1/(GeV/c))                                  *
+ *****************************************************************************/
 
 #include <TBits.h>
 #include <TObject.h>
@@ -35,8 +45,12 @@ public:
   Int_t GetLabel() const {return fLabel;}
   Double_t GetAlpha() const {return fRalpha;}
   void GetExternalParameters(Double_t &x, Double_t p[5]) const;
-  Bool_t GetExternalParametersAt(Double_t x, Double_t p[5]) const;
   void GetExternalCovariance(Double_t cov[15]) const;
+
+  Bool_t GetExternalParametersAt(Double_t x, Double_t p[5]) const;
+  Bool_t GetPxPyPzAt(Double_t x, Double_t p[3]) const;
+  Bool_t GetXYZAt(Double_t x, Double_t r[3]) const;
+
   Double_t GetIntegratedLength() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetMass() const;
@@ -62,12 +76,6 @@ public:
   void GetInnerExternalCovariance(Double_t cov[15]) const;//skowron
   Double_t GetInnerAlpha() const {return fIalpha;}
   
-  
-  void GetOuterPxPyPzPHOS(Double_t *p) const;
-  void GetOuterPxPyPzEMCAL(Double_t *p) const;
-  void GetOuterXYZPHOS(Double_t *r) const;
-  void GetOuterXYZEMCAL(Double_t *r) const;
-
   void SetITSpid(const Double_t *p);
   void SetITSChi2MIP(const Float_t *chi2mip);
   void SetITStrack(AliKalmanTrack * track){fITStrack=track;}
@@ -196,23 +204,12 @@ protected:
   Double_t fIx;       // x-coordinate of the track reference plane
   Double_t fIp[5];    // external track parameters
   Double_t fIc[15];   // external cov. matrix of the track parameters
+
 //Track parameters at the inner wall of the TRD 
   Double_t fTalpha;   // Track rotation angle
   Double_t fTx;       // x-coordinate of the track reference plane
   Double_t fTp[5];    // external track parameters
   Double_t fTc[15];   // external cov. matrix of the track parameters
-
-//Track parameters at the radius of the PHOS
-  Double_t fOalpha;   //! Track rotation angle
-  Double_t fOx;       //! x-coordinate of the track reference plane
-  Double_t fOp[5];    //! external track parameters
-  Double_t fOc[15];   //! external cov. matrix of the track parameters
-
-//Track parameters at the radius of the EMCAL
-  Double_t fXalpha;   //! Track rotation angle
-  Double_t fXx;       //! x-coordinate of the track reference plane
-  Double_t fXp[5];    //! external track parameters
-  Double_t fXc[15];   //! external cov. matrix of the track parameters
 
   // ITS related track information
   Float_t fITSchi2;        // chi2 in the ITS
@@ -236,6 +233,7 @@ protected:
   Float_t fTPCPoints[4];   // TPC points -first, max. dens, last and max density
   Int_t   fKinkIndexes[3]; // array of indexes of posible kink candidates 
   Int_t   fV0Indexes[3]; // array of indexes of posible kink candidates 
+
   // TRD related track information
   Float_t fTRDchi2;        // chi2 in the TRD
   Int_t   fTRDncls;        // number of clusters assigned in the TRD
@@ -245,6 +243,7 @@ protected:
   Float_t fTRDr[kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTRDLabel;       // label according TRD
   AliKalmanTrack * fTRDtrack; //! OWNER: pointer to the TRD track -- currently for debug purpose
+
   // TOF related track information
   Float_t fTOFchi2;        // chi2 in the TOF
   UInt_t  fTOFindex;       // index of the assigned TOF cluster
@@ -252,6 +251,7 @@ protected:
   Float_t fTOFr[kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTOFLabel[3];       // TOF label 
   Float_t fTOFInfo[10];       //! TOF informations
+
   // PHOS related track information 
   Float_t fPHOSpos[3]; // position localised by PHOS in global coordinate system
   Float_t fPHOSsignal; // energy measured by PHOS

@@ -49,6 +49,7 @@
 #pragma link C++ class AliEMCALFastRecParticle+;		
 #pragma link C++ class AliEMCALPID+;		
 #pragma link C++ class AliEMCALPIDv1+;
+#pragma link C++ class AliEMCALTracker+;
 #pragma link C++ class AliEMCALLoader+;	
 #pragma link C++ class AliEMCALReconstructor+;
 #pragma link C++ class AliEMCALRawStream+;

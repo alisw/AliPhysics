@@ -42,6 +42,7 @@ public:
   static void                SetDebug()   { fgDebug = kTRUE ; }
   static void                ResetDebug() { fgDebug = kFALSE ; }
   static Bool_t              Debug() { return fgDebug ; }
+  AliTracker *CreateTracker(AliRunLoader* runLoader) const;
   virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
   virtual void               Reconstruct(AliRunLoader* runLoader) const ;
   virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReaderFile * rawreader) const ;

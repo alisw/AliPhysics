@@ -32,6 +32,7 @@
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSPIDv1.h"
 #include "AliPHOSGetter.h"
+#include "AliPHOSTracker.h"
 #include "AliRawReaderFile.h"
 
  
@@ -98,31 +99,12 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReaderFile
 //____________________________________________________________________________
 void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 {
-  // Called by AliReconstruct after Reconstruct() and global tracking and vertxing 
-  //Creates the tracksegments and Recparticles
-  
+  // This function creates AliESDtracks from AliPHOSRecParticles
+  //         and
+  // writes them to the ESD
+
   Int_t eventNumber = runLoader->GetEventNumber() ;
 
-  TString headerFile(runLoader->GetFileName()) ; 
-  TString branchName(runLoader->GetEventFolder()->GetName()) ;  
-
-  AliPHOSTrackSegmentMakerv1 tsm(headerFile, branchName);
-  tsm.SetESD(esd) ; 
-  AliPHOSPIDv1 pid(headerFile, branchName);
-
-  // do current event; the loop over events is done by AliReconstruction::Run()
-  tsm.SetEventRange(eventNumber, eventNumber) ; 
-  pid.SetEventRange(eventNumber, eventNumber) ; 
-  if ( Debug() ) {
-   tsm.ExecuteTask("deb all") ;
-   pid.ExecuteTask("deb all") ;
-  }
-  else {
-    tsm.ExecuteTask("") ;
-    pid.ExecuteTask("") ;
-  }
-  
-  // Creates AliESDtrack from AliPHOSRecParticles 
   AliPHOSGetter::Instance()->Event(eventNumber, "P") ; 
   TClonesArray *recParticles = AliPHOSGetter::Instance()->RecParticles();
   Int_t nOfRecParticles = recParticles->GetEntries();
@@ -146,3 +128,11 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     delete et;
   }
 }
+
+AliTracker* AliPHOSReconstructor::CreateTracker(AliRunLoader* runLoader) const
+{
+// creates the PHOS tracker
+  if (!runLoader) return NULL; 
+  return new AliPHOSTracker(runLoader);
+}
+

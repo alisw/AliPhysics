@@ -40,7 +40,8 @@ public:
   virtual ~AliEMCALReconstructor() ; //dtor
 
   Bool_t                     Debug() const { return fDebug ; }
-  virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
+  AliTracker *CreateTracker(AliRunLoader* runLoader) const;  
+  virtual void FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
   virtual void               Reconstruct(AliRunLoader* runLoader) const ;
   virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReaderFile * rawreader) const ;
   

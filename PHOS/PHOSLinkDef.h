@@ -69,5 +69,6 @@
 #pragma link C++ class AliPHOSRawStream+;
 #pragma link C++ class AliPHOSOnlineMonitor+;
 #pragma link C++ class AliPHOSGetterLight+;
+#pragma link C++ class AliPHOSTracker+;
 
 #endif

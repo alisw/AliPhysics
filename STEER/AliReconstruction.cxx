@@ -138,6 +138,10 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
   fTRDTracker(NULL),
   fTOFLoader(NULL),
   fTOFTracker(NULL),
+  fPHOSLoader(NULL),
+  fPHOSTracker(NULL),
+  fEMCALLoader(NULL),
+  fEMCALTracker(NULL),
   fRICHLoader(NULL),
   fRICHTracker(NULL),
 
@@ -172,6 +176,10 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fTRDTracker(NULL),
   fTOFLoader(NULL),
   fTOFTracker(NULL),
+  fPHOSLoader(NULL),
+  fPHOSTracker(NULL),
+  fEMCALLoader(NULL),
+  fEMCALTracker(NULL),
   fRICHLoader(NULL),
   fRICHTracker(NULL),
 
@@ -543,7 +551,7 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     }
     if (fCheckPointLevel > 1) WriteESD(esd, "ITS.tracking");
 
-    if (fTRDTracker || fTOFTracker) {
+    if (fTRDTracker||fTOFTracker||fPHOSTracker||fEMCALTracker||fRICHTracker) {
       // ITS back propagation
       AliDebug(1, "ITS back propagation");
       if (fITSTracker->PropagateBack(esd) != 0) {
@@ -599,6 +607,48 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
 	fTOFTracker->UnloadClusters();
 	fTOFLoader->UnloadDigits();
 
+	if (!fPHOSTracker) {
+	  AliWarning("no PHOS tracker");
+	} else {
+	  // PHOS back propagation
+	  AliDebug(1, "PHOS back propagation");
+	  fPHOSLoader->LoadRecPoints("read");
+	  TTree* phosTree = fPHOSLoader->TreeR();
+	  if (!phosTree) {
+	    AliError("Can't get the PHOS cluster tree");
+	    return kFALSE;
+	  }
+	  fPHOSTracker->LoadClusters(phosTree);
+	  if (fPHOSTracker->PropagateBack(esd) != 0) {
+	    AliError("PHOS backward propagation failed");
+	    return kFALSE;
+	  }
+	  if (fCheckPointLevel > 1) WriteESD(esd, "PHOS.back");
+	  fPHOSTracker->UnloadClusters();
+	  fPHOSLoader->UnloadRecPoints();
+	}
+
+	if (!fEMCALTracker) {
+	  AliWarning("no EMCAL tracker");
+	} else {
+	  // EMCAL back propagation
+	  AliDebug(1, "EMCAL back propagation");
+	  fEMCALLoader->LoadRecPoints("read");
+	  TTree* emcalTree = fEMCALLoader->TreeR();
+	  if (!emcalTree) {
+	    AliError("Can't get the EMCAL cluster tree");
+	    return kFALSE;
+	  }
+	  fEMCALTracker->LoadClusters(emcalTree);
+	  if (fEMCALTracker->PropagateBack(esd) != 0) {
+	    AliError("EMCAL backward propagation failed");
+	    return kFALSE;
+	  }
+	  if (fCheckPointLevel > 1) WriteESD(esd, "EMCAL.back");
+	  fEMCALTracker->UnloadClusters();
+	  fEMCALLoader->UnloadRecPoints();
+	}
+
 	if (!fRICHTracker) {
 	  AliWarning("no RICH tracker");
 	} else {
@@ -649,7 +699,7 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
       }
       if (fCheckPointLevel > 1) WriteESD(esd, "ITS.refit");
 
-    }  // if TRD tracker
+    }  // if TRD tracker or TOF tracker or PHOS tracker ... 
     fITSTracker->UnloadClusters();
     fITSLoader->UnloadRecPoints();
 
@@ -838,6 +888,38 @@ Bool_t AliReconstruction::CreateTrackers()
     }
   }
 
+  fPHOSTracker = NULL;
+  fPHOSLoader = fRunLoader->GetLoader("PHOSLoader");
+  if (!fPHOSLoader) {
+    AliWarning("no PHOS loader found");
+    if (fStopOnError) return kFALSE;
+  } else {
+    AliReconstructor* phosReconstructor = GetReconstructor("PHOS");
+    if (phosReconstructor) {
+      fPHOSTracker = phosReconstructor->CreateTracker(fRunLoader);
+    }
+    if (!fPHOSTracker) {
+      AliWarning("couldn't create a tracker for PHOS");
+      if (fStopOnError) return kFALSE;
+    }
+  }
+
+  fEMCALTracker = NULL;
+  fEMCALLoader = fRunLoader->GetLoader("EMCALLoader");
+  if (!fEMCALLoader) {
+    AliWarning("no EMCAL loader found");
+    if (fStopOnError) return kFALSE;
+  } else {
+    AliReconstructor* emcalReconstructor = GetReconstructor("EMCAL");
+    if (emcalReconstructor) {
+      fEMCALTracker = emcalReconstructor->CreateTracker(fRunLoader);
+    }
+    if (!fEMCALTracker) {
+      AliWarning("couldn't create a tracker for EMCAL");
+      if (fStopOnError) return kFALSE;
+    }
+  }
+
   fRICHTracker = NULL;
   fRICHLoader = fRunLoader->GetLoader("RICHLoader");
   if (!fRICHLoader) {
@@ -874,6 +956,10 @@ void AliReconstruction::CleanUp(TFile* file)
   fTRDTracker = NULL;
   delete fTOFTracker;
   fTOFTracker = NULL;
+  delete fPHOSTracker;
+  fPHOSTracker = NULL;
+  delete fEMCALTracker;
+  fEMCALTracker = NULL;
   delete fRICHTracker;
   fRICHTracker = NULL;
 

@@ -43,8 +43,6 @@ fIalpha(0),
 fIx(0),
 fTalpha(0),
 fTx(0),
-fOalpha(0),
-fOx(0),
 fITSchi2(0),
 fITSncls(0),
 fITSsignal(0),
@@ -87,10 +85,10 @@ fRICHsignal(-1)
   fEMCALpos[0]=fEMCALpos[1]=fEMCALpos[2]=0.;
   Int_t i;
   for (i=0; i<5; i++)  { 
-    fRp[i]=fCp[i]=fIp[i]=fOp[i]=fXp[i]=fTp[i]=0.;
+    fRp[i]=fCp[i]=fIp[i]=fTp[i]=0.;
   }
   for (i=0; i<15; i++) { 
-    fRc[i]=fCc[i]=fIc[i]=fOc[i]=fXc[i]=fTc[i]=0.;  
+    fRc[i]=fCc[i]=fIc[i]=fTc[i]=0.;  
   }
   for (i=0; i<6; i++)  { fITSindex[i]=0; }
   for (i=0; i<180; i++){ fTPCindex[i]=0; }
@@ -141,16 +139,6 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   fTx =track.fTx;
   for (Int_t i=0;i<5;i++) fTp[i] =track.fTp[i];
   for (Int_t i=0;i<15;i++)  fTc[i] =track.fTc[i];
-  //
-  fOalpha =track.fOalpha;
-  fOx =track.fOx;
-  for (Int_t i=0;i<5;i++) fOp[i] =track.fOp[i];
-  for (Int_t i=0;i<15;i++)  fOc[i] =track.fOc[i];
-  //
-  fXalpha =track.fXalpha;
-  fXx =track.fXx;
-  for (Int_t i=0;i<5;i++) fXp[i] =track.fXp[i];
-  for (Int_t i=0;i<15;i++) fXc[i] =track.fXc[i];
   //
   fITSchi2 =track.fITSchi2;
   for (Int_t i=0;i<12;i++) fITSchi2MIP[i] =track.fITSchi2MIP[i];
@@ -338,19 +326,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags) {
                      //
     break;
 
-  case kTRDout:
-    //requested by the PHOS/EMCAL  ("temporary solution")
-    if (GetExternalParametersAt(460.,fOp)) {
-       fOalpha=t->GetAlpha();
-       fOx=460.;
-       t->GetExternalCovariance(fOc); //can be done better
-    }
-    if (GetExternalParametersAt(450.,fXp)) {
-       fXalpha=t->GetAlpha();
-       fXx=450.;
-       t->GetExternalCovariance(fXc); //can be done better
-    }
-  case kTRDin: case kTRDrefit:
+  case kTRDout: case kTRDin: case kTRDrefit:
     fTRDLabel = t->GetLabel(); 
     fTRDncls=t->GetNumberOfClusters();
     fTRDchi2=t->GetChi2();
@@ -524,8 +500,8 @@ void AliESDtrack::GetCovariance(Double_t cv[21]) const {
   // Cov(y,x) ... :   cv[1]  cv[2]
   // Cov(z,x) ... :   cv[3]  cv[4]  cv[5]
   // Cov(px,x)... :   cv[6]  cv[7]  cv[8]  cv[9]
-  // Cov(py,y)... :   cv[10] cv[11] cv[12] cv[13] cv[14]
-  // Cov(pz,z)... :   cv[15] cv[16] cv[17] cv[18] cv[19] cv[20]
+  // Cov(py,x)... :   cv[10] cv[11] cv[12] cv[13] cv[14]
+  // Cov(pz,x)... :   cv[15] cv[16] cv[17] cv[18] cv[19] cv[20]
   //
   // Results for (nearly) straight tracks are meaningless !
   //---------------------------------------------------------------------
@@ -621,59 +597,44 @@ void  AliESDtrack::GetTRDExternalParameters(Double_t &x, Double_t&alpha, Double_
   for (Int_t i=0; i<15; i++) cov[i]=fTc[i];
 }
 
-void AliESDtrack::GetOuterPxPyPzPHOS(Double_t *p) const {
+Bool_t AliESDtrack::GetPxPyPzAt(Double_t x,Double_t *p) const {
   //---------------------------------------------------------------------
   // This function returns the global track momentum components
-  // af the radius of the PHOS
+  // at the position "x" using the helix track approximation
   //---------------------------------------------------------------------
-  p[0]=p[1]=p[2]=0. ; 
-  if (fOx==0) 
-    return;
-  Double_t phi=TMath::ASin(fOp[2]) + fOalpha;
-  Double_t pt=1./TMath::Abs(fOp[4]);
-  p[0]=pt*TMath::Cos(phi); 
-  p[1]=pt*TMath::Sin(phi); 
-  p[2]=pt*fOp[3];
-} 
-void AliESDtrack::GetOuterPxPyPzEMCAL(Double_t *p) const {
-  //---------------------------------------------------------------------
-  // This function returns the global track momentum components
-  // af the radius of the EMCAL
-  //---------------------------------------------------------------------
-  if (fXx==0)
-    return;
-  Double_t phi=TMath::ASin(fXp[2]) + fXalpha;
-  Double_t pt=1./TMath::Abs(fXp[4]);
-  p[0]=pt*TMath::Cos(phi); 
-  p[1]=pt*TMath::Sin(phi); 
-  p[2]=pt*fXp[3];
+  Double_t dx=x-fRx;
+  Double_t f1=fRp[2], f2=f1 + dx*fRp[4]/AliKalmanTrack::GetConvConst();
+
+  if (TMath::Abs(f2) >= 0.9999) return kFALSE;
+  
+  Double_t r2=TMath::Sqrt(1.- f2*f2);
+
+  Double_t pt=1./TMath::Abs(fRp[4]);
+  Double_t cs=TMath::Cos(fRalpha), sn=TMath::Sin(fRalpha);
+  p[0]=pt*(r2*cs - f2*sn); p[1]=pt*(f2*cs + r2*sn); p[2]=pt*fRp[3];
+
+  return kTRUE;
 }
 
-void AliESDtrack::GetOuterXYZPHOS(Double_t *xyz) const {
+Bool_t AliESDtrack::GetXYZAt(Double_t x, Double_t *xyz) const {
   //---------------------------------------------------------------------
   // This function returns the global track position
-  // af the radius of the PHOS
+  // af the radius "x" using the helix track approximation
   //---------------------------------------------------------------------
-  xyz[0]=xyz[1]=xyz[2]=0.;
-  if (fOx==0) 
-    return;
-  Double_t phi=TMath::ATan2(fOp[0],fOx) + fOalpha;
-  Double_t r=TMath::Sqrt(fOx*fOx + fOp[0]*fOp[0]);
-  xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fOp[1]; 
-} 
-void AliESDtrack::GetOuterXYZEMCAL(Double_t *xyz) const {
-  //---------------------------------------------------------------------
-  // This function returns the global track position
-  // af the radius of the EMCAL
-  //---------------------------------------------------------------------
-  if (fXx==0) 
-    return;
-  Double_t phi=TMath::ATan2(fXp[0],fOx) + fXalpha;
-  Double_t r=TMath::Sqrt(fXx*fXx + fXp[0]*fXp[0]);
-  xyz[0]=r*TMath::Cos(phi); 
-  xyz[1]=r*TMath::Sin(phi); 
-  xyz[2]=fXp[1]; 
-} 
+  Double_t dx=x-fRx;
+  Double_t f1=fRp[2], f2=f1 + dx*fRp[4]/AliKalmanTrack::GetConvConst();
+
+  if (TMath::Abs(f2) >= 0.9999) return kFALSE;
+  
+  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
+  Double_t y = fRp[0] + dx*(f1+f2)/(r1+r2);
+  Double_t z = fRp[1] + dx*(f1+f2)/(f1*r2 + f2*r1)*fRp[3];
+
+  Double_t cs=TMath::Cos(fRalpha), sn=TMath::Sin(fRalpha);
+  xyz[0]=x*cs - y*sn; xyz[1]=x*sn + y*cs; xyz[2]=z;
+
+  return kTRUE;
+}
 
 //_______________________________________________________________________
 void AliESDtrack::GetIntegratedTimes(Double_t *times) const {

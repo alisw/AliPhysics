@@ -118,6 +118,10 @@ private:
   AliTracker*    fTRDTracker;         //! tracker for TRD
   AliLoader*     fTOFLoader;          //! loader for TOF
   AliTracker*    fTOFTracker;         //! tracker for TOF
+  AliLoader*     fPHOSLoader;         //! loader for PHOS
+  AliTracker*    fPHOSTracker;        //! tracker for PHOS
+  AliLoader*     fEMCALLoader;        //! loader for EMCAL
+  AliTracker*    fEMCALTracker;       //! tracker for EMCAL
   AliLoader*     fRICHLoader;         //! loader for RICH
   AliTracker*    fRICHTracker;        //! tracker for RICH
 

@@ -38,6 +38,7 @@ AliEMCALRecParticle.cxx \
 AliEMCALFastRecParticle.cxx \
 AliEMCALPID.cxx \
 AliEMCALPIDv1.cxx \
+AliEMCALTracker.cxx \
 AliEMCALLoader.cxx \
 AliEMCALReconstructor.cxx \
 AliEMCALRawStream.cxx
