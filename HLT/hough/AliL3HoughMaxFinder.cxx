@@ -111,3 +111,140 @@ AliL3TrackArray *AliL3HoughMaxFinder::FindMaxima(TH2F *hist,Int_t *rowrange,Int_
   tracks->QSort();
   return tracks;
 }
+
+void AliL3HoughMaxFinder::FindPeak(TH2F *hist,Double_t *peak)
+{
+  //Attempt of a more sophisticated peak finder.
+  
+  Int_t xmin = hist->GetXaxis()->GetFirst();
+  Int_t xmax = hist->GetXaxis()->GetLast();
+  Int_t ymin = hist->GetYaxis()->GetFirst();
+  Int_t ymax = hist->GetYaxis()->GetLast();
+  Int_t nbinsx = hist->GetXaxis()->GetNbins();
+  
+  Int_t *m = new Int_t[nbinsx];
+  Int_t *m_low = new Int_t[nbinsx];
+  Int_t *m_up = new Int_t[nbinsx];
+  for(Int_t i=0; i<nbinsx; i++)
+    {
+      m[i]=0;
+      m_low[i]=0;
+      m_up[i]=0;
+    }
+  
+
+  Int_t t1 = 2;
+  Double_t t2 = 0.95;
+
+  Int_t max_x=0,sum=0,max_xbin=0,bin;
+
+  for(Int_t xbin=xmin; xbin<=xmax; xbin++)
+    {
+      for(Int_t ybin=ymin; ybin <= ymax - t1; ybin += t1)
+	{
+	  sum = 0;
+	  for(Int_t y=ybin; y<=ybin+t1; y++)
+	    {
+	      //Inside window
+	      bin = hist->GetBin(xbin,y);
+	      sum += (Int_t)hist->GetBinContent(bin);
+	      
+	    }
+	  if(sum > m[xbin]) //Max value locally in this xbin
+	    {
+	      m[xbin]=sum;
+	      m_low[xbin]=ybin;
+	      m_up[xbin]=ybin+t1;
+	    }
+	  
+	}
+      
+      if(m[xbin] > max_x) //Max value globally in x-direction
+	{
+	  max_xbin = xbin;
+	  max_x = m[xbin];//sum;
+	}
+    }
+  //printf("max_xbin %d max_x %d m_low %d m_up %d\n",max_xbin,max_x,m_low[max_xbin],m_up[max_xbin]);
+  //printf("ylow %f yup %f\n",hist->GetYaxis()->GetBinCenter(m_low[max_xbin]),hist->GetYaxis()->GetBinCenter(m_up[max_xbin]));
+
+  //Determine a width in the x-direction
+  Int_t x_low=0,x_up=0;
+  for(Int_t xbin=max_xbin-1; xbin >= xmin; xbin--)
+    {
+      if(m[xbin]*t2 < max_x)
+	{
+	  x_low = xbin;
+	  break;
+	}
+    }
+  for(Int_t xbin = max_xbin+1; xbin <=xmax; xbin++)
+    {
+      if(m[xbin]*t2 < max_x)
+	{
+	  x_up = xbin;
+	  break;
+	}
+    }
+  
+  //  printf("xlow %f xup %f\n",hist->GetXaxis()->GetBinCenter(x_low),hist->GetXaxis()->GetBinCenter(x_up));
+
+  //Now, calculate the center of mass in x-direction
+  Double_t top=0,butt=0,x_peak,value;
+  for(Int_t xbin=x_low; xbin <= x_up; xbin++)
+    {
+      value = hist->GetXaxis()->GetBinCenter(xbin);
+      top += value*m[xbin];
+      butt += m[xbin];
+    }
+  x_peak = top/butt;
+  
+  
+  //Find the peak in y direction:
+  Int_t x_l = hist->GetXaxis()->FindBin(x_peak);
+  Int_t x_u = x_l + 1;
+    
+  printf("xlow %f xup %f\n",hist->GetXaxis()->GetBinCenter(x_l),hist->GetXaxis()->GetBinCenter(x_u));
+
+  value=top=butt=0;
+  
+  //printf("ylow %f yup %f\n",hist->GetYaxis()->GetBinCenter(m_low[x_l]),hist->GetYaxis()->GetBinCenter(m_up[x_l]));
+  printf("ylow %f yup %f\n",hist->GetYaxis()->GetBinCenter(m_low[x_u]),hist->GetYaxis()->GetBinCenter(m_up[x_u]));
+  
+  for(Int_t ybin=m_low[x_l]; ybin <= m_up[x_l]; ybin++)
+    {
+      value = hist->GetYaxis()->GetBinCenter(ybin);
+      bin = hist->GetBin(x_l,ybin);
+      top += value*hist->GetBinContent(bin);
+      butt += hist->GetBinContent(bin);
+    }
+  Double_t y_peak_low = top/butt;
+  
+  printf("y_peak_low %f\n",y_peak_low);
+
+  value=top=butt=0;
+  for(Int_t ybin=m_low[x_u]; ybin <= m_up[x_u]; ybin++)
+    {
+      value = hist->GetYaxis()->GetBinCenter(ybin);
+      bin = hist->GetBin(x_u,ybin);
+      top += value*hist->GetBinContent(bin);
+      butt += hist->GetBinContent(bin);
+    }
+  Double_t y_peak_up = top/butt;
+  
+  printf("y_peak_up %f\n",y_peak_up);
+
+  Double_t x_value_up = hist->GetXaxis()->GetBinCenter(x_u);
+  Double_t x_value_low = hist->GetXaxis()->GetBinCenter(x_l);
+
+  Double_t y_peak = (y_peak_low*(x_value_up - x_peak) + y_peak_up*(x_peak - x_value_low))/(x_value_up - x_value_low);
+
+
+  peak[0] = x_peak;
+  peak[1] = y_peak;
+
+  //delete [] m;
+  //delete [] m_low;
+  //delete [] m_up;
+  
+}

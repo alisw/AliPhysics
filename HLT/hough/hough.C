@@ -24,8 +24,8 @@ void hough(char *rootfile,int patch,Bool_t MC=false)
   peaks->SetMarkerColor(2);
   
   int slice = 2,n_phi_segments=30;
-  //float eta[2] = {0.3,0.4};
-  float eta[2] = {0.03,0.04};
+  float eta[2] = {0.3,0.4};
+  //float eta[2] = {0.03,0.04};
   
   AliL3HoughTransformer *a = new AliL3HoughTransformer(slice,patch,eta,n_phi_segments);
   a->GetPixels(rootfile,raw);
@@ -39,8 +39,18 @@ void hough(char *rootfile,int patch,Bool_t MC=false)
   
   AliL3HoughMaxFinder *b = new AliL3HoughMaxFinder("KappaPhi");
   //b->SetThreshold(10000);
-  AliL3TrackArray *tracks = b->FindMaxima(hist);
-    
+  //AliL3TrackArray *tracks = b->FindMaxima(hist);
+  
+  Double_t peak[2];
+  b->FindPeak(hist,peak);
+  printf("Found peak %f %f\n",peak[0],peak[1]);
+  peaks->Fill(peak[0],peak[1],1);
+  peaks->SetMarkerStyle(3);
+  peaks->SetMarkerColor(3);
+  hist->Draw("box");
+  peaks->Draw("same");
+  return;
+
   AliL3HoughEval *c = new AliL3HoughEval(a);
   printf("number of peaks before %d\n",tracks->GetNTracks());
   

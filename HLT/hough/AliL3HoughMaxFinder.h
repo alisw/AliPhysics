@@ -20,9 +20,9 @@ class AliL3HoughMaxFinder : public TObject {
   virtual ~AliL3HoughMaxFinder();
 
   AliL3TrackArray *FindMaxima(TH2F *hist,Int_t *rowrange=0,Int_t ref_row=0);
+  void FindPeak(TH2F *hist,Double_t *peak);
   void SetThreshold(Int_t f) {fThreshold = f;}
-
-  //AliL3TrackArray *GetTracks() {return fTracks;}
+  
 
   ClassDef(AliL3HoughMaxFinder,1)
 

@@ -92,7 +92,6 @@ void AliL3HoughTransformer::InitTemplates(TH2F *hist)
 	  Double_t r_pix = sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
 	  
 	  Double_t phi_pix = fTransform->GetPhi(xyz);
-	  Short_t signal = pixel->fCharge;
 	  Int_t index = pixel->fIndex;
 	  if(index >= fNDigits)
 	    printf("AliL3HoughTransformer::InitTemplates : Index error! %d\n",index);
@@ -290,14 +289,10 @@ void AliL3HoughTransformer::Transform2Circle(TH2F *hist)
   //Transformation is done with respect to local coordinates in slice.
   //Transform every pixel into whole phirange, using parametrisation:
   //kappa = 2*sin(phi-phi0)/R
-
-  printf("Transforming 1 pixel only\n");
+  //Assumes you run InitTemplates firstly!!!!
 
   AliL3Digits *pix1;
-  Int_t sector,row;
-  
-  Int_t ymin = hist->GetYaxis()->GetFirst();
-  Int_t ymax = hist->GetYaxis()->GetLast();
+    
   Int_t nbinsy = hist->GetNbinsY();
 
   for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
