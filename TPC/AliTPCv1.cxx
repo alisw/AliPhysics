@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/09/29 09:24:34  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -133,7 +136,7 @@ void AliTPCv1::CreateGeometry()
   gMC->Gsposp("TPMH",1,"TGAS",0.,0.,0.,0,"ONLY",dm,3);
  
   dm[0] = 78.;
-  dm[2] = 82.;
+  dm[1] = 82.;
   dm[2] = 0.1;
 
   gMC->Gsposp("TPMH",2,"TGAS",0.,0.,0.,0,"ONLY",dm,3);
