@@ -21,7 +21,7 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenAfterBurnerFlow.cxx \
 		AliPartonicEnergyLoss.cxx AliGenHerwig.cxx \
 		AliStructFuncType.cxx AliGenGrayParticles.cxx \
-		AliGenGeVSimEventHeader.cxx
+        AliGenGeVSimEventHeader.cxx AliGenEpEmv1.cxx
 
 # Headerfiles for this particular package (Path respect to own directory)
 HDRS= $(SRCS:.cxx=.h) 
@@ -34,6 +34,7 @@ $(ALICE_ROOT)/include/TMevSimConverter.h\
 $(ALICE_ROOT)/include/THBTprocessor.h\
 $(ALICE_ROOT)/include/MevSimCommon.h\
 $(ALICE_ROOT)/include/HBTprocCOMMON.h\
+$(ALICE_ROOT)/include/TEpEmGen.h\
 $(ROOTSYS)/include/TF1.h\
 $(ROOTSYS)/include/TChain.h\
 $(ROOTSYS)/include/TParticle.h
