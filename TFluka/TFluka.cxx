@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2002/12/06 12:21:32  morsch
+User stepping methods added (E. Futo)
+
 Revision 1.6  2002/11/21 18:40:06  iglez2
 Media handling added
 
@@ -63,6 +66,7 @@ First commit of Fluka interface.
 
 #include <Riostream.h>
 
+#include "TClonesArray.h"
 #include "TFluka.h"
 #include "TCallf77.h"      //For the fortran calls
 #include "Fdblprc.h"       //(DBLPRC) fluka common
@@ -72,6 +76,7 @@ First commit of Fluka interface.
 #include "Fpaprop.h"       //(PAPROP) fluka common
 #include "Fpart.h"         //(PART)   fluka common
 #include "Ftrackr.h"       //(TRACKR) fluka common
+#include "Fpaprop.h"       //(PAPROP) fluka common
 #include "Ffheavy.h"       //(FHEAVY) fluka common
 
 #include "TVirtualMC.h"
@@ -80,6 +85,7 @@ First commit of Fluka interface.
 
 #include "FGeometryInit.hh"
 #include "TLorentzVector.h"
+#include "FlukaVolume.h"
 
 // Fluka methods that may be needed.
 #ifndef WIN32 
@@ -158,6 +164,10 @@ TFluka::TFluka(const char *title, Int_t verbosity)
 
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::TFluka(" << title << ") constructor called." << endl;
+
+  fVolumeMediaMap = new TClonesArray("FlukaVolume",1000);
+  fNVolumes      = 0;
+  fMediaByRegion = 0;
 }
 
 TFluka::~TFluka() {
@@ -165,6 +175,9 @@ TFluka::~TFluka() {
     cout << "==> TFluka::~TFluka() destructor called." << endl;
 
   delete fGeometryManager;
+  fVolumeMediaMap->Delete();
+  delete  fVolumeMediaMap;
+  
 
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::~TFluka() destructor called." << endl;
@@ -199,22 +212,36 @@ void TFluka::Init() {
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::Init() called." << endl;
 
+  FinishGeometry();
+
 }
 
 void TFluka::FinishGeometry() {
+//
+// Build-up table with region to medium correspondance
+//
+    char tmp[5];
+    
   if (fVerbosityLevel >=3)
     cout << "==> TFluka::FinishGeometry() called." << endl;
 
-  fGeometryManager->Ggclos();
+//  fGeometryManager->Ggclos();
 
-  FGeometryInit* flugg = FGeometryInit::GetInstance();
-  map<TString, Int_t, less<TString> >::iterator i;
-  for (fVolumeMediaMap.begin(); i != fVolumeMediaMap.end(); i++) {
-    TString volName = (*i).first;
-    Int_t   media   = (*i).second;
-    Int_t   region  = flugg->GetRegionFromName(volName);
-    fMediaByRegion[region] = media;
+  FGeometryInit* flugg = FGeometryInit::GetInstance();  
+  
+  fMediaByRegion = new Int_t[fNVolumes+2];
+  for (Int_t i = 0; i < fNVolumes; i++)
+  {
+      FlukaVolume* vol = dynamic_cast<FlukaVolume*>((*fVolumeMediaMap)[i]);
+      TString volName = vol->GetName();
+      Int_t   media   = vol->GetMedium();
+      printf("Finish Geometry: volName, media %d %s %d \n", i, volName.Data(), media);
+      strcpy(tmp, volName.Data());
+      tmp[4] = '\0';
+      flugg->SetMediumFromName(tmp, media);
   }
+
+  flugg->BuildMediaMap();
   
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::FinishGeometry() called." << endl;
@@ -339,37 +366,53 @@ void TFluka::Gstpar(Int_t itmed, const char *param, Double_t parval) {
 Int_t TFluka::Gsvolu(const char *name, const char *shape, Int_t nmed,  
 		     Float_t *upar, Int_t np)  {
 //
-  fVolumeMediaMap[TString(name)] = nmed;
-  return fGeometryManager->Gsvolu(name, shape, nmed, upar, np); 
+//  fVolumeMediaMap[TString(name)] = nmed;
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, nmed);
+    return fGeometryManager->Gsvolu(name, shape, nmed, upar, np); 
 }
 Int_t TFluka::Gsvolu(const char *name, const char *shape, Int_t nmed,  
 		     Double_t *upar, Int_t np)  {
 //
-  return fGeometryManager->Gsvolu(name, shape, nmed, upar, np); 
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, nmed);
+
+    return fGeometryManager->Gsvolu(name, shape, nmed, upar, np); 
 }
  
 void TFluka::Gsdvn(const char *name, const char *mother, Int_t ndiv, 
 		   Int_t iaxis) {
 //
-  fGeometryManager->Gsdvn(name, mother, ndiv, iaxis); 
+    fGeometryManager->Gsdvn(name, mother, ndiv, iaxis); 
 } 
 
 void TFluka::Gsdvn2(const char *name, const char *mother, Int_t ndiv, 
 		    Int_t iaxis, Double_t c0i, Int_t numed) {
 //
-  fGeometryManager->Gsdvn2(name, mother, ndiv, iaxis, c0i, numed); 
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, numed);
+    fGeometryManager->Gsdvn2(name, mother, ndiv, iaxis, c0i, numed); 
 } 
 
 void TFluka::Gsdvt(const char *name, const char *mother, Double_t step, 
 		   Int_t iaxis, Int_t numed, Int_t ndvmx) {
-//			
-  fGeometryManager->Gsdvt(name, mother, step, iaxis, numed, ndvmx); 
+//	
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, numed);		
+    fGeometryManager->Gsdvt(name, mother, step, iaxis, numed, ndvmx); 
 } 
 
 void TFluka::Gsdvt2(const char *name, const char *mother, Double_t step, 
 		    Int_t iaxis, Double_t c0, Int_t numed, Int_t ndvmx) { 
 //
-  fGeometryManager->Gsdvt2(name, mother, step, iaxis, c0, numed, ndvmx); 
+    TClonesArray &lvols = *fVolumeMediaMap;
+    new(lvols[fNVolumes++]) 
+        FlukaVolume(name, numed);
+    fGeometryManager->Gsdvt2(name, mother, step, iaxis, c0, numed, ndvmx); 
 } 
 
 void TFluka::Gsord(const char *name, Int_t iax) {
@@ -425,8 +468,10 @@ void TFluka::WriteEuclid(const char* fileName, const char* topVol,
 //_____________________________________________________________________________
 // methods needed by the stepping
 //____________________________________________________________________________ 
+
 Int_t TFluka::GetMedium() const {
-  return fMediaByRegion[fCurrentFlukaRegion];
+    FGeometryInit* flugg = FGeometryInit::GetInstance();  
+    return flugg->GetMedium(fCurrentFlukaRegion);
 }
 
 
@@ -456,6 +501,584 @@ Int_t TFluka::PDGFromId(Int_t id) const
   return mpdgha(intfluka);
   
 }
+<<<<<<< TFluka.cxx
+
+
+
+//_____________________________________________________________________________
+// methods for step management
+//____________________________________________________________________________ 
+//
+// dynamic properties
+//
+void TFluka::TrackPosition(TLorentzVector& position) const
+{
+// Return the current position in the master reference frame of the
+// track being transported
+// TRACKR.atrack = age of the particle
+// TRACKR.xtrack = x-position of the last point
+// TRACKR.ytrack = y-position of the last point
+// TRACKR.ztrack = z-position of the last point
+  position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
+  position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
+  position.SetZ(TRACKR.ztrack[TRACKR.ntrack]);
+  position.SetT(TRACKR.atrack);
+}
+
+void TFluka::TrackMomentum(TLorentzVector& momentum) const
+{
+// Return the direction and the momentum (GeV/c) of the track
+// currently being transported
+// TRACKR.ptrack = momentum of the particle (not always defined, if
+//               < 0 must be obtained from etrack) 
+// TRACKR.cx,y,ztrck = direction cosines of the current particle
+// TRACKR.etrack = total energy of the particle
+// TRACKR.jtrack = identity number of the particle
+// PAPROP.am[TRACKR.jtrack] = particle mass in gev
+  if (TRACKR.ptrack >= 0) {
+    momentum.SetPx(TRACKR.ptrack*TRACKR.cxtrck);
+    momentum.SetPy(TRACKR.ptrack*TRACKR.cytrck);
+    momentum.SetPz(TRACKR.ptrack*TRACKR.cztrck);
+    momentum.SetE(TRACKR.etrack);
+    return;
+  }
+  else {
+    Double_t p = sqrt(TRACKR.etrack*TRACKR.etrack - PAPROP.am[TRACKR.jtrack]*PAPROP.am[TRACKR.jtrack]);
+    momentum.SetPx(p*TRACKR.cxtrck);
+    momentum.SetPy(p*TRACKR.cytrck);
+    momentum.SetPz(p*TRACKR.cztrck);
+    momentum.SetE(TRACKR.etrack);
+    return;
+  }
+}
+
+Double_t TFluka::TrackStep() const
+{
+// Return the length in centimeters of the current step
+// TRACKR.ctrack = total curved path
+    return TRACKR.ctrack;
+}
+
+Double_t TFluka::TrackLength() const
+{
+// It is wrong
+// should be the sum of all steps starting from the beginning of the track
+// for the time being returns only the length in centimeters of the current step
+    return TRACKR.ctrack;
+}
+
+Double_t TFluka::TrackTime() const
+{
+// Return the current time of flight of the track being transported
+// TRACKR.atrack = age of the particle
+  return TRACKR.atrack;
+}
+
+Double_t TFluka::Edep() const
+{
+// Energy deposition
+// if TRACKR.ntrack = 0, TRACKR.mtrack = 0:
+// -->local energy deposition (the value and the point are not recorded in TRACKR)
+//    but in the variable "rull" of the procedure "endraw.cxx"
+// if TRACKR.ntrack > 0, TRACKR.mtrack = 0:
+// -->no energy loss along the track
+// if TRACKR.ntrack > 0, TRACKR.mtrack > 0:
+// -->energy loss distributed along the track
+// TRACKR.dtrack = energy deposition of the jth deposition even
+  if (TRACKR.ntrack == 0 && TRACKR.mtrack == 0)
+    return fRull;
+  else {
+    Double_t sum = 0;
+    for ( Int_t j=0;j<TRACKR.mtrack;j++) {
+      sum +=TRACKR.dtrack[j];  
+    }
+    return sum;
+  }
+}
+
+Int_t TFluka::TrackPid() const
+{
+// Return the id of the particle transported
+// TRACKR.jtrack = identity number of the particle
+  return PDGFromId(TRACKR.jtrack);
+}
+
+Double_t TFluka::TrackCharge() const
+{
+// Return charge of the track currently transported
+// PAPROP.ichrge = electric charge of the particle
+  return PAPROP.ichrge[TRACKR.jtrack+6];
+}
+
+Double_t TFluka::TrackMass() const
+{
+// PAPROP.am = particle mass in GeV
+  return PAPROP.am[TRACKR.jtrack+6];
+}
+
+Double_t TFluka::Etot() const
+{
+// TRACKR.etrack = total energy of the particle
+  return TRACKR.etrack;
+}
+
+//
+// track status
+//
+Bool_t   TFluka::IsNewTrack() const
+{
+// ???????????????,
+// True if the track is not at the boundary of the current volume
+  return 0;
+}
+
+Bool_t   TFluka::IsTrackInside() const
+{
+// True if the track is not at the boundary of the current volume
+// In Fluka a step is always inside one kind of material
+// If the step would go behind the region of one material,
+// it will be shortened to reach only the boundary.
+// Therefore IsTrackInside() is always true.
+  return 1;
+}
+
+Bool_t   TFluka::IsTrackEntering() const
+{
+// True if this is the first step of the track in the current volume
+// Boundary- (X) crossing
+// Icode = 19: boundary crossing - call from Kaskad
+// Icode = 29: boundary crossing - call from Emfsco
+// Icode = 39: boundary crossing - call from Kasneu
+// Icode = 49: boundary crossing - call from Kashea
+// Icode = 59: boundary crossing - call from Kasoph
+  if (fIcode == 19 ||
+      fIcode == 29 ||
+      fIcode == 39 ||
+      fIcode == 49 ||
+      fIcode == 59) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackExiting() const
+{
+// True if this is the last step of the track in the current volume
+// Boundary- (X) crossing
+// Icode = 19: boundary crossing - call from Kaskad
+// Icode = 29: boundary crossing - call from Emfsco
+// Icode = 39: boundary crossing - call from Kasneu
+// Icode = 49: boundary crossing - call from Kashea
+// Icode = 59: boundary crossing - call from Kasoph
+  if (fIcode == 19 ||
+      fIcode == 29 ||
+      fIcode == 39 ||
+      fIcode == 49 ||
+      fIcode == 59) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackOut() const
+{
+// True if the track is out of the setup
+// means escape
+// Icode = 14: escape - call from Kaskad
+// Icode = 23: escape - call from Emfsco
+// Icode = 32: escape - call from Kasneu
+// Icode = 40: escape - call from Kashea
+// Icode = 51: escape - call from Kasoph
+  if (fIcode == 14 ||
+      fIcode == 23 ||
+      fIcode == 32 ||
+      fIcode == 40 ||
+      fIcode == 51) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackDisappeared() const
+{
+// means all inelastic interactions and decays
+// Icode = 11: inelastic interaction recoil - call from Kaskad
+  if (fIcode == 11) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackStop() const
+{
+// True if the track energy has fallen below the threshold
+// means stopped by signal or below energy threshold
+// Icode = 12: stopping particle       - call from Kaskad
+// Icode = 15: time kill               - call from Kaskad
+// Icode = 21: below threshold, iarg=1 - call from Emfsco
+// Icode = 22: below threshold, iarg=2 - call from Emfsco
+// Icode = 24: time kill               - call from Emfsco
+// Icode = 31: below threshold         - call from Kasneu
+// Icode = 33: time kill               - call from Kasneu
+// Icode = 41: time kill               - call from Kashea
+// Icode = 52: time kill               - call from Kasoph
+  if (fIcode == 12 ||
+      fIcode == 15 ||
+      fIcode == 21 ||
+      fIcode == 22 ||
+      fIcode == 24 ||
+      fIcode == 31 ||
+      fIcode == 33 ||
+      fIcode == 41 ||
+      fIcode == 52) return 1;
+  else return 0;
+}
+
+Bool_t   TFluka::IsTrackAlive() const
+{
+// means not disappeared or not out
+  if (IsTrackDisappeared() || IsTrackOut() ) return 0;
+  else return 1;
+}
+
+//
+// secondaries
+//
+
+//Int_t NSecondaries() const
+// Number of secondary particles generated in the current step
+//{
+//  return FINUC.np;
+//}
+
+//void     GetSecondary(Int_t isec, Int_t& particleId, TLorentzVector& position,
+//		      TLorentzVector& momentum)
+// 
+//{
+// will come from FINUC when called from USDRAW
+//}
+
+//TMCProcess ProdProcess(Int_t isec) const
+// Name of the process that has produced the secondary particles
+// in the current step
+//{
+// will come from FINUC when called from USDRAW
+//}
+
+//Int_t StepProcesses(TArrayI &proc) const
+// Return processes active in the current step
+//{
+//ck = total energy of the particl ???????????????? 
+//}
+
+
+void TFluka::FutoTest() const
+{
+  Int_t icode, mreg, newreg, medium;
+  Double_t rull, xsco, ysco, zsco;
+  icode  = GetIcode();
+  medium = -1;
+  
+  if (icode == 0)
+    cout << " icode=" << icode << endl;
+  else if (icode > 0 && icode <= 5) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    cout << " icode=" << icode
+	 << " mreg=" << mreg
+	 << " medium=" << medium
+	 << endl;
+  }
+  else if (icode >= 10 && icode <= 15) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    rull = GetRull();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " rull=" << rull
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode >= 20 && icode <= 24) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    rull = GetRull();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+	 << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " rull=" << rull
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode >= 30 && icode <= 33) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    rull = GetRull();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " rull=" << rull
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode >= 40 && icode <= 41) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    rull = GetRull();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " rull=" << rull
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode >= 50 && icode <= 52) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    rull = GetRull();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " rull=" << rull
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode >= 100 && icode <= 105) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 208) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 210) {
+    mreg = GetMreg();
+   medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+	 << " mreg=" << mreg
+	 << " medium=" << medium 
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 212) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode >= 214 && icode <= 215) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 217) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 219) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 221) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 225) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 300) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 400) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 19) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    newreg = GetNewreg();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " newreg=" << newreg
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 29) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    newreg = GetNewreg();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " newreg=" << newreg
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 39) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    newreg = GetNewreg();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " newreg=" << newreg
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 49) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    newreg = GetNewreg();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " newreg=" << newreg
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+  else if (icode == 59) {
+    mreg = GetMreg();
+    medium = GetMedium();
+    newreg = GetNewreg();
+    xsco = GetXsco();
+    ysco = GetYsco();
+    zsco = GetZsco();
+    cout << " icode=" << icode
+         << " mreg=" << mreg
+	 << " medium=" << medium
+	 << " newreg=" << newreg
+	 << " xsco=" << xsco
+	 << " ysco=" << ysco
+	 << " zsco=" << zsco << endl;
+  }
+
+
+} // end of FutoTest
+
+=======
 
 
 
@@ -925,4 +1548,3 @@ void TFluka::FutoTest()
   
 
 } // end of FutoTest
-

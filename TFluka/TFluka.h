@@ -23,6 +23,8 @@
 //Forward declaration
 class TG4GeometryManager;
 class TG4DetConstruction;
+class TClonesArray;
+
 
 class TFluka : public TVirtualMC {
   
@@ -299,7 +301,6 @@ class TFluka : public TVirtualMC {
 
   void SetCurrentFlukaRegion(Int_t reg) {fCurrentFlukaRegion=reg;}
   Int_t GetCurrentFlukaRegion() const {return fCurrentFlukaRegion;}
-
   //
   // test
   // ------------------------------------------------
@@ -316,7 +317,6 @@ class TFluka : public TVirtualMC {
   TString fInputFileName; //Name of the input file (f.e. mu.inp)
 
   Int_t    fIcode;  //Fluka Draw procedures formal parameter 
-//  Int_t    fMreg;   //Fluka Draw procedures formal parameter
   Int_t    fNewreg; //Fluka Draw procedures formal parameter
   Double_t fRull;   //Fluka Draw procedures formal parameter
   Double_t fXsco;   //Fluka Draw procedures formal parameter
@@ -326,25 +326,16 @@ class TFluka : public TVirtualMC {
 
 
   //Geometry through Geant4 for the time being!!!
-  TG4GeometryManager*  fGeometryManager; //geometry manager
+  TG4GeometryManager*  fGeometryManager; //Geometry manager
   TG4DetConstruction*  fDetector;        //Detector
 
+  TClonesArray*        fVolumeMediaMap;  //!Transient list of volumes
+  Int_t                fNVolumes;        //!Current number of volumes
+  Int_t*               fMediaByRegion;   //!Media by Fluka region
 
-
-
-
-  //Index of fluka region at each step
-  Int_t fCurrentFlukaRegion;
-  //Map between volume name and media indices
-  std::map<TString, Int_t, std::less<TString> > fVolumeMediaMap;
-  //Map between region and media indices
-  std::vector<Int_t> fMediaByRegion;
-
-
-
+  
+  Int_t fCurrentFlukaRegion; //Index of fluka region at each step
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo
-
-
 };
 
 #endif //TFLUKA
