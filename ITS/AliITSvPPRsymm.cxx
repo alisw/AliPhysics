@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/01/30 09:23:13  hristov
+Streamers removed (R.Brun)
+
 Revision 1.2  2001/01/26 20:01:19  hristov
 Major upgrade of AliRoot code
 
@@ -92,22 +95,23 @@ Introduction of the Copyright and cvs Log
 
 */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Inner Traking System version PPR  symmetric                                         //
-//  This class contains the base procedures for the Inner Tracking System    //
-//                                                                           //
-// Authors: R. Barbera
-// version 6.
-// Created  2000.
-//
-//  NOTE: THIS IS THE  SYMMETRIC PPR geometry of the ITS. 
-// THIS WILL NOT WORK
-// with the geometry or module classes or any analysis classes. You are 
-// strongly encouraged to uses AliITSv5.
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
- 
+//////////////////////////////////////////////////////////////////////////////
+//                                                                          //
+//  Inner Traking System version PPR  symmetric                             //
+//  This class contains the base procedures for the Inner Tracking System   //
+//                                                                          //
+// Authors: R. Barbera                                                      //
+// version 6.                                                               //
+// Created  2000.                                                           //
+//                                                                          //
+//  NOTE: THIS IS THE  SYMMETRIC PPR geometry of the ITS.                   //
+// THIS WILL NOT WORK                                                       //
+// with the geometry or module classes or any analysis classes. You are     //
+// strongly encouraged to uses AliITSv5.                                    //
+//                                                                          //
+//////////////////////////////////////////////////////////////////////////////
+#include <iostream.h>
+#include <iomanip.h>
 #include <TMath.h>
 #include <TRandom.h>
 #include <TVector.h>
@@ -124,9 +128,15 @@ Introduction of the Copyright and cvs Log
 #include "AliMagF.h"
 #include "AliConst.h"
 
+#include "../TGeant3/TGeant3.h"
+#include "AliITSGeant3Geometry.h"
 #include "AliITShit.h"
 #include "AliITSvPPRsymm.h"
 #include "AliRun.h"
+#include "AliITSgeom.h"
+#include "AliITSgeomSPD.h"
+#include "AliITSgeomSDD.h"
+#include "AliITSgeomSSD.h"
 
 
 ClassImp(AliITSvPPRsymm)
@@ -136,34 +146,47 @@ AliITSvPPRsymm::AliITSvPPRsymm() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard default constructor for the ITS version 9.
 ////////////////////////////////////////////////////////////////////////
+    Int_t i;
 
-  fIdN = 6;
-  fIdName = new TString[fIdN];
-  fIdName[0] = "ITS1";
-  fIdName[1] = "ITS2";
-  fIdName[2] = "ITS3";
-  fIdName[3] = "ITS4";
-  fIdName[4] = "ITS5";
-  fIdName[5] = "ITS6";
-  fIdSens    = new Int_t[fIdN];
-  for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+    fIdN       = 6;
+    fIdName    = 0;
+    fIdSens    = 0;
+    fEuclidOut    = kFALSE; // Don't write Euclide file
+    fGeomDetOut   = kFALSE; // Don't write .det file
+    fGeomDetIn    = kTRUE; // Read .det file
+    fMajorVersion = IsVersion();
+    fMinorVersion = -1;
+    for(i=0;i<60;i++) fRead[i] = '\0';
+    for(i=0;i<60;i++) fWrite[i] = '\0';
+    for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
 }
 //_____________________________________________________________________________
 AliITSvPPRsymm::AliITSvPPRsymm(const char *name, const char *title) : AliITS(name, title){
 ////////////////////////////////////////////////////////////////////////
 //    Standard constructor for the ITS version 9.
 ////////////////////////////////////////////////////////////////////////
+    Int_t i;
 
-  fIdN = 6;
-  fIdName = new TString[fIdN];
-  fIdName[0] = "ITS1";
-  fIdName[1] = "ITS2";
-  fIdName[2] = "ITS3";
-  fIdName[3] = "ITS4";
-  fIdName[4] = "ITS5";
-  fIdName[5] = "ITS6";
-  fIdSens    = new Int_t[fIdN];
-  for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+    fIdN = 6;
+    fIdName = new TString[fIdN];
+    fIdName[0] = "ITS1";
+    fIdName[1] = "ITS2";
+    fIdName[2] = "ITS3";
+    fIdName[3] = "ITS4";
+    fIdName[4] = "ITS5";
+    fIdName[5] = "ITS6";
+    fIdSens    = new Int_t[fIdN];
+    for (i=0;i<fIdN;i++) fIdSens[i] = 0;
+    fMajorVersion = IsVersion();
+    fMinorVersion = 1;
+    fEuclidOut    = kFALSE; // Don't write Euclide file
+    fGeomDetOut   = kFALSE; // Don't write .det file
+    fGeomDetIn    = kTRUE; // Read .det file
+
+    fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_PPRsymm.euc";
+    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_PPR.det",60);
+    strncpy(fRead,fEuclidGeomDet,60);
+    strncpy(fWrite,fEuclidGeomDet,60);
 
 }
 //____________________________________________________________________________
@@ -172,7 +195,7 @@ AliITSvPPRsymm::AliITSvPPRsymm(const AliITSvPPRsymm &source){
 //     Copy Constructor for ITS version 9.
 ////////////////////////////////////////////////////////////////////////
     if(&source == this) return;
-    printf("Not allowed to copy AliITSvPPRsymm\n");
+    Warning("Copy Constructor","Not allowed to copy AliITSvPPRsymm");
     return;
 }
 //_____________________________________________________________________________
@@ -180,17 +203,19 @@ AliITSvPPRsymm& AliITSvPPRsymm::operator=(const AliITSvPPRsymm &source){
 ////////////////////////////////////////////////////////////////////////
 //    Assignment operator for the ITS version 7.
 ////////////////////////////////////////////////////////////////////////
-  if(&source == this) return *this;
-    printf("Not allowed to copy AliITSvPPRsymm\n");
-  return *this;
+    if(&source == this) return *this;
+    Warning("= operator","Not allowed to copy AliITSvPPRsymm");
+    return *this;
 }
 //_____________________________________________________________________________
 AliITSvPPRsymm::~AliITSvPPRsymm() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard destructor for the ITS version 7.
 ////////////////////////////////////////////////////////////////////////
+    if(fRead!=0) delete fRead;
+    if(fWrite!=0) delete fWrite;
+    if(fEuclidGeomDet!=0) delete fEuclidGeomDet;
 }
-
 //__________________________________________________________________________
 void AliITSvPPRsymm::BuildGeometry(){
 ////////////////////////////////////////////////////////////////////////
@@ -2598,18 +2623,144 @@ void AliITSvPPRsymm::CreateMaterials(){
   AliMedium(86, "GEN Al$",      86, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
 
 }
+//______________________________________________________________________
+void AliITSvPPRsymm::InitAliITSgeom(){
+//     Based on the geometry tree defined in Geant 3.21, this
+// routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
+// sturture.
+    if(!((TGeant3*)gMC)) {
+	Error("InitAliITSgeom",
+		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
+	return;
+    } // end if
+    cout << "Reading Geometry transformation directly from Geant 3." << endl;
+    const Int_t nlayers = 6;
+    const Int_t ndeep = 7;
+    Int_t itsGeomTreeNames[nlayers][ndeep],lnam[20],lnum[20];
+    Int_t nlad[nlayers],ndet[nlayers];
+    Double_t t[3],r[10];
+    Float_t  par[20],att[20];
+    Int_t    npar,natt,idshape,imat,imed;
+    AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
+    Int_t mod,lay,lad,det,i,j,k;
+    char *names[nlayers][ndeep] = {
+     {"ALIC","ITSV","ITSD","IT12","I132","I186","ITS1"}, // lay=1
+     {"ALIC","ITSV","ITSD","IT12","I132","I131","ITS2"}, // lay=2
+     {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3"}, // lay=3
+     {"ALIC","ITSV","ITSD","IT34","I005","I402","ITS4"}, // lay=4
+     {"ALIC","ITSV","ITSD","IT56","I565","I562","ITS5"}, // lay=5
+     {"ALIC","ITSV","ITSD","IT56","I569","I566","ITS6"}};// lay=6
+    Int_t itsGeomTreeCopys[nlayers][ndeep] = {{1,1,1,1,10, 2, 4},// lay=1
+					      {1,1,1,1,10, 4, 4},// lay=2
+					      {1,1,1,1,14, 6, 1},// lay=3
+					      {1,1,1,1,22, 8, 1},// lay=4
+					      {1,1,1,1,34,22, 1},// lay=5
+					      {1,1,1,1,38,25, 1}};//lay=6
+
+    // Sorry, but this is not very pritty code. It should be replaced
+    // at some point with a version that can search through the geometry
+    // tree its self.
+    cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
+    for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
+    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++) 
+	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
+    mod = 0;
+    for(i=0;i<nlayers;i++){
+	k = 1;
+	for(j=0;j<ndeep;j++) if(itsGeomTreeCopys[i][j]!=0)
+	    k *= TMath::Abs(itsGeomTreeCopys[i][j]);
+	mod += k;
+    } // end for i
+
+    if(fITSgeom!=0) delete fITSgeom;
+    nlad[0]=20;nlad[1]=40;nlad[2]=14;nlad[3]=22;nlad[4]=34;nlad[5]=38;
+    ndet[0]=4;ndet[1]=4;ndet[2]=6;ndet[3]=8;ndet[4]=23;ndet[5]=26;
+    fITSgeom = new AliITSgeom(0,6,nlad,ndet,mod);
+    mod = -1;
+    for(lay=1;lay<=nlayers;lay++){
+	for(j=0;j<ndeep;j++) lnam[j] = itsGeomTreeNames[lay-1][j];
+	for(j=0;j<ndeep;j++) lnum[j] = itsGeomTreeCopys[lay-1][j];
+	switch (lay){
+	case 1: case 2: // layers 1 and 2 are a bit special
+	    lad = 0;
+	    for(j=1;j<=itsGeomTreeCopys[lay-1][4];j++){
+		lnum[4] = j;
+		for(k=1;k<=itsGeomTreeCopys[lay-1][5];k++){
+		    lad++;
+		    lnum[5] = k;
+		    for(det=1;det<=itsGeomTreeCopys[lay-1][6];det++){
+			lnum[6] = det;
+			mod++;
+			ig->GetGeometry(ndeep,lnam,lnum,t,r,idshape,npar,natt,
+					par,att,imat,imed);
+			fITSgeom->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
+			if(!(fITSgeom->IsShapeDefined((Int_t)kSPD)))
+			    if(fMinorVersion==1){
+                             fITSgeom->ReSetShape(kSPD,
+						  new AliITSgeomSPD425Short());
+			    } else if(fMinorVersion==2)
+                             fITSgeom->ReSetShape(kSPD,
+						  new AliITSgeomSPD425Short());
+		    } // end for det
+		} // end for k
+            } // end for j
+	    break;
+	case 3: case 4: case 5: case 6: // layers 3-6
+	    lnum[6] = 1;
+	    for(lad=1;lad<=itsGeomTreeCopys[lay-1][4];lad++){
+		lnum[4] = lad;
+		for(det=1;det<=itsGeomTreeCopys[lay-1][5];det++){
+		    lnum[5] = det;
+		    mod++;
+		    ig->GetGeometry(7,lnam,lnum,t,r,idshape,npar,natt,
+				    par,att,imat,imed);
+		    switch (lay){
+		    case 3: case 4:
+			fITSgeom->CreatMatrix(mod,lay,lad,det,kSDD,t,r);
+			if(!(fITSgeom->IsShapeDefined(kSDD))) 
+			    fITSgeom->ReSetShape(kSDD,new AliITSgeomSDD256());
+			    break;
+			case 5:
+			    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
+			    if(!(fITSgeom->IsShapeDefined(kSSD))) 
+				fITSgeom->ReSetShape(kSSD,new AliITSgeomSSD275and75());
+			    break;
+			case 6:
+			    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSDp,t,r);
+			    if(!(fITSgeom->IsShapeDefined(kSSDp))) 
+				fITSgeom->ReSetShape(kSSDp,new AliITSgeomSSD75and275());
+			    break;
+			} // end switch
+		} // end for det
+	    } // end for lad
+	    break;
+	} // end switch
+    } // end for lay
+    return;
+}
 //_____________________________________________________________________________
 void AliITSvPPRsymm::Init(){
 ////////////////////////////////////////////////////////////////////////
 //     Initialise the ITS after it has been created.
 ////////////////////////////////////////////////////////////////////////
+    Int_t i;
 
-    //
+    cout << endl;
+    for(i=0;i<27;i++) cout << "*";cout << " ITSvPPRsymm_Init ";
+    for(i=0;i<27;i++) cout << "*";cout << endl;
+//
+    if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
+    if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
+    if(fITSgeom!=0) delete fITSgeom;
+    fITSgeom = new AliITSgeom();
+    if(fGeomDetIn) fITSgeom->ReadNewFile(fRead);
+    if(!fGeomDetIn) this->InitAliITSgeom();
+    if(fGeomDetOut) fITSgeom->WriteNewFile(fWrite);
     AliITS::Init();
-    fMajorVersion = 1;
-    fMinorVersion = 0;
-}  
- 
+//
+    for(i=0;i<72;i++) cout << "*";
+    cout << endl;
+}
 //_____________________________________________________________________________
 void AliITSvPPRsymm::DrawModule(){
 ////////////////////////////////////////////////////////////////////////

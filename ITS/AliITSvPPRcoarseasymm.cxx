@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/01/30 09:23:13  hristov
+Streamers removed (R.Brun)
+
 Revision 1.15  2001/01/17 07:41:29  barbera
 Some media parameters modified
 
@@ -107,7 +110,7 @@ Introduction of the Copyright and cvs Log
 // strongly encouraged to uses AliITSv5.
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
- 
+#include <iostream.h> 
 #include <TMath.h>
 #include <TRandom.h>
 #include <TVector.h>
@@ -137,16 +140,11 @@ AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm() {
 //    Standard default constructor for the ITS version 6.
 ////////////////////////////////////////////////////////////////////////
 
-  fIdN = 6;
-  fIdName = new TString[fIdN];
-  fIdName[0] = "ITS1";
-  fIdName[1] = "ITS2";
-  fIdName[2] = "ITS3";
-  fIdName[3] = "ITS4";
-  fIdName[4] = "ITS5";
-  fIdName[5] = "ITS6";
-  fIdSens    = new Int_t[fIdN];
-  for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+    fIdN = 0;
+    fIdName = 0;
+    fIdSens    = 0;
+    fMajorVersion = 9;
+    fMinorVersion = 0;
 }
 //_____________________________________________________________________________
 AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm(const char *name, const char *title) : AliITS(name, title){
@@ -154,17 +152,18 @@ AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm(const char *name, const char *title
 //    Standard constructor for the ITS version 6.
 ////////////////////////////////////////////////////////////////////////
 
-  fIdN = 6;
-  fIdName = new TString[fIdN];
-  fIdName[0] = "ITS1";
-  fIdName[1] = "ITS2";
-  fIdName[2] = "ITS3";
-  fIdName[3] = "ITS4";
-  fIdName[4] = "ITS5";
-  fIdName[5] = "ITS6";
-  fIdSens    = new Int_t[fIdN];
-  for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
-
+    fIdN = 6;
+    fIdName = new TString[fIdN];
+    fIdName[0] = "ITS1";
+    fIdName[1] = "ITS2";
+    fIdName[2] = "ITS3";
+    fIdName[3] = "ITS4";
+    fIdName[4] = "ITS5";
+    fIdName[5] = "ITS6";
+    fIdSens    = new Int_t[fIdN];
+    for (Int_t i=0;i<fIdN;i++) fIdSens[i]=0;
+    fMajorVersion = 9;
+    fMinorVersion = 0;
 }
 //____________________________________________________________________________
 AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm(const AliITSvPPRcoarseasymm &source){
@@ -172,7 +171,7 @@ AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm(const AliITSvPPRcoarseasymm &source
 //     Copy Constructor for ITS version 6.
 ////////////////////////////////////////////////////////////////////////
     if(&source == this) return;
-    printf("Not allowed to copy AliITSvPPRcoarseasymm\n");
+    Warning("Copy Constructor","Not allowed to copy AliITSvPPRcoarseasymm");
     return;
 }
 //_____________________________________________________________________________
@@ -181,7 +180,7 @@ AliITSvPPRcoarseasymm& AliITSvPPRcoarseasymm::operator=(const AliITSvPPRcoarseas
 //    Assignment operator for the ITS version 6.
 ////////////////////////////////////////////////////////////////////////
   if(&source == this) return *this;
-    printf("Not allowed to copy AliITSvPPRcoarseasymm\n");
+    Warning("= operator","Not allowed to copy AliITSvPPRcoarseasymm");
   return *this;
 }
 //_____________________________________________________________________________
@@ -961,11 +960,16 @@ void AliITSvPPRcoarseasymm::Init(){
 ////////////////////////////////////////////////////////////////////////
 //     Initialise the ITS after it has been created.
 ////////////////////////////////////////////////////////////////////////
+    Int_t i;
 
-    //
+    cout << endl;
+    for(i=0;i<24;i++) cout << "*";cout << " ITSvPPRcoarseasymm_Init ";
+    for(i=0;i<25;i++) cout << "*";cout << endl;
+//
     AliITS::Init();
-    fMajorVersion = 1;
-    fMinorVersion = 0;
+//
+    for(i=0;i<72;i++) cout << "*";
+    cout << endl;
 }  
  
 //_____________________________________________________________________________

@@ -29,6 +29,15 @@ class AliITSvPPRcoarsesymm : public AliITS {
     } 
     virtual void   DrawModule();
     virtual void   StepManager();
+    virtual Int_t GetMajorVersion(){// return Major Version Number
+	return fMajorVersion;}
+    virtual Int_t GetMinorVersion(){// return Major Version Number
+	return fMinorVersion;}
+
+
+ private:
+    Int_t  fMajorVersion;     // Major version number == IsVersion
+    Int_t  fMinorVersion;     // Minor version number
 
     ClassDef(AliITSvPPRcoarsesymm,1)  //Hits manager for set:ITS version 7 
                                        // PPR coarse Geometry symmetric

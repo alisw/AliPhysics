@@ -15,6 +15,10 @@
 
 /*
 $Log$
+
+Revision 1.9  2001/02/08 16:00:37  barbera
+New thicknesses (300+300 um) added for SPD chips and detectors and set as default. Many other refinements.
+
 Revision 1.8  2001/02/06 08:03:44  barbera
 Material redefinition in SDD
 
@@ -33,94 +37,24 @@ Some media parameters modified
 Revision 1.1.2.1  2001/01/15 13:38:08  barbera
 New ITS detailed geometry to be used for the PPR
 
-Revision 1.13  2000/12/10 16:00:45  barbera
-Added last definition of special media like end-ladder boxes and cones
-
-Revision 1.12  2000/11/02 15:44:23  barbera
-Services on the opposite side w.r.t the absorber modified to make room for rails
-
-Revision 1.10  2000/10/27 17:19:50  barbera
-Position of rails w.r.t. the interaction point corrected.
-
-Revision 1.9  2000/10/27 13:31:29  barbera
-Rails between ITS and TPC added.
-
-Revision 1.8  2000/10/27 13:03:08  barbera
-Small changes in the SPD volumes and materials
-
-Revision 1.6  2000/10/16 14:45:37  barbera
-Mother volume ITSD modified to avoid some overlaps
-
-Revision 1.5  2000/10/16 13:49:15  barbera
-Services volumes slightly modified and material added following Pierluigi Barberis' information
-
-Revision 1.4  2000/10/07 15:33:07  barbera
-Small corrections to the ITSV mother volume
-
-Revision 1.3  2000/10/07 13:06:50  barbera
-Some new materials and media defined
-
-Revision 1.2  2000/10/07 10:58:15  barbera
-Mother volume ITSV corrected
-
-Revision 1.1  2000/10/06 23:09:24  barbera
-New  geometry (asymmetric services
-
-Revision 1.20  2000/10/02 21:28:08  fca
-Removal of useless dependecies via forward declarations
-
-Revision 1.19  2000/07/10 16:07:19  fca
-Release version of ITS code
-
-Revision 1.14.2.2  2000/05/19 10:09:21  nilsen
-fix for bug with HP and Sun unix + fix for event display in ITS-working branch
-
-Revision 1.14.2.1  2000/03/04 23:45:19  nilsen
-Fixed up the comments/documentation.
-
-Revision 1.14  1999/11/25 06:52:56  fca
-Correct value of drca
-
-Revision 1.13.2.1  1999/11/25 06:52:21  fca
-Correct value of drca
-
-Revision 1.13  1999/10/27 11:16:26  fca
-Correction of problem in geometry
-
-Revision 1.12  1999/10/22 08:25:25  fca
-remove double definition of destructors
-
-Revision 1.11  1999/10/22 08:16:49  fca
-Correct destructors, thanks to I.Hrivnacova
-
-Revision 1.10  1999/10/06 19:56:50  fca
-Add destructor
-
-Revision 1.9  1999/10/05 08:05:09  fca
-Minor corrections for uninitialised variables.
-
-Revision 1.8  1999/09/29 09:24:20  fca
-Introduction of the Copyright and cvs Log
-
 */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Inner Traking System version PPR  asymmetric                                         //
+//  Inner Traking System version PPR  asymmetric                             //
 //  This class contains the base procedures for the Inner Tracking System    //
 //                                                                           //
-// Authors: R. Barbera
-// version 6.
-// Created  2000.
-//
-//  NOTE: THIS IS THE  ASYMMETRIC PPR geometry of the ITS. 
+// Authors: R. Barbera                                                       //
+// version 8.                                                                //
+// Created  January 15 2001.                                                 //
+//                                                                           //
+//  NOTE: THIS IS THE  ASYMMETRIC PPR geometry of the ITS.                   //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 // See AliITSvPPRasymm::StepManager().
-#define ALIITSPRINTGEOM 0 // default. don't print out gemetry information
-//#define ALIITSPRINTGEOM 1 // print out geometry information 
-
+#include <iostream.h>
+#include <iomanip.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <TMath.h>
@@ -140,13 +74,15 @@ Introduction of the Copyright and cvs Log
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliConst.h"
-#if ALIITSPRINTGEOM==1
 #include "../TGeant3/TGeant3.h"
-#endif
+#include "AliITSGeant3Geometry.h"
 #include "AliITShit.h"
 #include "AliITS.h"
 #include "AliITSvPPRasymm.h"
 #include "AliITSgeom.h"
+#include "AliITSgeomSPD.h"
+#include "AliITSgeomSDD.h"
+#include "AliITSgeomSSD.h"
 
 
 ClassImp(AliITSvPPRasymm)
@@ -156,61 +92,75 @@ AliITSvPPRasymm::AliITSvPPRasymm() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard default constructor for the ITS version 8.
 ////////////////////////////////////////////////////////////////////////
+    Int_t i;
 
-  fIdN = 6;
-  fIdName = new TString[fIdN];
-  fIdName[0] = "ITS1";
-  fIdName[1] = "ITS2";
-  fIdName[2] = "ITS3";
-  fIdName[3] = "ITS4";
-  fIdName[4] = "ITS5";
-  fIdName[5] = "ITS6";
-  fIdSens    = new Int_t[fIdN];
-  for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+    fIdN          = 0;
+    fIdName       = 0;
+    fIdSens       = 0;
+    fEuclidOut    = kFALSE; // Don't write Euclide file
+    fGeomDetOut   = kFALSE; // Don't write .det file
+    fGeomDetIn    = kTRUE; // Read .det file
+    fMajorVersion = IsVersion();
+    fMinorVersion = -1;
+    for(i=0;i<60;i++) fRead[i] = '\0';
+    for(i=0;i<60;i++) fWrite[i] = '\0';
+    for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
 }
 //_____________________________________________________________________________
 AliITSvPPRasymm::AliITSvPPRasymm(const char *name, const char *title) : AliITS(name, title){
 ////////////////////////////////////////////////////////////////////////
 //    Standard constructor for the ITS version 8.
 ////////////////////////////////////////////////////////////////////////
+    Int_t i;
 
-  fIdN = 6;
-  fIdName = new TString[fIdN];
-  fIdName[0] = "ITS1";
-  fIdName[1] = "ITS2";
-  fIdName[2] = "ITS3";
-  fIdName[3] = "ITS4";
-  fIdName[4] = "ITS5";
-  fIdName[5] = "ITS6";
-  fIdSens    = new Int_t[fIdN];
-  for (Int_t i=0;i<fIdN;i++) fIdSens[i]=fIdName[i].Length();
+    fIdN = 6;
+    fIdName = new TString[fIdN];
+    fIdName[0] = "ITS1";
+    fIdName[1] = "ITS2";
+    fIdName[2] = "ITS3";
+    fIdName[3] = "ITS4";
+    fIdName[4] = "ITS5";
+    fIdName[5] = "ITS6";
+    fIdSens    = new Int_t[fIdN];
+    for(i=0;i<fIdN;i++) fIdSens[i] = 0;
+    fMajorVersion = IsVersion();
+    fMinorVersion = 21;
+    fEuclidOut    = kFALSE; // Don't write Euclide file
+    fGeomDetOut   = kFALSE; // Don't write .det file
+    fGeomDetIn    = kTRUE; // Read .det file
 
+    fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_PPRasymm21.euc";
+    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_PPRasymm21.det",60);
+    strncpy(fRead,fEuclidGeomDet,60);
+    strncpy(fWrite,fEuclidGeomDet,60);
 }
 //____________________________________________________________________________
 AliITSvPPRasymm::AliITSvPPRasymm(const AliITSvPPRasymm &source){
 ////////////////////////////////////////////////////////////////////////
-//     Copy Constructor for ITS version 6.
+//     Copy Constructor for ITS version 8.
 ////////////////////////////////////////////////////////////////////////
     if(&source == this) return;
-    printf("Not allowed to copy AliITSvPPRasymm\n");
+    Warning("Copy Constructor","Not allowed to copy AliITSvPPRasymm");
     return;
 }
 //_____________________________________________________________________________
 AliITSvPPRasymm& AliITSvPPRasymm::operator=(const AliITSvPPRasymm &source){
 ////////////////////////////////////////////////////////////////////////
-//    Assignment operator for the ITS version 6.
+//    Assignment operator for the ITS version 8.
 ////////////////////////////////////////////////////////////////////////
-  if(&source == this) return *this;
-    printf("Not allowed to copy AliITSvPPRasymm\n");
-  return *this;
+    if(&source == this) return *this;
+    Warning("= operator","Not allowed to copy AliITSvPPRasymm");
+    return *this;
 }
 //_____________________________________________________________________________
 AliITSvPPRasymm::~AliITSvPPRasymm() {
 ////////////////////////////////////////////////////////////////////////
 //    Standard destructor for the ITS version 8.
 ////////////////////////////////////////////////////////////////////////
+    if(fRead!=0) delete fRead;
+    if(fWrite!=0) delete fWrite;
+    if(fEuclidGeomDet!=0) delete fEuclidGeomDet;
 }
-
 //__________________________________________________________________________
 void AliITSvPPRasymm::BuildGeometry(){
 ////////////////////////////////////////////////////////////////////////
@@ -259,9 +209,6 @@ void AliITSvPPRasymm::BuildGeometry(){
 }
 //_____________________________________________________________________________
 void AliITSvPPRasymm::CreateGeometry(){
-
-
-
 ////////////////////////////////////////////////////////////////////////
 //    This routine defines and Creates the geometry for version 6 of the ITS.
 ////////////////////////////////////////////////////////////////////////
@@ -288,15 +235,16 @@ void AliITSvPPRasymm::CreateGeometry(){
 
   // Default values
   
-  Int_t thickness=2;  // detector thickness = 300 um - chip thickness = 300 um
-//  Int_t option=2;     // option 'b' for det/chip/bus stacking
-  
+//  Int_t thickness=2; // detector thickness = 300 um - chip thickness = 300 um
+//  Int_t option=2;    // option 'b' for det/chip/bus stacking
 
   // These values are NOT the default ones so leave them commented !
 
-//  Int_t thickness=1;  // detector thickness = 100 um - chip thickness = 150 um
-  Int_t option=1;     // option 'a' for det/chip/bus stacking
+//  Int_t thickness=1; // detector thickness = 100 um - chip thickness = 150 um
+//  Int_t option=1;    // option 'a' for det/chip/bus stacking
 
+  Int_t thickness = fMinorVersion/10;
+  Int_t option    = fMinorVersion - 10*thickness;
   
   Int_t *idtmed = fIdtmed->GetArray()-199;
 
@@ -304,6 +252,7 @@ void AliITSvPPRasymm::CreateGeometry(){
   // Rotation matrices
   
   // SPD - option 'a' (this is NOT the default so leave commented)
+  
   
   if (option == 1) {
   
@@ -4892,8 +4841,8 @@ void AliITSvPPRasymm::CreateGeometry(){
   dgh[2] = 0.6;    
   gMC->Gsvolu("ICYL", "TUBE", idtmed[210], dgh, 3);   
   gMC->Gspos("ICYL", 1, "ALIC", 0., 0., 74., 0, "ONLY");
-  gMC->Gspos("ICYL", 2, "ALIC", 0., 0., -74., idrotm[200], "ONLY");     
-  
+  gMC->Gspos("ICYL", 2, "ALIC", 0., 0., -74., idrotm[200], "ONLY");
+
   // --- Outputs the geometry tree in the EUCLID/CAD format 
   
   if (fEuclidOut) {
@@ -5061,19 +5010,148 @@ void AliITSvPPRasymm::CreateMaterials(){
   AliMedium(96, "SSD cone$",   96, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
 
 }
+//______________________________________________________________________
+void AliITSvPPRasymm::InitAliITSgeom(){
+//     Based on the geometry tree defined in Geant 3.21, this
+// routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
+// sturture.
+    if(!((TGeant3*)gMC)) {
+	Error("InitAliITSgeom",
+		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
+	return;
+    } // end if
+    cout << "Reading Geometry transformation directly from Geant 3." << endl;
+    const Int_t nlayers = 6;
+    const Int_t ndeep = 7;
+    Int_t itsGeomTreeNames[nlayers][ndeep],lnam[20],lnum[20];
+    Int_t nlad[nlayers],ndet[nlayers];
+    Double_t t[3],r[10];
+    Float_t  par[20],att[20];
+    Int_t    npar,natt,idshape,imat,imed;
+    AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
+    Int_t mod,lay,lad,det,i,j,k;
+    char *names[nlayers][ndeep] = {
+     {"ALIC","ITSV","ITSD","IT12","I132","I131","ITS1"}, // lay=1
+     {"ALIC","ITSV","ITSD","IT12","I132","I186","ITS2"}, // lay=2
+     {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3"}, // lay=3
+     {"ALIC","ITSV","ITSD","IT34","I005","I402","ITS4"}, // lay=4
+     {"ALIC","ITSV","ITSD","IT56","I565","I562","ITS5"}, // lay=5
+     {"ALIC","ITSV","ITSD","IT56","I569","I566","ITS6"}};// lay=6
+    Int_t itsGeomTreeCopys[nlayers][ndeep] = {{1,1,1,1,10, 2, 4},// lay=1
+					      {1,1,1,1,10, 4, 4},// lay=2
+					      {1,1,1,1,14, 6, 1},// lay=3
+					      {1,1,1,1,22, 8, 1},// lay=4
+					      {1,1,1,1,34,22, 1},// lay=5
+					      {1,1,1,1,38,25, 1}};//lay=6
+
+    // Sorry, but this is not very pritty code. It should be replaced
+    // at some point with a version that can search through the geometry
+    // tree its self.
+    cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
+    for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
+    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++) 
+	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
+    mod = 0;
+    for(i=0;i<nlayers;i++){
+	k = 1;
+	for(j=0;j<ndeep;j++) if(itsGeomTreeCopys[i][j]!=0)
+	    k *= TMath::Abs(itsGeomTreeCopys[i][j]);
+	mod += k;
+    } // end for i
+
+    if(fITSgeom!=0) delete fITSgeom;
+    nlad[0]=20;nlad[1]=40;nlad[2]=14;nlad[3]=22;nlad[4]=34;nlad[5]=38;
+    ndet[0]=4;ndet[1]=4;ndet[2]=6;ndet[3]=8;ndet[4]=22;ndet[5]=25;
+    fITSgeom = new AliITSgeom(0,6,nlad,ndet,mod);
+    mod = -1;
+    for(lay=1;lay<=nlayers;lay++){
+	for(j=0;j<ndeep;j++) lnam[j] = itsGeomTreeNames[lay-1][j];
+	for(j=0;j<ndeep;j++) lnum[j] = itsGeomTreeCopys[lay-1][j];
+	switch (lay){
+	case 1: case 2: // layers 1 and 2 are a bit special
+	    lad = 0;
+	    for(j=1;j<=itsGeomTreeCopys[lay-1][4];j++){
+		lnum[4] = j;
+		for(k=1;k<=itsGeomTreeCopys[lay-1][5];k++){
+		    lad++;
+		    lnum[5] = k;
+		    for(det=1;det<=itsGeomTreeCopys[lay-1][6];det++){
+			lnum[6] = det;
+			mod++;
+			ig->GetGeometry(ndeep,lnam,lnum,t,r,idshape,npar,natt,
+					par,att,imat,imed);
+			fITSgeom->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
+			if(!(fITSgeom->IsShapeDefined((Int_t)kSPD)))
+			    if(fMinorVersion==21){
+                             fITSgeom->ReSetShape(kSPD,
+						  new AliITSgeomSPD425Short());
+			    } else if(fMinorVersion==22)
+                             fITSgeom->ReSetShape(kSPD,
+						  new AliITSgeomSPD425Short());
+		    } // end for det
+		} // end for k
+            } // end for j
+	    break;
+	case 3: case 4: case 5: case 6: // layers 3-6
+	    lnum[6] = 1;
+	    for(lad=1;lad<=itsGeomTreeCopys[lay-1][4];lad++){
+		lnum[4] = lad;
+		for(det=1;det<=itsGeomTreeCopys[lay-1][5];det++){
+		    lnum[5] = det;
+		    mod++;
+		    ig->GetGeometry(7,lnam,lnum,t,r,idshape,npar,natt,
+				    par,att,imat,imed);
+		    switch (lay){
+		    case 3: case 4:
+			fITSgeom->CreatMatrix(mod,lay,lad,det,kSDD,t,r);
+			if(!(fITSgeom->IsShapeDefined(kSDD))) 
+			    fITSgeom->ReSetShape(kSDD,new AliITSgeomSDD256());
+			    break;
+			case 5:
+			    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
+			    if(!(fITSgeom->IsShapeDefined(kSSD))) 
+				fITSgeom->ReSetShape(kSSD,
+                                                  new AliITSgeomSSD275and75());
+			    break;
+			case 6:
+			    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSDp,t,r);
+			    if(!(fITSgeom->IsShapeDefined(kSSDp))) 
+				fITSgeom->ReSetShape(kSSDp,
+                                                  new AliITSgeomSSD75and275());
+			    break;
+			} // end switch
+		} // end for det
+	    } // end for lad
+	    break;
+	} // end switch
+    } // end for lay
+    return;
+}
 //_____________________________________________________________________________
 void AliITSvPPRasymm::Init(){
 ////////////////////////////////////////////////////////////////////////
 //     Initialise the ITS after it has been created.
 ////////////////////////////////////////////////////////////////////////
+    Int_t i;
 
-    //
+    cout << endl;
+    for(i=0;i<26;i++) cout << "*";
+    cout << " ITSvPPRasymm" << fMinorVersion << "_Init ";
+    for(i=0;i<25;i++) cout << "*";cout << endl;
+//
+    if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
+    if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
+    if(fITSgeom!=0) delete fITSgeom;
+    fITSgeom = new AliITSgeom();
+    if(fGeomDetIn) fITSgeom->ReadNewFile(fRead);
+    if(!fGeomDetIn) this->InitAliITSgeom();
+    if(fGeomDetOut) fITSgeom->WriteNewFile(fWrite);
     AliITS::Init();
-    fMajorVersion = 1;
-    fMinorVersion = 0;
-}  
- 
-//_____________________________________________________________________________
+//
+    for(i=0;i<72;i++) cout << "*";
+    cout << endl;
+}
+//______________________________________________________________________
 void AliITSvPPRasymm::DrawModule(){
 ////////////////////////////////////////////////////////////////////////
 //     Draw a shaded view of the FMD version 8.
@@ -5139,19 +5217,6 @@ void AliITSvPPRasymm::StepManager(){
   Int_t         vol[4];
   TLorentzVector position, momentum;
   TClonesArray &lhits = *fHits;
-#if ALIITSPRINTGEOM==1
-  FILE          *fp;
-  Int_t         i;
-  Float_t       xl[3],xt[3],angl[6];
-//  Float_t       par[20],att[20];
-  Float_t      mat[9];
-  static Bool_t first=kTRUE,printit[6][50][50];
-  if(first){ for(copy1=0;copy1<6;copy1++)for(copy2=0;copy2<50;copy2++)
-      for(id=0;id<50;id++) printit[copy1][copy2][id] = kTRUE;
-  first = kFALSE;
-  }
-  // end if first
-#endif
   //
   // Track status
   vol[3] = 0;
@@ -5235,54 +5300,7 @@ void AliITSvPPRasymm::StepManager(){
   hits[7]=gMC->TrackTime();
   // Fill hit structure with this new hit.
   new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->CurrentTrack(),vol,hits);
-#if ALIITSPRINTGEOM==1
-  if(printit[vol[0]][vol[2]][vol[1]]){
-      printit[vol[0]][vol[2]][vol[1]] = kFALSE;
-      xl[0] = xl[1] = xl[2] = 0.0;
-      gMC->Gdtom(xl,xt,1);
-      for(i=0;i<9;i++) mat[i] = 0.0;
-      mat[0] = mat[4] = mat[8] = 1.0;  // default with identity matrix
-      xl[0] = 1.0;
-      xl[1] = xl[2] =0.0;
-      gMC->Gdtom(xl,&(mat[0]),2);
-      xl[1] = 1.0;
-      xl[0] = xl[2] =0.0;
-      gMC->Gdtom(xl,&(mat[3]),2);
-      xl[2] = 1.0;
-      xl[1] = xl[0] =0.0;
-      gMC->Gdtom(xl,&(mat[6]),2);
 
-      angl[0] = TMath::ACos(mat[2]);
-      if(mat[2]==1.0) angl[0] = 0.0;
-      angl[1] = TMath::ATan2(mat[1],mat[0]);
-      if(angl[1]<0.0) angl[1] += 2.0*TMath::Pi();
-
-      angl[2] = TMath::ACos(mat[5]);
-      if(mat[5]==1.0) angl[2] = 0.0;
-      angl[3] = TMath::ATan2(mat[4],mat[3]);
-      if(angl[3]<0.0) angl[3] += 2.0*TMath::Pi();
-
-      angl[4] = TMath::ACos(mat[8]);
-      if(mat[8]==1.0) angl[4] = 0.0;
-      angl[5] = TMath::ATan2(mat[7],mat[6]);
-      if(angl[5]<0.0) angl[5] += 2.0*TMath::Pi();
-
-      for(i=0;i<6;i++) angl[i] *= 180.0/TMath::Pi(); // degrees
-      fp = fopen("ITSgeometry_v5.det","a");
-      fprintf(fp,"%2d %2d %2d %9e %9e %9e %9e %9e %9e %9e %9e %9e ",
-	      vol[0],vol[2],vol[1], // layer ladder detector
-	      xt[0],xt[1],xt[2],    // Translation vector
-	      angl[0],angl[1],angl[2],angl[3],angl[4],angl[5] // Geant rotaion
-                                                           // angles (degrees)
-	      );
-      fprintf(fp,"%9e %9e %9e %9e %9e %9e %9e %9e %9e",
-	     mat[0],mat[1],mat[2],mat[3],mat[4],mat[5],mat[6],mat[7],mat[8]
-	  );  // Adding the rotation matrix.
-      fprintf(fp,"\n");
-      fclose(fp);
-  } // end if printit[layer][ladder][detector]
-#endif
   return;
 
 }
-
