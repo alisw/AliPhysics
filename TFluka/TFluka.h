@@ -123,8 +123,7 @@ class TFluka : public TVirtualMC {
   virtual void       SetProcess(const char* flagName, Int_t flagValue, Int_t imed);
   virtual Bool_t     SetCut(const char* cutName, Double_t cutValue);
   virtual void       SetCut(const char* cutName, Double_t cutValue, Int_t imed);
-  virtual TObjArray* GetListOfProceses() {return fProcesses;}
-  virtual TObjArray* GetListOfCuts()     {return fCuts;}
+  virtual TObjArray* GetListOfUserConfigs() {return fUserConfig;}
   virtual Double_t   Xsec(char*, Double_t, Int_t, Int_t);
   
   // Particle table usage         
@@ -377,8 +376,7 @@ class TFluka : public TVirtualMC {
   TGeoMCGeometry      *fMCGeo;              // Interface to TGeo builder
 
   // SetProcess, SetCut and user Scoring dynamic storage
-  TObjArray* fProcesses;             // List of processes
-  TObjArray* fCuts;                  // List of cuts
+  TObjArray* fUserConfig;            // List of user physics configuration 
   TObjArray* fUserScore;             // List of user scoring options
   
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo

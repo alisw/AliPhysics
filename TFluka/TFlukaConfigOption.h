@@ -18,36 +18,73 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 //
+
+
 //
-//
 
+#include <TObject.h>
 
-#include <TNamed.h>
+typedef enum {kDCAY, kPAIR, kCOMP, kPHOT, kPFIS, kDRAY, kANNI, kBREM,
+	      kMUNU, kCKOV, kHADR, kLOSS, kMULS, kRAYL, kSTRA} FlukaProcessOption_t;
+typedef enum {kCUTGAM, kCUTELE, kCUTNEU, kCUTHAD, kCUTMUO, kBCUTE, kBCUTM, kDCUTE, kDCUTM, kPPCUTM, kTOFMAX}  FlukaCutOption_t;
+class TFlukaMCGeometry;
 
-
-class TFlukaConfigOption : public TNamed
+class TFlukaConfigOption : public TObject
 {
 public:
     // Constructors
     TFlukaConfigOption();
-    TFlukaConfigOption(const char* cutName, Double_t cut);
-    TFlukaConfigOption(const char* cutName, Double_t cut, Int_t imed);
-    TFlukaConfigOption(const char* procName, Int_t flag);
-    TFlukaConfigOption(const char* procName, Int_t flag, Int_t imed);
+    TFlukaConfigOption(Int_t imed);
     // Getters
-    Double_t Cut()  const                {return fCutValue;}
-    Int_t    Flag() const                {return fProcessFlag;}
-    Int_t    Medium()                    {return fMedium;}    
-    Bool_t   HasMediumAssigned()         {return  (fMedium > -1);}
+    Double_t Cut(FlukaCutOption_t i)      const {return fCutValue[i];}
+    Int_t    Flag(FlukaProcessOption_t i) const {return fProcessFlag[i];}
+    Int_t    Medium()                     const {return fMedium;}    
     // Setters
-    void     SetCut(Double_t val)        {fCutValue     =   val;}
-    void     SetFlag(Int_t val)          {fProcessFlag  =   val;}
-    void     SetMedium(Int_t imed)       {fMedium       =   imed;}    
-
+    void     SetCut(const char* flagname, Double_t val);
+    void     SetProcess(const char* flagname, Int_t flagValue);
+    void     SetMedium(Int_t imed)       {fMedium = imed;}
+    //
+    void     WriteFlukaInputCards();
+    void     ProcessDCAY();
+    void     ProcessPAIR();
+    void     ProcessBREM();
+    void     ProcessCOMP();
+    void     ProcessPHOT();
+    void     ProcessANNI();
+    void     ProcessPFIS();
+    void     ProcessMUNU();
+    void     ProcessRAYL();
+    void     ProcessCKOV();
+    void     ProcessHADR();
+    void     ProcessMULS();
+    void     ProcessLOSS();
+    void     ProcessSTRA();
+    
+    
+    void     ProcessCUTGAM();
+    void     ProcessCUTELE();
+    void     ProcessCUTNEU();
+    void     ProcessCUTHAD();
+    void     ProcessCUTMUO();
+    void     ProcessTOFMAX();
+    
+    //
+    static void SetStaticInfo(FILE* file, Float_t matMin, Float_t matMax, TFlukaMCGeometry* geom)
+	{fgFile = file; fgMatMin = matMin; fgMatMax = matMax; fgGeom = geom;}
  protected:
-    Double_t fCutValue;                // User cut
-    Int_t    fProcessFlag;             // User flag assigned to processes
+    Double_t fCutValue[11];            // User cut
+    Int_t    fProcessFlag[15];         // User flag assigned to processes
     Int_t    fMedium;                  // Materials assigned to user settings
+    Float_t  fCMatMin;                 // Minimum material number used for current card 
+    Float_t  fCMatMax;                 // Maximum material number used for current card
+    
+    // static
+    static Double_t  fgDCutValue[11];     // User default cut
+    static Int_t     fgDProcessFlag[15];  // User default flag assigned to processes
+    static Float_t   fgMatMin;            // Minimum material number 
+    static Float_t   fgMatMax;            // Maximum meterial number
+    static FILE*     fgFile;              // Output file
+    static TFlukaMCGeometry* fgGeom;      // Pointer to geometry     
     ClassDef(TFlukaConfigOption, 1)    // Fluka Configuration Option
 };
 	
