@@ -21,7 +21,6 @@
 //-----------------------------------------------------------------
 
 #include "TMath.h"
-#include "TString.h"
 
 #include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
@@ -192,8 +191,8 @@ AliESDtrack::~AliESDtrack(){
   // This is destructor according Coding Conventrions 
   //
   //printf("Delete track\n");
-  if (fITStrack) delete fITStrack;
-  if (fTRDtrack) delete fTRDtrack;  
+  delete fITStrack;
+  delete fTRDtrack;  
 }
 
 //_______________________________________________________________________
@@ -523,57 +522,59 @@ void  AliESDtrack::GetTRDExternalParameters(Double_t &x, Double_t p[5], Double_t
   for (Int_t i=0; i<15; i++) cov[i]=fTc[i];
 }
 
-void AliESDtrack::GetOuterPxPyPz(Double_t *p, TString det) const {
+void AliESDtrack::GetOuterPxPyPzPHOS(Double_t *p) const {
   //---------------------------------------------------------------------
   // This function returns the global track momentum components
   // af the radius of the PHOS
   //---------------------------------------------------------------------
   p[0]=p[1]=p[2]=0. ; 
-  if (det == "PHOS") { 
-    if (fOx==0) 
-      return;
-    Double_t phi=TMath::ASin(fOp[2]) + fOalpha;
-    Double_t pt=1./TMath::Abs(fOp[4]);
-    p[0]=pt*TMath::Cos(phi); 
-    p[1]=pt*TMath::Sin(phi); 
-    p[2]=pt*fOp[3];
-  } 
-  else if (det == "EMCAL" ) {
-    if (fXx==0)
-      return;
-    Double_t phi=TMath::ASin(fXp[2]) + fXalpha;
-    Double_t pt=1./TMath::Abs(fXp[4]);
-    p[0]=pt*TMath::Cos(phi); 
-    p[1]=pt*TMath::Sin(phi); 
-    p[2]=pt*fXp[3];
-  }
-  else 
-    Warning("GetOuterPxPyPz", "Only valid for PHOS or EMCAL") ; 
+  if (fOx==0) 
+    return;
+  Double_t phi=TMath::ASin(fOp[2]) + fOalpha;
+  Double_t pt=1./TMath::Abs(fOp[4]);
+  p[0]=pt*TMath::Cos(phi); 
+  p[1]=pt*TMath::Sin(phi); 
+  p[2]=pt*fOp[3];
+} 
+void AliESDtrack::GetOuterPxPyPzEMCAL(Double_t *p) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track momentum components
+  // af the radius of the EMCAL
+  //---------------------------------------------------------------------
+  if (fXx==0)
+    return;
+  Double_t phi=TMath::ASin(fXp[2]) + fXalpha;
+  Double_t pt=1./TMath::Abs(fXp[4]);
+  p[0]=pt*TMath::Cos(phi); 
+  p[1]=pt*TMath::Sin(phi); 
+  p[2]=pt*fXp[3];
 }
 
-void AliESDtrack::GetOuterXYZ(Double_t *xyz, TString det) const {
+void AliESDtrack::GetOuterXYZPHOS(Double_t *xyz) const {
   //---------------------------------------------------------------------
   // This function returns the global track position
-  // af the radius of the PHOS/EMCAL
+  // af the radius of the PHOS
   //---------------------------------------------------------------------
   xyz[0]=xyz[1]=xyz[2]=0.;
-  if ( det == "PHOS" ) {
-    if (fOx==0) 
-      return;
-    Double_t phi=TMath::ATan2(fOp[0],fOx) + fOalpha;
-    Double_t r=TMath::Sqrt(fOx*fOx + fOp[0]*fOp[0]);
-    xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fOp[1]; 
-  } 
-  else if ( det == "EMCAL" ) {
-    if (fXx==0) 
-      return;
-    Double_t phi=TMath::ATan2(fXp[0],fOx) + fXalpha;
-    Double_t r=TMath::Sqrt(fXx*fXx + fXp[0]*fXp[0]);
-    xyz[0]=r*TMath::Cos(phi); 
-    xyz[1]=r*TMath::Sin(phi); 
-    xyz[2]=fXp[1]; 
-  } 
-}
+  if (fOx==0) 
+    return;
+  Double_t phi=TMath::ATan2(fOp[0],fOx) + fOalpha;
+  Double_t r=TMath::Sqrt(fOx*fOx + fOp[0]*fOp[0]);
+  xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fOp[1]; 
+} 
+void AliESDtrack::GetOuterXYZEMCAL(Double_t *xyz) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track position
+  // af the radius of the EMCAL
+  //---------------------------------------------------------------------
+  if (fXx==0) 
+    return;
+  Double_t phi=TMath::ATan2(fXp[0],fOx) + fXalpha;
+  Double_t r=TMath::Sqrt(fXx*fXx + fXp[0]*fXp[0]);
+  xyz[0]=r*TMath::Cos(phi); 
+  xyz[1]=r*TMath::Sin(phi); 
+  xyz[2]=fXp[1]; 
+} 
 
 //_______________________________________________________________________
 void AliESDtrack::GetIntegratedTimes(Double_t *times) const {

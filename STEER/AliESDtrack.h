@@ -14,7 +14,6 @@
 
 #include <TBits.h>
 #include <TObject.h>
-class TString ; 
 class AliKalmanTrack;
 
 class AliESDtrack : public TObject {
@@ -60,8 +59,10 @@ public:
   Double_t GetInnerAlpha() const {return fIalpha;}
   
   
-  void GetOuterPxPyPz(Double_t *p, TString det) const;
-  void GetOuterXYZ(Double_t *r, TString det) const;
+  void GetOuterPxPyPzPHOS(Double_t *p) const;
+  void GetOuterPxPyPzEMCAL(Double_t *p) const;
+  void GetOuterXYZPHOS(Double_t *r) const;
+  void GetOuterXYZEMCAL(Double_t *r) const;
 
   void SetITSpid(const Double_t *p);
   void SetITSChi2MIP(const Float_t *chi2mip);
@@ -208,7 +209,7 @@ protected:
   Float_t fITSr[kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fITSLabel;       // label according TPC
   Float_t fITSFakeRatio;   // ration of fake tracks
-  AliKalmanTrack * fITStrack; //OWNER: pointer to the ITS track -- currently for debug purpose
+  AliKalmanTrack * fITStrack; //! OWNER: pointer to the ITS track -- currently for debug purpose
   
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
@@ -226,7 +227,7 @@ protected:
   Float_t fTRDsignal;      // detector's PID signal
   Float_t fTRDr[kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTRDLabel;       // label according TRD
-  AliKalmanTrack * fTRDtrack; //OWNER: pointer to the TRD track -- currently for debug purpose
+  AliKalmanTrack * fTRDtrack; //! OWNER: pointer to the TRD track -- currently for debug purpose
   // TOF related track information
   Float_t fTOFchi2;        // chi2 in the TOF
   UInt_t  fTOFindex;       // index of the assigned TOF cluster
@@ -247,7 +248,7 @@ protected:
   Float_t fRICHsignal;     // detector's PID signal (beta for RICH)
   Float_t fRICHr[kSPECIES];// "detector response probabilities" (for the PID)
   	
-  ClassDef(AliESDtrack,6)  //ESDtrack 
+  ClassDef(AliESDtrack,7)  //ESDtrack 
 };
 
 #endif 
