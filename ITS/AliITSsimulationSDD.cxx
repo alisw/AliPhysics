@@ -355,82 +355,82 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
     Int_t ii;
     Int_t idhit=-1;
     for(ii=0; ii<nhits; ii++) {
-	AliITShit *hit = (AliITShit*) fHits->At(ii);
-	Float_t xL[3];
-	hit = (AliITShit*) fHits->At(ii);
-	hit->GetPositionL(xL[0],xL[1],xL[2]);
-	Int_t hitDetector = hit->GetDetector();
+      AliITShit *hit = (AliITShit*) fHits->At(ii);
+      Float_t xL[3];
+      hit = (AliITShit*) fHits->At(ii);
+      hit->GetPositionL(xL[0],xL[1],xL[2]);
+      Int_t hitDetector = hit->GetDetector();
 
-        if(hit->StatusEntering()) idhit=ii;
-	
-	Int_t nOfSplits = 5;
-	if(fFlag) nOfSplits = 1;
-	// Deposited energy in keV
-	Float_t avpath = 0.;
-	Float_t avanod = 0.;
-	Float_t depEnergy = kconv*hit->GetIonization()/nOfSplits;
-	AliITShit *hit1 = 0;
-	Float_t xL1[3];
-	if(fFlag && depEnergy != 0.) continue;
-	if(depEnergy == 0.) {	
+      if(hit->StatusEntering()) idhit=ii;
+      
+      Int_t nOfSplits = 5;
+      if(fFlag) nOfSplits = 1;
+      // Deposited energy in keV
+      Float_t avpath = 0.;
+      Float_t avanod = 0.;
+      Float_t depEnergy = kconv*hit->GetIonization()/nOfSplits;
+      AliITShit *hit1 = 0;
+      Float_t xL1[3];
+      if(fFlag && depEnergy != 0.) continue;
+      if(depEnergy == 0.) {	
 	  ii++;
 	  hit1 = (AliITShit*) fHits->At(ii);
 	  hit1->GetPositionL(xL1[0],xL1[1],xL1[2]);
-	} else {
+      } else {
 	  xL1[0] = xL[0];
 	  xL1[1] = xL[1];
 	  xL1[2] = xL[2];
-	}
+      }
 
-	// scale path to simulate a perpendicular track
+      // scale path to simulate a perpendicular track
 
-	if(depEnergy == 0.) depEnergy = kconv*hit1->GetIonization()/nOfSplits;
-	if (fFlag) {
-	  Float_t pathInSDD = TMath::Sqrt((xL[0]-xL1[0])*(xL[0]-xL1[0])+(xL[1]-xL1[1])*(xL[1]-xL1[1])+(xL[2]-xL1[2])*(xL[2]-xL1[2]));
-	  depEnergy *= (0.03/pathInSDD); 
-	}
-	
-        for(Int_t kk=0;kk<nOfSplits;kk++) {
-         Float_t avDrft =  xL[0]+(xL1[0]-xL[0])*((kk+0.5)/((Float_t) nOfSplits));
-	 Float_t avAnode = xL[2]+(xL1[2]-xL[2])*((kk+0.5)/((Float_t) nOfSplits));
-	 Float_t driftPath = 10000.*avDrft;
-	  
-  	avpath = xL1[0];
-	avanod = xL1[2];
-	depEnergy = kconv*hit1->GetIonization();
-	
-	// added 11.09.2000 - continue if the particle did not lose energy
-	// passing through detector
-	if (!depEnergy) {
+      if(depEnergy == 0.) depEnergy = kconv*hit1->GetIonization()/nOfSplits;
+      // continue if the particle did not lose energy
+      // passing through detector
+      if (!depEnergy) {
 	  printf("This particle has passed without losing energy!\n");
 	  continue;
-	}
-	// end add
+      }
+
+      if (fFlag) {
+	  Float_t pathInSDD = TMath::Sqrt((xL[0]-xL1[0])*(xL[0]-xL1[0])+(xL[1]-xL1[1])*(xL[1]-xL1[1])+(xL[2]-xL1[2])*(xL[2]-xL1[2]));
+	  if(pathInSDD) depEnergy *= (0.03/pathInSDD); 
+      }
+	
+      for(Int_t kk=0;kk<nOfSplits;kk++) {
+	Float_t avDrft =  
+                xL[0]+(xL1[0]-xL[0])*((kk+0.5)/((Float_t) nOfSplits));
+	Float_t avAnode = 
+                xL[2]+(xL1[2]-xL[2])*((kk+0.5)/((Float_t) nOfSplits));
+	Float_t driftPath = 10000.*avDrft;
+	  
+	avpath = xL1[0];
+	avanod = xL1[2];
 
 	Int_t iWing = 2;
 	if(driftPath < 0) {
-	  iWing = 1;
-	  driftPath = -driftPath;
+	   iWing = 1;
+	   driftPath = -driftPath;
 	}
 	driftPath = sddLength-driftPath;
 	Int_t detector = 2*(hitDetector-1) + iWing;
 	if(driftPath < 0) {
-	  cout << "Warning: negative drift path " << driftPath << endl;
-	  continue;
+	   cout << "Warning: negative drift path " << driftPath << endl;
+	   continue;
 	}
 	 
 	//   Drift Time
 	Float_t driftTime = driftPath/driftSpeed;
 	Int_t timeSample = (Int_t) (fScaleSize*driftTime/timeStep + 1);
 	if(timeSample > fScaleSize*fMaxNofSamples) {
-	  cout << "Warning: Wrong Time Sample: " << timeSample << endl;
-	  continue;
+	   cout << "Warning: Wrong Time Sample: " << timeSample << endl;
+	   continue;
 	}
 
 	//   Anode
 	Float_t xAnode = 10000.*(avAnode)/anodePitch + nofAnodes/2;  // +1?
 	if((xAnode+1)*anodePitch > sddWidth || xAnode*anodePitch < 0.) 
-             { cout << "Warning: Z = " << xAnode*anodePitch << endl; }
+	  { cout << "Warning: Z = " << xAnode*anodePitch << endl; }
 	Int_t iAnode = (Int_t) (1.+xAnode); // xAnode?
 	if(iAnode < 0 || iAnode > nofAnodes) {
 	  cout << "Warning: Wrong iAnode: " << iAnode << endl;
@@ -445,7 +445,7 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
         // or store straight away the particle position in the array
 	// of particles and take idhit=ii only when part is entering (this
 	// requires FillModules() in the macro for analysis) : 
-        Int_t itrack = hit->GetTrack();
+	Int_t itrack = hit->GetTrack();
 
 	//  Signal 2d Shape
 	Float_t diffCoeff, s0;
@@ -1399,8 +1399,8 @@ void AliITSsimulationSDD::CreateHistograms(Int_t scale){
       Int_t i;
 
       fHis=new TObjArray(fNofMaps);
-      TString sddName("sdd_");
       for (i=0;i<fNofMaps;i++) {
+	   TString sddName("sdd_");
 	   Char_t candNum[4];
 	   sprintf(candNum,"%d",i+1);
 	   sddName.Append(candNum);
