@@ -5,7 +5,7 @@ void loadlibs ()
   gSystem->Load("$(ROOTSYS)/lib/libEG");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libSTEER");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libTGeant3Dummy");
-  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libdummyhijing.so");
+  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libdummyhijing");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libTHijing");
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libdummypythia6");
   gSystem->Load("$(ROOTSYS)/lib/libEGPythia6");
