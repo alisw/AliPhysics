@@ -5,7 +5,7 @@
 #endif
 
 
-void GetGoodParticles(Int_t slice,char *eventfile,char *digitfile)
+void GetGoodParticles(Int_t minslice,Int_t maxslice,char *eventfile,char *digitfile)
 {
 
   Int_t good_number = 70;
@@ -66,8 +66,8 @@ void GetGoodParticles(Int_t slice,char *eventfile,char *digitfile)
       param->AdjustSectorRow(digits->GetID(),sec,row);
       Int_t sl,padrow;
       transform->Sector2Slice(sl,padrow,sec,row);
-      if(sl < slice) continue;
-      if(sl != slice) break;
+      if(sl < minslice) continue;
+      if(sl > maxslice) break;
       digits->First();
       do {
 	Int_t it=digits->CurrentRow(), ip=digits->CurrentColumn();

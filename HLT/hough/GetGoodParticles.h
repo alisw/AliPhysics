@@ -13,6 +13,6 @@ struct GoodTrack
 };
 
 
-void GetGoodParticles(Int_t,Char_t *,Char_t *);
+void GetGoodParticles(Int_t,Int_t,Char_t *,Char_t *);
 
 #endif
