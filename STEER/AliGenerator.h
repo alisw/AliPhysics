@@ -54,7 +54,8 @@ class AliGenerator : public TNamed, public AliRndm
     void Vertex();
     void VertexExternal();
     virtual void VertexInternal();
-	    
+    virtual void FinishRun(){;}
+    
     virtual void SetMC(TGenerator *theMC) 
 	{if (!fgMCEvGen) fgMCEvGen =theMC;}
 
