@@ -222,11 +222,11 @@ void AliGenHIJINGpara::Init()
     fETApic = new TF1("etapic",&etapic,etaMin,etaMax,0);
     fETAkac = new TF1("etakac",&etakac,etaMin,etaMax,0);
 
-    TF1 etaPic0("etapic",&etapic,-7,7,0);
-    TF1 etaKac0("etakac",&etakac,-7,7,0);
+    TF1 etaPic0("etaPic0",&etapic,-7,7,0);
+    TF1 etaKac0("etaKac0",&etakac,-7,7,0);
 
-    TF1 ptPic0("ptpi",&ptpi,0.,15.,0);
-    TF1 ptKac0("ptka",&ptka,0.,15.,0);
+    TF1 ptPic0("ptPic0",&ptpi,0.,15.,0);
+    TF1 ptKac0("ptKac0",&ptka,0.,15.,0);
 
     Float_t intETApi  = etaPic0.Integral(-0.5, 0.5);
     Float_t intETAka  = etaKac0.Integral(-0.5, 0.5);
