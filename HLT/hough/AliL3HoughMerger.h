@@ -35,8 +35,8 @@ class AliL3HoughMerger : public AliL3Merger {
   void FillTracks(AliL3TrackArray *tracks,Int_t patch);
   
   void MergePatches(Bool_t slow=kTRUE);
-  void MergeEtaSlices(Int_t patch) {};
-  void MergeTracks(AliL3TrackArray *intracks,Int_t i,Int_t j) {};
+  void MergeEtaSlices(Int_t /*patch*/) {};
+  void MergeTracks(AliL3TrackArray */*intracks*/,Int_t /*i*/,Int_t /*j*/) {};
   void Print(AliL3Track **tracks);
   void SetParameters(Double_t maxkappa=0.001, Double_t maxpsi=0.05,Double_t maxphi0=0.1);
   

@@ -40,7 +40,7 @@ class AliL3HoughBaseTransformer {
   AliL3HoughBaseTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments,Float_t zvertex=0.0);
   virtual ~AliL3HoughBaseTransformer();
   
-  void SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr) {fDigitRowData = ptr;}
+  void SetInputData(UInt_t /*ndigits*/,AliL3DigitRowData *ptr) {fDigitRowData = ptr;}
   
   //this is for adaptave histograms
   virtual void CreateHistograms(Float_t /*ptmin*/,Float_t /*ptmax*/,Float_t /*pres*/,Int_t /*nybin*/,Float_t /*psi*/)

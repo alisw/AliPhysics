@@ -74,7 +74,7 @@ class AliL3Track {
   Bool_t IsPoint() {return fIsPoint;}
   Double_t GetCrossingAngle(Int_t padrow,Int_t slice=-1);
   Bool_t GetCrossingPoint(Int_t padrow,Float_t *xyz);
-  Double_t GetDistance(Double_t x0,Double_t x1){return 0;}
+  Double_t GetDistance(Double_t /*x0*/,Double_t /*x1*/){return 0;}
   void UpdateToFirstPoint();
 
   Float_t GetPID() {return fPID;}
