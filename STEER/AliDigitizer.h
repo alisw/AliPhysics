@@ -34,6 +34,7 @@ class AliDigitizer: public TTask {
       
     virtual ~AliDigitizer();
     virtual Bool_t Init() {return kTRUE;}
+    void SetRegionOfInterest(Bool_t flag) {fRegionOfInterest = flag;};
 //    virtual void Digitize() = 0;
 
 protected:
@@ -41,6 +42,7 @@ protected:
     void Copy(TObject &dig) const;
 
     AliRunDigitizer *fManager;   // Pointer to the Digitizer manager
+    Bool_t fRegionOfInterest;    // Flag for digitization only in region of interest
     
     ClassDef(AliDigitizer,1) // Base class for detector digitizers
 };

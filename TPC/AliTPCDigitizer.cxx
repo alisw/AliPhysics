@@ -132,11 +132,11 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
     masks[i]= fManager->GetMask(i);
   Short_t **pdig= new Short_t*[nInputs];   //pointers to the expanded digits array
   Int_t **ptr=  new Int_t*[nInputs];       //pointers to teh expanded tracks array
+  Bool_t *active=  new Bool_t[nInputs];    //flag for active input segments
 
   
   //create digits array for given sectors
   // make indexes
-  Stat_t nentries = 0;//number of entries in TreeS
   
   AliSimDigits ** digarr = new AliSimDigits*[nInputs]; 
   for (Int_t i1=0;i1<nInputs; i1++)
@@ -154,7 +154,6 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
             <<" input "<< i1<<endl;
         return;
        }
-      if (i1 == 0) nentries=treear->GetEntries();
     
       if (treear->GetIndex()==0)  
 	treear->BuildIndex("fSegmentID","fSegmentID");
@@ -174,7 +173,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
      ogime->MakeTree("D");
      tree  = ogime->TreeD();
    }
-  tree->Branch("Segment","AliSimDigits",&digrow);
+  TBranch* branch = tree->Branch("Segment","AliSimDigits",&digrow);
   //
 
   param->SetZeroSup(2);
@@ -183,39 +182,41 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   //
   //Loop over segments of the TPC
     
-  for (Int_t n=0; n<nentries; n++) 
+  for (Int_t segmentID=0; segmentID<param->GetNRowsTotal(); segmentID++) 
    {
-    rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
-    gime = rl->GetLoader("TPCLoader");
-    gime->TreeS()->GetEvent(n);
-    digarr[0]->ExpandBuffer();
-    digarr[0]->ExpandTrackBuffer();
-           
-    for (Int_t i=1;i<nInputs; i++) 
+    Int_t sec, row;
+    if (!param->AdjustSectorRow(segmentID,sec,row)) 
+     {
+      cerr<<"AliTPC warning: invalid segment ID ! "<<segmentID<<endl;
+      continue;
+     }
+
+    digrow->SetID(segmentID);
+
+    Int_t nrows = 0;
+    Int_t ncols = 0;
+
+    Bool_t digitize = kFALSE;
+    for (Int_t i=0;i<nInputs; i++) 
      { 
 
       rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i));
       gime = rl->GetLoader("TPCLoader");
       
-      gime->TreeS()->GetEntryWithIndex(digarr[0]->GetID(),digarr[0]->GetID());
-      if ((digarr[0]->GetID()-digarr[i]->GetID())>0) 
-       printf("problem - not corresponding segment in background event\n");
-      
-      digarr[i]->ExpandBuffer();
-      digarr[i]->ExpandTrackBuffer();
-      
+      if (gime->TreeS()->GetEntryWithIndex(segmentID,segmentID) >= 0) {
+	digarr[i]->ExpandBuffer();
+	digarr[i]->ExpandTrackBuffer();
+        nrows = digarr[i]->GetNRows();
+        ncols = digarr[i]->GetNCols();
+	active[i] = kTRUE;
+	if (!fRegionOfInterest || (i == 0)) digitize = kTRUE;
+      } else {
+	active[i] = kFALSE;
+      }
+      if (fRegionOfInterest && !digitize) break;
      }   
-    Int_t sec, row;
-    if (!param->AdjustSectorRow(digarr[0]->GetID(),sec,row)) 
-     {
-      cerr<<"AliTPC warning: invalid segment ID ! "<<digarr[0]->GetID()<<endl;
-      continue;
-     }
+    if (!digitize) continue;
 
-    digrow->SetID(digarr[0]->GetID());
-
-    Int_t nrows = digarr[0]->GetNRows();
-    Int_t ncols = digarr[0]->GetNCols();
     digrow->Allocate(nrows,ncols);
     digrow->AllocateTrack(3);
 
@@ -226,10 +227,10 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
     Int_t nElems = nrows*ncols;     
  
     for (Int_t i=0;i<nInputs; i++)
-     { 
+     if (active[i]) { 
        pdig[i] = digarr[i]->GetDigits();
        ptr[i]  = digarr[i]->GetTracks();
-     }
+      }
      
     Short_t *pdig1= digrow->GetDigits();
     Int_t   *ptr1= digrow->GetTracks() ;
@@ -242,7 +243,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
        q=0;
        labptr=0;
        // looop over digits 
-        for (Int_t i=0;i<nInputs; i++)
+        for (Int_t i=0;i<nInputs; i++) if (active[i]) 
          { 
           //          q  += digarr[i]->GetDigitFast(rows,col);
             q  += *(pdig[i]);
@@ -282,9 +283,10 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
     
     digrow->CompresBuffer(1,zerosup);
     digrow->CompresTrackBuffer(1);
+    branch->SetAddress(&digrow);
     tree->Fill();
     if (fDebug>0) cerr<<sec<<"\t"<<row<<"\n";  
-   } //for (Int_t n=0; n<nentries; n++) 
+   } //for (Int_t n=0; n<param->GetNRowsTotal(); n++) 
   
 
   orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
@@ -296,7 +298,10 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   delete digrow;     
   for (Int_t i1=0;i1<nInputs; i1++) delete digarr[i1];
   delete []masks;
-  delete digarr;  
+  delete []pdig;
+  delete []ptr;
+  delete []active;
+  delete []digarr;  
 }
 
 

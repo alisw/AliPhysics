@@ -27,6 +27,7 @@ public:
   void           SetMakeSDigits(const char* detectors) 
                    {fMakeSDigits = detectors;};
   void           MergeWith(const char* fileName, Int_t nSignalPerBkgrd = 1);
+  void           SetRegionOfInterest(Bool_t flag) {fRegionOfInterest = flag;};
   void           SetMakeDigits(const char* detectors)
                    {fMakeDigits = detectors;};
   void           SetMakeDigitsFromHits(const char* detectors)
@@ -56,6 +57,7 @@ private:
   TString        fConfigFileName;     // name of the config file
   TString        fGAliceFileName;     // name of the galice file
   TObjArray*     fBkgrdFileNames;     // names of background files for merging
+  Bool_t         fRegionOfInterest;   // digitization in region of interest
 
   AliRunLoader*  fRunLoader;          //! current run loader object
 

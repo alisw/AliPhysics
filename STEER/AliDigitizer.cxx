@@ -35,7 +35,8 @@ ClassImp(AliDigitizer)
 //_______________________________________________________________________
 AliDigitizer::AliDigitizer(const Text_t* name, const Text_t* title):
   TTask(name,title),
-  fManager(0)
+  fManager(0),
+  fRegionOfInterest(kTRUE)
 {
   //
   // Default ctor with name and title
@@ -45,7 +46,8 @@ AliDigitizer::AliDigitizer(const Text_t* name, const Text_t* title):
 //_______________________________________________________________________
 AliDigitizer::AliDigitizer(const AliDigitizer &dig):
   TTask(dig.GetName(),dig.GetTitle()),
-  fManager(0)
+  fManager(0),
+  fRegionOfInterest(kTRUE)
 {
   //
   // Copy ctor with
@@ -63,7 +65,8 @@ void AliDigitizer::Copy(TObject &) const
 AliDigitizer::AliDigitizer(AliRunDigitizer *manager, 
                            const Text_t* name, const Text_t* title):
   TTask(name,title),
-  fManager(manager)
+  fManager(manager),
+  fRegionOfInterest(kFALSE)
 {
   //
   // ctor with name and title

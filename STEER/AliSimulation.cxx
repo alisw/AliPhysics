@@ -79,6 +79,7 @@
 #include "AliModule.h"
 #include "AliGenerator.h"
 #include "AliRunDigitizer.h"
+#include "AliDigitizer.h"
 #include <TObjString.h>
 
 
@@ -154,6 +155,7 @@ void AliSimulation::Init()
   fConfigFileName = "Config.C";
   fGAliceFileName = "galice.root";
   fBkgrdFileNames = new TObjArray;
+  fRegionOfInterest = kTRUE;
 
   fRunLoader = NULL;
 }
@@ -217,7 +219,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   fRunLoader->LoadgAlice();
   gAlice = fRunLoader->GetAliRun();
   if (!gAlice) {
-    Error("GetLoadersAndDetectors", "no gAlice object found in file %s", 
+    Error("Run", "no gAlice object found in file %s", 
 	  fGAliceFileName.Data());
     return kFALSE;
   }
@@ -255,6 +257,9 @@ Bool_t AliSimulation::RunSimulation()
 {
 // run the generation and simulation
 
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
   Info("RunSimulation", "initializing gAlice with config file %s",
        fConfigFileName.Data());
   gAlice->Init(fConfigFileName.Data());
@@ -275,8 +280,11 @@ Bool_t AliSimulation::RunSimulation()
     gAlice->Generator()->SetTrackingFlag(0);
   }
 
-  Info("Run", "running gAlice");
+  Info("RunSimulation", "running gAlice");
   gAlice->Run(fNEvents);
+
+  Info("RunSimulation", "execution time:");
+  stopwatch.Print();
 
   return kTRUE;
 }
@@ -285,6 +293,9 @@ Bool_t AliSimulation::RunSimulation()
 Bool_t AliSimulation::RunSDigitization(const TString& detectors)
 {
 // run the digitization and produce summable digits
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
 
   TString detStr = detectors;
   TObjArray* detArray = gAlice->Detectors();
@@ -304,6 +315,9 @@ Bool_t AliSimulation::RunSDigitization(const TString& detectors)
     if (fStopOnError) return kFALSE;
   }
 
+  Info("RunSDigitization", "execution time:");
+  stopwatch.Print();
+
   return kTRUE;
 }
 
@@ -313,6 +327,9 @@ Bool_t AliSimulation::RunDigitization(const TString& detectors,
 				      const TString& excludeDetectors)
 {
 // run the digitization and produce digits from sdigits
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
 
   Int_t nStreams = fBkgrdFileNames->GetEntriesFast() + 1;
   Int_t signalPerBkgrd = 1;
@@ -333,9 +350,12 @@ Bool_t AliSimulation::RunDigitization(const TString& detectors,
     if (!det || !det->IsActive()) continue;
     if (IsSelected(det->GetName(), detStr) && 
 	!IsSelected(det->GetName(), detExcl)) {
-      if (!det->CreateDigitizer(manager)) {
+      AliDigitizer* digitizer = det->CreateDigitizer(manager);
+      if (!digitizer) {
 	Error("RunDigitization", "no digitizer for %s", det->GetName());
 	if (fStopOnError) return kFALSE;
+      } else {
+	digitizer->SetRegionOfInterest(fRegionOfInterest);
       }
     }
   }
@@ -352,6 +372,9 @@ Bool_t AliSimulation::RunDigitization(const TString& detectors,
   }
   delete manager;
 
+  Info("RunDigitization", "execution time:");
+  stopwatch.Print();
+
   return kTRUE;
 }
 
@@ -359,6 +382,9 @@ Bool_t AliSimulation::RunDigitization(const TString& detectors,
 Bool_t AliSimulation::RunHitsDigitization(const TString& detectors)
 {
 // run the digitization and produce digits from hits
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
 
   TString detStr = detectors;
   TObjArray* detArray = gAlice->Detectors();
@@ -377,6 +403,9 @@ Bool_t AliSimulation::RunHitsDigitization(const TString& detectors)
 	  detStr.Data());
     if (fStopOnError) return kFALSE;
   }
+
+  Info("RunHitsDigitization", "execution time:");
+  stopwatch.Print();
 
   return kTRUE;
 }
