@@ -55,6 +55,7 @@ ClassImp(AliTOFhitT0)
 
 //____________________________________________________________________________
 AliTOFhitT0::AliTOFhitT0(const AliTOFhitT0 & hit)
+:AliHit(hit)
 {
    //
    // copy ctor for AliTOFhitT0 object

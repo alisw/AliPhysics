@@ -74,7 +74,8 @@ AliTOFDigitMap::AliTOFDigitMap(TClonesArray *dig)
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFDigitMap::AliTOFDigitMap(const AliTOFDigitMap & digitMap)
+AliTOFDigitMap::AliTOFDigitMap(const AliTOFDigitMap & /*digitMap*/)
+:TObject()
 {
 //
 // Dummy copy constructor
@@ -182,7 +183,7 @@ FlagType AliTOFDigitMap::TestHit(Int_t *vol) const
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFDigitMap & AliTOFDigitMap::operator = (const AliTOFDigitMap & rhs) 
+AliTOFDigitMap & AliTOFDigitMap::operator = (const AliTOFDigitMap & /*rhs*/) 
 {
 // Dummy assignment operator
     return *this;

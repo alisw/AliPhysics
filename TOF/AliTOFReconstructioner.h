@@ -42,7 +42,7 @@ public:
   // this line has to be commented till TPC will provide fPx fPy fPz 
   // and fL in AliTPChit class
   //virtual void  ReadTPCHits(Int_t ntracks, TTree* treehits, TClonesArray* tpchits, Int_t* iTrackPt, Int_t* iparticle, Float_t* ptTrack, AliTOFTrack* trackArray, Int_t& itrack);
-  virtual void  ReadTPCTracks(TFile* tpcReconFile){};
+  virtual void  ReadTPCTracks(TFile* /*tpcReconFile*/){};
   virtual void  Matching(AliTOFTrack* trackArray, AliTOFRecHit* hitArray, Int_t *** mapPixel, AliTOFPad* pixelArray, Int_t* kTOFhitFirst, Int_t& ipixel, Int_t* iTrackPt, Int_t* iTOFpixel, Int_t ntotTpcTracks);
 
   virtual void FillNtuple(Int_t ntracks, AliTOFTrack* trackArray, AliTOFRecHit* hitArray, AliTOFPad* pixelArray, Int_t* iTOFpixel, Int_t* iparticle, Float_t* toftime, Int_t& ipixelLastEntry, Int_t itrack); 

@@ -76,7 +76,8 @@ AliTOFHitMap::AliTOFHitMap(TClonesArray *dig)
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFHitMap::AliTOFHitMap(const AliTOFHitMap & hitMap)
+AliTOFHitMap::AliTOFHitMap(const AliTOFHitMap & /*hitMap*/)
+:TObject()
 {
 //
 // Dummy copy constructor
@@ -184,7 +185,7 @@ FlagType AliTOFHitMap::TestHit(Int_t *vol) const
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFHitMap & AliTOFHitMap::operator = (const AliTOFHitMap & rhs) 
+AliTOFHitMap & AliTOFHitMap::operator = (const AliTOFHitMap & /*rhs*/) 
 {
 // Dummy assignment operator
     return *this;

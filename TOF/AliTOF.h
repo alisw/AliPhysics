@@ -62,8 +62,8 @@ public:
   virtual Int_t   IsVersion() const =0;
   Int_t           DistancetoPrimitive(Int_t px, Int_t py) const;
   virtual void    StepManager()=0;
-  virtual void    TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
-                        Float_t zlenB, Float_t zlenA, Float_t ztof0){}
+  virtual void    TOFpc(Float_t /*xtof*/, Float_t /*ytof*/, Float_t /*zlenC*/,
+                        Float_t /*zlenB*/, Float_t /*zlenA*/, Float_t /*ztof0*/){}
   virtual void    DrawModule() const;
   virtual void    DrawDetectorModules()=0;
   virtual void    DrawDetectorStrips()=0;

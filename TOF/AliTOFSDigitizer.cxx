@@ -460,7 +460,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 }
 
 //__________________________________________________________________
-void AliTOFSDigitizer::Print(Option_t* opt)const
+void AliTOFSDigitizer::Print(Option_t* /*opt*/)const
 {
   cout << "------------------- "<< GetName() << " -------------" << endl ;
 

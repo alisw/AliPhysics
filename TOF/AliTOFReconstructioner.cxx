@@ -509,7 +509,7 @@ void AliTOFReconstructioner::SetRecFile(char * file )
   fRecFile=file ;
 }
 //__________________________________________________________________
-void AliTOFReconstructioner::Print(Option_t* option)const
+void AliTOFReconstructioner::Print(Option_t* /*option*/)const
 {
   //
   // Print reconstruction output file name

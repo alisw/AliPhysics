@@ -49,6 +49,7 @@ ClassImp(AliTOFRecHit)
 
 //____________________________________________________________________________
 AliTOFRecHit::AliTOFRecHit(const AliTOFRecHit & hit)
+:AliHit(hit)
 {
   //
   // copy ctor for AliTOFRecHit object

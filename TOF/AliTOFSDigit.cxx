@@ -54,6 +54,7 @@ ClassImp(AliTOFSDigit)
 
 ////////////////////////////////////////////////////////////////////////
 AliTOFSDigit::AliTOFSDigit(Int_t tracknum, Int_t *vol,Float_t *digit)
+:TObject()
 {
   //
   // Constructor of digit object
@@ -77,6 +78,7 @@ AliTOFSDigit::AliTOFSDigit(Int_t tracknum, Int_t *vol,Float_t *digit)
 
 ////////////////////////////////////////////////////////////////////////
 AliTOFSDigit::AliTOFSDigit(const AliTOFSDigit & digit)
+:TObject()
 {
   // 
   // copy ctor for AliTOFSDigit object

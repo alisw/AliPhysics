@@ -59,7 +59,8 @@ AliTOFRoc::AliTOFRoc()
 
 //______________________________________________________________________________
 AliTOFRoc::AliTOFRoc(const AliTOFRoc& tofroc)
- : fItems(tofroc.fItems), fSize(tofroc.fSize), fNRoc(tofroc.fNRoc), fHeader(tofroc.fHeader) 
+:TObject()
+// : fItems(tofroc.fItems), fSize(tofroc.fSize), fNRoc(tofroc.fNRoc), fHeader(tofroc.fHeader) 
 { 
 //
 // copy ctor for AliTOFRoc class 

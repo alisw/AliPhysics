@@ -123,6 +123,12 @@ ClassImp(AliTOFT0)
 }
 
 //____________________________________________________________________________ 
+  AliTOFT0::AliTOFT0(const AliTOFT0 & tzero):TTask("AliTOFT0","")
+{
+( (AliTOFT0 &)tzero ).Copy(*this);
+}
+
+//____________________________________________________________________________ 
   AliTOFT0::~AliTOFT0()
 {
   // dtor
@@ -470,7 +476,7 @@ void AliTOFT0::SetTZeroFile(char * file ){
   fT0File=file;
 }
 //__________________________________________________________________
-void AliTOFT0::Print(Option_t* option)const
+void AliTOFT0::Print(Option_t* /*option*/)const
 {
   cout << "------------------- "<< GetName() << " -------------" << endl ;
   if(!fT0File.IsNull())

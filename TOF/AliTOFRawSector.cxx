@@ -45,7 +45,8 @@ AliTOFRawSector::AliTOFRawSector()
 
 //______________________________________________________________________________
 AliTOFRawSector::AliTOFRawSector(const AliTOFRawSector& tofrawsector)
- : fHeader(tofrawsector.fHeader), fGlobalCheckSum(tofrawsector.fGlobalCheckSum) 
+:TObject()
+// : fHeader(tofrawsector.fHeader), fGlobalCheckSum(tofrawsector.fGlobalCheckSum) 
 {
 // copy ctor for AliTOFRawSector class
 // (required also by RC10 Coding Convention)

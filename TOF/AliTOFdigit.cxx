@@ -56,6 +56,7 @@ AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol,Float_t *digit)
 
 //____________________________________________________________________________
 AliTOFdigit::AliTOFdigit(const AliTOFdigit & digit)
+:AliDigit(digit)
 {
   // 
   // copy ctor for AliTOFdigit object

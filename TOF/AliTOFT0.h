@@ -25,8 +25,8 @@ class AliTOFT0: public TTask {
 public:
   AliTOFT0() ;          // ctor
   AliTOFT0(char* headerFile, Int_t nEvents=0) ; 
-  AliTOFT0(const AliTOFT0 & tzero) 
-                  {( (AliTOFT0 &)tzero ).Copy(*this) ;} 
+  AliTOFT0(const AliTOFT0 & tzero);
+//////                  {( (AliTOFT0 &)tzero ).Copy(*this) ;} 
   virtual ~AliTOFT0() ; // dtor
   /*
   AliTOFT0 & operator = (const AliTOFT0 & rvalue)  {

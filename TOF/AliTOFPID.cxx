@@ -1351,7 +1351,7 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
 
 
 //__________________________________________________________________
-Bool_t AliTOFPID::operator==( AliTOFPID const & tofrec)const
+Bool_t AliTOFPID::operator==( AliTOFPID const & /*tofrec*/)const
 {
   // dummy version of Equal operator.
   // requested by coding conventions

@@ -131,7 +131,7 @@ void AliTOFProb::Init()
 
 
 //____________________________________________________________________________
-void AliTOFProb::Exec(const Option_t *dummyOpt) 
+void AliTOFProb::Exec(const Option_t * /*dummyOpt*/) 
 { 
   //
   // Performs Prob for TOF detector
@@ -262,7 +262,7 @@ void AliTOFProb::Exec(const Option_t *dummyOpt)
 
 
 //__________________________________________________________________
-Bool_t AliTOFProb::operator==( AliTOFProb const & tofrec)const
+Bool_t AliTOFProb::operator==( AliTOFProb const & /*tofrec*/)const
 {
   // dummy version of Equal operator.
   // requested by coding conventions
