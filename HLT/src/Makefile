@@ -50,7 +50,7 @@ endif
 
 LEVELSO = $(LIBDIR)/libAliL3.so
 
-all : $(OBJDIR) $(LEVELSO) 
+all : $(OBJDIR) $(LIBDIR) $(LEVELSO) 
 
 $(LEVELSO) : $(OBJS)
 	$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
@@ -64,6 +64,9 @@ $(OBJDIR)/%.o : %.cxx
 
 $(OBJDIR) : 
 	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
+
+$(LIBDIR) :
+	test ! -e $(LIBDIR) && mkdir -p $(LIBDIR)
 
 clean :
 	rm -f $(OBJDIR)/*.o

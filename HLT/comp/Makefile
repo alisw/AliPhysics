@@ -27,7 +27,7 @@ OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(OBJDIR)/bitio.o $(OBJDIR)/errha
 
 LEVELSO = $(LIBDIR)/libAliL3Comp.so
 
-all : $(OBJDIR) $(LEVELSO)
+all : $(OBJDIR) $(LIBDIR) $(LEVELSO)
 
 
 $(LEVELSO) : $(OBJS)
@@ -43,6 +43,9 @@ $(OBJDIR)/%.o : %.cxx
 
 $(OBJDIR) : 
 	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
+
+$(LIBDIR) :
+	test ! -e $(LIBDIR) && mkdir -p $(LIBDIR)
 
 $(OBJDIR)/bitio.o : bitio.c
 	$(CXX) -c -o $(OBJDIR)/bitio.o bitio.c
