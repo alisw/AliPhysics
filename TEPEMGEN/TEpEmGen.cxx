@@ -30,6 +30,8 @@
 // 9 October 2002
 //------------------------------------------------------------------------
 
+#include "TRandom.h"
+
 #include "TEpEmGen.h"
 #include "TClonesArray.h"
 #include "TParticle.h"
@@ -38,9 +40,11 @@
 #ifndef WIN32
 # define ee_init  ee_init_
 # define ee_event ee_event_
+# define eernd    eernd_
 #else
 # define ee_init  EE_INIT
 # define ee_event EE_EVENT
+# define eernd    EERND
 #endif
 
 extern "C" {
@@ -48,6 +52,11 @@ extern "C" {
   void ee_event (Double_t &ymin, Double_t &ymax, Double_t &xmin, Double_t &xmax,
 	         Double_t &yE,   Double_t &yP,   Double_t &xE,   Double_t &xP, 
 		 Double_t &phi,  Double_t &w);
+  Double_t eernd(Int_t*) {
+    Double_t r;
+    do r=gRandom->Rndm(); while(0 >= r || r >= 1);
+    return r;
+  }
 }
 
 ClassImp(TEpEmGen)

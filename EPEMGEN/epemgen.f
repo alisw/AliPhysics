@@ -257,12 +257,12 @@ C------------------------------------------------------------------------------
 
 C  Rapidity distributions: 
 C
- 10   YpY = YpYmin + (YpYmax-YpYmin)*pyr(0)
+ 10   YpY = YpYmin + (YpYmax-YpYmin)*eernd(0)
       Wt  = DsdYpY(YpY)
-      if (Wt.lt.pyr(0)*WYpYmax) go to 10
+      if (Wt.lt.eernd(0)*WYpYmax) go to 10
 C
 CYmY-
-      r1 = pyr(0)
+      r1 = eernd(0)
       if  (r1.lt.Gaus1) then
  13      call rnorml(rn1)
          YmY = sgmY1*rn1
@@ -273,10 +273,10 @@ CYmY-
          if (dabs(YmY).lt.Ymed1) go to 15
          if (dabs(YmY).gt.Ymed2) go to 15
       else
- 20      r2 = pyr(0)
+ 20      r2 = eernd(0)
          YmY=-Dlog(r2)/parYmY(6) + Ymed2
          if (YmY.gt.YmYmax) go to 20    
-         r2 = pyr(0)
+         r2 = eernd(0)
          if (r2.lt.0.5) YmY =-YmY
       endif
 C
@@ -289,27 +289,27 @@ C
 C      
 C Azimuthal angle:       
 C 
- 30   r1 = pyr(0)
+ 30   r1 = eernd(0)
       if (r1.lt.Exp3) then
- 31      r2 = pyr(0)
+ 31      r2 = eernd(0)
          Phi=-Dlog(r2)/parPhi(7)
          if (Phi.gt.pi) go to 31
          go to 50            
       else if (r1.lt.Exp2) then
- 32      r2 = pyr(0)
+ 32      r2 = eernd(0)
          Phi=-Dlog(r2)/parPhi(5)
          if (Phi.gt.pi) go to 32
          go to 50  
       else if (r1.lt.Exp1) then 
- 33      r2 = pyr(0)
+ 33      r2 = eernd(0)
          Phi=-Dlog(r2)/parPhi(3)
          if (Phi.gt.pi) go to 33
          go to 50
       else
-         Phi = pi*pyr(0)
+         Phi = pi*eernd(0)
       endif
 C     
- 50   if (pyr(0).gt.0.5) Phi =-Phi
+ 50   if (eernd(0).gt.0.5) Phi =-Phi
       Phi = Phi+pi
       if (Phi.lt.0.03.or.Phi.gt.2.*pi-0.03) go to 30 
 C
@@ -321,7 +321,7 @@ CXpX-
 C
       if (Icase.eq.2) then      !       Gausses and Exponent       
          Jcase = 3
-         if (pyr(0).lt.Gauss) Jcase = 1
+         if (eernd(0).lt.Gauss) Jcase = 1
       endif                     ! of Icase 2
 C           
       if (Jcase.eq.1) then      !       Gauss only
@@ -331,23 +331,23 @@ C
       endif                     ! of Jcase 1	      
 C
       if (Jcase.eq.3) then      !       Exponent only
- 70      r1  = pyr(0)
+ 70      r1  = eernd(0)
          XpX =-Dlog( 1.- r1*AnorX)/parXpX(5)+Xmed 	      
       endif                     ! of Jcase 3 
 
 CXmX-
-      r1 = pyr(0)
+      r1 = eernd(0)
       if (r1.lt.Exmx1) then
- 81      r2 = pyr(0)
+ 81      r2 = eernd(0)
          XmX=-Dlog(r2)/parXmX(2)
          if (XmX.gt.dabs(XmXmax)) go to 81           
       else 
- 82      r2 = pyr(0)
+ 82      r2 = eernd(0)
          XmX=-Dlog(r2)/parXmX(4)
          if (XmX.gt.dabs(XmXmax)) go to 82  
       endif
 C
- 85   if (pyr(0).gt.0.5) XmX =-XmX
+ 85   if (eernd(0).gt.0.5) XmX =-XmX
 C
       Xe = 0.5*(XpX+XmX)
       Xp = 0.5*(XpX-XmX)
@@ -506,10 +506,10 @@ C====================================================================
       PARAMETER (pi=3.141 592 653 589 793 238 462 643d00)
       PARAMETER (pi2=2.*pi)
 C      
-      u1 = pyr(0)
-      u2 = pyr(0)
+      u1 = eernd(0)
+      u2 = eernd(0)
       p1 = pi2*u1
       p2 = dsqrt(-2.*dlog(u2))
-      rnd=  dcos(p1)*p2
+      rnd= dcos(p1)*p2
       RETURN
       END
