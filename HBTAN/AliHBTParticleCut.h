@@ -319,6 +319,7 @@ class AliHBTVzCut: public AliHbtBaseCut
 class AliHBTPIDCut:  public AliHbtBaseCut
  {
    public:
+     AliHBTPIDCut():AliHbtBaseCut(0.0,0.0,kHbtPid),fPID(0){}
      AliHBTPIDCut(Int_t pid, Double_t min = 0.0, Double_t max = 1.0):AliHbtBaseCut(min,max,kHbtPid),fPID(pid){}
      virtual ~AliHBTPIDCut(){}
    protected:
