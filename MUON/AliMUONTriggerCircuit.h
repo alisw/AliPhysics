@@ -2,7 +2,7 @@
 #define ALIMUONTRIGGERCIRCUIT_H
 
 #include "TObjArray.h"
-#include <iostream.h>
+#include <Riostream.h>
 #include "AliMUONSegmentationTrigger.h"
 
 class AliMUONSegmentationTrigger;

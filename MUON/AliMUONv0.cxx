@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2002/10/14 14:57:29  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.20.6.2  2002/07/24 10:07:21  alibrary
 Updating VirtualMC
 
@@ -89,7 +92,7 @@ Gammas and neutrons are also scored in the stepmanager
 #include <TNode.h> 
 #include <TRandom.h> 
 #include <TLorentzVector.h> 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliMUONv0.h"
 #include "AliMUONChamber.h"

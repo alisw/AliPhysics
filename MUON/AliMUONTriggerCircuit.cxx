@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.8  2001/03/20 13:32:37  egangler
+includes cleanup
+
 Revision 1.7  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -47,7 +50,7 @@ problem with HP compiler solved (PH), static variables removed : now defined in 
 #include "AliMUONResponse.h"
 #include "AliMUONChamber.h"
 #include "TMath.h"
-#include "iostream.h"
+#include "Riostream.h"
 
 ClassImp(AliMUONTriggerCircuit)
 

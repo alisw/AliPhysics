@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2002/10/14 14:57:29  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.28.8.1  2002/10/11 06:56:47  hristov
 Updating VirtualMC to v3-09-02
 
@@ -166,7 +169,7 @@ Addition of files for track reconstruction in C++
 //
 ////////////////////////////////////
 
-#include <iostream.h> // for cout
+#include <Riostream.h> // for cout
 #include <stdlib.h> // for exit()
 
 #include <TTree.h>

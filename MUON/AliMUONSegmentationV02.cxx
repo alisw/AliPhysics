@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/01/26 21:25:48  morsch
+Empty default constructors and.
+
 Revision 1.7  2000/12/21 22:12:41  morsch
 Clean-up of coding rule violations,
 
@@ -50,7 +53,7 @@ AliMUONSegmentationV02 code  from  AliMUONSegResV02.cxx
 
 
 #include "AliMUONSegmentationV02.h"
-#include "iostream.h"
+#include "Riostream.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentationV02)

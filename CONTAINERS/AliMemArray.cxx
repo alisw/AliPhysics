@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/01/10 09:33:56  kowal2
+Clear method modified to fix the problem with reading Tree.
+
 Revision 1.1  2000/11/01 16:01:26  kowal2
 Classes for handling the new hits structures
 
@@ -58,7 +61,7 @@ Classes for handling the new hits structures
 
 
 #include "AliMemArray.h"
-#include "iostream.h"
+#include "Riostream.h"
 #include "TMath.h"
 #include "TError.h"
 

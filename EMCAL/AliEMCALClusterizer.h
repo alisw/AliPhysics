@@ -16,7 +16,7 @@
 #include "TTask.h" 
 
 // --- Standard library ---
-#include <iostream.h> 
+#include <Riostream.h> 
 
 // --- AliRoot header files ---
 

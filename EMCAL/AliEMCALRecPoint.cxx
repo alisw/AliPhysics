@@ -25,7 +25,7 @@
 #include "TClonesArray.h"
 
 // --- Standard library ---
-#include <iostream.h>
+#include <Riostream.h>
 #include <stdio.h>
 
 // --- AliRoot header files ---

@@ -66,7 +66,7 @@
 #include "TFile.h"
 
 // --- Standard library ---
-#include <iostream.h>   
+#include <Riostream.h>   
 
 // --- AliRoot header files ---
 #include "AliRun.h"

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/11/10 15:54:51  kowal2
+Corrections by P.Hristov to deal with the CINT problems.
+
 Revision 1.1  2000/11/01 16:01:22  kowal2
 Classes for handling the new hits structures
 
@@ -46,7 +49,7 @@ Classes for handling the new hits structures
 #include "TClass.h"
 
 #include "TROOT.h"
-#include "iostream.h"
+#include "Riostream.h"
 #include "AliDataType.h"
 
 ClassImp(AliClassInfo)

@@ -31,7 +31,7 @@
 #include "TTree.h" 
 
 // --- Standard library ---
-#include <iostream.h>
+#include <Riostream.h>
 #include <stdlib.h>   
 
 // --- AliRoot header files ---

@@ -90,9 +90,9 @@
 
 #include <stdlib.h>
 
-#include <strstream.h>
+#include <Rstrstream.h>
 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include <math.h>
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/05/16 14:57:17  alibrary
+New files for folders and Stack
+
 Revision 1.6  2000/11/12 17:17:03  pcrochet
 BuildGeometry of AliMUON for trigger chambers delegated to AliMUONSegmentationTriggerX (same strategy as for tracking chambers)
 
@@ -65,7 +68,7 @@ Draft version from P. Crochet
 #include <TRandom.h>
 #include <TArc.h>
 #include "AliMUONChamber.h"
-#include <iostream.h>
+#include <Riostream.h>
 
 ClassImp(AliMUONSegmentationTrigger)
 

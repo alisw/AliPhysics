@@ -16,6 +16,9 @@
 /*
 
 $Log$
+Revision 1.4  2002/01/21 17:04:12  kowal2
+check the range of digits array
+
 Revision 1.3  2001/11/24 16:08:09  kowal2
 Fatsre algorithms
 
@@ -67,7 +70,7 @@ Digits handling in a new data structure
 
 
 #include "TClass.h"
-#include <iostream.h>
+#include <Riostream.h>
 #include "TError.h"
 #include "AliSegmentID.h"
 #include "AliH2F.h"

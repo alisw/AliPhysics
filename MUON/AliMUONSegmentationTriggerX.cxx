@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/10/14 14:57:29  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.11.10.1  2002/10/11 06:56:48  hristov
 Updating VirtualMC to v3-09-02
 
@@ -94,7 +97,7 @@ Draft version from P. Crochet
 #include "TArc.h"
 #include "AliMUONChamber.h"
 #include "AliRun.h"  // gAlice
-#include <iostream.h> 
+#include <Riostream.h> 
 ClassImp(AliMUONSegmentationTriggerX)
 
 //------------------------------------------------------------------

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/11/20 21:44:17  pcrochet
+some modifications to account for the new class AliMUONResponseTriggerV1
+
 Revision 1.7  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -62,7 +65,7 @@ Draft version
 #include "AliMUONResponseTriggerV1.h"
 #include <TObjArray.h>
 #include <TMath.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 ClassImp(AliMUONChamberTrigger)
 

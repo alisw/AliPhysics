@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/05/16 14:57:17  alibrary
+New files for folders and Stack
+
 Revision 1.7  2001/01/26 21:25:48  morsch
 Empty default constructors and.
 
@@ -47,7 +50,7 @@ Segmentation classes for bending and non bending plane slat modules (A. de Falco
 
 #include "AliMUONSegmentationSlatModuleN.h"
 #include <TMath.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliMUONSegmentationV01.h"
 

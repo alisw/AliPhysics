@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/03/13 07:55:04  jchudoba
+Correction of the errourness last commit.
+
 Revision 1.8  2002/02/13 09:03:24  jchudoba
 Remove some deletes from dtor, those objects are deleted earlier in Exec() method (where they are created)
 
@@ -41,7 +44,7 @@ merging/digitization classes
 #include <TObjArray.h>
 #include <TFile.h>
 #include <TDirectory.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliMUONDigitizer.h"
 #include "AliMUONConstants.h"

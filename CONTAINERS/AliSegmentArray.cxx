@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/10/14 14:55:34  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.7.6.1  2002/06/10 15:00:53  hristov
 Merged with v3-08-02
 
@@ -62,7 +65,7 @@ New data structure handling
 //  Alice segment manager object                                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-#include <iostream.h>
+#include <Riostream.h>
 
 #include  <TROOT.h>
 #include <TTree.h>

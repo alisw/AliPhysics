@@ -32,7 +32,7 @@ class TFile;
 #include "TTree.h" 
 
 // --- Standard library ---
-#include <strstream.h>
+#include <Rstrstream.h>
 
 // --- AliRoot header files ---
 #include "AliEMCAL.h"

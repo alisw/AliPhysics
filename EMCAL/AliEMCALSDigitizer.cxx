@@ -59,7 +59,7 @@
 #include "TGeometry.h"
 
 // --- Standard library ---
-#include <iomanip.h>
+#include <Riostream.h>
 
 // --- AliRoot header files ---
 #include "AliRun.h"

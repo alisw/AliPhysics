@@ -21,7 +21,7 @@
 #include "AliSegmentation.h"
 #include <TMath.h>
 #include <TRandom.h>
-#include <iostream.h> 
+#include <Riostream.h> 
 
 ClassImp(AliMUONResponseTriggerV1)
 

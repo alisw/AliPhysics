@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/11/20 21:44:17  pcrochet
+some modifications to account for the new class AliMUONResponseTriggerV1
+
 Revision 1.3  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -31,7 +34,7 @@ Code from AliMUONSegResTrigger.cxx
 #include "AliSegmentation.h"
 #include <TMath.h>
 #include <TRandom.h>
-#include <iostream.h> 
+#include <Riostream.h> 
 
 ClassImp(AliMUONResponseTrigger)
 

@@ -41,8 +41,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <strstream.h>
-#include <iostream.h>
+#include <Rstrstream.h>
+#include <Riostream.h>
 
 // --- AliRoot header files ---
 

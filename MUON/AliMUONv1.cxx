@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2002/10/14 14:57:29  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.31.4.3  2002/10/11 06:56:48  hristov
 Updating VirtualMC to v3-09-02
 
@@ -167,7 +170,7 @@ Log messages included.
 #include <TNode.h> 
 #include <TRandom.h> 
 #include <TLorentzVector.h> 
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliMUONv1.h"
 #include "AliRun.h"

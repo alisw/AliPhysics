@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.4  2001/01/26 20:00:53  hristov
+Major upgrade of AliRoot code
+
 Revision 1.3  2000/10/11 09:19:12  egangler
 Corrected some bugs - it should compile now
 
@@ -67,7 +70,7 @@ Both read digits from raw data or use the Monte-Carlo.
 #include "AliMUONClusterFinder.h"
 #include "AliRun.h"
 #include "AliMC.h"
-#include "iostream.h"
+#include "Riostream.h"
 #include "AliCallf77.h" 
 #include "AliConst.h"
 //#include "chainalice2.h"

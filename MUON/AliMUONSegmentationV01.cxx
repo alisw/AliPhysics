@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2001/08/30 09:52:12  hristov
+The operator[] is replaced by At() or AddAt() in case of TObjArray.
+
 Revision 1.20  2001/07/20 10:03:14  morsch
 Changes needed to work with Root 3.01 (substitute lhs [] operator). (Jiri Chudoba)
 
@@ -99,7 +102,7 @@ AliMUONSegmentationV01 code  from  AliMUONSegResV01.cxx
 #include <TGeometry.h>  
 #include <TF1.h> 
 #include <TObjArray.h>
-#include <iostream.h>
+#include <Riostream.h>
 
 #include "AliMUONSegmentationV01.h"
 #include "AliMUON.h"
