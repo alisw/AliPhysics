@@ -26,7 +26,6 @@
 
 // --- Standard library ---
 
-#include <iostream>
 #include <cstdio>
 
 

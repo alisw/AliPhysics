@@ -46,7 +46,6 @@
 */             
 //*-- Author: Laurent Aphecetche(SUBATECH)
 // --- std system ---
-#include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

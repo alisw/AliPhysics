@@ -94,10 +94,6 @@
 
 // --- Standard library ---
 
-#include <Riostream.h>
-#include <fstream>
-#include <iomanip>
-
 // --- AliRoot header files ---
 
 #include "AliRun.h"

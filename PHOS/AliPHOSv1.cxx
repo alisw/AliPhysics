@@ -42,7 +42,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <strstream.h>
 
 // --- AliRoot header files ---
 
