@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2001/03/29 05:28:56  barbera
+Rails material changed from aluminum to carbon fiber according with the decision of the last Technical Board
+
 Revision 1.20  2001/03/28 06:40:21  barbera
 Central and services mother volumes made consistenf for detailed and coarse geometry. Switch for rails added to the coarse geometries
 
@@ -273,23 +276,37 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   Int_t idrotm[1999], i;
   Float_t dgh[100];
   
-
   Int_t rails = 1;       // flag for rails (1 --> rails in; 0 --> rails out)
-  
+  Int_t suppmat = 0;     // flag to change the material of the services
+                         // supports (=0 copper, =1 aluminum, =2 carbon)  
   rails = GetRails();
   
   if(rails != 0 && rails != 1) {
      cout << "WARNING: the switch for rails is not set neither to 0 (rails out) nor to 1 (rails in)." 
      " The default value of 1 (rails in) will be used." << endl;
-     	
   }  
   
-  if(rails == 0 ) {
+  if (rails == 0 ) {
      cout << "Rails are out." << endl; 
   } else {
      cout << "Rails are in." << endl;
   }      
-    
+  
+  suppmat = GetSupportMaterial();   
+  
+  if (suppmat != 0 && suppmat != 1 && suppmat != 2) {
+     cout << "WARNING: the flag for the material of services supports is not set neither to 0 (copper) nor to 1 (aluminum) nor to 2 (carbon)." 
+     " The default value of 0 (copper) will be used." << endl;
+  }  
+  
+  if (suppmat == 0) {
+     cout << "The material of the services supports is copper." << endl; 
+  } else if (suppmat == 1){
+     cout << "The material of the services supports is aluminum." << endl;
+  } else {
+     cout << "The material of the services supports is carbon." << endl;
+  }      
+      
 
   Int_t *idtmed = fIdtmed->GetArray()-199;
   
@@ -540,35 +557,98 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
 
   
   // --- DEFINE CABLES AT THE END OF THE ITS CONES - COPPER PART
+  //     UPPER PART
   
   dgh[0] = 46.;    
   dgh[1] = 46.+1.0;  
   dgh[2] = 9.5;
+  dgh[3] = 12.;
+  dgh[4] = 168.;
   
-  gMC->Gsvolu("ICCU", "TUBE", idtmed[279], dgh, 3);  
-  gMC->Gspos("ICCU", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
-  gMC->Gspos("ICCU", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");
+  if (suppmat == 0) {
+     gMC->Gsvolu("I1CU", "TUBS", idtmed[279], dgh, 5);    // copper
+  } else if (suppmat == 1) {
+     gMC->Gsvolu("I1CU", "TUBS", idtmed[285], dgh, 5);    // aluminum
+  } else {
+     gMC->Gsvolu("I1CU", "TUBS", idtmed[274], dgh, 5);    // carbon
+  }     
+  gMC->Gspos("I1CU", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
+  gMC->Gspos("I1CU", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");
   
+  // --- DEFINE CABLES AT THE END OF THE ITS CONES - COPPER PART
+  //     LOWER PART
+  
+  dgh[0] = 46.;    
+  dgh[1] = 46.+1.0;  
+  dgh[2] = 9.5;
+  dgh[3] = 192.;
+  dgh[4] = 348.;
+  
+  if (suppmat == 0) {
+     gMC->Gsvolu("I2CU", "TUBS", idtmed[279], dgh, 5);    // copper
+  } else if (suppmat == 1) {
+     gMC->Gsvolu("I2CU", "TUBS", idtmed[285], dgh, 5);    // aluminum
+  } else {
+     gMC->Gsvolu("I2CU", "TUBS", idtmed[274], dgh, 5);    // carbon
+  }     
+  gMC->Gspos("I2CU", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
+  gMC->Gspos("I2CU", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");
+
+
   // --- DEFINE CABLES AT THE END OF THE ITS CONES - CARBON PART
+  //     UPPER PART
   
   dgh[0] = 46.+1.0;  
   dgh[1] = 46.+1.0+1.5;   
   dgh[2] = 9.5;
+  dgh[3] = 12.;
+  dgh[4] = 168.;
   
-  gMC->Gsvolu("ICCC", "TUBE", idtmed[274], dgh, 3);  
-  gMC->Gspos("ICCC", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
-  gMC->Gspos("ICCC", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");  
+  gMC->Gsvolu("I1CC", "TUBS", idtmed[274], dgh, 5);  
+  gMC->Gspos("I1CC", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
+  gMC->Gspos("I1CC", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");  
   
+  // --- DEFINE CABLES AT THE END OF THE ITS CONES - CARBON PART
+  //     LOWER PART
+  
+  dgh[0] = 46.+1.0;  
+  dgh[1] = 46.+1.0+1.5;   
+  dgh[2] = 9.5;
+  dgh[3] = 192.;
+  dgh[4] = 348.;
+  
+  gMC->Gsvolu("I2CC", "TUBS", idtmed[274], dgh, 5);  
+  gMC->Gspos("I2CC", 1, "ITSV", 0., 0., 83.5, 0, "ONLY");
+  gMC->Gspos("I2CC", 2, "ITSV", 0., 0., -83.5, idrotm[200], "ONLY");  
+
   // --- DEFINE PATCH PANELS AT THE END OF THE ITS CONES
-  
+  //    UPPER PART
+    
   dgh[0] = 46.;  
   dgh[1] = 56.;
   dgh[2] = 2.25;
+  dgh[3] = 12.;
+  dgh[4] = 168.;
   
-  gMC->Gsvolu("IPAN", "TUBE", idtmed[285], dgh, 3);  
-  gMC->Gspos("IPAN", 1, "ITSV", 0., 0., 95.25, 0, "ONLY");  
-  gMC->Gspos("IPAN", 2, "ITSV", 0., 0., -95.25, idrotm[200], "ONLY"); 
+  gMC->Gsvolu("IPA1", "TUBS", idtmed[285], dgh, 5);  
+  gMC->Gspos("IPA1", 1, "ITSV", 0., 0., 95.25, 0, "ONLY");  
+  gMC->Gspos("IPA1", 2, "ITSV", 0., 0., -95.25, idrotm[200], "ONLY"); 
+
+
+  // --- DEFINE PATCH PANELS AT THE END OF THE ITS CONES
+  //     LOWER PART
+    
+  dgh[0] = 46.;  
+  dgh[1] = 56.;
+  dgh[2] = 2.25;
+  dgh[3] = 192.;
+  dgh[4] = 348.;
   
+  gMC->Gsvolu("IPA2", "TUBS", idtmed[285], dgh, 5);  
+  gMC->Gspos("IPA2", 1, "ITSV", 0., 0., 95.25, 0, "ONLY");  
+  gMC->Gspos("IPA2", 2, "ITSV", 0., 0., -95.25, idrotm[200], "ONLY"); 
+
+
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     UPPER PART
   
@@ -579,7 +659,13 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[4] = 62.3+1.0;   
   dgh[5] = 12.;    
   dgh[6] = 168.;
-  gMC->Gsvolu("ICU1", "CONS", idtmed[279], dgh, 7);    
+  if (suppmat == 0) {
+     gMC->Gsvolu("ICU1", "CONS", idtmed[279], dgh, 7);    // copper
+  } else if (suppmat == 1) {
+     gMC->Gsvolu("ICU1", "CONS", idtmed[285], dgh, 7);    // aluminum  
+  } else {
+     gMC->Gsvolu("ICU1", "CONS", idtmed[274], dgh, 7);    // carbon
+  }
   gMC->Gspos("ICU1", 1, "ITSV", 0., 0., 97.5+dgh[0], 0, "ONLY");   
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - COPPER PART
@@ -592,7 +678,13 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[4] = 62.3+1.0;  
   dgh[5] = 192.;    
   dgh[6] = 348.;
-  gMC->Gsvolu("ICU2", "CONS", idtmed[279], dgh, 7);    
+  if (suppmat == 0) {
+     gMC->Gsvolu("ICU2", "CONS", idtmed[279], dgh, 7);    // copper
+  } else if (suppmat == 1) {
+     gMC->Gsvolu("ICU2", "CONS", idtmed[285], dgh, 7);    // aluminum  
+  } else {
+     gMC->Gsvolu("ICU2", "CONS", idtmed[274], dgh, 7);    // carbon
+  }
   gMC->Gspos("ICU2", 1, "ITSV", 0., 0., 97.5+dgh[0], 0, "ONLY");  
 
 
@@ -630,7 +722,13 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[2] = 0.5;
   dgh[3] = 12.;
   dgh[4] = 168.;
-  gMC->Gsvolu("ICU3", "TUBS", idtmed[279], dgh, 5);    
+  if (suppmat == 0) {
+     gMC->Gsvolu("ICU3", "TUBS", idtmed[279], dgh, 5);    // copper
+  } else if (suppmat == 1) {
+     gMC->Gsvolu("ICU3", "TUBS", idtmed[285], dgh, 5);    // aluminum
+  } else {
+     gMC->Gsvolu("ICU3", "TUBS", idtmed[274], dgh, 5);    // carbon
+    }
   gMC->Gspos("ICU3", 1, "ITSV", 0., 0., ztpc+1.5+dgh[2], 0, "ONLY");  
 
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - COPPER PART
@@ -641,7 +739,13 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[2] = 0.5;
   dgh[3] = 192.;
   dgh[4] = 348.;
-  gMC->Gsvolu("ICU4", "TUBS", idtmed[279], dgh, 5);    
+  if (suppmat == 0) {
+     gMC->Gsvolu("ICU4", "TUBS", idtmed[279], dgh, 5);    // copper
+  } else if (suppmat == 1) {
+     gMC->Gsvolu("ICU4", "TUBS", idtmed[285], dgh, 5);    // aluminum
+  } else {
+     gMC->Gsvolu("ICU4", "TUBS", idtmed[274], dgh, 5);    // carbon
+  }
   gMC->Gspos("ICU4", 1, "ITSV", 0., 0., ztpc+1.5+dgh[2], 0, "ONLY");     
      
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON THE ABSORBER SIDE - CARBON PART
@@ -674,7 +778,13 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[2] = (ztpc-97.5+1.5)/2.;
   dgh[3] = 12.;
   dgh[4] = 168.;
-  gMC->Gsvolu("ICU5", "TUBS", idtmed[279], dgh, 5);   
+  if (suppmat == 0) {
+     gMC->Gsvolu("ICU5", "TUBS", idtmed[279], dgh, 5);   // copper
+  } else if (suppmat == 1) {
+     gMC->Gsvolu("ICU5", "TUBS", idtmed[285], dgh, 5);   // aluminum
+  } else {
+     gMC->Gsvolu("ICU5", "TUBS", idtmed[274], dgh, 5);   // carbon
+  }
   gMC->Gspos("ICU5", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY");  
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
@@ -685,7 +795,13 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[2] = (ztpc-97.5+1.5)/2.;
   dgh[3] = 192.;
   dgh[4] = 348.;  
-  gMC->Gsvolu("ICU6", "TUBS", idtmed[279], dgh, 5);   
+  if (suppmat == 0) {
+     gMC->Gsvolu("ICU6", "TUBS", idtmed[279], dgh, 5);   // copper
+  } else if (suppmat == 1) {
+     gMC->Gsvolu("ICU6", "TUBS", idtmed[285], dgh, 5);   // aluminum
+  } else {
+     gMC->Gsvolu("ICU6", "TUBS", idtmed[274], dgh, 5);   // carbon
+  }
   gMC->Gspos("ICU6", 1, "ITSV", 0., 0., -97.5-dgh[2], 0, "ONLY");    
   
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
@@ -718,7 +834,13 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[2] = 0.5;
   dgh[3] = 12.;
   dgh[4] = 168.;  
-  gMC->Gsvolu("ICU7", "TUBS", idtmed[279], dgh, 5);   
+  if (suppmat == 0) {
+     gMC->Gsvolu("ICU7", "TUBS", idtmed[279], dgh, 5);   // copper
+  } else if (suppmat == 1) {
+     gMC->Gsvolu("ICU7", "TUBS", idtmed[285], dgh, 5);   // aluminum
+  } else {
+     gMC->Gsvolu("ICU7", "TUBS", idtmed[274], dgh, 5);   // carbon
+  }
   gMC->Gspos("ICU7", 1, "ITSV", 0., 0., -(ztpc+1.5+dgh[2]), 0, "ONLY");  
   
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
@@ -729,7 +851,13 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   dgh[2] = 0.5;
   dgh[3] = 192.;
   dgh[4] = 348.;   
-  gMC->Gsvolu("ICU8", "TUBS", idtmed[279], dgh, 5);   
+  if (suppmat == 0) {
+     gMC->Gsvolu("ICU8", "TUBS", idtmed[279], dgh, 5);   // copper
+  } else if (suppmat == 1) {
+     gMC->Gsvolu("ICU8", "TUBS", idtmed[285], dgh, 5);   // aluminum
+  } else {
+     gMC->Gsvolu("ICU8", "TUBS", idtmed[274], dgh, 5);   // carbon
+  }
   gMC->Gspos("ICU8", 1, "ITSV", 0., 0., -(ztpc+1.5+dgh[2]), 0, "ONLY");      
     
   // --- DEFINE CABLES/COOLING BEHIND THE TPC ON OTHER SIDE W.R.T. THE ABSORBER
