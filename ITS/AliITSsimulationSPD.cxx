@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/11/13 11:13:24  barbera
+A protection against tracks with the same entrance and exit has been made more strict
+
 Revision 1.12  2001/10/04 22:44:31  nilsen
 Major changes in supppor of PreDigits (SDigits). Changes made with will make
 it easier to suppor expected changes in AliITSHit class. Added use of new
@@ -292,8 +295,8 @@ void AliITSsimulationSPD::HitToDigit(AliITSmodule *mod,Int_t hitpos,
 
     // to account for unexpected equal entrance and 
     // exit coordinates
-    if (x1l==x2l) x2l=x2l+x2l*0.0001;
-    if (z1l==z2l) z2l=z2l+z2l*0.0001;
+    if (x1l==x2l) x2l=x2l+x2l*0.1;
+    if (z1l==z2l) z2l=z2l+z2l*0.1;
 
     if ((r1==r2) && (c1==c2)){
 	// no charge sharing
@@ -347,9 +350,12 @@ void AliITSsimulationSPD::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
     xa     = x1l;
     za     = z1l;
     dx     = TMath::Abs(x1l-x2l);
+    if (dx == 0.) dx = 0.01;
     dz     = TMath::Abs(z1l-z2l);
+    if (dz == 0.) dz = 0.01;    
     dtot   = TMath::Sqrt((dx*dx)+(dz*dz));   
     dm     = (x2l - x1l) / (z2l - z1l);
+    if (dm == 0.) dm = 0.01; 
     dirx   = (Int_t) ((x2l - x1l) / dx);
     dirz   = (Int_t) ((z2l - z1l) / dz);
 
