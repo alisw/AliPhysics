@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:34  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1996/04/01 15:02:13  mclareni
 * Mathlib gen
 *
@@ -122,5 +125,8 @@ C     DGAUSS FOR CRAY AND ALIKE
    99 QGAUSS=H
 #endif
       RETURN
+      END
+#else
+      SUBROUTINE gauss128_dummy
       END
 #endif
