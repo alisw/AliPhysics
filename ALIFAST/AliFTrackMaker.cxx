@@ -45,46 +45,45 @@
 # pragma optimize( "", off )
 #endif
 
-#include <TParticle.h>
 #include <TFile.h>
-#include <TSystem.h>
-#include <TRandom.h>
-#include <TROOT.h>
-#include <TMath.h>
 #include <TH1.h>
-#include <TH2.h>
-#include <TH3.h>
+#include <TMath.h>
+#include <TParticle.h>
+#include <TRandom.h>
 
-#include "AliFast.h"
-//#include "AliFMCMaker.h"
-#include "AliFTrackMaker.h"
-#include "AliFTrack.h"
 #include "AliFDet.h"
+#include "AliFTrack.h"
+#include "AliFTrackMaker.h"
+#include "AliFast.h"
 #include "AliMC.h"
 
-const Double_t kPi       = TMath::Pi();
-const Double_t k2Pi      = 2*kPi;
-const Double_t kPiHalf   = kPi/2.;
+static const Double_t kPi       = TMath::Pi();
+static const Double_t k2Pi      = 2*kPi;
+static const Double_t kPiHalf   = kPi/2.;
 extern  AliFast * gAliFast;
 ClassImp(AliFTrackMaker)
 
 //_____________________________________________________________________________
 AliFTrackMaker::AliFTrackMaker()
 {
-   fNTracks = 0;
-   fResID1Test = 0;
-   fResID2Test = 0;
-   fResID3Test = 0;
-   fResID4Test = 0;
-   fResID5Test = 0;
+  //
+  // Default constructor
+  //
+  fNTracks = 0;
+  fResID1Test = 0;
+  fResID2Test = 0;
+  fResID3Test = 0;
+  fResID4Test = 0;
+  fResID5Test = 0;
 }
 
 //_____________________________________________________________________________
 AliFTrackMaker::AliFTrackMaker(const char *name, const char *title)
                  :AliFMaker(name,title)
 {
-//    Default Setters for tracks
-
+  //
+  // Standard Setters for tracks
+  //
    fFruits     = new TClonesArray("AliFTrack",100, kFALSE);
    fBranchName = "Tracks";
    fNTracks    = 0;
@@ -92,10 +91,22 @@ AliFTrackMaker::AliFTrackMaker(const char *name, const char *title)
    Save();
 }
 
+//_______________________________________________________________________
+AliFTrackMaker::AliFTrackMaker(const AliFTrackMaker& aftmk):
+  AliFMaker(aftmk)
+{
+  //
+  // Copy constructor for AliRun
+  //
+  aftmk.Copy(*this);
+}
+
 //_____________________________________________________________________________
 AliFTrackMaker::~AliFTrackMaker()
 {
-   //dummy
+  //
+  // Dummy constructor
+  //
 }
 
 //_____________________________________________________________________________
@@ -180,11 +191,11 @@ void AliFTrackMaker::Init()
 
 }
 
-//_____________________________________________________________________________
-// Calculate track and its resolution
-//_____________________________________________________________________________
 void AliFTrackMaker::Make()
 {
+  //
+  // Calculate track and its resolution
+  //
   Double_t v11, v22, v33, v12, v13, v23;
   Int_t iFlag;
 
@@ -301,6 +312,12 @@ void AliFTrackMaker::Make()
        
      }
   }
+}
+
+//_______________________________________________________________________
+void AliFTrackMaker::Copy(TObject &) const
+{
+  Fatal("Copy","Not implemented!\n");
 }
 
 //_____________________________________________________________________________
@@ -720,11 +737,12 @@ void AliFTrackMaker::TPCResolution(Double_t pTransv, Double_t radiPad, Double_t 
   
 }
 
-//_____________________________________________________________________________
-// returns the mass given particle ID 
 //-----------------------------------------------------------------------------
-Double_t AliFTrackMaker::ParticleMass(Int_t idTrack)
+Double_t AliFTrackMaker::ParticleMass(Int_t idTrack) const
 {
+  //
+  // returns the mass given particle ID 
+  //
   Double_t mass = 0.0;
 
        if(idTrack == 2){ mass = fPionMass;}
@@ -736,12 +754,12 @@ Double_t AliFTrackMaker::ParticleMass(Int_t idTrack)
 
 }
 
-//_____________________________________________________________________________
-// returns the rapidity given particle pT, pz 
-//-----------------------------------------------------------------------------
+//____________________________________________________________________________
 Double_t AliFTrackMaker::Rapidity(Double_t pt, Double_t pz)
 {
-//   Compute rapidity
+  //
+  // returns the rapidity given particle pT, pz 
+  //   Compute rapidity
 
    Double_t etalog = TMath::Log((TMath::Sqrt(pt*pt + pz*pz) + TMath::Abs(pz))/pt);
    if (pz < 0 ) return -TMath::Abs(etalog);
@@ -931,10 +949,11 @@ Int_t AliFTrackMaker::Compress(Int_t kf)
 }
 
 //_____________________________________________________________________________
-// TEST JOB: Calculate tracks resolution
-//_____________________________________________________________________________
 void AliFTrackMaker::MakeTest(Int_t n)
 {
+  //
+  // TEST JOB: Calculate tracks resolution
+  //
   Double_t v11, v22, v33, v12, v13, v23;
   Int_t iFlag;
   Int_t idTrack;

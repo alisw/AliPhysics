@@ -156,74 +156,120 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-#include <TROOT.h>
-#include <TChain.h>
-#include <TTree.h>
+//class TChain;
+
 #include <TBrowser.h>
-#include <TClonesArray.h>
-#include "AliRun.h"
+#include <TChain.h>
+#include <TROOT.h>
+#include <TTree.h>
+
 #include "AliFast.h"
-//#include "AliFMCMaker.h"
 #include "AliFTrackMaker.h"
-#include "AliFHistBrowser.h"
-#include "AliFBigBang.h"
-#include "AliFVirtualDisplay.h"
 
 
 R__EXTERN AliRun * gAlice;
+
 AliFast *gAliFast;
 
 ClassImp(AliFast)
 
 
 //_____________________________________________________________________________
-  //AliFast::AliFast() : TNamed("alifast","The ALICE fast simulation")
-  AliFast::AliFast() : AliRun("alifast","The ALICE fast simulation")
+AliFast::AliFast(): 
+  AliRun("alifast","The ALICE fast simulation"),
+  fVersion(0),
+  fVersionDate(0),
+  fMode(0),
+  fTestTrack(0),
+  fTree(0),
+  fMakers(0),
+  fMCMaker(0),
+  fTrackMaker(0),
+  fDet(new AliFDet("Detector","Make AliFast detector")),
+  fLuminosity(0),
+  fBfield(0),
+  fSmearing(0),
+  fSUSYcodeLSP(0),
+  fTrackFinding(0),
+  fFDisplay(0)
 {
+  //
+  // Default constructor
+  //
 
-   fTree          = 0;
-   fMakers        = 0;
-   fMode          = 0;
-   fMCMaker       = 0;
-   fTrackMaker    = 0;
-   fDisplay       = 0;
-   fDet           = new AliFDet("Detector","Make AliFast detector");
    gAliFast     = this;
    gAlice       = (AliRun*)this;
 }
 
 //_____________________________________________________________________________
-//AliFast::AliFast(const char *name, const char *title): TNamed(name,title)
-AliFast::AliFast(const char *name, const char *title): AliRun(name,title)
+AliFast::AliFast(const char *name, const char *title): 
+  AliRun(name,title),
+  fVersion(1), //AliFAST version number and release date
+  fVersionDate(150399),
+  fMode(0),
+  fTestTrack(0),
+  fTree(0),
+  fMakers(new TList()), // support list for the lists of AliFast objects
+  fMCMaker(0),
+  fTrackMaker(new AliFTrackMaker("TrackMaker","Make AliFast tracks")),
+  fDet(new AliFDet("Detector","Make AliFast detector")), // create detectors
+  fLuminosity(0),
+  fBfield(0),
+  fSmearing(0),
+  fSUSYcodeLSP(0),
+  fTrackFinding(0),
+  fFDisplay(0)
 {
+  //
+  // Standard constructor
+  //
 
    gAliFast      = this;
-   fVersion     = 001;       //AliFAST  version number and release date
-   fVersionDate = 150399;
-   fTree        = 0;
-   fMode        = 0;
-   fDisplay     = 0;
    
    SetDefaultParameters();
 
    gROOT->GetListOfBrowsables()->Add(this,"AliFast");
 
-// create the support list for the various lists of AliFast objects
-   fMakers  = new TList();
-
-// create "standard" makers and add them to the list of makers (in AliFMaker constructor
-// Note that the order in which makers are added to the list of makers is important
-// makers will be processed in this order !!
+   // create "standard" makers and add them to the list of makers 
+   // (in AliFMaker constructor)
+   // Note that the order in which makers are added to the list of makers 
+   // is important makers will be processed in this order !!
 
    //fMCMaker       = new AliFMCMaker("MCMaker","Make MC events");
-   fTrackMaker    = new AliFTrackMaker("TrackMaker","Make AliFast tracks");
-//create detector
-   fDet           = new AliFDet("Detector","Make AliFast detector");
+
+}
+
+//_______________________________________________________________________
+AliFast::AliFast(const AliFast& afast):
+  AliRun(afast),
+  fVersion(0),
+  fVersionDate(0),
+  fMode(0),
+  fTestTrack(0),
+  fTree(0),
+  fMakers(0),
+  fMCMaker(0),
+  fTrackMaker(0),
+  fDet(0),
+  fLuminosity(0),
+  fBfield(0),
+  fSmearing(0),
+  fSUSYcodeLSP(0),
+  fTrackFinding(0),
+  fFDisplay(0)
+{
+  //
+  // Copy constructor for AliRun
+  //
+  afast.Copy(*this);
 }
 
 //_____________________________________________________________________________
 AliFast::~AliFast()
 {
+  //
+  // Destructor
+  //
 //   fMakers->Delete();
 //   delete fMakers;
 }
@@ -232,6 +278,9 @@ AliFast::~AliFast()
 //______________________________________________________________________________
 void AliFast::Browse(TBrowser *b)
 {
+  //
+  // To allow browsing of the class
+  //
 
   if( b == 0) return;
 
@@ -251,33 +300,35 @@ void AliFast::Browse(TBrowser *b)
 //_____________________________________________________________________________
 void AliFast::Clear(Option_t *option)
 {
-//    Reset lists of event objects
+  //
+  //    Reset lists of event objects
+  //
    TIter next(fMakers);
    AliFMaker *maker;
    while ((maker = (AliFMaker*)next())) {
       maker->Clear(option);
    }
-   //fca   if (fDisplay) fDisplay->Clear();
 }
 
 //_____________________________________________________________________________
-void AliFast::Draw(Option_t */*option*/)
+void AliFast::Draw(Option_t */*option*/) const
 {
-//    Insert current event in graphics pad list
-
-    // Check if the Event Display object has been created
-   if (!fDisplay) {
+  //
+  //    Insert current event in graphics pad list
+  // Check if the Event Display object has been created
+  //
+   if (!fFDisplay) {
       Error("Draw","You must create an AliFDisplay object first");
       return;
    }
-
-   //fca   fDisplay->Draw(option);
 }
 
 //_____________________________________________________________________________
 void  AliFast::GetTreeEvent(Int_t event)
 {
-//    Read event from Tree
+  //
+  //    Read event from Tree
+  //
    if (fTree) fTree->GetEvent(event);
    fEvent = event;  
 }
@@ -285,7 +336,9 @@ void  AliFast::GetTreeEvent(Int_t event)
 //_____________________________________________________________________________
 void AliFast::Init()
 {
-//  Initialise detector
+  //
+  //  Initialise detector
+  //
    AliFDet *detector=gAliFast->Detector();  
    detector->InitDetParam(); 
 
@@ -314,15 +367,17 @@ void AliFast::Init()
 //_____________________________________________________________________________
 void AliFast::Paint(Option_t */*option*/)
 {
-//    Paint AliFast objects
-
-  //fca   fDisplay->Paint(option);
+  //
+  //    Paint AliFast objects
+  //
 }
 
 //_____________________________________________________________________________
 void AliFast::PrintInfo()
 {
-//     Gives information about versions etc.
+  //
+  //     Gives information about versions etc.
+  //
    printf("\n\n");
    printf("**************************************************************\n");
    printf("*             AliFast version:00%1d     last update  %6d    *\n",
@@ -351,10 +406,12 @@ void AliFast::PrintInfo()
 //_____________________________________________________________________________
 void AliFast::FillTree()
 {
-//  Fill the ROOT tree, looping on all active branches
-
+  //
+  //  Fill the ROOT tree, looping on all active branches
+  //
   // Clean generated particles (depending on option Save)
-  //MCMaker()->CleanParticles();
+  // MCMaker()->CleanParticles();
+  //
 
   // Now ready to fill the Root Tree
    if(fTree) fTree->Fill();
@@ -363,7 +420,9 @@ void AliFast::FillTree()
 //_____________________________________________________________________________
 void AliFast::InitChain(TChain *chain)
 {
-//  Initialize branch addresses for all makers in a TChain
+  //
+  //  Initialize branch addresses for all makers in a TChain
+  //
 
    if (chain == 0) return;
 
@@ -379,8 +438,10 @@ void AliFast::InitChain(TChain *chain)
 //_____________________________________________________________________________
 void AliFast::MakeTree(const char* name, const char*title)
 {
-//  Create a ROOT tree
-//  Loop on all makers to create the Root branch (if any)
+  //
+  //  Create a ROOT tree
+  //  Loop on all makers to create the Root branch (if any)
+  //
 
    if (fTree) return;
 
@@ -396,8 +457,9 @@ void AliFast::MakeTree(const char* name, const char*title)
 //_____________________________________________________________________________
 void AliFast::SetDefaultParameters()
 {
-
-//    Setters for flags and switches
+  //
+  //    Setters for flags and switches
+  //
    SetLuminosity();
    SetBfield();
    SetSmearing();
@@ -408,6 +470,9 @@ void AliFast::SetDefaultParameters()
 //_____________________________________________________________________________
 void AliFast::Make(Int_t i)
 {
+  //
+  // Main maker method
+  //
    fEvent = i;
 
 //   Loop on all makers
@@ -422,7 +487,9 @@ void AliFast::Make(Int_t i)
 //_____________________________________________________________________________
 void AliFast::FillClone()
 {
-   // Fill Makers fruits clones
+  //
+  // Fill Makers fruits clones
+  //
    
    TIter next(fMakers);
    AliFMaker *maker;
@@ -434,8 +501,10 @@ void AliFast::FillClone()
 //_____________________________________________________________________________
 void AliFast::Finish()
 {
-//    Terminate a run
-//   place to make operations on histograms, normalization,etc.
+  //
+  //    Terminate a run
+  //   place to make operations on histograms, normalization,etc.
+  //
 
    TIter next(fMakers);
    AliFMaker *maker;
@@ -445,7 +514,7 @@ void AliFast::Finish()
 }
 
 //_____________________________________________________________________________
-void AliFast::SortDown(Int_t n1, Float_t *a, Int_t *index, Bool_t down)
+void AliFast::SortDown(Int_t n1, Float_t *a, Int_t *index, Bool_t down) const
 {
 //  sort the n1 elements of array a.
 //  In output the array index contains the indices of the sorted array.
@@ -510,8 +579,9 @@ void AliFast::SortDown(Int_t n1, Float_t *a, Int_t *index, Bool_t down)
 //______________________________________________________________________________
 void AliFast::Streamer(TBuffer &R__b)
 {
-   // Stream an object of class AliFast.
-
+  //
+  // Stream an object of class AliFast.
+  //
    if (R__b.IsReading()) {
       UInt_t R__s, R__c;
       if (!gAliFast) gAliFast = this;
