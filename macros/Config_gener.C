@@ -137,7 +137,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 // momentum range
      gener->SetMomentumRange(0,999);
 // phi range
-     gener->SetPhiRange(-180,180);
+     gener->SetPhiRange(0,360);
 // theta range 
      gener->SetThetaRange(0,180.);
 // select flavor (0: no, 4: charm+beauty, 5:beauty)
@@ -157,7 +157,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
      AliGenPythia *gener = new AliGenPythia(-1);
 //   final state kinematic cuts
      gener->SetMomentumRange(0,999);
-     gener->SetPhiRange(-180,180);
+     gener->SetPhiRange(0, 360);
      gener->SetThetaRange(0., 180.);
      gener->SetYRange(-10,10);
      gener->SetPtRange(0,100);
@@ -201,7 +201,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 	 new AliGenParam(ntracks, AliGenMUONlib::kUpsilon);
      gener->SetMomentumRange(0,999);
      gener->SetPtRange(0,999);     
-     gener->SetPhiRange(-180, 180);
+     gener->SetPhiRange(0, 360);
      gener->SetYRange(2.5,4);
      gener->SetCutOnChild(1);
      gener->SetChildThetaRange(2,9);
@@ -235,7 +235,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 					  AliGenGSIlib::kUpsilon, "MUON");
      gener->SetMomentumRange(0,999);
      gener->SetPtRange(0,999);     
-     gener->SetPhiRange(-180, 180);
+     gener->SetPhiRange(0, 360);
      gener->SetYRange(2.5,4);
      gener->SetCutOnChild(1);
      gener->SetChildThetaRange(2,9);

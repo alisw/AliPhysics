@@ -448,7 +448,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	comment = comment.Append(":HIJINGparam test 50 particles");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(50);
 	gener->SetMomentumRange(0, 999999.);
-	gener->SetPhiRange(-180., 180.);
+	gener->SetPhiRange(0., 360.);
 	// Set pseudorapidity range from -8 to 8.
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
@@ -458,7 +458,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	comment = comment.Append(":Pythia p-p @ 14 TeV");
     AliGenPythia *gener = new AliGenPythia(-1); 
     gener->SetMomentumRange(0,999999);
-    gener->SetPhiRange(-180,180);
+    gener->SetPhiRange(0, 360);
     gener->SetThetaRange(0., 180.);
     gener->SetYRange(-12,12);
     gener->SetPtRange(0,1000);
@@ -470,7 +470,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	comment = comment.Append(":HIJINGparam N=8000");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(86030);
 	gener->SetMomentumRange(0, 999999.);
-	gener->SetPhiRange(-180., 180.);
+	gener->SetPhiRange(0., 360.);
 	// Set pseudorapidity range from -8 to 8.
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
@@ -480,7 +480,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	comment = comment.Append("HIJINGparam N=4000");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(43015);
 	gener->SetMomentumRange(0, 999999.);
-	gener->SetPhiRange(-180., 180.);
+	gener->SetPhiRange(0., 360.);
 	// Set pseudorapidity range from -8 to 8.
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
@@ -490,7 +490,7 @@ AliGenerator* GeneratorFactory(PprRun_t run) {
 	comment = comment.Append("HIJINGparam N=2000");
 	AliGenHIJINGpara *gener = new AliGenHIJINGpara(21507);
 	gener->SetMomentumRange(0, 999999.);
-	gener->SetPhiRange(-180., 180.);
+	gener->SetPhiRange(0., 360.);
 	// Set pseudorapidity range from -8 to 8.
 	Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
 	Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 

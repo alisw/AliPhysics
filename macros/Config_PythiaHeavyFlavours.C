@@ -164,7 +164,7 @@ void Config()
   // GEOM & KINE CUTS
   //
   pythia->SetMomentumRange(0,99999999);
-  pythia->SetPhiRange(-180.,180.);
+  pythia->SetPhiRange(0., 360.);
   pythia->SetThetaRange(0,180);
   switch(ycut) {
   case kFull:
