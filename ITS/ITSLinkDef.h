@@ -19,11 +19,14 @@
 #pragma link C++ class  AliITSvSPD02+;
 #pragma link C++ class  AliITSvSDD03+;
 #pragma link C++ class  AliITSvSSD03+;
-//#pragma link C++ class  AliITSv11+;
-//#pragma link C++ class  AliITSv11Geometry+;
+#pragma link C++ class  AliITSv11+;
+#pragma link C++ class  AliITSv11GeomCable+;
+#pragma link C++ class  AliITSv11GeomCableFlat+;
+#pragma link C++ class  AliITSv11GeomCableRound+;
+#pragma link C++ class  AliITSv11Geometry+;
 //#pragma link C++ class  AliITSv11GeometrySupport+;
 //#pragma link C++ class  AliITSv11GeometrySPD+;
-//#pragma link C++ class  AliITSv11GeometrySDD+;
+#pragma link C++ class  AliITSv11GeometrySDD+;
 //#pragma link C++ class  AliITSv11GeomSDDcable+;
 //#pragma link C++ class  AliITSv11GeomSDDcableNap+;
 //
