@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2001/05/21 16:45:47  hristov
+Last minute changes (C.Blume)
+
 Revision 1.23  2001/05/07 08:04:48  cblume
 New TRF and PRF. Speedup of the code. Digits from amplification region included
 
@@ -440,9 +443,6 @@ void AliTRDdigitizer::Init()
   // The drift velocity (cm / mus)
   fDriftVelocity  = 1.5;
 
-  // The magnetic field strength in Tesla
-  fField          = 0.2 * gAlice->Field()->Factor();
-
   // Diffusion on
   fDiffusionOn    = 1;
 
@@ -628,6 +628,7 @@ void AliTRDdigitizer::SampleTRF()
 
   //for (Int_t ipasa = 0; ipasa < kNpasa; ipasa++) {
   //  time[ipasa] += 0.13; 
+  //  time[ipasa] *= 0.5;
   //}
 
   if (fTRFsmp) delete fTRFsmp;
@@ -757,6 +758,9 @@ Bool_t AliTRDdigitizer::InitDetector()
   fGeo = fTRD->GetGeometry();
   printf("AliTRDdigitizer::InitDetector -- ");
   printf("Geometry version %d\n",fGeo->IsVersion());
+
+  // The magnetic field strength in Tesla
+  fField = 0.2 * gAlice->Field()->Factor();
 
   ReInit();
 
