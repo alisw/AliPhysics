@@ -13,7 +13,7 @@
 /aliDet/body/setVolVisibility true
 /aliDet/body/setVolColour Green
 
-/vis~/create_view/new_graphics_system DAWN
+/vis~/create_view/new_graphics_system DAWNFILE
 /vis~/camera/zoom 15.
 
 /aliGenerator/set Gun
