@@ -46,7 +46,7 @@ void AliPHOSv0::CreateGeometry()
 // ORIGIN    : NICK VAN EIJNDHOVEN 
 
     Float_t pphi;
-    Float_t r, dptcb[3], dpair[3], dphos[3], dpucp[3], dpasp[3], dpcpv[3];
+    Float_t r, dptcb[3], dpair[3], dphos[3], dpucp[3], dpasp[3];
     Float_t dpxtl[3];
     Float_t yo;
     Int_t idrotm[99];
@@ -60,8 +60,6 @@ void AliPHOSv0::CreateGeometry()
       const Float_t XTL_Z=2.2;
 // --- Tyvek wrapper thickness 
       const Float_t PAP_THICK=0.01;
-// --- CPV thickness --- 
-      const Float_t CPV_Y=0.5;
 // --- Polystyrene Foam Outer Cover dimensions --- 
       const Float_t FOC_X=214.6;
       const Float_t FOC_Y=80.;
@@ -138,13 +136,7 @@ void AliPHOSv0::CreateGeometry()
     yo = (FOC_Y-ASP_Y)/2. - (CBS_R-FOC_R+TCB_Y);
     gMC->Gspos("PASP", 1, "PAIR", 0., yo, 0., 0, "ONLY");
 
-// --- Define CPV volume, DON'T PLACE IT YET --- 
-    dpcpv[0] = TCB_X/2.;
-    dpcpv[1] = CPV_Y/2.;
-    dpcpv[2] = TCB_Z/2.;
-    gMC->Gsvolu("PCPV", "BOX ", idtmed[700], dpcpv, 3);
 // --- Divide in X and Z direction (same way as PTCB) --- 
-    gMC->Gsdvn("PCSE", "PCPV", 11, 1);
     gMC->Gsdvn("PCMO", "PCSE", 13, 3);
     gMC->Gsdvn("PCST", "PCMO", 8, 1);
     gMC->Gsdvn("PCCE", "PCST", 8, 3);
@@ -166,19 +158,6 @@ void AliPHOSv0::CreateGeometry()
     gMC->Gspos("PHOS", 2, "ALIC", xp2, yp2, 0., idrotm[1], "ONLY");
     gMC->Gspos("PHOS", 3, "ALIC",-xp2, yp2, 0., idrotm[2], "ONLY");
     gMC->Gspos("PHOS", 4, "ALIC",-xp1, yp1, 0., idrotm[3], "ONLY");
-
-// --- Now position PCPV so that its plates are right on top of --- 
-// --- corresponding PHOS supermodules (previously called cradles) --- 
-    r    = FOC_R-CPV_Y/2.;
-    pphi = TMath::ATan(FOC_X/(2.*FOC_R));
-    xp1  = -r * TMath::Sin(pphi * 3.);
-    yp1  = -r * TMath::Cos(pphi * 3.);
-    xp2  = -r * TMath::Sin(pphi);
-    yp2  = -r * TMath::Cos(pphi);
-    gMC->Gspos("PCPV", 1, "ALIC", xp1, yp1, 0., idrotm[0], "ONLY");
-    gMC->Gspos("PCPV", 2, "ALIC", xp2, yp2, 0., idrotm[1], "ONLY");
-    gMC->Gspos("PCPV", 3, "ALIC",-xp2, yp2, 0., idrotm[2], "ONLY");
-    gMC->Gspos("PCPV", 4, "ALIC",-xp1, yp1, 0., idrotm[3], "ONLY");
 
 // --- Set modules seen without tree for drawings --- 
     gMC->Gsatt("PMOD", "SEEN", -2);
@@ -226,7 +205,6 @@ void AliPHOSv0::CreateMaterials()
     AliMaterial(9, "Air$", 14.61, 7.3, .001205, 30420., 67500);
 
     AliMedium(0, "PHOS Xtal    $", 0, 1, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
-    AliMedium(1, "CPV scint.   $", 1, 1, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
     AliMedium(2, "Al parts     $", 2, 0, ISXFLD, SXMGMX, 10., .1, .1, .001, .001);
     AliMedium(3, "Tyvek wrapper$", 3, 0, ISXFLD, SXMGMX, 10., .1, .1, .001, .001);
     AliMedium(4, "Polyst. foam $", 4, 0, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);

@@ -81,14 +81,9 @@ class AliPHOSCradle : public TObject {
                                       float PIN_SideSize       ,
                                       float PIN_Length         ,
                                       float Radius             ,
-                                      float CPV_Thickness      ,
-                                      float CPV_PHOS_Distance  ,
                                       int   Nz                 ,
                                       int   Nphi               ,
                                       float Angle );
-
-    void                AddCPVHit(float x, float y);
-
     Float_t             GetCrystalSideSize     (void) const {return fCrystalSideSize;}
     Float_t             GetCellSideSize        (void) const {return fCrystalSideSize+2*fWrapThickness+2*fAirThickness;}
     Float_t             GetCrystalLength       (void) const {return fCrystalLength;}
@@ -97,8 +92,6 @@ class AliPHOSCradle : public TObject {
     Float_t             GetPIN_SideSize        (void) const {return fPIN_SideSize;}
     Float_t             GetPIN_Length          (void) const {return fPIN_Length;}
     Float_t             GetRadius              (void) const {return fRadius;}
-    Float_t             GetCPV_PHOS_Distance   (void) const {return fCPV_PHOS_Distance;}
-    Float_t             GetCPV_Thikness        (void) const {return fCPV_Thickness;}
     Int_t               GetNz                  (void) const {return fNz;}
     Int_t               GetNphi                (void) const {return fNphi;}
     Float_t             GetPhi                 (void) const {return fPhi;}
@@ -120,8 +113,6 @@ class AliPHOSCradle : public TObject {
     TH2F                fCellEnergy;                            // GeV. Energy in cells
     TH2S                fChargedTracksInPIN;                    // amount. hits in PIN
 
-    TArrayF             fCPV_hitsX;                             // cm. X-hits in CPV detector. (0 - cradle center)
-    TArrayF             fCPV_hitsY;                             // cm. Y-hits in CPV detector. (0 - cradle center)
 
   private:
 
@@ -135,8 +126,6 @@ class AliPHOSCradle : public TObject {
 
     Float_t             fRadius;                                // cm. Distance to PHOS
 
-    Float_t             fCPV_PHOS_Distance;                     // cm. Distance from CPV to PHOS.
-    Float_t             fCPV_Thickness;                         // cm. CPV thikness.
 
     Int_t               fNz;                                    // Cells amount in beam direction
     Int_t               fNphi;                                  // Cells amount around beam
@@ -187,8 +176,6 @@ class AliPHOS : public AliDetector {
   virtual void          SetRadius(Float_t radius);
   virtual void          SetCradleSize(Int_t nz, Int_t nphi, Int_t ncradles);
   virtual void          SetCradleA(Float_t angle);
-  virtual void          SetCPV(Float_t p1,Float_t p2=0,Float_t p3=0,Float_t p4=0,
-                               Float_t p5=0,Float_t p6=0,Float_t p7=0,Float_t p8=0,Float_t p9=0);
   virtual void          SetExtra(Float_t p1,Float_t p2=0,Float_t p3=0,Float_t p4=0,
                                Float_t p5=0,Float_t p6=0,Float_t p7=0,Float_t p8=0,Float_t p9=0);
   virtual void          SetTextolitWall(Float_t dx, Float_t dy, Float_t dz);
@@ -198,19 +185,8 @@ class AliPHOS : public AliDetector {
   virtual void          DefPars();
   virtual void          AddPHOSCradles();
 
-  /*
-
-  virtual Int_t GetPHOS_IDTMED_PbWO4         (void){return gAlice->Idtmed()[700-1];}
-  virtual Int_t GetPHOS_IDTMED_CPV           (void){return gAlice->Idtmed()[701-1];}
-  virtual Int_t GetPHOS_IDTMED_Al            (void){return gAlice->Idtmed()[702-1];}
-  virtual Int_t GetPHOS_IDTMED_Tyvek         (void){return gAlice->Idtmed()[703-1];}
-  virtual Int_t GetPHOS_IDTMED_PIN           (void){return gAlice->Idtmed()[706-1];}
-  virtual Int_t GetPHOS_IDTMED_AIR           (void){return gAlice->Idtmed()[799-1];}
-  
-  */
   
   virtual Int_t GetPHOS_IDTMED_PbWO4         (void){return (*fIdtmed)[0];}
-  virtual Int_t GetPHOS_IDTMED_CPV           (void){return (*fIdtmed)[1];}
   virtual Int_t GetPHOS_IDTMED_Al            (void){return (*fIdtmed)[2];}
   virtual Int_t GetPHOS_IDTMED_Tyvek         (void){return (*fIdtmed)[3];}
   virtual Int_t GetPHOS_IDTMED_PIN           (void){return (*fIdtmed)[4];}
@@ -224,8 +200,6 @@ class AliPHOS : public AliDetector {
   virtual Float_t  GetPIN_SideSize       (void) const {return PHOScell[4]; }
   virtual Float_t  GetPIN_Length         (void) const {return PHOScell[5]; }
   virtual Float_t  GetRadius             (void) const {return PHOSradius;  }
-  virtual Float_t  GetCPV_Thickness      (void) const {return PHOSCPV[0];  }
-  virtual Float_t  GetCPV_PHOS_Distance  (void) const {return PHOSCPV[1];  }
   virtual Int_t    GetNz                 (void) const {return PHOSsize[0]; }
   virtual Int_t    GetNphi               (void) const {return PHOSsize[1]; }
   virtual Int_t    GetCradlesAmount      (void) const {return PHOSsize[2]; }
@@ -250,7 +224,7 @@ private:
 
 #define MAXCRAD 100
 
-  Float_t PHOSflags[9], PHOScell[9], PHOSradius, PHOSCPV[9];
+  Float_t PHOSflags[9], PHOScell[9], PHOSradius;
   Int_t   PHOSsize[3];
   Float_t PHOScradlesA,PHOSTXW[3],PHOSAIR[3],PHOSFTI[4],PHOSextra[9],
         PHOSangle[MAXCRAD];

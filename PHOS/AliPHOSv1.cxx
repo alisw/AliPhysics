@@ -49,9 +49,7 @@ void AliPHOSv1::CreateGeometry()
 
   const float           cell_length             = GetCrystalLength()+GetAirThickness()+GetWrapThickness()+GetPIN_Length(),
                         cell_side_size          = GetCrystalSideSize()+2*GetAirThickness()+2*GetWrapThickness(),
-//                        cell_angle              = 180/kPI * 2 * atan(cell_side_size/2 / GetRadius()),        // radians
-                        cradle_thikness         = cell_length + GetCPV_Thickness() + GetCPV_PHOS_Distance(),
-                        distance_to_CPV         = GetRadius() - GetCPV_Thickness() - GetCPV_PHOS_Distance();
+                        cradle_thikness         = cell_length;
 
   //////////////////////////////////////////////////////////////////////////////
   // CELL volume and subvolumes creation
@@ -74,7 +72,7 @@ void AliPHOSv1::CreateGeometry()
   gMC->Gsvolu("PIN ","BOX ",GetPHOS_IDTMED_PIN(),par,3);
 
   //////////////////////////////////////////////////////////////////////////////
-  // CRADLE,CPV creation.
+  // CRADLE creation.
   //////////////////////////////////////////////////////////////////////////////
 
   par[0] = cell_side_size/2 * GetNz();
@@ -82,15 +80,6 @@ void AliPHOSv1::CreateGeometry()
   par[2] = cradle_thikness/2;
   gMC->Gsvolu("PHOS","BOX ",GetPHOS_IDTMED_AIR(),par,3);
 
-//par[0] : the same as above
-//par[1] : the same as above
-  par[2] = GetCPV_Thickness()/2;
-  gMC->Gsvolu("CPV ","BOX ",GetPHOS_IDTMED_CPV(),par,3);
-
-  x = 0;
-  y = 0;
-  z = (cell_length+GetCPV_PHOS_Distance())/2;
-  gMC->Gspos("CPV ",1,"PHOS",x,y,z,0,"ONLY");
 
   par[0] = cell_side_size/2 * GetNz();
   par[1] = cell_side_size/2 * GetNphi();
@@ -128,18 +117,6 @@ void AliPHOSv1::CreateGeometry()
   // CELL has been created.
   //////////////////////////////////////////////////////////////////////////////
 
-//   int n=0;
-//   z = -(GetCPV_Thickness()+GetCPV_PHOS_Distance())/2;
-//
-//   for( int iy=0; iy<GetNphi(); iy++ )
-//   {
-//     y = (iy-(GetNphi()-1)/2.)*cell_side_size;
-//     for( int ix=0; ix<GetNz(); ix++ )
-//     {
-//       x = (ix-(GetNz()-1)/2.)*cell_side_size;
-//       gMC->Gspos("CELL",++n,"PHOS",x,y,z,0,"ONLY");
-//     }
-//   }
 
   //////////////////////////////////////////////////////////////////////////////
   // End of CRADLE creation.
@@ -152,13 +129,12 @@ void AliPHOSv1::CreateGeometry()
 
   for( int i=0; i<GetCradlesAmount(); i++ )
   {
-    float c                = distance_to_CPV,           // Distance to CPV
-          l                = cell_side_size*GetNphi()/2,      // Cradle half size around beam (for rect. geom.)
-          cradle_angle     = 360/kPI*atan(l/c),
-          cradle_angle_pos = -90+(i-(GetCradlesAmount()-1)/2.) * (cradle_angle+GetAngleBetweenCradles());
+    Float_t cradle_angle     = 27.,
+            cradle_angle_pos = -90+(i-(GetCradlesAmount()-1)/2.) *
+                               (cradle_angle+GetAngleBetweenCradles());
     // Cradles are numerated in clock reversed order. (general way of angle increment)
 
-    float   r       = GetRadius() + cradle_thikness/2;
+    Float_t r = GetRadius() + cradle_thikness/2;
     x = r*cos(cradle_angle_pos*kPI/180);
     y = r*sin(cradle_angle_pos*kPI/180);
     z = 0;
@@ -166,28 +142,6 @@ void AliPHOSv1::CreateGeometry()
     gMC->Gspos("PHOS",i+1,"ALIC",x,y,z,rotation_matrix_number,"ONLY");
 
     GetCradleAngle(i) = cradle_angle_pos;
-//
-//    int n = PHOS.fCradles->GetEntries();
-//    PHOS.fCradles->Add(new AliPHOSCradle( 1,            // geometry.
-//                                          GetCrystalSideSize    (),
-//                                          GetCrystalLength      (),
-//                                          GetWrapThickness      (),
-//                                          GetAirThickness       (),
-//                                          GetPIN_SideSize       (),
-//                                          GetPIN_Length         (),
-//                                          GetRadius             (),
-//                                          GetCPV_Thickness      (),
-//                                          GetCPV_PHOS_Distance  (),
-//                                          GetNz                 (),
-//                                          GetNphi               (),
-//                                          cradle_angle_pos      ));
-//
-//    if( n+1 != PHOS.fCradles->GetEntries() ||
-//        NULL == PHOS.fCradles->At(n) )
-//    {
-//      cout << "  Can not create or add AliPHOSCradle.\n";
-//      exit(1);
-//    }
   }
   AddPHOSCradles();
 
@@ -251,46 +205,6 @@ void AliPHOSv1::StepManager()
 
   //////////////////////////////////////////////////////////////////////////////
 
-  if( gMC->GetMedium()==GetPHOS_IDTMED_CPV() && (gMC->IsTrackInside() || gMC->IsTrackExiting()) && inwold )
-  {
-    // GEANT particle just have entered into CPV detector.
-
-    AliPHOS &PHOS = *(AliPHOS*)gAlice->GetModule("PHOS");
-
-    gMC->CurrentVolOffID(1,cradle_number);
-    cradle_number--;
-//        cradle_number  = cvolu->number[cvolu->nlevel-2]-1;
-
-    // Save CPV x,y hits position of charged particles.
-
-    AliPHOSCradle  &cradle = PHOS.GetCradle(cradle_number);
-
-    TLorentzVector xyz;
-    TVector3 v;
-    gMC->TrackPosition(xyz);
-
-    float x,y,l;
-    float R = cradle.GetRadius() - cradle.GetCPV_PHOS_Distance() - cradle.GetCPV_Thikness();
-    cradle.GetXY(xyz.Vect(),v,R,x,y,l);
-    if( PHOS.fDebugLevel>0 )
-      if( l<0 )
-        printf("PHOS_STEP:  warning: negative distance to CPV!! %f\n", l);
-
-    // Store current particle in the list of Cradle particles.
-    TLorentzVector  pmom;
-    gMC->TrackMomentum(pmom);
-    float     Px      =       pmom[0],
-              Py      =       pmom[1],
-              Pz      =       pmom[2];
-    Int_t     Ipart   =       gMC->TrackPid();
-
-//     TClonesArray &P=cradle.GetParticles();
-//     new( P[P.GetEntries()] ) AliPHOSgamma(x,0,y,0,ctrak->getot,0,Px,Py,Pz);
-    cradle.GetParticles().Add(new AliPHOSgamma(x,y,gMC->Etot(),Px,Py,Pz,Ipart));
-
-    if( gMC->TrackCharge()!=0 )
-      cradle.AddCPVHit(x,y);
-  }
 
   inwold=gMC->IsTrackEntering();         // Save current status of GEANT variable.
 }
