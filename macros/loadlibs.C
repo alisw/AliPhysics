@@ -18,6 +18,7 @@ void loadlibs ()
 
   gSystem->Load("libRAW");
 
+  gSystem->Load("libESD");
   gSystem->Load("libSTEER");
   gSystem->Load("libEVGEN");
   gSystem->Load("libFASTSIM");
