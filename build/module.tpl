@@ -320,6 +320,8 @@ endif
 		@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
 		@share/alibtool depend "$(@PACKAGE@DEFINE) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC) $<" > $@
 
+.PRECIOUS: $(MODDIRO)/%.d
+
 @PACKAGE@CHECKS := $(patsubst %.cxx,@MODULE@/check/%.viol,$(SRCS))
 
 check-@MODULE@: $(@PACKAGE@CHECKS)
