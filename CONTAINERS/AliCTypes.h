@@ -45,8 +45,6 @@ public: \
    static int DeclFileLine() { return __LINE__; } \
    static const char *ImplFileName(); \
    static int ImplFileLine();  \
-   void    *operator new(size_t sz) { return TStorage::ObjectAlloc(sz); } \
-   void    *operator new(size_t sz, void *vp) { return vp; } \
    void  Dump();
 
 //static int ImplFileLine(){return 0;}  
