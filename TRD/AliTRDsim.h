@@ -102,7 +102,7 @@ class AliTRDsim : public TObject {
   Float_t   fSpLower;              // Lower border of the TR spectrum
   Float_t   fSpUpper;              // Upper border of the TR spectrum
 
-  Double_t *fSigma;                // Array of sigma values
+  Double_t *fSigma;                //[fSpNBins] Array of sigma values
 
   TH1D     *fSpectrum;             // TR photon energy spectrum
 

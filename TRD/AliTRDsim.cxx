@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/12/12 10:20:10  cblume
+Initialize fSepctrum = 0 in ctors
+
 Revision 1.5  2000/10/15 23:40:01  cblume
 Remove AliTRDconst
 
@@ -62,6 +65,7 @@ AliTRDsim::AliTRDsim():TObject()
   // 
 
   fSpectrum = 0;
+  fSigma    = 0;
 
   Init();
 
@@ -83,6 +87,7 @@ AliTRDsim::AliTRDsim(AliModule *mod, Int_t foil, Int_t gap)
   Char_t  name[21];
 
   fSpectrum = 0;
+  fSigma    = 0;
 
   Init();
 

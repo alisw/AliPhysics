@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.7  2000/12/08 16:07:02  cblume
+Update of the tracking by Sergei
+
 Revision 1.6  2000/11/30 17:38:08  cblume
 Changes to get in line with new STEER and EVGEN
 
@@ -209,7 +212,7 @@ inline Double_t f3trd(Double_t x1,Double_t y1,
 //___________________________________________________________________
 
 Int_t AliTRDtracker::FindProlongation(AliTRDtrack& t, AliTRDtrackingSector *sec,
-                            Int_t s, Int_t rf=0)
+                            Int_t s, Int_t rf)
 {
   // Starting from current position on track=t this function tries 
   // to extrapolate the track up to timeBin=rf and to confirm prolongation
@@ -567,7 +570,11 @@ Int_t AliTRDtracker::GetTrackLabel(AliTRDtrack t) {
   const Int_t range = AliTRDgeometry::kNplan * fGeom->GetTimeMax();
   Bool_t label_added;
 
-  Int_t s[range][2];
+  //  Int_t s[range][2];
+  Int_t **s = new Int_t* [range];
+  for (i=0; i<range; i++) {
+    s[i] = new Int_t[2];
+  }
   for (i=0; i<range; i++) {
     s[i][0]=-1;
     s[i][1]=0;
@@ -609,6 +616,7 @@ Int_t AliTRDtracker::GetTrackLabel(AliTRDtrack t) {
       max=s[i][1]; label=s[i][0];
     }
   }
+  delete []s;
   if(max > ncl*fLabelFraction) return label;
   else return -1;
 }
@@ -646,7 +654,7 @@ Int_t AliTRDtracker::WriteTracks(const Char_t *filename) {
 
 //_____________________________________________________________________________
 void AliTRDtracker::ReadClusters(TObjArray *array, const Char_t *filename, 
-Int_t option = 1) 
+Int_t option) 
 {
   //
   // Reads AliTRDclusters (option >= 0) or AliTRDrecPoints (option < 0) 
