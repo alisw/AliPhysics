@@ -2547,19 +2547,21 @@ void AliITSv11::ServicesCableSupport(TGeoVolume *Moth){
     //  none.
     // Based on the Drawings SSup_201A.jpg unless otherwise stated, 
     // Volumes A..., 
-    TGeoMedium *SUPcf  = 0; // SUP support cone Carbon Fiber materal number.
-    TGeoMedium *SUPfs  = 0; // SUP support cone inserto stesalite 4411w.
-    TGeoMedium *SUPfo  = 0; // SUP support cone foam, Rohacell 50A.
-    TGeoMedium *SUPss  = 0; // SUP support cone screw material,Stainless steal
-    TGeoMedium *SUPair = 0; // SUP support cone Air
-    TGeoMedium *SUPal  = 0; // SUP support cone SDD mounting bracket Al
+    TGeoMedium *SUPcf    = 0; // SUP support cone Carbon Fiber materal number.
+    TGeoMedium *SUPfs    = 0; // SUP support cone inserto stesalite 4411w.
+    TGeoMedium *SUPfo    = 0; // SUP support cone foam, Rohacell 50A.
+    TGeoMedium *SUPss    = 0; // SUP support cone screw material,Stainless
+    TGeoMedium *SUPair   = 0; // SUP support cone Air
+    TGeoMedium *SUPal    = 0; // SUP support cone SDD mounting bracket Al
+    TGeoMedium *SUPwater = 0; // SUP support cone Water
     TGeoManager *mgr = gGeoManager;
-    SUPcf = mgr->GetMedium("ITSssdCarbonFiber");
-    SUPfs = mgr->GetMedium("ITSssdStaselite4411w");
-    SUPfo = mgr->GetMedium("ITSssdRohacell50A");
-    SUPss = mgr->GetMedium("ITSssdStainlessSteal");
-    SUPair= mgr->GetMedium("ITSssdAir");
-    SUPal = mgr->GetMedium("ITSssdAl");
+    SUPcf    = mgr->GetMedium("ITSssdCarbonFiber");
+    SUPfs    = mgr->GetMedium("ITSssdStaselite4411w");
+    SUPfo    = mgr->GetMedium("ITSssdRohacell50A");
+    SUPss    = mgr->GetMedium("ITSssdStainlessSteal");
+    SUPair   = mgr->GetMedium("ITSssdAir");
+    SUPal    = mgr->GetMedium("ITSssdAl");
+    SUPwater = mgr->GetMedium("ITSssdWater");
     //
     Int_t i,j;
     Double_t x,y,z,t,t0,dt,di,r;
@@ -2567,7 +2569,7 @@ void AliITSv11::ServicesCableSupport(TGeoVolume *Moth){
     // RB 24 side
     const Double_t Z024         = 900*kmm;//SSup_203A.jpg
     const Double_t ThssFrame24  = 5.0*kmm;
-    const Double_t RssFrame24   = 444.0*kmm-ThssFrame24; // SSup_204A.jpg
+    const Double_t RssFrame24   = 444.5*kmm-ThssFrame24; // SSup_204A.jpg
     const Double_t WidthFrame24 = 10.0*kmm;
     const Double_t HightFrame24 = 10.0*kmm;
     const Double_t Phi0Frame24  = 15.2*kDegree; // SSup_602A.jpg
@@ -2649,6 +2651,140 @@ void AliITSv11::ServicesCableSupport(TGeoVolume *Moth){
         B24v->PrintNodes();
         M24v->PrintNodes();
     } // end if
+    // Cable support tray 
+    // Material is Aluminum
+    const Double_t RS24in     = TMath::Max(RssFrame24,444.5*kmm);
+                                           // SSup_204A & SSup_206A
+    const Double_t RS24Airout = 459.5*kmm; // SSup_204A & SSup_206A
+    const Double_t RS24out    = 494.5*kmm; // SSup_206A & SSup_204A
+    const Double_t RS24PPout  = 550.0*kmm; // SSup_206A
+    const Double_t LS24PP     = 350.0*kmm; // SSup_202A
+    const Double_t LS24       = (2693.0-900.0)*kmm; //SSup_205A & SSup_207A
+    const Double_t ThS24wall  = 1.0*kmm; // SSup_209A & SSup_210A
+    const Double_t WbS24      = 42.0*kmm; // SSup_209A & SSup_210A
+    const Double_t WtS24      = 46.9*kmm; // SSup_209A & SSup_210A
+    const Double_t WcapS24    = 50.0*kmm; // SSup_209A & SSup_210A
+    const Double_t WdS24      = 41.0*kmm; // SSup_209A ? should be 41.46938776
+    const Double_t HS24       = 50.0*kmm; // SSup_209A & SSup_210A
+    const Double_t OutDcoolTub= 12.0*kmm; // SSup_209A
+    const Double_t InDcoolTub = 10.0*kmm; // SSup_209A
+    const Double_t BlkNozInDS24= 6.0*kmm; // SSup_209A
+    // The following are deduced or guessed at
+    const Double_t LtopLipS24 = 6.0*kmm; // Guessed at.
+    const Double_t LdLipS24   = 6.0*kmm; // Guessed at.
+    const Double_t HdS24      = OutDcoolTub; //
+    const Double_t BlkNozZS24 = 6.0*kmm; // Guessed at.
+    // Simplifided exterior shape. The side wall size is 2.5*thicker than
+    // it should be (due to simplification).
+    TGeoArb8 *C24 = new TGeoArb8("ITS Sup Cable Tray Element C24",0.5*LS24);
+    C24->SetVertex(0,-0.5*WcapS24,HS24+ThS24wall);
+    C24->SetVertex(1,+0.5*WcapS24,HS24+ThS24wall);
+    C24->SetVertex(2,+0.5*WbS24,0.0);
+    C24->SetVertex(3,-0.5*WbS24,0.0);
+    C24->SetVertex(4,-0.5*WcapS24,HS24+ThS24wall);
+    C24->SetVertex(5,+0.5*WcapS24,HS24+ThS24wall);
+    C24->SetVertex(6,+0.5*WbS24,0.0);
+    C24->SetVertex(7,-0.5*WbS24,0.0);
+    TGeoArb8 *D24 = new TGeoArb8("ITS Sup Cable Tray lower Element D24",
+                                 0.5*LS24);
+    // Because of question about the value of WdS24, compute what it
+    // should be assuming cooling tube fixes hight of volume.
+    x = OutDcoolTub*(0.5*WcapS24-0.5*WbS24-ThS24wall)/(HS24-ThS24wall);
+    D24->SetVertex(0,-x,OutDcoolTub+ThS24wall);
+    D24->SetVertex(1,+x,OutDcoolTub+ThS24wall);
+    D24->SetVertex(2,+0.5*WbS24-ThS24wall,ThS24wall);
+    D24->SetVertex(3,-0.5*WbS24+ThS24wall,ThS24wall);
+    D24->SetVertex(4,-x,OutDcoolTub+ThS24wall);
+    D24->SetVertex(5,+x,OutDcoolTub+ThS24wall);
+    D24->SetVertex(6,+0.5*WbS24-ThS24wall,ThS24wall);
+    D24->SetVertex(7,-0.5*WbS24+ThS24wall,ThS24wall);
+    TGeoTube *E24 = new TGeoTube("ITS Sup Cooling Tube E24",0.5*InDcoolTub,
+                                 0.5*OutDcoolTub,0.5*LS24-BlkNozZS24);
+    TGeoArb8 *F24 = new TGeoArb8("ITS Sup Cable Tray lower Element block F24",
+                                 0.5*BlkNozZS24);
+    for(i=0;i<8;i++) F24->SetVertex(i,D24->GetVertices()[i*2+0],
+                                      D24->GetVertices()[i*2+1]); //
+    TGeoTube *G24 = new TGeoTube("ITS Sup Cooling Tube hole in block G24",
+                                 0.0,0.5*BlkNozInDS24,0.5*BlkNozZS24);
+    TGeoArb8 *H24 = new TGeoArb8("ITS Sup Cable Tray upper Element H24",
+                                 0.5*(LS24- LS24PP));
+    H24->SetVertex(0,C24->GetVertices()[0*2+0]+2.*ThS24wall,
+                     C24->GetVertices()[0*2+1]-ThS24wall);
+    H24->SetVertex(1,C24->GetVertices()[1*2+0]-2.*ThS24wall,
+                     C24->GetVertices()[1*2+1]-ThS24wall);
+    H24->SetVertex(2,D24->GetVertices()[1*2+0]-ThS24wall,
+                     D24->GetVertices()[1*2+1]+ThS24wall);
+    H24->SetVertex(3,D24->GetVertices()[0*2+0]+ThS24wall,
+                     D24->GetVertices()[0*2+1]+ThS24wall);
+    for(i=4;i<8;i++) H24->SetVertex(i,H24->GetVertices()[(i-4)*2+0],
+                                      H24->GetVertices()[(i-4)*2+1]); //
+    printArb8(C24);
+    printArb8(D24);
+    printTube(E24);
+    printArb8(F24);
+    printTube(G24);
+    printArb8(H24);
+    TGeoVolume *C24v,*D24v,*E24v,*F24v,*Ga24v,*Gw24v,*Gf24v,*H24v;
+    //
+    C24v = new TGeoVolume("ITSsupCableTrayC24",C24,SUPal);
+    C24v->SetVisibility(kTRUE);
+    C24v->SetLineColor(6); //
+    C24v->SetLineWidth(1);
+    C24v->SetFillColor(C24v->GetLineColor());
+    C24v->SetFillStyle(4000); // 0% transparent
+    D24v = new TGeoVolume("ITSsupCableTrayLowerD24",D24,SUPair);
+    D24v->SetVisibility(kTRUE);
+    D24v->SetLineColor(6); //
+    D24v->SetLineWidth(1);
+    D24v->SetFillColor(D24v->GetLineColor());
+    D24v->SetFillStyle(4000); // 0% transparent
+    E24v = new TGeoVolume("ITSsupCableTrayCoolTubeE24",E24,SUPss);
+    E24v->SetVisibility(kTRUE);
+    E24v->SetLineColor(6); //
+    E24v->SetLineWidth(1);
+    E24v->SetFillColor(E24v->GetLineColor());
+    E24v->SetFillStyle(4000); // 0% transparent
+    F24v = new TGeoVolume("ITSsupCableTrayBlockF24",F24,SUPal);
+    F24v->SetVisibility(kTRUE);
+    F24v->SetLineColor(6); //
+    F24v->SetLineWidth(1);
+    F24v->SetFillColor(F24v->GetLineColor());
+    F24v->SetFillStyle(4000); // 0% transparent
+    Gw24v = new TGeoVolume("ITSsupCableTrayCoolantWaterG24",G24,SUPwater);
+    Gw24v->SetVisibility(kTRUE);
+    Gw24v->SetLineColor(6); //
+    Gw24v->SetLineWidth(1);
+    Gw24v->SetFillColor(Gw24v->GetLineColor());
+    Gw24v->SetFillStyle(4000); // 0% transparent
+    Ga24v = new TGeoVolume("ITSsupCableTrayCoolantAirG24",G24,SUPair);
+    Ga24v->SetVisibility(kTRUE);
+    Ga24v->SetLineColor(6); //
+    Ga24v->SetLineWidth(1);
+    Ga24v->SetFillColor(Ga24v->GetLineColor());
+    Ga24v->SetFillStyle(4000); // 0% transparent
+    H24v = new TGeoVolume("ITSsupCableTrayUpperC24",H24,SUPair);
+    H24v->SetVisibility(kTRUE);
+    H24v->SetLineColor(6); //
+    H24v->SetLineWidth(1);
+    H24v->SetFillColor(H24v->GetLineColor());
+    H24v->SetFillStyle(4000); // 0% transparent
+    //
+    tran = new TGeoTranslation("",-OutDcoolTub,OutDcoolTub+ThS24wall,0.0);
+    F24v->AddNode(Gw24v,1,tran);
+    D24v->AddNode(E24v,1,tran);
+    tran = new TGeoTranslation("",0.0,OutDcoolTub+ThS24wall,0.0);
+    F24v->AddNode(Gw24v,2,tran);
+    D24v->AddNode(E24v,2,tran);
+    tran = new TGeoTranslation("",+OutDcoolTub,OutDcoolTub+ThS24wall,0.0);
+    F24v->AddNode(Gw24v,3,tran);
+    D24v->AddNode(E24v,3,tran);
+    tran = new TGeoTranslation("",0.0,0.0,0.5*LS24-0.5*BlkNozZS24);
+    D24v->AddNode(F24v,1,tran);
+    tran = new TGeoTranslation("",0.0,0.0,-(0.5*LS24-0.5*BlkNozZS24));
+    D24v->AddNode(F24v,2,tran);
+    C24v->AddNode(D24v,1,0);
+    C24v->AddNode(H24v,1,0);
+    //==================================================================
     //
     // RB 26 side
     const Double_t Z026         = -900*kmm;//SSup_203A.jpg
