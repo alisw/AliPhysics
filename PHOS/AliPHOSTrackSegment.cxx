@@ -21,10 +21,11 @@
 // --- ROOT system ---
  
 #include "TVector3.h"
+#include "TPad.h"
 
 // --- Standard library ---
 
-#include "iostream.h"
+#include <iostream>
 
 // --- AliRoot header files ---
 
@@ -56,6 +57,82 @@ AliPHOSTrackSegment::~AliPHOSTrackSegment() // dtor
 //    fPpsdUp.Delete() ;
 //    fPpsdLow.Delete() ;
 }
+
+//____________________________________________________________________________
+Int_t AliPHOSTrackSegment::DistancetoPrimitive(Int_t px, Int_t py)
+{
+//*-*-*-*-*-*-*-*-*-*-*Compute distance from point px,py to  a AliPHOSTrackSegment considered as a Tmarker*-*-*-*-*-*
+//*-*                  ===========================================
+//  Compute the closest distance of approach from point px,py to this marker.
+//  The distance is computed in pixels units.
+//
+
+   TVector3 pos(0.,0.,0.) ;
+   fEmcRecPoint->GetLocalPosition( pos) ;
+   Float_t x =  pos.X() ;
+   Float_t y =  pos.Z() ;
+   const Int_t kMaxDiff = 10;
+   Int_t pxm  = gPad->XtoAbsPixel(x);
+   Int_t pym  = gPad->YtoAbsPixel(y);
+   Int_t dist = (px-pxm)*(px-pxm) + (py-pym)*(py-pym);
+
+   if (dist > kMaxDiff) return 9999;
+   return dist;
+}
+
+//___________________________________________________________________________
+ void AliPHOSTrackSegment::Draw(Option_t *option)
+ {
+// //*-*-*-*-*-*-*-*-*-*-*Draw this AliPHOSTrackSegment with its current attributes*-*-*-*-*-*-*
+// //*-*
+   // assert(0==1);
+  AppendPad(option);
+ }
+
+//______________________________________________________________________________
+void AliPHOSTrackSegment::ExecuteEvent(Int_t event, Int_t px, Int_t py)
+{
+//*-*-*-*-*-*-*-*-*-*-*Execute action corresponding to one event*-*-*-*
+//*-*                  =========================================
+//  This member function is called when a AliPHOSTrackSegment is clicked with the locator
+//
+//  If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
+//  and switched off when the mouse button is released.
+//
+   static TPaveText* TrackSegmentText = 0 ;
+
+   if (!gPad->IsEditable()) return;
+
+   switch (event) {
+
+   case kButton1Down:{
+    
+     if (!TrackSegmentText) {
+  
+       TVector3 pos(0.,0.,0.) ;
+       fEmcRecPoint->GetLocalPosition(pos) ;
+       TrackSegmentText = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+50,pos.Z()+35,"") ;
+       Text_t  line1[40] ;
+       if (GetPartType() == 0 ) sprintf(line1,"PHOTON") ;
+       if (GetPartType() == 1 ) sprintf(line1,"NEUTRAL HADRON") ;
+       if (GetPartType() == 2 ) sprintf(line1,"CHARGED HADRON") ;
+       if (GetPartType() == 3 ) sprintf(line1,"ELECTRON") ;
+       TrackSegmentText ->AddText(line1) ;
+       TrackSegmentText ->Paint("");
+     }
+   }
+
+     break;
+
+   case kButton1Up:
+     if (TrackSegmentText) {
+       delete TrackSegmentText ;
+       TrackSegmentText = 0 ;
+     }
+     break;  
+   }
+}
+
 
 //____________________________________________________________________________
 Float_t AliPHOSTrackSegment::GetDistanceInPHOSPlane()
@@ -151,6 +228,34 @@ void AliPHOSTrackSegment::GetPosition( TVector3 & pos )
   TMatrix Dummy ;
   fEmcRecPoint->GetGlobalPosition(pos, Dummy) ;
 }
+
+//______________________________________________________________________________
+void AliPHOSTrackSegment::Paint(Option_t *)
+{
+//*-*-*-*-*-*-*-*-*-*-*Paint this ALiPHOSTrackSegment as a TMarker  with its current attributes*-*-*-*-*-*-*
+//*-*                  =============================================
+   TVector3 pos(0.,0.,0.)  ;
+   fEmcRecPoint->GetLocalPosition(pos)   ;
+   Coord_t x = pos.X()     ;
+   Coord_t y = pos.Z()     ;
+   Color_t MarkerColor = 1 ;
+   Size_t  MarkerSize = 1. ;
+   Style_t MarkerStyle = 29 ;
+
+   if (GetPartType() == 0 ) MarkerStyle = 20 ;
+   if (GetPartType() == 1 ) MarkerStyle = 21 ;
+   if (GetPartType() == 2 ) MarkerStyle = 22 ;
+   if (GetPartType() == 3 ) MarkerStyle = 23 ;
+
+   if (!gPad->IsBatch()) {
+     gVirtualX->SetMarkerColor(MarkerColor) ;
+     gVirtualX->SetMarkerSize (MarkerSize)  ;
+     gVirtualX->SetMarkerStyle(MarkerStyle) ;
+   }
+   gPad->SetAttMarkerPS(MarkerColor,MarkerStyle,MarkerSize) ;
+   gPad->PaintPolyMarker(1,&x,&y,"") ;
+}
+
 
 //____________________________________________________________________________
 void AliPHOSTrackSegment::Print()

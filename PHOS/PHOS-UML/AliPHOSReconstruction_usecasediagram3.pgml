@@ -83,8 +83,8 @@
               y="125" />
     </path>
     <text name="Fig0.6"
-      x="64"
-      y="127"
+      x="76"
+      y="130"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -125,8 +125,8 @@
       strokecolor="-16777216"
     />
     <text name="Fig1.2"
-      x="172"
-      y="10"
+      x="190"
+      y="13"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -136,7 +136,7 @@
     >1 . Get a Particle
 from TreeK</text>
   </group>
-  <group name="Fig3"
+  <group name="Fig2"
        description="uci.uml.visual.FigUseCase[218, 64, 182, 72]"
        href="S.101008"
        fill="1"
@@ -147,7 +147,7 @@ from TreeK</text>
     <private>
     </private>
     
-    <ellipse name="Fig3.0"
+    <ellipse name="Fig2.0"
       x="309"
       y="100"
       rx="91"
@@ -157,7 +157,7 @@ from TreeK</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <ellipse name="Fig3.1"
+    <ellipse name="Fig2.1"
       x="309"
       y="100"
       rx="91"
@@ -167,9 +167,9 @@ from TreeK</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <text name="Fig3.2"
-      x="235"
-      y="77"
+    <text name="Fig2.2"
+      x="258"
+      y="82"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -180,7 +180,7 @@ from TreeK</text>
 of other detectors on
 the way of the particle</text>
   </group>
-  <group name="Fig5"
+  <group name="Fig3"
        description="uci.uml.visual.FigUseCase[218, 208, 177, 52]"
        href="S.101012"
        fill="1"
@@ -191,7 +191,7 @@ the way of the particle</text>
     <private>
     </private>
     
-    <ellipse name="Fig5.0"
+    <ellipse name="Fig3.0"
       x="306"
       y="234"
       rx="88"
@@ -201,7 +201,7 @@ the way of the particle</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <ellipse name="Fig5.1"
+    <ellipse name="Fig3.1"
       x="306"
       y="234"
       rx="88"
@@ -211,9 +211,9 @@ the way of the particle</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <text name="Fig5.2"
-      x="231"
-      y="218"
+    <text name="Fig3.2"
+      x="256"
+      y="221"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -223,7 +223,7 @@ the way of the particle</text>
     >3. Get the average PHOS
 response to this particle</text>
   </group>
-  <group name="Fig7"
+  <group name="Fig4"
        description="uci.uml.visual.FigUseCase[49, 272, 155, 66]"
        href="S.101016"
        fill="1"
@@ -234,7 +234,7 @@ response to this particle</text>
     <private>
     </private>
     
-    <ellipse name="Fig7.0"
+    <ellipse name="Fig4.0"
       x="126"
       y="305"
       rx="77"
@@ -244,7 +244,7 @@ response to this particle</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <ellipse name="Fig7.1"
+    <ellipse name="Fig4.1"
       x="126"
       y="305"
       rx="77"
@@ -254,9 +254,9 @@ response to this particle</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <text name="Fig7.2"
-      x="59"
-      y="282"
+    <text name="Fig4.2"
+      x="80"
+      y="287"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -267,7 +267,7 @@ response to this particle</text>
 and properties of the 
 detected particle</text>
   </group>
-  <group name="Fig9"
+  <group name="Fig5"
        description="uci.uml.visual.FigUseCase[480, 8, 158, 66]"
        href="S.101022"
        fill="1"
@@ -278,7 +278,7 @@ detected particle</text>
     <private>
     </private>
     
-    <ellipse name="Fig9.0"
+    <ellipse name="Fig5.0"
       x="559"
       y="41"
       rx="79"
@@ -288,7 +288,7 @@ detected particle</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <ellipse name="Fig9.1"
+    <ellipse name="Fig5.1"
       x="559"
       y="41"
       rx="79"
@@ -298,9 +298,9 @@ detected particle</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <text name="Fig9.2"
-      x="490"
-      y="18"
+    <text name="Fig5.2"
+      x="512"
+      y="23"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -311,7 +311,7 @@ detected particle</text>
 conversion probability
 energy loss</text>
   </group>
-  <group name="Fig11"
+  <group name="Fig6"
        description="uci.uml.visual.FigUseCase[488, 80, 216, 96]"
        href="S.101024"
        fill="1"
@@ -322,7 +322,7 @@ energy loss</text>
     <private>
     </private>
     
-    <ellipse name="Fig11.0"
+    <ellipse name="Fig6.0"
       x="596"
       y="128"
       rx="108"
@@ -332,7 +332,7 @@ energy loss</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <ellipse name="Fig11.1"
+    <ellipse name="Fig6.1"
       x="596"
       y="128"
       rx="108"
@@ -342,9 +342,9 @@ energy loss</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <text name="Fig11.2"
-      x="503"
-      y="98"
+    <text name="Fig6.2"
+      x="531"
+      y="110"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -353,10 +353,9 @@ energy loss</text>
       textsize="9"
     >Charged and Neutral hadrons:
 energy loss
-momentum smearing
-</text>
+momentum smearing</text>
   </group>
-  <group name="Fig13"
+  <group name="Fig7"
        description="uci.uml.visual.FigUseCase[488, 192, 208, 80]"
        href="S.101026"
        fill="1"
@@ -367,7 +366,7 @@ momentum smearing
     <private>
     </private>
     
-    <ellipse name="Fig13.0"
+    <ellipse name="Fig7.0"
       x="592"
       y="232"
       rx="104"
@@ -377,7 +376,7 @@ momentum smearing
       stroke="1"
       strokecolor="-16777216"
     />
-    <ellipse name="Fig13.1"
+    <ellipse name="Fig7.1"
       x="592"
       y="232"
       rx="104"
@@ -387,9 +386,9 @@ momentum smearing
       stroke="1"
       strokecolor="-16777216"
     />
-    <text name="Fig13.2"
-      x="506"
-      y="209"
+    <text name="Fig7.2"
+      x="532"
+      y="214"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -400,7 +399,7 @@ momentum smearing
 identify a photon, 
 a charged or neutral hadron</text>
   </group>
-  <group name="Fig15"
+  <group name="Fig8"
        description="uci.uml.visual.FigUseCase[512, 296, 165, 52]"
        href="S.101030"
        fill="1"
@@ -411,7 +410,7 @@ a charged or neutral hadron</text>
     <private>
     </private>
     
-    <ellipse name="Fig15.0"
+    <ellipse name="Fig8.0"
       x="594"
       y="322"
       rx="82"
@@ -421,7 +420,7 @@ a charged or neutral hadron</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <ellipse name="Fig15.1"
+    <ellipse name="Fig8.1"
       x="594"
       y="322"
       rx="82"
@@ -431,9 +430,9 @@ a charged or neutral hadron</text>
       stroke="1"
       strokecolor="-16777216"
     />
-    <text name="Fig15.2"
-      x="522"
-      y="306"
+    <text name="Fig8.2"
+      x="544"
+      y="309"
       fill="0"
       fillcolor="-1"
       stroke="0"
@@ -443,7 +442,7 @@ a charged or neutral hadron</text>
     >Energy and momentum
 resolution</text>
   </group>
-  <group name="Fig2"
+  <group name="Fig9"
        description="uci.uml.visual.FigAssociation"
        href="S.101005"
        stroke="1"
@@ -455,7 +454,7 @@ resolution</text>
       sourceFigNode="Fig0"
       destFigNode="Fig1"
     </private>
-    <path name="Fig2.1"
+    <path name="Fig9.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -468,7 +467,7 @@ resolution</text>
               y="52" />
     </path>
   </group>
-  <group name="Fig4"
+  <group name="Fig10"
        description="uci.uml.visual.FigAssociation"
        href="S.101009"
        stroke="1"
@@ -476,11 +475,11 @@ resolution</text>
   >
     <private>
       sourcePortFig="Fig0"
-      destPortFig="Fig3"
+      destPortFig="Fig2"
       sourceFigNode="Fig0"
-      destFigNode="Fig3"
+      destFigNode="Fig2"
     </private>
-    <path name="Fig4.1"
+    <path name="Fig10.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -493,7 +492,7 @@ resolution</text>
               y="96" />
     </path>
   </group>
-  <group name="Fig6"
+  <group name="Fig11"
        description="uci.uml.visual.FigAssociation"
        href="S.101013"
        stroke="1"
@@ -501,11 +500,11 @@ resolution</text>
   >
     <private>
       sourcePortFig="Fig0"
-      destPortFig="Fig5"
+      destPortFig="Fig3"
       sourceFigNode="Fig0"
-      destFigNode="Fig5"
+      destFigNode="Fig3"
     </private>
-    <path name="Fig6.1"
+    <path name="Fig11.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -518,7 +517,7 @@ resolution</text>
               y="208" />
     </path>
   </group>
-  <group name="Fig8"
+  <group name="Fig12"
        description="uci.uml.visual.FigAssociation"
        href="S.101017"
        stroke="1"
@@ -526,11 +525,11 @@ resolution</text>
   >
     <private>
       sourcePortFig="Fig0"
-      destPortFig="Fig7"
+      destPortFig="Fig4"
       sourceFigNode="Fig0"
-      destFigNode="Fig7"
+      destFigNode="Fig4"
     </private>
-    <path name="Fig8.1"
+    <path name="Fig12.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -543,19 +542,19 @@ resolution</text>
               y="272" />
     </path>
   </group>
-  <group name="Fig10"
+  <group name="Fig13"
        description="uci.uml.visual.FigGeneralization"
        href="S.101023"
        stroke="1"
        strokecolor="-16777216"
   >
     <private>
-      sourcePortFig="Fig9.0"
-      destPortFig="Fig3.0"
-      sourceFigNode="Fig9"
-      destFigNode="Fig3"
+      sourcePortFig="Fig5.0"
+      destPortFig="Fig2.0"
+      sourceFigNode="Fig5"
+      destFigNode="Fig2"
     </private>
-    <path name="Fig10.1"
+    <path name="Fig13.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -568,19 +567,19 @@ resolution</text>
               y="64" />
     </path>
   </group>
-  <group name="Fig12"
+  <group name="Fig14"
        description="uci.uml.visual.FigGeneralization"
        href="S.101025"
        stroke="1"
        strokecolor="-16777216"
   >
     <private>
-      sourcePortFig="Fig11.0"
-      destPortFig="Fig3.0"
-      sourceFigNode="Fig11"
-      destFigNode="Fig3"
+      sourcePortFig="Fig6.0"
+      destPortFig="Fig2.0"
+      sourceFigNode="Fig6"
+      destFigNode="Fig2"
     </private>
-    <path name="Fig12.1"
+    <path name="Fig14.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -593,19 +592,19 @@ resolution</text>
               y="128" />
     </path>
   </group>
-  <group name="Fig14"
+  <group name="Fig15"
        description="uci.uml.visual.FigAssociation"
        href="S.101027"
        stroke="1"
        strokecolor="-16777216"
   >
     <private>
-      sourcePortFig="Fig13.0"
-      destPortFig="Fig5.0"
-      sourceFigNode="Fig13"
-      destFigNode="Fig5"
+      sourcePortFig="Fig7.0"
+      destPortFig="Fig3.0"
+      sourceFigNode="Fig7"
+      destFigNode="Fig3"
     </private>
-    <path name="Fig14.1"
+    <path name="Fig15.1"
       description="uci.gef.FigPoly"
       fill="0"
       fillcolor="-1"
@@ -625,10 +624,10 @@ resolution</text>
        strokecolor="-16777216"
   >
     <private>
-      sourcePortFig="Fig5.0"
-      destPortFig="Fig15.0"
-      sourceFigNode="Fig5"
-      destFigNode="Fig15"
+      sourcePortFig="Fig3.0"
+      destPortFig="Fig8.0"
+      sourceFigNode="Fig3"
+      destFigNode="Fig8"
     </private>
     <path name="Fig16.1"
       description="uci.gef.FigPoly"

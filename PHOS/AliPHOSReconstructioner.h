@@ -36,9 +36,8 @@ public:
 
 private:
   
-  AliPHOSClusterizer * fClusterizer ;  // Method of clusterization 
-
-  AliPHOSTrackSegmentMaker * fTrackSegmentMaker ;  // 
+  AliPHOSClusterizer * fClusterizer ;             // Method for clusterization 
+  AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Method for track segments finding 
   
 
 public:

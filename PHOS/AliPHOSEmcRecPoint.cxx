@@ -19,12 +19,14 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-
+#include "TPad.h"
+#include "TH2.h"
 #include "TMath.h" 
+#include "TCanvas.h" 
 
 // --- Standard library ---
 
-#include "iostream.h"
+#include <iostream>
 
 // --- AliRoot header files ---
 
@@ -50,11 +52,11 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(Float_t W0, Float_t LocMaxCut)
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
 }
 
-// //____________________________________________________________________________
-// AliPHOSEmcRecPoint::~AliPHOSEmcRecPoint() 
-// {
-//   // dtor 
-// }
+//____________________________________________________________________________
+AliPHOSEmcRecPoint::~AliPHOSEmcRecPoint() 
+{
+  // dtor 
+}
 
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::AddDigit(AliDigitNew & digit, Float_t Energy)
@@ -63,23 +65,33 @@ void AliPHOSEmcRecPoint::AddDigit(AliDigitNew & digit, Float_t Energy)
   // and accumulates the total amplitude and the multiplicity 
   
   if ( fMulDigit >= fMaxDigit ) { // increase the size of the lists 
-    int * tempo = new ( int[fMaxDigit*=2] ) ; 
-    Float_t * tempoE =  new ( Float_t[fMaxDigit*=2] ) ;
-    Int_t index ; 
-    
+    fMaxDigit*=2 ; 
+    int * tempo = new ( int[fMaxDigit] ) ; 
+    Float_t * tempoE =  new ( Float_t[fMaxDigit] ) ;
+
+    Int_t index ;     
     for ( index = 0 ; index < fMulDigit ; index++ ){
       tempo[index] = fDigitsList[index] ;
       tempoE[index] = fEnergyList[index] ; 
     }
     
-    delete fDigitsList ; 
-    delete fEnergyList ;
-    fDigitsList = tempo ;
-    fEnergyList = tempoE ; 
-  }
+    delete [] fDigitsList ; 
+    fDigitsList =  new ( int[fMaxDigit] ) ;
+ 
+    delete [] fEnergyList ;
+    fEnergyList =  new ( Float_t[fMaxDigit] ) ;
+
+    for ( index = 0 ; index < fMulDigit ; index++ ){
+      fDigitsList[index] = tempo[index] ;
+      fEnergyList[index] = tempoE[index] ; 
+    }
+ 
+    delete [] tempo ;
+    delete [] tempoE ; 
+  } // if
   
-  fDigitsList[fMulDigit]  =  (int) &digit  ; 
-  fEnergyList[fMulDigit++]= Energy ;
+  fDigitsList[fMulDigit]   =  (int) &digit  ; 
+  fEnergyList[fMulDigit++] = Energy ;
   fAmp += Energy ; 
 }
 
@@ -141,6 +153,108 @@ Int_t AliPHOSEmcRecPoint::Compare(TObject * obj)
   }
 
   return rv ; 
+}
+
+//______________________________________________________________________________
+void AliPHOSEmcRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
+{
+//*-*-*-*-*-*-*-*-*-*-*Execute action corresponding to one event*-*-*-*
+//*-*                  =========================================
+//  This member function is called when a AliPHOSRecPoint is clicked with the locator
+//
+//  If Left button is clicked on AliPHOSRecPoint, the digits are switched on    
+//  and switched off when the mouse button is released.
+//
+
+  //   static Int_t pxold, pyold;
+
+   static TGraph *  DigitGraph = 0 ;
+
+   if (!gPad->IsEditable()) return;
+
+   TH2F * Histo = 0 ;
+   TCanvas * HistoCanvas ; 
+   
+   switch (event) {
+   
+   case kButton1Down: {
+     AliPHOSDigit * digit ;
+     AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
+     Int_t iDigit;
+     Int_t relid[4] ;
+     Float_t xi[fMulDigit] ;
+     Float_t zi[fMulDigit] ;
+
+     // create the histogram for the single cluster 
+     // 1. gets histogram boundaries
+     Float_t ximax = -999. ; 
+     Float_t zimax = -999. ; 
+     Float_t ximin = 999. ; 
+     Float_t zimin = 999. ;
+ 
+     for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+       digit = (AliPHOSDigit *) fDigitsList[iDigit];
+       PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+       PHOSGeom->RelPosInModule(relid, xi[iDigit], zi[iDigit]);
+       if ( xi[iDigit] > ximax )
+	 ximax = xi[iDigit] ; 
+       if ( xi[iDigit] < ximin )
+	 ximin = xi[iDigit] ; 
+       if ( zi[iDigit] > zimax )
+	 zimax = zi[iDigit] ; 
+       if ( zi[iDigit] < zimin )
+	 zimin = zi[iDigit] ;     
+     }
+     ximax += PHOSGeom->GetCrystalSize(0) / 2. ;
+     zimax += PHOSGeom->GetCrystalSize(2) / 2. ;
+     ximin -= PHOSGeom->GetCrystalSize(0) / 2. ;
+     zimin -= PHOSGeom->GetCrystalSize(2) / 2. ;
+     Int_t xdim = (int)( (ximax - ximin ) / PHOSGeom->GetCrystalSize(0) + 0.5  ) ; 
+     Int_t zdim = (int)( (zimax - zimin ) / PHOSGeom->GetCrystalSize(2) + 0.5 ) ;
+ 
+     // 2. gets the histogram title
+
+     Text_t title[100] ; 
+     sprintf(title,"Energy=%1.2f GeV ; Digits ; %d ", GetEnergy(), GetDigitsMultiplicity()) ;
+  
+     if (!Histo) {
+       delete Histo ; 
+       Histo = 0 ; 
+     }
+     Histo = new TH2F("cluster3D", title,  xdim, ximin, ximax, zdim, zimin, zimax)  ;
+
+     Float_t x, z ; 
+     for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+       digit = (AliPHOSDigit *) fDigitsList[iDigit];
+       PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+       PHOSGeom->RelPosInModule(relid, x, z);
+       Histo->Fill(x, z, fEnergyList[iDigit] ) ;
+     }
+
+     if (!DigitGraph) {
+       DigitGraph = new TGraph(fMulDigit,xi,zi);
+       DigitGraph-> SetMarkerStyle(5) ; 
+       DigitGraph-> SetMarkerSize(1.) ;
+       DigitGraph-> SetMarkerColor(1) ;
+       DigitGraph-> Paint("P") ;
+     }
+
+     Print() ;
+     HistoCanvas = new TCanvas("cluser", "a single cluster", 600, 500) ; 
+     HistoCanvas->Draw() ; 
+     Histo->Draw("lego1") ; 
+
+     break;
+   }
+
+   case kButton1Up: 
+     if (DigitGraph) {
+       delete DigitGraph  ;
+       DigitGraph = 0 ;
+     }
+     break;
+  
+   }
 }
 
 //____________________________________________________________________________
@@ -257,18 +371,18 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(int *  maxAt, Float_t * maxAtEner
   Int_t iDigitN ;
   Int_t iDigit ;
 
-  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+  for(iDigit=0; iDigit<fMulDigit; iDigit++){
     maxAt[iDigit] = fDigitsList[iDigit] ;
   }
   
   for(iDigit=0 ; iDigit<fMulDigit; iDigit++) {   
-    if(maxAt[iDigit]!= -1) {
-      digit = (AliPHOSDigit *) maxAt[iDigit];
+    if(maxAt[iDigit] != -1) {
+      digit = (AliPHOSDigit *) maxAt[iDigit] ;
          
       for(iDigitN=0; iDigitN<fMulDigit; iDigitN++) {	
-	digitN = (AliPHOSDigit *) fDigitsList[iDigitN]; 
+	digitN = (AliPHOSDigit *) fDigitsList[iDigitN] ; 
 	
-	if ( AreNeighbours(digit,digitN) ) {
+	if ( AreNeighbours(digit, digitN) ) {
 	  if (fEnergyList[iDigit] > fEnergyList[iDigitN] ) {    
 	    maxAt[iDigitN] = -1 ;
 	    //but may be digit is not local max too ?
@@ -290,7 +404,8 @@ Int_t  AliPHOSEmcRecPoint::GetNumberOfLocalMax(int *  maxAt, Float_t * maxAtEner
   for(iDigit=0; iDigit<fMulDigit; iDigit++) { 
     if(maxAt[iDigit] != -1){
       maxAt[iDigitN] = maxAt[iDigit] ;
-      maxAtEnergy[iDigitN++] = fEnergyList[iDigit] ;
+      maxAtEnergy[iDigitN] = fEnergyList[iDigit] ;
+      iDigitN++ ; 
     }
   }
   return iDigitN ;
@@ -382,11 +497,21 @@ void AliPHOSEmcRecPoint::Print(Option_t * option)
 
   AliPHOSDigit * digit ; 
   Int_t iDigit;
+  AliPHOSGeometry * PHOSGeom =  (AliPHOSGeometry *) fGeom ;
 
+  Float_t xi ;
+  Float_t zi ;
+  Int_t relid[4] ; 
+ 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = (AliPHOSDigit *) fDigitsList[iDigit];
-    cout << "     digit Id          = " << digit->GetId()  
-         << "     digit Energy      = " << fEnergyList[iDigit] << endl ;
+    PHOSGeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    PHOSGeom->RelPosInModule(relid, xi, zi);
+    cout << " Id = " << digit->GetId() ;  
+    cout << "   module  = " << relid[0] ;  
+    cout << "   x  = " << xi ;  
+    cout << "   z  = " << zi ;  
+    cout << "   Energy = " << fEnergyList[iDigit] << endl ;
   }
   cout << "       Multiplicity    = " << fMulDigit  << endl ;
   cout << "       Cluster Energy  = " << fAmp << endl ;

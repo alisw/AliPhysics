@@ -4,7 +4,7 @@
       name="reconstructioner"
 >
   <group name="Fig0"
-       description="uci.uml.visual.FigClass[16, 136, 154, 89]"
+       description="uci.uml.visual.FigClass[16, 136, 154, 90]"
        href="S.100975"
        fill="1"
        fillcolor="-1"
@@ -18,7 +18,7 @@
       x="17"
       y="137"
       width="152"
-      height="87"
+      height="88"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -36,7 +36,7 @@
     >AliPHOSReconstructioner</text>
     <text name="Fig0.2"
       x="16"
-      y="154"
+      y="151"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -46,7 +46,7 @@
     ></text>
     <text name="Fig0.3"
       x="16"
-      y="189"
+      y="188"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -80,7 +80,7 @@
       x="208"
       y="128"
       width="246"
-      height="36"
+      height="28"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -98,7 +98,7 @@
     >&lt;&lt;Interface&gt;&gt;</text>
     <text name="Fig1.3"
       x="209"
-      y="147"
+      y="142"
       fill="1"
       fillcolor="-56"
       stroke="0"
@@ -108,7 +108,7 @@
     >AliPHOSClusterizer</text>
     <text name="Fig1.4"
       x="208"
-      y="163"
+      y="155"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -120,7 +120,6 @@ public void MakeClusters()</text>
   </group>
   <group name="Fig2"
        description="uci.uml.visual.FigInterface[208, 200, 176, 64]"
-       href="S.100566"
        fill="1"
        fillcolor="-56"
        stroke="1"
@@ -143,7 +142,7 @@ public void MakeClusters()</text>
       x="208"
       y="200"
       width="176"
-      height="36"
+      height="28"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -161,17 +160,17 @@ public void MakeClusters()</text>
     >&lt;&lt;Interface&gt;&gt;</text>
     <text name="Fig2.3"
       x="209"
-      y="219"
+      y="214"
       fill="1"
       fillcolor="-56"
       stroke="0"
       strokecolor="-256"
       font="Dialog"
       textsize="9"
-    >AliPHOSSubTracker</text>
+    >AliPHOSTrackSegmentMaker</text>
     <text name="Fig2.4"
       x="208"
-      y="235"
+      y="227"
       fill="1"
       fillcolor="-56"
       stroke="1"
@@ -205,7 +204,7 @@ public void MakeClusters()</text>
       x="24"
       y="24"
       width="176"
-      height="36"
+      height="28"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -223,7 +222,7 @@ public void MakeClusters()</text>
     >&lt;&lt;Interface&gt;&gt;</text>
     <text name="Fig3.3"
       x="25"
-      y="43"
+      y="38"
       fill="1"
       fillcolor="-1"
       stroke="0"
@@ -233,7 +232,7 @@ public void MakeClusters()</text>
     >AliReconstructioner</text>
     <text name="Fig3.4"
       x="24"
-      y="59"
+      y="51"
       fill="1"
       fillcolor="-1"
       stroke="1"
@@ -294,7 +293,6 @@ public void MakeSubTracks()</text>
   </group>
   <group name="Fig6"
        description="uci.uml.visual.FigAssociation"
-       href="S.100994"
        stroke="1"
        strokecolor="-16777216"
   >

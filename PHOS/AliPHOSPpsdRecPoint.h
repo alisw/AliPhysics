@@ -35,8 +35,9 @@ public:
   void  GetLocalPosition(TVector3 &LPos) ; // computes the position in the module of the cluster center 
                                            //projection of ALICE axes on PHOS Module, y = 0 .
   Bool_t GetUp() ;               // true if cluster is in upper ppsd 
-  Bool_t      IsEmc(void) {return kFALSE ; } 
-  Bool_t  IsSortable() const { return kTRUE ; }
+  Bool_t IsEmc(void) {return kFALSE ; } 
+  Bool_t IsSortable() const { return kTRUE ; }
+  virtual void  Paint(Option_t * option="");
   void Print(Option_t * opt = "void") ; 
 
   //  AliPHOSPpsdRecPoint&  operator = (AliPHOSPpsdRecPoint Clu) ;

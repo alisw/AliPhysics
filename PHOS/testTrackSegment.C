@@ -29,7 +29,7 @@ void testTrackSegment (Int_t evt = 0)
 
 
 //========== Creates the track segment maker
-  AliPHOSTrackSegmentMakererv1 tracksegmentmaker ;
+  AliPHOSTrackSegmentMakerv1 tracksegmentmaker ;
 
 //========== Creates the Reconstructioner  
   AliPHOSReconstructioner Reconstructioner(clusterizer,tracksegmentmaker);     

@@ -25,11 +25,11 @@
 
 // --- Standard library ---
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <strstream.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <strstream>
+#include <cassert>
 
 // --- AliRoot header files ---
 
@@ -67,10 +67,6 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   fDigits = new TClonesArray("AliPHOSDigit",100) ;
   fTmpHits= new TClonesArray("AliPHOSHit",100) ;
 
-  assert ( fHits != 0 ) ;
-  assert ( fDigits != 0 ) ;
-  assert ( fTmpHits != 0 ) ;
-
   fNTmpHits = fNhits = 0 ;
 
   fIshunt     =  1 ; // All hits are associated with primary particles
@@ -84,7 +80,7 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
    cout << "AliPHOSv0 : PHOS geometry initialization failed !" << endl ;   
 }
 //____________________________________________________________________________
-AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner&  Reconstructioner, const char *name, const char *title):
+AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner & Reconstructioner, const char *name, const char *title):
   AliPHOS(name,title)
 {
   
@@ -101,10 +97,6 @@ AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner&  Reconstructioner, const char *nam
   fDigits = new TClonesArray("AliPHOSDigit",100) ;
   fTmpHits= new TClonesArray("AliPHOSHit",100) ;
 
-  assert ( fHits != 0 ) ;
-  assert ( fDigits != 0 ) ;
-  assert ( fTmpHits != 0 ) ;
-
   fNTmpHits = fNhits = 0 ;
 
   fIshunt     =  1 ; // All hits are associated with primary particles
@@ -119,15 +111,27 @@ AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner&  Reconstructioner, const char *nam
 
   // Defining the PHOS Reconstructioner
  
- fReconstructioner = &Reconstructioner;
+ fReconstructioner = &Reconstructioner ;
 }
 
 //____________________________________________________________________________
 AliPHOSv0::~AliPHOSv0()
 {
-  delete fHits ;
+  fTmpHits->Delete() ; 
   delete fTmpHits ;
-  delete fDigits ;
+  fTmpHits = 0 ; 
+
+  fEmcClusters->Delete() ; 
+  delete fEmcClusters ; 
+  fEmcClusters = 0 ; 
+
+  fPpsdClusters->Delete() ;
+  delete fPpsdClusters ;
+  fPpsdClusters = 0 ; 
+
+  fTrackSegments->Delete() ; 
+  delete fTrackSegments ;
+  fTrackSegments = 0 ; 
 }
 
 //____________________________________________________________________________
@@ -1022,7 +1026,7 @@ void AliPHOSv0::CreateGeometryforPPSD()
 
 //___________________________________________________________________________
 Int_t AliPHOSv0::Digitize(Float_t Energy){
-  Float_t fB = 10000000. ;
+  Float_t fB = 100000000. ;
   Float_t fA = 0. ;
   Int_t chan = Int_t(fA + Energy*fB ) ;
   return chan ;
@@ -1039,7 +1043,6 @@ void AliPHOSv0::FinishEvent()
 
   for ( i = 0 ; i < fNTmpHits ; i++ ) {
     Hit = (AliPHOSHit*)fTmpHits->At(i) ;
-    assert (Hit!=0) ;
     Digit = new AliPHOSDigit(Hit->GetId(),Digitize(Hit->GetEnergy())) ;
     new(lDigits[fNdigits]) AliPHOSDigit(* Digit) ;
     fNdigits++;  delete Digit ;    
@@ -1087,28 +1090,43 @@ void AliPHOSv0::MakeBranch(Option_t* opt)
     printf("* AliPHOS::MakeBranch * Making Branch %s for digits\n",branchname);
   }
 }
+
 //_____________________________________________________________________________
-
-void AliPHOSv0::Reconstruction(AliPHOSReconstructioner& Reconstructioner)
+void AliPHOSv0::Reconstruction(AliPHOSReconstructioner & Reconstructioner)
 { 
-  fReconstructioner = &Reconstructioner;
-  if (fEmcClusters) 
-    { fEmcClusters->Delete();}
-  else
-    { fEmcClusters= new TClonesArray("AliPHOSEmcRecPoint", 100); } ;
+  // reinitializes the existing RecPoint Lists and steers the reconstruction processes
 
-  if (fPpsdClusters)
-    { fPpsdClusters->Delete(); }
-  else
-    { fPpsdClusters = new TClonesArray("AliPHOSPpsdRecPoint", 100) ;}
+  fReconstructioner = &Reconstructioner ;
+  cout << "Hola1" << endl;
+  if (fEmcClusters) { 
+    fEmcClusters->Delete() ; 
+    delete fEmcClusters ;
+    fEmcClusters = 0 ; 
 
-  if (fTrackSegments)
-    { fTrackSegments->Delete(); }
-  else
-    { fTrackSegments = new TObjArray(100) ;}
-  
+  }
+  fEmcClusters= new RecPointsList("AliPHOSEmcRecPoint", 100) ;
+ 
+  cout << "Hola2" << endl;
+  if (fPpsdClusters) { 
+    fPpsdClusters->Delete() ; 
+    delete fPpsdClusters ; 
+    fPpsdClusters = 0 ; 
+  }
+  fPpsdClusters = new RecPointsList("AliPHOSPpsdRecPoint", 100) ;
+
+
+  cout << "Hola3" << endl;
+  if (fTrackSegments) { 
+   fTrackSegments->Print(""); 
+   fTrackSegments->Delete() ; 
+    delete fTrackSegments ; 
+    fTrackSegments = 0 ; 
+  }
+  fTrackSegments = new TObjArray(100) ;
+
+  cout << "Hola4" << endl;
   fReconstructioner->Make(fDigits, fEmcClusters, fPpsdClusters, fTrackSegments);
-  
+  cout << "Hola5" << endl;
 }
 
 //____________________________________________________________________________

@@ -19,4 +19,7 @@
 #pragma link C++ class AliPHOSTrackSegment ;
 #pragma link C++ class AliPHOSTrackSegmentMaker ;
 #pragma link C++ class AliPHOSTrackSegmentMakerv1 ;
+#pragma link C++ function ReconstructionTest(Text_t*,Int_t, Int_t);
+#pragma link C++ function PHOSHistos(Text_t*,Int_t, Int_t);
+
 #endif

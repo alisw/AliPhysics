@@ -22,14 +22,14 @@
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSPpsdRecPoint.h"
 #include "AliPHOSTrackSegmentMaker.h"
-
+#include "TMinuit.h" 
 
 class  AliPHOSTrackSegmentMakerv1 : public AliPHOSTrackSegmentMaker {
 
 public:
 
   AliPHOSTrackSegmentMakerv1() ;                     
-  virtual ~ AliPHOSTrackSegmentMakerv1(){}  // dtor
+  virtual ~ AliPHOSTrackSegmentMakerv1() ; // dtor
   
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, int * MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) ; //Used in UnfoldClusters, calls TMinuit
@@ -51,18 +51,16 @@ public:
 
   void    SetMaxEmcPpsdDistance(Float_t r){ fR0 = r ;} //Radius within which we look for ppsd cluster
 
- Double_t ShowerShape(Double_t r) ; //Shape of shower used in unfolding
+  static Double_t ShowerShape(Double_t r) ; // Shape of shower used in unfolding; class member function (not object member function)
 
   void    UnfoldClusters(DigitsList * DL, RecPointsList * emcIn, AliPHOSEmcRecPoint * iniEmc, Int_t Nmax, 
-		         int * maxAt, Float_t * maxAtEnergy, TObjArray * emclist) ; //Unfolds overlaping clusters using TMinuit packadge
-
-  void static UnfoldingChiSquare(Int_t &NPar, Double_t *Grad, Double_t & fret, Double_t *x, Int_t iflag); //used in TMinuit
-
+		         int * maxAt, Float_t * maxAtEnergy, TObjArray * emclist) ; //Unfolds overlaping clusters using TMinuit package
 
 private:
 
-  Float_t fDelta ;  // parameter used for sorting
-  Float_t fR0  ;    // Maximal distance between EMC and PPSD clusters of one Track Segment in module plane
+  Float_t fDelta ;    // parameter used for sorting
+  Float_t fR0 ;       // Maximal distance between EMC and PPSD clusters of one Track Segment in module plane
+  TMinuit * fMinuit ; // Minuit object needed by cluster unfolding
 
 public: 
 

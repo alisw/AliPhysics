@@ -15,7 +15,10 @@
 
 // --- AliRoot header files ---
 #include "AliHit.h"
-#include <iostream.h>
+
+// --- Standard library ---
+
+#include <iostream>
 
 class AliPHOSHit : public AliHit {
 

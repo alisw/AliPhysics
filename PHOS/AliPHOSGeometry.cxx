@@ -25,8 +25,8 @@
 
 // --- Standard library ---
 
-#include <iostream.h>
-#include "assert.h"
+#include <iostream>
+#include <cassert>
 
 // --- AliRoot header files ---
 
@@ -79,6 +79,88 @@ Bool_t AliPHOSGeometry::AbsToRelNumbering(const Int_t AbsId, Int_t * RelId)
     RelId[3] = (Int_t)( Id - ( RelId[2] - 1 ) * GetNPhi() ) ; 
   } 
   return rv ; 
+}
+//____________________________________________________________________________  
+void AliPHOSGeometry::EmcModuleCoverage(const Int_t mod, Double_t & tm, Double_t & tM, Double_t & pm, Double_t & pM, Option_t * opt) 
+{
+  // calculates the angular coverage in theta and phi of a EMC module
+
+ Double_t conv ; 
+  if ( opt == kRadian ) 
+    conv = 1. ; 
+  else if ( opt == kDegre )
+    conv = 180. / TMath::Pi() ; 
+  else {
+    cout << "<I>  AliPHOSGeometry::EmcXtalCoverage : " << opt << " unknown option; result in radian " << endl ; 
+    conv = 1. ;
+      }
+
+  Float_t phi =  GetPHOSAngle(mod) *  (TMath::Pi() / 180.)  ;  
+  Float_t Y0  =  GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
+		  + GetSecondUpperPlateThickness() + GetUpperCoolingPlateThickness()  ;  
+  
+  Double_t angle = TMath::ATan( GetCrystalSize(0)*GetNPhi() / (2 * Y0) ) ;
+  phi = phi + 1.5 * TMath::Pi() ; // to follow the convention of the particle generator(PHOS is between 230 and 310 deg.)
+  Double_t m  = phi - angle ;
+  Double_t M  = phi + angle ;
+  pM = TMath::Max(M, m) * conv ;
+  pm = TMath::Min(M, m) * conv ; 
+  
+  angle =  TMath::ATan( GetCrystalSize(2)*GetNZ() / (2 * Y0) ) ;
+  M  = TMath::Pi() / 2.  + angle ; // to follow the convention of the particle generator(PHOS is at 90 deg.)
+  m  = TMath::Pi() / 2.  - angle ;
+  tM = TMath::Max(M, m) * conv ;
+  tm = TMath::Min(M, m) * conv ; 
+ 
+}
+
+//____________________________________________________________________________  
+void AliPHOSGeometry::EmcXtalCoverage(Double_t & theta, Double_t & phi, Option_t * opt) 
+{
+  // calculates the angular coverage in theta and phi of a single crystal in a EMC module
+
+  Double_t conv ; 
+  if ( opt == kRadian ) 
+    conv = 1. ; 
+  else if ( opt == kDegre )
+    conv = 180. / TMath::Pi() ; 
+  else {
+    cout << "<I>  AliPHOSGeometry::EmcXtalCoverage : " << opt << " unknown option; result in radian " << endl ; 
+    conv = 1. ;
+      }
+
+  Float_t Y0   =  GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
+    + GetSecondUpperPlateThickness() + GetUpperCoolingPlateThickness()  ;  
+  theta = 2 * TMath::ATan( GetCrystalSize(2) / (2 * Y0) ) * conv ;
+  phi   = 2 * TMath::ATan( GetCrystalSize(0) / (2 * Y0) ) * conv ;
+}
+ 
+
+//____________________________________________________________________________
+void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_t & ModuleNumber, Double_t & z, Double_t & x) 
+{
+  // calculates the impact coordinates of a neutral particle  
+  // emitted in direction theta and phi in ALICE
+
+  // searches for the PHOS EMC module
+  ModuleNumber = 0 ; 
+  Double_t tm, tM, pm, pM ; 
+  Int_t index = 1 ; 
+  while ( ModuleNumber == 0 && index <= GetNModules() ) { 
+    EmcModuleCoverage(index, tm, tM, pm, pM) ; 
+    if ( (theta >= tm && theta <= tM) && (phi >= pm && phi <= pM ) ) 
+      ModuleNumber = index ; 
+    index++ ;    
+  }
+  if ( ModuleNumber != 0 ) {
+    Float_t phi0 =  GetPHOSAngle(ModuleNumber) *  (TMath::Pi() / 180.) + 1.5 * TMath::Pi()  ;  
+    Float_t Y0  =  GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
+      + GetSecondUpperPlateThickness() + GetUpperCoolingPlateThickness()  ;   
+    Double_t angle = phi - phi0; 
+    x = Y0 * TMath::Tan(angle) ; 
+    angle = theta - TMath::Pi() / 2 ; 
+    z = Y0 * TMath::Tan(angle) ; 
+  }
 }
 
 //____________________________________________________________________________
@@ -258,7 +340,7 @@ void AliPHOSGeometry::InitPPSD(void)
   fAvalancheGap             = 0.01 ; 
   fCathodeThickness         = 0.0009 ;
   fCompositeThickness       = 0.3 ; 
-  fConversionGap            = 0.3 ; 
+  fConversionGap            = 0.6 ; 
   fLeadConverterThickness   = 0.56 ; 
   fLeadToMicro2Gap          = 0.1 ; 
   fLidThickness             = 0.2 ; 
@@ -292,7 +374,6 @@ void AliPHOSGeometry::InitPPSD(void)
 //____________________________________________________________________________
 AliPHOSGeometry *  AliPHOSGeometry::GetInstance() 
 { 
-  assert(fGeom!=0) ; 
   return (AliPHOSGeometry *) fGeom ; 
 }
 
@@ -356,26 +437,29 @@ void AliPHOSGeometry::RelPosInAlice(const Int_t Id, TVector3 & pos )
 
   Int_t PHOSModule = RelId[0] ; 
 
-  
+  Float_t Y0 ; 
+
   if ( RelId[1] == 0 ) // it is a PbW04 crystal 
-  {  pos.SetY( -(GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
-      + GetSecondUpperPlateThickness() + GetUpperCoolingPlateThickness()) ) ;  
+  {  Y0 =  -(GetIPtoOuterCoverDistance() + GetUpperPlateThickness()
+      + GetSecondUpperPlateThickness() + GetUpperCoolingPlateThickness())  ;  
   }
   if ( RelId[1] > 0 ) { // its a PPSD pad
     if ( RelId[1] >  GetNumberOfModulesPhi() *  GetNumberOfModulesZ() ) // its an bottom module
      {
-       pos.SetY(-( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() / 2.0) ) ;
+       Y0 = -( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() / 2.0)  ;
      } 
     else // its an upper module
-      pos.SetY(-( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() - GetLeadToMicro2Gap()
-	-  GetLeadConverterThickness() -  GetMicro1ToLeadGap() - GetMicromegas1Thickness() / 2.0) ) ; 
+      Y0 = -( GetIPtoOuterCoverDistance() - GetMicromegas2Thickness() - GetLeadToMicro2Gap()
+	-  GetLeadConverterThickness() -  GetMicro1ToLeadGap() - GetMicromegas1Thickness() / 2.0) ; 
   }
 
   Float_t x, z ; 
   RelPosInModule(RelId, x, z) ; 
 
-  pos.SetX(x);
-  pos.SetZ(z);
+  pos.SetX(x) ;
+  pos.SetZ(z) ;
+  pos.SetY( TMath::Sqrt(x*x + z*z + Y0*Y0) ) ; 
+
 
 
    Float_t Phi           = GetPHOSAngle( PHOSModule) ; 

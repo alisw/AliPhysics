@@ -30,13 +30,13 @@ public:
   AliPHOSClusterizerv1() ;             // ctor            
   virtual ~AliPHOSClusterizerv1(){} ;  // dtor
   
-  Int_t AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2) ; // checks if digits are in neighbour cells 
-  Float_t Calibrate(Int_t Amp){ return fA + fB*Amp ;}   //Tranforms Amp to energy 
-  void FillandSort(const DigitsList * dl, TObjArray * tl) ;  // sorts the list according to increasing id
+  Int_t AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2) ; // Checks if digits are in neighbour cells 
+  Float_t Calibrate(Int_t Amp){ return (fA + fB * Amp) ;}     // Tranforms Amp to energy 
+  void FillandSort(const DigitsList * dl, TObjArray * tl) ;   // Sorts the list according to increasing id
   Float_t GetLogWeightCut(void){return  fW0 ; }
   Float_t GetLocalMaxCut(void) {return  fLocMaxCut ; }
   virtual void GetNumberOfClustersFound(Int_t * numb) ;   
-  Bool_t IsInEmc(AliPHOSDigit * digit) ;                      // tells id digit is in EMCA
+  Bool_t IsInEmc(AliPHOSDigit * digit) ;                      // Tells if id digit is in EMC
   virtual void MakeClusters(const DigitsList * dl, RecPointsList * emcl, RecPointsList * ppsdl) ; // does the job 
   void PrintParameters() ;  
   void SetCalibrationParameters(Float_t A,Float_t B){ fA = A ; fB = B;} 

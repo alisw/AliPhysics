@@ -1,37 +1,8 @@
-#ifndef ALIPHOSXXX_H
-#define ALIPHOSXXX_H
+#ifndef ALIPHOSV0_H
+#define ALIPHOSV0_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////
-//  Short description                         //
-//  Author                 SUBATECH           //
-//      comment                               //  
-//                                            //
-////////////////////////////////////////////////
-
-// --- ROOT system ---
-
-// --- Standard library ---
-
-// --- AliRoot header files ---
-
-class AliPHOSxxx {
-
-public:
-
-  virtual ~AliPHOSxxx() ; // dtor
-
-private:
-
-ClassDef(AliPHOSxxx,1)  // description , version 1
-
-};
-
-#endif // AliPHOSXXX_H
-//-*-C++-*-
-#ifndef ALIPHOSV4_H
-#define ALIPHOSV4_H
 ////////////////////////////////////////////////
 //  Manager class  for PHOS                   //
 //  Version SUBATECH                          //
@@ -55,8 +26,8 @@ public:
 
   AliPHOSv0(void) ;
   AliPHOSv0(const char *name, const char *title="") ;
-  AliPHOSv0(AliPHOSReconstructioner&  Reconstructioner, const char *name, const char *title="") ;
-  virtual       ~AliPHOSv0(void) ;
+  AliPHOSv0(AliPHOSReconstructioner& Reconstructioner, const char *name, const char *title="") ;
+  virtual ~AliPHOSv0(void) ;
 
   virtual void   AddHit( Int_t track, Int_t id, Float_t *hits ) ;   // adds a pre-digitilized hit to the hit tree 
   virtual void   BuildGeometry(void) ;                              // creates the geometry for the ROOT display
@@ -66,35 +37,34 @@ public:
   void           CreateGeometryforPHOS(void) ;                      // creates the PHOS geometry for GEANT
   void           CreateGeometryforPPSD(void) ;                      // creates the PPSD geometry for GEANT
   Int_t          Digitize(Float_t Energy);
-  RecPointsList* EmcClusters() {return fEmcClusters;}                 // gets TClonesArray of cluster in the crystals 
+  RecPointsList* EmcClusters() {return fEmcClusters;}               // gets TClonesArray of cluster in the crystals 
   void           FinishEvent(void) ;                                // makes the digits from the hits 
+  virtual AliPHOSGeometry * GetGeometry() { return fGeom ; }  
   virtual void   Init(void) ;                                       // does nothing
+  Int_t IsVersion(void) const { return 0 ; }
   void           MakeBranch(Option_t* opt) ;
   RecPointsList* PpsdClusters() {return fPpsdClusters;}             // gets TClonesArray of clusters in the PPSD 
   void           Reconstruction(AliPHOSReconstructioner& Reconstructioner) ;
   void           ResetClusters(){} ;
-  void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {fReconstructioner = &Reconstructioner;} //
+  void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {fReconstructioner = &Reconstructioner ;} 
   virtual void   StepManager(void) ;                                // does the tracking through PHOS and a preliminary digitalization
-  TObjArray *   TrackSegments(){return fTrackSegments ;}
-  // inlines
-
-  virtual AliPHOSGeometry * GetGeometry() { return fGeom ; }  
-  Int_t IsVersion(void) const { return 4 ; }
-
+  TObjArray *    TrackSegments(){return fTrackSegments ;}
+  
 private:
 
-  AliPHOSGeometry  *        fGeom ; // geometry definition
-  RecPointsList    *        fEmcClusters;    //!
-  Int_t                     fNTmpHits ;     //!  used internally for digitalization (!=do not stream)
-  RecPointsList    *        fPpsdClusters;  //!
-  TObjArray *               fTrackSegments ;//!
-  TClonesArray *            fTmpHits ;      //!  idem
+  RecPointsList * fEmcClusters ;        //!  (!=do not stream)
+  AliPHOSGeometry * fGeom ;             // geometry definition
+  Int_t fNTmpHits ;                     //!  used internally for digitalization
+  RecPointsList * fPpsdClusters ;       //!
   AliPHOSReconstructioner * fReconstructioner ; // Reconstrutioner of the PHOS event: Clusterization and subtracking procedures
-  AliPHOSTrackSegmentMaker       * fTrackSegmentMaker ;
+  TClonesArray * fTmpHits ;             //!  idem
+  AliPHOSTrackSegmentMaker * fTrackSegmentMaker ;
+  TObjArray * fTrackSegments ;          //!
+
 public:
 
   ClassDef(AliPHOSv0,1)  // PHOS main class , version subatech
 
 };
 
-#endif // AliPHOSV4_H
+#endif // AliPHOSV0_H

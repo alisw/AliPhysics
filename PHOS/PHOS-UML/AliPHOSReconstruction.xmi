@@ -31,8 +31,54 @@
           <isAbstract XMI.value="true"/>
           <isLeaf XMI.value="false"/>
           <isRoot XMI.value="false"/>
-          <realization> <XMI.reference target="S.100080"/> </realization>
-          <!-- realizations is: AliPHOSv4 -->
+          <realization> <XMI.reference target="S.101042"/> </realization>
+          <!-- realizations is: AliPHOSv0 -->
+          <feature>
+            <Operation XMI.id = "S.101036">
+              <name>CreateMaterials</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.101037">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101038">
+              <name>GetGeometry</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.101039">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101040"/> </type>
+                  <!-- Type is: AliPHOSGeometry * -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
         </Interface>
       </ownedElement>
       <ownedElement>
@@ -46,156 +92,6 @@
           <supertype> <XMI.reference target="S.100075"/> </supertype>
           <!-- supertype is: AliDetector -->
         </Generalization>
-      </ownedElement>
-      <ownedElement>
-        <Class XMI.id = "S.100080">
-          <name>AliPHOSv4</name>
-          <visibility XMI.value = "public"/>
-          <isAbstract XMI.value="false"/>
-          <isLeaf XMI.value="false"/>
-          <isRoot XMI.value="false"/>
-          <isActive XMI.value = "false"/>
-          <specification> <XMI.reference target="S.100078"/> </specification>
-          <!-- specification is: AliPHOS -->
-          <feature>
-            <Operation XMI.id = "S.100082">
-              <name>AddHit</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100083">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100084">
-              <name>BuildGeometry</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100085">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100086">
-              <name>CreateGeometry</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100087">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100088">
-              <name>FinishEvent</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100089">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100090">
-              <name>MakeBranch</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100091">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100092">
-              <name>StepManager</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100093">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-        </Class>
       </ownedElement>
       <ownedElement>
         <Class XMI.id = "S.100094">
@@ -216,7 +112,7 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100115">
+                <Parameter XMI.id = "S.101803">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -239,7 +135,7 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100117">
+                <Parameter XMI.id = "S.101806">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -262,7 +158,7 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100119">
+                <Parameter XMI.id = "S.101809">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -285,7 +181,7 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100121">
+                <Parameter XMI.id = "S.101812">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -308,7 +204,7 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100123">
+                <Parameter XMI.id = "S.101815">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -316,6 +212,40 @@
                   <kind XMI.value="return"/>
                   <type> <XMI.reference target="S.100004"/> </type>
                   <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101816">
+              <name>many</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.101820">
+                  <name>getter/putter</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="in"/>
+                  <type> <XMI.reference target="S.101819"/> </type>
+                  <!-- Type is: more -->
+                </Parameter>
+              </parameter>
+              <parameter>
+                <Parameter XMI.id = "S.101821">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101817"/> </type>
+                  <!-- Type is: and -->
                 </Parameter>
               </parameter>
             </Operation>
@@ -333,43 +263,6 @@
             </Attribute>
           </feature>
         </Class>
-      </ownedElement>
-      <ownedElement>
-        <Association XMI.id="S.100095">
-          <name>* fGeom</name>
-          <visibility XMI.value = "public"/>
-          <isAbstract XMI.value="false"/>
-          <isLeaf XMI.value="false"/>
-          <isRoot XMI.value="false"/>
-            <connection>
-              <AssociationEnd XMI.id = "S.100096">
-                <name></name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="true"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="aggregate"/>
-                <multiplicity>1</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100080"/> </type>
-                <!-- Type is: AliPHOSv4 -->
-              </AssociationEnd>
-            </connection>
-            <connection>
-              <AssociationEnd XMI.id = "S.100097">
-                <name></name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="true"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="none"/>
-                <multiplicity>1</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100094"/> </type>
-                <!-- Type is: AliPHOSGeometry -->
-              </AssociationEnd>
-            </connection>
-        </Association>
       </ownedElement>
       <ownedElement>
         <Interface XMI.id = "S.100124">
@@ -403,23 +296,21 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100151">
+                <Parameter XMI.id = "S.101852">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
                   </defaultValue>
                   <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100010"/> </type>
-                  <!-- Type is: float -->
+                  <type> <XMI.reference target="S.101850"/> </type>
+                  <!-- Type is: Float_t -->
                 </Parameter>
               </parameter>
             </Operation>
           </feature>
           <feature>
-            <Operation XMI.id = "S.100152">
-              <name>G
-      
-      etId</name>
+            <Operation XMI.id = "S.101853">
+              <name>GetId</name>
               <visibility XMI.value = "public"/>
               <ownerScope XMI.value="instance"/>
               <isQuery XMI.value="false"/>
@@ -428,21 +319,21 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100153">
+                <Parameter XMI.id = "S.101855">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
                   </defaultValue>
                   <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100006"/> </type>
-                  <!-- Type is: int -->
+                  <type> <XMI.reference target="S.101118"/> </type>
+                  <!-- Type is: Int_t -->
                 </Parameter>
               </parameter>
             </Operation>
           </feature>
           <feature>
-            <Attribute XMI.id = "S.100127">
-              <name>fEnergy</name>
+            <Attribute XMI.id = "S.101856">
+              <name>fELOS</name>
               <visibility XMI.value = "private"/>
               <ownerScope XMI.value="instance"/>
               <changeable XMI.value="none"/>
@@ -451,6 +342,8 @@
               <initialValue>
                 0
               </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
             </Attribute>
           </feature>
           <feature>
@@ -464,48 +357,11 @@
               <initialValue>
                 0
               </initialValue>
-              <type> <XMI.reference target="S.100006"/> </type>
-              <!-- Type is: int -->
+              <type> <XMI.reference target="S.101118"/> </type>
+              <!-- Type is: Int_t -->
             </Attribute>
           </feature>
         </Class>
-      </ownedElement>
-      <ownedElement>
-        <Association XMI.id="S.100156">
-          <name>create</name>
-          <visibility XMI.value = "public"/>
-          <isAbstract XMI.value="false"/>
-          <isLeaf XMI.value="false"/>
-          <isRoot XMI.value="false"/>
-            <connection>
-              <AssociationEnd XMI.id = "S.100157">
-                <name></name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="true"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="none"/>
-                <multiplicity>0..*</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100125"/> </type>
-                <!-- Type is: AliPHOSHit -->
-              </AssociationEnd>
-            </connection>
-            <connection>
-              <AssociationEnd XMI.id = "S.100158">
-                <name></name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="false"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="none"/>
-                <multiplicity>1</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100080"/> </type>
-                <!-- Type is: AliPHOSv4 -->
-              </AssociationEnd>
-            </connection>
-        </Association>
       </ownedElement>
       <ownedElement>
         <Interface XMI.id = "S.100159">
@@ -533,8 +389,8 @@
           <!-- specification is: AliDigit -->
           <!-- specification is: AliDigit -->
           <feature>
-            <Operation XMI.id = "S.100186">
-              <name>GetEnergy</name>
+            <Operation XMI.id = "S.101910">
+              <name>Compare</name>
               <visibility XMI.value = "public"/>
               <ownerScope XMI.value="instance"/>
               <isQuery XMI.value="false"/>
@@ -543,14 +399,60 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100187">
+                <Parameter XMI.id = "S.102333">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
                   </defaultValue>
                   <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100010"/> </type>
-                  <!-- Type is: float -->
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101912">
+              <name>GetAmp</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102336">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101118"/> </type>
+                  <!-- Type is: Int_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101918">
+              <name>IsSortable</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102339">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101919"/> </type>
+                  <!-- Type is: Bool_t -->
                 </Parameter>
               </parameter>
             </Operation>
@@ -566,21 +468,21 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100189">
+                <Parameter XMI.id = "S.102342">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
                   </defaultValue>
                   <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100006"/> </type>
-                  <!-- Type is: int -->
+                  <type> <XMI.reference target="S.101118"/> </type>
+                  <!-- Type is: Int_t -->
                 </Parameter>
               </parameter>
             </Operation>
           </feature>
           <feature>
-            <Attribute XMI.id = "S.100162">
-              <name>fEnergy</name>
+            <Attribute XMI.id = "S.101900">
+              <name>fAmp</name>
               <visibility XMI.value = "private"/>
               <ownerScope XMI.value="instance"/>
               <changeable XMI.value="none"/>
@@ -589,6 +491,8 @@
               <initialValue>
                 0
               </initialValue>
+              <type> <XMI.reference target="S.101118"/> </type>
+              <!-- Type is: Int_t -->
             </Attribute>
           </feature>
           <feature>
@@ -602,48 +506,11 @@
               <initialValue>
                 0
               </initialValue>
-              <type> <XMI.reference target="S.100006"/> </type>
-              <!-- Type is: int -->
+              <type> <XMI.reference target="S.101118"/> </type>
+              <!-- Type is: Int_t -->
             </Attribute>
           </feature>
         </Class>
-      </ownedElement>
-      <ownedElement>
-        <Association XMI.id="S.100190">
-          <name></name>
-          <visibility XMI.value = "public"/>
-          <isAbstract XMI.value="false"/>
-          <isLeaf XMI.value="false"/>
-          <isRoot XMI.value="false"/>
-            <connection>
-              <AssociationEnd XMI.id = "S.100191">
-                <name>create</name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="false"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="none"/>
-                <multiplicity>1</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100080"/> </type>
-                <!-- Type is: AliPHOSv4 -->
-              </AssociationEnd>
-            </connection>
-            <connection>
-              <AssociationEnd XMI.id = "S.100192">
-                <name></name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="true"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="none"/>
-                <multiplicity>0..*</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100160"/> </type>
-                <!-- Type is: AliPHOSDigit -->
-              </AssociationEnd>
-            </connection>
-        </Association>
       </ownedElement>
       <ownedElement>
         <Interface XMI.id = "S.100193">
@@ -655,6 +522,29 @@
           <realization> <XMI.reference target="S.100198"/> </realization>
           <!-- realizations is: AliPHOSClusterizerv1 -->
           <feature>
+            <Operation XMI.id = "S.102512">
+              <name>Calibrate</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102514">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
             <Operation XMI.id = "S.100194">
               <name>GetNumberOfClustersFound</name>
               <visibility XMI.value = "public"/>
@@ -665,14 +555,14 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100195">
+                <Parameter XMI.id = "S.102517">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
                   </defaultValue>
                   <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100006"/> </type>
-                  <!-- Type is: int -->
+                  <type> <XMI.reference target="S.101118"/> </type>
+                  <!-- Type is: Int_t -->
                 </Parameter>
               </parameter>
             </Operation>
@@ -688,7 +578,7 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100197">
+                <Parameter XMI.id = "S.102520">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -723,14 +613,37 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100287">
+                <Parameter XMI.id = "S.102370">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
                   </defaultValue>
                   <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100288"/> </type>
-                  <!-- Type is: bool -->
+                  <type> <XMI.reference target="S.102368"/> </type>
+                  <!-- Type is: Boo_tl -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102371">
+              <name>Calibrate</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102373">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
                 </Parameter>
               </parameter>
             </Operation>
@@ -746,7 +659,76 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100290">
+                <Parameter XMI.id = "S.102376">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102377">
+              <name>GetLocalMaxCut</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102379">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101850"/> </type>
+                  <!-- Type is: Float_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102380">
+              <name>GetLocalWeightCut</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102382">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101850"/> </type>
+                  <!-- Type is: Float_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102383">
+              <name>GetNumberOfClustersFound</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102385">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -769,7 +751,30 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100292">
+                <Parameter XMI.id = "S.102388">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101919"/> </type>
+                  <!-- Type is: Bool_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102389">
+              <name>MakeClusters</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102391">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -792,7 +797,30 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100294">
+                <Parameter XMI.id = "S.102394">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102395">
+              <name>SetCalibrationParameters</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102397">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -815,7 +843,7 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100296">
+                <Parameter XMI.id = "S.102400">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -838,7 +866,53 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100298">
+                <Parameter XMI.id = "S.102403">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102404">
+              <name>SetLocalMaxCut</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102406">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102407">
+              <name>SetLogWeightCut</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102409">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -861,7 +935,7 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100300">
+                <Parameter XMI.id = "S.102412">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -884,7 +958,7 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100302">
+                <Parameter XMI.id = "S.102415">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -897,6 +971,51 @@
             </Operation>
           </feature>
           <feature>
+            <Attribute XMI.id = "S.102416">
+              <name>fA</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+                0.
+              </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102418">
+              <name>fB</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+                0.1
+              </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102419">
+              <name>fLocMaxCut</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+                0.06
+              </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
+            </Attribute>
+          </feature>
+          <feature>
             <Attribute XMI.id = "S.100200">
               <name>fNumberOfEmcClusters</name>
               <visibility XMI.value = "private"/>
@@ -907,8 +1026,8 @@
               <initialValue>
                 0
               </initialValue>
-              <type> <XMI.reference target="S.100006"/> </type>
-              <!-- Type is: int -->
+              <type> <XMI.reference target="S.101118"/> </type>
+              <!-- Type is: Int_t -->
             </Attribute>
           </feature>
           <feature>
@@ -922,8 +1041,8 @@
               <initialValue>
                 0
               </initialValue>
-              <type> <XMI.reference target="S.100006"/> </type>
-              <!-- Type is: int -->
+              <type> <XMI.reference target="S.101118"/> </type>
+              <!-- Type is: Int_t -->
             </Attribute>
           </feature>
           <feature>
@@ -935,8 +1054,10 @@
               <multiplicity>1</multiplicity>
               <targetScope XMI.value="instance"/>
               <initialValue>
-                0
+                0.1
               </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
             </Attribute>
           </feature>
           <feature>
@@ -948,8 +1069,10 @@
               <multiplicity>1</multiplicity>
               <targetScope XMI.value="instance"/>
               <initialValue>
-                0
+                0.01
               </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
             </Attribute>
           </feature>
           <feature>
@@ -961,8 +1084,10 @@
               <multiplicity>1</multiplicity>
               <targetScope XMI.value="instance"/>
               <initialValue>
-                0
+                0.00000015
               </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
             </Attribute>
           </feature>
           <feature>
@@ -974,8 +1099,25 @@
               <multiplicity>1</multiplicity>
               <targetScope XMI.value="instance"/>
               <initialValue>
-                0
+                0.0000001
               </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102433">
+              <name>fW0</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+                5.5
+              </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
             </Attribute>
           </feature>
         </Class>
@@ -1003,43 +1145,6 @@
             </connection>
             <connection>
               <AssociationEnd XMI.id = "S.100305">
-                <name></name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="true"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="none"/>
-                <multiplicity>0..*</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100160"/> </type>
-                <!-- Type is: AliPHOSDigit -->
-              </AssociationEnd>
-            </connection>
-        </Association>
-      </ownedElement>
-      <ownedElement>
-        <Association XMI.id="S.100307">
-          <name></name>
-          <visibility XMI.value = "public"/>
-          <isAbstract XMI.value="false"/>
-          <isLeaf XMI.value="false"/>
-          <isRoot XMI.value="false"/>
-            <connection>
-              <AssociationEnd XMI.id = "S.100308">
-                <name>create</name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="false"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="none"/>
-                <multiplicity>1</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100080"/> </type>
-                <!-- Type is: AliPHOSv4 -->
-              </AssociationEnd>
-            </connection>
-            <connection>
-              <AssociationEnd XMI.id = "S.100309">
                 <name></name>
                 <visibility XMI.value = "public"/>
                 <isNavigable XMI.value="true"/>
@@ -1092,635 +1197,36 @@
         </Association>
       </ownedElement>
       <ownedElement>
-        <Interface XMI.id = "S.100322">
-          <name>AliPHOSCluster</name>
-          <visibility XMI.value = "public"/>
-          <isAbstract XMI.value="true"/>
-          <isLeaf XMI.value="false"/>
-          <isRoot XMI.value="false"/>
-          <realization> <XMI.reference target="S.100334"/> </realization>
-          <realization> <XMI.reference target="S.100336"/> </realization>
-          <!-- realizations is: AliPHOSEmcCluster -->
-          <!-- realizations is: AliPHOSPpsdCluster -->
-          <feature>
-            <Operation XMI.id = "S.100323">
-              <name>AddDigit</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100324">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100325">
-              <name>GetMultiplicity</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100326">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100006"/> </type>
-                  <!-- Type is: int -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100327">
-              <name>GetDigitsList</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100328">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100329">
-              <name>Print</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100330">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100562">
-              <name>GetRelPosition</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100563">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-        </Interface>
-      </ownedElement>
-      <ownedElement>
         <Class XMI.id = "S.100334">
-          <name>AliPHOSEmcCluster</name>
+          <name>AliPHOSEmcRecPoint</name>
           <visibility XMI.value = "public"/>
           <isAbstract XMI.value="false"/>
           <isLeaf XMI.value="false"/>
           <isRoot XMI.value="false"/>
           <isActive XMI.value = "false"/>
-          <specification> <XMI.reference target="S.100322"/> </specification>
-          <!-- specification is: AliPHOSCluster -->
-          <feature>
-            <Operation XMI.id = "S.100535">
-              <name>AreNeighbours</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100536">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100288"/> </type>
-                  <!-- Type is: bool -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100537">
-              <name>Compare</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100538">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100539">
-              <name>GetAbsPosition</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100540">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100541">
-              <name>GetDispersion</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100542">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100010"/> </type>
-                  <!-- Type is: float -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100543">
-              <name>GetElipsAxis</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100544">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100545">
-              <name>GetMaximalEnergy</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100546">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100010"/> </type>
-                  <!-- Type is: float -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100547">
-              <name>GetMultiplicityAtLevel</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100548">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100549">
-              <name>GetNumberOfLocalMaxima</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100550">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100551">
-              <name>GetRelPosition</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100552">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100553">
-              <name>GetTotalEnergy</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100554">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100555">
-              <name>SetLocalMaxCut</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100556">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100557">
-              <name>SetLowWeightCut</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100558">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Attribute XMI.id = "S.100338">
-              <name>fDigitsList</name>
-              <visibility XMI.value = "private"/>
-              <ownerScope XMI.value="instance"/>
-              <changeable XMI.value="none"/>
-              <multiplicity>1</multiplicity>
-              <targetScope XMI.value="instance"/>
-              <initialValue>
-                0
-              </initialValue>
-            </Attribute>
-          </feature>
-          <feature>
-            <Attribute XMI.id = "S.100401">
-              <name>fEnergy</name>
-              <visibility XMI.value = "private"/>
-              <ownerScope XMI.value="instance"/>
-              <changeable XMI.value="none"/>
-              <multiplicity>1</multiplicity>
-              <targetScope XMI.value="instance"/>
-              <initialValue>
-                0
-              </initialValue>
-            </Attribute>
-          </feature>
-          <feature>
-            <Attribute XMI.id = "S.100403">
-              <name>fMultiplicity</name>
-              <visibility XMI.value = "private"/>
-              <ownerScope XMI.value="instance"/>
-              <changeable XMI.value="none"/>
-              <multiplicity>1</multiplicity>
-              <targetScope XMI.value="instance"/>
-              <initialValue>
-                0
-              </initialValue>
-              <type> <XMI.reference target="S.100006"/> </type>
-              <!-- Type is: int -->
-            </Attribute>
-          </feature>
-          <feature>
-            <Attribute XMI.id = "S.100465">
-              <name>fDelta</name>
-              <visibility XMI.value = "private"/>
-              <ownerScope XMI.value="instance"/>
-              <changeable XMI.value="none"/>
-              <multiplicity>1</multiplicity>
-              <targetScope XMI.value="instance"/>
-              <initialValue>
-                4.
-              </initialValue>
-            </Attribute>
-          </feature>
-          <feature>
-            <Attribute XMI.id = "S.100481">
-              <name>fLocMaxCut</name>
-              <visibility XMI.value = "private"/>
-              <ownerScope XMI.value="instance"/>
-              <changeable XMI.value="none"/>
-              <multiplicity>1</multiplicity>
-              <targetScope XMI.value="instance"/>
-              <initialValue>
-                0.6
-              </initialValue>
-            </Attribute>
-          </feature>
-          <feature>
-            <Attribute XMI.id = "S.100497">
-              <name>fW0</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <changeable XMI.value="none"/>
-              <multiplicity>1</multiplicity>
-              <targetScope XMI.value="instance"/>
-              <initialValue>
-                4.
-              </initialValue>
-            </Attribute>
-          </feature>
         </Class>
       </ownedElement>
       <ownedElement>
         <Class XMI.id = "S.100336">
-          <name>AliPHOSPpsdCluster</name>
+          <name>AliPHOSPpsdRecPoint</name>
           <visibility XMI.value = "public"/>
           <isAbstract XMI.value="false"/>
           <isLeaf XMI.value="false"/>
           <isRoot XMI.value="false"/>
           <isActive XMI.value = "false"/>
-          <specification> <XMI.reference target="S.100322"/> </specification>
-          <!-- specification is: AliPHOSCluster -->
-          <feature>
-            <Operation XMI.id = "S.100360">
-              <name>Compare</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100795">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100006"/> </type>
-                  <!-- Type is: int -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100560">
-              <name>GetRelPosition</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100798">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100004"/> </type>
-                  <!-- Type is: void -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Operation XMI.id = "S.100564">
-              <name>GetUp</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <isQuery XMI.value="false"/>
-              <concurrency XMI.value="sequential"/>
-              <isPolymorphic XMI.value="false"/>
-              <operationSpecification>
-              </operationSpecification>
-              <parameter>
-                <Parameter XMI.id = "S.100801">
-                  <name>return</name>
-                  <visibility XMI.value = "public"/>
-                  <defaultValue>
-                  </defaultValue>
-                  <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100288"/> </type>
-                  <!-- Type is: bool -->
-                </Parameter>
-              </parameter>
-            </Operation>
-          </feature>
-          <feature>
-            <Attribute XMI.id = "S.100362">
-              <name>fDigitsList</name>
-              <visibility XMI.value = "public"/>
-              <ownerScope XMI.value="instance"/>
-              <changeable XMI.value="none"/>
-              <multiplicity>1</multiplicity>
-              <targetScope XMI.value="instance"/>
-              <initialValue>
-                0
-              </initialValue>
-            </Attribute>
-          </feature>
-          <feature>
-            <Attribute XMI.id = "S.100441">
-              <name>fEnergy</name>
-              <visibility XMI.value = "private"/>
-              <ownerScope XMI.value="instance"/>
-              <changeable XMI.value="none"/>
-              <multiplicity>1</multiplicity>
-              <targetScope XMI.value="instance"/>
-              <initialValue>
-                0
-              </initialValue>
-            </Attribute>
-          </feature>
-          <feature>
-            <Attribute XMI.id = "S.100443">
-              <name>fMultiplicity</name>
-              <visibility XMI.value = "private"/>
-              <ownerScope XMI.value="instance"/>
-              <changeable XMI.value="none"/>
-              <multiplicity>1</multiplicity>
-              <targetScope XMI.value="instance"/>
-              <initialValue>
-                0
-              </initialValue>
-              <type> <XMI.reference target="S.100006"/> </type>
-              <!-- Type is: int -->
-            </Attribute>
-          </feature>
         </Class>
       </ownedElement>
       <ownedElement>
-        <Interface XMI.id = "S.100566">
-          <name>AliPHOSSubTracker</name>
+        <Class XMI.id = "S.100649">
+          <name>AliPHOSTrackSegmentMakerv1</name>
           <visibility XMI.value = "public"/>
-          <isAbstract XMI.value="true"/>
+          <isAbstract XMI.value="false"/>
           <isLeaf XMI.value="false"/>
           <isRoot XMI.value="false"/>
-          <realization> <XMI.reference target="S.100649"/> </realization>
-          <!-- realizations is: AliPHOSSubTrackerv1 -->
+          <isActive XMI.value = "false"/>
           <feature>
-            <Operation XMI.id = "S.100567">
-              <name>MakeSubTracks</name>
+            <Operation XMI.id = "S.102723">
+              <name>FillOneModule</name>
               <visibility XMI.value = "public"/>
               <ownerScope XMI.value="instance"/>
               <isQuery XMI.value="false"/>
@@ -1729,7 +1235,7 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100568">
+                <Parameter XMI.id = "S.102725">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
@@ -1741,18 +1247,29 @@
               </parameter>
             </Operation>
           </feature>
-        </Interface>
-      </ownedElement>
-      <ownedElement>
-        <Class XMI.id = "S.100649">
-          <name>AliPHOSSubTrackerv1</name>
-          <visibility XMI.value = "public"/>
-          <isAbstract XMI.value="false"/>
-          <isLeaf XMI.value="false"/>
-          <isRoot XMI.value="false"/>
-          <isActive XMI.value = "false"/>
-          <specification> <XMI.reference target="S.100566"/> </specification>
-          <!-- specification is: AliPHOSSubTracker -->
+          <feature>
+            <Operation XMI.id = "S.102726">
+              <name>FindFit</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102728">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
           <feature>
             <Operation XMI.id = "S.100683">
               <name>GetDistanceInPHOSPlane</name>
@@ -1764,14 +1281,175 @@
               <operationSpecification>
               </operationSpecification>
               <parameter>
-                <Parameter XMI.id = "S.100684">
+                <Parameter XMI.id = "S.102731">
                   <name>return</name>
                   <visibility XMI.value = "public"/>
                   <defaultValue>
                   </defaultValue>
                   <kind XMI.value="return"/>
-                  <type> <XMI.reference target="S.100010"/> </type>
-                  <!-- Type is: float -->
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102732">
+              <name>MakeLinks</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102734">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102735">
+              <name>MakePairs</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102737">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102738">
+              <name>MakeTrackSegments</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102740">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102741">
+              <name>SetMaxEmcPpsdDistance</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102743">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102744">
+              <name>ShowerShape</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102746">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102747">
+              <name>UnfoldClusters</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102749">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102750">
+              <name>UnfoldingChiSquare</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102752">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
                 </Parameter>
               </parameter>
             </Operation>
@@ -1822,7 +1500,7 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100649"/> </type>
-                <!-- Type is: AliPHOSSubTrackerv1 -->
+                <!-- Type is: AliPHOSTrackSegmentMakerv1 -->
               </AssociationEnd>
             </connection>
             <connection>
@@ -1850,6 +1528,167 @@
           <isRoot XMI.value="false"/>
           <isActive XMI.value = "false"/>
           <feature>
+            <Operation XMI.id = "S.102804">
+              <name>GetDistannceInPHOSPlane</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102806">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101850"/> </type>
+                  <!-- Type is: Float_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102807">
+              <name>GetEnergy</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102809">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101850"/> </type>
+                  <!-- Type is: Float_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102810">
+              <name>GetMomentumDirection</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102812">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101919"/> </type>
+                  <!-- Type is: Bool_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102813">
+              <name>GetParticuleType</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102815">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101118"/> </type>
+                  <!-- Type is: Int_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102816">
+              <name>GetPosition</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102818">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102819">
+              <name>Print</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102821">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102822">
+              <name>SetDispersionCutOff</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102824">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
             <Attribute XMI.id = "S.100692">
               <name>fCutOnDispersion</name>
               <visibility XMI.value = "private"/>
@@ -1860,45 +1699,50 @@
               <initialValue>
                 1.5
               </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
             </Attribute>
           </feature>
           <feature>
-            <Attribute XMI.id = "S.100694">
-              <name>fEmcCluster</name>
-              <visibility XMI.value = "public"/>
+            <Attribute XMI.id = "S.102793">
+              <name>fEmcRecPoint</name>
+              <visibility XMI.value = "private"/>
               <ownerScope XMI.value="instance"/>
               <changeable XMI.value="none"/>
               <multiplicity>1</multiplicity>
               <targetScope XMI.value="instance"/>
               <initialValue>
-                0
               </initialValue>
+              <type> <XMI.reference target="S.102794"/> </type>
+              <!-- Type is: AliPHOSEmcRecPoint* -->
             </Attribute>
           </feature>
           <feature>
             <Attribute XMI.id = "S.100696">
               <name>fPpsdLow</name>
-              <visibility XMI.value = "public"/>
+              <visibility XMI.value = "private"/>
               <ownerScope XMI.value="instance"/>
               <changeable XMI.value="none"/>
               <multiplicity>1</multiplicity>
               <targetScope XMI.value="instance"/>
               <initialValue>
-                0
               </initialValue>
+              <type> <XMI.reference target="S.102796"/> </type>
+              <!-- Type is: AliPHOSPpsdRecPoint* -->
             </Attribute>
           </feature>
           <feature>
             <Attribute XMI.id = "S.100698">
               <name>fPpsdUp</name>
-              <visibility XMI.value = "public"/>
+              <visibility XMI.value = "private"/>
               <ownerScope XMI.value="instance"/>
               <changeable XMI.value="none"/>
               <multiplicity>1</multiplicity>
               <targetScope XMI.value="instance"/>
               <initialValue>
-                0
               </initialValue>
+              <type> <XMI.reference target="S.102798"/> </type>
+              <!-- Type is: AliPHOSAppsdRecPoint* -->
             </Attribute>
           </feature>
         </Class>
@@ -1921,7 +1765,7 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100649"/> </type>
-                <!-- Type is: AliPHOSSubTrackerv1 -->
+                <!-- Type is: AliPHOSTrackSegmentMakerv1 -->
               </AssociationEnd>
             </connection>
             <connection>
@@ -1972,7 +1816,7 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100334"/> </type>
-                <!-- Type is: AliPHOSEmcCluster -->
+                <!-- Type is: AliPHOSEmcRecPoint -->
               </AssociationEnd>
             </connection>
         </Association>
@@ -2009,7 +1853,7 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100336"/> </type>
-                <!-- Type is: AliPHOSPpsdCluster -->
+                <!-- Type is: AliPHOSPpsdRecPoint -->
               </AssociationEnd>
             </connection>
         </Association>
@@ -2032,7 +1876,7 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100649"/> </type>
-                <!-- Type is: AliPHOSSubTrackerv1 -->
+                <!-- Type is: AliPHOSTrackSegmentMakerv1 -->
               </AssociationEnd>
             </connection>
             <connection>
@@ -2046,7 +1890,7 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100334"/> </type>
-                <!-- Type is: AliPHOSEmcCluster -->
+                <!-- Type is: AliPHOSEmcRecPoint -->
               </AssociationEnd>
             </connection>
         </Association>
@@ -2069,7 +1913,7 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100649"/> </type>
-                <!-- Type is: AliPHOSSubTrackerv1 -->
+                <!-- Type is: AliPHOSTrackSegmentMakerv1 -->
               </AssociationEnd>
             </connection>
             <connection>
@@ -2083,7 +1927,7 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100336"/> </type>
-                <!-- Type is: AliPHOSPpsdCluster -->
+                <!-- Type is: AliPHOSPpsdRecPoint -->
               </AssociationEnd>
             </connection>
         </Association>
@@ -3072,7 +2916,7 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100334"/> </type>
-                <!-- Type is: AliPHOSEmcCluster -->
+                <!-- Type is: AliPHOSEmcRecPoint -->
               </AssociationEnd>
             </connection>
         </Association>
@@ -3109,7 +2953,7 @@
                 <changeable XMI.value="none"/>
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100336"/> </type>
-                <!-- Type is: AliPHOSPpsdCluster -->
+                <!-- Type is: AliPHOSPpsdRecPoint -->
               </AssociationEnd>
             </connection>
         </Association>
@@ -3263,43 +3107,6 @@
                 <targetScope XMI.value="instance"/>
                 <type> <XMI.reference target="S.100193"/> </type>
                 <!-- Type is: AliPHOSClusterizer -->
-              </AssociationEnd>
-            </connection>
-        </Association>
-      </ownedElement>
-      <ownedElement>
-        <Association XMI.id="S.100994">
-          <name>fSubTracker</name>
-          <visibility XMI.value = "public"/>
-          <isAbstract XMI.value="false"/>
-          <isLeaf XMI.value="false"/>
-          <isRoot XMI.value="false"/>
-            <connection>
-              <AssociationEnd XMI.id = "S.100995">
-                <name></name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="true"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="aggregate"/>
-                <multiplicity>1</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100975"/> </type>
-                <!-- Type is: AliPHOSReconstructioner -->
-              </AssociationEnd>
-            </connection>
-            <connection>
-              <AssociationEnd XMI.id = "S.100996">
-                <name></name>
-                <visibility XMI.value = "public"/>
-                <isNavigable XMI.value="true"/>
-                <isOrdered XMI.value="false"/>
-                <aggregation XMI.value="none"/>
-                <multiplicity>1</multiplicity>
-                <changeable XMI.value="none"/>
-                <targetScope XMI.value="instance"/>
-                <type> <XMI.reference target="S.100566"/> </type>
-                <!-- Type is: AliPHOSSubTracker -->
               </AssociationEnd>
             </connection>
         </Association>
@@ -3526,7 +3333,6 @@ energy loss</name>
           <visibility XMI.value = "public"/>
           <discriminator>
           </discriminator>
-          <stereotype> <XMI.reference target="S.100348" /> </stereotype>
           <subtype> <XMI.reference target="S.101022"/> </subtype>
           <!-- subtype is: Photon: 
 conversion probability
@@ -3541,8 +3347,7 @@ the way of the particle -->
         <UseCase XMI.id = "S.101024">
           <name>Charged and Neutral hadrons:
 energy loss
-momentum smearing
-</name>
+momentum smearing</name>
           <visibility XMI.value = "public"/>
           <isAbstract XMI.value="false"/>
           <isLeaf XMI.value="false"/>
@@ -3555,12 +3360,10 @@ momentum smearing
           <visibility XMI.value = "public"/>
           <discriminator>
           </discriminator>
-          <stereotype> <XMI.reference target="S.100348" /> </stereotype>
           <subtype> <XMI.reference target="S.101024"/> </subtype>
           <!-- subtype is: Charged and Neutral hadrons:
 energy loss
-momentum smearing
- -->
+momentum smearing -->
           <supertype> <XMI.reference target="S.101008"/> </supertype>
           <!-- supertype is: 2. What is the incidence
 of other detectors on
@@ -3667,6 +3470,1499 @@ resolution -->
             </connection>
         </Association>
       </ownedElement>
+      <ownedElement>
+        <Class XMI.id = "S.101042">
+          <name>AliPHOSv0</name>
+          <visibility XMI.value = "public"/>
+          <isAbstract XMI.value="false"/>
+          <isLeaf XMI.value="false"/>
+          <isRoot XMI.value="false"/>
+          <isActive XMI.value = "false"/>
+          <specification> <XMI.reference target="S.100078"/> </specification>
+          <!-- specification is: AliPHOS -->
+          <feature>
+            <Operation XMI.id = "S.101045">
+              <name>AddHit</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102243">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101048">
+              <name>BuildGeometry</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102246">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101082">
+              <name>BuildGeometryforPHOS</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102249">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101085">
+              <name>BuildGeometryforPPSD</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102252">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101051">
+              <name>CreateGeometry</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102255">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101091">
+              <name>CreateGeometryforPHOS</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102258">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101094">
+              <name>CreateGeometryforPPSD</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102261">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101097">
+              <name>Digitize</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102264">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102265">
+              <name>EmcClusters</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102267">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101947"/> </type>
+                  <!-- Type is: RecPointsList* -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102136">
+              <name>GetGeometry</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102270">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101957"/> </type>
+                  <!-- Type is: AliPHOSGeometry* -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101106">
+              <name>FinishEvent</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102273">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101114">
+              <name>Init</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102276">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101117">
+              <name>IsVersion</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102279">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101118"/> </type>
+                  <!-- Type is: Int_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101121">
+              <name>MakeBranch</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102282">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101124">
+              <name>PpsdClusters</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102285">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101101"/> </type>
+                  <!-- Type is: RecPointsList -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101127">
+              <name>Reconstruction</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102288">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101130">
+              <name>ResetClusters</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102291">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101133">
+              <name>SetReconstructioner</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102294">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101135">
+              <name>StepManager</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102297">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101138">
+              <name>ShowMembers</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102300">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101141">
+              <name>Streamer</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102303">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.101144">
+              <name>TrqackSegments</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102306">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101145"/> </type>
+                  <!-- Type is: TObjArray -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.101946">
+              <name>fEmcClusters</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101947"/> </type>
+              <!-- Type is: RecPointsList* -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.101956">
+              <name>fGeom</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101957"/> </type>
+              <!-- Type is: AliPHOSGeometry* -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.101958">
+              <name>fPpsdClusters</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101947"/> </type>
+              <!-- Type is: RecPointsList* -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.101959">
+              <name>fReconstructioner</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101960"/> </type>
+              <!-- Type is: AliPHOSReconstructioner* -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.101961">
+              <name>fTmpHits</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101962"/> </type>
+              <!-- Type is: TClonesArray* -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.101963">
+              <name>fTrackSegmentsMaker</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101964"/> </type>
+              <!-- Type is: AliPHOSTrackSegmentMaker* -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.101965">
+              <name>fTrackSegments</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101966"/> </type>
+              <!-- Type is: TObjArray* -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.101150">
+              <name>fNTmpHits</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101118"/> </type>
+              <!-- Type is: Int_t -->
+            </Attribute>
+          </feature>
+        </Class>
+      </ownedElement>
+      <ownedElement>
+        <Association XMI.id="S.101055">
+          <name></name>
+          <visibility XMI.value = "public"/>
+          <isAbstract XMI.value="false"/>
+          <isLeaf XMI.value="false"/>
+          <isRoot XMI.value="false"/>
+            <connection>
+              <AssociationEnd XMI.id = "S.101056">
+                <name>uses</name>
+                <visibility XMI.value = "public"/>
+                <isNavigable XMI.value="false"/>
+                <isOrdered XMI.value="false"/>
+                <aggregation XMI.value="none"/>
+                <multiplicity>1</multiplicity>
+                <changeable XMI.value="none"/>
+                <targetScope XMI.value="instance"/>
+                <type> <XMI.reference target="S.101042"/> </type>
+                <!-- Type is: AliPHOSv0 -->
+              </AssociationEnd>
+            </connection>
+            <connection>
+              <AssociationEnd XMI.id = "S.101057">
+                <name></name>
+                <visibility XMI.value = "public"/>
+                <isNavigable XMI.value="true"/>
+                <isOrdered XMI.value="false"/>
+                <aggregation XMI.value="none"/>
+                <multiplicity>1</multiplicity>
+                <changeable XMI.value="none"/>
+                <targetScope XMI.value="instance"/>
+                <type> <XMI.reference target="S.100094"/> </type>
+                <!-- Type is: AliPHOSGeometry -->
+              </AssociationEnd>
+            </connection>
+        </Association>
+      </ownedElement>
+      <ownedElement>
+        <Association XMI.id="S.101158">
+          <name></name>
+          <visibility XMI.value = "public"/>
+          <isAbstract XMI.value="false"/>
+          <isLeaf XMI.value="false"/>
+          <isRoot XMI.value="false"/>
+            <connection>
+              <AssociationEnd XMI.id = "S.101159">
+                <name>creates</name>
+                <visibility XMI.value = "public"/>
+                <isNavigable XMI.value="false"/>
+                <isOrdered XMI.value="false"/>
+                <aggregation XMI.value="none"/>
+                <multiplicity>1</multiplicity>
+                <changeable XMI.value="none"/>
+                <targetScope XMI.value="instance"/>
+                <type> <XMI.reference target="S.101042"/> </type>
+                <!-- Type is: AliPHOSv0 -->
+              </AssociationEnd>
+            </connection>
+            <connection>
+              <AssociationEnd XMI.id = "S.101160">
+                <name></name>
+                <visibility XMI.value = "public"/>
+                <isNavigable XMI.value="true"/>
+                <isOrdered XMI.value="false"/>
+                <aggregation XMI.value="none"/>
+                <multiplicity>0..*</multiplicity>
+                <changeable XMI.value="none"/>
+                <targetScope XMI.value="instance"/>
+                <type> <XMI.reference target="S.100125"/> </type>
+                <!-- Type is: AliPHOSHit -->
+              </AssociationEnd>
+            </connection>
+        </Association>
+      </ownedElement>
+      <ownedElement>
+        <Association XMI.id="S.101161">
+          <name></name>
+          <visibility XMI.value = "public"/>
+          <isAbstract XMI.value="false"/>
+          <isLeaf XMI.value="false"/>
+          <isRoot XMI.value="false"/>
+            <connection>
+              <AssociationEnd XMI.id = "S.101162">
+                <name>creates</name>
+                <visibility XMI.value = "public"/>
+                <isNavigable XMI.value="false"/>
+                <isOrdered XMI.value="false"/>
+                <aggregation XMI.value="none"/>
+                <multiplicity>1</multiplicity>
+                <changeable XMI.value="none"/>
+                <targetScope XMI.value="instance"/>
+                <type> <XMI.reference target="S.101042"/> </type>
+                <!-- Type is: AliPHOSv0 -->
+              </AssociationEnd>
+            </connection>
+            <connection>
+              <AssociationEnd XMI.id = "S.101163">
+                <name></name>
+                <visibility XMI.value = "public"/>
+                <isNavigable XMI.value="true"/>
+                <isOrdered XMI.value="false"/>
+                <aggregation XMI.value="none"/>
+                <multiplicity>0..*</multiplicity>
+                <changeable XMI.value="none"/>
+                <targetScope XMI.value="instance"/>
+                <type> <XMI.reference target="S.100160"/> </type>
+                <!-- Type is: AliPHOSDigit -->
+              </AssociationEnd>
+            </connection>
+        </Association>
+      </ownedElement>
+      <ownedElement>
+        <Class XMI.id = "S.102526">
+          <name>AliRecPoint</name>
+          <visibility XMI.value = "public"/>
+          <isAbstract XMI.value="false"/>
+          <isLeaf XMI.value="false"/>
+          <isRoot XMI.value="false"/>
+          <isActive XMI.value = "false"/>
+          <feature>
+            <Operation XMI.id = "S.102542">
+              <name>AddDigit</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102675">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102545">
+              <name>AddTrack</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102678">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101218"/> </type>
+                  <!-- Type is: void?? -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102547">
+              <name>GetCovarianceMatrix</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102681">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102550">
+              <name>GetGeom</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102684">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.102532"/> </type>
+                  <!-- Type is: AliGeometry* -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102553">
+              <name>GetGlobalPosition</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102687">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102556">
+              <name>GetDigitsList</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102690">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.102530"/> </type>
+                  <!-- Type is: int* -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102559">
+              <name>GetEnergy</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102693">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101850"/> </type>
+                  <!-- Type is: Float_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102562">
+              <name>GetLocalPosition</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102696">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102565">
+              <name>GetDigitsMultiplicity</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102699">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101118"/> </type>
+                  <!-- Type is: Int_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102700">
+              <name>GetMaximumDigitMultiplicity</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102702">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101118"/> </type>
+                  <!-- Type is: Int_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102573">
+              <name>GetMaximumTrackMultiplicity</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102705">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101118"/> </type>
+                  <!-- Type is: Int_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102576">
+              <name>getTracksList</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102708">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.102530"/> </type>
+                  <!-- Type is: int* -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102579">
+              <name>GetTracksMutliplicity</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102711">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101118"/> </type>
+                  <!-- Type is: Int_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102582">
+              <name>Print</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102714">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102528">
+              <name>fAmp</name>
+              <visibility XMI.value = "protected"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102529">
+              <name>fDigitsList</name>
+              <visibility XMI.value = "protected"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.102530"/> </type>
+              <!-- Type is: int* -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102531">
+              <name>fGeom</name>
+              <visibility XMI.value = "protected"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.102532"/> </type>
+              <!-- Type is: AliGeometry* -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102533">
+              <name>fLocPos</name>
+              <visibility XMI.value = "protected"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.102534"/> </type>
+              <!-- Type is: TVector3 -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102535">
+              <name>fLocPosM</name>
+              <visibility XMI.value = "protected"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.102536"/> </type>
+              <!-- Type is: TMatrix* -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102537">
+              <name>fMaxDigit</name>
+              <visibility XMI.value = "protected"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101118"/> </type>
+              <!-- Type is: Int_t -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102538">
+              <name>fMulDigit</name>
+              <visibility XMI.value = "protected"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101118"/> </type>
+              <!-- Type is: Int_t -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102539">
+              <name>fMaxTrack</name>
+              <visibility XMI.value = "protected"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101118"/> </type>
+              <!-- Type is: Int_t -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102540">
+              <name>fMulTrack</name>
+              <visibility XMI.value = "protected"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101118"/> </type>
+              <!-- Type is: Int_t -->
+            </Attribute>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102541">
+              <name>fTracksList</name>
+              <visibility XMI.value = "protected"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.102530"/> </type>
+              <!-- Type is: int* -->
+            </Attribute>
+          </feature>
+        </Class>
+      </ownedElement>
+      <ownedElement>
+        <Class XMI.id = "S.102588">
+          <name>AliPHOSRecPoint</name>
+          <visibility XMI.value = "public"/>
+          <isAbstract XMI.value="false"/>
+          <isLeaf XMI.value="false"/>
+          <isRoot XMI.value="false"/>
+          <isActive XMI.value = "false"/>
+          <feature>
+            <Operation XMI.id = "S.102589">
+              <name>AddDigit</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102591">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102592">
+              <name>Compare</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102594">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102595">
+              <name>GetPHOSMod</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102597">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101118"/> </type>
+                  <!-- Type is: Int_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102598">
+              <name>IsEmc</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102600">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101919"/> </type>
+                  <!-- Type is: Bool_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102601">
+              <name>IsSortable</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102603">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.101919"/> </type>
+                  <!-- Type is: Bool_t -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102604">
+              <name>Print</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102606">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102607">
+              <name>fPhosMod</name>
+              <visibility XMI.value = "protected"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101118"/> </type>
+              <!-- Type is: Int_t -->
+            </Attribute>
+          </feature>
+        </Class>
+      </ownedElement>
+      <ownedElement>
+        <Generalization XMI.id = "S.102608">
+          <name></name>
+          <visibility XMI.value = "public"/>
+          <discriminator>
+          </discriminator>
+          <subtype> <XMI.reference target="S.102588"/> </subtype>
+          <!-- subtype is: AliPHOSRecPoint -->
+          <supertype> <XMI.reference target="S.102526"/> </supertype>
+          <!-- supertype is: AliRecPoint -->
+        </Generalization>
+      </ownedElement>
+      <ownedElement>
+        <Generalization XMI.id = "S.102609">
+          <name></name>
+          <visibility XMI.value = "public"/>
+          <discriminator>
+          </discriminator>
+          <subtype> <XMI.reference target="S.100334"/> </subtype>
+          <!-- subtype is: AliPHOSEmcRecPoint -->
+          <supertype> <XMI.reference target="S.102588"/> </supertype>
+          <!-- supertype is: AliPHOSRecPoint -->
+        </Generalization>
+      </ownedElement>
+      <ownedElement>
+        <Generalization XMI.id = "S.102610">
+          <name></name>
+          <visibility XMI.value = "public"/>
+          <discriminator>
+          </discriminator>
+          <subtype> <XMI.reference target="S.100336"/> </subtype>
+          <!-- subtype is: AliPHOSPpsdRecPoint -->
+          <supertype> <XMI.reference target="S.102588"/> </supertype>
+          <!-- supertype is: AliPHOSRecPoint -->
+        </Generalization>
+      </ownedElement>
+      <ownedElement>
+        <Class XMI.id = "S.102715">
+          <name>AliPHOSTrackSegmentMaker</name>
+          <visibility XMI.value = "public"/>
+          <isAbstract XMI.value="false"/>
+          <isLeaf XMI.value="false"/>
+          <isRoot XMI.value="false"/>
+          <isActive XMI.value = "false"/>
+          <feature>
+            <Operation XMI.id = "S.102717">
+              <name>MakeTrackSegments</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102719">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Operation XMI.id = "S.102720">
+              <name>SetMaxEmcPpsdDistance</name>
+              <visibility XMI.value = "public"/>
+              <ownerScope XMI.value="instance"/>
+              <isQuery XMI.value="false"/>
+              <concurrency XMI.value="sequential"/>
+              <isPolymorphic XMI.value="false"/>
+              <operationSpecification>
+              </operationSpecification>
+              <parameter>
+                <Parameter XMI.id = "S.102722">
+                  <name>return</name>
+                  <visibility XMI.value = "public"/>
+                  <defaultValue>
+                  </defaultValue>
+                  <kind XMI.value="return"/>
+                  <type> <XMI.reference target="S.100004"/> </type>
+                  <!-- Type is: void -->
+                </Parameter>
+              </parameter>
+            </Operation>
+          </feature>
+          <feature>
+            <Attribute XMI.id = "S.102716">
+              <name>fR0</name>
+              <visibility XMI.value = "private"/>
+              <ownerScope XMI.value="instance"/>
+              <changeable XMI.value="none"/>
+              <multiplicity>1</multiplicity>
+              <targetScope XMI.value="instance"/>
+              <initialValue>
+              </initialValue>
+              <type> <XMI.reference target="S.101850"/> </type>
+              <!-- Type is: Float_t -->
+            </Attribute>
+          </feature>
+        </Class>
+      </ownedElement>
+      <ownedElement>
+        <Generalization XMI.id = "S.102753">
+          <name></name>
+          <visibility XMI.value = "public"/>
+          <discriminator>
+          </discriminator>
+          <subtype> <XMI.reference target="S.100649"/> </subtype>
+          <!-- subtype is: AliPHOSTrackSegmentMakerv1 -->
+          <supertype> <XMI.reference target="S.102715"/> </supertype>
+          <!-- supertype is: AliPHOSTrackSegmentMaker -->
+        </Generalization>
+      </ownedElement>
     </Model>
     <Class XMI.id = "S.100024">
       <name>Stack</name>
@@ -3691,6 +4987,30 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
+    <Class XMI.id = "S.101154">
+      <name>TClonesArray</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101111">
+      <name>GetGeometry</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101964">
+      <name>AliPHOSTrackSegmentMaker*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
     <Class XMI.id = "S.100021">
       <name>Color</name>
       <visibility XMI.value = "public"/>
@@ -3699,8 +5019,24 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
+    <Class XMI.id = "S.102662">
+      <name>fEnergy</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
     <Class XMI.id = "S.100022">
       <name>Vector</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101040">
+      <name>AliPHOSGeometry *</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -3722,6 +5058,78 @@ resolution -->
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
     </DataType>
+    <Class XMI.id = "S.102530">
+      <name>int*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.102640">
+      <name>Float_t*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.102534">
+      <name>TVector3</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101960">
+      <name>AliPHOSReconstructioner*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101962">
+      <name>TClonesArray*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.102623">
+      <name>getters</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101103">
+      <name>EmcClusers</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.102794">
+      <name>AliPHOSEmcRecPoint*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.102532">
+      <name>AliGeometry*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
     <DataType XMI.id = "S.100004">
       <name>void</name>
       <visibility XMI.value = "public"/>
@@ -3729,6 +5137,14 @@ resolution -->
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
     </DataType>
+    <Class XMI.id = "S.101145">
+      <name>TObjArray</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
     <Class XMI.id = "S.100012">
       <name>Character</name>
       <visibility XMI.value = "public"/>
@@ -3744,6 +5160,22 @@ resolution -->
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
     </DataType>
+    <Class XMI.id = "S.102368">
+      <name>Boo_tl</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101218">
+      <name>void??</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
     <Class XMI.id = "S.100023">
       <name>Hashtable</name>
       <visibility XMI.value = "public"/>
@@ -3754,6 +5186,46 @@ resolution -->
     </Class>
     <Class XMI.id = "S.100019">
       <name>Rectangle</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101101">
+      <name>RecPointsList</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101919">
+      <name>Bool_t</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.102659">
+      <name>fDigitsList</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101156">
+      <name>AliPHOSTrackSegmentMaker</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.102796">
+      <name>AliPHOSPpsdRecPoint*</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -3776,6 +5248,22 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
+    <Class XMI.id = "S.101118">
+      <name>Int_t</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101850">
+      <name>Float_t</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
     <DataType XMI.id = "S.100009">
       <name>long</name>
       <visibility XMI.value = "public"/>
@@ -3783,8 +5271,40 @@ resolution -->
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
     </DataType>
+    <Class XMI.id = "S.102536">
+      <name>TMatrix*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101819">
+      <name>more</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
     <Class XMI.id = "S.100020">
       <name>Point</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101947">
+      <name>RecPointsList*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.100003">
+      <name>String</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -3798,8 +5318,8 @@ resolution -->
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
     </DataType>
-    <Class XMI.id = "S.100003">
-      <name>String</name>
+    <Class XMI.id = "S.100288">
+      <name>bool</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -3814,8 +5334,8 @@ resolution -->
       <isRoot XMI.value="false"/>
       <isActive XMI.value = "false"/>
     </Class>
-    <Class XMI.id = "S.100288">
-      <name>bool</name>
+    <Class XMI.id = "S.101966">
+      <name>TObjArray*</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
@@ -3829,6 +5349,14 @@ resolution -->
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
     </DataType>
+    <Class XMI.id = "S.102130">
+      <name>parameterName</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
     <DataType XMI.id = "S.100005">
       <name>char</name>
       <visibility XMI.value = "public"/>
@@ -3836,8 +5364,48 @@ resolution -->
       <isLeaf XMI.value="false"/>
       <isRoot XMI.value="false"/>
     </DataType>
+    <Class XMI.id = "S.102798">
+      <name>AliPHOSAppsdRecPoint*</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101817">
+      <name>and</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.102621">
+      <name>...</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.102570">
+      <name>MaximumDigitMultiplicity</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
     <Class XMI.id = "S.100016">
       <name>Long</name>
+      <visibility XMI.value = "public"/>
+      <isAbstract XMI.value="false"/>
+      <isLeaf XMI.value="false"/>
+      <isRoot XMI.value="false"/>
+      <isActive XMI.value = "false"/>
+    </Class>
+    <Class XMI.id = "S.101957">
+      <name>AliPHOSGeometry*</name>
       <visibility XMI.value = "public"/>
       <isAbstract XMI.value="false"/>
       <isLeaf XMI.value="false"/>
