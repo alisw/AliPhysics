@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  1999/12/17 09:01:14  fca
+Y.Schutz new classes for reconstruction
+
 */
 
 //-*-C++-*-
@@ -58,8 +61,10 @@ AliRecPoint::~AliRecPoint()
   // dtor
   
   delete fLocPosM ; 
-  if ( fDigitsList )     delete fDigitsList ; 
-  if ( fTracksList )     delete fTracksList ;  
+  if ( fDigitsList )    
+    delete fDigitsList ; 
+  if ( fTracksList )    
+    delete fTracksList ;  
   
 }
   
@@ -144,23 +149,25 @@ void AliRecPoint::Streamer(TBuffer &R__b)
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       TObject::Streamer(R__b);
       R__b >> fAmp;
-      R__b.ReadArray(fDigitsList);
+      R__b >> fMulDigit;
+      fDigitsList = new Int_t[fMulDigit] ; 
+      R__b.ReadFastArray(fDigitsList, fMulDigit);
       R__b >> fGeom;
       fLocPos.Streamer(R__b);
       R__b >> fLocPosM;
-      R__b >> fMulDigit;
       R__b >> fMulTrack;
-      R__b.ReadArray(fTracksList);
+      fTracksList = new Int_t[fMulTrack] ; 
+      R__b.ReadFastArray(fTracksList, fMulTrack);
    } else {
       R__b.WriteVersion(AliRecPoint::IsA());
       TObject::Streamer(R__b);
       R__b << fAmp;
-      R__b.WriteArray(fDigitsList, fMaxDigit);
+      R__b << fMulDigit;
+      R__b.WriteFastArray(fDigitsList, fMulDigit);
       R__b << fGeom;
       fLocPos.Streamer(R__b);
       R__b << fLocPosM;
-      R__b << fMulDigit;
       R__b << fMulTrack;
-      R__b.WriteArray(fTracksList, fMaxTrack);
+      R__b.WriteFastArray(fTracksList, fMulTrack);
    }
 }
