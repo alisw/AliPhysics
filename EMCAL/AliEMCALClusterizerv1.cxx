@@ -89,8 +89,8 @@ ClassImp(AliEMCALClusterizerv1)
   
   fNumberOfPreShoClusters = fNumberOfTowerClusters = 0 ; 
   
-  fPreShoClusteringThreshold = 0.0001;
-  fTowerClusteringThreshold  = 0.2;   
+  fPreShoClusteringThreshold = 0.00005;
+  fTowerClusteringThreshold  = 0.00005;
   
   fTowerLocMaxCut  = 0.03 ;
   fPreShoLocMaxCut = 0.03 ;
