@@ -313,7 +313,7 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
     Double_t zmax=det(2)+Detz[layer-1];
     if(iD==NDetector[layer-1]) zmax=det(2)+(Detz[layer-1])*epsz;
     //added to take into account problem on drift
-    if(layer == 3 || layer==2) zmin=zmin-epszpixel; zmax=zmax+epszpixel;
+    if(layer == 4 || layer==3) zmin=zmin-epszpixel; zmax=zmax+epszpixel;
     //cout<<"zmin zinters zmax det(2)= "<<zmin<<" "<<zinters<<" "<<zmax<<" "<<det(2)<<"\n";	
     if(zinters > zmin && zinters <= zmax) { 
       if(iz>1) {cout<< " Errore su iz in NewIntersection \n"; getchar();}
