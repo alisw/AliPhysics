@@ -13,6 +13,8 @@
 #ifndef ALI_SD_CONSTRUCTION_H
 #define ALI_SD_CONSTRUCTION_H
 
+#include "AliVerbose.h"
+
 #include "TG4VSDConstruction.h"
 
 #include <globals.hh>
@@ -23,7 +25,8 @@ class AliModule;
 class G4VPhysicalVolume;
 class G4LogicalVolume;
 
-class AliSDConstruction : public TG4VSDConstruction 
+class AliSDConstruction : public TG4VSDConstruction,
+                          public AliVerbose
 {  
   public:
     AliSDConstruction();

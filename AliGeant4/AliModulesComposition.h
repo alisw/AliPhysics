@@ -13,6 +13,7 @@
 
 #include "AliModulesCompositionMessenger.h"
 #include "AliModuleType.h"
+#include "AliVerbose.h"
 
 #include <G4VUserDetectorConstruction.hh>
 #include <globals.hh>
@@ -23,7 +24,8 @@ class AliMagneticField;
 
 class G4VPhysicalVolume;
 
-class AliModulesComposition : public G4VUserDetectorConstruction
+class AliModulesComposition : public G4VUserDetectorConstruction,
+                              public AliVerbose
 {
   typedef G4std::vector<AliModuleConstruction*> AliModuleConstructionVector;
   

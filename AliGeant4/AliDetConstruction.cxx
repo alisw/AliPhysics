@@ -120,8 +120,10 @@ void AliDetConstruction::BuildDetectors()
     // all modules will be processed alltogether
     AddModule(modName, modVersion);
 
-    G4cout << "Created module construction for " 
-           << modName << "v" << modVersion << "." << G4endl;   
+    if (VerboseLevel() > 0) {
+      G4cout << "Created module construction for " 
+             << modName << "v" << modVersion << "." << G4endl;   
+    }	     
   }
   
   // do not process Config.C 
@@ -262,8 +264,9 @@ void AliDetConstruction::GenerateXMLGeometry() const
                       topName, world->GetLogicalVolume());
   xml.CloseFile();
   
-  // set verbose
-  G4cout << "File " << detName << "v" << version << ".xml has been generated." 
-         << G4endl;
+  if (VerboseLevel() > 0) {
+    G4cout << "File " << detName << "v" << version << ".xml has been generated." 
+           << G4endl;
+  }	   
 }  
 

@@ -24,7 +24,8 @@
 
 //_____________________________________________________________________________
 AliSDConstruction::AliSDConstruction()
-  : TG4VSDConstruction() {
+  : TG4VSDConstruction(),
+    AliVerbose("SDConstruction") {
 //
 }
 
@@ -99,9 +100,12 @@ void AliSDConstruction::CreateSD(G4LogicalVolume* lv, AliModule* module) const
     AliSensitiveDetector* asd 
       = new AliSensitiveDetector(sdName, module);	
     pSDManager->AddNewDetector(asd);
-    // add verbose
-    G4cout << "Sensitive detector " << sdName << "(" 
-           << asd->GetID() << ") has been created." << G4endl;
+
+    if (VerboseLevel() > 0) {
+      G4cout << "Sensitive detector " << sdName << "(" 
+             << asd->GetID() << ") has been created." << G4endl;
+    }
+    	     
     sd = asd;  
   }	
   lv->SetSensitiveDetector(sd);	     
@@ -134,9 +138,12 @@ void AliSDConstruction::CreateLegoSD(G4LogicalVolume* lv, AliLego* lego) const
     AliLegoSensitiveDetector* legoSD
       = new AliLegoSensitiveDetector(sdName, lego, sd);	
     pSDManager->AddNewDetector(legoSD);
-    // add verbose
-    G4cout << "Lego sensitive detector " << sdName 
-         << ") has been created." << G4endl;
+
+    if (VerboseLevel() > 0) {
+      G4cout << "Lego sensitive detector " << sdName 
+             << ") has been created." << G4endl;
+    }
+    	     
     legoVSD = legoSD;  
   }	  
   lv->SetSensitiveDetector(legoVSD);	     

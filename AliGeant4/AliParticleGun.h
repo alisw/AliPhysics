@@ -10,17 +10,20 @@
 #ifndef ALI_PARTICLE_GUN_H
 #define ALI_PARTICLE_GUN_H
 
+#include "AliVerbose.h"
+#include "AliParticleGunMessenger.h"
+
 #include <G4VPrimaryGenerator.hh>
 #include <globals.hh>
 #include <g4std/vector>
 
-#include "AliParticleGunMessenger.h"
 
 class AliGunParticle;
 
 class G4Event;
 
-class AliParticleGun : public G4VPrimaryGenerator
+class AliParticleGun : public G4VPrimaryGenerator,
+                       public AliVerbose
 {
   typedef G4std::vector<AliGunParticle*>    GunParticleVector;
   typedef GunParticleVector::iterator       GunParticleIterator;

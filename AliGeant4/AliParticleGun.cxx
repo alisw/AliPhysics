@@ -19,14 +19,15 @@
 
 //_____________________________________________________________________________
 AliParticleGun::AliParticleGun() 
-  :fMessenger(this) {
+  : AliVerbose("particleGun"),
+    fMessenger(this) {
 //
-  //fMessenger = new AliParticleGunMessenger(this);
 }
 
 //_____________________________________________________________________________
 AliParticleGun::AliParticleGun(const AliParticleGun& right)
-  : G4VPrimaryGenerator(right),
+  : AliVerbose("particleGun"),
+    G4VPrimaryGenerator(right),
     fMessenger(this)
 {
   // copy stuff
@@ -148,12 +149,13 @@ void AliParticleGun::GeneratePrimaryVertex(G4Event* event)
     vertex->SetPrimary(primaryParticle);
   }
   
-  // add verbose
-  G4cout << "AliParticleGun::GeneratePrimaryVertex:" << G4endl;
-  G4cout << "   " 
-         << event->GetNumberOfPrimaryVertex()  << " of primary vertices,"
-         << "   " << fGunParticleVector.size() << " of primary particles " 
-	 << G4endl;  
+  if (VerboseLevel() > 0) {
+    G4cout << "AliParticleGun::GeneratePrimaryVertex:" << G4endl;
+    G4cout << "   " 
+           << event->GetNumberOfPrimaryVertex()  << " of primary vertices,"
+           << "   " << fGunParticleVector.size() << " of primary particles " 
+  	   << G4endl;  
+  }	   
 
   // delete gun particles
   Reset();

@@ -20,7 +20,8 @@
 
 //_____________________________________________________________________________
 AliModulesComposition::AliModulesComposition()
-  : fReadGeometry(false),
+  : AliVerbose("modulesComposition"),
+    fReadGeometry(false),
     fWriteGeometry(false),
     fMagneticField(0),
     fMessenger(this) {
@@ -29,7 +30,8 @@ AliModulesComposition::AliModulesComposition()
 
 //_____________________________________________________________________________
 AliModulesComposition::AliModulesComposition(const AliModulesComposition& right)
-  : fMessenger(this)
+  : AliVerbose("modulesComposition"),
+    fMessenger(this)
 {
 //
   AliGlobals::Exception("AliModulesComposition is protected from copying.");  
