@@ -16,11 +16,14 @@ class AliGenPythiaEventHeader : public AliGenEventHeader
   AliGenPythiaEventHeader(){;}
   virtual ~AliGenPythiaEventHeader() {}
   // Getters
-  Int_t   ProcessType()  {return fProcessType;}
+  Int_t ProcessType()  {return fProcessType;}
   // Setters
-  void SetProcessType(Int_t type)  {fProcessType = type;}
+  void  SetProcessType(Int_t type)  {fProcessType = type;}
+  Int_t Trials() {return fTrials;}
+  void  SetTrials(Int_t trials) {fTrials = trials;}
 protected:
-  Int_t fProcessType;
+  Int_t   fProcessType;              // PYTHIA process id for this event 
+  Int_t   fTrials;                   // Number of trials to fulfill trigger condition
   ClassDef(AliGenPythiaEventHeader,1) // Event header for Pythia event
 };
 
