@@ -1,8 +1,8 @@
-Int_t diaglevel=3;         // 1->Hits, 2->Spectra, 3->Statistics 
-
-
-void RICHpadtest (Int_t evNumber1=0,Int_t evNumber2=0) 
+void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0) 
 {
+
+// Int_t diaglevel=3;         // 1->Hits, 2->Spectra, 3->Statistics 
+
 /////////////////////////////////////////////////////////////////////////
 //   This macro is a small example of a ROOT macro
 //   illustrating how to read the output of GALICE
@@ -62,6 +62,7 @@ void RICHpadtest (Int_t evNumber1=0,Int_t evNumber2=0)
    Int_t ymin= -NpadY/2;
    Int_t ymax=  NpadY/2;
 
+   TH2F *hc0 = new TH2F("hc0","Zoom on center of Chamber 1",100,-50,50,100,-50,50);
    TH2F *hc1 = new TH2F("hc1","Chamber 1 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
    TH2F *hc2 = new TH2F("hc2","Chamber 2 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
    TH2F *hc3 = new TH2F("hc3","Chamber 3 signal distribution",NpadX,xmin,xmax,NpadY,ymin,ymax);
@@ -123,7 +124,7 @@ void RICHpadtest (Int_t evNumber1=0,Int_t evNumber2=0)
        
 
        //cout<<"nev  "<<nev<<endl;
-       printf ("\nProcessing event:%d\n",nev);
+       printf ("\nProcessing event: %d\n",nev);
        //cout<<"nparticles  "<<nparticles<<endl;
        printf ("Particles       : %d\n",nparticles);
        if (nev < evNumber1) continue;
@@ -172,7 +173,8 @@ void RICHpadtest (Int_t evNumber1=0,Int_t evNumber2=0)
 	       Int_t ipy  = dHit->fPadY;               // pad number on Y
 	       //Int_t iqpad  = dHit->fQpad;           // charge per pad
 	       //Int_t rpad  = dHit->fRSec;            // R-position of pad
-	       //printf ("Pad hit, PadX:%d, PadY:%d\n",ipx,ipy); 
+	       //printf ("Pad hit, PadX:%d, PadY:%d\n",ipx,ipy);
+	       if( ipx<=100 && ipy <=100 && ich==0) hc0->Fill(ipx,ipy,(float) qtot);
 	       if( ipx<=162 && ipy <=162 && ich==0) hc1->Fill(ipx,ipy,(float) qtot);
 	       if( ipx<=162 && ipy <=162 && ich==1) hc2->Fill(ipx,ipy,(float) qtot);
 	       if( ipx<=162 && ipy <=162 && ich==2) hc3->Fill(ipx,ipy,(float) qtot);
@@ -442,6 +444,9 @@ void RICHpadtest (Int_t evNumber1=0,Int_t evNumber2=0)
 	   c1->cd(7);
 	   hc7->SetXTitle("ix (npads)");
 	   hc7->Draw();
+	   c1->cd(8);
+	   hc0->SetXTitle("ix (npads)");
+	   hc0->Draw();
 	 }
 //
        TCanvas *c4 = new TCanvas("c4","Hits per type",400,10,600,700);
@@ -476,12 +481,12 @@ void RICHpadtest (Int_t evNumber1=0,Int_t evNumber2=0)
        
        c10->cd(1);
        hitsX->SetFillColor(42);
-       hitsX->SetXTitle("(GeV)");
+       hitsX->SetXTitle("(cm)");
        hitsX->Draw();
        
        c10->cd(2);
        hitsY->SetFillColor(42);
-       hitsY->SetXTitle("(GeV)");
+       hitsY->SetXTitle("(cm)");
        hitsY->Draw();
        
       
