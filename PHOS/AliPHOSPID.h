@@ -42,8 +42,8 @@ class AliPHOSPID : public TTask {
   //virtual void SetIdentificationMethod(char * option) = 0 ;
   //virtual void SetShowerProfileCut(char *  formula) = 0  ; 
   //virtual void SetDispersionCut(Float_t cut) = 0  ;   
-  virtual void SetCpvtoEmcDistanceCut(Float_t cut ) { cout << "AliPHOSPID::SetCpvtoEmcDistanceCut not defined " << endl ;}
-  virtual void SetTimeGate(Float_t gate) { cout << "AliPHOSPID::SetTimeGate not defined " << endl ; }
+  virtual void SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur,Float_t cut ) { cout << "AliPHOSPID::SetCpvtoEmcDistanceCut not defined " << endl ;}
+  virtual void SetTimeGate(Float_t Cluster_En, TString Eff_Pur, Float_t gate) { cout << "AliPHOSPID::SetTimeGate not defined " << endl ; }
   virtual void SetTrackSegmentsBranch(const char* title) { cout << "AliPHOSPID::Exec not define " << endl ; }
   virtual void SetRecParticlesBranch (const char* title) { cout << "AliPHOSPID::SetTecParticlesBranch not defined " << endl ; }
   virtual void SetSplitFile(const TString splitFileName = "PHOS.RecData.root") const ; 
