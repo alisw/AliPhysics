@@ -1,46 +1,12 @@
-SRCS= \
-AliMAG.cxx \
-AliABSO.cxx \
-AliABSOv0.cxx \
-AliDIPO.cxx \
-AliDIPOv1.cxx \
-AliDIPOv2.cxx \
-AliFRAME.cxx \
-AliFRAMEv0.cxx \
-AliFRAMEv1.cxx \
-AliFRAMEv2.cxx \
-AliHALL.cxx \
-AliSHIL.cxx \
-AliSHILv0.cxx \
-AliSHILvF.cxx \
-AliPIPE.cxx \
-AliPIPEv0.cxx \
-AliPIPEv1.cxx \
-AliPIPEv3.cxx \
-AliBODY.cxx \
-AliALIFE.cxx
+SRCS=  AliMAG.cxx      AliABSO.cxx       AliABSOv0.cxx \
+       AliDIPO.cxx  	AliDIPOv1.cxx     AliDIPOv2.cxx \
+       AliFRAME.cxx    AliFRAMEv0.cxx    AliFRAMEv1.cxx AliFRAMEv2.cxx  \
+       AliHALL.cxx     AliSHIL.cxx 	  AliSHILv0.cxx AliSHILvF.cxx\
+       AliPIPE.cxx     AliPIPEv0.cxx     AliPIPEv1.cxx \
+       AliPIPEv3.cxx 	AliBODY.cxx	  AliALIFE.cxx
 
-HDRS= \
-AliMAG.h \
-AliABSO.h \
-AliABSOv0.h \
-AliDIPO.h \
-AliDIPOv1.h \
-AliDIPOv2.h \
-AliFRAME.h \
-AliFRAMEv0.h \
-AliFRAMEv1.h \
-AliFRAMEv2.h \
-AliHALL.h \
-AliSHIL.h \
-AliSHILv0.h \
-AliSHILvF.h \
-AliPIPE.h \
-AliPIPEv0.h \
-AliPIPEv1.h \
-AliPIPEv3.h \
-AliBODY.h \
-AliALIFE.h
+
+HDRS= $(SRCS:.cxx=.h)
 
 DHDR:=STRUCTLinkDef.h
 

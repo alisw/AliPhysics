@@ -230,7 +230,7 @@ endif
 
 
 
-EINCLUDE:= packlib/kernlib/kerngen packlib/zebra packlib/kernlib/kernnum mathlib/gen
+EINCLUDE:= MINICERN/packlib/kernlib/kerngen MINICERN/packlib/zebra MINICERN/packlib/kernlib/kernnum MINICERN/mathlib/gen
 
 
 

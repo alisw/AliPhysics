@@ -1,4 +1,4 @@
-SRCS=  AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
+SRCS=   AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenCocktail.cxx AliGenFLUKAsource.cxx \
 		AliGenLib.cxx \
                 AliGenMUONlib.cxx AliGenParam.cxx AliGenPythia.cxx \
@@ -11,26 +11,20 @@ SRCS=  AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenHijingEventHeader.cxx AliGenPythiaEventHeader.cxx \
 		AliDecayer.cxx AliDecayerPythia.cxx \
                 AliGenMevSim.cxx AliMevSimParticle.cxx AliMevSimConfig.cxx \
-	        AliGenMC.cxx
+	        AliGenMC.cxx AliGenCocktailAfterBurner.cxx \
+         AliGenHBTprocessor.cxx 
 
-HDRS= AliGenHIJINGpara.h \
-AliGenBox.h \
-AliGenFixed.h \
-AliGenCocktail.h AliGenFLUKAsource.h \
-AliGenLib.h \
- AliGenMUONlib.h AliGenParam.h AliGenPythia.h \
- AliPythia.h AliDimuCombinator.h AliGenHalo.h \
-AliGenHaloProtvino.h \
-AliGenExtFile.h AliGenScan.h AliGenPHOSlib.h \
-AliGenDoubleScan.h AliGenCocktailEntry.h \
-AliGenGSIlib.h AliGenPMDlib.h\
-AliGenHijing.h \
-AliGenHijingEventHeader.h AliGenPythiaEventHeader.h \
-AliDecayer.h AliDecayerPythia.h \
- AliGenMevSim.h AliMevSimParticle.h AliMevSimConfig.h \
- AliGenMC.h
+# Headerfiels for this particular package (Path respect to own directory)
+HDRS= $(SRCS:.cxx=.h) 
 
+# Headerfiles otherwise needed (Full pathname required)
 
+EHDRS = $(ALICE_ROOT)/include/THijing.h \
+        $(ROOTSYS)/include/TF1.h \
+	$(ROOTSYS)/include/TChain.h \
+        $(ROOTSYS)/include/TParticle.h \
 
 
 DHDR:=EVGENLinkDef.h
+
+EXPORT:=AliPythia.h AliDecayer.h AliDecayerPythia.h AliGenHijingEventHeader.h

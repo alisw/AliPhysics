@@ -1,34 +1,18 @@
-SRCS:=  \
-TGeant3.cxx \
-TPaveTree.cxx \
-THIGZ.cxx \
-AliG3Medium.cxx \
-AliGeant3.cxx \
-AliG3Material.cxx \
-AliG3Volume.cxx \
-AliGUISliders.cxx \
-AliGuiGeomDialog.cxx \
-AliGuiGeomMain.cxx \
-AliGeant3GeometryGUI.cxx \
-AliNode.cxx \
-AliG3toRoot.cxx
+SRCS:=  TGeant3.cxx TPaveTree.cxx THIGZ.cxx AliG3Medium.cxx \
+                 AliGeant3.cxx AliG3Material.cxx AliG3Volume.cxx \
+		 AliGUISliders.cxx AliGuiGeomDialog.cxx AliGuiGeomMain.cxx \
+		 AliGeant3GeometryGUI.cxx AliNode.cxx AliG3toRoot.cxx
 
 FSRCS:=galicef.F
 
-HDRS:= \
-TGeant3.h \
-TPaveTree.h \
-THIGZ.h \
-AliG3Medium.h \
-AliGeant3.h \
-AliG3Material.h \
-AliG3Volume.h \
-AliGUISliders.h \
-AliGuiGeomDialog.h \
-AliGuiGeomMain.h \
-AliGeant3GeometryGUI.h \
-AliNode.h \
-AliG3toRoot.h
+HDRS:= $(filter-out gucode.h,$(SRCS:.cxx=.h))
+
+EHDRS:=$(ALICE_ROOT)/include/AliMC.h \
+$(ALICE_ROOT)/include/AliDecayer.h \
+$(ALICE_ROOT)/include/AliPDG.h
+
+EINCLUDE = GEANT321/geant321 GEANT321
 
 DHDR:=TGeant3LinkDef.h
+
 

@@ -1,28 +1,12 @@
 
-SRCS= \
-AliMemArray.cxx \
-AliClassInfo.cxx  \
-AliDataType.cxx \
-AliObjectArray.cxx \
-TArrayOfArray.cxx \
-AliArrayBranch.cxx \
-AliSegmentID.cxx  \
-AliSegmentArray.cxx \
-AliDigits.cxx \
-AliArrayI.cxx \
-AliArrayS.cxx
+SRCS= AliMemArray.cxx AliClassInfo.cxx  AliDataType.cxx\
+      AliObjectArray.cxx    TArrayOfArray.cxx  AliArrayBranch.cxx\
+      AliSegmentID.cxx  AliSegmentArray.cxx \
+      AliDigits.cxx AliArrayI.cxx AliArrayS.cxx
 
-HDRS= \
-AliMemArray.h \
-AliClassInfo.h  \
-AliDataType.h \
-AliObjectArray.h \
-TArrayOfArray.h \
-AliArrayBranch.h \
-AliSegmentID.h  \
-AliSegmentArray.h \
-AliDigits.h \
-AliArrayI.h \
-AliArrayS.h
+
+HDRS= $(SRCS:.cxx=.h)
 
 DHDR:= CONTAINERSLinkDef.h
+
+EINCLUDE:= TPC

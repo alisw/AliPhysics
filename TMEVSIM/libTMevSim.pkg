@@ -1,7 +1,4 @@
-SRCS= \
-TMevSim.cxx \
-TMevSimPartTypeParams.cxx \
-TMevSimConverter.cxx
+SRCS= TMevSim.cxx TMevSimPartTypeParams.cxx TMevSimConverter.cxx
 
 HDRS= \
 TMevSim.h \
@@ -9,3 +6,5 @@ TMevSimPartTypeParams.h \
 TMevSimConverter.h
 
 DHDR=TMevSimLinkDef.h
+
+EXPORT:=TMevSim.h MevSimCommon.h TMevSimPartTypeParams.h TMevSimConverter.h

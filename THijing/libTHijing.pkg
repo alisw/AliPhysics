@@ -3,3 +3,5 @@ SRCS= THijing.cxx
 HDRS= THijing.h
 
 DHDR:=THijingLinkDef.h
+
+EXPORT:=THijing.h

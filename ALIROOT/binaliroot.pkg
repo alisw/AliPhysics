@@ -1,16 +1,9 @@
 SRCS:=aliroot.cxx
 
-FSRCS:=loadmod.F ludata.F # pydata.F
+FSRCS:=loadmod.F #ludata.F # pydata.F
 
 CSRCS:=dummies.c
 
 ELIBSDIR:= build/tgt_$(ALICE_TARGET)/lib 
 
-ELIBS:= pythia6 pdf THijing hijing \
-            TMevSim mevsim STEER TPC PMD CONTAINERS \
-            ZDC STRUCT RALICE EMCAL ALIFAST CASTOR \
-            FMD START TGeant3 EVGEN TRD geant321 \
-             minicern TOF ITS RICH PHOS MUON 
-
-
-
+ELIBS:= MUON TPC PMD TRD FMD TOF ITS PHOS CASTOR RICH ZDC STRUCT minicern geant321 TGeant3 START EVGEN STEER CONTAINERS EG pythia6 pdf THijing hijing TMevSim mevsim THbtp HBTP

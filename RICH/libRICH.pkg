@@ -1,4 +1,4 @@
-SRCS   = AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx AliRICHv2.cxx\
+SRCS   =  AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx AliRICHv2.cxx\
 	 AliRICHDisplay.cxx AliRICHPoints.cxx AliRICHGeometry.cxx\
 	 AliRICHSegmentationV0.cxx AliRICHTresholdMap.cxx\
 	 AliRICHSegmentationV1.cxx AliRICHResponse.cxx AliRICHResponseV0.cxx \
@@ -9,15 +9,5 @@ SRCS   = AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx AliRICHv2.cxx\
 	 AliRICHRawCluster.cxx AliRICHRecHit1D.cxx AliRICHRecHit3D.cxx AliRICHEllipse.cxx \
 	 AliRICHMerger.cxx
 
-HDRS =   AliRICH.h AliRICHv0.h AliRICHv1.h AliRICHv2.h\
-	 AliRICHDisplay.h AliRICHPoints.h AliRICHGeometry.h\
-	 AliRICHSegmentationV0.h AliRICHTresholdMap.h\
-	 AliRICHSegmentationV1.h AliRICHResponse.h AliRICHResponseV0.h \
-	 AliRICHClusterFinder.h AliRICHHitMapA1.h\
-	 AliRICHChamber.h AliRICHDetect.h AliRICHPatRec.h \
-         AliRICHHit.h AliRICHCerenkov.h AliRICHSDigit.h \
-	 AliRICHDigit.h AliRICHTransientDigit.h \
-	 AliRICHRawCluster.h AliRICHRecHit1D.h AliRICHRecHit3D.h AliRICHEllipse.h \
-	 AliRICHMerger.h
-
+HDRS =  $(SRCS:.cxx=.h)
 DHDR= RICHLinkDef.h

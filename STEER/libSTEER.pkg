@@ -1,19 +1,21 @@
-SRCS          = AliDetector.cxx	AliHeader.cxx	AliMagF.cxx \
-                AliDigit.cxx	AliHit.cxx	AliPoints.cxx \
-                AliDisplay.cxx	AliMC.cxx	AliRun.cxx AliGenerator.cxx \
-		AliLego.cxx	AliModule.cxx	AliDigitNew.cxx \
-		AliGeometry.cxx	AliRecPoint.cxx	AliSegmentation.cxx \
-	        AliHitMap.cxx	AliMagFC.cxx	AliMagFCM.cxx \
-		AliMagFDM.cxx	AliLegoGenerator.cxx AliLegoGeneratorXYZ.cxx\
-                AliLegoGeneratorPhiZ.cxx AliLegoGeneratorEta.cxx \
-                AliRndm.cxx \
-		AliKalmanTrack.cxx AliCluster.cxx AliTracker.cxx\
-		AliMCQA.cxx AliPDG.cxx AliDebugVolume.cxx \
-		AliGenEventHeader.cxx AliStack.cxx AliConfig.cxx \
-		AliRunDigitizer.cxx AliDigitizer.cxx AliStream.cxx \
-		AliMergeCombi.cxx
+SRCS          =   \
+AliDetector.cxx	AliHeader.cxx	AliMagF.cxx \
+AliDigit.cxx	AliHit.cxx	AliPoints.cxx \
+AliDisplay.cxx	AliMC.cxx	AliRun.cxx AliGenerator.cxx \
+AliLego.cxx	AliModule.cxx	AliDigitNew.cxx \
+AliGeometry.cxx	AliRecPoint.cxx	AliSegmentation.cxx \
+AliHitMap.cxx	AliMagFC.cxx	AliMagFCM.cxx \
+AliMagFDM.cxx	AliLegoGenerator.cxx AliLegoGeneratorXYZ.cxx\
+AliLegoGeneratorPhiZ.cxx AliLegoGeneratorEta.cxx \
+AliRndm.cxx \
+AliKalmanTrack.cxx AliCluster.cxx AliTracker.cxx\
+AliMCQA.cxx AliPDG.cxx AliDebugVolume.cxx \
+AliGenEventHeader.cxx AliStack.cxx AliConfig.cxx \
+AliRunDigitizer.cxx AliDigitizer.cxx AliStream.cxx \
+AliMergeCombi.cxx
 
-HDRS:= $(SRCS:.cxx=.h)
+HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR= STEERLinkDef.h
 
+EXPORT:=$(SRCS:.cxx=.h) AliConst.h AliCallf77.h AliMCProcess.h 

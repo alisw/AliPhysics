@@ -1,13 +1,8 @@
-SRCS= AliZDC.cxx \
-AliZDCv1.cxx  \
-AliZDCv2.cxx \
-AliZDCHit.cxx \
-AliZDCDigit.cxx \
-AliGenZDC.cxx \
-AliZDCFragment.cxx \
-AliZDCMerger.cxx \
-AliZDCMergedHit.cxx
+SRCS= AliZDC.cxx AliZDCv1.cxx AliZDCv2.cxx AliZDCHit.cxx AliZDCDigit.cxx \
+      AliGenZDC.cxx AliZDCFragment.cxx AliZDCMerger.cxx AliZDCMergedHit.cxx
 
-HDRS= $(SRCS:.cxx=.h)
+HDRS= $(SRCS:.cxx=.h) 
+
+EHDRS = $(ROOTSYS)/include/TClonesArray.h
 
 DHDR:=ZDCLinkDef.h

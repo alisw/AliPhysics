@@ -1,4 +1,5 @@
 
+
 ifndef PACKFFLAGS
 @PACKAGE@FFLAGS:=$(FFLAGS)
 else
@@ -24,8 +25,16 @@ else
 WITHDICT=
 endif
 
+# Headerfiles exported to common place:
+@PACKAGE@EXPORT:=$(EXPORT)
+@PACKAGE@EXPORTDEST:=$(patsubst %,$(EXPORTDIR)/%,$(EXPORT))
+
+
 #Extra include,libs etc.
-@PACKAGE@INC:=$(patsubst %,-I$(MODDIR)/%,$(EINCLUDE))
+#@PACKAGE@INC:=$(patsubst %,-I@MODULE@/%,$(EINCLUDE)) -I@MODULE@
+
+@PACKAGE@INC:=$(patsubst %,-I%,$(EINCLUDE)) -I@MODULE@
+
 @PACKAGE@ELIBS:=$(patsubst %,-l%,$(ELIBS))
 @PACKAGE@ELIBSDIR:=$(patsubst %,-L%,$(ELIBSDIR))
 
@@ -39,8 +48,19 @@ endif
 
 #c++ sources and header
 @PACKAGE@S:=$(patsubst %,$(MODDIR)/%,$(SRCS))
-@PACKAGE@H:=$(patsubst %,$(MODDIR)/%,$(HDRS))
+@PACKAGE@H:=$(patsubst %,$(MODDIR)/%,$(HDRS)) $(EHDRS)
 
+#############################################################################
+#
+#            If special rootcint headerfiles is specified use them
+#                         else use all headers
+
+ifndef CINTHDRS
+@PACKAGE@CINTHDRS:=$(@PACKAGE@H) 
+else
+@PACKAGE@CINTHDRS:=$(CINTHDRS)
+endif
+#############################################################################
 
 # Package Dictionary 
 
@@ -75,7 +95,7 @@ endif
 @PACKAGE@BIN:=$(BINPATH)/@PACKAGE@
 
 
-# for using in the main Makefile
+# Use in the main Makefile
 
 ifeq ($(TYPE),lib)
 ALLLIBS += $(@PACKAGE@LIB)
@@ -87,25 +107,35 @@ endif
 # include all dependency files
 INCLUDEFILES +=$(@PACKAGE@DEP)
 
+EXPORTFILES += $(@PACKAGE@EXPORTDEST)
 
 #local rules
+
+#The exportfiles only include if any!!
+
+ifdef @PACKAGE@EXPORT
+$(@PACKAGE@EXPORTDEST): $(patsubst %,@MODULE@/%,$(@PACKAGE@EXPORT))
+	  @echo "***** Copying file @MODULE@/$(notdir $@) to $@ WRONG !!!*****"
+	  @[ -d $(dir $@) ] || mkdir $(dir $@)
+	  cp @MODULE@/$(notdir $@) $@	
+endif
 
 $(@PACKAGE@LIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 	  @echo "***** Linking library $@ *****"
 	  $(SHLD) $(SOFLAGS) $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB)  -o $@ $(@PACKAGE@O) $(@PACKAGE@DO)
- 	  
+ 
 $(@PACKAGE@BIN):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 	  @echo "***** Makeing executable $@ *****"
-	  $(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS)  $(LIBS) $(@PACKAGE@ELIBS) $(EXEFLAGS) -o $@ 
+	  $(LD) $(LDFLAGS) $(@PACKAGE@O) $(@PACKAGE@DO) $(BINLIBDIRS) $(LIBS) $(@PACKAGE@ELIBS) $(EXEFLAGS) -o $@ 
 
-$(@PACKAGE@DS): $(@PACKAGE@H) $(@PACKAGE@DH)
+$(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH)
 	 @echo "***** Creating $@ *****";	
 	 @(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-	 @rootcint -f $@ -c $(CINTFLAGS) $^
+	 rootcint -f $@ -c $(CINTFLAGS) $(@PACKAGE@INC) $^
 
 $(@PACKAGE@DO): $(@PACKAGE@DS)
 		@echo "***** (Re)compiling $< *****";
-		@$(CXX) -c $< -o $@ $(CXXFLAGS)
+		$(CXX) -c $(@PACKAGE@INC)  $< -o $@ $(@PACKAGE@CXXFLAGS)
 
 #Different targets for the module
 
@@ -118,7 +148,7 @@ depend-@PACKAGE@: $(@PACKAGE@DEP)
 $(MODDIRO)/%.o: $(MODDIR)/%.cxx $(MODDIRO)/%.d 
 	@echo "***** (Re)compiling $< *****";
 	@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-	$(CXX) -c $(@PACKAGE@INC) $< -o $@ $(@PACKAGE@CXXFLAGS)
+	$(CXX) -c $(@PACKAGE@INC)   $< -o $@ $(@PACKAGE@CXXFLAGS)
 
 $(MODDIRO)/%.o: $(MODDIR)/%.F $(MODDIRO)/%.d 
 	@echo "***** (Re)compiling $< *****";
@@ -133,29 +163,29 @@ $(MODDIRO)/%.o: $(MODDIR)/%.f $(MODDIRO)/%.d
 $(MODDIRO)/%.o: $(MODDIR)/%.c $(MODDIRO)/%.d 
 	@echo "***** (Re)compiling $< *****";
 	@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-	$(CC) -c $< -o $@ $(@PACKAGE@INC)  $(@PACKAGE@CFLAGS)
+	$(CC) -c  $(@PACKAGE@INC)  $< -o $@   $(@PACKAGE@CFLAGS)
 
 $(@PACKAGE@DDEP): $(@PACKAGE@DS)
 		@echo "***** Making dependencies for $< *****";
 		@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
 		@share/alibtool depend "$(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC)  $<" > $@
 
-$(MODDIRO)/%.d: $(MODDIRS)/%.cxx
+$(MODDIRO)/%.d: $(MODDIRS)/%.cxx $(EXPORTFILES)
 		@echo "***** Making dependencies for $< *****";
 		@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-		@share/alibtool depend "$(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC)  $<" > $@
-$(MODDIRO)/%.d: $(MODDIRS)/%.f
+		share/alibtool depend "$(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC)  $<" > $@
+$(MODDIRO)/%.d: $(MODDIRS)/%.f $(EXPORTFILES)
 		@echo "***** Making dependencies for $< *****";
 		@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-		@share/alibtool dependF "$(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC)  $<" > $@
-$(MODDIRO)/%.d: $(MODDIRS)/%.F 
+		share/alibtool dependF "$(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC)  $<" > $@
+$(MODDIRO)/%.d: $(MODDIRS)/%.F  $(EXPORTFILES)
 		@echo "***** Making dependencies for $< *****";
 		@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-		@share/alibtool dependF "$(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC)  $<" > $@
-$(MODDIRO)/%.d: $(MODDIRS)/%.c 
+		share/alibtool dependF "$(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC)  $<" > $@
+$(MODDIRO)/%.d: $(MODDIRS)/%.c $(EXPORTFILES)
 		@echo "***** Making dependencies for $< *****";
 		@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
-		@share/alibtool depend "$(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC) $<" > $@
+		share/alibtool depend "$(@PACKAGE@ELIBSDIR) $(@PACKAGE@INC) $(DEPINC) $<" > $@
 
 
 #Directory creation

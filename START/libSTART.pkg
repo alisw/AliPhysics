@@ -1,18 +1,7 @@
-SRCS= \
-AliSTART.cxx \
-AliSTARTv0.cxx \
-AliSTARTv1.cxx \
-AliSTARThit.cxx \
-AliSTARTdigit.cxx \
-AliSTARTvertex.cxx
+SRCS= AliSTART.cxx AliSTARTv0.cxx AliSTARTv1.cxx AliSTARThit.cxx AliSTARTdigit.cxx AliSTARTvertex.cxx
 
-HDRS= \
-AliSTART.h \
-AliSTARTv0.h \
-AliSTARTv1.h \
-AliSTARThit.h \
-AliSTARTdigit.h \
-AliSTARTvertex.h
+HDRS= $(SRCS:.cxx=.h)
+
 
 DHDR:= STARTLinkDef.h
 

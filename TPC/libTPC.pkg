@@ -1,59 +1,20 @@
-SRCS:= \
-AliTPCClusterFinder.cxx \
-AliTPC.cxx\
-AliTPCv0.cxx\
-AliTPCv1.cxx\
-AliTPCv2.cxx\
-AliTPCv3.cxx\
-AliDetectorParam.cxx\
-AliTPCParam.cxx\
-AliTPCParamSR.cxx\
-AliTPCParamCR.cxx\
-AliTPCPRF2D.cxx\
-AliTPCRF1D.cxx\
-AliSimDigits.cxx\
-AliDigitsArray.cxx\
-AliTPCDigitsArray.cxx\
-AliComplexCluster.cxx\
-AliClusters.cxx\
-AliClustersArray.cxx\
-AliTPCClustersRow.cxx\
-AliTPCClustersArray.cxx\
-AliH2F.cxx\
-AliTPCcluster.cxx\
-AliTPCclusterer.cxx\
-AliTPCtrack.cxx\
-AliTPCtracker.cxx\
-AliTPCTrackHits.cxx
+SRCS:=  AliTPCClusterFinder.cxx  AliTPC.cxx  AliTPCv0.cxx    AliTPCv1.cxx      AliTPCv2.cxx  \
+	AliTPCv3.cxx AliDetectorParam.cxx AliTPCParam.cxx \
+	AliTPCParamSR.cxx AliTPCParamCR.cxx  AliTPCPRF2D.cxx \
+	AliTPCRF1D.cxx \
+	AliSimDigits.cxx AliDigitsArray.cxx  AliTPCDigitsArray.cxx \
+	AliComplexCluster.cxx AliClusters.cxx AliClustersArray.cxx \
+	AliTPCClustersRow.cxx \
+	AliTPCClustersArray.cxx AliH2F.cxx \
+        AliTPCcluster.cxx AliTPCclusterer.cxx \
+        AliTPCtrack.cxx AliTPCtracker.cxx \
+	AliTPCTrackHits.cxx\
 
-HDRS:= \
-AliTPCClusterFinder.h \
-AliTPC.h\
-AliTPCv0.h\
-AliTPCv1.h\
-AliTPCv2.h\
-AliTPCv3.h\
-AliDetectorParam.h\
-AliTPCParam.h\
-AliTPCParamSR.h\
-AliTPCParamCR.h\
-AliTPCPRF2D.h\
-AliTPCRF1D.h\
-AliSimDigits.h\
-AliDigitsArray.h\
-AliTPCDigitsArray.h\
-AliComplexCluster.h\
-AliClusters.h\
-AliClustersArray.h\
-AliTPCClustersRow.h\
-AliTPCClustersArray.h\
-AliH2F.h\
-AliTPCcluster.h\
-AliTPCclusterer.h\
-AliTPCtrack.h\
-AliTPCtracker.h\
-AliTPCTrackHits.h
+
+HDRS:= $(SRCS:.cxx=.h)
+
 
 DHDR:= TPCLinkDef.h
 
+EINCLUDE:= CONTAINERS
 
