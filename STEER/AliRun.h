@@ -146,6 +146,7 @@ public:
    virtual  void ResetGenerator(AliGenerator *generator);
    virtual  void EnergySummary();
    virtual  TDatabasePDG* PDGDB() const {return fPDGDB;}
+   virtual  void Announce() const;
    
    // MC Application
    //

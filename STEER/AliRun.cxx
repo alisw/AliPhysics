@@ -602,6 +602,12 @@ void AliRun::EnergySummary()
 }
 
 //_______________________________________________________________________
+void AliRun::Announce() const
+{
+  //
+}
+
+//_______________________________________________________________________
 AliModule *AliRun::GetModule(const char *name) const
 {
   //
