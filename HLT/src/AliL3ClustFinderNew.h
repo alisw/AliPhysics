@@ -11,8 +11,8 @@ struct AliClusterData
   UInt_t fTotalCharge;
   UInt_t fPad;
   UInt_t fTime;
-  UInt_t fPad2;     //for error in XY direction
-  ULong64_t fTime2; //for error in Z  direction
+  ULong64_t fPad2;     //for error in XY direction
+  ULong64_t fTime2;    //for error in Z  direction
   UInt_t fMean;
   UInt_t fFlags;
   UInt_t fChargeFalling; //for deconvolution

@@ -380,15 +380,16 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,AliClusterData *list)
       if(list[j].fTotalCharge < fThreshold) continue; //noise cluster
 
       Float_t xyz[3];      
-      Float_t fpad =(Float_t)list[j].fPad /(Float_t)list[j].fTotalCharge;
+      Float_t fpad =(Float_t)list[j].fPad / list[j].fTotalCharge;
       Float_t fpad2=fXYErr*fXYErr; //fixed given error
-      Float_t ftime =(Float_t)list[j].fTime /(Float_t)list[j].fTotalCharge;
+      Float_t ftime =(Float_t)list[j].fTime / list[j].fTotalCharge;
       Float_t ftime2=fZErr*fZErr;  //fixed given error
 
       if(fCalcerr) { //calc the errors, otherwice take the fixed error 
 	Int_t patch = AliL3Transform::GetPatch(fCurrentRow);
-
-	Double_t sy2=(Float_t)list[j].fPad2/(Float_t)list[j].fTotalCharge - fpad*fpad;
+	UInt_t q2=list[j].fTotalCharge*list[j].fTotalCharge;
+	Float_t sy2=list[j].fPad2 * list[j].fTotalCharge - list[j].fPad * list[j].fPad;
+	sy2/=q2;
 	if(sy2 < 0) {
 	    LOG(AliL3Log::kError,"AliL3ClustFinderNew::WriteClusters","Cluster width")
 	      <<"SigmaY2 negative "<<sy2<<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
@@ -403,7 +404,8 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,AliClusterData *list)
 	    }
 	  } else fpad2=sy2; //take the width not the error
 	}
-	Double_t sz2=(Float_t)list[j].fTime2/(Float_t)list[j].fTotalCharge - ftime*ftime;
+	Float_t sz2=list[j].fTime2*list[j].fTotalCharge - list[j].fTime*list[j].fTime;
+	sz2/=q2;
 	if(sz2 < 0){
 	  LOG(AliL3Log::kError,"AliL3ClustFinderNew::WriteClusters","Cluster width")
 	    <<"SigmaZ2 negative "<<sz2<<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
