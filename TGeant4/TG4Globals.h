@@ -17,8 +17,6 @@
 #include <globals.hh>
 #include <g4std/vector>
 #include <g4std/set>
-#include <g4rw/tvordvec.h>
-#include <g4rw/tpordvec.h>
 #include <G4RotationMatrix.hh>
 
 class G4Material;

@@ -15,7 +15,6 @@
 #include "TG4ListTreeFrame.h"
 #include "TG4VolumesFrames.h"
 #include "TG4MaterialsFrames.h"
-#include "TG4GuiVolume.h"
 #include "TG4Globals.h"
 
 #include <TGTab.h>

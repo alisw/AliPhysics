@@ -12,9 +12,6 @@
 #include "TG4G3PhysicsManager.h"
 #include "TG4G3ControlVector.h"
 #include "TG4ProcessControlMap.h"
-#include "TG4ExtDecayer.h"
-#include "AliDecayer.h"
-#include "AliMC.h"
 
 #include <G4ParticleDefinition.hh>
 #include <G4ProcessManager.hh>
@@ -25,7 +22,6 @@
 #include <G4IonConstructor.hh>
 #include <G4ShortLivedConstructor.hh>
 #include <G4ProcessTable.hh>
-#include <G4Decay.hh>
 
 const G4double TG4ModularPhysicsList::fgkDefaultCutValue = 1.0 * mm;
 
