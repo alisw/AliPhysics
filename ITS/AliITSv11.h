@@ -40,9 +40,6 @@ class AliITSv11 : public AliITS {
     Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
     Int_t  fMajorVersion;     // Major version number == IsVersion
     Int_t  fMinorVersion;     // Minor version number
-    char   fEuclidGeomDet[60];// file where detector transormation are define.
-    char   fRead[60];         //! file name to read .det file
-    char   fWrite[60];        //! file name to write .det file
     Float_t  fDet1;	      // thickness of detector in SPD layer 1
     Float_t  fDet2;	      // thickness of detector in SPD layer 2
     Float_t  fChip1;	      // thickness of chip in SPD layer 1   

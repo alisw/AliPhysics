@@ -29,12 +29,14 @@ void Displayv11(const char* filename=""){
     TControlBar *bar=new TControlBar("vertical","ITS Geometry Display",10,10);
     bar->AddButton("Set ITS Debug level 1","ISetits(0,1)","Debug on");
     bar->AddButton("Set ITS Debug level 0","ISetits(0,0)","Debug off");
-    bar->AddButton("Set ITS Theta,Phi cut on","ISetits(2,1)","Cut on");
-    bar->AddButton("Set ITS Theta,Phi cut off","ISetits(2,0)","Cut off");
+    bar->AddButton("Set Clipping on","ISetits(2,1)","Clipping on");
+    bar->AddButton("Set Cllipping off","ISetits(2,0)","Clipping off");
     bar->AddButton("Set axis on","ISetits(3,1)","Show Axis on");
     bar->AddButton("Set axis off","ISetits(3,0)","Show Axis off");
     bar->AddButton("Set perspective on","ISetits(4,1)","Perspective on");
     bar->AddButton("Set perspective off","ISetits(4,0)","Perspective off");
+    bar->AddButton("Set RayTrace on","ISetits(5,1)","Perspective on");
+    bar->AddButton("Set RayTrace off","ISetits(5,0)","Perspective off");
     bar->AddButton("Set circle/80","ISetits(1,80)","circles ~ by 80 lines");
     bar->AddButton("Display Geometry","Displayit()","Run Displayit");
     bar->AddButton("Display SPD Thermal Sheald","EngineeringSPDThS()",
@@ -43,6 +45,10 @@ void Displayv11(const char* filename=""){
                    "Run EngineeringSDDCone");
     bar->AddButton("Display SDD Centeral Cylinder","EngineeringSDDCylinder()",
                    "Run EngineeringSDDCylinder");
+    bar->AddButton("Display SSD Cone","EngineeringSSDCone()",
+                   "Run EngineeringSSDCone");
+    bar->AddButton("Display SSD Centeral Cylinder","EngineeringSSDCylinder()",
+                   "Run EngineeringSSDCylinder");
     bar->AddButton("Display SUP RB24 side","EngineeringSupRB24()",
                    "Run EngineeringSDDCylinder");
     bar->AddButton("Display SUP RB26 side","EngineeringSupRB26()",
@@ -54,7 +60,7 @@ void Displayv11(const char* filename=""){
 }
 //----------------------------------------------------------------------
 Int_t ISetits(Int_t t,Int_t v){
-    static Int_t itsdebug=0,nsegments=80,cut=0,axis=1,perspective=0;
+    static Int_t itsdebug=1,nsegments=80,cut=0,axis=1,perspective=0,ray=0;
 
     switch (t) {
     case 0:
@@ -76,6 +82,10 @@ Int_t ISetits(Int_t t,Int_t v){
     case 4:
         if(v<0) return perspective;
         perspective = v;
+        break;
+    case 5:
+        if(v<0) return ray;
+        ray = v;
         break;
     }// end switch
     return 0;
@@ -133,6 +143,10 @@ void Displayit(){
     mgr2->SetVisOption(0);
     //mgr2->CheckOverlaps(0.01);
     //mgr2->PrintOverlaps();
+    if(ISetits(2,-1)==1){
+        TGeoShape *clip = new TGeoTubeSeg(0, 1000, 2000, 45, 90);
+        mgr2->SetClippingShape(clip);
+    } // end if
     if(ISetits(2,-1)!=0) mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     //
     c1->cd(1);
@@ -147,6 +161,7 @@ void Displayit(){
         view1->Front();
         if(ISetits(3,-1)!=0) view1->ShowAxis();
     } // end if view1
+    if(ISetits(5,-1)==1) ALIC->Raytrace();
     c1->cd(2);
     ALIC->Draw();
     TPad *p2 = c1->GetPad(2);
@@ -159,6 +174,7 @@ void Displayit(){
         view2->RotateView(60.,30.);
         if(ISetits(3,-1)!=0) view2->ShowAxis();
     } // end if view2
+    if(ISetits(5,-1)==1) ALIC->Raytrace();
     c1->cd(3);
     ALIC->Draw();
     c1->SetPhi(90.0); c1->SetTheta(90.0);
@@ -172,6 +188,7 @@ void Displayit(){
         view3->Top();
         if(ISetits(3,-1)!=0) view3->ShowAxis();
     } // end if view3
+    if(ISetits(5,-1)==1) ALIC->Raytrace();
     c1->cd(4);
     ALIC->Draw();
     TPad *p4 = c1->GetPad(4);
@@ -184,6 +201,7 @@ void Displayit(){
         view4->Side();
         if(ISetits(3,-1)!=0) view4->ShowAxis();
     } // end if view4
+    if(ISetits(5,-1)==1) ALIC->Raytrace();
     //
 }
 //----------------------------------------------------------------------
@@ -218,6 +236,10 @@ void EngineeringSPDThS(){
     mgr2->SetVisOption(0);
     //mgr2->CheckOverlaps(0.01);
     //mgr2->PrintOverlaps();
+    if(ISetits(2,-1)==1){
+        TGeoShape *clip = new TGeoTubeSeg(0, 1000, 2000, 45, 90);
+        mgr2->SetClippingShape(clip);
+    } // end if
     mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     if(ISetits(2,-1)!=0) mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     //
@@ -233,6 +255,7 @@ void EngineeringSPDThS(){
         view1->Front();
         if(ISetits(3,-1)!=0) view1->ShowAxis();
     } // end if view1
+    if(ISetits(5,-1)==1) SPDThS->Raytrace();
     //
     c4->cd(2);
     SPDThS->Draw();
@@ -246,6 +269,7 @@ void EngineeringSPDThS(){
         view2->Top();
         if(ISetits(3,-1)!=0) view2->ShowAxis();
     } // end if view2
+    if(ISetits(5,-1)==1) SPDThS->Raytrace();
     //
 }
 //----------------------------------------------------------------------
@@ -279,6 +303,10 @@ void EngineeringSDDCone(){
     mgr2->SetVisOption(0);
     //mgr2->CheckOverlaps(0.01);
     //mgr2->PrintOverlaps();
+    if(ISetits(2,-1)==1){
+        TGeoShape *clip = new TGeoTubeSeg(0, 1000, 2000, 45, 90);
+        mgr2->SetClippingShape(clip);
+    } // end if
     mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     if(ISetits(2,-1)!=0) mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     //
@@ -294,6 +322,7 @@ void EngineeringSDDCone(){
         view1->Front();
         if(ISetits(3,-1)!=0) view1->ShowAxis();
     } // end if view1
+    if(ISetits(5,-1)==1) SDD->Raytrace();
     //
     c2->cd(2);
     SDD->Draw();
@@ -307,6 +336,7 @@ void EngineeringSDDCone(){
         view2->Top();
         if(ISetits(3,-1)!=0) view2->ShowAxis();
     } // end if view1
+    if(ISetits(5,-1)==1) SDD->Raytrace();
     //
 }
 //----------------------------------------------------------------------
@@ -344,6 +374,10 @@ void EngineeringSDDCylinder(){
     mgr2->SetVisOption(0);
     //mgr2->CheckOverlaps(0.01);
     //mgr2->PrintOverlaps();
+    if(ISetits(2,-1)==1){
+        TGeoShape *clip = new TGeoTubeSeg(0, 1000, 2000, 45, 90);
+        mgr2->SetClippingShape(clip);
+    } // end if
     mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     if(ISetits(2,-1)!=0) mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     //
@@ -359,7 +393,8 @@ void EngineeringSDDCylinder(){
         view1->Front();
         if(ISetits(3,-1)!=0) view1->ShowAxis();
     } // end if view1
-    arrow->DrawArrow(1.01*Rmax,-Dz,1.01*Rmax,+Dz);
+    if(ISetits(5,-1)==1) SDD->Raytrace();
+    //arrow->DrawArrow(1.01*Rmax,-Dz,1.01*Rmax,+Dz);
     //
     c3->cd(2);
     SDD->Draw();
@@ -373,14 +408,157 @@ void EngineeringSDDCylinder(){
         view2->Top();
         if(ISetits(3,-1)!=0) view2->ShowAxis();
     } // end if view2
-    arrow->DrawArrow(Rmax,0.0,Rmax,0.0);
-    Double_t s = TMath::Sin(0.7),c = TMath::Cos(0.7);
-    arrow->DrawArrow(-Rmin*c,-Rmin*s,Rmin*c,Rmin*s);
+    if(ISetits(5,-1)==1) SDD->Raytrace();
+    //arrow->DrawArrow(Rmax,0.0,Rmax,0.0);
+    //Double_t s = TMath::Sin(0.7),c = TMath::Cos(0.7);
+    //arrow->DrawArrow(-Rmin*c,-Rmin*s,Rmin*c,Rmin*s);
+    //
+}
+//----------------------------------------------------------------------
+void EngineeringSSDCone(){
+    // Display SSD Cone Geometry
+    // Inputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Retrurn:
+    //    none.
+    Int_t irr;
+    //
+    TGeoManager *mgr2 = gGeoManager;
+    TGeoVolume *ALIC = mgr2->GetTopVolume();
+    TCanvas *c2;
+    if(!(c2 = (TCanvas*)gROOT->FindObject("C2")))
+        c2 = new TCanvas("C2","ITS SSD Cone Geometry",900,450);
+    c2->Divide(2,1);
+    TGeoVolume *ITS,*SSD=0;
+    TGeoNode *node;
+    //
+    node = ALIC->FindNode("ITSV_1");
+    ITS = node->GetVolume();
+    node = ITS->FindNode("ITSssdConeA_1");
+    SSD = node->GetVolume();
+    //
+    mgr2->SetNsegments(ISetits(1,-1));
+    //
+    mgr2->SetVisLevel(6);
+    mgr2->SetVisOption(0);
+    //mgr2->CheckOverlaps(0.01);
+    //mgr2->PrintOverlaps();
+    if(ISetits(2,-1)==1){
+        TGeoShape *clip = new TGeoTubeSeg(0, 1000, 2000, 45, 90);
+        mgr2->SetClippingShape(clip);
+    } // end if
+    mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
+    if(ISetits(2,-1)!=0) mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
+    //
+    c2->cd(1);
+    SSD->Draw();
+    TPad *p1 = c2->GetPad(1);
+    TView *view1 = p1->GetView();
+    if(view1){
+        view1->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
+        if(irr) cout <<"error="<<irr<<endl;
+        if(ISetits(4,-1)==0) view1->SetParralel();
+        else  view1->SetPerspective();
+        view1->Top();
+        if(ISetits(3,-1)!=0) view1->ShowAxis();
+    } // end if view1
+    if(ISetits(5,-1)==1) SSD->Raytrace();
+    //
+    c2->cd(2);
+    SSD->Draw();
+    TPad *p2 = c2->GetPad(2);
+    TView *view2 = p2->GetView();
+    if(view2){
+        view2->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
+        if(irr) cout <<"error="<<irr<<endl;
+        if(ISetits(4,-1)==0) view2->SetParralel();
+        else  view2->SetPerspective();
+        view2->Front();
+        if(ISetits(3,-1)!=0) view2->ShowAxis();
+    } // end if view1
+    if(ISetits(5,-1)==1) SSD->Raytrace();
+    //
+}
+//----------------------------------------------------------------------
+void EngineeringSSDCylinder(){
+    // Display SSD Cylinder Geometry
+    // Inputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Retrurn:
+    //    none.
+    Int_t irr;
+    //
+    TGeoManager *mgr2 = gGeoManager;
+    TGeoVolume *ALIC = mgr2->GetTopVolume();
+    TCanvas *c3;
+    if(!(c3 = (TCanvas*)gROOT->FindObject("C3")))
+        c3 = new TCanvas("C3","ITS SSD Cylinder Geometry",900,450);
+    c3->Divide(2,1);
+    TGeoVolume *ITS,*SSD=0;
+    TGeoNode *node;
+    TArrow *arrow=new TArrow();
+    //
+    node = ALIC->FindNode("ITSV_1");
+    ITS = node->GetVolume();
+    node = ITS->FindNode("ITSssdCentCylCA_1");
+    SSD = node->GetVolume();
+    Double_t Rmin = ((TGeoTube*)(SSD->GetShape()))->GetRmin();
+    Double_t Rmax = ((TGeoTube*)(SSD->GetShape()))->GetRmax();
+    Double_t Dz   = ((TGeoTube*)(SSD->GetShape()))->GetDz();
+    //
+    mgr2->SetNsegments(ISetits(1,-1));
+    //
+    mgr2->SetVisLevel(6);
+    mgr2->SetVisOption(0);
+    //mgr2->CheckOverlaps(0.01);
+    //mgr2->PrintOverlaps();
+    if(ISetits(2,-1)==1){
+        TGeoShape *clip = new TGeoTubeSeg(0, 1000, 2000, 45, 90);
+        mgr2->SetClippingShape(clip);
+    } // end if
+    mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
+    if(ISetits(2,-1)!=0) mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
+    //
+    c3->cd(1);
+    SSD->Draw();
+    TPad *p1 = c3->GetPad(1);
+    TView *view1 = p1->GetView();
+    if(view1){
+        view1->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
+        if(irr) cout <<"error="<<irr<<endl;
+        if(ISetits(4,-1)==0) view1->SetParralel();
+        else  view1->SetPerspective();
+        view1->Front();
+        if(ISetits(3,-1)!=0) view1->ShowAxis();
+    } // end if view1
+    if(ISetits(5,-1)==1) SSD->Raytrace();
+    //arrow->DrawArrow(1.01*Rmax,-Dz,1.01*Rmax,+Dz);
+    //
+    c3->cd(2);
+    SSD->Draw();
+    TPad *p2 = c3->GetPad(2);
+    TView *view2 = p2->GetView();
+    if(view2){
+        view2->SetView(DSetits(2,-1.),DSetits(3,-1.),DSetits(4,-1.),irr);
+        if(irr) cout <<"error="<<irr<<endl;
+        if(ISetits(4,-1)==0) view2->SetParralel();
+        else  view2->SetPerspective();
+        view2->Top();
+        if(ISetits(3,-1)!=0) view2->ShowAxis();
+    } // end if view2
+    if(ISetits(5,-1)==1) SSD->Raytrace();
+    //arrow->DrawArrow(Rmax,0.0,Rmax,0.0);
+    //Double_t s = TMath::Sin(0.7),c = TMath::Cos(0.7);
+    //arrow->DrawArrow(-Rmin*c,-Rmin*s,Rmin*c,Rmin*s);
     //
 }
 //----------------------------------------------------------------------
 void EngineeringSupRB24(){
-    // Display SDD Cylinder Geometry
+    // Display  RB 24 side cable tray support structure Geometry
     // Inputs:
     //    none.
     // Outputs:
@@ -410,6 +588,10 @@ void EngineeringSupRB24(){
     mgr2->SetVisOption(0);
     //mgr2->CheckOverlaps(0.01);
     //mgr2->PrintOverlaps();
+    if(ISetits(2,-1)==1){
+        TGeoShape *clip = new TGeoTubeSeg(0, 1000, 2000, 45, 90);
+        mgr2->SetClippingShape(clip);
+    } // end if
     mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     if(ISetits(2,-1)!=0) mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     //
@@ -425,6 +607,7 @@ void EngineeringSupRB24(){
         view1->Front();
         if(ISetits(3,-1)!=0) view1->ShowAxis();
     } // end if view1
+    if(ISetits(5,-1)==1) SUPRB24->Raytrace();
     //
     c4->cd(2);
     SUPRB24->Draw();
@@ -438,12 +621,13 @@ void EngineeringSupRB24(){
         view2->Top();
         if(ISetits(3,-1)!=0) view2->ShowAxis();
     } // end if view2
+    if(ISetits(5,-1)==1) SUPRB24->Raytrace();
     //
 }
 
 //----------------------------------------------------------------------
 void EngineeringSupRB26(){
-    // Display SDD Cylinder Geometry
+    // Display RB 26 side cable tray support structure
     // Inputs:
     //    none.
     // Outputs:
@@ -473,6 +657,10 @@ void EngineeringSupRB26(){
     mgr2->SetVisOption(0);
     //mgr2->CheckOverlaps(0.01);
     //mgr2->PrintOverlaps();
+    if(ISetits(2,-1)==1){
+        TGeoShape *clip = new TGeoTubeSeg(0, 1000, 2000, 45, 90);
+        mgr2->SetClippingShape(clip);
+    } // end if
     mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     if(ISetits(2,-1)!=0) mgr2->SetPhiRange(DSetits(1,-1.),DSetits(0,-1.));
     //
@@ -488,6 +676,7 @@ void EngineeringSupRB26(){
         view1->Front();
         if(ISetits(3,-1)!=0) view1->ShowAxis();
     } // end if view1
+    if(ISetits(5,-1)==1) SUPRB26->Raytrace();
     //
     c5->cd(2);
     SUPRB26->Draw();
@@ -501,5 +690,6 @@ void EngineeringSupRB26(){
         view2->Top();
         if(ISetits(3,-1)!=0) view2->ShowAxis();
     } // end if view2
+    if(ISetits(5,-1)==1) SUPRB26->Raytrace();
     //
 }

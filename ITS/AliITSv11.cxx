@@ -92,7 +92,18 @@ ClassImp(AliITSv11)
 */
 
 //______________________________________________________________________
-AliITSv11::AliITSv11() : AliITS() {
+AliITSv11::AliITSv11() : AliITS(),
+fEuclidOut(kFALSE),
+fGeomDetOut(kFALSE),
+fGeomDetIn(kFALSE),
+fMajorVersion(11),
+fMinorVersion(0),
+fDet1(0.0),
+fDet2(0.0),
+fChip1(0.0),
+fChip2(0.0),
+fRails(0),
+fFluid(1){
     // Standard default constructor for the ITS version 11.
     // Inputs:
     //   none.
@@ -106,7 +117,18 @@ AliITSv11::AliITSv11() : AliITS() {
 //   fcD = 0;
 }
 //______________________________________________________________________
-AliITSv11::AliITSv11(const char *title) : AliITS("ITS", title){
+AliITSv11::AliITSv11(const char *title) : AliITS("ITS", title),
+fEuclidOut(kFALSE),
+fGeomDetOut(kFALSE),
+fGeomDetIn(kFALSE),
+fMajorVersion(11),
+fMinorVersion(0),
+fDet1(0.0),
+fDet2(0.0),
+fChip1(0.0),
+fChip2(0.0),
+fRails(0),
+fFluid(1){
     // Standard constructor for the ITS version 11.
     // Inputs:
     //   const char *title  The title of for this geometry.
@@ -114,10 +136,6 @@ AliITSv11::AliITSv11(const char *title) : AliITS("ITS", title){
     //   none.
     // Return
     //   A Standard constructed AliITSv11 class.
-
-    //fITSV = 0;
-    //fcS = 0;
-//    fcD = 0;
 }
 //______________________________________________________________________
 AliITSv11::~AliITSv11() {
@@ -172,7 +190,7 @@ void AliITSv11::BuildGeometry(){
     //   none.
     // Return
     //   none.
-    TVector3 t(0.0,0.0,0.0);
+    //TVector3 t(0.0,0.0,0.0);
 
     //if(fITSV==0) fITSV = new AliITSGeometryITSV(this,"ALIC");
     //if(fcS==0) fcS = new AliITSGeometrySSDCone(this,t,"TSV",1);
@@ -194,23 +212,24 @@ void AliITSv11::CreateGeometry(){
     const Double_t kcm = 1.0;
 
     TGeoManager *mgr = gGeoManager;
-    TGeoVolume *ALIC = mgr->GetTopVolume();
+    TGeoVolume *vALIC = mgr->GetTopVolume();
 
-    TGeoPcon *itsv = new TGeoPcon("ITS Top Volume, Daughter of ALIC",
+    TGeoPcon *sITS = new TGeoPcon("ITS Top Volume, Daughter of ALIC",
                                   0.0,360.0,2);
     // DefineSection(section number, Z, Rmin, Rmax).
-    itsv->DefineSection(0,-300.0*kcm,0.01*kcm,50.0*kcm);
-    itsv->DefineSection(1,+300.0*kcm,0.01*kcm,50.0*kcm);
-    TGeoVolume *ITSV = new TGeoVolume("ITSV",itsv,0);
-    //mgr->AddVolume(ITSV);
-    ITSV->SetVisibility(kFALSE);
-    ALIC->AddNode(ITSV,1,0);
+    sITS->DefineSection(0,-300.0*kcm,0.01*kcm,50.0*kcm);
+    sITS->DefineSection(1,+300.0*kcm,0.01*kcm,50.0*kcm);
+    TGeoVolume *vITS = new TGeoVolume("ITSV",sITS,0);
+    mgr->AddVolume(vITS);
+    vITS->SetVisibility(kFALSE);
+    vALIC->AddNode(vITS,1,0);
     //
     AliITSv11GeometrySupport *sup = new AliITSv11GeometrySupport(GetDebug());
-    //sup->SPDCone(ITSV);
-    //sup->SDDCone(ITSV);
-    sup->SSDCone(ITSV);
-    //sup->ServicesCableSupport(ITSV);
+    sup->SPDCone(vITS);
+    sup->SPDThermalSheald(vITS);
+    sup->SDDCone(vITS);
+    sup->SSDCone(vITS);
+    sup->ServicesCableSupport(vITS);
 }
 //______________________________________________________________________
 void AliITSv11::CreateMaterials(){
@@ -226,56 +245,56 @@ void AliITSv11::CreateMaterials(){
     //   none.
 
     //TGeoMaterial *C  = new TGeoMaterial("ITSCarbon",12.0,6.0,2.265);
-    TGeoMaterial *Al = new TGeoMaterial("ITSAluminum",26.981539,13.0,2.07);
-    TGeoMixture *Cfiber = new TGeoMixture("ITSCarbonFiber",6,1.930);
-    TGeoMixture *Rohacell = new TGeoMixture("ITSRohacell",6,1.930);
-    TGeoMixture *Staselite = new TGeoMixture("ITSStaselite4411w",6,1.930);
-    TGeoMixture *Air = new TGeoMixture("ITSAir",6,1.205*1.E-3);
-    TGeoMixture *Stainless = new TGeoMixture("ITSStainless",6,1.930);
+    TGeoMaterial *matAl = new TGeoMaterial("ITSAluminum",26.981539,13.0,2.07);
+    TGeoMixture *matCfiber = new TGeoMixture("ITSCarbonFiber",6,1.930);
+    TGeoMixture *matRohacell = new TGeoMixture("ITSRohacell",6,1.930);
+    TGeoMixture *matStaselite = new TGeoMixture("ITSStaselite4411w",6,1.930);
+    TGeoMixture *matAir = new TGeoMixture("ITSAir",6,1.205*1.E-3);
+    TGeoMixture *matStainless = new TGeoMixture("ITSStainless",6,1.930);
     //
-    Double_t SPDcone[20];
-    SPDcone[0] = 1.0; // imat
-    SPDcone[1] = 0.0; // isvol
-    SPDcone[2] = gAlice->Field()->Integ(); // ifield
-    SPDcone[3] = gAlice->Field()->Max(); // fieldm
-    SPDcone[4] = 1.0; // tmaxfd [degrees]
-    SPDcone[5] = 1.0; // stemax [cm]
-    SPDcone[6] = 0.5; // deemax [fraction]
-    SPDcone[7] = 1.0E-3; // epsil [cm]
-    SPDcone[8] = 0.0; // stmin [cm]
-    new TGeoMedium("ITSspdCarbonFiber",1,Cfiber,SPDcone);
-    SPDcone[0] += 1.0;
-    new TGeoMedium("ITSspdStaselite4411w",2,Staselite,SPDcone);
-    SPDcone[0] += 1.0;
-    new TGeoMedium("ITSspdRohacell50A",3,Rohacell,SPDcone);
-    SPDcone[0] += 1.0;
-    new TGeoMedium("ITSspdStainlesSteal",4,Stainless,SPDcone);
-    SPDcone[0] += 1.0;
-    new TGeoMedium("ITSspdAir",5,Air,SPDcone);
-    SPDcone[0] += 1.0;
-    new TGeoMedium("ITSspdAl",6,Al,SPDcone);
+    Double_t medSPDcone[20];
+    medSPDcone[0] = 1.0; // imat
+    medSPDcone[1] = 0.0; // isvol
+    medSPDcone[2] = gAlice->Field()->Integ(); // ifield
+    medSPDcone[3] = gAlice->Field()->Max(); // fieldm
+    medSPDcone[4] = 1.0; // tmaxfd [degrees]
+    medSPDcone[5] = 1.0; // stemax [cm]
+    medSPDcone[6] = 0.5; // deemax [fraction]
+    medSPDcone[7] = 1.0E-3; // epsil [cm]
+    medSPDcone[8] = 0.0; // stmin [cm]
+    new TGeoMedium("ITSspdCarbonFiber",1,matCfiber,medSPDcone);
+    medSPDcone[0] += 1.0;
+    new TGeoMedium("ITSspdStaselite4411w",2,matStaselite,medSPDcone);
+    medSPDcone[0] += 1.0;
+    new TGeoMedium("ITSspdRohacell50A",3,matRohacell,medSPDcone);
+    medSPDcone[0] += 1.0;
+    new TGeoMedium("ITSspdStainlesSteal",4,matStainless,medSPDcone);
+    medSPDcone[0] += 1.0;
+    new TGeoMedium("ITSspdAir",5,matAir,medSPDcone);
+    medSPDcone[0] += 1.0;
+    new TGeoMedium("ITSspdAl",6,matAl,medSPDcone);
     //
-    Double_t SSDcone[20];
-    SSDcone[0] = 1.0; // imat
-    SSDcone[1] = 0.0; // isvol
-    SSDcone[2] = gAlice->Field()->Integ(); // ifield
-    SSDcone[3] = gAlice->Field()->Max(); // fieldm
-    SSDcone[4] = 1.0; // tmaxfd [degrees]
-    SSDcone[5] = 1.0; // stemax [cm]
-    SSDcone[6] = 0.5; // deemax [fraction]
-    SSDcone[7] = 1.0E-3; // epsil [cm]
-    SSDcone[8] = 0.0; // stmin [cm]
-    new TGeoMedium("ITSssdCarbonFiber",1,Cfiber,SSDcone);
-    SSDcone[0] += 1.0;
-    new TGeoMedium("ITSssdStaselite4411w",2,Staselite,SSDcone);
-    SSDcone[0] += 1.0;
-    new TGeoMedium("ITSssdRohacell50A",3,Rohacell,SSDcone);
-    SSDcone[0] += 1.0;
-    new TGeoMedium("ITSssdStainlesSteal",4,Stainless,SSDcone);
-    SSDcone[0] += 1.0;
-    new TGeoMedium("ITSssdAir",5,Air,SSDcone);
-    SSDcone[0] += 1.0;
-    new TGeoMedium("ITSssdAl",6,Al,SSDcone);
+    Double_t medSSDcone[20];
+    medSSDcone[0] = 1.0; // imat
+    medSSDcone[1] = 0.0; // isvol
+    medSSDcone[2] = gAlice->Field()->Integ(); // ifield
+    medSSDcone[3] = gAlice->Field()->Max(); // fieldm
+    medSSDcone[4] = 1.0; // tmaxfd [degrees]
+    medSSDcone[5] = 1.0; // stemax [cm]
+    medSSDcone[6] = 0.5; // deemax [fraction]
+    medSSDcone[7] = 1.0E-3; // epsil [cm]
+    medSSDcone[8] = 0.0; // stmin [cm]
+    new TGeoMedium("ITSssdCarbonFiber",1,matCfiber,medSSDcone);
+    medSSDcone[0] += 1.0;
+    new TGeoMedium("ITSssdStaselite4411w",2,matStaselite,medSSDcone);
+    medSSDcone[0] += 1.0;
+    new TGeoMedium("ITSssdRohacell50A",3,matRohacell,medSSDcone);
+    medSSDcone[0] += 1.0;
+    new TGeoMedium("ITSssdStainlesSteal",4,matStainless,medSSDcone);
+    medSSDcone[0] += 1.0;
+    new TGeoMedium("ITSssdAir",5,matAir,medSSDcone);
+    medSSDcone[0] += 1.0;
+    new TGeoMedium("ITSssdAl",6,matAl,medSSDcone);
 }
 //______________________________________________________________________
 void AliITSv11::InitAliITSgeom(){
