@@ -29,6 +29,7 @@ ClassImp(AliL3Histogram)
 
 AliL3Histogram::AliL3Histogram()
 {
+  // Default constructor
   fNxbins = 0;
   fNybins = 0;
   fNcells = 0;
@@ -54,6 +55,7 @@ AliL3Histogram::AliL3Histogram(Char_t *name,Char_t */*id*/,
 			       Int_t nxbin,Double_t xmin,Double_t xmax,
 			       Int_t nybin,Double_t ymin,Double_t ymax) 
 {
+  // Normal constructor
   strcpy(fName,name);
 
   fNxbins = nxbin;
@@ -93,6 +95,7 @@ AliL3Histogram::~AliL3Histogram()
 
 void AliL3Histogram::Reset()
 {
+  // Reset histogram contents
   if(fContent)
     for(Int_t i=0; i<fNcells; i++) fContent[i] = 0;
 
@@ -101,6 +104,7 @@ void AliL3Histogram::Reset()
 
 void AliL3Histogram::Fill(Double_t x,Double_t y,Int_t weight)
 {
+  // Fill the weight into a bin which correspond to x and y
   Int_t bin = FindBin(x,y);
 #ifdef _IFON_
   if(bin < 0)
@@ -112,6 +116,7 @@ void AliL3Histogram::Fill(Double_t x,Double_t y,Int_t weight)
 
 void AliL3Histogram::Fill(Double_t x,Int_t ybin,Int_t weight)
 {
+  // Fill the weight into a bin which correspond to x and ybin
   Int_t xbin = FindXbin(x);
   Int_t bin = GetBin(xbin,ybin);
 #ifdef _IFON_
@@ -124,6 +129,7 @@ void AliL3Histogram::Fill(Double_t x,Int_t ybin,Int_t weight)
 
 void AliL3Histogram::Fill(Int_t xbin,Double_t y,Int_t weight)
 {
+  // Fill the weight into a bin which correspond to xbin and y
   Int_t ybin = FindYbin(y);
   Int_t bin = GetBin(xbin,ybin);
 #ifdef _IFON_
@@ -136,6 +142,7 @@ void AliL3Histogram::Fill(Int_t xbin,Double_t y,Int_t weight)
 
 void AliL3Histogram::Fill(Int_t xbin,Int_t ybin,Int_t weight)
 {
+  // Fill the weight into a bin which correspond to xbin and ybin
   Int_t bin = GetBin(xbin,ybin);
 #ifdef _IFON_
   if(bin < 0)
@@ -147,6 +154,7 @@ void AliL3Histogram::Fill(Int_t xbin,Int_t ybin,Int_t weight)
 
 Int_t AliL3Histogram::FindBin(Double_t x,Double_t y) const
 {
+  // Finds the bin which correspond to x and y
   Int_t xbin = FindXbin(x);
   Int_t ybin = FindYbin(y);
 #ifdef _IFON_
@@ -159,6 +167,7 @@ Int_t AliL3Histogram::FindBin(Double_t x,Double_t y) const
 
 Int_t AliL3Histogram::FindLabelBin(Double_t x,Double_t y) const
 {
+  // Returns the corresponding bin with the mc labels
   Int_t xbin = FindXbin(x);
   Int_t ybin = FindYbin(y);
 #ifdef _IFON_
@@ -171,6 +180,7 @@ Int_t AliL3Histogram::FindLabelBin(Double_t x,Double_t y) const
 
 Int_t AliL3Histogram::FindXbin(Double_t x) const
 {
+  // Finds the bin which correspond to x
   if(x < fXmin || x > fXmax)
     return 0;
   
@@ -179,6 +189,7 @@ Int_t AliL3Histogram::FindXbin(Double_t x) const
 
 Int_t AliL3Histogram::FindYbin(Double_t y) const
 {
+  // Finds the bin which correspond to y
   if(y < fYmin || y > fYmax)
     return 0;
   
@@ -187,6 +198,7 @@ Int_t AliL3Histogram::FindYbin(Double_t y) const
 
 Int_t AliL3Histogram::GetBin(Int_t xbin,Int_t ybin) const
 {
+  // Returns the bin which correspond to xbin and ybin
   if(xbin < fFirstXbin || xbin > fLastXbin)
     return 0;
   if(ybin < fFirstYbin || ybin > fLastYbin)
@@ -197,6 +209,7 @@ Int_t AliL3Histogram::GetBin(Int_t xbin,Int_t ybin) const
 
 Int_t AliL3Histogram::GetLabelBin(Int_t xbin,Int_t ybin) const
 {
+  // Returns the corresponding bin with the mc labels
   if(xbin < fFirstXbin || xbin > fLastXbin)
     return -1;
   if(ybin < fFirstYbin || ybin > fLastYbin)
@@ -207,6 +220,7 @@ Int_t AliL3Histogram::GetLabelBin(Int_t xbin,Int_t ybin) const
 
 Int_t AliL3Histogram::GetBinContent(Int_t bin) const
 {
+  // Return the bin content
   if(bin >= fNcells)
     {
       LOG(AliL3Log::kError,"AliL3Histogram::GetBinContent","array")<<AliL3Log::kDec<<
@@ -221,6 +235,7 @@ Int_t AliL3Histogram::GetBinContent(Int_t bin) const
 
 void AliL3Histogram::SetBinContent(Int_t xbin,Int_t ybin,Int_t value)
 {
+  // Set bin content
   Int_t bin = GetBin(xbin,ybin);
 #ifdef _IFON_
   if(bin == 0) 
@@ -232,6 +247,7 @@ void AliL3Histogram::SetBinContent(Int_t xbin,Int_t ybin,Int_t value)
 
 void AliL3Histogram::SetBinContent(Int_t bin,Int_t value)
 {
+  // Set bin content
 
   if(bin >= fNcells)
     {
@@ -247,6 +263,7 @@ void AliL3Histogram::SetBinContent(Int_t bin,Int_t value)
 
 void AliL3Histogram::AddBinContent(Int_t xbin,Int_t ybin,Int_t weight)
 {
+  // Adds weight to bin content
   Int_t bin = GetBin(xbin,ybin);
 #ifdef _IFON_
   if(bin == 0)
@@ -258,6 +275,7 @@ void AliL3Histogram::AddBinContent(Int_t xbin,Int_t ybin,Int_t weight)
 
 void AliL3Histogram::AddBinContent(Int_t bin,Int_t weight)
 {
+  // Adds weight to bin content
   if(bin < 0 || bin > fNcells)
     {
       LOG(AliL3Log::kError,"AliL3Histogram::AddBinContent","array")<<AliL3Log::kDec<<
@@ -304,6 +322,7 @@ void AliL3Histogram::Add(AliL3Histogram *h1,Double_t /*weight*/)
 
 Double_t AliL3Histogram::GetBinCenterX(Int_t xbin) const
 {
+  // Returns the position of the center of a bin
   if(xbin < fFirstXbin || xbin > fLastXbin)
     {
       LOG(AliL3Log::kError,"AliL3Histogram::GetBinCenterX","xbin")
@@ -316,6 +335,7 @@ Double_t AliL3Histogram::GetBinCenterX(Int_t xbin) const
 
 Double_t AliL3Histogram::GetBinCenterY(Int_t ybin) const
 {
+  // Returns the position of the center of a bin
   if(ybin < fFirstYbin || ybin > fLastYbin)
     {
       LOG(AliL3Log::kError,"AliL3Histogram::GetBinCenterY","ybin")
@@ -328,6 +348,7 @@ Double_t AliL3Histogram::GetBinCenterY(Int_t ybin) const
 
 Double_t AliL3Histogram::GetPreciseBinCenterX(Float_t xbin) const
 {
+  // Returns the position of the center of a bin using precise values inside the bin
   if(xbin < (fFirstXbin-0.5) || xbin > (fLastXbin+0.5))
     {
       LOG(AliL3Log::kError,"AliL3Histogram::GetBinCenterX","xbin")
@@ -340,6 +361,7 @@ Double_t AliL3Histogram::GetPreciseBinCenterX(Float_t xbin) const
 
 Double_t AliL3Histogram::GetPreciseBinCenterY(Float_t ybin) const
 {
+  // Returns the position of the center of a bin using precise values inside the bin
   if(ybin < (fFirstYbin-0.5) || ybin > (fLastYbin+0.5))
     {
       LOG(AliL3Log::kError,"AliL3Histogram::GetBinCenterY","ybin")
@@ -352,6 +374,7 @@ Double_t AliL3Histogram::GetPreciseBinCenterY(Float_t ybin) const
 
 void AliL3Histogram::Draw(Char_t *option)
 {
+  // Fill the contents of the corresponding ROOT histogram and draws it 
 #ifdef use_root
   if(!fRootHisto)
     CreateRootHisto();
@@ -375,6 +398,7 @@ void AliL3Histogram::Draw(Char_t *option)
 
 void AliL3Histogram::CreateRootHisto()
 {
+  // Create ROOT histogram out of AliL3Histogram
 #ifdef use_root
   fRootHisto = new TH2F(fName,"",fNxbins,fXmin,fXmax,fNybins,fYmin,fYmax);
   return;

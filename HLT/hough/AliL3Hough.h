@@ -1,7 +1,7 @@
 // @(#) $Id$
 
-#ifndef ALIL3HOUGH
-#define ALIL3HOUGH
+#ifndef ALIL3HOUGH_H
+#define ALIL3HOUGH_H
 
 #include "AliL3RootTypes.h"
 
@@ -22,72 +22,22 @@ class AliL3Benchmark;
 #endif
 
 class AliL3Hough {
-  
- private:
-  Char_t *fInputFile;//!
-  Char_t *fInputPtr;//!
-  Char_t fPath[1024];
-  Bool_t fBinary;
-  Bool_t fAddHistograms;
-  Bool_t fDoIterative;
-  Bool_t fWriteDigits;
-  Bool_t fUse8bits;
-  Int_t fNEtaSegments;
-  Int_t fNPatches;
-  Int_t fVersion; //which HoughTransformer to use
-  Int_t fCurrentSlice;
-  Int_t fEvent;
-
-  Int_t fPeakThreshold[6];
-  Float_t fLowPt[6];
-  Float_t fUpperPt[6];
-  Float_t fPtRes[6];
-  Float_t fPhi[6];
-  Int_t fNBinX[6];
-  Int_t fNBinY[6];
-  Int_t fThreshold[6];
-  Int_t fNSaveIterations; //for HoughtransformerVhdl
-  
-  //parameters for the peak finder:
-  Int_t fKappaSpread;
-  Float_t fPeakRatio;
-
-  Float_t fZVertex;
-
-  AliL3MemHandler **fMemHandler; //!
-  AliL3HoughBaseTransformer **fHoughTransformer; //!
-  AliL3HoughEval **fEval; //!
-  AliL3HoughMaxFinder *fPeakFinder; //!
-  AliL3TrackArray **fTracks; //!
-  AliL3TrackArray *fGlobalTracks; //!
-  AliL3HoughMerger *fMerger; //!
-  AliL3HoughIntMerger *fInterMerger; //!
-  AliL3HoughGlobalMerger *fGlobalMerger; //!
-  AliL3Benchmark *fBenchmark; //!
-
-#ifdef use_newio
-  AliRunLoader *fRunLoader;
-#endif
-
-  void CleanUp();
-  Double_t GetCpuTime();
-  
  public:
   
   AliL3Hough(); 
-  AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0,Char_t *ptr=0);
+  AliL3Hough(Char_t *path,Bool_t binary,Int_t netasegments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0,Char_t *ptr=0);
   virtual ~AliL3Hough();
 
 #ifdef use_newio  
   void SetRunLoader(AliRunLoader *runloader) {fRunLoader = runloader;}
 #endif
 
-  void Init(Char_t *path,Bool_t binary,Int_t n_eta_segments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0,Char_t *ptr=0,Float_t zvertex=0.0);
+  void Init(Char_t *path,Bool_t binary,Int_t netasegments=100,Bool_t bit8=kFALSE,Int_t tv=0,Char_t *infile=0,Char_t *ptr=0,Float_t zvertex=0.0);
   void Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE);
 
   void Process(Int_t minslice,Int_t maxslice);
   void ReadData(Int_t slice,Int_t eventnr=0);
-  void Transform(Int_t *row_range = 0);
+  void Transform(Int_t *rowrange = 0);
   void ProcessSliceIter();
   void ProcessPatchIter(Int_t patch);
   void MergePatches();
@@ -98,8 +48,8 @@ class AliL3Hough {
   void FindTrackCandidatesRow();
   void AddAllHistograms();
   void AddAllHistogramsRows();
-  Int_t Evaluate(Int_t road_width=1,Int_t nrowstomiss=1);
-  void EvaluatePatch(Int_t i,Int_t road_width,Int_t nrowstomiss);
+  Int_t Evaluate(Int_t roadwidth=1,Int_t nrowstomiss=1);
+  void EvaluatePatch(Int_t i,Int_t roadwidth,Int_t nrowstomiss);
   void WriteTracks(Int_t slice,Char_t *path="./");
   void WriteTracks(Char_t *path);
   void WriteDigits(Char_t *outfile="output_digits.root");
@@ -131,6 +81,55 @@ class AliL3Hough {
   AliL3HoughIntMerger *GetInterMerger() {if(!fInterMerger) return 0; return fInterMerger;}
   AliL3MemHandler *GetMemHandler(Int_t i) {if(!fMemHandler[i]) return 0; return fMemHandler[i];}
   AliL3HoughMaxFinder *GetMaxFinder() {return fPeakFinder;}
+  
+ private:
+  Char_t *fInputFile;//!
+  Char_t *fInputPtr;//!
+  Char_t fPath[1024]; // Path to the files
+  Bool_t fBinary; // Is input binary
+  Bool_t fAddHistograms; // Add all patch histograms at the end or not
+  Bool_t fDoIterative; // Iterative or not
+  Bool_t fWriteDigits; // Write Digits or not
+  Bool_t fUse8bits; // Use 8 bits or not
+  Int_t fNEtaSegments; // Number of eta slices
+  Int_t fNPatches; // Number of patches
+  Int_t fVersion; //which HoughTransformer to use
+  Int_t fCurrentSlice; // Current eta slice
+  Int_t fEvent; // Current event number
+
+  Int_t fPeakThreshold[6]; // Threshold for the peak finder
+  Float_t fLowPt[6]; // Lower limit on Pt
+  Float_t fUpperPt[6]; // Upper limit on Pt
+  Float_t fPtRes[6]; // Desired Pt resolution
+  Float_t fPhi[6]; // Limit on the emission angle
+  Int_t fNBinX[6]; // Number of bins in the Hough space
+  Int_t fNBinY[6]; // Number of bins in the Hough space
+  Int_t fThreshold[6]; // Threshold for digits
+  Int_t fNSaveIterations; //for HoughtransformerVhdl
+  
+  //parameters for the peak finder:
+  Int_t fKappaSpread; // Kappa spread
+  Float_t fPeakRatio; // Peak ratio
+
+  Float_t fZVertex; // Z position of the primary vertex
+
+  AliL3MemHandler **fMemHandler; //!
+  AliL3HoughBaseTransformer **fHoughTransformer; //!
+  AliL3HoughEval **fEval; //!
+  AliL3HoughMaxFinder *fPeakFinder; //!
+  AliL3TrackArray **fTracks; //!
+  AliL3TrackArray *fGlobalTracks; //!
+  AliL3HoughMerger *fMerger; //!
+  AliL3HoughIntMerger *fInterMerger; //!
+  AliL3HoughGlobalMerger *fGlobalMerger; //!
+  AliL3Benchmark *fBenchmark; //!
+
+#ifdef use_newio
+  AliRunLoader *fRunLoader; // Run Loader
+#endif
+
+  void CleanUp();
+  Double_t GetCpuTime();
 
   ClassDef(AliL3Hough,1) //Hough transform base class
 };

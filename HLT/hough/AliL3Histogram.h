@@ -1,7 +1,7 @@
 // @(#) $Id$
 
-#ifndef ALIL3_HISTOGRAM
-#define ALIL3_HISTOGRAM
+#ifndef ALIL3HISTOGRAM_H
+#define ALIL3HISTOGRAM_H
 
 #include "AliL3StandardIncludes.h"
 #include "AliL3RootTypes.h"
@@ -12,33 +12,6 @@
 #endif
 
 class AliL3Histogram {
-  
- private:
-  Double_t fBinwidthX;
-  Double_t fBinwidthY;
-  
- protected:
-  Int_t *fContent; //!
-  Char_t fName[100];
-  Int_t fNxbins;
-  Int_t fNybins;
-  Int_t fNcells;
-  Int_t fEntries;
-  Int_t fFirstXbin;
-  Int_t fFirstYbin;
-  Int_t fLastXbin;
-  Int_t fLastYbin;
-  Int_t fThreshold;
-
-  Double_t fXmin;
-  Double_t fYmin;
-  Double_t fXmax;
-  Double_t fYmax;
-
-#ifdef use_root
-  TH2F *fRootHisto;
-#endif  
-  
  public:
 
   AliL3Histogram();
@@ -92,6 +65,32 @@ class AliL3Histogram {
   Int_t GetNbinsX() const {return fNxbins;}
   Int_t GetNbinsY() const {return fNybins;}
   Int_t GetNEntries() const {return fEntries;}
+    
+ protected:
+  Int_t *fContent; //!
+  Char_t fName[100]; // Name of the histogram
+  Int_t fNxbins; // Number of bins in the histogram
+  Int_t fNybins; // Number of bins in the histogram
+  Int_t fNcells; // Overall number of bins in the histogram
+  Int_t fEntries; // Number of entries in the histogram
+  Int_t fFirstXbin; // First active bin
+  Int_t fFirstYbin; // First active bin
+  Int_t fLastXbin; // Last active bin
+  Int_t fLastYbin; // Last active bin
+  Int_t fThreshold; // Bin content threshold 
+
+  Double_t fXmin; // Lower limit in X
+  Double_t fYmin; // Lower limit in Y
+  Double_t fXmax; // Upper limit in X
+  Double_t fYmax; // Upper limit in Y
+
+#ifdef use_root
+  TH2F *fRootHisto; // Corresponding ROOT histogram
+#endif  
+
+ private:
+  Double_t fBinwidthX; // Bin width of the Hough space
+  Double_t fBinwidthY; // Bin width of the Hough space
   
   ClassDef(AliL3Histogram,1) //2D histogram class
     

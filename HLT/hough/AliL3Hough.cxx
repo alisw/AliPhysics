@@ -102,11 +102,12 @@ AliL3Hough::AliL3Hough()
 #endif
 }
 
-AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv,Char_t *infile,Char_t *ptr)
+AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t netasegments,Bool_t bit8,Int_t tv,Char_t *infile,Char_t *ptr)
 {
+  //Normal constructor
   fBinary = binary;
   strcpy(fPath,path);
-  fNEtaSegments  = n_eta_segments;
+  fNEtaSegments  = netasegments;
   fAddHistograms = kFALSE;
   fDoIterative   = kFALSE; 
   fWriteDigits   = kFALSE;
@@ -188,11 +189,12 @@ void AliL3Hough::CleanUp()
   //cout << "Cleaned class mem " << endl;
 }
 
-void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit8,Int_t tv,Char_t *infile,Char_t *ptr,Float_t zvertex)
+void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t netasegments,Bool_t bit8,Int_t tv,Char_t *infile,Char_t *ptr,Float_t zvertex)
 {
+  //Normal init of the AliL3Hough
   fBinary = binary;
   strcpy(fPath,path);
-  fNEtaSegments = n_eta_segments;
+  fNEtaSegments = netasegments;
   fWriteDigits  = kFALSE;
   fUse8bits     = bit8;
   fVersion      = tv;
@@ -217,6 +219,7 @@ void AliL3Hough::Init(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bit
 
 void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 {
+  // Init
   fDoIterative   = doit; 
   fAddHistograms = addhists;
 
@@ -311,7 +314,7 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 
 void AliL3Hough::SetTransformerParams(Float_t ptres,Float_t ptmin,Float_t ptmax,Int_t ny,Int_t patch)
 {
-
+  // Setup the parameters for the Hough Transformer
   Int_t mrow;
   Float_t psi=0;
   if(patch==-1)
@@ -351,6 +354,7 @@ void AliL3Hough::SetTransformerParams(Float_t ptres,Float_t ptmin,Float_t ptmax,
 /*
 void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t ptmin,Int_t patch)
 {
+  // Setup the parameters for the Hough Transformer
 
   Int_t mrow=80;
   Double_t lineradius = sqrt(pow(AliL3Transform::Row2X(mrow),2) + pow(AliL3Transform::GetMaxY(mrow),2));
@@ -371,6 +375,7 @@ void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t ptmin,Int_t patc
 */
 void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t ptmin,Int_t /*patch*/)
 {
+  // Setup the parameters for the Hough Transformer
 
 
   Int_t mrow=79;
@@ -414,6 +419,7 @@ void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t lpt,Float_t phi)
 
 void AliL3Hough::SetThreshold(Int_t t3,Int_t patch)
 {
+  // Set digits threshold
   if(patch==-1)
     {
       Int_t i=0;
@@ -426,6 +432,7 @@ void AliL3Hough::SetThreshold(Int_t t3,Int_t patch)
 
 void AliL3Hough::SetPeakThreshold(Int_t threshold,Int_t patch)
 {
+  // Set Peak Finder threshold
   if(patch==-1)
     {
       Int_t i=0;
@@ -509,7 +516,7 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
   fEvent=eventnr;
 }
 
-void AliL3Hough::Transform(Int_t *row_range)
+void AliL3Hough::Transform(Int_t *rowrange)
 {
   //Transform all data given to the transformer within the given slice
   //(after ReadData(slice))
@@ -522,10 +529,10 @@ void AliL3Hough::Transform(Int_t *row_range)
       if((fVersion != 4) || (i == 0)) 
 	fHoughTransformer[i]->Reset();//Reset the histograms
       fBenchmark->Start("Hough Transform");
-      if(!row_range)
+      if(!rowrange)
 	fHoughTransformer[i]->TransformCircle();
       else
-	fHoughTransformer[i]->TransformCircleC(row_range,1);
+	fHoughTransformer[i]->TransformCircleC(rowrange,1);
       fBenchmark->Stop("Hough Transform");
     }
   cpuTime = GetCpuTime() - initTime;
@@ -535,6 +542,7 @@ void AliL3Hough::Transform(Int_t *row_range)
 
 void AliL3Hough::MergePatches()
 {
+  // Merge patches if they are not summed
   if(fAddHistograms) //Nothing to merge here
     return;
   fMerger->MergePatches(kTRUE);
@@ -542,6 +550,7 @@ void AliL3Hough::MergePatches()
 
 void AliL3Hough::MergeInternally()
 {
+  // Merge patches internally
   if(fAddHistograms)
     fInterMerger->FillTracks(fTracks[0]);
   else
@@ -607,7 +616,7 @@ void AliL3Hough::ProcessPatchIter(Int_t patch)
   //Process patch in a iterative way. 
   //transform + peakfinding + evaluation + transform +...
 
-  Int_t num_of_tries = 5;
+  Int_t numoftries = 5;
   AliL3HoughBaseTransformer *tr = fHoughTransformer[patch];
   AliL3TrackArray *tracks = fTracks[patch];
   tracks->Reset();
@@ -617,7 +626,7 @@ void AliL3Hough::ProcessPatchIter(Int_t patch)
   ev->SetNumOfRowsToMiss(3);
   ev->SetNumOfPadsToLook(2);
   AliL3Histogram *hist;
-  for(Int_t t=0; t<num_of_tries; t++)
+  for(Int_t t=0; t<numoftries; t++)
     {
       tr->Reset();
       tr->TransformCircle();
@@ -721,6 +730,7 @@ void AliL3Hough::AddAllHistogramsRows()
 
 void AliL3Hough::AddTracks()
 {
+  // Add current slice slice tracks to the global list of found tracks
   if(!fTracks[0])
     {
       cerr<<"AliL3Hough::AddTracks : No tracks"<<endl;
@@ -741,6 +751,7 @@ void AliL3Hough::AddTracks()
 
 void AliL3Hough::FindTrackCandidatesRow()
 {
+  // Find AliL3HoughTransformerRow track candidates
   if(fVersion != 4) {
     LOG(AliL3Log::kError,"AliL3Hough::FindTrackCandidatesRow()","")
       <<"Incompatible Peak Finder version!"<<ENDLOG;
@@ -748,16 +759,16 @@ void AliL3Hough::FindTrackCandidatesRow()
   }
 
   //Look for peaks in histograms, and find the track candidates
-  Int_t n_patches;
+  Int_t npatches;
   if(fAddHistograms)
-    n_patches = 1; //Histograms have been added.
+    npatches = 1; //Histograms have been added.
   else
-    n_patches = fNPatches;
+    npatches = fNPatches;
   
   Double_t initTime,cpuTime;
   initTime = GetCpuTime();
   fBenchmark->Start("Find Maxima");
-  for(Int_t i=0; i<n_patches; i++)
+  for(Int_t i=0; i<npatches; i++)
     {
       AliL3HoughBaseTransformer *tr = fHoughTransformer[i];
       fTracks[i]->Reset();
@@ -814,22 +825,23 @@ void AliL3Hough::FindTrackCandidatesRow()
 
 void AliL3Hough::FindTrackCandidates()
 {
+  // Find AliL3HoughTransformer track candidates
   if(fVersion == 4) {
     LOG(AliL3Log::kError,"AliL3Hough::FindTrackCandidatesRow()","")
       <<"Incompatible Peak Finder version!"<<ENDLOG;
     return;
   }
 
-  Int_t n_patches;
+  Int_t npatches;
   if(fAddHistograms)
-    n_patches = 1; //Histograms have been added.
+    npatches = 1; //Histograms have been added.
   else
-    n_patches = fNPatches;
+    npatches = fNPatches;
   
   Double_t initTime,cpuTime;
   initTime = GetCpuTime();
   fBenchmark->Start("Find Maxima");
-  for(Int_t i=0; i<n_patches; i++)
+  for(Int_t i=0; i<npatches; i++)
     {
       AliL3HoughBaseTransformer *tr = fHoughTransformer[i];
       fTracks[i]->Reset();
@@ -874,7 +886,7 @@ void AliL3Hough::InitEvaluate()
     fEval[i]->InitTransformer(fHoughTransformer[i]);
 }
 
-Int_t AliL3Hough::Evaluate(Int_t road_width,Int_t nrowstomiss)
+Int_t AliL3Hough::Evaluate(Int_t roadwidth,Int_t nrowstomiss)
 {
   //Evaluate the tracks, by looking along the road in the raw data.
   //If track does not cross all padrows - rows2miss, it is removed from the arrray.
@@ -894,7 +906,7 @@ Int_t AliL3Hough::Evaluate(Int_t road_width,Int_t nrowstomiss)
       return 0;
     }
   
-  Int_t removed_tracks=0;
+  Int_t removedtracks=0;
   AliL3TrackArray *tracks=0;
 
   if(fAddHistograms)
@@ -909,7 +921,7 @@ Int_t AliL3Hough::Evaluate(Int_t road_width,Int_t nrowstomiss)
     }
   
   for(Int_t i=0; i<fNPatches; i++)
-    EvaluatePatch(i,road_width,nrowstomiss);
+    EvaluatePatch(i,roadwidth,nrowstomiss);
   
   //Here we check the tracks globally; 
   //how many good rows (padrows with signal) 
@@ -923,22 +935,22 @@ Int_t AliL3Hough::Evaluate(Int_t road_width,Int_t nrowstomiss)
 	  if(track->GetNHits() < AliL3Transform::GetNRows() - nrowstomiss)
 	    {
 	      tracks->Remove(j);
-	      removed_tracks++;
+	      removedtracks++;
 	    }
 	}
       tracks->Compress();
       tracks->QSort();
     }
     
-  return removed_tracks;
+  return removedtracks;
 }
 
-void AliL3Hough::EvaluatePatch(Int_t i,Int_t road_width,Int_t nrowstomiss)
+void AliL3Hough::EvaluatePatch(Int_t i,Int_t roadwidth,Int_t nrowstomiss)
 {
   //Evaluate patch i.
   
   fEval[i]->InitTransformer(fHoughTransformer[i]);
-  fEval[i]->SetNumOfPadsToLook(road_width);
+  fEval[i]->SetNumOfPadsToLook(roadwidth);
   fEval[i]->SetNumOfRowsToMiss(nrowstomiss);
   //fEval[i]->RemoveFoundTracks();
   
@@ -1016,6 +1028,7 @@ void AliL3Hough::MergeEtaSlices()
 
 void AliL3Hough::WriteTracks(Char_t *path)
 {
+  // Write found tracks into file
   //cout<<"AliL3Hough::WriteTracks : Sorting the tracsk"<<endl;
   //fGlobalTracks->QSort();
   
@@ -1030,6 +1043,7 @@ void AliL3Hough::WriteTracks(Char_t *path)
 
 void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
 {
+  // Write found tracks slice by slice into file
   
   AliL3MemHandler mem;
   Char_t fname[100];
@@ -1054,8 +1068,8 @@ void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
 
 void AliL3Hough::WriteDigits(Char_t *outfile)
 {
-#ifdef use_aliroot  
   //Write the current data to a new rootfile.
+#ifdef use_aliroot  
 
   for(Int_t i=0; i<fNPatches; i++)
     {

@@ -26,18 +26,18 @@ using namespace std;
 
 ClassImp(AliL3HoughTransformerRow)
 
-UChar_t **AliL3HoughTransformerRow::fRowCount = 0;
-UChar_t **AliL3HoughTransformerRow::fGapCount = 0;
-UChar_t **AliL3HoughTransformerRow::fCurrentRowCount = 0;
+UChar_t **AliL3HoughTransformerRow::fgRowCount = 0;
+UChar_t **AliL3HoughTransformerRow::fgGapCount = 0;
+UChar_t **AliL3HoughTransformerRow::fgCurrentRowCount = 0;
 #ifdef do_mc
-TrackIndex **AliL3HoughTransformerRow::fTrackID = 0;
+TrackIndex **AliL3HoughTransformerRow::fgTrackID = 0;
 #endif
-UChar_t *AliL3HoughTransformerRow::fTrackNRows = 0;
-UChar_t *AliL3HoughTransformerRow::fTrackFirstRow = 0;
-UChar_t *AliL3HoughTransformerRow::fTrackLastRow = 0;
+UChar_t *AliL3HoughTransformerRow::fgTrackNRows = 0;
+UChar_t *AliL3HoughTransformerRow::fgTrackFirstRow = 0;
+UChar_t *AliL3HoughTransformerRow::fgTrackLastRow = 0;
 
-Float_t AliL3HoughTransformerRow::fBeta1 = AliL3Transform::Row2X(79)/pow(AliL3Transform::Row2X(79),2);
-Float_t AliL3HoughTransformerRow::fBeta2 = (AliL3Transform::Row2X(158)+6.0)/pow((AliL3Transform::Row2X(158)+6.0),2);
+Float_t AliL3HoughTransformerRow::fgBeta1 = AliL3Transform::Row2X(79)/pow(AliL3Transform::Row2X(79),2);
+Float_t AliL3HoughTransformerRow::fgBeta2 = (AliL3Transform::Row2X(158)+6.0)/pow((AliL3Transform::Row2X(158)+6.0),2);
 
 AliL3HoughTransformerRow::AliL3HoughTransformerRow()
 {
@@ -51,7 +51,7 @@ AliL3HoughTransformerRow::AliL3HoughTransformerRow()
   fLUTbackwardZ2=0;
 }
 
-AliL3HoughTransformerRow::AliL3HoughTransformerRow(Int_t slice,Int_t patch,Int_t n_eta_segments,Bool_t /*DoMC*/,Float_t zvertex) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments,zvertex)
+AliL3HoughTransformerRow::AliL3HoughTransformerRow(Int_t slice,Int_t patch,Int_t netasegments,Bool_t /*DoMC*/,Float_t zvertex) : AliL3HoughBaseTransformer(slice,patch,netasegments,zvertex)
 {
   //Normal constructor
   fParamSpace = 0;
@@ -69,69 +69,71 @@ AliL3HoughTransformerRow::AliL3HoughTransformerRow(Int_t slice,Int_t patch,Int_t
 
 AliL3HoughTransformerRow::~AliL3HoughTransformerRow()
 {
+  //Destructor
   DeleteHistograms();
 #ifdef do_mc
-  if(fTrackID)
+  if(fgTrackID)
     {
       for(Int_t i=0; i<GetNEtaSegments(); i++)
 	{
-	  if(!fTrackID[i]) continue;
-	  delete fTrackID[i];
+	  if(!fgTrackID[i]) continue;
+	  delete fgTrackID[i];
 	}
-      delete [] fTrackID;
-      fTrackID = 0;
+      delete [] fgTrackID;
+      fgTrackID = 0;
     }
 #endif
 
-  if(fRowCount)
+  if(fgRowCount)
     {
       for(Int_t i=0; i<GetNEtaSegments(); i++)
 	{
-	  if(!fRowCount[i]) continue;
-	  delete [] fRowCount[i];
+	  if(!fgRowCount[i]) continue;
+	  delete [] fgRowCount[i];
 	}
-      delete [] fRowCount;
-      fRowCount = 0;
+      delete [] fgRowCount;
+      fgRowCount = 0;
     }
-  if(fGapCount)
+  if(fgGapCount)
     {
       for(Int_t i=0; i<GetNEtaSegments(); i++)
 	{
-	  if(!fGapCount[i]) continue;
-	  delete [] fGapCount[i];
+	  if(!fgGapCount[i]) continue;
+	  delete [] fgGapCount[i];
 	}
-      delete [] fGapCount;
-      fGapCount = 0;
+      delete [] fgGapCount;
+      fgGapCount = 0;
     }
-  if(fCurrentRowCount)
+  if(fgCurrentRowCount)
     {
       for(Int_t i=0; i<GetNEtaSegments(); i++)
 	{
-	  if(fCurrentRowCount[i])
-	    delete [] fCurrentRowCount[i];
+	  if(fgCurrentRowCount[i])
+	    delete [] fgCurrentRowCount[i];
 	}
-      delete [] fCurrentRowCount;
-      fCurrentRowCount = 0;
+      delete [] fgCurrentRowCount;
+      fgCurrentRowCount = 0;
     }
-  if(fTrackNRows)
+  if(fgTrackNRows)
     {
-      delete [] fTrackNRows;
-      fTrackNRows = 0;
+      delete [] fgTrackNRows;
+      fgTrackNRows = 0;
     }
-  if(fTrackFirstRow)
+  if(fgTrackFirstRow)
     {
-      delete [] fTrackFirstRow;
-      fTrackFirstRow = 0;
+      delete [] fgTrackFirstRow;
+      fgTrackFirstRow = 0;
     }
-  if(fTrackLastRow)
+  if(fgTrackLastRow)
     {
-      delete [] fTrackLastRow;
-      fTrackLastRow = 0;
+      delete [] fgTrackLastRow;
+      fgTrackLastRow = 0;
     }
 }
 
 void AliL3HoughTransformerRow::DeleteHistograms()
 {
+  // Clean up
   delete[] fLUTforwardZ;
   delete[] fLUTforwardZ2;
   delete[] fLUTbackwardZ;
@@ -152,7 +154,7 @@ void AliL3HoughTransformerRow::DeleteHistograms()
   delete [] fParamSpace;
 }
 
-void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t pt_min,
+void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t ptmin,
 						Int_t nybin,Float_t phimin,Float_t phimax)
 {
   //Create the histograms (parameter space).
@@ -161,11 +163,11 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t pt_min,
   //The arguments give the range and binning; 
   //nxbin = #bins in kappa
   //nybin = #bins in phi0
-  //pt_min = mimium Pt of track (corresponding to maximum kappa)
+  //ptmin = mimium Pt of track (corresponding to maximum kappa)
   //phi_min = mimimum phi0 
   //phi_max = maximum phi0 
     
-  Double_t x = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/pt_min;
+  Double_t x = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/ptmin;
   //Double_t torad = AliL3Transform::Pi()/180;
   CreateHistograms(nxbin,-1.*x,x,nybin,phimin/**torad*/,phimax/**torad*/);
 }
@@ -173,7 +175,10 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t pt_min,
 void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
 						Int_t nybin,Float_t ymin,Float_t ymax)
 {
-  
+  //Create the histograms (parameter space)  
+  //nxbin = #bins in X
+  //nybin = #bins in Y
+  //xmin xmax ymin ymax = histogram limits in X and Y
   fParamSpace = new AliL3Histogram*[GetNEtaSegments()];
   
   Char_t histname[256];
@@ -190,54 +195,54 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
       Int_t ncellsx = (hist->GetNbinsX()+3)/2;
       Int_t ncellsy = (hist->GetNbinsY()+3)/2;
       Int_t ncells = ncellsx*ncellsy;
-      if(!fTrackID)
+      if(!fgTrackID)
 	{
 	  LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
-	    <<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(TrackIndex)<<" bytes to fTrackID"<<ENDLOG;
-	  fTrackID = new TrackIndex*[GetNEtaSegments()];
+	    <<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(TrackIndex)<<" bytes to fgTrackID"<<ENDLOG;
+	  fgTrackID = new TrackIndex*[GetNEtaSegments()];
 	  for(Int_t i=0; i<GetNEtaSegments(); i++)
-	    fTrackID[i] = new TrackIndex[ncells];
+	    fgTrackID[i] = new TrackIndex[ncells];
 	}
     }
 #endif
   AliL3Histogram *hist = fParamSpace[0];
   Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
-  if(!fRowCount)
+  if(!fgRowCount)
     {
       LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
-	<<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(UChar_t)<<" bytes to fRowCount"<<ENDLOG;
-      fRowCount = new UChar_t*[GetNEtaSegments()];
+	<<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(UChar_t)<<" bytes to fgRowCount"<<ENDLOG;
+      fgRowCount = new UChar_t*[GetNEtaSegments()];
       for(Int_t i=0; i<GetNEtaSegments(); i++)
-	fRowCount[i] = new UChar_t[ncells];
+	fgRowCount[i] = new UChar_t[ncells];
     }
-  if(!fGapCount)
+  if(!fgGapCount)
     {
       LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
-	<<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(UChar_t)<<" bytes to fGapCount"<<ENDLOG;
-      fGapCount = new UChar_t*[GetNEtaSegments()];
+	<<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(UChar_t)<<" bytes to fgGapCount"<<ENDLOG;
+      fgGapCount = new UChar_t*[GetNEtaSegments()];
       for(Int_t i=0; i<GetNEtaSegments(); i++)
-	fGapCount[i] = new UChar_t[ncells];
+	fgGapCount[i] = new UChar_t[ncells];
     }
-  if(!fCurrentRowCount)
+  if(!fgCurrentRowCount)
     {
       LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
-	<<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(UChar_t)<<" bytes to fCurrentRowCount"<<ENDLOG;
-      fCurrentRowCount = new UChar_t*[GetNEtaSegments()];
+	<<"Transformer: Allocating "<<GetNEtaSegments()*ncells*sizeof(UChar_t)<<" bytes to fgCurrentRowCount"<<ENDLOG;
+      fgCurrentRowCount = new UChar_t*[GetNEtaSegments()];
       for(Int_t i=0; i<GetNEtaSegments(); i++)
-	fCurrentRowCount[i] = new UChar_t[ncells];
+	fgCurrentRowCount[i] = new UChar_t[ncells];
     }
 
-  if(!fTrackNRows)
+  if(!fgTrackNRows)
     {
       LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
-	<<"Transformer: Allocating "<<ncells*sizeof(UChar_t)<<" bytes to fTrackNRows"<<ENDLOG;
-      fTrackNRows = new UChar_t[ncells];
+	<<"Transformer: Allocating "<<ncells*sizeof(UChar_t)<<" bytes to fgTrackNRows"<<ENDLOG;
+      fgTrackNRows = new UChar_t[ncells];
       LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
-	<<"Transformer: Allocating "<<ncells*sizeof(UChar_t)<<" bytes to fTrackFirstRow"<<ENDLOG;
-      fTrackFirstRow = new UChar_t[ncells];
+	<<"Transformer: Allocating "<<ncells*sizeof(UChar_t)<<" bytes to fgTrackFirstRow"<<ENDLOG;
+      fgTrackFirstRow = new UChar_t[ncells];
       LOG(AliL3Log::kInformational,"AliL3HoughTransformerRow::CreateHistograms()","")
-	<<"Transformer: Allocating "<<ncells*sizeof(UChar_t)<<" bytes to fTrackLastRow"<<ENDLOG;
-      fTrackLastRow = new UChar_t[ncells];
+	<<"Transformer: Allocating "<<ncells*sizeof(UChar_t)<<" bytes to fgTrackLastRow"<<ENDLOG;
+      fgTrackLastRow = new UChar_t[ncells];
 
       AliL3HoughTrack track;
       Int_t xmin = hist->GetFirstXbin();
@@ -251,17 +256,17 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 	    {
 	      //cvetan: we get strange warning on gcc-2.95
 	      //warning: large integer implicitly truncated to unsigned type
-	      fTrackNRows[xbin + ybin*nxbins] = 99999;
+	      fgTrackNRows[xbin + ybin*nxbins] = 99999;
 	      for(Int_t deltay = -1; deltay <= 1; deltay += 2) {
 		for(Int_t deltax = -1; deltax <= 1; deltax += 2) {
 		
 		  Float_t xtrack = hist->GetPreciseBinCenterX((Float_t)xbin+0.5*(Float_t)deltax);
 		  Float_t ytrack = hist->GetPreciseBinCenterY((Float_t)ybin+0.5*(Float_t)deltay);
 
-		  Float_t psi = atan((xtrack-ytrack)/(fBeta1-fBeta2));
-		  Float_t kappa = 2.0*(xtrack*cos(psi)-fBeta1*sin(psi));
+		  Float_t psi = atan((xtrack-ytrack)/(fgBeta1-fgBeta2));
+		  Float_t kappa = 2.0*(xtrack*cos(psi)-fgBeta1*sin(psi));
 		  track.SetTrackParameters(kappa,psi,1);
-		  Bool_t first_row = kFALSE;
+		  Bool_t firstrow = kFALSE;
 		  UInt_t maxfirstrow = 0;
 		  UInt_t maxlastrow = 0;
 		  UInt_t curfirstrow = 0;
@@ -273,15 +278,15 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 		      AliL3Transform::LocHLT2Raw(hit,0,j);
 		      if(hit[1]>=0 && hit[1]<AliL3Transform::GetNPads(j))
 			{
-			  if(!first_row) {
+			  if(!firstrow) {
 			    curfirstrow = j;
-			    first_row = kTRUE;
+			    firstrow = kTRUE;
 			  }
 			  curlastrow = j;
 			}
 		      else {
-			if(first_row) {
-			  first_row = kFALSE;
+			if(firstrow) {
+			  firstrow = kFALSE;
 			  if((curlastrow-curfirstrow) >= (maxlastrow-maxfirstrow)) {
 			    maxfirstrow = curfirstrow;
 			    maxlastrow = curlastrow;
@@ -293,14 +298,14 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 		    maxfirstrow = curfirstrow;
 		    maxlastrow = curlastrow;
 		  }
-		  if((maxlastrow-maxfirstrow) < fTrackNRows[xbin + ybin*nxbins]) {
-		    fTrackNRows[xbin + ybin*nxbins] = maxlastrow-maxfirstrow;
-		    fTrackFirstRow[xbin + ybin*nxbins] = maxfirstrow;
-		    fTrackLastRow[xbin + ybin*nxbins] = maxlastrow;
+		  if((maxlastrow-maxfirstrow) < fgTrackNRows[xbin + ybin*nxbins]) {
+		    fgTrackNRows[xbin + ybin*nxbins] = maxlastrow-maxfirstrow;
+		    fgTrackFirstRow[xbin + ybin*nxbins] = maxfirstrow;
+		    fgTrackLastRow[xbin + ybin*nxbins] = maxlastrow;
 		  }
 		}
 	      }
-	      //	      cout<<" fTrackNRows "<<xbin<<" "<<ybin<<" "<<(Int_t)fTrackNRows[xbin + ybin*nxbins]<<" "<<endl;
+	      //	      cout<<" fgTrackNRows "<<xbin<<" "<<ybin<<" "<<(Int_t)fgTrackNRows[xbin + ybin*nxbins]<<" "<<endl;
 	    }
 	}
     }
@@ -325,7 +330,7 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
 
 void AliL3HoughTransformerRow::Reset()
 {
-  //Reset all the histograms
+  //Reset all the histograms. Should be done when processing new slice
 
   if(!fParamSpace)
     {
@@ -345,17 +350,17 @@ void AliL3HoughTransformerRow::Reset()
       Int_t ncellsy = (hist->GetNbinsY()+3)/2;
       Int_t ncells = ncellsx*ncellsy;
       for(Int_t i=0; i<GetNEtaSegments(); i++)
-	memset(fTrackID[i],0,ncells*sizeof(TrackIndex));
+	memset(fgTrackID[i],0,ncells*sizeof(TrackIndex));
     }
 #endif
   AliL3Histogram *hist = fParamSpace[0];
   Int_t ncells = (hist->GetNbinsX()+2)*(hist->GetNbinsY()+2);
   for(Int_t i=0; i<GetNEtaSegments(); i++)
     {
-      memset(fRowCount[i],0,ncells*sizeof(UChar_t));
-      memset(fGapCount[i],1,ncells*sizeof(UChar_t));
-      //      memset(fCurrentRowCount[i],160,ncells*sizeof(UChar_t));
-      memcpy(fCurrentRowCount[i],fTrackFirstRow,ncells*sizeof(UChar_t));
+      memset(fgRowCount[i],0,ncells*sizeof(UChar_t));
+      memset(fgGapCount[i],1,ncells*sizeof(UChar_t));
+      //      memset(fgCurrentRowCount[i],160,ncells*sizeof(UChar_t));
+      memcpy(fgCurrentRowCount[i],fgTrackFirstRow,ncells*sizeof(UChar_t));
     }
 }
 
@@ -368,62 +373,65 @@ Int_t AliL3HoughTransformerRow::GetEtaIndex(Double_t eta)
   return (Int_t)index;
 }
 
-inline AliL3Histogram *AliL3HoughTransformerRow::GetHistogram(Int_t eta_index)
+inline AliL3Histogram *AliL3HoughTransformerRow::GetHistogram(Int_t etaindex)
 {
-  if(!fParamSpace || eta_index >= GetNEtaSegments() || eta_index < 0)
+  // Return a pointer to the histogram which contains etaindex eta slice
+  if(!fParamSpace || etaindex >= GetNEtaSegments() || etaindex < 0)
     return 0;
-  if(!fParamSpace[eta_index])
+  if(!fParamSpace[etaindex])
     return 0;
-  return fParamSpace[eta_index];
+  return fParamSpace[etaindex];
 }
 
-Double_t AliL3HoughTransformerRow::GetEta(Int_t eta_index,Int_t /*slice*/)
+Double_t AliL3HoughTransformerRow::GetEta(Int_t etaindex,Int_t /*slice*/)
 {
-  Double_t eta_slice = (GetEtaMax()-GetEtaMin())/GetNEtaSegments();
+  // Return eta calculated in the middle of the eta slice
+  Double_t etaslice = (GetEtaMax()-GetEtaMin())/GetNEtaSegments();
   Double_t eta=0;
-  eta=(Double_t)((eta_index+0.5)*eta_slice);
+  eta=(Double_t)((etaindex+0.5)*etaslice);
   return eta;
 }
 
-struct EtaRow {
-  UChar_t start_pad;
-  UChar_t end_pad;
-  Bool_t found;
-  Float_t start_y;
+struct AliL3EtaRow {
+  UChar_t fStartPad; //First pad in the cluster
+  UChar_t fEndPad; //Last pad in the cluster
+  Bool_t fIsFound; //Is the cluster already found
+  Float_t fStartY; //Y position of the first pad in the cluster
 #ifdef do_mc
-  Int_t mc_labels[MaxTrack];
+  Int_t fMcLabels[MaxTrack]; //Array to store mc labels inside cluster
 #endif
 };
 
 void AliL3HoughTransformerRow::TransformCircle()
 {
-  Float_t beta1 = fBeta1;
-  Float_t beta2 = fBeta2;
-  Float_t beta1_minus_beta2 = fBeta1 - fBeta2;
+  //Do the Hough Transform
+  Float_t beta1 = fgBeta1;
+  Float_t beta2 = fgBeta2;
+  Float_t beta1minusbeta2 = fgBeta1 - fgBeta2;
 
-  Int_t n_eta_segments = GetNEtaSegments();
-  Double_t eta_min = GetEtaMin();
-  Double_t eta_slice = (GetEtaMax() - eta_min)/n_eta_segments;
+  Int_t netasegments = GetNEtaSegments();
+  Double_t etamin = GetEtaMin();
+  Double_t etaslice = (GetEtaMax() - etamin)/netasegments;
 
-  Int_t lower_threshold = GetLowerThreshold();
+  Int_t lowerthreshold = GetLowerThreshold();
 
   //Assumes that all the etaslice histos are the same!
   AliL3Histogram *h = fParamSpace[0];
-  Float_t y_min = h->GetYmin();
+  Float_t ymin = h->GetYmin();
   //Float_t y_max = h->GetYmax();
-  Float_t hist_bin = h->GetBinWidthY();
-  Int_t first_bin = h->GetFirstYbin();
-  Int_t last_bin = h->GetLastYbin();
-  Float_t x_min = h->GetXmin();
-  Float_t x_max = h->GetXmax();
-  Float_t x_bin = (x_max-x_min)/h->GetNbinsX();
-  Int_t first_binx = h->GetFirstXbin()-1;
-  Int_t last_binx = h->GetLastXbin()+1;
+  Float_t histbin = h->GetBinWidthY();
+  Int_t firstbin = h->GetFirstYbin();
+  Int_t lastbin = h->GetLastYbin();
+  Float_t xmin = h->GetXmin();
+  Float_t xmax = h->GetXmax();
+  Float_t xbin = (xmax-xmin)/h->GetNbinsX();
+  Int_t firstbinx = h->GetFirstXbin()-1;
+  Int_t lastbinx = h->GetLastXbin()+1;
   Int_t nbinx = h->GetNbinsX()+2;
 
-  UChar_t last_pad;
-  Int_t last_eta_index;
-  EtaRow *eta_clust = new EtaRow[n_eta_segments];
+  UChar_t lastpad;
+  Int_t lastetaindex;
+  AliL3EtaRow *etaclust = new AliL3EtaRow[netasegments];
 
   AliL3DigitRowData *tempPt = GetDataPointer();
   if(!tempPt)
@@ -434,7 +442,7 @@ void AliL3HoughTransformerRow::TransformCircle()
     }
 
   Int_t ipatch = GetPatch();
-  Double_t pad_pitch = AliL3Transform::GetPadPitchWidth(ipatch);
+  Double_t padpitch = AliL3Transform::GetPadPitchWidth(ipatch);
   Int_t islice = GetSlice();
   Float_t *fLUTz;
   Float_t *fLUTz2;
@@ -452,9 +460,9 @@ void AliL3HoughTransformerRow::TransformCircle()
     {
       Int_t npads = AliL3Transform::GetNPads((Int_t)i)-1;
 
-      last_pad = 255;
+      lastpad = 255;
       //Flush eta clusters array
-      memset(eta_clust,0,n_eta_segments*sizeof(EtaRow));  
+      memset(etaclust,0,netasegments*sizeof(AliL3EtaRow));  
 
       Float_t x = AliL3Transform::Row2X((Int_t)i);
       Float_t x2 = x*x;
@@ -473,17 +481,17 @@ void AliL3HoughTransformerRow::TransformCircle()
       for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	{
 	  UShort_t charge = digPt[j].fCharge;
-	  if((Int_t)charge <= lower_threshold)
+	  if((Int_t)charge <= lowerthreshold)
 	    continue;
 	  UChar_t pad = digPt[j].fPad;
 	  UShort_t time = digPt[j].fTime;
 
-	  if(pad != last_pad)
+	  if(pad != lastpad)
 	    {
-	      y = (pad-0.5*npads)*pad_pitch;
+	      y = (pad-0.5*npads)*padpitch;
 	      Float_t y2 = y*y;
 	      r2 = x2 + y2;
-	      last_eta_index = -1;
+	      lastetaindex = -1;
 	    }
 
 	  //Transform data to local cartesian coordinates:
@@ -493,22 +501,22 @@ void AliL3HoughTransformerRow::TransformCircle()
 	  Double_t r = sqrt(r2+z2);
 	  Double_t eta = 0.5 * log((r+z)/(r-z));
 	  //Get the corresponding index, which determines which histogram to fill:
-	  Int_t eta_index = (Int_t)((eta-eta_min)/eta_slice);
+	  Int_t etaindex = (Int_t)((eta-etamin)/etaslice);
 
 #ifndef do_mc
-	  if(eta_index == last_eta_index) continue;
+	  if(etaindex == lastetaindex) continue;
 #endif
-	  //	  cout<<" Digit at patch "<<ipatch<<" row "<<i<<" pad "<<(Int_t)pad<<" time "<<time<<" etaslice "<<eta_index<<endl;
+	  //	  cout<<" Digit at patch "<<ipatch<<" row "<<i<<" pad "<<(Int_t)pad<<" time "<<time<<" etaslice "<<etaindex<<endl;
 	  
-	  if(eta_index < 0 || eta_index >= n_eta_segments)
+	  if(etaindex < 0 || etaindex >= netasegments)
 	    continue;
 
-	  if(!eta_clust[eta_index].found)
+	  if(!etaclust[etaindex].fIsFound)
 	    {
-	      eta_clust[eta_index].start_pad = pad;
-	      eta_clust[eta_index].end_pad = pad;
-	      eta_clust[eta_index].start_y = y - pad_pitch/2.0;
-	      eta_clust[eta_index].found = 1;
+	      etaclust[etaindex].fStartPad = pad;
+	      etaclust[etaindex].fEndPad = pad;
+	      etaclust[etaindex].fStartY = y - padpitch/2.0;
+	      etaclust[etaindex].fIsFound = 1;
 #ifdef do_mc
 	      if(fDoMC)
 		{
@@ -518,10 +526,10 @@ void AliL3HoughTransformerRow::TransformCircle()
 		      if(label < 0) break;
 		      UInt_t c;
 		      for(c=0; c<(MaxTrack-1); c++)
-			if(eta_clust[eta_index].mc_labels[c] == label || eta_clust[eta_index].mc_labels[c] == 0)
+			if(etaclust[etaindex].fMcLabels[c] == label || etaclust[etaindex].fMcLabels[c] == 0)
 			  break;
 		      //		      if(c == MaxTrack-1) cerr<<"AliL3HoughTransformer::TransformCircle : Cluster array reached maximum!! "<<c<<endl;
-		      eta_clust[eta_index].mc_labels[c] = label;
+		      etaclust[etaindex].fMcLabels[c] = label;
 		    }
 		}
 #endif
@@ -529,9 +537,9 @@ void AliL3HoughTransformerRow::TransformCircle()
 	    }
 	  else
 	    {
-	      if(pad <= (eta_clust[eta_index].end_pad + 1))
+	      if(pad <= (etaclust[etaindex].fEndPad + 1))
 		{
-		  eta_clust[eta_index].end_pad = pad;
+		  etaclust[etaindex].fEndPad = pad;
 #ifdef do_mc
 		  if(fDoMC)
 		    {
@@ -541,71 +549,71 @@ void AliL3HoughTransformerRow::TransformCircle()
 			  if(label < 0) break;
 			  UInt_t c;
 			  for(c=0; c<(MaxTrack-1); c++)
-			    if(eta_clust[eta_index].mc_labels[c] == label || eta_clust[eta_index].mc_labels[c] == 0)
+			    if(etaclust[etaindex].fMcLabels[c] == label || etaclust[etaindex].fMcLabels[c] == 0)
 			      break;
 			  //			  if(c == MaxTrack-1) cerr<<"AliL3HoughTransformer::TransformCircle : Cluster array reached maximum!! "<<c<<endl;
-			  eta_clust[eta_index].mc_labels[c] = label;
+			  etaclust[etaindex].fMcLabels[c] = label;
 			}
 		    }
 #endif
 		}
 	      else
 		{
-		  Bool_t fill_cluster = kTRUE;
-		  if(fill_cluster) {
+		  Bool_t fillcluster = kTRUE;
+		  if(fillcluster) {
 
-		  UChar_t *nrows = fRowCount[eta_index];
-		  UChar_t *ngaps = fGapCount[eta_index];
-		  UChar_t *currentrow = fCurrentRowCount[eta_index];
-		  UChar_t *lastrow = fTrackLastRow;
+		  UChar_t *nrows = fgRowCount[etaindex];
+		  UChar_t *ngaps = fgGapCount[etaindex];
+		  UChar_t *currentrow = fgCurrentRowCount[etaindex];
+		  UChar_t *lastrow = fgTrackLastRow;
 
 		  //Do the transformation:
-		  Float_t start_y = eta_clust[eta_index].start_y;
-		  if(eta_clust[eta_index].start_pad == 0)
-		    start_y -= 0.0*pad_pitch;
-		  Float_t R1 = x2 + start_y*start_y;
-		  Float_t x_over_R1 = x/R1;
-		  Float_t start_y_over_R1 = start_y/R1;
-		  Float_t end_y = (eta_clust[eta_index].end_pad-0.5*(npads-1))*pad_pitch;
-		  if(eta_clust[eta_index].end_pad == npads)
-		    end_y += 0.0*pad_pitch;
-		  Float_t R2 = x2 + end_y*end_y; 
-		  Float_t x_over_R2 = x/R2;
-		  Float_t end_y_over_R2 = end_y/R2;
-		  Float_t A1 = beta1_minus_beta2/(x_over_R1-beta2);
-		  Float_t B1 = (x_over_R1-beta1)/(x_over_R1-beta2);
-		  Float_t A2 = beta1_minus_beta2/(x_over_R2-beta2);
-		  Float_t B2 = (x_over_R2-beta1)/(x_over_R2-beta2);
+		  Float_t starty = etaclust[etaindex].fStartY;
+		  if(etaclust[etaindex].fStartPad == 0)
+		    starty -= 0.0*padpitch;
+		  Float_t r1 = x2 + starty*starty;
+		  Float_t xoverr1 = x/r1;
+		  Float_t startyoverr1 = starty/r1;
+		  Float_t endy = (etaclust[etaindex].fEndPad-0.5*(npads-1))*padpitch;
+		  if(etaclust[etaindex].fEndPad == npads)
+		    endy += 0.0*padpitch;
+		  Float_t r2 = x2 + endy*endy; 
+		  Float_t xoverr2 = x/r2;
+		  Float_t endyoverr2 = endy/r2;
+		  Float_t a1 = beta1minusbeta2/(xoverr1-beta2);
+		  Float_t b1 = (xoverr1-beta1)/(xoverr1-beta2);
+		  Float_t a2 = beta1minusbeta2/(xoverr2-beta2);
+		  Float_t b2 = (xoverr2-beta1)/(xoverr2-beta2);
 
-		  Float_t kappa1 = (A1*start_y_over_R1+B1*y_min-x_min)/x_bin;
-		  Float_t delta_kappa1 = B1*hist_bin/x_bin;
-		  if(B1<0)
-		    kappa1 += delta_kappa1;
-		  Float_t kappa2 = (A2*end_y_over_R2+B2*y_min-x_min)/x_bin;
-		  Float_t delta_kappa2 = B2*hist_bin/x_bin;
-		  if(B2>=0)
-		    kappa2 += delta_kappa2;
+		  Float_t kappa1 = (a1*startyoverr1+b1*ymin-xmin)/xbin;
+		  Float_t deltaalpha1 = b1*histbin/xbin;
+		  if(b1<0)
+		    kappa1 += deltaalpha1;
+		  Float_t kappa2 = (a2*endyoverr2+b2*ymin-xmin)/xbin;
+		  Float_t deltaalpha2 = b2*histbin/xbin;
+		  if(b2>=0)
+		    kappa2 += deltaalpha2;
 
 		  //Fill the histogram along the phirange
-		  for(Int_t b=first_bin; b<=last_bin; b++, kappa1 += delta_kappa1, kappa2 += delta_kappa2)
+		  for(Int_t b=firstbin; b<=lastbin; b++, kappa1 += deltaalpha1, kappa2 += deltaalpha2)
 		    {
 		      Int_t binx1 = 1 + (Int_t)kappa1;
-		      if(binx1>last_binx) continue;
-		      if(binx1<first_binx) binx1 = first_binx;
+		      if(binx1>lastbinx) continue;
+		      if(binx1<firstbinx) binx1 = firstbinx;
 		      Int_t binx2 = 1 + (Int_t)kappa2;
-		      if(binx2<first_binx) continue;
-		      if(binx2>last_binx) binx2 = last_binx;
+		      if(binx2<firstbinx) continue;
+		      if(binx2>lastbinx) binx2 = lastbinx;
 #ifdef do_mc
 		      if(binx2<binx1) {
 			LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::TransformCircle()","")
-			  <<"Wrong filling "<<binx1<<" "<<binx2<<" "<<i<<" "<<x<<" "<<start_y<<" "<<end_y<<ENDLOG;
+			  <<"Wrong filling "<<binx1<<" "<<binx2<<" "<<i<<" "<<x<<" "<<starty<<" "<<endy<<ENDLOG;
 		      }
 #endif
-		      Int_t temp_bin = b*nbinx;
-		      UChar_t *nrows2 = nrows + temp_bin;
-		      UChar_t *ngaps2 = ngaps + temp_bin;
-		      UChar_t *currentrow2 = currentrow + temp_bin;
-		      UChar_t *lastrow2 = lastrow + temp_bin;
+		      Int_t tempbin = b*nbinx;
+		      UChar_t *nrows2 = nrows + tempbin;
+		      UChar_t *ngaps2 = ngaps + tempbin;
+		      UChar_t *currentrow2 = currentrow + tempbin;
+		      UChar_t *lastrow2 = lastrow + tempbin;
 		      for(Int_t bin=binx1;bin<=binx2;bin++)
 			{
 			  if(ngaps2[bin] < MAX_N_GAPS) {
@@ -625,18 +633,18 @@ void AliL3HoughTransformerRow::TransformCircle()
 			      {
 				for(UInt_t t=0;t<(MaxTrack-1); t++)
 				  {
-				    Int_t label = eta_clust[eta_index].mc_labels[t];
+				    Int_t label = etaclust[etaindex].fMcLabels[t];
 				    if(label == 0) break;
 				    UInt_t c;
-				    Int_t temp_bin2 = ((Int_t)(b/2))*((Int_t)((nbinx+1)/2)) + (Int_t)(bin/2);
+				    Int_t tempbin2 = ((Int_t)(b/2))*((Int_t)((nbinx+1)/2)) + (Int_t)(bin/2);
 				    for(c=0; c<(MaxTrack-1); c++)
-				      if(fTrackID[eta_index][temp_bin2].fLabel[c] == label || fTrackID[eta_index][temp_bin2].fNHits[c] == 0)
+				      if(fgTrackID[etaindex][tempbin2].fLabel[c] == label || fgTrackID[etaindex][tempbin2].fNHits[c] == 0)
 					break;
 				    //				    if(c == MaxTrack-1) cerr<<"AliL3HoughTransformer::TransformCircle : Array reached maximum!! "<<c<<endl;
-				    fTrackID[eta_index][temp_bin2].fLabel[c] = label;
-				    if(fTrackID[eta_index][temp_bin2].fCurrentRow[c] != i) {
-				      fTrackID[eta_index][temp_bin2].fNHits[c]++;
-				      fTrackID[eta_index][temp_bin2].fCurrentRow[c] = i;
+				    fgTrackID[etaindex][tempbin2].fLabel[c] = label;
+				    if(fgTrackID[etaindex][tempbin2].fCurrentRow[c] != i) {
+				      fgTrackID[etaindex][tempbin2].fNHits[c]++;
+				      fgTrackID[etaindex][tempbin2].fCurrentRow[c] = i;
 				    }
 				  }
 			      }
@@ -648,90 +656,90 @@ void AliL3HoughTransformerRow::TransformCircle()
 
 		  }
 
-		  eta_clust[eta_index].start_pad = pad;
-		  eta_clust[eta_index].end_pad = pad;
-		  eta_clust[eta_index].start_y = y - pad_pitch/2.0;
+		  etaclust[etaindex].fStartPad = pad;
+		  etaclust[etaindex].fEndPad = pad;
+		  etaclust[etaindex].fStartY = y - padpitch/2.0;
 
 #ifdef do_mc
 		  if(fDoMC)
 		    {
-		      memset(eta_clust[eta_index].mc_labels,0,MaxTrack);
+		      memset(etaclust[etaindex].fMcLabels,0,MaxTrack);
 		      for(Int_t t=0; t<3; t++)
 			{
 			  Int_t label = digPt[j].fTrackID[t];
 			  if(label < 0) break;
 			  UInt_t c;
 			  for(c=0; c<(MaxTrack-1); c++)
-			    if(eta_clust[eta_index].mc_labels[c] == label || eta_clust[eta_index].mc_labels[c] == 0)
+			    if(etaclust[etaindex].fMcLabels[c] == label || etaclust[etaindex].fMcLabels[c] == 0)
 			      break;
 			  //			  if(c == MaxTrack-1) cerr<<"AliL3HoughTransformer::TransformCircle : Cluster array reached maximum!! "<<c<<endl;
-			  eta_clust[eta_index].mc_labels[c] = label;
+			  etaclust[etaindex].fMcLabels[c] = label;
 			}
 		    }
 #endif
 		}
 	    }
-	  last_pad = pad;
-	  last_eta_index = eta_index;
+	  lastpad = pad;
+	  lastetaindex = etaindex;
 	}
       //Write remaining clusters
-      for(Int_t eta_index = 0;eta_index < n_eta_segments;eta_index++)
+      for(Int_t etaindex = 0;etaindex < netasegments;etaindex++)
 	{
 	  //Check for empty row
-	  if((eta_clust[eta_index].start_pad == 0) && (eta_clust[eta_index].end_pad == 0)) continue;
+	  if((etaclust[etaindex].fStartPad == 0) && (etaclust[etaindex].fEndPad == 0)) continue;
 
-	  UChar_t *nrows = fRowCount[eta_index];
-	  UChar_t *ngaps = fGapCount[eta_index];
-	  UChar_t *currentrow = fCurrentRowCount[eta_index];
-	  UChar_t *lastrow = fTrackLastRow;
+	  UChar_t *nrows = fgRowCount[etaindex];
+	  UChar_t *ngaps = fgGapCount[etaindex];
+	  UChar_t *currentrow = fgCurrentRowCount[etaindex];
+	  UChar_t *lastrow = fgTrackLastRow;
 
 	  //Do the transformation:
-	  Float_t start_y = eta_clust[eta_index].start_y;
-	  if(eta_clust[eta_index].start_pad == 0)
-	    start_y -= 0.0*pad_pitch;
-	  Float_t R1 = x2 + start_y*start_y; 
-	  Float_t x_over_R1 = x/R1;
-	  Float_t start_y_over_R1 = start_y/R1;
-	  Float_t end_y = (eta_clust[eta_index].end_pad-0.5*(npads-1))*pad_pitch;
-	  if(eta_clust[eta_index].end_pad == npads)
-	    end_y += 0.0*pad_pitch;
-	  Float_t R2 = x2 + end_y*end_y; 
-	  Float_t x_over_R2 = x/R2;
-	  Float_t end_y_over_R2 = end_y/R2;
-	  Float_t A1 = beta1_minus_beta2/(x_over_R1-beta2);
-	  Float_t B1 = (x_over_R1-beta1)/(x_over_R1-beta2);
-	  Float_t A2 = beta1_minus_beta2/(x_over_R2-beta2);
-	  Float_t B2 = (x_over_R2-beta1)/(x_over_R2-beta2);
+	  Float_t starty = etaclust[etaindex].fStartY;
+	  if(etaclust[etaindex].fStartPad == 0)
+	    starty -= 0.0*padpitch;
+	  Float_t r1 = x2 + starty*starty; 
+	  Float_t xoverr1 = x/r1;
+	  Float_t startyoverr1 = starty/r1;
+	  Float_t endy = (etaclust[etaindex].fEndPad-0.5*(npads-1))*padpitch;
+	  if(etaclust[etaindex].fEndPad == npads)
+	    endy += 0.0*padpitch;
+	  Float_t r2 = x2 + endy*endy; 
+	  Float_t xoverr2 = x/r2;
+	  Float_t endyoverr2 = endy/r2;
+	  Float_t a1 = beta1minusbeta2/(xoverr1-beta2);
+	  Float_t b1 = (xoverr1-beta1)/(xoverr1-beta2);
+	  Float_t a2 = beta1minusbeta2/(xoverr2-beta2);
+	  Float_t b2 = (xoverr2-beta1)/(xoverr2-beta2);
 
-	  Float_t kappa1 = (A1*start_y_over_R1+B1*y_min-x_min)/x_bin;
-	  Float_t delta_kappa1 = B1*hist_bin/x_bin;
-	  if(B1<0)
-	    kappa1 += delta_kappa1;
-	  Float_t kappa2 = (A2*end_y_over_R2+B2*y_min-x_min)/x_bin;
-	  Float_t delta_kappa2 = B2*hist_bin/x_bin;
-	  if(B2>=0)
-	    kappa2 += delta_kappa2;
+	  Float_t kappa1 = (a1*startyoverr1+b1*ymin-xmin)/xbin;
+	  Float_t deltaalpha1 = b1*histbin/xbin;
+	  if(b1<0)
+	    kappa1 += deltaalpha1;
+	  Float_t kappa2 = (a2*endyoverr2+b2*ymin-xmin)/xbin;
+	  Float_t deltaalpha2 = b2*histbin/xbin;
+	  if(b2>=0)
+	    kappa2 += deltaalpha2;
 
 	  //Fill the histogram along the phirange
-	  for(Int_t b=first_bin; b<=last_bin; b++, kappa1 += delta_kappa1, kappa2 += delta_kappa2)
+	  for(Int_t b=firstbin; b<=lastbin; b++, kappa1 += deltaalpha1, kappa2 += deltaalpha2)
 	    {
 	      Int_t binx1 = 1 + (Int_t)kappa1;
-	      if(binx1>last_binx) continue;
-	      if(binx1<first_binx) binx1 = first_binx;
+	      if(binx1>lastbinx) continue;
+	      if(binx1<firstbinx) binx1 = firstbinx;
 	      Int_t binx2 = 1 + (Int_t)kappa2;
-	      if(binx2<first_binx) continue;
-	      if(binx2>last_binx) binx2 = last_binx;
+	      if(binx2<firstbinx) continue;
+	      if(binx2>lastbinx) binx2 = lastbinx;
 #ifdef do_mc
 	      if(binx2<binx1) {
 		LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::TransformCircle()","")
-		  <<"Wrong filling "<<binx1<<" "<<binx2<<" "<<i<<" "<<x<<" "<<start_y<<" "<<end_y<<ENDLOG;
+		  <<"Wrong filling "<<binx1<<" "<<binx2<<" "<<i<<" "<<x<<" "<<starty<<" "<<endy<<ENDLOG;
 	      }
 #endif
-	      Int_t temp_bin = b*nbinx;
-	      UChar_t *nrows2 = nrows + temp_bin;
-	      UChar_t *ngaps2 = ngaps + temp_bin;
-	      UChar_t *currentrow2 = currentrow + temp_bin;
-	      UChar_t *lastrow2 = lastrow + temp_bin;
+	      Int_t tempbin = b*nbinx;
+	      UChar_t *nrows2 = nrows + tempbin;
+	      UChar_t *ngaps2 = ngaps + tempbin;
+	      UChar_t *currentrow2 = currentrow + tempbin;
+	      UChar_t *lastrow2 = lastrow + tempbin;
 	      for(Int_t bin=binx1;bin<=binx2;bin++)
 		{
 		  if(ngaps2[bin] < MAX_N_GAPS) {
@@ -751,18 +759,18 @@ void AliL3HoughTransformerRow::TransformCircle()
 		      {
 			for(UInt_t t=0;t<(MaxTrack-1); t++)
 			  {
-			    Int_t label = eta_clust[eta_index].mc_labels[t];
+			    Int_t label = etaclust[etaindex].fMcLabels[t];
 			    if(label == 0) break;
 			    UInt_t c;
-			    Int_t temp_bin2 = ((Int_t)(b/2))*((Int_t)((nbinx+1)/2)) + (Int_t)(bin/2);
+			    Int_t tempbin2 = ((Int_t)(b/2))*((Int_t)((nbinx+1)/2)) + (Int_t)(bin/2);
 			    for(c=0; c<(MaxTrack-1); c++)
-			      if(fTrackID[eta_index][temp_bin2].fLabel[c] == label || fTrackID[eta_index][temp_bin2].fNHits[c] == 0)
+			      if(fgTrackID[etaindex][tempbin2].fLabel[c] == label || fgTrackID[etaindex][tempbin2].fNHits[c] == 0)
 				break;
 			    //			    if(c == MaxTrack-1) cout<<"AliL3HoughTransformer::TransformCircle : Array reached maximum!! "<<c<<endl;
-			    fTrackID[eta_index][temp_bin2].fLabel[c] = label;
-			    if(fTrackID[eta_index][temp_bin2].fCurrentRow[c] != i) {
-			      fTrackID[eta_index][temp_bin2].fNHits[c]++;
-			      fTrackID[eta_index][temp_bin2].fCurrentRow[c] = i;
+			    fgTrackID[etaindex][tempbin2].fLabel[c] = label;
+			    if(fgTrackID[etaindex][tempbin2].fCurrentRow[c] != i) {
+			      fgTrackID[etaindex][tempbin2].fNHits[c]++;
+			      fgTrackID[etaindex][tempbin2].fCurrentRow[c] = i;
 			    }
 			  }
 		      }
@@ -778,11 +786,12 @@ void AliL3HoughTransformerRow::TransformCircle()
       AliL3MemHandler::UpdateRowPointer(tempPt);
     }
 
-  delete [] eta_clust;
+  delete [] etaclust;
 }
 
-Int_t AliL3HoughTransformerRow::GetTrackID(Int_t eta_index,Double_t kappa,Double_t psi)
+Int_t AliL3HoughTransformerRow::GetTrackID(Int_t etaindex,Double_t kappa,Double_t psi)
 {
+  // Returns the MC label for a given peak found in the Hough space
   if(!fDoMC)
     {
       LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::GetTrackID","Data")
@@ -791,13 +800,13 @@ Int_t AliL3HoughTransformerRow::GetTrackID(Int_t eta_index,Double_t kappa,Double
     }
   
 #ifdef do_mc
-  if(eta_index < 0 || eta_index > GetNEtaSegments())
+  if(etaindex < 0 || etaindex > GetNEtaSegments())
     {
       LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::GetTrackID","Data")
-	<<"Wrong etaindex "<<eta_index<<ENDLOG;
+	<<"Wrong etaindex "<<etaindex<<ENDLOG;
       return -1;
     }
-  AliL3Histogram *hist = fParamSpace[eta_index];
+  AliL3Histogram *hist = fParamSpace[etaindex];
   Int_t bin = hist->FindLabelBin(kappa,psi);
   if(bin==-1) {
     LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::GetTrackID()","")
@@ -808,30 +817,32 @@ Int_t AliL3HoughTransformerRow::GetTrackID(Int_t eta_index,Double_t kappa,Double
   Int_t max=0;
   for(UInt_t i=0; i<(MaxTrack-1); i++)
     {
-      Int_t nhits=fTrackID[eta_index][bin].fNHits[i];
+      Int_t nhits=fgTrackID[etaindex][bin].fNHits[i];
       if(nhits == 0) break;
       if(nhits > max)
 	{
 	  max = nhits;
-	  label = fTrackID[eta_index][bin].fLabel[i];
+	  label = fgTrackID[etaindex][bin].fLabel[i];
 	}
     }
   Int_t label2=-1;
   Int_t max2=0;
   for(UInt_t i=0; i<(MaxTrack-1); i++)
     {
-      Int_t nhits=fTrackID[eta_index][bin].fNHits[i];
+      Int_t nhits=fgTrackID[etaindex][bin].fNHits[i];
       if(nhits == 0) break;
       if(nhits > max2)
 	{
-	  if(fTrackID[eta_index][bin].fLabel[i]!=label) {
+	  if(fgTrackID[etaindex][bin].fLabel[i]!=label) {
 	    max2 = nhits;
-	    label2 = fTrackID[eta_index][bin].fLabel[i];
+	    label2 = fgTrackID[etaindex][bin].fLabel[i];
 	  }
 	}
     }
-  LOG(AliL3Log::kDebug,"AliL3HoughTransformerRow::GetTrackID()","")
-    <<" TrackID"<<" label "<<label<<" max "<<max<<" label2 "<<label2<<" max2 "<<max2<<" "<<(Float_t)max2/(Float_t)max<<" "<<fTrackID[eta_index][bin].fLabel[MaxTrack-1]<<" "<<(Int_t)fTrackID[eta_index][bin].fNHits[MaxTrack-1]<<ENDLOG;
+  if(max2 !=0 ) {
+    LOG(AliL3Log::kDebug,"AliL3HoughTransformerRow::GetTrackID()","")
+      <<" TrackID"<<" label "<<label<<" max "<<max<<" label2 "<<label2<<" max2 "<<max2<<" "<<(Float_t)max2/(Float_t)max<<" "<<fgTrackID[etaindex][bin].fLabel[MaxTrack-1]<<" "<<(Int_t)fgTrackID[etaindex][bin].fNHits[MaxTrack-1]<<ENDLOG;
+  }
   return label;
 #endif
   LOG(AliL3Log::kWarning,"AliL3HoughTransformerRow::GetTrackID()","")
@@ -839,33 +850,33 @@ Int_t AliL3HoughTransformerRow::GetTrackID(Int_t eta_index,Double_t kappa,Double
   return -1;
 }
 
-UChar_t *AliL3HoughTransformerRow::GetRowCount(Int_t eta_index)
+UChar_t *AliL3HoughTransformerRow::GetRowCount(Int_t etaindex)
 {
-  return fRowCount[eta_index];
+  return fgRowCount[etaindex];
 }
 
-UChar_t *AliL3HoughTransformerRow::GetGapCount(Int_t eta_index)
+UChar_t *AliL3HoughTransformerRow::GetGapCount(Int_t etaindex)
 {
-  return fGapCount[eta_index];
+  return fgGapCount[etaindex];
 }
 
-UChar_t *AliL3HoughTransformerRow::GetCurrentRowCount(Int_t eta_index)
+UChar_t *AliL3HoughTransformerRow::GetCurrentRowCount(Int_t etaindex)
 {
-  return fCurrentRowCount[eta_index];
+  return fgCurrentRowCount[etaindex];
 }
 
 UChar_t *AliL3HoughTransformerRow::GetTrackNRows()
 {
-  return fTrackNRows;
+  return fgTrackNRows;
 }
 
 
 UChar_t *AliL3HoughTransformerRow::GetTrackFirstRow()
 {
-  return fTrackFirstRow;
+  return fgTrackFirstRow;
 }
 
 UChar_t *AliL3HoughTransformerRow::GetTrackLastRow()
 {
-  return fTrackLastRow;
+  return fgTrackLastRow;
 }
