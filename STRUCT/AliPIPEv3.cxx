@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  1999/09/29 09:24:30  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,7 +34,6 @@ $Log$
 
 #include "AliPIPEv3.h"
 #include "AliRun.h"
-#include "AliMC.h"
  
 ClassImp(AliPIPEv3)
  
@@ -485,14 +487,14 @@ void AliPIPEv3::Undulation(char *undul, Float_t pitch, Float_t thick,
   dcone8[3] = dcone5[1];
   dcone8[4] = dcone5[2];
 
-  gMC->Gsvolu(cone[0], "CONE", idtmed[2015], dcone1, 5);
-  gMC->Gsvolu(cone[1], "CONE", idtmed[2015], dcone2, 5);
-  gMC->Gsvolu(cone[2], "CONE", idtmed[2015], dcone3, 5);
-  gMC->Gsvolu(cone[3], "CONE", idtmed[2015], dcone4, 5);
-  gMC->Gsvolu(cone[4], "CONE", idtmed[2015], dcone5, 5);
-  gMC->Gsvolu(cone[5], "CONE", idtmed[2015], dcone6, 5);
-  gMC->Gsvolu(cone[6], "CONE", idtmed[2015], dcone7, 5);
-  gMC->Gsvolu(cone[7], "CONE", idtmed[2015], dcone8, 5);
+  gMC->Gsvolu(cone[0], "CONE", idtmed[2018], dcone1, 5);
+  gMC->Gsvolu(cone[1], "CONE", idtmed[2018], dcone2, 5);
+  gMC->Gsvolu(cone[2], "CONE", idtmed[2018], dcone3, 5);
+  gMC->Gsvolu(cone[3], "CONE", idtmed[2018], dcone4, 5);
+  gMC->Gsvolu(cone[4], "CONE", idtmed[2018], dcone5, 5);
+  gMC->Gsvolu(cone[5], "CONE", idtmed[2018], dcone6, 5);
+  gMC->Gsvolu(cone[6], "CONE", idtmed[2018], dcone7, 5);
+  gMC->Gsvolu(cone[7], "CONE", idtmed[2018], dcone8, 5);
   gMC->Gsatt(cone[0], "SEEN", 0);
   gMC->Gsatt(cone[1], "SEEN", 0);
   gMC->Gsatt(cone[2], "SEEN", 0);
