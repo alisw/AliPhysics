@@ -38,9 +38,9 @@ public:
   static AliEMCALGeometry * GetInstance(const Text_t* name,
 					const Text_t* title="") ; 
   static AliEMCALGeometry * GetInstance() ;
-  AliEMCALGeometry & operator = (const AliEMCALGeometry  & rvalue) const {
+  AliEMCALGeometry & operator = (const AliEMCALGeometry  & /*rvalue*/) const {
     // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
+    Fatal("operator =", "not implemented") ;  
     return *(GetInstance()) ; 
   };
 

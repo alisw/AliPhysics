@@ -64,7 +64,7 @@ public:
   void        Print(Option_t * /*opt = "void"*/) ; 
   const TVector3 XYZInAlice(Float_t r = 9999., Float_t theta = 9999., Float_t phi = 9999.) const ;  
 
-  AliEMCALTowerRecPoint & operator = (const AliEMCALTowerRecPoint & rvalue)  {
+  AliEMCALTowerRecPoint & operator = (const AliEMCALTowerRecPoint & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     assert(0==1) ;
     return *this ; 

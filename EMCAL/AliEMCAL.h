@@ -52,7 +52,7 @@ class AliEMCAL : public AliDetector {
   virtual TTree * TreeQA() const {return fTreeQA; }                
   virtual const TString Version() const {return TString(" ") ; }  
   virtual void WriteQA() ; 
-  AliEMCAL & operator = (const AliEMCAL & rvalue)  {
+  AliEMCAL & operator = (const AliEMCAL & /*rvalue*/)  {
     // assignement operator requested by coding convention
     // but not needed
     Fatal("operator =", "not implemented") ;  

@@ -46,7 +46,7 @@ class AliEMCALv0 : public AliEMCAL {
     return TString("v0") ; 
   }
   
-  AliEMCALv0 & operator = (const AliEMCALv0 & rvalue)  {
+  AliEMCALv0 & operator = (const AliEMCALv0 & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ;  
     return *this ; 

@@ -38,7 +38,7 @@ public:
   virtual void StepManager(void) ;
   virtual const TString Version(void)const {return TString("v0");}
   // assignement operator requested by coding convention but not needed  
-  AliEMCALv1 & operator = (const AliEMCALv0 & rvalue){
+  AliEMCALv1 & operator = (const AliEMCALv0 & /*rvalue*/){
     Fatal("operator =", "not implemented") ;  
     return *this;}
  
