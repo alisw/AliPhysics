@@ -122,8 +122,7 @@
 	 iotrack=(AliITSIOTrack*)tarray.UncheckedAt(i);
 	 if(!iotrack) continue;
      Int_t labITS=iotrack->GetLabel();
-     Int_t labTPC=iotrack->GetTPCLabel();  
-     //Int_t labTPC=labITS;  //provvisoria  
+     Int_t labTPC=iotrack->GetTPCLabel();   
 	  Double_t phistate=iotrack->GetStatePhi();
 	  Double_t tgl=iotrack->GetStateTgl();	
 	  Double_t Zstate=iotrack->GetStateZ();
@@ -136,9 +135,9 @@
 	  Int_t c = iotrack->GetCharge(); 
 	  Double_t x=iotrack->GetX();
 	  Double_t y=iotrack->GetY();
-	  Double_t z= iotrack->GetZ(); 
-	//  Double_t Dz=z;   //non e' vero bisogna levare vertice
-	 // Double_t Dtot= TMath::Sqrt(Dr*Dr+Dz*Dz);
+	  Double_t z= iotrack->GetZ();
+	  Double_t Dz=iotrack->GetDz(); 
+
 	  
      // cout<<" track label = "<<label<<"\n";
      // cout<<" phi z D tanl C = "<<phistate<<" "<<Zstate<<" "<<Dr<<" "<<tgl<<" "<<C<<"\n"; 	  
@@ -195,7 +194,6 @@
      if(phi<0.) phi+=duepi;      
       Double_t signC=0.; 
       if(c>0) signC=1.; else signC=-1.;
- 	  Double_t Dz=z-zo;   // vertex subtraction
 	  Double_t Dtot= TMath::Sqrt(Dr*Dr+Dz*Dz);       
       Double_t difphi = (phi - phig)*1000.;
       dataOut(kkk)=difphi; kkk++;

@@ -21,7 +21,7 @@ Int_t ITStracks(Int_t evNumber1=0,Int_t evNumber2=0,Int_t nclust=5) {
 
   cerr<<"Select tracks which have nclust rec points in ITS...\n";
 
-  GoodTrack gt[50000];
+  GoodTrack gt[30000];
   Int_t ngood=0;
   ifstream in("good_tracks_tpc");
    ofstream out("itsgood_tracks");  
@@ -34,7 +34,7 @@ Int_t ITStracks(Int_t evNumber1=0,Int_t evNumber2=0,Int_t nclust=5) {
   >>gt[ngood].ptg >>gt[ngood].flag) {
     ngood++;
     cerr<<ngood<<'\r';
-    if (ngood==50000) {
+    if (ngood==30000) {
       cerr<<"Too many good tracks !\n";
       break;
     }

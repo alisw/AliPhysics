@@ -41,7 +41,7 @@ class AliITSTrackerV1 : public TObject {
     AliITSTrackerV1(const AliITSTrackerV1 &cobj);
     ~AliITSTrackerV1();
     AliITSTrackerV1 &operator=(AliITSTrackerV1 obj);
-    void DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile *file);
+    void DoTracking(Int_t evNumber, Int_t minTr, Int_t maxTr, TFile *file, Bool_t realmass=0);
     void RecursiveTracking(TList *trackITSlist);
     Int_t Intersection(AliITSTrackV1 &track, Int_t layer,Int_t &ladder,
 		       Int_t &detector); 
@@ -56,10 +56,9 @@ class AliITSTrackerV1 : public TObject {
     AliITS* fITS;              //! pointer to AliITS
     AliITSTrackV1 *fresult;    // result is a pointer to the final best track
     Double_t fPtref;           // transvers momentum obtained from TPC tracking
-    Double_t fChi2max;         //  cluster with chi2>chi2max are cut. It is
-                               // pt dependend.  aggiunto il 31-7-2001
-    Double_t fepsphi;  //eps for definition window in phi aggiunto il 1-8-2001
-    Double_t fepsz;  //eps for definition window in z aggiunto il 1-8-2001
+    Double_t fChi2max;         //  chi2 cut  
+    Double_t fepsphi;  //eps for definition window in phi 
+    Double_t fepsz;  //eps for definition window in z 
     TObjArray  *frecPoints;    // pointer to RecPoints
     Int_t **fvettid;           // flag vector of used clusters
     Bool_t fflagvert;          // a flag to impose or not the vertex constraint
@@ -78,7 +77,7 @@ class AliITSTrackerV1 : public TObject {
     //TStopwatch *fTimerKalman;         // timer for kalman filter
     //TStopwatch *fTimerIntersection;   // timer for Intersection 
 
-    ClassDef(AliITSTrackerV1,1) //????
+    ClassDef(AliITSTrackerV1,1)  
 };
 
 #endif

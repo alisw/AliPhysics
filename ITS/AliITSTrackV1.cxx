@@ -32,16 +32,15 @@ AliITSTrackV1::AliITSTrackV1() {
   fLayer = -1; 
   fClusterInTrack = new TMatrix(6,9);
   Int_t i,j;
-  //for(i=0; i<6; i++) (*fClusterInTrack)(i,6)=(*fClusterInTrack)(i,7)=
-  //                         (*fClusterInTrack)(i,8)=-1.;
   for(i=0; i<6; i++){
-  for(j=4; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   //modificata angela
+  for(j=4; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   
   } 
   frtrack=0.;
   fnoclust=0;     
   fd2.ResizeTo(6);
   ftgl2.ResizeTo(6); 
   fdtgl.ResizeTo(6);
+  fMass=0.13956995; //a pion by default 
   
 //////////////////////////////////////// gets magnetic field factor ////////////////////////////////
 
@@ -97,7 +96,8 @@ AliITSTrackV1::AliITSTrackV1(const AliITSTrackV1 &cobj) {
   *fClusterInTrack = *cobj.fClusterInTrack;
   
   fFieldFactor=cobj.fFieldFactor;
- 
+  fMass=cobj.fMass; 
+   
   for(i=0; i<cobj.flistCluster->GetSize(); i++) 
     flistCluster->AddLast(cobj.flistCluster->At(i));
  
@@ -134,14 +134,11 @@ AliITSTrackV1::AliITSTrackV1(AliTPCtrack &obj)
   fVertex(2)=(Double_t)vzg;    
   
   fLayer = 7;
-  //fmCovariance = new TMatrix(5,5);
   fClusterInTrack = new TMatrix(6,9);
   
   Int_t i,j;
-  //for(i=0; i<6; i++) (*fClusterInTrack)(i,6)=(*fClusterInTrack)(i,7)=
-  //                         (*fClusterInTrack)(i,8)=-1.;
   for(i=0; i<6; i++){
-  for(j=4; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   //modificata angela
+  for(j=4; j<9; j++) (*fClusterInTrack)(i,j)=-1.;   
   }  
   flistCluster = new TObjArray; 
   fNumClustInTrack = 0;
@@ -232,7 +229,6 @@ void AliITSTrackV1::LmTPC() {
   Double_t xo,yo, signy;
   Double_t r = 1./cTPC;
   xo =  etaTPC / cTPC;
-  //fxoTPC=xo;
   Double_t yo1, yo2, diffsq1, diffsq2;  
   yo1 = yTPC +  TMath::Sqrt(r*r - (xl-xo)*(xl-xo)); 
   yo2 = yTPC -  TMath::Sqrt(r*r - (xl-xo)*(xl-xo));   
@@ -246,26 +242,8 @@ void AliITSTrackV1::LmTPC() {
   y0m = xo * sina + yo * cosa;  
 
   frtrack=TMath::Sqrt(xm*xm+ym*ym);
-  /*
-  Double_t pigre=TMath::Pi();
-  Double_t phi=0.0;
-  if(ym == 0. || xm == 0.) {
-    if(ym == 0. && xm == 0.) {cout << "  Error in AliITSTrackV1::LmTPC x=0 and y=0 \n"; getchar();}
-    if(ym ==0. && xm>0.) phi=0.;
-    if(ym==0. && xm<0.) phi=pigre;
-    if(xm==0 && ym>0.) phi=pigre/2.;
-    if(xm==0 && ym<0.) phi=1.5*pigre;   
-  }
-  else {
-    if (xm>0. && ym>0.) phi=TMath::ATan(ym/xm);
-    if (xm<0. && ym>0.) phi=pigre+TMath::ATan(ym/xm);
-    if (xm<0. && ym<0.) phi=pigre+TMath::ATan(ym/xm); 
-    if (xm>0. && ym<0.) phi=(2*pigre)+TMath::ATan(ym/xm);     
-  };
-  if(phi<0. || phi>(2*pigre)) {cout<<"attention error on phi in  AliITSTrackV1:LmTPC \n"; getchar();}
-   */
 	
-    Double_t phi=TMath::ATan2(ym,xm);  if(phi<0) phi=2.*TMath::Pi()+phi;   //nuova def phi   
+  Double_t phi=TMath::ATan2(ym,xm);  if(phi<0) phi=2.*TMath::Pi()+phi;     
 
   fX0=phi;
   fX1=zm;
@@ -322,7 +300,6 @@ void AliITSTrackV1::LmTPC() {
   fC43=cov[13];
   fC44=cov[9];
   
-  //cout<<" C32 e C44 = "<<fC32<<" "<<fC44<<"\n"; getchar();
    
 }
 
@@ -358,8 +335,9 @@ AliITSTrackV1 &AliITSTrackV1::operator=(AliITSTrackV1 obj) {
   
   fC00=obj.fC00; fC10=obj.fC10; fC11=obj.fC11; fC20=obj.fC20; fC21=obj.fC21;
   fC22=obj.fC22; fC30=obj.fC30; fC31=obj.fC31; fC32=obj.fC32; fC33=obj.fC33; 
-  fC40=obj.fC40; fC41=obj.fC41; fC42=obj.fC42; fC43=obj.fC43; fC44=obj.fC44; 
-  
+  fC40=obj.fC40; fC41=obj.fC41; fC42=obj.fC42; fC43=obj.fC43; fC44=obj.fC44;
+   
+  fMass=obj.fMass;   
   
   *fClusterInTrack = *obj.fClusterInTrack;
   Int_t i;
@@ -510,6 +488,8 @@ void AliITSTrackV1::AddEL(AliITSRad *rl, Double_t signdE, Bool_t flagtot, Double
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
 //  add energy loss
 
+  mass=fMass;  
+  
   TVector s(6);  
   s(0)=0.0026+0.00283; s(1)=0.018; s(2)=0.0094; s(3)=0.0095; s(4)=0.0091; s(5)=0.0087;
   //s(0)=0.0026+0.00283*2.; s(1)=0.018*2.; s(2)=0.0094; s(3)=0.0095; s(4)=0.0091; s(5)=0.0087;
@@ -614,6 +594,8 @@ void AliITSTrackV1::AddMS(AliITSRad *rl, Double_t mass) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it       
 //////////   Modification of the covariance matrix to take into account multiple scattering  ///////////     
    
+  mass=fMass;
+ 
   TVector s(6);
 
   s(0)=0.0026+0.00283; s(1)=0.018; s(2)=0.0094; s(3)=0.0095; s(4)=0.0091; s(5)=0.0087;
@@ -671,7 +653,8 @@ void AliITSTrackV1::AddMS(AliITSRad *rl, Double_t mass) {
   	 	
   Double_t p2=(GetPt()*GetPt())/(cosl*cosl);
   Double_t beta2=p2/(p2+mass*mass);
-  Double_t theta2=14.1*14.1/(beta2*p2*1.e6)*(s(layer-1)/cosl);
+ // Double_t theta2=14.1*14.1/(beta2*p2*1.e6)*(s(layer-1)/cosl);
+   Double_t theta2=14.1*14.1/(beta2*p2*1.e6)*(s(layer-1)/TMath::Abs(cosl));
 
   fC22+=theta2*(q40*q40+q41*q41);
   fC32+=theta2*q20*q40;

@@ -15,6 +15,7 @@ AliITSIOTrack::AliITSIOTrack() {
   fTPCLab=-3;   
   fX=fZ=fY=0.; 
   fPx=fPy=fPz=0.;
+  fDz=0.;
   for (Int_t i=0;i<6;i++) {fIdModules[i]=fIdPoints[i]=-1; fIdPoints[i]=-1;}
   fStateVPhi=0.; fStateVZ=0.; fStateVD=0.; fStateVTgl=0.; fStateVC=0.;
   fRadius=0.; fCharge=0; 

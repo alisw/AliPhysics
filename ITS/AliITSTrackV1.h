@@ -58,7 +58,8 @@ public:
   void GetXElements(Double_t &X0, Double_t &X1, Double_t &X2, Double_t &X3, Double_t &X4) const; // get elements
                                                                                            // of state vector
   void PutXElements(Double_t X0, Double_t X1, Double_t X2, Double_t X3, Double_t X4);  // put elements
-                                                                                       // of state vector
+ 
+  void PutMass(Double_t mass) {fMass=mass;} // put the  particle mass                                                                                        // of state vector
     
   void SetLayer(Int_t layer) { fLayer = layer;}      // set current layer
   AliTPCtrack *GetTPCtrack() const { return fTPCtrack;}    // get hte TPC track
@@ -149,9 +150,9 @@ public:
   TVector           ftgl2;              // C(3,3)  for primary track
   TVector           fdtgl;              // C(2,3)  for primary track
 
- // Double_t          fxoTPC;             // cohordinate xo of the helix center, got from the TPC track 
+  Double_t          fMass;         //  particle mass 
   
-  Int_t   fnoclust;  //nm of layers in which we don't add a cluster to the track
+  Int_t   fnoclust;  //nm of layers in which tracking doesn't add a cluster to the track
   		   
   
 

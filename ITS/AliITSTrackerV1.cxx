@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.10.2.1  2001/10/24 07:26:04  hristov
+All the changes from the head are merged with the release
+
 Revision 1.14  2001/10/24 07:19:57  hristov
 Some pointer correctly initialised in one of the constructors
 
@@ -361,7 +364,7 @@ AliITSTrackerV1 &AliITSTrackerV1::operator=(AliITSTrackerV1 obj) {
 }
 //______________________________________________________________________
 void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
-				 TFile *file) {
+				 TFile *file, Bool_t realmass) {
     // Origin   A. Badala' and G.S. Pappalardo:
     // e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
     // The method needs the event number, the minimum and maximum order
@@ -453,33 +456,52 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     AliITSIOTrack *ioTrack=0;
     tracktree1.Branch("ITStracks","AliITSIOTrack",&ioTrack,32000,0);
   
+   TDatabasePDG * db = new TDatabasePDG;   
+  
     Int_t j;       
     for (j=minTr; j<=maxTr; j++) {     
 	track=(AliTPCtrack*)tracks.UncheckedAt(j);
 	if (!track) continue;
+	
+	///   mass definition ////////////////////////
+    Double_t mass=0.13956995;
+	 Int_t pcode=211;  // a pion by default
+	 if(realmass) {
+    Int_t TPClabel=TMath::Abs( track->GetLabel() );   
+	 TParticle *p = (TParticle*)gAlice->Particle(TPClabel);
+	  pcode=p->GetPdgCode();
+	 // Int_t mothercode=p->GetFirstMother();
+	 //if(mothercode>0 ) numofsecondaries++; else numofprimaries++;
+	 }
+	 //if(!pcode) pcode=211;	 
+	 if(TMath::Abs(pcode)<20443) mass=db->GetParticle(pcode)->Mass();	
+	
+	
+	///////////////////////////////////////////////
 
 	//////   propagation to the end of TPC //////////////
 	Double_t xk=77.415;
-	track->PropagateTo(xk, 28.94, 1.204e-3);	 //Ne    
+	track->PropagateTo(xk, 28.94, 1.204e-3,mass);	 //Ne    
 	xk -=0.01;
-	track->PropagateTo(xk, 44.77, 1.71);	 //Tedlar
+	track->PropagateTo(xk, 44.77, 1.71,mass);	 //Tedlar
 	xk -=0.04;
-	track->PropagateTo(xk, 44.86, 1.45);	 //kevlar
+	track->PropagateTo(xk, 44.86, 1.45,mass);	 //kevlar
 	xk -=2.0;
-	track->PropagateTo(xk, 41.28, 0.029);	 //Nomex	 
+	track->PropagateTo(xk, 41.28, 0.029,mass);	 //Nomex	 
 	xk-=16;
-	track->PropagateTo(xk,36.2,1.98e-3); //C02
+	track->PropagateTo(xk,36.2,1.98e-3,mass); //C02
 	xk -=0.01;
-	track->PropagateTo(xk, 24.01, 2.7);	 //Al	 
+	track->PropagateTo(xk, 24.01, 2.7,mass);	 //Al	 
 	xk -=0.01;
-	track->PropagateTo(xk, 44.77, 1.71);	 //Tedlar
+	track->PropagateTo(xk, 44.77, 1.71,mass);	 //Tedlar
 	xk -=0.04;
-	track->PropagateTo(xk, 44.86, 1.45);	 //kevlar
+	track->PropagateTo(xk, 44.86, 1.45,mass);	 //kevlar
 	xk -=0.5;
-	track->PropagateTo(xk, 41.28, 0.029);	 //Nomex
+	track->PropagateTo(xk, 41.28, 0.029,mass);	 //Nomex
     ////////////////////////////////////////////////////////////////////
 
-	AliITSTrackV1 trackITS(*track);
+	AliITSTrackV1 trackITS(*track);     
+	trackITS.PutMass(mass);	  //new to add mass to track
 	if(fresult){ delete fresult; fresult=0;}   	 
 	fresult = new AliITSTrackV1(trackITS);	 
 
@@ -578,6 +600,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	//propagation to vertex
 
 	Double_t rbeam=3.;
+    if((*fresult).DoNotCross(rbeam)) continue;  //no intersection with beampipe	
 	(*fresult).Propagation(rbeam);
 	Double_t c00,c10,c11,c20,c21,c22,c30,c31,c32,c33,c40,c41,c42,c43,c44;
 	(*fresult).GetCElements(c00,
@@ -635,6 +658,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	    ioTrack->SetZ(ztrack);
 	    ioTrack->SetLabel(labITS);
 	    ioTrack->SetTPCLabel(lab);
+		 ioTrack->SetDz(dz);
 	    Int_t il;		
 	    for(il=0;il<6; il++){
 		ioTrack->SetIdPoint(il,(*fresult).GetIdPoint(il));
@@ -644,15 +668,15 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	    for (il=0;il<6;il++) {
 		idpoint=(*fresult).GetIdPoint(il);
 		idmodule=(*fresult).GetIdModule(il);
-		//*(fvettid[idmodule]+idpoint)=1; 
-		if(idmodule>0.) *(fvettid[idmodule]+idpoint)=1;//modificata
-		                                               // angela
+		if(idmodule>0.) *(fvettid[idmodule]+idpoint)=1;
+		                                               
 		ioTrack->SetIdPoint(il,idpoint);
 		ioTrack->SetIdModule(il,idmodule);
 	    } // end for il	    
 	} // end if on numOfCluster
 	//gObjectTable->Print();    // stampa memoria     
     }  //  end for (int j=minTr; j<=maxTr; j++)
+    delete db;    	 
     static Bool_t first=kTRUE;
     static TFile *tfile;
     if(first) {
