@@ -1,8 +1,5 @@
 #include "WrapUtils.hh"
-
 #include "FGeometryInit.hh"
-#include <iostream.h>
-#include <iomanip.h>
 
 ////////////////////////////////////////////////////////////////////////
 // StepAndLocation
@@ -172,13 +169,13 @@ bool EqualHistories(const G4NavigationHistory* ptrFirstHist,
 ////////////////////////////////////////////////////////////////////////
 // PrintHeader
 ////////////////////////////////////////////////////////////////////////
-ostream& PrintHeader(ostream& os, const char* title) {
+G4std::ostream& PrintHeader(G4std::ostream& os, const char* title) {
   os << "*\n" << "*\n" << "*\n";
   os << "*********************  " << title << " *********************\n"
      << "*\n";
   os << "*...+....1....+....2....+....3....+....4....+....5....+....6....+....7..."
-     << endl;
-  os << "*" << endl;
+     << G4endl;
+  os << "*" << G4endl;
 
   return os;
 }
@@ -186,7 +183,7 @@ ostream& PrintHeader(ostream& os, const char* title) {
 ////////////////////////////////////////////////////////////////////////
 // PrintMaterial
 ////////////////////////////////////////////////////////////////////////
-ostream& PrintMaterial(ostream& os, const char* title,
+G4std::ostream& PrintMaterial(G4std::ostream& os, const char* title,
 		       G4double Z, G4double A,
 		       G4double density,
 		       G4double index,
@@ -195,7 +192,7 @@ ostream& PrintMaterial(ostream& os, const char* title,
 
   os << setw10 << title;
 
-  os.setf(0,G4std::ios::floatfield);
+  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
   if (Z < 0)
     os << setw10 << " ";
   else
@@ -210,13 +207,13 @@ ostream& PrintMaterial(ostream& os, const char* title,
     os << setw10 << G4std::setprecision(3)
        << A;
 
-  os.setf(0,G4std::ios::floatfield);
+  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
   os << setw10 
      << setscientific
      << G4std::setprecision(3) 
      << density;
 
-  os.setf(0,G4std::ios::floatfield);
+  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
   os << setw10 
      << setfixed
      << G4std::setprecision(1) 
@@ -229,7 +226,7 @@ ostream& PrintMaterial(ostream& os, const char* title,
   else
     os << setw10 << N;
 
-  os << name << endl;
+  os << name << G4endl;
 
   return os;
 }
@@ -238,7 +235,7 @@ ostream& PrintMaterial(ostream& os, const char* title,
 ////////////////////////////////////////////////////////////////////////
 // PrintCompund
 ////////////////////////////////////////////////////////////////////////
-ostream& PrintCompound(ostream& os, const char* title,
+G4std::ostream& PrintCompound(G4std::ostream& os, const char* title,
 		       G4int count,
 		       const char* name,
 		       G4double fraction,
@@ -246,16 +243,16 @@ ostream& PrintCompound(ostream& os, const char* title,
 
   
   if(count==3) {
-    os << name << endl;
+    os << name << G4endl;
     os << setw10 << "COMPOUND  ";
   }
   
-  os.setf(0,G4std::ios::floatfield);
+  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
   os << setw10
      << setscientific
      << G4std::setprecision(2)
      << fraction;
-  os.setf(0,G4std::ios::floatfield);
+  os.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
   os << setw10
      << setfixed
      << G4std::setprecision(1)

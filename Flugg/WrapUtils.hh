@@ -10,10 +10,10 @@
 #ifndef WrapUtils_hh
 #define WrapUtils_hh 1
 
+//#include <iostream.h>
+#include <iomanip>
 #include "G4NavigationHistory.hh"
 #include "G4ThreeVector.hh"
-#include <iostream.h>
-#include <iomanip.h>
 
 //Forward declarations
 
@@ -31,17 +31,17 @@ bool EqualHistories(const G4NavigationHistory*,
 		    const G4NavigationHistory*);
 
 // Commonly printed things used in FGeometryInit.cc
-inline ostream& setw10(ostream& os) { return os << G4std::setw(10);}
-inline ostream& setscientific(ostream& os) { return os << G4std::setiosflags(G4std::ios::scientific);}
-inline ostream& setfixed(ostream& os) { return os << G4std::setiosflags(G4std::ios::fixed);}
-ostream& PrintHeader(ostream& os, const char* title);
-ostream& PrintMaterial(ostream& os, const char* title,
+inline G4std::ostream& setw10(G4std::ostream& os) { return os << G4std::setw(10);}
+inline G4std::ostream& setscientific(G4std::ostream& os) { return os << G4std::setiosflags(G4std::ios::scientific);}
+inline G4std::ostream& setfixed(G4std::ostream& os) { return os << G4std::setiosflags(G4std::ios::fixed);}
+G4std::ostream& PrintHeader(G4std::ostream& os, const char* title);
+G4std::ostream& PrintMaterial(G4std::ostream& os, const char* title,
 		       G4double Z, G4double A,
 		       G4double density,
 		       G4double index,
 		       G4double N,
 		       const char* name);
-ostream& PrintCompound(ostream& os, const char* title,
+G4std::ostream& PrintCompound(G4std::ostream& os, const char* title,
 		       G4int count,
 		       const char* name,
 		       G4double fraction,

@@ -2,11 +2,11 @@
 // Flugg tag 
 // modified 17/06/02: by I. Gonzalez. STL migration
 
+//#include <stdio.h>
+//#include <iomanip.h>
 #include "FGeometryInit.hh"
 #include "FluggNavigator.hh"
 #include "WrapUtils.hh"
-#include <stdio.h>
-#include <iomanip.h>
 
 FGeometryInit * FGeometryInit::flagInstance=0;
 
@@ -29,14 +29,15 @@ FGeometryInit* FGeometryInit::GetInstance()  {
 FGeometryInit::FGeometryInit():
   fDetector(0),
   fFieldManager(0),
+  fTransportationManager(G4TransportationManager::GetTransportationManager()),
   myTopNode(0),
   ptrGeoMan(0),
   ptrArray(0),
   ptrTouchHist(0),
   ptrOldNavHist(0),
   ptrTempNavHist(0),
-  ptrJrLtGeant(0),
-  fTransportationManager(G4TransportationManager::GetTransportationManager()){
+  ptrJrLtGeant(0)
+{
 
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "==> Flugg FGeometryInit::FGeometryInit()" << G4endl;
@@ -48,7 +49,7 @@ FGeometryInit::FGeometryInit():
     fTransportationManager->SetNavigatorForTracking(newnav);
   }
   else {
-    cerr << "ERROR: Could not find the actual G4Navigator" << G4endl;
+    G4cerr << "ERROR: Could not find the actual G4Navigator" << G4endl;
     abort();
   }
 
@@ -292,7 +293,7 @@ void FGeometryInit::createFlukaMatFile() {
 #endif 
   
   //open file for output
-  ofstream fout("flukaMat.inp");  
+  G4std::ofstream fout("flukaMat.inp");  
   
   //PhysicalVolumeStore, Volume and MaterialTable pointers
   G4PhysicalVolumeStore * pVolStore = G4PhysicalVolumeStore::GetInstance();
@@ -589,7 +590,7 @@ void FGeometryInit::createFlukaMatFile() {
   G4int lastFlagField = 0;
   
   //open file for volume-index correspondence
-  ofstream vout("Volumes_index.inp");
+  G4std::ofstream vout("Volumes_index.inp");
   
   //... and write title
   vout << "*" << G4endl;
@@ -674,7 +675,7 @@ void FGeometryInit::createFlukaMatFile() {
       
       // begin material card		
       fout << setw10 << "ASSIGNMAT ";
-      fout.setf(0,G4std::ios::floatfield);	
+      fout.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);	
       fout << setw10 << setfixed
 	   << G4std::setprecision(1) << G4double(indexMat);
       fout << setw10 << G4double(indexRegFluka);
@@ -741,7 +742,7 @@ void FGeometryInit::createFlukaMatFile() {
     fout << setw10 << "";
     fout << setw10 << "";
     fout << setw10 << "";
-    fout.setf(0,G4std::ios::floatfield);
+    fout.setf(static_cast<G4std::ios::fmtflags>(0),G4std::ios::floatfield);
     fout << setw10 << setfixed
 	 << G4std::setprecision(4) << Bx
 	 << setw10 << By
