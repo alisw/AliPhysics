@@ -887,7 +887,7 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
   // if multiplicity less then 2 - nothing to unfold
   if(GetMultiplicity()<2) return 1; 
 
-  Int_t maxAt[1000];
+  AliPHOSDigit * maxAt[1000];
   Float_t maxAtEnergy[1000];  
   Float_t LocMaxCut, LogWeight;
   Int_t relid[4] ; 
@@ -940,7 +940,7 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
 
       for(Int_t iMax=0; iMax<Nmax; iMax++)
 	{
-	  AliPHOSDigit* digitMax = (AliPHOSDigit*)maxAt[iMax];
+	  AliPHOSDigit* digitMax = maxAt[iMax];
 	  Float_t eMax = maxAtEnergy[iMax]; 
 	  fGeom->AbsToRelNumbering(digitMax->GetId(), relid) ;
 	  fGeom->RelPosInModule(relid, xMax, zMax);
@@ -956,7 +956,7 @@ Int_t AliPHOSEvalRecPoint::UnfoldLocalMaxima()
 
   for(Int_t iMax=0; iMax<Nmax; iMax++) 
     {
-      AliPHOSDigit* digitMax = (AliPHOSDigit*)maxAt[iMax];
+      AliPHOSDigit* digitMax = maxAt[iMax];
       fGeom->AbsToRelNumbering(digitMax->GetId(), relid) ;
       fGeom->RelPosInModule(relid, xMax, zMax);
       Float_t eMax = maxAtEnergy[iMax];

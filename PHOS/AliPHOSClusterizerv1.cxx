@@ -238,7 +238,7 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * maxAt, Float_t * maxAtEnergy,
+Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit ** maxAt, Float_t * maxAtEnergy,
 				    Int_t nPar, Float_t * fitparameters) const
 { 
   // Calls TMinuit to fit the energy distribution of a cluster with several maxima 
@@ -272,7 +272,7 @@ Bool_t AliPHOSClusterizerv1::FindFit(AliPHOSEmcRecPoint * emcRP, int * maxAt, Fl
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
 
   for(iDigit = 0; iDigit < nDigits; iDigit++){
-    digit = (AliPHOSDigit *) maxAt[iDigit]; 
+    digit = maxAt[iDigit]; 
 
     Int_t relid[4] ;
     Float_t x = 0.;
@@ -699,7 +699,7 @@ void AliPHOSClusterizerv1::MakeUnfolding()
 	break ;
       
       Int_t nMultipl = emcRecPoint->GetMultiplicity() ; 
-      Int_t * maxAt = new Int_t[nMultipl] ;
+      AliPHOSDigit ** maxAt = new AliPHOSDigit*[nMultipl] ;
       Float_t * maxAtEnergy = new Float_t[nMultipl] ;
       Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fEmcLocMaxCut,digits) ;
       
@@ -736,7 +736,7 @@ void AliPHOSClusterizerv1::MakeUnfolding()
       AliPHOSEmcRecPoint * emcRecPoint = (AliPHOSEmcRecPoint*) recPoint ; 
       
       Int_t nMultipl = emcRecPoint->GetMultiplicity() ; 
-      Int_t * maxAt = new Int_t[nMultipl] ;
+      AliPHOSDigit ** maxAt = new AliPHOSDigit*[nMultipl] ;
       Float_t * maxAtEnergy = new Float_t[nMultipl] ;
       Int_t nMax = emcRecPoint->GetNumberOfLocalMax(maxAt, maxAtEnergy,fCpvLocMaxCut,digits) ;
       
@@ -772,7 +772,7 @@ Double_t  AliPHOSClusterizerv1::ShowerShape(Double_t r)
 //____________________________________________________________________________
 void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc, 
 						 Int_t nMax, 
-						 int * maxAt, 
+						 AliPHOSDigit ** maxAt, 
 						 Float_t * maxAtEnergy)
 { 
   // Performs the unfolding of a cluster with nMax overlapping showers 

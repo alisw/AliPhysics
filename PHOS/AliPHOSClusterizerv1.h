@@ -86,13 +86,13 @@ private:
 
   void    GetCalibrationParameters(void) ;
   
-  Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, int * MaxAt, Float_t * maxAtEnergy, 
+  Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit ** MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
   void Init() ;
 
   virtual void   MakeUnfolding() ;
   void           UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,Int_t Nmax, 
-		       int * maxAt,Float_t * maxAtEnergy ) ; //Unfolds cluster using TMinuit package
+		       AliPHOSDigit ** maxAt,Float_t * maxAtEnergy ) ; //Unfolds cluster using TMinuit package
   void           PrintRecPoints(Option_t * option) ;
 
 private:

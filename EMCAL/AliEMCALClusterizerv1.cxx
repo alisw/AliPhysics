@@ -235,7 +235,7 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
 }
 
 //____________________________________________________________________________
-Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALTowerRecPoint * emcRP, int * maxAt, Float_t * maxAtEnergy,
+Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALTowerRecPoint * emcRP, AliEMCALDigit ** maxAt, Float_t * maxAtEnergy,
 				    Int_t nPar, Float_t * fitparameters) const
 { 
   // Calls TMinuit to fit the energy distribution of a cluster with several maxima 
@@ -269,7 +269,7 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALTowerRecPoint * emcRP, int * maxAt
   AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
 
   for(iDigit = 0; iDigit < nDigits; iDigit++){
-    digit = (AliEMCALDigit *) maxAt[iDigit]; 
+    digit = maxAt[iDigit]; 
 
     Int_t relid[4] ;
     Float_t x = 0.;
@@ -764,7 +764,7 @@ Double_t  AliEMCALClusterizerv1::ShowerShape(Double_t r)
 //____________________________________________________________________________
 void  AliEMCALClusterizerv1::UnfoldCluster(AliEMCALTowerRecPoint * iniTower, 
 						 Int_t nMax, 
-						 int * maxAt, 
+						 AliEMCALDigit ** maxAt, 
 						 Float_t * maxAtEnergy)
 {
   // Performs the unfolding of a cluster with nMax overlapping showers 

@@ -86,13 +86,13 @@ private:
 
   void    GetCalibrationParameters(void) ;
   
-  Bool_t  FindFit(AliEMCALTowerRecPoint * emcRP, int * MaxAt, Float_t * maxAtEnergy, 
+  Bool_t  FindFit(AliEMCALTowerRecPoint * emcRP, AliEMCALDigit ** MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
   void Init() ;
 
   virtual void   MakeUnfolding() ;
   void           UnfoldCluster(AliEMCALTowerRecPoint * iniEmc,Int_t Nmax, 
-		       int * maxAt,Float_t * maxAtEnergy ) ; //Unfolds cluster using TMinuit package
+		       AliEMCALDigit ** maxAt,Float_t * maxAtEnergy ) ; //Unfolds cluster using TMinuit package
   void           PrintRecPoints(Option_t * option) ;
 
 private:

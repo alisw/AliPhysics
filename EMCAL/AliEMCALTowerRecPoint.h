@@ -56,7 +56,7 @@ public:
   Int_t       GetMultiplicity(void) const { return fMulDigit ; }   // gets the number of digits making this recpoint
   Int_t       GetMultiplicityAtLevel(const Float_t level) const ;  // computes multiplicity of digits with 
                                                                    // energy above relative level
-  virtual Int_t GetNumberOfLocalMax(Int_t *  maxAt, Float_t * maxAtEnergy,
+  virtual Int_t GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * maxAtEnergy,
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 
                                                                    // searches for the local maxima 
   Float_t     GetTime(void) const{return  fTime ; } 
