@@ -158,10 +158,10 @@ void AliPMDClustering::Order()
   // Sorting algorithm
   // sorts the ADC values from higher to lower
   //
-  double dd[kNMX], adum;
+  double dd[kNMX];
   // matrix fEdepCell converted into
   // one dimensional array dd. adum a place holder for double
-  int i, j, i1, i2, iord1[kNMX], itst, idum;
+  int i, j, i1, i2, iord1[kNMX];
   // information of
   // ordering is stored in iord1, original array not ordered
   //
