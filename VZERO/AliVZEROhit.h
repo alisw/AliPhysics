@@ -38,6 +38,8 @@ public:
   Float_t Vz()    const {return fVz;};
   Float_t Eloss() const {return fEloss;}
   Float_t Tleng() const {return fTleng;}
+  Float_t Nphot() const {return fNphot;}
+  Float_t Cell()  const {return fCell;}
  
 private:
   Int_t   fVolume;        // Current volume ID
@@ -59,8 +61,9 @@ private:
   Float_t fVz;            // Vertex z coordinate    
   Float_t fEloss;         // Energy loss  in VZERO detector
   Float_t fTleng;         // Track length in VZERO detector
-  
-    
+  Int_t   fNphot;         // Number of photons created by current hit 
+  Int_t   fCell;          // Scintillator cell number from 0 to 71 
+
   ClassDef(AliVZEROhit,2) //  Hits for detector VZERO
 };
 #endif
