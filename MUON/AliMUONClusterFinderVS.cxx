@@ -72,7 +72,10 @@ AliMUONClusterFinderVS::~AliMUONClusterFinderVS()
 {
   // Reset tracks information
    fNRawClusters = 0;
-   if (fRawClusters) fRawClusters->Delete();
+   if (fRawClusters) {
+     fRawClusters->Delete();
+     delete fRawClusters;
+   }
 }
 
 AliMUONClusterFinderVS::AliMUONClusterFinderVS(const AliMUONClusterFinderVS & clusterFinder):TObject(clusterFinder)

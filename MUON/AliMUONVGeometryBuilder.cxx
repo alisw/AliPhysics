@@ -56,8 +56,10 @@ AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& 
 //______________________________________________________________________________
 AliMUONVGeometryBuilder::~AliMUONVGeometryBuilder() {
 //
-
-  delete fChambers;
+  if (fChambers) {
+    fChambers->Clear(); // Sets pointers to 0 sinche it is not the owner
+    delete fChambers;
+  }
 }
 
 //______________________________________________________________________________
