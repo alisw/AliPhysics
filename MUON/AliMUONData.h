@@ -54,7 +54,7 @@ class AliMUONData : public TNamed {
     TClonesArray*  RecTracks() {return fRecTracks;}
 
     void           GetTrack(Int_t it) {fLoader->TreeH()->GetEvent(it);}
-    Int_t          GetNtracks()       {return fLoader->TreeH()->GetEntries();}
+    int            GetNtracks()       {return fLoader->TreeH()->GetEntries();}
     void           GetCathode(Int_t ic) {fLoader->TreeD()->GetEvent(ic);}
     void           GetRawClusters() {fLoader->TreeR()->GetEvent(0);}
     void           GetTrigger() {fLoader->TreeR()->GetEvent(0);}
