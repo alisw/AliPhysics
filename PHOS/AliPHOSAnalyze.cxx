@@ -416,8 +416,8 @@ void AliPHOSAnalyze::ReadAndPrintCPV(Int_t EvFirst, Int_t EvLast)
 	  nGenHits++;
 	  cpvHit = (AliPHOSCPVHit*)cpvHits->UncheckedAt(ihit);
 	  p      = cpvHit->GetMomentum();
-	  xgen   = cpvHit->GetX();
-	  zgen   = cpvHit->GetY();
+	  xgen   = cpvHit->X();
+	  zgen   = cpvHit->Y();
 	  ipart  = cpvHit->GetIpart();
 	  printf("CPV hit in module %d: ",iModule+1);
 	  printf(" p = (%f, %f, %f, %f) GeV,\n",
@@ -512,8 +512,8 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
 	  cpvHit   = (AliPHOSCPVHit*)cpvHits->UncheckedAt(ihit);
 	  p        = cpvHit->GetMomentum();
-	  xzgen[0] = cpvHit->GetX();
-	  xzgen[1] = cpvHit->GetY();
+	  xzgen[0] = cpvHit->X();
+	  xzgen[1] = cpvHit->Y();
 	  ipart    = cpvHit->GetIpart();
 	  TClonesArray &lhits = *(TClonesArray *)hitsPerModule[iModule];
 	  new(lhits[hitsPerModule[iModule]->GetEntriesFast()]) AliPHOSCPVHit(*cpvHit);
@@ -555,8 +555,8 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
       Int_t nCPVhits  = cpvHits->GetEntriesFast();
       for (Int_t ihit=0; ihit<nCPVhits; ihit++) {
 	cpvHit = (AliPHOSCPVHit*)cpvHits->UncheckedAt(ihit);
-	xgen   = cpvHit->GetX();
-	zgen   = cpvHit->GetY();
+	xgen   = cpvHit->X();
+	zgen   = cpvHit->Y();
 	r2 = TMath::Power((xgen-xrec),2) + TMath::Power((zgen-zrec),2);
 	if ( r2 < r2min ) {
 	  r2min = r2;

@@ -6,6 +6,7 @@ include $(ALICE_ROOT)/conf/GeneralDef
 include $(ALICE_ROOT)/conf/MachineDef.$(ALICE_TARGET)
 
 PACKAGE = PHOS
+MYLIBDIR = ~/lib/tgt_$(ALICE_TARGET)
 
 # C++ sources
 
@@ -51,11 +52,11 @@ ALOBJS  = $(SHOBJS) $(RCOBJS) $(DUOBJS)
 
 ##### COMMANDS ##### 
 
-SLIBRARY     	= $(LIBDIR)/libPHOS.$(SL)
+SLIBRARY     	= $(MYLIBDIR)/libPHOS.$(SL)
 
 default:	$(SLIBRARY)
 
-$(LIBDIR)/libPHOS.$(SL):			$(OBJS) $(FOBJS)
+$(MYLIBDIR)/libPHOS.$(SL):			$(OBJS) $(FOBJS)
 
 $(DICT):					$(HDRS)
 

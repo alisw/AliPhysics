@@ -584,7 +584,7 @@ void AliPHOSv1::StepManager(void)
 
       // Add the current particle in the list of the CPV hits.
 
-      phos.GetCPVModule(moduleNumber).AddHit(pmom,xyd,ipart);
+      phos.GetCPVModule(moduleNumber).AddHit(fIshunt,tracknumber,pmom,xyd,ipart);
 
       if (fDebugLevel == 1) {
 	printf("CPV hit added to module #%2d: p = (% .4f, % .4f, % .4f, % .4f) GeV,\n",

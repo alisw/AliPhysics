@@ -17,28 +17,25 @@
 #include <TLorentzVector.h>
 
 // --- galice header files ---
+#include <AliHit.h>
 
 //==============================================================================
 //                              AliPHOSCPVHit
 //==============================================================================
 
-class AliPHOSCPVHit : public TObject {
+class AliPHOSCPVHit : public AliHit {
   
 public:
   virtual ~AliPHOSCPVHit() {}
            AliPHOSCPVHit() {}
-           AliPHOSCPVHit(TLorentzVector p, Float_t *xy, Int_t ipart);
+           AliPHOSCPVHit(Int_t shunt, Int_t track, TLorentzVector p, Float_t *xy, Int_t ipart);
   
   TLorentzVector GetMomentum()  { return  fMomentum; }
-  Float_t        GetX()         { return  fXhit;     }
-  Float_t        GetY()         { return  fYhit;     }
   Int_t          GetIpart()     { return  fIpart;    }
   void           Print();
 
 private:
   TLorentzVector fMomentum;   // 4-momentum of the particle
-  Float_t        fXhit;       // Hit's X-coordinates
-  Float_t        fYhit;       // Hit's Y-coordinates
   Int_t          fIpart;      // Hit's particle type
   
   ClassDef(AliPHOSCPVHit,1)  // Hit object in one CPV module

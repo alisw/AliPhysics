@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/11/03 16:49:53  schutz
+  New class AliPHOSCPVHit
+
 */
 
 ////////////////////////////////////////////////
@@ -38,15 +41,16 @@ ClassImp(AliPHOSCPVHit)
 
 //______________________________________________________________________________
 
-AliPHOSCPVHit::AliPHOSCPVHit(TLorentzVector p, Float_t *xy, Int_t ipart)
+AliPHOSCPVHit::AliPHOSCPVHit(Int_t shunt, Int_t track, TLorentzVector p, Float_t *xy, Int_t ipart)
+             : AliHit(shunt, track)
 {
   //
   // Create a CPV hit object
   //
 
   fMomentum  = p;
-  fXhit      = xy[0];
-  fYhit      = xy[1];
+  fX         = xy[0];
+  fY         = xy[1];
   fIpart     = ipart;
 }
 
@@ -58,7 +62,7 @@ void AliPHOSCPVHit::Print()
   //
 
   printf("CPV hit: p  = (% .4f, % .4f, % .4f, % .4f) GeV,\n",
-	GetMomentum().Px(),GetMomentum().Py(),GetMomentum().Pz(),GetMomentum().E());
+	fMomentum.Px(),fMomentum.Py(),fMomentum.Pz(),fMomentum.E());
   printf("         xy = (%8.4f, %8.4f) cm, ipart = %d\n",
-	 fXhit,fYhit,fIpart);
+	 fX,fY,fIpart);
 }

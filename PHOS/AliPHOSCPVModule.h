@@ -34,7 +34,7 @@ public:
   void     Copy(AliPHOSCPVModule &module) const;
   void     Clear(Option_t *opt="");
   void     Print(Option_t *opt="");
-  void     AddHit(TLorentzVector p, Float_t *xy, Int_t ipart);
+  void     AddHit(Int_t shunt, Int_t track, TLorentzVector p, Float_t *xy, Int_t ipart);
   void     MakeBranch(Int_t i);
   void     SetTreeAddress(Int_t i);
   

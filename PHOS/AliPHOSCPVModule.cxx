@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.3  2000/11/13 11:45:36  schutz
+  DEC and HP compilers sufisfied
+
   Revision 1.2  2000/11/13 09:34:11  martinez
   Copy constructor and operator = changed
 
@@ -110,14 +113,14 @@ void AliPHOSCPVModule::Clear(Option_t *opt)
 
 //______________________________________________________________________________
 
-void AliPHOSCPVModule::AddHit(TLorentzVector p, Float_t *xy, Int_t ipart)
+void AliPHOSCPVModule::AddHit(Int_t shunt, Int_t track, TLorentzVector p, Float_t *xy, Int_t ipart)
 {
   //
   // Add this hit to the hit list in CPV detector.
   //
 
   TClonesArray &lhits = *(TClonesArray *)fHits;
-  new(lhits[fHits->GetEntriesFast()]) AliPHOSCPVHit(p,xy,ipart);
+  new(lhits[fHits->GetEntriesFast()]) AliPHOSCPVHit(shunt,track,p,xy,ipart);
 }
 
 //______________________________________________________________________________
