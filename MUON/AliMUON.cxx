@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.57  2002/10/14 14:57:29  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.56.6.2  2002/07/24 10:07:20  alibrary
 Updating VirtualMC
 
@@ -266,7 +269,7 @@ Log message added
 #include "AliMC.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONMerger.h"	
-#include "iostream.h"
+#include "Riostream.h"
 #include "AliConst.h" 
 
 // Defaults parameters for Z positions of chambers
@@ -430,7 +433,6 @@ AliMUON::~AliMUON()
 // Destructor
     if(fDebug) printf("%s: Calling AliMUON destructor !!!\n",ClassName());
     
-    Int_t i;
     fIshunt  = 0;
  
     // Delete TObjArrays
