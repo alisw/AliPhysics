@@ -52,28 +52,33 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 	    cout << endl << " !!! I am in mgdraw - calling Stepping(): " << icode << endl;
 	    cout << endl << " Track Id = " << trackId << " region = " << mreg << endl;
 	}
+      
 	(TVirtualMCApplication::Instance())->Stepping();
 	fluka->SetTrackIsNew(kFALSE);
     } else {
 	//
 	// Tracking is being resumed after secondary tracking
 	//
-	// Reset flag
-	TRACKR.ispusr[mkbmx2 - 2] = 0;
-//
-	fluka->SetTrackIsNew(kTRUE);
-
 	if (verbosityLevel >= 3) {
 	    cout << endl << " !!! I am in mgdraw - resuming Stepping(): " << trackId << endl;
 	}
-
+	
+	fluka->SetTrackIsNew(kTRUE);
+	fluka->SetCaller(40);
 	(TVirtualMCApplication::Instance())->Stepping();
-	fluka->SetTrackIsNew(kFALSE);
+
+	// Reset flag and stored values
+	TRACKR.ispusr[mkbmx2 - 2] = 0;
+	for (Int_t i = 0; i < 9; i++) TRACKR.spausr[i] = -1.;
+
 
 	if (verbosityLevel >= 3) {
 	    cout << endl << " !!! I am in mgdraw - first Stepping() after resume: " << icode << endl;
 	    cout << endl << " Track Id = " << trackId << " region = " << mreg << endl;
 	}
+
+	fluka->SetTrackIsNew(kFALSE);
+	fluka->SetCaller(4);
 	(TVirtualMCApplication::Instance())->Stepping();
     }
     
