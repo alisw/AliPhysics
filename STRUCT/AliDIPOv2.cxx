@@ -635,7 +635,7 @@ void AliDIPOv2::CreateCompensatorDipole()
     Int_t *idtmed = fIdtmed->GetArray()-1799;
     Int_t idrotm[1899];
 //
-    Float_t pbox[3] = {62.5, 62.5, 170.};
+    Float_t pbox[3] = {63., 63., 170.};
     
 //  Mother volumes
     gMC->Gsvolu("DCM0", "BOX", idtmed[1814], pbox, 3);
