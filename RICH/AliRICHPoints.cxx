@@ -34,8 +34,8 @@
 #include <TPolyMarker3D.h>
 #include <TMarker3DBox.h>
 
-#include <AliRICH.h>
-#include "TParticle.h"
+#include "AliRICH.h"
+#include <TParticle.h>
 #include "AliRICHDisplay.h"
 #include "AliRICHPoints.h"
 #include "AliRun.h"
