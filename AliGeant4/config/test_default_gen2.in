@@ -1,5 +1,6 @@
 # $Id$
 # empty generator - no particles are shooted (test2)
 
+/aliGenerator/set Gun
 /aliGun/reset
 #
