@@ -15,6 +15,10 @@
 /*
   $Id$
   $Log$
+  Revision 1.24  2002/04/24 22:02:31  nilsen
+  New SDigits and Digits routines, and related changes,  (including new
+  noise values).
+
  */
 
 #include <iostream.h>
@@ -49,7 +53,8 @@ AliITSClusterFinderSDD::AliITSClusterFinderSDD(AliITSsegmentation *seg,
     SetCutAmplitude();
     SetDAnode();
     SetDTime();
-    SetMinPeak();
+    SetMinPeak((Int_t)(((AliITSresponseSDD*)fResponse)->GetNoiseAfterElectronics()*5));
+    //    SetMinPeak();
     SetMinNCells();
     SetMaxNCells();
     SetTimeCorr();
@@ -67,6 +72,14 @@ AliITSClusterFinderSDD::AliITSClusterFinderSDD(){
     fNclusters    = 0;
     fMap          = 0;
     fCutAmplitude = 0;
+    fDAnode = 0;
+    fDTime = 0;
+    fMinPeak = 0;
+    fMinNCells = 0;
+    fMaxNCells = 0;
+    fTimeCorr = 0;
+    fMinCharge = 0;
+    /*
     SetDAnode();
     SetDTime();
     SetMinPeak((Int_t)(((AliITSresponseSDD*)fResponse)->GetNoiseAfterElectronics()*5));
@@ -74,6 +87,7 @@ AliITSClusterFinderSDD::AliITSClusterFinderSDD(){
     SetMaxNCells();
     SetTimeCorr();
     SetMinCharge();
+    */
 }
 //____________________________________________________________________________
 AliITSClusterFinderSDD::~AliITSClusterFinderSDD(){
