@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.32  2003/01/10 10:26:40  morsch
+Sampling fraction initialized from geometry class.
+
 Revision 1.31  2003/01/08 17:13:41  schutz
 added the HCAL section
 
@@ -238,7 +241,6 @@ AliEMCALJetFinder::AliEMCALJetFinder(const char* name, const char *title)
     SetEfficiencySim();
     SetDebug();
     SetHadronCorrection();
-    SetSamplingFraction();
     SetIncludeK0andN();
 
     SetParametersForBgSubtraction();
