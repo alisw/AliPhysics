@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.35  2001/03/09 13:03:40  morsch
+Process_t and Struc_Func_t moved to AliPythia.h
+
 Revision 1.34  2001/02/14 15:50:40  hristov
 The last particle in event marked using SetHighWaterMark
 
@@ -236,10 +239,10 @@ void AliGenPythia::Generate()
 // Generate one event
     fDecayer->ForceDecay();
 
-    Float_t polar[3] =   {0,0,0};
-    Float_t origin[3]=   {0,0,0};
-    Float_t originP[3]= {0,0,0};
-    Float_t origin0[3]=  {0,0,0};
+    Float_t polar[3]   =   {0,0,0};
+    Float_t origin[3]  =   {0,0,0};
+    Float_t originP[3] =   {0,0,0};
+    Float_t origin0[3] =   {0,0,0};
     Float_t p[3], pP[4];
 //    Float_t random[6];
     static TClonesArray *particles;
@@ -345,38 +348,41 @@ void AliGenPythia::Generate()
 				    p[0]=ichild->Px();
 				    p[1]=ichild->Py();
 				    p[2]=ichild->Pz();
-				    Float_t tof=kconv*ichild->T();
-				    gAlice->SetTrack(fTrackIt, iparent, kf,
-						     p,origin,polar,
-						     tof,kPDecay,nt,fChildWeight);
-				    gAlice->KeepTrack(nt);
-				  } // select child
-				} // child loop
-			    } 
-			}
-		    } // kinematic selection
-		} // select particle
-	    } // particle loop
-	} else {
-	    for (Int_t i = 0; i<np-1; i++) {
-		TParticle *  iparticle = (TParticle *) particles->At(i);
-		kf = CheckPDGCode(iparticle->GetPdgCode());
-		Int_t ks = iparticle->GetStatusCode();
-
-		if (ks==1 && kf!=0 && KinematicSelection(iparticle)) {
-			nc++;
+  				    Float_t tof=kconv*ichild->T();
+  				    gAlice->SetTrack(fTrackIt, iparent, kf,
+  						     p,origin,polar,
+  						     tof,kPDecay,nt,fChildWeight);
+  				    gAlice->KeepTrack(nt);
+ 				  } // select child
+  				} // child loop
+  			    } 
+  			}
+  		    } // kinematic selection
+  		} // select particle
+  	    } // particle loop
+  	} else {
+  	    for (Int_t i = 0; i<np-1; i++) {
+  		TParticle *  iparticle = (TParticle *) particles->At(i);
+  		kf = CheckPDGCode(iparticle->GetPdgCode());
+  		Int_t ks = iparticle->GetStatusCode();
+		Int_t km = iparticle->GetFirstMother();
+		//	printf("\n process %d %d\n", ks,km);
+		
+		if ((ks==1 && kf!=0 && KinematicSelection(iparticle)) ||
+		    (fProcess == kPyJets && ks == 21 && km == 0 && i>1)) {
+		    nc++;
 //
 // store track information
-			p[0]=iparticle->Px();
-			p[1]=iparticle->Py();
-			p[2]=iparticle->Pz();
-			origin[0]=origin0[0]+iparticle->Vx()/10.;
-			origin[1]=origin0[1]+iparticle->Vy()/10.;
-			origin[2]=origin0[2]+iparticle->Vz()/10.;
-			Float_t tof=kconv*iparticle->T();
-			gAlice->SetTrack(fTrackIt,-1,kf,p,origin,polar,
-					 tof,kPPrimary,nt);
-            gAlice->KeepTrack(nt);
+		    p[0]=iparticle->Px();
+		    p[1]=iparticle->Py();
+		    p[2]=iparticle->Pz();
+		    origin[0]=origin0[0]+iparticle->Vx()/10.;
+		    origin[1]=origin0[1]+iparticle->Vy()/10.;
+		    origin[2]=origin0[2]+iparticle->Vz()/10.;
+		    Float_t tof=kconv*iparticle->T();
+		    gAlice->SetTrack(fTrackIt,-1,kf,p,origin,polar,
+				     tof,kPPrimary,nt);
+		    gAlice->KeepTrack(nt);
 		} // select particle
 	    } // particle loop 
 	    printf("\n I've put %i particles on the stack \n",nc);
@@ -386,8 +392,6 @@ void AliGenPythia::Generate()
 	    if (jev >= fNpart || fNpart == -1) {
 		fKineBias=Float_t(fNpart)/Float_t(fTrials);
 		printf("\n Trials: %i %i %i\n",fTrials, fNpart, jev);
-// Print x-section summary
-		fPythia->Pystat(1);
 		break;
 	    }
 	}
@@ -397,6 +401,12 @@ void AliGenPythia::Generate()
     AdjustWeights();
 //  get cross-section
     fXsection=fPythia->GetPARI(1);
+}
+
+void AliGenPythia::FinishRun()
+{
+// Print x-section summary
+    fPythia->Pystat(1);
 }
 
 Bool_t AliGenPythia::ParentSelected(Int_t ip)
