@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/11/20 08:54:44  cblume
+Switch off compression as default
+
 Revision 1.13  2000/11/10 14:57:52  cblume
 Changes in the geometry constants for the DEC compiler
 
@@ -158,7 +161,7 @@ AliTRDdigitizer::AliTRDdigitizer():TNamed()
   fTRFlo         = 0.0;
   fTRFhi         = 0.0;
   fTRFwid        = 0.0;
-  fCompress      = kFALSE;
+  fCompress      = kTRUE;
   fVerbose       = 1;
 
 }
@@ -846,7 +849,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
     if (fVerbose > 0) {
       printf("AliTRDdigitizer::MakeDigits -- ");
       printf("Digitization for chamber %d\n",iDet);
-      printf("iDet = %d, nRowMax = %d, nColMax = %d, nTimeMax = %d\n",iDet,nRowMax,nColMax,nTimeMax);
     }
 
     // Add a container for the digits of this detector
