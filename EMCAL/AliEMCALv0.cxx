@@ -68,16 +68,16 @@ void AliEMCALv0::BuildGeometry()
 	    fGeom->GetEnvelop(1),     // rmax
 	    fGeom->GetEnvelop(2)/2.0, // half length in Z
 	    fGeom->GetArm1PhiMin(),   // minimun phi angle
-	    fGeom->GetArm1PhiMax()   // maximun phi angle
+	    fGeom->GetArm1PhiMax()    // maximun phi angle
 	    ) ; 
    // Active material of  Arm1
  
   new TTUBS("Arm1", "Active material of  arm 1", "void", 
-	    fGeom->GetEnvelop(0),     // rmin 
-	    fGeom->GetEnvelop(1),     // rmax
+	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active(),                   // rmin 
+	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active() + fGeom->GetLmat(),// rmax 
 	    fGeom->GetLmat()/2.0,     // half length in Z
 	    fGeom->GetArm1PhiMin(),   // minimun phi angle
-	    fGeom->GetArm1PhiMax()   // maximun phi angle
+	    fGeom->GetArm1PhiMax()    // maximun phi angle
 	    ) ; 
   // make the container of  Arm2
  
@@ -86,46 +86,45 @@ void AliEMCALv0::BuildGeometry()
 	    fGeom->GetEnvelop(1),     // rmax
 	    fGeom->GetEnvelop(2)/2.0, // half length in Z
 	    fGeom->GetArm2PhiMin(),   // minimun phi angle
-	    fGeom->GetArm2PhiMax()   // maximun phi angle
+	    fGeom->GetArm2PhiMax()    // maximun phi angle
 	    ) ;
 	   
   // Active material of  Arm2
  
   new TTUBS("Arm2", "Active material of  arm 2", "void", 
-	    fGeom->GetEnvelop(0),     // rmin 
-	    fGeom->GetEnvelop(1),     // rmax
-	    fGeom->GetLmat()/2.0,     // half length in Z	    ) ; 
+	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active(),                   // rmin 
+	    fGeom->GetEnvelop(0) + fGeom->GetGap2Active() + fGeom->GetLmat(),// rmax 
+	    fGeom->GetLmat()/2.0,     // half length in Z	   
 	    fGeom->GetArm2PhiMin(),   // minimun phi angle
-	    fGeom->GetArm2PhiMax()   // maximun phi angle
+	    fGeom->GetArm2PhiMax()    // maximun phi angle
 	    ) ;
 
   TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
   top->cd();
   
   // Arm 1 inside alice
-  TNode * envelop1node = new TNode("Arm1 Envelop", "Arm1 Envelop", "Envelop1") ;
+  TNode * envelop1node = new TNode("Envelop1", "Arm1 Envelop", "Envelop1") ;
   envelop1node->SetLineColor(kColorArm1) ;
   fNodes->Add(envelop1node) ;
 
   // Arm 2 inside alice
-  TNode * envelop2node = new TNode("Arm2 Envelop", "Arm2 Envelop", "Envelop2") ;
+  TNode * envelop2node = new TNode("Envelop2", "Arm2 Envelop", "Envelop2") ;
   envelop2node->SetLineColor(kColorArm2) ;
   fNodes->Add(envelop2node) ;
 
   // active material inside Arm 1
   envelop1node->cd() ; 
-  TNode * arm1node = new TNode("Arm1 Mat", "Arm1 Mat", "Arm1Mat") ;
+  TNode * arm1node = new TNode("Arm1", "Arm1 with Mat", "Arm1") ;
   arm1node->SetLineColor(kColorArm1Active) ;
   fNodes->Add(arm1node) ; 
 
   // active material inside Arm 2
   envelop2node->cd() ; 
-  TNode * arm2node = new TNode("Arm2 Mat", "Arm2 Mat", "Arm2Mat") ;
+  TNode * arm2node = new TNode("Arm2", "Arm2 with Mat", "Arm2") ;
   arm2node->SetLineColor(kColorArm2Active) ;
   fNodes->Add(arm2node) ; 
   
 }
-
 
 //____________________________________________________________________________
 void AliEMCALv0::CreateGeometry()
@@ -144,7 +143,7 @@ void AliEMCALv0::CreateGeometry()
   Int_t *idtmed = fIdtmed->GetArray() - 1599 ;
 
 
-  // Create a tube sector that contains Arm 1 
+  // Create tube sectors that contains Arm 1 & 2 
  
   Float_t envelopA[5] ; 
   envelopA[0] = fGeom->GetEnvelop(0) ;         // rmin
@@ -155,27 +154,26 @@ void AliEMCALv0::CreateGeometry()
 
   gMC->Gsvolu("XEN1", "TUBS ", idtmed[1599], envelopA, 5) ; // filled with air
 
-  // Create a tube sector that contains active material Arm 1 
- 
-  envelopA[2] = fGeom->GetLmat() / 2.0 ;       // dz
+  envelopA[3] = fGeom->GetArm2PhiMin() ;       // minimun phi angle
+  envelopA[4] = fGeom->GetArm2PhiMax() ;       // maximun phi angle
+  
+  gMC->Gsvolu("XEN2", "TUBS ", idtmed[1599], envelopA, 5) ; // filled with air
+
+  // Create a tube sector that contains active material Arm 1 & 2 
+
+  envelopA[0] = fGeom->GetEnvelop(0) +  fGeom->GetGap2Active() ;
+  envelopA[1] = envelopA[0] + fGeom->GetLmat() ;
+  envelopA[3] = fGeom->GetArm1PhiMin() ;       // minimun phi angle
+  envelopA[4] = fGeom->GetArm1PhiMax() ;       // maximun phi angle
 
   gMC->Gsvolu("XAR1", "TUBS ", idtmed[1601], envelopA, 5) ; // filled with active material (average)
 
-
-  // Create a tube sector that contains Arm 2 
- 
   envelopA[3] = fGeom->GetArm2PhiMin() ;       // minimun phi angle
   envelopA[4] = fGeom->GetArm2PhiMax() ;       // maximun phi angle
-
-  gMC->Gsvolu("XEN2", "TUBS ", idtmed[1599], envelopA, 5) ; // filled with air
-
-  // Create a tube sector that contains active material Arm 1 
  
-  envelopA[2] = fGeom->GetLmat() / 2.0 ;       // dz
-
   gMC->Gsvolu("XAR2", "TUBS ", idtmed[1601], envelopA, 5) ; // filled with active material (average)
   
-  Int_t idrotm =1;
+  Int_t idrotm = 1;
   AliMatrix(idrotm, 90.0, 0., 90.0, 90.0, 0.0, 0.0) ;
 
   // Position  ENV1 container in ALIC
