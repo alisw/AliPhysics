@@ -40,6 +40,7 @@ Float_t  AliRICHParam::fgSigmaThSpread        =0.035; //
 //__________________________________________________________________________________________________
 void AliRICHParam::Print(Option_t*) const
 {
+//print some usefull (hopefully) info on some internal guts of RICH parametrisation 
   AliInfo(Form("Pads in chamber (%3i,%3i) in sector (%2i,%2i) pad size (%4.2f,%4.2f)",NpadsX(),NpadsY(),NpadsXsec(),NpadsYsec(),PadSizeX(),PadSizeY()));
   AliInfo(Form("Resolve clusters %i sagita %i Radio source %i Aerogel %i TestBeam %i",
                 IsResolveClusters(),IsWireSag(),IsRadioSrc(),IsAerogel(),IsTestBeam())); 
@@ -84,7 +85,8 @@ Float_t AliRICHParam::AbsCH4(Float_t eV)
 }//AbsoCH4()
 //__________________________________________________________________________________________________
 void AliRICHParam::TestSeg()
-{  
+{
+//Provides a set of pictures to test segementation currently in use.    
   new TCanvas("pads","PC segmentation - pads display",700,600);
   gPad->Range(-5,-5,PcSizeX()+5,PcSizeY()+15);
   TVector p(2);   TVector2 c;    TVector2 b;   //current: pad, pad center, pad boundary
@@ -141,22 +143,22 @@ void AliRICHParam::TestSeg()
 //__________________________________________________________________________________________________
 void AliRICHParam::TestResp()
 {
-//test the response set of methodes  
+//Provides a set of plot to check the response parametrisation currently in use.  
   TCanvas *pC=new TCanvas("c","Amplification test",900,800);
   pC->Divide(1,2);
   
   
-  const Int_t nPoints=8;
+  const Int_t kNpoints=8;
   THStack *pStackPhot=new THStack("StackPhot","photons");
   THStack *pStackMip =new THStack("StackMip","mips");
   TLegend *pLeg=new TLegend(0.6,0.2,0.9,0.5,"legend");    
-  TH1F *apHphot[nPoints];
-  TH1F *apHmip[nPoints];
+  TH1F *apHphot[kNpoints];
+  TH1F *apHmip[kNpoints];
   
   Double_t starty=0;
-  Double_t deltay=AliRICHParam::SectorSizeY()/nPoints;
+  Double_t deltay=AliRICHParam::SectorSizeY()/kNpoints;
   
-  for(int i=0;i<nPoints;i++){
+  for(int i=0;i<kNpoints;i++){
     apHphot[i]=new TH1F(Form("hphot%i",i),"Qdc for Photon;QDC;Counts",500,0,500); apHphot[i]->SetLineColor(i);pStackPhot->Add(apHphot[i]);                 
     apHmip[i] =new TH1F(Form("hmip%i",i),"Qdc for Mip;QDC;Counts",4000,0,4000);   apHmip[i]->SetLineColor(i);pStackMip->Add(apHmip[i]);                 
     
@@ -166,7 +168,7 @@ void AliRICHParam::TestResp()
   
   TVector2 x2(0,0);  
   for(Int_t i=0;i<10000;i++){//events loop
-    for(int j=0;j<nPoints;j++){
+    for(int j=0;j<kNpoints;j++){
       x2.Set(10,starty+j*deltay);
       apHphot[j]->Fill(TotQdc(x2,0));
       apHmip[j]->Fill(TotQdc(x2,gRandom->Landau(600,150)*1e-9));
@@ -179,7 +181,7 @@ void AliRICHParam::TestResp()
 //__________________________________________________________________________________________________
 void AliRICHParam::TestTrans()
 {
-//test the set of transformation methods
+//Provides a set of plots to test transformation methods
   new TCanvas("trasform","Test LRS-MRS transform");
   TLatex t; t.SetTextSize(0.02);
   
@@ -206,14 +208,16 @@ void AliRICHParam::TestTrans()
 //__________________________________________________________________________________________________
 void AliRICHParam::DrawAxis()
 {
-  Double_t X[6]={0,0,0,300,0,0};  Double_t Y[6]={0,0,0,0,300,0};  Double_t Z[6]={0,0,0,0,0,300};  
-  TPolyLine3D *pXaxis=new TPolyLine3D(2,X);pXaxis->SetLineColor(kRed);   pXaxis->Draw();
-  TPolyLine3D *pYaxis=new TPolyLine3D(2,Y);pYaxis->SetLineColor(kGreen); pYaxis->Draw();
-  TPolyLine3D *pZaxis=new TPolyLine3D(2,Z);pZaxis->SetLineColor(kBlue);  pZaxis->Draw();  
+//Utility: draws axis on geometry scene  
+  Double_t x[6]={0,0,0,300,0,0};  Double_t y[6]={0,0,0,0,300,0};  Double_t z[6]={0,0,0,0,0,300};  
+  TPolyLine3D *pXaxis=new TPolyLine3D(2,x);pXaxis->SetLineColor(kRed);   pXaxis->Draw();
+  TPolyLine3D *pYaxis=new TPolyLine3D(2,y);pYaxis->SetLineColor(kGreen); pYaxis->Draw();
+  TPolyLine3D *pZaxis=new TPolyLine3D(2,z);pZaxis->SetLineColor(kBlue);  pZaxis->Draw();  
 }
 //__________________________________________________________________________________________________
 void AliRICHParam::DrawSectors() 
 { 
+//Utility: draws RICH chamber sectors on event display.
   Double_t xLeft[5]  = {0,0,SectorSizeX(),SectorSizeX(),0};
   Double_t xRight[5] = {SectorSizeX()+DeadZone(),SectorSizeX()+DeadZone(),PcSizeX(),PcSizeX(),SectorSizeX()+DeadZone()};
   

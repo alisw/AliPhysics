@@ -28,6 +28,11 @@ static const int kFeedback=50000051;  //??? go to something more general like TP
 
 class AliRICHChamber;
 
+// Class providing all the needed parametrised information
+// to construct the geometry, to define segmentation and to provide response model
+// In future will also provide all the staff needed for alignment and calibration
+
+
 class AliRICHParam :public TObject  
 {
 public:
@@ -86,13 +91,7 @@ public:
   static TVector2 MathiesonDelta()           {return TVector2(5*0.18,5*0.18);}            //area of 5 sigmas of Mathieson distribution (cm)
   static Int_t    MaxQdc()                   {return 4095;}                               //QDC number of channels          
   
-  static Int_t    HV(Int_t sector)           {
-    if (sector>=1 && sector <=6)
-      return fgHV[sector-1];
-    else {
-      return kBad;
-    } 
-  }       //high voltage for this sector
+  static Int_t    HV(Int_t sector)           {if (sector>=1 && sector <=6) return fgHV[sector-1];  else return kBad;} //high voltage for this sector
   static void     SetHV(Int_t sector,Int_t hv){fgHV[sector-1]=hv;}  
 //optical properties methodes  
   static Float_t  PhotonEnergy(Int_t i)    {return 0.1*i+5.5;}             //photon energy (eV) for i-th point
@@ -129,7 +128,7 @@ public:
          static Float_t  SigmaThMean()                 {return fgSigmaThMean;}                     //QDC electronic noise mean
          static Float_t  SigmaThSpread()               {return fgSigmaThSpread;}                   //QDC electronic noise width
                 
-  inline static Double_t CogCorr(Double_t x) {return 3.31267e-2*TMath::Sin(2*TMath::Pi()/PadSizeX()*x) //correction of cluster CoG due to sinoidal
+         static Double_t CogCorr(Double_t x) {return 3.31267e-2*TMath::Sin(2*TMath::Pi()/PadSizeX()*x) //correction of cluster CoG due to sinoidal
                                                     -2.66575e-3*TMath::Sin(4*TMath::Pi()/PadSizeX()*x)
                                                     +2.80553e-3*TMath::Sin(6*TMath::Pi()/PadSizeX()*x);}
   
