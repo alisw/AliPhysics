@@ -218,12 +218,12 @@ include build/dummy.d
 modules: $(patsubst %,%/module.mk,$(MODULES)) 
 
 
-aliroot: $(BINPATH) $(ALLEXECS) alilibs bin
+aliroot: $(BINPATH) $(ALLEXECS) alilibs
 
 ifeq ($(ALIPROFILE),YES)
-alilibs: $(LIBPATH) $(ALLLIBS) $(ALLALIBS) lib modules
+alilibs: $(LIBPATH) modules $(ALLLIBS) $(ALLALIBS)
 else
-alilibs: $(LIBPATH) $(ALLLIBS) lib modules
+alilibs: $(LIBPATH) modules $(ALLLIBS)
 endif
 
 # Single Makefile "distribution": Makefile + modules + mkdepend scripts
@@ -247,14 +247,6 @@ ifndef ALIQUIET
 	@echo "***** Entering PROFILE mode. *****"
 endif
 	@(export ALIPROFILE=YES && $(MAKE))
-
-lib:
-	@mkdir lib
-	@mkdir lib/tgt_$(ALICE_TARGET)
-
-bin:
-	@mkdir bin
-	@mkdir bin/tgt_$(ALICE_TARGET)
 
 $(MODULES):
 ifndef ALIQUIET
