@@ -52,7 +52,6 @@
 #pragma link C++ class AliPHOSClusterizerv2+;
 #pragma link C++ class AliPHOSEvalRecPoint+;
 #pragma link C++ class AliPHOSPIDv1+;
-#pragma link C++ class AliPHOSMemoryWatcher+;
 #pragma link C++ class AliPHOSRaw2Digits+;
 #pragma link C++ class AliPHOSBeamTestEvent+;
 #pragma link C++ class AliPHOSCalibrationDB+;
