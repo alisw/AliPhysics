@@ -471,7 +471,7 @@ Double_t AliPHOSv4::SigmaE(Double_t energy)
 }
 
 //____________________________________________________________________________
-Double_t AliPHOSv4::SigmaP(Double_t energy, Int_t incidence)
+Double_t AliPHOSv4::SigmaP(Double_t energy, Double_t incidence)
 {
   // Calculates the energy dependent position resolution 
 

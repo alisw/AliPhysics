@@ -65,7 +65,7 @@ public:
   void         ResetFastRecParticles() ; 
   void         SetBigBox(Int_t index, Float_t value) ;                             
   Double_t     SigmaE(Double_t energy) ;    // calulates the energy resolution at a given Energy                           
-  Double_t     SigmaP(Double_t energy, Int_t inc) ; // calulates the position resolution at a given Energy at a given incidence                           
+  Double_t     SigmaP(Double_t energy, Double_t inc) ; // calulates the position resolution at a given Energy at a given incidence                           
   virtual void StepManager(void) ;          // does the tracking through PHOS and a preliminary digitalization
   virtual TString Version(void){ 
     // As IsVersion
