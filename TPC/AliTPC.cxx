@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.25  2000/11/02 07:25:31  kowal2
+Changes due to the new hit structure.
+Memory leak removed.
+
 Revision 1.24  2000/10/05 16:06:09  kowal2
 Forward declarations. Changes due to a new class AliComplexCluster.
 
@@ -2021,6 +2025,7 @@ void AliTPC::LoadPoints(Int_t)
 {
   //
   Int_t a = 0;
+  if(fHitType==1) return AliDetector::LoadPoints(a);
   LoadPoints2(a);
   // LoadPoints3(a);
 
