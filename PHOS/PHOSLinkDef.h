@@ -59,5 +59,6 @@
 #pragma link C++ class AliPHOSCalibrationData+;
 #pragma link C++ class AliPHOSJetFinder+;
 #pragma link C++ class AliPHOSJet+;
+#pragma link C++ class AliPHOSFastGlobalReconstruction+;
 
 #endif
