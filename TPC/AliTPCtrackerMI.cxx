@@ -533,10 +533,12 @@ void AliTPCtrackerMI::LoadOuterSectors() {
   // This function fills outer TPC sectors with clusters.
   //-----------------------------------------------------------------
   UInt_t index;
-  Int_t j=Int_t(fClustersArray.GetTree()->GetEntries());
+  //Int_t j=Int_t(fClustersArray.GetTree()->GetEntries());
+  Int_t j = ((AliTPCParam*)fParam)->GetNRowsTotal();
   for (Int_t i=0; i<j; i++) {
     //  AliSegmentID *s=fClustersArray.LoadEntry(i);
     AliSegmentID *s= const_cast<AliSegmentID*>(fClustersArray.At(i));
+    if (!s) continue;
     Int_t sec,row;
     AliTPCParam *par=(AliTPCParam*)fClustersArray.GetParam();
     par->AdjustSectorRow(s->GetID(),sec,row);
@@ -560,10 +562,12 @@ void AliTPCtrackerMI::LoadInnerSectors() {
   // This function fills inner TPC sectors with clusters.
   //-----------------------------------------------------------------
   UInt_t index;
-  Int_t j=Int_t(fClustersArray.GetTree()->GetEntries());
+  //Int_t j=Int_t(fClustersArray.GetTree()->GetEntries());
+  Int_t j = ((AliTPCParam*)fParam)->GetNRowsTotal();
   for (Int_t i=0; i<j; i++) {
     //   AliSegmentID *s=fClustersArray.LoadEntry(i);
     AliSegmentID *s=const_cast<AliSegmentID*>(fClustersArray.At(i));
+    if (!s) continue;
     Int_t sec,row;
     AliTPCParam *par=(AliTPCParam*)fClustersArray.GetParam();
     par->AdjustSectorRow(s->GetID(),sec,row);
@@ -1726,6 +1730,7 @@ AliTPCclusterMI *AliTPCtrackerMI::GetClusterMI(Int_t index) const {
   Int_t ncl=(index&0x0000ffff)>>00;
 
   AliTPCClustersRow *clrow=((AliTPCtrackerMI *) this)->fClustersArray.GetRow(sec,row);
+  if (!clrow) return 0;
   return (AliTPCclusterMI*)(*clrow)[ncl];      
 }
 
@@ -1749,6 +1754,7 @@ void AliTPCtrackerMI::CookLabel(AliKalmanTrack *t, Float_t wrong) const {
   Int_t lab=123456789;
   for (i=0; i<noc; i++) {
     AliTPCclusterMI *c=clusters[i];
+    if (!clusters[i]) continue;
     lab=TMath::Abs(c->GetLabel(0));
     Int_t j;
     for (j=0; j<noc; j++) if (lb[j]==lab || mx[j]==0) break;
@@ -1760,7 +1766,8 @@ void AliTPCtrackerMI::CookLabel(AliKalmanTrack *t, Float_t wrong) const {
   for (i=0; i<noc; i++) if (mx[i]>max) {max=mx[i]; lab=lb[i];}
     
   for (i=0; i<noc; i++) {
-    AliTPCclusterMI *c=clusters[i];
+    AliTPCclusterMI *c=clusters[i]; 
+    if (!clusters[i]) continue;
     if (TMath::Abs(c->GetLabel(1)) == lab ||
         TMath::Abs(c->GetLabel(2)) == lab ) max++;
   }
@@ -1772,6 +1779,7 @@ void AliTPCtrackerMI::CookLabel(AliKalmanTrack *t, Float_t wrong) const {
      max=0;
      for (i=1; i<=tail; i++) {
        AliTPCclusterMI *c=clusters[noc-i];
+       if (!clusters[i]) continue;
        if (lab == TMath::Abs(c->GetLabel(0)) ||
            lab == TMath::Abs(c->GetLabel(1)) ||
            lab == TMath::Abs(c->GetLabel(2))) max++;
