@@ -269,7 +269,7 @@ void AliPHOSv1::StepManager(void)
 
   Int_t          relid[4] ;           // (box, layer, row, column) indices
   Int_t          absid    ;           // absolute cell ID number
-  Float_t        xyze[5]={-1000,-1000,-1000,0,0}  ; // position wrt MRS, time and energy deposited
+  Float_t        xyzte[5]={-1000.,-1000.,-1000.,0.,0.}  ; // position wrt MRS, time and energy deposited
   TLorentzVector pos      ;           // Lorentz vector of the track current position
   Int_t          copy     ;
 
@@ -356,10 +356,10 @@ void AliPHOSv1::StepManager(void)
       
       // add current digit to the temporary hit list
 
-      xyze[3] = gMC->TrackTime() ;
-      xyze[4] = cpvDigit->GetQpad() ;                          // amplitude in a pad
+      xyzte[3] = gMC->TrackTime() ;
+      xyzte[4] = cpvDigit->GetQpad() ;                          // amplitude in a pad
       primary = -1;                                             // No need in primary for CPV
-      AddHit(fIshunt, primary, tracknumber, absid, xyze);
+      AddHit(fIshunt, primary, tracknumber, absid, xyzte);
       
       if (cpvDigit->GetQpad() > 0.02) {
 	xmean += cpvDigit->GetQpad() * (cpvDigit->GetXpad() + 0.5);
@@ -379,9 +379,9 @@ void AliPHOSv1::StepManager(void)
   if(gMC->CurrentVolID(copy) == gMC->VolId("PXTL") ) { //  We are inside a PBWO crystal
 
     gMC->TrackPosition(pos) ;
-    xyze[0] = pos[0] ;
-    xyze[1] = pos[1] ;
-    xyze[2] = pos[2] ;
+    xyzte[0] = pos[0] ;
+    xyzte[1] = pos[1] ;
+    xyzte[2] = pos[2] ;
 
     Float_t global[3], local[3] ;
     global[0] = pos[0] ;
@@ -392,7 +392,7 @@ void AliPHOSv1::StepManager(void)
     //Put in the TreeK particle entering PHOS and all its parents
     if ( gMC->IsTrackEntering() ){
       Float_t xyzd[3] ;
-      gMC -> Gmtod (xyze, xyzd, 1);    // transform coordinate from master to daughter system    
+      gMC -> Gmtod (xyzte, xyzd, 1);    // transform coordinate from master to daughter system    
       if (xyzd[1] >  GetGeometry()->GetCrystalSize(1)/2-0.002 ||
 	  xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2+0.002) {
 	TParticle * part = 0 ; 
@@ -405,7 +405,7 @@ void AliPHOSv1::StepManager(void)
       }
     }
     if ( lostenergy != 0 ) {  // Track is inside the crystal and deposits some energy 
-      xyze[3] = gMC->TrackTime() ;     
+      xyzte[3] = gMC->TrackTime() ;     
       
       gMC->CurrentVolOffID(10, moduleNumber) ; // get the PHOS module number ;
       
@@ -422,22 +422,23 @@ void AliPHOSv1::StepManager(void)
       
       gMC->Gmtod(global, local, 1) ;
       
-      //Calculates the light yield, the number of photns produced in the
+      //Calculates the light yield, the number of photons produced in the
       //crystal 
       Float_t lightYield = gRandom->Poisson(fLightFactor * lostenergy *
 					    exp(-fLightYieldAttenuation *
 						(local[1]+GetGeometry()->GetCrystalSize(1)/2.0 ))
 					    ) ;
+
       //Calculates de energy deposited in the crystal  
-      xyze[4] = fAPDFactor * lightYield  ;
+      xyzte[4] = fAPDFactor * lightYield  ;
       
       // add current hit to the hit list
       //cout << "AliPHOSv1::StepManager " << primary << " " << tracknumber << endl ; 
-      AddHit(fIshunt, primary,tracknumber, absid, xyze);
+      AddHit(fIshunt, primary,tracknumber, absid, xyzte);
       
       // fill the relevant QA Checkables
-      fQATotEner->Update( xyze[4] ) ;                                             // total energy in PHOS
-      (static_cast<AliPHOSQAFloatCheckable*>((*fQATotEnerB)[moduleNumber-1]))->Update( xyze[4] ) ; // energy in this block  
+      fQATotEner->Update( xyzte[4] ) ;                                             // total energy in PHOS
+      (static_cast<AliPHOSQAFloatCheckable*>((*fQATotEnerB)[moduleNumber-1]))->Update( xyzte[4] ) ; // energy in this block  
       
     } // there is deposited energy
   } // we are inside a PHOS Xtal
