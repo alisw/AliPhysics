@@ -202,7 +202,9 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b)
   AliFieldMap* map = 0;
   if (fFieldMap[0]->Inside(xm[0], xm[1], xm[2])) {
       map = fFieldMap[0];
-      if (!fL3Option && TMath::Abs(xm[2]) < 370.) {
+      Float_t r = TMath::Sqrt(xm[0] * xm[0] + xm[1] * xm[1]);
+      
+      if (!fL3Option && TMath::Abs(xm[2]) < 370. && r < 550.) {
       //
       //     Constant L3 field , if this option was selected
       //
