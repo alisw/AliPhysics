@@ -31,6 +31,6 @@
 #pragma link C++ class  AliLegoGenerator;
 #pragma link C++ class  AliDigitNew;
 #pragma link C++ class  AliGeometry;
-#pragma link C++ class  AliRecPoint-;
+#pragma link C++ class  AliRecPoint;
 
 #endif

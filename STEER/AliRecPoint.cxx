@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/03/20 14:22:25  fca
+New version to support new PHOS code
+
 Revision 1.2  2000/02/15 09:43:54  fca
 Corrections
 - a bug in the streamer (wrong size of the arrays)
@@ -147,36 +150,4 @@ void AliRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrix & gmat)
  
 }
 
-//______________________________________________________________________________
-void AliRecPoint::Streamer(TBuffer &R__b)
-{
-  //  Stream an object of class AliRecPoint.
- if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);
-      R__b >> fAmp;
-      R__b >> fIndexInList;
-      R__b >> fMulDigit;
-      fDigitsList = new Int_t[fMulDigit] ; 
-      R__b.ReadFastArray(fDigitsList, fMulDigit);
-      R__b >> fGeom;
-      fLocPos.Streamer(R__b);
-      R__b >> fLocPosM;
-      R__b >> fMulTrack;
-      fTracksList = new Int_t[fMulTrack] ; 
-      R__b.ReadFastArray(fTracksList, fMulTrack);
-   } else {
-      R__b.WriteVersion(AliRecPoint::IsA());
-      TObject::Streamer(R__b);
-      R__b << fAmp;
-      R__b << fIndexInList;
-      R__b << fMulDigit;
-      R__b.WriteFastArray(fDigitsList, fMulDigit);
-      R__b << fGeom;
-      fLocPos.Streamer(R__b);
-      R__b << fLocPosM;
-      R__b << fMulTrack;
-      R__b.WriteFastArray(fTracksList, fMulTrack);
-   }
-}
 
