@@ -1,3 +1,5 @@
+FSRCS= jet_finder_ua1.F
+
 SRCS= \
 AliEMCAL.cxx  \
 AliEMCALGeometry.cxx \
@@ -8,8 +10,11 @@ AliEMCALDigit.cxx \
 AliEMCALSDigitizer.cxx \
 AliEMCALDigitizer.cxx \
 AliEMCALTick.cxx \
-AliEMCALGetter.cxx
- 
+AliEMCALGetter.cxx \
+AliEMCALJet.cxx \
+AliEMCALJetFinder.cxx \ 
+AliEMCALFast.cxx 
+
 HDRS= \
 AliEMCAL.h  \
 AliEMCALGeometry.h \
@@ -20,6 +25,9 @@ AliEMCALDigit.h \
 AliEMCALSDigitizer.h \
 AliEMCALDigitizer.h \
 AliEMCALTick.h  \
-AliEMCALGetter.h
+AliEMCALGetter.h \
+AliEMCALJet.h  \
+AliEMCALJetFinder.h \ 
+AliEMCALFast.h
 
 DHDR:=EMCALLinkDef.h
