@@ -1,6 +1,7 @@
-/* $Id$
-Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de>
-*/
+// $Id$
+
+// Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de>
+// *-- Copyright & copy CL
 
 #include <iostream.h>
 #include <stdio.h>
