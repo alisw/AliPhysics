@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2000/06/08 14:03:58  hristov
+Only one initializer for a default argument
+
 Revision 1.35  2000/06/07 10:13:14  hristov
 Delete only existent objects.
 
@@ -399,8 +402,11 @@ void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
   if(fField) delete fField;
   if(version==1) {
     fField = new AliMagFC("Map1"," ",type,version,scale,maxField);
-  } else if(version<=3) {
+  } else if(version<=2) {
     fField = new AliMagFCM("Map2-3",filename,type,version,scale,maxField);
+    fField->ReadField();
+  } else if(version==3) {
+    fField = new AliMagFDM("Map4",filename,type,version,scale,maxField);
     fField->ReadField();
   } else {
     Warning("SetField","Invalid map %d\n",version);
