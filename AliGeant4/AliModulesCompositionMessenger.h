@@ -17,7 +17,6 @@ class AliModulesComposition;
 
 class G4UIcommand;
 class G4UIdirectory;
-class G4UIcmdWithAString;
 class G4UIcmdWithoutParameter;
 class G4UIcmdWithABool;
 class G4UIcmdWithADoubleAndUnit;
@@ -34,7 +33,6 @@ class AliModulesCompositionMessenger: public G4UImessenger
 
     // methods
     virtual void SetNewValue(G4UIcommand* command, G4String newValues);
-    void SetCandidates();
     
   protected:
     AliModulesCompositionMessenger();
@@ -50,10 +48,6 @@ class AliModulesCompositionMessenger: public G4UImessenger
     G4UIdirectory*          fDirectory;          //command directory
     
     // commands data members
-    G4UIcmdWithAString*         fSwitchOnCmd;         //command: switchOn 
-    G4UIcmdWithAString*         fSwitchOffCmd;        //command: switchOn
-    G4UIcmdWithoutParameter*    fListCmd;             //command: list
-    G4UIcmdWithoutParameter*    fListAvailableCmd;    //command: listAvailable
     G4UIcmdWithADoubleAndUnit*  fFieldValueCmd;       //command: fieldValue
     G4UIcmdWithABool*           fSetReadGeometryCmd;  //command: readGeometry   
     G4UIcmdWithABool*           fSetWriteGeometryCmd; //command: writeGeometry    

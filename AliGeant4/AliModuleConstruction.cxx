@@ -9,37 +9,46 @@
 
 #include "AliModuleConstruction.h"
 #include "AliGlobals.h"
-#include "AliLVStructure.h"
+#include "AliFiles.h"
+#include "AliRun.h"
 #include "AliModule.h"
-#ifdef ALICE_VISUALIZE
-#include "AliColourStore.h"
-#endif
 
-#include "TG4GeometryServices.h"
+#include <G4UImanager.hh>
 
-#include <G4LogicalVolumeStore.hh>
-#include <G4LogicalVolume.hh>
-#ifdef ALICE_VISUALIZE
-#include <G4Colour.hh>
-#include <G4VisAttributes.hh>
-#endif
+#include <TROOT.h> 
+#include <TCint.h> 
+
 
 //_____________________________________________________________________________
-AliModuleConstruction::AliModuleConstruction(const G4String& moduleName) 
-  : fModuleName(moduleName), 
-    fModuleFrameName(moduleName),
-    fModuleFrameLV(0),
-    fAliModule(0),
+AliModuleConstruction::AliModuleConstruction(const G4String& moduleName,
+                                             G4int version, 
+			                     AliModuleType moduleType)
+  : fAliModule(0),
+    fModuleName(moduleName), 
+    fType(moduleType),
+    fVersion(version),
+    fProcessConfig(true),
     fReadGeometry(false),
     fWriteGeometry(false),
-    fDataFilePath(""),    
-    fMessenger(this, moduleName) {
+    fDataFilePath("") {
+//
+}
+
+//_____________________________________________________________________________
+AliModuleConstruction::AliModuleConstruction()
+  : fAliModule(0),
+    fModuleName(""), 
+    fType(kDetector),
+    fVersion(-1),
+    fProcessConfig(true),
+    fReadGeometry(false),
+    fWriteGeometry(false),
+    fDataFilePath("") {
 //
 }
 
 //_____________________________________________________________________________
 AliModuleConstruction::AliModuleConstruction(const AliModuleConstruction& right)
-  : fMessenger(this, right.fModuleName)
 {
 //
   // copy stuff
@@ -47,23 +56,9 @@ AliModuleConstruction::AliModuleConstruction(const AliModuleConstruction& right)
 }
 
 //_____________________________________________________________________________
-AliModuleConstruction::AliModuleConstruction()
-  : fModuleName(""), 
-    fModuleFrameName(""),
-    fModuleFrameLV(0),
-    fAliModule(0),
-    fReadGeometry(false),
-    fWriteGeometry(false),
-    fDataFilePath(""),    
-    fMessenger(this, "") {
-//
-}
-
-//_____________________________________________________________________________
 AliModuleConstruction::~AliModuleConstruction()
 {
 //
-  delete fAliModule;
 }
 
 // operators
@@ -75,14 +70,14 @@ AliModuleConstruction::operator=(const AliModuleConstruction& right)
   // check assignement to self
   if (this == &right) return *this;
   
-  fModuleName = right.fModuleName; 
-  fModuleFrameName = right.fModuleFrameName;
-  fModuleFrameLV = right.fModuleFrameLV;
   fAliModule = right.fAliModule;
+  fModuleName = right.fModuleName; 
+  fVersion = right.fVersion;
+  fType = right.fType;
+  fProcessConfig = right.fProcessConfig;
   fReadGeometry = right.fReadGeometry;
   fWriteGeometry = right.fWriteGeometry;
   fDataFilePath = right.fDataFilePath;
-  //fMessenger = right.fMessenger;
 
   return *this;
 }
@@ -106,247 +101,48 @@ AliModuleConstruction::operator!=(const AliModuleConstruction& right) const
   return returnValue;
 }
 
-// protected methods
-
 //_____________________________________________________________________________
-void AliModuleConstruction::RegisterLogicalVolume(
-                                    G4LogicalVolume* lv, const G4String& path,
-				    AliLVStructure& lvStructure) const
-{
-// Registers logical volume lv in the structure.
-// ---        
+void AliModuleConstruction::Configure()
+{ 
+// Executes the detector setup Root macro
+// (extracted from AliRoot Config.C) and
+// G4 macro.
+// ---
 
-  G4String lvName = lv->GetName();
-  lvStructure.AddNewVolume(lv, path);
+  AliFiles* files = AliFiles::Instance();
+
+  // filepaths and macro names 
+  G4bool isStructure = (fType == kStructure);
+  G4String rootFilePath 
+    = files->GetRootMacroPath(GetDetName(), isStructure);
+  G4String g4FilePath
+    = files->GetG4MacroPath(GetDetName(), isStructure);
+  fDataFilePath 
+    = files->GetG3CallsDatPath(GetDetName(), fVersion, isStructure); 
   
-  // register daughters
-  G4int nofDaughters = lv->GetNoDaughters();
-  if (nofDaughters>0) {
-    G4String previousName = "";
-    for (G4int i=0; i<nofDaughters; i++) {
-      G4LogicalVolume* lvd = lv->GetDaughter(i)->GetLogicalVolume();
-      G4String currentName = lvd->GetName();
-      if (currentName != lvName && currentName != previousName) { 
-        G4String newPath = path + lvName +"/";
-        RegisterLogicalVolume(lvd, newPath, lvStructure);
-	previousName = currentName;
-      }
-    }
-  }     
-}          
-
-// public methods
-
-//_____________________________________________________________________________
-void AliModuleConstruction::SetDetFrame(G4bool warn)
-{ 
-// The logical volume with name identical with
-// fModuleName is retrieved from G4LogicalVolumeStore.
-// ---
-
-  fModuleFrameLV 
-    = TG4GeometryServices::Instance()->FindLogicalVolume(fModuleFrameName, true);
+  // load and execute aliroot config macro
+  if (fProcessConfig) {
+    gROOT->LoadMacro(rootFilePath);
+    G4String macroName = files->GetDefaultMacroName();
+    //macroName = macroName + "_" + GetDetName();
+    macroName = macroName + "(";
+    AliGlobals::AppendNumberToString(macroName, fVersion);
+    macroName = macroName + ")";
+    gInterpreter->ProcessLine(macroName);
+  } 
   
-  if (fModuleFrameLV == 0 && warn) {
-    G4String text = "AliModuleConstruction: Detector frame for ";
-    text = text + fModuleFrameName + " has not been found.";
-    AliGlobals::Warning(text); 
+  // process g4 config macro
+  G4String command = "/control/execute ";
+  G4UImanager* pUI = G4UImanager::GetUIpointer();  
+  pUI->ApplyCommand(command + g4FilePath);
+  
+  // get AliModule created in Config.C macro
+  fAliModule = gAlice->GetModule(GetDetName());
+  if (!fAliModule) {
+    G4String text = "AliSingleModuleConstruction::Configure:\n";
+    text = text + "    AliModule " + GetDetName();
+    text = text + " has not been found in gAlice.";
+    AliGlobals::Exception(text);
   }  
 }
-
-//_____________________________________________________________________________
-void AliModuleConstruction::SetDetFrame(const G4String& frameName, G4bool warn)
-{ 
-// The logical volume with frameName
-// is retrieved from G4LogicalVolumeStore.
-// ---
-
-  fModuleFrameName = frameName;
-  SetDetFrame(warn);
-}
-
-//_____________________________________________________________________________
-void AliModuleConstruction::ListAllLVTree() const
-{
-// Lists all logical volumes tree if the frame logical volume 
-// is defined.
-// ---- 
-
-  if (fModuleFrameLV) 
-    ListLVTree(fModuleFrameLV->GetName());
-  else {
-    G4String text = "AliModuleConstruction::ListAllLVTree:\n";
-    text = text + "    Detector frame is not defined.";    
-    AliGlobals::Warning(text);
-  }   
-}
-
-//_____________________________________________________________________________
-void AliModuleConstruction::ListAllLVTreeLong() const
-{
-// Lists all logical volume tree if the frame logical volume 
-// is defined with numbers of daughters (physical volumes).
-// ---- 
-
-  if (fModuleFrameLV) 
-    ListLVTreeLong(fModuleFrameLV->GetName());
-  else {
-    G4String text = "AliModuleConstruction::ListAllLVTreeLong:\n";
-    text = text + "    Detector frame is not defined.";    
-    AliGlobals::Warning(text);
-  }  
-}
-
-//_____________________________________________________________________________
-void AliModuleConstruction::ListLVTree(const G4String& lvName) const
-{
-// Lists logical volumes tree (daughters) of the logical volume 
-// with specified lvName.
-// ---- 
-
-  G4LogicalVolume* lv 
-    = TG4GeometryServices::Instance()->FindLogicalVolume(lvName);
-
-  if (lv)
-  {
-    G4String path = "";
-    AliLVStructure lvStructure(path);
-    RegisterLogicalVolume(lv, path, lvStructure);
-    lvStructure.ListTree();
-  }
-}
-
-//_____________________________________________________________________________
-void AliModuleConstruction::ListLVTreeLong(const G4String& lvName) const
-{
-// Lists logical volumes tree (daughters) of the logical volume 
-// with specified lvName with numbers of daughters (physical volumes).
-// ---- 
-
-  G4LogicalVolume* lv 
-    = TG4GeometryServices::Instance()->FindLogicalVolume(lvName);
-
-  if (lv) {
-    G4String path = "";
-    AliLVStructure lvStructure(path);
-    RegisterLogicalVolume(lv, path, lvStructure);
-    lvStructure.ListTreeLong();
-  }
-}
-
-#ifdef ALICE_VISUALIZE
-
-//_____________________________________________________________________________
-void AliModuleConstruction::SetDetVisibility(G4bool visibility) const
-{
-// Sets visibility to all detector logical volumes if
-// frame logical volume is defined.
-// ---
-
-  if (fModuleFrameLV) 
-    SetLVTreeVisibility(fModuleFrameLV, visibility);  
-  else  {
-    G4String text = "AliModuleConstruction::SetDetVisibility:\n";
-    text = text + "    Detector frame is not defined.";    
-    AliGlobals::Warning(text);
-  }  
-}
-
-
-//_____________________________________________________________________________
-void AliModuleConstruction::SetLVTreeVisibility(G4LogicalVolume* lv, 
-                                                G4bool visibility) const
-{ 
-// Sets visibility to the logical volumes tree (daughters) of 
-// the logical volume lv.
-// ---
-
-  if (lv) {
-    G4String path = "";
-    AliLVStructure lvStructure(path);
-    RegisterLogicalVolume(lv, path, lvStructure);
-    lvStructure.SetTreeVisibility(visibility);
-  }
-}
-
-//_____________________________________________________________________________
-void AliModuleConstruction::SetVolumeVisibility(G4LogicalVolume* lv, 
-                                                G4bool visibility) const
-{ 
-// Sets visibility to the specified logical volume.
-// ---
-
-  if (lv) {
-    const G4VisAttributes* kpVisAttributes = lv->GetVisAttributes ();
-    G4VisAttributes* newVisAttributes; 
-    if (kpVisAttributes) {
-      G4Colour oldColour   = kpVisAttributes->GetColour();
-      newVisAttributes = new G4VisAttributes(oldColour); 
-    }  
-    else
-      newVisAttributes = new G4VisAttributes();
-    delete kpVisAttributes;
-
-    newVisAttributes->SetVisibility(visibility); 
-
-    lv->SetVisAttributes(newVisAttributes);
-  }
-}
-
-//_____________________________________________________________________________
-void AliModuleConstruction::SetDetColour(G4String colName) const
-{
-// Sets colour to all detector logical volumes if
-// frame logical volume is defined.
-// ---
-
-  if (fModuleFrameLV) 
-    SetLVTreeColour(fModuleFrameLV, colName);  
-  else { 
-    G4String text = "AliModuleConstruction::SetDetColour:\n";
-    text = text + "    Detector frame is not defined.";    
-    AliGlobals::Warning(text);
-  }  
-}
-
-//_____________________________________________________________________________
-void AliModuleConstruction::SetLVTreeColour(G4LogicalVolume* lv, 
-                                            const G4String& colName) const
-{ 
-// Sets colour to the logical volumes tree (daughters) of 
-// the logical volume lv.
-// ---
-
-  if (lv) {
-    G4String path = "";
-    AliLVStructure lvStructure(path);
-    RegisterLogicalVolume(lv, path, lvStructure);
-    lvStructure.SetTreeVisibility(true);
-    lvStructure.SetTreeColour(colName);
-  }
-}
-
-//_____________________________________________________________________________
-void AliModuleConstruction::SetVolumeColour(G4LogicalVolume* lv,
-                                            const G4String& colName) const
-{
-// Sets colour to the specified logical volume.
-// ---
-
-  if (lv) {
-    const G4VisAttributes* kpVisAttributes = lv->GetVisAttributes ();
-    delete kpVisAttributes;
-
-    G4VisAttributes* newVisAttributes = new G4VisAttributes(); 
-
-    AliColourStore* pColours = AliColourStore::Instance();
-    const G4Colour kColour = pColours->GetColour(colName);
-    newVisAttributes->SetVisibility(true); 
-    newVisAttributes->SetColour(kColour);
-
-    lv->SetVisAttributes(newVisAttributes);
-  }      
-}
-
-#endif //ALICE_VISUALIZE
 
