@@ -224,7 +224,7 @@ AliITSVertex::AliITSVertex() {
    
    cout << "\nNumber of used pairs: \n";
    cout << hITSZv->GetEntries() << '\n' << '\n';	
-   cout << "\nCentroid and RMS of hIITSZv: \n";
+   cout << "\nCentroid and RMS of Zv distribution: \n";
    cout <<  hITSZv->GetMean() << "       " << hITSZv->GetRMS() << "\n"<< "\n";
 
    delete [] Z1;
@@ -248,6 +248,7 @@ AliITSVertex::AliITSVertex() {
    f4->SetParameter(3,50.);
    
    hITSZv->Fit("f4","RME0"); 
+
    
    delete hITSZv;
   
