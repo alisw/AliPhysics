@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.7  2001/07/17 12:41:01  morsch
+- Calculation of fraction of event corresponding to selected pt-range corrected
+(R. Turrisi)
+- Parent weight corrected.
+
 Revision 1.6  2001/05/16 14:57:10  alibrary
 New files for folders and Stack
 
@@ -250,7 +255,15 @@ void AliGenHIJINGpara::Init()
     
     printf("%s: The number of particles in the selected kinematic region corresponds to %f percent of a full event\n ", 
 	   ClassName(),100.*fParentWeight);
-    
+
+// Issue warning message if etaMin or etaMax are outside the alowed range 
+// of the parametrization
+    if (etaMin < -8.001 || etaMax > 8.001) {
+	printf("\n \n WARNING FROM AliGenHIJINGPara !");
+	printf("\n YOU ARE USING THE PARAMETERISATION OUTSIDE ");	
+	printf("\n THE ALLOWED PSEUDORAPIDITY RANGE (-8. - 8.)");	    
+	printf("\n YOUR LIMITS: %f %f \n \n ", etaMin, etaMax);
+    }
 }
 
 //_____________________________________________________________________________
