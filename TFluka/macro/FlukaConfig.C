@@ -22,7 +22,7 @@ void Config()
   }
   
   TFluka *fluka = (TFluka *) gMC;
-  fluka->SetInputFileName("mu.inp");
+  fluka->SetInputFileName("muon.inp");
   
   //cout << "<== Config.C..." << endl;
   //return;
@@ -68,118 +68,129 @@ void Config()
   gMC ->SetCut("PPCUTM",cut);
   gMC ->SetCut("TOFMAX",tofmax);
 
-    //
-    //=======================================================================
-    // ************* STEERING parameters FOR ALICE SIMULATION **************
-    // --- Specify event type to be tracked through the ALICE setup
-    // --- All positions are in cm, angles in degrees, and P and E in GeV
-    if (gSystem->Getenv("CONFIG_NPARTICLES"))
+  //
+  //=======================================================================
+  // ************* STEERING parameters FOR ALICE SIMULATION **************
+  // --- Specify event type to be tracked through the ALICE setup
+  // --- All positions are in cm, angles in degrees, and P and E in GeV
+  if (gSystem->Getenv("CONFIG_NPARTICLES"))
+    int     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
+  else
+    int     nParticles = 50;
+  cout << "\t* Creating and configuring generator for " << nParticles 
+       << " particles..." << endl;
+  
+  AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
+  
+  gener->SetMomentumRange(0, 999);
+  gener->SetPhiRange(0, 360);
+  // Set pseudorapidity range from -8 to 8.
+  Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
+  Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
+  gener->SetThetaRange(thmin,thmax);
+  gener->SetOrigin(0, 0, 0);  //vertex position
+  gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
+  gener->Init();
+  // 
+  // Activate this line if you want the vertex smearing to happen
+  // track by track
+  //
+  //gener->SetVertexSmear(perTrack); 
+
+  cout << "\t* Setting magnetic field..." << endl; 
+  gAlice->SetField(-999, 2);  //Specify maximum magnetic field in Tesla (neg. ==> default field)
+
+  cout << "\t* Defining which detectors to load..." << endl;
+  
+  Int_t   iABSO = 0;
+  Int_t   iCRT = 0;
+  Int_t   iDIPO = 0;
+  Int_t   iFMD = 0;
+  Int_t   iFRAME = 0;
+  Int_t   iHALL = 0;
+  Int_t   iITS = 0;
+  Int_t   iMAG = 0;
+  Int_t   iMUON = 0;
+  Int_t   iPHOS = 0;
+  Int_t   iPIPE = 0;
+  Int_t   iPMD = 0;
+  Int_t   iRICH = 0;
+  Int_t   iSHIL = 0;
+  Int_t   iSTART = 0;
+  Int_t   iTOF = 0;
+  Int_t   iTPC = 1;
+  Int_t   iTRD = 0;
+  Int_t   iZDC = 0;
+  Int_t   iEMCAL = 0;
+  
+  cout << "\t* Creating the detectors ..." << endl;
+  //=================== Alice BODY parameters =============================
+  AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
+  cout << "\t\t+ BODY..." << endl;
+  
+  
+  if (iMAG)
     {
-        int     nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
-    } else
-    {
-        int     nParticles = 50;
+      //=================== MAG parameters ============================
+      // --- Start with Magnet since detector layouts may be depending ---
+      // --- on the selected Magnet dimensions ---
+      cout << "\t\t+ Magnet..." << endl;
+      AliMAG *MAG = new AliMAG("MAG", "Magnet");
     }
-    AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
-
-    gener->SetMomentumRange(0, 999);
-    gener->SetPhiRange(0, 360);
-    // Set pseudorapidity range from -8 to 8.
-    Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
-    Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
-    gener->SetThetaRange(thmin,thmax);
-    gener->SetOrigin(0, 0, 0);  //vertex position
-    gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
-    gener->Init();
-    // 
-    // Activate this line if you want the vertex smearing to happen
-    // track by track
-    //
-    //gener->SetVertexSmear(perTrack); 
-
-    gAlice->SetField(-999, 2);  //Specify maximum magnetic field in Tesla (neg. ==> default field)
-
-    Int_t   iABSO = 1;
-    Int_t   iCRT = 1;
-    Int_t   iDIPO = 1;
-    Int_t   iFMD = 1;
-    Int_t   iFRAME = 1;
-    Int_t   iHALL = 1;
-    Int_t   iITS = 1;
-    Int_t   iMAG = 1;
-    Int_t   iMUON = 1;
-    Int_t   iPHOS = 1;
-    Int_t   iPIPE = 1;
-    Int_t   iPMD = 1;
-    Int_t   iRICH = 1;
-    Int_t   iSHIL = 1;
-    Int_t   iSTART = 1;
-    Int_t   iTOF = 1;
-    Int_t   iTPC = 1;
-    Int_t   iTRD = 1;
-    Int_t   iZDC = 1;
-    Int_t   iEMCAL = 0;
-
-    //=================== Alice BODY parameters =============================
-    AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
-
-
-    if (iMAG)
+  
+  
+  if (iABSO)
     {
-        //=================== MAG parameters ============================
-        // --- Start with Magnet since detector layouts may be depending ---
-        // --- on the selected Magnet dimensions ---
-        AliMAG *MAG = new AliMAG("MAG", "Magnet");
+      //=================== ABSO parameters ============================
+      cout << "\t\t+ ABSO..." << endl;
+      AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
     }
-
-
-    if (iABSO)
+  
+  if (iDIPO)
     {
-        //=================== ABSO parameters ============================
-        AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
+      //=================== DIPO parameters ============================
+      cout << "\t\t+ DIPO..." << endl;     
+      AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
     }
-
-    if (iDIPO)
+  
+  if (iHALL)
     {
-        //=================== DIPO parameters ============================
-
-        AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
+      //=================== HALL parameters ============================
+      cout << "\t\t+ HALL..." << endl;
+      AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
     }
-
-    if (iHALL)
+  
+  
+  if (iFRAME)
     {
-        //=================== HALL parameters ============================
-
-        AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
+      //=================== FRAME parameters ============================
+      
+      cout << "\t\t+ FRAME..." << endl;
+      AliFRAME *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
+      
     }
-
-
-    if (iFRAME)
+  
+  if (iSHIL)
     {
-        //=================== FRAME parameters ============================
-
-        AliFRAME *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-
+      //=================== SHIL parameters ============================
+      
+      cout << "\t\t+ SHIL..." << endl;
+      AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding");
     }
-
-    if (iSHIL)
+  
+  
+  if (iPIPE)
     {
-        //=================== SHIL parameters ============================
-
-        AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding");
+      //=================== PIPE parameters ============================
+      
+      cout << "\t\t+ PIPE..." << endl;
+      AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
     }
-
-
-    if (iPIPE)
-    {
-        //=================== PIPE parameters ============================
-
-        AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
-    }
- 
+  
   if(iITS) {
-
-//=================== ITS parameters ============================
+      cout << "\t\t+ ITS..." << endl;
+    
+    //=================== ITS parameters ============================
     //
     // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
     // almost all other detectors. This involves the fact that the ITS geometry
@@ -245,132 +256,144 @@ void Config()
     ITS->SetEUCLID(0);  
   }
   
-
-    if (iTPC)
+  
+  if (iTPC)
     {
-        //============================ TPC parameters ================================
-        // --- This allows the user to specify sectors for the SLOW (TPC geometry 2)
-        // --- Simulator. SecAL (SecAU) <0 means that ALL lower (upper)
-        // --- sectors are specified, any value other than that requires at least one 
-        // --- sector (lower or upper)to be specified!
-        // --- Reminder: sectors 1-24 are lower sectors (1-12 -> z>0, 13-24 -> z<0)
-        // ---           sectors 25-72 are the upper ones (25-48 -> z>0, 49-72 -> z<0)
-        // --- SecLows - number of lower sectors specified (up to 6)
-        // --- SecUps - number of upper sectors specified (up to 12)
-        // --- Sens - sensitive strips for the Slow Simulator !!!
-        // --- This does NOT work if all S or L-sectors are specified, i.e.
-        // --- if SecAL or SecAU < 0
-        //
-        //
-        //-----------------------------------------------------------------------------
-
-        //  gROOT->LoadMacro("SetTPCParam.C");
-        //  AliTPCParam *param = SetTPCParam();
-        AliTPC *TPC = new AliTPCv2("TPC", "Default");
-
-        // All sectors included 
-        TPC->SetSecAL(-1);
-        TPC->SetSecAU(-1);
-
+      cout << "\t\t+ TPC..." << endl;
+      //============================ TPC parameters ================================
+      // --- This allows the user to specify sectors for the SLOW (TPC geometry 2)
+      // --- Simulator. SecAL (SecAU) <0 means that ALL lower (upper)
+      // --- sectors are specified, any value other than that requires at least one 
+      // --- sector (lower or upper)to be specified!
+      // --- Reminder: sectors 1-24 are lower sectors (1-12 -> z>0, 13-24 -> z<0)
+      // ---           sectors 25-72 are the upper ones (25-48 -> z>0, 49-72 -> z<0)
+      // --- SecLows - number of lower sectors specified (up to 6)
+      // --- SecUps - number of upper sectors specified (up to 12)
+      // --- Sens - sensitive strips for the Slow Simulator !!!
+      // --- This does NOT work if all S or L-sectors are specified, i.e.
+      // --- if SecAL or SecAU < 0
+      //
+      //
+      //-----------------------------------------------------------------------------
+      
+      //  gROOT->LoadMacro("SetTPCParam.C");
+      //  AliTPCParam *param = SetTPCParam();
+      AliTPC *TPC = new AliTPCv2("TPC", "Default");
+      
+      // All sectors included 
+      TPC->SetSecAL(-1);
+      TPC->SetSecAU(-1);
+      
     }
-
-    if (iTOF)
+  
+  if (iTOF)
     {
-        //=================== TOF parameters ============================
-        AliTOF *TOF = new AliTOFv2("TOF", "normal TOF");
+      cout << "\t\t+ TOF..." << endl;
+      //=================== TOF parameters ============================
+      AliTOF *TOF = new AliTOFv2("TOF", "normal TOF");
     }
-
-    if (iRICH)
+  
+  if (iRICH)
     {
-        //=================== RICH parameters ===========================
+      cout << "\t\t+ RICH..." << endl;
+      //=================== RICH parameters ===========================
         AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
-
+	
     }
-
-
-    if (iZDC)
+  
+  
+  if (iZDC)
     {
-        //=================== ZDC parameters ============================
-
-        AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
+      cout << "\t\t+ ZDC..." << endl;
+      //=================== ZDC parameters ============================
+      
+      AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
     }
-
-    if (iCRT)
+  
+  if (iCRT)
     {
-        //=================== CRT parameters ============================
-
-        AliCRT *CRT = new AliCRTv0("CRT", "normal CRT");
+      cout << "\t\t+ CRT..." << endl;
+      //=================== CRT parameters ============================
+      
+      AliCRT *CRT = new AliCRTv0("CRT", "normal CRT");
     }
-
-    if (iTRD)
+  
+  if (iTRD)
     {
-        //=================== TRD parameters ============================
-
-        AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
-
-        // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
-        TRD->SetGasMix(1);
-
-        // With hole in front of PHOS
-        TRD->SetPHOShole();
-        // With hole in front of RICH
-        TRD->SetRICHhole();
-        // Switch on TR
-        AliTRDsim *TRDsim = TRD->CreateTR();
+      cout << "\t\t+ TRD..." << endl;
+      //=================== TRD parameters ============================
+      
+      AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
+      
+      // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
+      TRD->SetGasMix(1);
+      
+      // With hole in front of PHOS
+      TRD->SetPHOShole();
+      // With hole in front of RICH
+      TRD->SetRICHhole();
+      // Switch on TR
+      AliTRDsim *TRDsim = TRD->CreateTR();
     }
-
-    if (iFMD)
+  
+  if (iFMD)
     {
-        //=================== FMD parameters ============================
-
-        AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
-        FMD->SetRingsSi1(256);
-        FMD->SetRingsSi2(64);
-        FMD->SetSectorsSi1(20);
-        FMD->SetSectorsSi2(24);
-   }
-
-    if (iMUON)
-    {
-        //=================== MUON parameters ===========================
-
-        AliMUON *MUON = new AliMUONv1("MUON", "default");
+      cout << "\t\t+ FMD..." << endl;
+      //=================== FMD parameters ============================
+      
+      AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
+      FMD->SetRingsSi1(256);
+      FMD->SetRingsSi2(64);
+      FMD->SetSectorsSi1(20);
+      FMD->SetSectorsSi2(24);
     }
-    //=================== PHOS parameters ===========================
-
-    if (iPHOS)
+  
+  if (iMUON)
     {
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "GPS2");
+      cout << "\t\t+ MUON..." << endl;
+      //=================== MUON parameters ===========================
+      
+      AliMUON *MUON = new AliMUONv1("MUON", "default");
     }
-
-
-    if (iPMD)
+  //=================== PHOS parameters ===========================
+  
+  if (iPHOS)
     {
-        //=================== PMD parameters ============================
-
-        AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
-
-        PMD->SetPAR(1., 1., 0.8, 0.02);
-        PMD->SetIN(6., 18., -580., 27., 27.);
-        PMD->SetGEO(0.0, 0.2, 4.);
-        PMD->SetPadSize(0.8, 1.0, 1.0, 1.5);
-
+      cout << "\t\t+ PHOS..." << endl;
+      AliPHOS *PHOS = new AliPHOSv1("PHOS", "GPS2");
     }
-
-    if (iEMCAL && !iRICH)
+  
+  
+  if (iPMD)
     {
-        //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
+      cout << "\t\t+ PMD..." << endl;
+      //=================== PMD parameters ============================
+      
+      AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
+      
+      PMD->SetPAR(1., 1., 0.8, 0.02);
+      PMD->SetIN(6., 18., -580., 27., 27.);
+      PMD->SetGEO(0.0, 0.2, 4.);
+      PMD->SetPadSize(0.8, 1.0, 1.0, 1.5);
+      
     }
-
-    if (iSTART)
+  
+  if (iEMCAL && !iRICH)
     {
-        //=================== START parameters ============================
-        AliSTART *START = new AliSTARTv1("START", "START Detector");
+      cout << "\t\t+ EMCAL (no RICH)..." << endl;
+      //=================== EMCAL parameters ============================
+      AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
     }
-
-
-    cout << "<== Config.C..." << endl;
+  
+  if (iSTART)
+    {
+      cout << "\t\t+ START..." << endl;
+      //=================== START parameters ============================
+      AliSTART *START = new AliSTARTv1("START", "START Detector");
+    }
+  
+  
+  cout << "<== Config.C..." << endl;
 }
 
 Float_t EtaToTheta(Float_t arg){
