@@ -37,10 +37,8 @@ public:
   virtual void MakeTrackSegments(DigitsList * DL, 
 				 AliPHOSRecPoint::RecPointsList * emcl, 
 				 AliPHOSRecPoint::RecPointsList * ppsdl,
+				 AliPHOSRecPoint::RecPointsList * cpvl,
 				 AliPHOSTrackSegment::TrackSegmentsList * trsl ) = 0 ; // does the job
-  virtual void MakeTrackSegmentsCPV(DigitsList * DL, 
-			         AliPHOSRecPoint::RecPointsList * emcl, 
-			         AliPHOSRecPoint::RecPointsList * ppsdl ) = 0; // just unfold EMC and CPV clusters
   virtual void SetMaxEmcPpsdDistance(Float_t r) = 0 ; 
   virtual void SetUnfoldFlag() = 0 ;
   virtual void UnsetUnfoldFlag() = 0 ;

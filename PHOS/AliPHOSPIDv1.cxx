@@ -95,6 +95,9 @@ void  AliPHOSPIDv1::MakeParticles(AliPHOSTrackSegment::TrackSegmentsList * trsl,
   Int_t pcdetector ;    // 1 hit and 0 no hit
 
   while ( (tracksegment = (AliPHOSTrackSegment *)next()) ) {
+    Int_t module = tracksegment->GetPHOSMod();
+    cout << "PHOS module: " << module << endl;
+    if ( module <= fGeom->GetNCPVModules()) continue;
     new( (*rpl)[index] ) AliPHOSRecParticle(tracksegment) ;
     rp = (AliPHOSRecParticle *)rpl->At(index) ; 
     AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ;

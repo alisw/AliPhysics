@@ -390,8 +390,8 @@ void AliPHOSAnalyze::ReadAndPrintCPV(Int_t EvFirst, Int_t EvLast)
     AliPHOSRecPoint::RecPointsList ** emcRecPoints = fPHOS->EmcRecPoints() ;
     gAlice->TreeR()->SetBranchAddress( "PHOSEmcRP" , emcRecPoints  ) ;
     
-    AliPHOSRecPoint::RecPointsList ** cpvRecPoints = fPHOS->PpsdRecPoints() ;
-    gAlice->TreeR()->SetBranchAddress( "PHOSPpsdRP", cpvRecPoints ) ;
+    AliPHOSRecPoint::RecPointsList ** cpvRecPoints = fPHOS->CpvRecPoints() ;
+    gAlice->TreeR()->SetBranchAddress( "PHOSCpvRP", cpvRecPoints ) ;
 
     // Read and print CPV hits
       
@@ -408,7 +408,7 @@ void AliPHOSAnalyze::ReadAndPrintCPV(Int_t EvFirst, Int_t EvLast)
       gAlice->ResetHits();
       gAlice->TreeH()->GetEvent(itrack);
       Int_t iModule = 0 ; 	
-      for (iModule=0; iModule < fGeom->GetNModules(); iModule++) {
+      for (iModule=0; iModule < fGeom->GetNCPVModules(); iModule++) {
 	cpvModule = fPHOS->GetCPVModule(iModule);
 	cpvHits   = cpvModule.Hits();
 	nCPVhits  = cpvHits->GetEntriesFast();
@@ -432,10 +432,11 @@ void AliPHOSAnalyze::ReadAndPrintCPV(Int_t EvFirst, Int_t EvLast)
 
     //=========== Gets the Reconstruction TTree
     gAlice->TreeR()->GetEvent(0) ;
-    TIter nextRP(*fPHOS->PpsdRecPoints() ) ;
-    AliPHOSPpsdRecPoint *cpvRecPoint ;
+    printf("Recpoints: %d\n",(*fPHOS->CpvRecPoints())->GetEntries());
+    TIter nextRP(*fPHOS->CpvRecPoints() ) ;
+    AliPHOSCpvRecPoint *cpvRecPoint ;
     Int_t nRecPoints = 0;
-    while( ( cpvRecPoint = (AliPHOSPpsdRecPoint *)nextRP() ) ) {
+    while( ( cpvRecPoint = (AliPHOSCpvRecPoint *)nextRP() ) ) {
       nRecPoints++;
       TVector3  locpos;
       cpvRecPoint->GetLocalPosition(locpos);

@@ -662,7 +662,7 @@ void AliPHOSv0::CreateGeometry()
   else
     cout << "AliPHOSv0::CreateGeometry : no charged particle identification system installed" << endl; 
 
-//      this->CreateGeometryforSupport() ; 
+  this->CreateGeometryforSupport() ; 
   
   // --- Position  PHOS mdules in ALICE setup ---
   

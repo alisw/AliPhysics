@@ -378,31 +378,29 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TArrayI * emcRecPoints,
 void  AliPHOSTrackSegmentMakerv1::MakeTrackSegments(DigitsList * dl, 
 						    AliPHOSRecPoint::RecPointsList * emcl, 
 						    AliPHOSRecPoint::RecPointsList * ppsdl, 
+						    AliPHOSRecPoint::RecPointsList * cpvl, 
 						    AliPHOSTrackSegment::TrackSegmentsList * trsl)
 {
   // Makes the track segments out of the list of EMC and PPSD Recpoints and stores them in a list
   
-  Int_t phosmod      = fGeom->GetNCPVModules() + 1 ;
   Int_t emcStopedAt  = 0 ; 
   Int_t ppsdStopedAt = 0 ; 
 
   fNTrackSegments = 0 ; 
-
   
   TArrayI * emcRecPoints     = new TArrayI(1000) ;  // these arrays keep indexes 
   TArrayI * ppsdRecPointsUp  = new TArrayI(1000) ;  // of RecPoints, which are 
-  TArrayI * ppsdRecPointsLow = new TArrayI(1000) ;  // kept in TClonesArray's emcl and ppsdl
-  
+  TArrayI * ppsdRecPointsLow = new TArrayI(1000) ;  // kept in TClonesArray's emcl, ppsdl, cpv
   
   TClonesArray * linklowArray = new TClonesArray("AliPHOSLink", 1000);
   TClonesArray * linkupArray  = new TClonesArray("AliPHOSLink", 1000); 
 
-
   if(fUnfoldFlag){
     UnfoldAll(dl, emcl) ; // Unfolds all EMC clusters
+    UnfoldAll(dl, cpvl) ; // Unfolds all CPV clusters
   }
 
-
+  Int_t phosmod  = fGeom->GetNCPVModules() + 1 ;
   while(phosmod <= fGeom->GetNModules() ){
     
     FillOneModule(emcl, emcRecPoints, ppsdl, ppsdRecPointsUp, ppsdRecPointsLow, phosmod, emcStopedAt, ppsdStopedAt) ;

@@ -43,7 +43,7 @@ AliPHOSRecPoint::AliPHOSRecPoint()
 {
   // ctor
 
-  fGeom =   AliPHOSGeometry::GetInstance() ;
+  fGeom = (AliPHOSGeometry*) AliPHOSGeometry::GetInstance() ;
   fPHOSMod = 0;
 }
 

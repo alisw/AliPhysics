@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -47,6 +48,7 @@ AliPHOS::AliPHOS():AliDetector()
   fDigits        = 0 ;
   fEmcRecPoints  = 0 ; 
   fPpsdRecPoints = 0 ;
+  fCpvRecPoints  = 0 ;
   fTrackSegments = 0 ;
   fRecParticles  = 0 ;
 
@@ -59,6 +61,7 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name,title)
   fDigits        = 0 ; 
   fEmcRecPoints  = 0 ; 
   fPpsdRecPoints = 0 ;
+  fCpvRecPoints  = 0 ;
   fTrackSegments = 0 ;
   fRecParticles  = 0 ;
   
@@ -73,6 +76,9 @@ AliPHOS::~AliPHOS()
   if(fPpsdRecPoints)
     fPpsdRecPoints->Delete() ;
   delete fPpsdRecPoints ;
+  if(fCpvRecPoints)
+    fCpvRecPoints->Delete() ;
+  delete fCpvRecPoints ;
   if(fTrackSegments)
     fTrackSegments->Delete() ;
   delete fTrackSegments ;
@@ -361,10 +367,10 @@ void AliPHOS::SetTreeAddress()
     if (branch) branch->SetAddress(&fDigits) ;
   } 
 
-   TTree *treeR = gAlice->TreeR();
+  TTree *treeR = gAlice->TreeR();
    
-   //Branch address for TreeR: EmcRecPoint
-
+  //Branch address for TreeR: EmcRecPoint
+  
   if(fEmcRecPoints)
     fEmcRecPoints->Delete();
   else
@@ -384,6 +390,17 @@ void AliPHOS::SetTreeAddress()
   if ( treeR && fPpsdRecPoints ) {
     branch = treeR->GetBranch("PHOSPpsdRP");
     if (branch) branch->SetAddress(&fPpsdRecPoints) ;
+  }
+
+  //Branch address for TreeR: CPVRecPoint
+  if(fCpvRecPoints)
+    fCpvRecPoints->Delete();
+  else
+    fCpvRecPoints = new AliPHOSRecPoint::RecPointsList(1) ;
+
+  if ( treeR && fCpvRecPoints ) {
+    branch = treeR->GetBranch("PHOSCpvRP");
+    if (branch) branch->SetAddress(&fCpvRecPoints) ;
   }
 
   //Branch address for TreeR: TrackSegments

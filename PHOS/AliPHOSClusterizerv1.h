@@ -46,13 +46,14 @@ public:
   virtual Float_t GetCpvClusteringThreshold()  { return fCpvClusteringThreshold;  } 
   virtual Float_t GetCpvEnergyThreshold()      { return fCpvEnergyThreshold;  }
 
-  virtual Bool_t IsInEmc (AliPHOSDigit * digit) ;                      // Tells if id digit is in EMC
-  virtual Bool_t IsInPpsd(AliPHOSDigit * digit) ;                      // Tells if id digit is in PPSD
-  virtual Bool_t IsInCpv (AliPHOSDigit * digit) ;                      // Tells if id digit is in CPV
+  virtual Bool_t IsInEmc (AliPHOSDigit * digit) ;             // Tells if id digit is in EMC
+  virtual Bool_t IsInPpsd(AliPHOSDigit * digit) ;             // Tells if id digit is in PPSD
+  virtual Bool_t IsInCpv (AliPHOSDigit * digit) ;             // Tells if id digit is in CPV
   virtual void MakeClusters(const DigitsList * dl, 
 			    AliPHOSRecPoint::RecPointsList * emcl, 
-			    AliPHOSRecPoint::RecPointsList * ppsdl) ; // does the job 
-  virtual void PrintParameters() ;  
+			    AliPHOSRecPoint::RecPointsList * ppsdl,
+			    AliPHOSRecPoint::RecPointsList * cpvl) ; // does the job 
+  virtual void PrintParameters() ;
   virtual void SetCalibrationParameters(Float_t A,Float_t B){ fA = A ; fB = B;} 
   virtual void SetEmcClusteringThreshold(Float_t cluth)  { fEmcClusteringThreshold = cluth ; }
   virtual void SetEmcEnergyThreshold(Float_t enth)       { fEmcEnergyThreshold = enth ; } 

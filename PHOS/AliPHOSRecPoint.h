@@ -78,7 +78,7 @@ class AliPHOSRecPoint : public AliRecPoint {
 protected:
   
   Int_t fPHOSMod ;      // PHOS Module number in which the RecPoint is found
-  AliPHOSGeometry * fGeom ; // pointer to the PHOS geometry class
+//    AliPHOSGeometry * fGeom ; // pointer to the PHOS geometry class
   
   ClassDef(AliPHOSRecPoint,1) // RecPoint for PHOS (Base Class)
  

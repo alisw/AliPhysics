@@ -218,13 +218,15 @@ Bool_t AliPHOSClusterizerv1::IsInCpv(AliPHOSDigit * digit)
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl, 
 					AliPHOSRecPoint::RecPointsList * emcl, 
-					AliPHOSRecPoint::RecPointsList * ppsdl)
+					AliPHOSRecPoint::RecPointsList * ppsdl, 
+					AliPHOSRecPoint::RecPointsList * cpvl)
 {
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits
 
-  fNumberOfEmcClusters = 0 ;
+  fNumberOfEmcClusters  = 0 ;
   fNumberOfPpsdClusters = 0 ;
+  fNumberOfCpvClusters  = 0 ;
 
   // Fill and sort the working digits list
   TObjArray tempodigitslist( dl->GetEntries() ) ;
@@ -240,9 +242,9 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 
     AliPHOSDigit ** clusterdigitslist = new AliPHOSDigit*[dl->GetEntries()] ;   
     Int_t index ;
-    if (( (  IsInEmc (digit) ) && ( Calibrate(digit->GetAmp() ) > fEmcClusteringThreshold  ) ) || 
-        ( (  IsInPpsd(digit) ) && ( Calibrate(digit->GetAmp() ) > fPpsdClusteringThreshold ) ) ||
-        ( (  IsInCpv (digit) ) && ( Calibrate(digit->GetAmp() ) > fCpvClusteringThreshold  ) ) ) {
+    if (( IsInEmc (digit) && Calibrate(digit->GetAmp()) > fEmcClusteringThreshold  ) || 
+        ( IsInPpsd(digit) && Calibrate(digit->GetAmp()) > fPpsdClusteringThreshold ) ||
+        ( IsInCpv (digit) && Calibrate(digit->GetAmp()) > fCpvClusteringThreshold  ) ) {
   
       Int_t iDigitInCluster = 0 ; 
 
@@ -261,19 +263,21 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	
 	// start a new PPSD cluster
 	if(fNumberOfPpsdClusters >= ppsdl->GetSize()) ppsdl->Expand(2*fNumberOfPpsdClusters+1);
+	if(fNumberOfCpvClusters  >= cpvl ->GetSize()) cpvl ->Expand(2*fNumberOfCpvClusters +1);
 	if      (IsInPpsd(digit)) {
 	  (*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSPpsdRecPoint() ;
 	  clu =  (AliPHOSPpsdRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
+	  fNumberOfPpsdClusters++ ; 
 	}
 	else if (IsInCpv(digit) ) {
-	  (*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSCpvRecPoint(fW0CPV, fLocMaxCutCPV) ;
-	  clu =  (AliPHOSCpvRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
+	  (*cpvl) [fNumberOfCpvClusters]  = new AliPHOSCpvRecPoint(fW0CPV, fLocMaxCutCPV) ;
+	  clu =  (AliPHOSCpvRecPoint  *) cpvl ->At(fNumberOfCpvClusters)  ;  
+	  fNumberOfCpvClusters++ ; 
 	}
 	else {
 	  cout << "AliPHOSClusterizerv1::MakeClusters: unknown configuration " << fGeom->GetName() << endl;
 	  assert(0==1);
 	}
-	fNumberOfPpsdClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp()) ) ;	
 	clusterdigitslist[iDigitInCluster] = digit  ;	
 	iDigitInCluster++ ; 

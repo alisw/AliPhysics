@@ -51,6 +51,10 @@ class AliPHOS : public AliDetector {
     // to be redefined when ppsd is present
     return & fPpsdRecPoints ;
   } 
+  virtual  AliPHOSRecPoint::RecPointsList ** CpvRecPoints() {
+    // to be redefined when cpv is present
+    return & fCpvRecPoints ;
+  }
   virtual void  SetTreeAddress();                
   virtual  AliPHOSRecParticle::RecParticlesList **  RecParticles() {
     // Getting list of RecParticles
@@ -69,12 +73,13 @@ class AliPHOS : public AliDetector {
     return *this ; 
   }
  
- protected:
+protected:
   
-  AliPHOSRecPoint::RecPointsList * fEmcRecPoints ;         // The RecPoints (clusters) list in EMC 
-  AliPHOSRecPoint::RecPointsList * fPpsdRecPoints ;        // The RecPoints (clusters) list in PPSD (veto)
-  AliPHOSTrackSegment::TrackSegmentsList * fTrackSegments ;// The TrackSegment list in PHOS
-  AliPHOSRecParticle::RecParticlesList * fRecParticles ;   // The reconstructed particles list in PHOS
+  AliPHOSRecPoint::RecPointsList         *fEmcRecPoints ; // The RecPoints (clusters) list in EMC 
+  AliPHOSRecPoint::RecPointsList         *fPpsdRecPoints ;// The RecPoints (clusters) list in PPSD (veto)
+  AliPHOSRecPoint::RecPointsList         *fCpvRecPoints ; // The RecPoints (clusters) list in CPV (veto)
+  AliPHOSTrackSegment::TrackSegmentsList *fTrackSegments ;// The TrackSegment list in PHOS
+  AliPHOSRecParticle::RecParticlesList   *fRecParticles ; // The reconstructed particles list in PHOS
 
   ClassDef(AliPHOS,2) // Photon Spectrometer Detector (base class)
 

@@ -104,7 +104,6 @@ AliPHOSv0(name,title)
   // and the TreeD at the end of the event (branch is set in FinishEvent() ).
   
   fHits= new TClonesArray("AliPHOSHit",1000) ;
-  gAlice->AddHitList(fHits);
 
   fNhits = 0 ;
 
@@ -165,7 +164,7 @@ AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *nam
 
   fDigits = 0 ;
   fHits= new TClonesArray("AliPHOSHit",1000) ;
-  gAlice->AddHitList(fHits);
+
   fNhits = 0 ;
 
   fIshunt     =  1 ; // All hits are associated with primary particles
@@ -211,6 +210,12 @@ AliPHOSv1::~AliPHOSv1()
     fPpsdRecPoints->Delete() ;
     delete fPpsdRecPoints ;
     fPpsdRecPoints = 0 ; 
+  }
+  
+  if ( fCpvRecPoints ) {
+    fCpvRecPoints->Delete() ; 
+    delete fCpvRecPoints ; 
+    fCpvRecPoints = 0 ; 
   }
   
   if ( fTrackSegments ) {
@@ -407,6 +412,13 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
     gAlice->TreeR()->Branch(branchname, "TObjArray", &fPpsdRecPoints, fBufferSize, splitlevel) ;
   }
 
+  fCpvRecPoints->Delete() ; 
+
+  if ( fCpvRecPoints && gAlice->TreeR() ) {
+    sprintf(branchname,"%sCpvRP",GetName()) ;
+    gAlice->TreeR()->Branch(branchname, "TObjArray", &fCpvRecPoints, fBufferSize, splitlevel) ;
+  }
+
   fTrackSegments->Delete() ; 
 
   if ( fTrackSegments && gAlice->TreeR() ) { 
@@ -416,7 +428,7 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 
   fRecParticles->Delete() ; 
 
-  if      (strcmp(fGeom->GetName(),"GPS2") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0) {
+  if (strcmp(fGeom->GetName(),"GPS2") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0) {
     if ( fRecParticles && gAlice->TreeR() ) { 
       sprintf(branchname,"%sRP",GetName()) ;
       gAlice->TreeR()->Branch(branchname, &fRecParticles, fBufferSize) ;
@@ -424,10 +436,13 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   }
   
   // 3.
-  if      (strcmp(fGeom->GetName(),"GPS2") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0)
-    fReconstructioner->MakePPSD(fDigits, fEmcRecPoints, fPpsdRecPoints, fTrackSegments, fRecParticles);
-  if (strcmp(fGeom->GetName(),"IHEP") == 0 || strcmp(fGeom->GetName(),"MIXT") == 0)
-    fReconstructioner->MakeCPV (fDigits, fEmcRecPoints, fPpsdRecPoints);
+
+  fReconstructioner->Make(fDigits, fEmcRecPoints, fPpsdRecPoints,
+			  fCpvRecPoints, fTrackSegments, fRecParticles);
+
+  printf("Reconstruction: %d %d %d %d %d\n",
+	 fEmcRecPoints->GetEntries(),fPpsdRecPoints->GetEntries(),fCpvRecPoints->GetEntries(),
+	 fTrackSegments->GetEntries(),fRecParticles->GetEntries());
 
   // 4. Expand or Shrink the arrays to the proper size
   
@@ -438,6 +453,9 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 
   size = fPpsdRecPoints->GetEntries() ;
   fPpsdRecPoints->Expand(size) ;
+
+  size = fCpvRecPoints->GetEntries() ;
+  fCpvRecPoints->Expand(size) ;
 
   size = fTrackSegments->GetEntries() ;
   fTrackSegments->Expand(size) ;
@@ -473,10 +491,11 @@ void AliPHOSv1::ResetReconstruction()
 { 
   // Deleting reconstructed objects
 
-  if ( fEmcRecPoints )   fEmcRecPoints->Delete();
+  if ( fEmcRecPoints  )  fEmcRecPoints ->Delete();
   if ( fPpsdRecPoints )  fPpsdRecPoints->Delete();
+  if ( fCpvRecPoints  )  fCpvRecPoints ->Delete();
   if ( fTrackSegments )  fTrackSegments->Delete();
-  if ( fRecParticles )   fRecParticles->Delete();
+  if ( fRecParticles  )  fRecParticles ->Delete();
   
 }
 

@@ -41,7 +41,10 @@ public:
   virtual Float_t GetPpsdClusteringThreshold() = 0 ; 
   virtual Float_t GetPpsdEnergyThreshold() = 0 ; 
 
-  virtual void MakeClusters(const DigitsList * dl, AliPHOSRecPoint::RecPointsList * emccl, AliPHOSRecPoint::RecPointsList * ppsdl) = 0 ; 
+  virtual void MakeClusters(const DigitsList * dl,
+			    AliPHOSRecPoint::RecPointsList * emccl,
+			    AliPHOSRecPoint::RecPointsList * ppsdl,
+			    AliPHOSRecPoint::RecPointsList * cpvl) = 0 ; 
   virtual void PrintParameters() = 0 ;  
   virtual void SetCalibrationParameters(Float_t A, Float_t B) = 0 ; 
   virtual void SetEmcClusteringThreshold(Float_t cluth) = 0 ; 

@@ -75,7 +75,7 @@ public:
   void        GetClusterLengths(Int_t &lengX, Int_t &lengZ); // cluster lengths along x and z
   Bool_t      IsCPV(void) {
     // true if the recpoint is in CPV
-    return (fPHOSMod <= fGeom->GetNCPVModules()) ; } 
+    return (fPHOSMod <= ((AliPHOSGeometry*) fGeom)->GetNCPVModules()) ; } 
   Bool_t      IsSortable() const { 
     // says that emcrecpoints are sortable objects 
     return kTRUE ; } 

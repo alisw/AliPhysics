@@ -61,6 +61,7 @@ public:
   void    MakeTrackSegments(DigitsList * DL, 
 			    AliPHOSRecPoint::RecPointsList * emcl, 
 			    AliPHOSRecPoint::RecPointsList * ppsdl, 
+			    AliPHOSRecPoint::RecPointsList * cpvl, 
 			    AliPHOSTrackSegment::TrackSegmentsList * trsl ) ; // does the job
   virtual void MakeTrackSegmentsCPV(DigitsList * DL, 
 			         AliPHOSRecPoint::RecPointsList * emcl, 
