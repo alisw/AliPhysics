@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/04/25 14:50:42  gosset
+Corrections to violations of coding conventions
+
 Revision 1.11  2001/04/23 12:33:17  hristov
 Arrays with variable size created by new and deleted at the end
 
@@ -98,6 +101,7 @@ Addition of files for track reconstruction in C++
 ///////////////////////////////////////////////////
 
 #include <iostream.h> // for cout
+#include <stdlib.h> // for exit()
 
 #include <TClonesArray.h>
 #include <TMath.h>

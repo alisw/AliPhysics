@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2001/04/25 14:50:42  gosset
+Corrections to violations of coding conventions
+
 Revision 1.24  2001/03/30 09:37:58  gosset
 Initialisations of pointers... for GEANT background events in the constructor
 
@@ -149,6 +152,7 @@ Addition of files for track reconstruction in C++
 ////////////////////////////////////
 
 #include <iostream.h> // for cout
+#include <stdlib.h> // for exit()
 
 #include <TTree.h>
 
