@@ -18,6 +18,7 @@
 #include "TString.h"
 #include "TObjArray.h"
 #include "TVector3.h"
+class TParticle ; 
 
 // --- AliRoot header files ---
 
