@@ -17,6 +17,7 @@ class AliMUONChamberTrigger:
 public AliMUONChamber {
  public:
     AliMUONChamberTrigger();
+    AliMUONChamberTrigger(Int_t id);
     virtual ~AliMUONChamberTrigger(){}
 // Cluster formation method (charge disintegration)
     

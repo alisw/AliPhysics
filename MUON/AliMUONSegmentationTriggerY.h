@@ -55,7 +55,7 @@ public AliMUONSegmentationTrigger {
     (Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[2], Int_t Ylist[2]);
   //
   // Initialisation
-  virtual void Init(AliMUONChamber* chamber);    
+  virtual void Init(Int_t chamber);    
   
   ClassDef(AliMUONSegmentationTriggerY,1) //Segmentation class for trigger X
     protected:    

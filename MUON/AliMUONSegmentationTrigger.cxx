@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/26 10:00:14  pcrochet
+global variables removed, problem with HP compiler solved (PH)
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -41,6 +44,8 @@ Draft version from P. Crochet
 
 #include "AliMUONSegmentationTrigger.h"
 #include "AliMUONTriggerConstants.h"
+#include "AliRun.h"
+#include "AliMUON.h"
 #include <TMath.h>
 #include <TRandom.h>
 #include <TArc.h>
@@ -50,12 +55,15 @@ Draft version from P. Crochet
 ClassImp(AliMUONSegmentationTrigger)
 
 //------------------------------------------------------------------
-void AliMUONSegmentationTrigger::Init(AliMUONChamber* Chamber)
+void AliMUONSegmentationTrigger::Init(Int_t chamber)
 {
   // initialize Module geometry
   cout << "Initialize Trigger Chamber Module Geometry " << "\n";    
 
-  Float_t zPos=Chamber->Z();
+  AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+  AliMUONChamber* iChamber=&(pMUON->Chamber(chamber));
+
+  Float_t zPos=iChamber->Z();
   Float_t z1Pos=1603.5;
   fZscale = zPos/z1Pos;
 

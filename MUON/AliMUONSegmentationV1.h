@@ -34,7 +34,7 @@ public AliMUONSegmentation {
     virtual void DefaultCut(void);
     //
     // Initialisation
-    virtual void Init(AliMUONChamber* chamber);
+    virtual void Init(Int_t id);
     //
     // Get member data
     //

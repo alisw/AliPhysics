@@ -17,7 +17,7 @@ public AliMUONSegmentationV02 {
     AliMUONSegmentationV05(){}
     virtual ~AliMUONSegmentationV05(){}
     // Initialisation
-    virtual void Init(AliMUONChamber* chamber);
+    virtual void Init(Int_t chamber);
     // Test points for auto calibration
     void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y);
     ClassDef(AliMUONSegmentationV05,1)// Segmentation zones are rectangular modules 

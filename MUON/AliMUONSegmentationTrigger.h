@@ -17,7 +17,7 @@ public AliMUONSegmentationV0 {
  public:
   AliMUONSegmentationTrigger(){};
   virtual ~AliMUONSegmentationTrigger(){}  
-  virtual void Init(AliMUONChamber* chamber);         // Initialization
+  virtual void Init(Int_t chamber);         // Initialization
   Int_t ModuleNumber(Int_t imodule);  // returns module number of ModuleId
   // Set pad position -> in SegRes X & Y
   //       virtual void     SetPad(Int_t, Int_t);

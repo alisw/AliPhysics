@@ -14,6 +14,13 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.3  2000/06/28 15:16:35  morsch
+(1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
+to allow development of slat-muon chamber simulation and reconstruction code in the MUON
+framework. The changes should have no side effects (mostly dummy arguments).
+(2) Hit disintegration uses 3-dim hit coordinates to allow simulation
+of chambers with overlapping modules (MakePadHits, Disintegration).
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -34,18 +41,33 @@ Log messages included
 #include "TMath.h"
 ClassImp(AliMUONChamber)	
 
-    AliMUONChamber::AliMUONChamber() 
+    AliMUONChamber::AliMUONChamber()
 {
+// Default constructor
     fSegmentation = new TObjArray(2);
     (*fSegmentation)[0] = 0;
     (*fSegmentation)[1] = 0;    
     fResponse=0;
     fnsec=1;
     fReconstruction=0;
+    fId=0;
+}
+
+    AliMUONChamber::AliMUONChamber(Int_t id) 
+{
+// Construtor with chamber id 
+    fSegmentation = new TObjArray(2);
+    (*fSegmentation)[0] = 0;
+    (*fSegmentation)[1] = 0;    
+    fResponse=0;
+    fnsec=1;
+    fReconstruction=0;
+    fId=id;
 }
 
 AliMUONChamber::~AliMUONChamber() 
 {
+// Destructor
     if (fSegmentation) delete fSegmentation;
 }
 
@@ -62,11 +84,11 @@ void AliMUONChamber::Init()
 //
 // ... for chamber segmentation
     if ((*fSegmentation)[0]) 
-    ((AliMUONSegmentation *) (*fSegmentation)[0])->Init(this);
+    ((AliMUONSegmentation *) (*fSegmentation)[0])->Init(fId);
 
     if (fnsec==2) {
 	if ((*fSegmentation)[1])
-	((AliMUONSegmentation *) (*fSegmentation)[1])->Init(this);
+	((AliMUONSegmentation *) (*fSegmentation)[1])->Init(fId);
     }
 }
 

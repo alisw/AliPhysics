@@ -7,7 +7,6 @@
 
 #include "AliMUONSegmentation.h"
 
-class AliMUONChamber;
 //----------------------------------------------
 //
 // Chamber segmentation for homogeneously segmented circular chamber
@@ -39,7 +38,7 @@ public AliMUONSegmentation {
 	{z=0; GetPadCxy(ix, iy, x , y);}
     //
     // Initialisation
-    virtual void Init(AliMUONChamber* chamber);
+    virtual void Init(Int_t chamber);
     //
     // Get member data
     //

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/26 10:01:26  pcrochet
+global variables removed
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -50,11 +53,11 @@ Draft version from P. Crochet
 ClassImp(AliMUONSegmentationTriggerY)
 
 //------------------------------------------------------------------
-void AliMUONSegmentationTriggerY::Init(AliMUONChamber* Chamber)
+void AliMUONSegmentationTriggerY::Init(Int_t chamber)
 {
 // intialize Y segmentation 
   cout << "Initialize Trigger Chamber Geometry Y " << "\n";    
-  AliMUONSegmentationTrigger::Init(Chamber);
+  AliMUONSegmentationTrigger::Init(chamber);
     
 // calculate x & y position of Y strips
   Int_t nModule=AliMUONTriggerConstants::Nmodule();  

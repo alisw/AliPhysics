@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.1  2000/06/09 21:38:15  morsch
 AliMUONSegmentationV04 code  from  AliMUONSegResV04.cxx
 
@@ -32,7 +35,7 @@ AliMUONSegmentationV04 code  from  AliMUONSegResV04.cxx
 ClassImp(AliMUONSegmentationV04)
 
 
-void AliMUONSegmentationV04::Init(AliMUONChamber* Chamber)
+void AliMUONSegmentationV04::Init(Int_t chamber)
 {
     printf("\n Initialise segmentation v04 \n");
 //

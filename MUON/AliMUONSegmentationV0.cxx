@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.2  2000/06/12 07:57:23  morsch
 include TMath.h
 
@@ -26,6 +29,8 @@ AliMUONSegmentationV0 code  from  AliMUONSegResV0.cxx
 #include "TArc.h"
 #include "TMath.h"
 #include "AliMUONChamber.h"
+#include "AliRun.h"
+#include "AliMUON.h"
 
 ClassImp(AliMUONSegmentationV0)
     AliMUONSegmentationV0::AliMUONSegmentationV0(const AliMUONSegmentationV0& segmentation)
@@ -33,17 +38,20 @@ ClassImp(AliMUONSegmentationV0)
 // Dummy copy constructor
 }
 
-    void AliMUONSegmentationV0::Init(AliMUONChamber* Chamber)
+    void AliMUONSegmentationV0::Init(Int_t  chamber)
 {
 //  Initialises member data of the segmentation from geometry data 
 //  owned by Chamber
 //
+    AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+    AliMUONChamber* iChamber=&(pMUON->Chamber(chamber));
+    
 //  Initialise maximum number of pads in x ans y
-    fNpx=(Int_t) (Chamber->ROuter()/fDpx+1);
-    fNpy=(Int_t) (Chamber->ROuter()/fDpy+1);
+    fNpx=(Int_t) (iChamber->ROuter()/fDpx+1);
+    fNpy=(Int_t) (iChamber->ROuter()/fDpy+1);
 //  Initialize inner and outer radius of the sensitive region     
-    fRmin=Chamber->RInner();
-    fRmax=Chamber->ROuter();    
+    fRmin=iChamber->RInner();
+    fRmax=iChamber->ROuter();    
     fCorr=0;
     
 }

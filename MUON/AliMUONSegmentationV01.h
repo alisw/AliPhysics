@@ -46,7 +46,7 @@ public AliMUONSegmentationV0 {
 	{z=0; GetPadCxy(ix, iy, x , y);}
     //
     // Initialisation
-    virtual void Init(AliMUONChamber* chamber);
+    virtual void Init(Int_t chamber);
     //
     // Get member data
     //

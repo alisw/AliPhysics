@@ -8,8 +8,6 @@
 #include "TObject.h"
 
 class TF1;
-class AliMUONChamber;
-class AliMUONRecCluster;
 
 //----------------------------------------------
 //
@@ -34,7 +32,7 @@ public TObject {
     virtual void    GetPadCxy(Int_t  ix, Int_t  iy, Float_t &x, Float_t  &y, Float_t &z) =0;
     //
     // Initialisation
-    virtual void Init(AliMUONChamber*)                           =0;
+    virtual void Init(Int_t chamber)                             =0;
     //
     // Get member data
     //

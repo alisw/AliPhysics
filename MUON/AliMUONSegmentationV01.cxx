@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.1  2000/06/09 21:37:30  morsch
 AliMUONSegmentationV01 code  from  AliMUONSegResV01.cxx
 
@@ -99,7 +102,7 @@ void AliMUONSegmentationV01::SetPadDivision(Int_t ndiv[4])
 }
 
 
-void AliMUONSegmentationV01::Init(AliMUONChamber* Chamber)
+void AliMUONSegmentationV01::Init(Int_t chamber)
 {
 //
 //  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector

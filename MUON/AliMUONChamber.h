@@ -18,6 +18,7 @@ public TObject
 {
  public:
     AliMUONChamber();
+    AliMUONChamber(Int_t id);
     AliMUONChamber(const AliMUONChamber & rChamber);
     virtual ~AliMUONChamber();
     
@@ -110,7 +111,7 @@ public TObject
   virtual AliMUONChamber& operator =(const AliMUONChamber& rhs);
   
  protected:
-
+  Int_t   fId;   // chamber number
   Float_t fdGas; // half gaz gap
   Float_t fdAlu; // half Alu width  
   Int_t   fGid;  // GEANT volume if for sensitive volume of this chamber

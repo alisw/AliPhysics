@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/29 06:52:02  pcrochet
+pow changed to TMath::Power
+
 Revision 1.3  2000/06/28 15:16:35  morsch
 (1) Client code adapted to new method signatures in AliMUONSegmentation (see comments there)
 to allow development of slat-muon chamber simulation and reconstruction code in the MUON
@@ -47,9 +50,16 @@ Draft version
 ClassImp(AliMUONChamberTrigger)
 
 //-------------------------------------------
-AliMUONChamberTrigger::AliMUONChamberTrigger() : AliMUONChamber()
+
+    AliMUONChamberTrigger::AliMUONChamberTrigger()
 {
-// Default Constructor
+// Default constructor
+}
+
+
+AliMUONChamberTrigger::AliMUONChamberTrigger(Int_t id) : AliMUONChamber(id)
+{
+// Constructor using chamber id
 }
 
 //-------------------------------------------

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.2  2000/06/12 07:57:43  morsch
 include TMath.cxx
 
@@ -31,6 +34,8 @@ AliMUONSegmentationV1 code  from  AliMUONSegResV1.cxx
 #include <TMath.h>
 #include "AliMUONChamber.h"
 #include "AliMUONSegmentationV1.h"
+#include "AliRun.h"
+#include "AliMUON.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentationV1)
@@ -54,14 +59,17 @@ AliMUONSegmentationV1::AliMUONSegmentationV1()
 }
 
 
-void AliMUONSegmentationV1::Init(AliMUONChamber* Chamber)
+void AliMUONSegmentationV1::Init(Int_t chamber)
 {
     // valid only for T5/6
     // beware : frMin is SENSITIVE radius by definition.
-    frSensMin2 = (Chamber->RInner())*(Chamber->RInner());
-    frSensMax2 = (Chamber->ROuter())*(Chamber->ROuter());
-    fNpx=(Int_t) (Chamber->ROuter()/fDpx) + 1;
-    fNpy=(Int_t) (Chamber->ROuter()/fDpy) + 1;
+    AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+    AliMUONChamber* iChamber=&(pMUON->Chamber(chamber));
+
+    frSensMin2 = (iChamber->RInner())*(iChamber->RInner());
+    frSensMax2 = (iChamber->ROuter())*(iChamber->ROuter());
+    fNpx=(Int_t) (iChamber->ROuter()/fDpx) + 1;
+    fNpy=(Int_t) (iChamber->ROuter()/fDpy) + 1;
     //    fNwire=3;
     DefaultCut();
     fCorr=0;
