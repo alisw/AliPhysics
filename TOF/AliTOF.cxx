@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.38  2002/06/13 08:43:46  vicinanz
+Merging added and test macro
+
 Revision 1.37  2002/05/03 07:34:19  vicinanz
 Updated SDigitizer; Added AliTOFanalyzeSDigits.C macro
 
@@ -502,20 +505,21 @@ void AliTOF::CreateMaterials()
 {
   //
   // Defines TOF materials for all versions
-  // Authors :   Maxim Martemianov, Boris Zagreev (ITEP) 
-  //            18/09/98 
-  // Revision: F. Pierella 5-3-2001
-  // Bologna University
+  // Revision: F. Pierella 18-VI-2002
   //
+
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
   //
-  //--- Quartz (SiO2) 
+  //--- Quartz (SiO2) to simulate float glass
+  //    density tuned to have correct float glass 
+  //    radiation length
   Float_t   aq[2] = { 28.0855,15.9994 };
   Float_t   zq[2] = { 14.,8. };
   Float_t   wq[2] = { 1.,2. };
-  Float_t   dq = 2.20;
+  Float_t   dq = 2.55; // std value: 2.2
   Int_t nq = -2;
+
   // --- Freon C2F4H2 (TOF-TDR pagg.)
   // Geant Manual CONS110-1, pag. 43 (Geant, Detector Description and Simulation Tool)
   Float_t afre[3]  = {12.011,18.998,1.007};
@@ -562,12 +566,14 @@ void AliTOF::CreateMaterials()
   Float_t wmatg10[4] = { .259,.288,.248,.205 };
   Float_t densg10  = 1.7;
   Int_t nlmatg10 = -4;
-  // --- DME 
-  Float_t adme[5] = { 12.,1.,16.,19.,79. };
-  Float_t zdme[5] = {  6.,1., 8., 9.,35. };
-  Float_t wmatdme[5] = { .4056,.0961,.2562,.1014,.1407 };
-  Float_t densdme  = .00205;
-  Int_t nlmatdme = 5;
+
+  // plexiglass CH2=C(CH3)CO2CH3
+  Float_t aplex[3] = { 12.,1.,16.};
+  Float_t zplex[3] = {  6.,1., 8.};
+  Float_t wmatplex[3] = {5.,8.,2.};
+  Float_t densplex  =1.16;
+  Int_t nplex = -3;
+
   // ---- ALUMINA (AL203) 
   Float_t aal[2] = { 27.,16.};
   Float_t zal[2] = { 13., 8.};
@@ -593,14 +599,14 @@ void AliTOF::CreateMaterials()
   AliMaterial( 3, "C  $",  12.01,  6.0, 2.265,18.8, 74.4);
   AliMixture ( 4, "Polyethilene$", ape, zpe, dpe, npe, wpe);
   AliMixture ( 5, "G10$", ag10, zg10, densg10, nlmatg10, wmatg10);
-  AliMixture ( 6, "DME ", adme, zdme, densdme, nlmatdme, wmatdme);
+  AliMixture ( 6, "PLE$", aplex, zplex, densplex, nplex, wmatplex);
   AliMixture ( 7, "CO2$", ac, zc, dc, nc, wc);
   AliMixture ( 8, "ALUMINA$", aal, zal, densal, nlmatal, wmatal);
   AliMaterial( 9, "Al $", 26.98, 13., 2.7, 8.9, 37.2);
   AliMaterial(10, "C-TRD$", 12.01, 6., 2.265*18.8/69.282*15./100, 18.8, 74.4); // for 15%
   AliMixture (11, "Mylar$",  amy, zmy, dmy, nmy, wmy);
   AliMixture (12, "Freon$",  afre, zfre, densfre, nfre, wfre);
-  AliMixture (13, "Quartz$", aq, zq, dq, nq, wq);
+  AliMixture (13, "Glass$", aq, zq, dq, nq, wq);
   AliMixture (14, "Water$",  awa, zwa, dwa, nwa, wwa);
   AliMixture (15, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
 
@@ -623,7 +629,7 @@ void AliTOF::CreateMaterials()
   AliMedium( 3, "C  $"  ,  3, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium( 4, "Pol$"  ,  4, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium( 5, "G10$"  ,  5, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 6, "DME$"  ,  6, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 6, "PLE$"  ,  6, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium( 7, "CO2$"  ,  7, 0, isxfld, sxmgmx, 10., -.01, -.1, .01, -.01);
   AliMedium( 8,"ALUMINA$", 8, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium( 9,"Al Frame$",9, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
