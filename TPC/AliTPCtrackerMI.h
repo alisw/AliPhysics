@@ -13,12 +13,8 @@
 //-------------------------------------------------------
 #include "AliTracker.h"
 #include "AliTPCtrack.h"
-#include "TClonesArray.h"
-//#include "AliTPCClustersArray.h"
-
-#include "AliTPCreco.h" 
-#include "Rtypes.h"
 #include "AliComplexCluster.h"
+
 class TFile;
 class AliTPCParam;
 class AliTPCseed;
@@ -29,6 +25,7 @@ class TTree;
 
 
 class AliTPCseed : public AliTPCtrack {
+  friend class AliTPCtrackerMI;
   public:
      AliTPCseed();
      virtual ~AliTPCseed();
@@ -45,17 +42,17 @@ class AliTPCseed : public AliTPCtrack {
                 const Double_t cc[15], Double_t xr, Double_t alpha);
 
      Double_t GetDensityFirst(Int_t n);
-     Double_t GetSigma2C(){return fC44;}
+     Double_t GetSigma2C() const {return fC44;};
      void GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_t &foundable, Int_t &shared, Bool_t plus2);
      
      void Modify(Double_t factor);
-     void SetClusterIndex2(Int_t row, Int_t index){
+     void SetClusterIndex2(Int_t row, Int_t index) {
        fIndex[row] = index;
      }
-     Int_t  GetClusterIndex2(Int_t row){
+     Int_t  GetClusterIndex2(Int_t row) const {
        return fIndex[row];
      }
-     Int_t GetClusterSector(Int_t row){
+     Int_t GetClusterSector(Int_t row) const {
        Int_t pica = -1;
        if (fIndex[row]>=0) pica =  ((fIndex[row]&0xff000000)>>24);
        return pica;
@@ -65,10 +62,11 @@ class AliTPCseed : public AliTPCtrack {
      void SetErrorZ2(Float_t sz2){fErrorZ2=sz2;}
      void CookdEdx(Double_t low=0.05, Double_t up=0.70, Int_t i1=0, Int_t i2=159, Bool_t onlyused = kFALSE);
      //     void CookdEdx2(Double_t low=0.05, Double_t up=0.70);
-     Bool_t IsActive(){ return !(fRemoval);}
+     Bool_t IsActive() const { return !(fRemoval);}
      void Desactivate(Int_t reason){ fRemoval = reason;} 
      //
      //
+ private:
      AliTPCclusterMI*   fClusterPointer[160];  //! array of cluster pointers  - 
      TClonesArray * fPoints;              // array with points along the track
      TClonesArray * fEPoints;             // array with exact points - calculated in special macro not used in tracking
@@ -97,7 +95,6 @@ class AliTPCseed : public AliTPCtrack {
      Int_t   fSeed1;            //first row for seeding
      Int_t   fSeed2;            //last row for seeding
      Int_t   fOverlapLabels[12];  //track labels and the length of the  overlap     
-   private:
      Float_t fMAngular;        // mean angular factor
      AliTPCTrackerPoint  fTrackPoints[160];  //!track points - array track points
    
@@ -113,7 +110,7 @@ public:
       fInnerSec=fOuterSec=0; fSeeds=0; 
    }
    AliTPCtrackerMI(const AliTPCParam *par); 
-  ~AliTPCtrackerMI();
+  virtual ~AliTPCtrackerMI();
   //
   //to be implemented later
   virtual Int_t Clusters2Tracks (AliESD *){return 0;}
@@ -162,21 +159,24 @@ public:
    virtual Double_t ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl = 0);
    virtual Double_t ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl = 0);   
 
-   Double_t f1(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3); 
-   Double_t f1old(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3); 
-   Double_t f2(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3); 
-   Double_t f2old(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3); 
+   Double_t F1(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3); 
+   Double_t F1old(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3); 
+   Double_t F2(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3); 
+   Double_t F2old(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3); 
 
-   Double_t f3(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t z1,Double_t z2); 
-   Double_t f3n(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t z1,Double_t z2, 
+   Double_t F3(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t z1,Double_t z2); 
+   Double_t F3n(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t z1,Double_t z2, 
                 Double_t c); 
    Bool_t GetProlongation(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z);
 
-public:
+ public:
 //**************** Internal tracker class ********************** 
+   class AliTPCSector;
    class AliTPCRow {
+     friend class AliTPCtrackerMI;
+     friend class AliTPCtrackerMI::AliTPCSector;
    public:
-     AliTPCRow() {fN=0;}
+     AliTPCRow();
      ~AliTPCRow();
      void InsertCluster(const AliTPCclusterMI *c, UInt_t index);
      operator int() const {return fN;}
@@ -190,15 +190,13 @@ public:
      
      void SetX(Double_t x) {fX=x;}
      Double_t GetX() const {return fX;}
+   private:  
      Float_t fDeadZone;  // the width of the dead zone
-     //     void RebuildRow(){;}
-//
      AliTPCclusterMI *fClusters1; //array with clusters 1
-     Int_t fN1;  
+     Int_t fN1;  //number of clusters on left side
      AliTPCclusterMI *fClusters2; //array with clusters 2
-     Int_t fN2;
-     Short_t fFastCluster[510];   
-   private:
+     Int_t fN2; // number of clusters on right side of the TPC
+     Short_t fFastCluster[510];   //index of the nearest cluster at given position
      Int_t fN;                                          //number of clusters 
      const AliTPCclusterMI *fClusters[kMaxClusterPerRow]; //pointers to clusters
                                // indexes for cluster at given position z  
@@ -212,6 +210,7 @@ public:
 
 //**************** Internal tracker class ********************** 
    class AliTPCSector {
+     friend class AliTPCtrackerMI;
    public:
      AliTPCSector() { fN=0; fRow = 0; }
     ~AliTPCSector() { delete[] fRow; }
@@ -262,7 +261,7 @@ public:
      Double_t f2PadPitchLength;           //pad pitch length
     
    private:
-     AliTPCSector(const AliTPCSector &s);           //dummy copy contructor
+     AliTPCSector(const AliTPCSector &s);           //dummy copy contructor 
      AliTPCSector& operator=(const AliTPCSector &s);//dummy assignment operator
    };
 

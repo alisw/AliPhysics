@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2003/10/21 11:11:52  kowal2
+Removed compiler warning (Bool_t accept  changed to Int_t accept)
+
 Revision 1.18  2003/10/17 15:42:14  kowal2
 Back to the previous version. The warning was erronously generated
 by the compiler
@@ -75,9 +78,10 @@ Logs added
 #include <TObjArray.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TClonesArray.h>
+
 #include "Riostream.h"
 
-#include "AliTPCtrackerMI.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCParam.h"
 #include "AliTPCClustersRow.h"
@@ -86,9 +90,11 @@ Logs added
 #include "TStopwatch.h"
 #include "AliESD.h"
 #include "AliHelix.h"
-#include "TGraph.h"
 //
 #include "AliRunLoader.h"
+//
+#include "AliTPCreco.h" 
+#include "AliTPCtrackerMI.h"
 
 
 
@@ -96,24 +102,29 @@ ClassImp(AliTPCseed)
 ClassImp(AliTPCtrackerMI)
 
 
-class TPCFastMath {
+class AliTPCFastMath {
 public:
-  TPCFastMath();  
+  AliTPCFastMath();  
   static Double_t FastAsin(Double_t x);   
  private: 
-  static Double_t fgFastAsin[20000];
+  static Double_t fgFastAsin[20000];  //lookup table for fast asin computation
 };
 
-Double_t TPCFastMath::fgFastAsin[20000];
+Double_t AliTPCFastMath::fgFastAsin[20000];
+AliTPCFastMath gAliTPCFastMath;
 
-TPCFastMath::TPCFastMath(){
+AliTPCFastMath::AliTPCFastMath(){
+  //
+  // initialized lookup table;
   for (Int_t i=0;i<10000;i++){
     fgFastAsin[2*i] = TMath::ASin(i/10000.);
     fgFastAsin[2*i+1] = (TMath::ASin((i+1)/10000.)-fgFastAsin[2*i]);
   }
 }
 
-Double_t TPCFastMath::FastAsin(Double_t x){
+Double_t AliTPCFastMath::FastAsin(Double_t x){
+  //
+  // return asin using lookup table
   if (x>0){
     Int_t index = int(x*10000);
     return fgFastAsin[2*index]+(x*10000.-index)*fgFastAsin[2*index+1];
@@ -123,11 +134,13 @@ Double_t TPCFastMath::FastAsin(Double_t x){
   return -(fgFastAsin[2*index]+(x*10000.-index)*fgFastAsin[2*index+1]);
 }
 
-TPCFastMath gTPCMath;
 
 
 
 Int_t AliTPCtrackerMI::UpdateTrack(AliTPCseed * track, Int_t accept){
+  //
+  //update track information using current cluster - track->fCurrentCluster
+
 
   AliTPCclusterMI* c =track->fCurrentCluster;
   if (accept>0) track->fCurrentClusterIndex1 |=0x8000;  //sign not accepted clusters
@@ -890,7 +903,7 @@ Int_t  AliTPCseed::GetProlongation(Double_t xk, Double_t &y, Double_t & z) const
     dz = dx*fP3*(c1+c2)/(c1*r2 + c2*r1);
   }
   */
-  dz =  fP3*TPCFastMath::FastAsin(delta)/fP4;
+  dz =  fP3*AliTPCFastMath::FastAsin(delta)/fP4;
   //
   y+=dy;
   z+=dz;
@@ -1038,7 +1051,7 @@ Int_t AliTPCseed::Update(const AliTPCclusterMI *c, Double_t chisq, UInt_t /*inde
 
 
 //_____________________________________________________________________________
-Double_t AliTPCtrackerMI::f1old(Double_t x1,Double_t y1,
+Double_t AliTPCtrackerMI::F1old(Double_t x1,Double_t y1,
                    Double_t x2,Double_t y2,
                    Double_t x3,Double_t y3) 
 {
@@ -1059,7 +1072,7 @@ Double_t AliTPCtrackerMI::f1old(Double_t x1,Double_t y1,
 
 
 //_____________________________________________________________________________
-Double_t AliTPCtrackerMI::f1(Double_t x1,Double_t y1,
+Double_t AliTPCtrackerMI::F1(Double_t x1,Double_t y1,
                    Double_t x2,Double_t y2,
                    Double_t x3,Double_t y3) 
 {
@@ -1085,7 +1098,7 @@ Double_t AliTPCtrackerMI::f1(Double_t x1,Double_t y1,
 }
 
 
-Double_t AliTPCtrackerMI::f2(Double_t x1,Double_t y1,
+Double_t AliTPCtrackerMI::F2(Double_t x1,Double_t y1,
                    Double_t x2,Double_t y2,
                    Double_t x3,Double_t y3) 
 {
@@ -1115,7 +1128,7 @@ Double_t AliTPCtrackerMI::f2(Double_t x1,Double_t y1,
 
 
 //_____________________________________________________________________________
-Double_t AliTPCtrackerMI::f2old(Double_t x1,Double_t y1,
+Double_t AliTPCtrackerMI::F2old(Double_t x1,Double_t y1,
                    Double_t x2,Double_t y2,
                    Double_t x3,Double_t y3) 
 {
@@ -1134,7 +1147,7 @@ Double_t AliTPCtrackerMI::f2old(Double_t x1,Double_t y1,
 }
 
 //_____________________________________________________________________________
-Double_t AliTPCtrackerMI::f3(Double_t x1,Double_t y1, 
+Double_t AliTPCtrackerMI::F3(Double_t x1,Double_t y1, 
                    Double_t x2,Double_t y2,
                    Double_t z1,Double_t z2) 
 {
@@ -1145,7 +1158,7 @@ Double_t AliTPCtrackerMI::f3(Double_t x1,Double_t y1,
 }
 
 
-Double_t AliTPCtrackerMI::f3n(Double_t x1,Double_t y1, 
+Double_t AliTPCtrackerMI::F3n(Double_t x1,Double_t y1, 
                    Double_t x2,Double_t y2,
                    Double_t z1,Double_t z2, Double_t c) 
 {
@@ -1160,8 +1173,8 @@ Double_t AliTPCtrackerMI::f3n(Double_t x1,Double_t y1,
   Double_t d  =  TMath::Sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
   if (TMath::Abs(d*c*0.5)>1) return 0;
   //  Double_t   angle2    =  TMath::ASin(d*c*0.5);
-  //  Double_t   angle2    =  TPCFastMath::FastAsin(d*c*0.5);
-  Double_t   angle2    = (d*c*0.5>0.1)? TMath::ASin(d*c*0.5): TPCFastMath::FastAsin(d*c*0.5);
+  //  Double_t   angle2    =  AliTPCFastMath::FastAsin(d*c*0.5);
+  Double_t   angle2    = (d*c*0.5>0.1)? TMath::ASin(d*c*0.5): AliTPCFastMath::FastAsin(d*c*0.5);
 
   angle2  = (z1-z2)*c/(angle2*2.);
   return angle2;
@@ -1191,10 +1204,10 @@ Bool_t   AliTPCtrackerMI::GetProlongation(Double_t x1, Double_t x2, Double_t x[5
   if (TMath::Abs(delta)>0.01){
     dz = x[3]*TMath::ASin(delta)/x[4];
   }else{
-    dz = x[3]*TPCFastMath::FastAsin(delta)/x[4];
+    dz = x[3]*AliTPCFastMath::FastAsin(delta)/x[4];
   }
   
-  //dz = x[3]*TPCFastMath::FastAsin(delta)/x[4];
+  //dz = x[3]*AliTPCFastMath::FastAsin(delta)/x[4];
 
   y+=dy;
   z+=dz;
@@ -2398,6 +2411,8 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESD *event)
 
 void AliTPCtrackerMI::DeleteSeeds()
 {
+  //
+  //delete Seeds
   Int_t nseed = fSeeds->GetEntriesFast();
   for (Int_t i=0;i<nseed;i++){
     AliTPCseed * seed = (AliTPCseed*)fSeeds->At(i);
@@ -2424,7 +2439,7 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event)
   for (Int_t i=0; i<nentr; i++) {
     AliESDtrack *esd=event->GetTrack(i);
     ULong_t status=esd->GetStatus();    
-    const AliTPCtrack t(*esd);
+    AliTPCtrack t(*esd);
     AliTPCseed *seed = new AliTPCseed(t,t.GetAlpha());
     if (status==AliESDtrack::kTPCin) seed->Modify(0.8);
     //
@@ -2582,8 +2597,8 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
        
 	//Double_t dfi0   = 2.*TMath::ASin(dvertex*c0*0.5);
 	//Double_t dfi1   = 2.*TMath::ASin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);
-	Double_t dfi0   = 2.*TPCFastMath::FastAsin(dvertex*c0*0.5);
-	Double_t dfi1   = 2.*TPCFastMath::FastAsin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);  
+	Double_t dfi0   = 2.*AliTPCFastMath::FastAsin(dvertex*c0*0.5);
+	Double_t dfi1   = 2.*AliTPCFastMath::FastAsin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);  
 	//
 	//
 	Double_t z0  =  kcl->GetZ();  
@@ -2659,17 +2674,17 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 	Double_t sy3=25000*x[4]*x[4]+0.1, sy=0.1, sz=0.1;
 	//Double_t sy3=25000*x[4]*x[4]*60+0.5, sy=0.1, sz=0.1;
 
-	Double_t f40=(f1(x1,y1+sy,x2,y2,x3,y3)-x[4])/sy;
-	Double_t f42=(f1(x1,y1,x2,y2+sy,x3,y3)-x[4])/sy;
-	Double_t f43=(f1(x1,y1,x2,y2,x3,y3+sy)-x[4])/sy;
-	Double_t f20=(f2(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
-	Double_t f22=(f2(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
-	Double_t f23=(f2(x1,y1,x2,y2,x3,y3+sy)-x[2])/sy;
+	Double_t f40=(F1(x1,y1+sy,x2,y2,x3,y3)-x[4])/sy;
+	Double_t f42=(F1(x1,y1,x2,y2+sy,x3,y3)-x[4])/sy;
+	Double_t f43=(F1(x1,y1,x2,y2,x3,y3+sy)-x[4])/sy;
+	Double_t f20=(F2(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
+	Double_t f22=(F2(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
+	Double_t f23=(F2(x1,y1,x2,y2,x3,y3+sy)-x[2])/sy;
 	
-	Double_t f30=(f3(x1,y1+sy,x2,y2,z1,z2)-x[3])/sy;
-	Double_t f31=(f3(x1,y1,x2,y2,z1+sz,z2)-x[3])/sz;
-	Double_t f32=(f3(x1,y1,x2,y2+sy,z1,z2)-x[3])/sy;
-	Double_t f34=(f3(x1,y1,x2,y2,z1,z2+sz)-x[3])/sz;
+	Double_t f30=(F3(x1,y1+sy,x2,y2,z1,z2)-x[3])/sy;
+	Double_t f31=(F3(x1,y1,x2,y2,z1+sz,z2)-x[3])/sz;
+	Double_t f32=(F3(x1,y1,x2,y2+sy,z1,z2)-x[3])/sy;
+	Double_t f34=(F3(x1,y1,x2,y2,z1,z2+sz)-x[3])/sz;
 	
         c[0]=sy1;
         c[1]=0.;       c[2]=sz1;
@@ -2934,14 +2949,14 @@ void AliTPCtrackerMI::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
                   	
       x[0]=y1;
       x[1]=z1;
-      x[4]=f1(x1,y1,x2,y2,x3,y3);
+      x[4]=F1(x1,y1,x2,y2,x3,y3);
       //if (TMath::Abs(x[4]) >= cuts[0]) continue;
       nin0++;
       //
-      x[2]=f2(x1,y1,x2,y2,x3,y3);
+      x[2]=F2(x1,y1,x2,y2,x3,y3);
       nin1++;
       //
-      x[3]=f3n(x1,y1,x2,y2,z1,z2,x[4]);
+      x[3]=F3n(x1,y1,x2,y2,z1,z2,x[4]);
       //if (TMath::Abs(x[3]) > cuts[3]) continue;
       nin2++;
       //
@@ -2950,17 +2965,17 @@ void AliTPCtrackerMI::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
       Double_t sy2=0.1,  sz2=0.1;
       Double_t sy3=0.1,  sy=0.1, sz=0.1;
       
-      Double_t f40=(f1(x1,y1+sy,x2,y2,x3,y3)-x[4])/sy;
-      Double_t f42=(f1(x1,y1,x2,y2+sy,x3,y3)-x[4])/sy;
-      Double_t f43=(f1(x1,y1,x2,y2,x3,y3+sy)-x[4])/sy;
-      Double_t f20=(f2(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
-      Double_t f22=(f2(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
-      Double_t f23=(f2(x1,y1,x2,y2,x3,y3+sy)-x[2])/sy;
+      Double_t f40=(F1(x1,y1+sy,x2,y2,x3,y3)-x[4])/sy;
+      Double_t f42=(F1(x1,y1,x2,y2+sy,x3,y3)-x[4])/sy;
+      Double_t f43=(F1(x1,y1,x2,y2,x3,y3+sy)-x[4])/sy;
+      Double_t f20=(F2(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
+      Double_t f22=(F2(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
+      Double_t f23=(F2(x1,y1,x2,y2,x3,y3+sy)-x[2])/sy;
       
-      Double_t f30=(f3(x1,y1+sy,x2,y2,z1,z2)-x[3])/sy;
-      Double_t f31=(f3(x1,y1,x2,y2,z1+sz,z2)-x[3])/sz;
-      Double_t f32=(f3(x1,y1,x2,y2+sy,z1,z2)-x[3])/sy;
-      Double_t f34=(f3(x1,y1,x2,y2,z1,z2+sz)-x[3])/sz;
+      Double_t f30=(F3(x1,y1+sy,x2,y2,z1,z2)-x[3])/sy;
+      Double_t f31=(F3(x1,y1,x2,y2,z1+sz,z2)-x[3])/sz;
+      Double_t f32=(F3(x1,y1,x2,y2+sy,z1,z2)-x[3])/sy;
+      Double_t f34=(F3(x1,y1,x2,y2,z1,z2+sz)-x[3])/sz;
       
       c[0]=sy1;
       c[1]=0.;       c[2]=sz1; 
@@ -3206,14 +3221,14 @@ void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 	}
 	x[0]=y1;
 	x[1]=z1;
-	x[4]=f1(x1,y1,x2,y2,x3,y3);
+	x[4]=F1(x1,y1,x2,y2,x3,y3);
 		
 	//	if (TMath::Abs(x[4]) >= cuts[0]) continue;  //
-	x[2]=f2(x1,y1,x2,y2,x3,y3);
+	x[2]=F2(x1,y1,x2,y2,x3,y3);
 	
 	//if (TMath::Abs(x[4]*x1-x[2]) >= cuts[1]) continue;
-	//x[3]=f3(x1,y1,x2,y2,z1,z2);
-	x[3]=f3n(x1,y1,x3,y3,z1,z3,x[4]);
+	//x[3]=F3(x1,y1,x2,y2,z1,z2);
+	x[3]=F3n(x1,y1,x3,y3,z1,z3,x[4]);
 	//if (TMath::Abs(x[3]) > cuts[3]) continue;
 
 	
@@ -3226,17 +3241,17 @@ void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 	  sy3=25000*x[4]*x[4]+0.1, sy=0.1, sz=0.1;
 	}
 	
-	Double_t f40=(f1(x1,y1+sy,x2,y2,x3,y3)-x[4])/sy;
-	Double_t f42=(f1(x1,y1,x2,y2+sy,x3,y3)-x[4])/sy;
-	Double_t f43=(f1(x1,y1,x2,y2,x3,y3+sy)-x[4])/sy;
-	Double_t f20=(f2(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
-	Double_t f22=(f2(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
-	Double_t f23=(f2(x1,y1,x2,y2,x3,y3+sy)-x[2])/sy;
+	Double_t f40=(F1(x1,y1+sy,x2,y2,x3,y3)-x[4])/sy;
+	Double_t f42=(F1(x1,y1,x2,y2+sy,x3,y3)-x[4])/sy;
+	Double_t f43=(F1(x1,y1,x2,y2,x3,y3+sy)-x[4])/sy;
+	Double_t f20=(F2(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
+	Double_t f22=(F2(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
+	Double_t f23=(F2(x1,y1,x2,y2,x3,y3+sy)-x[2])/sy;
 
-	Double_t f30=(f3(x1,y1+sy,x3,y3,z1,z3)-x[3])/sy;
-	Double_t f31=(f3(x1,y1,x3,y3,z1+sz,z3)-x[3])/sz;
-	Double_t f32=(f3(x1,y1,x3,y3+sy,z1,z3)-x[3])/sy;
-	Double_t f34=(f3(x1,y1,x3,y3,z1,z3+sz)-x[3])/sz;
+	Double_t f30=(F3(x1,y1+sy,x3,y3,z1,z3)-x[3])/sy;
+	Double_t f31=(F3(x1,y1,x3,y3,z1+sz,z3)-x[3])/sz;
+	Double_t f32=(F3(x1,y1,x3,y3+sy,z1,z3)-x[3])/sy;
+	Double_t f34=(F3(x1,y1,x3,y3,z1,z3+sz)-x[3])/sz;
 
 	
 	c[0]=sy1;
@@ -3367,10 +3382,10 @@ AliTPCseed *AliTPCtrackerMI::MakeSeed(AliTPCseed *track, Float_t r0, Float_t r1,
   //
   x[0]=x2[1];
   x[1]=x2[2];
-  x[4]=f1(x2[0],x2[1],x1[0],x1[1],x0[0],x0[1]);
+  x[4]=F1(x2[0],x2[1],x1[0],x1[1],x0[0],x0[1]);
   //  if (x[4]>1) return 0;
-  x[2]=f2(x2[0],x2[1],x1[0],x1[1],x0[0],x0[1]);
-  x[3]=f3n(x2[0],x2[1],x0[0],x0[1],x2[2],x0[2],x[4]);
+  x[2]=F2(x2[0],x2[1],x1[0],x1[1],x0[0],x0[1]);
+  x[3]=F3n(x2[0],x2[1],x0[0],x0[1],x2[2],x0[2],x[4]);
   //if (TMath::Abs(x[3]) > 2.2)  return 0;
   //if (TMath::Abs(x[2]) > 1.99) return 0;
   //  
@@ -3380,17 +3395,17 @@ AliTPCseed *AliTPCtrackerMI::MakeSeed(AliTPCseed *track, Float_t r0, Float_t r1,
   Double_t sy2=0.01+track->GetSigmaY2(), sz2=0.01+track->GetSigmaZ2();
   Double_t sy3=0.01+track->GetSigmaY2();
   //
-  Double_t f40=(f1(x2[0],x2[1]+sy,x1[0],x1[1],x0[0],x0[1])-x[4])/sy;
-  Double_t f42=(f1(x2[0],x2[1],x1[0],x1[1]+sy,x0[0],x0[1])-x[4])/sy;
-  Double_t f43=(f1(x2[0],x2[1],x1[0],x1[1],x0[0],x0[1]+sy)-x[4])/sy;
-  Double_t f20=(f2(x2[0],x2[1]+sy,x1[0],x1[1],x0[0],x0[1])-x[2])/sy;
-  Double_t f22=(f2(x2[0],x2[1],x1[0],x1[1]+sy,x0[0],x0[1])-x[2])/sy;
-  Double_t f23=(f2(x2[0],x2[1],x1[0],x1[1],x0[0],x0[1]+sy)-x[2])/sy;
+  Double_t f40=(F1(x2[0],x2[1]+sy,x1[0],x1[1],x0[0],x0[1])-x[4])/sy;
+  Double_t f42=(F1(x2[0],x2[1],x1[0],x1[1]+sy,x0[0],x0[1])-x[4])/sy;
+  Double_t f43=(F1(x2[0],x2[1],x1[0],x1[1],x0[0],x0[1]+sy)-x[4])/sy;
+  Double_t f20=(F2(x2[0],x2[1]+sy,x1[0],x1[1],x0[0],x0[1])-x[2])/sy;
+  Double_t f22=(F2(x2[0],x2[1],x1[0],x1[1]+sy,x0[0],x0[1])-x[2])/sy;
+  Double_t f23=(F2(x2[0],x2[1],x1[0],x1[1],x0[0],x0[1]+sy)-x[2])/sy;
   //
-  Double_t f30=(f3(x2[0],x2[1]+sy,x0[0],x0[1],x2[2],x0[2])-x[3])/sy;
-  Double_t f31=(f3(x2[0],x2[1],x0[0],x0[1],x2[2]+sz,x0[2])-x[3])/sz;
-  Double_t f32=(f3(x2[0],x2[1],x0[0],x0[1]+sy,x2[2],x0[2])-x[3])/sy;
-  Double_t f34=(f3(x2[0],x2[1],x0[0],x0[1],x2[2],x0[2]+sz)-x[3])/sz;
+  Double_t f30=(F3(x2[0],x2[1]+sy,x0[0],x0[1],x2[2],x0[2])-x[3])/sy;
+  Double_t f31=(F3(x2[0],x2[1],x0[0],x0[1],x2[2]+sz,x0[2])-x[3])/sz;
+  Double_t f32=(F3(x2[0],x2[1],x0[0],x0[1]+sy,x2[2],x0[2])-x[3])/sy;
+  Double_t f34=(F3(x2[0],x2[1],x0[0],x0[1],x2[2],x0[2]+sz)-x[3])/sz;
   
   
   c[0]=sy1;
@@ -3495,9 +3510,9 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed, Float_t th)
   Double_t xh[5],xm = x[padm];  
   xh[0]=yt[i2];
   xh[1]=zt[i2];
-  xh[4]=f1(xt[i2],yt[i2],xt[padm],yt[padm],xt[i1],yt[i1]);  
-  xh[2]=f2(xt[i2],yt[i2],xt[padm],yt[padm],xt[i1],yt[i1]);
-  xh[3]=f3n(xt[i2],yt[i2],xt[i1],yt[i1],zt[i2],zt[i1],xh[4]);
+  xh[4]=F1(xt[i2],yt[i2],xt[padm],yt[padm],xt[i1],yt[i1]);  
+  xh[2]=F2(xt[i2],yt[i2],xt[padm],yt[padm],xt[i1],yt[i1]);
+  xh[3]=F3n(xt[i2],yt[i2],xt[i1],yt[i1],zt[i2],zt[i1],xh[4]);
   //
   //
   for (Int_t i=i1;i<=i2;i++){
@@ -3506,8 +3521,8 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed, Float_t th)
     GetProlongation(x[i2], x[i],xh,yy,zz);
     if (TMath::Abs(y[i]-yy)>4||TMath::Abs(z[i]-zz)>4){
       //Double_t xxh[5];
-      //xxh[4]=f1old(x[i2],y[i2],x[padm],y[padm],x[i1],y[i1]);  
-      //xxh[2]=f2old(x[i2],y[i2],x[padm],y[padm],x[i1],y[i1]);
+      //xxh[4]=F1old(x[i2],y[i2],x[padm],y[padm],x[i1],y[i1]);  
+      //xxh[2]=F2old(x[i2],y[i2],x[padm],y[padm],x[i1],y[i1]);
       printf("problem\n");
     }
     y[i] = y[i] - yy;
@@ -4277,6 +4292,8 @@ Int_t AliTPCtrackerMI::PropagateForward2(TObjArray * arr)
 
 Int_t AliTPCtrackerMI::PropagateForward()
 {
+  //
+  // propagate track forward
   fSectors = fOuterSec;
   ParallelTracking(fSeeds,fSectors->GetNRows()-1,0);
   fSectors = fInnerSec;
@@ -4494,9 +4511,19 @@ void AliTPCtrackerMI::AliTPCSector::Setup(const AliTPCParam *par, Int_t f) {
   } 
 }
 
+AliTPCtrackerMI::AliTPCRow::AliTPCRow() {
+  //
+  // default constructor
+  fN=0;
+  fN1=0;
+  fN2=0;
+  fClusters1=0;
+  fClusters2=0;
+}
 
 AliTPCtrackerMI::AliTPCRow::~AliTPCRow(){
   //
+
 }
 
 
@@ -4626,7 +4653,6 @@ AliTPCseed::AliTPCseed():AliTPCtrack(){
   fEPoints = 0;
   fNFoundable =0;
   fNShared  =0;
-  //  fTrackPoints =0;
   fRemoval = 0;
   fSort =0;
   fFirstPoint =0;
@@ -4634,9 +4660,12 @@ AliTPCseed::AliTPCseed():AliTPCtrack(){
   fBSigned = kFALSE;
   fSeed1 =-1;
   fSeed2 =-1;
+  fCurrentCluster =0;
 }
 
 AliTPCseed::AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){
+  //
+  //copy constructor
   fPoints = 0;
   fEPoints = 0;
   fNShared  =0; 
@@ -4658,9 +4687,13 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){
   fBSigned = kFALSE;
   fSeed1 =-1;
   fSeed2 =-1;
+  fCurrentCluster =0;
+
 }
 
 AliTPCseed::AliTPCseed(const AliKalmanTrack &t, Double_t a):AliTPCtrack(t,a){
+  //
+  //copy constructor
   fRow=0;
   for (Int_t i=0;i<160;i++) {
     fClusterPointer[i] = 0;
@@ -4680,6 +4713,7 @@ AliTPCseed::AliTPCseed(const AliKalmanTrack &t, Double_t a):AliTPCtrack(t,a){
   fBSigned = kFALSE;
   fSeed1 =-1;
   fSeed2 =-1;
+  fCurrentCluster =0;
 }
 
 AliTPCseed::AliTPCseed(UInt_t index, const Double_t xx[5], const Double_t cc[15], 
@@ -4687,6 +4721,7 @@ AliTPCseed::AliTPCseed(UInt_t index, const Double_t xx[5], const Double_t cc[15]
   AliTPCtrack(index, xx, cc, xr, alpha) {
   //
   //
+  //constructor
   fRow =0;
   for (Int_t i=0;i<200;i++) SetClusterIndex2(i,-3);
   for (Int_t i=0;i<160;i++) fClusterPointer[i]=0;
@@ -4704,9 +4739,13 @@ AliTPCseed::AliTPCseed(UInt_t index, const Double_t xx[5], const Double_t cc[15]
   fBSigned = kFALSE;
   fSeed1 =-1;
   fSeed2 =-1;
+  fCurrentCluster =0;
+
 }
 
 AliTPCseed::~AliTPCseed(){
+  //
+  // destructor
   if (fPoints) delete fPoints;
   fPoints =0;
   if (fEPoints) delete fEPoints;
