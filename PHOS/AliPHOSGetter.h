@@ -26,7 +26,7 @@ class TTask ;
 
 // --- Standard library ---
 #include <stdlib.h>
-#include <iostream>
+#include <iostream.h>
 
 // --- AliRoot header files ---
 

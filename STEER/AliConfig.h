@@ -6,6 +6,9 @@
 /* $Id$ */
 /* 
  * $Log$
+ * Revision 1.3  2001/10/04 15:30:56  hristov
+ * Changes to accommodate the set of PHOS folders and tasks (Y.Schutz)
+ *
  * Revision 1.2  2001/05/21 17:22:51  buncic
  * Fixed problem with missing AliConfig while reading galice.root
  *
@@ -14,7 +17,7 @@
  * 
  */
 
-#include <iostream>
+#include <iostream.h>
 #include <TFolder.h>
 #include <TList.h>
 #include <TInterpreter.h>
