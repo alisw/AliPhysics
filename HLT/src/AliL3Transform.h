@@ -13,6 +13,8 @@ class AliL3Transform {
   static Int_t fNTimeBins;
   static Int_t fNRowLow;
   static Int_t fNRowUp;
+  static Int_t fNRowUp1;
+  static Int_t fNRowUp2;
   static Int_t fNSectorLow;
   static Int_t fNSectorUp;
   static Double_t fPadPitchWidthLow;
@@ -26,8 +28,8 @@ class AliL3Transform {
   static Double_t fNRotShift;
   static Double_t fZLength;
   static Double_t fZOffset;
-  static Int_t fNPads[176]; //fill this following Init
-  static Double_t fX[176];  //fill this following Init
+  static Int_t fNPads[159]; //fill this following Init
+  static Double_t fX[159];  //fill this following Init
   static Int_t fVersion;    //flags the version
   static Int_t fRows[6][2];
   static Int_t fNRows[6];
@@ -36,14 +38,18 @@ class AliL3Transform {
   static Double_t fDiffL; //Longitudinal diffusion constant
   static Double_t fAnodeWireSpacing; 
   static Double_t fInnerPadLength;
-  static Double_t fOuterPadLength;
+  static Double_t fOuter1PadLength;
+  static Double_t fOuter2PadLength;
   static Double_t fInnerPRFSigma;
-  static Double_t fOuterPRFSigma;
+  static Double_t fOuter1PRFSigma;
+  static Double_t fOuter2PRFSigma;
   static Double_t fTimeSigma; //Minimal longitudinal width
 
  public:
 
-  static void Init(const Char_t* path); //new init for all AliRoot versions
+  static void Init(Char_t* path,Bool_t UseAliTPCParam=kFALSE); //new init for all AliRoot versions
+  static void MakeInitFile(Char_t *filename,Char_t *path);
+  static void ReadInit(Char_t *path);
   static void SetBField(Double_t f) {fBField = f;}
 
   static Int_t GetFirstRow(Int_t patch) {return fRows[patch][0];}
@@ -65,8 +71,8 @@ class AliL3Transform {
   static Double_t GetDiffT() {return fDiffT;}
   static Double_t GetDiffL() {return fDiffL;}
   static Double_t GetAnodeWireSpacing() {return fAnodeWireSpacing;}
-  static Double_t GetPadLength(Int_t patch) {return patch < 2 ? fInnerPadLength : fOuterPadLength;}
-  static Double_t GetPRFSigma(Int_t patch) {return patch < 2 ? fInnerPRFSigma : fOuterPRFSigma;}
+  static Double_t GetPadLength(Int_t padrow);
+  static Double_t GetPRFSigma(Int_t padrow);
   static Double_t GetTimeSigma() {return fTimeSigma;}
   static Int_t GetNSectorLow() {return fNSectorLow;}
   static Int_t GetNSectorUp() {return fNSectorUp;}

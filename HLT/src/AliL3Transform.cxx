@@ -8,7 +8,14 @@
 
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
-
+#ifdef use_aliroot
+#include "AliRun.h"
+#include "AliMagF.h"
+#include "AliTPCParamSR.h"
+#include "AliTPCPRF2D.h"
+#include "AliTPCRF1D.h"
+#include "TFile.h"
+#endif
 
 /** \class AliL3Transform 
 //<pre>
@@ -21,9 +28,9 @@
 // and different useful functions for coordinate transforms.
 //
 // The class is completely static, which means that no object needs
-// to be instantiated. Function calls should then be done like:
+// to be instantiated. Function calls should then be done like, e.g.:
 //
-// AliL3Transform::GetEta(xyz);
+// Double_t eta = AliL3Transform::GetEta(xyz);
 //
 // IMPORTANT: If used as is, default detector parameters will be used,
 //            and you really have to make sure that these correspond to
@@ -34,7 +41,16 @@
 // 
 //            where path is a char*, giving the path to where file containing
 //            the detector parameter is located. This file should be called
-//            "l3transform.config", and can be created with macro exa/Make_Init.C.
+//            "l3transform.config", and can be created with the function MakeInitFile.
+//            
+//            You can also force reading the parameters from a AliTPCParam object
+//            by setting the flag;
+//
+//            AliL3Transform::Init(filename,kTRUE);
+//
+//            where filename is a char* providing the path to the rootfile which 
+//            should be called digitfile.root. Note that in this case you have to
+//            compile with USEPACKAGE=ALIROOT set (see level3code/Makefile.conf).
 //</pre>
 */
 
@@ -42,216 +58,202 @@ ClassImp(AliL3Transform)
 
 const Double_t AliL3Transform::fBFACT = 0.0029980;
 Double_t AliL3Transform::fBField = 0.2;
-Int_t AliL3Transform::fBFieldFactor = 1;
 Int_t AliL3Transform::fVersion = 0;
+Int_t AliL3Transform::fNPatches = 6;
+Int_t AliL3Transform::fBFieldFactor = 1 ;
 Int_t AliL3Transform::fNTimeBins = 446 ;
-Int_t AliL3Transform::fNRowLow = 64 ;
-Int_t AliL3Transform::fNRowUp = 112 ;
+Int_t AliL3Transform::fNRowLow = 63 ;
+Int_t AliL3Transform::fNRowUp = 96 ;
+Int_t AliL3Transform::fNRowUp1 = 64 ;
+Int_t AliL3Transform::fNRowUp2 = 32 ;
 Int_t AliL3Transform::fNSectorLow = 36 ;
 Int_t AliL3Transform::fNSectorUp = 36 ;
 Int_t AliL3Transform::fNSector = 72 ;
+Double_t AliL3Transform::fAnodeWireSpacing = 0.25; //Taken from the TDR
 Double_t AliL3Transform::fPadPitchWidthLow = 0.400000 ;
 Double_t AliL3Transform::fPadPitchWidthUp = 0.600000 ;
 Double_t AliL3Transform::fZWidth = 0.56599998474121093750 ;
 Double_t AliL3Transform::fZSigma = 0.22880849748219134199 ;
-Double_t AliL3Transform::fZOffset = 0.68642549244657402596;
-Double_t AliL3Transform::fDiffT = 0.0219999998807907104;
-Double_t AliL3Transform::fDiffL = 0.0219999998807907104;
-Double_t AliL3Transform::fAnodeWireSpacing = 0.25;
-Double_t AliL3Transform::fInnerPadLength = 0.75;
-Double_t AliL3Transform::fOuterPadLength = 1.;
-Double_t AliL3Transform::fInnerPRFSigma = 0.203811079263687134;
-Double_t AliL3Transform::fOuterPRFSigma = 0.299324512481689453;
-Double_t AliL3Transform::fTimeSigma = 0.228808626532554626;
-Double_t AliL3Transform::fZLength = 250.;
+Double_t AliL3Transform::fZLength = 250.00000000000000000000 ;
+Double_t AliL3Transform::fZOffset = 0.68642549244657402596 ;
+Double_t AliL3Transform::fDiffT = 0.02199999988079071045 ;
+Double_t AliL3Transform::fDiffL = 0.02199999988079071045 ;
+Double_t AliL3Transform::fInnerPadLength = 0.750000 ;
+Double_t AliL3Transform::fOuter1PadLength = 1.000000 ;
+Double_t AliL3Transform::fOuter2PadLength = 1.500000 ;
+Double_t AliL3Transform::fInnerPRFSigma = 0.20381128787994384766 ;
+Double_t AliL3Transform::fOuter1PRFSigma = 0.29932481050491333008 ;
+Double_t AliL3Transform::fOuter2PRFSigma = 0.29932320117950439453 ;
+Double_t AliL3Transform::fTimeSigma = 0.22880862653255462646 ;
 Int_t AliL3Transform::fNSlice = 36 ;
-Int_t AliL3Transform::fNRow = 176 ;
+Int_t AliL3Transform::fNRow = 159 ;
 Double_t AliL3Transform::fNRotShift = 0.5 ;
 Double_t AliL3Transform::fPi = 3.141592653589793 ;
-Int_t AliL3Transform::fNPatches = 6;
-Int_t AliL3Transform::fRows[6][2] = {{0,31},{32,63},{64,91},{92,119},{120,143},{144,175}};
-Int_t AliL3Transform::fNRows[6] = {32,32,28,28,24,32};
-Double_t AliL3Transform::fX[176] = {84.570007324218750,
-                                    85.320007324218750,
-                                    86.070007324218750,
-                                    86.820007324218750,
-                                    87.570007324218750,
-                                    88.320007324218750,
-                                    89.070007324218750,
-                                    89.820007324218750,
-                                    90.570007324218750,
-                                    91.320007324218750,
-                                    92.070007324218750,
-                                    92.820007324218750,
-                                    93.570007324218750,
-                                    94.320007324218750,
-                                    95.070007324218750,
-                                    95.820007324218750,
-                                    96.570007324218750,
-                                    97.320007324218750,
-                                    98.070007324218750,
-                                    98.820007324218750,
-                                    99.570007324218750,
-                                    100.320007324218750,
-                                    101.070007324218750,
-                                    101.820007324218750,
-                                    102.570007324218750,
-                                    103.320007324218750,
-                                    104.070007324218750,
-                                    104.820007324218750,
-                                    105.570007324218750,
-                                    106.320007324218750,
-                                    107.070007324218750,
-                                    107.820007324218750,
-                                    108.570007324218750,
-                                    109.320007324218750,
-                                    110.070007324218750,
-                                    110.820007324218750,
-                                    111.570007324218750,
-                                    112.320007324218750,
-                                    113.070007324218750,
-                                    113.820007324218750,
-                                    114.570007324218750,
-                                    115.320007324218750,
-                                    116.070007324218750,
-                                    116.820007324218750,
-                                    117.570007324218750,
-                                    118.320007324218750,
-                                    119.070007324218750,
-                                    119.820007324218750,
-                                    120.570007324218750,
-                                    121.320007324218750,
-                                    122.070007324218750,
-                                    122.820007324218750,
-                                    123.570007324218750,
-                                    124.320007324218750,
-                                    125.070007324218750,
-                                    125.820007324218750,
-                                    126.570007324218750,
-                                    127.320007324218750,
-                                    128.070007324218750,
-                                    128.820007324218750,
-                                    129.570007324218750,
-                                    130.320007324218750,
-                                    131.070007324218750,
-                                    131.820007324218750,
-                                    135.054992675781250,
-                                    136.054992675781250,
-                                    137.054992675781250,
-                                    138.054992675781250,
-                                    139.054992675781250,
-                                    140.054992675781250,
-                                    141.054992675781250,
-                                    142.054992675781250,
-                                    143.054992675781250,
-                                    144.054992675781250,
-                                    145.054992675781250,
-                                    146.054992675781250,
-                                    147.054992675781250,
-                                    148.054992675781250,
-                                    149.054992675781250,
-                                    150.054992675781250,
-                                    151.054992675781250,
-                                    152.054992675781250,
-                                    153.054992675781250,
-                                    154.054992675781250,
-                                    155.054992675781250,
-                                    156.054992675781250,
-                                    157.054992675781250,
-                                    158.054992675781250,
-                                    159.054992675781250,
-                                    160.054992675781250,
-                                    161.054992675781250,
-                                    162.054992675781250,
-                                    163.054992675781250,
-                                    164.054992675781250,
-                                    165.054992675781250,
-                                    166.054992675781250,
-                                    167.054992675781250,
-                                    168.054992675781250,
-                                    169.054992675781250,
-                                    170.054992675781250,
-                                    171.054992675781250,
-                                    172.054992675781250,
-                                    173.054992675781250,
-                                    174.054992675781250,
-                                    175.054992675781250,
-                                    176.054992675781250,
-                                    177.054992675781250,
-                                    178.054992675781250,
-                                    179.054992675781250,
-                                    180.054992675781250,
-                                    181.054992675781250,
-                                    182.054992675781250,
-                                    183.054992675781250,
-                                    184.054992675781250,
-                                    185.054992675781250,
-                                    186.054992675781250,
-                                    187.054992675781250,
-                                    188.054992675781250,
-                                    189.054992675781250,
-                                    190.054992675781250,
-                                    191.054992675781250,
-                                    192.054992675781250,
-                                    193.054992675781250,
-                                    194.054992675781250,
-                                    195.054992675781250,
-                                    196.054992675781250,
-                                    197.054992675781250,
-                                    198.054992675781250,
-                                    199.054992675781250,
-                                    200.054992675781250,
-                                    201.054992675781250,
-                                    202.054992675781250,
-                                    203.054992675781250,
-                                    204.054992675781250,
-                                    205.054992675781250,
-                                    206.054992675781250,
-                                    207.054992675781250,
-                                    208.054992675781250,
-                                    209.054992675781250,
-                                    210.054992675781250,
-                                    211.054992675781250,
-                                    212.054992675781250,
-                                    213.054992675781250,
-                                    214.054992675781250,
-                                    215.054992675781250,
-                                    216.054992675781250,
-                                    217.054992675781250,
-                                    218.054992675781250,
-                                    219.054992675781250,
-                                    220.054992675781250,
-                                    221.054992675781250,
-                                    222.054992675781250,
-                                    223.054992675781250,
-                                    224.054992675781250,
-                                    225.054992675781250,
-                                    226.054992675781250,
-                                    227.054992675781250,
-                                    228.054992675781250,
-                                    229.054992675781250,
-                                    230.054992675781250,
-                                    231.054992675781250,
-                                    232.054992675781250,
-                                    233.054992675781250,
-                                    234.054992675781250,
-                                    235.054992675781250,
-                                    236.054992675781250,
-                                    237.054992675781250,
-                                    238.054992675781250,
-                                    239.054992675781250,
-                                    240.054992675781250,
-                                    241.054992675781250,
-                                    242.054992675781250,
-                                    243.054992675781250,
-                                    244.054992675781250,
-                                    245.054992675781250,
-                                    246.054992675781250
+Int_t AliL3Transform::fRows[6][2] = {{0,31},{32,62},{63,86},{87,110},{111,134},{135,158}}; //Defined by us
+Int_t AliL3Transform::fNRows[6] = {32,31,24,24,24,24}; //Defined by us
+Double_t AliL3Transform::fX[159] = {85.194999694824219,
+                                    85.944999694824219,
+                                    86.694999694824219,
+                                    87.444999694824219,
+                                    88.194999694824219,
+                                    88.944999694824219,
+                                    89.694999694824219,
+                                    90.444999694824219,
+                                    91.194999694824219,
+                                    91.944999694824219,
+                                    92.694999694824219,
+                                    93.444999694824219,
+                                    94.194999694824219,
+                                    94.944999694824219,
+                                    95.694999694824219,
+                                    96.444999694824219,
+                                    97.194999694824219,
+                                    97.944999694824219,
+                                    98.694999694824219,
+                                    99.444999694824219,
+                                    100.194999694824219,
+                                    100.944999694824219,
+                                    101.694999694824219,
+                                    102.444999694824219,
+                                    103.194999694824219,
+                                    103.944999694824219,
+                                    104.694999694824219,
+                                    105.444999694824219,
+                                    106.194999694824219,
+                                    106.944999694824219,
+                                    107.694999694824219,
+                                    108.444999694824219,
+                                    109.194999694824219,
+                                    109.944999694824219,
+                                    110.694999694824219,
+                                    111.444999694824219,
+                                    112.194999694824219,
+                                    112.944999694824219,
+                                    113.694999694824219,
+                                    114.444999694824219,
+                                    115.194999694824219,
+                                    115.944999694824219,
+                                    116.694999694824219,
+                                    117.444999694824219,
+                                    118.194999694824219,
+                                    118.944999694824219,
+                                    119.694999694824219,
+                                    120.444999694824219,
+                                    121.194999694824219,
+                                    121.944999694824219,
+                                    122.694999694824219,
+                                    123.444999694824219,
+                                    124.194999694824219,
+                                    124.944999694824219,
+                                    125.694999694824219,
+                                    126.444999694824219,
+                                    127.194999694824219,
+                                    127.944999694824219,
+                                    128.695007324218750,
+                                    129.445007324218750,
+                                    130.195007324218750,
+                                    130.945007324218750,
+                                    131.695007324218750,
+                                    135.180007934570312,
+                                    136.180007934570312,
+                                    137.180007934570312,
+                                    138.180007934570312,
+                                    139.180007934570312,
+                                    140.180007934570312,
+                                    141.180007934570312,
+                                    142.180007934570312,
+                                    143.180007934570312,
+                                    144.180007934570312,
+                                    145.180007934570312,
+                                    146.180007934570312,
+                                    147.180007934570312,
+                                    148.180007934570312,
+                                    149.180007934570312,
+                                    150.180007934570312,
+                                    151.180007934570312,
+                                    152.180007934570312,
+                                    153.180007934570312,
+                                    154.180007934570312,
+                                    155.180007934570312,
+                                    156.180007934570312,
+                                    157.180007934570312,
+                                    158.180007934570312,
+                                    159.180007934570312,
+                                    160.180007934570312,
+                                    161.180007934570312,
+                                    162.180007934570312,
+                                    163.180007934570312,
+                                    164.180007934570312,
+                                    165.180007934570312,
+                                    166.180007934570312,
+                                    167.180007934570312,
+                                    168.180007934570312,
+                                    169.180007934570312,
+                                    170.180007934570312,
+                                    171.180007934570312,
+                                    172.180007934570312,
+                                    173.180007934570312,
+                                    174.180007934570312,
+                                    175.180007934570312,
+                                    176.180007934570312,
+                                    177.180007934570312,
+                                    178.180007934570312,
+                                    179.180007934570312,
+                                    180.180007934570312,
+                                    181.180007934570312,
+                                    182.180007934570312,
+                                    183.180007934570312,
+                                    184.180007934570312,
+                                    185.180007934570312,
+                                    186.180007934570312,
+                                    187.180007934570312,
+                                    188.180007934570312,
+                                    189.180007934570312,
+                                    190.180007934570312,
+                                    191.180007934570312,
+                                    192.180007934570312,
+                                    193.180007934570312,
+                                    194.180007934570312,
+                                    195.180007934570312,
+                                    196.180007934570312,
+                                    197.180007934570312,
+                                    198.180007934570312,
+                                    199.430007934570312,
+                                    200.930007934570312,
+                                    202.430007934570312,
+                                    203.930007934570312,
+                                    205.430007934570312,
+                                    206.930007934570312,
+                                    208.430007934570312,
+                                    209.930007934570312,
+                                    211.430007934570312,
+                                    212.930007934570312,
+                                    214.430007934570312,
+                                    215.930007934570312,
+                                    217.430007934570312,
+                                    218.930007934570312,
+                                    220.430007934570312,
+                                    221.930007934570312,
+                                    223.430007934570312,
+                                    224.930007934570312,
+                                    226.430007934570312,
+                                    227.930007934570312,
+                                    229.430007934570312,
+                                    230.930007934570312,
+                                    232.430007934570312,
+                                    233.930007934570312,
+                                    235.430007934570312,
+                                    236.930007934570312,
+                                    238.430007934570312,
+                                    239.930007934570312,
+                                    241.430007934570312,
+                                    242.930007934570312,
+                                    244.430007934570312,
+                                    245.930007934570312
 };
 
-Int_t AliL3Transform::fNPads[176] = {67,
+Int_t AliL3Transform::fNPads[159] = {67,
                                      67,
-                                     67,
                                      69,
                                      69,
                                      69,
@@ -300,6 +302,7 @@ Int_t AliL3Transform::fNPads[176] = {67,
                                      99,
                                      99,
                                      99,
+                                     99,
                                      101,
                                      101,
                                      101,
@@ -312,12 +315,11 @@ Int_t AliL3Transform::fNPads[176] = {67,
                                      107,
                                      107,
                                      107,
-                                     109,
                                      73,
                                      75,
                                      75,
                                      75,
-                                     77,
+                                     75,
                                      77,
                                      77,
                                      77,
@@ -327,14 +329,14 @@ Int_t AliL3Transform::fNPads[176] = {67,
                                      81,
                                      81,
                                      81,
-                                     83,
+                                     81,
                                      83,
                                      83,
                                      83,
                                      85,
                                      85,
                                      85,
-                                     87,
+                                     85,
                                      87,
                                      87,
                                      87,
@@ -344,14 +346,14 @@ Int_t AliL3Transform::fNPads[176] = {67,
                                      91,
                                      91,
                                      91,
-                                     93,
+                                     91,
                                      93,
                                      93,
                                      93,
                                      95,
                                      95,
                                      95,
-                                     97,
+                                     95,
                                      97,
                                      97,
                                      97,
@@ -361,14 +363,14 @@ Int_t AliL3Transform::fNPads[176] = {67,
                                      101,
                                      101,
                                      101,
-                                     103,
+                                     101,
                                      103,
                                      103,
                                      103,
                                      105,
                                      105,
                                      105,
-                                     107,
+                                     105,
                                      107,
                                      107,
                                      107,
@@ -381,15 +383,10 @@ Int_t AliL3Transform::fNPads[176] = {67,
                                      113,
                                      113,
                                      113,
-                                     113,
                                      115,
                                      115,
-                                     115,
                                      117,
                                      117,
-                                     117,
-                                     117,
-                                     119,
                                      119,
                                      119,
                                      121,
@@ -397,23 +394,15 @@ Int_t AliL3Transform::fNPads[176] = {67,
                                      121,
                                      123,
                                      123,
-                                     123,
-                                     123,
-                                     125,
                                      125,
                                      125,
                                      127,
                                      127,
                                      127,
-                                     127,
-                                     129,
                                      129,
                                      129,
                                      131,
                                      131,
-                                     131,
-                                     133,
-                                     133,
                                      133,
                                      133,
                                      135,
@@ -421,19 +410,28 @@ Int_t AliL3Transform::fNPads[176] = {67,
                                      135,
                                      137,
                                      137,
-                                     137,
-                                     137,
-                                     139,
                                      139
 };
 
 
 
-void AliL3Transform::Init(const Char_t* path)
+void AliL3Transform::Init(Char_t* path,Bool_t UseAliTPCParam)
 {
   //Overwrite the parameters with values stored in file "l3transform.config" in path.
   //If file does not exist, old default values will be used.
+  //If flag UseAliTPCParam is set, the parameters will be read from the the rootfile
+  //which then has to be called path/digitfile.root
   
+  if(fVersion != 0)
+    LOG(AliL3Log::kWarning,"AliL3Transform::Init","Init values")
+      <<"You are initializing the parameters more than once; check your code please! "<<fVersion<<ENDLOG;
+  
+  if(UseAliTPCParam)
+    {
+      ReadInit(path);
+      return;
+    }
+
   Char_t *pathname=new Char_t[1024];
   strcpy(pathname,path);
   strcat(pathname,"/l3transform.config");
@@ -455,10 +453,12 @@ void AliL3Transform::Init(const Char_t* path)
     if(strcmp(d1,"fBFieldFactor")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fBFieldFactor=(Int_t)dummy;fBField=fBFieldFactor*0.2;}
     else if(strcmp(d1,"fNTimeBins")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNTimeBins=(Int_t)dummy;}
     else if(strcmp(d1,"fNRowLow")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowLow=(Int_t)dummy;}    
-    if(fNRowLow != 64)
+    if(fNRowLow != 63)
       LOG(AliL3Log::kError,"AliL3Transform::Init","Overflow")
-	<<"Number of inner PadRows should be 64! Check and fgrep the code for 64 to see the consequences of this major change!"<<ENDLOG;
+	<<"Number of inner PadRows should be 63! Check and fgrep the code for 63 to see the consequences of this major change!"<<ENDLOG;
     else if(strcmp(d1,"fNRowUp")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowUp=(Int_t)dummy;}
+    else if(strcmp(d1,"fNRowUp1")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowUp1=(Int_t)dummy;}
+    else if(strcmp(d1,"fNRowUp2")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRowUp2=(Int_t)dummy;}
     else if(strcmp(d1,"fNSectorLow")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNSectorLow=(Int_t)dummy;}
     else if(strcmp(d1,"fNSectorUp")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNSectorUp=(Int_t)dummy;}
     else if(strcmp(d1,"fNSector")==0){fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNSector=(Int_t)dummy;}
@@ -472,14 +472,16 @@ void AliL3Transform::Init(const Char_t* path)
     else if(strcmp(d1,"fDiffT")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fDiffT=(Double_t)ddummy;}
     else if(strcmp(d1,"fDiffL")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fDiffL=(Double_t)ddummy;}
     else if(strcmp(d1,"fInnerPadLength")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fInnerPadLength=(Double_t)ddummy;}
-    else if(strcmp(d1,"fOuterPadLength")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fOuterPadLength=(Double_t)ddummy;}
+    else if(strcmp(d1,"fOuter1PadLength")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fOuter1PadLength=(Double_t)ddummy;}
+    else if(strcmp(d1,"fOuter2PadLength")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fOuter2PadLength=(Double_t)ddummy;}
     else if(strcmp(d1,"fInnerPRFSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fInnerPRFSigma=(Double_t)ddummy;}
-    else if(strcmp(d1,"fOuterPRFSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fOuterPRFSigma=(Double_t)ddummy;}
+    else if(strcmp(d1,"fOuter1PRFSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fOuter1PRFSigma=(Double_t)ddummy;}
+    else if(strcmp(d1,"fOuter2PRFSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fOuter2PRFSigma=(Double_t)ddummy;}
     else if(strcmp(d1,"fTimeSigma")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fTimeSigma=(Double_t)ddummy;}
     else if(strcmp(d1,"fNRow")==0){
       fscanf(fptr,"%s %d %s",d2,&dummy,d3);fNRow=(Int_t)dummy;
-      if(fNRow!=176){
-	LOG(AliL3Log::kError,"AliL3Transform::Init","Overflow")<<"Number of PadRows should be 176! Check and fgrep the code for 176 to see the consequences of this major change!"<<ENDLOG;
+      if(fNRow!=159){
+	LOG(AliL3Log::kError,"AliL3Transform::Init","Overflow")<<"Number of PadRows should be 159! Check and fgrep the code for 159 to see the consequences of this major change!"<<ENDLOG;
       }
     }
     else if(strcmp(d1,"fNRotShift")==0){fscanf(fptr,"%s %lf %s",d2,&ddummy,d3);fNRotShift=(Double_t)ddummy;}
@@ -496,7 +498,172 @@ void AliL3Transform::Init(const Char_t* path)
 
   fclose(fptr);
   delete pathname;
-  fVersion=1; //new version
+  fVersion++; //new version
+}
+void AliL3Transform::ReadInit(Char_t *path)
+{
+  //Read all the parameters from a aliroot file, and store it in a temporary 
+  //file which is read by Init. Use this if you want to read the parameters from
+  //the rootfile "every" time.
+  
+#ifndef use_aliroot
+  LOG(AliL3Log::kError,"AliL3Transform::ReadInit","Version")
+    <<"You have to compile with use_aliroot flag in order to read from AliROOT file"<<ENDLOG;
+  return;
+#else
+  Char_t filename[1024];
+  sprintf(filename,"%s/digitfile.root",path);
+  MakeInitFile(filename,"/tmp/");
+  Init("/tmp/");
+#endif  
+}
+
+
+
+void AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
+{
+  //Get the parameters from rootfile, and store it on the file "l3transform.config"
+  //which is being read by Init.
+  
+#ifndef use_aliroot
+  LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","Version")
+    <<"You have to compile with use_aliroot flag in order to use this function"<<ENDLOG;
+  return;
+#else
+  TFile *rootfile = TFile::Open(filename);
+  AliRun *gAlice = (AliRun*)rootfile->Get("gAlice");
+  if(!gAlice)
+    {
+      LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","File")
+	<<"No gAlice in file: "<<filename<<ENDLOG;
+      return;
+    }  
+  AliTPCParamSR *param=(AliTPCParamSR*)rootfile->Get("75x40_100x60_150x60");
+  if(!param)
+    {
+      LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","File")
+	<<"No TPC parameters found"<<ENDLOG;
+      return;
+    }
+  
+  AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;
+  AliTPCPRF2D    * prfouter1   = new AliTPCPRF2D;
+  AliTPCPRF2D    * prfouter2   = new AliTPCPRF2D;  
+  AliTPCRF1D     * rf    = new AliTPCRF1D(kTRUE);
+  rf->SetGauss(param->GetZSigma(),param->GetZWidth(),1.);
+  rf->SetOffset(3*param->GetZSigma());
+  rf->Update();
+  
+  TDirectory *savedir=gDirectory;
+  TFile *prf_file = TFile::Open("$ALICE_ROOT/TPC/AliTPCprf2d.root");
+  if (!prf_file->IsOpen()) 
+    { 
+      LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","File")
+	<<"Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !"<<ENDLOG;
+      return;
+    }
+  prfinner->Read("prf_07504_Gati_056068_d02");
+  prfouter1->Read("prf_10006_Gati_047051_d03");
+  prfouter2->Read("prf_15006_Gati_047051_d03");  
+  prf_file->Close();
+  savedir->cd();
+  
+  param->SetInnerPRF(prfinner);
+  param->SetOuter1PRF(prfouter1); 
+  param->SetOuter2PRF(prfouter2);
+  param->SetTimeRF(rf);
+  
+  Int_t nTimeBins = param->GetMaxTBin()+1;
+  Int_t nRowLow = param->GetNRowLow();
+  Int_t nRowUp  = param->GetNRowUp();
+  Int_t nRowUp1 = param->GetNRowUp1();
+  Int_t nRowUp2 = param->GetNRowUp2();
+  Int_t nRow= fNRowLow + fNRowUp;
+  Int_t nSectorLow = param->GetNInnerSector();
+  Int_t nSectorUp = param->GetNOuterSector();
+  Int_t nSector = fNSectorLow + fNSectorUp;
+    
+  Char_t tofile[100];
+  sprintf(tofile,"%s/l3transform.config",path);
+  FILE *f = fopen(tofile,"w");
+  fprintf(f,"void AliL3Transform::Init(){\n");
+
+  fprintf(f,"  fBFieldFactor = %d ;\n",(Int_t)gAlice->Field()->Factor());
+  fprintf(f,"  //sector:\n");
+  fprintf(f,"  fNTimeBins = %d ;\n",nTimeBins);
+  fprintf(f,"  fNRowLow = %d ;\n",nRowLow);
+  fprintf(f,"  fNRowUp = %d ;\n",nRowUp);
+  fprintf(f,"  fNRowUp1 = %d ;\n",nRowUp1);
+  fprintf(f,"  fNRowUp2 = %d ;\n",nRowUp2);
+  fprintf(f,"  fNSectorLow = %d ;\n",nSectorLow);
+  fprintf(f,"  fNSectorUp = %d ;\n",nSectorUp);
+  fprintf(f,"  fNSector = %d ;\n",nSector);
+  fprintf(f,"  fPadPitchWidthLow = %f ;\n",param->GetInnerPadPitchWidth());
+  fprintf(f,"  fPadPitchWidthUp = %f ;\n",param->GetOuterPadPitchWidth());
+  fprintf(f,"  fZWidth = %.20f ;\n",param->GetZWidth());
+  fprintf(f,"  fZSigma = %.20f ;\n",param->GetZSigma());
+  fprintf(f,"  fZLength = %.20f ;\n",param->GetZLength());
+  fprintf(f,"  fZOffset = %.20f ;\n",param->GetZOffset());
+  fprintf(f,"  fDiffT = %.20f ;\n",param->GetDiffT());
+  fprintf(f,"  fDiffL = %.20f ;\n",param->GetDiffL());
+  fprintf(f,"  fInnerPadLength = %f ;\n",param->GetInnerPadLength());
+  fprintf(f,"  fOuter1PadLength = %f ;\n",param->GetOuter1PadLength());
+  fprintf(f,"  fOuter2PadLength = %f ;\n",param->GetOuter2PadLength());
+  fprintf(f,"  fInnerPRFSigma = %.20f ;\n",param->GetInnerPRF()->GetSigmaX());
+  fprintf(f,"  fOuter1PRFSigma = %.20f ;\n",param->GetOuter1PRF()->GetSigmaX());
+  fprintf(f,"  fOuter2PRFSigma = %.20f ;\n",param->GetOuter2PRF()->GetSigmaX());
+  
+  fprintf(f,"  fTimeSigma = %.20f ;\n",param->GetTimeRF()->GetSigma());
+  
+  fprintf(f,"\n  //slices:\n");
+  fprintf(f,"  fNSlice = %d ;\n",nSectorLow);
+  fprintf(f,"  fNRow = %d ;\n",nRow);
+
+  //rotation shift put in by hand -> Constantin 
+  fprintf(f,"  fNRotShift = 0.5 ;\n");
+
+  fprintf(f,"  fPi = %.15f ;\n",TMath::Pi());
+  
+  for(Int_t i=0;i<nRow;i++){
+    Int_t sec,row;
+    if( i < nRowLow){sec =0;row =i;}
+    else{sec = nSectorLow;row =i-nRowLow;}
+    fprintf(f,"  fX[%d] = %3.15f ;\n",i,param->GetPadRowRadii(sec,row));
+  }
+  for(Int_t i=0;i<nRow;i++){
+    Int_t sec,row;
+    if( i < nRowLow){sec =0;row =i;}
+    else{sec = nSectorLow;row =i-nRowLow;}
+    fprintf(f,"  fNPads[%d] = %d ;\n",i,param->GetNPads(sec,row));
+  }
+  
+  fprintf(f,"}\n");
+  fclose(f);
+#endif
+}
+
+inline Double_t AliL3Transform::GetPadLength(Int_t padrow)
+{
+  if(padrow >= fNRow)
+    return 0;
+  if(padrow < fNRowLow)
+    return fInnerPadLength;
+  if(padrow >= fNRowLow && padrow < fNRowLow + fNRowUp1 - 1)
+    return fOuter1PadLength;
+  if(padrow >= fNRowLow + fNRowUp1 - 1)
+    return fOuter2PadLength;
+}
+
+inline Double_t AliL3Transform::GetPRFSigma(Int_t padrow)
+{
+  if(padrow >= fNRow)
+    return 0;
+  if(padrow < fNRowLow)
+    return fInnerPRFSigma;
+  if(padrow >= fNRowLow && padrow < fNRowLow + fNRowUp1 - 1)
+    return fOuter1PRFSigma;
+  if(padrow >= fNRowLow + fNRowUp1 - 1)
+    return fOuter2PRFSigma;
 }
 
 Double_t AliL3Transform::GetEta(Float_t *xyz)

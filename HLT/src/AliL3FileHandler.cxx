@@ -126,7 +126,7 @@ Bool_t AliL3FileHandler::SetAliInput()
       <<"Ali File "<<fInAli->GetName()<<" does not exist"<<ENDLOG;
     return kFALSE;
   }
-  fParam = (AliTPCParam*)fInAli->Get("75x40_100x60");
+  fParam = (AliTPCParam*)fInAli->Get("75x40_100x60_150x60");
   if(!fParam){ 
     LOG(AliL3Log::kError,"AliL3FileHandler::SetAliInput","File Open")
       <<"No AliTPCParam 75x40_100x60 in File "<<fInAli->GetName()<<ENDLOG;
@@ -317,9 +317,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
       Int_t localcount=0;
       fDigits->First();
       do {
-        //dig=fDigits->CurrentDigit();
-	//if (dig<=fParam->GetZeroSup()) continue;
-        time=fDigits->CurrentRow();
+	time=fDigits->CurrentRow();
         pad=fDigits->CurrentColumn();
         dig = fDigits->GetDigit(time,pad);
 	if (dig <= fParam->GetZeroSup()) continue;
@@ -368,7 +366,7 @@ Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
   
   fInAli->cd();
   Char_t dname[100];
-  sprintf(dname,"TreeD_75x40_100x60_%d",event);
+  sprintf(dname,"TreeD_75x40_100x60_150x60_%d",event);
   fDigitsTree = (TTree*)fInAli->Get(dname);
   if(!fDigitsTree) 
     {
