@@ -28,6 +28,7 @@ const G4int TG4XMLConvertor::fgkMaxMaterialNameLength = 20;
 const G4int TG4XMLConvertor::fgkDefaultNumWidth = 7;
 const G4int TG4XMLConvertor::fgkDefaultNumPrecision = 4;
 
+//_____________________________________________________________________________
 TG4XMLConvertor::TG4XMLConvertor(G4std::ofstream& outFile) 
   : fOutFile(outFile),
     fkBasicIndention("   "),
@@ -40,12 +41,14 @@ TG4XMLConvertor::TG4XMLConvertor(G4std::ofstream& outFile)
   fOutFile.precision(fgkDefaultNumPrecision);
 }
 
+//_____________________________________________________________________________
 TG4XMLConvertor::~TG4XMLConvertor() {
 //
 }
 
 // private methods
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::CutName(G4String& name) const
 {
 // Removes spaces after the name if present.
@@ -55,6 +58,7 @@ void TG4XMLConvertor::CutName(G4String& name) const
   while (name(--i) == ' ') name = name(0,i);
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::CutName(G4String& name, G4int size) const
 {
 // Cuts name to given size.
@@ -63,6 +67,7 @@ void TG4XMLConvertor::CutName(G4String& name, G4int size) const
   if (name.length() > size) name = name(0, size);
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::PutName(G4String& element, G4String name, 
                               G4String templ) const
 {
@@ -81,6 +86,7 @@ void TG4XMLConvertor::PutName(G4String& element, G4String name,
   while (element.contains(templ)) element.replace(element.find(templ), 1 , " ");
 }    
   
+//_____________________________________________________________________________
 void TG4XMLConvertor::WriteBox(G4String lvName, const G4Box* box, 
                                G4String materialName)
 {
@@ -110,6 +116,7 @@ void TG4XMLConvertor::WriteBox(G4String lvName, const G4Box* box,
 	   << element4 << G4endl << G4endl;
 }
  
+//_____________________________________________________________________________
 void TG4XMLConvertor::WriteTubs(G4String lvName, const G4Tubs* tubs, 
                                 G4String materialName)
 {
@@ -146,7 +153,7 @@ void TG4XMLConvertor::WriteTubs(G4String lvName, const G4Tubs* tubs,
 	   << element5 << G4endl << G4endl;
 }  
 
-
+//_____________________________________________________________________________
 void TG4XMLConvertor::WriteCons(G4String lvName, const G4Cons* cons, 
                                 G4String materialName)
 {
@@ -187,7 +194,7 @@ void TG4XMLConvertor::WriteCons(G4String lvName, const G4Cons* cons,
 	   << element5 << G4endl << G4endl;
 }  
 
-
+//_____________________________________________________________________________
 void TG4XMLConvertor::WriteTrd(G4String lvName, const G4Trd* trd, 
                                G4String materialName)
 {
@@ -221,7 +228,7 @@ void TG4XMLConvertor::WriteTrd(G4String lvName, const G4Trd* trd,
 	   << element4 << G4endl << G4endl;
 }  
 
-
+//_____________________________________________________________________________
 void TG4XMLConvertor::WriteTrap(G4String lvName, const G4Trap* trap, 
                                 G4String materialName)
 {
@@ -283,6 +290,7 @@ void TG4XMLConvertor::WriteTrap(G4String lvName, const G4Trap* trap,
 	   << element6 << G4endl << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::WritePara(G4String lvName, const G4Para* para, 
                                 G4String materialName)
 {
@@ -334,6 +342,7 @@ void TG4XMLConvertor::WritePara(G4String lvName, const G4Para* para,
 	   << element7 << G4endl << G4endl;
 }
  
+//_____________________________________________________________________________
 void TG4XMLConvertor::WritePolycone(G4String lvName, const G4Polycone* polycone, 
                                     G4String materialName)
 {
@@ -392,7 +401,7 @@ void TG4XMLConvertor::WritePolycone(G4String lvName, const G4Polycone* polycone,
            << element7 << G4endl << G4endl;  	     
 }  
 
-
+//_____________________________________________________________________________
 void TG4XMLConvertor::WritePolyhedra(G4String lvName, const G4Polyhedra* polyhedra, 
                                     G4String materialName)
 {
@@ -467,6 +476,7 @@ void TG4XMLConvertor::WritePolyhedra(G4String lvName, const G4Polyhedra* polyhed
 
 // public methods
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::OpenMaterials(const G4String& version, 
  	                 const G4String& date, const G4String& author,
                          const G4String dtdVersion)
@@ -489,6 +499,7 @@ void TG4XMLConvertor::OpenMaterials(const G4String& version,
            << element5 << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::OpenSection(const G4String& name, const G4String& version,
  	                 const G4String& date, const G4String& author,
                          const G4String& topVolume)
@@ -531,6 +542,7 @@ void TG4XMLConvertor::OpenComposition(const G4String& name)
   IncreaseIndention();	   
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::CloseMaterials()
 {
 // Writes materials closing.
@@ -544,6 +556,7 @@ void TG4XMLConvertor::CloseMaterials()
 	   << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::CloseSection()
 {
 // Writes section closing.
@@ -557,6 +570,7 @@ void TG4XMLConvertor::CloseSection()
 	   << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::CloseComposition()
 {
 // Writes composition closing.
@@ -574,6 +588,7 @@ void TG4XMLConvertor::CloseComposition()
 	   << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::WriteMaterial(const G4Material* material) 
 {
 // Writes G4Material. 
@@ -594,6 +609,7 @@ void TG4XMLConvertor::WriteMaterial(const G4Material* material)
            << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::WriteSolid(G4String lvName, const G4VSolid* solid, 
                                  G4String materialName) 
 {
@@ -666,6 +682,7 @@ void TG4XMLConvertor::WriteSolid(G4String lvName, const G4VSolid* solid,
            << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::WriteRotation(const G4RotationMatrix* rotation)
 {
 // Writes G4RotationMatrix. 
@@ -724,6 +741,7 @@ void TG4XMLConvertor::WriteRotation(const G4RotationMatrix* rotation)
            << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::WritePosition(G4String lvName, G4ThreeVector position) 
 {
 // Writes position without rotation with a given solid name. 
@@ -751,6 +769,7 @@ void TG4XMLConvertor::WritePosition(G4String lvName, G4ThreeVector position)
 	   << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::WritePositionWithRotation(
                            G4String lvName, G4ThreeVector position, 
 			   const G4RotationMatrix* rotation)
@@ -821,6 +840,7 @@ void TG4XMLConvertor::WritePositionWithRotation(
 	   << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::WriteReplica(G4String lvName, G4PVReplica* pvr) 
 {
 // Writes position without rotation with a given solid name. 
@@ -881,6 +901,7 @@ void TG4XMLConvertor::WriteReplica(G4String lvName, G4PVReplica* pvr)
 	   << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::WriteEmptyLine()
 {
 // Writes empty line.
@@ -889,12 +910,14 @@ void TG4XMLConvertor::WriteEmptyLine()
   fOutFile << G4endl;
 }  
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::IncreaseIndention()
 {
   // increase indention
   fIndention.append(fkBasicIndention);	   
 }
 
+//_____________________________________________________________________________
 void TG4XMLConvertor::DecreaseIndention()
 {
   // decrease indention

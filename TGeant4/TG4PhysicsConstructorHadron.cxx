@@ -102,6 +102,7 @@
 #include <G4KaonMinusAbsorptionAtRest.hh>
 #endif
 
+//_____________________________________________________________________________
 TG4PhysicsConstructorHadron::TG4PhysicsConstructorHadron(const G4String& name)
   : G4VPhysicsConstructor(name)
 {
@@ -109,12 +110,14 @@ TG4PhysicsConstructorHadron::TG4PhysicsConstructorHadron(const G4String& name)
   SetVerboseLevel(1);
 }
 
+//_____________________________________________________________________________
 TG4PhysicsConstructorHadron::~TG4PhysicsConstructorHadron() {
 //
 }
 
 // protected methods
 
+//_____________________________________________________________________________
 void TG4PhysicsConstructorHadron::ConstructParticle()
 {
 // The particles are constructed in the 
@@ -122,6 +125,7 @@ void TG4PhysicsConstructorHadron::ConstructParticle()
 // ---
 }
 
+//_____________________________________________________________________________
 void TG4PhysicsConstructorHadron::ConstructProcess()
 {
 // Makes discrete physics processes for the hadrons, at present limited

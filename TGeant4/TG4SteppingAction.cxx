@@ -10,6 +10,7 @@
 #include <G4Track.hh>
 #include <G4SteppingManager.hh>
 
+//_____________________________________________________________________________
 TG4SteppingAction::TG4SteppingAction() 
   : fMaxNofSteps(kMaxNofSteps),
     fStandardVerboseLevel(0),
@@ -19,17 +20,20 @@ TG4SteppingAction::TG4SteppingAction()
 //
 }
 
+//_____________________________________________________________________________
 TG4SteppingAction::TG4SteppingAction(const TG4SteppingAction& right) {
 //
   TG4Globals::Exception("TG4SteppingAction is protected from copying.");
 }
 
+//_____________________________________________________________________________
 TG4SteppingAction::~TG4SteppingAction() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 TG4SteppingAction& 
 TG4SteppingAction::operator=(const TG4SteppingAction &right)
 {
@@ -43,6 +47,7 @@ TG4SteppingAction::operator=(const TG4SteppingAction &right)
 
 // protected methods
 
+//_____________________________________________________________________________
 void TG4SteppingAction::PrintTrackInfo(const G4Track* track) const
 {
 // Prints the track info
@@ -96,6 +101,7 @@ void TG4SteppingAction::PrintTrackInfo(const G4Track* track) const
 
 // public methods
 
+//_____________________________________________________________________________
 void TG4SteppingAction::UserSteppingAction(const G4Step* step)
 {
 // Called by G4 kernel at the end of each step.

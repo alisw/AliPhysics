@@ -12,25 +12,27 @@
 
 TG4ElementTable* TG4ElementTable::fgInstance = 0;
 
-// lifecycle
-
+//_____________________________________________________________________________
 TG4ElementTable::TG4ElementTable() {
 // 
   Construct();
 }
 
+//_____________________________________________________________________________
 TG4ElementTable::TG4ElementTable(const TG4ElementTable& right) { 
 //
   TG4Globals::Exception(
     "Attempt to copy TG4ElementTable singleton.");
 }
 
+//_____________________________________________________________________________
 TG4ElementTable::~TG4ElementTable(){
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 TG4ElementTable& TG4ElementTable::operator=(const TG4ElementTable& right)
 {
   // check assignement to self
@@ -44,6 +46,7 @@ TG4ElementTable& TG4ElementTable::operator=(const TG4ElementTable& right)
           
 // static methods
   
+//_____________________________________________________________________________
 TG4ElementTable* TG4ElementTable::Instance() 
 {
 // singleton access method
@@ -58,6 +61,7 @@ TG4ElementTable* TG4ElementTable::Instance()
 
 // private methods
 
+//_____________________________________________________________________________
 void TG4ElementTable::Construct() 
 { 
 // construct element table

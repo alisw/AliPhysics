@@ -16,6 +16,7 @@
 
 TG4ParticlesManager* TG4ParticlesManager::fgInstance = 0;
 
+//_____________________________________________________________________________
 TG4ParticlesManager::TG4ParticlesManager()
 { 
 //
@@ -27,12 +28,14 @@ TG4ParticlesManager::TG4ParticlesManager()
   fgInstance = this;  
 }
 
+//_____________________________________________________________________________
 TG4ParticlesManager::TG4ParticlesManager(const TG4ParticlesManager& right) {
 // 
   TG4Globals::Exception(
     "Attempt to copy TG4ParticlesManager singleton.");
 }
 
+//_____________________________________________________________________________
 TG4ParticlesManager::~TG4ParticlesManager() {
 //
 }
@@ -53,6 +56,8 @@ TG4ParticlesManager::operator=(const TG4ParticlesManager& right)
           
 // private methods
 
+
+//_____________________________________________________________________________
 G4int TG4ParticlesManager::GetPDGEncoding(G4ParticleDefinition* particle)
 {
 // Returns the PDG code of particle;
@@ -93,6 +98,8 @@ G4int TG4ParticlesManager::GetPDGEncoding(G4ParticleDefinition* particle)
   return pdgEncoding;  
 }  
      
+
+//_____________________________________________________________________________
 G4int TG4ParticlesManager::GetPDGEncoding(G4String particleName)
 {
 // Returns the PDG code of particle sepcified by name.
@@ -112,6 +119,8 @@ G4int TG4ParticlesManager::GetPDGEncoding(G4String particleName)
   return GetPDGEncoding(particle);
 }  
   
+
+//_____________________________________________________________________________
 void  TG4ParticlesManager::MapParticles()
 {
   // map G4 particle names to TDatabasePDG names
@@ -162,7 +171,8 @@ G4int TG4ParticlesManager::GetPDGEncodingFast(G4ParticleDefinition* particle)
   return pdgEncoding;  
 }  
      
-     
+
+//_____________________________________________________________________________
 TParticle* TG4ParticlesManager::GetParticle(const TClonesArray* particles, 
                                           G4int index) const
 {
@@ -183,6 +193,7 @@ TParticle* TG4ParticlesManager::GetParticle(const TClonesArray* particles,
 }     
 
 
+//_____________________________________________________________________________
 G4ParticleDefinition* TG4ParticlesManager::GetParticleDefinition(
                                const TParticle* particle) const
 {
@@ -214,6 +225,8 @@ G4ParticleDefinition* TG4ParticlesManager::GetParticleDefinition(
   return particleDefinition;
 }
 
+
+//_____________________________________________________________________________
 G4DynamicParticle* TG4ParticlesManager::CreateDynamicParticle(
                                    const TParticle* particle) const
 { 
@@ -234,6 +247,8 @@ G4DynamicParticle* TG4ParticlesManager::CreateDynamicParticle(
   return dynamicParticle;
 }
 
+
+//_____________________________________________________________________________
 G4ThreeVector TG4ParticlesManager::GetParticlePosition(
                                    const TParticle* particle) const 
 {
@@ -248,6 +263,7 @@ G4ThreeVector TG4ParticlesManager::GetParticlePosition(
 }  		     
 			
 			
+//_____________________________________________________________________________
 G4ThreeVector TG4ParticlesManager::GetParticleMomentum(
                                    const TParticle* particle) const
 {

@@ -11,6 +11,7 @@
 #include <G4UIcmdWithoutParameter.hh>
 #include <G4UIcmdWithABool.hh>
 
+//_____________________________________________________________________________
 TG4Messenger::TG4Messenger(TG4GeometryManager* geometryManager, 
                            TG4PhysicsManager* physicsManager, 
 			   TG4StepManager* stepManager)
@@ -59,15 +60,18 @@ TG4Messenger::TG4Messenger(TG4GeometryManager* geometryManager,
   fProcessActivationCmd->AvailableForStates(Idle);
 }
 
+//_____________________________________________________________________________
 TG4Messenger::TG4Messenger(){
 //
 } 
 
+//_____________________________________________________________________________
 TG4Messenger::TG4Messenger(const TG4Messenger& right) {
 // 
   TG4Globals::Exception("TG4Messenger is protected from copying.");
 }
 
+//_____________________________________________________________________________
 TG4Messenger::~TG4Messenger() {
 //
   delete fSetEMCmd;
@@ -80,6 +84,7 @@ TG4Messenger::~TG4Messenger() {
 
 // operators
 
+//_____________________________________________________________________________
 TG4Messenger& TG4Messenger::operator=(const TG4Messenger& right)
 {
   // check assignement to self
@@ -92,6 +97,7 @@ TG4Messenger& TG4Messenger::operator=(const TG4Messenger& right)
           
 // public methods
 
+//_____________________________________________________________________________
 void TG4Messenger::SetNewValue(G4UIcommand* command, G4String newValue)
 { 
 // Applies command to the associated object.

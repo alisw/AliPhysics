@@ -8,21 +8,25 @@
 #include "TG4VSensitiveDetector.h"
 #include "TG4Globals.h"
 
+//_____________________________________________________________________________
 TG4TrackingAction::TG4TrackingAction() {
 //
 }
 
+//_____________________________________________________________________________
 TG4TrackingAction::TG4TrackingAction(const TG4TrackingAction& right) {
 //
   TG4Globals::Exception("TG4TrackingAction is protected from copying.");
 }
 
+//_____________________________________________________________________________
 TG4TrackingAction::~TG4TrackingAction() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 TG4TrackingAction& 
 TG4TrackingAction::operator=(const TG4TrackingAction &right)
 {
@@ -36,6 +40,7 @@ TG4TrackingAction::operator=(const TG4TrackingAction &right)
 
 // public methods
 
+//_____________________________________________________________________________
 void TG4TrackingAction::PreUserTrackingAction(const G4Track* track)
 {
 // Called by G4 kernel before starting tracking.
@@ -75,6 +80,7 @@ void TG4TrackingAction::PreUserTrackingAction(const G4Track* track)
   } 
 }
 
+//_____________________________________________________________________________
 void TG4TrackingAction::PostUserTrackingAction(const G4Track* track)
 {
 // Called by G4 kernel after finishing tracking.

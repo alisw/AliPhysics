@@ -22,6 +22,7 @@
 
 TG4XMLGeometryGenerator* TG4XMLGeometryGenerator::fgInstance = 0;
 
+//_____________________________________________________________________________
 TG4XMLGeometryGenerator::TG4XMLGeometryGenerator() 
 {
 //
@@ -33,6 +34,7 @@ TG4XMLGeometryGenerator::TG4XMLGeometryGenerator()
   fConvertor = new TG4XMLConvertor(fOutFile);  
 }
 
+//_____________________________________________________________________________
 TG4XMLGeometryGenerator::TG4XMLGeometryGenerator(const TG4XMLGeometryGenerator& right) 
 {
 // 
@@ -40,13 +42,14 @@ TG4XMLGeometryGenerator::TG4XMLGeometryGenerator(const TG4XMLGeometryGenerator& 
     "TG4XMLGeometryGenerator: attempt to copy singleton.");
 }
 
-
+//_____________________________________________________________________________
 TG4XMLGeometryGenerator::~TG4XMLGeometryGenerator() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 TG4XMLGeometryGenerator& 
 TG4XMLGeometryGenerator::operator=(const TG4XMLGeometryGenerator& right)
 {
@@ -62,6 +65,7 @@ TG4XMLGeometryGenerator::operator=(const TG4XMLGeometryGenerator& right)
 
 // private methods
 
+//_____________________________________________________________________________
 void TG4XMLGeometryGenerator::CutName(G4String& name) const
 {
 // Removes spaces after the name if present.
@@ -71,6 +75,7 @@ void TG4XMLGeometryGenerator::CutName(G4String& name) const
   while (name(--i) == ' ') name = name(0,i);
 }  
 
+//_____________________________________________________________________________
 void TG4XMLGeometryGenerator::ProcessSolids(G4LogicalVolume* lv) 
 {
 // Writes all solids of given logical volume.
@@ -100,6 +105,7 @@ void TG4XMLGeometryGenerator::ProcessSolids(G4LogicalVolume* lv)
     }
 }  
 
+//_____________________________________________________________________________
 void TG4XMLGeometryGenerator::ProcessMaterials(G4LogicalVolume* lv) 
 {
 // Writes all materials of given logical volume.
@@ -135,6 +141,7 @@ void TG4XMLGeometryGenerator::ProcessMaterials(G4LogicalVolume* lv)
     }
 }  
 
+//_____________________________________________________________________________
 void TG4XMLGeometryGenerator::ProcessRotations(G4LogicalVolume* lv) 
 {
 // Writes all rotation matrices of given logical volume.
@@ -167,6 +174,7 @@ void TG4XMLGeometryGenerator::ProcessRotations(G4LogicalVolume* lv)
   }  
 }  
 
+//_____________________________________________________________________________
 void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv) 
 {
 // Writes logical volume tree.
@@ -252,6 +260,7 @@ void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv)
   }    
 }  
 
+//_____________________________________________________________________________
 void TG4XMLGeometryGenerator::ClearMaterialNames() 
 {
 // Clears the set of material names.
@@ -260,6 +269,7 @@ void TG4XMLGeometryGenerator::ClearMaterialNames()
   fMaterialNames.erase(fMaterialNames.begin(), fMaterialNames.end());
 }  
 
+//_____________________________________________________________________________
 void TG4XMLGeometryGenerator::ClearVolumeNames() 
 {
 // Clears the set of volume names.
@@ -270,6 +280,7 @@ void TG4XMLGeometryGenerator::ClearVolumeNames()
 
 // public methods
 
+//_____________________________________________________________________________
 void TG4XMLGeometryGenerator::GenerateMaterials( 
                         const G4String& version, const G4String& date,
 		        const G4String& author,  const G4String dtdVersion,
@@ -294,6 +305,7 @@ void TG4XMLGeometryGenerator::GenerateMaterials(
   fConvertor->WriteEmptyLine();
 }   
 
+//_____________________________________________________________________________
 void TG4XMLGeometryGenerator::GenerateSection(const G4String& name, 
                         const G4String& version, const G4String& date,
 		        const G4String& author, const G4String& topVolume,
@@ -328,6 +340,7 @@ void TG4XMLGeometryGenerator::GenerateSection(const G4String& name,
   fConvertor->CloseSection();
 }   
 
+//_____________________________________________________________________________
 void TG4XMLGeometryGenerator::OpenFile(G4String filePath)
 { 
 // Opens output file.
@@ -346,6 +359,7 @@ void TG4XMLGeometryGenerator::OpenFile(G4String filePath)
 }
 
 
+//_____________________________________________________________________________
 void TG4XMLGeometryGenerator::CloseFile()
 { 
 // Closes output file.

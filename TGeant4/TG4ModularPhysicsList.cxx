@@ -22,6 +22,7 @@
 #include <G4Decay.hh>
 
 
+//_____________________________________________________________________________
 TG4ModularPhysicsList::TG4ModularPhysicsList()
   : G4VModularPhysicsList(),
     fExtDecayer(0)
@@ -32,12 +33,14 @@ TG4ModularPhysicsList::TG4ModularPhysicsList()
   SetVerboseLevel(1);
 }
 
+//_____________________________________________________________________________
 TG4ModularPhysicsList::TG4ModularPhysicsList(const TG4ModularPhysicsList& right)
 {
 //
   TG4Globals::Exception("TG4ModularPhysicsList is protected from copying.");
 }
 
+//_____________________________________________________________________________
 TG4ModularPhysicsList::~TG4ModularPhysicsList() {
 //
   //delete fExtDecayer;
@@ -46,6 +49,7 @@ TG4ModularPhysicsList::~TG4ModularPhysicsList() {
 
 // operators
 
+//_____________________________________________________________________________
 TG4ModularPhysicsList& 
 TG4ModularPhysicsList::operator=(const TG4ModularPhysicsList &right)
 {
@@ -59,6 +63,7 @@ TG4ModularPhysicsList::operator=(const TG4ModularPhysicsList &right)
 
 // protected methods
 
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::ConstructParticle()
 {
 // In this method, static member functions should be called
@@ -83,6 +88,7 @@ void TG4ModularPhysicsList::ConstructParticle()
   G4VModularPhysicsList::ConstructParticle();
 }
 
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::ConstructProcess()
 {
 // Constructs all processes.
@@ -97,7 +103,7 @@ void TG4ModularPhysicsList::ConstructProcess()
   if (verboseLevel>1) PrintAllProcesses();
 }
 
-
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::ConstructAllBosons()
 {
 // Construct all bosons
@@ -107,6 +113,7 @@ void TG4ModularPhysicsList::ConstructAllBosons()
   pConstructor.ConstructParticle();
 }
 
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::ConstructAllLeptons()
 {
 // Construct all leptons
@@ -116,6 +123,7 @@ void TG4ModularPhysicsList::ConstructAllLeptons()
   pConstructor.ConstructParticle();
 }
 
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::ConstructAllMesons()
 {
 // Construct all mesons
@@ -125,6 +133,7 @@ void TG4ModularPhysicsList::ConstructAllMesons()
   pConstructor.ConstructParticle();
 }
 
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::ConstructAllBaryons()
 {
 // Construct all barions
@@ -134,6 +143,7 @@ void TG4ModularPhysicsList::ConstructAllBaryons()
   pConstructor.ConstructParticle();
 }
 
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::ConstructAllIons()
 {
 // Construct light ions
@@ -143,6 +153,7 @@ void TG4ModularPhysicsList::ConstructAllIons()
   pConstructor.ConstructParticle();  
 }
 
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::ConstructAllShortLiveds()
 {
 // Construct  resonaces and quarks
@@ -152,6 +163,7 @@ void TG4ModularPhysicsList::ConstructAllShortLiveds()
   pConstructor.ConstructParticle();  
 }
 
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::ConstructGeneral()
 {
 // Constructs general processes.
@@ -186,6 +198,7 @@ void TG4ModularPhysicsList::ConstructGeneral()
 
 // public methods
 
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::SetCuts()
 {
 // Sets the default cut value for all particle types
@@ -228,6 +241,7 @@ void TG4ModularPhysicsList::SetCuts()
   }
 }
 
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::SetProcessActivation()
 {
 // (In)Activates built processes according
@@ -279,6 +293,7 @@ void TG4ModularPhysicsList::SetProcessActivation()
   }    
 }
 
+//_____________________________________________________________________________
 void TG4ModularPhysicsList::PrintAllProcesses() const
 {
 // Prints all processes.

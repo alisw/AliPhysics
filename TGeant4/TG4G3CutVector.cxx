@@ -10,6 +10,7 @@
 #include <G4ParticleDefinition.hh>
 #include <G4VProcess.hh>
 
+//_____________________________________________________________________________
 TG4G3CutVector::TG4G3CutVector()
 {
   // initialize fCutVector 
@@ -17,6 +18,7 @@ TG4G3CutVector::TG4G3CutVector()
   for (G4int i=0; i<kNoG3Cuts; i++) fCutVector->insert(0.); 
 }
 
+//_____________________________________________________________________________
 TG4G3CutVector::TG4G3CutVector(const TG4G3CutVector& right)
 {
  // allocation
@@ -26,6 +28,7 @@ TG4G3CutVector::TG4G3CutVector(const TG4G3CutVector& right)
   *this = right;
 }
 
+//_____________________________________________________________________________
 TG4G3CutVector::~TG4G3CutVector() {
 //
   delete fCutVector;
@@ -33,6 +36,7 @@ TG4G3CutVector::~TG4G3CutVector() {
 
 // operators
 
+//_____________________________________________________________________________
 TG4G3CutVector& TG4G3CutVector::operator=(const TG4G3CutVector& right)
 {
   // check assignement to self
@@ -47,6 +51,7 @@ TG4G3CutVector& TG4G3CutVector::operator=(const TG4G3CutVector& right)
   return *this;   
 }  
 
+//_____________________________________________________________________________
 G4double TG4G3CutVector::operator[](G4int index) const 
 {
 //
@@ -61,6 +66,7 @@ G4double TG4G3CutVector::operator[](G4int index) const
 
 // public methods
 
+//_____________________________________________________________________________
 void TG4G3CutVector::SetG3Cut(TG4G3Cut cut, G4double cutValue)
 {
 // Sets the cutValue for the specified cut.
@@ -75,6 +81,7 @@ void TG4G3CutVector::SetG3Cut(TG4G3Cut cut, G4double cutValue)
   }
 }
 
+//_____________________________________________________________________________
 void TG4G3CutVector::SetG3Defaults()
 {
 // Sets G3 default values for all cuts.
@@ -85,6 +92,7 @@ void TG4G3CutVector::SetG3Defaults()
   } 
 }
 
+//_____________________________________________________________________________
 G4double TG4G3CutVector::GetMinEkine(const G4Track& track) const
 {
 // Returns the cut value for the particle associated with
@@ -120,6 +128,7 @@ G4double TG4G3CutVector::GetMinEkine(const G4Track& track) const
   }    
 }
 
+//_____________________________________________________________________________
 G4double TG4G3CutVector::GetMinEkineForGamma(const G4Track& track) const
 {
 // Returns the cut value for gamma.
@@ -146,6 +155,7 @@ G4double TG4G3CutVector::GetMinEkineForGamma(const G4Track& track) const
   }
 }
 
+//_____________________________________________________________________________
 G4double TG4G3CutVector::GetMinEkineForElectron(const G4Track& track) const
 {
 // Returns the cut value for e-.
@@ -171,6 +181,7 @@ G4double TG4G3CutVector::GetMinEkineForElectron(const G4Track& track) const
   }
 }
 
+//_____________________________________________________________________________
 G4double TG4G3CutVector::GetMinEkineForHadron(const G4Track& track) const
 {
 // Returns the cut value for charged hadron.
@@ -179,6 +190,7 @@ G4double TG4G3CutVector::GetMinEkineForHadron(const G4Track& track) const
   return (*fCutVector)[kCUTHAD];
 }
 
+//_____________________________________________________________________________
 G4double TG4G3CutVector::GetMinEkineForNeutralHadron(const G4Track& track) const
 {
 // Returns the cut value for neutral hadron.
@@ -187,6 +199,7 @@ G4double TG4G3CutVector::GetMinEkineForNeutralHadron(const G4Track& track) const
   return (*fCutVector)[kCUTNEU];
 }
 
+//_____________________________________________________________________________
 G4double TG4G3CutVector::GetMinEkineForMuon(const G4Track& track) const
 {
 // Returns the cut value for neutral muon.
@@ -195,6 +208,7 @@ G4double TG4G3CutVector::GetMinEkineForMuon(const G4Track& track) const
   return (*fCutVector)[kCUTMUO];
 }
 
+//_____________________________________________________________________________
 G4double TG4G3CutVector::GetMinEkineForOther(const G4Track& track) const
 {
 // Returns 0.

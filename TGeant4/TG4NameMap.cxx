@@ -14,22 +14,26 @@ G4String TG4NameMap::fgUndefined = "Undefined";
 typedef G4std::map<G4String, G4String, G4std::less<G4String> >
   :: iterator MapIterator;
 
+//_____________________________________________________________________________
 TG4NameMap::TG4NameMap() 
   : fSecond(fgUndefined) {
 //
 }
 
+//_____________________________________________________________________________
 TG4NameMap::TG4NameMap(const TG4NameMap& right) {
 //
   TG4Globals::Exception("TG4NameMap is protected from copying.");
 }  
 
+//_____________________________________________________________________________
 TG4NameMap::~TG4NameMap() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 TG4NameMap& TG4NameMap::operator=(const TG4NameMap& right)
 {
   // check assignement to self
@@ -42,6 +46,7 @@ TG4NameMap& TG4NameMap::operator=(const TG4NameMap& right)
           
 // public methods
 
+//_____________________________________________________________________________
 G4bool TG4NameMap::Add(const G4String& first, const G4String& second)
 {  
 // Adds names pair to the map.
@@ -57,7 +62,7 @@ G4bool TG4NameMap::Add(const G4String& first, const G4String& second)
   return false;
 }
 
-
+//_____________________________________________________________________________
 G4bool TG4NameMap::AddName(const G4String& name)
 {  
 // Adds name to the map.
@@ -72,7 +77,7 @@ G4bool TG4NameMap::AddName(const G4String& name)
   return false;
 }
 
-
+//_____________________________________________________________________________
 const G4String& TG4NameMap::GetSecond(const G4String& name)
 {
 // Gets second name associated with given name.
@@ -85,7 +90,7 @@ const G4String& TG4NameMap::GetSecond(const G4String& name)
     return (*i).second;
 }
 
-
+//_____________________________________________________________________________
 void TG4NameMap::PrintAll()
 {
 // Dumps all map.
@@ -103,7 +108,7 @@ void TG4NameMap::PrintAll()
   }
 }
 
-
+//_____________________________________________________________________________
 void TG4NameMap::Clear() 
 {
 // Clears the map.

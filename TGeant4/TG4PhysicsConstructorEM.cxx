@@ -21,6 +21,7 @@
 #include <G4MuPairProduction.hh>
 #include <G4hIonisation.hh>
 
+//_____________________________________________________________________________
 TG4PhysicsConstructorEM::TG4PhysicsConstructorEM(const G4String& name)
   : G4VPhysicsConstructor(name)
 {
@@ -28,12 +29,14 @@ TG4PhysicsConstructorEM::TG4PhysicsConstructorEM(const G4String& name)
   SetVerboseLevel(1);
 }
 
+//_____________________________________________________________________________
 TG4PhysicsConstructorEM::~TG4PhysicsConstructorEM() {
 //
 }
 
 // protected methods
 
+//_____________________________________________________________________________
 void TG4PhysicsConstructorEM::ConstructParticle()
 {
 // The particles are constructed in the 
@@ -41,6 +44,7 @@ void TG4PhysicsConstructorEM::ConstructParticle()
 // ---
 }
 
+//_____________________________________________________________________________
 void TG4PhysicsConstructorEM::ConstructProcess()
 {
 // Constructs electromagnetic processes.

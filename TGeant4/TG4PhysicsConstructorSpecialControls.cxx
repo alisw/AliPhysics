@@ -12,6 +12,7 @@
 #include <G4ProcessManager.hh>
 #include <G4VProcess.hh>
 
+//_____________________________________________________________________________
 TG4PhysicsConstructorSpecialControls::TG4PhysicsConstructorSpecialControls(
                                      const G4String& name)
   : G4VPhysicsConstructor(name)
@@ -20,12 +21,14 @@ TG4PhysicsConstructorSpecialControls::TG4PhysicsConstructorSpecialControls(
   SetVerboseLevel(1);
 }
 
+//_____________________________________________________________________________
 TG4PhysicsConstructorSpecialControls::~TG4PhysicsConstructorSpecialControls() {
 //
 }
 
 // protected methods
 
+//_____________________________________________________________________________
 void TG4PhysicsConstructorSpecialControls::ConstructParticle()
 {
 // The particles are constructed in the 
@@ -33,6 +36,7 @@ void TG4PhysicsConstructorSpecialControls::ConstructParticle()
 // ---
 }
 
+//_____________________________________________________________________________
 void TG4PhysicsConstructorSpecialControls::ConstructProcess()
 {
 // Adds TG4SpecialControls "process" that activates

@@ -11,6 +11,7 @@
 
 #include <math.h>
 
+//_____________________________________________________________________________
 TG4G3ControlVector::TG4G3ControlVector()
 {
   // initialize fControlVector 
@@ -18,6 +19,7 @@ TG4G3ControlVector::TG4G3ControlVector()
   for (G4int i=0; i<kNoG3Controls; i++) fControlVector->insert(kUnset); 
 }
 
+//_____________________________________________________________________________
 TG4G3ControlVector::TG4G3ControlVector(const TG4G3ControlVector& right)
 {
   // allocation
@@ -27,6 +29,7 @@ TG4G3ControlVector::TG4G3ControlVector(const TG4G3ControlVector& right)
   *this = right;  
 }
 
+//_____________________________________________________________________________
 TG4G3ControlVector::~TG4G3ControlVector() {
 //
   delete fControlVector;
@@ -34,6 +37,7 @@ TG4G3ControlVector::~TG4G3ControlVector() {
 
 // operators
 
+//_____________________________________________________________________________
 TG4G3ControlVector& TG4G3ControlVector::operator=(
                                           const TG4G3ControlVector& right)
 {
@@ -49,6 +53,7 @@ TG4G3ControlVector& TG4G3ControlVector::operator=(
   return *this;   
 }  
 
+//_____________________________________________________________________________
 G4double TG4G3ControlVector::operator[](G4int index) const
 {
 //
@@ -63,6 +68,7 @@ G4double TG4G3ControlVector::operator[](G4int index) const
 
 // public methods
 
+//_____________________________________________________________________________
 void TG4G3ControlVector::SetG3Control(TG4G3Control control, 
                                       G4double controlValue)
 {
@@ -91,6 +97,7 @@ void TG4G3ControlVector::SetG3Control(TG4G3Control control,
   }
 }
 
+//_____________________________________________________________________________
 void TG4G3ControlVector::SetG3Defaults()
 {
 // Sets G3 default values for all controls.
@@ -101,6 +108,7 @@ void TG4G3ControlVector::SetG3Defaults()
   } 
 }
 
+//_____________________________________________________________________________
 G4int TG4G3ControlVector::GetControl(G4VProcess* process) const 
 {
 // Returns the control value for the particle associated with

@@ -12,21 +12,25 @@
 typedef G4std::map<G4String, G4int, G4std::less<G4String> >
   :: iterator IntMapIterator;
 
+//_____________________________________________________________________________
 TG4IntMap::TG4IntMap(){
 //
 }
 
+//_____________________________________________________________________________
 TG4IntMap::TG4IntMap(const TG4IntMap& right) {
 //
   TG4Globals::Exception("TG4IntMap is protected from copying.");
 }  
 
+//_____________________________________________________________________________
 TG4IntMap::~TG4IntMap() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 TG4IntMap& TG4IntMap::operator=(const TG4IntMap& right)
 {
   // check assignement to self
@@ -39,6 +43,7 @@ TG4IntMap& TG4IntMap::operator=(const TG4IntMap& right)
           
 // private methods
 
+//_____________________________________________________________________________
 G4bool TG4IntMap::IsDefined(const G4String& first)
 {
 // Returns true if the first is already in the map.
@@ -53,6 +58,7 @@ G4bool TG4IntMap::IsDefined(const G4String& first)
 
 // public methods
 
+//_____________________________________________________________________________
 G4bool TG4IntMap::Add(const G4String& first, G4int second)
 {  
 // Adds pair (name, int number) to the map.
@@ -67,6 +73,7 @@ G4bool TG4IntMap::Add(const G4String& first, G4int second)
   return false;
 }
 
+//_____________________________________________________________________________
 G4int TG4IntMap::GetSecond(const G4String& name)
 {
 // Gets second name associated with given name.
@@ -84,6 +91,7 @@ G4int TG4IntMap::GetSecond(const G4String& name)
   }  
 }
 
+//_____________________________________________________________________________
 void TG4IntMap::PrintAll()
 {
 // Dumps all map.
@@ -101,7 +109,7 @@ void TG4IntMap::PrintAll()
   }
 }
 
-
+//_____________________________________________________________________________
 void TG4IntMap::Clear() 
 {
 // Clears the map.

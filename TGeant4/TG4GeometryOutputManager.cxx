@@ -7,16 +7,19 @@
 #include <g4std/iostream>
 #include <g4std/iomanip>
 
+//_____________________________________________________________________________
 TG4GeometryOutputManager::TG4GeometryOutputManager() {
 //
 }
 
+//_____________________________________________________________________________
 TG4GeometryOutputManager::~TG4GeometryOutputManager() {
 //
 }
 
 // public methods
 
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::OpenFile(G4String filePath)
 { 
 // Opens output files.
@@ -38,6 +41,7 @@ void TG4GeometryOutputManager::OpenFile(G4String filePath)
 }
 
 
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::CloseFile()
 { 
 // Closes output files.
@@ -47,6 +51,7 @@ void TG4GeometryOutputManager::CloseFile()
 }
 
 
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGsvolu( 
               G4String vname, G4String shape, G4int nmed, G4double* Rpar,
               G4int npar)
@@ -72,7 +77,7 @@ void TG4GeometryOutputManager::WriteGsvolu(
   fOutFile << G4endl;   
 }
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGspos(
              G4String vname, G4int num, G4String vmoth, G4double x,
              G4double y, G4double z, G4int irot, G4String vonly)
@@ -99,7 +104,7 @@ void TG4GeometryOutputManager::WriteGspos(
 	  << G4endl;
 }	     
   
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGsposp(
               G4String vname, G4int num, G4String vmoth, G4double x,
               G4double y, G4double z, G4int irot, G4String vonly,
@@ -134,7 +139,7 @@ void TG4GeometryOutputManager::WriteGsposp(
   fOutFile << G4endl;
 }	      
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGsrotm(
               G4int irot, G4double theta1, G4double phi1,
               G4double theta2, G4double phi2, G4double theta3, G4double phi3)
@@ -161,7 +166,7 @@ void TG4GeometryOutputManager::WriteGsrotm(
 	  << G4endl;
 }	  
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGsdvn(
               G4String vname, G4String vmoth, G4int ndiv, G4int iaxis)
 {
@@ -183,7 +188,7 @@ void TG4GeometryOutputManager::WriteGsdvn(
           << G4endl;
 }	     
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGsdvn2(
                G4String vname, G4String vmoth, G4int ndiv, G4int iaxis,
                G4double c0, G4int numed)
@@ -208,7 +213,7 @@ void TG4GeometryOutputManager::WriteGsdvn2(
 	  << G4endl;
 }	     
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGsdvt(
              G4String vname, G4String vmoth, G4double step, G4int iaxis,
              G4int numed, G4int ndvmx) 
@@ -233,7 +238,7 @@ void TG4GeometryOutputManager::WriteGsdvt(
 	  << G4endl;
 }	     
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGsdvt2(
                G4String vname, G4String vmoth, G4double step, G4int iaxis,
                G4double c0, G4int numed, G4int ndvmx)
@@ -259,7 +264,7 @@ void TG4GeometryOutputManager::WriteGsdvt2(
 	  << G4endl;
 }	     
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGsdvx(
              G4String name, G4String moth, G4int ndiv, G4int iaxis,
              G4double step, G4double c0, G4int numed, G4int ndvmx)
@@ -287,7 +292,7 @@ void TG4GeometryOutputManager::WriteGsdvx(
 	  << G4endl;
 }	     
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGsmate(
               G4int imate, G4String name, G4double ain, G4double zin,
               G4double densin, G4double radl, G4int nwbf, G4double* ubuf)
@@ -318,7 +323,7 @@ void TG4GeometryOutputManager::WriteGsmate(
   fOutFile << G4endl;
 }	      
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGsmixt(
               G4int imate, G4String name, G4double* a, G4double* z,
               G4double dens, G4int nlmat, G4double* wmat)
@@ -356,7 +361,7 @@ void TG4GeometryOutputManager::WriteGsmixt(
   fOutFile << G4endl;
 }	      
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGstmed(
               G4int itmed, G4String name, G4int nmat, G4int isvol,
               G4int ifield, G4double fieldm, G4double tmaxfd,
@@ -395,7 +400,7 @@ void TG4GeometryOutputManager::WriteGstmed(
   fOutFile << G4endl;
 }	  
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGstpar(
                G4int itmed, G4String param, G4double parval)
 {	       
@@ -416,7 +421,7 @@ void TG4GeometryOutputManager::WriteGstpar(
           << G4endl;
 }	      
 
-
+//_____________________________________________________________________________
 void TG4GeometryOutputManager::WriteGgclos()
 {
 // Writes GGCLOS token

@@ -10,6 +10,7 @@
 #include <G4ProcessManager.hh>
 #include <G4ProcessVector.hh>
 
+//_____________________________________________________________________________
 TG4SpecialControls::TG4SpecialControls(const G4String& aName)
   : G4VProcess(aName),
     fSwitchControls(kUnswitch)
@@ -20,18 +21,21 @@ TG4SpecialControls::TG4SpecialControls(const G4String& aName)
    }
 }
 
+//_____________________________________________________________________________
 TG4SpecialControls::TG4SpecialControls(const TG4SpecialControls& right) {
 // 
   TG4Globals::Exception(
     "TG4SpecialControls is protected from copying.");
 }
 
+//_____________________________________________________________________________
 TG4SpecialControls::~TG4SpecialControls() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 TG4SpecialControls& TG4SpecialControls::operator=(
                                           const TG4SpecialControls& right)
 {
@@ -46,6 +50,7 @@ TG4SpecialControls& TG4SpecialControls::operator=(
 
 // public methods   
           
+//_____________________________________________________________________________
 G4double TG4SpecialControls::PostStepGetPhysicalInteractionLength(
                            const G4Track& track, G4double previousStepSize,
 			   G4ForceCondition* condition)
@@ -95,6 +100,7 @@ G4double TG4SpecialControls::PostStepGetPhysicalInteractionLength(
   return proposedStep;
 }
 
+//_____________________________________________________________________________
 G4VParticleChange* TG4SpecialControls::PostStepDoIt(
                       const G4Track& track, const G4Step& step)
 {

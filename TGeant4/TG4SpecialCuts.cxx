@@ -11,6 +11,7 @@
 
 #include <G4EnergyLossTables.hh>
 
+//_____________________________________________________________________________
 TG4SpecialCuts::TG4SpecialCuts(TG4G3ParticleWSP particle, 
                                TG4G3CutVector* cutVector,
                                const G4String& processName)
@@ -49,22 +50,26 @@ TG4SpecialCuts::TG4SpecialCuts(TG4G3ParticleWSP particle,
   }
 }
 
+//_____________________________________________________________________________
 TG4SpecialCuts::TG4SpecialCuts() {
 //
 }
 
+//_____________________________________________________________________________
 TG4SpecialCuts::TG4SpecialCuts(const TG4SpecialCuts& right) {
 // 
   TG4Globals::Exception(
     "TG4SpecialCuts is protected from copying.");
 }
 
+//_____________________________________________________________________________
 TG4SpecialCuts::~TG4SpecialCuts() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 TG4SpecialCuts& TG4SpecialCuts::operator=(const TG4SpecialCuts& right)
 {
   // check assignement to self
@@ -78,6 +83,7 @@ TG4SpecialCuts& TG4SpecialCuts::operator=(const TG4SpecialCuts& right)
           
 // public methods
 
+//_____________________________________________________________________________
 G4double TG4SpecialCuts::PostStepGetPhysicalInteractionLength(
                            const G4Track& track, G4double previousStepSize,
 			   G4ForceCondition* condition)
@@ -163,6 +169,7 @@ G4double TG4SpecialCuts::PostStepGetPhysicalInteractionLength(
   return proposedStep;
 }
 
+//_____________________________________________________________________________
 G4VParticleChange* TG4SpecialCuts::PostStepDoIt(const G4Track& track, 
                                                 const G4Step& step)
 {

@@ -11,6 +11,7 @@
 
 const G4double TG4Limits::fgkDefaultMaxStep = 10*cm;
 
+//_____________________________________________________________________________
 TG4Limits::TG4Limits()
   : G4UserLimits(),              
     // default values of G4UserLimits data members are set: 
@@ -25,6 +26,7 @@ TG4Limits::TG4Limits()
   fControlVector = new TG4G3ControlVector();
 }
 
+//_____________________________________________________________________________
 TG4Limits::TG4Limits(const TG4Limits& right)
   : G4UserLimits(right) 
 {
@@ -37,6 +39,7 @@ TG4Limits::TG4Limits(const TG4Limits& right)
   *this = right;
 }  
 
+//_____________________________________________________________________________
 TG4Limits::~TG4Limits() {
 //
   delete fCutVector;
@@ -45,6 +48,7 @@ TG4Limits::~TG4Limits() {
 
 // operators
 
+//_____________________________________________________________________________
 TG4Limits& TG4Limits::operator=(const TG4Limits& right)
 {
   // check assignement to self
@@ -61,6 +65,7 @@ TG4Limits& TG4Limits::operator=(const TG4Limits& right)
           
 // private methods
 
+//_____________________________________________________________________________
 G4double TG4Limits::GetUserMinEkine(const G4Track& track)
 {
 // Returns the kinetic energy cut for the particle
@@ -75,6 +80,7 @@ G4double TG4Limits::GetUserMinEkine(const G4Track& track)
 
 // public methods
 
+//_____________________________________________________________________________
 void TG4Limits::SetG3Cut(TG4G3Cut cut, G4double cutValue)
 {
 // Sets the cut value for the specified cut.
@@ -84,6 +90,7 @@ void TG4Limits::SetG3Cut(TG4G3Cut cut, G4double cutValue)
   fIsCut = true;
 }
 
+//_____________________________________________________________________________
 void TG4Limits::SetG3Control(TG4G3Control control, G4double flagValue)
 {
 // Sets the process control value for the specified flag.
@@ -93,6 +100,7 @@ void TG4Limits::SetG3Control(TG4G3Control control, G4double flagValue)
   if (flagValue - kUnset > 0.01) fIsControl = true;
 }
 
+//_____________________________________________________________________________
 void TG4Limits::SetG3DefaultCuts()
 {
 // Sets the G3 default cut values for all cuts.
@@ -102,6 +110,7 @@ void TG4Limits::SetG3DefaultCuts()
   fIsCut = true;  
 }
 
+//_____________________________________________________________________________
 void TG4Limits::SetG3DefaultControls()
 {
 // Sets the G3 default process control values for all flags.
@@ -111,6 +120,7 @@ void TG4Limits::SetG3DefaultControls()
   fIsControl = true;
 }
 
+//_____________________________________________________________________________
 G4double TG4Limits::GetMinEkineForGamma(const G4Track& track) const
 {
 // Returns the cut value for gamma.
@@ -122,6 +132,7 @@ G4double TG4Limits::GetMinEkineForGamma(const G4Track& track) const
     return fMinEkine;
 }
 
+//_____________________________________________________________________________
 G4double TG4Limits::GetMinEkineForElectron(const G4Track& track) const
 {
 // Returns the cut value for e-.
@@ -133,6 +144,7 @@ G4double TG4Limits::GetMinEkineForElectron(const G4Track& track) const
     return fMinEkine;
 }
 
+//_____________________________________________________________________________
 G4double TG4Limits::GetMinEkineForHadron(const G4Track& track) const
 {
 // Returns the cut value for charged hadron.
@@ -144,6 +156,7 @@ G4double TG4Limits::GetMinEkineForHadron(const G4Track& track) const
     return fMinEkine;
 }
 
+//_____________________________________________________________________________
 G4double TG4Limits::GetMinEkineForNeutralHadron(const G4Track& track) const
 {
 // Returns the cut value for neutral hadron.
@@ -155,6 +168,7 @@ G4double TG4Limits::GetMinEkineForNeutralHadron(const G4Track& track) const
     return fMinEkine;
 }
 
+//_____________________________________________________________________________
 G4double TG4Limits::GetMinEkineForMuon(const G4Track& track) const
 {
 // Returns the cut value for neutral muon.
@@ -166,6 +180,7 @@ G4double TG4Limits::GetMinEkineForMuon(const G4Track& track) const
     return fMinEkine;
 }
 
+//_____________________________________________________________________________
 G4double TG4Limits::GetMinEkineForOther(const G4Track& track) const
 {
  // Returns 0.
@@ -174,6 +189,7 @@ G4double TG4Limits::GetMinEkineForOther(const G4Track& track) const
  return fMinEkine;
 }
 
+//_____________________________________________________________________________
 G4int TG4Limits::GetControl(G4VProcess* process) const 
 {
 // Returns the flag value for the particle associated with

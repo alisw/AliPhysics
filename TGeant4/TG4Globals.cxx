@@ -7,16 +7,19 @@
 
 #include <stdlib.h>
 
+//_____________________________________________________________________________
 TG4Globals::TG4Globals() {
 //
 }
   
+//_____________________________________________________________________________
 TG4Globals::~TG4Globals() {
 //
 }
   
 // static methods
 
+//_____________________________________________________________________________
 void TG4Globals::Exception(const char* string)
 {
 // Prints error message end exits the program.
@@ -28,6 +31,7 @@ void TG4Globals::Exception(const char* string)
   exit(1);
 }
 
+//_____________________________________________________________________________
 void TG4Globals::Warning(const char* string)
 {
 // Prints warning message.
@@ -39,6 +43,7 @@ void TG4Globals::Warning(const char* string)
   G4cerr << "+++++++++++++++++++++++" << G4endl;   
 }
 
+//_____________________________________________________________________________
 void TG4Globals::AppendNumberToString(G4String& s, G4int a)
 {
 // Appends number to string.

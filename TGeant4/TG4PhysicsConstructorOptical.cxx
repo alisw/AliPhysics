@@ -12,6 +12,7 @@
 #include <G4OpRayleigh.hh>
 #include <G4OpBoundaryProcess.hh>
 
+//_____________________________________________________________________________
 TG4PhysicsConstructorOptical::TG4PhysicsConstructorOptical(const G4String& name)
   : G4VPhysicsConstructor(name)
 {
@@ -19,12 +20,14 @@ TG4PhysicsConstructorOptical::TG4PhysicsConstructorOptical(const G4String& name)
   SetVerboseLevel(1);
 }
 
+//_____________________________________________________________________________
 TG4PhysicsConstructorOptical::~TG4PhysicsConstructorOptical() {
 //
 }
 
 // protected methods
 
+//_____________________________________________________________________________
 void TG4PhysicsConstructorOptical::ConstructParticle()
 {
 // The particles are constructed in the 
@@ -32,6 +35,7 @@ void TG4PhysicsConstructorOptical::ConstructParticle()
 // ---
 }
 
+//_____________________________________________________________________________
 void TG4PhysicsConstructorOptical::ConstructProcess()
 {
 // Constructs optical processes.
