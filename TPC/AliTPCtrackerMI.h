@@ -32,6 +32,31 @@ class AliTPCclusterTracks {
   Short_t fTrackIndex[3]; // indexes of the  tracks overlapped with clusters 
 };
 
+class AliTPCseed;
+
+class AliTPCKalmanSegment: public TObject {
+  //
+  // class to store tracklet parameters
+  // needed to probabilistically define track beginning and track end  
+ public:
+  AliTPCKalmanSegment();
+  void Init(AliTPCseed* seed);             // in initialization initial entrance integral chi2, fNCFoundable and fNC stored 
+  void Finish(AliTPCseed* seed);           // in finish state vector stored and chi2 and fNC... calculated
+  void GetState(Double_t &x, Double_t & alpha, Double_t state[5]);        
+  void GetCovariance(Double_t covariance[15]);
+  void GetStatistic(Int_t & nclusters, Int_t & nfoundable, Float_t & chi2); 
+ private:
+  Float_t fX;               //  x - state
+  Float_t fAlpha;           //  Rotation angle the local (TPC sector) 
+  Float_t fState[5];        // state vector
+  Float_t fChi2;            // chi2 - for given tracklet
+  Float_t fCovariance[15];  // 15 elements of covariance matrix
+  Int_t fNCFoundable;       // number of foundable clusters on tracklet (effect of dead zone)
+  Int_t fNC;                // number of accepted clusters for tracklet  
+  //  Int_t fN;                 // total number of padrows for given tracklet
+  ClassDef(AliTPCKalmanSegment,1) 
+}; 
+
 
 class AliTPCseed : public AliTPCtrack {
    public:
@@ -56,14 +81,16 @@ class AliTPCseed : public AliTPCtrack {
      void CookdEdx(Double_t low=0.05, Double_t up=0.70);
      Bool_t IsActive(){ return !(fRemoval);}
      void Desactivate(Int_t reason){ fRemoval = reason;} 
+     
      //     Float_t GetRadius(){ return (1-fP2)/fP4;}  
      Int_t fRelativeSector;  // ! index of current relative sector
      Int_t   fClusterIndex[200];  //array of cluster indexes
+     Float_t fClusterDensity[16]; //array with cluster densities 
     
      Int_t fRemoval;               //reason - why was track removed - 0 - means still active     
      TClonesArray * fPoints;              // array with points along the track   
      TClonesArray * fEPoints;             // array with exact points - calculated in special macro not used in tracking
-     Int_t fRow;                 //! current row number  
+     Int_t fRow;                 //!current row number  
      Int_t fSector;              //!current sector number
      Float_t fCurrentSigmaY;     //!expected current cluster sigma Y
      Float_t fCurrentSigmaZ;     //!expected current cluster sigma Z
@@ -114,7 +141,7 @@ public:
    //   Int_t PropagateBack(const TFile *in, TFile *out);
 
    virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 
-
+   void RotateToLocal(AliTPCseed *seed);
    virtual Double_t ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl = 0);
    virtual Double_t ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl = 0);   
 
@@ -208,6 +235,8 @@ public:
    Float_t OverlapFactor(AliTPCseed * s1, AliTPCseed * s2, Int_t &sum1, Int_t &sum2);
    void  SignShared(AliTPCseed * s1, AliTPCseed * s2);
    void  RemoveOverlap(TObjArray * arr, Float_t factor, Int_t removalindex, Bool_t shared=kFALSE);
+   void  RemoveUsed(TObjArray * arr, Float_t factor, Int_t removalindex);
+
 private:
    Float_t  GetSigmaY(AliTPCseed * seed);
    Float_t  GetSigmaZ(AliTPCseed * seed);

@@ -49,6 +49,80 @@
 
 
 ClassImp(AliTPCseed)
+ClassImp(AliTPCKalmanSegment)
+
+
+
+//_____________________________________________________________________________
+
+AliTPCKalmanSegment::AliTPCKalmanSegment(){
+  //
+  //
+  fX=fAlpha=fChi2=0;
+  for (Int_t i=0;i<5;i++) fState[i] = 0.;
+  for (Int_t i=0;i<15;i++) fCovariance[i] = 0.;
+  fNCFoundable = 0;
+  fNC          = 0;
+  //  fN           = 0;
+}
+
+//_____________________________________________________________________________
+
+void AliTPCKalmanSegment::Init(AliTPCseed* seed)
+{
+  // in initialization  
+  // initial entrance integral chi2, fNCFoundable and fNC stored 
+  fNCFoundable = seed->fNFoundable;
+  fNC          = seed->GetNumberOfClusters();
+  fChi2        = seed->GetChi2();
+}
+
+
+void AliTPCKalmanSegment::Finish(AliTPCseed* seed)
+{
+  //
+  // in finish state vector stored and chi2 and fNC... calculated
+  Double_t x;  
+  Double_t state[5];  
+  Double_t cov[15];  
+  seed->GetExternalParameters(x,state);
+  seed->GetExternalCovariance(cov);
+  //float precision for tracklet 
+  for (Int_t i=0;i<5;i++) fState[i] = state[i];
+  for (Int_t i=0;i<15;i++) fCovariance[i] = cov[i];
+  //
+  // in current   seed integral track characteristic 
+  // for tracklet differenciation between beginning (Init state) and Finish state 
+  fNCFoundable =  seed->fNFoundable - fNCFoundable; 
+  fNC          =  seed->GetNumberOfClusters() - fNC;
+  fChi2        =  seed->GetChi2()-fChi2;
+  //
+}
+
+void AliTPCKalmanSegment::GetState(Double_t &x, Double_t & alpha, Double_t state[5])
+{
+  //
+  x = fX;
+  alpha = fAlpha;
+  for (Int_t i=0;i<5;i++) state[i] = fState[i];
+} 
+       
+void AliTPCKalmanSegment::GetCovariance(Double_t covariance[15])
+{
+  //
+  for (Int_t i=0;i<5;i++) covariance[i] = fCovariance[i];
+}
+
+void AliTPCKalmanSegment::GetStatistic(Int_t & nclusters, Int_t & nfoundable, Float_t & chi2)
+{
+  //
+  //
+  nclusters  = fNC;
+  nfoundable = fNCFoundable;
+  chi2       = fChi2;  
+}
+
+
 
 AliTPCclusterTracks::AliTPCclusterTracks(){
   // class for storing overlaping info
@@ -64,6 +138,10 @@ AliTPCclusterTracks::AliTPCclusterTracks(){
 
 
 
+
+
+
+
 Int_t AliTPCtrackerMI::UpdateTrack(AliTPCseed * track, AliTPCclusterMI* c, Double_t chi2, UInt_t i){
 
   Int_t sec=(i&0xff000000)>>24; 
@@ -74,6 +152,7 @@ Int_t AliTPCtrackerMI::UpdateTrack(AliTPCseed * track, AliTPCclusterMI* c, Doubl
   if (sec>=fParam->GetNInnerSector()) track->fRow += fParam->GetNRowLow(); 
   track->fClusterIndex[track->fRow] = i;
   track->fFirstPoint = row;
+  if ( track->fLastPoint<row) track->fLastPoint =row;
   //
 
   AliTPCTrackPoint   *trpoint =track->GetTrackPoint(track->fRow);
@@ -174,7 +253,7 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
   //
   //
   Float_t snoise2;
-  Float_t z = fParam->GetZLength()-TMath::Abs(seed->GetZ());
+  Float_t z = TMath::Abs(fParam->GetZLength()-TMath::Abs(seed->GetZ()));
 
   //cluster "quality"
   Float_t rsigmay = 1;
@@ -251,7 +330,7 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
   //
   //
   Float_t snoise2;
-  Float_t z = fParam->GetZLength()-TMath::Abs(seed->GetZ());
+  Float_t z = TMath::Abs(fParam->GetZLength()-TMath::Abs(seed->GetZ()));
   //signal quality
   Float_t rsigmaz=1;
   Int_t ctype =0;
@@ -312,6 +391,9 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
   seed->SetErrorZ2(res);
   return res;
 }
+
+
+
 
 
 void AliTPCseed::Reset()
@@ -377,8 +459,8 @@ Int_t AliTPCseed::Compare(const TObject *o) const {
   // This function compares tracks according to the sector - for given sector according z
   //-----------------------------------------------------------------
   AliTPCseed *t=(AliTPCseed*)o;
-  if (t->fSector>fSector) return -1;
-  if (t->fSector<fSector) return 1;
+  if (t->fRelativeSector>fRelativeSector) return -1;
+  if (t->fRelativeSector<fRelativeSector) return 1;
 
   Double_t z2 = t->GetZ();
   Double_t z1 = GetZ();
@@ -387,7 +469,23 @@ Int_t AliTPCseed::Compare(const TObject *o) const {
   return 0;
 }
 
+void AliTPCtrackerMI::RotateToLocal(AliTPCseed *seed)
+{
+  //rotate to track "local coordinata
+  Float_t x = seed->GetX();
+  Float_t y = seed->GetY();
+  Float_t ymax = x*TMath::Tan(0.5*fSectors->GetAlpha());
+  if (y > ymax) {
+    seed->fRelativeSector= (seed->fRelativeSector+1) % fN;
+    if (!seed->Rotate(fSectors->GetAlpha())) 
+      return;
+  } else if (y <-ymax) {
+    seed->fRelativeSector= (seed->fRelativeSector-1+fN) % fN;
+    if (!seed->Rotate(-fSectors->GetAlpha())) 
+      return;
+  }   
 
+}
 
 
 
@@ -617,6 +715,9 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
 
   if (TMath::Abs(TMath::Abs(y)-ymax)<krow.fDeadZone){
     t.fInDead = kTRUE;
+    Int_t row = nr;
+    if (fSectors==fOuterSec) row += fParam->GetNRowLow();
+    t.fClusterIndex[row] = -1; 
     return 0;
   } 
   else
@@ -636,17 +737,50 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
       if (maxdistance>distance) {
 	maxdistance = distance;
 	cl=c;
-	index=krow.GetIndex(i);       
+	//	index=krow.GetIndex(i);       
+	index =i;
       }
     }
   }      
   if (cl) {
-    //Double_t sy2=
-    ErrY2(&t,cl);
-    //Double_t sz2=
-    ErrZ2(&t,cl);
-    Double_t chi2= t.GetPredictedChi2(cl);    
-    UpdateTrack(&t,cl,chi2,index);   
+    //    Double_t sy2= ErrY2(&t,cl);
+    //    Double_t sz2= ErrZ2(&t,cl);
+    //    Double_t chi2= t.GetPredictedChi2(cl);    
+    //    UpdateTrack(&t,cl,chi2,index);   
+   
+    t.fCurrentCluster = cl; 
+    t.fCurrentClusterIndex1 = krow.GetIndex(index);   
+    t.fCurrentClusterIndex2 = index;   
+    Double_t sy2=ErrY2(&t,t.fCurrentCluster);
+    Double_t sz2=ErrZ2(&t,t.fCurrentCluster);
+
+    Double_t sdistancey = TMath::Sqrt(sy2+t.GetSigmaY2());
+    Double_t sdistancez = TMath::Sqrt(sz2+t.GetSigmaZ2());
+
+    Double_t rdistancey = TMath::Abs(t.fCurrentCluster->GetY()-t.GetY());
+    Double_t rdistancez = TMath::Abs(t.fCurrentCluster->GetZ()-t.GetZ());
+    
+    Double_t rdistance  = TMath::Sqrt(TMath::Power(rdistancey/sdistancey,2)+TMath::Power(rdistancez/sdistancez,2));
+
+
+    //    printf("\t%f\t%f\t%f\n",rdistancey/sdistancey,rdistancez/sdistancez,rdistance);
+    if ( (rdistancey>1) || (rdistancez>1)) return 0;
+    if (rdistance>4) return 0;
+
+    if ((rdistancey/sdistancey>2.5 || rdistancez/sdistancez>2.5) && t.fCurrentCluster->GetType()==0)  
+	return 0;  //suspisiouce - will be changed
+
+    if ((rdistancey/sdistancey>2. || rdistancez/sdistancez>2.0) && t.fCurrentCluster->GetType()>0)  
+	// strict cut on overlaped cluster
+	return 0;  //suspisiouce - will be changed
+
+    if ( (rdistancey/sdistancey>1. || rdistancez/sdistancez>2.5 ||t.fCurrentCluster->GetQ()<70 ) 
+	 && t.fCurrentCluster->GetType()<0)
+      return 0;
+
+    //    t.SetSampledEdx(0.3*t.fCurrentCluster->GetQ()/l,t.GetNumberOfClusters(), GetSigmaY(&t), GetSigmaZ(&t));
+    UpdateTrack(&t,t.fCurrentCluster,t.GetPredictedChi2(t.fCurrentCluster),t.fCurrentClusterIndex1);
+
   } else {    
     if (y > ymax) {
       t.fRelativeSector= (t.fRelativeSector+1) % fN;
@@ -734,6 +868,9 @@ Int_t AliTPCtrackerMI::FollowToNextCluster(Int_t trindex, Int_t nr) {
 
   if (TMath::Abs(TMath::Abs(y)-ymax)<krow.fDeadZone){
     t.fInDead = kTRUE;
+    Int_t row = nr;
+    if (fSectors==fOuterSec) row += fParam->GetNRowLow();
+    t.fClusterIndex[row] = -1; 
     return 0;
   } 
   else
@@ -966,16 +1103,39 @@ Float_t AliTPCtrackerMI::OverlapFactor(AliTPCseed * s1, AliTPCseed * s2, Int_t &
   sum1=0;
   sum2=0;
   Int_t sum=0;
-  if (s1->fSector!=s2->fSector) return 0;
   //
   Float_t dz2 =(s1->GetZ() - s2->GetZ());
-  dz2*=dz2;
-  Float_t dy2 =(s1->GetY() - s2->GetY());
+  dz2*=dz2;  
+  /*
+    Float_t x = s1->GetX();
+    Float_t x2 = s2->GetX();
+    
+    Float_t ymax = x*TMath::Tan(0.5*fSectors->GetAlpha());
+  */
+  Float_t dy2 =TMath::Abs((s1->GetY() - s2->GetY()));
+  //if (TMath::Abs(dy2)>2*ymax-3) 
+  //  dy2-=2*ymax;
   dy2*=dy2;
   Float_t distance = TMath::Sqrt(dz2+dy2);
-  if (distance>5.) return 0; // if there are far away  - not overlap - to reduce combinatorics
+  if (distance>4.) return 0; // if there are far away  - not overlap - to reduce combinatorics
  
-  for (Int_t i=0;i<160;i++){
+  Int_t offset =0;
+  if (fSectors==fOuterSec) offset = fParam->GetNRowLow();
+  Int_t firstpoint = TMath::Min(s1->fFirstPoint,s2->fFirstPoint);
+  Int_t lastpoint = TMath::Max(s1->fLastPoint,s2->fLastPoint);
+  lastpoint +=offset;
+  firstpoint+=offset;
+  if (lastpoint>160) 
+    lastpoint =160;
+  if (firstpoint<0) 
+    firstpoint = 0;
+  if (firstpoint<lastpoint-15) {
+    firstpoint =0;
+    lastpoint  =160;
+  }
+    
+  
+  for (Int_t i=firstpoint;i<lastpoint;i++){
     if (s1->fClusterIndex[i]>0) sum1++;
     if (s2->fClusterIndex[i]>0) sum2++;
     if (s1->fClusterIndex[i]==s2->fClusterIndex[i] && s1->fClusterIndex[i]>0) {
@@ -997,6 +1157,7 @@ void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
   Float_t dz2 =(s1->GetZ() - s2->GetZ());
   dz2*=dz2;
   Float_t dy2 =(s1->GetY() - s2->GetY());
+
   dy2*=dy2;
   Float_t distance = TMath::Sqrt(dz2+dy2);
   if (distance>15.) return ; // if there are far away  - not overlap - to reduce combinatorics
@@ -1025,6 +1186,10 @@ void  AliTPCtrackerMI::RemoveOverlap(TObjArray * arr, Float_t factor, Int_t remo
 
   //
   // remove overlap - used removal factor - removal index stored in the track
+  for (Int_t i=0; i<arr->GetEntriesFast(); i++) {
+    AliTPCseed *pt=(AliTPCseed*)arr->UncheckedAt(i);    
+    if (pt) RotateToLocal(pt);
+  }
   arr->Sort();  // sorting according z
   arr->Expand(arr->GetEntries());
   Int_t nseed=arr->GetEntriesFast();
@@ -1040,40 +1205,42 @@ void  AliTPCtrackerMI::RemoveOverlap(TObjArray * arr, Float_t factor, Int_t remo
     if (!(pt->IsActive())) continue;
     for (Int_t j=i+1; j<nseed; j++){
       AliTPCseed *pt2=(AliTPCseed*)arr->UncheckedAt(j);
-      if ((pt2) && pt2->IsActive())
-	if (pt->fSector == pt2->fSector)
-	  if (TMath::Abs(pt2->GetZ()-pt->GetZ())<2){
-	    Int_t sum1,sum2;
-	    Float_t ratio = OverlapFactor(pt,pt2,sum1,sum2);
-	    //if (sum1==0) {
-	    //  pt->Desactivate(removalindex); // arr->RemoveAt(i); 
-	    //  break;
-	    //}
-	    if (ratio>factor){
-	      //	  if (pt->GetChi2()<pt2->GetChi2()) pt2->Desactivate(removalindex);  // arr->RemoveAt(j);	      
-	      Float_t ratio2 = (pt->GetChi2()*sum2)/(pt2->GetChi2()*sum1);
-	      Float_t ratio3 = Float_t(sum1-sum2)/Float_t(sum1+sum2);
-	      removed++;
-	      if (TMath::Abs(ratio3)>0.025){  // if much more points  
-		if (sum1>sum2) pt2->Desactivate(removalindex);
-		else {
-		  pt->Desactivate(removalindex); // arr->RemoveAt(i); 
-		  break;
-		}
-	      }
-	      else{  //decide on mean chi2
-		if (ratio2<1)  
-		  pt2->Desactivate(removalindex);
-		else {
-		  pt->Desactivate(removalindex); // arr->RemoveAt(i); 
-		  break;
-		}	    
-	      }  
-	      
-	    }  // if suspicious ratio
+      //
+      if (!pt2) continue; 
+      if (!(pt2->IsActive())) continue;
+      if (TMath::Abs(pt->fRelativeSector-pt2->fRelativeSector)>0) break;
+      if (TMath::Abs(pt2->GetZ()-pt->GetZ())<4){
+	Int_t sum1,sum2;
+	Float_t ratio = OverlapFactor(pt,pt2,sum1,sum2);
+	//if (sum1==0) {
+	//  pt->Desactivate(removalindex); // arr->RemoveAt(i); 
+	//  break;
+	//}
+	if (ratio>factor){
+	  //	  if (pt->GetChi2()<pt2->GetChi2()) pt2->Desactivate(removalindex);  // arr->RemoveAt(j);	      
+	  Float_t ratio2 = (pt->GetChi2()*sum2)/(pt2->GetChi2()*sum1);
+	  Float_t ratio3 = Float_t(sum1-sum2)/Float_t(sum1+sum2);
+	  removed++;
+	  if (TMath::Abs(ratio3)>0.025){  // if much more points  
+	    if (sum1>sum2) pt2->Desactivate(removalindex);
+	    else {
+	      pt->Desactivate(removalindex); // arr->RemoveAt(i); 
+	      break;
+	    }
 	  }
-	  else
-	    break;
+	  else{  //decide on mean chi2
+	    if (ratio2<1)  
+	      pt2->Desactivate(removalindex);
+	    else {
+	      pt->Desactivate(removalindex); // arr->RemoveAt(i); 
+	      break;
+	    }	    
+	  }  
+	  
+	}  // if suspicious ratio
+      }
+      else
+	break;
     }
   }
   //  printf("removed\t%d\n",removed);
@@ -1109,6 +1276,47 @@ void  AliTPCtrackerMI::RemoveOverlap(TObjArray * arr, Float_t factor, Int_t remo
 
 
 }
+
+void AliTPCtrackerMI::RemoveUsed(TObjArray * arr, Float_t factor, Int_t removalindex)
+{
+
+  //Loop over all tracks and remove "overlaps"
+  //
+  //
+  Int_t nseed = arr->GetEntriesFast();  
+  Int_t good =0;
+  for (Int_t i=0; i<nseed; i++) {
+    AliTPCseed *pt=(AliTPCseed*)arr->UncheckedAt(i);    
+    if (!pt) {
+      continue;
+    }
+    if (!(pt->IsActive())) continue;
+    Int_t noc=pt->GetNumberOfClusters();
+    Int_t shared =0;
+    for (Int_t i=0; i<noc; i++) {
+      Int_t index=pt->GetClusterIndex(i);
+      AliTPCclusterMI *c=(AliTPCclusterMI*)GetClusterMI(index); 
+      if (!c) continue;
+      if (c->IsUsed()) shared++;
+    }
+    if ((Float_t(shared)/Float_t(noc))>factor)
+      pt->Desactivate(removalindex);
+    else{
+      good++;
+      for (Int_t i=0; i<noc; i++) {
+	Int_t index=pt->GetClusterIndex(i);
+	AliTPCclusterMI *c=(AliTPCclusterMI*)GetClusterMI(index);  
+	if (!c) continue;
+	c->Use();  
+      }
+    }
+  }
+  fNtracks = good;
+  printf("\n*****\nNumber of good tracks after shared removal\t%d\n",fNtracks);
+
+}
+
+
 void AliTPCtrackerMI::MakeSeedsAll()
 {
   if (fSeeds == 0) fSeeds = new TObjArray;
@@ -1136,35 +1344,39 @@ TObjArray *  AliTPCtrackerMI::MakeSeedsSectors(Int_t sec1, Int_t sec2)
 
   for (Int_t sec=sec1; sec<sec2;sec++){
     MakeSeeds(arr, sec, nup-1, nup-1-gap);
-    MakeSeeds(arr, sec, nup-1-shift, nup-1-shift-gap);
+    MakeSeeds(arr, sec, nup-2-shift, nup-2-shift-gap);
   }
-  gap = Int_t(0.3* nrows);
-  for (Int_t sec=sec1; sec<sec2;sec++){
+  gap = Int_t(0.2* nrows);
+  for (Int_t sec=sec1; sec<sec2;sec++){    
     //find secondaries
-    MakeSeeds2(arr, sec, nup-1, nup-1-gap);
+    //MakeSeeds2(arr, sec, nup-1, nup-1-gap);
     MakeSeeds2(arr, sec, nup-1-shift, nup-1-shift-gap);
-    MakeSeeds2(arr, sec, nup-1-2*shift, nup-1-2*shift-gap);
-    //MakeSeeds2(arr, sec, nup-1-3*shift, nup-1-3*shift-gap);
-    MakeSeeds2(arr, sec, 30, 0);
+    //MakeSeeds2(arr, sec, nup-1-2*shift, nup-1-2*shift-gap);
+    MakeSeeds2(arr, sec, nup-1-3*shift, nup-1-3*shift-gap);
+    //MakeSeeds2(arr, sec, nup-1-4*shift, nup-1-4*shift-gap);
+    MakeSeeds2(arr, sec, nup-1-5*shift, nup-1-5*shift-gap);    
+    MakeSeeds2(arr, sec, gap, 1);    
   }
   
   Int_t nseed=arr->GetEntriesFast();
-  gap=Int_t(0.3*nrows);
-  // continue seeds 
-  Int_t i;
-  for (i=0; i<nseed; i++) {
+  Int_t i;    
+  
+    gap=Int_t(0.3*nrows);
+    // continue seeds 
+    for (i=0; i<nseed; i++) {
     AliTPCseed *pt=(AliTPCseed*)arr->UncheckedAt(i), &t=*pt; 
     if (!pt) continue;
     if (FollowProlongation(t,nup-gap)) {
-      pt->fIsSeeding =kFALSE;
-      continue;
+    pt->fIsSeeding =kFALSE;
+    continue;
     }
     delete arr->RemoveAt(i);
-  }
+    }
+  
      
   //
   //remove seeds which overlaps  
-  RemoveOverlap(arr,0.6,1);	  
+  RemoveOverlap(arr,0.4,1);	  
   //delete seeds - which were sign  
   nseed=arr->GetEntriesFast();
   for (i=0; i<nseed; i++) {
@@ -1317,15 +1529,29 @@ void AliTPCtrackerMI::MakeSeeds(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2) 
         UInt_t index=kr1.GetIndex(is);
 	AliTPCseed *track=new AliTPCseed(index, x, c, x1, ns*alpha+shift);
 	track->fIsSeeding = kTRUE;
-	Int_t rc=FollowProlongation(*track, i2);
-	//FollowProlongationFast(*track, 5);
-	//FollowProlongationFast(*track, 5);
-	//FollowProlongationFast(*track, 5);
-	//FollowProlongationFast(*track, 5);
+	//Int_t rc=FollowProlongation(*track, i2);
+	Int_t delta4 = Int_t((i2-i1)/4.);
+
+	FollowProlongation(*track, i1-delta4);
+	if (track->GetNumberOfClusters() < track->fNFoundable/2.) {
+	  delete track;
+	  continue;
+	}
+	FollowProlongation(*track, i1-2*delta4);
+	if (track->GetNumberOfClusters() < track->fNFoundable/2.) {
+	  delete track;
+	  continue;
+	}
+	FollowProlongation(*track, i1-3*delta4);
+	if (track->GetNumberOfClusters() < track->fNFoundable/2.) {
+	  delete track;
+	  continue;
+	}
+	FollowProlongation(*track, i2);
 	//Int_t rc = 1;
 	
 	track->fLastPoint = i1;  // first cluster in track position
-	if (rc==0 || track->GetNumberOfClusters()<(i1-i2)/4 || track->GetNumberOfClusters() < track->fNFoundable/2. ) delete track;
+	if (track->GetNumberOfClusters()<(i1-i2)/4 || track->GetNumberOfClusters() < track->fNFoundable/2. ) delete track;
         else arr->AddLast(track); 
       }
     }
@@ -1396,6 +1622,7 @@ void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2)
 	}
       }
       polytrack.UpdateParameters();
+      if (nfound<0.45*nfoundable) break;
     }
     if ((nfound>0.5*nfoundable) &&( nfoundable>0.4*(i1-i2))) {
       // add polytrack candidate
@@ -1412,15 +1639,15 @@ void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2)
       x0=0;
       polytrack.GetFitPoint(x0,y0,z0);
       if ( (TMath::Abs(z0-GetZ())<10) && (TMath::Abs(y0-GetY())<5)){ //if yes apply vertex constraint
-	x3 = 0;
-	y3 = GetY();
-	z3 = GetZ();
+	//	x3 = 0;
+	//y3 = GetY();
+	//z3 = GetZ();
       }
 
       x[0]=y1;
       x[1]=z1;
       x[4]=f1(x1,y1,x2,y2,x3,y3);
-      if (TMath::Abs(x[4]) >= 0.0066) continue;
+      if (TMath::Abs(x[4]) >= 0.05) continue;  //MI change
       x[2]=f2(x1,y1,x2,y2,x3,y3);
       //if (TMath::Abs(x[4]*x1-x[2]) >= 0.99999) continue;
       x[3]=f3(x1,y1,x2,y2,z1,z2);
@@ -1573,21 +1800,33 @@ Int_t AliTPCtrackerMI::Clusters2Tracks(const TFile *inp, TFile *out) {
   Int_t nseed=fSeeds->GetEntriesFast();
   // outer sectors parallel tracking
   ParallelTracking(fSectors->GetNRows()-gap-1,0); 
-  //ParallelTracking(fSectors->GetNRows()-1,0); 
-  //RemoveOverlap(fSeeds, 0.6,3);	
-  //  ParallelTracking(49,0); 
   printf("Time for parralel tracking outer sectors: \t"); timer.Print();timer.Start();
 
-  RemoveOverlap(fSeeds, 0.6,3);	 
+  RemoveOverlap(fSeeds, 0.4,3);	 
   printf("Time for removal overlap- outer sectors: \t");timer.Print();timer.Start();
   //parallel tracking 
   fSectors = fInnerSec;
-  fN=fkNIS;
+  fN=fkNIS;  
+
   ParallelTracking(fSectors->GetNRows()-1,0);
+  /*
+    ParallelTracking(fSectors->GetNRows()-1,2*fSectors->GetNRows()/3);
+    RemoveOverlap(fSeeds,0.4,5,kTRUE);
+    ParallelTracking(2*fSectors->GetNRows()/3-1,fSectors->GetNRows()/3);
+    RemoveOverlap(fSeeds,0.4,5,kTRUE);
+    ParallelTracking(fSectors->GetNRows()/3-1,0);
+  */
   printf("Number of tracks after  inner tracking  %d\n",fNtracks); 
   printf("Time for parralel tracking inner sectors: \t"); timer.Print();timer.Start();
   //
-  RemoveOverlap(fSeeds,0.6,5,kTRUE);  // remove overlap -  shared points signed 
+  for (Int_t i=0;i<fSeeds->GetEntriesFast();i++){
+    AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i), &t=*pt;    
+    if (!pt) continue;   
+    if (!pt->IsActive()) continue;
+    pt->PropagateTo(90.);
+  } 
+  RemoveOverlap(fSeeds,0.4,5,kTRUE);  // remove overlap -  shared points signed 
+  RemoveUsed(fSeeds,0.4,6);
   printf("Time for removal overlap- inner sectors: \t"); timer.Print();timer.Start();
   //
   // 
@@ -1616,19 +1855,20 @@ Int_t AliTPCtrackerMI::Clusters2Tracks(const TFile *inp, TFile *out) {
       tracktree.Fill();
      cerr<<found++<<'\r';      
     }   
-    else 
-      if ( (pt->IsActive())) fNtracks--;
-    pt->RebuildSeed();
-    seedbranch->SetAddress(&pt);
-
-    seedtree.Fill();        
-    for (Int_t j=0;j<160;j++){
+    /*
+      pt->RebuildSeed();
+      seedbranch->SetAddress(&pt);
+      
+      seedtree.Fill();        
+      for (Int_t j=0;j<160;j++){
       delete pt->fPoints->RemoveAt(j);
-    }
-    delete pt->fPoints;
-    pt->fPoints =0;
+      }
+      delete pt->fPoints;
+      pt->fPoints =0;
+    */
     delete fSeeds->RemoveAt(i);
   }
+  //  fNTracks = found;
   printf("Time for track writing and dedx cooking: \t"); timer.Print();timer.Start();
 
   UnloadClusters();
@@ -1636,7 +1876,7 @@ Int_t AliTPCtrackerMI::Clusters2Tracks(const TFile *inp, TFile *out) {
 
   tracktree.Write();
   seedtree.Write();
-  cerr<<"Number of found tracks : "<<fNtracks<<"\t"<<found<<endl;
+  cerr<<"Number of found tracks : "<<"\t"<<found<<endl;
   
   savedir->cd();
   
@@ -1656,7 +1896,8 @@ void  AliTPCtrackerMI::ParallelTracking(Int_t rfirst, Int_t rlast)
     if (!pt) continue;
     if (!t.IsActive()) continue;
     // follow prolongation to the first layer
-    FollowProlongation(t, rfirst+1);
+    if ( (fSectors ==fInnerSec) || (t.fFirstPoint>rfirst+1))  
+      FollowProlongation(t, rfirst+1);
   }
 
 
@@ -1668,9 +1909,10 @@ void  AliTPCtrackerMI::ParallelTracking(Int_t rfirst, Int_t rlast)
 
     // find nearest cluster
     for (Int_t i=0; i<nseed; i++) {
-      AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i), &t=*pt; 
+      AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i), &t=*pt;       
       if (!pt) continue;
       if (!pt->IsActive()) continue;
+      if ( (fSectors ==fOuterSec) && pt->fFirstPoint<nr) continue;
       if (pt->fRelativeSector>17) {
 	continue;
       }
@@ -1681,6 +1923,7 @@ void  AliTPCtrackerMI::ParallelTracking(Int_t rfirst, Int_t rlast)
       AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i); 
       if (!pt) continue;
       if (!pt->IsActive()) continue; 
+      if ((fSectors ==fOuterSec) &&pt->fFirstPoint<nr) continue;
       if (pt->fRelativeSector>17) {
 	continue;
       }
@@ -1696,7 +1939,7 @@ Float_t  AliTPCtrackerMI::GetSigmaY(AliTPCseed * seed)
 {
   //
   //  
-  Float_t sd2 = (fParam->GetZLength()-TMath::Abs(seed->GetZ()))*fParam->GetDiffL()*fParam->GetDiffL();
+  Float_t sd2 = TMath::Abs((fParam->GetZLength()-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
   Float_t padlength =  fParam->GetPadPitchLength(seed->fSector);
   Float_t sres = (seed->fSector < fParam->GetNSector()/2) ? 0.2 :0.3;
   Float_t angular  = seed->GetSnp();
@@ -1710,7 +1953,7 @@ Float_t  AliTPCtrackerMI::GetSigmaZ(AliTPCseed * seed)
 {
   //
   //
-  Float_t sd2 = (fParam->GetZLength()-TMath::Abs(seed->GetZ()))*fParam->GetDiffL()*fParam->GetDiffL();
+  Float_t sd2 = TMath::Abs((fParam->GetZLength()-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
   Float_t padlength =  fParam->GetPadPitchLength(seed->fSector);
   Float_t sres = fParam->GetZSigma();
   Float_t angular  = seed->GetTgl();
