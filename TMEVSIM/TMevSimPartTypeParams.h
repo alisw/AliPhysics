@@ -15,7 +15,6 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
 #ifndef ROOT_TObject
 #include <TObject.h>
 #endif
@@ -23,31 +22,6 @@
 #include "MevSimCommon.h"
 
 class TMevSimPartTypeParams : public TObject {
-
- protected:
-  
-  Int_t       fGPid;                     
-  Int_t       fMultMean;                
-  Int_t       fMultVarianceControl;     
-  Float_t     fTempMean, fTempStDev;
-  Float_t     fSigmaMean, fSigmaStDev;
-  Float_t     fExpVelMean, fExpVelStDev;
-  Float_t     fVnMean[NFLOWTERMS][4];
-  Float_t     fVnStDev[NFLOWTERMS][4];
- 
-  // GPid : particle ID ala geant3
-  // MultMean, MultVarianceControl: mean multiplicy and variance control
-  //           MultVarianceControl 0; for no variance in multiplicity
-  //           MultVarianceControl 1; to allow Poisson distribution for particle multiplicities 
-  // TempMean, TempStDev: Temperature parameter (in GeV)
-  //           mean and standard deviation (Gaussian distribution assumed) 
-  // SigmaMean, SigmaStDev: Rapidity distribution width (sigma)  
-  //           mean and standard deviation (Gaussian distribution assumed) 
-  // ExpVelMean, ExpVelStDev: Expansion velocity ala Scott Pratt (in units of c)  
-  //           mean and standard deviation (Gaussian distribution assumed) 
-  // VnMean VnStDev: Anisotropic flow parameters for Fourier components NFLOWTERMS=1,6
-  //                 mean and standard deviation
-  //                 include all 6 sets of parameters, set them to 0 if not used                                
 
  public:
   
@@ -98,6 +72,35 @@ class TMevSimPartTypeParams : public TObject {
    virtual Float_t     GetVnMeanComponent(Int_t nComponent, Int_t nMean) const;
    virtual Float_t     GetVnStDevComponent(Int_t nComponent, Int_t nStDev) const;
    
+
+ protected:
+  
+  Int_t       fGPid;                  //PID 
+  Int_t       fMultMean;              //mean multiplicy control   
+  Int_t       fMultVarianceControl;   //mean variance 
+  Float_t     fTempMean;//Temperature parameter mean (in GeV) (Gaussian distribution assumed) 
+  Float_t     fTempStDev;//Temperature parameter standard deviation (in GeV) (Gaussian distribution assumed) 
+  Float_t     fSigmaMean;// Rapidity distribution width (sigma) (Gaussian distribution assumed) 
+  Float_t     fSigmaStDev;// Rapidity distribution standard deviation  (Gaussian distribution assumed) 
+  Float_t     fExpVelMean;// Expansion velocity ala Scott Pratt (in units of c)   mean 
+  Float_t     fExpVelStDev;//Expansion velocity ala Scott Pratt (in units of c)  standard deviation 
+  Float_t     fVnMean[NFLOWTERMS][4];// Anisotropic flow parameters for Fourier components NFLOWTERMS=1,6 mean 
+  Float_t     fVnStDev[NFLOWTERMS][4];//Anisotropic flow parameters for Fourier components NFLOWTERMS=1,6  standard deviation
+ 
+  // GPid : particle ID ala geant3
+  // MultMean, MultVarianceControl: mean multiplicy and variance control
+  //           MultVarianceControl 0; for no variance in multiplicity
+  //           MultVarianceControl 1; to allow Poisson distribution for particle multiplicities 
+  // TempMean, TempStDev: Temperature parameter (in GeV)
+  //           mean and standard deviation (Gaussian distribution assumed) 
+  // SigmaMean, SigmaStDev: Rapidity distribution width (sigma)  
+  //           mean and standard deviation (Gaussian distribution assumed) 
+  // ExpVelMean, ExpVelStDev: Expansion velocity ala Scott Pratt (in units of c)  
+  //           mean and standard deviation (Gaussian distribution assumed) 
+  // VnMean VnStDev: Anisotropic flow parameters for Fourier components NFLOWTERMS=1,6
+  //                 mean and standard deviation
+  //                 include all 6 sets of parameters, set them to 0 if not used                                
+
 
    ClassDef(TMevSimPartTypeParams,1)            //Parameters of the type of particle for MevSim event generator
 
