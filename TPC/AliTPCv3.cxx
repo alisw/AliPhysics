@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/10/08 06:27:23  fca
+Corrected bug in the HV degrader geometry, thanks to G.Tabary
+
 Revision 1.8  1999/10/04 13:39:55  fca
 Correct array index problem
 
@@ -44,6 +47,7 @@ Introduction of the Copyright and cvs Log
 #include "AliConst.h"
 #include "AliTPCD.h"
 #include "AliTPCParam.h"
+#include "AliPDG.h"
 
 ClassImp(AliTPCv3)
  
@@ -794,7 +798,8 @@ void AliTPCv3::StepManager()
   Float_t ptot=mom.Rho();
   Float_t beta_gamma = ptot/gMC->TrackMass();
   
-  if(gMC->IdFromPDG(gMC->TrackPid()) <= 3 && ptot > 0.002)
+  Int_t pid=gMC->TrackPid();
+  if((pid==kElectron || pid==kPositron || pid==kGamma) && ptot > 0.002)
     { 
       pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
     }
