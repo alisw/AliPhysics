@@ -62,6 +62,7 @@ ClassImp(AliEMCALGetter)
 AliEMCALGetter * AliEMCALGetter::fgObjGetter = 0 ; 
 AliEMCALLoader * AliEMCALGetter::fgEmcalLoader = 0;
 Int_t AliEMCALGetter::fgDebug = 0;
+TString AliEMCALGetter::fVersion = "";
 
 //  TFile * AliEMCALGetter::fgFile = 0 ; 
 
@@ -89,10 +90,12 @@ AliEMCALGetter::~AliEMCALGetter()
   delete rl;
   fgEmcalLoader = 0 ;
   fgObjGetter = 0; 
+  fVersion = "";
 }
 
 //____________________________________________________________________________ 
 void AliEMCALGetter::OpenFile(const char* headerFile, const char* version, Option_t * openingOption) {
+  fVersion = version;
   AliRunLoader* rl = AliRunLoader::GetRunLoader(version) ; 
   if (!rl) {
     rl = AliRunLoader::Open(headerFile, version, openingOption);
@@ -301,13 +304,14 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
 {
   // Creates and returns the pointer of the unique instance
   // Must be called only when the environment has changed
-  
+
   if(!fgObjGetter){ // first time the getter is called 
     fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;
   }
   else { // the getter has been called previously
-    AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
-    if ( rl->GetFileName() == alirunFileName ) {// the alirunFile has the same name
+    AliRunLoader * rl = AliRunLoader::GetRunLoader(fVersion);
+    if (rl == 0)  fgObjGetter->OpenFile(alirunFileName, version, openingOption) ; 
+    else if ( rl->GetFileName() == alirunFileName ) {// the alirunFile has the same name
       // check if the file is already open
       TFile * galiceFile = dynamic_cast<TFile *>(gROOT->FindObject(rl->GetFileName()) ) ; 
       
@@ -321,12 +325,12 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
 	  if(fgDebug)
 	    ::Warning( "Instance", "Files with version %s already open", currentVersionName.Data() ) ;  
 	else {    
-	  fgEmcalLoader->SetTitle(version);
+	  fgEmcalLoader->SetTitle(version); fVersion = version;
 	}
       }
     }
     else { 
-      AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
+      AliRunLoader * rl = AliRunLoader::GetRunLoader(fVersion);
       if ( strstr(version, AliConfig::GetDefaultEventFolderName()) ) // false in case of merging
 	delete rl ; 
       fgObjGetter->OpenFile(alirunFileName, version, openingOption) ;      

@@ -140,11 +140,8 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd):
 //____________________________________________________________________________ 
   AliEMCALDigitizer::~AliEMCALDigitizer()
 {
-  // dtor
   AliEMCALGetter * gime =AliEMCALGetter::Instance(GetTitle(),fEventFolderName);
   gime->EmcalLoader()->CleanDigitizer();
-  delete [] fInputFileNames ; 
-  delete [] fEventNames ; 
 
 }
 
@@ -419,7 +416,6 @@ Bool_t AliEMCALDigitizer::Init()
     Error("Init", "Could not obtain the Getter object for file %s and event %s !", GetTitle(), fEventFolderName.Data()) ;   
     return kFALSE;
   } 
-  
   TString opt("Digits") ; 
   if(gime->VersionExists(opt) ) { 
     Error( "Init", "Give a version name different from %s", fEventFolderName.Data() ) ;

@@ -215,6 +215,7 @@ private:
   static Int_t          fgDebug ;             //! Debug level
 
   TString           fLoadingStatus ;     //! tells which trees are loaded
+  static TString           fVersion;            //! stores the current folder name
 
 //  AliEMCALCalibrationDB * fcdb ;       //!
    
@@ -224,7 +225,7 @@ private:
   enum EDataTypes{kHits,kSDigits,kDigits,kRecPoints,kTracks,kNDataTypes};
 
 
-  ClassDef(AliEMCALGetter,4)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliEMCALGetter,5)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
 
 };
 
