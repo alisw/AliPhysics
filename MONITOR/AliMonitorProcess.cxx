@@ -61,6 +61,7 @@
 #include <AliL3ClusterFitter.h>
 #include <AliL3Vertex.h>
 #include <AliL3Fitter.h>
+#include <AliL3DDLDataFileHandler.h>
 #endif
 
 ClassImp(AliMonitorProcess) 
@@ -677,8 +678,8 @@ void AliMonitorProcess::CreateHLTHough(const char* fileName)
 
   fHLTHough = new AliL3Hough();
   fHLTHough->SetThreshold(4);
-  fHLTHough->SetTransformerParams(140,150,0.2,-1);
-  fHLTHough->SetPeakThreshold(6000,-1);
+  fHLTHough->SetTransformerParams(140,150,0.5,-1);
+  fHLTHough->SetPeakThreshold(9000,-1);// or 6000
   fHLTHough->Init("./", kFALSE, 50, kFALSE,0,name);
   fHLTHough->SetAddHistograms();
   //  fHLTHough->GetMaxFinder()->SetThreshold(14000);
@@ -780,14 +781,17 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(
   // Takes input from global hough tracks produced by HT
   fitter->LoadSeeds(rowrange,kFALSE,iEvent);
 
+  UInt_t ndigits;
+
   for(Int_t islice = 0; islice <= 35; islice++)
     {
       for(Int_t ipatch = 0; ipatch < AliL3Transform::GetNPatches(); ipatch++)
 	{
-	  fitter->Init(islice,ipatch);
-
 	  // Read digits
-	  AliL3DigitRowData *digits = fHLTHough->GetTransformer(ipatch)->GetDataPointer();
+	  fHLTHough->GetMemHandler(ipatch)->Init(islice,ipatch);
+	  AliL3DigitRowData *digits = (AliL3DigitRowData *)fHLTHough->GetMemHandler(ipatch)->AliAltroDigits2Memory(ndigits,iEvent);
+
+	  fitter->Init(islice,ipatch);
 	  fitter->SetInputData(digits);
 	  fitter->FindClusters();
 	  fitter->WriteClusters();
@@ -800,16 +804,12 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(
   AliL3TrackArray *tracks = fitter->GetSeeds();
   AliL3Fitter *ft = new AliL3Fitter(&vertex,1);
 
-  // Temporary solution !
-  //  sprintf(command, "rename _5.raw _-1.raw hlt/fitter/points*.raw", iEvent);
-  //  gSystem->Exec(command);
-
   ft->LoadClusters("./hlt/fitter/",iEvent,kFALSE);
   for(Int_t i=0; i<tracks->GetNTracks(); i++)
     {
       AliL3Track *track = tracks->GetCheckedTrack(i);
       if(!track) continue;
-      if(track->GetNHits() < 40) continue;
+      if(track->GetNHits() < 20) continue;
       ft->SortTrackClusters(track);
       ft->FitHelix(track);
       ft->UpdateTrack(track);
@@ -817,7 +817,7 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(
   delete ft;
         
   //Write the final tracks
-  fitter->WriteTracks(5);
+  fitter->WriteTracks(20);
 
   delete fitter;
 
