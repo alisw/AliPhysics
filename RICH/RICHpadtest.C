@@ -49,9 +49,14 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
       if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
     }
 
+    AliRICH *RICH  = (AliRICH*)gAlice->GetDetector("RICH");
+    
+    RICH->DiagnosticsSE(diaglevel,evNumber1,evNumber2);
+
+
 //  Create some histograms
 
-   AliRICH *RICH  = (AliRICH*)gAlice->GetDetector("RICH");
+/*   AliRICH *RICH  = (AliRICH*)gAlice->GetDetector("RICH");
    AliRICHSegmentationV0*  segmentation;
    AliRICHChamber*       chamber;
    
@@ -62,11 +67,11 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
    Int_t NpadY = segmentation->Npy();                 // number of pads on Y
     
    Int_t Pad[144][160];
-   /*for (Int_t i=0;i<NpadX;i++) {
-     for (Int_t j=0;j<NpadY;j++) {
-       Pad[i][j]=0;
-     }
-   } */
+   //for (Int_t i=0;i<NpadX;i++) {
+   //for (Int_t j=0;j<NpadY;j++) {
+   //Pad[i][j]=0;
+   //}
+   //} 
 
 
    Int_t xmin= -NpadX/2;  
@@ -166,22 +171,28 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
        
 // Get pointers to RICH detector and Hits containers
        
-       Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
-       gAlice->TreeR()->GetEvent(nent-1);
-       TClonesArray *Rawclusters = RICH->RawClustAddress(2);    //  Raw clusters branch
-       //printf ("Rawclusters:%p",Rawclusters);
-       Int_t nrawclusters = Rawclusters->GetEntriesFast();
-       //printf (" nrawclusters:%d\n",nrawclusters);
-       gAlice->TreeR()->GetEvent(nent-1);
-       TClonesArray *RecHits1D = RICH->RecHitsAddress1D(2);
-       Int_t nrechits1D = RecHits1D->GetEntriesFast();
-       //printf (" nrechits:%d\n",nrechits);
-       TClonesArray *RecHits3D = RICH->RecHitsAddress3D(2);
-       Int_t nrechits3D = RecHits3D->GetEntriesFast();
-       //printf (" nrechits:%d\n",nrechits);
+
+       if(gAlice->TreeR())
+	 {
+	   Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
+	   gAlice->TreeR()->GetEvent(nent-1);
+	   TClonesArray *Rawclusters = RICH->RawClustAddress(2);    //  Raw clusters branch
+	   //printf ("Rawclusters:%p",Rawclusters);
+	   Int_t nrawclusters = Rawclusters->GetEntriesFast();
+	   //printf (" nrawclusters:%d\n",nrawclusters);
+	   gAlice->TreeR()->GetEvent(nent-1);
+	   TClonesArray *RecHits1D = RICH->RecHitsAddress1D(2);
+	   Int_t nrechits1D = RecHits1D->GetEntriesFast();
+	   //printf (" nrechits:%d\n",nrechits);
+	   TClonesArray *RecHits3D = RICH->RecHitsAddress3D(2);
+	   Int_t nrechits3D = RecHits3D->GetEntriesFast();
+	   //printf (" nrechits:%d\n",nrechits);
+	 }
+       else
+	 printf("No TreeR found on file.\n");
        TTree *TH = gAlice->TreeH(); 
        Int_t ntracks = TH->GetEntries();
-
+       
        gAlice->ResetDigits();
        Int_t nent=(Int_t)gAlice->TreeD()->GetEntries();
        gAlice->TreeD()->GetEvent(0);
@@ -286,9 +297,9 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 		   Float_t cy  =      cHit->Z();                // y-position
 		   Int_t cmother =  cHit->fCMother;      // Index of mother particle
 		   Int_t closs =    cHit->fLoss;           // How did the particle get lost? 
-		  //printf ("Cerenkov hit, X:%d, Y:%d\n",cx,cy); 
+		   //printf ("Cerenkov hit number %d/%d, X:%d, Y:%d\n",hit,ncerenkovs,cx,cy); 
 
-		   //printf("Particle:%9d\n",index);
+		   //printf("Particle:%9d\n",current->GetPdgCode());
 		 		 
 		   TParticle *current = (TParticle*)gAlice->Particle(index);
 		   Float_t energyckov = current->Energy();
@@ -313,7 +324,8 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 			 {
 			   cerenkov->Fill(cx,cy,(float) 1); 
 			   
-		 			 
+			   printf ("Cerenkov hit number %d/%d, X:%d, Y:%d\n",hit,ncerenkovs,cx,cy); 
+			   
 			 TParticle *MIP = (TParticle*)gAlice->Particle(cmother);
 			 mipHit = (AliRICHHit*) Hits->UncheckedAt(0);
 			 mom[0] = current->Px();
@@ -847,16 +859,16 @@ void RICHpadtest (Int_t diaglevel,Int_t evNumber1=0,Int_t evNumber2=0)
 
 
    Int_t Np=0;
-   /*for (Int_t i=0;i< NpadX;i++) {
-       for (Int_t j=0;j< NpadY;j++) {
-	   if (Pad[i][j]>=6){
-	       Np+=1;
-	   }
-       }
-   }*/
+   //for (Int_t i=0;i< NpadX;i++) {
+       //for (Int_t j=0;j< NpadY;j++) {
+	   //if (Pad[i][j]>=6){
+	       //Np+=1;
+	   //}
+       //}
+   //}
    //printf("The total number of pads which give a signal: %d %d\n",Nh,Nh1);
    printf("\nEnd of macro\n");
-   printf("**********************************\n");
+   printf("**********************************\n");*/
 }
 
 
