@@ -30,10 +30,10 @@ public:
     return fMaxAdc;
   }                       
   
-  virtual void    SetMagicValue(Float_t p1=96.95) {
+  virtual void    SetMagicValue(Float_t p1=900.) {
     // Set maximum Adc-top value
     fTopValue=p1;
-    //it was 1024
+    //it was 96.95
   }
   virtual Float_t MagicValue()  {
     // Get maximum Adc-top value
@@ -87,7 +87,7 @@ public:
     strcpy(opt1,fParam1.Data()); strcpy(opt2,fParam2.Data());
   }
   
-  virtual  void  SetNoiseParam(Float_t n=1.8, Float_t b=20.){
+  virtual  void  SetNoiseParam(Float_t n=1.75, Float_t b=10.){
     // Noise and baseline
     fNoise=n; fBaseline=b;
   }   

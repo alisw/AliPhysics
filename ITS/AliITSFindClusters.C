@@ -41,28 +41,24 @@ Int_t AliITSFindClusters() {
    // SDD
    Float_t baseline = 10.;
    Float_t noise = 1.67;
-   Int_t thres = baseline+3.*noise;
+   Float_t thres = baseline+3.*noise;
 
    AliITSDetType *iDetType=ITS->DetType(1);
    AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->GetSegmentationModel();
    if (!seg1) seg1 = new AliITSsegmentationSDD(geom);
    AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
    if (!res1) res1=new AliITSresponseSDD();
-	
-	
-   //res1->SetNoiseParam(noise,baseline);
-
-   res1->SetNoiseParam(noise,baseline);
+   res1->SetMagicValue(900.);
    Float_t magic = res1->MagicValue();
    Float_t top = res1->MaxAdc();
    thres *= top/magic;
-
+   res1->SetNoiseParam(noise,baseline);
    TClonesArray *dig1  = ITS->DigitsAddress(1);
    TClonesArray *recp1  = ITS->ClustersAddress(1);
    AliITSClusterFinderSDD *rec1=new AliITSClusterFinderSDD(seg1,res1,dig1,recp1);
    rec1->SetMinNCells(6);
    rec1->SetTimeCorr(70.);
-   rec1->SetCutAmplitude(thres);
+   rec1->SetCutAmplitude((int)thres);
    ITS->SetReconstructionModel(1,rec1);
 
 
