@@ -42,6 +42,7 @@ AliEMCALJetFinderInputPrep::AliEMCALJetFinderInputPrep()
 	// Default constructor
 if (fDebug > 0) Info("AliEMCALJetFinderInputPrep","Beginning Constructor");	
   fDebug = 0;
+  fPythiaComparison = 0; // This requires lots of checks 
   fInputObject.SetDebug(0);
 }
 AliEMCALJetFinderInputPrep::~AliEMCALJetFinderInputPrep()

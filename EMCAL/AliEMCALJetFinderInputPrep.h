@@ -28,12 +28,15 @@ class AliEMCALJetFinderInputPrep : public TTask
 	void SetDebug(Int_t debug = 0){fDebug = debug; fInputObject.SetDebug(debug-2); }
 	Int_t FillFromFile(TString *filename, AliEMCALJetFinderFileType_t filetype, Int_t EventNumber);
 	AliEMCALJetFinderInput* GetJetFinderInput()  {return &fInputObject;}
+	void SetPythiaComparison(Bool_t value) {fPythiaComparison = value;}
+	Bool_t GetPythiaComparison(Bool_t value) {return fPythiaComparison;}
 	protected:
 	Int_t 		fDebug; // The debug flag to be used for messages
 	AliEMCALJetFinderInput 	fInputObject;	// The JetFinder input object to be filled
+	Bool_t		fPythiaComparison;	// Special flag for pyclus comparison
 	private:
 
-	ClassDef(AliEMCALJetFinderInputPrep,2)
+	ClassDef(AliEMCALJetFinderInputPrep,3)
 	
 };
 #endif
