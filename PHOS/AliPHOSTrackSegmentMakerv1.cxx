@@ -333,10 +333,11 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
 
   while ( (linkLow =  (AliPHOSLink *)nextLow() ) ){
   
-    if( (emcExist[linkLow->GetEmc()-fEmcFirst]> 0) && ppsdExist[linkLow->GetPpsd()-fPpsdFirst]  ){ // RecPoints not removed yet 
+    if( (emcExist[linkLow->GetEmc()-fEmcFirst]> 0) && 
+	ppsdExist[linkLow->GetPpsd()-fPpsdFirst]  ){ // RecPoints not removed yet 
       new ((*fTrackSegments)[fNTrackSegments]) AliPHOSTrackSegment((AliPHOSEmcRecPoint *) fEmcRecPoints->At(linkLow->GetEmc()), 
 						 nullpointer, 
-						(AliPHOSPpsdRecPoint *)fCpvRecPoints->At(linkLow->GetPpsd()) ) ;
+						(AliPHOSRecPoint *)fCpvRecPoints->At(linkLow->GetPpsd()) ) ;
 	 
       ((AliPHOSTrackSegment* )fTrackSegments->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);    
       //replace index of emc to negative and shifted index of TS      
@@ -356,7 +357,7 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
 	if(emcExist[linkUp->GetEmc()-fEmcFirst] > 0){ //without ppsd Low => create new TS
 
 	  new ((* fTrackSegments)[fNTrackSegments]) AliPHOSTrackSegment((AliPHOSEmcRecPoint *) fEmcRecPoints->At(linkUp->GetEmc()) , 
-								      (AliPHOSPpsdRecPoint *)fCpvRecPoints->At(linkUp->GetPpsd()), 
+								      (AliPHOSRecPoint *)fCpvRecPoints->At(linkUp->GetPpsd()), 
 								      nullpointer) ;
 	  ((AliPHOSTrackSegment *) fTrackSegments->At(fNTrackSegments))->SetIndexInList(fNTrackSegments);
 	  fNTrackSegments++ ;
