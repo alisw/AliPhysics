@@ -280,9 +280,9 @@ void AliEMCALJetFinderInputSimPrep::FillTracks()	// Fill from particles simulati
 		}
 	   break;
 	   case kEM:   // All Electromagnetic particles
-		if (MPart->GetPdgCode() == kElectron ||
-                    MPart->GetPdgCode() == kMuonPlus  &&
-                    MPart->GetPdgCode() == kMuonMinus &&
+		if (MPart->GetPdgCode() == kElectron  ||
+                    MPart->GetPdgCode() == kMuonPlus  || 
+                    MPart->GetPdgCode() == kMuonMinus ||
 		    MPart->GetPdgCode() == kPositron ){
 		      if (fDebug > 5) Info("FillTracks","Storing electron or positron");
 	 	      if (fSmearType == kSmear ||
