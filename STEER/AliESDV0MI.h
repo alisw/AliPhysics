@@ -19,6 +19,7 @@ class AliESDtrack;
 
 class AliESDV0MI :  public AliESDv0 {
 public:
+  //  friend class AliITStrackerMI;
   AliESDV0MI();             //constructor
   //
   void SetP(const AliExternalTrackParam & paramp); 
@@ -97,44 +98,4 @@ private:
 };
 
 
-
-
 #endif
-
-/*
-
-class AliITSRecV0Info: public AliV0vertex {
-  friend class AliITStrackerMI;
-protected:
-  AliITSRecV0Info();
-  AliITSRecV0Info(const AliITStrackV2 &neg, const AliITStrackV2 &pos);
-  void Update(Float_t vertex[3], Float_t mass1, Float_t mass2);
-  Double_t       fDist1;    //info about closest distance according closest MC - linear DCA
-  Double_t       fDist2;    //info about closest distance parabolic DCA
-  Double_t       fDistNorm; //normalized  DCA
-  Double_t       fDistSigma; //sigma of distance
-  Double_t       fInvMass;  //reconstructed invariant mass -
-  //
-  Double_t       fPdr[3];    //momentum at vertex daughter  - according approx at DCA
-  Double_t       fXr[3];     //rec. position according helix
-  //
-  Double_t       fPm[3];    //momentum at the vertex mother
-  Double_t       fAngle[3]; //three angles
-  Double_t       fRr;       // rec position of the vertex 
-  Int_t          fLab[2];   //MC label of the particle
-  Int_t          fIndex[2]; //indexes of the tracks
-  Int_t          fOrder[3]; //order of the vertex 
-  Float_t        fChi2Before;   //chi2 of the tracks before V0
-  Float_t        fNBefore;      // number of possible points before V0
-  //
-  Float_t        fChi2After;   // chi2 of the tracks after V0
-  Float_t        fNAfter;      // number of possible points after V0
- 
-  //
-  Float_t        fPointAngleFi; //point angle fi
-  Float_t        fPointAngleTh; //point angle theta
-  Float_t        fPointAngle;   //point angle full
-  ClassDef(AliITSRecV0Info,1)  // container for  
-};
-
-*/

@@ -29,7 +29,33 @@ public:
   void Update();            //update
   Float_t GetTPCDensityFactor() const;
   Float_t GetQt() const;    
+  //
+  Float_t GetR() const {return fRr;}
+  Float_t GetDistance() const {return fDist2;}
+  Int_t   GetTPCRow0() const {return fRow0;}
+  Float_t GetAngle(Int_t i) const {return fAngle[i];}
+  const Double_t *GetPosition() const   {return fXr;}
+  const Double_t *GetMotherP()  const   {return fPm;}
+  const Double_t *GetDaughterP()  const {return fPdr;}
+  void SetTPCRow0(Int_t row0){fRow0 = row0;}
+  Int_t GetLabel(Int_t i) const {return fLab[i];}
+  void SetLabel(Int_t label, Int_t pos) {fLab[pos]=label;}
+  Int_t GetIndex(Int_t i) const {return fIndex[i];}
+  void SetIndex(Int_t index, Int_t pos){fIndex[pos]=index;}
+  void SetStatus(Int_t status, Int_t pos){fStatus[pos]=status;}
+  Int_t GetStatus(Int_t pos) const {return fStatus[pos];}
+  void SetTPCncls(Int_t ncls,Int_t pos) {fTPCncls[pos]=ncls;}
+  const Int_t *GetTPCncls() const {return fTPCncls;} 
+  void  SetTPCDensity(Float_t dens, Int_t pos0,Int_t pos1){fTPCdensity[pos0][pos1]=dens;}
+  Float_t GetTPCDensity(Int_t pos0,Int_t pos1) const {return fTPCdensity[pos0][pos1];}
+  void    SetTPCDensity2(Float_t dens, Int_t pos0,Int_t pos1){fTPCdensity[pos0][pos1]=dens;}
+  Float_t GetTPCDensity2(Int_t pos0,Int_t pos1) const {return fTPCdensity[pos0][pos1];}
+  Float_t GetShapeFactor() const {return fShapeFactor;}
+  void    SetShapeFactor(Float_t factor){fShapeFactor = factor;}
+  void  SetMultiple(Int_t mult,Int_t pos){fMultiple[pos]=mult;}
+  const Int_t * GetMultiple() const {return fMultiple;}
   //  
+ protected:
   Int_t          fID;       // kink ID
   AliExternalTrackParam fParamDaughter;
   AliExternalTrackParam fParamMother;
@@ -44,15 +70,14 @@ public:
   Double_t       fRr;       // rec position of the vertex 
   Int_t          fLab[2];   //MC label of the partecle
   Int_t          fIndex[2]; //reconstructed labels of the tracks
-  Int_t          fStatus;       //status 
+  Char_t         fStatus[12];       //status of kink - first 4 mother (ITS,TPC,TRD,TOF)  other daughter
   Float_t        fTPCdensity[2][2];  //tpc cluster density before and after kink
   Float_t        fTPCdensity2[2][2];  //tpc cluster density before and after kink - after second iteration
   Float_t        fShapeFactor;       // tpc clusters shape factor
   Int_t          fRow0;              // critical pad row number
   Int_t          fMultiple[2];       //how many times the track's were used
-  Float_t        fZm[2];                // z at the middle of chamber
-  Float_t        fFi[2];
-  ClassDef(AliESDkink,1)      // ESD V0 vertex
+  Int_t          fTPCncls[2];     //number of clusters for mother particle
+  ClassDef(AliESDkink,2)      // ESD V0 vertex
 };
 
 #endif

@@ -57,6 +57,7 @@ fTRDchi2(0),
 fTRDncls(0),
 fTRDncls0(0),
 fTRDsignal(0),
+fTRDQuality(0),
 fTOFchi2(0),
 fTOFindex(0),
 fTOFsignal(-1),
@@ -110,6 +111,7 @@ fRICHdy(0)
   for (Int_t i=0;i<10;i++) {fTOFInfo[i]=-1;}
   fTPCLabel = 0;
   fTRDLabel = 0;
+  fTRDQuality =0;
   fITSLabel = 0;
   fITStrack = 0;
   fTRDtrack = 0;  
@@ -184,6 +186,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
   fTRDLabel=track.fTRDLabel;       
   fTRDtrack=0; 
+  fTRDQuality  = track.fTRDQuality;
   //
   fTOFchi2=track.fTOFchi2;        
   fTOFindex=track.fTOFindex;       

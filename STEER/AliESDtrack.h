@@ -110,6 +110,8 @@ public:
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   
   void SetTRDpid(const Double_t *p);
+  void     SetTRDQuality(Float_t quality){fTRDQuality=quality;}
+  Float_t  GetTRDQuality()const {return fTRDQuality;}
   void SetTRDtrack(AliKalmanTrack * track){fTRDtrack=track;}
   void SetTRDsignals(Float_t dedx, Int_t i) {fTRDsignals[i]=dedx;}
   void SetTRDTimBin(Int_t timbin, Int_t i) {fTRDTimBin[i]=timbin;}
@@ -271,6 +273,7 @@ protected:
   Int_t fTRDTimBin[kNPlane];     // Time bin of Max cluster from all six planes
   Float_t fTRDr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTRDLabel;       // label according TRD
+  Float_t fTRDQuality;     //trd quality factor for TOF
   AliKalmanTrack * fTRDtrack; //! OWNER: pointer to the TRD track -- currently for debug purpose
 
   // TOF related track information
@@ -302,7 +305,7 @@ protected:
   Float_t fRICHdx;         // x of the track impact minus x of the MIP
   Float_t fRICHdy;         // y of the track impact minus y of the MIP
   	
-  ClassDef(AliESDtrack,12)  //ESDtrack 
+  ClassDef(AliESDtrack,13)  //ESDtrack 
 };
 
 #endif 
