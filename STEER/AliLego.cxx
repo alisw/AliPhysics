@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2001/05/21 08:39:13  morsch
+Use fStepBack = 1 only in debug mode.
+
 Revision 1.23  2001/05/20 10:10:39  morsch
 - Debug output at the beginning of new event and end of run.
 - Filter out boundary loops.
@@ -299,7 +302,7 @@ void AliLego::StepManager() {
 
    
   if (! fStepBack) {
-//      printf("\n volume %s %d", vol, status);      
+      printf("\n volume %s %d", vol, status);      
 //
 // Normal Forward stepping
 //
@@ -314,10 +317,9 @@ void AliLego::StepManager() {
 	  if (fStepsForward > 0) {
 	      AliDebugVolume* tmp = (AliDebugVolume*) (*fVolumesFwd)[fStepsForward-1];	       
 	      if (tmp->IsEqual(vol, copy) && gMC->IsTrackEntering()) {
-		  step += ((AliDebugVolume*) lvols[fStepsForward])->Step();
 		  fStepsForward -= 2;
-		  delete ((AliDebugVolume*) lvols[fStepsForward]);
-		  delete ((AliDebugVolume*) lvols[fStepsForward+1]);
+		  fVolumesFwd->RemoveAt(fStepsForward);
+		  fVolumesFwd->RemoveAt(fStepsForward+1);		  
 	      }
 	  }
 
@@ -394,9 +396,8 @@ void AliLego::StepManager() {
 	      AliDebugVolume* tmp = (AliDebugVolume*) (*fVolumesBwd)[fStepsBackward];	       
 	      if (tmp->IsEqual(vol, copy) && gMC->IsTrackEntering()) {
 		  fStepsBackward += 2;
-		  delete ((AliDebugVolume*) lvols[fStepsBackward-1]);
-		  delete ((AliDebugVolume*) lvols[fStepsBackward-2]);
-		  step += ((AliDebugVolume*) lvols[fStepsBackward])->Step();
+		  fVolumesBwd->RemoveAt(fStepsBackward-1);
+		  fVolumesBwd->RemoveAt(fStepsBackward-2);		  
 	      }
 	  } 
 
