@@ -34,6 +34,7 @@
 
 // --- AliRoot header files ---
 
+#include "AliGenerator.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliRun.h"
@@ -463,7 +464,7 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(void )
   Float_t xo,yo,zo ; //Coordinates of the origin
   gAlice->Generator()->GetOrigin(xo,yo,zo) ;
 
-  Float_t phi = fGeom->GetPHOSAngle(relid[0]) ;
+  Float_t phi = phosgeom->GetPHOSAngle(relid[0]) ;
 
   //Transform to the local ref.frame
   Float_t xoL,yoL ;
@@ -471,8 +472,8 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(void )
   yoL = xo*TMath::Sin(phi)+yo*TMath::Cos(phi) ;
   
   Float_t radius = TMath::Sqrt((xoL-x)*(xoL-x)+
-                               (fGeom->GetIPtoCrystalSurface()-yoL)*(fGeom->GetIPtoCrystalSurface()-yoL)+
-                               (zoL-z)*(zoL-z));
+                               (phosgeom->GetIPtoCrystalSurface()-yoL)*(phosgeom->GetIPtoCrystalSurface()-yoL)+
+                               (zo-z)*(zo-z));
  
   Float_t incidencephi = TMath::ATan((x-xoL ) / radius) ; 
   Float_t incidencetheta = TMath::ATan((z-zo) / radius) ;
