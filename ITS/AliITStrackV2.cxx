@@ -180,9 +180,9 @@ Double_t AliITStrackV2::GetPredictedChi2(const AliCluster *c) const
     return 1e10;
   }
   Double_t tmp=r00; r00=r11; r11=tmp; r01=-r01;
-  
+
   Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
-  
+
   return (dy*r00*dy + 2*r01*dy*dz + dz*r11*dz)/det;
 }
 
@@ -270,8 +270,8 @@ Int_t AliITStrackV2::CorrectForMaterial(Double_t d, Double_t x0) {
 
   //Multiple scattering******************
   if (d!=0) {
-    //Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(d);
-     Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
+     Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(d);
+     //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
      fC22 += theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
      fC33 += theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
      fC43 += theta2*fP3*fP4*(1. + fP3*fP3);
@@ -465,6 +465,7 @@ Int_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   //------------------------------------------------------------------
   //This function propagates a track
   //------------------------------------------------------------------
+  Double_t alpha=fAlpha, x=fX;
   Double_t p0=fP0,p1=fP1,p2=fP2,p3=fP3,p4=fP4;
   Double_t c00=fC00;
   Double_t c10=fC10, c11=fC11;
@@ -472,35 +473,43 @@ Int_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   Double_t c30=fC30, c31=fC31, c32=fC32, c33=fC33;
   Double_t c40=fC40, c41=fC41, c42=fC42, c43=fC43, c44=fC44;
 
+  if      (alp < -TMath::Pi()) alp += 2*TMath::Pi();
+  else if (alp >= TMath::Pi()) alp -= 2*TMath::Pi();
+  Double_t ca=TMath::Cos(alp-fAlpha), sa=TMath::Sin(alp-fAlpha);
+  Double_t sf=fP2, cf=TMath::Sqrt(1.- fP2*fP2);
 
-  Double_t dalp=alp-fAlpha;
+  TMatrixD *T=0;
+  // **** rotation **********************
+  {
+  fAlpha = alp;
+  fX =  x*ca + p0*sa;
+  fP0= -x*sa + p0*ca;
+  fP2=  sf*ca - cf*sa;
 
-  Double_t ca=TMath::Cos(dalp), sa=TMath::Sin(dalp);
-  Double_t sf=fP2, cf=TMath::Sqrt(1.- fP2*fP2);  
+  TMatrixD C(5,5); 
+  C(0,0)=c00;
+  C(1,0)=c10; C(1,1)=c11;
+  C(2,0)=c20; C(2,1)=c21; C(2,2)=c22;
+  C(3,0)=c30; C(3,1)=c31; C(3,2)=c32; C(3,3)=c33;
+  C(4,0)=c40; C(4,1)=c41; C(4,2)=c42; C(4,3)=c43; C(4,4)=c44;
+  C(0,1)=C(1,0);
+  C(0,2)=C(2,0); C(1,2)=C(2,1);
+  C(0,3)=C(3,0); C(1,3)=C(3,1); C(2,3)=C(3,2);
+  C(0,4)=C(4,0); C(1,4)=C(4,1); C(2,4)=C(4,2); C(3,4)=C(4,3);
 
-  Double_t pp2=fP2*ca - cf*sa;
-  if (TMath::Abs(pp2) >= 0.9999) {
-     Int_t n=GetNumberOfClusters();
-     if (n>kWARN) 
-        cerr<<n<<" AliITStrackV2::Propagate: Rotation failed !\n";
-     return 0;
+  TMatrixD F(6,5);
+  F(0,0)=sa; 
+  F(1,0)=ca;
+  F(2,1)=F(4,3)=F(5,4)=1; 
+  F(3,2)=ca + sf/cf*sa;
+
+  TMatrixD tmp(C,TMatrixD::kMult,TMatrixD(TMatrixD::kTransposed, F)); 
+  T=new TMatrixD(F,TMatrixD::kMult,tmp);
   }
 
-  fAlpha = alp;
-  if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
-  else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
-  
-  Double_t x1=fX, y1=fP0;
-
-  fX = x1*ca + y1*sa;
-  fP0=-x1*sa + y1*ca;
-  fP2 = pp2;
-
-  cf=ca + sf*sa/cf;
-
-  if (!Invariant()) return 0;
-
-  x1=fX; Double_t x2=xk, dx=x2-x1;
+  // **** translation ******************
+  {
+  Double_t dx=xk-fX;
   Double_t f1=fP2, f2=f1 + fP4*dx;
   if (TMath::Abs(f2) >= 0.9999) {
     Int_t n=GetNumberOfClusters();
@@ -508,72 +517,28 @@ Int_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
        cerr<<n<<" AliITStrackV2::Propagate: Propagation failed !\n";
     return 0;
   }
-
-  Double_t r1=sqrt(1.- f1*f1), r2=sqrt(1.- f2*f2);
+  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
   
+  fX=xk;
   fP0 += dx*(f1+f2)/(r1+r2);
   fP1 += dx*(f1+f2)/(f1*r2 + f2*r1)*fP3;
   fP2 += dx*fP4;
 
-  //f = F - 1
-  Double_t f02=    dx/(r1*r1*r1);
-  Double_t f04=0.5*dx*dx/(r1*r1*r1);
-  Double_t f12=    dx*fP3*f1/(r1*r1*r1);
-  Double_t f14=0.5*dx*dx*fP3*f1/(r1*r1*r1);
-  Double_t f13=    dx/r1;
-  Double_t f24=    dx; 
-  /*
-  //b = C*ft
-  Double_t b00=f02*fC20 + f03*fC30, b01=f12*fC20 + f13*fC30 + f14*fC40;
-  Double_t b02=f23*fC30;
-  Double_t b10=f02*fC21 + f03*fC31, b11=f12*fC21 + f13*fC31 + f14*fC41;
-  Double_t b12=f23*fC31;
-  Double_t b20=f02*fC22 + f03*fC32, b21=f12*fC22 + f13*fC32 + f14*fC42;
-  Double_t b22=f23*fC32;
-  Double_t b30=f02*fC32 + f03*fC33, b31=f12*fC32 + f13*fC33 + f14*fC43;
-  Double_t b32=f23*fC33;
-  Double_t b40=f02*fC42 + f03*fC43, b41=f12*fC42 + f13*fC43 + f14*fC44;
-  Double_t b42=f23*fC43;
-  
-  //a = f*b = f*C*ft
-  Double_t a00=f02*b20+f03*b30,a01=f02*b21+f03*b31,a02=f02*b22+f03*b32;
-  Double_t a11=f12*b21+f13*b31+f14*b41,a12=f12*b22+f13*b32+f14*b42;
-  Double_t a22=f23*b32;
+  TMatrixD F(5,6);
+  F(0,1)=F(1,2)=F(2,3)=F(3,4)=F(4,5)=1; 
+  F(0,3)=dx/(r1+r2)*(2+(f1+f2)*(f2/r2+f1/r1)/(r1+r2)); 
+  F(0,5)=dx*dx/(r1+r2)*(1+(f1+f2)*f2/(r1+r2));
+  F(1,3)=dx*fP3/(f1*r2 + f2*r1)*(2-(f1+f2)*(r2-f1*f2/r2+r1-f2*f1/r1)/(f1*r2 + f2*r1));
+  F(1,4)=dx*(f1+f2)/(f1*r2 + f2*r1);
+  F(1,5)=dx*dx*fP3/(f1*r2 + f2*r1)*(1-(f1+f2)*(-f1*f2/r2+r1)/(f1*r2 + f2*r1));
+  F(2,5)=dx;
+  F(0,0)=-1/(r1+r2)*((f1+f2)+dx*fP4*(1+(f1+f2)/(r1+r2)*f2/r2));
+  F(1,0)=-fP3/(f1*r2 + f2*r1)*((f1+f2)+dx*fP4*(1+(f1+f2)/(f1*r2 + f2*r1)*(f1*f2/r2-r1)));
+  F(2,0)=-fP4;
 
-  //F*C*Ft = C + (b + bt + a)
-  fC00 += b00 + b00 + a00;
-  fC10 += b10 + b01 + a01; 
-  fC20 += b20 + b02 + a02;
-  fC30 += b30;
-  fC40 += b40;
-  fC11 += b11 + b11 + a11;
-  fC21 += b21 + b12 + a12;
-  fC31 += b31; 
-  fC41 += b41;
-  fC22 += b22 + b22 + a22;
-  fC32 += b32;
-  fC42 += b42;
-*/
-
- TMatrixD F(5,5); F.UnitMatrix();
- F(0,0)=-(f1+f2)/(r1+r2)*sa + ca; F(0,2)=f02*cf; F(0,4)=f04;
- F(1,0)=-(f1+f2)/(f1*r2 + f2*r1)*fP3*sa; F(1,2)=f12*cf; F(1,4)=f14; F(1,3)=f13;
- F(2,0)=-fP4*sa; F(2,2)=cf; F(2,4)=f24;
-
-  TMatrixD C(5,5);
-  C(0,0)=fC00; 
-  C(1,0)=fC10; C(1,1)=fC11; 
-  C(2,0)=fC20; C(2,1)=fC21; C(2,2)=fC22;
-  C(3,0)=fC30; C(3,1)=fC31; C(3,2)=fC32; C(3,3)=fC33;
-  C(4,0)=fC40; C(4,1)=fC41; C(4,2)=fC42; C(4,3)=fC43; C(4,4)=fC44;
-
-  C(0,1)=C(1,0);
-  C(0,2)=C(2,0); C(1,2)=C(2,1);
-  C(0,3)=C(3,0); C(1,3)=C(3,1); C(2,3)=C(3,2);
-  C(0,4)=C(4,0); C(1,4)=C(4,1); C(2,4)=C(4,2); C(3,4)=C(4,3);
-
-  TMatrixD tmp(C,TMatrixD::kMult,TMatrixD(TMatrixD::kTransposed, F));
-  C.Mult(F,tmp);
+  TMatrixD tmp(*T,TMatrixD::kMult,TMatrixD(TMatrixD::kTransposed, F)); 
+  delete T;
+  TMatrixD C(F,TMatrixD::kMult,tmp);
 
   fC00=C(0,0); 
   fC10=C(1,0); fC11=C(1,1); 
@@ -582,6 +547,8 @@ Int_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   fC40=C(4,0); fC41=C(4,1); fC42=C(4,2); fC43=C(4,3); fC44=C(4,4);
 
   if (!Invariant()) {
+     fAlpha=alpha; 
+     fX=x; 
      fP0=p0; fP1=p1; fP2=p2; fP3=p3; fP4=p4;
      fC00=c00;
      fC10=c10; fC11=c11;
@@ -590,8 +557,7 @@ Int_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
      fC40=c40; fC41=c41; fC42=c42; fC43=c43; fC44=c44;
      return 0;
   }
-
-  fX=x2;
+  }
 
   return 1;
 }
