@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/02 21:28:20  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.2  2000/07/11 11:12:34  fca
 Some syntax corrections for non standard HP aCC
 
@@ -149,6 +152,7 @@ void AliGenZDC::Generate()
   }
     
   Float_t polar[3] = {0,0,0};
+  fBoostP[2]=-fBoostP[2];
   gAlice->SetTrack(fTrackIt,-1,fIpart,fBoostP,fOrigin.GetArray(),polar,0,
   		   "Primary",nt);
 }
@@ -194,7 +198,7 @@ void AliGenZDC::ExtractFermi(Int_t id, Double_t* fPp, Double_t* fProbintp,
 //
   Int_t i;
   Float_t xx = gRandom->Rndm();
-  assert ( id==kProton && id==kNeutron );
+  assert ( id==kProton || id==kNeutron );
   if(id==kProton){
     for(i=0; i<=200; i++){
        if((xx>=fProbintp[i-1]) && (xx<fProbintp[i])) break;
