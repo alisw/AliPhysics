@@ -50,7 +50,7 @@ private:
   Float_t fLightFactor ;            //! a calculated factor
   Float_t fAPDFactor ;              //! a calculated factor
 
-  ClassDef(AliEMCALv1,3)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
+  ClassDef(AliEMCALv1,4)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
 
 };
 
