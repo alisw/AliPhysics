@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2003/04/10 08:48:13  morsch
+First commit.
+
 */
 
 // from AliRoot
@@ -427,5 +430,5 @@ Double_t AliFastGlauber::Binaries(Double_t b)
     // Return number of binary collisions normalized to 1 at b=0
     //
     
-    return fWSN->Eval(b)/fWSN->Eval(1.);
+    return fWSN->Eval(b)/fWSN->Eval(0.);
 }
