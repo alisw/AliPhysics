@@ -45,9 +45,7 @@ class  AliEMCALPIDv1 : public AliEMCALPID {
   //To turn on or off the Pi0 analysis
   Bool_t GetPi0Analysis() const {return fPi0Analysis;}
   void  SetPi0Analysis(Bool_t turnonoff){ fPi0Analysis = turnonoff; }
- 
-  virtual const char * Version() const { return "pid-v1" ; }  
-  
+   
  private:
   
   const TString BranchName() const ; 
@@ -57,6 +55,12 @@ class  AliEMCALPIDv1 : public AliEMCALPID {
   void     PrintRecParticles(Option_t * option) ;
   virtual  void WriteRecParticles() ; 
   void Unload(); 
+
+  void Print() const ; 
+
+  virtual char * Version() const { return "pid-v1" ; }  
+
+  AliEMCALPIDv1 & operator = (const AliEMCALPIDv1 & /*pid*/) { return *this ;} 
 
  private:
 

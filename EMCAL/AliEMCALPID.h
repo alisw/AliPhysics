@@ -37,11 +37,12 @@ class AliEMCALPID : public TTask {
 
   virtual void Exec(Option_t *) = 0;
   virtual const Int_t GetRecParticlesInRun()  const { Warning("GetRecParticlesInRun", "not defined" ) ; return 0 ;} 
-  virtual void Print(Option_t *) = 0;
-  void   SetEventFolderName(TString name) { fEventFolderName = name ; }
+  virtual void Print() const { Warning("Print", "not defined" ) ;}
+  void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
+  void SetEventFolderName(TString name) { fEventFolderName = name ; }
   virtual void SetPREtoECADistanceCut(Float_t, TString, Float_t) { Warning("SetCpvtoEmcDistanceCut", "not defined" ) ;}
   virtual void SetTimeGate(Float_t /*Cluster_En*/, TString /*Eff_Pur*/, Float_t /*gate*/) { Warning("SetTimeGate", "not defined" ) ; }
-  virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
+  virtual char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
   virtual void WriteRecParticles() = 0;
 
 private: 
@@ -49,6 +50,8 @@ private:
 
 protected:
   TString fEventFolderName ;  // event folder name
+  Int_t   fFirstEvent;        // first event to process
+  Int_t   fLastEvent;         // last  event to process
  
   ClassDef(AliEMCALPID,3)  // Particle Identifier algorithm (base class)
 

@@ -116,11 +116,16 @@ void  AliEMCALPIDv1::Exec(Option_t * option)
   }
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
 
-  Int_t nevents = gime->MaxEvent() ;      
+  if (fLastEvent == -1) 
+    fLastEvent = gime->MaxEvent() - 1 ;
+  else 
+    fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
+  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
+
   Int_t ievent ;
 
 
-  for(ievent = 0; ievent < nevents; ievent++){
+  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent,"TR") ;
     if(gime->TrackSegments() && //Skip events, where no track segments made
        gime->TrackSegments()->GetEntriesFast()) {   
@@ -136,7 +141,7 @@ void  AliEMCALPIDv1::Exec(Option_t * option)
     gBenchmark->Stop("EMCALPID");
     printf("Exec: took %f seconds for PID %f seconds per event", 
 	 gBenchmark->GetCpuTime("EMCALPID"),  
-	 gBenchmark->GetCpuTime("EMCALPID")/nevents) ;
+	 gBenchmark->GetCpuTime("EMCALPID")/nEvents) ;
   } 
 
   Unload();
@@ -226,6 +231,14 @@ void  AliEMCALPIDv1:: Print(Option_t * /*option*/) const
     printf("Making PID\n");
     printf("    Pricipal analysis file from 0.5 to 100 %s\n", fFileName.Data() ) ; 
     printf("    Name of parameters file     %s\n", fFileNamePar.Data() )  ;
+}
+
+//____________________________________________________________________________
+void  AliEMCALPIDv1::Print() const
+{
+  // Print the parameters used for the particle type identification
+
+    Info("Print", "=============== AliEMCALPIDv1 ================") ;
 }
 
 //____________________________________________________________________________
