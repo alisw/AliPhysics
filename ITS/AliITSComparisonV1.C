@@ -34,7 +34,7 @@
     Bool_t flag;
   };   
     Int_t i;
-  GoodTrack gt[15000]; 
+  GoodTrack gt[50000]; 
   Int_t ngood=0;  
   cerr<<"Reading itsgood tracks...\n";
   while (in>>gt[ngood].fEventN>>gt[ngood].lab>>gt[ngood].code
@@ -44,7 +44,7 @@
 	  >>gt[ngood].ptg >>gt[ngood].flag) {
     ngood++;
     cerr<<ngood<<'\r';
-    if (ngood==15000) {
+    if (ngood==50000) {
       cerr<<"Too many good tracks !\n";
       break;
     }
