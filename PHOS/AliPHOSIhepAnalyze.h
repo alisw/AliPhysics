@@ -25,22 +25,30 @@ class AliPHOSIhepAnalyze : public TObject {
 
   AliPHOSIhepAnalyze() ;              // ctor
   AliPHOSIhepAnalyze(Text_t * name) ; // ctor
+  AliPHOSIhepAnalyze(const AliPHOSIhepAnalyze & obj) : TObject(obj) {
+    // cpy ctor: no implementation yet
+    // requested by the Coding Convention
+    Fatal("cpy ctor", "not implemented") ;
+  }
+  virtual ~AliPHOSIhepAnalyze() {}  ; // dtor
+  AliPHOSIhepAnalyze & operator = (const AliPHOSIhepAnalyze & /*rvalue*/)  {
+    Fatal("operator =", "not implemented") ; return *this ; }
 
   void AnalyzeCPV1(Int_t Nevents); // resolutions, mult and cluster lengths for CPV
   void AnalyzeEMC1(Int_t Nevents); // resolutions, mult and cluster lengths for EMC
   void AnalyzeCPV2(Int_t Nevents); // delta(gen)/delta(rec) between hits 
   void CpvSingle(Int_t Nevents); // signle particle analysis
   virtual void HitsCPV(Int_t event); 
-  TString GetFileName() { return fFileName; }
+  const TString GetFileName() const { return fFileName; }
 
  private:
 
-  Bool_t IsCharged(Int_t pdg_code);
+  Bool_t IsCharged(Int_t pdgCode);
 
  private:
  
-  AliRunLoader *fRunLoader;
-  TString fFileName;
+  AliRunLoader *fRunLoader; // run loader
+  TString fFileName;        // filename with headers (e.g. galice.root)
 
 ClassDef(AliPHOSIhepAnalyze,1)  // PHOSv1 event analyzis algorithm
 

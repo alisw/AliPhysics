@@ -66,8 +66,8 @@ AliPHOSIhepAnalyze::AliPHOSIhepAnalyze()
 
 //____________________________________________________________________________
 
-AliPHOSIhepAnalyze::AliPHOSIhepAnalyze(Text_t * name) : fFileName(name) 
- {
+AliPHOSIhepAnalyze::AliPHOSIhepAnalyze(Text_t * name) : fFileName(name) {
+  // Constructor: open a header file
   fRunLoader = AliRunLoader::Open(fFileName);
   if (fRunLoader == 0x0)
    {
@@ -543,15 +543,15 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
   // 24 March 2001
 
 
-  TH1F* hDrij_cpv_r = new TH1F("Drij_cpv_r","Distance between reconstructed hits in CPV",140,0,50);
-  TH1F* hDrij_cpv_g = new TH1F("Drij_cpv_g","Distance between generated hits in CPV",140,0,50);
-  TH1F* hDrij_cpv_ratio = new TH1F("Drij_cpv_ratio","R_{ij}^{rec}/R_{ij}^{gen} in CPV",140,0,50);
+  TH1F* hDrijCPVr = new TH1F("Drij_cpv_r","Distance between reconstructed hits in CPV",140,0,50);
+  TH1F* hDrijCPVg = new TH1F("Drij_cpv_g","Distance between generated hits in CPV",140,0,50);
+  TH1F* hDrijCPVratio = new TH1F("Drij_cpv_ratio","R_{ij}^{rec}/R_{ij}^{gen} in CPV",140,0,50);
 
 //    TH1F* hT0 = new TH1F("hT0","Type of entering particle",20000,-10000,10000);
 
-  hDrij_cpv_r->Sumw2();
-  hDrij_cpv_g->Sumw2();
-  hDrij_cpv_ratio->Sumw2(); //correct treatment of errors
+  hDrijCPVr->Sumw2();
+  hDrijCPVg->Sumw2();
+  hDrijCPVratio->Sumw2(); //correct treatment of errors
 
   TList * fCpvImpacts = new TList();
   TBranch * branchCPVimpacts;
@@ -571,8 +571,8 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
       fRunLoader->GetEvent(nev);
       Int_t ntracks = fRunLoader->GetHeader()->GetNtrack();
     
-      Int_t nrec_cpv = 0; // Reconstructed points in event
-      Int_t ngen_cpv = 0; // Impacts in event
+      Int_t nRecCPV = 0; // Reconstructed points in event
+      Int_t nGenCPV = 0; // Impacts in event
 
       // Get branch of CPV impacts
       TTree* treeH = please->TreeH();
@@ -616,19 +616,19 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
 	Int_t nsum = hitsPerModule[iModule]->GetEntriesFast();
 	printf("CPV module %d has %d hits\n",iModule,nsum);
 
-        AliPHOSImpact* GenHit1;
-        AliPHOSImpact* GenHit2;
+        AliPHOSImpact* genHit1;
+        AliPHOSImpact* genHit2;
         Int_t irp1,irp2;
 	for(irp1=0; irp1< nsum; irp1++)
 	  {
-	    GenHit1 = (AliPHOSImpact*)((hitsPerModule[iModule])->At(irp1));
+	    genHit1 = (AliPHOSImpact*)((hitsPerModule[iModule])->At(irp1));
 	    for(irp2 = irp1+1; irp2<nsum; irp2++)
 	      {
-		GenHit2 = (AliPHOSImpact*)((hitsPerModule[iModule])->At(irp2));
-		Float_t dx = GenHit1->X() - GenHit2->X();
-  		Float_t dz = GenHit1->Z() - GenHit2->Z();
+		genHit2 = (AliPHOSImpact*)((hitsPerModule[iModule])->At(irp2));
+		Float_t dx = genHit1->X() - genHit2->X();
+  		Float_t dz = genHit1->Z() - genHit2->Z();
 		Float_t dr = TMath::Sqrt(dx*dx + dz*dz);
-		hDrij_cpv_g->Fill(dr);
+		hDrijCPVg->Fill(dr);
 //      		Info("AnalyzeCPV1", "(dx dz dr): %f %f", dx, dz);
 	      }
 	  }
@@ -638,48 +638,48 @@ void AliPHOSIhepAnalyze::AnalyzeCPV2(Int_t Nevents)
   //--------- Combinatoric distance between rec. hits in CPV
 
       TObjArray* cpvRecPoints = please->CpvRecPoints();
-      nrec_cpv =  cpvRecPoints->GetEntriesFast();
+      nRecCPV =  cpvRecPoints->GetEntriesFast();
 
-      if(nrec_cpv)
+      if(nRecCPV)
 	{
-	  AliPHOSCpvRecPoint* RecHit1;
-	  AliPHOSCpvRecPoint* RecHit2;
-	  TIter next_cpv_rec1(cpvRecPoints);
-	  while(TObject* obj1 = next_cpv_rec1() )
+	  AliPHOSCpvRecPoint* recHit1;
+	  AliPHOSCpvRecPoint* recHit2;
+	  TIter nextCPVrec1(cpvRecPoints);
+	  while(TObject* obj1 = nextCPVrec1() )
 	    {
-	      TIter next_cpv_rec2(cpvRecPoints);
-	      while (TObject* obj2 = next_cpv_rec2())
+	      TIter nextCPVrec2(cpvRecPoints);
+	      while (TObject* obj2 = nextCPVrec2())
 		{
 		  if(!obj2->IsEqual(obj1))
 		    {
-		      RecHit1 = (AliPHOSCpvRecPoint*)obj1;
-		      RecHit2 = (AliPHOSCpvRecPoint*)obj2;
+		      recHit1 = (AliPHOSCpvRecPoint*)obj1;
+		      recHit2 = (AliPHOSCpvRecPoint*)obj2;
 		      TVector3 locpos1;
 		      TVector3 locpos2;
-		      RecHit1->GetLocalPosition(locpos1);
-		      RecHit2->GetLocalPosition(locpos2);
+		      recHit1->GetLocalPosition(locpos1);
+		      recHit2->GetLocalPosition(locpos2);
 		      Float_t dx = locpos1.X() - locpos2.X();
 		      Float_t dz = locpos1.Z() - locpos2.Z();		      
 		      Float_t dr = TMath::Sqrt(dx*dx + dz*dz);
-		      if(RecHit1->GetPHOSMod() == RecHit2->GetPHOSMod())
-			hDrij_cpv_r->Fill(dr);
+		      if(recHit1->GetPHOSMod() == recHit2->GetPHOSMod())
+			hDrijCPVr->Fill(dr);
 		    }
 		}
 	    }	
 	}
       
       Info("AnalyzeCPV1", " Event %d . Total of %d hits, %d rec.points.", 
-	   nev, ngen_cpv, nrec_cpv) ; 
+	   nev, nGenCPV, nRecCPV) ; 
     
       delete [] hitsPerModule;
 
     } // End of loop over events.
 
 
-//    hDrij_cpv_g->Draw();
-//    hDrij_cpv_r->Draw();
-  hDrij_cpv_ratio->Divide(hDrij_cpv_r,hDrij_cpv_g);
-  hDrij_cpv_ratio->Draw();
+//    hDrijCPVg->Draw();
+//    hDrijCPVr->Draw();
+  hDrijCPVratio->Divide(hDrijCPVr,hDrijCPVg);
+  hDrijCPVratio->Draw();
 
 //    hT0->Draw();
 
@@ -798,8 +798,8 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
   fRunLoader->GetEvent(nev);
   Int_t ntracks = fRunLoader->GetHeader()->GetNtrack();
     
-//    Int_t nrec_cpv = 0; // Reconstructed points in event // 01.10.2001
-//    Int_t ngen_cpv = 0; // Impacts in event
+//    Int_t nRecCPV = 0; // Reconstructed points in event // 01.10.2001
+//    Int_t nGenCPV = 0; // Impacts in event
 
   // Get branch of CPV impacts
    TTree* treeH = please->TreeH();
@@ -907,11 +907,11 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
 //    Info("AnalyzeCPV1", " PHOS module "<<iModule<<": "<<hits->GetEntries()<<" charged CPV hits.");
 //  }
 
-Bool_t AliPHOSIhepAnalyze::IsCharged(Int_t pdg_code)
+Bool_t AliPHOSIhepAnalyze::IsCharged(Int_t pdgCode)
 {
   // For HIJING
-  Info("AnalyzeCPV1", "pdg_code %d", pdg_code);
-  if(pdg_code==211 || pdg_code==-211 || pdg_code==321 || pdg_code==-321 || pdg_code==11 || pdg_code==-11 || pdg_code==2212 || pdg_code==-2212) return kTRUE;
+  Info("AnalyzeCPV1", "pdgCode %d", pdgCode);
+  if(pdgCode==211 || pdgCode==-211 || pdgCode==321 || pdgCode==-321 || pdgCode==11 || pdgCode==-11 || pdgCode==2212 || pdgCode==-2212) return kTRUE;
   else
     return kFALSE;
 }
