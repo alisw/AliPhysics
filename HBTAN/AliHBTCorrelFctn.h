@@ -120,6 +120,21 @@ class AliHBTQSideLCMSCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrel
 };
 /*************************************************************************************/ 
 
+class AliHBTQtCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunction
+{
+//Q Longaraint Correlation Function
+//1D two particle function 
+ public:
+   AliHBTQtCorrelFctn(Int_t nbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0);
+   virtual ~AliHBTQtCorrelFctn(){};
+   TH1* GetResult();
+ protected:
+   Double_t GetValue(AliHBTPair * pair) const {return pair->GetQt();}
+ private:  
+    ClassDef(AliHBTQtCorrelFctn,2)
+};
+/*************************************************************************************/ 
+
 class AliHBTInvMassCorrelFctn: public AliHBTOnePairFctn1D
 {
 //   Invariant Mass Function 

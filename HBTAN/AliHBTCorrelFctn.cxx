@@ -158,11 +158,32 @@ AliHBTQtLCMSCorrelFctn::AliHBTQtLCMSCorrelFctn(Int_t nbins, Double_t maxXval, Do
 {
   //ctor
  fWriteNumAndDen = kTRUE;//change default behaviour
- Rename("Qtcf","Q_{long} Correlation Function");
+ Rename("Qtcf","Q_{t}(LCMS) Correlation Function");
 }
 /*************************************************************************************/ 
     
 TH1* AliHBTQtLCMSCorrelFctn::GetResult()
+{
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
+}
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+/*************************************************************************************/ 
+ClassImp(AliHBTQtCorrelFctn)
+    
+AliHBTQtCorrelFctn::AliHBTQtCorrelFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
+ AliHBTOnePairFctn1D(nbins,maxXval,minXval)
+{
+  //ctor
+ fWriteNumAndDen = kTRUE;//change default behaviour
+ Rename("qtcf","Q_{t} Correlation Function");
+}
+/*************************************************************************************/ 
+    
+TH1* AliHBTQtCorrelFctn::GetResult()
 {
  //returns the scaled ratio
  delete fRatio;
