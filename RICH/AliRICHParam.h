@@ -1,153 +1,226 @@
 #ifndef AliRICHParam_h
 #define AliRICHParam_h
 
-#include <TObject.h>
 #include "AliRICHConst.h"
-
-
+#include <TObject.h>
+#include <TMath.h>
+#include <TVector3.h>
+#include <TRandom.h>
 
 class AliRICHParam :public TObject  
 {
 public:
-           AliRICHParam();  
+           AliRICHParam()                    {;}
   virtual ~AliRICHParam()                    {;}  
+  static Int_t   NpadsX()                   {return 144;}
+  static Int_t   NpadsY()                   {return 160;}   
+  static Int_t   NpadsXsec()                {return NpadsX()/3;}   
+  static Int_t   NpadsYsec()                {return NpadsY()/2;}   
+  static Double_t DeadZone()                 {return 2.6;}
+  static Double_t PadSizeX()                 {return 0.84;}
+  static Double_t PadSizeY()                 {return 0.8;}
+  static Double_t SectorSizeX()              {return NpadsX()*PadSizeX()/3;}
+  static Double_t SectorSizeY()              {return NpadsY()*PadSizeY()/2;}  
+  static Double_t PcSizeX()                  {return NpadsX()*PadSizeX()+2*DeadZone();}
+  static Double_t PcSizeY()                  {return NpadsY()*PadSizeY()+DeadZone();}
+  static Double_t WirePitch()                {return PadSizeX()/2;}
+  static Double_t SizeX()                    {return 132.6;}
+  static Double_t SizeY()                    {return 26;}
+  static Double_t SizeZ()                    {return 136.7;}   
+  static Double_t Offset()                   {return 490+1.267;}  
+  static Double_t AngleYZ()                  {return 19.5*TMath::DegToRad();} 
+  static Double_t AngleXY()                  {return 20*TMath::DegToRad();} 
+  static Double_t FreonThickness()           {return 1.5;}   
+  static Double_t QuartzThickness()          {return 0.5;}   
+  static Double_t GapThickness()             {return 8.0;}      
+  static Double_t RadiatorToPads()           {return FreonThickness()+QuartzThickness()+GapThickness();}   
+  static Double_t ProximityGapThickness()    {return 0.4;}    
+  static Double_t AnodeCathodeGap()          {return 0.2;}
+  static Double_t QuartzLength()             {return 133;}   
+  static Double_t QuartzWidth()              {return 127.9;}
+  static Double_t OuterFreonLength()         {return 133;}   
+  static Double_t OuterFreonWidth()          {return 41.3;}   
+  static Double_t InnerFreonLength()         {return 133;}   
+  static Double_t InnerFreonWidth()          {return 41.3;}   
+  static Double_t IonisationPotential()      {return 26.0e-9;}                            
+  static Double_t MathiensonDeltaX()         {return 5*0.18;}    
+  static Double_t MathiensonDeltaY()         {return 5*0.18;}    
+  static Int_t    MaxQdc()                   {return 4095;}          
+  static Double_t QdcSlope(Int_t sec)        {HV(sec);return 27;}
+  static Double_t AlphaFeedback(Int_t sec)   {HV(sec);return 0.036;}
   
-  inline  Int_t Neighbours(Int_t iPadX,Int_t iPadY,Int_t aListX[4],Int_t aListY[4])const;                      //pad->neibours
-  inline  void   SigGenInit(Float_t x,Float_t y);
-  inline  Bool_t SigGenCond(Float_t x,Float_t y);
-  static  Int_t   Local2Pad(Float_t x,Float_t y,Int_t &padx,Int_t &pady);               //(x,y)->(padx,pady), returns sector code 
-  static  Int_t   Local2PadX(Float_t x,Float_t y)    {Int_t padx,pady;Local2Pad(x,y,padx,pady);return padx;}//(x,y)->padx
-  static  Int_t   Local2PadY(Float_t x,Float_t y)    {Int_t padx,pady;Local2Pad(x,y,padx,pady);return pady;}//(x,y)->pady
-  static  void    Pad2Local(Int_t padx,Int_t pady,Float_t &x,Float_t &y);                                         //(padx,pady)->(x,y)
-  static  Int_t   LocalX2Wire(Float_t x)      {return  Int_t((x+PcSizeX()/2)/WirePitch())+1;}         //x->wire number
-  static  Float_t Wire2LocalX(Int_t iWireN)   {return iWireN*WirePitch()-PcSizeX()/2;}                //wire number->x
-  
-  Float_t Gain(Float_t y);                                 //Returns total charge induced by single photon
-  Float_t TotalCharge(Int_t iPID,Float_t eloss,Float_t y); //Returns total charge induced by particle lost eloss GeV
-  static  Float_t AssignChargeToPad(Float_t hx,Float_t hy, Int_t px, Int_t py); //Returns charge assigned to given pad for a given hit
-  void    FirstPad(Float_t x,Float_t y);
-          
-  static  Float_t AnodeCathodeGap()          {return 0.2;}
-  
-  static  Int_t   NpadsX()                   {return 144;}
-  static  Int_t   NpadsY()                   {return 160;}   
-  static  Int_t   NpadsXsec()                {return NpadsX()/3;}   
-  static  Int_t   NpadsYsec()                {return NpadsY()/2;}   
-  static  Float_t DeadZone()                 {return 2.6;}
-  static  Float_t PadSizeX()                 {return 0.84;}
-  static  Float_t PadSizeY()                 {return 0.8;}
-  static  Float_t SectorSizeX()              {return NpadsX()*PadSizeX()/3;}
-  static  Float_t SectorSizeY()              {return NpadsY()*PadSizeY()/2;}  
-  static  Float_t PcSizeX()                  {return NpadsX()*PadSizeX()+2*DeadZone();}
-  static  Float_t PcSizeY()                  {return NpadsY()*PadSizeY()+DeadZone();}
-  static  Float_t WirePitch()                {return PadSizeX()/2;}
-            
-  void    Size(Float_t x,Float_t y,Float_t z){fSizeX=x;fSizeY=y;fSizeZ=z;}
-  void    GeantSize(Float_t *pArr)      const{pArr[0]=fSizeX/2;pArr[1]=fSizeY/2;pArr[2]=fSizeZ/2;}  
-  Float_t SizeX()                       const{return fSizeX;}
-  Float_t SizeY()                       const{return fSizeY;}
-  Float_t SizeZ()                       const{return fSizeZ;}   
-  static  Float_t Offset()                   {return 490+1.267;}  
-  static  Float_t AngleYZ()                  {return 19.5*TMath::DegToRad();} 
-  static  Float_t AngleXY()                  {return 20*TMath::DegToRad();} 
-  static  void    AngleRot(Float_t angle)    {       fgAngleRot=angle;}
-  static  Float_t AngleRot()                 {return fgAngleRot*kD2r;}                
-  static  Float_t GapThickness()             {return 8.0;}      
-  void    ProximityGapThickness(Float_t a)   {       fProximityGapThickness=a;}
-  Float_t ProximityGapThickness()       const{return fProximityGapThickness;}    
-  void    QuartzLength(Float_t a)            {       fQuartzLength=a;}
-  Float_t QuartzLength()                const{return fQuartzLength;}   
-  void    QuartzWidth(Float_t a)             {       fQuartzWidth=a;}
-  Float_t QuartzWidth()                 const{return fQuartzWidth;}
-  static Float_t QuartzThickness()           {return 0.5;}   
-  void    OuterFreonLength(Float_t a)        {       fOuterFreonLength=a;}
-  Float_t OuterFreonLength()            const{return fOuterFreonLength;}   
-  void    OuterFreonWidth(Float_t a)         {       fOuterFreonWidth=a;}
-  Float_t OuterFreonWidth()             const{return fOuterFreonWidth;}   
-  void    InnerFreonLength(Float_t a)        {       fInnerFreonLength=a;}
-  Float_t InnerFreonLength()            const{return fInnerFreonLength;}   
-  void    InnerFreonWidth(Float_t a)         {       fInnerFreonWidth=a;}
-  Float_t InnerFreonWidth()             const{return fInnerFreonWidth;}   
-  static  Float_t FreonThickness()           {return 1.5;}   
-  static  Float_t RadiatorToPads()           {return FreonThickness()+QuartzThickness()+GapThickness();}   
-        
-  void    SigmaIntegration(Float_t a)        {       fSigmaIntegration=a;}    
-  Float_t SigmaIntegration()            const{return fSigmaIntegration;}    
-  void    ChargeSpreadX(Float_t a)           {       fChargeSpreadX=a;}
-  Float_t ChargeSpreadX()               const{return fChargeSpreadX;}    
-  void    ChargeSpreadY(Float_t a)           {       fChargeSpreadY=a;}  
-  Float_t ChargeSpreadY()               const{return fChargeSpreadY;}  
-  Float_t AreaX()                       const{return fSigmaIntegration*fChargeSpreadX;} 
-  Float_t AreaY()                       const{return fSigmaIntegration*fChargeSpreadY;} 
-  void    ChargeSlope(Float_t a)             {       fChargeSlope=a;}
-  Float_t ChargeSlope()                      {return fChargeSlope;}
-  void    MaxAdc(Int_t a)                    {       fMaxAdc=a;}
-  Int_t   MaxAdc()                      const{return fMaxAdc;}
-  void    AlphaFeedback(Float_t a)           {       fAlphaFeedback=a;}
-  Float_t AlphaFeedback()               const{return fAlphaFeedback;}
-  void    EIonisation(Float_t a)             {       fEIonisation=a;}
-  Float_t EIonisation()                 const{return fEIonisation;}                            
-  static Float_t SqrtKx3()  {return 0.77459667;}
-  static Float_t Kx2()      {return 0.962;}
-  static Float_t Kx4()      {return 0.379;}
-  static Float_t SqrtKy3()  {return 0.77459667;}
-  static Float_t Ky2()      {return 0.962;}
-  static Float_t Ky4()      {return 0.379;}
+  static Bool_t   IsWireSag()                {return fgIsWireSag;}
+  static Int_t    HV(Int_t)                  {return fgHV;}
+  static Double_t AngleRot()                {return fgAngleRot*TMath::DegToRad();} 
+    static void  SetWireSag(Bool_t status)  {fgIsWireSag=status;}  
+    static void  SetHV(Int_t hv)            {fgHV       =hv;}  
+    static void  SetAngleRot(Double_t rot)  {fgAngleRot =rot;}         
 
-  void    WireSag(Int_t a)                   {       fWireSag=a;}
-  void    Voltage(Int_t a)                   {       fVoltage=a;}       
-  Float_t Voltage()                     const{return fVoltage;}       
+  inline static Double_t Mathienson(Double_t lx1,Double_t lx2,Double_t ly1,Double_t ly2);   
+  inline static void    Loc2Area(TVector3 hitX3,Int_t &padxMin,Int_t &padyMin,Int_t &padxMax,Int_t &padyMax);
+  inline static Int_t   PadNeighbours(Int_t iPadX,Int_t iPadY,Int_t aListX[4],Int_t aListY[4]);
+  inline static Int_t   Loc2Pad(Double_t x,Double_t y,Int_t &padx,Int_t &pady); 
+  inline static void    Pad2Loc(Int_t padx,Int_t pady,Double_t &x,Double_t &y);  
+  inline static Double_t GainVariation(Double_t y,Int_t sector);       
+  inline static Int_t   Loc2TotQdc(TVector3 locX3,Double_t eloss,Int_t iPid, Int_t &sector);
+  inline static Double_t Loc2PadFrac(TVector3 locX3,Int_t padx,Int_t pady);
+  
+  inline  void   SigGenInit(Double_t x,Double_t y);
+  inline  Bool_t SigGenCond(Double_t x,Double_t y);
+  inline static Int_t   Loc2Sec(Double_t &x,Double_t &y); 
+  inline static Int_t   Pad2Sec(Int_t &padx,Int_t &pady); 
+  
 protected:
-  static Int_t   Local2Sector(Float_t &x,Float_t &y); //(x,y)->sector
-  static Int_t   Pad2Sector(Int_t &padx,Int_t &pady); //(padx,pady)->sector
+  static Bool_t  fgIsWireSag;      //is wire sagitta taken into account
+  static Int_t   fgHV;             //HV applied to anod wires
+  static Double_t fgAngleRot;       //rotation of RICH from up postion (0,0,490)cm
   
-  Int_t   fCurrentPadX,fCurrentPadY;              //???
-  Int_t   fCurrentWire;                           //???
-    
-  Float_t fSizeX;  Float_t fSizeY; Float_t fSizeZ;                                //chamber outer size, cm
-  static  Float_t fgAngleRot;                                                     //azimuthal rotation XY plane, deg  
-  Float_t fProximityGapThickness;                                                 //proximity gap thickness, cm
-  Float_t fQuartzLength;     Float_t fQuartzWidth;                                //quartz window size, cm
-  Float_t fOuterFreonLength; Float_t fOuterFreonWidth;                            //freon box outer size, cm
-  Float_t fInnerFreonLength; Float_t fInnerFreonWidth;                            //freon box inner size, cm
-  
-  Float_t fChargeSlope;              //Slope of the charge distribution
-  Float_t fChargeSpreadX;            //Width of the charge distribution in x
-  Float_t fChargeSpreadY;            //Width of the charge distribution in y
-  Float_t fSigmaIntegration;         //Number of sigma's used for charge distribution
-  Float_t fAlphaFeedback;            //Feedback photons coefficient
-  Float_t fEIonisation;              //Mean ionisation energy
-  Int_t   fMaxAdc;                   //Maximum ADC channel
-  Int_t   fWireSag;                  //Flag to turn on/off (0/1) wire sag
-  Int_t   fVoltage;                  //Working voltage (2000, 2050, 2100, 2150)
-
-  ClassDef(AliRICHParam,2)    //RICH main parameters
+  ClassDef(AliRICHParam,4)    //RICH main parameters
 };
 //__________________________________________________________________________________________________
-void AliRICHParam::SigGenInit(Float_t x,Float_t y)
-{//Initialises pad and wire position during stepping
-  Local2Pad(x,y,fCurrentPadX,fCurrentPadY);
-  fCurrentWire= (x>0) ? Int_t(x/WirePitch())+1 : Int_t(x/WirePitch())-1 ;
-}
-//__________________________________________________________________________________________________
-Bool_t AliRICHParam::SigGenCond(Float_t x,Float_t y)
-{//Signal will be generated if particle crosses pad boundary or boundary between two wires.
-  Int_t curPadX,curPadY;
-  Local2Pad(x,y,curPadX,curPadY);
-  Int_t currentWire=(x>0) ? Int_t(x/WirePitch())+1 : Int_t(x/WirePitch())-1;
-  if((curPadX != fCurrentPadX) || (curPadY != fCurrentPadY) || (currentWire!=fCurrentWire)) 
-    return kTRUE;
-  else
-    return kFALSE;
-}//Bool_t AliRICHParam::SigGenCond(Float_t x,Float_t y)
-//__________________________________________________________________________________________________
-Int_t AliRICHParam::Neighbours(Int_t iPadX,Int_t iPadY,Int_t listX[4],Int_t listY[4])const
+Int_t AliRICHParam::PadNeighbours(Int_t iPadX,Int_t iPadY,Int_t listX[4],Int_t listY[4])
 {
-  listX[0]=iPadX;   listY[0]=iPadY-1;       
-  listX[1]=iPadX+1; listY[1]=iPadY;       
-  listX[2]=iPadX;   listY[2]=iPadY+1;       
-  listX[3]=iPadX-1; listY[3]=iPadY;       
-  return 4;
+  Int_t nPads=0;
+  if(iPadY<NpadsY()){listX[nPads]=iPadX;   listY[nPads]=iPadY+1; nPads++;}       
+  if(iPadX<NpadsX()){listX[nPads]=iPadX+1; listY[nPads]=iPadY;   nPads++;}       
+  if(iPadY>1)       {listX[nPads]=iPadX;   listY[nPads]=iPadY-1; nPads++;}      
+  if(iPadX>1)       {listX[nPads]=iPadX-1; listY[nPads]=iPadY;   nPads++;}       
+  return nPads;
+}//Pad2ClosePads()
+//__________________________________________________________________________________________________
+Int_t AliRICHParam::Loc2Sec(Double_t &x,Double_t &y)
+{//Determines sector for a given hit (x,y) and trasform this point to the local system of that sector.
+  Int_t sector=kBad;  
+  Double_t x1=-0.5*PcSizeX();      Double_t x2=-0.5*SectorSizeX()-DeadZone();  Double_t x3=-0.5*SectorSizeX();
+  Double_t x4= 0.5*SectorSizeX();  Double_t x5= 0.5*SectorSizeX()+DeadZone();  Double_t x6= 0.5*PcSizeX();
+
+  if     (x>=x1&&x<=x2)    {sector=1;x+=0.5*PcSizeX();}
+  else if(x>=x3&&x<=x4)    {sector=2;x+=0.5*SectorSizeX();}
+  else if(x>=x5&&x<=x6)    {sector=3;x-=0.5*SectorSizeX()+DeadZone();}
+  else if(x< x1||x> x6)    {return kBad;}
+  else                                                        {return kBad;} //in dead zone
+
+  if     (y>=-0.5*PcSizeY()   &&y<=-0.5*DeadZone())  {y+=0.5*PcSizeY();  return -sector;}
+  else if(y> -0.5*DeadZone()  &&y<  0.5*DeadZone())  {return kBad;} //in dead zone
+  else if(y>= 0.5*DeadZone()  &&y<= 0.5*PcSizeY())   {y-=0.5*DeadZone(); return  sector;}
+  else                                               {return kBad;}
+}//Loc2Sec(Double_t x, Double_t y)
+//__________________________________________________________________________________________________
+Int_t AliRICHParam::Pad2Sec(Int_t &padx, Int_t &pady)
+{//Determines sector for a given pad (padx,pady) and trasform this point to the local system of that sector.
+  Int_t sector=kBad;      
+  if     (padx>=1            &&padx<=NpadsXsec())      {sector=1;}
+  else if(padx> NpadsXsec()  &&padx<=NpadsXsec()*2)    {sector=2;padx-=NpadsXsec();}
+  else if(padx> NpadsXsec()*2&&padx<=NpadsX())         {sector=3;padx-=NpadsXsec()*2;}
+  else                                                 {return kBad;}
+
+  if     (pady>=1         &&pady<= NpadsYsec())     {return -sector;}
+  else if(pady>NpadsYsec()&&pady<= NpadsY())        {pady-=NpadsYsec();return sector;} 
+  else                                              {return kBad;}
+}//Pad2Sec()
+//__________________________________________________________________________________________________
+Int_t AliRICHParam::Loc2Pad(Double_t x, Double_t y, Int_t &padx, Int_t &pady)
+{//returns pad numbers (iPadX,iPadY) for given point in local coordinates (x,y) 
+ //count starts in lower left corner from 1,1 to 144,180
+  
+  padx=pady=kBad;
+  Int_t sector=Loc2Sec(x,y);
+  if(sector==kBad) return sector;
+  
+  padx=Int_t(x/PadSizeX())+1; 
+  if(padx>NpadsXsec())            padx= NpadsXsec();
+  if(sector==2||sector==-2)       padx+=NpadsXsec();
+  else if(sector==3||sector==-3)  padx+=NpadsXsec()*2;
+  
+  pady=Int_t(y/PadSizeY())+1;
+  if(pady>NpadsYsec())            padx= NpadsYsec();
+  if(sector>0)                    pady+=NpadsYsec();    
+
+  return sector;
+}//Loc2Pad()
+//__________________________________________________________________________________________________
+void AliRICHParam::Pad2Loc(Int_t padx,Int_t pady,Double_t &x,Double_t &y)
+{
+  Int_t sector=Pad2Sec(padx,pady);  
+  if(sector>0)
+    y=0.5*DeadZone()+pady*PadSizeY()-0.5*PadSizeY();
+  else{
+    sector=-sector;
+    y=-0.5*PcSizeY()+pady*PadSizeY()-0.5*PadSizeY();
+  }
+  if(sector==1)
+    x=-0.5*PcSizeX()+padx*PadSizeX()-0.5*PadSizeX();
+  else if(sector==2)
+    x=-0.5*SectorSizeX()+padx*PadSizeX()-0.5*PadSizeX();
+  else
+    x= 0.5*SectorSizeX()+DeadZone()+padx*PadSizeX()-0.5*PadSizeX();
+  return;
+}//Pad2Loc()
+//__________________________________________________________________________________________________
+Double_t AliRICHParam::GainVariation(Double_t y,Int_t sector)
+{
+  if(IsWireSag()){
+    if(y>0) y-=SectorSizeY()/2; else  y+=SectorSizeY()/2; 
+    switch(HV(sector)){
+      case 2150:
+      default:  
+        return 9e-6*TMath::Power(y,4)+2e-7*TMath::Power(y,3)-0.0316*TMath::Power(y,2)-3e-4*y+25.367;//%
+    }
+  }else
+    return 0;
 }
 //__________________________________________________________________________________________________
+Int_t AliRICHParam::Loc2TotQdc(TVector3 x3,Double_t eloss,Int_t iPid,Int_t &sector)
+{//calculates the total charge produced by the hit given in local refenrence system
+  Double_t x=x3.X(),y=x3.Y();
+  
+  sector=Loc2Sec(x,y);
+  
+  Double_t gain=QdcSlope(sector)*(1+GainVariation(x3.Y(),sector)/100);
+
+  
+  if(iPid>50000){//it's photon => 1 electron
+    return Int_t(gain*-TMath::Log(gRandom->Rndm()));
+  }else{//it's MIP  
+    Int_t iNelectrons=Int_t(eloss/IonisationPotential());
+    if(iNelectrons==0) return 0;
+    Double_t qdc=0;
+    for(Int_t i=1;i<=iNelectrons;i++) qdc+=gain*-TMath::Log(gRandom->Rndm());
+    return Int_t(qdc);
+  }
+}
+//__________________________________________________________________________________________________
+Double_t AliRICHParam::Loc2PadFrac(TVector3 hitX3,Int_t padx,Int_t pady)
+{//
+  Double_t padXcenter=0,padYcenter=0;  Pad2Loc(padx,pady,padXcenter,padYcenter);  
+
+  //correction to the position of the nearest wire
+  
+  Double_t normXmin=(hitX3.X()-padXcenter-PadSizeX()/2)  /AnodeCathodeGap();
+  Double_t normXmax=(hitX3.X()-padXcenter+PadSizeX()/2)  /AnodeCathodeGap();
+  Double_t normYmin=(hitX3.Y()-padYcenter-PadSizeY()/2)  /AnodeCathodeGap();
+  Double_t normYmax=(hitX3.Y()-padYcenter+PadSizeY()/2)  /AnodeCathodeGap();
+  
+  return Mathienson(normXmin,normYmin,normXmax,normYmax);
+}//Loc2PadQdc()
+//__________________________________________________________________________________________________
+Double_t AliRICHParam::Mathienson(Double_t xMin,Double_t yMin,Double_t xMax,Double_t yMax)
+{//see NIM A370(1988)602-603 
+  const Double_t SqrtKx3=0.77459667;const Double_t Kx2=0.962;const Double_t Kx4=0.379;
+  const Double_t SqrtKy3=0.77459667;const Double_t Ky2=0.962;const Double_t Ky4=0.379;
+
+  Double_t ux1=SqrtKx3*TMath::TanH(Kx2*xMin);
+  Double_t ux2=SqrtKx3*TMath::TanH(Kx2*xMax);    
+  Double_t uy1=SqrtKy3*TMath::TanH(Ky2*yMin);
+  Double_t uy2=SqrtKy3*TMath::TanH(Ky2*yMax);
+  return 4*Kx4*(TMath::ATan(ux2)-TMath::ATan(ux1))*Ky4*(TMath::ATan(uy2)-TMath::ATan(uy1));
+}  
+//__________________________________________________________________________________________________
+void AliRICHParam::Loc2Area(TVector3 hitX3,Int_t &iPadXmin,Int_t &iPadYmin,Int_t &iPadXmax,Int_t &iPadYmax)
+{//calculates the area of disintegration for a given hit. Area is a rectangulare set pf pads
+ //defined by its left-down and right-up coners
+  //  hitX3.SetX(Shift2NearestWire(hitX3.X());
+  Loc2Pad(hitX3.X()-MathiensonDeltaX(),hitX3.X()-MathiensonDeltaY(),iPadXmin,iPadYmin);   
+  Loc2Pad(hitX3.X()+MathiensonDeltaX(),hitX3.X()+MathiensonDeltaY(),iPadXmax,iPadYmax);     
+}//
 #endif //AliRICHParam_h

@@ -34,13 +34,12 @@
 #include "AliMagF.h"
 #include "AliPDG.h"
 #include "AliRICHGeometry.h"
-#include "AliRICHResponseV0.h"
+#include "AliRICHResponse.h"
 #include "AliRICHSegmentationV1.h"
 #include "AliRICHv3.h"
 #include "AliRun.h"
 #include "AliRICHRawCluster.h"
 #include "AliRICHDigit.h"
-#include "AliRICHRecHit1D.h"
 #include "AliMC.h"
 
 
@@ -54,7 +53,7 @@ AliRICHv3::AliRICHv3(const char *sName, const char *sTitle)
       	  :AliRICH(sName,sTitle)
 {
 // The named ctor currently creates a single copy of 
-// AliRICHGeometry AliRICHSegmentationV1 AliRICHResponseV0
+// AliRICHGeometry AliRICHSegmentationV1 AliRICHResponse
 // and initialises the corresponding models of all 7 chambers with these stuctures.
 // Note: all chambers share the single copy of models. MUST be changed later (???).
   if(GetDebug())Info("named ctor","Start.");
@@ -63,7 +62,7 @@ AliRICHv3::AliRICHv3(const char *sName, const char *sTitle)
    
    AliRICHGeometry       *pRICHGeometry    =new AliRICHGeometry;           // ??? to be moved to AlRICHChamber::named ctor
    AliRICHSegmentationV1 *pRICHSegmentation=new AliRICHSegmentationV1;     // ??? to be moved to AlRICHChamber::named ctor
-   AliRICHResponseV0     *pRICHResponse    =new AliRICHResponseV0;         // ??? to be moved to AlRICHChamber::named ctor
+   AliRICHResponse       *pRICHResponse    =new AliRICHResponse;           // ??? to be moved to AlRICHChamber::named ctor
      
    for (Int_t i=1; i<=kNCH; i++){    
       SetGeometryModel(i,pRICHGeometry);

@@ -103,14 +103,14 @@ void AliRICHDisplFast::Display()
      gHitsH2->Reset();
 //     h2_dispad->Reset();
 
-     Float_t xpad,ypad;
+     Double_t xpad,ypad;
      
 // loop for Digits...           
      
      for(Int_t j=0;j<nDigits;j++)
 	{
           AliRICHDigit *pDigit = (AliRICHDigit*)pRich->DigitsOld(iChamber)->At(j);
-	  AliRICHParam::Pad2Local(pDigit->PadX(),pDigit->PadY(),xpad,ypad);
+	  AliRICHParam::Pad2Loc(pDigit->PadX(),pDigit->PadY(),xpad,ypad);
           Float_t charge = (Float_t)pDigit->Signal();
 	  h2_disp->Fill(xpad,ypad,charge);
           h2_dispad->Fill(pDigit->PadX(),pDigit->PadY(),pDigit->Signal());
@@ -129,7 +129,7 @@ void AliRICHDisplFast::Display()
           cout << " chamber " << iChamber << " hit n. " << j << " ch " << pHit->Chamber() << endl;
           if(pHit->C()==iChamber) {
             TVector3 xyzhit(pHit->X(),pHit->Y(),pHit->Z());
-            TVector3 hitlocal = pRich->C(iChamber)->Global2Local(xyzhit);
+            TVector3 hitlocal = pRich->C(iChamber)->Glob2Loc(xyzhit);
             gHitsH2->Fill(hitlocal.X(),hitlocal.Y());
 //            pHit->Print();
           }

@@ -25,7 +25,7 @@ public:
   void   AddDigit2Cluster(Int_t i, Int_t j, AliRICHRawCluster &c);
   void   Decluster(AliRICHRawCluster *cluster);                                      //Decluster
   void   CalibrateCOG();                                                             //Self Calibration of COG 
-  void   SinoidalFit(Float_t x, Float_t y, TF1 *func);
+  void   SinoidalFit(Double_t x,Double_t y, TF1 *func);
   void   CorrectCOG(){;}      
   Bool_t Centered(AliRICHRawCluster *cluster);
   void   SplitByLocalMaxima(AliRICHRawCluster *cluster);

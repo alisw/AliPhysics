@@ -90,9 +90,9 @@ void Specials2Sdigits()
   Info("Specials2Sdigits","Stop.");    
 }//Specials2Sdigits()
 //__________________________________________________________________________________________________
-void Hits2Sdigits()
+void H_SD()
 {
-  Info("Hits2Sdigits","Start.");
+  Info("H_SD","Start.");
   
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
     al->GetEvent(iEventN);
@@ -100,15 +100,27 @@ void Hits2Sdigits()
     if(!rl->TreeH()) rl->LoadHits();//from
     if(!rl->TreeS()) rl->MakeTree("S");    r->MakeBranch("S");//to
       
-    NOT YET DONE!
     for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
       rl->TreeH()->GetEntry(iPrimN);
       for(Int_t iHitN=0;iHitN<r->Hits()->GetEntries();iHitN++){//hits loop  
-        AliRICHhit *pHit=r->Hits()->At(iHitN);
-        r->Param()->G2Px
-        r->AddSdigit(pHit->C(),padx+r->Param()->NpadsX()/2,pady+r->Param()->NpadsY()/2,qdc,track);
-      }
-    }
+        AliRICHhit *pHit=r->Hits()->At(iHitN);        
+        TVector3 globX3(pHit->X(),pHit->Y(),pHit->Z());        
+        TVector3 locX3=r->C(pHit->C())->Glob2Loc(globX3);
+        
+        Int_t sector;
+        Int_t iTotQdc=r->Param()->Loc2TotQdc(locX3,pHit->Eloss(),pHit->Pid(),sector);
+        
+        Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
+        r->Param()->Loc2Area(locX3,iPadXmin,iPadYmin,iPadXmax,iPadYmax);
+        cout<<"left-down=("<<iPadXmin<<","<<iPadYmin<<") right-up=("<<iPadXmax<<','<<iPadYmax<<')'<<endl;
+        for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)
+          for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++){
+            Int_t iPadQdc=iTotQdc*r->Param()->Loc2PadFrac(locX3,iPadX,iPadY);
+            cout<<"hit="<<iHitN<<" pad("<<iPadX<<","<<iPadY<<")="<<iPadQdc<<endl;
+          }
+//            r->AddSdigit(pHit->C(),padx,pady,r->Param()->Local2PadQdc(localX3,padx,pady),pHit->GetTrack());
+      }//hits loop
+    }//prims loop
     rl->TreeS()->Fill();
     rl->WriteSDigits("OVERWRITE");
   }//events loop
@@ -455,7 +467,7 @@ void PrintGeo(Float_t rotDeg=0)
 void TestGain()
 {
   AliRICHParam *pParam=new AliRICHParam;
-  AliRICHResponseV0 *pRes=new AliRICHResponseV0;
+  AliRICHResponse *pRes=new AliRICHResponse;
   
   TLegend *pLegend=new TLegend(0.6,0.3,0.85,0.5);  
   TH1F *pH0=new TH1F("pH1","Gain",100,0,600); 
@@ -486,7 +498,7 @@ void TestGain()
 void TestMipCharge()
 {
   AliRICHParam *pParam=new AliRICHParam;
-  AliRICHResponseV0 *pRes=new AliRICHResponseV0;
+  AliRICHResponse *pRes=new AliRICHResponse;
   
   TLegend *pLegend=new TLegend(0.6,0.3,0.85,0.5);  
   TH1F *pH0= new TH1F("pH1", "Mip Charge",100,0,500); 
@@ -705,10 +717,10 @@ void menu()
     pMenu->AddButton("Hits->Sdigits->Digits","Hits2Digits()","Convert");
     pMenu->AddButton("Digits->Recos",         "Digits2Recos()","Convert");
     pMenu->AddButton("Show","Show3()","Shows the structure of events in files");
-    pMenu->AddButton("Hits->Sdigits",    "Hits2Sdigits()",       "Perform first phase converstion");
-    pMenu->AddButton("Specials->Sdigits","Specials2Sdigits()",    "Perform first phase converstion");
-    pMenu->AddButton("Sdigits->Digits",  "Sdigits2Digits()",       "Perform first phase converstion");
-    pMenu->AddButton("Digits->Clusters", "Digits2Clusters()",        "Perform first phase converstion");
+    pMenu->AddButton("hits->sdigits",    "H_SD()",       "Perform first phase converstion");
+    pMenu->AddButton("specials->sdigits","S_SD()",       "Perform first phase converstion");
+    pMenu->AddButton("sdigits->digits",  "SD_D()",       "Perform first phase converstion");
+    pMenu->AddButton("digits->clusters", "D_C()",        "Perform first phase converstion");
 
     pMenu->AddButton("Sdigits->DigitsOLD",        "Sdigits2DigitsOLD()","Perform second phase converstion");
     pMenu->AddButton("DigitsOLD->RawClustersOLD", "DigitsOLD2RawClustersOLD()",  "Perform second phase converstion");

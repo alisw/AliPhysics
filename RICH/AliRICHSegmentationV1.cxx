@@ -13,16 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 #include "AliRICHSegmentationV1.h"
 
 ClassImp(AliRICHSegmentationV1)
-
+//__________________________________________________________________________________________________
 AliRICHSegmentationV1::AliRICHSegmentationV1()
-{ 
-
-// Default constructor for AliRICHSegmantionV1 (with dead zones)
+{// Default constructor for AliRICHSegmantionV1 (with dead zones)
 
    fNpx=144;      // number of pads along X direction 
    fNpy=160;      // number of pads along Y direction 
@@ -33,7 +29,7 @@ AliRICHSegmentationV1::AliRICHSegmentationV1()
    fSector=-1;
    Init(0);       // ??? remove 0
 }
-
+//__________________________________________________________________________________________________
 void AliRICHSegmentationV1::Init(Int_t /*id*/)
 {//Recalculates all the values after some of them have been changed
     
@@ -43,55 +39,12 @@ void AliRICHSegmentationV1::Init(Int_t /*id*/)
    fPadPlane_Width = (csi_width - 2*fDeadZone)/3;
    fPadPlane_Length = (csi_length - fDeadZone)/2;
 }
-
-// calculate sector from x-y coordinates
-
+//__________________________________________________________________________________________________
 Int_t AliRICHSegmentationV1::Sector(Float_t x, Float_t y)
-{
-
-// Calculate in which sector is the hit
+{// Calculate in which sector is the hit
   
   fSector=-1;
   
-  //old numerical definition
-
-  /*if (x<-fDeadZone/2)
-    {
-      if (y>22.75)
-	{
-	  if (y<63.1)
-	    fSector=0;
-	}
-      if (y<20.15)
-	{
-	  if (y>(-20.15))
-	    fSector=2;
-	}
-      if (y<(-22.75))
-	{
-	  if (y>(-63.1))
-	    fSector=4;
-	}
-    }
-  else if (x>fDeadZone/2)
-    {
-      if (y>22.75)
-	{
-	  if (y<63.1)
-	    fSector=1;
-	}
-      if (y<20.15)
-	{
-	  if (y>(-20.15))
-	    fSector=3;
-	}
-      if (y<(-22.75))
-	{
-	  if (y>(-63.1))
-	    fSector=5;
-	}
-    }*/
-
   //Parametrized definition
 
   if (y<-fDeadZone/2)
@@ -131,31 +84,20 @@ Int_t AliRICHSegmentationV1::Sector(Float_t x, Float_t y)
 	}
     }
 
-  
-  //if (fSector==2)
-    //printf("x:%f, y:%f, sector:%d\n",x,y,fSector);
-
   return fSector;
-}
-
-
+}//Sector()
+//__________________________________________________________________________________________________
 void AliRICHSegmentationV1::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 {
-//  returns pad coordinates (ix,iy) for given real coordinates (x,y)
-//
-// Please check origin of pad numbering !!!
 
   ix=9999; //PH Fake values which should not be returned
   iy=9999;
 
   Int_t sector=Sector(x,y);
 
-  //printf("Sector: %d\n",sector);
 
   if (sector==0)
     {
-      //ix = (x>0)? Int_t(x/fDpx)+1 : Int_t(x/fDpx);
-      //iy = (y>0)? Int_t(y/fDpy)+1 : Int_t(y/fDpy);
       ix = Int_t ((x-fDeadZone)/fDpx);
       iy = Int_t ((y+fDeadZone/2)/fDpy)-1;
     }
@@ -185,12 +127,6 @@ void AliRICHSegmentationV1::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
       iy = Int_t ((y-fDeadZone/2)/fDpy);
     }
 
-  
-  //ix = Int_t (x/fDpx);
-  //iy = Int_t (y/fDpy);
-
-  //ix = (x>0)? Int_t(x/fDpx)+1 : Int_t(x/fDpx);
-  //iy = (y>0)? Int_t(y/fDpy)+1 : Int_t(y/fDpy);
 
   if (sector==-1)
     {
@@ -202,58 +138,12 @@ void AliRICHSegmentationV1::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
   if (iy < -fNpy) iy=-fNpy;
   if (ix >  fNpx) ix= fNpx;
   if (ix < -fNpx) ix=-fNpx;
-}
-
-void AliRICHSegmentationV1::
-GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
-{
-//  returns real coordinates (x,y) for given pad coordinates (ix,iy)
-//
-
-  //Int_t sector=Sector(ix*.8,iy*.84);
-
+}//GetPadI()
+//__________________________________________________________________________________________________
+void AliRICHSegmentationV1::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
+{//  returns real coordinates (x,y) for given pad coordinates (ix,iy)
   Int_t sector=-1;
 
- // old numerical definition
-
- /*if (ix<=0)
-    {
-      if (iy<=72)
-	{
-	  if (iy>24)
-	    sector=0;
-	}
-      if (iy<=24)
-	{
-	  if (iy>-24)
-	    sector=2;
-	}
-      if (iy<=-24)
-	{
-	  if (iy>-72)
-	    sector=4;
-	}
-    }
-  if (ix>0)
-    {
-      if (iy<=72)
-	{
-	  if (iy>24)
-	    sector=1;
-	}
-      if (iy<=24)
-	{
-	  if (iy>-24)
-	    sector=3;
-	}
-      if (iy<=-24)
-	{
-	  if (iy>-72)
-	    sector=5;
-	}
-    }*/
-  
-  //  parametrised definition
 
   Float_t padplane_width = fNpx/3;
   
@@ -326,37 +216,12 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
       x = Float_t(ix)*fDpx+fDpx/2-fDeadZone;
       y = Float_t(iy)*fDpy+fDpy/2+fDeadZone/2;
     }
- 
-  
-  //if (sector==2)
-    //printf("fSector:%d x:%f y:%f\n",fSector,x,y);
-  
-}
-
-void AliRICHSegmentationV1::
-IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
+}//GetPadC
+//__________________________________________________________________________________________________
+void AliRICHSegmentationV1::IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
 {
-
-// Calculates integration limits
-
-/*
-  x1=fXt-fX-fDpx/2.;
-  x2=x1+fDpx;
-  y1=fYt-fY-fDpy/2.;
-  y2=y1+fDpy;    
-*/
-  //Int_t sector=Sector(fX,fY);
-
-  //printf("Sector:%d\n",sector);
-
   x1=fXhit-fX-fDpx/2.;
   x2=x1+fDpx;
   y1=fYhit-fY-fDpy/2.;
   y2=y1+fDpy;
 }
-
-
-
-
-
-

@@ -53,8 +53,8 @@ public:
   Double_t    Z()                  const{return fCenterV3.Z();}
   TVector3    L2G(TVector3 x3)                       const{x3.Transform(fRot);x3+=fCenterV3;return x3;}
   TVector3    G2L(TVector3 x3)                       const{x3-=fCenterV3;x3.Transform(fRot.Inverse()); return x3;}
-  inline TVector3  Global2Local(TVector3 x3, Bool_t isVector=kFALSE) const;
-  TVector3    Global2Local(TLorentzVector x4,Bool_t isVector=kFALSE) const{return Global2Local(x4.Vect(),isVector);}
+  inline TVector3  Glob2Loc(TVector3 x3, Bool_t isVector=kFALSE) const;
+  TVector3    Glob2Loc(TLorentzVector x4,Bool_t isVector=kFALSE) const{return Glob2Loc(x4.Vect(),isVector);}
   TVector3    L2G(Double_t x,Double_t y,Double_t z)  const{return L2G(TVector3(x,y,z));}
   TVector3    G2L(TLorentzVector x4)                 const{return G2L(x4.Vect());}
   Float_t     G2Ly(TLorentzVector x4)                const{TVector3 x3=G2L(x4.Vect()); return x3.Z();}
@@ -104,7 +104,7 @@ void AliRICHChamber::SetToZenith()
   fPcX3.SetXYZ(0,AliRICHParam::Offset()-AliRICHParam::GapThickness()/2+5.276+0.25,0);   
 }
 //__________________________________________________________________________________________________
-TVector3 AliRICHChamber::Global2Local(TVector3 x3,Bool_t isVector)const
+TVector3 AliRICHChamber::Glob2Loc(TVector3 x3,Bool_t isVector)const
 {
   if(!isVector) x3-=fPcX3;
   x3.Transform(fRot.Inverse()); 

@@ -154,9 +154,7 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
   Float_t qcheck=0, qp=0;
 
   iNpads=0;
-  for(fSegmentation->FirstPad(xhit, yhit, 0, dx, dy);
-      fSegmentation->MorePads();
-      fSegmentation->NextPad()) {
+  for(fSegmentation->FirstPad(xhit, yhit, 0, dx, dy); fSegmentation->MorePads(); fSegmentation->NextPad()) {
     qp= fResponse->IntXY(fSegmentation);
     qp= TMath::Abs(qp);
     if(qp >1.e-4){

@@ -310,13 +310,13 @@ void AliRICHRecon::StartProcessEvent()
       SetTrackCharge(q);
 
       TVector3 pGlob(pHit->MomFreoX(),pHit->MomFreoY(),pHit->MomFreoZ());
-      TVector3 pLocal = Rich()->C(pHit->Chamber())->Global2Local(pGlob,1);
+      TVector3 pLocal = Rich()->C(pHit->Chamber())->Glob2Loc(pGlob,1);
       
       Float_t primGlobalX = pHit->X();
       Float_t primGlobalY = pHit->Y();
       Float_t primGlobalZ = pHit->Z();
       TVector3 primGlobal(primGlobalX,primGlobalY,primGlobalZ);
-      TVector3 primLocal = Rich()->C(pHit->Chamber())->Global2Local(primGlobal);
+      TVector3 primLocal = Rich()->C(pHit->Chamber())->Glob2Loc(primGlobal);
       
 //      Float_t pmodFreo = pLocal.Mag();
       Float_t TrackTheta = pLocal.Theta();

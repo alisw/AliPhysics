@@ -63,7 +63,6 @@
 #include "AliRICHSDigit.h"
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
-#include "AliRICHRecHit1D.h"
 #include "AliMC.h"
 
 ClassImp(AliRICHDisplay)
@@ -789,57 +788,7 @@ void AliRICHDisplay::LoadCoG(Int_t chamber, Int_t cathode)
 //___________________________________________
 void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 {
-// Read rec. hits info 
-// Loop on all detectors
-
-   if (chamber > 6) return;
-
-   ///printf("Entering LoadRecHits\n");
-
-
-   AliRICH *pRICH  = (AliRICH*)gAlice->GetModule("RICH");
-   AliRICHChamber*  iChamber;
-
-   TClonesArray *pRICHrechits1D  = pRICH->RecHitsAddress1D(chamber);
-   //printf ("Chamber:%d\n", chamber);
-   if (pRICHrechits1D != 0)
-     {
-
-       //RICH->ResetRecHits();
-
-
-       Int_t nent1D=(Int_t)gAlice->TreeR()->GetEntries();
-       gAlice->TreeR()->GetEvent(nent1D-1+cathode-1);
-       Int_t nrechits1D = pRICHrechits1D->GetEntriesFast();
-       //printf ("nrechits1D:%d\n",nrechits1D);
-       if (nrechits1D != 0)
-	 {
-	   if (fRecpoints == 0) fRecpoints = new TObjArray(50);
-	   
-	   iChamber = &(pRICH->Chamber(chamber));
-	   AliRICHRecHit1D  *mRec1D;
-	   AliRICHPoints *points1D = 0;
-	   //loop over all rechits and store their position  
-	   
-	   points1D = new AliRICHPoints(nrechits1D);
-	   for (Int_t irec=0;irec<nrechits1D;irec++) {
-	     mRec1D   = (AliRICHRecHit1D*)pRICHrechits1D->UncheckedAt(irec);
-	     fRecpoints->AddAt(points1D,irec);
-	     points1D->SetMarkerColor(38);
-	     points1D->SetMarkerStyle(8);
-	     points1D->SetMarkerSize(.5);
-	     points1D->SetParticle(-1);
-	     points1D->SetHitIndex(-1);
-	     points1D->SetTrackIndex(-1);
-	     points1D->SetDigitIndex(-1);
-	     Float_t  vectorLoc[3]={mRec1D->fX,5,mRec1D->fY};
-	     Float_t  vectorGlob[3];
-	     iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
-	     points1D->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
-	   }
-	 }
-     }
-
+  chamber++;cathode++;
 }
 //___________________________________________
 void AliRICHDisplay::LoadDigits()

@@ -23,7 +23,6 @@
 #include <AliMagF.h>
 #include "AliRICH.h"
 #include "AliRICHParam.h"
-#include "AliRICHRecHit1D.h"
 #include <AliRun.h>
 #include <AliRunDigitizer.h>
 #include "AliMC.h"
@@ -68,7 +67,6 @@ AliRICH::AliRICH()
   fSpecials   =0; fNspecials  =0;  
   fDchambers  =0; for(int i=0;i<kNCH;i++) fNdch[i]=0;
   fRawClusters=0; for(int i=0;i<kNCH;i++) fNrawch[i]=0;  
-  fRecHits1D  =0; for(int i=0;i<kNCH;i++) fNrechits1D[i]=0;
   fCkovNumber=fFreonProd=0;  
 }//AliRICH::AliRICH()
 //__________________________________________________________________________________________________
@@ -88,7 +86,6 @@ AliRICH::AliRICH(const char *name, const char *title)
   fSpecials=   0;     CreateSpecialsOld();   
   fDchambers=  0;   //CreateDigitsOld();
   fRawClusters=0;   //CreateRawClustersOld();
-  fRecHits1D=  0;   //CreateRecos1Old();
   
   fCkovNumber=fFreonProd=0;  
   if(GetDebug())Info("named ctor","Stop.");
@@ -111,7 +108,6 @@ AliRICH::~AliRICH()
   if(fSpecials)  delete fSpecials;
   if(fDchambers)   {fDchambers->Delete();     delete fDchambers;}
   if(fRawClusters) {fRawClusters->Delete();   delete fRawClusters;}          
-  if(fRecHits1D) {fRecHits1D->Delete();       delete fRecHits1D;}
   if(GetDebug()) Info("dtor","Stop.");    
 }//AliRICH::~AliRICH()
 //__________________________________________________________________________________________________
@@ -199,13 +195,6 @@ void AliRICH::Digits2Reco()
 
 }//void AliRICH::Digits2Reco()  
 //__________________________________________________________________________________________________
-void AliRICH::AddRecHit1D(Int_t id, Float_t *rechit, Float_t *photons, Int_t *padsx, Int_t* padsy)
-{// Add a RICH reconstructed hit to the list
-
-    TClonesArray &lrec1D = *((TClonesArray*)fRecHits1D->At(id));
-    new(lrec1D[fNrechits1D[id]++]) AliRICHRecHit1D(id,rechit,photons,padsx,padsy);
-}
-//_____________________________________________________________________________
 void AliRICH::BuildGeometry() 
 {//Builds a TNode geometry for event display
   if(GetDebug())Info("BuildGeometry","Start.");
@@ -652,10 +641,6 @@ void AliRICH::MakeBranch(Option_t* option)
     CreateRawClustersOld(); 
     for(int i=0; i<kNCH ;i++)
       MakeBranchInTree(fLoader->TreeR(),Form("%sRawClusters%d",GetName(),i+1), &((*fRawClusters)[i]), kBufferSize, 0);
-
-    CreateRecos1Old();   
-    for(int i=0; i<kNCH ;i++) 
-      MakeBranchInTree(fLoader->TreeR(),Form("%sRecHits1D%d",GetName(),i+1),&((*fRecHits1D)[i]),kBufferSize,0);    
    }//R
   if(GetDebug())Info("MakeBranch","Stop.");   
 }//void AliRICH::MakeBranch(Option_t* option)
@@ -701,9 +686,6 @@ void AliRICH::SetTreeAddress()
     for(int i=0;i<kNCH;i++) {
       branch=fLoader->TreeR()->GetBranch(Form("%sRawClusters%d" ,GetName(),i+1));
       if(branch){CreateRawClustersOld(); branch->SetAddress(&((*fRawClusters)[i]));}
-      
-      branch=fLoader->TreeR()->GetBranch(Form("%sRecHits1D%d",GetName(),i+1));
-      if(branch){CreateRecos1Old(); branch->SetAddress(&((*fRecHits1D)[i]));}
     }
   }//R
   if(GetDebug())Info("SetTreeAddress","Stop.");
@@ -939,10 +921,11 @@ void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
   Float_t dir[3], phi;
   Float_t pol[3], mom[4];
 //Determine number of feedback photons
-  TLorentzVector x4;
-  gMC->TrackPosition(x4);  
-  Float_t charge=Param()->TotalCharge(gMC->TrackPid(),eloss,C(iChamber)->G2Ly(x4));//Total Charge
-  Int_t iNphotons=gMC->GetRandom()->Poisson(Param()->AlphaFeedback()*charge);    
+  TLorentzVector globX4;
+  gMC->TrackPosition(globX4);  
+  Int_t sector;
+  Int_t iTotQdc=Param()->Loc2TotQdc(C(iChamber)->Glob2Loc(globX4),eloss,gMC->TrackPid(),sector);
+  Int_t iNphotons=gMC->GetRandom()->Poisson(Param()->AlphaFeedback(sector)*iTotQdc);    
   Info("GenerateFeedbacks","N photons=%i",iNphotons);
 //Generate photons
   for(Int_t i=0;i<iNphotons;i++){
@@ -1004,10 +987,10 @@ void AliRICH::GenerateFeedbacks(Int_t iChamber,Float_t eloss)
                      gAlice->GetMCApp()->GetCurrentTrackNumber(),//parent track 
                      kFeedback,                      //PID
 		     mom[0],mom[1],mom[2],mom[3],    //track momentum  
-                     x4.X(),x4.Y(),x4.Z(),x4.T(),    //track origin 
+                     globX4.X(),globX4.Y(),globX4.Z(),globX4.T(),    //track origin 
                      pol[0],pol[1],pol[2],           //polarization
 		     kPFeedBackPhoton,outputNtracksStored,1.0);
     
   }
-}//Int_t AliRICH::FeedBackPhotons()
+}//FeedBackPhotons()
 //__________________________________________________________________________________________________

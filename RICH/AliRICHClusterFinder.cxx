@@ -84,7 +84,7 @@ Bool_t AliRICHClusterFinder::Centered(AliRICHRawCluster *cluster)
   AliRICHDigit* dig;
   dig= (AliRICHDigit*)fDigits->UncheckedAt(cluster->fIndexMap[0]);
   Int_t x[kMaxNeighbours], y[kMaxNeighbours], xN[kMaxNeighbours], yN[kMaxNeighbours];
-  Int_t nn=Rich()->Param()->Neighbours(dig->PadX(),dig->PadY(),x,y);
+  Int_t nn=Rich()->Param()->PadNeighbours(dig->PadX(),dig->PadY(),x,y);
     
   
   Int_t nd=0;
@@ -154,7 +154,7 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
   
       AliRICHDigit* dig[100], *digt;
     Int_t ix[100], iy[100], q[100];
-    Float_t x[100], y[100];
+    Double_t x[100], y[100];
     Int_t i; // loops over digits
     Int_t j; // loops over local maxima
     Int_t mul=c->fMultiplicity;
@@ -164,7 +164,7 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
     ix[i]= dig[i]->PadX();
     iy[i]= dig[i]->PadY();
     q[i] = dig[i]->Signal();
-    AliRICHParam::Pad2Local(ix[i], iy[i], x[i], y[i]);
+    AliRICHParam::Pad2Loc(ix[i], iy[i], x[i], y[i]);
   }
 //  Find local maxima
     Bool_t isLocal[100];
@@ -303,7 +303,8 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 	    }
 	    for (i=0; i<mul; i++) {
 		cnew.fIndexMap[cnew.fMultiplicity]=c->fIndexMap[i];
-		cnew.fContMap[cnew.fMultiplicity]=AliRICHParam::AssignChargeToPad(xrec[j],yrec[j],gix[i], giy[i]);
+                TVector3 x3(xrec[j],yrec[j],0);
+		cnew.fContMap[cnew.fMultiplicity]=AliRICHParam::Loc2PadFrac(x3,gix[i], giy[i]);
 		cnew.fMultiplicity++;
 	    }
 	    FillCluster(&cnew,0);
@@ -391,7 +392,7 @@ void AliRICHClusterFinder::SplitByLocalMaxima(AliRICHRawCluster *c)
 void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag) 
 {//  Completes cluster information starting from list of digits
     AliRICHDigit* dig;
-    Float_t x, y;
+    Double_t x, y;
     Int_t  ix, iy;
     Float_t fraction=0;
     
@@ -431,7 +432,7 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
 	   }
 	}
 	if (flag) {
-	    AliRICHParam::Pad2Local(ix,iy,x,y);
+	    AliRICHParam::Pad2Loc(ix,iy,x,y);
 	    c->fX += q*x;
 	    c->fY += q*y;
 	    c->fQ += q;
@@ -447,8 +448,8 @@ void  AliRICHClusterFinder::FillCluster(AliRICHRawCluster* c, Int_t flag)
 //  apply correction to the coordinate along the anode wire
      x=c->fX;   
      y=c->fY;
-     AliRICHParam::Local2Pad(x,y,ix,iy);
-     AliRICHParam::Pad2Local(ix,iy,x,y);
+     AliRICHParam::Loc2Pad(x,y,ix,iy);
+     AliRICHParam::Pad2Loc(ix,iy,x,y);
      Int_t isec=fSegmentation->Sector(ix,iy);
      TF1* cogCorr = fSegmentation->CorrFunc(isec-1);
      
@@ -500,14 +501,14 @@ void  AliRICHClusterFinder::AddDigit2Cluster(Int_t i, Int_t j, AliRICHRawCluster
 	Info("AddDigit2CLuster","multiplicity >50  %d \n",c.fMultiplicity);
 	c.fMultiplicity=49;
     }
-  Float_t x,y;// Prepare center of gravity calculation
-  AliRICHParam::Pad2Local(i,j,x,y);
+  Double_t x,y;// Prepare center of gravity calculation
+  AliRICHParam::Pad2Loc(i,j,x,y);
   c.fX+=q*x;    c.fY+=q*y;    c.fQ += q;
   fHitMap->FlagHit(i,j);// Flag hit as taken  
 
 
   Int_t xList[4], yList[4];    //  Now look recursively for all neighbours
-  for (Int_t iNei=0;iNei<Rich()->Param()->Neighbours(i,j,xList,yList);iNei++)
+  for (Int_t iNei=0;iNei<Rich()->Param()->PadNeighbours(i,j,xList,yList);iNei++)
     if(fHitMap->TestHit(xList[iNei],yList[iNei])==kUnused) AddDigit2Cluster(xList[iNei],yList[iNei],c);    
 }//AddDigit2Cluster()
 //__________________________________________________________________________________________________
@@ -538,8 +539,8 @@ void AliRICHClusterFinder::FindRawClusters()
     
 //    Int_t ix,iy;//  apply correction to the coordinate along the anode wire
 //    Float_t x=c.fX, y=c.fY;	
-//    Rich()->Param()->Local2Pad(x,y,ix,iy);
-//    Rich()->Param()->Pad2Local(ix,iy,x,y);
+//    Rich()->Param()->Loc2Pad(x,y,ix,iy);
+//    Rich()->Param()->Pad2Loc(ix,iy,x,y);
 //    Int_t isec=fSegmentation->Sector(ix,iy);
 //    TF1* cogCorr=fSegmentation->CorrFunc(isec-1);
 //    if(cogCorr){
@@ -578,7 +579,7 @@ void AliRICHClusterFinder::CalibrateCOG()
     }
 }//CalibrateCOG()
 //__________________________________________________________________________________________________
-void AliRICHClusterFinder::SinoidalFit(Float_t x, Float_t y, TF1 *func)
+void AliRICHClusterFinder::SinoidalFit(Double_t x, Double_t y, TF1 *func)
 {//Sinoidal fit
   static Int_t count=0;
     
@@ -589,16 +590,16 @@ void AliRICHClusterFinder::SinoidalFit(Float_t x, Float_t y, TF1 *func)
     Float_t xsig[kNs], ysig[kNs];
    
     Int_t ix,iy;
-    AliRICHParam::Local2Pad(x,y,ix,iy);   
-    AliRICHParam::Pad2Local(ix,iy,x,y);   
+    AliRICHParam::Loc2Pad(x,y,ix,iy);   
+    AliRICHParam::Pad2Loc(ix,iy,x,y);   
     Int_t isec=fSegmentation->Sector(ix,iy);
 // Pad Limits    
     Float_t xmin = x-Rich()->Param()->PadSizeX()/2;
     Float_t ymin = y-Rich()->Param()->PadSizeY()/2;
 //      	
-//      Integration Limits
-    Float_t dxI=Rich()->Param()->SigmaIntegration()*Rich()->Param()->ChargeSpreadX();
-    Float_t dyI=Rich()->Param()->SigmaIntegration()*Rich()->Param()->ChargeSpreadY();
+//      Integration Limits 
+    Float_t dxI=Rich()->Param()->MathiensonDeltaX();
+    Float_t dyI=Rich()->Param()->MathiensonDeltaY();
 
 //
 //  Scanning
@@ -625,8 +626,8 @@ void AliRICHClusterFinder::SinoidalFit(Float_t x, Float_t y, TF1 *func)
 		qcheck+=qp;
 		Int_t ixs=fSegmentation->Ix();
 		Int_t iys=fSegmentation->Iy();
-		Float_t xs,ys;
-		AliRICHParam::Pad2Local(ixs,iys,xs,ys);
+		Double_t xs,ys;
+		AliRICHParam::Pad2Loc(ixs,iys,xs,ys);
 		sum+=qp*ys;
 	    }
 	} // Pad loop
@@ -655,8 +656,8 @@ void AliRICHClusterFinder::SinoidalFit(Float_t x, Float_t y, TF1 *func)
 		qcheck+=qp;
 		Int_t ixs=fSegmentation->Ix();
 		Int_t iys=fSegmentation->Iy();
-		Float_t xs,ys;
-		AliRICHParam::Pad2Local(ixs,iys,xs,ys);
+		Double_t xs,ys;
+		AliRICHParam::Pad2Loc(ixs,iys,xs,ys);
 		sum+=qp*xs;
 	    }
 	} // Pad loop
@@ -714,9 +715,10 @@ Float_t DiscrCharge(Int_t i,Double_t *par)
 	gChargeTot=Int_t(qtot);
 	
     }
-    Float_t q1=AliRICHParam::AssignChargeToPad(par[0],par[1],gix[i],giy[i]);
-    
-    Float_t q2=AliRICHParam::AssignChargeToPad(par[2],par[3],gix[i],giy[i]);
+    TVector3 x3(par[0],par[1],0);
+    Float_t q1=AliRICHParam::Loc2PadFrac(x3,gix[i],giy[i]);
+    x3.SetX(par[2]);x3.SetY(par[3]);
+    Float_t q2=AliRICHParam::Loc2PadFrac(x3,gix[i],giy[i]);
 //    cout<<"qtot="<<gChargeTot<<" q1="<<q1<<" q2="<<q2<<" px="<<gix[i]<<" py="<<giy[i]<<endl;
     
     Float_t value = qtot*(par[4]*q1+(1.-par[4])*q2);
