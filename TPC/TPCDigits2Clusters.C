@@ -101,7 +101,7 @@ AliTPCClustersArray *  GetCalcClustersArray(Bool_t newtree=kFALSE, const char* n
   if (arr==0) {    
     arr = new AliTPCClustersArray;
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-    if (file==0) file = new TFile("galice.root","update");   
+    if (file==0) file = TFile::Open("rfio:galice.root","update");   
     arr->SetClusterType("AliDigitCluster");         
     arr->Setup(gTPCParam);
     cout<<"Update status : "<<arr->Update()<<"\n";
@@ -135,7 +135,7 @@ AliTPCClustersArray *  GetDifClustersArray(Bool_t newtree=kFALSE, const char* na
   if (arr==0) {    
     arr = new AliTPCClustersArray;
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
-    if (file==0) file = new TFile("galice.root","update");   
+    if (file==0) file = TFile::Open("rfio:galice.root","update");   
     arr->SetClusterType("AliDifCluster");         
     arr->Setup(gTPCParam);
     cout<<"Update status : "<<arr->Update()<<"\n";

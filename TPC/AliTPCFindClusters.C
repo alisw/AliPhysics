@@ -12,7 +12,7 @@
 Int_t AliTPCFindClusters() {
    TFile *out=TFile::Open("AliTPCclusters.root","new");
    if (!out->IsOpen()) {cerr<<"Delete old AliTPCclusters.root !\n"; return 1;}
-   TFile *in=TFile::Open("galice.root");
+   TFile *in=TFile::Open("rfio:galice.root");
    if (!in->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 2;}
 
    if (!(gAlice=(AliRun*)in->Get("gAlice"))) {

@@ -5,7 +5,7 @@ Int_t AliTPCDisplayDigits(int sec, int row, int lab=-1,
    cerr<<"Displaying digits...\n";
 
 // Connect the Root Galice file containing Geometry, Kine and Hits
-   TFile *f = TFile::Open("galice.root");
+   TFile *f = TFile::Open("rfio:galice.root");
    if (!f->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 1;}
 
    AliTPCParam *par=(AliTPCParam *)f->Get("75x40_100x60");

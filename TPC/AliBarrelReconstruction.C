@@ -35,11 +35,11 @@ Int_t ITSPropagateBack(const Char_t *inname, const Char_t *outname);
 
 
 Int_t AliBarrelReconstruction() {
-   const Char_t *TPCdigName="galice.root";
+   const Char_t *TPCdigName="rfio:galice.root";
    const Char_t *TPCclsName="AliTPCclusters.root";
    const Char_t *TPCtrkName="AliTPCtracks.root";
 
-   const Char_t *ITSdigName="galice.root";
+   const Char_t *ITSdigName="rfio:galice.root";
    const Char_t *ITSclsName="AliITSclustersV2.root";
    const Char_t *ITStrkName="AliITStracksV2.root";
 

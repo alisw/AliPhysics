@@ -1,7 +1,7 @@
 Int_t AliTPCDisplayClusters() {
    cerr<<"Displaying clusters...\n";
 
-   TFile *file=TFile::Open("galice.root");
+   TFile *file=TFile::Open("rfio:galice.root");
    if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; return 1;}
 
    TFile *cf=TFile::Open("AliTPCclusters.root");

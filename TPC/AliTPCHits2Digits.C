@@ -5,12 +5,13 @@ Int_t AliTPCHits2Digits()
 
   // Connect the Root Galice file containing Geometry, Kine and Hits
 
-  const char * inFile = "galice.root";  
-  TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile);
+  const char * inFile_old = "galice.root"; 
+  const char * inFile_new = "rfio:galice.root";
+  TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile_old);
   if (file) {file->Close(); delete file;}
-  file = new TFile(inFile,"UPDATE");
+  file = new TFile(inFile_new,"UPDATE");
   if (!file->IsOpen()) {
-    cerr<<"Can't open "<<inFile<<" !\n";
+    cerr<<"Can't open "<<inFile_new<<" !\n";
     return 1;
   }
 

@@ -305,7 +305,7 @@ Int_t AliTPCComparison() {
 Int_t good_tracks(GoodTrack *gt, Int_t max) {
    Int_t nt=0;
 
-   TFile *file=TFile::Open("galice.root");
+   TFile *file=TFile::Open("rfio:galice.root");
    if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; exit(4);}
 
    if (!(gAlice=(AliRun*)file->Get("gAlice"))) {
