@@ -19,6 +19,7 @@ class AliLegoGeneratorEta : public AliLegoGenerator
 {
 
  public:
+    AliLegoGeneratorEta() {}
     virtual ~AliLegoGeneratorEta() {}
     virtual void    Generate();
     ClassDef(AliLegoGeneratorEta,1) //Lego GeneratorEta
