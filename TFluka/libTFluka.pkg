@@ -10,6 +10,8 @@ HDRS:=  $(filter-out source.h,$(SRCS:.cxx=.h) )
 DHDR:=  TFlukaLinkDef.h
 
 # Extra includes and libraries
-#EINCLUDE:=
+EINCLUDE:= Flugg geant4_vmc/include $(G4INSTALL)/include $(CLHEP_BASE_DIR)/include
 ELIBSDIR:= $(FLUPRO)
 ELIBS   := flukahp
+
+CXXFLAGS += -fno-for-scope -DGNU_GCC -DGEOMETRY_DEBUG -DG4OPTIMISE -DG4USE_STL -DG4USE_STD_NAMESPACE -DG4VERBOSE -DG4_STORE_TRAJECTORY
