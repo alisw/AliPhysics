@@ -20,8 +20,7 @@ ClassImp(AliMUONSubEventTrigger)
 //___________________________________________
 AliMUONSubEventTrigger::AliMUONSubEventTrigger()
   :  TObject(),
-     fRegWord(0),
-     fRegOutput(0)
+     fRegWord(0)
 {
   for (Int_t i = 0; i < 16*5; i++)
     fLocalData[i] = 0;

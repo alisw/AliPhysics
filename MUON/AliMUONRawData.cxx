@@ -431,7 +431,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
   Int_t index;
   Int_t iEntries = 0;
   Int_t iLocCard, locCard;
-  Char_t locDec, trigY, posY, devX, posX;
+  Char_t locDec, trigY, posY, devX, posX,regOut;
   Int_t version = 1; // software version
   Int_t eventType =1; // trigger type: 1 for physics ?
   Int_t serialNb = 0xF; // serial nb of card: all bits on for the moment
@@ -470,15 +470,17 @@ Int_t AliMUONRawData::WriteTriggerDDL()
 
       // Regional card header
       word = 0;
-      AliBitPacking::PackWord((UInt_t)serialNb,word,27,31); //see  AliMUONSubEventTrigger.h for details
-      AliBitPacking::PackWord((UInt_t)iReg,word,22,26);
-      AliBitPacking::PackWord((UInt_t)version,word,14,21);
+      regOut  = 0;
+      AliBitPacking::PackWord((UInt_t)serialNb,word,24,28); //see  AliMUONSubEventTrigger.h for details
+      AliBitPacking::PackWord((UInt_t)version,word,16,23);
+      AliBitPacking::PackWord((UInt_t)iReg,word,12,15);
+      AliBitPacking::PackWord((UInt_t)regOut,word,0,7); // whenever regional output will be implemented
+
       subEvent->SetRegWord(word);
       memcpy(&buffer[index++],subEvent->GetAddress(),4);
 
       buffer[index++] = 0;// 2 words of regional input
       buffer[index++] = 0;
-      buffer[index++] = 0;// regional output
 
       for (Int_t iLoc = 0; iLoc < 16; iLoc++) {
 
