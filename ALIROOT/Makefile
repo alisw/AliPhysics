@@ -70,7 +70,8 @@ depend:		$(ALLSRCS)
 
 $(BINDIR)/aliroot:	$(OBJS) $(COBJS) $(FOBJS)
 
-LIBS = $(ALILIBS) $(G3LIBS) $(CLIBS) $(GLIBS) -lEG -lEGPythia -lpythia -lpdf
+LIBS = $(ALILIBS) $(G3LIBS) $(CLIBS) $(GLIBS) -lEG -lEGPythia -lpythia -lpdf \
+					-lTHijing -lhijing
 
 TOCLEAN		= $(PROGRAM) $(OBJS) $(COBJS) $(FOBJS)
 
