@@ -5,6 +5,7 @@
 #include <TMath.h>
 #include <TVector2.h>
 #include <TRandom.h>
+#include <TError.h>
 
 
 static const int kNCH=7;           //number of RICH chambers 
@@ -61,7 +62,14 @@ public:
   
   static Bool_t   IsResolveClusters()         {return fgIsResolveClusters;}  //go after resolved clusters?
   static Bool_t   IsWireSag()                 {return fgIsWireSag;}          //take wire sagita in account?
-  static Int_t    HV(Int_t sector)            {return fgHV[sector-1];}       //high voltage for this sector
+  static Int_t    HV(Int_t sector)            {
+    if (sector>=1 && sector <=6)
+      return fgHV[sector-1];
+    else {
+      ::Error("HV","Wrong sector %d",sector);
+      return kBad;
+    } 
+  }       //high voltage for this sector
   static void     IsResolveClusters(Bool_t a) {fgIsResolveClusters=a;}  
   static void     SetWireSag(Bool_t status)   {fgIsWireSag=status;}  
   static void     SetHV(Int_t sector,Int_t hv){fgHV[sector-1]=hv;}  
