@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.8  2001/07/04 10:28:20  morsch
+Introduce GetLifetime(Int_T kf) method until functionality provided by
+TParticlePDG.
+
 Revision 1.7  2001/04/12 07:23:28  morsch
 Reactivate forcing option for dimuon and dielectron decay channels of phi (333).
 
@@ -87,9 +91,9 @@ void AliDecayerPythia::Init()
 // Switch on heavy flavor decays
     
     Int_t kc, i, j;
-    Int_t heavy[8] = {411, 421, 431, 4122, 511, 521, 531, 5122};
+    Int_t heavy[14] = {411, 421, 431, 4122, 4132, 4232, 4332, 511, 521, 531, 5122, 5132, 5232, 5332};
     fPythia->ResetDecayTable();
-    for (j=0; j < 8; j++) {
+    for (j=0; j < 14; j++) {
 	kc=fPythia->Pycomp(heavy[j]);
 	fPythia->SetMDCY(kc,1,1);
 	for (i=fPythia->GetMDCY(kc,2); 
@@ -112,6 +116,8 @@ void AliDecayerPythia::Decay(Int_t idpart, TLorentzVector* p)
     
     Lu1Ent(0, idpart, energy, theta, phi);
     fPythia->GetPrimaries();
+//    fPythia->Pylist(1);
+    
 }
 
 Int_t AliDecayerPythia::ImportParticles(TClonesArray *particles)
@@ -136,12 +142,18 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay(  411,13,1); // D+/-     
 	ForceParticleDecay(  421,13,1); // D0     
 	ForceParticleDecay(  431,13,1); // D_s     
-	ForceParticleDecay( 4122,13,1); // Lambda_c     
+	ForceParticleDecay( 4122,13,1); // Lambda_c    
+	ForceParticleDecay( 4132,13,1); // Xsi_c     
+	ForceParticleDecay( 4232,13,1); // Sigma_c 
+	ForceParticleDecay( 4332,13,1); // Omega_c     
 	ForceParticleDecay(  511,13,1); // B0     
 	ForceParticleDecay(  521,13,1); // B+/-     
 	ForceParticleDecay(  531,13,1); // B_s     
 	ForceParticleDecay( 5122,13,1); // Lambda_b    
-    break;
+	ForceParticleDecay( 5132,13,1); // Xsi_b    
+	ForceParticleDecay( 5232,13,1); // Sigma_b    
+	ForceParticleDecay( 5332,13,1); // Omega_b    
+	break;
     case kDiMuon:
 	ForceParticleDecay(  333,13,2); // phi
 	ForceParticleDecay(  443,13,2); // J/Psi
@@ -151,19 +163,22 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay(30553,13,2); // Upsilon''
 	break;
     case kSemiElectronic:
-	
 	ForceParticleDecay(  411,11,1); // D+/-     
 	ForceParticleDecay(  421,11,1); // D0     
 	ForceParticleDecay(  431,11,1); // D_s     
 	ForceParticleDecay( 4122,11,1); // Lambda_c     
-	
+	ForceParticleDecay( 4132,11,1); // Xsi_c     
+	ForceParticleDecay( 4232,11,1); // Sigma_c 
+	ForceParticleDecay( 4332,11,1); // Omega_c     
 	ForceParticleDecay(  511,11,1); // B0     
 	ForceParticleDecay(  521,11,1); // B+/-     
 	ForceParticleDecay(  531,11,1); // B_s     
 	ForceParticleDecay( 5122,11,1); // Lambda_b     
+	ForceParticleDecay( 5132,11,1); // Xsi_b    
+	ForceParticleDecay( 5232,11,1); // Sigma_b    
+	ForceParticleDecay( 5332,11,1); // Omega_b    
 	break;
     case kDiElectron:
-
 	ForceParticleDecay(  333,11,2); // phi
 	ForceParticleDecay(  443,11,2); // J/Psi
 	ForceParticleDecay(30443,11,2); // Psi'
@@ -206,6 +221,9 @@ void AliDecayerPythia::ForceDecay()
 	break;
     case kHadronicD:
 	ForceHadronicD();
+	break;
+    case kOmega:
+	ForceOmega();
     case kAll:
 	break;
     case kNoDecay:
@@ -372,6 +390,19 @@ void AliDecayerPythia::DefineParticles()
     tlife= fPythia->GetPMAS(kc,4);
 //    gMC->Gspart(113,"Phi",3,mass,0,tlife);
 }
+
+void  AliDecayerPythia::ForceOmega()
+{
+    // Force Omega -> Lambda K- Decay
+    Int_t kc=fPythia->Pycomp(3334);
+    fPythia->SetMDCY(kc,1,1);
+    fPythia->SetMDME(1202,1,1);
+    fPythia->SetMDME(1203,1,0);
+    fPythia->SetMDME(1204,1,0);
+    fPythia->SetMDME(1205,1,0);
+}
+
+
 
 Float_t  AliDecayerPythia::GetPartialBranchingRatio(Int_t kf)
 {

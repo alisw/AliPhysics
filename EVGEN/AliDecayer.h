@@ -16,7 +16,7 @@ class TLorentzVector;
 typedef enum
 { kSemiElectronic, kDiElectron, kSemiMuonic, kDiMuon,
   kBJpsiDiMuon, kBJpsiDiElectron, 
-  kBPsiPrimeDiMuon, kBPsiPrimeDiElectron, kPiToMu, kKaToMu, kNoDecay, kHadronicD, kAll}
+  kBPsiPrimeDiMuon, kBPsiPrimeDiElectron, kPiToMu, kKaToMu, kNoDecay, kHadronicD, kOmega, kAll}
 Decay_t;
 
 class AliDecayer :
@@ -32,7 +32,7 @@ public TObject
     virtual void    ForceDecay()                               =0;
     virtual Float_t GetPartialBranchingRatio(Int_t ipart)      =0;
     virtual Float_t GetLifetime(Int_t kf)                      =0;
-    ClassDef(AliDecayer,1) // Alice Decayer Base Class
+    ClassDef(AliDecayer,2) // Alice Decayer Base Class
 };
 #endif
 

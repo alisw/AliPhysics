@@ -38,7 +38,8 @@ public AliDecayer
 		    Double_t mom, Double_t theta, Double_t phi);
     Int_t    CountProducts(Int_t channel, Int_t particle);
     void     ForceParticleDecay(Int_t particle, Int_t product, Int_t mult);
-    void     ForceHadronicD();    
+    void     ForceHadronicD();
+    void     ForceOmega();    
     Float_t  GetBraPart(Int_t kf);
 
     AliDecayerPythia(const AliDecayerPythia &decayer) {;}
@@ -47,12 +48,12 @@ public AliDecayer
     
     
  private:
-    AliPythia*  fPythia;          //  ! Pointer to AliPythia
-    Decay_t     fDecay;           //  Forced decay mode
-    Float_t     fBraPart[501];    //  ! Branching ratios
-    static Bool_t fgInit;         //  ! initialization flag 
+    AliPythia*  fPythia;          //! Pointer to AliPythia
+    Decay_t     fDecay;           // Forced decay mode
+    Float_t     fBraPart[501];    //! Branching ratios
+    static Bool_t fgInit;         //! initialization flag 
     
-    ClassDef(AliDecayerPythia,1)  // AliDecayer implementation using Pythia  
+    ClassDef(AliDecayerPythia,2)  // AliDecayer implementation using Pythia  
 };
 #endif
 
