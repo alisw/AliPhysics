@@ -73,7 +73,7 @@ class AliTRDdigitizer : public AliDigitizer {
  protected:
 
   //TFile               *fInputFile;          //! ALIROOT-file
-  AliRunLoader        *fRunLoader;
+  AliRunLoader        *fRunLoader;          //! Local pointer
   AliTRDdigitsManager *fDigitsManager;      //! Manager for the output digits
   AliTRDdigitsManager *fSDigitsManager;     //! Manager for the summed input s-digits
   TList               *fSDigitsManagerList; //! List of managers of input s-digits
