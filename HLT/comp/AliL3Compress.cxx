@@ -397,7 +397,7 @@ void AliL3Compress::RestoreData(Char_t which='u')
   CreateDigitArray(10000000);
   
   Float_t pad,time,sigmaY2,sigmaZ2;
-  Int_t charge;
+  Int_t charge,npads;
   for(Int_t j=AliL3Transform::GetFirstRow(fPatch); j<=AliL3Transform::GetLastRow(fPatch); j++)
     {
       cout<<"Building clusters on row "<<j<<endl;
@@ -411,8 +411,8 @@ void AliL3Compress::RestoreData(Char_t which='u')
 	     !track->GetXYWidth(j,sigmaY2) || 
 	     !track->GetZWidth(j,sigmaZ2))
 	    continue;
-	  
-	  CreateDigits(j,pad,time,charge,sigmaY2,sigmaZ2);
+	  npads = track->GetNPads(j);
+	  CreateDigits(j,npads,pad,time,charge,sigmaY2,sigmaZ2);
 	}
     }
   
@@ -538,42 +538,14 @@ void AliL3Compress::WriteRestoredData()
   
 }
 
-void AliL3Compress::CreateDigits(Int_t row,Float_t pad,Float_t time,Int_t charge,Float_t sigmaY2,Float_t sigmaZ2)
+void AliL3Compress::CreateDigits(Int_t row,Int_t npads,Float_t pad,Float_t time,Int_t charge,Float_t sigmaY2,Float_t sigmaZ2)
 {
   //Create raw data out of the cluster.
-  
-
     
-  //Convert back the sigmas:
-  /*
-    Float_t padw,timew;
-    if(fPatch < 2)
-    padw = AliL3Transform::GetPadPitchWidthLow();
-    else
-    padw = AliL3Transform::GetPadPitchWidthUp();
-    timew = AliL3Transform::GetZWidth();
-  */
+  if(npads == 1)//If there was only 1 pad, the xywidth is set to zero.
+    sigmaY2 = 0;
   
-  /*
-    if(fPatch < 3)
-    sigmaY2 = sigmaY2/2.07;
-    sigmaY2 = sigmaY2/0.108;
-  */
-  
-  //sigmaY2 = sigmaY2/(padw*padw);
-  
-  //sigmaY2 = sigmaY2;// - 1./12;
-  
-  /*
-    if(fPatch < 3)
-    sigmaZ2 = sigmaZ2/1.77;
-    sigmaZ2 = sigmaZ2/0.169;
-  */
-  
-  //sigmaZ2 = sigmaZ2/(timew*timew);
-  //sigmaZ2 = sigmaZ2;// - 1./12;
-  
-  if(sigmaY2 <= 0 || sigmaZ2 <= 0)
+  if(sigmaY2 < 0 || sigmaZ2 <= 0)
     {
       cerr<<"AliL3Compress::CreateDigits() : Wrong sigmas : "<<sigmaY2<<" "<<sigmaZ2;
       cerr<<" on row "<<row<<" pad "<<pad<<" time "<<time<<endl;
@@ -582,12 +554,12 @@ void AliL3Compress::CreateDigits(Int_t row,Float_t pad,Float_t time,Int_t charge
   
   TRandom *random = new TRandom();
   
-  Int_t entries=1000;
+  Int_t entries=2000;
   TH1F *hist1 = new TH1F("hist1","",AliL3Transform::GetNPads(row),0,AliL3Transform::GetNPads(row)-1);
   TH1F *hist2 = new TH1F("hist2","",AliL3Transform::GetNTimeBins(),0,AliL3Transform::GetNTimeBins()-1);
   TH2F *hist3 = new TH2F("hist3","",AliL3Transform::GetNPads(row),0,AliL3Transform::GetNPads(row)-1,AliL3Transform::GetNTimeBins(),0,AliL3Transform::GetNTimeBins()-1);
 
-  
+
   
   //Create the distributions in pad and time:
   for(Int_t i=0; i<entries; i++)
@@ -773,6 +745,5 @@ void AliL3Compress::WriteRootFile(Char_t *newrootfile)
   delete mem;
   delete file;
 #endif
-
   return;
 }
