@@ -21,10 +21,18 @@ class AliITSstatistics2 : public TObject {
     virtual ~AliITSstatistics2();
     void Reset();
     void AddValue(Double_t y,Double_t x,Double_t w);
-    void AddValue(Double_t y,Double_t x){AddValue(y,x,1.0);} // default weight
+    void AddValue(Double_t y,Double_t x){
+	                                      // default weight
+	                                      AddValue(y,x,1.0);
+													  } 
     void AddValue(Float_t y,Float_t x,Float_t w){
-             AddValue((Double_t)y,(Double_t)x,(Double_t)w);} // Floating point version
-    void AddValue(Float_t y,Float_t x){AddValue(y,x,1.0);}// default weight F.
+	                                              // Floating point version
+                                                 AddValue((Double_t)y,(Double_t)x,(Double_t)w);
+																 } 
+    void AddValue(Float_t y,Float_t x){
+	                                    // default weight F.
+	                                    AddValue(y,x,1.0);
+												  }
     Double_t GetXNth (Int_t order);
     Double_t GetYNth (Int_t order);
     Double_t GetYXNth(Int_t order);
