@@ -74,6 +74,7 @@
 ClassImp(AliPHOSGetter)
   
   AliPHOSGetter * AliPHOSGetter::fgObjGetter = 0 ; 
+  TFile * AliPHOSGetter::fFile = 0 ; 
 
 //____________________________________________________________________________ 
 AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
@@ -188,8 +189,10 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
 
   if ( fgObjGetter )    
     if((fgObjGetter->fBranchTitle.CompareTo(branchTitle) == 0) && 
-       (fgObjGetter->fHeaderFile.CompareTo(headerFile)==0))
+       (fgObjGetter->fHeaderFile.CompareTo(headerFile)==0)) {
+      fFile->cd() ; 
       return fgObjGetter ;
+    }
     else 
       fgObjGetter->~AliPHOSGetter() ;  // delete it already exists another version
  
@@ -254,20 +257,20 @@ TObject** AliPHOSGetter::PrimariesRef(void) const
   
   // the hierarchy is //Folders/RunMC/Event/Data/Primaries
   if ( !fPrimariesFolder ) {
-    cerr << "ERROR: AliPHOSGetter::Post PrimariesRef -> Folder //" << fPrimariesFolder << " not found!" << endl;
-    return 0;
+    cerr << "ERROR: AliPHOSGetter::PrimariesRef -> Folder //" << fPrimariesFolder << " not found!" << endl;
+    abort() ;
   }    
  
   TFolder * primariesFolder = dynamic_cast<TFolder *>(fPrimariesFolder->FindObject("Primaries")) ;
   if ( !primariesFolder ) {
-    cerr << "ERROR: AliPHOSGetter::Post PrimariesRef -> Folder //" << fPrimariesFolder << "/Primaries/ not found!" << endl;  
-    return 0;
+    cerr << "ERROR: AliPHOSGetter::PrimariesRef -> Folder //" << fPrimariesFolder << "/Primaries/ not found!" << endl;  
+    abort() ;
   }
  
   TObject * p = primariesFolder->FindObject("Primaries") ;
   if(!p) {
     cerr << "ERROR: AliPHOSGetter::PrimariesRef -> " << primariesFolder->GetName() << "/Primaries not found !" << endl ; 
-    return 0 ;
+    abort() ;
   }
   else
     return primariesFolder->GetListOfFolders()->GetObjectRef(p) ;
@@ -301,20 +304,20 @@ TObject** AliPHOSGetter::HitsRef(void) const
   
   // the hierarchy is //Folders/RunMC/Event/Data/PHOS/Hits
   if ( !fHitsFolder ) {
-    cerr << "ERROR: AliPHOSGetter::Post H -> Folder //" << fHitsFolder << " not found!" << endl;
-    return 0;
+    cerr << "ERROR: AliPHOSGetter::HitsRef -> Folder //" << fHitsFolder << " not found!" << endl;
+    abort() ;
   }    
  
   TFolder * phosFolder = dynamic_cast<TFolder *>(fHitsFolder->FindObject("PHOS")) ;
   if ( !phosFolder ) {
-    cerr << "ERROR: AliPHOSGetter::Post HRef -> Folder //" << fHitsFolder << "/PHOS/ not found!" << endl;  
-    return 0;
+    cerr << "ERROR: AliPHOSGetter::HitsRef -> Folder //" << fHitsFolder << "/PHOS/ not found!" << endl;  
+    abort() ;
   }
  
   TObject * h = phosFolder->FindObject("Hits") ;
   if(!h) {
-    cerr << "ERROR: AliPHOSGetter::HRef -> " << phosFolder->GetName() << "/Hits not found !" << endl ; 
-    return 0 ;
+    cerr << "ERROR: AliPHOSGetter::HitsRef -> " << phosFolder->GetName() << "/Hits not found !" << endl ; 
+    abort() ;
   }
   else
     return phosFolder->GetListOfFolders()->GetObjectRef(h) ;
@@ -362,14 +365,14 @@ TObject** AliPHOSGetter::SDigitsRef(const char * name, const char * file) const
   // the hierarchy is //Folders/RunMC/Event/Data/PHOS/SDigits/filename/SDigits
 
   if ( !fSDigitsFolder ) {
-    cerr << "ERROR: AliPHOSGetter::Post SRef -> Folder //" << fSDigitsFolder << " not found!" << endl;
-    return 0;
+    cerr << "ERROR: AliPHOSGetter::SDigitsRef -> Folder //" << fSDigitsFolder << " not found!" << endl;
+    abort() ;
   }    
  
   TFolder * phosFolder = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject("PHOS")) ;
   if ( !phosFolder ) {
-    cerr << "ERROR: AliPHOSGetter::Post SRef -> Folder //" << fSDigitsFolder << "/PHOS/ not found!" << endl;
-    return 0;
+    cerr << "ERROR: AliPHOSGetter::SDigitsRef -> Folder //" << fSDigitsFolder << "/PHOS/ not found!" << endl;
+    abort() ;
   }
 
   TFolder * phosSubFolder = 0 ;
@@ -379,13 +382,15 @@ TObject** AliPHOSGetter::SDigitsRef(const char * name, const char * file) const
     phosSubFolder = dynamic_cast<TFolder *>(phosFolder->FindObject(fHeaderFile)) ;
   
   if(!phosSubFolder) {
-    cerr << "ERROR: AliPHOSGetter::Post SRef -> Folder //Folders/RunMC/Event/Data/PHOS/" << file << "not found!" << endl;
-    return 0;
+    cerr << "ERROR: AliPHOSGetter::DigitesSRef -> Folder //Folders/RunMC/Event/Data/PHOS/" << file << "not found!" << endl;
+    abort() ;
   }
 
   TObject * dis = phosSubFolder->FindObject(name) ;
-  if(!dis)
-    return 0 ;
+  if(!dis){
+    cerr << "ERROR: AliPHOSGetter::DigitesSRef -> object " << name << " not found! " << endl ; 
+    abort()  ;
+  }
   else
     return phosSubFolder->GetListOfFolders()->GetObjectRef(dis) ;
 
@@ -517,19 +522,21 @@ TObject** AliPHOSGetter::DigitsRef(const char * name) const
   // the hierarchy is //Folders/Run/Event/Data/PHOS/Digits/name
 
   if ( !fDigitsFolder ) {
-    cerr << "ERROR: AliPHOSGetter::Post DRef -> Folder //" << fDigitsFolder << " not found!" << endl;
-    return 0;
+    cerr << "ERROR: AliPHOSGetter::DigitsRef -> Folder //" << fDigitsFolder << " not found!" << endl;
+    abort() ;
   }    
   
   TFolder * phosFolder  = dynamic_cast<TFolder*>(fDigitsFolder->FindObject("PHOS")) ; 
   if ( !phosFolder ) {
-    cerr << "ERROR: AliPHOSGetter::DRef -> Folder //" << fDigitsFolder << "/PHOS/ not found!" << endl;
-    return 0;
+    cerr << "ERROR: AliPHOSGetter::DigitsRef -> Folder //" << fDigitsFolder << "/PHOS/ not found!" << endl;
+    abort() ;
   }    
 
   TObject * d = phosFolder->FindObject(name) ;
-  if(!d)
-    return 0 ;
+  if(!d) {
+    cerr << "ERROR: AliPHOSGetter::DigitsRef -> object " << name << " not found! " << endl ; 
+    abort() ;
+  }
   else
     return phosFolder->GetListOfFolders()->GetObjectRef(d) ;
 
@@ -678,22 +685,23 @@ TObject** AliPHOSGetter::EmcRecPointsRef(const char * name) const
    
   if ( !fRecoFolder ) {
     cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder->GetName() << " not found!" << endl;
-    return 0 ; 
+    abort() ; 
   }    
 
   TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/EMCARecPoints")) ; 
   if ( !phosFolder ) {
     cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder->GetName() << "/PHOS/EMCARecPoints/ not found!" << endl;
-    return 0;
+    abort() ;
   }    
 
 
   TObject * erp = phosFolder->FindObject(name ) ;
   if ( !erp )   {
-    return 0 ;
+    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> object " << name << " not found! " << endl ; 
+    abort() ;
   }
   return phosFolder->GetListOfFolders()->GetObjectRef(erp) ;
-
+  
 } 
 
 //____________________________________________________________________________ 
@@ -703,22 +711,23 @@ TObject** AliPHOSGetter::CpvRecPointsRef(const char * name) const
   // the hierarchy is //Folders/Run/Event/RecData/PHOS/CPVRecPoints/name
    
   if ( !fRecoFolder ) {
-    cerr << "ERROR: AliPHOSGetter::EmcRecPointsRef -> Folder //" << fRecoFolder->GetName() << " not found!" << endl;
-    return 0 ; 
+    cerr << "ERROR: AliPHOSGetter::CpvRecPointsRef -> Folder //" << fRecoFolder->GetName() << " not found!" << endl;
+    abort() ; 
   }    
 
   TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/CPVRecPoints")) ; 
   if ( !phosFolder ) {
     cerr << "ERROR: AliPHOSGetter::CpvRecPointsRef -> Folder //" << fRecoFolder->GetName() << "/PHOS/CPVRecPoints/" << endl;
-    return 0;
+    abort() ;
   }    
 
   TObject * crp = phosFolder->FindObject(name ) ;
   if ( !crp )   {
-    return 0 ;
+    cerr << "ERROR: AliPHOSGetter::CpvRecPointsRef -> object " << name << " not found " << endl ; 
+    abort() ;
   }
   return phosFolder->GetListOfFolders()->GetObjectRef(crp) ;
-
+  
 } 
 
 //____________________________________________________________________________ 
@@ -762,14 +771,14 @@ TObject** AliPHOSGetter::ClusterizerRef(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliPHOSGetter::Post RerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
-    return 0 ;
+    cerr << "ERROR: AliPHOSGetter::ClusterizerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    abort() ;
   }        
         
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"WARNING: AliPHOSGetter::Post RerRef -> //" << fTasksFolder << "/Reconstructioner/PHOS" << endl; 
-    return 0 ; 
+    cerr <<"WARNING: AliPHOSGetter::ClusterizerRef -> //" << fTasksFolder << "/Reconstructioner/PHOS" << endl; 
+    abort() ; 
   }   
 
   TList * l = phos->GetListOfTasks() ; 
@@ -789,7 +798,7 @@ TObject** AliPHOSGetter::ClusterizerRef(const char * name) const
   if(clu) 
     return l->GetObjectRef(clu) ;
   else{
-    cerr << "ERROR: AliPHOSGetter::Post RerRef -> Task //" << fTasksFolder << "/Reconstructioner/clusterizer name not found!" << endl;
+    cerr << "ERROR: AliPHOSGetter::ClusterizerRef -> Task //" << fTasksFolder << "/Reconstructioner/clusterizer name not found!" << endl;
     abort() ;
   }
 }
@@ -868,18 +877,19 @@ TObject** AliPHOSGetter::TrackSegmentsRef(const char * name) const
 
  if ( !fRecoFolder ) {
     cerr << "ERROR: AliPHOSGetter::TrackSegmentsRef -> Folder //" << fRecoFolder->GetName() << "not found!" << endl;
-    return 0 ; 
+    abort() ; 
   }    
 
   TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/TrackSegments")) ; 
   if ( !phosFolder ) {
     cerr << "ERROR: AliPHOSGetter::TrackSegmentsRef -> Folder //" << fRecoFolder->GetName() << "/PHOS/TrackSegments/ not found!" << endl;
-    return 0;
+    abort() ;
   }    
   
   TObject * tss =  phosFolder->FindObject(name) ;
   if (!tss) {
-    return 0 ;  
+    cerr << "ERROR: AliPHOSGetter::TrackSegmentsRef -> object " << name << " not found! " << endl ;  
+    abort() ;  
   }
   return phosFolder->GetListOfFolders()->GetObjectRef(tss) ;
 } 
@@ -961,14 +971,14 @@ TObject** AliPHOSGetter::TSMakerRef(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliPHOSGetter::Post TerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
-    return 0 ;
+    cerr << "ERROR: AliPHOSGetter::TSMakerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    abort() ;
   }        
         
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"WARNING: AliPHOSGetter::Post TerRef -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
-    return 0 ; 
+    cerr <<"WARNING: AliPHOSGetter::TSMakerRef -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
+    abort()  ; 
   }   
 
   TList * l = phos->GetListOfTasks() ; 
@@ -987,12 +997,10 @@ TObject** AliPHOSGetter::TSMakerRef(const char * name) const
   
   if(tsm) 
     return l->GetObjectRef(tsm) ;
-  else
-    {
-    cerr << "ERROR: AliPHOSGetter::Post TerRef -> Task //" << fTasksFolder << "/Reconstructioner/TrackSegmentMarker name not found!" << endl;
+  else {
+    cerr << "ERROR: AliPHOSGetter::TSMakerRef -> Task //" << fTasksFolder << "/Reconstructioner/TrackSegmentMarker name not found!" << endl;
     abort() ;
-  }
-  
+  } 
 } 
 
 //____________________________________________________________________________ 
@@ -1037,18 +1045,19 @@ TObject** AliPHOSGetter::RecParticlesRef(const char * name) const
 
  if ( !fRecoFolder ) {
     cerr << "ERROR: AliPHOSGetter::RecParticlesRef -> Folder//" << fRecoFolder->GetName() << " not found!" << endl; 
-    return 0 ; 
+    abort() ; 
   }    
 
   TFolder * phosFolder  = dynamic_cast<TFolder*>(fRecoFolder->FindObject("PHOS/RecParticles")) ; 
   if ( !phosFolder ) {
     cerr << "ERROR: AliPHOSGetter::RecParticlesRef -> Folder //" << fRecoFolder->GetName() << "/PHOS/RecParticles/ not found!" << endl;
-    return 0;
+    abort() ;
   }    
 
   TObject * tss =  phosFolder->FindObject(name  ) ;
   if (!tss) {
-    return 0 ;  
+    cerr << "ERROR: AliPHOSGetter::RecParticlesRef -> object " << name << " not found! " << endl ; 
+    abort() ;  
   }
   return phosFolder->GetListOfFolders()->GetObjectRef(tss) ;
 }
@@ -1133,14 +1142,14 @@ TObject** AliPHOSGetter::PIDRef(const char * name) const
   TTask * tasks  = dynamic_cast<TTask*>(fTasksFolder->FindObject("Reconstructioner")) ; 
 
   if ( !tasks ) {
-    cerr << "ERROR: AliPHOSGetter::Post PerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
-    return 0 ;
+    cerr << "ERROR: AliPHOSGetter::PIDRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
+    abort() ;
   }        
         
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"WARNING: AliPHOSGetter::Post PerRef -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
-    return 0 ; 
+    cerr << "ERROR: AliPHOSGetter::PIDRef -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
+    abort()  ; 
   }   
   
   TList * l = phos->GetListOfTasks() ; 
@@ -1159,8 +1168,8 @@ TObject** AliPHOSGetter::PIDRef(const char * name) const
   
   if(pid) 
     return l->GetObjectRef(pid) ;
-  else{
-    cerr << "ERROR: AliPHOSGetter::Post PerRef -> Task //" << fTasksFolder << "/Reconstructioner/PID name not found!" << endl;
+  else {
+    cerr << "ERROR: AliPHOSGetter::PIDRef -> Task //" << fTasksFolder << "/Reconstructioner/PID name not found!" << endl;
     abort() ;
   }
   
@@ -1191,14 +1200,14 @@ TObject** AliPHOSGetter::AlarmsRef(void) const
   
   // the hierarchy is //Folders/Run/Conditions/QA/PHOS
   if ( !fQAFolder ) {
-    cerr << "ERROR: AliPHOSGetter::Post QRef -> Folder //" << fQAFolder << " not found!" << endl;
-    return 0;
+    cerr << "ERROR: AliPHOSGetter::AlarmsRef -> Folder //" << fQAFolder << " not found!" << endl;
+    abort() ;
   }    
  
   TFolder * phosFolder = dynamic_cast<TFolder *>(fQAFolder->FindObject("PHOS")) ;
   if ( !phosFolder ) {
-    cerr << "ERROR: AliPHOSGetter::Post QRef -> Folder //" << fQAFolder << "/PHOS/ not found!" << endl;
-    return 0;
+    cerr << "ERROR: AliPHOSGetter::AlarmsRef -> Folder //" << fQAFolder << "/PHOS/ not found!" << endl;
+    abort() ;
   }
    
   return fQAFolder->GetListOfFolders()->GetObjectRef(phosFolder) ;
@@ -1412,6 +1421,7 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
   // This is a feature needed by PID to be able to reconstruct several times particles (each time a ther title is given)
   // from a given set of TrackSegments (with a given name)
   // This is why any is NOT used to read the branch of RecParticles
+  // any migh have become obsolete : to be checked
   // See AliPHOSPIDv1    
 
   if(gAlice->TreeR()== 0){
@@ -1426,8 +1436,10 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
   TBranch * cpvbranch = 0 ; 
   TBranch * clusterizerbranch = 0 ; 
   Bool_t phosemcrpfound = kFALSE, phoscpvrpfound = kFALSE, clusterizerfound = kFALSE ; 
+
   
   while ( (branch = static_cast<TBranch*>(next())) && (!phosemcrpfound || !phoscpvrpfound || !clusterizerfound) ) 
+
     if(strcmp(branch->GetTitle(), fRecPointsTitle)==0 || any) {
       if ( strcmp(branch->GetName(), "PHOSEmcRP")==0) {
 	emcbranch = branch ; 

@@ -218,13 +218,14 @@ private:
 
  private:
 
-  TFile *        fFile;               //! 
+  static TFile *        fFile;               //! 
   TString        fHeaderFile ;        //! File in which gAlice lives
   TString        fBranchTitle ;       //!
   TString        fTrackSegmentsTitle ;//! 
   TString        fRecPointsTitle ;    //!
   TString        fRecParticlesTitle ; //!
-  TString        fDigitsTitle ;       //!
+  TString        fDigitsTitle ;       //! TDirectory tempo(gDirectory) ; 
+
   TString        fSDigitsTitle ;      //!
 
   Bool_t         fFailed ;            //! set if file not opend or galice not found
