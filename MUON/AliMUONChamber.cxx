@@ -14,6 +14,19 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.7  2000/12/20 13:00:22  egangler
+
+Added charge correlation between cathods.
+In Config_slat.C, use
+ MUON->Chamber(chamber-1).SetChargeCorrel(0.11); to set the RMS of
+ q1/q2 to 11 % (number from Alberto)
+ This is stored in AliMUONChamber fChargeCorrel member.
+ At generation time, when a tracks enters the volume,
+ AliMUONv1::StepManager calls
+ AliMUONChamber::ChargeCorrelationInit() to set the current value of
+ fCurrentCorrel which is then used at Disintegration level to scale
+ appropriately the PadHit charges.
+
 Revision 1.6  2000/10/09 14:01:12  morsch
 Double inclusion of AliResponse removed.
 
@@ -90,7 +103,10 @@ ClassImp(AliMUONChamber)
 AliMUONChamber::~AliMUONChamber() 
 {
 // Destructor
-    if (fSegmentation) delete fSegmentation;
+  if (fSegmentation) {
+    fSegmentation->Delete();
+    delete fSegmentation;
+  }
 }
 
 AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber)

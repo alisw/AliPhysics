@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.41  2000/12/21 22:12:40  morsch
+Clean-up of coding rule violations,
+
 Revision 1.40  2000/11/29 20:32:26  gosset
 Digitize:
 1. correction for array index out of bounds
@@ -368,31 +371,72 @@ AliMUON::~AliMUON()
     
     Int_t i;
     fIshunt  = 0;
-    delete fHits;
-    delete fPadHits;
-    
-    delete fGlobalTrigger;
+ 
+    // Delete TObjArrays
+ 
+    if (fChambers){
+      fChambers->Delete();
+      delete fChambers;
+    }
+ 
+    if (fTriggerCircuits){
+      fTriggerCircuits->Delete();
+      delete fTriggerCircuits;
+    }
+ 
+    if (fDchambers){
+      fDchambers->Delete();
+      delete fDchambers;
+    }
+ 
+    if (fRawClusters){
+      fRawClusters->Delete();
+      delete fRawClusters;
+    }
+    for (i=0;i<AliMUONConstants::NTrackingCh();i++) {
+      fNrawch[i]=0;
+    }
+ 
+    // Delete TClonesArrays
+ 
+    if (fPadHits){
+      fPadHits->Delete();
+      delete fPadHits;
+    }
+ 
+    if (fGlobalTrigger){
+      fGlobalTrigger->Delete();
+      delete fGlobalTrigger;
+    }
     fNGlobalTrigger = 0;
     
-    delete fLocalTrigger;
+    if (fLocalTrigger){
+      fLocalTrigger->Delete();
+      delete fLocalTrigger;
+    }
     fNLocalTrigger = 0;
 
-    for (i=0;i<AliMUONConstants::NCh();i++) {
-	delete (*fDchambers)[i];
-	fNdch[i]=0;
+    if (fHits2){
+      fHits2->Delete();
+      delete fHits2;
     }
-    delete fDchambers;
-    
-    for (i=0;i<AliMUONConstants::NTrackingCh();i++) {
-	delete (*fRawClusters)[i];
-	fNrawch[i]=0;
+
+    if (fPadHits2){
+      fPadHits2->Delete();
+      delete fPadHits2;
     }
-    delete fRawClusters;
-    
-    for (Int_t circ=0; circ<AliMUONConstants::NTriggerCircuit(); circ++) {
-	delete (*fTriggerCircuits)[circ];
+
+    if (fHits) {
+      fHits->Delete();
+      delete fHits;
     }
-    delete fTriggerCircuits;
+
+    // Delete hits tree for background event
+
+    if (fTrH1) {
+      fTrH1->Delete();
+      delete fTrH1;
+    }
 }
  
 //___________________________________________

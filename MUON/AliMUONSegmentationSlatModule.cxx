@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/12/21 22:12:41  morsch
+Clean-up of coding rule violations,
+
 Revision 1.6  2000/11/06 09:20:43  morsch
 AliMUON delegates part of BuildGeometry() to AliMUONSegmentation using the
 Draw() method. This avoids code and parameter replication.
@@ -396,7 +399,6 @@ void AliMUONSegmentationSlatModule::Init(Int_t chamber)
     fNpy=nPyPCB;
     fNpx=fNpxS[3];
 //
-    AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
     fId = chamber;
 }
 

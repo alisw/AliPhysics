@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/12/21 22:12:41  morsch
+Clean-up of coding rule violations,
+
 Revision 1.7  2000/11/08 13:01:40  morsch
 Chamber half-planes of stations 3-5 at different z-positions.
 
@@ -61,6 +64,14 @@ AliMUONSegmentationSlat::AliMUONSegmentationSlat()
 // Default constructor
     fSlats=0;            
     fNDiv = new TArrayI(4);   
+}
+
+AliMUONSegmentationSlat::~AliMUONSegmentationSlat(){
+  //PH Delete TObjArrays
+  if (fSlats) {
+    fSlats->Delete();
+    delete fSlats;
+  }
 }
 
 void AliMUONSegmentationSlat::SetPadSize(Float_t p1, Float_t p2)
