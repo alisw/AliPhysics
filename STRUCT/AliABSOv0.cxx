@@ -464,8 +464,8 @@ void AliABSOv0::CreateGeometry()
   AliMatrix(idrotm[1600], 180., 0., 90., 0., 90., 90.);
   AliMatrix(idrotm[1601], 180., 0., 90., 0., 90., 270.);
   gMC->Gsvolu("ASST", "TRAP", idtmed[kSteel], trap, 11);
-  dz = (600.+kZRear+2.)/2.+(trap[4]-trap[8])/2.;
-  Float_t dy =  170.+trap[0];
+  //PH  dz = (600.+kZRear+2.)/2.+(trap[4]-trap[8])/2.;
+  //PH  Float_t dy =  170.+trap[0];
   
 //  gMC->Gspos("ASST", 1, "ALIC", 0.,  dy, - dz, idrotm[1600], "ONLY");
 //  gMC->Gspos("ASST", 2, "ALIC", 0., -dy, - dz, idrotm[1601], "ONLY");
