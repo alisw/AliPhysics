@@ -15,12 +15,18 @@
 
 /*
 $Log$
+Revision 1.4  2001/01/26 20:00:53  hristov
+Major upgrade of AliRoot code
+
 Revision 1.3  2000/12/21 17:51:54  morsch
 RN3 violations corrected
 
 Revision 1.2  2000/11/23 10:09:38  gosset
 Bug correction in AliMUONRecoDisplay.
 Copyright, $Log$
+Copyright, Revision 1.4  2001/01/26 20:00:53  hristov
+Copyright, Major upgrade of AliRoot code
+Copyright,
 Copyright, Revision 1.3  2000/12/21 17:51:54  morsch
 Copyright, RN3 violations corrected
 Copyright,, $Id$, comments at the right place for automatic documentation,
@@ -249,7 +255,7 @@ const Double_t AliMUONRecoTrack::Phi()
 const Double_t AliMUONRecoTrack::Theta()
 {
 // Return trach theta angle
-   return TMath::ACos(fPr[3] / P());
+   return TMath::ACos(fPr[2] / P());
 }
 
 //-------------------------------------------------------------------
