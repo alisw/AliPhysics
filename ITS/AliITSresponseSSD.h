@@ -80,7 +80,8 @@ public:
   
 protected:
   Int_t   fNPar;            // Number of detector param 
-  Float_t *fDetPar       ;  // Array of parameters 
+  Float_t *fDetPar;         //!
+                            // Array of parameters 
   
   Float_t fNoiseP;          // Noise on Pside
   Float_t fNoiseN;          // Noise on Nside
@@ -89,10 +90,13 @@ protected:
   Float_t fSigmaN;          // Sigma charge spread on Nside
   Float_t fDiffCoeff;       // Diffusion Coefficient
   
-  Option_t *fOption1;       // Simulate invalid strips option
-  Option_t *fOption2;       // Not used for the moment
+  Option_t *fOption1;       //!
+                            // Simulate invalid strips option
+  Option_t *fOption2;       //! 
+                            // Not used for the moment
   
-  char*  fDataType;       // Type of data - real or simulated
+  char*  fDataType;         //!
+                            // Type of data - real or simulated
   
   ClassDef(AliITSresponseSSD,1) //Response class for SSD 
 

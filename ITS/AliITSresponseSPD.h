@@ -60,7 +60,8 @@ public:
   Float_t fBaseline;        // Baseline value
   Int_t fThreshold;         // Zero-Suppression threshold
   
-  char* fDataType;        // Type of data - real or simulated
+  char* fDataType;          //!
+                            // Type of data - real or simulated
 };
 
 #endif

@@ -186,14 +186,21 @@ protected:
   Int_t      fMinVal;        // Min value used in 2D zero-suppression algo
   
   Bool_t     fWrite;         // Write option for the compression algorithms
-  Option_t   *fOption;       // Zero-suppresion option (1D, 2D or none)
-  Option_t   *fParam1;       // Read baselines from file option
-  Option_t   *fParam2;       // Read compression algo thresholds from file 
+  Option_t   *fOption;       //! 
+                             // Zero-suppresion option (1D, 2D or none)
+  Option_t   *fParam1;       //! 
+                             //Read baselines from file option
+  Option_t   *fParam2;       //! 
+                             //Read compression algo thresholds from file 
   
-  char*         fDataType;         // input keys : run, module #
-  char*         fFileName1;        // input keys : run, module #
-  char*         fFileName2;        // baseline & noise val or output coded                                        // signal or monitored bgr.
-  char*         fFileName3;        // param values or output coded signal 
+  char*         fDataType;         //!
+				   // input keys : run, module #
+  char*         fFileName1;        //!
+                                   // input keys : run, module #
+  char*         fFileName2;        //!
+                                   // baseline & noise val or output coded                                        // signal or monitored bgr.
+  char*         fFileName3;        //!
+                                   // param values or output coded signal 
   
   ClassDef(AliITSresponseSDD,1) // SDD response 
     

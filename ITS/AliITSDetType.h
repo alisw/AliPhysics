@@ -83,8 +83,10 @@ protected:
   AliITSresponse       *fResponse;         // response
   AliITSsegmentation   *fSegmentation;     // segmentation
   
-  char*              fDigClassName;      // string
-  char*              fClustClassName;    // string
+  char*              fDigClassName;      //!
+                                         // string
+  char*              fClustClassName;    //! 
+                                         // string
   
   ClassDef(AliITSDetType,1)
     
