@@ -17,7 +17,10 @@
 
 ClassImp(AliAnalysis)
 
-AliAnalysis::AliAnalysis()
+AliAnalysis::AliAnalysis():
+ fEventCut(0x0),
+ fCutOnSim(kTRUE),
+ fCutOnRec(kTRUE)
 {
  //ctor
 }
