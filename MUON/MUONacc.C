@@ -2,8 +2,8 @@ Bool_t SelectThis(AliMUONHit* mHit);
 
 Bool_t SelectThis(Float_t x, Float_t y, Float_t d)
 {
-//    Float_t x     =    mHit->fX;        // x-pos 
-//    Float_t y     =    mHit->fY;        // y-pos
+//    Float_t x     =    mHit->X();        // x-pos 
+//    Float_t y     =    mHit->Y();        // y-pos
     if (TMath::Abs(x) > d/2. && TMath::Abs(y) > d/2.) {
 	return 1;
     } else {
@@ -11,6 +11,21 @@ Bool_t SelectThis(Float_t x, Float_t y, Float_t d)
     }
 }
 
+Bool_t SelectThat(Float_t x, Float_t y, Float_t d)
+{
+    const Float_t phi0=60.*TMath::Pi()/180.;
+    
+    if (y<0.) return 1;
+    if (x<0.) x=-x;
+    
+    Float_t phi = TMath::ATan2(y,x);
+    Float_t dist = TMath::Sin(phi0-phi)*TMath::Sqrt(x*x+y*y);
+    if (TMath::Abs(dist) > d) {
+	return 1;
+    } else {
+	return 0 ;
+    }
+}
 
 void MUONacc (Float_t d=3., Int_t evNumber1=0, Int_t evNumber2=0) 
 {
@@ -54,6 +69,7 @@ void MUONacc (Float_t d=3., Int_t evNumber1=0, Int_t evNumber2=0)
 
     TH1F *theta   =  new TH1F("theta","Theta distribution",180,0,180);
     TH1F *emult   =  new TH1F("emult","Event Multiplicity",100,0,1000);   
+    TH2F *supp    =  new TH2F("supp", "Diselected",100, -200., 200, 100, -200., 200.);   
 
     AliMUONChamber*  iChamber;
     AliSegmentation* seg;
@@ -82,9 +98,9 @@ void MUONacc (Float_t d=3., Int_t evNumber1=0, Int_t evNumber2=0)
 //       
 	Int_t prim=0;
 	
-	for (Int_t part=0; part<3000; part+=3) {
-	    TParticle *MPart = (TParticle*) fPartArray->UncheckedAt(part);
-	    Int_t mpart = MPart->GetPdgCode();
+	for (Int_t part=0; part<30000; part+=3) {
+	    TParticle *MPart = gAlice->Particle(part);
+	    Int_t mpart  = MPart->GetPdgCode();
 	    Int_t child1 = MPart->GetFirstDaughter();
 	    Int_t child2 = MPart->GetLastDaughter();	
 	    Int_t mother = MPart->GetFirstMother();	    
@@ -112,23 +128,24 @@ void MUONacc (Float_t d=3., Int_t evNumber1=0, Int_t evNumber2=0)
 			mHit;
 			mHit=(AliMUONHit*)MUON->NextHit()) 
 		    {
-			Int_t   nch   =    mHit->fChamber;  // chamber number
-			Float_t x     =    mHit->fX;        // x-pos of hit
-			Float_t y     =    mHit->fY;        // y-pos
-			Float_t z     =    mHit->fZ;        // z-pos
-			Float_t Eloss =    mHit->fEloss;    // energy loss
-			Float_t Theta =    mHit->fTheta;    // theta
-			Float_t Particle = mHit->fParticle; // Particle type
-			Int_t itrack   = Int_t(mHit->fTrack);
-		        TParticle *thePart = (TParticle*) fPartArray->UncheckedAt(itrack);
+			Int_t   nch   =    mHit->Chamber();  // chamber number
+			Float_t x     =    mHit->X();        // x-pos of hit
+			Float_t y     =    mHit->Y();        // y-pos
+			Float_t z     =    mHit->Z();        // z-pos
+			Float_t Eloss =    mHit->Eloss();    // energy loss
+			Float_t Theta =    mHit->Theta();    // theta
+			Float_t Particle = mHit->Particle(); // Particle type
+			Int_t itrack   = Int_t(mHit->Track());
+
+		        TParticle *thePart = gAlice->Particle(itrack);
 			Float_t pTheta=thePart->Theta();
 			
 			if (Particle != kMuonPlus && Particle != kMuonMinus) continue;
 			
 			Float_t P    =
-			    TMath::Sqrt(mHit->fCxHit*mHit->fCxHit+
-					mHit->fCyHit*mHit->fCyHit+
-					mHit->fCzHit*mHit->fCzHit);
+			    TMath::Sqrt(mHit->Cx()*mHit->Cx()+
+					mHit->Cy()*mHit->Cy()+
+					mHit->Cz()*mHit->Cz());
 			Float_t R   = TMath::Sqrt(x*x+y*y);
 			TParticlePDG* Part = DataBase->GetParticle(Particle);
 			Double_t mass = Part->Mass();
@@ -149,12 +166,22 @@ void MUONacc (Float_t d=3., Int_t evNumber1=0, Int_t evNumber2=0)
 //			    (z>970 && ( R > 970 * TMath::Tan(2.0*TMath::Pi()/180.)
 //					+(z-970)* TMath::Tan(1.6*TMath::Pi()/180.)));
 //
-			Bool_t ok = (z<970 && ( R < z*TMath::Tan(9.0*TMath::Pi()/180.))) ||
-			    (z>970 && ( R < 970 * TMath::Tan(9.0*TMath::Pi()/180.)
-					+(z-970)* TMath::Tan(12.0*TMath::Pi()/180.)));
-
+//			Bool_t ok = (z<970 && ( R < z*TMath::Tan(9.0*TMath::Pi()/180.))) ||
+//			    (z>970 && ( R < 970 * TMath::Tan(9.0*TMath::Pi()/180.)
+//					+(z-970)* TMath::Tan(12.0*TMath::Pi()/180.)));
+			if (nch == 4 ||  nch == 7) {
+			    Bool_t ok = SelectThat(x,y,d);
+			} else {
+			    Bool_t ok = kTRUE;
+			}
 			
-			selected[muons] = selected[muons] && ok;
+			
+			    selected[muons] = selected[muons] && ok;
+			if (!ok) {
+			    supp->Fill(x,y,1.);
+			    
+			}
+			
 
 		    } // hit loop
 		} // if MUON
@@ -169,9 +196,11 @@ void MUONacc (Float_t d=3., Int_t evNumber1=0, Int_t evNumber2=0)
 //Create a canvas, set the view range, show histograms
     Int_t k;
     TCanvas *c1 = new TCanvas("c1","Canvas 1",400,10,600,700);
-    c1->Divide(2,4);
+    c1->Divide(2,2);
     c1->cd(1);
     theta->Draw();
+    c1->cd(2);
+    supp->Draw();
     
 }
 
