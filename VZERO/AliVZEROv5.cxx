@@ -35,7 +35,6 @@
 
 // --- ROOT libraries ---
 #include <TClonesArray.h>
-#include <TGeant3.h>
 #include <TGeometry.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
@@ -756,7 +755,6 @@ void AliVZEROv5::CreateMaterials()
 
     Int_t *idtmed = fIdtmed->GetArray()-2999;
     
-//    TGeant3 *geant3 = (TGeant3*) gMC;
     
 //  Parameters related to Quarz (SiO2) :
  
