@@ -19,7 +19,6 @@
 #include <G4Navigator.hh>
 
 #include <Randomize.hh>
-
 #include <TLorentzVector.h>
 
 TG4StepManager* TG4StepManager::fgInstance = 0;
@@ -74,13 +73,16 @@ void TG4StepManager::CheckTrack() const
 }     
 
 
-void TG4StepManager::CheckStep() const
+void TG4StepManager::CheckStep(const G4String& method) const
 {
 // Gives exception in case the step is not defined.
 // ---
 
-  if (!fStep) 
-    TG4Globals::Exception("TG4StepManager: Step is not defined.");
+  if (!fStep) {
+    G4String text = "TG4StepManager::";
+    text = text + method + ": Step is not defined.";
+    TG4Globals::Exception(text);
+  }
 }     
 
 
@@ -114,7 +116,8 @@ G4VPhysicalVolume* TG4StepManager::GetCurrentOffPhysicalVolume(G4int off) const
  
   G4VPhysicalVolume* physVolume = GetCurrentPhysicalVolume(); 
 
-  G4VPhysicalVolume* mother = physVolume;
+  G4VPhysicalVolume* mother = physVolume; 
+
   Int_t level = off;
   while (level > 0) { 
     if (mother) mother = mother->GetMother();
@@ -178,7 +181,9 @@ void TG4StepManager::StopTrack()
 //                       // secondaries.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif  
   
   fTrack->SetTrackStatus(fStopAndKill);
   // fTrack->SetTrackStatus(fStopButAlive);
@@ -190,7 +195,9 @@ void TG4StepManager::StopEvent()
 // Aborts the current event processing.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif  
   
   fTrack->SetTrackStatus(fKillTrackAndSecondaries);
           //StopTrack();   // cannot be used as it keeps secondaries
@@ -257,15 +264,27 @@ G4VPhysicalVolume* TG4StepManager::GetCurrentPhysicalVolume() const
 
   G4VPhysicalVolume* physVolume; 
   if (fStepStatus == kNormalStep) {
-    CheckStep();
+
+#ifdef TGEANT4_DEBUG
+    CheckStep("GetCurrentPhysicalVolume");
+#endif    
+
     physVolume = fStep->GetPreStepPoint()->GetPhysicalVolume();
   }  
   else if (fStepStatus == kBoundary) {
-    CheckStep();
+
+#ifdef TGEANT4_DEBUG
+    CheckStep("GetCurrentPhysicalVolume");
+#endif 
+
     physVolume = fStep->GetPostStepPoint()->GetPhysicalVolume();
   }  
   else {
+
+#ifdef TGEANT4_DEBUG
     CheckTrack();
+#endif 
+
     G4ThreeVector position = fTrack->GetPosition();
     G4Navigator* navigator =
       G4TransportationManager::GetTransportationManager()->
@@ -347,9 +366,7 @@ Int_t TG4StepManager::CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens,
   G4Material* material 
     = physVolume->GetLogicalVolume()->GetMaterial();
 
-  // this if may be redundant - check
-  if (material)
-  {
+  if (material) {
     G4int nofElements = material->GetNumberOfElements();
     TG4GeometryManager* pGeometryManager = TG4GeometryManager::Instance();
     a = pGeometryManager->GetEffA(material);
@@ -393,16 +410,27 @@ void TG4StepManager::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
 //
 // ---
 
-  CheckStep();
+  G4AffineTransform affineTransform;
+
+  if (fStepStatus == kVertex) {
+    G4Navigator* navigator =
+      G4TransportationManager::GetTransportationManager()->
+        GetNavigatorForTracking();
+	
+    affineTransform = navigator->GetGlobalToLocalTransform();
+  }
+  else {
+
+#ifdef TGEANT4_DEBUG
+    CheckStep("Gmtod");
+#endif
  
+    affineTransform
+      = fStep->GetPreStepPoint()->GetTouchable()->GetHistory()
+        ->GetTopTransform();
+  }	
+
   G4ThreeVector theGlobalPoint(xm[0],xm[1],xm[2]); 
-
-  //const G4NavigationHistory* history
-  //   =  fStep->GetPreStepPoint()->GetTouchable()->GetHistory();
-  G4AffineTransform affineTransform
-    = fStep->GetPreStepPoint()->GetTouchable()->GetHistory()
-      ->GetTopTransform();
-
   G4ThreeVector theLocalPoint;
   if(iflag == 1) 
        theLocalPoint = affineTransform.TransformPoint(theGlobalPoint);
@@ -415,7 +443,6 @@ void TG4StepManager::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
   xd[0] = theLocalPoint.x();
   xd[1] = theLocalPoint.y();
   xd[2] = theLocalPoint.z();
-     
 } 
  
 void TG4StepManager::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag) 
@@ -437,16 +464,29 @@ void TG4StepManager::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag)
 //
 // ---
 
-  CheckStep();
+  G4AffineTransform affineTransform;
 
-  // check this
-    
-  G4ThreeVector theLocalPoint(xd[0],xd[1],xd[2]); 
+  if (fStepStatus == kVertex) {
+    G4Navigator* navigator =
+      G4TransportationManager::GetTransportationManager()->
+        GetNavigatorForTracking();
+	
+    affineTransform = navigator->GetLocalToGlobalTransform();
+  }
+  else {
 
-  G4AffineTransform affineTransform
-    = fStep->GetPreStepPoint()->GetTouchable()->GetHistory()
+#ifdef TGEANT4_DEBUG
+    CheckStep("Gdtom");
+#endif
+
+    // check this
+     
+    affineTransform
+      = fStep->GetPreStepPoint()->GetTouchable()->GetHistory()
         ->GetTopTransform().Inverse();
+  }	
   
+  G4ThreeVector theLocalPoint(xd[0],xd[1],xd[2]); 
   G4ThreeVector theGlobalPoint;
   if(iflag == 1)
        theGlobalPoint = affineTransform.TransformPoint(theLocalPoint);
@@ -467,9 +507,10 @@ Float_t TG4StepManager::MaxStep() const
 // by User Limits.
 // ---
 
-  // check this
-  G4LogicalVolume* curLogVolume 
+  G4LogicalVolume* curLogVolume
     = GetCurrentPhysicalVolume()->GetLogicalVolume();
+
+  // check this
   G4UserLimits* userLimits 
     = curLogVolume->GetUserLimits();
 
@@ -505,8 +546,10 @@ void TG4StepManager::TrackPosition(TLorentzVector& position) const
 // (position of the PostStepPoint).
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
-  
+#endif
+
   // get position
   // check if this is == to PostStepPoint position !!
   G4ThreeVector positionVector = fTrack->GetPosition();
@@ -539,7 +582,9 @@ void TG4StepManager::TrackMomentum(TLorentzVector& momentum) const
 // Current particle "momentum" (px, py, pz, Etot).
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
 
   G4ThreeVector momentumVector = fTrack->GetMomentum(); 
   momentumVector *= 1./(TG3Units::Energy());   
@@ -556,7 +601,9 @@ void TG4StepManager::TrackVertexPosition(TLorentzVector& position) const
 // and the local time since the current track is created.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
 
   // position
   G4ThreeVector positionVector = fTrack->GetVertexPosition();
@@ -576,7 +623,10 @@ void TG4StepManager::TrackVertexMomentum(TLorentzVector& momentum) const
 // to do: change Ekin -> Etot 
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
+
   G4ThreeVector momentumVector = fTrack->GetVertexMomentumDirection(); 
   momentumVector *= 1./(TG3Units::Energy());   
 
@@ -593,7 +643,11 @@ Float_t TG4StepManager::TrackStep() const
 
   G4double length;
   if (fStepStatus == kNormalStep) {
-    CheckStep();    
+
+#ifdef TGEANT4_DEBUG
+    CheckStep("TrackStep");    
+#endif
+
     length = fStep->GetStepLength();
     length /= TG3Units::Length();
   }  
@@ -608,7 +662,9 @@ Float_t TG4StepManager::TrackLength() const
 // Returns the length of the current track from its origin.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
 
   G4double length = fTrack->GetTrackLength();
   length /= TG3Units::Length();
@@ -623,7 +679,9 @@ Float_t TG4StepManager::TrackTime() const
 // the proper time of the dynamical particle of the current track.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
   
   G4double time = fTrack->GetLocalTime();
   time /= TG3Units::Time();
@@ -637,7 +695,11 @@ Float_t TG4StepManager::Edep() const
 
   G4double energyDeposit;
   if (fStepStatus == kNormalStep) {
-    CheckStep();
+
+#ifdef TGEANT4_DEBUG
+    CheckStep("Edep");
+#endif
+
     energyDeposit = fStep->GetTotalEnergyDeposit();
     energyDeposit /= TG3Units::Energy();
   }
@@ -652,7 +714,9 @@ Int_t TG4StepManager::TrackPid() const
 // Returns the current particle PDG encoding.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
 
   G4ParticleDefinition* particle
     = fTrack->GetDynamicParticle()->GetDefinition();
@@ -671,7 +735,10 @@ Float_t TG4StepManager::TrackCharge() const
 // Returns the current particle charge.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
+
   G4double charge
     = fTrack->GetDynamicParticle()->GetDefinition()
       ->GetPDGCharge();
@@ -684,7 +751,9 @@ Float_t TG4StepManager::TrackMass() const
 // Returns current particle rest mass.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
 
   G4double mass
     = fTrack->GetDynamicParticle()->GetDefinition()
@@ -698,7 +767,9 @@ Float_t TG4StepManager::Etot() const
 // Returns total energy of the current particle.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
 
   G4double energy
     = fTrack->GetDynamicParticle()->GetTotalEnergy();
@@ -740,8 +811,11 @@ Bool_t TG4StepManager::IsTrackExiting() const
 // ---
 
   if (fStepStatus == kNormalStep) {
-    CheckStep();
-    
+
+#ifdef TGEANT4_DEBUG
+    CheckStep("IsTrackExiting");
+#endif    
+
     if (fStep->GetPostStepPoint()->GetStepStatus() == fGeomBoundary) 
        return true;  
   }
@@ -757,7 +831,9 @@ Bool_t TG4StepManager::IsTrackOut() const
 
   if (fStepStatus == kVertex) return false;
 
-  CheckStep();
+#ifdef TGEANT4_DEBUG
+  CheckStep("IsTrackCut");
+#endif
 
   // check
   G4StepStatus status
@@ -787,7 +863,9 @@ Bool_t TG4StepManager::IsTrackStop() const
 //                       // to the next event.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
 
   // check
   G4TrackStatus status
@@ -809,7 +887,9 @@ Bool_t TG4StepManager::IsTrackDisappeared() const
 // or has been killed, suspended or postponed to next event.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
 
   // check
   G4TrackStatus status
@@ -829,7 +909,9 @@ Bool_t TG4StepManager::IsTrackAlive() const
 // Returns true if particle continues tracking.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckTrack();
+#endif
 
   G4TrackStatus status
      = fTrack->GetTrackStatus();
@@ -856,7 +938,9 @@ Int_t TG4StepManager::NSecondaries() const
 // in the current step.
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckSteppingManager();
+#endif
 
   G4int nofSecondaries = 0;
   nofSecondaries += fSteppingManager->GetfN2ndariesAtRestDoIt();
@@ -874,7 +958,9 @@ void TG4StepManager::GetSecondary(Int_t index, Int_t& particleId,
 // !! Check if indexing of secondaries is same !!
 // ---
 
+#ifdef TGEANT4_DEBUG
   CheckSteppingManager();
+#endif
 
   G4int nofSecondaries = NSecondaries();
   G4TrackVector* secondaryTracks = fSteppingManager->GetSecondary();
@@ -923,8 +1009,15 @@ const char* TG4StepManager::ProdProcess() const
 // Returns the name of the process that defined current step
 // (and may produce the secondary particles).
 // ---
+  
+  if (fStepStatus == kVertex) return "NONE";
 
-  CheckStep();
+  G4int nofSecondaries = NSecondaries();
+  if (nofSecondaries == 0) return "NONE";
+  
+#ifdef TGEANT4_DEBUG
+  CheckStep("ProdProcess");
+#endif
 
   const G4VProcess* curProcess 
     = fStep->GetPostStepPoint()->GetProcessDefinedStep(); 
