@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.22  2002/04/26 10:28:48  morsch
+Option kPyBeautyPbMNR added (N. Carrer).
+
 Revision 1.21  2002/03/25 14:46:16  morsch
 Case  kPyD0PbMNR added (N. Carrer).
 
@@ -378,7 +381,12 @@ void  AliPythia::SetDecayTable()
 #endif
 
 extern "C" {
-  Double_t pyr(Int_t*) {return sRandom->Rndm();}
+  Double_t pyr(Int_t*) 
+{
+      Float_t r;
+      do r=sRandom->Rndm(); while(0 >= r || r >= 1);
+      return r;
+}
   void pyrset(Int_t*,Int_t*) {}
   void pyrget(Int_t*,Int_t*) {}
 }
