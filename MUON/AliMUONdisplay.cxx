@@ -300,10 +300,8 @@ void AliMUONdisplay::CreateColors()
         b=0.;
         color=i;
         color=260+23-color;
-	//        printf("CreateColors - i, k, color %d %d %d \n",i,k,color);
         new TColor(color,r,g,b);
       } 
-      //      printf("I'm out of case %d \n",k);
       break;
     case 2:
       for (i=1;i<=4;i++) {
@@ -312,10 +310,8 @@ void AliMUONdisplay::CreateColors()
         b=0.;
         color=i+5;
         color=260+23-color;
-	//        printf("CreateColors - i, k, color %d %d %d \n",i,k,color);
         new TColor(color,r,g,b);
       } 
-      //      printf("I'm out of case %d \n",k);
       break;
     case 3:
       for (i=1;i<=4;i++) {
@@ -324,10 +320,8 @@ void AliMUONdisplay::CreateColors()
         b=i*0.2+0.2;
         color=i+9;
         color=260+23-color;
-	//        printf("CreateColors - i, k, color %d %d %d \n",i,k,color);
         new TColor(color,r,g,b);
       } 
-      //      printf("I'm out of case %d \n",k);
       break;
     case 4:
       for (i=1;i<=4;i++) {
@@ -336,10 +330,8 @@ void AliMUONdisplay::CreateColors()
         b=1.;
         color=i+13;
         color=260+23-color;
-	//        printf("CreateColors - i, k, color %d %d %d \n",i,k,color);
         new TColor(color,r,g,b);
       } 
-      //      printf("I'm out of case %d \n",k);
       break;
     case 5:
       for (i=1;i<=5;i++) {
@@ -348,10 +340,8 @@ void AliMUONdisplay::CreateColors()
         b=1.;
         color=i+17;
         color=260+23-color;
-	//        printf("CreateColors - i, k, color %d %d %d \n",i,k,color);
         new TColor(color,r,g,b);
       } 
-      //      printf("I'm out of case %d \n",k);
       break;
     }
     
@@ -379,10 +369,10 @@ void AliMUONdisplay::DisplayColorScale()
    text->SetTextSize(0.2);
    text->SetTextAlign(22);
    
-	   AliMUON *MUON  = (AliMUON*)gAlice->GetModule("MUON");
-	   AliMUONchamber *iChamber = &(MUON->Chamber(fChamber-1));
-	    AliMUONresponse * response=iChamber->GetResponseModel();
-	    Int_t adcmax= (Int_t) response->MaxAdc();
+   AliMUON *MUON  = (AliMUON*)gAlice->GetModule("MUON");
+   AliMUONchamber *iChamber = &(MUON->Chamber(fChamber-1));
+   AliMUONresponse * response=iChamber->GetResponseModel();
+   Int_t adcmax= (Int_t) response->MaxAdc();
    
 
    TBox *box;
@@ -395,9 +385,6 @@ void AliMUONdisplay::DisplayColorScale()
        ylow = y1 + hs*(Float_t(i));
        yup  = y1 + hs*(Float_t(i+1));
          color = 261+i;
-	 //	 Int_t scale=(i+1)*(Int_t)adc_satm/22;
-	 //	 sprintf(label,"%d",scale);
-	 //Double_t logscale=Double_t(i+1)*(TMath::Log(adc_satm)/22);
 	 Double_t logscale=Double_t(i+1)*(TMath::Log(adcmax)/22);
          Int_t scale=(Int_t)TMath::Exp(logscale);
 	 sprintf(label,"%d",scale);
@@ -452,31 +439,22 @@ void AliMUONdisplay::DrawClusters()
    TObjArray *points;
    AliMUONpoints *pm;
 
-   //   rmax=fRzone;
       
    fClustersCuts = 0;
       points = Points();
       if (!points) return;
       ndigits = points->GetEntriesFast();
-      printf("DrawClusters - ndigits %d \n",ndigits);
       for (digit=0;digit<ndigits;digit++){
          pm = (AliMUONpoints*)points->UncheckedAt(digit);
          if (!pm) continue;
          Float_t *pxyz;
          pxyz=pm->GetP();
-//         Int_t color=(Int_t)pm->GetMarkerColor();
-	 //	 printf("DrawClusters - color %d \n",color);
-	 //       	 DrawP(pxyz[0],pxyz[1],pxyz[2],0.75,0.5,color);
-	 //        printf("DrawClusters - pxyz[0],pxyz[1] %f %f \n",pxyz[0],pxyz[1]);
 	 for (Int_t im=0;im<3;im++) {
   	   TMarker3DBox *marker=pm->GetMarker(im);
-	   //	 marker->Dump();
 	   if (marker)
    	     marker->Draw();
 	   }
       	 pm->Draw();
-	 //	          Int_t n=pm->GetN();
-	 //	          printf("DrawClusters - n %d \n",n);
          fClustersCuts +=pm->GetN();
 
       }
@@ -497,7 +475,6 @@ void AliMUONdisplay::DrawHits()
       points = Phits();
       if (!points) return;
       ntracks = points->GetEntriesFast();
-      printf("DrawHits - ntracks %d \n",ntracks);
       for (track=0;track<ntracks;track++) {
          pm = (AliMUONpoints*)points->UncheckedAt(track);
 	 if (!pm) continue;
@@ -521,7 +498,6 @@ void AliMUONdisplay::DrawCoG()
       points = Rpoints();
       if (!points) return;
       ncog = points->GetEntriesFast();
-      printf("DrawCoG - ncog %d \n",ncog);
       for (icog=0;icog<ncog;icog++) {
          pm = (AliMUONpoints*)points->UncheckedAt(icog);
 	 if (!pm) continue;
@@ -548,7 +524,6 @@ void AliMUONdisplay::DrawCoG2()
       points = R2points();
       if (!points) return;
       ncog = points->GetEntriesFast();
-      printf("DrawCoG - ncog %d \n",ncog);
       for (icog=0;icog<ncog;icog++) {
          pm = (AliMUONpoints*)points->UncheckedAt(icog);
 	 if (!pm) continue;
@@ -572,7 +547,6 @@ void AliMUONdisplay::DrawCathCor()
       points = Cpoints();
       if (!points) return;
       ncog = points->GetEntriesFast();
-      printf("DrawCathCor - ncog %d \n",ncog);
       for (icog=0;icog<ncog;icog++) {
          pm = (AliMUONpoints*)points->UncheckedAt(icog);
 	 if (!pm) continue;
@@ -733,8 +707,6 @@ void AliMUONdisplay::LoadDigits(Int_t chamber, Int_t cathode)
    fChamber=chamber;
    fCathode=cathode;
 
-   printf("cathode, fCathode %d %d \n",cathode,fCathode);
- 
    ResetPoints();
 
    AliMUON *MUON  = (AliMUON*)gAlice->GetModule("MUON");
@@ -752,17 +724,12 @@ void AliMUONdisplay::LoadDigits(Int_t chamber, Int_t cathode)
    Int_t ndigits = MUONdigits->GetEntriesFast();
    if (ndigits == 0) return;
    if (fPoints == 0) fPoints = new TObjArray(ndigits);
-   printf("Found %d digits for cathode %d in chamber %d \n",ndigits,cathode,chamber);
 	  
    iChamber = &(MUON->Chamber(chamber-1));
-   printf("LoadPoints - iChamber %p \n",iChamber);
    segmentation=iChamber->GetSegmentationModel(cathode);
-   printf("LoadPoints - segmentation %p \n",segmentation);
-   Float_t dpxbig  = segmentation->Dpx()/2.;
-   Float_t dpy  = segmentation->Dpy()/2.;
-   printf("LoadPoints - dpxbig, dpy %f %f \n",dpxbig,dpy);
-   Float_t zpos=iChamber->ZPosition();  // check with Andreas
-   printf("LoadPoint - zpos %f \n",zpos);
+   //Float_t dpxbig  = segmentation->Dpx()/2.;
+   //   Float_t dpy  = segmentation->Dpy()/2.;
+   Float_t zpos=iChamber->ZPosition();  
    AliMUONdigit  *mdig;
    AliMUONpoints *points = 0;
    TMarker3DBox *marker=0;
@@ -777,9 +744,6 @@ void AliMUONdisplay::LoadDigits(Int_t chamber, Int_t cathode)
         // First get all needed parameters
         //
         Int_t charge=mdig->fSignal;
-        // set the color according to the color scale
-	//        Int_t scale=(Int_t)adc_satm/22;
-	//        Int_t index=(Int_t)charge/scale;
         Int_t index=Int_t(TMath::Log(charge)/(TMath::Log(adc_satm)/22));
         Int_t color=261+index;
         if (color>282) color=282;
@@ -819,13 +783,6 @@ void AliMUONdisplay::LoadDigits(Int_t chamber, Int_t cathode)
           marker->SetRefObject((TObject*)points);
           points->Set3DMarker(imark, marker);
 
-	  //	DrawPad(xpad,ypad,zpos,dpx,dpy,color);
-
-	  //        Float_t *pxyz;
-	  //        pxyz=points->GetP();
-	  //        printf("pxyz[0],pxyz[1],color %f %f %d \n",pxyz[0],pxyz[1],color);
-	  //        Int_t np=points->GetN();
-	  //        printf("np %d \n",np);
 	  }
    }
 }
@@ -841,14 +798,12 @@ void AliMUONdisplay::LoadCoG(Int_t chamber, Int_t cathode)
 
    AliMUON *MUON  = (AliMUON*)gAlice->GetModule("MUON");
    AliMUONchamber*  iChamber;
-//   AliMUONsegmentation*  segmentation;
 
    TClonesArray *MUONrawclust  = MUON->RawClustAddress(chamber-1);
    if (MUONrawclust == 0) return;
 
    MUON->ResetRawClusters();
 
-//   gAlice->TreeR()->GetEvent(fEvent+cathode);
 
    Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
    gAlice->TreeR()->GetEvent(nent-2+cathode-1);
@@ -856,12 +811,9 @@ void AliMUONdisplay::LoadCoG(Int_t chamber, Int_t cathode)
    Int_t nrawcl = MUONrawclust->GetEntriesFast();
    if (nrawcl == 0) return;
    if (fRpoints == 0) fRpoints = new TObjArray(nrawcl);
-   printf("Found %d raw clust for cathode %d in chamber %d \n",nrawcl,cathode,chamber);
 	  
    iChamber = &(MUON->Chamber(chamber-1));
-   printf("LoadPoints - iChamber %p \n",iChamber);
-   Float_t zpos=iChamber->ZPosition();  // check with Andreas
-   printf("LoadPoint - zpos %f \n",zpos);
+   Float_t zpos=iChamber->ZPosition();  
    AliMUONRawCluster  *mRaw;
    AliMUONpoints *points = 0;
    //
@@ -892,24 +844,21 @@ void AliMUONdisplay::LoadCoG2(Int_t chamber, Int_t cathode)
 
    AliMUON *MUON  = (AliMUON*)gAlice->GetModule("MUON");
    AliMUONchamber*  iChamber;
-//   AliMUONsegmentation*  segmentation;
 
    TClonesArray *MUONrawclust  = MUON->RawClustAddress(chamber-1);
    if (MUONrawclust == 0) return;
 
    MUON->ResetRawClusters();
 
-//   gAlice->TreeR()->GetEvent(fEvent+cathode);
    Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
    gAlice->TreeR()->GetEvent(nent-2+cathode-1);
    //gAlice->TreeR()->GetEvent(cathode);
    Int_t nrawcl = MUONrawclust->GetEntriesFast();
    if (nrawcl == 0) return;
    if (fR2points == 0) fR2points = new TObjArray(nrawcl);
-   printf("Found %d raw clust for cathode %d in chamber %d \n",nrawcl,cathode,chamber);
 	  
    iChamber = &(MUON->Chamber(chamber-1));
-   Float_t zpos=iChamber->ZPosition();  // check with Andreas
+   Float_t zpos=iChamber->ZPosition();  
    AliMUONRawCluster  *mRaw;
    AliMUONpoints *points = 0;
    //
@@ -948,18 +897,15 @@ void AliMUONdisplay::LoadCathCor(Int_t chamber)
      MUON->GetTreeC(fEvent);
      TTree *TC=MUON->TreeC();
      if (!TC) return;
-     Int_t nent=(Int_t)TC->GetEntries();
-     printf("Found %d entries in the tree (must be one per cathode per event!)\n",nent);
+     //     Int_t nent=(Int_t)TC->GetEntries();
  
      TClonesArray *MUONcorrel  = MUON->CathCorrelAddress(chamber-1);
      if (MUONcorrel == 0) return;
 
      MUON->ResetCorrelation();
-     //   TC->GetEvent(nent-1);
      TC->GetEvent();
 
      Int_t ncor = MUONcorrel->GetEntries();
-     printf("Found %d entries in TreeC for chamber %d \n",ncor,chamber);
      if (!ncor) return;
      if (!fCpoints) fCpoints = new TObjArray(ncor);
 	  
@@ -983,81 +929,6 @@ void AliMUONdisplay::LoadCathCor(Int_t chamber)
 }
 
 //___________________________________________
-void AliMUONdisplay::DrawP(Float_t xpad, Float_t ypad, Float_t zpos ,Float_t dpx, Float_t dpy, Int_t color)
-{
-     fPad->cd();
-
-   Float_t xlow, xup, ylow, yup;
-   TBox *box;
-//*-* draw pad
-
-   //   printf("DrawPad -- color %d \n",color);
-  
-   xlow=(xpad > 0) ? xpad-dpx/2. : xpad+dpx/2.;
-   xup=(xlow > 0) ? xlow+dpx : xlow-dpx;
-   ylow=(ypad > 0) ? ypad-dpy/2. : ypad+dpy/2.;
-   yup=(ylow > 0) ? ylow+dpy : ylow-dpy;
- 
-   box = new TBox(xlow, ylow, xup, yup);
-	box->SetLineColor(2);
-	box->SetFillStyle(1001);
-   box->SetFillColor(color);
-   /*
-   Int_t x1=gPad->XtoAbsPixel(xlow);
-     Int_t y1=gPad->YtoAbsPixel(ylow);
-      Int_t x2=gPad->XtoAbsPixel(xup);
-      Int_t y2=gPad->YtoAbsPixel(yup);
-      printf("DrawPad -- x1,y1,x2,y2 %d %d %d %d \n",x1,y1,x2,y2);
-      //      box->DrawBox(xlow,ylow,xup,yup);
-      gGXW->DrawBox(x1,y1,x2,y2, TGXW::kFilled);
- */
-    box->Draw();
- 
-  //Create temporary storage
-   /*
-   Int_t *pxy = new Int_t[4];
-   Float_t *x  = new Float_t[2];
-   Float_t *y  = new Float_t[2];
-   Float_t xndc[3];
-   Float_t ptr[3];
-   ptr[0]=xlow;
-   ptr[1]=ylow;
-   ptr[2]=zpos;
-
-   TView *view = gPad->GetView();      //Get current 3-D view
-   if(!view) return;                           //Check if `view` is valid
-
-//- convert points from world to pixel coordinates
-
-   Int_t nin = 0;
-   for (Int_t i = 0; i < 2; i++) {
-      view->WCtoNDC(ptr, xndc);
-      if (xndc[0] < gPad->GetX1() || xndc[0] > gPad->GetX2()) continue;
-      if (xndc[1] < gPad->GetY1() || xndc[1] > gPad->GetY2()) continue;
-      x[nin] = xndc[0];
-      y[nin] = xndc[1];
-      //      pxy[nin].fX = gPad->XtoPixel(x[nin]);
-      //      pxy[nin].fY = gPad->YtoPixel(y[nin]);
-      pxy[i+nin] = gPad->XtoPixel(x[nin]);
-      pxy[i+1+nin] = gPad->YtoPixel(y[nin]);
-      printf("DrawPad -- x,y,pxy,pxy %f %f %d %d \n",x[nin],y[nin],pxy[i+nin],pxy[i+1+nin]);
-      nin++;
-      ptr[0]=xup;
-      ptr[1]=yup;
-   }
-
-//- invoke the graphics subsystem
-    box->DrawBox((Int_t)x[0],(Int_t)y[0],(Int_t)x[1],(Int_t)y[1]);
-   //   gGXW->DrawBox(pxy[0],pxy[1],pxy[2],pxy[3], TGXW::kFilled);
-
-   delete [] x;
-   delete [] y;
-
-   delete [] pxy;
-   */
-}
-
-//___________________________________________
 void AliMUONdisplay::LoadHits(Int_t chamber)
 {
 // Read hits info and store x,y,z info in arrays fPhits
@@ -1074,12 +945,10 @@ void AliMUONdisplay::LoadHits(Int_t chamber)
 
    iChamber = &(MUON->Chamber(chamber-1));
    Float_t zpos=iChamber->ZPosition();
-   //printf("LoadHits - zpos %f \n",zpos);
 
    Int_t ntracks = (Int_t)gAlice->TreeH()->GetEntries();
-   printf("LoadHits - primary tracks %d\n",ntracks);
-   Int_t ntrks = gAlice->GetNtrack();
-   printf("LoadHits - all tracks %d\n",ntrks);
+   //Int_t ntrks = gAlice->GetNtrack();
+
 
    Int_t nthits=0;
     for (Int_t track=0; track<ntracks;track++) {
@@ -1128,7 +997,6 @@ void AliMUONdisplay::LoadHits(Int_t chamber)
             points->SetMarkerStyle(5);
             points->SetMarkerSize(1.);
             points->SetParticle(mHit->fTrack);
-            //Int_t index=points->GetIndex();
             points->SetHitIndex(hit);
             points->SetTrackIndex(track);
             points->SetDigitIndex(-1);
@@ -1219,9 +1087,6 @@ void AliMUONdisplay::SetChamberAndCathode(Int_t chamber, Int_t cathode)
    fChamber = chamber;
    fCathode = cathode;
 
-   //   Pad();
-   //   printf("SetChamberAndCathode - fPad %p \n",fPad);
-   printf("SetChamberAndCathode - fChamber fCathode %d %d\n",fChamber,fCathode);
    if (!fPad) return;
    fPad->Clear();
    LoadDigits(chamber,cathode);

@@ -63,8 +63,7 @@ AliMUONpoints::~AliMUONpoints()
   fTrackIndex = 0;
   fDigitIndex = 0;
   for (Int_t i=0;i<3;i++){
-      if (
-fMarker[i]) delete fMarker[i];
+      if (fMarker[i]) delete fMarker[i];
   }
   fMatrix = 0;
 }
@@ -91,7 +90,6 @@ void AliMUONpoints::DumpHit()
   //
   AliMUONhit *hit = GetHit();
   if (hit) hit->Dump();
-  printf("fTrackIndex %d \n",fTrackIndex);
 }
 
 //_____________________________________________________________________________
@@ -102,10 +100,6 @@ void AliMUONpoints::DumpDigit()
   //
   AliMUONdigit *digit = GetDigit();
   if (digit) digit->Dump();
-  for (int i=0;i<10;i++) {
-        printf(" track charge %d %d \n",digit->fTracks[i],digit->fTcharges[i]);
-  }
-
 }
 
 //_____________________________________________________________________________
@@ -182,7 +176,7 @@ Int_t AliMUONpoints::GetTrackIndex()
   //
   //   Dump digit corresponding to this point
   //
-  printf("GetTrackIndex - fTrackIndex %d \n",fTrackIndex);
+
   this->Inspect();
   /*
   if (fDigitIndex != 0) {
@@ -206,7 +200,6 @@ AliMUONhit *AliMUONpoints::GetHit() const
   TClonesArray *MUONhits  = MUON->Hits();
   Int_t nhits = MUONhits->GetEntriesFast();
   if (fHitIndex < 0 || fHitIndex >= nhits) return 0;
-  printf("ftrackIndex, fHitIndex %d %d \n",fTrackIndex,fHitIndex);
   return (AliMUONhit*)MUONhits->UncheckedAt(fHitIndex);
 }
 
@@ -263,13 +256,10 @@ static void FindCluster(AliMUONchamber *iChamber, AliMUONsegmentation *segmentat
   // Find clusters
   //
 
-  printf("I'm in FindCluster \n"); 
 
   Bin& b=bins[i][j];
   Int_t q=b.dig->fSignal;
 
-  printf("FindCluster - i j q %d %d %d\n",i,j,q);
-  
   if (q<0) { 
     q=-q;
     c.cut=1;
@@ -278,28 +268,23 @@ static void FindCluster(AliMUONchamber *iChamber, AliMUONsegmentation *segmentat
   if (b.idx >= 0 && b.idx > c.idx) {
     c.idx=b.idx;
     c.npeaks++;
-    printf("FindCluster - one more peak \n");
   }
   
   if (q > TMath::Abs(c.summit->fSignal)) c.summit=b.dig;
 
-  Float_t zpos=iChamber->ZPosition();  // check with Andreas
+  Float_t zpos=iChamber->ZPosition();
 
   Int_t npx  = segmentation->Npx();
   Int_t npy  = segmentation->Npy();
-  printf("FindCluster - npx npy %d %d \n",npx,npy);
 
 
   // get pad coordinates and prepare the up and down steps   
-  Int_t jup  =(j-npy > 0) ? j+1 : (j-npy-1)+npy;
-  Int_t jdown=(j-npy > 0) ? j-1 : (j-npy+1)+npy;
-  //  Int_t jup  =j+1;
-  //  Int_t jdown=j-1;
+  Int_t jup  =(j-npy > 0) ? j+1 : j-1;
+  Int_t jdown=(j-npy > 0) ? j-1 : j+1;
+
   Float_t x, y;
   segmentation->GetPadCxy(i-npx, j-npy,x, y);
   Int_t isec0=segmentation->Sector(i-npx,j-npy);
-  printf("FindCluster - i-npx j-npy isec0 %d %d %d \n",i-npx,j-npy,isec0);
-  //  printf("FindCluster - x  y %f %f \n",x,y);
 
   Float_t dpy  = segmentation->Dpy(isec0);
   Float_t dpx  = segmentation->Dpx(isec0)/16;
@@ -307,23 +292,19 @@ static void FindCluster(AliMUONchamber *iChamber, AliMUONsegmentation *segmentat
   Float_t absx=TMath::Abs(x);
   // iup
   (y >0) ? segmentation->GetPadIxy(absx+dpx,y+dpy,ixx,iyy) : segmentation->GetPadIxy(absx+dpx,y-dpy,ixx,iyy);
-  printf(" iup: ixx iyy %d %d \n",ixx,iyy);
-  Int_t jtest=TMath::Abs(iyy)-npy-1;
-  if (j != jtest) {
-    //printf(" j != jtest - something's wrong %d %d \n",j,jtest);
-  }
+
+  //  Int_t jtest=TMath::Abs(iyy)-npy-1;
+
   Int_t iup=(x >0) ? ixx+npx : -ixx+npx;
   // idown
   (y >0) ? segmentation->GetPadIxy(absx+dpx,y-dpy,ixx,iyy) : segmentation->GetPadIxy(absx+dpx,y+dpy,ixx,iyy);
-  printf(" idown: ixx iyy %d %d \n",ixx,iyy);
+
   Int_t idown=(x >0) ? ixx+npx : -ixx+npx;
   if (bins[idown][jdown].dig == 0) {
      (y >0) ? segmentation->GetPadIxy(absx-dpx,y-dpy,ixx,iyy) : segmentation->GetPadIxy(absx-dpx,y+dpy,ixx,iyy);
-     printf(" idown: ixx iyy %d %d \n",ixx,iyy);
      idown=(x >0) ? ixx+npx : -ixx+npx;
   }
  
-  printf("i, iup, idown, j, jup, jdown %d %d %d %d %d %d \n",i,iup,idown,j,jup,jdown);
 
   // calculate center of gravity
   c.npoly++;
@@ -398,19 +379,13 @@ void AliMUONpoints::GetCenterOfGravity()
   }
    PreCluster c; c.summit=bins[ipx+npx][ipy+npy].dig; c.idx=ncls;
    FindCluster(iChamber,segmentation,ipx+npx, ipy+npy, bins, c);
-   printf("GetCenterOfGravity -- npoly %d \n",c.npoly);
     
    if (c.npeaks>1) {
       printf("GetCenterOfGravity -- more than one peak");
    }
    c.fX /= c.fQ;
    c.fY /= c.fQ;
-   printf("GetCenterOfGravity - c.fX c.fY c.fQ c.npeaks %f %f %d %d \n",c.fX,c.fY,c.fQ,c.npeaks);
-   /*
-   c.fTracks[0]=(Int_t)(*(c.summit->fTrks))(0);
-   c.fTracks[1]=(Int_t)(*(c.summit->fTrks))(1);
-   c.fTracks[2]=(Int_t)(*(c.summit->fTrks))(2);
-   */
+
    c.fTracks[0]=c.summit->fTracks[0];
    c.fTracks[1]=c.summit->fTracks[1];
    c.fTracks[2]=c.summit->fTracks[2];
@@ -452,7 +427,6 @@ void AliMUONpoints::GetCenterOfGravity()
    }
    c.npoly=0;
 
-   printf("GetCenterOfGravity -- ncls %d \n",ncls);
 
 }
 
