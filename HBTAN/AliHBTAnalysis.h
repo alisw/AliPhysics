@@ -35,6 +35,7 @@ class AliHBTTwoPairFctn;
 
 class AliHBTMonOneParticleFctn;
 class AliHBTMonTwoParticleFctn;
+class AliHBTAvSeparationCut;
 
 class TList;
 
@@ -49,6 +50,8 @@ class AliHBTAnalysis: public TObject
      virtual void Process(Option_t* option = "TracksAndParticles");
      
      void SetGlobalPairCut(AliHBTPairCut* cut);
+     void SetAntiMergingCut(AliHBTAvSeparationCut *am){fAntiMergingCut = am;}
+     void SetAntiMergingCut(Float_t x);
      
      void AddTrackFunction(AliHBTOnePairFctn* f);
      void AddParticleFunction(AliHBTOnePairFctn* f);
@@ -71,6 +74,8 @@ class AliHBTAnalysis: public TObject
      void   Init();
      void   ResetFunctions();
      void   SetDisplayInfo(Int_t howoften){fDisplayMixingInfo = howoften;}//defines every each line info about mixing is displayed
+     
+     static void PressAnyKey();//small utility function that helps to make comfortable macros
    protected:
      
      Bool_t RunCoherencyCheck();
@@ -112,7 +117,8 @@ class AliHBTAnalysis: public TObject
      /* Control parameters  */
      /**********************************************/
 
-     AliHBTPairCut *fPairCut;//! Pair cut applied for all mixed particles
+     AliHBTPairCut*          fPairCut;//! Pair cut applied for all mixed particles
+     AliHBTAvSeparationCut*  fAntiMergingCut;//Anti-Splitting cut (only denominator)
       
      Int_t  fBufferSize; //!defines the size of buffer for mixed events; -1==MIX All
      Int_t  fDisplayMixingInfo;//!defines every which particle mixing info is displayed

@@ -29,10 +29,16 @@
 #include "AliHBTFunction.h"
 #include "AliHBTMonitorFunction.h"
 #include "AliHBTEventBuffer.h"
+#include "AliHBTPairCut.h"
  
+#include <TSystem.h>
 #include <TBenchmark.h>
 #include <TList.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 ClassImp(AliHBTAnalysis)
 
@@ -48,20 +54,19 @@ AliHBTAnalysis::AliHBTAnalysis():
   fNTrackMonitorFunctions(0),
   fNParticleMonitorFunctions(0), 
   fNParticleAndTrackMonitorFunctions(0),
+  fTrackFunctions ( new AliHBTOnePairFctn* [fgkFctnArraySize]),
+  fParticleFunctions ( new AliHBTOnePairFctn* [fgkFctnArraySize]),
+  fParticleAndTrackFunctions ( new AliHBTTwoPairFctn* [fgkFctnArraySize]),
+  fParticleMonitorFunctions ( new AliHBTMonOneParticleFctn* [fgkFctnArraySize]),    
+  fTrackMonitorFunctions ( new AliHBTMonOneParticleFctn* [fgkFctnArraySize]),    
+  fParticleAndTrackMonitorFunctions ( new AliHBTMonTwoParticleFctn* [fgkFctnArraySize]),    
+  fPairCut(new AliHBTEmptyPairCut()),//empty cut - accepts all particles
+  fAntiMergingCut(0x0),
   fBufferSize(2),
   fDisplayMixingInfo(fgkDefaultMixingInfo),
   fIsOwner(kFALSE)
  {
-//default constructor
-   fTrackFunctions = new AliHBTOnePairFctn* [fgkFctnArraySize];
-   fParticleFunctions = new AliHBTOnePairFctn* [fgkFctnArraySize];
-   fParticleAndTrackFunctions = new AliHBTTwoPairFctn* [fgkFctnArraySize];
-   
-   fParticleMonitorFunctions = new AliHBTMonOneParticleFctn* [fgkFctnArraySize];    
-   fTrackMonitorFunctions = new AliHBTMonOneParticleFctn* [fgkFctnArraySize];    
-   fParticleAndTrackMonitorFunctions = new AliHBTMonTwoParticleFctn* [fgkFctnArraySize];    
-
-   fPairCut = new AliHBTEmptyPairCut();//empty cut - accepts all particles
+   //default constructor
  }
 /*************************************************************************************/ 
 
@@ -81,6 +86,7 @@ AliHBTAnalysis::AliHBTAnalysis(const AliHBTAnalysis& in):
   fTrackMonitorFunctions(0x0),
   fParticleAndTrackMonitorFunctions(0x0),
   fPairCut(0x0),
+  fAntiMergingCut(0x0),
   fBufferSize(fgkDefaultBufferSize),
   fDisplayMixingInfo(fgkDefaultMixingInfo),
   fIsOwner(kFALSE)
@@ -113,6 +119,7 @@ AliHBTAnalysis::~AliHBTAnalysis()
    delete [] fParticleAndTrackMonitorFunctions; 
 
    delete fPairCut; // always have an copy of an object - we create we dstroy
+   delete fAntiMergingCut;
  }
 
 /*************************************************************************************/ 
@@ -257,9 +264,12 @@ void AliHBTAnalysis::Process(Option_t* option)
 
 void AliHBTAnalysis::ProcessTracksAndParticles()
 {
+//Makes analysis for both tracks and particles
+//mainly for resolution study and analysies with weighting algirithms
 //In order to minimize calling AliRun::GetEvent (we need at one time particles from different events),
 //the loops are splited
   
+// cuta on particles only
   
   AliHBTParticle * part1, * part2;
   AliHBTParticle * track1, * track2;
@@ -373,9 +383,9 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
             track2= trackEvent->GetParticle(k);
             trackpair->SetParticles(track1,track2);
 
-            if(fPairCut->Pass(trackpair) ) //check pair cut 
+            if(fPairCut->Pass(partpair) ) //check pair cut 
               { //do not meets crietria of the pair cut, try with swapped pairs
-                if( fPairCut->Pass(trackpair->GetSwapedPair()) )
+                if( fPairCut->Pass(partpair->GetSwapedPair()) )
                   continue; //swaped pairs do not meet criteria of pair cut as well, take next particle
                 else 
                  { //swaped pair meets all the criteria
@@ -388,6 +398,7 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
                tmptrackpair = trackpair;
                tmppartpair = partpair;
              }
+             
             for(ii = 0;ii<fNParticleFunctions;ii++)
                    fParticleFunctions[ii]->ProcessSameEventParticles(tmppartpair);
                 
@@ -439,6 +450,11 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
                   tmptrackpair = trackpair;
                   tmppartpair = partpair;
                  }
+
+                //Anti merging cut is only on tracks makes the background
+                if (fAntiMergingCut) 
+                  if (fAntiMergingCut->Pass(trackpair)) continue;
+
                 for(ii = 0;ii<fNParticleFunctions;ii++)
                   fParticleFunctions[ii]->ProcessDiffEventParticles(tmppartpair);
                  
@@ -574,11 +590,14 @@ void AliHBTAnalysis::ProcessTracks()
                   tmptrackpair = trackpair;
                  }
                  
+                //Anti merging cut is only on tracks makes the background
+                if (fAntiMergingCut) 
+                  if (fAntiMergingCut->Pass(trackpair)) continue;
+
                 for(ii = 0;ii<fNTrackFunctions;ii++)
                   fTrackFunctions[ii]->ProcessDiffEventParticles(tmptrackpair);
                  
              }//for(Int_t l = 0; l<N2;l++)   //  ... on all particles
-            
           }
        }
       trackEvent1 = trackbuffer.Push(trackEvent1); 
@@ -710,6 +729,18 @@ void AliHBTAnalysis::ProcessParticles()
        }
       partEvent1 = partbuffer.Push(partEvent1); 
     }//while (fReader->Next() == kFALSE)
+}
+/*************************************************************************************/ 
+
+void AliHBTAnalysis::SetAntiMergingCut(Float_t x)
+{
+  if (x < 0)
+   {
+     Error("SetAntiMergingCut","Value less then 0");
+     return;
+   }
+  if (fAntiMergingCut == 0x0) fAntiMergingCut = new AliHBTAvSeparationCut(x);
+  else fAntiMergingCut->SetMinimum(x);
 }
 /*************************************************************************************/
 
@@ -1448,3 +1479,20 @@ Bool_t AliHBTAnalysis::IsNonIdentAnalysis()
  
  return kTRUE;
 }
+
+/*************************************************************************************/ 
+
+void AliHBTAnalysis::PressAnyKey()
+{ //small utility function that helps to make comfortable macros
+  char c;
+  int nread = -1;
+  fcntl(0,  F_SETFL, O_NONBLOCK);
+  ::Info("","Press Any Key to continue ...");
+  while (nread<1) 
+   {
+     nread = read(0, &c, 1);
+     gSystem->ProcessEvents();
+   }
+}
+
+

@@ -48,7 +48,8 @@
 #pragma link C++ class AliHBTQSideCMSLCCut+;
 #pragma link C++ class AliHBTQOutCMSLCCut+;
 #pragma link C++ class AliHBTQLongCMSLCCut+;
-
+#pragma link C++ class AliHBTAvSeparationCut+;
+    
 #pragma link C++ class AliHBTMomentumCut+;
 #pragma link C++ class AliHBTPtCut+;
 #pragma link C++ class AliHBTEnergyCut+;

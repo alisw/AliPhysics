@@ -1,7 +1,9 @@
 /* $Id$ */
-
-//-------------------------------------------------------------------
+//____________________________________
+/////////////////////////////////////////////////////////////////////////
+//
 // Class AliHBTPairCut:
+//
 // implements cut on the pair of particles
 // more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
 // Author: Piotr.Skowronski@cern.ch
@@ -10,6 +12,7 @@
 #include "AliHBTPairCut.h"
 #include "AliHBTPair.h"
 #include "AliHBTParticleCut.h"
+#include "AliHBTTrackPoints.h"
 
 ClassImp(AliHBTPairCut)
 const Int_t AliHBTPairCut::fgkMaxCuts = 50;
@@ -225,6 +228,14 @@ void AliHBTPairCut::SetKStarRange(Double_t min, Double_t max)
   else fCuts[fNCuts++] = new AliHBTKStarCut(min,max);
 }
 /**********************************************************/
+void AliHBTPairCut::SetAvSeparationRange(Double_t min, Double_t max)
+{
+  //sets avarage separation cut ->Anti-Merging cut
+  AliHbtBasePairCut* cut= FindCut(kHbtPairCutPropAvSepar);
+  if(cut) cut->SetRange(min,max);
+  else fCuts[fNCuts++] = new AliHBTAvSeparationCut(min,max);
+}
+/**********************************************************/
 
 AliHbtBasePairCut* AliHBTPairCut::FindCut(AliHBTPairCutProperty property)
 {
@@ -299,3 +310,27 @@ ClassImp(AliHBTKtCut)
 ClassImp(AliHBTQSideCMSLCCut)
 ClassImp(AliHBTQOutCMSLCCut)
 ClassImp(AliHBTQLongCMSLCCut)
+ClassImp(AliHBTAvSeparationCut)
+
+    
+Double_t AliHBTAvSeparationCut::GetValue(AliHBTPair* pair) const 
+{
+  //chacks if avarage distance of two tracks is in given range
+  Warning("Pass","Checking Av Separation."); 
+  AliHBTTrackPoints* tpts1 = pair->Particle1()->GetTrackPoints();
+  if ( tpts1 == 0x0)
+   {
+     Warning("Pass","Track 1 does not have Track Points. Pair NOT Passed.");
+     return -10e5;
+   }
+
+  AliHBTTrackPoints* tpts2 = pair->Particle2()->GetTrackPoints();
+  if ( tpts2 == 0x0)
+   {
+     Warning("Pass","Track 2 does not have Track Points. Pair NOT Passed.");
+     return -10e5;
+   }
+   
+  return tpts1->AvarageDistance(*tpts2);
+}
+

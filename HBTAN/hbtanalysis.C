@@ -24,6 +24,8 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
                 Int_t first = -1,Int_t last = -1, 
                 char *outfile = "hbtanalysis.root")
  {
+   
+  AliHBTTrackPoints::SetDebug(1);
 //HBT Anlysis Macro
 //Anlyzes TPC recontructed tracks and simulated particles that corresponds to them
 
@@ -49,6 +51,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
 //  const char* basedir="rfio:/castor/cern.ch/user/s/skowron/";
 //  const char* serie="standard";
 //  const char* field = "0.4";
+
   const char* basedir=".";
   const char* serie="";
   const char* field = "";
@@ -88,6 +91,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   else if(!TPC)
    {
     reader = new AliHBTReaderTPC();
+    ((AliHBTReaderTPC*)reader)->SetNumberOfTrackPoints(5,30.);
    }
   else if(!ITSv1)
    {
@@ -137,6 +141,22 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   
   analysis->SetReader(reader);
 
+  AliHBTPairCut *paircut = new AliHBTPairCut();
+  Float_t qinvmin = 0.0;
+  Float_t qinvmax = 0.05;//50MeV
+  paircut->SetQInvRange(qinvmin,qinvmax);  
+  
+ // paircut->SetAvSeparationRange(10.,10000.);  
+  
+//  AliHBTParticleCut* partcut= new AliHBTParticleCut();
+//  partcut->SetPID(kPiPlus);
+//  paircut->SetFirstPartCut(partcut);
+//  partcut->SetPID(kPiMinus);
+//  paircut->SetSecondPartCut(partcut);
+  
+  analysis->SetGlobalPairCut(paircut);
+  analysis->SetAntiMergingCut(5.);//in cm
+  
   /***********************************************************/    
   /*****   W E I G H T S        ******************************/    
   /***********************************************************/    
@@ -152,27 +172,15 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   AliHBTLLWeights::Instance()->Set();
 
   //example function
-  AliHBTWeightTheorQInvFctn  *wqinvcfP = new AliHBTWeightTheorQInvFctn(nbins,qmax);
-  wqinvcfP->SetNumberOfBinsToScale(binstoscale);
-  wqinvcfP->Rename("wqinvcfP","Lednicky Q_{inv} Theoretical Correlation Function "+system);
+  AliHBTWeightTheorQInvFctn  *wqinvcfP = new AliHBTWeightTheorQInvFctn(100,qinvmax);
+  wqinvcfP->SetNumberOfBinsToScale(30);
+  wqinvcfP->Rename("wqinvcfP","Lednicky Q_{inv} Theoretical Correlation Function");
   analysis->AddParticleFunction(wqinvcfP);
 
   /************************************************************/
   /****   Q INV Correlation Function   ************************/
   /************************************************************/
    
-  AliHBTPairCut *paircut = new AliHBTPairCut();
-  Float_t qinvmin = 0.0;
-  Float_t qinvmax = 0.05;//50MeV
-  paircut->SetQInvRange(qinvmin,qinvmax);  
-  
-//  AliHBTParticleCut* partcut= new AliHBTParticleCut();
-//  partcut->SetPID(kPiPlus);
-//  paircut->SetFirstPartCut(partcut);
-//  partcut->SetPID(kPiMinus);
-//  paircut->SetSecondPartCut(partcut);
-  
-//  analysis->SetGlobalPairCut(paircut);
 
   AliHBTQInvCorrelFctn * qinvcfT = new AliHBTQInvCorrelFctn(100,qinvmax);
   AliHBTQInvCorrelFctn * qinvcfP = new AliHBTQInvCorrelFctn(100,qinvmax);

@@ -1,4 +1,17 @@
 #include "AliHBTTrackPoints.h"
+//_________________________________
+////////////////////////////////////////////////////////////
+//                                                        //
+// class AliHBTTrackPoints                                //
+//                                                        //
+// used by Anti-Merging cut                               //
+// contains set of poits the lay on track trajectory      //
+// according to reconstructed track parameters -          //
+// NOT CLUSTERS POSITIONS!!!                              //
+// Anti-Merging cut is applied only on tracks coming from //
+// different events (that are use to fill deniminators)   //
+//                                                        //
+////////////////////////////////////////////////////////////
 #include "AliTPCtrack.h"
 #include <TMath.h>
 #include "AliTrackReference.h"
@@ -6,6 +19,7 @@
 
 ClassImp(AliHBTTrackPoints)
 
+Int_t AliHBTTrackPoints::fgDebug = 0;
 AliHBTTrackPoints::AliHBTTrackPoints():
  fN(0),
  fX(0x0),
@@ -14,6 +28,7 @@ AliHBTTrackPoints::AliHBTTrackPoints():
 {
   //constructor
 }
+/***************************************************************/
 
 AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliTPCtrack* track, Float_t dr, Float_t r0):
  fN(n),
@@ -63,10 +78,10 @@ AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliTPCtrack* track, Float_t dr, Fl
   Double_t r = TMath::Hypot(x,y);
   
 
-  if (GetDebug()) 
+  if (GetDebug() > 9) 
     Info("AliHBTTrackPoints","Radius0 %f, Real Radius %f",r0,r); 
   
-  if (GetDebug()) 
+  if (GetDebug() > 5) 
     Info("AliHBTTrackPoints","Phi Global at first padraw %f, Phi locat %f",phi0global,phi0local);
   Double_t c=track->GetC();
   Double_t eta = track->GetEta();
@@ -97,14 +112,14 @@ AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliTPCtrack* track, Float_t dr, Fl
      fX[i] = rc*TMath::Cos(phi);
      fY[i] = rc*TMath::Sin(phi);
      
-     if ( GetDebug() )
+     if ( GetDebug() > 2 )
       {
         Info("AliHBTTrackPoints","X %f Y %f Z %f R asked %f R obtained %f",
              fX[i],fY[i],fZ[i],rc,TMath::Hypot(fX[i],fY[i]));
       }
    }
 }
-
+/***************************************************************/
 
 AliHBTTrackPoints::~AliHBTTrackPoints()
 {
@@ -113,6 +128,7 @@ AliHBTTrackPoints::~AliHBTTrackPoints()
   delete [] fY;
   delete [] fZ;
 }
+/***************************************************************/
 
 void AliHBTTrackPoints::PositionAt(Int_t n, Float_t &x,Float_t &y,Float_t &z)
 {
@@ -126,13 +142,12 @@ void AliHBTTrackPoints::PositionAt(Int_t n, Float_t &x,Float_t &y,Float_t &z)
   x = fX[n];
   y = fY[n];
   z = fZ[n];
-  if ( GetDebug() )
+  if ( GetDebug() > 1 )
     {
       Info("AliHBTTrackPoints","n %d; X %f; Y %f; Z %f",n,x,y,z);
     }
-
 }
-
+/***************************************************************/
 
 Double_t AliHBTTrackPoints::AvarageDistance(const AliHBTTrackPoints& tr)
 {
@@ -151,18 +166,39 @@ Double_t AliHBTTrackPoints::AvarageDistance(const AliHBTTrackPoints& tr)
   Double_t sum;
   for (Int_t i = 0; i<fN; i++)
    {
-      if (fR[i] != tr.fR[i])
-       {
-         Error("AvarageDistance","Different radii");
-         return -1;
-       }
-      Double_t dx = fX-tr.fX;
-      Double_t dy = fY-tr.fY;
-      Double_t dz = fZ-tr.fZ;
-      sum+=TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+     if (GetDebug()>9)
+      {
+//       Float_t r1sq = fX[i]*fX[i]+fY[i]*fY[i];
+//       Float_t r2sq = tr.fX[i]*tr.fX[i]+tr.fY[i]*tr.fY[i];
+       Float_t r1sq = TMath::Hypot(fX[i],fY[i]);
+       Float_t r2sq = TMath::Hypot(tr.fX[i],tr.fY[i]);
+       Info("AvarageDistance","radii: %f %f",r1sq,r2sq);
+      } 
+
+      
+     Double_t dx = fX[i]-tr.fX[i];
+     Double_t dy = fY[i]-tr.fY[i];
+     Double_t dz = fZ[i]-tr.fZ[i];
+     sum+=TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+     
+     if (GetDebug()>0)
+      {
+       Info("AvarageDistance","Diff: x ,y z: %f , %f, %f",dx,dy,dz);
+       Info("AvarageDistance","xxyyzz %f %f %f %f %f %f",
+            fX[i],tr.fX[i],fY[i],tr.fY[i],fZ[i],tr.fZ[i]);
+      } 
    }
-  return sum/((Double_t)fN);
+   
+  Double_t retval = sum/((Double_t)fN);
+  if ( GetDebug() )
+    {
+      Info("AvarageDistance","Avarage distance is %f.",retval);
+    }
+  return retval;
 }
+/***************************************************************/
+/***************************************************************/
+/***************************************************************/
 
 #include "AliRun.h"
 #include "AliRunLoader.h"

@@ -21,6 +21,7 @@ enum AliHBTPairCutProperty
   kHbtPairCutPropQSideCMSLC,
   kHbtPairCutPropQOutCMSLC,
   kHbtPairCutPropQLongCMSLC,
+  kHbtPairCutPropAvSepar,
   kHbtPairCutPropNone
 };
 
@@ -49,7 +50,8 @@ class AliHBTPairCut: public TNamed
   void SetQOutCMSLRange(Double_t min, Double_t max);
   void SetQSideCMSLRange(Double_t min, Double_t max);
   void SetQLongCMSLRange(Double_t min, Double_t max);
-  
+  void SetAvSeparationRange(Double_t min,Double_t max = 10e5);
+      
   AliHBTParticleCut* GetFirstPartCut() const {return fFirstPartCut;}
   AliHBTParticleCut* GetSecondPartCut() const {return fSecondPartCut;}
   
@@ -129,6 +131,9 @@ class AliHbtBasePairCut: public TObject
 
 inline Bool_t AliHbtBasePairCut::Pass(AliHBTPair* pair) const
 {
+  //checks if pair proprty is in range
+  //null pointer check is made by AliHBTPairCut, so here is unnecesary
+  
   Double_t value = GetValue(pair);
   if ( (value > fMin) && (value <fMax ) ) return kFALSE; //accepted
   else return kTRUE; //rejected
@@ -209,4 +214,17 @@ class AliHBTQLongCMSLCCut: public AliHbtBasePairCut
   ClassDef(AliHBTQLongCMSLCCut,1)
 };
 
+  
+class AliHBTAvSeparationCut: public AliHbtBasePairCut
+{
+ public:
+  AliHBTAvSeparationCut(Double_t min = 0.0, Double_t max = 1e5):
+    AliHbtBasePairCut(min,max,kHbtPairCutPropAvSepar){}
+  virtual ~AliHBTAvSeparationCut(){}
+  
+ protected:
+  virtual Double_t  GetValue(AliHBTPair* pair) const;
+  ClassDef(AliHBTAvSeparationCut,1)
+};
+  
 #endif

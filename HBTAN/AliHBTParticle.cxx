@@ -73,7 +73,8 @@ AliHBTParticle::AliHBTParticle(const AliHBTParticle& in):
    fNPids(in.fNPids),fPids(new Int_t[fNPids]),fPidProb(new Float_t[fNPids]),
    fCalcMass(in.GetCalcMass()),
    fPx(in.Px()),fPy(in.Py()),fPz(in.Pz()),fE(in.Energy()), 
-   fVx(in.Vx()),fVy(in.Vy()),fVz(in.Vz()),fVt(in.T())
+   fVx(in.Vx()),fVy(in.Vy()),fVz(in.Vz()),fVt(in.T()),
+   fTrackPoints(0x0) 
 {
  //Copy constructor
  for(Int_t i = 0; i<fNPids; i++)
@@ -81,8 +82,12 @@ AliHBTParticle::AliHBTParticle(const AliHBTParticle& in):
     fPids[i] =  in.fPids[i];
     fPidProb[i] = in.fPidProb[i];
   }
+ 
+ //fTrackPoints = (in.fTrackPoints)?(AliHBTTrackPoints*)in.fTrackPoints->Clone():0x0;
   
- fTrackPoints = (in.fTrackPoints)?(AliHBTTrackPoints*)fTrackPoints->Clone():0x0;
+ if (in.fTrackPoints)
+   fTrackPoints = (AliHBTTrackPoints*)in.fTrackPoints->Clone();
+   
   
 }
 
