@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:21  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:43  cernlib
 * Geant
 *
@@ -89,7 +92,7 @@ C.
          IF (IQ(JSTAK+1).GT.NSTMAX) NSTMAX = IQ(JSTAK+1)
 *
          IQ(JST+1) = -ITRA
-         IQ(JST+2) = 50
+         IQ(JST+2) = IPART
          IQ(JST+3) = 0
          DO 10 I = 1,3
             Q(JST+3+I) = XPHOT(I  ,NN)
