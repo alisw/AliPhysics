@@ -17,7 +17,7 @@
 #include <TClonesArray.h>
 #include <TString.h>
 #include <TObjString.h>
-
+#include <TTree.h>
 #include "AliJetEventParticles.h"
 #include "AliJetParticlesReader.h"
 
@@ -36,7 +36,9 @@ AliJetParticlesReader::AliJetParticlesReader()
     fLast(0),
     fPtMin(0),fPtMax(1000),
     fEtaMin(-1),fEtaMax(1),
-    fPhiMin(0),fPhiMax(2*TMath::Pi())
+    fPhiMin(0),fPhiMax(2*TMath::Pi()),
+    fNewTree(0),
+    fTree(0)
 {
   //Constructor
 }
@@ -53,7 +55,9 @@ AliJetParticlesReader::AliJetParticlesReader(TObjArray *dirs)
     fLast(0),
     fPtMin(0),fPtMax(1000),
     fEtaMin(-1),fEtaMax(1),
-    fPhiMin(0),fPhiMax(2*TMath::Pi())
+    fPhiMin(0),fPhiMax(2*TMath::Pi()),
+    fNewTree(0),
+    fTree(0)
 {
 }
 
@@ -77,7 +81,13 @@ Int_t AliJetParticlesReader::Next()
     } while (fNEventsRead < fFirst);
    
   //here we have event
-
+  if(fTree && fEventParticles){
+      if(fNewTree){
+	fTree->Branch("particles","AliJetEventParticles",&fEventParticles,32000,1);
+	fNewTree=0;
+      }
+      fTree->Fill();
+  }
   return kTRUE;
 }
 

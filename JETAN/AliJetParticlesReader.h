@@ -20,6 +20,7 @@
 #include <TObjArray.h>
 class TClonesArray;
 class TString;
+class TTree;
 class AliJetEventParticles;
 
 class AliJetParticlesReader: public TNamed
@@ -43,6 +44,7 @@ class AliJetParticlesReader: public TNamed
   void SetEtaCut(Float_t e=1){SetEtaCut(-e,e);}
   void SetEtaCut(Float_t emin, Float_t emax)
     {fEtaMin=emin;fEtaMax=emax;}
+  void SetTree(TTree *t){fTree=t;fNewTree=kTRUE;}
 
   const AliJetEventParticles* GetEventParticles() const {return fEventParticles;}
   AliJetEventParticles* GetEventParticles(Bool_t o) 
@@ -78,7 +80,10 @@ class AliJetParticlesReader: public TNamed
   Float_t fPhiMin;  //min phi cut
   Float_t fPhiMax;  //max phi cut
 
-  ClassDef(AliJetParticlesReader,1) // Basic AliJetParticles Reader class
+  Bool_t fNewTree;  // signals new tree
+  TTree *fTree;     //! if non-zero store AliJetEventParticles
+
+  ClassDef(AliJetParticlesReader,2) // Basic AliJetParticles Reader class
 };
 
 #endif
