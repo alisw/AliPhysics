@@ -20,10 +20,6 @@
 #include "AliTPCCompression.h"
 #include "AliTPCBuffer160.h"
 #include "AliTPCDDLRawData.h"
-#include "TFile.h"
-#include "TTree.h"
-
-
 
 ClassImp(AliTPCDDLRawData)
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -111,7 +107,7 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber){
 
 	  if(PSubSector!=data.SubSec){
 	    CountDDL++;
-	    if(CountDDL==(DDLPerFile+1)){
+	    if(CountDDL==DDLPerFile){
 	      //size magic word sector number sub-sector number 0 for TPC 0 for uncompressed
 	      Buffer->Flush();
 	      Buffer->WriteMiniHeader(1,PSecNumber,PSubSector,0,0);
@@ -122,7 +118,7 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber){
 	      cout<<"   Creating "<<filename<<endl;
 	      Buffer=new AliTPCBuffer160(filename,1);
 	      Buffer->WriteMiniHeader(0,data.Sec,data.SubSec,0,0);//Dummy;
-	      CountDDL=1;
+	      CountDDL=0;
 	    }//end if
 	    else{
 	      Buffer->Flush();
@@ -131,7 +127,6 @@ void AliTPCDDLRawData::RawData(Int_t LDCsNumber){
 	    }
 	    PSubSector=data.SubSec;
 	  }//end if
-	  
 	}//end if
 	
 	BunchLength=1;
@@ -235,6 +230,7 @@ Int_t AliTPCDDLRawData::RawDataCompDecompress(Int_t LDCsNumber,Int_t Comp){
       }//end for
       fi.close();
     }//end while
+    f.clear();
     f.close();
     fdest.close();
     remove("TempFile");
@@ -333,24 +329,22 @@ void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp){
   else
     sprintf(dest,"AltroDDLRecomposedDec.dat");
   ofstream fdest;
+
   fdest.open(dest,ios::binary);
-  
   ULong_t Size=0;
   //Int_t MagicWord,DDLNumber,SecNumber,SubSector,Detector,Flag=0;
   for(Int_t i=1;i<=LDCsNumber;i++){
-     if(!Comp)
+    if(!Comp)
       sprintf(filename,"TPCslice%d",i);  
     else
       sprintf(filename,"TPCslice%d.decomp",i);  
-    
     f.open(filename,ios::binary|ios::in);
-    if(!f){exit(1);}
+    if(!f){cout<<"The file doesn't exist"<<endl;exit(1);}
     //loop over the DDL block 
     //Each block contains a Mini Header followed by raw data (ALTRO FORMAT)
     //The number of block is ceil(216/LDCsNumber)
     ULong_t MiniHeader[3];
     //here the Mini Header is read
-    //    for(Int_t j=0;j<3;j++)MiniHeader[j]=0;
     while( (f.read((char*)(MiniHeader),sizeof(ULong_t)*3)) ){
       //cout<<"Mini header dimension "<<MiniHeader[0]<<endl;
       Int_t car=0;
@@ -360,6 +354,7 @@ void AliTPCDDLRawData::RawDataAltroDecode(Int_t LDCsNumber,Int_t Comp){
 	fdest.write((char*)(&car),1);
       }//end for
     }//end while
+    f.clear();
     f.close();
   }//end for
   fdest.close();

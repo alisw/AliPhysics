@@ -849,6 +849,7 @@ void AliITSDDLRawData::TestFormat(){
 	}//end switch
       }//end for
     }//end while
+    f.clear();
     f.close();
   }//end for
   ftxt.close();
