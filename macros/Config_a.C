@@ -286,6 +286,12 @@ if(iTRD) {
 //=================== TRD parameters ============================
 
 AliTRD *TRD  = new AliTRDv2("TRD","TRD version 2");
+// Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
+TRD->SetGasMix(0);
+// Define the sensitive parts of the detector
+//TRD->SetSensPlane(3);
+//TRD->SetSensChamber(2);
+//TRD->SetSensSector(5);
 }
 
 

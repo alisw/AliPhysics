@@ -68,7 +68,7 @@ Int_t iTRD=1;
 Int_t iABSO=1;
 Int_t iDIPO=1;
 Int_t iHALL=1;
-Int_t iFRAME=0;
+Int_t iFRAME=1;
 Int_t iSHIL=1;
 Int_t iPIPE=1;
 Int_t iFMD=1;
@@ -156,6 +156,12 @@ if(iTRD) {
 //=================== TRD parameters ============================
 
 AliTRD *TRD  = new AliTRDv2("TRD","TRD version 2");
+// Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
+TRD->SetGasMix(0);
+// Define the sensitive parts of the detector
+//TRD->SetSensPlane(3);
+//TRD->SetSensChamber(2);
+//TRD->SetSensSector(5);
 }
 
 
@@ -179,7 +185,7 @@ AliHALL *HALL  = new AliHALL("HALL","Alice Hall");
 
 if(iFRAME) {
 //=================== FRAME parameters ============================
-AliFRAME *FRAME  = new AliFRAMEv0("FRAME","Space Frame");
+AliFRAME *FRAME  = new AliFRAMEv1("FRAME","Space Frame");
 }
 
 if(iSHIL) {
