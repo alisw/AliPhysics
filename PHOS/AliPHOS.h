@@ -15,6 +15,7 @@ class TString ;
 
 // --- AliRoot header files ---
 
+#include <stdlib.h>
 #include "AliDetector.h" 
 class AliPHOSGeometry ; 
 

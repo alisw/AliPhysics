@@ -17,6 +17,8 @@
 
 // --- ROOT system ---
 #include "TClonesArray.h"
+#include <stdlib.h>
+
 class TString ;
 class TParticle ;
 

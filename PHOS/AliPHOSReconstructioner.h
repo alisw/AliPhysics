@@ -13,6 +13,7 @@
 
 // --- ROOT system ---
 
+#include <stdlib.h>
 #include "TTask.h"
 class AliPHOSDigitizer ;
 class AliPHOSClusterizer ;
