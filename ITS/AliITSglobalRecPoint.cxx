@@ -2,7 +2,6 @@
 #include <iostream.h>
 
 #include <TROOT.h>
-#include <TObject.h>
 #include <TMath.h>
 #include <TString.h>
 

@@ -1,10 +1,14 @@
 #ifndef AliITSneuralTracker_h
 #define AliITSneuralTracker_h
 
+#include <TObject.h>
+
+#include "AliITSglobalRecPoint.h"
 class TObjArray;
+
 class AliITSneuron;
 class AliITSneuralTrack;
-class AliITSglobalRecPoint;
+//class AliITSglobalRecPoint;
 
 ///////////////////////////////////////////////////////////////////////
 //

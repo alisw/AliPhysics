@@ -1,6 +1,8 @@
 #ifndef ALIITSGLOBALRECPOINT_H
 #define ALIITSGLOBALRECPOINT_H
 
+#include <TObject.h>
+
 class AliITSglobalRecPoint : public TObject {
 
 	public:
