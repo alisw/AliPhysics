@@ -71,6 +71,8 @@ depend:				$(SRCS)
 
 TOCLEAN			= $(OBJS) *Cint.h *Cint.cxx
 
+CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
+
 ############################### General Macros ################################
 
 include $(ALICE_ROOT)/conf/GeneralMacros
@@ -79,13 +81,6 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 
 -include tgt_$(ALICE_TARGET)/Make-depend 
 
-### Target check creates violation reports (.viol), which depend on
-### stripped files (.ii), which in turn depend on preprocessed
-### files (.i). Dependences are in conf/GeneralDef.
-
-CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
-
-check:          $(CHECKS)
 
 
 

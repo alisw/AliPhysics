@@ -59,6 +59,8 @@ depend:			$(SRCS)
 
 TOCLEAN			= $(OBJS) *Cint.h *Cint.cxx
 
+CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
+
 ############################### General Macros ################################
 
 include $(ALICE_ROOT)/conf/GeneralMacros

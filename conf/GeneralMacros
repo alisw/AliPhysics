@@ -44,3 +44,11 @@ tgt_$(ALICE_TARGET)/Make-depend:
 macroclean:
 		@rm -f $(TOCLEAN) *~ \#*
 
+
+### Target check creates violation reports (.viol), which depend on
+### stripped files (.ii), which in turn depend on preprocessed
+### files (.i). Dependences are in GeneralDef.
+
+check:		$(CHECKS)
+
+.SECONDARY: $(CHECKS:%.viol=%.ii)

@@ -67,12 +67,14 @@ depend:			$(SRCS)
 
 TOCLEAN			= $(OBJS) *Cint.h *Cint.cxx
 
+CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
+
 ############################### General Macros ################################
 
 include $(ALICE_ROOT)/conf/GeneralMacros
 
 ############################ Dependencies #####################################
 
-include tgt_$(ALICE_TARGET)/Make-depend 
+-include tgt_$(ALICE_TARGET)/Make-depend 
 
 
