@@ -43,8 +43,8 @@ RICHpatrec (Int_t evNumber1=0,Int_t evNumber2=0) {
     //
     for (int nev=0; nev<= evNumber2; nev++) {
       Int_t nparticles = gAlice->GetEvent(nev);
-      cout << "nev         " <<nev<<endl;
-      cout << "nparticles  " <<nparticles<<endl;
+      cout <<endl<< "Processing event:" <<nev<<endl;
+      cout << "Particles       :" <<nparticles<<endl;
       if (nev < evNumber1) continue;
       if (nparticles <= 0) return;
       if (RICH) detect->PatRec();
