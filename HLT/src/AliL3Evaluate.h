@@ -59,6 +59,7 @@ class AliL3Evaluate : public TObject {
   Int_t *fMcId;//!
   Int_t fGoodFound;
   Int_t fGoodGen;
+  Double_t fMinGoodPt;
 
   //Histograms
   TNtuple *fNtuppel;
@@ -104,6 +105,7 @@ class AliL3Evaluate : public TObject {
   TH1F *GetPtRes() {return fPtRes;}
 
   void SetMinPoints(Int_t f) {fMinPointsOnTrack = f;}
+  void SetMinGoodPt(Double_t f) {fMinGoodPt = f;}
   void DoSingleTracks() {fNoOverlap = kTRUE;}
   Int_t GetNGoodTracks() {return fGoodGen;}
   Int_t GetNFoundTracks() {return fGoodFound;}

@@ -2,6 +2,7 @@
 //Last Modified: 5.01.2001
 
 #include <stdio.h>
+#include <math.h>
 #include <TFile.h>
 #include <TH1.h>
 #include <TParticle.h>
@@ -63,6 +64,7 @@ AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Char_t *digitsfile,Int_t *slice)
   
   fMinSlice = slice[0];
   fMaxSlice = slice[1];
+  fMinGoodPt = 0.1;
   fNoOverlap = kFALSE;
 }
 
@@ -287,7 +289,7 @@ void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_numbe
 	      Int_t idx0=fDigits->GetTrackID(it,ip,0); 
 	      Int_t idx1=fDigits->GetTrackID(it,ip,1);
 	      Int_t idx2=fDigits->GetTrackID(it,ip,2);
-	      
+
 	      if (idx0>=0 && dig>=zero) count[idx0]+=1;
 	      if (idx1>=0 && dig>=zero) count[idx1]+=1;
 	      if (idx2>=0 && dig>=zero) count[idx2]+=1;
@@ -339,12 +341,13 @@ void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_numbe
       if (hit1->fQ != 0.) continue;
       Int_t i=hit->Track();
       TParticle *p = (TParticle*)gAlice->Particle(i);
-      printf("Checking particle %d\n",npart);
+      
+      printf("Checking particle %d with code %d\n",i,p->GetPdgCode());
       if (p->GetFirstMother()>=0) continue;  //secondary particle
       if (good[i] < good_number) continue;
-      if (p->Pt()<0.100) continue;
+      if (p->Pt()<fMinGoodPt) continue;
       if (TMath::Abs(p->Pz()/p->Pt())>0.999) continue;
-      
+      printf("Checking particle %d, nHits %d\n",i,good[i]);
       fGoodGen++;
       fGoodTracks[nt].label=i;
       fGoodTracks[nt].code=p->GetPdgCode();
@@ -355,29 +358,7 @@ void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_numbe
       if (hit0) delete hit0;
       if (nt==max) {cerr<<"Too many good tracks !n"; break;}
    }
-  /*
-    TObjArray *good_part = new TObjArray();
-    
-    for(Int_t i=0; i<fParticles->GetEntriesFast(); i++)
-    {
-    TParticle *p = (TParticle*)fParticles->UncheckedAt(i);
-    if(p->GetFirstMother()>0) continue; //secondary particle
-    if(good[i] < good_number) {continue;}
-    
-    Double_t ptg=p->Pt(),pxg=p->Px(),pyg=p->Py(),pzg=p->Pz();
-    //Double_t phi_part = TMath::ATan2(pyg,pxg);
-    // if (phi_part < 0) phi_part += 2*TMath::Pi();
-    //if(phi_part < phi_min*torad || phi_part > phi_max*torad) {continue;}
-    if(ptg<0.100) continue;
-    if(fabs(pzg/ptg)>0.999) {continue;}
-    //if(ptg < 4.5 || ptg > 5.5) continue;
-    printf("ptg %f\n",ptg);
-    fGoodGen++;
-    Int_t entries = good_part->GetEntriesFast();
-    good_part->AddLast(p);
-    particle_id[entries] = i;
-    }
-  */
+  
   delete [] good;
     
 }
@@ -444,7 +425,7 @@ void AliL3Evaluate::AssignIDs()
       fGoodFound++;
       Int_t tID = GetMCTrackLabel(track);
       track->SetMCid(tID);
-      printf("track %i id %d\n",i,tID);
+      printf("track %i id %d nHits %d\n",i,tID,track->GetNumberOfPoints());
     }
 }
 
@@ -524,6 +505,8 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track){
       return -lab;
     }
   
+  for(Int_t j=0; j<track->GetNumberOfPoints(); j++)
+    delete [] trackID[j];
   delete [] trackID;
   return lab;
 }
@@ -580,11 +563,17 @@ Int_t **AliL3Evaluate::GetClusterIDs(AliL3Track *track)
 	      <<"Error reading digits tree"<<ENDLOG;
 	  
 	  trackID[i] = new Int_t[3];
-	  trackID[i][0] = fDigits->GetTrackID((Int_t)xyz[2],(Int_t)xyz[1],0);
-	  trackID[i][1] = fDigits->GetTrackID((Int_t)xyz[2],(Int_t)xyz[1],1);
-	  trackID[i][2] = fDigits->GetTrackID((Int_t)xyz[2],(Int_t)xyz[1],2);
-	  if(trackID[i][0]<0)
-	    printf("trackID %d, padrow %d pad %d time %d\n",trackID[i][0],padrow,(Int_t)xyz[1],(Int_t)xyz[2]);
+	  trackID[i][0] = fDigits->GetTrackID((Int_t)rint(xyz[2]),(Int_t)rint(xyz[1]),0);
+	  trackID[i][1] = fDigits->GetTrackID((Int_t)rint(xyz[2]),(Int_t)rint(xyz[1]),1);
+	  trackID[i][2] = fDigits->GetTrackID((Int_t)rint(xyz[2]),(Int_t)rint(xyz[1]),2);
+	  //if(trackID[i][0]==6 || trackID[i][0]==32)
+	  //printf("trackID %d, padrow %d pad %d time %d\n",fDigits->GetTrackID((Int_t)rint(xyz[2]),(Int_t)rint(xyz[1]),0),padrow,(int)rint(xyz[1]),(int)rint(xyz[2]));
+	  /*if(trackID[i][0]<0)
+	    {
+	      
+	    printf("trackID %d, padrow %d pad %d time %d\n",trackID[i][0],padrow,(int)rint(xyz[1]),(int)rint(xyz[2]));
+	    printf("on the side %d %d %d %d\n",fDigits->GetTrackID(((int)rint(xyz[2])-1),((int)rint(xyz[1])),0),fDigits->GetTrackID(((int)rint(xyz[2])+1),((int)rint(xyz[1])),0),fDigits->GetTrackID(((int)rint(xyz[2])),((int)rint(xyz[1])-1),0),fDigits->GetTrackID(((int)rint(xyz[2])),((int)rint(xyz[1])+1),0));
+	    }*/
 	}
       else
 	{
@@ -600,6 +589,7 @@ Int_t **AliL3Evaluate::GetClusterIDs(AliL3Track *track)
 	  trackID[i][2] = -1;
 	}
     }
+
   return trackID;
 }
 
@@ -880,9 +870,9 @@ TNtuple *AliL3Evaluate::EvaluatePoints(Char_t *rootfile)
 	      TParticle *part = gAlice->Particle(mcId);
 	      Float_t xyz_cl[3] = {points[c].fX,points[c].fY,points[c].fZ};
 	      fTransform->Global2Raw(xyz_cl,cursec,currow);
-	      if(fDigits->GetTrackID((Int_t)xyz_cl[2],(Int_t)xyz_cl[1],0)!=mcId &&
-		 fDigits->GetTrackID((Int_t)xyz_cl[2],(Int_t)xyz_cl[1],1)!=mcId &&
-		 fDigits->GetTrackID((Int_t)xyz_cl[2],(Int_t)xyz_cl[1],2)!=mcId)
+	      if(fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),0)!=mcId &&
+		 fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),1)!=mcId &&
+		 fDigits->GetTrackID((Int_t)rint(xyz_cl[2]),(Int_t)rint(xyz_cl[1]),2)!=mcId)
 		continue;
 	      
 	      Float_t resy = xyz_cl[1]-cluster->fY;
