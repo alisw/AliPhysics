@@ -15,7 +15,7 @@ Int_t AliITStestBari() {
 
    if (ver==5) {
      gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSHits2DigitsBari.C");
-     if (rc=AliITSHits2Digits()) return rc;
+     if (rc=AliITSHits2DigitsBari()) return rc;
 
    }
 
@@ -23,7 +23,10 @@ Int_t AliITStestBari() {
 
 //Test ITS reconstruction
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSFindClustersBari.C");
-   if (rc=AliITSFindClusters()) return rc;
+
+   delete gAlice; gAlice=0;
+   
+   if (rc=AliITSFindClustersBari()) return rc;
 
    //gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSgraphycs.C");
    //if (rc=AliITSgraphycs()) return rc;

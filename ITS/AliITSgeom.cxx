@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2000/10/02 16:32:35  barbera
+Forward declaration added
+
 Revision 1.4.4.15  2000/10/02 15:52:05  barbera
 Forward declaration added
 
@@ -211,8 +214,8 @@ AliITSgeom::~AliITSgeom(){
   // Default destructor.
   // if arrays exist delete them. Then set everything to zero.
    if(fGm!=0){
-      for(Int_t i=0;i<fNlayers;i++) delete fGm[i];
-      delete fGm;
+      for(Int_t i=0;i<fNmodules;i++) delete fGm[i];
+      delete [] fGm;
    } // end if fGm!=0
    if(fNlad!=0) delete[] fNlad;
    if(fNdet!=0) delete[] fNdet;
