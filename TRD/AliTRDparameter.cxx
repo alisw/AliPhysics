@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2002/03/25 20:01:18  cblume
+Introduce parameter class
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,6 +96,47 @@ AliTRDparameter::AliTRDparameter(const Text_t *name, const Text_t *title)
   //
 
   fGeo                = new AliTRDgeometryFull();
+  fPRFsmp             = 0;
+  fTRFsmp             = 0;
+  fCTsmp              = 0;
+  fGasGain            = 0.0;
+  fNoise              = 0.0;
+  fChipGain           = 0.0;
+  fADCoutRange        = 0.0;
+  fADCinRange         = 0.0;
+  fADCthreshold       = 0;
+  fDiffusionOn        = 0;
+  fDiffusionT         = 0.0;
+  fDiffusionL         = 0.0;
+  fElAttachOn         = 0;
+  fElAttachProp       = 0.0;
+  fExBOn              = 0;
+  fOmegaTau           = 0.0;
+  fPRFOn              = 0;
+  fTRFOn              = 0;
+  fCTOn               = 0;
+  fTCOn               = 0;
+  fDriftVelocity      = 0.0;
+  fPadCoupling        = 0.0;
+  fTimeCoupling       = 0.0;
+  fTimeBinWidth       = 0.0;
+  fField              = 0.0;
+  fTiltingAngle       = 0.0;
+  fPRFbin             = 0;
+  fPRFlo              = 0.0;
+  fPRFhi              = 0.0;
+  fPRFwid             = 0.0;
+  fPRFpad             = 0;
+  fTRFbin             = 0;
+  fTRFlo              = 0.0;
+  fTRFhi              = 0.0;
+  fTRFwid             = 0.0;
+  fTCnexp             = 0;
+
+  fLUTOn              = 0;  
+  fLUT                = 0;
+  fClusMaxThresh      = 0;
+  fClusSigThresh      = 0;
 
   Init();
 
