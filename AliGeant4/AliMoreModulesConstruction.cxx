@@ -150,6 +150,25 @@ void AliMoreModulesConstruction::AddModule(G4String moduleName, G4int version,
   fModuleConstructionVector.push_back(moduleConstruction);
 }  
   					   
+void AliMoreModulesConstruction::Configure()
+{ 
+// Executes the detectors setup Root macros
+// (extracted from AliRoot Config.C) and
+// G4 macros.
+// ---
+  
+  // number of modules
+  G4int nofModules = fModuleConstructionVector.size();
+
+  if (nofModules == 0) {
+    AliGlobals::Warning(
+      "AliMoreModulesConstruction::Construct(): No modules are defined.");
+  }
+  else 
+    for (G4int i=0; i<nofModules; i++) 
+      fModuleConstructionVector[i]->Configure();
+}      
+
 void AliMoreModulesConstruction::Construct()
 { 
 // Constructs geometry.
@@ -171,7 +190,7 @@ void AliMoreModulesConstruction::Construct()
     G4int i;
     for (i=0; i<nofModules; i++) {
 
-      fModuleConstructionVector[i]->Configure();
+      // fModuleConstructionVector[i]->Configure();
     
       // register module name in the name map
       AliModule* module = fModuleConstructionVector[i]->GetAliModule();
@@ -207,6 +226,9 @@ void AliMoreModulesConstruction::Construct()
 
         // construct G3 geometry
         module->CreateGeometry();
+        
+        // construct geometry for display
+        module->BuildGeometry();
 
         if (writeGeometry) 
           pGeometryManager->CloseOutFile();
