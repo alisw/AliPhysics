@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.54  2002/03/28 11:49:10  morsch
+Pass status code in SetTrack.
+
 Revision 1.53  2002/03/25 14:51:13  morsch
 New stack-fill and count options introduced (N. Carrer).
 
@@ -156,6 +159,17 @@ Revision 1.11  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 */
 
+//
+// Generator using the TPythia interface (via AliPythia)
+// to generate pp collisions.
+// Using SetNuclei() also nuclear modifications to the structure functions
+// can be taken into account. This makes, of course, only sense for the
+// generation of the products of hard processes (heavy flavor, jets ...)
+//
+// andreas.morsch@cern.ch
+//
+
+
 #include "AliGenPythia.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliDecayerPythia.h"
@@ -218,6 +232,7 @@ AliGenPythia::AliGenPythia(Int_t npart)
 AliGenPythia::AliGenPythia(const AliGenPythia & Pythia)
 {
 // copy constructor
+    Pythia.Copy(*this);
 }
 
 AliGenPythia::~AliGenPythia()
@@ -633,7 +648,7 @@ void AliGenPythia::SetNuclei(Int_t a1, Int_t a2)
 }
 
 
-void AliGenPythia::MakeHeader()
+void AliGenPythia::MakeHeader() const
 {
 // Builds the event header, to be called after each event
     AliGenEventHeader* header = new AliGenPythiaEventHeader("Pythia");

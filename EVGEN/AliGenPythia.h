@@ -5,6 +5,15 @@
 
 /* $Id$ */
 
+//
+// Generator using the TPythia interface (via AliPythia)
+// to generate pp collisions.
+// Using SetNuclei() also nuclear modifications to the structure functions
+// can be taken into account. This makes, of course, only sense for the
+// generation of the products of hard processes (heavy flavor, jets ...)
+//
+// andreas.morsch@cern.ch
+//
 
 #include "AliGenMC.h"
 #include "AliPythia.h"
@@ -31,7 +40,7 @@ class AliGenPythia : public AliGenMC
     // select process type
     virtual void    SetProcess(Process_t proc = kPyCharm) {fProcess = proc;}
     // select structure function
-    virtual void    SetStrucFunc(StrucFunc_t func = kGRV_HO) {fStrucFunc = func;}
+    virtual void    SetStrucFunc(StrucFunc_t func = kGRVHO) {fStrucFunc = func;}
     // select pt of hard scattering 
     virtual void    SetPtHard(Float_t ptmin = 0, Float_t ptmax = 1.e10)
 	{fPtHardMin = ptmin; fPtHardMax = ptmax; }
@@ -72,10 +81,12 @@ class AliGenPythia : public AliGenMC
     
     // Assignment Operator
     AliGenPythia & operator=(const AliGenPythia & rhs);
- private:
-    Int_t  GenerateMB();
-    virtual void    MakeHeader();    
  protected:
+    // adjust the weight from kinematic cuts
+    void   AdjustWeights();
+    Int_t  GenerateMB();
+    void   MakeHeader() const;    
+
     TClonesArray* fParticles;     //Particle  List
     
     Process_t   fProcess;         //Process type
@@ -94,15 +105,15 @@ class AliGenPythia : public AliGenMC
     AliDecayer  *fDecayer;        //!Pointer to the decayer instance
     Int_t       fDebugEventFirst; //!First event to debug
     Int_t       fDebugEventLast;  //!Last  event to debug
-    Float_t     fEtaMinJet;      // Minimum eta of triggered Jet
-    Float_t     fEtaMaxJet;      // Maximum eta of triggered Jet
-    Float_t     fPhiMinJet;      // Minimum phi of triggered Jet
-    Float_t     fPhiMaxJet;      // Maximum phi of triggered Jet
+    Float_t     fEtaMinJet;       //Minimum eta of triggered Jet
+    Float_t     fEtaMaxJet;       //Maximum eta of triggered Jet
+    Float_t     fPhiMinJet;       //Minimum phi of triggered Jet
+    Float_t     fPhiMaxJet;       //Maximum phi of triggered Jet
 
-    Float_t     fEtaMinGamma;    // Minimum eta of triggered gamma
-    Float_t     fEtaMaxGamma;    // Maximum eta of triggered gamma
-    Float_t     fPhiMinGamma;    // Minimum phi of triggered gamma
-    Float_t     fPhiMaxGamma;    // Maximum phi of triggered gamma
+    Float_t     fEtaMinGamma;     // Minimum eta of triggered gamma
+    Float_t     fEtaMaxGamma;     // Maximum eta of triggered gamma
+    Float_t     fPhiMinGamma;     // Minimum phi of triggered gamma
+    Float_t     fPhiMaxGamma;     // Maximum phi of triggered gamma
 
     StackFillOpt_t fStackFillOpt; // Stack filling with all particles with
                                   // that flavour or only with selected
@@ -118,12 +129,10 @@ class AliGenPythia : public AliGenMC
     // fCountMode = kCountParents     --> Only selected parents are counted
     // fCountMode = kCountTrackabless --> Only particles flagged for tracking
     //                                     are counted
-
- private:
-    // adjust the weight from kinematic cuts
-    void   AdjustWeights();
+    //
 
     ClassDef(AliGenPythia,2) // AliGenerator interface to Pythia
+
 };
 #endif
 

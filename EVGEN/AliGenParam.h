@@ -5,8 +5,15 @@
 
 /* $Id$ */
 
+//
+// Class to generate particles from using paramtrized pT and y distributions.
+// Distributions are obtained from pointer to object of type AliGenLib.
+// (For example AliGenMUONlib)
+//
+// andreas.morsch@cern.ch
+//
+
 #include "AliGenMC.h"
-#include <TArrayI.h>
 
 class AliPythia;
 class TParticle;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.36  2002/02/08 16:50:50  morsch
+Add name and title in constructor.
+
 Revision 1.35  2002/01/21 10:02:40  morsch
 ty is Double_t
 Abort if too high rapidity causes numerical paroblem. User has to specify
@@ -104,6 +107,14 @@ Revision 1.11  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 
 */
+
+
+
+// Class to generate particles from using paramtrized pT and y distributions.
+// Distributions are obtained from pointer to object of type AliGenLib.
+// (For example AliGenMUONlib)
+// Decays are performed using Pythia.
+// andreas.morsch@cern.ch
 
 #include "AliGenParam.h"
 #include "AliDecayerPythia.h"
@@ -226,9 +237,10 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
 }
 
 
-AliGenParam::AliGenParam(const AliGenParam & Paramd)
+AliGenParam::AliGenParam(const AliGenParam & Param)
 {
 // copy constructor
+    Param.Copy(*this);
 }
 
 //____________________________________________________________
