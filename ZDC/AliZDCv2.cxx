@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/11/21 20:05:22  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.8  2002/10/14 14:57:44  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -180,7 +183,7 @@ AliZDCv2::AliZDCv2(const char *name, const char *title)
 void AliZDCv2::CreateGeometry()
 {
   //
-  // Create the geometry for the Zero Degree Calorimeter version 1
+  // Create the geometry for the Zero Degree Calorimeter version 2
   //* Initialize COMMON block ZDC_CGEOM
   //*
 
@@ -200,13 +203,15 @@ void AliZDCv2::CreateBeamLine()
   
   // -- Mother of the ZDCs (Vacuum PCON)
   
+  zd1 = 2092.;
+  
   conpar[0] = 0.;
   conpar[1] = 360.;
   conpar[2] = 2.;
-  conpar[3] = 2000.;
+  conpar[3] = zd1;
   conpar[4] = 0.;
   conpar[5] = 55.;
-  conpar[6] = 13060.;
+  conpar[6] = 13500.;
   conpar[7] = 0.;
   conpar[8] = 55.;
   gMC->Gsvolu("ZDC ", "PCON", idtmed[11], conpar, 9);
@@ -214,9 +219,7 @@ void AliZDCv2::CreateBeamLine()
 
   // -- FIRST SECTION OF THE BEAM PIPE (from compensator dipole to 
   //    	the beginning of D1) 
-  
-  zd1 = 2000.;
-  
+    
   tubpar[0] = 6.3/2.;
   tubpar[1] = 6.7/2.;
   tubpar[2] = 3838.3/2.;
@@ -433,7 +436,7 @@ void AliZDCv2::CreateBeamLine()
   gMC->Gspos("QT16", 1, "QT14", 7.7, 0., 0., 0, "ONLY");
   
   
-  //-- BEAM PIPE BETWEEN END OF CONICAL PIPE AND BEGINNING OF D2
+  //-- BEAM PIPE BETWEEN END OF CONICAL PIPE AND BEGINNING OF D2 
   
   tubpar[0] = 6.4/2.;
   tubpar[1] = 6.8/2.;
@@ -458,14 +461,15 @@ void AliZDCv2::CreateBeamLine()
              0., tubpar[2] + zd1, im2, "ONLY");
 	       
   // -- BEAM PIPE ON THE OTHER SIDE OF I.P. TILL THE EM ZDC 
-
+  // -- 25 Mar 2003 -> This seem to be no longer needed
+  /*
   Float_t zb = -800.;	 	// End of QBPM (from AliPIPEv0.cxx)
   tubpar[0] = 8.0/2.;
   tubpar[1] = 8.2/2.;
   tubpar[2] = (1050+zb)/2.;	// From the end of QBPM to z=1050.
   gMC->Gsvolu("QT19", "TUBE", idtmed[7], tubpar, 3);
   gMC->Gspos("QT19", 1, "ALIC", 0., 0., zb - tubpar[2], 0, "ONLY");
-
+  */
   
   // --  END OF BEAM PIPE VOLUME DEFINITION.  
   // ----------------------------------------------------------------
