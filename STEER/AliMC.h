@@ -24,6 +24,8 @@ class TArrayI;
 
 R__EXTERN AliMC *gMC;
 
+enum AliMCGeomType { kGeant3, kGeant4 }; 
+
 class AliMC : public TNamed, public AliRndm
 {
   public:
@@ -77,6 +79,7 @@ class AliMC : public TNamed, public AliRndm
     virtual void  Gsposp(const char *name, Int_t nr, const char *mother,  
                          Float_t x, Float_t y, Float_t z, Int_t irot,
                          const char *konly, Float_t *upar, Int_t np) = 0;
+    virtual void  Gsbool(const char* onlyVolName, const char* manyVolName) = 0;
 
     virtual void  SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
                   Float_t *absco, Float_t *effic, Float_t *rindex) = 0;
@@ -177,6 +180,7 @@ class AliMC : public TNamed, public AliRndm
     // other (then geometry/step/run management) methods
     // ----------------------------------------------
     //
+    virtual AliMCGeomType GetMCGeomType() const = 0;
     
     //
     // Geant3 specific methods
