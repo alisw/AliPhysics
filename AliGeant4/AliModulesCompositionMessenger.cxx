@@ -72,8 +72,23 @@ AliModulesCompositionMessenger::AliModulesCompositionMessenger(
     ->SetGuidance("If false: only volumes defined with a sensitive tracking");
   fSetAllSensitiveCmd 
     ->SetGuidance("          medium are associated with a sensitive detector.");
+  fSetAllSensitiveCmd 
+    ->SetGuidance("It has lower priority than individual module setting");
   fSetAllSensitiveCmd->SetParameterName("sensitivity", false);
   fSetAllSensitiveCmd->AvailableForStates(PreInit);  
+
+  fForceAllSensitiveCmd
+    = new G4UIcmdWithABool("/aliDet/forceAllSensitive", this);
+  fForceAllSensitiveCmd 
+    ->SetGuidance("If true: force to set all logical volumes sensitive.");
+  fForceAllSensitiveCmd 
+    ->SetGuidance("         (Each logical is volume associated with a sensitive");
+  fForceAllSensitiveCmd 
+    ->SetGuidance("          detector.)");
+  fForceAllSensitiveCmd 
+    ->SetGuidance("It has higher priority than individual module setting");
+  fForceAllSensitiveCmd->SetParameterName("forceSensitivity", false);
+  fForceAllSensitiveCmd->AvailableForStates(PreInit);  
 
   fSetReadGeometryCmd 
     = new G4UIcmdWithABool("/aliDet/readGeometry", this);
@@ -126,6 +141,7 @@ AliModulesCompositionMessenger::~AliModulesCompositionMessenger() {
   delete fListAvailableCmd;
   delete fFieldValueCmd;
   delete fSetAllSensitiveCmd;
+  delete fForceAllSensitiveCmd;
   delete fSetReadGeometryCmd;
   delete fSetWriteGeometryCmd;
   delete fPrintMaterialsCmd;
@@ -173,6 +189,10 @@ void AliModulesCompositionMessenger::SetNewValue(G4UIcommand* command, G4String 
   else if (command == fSetAllSensitiveCmd) {
     fModulesComposition->SetAllLVSensitive(
                          fSetAllSensitiveCmd->GetNewBoolValue(newValues));
+  }
+  else if (command == fForceAllSensitiveCmd) {
+    fModulesComposition->SetForceAllLVSensitive(
+                         fForceAllSensitiveCmd->GetNewBoolValue(newValues));
   }
   else if (command == fSetReadGeometryCmd) {
     fModulesComposition->SetReadGeometry(
