@@ -1074,15 +1074,14 @@ fin:
     // flag = 0 no delta rays
     // flag = 1 delta rays, secondaries processed
     // flag = 2 delta rays, no secondaries stored
-    // gMC ->SetProcess("PAIR",1); // PAIRBREM  1.   0.  0. 3. lastmat
-                                 // EMFCUT    0.   0. -1. 3. lastmat 0. PHOT-THR
+
     else if ((strncmp(proc->GetName(),"PAIR",4) == 0) && (proc->Flag() == 1 || proc->Flag() == 2)) {
 
 	nextp.Reset();
 	
 	while ((procp = (TFlukaConfigOption*)nextp())) {
 	    if ((strncmp(procp->GetName(),"BREM",4) == 0) && 
-		(proc->Flag() == 1 || procp->Flag() == 2) &&
+		(proc->Flag() == 1) &&
 		(procp->Medium() == proc->Medium())) {
 		fprintf(pFlukaVmcInp,"*\n*Bremsstrahlung and pair production by muons and charged hadrons both activated\n");
 		fprintf(pFlukaVmcInp,"*Generated from call: SetProcess('BREM',1) and SetProcess('PAIR',1)\n");
@@ -1135,13 +1134,13 @@ fin:
 		// "ELPO-THR"; 
 		fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",theCut,zero,zero,matMin,matMax,one);
 		
-          // for e+ and e-
-		fprintf(pFlukaVmcInp,"*\n*Pair production by electrons is activated\n");
+                // for gamma -> e+ and e-
+		fprintf(pFlukaVmcInp,"*\n*Pair production by photons is activated\n");
 		fprintf(pFlukaVmcInp,"*Generated from call: SetProcess('PAIR',1);\n");
 		theCut = -1.0;
 		nextc.Reset();
 		while ((cut = (TFlukaConfigOption*)nextc())) {
-		    if (strncmp(cut->GetName(), "CUTGAM", 6) == 0 &&
+		    if (strncmp(cut->GetName(), "CUTELE", 6) == 0 &&
 			(cut->Medium() == proc->Medium())) theCut = cut->Cut();
 		}
 		// theCut = energy threshold (GeV) for gamma pair production (< 0.0 : resets to default, = 0.0 : ignored)
@@ -1168,13 +1167,13 @@ fin:
 	// matMax = upper bound of the material indices in which the respective thresholds apply
 	fprintf(pFlukaVmcInp,"PAIRBREM  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,zero,zero,matMin,matMax);
 	
-	// for e+ and e-
+	// for gamma -> e+ and e-
 	fprintf(pFlukaVmcInp,"*\n*Pair production by electrons is activated\n");
 	fprintf(pFlukaVmcInp,"*Generated from call: SetProcess('PAIR',1) or SetProcess('PAIR',2)\n");
 	theCut = -1.0;
 	nextc.Reset();
 	while ((cut = (TFlukaConfigOption*)nextc())) {
-	    if (strncmp(cut->GetName(), "CUTGAM", 6) == 0 &&
+	    if (strncmp(cut->GetName(), "CUTELE", 6) == 0 &&
 		(cut->Medium() == proc->Medium())) theCut = cut->Cut();
 	}
 	// zero = energy threshold (GeV) for Compton scattering (= 0.0 : ignored)
@@ -1210,7 +1209,7 @@ fin:
 		  procp->Flag() == 1 &&
 		  (procp->Medium() == proc->Medium())) goto NOBREM;
 	  }
-          if (proc->Flag() == 1 || proc->Flag() == 2) { 
+          if (proc->Flag() == 1) { 
 	      fprintf(pFlukaVmcInp,"*\n*Bremsstrahlung by muons and charged hadrons is activated\n");
 	      fprintf(pFlukaVmcInp,"*Generated from call: SetProcess('BREM',1) or SetProcess('BREM',2)\n");
 	      fprintf(pFlukaVmcInp,"*Energy threshold set by call SetCut('BCUTM',cut) or set to 0.\n");
@@ -1241,7 +1240,13 @@ fin:
 	      // matMax = upper bound of the material indices in which the respective thresholds apply
 	      // one = step length in assigning indices
 	      //"ELPO-THR"; 
-	      fprintf(pFlukaVmcInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",-one,zero,zero,matMin,matMax,one);
+	      theCut = -1.0;
+	      nextc.Reset();
+	      while ((cut = (TFlukaConfigOption*)nextc())) {
+		  if (strncmp(cut->GetName(), "CUTGAM", 6) == 0 &&
+		      (cut->Medium() == proc->Medium())) theCut = cut->Cut();
+	      }
+	      fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n", theCut,zero,zero,matMin,matMax,one);
 	  }
 	  else if (proc->Flag() == 0) {
 	      fprintf(pFlukaVmcInp,"*\n*No bremsstrahlung - no FLUKA card generated\n");
@@ -1367,7 +1372,13 @@ fin:
 	      // matMax = upper bound of the material indices in which the respective thresholds apply
 	      // one = step length in assigning indices
 	      //"PHOT-THR"; 
-	      fprintf(pFlukaVmcInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",-one,zero,zero,matMin,matMax,one);
+	      theCut = -1.0;
+	      nextc.Reset();
+	      while ((cut = (TFlukaConfigOption*)nextc())) {
+		  if (strncmp(cut->GetName(), "CUTELE", 6) == 0 &&
+		      (cut->Medium() == proc->Medium())) theCut = cut->Cut();
+	      }
+	      fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",theCut,zero,zero,matMin,matMax,one);
 	  }
 	  else if (proc->Flag() == 0) {
 	      fprintf(pFlukaVmcInp,"*\n*No Compton scattering - no FLUKA card generated\n");
@@ -1497,13 +1508,7 @@ fin:
       // loss tables must be recomputed via the command 'PHYSI'
       // gMC ->SetProcess("LOSS",2); // ??? IONFLUCT ? energy loss
       else if (strncmp(proc->GetName(),"LOSS",4) == 0) {
-	  if (proc->Flag() == 2) { // complete energy loss fluctuations
-	      fprintf(pFlukaVmcInp,"*\n*Complete energy loss fluctuations do not exist in FLUKA\n");
-	      fprintf(pFlukaVmcInp,"*Generated from call: SetProcess('LOSS',2);\n");
-	      fprintf(pFlukaVmcInp,"*flag=2=complete energy loss fluctuations\n");
-	      fprintf(pFlukaVmcInp,"*No FLUKA card generated\n");
-	  }
-	  else if (proc->Flag() == 1 || proc->Flag() == 3) { // restricted energy loss fluctuations
+	  if (proc->Flag() > 0 || proc->Flag() < 4) { // restricted energy loss fluctuations
 	      fprintf(pFlukaVmcInp,"*\n*Restricted energy loss fluctuations\n");
 	      fprintf(pFlukaVmcInp,"*Generated from call: SetProcess('LOSS',1) or SetProcess('LOSS',3)\n");
 	      // one = restricted energy loss fluctuations (for hadrons and muons) switched on
@@ -1511,7 +1516,7 @@ fin:
 	      // one = minimal accuracy
 	      // matMin = lower bound of the material indices in which the respective thresholds apply
 	      // upper bound of the material indices in which the respective thresholds apply
-	      fprintf(pFlukaVmcInp,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,one,one,matMin,matMax);
+	      fprintf(pFlukaVmcInp,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one, one, 4., matMin, matMax);
 	  }
 	  else if (proc->Flag() == 4) { // no energy loss fluctuations
 	      fprintf(pFlukaVmcInp,"*\n*No energy loss fluctuations\n");
@@ -1659,7 +1664,7 @@ fin:
       // flag = 2 photo electric effect, no electron stored
       // gMC ->SetProcess("PHOT",1); // EMFCUT    0.  -1.  0. 3. lastmat 0. PHOT-THR
       else if (strncmp(proc->GetName(),"PHOT",4) == 0) {
-	  if (proc->Flag() == 1 || proc->Flag() == 2) {
+	  if (proc->Flag() == 1) {
 	      fprintf(pFlukaVmcInp,"*\n*Photo electric effect is activated\n");
 	      fprintf(pFlukaVmcInp,"*Generated from call: SetProcess('PHOT',1);\n");
 	      // zero = ignored
@@ -1669,7 +1674,13 @@ fin:
 	      // matMax = upper bound of the material indices in which the respective thresholds apply
 	      // one = step length in assigning indices
 	      //"PHOT-THR"; 
-	      fprintf(pFlukaVmcInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",zero,-one,zero,matMin,matMax,one);
+	      theCut = -1.0;
+	      nextc.Reset();
+	      while ((cut = (TFlukaConfigOption*)nextc())) {
+		  if (strncmp(cut->GetName(), "CUTELE", 6) == 0 &&
+		      (cut->Medium() == proc->Medium())) theCut = cut->Cut();
+	      }
+	      fprintf(pFlukaVmcInp,"EMFCUT    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",zero,theCut,zero,matMin,matMax,one);
 	  }
 	  else if (proc->Flag() == 0) {
 	      fprintf(pFlukaVmcInp,"*\n*No photo electric effect - no FLUKA card generated\n");
