@@ -541,16 +541,13 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * dig
   xoL = xo*TMath::Cos(phi)-yo*TMath::Sin(phi) ;
   yoL = xo*TMath::Sin(phi)+yo*TMath::Cos(phi) ;
   
-  Float_t radius = TMath::Sqrt((xoL-x)*(xoL-x)+
-                               (phosgeom->GetIPtoCrystalSurface()-yoL)*(phosgeom->GetIPtoCrystalSurface()-yoL)+
-                               (zo-z)*(zo-z));
+  Float_t radius = phosgeom->GetIPtoCrystalSurface()-yoL;
  
   Float_t incidencephi = TMath::ATan((x-xoL ) / radius) ; 
   Float_t incidencetheta = TMath::ATan((z-zo) / radius) ;
  
   Float_t depthx =  ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencephi) ; 
   Float_t depthz =  ( para * TMath::Log(fAmp) + parb ) * TMath::Sin(incidencetheta) ; 
-  
 
   fLocPos.SetX(x - depthx)  ;
   fLocPos.SetY(0.) ;
