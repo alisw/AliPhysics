@@ -65,6 +65,9 @@ void AliL3Track::Set(AliL3Track *tpt){
   SetTgl(tpt->GetTgl());
   SetCharge(tpt->GetCharge());
   SetHits(tpt->GetNHits(),(UInt_t *)tpt->GetHitNumbers());
+#ifdef do_mc
+  SetMCid(tpt->GetMCid());
+#endif
 }
 
 Int_t AliL3Track::Compare(const AliL3Track *track) const
@@ -288,8 +291,8 @@ Bool_t AliL3Track::CalculateReferencePoint(Double_t angle,Double_t radius){
 Bool_t AliL3Track::CalculateEdgePoint(Double_t angle){
   // Global coordinate: crossing point with y = ax; a=tan(angle);
   //
-  Double_t rmin=80;  //min Radius of TPC
-  Double_t rmax=260; //max Radius of TPC
+  Double_t rmin=AliL3Transform::Row2X(AliL3Transform::GetFirstRow(-1));  //min Radius of TPC
+  Double_t rmax=AliL3Transform::Row2X(AliL3Transform::GetLastRow(-1)); //max Radius of TPC
 
   Double_t a = tan(angle);
   Double_t pp=(fCenterX+a*fCenterY)/(1+pow(a,2));
