@@ -1,5 +1,7 @@
-//#include "alles.h"
-//#include "TParticle.h"
+#ifndef __CINT__
+  #include "alles.h"
+#endif
+
 struct GoodTrack {
   Int_t lab;
   Int_t code;
@@ -11,7 +13,6 @@ Int_t good_tracks(GoodTrack *gt, Int_t max);
 Int_t AliTPCComparison() {
   Int_t i;
    gBenchmark->Start("AliTPCComparison");
-   cerr<<"Doing comparison...\n";
 
    TFile *cf=TFile::Open("AliTPCclusters.root");
    if (!cf->IsOpen()) {cerr<<"Can't open AliTPCclusters.root !\n"; return 1;}
@@ -24,10 +25,7 @@ Int_t AliTPCComparison() {
    ca->SetClusterType("AliTPCcluster");
    ca->ConnectTree("Segment Tree");
    Int_t nentr=Int_t(ca->GetTree()->GetEntries());
-   for (i=0; i<nentr; i++) {
-     //AliSegmentID *s=;
-       ca->LoadEntry(i);
-   }
+   for (i=0; i<nentr; i++) ca->LoadEntry(i);
 
 // Load tracks
    TFile *tf=TFile::Open("AliTPCtracks.root");
@@ -37,8 +35,9 @@ Int_t AliTPCComparison() {
    TBranch *tbranch=tracktree->GetBranch("tracks");
    nentr=(Int_t)tracktree->GetEntries();
    
+   AliTPCtrack *iotrack=0;
    for (i=0; i<nentr; i++) {
-       AliTPCtrack *iotrack=new AliTPCtrack;
+       iotrack=new AliTPCtrack;
        tbranch->SetAddress(&iotrack);
        tracktree->GetEvent(i);
        iotrack->CookLabel(ca);
@@ -52,10 +51,12 @@ Int_t AliTPCComparison() {
 /////////////////////////////////////////////////////////////////////////
    GoodTrack gt[15000];
    Int_t ngood=0;
-   ifstream in("good_tracks");
+   ifstream in("good_tracks_tpc");
    if (in) {
       cerr<<"Reading good tracks...\n";
-      while (in>>gt[ngood].lab>>gt[ngood].code>>gt[ngood].px>>gt[ngood].py>>gt[ngood].pz>>gt[ngood].x>>gt[ngood].y>>gt[ngood].z) {
+      while (in>>gt[ngood].lab>>gt[ngood].code>>
+                 gt[ngood].px>>gt[ngood].py>>gt[ngood].pz>>
+                 gt[ngood].x >>gt[ngood].y >>gt[ngood].z) {
          ngood++;
          cerr<<ngood<<'\r';
          if (ngood==15000) {
@@ -63,16 +64,31 @@ Int_t AliTPCComparison() {
             break;
          }
       }
-      if (!in.eof()) cerr<<"Read error (good_tracks) !\n";
+      if (!in.eof()) cerr<<"Read error (good_tracks_tpc) !\n";
    } else {
       cerr<<"Marking good tracks (this will take a while)...\n";
       ngood=good_tracks(gt,15000);
-      ofstream out("good_tracks");
+      ofstream out("good_tracks_tpc");
       if (out) {
          for (Int_t ngd=0; ngd<ngood; ngd++)            
-	    out<<gt[ngd].lab<<' '<<gt[ngd].code<<' '<<gt[ngd].px <<' '<<gt[ngd].py<<' '<<gt[ngd].pz<<' '<<gt[ngd].x  <<' '<<gt[ngd].y <<' '<<gt[ngd].z <<endl;
-      } else cerr<<"Can not open file (good_tracks) !\n";
+	    out<<gt[ngd].lab<<' '<<gt[ngd].code<<' '<<
+                 gt[ngd].px<<' '<<gt[ngd].py<<' '<<gt[ngd].pz<<' '<<
+                 gt[ngd].x <<' '<<gt[ngd].y <<' '<<gt[ngd].z <<endl;
+      } else cerr<<"Can not open file (good_tracks_tpc) !\n";
       out.close();
+
+      cerr<<"Preparing tracks for matching with the ITS...\n";
+      tarray.Sort();
+      tf=TFile::Open("AliTPCtracks.root","recreate");
+      tracktree=new TTree("TreeT","Tree with TPC tracks");
+      tracktree->Branch("tracks","AliTPCtrack",&iotrack,32000,0);
+      for (i=0; i<nentr; i++) {
+          iotrack=(AliTPCtrack*)tarray.UncheckedAt(i);
+          tracktree->Fill();
+      }
+      tracktree->Write();
+      tf->Close();
+
    }
    cerr<<"Number of good tracks : "<<ngood<<endl;
 
@@ -84,16 +100,18 @@ Int_t AliTPCComparison() {
    TH1F *hmpt=new TH1F("hmpt","Relative Pt resolution (pt>4GeV/c)",30,-60,60); 
    hmpt->SetFillColor(6);
 
-   TH1F *hgood=new TH1F("hgood","Good tracks",20,0,7);    
-   TH1F *hfound=new TH1F("hfound","Found tracks",20,0,7);
-   TH1F *hfake=new TH1F("hfake","Fake tracks",20,0,7);
-   TH1F *hg=new TH1F("hg","",20,0,7); //efficiency for good tracks
+   TH1F *hgood=new TH1F("hgood","Good tracks",30,0.1,6.1);    
+   TH1F *hfound=new TH1F("hfound","Found tracks",30,0.1,6.1);
+   TH1F *hfake=new TH1F("hfake","Fake tracks",30,0.1,6.1);
+   TH1F *hg=new TH1F("hg","",30,0.1,6.1); //efficiency for good tracks
    hg->SetLineColor(4); hg->SetLineWidth(2);
-   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",20,0,7);
+   TH1F *hf=new TH1F("hf","Efficiency for fake tracks",30,0.1,6.1);
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
 
    TH1F *he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
    TH2F *hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,200.);
+   hep->SetMarkerStyle(8);
+   hep->SetMarkerSize(0.4);
 
    Int_t mingood = ngood;  //MI change
    Int_t * track_notfound = new Int_t[ngood];
@@ -118,7 +136,7 @@ Int_t AliTPCComparison() {
           if (lab==TMath::Abs(tlab)) break;
       }
       if (i==nentr) {
-	//	cerr<<"Track "<<lab<<" was not found !\n";
+	//cerr<<"Track "<<lab<<" was not found !\n";
 	track_notfound[itrack_notfound++]=lab;
         continue;
       }
@@ -150,23 +168,26 @@ Int_t AliTPCComparison() {
 	//cerr<<lab<<" fake\n";
       }
 
-      Double_t px,py,pz,pt=fabs(track->GetPt());track->GetPxPyPz(px,py,pz);
+      Double_t par[5]; track->GetExternalParameters(xk,par);
+      Float_t phi=TMath::ASin(par[2]) + track->GetAlpha();
+      if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
+      if (phi>=TMath::Pi()) phi-=2*TMath::Pi();
+      Float_t lam=TMath::ATan(par[3]); 
+      Float_t pt_1=TMath::Abs(par[4]);
 
       if (TMath::Abs(gt[ngood].code)==11 && ptg>4.) {
-         hmpt->Fill((1/pt - 1/ptg)/(1/ptg)*100.);
+         hmpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
       } else {
          Float_t phig=TMath::ATan2(gt[ngood].py,gt[ngood].px);
-         Float_t phi =TMath::ATan2(py,px );
          hp->Fill((phi - phig)*1000.);
 
          Float_t lamg=TMath::ATan2(gt[ngood].pz,ptg);
-         Float_t lam =TMath::ATan2(pz ,pt );
          hl->Fill((lam - lamg)*1000.);
 
-         hpt->Fill((1/pt - 1/ptg)/(1/ptg)*100.);
+         hpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
       }
 
-      Float_t mom=track->GetP();
+      Float_t mom=1./(pt_1*TMath::Cos(lam));
       Float_t dedx=track->GetdEdx();
       hep->Fill(mom,dedx,1.);
       if (TMath::Abs(gt[ngood].code)==211)
@@ -279,7 +300,7 @@ Int_t AliTPCComparison() {
 Int_t good_tracks(GoodTrack *gt, Int_t max) {
    Int_t nt=0;
 
-   TFile *file=TFile::Open("galice.root");
+   TFile *file=TFile::Open("rfio:galice.root");
    if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; exit(4);}
 
    if (!(gAlice=(AliRun*)file->Get("gAlice"))) {
@@ -287,7 +308,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
      exit(5);
    }
 
-   gAlice->GetEvent(0);   
+   Int_t np=gAlice->GetEvent(0);   
 
    AliTPC *TPC=(AliTPC*)gAlice->GetDetector("TPC");
    Int_t ver = TPC->IsVersion(); 
@@ -303,11 +324,6 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    Int_t gap=Int_t(0.125*nrows);
    Int_t good_number=Int_t(0.4*nrows);
 
-   TObjArray *particles=gAlice->Particles(); //MI change 
-   
-   //
-   //   Int_t np=particles->GetEntriesFast();
-   Int_t np=gAlice->GetNtrack(); //FCA correction
    Int_t *good=new Int_t[np];
    for (Int_t ii=0; ii<np; ii++) good[ii]=0;
 
@@ -393,7 +409,6 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    }
 
    TTree *TH=gAlice->TreeH();
-   //   TClonesArray *hits=TPC->Hits();
    Int_t npart=(Int_t)TH->GetEntries();
 
    while (npart--) {
@@ -413,20 +428,8 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
       else continue;
       AliTPChit *hit1=(AliTPChit*)TPC->NextHit();	
       if (hit1==0) continue;
-      /*      Int_t nhits=hits->GetEntriesFast();
-      if (nhits==0) continue;
-      AliTPChit *hit;
-      Int_t j;
-      for (j=0; j<nhits-1; j++) {
-         hit=(AliTPChit*)hits->UncheckedAt(j);
-         if (hit->fQ==0.) break;
-      }
-      if (j==nhits-1) continue;
-      AliTPChit *hit1=(AliTPChit*)hits->UncheckedAt(j+1);
-      */
       if (hit1->fQ != 0.) continue;
       Int_t i=hit->Track();
-      //      TParticle *p = (TParticle*)particles->UncheckedAt(i);
       TParticle *p = (TParticle*)gAlice->Particle(i);
 
       if (p->GetFirstMother()>=0) continue;  //secondary particle
@@ -449,7 +452,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
    }
    delete[] good;
 
-   //delete gAlice; gAlice=0;
+   delete gAlice; gAlice=0;
 
    file->Close();
    gBenchmark->Stop("AliTPCComparison");

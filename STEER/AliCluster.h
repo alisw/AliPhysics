@@ -15,6 +15,7 @@
 class AliCluster : public TObject {
 public:
   AliCluster();
+  virtual ~AliCluster() {;}
   AliCluster(Int_t *lab, Float_t *hit);
   void SetLabel(Int_t lab, Int_t i) {fTracks[i]=lab;}
   void SetY(Float_t y)              {fY=y;}
@@ -27,6 +28,8 @@ public:
   Float_t GetZ()          const {return fZ;}
   Float_t GetSigmaY2()    const {return fSigmaY2;}
   Float_t GetSigmaZ2()    const {return fSigmaZ2;}
+
+  virtual void Use() = 0;
 
 protected:
   Int_t     fTracks[3];//labels of overlapped tracks

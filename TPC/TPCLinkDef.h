@@ -18,6 +18,7 @@
 #pragma link C++ class  AliTPCdigit+;
 #pragma link C++ class  AliTPCcluster+;
 #pragma link C++ class  AliTPCtrack+;
+#pragma link C++ class  AliTPCtracker+;
 
 #pragma link C++ class  AliTPCParam+;
 #pragma link C++ class  AliTPCParamSR-;

@@ -34,10 +34,11 @@ const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
   //-----------------------------------------------------------------
   // This is the main track constructor.
   //-----------------------------------------------------------------
-  fdEdx=0.;
-
-  fAlpha=alpha;
   fX=xref;
+  fAlpha=alpha;
+  if (fAlpha<-TMath::Pi()) fAlpha += 2*TMath::Pi();
+  if (fAlpha>=TMath::Pi()) fAlpha -= 2*TMath::Pi();
+  fdEdx=0.;
 
   fP0=xx[0]; fP1=xx[1]; fP2=xx[2]; fP3=xx[3]; fP4=xx[4];
 
@@ -47,7 +48,8 @@ const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
   fC30=cc[6];  fC31=cc[7];  fC32=cc[8];  fC33=cc[9];
   fC40=cc[10]; fC41=cc[11]; fC42=cc[12]; fC43=cc[13]; fC44=cc[14];
 
-  fIndex[fN++]=index;
+  fIndex[0]=index;
+  SetNumberOfClusters(1);
 }
 
 //_____________________________________________________________________________
@@ -55,12 +57,75 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) : AliKalmanTrack(t) {
   //-----------------------------------------------------------------
   // This is a track copy constructor.
   //-----------------------------------------------------------------
-  for (Int_t i=0; i<fN; i++) fIndex[i]=t.fIndex[i];
-
+  fX=t.fX;
+  fAlpha=t.fAlpha;
   fdEdx=t.fdEdx;
 
-  fAlpha=t.fAlpha;
-  fX=t.fX;
+  fP0=t.fP0; fP1=t.fP1; fP2=t.fP2; fP3=t.fP3; fP4=t.fP4;
+
+  fC00=t.fC00;
+  fC10=t.fC10;  fC11=t.fC11;
+  fC20=t.fC20;  fC21=t.fC21;  fC22=t.fC22;
+  fC30=t.fC30;  fC31=t.fC31;  fC32=t.fC32;  fC33=t.fC33;
+  fC40=t.fC40;  fC41=t.fC41;  fC42=t.fC42;  fC43=t.fC43;  fC44=t.fC44;
+
+  Int_t n=GetNumberOfClusters();
+  for (Int_t i=0; i<n; i++) fIndex[i]=t.fIndex[i];
+}
+
+//_____________________________________________________________________________
+Int_t AliTPCtrack::Compare(const TObject *o) const {
+  //-----------------------------------------------------------------
+  // This function compares tracks according to the their curvature
+  //-----------------------------------------------------------------
+  AliTPCtrack *t=(AliTPCtrack*)o;
+  Double_t co=TMath::Abs(t->Get1Pt());
+  Double_t c =TMath::Abs(Get1Pt());
+  if (c>co) return 1;
+  else if (c<co) return -1;
+  return 0;
+}
+
+//_____________________________________________________________________________
+void AliTPCtrack::GetExternalCovariance(Double_t cc[15]) const {
+  //-------------------------------------------------------------------------
+  // This function returns an external representation of the covriance matrix.
+  //   (See comments in AliTPCtrack.h about external track representation)
+  //-------------------------------------------------------------------------
+  Double_t a=kConversionConstant;
+
+  Double_t c22=fX*fX*fC33-2*fX*fC32+fC22;
+  Double_t c42=fX*fC43-fC42;
+  Double_t c20=fX*fC30-fC20, c21=fX*fC31-fC21, c32=fX*fC33-fC32;
+  
+  cc[0 ]=fC00;
+  cc[1 ]=fC10;   cc[2 ]=fC11;
+  cc[3 ]=c20;    cc[4 ]=c21;    cc[5 ]=c22;
+  cc[6 ]=fC40;   cc[7 ]=fC41;   cc[8 ]=c42;   cc[9 ]=fC44; 
+  cc[10]=fC30*a; cc[11]=fC31*a; cc[12]=c32*a; cc[13]=fC43*a; cc[14]=fC33*a*a;
+
+}
+
+//_____________________________________________________________________________
+Double_t AliTPCtrack::GetPredictedChi2(const AliCluster *c) const 
+{
+  //-----------------------------------------------------------------
+  // This function calculates a predicted chi2 increment.
+  //-----------------------------------------------------------------
+  Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2();
+  r00+=fC00; r01+=fC10; r11+=fC11;
+
+  Double_t det=r00*r11 - r01*r01;
+  if (TMath::Abs(det) < 1.e-10) {
+    Int_t n=GetNumberOfClusters();
+    if (n>4) cerr<<n<<" AliKalmanTrack warning: Singular matrix !\n";
+    return 1e10;
+  }
+  Double_t tmp=r00; r00=r11; r11=tmp; r01=-r01;
+  
+  Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
+  
+  return (dy*r00*dy + 2*r01*dy*dz + dz*r11*dz)/det;
 }
 
 //_____________________________________________________________________________
@@ -70,7 +135,8 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
   // This function propagates a track to a reference plane x=xk.
   //-----------------------------------------------------------------
   if (TMath::Abs(fP3*xk - fP2) >= 0.99999) {
-    if (fN>4) cerr<<fN<<" AliTPCtrack warning: Propagation failed !\n";
+    Int_t n=GetNumberOfClusters();
+    if (n>4) cerr<<n<<" AliTPCtrack warning: Propagation failed !\n";
     return 0;
   }
 
@@ -115,9 +181,9 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho,Double_t pm)
 
   //Multiple scattering******************
   Double_t d=sqrt((x1-fX)*(x1-fX)+(y1-fP0)*(y1-fP0)+(z1-fP1)*(z1-fP1));
-  Double_t p2=GetP()*GetP();
+  Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
   Double_t beta2=p2/(p2 + pm*pm);
-  Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho/2.;
+  Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
   //Double_t theta2=1.0259e-6*10*10/20/(beta2*p2)*d*rho;
 
   Double_t ey=fP3*fX - fP2, ez=fP4;
@@ -154,8 +220,7 @@ Int_t AliTPCtrack::PropagateToVertex(Double_t x0,Double_t rho,Double_t pm)
 }
 
 //_____________________________________________________________________________
-void AliTPCtrack::Update(const AliCluster *c, Double_t chisq, UInt_t index)
-{
+Int_t AliTPCtrack::Update(const AliCluster *c, Double_t chisq, UInt_t index) {
   //-----------------------------------------------------------------
   // This function associates a cluster with this track.
   //-----------------------------------------------------------------
@@ -173,8 +238,9 @@ void AliTPCtrack::Update(const AliCluster *c, Double_t chisq, UInt_t index)
   Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
   Double_t cur=fP3 + k30*dy + k31*dz, eta=fP2 + k20*dy + k21*dz;
   if (TMath::Abs(cur*fX-eta) >= 0.99999) {
-    if (fN>4) cerr<<fN<<" AliTPCtrack warning: Filtering failed !\n";
-    return;
+    Int_t n=GetNumberOfClusters();
+    if (n>4) cerr<<n<<" AliTPCtrack warning: Filtering failed !\n";
+    return 0;
   }
 
   fP0 += k00*dy + k01*dz;
@@ -202,8 +268,12 @@ void AliTPCtrack::Update(const AliCluster *c, Double_t chisq, UInt_t index)
 
   fC44-=k40*c04+k41*c14; 
 
-  fIndex[fN++]=index;
-  fChi2 += chisq;
+  Int_t n=GetNumberOfClusters();
+  fIndex[n]=index;
+  SetNumberOfClusters(n+1);
+  SetChi2(GetChi2()+chisq);
+
+  return 1;
 }
 
 //_____________________________________________________________________________
@@ -213,6 +283,8 @@ Int_t AliTPCtrack::Rotate(Double_t alpha)
   // This function rotates this track.
   //-----------------------------------------------------------------
   fAlpha += alpha;
+  if (fAlpha<-TMath::Pi()) fAlpha += 2*TMath::Pi();
+  if (fAlpha>=TMath::Pi()) fAlpha -= 2*TMath::Pi();
   
   Double_t x1=fX, y1=fP0;
   Double_t ca=cos(alpha), sa=sin(alpha);
@@ -224,13 +296,15 @@ Int_t AliTPCtrack::Rotate(Double_t alpha)
   
   Double_t r2=fP3*fX - fP2;
   if (TMath::Abs(r2) >= 0.99999) {
-    if (fN>4) cerr<<fN<<" AliTPCtrack warning: Rotation failed !\n";
+    Int_t n=GetNumberOfClusters();
+    if (n>4) cerr<<n<<" AliTPCtrack warning: Rotation failed !\n";
     return 0;
   }
   
   Double_t y0=fP0 + sqrt(1.- r2*r2)/fP3;
   if ((fP0-y0)*fP3 >= 0.) {
-    if (fN>4) cerr<<fN<<" AliTPCtrack warning: Rotation failed !!!\n";
+    Int_t n=GetNumberOfClusters();
+    if (n>4) cerr<<n<<" AliTPCtrack warning: Rotation failed !!!\n";
     return 0;
   }
 
@@ -268,34 +342,18 @@ Int_t AliTPCtrack::Rotate(Double_t alpha)
 }
 
 //_____________________________________________________________________________
-void AliTPCtrack::GetPxPyPz(Double_t& px, Double_t& py, Double_t& pz) const 
-{
-  //-----------------------------------------------------------------
-  // This function returns reconstructed track momentum in the global system.
-  //-----------------------------------------------------------------
-  Double_t pt=TMath::Abs(GetPt()); // GeV/c
-  Double_t r=fP3*fX-fP2;
-  Double_t y0=fP0 + sqrt(1.- r*r)/fP3;
-  px=-pt*(fP0-y0)*fP3;    //cos(phi);
-  py=-pt*(fP2-fX *fP3);   //sin(phi);
-  pz=pt*fP4;
-  Double_t tmp=px*TMath::Cos(fAlpha) - py*TMath::Sin(fAlpha);
-  py=px*TMath::Sin(fAlpha) + py*TMath::Cos(fAlpha);
-  px=tmp;  
-}
-
-//_____________________________________________________________________________
 void AliTPCtrack::CookLabel(AliTPCClustersArray *ca) {
   //-----------------------------------------------------------------
   // This function cooks the track label. If label<0, this track is fake.
   //-----------------------------------------------------------------
-  Int_t *lb=new Int_t[fN];
-  Int_t *mx=new Int_t[fN];
-  AliTPCcluster **clusters=new AliTPCcluster*[fN];
+  Int_t n=GetNumberOfClusters();
+  Int_t *lb=new Int_t[n];
+  Int_t *mx=new Int_t[n];
+  AliTPCcluster **clusters=new AliTPCcluster*[n];
 
   Int_t i;
   Int_t sec,row,ncl;
-  for (i=0; i<fN; i++) {
+  for (i=0; i<n; i++) {
      lb[i]=mx[i]=0;
      GetCluster(i,sec,row,ncl);
      AliTPCClustersRow *clrow=ca->GetRow(sec,row);
@@ -303,40 +361,46 @@ void AliTPCtrack::CookLabel(AliTPCClustersArray *ca) {
   }
   
   Int_t lab=123456789;
-  for (i=0; i<fN; i++) {
+  for (i=0; i<n; i++) {
     AliTPCcluster *c=clusters[i];
     lab=TMath::Abs(c->GetLabel(0));
     Int_t j;
-    for (j=0; j<fN; j++)
+    for (j=0; j<n; j++)
       if (lb[j]==lab || mx[j]==0) break;
     lb[j]=lab;
     (mx[j])++;
   }
   
   Int_t max=0;
-  for (i=0; i<fN; i++) 
+  for (i=0; i<n; i++) 
     if (mx[i]>max) {max=mx[i]; lab=lb[i];}
     
-  for (i=0; i<fN; i++) {
+  for (i=0; i<n; i++) {
     AliTPCcluster *c=clusters[i];
     if (TMath::Abs(c->GetLabel(1)) == lab ||
         TMath::Abs(c->GetLabel(2)) == lab ) max++;
   }
   
   SetLabel(-lab);
-  if (1.-Float_t(max)/fN <= 0.10) {
+  if (1.-Float_t(max)/n <= 0.10) {
     //Int_t tail=Int_t(0.08*fN);
      Int_t tail=14;
      max=0;
      for (i=1; i<=tail; i++) {
-       AliTPCcluster *c=clusters[fN-i];
+       AliTPCcluster *c=clusters[n-i];
        if (lab == TMath::Abs(c->GetLabel(0)) ||
            lab == TMath::Abs(c->GetLabel(1)) ||
            lab == TMath::Abs(c->GetLabel(2))) max++;
      }
      if (max >= Int_t(0.5*tail)) SetLabel(lab);
   }
-
+/*
+if (lab==111)
+   for (i=0; i<n; i++) {
+     AliTPCcluster *c=clusters[i];
+     cerr<<i<<' '<<c->GetLabel(0)<<endl;
+   }
+*/
   delete[] lb;
   delete[] mx;
   delete[] clusters;

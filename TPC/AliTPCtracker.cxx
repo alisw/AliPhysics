@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.5  2000/12/20 07:51:59  kowal2
+Changes suggested by Alessandra and Paolo to avoid overlapped
+data fields in encapsulated classes.
+
 Revision 1.4  2000/11/02 07:27:16  kowal2
 code corrections
 
@@ -143,8 +147,8 @@ Int_t s, Int_t rf)
   //-----------------------------------------------------------------
   // This function tries to find a track prolongation.
   //-----------------------------------------------------------------
-  const Int_t kSKIP=(t.GetNumberOfClusters()<10) ? 
-                        10 : Int_t(0.5*sec->GetNRows());
+  const Int_t kSKIP=(t.GetNumberOfClusters()<10) ? 10 : 
+                    Int_t(0.5*sec->GetNRows());
   Int_t tryAgain=kSKIP;
   Double_t alpha=sec->GetAlpha();
   Int_t ns=Int_t(2*TMath::Pi()/alpha+0.5);
@@ -157,7 +161,7 @@ Int_t s, Int_t rf)
     UInt_t index=0;
     Double_t maxchi2=12.;
     const AliTPCRow &krow=sec[s][nr];
-    Double_t sy2=SigmaY2(t.GetX(),t.GetTgl(),t.GetPt());
+    Double_t sy2=SigmaY2(t.GetX(),t.GetTgl(),1./t.Get1Pt());
     Double_t sz2=SigmaZ2(t.GetX(),t.GetTgl());
     Double_t road=4.*sqrt(t.GetSigmaY2() + sy2), y=t.GetY(), z=t.GetZ();
 
@@ -184,8 +188,9 @@ Int_t s, Int_t rf)
     if (cl) {
       Float_t l=sec->GetPadPitchWidth();
       t.SetSampledEdx(cl->GetQ()/l,t.GetNumberOfClusters());
-      t.Update(cl,maxchi2,index);
-      tryAgain=kSKIP;
+      if (!t.Update(cl,maxchi2,index)) {
+         if (!tryAgain--) return 0;
+      } else tryAgain=kSKIP;
     } else {
       if (tryAgain==0) break;
       if (y > ymax) {
@@ -298,7 +303,7 @@ Int_t i1, Int_t i2)
         track->SetSampledEdx(kr1[is]->GetQ()/l,0);
 
         Int_t rc=FindProlongation(*track,sec,ns,i2);
-        if (rc<0 || track->GetNumberOfClusters()<(i1-i2)/2) delete track;
+        if (rc==0 || track->GetNumberOfClusters()<(i1-i2)/2) delete track;
         else seeds.AddLast(track); 
       }
     }
@@ -489,11 +494,12 @@ void AliTPCtracker::AliTPCseed::CookdEdx(Double_t low, Double_t up) {
   // This funtion calculates dE/dX within the "low" and "up" cuts.
   //-----------------------------------------------------------------
   Int_t i;
+  Int_t nc=GetNumberOfClusters();
 
   Int_t swap;//stupid sorting
   do {
     swap=0;
-    for (i=0; i<fN-1; i++) {
+    for (i=0; i<nc-1; i++) {
       if (fdEdxSample[i]<=fdEdxSample[i+1]) continue;
       Float_t tmp=fdEdxSample[i];
       fdEdxSample[i]=fdEdxSample[i+1]; fdEdxSample[i+1]=tmp;
@@ -501,7 +507,7 @@ void AliTPCtracker::AliTPCseed::CookdEdx(Double_t low, Double_t up) {
     }
   } while (swap);
 
-  Int_t nl=Int_t(low*fN), nu=Int_t(up*fN);
+  Int_t nl=Int_t(low*nc), nu=Int_t(up*nc);
   Float_t dedx=0;
   for (i=nl; i<=nu; i++) dedx += fdEdxSample[i];
   dedx /= (nu-nl+1);
@@ -513,8 +519,10 @@ void AliTPCtracker::AliTPCseed::UseClusters(AliTPCClustersArray *ca, Int_t n) {
   //-----------------------------------------------------------------
   // This function marks clusters associated with this track.
   //-----------------------------------------------------------------
+  Int_t nc=GetNumberOfClusters();
   Int_t sec,row,ncl;
-  for (Int_t i=n; i<fN; i++) {
+
+  for (Int_t i=n; i<nc; i++) {
      GetCluster(i,sec,row,ncl);
      AliTPCClustersRow *clrow=ca->GetRow(sec,row);
      AliTPCcluster *c=(AliTPCcluster*)(*clrow)[ncl]; 

@@ -40,6 +40,7 @@
 #pragma link C++ class  AliHitMap+;
 #pragma link C++ class  AliCluster+;
 #pragma link C++ class  AliKalmanTrack+;
+#pragma link C++ class  AliTracker+;
 #pragma link C++ class  AliRndm+;
 #pragma link C++ class  AliMCQA+;
 #pragma link C++ class  AliPDG+;
