@@ -44,17 +44,17 @@ public:
   Float_t MomX()                {return fMomX;}
   Float_t MomY()                {return fMomY;}
   Float_t MomZ()                {return fMomZ;}
-  Float_t CerenkovAngle()       {return fMomX;}
-  Float_t MomFreoX()            {return fMomX;}
-  Float_t MomFreoY()            {return fMomY;}
-  Float_t MomFreoZ()            {return fMomZ;}
+  Float_t CerenkovAngle()       {return fCerenkovAngle;}
+  Float_t MomFreoX()            {return fMomFreoX;}
+  Float_t MomFreoY()            {return fMomFreoY;}
+  Float_t MomFreoZ()            {return fMomFreoZ;}
   void    Print(Option_t *option="")const;      //virtual
 protected:
   Int_t     fChamber;                      //chamber number
   Int_t     fPid;                          //particle code
-  Float_t   fTheta,fPhi ;                  //incident theta phi angles in degrees      
+  Float_t   fTheta,fPhi ;                  //incident theta phi angles in degrees
   Float_t   fTlength;                      //track length inside the chamber
-  Float_t   fEloss;                        //ionisation energy loss in gas   
+  Float_t   fEloss;                        //ionisation energy loss in gas
   Float_t   fPHfirst;                      //first padhit
   Float_t   fPHlast;                       //last padhit
   Float_t   fLoss;                         // did it hit the freon?
