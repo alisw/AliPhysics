@@ -2,6 +2,8 @@
 //Last Modified: 28.6.01
 
 #include <string.h>
+#include <math.h>
+#include <stdlib.h>
 
 #include "AliL3Histogram.h"
 #include "AliL3TrackArray.h"
@@ -39,21 +41,20 @@ AliL3HoughMaxFinder::~AliL3HoughMaxFinder()
 
 }
 
-Int_t *AliL3HoughMaxFinder::FindAbsMaxima()
+void AliL3HoughMaxFinder::FindAbsMaxima(Int_t &max_xbin,Int_t &max_ybin)
 {
   if(!fCurrentHisto)
     {
       printf("AliL3HoughMaxFinder::FindAbsMaxima : No histogram!\n");
-      return 0;
+      return;
     }
   AliL3Histogram *hist = fCurrentHisto;
-
+  
   Int_t xmin = hist->GetFirstXbin();
   Int_t xmax = hist->GetLastXbin();
   Int_t ymin = hist->GetFirstYbin();
   Int_t ymax = hist->GetLastYbin();  
   Int_t bin;
-  Int_t *max_bin = new Int_t[2];
   Stat_t value,max_value=0;
 
   for(Int_t xbin=xmin; xbin<=xmax; xbin++)
@@ -65,12 +66,12 @@ Int_t *AliL3HoughMaxFinder::FindAbsMaxima()
 	  if(value>max_value)
 	    {
 	      max_value = value;
-	      max_bin[0] = xbin;
-	      max_bin[1] = ybin;
+	      max_xbin = xbin;
+	      max_ybin = ybin;
 	    }
 	}
     }
-  return max_bin;
+  
 }
 
 AliL3TrackArray *AliL3HoughMaxFinder::FindBigMaxima(AliL3Histogram *hist)
@@ -115,7 +116,7 @@ AliL3TrackArray *AliL3HoughMaxFinder::FindBigMaxima(AliL3Histogram *hist)
 	      Double_t max_x = hist->GetBinCenterX(xbin);
 	      Double_t max_y = hist->GetBinCenterY(ybin);
 	      track = (AliL3HoughTrack*)tracks->NextTrack();
-	      track->SetTrackParameters(max_x,max_y,value[12]);
+	      track->SetTrackParameters(max_x,max_y,(Int_t)value[12]);
 	    }
 	}
     }
@@ -213,7 +214,6 @@ AliL3TrackArray *AliL3HoughMaxFinder::LookForPeaks(AliL3Histogram *hist,Int_t nb
   Int_t ymax = hist->GetLastYbin();
   
   Int_t weight_loc;
-  Int_t candidate=0;
   for(Int_t xbin=xmin+nbins; xbin <= xmax - nbins; xbin++)
     {
       for(Int_t ybin=ymin+nbins; ybin <= ymax - nbins; ybin++)
@@ -262,38 +262,6 @@ AliL3TrackArray *AliL3HoughMaxFinder::LookForPeaks(AliL3Histogram *hist,Int_t nb
     }
   tracks->Compress();
   return tracks;
-}
-
-AliL3TrackArray *AliL3HoughMaxFinder::LookInWindows(AliL3Histogram *hist,Int_t nbins,Int_t t1,Double_t t2,Int_t t3)
-{
-
-  AliL3TrackArray *tracks = new AliL3TrackArray("AliL3HoughTrack");
-  AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->NextTrack();
-
-  Int_t xmin = hist->GetFirstXbin();
-  Int_t xmax = hist->GetLastXbin();
-  Int_t ymin = hist->GetFirstYbin();
-  Int_t ymax = hist->GetLastYbin();
-  
-  for(Int_t xbin=xmin+nbins; xbin < xmax - nbins; xbin += nbins)
-    {
-      for(Int_t ybin=ymin+nbins; ybin<ymax-nbins; ybin += nbins)
-	{
-	  //Int_t bin = hist->GetBin(xbin,ybin);
-	  //if((Int_t)hist->GetBinContent(bin)==0) continue;
-	  
-	  Int_t xrange[2] = {xbin-nbins,xbin+nbins};
-	  Int_t yrange[2] = {ybin-nbins,ybin+nbins};
-	  if(LocatePeak(hist,track,xrange,yrange,t1,t2,t3))
-	    track = (AliL3HoughTrack*)tracks->NextTrack();
-	  else
-	    continue;
-	}
-    }
-  tracks->QSort();
-  tracks->RemoveLast();
-  return tracks;
-  
 }
 
 AliL3HoughTrack *AliL3HoughMaxFinder::CalculatePeakInWindow(Int_t *maxbin,Int_t t0,Int_t t1,Double_t t2,Int_t t3)
@@ -485,11 +453,223 @@ AliL3HoughTrack *AliL3HoughMaxFinder::CalculatePeakInWindow(Int_t *maxbin,Int_t 
   
 }
 
+AliL3HoughTrack *AliL3HoughMaxFinder::FindPeakLine(Double_t rho,Double_t theta)
+{
+  //Peak finder based on a second line transformation on kappa-phi space, 
+  //to use as a baseline.
+
+  if(!fCurrentHisto)
+    {
+      printf("AliL3HoughTransformer::FindPeakLine : No input histogram\n");
+      return 0;
+    }
+  
+  //get the line parameters:
+  Double_t a = -1./tan(theta);
+  Double_t b = rho/sin(theta);
+  
+  printf("rho %f theta %f\n",rho,theta);
+  //now, start looking along the line.
+  Int_t xmin = fCurrentHisto->GetFirstXbin();
+  Int_t xmax = fCurrentHisto->GetLastXbin();
+    
+  Int_t max_weight=0;
+  Double_t max_bin[2];
+  for(Int_t xbin=xmin; xbin<=xmax; xbin++)
+    {
+      Double_t x = fCurrentHisto->GetBinCenterX(xbin);
+      Double_t y = a*x + b;
+      Int_t bin = fCurrentHisto->FindBin(x,y);
+      //printf("x %f y %f weight %d\n",x,y,fCurrentHisto->GetBinContent(bin));
+      if(fCurrentHisto->GetBinContent(bin) > max_weight)
+	{
+	  max_weight = (Int_t)fCurrentHisto->GetBinContent(bin);
+	  max_bin[0] = x;
+	  max_bin[1] = y;
+	}
+    }
+  
+  AliL3HoughTrack *track = new AliL3HoughTrack();
+  track->SetTrackParameters(max_bin[0],max_bin[1],max_weight);
+  return track;
+}
+
+
+
+void AliL3HoughMaxFinder::FindPeak1(Float_t *xpeaks,Float_t *ypeaks,Int_t &n)
+{
+  //testing mutliple peakfinding
+  
+  Int_t max_entries = n;
+  n=0;
+  if(!fCurrentHisto)
+    {
+      printf("AliL3HoughMaxFinder::FindPeak1 : No input histogram\n");
+      return;
+    }  
+  Int_t y_window=2;
+  Int_t x_bin_sides=2;
+  Int_t max_sum=0;
+  
+  Int_t xmin = fCurrentHisto->GetFirstXbin();
+  Int_t xmax = fCurrentHisto->GetLastXbin();
+  Int_t ymin = fCurrentHisto->GetFirstYbin();
+  Int_t ymax = fCurrentHisto->GetLastYbin();
+  Int_t nbinsx = fCurrentHisto->GetNbinsX()+1;
+  
+  AxisWindow **windowPt = new AxisWindow*[nbinsx];
+  AxisWindow **anotherPt = new AxisWindow*[nbinsx];
+  
+  for(Int_t i=0; i<nbinsx; i++)
+    {
+      windowPt[i] = new AxisWindow;
+      bzero((void*)windowPt[i],sizeof(AxisWindow));
+      anotherPt[i] = windowPt[i];
+    }
+  
+  for(Int_t xbin=xmin; xbin<=xmax; xbin++)
+    {
+      max_sum = 0;
+      for(Int_t ybin=ymin; ybin<=ymax-y_window; ybin++)
+	{
+	  Int_t sum_in_window=0;
+	  for(Int_t b=ybin; b<ybin+y_window; b++)
+	    {
+	      //inside window
+	      Int_t bin = fCurrentHisto->GetBin(xbin,b);
+	      sum_in_window += (Int_t)fCurrentHisto->GetBinContent(bin);
+	    }
+	  
+	  if(sum_in_window > max_sum)
+	    {
+	      max_sum = sum_in_window;
+	      windowPt[xbin]->ymin = ybin;
+	      windowPt[xbin]->ymax = ybin + y_window;
+	      windowPt[xbin]->weight = sum_in_window;
+	      windowPt[xbin]->xbin = xbin;
+	    }
+	}
+    }
+
+  //Sort the windows according to the weight
+  SortPeaks(windowPt,0,nbinsx);
+  
+  //for(Int_t i=0; i<nbinsx; i++)
+  //printf("xbin %f weight %d\n",fCurrentHisto->GetBinCenterX(windowPt[i]->xbin),windowPt[i]->weight);
+  
+  Float_t top,butt;
+  for(Int_t i=0; i<nbinsx; i++)
+    {
+      top=butt=0;
+      Int_t xbin = windowPt[i]->xbin;
+      
+      if(xbin<xmin || xbin > xmax-1) continue;
+      
+      //Check if this is really a peak
+      if(anotherPt[xbin-1]->weight > windowPt[i]->weight ||
+	 anotherPt[xbin+1]->weight > windowPt[i]->weight)
+	continue;
+
+      for(Int_t j=windowPt[i]->ymin; j<windowPt[i]->ymax; j++)
+	{
+	  //Calculate the mean in y direction:
+	  Int_t bin = fCurrentHisto->GetBin(windowPt[i]->xbin,j);
+	  top += (fCurrentHisto->GetBinCenterY(j))*(fCurrentHisto->GetBinContent(bin));
+	  butt += fCurrentHisto->GetBinContent(bin);
+	}
+      xpeaks[n] = fCurrentHisto->GetBinCenterX(windowPt[i]->xbin);
+      ypeaks[n] = top/butt;
+      n++;
+      if(n==max_entries) break;
+    }
+
+  
+  //Improve the peaks by including the region around in x.
+  Float_t ytop,ybutt;
+  for(Int_t i=0; i<n; i++)
+    {
+      Int_t xbin = fCurrentHisto->FindXbin(xpeaks[i]);
+      if(xbin - x_bin_sides < xmin || xbin + x_bin_sides > xmax) continue;
+      top=butt=0;
+      ytop=0,ybutt=0;	  
+      for(Int_t j=xbin-x_bin_sides; j<=xbin+x_bin_sides; j++)
+	{
+	  top += fCurrentHisto->GetBinCenterX(j)*anotherPt[j]->weight;
+	  butt += anotherPt[j]->weight;
+	  for(Int_t k=anotherPt[j]->ymin; k<anotherPt[j]->ymax; k++)
+	    {
+	      Int_t bin = fCurrentHisto->GetBin(j,k);
+	      ytop += (fCurrentHisto->GetBinCenterY(k))*(fCurrentHisto->GetBinContent(bin));
+	      ybutt += fCurrentHisto->GetBinContent(bin);
+	    }
+	}
+      xpeaks[i] = top/butt;
+      ypeaks[i] = ytop/ybutt;
+    }
+  
+  for(Int_t i=0; i<nbinsx; i++)
+    delete windowPt[i];
+  delete [] windowPt;
+  delete [] anotherPt;
+  
+}
+
+void AliL3HoughMaxFinder::SortPeaks(struct AxisWindow **a,Int_t first,Int_t last)
+{
+  //General sorting routine
+  //Sort according to PeakCompare()
+
+  static struct AxisWindow *tmp;
+  static int i;           // "static" to save stack space
+  int j;
+  
+  while (last - first > 1) {
+    i = first;
+    j = last;
+    for (;;) {
+      while (++i < last && PeakCompare(a[i], a[first]) < 0)
+	;
+      while (--j > first && PeakCompare(a[j], a[first]) > 0)
+	;
+      if (i >= j)
+	break;
+      
+      tmp  = a[i];
+      a[i] = a[j];
+      a[j] = tmp;
+    }
+    if (j == first) {
+      ++first;
+      continue;
+    }
+    tmp = a[first];
+    a[first] = a[j];
+    a[j] = tmp;
+    if (j - first < last - (j + 1)) {
+      SortPeaks(a, first, j);
+      first = j + 1;   // QSort(j + 1, last);
+    } else {
+      SortPeaks(a, j + 1, last);
+      last = j;        // QSort(first, j);
+    }
+  }
+  
+}
+
+Int_t AliL3HoughMaxFinder::PeakCompare(struct AxisWindow *a,struct AxisWindow *b)
+{
+  if(a->weight < b->weight) return 1;
+  if(a->weight > b->weight) return -1;
+  return 0;
+
+}
 
 AliL3HoughTrack *AliL3HoughMaxFinder::FindPeak(Int_t t1,Double_t t2,Int_t t3)
 {
   //Attempt of a more sophisticated peak finder.
-  
+  //Finds the best peak in the histogram, and returns the corresponding
+  //track object.
+
   if(!fCurrentHisto)
     {
       printf("AliL3HoughMaxFinder::FindPeak : No histogram!!\n");

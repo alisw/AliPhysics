@@ -39,14 +39,17 @@ void AliL3HoughTransformer::DeleteHistograms()
   if(!fParamSpace)
     return;
   for(Int_t i=0; i<fNEtaSegments; i++)
-    delete fParamSpace[i];
+    {
+      if(!fParamSpace[i]) continue;
+      delete fParamSpace[i];
+    }
   delete [] fParamSpace;
 }
 
 void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,
 					     Int_t nybin,Double_t ymin,Double_t ymax)
 {
-      
+  
   fParamSpace = new AliL3Histogram*[fNEtaSegments];
   
   Char_t histname[256];
@@ -63,17 +66,17 @@ void AliL3HoughTransformer::SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr)
   fDigitRowData = ptr;
 }
 
-AliL3DigitRowData *AliL3HoughTransformer::UpdateDataPointer(AliL3DigitRowData *tempPt)
+void AliL3HoughTransformer::UpdateDataPointer(AliL3DigitRowData *&tempPt)
 {
   //Update the data pointer to the next padrow
-
+  
   Byte_t *tmp = (Byte_t*)tempPt;
   Int_t size = sizeof(AliL3DigitRowData) + tempPt->fNDigit*sizeof(AliL3DigitData);
   tmp += size;
-  return (AliL3DigitRowData*)tmp;
+  tempPt = (AliL3DigitRowData*)tmp;
 }
 
-void AliL3HoughTransformer::Transform()
+void AliL3HoughTransformer::TransformCircle()
 {
   //Transform the input data with a circle HT.
   
@@ -82,7 +85,7 @@ void AliL3HoughTransformer::Transform()
   AliL3DigitRowData *tempPt = (AliL3DigitRowData*)fDigitRowData;
   if(!tempPt || fNDigitRowData==0)
     {
-      printf("\nAliL3HoughTransformer::TransformTables : No input data!!!\n\n");
+      printf("\nAliL3HoughTransformer::TransformCircle : No input data!!!\n\n");
       return;
     }
   
@@ -92,7 +95,68 @@ void AliL3HoughTransformer::Transform()
       AliL3DigitData *digPt = tempPt->fDigitData;
       if(i != (Int_t)tempPt->fRow)
 	{
-	  printf("AliL3HoughTransform::Transform : Mismatching padrow numbering\n");
+	  printf("AliL3HoughTransform::TransformCircle : Mismatching padrow numbering\n");
+	  continue;
+	}
+      for(UInt_t j=0; j<tempPt->fNDigit; j++)
+	{
+	  UShort_t charge = digPt[j].fCharge;
+	  UChar_t pad = digPt[j].fPad;
+	  UShort_t time = digPt[j].fTime;
+	  if(charge < fThreshold)
+	    continue;
+	  Int_t sector,row;
+	  Float_t xyz[3];
+	  fTransform->Slice2Sector(fSlice,i,sector,row);
+	  fTransform->Raw2Local(xyz,sector,row,(Int_t)pad,(Int_t)time);
+	  Double_t eta = fTransform->GetEta(xyz);
+	  Int_t eta_index = (Int_t)(eta/etaslice);
+	  if(eta_index < 0 || eta_index >= fNEtaSegments)
+	    continue;
+	  
+	  //Get the correct histogram:
+	  AliL3Histogram *hist = fParamSpace[eta_index];
+	  if(!hist)
+	    {
+	      printf("AliL3HoughTransformer::TransformCircle : Error getting histogram in index %d\n",eta_index);
+	      continue;
+	    }
+
+	  //Start transformation
+	  Float_t R = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2]);
+	  Float_t phi = fTransform->GetPhi(xyz);
+	  
+	  //Fill the histogram along the phirange
+	  for(Int_t b=hist->GetFirstYbin(); b<=hist->GetLastYbin(); b++)
+	    {
+	      Float_t phi0 = hist->GetBinCenterY(b);
+	      Float_t kappa = 2*sin(phi - phi0)/R;
+	      hist->Fill(kappa,phi0,charge);
+	    }
+	}
+      UpdateDataPointer(tempPt);
+    }
+}
+
+void AliL3HoughTransformer::TransformLine()
+{
+  //Do a line transform on the data.
+
+  
+  AliL3DigitRowData *tempPt = (AliL3DigitRowData*)fDigitRowData;
+  if(!tempPt || fNDigitRowData==0)
+    {
+      printf("\nAliL3HoughTransformer::TransformLine : No input data!!!\n\n");
+      return;
+    }
+  
+  Double_t etaslice = (fEtaMax - fEtaMin)/fNEtaSegments;
+  for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
+    {
+      AliL3DigitData *digPt = tempPt->fDigitData;
+      if(i != (Int_t)tempPt->fRow)
+	{
+	  printf("AliL3HoughTransform::TransformLine : Mismatching padrow numbering\n");
 	  continue;
 	}
       for(UInt_t j=0; j<tempPt->fNDigit; j++)
@@ -115,23 +179,17 @@ void AliL3HoughTransformer::Transform()
 	  AliL3Histogram *hist = fParamSpace[eta_index];
 	  if(!hist)
 	    {
-	      printf("AliL3HoughTransformer::Transform : Error getting histogram in index %d\n",eta_index);
+	      printf("AliL3HoughTransformer::TransformLine : Error getting histogram in index %d\n",eta_index);
 	      continue;
 	    }
-
-	  //Start transformation
-	  Float_t R = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2]);
-	  Float_t phi = fTransform->GetPhi(xyz);
-	  
-	  //Fill the histogram along the phirange
-	  for(Int_t b=hist->GetFirstYbin(); b<=hist->GetLastYbin(); b++)
+	  for(Int_t xbin=hist->GetFirstXbin(); xbin<hist->GetLastXbin(); xbin++)
 	    {
-	      Float_t phi0 = hist->GetBinCenterY(b);
-	      Float_t kappa = 2*sin(phi - phi0)/R;
-	      hist->Fill(kappa,phi0,charge);
+	      Double_t theta = hist->GetBinCenterX(xbin);
+	      Double_t rho = xyz[0]*cos(theta) + xyz[1]*sin(theta);
+	      hist->Fill(theta,rho,charge);
 	    }
 	}
-      tempPt = UpdateDataPointer(tempPt);
+      UpdateDataPointer(tempPt);
     }
+  
 }
-

@@ -13,12 +13,12 @@ ClassImp(AliL3HoughEval)
 
 AliL3HoughEval::AliL3HoughEval()
 {
-
+    
 }
 
 AliL3HoughEval::AliL3HoughEval(AliL3HoughTransformer *transformer)
 {
-
+  
   fHoughTransformer = transformer;
   fTransform = new AliL3Transform();
   
@@ -56,7 +56,7 @@ void AliL3HoughEval::GenerateLUT()
     {
       Int_t prow = i - NRows[fPatch][0];
       fRowPointers[prow] = tempPt;
-      tempPt = fHoughTransformer->UpdateDataPointer(tempPt);
+      fHoughTransformer->UpdateDataPointer(tempPt);
     }
   
 }
@@ -161,6 +161,7 @@ void AliL3HoughEval::DisplayEtaSlice(Int_t eta_index,AliL3Histogram *hist)
 	  UChar_t pad = digPt[j].fPad;
 	  UChar_t charge = digPt[j].fCharge;
 	  UShort_t time = digPt[j].fTime;
+	  if(charge < fHoughTransformer->GetThreshold()) continue;
 	  Float_t xyz[3];
 	  Int_t sector,row;
 	  fTransform->Slice2Sector(fSlice,padrow,sector,row);

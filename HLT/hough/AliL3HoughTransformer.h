@@ -19,7 +19,7 @@ class AliL3HoughTransformer : public TObject {
   Int_t fThreshold;
   AliL3Transform *fTransform; //!
   
-  //Pointer to histograms
+  //Pointers to histograms
   AliL3Histogram **fParamSpace; //!
 
   //Data pointers
@@ -34,18 +34,24 @@ class AliL3HoughTransformer : public TObject {
   virtual ~AliL3HoughTransformer();
   
   void SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr);
-  AliL3DigitRowData *UpdateDataPointer(AliL3DigitRowData *tempPt);
-  void CreateHistograms(Int_t nxbin=70,Double_t xmin=-0.006,Double_t xmax=0.006,
-			Int_t nybin=70,Double_t ymin=-0.26,Double_t ymax=0.26);
-  void Transform();
-  
+  void UpdateDataPointer(AliL3DigitRowData *&tempPt);
+  void CreateHistograms(Int_t nxbin=64,Double_t xmin=-0.006,Double_t xmax=0.006,
+			Int_t nybin=64,Double_t ymin=-0.26,Double_t ymax=0.26);
+  void TransformCircle();
+  void TransformLine();
+
+  //Getters
   Int_t GetSlice() {return fSlice;}
   Int_t GetPatch() {return fPatch;}
   Int_t GetNEtaSegments() {return fNEtaSegments;}
+  Int_t GetThreshold() {return fThreshold;}
   Double_t GetEtaMin() {return fEtaMin;}
   Double_t GetEtaMax() {return fEtaMax;}
   void *GetDataPointer() {return (void*)fDigitRowData;}
   AliL3Histogram *GetHistogram(Int_t eta_index);
+  
+  //setters
+  void SetThreshold(Int_t i) {fThreshold = i;}
 
   ClassDef(AliL3HoughTransformer,1)
 

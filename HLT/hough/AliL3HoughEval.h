@@ -40,7 +40,9 @@ class AliL3HoughEval : public TObject {
   
   //Setters:
   void RemoveFoundTracks() {fRemoveFoundTracks = kTRUE;}
-  
+  void SetNumOfRowsToMiss(Int_t i) {fNumOfRowsToMiss = i;}
+  void SetNumOfPadsToLook(Int_t i) {fNumOfPadsToLook = i;}
+
   ClassDef(AliL3HoughEval,1)
 
 };

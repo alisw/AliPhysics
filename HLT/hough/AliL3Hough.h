@@ -10,42 +10,37 @@ class AliL3FileHandler;
 class AliL3HoughEval;
 class AliL3Transform;
 class AliL3TrackArray;
+class TFile;
 
 class AliL3Hough : public TObject {
   
  private:
-
   Char_t fPath[256];
+  Bool_t fBinary;
   Int_t fNEtaSegments;
-  AliL3Histogram **fHistos; //!
-  AliL3FileHandler *fMemHandler; //!
-  AliL3HoughMaxFinder *fMaxFinder; 
-  AliL3HoughEval *fEval;
-  AliL3HoughTransformer *fHoughTransformer;
-  AliL3Transform *fTransform; //!
-  Bool_t fUseBinary;
-  Bool_t fDeleteTrack;
-  AliL3TrackArray *fTracks; //!
+  AliL3FileHandler **fMemHandler; //!
+  AliL3HoughTransformer **fHoughTransformer; //!
+  TFile *fRootFile; //!
 
-  Int_t fNxbin;
-  Int_t fNybin;
-  Double_t fXmin;
-  Double_t fXmax;
-  Double_t fYmin;
-  Double_t fYmax;
-
+  void DeleteTransformers();
+  void DeleteMemory();
+  void Init();
+  
  public:
-
+  
   AliL3Hough(); 
-  AliL3Hough(Int_t n_eta_segments,Int_t xbin,Double_t *xrange,Int_t ybin,Double_t *yrange);
+  AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments=100);
   virtual ~AliL3Hough();
   
-  void SetInput(Char_t *input,Bool_t binary);
-  void ProcessSlice(Int_t slice);
-  void ProcessPatch(Int_t slice,Int_t patch);
-  void SetDeleteTrack(Bool_t f) {fDeleteTrack = (Bool_t)f;}
+  void TransformSlice(Int_t slice);
+  AliL3Histogram *AddHistograms();
+  void Evaluate(AliL3Histogram *hist);
+
+  //Setters
+  void SetNEtaSegments(Int_t i) {fNEtaSegments = i;}
   
-  AliL3TrackArray *GetTracks() {return fTracks;}
+  //Getters
+  AliL3HoughTransformer *GetTransformer(Int_t i) {if(!fHoughTransformer[i]) return 0; return fHoughTransformer[i];}
 
   ClassDef(AliL3Hough,1)
 
