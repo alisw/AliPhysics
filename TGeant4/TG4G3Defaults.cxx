@@ -1,5 +1,5 @@
 // $Id$
-// Category: physics
+// Category: global
 //
 // See the class description in the header file.
 
@@ -39,14 +39,17 @@ const TG4G3ControlValue TG4G3Defaults::fgkDCAY = kActivate;   // 1
 const TG4G3ControlValue TG4G3Defaults::fgkLOSS = kActivate2;  // 2
 const TG4G3ControlValue TG4G3Defaults::fgkMULS = kActivate;   // 1
 
+//_____________________________________________________________________________
 TG4G3Defaults::TG4G3Defaults() {
 //
 }
   
+//_____________________________________________________________________________
 TG4G3Defaults::~TG4G3Defaults() {
 //
 }
 
+//_____________________________________________________________________________
 G4double TG4G3Defaults::CutValue(G4int g3Cut)
 {
 // Returns the G3 default value for the specified cut.
@@ -79,6 +82,7 @@ G4double TG4G3Defaults::CutValue(G4int g3Cut)
   }
 }          
 
+//_____________________________________________________________________________
 TG4G3ControlValue TG4G3Defaults::ControlValue(G4int control)
 {
 // Returns the G3 default value for the specified control.
@@ -116,6 +120,7 @@ TG4G3ControlValue TG4G3Defaults::ControlValue(G4int control)
   }
 }          
 
+//_____________________________________________________________________________
 G4bool TG4G3Defaults::IsDefaultCut(TG4G3Cut cut, G4double value)
 {
 // Tests if the parameter value is equal to the G3 default value.
@@ -127,6 +132,7 @@ G4bool TG4G3Defaults::IsDefaultCut(TG4G3Cut cut, G4double value)
     return true;
 }
 
+//_____________________________________________________________________________
 G4bool TG4G3Defaults::IsDefaultControl(TG4G3Control control,
                                               G4double value)
 {
