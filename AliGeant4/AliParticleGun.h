@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliParticleGun
+// --------------------
 // Particle gun that can be interactively composed by a user.
 
 #ifndef ALI_PARTICLE_GUN_H
@@ -8,17 +12,19 @@
 
 #include <G4VPrimaryGenerator.hh>
 #include <globals.hh>
+#include <g4std/vector>
 
-#include <g4rw/tpordvec.h>
+#include "AliParticleGunMessenger.h"
 
 class AliGunParticle;
-class AliParticleGunMessenger;
 
 class G4Event;
 
 class AliParticleGun : public G4VPrimaryGenerator
 {
-  typedef G4RWTPtrOrderedVector<AliGunParticle>  AliGunParticleVector;
+  typedef G4std::vector<AliGunParticle*>    GunParticleVector;
+  typedef GunParticleVector::iterator       GunParticleIterator;
+  typedef GunParticleVector::const_iterator GunParticleConstIterator;
 
   public:
      AliParticleGun();
@@ -40,14 +46,14 @@ class AliParticleGun : public G4VPrimaryGenerator
   
   private:
      // data members
-     AliGunParticleVector      fGunParticlesVector; //vector of AliGunParticle
-     AliParticleGunMessenger*  fMessenger;          //messenger
+     GunParticleVector        fGunParticleVector; //vector of AliGunParticle
+     AliParticleGunMessenger  fMessenger;         //messenger
 };
 
 // inline methods
 
 inline G4int AliParticleGun::GetNofGunParticles() const
-{ return fGunParticlesVector.entries(); }
+{ return fGunParticleVector.size(); }
 
 #endif //ALI_PARTICLE_GUN_H
 

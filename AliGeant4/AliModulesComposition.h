@@ -1,6 +1,10 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliModulesComposition
+// ---------------------------
 // Detector construction base class for building geometry
 // composed from independent modules with availability of interactive modules
 // setup.
@@ -8,16 +12,15 @@
 #ifndef ALI_MODULES_COMPOSITION_H
 #define ALI_MODULES_COMPOSITION_H
 
+#include "AliModulesCompositionMessenger.h"
 #include "AliModuleType.h"
 
 #include <G4VUserDetectorConstruction.hh>
 #include <globals.hh>
-
-#include <g4rw/tpordvec.h>
+#include <g4std/vector>
 
 class AliSingleModuleConstruction;
 class AliDetSwitch;
-class AliModulesCompositionMessenger;
 class AliMoreModulesConstruction;
 class AliMagneticField;
 
@@ -25,9 +28,12 @@ class G4VPhysicalVolume;
 
 class AliModulesComposition : public G4VUserDetectorConstruction
 {
-  typedef G4RWTPtrOrderedVector<AliDetSwitch>  AliDetSwitchRWVector;
-  typedef G4RWTPtrOrderedVector<AliSingleModuleConstruction>
-                                AliSingleModuleConstructionRWVector; 
+  typedef G4std::vector<AliDetSwitch*>    DetSwitchVector;
+  typedef DetSwitchVector::iterator       DetSwitchIterator;
+  typedef DetSwitchVector::const_iterator DetSwitchConstIterator;
+
+  typedef G4std::vector<AliSingleModuleConstruction*> SingleModuleVector;
+  typedef SingleModuleVector::iterator                SingleModuleIterator;    
 
   public:
     AliModulesComposition();
@@ -37,11 +43,11 @@ class AliModulesComposition : public G4VUserDetectorConstruction
 
     // methods
     virtual G4VPhysicalVolume* Construct() = 0;
-    void SwitchDetOn(G4String moduleNameVer);
-    void SwitchDetOn(G4String moduleName, G4int version);
-    void SwitchDetOnDefault(G4String moduleName);
-    void SwitchDetOnPPR(G4String moduleName);
-    void SwitchDetOff(G4String moduleName);
+    void SwitchDetOn(const G4String& moduleNameVer);
+    void SwitchDetOn(const G4String& moduleName, G4int version);
+    void SwitchDetOnDefault(const G4String& moduleName);
+    void SwitchDetOnPPR(const G4String& moduleName);
+    void SwitchDetOff(const G4String& moduleName);
     void PrintSwitchedDets() const;
     void PrintAvailableDets() const;
     void PrintMaterials() const;
@@ -68,17 +74,17 @@ class AliModulesComposition : public G4VUserDetectorConstruction
 
     // methods  
     void AddDetSwitch(AliDetSwitch* detSwitch);
-    void AddSingleModuleConstruction(G4String moduleName, G4int version,
+    void AddSingleModuleConstruction(const G4String& name, G4int version,
                                      AliModuleType moduleType = kDetector);
-    void AddMoreModuleConstruction(G4String moduleName, G4int version,
+    void AddMoreModuleConstruction(const G4String& name, G4int version,
                                      AliModuleType moduleType = kDetector);
     void ConstructModules();
 
     // get methods
-    AliDetSwitch* GetDetSwitch(const G4String& detName);
+    AliDetSwitch* GetDetSwitch(const G4String& moduleName);
 
     // data members
-    AliDetSwitchRWVector  fDetSwitchVector; //vector of AliDetSwitch
+    DetSwitchVector  fDetSwitchVector; //vector of AliDetSwitch
     
   private:    
     // methods
@@ -86,14 +92,13 @@ class AliModulesComposition : public G4VUserDetectorConstruction
     void SetWriteGeometryToModules(G4bool writeGeometry);
 
     // data members
-    AliSingleModuleConstructionRWVector fModuleConstructionVector; //..
-				          //vector of 
-					  //AliSingleModuleConstruction 
-    AliMoreModulesConstruction*         fMoreModulesConstruction;  //..
-                                          //AliMoreModulesConstruction
+    SingleModuleVector           fModuleConstructionVector; //vector of 
+					  //single module constructions 
+    AliMoreModulesConstruction*  fMoreModulesConstruction;  //..
+                                          //dependent modules construction
 
-    AliMagneticField*                fMagneticField;  //magnetic field
-    AliModulesCompositionMessenger*  fMessenger;      //messenger
+    AliMagneticField*               fMagneticField;  //magnetic field
+    AliModulesCompositionMessenger  fMessenger;      //messenger
     G4bool  fReadGeometry;        //option applied to all modules
     G4bool  fWriteGeometry;       //option applied to all modules     
 };

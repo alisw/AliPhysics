@@ -1,6 +1,10 @@
 // $Id$
 // Category: event
 //
+// Author: I. Hrivnacova
+//
+// Class AliParticleGun
+// --------------------
 // See the class description in the header file.
 
 #include "AliParticleGun.h"
@@ -14,18 +18,17 @@
 #include <G4Event.hh>
 
 //_____________________________________________________________________________
-AliParticleGun::AliParticleGun() {
+AliParticleGun::AliParticleGun() 
+  :fMessenger(this) {
 //
-  fMessenger = new AliParticleGunMessenger(this);
+  //fMessenger = new AliParticleGunMessenger(this);
 }
 
 //_____________________________________________________________________________
 AliParticleGun::AliParticleGun(const AliParticleGun& right)
-  : G4VPrimaryGenerator(right)
+  : G4VPrimaryGenerator(right),
+    fMessenger(this)
 {
-  // allocation
-  fMessenger = new AliParticleGunMessenger(this);
-
   // copy stuff
   *this = right;
 }
@@ -33,8 +36,8 @@ AliParticleGun::AliParticleGun(const AliParticleGun& right)
 //_____________________________________________________________________________
 AliParticleGun::~AliParticleGun() {
 //
-  fGunParticlesVector.clearAndDestroy();
-  delete fMessenger;
+  // delete gun particles
+  Reset();
 }
 
 // operators
@@ -48,13 +51,14 @@ AliParticleGun& AliParticleGun::operator=(const AliParticleGun& right)
   // base class assignment
   this->G4VPrimaryGenerator::operator=(right);
 
-  // particles vector
-  fGunParticlesVector.clearAndDestroy();
-  for (G4int i=0; i<right.fGunParticlesVector.entries(); i++) {
-    AliGunParticle* rhsParticle = right.fGunParticlesVector[i];
-    AliGunParticle* newParticle = new AliGunParticle(*rhsParticle);
-    fGunParticlesVector.insert(newParticle);
-  }
+  // delete gun particles
+  Reset();
+
+  // copy  gun particles
+  GunParticleConstIterator it;
+  for (it = (right.fGunParticleVector).begin();
+       it != (right.fGunParticleVector).end(); it++)
+    fGunParticleVector.push_back(new AliGunParticle(**it));
 
   return *this;  
 }
@@ -67,7 +71,7 @@ void AliParticleGun::AddParticle(AliGunParticle* particle)
 // Adds particle.
 // ---
 
-  fGunParticlesVector.insert(particle); 
+  fGunParticleVector.push_back(particle); 
 }
 
 //_____________________________________________________________________________
@@ -76,9 +80,12 @@ void AliParticleGun::RemoveParticle(G4int iParticle)
 // Removes particle.
 // ---
 
-  AliGunParticle* particle = fGunParticlesVector[iParticle];
-  fGunParticlesVector.remove(particle); 
-  delete particle;  
+  GunParticleIterator it = fGunParticleVector.begin();
+  it += iParticle;
+  //advance(it,iParticle);
+   
+  delete *it;
+  fGunParticleVector.erase(it); 
 }
 
 //_____________________________________________________________________________
@@ -91,10 +98,10 @@ void AliParticleGun::GeneratePrimaryVertex(G4Event* event)
   G4ThreeVector previousPosition = G4ThreeVector(); 
   G4double previousTime = 0.; 
 
-  G4int nofGunParticles = fGunParticlesVector.entries();
-  for( G4int i=0; i<nofGunParticles; i++ )
-  {    
-    AliGunParticle* particle = fGunParticlesVector[i];
+  GunParticleIterator it;
+  for (it = fGunParticleVector.begin(); it != fGunParticleVector.end(); it++) {    
+
+    AliGunParticle* particle = *it;
 
     G4ParticleDefinition* particleDefinition
       = particle->GetParticleDefinition();
@@ -106,7 +113,8 @@ void AliParticleGun::GeneratePrimaryVertex(G4Event* event)
     G4ThreeVector position = particle->GetPosition(); 
     G4double time = particle->GetTime(); 
     G4PrimaryVertex* vertex;
-    if ( i==0 || position != previousPosition || time != previousTime ) {   
+    if (it == fGunParticleVector.begin() || 
+        position != previousPosition || time != previousTime ) {   
       // create a new vertex 
       // in case position and time of gun particle are different from 
       // previous values
@@ -140,14 +148,15 @@ void AliParticleGun::GeneratePrimaryVertex(G4Event* event)
     vertex->SetPrimary(primaryParticle);
   }
   
-  // delete gun particles
-  fGunParticlesVector.clearAndDestroy();
-
   // add verbose
   G4cout << "AliParticleGun::GeneratePrimaryVertex:" << G4endl;
   G4cout << "   " 
-         << event->GetNumberOfPrimaryVertex() << " of primary vertices,"
-         << "   " << nofGunParticles << " of primary particles " << G4endl;  
+         << event->GetNumberOfPrimaryVertex()  << " of primary vertices,"
+         << "   " << fGunParticleVector.size() << " of primary particles " 
+	 << G4endl;  
+
+  // delete gun particles
+  Reset();
 }
 
 //_____________________________________________________________________________
@@ -156,7 +165,11 @@ void AliParticleGun::Reset()
 // Resets the particle gun.
 // ---
 
-  fGunParticlesVector.clearAndDestroy(); 
+  GunParticleIterator it;
+  for (it = fGunParticleVector.begin(); it != fGunParticleVector.end(); it++)
+    delete *it;
+
+  fGunParticleVector.clear(); 
 }
 
 //_____________________________________________________________________________
@@ -165,19 +178,19 @@ void AliParticleGun::List()
 // Lists the particle gun.
 // ---
 
-  G4int nofGunParticles = fGunParticlesVector.entries();
-
   G4cout << "Particle Gun: " << G4endl;
 
-  if (nofGunParticles==0)
-  { G4cout << "   No particles are defined." << G4endl; }
-  else
-  {
-    for (G4int i=0; i<nofGunParticles; i++)
-    {
-      G4cout << i << " th particle properties: " << G4endl;
+  if (fGunParticleVector.size() == 0) 
+    G4cout << "   No particles are defined." << G4endl; 
+  else {
+    G4int i = 0;
+    GunParticleIterator it;
+    for (it = fGunParticleVector.begin(); 
+         it != fGunParticleVector.end(); it++) {    
+	 
+      G4cout << i++ << " th particle properties: " << G4endl;
       G4cout << "============================" << G4endl;
-      fGunParticlesVector[i]->Print();
+      (*it)->Print();
     }
   }
 }

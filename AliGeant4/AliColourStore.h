@@ -1,6 +1,10 @@
 // $Id$
 // Category: visualization
 //
+// Author: I. Hrivnacova
+//
+// Class AliColourStore
+// --------------------
 // Singleton data type class - store for the predefined colours.
 
 #ifndef ALI_COLOUR_STORE_H
@@ -10,11 +14,13 @@
  
 class AliColour;
 
-#include <g4rw/tvordvec.h>
+#include <g4std/vector>
 
 class AliColourStore 
 {
-  typedef G4RWTValOrderedVector<AliColour>  AliColourVector;
+  typedef G4std::vector<AliColour>     ColourVector;
+  typedef ColourVector::iterator       ColourIterator;
+  typedef ColourVector::const_iterator ColourConstIterator;
 
   public:
     // --> protected
@@ -42,7 +48,7 @@ class AliColourStore
     static AliColourStore*  fgInstance; //this instance
 
     // data members
-    AliColourVector  fColours;          //vector of AliColour
+    ColourVector  fColours; //vector of AliColour
 };   
 
 #endif //ALI_COLOUR_STORE_H

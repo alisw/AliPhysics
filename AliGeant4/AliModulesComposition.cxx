@@ -1,10 +1,13 @@
 // $Id$
 // Category: geometry
 //
+// Author: I. Hrivnacova
+//
+// Class AliModulesComposition
+// ---------------------------
 // See the class description in the header file.
 
 #include "AliModulesComposition.h"
-#include "AliModulesCompositionMessenger.h"
 #include "AliSingleModuleConstruction.h"
 #include "AliMoreModulesConstruction.h"
 #include "AliDetSwitch.h"
@@ -22,15 +25,16 @@
 AliModulesComposition::AliModulesComposition()
   : fReadGeometry(false),
     fWriteGeometry(false),
-    fMagneticField(0)    
+    fMagneticField(0),
+    fMessenger(this)
 {
 //
   fMoreModulesConstruction = new AliMoreModulesConstruction();
-  fMessenger = new AliModulesCompositionMessenger(this);
 }
 
 //_____________________________________________________________________________
 AliModulesComposition::AliModulesComposition(const AliModulesComposition& right)
+  : fMessenger(this)
 {
 //
   AliGlobals::Exception("AliModulesComposition is protected from copying.");  
@@ -41,13 +45,17 @@ AliModulesComposition::~AliModulesComposition() {
 //   
   delete fMoreModulesConstruction;
   delete fMagneticField;
-  delete fMessenger; 
   
   // destroy det switch vector
-  fDetSwitchVector.clearAndDestroy();  
+  DetSwitchIterator it;
+  for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
+    delete *it; 
   
   // destroy det construction vector
-  fModuleConstructionVector.clearAndDestroy();
+  SingleModuleIterator itm;
+  for (itm = fModuleConstructionVector.begin(); 
+       itm != fModuleConstructionVector.end(); it++)
+    delete *itm;
 }
 
 // operators
@@ -72,31 +80,32 @@ void AliModulesComposition::AddDetSwitch(AliDetSwitch* detSwitch)
 // Adds detSwitch to the detSwitch vector.
 // ---
 
-  fDetSwitchVector.insert(detSwitch);
-  fMessenger->SetCandidates();
+  fDetSwitchVector.push_back(detSwitch);
+  fMessenger.SetCandidates();
 }  
   
 //_____________________________________________________________________________
-void AliModulesComposition::AddSingleModuleConstruction(G4String moduleName, 
-                               G4int version, AliModuleType moduleType)
+void AliModulesComposition::AddSingleModuleConstruction(
+                               const G4String& name, G4int version, 
+			       AliModuleType moduleType)
 {
 // Adds SingleModuleConstruction.
 // ---
 
-  AliSingleModuleConstruction* moduleConstruction
-    = new AliSingleModuleConstruction(moduleName, version, moduleType);
-  fModuleConstructionVector.insert(moduleConstruction);
+  fModuleConstructionVector
+    .push_back(new AliSingleModuleConstruction(name, version, moduleType));
 }  
 		  
 //_____________________________________________________________________________
-void AliModulesComposition::AddMoreModuleConstruction(G4String moduleName, 
-                               G4int version, AliModuleType moduleType)
+void AliModulesComposition::AddMoreModuleConstruction(
+                               const G4String& name, G4int version, 
+			       AliModuleType moduleType)
 {
 // Adds module to MoreModulesConstruction (construction of dependent
 // modules.)
 // ---
 
-  fMoreModulesConstruction->AddModule(moduleName, version, moduleType);
+  fMoreModulesConstruction->AddModule(name, version, moduleType);
 }  
 		  		  
 //_____________________________________________________________________________
@@ -110,47 +119,48 @@ void AliModulesComposition::ConstructModules()
   SetWriteGeometryToModules(fWriteGeometry);
   
   // configure single modules
-  G4int nofDets = fModuleConstructionVector.entries();
-  G4int i;
-  for (i=0; i<nofDets; i++) {
-    fModuleConstructionVector[i]->Configure(*AliFiles::Instance());
-    cout << "Module " << fModuleConstructionVector[i]->GetDetName() 
-         << " configured." << endl;
+  SingleModuleIterator it;
+  for (it  = fModuleConstructionVector.begin(); 
+       it != fModuleConstructionVector.end(); it++) {
+       
+    (*it)->Configure(*AliFiles::Instance());
+    cout << "Module " << (*it)->GetDetName() << " configured." << endl;
   }  
      
   // configure dependent modules
-  G4int nofModules = fMoreModulesConstruction->GetNofModules();
-  if (nofModules>0) {
+  if (fMoreModulesConstruction->GetNofModules() > 0)
     fMoreModulesConstruction->Configure(*AliFiles::Instance());
-  }  
 
   // construct single modules
-  for (i=0; i<nofDets; i++) {
-    G4cout << "Module " << fModuleConstructionVector[i]->GetDetName()
+  for (it  = fModuleConstructionVector.begin(); 
+       it != fModuleConstructionVector.end(); it++) {
+
+    G4cout << "Module " << (*it)->GetDetName()
            << " will be constructed now." << G4endl;
-    fModuleConstructionVector[i]->Construct();
+    (*it)->Construct();
   }  
     
   // construct dependent modules
-  if (nofModules>0) {
+  if (fMoreModulesConstruction->GetNofModules() > 0) {
     G4cout << "Dependent modules will be constructed now." << G4endl;
     fMoreModulesConstruction->Construct();
   }  
 }  
 
 //_____________________________________________________________________________
-AliDetSwitch* AliModulesComposition::GetDetSwitch(const G4String& detName)
+AliDetSwitch* AliModulesComposition::GetDetSwitch(const G4String& moduleName)
 {
 // Returns the detector switch with given detector name.
 // ---
 
-  AliDetSwitch* detSwitch = 0;
-  for (G4int id=0; id<fDetSwitchVector.entries(); id++) {  
-    detSwitch = fDetSwitchVector[id];
-    if (detSwitch->GetDetName() == detName) return detSwitch; 
-  }
-  
-  return detSwitch;  
+  DetSwitchIterator it;
+  for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
+    if ((*it)->GetDetName() == moduleName) return *it; 
+
+  G4String text = "AliModulesComposition::GetDetSwitch:\n";
+  text = text + "Wrong detector name for " + moduleName;   
+  AliGlobals::Exception(text);
+  return 0;  
 } 
 
 //_____________________________________________________________________________
@@ -160,18 +170,15 @@ void AliModulesComposition::SetReadGeometryToModules(G4bool readGeometry)
 // ---
 
   // single module constructions
-  G4int nofDets = fModuleConstructionVector.entries();
-  G4int i;
-  for (i=0; i<nofDets; i++)
-    fModuleConstructionVector[i]->SetReadGeometry(readGeometry);
+  SingleModuleIterator it;
+  for (it  = fModuleConstructionVector.begin(); 
+       it != fModuleConstructionVector.end(); it++)        
+    (*it)->SetReadGeometry(readGeometry);
 
   // more modules construction
-  nofDets = fMoreModulesConstruction->GetNofModules();
-  for (i=0; i<nofDets; i++) { 
-    AliSingleModuleConstruction* moduleConstruction
-      = fMoreModulesConstruction->GetModuleConstruction(i);
-    moduleConstruction->SetReadGeometry(readGeometry);
-  }  
+  for (G4int i=0; i<fMoreModulesConstruction->GetNofModules(); i++) 
+    fMoreModulesConstruction
+      ->GetModuleConstruction(i)->SetReadGeometry(readGeometry);
 }    
   
 //_____________________________________________________________________________
@@ -181,18 +188,15 @@ void AliModulesComposition::SetWriteGeometryToModules(G4bool writeGeometry)
 // ---
 
   // single module constructions
-  G4int nofDets = fModuleConstructionVector.entries();
-  G4int i;
-  for (i=0; i<nofDets; i++)
-    fModuleConstructionVector[i]->SetWriteGeometry(writeGeometry);
+  SingleModuleIterator it;
+  for (it  = fModuleConstructionVector.begin(); 
+       it != fModuleConstructionVector.end(); it++)        
+    (*it)->SetWriteGeometry(writeGeometry);
 
   // more modules construction
-  nofDets = fMoreModulesConstruction->GetNofModules();
-  for (i=0; i<nofDets; i++) { 
-    AliSingleModuleConstruction* moduleConstruction
-      = fMoreModulesConstruction->GetModuleConstruction(i);
-    moduleConstruction->SetWriteGeometry(writeGeometry);
-  }  
+  for (G4int i=0; i<fMoreModulesConstruction->GetNofModules(); i++) 
+    fMoreModulesConstruction
+      ->GetModuleConstruction(i)->SetWriteGeometry(writeGeometry);
 }    
 
 //_____________________________________________________________________________
@@ -202,45 +206,45 @@ void AliModulesComposition::SetProcessConfigToModules(G4bool processConfig)
 // ---
 
   // single module constructions
-  G4int nofDets = fModuleConstructionVector.entries();
-  G4int i;
-  for (i=0; i<nofDets; i++)
-    fModuleConstructionVector[i]->SetProcessConfig(processConfig);
+  SingleModuleIterator it;
+  for (it  = fModuleConstructionVector.begin(); 
+       it != fModuleConstructionVector.end(); it++)        
+    (*it)->SetProcessConfig(processConfig);
   
   // more modules construction
-  nofDets = fMoreModulesConstruction->GetNofModules();
-  for (i=0; i<nofDets; i++) { 
-    AliSingleModuleConstruction* moduleConstruction
-      = fMoreModulesConstruction->GetModuleConstruction(i);
-    moduleConstruction->SetProcessConfig(processConfig);
-  }    
+  for (G4int i=0; i<fMoreModulesConstruction->GetNofModules(); i++) 
+    fMoreModulesConstruction
+      ->GetModuleConstruction(i)->SetProcessConfig(processConfig);
 }    
 
 // public methods
 
 //_____________________________________________________________________________
-void AliModulesComposition::SwitchDetOn(G4String moduleNameVer)
+void AliModulesComposition::SwitchDetOn(const G4String& moduleNameVer)
 { 
 // Switchs on module specified by name and version.
 // ---
 
-  G4int nofDets = fDetSwitchVector.entries(); 
+  DetSwitchIterator it;
+
   if (moduleNameVer == "ALL") {
-    for (G4int id=0; id<nofDets; id++) fDetSwitchVector[id]->SwitchOnDefault(); 
+    for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
+      (*it)->SwitchOnDefault(); 
   }
   else if (moduleNameVer == "PPR") {
-    for (G4int id=0; id<nofDets; id++) fDetSwitchVector[id]->SwitchOnPPR(); 
+    for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
+      (*it)->SwitchOnPPR(); 
     AliFiles::Instance()->SetMacroName("ConfigPPR");
   }
   else if (moduleNameVer == "NONE") {
-    for (G4int id=0; id<nofDets; id++)
-      fDetSwitchVector[id]->SwitchOff(); 
+    for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
+      (*it)->SwitchOff(); 
   }
   else {
     // get version number
     G4int len = moduleNameVer.length();
-    G4String moduleName = moduleNameVer(0, len-1);
-    G4String version = moduleNameVer(len-1, 1);
+    G4String moduleName = moduleNameVer.substr(0, len-1);
+    G4String version = moduleNameVer.substr(len-1, 1);
     G4int iVersion = AliGlobals::StringToInt(version);
 
     if (iVersion < 0) {
@@ -254,81 +258,46 @@ void AliModulesComposition::SwitchDetOn(G4String moduleNameVer)
 }
 
 //_____________________________________________________________________________
-void AliModulesComposition::SwitchDetOn(G4String moduleName, G4int version)
+void AliModulesComposition::SwitchDetOn(const G4String& moduleName, 
+                                        G4int version)
 { 
 // Switchs on module specified by name and version.
 // ---
 
-  G4int nofDets = fDetSwitchVector.entries(); 
-  for (G4int id=0; id<nofDets; id++) {
-    G4String iDetName = fDetSwitchVector[id]->GetDetName();
-    if (iDetName == moduleName) {
-      fDetSwitchVector[id]->SwitchOn(version);
-      return;
-    }
-  }
-  AliGlobals::Exception(
-    "AliModulesComposition: Wrong detector name for " + moduleName + ".");
+  GetDetSwitch(moduleName)->SwitchOn(version);
 }
 
 //_____________________________________________________________________________
-void AliModulesComposition::SwitchDetOnDefault(G4String moduleName)
+void AliModulesComposition::SwitchDetOnDefault(const G4String& moduleName)
 { 
 // Switchs on module specified by name with default version.
 // ---
 
-  G4int nofDets = fDetSwitchVector.entries(); 
-  for (G4int id=0; id<nofDets; id++) {
-    G4String iDetName = fDetSwitchVector[id]->GetDetName();
-    if (iDetName == moduleName) {
-      fDetSwitchVector[id]->SwitchOnDefault();
-      return;
-    }
-  }
-  AliGlobals::Exception(
-    "AliModulesComposition: Wrong detector name for " + moduleName + ".");
+  GetDetSwitch(moduleName)->SwitchOnDefault();
 }
 
 //_____________________________________________________________________________
-void AliModulesComposition::SwitchDetOnPPR(G4String moduleName)
+void AliModulesComposition::SwitchDetOnPPR(const G4String& moduleName)
 { 
 // Switchs on module specified by name with PPR version.
 // ---
 
-  G4int nofDets = fDetSwitchVector.entries(); 
-  for (G4int id=0; id<nofDets; id++) {
-    G4String iDetName = fDetSwitchVector[id]->GetDetName();
-    if (iDetName == moduleName) {
-      fDetSwitchVector[id]->SwitchOnPPR();
-      return;
-    }
-  }
-  AliGlobals::Exception(
-    "AliModulesComposition: Wrong detector name for " + moduleName + ".");
+  GetDetSwitch(moduleName)->SwitchOnPPR();
 }
 
 //_____________________________________________________________________________
-void AliModulesComposition::SwitchDetOff(G4String moduleName)
+void AliModulesComposition::SwitchDetOff(const G4String& moduleName)
 { 
 // Switchs off module specified by name.
 // ---
 
-  G4int nofDets = fDetSwitchVector.entries(); 
   if (moduleName == "ALL") {
-    for (G4int id=0; id<nofDets; id++)
-      fDetSwitchVector[id]->SwitchOff(); 
+    DetSwitchIterator it;
+    for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
+      (*it)->SwitchOff(); 
   }
-  else {
-    for (G4int id=0; id<nofDets; id++) {
-      G4String iDetName = fDetSwitchVector[id]->GetDetName();
-      if (iDetName == moduleName) { 
-        fDetSwitchVector[id]->SwitchOff();
-        return;
-      }
-    }
-  }
-  AliGlobals::Exception(
-    "AliModulesComposition: Wrong detector name for " + moduleName + ".");
+  else 
+    GetDetSwitch(moduleName)->SwitchOff();
 }
 
 //_____________________________________________________________________________
@@ -382,7 +351,7 @@ void AliModulesComposition::GenerateXMLGeometry() const
   G4String detName;
   G4String detVersion = "";
   G4int version = -1;
-  for (G4int i=fDetSwitchVector.entries()-1; i>=0; i--) {
+  for (G4int i=fDetSwitchVector.size()-1; i>=0; i--) {
     version = fDetSwitchVector[i]->GetSwitchedVersion();
     if (version > -1) {
       detName = fDetSwitchVector[i]->GetDetName();
@@ -422,23 +391,23 @@ G4String AliModulesComposition::GetSwitchedDetsList() const
 // Returns list of switched detectors.
 // ---
 
-  G4String svList = "";
-  
-  G4int nofDets = fDetSwitchVector.entries(); 
+  G4String svList = "";  
   G4int nofSwitchedDets = 0;
-  for (G4int id=0; id<nofDets; id++) {
-    G4int iVersion = fDetSwitchVector[id]->GetSwitchedVersion();
+  DetSwitchConstIterator it;
+  
+  for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++) {
+    G4int iVersion = (*it)->GetSwitchedVersion();
     if (iVersion > -1) {
       nofSwitchedDets++;
-      G4String moduleNameVer = fDetSwitchVector[id]->GetDetName();
+      G4String moduleNameVer = (*it)->GetDetName();
       AliGlobals::AppendNumberToString(moduleNameVer, iVersion);
       svList += moduleNameVer;
       svList += " "; 
     }
   }
 
-  if (nofSwitchedDets ==  nofDets) svList = "ALL: " + svList;
-  if (nofSwitchedDets ==  0)       svList = "NONE";   
+  if (nofSwitchedDets == fDetSwitchVector.size()) svList = "ALL: " + svList;
+  if (nofSwitchedDets == 0) svList = "NONE";   
 
   return svList;
 }
@@ -450,17 +419,15 @@ G4String AliModulesComposition::GetAvailableDetsList() const
 // ---
 
   G4String svList = "";
+  DetSwitchConstIterator it;
   
-  G4int nofDets = fDetSwitchVector.entries(); 
-  for (G4int id=0; id<nofDets; id++) {
-    G4int nofVersions = fDetSwitchVector[id]->GetNofVersions();
-    for (G4int iv=0; iv<nofVersions; iv++) {
-      G4String moduleNameVer = fDetSwitchVector[id]->GetDetName();
+  for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
+    for (G4int iv=0; iv<(*it)->GetNofVersions(); iv++) {
+      G4String moduleNameVer = (*it)->GetDetName();
       AliGlobals::AppendNumberToString(moduleNameVer, iv);
       svList += moduleNameVer;
       svList += " ";
-    }
-  }
+    } 
 
   return svList;
 }
@@ -472,18 +439,17 @@ G4String AliModulesComposition::GetAvailableDetsListWithCommas() const
 // ---
 
   G4String svList = "";
-  
-  G4int nofDets = fDetSwitchVector.entries(); 
-  for (G4int id=0; id<nofDets; id++) {
-    G4int nofVersions = fDetSwitchVector[id]->GetNofVersions();
-    for (G4int iv=0; iv<nofVersions; iv++) {
-      G4String moduleNameVer = fDetSwitchVector[id]->GetDetName();
+  G4int id =0;
+  DetSwitchConstIterator it;
+
+  for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++)
+    for (G4int iv=0; iv<(*it)->GetNofVersions(); iv++) {
+      G4String moduleNameVer = (*it)->GetDetName();
       AliGlobals::AppendNumberToString(moduleNameVer, iv);
       svList += moduleNameVer;
-      if (iv<nofVersions-1)    svList += "/";
-      else if (id < nofDets-1) svList += ", ";
+      if (iv < (*it)->GetNofVersions()-1)        svList += "/";
+      else if (id++ < fDetSwitchVector.size()-1) svList += ", ";
     }
-  }
 
   return svList;
 }
@@ -495,10 +461,10 @@ G4String AliModulesComposition::GetDetNamesList() const
 // ---
 
   G4String svList = "";
+  DetSwitchConstIterator it;
   
-  G4int nofDets = fDetSwitchVector.entries(); 
-  for (G4int id=0; id<nofDets; id++) { 
-    svList += fDetSwitchVector[id]->GetDetName();
+  for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++) {
+    svList += (*it)->GetDetName();
     svList += " ";
   }
 
@@ -512,11 +478,12 @@ G4String AliModulesComposition::GetDetNamesListWithCommas() const
 // ---
 
   G4String svList = "";
-  
-  G4int nofDets = fDetSwitchVector.entries(); 
-  for (G4int id=0; id<nofDets; id++) { 
-    svList += fDetSwitchVector[id]->GetDetName();
-    if (id < nofDets-1) svList += ", ";
+  G4int id =0;
+  DetSwitchConstIterator it;
+
+  for (it = fDetSwitchVector.begin(); it != fDetSwitchVector.end(); it++) {
+    svList += (*it)->GetDetName();
+    if (id++ < fDetSwitchVector.size()-1) svList += ", ";
   }
 
   return svList;
