@@ -71,6 +71,7 @@ AliQuenchingWeights::AliQuenchingWeights()
   SetMu();
   SetQTransport();
   SetK();
+  fECMethod=kReweight; //this is to force printout
   SetECMethod();
   SetLengthMax();
   fLengthMaxOld=0;
@@ -131,6 +132,7 @@ void AliQuenchingWeights::SetECMethod(kECMethod type)
 {
   //set energy constraint method
 
+  if(fECMethod==type) return;
   fECMethod=type;
   if(fECMethod==kDefault)
     Info("SetECMethod","Energy Constraint Method set to DEFAULT:\nIf (sampled energy loss > parton energy) then sampled energy loss = parton energy.");
@@ -1977,3 +1979,4 @@ Int_t AliQuenchingWeights::GetIndex(Double_t len) const
   if((len-l*0.5)>0.25) l++;
   return l;
 }
+
