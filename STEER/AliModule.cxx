@@ -136,6 +136,9 @@ AliModule::~AliModule()
   // Destructor
   //
 
+  // Remove this Module from the list of Modules
+  gAlice->Modules()->Remove(this);
+
   // Delete ROOT geometry
   if(fNodes) {
     fNodes->Clear();
