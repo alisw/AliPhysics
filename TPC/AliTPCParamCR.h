@@ -49,7 +49,7 @@ protected:
   AliTPCPRF2D * fOuter2PRF;  
   AliTPCRF1D  * fTimeRF;           //!time response function object
   Float_t       fFacSigma;         //factor-how many sigma of response I accept
-  ClassDef(AliTPCParamCR,1)  //parameter  object for set:TPC
+  ClassDef(AliTPCParamCR,2)  //parameter  object for set:TPC
 };
 
 #endif  

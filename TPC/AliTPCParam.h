@@ -418,7 +418,7 @@ protected:
   Int_t   *fResponseBin;    //!array with bins                     -calulated
   Float_t *fResponseWeight; //!array with response                 -calulated
 
-  ClassDef(AliTPCParam,2)  //parameter  object for set:TPC
+  ClassDef(AliTPCParam,3)  //parameter  object for set:TPC
 };
 
  

@@ -73,7 +73,7 @@ protected:
   Float_t      fFacSigmaPadRow;    //factor-how many sigma of response I accept
   Float_t      fFacSigmaPad;       //factor-how many sigma of response I accept
   Float_t      fFacSigmaTime;      //factor-how many sigma of response I accept
-  ClassDef(AliTPCParamSR,1)  //parameter  object for set:TPC
+  ClassDef(AliTPCParamSR,2)  //parameter  object for set:TPC
 };
 
 #endif  
