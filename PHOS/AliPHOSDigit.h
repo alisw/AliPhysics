@@ -55,10 +55,9 @@ class AliPHOSDigit : public AliDigitNew {
 
  private:
 
-  Int_t fPrimary1 ;          // first primary (because objects in a TClonesArray bust have constant length) 
-  Int_t fPrimary2 ;          // second primary (because objects in a TClonesArray bust have constant lengt) 
-  Int_t fPrimary3 ;          // third primary (because objects in a TClonesArray bust have constant lengt) 
-  Int_t fNprimary ;          // Number of primaries
+  Int_t fNprimary ;     // Number of primaries
+  Int_t fNMaxPrimary ;  //! Max Number of primaries
+  Int_t * fPrimary ;    //[fNprimary]  Array of primaries       
     
   ClassDef(AliPHOSDigit,1)   // Digit in PHOS 
 

@@ -46,9 +46,8 @@ ClassImp(AliPHOSDigit)
 
   fIndexInList = -1 ; 
   fNprimary    = 0 ;  
-  fPrimary1    = -1 ; 
-  fPrimary2    = -1 ; 
-  fPrimary3    = -1 ;
+  fNMaxPrimary = 5 ; 
+  fPrimary = new Int_t[fNMaxPrimary] ;
 }
 
 //____________________________________________________________________________
@@ -61,14 +60,15 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Int_t index
   fIndexInList = index ; 
   if( primary != -1){
     fNprimary    = 1 ; 
-    fPrimary1    = primary ;
+    fPrimary[0]  = primary ;
   }
   else{  //If the contribution of this primary smaller than fDigitThreshold (AliPHOSv1)
     fNprimary    = 0 ; 
-    fPrimary1    = -1 ;
+    fPrimary[0]  = -1 ;
   }
-  fPrimary2    = -1 ; 
-  fPrimary3    = -1 ;
+  Int_t i ;
+  for ( i = 1; i < fNMaxPrimary ; i++)
+    fPrimary[i]  = -1 ; 
 }
 
 //____________________________________________________________________________
@@ -80,9 +80,10 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit)
   fId          = digit.fId;
   fIndexInList = digit.fIndexInList ; 
   fNprimary    = digit.fNprimary ;
-  fPrimary1    = digit.fPrimary1 ;
-  fPrimary2    = digit.fPrimary2 ;
-  fPrimary3    = digit.fPrimary3 ;
+  fNMaxPrimary = digit.fNMaxPrimary ;
+  Int_t i ;
+  for ( i = 0; i < fNMaxPrimary ; i++)
+    fPrimary[i]  = digit.fPrimary[i] ;
 }
 
 //____________________________________________________________________________
@@ -114,24 +115,13 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
   // Returns the primary particle id index =1,2,3
  
   Int_t rv = -1 ; 
-  if ( index > 3 )
-    cout << "AliPHOSDigit  ERROR > only 3 primaries allowed" << endl ; 
-  else {
-    switch (index) {  
-    case 1 :
-      rv = fPrimary1 ; 
-      break ; 
-    case 2 :
-      rv = fPrimary2 ; 
-      break ; 
-    case 3 :
-      rv = fPrimary3 ; 
-      break ; 
-    }
-  } 
+  if ( index > fNMaxPrimary )
+    cout << "AliPHOSDigit  ERROR > only " << fNMaxPrimary << " primaries allowed" << endl ; 
+  else 
+    rv = fPrimary[index-1] ; 
 
   return rv ; 
-
+  
 }
 
 //____________________________________________________________________________
@@ -152,50 +142,22 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
   // if amplitude is larger than 
 
   fAmp += digit.fAmp ;
-  
-  // Here comes something crummy ... but I do not know how to stream pointers
-  // because AliPHOSDigit is in a TCLonesArray 
-
-  Int_t tempo1[3] ; 
-  tempo1[0] = fPrimary1 ; 
-  tempo1[1] = fPrimary2 ; 
-  tempo1[2] = fPrimary3 ; 
-
-  Int_t tempo2[3] ; 
-  tempo2[0] = digit.fPrimary1 ; 
-  tempo2[1] = digit.fPrimary2 ; 
-  tempo2[2] = digit.fPrimary3 ; 
 
   Int_t max1 = fNprimary ; 
   Int_t max2 = digit.fNprimary ; 
  
-  if ( fNprimary >= 3 ) {
-    cout << "AliPHOSDigit + operator  ERROR > too many primaries, modify AliPHOSDigit" << endl ; 
-  } 
+  if ( fNprimary >= fNMaxPrimary ) 
+    cout << "AliPHOSDigit + operator  ERROR > too many primaries, modify AliPHOSDigit" << endl ;
   else {
     fNprimary += digit.fNprimary ; 
-    if ( fNprimary > 3 ) {
+    if ( fNprimary > fNMaxPrimary ) {
       cout << "AliPHOSDigit + operator  ERROR > too many primaries, modify AliPHOSDigit" << endl ; 
-      fNprimary = 3 ;
+      fNprimary = fNMaxPrimary ;
     }
-    
-    Int_t tempo3[3] ;
     Int_t index ; 
-    for (index = 0 ; index < 3 ; index++)
-      tempo3[index] = 0 ; 
-
-    for (index = 0 ; index < max1 ; index++)
-      tempo3[index] = tempo1[index] ;
-
     for (index = 0 ; index < max2 ; index++)
-      tempo3[index+max1] = tempo2[index] ; 
-    
-    fPrimary1 = tempo3[0] ; 
-    fPrimary2 = tempo3[1] ; 
-    fPrimary3 = tempo3[2] ; 
-
+      fPrimary[index+max1] = (digit.fPrimary)[index] ; 
   }
- // end of crummy stuff      
 
   return *this ;
 }
@@ -206,10 +168,12 @@ ostream& operator << ( ostream& out , const AliPHOSDigit & digit)
   // Prints the data of the digit
   
   out << "ID " << digit.fId << " Energy = " << digit.fAmp << endl 
-      << "Primary 1 = " << digit.fPrimary1 << endl 
-      << "Primary 2 = " << digit.fPrimary2 << endl 
-      << "Primary 3 = " << digit.fPrimary3 << endl 
-      << "Position in list = " << digit.fIndexInList << endl ; 
+      << "Primary 1 = " << digit.fPrimary[0] << endl 
+      << "Primary 2 = " << digit.fPrimary[1] << endl 
+      << "Primary 3 = " << digit.fPrimary[2] << endl 
+      << "Primary 4 = " << digit.fPrimary[3] << endl 
+      << "Primary 5 = " << digit.fPrimary[4] << endl 
+       << "Position in list = " << digit.fIndexInList << endl ; 
   return out ;
 }
 
