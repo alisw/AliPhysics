@@ -1,4 +1,5 @@
 #include "iostream.h"
+#include "TMath.h"
 
 void VertexMacro(Int_t evNumber1=0,Int_t evNumber2=0) {
 
@@ -42,25 +43,24 @@ void VertexMacro(Int_t evNumber1=0,Int_t evNumber2=0) {
      TStopwatch timer;
      timer.Start();
 
-     AliITSVertex *V = new AliITSVertex();;
+     AliITSVertex *V = new AliITSVertex();
 
      timer.Stop();
      timer.Print();
 
+     cout << endl << "Xv = " << V->GetXv() << " cm" << endl;
+     cout << "X resolution = " << V->GetXRes()*10000 << " microns"  << endl;
+     cout << "Signal/Noise for X = " << V->GetXSNR() << endl;
+     cout << endl << "Yv = " << V->GetYv() << " cm"  << endl;
+     cout << "Y resolution = " << V->GetYRes()*10000 << " microns"  << endl;
+     cout << "Signal/Noise for Y = " << V->GetYSNR() << endl;
      cout << endl << "Zv = " << V->GetZv() << " cm" << endl;
      cout << "Z Resolution = " << V->GetZRes()*10000 << " microns" << endl;
      cout << "Signal/Noise for Z = " << V->GetZSNR() <<endl;
-     cout << endl << "Yv (MC value) = " << V->GetYv() << " cm"  << endl;
-//     cout << "Y resolution = " << V->GetYRes()*10000 << " microns"  << endl;
-//     cout << "Signal/Noise for Y = " << V->GetYSNR() << endl;
-     cout << endl << "Xv (MC value) = " << V->GetXv() << " cm" << endl;
-//     cout << "X resolution = " << V->GetXRes()*10000 << " microns"  << endl;
-//     cout << "Signal/Noise for X = " << V->GetXSNR() << endl;
-  
+	 	 
      delete V;
-   
   } 
   
-  file->Close();  
+  file->Close(); 
 }
 
