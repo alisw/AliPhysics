@@ -9,7 +9,6 @@
 
 #include "AliHBTWeightsPID.h"
 #include "AliHBTPair.h"
-#include "AliHBTParticle.h"
 #include <TRandom.h>
 #include <TMath.h>
 #include <TH1.h>
