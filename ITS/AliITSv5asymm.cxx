@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/02/14 14:12:43  nilsen
+Forgot about the nonexisting v in ITSgeometry_5.det.
+
 Revision 1.8  2001/02/14 14:06:23  nilsen
 Wrong default .det file name for old .det file format.
 
@@ -170,7 +173,7 @@ AliITSv5asymm::AliITSv5asymm(const char *name, const char *title) : AliITS(name,
 
     fEuclidMaterial = "$ALICE_ROOT/Euclid/ITSgeometry_5asymm.tme";
     fEuclidGeometry = "$ALICE_ROOT/Euclid/ITSgeometry_5asymm.euc";
-    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_5.det",60);
+    strncpy(fEuclidGeomDet,"$ALICE_ROOT/Euclid/ITSgeometry_5.det",60);
     strncpy(fRead,fEuclidGeomDet,60);
     strncpy(fWrite,fEuclidGeomDet,60);
 }
