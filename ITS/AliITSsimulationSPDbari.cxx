@@ -53,7 +53,7 @@ AliITSsimulationSPDbari::AliITSsimulationSPDbari(AliITSsegmentation *seg, AliITS
       // 
       fNPixelsZ=fSegmentation->Npz();
       fNPixelsX=fSegmentation->Npx();
-
+      fHis=0;
 }
 
 //_____________________________________________________________________________
@@ -111,7 +111,7 @@ void AliITSsimulationSPDbari::DigitiseModule(AliITSmodule *mod, Int_t module,
   if (!nhits) return;
 
 
-  printf("Module %d (%d hits) \n",module+1,nhits);
+  //printf("Module %d (%d hits) \n",module+1,nhits);
 
 
   Int_t  number=10000;
@@ -527,27 +527,27 @@ void AliITSsimulationSPDbari::CreateDigit(Int_t nhits, Int_t module, Float_t
    
            // check if the deposited energy in a pixel is above the threshold 
            Float_t signal = (Float_t) fMapA2->GetSignal(r,c);
+	   gi =r*fNPixelsX+c; // global index
            if ( signal > fThresh) {
 	          digits[0] = r-1;  // digits starts from 0
-              digits[1] = c-1;  // digits starts from 0
-              //digits[2] = 1;  
-              signal = signal*1.0e9;  //signal in eV
-              digits[2] =  (Int_t) signal;  // the signal is stored in eV
-	          gi =r*fNPixelsX+c; // global index
+		  digits[1] = c-1;  // digits starts from 0
+		  //digits[2] = 1;  
+		  signal = signal*1.0e9;  //signal in eV
+		  digits[2] =  (Int_t) signal;  // the signal is stored in eV
 	          for(j1=0;j1<3;j1++){
-                 tracks[j1] = (Int_t)(*(pList[gi]+j1));
-                 hits[j1] = (Int_t)(*(pList[gi]+j1+6));
-                 charges[j1] = 0;
-              }
+		    tracks[j1] = (Int_t)(*(pList[gi]+j1));
+		    hits[j1] = (Int_t)(*(pList[gi]+j1+6));
+		    charges[j1] = 0;
+		  }
               /* debug
               printf("digits %d %d %d\n",digits[0],digits[1],digits[2]); //debug
               printf("tracks %d %d %d\n",tracks[0],tracks[1],tracks[2]); //debug
               printf("hits %d %d %d\n",hits[0],hits[1],hits[2]); //debug
               */
               Float_t phys = 0;        
-	          aliITS->AddSimDigit(0,phys,digits,tracks,hits,charges);
-	          if(pList[gi]) delete [] pList[gi];
-	       }//endif of threshold condition
+	      aliITS->AddSimDigit(0,phys,digits,tracks,hits,charges);
+	   }//endif of threshold condition
+	   if(pList[gi]) delete [] pList[gi];
         }
      }// enddo on pixels
     }
@@ -663,13 +663,12 @@ void AliITSsimulationSPDbari::SetFluctuations(Float_t **pList) {
   //End_Html
   
   
-  TRandom random; 
   Double_t signal;
 
   Int_t iz,ix;
   for(iz=1;iz<=fNPixelsZ;iz++){
     for(ix=1;ix<=fNPixelsX;ix++){
-      signal = fSigma*random.Gaus(); 
+      signal = fSigma*gRandom->Gaus(); 
       fMapA2->SetHit(iz,ix,signal);
 
       // insert in the label-signal-hit list the pixels fired only by noise
@@ -696,6 +695,7 @@ void AliITSsimulationSPDbari::CreateHistograms() {
   // CreateHistograms
 
       Int_t i;
+      fHis=new TObjArray(fNPixelsZ);
       for(i=0;i<fNPixelsZ;i++) {
 	   TString spdname("spd_");
 	   Char_t candnum[4];

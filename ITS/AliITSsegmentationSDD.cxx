@@ -29,7 +29,7 @@ AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom,
 					     AliITSresponse *resp){
   // constructor
    fGeom=geom;
-   fResponse=resp;
+   fDriftSpeed=resp->DriftSpeed();
    fCorr=0;
    SetDetSize();
    SetPadSize();
@@ -40,34 +40,12 @@ AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom,
 AliITSsegmentationSDD::AliITSsegmentationSDD(){
   // standard constructor
    fGeom=0;
-   fResponse=0;  
+   fDriftSpeed=0;  
    fCorr=0;
    SetDetSize();
    SetPadSize();
    SetNPads();
 
-}
-//______________________________________________________________________
-AliITSsegmentationSDD& AliITSsegmentationSDD::operator=(AliITSsegmentationSDD 
-							&source){
-  // Operator =
-  if(this==&source) return *this;
-  this->fNsamples = source.fNsamples;
-  this->fNanodes  = source.fNanodes;
-  this->fPitch    = source.fPitch;
-  this->fTimeStep = source.fTimeStep;
-  this->fDx       = source.fDx;
-  this->fDz       = source.fDz;
-  this->fDy       = source.fDy;
-  this->fCorr     = new TF1(*(source.fCorr));
-  this->fGeom     = source.fGeom; // Just copy the pointer
-  this->fResponse = source.fResponse; //Just copy the pointer
-  return *this;
-}
-//______________________________________________________________________
-AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSsegmentationSDD &source){
-  // Copy constructor
-   *this = source;
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::Init(){
@@ -107,18 +85,17 @@ Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[8], Int_t Zlist[8]){
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::GetPadIxz(Float_t x,Float_t z,
 				      Int_t &timebin,Int_t &anode){
-// Returns cell coordinates (time sample,anode) for given real local
-// coordinates (x,z)
+// Returns cell coordinates (time sample,anode) incremented by 1 !!!!! 
+// for given real local coordinates (x,z)
 
     // expects x, z in cm
 
     const Float_t kconv=10000;  // cm->um
 
-    Float_t speed=fResponse->DriftSpeed();
     Int_t na = fNanodes/2;
     Float_t driftpath=fDx-TMath::Abs(kconv*x);
-    timebin=(Int_t)(driftpath/speed/fTimeStep);
-    anode=(Int_t)(kconv*z/fPitch) + na/2;
+    timebin=(Int_t)(driftpath/fDriftSpeed/fTimeStep);
+    anode=(Int_t)(kconv*(z/fPitch + na/2));
     if (x > 0) anode += na;
 
     timebin+=1;
@@ -131,15 +108,16 @@ void AliITSsegmentationSDD::GetPadCxz(Int_t timebin,Int_t anode,
     // Transform from cell to real local coordinates
     // returns x, z in cm
 
+  // the +0.5 means that an # and time bin # should start from 0 !!! 
     const Float_t kconv=10000;  // um->cm
+  // the +0.5 means that an # and time bin # should start from 0 !!! 
 
-    Float_t speed=fResponse->DriftSpeed();
     Int_t na = fNanodes/2;
-    Float_t driftpath=(timebin+1)*fTimeStep*speed;
+    Float_t driftpath=(timebin+0.5)*fTimeStep*fDriftSpeed;
     if (anode >= na) x=(fDx-driftpath)/kconv;
     else x = -(fDx-driftpath)/kconv;
     if (anode >= na) anode-=na;
-    z=((anode+1)*fPitch-fDz/2)/kconv;
+    z=((anode+0.5)*fPitch-fDz/2)/kconv;
 
 }
 //----------------------------------------------------------------------
@@ -151,10 +129,9 @@ void AliITSsegmentationSDD::GetPadTxz(Float_t &x,Float_t &z){
     const Float_t kconv=10000;  // cm->um
 
     Float_t x0=x;
-    Float_t speed=fResponse->DriftSpeed();
     Int_t na = fNanodes/2;
     Float_t driftpath=fDx-TMath::Abs(kconv*x);
-    x=driftpath/speed/fTimeStep;
+    x=driftpath/fDriftSpeed/fTimeStep;
     z=kconv*z/fPitch + (float)na/2;
     if (x0 < 0) x = -x;
 
@@ -238,7 +215,7 @@ void AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz){
     dz = -0.5*kconv*Dz(); // lower left edge in cm.
     if(x<dx || x>-dx) return; // outside of defined volume.
     if(z<dz || z>-dz) return; // outside of defined volume.
-    tb = fResponse->DriftSpeed()*fTimeStep*kconv; // compute size of time bin.
+    tb = fDriftSpeed*fTimeStep*kconv; // compute size of time bin.
     if(x>0) dx = -(dx + x)/tb; // distance from + side in time bin units
     else dx = (x - dx)/tb;     // distance from - side in time bin units
     dz = (z - dz)/(kconv*fPitch); // distance in z in anode pitch units
@@ -288,7 +265,7 @@ void AliITSsegmentationSDD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z)
     z = -0.5*kconv*Dz(); // default value.
     if(ix<0 || ix>=Npx()) return; // outside of detector
     if(iz<0 || iz>=Npz()) return; // outside of detctor
-    tb = fResponse->DriftSpeed()*fTimeStep*kconv; // compute size of time bin.
+    tb = fDriftSpeed*fTimeStep*kconv; // compute size of time bin.
     if(iz>=Npz()/2) tb *= -1.0; // for +x side decrement frmo Dx().
     for(i=0;i<ix;i++) x += tb; // sum up to cell ix-1
     x += 0.5*tb; // add 1/2 of cell ix for center location.

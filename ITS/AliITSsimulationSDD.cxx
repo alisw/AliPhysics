@@ -895,7 +895,6 @@ void AliITSsimulationSDD::ChargeToSignal() {
 
   Float_t contrib=0;
 
-  TRandom random; 
   Int_t i,k,kk; 
 
   Float_t maxadc = fResponse->MaxAdc();    
@@ -904,7 +903,7 @@ void AliITSsimulationSDD::ChargeToSignal() {
         if  (read && i<fNofMaps) GetAnodeBaseline(i,baseline,noise);
 	for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
 	   fInZR[k] = fHitMap2->GetSignal(i,k);
-	   contrib = (baseline + noise*random.Gaus());
+	   contrib = (baseline + noise*gRandom->Gaus());
 	   fInZR[k] += contrib;
 	}
 	for(k=0; k<fMaxNofSamples; k++) {
@@ -931,7 +930,7 @@ void AliITSsimulationSDD::ChargeToSignal() {
       if  (read && i<fNofMaps) GetAnodeBaseline(i,baseline,noise);
       for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
 	fInZR[k] = fHitMap2->GetSignal(i,k);
-	contrib = (baseline + noise*random.Gaus());
+	contrib = (baseline + noise*gRandom->Gaus());
 	fInZR[k] += contrib;
 	fInZI[k] = 0.;
       }

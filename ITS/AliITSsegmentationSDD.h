@@ -14,15 +14,13 @@ public AliITSsegmentation {
 
     AliITSsegmentationSDD();
     AliITSsegmentationSDD(AliITSgeom *gm, AliITSresponse *resp);
-    AliITSsegmentationSDD(AliITSsegmentationSDD &source);
     virtual ~AliITSsegmentationSDD(){}
-    AliITSsegmentationSDD& operator=(AliITSsegmentationSDD &source);
 
     // Set Detector Segmentation Parameters
     //
     // Detector size : x,z,y
-  virtual  void   SetDetSize
-          (Float_t p1=35000., Float_t p2=75264., Float_t p3= 300.) 
+    virtual  void   SetDetSize
+          (Float_t p1=35085., Float_t p2=75264., Float_t p3= 300.) 
           {fDx=p1; fDz=p2; fDy=p3;}
 
     // Cell size dz*dx  
@@ -58,7 +56,7 @@ public AliITSsegmentation {
     // Get member data
     //
     // Detector type geometry
-    virtual AliITSgeom* Geometry() {return fGeom;}
+    AliITSgeom* Geometry() {return fGeom;}
     // Detector length
     virtual Float_t Dx() {return fDx;}
     // Detector drift distance or detector active area half width
@@ -118,6 +116,11 @@ public AliITSsegmentation {
     // Print Parameters
     virtual void    Print();
 	    
+  private:
+
+    AliITSsegmentationSDD(AliITSsegmentationSDD &source);
+    AliITSsegmentationSDD& operator=(AliITSsegmentationSDD &source);
+
   protected:
 
     Int_t      fNsamples; // Number of time samples in x
@@ -127,13 +130,12 @@ public AliITSsegmentation {
     Float_t    fDx;       // Drift distance of the 1/2detector (x axis)-microns
     Float_t    fDz;       // Length of half-detector (z axis) - microns
     Float_t    fDy;       // Full thickness of the detector (y axis) - microns
+    Float_t    fDriftSpeed;  // Drift speed 
 
     AliITSgeom *fGeom;         //! pointer to the geometry class
-    AliITSresponse *fResponse; // pointer to the response class
-   
     TF1*       fCorr;          // correction function
 
-    ClassDef(AliITSsegmentationSDD,1) // SDD segmentation
+    ClassDef(AliITSsegmentationSDD,2) // SDD segmentation
 };
 
 #endif

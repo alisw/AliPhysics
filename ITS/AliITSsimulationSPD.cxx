@@ -144,20 +144,14 @@ void AliITSsimulationSPD::DigitiseModule(AliITSmodule *mod, Int_t module, Int_t 
     Int_t lasttrack=-2;
     Int_t hit, iZi, jz, jx;
     //cout<<"SPD: module,nhits ="<<module<<","<<nhits<<endl;
+    Int_t idhit=-1;
     for (hit=0;hit<nhits;hit++) {
         AliITShit *iHit = (AliITShit*) fHits->At(hit);
 	Int_t layer = iHit->GetLayer();
         Float_t yPix0 = -73; 
         if(layer == 1) yPix0 = -77; 
 
-	// work with the idtrack=entry number in the TreeH
-	Int_t idhit,idtrack;
-	mod->GetHitTrackAndHitIndex(hit,idtrack,idhit);    
-	//Int_t idtrack=mod->GetHitTrackIndex(hit);  
-        // or store straight away the particle position in the array
-	// of particles : 
-
-	//b.b.        if(iHit->StatusEntering()) idhit=hit;
+	if(iHit->StatusEntering()) idhit=hit;
         Int_t itrack = iHit->GetTrack();
         Int_t dray = 0;
    
@@ -530,7 +524,6 @@ void AliITSsimulationSPD::ChargeToSignal(Float_t **pList)
   AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
   
 
-  TRandom *random = new TRandom(); 
   Float_t threshold = (float)fResponse->MinVal();
 
   Int_t digits[3], tracks[3], hits[3],gi,j1;
@@ -539,7 +532,7 @@ void AliITSsimulationSPD::ChargeToSignal(Float_t **pList)
   Float_t signal,phys;
   for(Int_t iz=0;iz<fNPixelsZ;iz++){
     for(Int_t ix=0;ix<fNPixelsX;ix++){
-      electronics = fBaseline + fNoise*random->Gaus();
+      electronics = fBaseline + fNoise*gRandom->Gaus();
       signal = (float)fMapA2->GetSignal(iz,ix);
       signal += electronics;
       gi =iz*fNPixelsX+ix; // global index
@@ -598,8 +591,8 @@ void AliITSsimulationSPD::CreateHistograms()
       printf("SPD - create histograms\n");
 
       fHis=new TObjArray(fNPixelsZ);
-      TString spdName("spd_");
       for (Int_t i=0;i<fNPixelsZ;i++) {
+	TString spdName("spd_");
 	   Char_t pixelz[4];
 	   sprintf(pixelz,"%d",i+1);
 	   spdName.Append(pixelz);

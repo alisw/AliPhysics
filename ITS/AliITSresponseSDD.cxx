@@ -43,58 +43,10 @@ AliITSresponseSDD::AliITSresponseSDD()
    SetOutputOption();
    SetDo10to8();
 }
+AliITSresponseSDD::~AliITSresponseSDD() { 
 
-//__________________________________________________________________________
-AliITSresponseSDD::AliITSresponseSDD(const AliITSresponseSDD &source){
-  //     Copy Constructor 
-  if(&source == this) return;
-  Int_t i;
-  for(i=0;i<8;i++){this->fCPar[i] = source.fCPar[i];}
-  this->fNoise = source.fNoise;
-  this->fBaseline = source.fBaseline;
-  this->fNoiseAfterEl = source.fNoiseAfterEl;
-  this->fDynamicRange = source.fDynamicRange;
-  this->fChargeLoss = source.fChargeLoss;
-  this->fTemperature = source.fTemperature;
-  this->fDriftSpeed = source.fDriftSpeed;
-  this->fNsigmas = source.fNsigmas;
-  this->fMaxAdc = source.fMaxAdc;
-  this->fDiffCoeff = source.fDiffCoeff;
-  this->fDiffCoeff1 = source.fDiffCoeff1;
-  this->fZeroSuppFlag = source.fZeroSuppFlag;
-  this->fMinVal = source.fMinVal;
-  this->fWrite = source.fWrite;
-  this->fBitComp = source.fBitComp;
-  this->fOption = source.fOption;
-  this->fParam1 = source.fParam1;
-  return;
-}
+  if(fGaus) delete fGaus;
 
-//_________________________________________________________________________
-AliITSresponseSDD& 
-  AliITSresponseSDD::operator=(const AliITSresponseSDD &source) {
-  //    Assignment operator
-  if(&source == this) return *this;
-  Int_t i;
-  for(i=0;i<8;i++){this->fCPar[i] = source.fCPar[i];}
-  this->fNoise = source.fNoise;
-  this->fBaseline = source.fBaseline;
-  this->fNoiseAfterEl = source.fNoiseAfterEl;
-  this->fDynamicRange = source.fDynamicRange;
-  this->fChargeLoss = source.fChargeLoss;
-  this->fTemperature = source.fTemperature;
-  this->fDriftSpeed = source.fDriftSpeed;
-  this->fNsigmas = source.fNsigmas;
-  this->fMaxAdc = source.fMaxAdc;
-  this->fDiffCoeff = source.fDiffCoeff;
-  this->fDiffCoeff1 = source.fDiffCoeff1;
-  this->fZeroSuppFlag = source.fZeroSuppFlag;
-  this->fMinVal = source.fMinVal;
-  this->fWrite = source.fWrite;
-  this->fBitComp = source.fBitComp;
-  this->fOption = source.fOption;
-  this->fParam1 = source.fParam1;
-  return *this;
 }
 
 void AliITSresponseSDD::SetCompressParam(Int_t  cp[8])
@@ -145,7 +97,6 @@ void AliITSresponseSDD::Print()
    cout << "Max. ADC Value: " << fMaxAdc << endl;
    cout << "Min. Value: " << fMinVal << endl;
 
-   cout << "Zero suppression flag: " << fZeroSuppFlag << endl; 
    cout << "**************************************************" << endl;
   
 
