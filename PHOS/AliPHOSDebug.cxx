@@ -544,7 +544,7 @@ void AliPHOSv1::StepManager(void)
 
   if ( name == "GPS2" || name == "MIXT" ) {            // ======> CPV is a GPS' PPSD
 
-    if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") ) // We are inside a gas cell 
+    if( gMC->CurrentVolID(copy) == gMC->VolId("PCEL") ) // We are inside a gas cell 
     {
       gMC->TrackPosition(pos) ;
       xyze[0] = pos[0] ;
@@ -579,7 +579,7 @@ void AliPHOSv1::StepManager(void)
 
     // Yuri Kharlov, 28 September 2000
 
-    if( gMC->CurrentVolID(copy) == gMC->VolId("CPVQ") &&
+    if( gMC->CurrentVolID(copy) == gMC->VolId("PCPQ") &&
 	entered &&
 	gMC->TrackCharge() != 0) {      
       
