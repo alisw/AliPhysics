@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  1999/10/01 09:54:33  fca
+Correct logics for Lego StepManager
+
 Revision 1.7  1999/09/29 09:24:29  fca
 Introduction of the Copyright and cvs Log
 
@@ -241,7 +244,7 @@ void AliLego::StepManager()
 // called from AliRun::Stepmanager from gustep.
 // Accumulate the 3 parameters step by step
   
-   Float_t t, tt;
+   static Float_t t;
    Float_t a,z,dens,radl,absl;
    Int_t i;
    
@@ -259,7 +262,13 @@ void AliLego::StepManager()
 // --- See if we have to stop now
    if (TMath::Abs(pos[2]) > fZMax  || 
        pos[0]*pos[0] +pos[1]*pos[1] > fRadMax*fRadMax) {
-     gMC->StopEvent();
+     if (gMC->TrackLength()) {
+       // Not the first step, add past contribution
+       fTotAbso += t/absl;
+       fTotRadl += t/radl;
+       fTotGcm2 += t*dens;
+     }
+     gMC->StopTrack();
      return;
    }
 
@@ -268,11 +277,11 @@ void AliLego::StepManager()
      vect[i]=pos[i];
      dir[i]=mom[i];
    }
-   t  = PropagateCylinder(vect,dir,fRadMax,fZMax);
-   tt = TMath::Min(step,t);
 
-   fTotAbso += tt/absl;
-   fTotRadl += tt/radl;
-   fTotGcm2 += tt*dens;
+   t  = PropagateCylinder(vect,dir,fRadMax,fZMax);
+
+   fTotAbso += step/absl;
+   fTotRadl += step/radl;
+   fTotGcm2 += step*dens;
 }
 
