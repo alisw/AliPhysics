@@ -1,3 +1,4 @@
+AliRICH * Rich() {return r;}
 
 Int_t countContrib[7][3];
 
@@ -6,70 +7,72 @@ void ControlPlots()
   Int_t iChamber=1;
   
   TFile *pFile = new TFile("$(HOME)/plots.root","RECREATE");   
-  TH1F *pCqH1=new TH1F("ClusQ",   "Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
-  TH1F *pCsH1=new TH1F("ClusSize","Cluster size all chambers;size [number of pads in cluster]",100,0,100);
-  TH2F *pCmH2=new TH2F("ClusMap", "Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
-                                                             1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
+  Bool_t isDig =!Rich()->GetLoader()->LoadDigits();
+  Bool_t isClus=!Rich()->GetLoader()->LoadRecPoints();
+  TH1F *pHxD,*pHyD,*pCqH1,*pCsH1,pCqMipH1,*pCsMipH1,*pCqCerH1,*pCsCerH1,*pCqFeeH1,*pCsFeeH1;  
+  TH2F *pCmH2,*pCmMipH2,*pCmCerH2,*pCmFeeH2;
+  if(isDig){
+    pHxD=new TH1F("HitDigitDiffX","Hit-Digits diff X all chambers;diff [cm]",20,-2,2); 
+    pHyD=new TH1F("HitDigitDiffY","Hit-Digits diff Y all chambers;diff [cm]",20,-2,2); 
+  }//isDig
   
-  TH1F *pCqMipH1=new TH1F("MipClusQ",   "MIP Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
-  TH1F *pCsMipH1=new TH1F("MipClusSize","MIP Cluster size all chambers;size [number of pads in cluster]",100,0,100);
-  TH2F *pCmMipH2=new TH2F("MipClusMap", "MIP Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
-                                                             1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
+  if(isClus){  
+    pCqH1=new TH1F("ClusQ",   "Cluster Charge all chambers;q [QDC]",Rich()->P()->MaxQdc(),0,Rich()->P()->MaxQdc());
+    pCsH1=new TH1F("ClusSize","Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+    pCmH2=new TH2F("ClusMap", "Cluster map;x [cm];y [cm]",1000,-Rich()->P()->PcSizeX()/2,Rich()->P()->PcSizeX()/2,
+                                                          1000,-Rich()->P()->PcSizeY()/2,Rich()->P()->PcSizeY()/2);
   
-  TH1F *pCqCerH1=new TH1F("CerClusQ",   "Cerenkov Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
-  TH1F *pCsCerH1=new TH1F("CerClusSize","Cernekov Cluster size all chambers;size [number of pads in cluster]",100,0,100);
-  TH2F *pCmCerH2=new TH2F("CerClusMap", "Cerenkov Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
-                                                             1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
-  TH1F *pCqFeeH1=new TH1F("FeeClusQ",   "Feedback Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
-  TH1F *pCsFeeH1=new TH1F("FeeClusSize","Feedback Cluster size all chambers;size [number of pads in cluster]",100,0,100);
-  TH2F *pCmFeeH2=new TH2F("FeeClusMap", "Feedback Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
-                                                             1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
-  Bool_t isClusters=!rl->LoadRecPoints();
-  r->SetTreeAddress();  
-  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
-    al->GetEvent(iEventN);    
-    if(isClusters){
-      rl->TreeR()->GetEntry(0);
-      Int_t iTotalClusters=0;
-      for(int i=1;i<=7;i++){//chambers loop
-        iTotalClusters+=r->Clusters(i)->GetEntries();    
-        for(Int_t iClusterN=0;iClusterN<r->Clusters(i)->GetEntries();iClusterN++){//clusters loop
-          AliRICHcluster *pClus=(AliRICHcluster*)r->Clusters(i)->At(iClusterN);
-          
-          countContrib[i-1][0] += pClus->Nmips();
-          countContrib[i-1][1] += pClus->Ncerenkovs();
-          countContrib[i-1][2] += pClus->Nfeedbacks();
-              
-          pCqH1->Fill(pClus->Q());             
-          pCsH1->Fill(pClus->Size());           
-          pCmH2->Fill(pClus->X(),pClus->Y());  
-          
-          if(pClus->IsPureMip()){ //Pure Mips
-            pCqMipH1->Fill(pClus->Q());
-            pCsMipH1->Fill(pClus->Size()); 
-            pCmMipH2->Fill(pClus->X(),pClus->Y());
-          }
-          if(pClus->IsPureCerenkov()){ //Pure Photons
-            pCqCerH1->Fill(pClus->Q());
-            pCsCerH1->Fill(pClus->Size()); 
-            pCmCerH2->Fill(pClus->X(),pClus->Y());
-          }
-          if(pClus->IsPureFeedback()){ //Pure Feedbacks
-            pCqFeeH1->Fill(pClus->Q());
-            pCsFeeH1->Fill(pClus->Size()); 
-            pCmFeeH2->Fill(pClus->X(),pClus->Y());
-          }
+    pCqMipH1=new TH1F("MipClusQ",   "MIP Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
+    pCsMipH1=new TH1F("MipClusSize","MIP Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+    pCmMipH2=new TH2F("MipClusMap", "MIP Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
+                                                                    1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
+  
+    pCqCerH1=new TH1F("CerClusQ",   "Cerenkov Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
+    pCsCerH1=new TH1F("CerClusSize","Cernekov Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+    pCmCerH2=new TH2F("CerClusMap", "Cerenkov Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
+                                                                         1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
+    
+    pCqFeeH1=new TH1F("FeeClusQ",   "Feedback Cluster Charge all chambers;q [QDC]",r->P()->MaxQdc(),0,r->P()->MaxQdc());
+    pCsFeeH1=new TH1F("FeeClusSize","Feedback Cluster size all chambers;size [number of pads in cluster]",100,0,100);
+    pCmFeeH2=new TH2F("FeeClusMap", "Feedback Cluster map;x [cm];y [cm]",1000,-r->P()->PcSizeX()/2,r->P()->PcSizeX()/2,
+                                                                               1000,-r->P()->PcSizeY()/2,r->P()->PcSizeY()/2);
+  }//isClus
+  
+  for(Int_t iEvtN=0;iEvtN<a->GetEventsPerRun();iEvtN++){//events loop
+    al->GetEvent(iEvtN);    
+    for(Int_t iChamN=1;iChamN<=7;iChamN++){//chambers loop
+      if(isClus){
+        Rich()->GetLoader()->TreeR()->GetEntry(0);
+        for(Int_t iClusN=0;iClusN<r->Clusters(iChamN)->GetEntries();iClusN++){//clusters loop
+          AliRICHcluster *pClus=(AliRICHcluster*)r->Clusters(iChamN)->At(iClusN);
+          countContrib[i-1][0] += pClus->Nmips();countContrib[i-1][1] += pClus->Ncerenkovs();countContrib[i-1][2] += pClus->Nfeedbacks();
+                                      pCqH1->Fill(pClus->Q());   pCsH1->Fill(pClus->Size());   pCmH2->Fill(pClus->X(),pClus->Y());    //common        
+          if(pClus->IsPureMip())     {pCqMipH1->Fill(pClus->Q());pCsMipH1->Fill(pClus->Size());pCmMipH2->Fill(pClus->X(),pClus->Y());}//Pure Mips
+          if(pClus->IsPureCerenkov()){pCqCerH1->Fill(pClus->Q());pCsCerH1->Fill(pClus->Size());pCmCerH2->Fill(pClus->X(),pClus->Y());}//Pure Photons
+          if(pClus->IsPureFeedback()){pCqFeeH1->Fill(pClus->Q());pCsFeeH1->Fill(pClus->Size());pCmFeeH2->Fill(pClus->X(),pClus->Y());}//Pure Feedbacks
         }//clusters loop
-      }//chambers loop
-    }//isClusters
-    Info("ControlPlots","Event %i processed.",iEventN);
+      }//isClus
+      if(isDig){
+        Rich()->GetLoader()->TreeD()->GetEntry(0);  
+        for(Int_t iDigN=0;iDigN<r->Digits(iChamN)->GetEntries();iDigN++){//digits loop
+          AliRICHdigit *pDig=(AliRICHdigit*)r->Digits(iChamN)->At(iDigN);
+          AliRICHhit   *pHit=hit(pDig->Tid(0));
+          cout<<"chamber "<<iChamN<<" digit "<<iDigN<<endl;
+          TVector2 hitV2=Rich()->C(iChamN)->Glob2Loc(pHit->OutX3()); TVector2 digV2=Rich()->P()->Pad2Loc(pDig->X(),pDig->Y());
+          pHxD->Fill(hitV2.X()-digV2.X()); pHyD->Fill(hitV2.Y()-digV2.Y());
+        }//digits loop
+      }//isDig
+    }//chambers loop
+    Info("ControlPlots","Event %i processed.",iEvtN);
   }//events loop 
-  if(isClusters) rl->UnloadRecPoints();
   
-  pFile->Write();
-  delete pFile;
-  for(Int_t i=0;i<7;i++)
-    cout <<" chamber " << i+1 << " n. mips " << countContrib[i][0] << " n. ckovs " << countContrib[i][1] << " n. fdbks " << countContrib[i][2] << endl;
+  if(isDig)  Rich()->GetLoader()->UnloadDigits();
+  if(isClus) Rich()->GetLoader()->UnloadRecPoints();
+  
+  pHxD->Draw(); pHyD->SetLineColor(kRed);pHyD->Draw("same");  
+  
+  pFile->Write();  delete pFile;
+  for(Int_t i=0;i<7;i++) cout<<" chamber "<<i+1<<" n. mips "<<countContrib[i][0]<<" n. ckovs "<<countContrib[i][1]<<" n. fdbks "<<countContrib[i][2]<<endl;
 }//void ControlPlots()
 //__________________________________________________________________________________________________
 void MainTrank()
@@ -83,16 +86,29 @@ void MainTrank()
 //__________________________________________________________________________________________________
 void sh()
 {
-  if(rl->LoadHits()) return;
+  Rich()->GetLoader()->LoadHits();
   
   Int_t iTotalHits=0;
   for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
-    rl->TreeH()->GetEntry(iPrimN);      
-    r->Hits()->Print();
+    Rich()->GetLoader()->TreeH()->GetEntry(iPrimN);      
+    Rich()->Hits()->Print();
     iTotalHits+=r->Hits()->GetEntries();
   }
   Info("sh","totally %i hits",iTotalHits);
-  rl->UnloadHits();
+  Rich()->GetLoader()->UnloadHits();
+}
+//__________________________________________________________________________________________________
+AliRICHhit* hit(Int_t tid)
+{//print hits for given tid
+  Rich()->GetLoader()->LoadHits();
+  for(Int_t iPrimN=0;iPrimN<Rich()->GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop      
+    Rich()->GetLoader()->TreeH()->GetEntry(iPrimN);
+    for(Int_t iHitN=0;iHitN<Rich()->Hits()->GetEntries();iHitN++){
+      AliRICHhit *pHit=(AliRICHhit*)Rich()->Hits()->At(iHitN);
+      if(tid==pHit->Track()) {Rich()->GetLoader()->UnloadHits();return pHit;}
+    }//hits
+  }//prims loop
+  Rich()->GetLoader()->UnloadHits();
 }
 //__________________________________________________________________________________________________
 void ss()
@@ -128,18 +144,40 @@ void sc()
 //__________________________________________________________________________________________________
 void sp(int tid)
 {
-  al->LoadHeader();  al->LoadKinematics();
-  PrintParticleInfo(tid);
-  al->UnloadKinematics();  al->UnloadHeader();
+  Rich()->GetLoader()->GetRunLoader()->LoadHeader();  Rich()->GetLoader()->GetRunLoader()->LoadKinematics();
+  
+  if(tid<0||tid>=Rich()->GetLoader()->GetRunLoader()->Stack()->GetNtrack())
+    cout<<"Valid tid number is 0-"<<Rich()->GetLoader()->GetRunLoader()->Stack()->GetNtrack()-1<<" for this event.\n";
+  else
+    PrintParticleInfo(tid);
+  
+  Rich()->GetLoader()->GetRunLoader()->UnloadKinematics();  Rich()->GetLoader()->GetRunLoader()->UnloadHeader();
 }
 //__________________________________________________________________________________________________
 void PrintParticleInfo(int tid)
 {
   TParticle *p=al->Stack()->Particle(tid);
-  cout<<p->GetName();
+  cout<<p->GetName()<<"("<<tid<<")";
   if(p->GetMother(0)!=-1){cout<<" from "; PrintParticleInfo(p->GetMother(0));}
   else                   {cout<<endl;} 
 }    
+//__________________________________________________________________________________________________
+Int_t prim(Int_t tid)
+{
+  Rich()->GetLoader()->GetRunLoader()->LoadHeader();  Rich()->GetLoader()->GetRunLoader()->LoadKinematics();
+  
+  if(tid<0||tid>=Rich()->GetLoader()->GetRunLoader()->Stack()->GetNtrack())
+    cout<<"Valid tid number is 0-"<<Rich()->GetLoader()->GetRunLoader()->Stack()->GetNtrack()-1<<" for this event.\n";
+  else
+    while(1){
+      TParticle *p=Rich()->GetLoader()->GetRunLoader()->GetAliRun()->Stack()->Particle(tid);
+      if(p->GetMother(0)==-1) break;
+      tid=p->GetMother(0);
+    }
+  
+  Rich()->GetLoader()->GetRunLoader()->UnloadKinematics();  Rich()->GetLoader()->GetRunLoader()->UnloadHeader();
+  return tid;
+}
 //__________________________________________________________________________________________________
 
 Double_t r2d = TMath::RadToDeg();
@@ -174,7 +212,6 @@ void D_C()
 }
 //__________________________________________________________________________________________________
 
-AliRICH * Rich() {return r;}
 void SD_D()
 {
   Info("SD_D","Start.");  
@@ -243,7 +280,7 @@ void Show()
       rl->TreeH()->GetEntry(iPrimN);      
       iTotalHits+=r->Hits()->GetEntries();
       TParticle *pPrim=al->Stack()->Particle(iPrimN);
-      Info("Show","Evt %4i prim %4i has %4i hits from %s (,%7.2f,%7.2f)",
+      if(iPrimN<10) Info("Show","Evt %4i prim %4i has %4i hits from %s (,%7.2f,%7.2f)",
                   iEventN,iPrimN, r->Hits()->GetEntries(), pPrim->GetName(), pPrim->Theta()*r2d,pPrim->Phi()*r2d);
     }//prims loop
     Info("Show-HITS","Evt %i total:  %i particles %i primaries %i hits",

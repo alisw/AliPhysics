@@ -1,10 +1,7 @@
-
-total amount of particles in stack for a given event:
-AliStack::GetNtrack() or AliRun::GetEvent()
-
-
-total amount of primiry particles in stack for a given event:
-AliStack::GetNprimary() or TreeH()::GetEntries()
+How to work with the stack of particles?
+	pointer to the stack is returned by AliRun::Stack() or AliRunLoader::Stack()
+	total amount of particles in stack for a given event:         AliStack::GetNtrack() or AliRun::GetEvent()
+	total amount of primiry particles in stack for a given event: AliStack::GetNprimary() or TreeH()::GetEntries()
 
 How to open session?
                      use static methode  AliRunLoader::Open(
@@ -29,12 +26,11 @@ How to retrive sdigits?
 gAlice->GetMCApp()->GetCurrentTrackNumber()
 
 
-Debug staff:
-
-AliModule::GetDebug() 
-AliModule::SetDebug()
-AliRun::GetDebug()
-AliRun::SetDebug()
+What are the debug methodes avail:
+	AliModule::GetDebug() 
+	AliModule::SetDebug()
+	AliRun::GetDebug()
+	AliRun::SetDebug()
 
 
 How to get info for tid number?
@@ -47,9 +43,8 @@ How to get info for tid number?
 How to deal with AliRunDigitizer?
 	AliRunDigitizer::Exec() just call AliRunDigitizer::Digitize()	
 
-
-
-How to avoid using the pointer to gAlice?
-
+How to avoid using gAlice?
+	Rich()->GetLoader()->GetRunLoader()->GetAliRun() returns gAlice global pointer.
+         
 
 
