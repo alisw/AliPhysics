@@ -48,6 +48,9 @@
 #pragma link C++ class  AliStack+;
 #pragma link C++ class  AliConfig+;
 #pragma link C++ class  AliGenEventHeader+;
+#pragma link C++ class  AliDigitizer+;
+#pragma link C++ class  AliRunDigitizer+;
+
 #endif
 
 
