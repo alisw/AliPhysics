@@ -64,6 +64,7 @@ public:
 };
 
 Double_t AliTPCFastMath::fgFastAsin[20000];
+AliTPCFastMath gAliTPCFastMath; // needed to fill the LUT
 
 AliTPCFastMath::AliTPCFastMath(){
   //
