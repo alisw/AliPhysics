@@ -41,7 +41,7 @@ AliESDVertex::AliESDVertex() {
 }
 //--------------------------------------------------------------------------
 AliESDVertex::AliESDVertex(Double_t positionZ,Double_t sigmaZ,
-			   Int_t nContributors,Char_t *vtxName) {
+			   Int_t nContributors,const Char_t *vtxName) {
   //
   // Constructor for vertex Z from pixels
   //
@@ -56,7 +56,7 @@ AliESDVertex::AliESDVertex(Double_t positionZ,Double_t sigmaZ,
 }
 //------------------------------------------------------------------------- 
 AliESDVertex::AliESDVertex(Double_t position[3],Double_t covmatrix[6],
-			   Double_t chi2,Int_t nContributors,Char_t *vtxName) {
+			   Double_t chi2,Int_t nContributors, const Char_t *vtxName) {
 //
 // Constructor for vertex in 3D from tracks
 //
@@ -81,7 +81,7 @@ AliESDVertex::AliESDVertex(Double_t position[3],Double_t covmatrix[6],
 }
 //--------------------------------------------------------------------------
 AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
-			   Char_t *vtxName) {
+			   const Char_t *vtxName) {
 //
 // Constructor for smearing of true position
 //
@@ -103,7 +103,7 @@ AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
 }
 //--------------------------------------------------------------------------
 AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
-			   Double_t snr[3],Char_t *vtxName) {
+			   Double_t snr[3], const Char_t *vtxName) {
   //
   // Constructor for Pb-Pb
   //

@@ -35,14 +35,14 @@ class AliESDVertex : public TNamed {
  
   AliESDVertex();
   AliESDVertex(Double_t positionZ,Double_t sigmaZ,Int_t nContributors,
-	       Char_t *vtxName="Vertex");
+	       const Char_t *vtxName="Vertex");
   AliESDVertex(Double_t position[3],Double_t covmatrix[6],
 	       Double_t chi2,Int_t nContributors,
-	       Char_t *vtxName="Vertex");
+	       const Char_t *vtxName="Vertex");
   AliESDVertex(Double_t position[3],Double_t sigma[3],
-	       Char_t *vtxName="Vertex");
+	       const Char_t *vtxName="Vertex");
   AliESDVertex(Double_t position[3],Double_t sigma[3],Double_t snr[3],
-	       Char_t *vtxName="Vertex");
+	       const Char_t *vtxName="Vertex");
 
   virtual ~AliESDVertex();
 
