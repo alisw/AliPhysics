@@ -28,7 +28,7 @@
 //   new TrackSegment. 
 // If there is no CPV/PPSD RecPoint we make TrackSegment 
 // consisting from EMC alone. There is no TrackSegments without EMC RecPoint.
-//// In principle this class should be called from AliPHOSReconstructioner, but 
+//// In principle this class should be called from AliPHOSReconstructor, but 
 // one can use it as well in standalone mode.
 // Use  case:
 //  root [0] AliPHOSTrackSegmentMakerv1 * t = new AliPHOSTrackSegmentMaker("galice.root", "tracksegmentsname", "recpointsname")

@@ -17,7 +17,7 @@ class TFile;
 // --- AliRoot header files ---
 #include "AliPHOSv0.h"
 #include "AliPHOSGeometry.h"
-#include "AliPHOSReconstructioner.h"
+#include "AliPHOSReconstructor.h"
 #include "AliPHOSTrackSegmentMaker.h"
 #include "AliPHOSPID.h"
 #include "AliPHOSCPVDigit.h"
@@ -28,7 +28,7 @@ public:
 
   AliPHOSv1(void) ;
   AliPHOSv1(const char *name, const char *title="") ;
-  AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title="") ;
+  AliPHOSv1(AliPHOSReconstructor * Reconstructioner, const char *name, const char *title="") ;
   AliPHOSv1(const AliPHOSv1 & phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
@@ -41,7 +41,7 @@ public:
   Int_t          Digitize(Float_t Energy){ return (Int_t ) (fDigitizeA + Energy*fDigitizeB); }
   virtual void   Hits2SDigits() ;
   virtual void   MakeBranch(Option_t* opt, char *file=0 ) ;
-  void           Reconstruction(AliPHOSReconstructioner * Reconstructioner) ;
+  void           Reconstruction(AliPHOSReconstructor * Reconstructioner) ;
   void           ResetClusters(){} ;
   virtual void   SDigits2Digits() ;  
   virtual Int_t  IsVersion(void) const {
@@ -50,7 +50,7 @@ public:
   }
 
   virtual void   ResetReconstruction() ; // Reset reconstructed objects
-  void           SetReconstructioner(AliPHOSReconstructioner& Reconstructioner) {
+  void           SetReconstructioner(AliPHOSReconstructor& Reconstructioner) {
     // sets the reconstructionner object to be used
     fReconstructioner = &Reconstructioner ;
   }  
@@ -83,7 +83,7 @@ protected:
   Float_t fDigitizeA ;                            //Parameters of the 
   Float_t fDigitizeB ;                            //digitization 
   Int_t   fnSdigits ; 
-  AliPHOSReconstructioner  * fReconstructioner ;  // Clusterization and subtracking procedures
+  AliPHOSReconstructor  * fReconstructioner ;  // Clusterization and subtracking procedures
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Reconstructioner of the PHOS track segment: 2 x PPSD + 1 x EMC
 
   ClassDef(AliPHOSv1,1)  // Implementation of PHOS manager class for layout EMC+PPSD

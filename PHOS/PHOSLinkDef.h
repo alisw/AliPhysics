@@ -18,7 +18,7 @@
 #pragma link C++ class AliPHOSvImpacts+;
 #pragma link C++ class AliPHOSImpact+;
 #pragma link C++ class AliPHOSLink+;
-#pragma link C++ class AliPHOSReconstructioner+;
+#pragma link C++ class AliPHOSReconstructor+;
 #pragma link C++ class AliPHOSRecPoint+;
 #pragma link C++ class AliPHOSSDigitizer+;
 #pragma link C++ class AliPHOSDigitizer+;

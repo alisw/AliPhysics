@@ -1,5 +1,5 @@
-#ifndef ALIPHOSRECONSTRUCTIONER_H
-#define ALIPHOSRECONSTRUCTIONER_H
+#ifndef ALIPHOSRECONSTRUCTOR_H
+#define ALIPHOSRECONSTRUCTOR_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -25,19 +25,19 @@ class AliESD ;
 
 // --- AliRoot header files ---
 
-class AliPHOSReconstructioner : public TTask {
+class AliPHOSReconstructor : public TTask {
 
 public:
 
-  AliPHOSReconstructioner() ; //ctor            
-  AliPHOSReconstructioner(const char * headerFile, const char * branchName = "Default",const TString taskName="CTP");
-  AliPHOSReconstructioner(const AliPHOSReconstructioner & rec) : TTask(rec) {
+  AliPHOSReconstructor() ; //ctor            
+  AliPHOSReconstructor(const char * headerFile, const char * branchName = "Default",const TString taskName="CTP");
+  AliPHOSReconstructor(const AliPHOSReconstructor & rec) : TTask(rec) {
     // cpy ctor: 
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;
   }
    
-  virtual ~AliPHOSReconstructioner() ;
+  virtual ~AliPHOSReconstructor() ;
 
   virtual void Exec(Option_t *) ;
   void Clusters2Tracks(Int_t ievent, AliESD *event);
@@ -49,7 +49,7 @@ public:
 
   void Print()const ;
 
-  AliPHOSReconstructioner & operator = (const AliPHOSReconstructioner & /*rvalue*/)  {
+  AliPHOSReconstructor & operator = (const AliPHOSReconstructor & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ;
     return *this ; 
@@ -73,8 +73,8 @@ private:
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
  
-  ClassDef(AliPHOSReconstructioner,1)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliPHOSReconstructor,1)  // Reconstruction algorithm class (Base Class)
 
 }; 
 
-#endif // ALIPHOSRECONSTRUCTIONER_H
+#endif // ALIPHOSRECONSTRUCTOR_H

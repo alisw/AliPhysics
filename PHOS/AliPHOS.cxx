@@ -43,7 +43,7 @@ class TFile;
 #include "AliRun.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
-#include "AliPHOSReconstructioner.h"
+#include "AliPHOSReconstructor.h"
 ClassImp(AliPHOS)
 //____________________________________________________________________________
 AliPHOS:: AliPHOS() : AliDetector()
@@ -382,7 +382,7 @@ void AliPHOS::FillESD(AliESD* esd) const
   // Called by AliReconstruct after Reconstruct() and global tracking and vertxing
 
   //Creates the tracksegments and Recparticles
-  AliPHOSReconstructioner * rec = new AliPHOSReconstructioner((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
+  AliPHOSReconstructor * rec = new AliPHOSReconstructor((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
   TList * taskslist = rec->GetListOfTasks() ; 
   Int_t index ;
   TTask * task ; 
@@ -477,7 +477,7 @@ void AliPHOS::Reconstruct() const
   // segment maker needs access to the AliESD object to retrieve the tracks reconstructed by 
   // the global tracking.
  
-  AliPHOSReconstructioner * rec = new AliPHOSReconstructioner((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
+  AliPHOSReconstructor * rec = new AliPHOSReconstructor((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
   TList * taskslist = rec->GetListOfTasks() ; 
   Int_t index ;
   TTask * task ; 

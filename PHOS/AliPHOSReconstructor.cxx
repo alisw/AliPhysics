@@ -33,7 +33,7 @@
 //
 //  Use case: 
 //
-//  root [0] AliPHOSReconstructioner * r = new AliPHOSReconstructioner("galice.root")
+//  root [0] AliPHOSReconstructor * r = new AliPHOSReconstructor("galice.root")
 //              //  Set the header file
 //  root [1] r->ExecuteTask() 
 //              //  Make full chain of reconstruction
@@ -64,17 +64,17 @@
 // --- AliRoot header files ---
 #include "AliESD.h"
 #include "AliESDCaloTrack.h"
-#include "AliPHOSReconstructioner.h"
+#include "AliPHOSReconstructor.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSPIDv1.h"
 #include "AliPHOSGetter.h"
 
 
-ClassImp(AliPHOSReconstructioner)
+ClassImp(AliPHOSReconstructor)
 
 //____________________________________________________________________________
-  AliPHOSReconstructioner::AliPHOSReconstructioner():TTask("AliPHOSReconstructioner","")
+  AliPHOSReconstructor::AliPHOSReconstructor():TTask("AliPHOSReconstructor","")
 {
   // ctor
   fClusterizer = 0 ;
@@ -87,8 +87,8 @@ ClassImp(AliPHOSReconstructioner)
 } 
 
 //____________________________________________________________________________
-AliPHOSReconstructioner::AliPHOSReconstructioner(const char* evFoldName,const char * branchName,const TString taskName):
-TTask("AliPHOSReconstructioner",evFoldName)
+AliPHOSReconstructor::AliPHOSReconstructor(const char* evFoldName,const char * branchName,const TString taskName):
+TTask("AliPHOSReconstructor",evFoldName)
 {
   // Create a PHOS reconstructioner for the tasks defined by taskName
   // "C" - clusterization
@@ -118,7 +118,7 @@ TTask("AliPHOSReconstructioner",evFoldName)
   fIsInitialized = kTRUE ;
 } 
 //____________________________________________________________________________
-void AliPHOSReconstructioner::Exec(Option_t *opt)
+void AliPHOSReconstructor::Exec(Option_t *opt)
 {
   //check, if the names of branches, which should be made coincide with already
   //existing
@@ -128,7 +128,7 @@ void AliPHOSReconstructioner::Exec(Option_t *opt)
     Init() ;
 }
 //____________________________________________________________________________
-void AliPHOSReconstructioner:: Clusters2Tracks(Int_t ievent, AliESD *event)
+void AliPHOSReconstructor:: Clusters2Tracks(Int_t ievent, AliESD *event)
 {
   // Convert PHOS reconstructed particles into ESD object for event# ievent.
   // ESD object is returned as an argument event
@@ -154,7 +154,7 @@ void AliPHOSReconstructioner:: Clusters2Tracks(Int_t ievent, AliESD *event)
   
 }
 //____________________________________________________________________________
- void AliPHOSReconstructioner::Init()
+ void AliPHOSReconstructor::Init()
 {
   // initiliaze Reconstructioner if necessary: we can not do this in default constructor
 
@@ -178,16 +178,16 @@ void AliPHOSReconstructioner:: Clusters2Tracks(Int_t ievent, AliESD *event)
   }
 } 
 //____________________________________________________________________________
-AliPHOSReconstructioner::~AliPHOSReconstructioner()
+AliPHOSReconstructor::~AliPHOSReconstructor()
 {
   // Delete data members if any
 } 
 
-void AliPHOSReconstructioner::Print()const {
+void AliPHOSReconstructor::Print()const {
   // Print reconstructioner data  
 
   TString message ; 
-  message  = "-----------------AliPHOSReconstructioner---------------\n" ;
+  message  = "-----------------AliPHOSReconstructor---------------\n" ;
   message += " Reconstruction of the header file %s\n" ;
   message += " with the following modules:\n" ;
 
@@ -210,7 +210,7 @@ void AliPHOSReconstructioner::Print()const {
 }
 
 //____________________________________________________________________________
-void AliPHOSReconstructioner::SetEventRange(Int_t first, Int_t last)
+void AliPHOSReconstructor::SetEventRange(Int_t first, Int_t last)
 {
   // Set the event range to process
   fFirstEvent=first; 

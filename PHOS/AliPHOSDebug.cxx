@@ -44,7 +44,7 @@
 #include "AliPHOSv1.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSDigit.h"
-#include "AliPHOSReconstructioner.h"
+#include "AliPHOSReconstructor.h"
 #include "AliRun.h"
 #include "AliConst.h"
 
@@ -97,7 +97,7 @@ AliPHOSv0(name,title)
 }
 
 //____________________________________________________________________________
-AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title):
+AliPHOSv1::AliPHOSv1(AliPHOSReconstructor * Reconstructioner, const char *name, const char *title):
   AliPHOSv0(name,title)
 {
   // ctor : title is used to identify the layout
@@ -430,7 +430,7 @@ void AliPHOSv1::MakeBranch(Option_t* opt, char *file)
 }
 
 //_____________________________________________________________________________
-void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
+void AliPHOSv1::Reconstruction(AliPHOSReconstructor * Reconstructioner)
 { 
   // 1. Reinitializes the existing RecPoint, TrackSegment, and RecParticles Lists and 
   // 2. Creates TreeR with a branch for each list

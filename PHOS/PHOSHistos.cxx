@@ -39,7 +39,7 @@
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSPpsdRecPoint.h"
 #include "AliPHOSClusterizerv1.h"
-#include "AliPHOSReconstructioner.h"
+#include "AliPHOSReconstructor.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSPIDv1.h"
@@ -85,7 +85,7 @@ void PHOSHistos (Text_t* infile, Int_t nevent, Int_t Module)
     clusterizer->SetCalibrationParameters(0., 0.00000001) ;
 
   //========== Creates the Reconstructioner  
-    AliPHOSReconstructioner * Reconstructioner = new AliPHOSReconstructioner(clusterizer, tracksegmentmaker, particleidentifier) ;
+    AliPHOSReconstructor * Reconstructioner = new AliPHOSReconstructor(clusterizer, tracksegmentmaker, particleidentifier) ;
      
     Info("PHOSHistos", "Event %d\n", ievent);
 

@@ -26,7 +26,7 @@ void Digits2RecParticles(){
   fPID->SetShowerProfileCuts(0.3, 1.8, 0.3, 1.8 ) ;       
       
   //========== Creates the Reconstructioner
-  AliPHOSReconstructioner * fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ; 
+  AliPHOSReconstructor * fRec = new AliPHOSReconstructor(fClu, fTrs, fPID) ; 
   // fRec -> SetDebugReconstruction(kTRUE);     
      
   gAlice->GetEvent(0) ;
