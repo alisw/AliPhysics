@@ -80,7 +80,7 @@ public:
     Int_t      fZn;       // Number of mesh points in z
     TVector*   fB;        //!Field map
     
-    ClassDef(AliFieldMap,1)  //Class for Field Map
+    ClassDef(AliFieldMap,2)  //Class for Field Map
 };
 
 #endif
