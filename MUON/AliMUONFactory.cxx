@@ -19,6 +19,9 @@
 
 /*
 $Log$
+Revision 1.2  2001/05/16 14:57:17  alibrary
+New files for folders and Stack
+
 Revision 1.1  2001/04/06 11:24:43  morsch
 Dependency on implementations of AliSegmentation and AliMUONResponse moved to AliMUONFactory class.
 Static method Build() builds the MUON system out of chambers, segmentation and response.
@@ -159,7 +162,7 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
 // Configuration for Chamber TC3/4 (Station 2) -----------
 ///^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Float_t rseg2[4]={23.5, 87.7, 122.4, 122.5};
-	Float_t rseg2[4]={23.5, 47.1, 87.7, 122.5};
+	Float_t rseg2[4]={23.5, 53.5, 90.5, 122.5};       
 	Int_t   nseg2[4]={4, 4, 2, 1};
 //
 	chamber=3;
