@@ -14,6 +14,8 @@
 #include <G4ParticleDefinition.hh>
 #include <G4VProcess.hh>
 
+#include <g4std/strstream>
+
 const G4double  TG4G3CutVector::fgkDCUTEOff  = 10. * TeV;
 const G4double  TG4G3CutVector::fgkDCUTMOff  = 10. * TeV;
 const G4double  TG4G3CutVector::fgkTolerance =  1. * keV;
@@ -173,33 +175,45 @@ G4bool TG4G3CutVector::Update(const TG4G3CutVector& vector)
 }
 
 //_____________________________________________________________________________
+G4String TG4G3CutVector::Format() const
+{
+// Formats the output into a string.
+// ---
+
+  strstream tmpStream;
+  tmpStream << "  G3 cut vector:" << G4endl; 
+  if (fDeltaRaysOn)
+    tmpStream << "    Delta rays On" << G4endl; 
+  else  
+    tmpStream << "    Delta rays Off" << G4endl; 
+  
+  // energy cuts
+  for (G4int i=0; i<kTOFMAX; i++) {
+
+    tmpStream << "    " << fgCutNameVector[i] << " cut value (MeV): ";
+
+    if (i == kDCUTE && !fDeltaRaysOn)
+      tmpStream << fgkDCUTEOff/MeV << G4endl;
+    else if (i == kDCUTM && !fDeltaRaysOn)
+      tmpStream << fgkDCUTMOff/MeV << G4endl;
+    else	          
+      tmpStream << fCutVector[i]/MeV << G4endl;
+  }      
+
+  // time cut
+  tmpStream << "    " << fgCutNameVector[kTOFMAX] << " cut value (s):   "
+            << fCutVector[kTOFMAX]/s << G4endl;
+
+  return tmpStream.str();
+}	   
+
+//_____________________________________________________________________________
 void TG4G3CutVector::Print() const
 {
 // Prints the cuts.
 // ---
 
-  G4cout << "  G3 cut vector:" << G4endl; 
-  if (fDeltaRaysOn)
-    G4cout << "    Delta rays On" << G4endl; 
-  else  
-    G4cout << "    Delta rays Off" << G4endl; 
-  
-  // energy cuts
-  for (G4int i=0; i<kTOFMAX; i++) {
-
-    G4cout << "    " << fgCutNameVector[i] << " cut value (MeV): ";
-
-    if (i == kDCUTE && !fDeltaRaysOn)
-      G4cout << fgkDCUTEOff/MeV << G4endl;
-    else if (i == kDCUTM && !fDeltaRaysOn)
-      G4cout << fgkDCUTMOff/MeV << G4endl;
-    else	          
-      G4cout << fCutVector[i]/MeV << G4endl;
-  }      
-
-  // time cut
-  G4cout << "    " << fgCutNameVector[kTOFMAX] << " cut value (s):   "
-         << fCutVector[kTOFMAX]/s << G4endl;
+  G4cout << Format();
 }	   
 
 //_____________________________________________________________________________

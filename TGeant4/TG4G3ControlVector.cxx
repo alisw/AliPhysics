@@ -14,6 +14,7 @@
 #include "TG4Globals.h"
 
 #include <G4VProcess.hh>
+#include <g4std/strstream>
 
 #include <math.h>
 
@@ -251,17 +252,30 @@ G4bool TG4G3ControlVector::Update(const TG4G3ControlVector& vector)
 }
 
 //_____________________________________________________________________________
+G4String TG4G3ControlVector::Format() const
+{
+// Formats the output into a string.
+// ---
+
+  strstream tmpStream;
+
+  tmpStream << "  G3 control vector:" << G4endl; 
+  for (G4int i=0; i<kNoG3Controls; i++) 
+    //if (i != kDRAY) {
+      tmpStream << "    " << fgControlNameVector[i] 
+                << " control value: " << fControlVector[i] << G4endl; 
+    //}	     
+    
+  return tmpStream.str();  
+}	   
+
+//_____________________________________________________________________________
 void TG4G3ControlVector::Print() const
 {
 // Prints the controls.
 // ---
 
-  G4cout << "  G3 control vector:" << G4endl; 
-  for (G4int i=0; i<kNoG3Controls; i++) 
-    //if (i != kDRAY) {
-      G4cout << "    " << fgControlNameVector[i] 
-             << " control value: " << fControlVector[i] << G4endl; 
-    //}	     
+  G4cout << Format();	     
 }	   
 
 //_____________________________________________________________________________
