@@ -316,6 +316,11 @@ class TFluka : public TVirtualMC {
   void SetCurrentFlukaRegion(Int_t reg) {fCurrentFlukaRegion=reg;}
   Int_t GetCurrentFlukaRegion() const {return fCurrentFlukaRegion;}
 
+  void   SetDummyBoundary(Int_t mode) {fDummyBoundary = mode;}
+  Int_t  GetDummyBoundary() const {return fDummyBoundary;}
+  Bool_t IsDummyBoundary() const {return (fDummyBoundary==0)?kFALSE:kTRUE;}
+  void   EnableField(Bool_t flag=kTRUE) {fFieldFlag = flag;}
+  Bool_t IsFieldEnabled() const {return fFieldFlag;}
   void SetTrackIsEntering(){fTrackIsEntering = kTRUE; fTrackIsExiting = kFALSE;}
   void SetTrackIsExiting() {fTrackIsExiting  = kTRUE; fTrackIsEntering = kFALSE;}
   void SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
@@ -343,15 +348,17 @@ class TFluka : public TVirtualMC {
   Bool_t   fTrackIsEntering;  // Flag for track entering
   Bool_t   fTrackIsExiting;   // Flag for track exiting  
   Bool_t   fTrackIsNew;       // Flag for new track
+  Bool_t   fFieldFlag;        // Flag for magnetic field
+  Int_t    fDummyBoundary;    // Flag for crossing dummy boundaries
   //variables for SetProcess and SetCut
   Int_t    fNbOfProc;
-  Int_t    fProcessValue[1000];
-  Int_t    fProcessMaterial[1000];
-  Char_t   fProcessFlag[1000][5];
+  Int_t    fProcessValue[10000];
+  Int_t    fProcessMaterial[10000];
+  Char_t   fProcessFlag[10000][5];
   Int_t    fNbOfCut;
-  Double_t fCutValue[1000];
-  Char_t   fCutFlag[1000][7];
-  Int_t    fCutMaterial[1000];
+  Double_t fCutValue[10000];
+  Char_t   fCutFlag[10000][7];
+  Int_t    fCutMaterial[10000];
 
   //Geometry through TGeo
   Int_t*               fMaterials;         //!Array of indices
