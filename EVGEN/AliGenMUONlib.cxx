@@ -325,6 +325,9 @@ GenFunc AliGenMUONlib::GetPt(Param_t param)
     case kaon_p:
 	func=PtKaon;
 	break;
+    default:
+        func=0;
+        printf("<AliGenMUONlib::GetPt> unknown parametrisation\n");
     }
     return func;
 }
@@ -355,6 +358,9 @@ GenFunc AliGenMUONlib::GetY(Param_t param)
     case kaon_p:
 	func=YKaon;
 	break;
+    default:
+        func=0;
+        printf("<AliGenMUONlib::GetY> unknown parametrisation\n");
     }
     return func;
 }
@@ -385,6 +391,9 @@ GenFuncIp AliGenMUONlib::GetIp(Param_t param)
     case kaon_p:
 	func=IpKaon;
 	break;
+    default:
+        func=0;
+        printf("<AliGenMUONlib::GetIp> unknown parametrisation\n");
     }
     return func;
 }
