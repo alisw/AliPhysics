@@ -10,13 +10,14 @@
 #include "AliLVStructure.h"
 #include "AliGlobals.h"
 
-#ifdef ALICE_VISUALIZE
+#ifdef G4VIS_USE
 #include "AliColourStore.h"
 
 #include <G4Colour.hh>
 #include <G4VisAttributes.hh>
-#endif //ALICE_VISUALIZE
+#endif //G4VIS_USE
 #include <G4LogicalVolume.hh>
+#include <G4BooleanSolid.hh>
 
 //_____________________________________________________________________________
 AliLVStructure::AliLVStructure(G4String path)
@@ -223,13 +224,18 @@ void AliLVStructure::ListTree() const
 void AliLVStructure::ListTreeLong() const
 {
 // Prints LV tree structure with number of
-// daughters (physical volume)
+// daughters (physical volume), indicates Boolean solid.
 // ---
 
   for (G4int i=0; i<fLogicalVolumes.entries(); i++) {
     G4LogicalVolume* lv = fLogicalVolumes(i);
-    G4cout << fPathName << lv->GetName() 
-           << " (" << lv->GetNoDaughters() << ")" << G4endl;
+
+    G4cout << fPathName << lv->GetName() << " (" << lv->GetNoDaughters();
+	    
+    if (dynamic_cast<G4BooleanSolid*>(lv->GetSolid()))
+      G4cout << ", B";
+
+    G4cout << ")" << G4endl;
   }
   for (G4int j=0; j<fStructures.entries(); j++) { 
     fStructures(j)->ListTreeLong(); 
@@ -248,7 +254,7 @@ void AliLVStructure::SetVerboseLevel(G4int verbose)
   }
 }
 
-#ifdef ALICE_VISUALIZE
+#ifdef G4VIS_USE
 //_____________________________________________________________________________
 void AliLVStructure::SetTreeVisibility(G4bool visibility)       
 {
