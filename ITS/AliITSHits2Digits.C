@@ -27,15 +27,17 @@ Int_t AliITSHits2Digits(const char *inFile = "galice.root"){
 	return 2;
     } // end if !gAlice
 
+    gAlice->GetEvent(0);
     AliITS *ITS = (AliITS*)gAlice->GetDetector("ITS");      
     if (!ITS) {
 	cerr<<"AliITSHits2Digits.C : AliITS object not found on file" 
 	    << endl;
 	return 3;
     }  // end if !ITS
-
-    // Set the simulation models for the three detector types
-    AliITSgeom *geom = ITS->GetITSgeom();
+    if(!(ITS->GetITSgeom())){
+	cerr << " AliITSgeom not found. Can't digitize with out it." << endl;
+	return 4;
+    } // end if
 
     // SPD
     cout << "Changing from Default SPD simulation, and responce." << endl;
@@ -77,7 +79,7 @@ Int_t AliITSHits2Digits(const char *inFile = "galice.root"){
     AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->
 	GetSegmentationModel();
     if (!seg1) {
-	seg1 = new AliITSsegmentationSDD(geom,res1);
+	seg1 = new AliITSsegmentationSDD(ITS->GetITSgeom(),res1);
 	ITS->SetSegmentationModel(1,seg1);
     } // end if !seg1
     AliITSsimulationSDD *sim1 = new AliITSsimulationSDD(seg1,res1);
@@ -102,7 +104,6 @@ Int_t AliITSHits2Digits(const char *inFile = "galice.root"){
     //make branch
     ITS->MakeBranch("D");
     ITS->SetTreeAddress();
-    gAlice->GetEvent(0);
     cout << "Digitizing ITS..." << endl;
 
     TStopwatch timer;

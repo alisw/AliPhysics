@@ -82,7 +82,7 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
    if (!seg1) seg1 = new AliITSsegmentationSDD(geom);
    AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
    if (!res1) res1=new AliITSresponseSDD();
-   res1->Print();
+//   res1->Print();
 
    //Float_t nsig_noise = 4.;
 
@@ -91,7 +91,7 @@ void ITSDigitsToClusters (Int_t evNumber1=0,Int_t evNumber2=0)
    AliITSClusterFinderSDD *rec1=new AliITSClusterFinderSDD(seg1,res1,dig1,recp1);
    //rec1->SetCutAmplitude(nsig_noise);
    ITS->SetReconstructionModel(1,rec1);
-   rec1->Print();
+//   rec1->Print();
 
    // SSD
 

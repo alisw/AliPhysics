@@ -1,9 +1,16 @@
 Int_t AliITSHits2SDigits(const char *inFile = "galice.root"){
+
+    // Dynamically link some shared libs
+    if (gClassTable->GetID("AliRun") < 0) {
+	gROOT->LoadMacro("loadlibs.C");
+	loadlibs();
+    } // end if
+
     // Connect the Root Galice file containing Geometry, Kine and Hits
   
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile);
     if (file) {file->Close(); delete file;}
-    cout << "AliITSHits2Digits" << endl;
+    cout << "AliITSHits2SDigits" << endl;
     file = new TFile(inFile,"UPDATE");
     if (!file->IsOpen()) {
 	cerr<<"Can't open "<<inFile<<" !" << endl;
@@ -27,9 +34,10 @@ Int_t AliITSHits2SDigits(const char *inFile = "galice.root"){
 	    << endl;
 	return 3;
     }  // end if !ITS
-
-    // Set the simulation models for the three detector types
-    AliITSgeom *geom = ITS->GetITSgeom();
+    if(!(ITS->GetITSgeom())){
+	cerr << " AliITSgeom not found. Can't digitize with out it." << endl;
+	return 4;
+    } // end if
 
     // SPD
     cout << "Changing from Default SPD simulation, and responce." << endl;
@@ -71,7 +79,7 @@ Int_t AliITSHits2SDigits(const char *inFile = "galice.root"){
     AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->
 	GetSegmentationModel();
     if (!seg1) {
-	seg1 = new AliITSsegmentationSDD(geom,res1);
+	seg1 = new AliITSsegmentationSDD(ITS->GetITSgeom(),res1);
 	ITS->SetSegmentationModel(1,seg1);
     } // end if !seg1
     AliITSsimulationSDD *sim1 = new AliITSsimulationSDD(seg1,res1);

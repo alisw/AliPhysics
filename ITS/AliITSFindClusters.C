@@ -51,7 +51,7 @@ Int_t AliITSFindClusters() {
    Float_t thres = baseline;
    thres += (4.*noise_after_el);  // TB // (4.*noise_after_el);
    printf("thres %f\n",thres);
-   res1->Print();
+//   res1->Print();
    TClonesArray *dig1  = ITS->DigitsAddress(1);
    TClonesArray *recp1  = ITS->ClustersAddress(1);
    AliITSClusterFinderSDD *rec1=new AliITSClusterFinderSDD(seg1,res1,dig1,recp1);

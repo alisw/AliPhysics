@@ -1,4 +1,10 @@
 Int_t AliITSHits2DigitsDubna(const char *inFile = "galice.root"){
+    // Dynamically link some shared libs
+    if (gClassTable->GetID("AliRun") < 0) {
+	gROOT->LoadMacro("loadlibs.C");
+	loadlibs();
+    } // end if
+
     // Connect the Root Galice file containing Geometry, Kine and Hits
 
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile);
@@ -20,6 +26,17 @@ Int_t AliITSHits2DigitsDubna(const char *inFile = "galice.root"){
 	return 2;
     } // end if !gAlice
 
+    gAlice->GetEvent(0);
+    AliITS *ITS = (AliITS*)gAlice->GetDetector("ITS");      
+    if (!ITS) {
+	cerr<<"ITSHits2Digits.C : AliITS object not found on file" << endl;
+	return 3;
+    }  // end if !ITS
+    if(!(ITS->GetITSgeom())){
+	cerr << " AliITSgeom not found. Can't digitize with out it." << endl;
+	return 4;
+    } // end if
+
     if(!gAlice->TreeD()){ 
 	cout << "Having to create the Digits Tree." << endl;
 	gAlice->MakeTree("D");
@@ -27,16 +44,6 @@ Int_t AliITSHits2DigitsDubna(const char *inFile = "galice.root"){
     //make branch
     ITS->MakeBranch("D");
     ITS->SetTreeAddress();
-    gAlice->GetEvent(0);
-    AliITS *ITS = (AliITS*)gAlice->GetDetector("ITS");      
-    if (!ITS) {
-	cerr<<"AliITSHits2DigitsDubna.C : AliITS object not found on file" 
-	    << endl;
-	return 3;
-    } // end if !ITS
-
-    // Set the simulation models for the three detector types
-    AliITSgeom *geom = ITS->GetITSgeom();
 
     // SPD
     cout << "Changing from Default SPD simulation, and responce." << endl;
@@ -79,7 +86,7 @@ Int_t AliITSHits2DigitsDubna(const char *inFile = "galice.root"){
     AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->
 	GetSegmentationModel();
     if (!seg1) {
-	seg1 = new AliITSsegmentationSDD(geom,res1);
+	seg1 = new AliITSsegmentationSDD(ITS->GetITSgeom(),res1);
 	ITS->SetSegmentationModel(1,seg1);
     } // end if !seg1
     AliITSsimulationSDD *sim1 = new AliITSsimulationSDD(seg1,res1);

@@ -1,9 +1,16 @@
 Int_t AliITSHits2DigitsDefault(const char *inFile = "galice.root"){
+
+    // Dynamically link some shared libs
+    if (gClassTable->GetID("AliRun") < 0) {
+	gROOT->LoadMacro("loadlibs.C");
+	loadlibs();
+    } // end if
+
     // Connect the Root Galice file containing Geometry, Kine and Hits
   
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile);
     if (file) {file->Close(); delete file;}
-    cout << "AliITSHits2Digits" << endl;
+    cout << "AliITSHits2DigitsDefault" << endl;
     file = new TFile(inFile,"UPDATE");
     if (!file->IsOpen()) {
 	cerr<<"Can't open "<<inFile<<" !" << endl;
@@ -23,11 +30,15 @@ Int_t AliITSHits2DigitsDefault(const char *inFile = "galice.root"){
     gAlice->GetEvent(0);
     AliITS *ITS = (AliITS*)gAlice->GetDetector("ITS");      
     if (!ITS) {
-	cerr<<"ITSHits2Digits.C : AliITS object not found on file\n";
+	cerr<<"ITSHits2Digits.C : AliITS object not found on file" << endl;
 	return 3;
     }  // end if !ITS
+    if(!(ITS->GetITSgeom())){
+	cerr << " AliITSgeom not found. Can't digitize with out it." << endl;
+	return 4;
+    } // end if
 
-    if(!gAlice->TreeD()){ 
+    if(!gAlice->TreeD()){
 	cout << "Having to create the Digits Tree." << endl;
 	gAlice->MakeTree("D");
     } // end if !gAlice->TreeD()

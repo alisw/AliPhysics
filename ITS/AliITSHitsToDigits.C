@@ -1,4 +1,5 @@
-Int_t AliITSHitsToDigits(const char *inFile="galice.root"){
+Int_t AliITSHitsToDigits(Int_t evNumber1=0,Int_t evNumber2=0,
+				const char *inFile="galice.root"){
 /////////////////////////////////////////////////////////////////////////
 //   This macro is a small example of a ROOT macro
 //   illustrating how to read the output of GALICE
@@ -15,26 +16,34 @@ Int_t AliITSHitsToDigits(const char *inFile="galice.root"){
     // Connect the Root Galice file containing Geometry, Kine and Hits
 
     TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(inFile);
-    cout << "file " << inFile << endl;
-    if (file) file->Close(); 
-    if (!file) file = new TFile(inFile,"UPDATE");
+    if (file) {file->Close(); delete file;}
+    cout << "AliITSHitsToDigitsDefault" << endl;
+    file = new TFile(inFile,"UPDATE");
+    if (!file->IsOpen()) {
+	cerr<<"Can't open "<<inFile<<" !" << endl;
+	return 1;
+    } // end if !file
     file->ls();
 
     // Get AliRun object from file or create it if not on file
-
+    if (gAlice) delete gAlice;
+    gAlice = (AliRun*)file->Get("gAlice");
     if (!gAlice) {
-	gAlice = (AliRun*)file->Get("gAlice");
-	if (gAlice) printf("AliRun object found on file\n");
-	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-    } // end if !gAlice 
+	cerr << "AliITSITSHits2Digits.C : AliRun object not found on file"
+	    << endl;
+	return 2;
+    } // end if !gAlice
 
+    gAlice->GetEvent(0);
     AliITS *ITS  = (AliITS*) gAlice->GetModule("ITS");
-    if (!ITS) return;
-
-    // Set the simulation models
-    AliITSgeom *geom = ITS->GetITSgeom();
-
-    Int_t nbgr_ev=0;
+    if (!ITS){
+	cerr << "ITS not found in gAlice. Exiting." << endl;
+	return 3;
+    } // end if
+    if(!(ITS->GetITSgeom())){
+	cerr << " AliITSgeom not found. Can't digitize with out it." << endl;
+	return 4;
+    } // end if
 
     // SPD
     cout << "Changing from Default SPD simulation, and responce." << endl;
@@ -76,7 +85,7 @@ Int_t AliITSHitsToDigits(const char *inFile="galice.root"){
     AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->
 	GetSegmentationModel();
     if (!seg1) {
-	seg1 = new AliITSsegmentationSDD(geom,res1);
+	seg1 = new AliITSsegmentationSDD(ITS->GetITSgeom(),res1);
 	ITS->SetSegmentationModel(1,seg1);
     } // end if !seg1
     AliITSsimulationSDD *sim1 = new AliITSsimulationSDD(seg1,res1);
@@ -101,7 +110,7 @@ Int_t AliITSHitsToDigits(const char *inFile="galice.root"){
     //make branch
     ITS->MakeBranch("D");
     ITS->SetTreeAddress();
-    gAlice->GetEvent(0);
+
     cout<<"Digitizing ITS..." << endl;
     TStopwatch timer;
     Long_t size0 = file->GetSize();
@@ -109,22 +118,17 @@ Int_t AliITSHitsToDigits(const char *inFile="galice.root"){
     for (Int_t nev=evNumber1; nev<= evNumber2; nev++) {
 	cout << "nev         " <<nev<<endl;
 	if(nev>0) {
-	    nparticles = gAlice->GetEvent(nev);
 	    gAlice->SetEvent(nev);
 	    if(!gAlice->TreeD()) gAlice->MakeTree("D");
 	    ITS->MakeBranch("D");
 	} // end if nev>0
-	cout << "nparticles  " <<nparticles<<endl;
 	if (nev < evNumber1) continue;
-	if (nparticles <= 0) return;
-
-	Int_t nbgr_ev=0;
-	if(nsignal) nbgr_ev=Int_t(nev/nsignal);
 	timer.Start();
-	ITS->HitsToDigits(nev,nbgr_ev,size," ","All"," ");
+	ITS->HitsToDigits(nev,0,-1," ","All"," ");
 	timer.Stop(); timer.Print();
     } // event loop
 
+    delete gAlice; gAlice=0;
     file->Close();
     Long_t size1 = file->GetSize();
     cout << "File size before = " << size0 << " file size after = " << size1;
