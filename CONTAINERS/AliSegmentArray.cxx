@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/07/27 13:03:11  hristov
+Default Branch split level set to 99
+
 Revision 1.4  2001/06/07 18:23:52  buncic
 TPC branches now correctly diverted into Digits.TPS.root file
 
@@ -215,10 +218,12 @@ void AliSegmentArray::ClearSegment(Int_t index)
   //
   //remove segment from active memory    
   //
-  if ((*fSegment)[index]){
+  //PH  if ((*fSegment)[index]){
+  if (fSegment->At(index)){
     //    (*fSegment)[index]->Delete(); //not working for TClonesArray
-    delete (*fSegment)[index]; //because problem with deleting TClonesArray
-    fSegment->RemoveAt(index);
+    //PH    delete (*fSegment)[index]; //because problem with deleting TClonesArray
+    //PH    fSegment->RemoveAt(index);
+    delete fSegment->RemoveAt(index);
   }
 }
 
@@ -245,8 +250,9 @@ void AliSegmentArray::MakeTree(char *file)
   AliSegmentID * psegment = NewSegment();  
   if (fTree) delete fTree;
   fTree = new TTree("Segment Tree","Tree with segments");
-  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000);
-  if (file) {
+  //PH  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000);
+   fBranch = fTree->BranchOld("Segment",psegment->IsA()->GetName(),&psegment,64000);
+ if (file) {
         TString outFile = gAlice->GetBaseFile();
         outFile = outFile + "/" + file;
         fBranch->SetFile(outFile.Data());
@@ -315,7 +321,8 @@ AliSegmentID *AliSegmentArray::LoadSegment(Int_t index)
   if (fTreeIndex ==0 ) return 0;
   if (fBranch==0) return 0;
   if (index>fTreeIndex->fN) return 0;
-  AliSegmentID *s = (AliSegmentID*)(*fSegment)[index];
+  //PH  AliSegmentID *s = (AliSegmentID*)(*fSegment)[index];
+  AliSegmentID *s = (AliSegmentID*)fSegment->At(index);
   if (s==0)  s=  NewSegment();
   s->SetID(index);
   //  new AliSegmentID(index);
@@ -326,7 +333,8 @@ AliSegmentID *AliSegmentArray::LoadSegment(Int_t index)
     else treeIndex--;   //I don't like it Int table I have index shifted by 1		       
     fBranch->SetAddress(&s);
     fTree->GetEvent(treeIndex);
-    (*fSegment)[index] = (TObject*) s;
+    //PH    (*fSegment)[index] = (TObject*) s;
+    fSegment->AddAt((TObject*) s, index);
   }
   else 
     return 0;
@@ -351,7 +359,8 @@ AliSegmentID *AliSegmentArray::LoadEntry(Int_t index)
     return 0;
   Int_t nindex = s->GetID();
   ClearSegment(nindex);
-  (*fSegment)[nindex] = (TObject*) s;
+  //PH  (*fSegment)[nindex] = (TObject*) s;
+  fSegment->AddAt((TObject*) s, nindex);
   return s;
 }
 
