@@ -309,7 +309,7 @@ void AliL3TrackArray::AddLast(AliL3Track *track)
 }
 
 
-void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack){
+void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack,Bool_t remove_old){
   if(GetTrackType() != newtrack->GetTrackType())
     return;
   if(fSize < fNTracks+newtrack->GetNPresent())
@@ -317,9 +317,9 @@ void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack){
   for(Int_t i =0;i<newtrack->GetNTracks();i++){
     AliL3Track *tpt = newtrack->GetCheckedTrack(i);
     if(!tpt) continue;
-    newtrack->Remove(i);
+    if(remove_old)
+      newtrack->Remove(i);
     AliL3Track *track = NextTrack();
-    
     track->Set(tpt);
 
   }
