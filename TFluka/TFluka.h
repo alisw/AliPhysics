@@ -332,7 +332,8 @@ class TFluka : public TVirtualMC {
   void SetTrackIsEntering(){fTrackIsEntering = kTRUE; fTrackIsExiting = kFALSE;}
   void SetTrackIsExiting() {fTrackIsExiting  = kTRUE; fTrackIsEntering = kFALSE;}
   void SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
-  void SetTrackIsNew(Bool_t flag=kTRUE) {fTrackIsNew = flag;}
+  void SetTrackIsNew(Bool_t flag = kTRUE);
+  
   Int_t GetMaterialIndex(Int_t idmat) const {return fMaterials[idmat];}
   TObjArray *GetFlukaMaterials();
 
