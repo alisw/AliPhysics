@@ -60,7 +60,7 @@ class AliMUONClusterFinderVS : public TObject
     AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
 
  protected:
-    AliMUONClusterInput*    fInput;              // AliMUONClusterInput instance
+    AliMUONClusterInput*    fInput;              // ! AliMUONClusterInput instance
     AliMUONHitMapA1*        fHitMap[2];          // Hit Maps for cathode 1 and 2
     AliSegmentation*        fSeg[2];             // Segmentations for cathode 1 and 2
     
