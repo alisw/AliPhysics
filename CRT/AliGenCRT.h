@@ -44,6 +44,8 @@ class AliGenCRT : public AliGenerator {
   TF1* GetMomentumDistibution() const {return fMomentumDist;}
   TF1* GetUnfoldedDistribution() const {return fUnfoldedMomentumDist;}
 
+  TClonesArray* GetArray() const {return fPDist;}
+
  protected:
   void InitApWeightFactors();
   void InitMomentumGeneration();

@@ -41,6 +41,7 @@
 #include <TPDGCode.h>
 #include <TClonesArray.h>
 #include <TF1.h>
+#include <TH1F.h>
 
 #include "AliRun.h"
 #include "AliConst.h"
@@ -160,7 +161,7 @@ void AliGenCRT::Generate()
       this->GenerateOneSingleMuon(kTRUE);
 
     } else {
-      // Generate only single muons but following the parametrizations
+      // Generate only single muons following the parametrizations
       // for atmospheric muons.
       this->GenerateOneSingleMuon();
 
@@ -260,13 +261,13 @@ void AliGenCRT::GenerateOneSingleMuon(Bool_t withFlatMomentum)
   Rndm(random,6);
   origin[0] = AliCRTConstants::Instance()->Depth()*TMath::Tan(zenith*kDegrad)*
     TMath::Sin(azimuth*kDegrad);
-  // + fOsigma[0]* TMath::Cos(2*random[0]*TMath::Pi())*TMath::Sqrt(-2*TMath::Log(random[1]));
+    + fOsigma[0]* TMath::Cos(2*random[0]*TMath::Pi())*TMath::Sqrt(-2*TMath::Log(random[1]));
 
   origin[1] = AliCRTConstants::Instance()->Depth();
 
   origin[2] = AliCRTConstants::Instance()->Depth()*TMath::Tan(zenith*kDegrad)*
     TMath::Cos(azimuth*kDegrad);
-  // + fOsigma[2]* TMath::Cos(2*random[2]*TMath::Pi())*TMath::Sqrt(-2*TMath::Log(random[3]));;
+    + fOsigma[2]* TMath::Cos(2*random[2]*TMath::Pi())*TMath::Sqrt(-2*TMath::Log(random[3]));;
 
   // Put the track on the stack.
   PushTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
@@ -290,10 +291,10 @@ void AliGenCRT::GenerateOneMuonBundle()
   Float_t random[6];
 
   Rndm(random, 3);
-  //Float_t zenith = fZenithMin + (fZenithMax - fZenithMin)*random[1];
-  //Float_t azimuth = fAzimuthMin + (fAzimuthMax-fAzimuthMin)*random[2];
-  Float_t zenith = 10;
-  Float_t azimuth = 30;
+  Float_t zenith = fZenithMin + (fZenithMax - fZenithMin)*random[1];
+  Float_t azimuth = fAzimuthMin + (fAzimuthMax-fAzimuthMin)*random[2];
+  //Float_t zenith = 10;
+  //Float_t azimuth = 30;
 
   // Generate the kinematics a la AliGenScan (Andreas Morchs)
   Float_t dx, dz;
@@ -311,14 +312,14 @@ void AliGenCRT::GenerateOneMuonBundle()
     //dz = 100.;
   }
 
-  //origin[0] = AliCRTConstants::fgDepth*TMath::Tan(zenith*kDegrad)*
-  origin[0] = 0.;
-    //TMath::Sin(azimuth*kDegrad);
-  //origin[1] = AliCRTConstants::fgDepth;
-  origin[1] = 900;
-  //origin[2] = AliCRTConstants::fgDepth*TMath::Tan(zenith*kDegrad)*
-  origin[2] = 0.;
-    //TMath::Cos(azimuth*kDegrad);
+  origin[0] = AliCRTConstants::Instance()->Depth()*TMath::Tan(zenith*kDegrad)*
+              TMath::Sin(azimuth*kDegrad);
+  //origin[0] = 0.;
+  origin[1] = AliCRTConstants::Instance()->Depth();
+  //origin[1] = 900;
+  origin[2] = AliCRTConstants::Instance()->Depth()*TMath::Tan(zenith*kDegrad)*
+              TMath::Cos(azimuth*kDegrad);
+    //origin[2] = 0.;
 
   for (Int_t ix = 0; ix < fNx; ix++ ) {
     for (Int_t iz = 0; iz < fNz; iz++ ) {
@@ -484,20 +485,28 @@ void AliGenCRT::InitZenithalAngleGeneration()
       
       // initialize the momentum dependent coefficients, a(p) 
       this->InitApWeightFactors();
-      
-      // Define the standard function.
-      const char* zenithalDisributionFunction = "1 + [0]*(1 - cos(x*3.14159265358979312/180))";
 
       Int_t pEnd  = TMath::Abs(TMath::Nint(fPMax/fPResolution)) + 1;
-      fPDist = new TClonesArray("TF1", pEnd);
-      TClonesArray &angle = *fPDist;
+      char name[26];
+      char title[52];
+      fPDist = new TClonesArray("TH1F", pEnd);
+      TClonesArray &mom = *fPDist;
+      TH1F* zenith = 0;
+      Float_t weight = 0;
       for ( Int_t i = 0; i < pEnd; i++ ) {
 	// Fill the distribution
-	TF1* zenith = new(angle[i]) TF1("zenith",zenithalDisributionFunction, fZenithMin, fZenithMax);
+	sprintf(name, "zenith%d", i+1);
+	sprintf(title, "Zenith distribution, p=%f", fPMin+(Float_t)i);
+	zenith = new(mom[i]) TH1F(name, title, TMath::Abs(TMath::Nint(fZenithMax-fZenithMin)), TMath::Cos(fZenithMax*TMath::Pi()/180), TMath::Cos(fZenithMin*TMath::Pi()/180));
 
-	// Fix the momentum dependent coefficients
-	zenith->SetParName(0, "a(p)");
-	zenith->SetParameter(0, fAp->At(i));
+	// Make a loop for the angle and fill the histogram for the weight
+	Int_t steps = 1000;
+	Float_t value = 0;
+	for (Int_t j = 0; j < steps; j++ ) {
+	  value = TMath::Cos(fZenithMin*TMath::Pi()/180) + (Float_t)j * ( TMath::Cos(fZenithMax*TMath::Pi()/180) - TMath::Cos(fZenithMin*TMath::Pi()/180))/1000;
+	  weight = 1 + fAp->At(i)*(1 - value);
+	  zenith->Fill(value, weight);
+	}
 
       }
 
@@ -517,11 +526,10 @@ const Float_t AliGenCRT::GetZenithAngle(Float_t mom) const
     // Check if you have defined an array of momentum functions
     if ( fPDist ) {
       Int_t pIndex = TMath::Abs(TMath::Nint(mom));
-      TF1* zenithAngle = (TF1*)fPDist->UncheckedAt(pIndex);
-
-      Float_t tmpzenith = TMath::Cos(zenithAngle->GetRandom()*kDegrad);
+      TH1F* cosZenithAngle = (TH1F*)fPDist->UncheckedAt(pIndex);
+      Float_t tmpzenith = TMath::ACos(cosZenithAngle->GetRandom());
       // Correct the value
-      zenith = kRaddeg*TMath::ACos(1 - (tmpzenith - 1)/fAp->At(pIndex));
+      zenith = kRaddeg*tmpzenith;
       return zenith;
     } else {
 
