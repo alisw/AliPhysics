@@ -809,7 +809,7 @@ void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
     Float_t phys;
     Float_t * charges = new Float_t[size];
 
-    if( fResponse->Do10to8() ) signal = Convert8to10( signal ); 
+//    if( fResponse->Do10to8() ) signal = Convert8to10( signal ); 
     digits[0] = i;
     digits[1] = j;
     digits[2] = signal;

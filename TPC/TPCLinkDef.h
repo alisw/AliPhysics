@@ -78,12 +78,7 @@
 
 
 #pragma link C++ class  AliTPCBuffer+;
-#pragma link C++ class  AliTPCBuffer160+;
-#pragma link C++ class  AliTPCCompression+;
 #pragma link C++ class  AliTPCDDLRawData+;
-#pragma link C++ class  AliTPCRawStream+;
-#pragma link C++ class  AliTPCHNode+;
-#pragma link C++ class  AliTPCHTable+;
 #pragma link C++ class  AliTPCKalmanSegment+;
 
 #pragma link C++ class  AliTPCPid+;

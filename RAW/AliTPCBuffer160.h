@@ -16,6 +16,8 @@
 
 #ifndef AliTPCBUFFER160_H
 #define AliTPCBUFFER160_H
+
+#include <TObject.h>
 #ifdef __CINT__
 class fstream;
 #else
@@ -27,6 +29,7 @@ class AliTPCBuffer160:public TObject{
 public:
   AliTPCBuffer160(){}//default constructor
   AliTPCBuffer160(const char* fileName,Int_t flag);//constructor
+  AliTPCBuffer160(fstream* file, Int_t size);//constructor for reading a file with mini header
   virtual ~AliTPCBuffer160();//destructor
   AliTPCBuffer160(const AliTPCBuffer160 &source); // copy constructor
   AliTPCBuffer160& operator=(const AliTPCBuffer160 &source); // ass. op.
@@ -70,7 +73,8 @@ private:
   Int_t fFreeCellBuffer;//number of free cells of the buffer
   Int_t fFlag;          //0 read  1 write
   Int_t fVerbose;       //verbose level
-  fstream f;            //logical name of the I/O file
+  fstream* f;           //logical name of the I/O file
+  Bool_t fCreated;      //true if f was created by the buffer
   Int_t fMaskBackward;  //bit mask for backward reading of a file
   ULong_t fFilePosition;//'pointer' to the actual position in the file
   ULong_t fFileEnd;     //position of the last element of the file (File dimension)

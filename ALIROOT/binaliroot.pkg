@@ -5,7 +5,8 @@ ELIBSDIR:=
 
 ELIBS:= MUON TPC ITS PMD TRD FMD TOF PHOS CRT RICH ZDC VZERO EMCAL STRUCT \
 START EVGEN STEER CONTAINERS pythia6 AliPythia6 pdf THijing hijing TMEVSIM \
-mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN TPHIC FASTSIM microcern
+mevsim THbtp HBTP THerwig herwig TEPEMGEN EPEMGEN TPHIC FASTSIM microcern \
+RAW MONITOR
 
 # The two variables below are used for the creation of profile target.
 # ARLIBS stands for ARchive LIBrarieS and for each module one wants to profile

@@ -169,6 +169,9 @@ void AliITSclustererV2::Digits2Clusters(AliRawReader* rawReader) {
   delete array;
 
   TClonesArray** clusters = new TClonesArray*[fNModules]; 
+  for (Int_t iModule = 0; iModule < fNModules; iModule++) {
+    clusters[iModule] = NULL;
+  }
   // one TClonesArray per module
 
   rawReader->Reset();
@@ -186,7 +189,7 @@ void AliITSclustererV2::Digits2Clusters(AliRawReader* rawReader) {
   // write all clusters to the tree
   Int_t nClusters = 0;
   for (Int_t iModule = 0; iModule < fNModules; iModule++) {
-    TClonesArray* array = clusters[iModule];
+    array = clusters[iModule];
     if (!array) {
       Error("Digits2Clusters", "data for module %d missing!", iModule);
       array = new TClonesArray("AliITSclusterV2");
@@ -197,6 +200,8 @@ void AliITSclustererV2::Digits2Clusters(AliRawReader* rawReader) {
     delete array;
   }
   itsLoader->WriteRecPoints("OVERWRITE");
+
+  delete[] clusters;
 
   Info("Digits2Clusters", "total number of found clusters in ITS: %d\n", 
        nClusters);

@@ -2,9 +2,14 @@
 
 ROOTH         = TH1.h
 
-SRCS          = AliRawEvent.cxx
+SRCS          = AliRawEvent.cxx \
+		AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
+		AliTPCBuffer160.cxx AliTPCHuffman.cxx AliTPCCompression.cxx \
+		AliTPCRawStream.cxx \
+		AliITSRawStream.cxx AliITSRawStreamSPD.cxx \
+		AliITSRawStreamSDD.cxx AliITSRawStreamSSD.cxx
 
-HDRS          = AliRawEvent.h LinkDef.h
+HDRS          = $(SRCS:.cxx=.h) LinkDef.h
 
 DICT          = AliRawDict.cxx
 DICTH         = $(DICT:.cxx=.h)
@@ -19,7 +24,7 @@ ALLDICT       = $(DICT) $(DICTH)
 ALLSRCS       = $(SRCS) $(HDRS) $(MAIN) DateEvent.h
 ALLOBJS       = $(OBJS) $(MAINO)
 
-ALIRAW        = libAliRaw.so
+ALIRAW        = libRAW.so
 ALIMDC        = alimdc
 
 

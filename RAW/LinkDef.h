@@ -19,5 +19,17 @@
 #pragma link C++ class AliTagNullDB;
 #pragma link C++ class AliRunDB;
 #pragma link C++ class AliMDC;
+#pragma link C++ class AliRawReader+;
+#pragma link C++ class AliRawReaderFile+;
+#pragma link C++ class AliRawReaderRoot+;
+#pragma link C++ class AliTPCBuffer160+;
+#pragma link C++ class AliTPCCompression+;
+#pragma link C++ class AliTPCHNode+;
+#pragma link C++ class AliTPCHTable+;
+#pragma link C++ class AliTPCRawStream+;
+#pragma link C++ class AliITSRawStream+;
+#pragma link C++ class AliITSRawStreamSPD+;
+#pragma link C++ class AliITSRawStreamSDD+;
+#pragma link C++ class AliITSRawStreamSSD+;
 
 #endif

@@ -8,23 +8,38 @@
 #endif
 
 
-void AliTPCDDL(char* FileName,Int_t eth=0){
+void AliTPCDDL(Int_t eventNumber=0, Int_t eth=0){
   //eth is a threshold.
   //Digits stored into a file have an amplitude value greater than "eth"
-  TFile *cf=TFile::Open(FileName);
-  // old geometry (3.07)
-  //AliTPCParamSR *param =(AliTPCParamSR *)cf->Get("75x40_100x60");
-  // if new geometry comment out the line above and uncomment the one below
-  AliTPCParamSR *param =(AliTPCParamSR *)cf->Get("75x40_100x60_150x60");
+
+  const char * inFile_new = "galice.root";
+  AliRunLoader *rl = AliRunLoader::Open(inFile_new,"Event","read");
+
+  Int_t nevents=rl->GetNumberOfEvents();
+  cout<<"Number of Events:"<<nevents<<endl;
+  while (eventNumber<=0 || eventNumber>nevents){
+    cout<<"Insert the event number:";
+    cin>>eventNumber;
+    cout<<endl;
+  }
+  rl->GetEvent(eventNumber-1);
+  AliLoader *tpcloader=rl->GetLoader("TPCLoader");
+  tpcloader->LoadDigits();
+  TTree *digitsTree=tpcloader->TreeD();
+
+  AliSimDigits digrows, *dummy=&digrows;
+  digitsTree->GetBranch("Segment")->SetAddress(&dummy);
+  Stat_t nrows = digitsTree->GetEntries();
+  cout<<"Number of entries (rows):"<<nrows<<endl;
+  // get the TPC parameters
+  rl->CdGAFile();
+  AliTPCParamSR* param = AliTPC::LoadTPCParam(gFile);
+  if (!param)
+    cout<<"No TPC parameter"<<endl;
   AliTPCDigitsArray *digarr=new AliTPCDigitsArray;
   digarr->Setup(param);
-  char  cname[100];
-  //old geometry
-  //sprintf(cname,"TreeD_75x40_100x60_%d",eventn);
-  // if new geometry comment out the line above and uncomment the one below
-  Int_t eventn=0;
-  sprintf(cname,"TreeD_75x40_100x60_150x60_%d",eventn);
-  digarr->ConnectTree(cname);
+  digarr->ConnectTree(digitsTree);
+
   AliTPCBuffer *b=new AliTPCBuffer("AliTPCDDL.dat");
 
   //Verbose level
@@ -38,7 +53,7 @@ void AliTPCDDL(char* FileName,Int_t eth=0){
   b->SetVerbose(0);
 
 
-  Int_t nrows=Int_t(digarr->GetTree()->GetEntries());
+  nrows=Int_t(digarr->GetTree()->GetEntries());
   cout<<"Number of entries "<<nrows<<endl;
   Int_t PSector=-1;
   Int_t SubSec=0;
@@ -89,7 +104,6 @@ void AliTPCDDL(char* FileName,Int_t eth=0){
       }
     }//end else
   }//end for
-  cf->Close();
   cout<<"File created !"<<endl;
   cout<<"Total number of digits: "<<b->GetDigNumber()<<endl;
   delete b;

@@ -295,7 +295,7 @@ void AliMemArray::Resize(UInt_t  n)
      return;
   }
   //
-  if (n>fCapacity) Reserve(n);   //reserve automaticaly space if sie >capacity
+  if (n>fCapacity) Reserve(2*n);   //reserve automaticaly space if sie >capacity
   if (fSize>n){ 
     DTORBuffer(Unchecked1DAt(n),fSize-n);
     //memset(&((char*)fCont)[n*fObjectSize], 0, (fSize-n)*fObjectSize);

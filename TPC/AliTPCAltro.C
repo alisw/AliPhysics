@@ -8,7 +8,7 @@
 #include "AliTPCBuffer160.h"
 #endif
 
-int AliTPCAltro(char* FileName,Int_t eth=0){
+int AliTPCAltro(Int_t eth=0){
   //eth is a threshold.
   //Digits stored into a file have an amplitude value greater than "eth"
   Int_t offset=1; //this should be equal to the threshold
@@ -17,48 +17,59 @@ int AliTPCAltro(char* FileName,Int_t eth=0){
     because the range for each word goes from 0 to 1023, now due to zero suppression 
     values lower that the threshold never appear.
    */
-  TFile *cf=TFile::Open(FileName);
-  // old geometry (3.07)
-  //AliTPCParamSR *param =(AliTPCParamSR *)cf->Get("75x40_100x60");
-  // if new geometry comment out the line above and uncomment the one below
-  AliTPCParamSR *param =(AliTPCParamSR *)cf->Get("75x40_100x60_150x60");
-  AliTPCDigitsArray *digarr=new AliTPCDigitsArray;
-  digarr->Setup(param);
-  
-  char  cname[100];
-  //old geometry
-  //sprintf(cname,"TreeD_75x40_100x60_%d",eventn);
-  // if new geometry comment out the line above and uncomment the one below
-  Int_t eventn=0;
-  sprintf(cname,"TreeD_75x40_100x60_150x60_%d",eventn);
-  digarr->ConnectTree(cname);
 
   Int_t PSecNumber=-1;  //Previous Sector number
   Int_t PRowNumber=-1;  //Previous Row number  
   Int_t PPadNumber=-1;  //Previous Pad number
   Int_t PTimeBin=-1;    //Previous Time-Bin
   Int_t BunchLength=0;
-
   //AliTPCBuffer160 is used in write mode to generate AltroFormat.dat file
   AliTPCBuffer160 Buffer("AltroFormat.dat",1); 
-  //number of entries in the tree
-  Int_t nrows=Int_t(digarr->GetTree()->GetEntries());
-  cout<<"Number of entries "<<nrows<<endl;
   ULong_t Count=0;
   Int_t nwords=0;
   Int_t numPackets=0;
+  
+  const char * inFile_new = "galice.root";
+  AliRunLoader *rl = AliRunLoader::Open(inFile_new,"Event","read");
+
+  Int_t nevents=rl->GetNumberOfEvents();
+  cout<<"Number of Events:"<<nevents<<endl;
+  Int_t choice=0;
+  do{
+    cout<<"Insert the event number: "; 
+    cin>>choice;
+  }while (choice<=0 || choice>nevents);
+  rl->GetEvent(choice-1);
+  AliLoader *tpcloader=rl->GetLoader("TPCLoader");
+  tpcloader->LoadDigits();
+  TTree *digitsTree=tpcloader->TreeD();
+
+  AliSimDigits digrows, *dummy=&digrows;
+  digitsTree->GetBranch("Segment")->SetAddress(&dummy);
+  Stat_t nrows = digitsTree->GetEntries();
+  cout<<"Number of entries (rows):"<<nrows<<endl;
+  // get the TPC parameters
+  rl->CdGAFile();
+  AliTPCParamSR* param = AliTPC::LoadTPCParam(gFile);
+  if (!param)
+    cout<<"No TPC parameter"<<endl;
+  AliTPCDigitsArray *digarr=new AliTPCDigitsArray;
+  digarr->Setup(param);
+  digarr->ConnectTree(digitsTree);
   //ofstream ftxt("Data.txt");
   for (Int_t n=0; n<nrows; n++) {
-    AliSimDigits *digrow=(AliSimDigits*)digarr->LoadEntry(n);
     Int_t sec,row; // sector and row number (in the TPC)
+    AliSimDigits *digrow=(AliSimDigits*)digarr->LoadEntry(n);
     param->AdjustSectorRow(digrow->GetID(),sec,row);   
+
     //cout<<"Sector:"<<sec<<" Row:"<<row<<endl;
     digrow->First();
     do{
-      Short_t dig=digrow->CurrentDigit(); //adc
-      Int_t time=digrow->CurrentRow(); //time
-      Int_t pad =digrow->CurrentColumn(); // pad 
-      if(dig>eth){
+      Short_t dig=digrow->CurrentDigit();  //adc
+      Int_t time=digrow->CurrentRow();     //time
+      Int_t pad =digrow->CurrentColumn();  // pad 
+      //cout<<"dig:"<<dig<<" time:"<<time<<" pad:"<<pad<<endl;
+           if(dig>eth){
 	Count++;
 	//ftxt<<"Sec: "<<sec<<" Row: "<<row<<" Pad:"<<pad<<" Time: "<<time<<" ADC:"<<dig<<endl;
 	//cout<<"Sec: "<<sec<<" Row: "<<row<<" Pad:"<<pad<<" Time: "<<time<<" ADC:"<<dig<<endl;
@@ -102,10 +113,12 @@ int AliTPCAltro(char* FileName,Int_t eth=0){
       }//end if
     } while (digrow->Next());
   }//end for
+  
   Buffer.FillBuffer(PTimeBin);
   Buffer.FillBuffer(BunchLength+2);
   nwords+=2;
   Buffer.WriteTrailer(nwords,PPadNumber,PRowNumber,PSecNumber);
+ 
   numPackets++;
   cout<<"There are "<<Count<<" Digits\n";
   cout<<"Packets "<<numPackets<<"\n";

@@ -21,11 +21,11 @@
 // and in the compression of the RAW data
 // Author: D.Favretto
 
+#include "AliTPCBuffer160.h"
 #include <TObjArray.h>
 #include <Riostream.h>
 #include <TMath.h>
 #include <stdlib.h>
-#include "AliTPCBuffer160.h"
 
 
 ClassImp(AliTPCBuffer160)
@@ -45,26 +45,44 @@ AliTPCBuffer160::AliTPCBuffer160(const char* fileName,Int_t flag){
     for (Int_t i=0;i<5;i++)fBuffer[i]=0;
     //open the output file
 #ifndef __DECCXX
-    f.open(fileName,ios::binary|ios::out);
+    f = new fstream(fileName,ios::binary|ios::out);
 #else
-    f.open(fileName,ios::out);
+    f = new fstream(fileName,ios::out);
 #endif
   }
   else{
     //open the input file
 #ifndef __DECCXX
-    f.open(fileName,ios::binary|ios::in);
+    f = new fstream(fileName,ios::binary|ios::in);
 #else
-    f.open(fileName,ios::in);
+    f = new fstream(fileName,ios::in);
 #endif
     if(!f){cout<<"File doesn't exist:"<<fileName<<endl;;exit(-1);}
     fShift=0;
     //To get the file dimension (position of the last element in term of bytes)
-    f.seekg(0, ios::end);
-    fFilePosition= f.tellg();
+    f->seekg(0, ios::end);
+    fFilePosition= f->tellg();
     fFileEnd=fFilePosition;
-    f.seekg(0);
+    f->seekg(0);
   }
+  fCreated = kTRUE;
+}
+
+AliTPCBuffer160::AliTPCBuffer160(fstream* file, Int_t size){
+//constructor for reading a file with mini header
+  fFlag=0;
+  f=file;
+  fCurrentCell=0;
+  fShift=0;
+  fMaskBackward=0xFF;
+  fVerbose=0;
+
+  fMiniHeaderPos=f->tellg();
+  f->seekg(fMiniHeaderPos+size);
+  fFilePosition=f->tellg();
+  fFileEnd=fFilePosition;
+  f->seekg(fMiniHeaderPos);
+  fCreated = kFALSE;
 }
 
 AliTPCBuffer160::~AliTPCBuffer160(){
@@ -75,7 +93,10 @@ AliTPCBuffer160::~AliTPCBuffer160(){
     if(fVerbose)
       cout<<"File Created\n";
   }//end if
-  f.close();
+  if (fCreated) {
+    f->close();
+    delete f;
+  }
 }
 
 
@@ -118,7 +139,8 @@ Int_t AliTPCBuffer160::GetNext(){
   ULong_t temp;
   ULong_t value;
   if (!fShift){
-    if ( f.read((char*)fBuffer,sizeof(ULong_t)*5) ){
+    if (f->tellg()>=(Int_t)fFileEnd) return -1;
+    if ( f->read((char*)fBuffer,sizeof(ULong_t)*5) ){
       fCurrentCell=0;
       fShift=22;
       value=fBuffer[fCurrentCell]&mask;
@@ -159,10 +181,10 @@ Int_t AliTPCBuffer160::GetNextBackWord(){
   ULong_t temp;
   ULong_t value;
   if (!fShift){
-    if (fFilePosition){
+    if (fFilePosition>fMiniHeaderPos){
       fFilePosition-=sizeof(ULong_t)*5;
-      f.seekg(fFilePosition);
-      f.read((char*)fBuffer,sizeof(ULong_t)*5);
+      f->seekg(fFilePosition);
+      f->read((char*)fBuffer,sizeof(ULong_t)*5);
       
       //cout<<"Buffer letto"<<endl;
       /*
@@ -187,7 +209,11 @@ Int_t AliTPCBuffer160::GetNextBackWord(){
       fBuffer[fCurrentCell]=fBuffer[fCurrentCell]>>10;
       return value;      
     }
-    else return -1;
+    else {
+//      f->seekg(fFileEnd);
+      f->seekg(fMiniHeaderPos);
+      return -1;
+    }
   }//end if
   else{
     if (fShift>=10){
@@ -236,7 +262,7 @@ void AliTPCBuffer160::FillBuffer(Int_t Val){
   fBuffer[fCurrentCell]|=Val;
   if(!fShift){
     //Buffer is written into a file
-    f.write((char*)fBuffer,sizeof(ULong_t)*5);
+    f->write((char*)fBuffer,sizeof(ULong_t)*5);
    //Buffer is empty
     for(Int_t j=0;j<5;j++)fBuffer[j]=0;
     fShift=32;
@@ -311,20 +337,20 @@ void AliTPCBuffer160::WriteMiniHeader(ULong_t Size,Int_t SecNumber,Int_t SubSect
   PackWord(miniHeader[2],ddlNumber,16,31);
   if (!Size){
     //if size=0 it means that this mini header is a dummi mini header
-    fMiniHeaderPos=f.tellp();
+    fMiniHeaderPos=f->tellp();
     //cout<<" Position of the DUMMY MH:"<<fMiniHeaderPos<<" Size:"<<Size<<endl;
     miniHeader[0]=Size;
-    f.write((char*)(miniHeader),miniHeaderSize);
+    f->write((char*)(miniHeader),miniHeaderSize);
   }//end if
   else{
-    ULong_t currentFilePos=f.tellp();
-    f.seekp(fMiniHeaderPos);
+    ULong_t currentFilePos=f->tellp();
+    f->seekp(fMiniHeaderPos);
     Size=currentFilePos-fMiniHeaderPos-miniHeaderSize;
     //cout<<"Current Position (Next MH) "<<currentFilePos<<" Position of the MH:"<<fMiniHeaderPos<<" Size:"<<Size<<endl;
     miniHeader[0]=Size;
     //cout<<"Mini Header Size:"<<miniHeader[0]<<endl;
-    f.write((char*)(miniHeader),miniHeaderSize);
-    f.seekp(currentFilePos);
+    f->write((char*)(miniHeader),miniHeaderSize);
+    f->seekp(currentFilePos);
   }
   return;
 }

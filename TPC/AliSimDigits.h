@@ -13,6 +13,7 @@
 #include   "AliArrayI.h"
 #include   "AliArrayS.h"
 #include   "AliDigits.h"
+#include <TClonesArray.h>
 
 class AliH2F;
 

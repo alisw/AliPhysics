@@ -1,6 +1,9 @@
 #if !defined(__CINT__)
 #include <Riostream.h>
 #include "AliITSDDLRawData.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
+#include "AliITS.h"
 #endif
 
 /*
@@ -11,69 +14,36 @@ In this way the amplitude value for signal coming from SDD takes only 8 bits and
 */
 //DigitsFile is the input file that contains digits
 
-void AliITSDDLRawData(char* DigitsFile="galiceD.root"){
-#ifdef __NOCOMPILED__
-  if (gClassTable->GetID("AliRun") < 0) {
-    gROOT->LoadMacro("loadlibs.C");
-    loadlibs();
-  }
-  else {
-#endif
-    if(gAlice){
-      delete gAlice;
-      gAlice=0;
-    }
-#ifdef __NOCOMPILED__
-  }
-#endif
-  Int_t eventNumber=0;
+void AliITSDDLRawData(Int_t eventNumber=0){
+
   Int_t spdLDCs=2;
   Int_t sddLDCs=4;
   Int_t ssdLDCs=2;
-  TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(DigitsFile);
-  if (!file){
-    file = new TFile(DigitsFile);
-  }//end if
-  file->ls();
-
-  // Get AliRun object from file
-    if (!gAlice){
-      gAlice = (AliRun*)file->Get("gAlice");
-      if (gAlice)cout<<"AliRun object found on file "<<DigitsFile<<endl;
-      if(!gAlice){
-	cout<<"Can't access AliRun object on file "<<DigitsFile<<endl;
-	cout<<"Macro execution stopped!!!"<<endl;
-	exit(1);
-      }//end if
-    }//end if 
-    gAlice->SetTreeDFileName(DigitsFile);
-    //  Long_t nparticles = gAlice->GetEvent(0);
-  
-    //Int_t nparticles = gAlice->GetEvent(0);
-    // 
-    // ITS
-    AliITS *ITS  = (AliITS*)gAlice->GetModule("ITS");
-    Int_t nmodules;
-    ITS->InitModules(-1,nmodules);
-    cout<<"Number of ITS modules= "<<nmodules<<endl;
-    //cout<<"Filling modules... It takes a while, now. Please be patient"<<endl;
-    //ITS->FillModules(0,0,nmodules," "," ");
-    //cout<<"ITS modules .... DONE!"<<endl;
-    // DIGITS
-    
-    
-    TTree* TD = (TTree*)file->Get("TreeD0");
-    if (TD == 0x0){
-      ::Error("DDLRawData","Can not find tree with ITS digits");
-      return;
-    }//end if
-    ITS->SetTreeAddressD(TD);
-    
-    
-    //TTree *TD = gAlice->TreeD();
+  Int_t eventn=0;
+  const char * inFile_new = "galice.root";
+  AliRunLoader *rl = AliRunLoader::Open(inFile_new,"Event","read");
+  rl->LoadgAlice();
+  Int_t nevents=rl->GetNumberOfEvents();
+  cout<<"Number of Events:"<<nevents<<endl;
+  while (eventNumber<=0 || eventNumber>nevents){
     cout<<"Insert the event number:";
     cin>>eventNumber;
     cout<<endl;
+  }
+  rl->GetEvent(eventNumber-1);
+  AliLoader *itsloader=rl->GetLoader("ITSLoader");
+  itsloader->LoadDigits();
+  TTree *TD=itsloader->TreeD();
+  gAlice=rl->GetAliRun(); 
+  if(!gAlice){
+    cout<<"gAlice is null"<<endl;
+    return;
+  } 
+  AliITS *ITS  = (AliITS*)gAlice->GetDetector("ITS");
+
+  Int_t nmodules;
+  ITS->InitModules(-1,nmodules);
+  ITS->SetTreeAddressD(TD);
 
     AliITSDDLRawData *util=new AliITSDDLRawData();
     //Verbose level
@@ -111,5 +81,6 @@ void AliITSDDLRawData(char* DigitsFile="galiceD.root"){
     timer.Print();
     
     delete util;
+
     return;
 }

@@ -1,0 +1,11 @@
+SRCS:=  AliRawEvent.cxx \
+	AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
+	AliTPCBuffer160.cxx AliTPCHuffman.cxx AliTPCCompression.cxx \
+	AliTPCRawStream.cxx \
+	AliITSRawStream.cxx AliITSRawStreamSPD.cxx \
+	AliITSRawStreamSDD.cxx AliITSRawStreamSSD.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= LinkDef.h
+

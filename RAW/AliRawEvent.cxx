@@ -60,6 +60,7 @@ const char *kRawDBFS[2] = { "/scratch/mdc1", "/scratch/mdc2" };
 const char *kTagDBFS    = "/scratch/mdc1/tags";
 const char *kRunDBFS    = "/scratch/mdc1/meta";
 const char *kRFIOFS     = "rfio:/castor/cern.ch/lcg/alicemdc4";
+const char *kRootdFS    = "root://localhost//tmp/mdc1";
 #endif
 
 // Maximum size of tag db files
@@ -231,6 +232,12 @@ AliRawEvent *AliRawEvent::NextSubEvent()
    fNSubEvents++;
 
    return ev;
+}
+
+//______________________________________________________________________________
+AliRawEvent *AliRawEvent::GetSubEvent(Int_t index)
+{
+  return (AliRawEvent *)fSubEvents->At(index);
 }
 
 //______________________________________________________________________________

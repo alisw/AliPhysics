@@ -43,8 +43,6 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv5.cxx AliITSvSPD02.cxx \
 	        AliITSRiemannFit.cxx \
 		AliITSFDigitizer.cxx \
 		AliITSDDLRawData.cxx AliITSpidESD.cxx \
-		AliITSRawStream.cxx AliITSRawStreamSPD.cxx \
-		AliITSRawStreamSDD.cxx AliITSRawStreamSSD.cxx
 #		AliITSBaseGeometry.cxx \
 #		AliITSv11.cxx \
 
@@ -55,5 +53,5 @@ HDRS:=  $(SRCS:.cxx=.h)
 
 DHDR=ITSLinkDef.h
 
-EINCLUDE:=$(ALICE)/geant3/TGeant3 TPC CONTAINERS
+EINCLUDE:=$(ALICE)/geant3/TGeant3 TPC CONTAINERS RAW
 

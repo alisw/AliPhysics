@@ -14,14 +14,12 @@ SRCS:=  AliTPCLoader.cxx\
 	AliTPCTrackHitsV2.cxx AliTPCtrackerParam.cxx AliTPCkineGrid.cxx \
 	AliTPCclustererMI.cxx AliTPCclusterMI.cxx  AliTPCtrackerMI.cxx \
 	AliTPCpolyTrack.cxx \
-	AliTPCBuffer.cxx AliTPCBuffer160.cxx \
-	AliTPCCompression.cxx AliTPCDDLRawData.cxx \
-	AliTPCRawStream.cxx \
-	AliTPCHuffman.cxx AliTPCPid.cxx AliTPCtrackPid.cxx AliTPCpidESD.cxx
+	AliTPCBuffer.cxx AliTPCDDLRawData.cxx \
+	AliTPCPid.cxx AliTPCtrackPid.cxx AliTPCpidESD.cxx
 HDRS:= $(SRCS:.cxx=.h)
 
 
 DHDR:= TPCLinkDef.h
 
-EINCLUDE:= CONTAINERS
+EINCLUDE:= CONTAINERS RAW
 

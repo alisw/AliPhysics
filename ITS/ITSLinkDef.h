@@ -163,10 +163,6 @@
 
 #pragma link C++ class AliITSLoader+;
 
-#pragma link C++ class AliITSRawStream+;
-#pragma link C++ class AliITSRawStreamSPD+;
-#pragma link C++ class AliITSRawStreamSDD+;
-#pragma link C++ class AliITSRawStreamSSD+;
 //
 //#pragma link C++ class AliACORDEFunction+;
 //#pragma link C++ class AliACORDEMaterial+;

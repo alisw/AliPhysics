@@ -5,18 +5,17 @@
 #endif
 
 
-void AliTPCDDLRawData(Int_t LDCsNumber=12){
+void AliTPCDDLRawData(Int_t eventNumber=0, Int_t LDCsNumber=12){
   AliTPCDDLRawData *util=new AliTPCDDLRawData();
   AliTPCCompression *u=new AliTPCCompression();
   TStopwatch timer;
-  Int_t eventNumber=0;
   static const Int_t NumTable=5;
 
   util->SetVerbose(1);
   u->SetVerbose(1);  
   
   //The Altro File "AltroFormatDDL.dat" is built from "AliTPCDDL.dat"
-  util->RawDataAltro();
+  //util->RawDataAltro();
   
   /*
   //The file "AltroFormatDDL.dat" is converted in a txt file "AltroFormatDDL.txt"
@@ -31,9 +30,11 @@ void AliTPCDDLRawData(Int_t LDCsNumber=12){
   */
 
 
-  cout<<"Insert the event number:";
-  cin>>eventNumber;
-  cout<<endl;
+  while (eventNumber<=0){
+    cout<<"Insert the event number:";
+    cin>>eventNumber;
+    cout<<endl;
+  }
 
   //SLICE CREATION
   //Slices are built here

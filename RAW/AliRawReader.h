@@ -22,6 +22,14 @@ class AliRawReader: public TObject {
     void             Select(Int_t detectorID, 
 			    Int_t minDDLID = -1, Int_t maxDDLID = -1);
 
+    virtual UInt_t   GetType() = 0;
+    virtual UInt_t   GetRunNumber() = 0;
+    virtual const UInt_t* GetEventId() = 0;
+    virtual const UInt_t* GetTriggerPattern() = 0;
+    virtual const UInt_t* GetDetectorPattern() = 0;
+    virtual const UInt_t* GetAttributes() = 0;
+    virtual UInt_t   GetGDCId() = 0;
+
     inline Int_t     GetDataSize() const {return fMiniHeader->fSize;};
     inline Int_t     GetDetectorID() const {return fMiniHeader->fDetectorID;};
     inline Int_t     GetDDLID() const {return fMiniHeader->fDDLID;};

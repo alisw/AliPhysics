@@ -29,9 +29,12 @@
 #include <TTree.h>
 #endif
 
+#ifndef ROOT_TH1
+#include <TH1.h>
+#endif
+
 
 // Forward class declarations
-class TH1F;
 class AliRawDB;
 
 
@@ -188,6 +191,7 @@ public:
    AliRawData            *GetRawData();
    Int_t                  GetNSubEvents() const { return fNSubEvents; }
    AliRawEvent           *NextSubEvent();
+   AliRawEvent           *GetSubEvent(Int_t index);
    void                   Reset();
 
    ClassDef(AliRawEvent,1)  // ALICE raw event object
