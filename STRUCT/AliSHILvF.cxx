@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/11/17 01:29:21  morsch
+Obsolete and wrong volume YXO5 removed.
+
 Revision 1.10  2001/11/16 08:57:42  morsch
 Volume YP32 obsolete.
 
@@ -70,7 +73,8 @@ AliSHILvF::AliSHILvF(const char *name, const char *title)
   SetMarkerSize(0.4);
   // Pb  cone not yet compatible with muon chamber inner radii
   // Switched off by default
-  fPbCone=kFALSE;
+  SetWriteGeometry();
+  SetPbCone();
 }
  
 //_____________________________________________________________________________
@@ -110,10 +114,15 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 //
 //
 // begin Fluka
-  AliALIFE* flukaGeom = new AliALIFE("beamshield.alife", "beamshield_vol.inp");
   Int_t i=0,ifl=0;
   Float_t posfluka[3]={0., 0., 0.};
   Float_t zfluka[12], rfluka1[12], rfluka2[12], rfluka3[12] ;  
+  AliALIFE* flukaGeom = 0;
+  
+  if (fWriteGeometry) {
+      flukaGeom = new AliALIFE("beamshield.alife", "beamshield_vol.inp");
+  }
+  
 //
 // end Fluka  
   
@@ -321,28 +330,29 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
 //
 // begin Fluka
-  for (ifl=0; ifl<12; ifl++) {
-      zfluka[ifl]=par1[3+3*ifl]+dl+zRear-dRear;
-      rfluka1[ifl] = par1[4+3*ifl];
-      rfluka2[ifl] = par1[5+3*ifl]; 
-      if (ifl > 3)  rfluka2[ifl]=rfluka2[ifl]-dRSteel1;
-  }
-
-  
   Float_t rfluka0[8]={rBox,rBox,rBox,rBox,rBox,rBox,rBox,rBox};
-  
-  flukaGeom->Comment("1st part: Shield");
+  if (fWriteGeometry) {
+      for (ifl=0; ifl<12; ifl++) {
+	  zfluka[ifl]=par1[3+3*ifl]+dl+zRear-dRear;
+	  rfluka1[ifl] = par1[4+3*ifl];
+	  rfluka2[ifl] = par1[5+3*ifl]; 
+	  if (ifl > 3)  rfluka2[ifl]=rfluka2[ifl]-dRSteel1;
+      }
+       flukaGeom->Comment("1st part: Shield");
 // Use default for first three cones
-  flukaGeom->SetDefaultVolume("*ACR02");
-  rfluka2[0]=rfluka2[1]=rfluka2[2]=-1;
+      flukaGeom->SetDefaultVolume("*ACR02");
+      rfluka2[0]=rfluka2[1]=rfluka2[2]=-1;
 //
-  flukaGeom->Comment("Shield");         
-  flukaGeom->PolyCone(rfluka1,    rfluka2,   zfluka,   12, posfluka, "NIW", "MF", "$SHS");
-  flukaGeom->Comment("Vacuum");
-  flukaGeom->PolyCone(rfluka0,  rfluka1+2, zfluka+2,   8, posfluka, "VACUUM", "MF", "$SHS");
+      flukaGeom->Comment("Shield");         
+      flukaGeom->PolyCone(rfluka1,    rfluka2,   zfluka,   12, posfluka, "NIW", "MF", "$SHS");
+      flukaGeom->Comment("Vacuum");
+      flukaGeom->PolyCone(rfluka0,  rfluka1+2, zfluka+2,   8, posfluka, "VACUUM", "MF", "$SHS");
+  }
+  
 //
 // end Fluka
-
+  
+  
   for (i=0; i<39; i++)  pars1[i]  = par1[i];
   for (i=4; i<38; i+=3) pars1[i]  = 0.;
 
@@ -361,9 +371,13 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   dz=dl-tpar[2];
   gMC->Gspos("YSE1", 1, "YGO1", 0., 0., dz, 0, "ONLY");
 
+
 // begin Fluka
-  flukaGeom->Comment("1st part: Steel Envelope");
-  flukaGeom->Cylinder(tpar[0], tpar[1], zRear, zvac4, posfluka, "NIW", "MF", "$SHS");
+  if (fWriteGeometry) {
+      flukaGeom->Comment("1st part: Steel Envelope");
+      flukaGeom->Cylinder(tpar[0], tpar[1], zRear, zvac4, posfluka, "NIW", "MF", "$SHS");
+  }
+  
 //
 // end Fluka
 
@@ -415,7 +429,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
   tpar[0]=0;
   tpar[1]=rB1+hB1+0.5;
-  tpar[2]=10.*lB1/2.;
+  tpar[2]=12.*lB1/2.;
   gMC->Gsvolu("YBM1", "TUBE", idtmed[kVacuum+40], tpar, 3);
   Float_t bsize = tpar[2];
   tpar[0]=rB1+hB1;
@@ -424,7 +438,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
   dz=-bsize+lB1/2.;
 
-  for (i=0; i<10; i++) {
+  for (i=0; i<12; i++) {
     gMC->Gspos("YBU1", i+1 , "YBM1", 0., 0., dz, 0, "ONLY"); 
     dz+=lB1;
   }
@@ -432,8 +446,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   dz=-dl+(zvac1-zstart)+dr11+bsize;
   gMC->Gspos("YBM1", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
-  dz=dl-dr13-(zvac4-zvac3)-bsize;
-  gMC->Gspos("YBM1", 2, "YMO1", 0., 0., dz, 0, "ONLY"); 
+//  dz=dl-dr13-(zvac4-zvac3)-bsize;
+//  gMC->Gspos("YBM1", 2, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
 
 //
@@ -482,10 +496,11 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
 //
 // begin Fluka
-  flukaGeom->Comment("First Bellow");
-  Float_t z1=zvac1+dr11;
-  Float_t z2;
+  Float_t z1, z2, zcy1, zcy2, zfl;
   
+  if (fWriteGeometry) {
+  flukaGeom->Comment("First Bellow");
+  z1=zvac1+dr11;
   for (i=0; i<10; i++) {
       z2=z1+eB1;
       flukaGeom->Cylinder(0., rB1, z1, z2, posfluka, "VACUUM", "MF", "$SHH");
@@ -508,7 +523,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
    }
   flukaGeom->Cylinder(rB1+hB1, rB1+hB1+0.5, zvac1+dr11, z1, posfluka, "AIR", "MF", "$SHH");
   flukaGeom->Cylinder(rB1+hB1+0.5, rBox, zvac1+dr11, z1, posfluka, "AIR", "MF", "$SHH");
-  Float_t zcy1=z1;
+  zcy1=z1;
   
 
   flukaGeom->Comment("Second Bellow");
@@ -535,9 +550,9 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   flukaGeom->Cylinder(rB1+hB1, rB1+hB1+0.5, z1, zvac3-dr13, posfluka, "AIR", "MF", "$SHH");
   flukaGeom->Cylinder(rB1+hB1+0.5, rBox,    z1, zvac3-dr13, posfluka, "AIR", "MF", "$SHH");
 
-  Float_t zcy2=z1;
+  zcy2=z1;
   flukaGeom->Comment("Flange");
-  Float_t zfl=(zcy1+zcy2)/2.;
+  zfl=(zcy1+zcy2)/2.;
 
   z1=zfl-dF1/2.;
   z2=zfl+dF1/2.;  
@@ -570,6 +585,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   flukaGeom->Cylinder(rB1, rB1+0.1     , z1, z2, posfluka, "STEEL", "MF", "$SHH");
   flukaGeom->Cylinder(rB1+0.1, rB1+0.6 , z1, z2, posfluka, "AIR", "MF", "$SHH");
   flukaGeom->Cylinder(rB1+0.6, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
+  }
 // end Fluka
 //
 
@@ -603,6 +619,14 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 // begin Fluka
 //
   Float_t rf1[10], rf2[10];
+  char* materialsA[7] 
+      = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR", "AIR"};
+  char* fieldsA[7] 
+      = {"MF", "MF", "MF", "MF", "MF", "MF"};
+  char* cutsA[7] 
+      = {"$SHH","$SHH","$SHH","$SHH","$SHH","$SHH","$SHH"};
+  
+  if (fWriteGeometry) {
   rf1[0]=0.; rf2[0]=0.;
   rf1[1] = cpar0[1];
   rf2[1] = cpar0[3];
@@ -613,12 +637,6 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   rf2[2]=rf2[1]+0.15; rf2[3]=rf2[2]+0.5; rf2[4]=rf2[3]+0.1; 
   rf2[5]=par1[7];
   
-  char* materialsA[7] 
-      = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR", "AIR"};
-  char* fieldsA[7] 
-      = {"MF", "MF", "MF", "MF", "MF", "MF"};
-  char* cutsA[7] 
-      = {"$SHH","$SHH","$SHH","$SHH","$SHH","$SHH","$SHH"};
 
   flukaGeom->Comment("1st part: Beam pipe lateral struture (left)");
   flukaGeom->OnionCone(rf1, rf2,  6 , zstart, zvac1, posfluka, materialsA, fieldsA, cutsA);
@@ -626,6 +644,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   for (i=1; i<6; i++) rf2[i]=rf1[i]+dr11*TMath::Tan(thetaOpen1);
   flukaGeom->OnionCone(rf1, rf2,  6 , zvac1, zvac1+dr11, posfluka, materialsA, fieldsA, cutsA);
   flukaGeom->Cone(rc1, rf2[5], rc1, rc1+dr11, zvac1 , zvac1+dr11, posfluka,"AIR", "MF", "$SHH");
+  }
+  
 //
 // end Fluka
 
@@ -664,7 +684,9 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
  
   char* cutsB[5] 
       = {"$SHH","$SHH","$SHH","$SHH","$SHH"};
-
+     
+  if (fWriteGeometry) {
+ 
   rf1[0]=rf2[0]=0.;
   rf1[1]=cpar0[1]; 
   rf2[1]=cpar0[3];
@@ -680,7 +702,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   for (i=1; i<5; i++) rf1[i]=rf2[i];
   rf1[5]=rf2[5]+dr13;
   flukaGeom->OnionCone(rf1, rf2,  6 , zvac3-dr13, zvac3, posfluka, materialsB, fieldsB, cutsB);
-
+  }
+  
 //
 // end Fluka
 
@@ -744,8 +767,10 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
 //
 // begin Fluka
-
-  char* materials1[8] 
+  Float_t r3V;
+  
+  if (fWriteGeometry) {
+   char* materials1[8] 
       = {"VACUUM", "STEEL", "PIPEINSU", "STEEL", "AIR", "NIW", "NIW", "STEEL"};
   char* fields1[8] 
       = {"MF", "MF", "MF", "MF", "MF", "MF", "MF", "MF"};
@@ -823,32 +848,41 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   rf2[7] = 26;
   flukaGeom->OnionCone(rf1, rf2,  9 , zConeE, zvac7, posfluka, materials1, fields1, cuts1);
 
-  Float_t r3V = rf2[1];
-
+  r3V = rf2[1];
+  }
+  
 // end Fluka
 
 //
 // Lead cone 
 //
-  Float_t parPb[12];
-  parPb[0]  = 0.;
-  parPb[1]  = 360.;
-  parPb[2]  = 3.;
+  Float_t parPb[18];
+  parPb[ 0]  = 0.;
+  parPb[ 1]  = 360.;
+  parPb[ 2]  = 5.;
   Float_t dlPb=(zvac7-zPb)/2.;
   
-  parPb[3]  = -dlPb;
-  parPb[4]  =  r2+(zPb-zvac4-10.) * TMath::Tan(thetaOpen2);
-  parPb[5]  =  zPb*TMath::Tan(accMin)-dRSteel2;
+  parPb[ 3]  = -dlPb;
+  parPb[ 4]  =  r2+(zPb-zvac4-10.) * TMath::Tan(thetaOpen2);
+  parPb[ 5]  =  zPb*TMath::Tan(accMin)-dRSteel2;
   
-  parPb[6]  = -dlPb+(zConeE-zPb);
-  parPb[7]  =  r2+(zConeE-zvac4-10.) * TMath::Tan(thetaOpen2);
-  parPb[8]  = 26.;
-  
-  parPb[9]   = dlPb;
-  parPb[10]  =  r2+(zvac7-zvac4-10.) * TMath::Tan(thetaOpen2);
+  parPb[ 6]  = -dlPb+(zConeE-zPb);
+  parPb[ 7]  =  r2+(zConeE-zvac4-10.) * TMath::Tan(thetaOpen2);
+  parPb[ 8]  = 26.;
+
+  parPb[ 9]  = -dlPb+(zch32+4.-zPb);
+  parPb[10]  =  r2+(zch32+4.-zvac4-10.) * TMath::Tan(thetaOpen2);
   parPb[11]  = 26.;
 
-  gMC->Gsvolu("YXO2", "PCON", idtmed[kPb], parPb, 12);	  
+  parPb[12]  = -dlPb+(zch32+4.-zPb);
+  parPb[13]  =  r2+(zch32+4.-zvac4-10.) * TMath::Tan(thetaOpen2);
+  parPb[14]  = 30.;
+  
+  parPb[15]  = dlPb;
+  parPb[16]  =  r2+(zvac7-zvac4-10.) * TMath::Tan(thetaOpen2);
+  parPb[17]  = 30.;
+
+  gMC->Gsvolu("YXO2", "PCON", idtmed[kPb], parPb, 18);	  
   gMC->Gspos("YXO2", 1, "YGO2", 0., 0., (zPb-zvac4)/2., 0, "ONLY");  
 
 //
@@ -953,6 +987,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   gMC->Gsvolu("YGO3", "PCON", idtmed[iHeavy+40], par3, 27);
 
 // begin Fluka
+ if (fWriteGeometry) {
   Float_t rfvacu0[15];
   for (ifl=0; ifl<8; ifl++) {
       zfluka[ifl]=par3[3+3*ifl]+dl+zvac7;
@@ -1079,9 +1114,11 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   flukaGeom->Cylinder(rB2, rB2+0.1     , z1, z2, posfluka, "STEEL", "MF", "$SHH");
   flukaGeom->Cylinder(rB2+0.1, rB2+0.2 , z1, z2, posfluka, "AIR", "MF", "$SHH");
   flukaGeom->Cylinder(rB2+0.2, rBox    , z1, z2, posfluka, "AIR", "MF", "$SHH");
+ }
+ 
 //
 // end Fluka
-
+ 
   for (i=4; i<26; i+=3) par3[i]  = 0;
 
   gMC->Gsvolu("YMO3", "PCON", idtmed[kVacuum+40], par3, 27);
@@ -1089,11 +1126,11 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
 //
 // Steel envelope
-  tpar[0]=26;
-  tpar[1]=30;
-  tpar[2]=dl;
-  gMC->Gsvolu("YS31", "TUBE", idtmed[kSteel], tpar, 3);
-  gMC->Gspos("YS31", 1, "YGO3", 0., 0., 0., 0, "ONLY");  
+//  tpar[0]=26;
+//  tpar[1]=30;
+//  tpar[2]=dl;
+//  gMC->Gsvolu("YS31", "TUBE", idtmed[kSteel], tpar, 3);
+//  gMC->Gspos("YS31", 1, "YGO3", 0., 0., 0., 0, "ONLY");  
   dZ+=dl;
   gMC->Gspos("YMO3", 1, "YMOT", 0., 0., dZ, 0, "ONLY");  
   dZ+=dl;
@@ -1239,6 +1276,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
   gMC->Gsvolu("YGO4", "PCON", idtmed[iHeavy+40], par4, 24);
 
+
 //  parPb[0]  = (zvac12-zvac10)/2.;
 //  parPb[1]  = parPb[3];
 //  parPb[2]  = 31.;
@@ -1271,9 +1309,11 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
 //
 // begin Fluka
-
-  Float_t r10=r3+(zvac10-zvac9-dHorZ) * TMath::Tan(thetaOpen3);
-  Float_t r11=cpar[1];
+  Float_t r10, r11;
+  
+  if (fWriteGeometry) {
+  r10=r3+(zvac10-zvac9-dHorZ) * TMath::Tan(thetaOpen3);
+  r11=cpar[1];
 
   flukaGeom->Comment("4th part: Shield");
   
@@ -1295,7 +1335,9 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 	      posfluka, "PORTLAND", "NF", "$SHH");
   flukaGeom->Comment("4th part: VACUUM");
   flukaGeom->Cone(0., 0., cpar[1]-0.1, cpar[3], zvac11, zvac12, 
-	      posfluka, "VACUUM", "NF", "$SHH");
+		  posfluka, "VACUUM", "NF", "$SHH");
+ }
+ 
 //
 // end Fluka
 //
@@ -1307,7 +1349,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   tpar[2]=(zvac10-zvac9)/2.;
   gMC->Gsvolu("YS41", "TUBE", idtmed[kSteel], tpar, 3);
   dz+=tpar[2];
-  gMC->Gspos("YS41", 1, "YGO4", 0., 0., dz, 0, "ONLY");  
+//  gMC->Gspos("YS41", 1, "YGO4", 0., 0., dz, 0, "ONLY");  
   dz+=tpar[2];
 
   tpar[0]=R41-dRSteel2;
@@ -1354,20 +1396,23 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 //
   tpar[0]=0.;
   tpar[1]=R43;
-  tpar[2]=50.;
+  tpar[2]=60.;
   gMC->Gsvolu("YAEM", "TUBE", idtmed[kAir], tpar, 3);
   tpar[0]=rAbs;
   tpar[1]=R43;
-  tpar[2]=50.;
+  tpar[2]=60.;
   gMC->Gsvolu("YFEM", "TUBE", idtmed[kFe], tpar, 3);
   gMC->Gspos("YFEM", 1, "YAEM", 0., 0., 0., 0, "ONLY"); 
 
 //
 
-  dz=zvac12+50.;
-  gMC->Gspos("YAEM", 1, "ALIC", 0., 0., dz, 0, "ONLY"); 
-
-
+  if (gMC->VolId("HUP2")) {
+      gMC->Gspos("YAEM", 1, "HUP2", 0., 0., 0., 0, "ONLY");
+  } else {
+      dz=zvac12+60.;
+      gMC->Gspos("YAEM", 1, "ALIC", 0., 0., dz, 0, "ONLY"); 
+  }
+  
 // 
 //
 // 4th section: vacuum system 
@@ -1396,6 +1441,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
 //
 // begin Fluka
+ if (fWriteGeometry) {
   flukaGeom->Comment("4th part: Beam pipe lateral structure");
   for (i=0; i<7; i++)  fieldsA[i] = "NF";
 
@@ -1432,6 +1478,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   rf2[5]=r11;
 
   flukaGeom->OnionCone(rf1, rf2,  6 , zvac10, zvac11, posfluka, materialsA, fieldsA, cutsA);
+ }
+ 
 //  
 // end Fluka
 //
@@ -1459,7 +1507,6 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 //  cpar[4]=cpar0[4]-dProtS;
 //  gMC->Gsvolu("YP32", "CONE", idtmed[kVacuum+40], cpar, 5);
 //  gMC->Gspos("YP32", 1, "YV32", 0., 0., 0., 0, "ONLY"); 
-  
   dz=dl-cpar[0];
   gMC->Gspos("YV32", 1, "YMO4", 0., 0., dz, 0, "ONLY"); 
 //
@@ -1644,7 +1691,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 	          zch22, zvac6, posfluka,"NIW", "MF", "$SHS");
 
 */
-  flukaGeom->Finish();
+  if (fWriteGeometry) flukaGeom->Finish();
 
 // 
 // end Fluka
@@ -1701,9 +1748,96 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
       par0[31]  = 30.;
       par0[32]  = par0[29];
 //
+      Int_t ii;
+      
+      for (ii = 0; ii < 33; ii++) printf("\n %d %f", ii, par0[ii] );
+      
       gMC->Gsvolu("YOPB", "PCON", idtmed[kPb], par0, 33);
-      dz = -(zvac12-zstart)/2. + (zch32-zstart) + dl;
-      gMC->Gspos("YOPB", 1, "YMOT", 0., 0., dz, 0, "ONLY");
+      Float_t dzs = -(zvac12-zstart)/2. + (zch32-zstart) + dl;
+      gMC->Gspos("YOPB", 1, "YMOT", 0., 0., dzs, 0, "ONLY");
+  
+      par0[ 0]  = 0.;
+      par0[ 1]  = 360.;
+      par0[ 2]  = 18.;
+  
+      par0[ 3]  = -dl;
+      par0[ 5]  = 30.+(zch32-zConeE)*TMath::Tan(thetaOpenPbO);
+      par0[ 4]  = par0[ 5] - 4.;
+//    4th station
+      par0[ 6]  = -dz + zch41 - 4.;
+      par0[ 8]  = 30.+(zch41-4.-zConeE)*TMath::Tan(thetaOpenPbO);
+      par0[ 7]  = par0[ 8] -4.;
+
+      par0[ 9]  = -dz + zch41 - 4.;
+      par0[11]  = par0[8];  
+      par0[10]  = 33.5;
+
+      par0[12]  = -dz + zch41;
+      par0[14]  = 30.+(zch41-zConeE)*TMath::Tan(thetaOpenPbO);  
+      par0[13]  = 33.5;
+
+      par0[15]  = -dz + zch41;
+      par0[17]  = 37.5;  
+      par0[16]  = 33.5;
+                      
+      par0[18]  = -dz + zch42;
+      par0[20]  = 37.5;
+      par0[19]  = 33.5;
+
+      par0[21]  = -dz + zch42;
+      par0[23]  = 30.+(zch42-zConeE)*TMath::Tan(thetaOpenPbO);  
+      par0[22]  = 33.5;
+
+      par0[24]  = -dz + zch42 + 4.;
+      par0[26]  = 30.+(zch42+4.-zConeE)*TMath::Tan(thetaOpenPbO);
+      par0[25]  = 33.5;
+
+      par0[27]  = -dz + zch42 + 4.;
+      par0[29]  = 30.+(zch42+4.-zConeE)*TMath::Tan(thetaOpenPbO);
+      par0[28]  = par0[29] - 4.;
+
+//    5th station
+      par0[30]  = -dz + zch51 - 4.;
+      par0[32]  = 30.+(zch51-4.-zConeE)*TMath::Tan(thetaOpenPbO);
+      par0[31]  = par0[32] - 4.;
+      printf("\n test: %f %f", par0[31], par0[32]);
+      
+      par0[33]  = -dz + zch51 - 4.;
+      par0[35]  = par0[32];
+      par0[34]  = 33.5;
+
+      par0[36]  = -dz + zch51;
+      par0[38]  = 30.+(zch51-zConeE)*TMath::Tan(thetaOpenPbO);
+      par0[37]  = 33.5;
+
+      par0[39]  = -dz + zch51;
+      par0[41]  = 37.5;
+      par0[40]  = 33.5;
+
+      par0[42]  = -dz + zch52;
+      par0[44]  = 37.5;
+      par0[43]  = 33.5;
+
+      par0[45]  = -dz + zch52;
+      par0[47]  = 30.+(zch52-zConeE)*TMath::Tan(thetaOpenPbO);
+      par0[46]  = 33.5;
+
+      par0[48]  = -dz + zch52 + 4.;
+      par0[50]  = 30.+(zch52+4.-zConeE)*TMath::Tan(thetaOpenPbO);
+      par0[49]  = 33.5;
+
+      par0[51]  = -dz + zch52 + 4.;
+      par0[53]  = 30.+(zch52+4.-zConeE)*TMath::Tan(thetaOpenPbO);
+      par0[52]  = par0[53] - 4.;
+
+      par0[54]  = +dl;
+      par0[56]  = par0[53];
+      par0[55]  = par0[52];
+
+      for (ii = 0; ii < 57; ii++) printf("\n %d %f", ii, par0[ii] );
+
+      gMC->Gsvolu("YOSE",    "PCON", idtmed[kSteel], par0, 57);
+      gMC->Gspos ("YOSE", 1, "YOPB", 0., 0., 0., 0, "ONLY");
   }
 }
 
