@@ -61,6 +61,15 @@ class AliITSsimulation : public TObject {
     // digitizes module using the "fast" detector simulator.
     virtual void CreateFastRecPoints(AliITSmodule *mod,Int_t module,
 				     TRandom *rndm) {}
+    // Return pointer to Response model
+    virtual AliITSresponse* GetResponseModel(){return fResponse;}
+    // set pointer to Response model
+    virtual void SetResponseModel(AliITSresponse *res){fResponse = res;}
+    // Return pointer to Response model
+    virtual AliITSsegmentation* GetSegmentationModel(){return fSegmentation;}
+    // set pointer to Response model
+    virtual void SetSegmentationModel(AliITSsegmentation *seg){
+	fSegmentation = seg;}
 
  protected:
     AliITSresponse      *fResponse;       //! response
