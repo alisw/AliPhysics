@@ -264,7 +264,6 @@ public:
   virtual Int_t   IsVersion()                                            const =0;            
           void    Hits2SDigits();                                                                                 //virtual
   AliDigitizer*   CreateDigitizer(AliRunDigitizer* man) const {return new AliRICHDigitizer(man);}                 //virtual
-          void    SDigits2Digits();                                                                               //virtual
   
   inline  void    CreateHits();    
   inline  void    CreateSDigits();  

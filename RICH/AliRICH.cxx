@@ -166,13 +166,6 @@ void AliRICH::Hits2SDigits()
   if(GetDebug()) Info("Hit2SDigits","Stop.");
 }//Hits2SDigits()
 //__________________________________________________________________________________________________
-void AliRICH::SDigits2Digits()
-{
-//Generate digits from sdigits.
-  if(GetDebug()) Info("SDigits2Digits","Start.");
-  if(GetDebug()) Info("SDigits2Digits","Stop.");
-}//SDigits2Digits()
-//__________________________________________________________________________________________________
 void AliRICH::BuildGeometry() 
 {
 //Builds a TNode geometry for event display

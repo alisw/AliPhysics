@@ -17,8 +17,9 @@ public:
            AliRICHDigitizer(AliRunDigitizer * manager);
   virtual ~AliRICHDigitizer();
         
-  void   Exec(Option_t* option=0);                //virtual
-  Bool_t GetDebug() const {return gAlice->GetDebug();}
+  void     Exec(Option_t* option=0);                //virtual
+  Bool_t   GetDebug() const {return gAlice->GetDebug();}
+  AliRICH* Rich()     const {return fRich;}
 protected:
   AliRICH* fRich; //pointer to main RICH object
   ClassDef(AliRICHDigitizer,0)
