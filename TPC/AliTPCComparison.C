@@ -353,7 +353,7 @@ Int_t good_tracks_tpc(GoodTrackTPC *gt, const Int_t max, const Int_t event) {
      break;
    case 2:
      {
-       TFile fff("digits.root");
+       TFile fff("galice.root");
 	 
       char dname[100]; sprintf(dname,"TreeD_75x40_100x60_150x60_%d",event);
       TTree *TD=(TTree*)gDirectory->Get(dname);
