@@ -32,7 +32,8 @@ class AliMergeCombi;
 class AliRunDigitizer: public TTask {
 
 public:
-  AliRunDigitizer(Int_t nInputStream=1, Int_t sperb=1);
+  AliRunDigitizer();
+  AliRunDigitizer(Int_t nInputStreams, Int_t sperb=1);
   virtual ~AliRunDigitizer();
   void      AddDigitizer(AliDigitizer *digitizer);
   void      SetOutputFile(TString fn);

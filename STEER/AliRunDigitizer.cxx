@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/11/15 11:07:25  jchudoba
+Set to zero new pointers to TPC and TRD special trees in the default ctor. Add const to all Get functions. Remove unused constant, rename constant according coding rules.
+
 Revision 1.9  2001/11/15 09:00:11  jchudoba
 Add special treatment for TPC and TRD, they use different trees than other detectors
 
@@ -80,11 +83,30 @@ Manager class for merging/digitization
 // same geometry in all input files), gAlice is taken from the first 
 // input file on the first stream.
 //
-// Example with MUON digitizer:
+// Example with MUON digitizer, no merging, just digitization
+//
+//  AliRunDigitizer * manager = new AliRunDigitizer(1,1);
+//  manager->SetInputStream(0,"galice.root");
+//  AliMUONDigitizer *dMUON  = new AliMUONDigitizer(manager);
+//  manager->Exec("");
+//
+// Example with MUON digitizer, merge all events from 
+//   galice.root (signal) file with events from bgr.root 
+//   (background) file. Number of merged events is
+//   min(number of events in galice.root, number of events in bgr.root)
 //
 //  AliRunDigitizer * manager = new AliRunDigitizer(2,1);
-//  manager->SetInputStream(0,"1track_10events_phi45_60.root");
-//  manager->SetInputStream(1,"1track_10events_phi120_135.root");
+//  manager->SetInputStream(0,"galice.root");
+//  manager->SetInputStream(1,"bgr.root");
+//  AliMUONDigitizer *dMUON  = new AliMUONDigitizer(manager);
+//  manager->Exec("");
+//
+// Example with MUON digitizer, save digits in a new file digits.root,
+//   process only 1 event
+//
+//  AliRunDigitizer * manager = new AliRunDigitizer(2,1);
+//  manager->SetInputStream(0,"galice.root");
+//  manager->SetInputStream(1,"bgr.root");
 //  manager->SetOutputFile("digits.root");
 //  AliMUONDigitizer *dMUON  = new AliMUONDigitizer(manager);
 //  manager->SetNrOfEventsToWrite(1);
@@ -115,9 +137,29 @@ Manager class for merging/digitization
 ClassImp(AliRunDigitizer)
 
 ////////////////////////////////////////////////////////////////////////
+AliRunDigitizer::AliRunDigitizer()
+{
+// root requires default ctor, where no new objects can be created
+// do not use this ctor, it is supplied only for root needs
+  
+// just set all pointers - data members to 0
+  fOutput = 0;
+  fTreeD = 0;
+  fTreeDTPC = 0;
+  fTreeDTRD = 0;
+  fInputStreams = 0;
+  for (Int_t i=0;i<kMaxStreamsToMerge;i++) {
+    fArrayTreeS[i]=fArrayTreeH[i]=fArrayTreeTPCS[i]=fArrayTreeTRDS[i]=NULL;
+    fInputFiles[i]=0;
+  }
+  fCombi = 0;
+
+}
+
+////////////////////////////////////////////////////////////////////////
 AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb) : TTask("AliRunDigitizer","The manager for Merging")
 {
-// default ctor
+// ctor which should be used to create a manager for merging/digitization
   if (nInputStreams == 0) {
     Error("AliRunDigitizer","Specify nr of input streams");
     return;
@@ -128,7 +170,7 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb) : TTask("AliR
   fOutputDirName = ".";
   fCombination.Set(kMaxStreamsToMerge);
   for (i=0;i<kMaxStreamsToMerge;i++) {
-    fArrayTreeS[i]=fArrayTreeH[i]=fArrayTreeTPCS[i]=NULL;
+    fArrayTreeS[i]=fArrayTreeH[i]=fArrayTreeTPCS[i]=fArrayTreeTRDS[i]=NULL;
     fCombination[i]=-1;
   }
   fkMASKSTEP = 10000000;
@@ -141,7 +183,7 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb) : TTask("AliR
 // the first Input is open RW to be output as well
   new(lInputStreams[0]) AliStream("UPDATE");
   for (i=1;i<nInputStreams;i++) {
-    new(lInputStreams[i]) AliStream();
+    new(lInputStreams[i]) AliStream("READ");
   }
   fOutput = 0;
   fEvent = 0;

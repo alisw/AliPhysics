@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/10/15 17:31:56  jchudoba
+Bug correction
+
 Revision 1.2  2001/10/04 15:58:52  jchudoba
 Option to open the stream in READ or UPDATE mode
 
@@ -46,14 +49,11 @@ ClassImp(AliStream)
 
 AliStream::AliStream()
 {
-// default ctor
-  fLastEventSerialNr = -1;
-  fLastEventNr = 0;
-  fCurrentFileIndex = -1;
+// root requires default ctor, where no new objects can be created
+// do not use this ctor, it is supplied only for root needs
   fCurrentFile = 0;
   fEvents = 0;
-  fFileNames = new TObjArray(1);
-  fMode = "READ";
+  fFileNames = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
