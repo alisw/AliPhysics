@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/11/01 15:57:13  kowal2
+Moved from the TPC directory
+
 Revision 1.3  2000/06/30 12:07:49  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -35,6 +38,7 @@ New data structure handling
 //  Alice segment manager object                                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+#include <iostream.h>
 
 #include  <TROOT.h>
 #include <TTree.h>
@@ -44,6 +48,7 @@ New data structure handling
 #include "TError.h"
 #include "TClass.h"
 
+#include "AliRun.h"
 #include "AliSegmentID.h"
 #include "AliSegmentArray.h"
 #include "TObjString.h"
@@ -225,13 +230,24 @@ Bool_t AliSegmentArray::MakeArray(Int_t n)
 }
 
 
-void AliSegmentArray::MakeTree()
+void AliSegmentArray::MakeTree(char *file)
 {
   //  AliSegmentID  segment;
   AliSegmentID * psegment = NewSegment();  
   if (fTree) delete fTree;
   fTree = new TTree("Segment Tree","Tree with segments");
   fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000,1);
+  if (file) {
+        TDirectory *wd = gDirectory;
+        fBranch->SetFile(file);
+        TBranch *b = fBranch;
+        TIter next( b->GetListOfBranches());
+        while ((b=(TBranch*)next())) {
+           b->SetFile(file);
+        }
+   	    cout << "Diverting branch " << "Segment" << " to file " << file << endl;  
+        wd->cd(); 
+    }
   delete psegment;
 }              
 
