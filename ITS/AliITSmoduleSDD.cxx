@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:20  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 
@@ -30,6 +33,6 @@ ClassImp(AliITSmoduleSDD)
 
 AliITSmoduleSDD::AliITSmoduleSDD() {};
 
-AliITSmoduleSDD::AliITSmoduleSDD(Int_t index) {};
+AliITSmoduleSDD::AliITSmoduleSDD(Int_t ) {};
 
 AliITSmoduleSDD::~AliITSmoduleSDD() {};

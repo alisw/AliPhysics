@@ -15,10 +15,36 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:20  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 
 #include "AliITSmoduleSSD.h"
+
+    //Technical parameters of detector
+const Float_t   AliITSmoduleSSD::kStereo = 0.0175;  //Stereo Angle 17.5 mrad
+const Float_t   AliITSmoduleSSD::kTan = 0.0175;  
+const Int_t     AliITSmoduleSSD::kNStrips = 768;    //Number of strips on each side
+const Float_t   AliITSmoduleSSD::kPitch = 0.095;    //Distance strip - strip (mm)
+const Float_t   AliITSmoduleSSD::kX = 72.96;        //X size (mm)
+const Float_t   AliITSmoduleSSD::kY = 0.3;          //Y size (mm)
+const Float_t   AliITSmoduleSSD::kZ = 40;           //Thickness (mm)
+    
+    // <------------------------------
+  
+    //______________________________________________________________
+    //  
+    // Parameters for simulation
+    //______________________________________________________________
+      
+const Float_t   AliITSmoduleSSD::kSigmaP = 0.003;     //Gaussian sigm
+const Float_t   AliITSmoduleSSD::kSigmaN = 0.002;
+const Int_t     AliITSmoduleSSD::kSteps  = 10;        //Number of steps 
+const Int_t     AliITSmoduleSSD::kTresholdP = 1500;    
+const Int_t     AliITSmoduleSSD::kTresholdN = 2500; 
+   
 
 
 ClassImp(AliITSmoduleSSD)

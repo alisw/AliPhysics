@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  1999/09/29 09:24:20  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////
@@ -87,7 +90,7 @@ AliITSgeom::AliITSgeom(const char *filename){
    ITS_geom *g;
    Int_t    l,a,d;
    Float_t  x,y,z,o,p,q,r,s,t;
-   Double_t or,pr,qr,rr,sr,tr; // Radians
+   Double_t oor,pr,qr,rr,sr,tr; // Radians
    Double_t lr[9];
    Double_t si; // sin(angle)
    Double_t PI = TMath::Pi(), byPI = PI/180.;
@@ -140,7 +143,7 @@ AliITSgeom::AliITSgeom(const char *filename){
       i = d + a*fNdet[l]; // position of this detector
       g = &(fg[l][i]);
 
-      or = byPI*o;
+      oor = byPI*o;
       pr = byPI*p;
       qr = byPI*q;
       rr = byPI*r;
@@ -150,12 +153,12 @@ AliITSgeom::AliITSgeom(const char *filename){
       g->fx0   = x;
       g->fy0   = y;
       g->fz0   = z;
-      si    = sin(or);if(o== 90.0) si = +1.0;
+      si    = sin(oor);if(o== 90.0) si = +1.0;
                       if(o==270.0) si = -1.0;
                       if(o==  0.0||o==180.) si = 0.0;
       lr[0] = si * cos(pr);
       lr[1] = si * sin(pr);
-      lr[2] = cos(or);if(o== 90.0||o==270.) lr[2] = 0.0;
+      lr[2] = cos(oor);if(o== 90.0||o==270.) lr[2] = 0.0;
                       if(o== 0.0)           lr[2] = +1.0;
                       if(o==180.0)          lr[2] = -1.0;
       si    =  sin(qr);if(q== 90.0) si = +1.0; 
@@ -182,10 +185,10 @@ AliITSgeom::AliITSgeom(const char *filename){
          for(d=0;d<3;d++) g->fr[3*a+d] = lr[3*a+d] = si*lr[3*a+d];
       } // end for a
       // get angles from matrix up to a phase of 180 degrees.
-      or     = atan2(lr[7],lr[8]);if(or<0.0) or += 2.0*PI;
+      oor     = atan2(lr[7],lr[8]);if(oor<0.0) oor += 2.0*PI;
       pr     = asin(lr[2]);       if(pr<0.0) pr += 2.0*PI;
       qr     = atan2(lr[3],lr[0]);if(qr<0.0) qr += 2.0*PI;
-      g->frx = or;
+      g->frx = oor;
       g->fry = pr;
       g->frz = qr;
       // l = layer-1 at this point.
@@ -306,7 +309,7 @@ void AliITSgeom::GtoL(const Int_t *id,const Float_t *g,Float_t *l){
    return;
 }
 //________________________________________________________________________
-void AliITSgeom::GtoL(Int_t index,const Float_t *g,Float_t *l){
+void AliITSgeom::GtoL(const Int_t index,const Float_t *g,Float_t *l){
 ////////////////////////////////////////////////////////////////////////
 //     The function that does the local active volume detector Cartesian
 // coordinate to global ALICE Cartesian coordinate transformation.
@@ -391,7 +394,7 @@ void AliITSgeom::LtoG(const Int_t *id,const Float_t *l,Float_t *g){
    return;
 }
 //________________________________________________________________________
-void AliITSgeom::LtoG(Int_t index,const Float_t *l,Float_t *g){
+void AliITSgeom::LtoG(const Int_t index,const Float_t *l,Float_t *g){
 ////////////////////////////////////////////////////////////////////////
 //     The function that does the local active volume detector Cartesian
 // coordinate to global ALICE Cartesian coordinate transformation.

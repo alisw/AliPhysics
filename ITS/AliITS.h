@@ -225,11 +225,11 @@ class AliITS : public AliDetector {
 
     inline void GetGeometryVersion(Int_t &a,Int_t &b)
       {a = fMajorVersion;b=fMinorVersion;return;}
-    inline virtual Int_t  IsVersion() {return 1;}
+           virtual Int_t  IsVersion() const {return 1;}
                    Int_t  DistancetoPrimitive(Int_t px, Int_t py);
            virtual void   Init();
            virtual void   MakeBranch(Option_t *opt=" ");
-    inline virtual void   SetEUCLID(Bool_t euclid=1){fEuclidOut = euclid;}
+           virtual void   SetEUCLID(Bool_t euclid=1) {fEuclidOut = euclid;}
            virtual void   StepManager()=0;
     //
     // ITS geometry functions

@@ -126,13 +126,13 @@ protected:
     // Proceding part should be in SSDgeo ----->
     
     //Technical parameters of detector
-    static const Float_t   kStereo = 0.0175;  //Stereo Angle 17.5 mrad
-    static const Float_t   kTan = 0.0175;  
-    static const Int_t     kNStrips = 768;    //Number of strips on each side
-    static const Float_t   kPitch = 0.095;    //Distance strip - strip (mm)
-    static const Float_t   kX = 72.96;        //X size (mm)
-    static const Float_t   kY = 0.3;          //Y size (mm)
-    static const Float_t   kZ = 40;           //Thickness (mm)
+    static const Float_t   kStereo ;// = 0.0175;  //Stereo Angle 17.5 mrad
+    static const Float_t   kTan ;// = 0.0175;  
+    static const Int_t     kNStrips ;// = 768;    //Number of strips on each side
+    static const Float_t   kPitch ;// = 0.095;    //Distance strip - strip (mm)
+    static const Float_t   kX ;// = 72.96;        //X size (mm)
+    static const Float_t   kY ;// = 0.3;          //Y size (mm)
+    static const Float_t   kZ ;// = 40;           //Thickness (mm)
     
     // <------------------------------
   
@@ -141,11 +141,11 @@ protected:
     // Parameters for simulation
     //______________________________________________________________
       
-    static const Float_t   kSigmaP = 0.003;     //Gaussian sigm
-    static const Float_t   kSigmaN = 0.002;
-    static const Int_t     kSteps  = 10;        //Number of steps 
-    static const Int_t     kTresholdP = 1500;    
-    static const Int_t     kTresholdN = 2500; 
+    static const Float_t   kSigmaP ;// = 0.003;     //Gaussian sigm
+    static const Float_t   kSigmaN ;// = 0.002;
+    static const Int_t     kSteps  ;// = 10;        //Number of steps 
+    static const Int_t     kTresholdP ;// = 1500;    
+    static const Int_t     kTresholdN ;// = 2500; 
    
     //________________________________________________________________
     //      
