@@ -57,10 +57,7 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   AliPHOS(name,title)
 {
   // ctor : title is used to identify the layout
- 
-  // create the getter not needed
-  //AliPHOSGetter::GetInstance(gDirectory->GetName(), 0);
-  
+  GetGeometry() ; 
 }
 
 //____________________________________________________________________________
@@ -879,25 +876,25 @@ void AliPHOSv0::Init(void)
   Int_t i;
 
   if(fDebug) {
-    printf("\n%s: ",ClassName());
-    for(i=0;i<35;i++) printf("*");
-    printf(" PHOS_INIT ");
-    for(i=0;i<35;i++) printf("*");
-    printf("\n%s: ",ClassName());
-    
-    
+    cout << endl ;  
+    for(i=0;i<35;i++) 
+      cout <<"*";
+    cout << "INFO: " << ClassName() << "::Init ";
+    for(i=0;i<35;i++) 
+      cout << "*";
+    cout << endl;
+   
     // Here the PHOS initialisation code (if any!)
-
+    
     AliPHOSGeometry * geom = GetGeometry() ; 
 
     if (geom!=0)  
       cout << "AliPHOS" << Version() << " : PHOS geometry intialized for " << geom->GetName() << endl ;
     else
-      cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;   
+      cout << "AliPHOS" << Version() << " : PHOS geometry initialization failed !" << endl ;       
+    for(i=0;i<80;i++) 
+      cout << "*" ;
+    cout << endl;
     
-    for(i=0;i<80;i++) printf("*");
-    printf("\n");
-  }  
+  }
 }
-
-

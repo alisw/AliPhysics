@@ -27,7 +27,7 @@ public:
     // Gives the version number 
     return 2 ; 
   }
-  virtual TString Version(void){ 
+  virtual const TString Version(void)const { 
     // returns the version number 
     return TString("v2") ; 
   }

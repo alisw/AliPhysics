@@ -54,7 +54,7 @@ class AliPHOSv0 : public AliPHOS {
     // Gives the version number 
     return 0 ; 
   }
-  virtual TString Version(void){ 
+  virtual const TString Version(void)const { 
     // As above
     return TString("v0") ; 
   }

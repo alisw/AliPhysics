@@ -50,7 +50,7 @@ public:
   virtual void   Init(void) ;                                        // does nothing
   virtual Int_t  IsVersion(void) const {
     // Gives the version number 
-    return 4 ; 
+    return 99 ; 
   }
 
   void    MakeBranch(Option_t* opt, const char *file=0) ;
@@ -67,7 +67,7 @@ public:
   Double_t     SigmaE(Double_t energy) ;    // calulates the energy resolution at a given Energy                           
   Double_t     SigmaP(Double_t energy, Double_t inc) ; // calulates the position resolution at a given Energy at a given incidence                           
   virtual void StepManager(void) ;          // does the tracking through PHOS and a preliminary digitalization
-  virtual TString Version(void){ 
+  virtual const TString Version(void)const { 
     // As IsVersion
     return TString("vFast") ; 
   }

@@ -42,7 +42,7 @@ public:
   }
 
   virtual void   StepManager(void) ;                              
-  virtual TString Version(void){ return TString("v1") ;  }
+  virtual const TString Version(void)const { return TString("v1") ;  }
 
   AliPHOSv1 & operator = (const AliPHOSv1 & rvalue)  {
     // assignement operator requested by coding convention but not needed

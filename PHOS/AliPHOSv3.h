@@ -36,7 +36,7 @@ class AliPHOSv3 : public AliPHOSv1 {
     // Gives the version number 
     return 3 ; 
   }
-  virtual TString Version(void){ 
+  virtual const TString Version(void)const { 
     // returns the version number 
     return TString("v3") ; 
   }   
