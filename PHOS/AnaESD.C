@@ -35,44 +35,73 @@
 #include "AliEMCALRecParticle.h"
 #include "AliPHOSRecParticle.h"
 #include "AliKalmanTrack.h"
+#include "AliPHOSAliEnFile.h"
 #endif
 
 void Match(TParticle * pp, AliESDtrack * cp, Double_t * dist) ; 
 TH1D * heta = new TH1D("heta", "Eta correlation", 100, 0., 360.) ; 
 TH1D * hphi = new TH1D("hphi", "Phi correlation", 100, 0., 360.) ; 
- 
+// Data Challenge identification
+const TString kYear("2004") ; 
+const TString kProd("02") ; 
+const TString kVers("V4.01.Rev.00") ; 
 
-void Ana() 
+Bool_t Ana(const TString type = "per5", const Int_t run = 1, const Int_t nOfEvt = 1) 
 { 
   Double_t dist[3] ; 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance("galice.root") ; 
-  Int_t nEvent = gime->MaxEvent() ;  
-  Int_t event ; 
-  AliESD * esd = 0 ;
-  for (event = 0 ; event < nEvent; event++) {
-    esd = gime->ESD(event) ; 
-    //esd->Print();  
-    Int_t caloindex ;
-    // Calorimeter tracks 
-    AliESDCaloTrack * ct ; 
-    for (caloindex = 0 ; caloindex < esd->GetNumberOfCaloTracks() ; caloindex++) {
-      // get the calorimeter type of particles (PHOS or EMCAL)
-      ct = esd->GetCaloTrack(caloindex) ;
-      TParticle * part = ct->GetRecParticle() ; 
+  // get the LFN file name in the AliEn catalogue ; 
+  AliPHOSAliEnFile lfn ; 
+  lfn.SetPath(kYear, kProd, kVers, type) ;  
+  lfn.SetRun(run) ; 
 
-      AliESDtrack * cp ; 
-      Int_t cpindex ; 
-      for (cpindex = 0 ; cpindex < esd->GetNumberOfTracks() ; cpindex++) {
-	// get the charged tracks from central tracking
-	cp = esd->GetTrack(cpindex) ;
-	Match(part, cp, dist) ; 
+  //loop over the events 
+  Int_t nevt, evt = 0 ; 
+  for (nevt = 0 ; nevt < nOfEvt ; nevt++) { 
+    evt++ ; 
+    lfn.SetEvt(evt) ;
+    TString fileName = lfn.GetLFN() ; 
+    
+    if (fileName.IsNull()) {
+      nevt-- ; 
+      continue ; 
+    }
+
+    printf(">>>>>>>>>>>> Processing %s-%s/%s/%s : run # %d event # %d \n", 
+	   kYear.Data(), kProd.Data(), kVers.Data(), type.Data(), run, evt) ;  
+    AliPHOSGetter * gime = AliPHOSGetter::Instance(fileName) ; 
+    
+    Int_t nEvent = gime->MaxEvent() ;  
+    Int_t event ; 
+    AliESD * esd = 0 ;
+    for (event = 0 ; event < nEvent; event++) {
+      esd = gime->ESD(event) ; 
+      if (!esd) 
+	return kFALSE ; 
+      
+      //esd->Print();  
+      Int_t caloindex ;
+      // Calorimeter tracks 
+      AliESDCaloTrack * ct ; 
+      for (caloindex = 0 ; caloindex < esd->GetNumberOfCaloTracks() ; caloindex++) {
+	// get the calorimeter type of particles (PHOS or EMCAL)
+	ct = esd->GetCaloTrack(caloindex) ;
+	TParticle * part = ct->GetRecParticle() ; 
+	
+	AliESDtrack * cp ; 
+	Int_t cpindex ; 
+	for (cpindex = 0 ; cpindex < esd->GetNumberOfTracks() ; cpindex++) {
+	  // get the charged tracks from central tracking
+	  cp = esd->GetTrack(cpindex) ;
+	  Match(part, cp, dist) ; 
+	}
+	heta->Fill( dist[1] ) ; 
+	hphi->Fill( dist[2] ) ; 
       }
-      heta->Fill( dist[1] ) ; 
-      hphi->Fill( dist[2] ) ; 
     }
   }
   heta->Draw() ; 
   //hphi->Draw() ; 
+  return kTRUE ; 
 }
 
 void Match(TParticle * part, AliESDtrack * cp, Double_t * dist) 
@@ -133,4 +162,3 @@ void Match(TParticle * part, AliESDtrack * cp, Double_t * dist)
     //cout << "EMCAL particle # " << endl ; 
   }
 }
- 
