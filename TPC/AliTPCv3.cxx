@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.19  2000/11/06 17:24:10  kowal2
+Corrected bug in the outer containment vessel and
+the outer field cage geometry.
+Thanks to J. Barbosa.
+
 Revision 1.18  2000/11/02 16:55:24  kowal2
 Corrected bug in the inner containment vessel geometry.
 Thanks to J. Belikov
@@ -380,7 +385,7 @@ void AliTPCv3::CreateGeometry()
   dm[0] += 0.06;
   dm[1] -= 0.06;
 
-  gMC->Gsvolu("TSA4","TUBE",idtmed[5],dm,3);  
+  gMC->Gsvolu("TSA4","TUBE",idtmed[6],dm,3);  
   
   // 4->3->2->1->TOCV
 
