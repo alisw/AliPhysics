@@ -56,6 +56,8 @@ $(DICT):	                        $(DICTH)
 
 depend:					$(SRCS)
 
+clean: macroclean
+
 #HEADERS =	$(filter-out %LinkDef.h,$(HDRS))
 
 TOCLEAN	=       $(OBJS) *Cint.cxx *Cint.h
