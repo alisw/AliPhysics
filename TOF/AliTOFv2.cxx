@@ -13,16 +13,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTOFv2.h"
-#include <TNode.h>
-#include <TTUBE.h>
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
  
 ClassImp(AliTOFv2)
  
 //_____________________________________________________________________________
-AliTOFv2::AliTOFv2() : AliTOF()
+AliTOFv2::AliTOFv2()
 {
   //
   // Default constructor

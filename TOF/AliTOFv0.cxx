@@ -14,13 +14,12 @@
 
 #include "AliTOFv0.h"
 #include "AliRun.h"
-#include "AliMC.h"
 #include "AliConst.h"
   
 ClassImp(AliTOFv0)
  
 //_____________________________________________________________________________
-AliTOFv0::AliTOFv0() : AliTOF()
+AliTOFv0::AliTOFv0()
 {
   //
   // Default constructor
@@ -63,8 +62,10 @@ void AliTOFv0::CreateGeometry()
   Int_t *idtmed = gAlice->Idtmed();
   //
   // barrel size along Z axis 
-  rp1 = 360.;
-  rp2 = 372.;
+  //  rp1 = 360.;
+  // rp2 = 372.;
+  rp1 = 370;
+  rp2 = rp1 + 12;
   zl  = 720.;
   //
   // TOF width along radius of barrel 
