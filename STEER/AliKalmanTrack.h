@@ -30,15 +30,19 @@ public:
     return 0;
   } 
 
-  virtual Int_t Compare(const TObject *o) const=0; 
+  virtual Int_t Compare(const TObject *o) const {return 0;} 
 
-  virtual void GetExternalParameters(Double_t &xr, Double_t x[5]) const=0;
-  virtual void GetExternalCovariance(Double_t cov[15]) const=0;
+  virtual void GetExternalParameters(Double_t &xr, Double_t x[5]) const {}
+  virtual void GetExternalCovariance(Double_t cov[15]) const {}
 
-  virtual Double_t GetPredictedChi2(const AliCluster *cluster) const=0;
+  virtual Double_t GetPredictedChi2(const AliCluster *cluster) const {return 0;}
   virtual 
-  Int_t PropagateTo(Double_t xr,Double_t x0,Double_t rho,Double_t pm)=0;
-  virtual Int_t Update(const AliCluster* c, Double_t chi2, UInt_t i)=0;
+  Int_t PropagateTo(Double_t xr,Double_t x0,Double_t rho,Double_t pm) {
+    return 0;
+  }
+  virtual Int_t Update(const AliCluster* c, Double_t chi2, UInt_t i) {
+    return 0;
+  }
 
   static void SetConvConst(Double_t cc) {fConvConst=cc;}
   Double_t GetConvConst() const {return fConvConst;}
