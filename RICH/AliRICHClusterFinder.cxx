@@ -15,12 +15,13 @@
 
 
 #include "AliRICHClusterFinder.h"
-#include "AliRICH.h"
 #include "AliRICHMap.h"
-#include "AliRICHParam.h"
+#include <TMinuit.h>
+#include <TVector3.h>
 #include <AliLoader.h>
 #include <AliRun.h>
 
+void RICHMinMathieson(Int_t &npar, Double_t *gin, Double_t &chi2, Double_t *par, Int_t iflag);
 
 ClassImp(AliRICHClusterFinder)
 //__________________________________________________________________________________________________
@@ -34,19 +35,19 @@ AliRICHClusterFinder::AliRICHClusterFinder(AliRICH *pRICH)
   
 }//main ctor
 //__________________________________________________________________________________________________
-void AliRICHClusterFinder::FindLocalMaxima(AliRICHcluster &rawCluster)
+void AliRICHClusterFinder::FindLocalMaxima()
 {// Split the cluster according to the number of maxima inside
-  Info("SplitbyLocalMaxima","Start.");
+  Info("FindLocalMaxima","Start.");
   Int_t Nlocal = 0;
   Int_t localX[100],localY[100];
-  for(Int_t iDig1=0;iDig1<rawCluster.Size();iDig1++) {
+  for(Int_t iDig1=0;iDig1<fCurrentCluster.Size();iDig1++) {
     Int_t iNotMax = 0;
-    AliRICHdigit *pDig1 = (AliRICHdigit *)rawCluster.Digits()->At(iDig1);
+    AliRICHdigit *pDig1 = (AliRICHdigit *)fCurrentCluster.Digits()->At(iDig1);
     Int_t padX1 = pDig1->X();
     Int_t padY1 = pDig1->Y();
     Double_t padQ1 = pDig1->Q();
-    for(Int_t iDig2=0;iDig2<rawCluster.Size();iDig2++) {
-      AliRICHdigit *pDig2 = (AliRICHdigit *)rawCluster.Digits()->At(iDig2);
+    for(Int_t iDig2=0;iDig2<fCurrentCluster.Size();iDig2++) {
+      AliRICHdigit *pDig2 = (AliRICHdigit *)fCurrentCluster.Digits()->At(iDig2);
       Int_t padX2 = pDig2->X();
       Int_t padY2 = pDig2->Y();
       Double_t padQ2 = pDig2->Q();
@@ -105,15 +106,14 @@ void AliRICHClusterFinder::FindRawClusters(Int_t iChamber)
     Int_t i=dig->X();   Int_t j=dig->Y();
     if(fHitMap->TestHit(i,j)==kUsed) continue;
 	
-    AliRICHcluster rawCluster;
-    FormRawCluster(i,j,rawCluster);
+    FormRawCluster(i,j);
 	
     if(AliRICHParam::IsResolveClusters()) {
-      ResolveCluster(rawCluster); // ResolveCluster serialization will happen inside
+      ResolveCluster(); // ResolveCluster serialization will happen inside
     } else {
-      WriteRawCluster(rawCluster); // simply output of the RawCluster found without deconvolution
+      WriteRawCluster(); // simply output of the RawCluster found without deconvolution
     }    
-    
+    fCurrentCluster.Reset();
   }//digits loop
 
   delete fHitMap;
@@ -121,34 +121,116 @@ void AliRICHClusterFinder::FindRawClusters(Int_t iChamber)
   
 }//FindRawClusters()
 //__________________________________________________________________________________________________
-void  AliRICHClusterFinder::FormRawCluster(Int_t i, Int_t j, AliRICHcluster &rawCluster)
+void  AliRICHClusterFinder::FormRawCluster(Int_t i, Int_t j)
 {// Builder of the final Raw Cluster (before deconvolution)  
   Info("FormRawCluster","Start with digit(%i,%i)",i,j);
   
-  rawCluster.AddDigit((AliRICHdigit*) fHitMap->GetHit(i,j));
+  fCurrentCluster.AddDigit((AliRICHdigit*) fHitMap->GetHit(i,j));
   fHitMap->FlagHit(i,j);// Flag hit as taken  
 
   Int_t listX[4], listY[4];    //  Now look recursively for all neighbours
   for (Int_t iNeighbour=0;iNeighbour<Rich()->Param()->PadNeighbours(i,j,listX,listY);iNeighbour++)
     if(fHitMap->TestHit(listX[iNeighbour],listY[iNeighbour])==kUnused) 
-                      FormRawCluster(listX[iNeighbour],listY[iNeighbour],rawCluster);    
+                      FormRawCluster(listX[iNeighbour],listY[iNeighbour]);    
 }//AddDigit2Cluster()
 //__________________________________________________________________________________________________
-void AliRICHClusterFinder::ResolveCluster(AliRICHcluster &rawCluster)
+void AliRICHClusterFinder::ResolveCluster()
 {// Decluster algorithm
   Info("ResolveCluster","Start.");    
+
+  fCurrentCluster.CoG(); // first initial approxmation of the CoG...to start minimization.
+  fCurrentCluster.Print();
+  switch (fCurrentCluster.Size()) {
   
-  rawCluster.SetStatus(kRaw);// just dummy to compile...
-     
+  case 1:
+    WriteRawCluster(); break;
+  case 2:
+    FitCoG();
+    WriteRawCluster(); break;
+    
+  default:
+    WriteRawCluster(); break;
+  }     
 }//ResolveCluster()
 //__________________________________________________________________________________________________
-void AliRICHClusterFinder::WriteRawCluster(AliRICHcluster &rawCluster)
+void AliRICHClusterFinder::WriteRawCluster()
 {// out the current RawCluster
   Info("WriteRawCluster","Start.");
   
-  rawCluster.CoG();
-  
-  Rich()->AddCluster(rawCluster);
+  Rich()->AddCluster(fCurrentCluster);
   
 }//WriteRawCluster()
 //__________________________________________________________________________________________________
+void AliRICHClusterFinder::FitCoG()
+{// Fit cluster size 2 by single Mathieson
+  Info("FitCoG","Start.");
+  
+  TMinuit *pMinuit = new TMinuit(2);
+  
+  Double_t arglist;
+  Int_t ierflag = 0;
+
+  static Double_t vstart[2];
+  static Double_t lower[2], upper[2];
+  static Double_t step[2]={0.001,0.001};
+
+  TString chname;
+  Int_t ierflg;
+  
+  pMinuit->SetObjectFit((TObject*)this);
+  pMinuit->SetFCN(RICHMinMathieson);
+  pMinuit->mninit(5,10,7);
+
+  vstart[0] = fCurrentCluster.X();
+  vstart[1] = fCurrentCluster.Y();
+
+  lower[0] = vstart[0] - 2*AliRICHParam::PadSizeX();
+  upper[0] = vstart[0] + 2*AliRICHParam::PadSizeX();
+  lower[1] = vstart[1] - 2*AliRICHParam::PadSizeY();
+  upper[1] = vstart[1] + 2*AliRICHParam::PadSizeY();
+
+
+  pMinuit->mnparm(0," x position ",vstart[0],step[0],lower[0],upper[0],ierflag);
+  pMinuit->mnparm(1," y position ",vstart[1],step[1],lower[1],upper[1],ierflag);
+
+  arglist = -1;
+
+  pMinuit->SetPrintLevel(-1);
+  pMinuit->mnexcm("SET NOGR",&arglist, 1, ierflag);
+  pMinuit->mnexcm("SET NOW",&arglist, 1, ierflag);
+  arglist = 1;
+  pMinuit->mnexcm("SET ERR", &arglist, 1,ierflg);
+  arglist = -1;
+  pMinuit->mnexcm("SIMPLEX",&arglist, 0, ierflag);
+  pMinuit->mnexcm("MIGRAD",&arglist, 0, ierflag);
+  pMinuit->mnexcm("EXIT" ,&arglist, 0, ierflag);  
+  Double_t xCoG,yCoG;
+  Double_t eps, b1, b2;
+  pMinuit->mnpout(0,chname, xCoG, eps , b1, b2, ierflg);
+  pMinuit->mnpout(1,chname, yCoG, eps , b1, b2, ierflg);
+  delete pMinuit;
+}
+//__________________________________________________________________________________________________
+void RICHMinMathieson(Int_t &, Double_t *, Double_t &chi2, Double_t *par, Int_t iflag)
+{// Minimization function of Mathieson
+  
+  AliRICHcluster *pRawCluster = ((AliRICHClusterFinder*)gMinuit->GetObjectFit())->GetCurrentCluster();
+
+  TVector3 centroid(par[0],par[1],0);
+  
+  chi2 = 0;
+  Int_t qtot = pRawCluster->Q();
+  for(Int_t i=0;i<pRawCluster->Size();i++) {
+    Int_t    padX = ((AliRICHdigit *)pRawCluster->Digits()->At(i))->X();
+    Int_t    padY = ((AliRICHdigit *)pRawCluster->Digits()->At(i))->Y();
+    Double_t padQ = ((AliRICHdigit *)pRawCluster->Digits()->At(i))->Q();
+     chi2 += TMath::Power((qtot*AliRICHParam::Loc2PadFrac(centroid,padX,padY)-padQ),2)/padQ;
+  }   
+  if(iflag == 3)
+    {
+            cout << " --- end convergence...summary --- " << endl;
+            cout << " x position " << par[0] << endl;
+            cout << " y position " << par[1] << endl;
+            cout << " chi2       " << chi2 << endl;
+    }
+}//RICHMinMathieson()

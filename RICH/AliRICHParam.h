@@ -43,8 +43,8 @@ public:
   static Double_t InnerFreonLength()         {return 133;}   
   static Double_t InnerFreonWidth()          {return 41.3;}   
   static Double_t IonisationPotential()      {return 26.0e-9;}                            
-  static Double_t MathiensonDeltaX()         {return 5*0.18;}    
-  static Double_t MathiensonDeltaY()         {return 5*0.18;}    
+  static Double_t MathiesonDeltaX()          {return 5*0.18;}    
+  static Double_t MathiesonDeltaY()          {return 5*0.18;}    
   static Int_t    MaxQdc()                   {return 4095;}          
   static Double_t QdcSlope(Int_t sec)        {HV(sec);return 27;}
   static Double_t AlphaFeedback(Int_t sec)   {HV(sec);return 0.036;}
@@ -58,7 +58,7 @@ public:
     static void  SetHV(Int_t hv)             {fgHV       =hv;}  
     static void  SetAngleRot(Double_t rot)   {fgAngleRot =rot;}         
 
-  inline static Double_t Mathienson(Double_t lx1,Double_t lx2,Double_t ly1,Double_t ly2);   
+  inline static Double_t Mathieson(Double_t lx1,Double_t lx2,Double_t ly1,Double_t ly2);   
   inline static void    Loc2Area(TVector3 hitX3,Int_t &padxMin,Int_t &padyMin,Int_t &padxMax,Int_t &padyMax);
   inline static Int_t   PadNeighbours(Int_t iPadX,Int_t iPadY,Int_t aListX[4],Int_t aListY[4]);
   inline static Int_t   Loc2Pad(Double_t x,Double_t y,Int_t &padx,Int_t &pady); 
@@ -202,10 +202,10 @@ Double_t AliRICHParam::Loc2PadFrac(TVector3 hitX3,Int_t padx,Int_t pady)
   Double_t normYmin=(hitX3.Y()-padYcenter-PadSizeY()/2)  /AnodeCathodeGap();
   Double_t normYmax=(hitX3.Y()-padYcenter+PadSizeY()/2)  /AnodeCathodeGap();
   
-  return Mathienson(normXmin,normYmin,normXmax,normYmax);
+  return Mathieson(normXmin,normYmin,normXmax,normYmax);
 }//Loc2PadQdc()
 //__________________________________________________________________________________________________
-Double_t AliRICHParam::Mathienson(Double_t xMin,Double_t yMin,Double_t xMax,Double_t yMax)
+Double_t AliRICHParam::Mathieson(Double_t xMin,Double_t yMin,Double_t xMax,Double_t yMax)
 {//see NIM A370(1988)602-603 
   const Double_t SqrtKx3=0.77459667;const Double_t Kx2=0.962;const Double_t Kx4=0.379;
   const Double_t SqrtKy3=0.77459667;const Double_t Ky2=0.962;const Double_t Ky4=0.379;
@@ -221,7 +221,7 @@ void AliRICHParam::Loc2Area(TVector3 hitX3,Int_t &iPadXmin,Int_t &iPadYmin,Int_t
 {//calculates the area of disintegration for a given hit. Area is a rectangulare set pf pads
  //defined by its left-down and right-up coners
   //  hitX3.SetX(Shift2NearestWire(hitX3.X());
-  Loc2Pad(hitX3.X()-MathiensonDeltaX(),hitX3.Y()-MathiensonDeltaY(),iPadXmin,iPadYmin);   
-  Loc2Pad(hitX3.X()+MathiensonDeltaX(),hitX3.Y()+MathiensonDeltaY(),iPadXmax,iPadYmax);     
+  Loc2Pad(hitX3.X()-MathiesonDeltaX(),hitX3.Y()-MathiesonDeltaY(),iPadXmin,iPadYmin);   
+  Loc2Pad(hitX3.X()+MathiesonDeltaX(),hitX3.Y()+MathiesonDeltaY(),iPadXmax,iPadYmax);     
 }//
 #endif //AliRICHParam_h

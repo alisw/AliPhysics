@@ -227,6 +227,7 @@ public:
          void       Print(Option_t *option="")const;                                                       //virtual
   inline void       AddDigit(AliRICHdigit *pDig);                                                          //
   inline void       CoG();                                                                                 // 
+         void       Reset() {fSize=fQdc=fStatus=fChamber=fDimXY=kBad;fX=fY=kBad;delete fDigits;fDigits=0;} //                                                                               //
 protected:
   Int_t         fSize;        //how many digits belong to this cluster    
   Int_t         fDimXY;       //100*xdim+ydim box containing the cluster
