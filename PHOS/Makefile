@@ -25,7 +25,8 @@ SRCS          =  AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSTrackSegmentMaker.cxx AliPHOSTrackSegmentMakerv1.cxx \
                  AliPHOSRecParticle.cxx AliPHOSPID.cxx AliPHOSPIDv1.cxx \
                  AliPHOSAnalyze.cxx AliPHOSFastRecParticle.cxx \
-                 AliPHOSIndexToObject.cxx
+                 AliPHOSIndexToObject.cxx \
+                 AliDBPPR.cxx AliDBPPRS.cxx
 
 # C++ Headers
 
