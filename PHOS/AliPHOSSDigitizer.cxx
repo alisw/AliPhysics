@@ -205,7 +205,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     sdigits->Sort() ;
     
     nSdigits = sdigits->GetEntriesFast() ;
-    
+    fSDigitsInRun += nSdigits ;  
     sdigits->Expand(nSdigits) ;
     Int_t i ;
     for (i = 0 ; i < nSdigits ; i++) { 
