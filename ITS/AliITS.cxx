@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.61  2001/10/11 15:26:07  mariana
+Correct HitsToFastRecPoints
+
 Revision 1.60  2001/10/04 22:38:10  nilsen
 Changes made to support PreDigits (SDigits) plus other helpful changes.
 
@@ -287,6 +290,7 @@ AliITS::AliITS() : AliDetector() {
     fEuclidOut  = 0;
     fITSgeom    = 0;
     fITSmodules = 0;
+    SetDetectors(); // default to "All". This variable not written out.
 
     fIdN        = 0;
     fIdName     = 0;
@@ -331,6 +335,7 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
     fEuclidOut  = 0;
     fITSgeom    = 0;
     fITSmodules = 0;
+    SetDetectors(); // default to "All". This variable not written out.
 
     fIdN        = 0;
     fIdName     = 0;
@@ -865,7 +870,7 @@ void AliITS::Hits2SDigits(){
     // Do the Hits to Digits operation. Use Standard input values.
     // Event number from file, no background hit merging , use size from
     // AliITSgeom class, option="All", input from this file only.
-    HitsToSDigits(header->GetEvent(),0,-1," ","All"," ");
+    HitsToSDigits(header->GetEvent(),0,-1," ",fOpt," ");
 }
 //______________________________________________________________________
 void AliITS::Hits2PreDigits(){
@@ -875,7 +880,7 @@ void AliITS::Hits2PreDigits(){
     // Do the Hits to Digits operation. Use Standard input values.
     // Event number from file, no background hit merging , use size from
     // AliITSgeom class, option="All", input from this file only.
-    HitsToPreDigits(header->GetEvent(),0,-1," ","All"," ");
+    HitsToPreDigits(header->GetEvent(),0,-1," ",fOpt," ");
 }
 //______________________________________________________________________
 void AliITS::SDigits2Digits(){
@@ -891,7 +896,7 @@ void AliITS::Hits2Digits(){
     // Do the Hits to Digits operation. Use Standard input values.
     // Event number from file, no background hit merging , use size from
     // AliITSgeom class, option="All", input from this file only.
-    HitsToDigits(header->GetEvent(),0,-1," ","All"," ");
+    HitsToDigits(header->GetEvent(),0,-1," ",fOpt," ");
 }
 //______________________________________________________________________
 void AliITS::HitsToSDigits(Int_t evNumber,Int_t bgrev,Int_t size,
@@ -1324,7 +1329,7 @@ void AliITS::Digits2Reco(){
     AliHeader *header=gAlice->GetHeader();
     // to Digits to RecPoints for event in file, all digits in file, and
     // all ITS detectors.
-    DigitsToRecPoints(header->GetEvent(),0,"All");
+    DigitsToRecPoints(header->GetEvent(),0,fOpt);
 }
 //______________________________________________________________________
 void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt){

@@ -71,6 +71,11 @@ class AliITS : public AliDetector {
     AliITSDetType *DetType(Int_t id);
     //Int_t           NDetTypes() {return fNDetTypes;}
     //---------- Configuration Methods (per detector type) -------------
+    // Determines which ITS subdetectors will be processed. Effects
+    // digitization, and Reconstruction only.
+    void SetDetectors(Option_t *opt="All"){fOpt = opt;}
+    // Returns the list of ITS subdetectors that will be processed.
+    Option_t* GetDetectors(){return fOpt;}
     // Set response 
     virtual void SetResponseModel(Int_t id, AliITSresponse *response);
     // Set segmentation 
@@ -162,6 +167,7 @@ class AliITS : public AliDetector {
     AliITSgeom   *fITSgeom;    // Pointer to ITS geometry
     Bool_t       fEuclidOut;   // Flag to write geometry in euclid format
     TObjArray    *fITSmodules; //! Pointer to ITS modules
+    Option_t     *fOpt;        //! Detector option ="All" unless changed.
 
     Int_t        fIdN;         // the number of layers
     Int_t        *fIdSens;     //[fIdN] layer identifier
