@@ -109,7 +109,7 @@ Int_t  AliMUONResponseV0::DigitResponse(Int_t digit, AliMUONTransientDigit* /*wh
     // one more field to add to AliMUONResponseV0 to allow different noises ????
     Float_t meanNoise = gRandom->Gaus(1., 0.2);
     Float_t noise     = gRandom->Gaus(0., meanNoise);
-    digit+=(Int_t)noise; 
+    digit += TMath::Nint(noise); 
     if ( digit <= ZeroSuppression()) digit = 0;
     // if ( digit >  MaxAdc())          digit=MaxAdc();
     if ( digit >  Saturation())          digit=Saturation();
