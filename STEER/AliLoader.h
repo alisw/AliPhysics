@@ -333,7 +333,7 @@ class AliLoader: public TNamed
     TObject*      GetDetectorData(const char* name){return GetDetectorDataFolder()->FindObject(name);}
     TObject**     GetDetectorDataRef(TObject* obj);
     
-    void InitDefaults();
+    virtual void InitDefaults();
     void ResetDataInfo();
     
     void SetTAddrInDet();//Call SetTreeAddress for corresponding detector
