@@ -1673,7 +1673,7 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
   if( strstr(opt,"Q") )
     ReadTreeQA() ;
 
-  if( strstr(opt,"P") )
+  //  if( strstr(opt,"P") )
     ReadPrimaries() ;
 
 }
