@@ -52,7 +52,7 @@ class AliMUONTrack : public TObject {
   void SetTrackParamAtHit(Int_t indexHit, AliMUONTrackParam *TrackParam);
   Int_t HitsInCommon(AliMUONTrack* Track);
 
-  static TVirtualFitter* AliMUONTrack::Fitter(void) {return fgFitter;}
+  static TVirtualFitter* Fitter(void) {return fgFitter;}
 
  protected:
  private:
