@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2000/11/01 15:20:13  cblume
+Change AliTRDdataArrayI to AliTRDdataArray in MakeBranch()
+
 Revision 1.7  2000/11/01 14:53:20  cblume
 Merge with TRD-develop
 
@@ -177,12 +180,13 @@ Bool_t AliTRDdigitsManager::MakeBranch()
 
     // Make the branches for the dictionaries
     for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-
       Char_t branchname[15];
       sprintf(branchname,"TRDdictionary%d",iDict);
       if (fDictionary[iDict]) {
-        const AliTRDdataArrayI *kDictionary = 
-             (AliTRDdataArrayI *) fDictionary[iDict]->At(0);
+        //const AliTRDdataArrayI *kDictionary = 
+        //     (AliTRDdataArrayI *) fDictionary[iDict]->At(0);
+        const AliTRDdataArray *kDictionary = 
+             (AliTRDdataArray *) fDictionary[iDict]->At(0);
         if (kDictionary) {
           gAlice->TreeD()->Branch(branchname,kDictionary->IsA()->GetName()
                                             ,&kDictionary,buffersize,1);
