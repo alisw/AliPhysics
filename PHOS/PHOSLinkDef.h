@@ -24,5 +24,6 @@
 #pragma link C++ class AliPHOSPID ;
 #pragma link C++ class AliPHOSPIDv1 ;
 #pragma link C++ class AliPHOSAnalyze ;
+#pragma link C++ class AliPHOSvFast ;
 
 #endif
