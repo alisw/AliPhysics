@@ -55,6 +55,8 @@
 #pragma link C++ class AliPHOSMemoryWatcher+;
 #pragma link C++ class AliPHOSRaw2Digits+;
 #pragma link C++ class AliPHOSBeamTestEvent+;
-#pragma link C++ class AliPHOSCalibrationDB+;
+#pragma link C++ class AliPHOSCalibrManager+;
 #pragma link C++ class AliPHOSConTableDB+;
+#pragma link C++ class AliPHOSCalibrator+;
+#pragma link C++ class AliPHOSCalibrationData+;
 #endif

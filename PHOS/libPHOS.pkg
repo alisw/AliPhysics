@@ -22,8 +22,10 @@ SRCS          =    AliPHOS.cxx AliPHOSv0.cxx AliPHOSv1.cxx AliPHOSv2.cxx \
                  AliPHOSIhepAnalyze.cxx AliPHOSEvalRecPoint.cxx \
                  AliPHOSRecManager.cxx AliPHOSRecCpvManager.cxx AliPHOSRecEmcManager.cxx \
                  AliPHOSClusterizerv2.cxx AliPHOSPIDv1.cxx AliPHOSMemoryWatcher.cxx \
-		 AliPHOSRaw2Digits.cxx AliPHOSBeamTestEvent.cxx AliPHOSCalibrationDB.cxx \
-		 AliPHOSConTableDB.cxx
+		 AliPHOSRaw2Digits.cxx AliPHOSBeamTestEvent.cxx \
+                 AliPHOSCalibrManager.cxx \
+		 AliPHOSConTableDB.cxx AliPHOSCalibrator.cxx\
+                 AliPHOSCalibrationData.cxx 
 
 HDRS:= $(SRCS:.cxx=.h) 
 
