@@ -190,14 +190,7 @@ void AliMUONGeometryBuilder::FillGlobalTransformations(
       TGeoHMatrix total 
 	= fGlobalTransformation *
 	  (*geometry->GetTransformation()) * 
-          fGlobalTransformation.Inverse() *
 	  (*localTransform);
-	          // !! The local detection element frame is 
-		  // defined wrt the new ALICE coordinate system:
-		  // TGL = Tglobal * Tchamber * Tde
-		  //     =  Tglobal * Tchamber * Tglobal.inv  *  Tglobal * Tde
-		  //     = (Tglobal * Tchamber * Tglobal.inv) * (Tglobal * Tde)
-		  //     = Ttotal * Tde'
 	  
       // Convert TGeoHMatrix to TGeoCombiTrans
       TGeoCombiTrans globalTransform(localTransform->GetName());
