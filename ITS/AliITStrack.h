@@ -8,6 +8,8 @@
 #include "../TPC/AliTPCtrack.h"
 
 class TObjArray;
+class AliITSRad;
+
 //   ITS Track Class
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
 //
