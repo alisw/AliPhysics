@@ -78,10 +78,6 @@ public:
    Int_t    Update(const AliTRDcluster* c, Double_t chi2, UInt_t i, 
                    Double_t h01);
 
-   void     ResetParameters();   
-   void     CheckParameters(Int_t stage);   
-
-
 protected:
 
    Int_t    fSeedLab;     // track label taken from seeding  
