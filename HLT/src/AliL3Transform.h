@@ -47,9 +47,10 @@ class AliL3Transform {
 
  public:
 
-  static void Init(Char_t* path,Bool_t UseAliTPCParam=kFALSE); //new init for all AliRoot versions
-  static void MakeInitFile(Char_t *filename,Char_t *path);
-  static void ReadInit(Char_t *path);
+  static Bool_t Init(Char_t* path,Bool_t UseAliTPCParam=kFALSE); //init for different AliRoot versions
+  static Bool_t MakeInitFile(Char_t *filename,Char_t *path);     //create the init file in path
+  static Bool_t ReadInit(Char_t *path);                          //read it possibly from root file 
+
   static void SetBField(Double_t f) {fBField = f;}
 
   static const Char_t* GetParamName() {return "75x40_100x60_150x60";}

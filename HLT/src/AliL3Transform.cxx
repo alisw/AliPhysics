@@ -13,6 +13,8 @@
 #include <AliTPCPRF2D.h>
 #include <AliTPCRF1D.h>
 #include <TFile.h>
+#include <TUnixSystem.h>
+#include <TTimeStamp.h>
 #endif
 
 #include "AliL3Logging.h"
@@ -47,10 +49,12 @@
 //            You can also force reading the parameters from a AliTPCParam object
 //            by setting the flag;
 //
-//            AliL3Transform::Init(filename,kTRUE);
+//            AliL3Transform::Init(path,kTRUE);
 //
-//            where filename is a char* providing the path to the rootfile which 
-//            should be called digitfile.root. Note that in this case you have to
+//            where path is a char* 
+//            either providing the rootfile containing the geometry or 
+//            the path to the rootfile which  should then be called alirunfile.root. 
+//            Note that for both cases you have to
 //            compile with USEPACKAGE=ALIROOT set (see level3code/Makefile.conf).
 //</pre>
 */
@@ -417,7 +421,7 @@ Int_t AliL3Transform::fNPads[159] = {67,
                                      139
 };
 
-void AliL3Transform::Init(Char_t* path,Bool_t UseAliTPCParam)
+Bool_t AliL3Transform::Init(Char_t* path,Bool_t UseAliTPCParam)
 {
   //Overwrite the parameters with values stored in file "l3transform.config" in path.
   //If file does not exist, old default values will be used.
@@ -430,8 +434,7 @@ void AliL3Transform::Init(Char_t* path,Bool_t UseAliTPCParam)
   
   if(UseAliTPCParam)
     {
-      ReadInit(path);
-      return;
+      return ReadInit(path);
     }
 
   Char_t *pathname=new Char_t[1024];
@@ -442,7 +445,7 @@ void AliL3Transform::Init(Char_t* path,Bool_t UseAliTPCParam)
   if(!fptr){
     LOG(AliL3Log::kWarning,"AliL3Transform::Init","File Open")
       <<"Pointer to Config File \""<<pathname<<"\" 0x0!"<<ENDLOG;
-    return;
+    return kFALSE;
   }
 
   Char_t d1[250], d2[100], d3[100];
@@ -501,8 +504,11 @@ void AliL3Transform::Init(Char_t* path,Bool_t UseAliTPCParam)
   fclose(fptr);
   delete pathname;
   fVersion++; //new version
+
+  return kTRUE;
 }
-void AliL3Transform::ReadInit(Char_t *path)
+
+Bool_t AliL3Transform::ReadInit(Char_t *path)
 {
   //Read all the parameters from a aliroot file, and store it in a temporary 
   //file which is read by Init. Use this if you want to read the parameters from
@@ -511,16 +517,35 @@ void AliL3Transform::ReadInit(Char_t *path)
 #ifndef use_aliroot
   LOG(AliL3Log::kError,"AliL3Transform::ReadInit","Version")
     <<"You have to compile with use_aliroot flag in order to read from AliROOT file"<<ENDLOG;
-  return;
+  return kFALSE;
 #else
   Char_t filename[1024];
-  sprintf(filename,"%s/alirunfile.root",path);
-  MakeInitFile(filename,"/tmp/");
-  Init("/tmp/");
+  //first test whether provided path is the rootfile itself
+  TFile *rootfile = TFile::Open(path);
+  if(!rootfile) //ok assume its path to file
+    {
+      sprintf(filename,"%s/alirunfile.root",path); //create rootfile name
+    } else {
+      rootfile->Close();
+      sprintf(filename,"%s",path); //path contains itself the rootfile name
+    }
+  //finally make dummy init file /tmp/l3transform.config
+  if(MakeInitFile(filename,"/tmp/"))
+    { 
+      Bool_t ret=Init("/tmp/");
+      //Move the temp file to /tmp/l3transform.config-"time in seconds"
+      TUnixSystem sys;
+      TTimeStamp time;
+      sprintf(filename,"/tmp/l3transform.config-%ld",(long)time.GetSec()); 
+      sys.Rename("/tmp/l3transform.config",filename);
+      return ret;
+    }
+
+  return kFALSE;
 #endif  
 }
 
-void AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
+Bool_t AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
 {
   //Get the parameters from rootfile, and store it on the file "l3transform.config"
   //which is being read by Init.
@@ -528,22 +553,28 @@ void AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
 #ifndef use_aliroot
   LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","Version")
     <<"You have to compile with use_aliroot flag in order to use this function"<<ENDLOG;
-  return;
+  return kFALSE;
 #else
   TFile *rootfile = TFile::Open(filename);
+  if(!rootfile)
+    {
+      LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","File")
+	<<"Could not open file: "<<filename<<ENDLOG;
+      return kFALSE;
+    }
   AliRun *gAlice = (AliRun*)rootfile->Get("gAlice");
   if(!gAlice)
     {
       LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","File")
 	<<"No gAlice in file: "<<filename<<ENDLOG;
-      return;
+      return kFALSE;
     }  
   AliTPCParamSR *param=(AliTPCParamSR*)rootfile->Get(GetParamName());
   if(!param)
     {
       LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","File")
 	<<"No TPC parameters found"<<ENDLOG;
-      return;
+      return kFALSE;
     }
   
   AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;
@@ -560,7 +591,7 @@ void AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
     { 
       LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","File")
 	<<"Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !"<<ENDLOG;
-      return;
+      return kFALSE;
     }
   prfinner->Read("prf_07504_Gati_056068_d02");
   prfouter1->Read("prf_10006_Gati_047051_d03");
@@ -639,6 +670,8 @@ void AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
   
   fprintf(f,"}\n");
   fclose(f);
+
+  return kTRUE;
 #endif
 }
 
