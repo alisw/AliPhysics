@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.10  2001/02/09 00:05:31  nilsen
+Added fMajor/MinorVersion variables and made other changes to better make
+use of the new code changes in AliITSgeom related classes.
+
 
 Revision 1.9  2001/02/08 16:00:37  barbera
 New thicknesses (300+300 um) added for SPD chips and detectors and set as default. Many other refinements.
@@ -235,9 +239,9 @@ void AliITSvPPRasymm::CreateGeometry(){
 
   // Default values
   
-//  Int_t thickness=2; // detector thickness = 300 um - chip thickness = 300 um
-//  Int_t option=2;    // option 'b' for det/chip/bus stacking
-
+  Int_t thickness=2;  // detector thickness = 300 um - chip thickness = 300 um
+  Int_t option=2;     // option 'b' for det/chip/bus stacking
+  
   // These values are NOT the default ones so leave them commented !
 
 //  Int_t thickness=1; // detector thickness = 100 um - chip thickness = 150 um
