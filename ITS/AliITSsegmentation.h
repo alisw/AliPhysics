@@ -1,13 +1,10 @@
 #ifndef ALIITSSEGMENTATION_H
 #define ALIITSSEGMENTATION_H
 
-
 #include <TObject.h>
-
 
 class TF1;
 class AliITSgeom;
-
 //----------------------------------------------
 //
 // ITS  segmentation virtual base class
@@ -15,25 +12,22 @@ class AliITSgeom;
 class AliITSsegmentation :
 public TObject {
  public:
-
     virtual ~AliITSsegmentation() {}
     // Set Detector Segmentation Parameters
     //
     // Detector size  
     virtual void    SetDetSize(Float_t Dx, Float_t Dz, Float_t Dy) {}
-
     // Cell size   
     virtual void    SetPadSize(Float_t p1, Float_t p2) {}
-
     // Maximum number of cells along the two coordinates  
     virtual void    SetNPads(Int_t p1, Int_t p2) {}
     // Returns the maximum number of cells (digits) posible
     virtual Int_t   GetNPads(){return 0;}
-
     // Set angles - find a generic name fit for other detectors as well
     // might be useful for beam test setups (3 angles ?)
     virtual void    SetAngles(Float_t p1, Float_t p2) {}
-
+    // Set layer
+    virtual void SetLayer(Int_t l) {}
     // Transform from real to cell coordinates
     virtual void    GetPadIxz(Float_t x ,Float_t z ,Int_t &ix,Int_t &iz) {}
     // Transform from cell to real coordinates
@@ -67,15 +61,14 @@ public TObject {
     virtual Float_t Dpx(Int_t) {return 0.;}
     // Cell size in z 
     virtual Float_t Dpz(Int_t) {return 0.;}
-
     // Maximum number of Cells in x
     virtual Int_t    Npx() {return 0;}
     // Maximum number of Cells in z
     virtual Int_t    Npz() {return 0;}
-
+    // Layer
+    virtual Int_t GetLayer() {return 0;}
     // Angles 
     virtual void Angles(Float_t &, Float_t&) {}
-
     // Set cell position
     virtual void     SetPad(Int_t, Int_t) {}
     // Set hit position
@@ -118,10 +111,7 @@ public TObject {
 	    
     ClassDef(AliITSsegmentation,1) //Segmentation virtual base class 
 };
-
 #endif
-
-
 
 
 
