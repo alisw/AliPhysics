@@ -49,7 +49,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#include <Riostream.h>
+#include <iostream.h>
 
 #include "TROOT.h"
 #include "TCanvas.h"
@@ -66,6 +66,7 @@
 
 #include "AliGenGeVSim.h"
 #include "AliGeVSimParticle.h"
+#include "AliGenGeVSimEventHeader.h"
 
 
 ClassImp(AliGenGeVSim);
@@ -110,7 +111,7 @@ AliGenGeVSim::AliGenGeVSim(Float_t psi, Bool_t isMultTotal) : AliGenerator(-1) {
   if (psi < 0 || psi > 360 ) 
     Error ("AliGenGeVSim", "Reaction plane angle ( %d )out of range [0..360]", psi);
 
-  fPsi = psi * 2 * TMath::Pi() / 360. ;
+  fPsi = psi * TMath::Pi() / 180. ;
   fIsMultTotal = isMultTotal;
 
   // initialization 
@@ -380,11 +381,14 @@ void AliGenGeVSim::DetermineReactionPlane() {
   
   form = 0;
   form = (TF1 *)gROOT->GetFunction("gevsimPsi");
-  if (form) fPsi = form->Eval(gAlice->GetEvNumber());
+  if (form) fPsi = form->Eval(gAlice->GetEvNumber()) * TMath::Pi() / 180;
   
   form = 0;
   form = (TF1 *)gROOT->GetFunction("gevsimPsiRndm");
-  if (form) fPsi = form->GetRandom();
+  if (form) fPsi = form->GetRandom() * TMath::Pi() / 180;
+
+  
+  cout << "Psi = " << fPsi << "\t" << (Int_t)(fPsi*180./TMath::Pi()) << endl;
   
   fPhiFormula->SetParameter(0, fPsi);
 }
@@ -534,7 +538,7 @@ void AliGenGeVSim::SetFormula(Int_t pdg) {
       fPtYHist = (TH2D*)gROOT->FindObject(buff);
     }
 
-    if (!fPtYHist) Error(where, msg[3], pdg);
+    if (!fPtYHist) Error(where, msg[4], pdg);
   }
 
 }
@@ -790,6 +794,17 @@ void AliGenGeVSim::Generate() {
       if (isMultTotal) nParticle++;
     }
   }
+
+  // prepare and store header
+
+  AliGenGeVSimEventHeader *header = new AliGenGeVSimEventHeader("GeVSim header");
+  TArrayF eventVertex(3,orgin);
+
+  header->SetPrimaryVertex(eventVertex);
+  header->SetEventPlane(fPsi);
+  header->SetEllipticFlow(fPhiFormula->GetParameter(2));
+
+  gAlice->SetGenEventHeader(header);
 
   delete v;
 }

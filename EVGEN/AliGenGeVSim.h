@@ -87,7 +87,7 @@ class AliGenGeVSim : public AliGenerator {
 
   TF1 *fPtFormula;           //! Pt formula for model (1)
   TF1 *fYFormula;            //! Y formula for model (1)
-  TF2 *fPtYFormula[4];       //! Pt,Y formulae for model (2)-(4)
+  TF2 *fPtYFormula[3];       //! Pt,Y formulae for model (2)-(4)
   TF1 *fPhiFormula;          //! phi formula 
   
   TFormula *fCurrentForm;    //! currently used formula
