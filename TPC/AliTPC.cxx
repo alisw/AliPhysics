@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.41  2001/07/28 10:53:50  hristov
+Digitisation done according to the general scheme (M.Ivanov)
+
 Revision 1.40  2001/07/27 13:03:14  hristov
 Default Branch split level set to 99
 
@@ -1202,7 +1205,7 @@ void AliTPC::SDigits2Digits2(Int_t eventnumber)
     digrow->ExpandTrackBuffer();
     digarr.ExpandTrackBuffer();
 
-    for (Int_t row=0;row<nrows; row++)
+    for (row=0;row<nrows; row++)
       for (Int_t col=0;col<ncols; col++){
 	Float_t  q  = digarr.GetDigitFast(row,col);
 	q/=16;  //konversion faktor
