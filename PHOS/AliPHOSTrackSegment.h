@@ -78,6 +78,8 @@ public:
     // sets the index value  of this in the list 
     fIndexInList = val ; 
   } 
+
+  typedef TClonesArray TrackSegmentsList ; 
  
  private:
   
@@ -85,9 +87,7 @@ public:
   Int_t fIndexInList ;     // the index of this TrackSegment in the list stored in TreeR (to be set by analysis)
   Int_t fPpsdLowRecPoint ; // The PPSD reconstructed point from the lower layer index in array stored in TreeR/PHOSPpsdRP
   Int_t fPpsdUpRecPoint ;  // The PPSD reconstructed point from the upper layer index in array stored in TreeR/PHOSPpsdRP
-
-  typedef TClonesArray TrackSegmentsList ; 
-
+  
   ClassDef(AliPHOSTrackSegment,1)  // Track segment in PHOS
 
 };

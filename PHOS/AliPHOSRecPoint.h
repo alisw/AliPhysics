@@ -58,7 +58,7 @@ class AliPHOSRecPoint : public AliRecPoint {
     // Print prototype
   } 
 
-  AliPHOSRecPoint & operator = (AliPHOSRecPoint const & rvalue)  {
+  AliPHOSRecPoint & operator = (const AliPHOSRecPoint & rvalue)  {
     // assignement operator requested by coding convention
     // but not needed
     assert(0==1) ;

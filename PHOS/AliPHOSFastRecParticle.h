@@ -63,6 +63,8 @@ class AliPHOSFastRecParticle : public TParticle {
   enum EParticleType { kUNDEFINED=-1, kNEUTRALEM,  kNEUTRALHA,  kGAMMA , kGAMMAHA , 
 		       kABSURDEM,  kABSURDHA ,  kELECTRON, kCHARGEDHA } ; 
 
+  typedef TClonesArray  FastRecParticlesList ; 
+
  protected:
 
   Int_t fIndexInList ; // the index of this RecParticle in the list stored in TreeR (to be set by analysis)
@@ -71,7 +73,6 @@ class AliPHOSFastRecParticle : public TParticle {
 
  private:
 
-  typedef TClonesArray  FastRecParticlesList ; 
 
   ClassDef(AliPHOSFastRecParticle,1)  // Reconstructed Particle produced by the fast simulation 
 

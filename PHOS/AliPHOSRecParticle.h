@@ -42,13 +42,12 @@ public:
   }
   Int_t *               GetPrimaries(Int_t & number) ;
 
-private:
+  typedef TClonesArray RecParticlesList ; 
+  
+ private:
 
   Int_t fPHOSTrackSegment ; // pointer to the associated track segment in PHOS  
-
-  typedef TClonesArray RecParticlesList ; 
-
-
+  
   ClassDef(AliPHOSRecParticle,1)  // Reconstructed Particle
 };
 
