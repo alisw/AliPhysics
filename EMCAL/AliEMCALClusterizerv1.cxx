@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -404,66 +405,43 @@ void AliEMCALClusterizerv1::MakeClusters()
   aECARecPoints->Delete() ;
 
   TClonesArray * digits = gime->Digits() ; 
-
-  TIter next(digits) ; 
-  AliEMCALDigit * digit ; 
-  Int_t ndigECA=0 ; 
-
-  // count the number of digits in ECA section
-  while ( (digit = dynamic_cast<AliEMCALDigit *>(next())) ) { // scan over the list of digits 
-    if (geom->IsInECA(digit->GetId())) 
-      ndigECA++ ; 
-    else {
-      Error("MakeClusters", "id = %d is a wrong ID!", digit->GetId()) ; 
-      abort() ;
-    }
-  }
   TClonesArray * digitsC =  dynamic_cast<TClonesArray*>(digits->Clone()) ;
-  // Clusterization starts  
-  
-  TIter nextdigit(digitsC) ; 
+
+  // Clusterization starts    
+  TIter nextdigit(digitsC) ;
+  AliEMCALDigit * digit;
   
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigit())) ) { // scan over the list of digitsC
     AliEMCALRecPoint * clu = 0 ; 
     
     TArrayI clusterECAdigitslist(50000);   
- 
-    Bool_t inECA = kFALSE;
-    if( geom->IsInECA(digit->GetId()) ) {
-       inECA = kTRUE ;
-     }    
+   
     if (gDebug == 2) { 
-      if (inECA)
-	printf("MakeClusters: id = %d, ene = %f , thre = %f", 
-	     digit->GetId(),Calibrate(digit->GetAmp()), fECAClusteringThreshold) ;  
+      printf("MakeClusters: id = %d, ene = %f , thre = %f", digit->GetId(),Calibrate(digit->GetAmp()),
+         fECAClusteringThreshold) ;  
     }
-    if (inECA && (Calibrate(digit->GetAmp()) > fECAClusteringThreshold  ) ){
 
-    Int_t iDigitInECACluster = 0;
-      // Find the seed
-      if( geom->IsInECA(digit->GetId()) ) {   
-	// start a new Tower RecPoint
-	if(fNumberOfECAClusters >= aECARecPoints->GetSize()) 
+    if ( geom->IsInECA(digit->GetId()) && (Calibrate(digit->GetAmp()) > fECAClusteringThreshold  ) ){
+      Int_t iDigitInECACluster = 0;
+      // start a new Tower RecPoint
+      if(fNumberOfECAClusters >= aECARecPoints->GetSize()) 
 	  aECARecPoints->Expand(2*fNumberOfECAClusters+1) ;
-	AliEMCALRecPoint * rp = new  AliEMCALRecPoint("") ; 
-	aECARecPoints->AddAt(rp, fNumberOfECAClusters) ;
-	clu = dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(fNumberOfECAClusters)) ; 
-  	fNumberOfECAClusters++ ; 
-	clu->AddDigit(*digit, Calibrate(digit->GetAmp())) ; 
-	clusterECAdigitslist[iDigitInECACluster] = digit->GetIndexInList() ;	
-	iDigitInECACluster++ ; 
-	digitsC->Remove(digit) ; 
-	if (gDebug == 2 ) 
-	  printf("MakeClusters: OK id = %d, ene = %f , thre = %f ", digit->GetId(),Calibrate(digit->GetAmp()), fECAClusteringThreshold) ;  
-	
-      }    
+      AliEMCALRecPoint * rp = new  AliEMCALRecPoint("") ; 
+      aECARecPoints->AddAt(rp, fNumberOfECAClusters) ;
+      clu = dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(fNumberOfECAClusters)) ; 
+      fNumberOfECAClusters++ ; 
+      clu->AddDigit(*digit, Calibrate(digit->GetAmp())) ; 
+      clusterECAdigitslist[iDigitInECACluster] = digit->GetIndexInList() ;	
+      iDigitInECACluster++ ; 
+      digitsC->Remove(digit) ; 
+      if (gDebug == 2 ) 
+	printf("MakeClusters: OK id = %d, ene = %f , thre = %f ", digit->GetId(),Calibrate(digit->GetAmp()), fECAClusteringThreshold) ;  
       nextdigit.Reset() ;
       
       AliEMCALDigit * digitN ; 
       Int_t index = 0 ;
 
-      // Do the Clustering
-
+      // Find the neighbours
       while (index < iDigitInECACluster){ // scan over digits already in cluster 
 	digit =  (AliEMCALDigit*)digits->At(clusterECAdigitslist[index])  ;      
 	index++ ; 
@@ -487,7 +465,10 @@ void AliEMCALClusterizerv1::MakeClusters()
       endofloop1: ;
 	nextdigit.Reset() ; 
       } // loop over ECA cluster
-    } // energy theshold     
+    } // energy theshold
+    else{ // if below the energy threshold then we remove it
+      digitsC->Remove(digit);
+    }     
   } // while digit  
   delete digitsC ;
 }
