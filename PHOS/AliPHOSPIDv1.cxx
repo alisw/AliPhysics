@@ -585,61 +585,61 @@ const Double_t  AliPHOSPIDv1::GetCalibrationParameter(const Int_t i) const
   return param;
 }
 //____________________________________________________________________________
-// const Double_t  AliPHOSPIDv1::GetEllipseParameter(const TString Param,Float_t E) const 
-// {
-//   // Calculates the parameter Param of the ellipse
-  
-//   Double_t p[4]={0.,0.,0.,0.};
-//   Double_t value = 0.0;
-//   Int_t i;
-
-//   if(Param.Contains("a")){
-//     for(i=0;i<4;i++)p[i]=(*fParameters)(4,i);
-//     if(E>70.)E=70.;
-//   }
-  
-//   else if(Param.Contains("b")){
-//     for(i=0;i<4;i++)p[i]=(*fParameters)(5,i);
-//     if(E>70.)E=70.;
-//   }
-  
-//   else if(Param.Contains("c"))
-//     for(i=0;i<4;i++)p[i]=(*fParameters)(6,i);
-  
-//   else if(Param.Contains("x0")){
-//     for(i=0;i<4;i++)p[i]=(*fParameters)(7,i);
-//     if(E<1.)E=1.1;
-//   }
-//   else if(Param.Contains("y0"))
-//     for(i=0;i<4;i++)p[i]=(*fParameters)(8,i);
-  
-//   value = p[0]/TMath::Sqrt(E)+p[1]*E+p[2]*E*E+p[3];
-//   return value;
-// }
-
-//____________________________________________________________________________
 const Double_t  AliPHOSPIDv1::GetEllipseParameter(const TString Param,Float_t E) const 
 {
-  // Calculates the parameter Param of the pi0 ellipse
+  // Calculates the parameter Param of the ellipse
   
-  Double_t p[3]  = {0.,0.,0.};
+  Double_t p[4]={0.,0.,0.,0.};
   Double_t value = 0.0;
-  Int_t    i;
+  Int_t i;
 
-  if(Param.Contains("a"))
-    for(i=0;i<3;i++)p[i]=(*fParameters)(4,i);
-  else if(Param.Contains("b"))
-    for(i=0;i<3;i++)p[i]=(*fParameters)(5,i);
-  else if(Param.Contains("c"))
-    for(i=0;i<3;i++)p[i]=(*fParameters)(6,i);
-  else if(Param.Contains("x0"))
-    for(i=0;i<3;i++)p[i]=(*fParameters)(7,i);
-  else if(Param.Contains("y0"))
-    for(i=0;i<3;i++)p[i]=(*fParameters)(8,i);
+  if(Param.Contains("a")){
+    for(i=0;i<4;i++)p[i]=(*fParameters)(4,i);
+    if(E>70.)E=70.;
+  }
   
-  value = p[0] + p[1]*E + p[2]*E*E;
+  else if(Param.Contains("b")){
+    for(i=0;i<4;i++)p[i]=(*fParameters)(5,i);
+    if(E>70.)E=70.;
+  }
+  
+  else if(Param.Contains("c"))
+    for(i=0;i<4;i++)p[i]=(*fParameters)(6,i);
+  
+  else if(Param.Contains("x0")){
+    for(i=0;i<4;i++)p[i]=(*fParameters)(7,i);
+    if(E<1.)E=1.1;
+  }
+  else if(Param.Contains("y0"))
+    for(i=0;i<4;i++)p[i]=(*fParameters)(8,i);
+  
+  value = p[0]/TMath::Sqrt(E)+p[1]*E+p[2]*E*E+p[3];
   return value;
 }
+
+//____________________________________________________________________________
+// const Double_t  AliPHOSPIDv1::GetEllipseParameter(const TString Param,Float_t E) const 
+// {
+//   // Calculates the parameter Param of the pi0 ellipse
+  
+//   Double_t p[3]  = {0.,0.,0.};
+//   Double_t value = 0.0;
+//   Int_t    i;
+
+//   if(Param.Contains("a"))
+//     for(i=0;i<3;i++)p[i]=(*fParameters)(4,i);
+//   else if(Param.Contains("b"))
+//     for(i=0;i<3;i++)p[i]=(*fParameters)(5,i);
+//   else if(Param.Contains("c"))
+//     for(i=0;i<3;i++)p[i]=(*fParameters)(6,i);
+//   else if(Param.Contains("x0"))
+//     for(i=0;i<3;i++)p[i]=(*fParameters)(7,i);
+//   else if(Param.Contains("y0"))
+//     for(i=0;i<3;i++)p[i]=(*fParameters)(8,i);
+  
+//   value = p[0] + p[1]*E + p[2]*E*E;
+//   return value;
+// }
 //____________________________________________________________________________
 const Double_t  AliPHOSPIDv1::GetEllipseParameterPi0(const TString Param,Float_t E) const 
 {
