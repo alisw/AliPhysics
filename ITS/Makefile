@@ -10,15 +10,16 @@ PACKAGE = ITS
 # C++ sources
 
 SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
-		AliITSvtest.cxx AliITShit.cxx AliITSDetType.cxx \
-		AliITSgeom.cxx AliITSgeomSPD.cxx AliITSgeomSDD.cxx \
+                AliITShit.cxx AliITSDetType.cxx \
+		AliITSgeom.cxx AliITSgeomMatrix.cxx \
+                AliITSgeomSPD.cxx AliITSgeomSDD.cxx \
 		AliITSgeomSSD.cxx AliITSmodule.cxx \
 		AliITSsimulationFastPoints.cxx \
 		AliITSsimulationFastPointsV0.cxx AliITSsimulation.cxx \
 		AliITSsimulationSPD.cxx AliITSsimulationSDD.cxx \
 		AliITSetfSDD.cxx AliITSsimulationSSD.cxx AliITSdcsSSD.cxx \
 		AliITSdigit.cxx AliITSRawCluster.cxx AliITSRecPoint.cxx \
-		AliITStrack.cxx AliITSMap.cxx AliITSMapA1.cxx AliITSMapA2.cxx \
+		AliITSMap.cxx AliITSMapA1.cxx AliITSMapA2.cxx \
 		AliITSsegmentation.cxx AliITSsegmentationSPD.cxx \
 		AliITSsegmentationSDD.cxx AliITSsegmentationSSD.cxx\
 		AliITSresponse.cxx AliITSresponseSPD.cxx \
@@ -28,8 +29,9 @@ SRCS          = AliITS.cxx AliITSv1.cxx AliITSv3.cxx AliITSv5.cxx \
 		AliITSHuffman.cxx AliITSClusterFinderSSD.cxx \
 		AliITSclusterSSD.cxx AliITSpackageSSD.cxx \
 		AliITSdictSSD.cxx AliITSgeomSPD300.cxx AliITSgeomSPD425.cxx \
-		AliITSstatistics.cxx AliITSstatistics2.cxx \
-		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx 
+		AliITSstatistics.cxx AliITSstatistics2.cxx 
+#		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
+#		AliITSvtest.cxx AliITStrack.cxx
 
 # Fortran sources
 

@@ -24,6 +24,7 @@
 #pragma link C++ class  AliITSdigitSSD+;
 #pragma link C++ class  AliITSTransientDigit+;
 #pragma link C++ class  AliITSgeom-;
+#pragma link C++ class  AliITSgeomMatrix-;
 #pragma link C++ class  AliITSgeomSPD+;
 #pragma link C++ class  AliITSgeomSDD+;
 #pragma link C++ class  AliITSgeomSSD+;
@@ -59,7 +60,8 @@
 #pragma link C++ class  AliITSClusterFinderSDD+;
 #pragma link C++ class  AliITSClusterFinderSSD+;
 #pragma link C++ class  AliITSDetType+;
-#pragma link C++ class  AliITStrack+;
+#pragma link C++ class  AliITSstatistics-;
+#pragma link C++ class  AliITSstatistics2-;
 // SDD simulation
 #pragma link C++ class  AliITSRawData+;
 #pragma link C++ class  AliITSInStream-;
@@ -73,18 +75,16 @@
 #pragma link C++ class  AliITSclusterSSD+;
 #pragma link C++ class  AliITSpackageSSD+;
 // New used for Alignment studdies
-#pragma link C++ class  AliITSAlignmentTrack-;
-#pragma link C++ class  AliITSAlignmentModule-;
-#pragma link C function HitsTo;
-#pragma link C function HitsToClustAl;
-#pragma link C function FillGlobalPositions;
-#pragma link C function PlotGeomChanges;
-#pragma link C function FitAllTracks;
-#pragma link C function FitVertexAll;
-#pragma link C function OnlyOneGeometry;
-#pragma link C function deleteClustAl;
-#pragma link C++ class  AliITSstatistics-;
-#pragma link C++ class  AliITSstatistics2-;
+//#pragma link C++ class  AliITSAlignmentTrack-;
+//#pragma link C++ class  AliITSAlignmentModule-;
+//#pragma link C function HitsTo;
+//#pragma link C function HitsToClustAl;
+//#pragma link C function FillGlobalPositions;
+//#pragma link C function PlotGeomChanges;
+//#pragma link C function FitAllTracks;
+//#pragma link C function FitVertexAll;
+//#pragma link C function OnlyOneGeometry;
+//#pragma link C function deleteClustAl;
 // New used for AliITSdisplay
 //#pragma link C++ class  AliITSdisplay;
 //#pragma link C++ class  AliITSDisplay;
@@ -94,8 +94,8 @@
 //#pragma link C function GetIntegerDialog;
 //#pragma link C function GetFloatDialog;
 // New classes used for Tracking
-
+//#pragma link C++ class  AliITStrack+;
 // This class will always be for ITS only
-#pragma link C++ class  AliITSvtest-;
+//#pragma link C++ class  AliITSvtest-;
 
 #endif
