@@ -41,7 +41,6 @@ public:
   void AnalyzeCPV(Int_t Nevents);           // analyzes various CPV characteristics
   void InvariantMass(Int_t Nevents = 100) ; 
   void Reconstruct(Int_t Nevtents = 100,Int_t FirstEvent = 0) ;
-  void AnalyzeResolutions(Int_t Nevtents) ;  // analyzes Energy and Position resolutions   ;
   void BookingHistograms() ;                // booking histograms for the ManyEvent analysis ;
   void BookResolutionHistograms() ;         // booking histograms for the Resoluion analysis ;
   void Copy(TObject & obj) ;                // copies an analysis into an other one   

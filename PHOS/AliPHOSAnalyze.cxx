@@ -54,6 +54,7 @@
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSIndexToObject.h"
 #include "AliPHOSCPVHit.h"
+#include "AliPHOSCpvRecPoint.h"
 
 ClassImp(AliPHOSAnalyze)
 
