@@ -49,6 +49,7 @@ AliEMCAL::AliEMCAL():AliDetector()
   fName="EMCAL";
   //fQATask = 0;
   fTreeQA = 0;
+  fGeom = 0 ; 
 }
 
 //____________________________________________________________________________
@@ -56,6 +57,7 @@ AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
 {
   //   ctor : title is used to identify the layout
   
+  fGeom = AliEMCALGeometry::GetInstance(GetTitle(),"") ; 
   //fQATask = 0;
   fTreeQA = 0;
 }
@@ -156,9 +158,11 @@ void AliEMCAL::CreateMaterials()
 AliEMCALGeometry * AliEMCAL::GetGeometry() const 
 {  
   // gets the pointer to the AliEMCALGeometry unique instance 
-  
-  return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  
 
+  if (fGeom) 
+    return fGeom ; 
+  else 
+    return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  
 }
 
 //____________________________________________________________________________

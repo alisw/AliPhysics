@@ -64,8 +64,9 @@ protected:
 
   //AliEMCALQAChecker * fQATask ; //! PHOS checkers container
   TTree * fTreeQA ;            // the QA tree that contains the alarms
+  AliEMCALGeometry * fGeom ;   // the geometry object
 
-  ClassDef(AliEMCAL,2) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,3) // Electromagnetic calorimeter (base class)
 
 } ;
 
