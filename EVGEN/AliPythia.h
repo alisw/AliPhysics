@@ -9,7 +9,9 @@
 #include <AliRndm.h>
 #include <AliStructFuncType.h>
 typedef enum
-{kPyCharm, kPyBeauty, kPyCharmUnforced, kPyBeautyUnforced, kPyJpsi, kPyJpsiChi, kPyMb, kPyMbNonDiffr, kPyJets, kPyDirectGamma, kPyCharmPbMNR, kPyD0PbMNR, kPyBeautyPbMNR}
+{kPyCharm, kPyBeauty, kPyCharmUnforced, kPyBeautyUnforced,
+ kPyJpsi, kPyJpsiChi, kPyMb, kPyMbNonDiffr, kPyJets, kPyDirectGamma,
+ kPyCharmPbMNR, kPyD0PbMNR, kPyBeautyPbMNR}
 Process_t;
 /*
 typedef enum
@@ -45,6 +47,7 @@ class AliPythia : public TPythia6, public AliRndm
     virtual void PrintParticles();
     virtual void ResetDecayTable();
     virtual void SetDecayTable();
+    virtual void Pycell(Int_t& nclus);
     virtual void Pyclus(Int_t& nclus);
     // return instance of the singleton
     static  AliPythia* Instance();

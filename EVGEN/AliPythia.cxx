@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.27  2002/11/15 00:39:37  morsch
+- Correct initialisation of sRandom.
+- QCD Jets with initial and final state gluon radiation is default
+- pt kick for jets default
+- Interface to Pyclus added.
+
 Revision 1.26  2002/11/14 00:37:32  morsch
 Warning message for kPyJets added.
 
@@ -99,13 +105,16 @@ ClassImp(AliPythia)
 
 #ifndef WIN32
 # define pyclus pyclus_
+# define pycell pycell_
 # define type_of_call
 #else
 # define pyclus PYCLUS
+# define pycell PYCELL
 # define type_of_call _stdcall
 #endif
 
 extern "C" void type_of_call pyclus(Int_t & );
+extern "C" void type_of_call pycell(Int_t & );
 
 //_____________________________________________________________________________
 
@@ -410,6 +419,13 @@ void  AliPythia::Pyclus(Int_t& njet)
     pyclus(njet);
 }
 
+void  AliPythia::Pycell(Int_t& njet)
+{
+//  Call Pythia jet reconstruction algorithm
+//
+    pycell(njet);
+}
+
 
 
 #ifndef WIN32
@@ -417,11 +433,13 @@ void  AliPythia::Pyclus(Int_t& njet)
 #define pyrset pyrset_
 #define pyrget pyrget_
 #define pyclus pyclus_
+#define pycell pycell_
 #else
 #define pyr    PYR
 #define pyrset PYRSET
 #define pyrget PYRGET
 #define pyclus PYCLUS
+#define pycell PYCELL
 #endif
 
 extern "C" {

@@ -87,6 +87,8 @@ class AliGenPythia : public AliGenMC
     virtual Float_t GetXsection() const {return fXsection;}
     // get triggered jets
     void GetJets(Float_t dist, Int_t part, Int_t& njets, Int_t& ntrig, Float_t[4][10]);
+    void RecJetsUA1(Float_t eCellMin, Float_t eCellSeed, Float_t eMin, Float_t rMin, 
+		    Int_t& njets, Float_t jets[4][50]);    
     void LoadEvent();
     // Getters
     virtual Process_t    GetProcess() {return fProcess;}

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.65  2002/11/19 08:57:10  morsch
+Configuration of pt-kick added.
+
 Revision 1.64  2002/11/15 00:43:06  morsch
 Changes for kPyJets
 - initial and final state g-radiation + pt-kick default
@@ -324,7 +327,6 @@ void AliGenPythia::Init()
       fPythia->SetMSTP(111,0);
     }
 
-    fPythia->ProcInit(fProcess,fEnergyCMS,fStrucFunc);
 
 //  initial state radiation   
     fPythia->SetMSTP(61,fGinit);
@@ -337,8 +339,11 @@ void AliGenPythia::Init()
     } else {
 	fPythia->SetMSTP(91,0);
     }
-    
+
+ //   fPythia->SetMSTJ(1,2);
  //
+    fPythia->ProcInit(fProcess,fEnergyCMS,fStrucFunc);
+
 //  Parent and Children Selection
     switch (fProcess) 
     {
@@ -752,7 +757,7 @@ void AliGenPythia::MakeHeader()
     {
 	Int_t ntrig, njet;
 	Float_t jets[4][10];
-	GetJets(5.0, 1, njet, ntrig, jets);
+	GetJets(5., 1, njet, ntrig, jets);
 	for (Int_t i = 0; i < ntrig; i++) {
 	    ((AliGenPythiaEventHeader*) header)->AddJet(jets[0][i], jets[1][i], jets[2][i], 
 							jets[3][i]);
@@ -848,6 +853,46 @@ void  AliGenPythia::LoadEvent()
     }
 }
 
+void AliGenPythia::RecJetsUA1(Float_t eCellMin, Float_t eCellSeed, Float_t eMin, Float_t rMax, 
+			      Int_t& njets, Float_t jets [4][50])
+{
+//
+//  Calls the Pythia jet finding algorithm to find jets in the current event
+//
+//
+//  Configure detector (EMCAL like)
+//
+    fPythia->SetPARU(51,2.);
+    fPythia->SetMSTU(51,Int_t(96 * 2./0.7));
+    fPythia->SetMSTU(52,3 * 144);
+//
+//  Configure Jet Finder
+//  
+    fPythia->SetPARU(58, eCellMin);
+    fPythia->SetPARU(52, eCellSeed);
+    fPythia->SetPARU(53, eMin);
+    fPythia->SetPARU(54, rMax);
+    fPythia->SetMSTU(54, 2);
+//
+//  Save jets
+    Int_t n     = fPythia->GetN();
+
+//
+//  Run Jet Finder
+    fPythia->Pycell(njets);
+    Int_t i;
+    for (i = 0; i < njets; i++) {
+	Float_t px    = (fPythia->GetPyjets())->P[0][n+i];
+	Float_t py    = (fPythia->GetPyjets())->P[1][n+i];
+	Float_t pz    = (fPythia->GetPyjets())->P[2][n+i];
+	Float_t e     = (fPythia->GetPyjets())->P[3][n+i];
+	jets[0][i] = px;
+	jets[1][i] = py;
+	jets[2][i] = pz;
+	jets[3][i] = e;
+    }
+}
+
 
 void  AliGenPythia::GetJets(Float_t dist, Int_t part, Int_t& nJets, Int_t& nJetsTrig, Float_t jets[4][10])
 {
@@ -893,6 +938,7 @@ void  AliGenPythia::GetJets(Float_t dist, Int_t part, Int_t& nJets, Int_t& nJets
 	    jets[2][nJetsTrig] = pz;
 	    jets[3][nJetsTrig] = e;
 	    nJetsTrig++;
+//	    if (et > 55.) fPythia->Pylist(1);
 	    
 	} else {
 //	    printf("\n........-Jet #%d: %10.3f %10.3f %10.3f %10.3f \n", i, pt, et, eta, phi * kRaddeg);
