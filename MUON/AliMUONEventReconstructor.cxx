@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/30 10:15:48  gosset
+Changes to EventReconstructor...:
+precision fit with multiple Coulomb scattering;
+extrapolation to vertex with Branson correction in absorber (JPC)
+
 Revision 1.4  2000/06/27 14:11:36  gosset
 Corrections against violations of coding conventions
 
@@ -984,7 +989,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
   AliMUONSegment *bestSegment, *extrapSegment, *segment;
   AliMUONTrack *track, *nextTrack;
   AliMUONTrackParam *trackParam1, trackParam[2], trackParamVertex;
-  Int_t ch, chBestHit, iHit, iSegment, station, trackIndex;
+  Int_t ch, chInStation, chBestHit, iHit, iSegment, station, trackIndex;
   Double_t bestChi2, chi2, dZ1, dZ2, dZ3, maxSigma2Distance, mcsFactor;
   AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   // local maxSigma2Distance, for easy increase in testing
@@ -1083,14 +1088,17 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	       << endl;
 	}
 	// Loop over chambers of the station
-	for (ch = 0; ch < 2; ch++) {
+	for (chInStation = 0; chInStation < 2; chInStation++) {
 	  // coordinates of extrapolated hit
-	  extrapHit->SetBendingCoor((&(trackParam[ch]))->GetBendingCoor());
-	  extrapHit->SetNonBendingCoor((&(trackParam[ch]))->GetNonBendingCoor());
+	  extrapHit->
+	    SetBendingCoor((&(trackParam[chInStation]))->GetBendingCoor());
+	  extrapHit->
+	    SetNonBendingCoor((&(trackParam[chInStation]))->GetNonBendingCoor());
 	  // resolutions from "extrapSegment"
 	  extrapHit->SetBendingReso2(extrapSegment->GetBendingCoorReso2());
 	  extrapHit->SetNonBendingReso2(extrapSegment->GetNonBendingCoorReso2());
 	  // Loop over hits in the chamber
+	  ch = 2 * station + ch;
 	  for (iHit = fIndexOfFirstHitForRecPerChamber[ch];
 	       iHit < fIndexOfFirstHitForRecPerChamber[ch] +
 		 fNHitsForRecPerChamber[ch];
@@ -1102,14 +1110,14 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	      // update best Chi2 and HitForRec if better found
 	      bestHit = hit;
 	      bestChi2 = chi2;
-	      chBestHit = ch;
+	      chBestHit = chInStation;
 	    }
 	  }
 	}
 	if (bestHit) {
 	  // best hit found: add it to track candidate
 	  track->AddHitForRec(bestHit);
-	  // set track parameters at these two TrakHit's
+	  // set track parameters at these two TrackHit's
 	  track->SetTrackParamAtHit(track->GetNTrackHits() - 1,
 				    &(trackParam[chBestHit]));
 	  if (fPrintLevel >= 10) {
@@ -1155,8 +1163,8 @@ void AliMUONEventReconstructor::FollowTracks(void)
       }
       if (fPrintLevel >= 1) {
 	cout << "FollowTracks: track candidate(0..): " << trackIndex
-	     << " after fit from station(0..): " << station << " to 4" << endl;
-	//      track->RecursiveDump(); // CCC
+	     << " after extrapolation to vertex" << endl;
+	track->RecursiveDump();
       }
     } // for (station = 2;...
     // go really to next track
