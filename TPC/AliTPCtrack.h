@@ -105,6 +105,7 @@ public:
   Int_t PropagateTo(Double_t xr,Double_t x0=28.94,Double_t rho=0.9e-3);
   Int_t Update(const AliCluster* c, Double_t chi2, UInt_t i);
   void ResetCovariance();
+  void ResetClusters() {SetNumberOfClusters(0); SetChi2(0.);}
   void UpdatePoints();//update points 
   Float_t* GetPoints() {return fPoints;}
   //
