@@ -43,6 +43,7 @@ class AliL3FileHandler:public AliL3MemHandler{
   Bool_t AliDigits2Binary();
   AliL3DigitRowData *AliDigits2Memory(UInt_t & nrow); //Allocates Memory
   Bool_t AliDigits2CompBinary();  
+  void AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile);
 
   //Point IO
   Bool_t AliPoints2Binary();

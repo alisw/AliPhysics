@@ -14,6 +14,7 @@
 #include "AliL3MemHandler.h"
 #include "AliL3FileHandler.h"
 
+#include "AliTPCDigitsArray.h"
 #include "AliTPCClustersArray.h"
 #include "AliTPCcluster.h"
 #include "AliTPCClustersRow.h"
@@ -282,6 +283,83 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow){
     }
   savedir->cd(); 
   return data;
+}
+
+void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile)
+{
+  //Write digits to a new alirootfile.
+
+  if(!fInAli)
+    {
+      printf("AliL3FileHandler::AliDigits2RootFile : No input alirootfile\n");
+      return;
+    }
+  if(!fParam)
+    {
+      printf("AliL3FileHandler::AliDigits2RootFile : No parameter object. Run on rootfile\n");
+      return;
+    }
+  if(!fTransformer)
+    {
+      printf("AliL3FileHandler::AliDigits2RootFile : No transform object\n");
+      return;
+    }
+  
+  //Get the original digitstree:
+  fInAli->cd();
+  AliTPCDigitsArray *old_array = new AliTPCDigitsArray();
+  old_array->Setup(fParam);
+  old_array->SetClass("AliSimDigits");
+  Bool_t ok = old_array->ConnectTree("TreeD_75x40_100x60");
+  if(!ok)
+    {
+      printf("AliL3FileHandler::AliDigits2RootFile : No digits tree object\n");
+      return;
+    }
+    
+  TFile *digFile = new TFile(new_digitsfile,"RECREATE");
+  digFile->cd();
+  
+  //setup a new one:
+  AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
+  arr->SetClass("AliSimDigits");
+  arr->Setup(fParam);
+  arr->MakeTree();
+  if(fRowMin !=0 || fRowMax != 175)
+    printf("\n AliL3FileHandler::AliDigits2RootFile : Rather stupid row numbers...%d %d\n\n",fRowMin,fRowMax);
+  for(Int_t i=fRowMin; i<=fRowMax; i++)
+    {
+      Int_t sector,row;
+      fTransformer->Slice2Sector(fSlice,i,sector,row);
+      AliDigits * dig = arr->CreateRow(sector,row);
+      AliDigits *old_dig = old_array->LoadRow(sector,row);
+      if(!old_dig)
+	printf("AliL3FileHandler::AliDigits2RootFile : No padrow %d %d\n",sector,row);
+      
+      AliL3DigitData *digPt = rowPt->fDigitData;
+      for(UInt_t j=0; j<rowPt->fNDigit; j++)
+	{
+	  UShort_t charge = digPt[j].fCharge;
+	  UChar_t pad = digPt[j].fPad;
+	  UShort_t time = digPt[j].fTime;
+	  dig->SetDigitFast(charge,time,pad);
+	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,0),time,pad,0);
+	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,1),time,pad,1);
+	  ((AliSimDigits*)dig)->SetTrackIDFast(((AliSimDigits*)old_dig)->GetTrackID((Int_t)time,(Int_t)pad,2),time,pad,2);
+	  
+	}
+      UpdateRowPointer(rowPt);
+      arr->StoreRow(sector,row);
+      arr->ClearRow(sector,row);  
+      old_array->ClearRow(sector,row);
+    }
+  digFile->cd();
+  char treeName[100];
+  sprintf(treeName,"TreeD_%s",fParam->GetTitle());
+  arr->GetTree()->Write(treeName,TObject::kOverwrite);
+  fParam->Write(fParam->GetTitle());
+  digFile->Close();
+  delete digFile;
 }
 
 ///////////////////////////////////////// Point IO  
