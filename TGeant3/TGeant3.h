@@ -560,6 +560,7 @@ public:
   void  TrackPosition(TLorentzVector &xyz) const;
   void  TrackMomentum(TLorentzVector &xyz) const;  
   Int_t NofVolumes() const;
+  Int_t VolId2Mate(Int_t id) const;
   Float_t TrackTime() const;  
   Float_t TrackCharge() const;
   Float_t TrackMass() const;

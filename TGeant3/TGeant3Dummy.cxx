@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2000/11/30 07:12:54  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.24  2000/09/14 07:08:42  fca
 Introducing glvolu in the interface
 
@@ -95,6 +98,7 @@ Int_t   TGeant3::CurrentVolID(Int_t&) const {return 0;}
 const char*  TGeant3::CurrentVolName() const {return 0;}
 Float_t TGeant3::Xsec(char*, Float_t, Int_t, Int_t) {return 0;}
 Int_t   TGeant3::NofVolumes() const {return 0;}
+Int_t   TGeant3::VolId2Mate(Int_t id) const {return 0;}
 Int_t   TGeant3::CurrentVolOffID(Int_t, Int_t&) const {return 0;}
 const char *TGeant3::CurrentVolOffName(Int_t) const {return 0;}
 void    TGeant3::TrackPosition(TLorentzVector&) const {}

@@ -91,6 +91,7 @@ class AliMC : public TNamed, public AliRndm
     virtual Int_t VolId(const Text_t* volName) const = 0;
     virtual const char* VolName(Int_t id) const = 0;
     virtual Int_t NofVolumes() const = 0;
+    virtual Int_t VolId2Mate(Int_t id) const = 0;
 
     //
     // methods for physics management

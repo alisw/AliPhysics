@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.40  2000/12/06 10:06:58  morsch
+Add all D and B baryons produced by HIJING to PDG DataBase.
+
 Revision 1.39  2000/11/30 07:12:54  alibrary
 Introducing new Rndm and QA classes
 
@@ -1447,6 +1450,20 @@ Int_t TGeant3::NofVolumes() const
   // Return total number of volumes in the geometry
   //
   return fGcnum->nvolum;
+}
+
+//_____________________________________________________________________________
+Int_t TGeant3::VolId2Mate(Int_t id) const 
+{
+  //
+  // Return material number for a given volume id
+  //
+  if(id<1 || id > fGcnum->nvolum || fGclink->jvolum<=0) 
+    return 0;
+  else {
+    Int_t jvo = fZlq[fGclink->jvolum-id];
+    return Int_t(fZq[jvo+4]);
+  }
 }
 
 //_____________________________________________________________________________
