@@ -31,6 +31,11 @@
 //      inside an ellipse defined by fX_center, fY_center, fA, fB, fAngle
 //      (each bit corresponds to a different efficiency-purity point of the 
 //      photon identification) 
+//      A calibrated energy is calculated. The energy of the reconstructed
+//      cluster is corrected with the formula A + B * E  + C * E^2, whose parameters
+//      where obtained thourgh the study of the reconstructed energy 
+//      distribution of monoenergetic photons. 
+//
 //
 //
 // use case:
@@ -52,20 +57,9 @@
 //  root [3] p2->ExecuteTask()
 //
 //  There are two possible principal files available to do the analysis. 
-//  One for energy ranges from 0.5 to 5 GeV, the default one, and another 
-//  one from 0.5 to 100 GeV. To do the analysis with one of this files,
-//  Use case
-//  root [0] AliPHOSPIDv1 p("galice.root")
-//  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-//  root [1] p.SetParameters("Wide energy range")       (0.5-100 GeV)              
-//  root [2] p.ExecuteTask("deb")            
-//  or
-//  root [0] AliPHOSPIDv1 p("galice.root")
-//  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-//  root [1] p.SetParameters("Small energy range")       (0.5-5 GeV) 
-//  or 
-//  p.SetParameters("Default")                           (0.5-5 GeV)              
-//  root [2] p.ExecuteTask("deb")            
+//  One for energy ranges from 0.5 to 5 GeV, and another 
+//  one from 5 to 100 GeV. This files are automatically called in function
+//  of the cluster energy.
 
 //*-- Author: Yves Schutz (SUBATECH)  & Gines Martinez (SUBATECH) & 
 //            Gustavo Conesa April 2002
@@ -137,31 +131,34 @@ AliPHOSPIDv1::~AliPHOSPIDv1()
   // dtor
   // gime=0 if PID created by default ctor (to get just the parameters)
   
+
   delete [] fX ; // Principal input 
   delete [] fP ; // Principal components
   delete fParameters ; // Matrix of Parameters 
+  delete fParameters5 ; // Matrix of Parameters 
+  delete fParameters100 ; // Matrix of Parameters 
+ 
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+
+  if(gime){  
+  // remove the task from the folder list
+  gime->RemoveTask("P",GetName()) ;
+  TString name(GetName()) ; 
+  name.ReplaceAll("pid", "clu") ; 
+  gime->RemoveTask("C",name) ;
   
-  if (gime) {
-    // remove the task from the folder list
-    gime->RemoveTask("P",GetName()) ;
-    TString name(GetName()) ; 
-    name.ReplaceAll("pid", "clu") ; 
-    gime->RemoveTask("C",name) ;
-    
-    // remove the data from the folder list
-    name = GetName() ; 
-    name.Remove(name.Index(":")) ; 
-    gime->RemoveObjects("RE", name) ; // EMCARecPoints
-    gime->RemoveObjects("RC", name) ; // CPVRecPoints
-    gime->RemoveObjects("T", name) ;  // TrackSegments
-    gime->RemoveObjects("P", name) ;  // RecParticles
-    
-    // Delete gAlice
-    gime->CloseFile() ; 
+  // remove the data from the folder list
+  name = GetName() ; 
+  name.Remove(name.Index(":")) ; 
+  gime->RemoveObjects("RE", name) ; // EMCARecPoints
+  gime->RemoveObjects("RC", name) ; // CPVRecPoints
+  gime->RemoveObjects("T", name) ;  // TrackSegments
+  gime->RemoveObjects("P", name) ;  // RecParticles
   
-    fSplitFile = 0 ;  
+  // Delete gAlice
+  gime->CloseFile() ; 
+  fSplitFile = 0 ; 
   }
 }
 
@@ -211,44 +208,46 @@ void AliPHOSPIDv1::InitParameters()
   name.Append(Version()) ; 
   SetName(name) ; 
   fRecParticlesInRun = 0 ; 
-  fOptFileName       = "Default" ;
   fNEvent            = 0 ;            
   fClusterizer       = 0 ;      
   fTSMaker           = 0 ;        
   fRecParticlesInRun = 0 ;
-  SetParameters(fOptFileName) ; // fill the parameters matrix from parameters file
+  SetParameters() ; // fill the parameters matrix from parameters file
 }
 
 //____________________________________________________________________________
-Double_t  AliPHOSPIDv1::GetCpvtoEmcDistanceCut(const Float_t Cluster_En, const TString Eff_Pur)const 
+Double_t  AliPHOSPIDv1::GetCpvtoEmcDistanceCut(const Float_t Cluster_En, const TString Eff_Pur)
 {
   // Get CpvtoEmcDistanceCut parameter depending on the cluster energy and 
   // Purity-Efficiency point (possible options "HIGH EFFICIENCY" 
   // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
   // EFFICIENCY by PURITY)
- 
-  Int_t cluster = GetClusterOption(Cluster_En,kTRUE); 
+  
   Int_t eff_pur = GetEffPurOption(Eff_Pur);
   
-  if((cluster!= -1)||(eff_pur != -1))
-    return (*fParameters)(cluster,eff_pur) ;
-  
+  GetAnalysisParameters(Cluster_En) ;
+  if((fClusterrcpv!= -1)&&(eff_pur != -1))
+    return (*fParameters)(fClusterrcpv,eff_pur) ;
+  else
+    return 0.0;
 }
 //____________________________________________________________________________
 
-Double_t  AliPHOSPIDv1::GetTimeGate(const Float_t Cluster_En, const TString Eff_Pur) const 
+Double_t  AliPHOSPIDv1::GetTimeGate(const Float_t Cluster_En, const TString Eff_Pur)  
 {
   // Get TimeGate parameter depending on the cluster energy and 
   // Purity-Efficiency point (possible options "HIGH EFFICIENCY" 
   // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
   // EFFICIENCY by PURITY)
-  
-  Int_t cluster = GetClusterOption( Cluster_En,kFALSE);
+ 
   Int_t eff_pur = GetEffPurOption(Eff_Pur);
+  GetAnalysisParameters(Cluster_En) ;
 
-   if((cluster!= -1)||(eff_pur != -1))
-    return (*fParameters)(cluster+3+fCluster,eff_pur) ; 
-  
+  if((fCluster!= -1)&&(eff_pur != -1))
+    return (*fParameters)(fCluster+3+fMatrixExtraRow,eff_pur) ; 
+  else
+    return 0.0;
+
 }
 //_____________________________________________________________________________
 Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Option_t *  Axis)const
@@ -280,10 +279,21 @@ Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cp
 }
 
 //____________________________________________________________________________
-Int_t  AliPHOSPIDv1::GetPrincipalSign(Double_t* P, Int_t cluster, Int_t eff_pur )const
+Double_t  AliPHOSPIDv1::CalibratedEnergy(Float_t e){
+  //It calibrates Energy depending on the recpoint energy.
+//      The energy of the reconstructed
+//      cluster is corrected with the formula A + B* E  + C* E^2, whose parameters
+//      where obtained through the study of the reconstructed energy 
+//      distribution of monoenergetic photons. 
+  Double_t enerec; 
+    enerec = fACalParameter + fBCalParameter * e+ fCCalParameter * e * e;
+  return enerec ;
+
+}
+//____________________________________________________________________________
+Int_t  AliPHOSPIDv1::GetPrincipalSign(Double_t* P, Int_t cluster, Int_t eff_pur)const
 {
   //This method gives if the PCA of the particle are inside a defined ellipse
-  
   // Get the parameters that define the ellipse stored in the 
   // fParameters matrix.
   Double_t X_center = (*fParameters)(cluster+6,eff_pur) ; 
@@ -303,7 +313,7 @@ Int_t  AliPHOSPIDv1::GetPrincipalSign(Double_t* P, Int_t cluster, Int_t eff_pur 
   Double_t   Sin_Theta = TMath::Sin(Pi*Angle/180.) ;   
 
   Dx = P[0] - X_center ; 
-  Delta = 4.*A*A*A*B* (A*A*Cos_Theta*Cos_Theta 
+  Delta = 4.*A*A*B*B* (A*A*Cos_Theta*Cos_Theta 
 			+ B*B*Sin_Theta*Sin_Theta - Dx*Dx) ; 
   if (Delta < 0.) 
     {prinsign=0;} 
@@ -337,29 +347,6 @@ Int_t  AliPHOSPIDv1::GetPrincipalSign(Double_t* P, Int_t cluster, Int_t eff_pur 
 }
 
 //____________________________________________________________________________
-void   AliPHOSPIDv1::SetPrincipalFileOptions(TString OptFileName) {
-  fOptFileName = OptFileName ;
-
-  if(fOptFileName.Contains("Small energy range")||fOptFileName.Contains("Default")){
-    fFileName  = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-5.root" ;
-    fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters_0.5_5.dat"); 
-    fCluster     = 0 ;
-  }
-  
-  else if(fOptFileName.Contains("Wide energy range")){
-    fFileName  = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root" ;
-    fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters_0.5_100.dat"); 
-    fCluster     = 3 ;
-  }
-  else{
-    cout<<" Invalid energy range option "<<endl;
-    cout<<" Possible options : Default (0.5-5 GeV) "<<endl;
-    cout<<"         Small energy range (0.5-5 GeV) "<<endl;
-    cout<<"         Wide energy range  (0.5-100 GeV) "<<endl;
-  }
-}
-
-//____________________________________________________________________________
 void  AliPHOSPIDv1::SetEllipseParameters(Float_t Cluster_En, TString Eff_Pur, Float_t x, Float_t y,Float_t a, Float_t b,Float_t angle)
 {
 
@@ -368,15 +355,14 @@ void  AliPHOSPIDv1::SetEllipseParameters(Float_t Cluster_En, TString Eff_Pur, Fl
   // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
   // EFFICIENCY by PURITY)
   
-  Int_t cluster = GetClusterOption( Cluster_En, kFALSE);
   Int_t eff_pur = GetEffPurOption(Eff_Pur);
-  
-  if((cluster!= -1)||(eff_pur != -1)){   
-    (*fParameters)(cluster+6 +fCluster,eff_pur) = x ;
-    (*fParameters)(cluster+9 +fCluster,eff_pur) = y ;
-    (*fParameters)(cluster+12+fCluster,eff_pur) = a ;
-    (*fParameters)(cluster+15+fCluster,eff_pur) = b ;
-    (*fParameters)(cluster+18+fCluster,eff_pur) = angle ;
+  GetAnalysisParameters(Cluster_En) ;
+  if((fCluster!= -1)&&(eff_pur != -1)){   
+    (*fParameters)(fCluster+6 +fMatrixExtraRow,eff_pur) = x ;
+    (*fParameters)(fCluster+9 +fMatrixExtraRow,eff_pur) = y ;
+    (*fParameters)(fCluster+12+fMatrixExtraRow,eff_pur) = a ;
+    (*fParameters)(fCluster+15+fMatrixExtraRow,eff_pur) = b ;
+    (*fParameters)(fCluster+18+fMatrixExtraRow,eff_pur) = angle ;
   }
   
 }
@@ -387,13 +373,10 @@ void  AliPHOSPIDv1::SetEllipseXCenter(Float_t Cluster_En, TString Eff_Pur, Float
   // Purity-Efficiency point (possible options "HIGH EFFICIENCY" 
   // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
   // EFFICIENCY by PURITY)
-  
-  Int_t cluster = GetClusterOption( Cluster_En, kFALSE);
   Int_t eff_pur = GetEffPurOption(Eff_Pur);
-  
-  if((cluster!= -1)||(eff_pur != -1))
-    (*fParameters)(cluster+6+fCluster,eff_pur) = x ; 
-   
+  GetAnalysisParameters(Cluster_En) ;
+  if((fCluster!= -1)&&(eff_pur != -1))
+    (*fParameters)(fCluster+6+fMatrixExtraRow,eff_pur) = x ; 
 }
 //_________________________________________________________________________    
 void  AliPHOSPIDv1::SetEllipseYCenter(Float_t Cluster_En, TString Eff_Pur, Float_t y) 
@@ -403,13 +386,11 @@ void  AliPHOSPIDv1::SetEllipseYCenter(Float_t Cluster_En, TString Eff_Pur, Float
   // Purity-Efficiency point (possible options "HIGH EFFICIENCY" 
   // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
   // EFFICIENCY by PURITY)
-  
-  Int_t cluster = GetClusterOption( Cluster_En, kFALSE);
+ 
   Int_t eff_pur = GetEffPurOption(Eff_Pur);
-  
-  if((cluster!= -1)||(eff_pur != -1))
-    (*fParameters)(cluster+9+fCluster,eff_pur) = y ;
-  
+  GetAnalysisParameters(Cluster_En) ;
+  if((fCluster!= -1)&&(eff_pur != -1))
+    (*fParameters)(fCluster+9+fMatrixExtraRow,eff_pur) = y ;
 }
 //_________________________________________________________________________
 void  AliPHOSPIDv1::SetEllipseAParameter(Float_t Cluster_En, TString Eff_Pur, Float_t a) 
@@ -419,12 +400,10 @@ void  AliPHOSPIDv1::SetEllipseAParameter(Float_t Cluster_En, TString Eff_Pur, Fl
   // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
   // EFFICIENCY by PURITY)
   
-  Int_t cluster = GetClusterOption(Cluster_En,kFALSE);
   Int_t eff_pur = GetEffPurOption(Eff_Pur);
-
-  if((cluster!= -1)||(eff_pur != -1)) 
-    (*fParameters)(cluster+12+fCluster,eff_pur) = a ;    
-
+  GetAnalysisParameters(Cluster_En) ;
+  if((fCluster!= -1)&&(eff_pur != -1)) 
+    (*fParameters)(fCluster+12+fMatrixExtraRow,eff_pur) = a ;    
 }
 //________________________________________________________________________
 void  AliPHOSPIDv1::SetEllipseBParameter(Float_t Cluster_En, TString Eff_Pur, Float_t b) 
@@ -434,12 +413,10 @@ void  AliPHOSPIDv1::SetEllipseBParameter(Float_t Cluster_En, TString Eff_Pur, Fl
   // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
   // EFFICIENCY by PURITY)
   
-  Int_t cluster = GetClusterOption(Cluster_En,kFALSE);
   Int_t eff_pur = GetEffPurOption(Eff_Pur);
-
-  if((cluster!= -1)||(eff_pur != -1))
-    (*fParameters)(cluster+15+fCluster,eff_pur) = b ;
-  
+  GetAnalysisParameters(Cluster_En) ;
+  if((fCluster!= -1)&&(eff_pur != -1))
+    (*fParameters)(fCluster+15+fMatrixExtraRow,eff_pur) = b ;
 }
 //________________________________________________________________________
 void  AliPHOSPIDv1::SetEllipseAngle(Float_t Cluster_En, TString Eff_Pur, Float_t angle) 
@@ -450,12 +427,10 @@ void  AliPHOSPIDv1::SetEllipseAngle(Float_t Cluster_En, TString Eff_Pur, Float_t
   // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
   // EFFICIENCY by PURITY)
  
-  Int_t cluster = GetClusterOption(Cluster_En,kFALSE) ;
   Int_t eff_pur = GetEffPurOption(Eff_Pur);
-  
-  if((cluster!= -1)||(eff_pur != -1))
-    (*fParameters)(cluster+18+fCluster,eff_pur) = angle ;
-  
+  GetAnalysisParameters(Cluster_En) ;
+  if((fCluster!= -1)&&(eff_pur != -1))
+    (*fParameters)(fCluster+18+fMatrixExtraRow,eff_pur) = angle ;
 } 
 //_____________________________________________________________________________
 void  AliPHOSPIDv1::SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur, Float_t cut) 
@@ -466,12 +441,11 @@ void  AliPHOSPIDv1::SetCpvtoEmcDistanceCut(Float_t Cluster_En, TString Eff_Pur, 
   // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
   // EFFICIENCY by PURITY)
 
-  Int_t cluster = GetClusterOption(Cluster_En,kTRUE);
+  
   Int_t eff_pur = GetEffPurOption(Eff_Pur);
-  
-  if((cluster!= -1)||(eff_pur != -1))
-    (*fParameters)(cluster,eff_pur) = cut ;
-  
+  GetAnalysisParameters(Cluster_En) ;
+  if((fClusterrcpv!= -1)&&(eff_pur != -1))
+    (*fParameters)(fClusterrcpv,eff_pur) = cut ;
 }
 //_____________________________________________________________________________
 void  AliPHOSPIDv1::SetTimeGate(Float_t Cluster_En, TString Eff_Pur, Float_t gate) 
@@ -482,93 +456,157 @@ void  AliPHOSPIDv1::SetTimeGate(Float_t Cluster_En, TString Eff_Pur, Float_t gat
   // "MEDIUM EFFICIENCY" "LOW EFFICIENCY" and 3 more options changing 
   // EFFICIENCY by PURITY)
     
-  Int_t cluster = GetClusterOption(Cluster_En,kFALSE);
   Int_t eff_pur = GetEffPurOption(Eff_Pur);
-  
-  if((cluster!= -1)||(eff_pur != -1))
-    (*fParameters)(cluster+3+fCluster,eff_pur) = gate ;
-  
+  GetAnalysisParameters(Cluster_En) ;
+  if((fCluster!= -1)&&(eff_pur != -1))
+    (*fParameters)(fCluster+3+fMatrixExtraRow,eff_pur) = gate ;
 } 
 //_____________________________________________________________________________
-void  AliPHOSPIDv1::SetParameters(TString OptFileName) 
+void  AliPHOSPIDv1::SetParameters()
+				  //TString OptFileName) 
 {
   // PCA : To do the Principal Components Analysis it is necessary 
   // the Principal file, which is opened here
   fX         = new double[7]; // Data for the PCA 
   fP         = new double[7]; // Eigenvalues of the PCA
   
-  fOptFileName = OptFileName ;
 
-  SetPrincipalFileOptions(fOptFileName);
-  TFile f( fFileName.Data(), "read" ) ;
-  //cout<<fFileName.Data()<<endl;
+  // Set the principal and parameters files to be used
+  fFileName5  = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-5.root" ;
+  fFileNamePar5 = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters_0.5_5.dat"); 
+  fFileName100  = "$ALICE_ROOT/PHOS/PCA8pa15_0.5-100.root" ;
+  fFileNamePar100 = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters_0.5_100.dat"); 
+
+  //SetPrincipalFileOptions();
+  //fOptFileName);
+  TFile f5( fFileName5.Data(), "read" ) ;
+  fPrincipal5 = dynamic_cast<TPrincipal*> (f5.Get("principal")) ; 
+  f5.Close() ; 
+  TFile f100( fFileName100.Data(), "read" ) ;
+  fPrincipal100 = dynamic_cast<TPrincipal*> (f100.Get("principal")) ; 
+  f100.Close() ; 
+  TFile f( fFileName100.Data(), "read" ) ;
   fPrincipal = dynamic_cast<TPrincipal*> (f.Get("principal")) ; 
   f.Close() ; 
-
-  // Initialization of the Parameters matrix. In the File Parameters.dat
-  // are all the parameters. These are introduced in a matrix of 21x3 or 24x3 
-  // elements (depending on the principal file 21 rows for 0.5-5 GeV and 24 
-  // rows for 0.5-100).
+  // Initialization of the Parameters matrix. In the File ParametersXX.dat
+  // are all the parameters. These are introduced in a matrix of 21x3 or 22x3 
+  // elements (depending on the principal file 21 rows for 0.5-5 GeV and 22 
+  // rows for 5-100).
   // All the parameters defined in this file are, in order of row (there are
-  // 3 rows per parameter): CpvtoEmcDistanceCut(if the principal file is 0.5-100 
-  // GeV than 6 rows), TimeGate (and the ellipse parameters), X_center, Y_center,
+  // 3 rows per parameter): CpvtoEmcDistanceCut(if the principal file is 5-100 
+  // GeV then 4 rows), TimeGate and the ellipse parameters, X_center, Y_center,
   // a, b, angle. Each row of a given parameter depends on the cluster energy range 
   // (wich depends on the chosen principal file)
-  // Each column designes the parameters for a point in the Efficiency-Purity
+  // Each column designs the parameters for a point in the Efficiency-Purity
   // of the photon identification P1(96%,63%), P2(87%,0.88%) and P3(68%,94%) 
   // for the principal file from 0.5-5 GeV and for the other one P1(95%,79%),
   // P2(89%,90%) and P3(72%,96%)
 
-  Int_t rows = 21;
-  if(fCluster == 0)rows = 21 ;
-  if(fCluster == 3)rows = 24 ;
 
-  fParameters = new TMatrixD(rows,3) ; 
-  //cout<<fFileNamePar<<endl;
-  ifstream paramFile(fFileNamePar, ios::in) ; 
+  fParameters5 = new TMatrixD(21,3) ; 
+  fParameters100 = new TMatrixD(22,3) ; 
+  fParameters = new TMatrixD(22,3) ;
+ 
+  ifstream paramFile5(fFileNamePar5, ios::in) ; 
   
   Int_t i,j ;
   
-  for(i = 0; i< rows; i++){
+  for(i = 0; i< 21; i++){
     for(j = 0; j< 3; j++){
-      paramFile >> (*fParameters)(i,j) ;
+      paramFile5 >> (*fParameters5)(i,j) ;
     }
   }
-  paramFile.close(); 
+  paramFile5.close();
+ 
+  ifstream paramFile100(fFileNamePar100, ios::in) ; 
+  
+  Int_t l,k ;
+  
+  for(l = 0; l< 22; l++){
+    for(k = 0; k< 3; k++){
+      paramFile100 >> (*fParameters100)(l,k) ;
+    }
+  }
+  paramFile100.close();
+ 
+  ifstream paramFile(fFileNamePar100, ios::in) ; 
+  Int_t h,n;
+  for(h = 0; h< 22; h++){
+    for(n = 0; n< 3; n++){
+      paramFile >> (*fParameters)(h,n) ;
+    }
+  }
+  paramFile.close();
+
+  fCluster = -1;
+  fClusterrcpv = -1;
+  fMatrixExtraRow = 0;
+
+  //Calibration parameters Encal = C * E^2 + B * E + A  (E is the energy from cluster)
+  fACalParameter = 0.0241  ;
+  fBCalParameter = 1.0504  ;
+  fCCalParameter = 0.000249 ;
+ 
   // fParameters->Print();
 }
 //_____________________________________________________________________________
-Int_t  AliPHOSPIDv1::GetClusterOption(const Float_t Cluster_En, const Bool_t rcpv) const
+void  AliPHOSPIDv1::GetAnalysisParameters(Float_t Cluster_En) 
+{
+  if(Cluster_En <= 5.){
+    fPrincipal  = fPrincipal5;
+    fParameters = fParameters5;
+    fMatrixExtraRow = 0;
+    GetClusterOption(Cluster_En,kFALSE) ;
+  }
+  else{
+    fPrincipal  = fPrincipal100;
+    fParameters = fParameters100;
+    fMatrixExtraRow = 1;
+    GetClusterOption(Cluster_En,kTRUE) ;
+  }
+}
+
+//_____________________________________________________________________________
+void  AliPHOSPIDv1::GetClusterOption(const Float_t Cluster_En, const Bool_t range) 
 {
 
   // Gives the cluster energy range.
+  // range = kFALSE Default analisys range from 0.5 to 5 GeV
+  // range = kTRUE  analysis range from 0.5 to 100 GeV
+
   
-  Int_t cluster = -1 ;
+  //Int_t cluster = -1 ;
   
-  if((fCluster == 0)){
-    if((Cluster_En > 0.3)&&(Cluster_En <= 1.0))   cluster = 0 ;
-    if((Cluster_En > 1.0)&&(Cluster_En <= 2.0))   cluster = 1 ;
-    if( Cluster_En > 2.0)                         cluster = 2 ;
+  if((range == kFALSE)){
+    if((Cluster_En > 0.3)&&(Cluster_En <= 1.0)){
+      fCluster = 0 ;
+      fClusterrcpv = 0 ;
+    }
+    if((Cluster_En > 1.0)&&(Cluster_En <= 2.0)){
+      fCluster = 1 ;
+      fClusterrcpv = 1 ;
+    }
+    if( Cluster_En > 2.0){
+      fCluster = 2 ;
+      fClusterrcpv = 2 ;
+    }
   }
-  else if(fCluster == 3 &&(rcpv == kFALSE)){
-    if((Cluster_En > 0.5 )&&(Cluster_En <= 20.0)) cluster = 0 ;
-    if((Cluster_En > 20.0)&&(Cluster_En <= 50.0)) cluster = 1 ;
-    if( Cluster_En > 50.0)                        cluster = 2 ;
-  }
-  else if(fCluster == 3 &&(rcpv == kTRUE)){
-    if((Cluster_En > 0.5 )&&(Cluster_En <= 2.0) ) cluster = 0 ;
-    if((Cluster_En > 2.0 )&&(Cluster_En <= 5.0) ) cluster = 1 ;
-    if((Cluster_En > 5.0 )&&(Cluster_En <= 10.0)) cluster = 2 ;
-    if((Cluster_En > 10.0)&&(Cluster_En <= 20.0)) cluster = 3 ;
-    if((Cluster_En > 20.0)&&(Cluster_En <= 30.0)) cluster = 4 ;
-    if( Cluster_En > 30.0) cluster = 5 ;
+  else if(range == kTRUE){
+    if((Cluster_En > 0.5 )&&(Cluster_En <= 20.0)) fCluster = 0 ;
+    if((Cluster_En > 20.0)&&(Cluster_En <= 50.0)) fCluster = 1 ;
+    if( Cluster_En > 50.0)                        fCluster = 2 ;
+    if((Cluster_En > 5.0 )&&(Cluster_En <= 10.0)) fClusterrcpv = 0 ;
+    if((Cluster_En > 10.0)&&(Cluster_En <= 20.0)) fClusterrcpv = 1 ;
+    if((Cluster_En > 20.0)&&(Cluster_En <= 30.0)) fClusterrcpv = 2 ;
+    if( Cluster_En > 30.0)                        fClusterrcpv = 3 ;
   }
   else {
-    cluster = -1 ;
+    fCluster = -1 ;
+    fClusterrcpv = -1;
     cout<<"Invalid Energy option"<<endl;
   }
   
-  return cluster;
+  //return cluster;
 }
 //____________________________________________________________________________
 Int_t  AliPHOSPIDv1::GetEffPurOption(const TString Eff_Pur) const
@@ -708,64 +746,73 @@ void  AliPHOSPIDv1::MakeRecParticles(){
     if(ts->GetCpvIndex()>=0)
       cpv = (AliPHOSRecPoint *)   cpvRecPoints->At(ts->GetCpvIndex()) ;
     
-    //set momentum and energy first
-    Float_t    e = emc->GetEnergy() ;
-    TVector3 dir = GetMomentumDirection(emc,cpv) ; 
-    dir.SetMag(e) ;
-
-    rp->SetMomentum(dir.X(),dir.Y(),dir.Z(),e) ;
-    rp->SetCalcMass(0);
-    
     // Now set type (reconstructed) of the particle
 
     // Choose the cluster energy range
-    // Ellipse and rcpv cut in function of the cluster energy
-    Int_t clusterrcpv = GetClusterOption(e,kTRUE) ;
-    Int_t cluster     = GetClusterOption(e,kFALSE) ;
-    if((cluster== -1)||(clusterrcpv == -1)) continue ;
+    
+    Float_t    e = emc->GetEnergy() ;   
 
+   
+    GetAnalysisParameters(e);
+
+    if((fCluster== -1)||(fClusterrcpv == -1)) continue ;
+    
+    // Ellipse and rcpv cut in function of the cluster energy
+    
     // Loop of Efficiency-Purity (the 3 points of purity or efficiency are taken 
     // into account to set the particle identification)
     for(Int_t eff_pur = 0; eff_pur < 3 ; eff_pur++){
       
-      // Looking at the CPV detector. If RCPV greater than CpvEmcDistance, 1st, 
-      // 2nd or 3rd bit (depending on the efficiency-purity point )is set to 1 .  
-      if(GetDistance(emc, cpv,  "R") > (*fParameters)(clusterrcpv,eff_pur) )  
-	rp->SetPIDBit(eff_pur) ;
-      
-      // Looking the TOF. If TOF smaller than gate,  4th, 5th or 6th 
-      // bit (depending on the efficiency-purity point )is set to 1             
-      if(emc->GetTime()< (*fParameters)(cluster+3+fCluster,eff_pur))  
-	rp->SetPIDBit(eff_pur+3) ;		    
-     
-      // Looking PCA. Define and calculate the data (X), introduce in the function 
-      // X2P that gives the components (P).  
-      Float_t  Spher = 0. ;
-      Float_t  Emaxdtotal = 0. ; 
       Float_t  lambda[2] ;
-      
       emc->GetElipsAxis(lambda) ;
-      if((lambda[0]+lambda[1])!=0) Spher=fabs(lambda[0]-lambda[1])/(lambda[0]+lambda[1]); 
+      Float_t time =emc->GetTime() ;
       
-      Emaxdtotal=emc->GetMaximalEnergy()/emc->GetEnergy(); 
-      
-      fX[0] = lambda[0] ;  
-      fX[1] = lambda[1] ; 
-      fX[2] = emc->GetDispersion() ; 
-      fX[3] = Spher ; 
-      fX[4] = emc->GetMultiplicity() ;  
-      fX[5] = Emaxdtotal ;  
-      fX[6] = emc->GetCoreEnergy() ;  
-      
-      fPrincipal->X2P(fX,fP);
-      
-      //If we are inside the ellipse, 7th, 8th or 9th 
-      // bit (depending on the efficiency-purity point )is set to 1 
-      if(GetPrincipalSign(fP,cluster+fCluster,eff_pur) == 1) 
-	rp->SetPIDBit(eff_pur+6) ;
-      
+      if((lambda[0]>0.01) && (lambda[1]>0.01) && time > 0.){
+	
+	// Looking at the CPV detector. If RCPV greater than CpvEmcDistance, 1st, 
+	// 2nd or 3rd bit (depending on the efficiency-purity point )is set to 1 . 
+	
+	if(GetDistance(emc, cpv,  "R") > (*fParameters)(fClusterrcpv,eff_pur) )  
+	  rp->SetPIDBit(eff_pur) ;
+	
+	// Looking the TOF. If TOF smaller than gate,  4th, 5th or 6th 
+	// bit (depending on the efficiency-purity point )is set to 1             
+	if(time< (*fParameters)(fCluster+3+fMatrixExtraRow,eff_pur))  
+	  rp->SetPIDBit(eff_pur+3) ;		    
+	
+	// Looking PCA. Define and calculate the data (X), introduce in the function 
+	// X2P that gives the components (P).  
+	Float_t  Spher = 0. ;
+	Float_t  Emaxdtotal = 0. ; 
+	
+	if((lambda[0]+lambda[1])!=0) Spher=fabs(lambda[0]-lambda[1])/(lambda[0]+lambda[1]); 
+	
+	Emaxdtotal=emc->GetMaximalEnergy()/emc->GetEnergy(); 
+	
+	fX[0] = lambda[0] ;  
+	fX[1] = lambda[1] ; 
+	fX[2] = emc->GetDispersion() ; 
+	fX[3] = Spher ; 
+	fX[4] = emc->GetMultiplicity() ;  
+	fX[5] = Emaxdtotal ;  
+	fX[6] = emc->GetCoreEnergy() ;  
+	
+	fPrincipal->X2P(fX,fP);
+	
+	//If we are inside the ellipse, 7th, 8th or 9th 
+	// bit (depending on the efficiency-purity point )is set to 1 
+	if(GetPrincipalSign(fP,fCluster+fMatrixExtraRow,eff_pur) == 1) 
+	  rp->SetPIDBit(eff_pur+6) ;
+	
+      }
     }
     
+    //Set momentum, energy and other parameters 
+    Float_t  encal = CalibratedEnergy(e);
+    TVector3 dir   = GetMomentumDirection(emc,cpv) ; 
+    dir.SetMag(encal) ;
+    rp->SetMomentum(dir.X(),dir.Y(),dir.Z(),encal) ;
+    rp->SetCalcMass(0);
     rp->Name(); //If photon sets the particle pdg name to gamma
     rp->SetProductionVertex(0,0,0,0);
     rp->SetFirstMother(-1);
@@ -788,18 +835,26 @@ void  AliPHOSPIDv1:: Print()
     cout <<  "    RecPoints branch title:     " << fRecPointsTitle.Data() << endl ;
     cout <<  "    TrackSegments Branch title: " << fTrackSegmentsTitle.Data() << endl ;
     cout <<  "    RecParticles Branch title   " << fRecParticlesTitle.Data() << endl;
-    cout <<  "    Pricipal analysis file      " << fFileName.Data() << endl;
-    cout <<  "    Matrix of Parameters: "<<endl;
-    cout <<  "    Name of parameters file     "<<fFileNamePar.Data() << endl ;
-    cout <<  "           3  Columns [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]"<<endl;
-    if(fCluster == 0)
-      cout <<  "           21 Rows, each 3 [ RCPV, TOF, X_Center, Y_Center, A, B, Angle ]"<<endl;
-    if(fCluster == 3)
-      cout <<  "           24 Rows, [ 6 RCPV, 3 TOF, 3 X_Center, 3 Y_Center, 3 A, 3 B, 3 Angle ]"<<endl;
 
-    //cout<<fOptFileName<<endl;
-    SetParameters(fOptFileName) ;
-    fParameters->Print() ; 
+    cout <<  "    Pricipal analysis file from 0.5 to 5 " << fFileName5.Data() << endl;
+    cout <<  "    Name of parameters file     "<<fFileNamePar5.Data() << endl ;
+    cout <<  "    Matrix of Parameters: "<<endl;
+    cout <<  "           3  Columns [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]"<<endl;
+    cout <<  "           21 Rows, each 3 [ RCPV, TOF, X_Center, Y_Center, A, B, Angle ]"<<endl;
+    fParameters5->Print() ;
+
+    cout <<  "    Pricipal analysis file from 5 to 100 " << fFileName100.Data() << endl;
+    cout <<  "    Name of parameters file     "<<fFileNamePar100.Data() << endl ;
+    cout <<  "    Matrix of Parameters: "<<endl;
+    cout <<  "           3  Columns [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]"<<endl;
+    cout <<  "           22 Rows, [ 4 RCPV, 3 TOF, 3 X_Center, 3 Y_Center, 3 A, 3 B, 3 Angle ]"<<endl;
+    fParameters100->Print() ;
+
+    cout <<  "    Energy Calibration Parameters  A + B* E + C * E^2"<<endl;
+    cout <<  "    E is the energy from the cluster "<<endl;
+    cout <<  "           A = "<< fACalParameter  << endl;
+    cout <<  "           B = "<< fBCalParameter  << endl;   
+    cout <<  "           C = "<< fCCalParameter  << endl; 
     cout <<  "============================================" << endl ;
 }
 
