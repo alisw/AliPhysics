@@ -14,7 +14,13 @@
  **************************************************************************/
 
 /* $Id$ */
-
+//
+// Realisation of AliGenReader to be used with AliGenExtFile
+// It reads Hijing events from a ntuple like event structure.
+// The event format is defined in Init()
+// NextEvent() is used to loop over events and NextParticle() to loop over particles.  
+// Author: andreas.morsch@cern.ch
+//
 #include <TFile.h>
 #include <TParticle.h>
 #include <TTree.h>
@@ -82,8 +88,9 @@ Int_t AliGenReaderEcalHijing::NextEvent()
 
 TParticle* AliGenReaderEcalHijing::NextParticle() 
 {
-    Float_t p[4];
 // Read the next particle
+
+    Float_t p[4];
     Int_t ipart = fKhij[fNparticle];
     p[0] = fPxhij[fNparticle];
     p[1] = fPyhij[fNparticle];      

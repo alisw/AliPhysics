@@ -14,7 +14,13 @@
  **************************************************************************/
 
 /* $Id$ */
-
+//
+// Realisation of AliGenReader to be used with AliGenExtFile
+// It reads Pythia Jet events from a ntuple like event structure.
+// The event format is defined in Init()
+// NextEvent() is used to loop over events and NextParticle() to loop over particles.  
+// Author: andreas.morsch@cern.ch
+//
 #include <TFile.h>
 #include <TParticle.h>
 #include <TTree.h>
@@ -94,8 +100,9 @@ Int_t AliGenReaderEcalJets::NextEvent()
 
 TParticle* AliGenReaderEcalJets::NextParticle() 
 {
-    Float_t p[4];
 // Read the next particle
+
+    Float_t p[4];
     Int_t    ipart  = fXid[fNparticle];
     Float_t  pt     = fXpt[fNparticle];
     Float_t  eta    = fXeta[fNparticle];

@@ -5,6 +5,11 @@
 
 /* $Id$ */
 
+//
+// Realisation of AliGenReader to be used with AliGenExtFile
+// It reads Hijing events from a ntuple like event structure.
+// Author: andreas.morsch@cern.ch
+//
 #include "AliGenReader.h"
 
 
@@ -22,11 +27,10 @@ class AliGenReaderEcalHijing : public AliGenReader
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
     AliGenReaderEcalHijing & operator=(const AliGenReaderEcalHijing & rhs);
- private:
-    void Copy(AliGenReaderEcalHijing&) const;
+
  protected:
     Int_t             fNcurrent;      // points to the next entry
-    Int_t             fNparticle;     // 
+    Int_t             fNparticle;     // number of particles
     
     TTree            *fTreeNtuple;    // pointer to the TTree
     //Declaration of leaves types
@@ -38,6 +42,9 @@ class AliGenReaderEcalHijing : public AliGenReader
     Float_t         fPyhij[10000];    // py
     Float_t         fPzhij[10000];    // pz
     Float_t         fEhij[10000];     // energy
+ private:
+    void Copy(AliGenReaderEcalHijing&) const;
+    
     ClassDef(AliGenReaderEcalHijing,1) // Read particles from cwn-ntuple
 };
 #endif

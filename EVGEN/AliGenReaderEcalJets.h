@@ -4,7 +4,11 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-
+//
+// Realisation of AliGenReader to be used with AliGenExtFile
+// It reads Hijing events from a ntuple like event structure.
+// Author: andreas.morsch@cern.ch
+//
 #include "AliGenReader.h"
 
 
@@ -22,13 +26,12 @@ class AliGenReaderEcalJets : public AliGenReader
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
     AliGenReaderEcalJets & operator=(const AliGenReaderEcalJets & rhs);
- private:
-    void Copy(AliGenReaderEcalJets&) const;
+ 
  protected:
     Int_t           fNcurrent;      // points to the next event
     Int_t           fNparticle;     // points to the next particle 
     Int_t           fNev;           // event number
-    Float_t         fX[2];          // 
+    Float_t         fX[2];          // vertex ?
     Int_t           fXtyp[2];       // parton type
     Int_t           fNpart;         // number of particles  
     Float_t         fXpt[200];      // pt of particle
@@ -43,13 +46,14 @@ class AliGenReaderEcalJets : public AliGenReader
     Float_t         fJset[10];      // E_t of cluster 
     Float_t         fJseta[10];     // eta of cluster
     Float_t         fJsphi[10];     // phi of cluster
-    Int_t           fNpjet;         // ?
-    Float_t         fJpet[10];      // ?
-    Float_t         fJpeta[10];     // ?
-    Float_t         fJpphi[10];     // ?
+    Int_t           fNpjet;         // Jet p
+    Float_t         fJpet[10];      // Jet Et
+    Float_t         fJpeta[10];     // Jet eta
+    Float_t         fJpphi[10];     // Jet phi
+    TTree            *fTreeNtuple;  // pointer to the TTree
 
-    TTree            *fTreeNtuple;    // pointer to the TTree
-    //Declaration of leaves types
+ private:
+    void Copy(AliGenReaderEcalJets&) const;
     ClassDef(AliGenReaderEcalJets,1) // Read particles from cwn-ntuple
 };
 #endif
