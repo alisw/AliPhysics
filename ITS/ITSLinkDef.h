@@ -109,6 +109,6 @@
 //#pragma link C function GetIntegerDialog;
 //#pragma link C function GetFloatDialog;
 // This class will always be for ITS only
-//#pragma link C++ class  AliITSvtest-;
+#pragma link C++ class  AliITSvtest+;
 
 #endif
