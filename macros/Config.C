@@ -9,7 +9,14 @@ new AliGeant3("C++ Interface to Geant3");
 TFile *rootfile = new TFile("galice.root","recreate");
 rootfile->SetCompressionLevel(2);
 TGeant3 *geant3 = (TGeant3*)gMC;
-
+//
+// Set External decayer
+ AliDecayer* decayer = new AliDecayerPythia();
+ decayer->SetForceDecay(all);
+ decayer->Init();
+ gMC->SetExternalDecayer(decayer);
+//
+//
 //=======================================================================
 // ******* GEANT STEERING parameters FOR ALICE SIMULATION *******
 geant3->SetTRIG(1); //Number of events to be processed 
