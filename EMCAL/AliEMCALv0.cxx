@@ -114,7 +114,7 @@ void AliEMCALv0::CreateGeometry(){
     AliMatrix(idrotm, 90.0, 0., 90.0, 90.0, 0.0, 0.0) ;
 
     // Position the Envelope in Alice  
-    gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "MANY") ;
+    gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
      envelopA[1]  =envelopA[0] + fGeom->GetGap2Active(); 
     TString label = "XU0";
 
@@ -122,7 +122,7 @@ void AliEMCALv0::CreateGeometry(){
 	envelopA[1] = envelopA[0] + 2.2    ;  //rmax larger for first two layers (preshower)
 
     gMC->Gsvolu(label.Data(), "TUBS ", idtmed[1599], envelopA, 5) ; //filled with air
-    gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "MANY") ; // Place XU0 in to XEN1
+    gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ; // Place XU0 in to XEN1
 
  for (int i = 1; i < ((fGeom->GetNLayers()-1)/2) + 1 ; i++ ){
        label = "XU" ;
@@ -132,7 +132,7 @@ void AliEMCALv0::CreateGeometry(){
        envelopA[1] = envelopA[0] + 2.0  ;  //rmax 
 
     gMC->Gsvolu(label.Data(), "TUBS ", idtmed[1599], envelopA, 5) ; //filled with air
-    gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "MANY") ;
+    gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
 
 	} // end  i
 
