@@ -1,4 +1,6 @@
 #ifndef __CINT__
+  #include <iostream.h>
+
   #include "AliRun.h"
   #include "AliITS.h"
   #include "AliITSgeom.h"
@@ -41,14 +43,15 @@ Int_t AliITSFindClustersV2() {
 
    gAlice->MakeTree("R"); ITS->MakeBranch("R",0);
 //////////////// Taken from ITSHitsToFastPoints.C ///////////////////////
-   AliITSsimulationFastPoints *sim = new AliITSsimulationFastPoints();
-   for (Int_t i=0;i<3;i++) { ITS->SetSimulationModel(i,sim); }
-
+   ITS->SetSimulationModel(0,new AliITSsimulationFastPoints());
+   ITS->SetSimulationModel(1,new AliITSsimulationFastPoints());
+   ITS->SetSimulationModel(2,new AliITSsimulationFastPoints());
    Int_t nsignal=25;
    Int_t size=-1;
    Int_t bgr_ev=Int_t(ev/nsignal);
    ITS->HitsToFastRecPoints(ev,bgr_ev,size," ","All"," ");
 //////////////////////////////////////////////////////////////////////////
+
    delete gAlice; gAlice=0;
    in->Close();
 
@@ -79,11 +82,12 @@ Int_t AliITSFindClustersV2() {
    geom->Write();
 
    TClonesArray *clusters=new TClonesArray("AliITSclusterV2",10000);
-   TTree *cTree=new TTree("cTree","ITS clusters");
+   //TTree *cTree=new TTree("cTree","ITS clusters");
+   TTree *cTree=new TTree("TreeC_ITS_0","ITS clusters");
    cTree->Branch("Clusters",&clusters);
 
    TTree *pTree=gAlice->TreeR();
-   if (!pTree) { 
+   if (!pTree) {
       cerr<<"Can't get TreeR !\n";
       return 7;
    }
@@ -102,13 +106,14 @@ Int_t AliITSFindClustersV2() {
    cerr<<"Number of entries: "<<nentr<<endl;
 
    for (Int_t i=0; i<nentr; i++) {
-       if (!pTree->GetEvent(i)) {cTree->Fill(); continue;}
+       points->Clear();
+       pTree->GetEvent(i);
+       Int_t ncl=points->GetEntriesFast(); if (ncl==0){cTree->Fill();continue;}
        Int_t lay,lad,det; geom->GetModuleId(i,lay,lad,det);
        Float_t x,y,zshift; geom->GetTrans(lay,lad,det,x,y,zshift); 
        Double_t rot[9];    geom->GetRotMatrix(lay,lad,det,rot);
        Double_t yshift = x*rot[0] + y*rot[1];
        Int_t ndet=(lad-1)*geom->GetNdetectors(lay) + (det-1);
-       Int_t ncl=points->GetEntriesFast();
        nclusters+=ncl;
        for (Int_t j=0; j<ncl; j++) {
           AliITSRecPoint *p=(AliITSRecPoint*)points->UncheckedAt(j);
@@ -147,10 +152,12 @@ Int_t AliITSFindClustersV2() {
    delete cTree; delete clusters; delete points;
 
    delete gAlice; gAlice=0;
+
    in->Close();
    out->Close();
 
    return 0;
+
 }
 
 

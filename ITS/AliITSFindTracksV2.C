@@ -25,6 +25,8 @@ Int_t AliITSFindTracksV2() {
    Int_t rc=tracker.Clusters2Tracks(in,out);
    timer.Stop(); timer.Print();
 
+   delete geom; //Thanks to Mariana Bondila
+
    file->Close();
    in->Close();
    out->Close();

@@ -92,11 +92,10 @@ if (phi<0) phi += 2*TMath::Pi();
 
   try {
      //Read clusters
-    //MI change 
-    char   cname[100]; 
-    sprintf(cname,"TreeC_ITS_%d",eventn);
+     //MI change 
+     char   cname[100]; 
+     sprintf(cname,"TreeC_ITS_%d",eventn);
      TTree *cTree=(TTree*)gDirectory->Get(cname);
-    //     TTree *cTree=(TTree*)gDirectory->Get("cTree");
 
      if (!cTree) throw 
         ("AliITStrackerV2::AliITStrackerV2 can't get cTree !\n");
@@ -111,7 +110,6 @@ if (phi<0) phi += 2*TMath::Pi();
      Int_t nentr=(Int_t)cTree->GetEntries();
      for (i=0; i<nentr; i++) {
        if (!cTree->GetEvent(i)) continue;
-       //Int_t lay,lad,det; g->GetModuleId(i-1,lay,lad,det);
        Int_t lay,lad,det; g->GetModuleId(i,lay,lad,det);
        Int_t ncl=clusters->GetEntriesFast();
        while (ncl--) {
@@ -131,6 +129,7 @@ cout<<lay-1<<' '<<lad-1<<' '<<det-1<<' '<<c->GetY()<<' '<<c->GetZ()<<endl;
        }
        clusters->Delete();
      }
+     delete cTree; //Thanks to Mariana Bondila
   }
   catch (const Char_t *msg) {
     cerr<<msg<<endl;
@@ -168,7 +167,6 @@ Int_t AliITStrackerV2::Clusters2Tracks(const TFile *inp, TFile *out) {
   char   tname[100];
   sprintf(tname,"TreeT_TPC_%d",fEventN);
   TTree *tpcTree=(TTree*)in->Get(tname);
-  //TTree *tpcTree=(TTree*)in->Get("TPCf");
 
   if (!tpcTree) {
      cerr<<"AliITStrackerV2::Clusters2Tracks() ";
@@ -267,6 +265,8 @@ cout<<fBestTrack.GetNumberOfClusters()<<" number of clusters\n\n";
   cerr<<"Number of TPC tracks: "<<nentr<<endl;
   cerr<<"Number of prolonged tracks: "<<ntrk<<endl;
 
+  delete tpcTree; //Thanks to Mariana Bondila
+
   delete itrack;
 
   return 0;
@@ -292,7 +292,7 @@ Int_t AliITStrackerV2::PropagateBack(const TFile *inp, TFile *out) {
   }
 
   in->cd();
-  TTree *itsTree=(TTree*)in->Get("ITSf");
+  TTree *itsTree=(TTree*)in->Get("TreeT_ITS_0");
   if (!itsTree) {
      cerr<<"AliITStrackerV2::PropagateBack() ";
      cerr<<"can't get a tree with ITS tracks !\n";
@@ -302,7 +302,7 @@ Int_t AliITStrackerV2::PropagateBack(const TFile *inp, TFile *out) {
   itsTree->SetBranchAddress("tracks",&itrack);
 
   out->cd();
-  TTree backTree("ITSb","Tree with back propagated ITS tracks");
+  TTree backTree("TreeT_ITSb_0","Tree with back propagated ITS tracks");
   AliTPCtrack *otrack=0;
   backTree.Branch("tracks","AliTPCtrack",&otrack,32000,0);
 
@@ -453,6 +453,8 @@ for (Int_t k=0; k<nc; k++) {
   cerr<<"Number of back propagated ITS tracks: "<<ntrk<<endl;
 
   delete itrack;
+
+  delete itsTree; //Thanks to Mariana Bondila
 
   return 0;
 }
@@ -638,6 +640,7 @@ AliITStrackerV2::AliITSlayer::AliITSlayer() {
   //--------------------------------------------------------------------
   fN=0;
   fDetectors=0;
+  for (Int_t i=0; i<kMaxClusterPerLayer; i++) fClusters[i]=0;
 }
 
 AliITStrackerV2::AliITSlayer::
@@ -648,6 +651,7 @@ AliITSlayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd) {
   fR=r; fPhiOffset=p; fZOffset=z;
   fNladders=nl; fNdetectors=nd;
   fDetectors=new AliITSdetector[fNladders*fNdetectors];
+  for (Int_t i=0; i<kMaxClusterPerLayer; i++) fClusters[i]=0;
 
   fN=0;
   fI=0;
@@ -757,7 +761,7 @@ AliITStrackerV2::AliITSlayer::GetThickness(Double_t phi, Double_t z) const {
   //This function returns the thickness of this layer
   //--------------------------------------------------------------------
   //-pi<phi<+pi
-  if (3 <fR&&fR<8 ) return 1.1*0.096;
+  if (3 <fR&&fR<8 ) return 2.2*0.096;
   if (13<fR&&fR<26) return 1.1*0.088;
   if (37<fR&&fR<41) return 1.1*0.085;
   return 1.1*0.081;

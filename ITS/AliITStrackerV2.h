@@ -21,7 +21,7 @@ class TFile;
 class AliITStrackerV2 : public AliTracker {
 public:
   AliITStrackerV2():AliTracker(){}
-  AliITStrackerV2(const AliITSgeom *geom, Int_t event) throw (const Char_t *);
+  AliITStrackerV2(const AliITSgeom *geom, Int_t event=0) throw (const Char_t *);
 
   AliCluster *GetCluster(Int_t index) const;
   Int_t Clusters2Tracks(const TFile *in, TFile *out);
