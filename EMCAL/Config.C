@@ -25,10 +25,12 @@ enum PprRad_t
 };
 
 // This part for configuration    
-static PprRun_t run = kParam_8000_Ecal;
+static PprRun_t run = kJets_50;
 //static PprRun_t run = kJets_100;
 static PprGeo_t geo = kHoles;
 static PprRad_t rad = kGluonRadiation;
+static Int_t    eventsPerRun = 100;
+
 // Comment line 
 static TString  comment;
 
