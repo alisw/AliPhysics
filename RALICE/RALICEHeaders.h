@@ -30,3 +30,5 @@
 #include "AliEvent.h"
 #include "AliCollider.h"
 #include "AliObjMatrix.h"
+#include "AliAttrib.h"
+#include "AliAttribObj.h"

@@ -41,10 +41,14 @@
 // Float_t err[3]={0.03,0.7,0.18};
 // Float_t signal=120.8;
 // Float_t error=1.73;
+// Float_t offset=-12.78;
+// Float_t gain=250;
 // s.SetPosition(pos,"car");
 // s.SetPositionErrors(err,"car");
 // s.SetSignal(signal);
 // s.SetSignalError(error);
+// s.SetOffset(offset);
+// s.SetGain(gain);
 // Float_t loc[3],dr[3],sigma;
 // s.GetPosition(loc,"sph");
 // s.GetPositionErrors(dr,"sph");
@@ -58,16 +62,24 @@
 // q.SetPositionErrors(err,"car");
 // signal=82.5; // e.g. signal time in ns
 // error=2.01;
+// offset=0.003;
 // q.SetSignal(signal,1);
 // q.SetSignalError(error,1);
+// q.SetOffset(offset,1);
 // signal=268.1; // e.g. ADC value of signal
 // error=3.75;
+// gain=120.78;
 // q.SetSignal(signal,2);
 // q.SetSignalError(error,2);
+// q.SetGain(gain,2);
 // signal=23.7; // e.g. corresponding dE/dx value
 // error=0.48;
+// offset=0.2;
+// gain=150;
 // q.SetSignal(signal,3);
 // q.SetSignalError(error,3);
+// q.SetOffset(offset,3);
+// q.SetGain(gain,3);
 //
 //--- Author: Nick van Eijndhoven 23-jan-1999 UU-SAP Utrecht
 //- Modified: NvE $Date$ UU-SAP Utrecht
@@ -78,64 +90,67 @@
  
 ClassImp(AliSignal) // Class implementation to enable ROOT I/O
  
-AliSignal::AliSignal() : TObject(),AliPosition()
+AliSignal::AliSignal() : TObject(),AliPosition(),AliAttrib()
 {
 // Creation of an AliSignal object and initialisation of parameters.
-// Several values (with errors) can be stored.
+// Several signal values (with errors) can be stored in different slots.
 // If needed, the storage for values (and errors) will be expanded automatically
 // when entering values and/or errors.
- fSignal=0;
- fDsignal=0;
+ fSignals=0;
+ fDsignals=0;
+ fWaveforms=0;
  fName="Unspecified";
- fHwaveform=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSignal::~AliSignal()
 {
 // Destructor to delete dynamically allocated memory
- if (fSignal)
+ if (fSignals)
  {
-  delete fSignal;
-  fSignal=0;
+  delete fSignals;
+  fSignals=0;
  }
- if (fDsignal)
+ if (fDsignals)
  {
-  delete fDsignal;
-  fDsignal=0;
+  delete fDsignals;
+  fDsignals=0;
  }
- if (fHwaveform)
+ if (fWaveforms)
  {
-  delete fHwaveform;
-  fHwaveform=0;
+  delete fWaveforms;
+  fWaveforms=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliSignal::AliSignal(AliSignal& s) : TObject(s),AliPosition(s)
+AliSignal::AliSignal(AliSignal& s) : TObject(s),AliPosition(s),AliAttrib(s)
 {
 // Copy constructor
- fSignal=0;
- fDsignal=0;
+ fSignals=0;
+ fDsignals=0;
  fName=s.fName;
- fHwaveform=0;
+ fWaveforms=0;
 
- Int_t nvalues=s.GetNvalues();
- Double_t sig;
- for (Int_t i=1; i<=nvalues; i++)
+ Int_t n=s.GetNvalues();
+ Double_t val;
+ for (Int_t i=1; i<=n; i++)
  {
-  sig=s.GetSignal(i);
-  SetSignal(sig,i);
+  val=s.GetSignal(i);
+  SetSignal(val,i);
  } 
 
- Int_t nerrors=s.GetNerrors();
- Double_t err;
- for (Int_t j=1; j<=nerrors; j++)
+ n=s.GetNerrors();
+ for (Int_t j=1; j<=n; j++)
  {
-  err=s.GetSignalError(j);
-  SetSignalError(err,j);
+  val=s.GetSignalError(j);
+  SetSignalError(val,j);
  }
 
- TH1F* hist=s.GetWaveform();
- if (hist) fHwaveform=new TH1F(*hist); 
+ n=s.GetNwaveforms();
+ for (Int_t k=1; k<=n; k++)
+ {
+  TH1F* hist=s.GetWaveform(k);
+  if (hist) SetWaveform(hist,k); 
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::Reset(Int_t mode)
@@ -143,21 +158,23 @@ void AliSignal::Reset(Int_t mode)
 // Reset all signal and position values and errors to 0.
 //
 // mode = 0 Reset position and all signal values and their errors to 0.
-//          The waveform histogram is reset.
+//          The waveform histograms are reset, but the calibration
+//          constants (i.e. gains and offsets) are kept.
 //        1 Reset position and delete the signal and error storage arrays.
-//          The waveform histogram is deleted.
+//          Also the waveform histograms, gains and offset arrays are deleted.
 //
 // The default when invoking Reset() corresponds to mode=0.
 //
 // The usage of mode=0 allows to re-use the allocated memory for new
 // signal (and error) values. This behaviour is preferable (i.e. faster)
-// in case the various signals always contain the same number of values.
+// in case the various signals always contain the same number of values
+// and have the same calibration constants.
 // The usage of mode=1 is slower, but allows a more efficient memory
 // occupation (and smaller output file size) in case the different
 // signals have a variable number of values.
 //
-// For more specific actions see ResetPosition(), ResetSignals()
-// and DeleteSignals().
+// For more specific actions see ResetPosition(), ResetSignals(),
+// DeleteSignals(), ResetGain(), ResetOffset() and DeleteCalibrations().
 //
 
  if (mode<0 || mode>1)
@@ -175,6 +192,7 @@ void AliSignal::Reset(Int_t mode)
  else
  {
   DeleteSignals();
+  DeleteCalibrations();
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -188,7 +206,7 @@ void AliSignal::ResetSignals(Int_t mode)
 //
 // The default when invoking ResetSignals() corresponds to mode=0.
 //
-// Irrespective of the mode, the waveform histogram is reset.
+// Irrespective of the mode, the waveform histograms are reset.
 
  if (mode<0 || mode>2)
  {
@@ -197,23 +215,23 @@ void AliSignal::ResetSignals(Int_t mode)
   mode=0;
  }
 
- if (fSignal && (mode==0 || mode==1))
+ if (fSignals && (mode==0 || mode==1))
  {
-  for (Int_t i=0; i<fSignal->GetSize(); i++)
+  for (Int_t i=0; i<fSignals->GetSize(); i++)
   {
-   fSignal->AddAt(0,i);
+   fSignals->AddAt(0,i);
   }
  }
 
- if (fDsignal && (mode==0 || mode==2))
+ if (fDsignals && (mode==0 || mode==2))
  {
-  for (Int_t j=0; j<fDsignal->GetSize(); j++)
+  for (Int_t j=0; j<fDsignals->GetSize(); j++)
   {
-   fDsignal->AddAt(0,j);
+   fDsignals->AddAt(0,j);
   }
  }
 
- if (fHwaveform) fHwaveform->Reset();
+ ResetWaveform(0);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::DeleteSignals(Int_t mode)
@@ -226,7 +244,7 @@ void AliSignal::DeleteSignals(Int_t mode)
 //
 // The default when invoking DeleteSignals() corresponds to mode=0.
 //
-// Irrespective of the mode, the waveform histogram is deleted.
+// Irrespective of the mode, the waveform histograms are deleted.
 
  if (mode<0 || mode>2)
  {
@@ -235,23 +253,19 @@ void AliSignal::DeleteSignals(Int_t mode)
   mode=0;
  }
 
- if (fSignal && (mode==0 || mode==1))
+ if (fSignals && (mode==0 || mode==1))
  {
-  delete fSignal;
-  fSignal=0;
+  delete fSignals;
+  fSignals=0;
  }
 
- if (fDsignal && (mode==0 || mode==2))
+ if (fDsignals && (mode==0 || mode==2))
  {
-  delete fDsignal;
-  fDsignal=0;
+  delete fDsignals;
+  fDsignals=0;
  }
 
- if (fHwaveform)
- {
-  delete fHwaveform;
-  fHwaveform=0;
- }
+ DeleteWaveform(0);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetPosition()
@@ -264,64 +278,98 @@ void AliSignal::ResetPosition()
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::SetSignal(Double_t sig,Int_t j)
 {
-// Store j-th (default j=1) signal value.
-// Note : The first signal value is at j=1.
+// Store value in the j-th (default j=1) signal slot.
+// Note : The first signal slot is at j=1.
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for signal values, the number of reserved slots for the
 // signal values is increased automatically.
 
- if (!fSignal)
+ if (!fSignals)
  {
-  fSignal=new TArrayF(j);
+  fSignals=new TArrayF(j);
   ResetSignals(1);
  }
 
- Int_t size=fSignal->GetSize();
+ Int_t size=fSignals->GetSize();
 
  if (j>size)
  {
-  fSignal->Set(j);
+  fSignals->Set(j);
  }
 
- fSignal->AddAt(float(sig),j-1);
+ fSignals->AddAt(float(sig),j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::AddSignal(Double_t sig,Int_t j)
 {
-// Add value to j-th (default j=1) signal value.
-// Note : The first signal value is at j=1.
+// Add value to the j-th (default j=1) signal slot.
+// Note : The first signal slot is at j=1.
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for signal values, the number of reserved slots for the
 // signal values is increased automatically.
 
- if (!fSignal)
+ if (!fSignals)
  {
-  fSignal=new TArrayF(j);
+  fSignals=new TArrayF(j);
   ResetSignals(1);
  }
 
- Int_t size=fSignal->GetSize();
+ Int_t size=fSignals->GetSize();
 
  if (j>size)
  {
-  fSignal->Set(j);
+  fSignals->Set(j);
  }
 
- Float_t sum=(fSignal->At(j-1))+sig;
- fSignal->AddAt(sum,j-1);
+ Float_t sum=(fSignals->At(j-1))+sig;
+ fSignals->AddAt(sum,j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliSignal::GetSignal(Int_t j)
+Float_t AliSignal::GetSignal(Int_t j,Int_t mode)
 {
-// Provide j-th (default j=1) signal value.
-// Note : The first signal value is at j=1.
+// Provide value of the j-th (default j=1) signal slot.
+// Note : The first signal slot is at j=1.
 // In case no signal is present or the argument j is invalid, 0 is returned.
+// The parameter "mode" allows for automatic gain etc... correction of the signal.
+//
+// mode = 0 : Just the j-th signal is returned.
+//        1 : The j-th signal is corrected for the gain, offset, dead flag etc...
+//            In case the gain value was not set, gain=1 will be assumed.
+//            In case the gain value was 0, a signal value of 0 is returned.
+//            In case the offset value was not set, offset=0 will be assumed.
+//            In case the j-th slot was marked dead, 0 is returned.
+//
+// The corrected signal (sigc) is determined as follows :
+//
+//              sigc=(signal/gain)-offset 
+//
+// The default is mode=0.
+
  Float_t sig=0;
- if (fSignal)
+ Float_t gain=1;
+ Float_t offset=0;
+ if (fSignals)
  {
-  if (j>0 && j<=(fSignal->GetSize()))
+  if (j>0 && j<=(fSignals->GetSize()))
   {
-   sig=fSignal->At(j-1);
+   sig=fSignals->At(j-1);
+
+   if (mode==0) return sig;
+
+   // Correct the signal for the gain, offset, dead flag etc...
+   if (GetDeadValue(j)) return 0;
+
+   if (GetGainFlag(j)) gain=GetGain(j);
+   if (GetOffsetFlag(j)) offset=GetOffset(j);
+
+   if (fabs(gain)>0.)
+   {
+    sig=(sig/gain)-offset;
+   }
+   else
+   {
+    sig=0;
+   }
   }
   else
   {
@@ -333,39 +381,39 @@ Float_t AliSignal::GetSignal(Int_t j)
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::SetSignalError(Double_t dsig,Int_t j)
 {
-// Store error on j-th (default j=1) signal value.
-// Note : The error on the first signal value is at j=1.
+// Store error for the j-th (default j=1) signal slot.
+// Note : The first signal slot is at j=1.
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for signal error values, the number of reserved slots for the
 // signal errors is increased automatically.
 
- if (!fDsignal)
+ if (!fDsignals)
  {
-  fDsignal=new TArrayF(j);
+  fDsignals=new TArrayF(j);
   ResetSignals(2);
  }
 
- Int_t size=fDsignal->GetSize();
+ Int_t size=fDsignals->GetSize();
 
  if (j>size)
  {
-  fDsignal->Set(j);
+  fDsignals->Set(j);
  }
 
- fDsignal->AddAt(float(dsig),j-1);
+ fDsignals->AddAt(float(dsig),j-1);
 }
 ///////////////////////////////////////////////////////////////////////////
 Float_t AliSignal::GetSignalError(Int_t j)
 {
-// Provide error on the j-th (default j=1) signal value.
-// Note : The error on the first signal value is at j=1.
+// Provide error of the j-th (default j=1) signal slot.
+// Note : The first signal slot is at j=1.
 // In case no signal is present or the argument j is invalid, 0 is returned.
  Float_t err=0;
- if (fDsignal)
+ if (fDsignals)
  {
-  if (j>0 && j<=(fDsignal->GetSize()))
+  if (j>0 && j<=(fDsignals->GetSize()))
   {
-   err=fDsignal->At(j-1);
+   err=fDsignals->At(j-1);
   }
   else
   {
@@ -375,22 +423,46 @@ Float_t AliSignal::GetSignalError(Int_t j)
  return err;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::Data(TString f)
+void AliSignal::Data(TString f,Int_t j)
 {
-// Provide signal information within the coordinate frame f
+// Provide signal information for the j-th slot within the coordinate frame f.
+// The first slot is at j=1.
+// In case j=0 (default) the data of all slots will be listed.
+
+ if (j<0) 
+ {
+  cout << " *AliSignal::Data* Invalid argument j = " << j << endl;
+  return;
+ }
+
  cout << " *AliSignal::Data* Signal of kind : " << fName.Data() << endl;
  cout << " Position";
  Ali3Vector::Data(f);
 
  Int_t nvalues=GetNvalues();
  Int_t nerrors=GetNerrors();
+ Int_t n=nvalues;
+ if (nerrors>n) n=nerrors;
 
- if (fSignal)
+ if (j==0)
  {
-  for (Int_t i=0; i<nvalues; i++)
+  for (Int_t i=1; i<=n; i++)
   {
-   cout << "   Signal value : " << fSignal->At(i);
-   if (fDsignal && i<nerrors) cout << " error : " << fDsignal->At(i);
+   cout << "   Signal";
+   if (i<=nvalues) cout << " value : " << GetSignal(i);
+   if (i<=nerrors) cout << " error : " << GetSignalError(i);
+   AliAttrib::Data(i);
+   cout << endl;
+  }
+ }
+ else
+ {
+  if (j<=n)
+  {
+   cout << "   Signal";
+   if (j<=nvalues) cout << " value : " << GetSignal(j);
+   if (j<=nerrors) cout << " error : " << GetSignalError(j);
+   AliAttrib::Data(j);
    cout << endl;
   }
  }
@@ -412,7 +484,7 @@ Int_t AliSignal::GetNvalues()
 {
 // Provide the number of values for this signal.
  Int_t n=0;
- if (fSignal) n=fSignal->GetSize();
+ if (fSignals) n=fSignals->GetSize();
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -420,40 +492,141 @@ Int_t AliSignal::GetNerrors()
 {
 // Provide the number specified errors on the values for this signal.
  Int_t n=0;
- if (fDsignal) n=fDsignal->GetSize();
+ if (fDsignals) n=fDsignals->GetSize();
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
-TH1F* AliSignal::GetWaveform()
+Int_t AliSignal::GetNwaveforms()
 {
-// Provide pointer to the 1D waveform histogram.
- return fHwaveform;
+// Provide the number specified waveforms for this signal.
+ Int_t n=0;
+ if (fWaveforms) n=fWaveforms->GetSize();
+ return n;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::SetWaveform(TH1F* waveform)
+TH1F* AliSignal::GetWaveform(Int_t j)
 {
-// Set the 1D waveform histogram.
+// Provide pointer to the j-th waveform histogram.
+ TH1F* waveform=0;
+ if (j <= GetNwaveforms()) waveform=(TH1F*)fWaveforms->At(j-1);
+ return waveform;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::SetWaveform(TH1F* waveform,Int_t j)
+{
+// Set the 1D waveform histogram corresponding to the j-th signal value.
 //
-// In case the input argument has the same value as the current waveform
+// Notes :
+//  The waveform of the first signal value is at j=1.
+//  j=1 is the default value.
+//
+// In case the value of the index j exceeds the maximum number of reserved
+// slots for the waveforms, the number of reserved slots for the waveforms
+// is increased automatically.
+//
+// In case the histo pointer argument has the same value as the current waveform
 // histogram pointer value, no action is taken since the user has already
 // modified the actual histogram.
 //
-// In case the input argument is zero, the current waveform histogram
+// In case the histo pointer argument is zero, the current waveform histogram
 // is deleted and the pointer set to zero.
 //
 // In all other cases the current waveform histogram is deleted and a new
 // copy of the input histogram is created which becomes the current waveform
 // histogram.
 
- if (waveform != fHwaveform)
+ if (!fWaveforms)
  {
-  if (fHwaveform)
+  fWaveforms=new TObjArray(j);
+  fWaveforms->SetOwner();
+ }
+
+ if (j > fWaveforms->GetSize()) fWaveforms->Expand(j);
+
+ TH1F* hcur=(TH1F*)fWaveforms->At(j-1);
+ if (waveform != hcur)
+ {
+  if (hcur)
   {
-   delete fHwaveform;
-   fHwaveform=0;
+   fWaveforms->Remove(hcur);
+   delete hcur;
+   hcur=0;
   }
-  if (waveform) fHwaveform=new TH1F(*waveform);
+  if (waveform)
+  {
+   hcur=new TH1F(*waveform);
+   fWaveforms->AddAt(hcur,j-1);
+  }
  } 
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::ResetWaveform(Int_t j)
+{
+// Reset the waveform of the j-th (default j=1) signal value.
+// This memberfunction invokes TH1F::Reset() for the corresponding waveform(s).
+// To actually delete the histograms from memory, use DeleteWaveform().
+// Notes : The first signal value is at j=1.
+//         j=0 ==> All waveforms will be reset.
+ 
+ if (!fWaveforms) return;
+
+ Int_t size=fWaveforms->GetSize();
+
+ if ((j>=0) && (j<=size))
+ {
+  if (j)
+  {
+   TH1F* hwave=(TH1F*)fWaveforms->At(j-1);
+   if (hwave) hwave->Reset();
+  }
+  else
+  {
+   for (Int_t i=0; i<size; i++)
+   {
+    TH1F* hwave=(TH1F*)fWaveforms->At(i);
+    if (hwave) hwave->Reset();
+   }
+  }
+ }
+ else
+ {
+  cout << " *AliSignal::ResetWaveform* Index j = " << j << " invalid." << endl;
+  return;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::DeleteWaveform(Int_t j)
+{
+// Delete the waveform of the j-th (default j=1) signal value.
+// Notes : The first signal value is at j=1.
+//         j=0 ==> All waveforms will be deleted.
+ 
+ if (!fWaveforms) return;
+
+ Int_t size=fWaveforms->GetSize();
+
+ if ((j>=0) && (j<=size))
+ {
+  if (j)
+  {
+   TH1F* hwave=(TH1F*)fWaveforms->At(j-1);
+   if (hwave)
+   {
+    fWaveforms->Remove(hwave);
+    delete hwave;
+   }
+  }
+  else
+  {
+   delete fWaveforms;
+   fWaveforms=0;
+  }
+ }
+ else
+ {
+  cout << " *AliSignal::DeleteWaveform* Index j = " << j << " invalid." << endl;
+  return;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSignal* AliSignal::MakeCopy(AliSignal& s)

@@ -105,6 +105,18 @@ Ali3Vector::Ali3Vector(const Ali3Vector& v)
  fDresult=v.fDresult;
 }
 ///////////////////////////////////////////////////////////////////////////
+void Ali3Vector::Load(Ali3Vector& q)
+{
+// Load all attributes of the input Ali3Vector into this Ali3Vector object.
+ Double_t temp=q.GetResultError();
+ Double_t a[3];
+ q.GetVector(a,"sph");
+ SetVector(a,"sph");
+ q.GetErrors(a,"car");
+ SetErrors(a,"car");
+ fDresult=temp;
+}
+///////////////////////////////////////////////////////////////////////////
 void Ali3Vector::SetZero()
 {
 // (Re)set all attributes to zero.

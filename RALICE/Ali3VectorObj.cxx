@@ -81,15 +81,3 @@ Ali3VectorObj::Ali3VectorObj(Ali3VectorObj& v) : TObject(v),Ali3Vector(v)
 // Copy constructor
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali3VectorObj::Load(Ali3Vector& q)
-{
-// Load all attributes of the input Ali3Vector into this Ali3VectorObj object.
- Double_t temp=q.GetResultError();
- Double_t a[3];
- q.GetVector(a,"sph");
- SetVector(a,"sph");
- q.GetErrors(a,"car");
- SetErrors(a,"car");
- fDresult=temp;
-}
-///////////////////////////////////////////////////////////////////////////

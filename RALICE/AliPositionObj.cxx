@@ -80,15 +80,3 @@ AliPositionObj::AliPositionObj(const AliPositionObj& p) : TObject(p),AliPosition
 // Copy constructor
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliPositionObj::Load(Ali3Vector& q)
-{
-// Load all attributes of the input Ali3Vector into this AliPositionObj object.
- Double_t temp=q.GetResultError();
- Double_t a[3];
- q.GetVector(a,"sph");
- SetPosition(a,"sph");
- q.GetErrors(a,"car");
- SetPositionErrors(a,"car");
- fDresult=temp;
-}
-///////////////////////////////////////////////////////////////////////////

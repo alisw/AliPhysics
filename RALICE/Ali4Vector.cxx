@@ -161,6 +161,20 @@ Ali4Vector::Ali4Vector(const Ali4Vector& v)
  fV=v.fV;
 }
 ///////////////////////////////////////////////////////////////////////////
+void Ali4Vector::Load(Ali4Vector& q)
+{
+// Load all attributes of the input Ali4Vector into this Ali4Vector object.
+ Int_t temp1=q.GetScalarFlag();
+ Double_t temp2=q.GetResultError();
+ Double_t a[4];
+ q.GetVector(a,"sph");
+ SetVector(a,"sph");
+ q.GetErrors(a,"car");
+ SetErrors(a,"car");
+ fScalar=temp1;
+ fDresult=temp2;
+}
+///////////////////////////////////////////////////////////////////////////
 void Ali4Vector::SetZero()
 {
 // (Re)set all attributes to zero.

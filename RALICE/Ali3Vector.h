@@ -16,6 +16,7 @@ class Ali3Vector
   Ali3Vector();                                  // Default constructor
   virtual ~Ali3Vector();                         // Destructor
   Ali3Vector(const Ali3Vector& v);               // Copy constructor
+  virtual void Load(Ali3Vector& q);              // Load all attributes of input Ali3Vector
   virtual void SetZero();                        // (Re)set all attributes to zero.
   virtual void SetVector(Double_t* v,TString f); // Store vector v in frame f
   virtual void GetVector(Double_t* v,TString f); // Provide vector v in frame f
@@ -47,6 +48,6 @@ class Ali3Vector
   Double_t fDx,fDy,fDz;       // Errors on Cartesian coordinates
   Double_t fDresult;          // Error on scalar result (e.g. norm or dotproduct)
 
- ClassDef(Ali3Vector,3) // Handling of 3-vectors in various reference frames.
+ ClassDef(Ali3Vector,4) // Handling of 3-vectors in various reference frames.
 };
 #endif

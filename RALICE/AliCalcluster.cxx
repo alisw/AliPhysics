@@ -114,6 +114,7 @@ AliCalcluster::AliCalcluster(AliCalmodule& m) : AliSignal()
   fCol=m.GetColumn();
   r=m.GetPosition();
   SetPosition(r);
+  sig=m.GetSignal(1,1); // Use the gain etc... corrected module signal
   SetSignal(sig);
   fNmods=1;
   fRowdisp=0.;
@@ -203,7 +204,7 @@ void AliCalcluster::Start(AliCalmodule& m)
   fCol=m.GetColumn();
   r=m.GetPosition();
   SetPosition(r);
-  SetSignal(m.GetSignal());
+  SetSignal(m.GetSignal(1,1)); // Use the gain etc... corrected module signal
   fNmods=1;
   fRowdisp=0.;
   fColdisp=0.;
@@ -229,10 +230,10 @@ void AliCalcluster::Add(AliCalmodule& m)
 
  if (fNmods)
  {
-  Float_t sigm=m.GetClusteredSignal();
- 
-  if (sigm>0. && m.GetDeadValue()==0) // only add unused modules
+  if (m.GetClusteredSignal()>0. && m.GetDeadValue()==0) // only add unused modules
   {
+   Float_t sigm=m.GetSignal(1,1); // Use the gain etc... corrected module signal
+
    Int_t drow=int(fabs(double(GetRow()-m.GetRow())));       // row distance to center
    Int_t dcol=int(fabs(double(GetColumn()-m.GetColumn()))); // column distance to center 
 

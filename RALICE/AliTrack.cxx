@@ -116,6 +116,7 @@ void AliTrack::Init()
  fImpactXZ=0;
  fImpactYZ=0;
  fClosest=0;
+ fParent=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliTrack::~AliTrack()
@@ -204,6 +205,7 @@ AliTrack::AliTrack(AliTrack& t) : TObject(t),Ali4Vector(t)
  fChi2=t.fChi2;
  fNdf=t.fNdf;
  fCode=t.fCode;
+ fParent=t.fParent;
 
  if (fNdec)
  {
@@ -240,6 +242,7 @@ void AliTrack::Reset()
  fNmasses=0;
  Double_t a[4]={0,0,0,0};
  SetVector(a,"sph");
+ fParent=0;
  if (fDecays)
  {
   delete fDecays;
@@ -1106,5 +1109,17 @@ Int_t AliTrack::GetParticleCode()
 {
 // Provide the user defined particle id code.
  return fCode;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetParentTrack(AliTrack* t)
+{
+// Set pointer to the parent track.
+ fParent=t;
+}
+///////////////////////////////////////////////////////////////////////////
+AliTrack* AliTrack::GetParentTrack()
+{
+// Provide pointer to the parent track.
+ return fParent;
 }
 ///////////////////////////////////////////////////////////////////////////

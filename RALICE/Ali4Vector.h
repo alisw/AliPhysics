@@ -15,6 +15,7 @@ class Ali4Vector
   Ali4Vector();                                     // Default constructor for contravariant vector
   virtual ~Ali4Vector();                            // Destructor
   Ali4Vector(const Ali4Vector& v);                  // Copy constructor
+  virtual void Load(Ali4Vector& q);                 // Load all attributes of input Ali4Vector
   virtual void SetZero();                           // (Re)set all attributes to zero
   virtual void SetVector(Double_t v0,Ali3Vector& v);// Store contravariant vector
   virtual void SetVector(Double_t* v,TString f);    // Store contravariant vector v^i in frame f
@@ -62,6 +63,6 @@ class Ali4Vector
   Double_t GetScaTrans(); // Provide "transverse value" of scalar part w.r.t. z-axis
   Double_t GetScaLong();  // Provide "longitudinal value" of scalar part w.r.t. z-axis
 
- ClassDef(Ali4Vector,3) // Handling of Lorentz 4-vectors in various reference frames.
+ ClassDef(Ali4Vector,4) // Handling of Lorentz 4-vectors in various reference frames.
 };
 #endif

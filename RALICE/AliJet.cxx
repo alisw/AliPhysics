@@ -225,13 +225,27 @@ void AliJet::Reset()
  if (fNtinit > 0) SetNtinit(fNtinit);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliJet::AddTrack(AliTrack& t,Int_t copy)
+void AliJet::AddTrack(AliTrack& t)
 {
 // Add a track to the jet.
-// Note : The optional parameter "copy" is for internal use only.
 // In case the maximum number of tracks has been reached
 // space will be extended to hold an additional amount of tracks as
 // was initially reserved.
+// See SetTrackCopy() to tailor the functionality of the stored structures.
+ AddTrack(t,1);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliJet::AddTrack(AliTrack& t,Int_t copy)
+{
+// Internal memberfunction to actually add a track to the jet.
+// In case the maximum number of tracks has been reached
+// space will be extended to hold an additional amount of tracks as
+// was initially reserved.
+//
+// If copy=0 NO copy of the track will be made, irrespective of the setting
+// of the TrackCopy flag.
+// This allows a proper treatment of automatically generated connecting
+// tracks between vertices.
  if (!fTracks)
  {
   fTracks=new TObjArray(fNtmax);

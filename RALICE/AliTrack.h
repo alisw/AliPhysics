@@ -70,6 +70,8 @@ class AliTrack : public TObject,public Ali4Vector
   Int_t GetNdf();                       // Provide the number of degrees of freedom for the track fit
   void SetParticleCode(Int_t code);     // Set the user defined particle id code (e.g. the PDF convention)
   Int_t GetParticleCode();              // Provide the user defined particle id code
+  void SetParentTrack(AliTrack* t);     // Set pointer to the parent track
+  AliTrack* GetParentTrack();           // Provide pointer to the parent track
 
  
  protected:
@@ -93,10 +95,11 @@ class AliTrack : public TObject,public Ali4Vector
   Float_t fChi2;             // The Chi-squared of the track fit
   Int_t fNdf;                // The number of degrees of freedom of the track fit
   Int_t fCode;               // The user defined particle id code
+  AliTrack* fParent;         // Pointer to the parent track
 
  private:
   void Dump(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
  
- ClassDef(AliTrack,4) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,5) // Handling of the attributes of a reconstructed particle track.
 };
 #endif

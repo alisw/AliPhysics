@@ -378,3 +378,22 @@
                 introduction of a linear object array for fast looping over the stored objects.
 15-aug-2003 NvE Usage of TMCParticle removed from AliCollider; only Pythia intrinsic functionality
                 is used.
+01-sep-2003 NvE Explicit initialisation of TObject() introduced in default constructor of AliObjMatrix.
+16-sep-2003 NvE Parent track pointer introduced for AliTrack.
+                Functionality of AliSignal extended and support for gains and offsets introduced.
+                Gain datamember removed from AliCalmodule.
+17-sep-2003 NvE Memberfunction AddTrack with second argument "copy" of AliJet moved into the
+                "protected" area to avoid confusion among users.
+                The user has now only access to the AddTrack memberfunction with only the track
+                (pointer) as argument.
+23-sep-2003 NvE New classes AliAttrib and AliAttribObj introduced to centralise the handling of
+                name, gain, offset, edge and dead value attributes for a certain slot.
+                Classes AliSignal and AliCalmodule updated accordingly.
+28-sep-2003 NvE Facility for automatic gain etc... correction introduced in AliSignal::GetSignal().
+30-sep-2003 NvE New version of AliCalorimeter introduced, making use of AliObjMatrix and AliAttribObj
+                and supporting full treatment of module gains, offsets etc...
+                Also class AliCalcluster updated to take gain etc... correction into account.
+02-oct-2003 NvE Memberfunction Load() moved from Ali3VectorObj and Ali4VectorObj to Ali3Vector
+                and Ali4Vector respectively. This allows to use this memberfunction also in
+                all the derived classes (e.g. AliPosition, AliSignal, AliTrack, etc...).
+                Therefore the Load() memberfunction has been removed from AliPositionObj.

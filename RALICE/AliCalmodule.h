@@ -22,20 +22,13 @@ class AliCalmodule : public AliSignal
   Int_t GetColumn();                                       // Return the column number of the module
   void SetClusteredSignal(Float_t val);                    // Set the signal of the module after clustering
   Float_t GetClusteredSignal();                            // Return module signal after clustering
-  void SetDead();                                          // Set flag to indicate dead modules
-  void SetAlive();                                         // Set flag to indicate active modules
-  Int_t GetDeadValue();                                    // Return the value of the dead module indicator
-  void SetGain(Float_t gain);                              // Set gain of the module's readout system
-  Float_t GetGain();                                       // Return the gain value
   virtual AliCalmodule* MakeCopy(AliCalmodule& m);         // Make a deep copy and provide its pointer
  
  protected:
-  Int_t fRow;      // The current row number
-  Int_t fCol;      // The current column number
-  Float_t fSigc;   // The signal after clustering
-  Int_t fDead;     // Flag to indicate dead module (1=dead 0=alive)
-  Float_t fGain;   // Gain of the module's readout system
+  Int_t fRow;        // The current row number
+  Int_t fCol;        // The current column number
+  Float_t fSigc;     // The signal after clustering
  
- ClassDef(AliCalmodule,3) // Description of a module in a calorimeter system.
+ ClassDef(AliCalmodule,4) // Description of a module in a calorimeter system.
 };
 #endif

@@ -81,17 +81,3 @@ Ali4VectorObj::Ali4VectorObj(Ali4VectorObj& v) : TObject(v),Ali4Vector(v)
 // Copy constructor
 }
 ///////////////////////////////////////////////////////////////////////////
-void Ali4VectorObj::Load(Ali4Vector& q)
-{
-// Load all attributes of the input Ali4Vector into this Ali4VectorObj object.
- Int_t temp1=q.GetScalarFlag();
- Double_t temp2=q.GetResultError();
- Double_t a[4];
- q.GetVector(a,"sph");
- SetVector(a,"sph");
- q.GetErrors(a,"car");
- SetErrors(a,"car");
- fScalar=temp1;
- fDresult=temp2;
-}
-///////////////////////////////////////////////////////////////////////////

@@ -81,7 +81,7 @@
  
 ClassImp(AliObjMatrix) // Class implementation to enable ROOT I/O
  
-AliObjMatrix::AliObjMatrix()
+AliObjMatrix::AliObjMatrix() : TObject()
 {
 // Default constructor.
 // Note : The owner and swap mode flags will be initialised to 0.

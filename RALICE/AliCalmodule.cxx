@@ -37,8 +37,6 @@ AliCalmodule::AliCalmodule() : AliSignal()
  fRow=0;
  fCol=0;
  fSigc=0;
- fDead=0;
- fGain=1;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalmodule::~AliCalmodule()
@@ -52,8 +50,6 @@ AliCalmodule::AliCalmodule(AliCalmodule& m) : AliSignal(m)
  fRow=m.fRow;
  fCol=m.fCol;
  fSigc=m.fSigc;
- fDead=m.fDead;
- fGain=m.fGain;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalmodule::AliCalmodule(Int_t row,Int_t col,Float_t sig) : AliSignal()
@@ -63,8 +59,6 @@ AliCalmodule::AliCalmodule(Int_t row,Int_t col,Float_t sig) : AliSignal()
  fCol=col;
  AliSignal::SetSignal(sig);
  fSigc=sig;
- fDead=0;
- fGain=1;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliCalmodule::SetRow(Int_t i)
@@ -103,24 +97,6 @@ void AliCalmodule::SetClusteredSignal(Float_t sig)
  fSigc=sig;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalmodule::SetDead()
-{
-// Indicate the module as dead
- fDead=1;
-}
-///////////////////////////////////////////////////////////////////////////
-void AliCalmodule::SetAlive()
-{
-// Indicate the module as dead
- fDead=0;
-}
-///////////////////////////////////////////////////////////////////////////
-void AliCalmodule::SetGain(Float_t gain)
-{
-// Set the gain value of the readout system
- fGain=gain;
-}
-///////////////////////////////////////////////////////////////////////////
 Int_t AliCalmodule::GetRow()
 {
 // Provide the row number of the module
@@ -135,8 +111,9 @@ Int_t AliCalmodule::GetColumn()
 ///////////////////////////////////////////////////////////////////////////
 Float_t AliCalmodule::GetClusteredSignal()
 {
-// Provide the signal of the module after clustering
- if (!fDead)
+// Provide the signal of the module after clustering.
+ Int_t dead=GetDeadValue();
+ if (!dead)
  {
   return fSigc;
  }
@@ -144,18 +121,6 @@ Float_t AliCalmodule::GetClusteredSignal()
  {
   return 0;
  }
-}
-///////////////////////////////////////////////////////////////////////////
-Int_t AliCalmodule::GetDeadValue()
-{
-// Provide the value of the dead indicator (1=dead 0=alive)
- return fDead;
-}
-///////////////////////////////////////////////////////////////////////////
-Float_t AliCalmodule::GetGain()
-{
-// Provide the gain value of the readout system
- return fGain;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalmodule* AliCalmodule::MakeCopy(AliCalmodule& m)

@@ -22,8 +22,8 @@ class AliJet : public TObject,public Ali4Vector
   AliJet(AliJet& j);                 // Copy constructor
   virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
   void Reset();                      // Reset all values
-  void AddTrack(AliTrack& t,Int_t copy=1);// Add a track to the jet
-  void AddTrack(AliTrack* t,Int_t copy=1) { AddTrack(*t,copy); }
+  void AddTrack(AliTrack& t);        // Add a track to the jet
+  void AddTrack(AliTrack* t) { AddTrack(*t); }
   void Data(TString f);              // Print jet information in coordinate frame f 
   void List(TString f="car");        // Print jet prim. track information for coord. frame f
   void ListAll(TString f="car");     // Print jet prim. and decay track information for coord. frame f
@@ -47,15 +47,17 @@ class AliJet : public TObject,public Ali4Vector
   Int_t GetId();                     // Provide the user defined identifier
 
  protected:
-  void Init();               // Initialisation of pointers etc...
-  void SetNtinit(Int_t n=2); // Set the initial max. number of tracks for this Jet
-  Int_t fNtinit;             // The initial max. number of tracks for this jet
-  Int_t fNtmax;              // The maximum number of tracks for this Jet
-  Float_t fQ;                // The total charge of the jet 
-  Int_t fNtrk;               // The number of tracks in the jet
-  TObjArray* fTracks;        // Array to hold the pointers to the tracks of the jet
-  Int_t fTrackCopy;          // Flag to denote creation of private copies in fTracks
-  Int_t fUserId;             // The user defined identifier
+  void Init();                           // Initialisation of pointers etc...
+  void SetNtinit(Int_t n=2);             // Set the initial max. number of tracks for this Jet
+  void AddTrack(AliTrack& t,Int_t copy); // Internal memberfunction to add a track to the jet
+  void AddTrack(AliTrack* t,Int_t copy) { AddTrack(*t,copy); }
+  Int_t fNtinit;                         // The initial max. number of tracks for this jet
+  Int_t fNtmax;                          // The maximum number of tracks for this Jet
+  Float_t fQ;                            // The total charge of the jet 
+  Int_t fNtrk;                           // The number of tracks in the jet
+  TObjArray* fTracks;                    // Array to hold the pointers to the tracks of the jet
+  Int_t fTrackCopy;                      // Flag to denote creation of private copies in fTracks
+  Int_t fUserId;                         // The user defined identifier
  
  ClassDef(AliJet,4) // Creation and investigation of a jet of particle tracks.
 };
