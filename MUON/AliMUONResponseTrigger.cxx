@@ -26,12 +26,12 @@ ClassImp(AliMUONResponseTrigger)
 //------------------------------------------------------------------   
 Int_t AliMUONResponseTrigger::SetGenerCluster(){
 // nothing to be done except return 0
-  return 0;
+  return 0; 
 } 
 
 //------------------------------------------------------------------   
 Int_t AliMUONResponseTrigger::DigitResponse(Int_t digit, 
-					    AliMUONTransientDigit* where){
+					    AliMUONTransientDigit* /*where*/){
 //  only digital (0/1) information available
   if (digit) digit=1;
   return digit;
