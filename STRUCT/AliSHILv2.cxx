@@ -316,7 +316,7 @@ void AliSHILv2::CreateGeometry()
   Float_t rBox= par1[43]-0.1;
   Float_t rc1 = par1[7];
 
-  gMC->Gsvolu("YGO1", "PCON", idtmed[kNiCuW], par1, 45);
+  gMC->Gsvolu("YGO1", "PCON", idtmed[kNiCuW+40], par1, 45);
 
 //
 // begin Fluka
@@ -867,7 +867,7 @@ void AliSHILv2::CreateGeometry()
   parPb[16]  =  r2+(kZvac7-kZvac4-10.) * TMath::Tan(kThetaOpen2);
   parPb[17]  = 30.;
 
-  gMC->Gsvolu("YXO2", "PCON", idtmed[kPb], parPb, 18);	  
+  gMC->Gsvolu("YXO2", "PCON", idtmed[kPb+40], parPb, 18);	  
   gMC->Gspos("YXO2", 1, "YGO2", 0., 0., (kZPb-kZvac4)/2., 0, "ONLY");  
 //
 // Concrete replacing Pb
@@ -929,7 +929,7 @@ void AliSHILv2::CreateGeometry()
   parW[13]  =  r2+(kZPb-kZvac4) * TMath::Tan(kThetaOpen2);
   parW[14]  = kZPb*TMath::Tan(kAccMin)-kDRSteel2;
 
-  gMC->Gsvolu("YYO2", "PCON", idtmed[kNiCuW], parW, 15);	  
+  gMC->Gsvolu("YYO2", "PCON", idtmed[kNiCuW+40], parW, 15);	  
   gMC->Gspos("YYO2", 1, "YGO2", 0., 0., -(kZvac7-kZPb)/2., 0, "ONLY");  
 
   for (i=4; i<35; i+=3) par2[i]  = 0;
@@ -1395,7 +1395,7 @@ void AliSHILv2::CreateGeometry()
   tpar[0]=kR41-kDRSteel2;
   tpar[1]=kR41;
   tpar[2]=(kZvac11-kZvac10)/2.;
-  gMC->Gsvolu("YS43", "TUBE", idtmed[kPb], tpar, 3);
+  gMC->Gsvolu("YS43", "TUBE", idtmed[kPb+40], tpar, 3);
   dz+=tpar[2];
   gMC->Gspos("YS43", 1, "YGO4", 0., 0., dz, 0, "ONLY");  
 //
@@ -1416,7 +1416,7 @@ void AliSHILv2::CreateGeometry()
   tpar[0]=kR42-5;
   tpar[1]=kR42;
   tpar[2]=(kZvac11-kZvac10)/2.;
-  gMC->Gsvolu("YPBO", "TUBE", idtmed[kPb], tpar, 3);
+  gMC->Gsvolu("YPBO", "TUBE", idtmed[kPb+40], tpar, 3);
   gMC->Gspos("YPBO", 1, "YPBI", 0., 0., 0., 0, "ONLY"); 
 
   tpar[2]=(zCC2-zCC1)/2.;
@@ -1441,22 +1441,25 @@ void AliSHILv2::CreateGeometry()
   dz=-(kZvac12-kZvac11)/2.+tpar[2];
   gMC->Gspos("YFEO", 1, "YFEI", 0., 0., dz, 0, "ONLY"); 
 //
+// The following element has been moved to ZDC
+//
 // Magnet element 
 //
-  tpar[0]=0.;
-  tpar[1]= 40.;
-  tpar[2]=85.;
-  gMC->Gsvolu("YAEM", "TUBE", idtmed[kAir], tpar, 3);
-  tpar[0]=17.6/2.;
-  tpar[1]=40.;
-  tpar[2]=85.;
-  gMC->Gsvolu("YFEM", "TUBE", idtmed[kFe], tpar, 3);
-  gMC->Gspos("YFEM", 1, "YAEM", 0., 0., 0., 0, "ONLY"); 
+//  tpar[0]=0.;
+//  tpar[1]= 40.;
+//  tpar[2]=85.;
+//  gMC->Gsvolu("YAEM", "TUBE", idtmed[kAir], tpar, 3);
+//  tpar[0]=17.6/2.;
+//  tpar[1]=40.;
+//  tpar[2]=85.;
+//  gMC->Gsvolu("YFEM", "TUBE", idtmed[kFe], tpar, 3);
+//  gMC->Gspos("YFEM", 1, "YAEM", 0., 0., 0., 0, "ONLY"); 
 
 //
 
   dz=1921.6 + tpar[2];
-  gMC->Gspos("YAEM", 1, "ALIC", 0., 0., - dz, 0, "ONLY"); 
+
+//  gMC->Gspos("YAEM", 1, "ALIC", 0., 0., - dz, 0, "ONLY"); 
 
 
 // 
@@ -1567,7 +1570,7 @@ void AliSHILv2::CreateGeometry()
   cpar[2]=kZRear*TMath::Tan(kAccMin);
   cpar[3]=kR11;
   cpar[4]=(kZRear+2.*cpar[0])*TMath::Tan(kAccMin);
-  gMC->Gsvolu("YCS1", "CONE", idtmed[kNiCuW], cpar, 5);
+  gMC->Gsvolu("YCS1", "CONE", idtmed[kNiCuW+40], cpar, 5);
   dz=-(kZvac12-zstart)/2.+(kZRear-zstart)+cpar[0];
   gMC->Gspos("YCS1", 1, "YMOT", 0., 0., dz, 0, "ONLY");
 
@@ -1576,7 +1579,7 @@ void AliSHILv2::CreateGeometry()
   cpar[2]=kZvac41*TMath::Tan(kAccMin);
   cpar[3]=kR21;
   cpar[4]=(kZvac41+2.*cpar[0])*TMath::Tan(kAccMin);
-  gMC->Gsvolu("YCS3", "CONE", idtmed[kNiCuW], cpar, 5);
+  gMC->Gsvolu("YCS3", "CONE", idtmed[kNiCuW+40], cpar, 5);
   dz=-(kZvac12-zstart)/2.+(kZvac41-zstart)+cpar[0];
   gMC->Gspos("YCS3", 1, "YMOT", 0., 0., dz, 0, "ONLY");
 
@@ -1599,7 +1602,7 @@ void AliSHILv2::CreateGeometry()
 // phi_min, phi_max
   ptubs[3] =   0.;
   ptubs[4] =  90.;  
-  gMC->Gsvolu("YCR0", "TUBS", idtmed[kNiCuW], ptubs, 0);
+  gMC->Gsvolu("YCR0", "TUBS", idtmed[kNiCuW+40], ptubs, 0);
     
   AliMatrix(idrotm[1701],90.,   0., 90.,  90., 0., 0.);
   AliMatrix(idrotm[1702],90.,  90., 90., 180., 0., 0.);
@@ -1644,7 +1647,7 @@ void AliSHILv2::CreateGeometry()
   cpar[2]=kZvac4*TMath::Tan(kAccMin);
   cpar[3]=kR21;
   cpar[4]=(kZvac4+2.*cpar[0])*TMath::Tan(kAccMin);
-  gMC->Gsvolu("YCS4", "CONE", idtmed[kNiCuW], cpar, 5);
+  gMC->Gsvolu("YCS4", "CONE", idtmed[kNiCuW+40], cpar, 5);
   dz=-(kZvac12-zstart)/2.+(kZvac4-zstart)+cpar[0];
   gMC->Gspos("YCS4", 1, "YMOT", 0., 0., dz, 0, "ONLY");
 
@@ -1653,7 +1656,7 @@ void AliSHILv2::CreateGeometry()
   cpar[2]=kZch22*TMath::Tan(kAccMin);
   cpar[3]=kR21;
   cpar[4]=(kZch22+2.*cpar[0])*TMath::Tan(kAccMin);
-  gMC->Gsvolu("YCS6", "CONE", idtmed[kNiCuW], cpar, 5);
+  gMC->Gsvolu("YCS6", "CONE", idtmed[kNiCuW+40], cpar, 5);
   dz=-(kZvac12-zstart)/2.+(kZch22-zstart)+cpar[0];
   gMC->Gspos("YCS6", 1, "YMOT", 0., 0., dz, 0, "ONLY");
   
@@ -1673,7 +1676,7 @@ void AliSHILv2::CreateGeometry()
   ptubs[2] =   0.;
   ptubs[3] =   0.;
   ptubs[4] =  90.;  
-  gMC->Gsvolu("YCR1", "TUBS", idtmed[kNiCuW], ptubs, 0);
+  gMC->Gsvolu("YCR1", "TUBS", idtmed[kNiCuW+40], ptubs, 0);
 
   dz=-cpar[0];
 // 1.
@@ -1783,7 +1786,7 @@ void AliSHILv2::CreateGeometry()
       par0[31]  = 30.;
       par0[32]  = par0[29];
 //
-      gMC->Gsvolu("YOPB", "PCON", idtmed[kPb], par0, 33);
+      gMC->Gsvolu("YOPB", "PCON", idtmed[kPb+40], par0, 33);
       Float_t dzs = -(kZvac12-zstart)/2. + (kZch32-zstart) + dl;
       gMC->Gspos("YOPB", 1, "YMOT", 0., 0., dzs, 0, "ONLY");
 
