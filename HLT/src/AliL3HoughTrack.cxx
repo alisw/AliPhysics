@@ -31,10 +31,16 @@ AliL3HoughTrack::~AliL3HoughTrack()
 
 void AliL3HoughTrack::Set(AliL3Track *track)
 {
-
+  
   AliL3HoughTrack *tpt = (AliL3HoughTrack*)track;
   SetTrackParameters(tpt->GetKappa(),tpt->GetPhi0(),tpt->GetWeight());
   SetEtaIndex(tpt->GetEtaIndex());
+  SetEta(tpt->GetEta());
+  SetPsi(tpt->GetPsi());
+  SetCenterX(tpt->GetCenterX());
+  SetCenterY(tpt->GetCenterY());
+  SetFirstPoint(tpt->GetFirstPointX(),tpt->GetFirstPointY(),tpt->GetFirstPointZ());
+  SetCharge(tpt->GetCharge());
   return;
 
   fWeight = tpt->GetWeight();
@@ -45,6 +51,14 @@ void AliL3HoughTrack::Set(AliL3Track *track)
   fIsHelix = false;
 
 
+}
+
+Int_t AliL3HoughTrack::Compare(const AliL3Track *tpt) const
+{
+  AliL3HoughTrack *track = (AliL3HoughTrack*)tpt;
+  if(track->GetWeight() < GetWeight()) return 1;
+  if(track->GetWeight() > GetWeight()) return -1;
+  return 0;
 }
 
 void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weight)
@@ -58,7 +72,9 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t phi,Int_t weigh
   SetPt(pt);
   Double_t radius = 1/fabs(kappa);
   SetRadius(radius);
-  
+  SetFirstPoint(0,0,0);
+  SetPsi(phi);
+
   //set nhits for sorting.
   SetNHits(weight);
     

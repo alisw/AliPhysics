@@ -70,16 +70,21 @@ void AliL3Track::Set(AliL3Track *tpt){
 
 }
 
+Int_t AliL3Track::Compare(const AliL3Track *track) const
+{
+  if(track->GetNHits() < GetNHits()) return 1;
+  if(track->GetNHits() > GetNHits()) return -1;
+  return 0;
+}
 
 AliL3Track::~AliL3Track()
 {
-
+  //Nothing to do
 }
 
 Double_t AliL3Track::GetP() const
 {
-  // Returns total momentum.
-  
+  // Returns total momentum.  
   return fabs(GetPt())*sqrt(1. + GetTgl()*GetTgl());
 
 }
@@ -88,42 +93,56 @@ Double_t AliL3Track::GetPseudoRapidity() const
 {
   return 0.5 * log((GetP() + GetPz()) / (GetP() - GetPz()));
 }
-
+/*
 Double_t AliL3Track::GetEta() const
 {
   return GetPseudoRapidity();
 }
-
+*/
 Double_t AliL3Track::GetRapidity() const
 {
   Double_t m_pi = 0.13957;
   return 0.5 * log((m_pi + GetPz()) / (m_pi - GetPz()));
 }
 
-void AliL3Track::Rotate(Int_t slice)
+void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
 {
-
   //Rotate track to global parameters
+  //If flag tolocal is set, the track is rotated
+  //to local coordinates.
 
   AliL3Transform *transform = new AliL3Transform();
   
   Float_t psi[1] = {GetPsi()};
-  transform->Local2GlobalAngle(psi,slice);
+  if(!tolocal)
+    transform->Local2GlobalAngle(psi,slice);
+  else
+    transform->Global2LocalAngle(psi,slice);
   SetPsi(psi[0]);
   Float_t first[3];
   first[0] = GetFirstPointX();
   first[1] = GetFirstPointY();
   first[2] = GetFirstPointZ();
-  transform->Local2Global(first,slice);
+  if(!tolocal)
+    transform->Local2Global(first,slice);
+  else
+    transform->Global2Local(first,slice,kTRUE);
+  
   SetFirstPoint(first[0],first[1],first[2]);
   Float_t last[3];
   last[0] = GetLastPointX();
   last[1] = GetLastPointY();
   last[2] = GetLastPointZ();
-  transform->Local2Global(last,slice);
+  if(!tolocal)
+    transform->Local2Global(last,slice);
+  else
+    transform->Global2Local(last,slice,kTRUE);
   SetLastPoint(last[0],last[1],last[2]);
-
-  fIsLocal=false;
+  
+  if(!tolocal)
+    fIsLocal=kFALSE;
+  else
+    fIsLocal=kTRUE;
   delete transform;
 }
 

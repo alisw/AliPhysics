@@ -321,7 +321,14 @@ void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack,Bool_t remove_old){
       newtrack->Remove(i);
     AliL3Track *track = NextTrack();
     track->Set(tpt);
-
+    /*
+      AliL3Track *track;
+      if(GetTrackType()=='h')
+      track = (AliL3HoughTrack*)NextTrack();
+      else
+      track = NextTrack();
+      track->Set(tpt);
+    */
   }
 }
 
@@ -355,7 +362,7 @@ void AliL3TrackArray::QSort(){
   QSort(fTrack,0,fNTracks);
 }
 
- void AliL3TrackArray::QSort( AliL3Track **a, Int_t first, Int_t last){
+void AliL3TrackArray::QSort( AliL3Track **a, Int_t first, Int_t last){
 
    // Sort array of AliL3Track pointers using a quicksort algorithm.
    // Uses TrackCompare() to compare objects.
@@ -369,10 +376,10 @@ void AliL3TrackArray::QSort(){
       i = first;
       j = last;
       for (;;) {
-         while (++i < last && TrackCompare(a[i], a[first]) < 0)
-            ;
-         while (--j > first && TrackCompare(a[j], a[first]) > 0)
-            ;
+	while (++i < last && TrackCompare(a[i], a[first]) < 0)
+	  ;
+	while (--j > first && TrackCompare(a[j], a[first]) > 0)
+	  ;
          if (i >= j)
             break;
 
@@ -399,10 +406,25 @@ void AliL3TrackArray::QSort(){
 
 Int_t AliL3TrackArray::TrackCompare(AliL3Track *a, AliL3Track *b){
    // Compare the two tracks.
-
-  if(a->GetNHits() < b->GetNHits()) return 1;
-  if(a->GetNHits() > b->GetNHits()) return -1;
-  return 0;
+  
+  return b->Compare(a);
+  
+  /*
+    if(fTrackType=='h')
+    {
+    AliL3HoughTrack *tra = (AliL3HoughTrack*)a;
+    AliL3HoughTrack *trb = (AliL3HoughTrack*)b;
+    if(tra->GetWeight() < trb->GetWeight()) return 1;
+    if(tra->GetWeight() > trb->GetWeight()) return -1;
+    }
+    else
+    {
+    if(a->GetNHits() < b->GetNHits()) return 1;
+    if(a->GetNHits() > b->GetNHits()) return -1;
+    }
+    
+    return 0;
+  */
 }
 
 

@@ -61,6 +61,7 @@ class AliL3Track {
   virtual ~AliL3Track();
   
   virtual void Set(AliL3Track* track);
+  virtual Int_t Compare(const AliL3Track *track) const;
   
   Bool_t CalculateReferencePoint(Double_t angle);//Calculate Reference Point
   Bool_t CalculateEdgePoint(Double_t angle);//Calculate crossing point with line
@@ -71,7 +72,7 @@ class AliL3Track {
   Bool_t GetCrossingPoint(Int_t padrow,Float_t *xyz);
   Double_t GetDistance(Double_t x0,Double_t x1){return 0;}
   
-  void Rotate(Int_t slice);
+  void Rotate(Int_t slice,Bool_t tolocal=kFALSE);
   Bool_t IsLocal() {return fIsLocal;}
 
   // getter
@@ -99,7 +100,7 @@ class AliL3Track {
   Double_t   GetCenterX()          const { return fCenterX;}
   Double_t   GetCenterY()          const { return fCenterY;}
 
-  Int_t GetNHits() {return fNHits;}
+  Int_t GetNHits() const {return fNHits;}
   Int_t   GetNumberOfPoints()   const {return fNHits;}
   Bool_t  ComesFromMainVertex() const { return fFromMainVertex;}
     
@@ -109,7 +110,7 @@ class AliL3Track {
   
   Double_t   GetP() const;
   Double_t   GetPseudoRapidity() const;
-  Double_t   GetEta() const; 
+  //Double_t   GetEta() const; 
   Double_t   GetRapidity() const;
   
   Int_t   GetCharge()           const { return fQ;}
@@ -122,6 +123,7 @@ class AliL3Track {
   UInt_t *GetHitNumbers() {return fHitNumbers;}
 
   // setter   
+  
   void SetMCid(Int_t f) {fMCid = f;}
   void SetFirstPoint(Double_t f,Double_t g,Double_t h) {fFirstPoint[0]=f; fFirstPoint[1]=g; fFirstPoint[2]=h;}
   void SetLastPoint(Double_t f,Double_t g,Double_t h) {fLastPoint[0]=f; fLastPoint[1]=g; fLastPoint[2]=h;}
