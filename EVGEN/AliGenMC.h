@@ -19,7 +19,7 @@ class AliGenMC : public AliGenerator
     AliGenMC(Int_t npart);
     AliGenMC(const AliGenMC &MC);
     virtual ~AliGenMC();
-    void Init();
+    virtual void Init();
     virtual void SetForceDecay(Decay_t decay = kAll) {fForceDecay = decay;}
     AliGenMC & operator=(const AliGenMC & rhs);
         virtual void SetCutOnChild(Int_t flag = 0) {fCutOnChild = flag;}
