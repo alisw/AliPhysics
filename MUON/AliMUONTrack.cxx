@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/30 10:15:48  gosset
+Changes to EventReconstructor...:
+precision fit with multiple Coulomb scattering;
+extrapolation to vertex with Branson correction in absorber (JPC)
+
 Revision 1.3  2000/06/25 13:23:28  hristov
 stdlib.h needed for non-Linux compilation
 
@@ -42,9 +47,9 @@ Addition of files for track reconstruction in C++
 #include <iostream.h>
 
 #include <TClonesArray.h>
-#include <TMinuit.h>
 #include <TMath.h>
 #include <TMatrix.h>
+#include <TVirtualFitter.h>
 
 #include "AliMUONEventReconstructor.h" 
 #include "AliMUONHitForRec.h" 
@@ -53,10 +58,6 @@ Addition of files for track reconstruction in C++
 
 #include <stdlib.h>
 
-// variables to be known from minimization functions
-static AliMUONTrack *trackBeingFitted;
-static AliMUONTrackParam *trackParamBeingFitted;
-
 // Functions to be minimized with Minuit
 void TrackChi2(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag);
 void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag);
@@ -64,6 +65,8 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
 Double_t MultipleScatteringAngle2(AliMUONTrackHit *TrackHit);
 
 ClassImp(AliMUONTrack) // Class implementation in ROOT context
+
+TVirtualFitter* AliMUONTrack::fgFitter = NULL; 
 
   //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegment, AliMUONEventReconstructor* EventReconstructor)
@@ -77,7 +80,10 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegmen
   AddSegment(EndSegment); // add hits from EndSegment
   fTrackHitsPtr->Sort(); // sort TrackHits according to increasing Z
   SetTrackParamAtVertex(); // set track parameters at vertex
+  // set fit conditions
   fFitMCS = 0;
+  fFitNParam = 3;
+  fFitStart = 1;
   return;
 }
 
@@ -93,15 +99,20 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec,
   AddHitForRec(HitForRec); // add HitForRec
   fTrackHitsPtr->Sort(); // sort TrackHits according to increasing Z
   SetTrackParamAtVertex(); // set track parameters at vertex
+  // set fit conditions
   fFitMCS = 0;
+  fFitNParam = 3;
+  fFitStart = 1;
   return;
 }
 
+  //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack (const AliMUONTrack& MUONTrack)
 {
 // Dummy copy constructor
 }
 
+  //__________________________________________________________________________
 AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& MUONTrack)
 {
 // Dummy assignment operator
@@ -111,26 +122,51 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& MUONTrack)
   //__________________________________________________________________________
 void AliMUONTrack::SetFitMCS(Int_t FitMCS)
 {
-  // Set track fit option with or without multiple Coulomb scattering
+  // Set multiple Coulomb scattering option for track fit "fFitMCS"
   // from "FitMCS" argument: 0 without, 1 with
-  fFitMCS = FitMCS;
+  if ((FitMCS == 0) || (FitMCS == 1)) fFitMCS = FitMCS;
   // better implementation with enum(with, without) ????
+  else {
+    cout << "ERROR in AliMUONTrack::SetFitMCS(FitMCS)" << endl;
+    cout << "FitMCS = " << FitMCS << " is neither 0 nor 1" << endl;
+    exit(0);
+  }
   return;
 }
 
-// Inline functions for Get and Set: inline removed because it does not work !!!!
-AliMUONTrackParam* AliMUONTrack::GetTrackParamAtVertex(void) {
-  // Get pointer to fTrackParamAtVertex
-  return &fTrackParamAtVertex;}
+  //__________________________________________________________________________
+void AliMUONTrack::SetFitNParam(Int_t FitNParam)
+{
+  // Set number of parameters for track fit "fFitNParam" from "FitNParam":
+  // 3 for momentum, 5 for momentum and position
+  if ((FitNParam == 3) || (FitNParam == 5)) fFitNParam = FitNParam;
+  else {
+    cout << "ERROR in AliMUONTrack::SetFitNParam(FitNParam)" << endl;
+    cout << "FitNParam = " << FitNParam << " is neither 3 nor 5" << endl;
+    exit(0);
+  }
+  return;
+}
+
+  //__________________________________________________________________________
+void AliMUONTrack::SetFitStart(Int_t FitStart)
+{
+  // Set multiple Coulomb scattering option for track fit "fFitStart"
+  // from "FitStart" argument: 0 without, 1 with
+  if ((FitStart == 0) || (FitStart == 1)) fFitStart = FitStart;
+  // better implementation with enum(vertex, firstHit) ????
+  else {
+    cout << "ERROR in AliMUONTrack::SetFitStart(FitStart)" << endl;
+    cout << "FitStart = " << FitStart << " is neither 0 nor 1" << endl;
+    exit(0);
+  }
+  return;
+}
+
+  //__________________________________________________________________________
 AliMUONTrackParam* AliMUONTrack::GetTrackParamAtFirstHit(void) {
   // Get pointer to TrackParamAtFirstHit
   return ((AliMUONTrackHit*) (fTrackHitsPtr->First()))->GetTrackParam();}
-TClonesArray* AliMUONTrack::GetTrackHitsPtr(void) {
-  // Get fTrackHitsPtr
-  return fTrackHitsPtr;}
-Int_t AliMUONTrack::GetNTrackHits(void) {
-  // Get fNTrackHits
-  return fNTrackHits;}
 
   //__________________________________________________________________________
 void AliMUONTrack::RecursiveDump(void)
@@ -155,75 +191,76 @@ void AliMUONTrack::RecursiveDump(void)
 }
 
   //__________________________________________________________________________
-void AliMUONTrack::Fit(AliMUONTrackParam *TrackParam, Int_t NParam)
+void AliMUONTrack::Fit()
 {
   // Fit the current track ("this"),
-  // starting with track parameters pointed to by "TrackParam",
-  // and with 3 or 5 parameters ("NParam"):
-  // 3 if one keeps X and Y fixed in "TrackParam",
-  // 5 if one lets them vary.
-  if ((NParam != 3) && (NParam != 5)) {
-    cout << "ERROR in AliMUONTrack::Fit, NParam = " << NParam;
-    cout << " , i.e. neither 3 nor 5 ====> EXIT" << endl;
-    exit(0); // right instruction for exit ????
-  }
-  Int_t error = 0;
+  // with or without multiple Coulomb scattering according to "fFitMCS",
+  // with the number of parameters given by "fFitNParam"
+  // (3 if one keeps X and Y fixed in "TrackParam", 5 if one lets them vary),
+  // starting, according to "fFitStart",
+  // with track parameters at vertex or at the first TrackHit.
+  // "fFitMCS", "fFitNParam" and "fFitStart" have to be set before
+  // by calling the corresponding Set methods.
   Double_t arg[1], benC, errorParam, invBenP, lower, nonBenC, upper, x, y;
-  TString parName;
-  TMinuit *minuit = new TMinuit(5);
-  trackBeingFitted = this; // for the track to be known from the function to minimize
-  trackParamBeingFitted = TrackParam; // for the track parameters to be known from the function to minimize; possible to use only Minuit parameters ????
-  // try to use TVirtualFitter to get this feature automatically !!!!
-  minuit->mninit(5, 10, 7); // sysrd, syswr, syssa: useful ????
+  char parName[50];
+  AliMUONTrackParam *trackParam;
+  // Check if Minuit is initialized...
+  fgFitter = TVirtualFitter::Fitter(this); // add 3 or 5 for the maximum number of parameters ???
+  fgFitter->Clear(); // necessary ???? probably yes
+  // how to reset the printout number at every fit ????
+  // is there any risk to leave it like that ????
   // how to go faster ???? choice of Minuit parameters like EDM ????
   // choice of function to be minimized according to fFitMCS
-  if (fFitMCS == 0) minuit->SetFCN(TrackChi2);
-  else minuit->SetFCN(TrackChi2MCS);
-  minuit->SetPrintLevel(1); // More printing !!!!
-  // set first 3 parameters
+  if (fFitMCS == 0) fgFitter->SetFCN(TrackChi2);
+  else fgFitter->SetFCN(TrackChi2MCS);
+  arg[0] = 1;
+  fgFitter->ExecuteCommand("SET PRINT", arg, 1); // More printing !!!!
+  // Parameters according to "fFitStart"
+  // (should be a function to be used at every place where needed ????)
+  if (fFitStart == 0) trackParam = &fTrackParamAtVertex;
+  else trackParam = this->GetTrackParamAtFirstHit();
+  // set first 3 Minuit parameters
   // could be tried with no limits for the search (min=max=0) ????
-  minuit->mnparm(0, "InvBenP",
-		 TrackParam->GetInverseBendingMomentum(),
-		 0.003, -0.4, 0.4, error);
-  minuit->mnparm(1, "BenS",
-		 TrackParam->GetBendingSlope(),
-		 0.001, -0.5, 0.5, error);
-  minuit->mnparm(2, "NonBenS",
-		 TrackParam->GetNonBendingSlope(),
-		 0.001, -0.5, 0.5, error);
-  if (NParam == 5) {
-    // set last 2 parameters (no limits for the search: min=max=0)
-    minuit->mnparm(3, "X",
-		   TrackParam->GetNonBendingCoor(),
-		   0.03, 0.0, 0.0, error);
-    minuit->mnparm(4, "Y",
-		   TrackParam->GetBendingCoor(),
-		   0.10, 0.0, 0.0, error);
+  fgFitter->SetParameter(0, "InvBenP",
+			 trackParam->GetInverseBendingMomentum(),
+			 0.003, -0.4, 0.4);
+  fgFitter->SetParameter(1, "BenS",
+			 trackParam->GetBendingSlope(),
+			 0.001, -0.5, 0.5);
+  fgFitter->SetParameter(2, "NonBenS",
+			 trackParam->GetNonBendingSlope(),
+			 0.001, -0.5, 0.5);
+  if (fFitNParam == 5) {
+    // set last 2 Minuit parameters (no limits for the search: min=max=0)
+    fgFitter->SetParameter(3, "X",
+			   trackParam->GetNonBendingCoor(),
+			   0.03, 0.0, 0.0);
+    fgFitter->SetParameter(4, "Y",
+			   trackParam->GetBendingCoor(),
+			   0.10, 0.0, 0.0);
   }
   // search without gradient calculation in the function
-  minuit->mnexcm("SET NOGRADIENT", arg, 0, error);
+  fgFitter->ExecuteCommand("SET NOGRADIENT", arg, 0);
   // minimization
-  minuit->mnexcm("MINIMIZE", arg, 0, error);
+  fgFitter->ExecuteCommand("MINIMIZE", arg, 0);
   // exit from Minuit
-  minuit->mnexcm("EXIT", arg, 0, error); // necessary ????
-  // print results
-  minuit->mnpout(0, parName, invBenP, errorParam, lower, upper, error);
-  minuit->mnpout(1, parName, benC, errorParam, lower, upper, error);
-  minuit->mnpout(2, parName, nonBenC, errorParam, lower, upper, error);
-  if (NParam == 5) {
-    minuit->mnpout(3, parName, x, errorParam, lower, upper, error);
-    minuit->mnpout(4, parName, y, errorParam, lower, upper, error);
+  fgFitter->ExecuteCommand("EXIT", arg, 0); // necessary ????
+  // get results into "invBenP", "benC", "nonBenC" ("x", "y")
+  fgFitter->GetParameter(0, parName, invBenP, errorParam, lower, upper);
+  fgFitter->GetParameter(1, parName, benC, errorParam, lower, upper);
+  fgFitter->GetParameter(2, parName, nonBenC, errorParam, lower, upper);
+  if (fFitNParam == 5) {
+    fgFitter->GetParameter(3, parName, x, errorParam, lower, upper);
+    fgFitter->GetParameter(4, parName, y, errorParam, lower, upper);
   }
   // result of the fit into track parameters
-  TrackParam->SetInverseBendingMomentum(invBenP);
-  TrackParam->SetBendingSlope(benC);
-  TrackParam->SetNonBendingSlope(nonBenC);
-  if (NParam == 5) {
-    TrackParam->SetNonBendingCoor(x);
-    TrackParam->SetBendingCoor(y);
+  trackParam->SetInverseBendingMomentum(invBenP);
+  trackParam->SetBendingSlope(benC);
+  trackParam->SetNonBendingSlope(nonBenC);
+  if (fFitNParam == 5) {
+    trackParam->SetNonBendingCoor(x);
+    trackParam->SetBendingCoor(y);
   }
-  trackBeingFitted = NULL;
-  delete minuit;
 }
 
   //__________________________________________________________________________
@@ -303,13 +340,17 @@ void TrackChi2(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Para
   // Assumes that the track hits are sorted according to increasing Z.
   // Track parameters at each TrackHit are updated accordingly.
   // Multiple Coulomb scattering is not taken into account
+  AliMUONTrack *trackBeingFitted;
   AliMUONTrackHit* hit;
   AliMUONTrackParam param1;
   Int_t hitNumber;
   Double_t zHit;
   Chi2 = 0.0; // initialize Chi2
   // copy of track parameters to be fitted
-  param1 = *trackParamBeingFitted;
+  trackBeingFitted = (AliMUONTrack*) AliMUONTrack::Fitter()->GetObjectFit();
+  if (trackBeingFitted->GetFitStart() == 0)
+    param1 = *(trackBeingFitted->GetTrackParamAtVertex());
+  else param1 = *(trackBeingFitted->GetTrackParamAtFirstHit());
   // Minuit parameters to be fitted into this copy
   param1.SetInverseBendingMomentum(Param[0]);
   param1.SetBendingSlope(Param[1]);
@@ -350,10 +391,14 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
   // Assumes that the track hits are sorted according to increasing Z.
   // Track parameters at each TrackHit are updated accordingly.
   // Multiple Coulomb scattering is taken into account with covariance matrix.
+  AliMUONTrack *trackBeingFitted;
   AliMUONTrackParam param1;
   Chi2 = 0.0; // initialize Chi2
   // copy of track parameters to be fitted
-  param1 = *trackParamBeingFitted;
+  trackBeingFitted = (AliMUONTrack*) AliMUONTrack::Fitter()->GetObjectFit();
+  if (trackBeingFitted->GetFitStart() == 0)
+    param1 = *(trackBeingFitted->GetTrackParamAtVertex());
+  else param1 = *(trackBeingFitted->GetTrackParamAtFirstHit());
   // Minuit parameters to be fitted into this copy
   param1.SetInverseBendingMomentum(Param[0]);
   param1.SetBendingSlope(Param[1]);
@@ -363,12 +408,13 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
     param1.SetBendingCoor(Param[4]);
   }
 
-  AliMUONTrackHit* hit, hit1, hit2, hit3;
-  Bool_t GoodDeterminant;
+  AliMUONTrackHit *hit;
+  Bool_t goodDeterminant;
   Int_t hitNumber, hitNumber1, hitNumber2, hitNumber3;
   Double_t zHit[10], paramBendingCoor[10], paramNonBendingCoor[10], ap[10];
   Double_t hitBendingCoor[10], hitNonBendingCoor[10];
   Double_t hitBendingReso2[10], hitNonBendingReso2[10];
+  // dimension 10 in parameter ??? related to AliMUONConstants::NTrackingCh() !!!!
   Int_t numberOfHit = TMath::Min(trackBeingFitted->GetNTrackHits(), 10);
   TMatrix *covBending = new TMatrix(numberOfHit, numberOfHit);
   TMatrix *covNonBending = new TMatrix(numberOfHit, numberOfHit);
@@ -381,59 +427,78 @@ void TrackChi2MCS(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *P
     // security against infinite loop ????
     (&param1)->ExtrapToZ(zHit[hitNumber]); // extrapolation
     hit->SetTrackParam(&param1);
-    paramBendingCoor[hitNumber]= (&param1)->GetBendingCoor();
-    paramNonBendingCoor[hitNumber]= (&param1)->GetNonBendingCoor();
-    hitBendingCoor[hitNumber]= hit->GetHitForRecPtr()->GetBendingCoor();
-    hitNonBendingCoor[hitNumber]= hit->GetHitForRecPtr()->GetNonBendingCoor();
-    hitBendingReso2[hitNumber]= hit->GetHitForRecPtr()->GetBendingReso2();
-    hitNonBendingReso2[hitNumber]= hit->GetHitForRecPtr()->GetNonBendingReso2();
+    paramBendingCoor[hitNumber] = (&param1)->GetBendingCoor();
+    paramNonBendingCoor[hitNumber] = (&param1)->GetNonBendingCoor();
+    hitBendingCoor[hitNumber] = hit->GetHitForRecPtr()->GetBendingCoor();
+    hitNonBendingCoor[hitNumber] = hit->GetHitForRecPtr()->GetNonBendingCoor();
+    hitBendingReso2[hitNumber] = hit->GetHitForRecPtr()->GetBendingReso2();
+    hitNonBendingReso2[hitNumber] = hit->GetHitForRecPtr()->GetNonBendingReso2();
     ap[hitNumber] = MultipleScatteringAngle2(hit); // multiple scatt. angle ^2  
   }
 
   // Calculates the covariance matrix
+  // One chamber is taken into account between successive hits.
+  // "ap" should be changed for taking into account the eventual missing hits
+  // by defining an "equivalent" chamber thickness !!!!
   for (hitNumber1 = 0; hitNumber1 < numberOfHit; hitNumber1++) {    
     for (hitNumber2 = hitNumber1; hitNumber2 < numberOfHit; hitNumber2++) {
-      (*covBending)(hitNumber1, hitNumber2) = 0;
-      (*covBending)(hitNumber2, hitNumber1) = 0;
-      if (hitNumber1 == hitNumber2){ // diagonal elements
-	(*covBending)(hitNumber2, hitNumber1) =
-	  (*covBending)(hitNumber2, hitNumber1) + hitBendingReso2[hitNumber1];
-      }
-      // Multiple Scattering...  loop on upstream chambers ??
-      for (hitNumber3 = 0; hitNumber3 < hitNumber1; hitNumber3++){ 	
+      // initialization to 0 (diagonal plus upper triangular part)
+      (*covBending)(hitNumber2, hitNumber1) = 0.0;
+      // contribution from multiple scattering in bending plane:
+      // loop over upstream hits
+      for (hitNumber3 = 0; hitNumber3 < hitNumber1; hitNumber3++) { 	
 	(*covBending)(hitNumber2, hitNumber1) =
 	  (*covBending)(hitNumber2, hitNumber1) +
 	  ((zHit[hitNumber1] - zHit[hitNumber3]) *
 	   (zHit[hitNumber2] - zHit[hitNumber3]) * ap[hitNumber3]); 
-      }  
-      (*covNonBending)(hitNumber1, hitNumber2) = 0;
+      }
+      // equal contribution from multiple scattering in non bending plane
       (*covNonBending)(hitNumber2, hitNumber1) =
 	(*covBending)(hitNumber2, hitNumber1);
-      if (hitNumber1 == hitNumber2) {  // diagonal elements
+      if (hitNumber1 == hitNumber2) {
+	// Diagonal elements: add contribution from position measurements
+	// in bending plane
+	(*covBending)(hitNumber2, hitNumber1) =
+	  (*covBending)(hitNumber2, hitNumber1) + hitBendingReso2[hitNumber1];
+	// and in non bending plane
 	(*covNonBending)(hitNumber2, hitNumber1) =
-	  (*covNonBending)(hitNumber2, hitNumber1) -
-	  hitBendingReso2[hitNumber1] + hitNonBendingReso2[hitNumber1] ;
-      }      
-    }
-  }
+	  (*covNonBending)(hitNumber2, hitNumber1) + hitNonBendingReso2[hitNumber1];
+      }
+      else {
+	// Non diagonal elements: symmetrization
+	// for bending plane
+	(*covBending)(hitNumber1, hitNumber2) =
+	  (*covBending)(hitNumber2, hitNumber1);
+	// and non bending plane
+	(*covNonBending)(hitNumber1, hitNumber2) =
+	  (*covNonBending)(hitNumber2, hitNumber1);
+      }
+    } // for (hitNumber2 = hitNumber1;...
+  } // for (hitNumber1 = 0;...
 
   // Inverts covariance matrix 
-  GoodDeterminant = kTRUE;
+  goodDeterminant = kTRUE;
+  // check whether the Invert method returns flag if matrix cannot be inverted,
+  // and do not calculate the Determinant in that case !!!!
   if (covBending->Determinant() != 0) {
     covBending->Invert();
   } else {
-    GoodDeterminant = kFALSE;
+    goodDeterminant = kFALSE;
     cout << "Warning in ChiMCS  Determinant Bending=0: " << endl;  
   }
-  if (covNonBending->Determinant() != 0){
+  if (covNonBending->Determinant() != 0) {
     covNonBending->Invert();
   } else {
-    GoodDeterminant = kFALSE;
+    goodDeterminant = kFALSE;
     cout << "Warning in ChiMCS  Determinant non Bending=0: " << endl;  
   }
+
+  // It would be worth trying to calculate the inverse of the covariance matrix
+  // only once per fit, since it cannot change much in principle,
+  // and it would save a lot of computing time !!!!
   
   // Calculates Chi2
-  if (GoodDeterminant) { // with Multiple Scattering if inversion correct
+  if (goodDeterminant) { // with Multiple Scattering if inversion correct
     for (hitNumber1=0; hitNumber1 < numberOfHit ; hitNumber1++){ 
       for (hitNumber2=0; hitNumber2 < numberOfHit; hitNumber2++){
 	Chi2 = Chi2 +
@@ -469,7 +534,9 @@ Double_t MultipleScatteringAngle2(AliMUONTrackHit *TrackHit)
   // at TrackHit pointed to by "TrackHit"
   Double_t slopeBending, slopeNonBending, radiationLength, inverseBendingMomentum2, inverseTotalMomentum2;
   Double_t varMultipleScatteringAngle;
+  AliMUONTrack *trackBeingFitted = (AliMUONTrack*) AliMUONTrack::Fitter()->GetObjectFit();
   AliMUONTrackParam *param = TrackHit->GetTrackParam();
+  // Better implementation in AliMUONTrack class ????
   slopeBending = param->GetBendingSlope();
   slopeNonBending = param->GetNonBendingSlope();
   // thickness in radiation length for the current track,
@@ -481,9 +548,10 @@ Double_t MultipleScatteringAngle2(AliMUONTrackHit *TrackHit)
   inverseBendingMomentum2 = 
     param->GetInverseBendingMomentum() * param->GetInverseBendingMomentum();
   inverseTotalMomentum2 =
-    inverseBendingMomentum2 * (1.0 + slopeBending*slopeBending) /
+    inverseBendingMomentum2 * (1.0 + slopeBending * slopeBending) /
     (1.0 + slopeBending *slopeBending + slopeNonBending * slopeNonBending); 
   varMultipleScatteringAngle = 0.0136 * (1.0 + 0.038 * TMath::Log(radiationLength));
+  // The velocity is assumed to be 1 !!!!
   varMultipleScatteringAngle = inverseTotalMomentum2 * radiationLength *
     varMultipleScatteringAngle * varMultipleScatteringAngle;
   return varMultipleScatteringAngle;

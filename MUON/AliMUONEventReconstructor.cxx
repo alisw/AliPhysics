@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/07/03 12:28:06  gosset
+Printout at the right place after extrapolation to vertex
+
 Revision 1.6  2000/06/30 12:01:06  gosset
 Correction for hit search in the right chamber (JPC)
 
@@ -673,9 +676,9 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
       //  original raw cluster
       hitForRec->SetChamberNumber(ch);
       hitForRec->SetHitNumber(iclus);
-      // Z coordinate of the chamber (cm) with sign opposite to GEANT sign
+      // Z coordinate of the chamber (cm)
       // could (should) be more exact from chamber geometry ???? 
-      hitForRec->SetZ(-(&(pMUON->Chamber(ch)))->Z());
+      hitForRec->SetZ((&(pMUON->Chamber(ch)))->Z());
       if (fPrintLevel >= 10) {
 	cout << "chamber (0...): " << ch <<
 	  " raw cluster (0...): " << iclus << endl;
@@ -972,7 +975,7 @@ void AliMUONEventReconstructor::MakeTrackCandidates(void)
       // because candidates with 2 segments have to looked for only once.
       if (begStation == 4)
 	nbCan2Seg = MakeTrackCandidatesWithTwoSegments(begSegment);
-      // Look for track candidates with one segments and one point,
+      // Look for track candidates with one segment and one point,
       // "begSegment" and all compatible HitForRec's in other station.
       // Only if "begSegment" does not belong already to a track candidate.
       // Is that a too strong condition ????
@@ -1008,12 +1011,14 @@ void AliMUONEventReconstructor::FollowTracks(void)
     nextTrack = (AliMUONTrack*) fRecTracksPtr->After(track); // prepare next track
     if (fPrintLevel >= 2)
       cout << "FollowTracks: track candidate(0..): " << trackIndex << endl;
-    // Fit track candidate from vertex at X = Y = 0 
-    track->SetFitMCS(0);  // fit without Multiple Scattering
-    track->Fit(track->GetTrackParamAtVertex(), 3);
+    // Fit track candidate
+    track->SetFitMCS(0); // without multiple Coulomb scattering
+    track->SetFitNParam(3); // with 3 parameters (X = Y = 0)
+    track->SetFitStart(0); // from parameters at vertex
+    track->Fit();
     if (fPrintLevel >= 10) {
       cout << "FollowTracks: track candidate(0..): " << trackIndex
-	   << " after fit in stations(1..) 4 and 5" << endl;
+	   << " after fit in stations(0..) 3 and 4" << endl;
       track->RecursiveDump();
     }
     // Loop over stations(1..) 3, 2 and 1
@@ -1101,7 +1106,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	  extrapHit->SetBendingReso2(extrapSegment->GetBendingCoorReso2());
 	  extrapHit->SetNonBendingReso2(extrapSegment->GetNonBendingCoorReso2());
 	  // Loop over hits in the chamber
-	  ch = 2 * station + ch;
+	  ch = 2 * station + chInStation;
 	  for (iHit = fIndexOfFirstHitForRecPerChamber[ch];
 	       iHit < fIndexOfFirstHitForRecPerChamber[ch] +
 		 fNHitsForRecPerChamber[ch];
@@ -1120,7 +1125,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	if (bestHit) {
 	  // best hit found: add it to track candidate
 	  track->AddHitForRec(bestHit);
-	  // set track parameters at these two TrackHit's
+	  // set track parameters at this TrackHit
 	  track->SetTrackParamAtHit(track->GetNTrackHits() - 1,
 				    &(trackParam[chBestHit]));
 	  if (fPrintLevel >= 10) {
@@ -1148,17 +1153,21 @@ void AliMUONEventReconstructor::FollowTracks(void)
       // Update track parameters at first track hit (smallest Z)
       trackParam1 = ((AliMUONTrackHit*)
 		     (track->GetTrackHitsPtr()->First()))->GetTrackParam();
-      // Track fit from first track hit varying X and Y,
+      // Track fit
       // with multiple Coulomb scattering if all stations
       if (station == 0) track->SetFitMCS(1);
+      // without multiple Coulomb scattering if not all stations
       else track->SetFitMCS(0);
-      track->Fit(trackParam1, 5);
+      track->SetFitNParam(5);  // with 5 parameters (momentum and position)
+      track->SetFitStart(1);  // from parameters at first hit
+      track->Fit();
       if (fPrintLevel >= 10) {
 	cout << "FollowTracks: track candidate(0..): " << trackIndex
 	     << " after fit from station(0..): " << station << " to 4" << endl;
 	track->RecursiveDump();
       }
       // Track extrapolation to the vertex through the absorber (Branson)
+      // after going through the first station
       if (station == 0) {
 	trackParamVertex = *trackParam1;
 	(&trackParamVertex)->ExtrapToVertex();

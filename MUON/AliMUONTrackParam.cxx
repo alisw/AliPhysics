@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/07/03 07:53:31  morsch
+Double declaration problem on HP solved.
+
 Revision 1.3  2000/06/30 10:15:48  gosset
 Changes to EventReconstructor...:
 precision fit with multiple Coulomb scattering;
@@ -120,9 +123,10 @@ void AliMUONTrackParam::ExtrapToZ(Double_t Z)
   // For use of reco_ghelix...: invert X and Y, PX/PTOT and PY/PTOT !!!!
   temp = vGeant3[0]; vGeant3[0] = vGeant3[1]; vGeant3[1] = temp;
   temp = vGeant3[3]; vGeant3[3] = vGeant3[4]; vGeant3[4] = temp;
-  // charge must be changed with momentum for backward motion
-  Double_t charge =
-    forwardBackward * TMath::Sign(Double_t(1.0), this->fInverseBendingMomentum);
+  // sign of charge (sign of fInverseBendingMomentum if forward motion)
+  // must be also changed if backward extrapolation
+  Double_t chargeExtrap = forwardBackward *
+    TMath::Sign(Double_t(1.0), this->fInverseBendingMomentum);
   Double_t stepLength = 6.0; // in parameter ????
   // Extrapolation loop
   stepNumber = 0;
@@ -131,7 +135,7 @@ void AliMUONTrackParam::ExtrapToZ(Double_t Z)
     stepNumber++;
     // call Geant3 "ghelix" subroutine through a copy in "reco_muon.F":
     // the true function should be called, but how ???? and remove prototyping ...
-    reco_ghelix(charge, stepLength, vGeant3, vGeant3New);
+    reco_ghelix(chargeExtrap, stepLength, vGeant3, vGeant3New);
     if ((forwardBackward * (vGeant3New[2] - Z)) > 0.0) break; // one is beyond Z
     // better use TArray ????
     for (iGeant3 = 0; iGeant3 < 7; iGeant3++)
@@ -160,12 +164,14 @@ void AliMUONTrackParam::ExtrapToZ(Double_t Z)
   vGeant3[2] = Z; // Z
   Double_t xPrimeI = xPrime - 0.5 * xSecond * (dZi2 - dZ1i);
   Double_t yPrimeI = yPrime - 0.5 * ySecond * (dZi2 - dZ1i);
+  // (PX, PY, PZ)/PTOT assuming forward motion
   vGeant3[5] =
     1.0 / TMath::Sqrt(1.0 + xPrimeI * xPrimeI + yPrimeI * yPrimeI); // PZ/PTOT
   vGeant3[3] = xPrimeI * vGeant3[5]; // PX/PTOT
   vGeant3[4] = yPrimeI * vGeant3[5]; // PY/PTOT
-  // Track parameters from Geant3 parameters
-  GetFromGeant3Parameters(vGeant3, charge);
+  // Track parameters from Geant3 parameters,
+  // with charge back for forward motion
+  GetFromGeant3Parameters(vGeant3, chargeExtrap * forwardBackward);
 }
 
   //__________________________________________________________________________
@@ -193,7 +199,8 @@ void AliMUONTrackParam::SetGeant3Parameters(Double_t *VGeant3, Double_t ForwardB
 void AliMUONTrackParam::GetFromGeant3Parameters(Double_t *VGeant3, Double_t Charge)
 {
   // Get track parameters in current AliMUONTrackParam
-  // from Geant3 parameters pointed to by "VGeant3".
+  // from Geant3 parameters pointed to by "VGeant3",
+  // assumed to be calculated for forward motion in Z.
   // "InverseBendingMomentum" is signed with "Charge".
   this->fNonBendingCoor = VGeant3[0]; // X
   this->fBendingCoor = VGeant3[1]; // Y
@@ -243,7 +250,7 @@ void AliMUONTrackParam::ExtrapToVertex()
   // Extrapolation to the vertex.
   // Returns the track parameters resulting from the extrapolation,
   // in the current TrackParam.
-  // Changes parameters according to branson correction through the absorber 
+  // Changes parameters according to Branson correction through the absorber 
   
   Double_t zAbsorber = 503.0; // to be coherent with the Geant absorber geometry !!!!
   // Extrapolates track parameters upstream to the "Z" end of the front absorber
@@ -261,6 +268,8 @@ void AliMUONTrackParam::BransonCorrection()
   Double_t  pYZ, pX, pY, pZ, pTotal, xEndAbsorber, yEndAbsorber, radiusEndAbsorber2, pT, theta;
   Int_t sign;
   // Would it be possible to calculate all that from Geant configuration ????
+  // and to get the Branson parameters from a function in ABSO module ????
+  // with an eventual contribution from other detectors like START ????
   // Radiation lengths outer part theta > 3 degres
   static Double_t x01[9] = { 18.8,    // C (cm)
 			     10.397,   // Concrete (cm)
@@ -324,7 +333,7 @@ void AliMUONTrackParam::BransonCorrection()
     zEndAbsorber = z1[9];
     zBP = zBP1;
   } else {
-    zEndAbsorber = z2[2];
+    zEndAbsorber = z2[3];
     zBP = zBP2;
   }
 
@@ -365,6 +374,7 @@ Double_t AliMUONTrackParam::TotalMomentumEnergyLoss(Double_t rLimit, Double_t pT
   Double_t radiusEndAbsorber2 =
     xEndAbsorber *xEndAbsorber + yEndAbsorber * yEndAbsorber;
   // Parametrization to be redone according to change of absorber material ????
+  // See remark in function BransonCorrection !!!!
   // The name is not so good, and there are many arguments !!!!
   if (radiusEndAbsorber2 < rLimit * rLimit) {
     if (pTotal < 15) {

@@ -41,7 +41,7 @@ class AliMUONTrackParam : public TObject {
 
  protected:
  private:
-  Double_t fInverseBendingMomentum; // Inverse bending momentum (GeV/c ** -1)
+  Double_t fInverseBendingMomentum; // Inverse bending momentum (GeV/c ** -1) times the charge (assumed forward motion)
   Double_t fBendingSlope; // Bending slope (cm ** -1)
   Double_t fNonBendingSlope; // Non bending slope (cm ** -1)
   Double_t fZ; // Z coordinate (cm)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/25 13:06:39  hristov
+Inline functions moved from *.cxx to *.h files instead of forward declarations
+
 Revision 1.2  2000/06/15 07:58:49  morsch
 Code from MUON-dev joined
 
@@ -59,18 +62,43 @@ AliMUONTrackHit::AliMUONTrackHit(AliMUONHitForRec* Hit)
   Hit->SetNTrackHits(Hit->GetNTrackHits() + 1);
 }
 
-
+  //__________________________________________________________________________
 AliMUONTrackHit::AliMUONTrackHit (const AliMUONTrackHit& MUONTrackHit)
 {
 // Dummy copy constructor
 }
 
+  //__________________________________________________________________________
 AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& MUONTrackHit)
 {
 // Dummy assignment operator
     return *this;
 }
 
+
+  //__________________________________________________________________________
+AliMUONTrackHit::~AliMUONTrackHit()
+{
+  // Destructor
+//   AliMUONHitForRec * hit; // pointer to HitForRec
+//   // remove current TrackHit in HitForRec links
+//   if (this == hit->GetFirstTrackHitPtr())
+//     hit->SetFirstTrackHitPtr(fNextTrackHitWithSameHitForRec); // if first
+//   if (this == hit->GetLastTrackHitPtr())
+//     hit->SetLastTrackHitPtr(fPrevTrackHitWithSameHitForRec); // if last
+//   hit->SetNTrackHits(hit->GetNTrackHits() - 1); // decrement NTrackHits
+//   // update link to next TrackHit of previous TrackHit
+//   if (fPrevTrackHitWithSameHitForRec != NULL)
+//     fPrevTrackHitWithSameHitForRec->
+//       SetNextTrackHitWithSameHitForRec(fNextTrackHitWithSameHitForRec);
+//   // update link to previous TrackHit of next TrackHit
+//   if (fNextTrackHitWithSameHitForRec)
+//     fNextTrackHitWithSameHitForRec->
+//       SetPrevTrackHitWithSameHitForRec(fPrevTrackHitWithSameHitForRec);
+  // to be checked thoroughly !!!!
+  // with Root counter of AliMUONTrackHit objects,
+  // with loop over all these links after the update
+}
 
   //__________________________________________________________________________
 Int_t AliMUONTrackHit::Compare(TObject* TrackHit)

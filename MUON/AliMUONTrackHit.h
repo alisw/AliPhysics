@@ -15,9 +15,7 @@ class AliMUONTrackHit : public TObject {
   AliMUONTrackHit(){
     // Constructor
     ;} // Constructor
-  virtual ~AliMUONTrackHit(){
-    // Destructor
-    ;} // Destructor
+  virtual ~AliMUONTrackHit(); // Destructor
   AliMUONTrackHit (const AliMUONTrackHit& AliMUONTrackHit); // copy constructor
   AliMUONTrackHit& operator=(const AliMUONTrackHit& AliMUONTrackHit); // assignment operator
   AliMUONTrackHit(AliMUONHitForRec* Hit); // Constructor from one HitForRec
@@ -41,6 +39,9 @@ class AliMUONTrackHit : public TObject {
 
  protected:
  private:
+  void SetNextTrackHitWithSameHitForRec(AliMUONTrackHit *Next) {fNextTrackHitWithSameHitForRec = Next;}
+  void SetPrevTrackHitWithSameHitForRec(AliMUONTrackHit *Prev) {fPrevTrackHitWithSameHitForRec = Prev;}
+
   AliMUONTrackParam fTrackParam; // Track parameters
   AliMUONHitForRec *fHitForRecPtr; // Pointer to HitForRec
   AliMUONTrackHit *fNextTrackHitWithSameHitForRec; // Pointer to next track hit with same HitForRec
