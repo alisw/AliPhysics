@@ -103,8 +103,6 @@ class AliPMDClustering
   double Dist(double, double, double, double);
   void gaussfit(int, int, double &, double &, double &, double &, double &, 
 		double &, double &);
-  void ConvertL2G(int, double, double, double &, double &);
-  void cell_pos(Int_t , Int_t , Int_t , Float_t &, Float_t &);
   void SetMessage(Int_t);
 
   ClassDef(AliPMDClustering,1)
