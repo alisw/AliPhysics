@@ -539,7 +539,7 @@ void AliMUONv1::StepManager2()
     }  
     
     // One hit per chamber
-    GetMUONData()->AddHit(fIshunt, 
+    GetMUONData()->AddHit2(fIshunt, 
 			  gAlice->GetMCApp()->GetCurrentTrackNumber(), 
 			  detElemId, ipart,
 			  fTrackPosition.X(), 

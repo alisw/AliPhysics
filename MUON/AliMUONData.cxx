@@ -235,7 +235,7 @@ void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber,
 				  idpart, X, Y, Z, 
 				  tof, momentum, theta, 
 				  phi, length, destep,
-				  Xref,Yref,Zref, true);
+				  Xref,Yref,Zref);
 }
 //____________________________________________________________________________
 void AliMUONData::AddHit2(Int_t fIshunt, Int_t track, Int_t detElemId, 
