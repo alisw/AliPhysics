@@ -28,6 +28,7 @@
 #include "TMath.h" 
 #include "TCanvas.h" 
 #include "TClonesArray.h" 
+#include "AliPHOSGetter.h" 
 
 // --- Standard library ---
 
@@ -63,7 +64,9 @@ Bool_t AliPHOSCpvRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * d
   
   Bool_t aren = kFALSE ;
   
-  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry *) fGeom ;
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+
   Int_t relid1[4] ; 
   phosgeom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
 
