@@ -132,14 +132,14 @@ class AliITSPConeData : public AliITSBaseVolParams {
     Double_t Phi0(){return fPhi0;}// Return starting phi value
     Double_t DPhi(){return fDphi;}// Return delta phi value
     Double_t ZAt(Int_t i) // Return Z coordiante
-	{if(i<0||i>=fNz) return NAN;else return fZ[i];}
+	{/*if(i<0||i>=fNz) return NAN;else*/ return fZ[i];}
     Double_t *Z(){return fZ;} // Returns array of z values
     Double_t *Rmin() {return fRmin;} // Returm arrau of rmin values
     Double_t *Rmax() {return fRmax;} // Returm arrau of rmax values
     Double_t Rmin(Int_t i) // Return Inner radius value
-	{if(i<0||i>=fNz) return NAN;else return fRmin[i];}
+	{/*if(i<0||i>=fNz) return NAN;else*/ return fRmin[i];}
     Double_t Rmax(Int_t i) // Return Outer radius value
-	{if(i<0||i>=fNz) return NAN;else return fRmax[i];}
+	{/*if(i<0||i>=fNz) return NAN;else*/ return fRmax[i];}
     // Setters
     Double_t& P0() // Returns the address of fPhi0
 	{return fPhi0;}
@@ -225,11 +225,11 @@ class AliITSPGonData : public AliITSBaseVolParams {
     Double_t *Rmin() {return fRmin;} // Returm arrau of rmin values
     Double_t *Rmax() {return fRmax;} // Returm arrau of rmax values
     Double_t ZAt(Int_t i) // Return Z coordiante
-	{if(i<0||i>=fNz) return NAN;else return fZ[i];}
+	{/*if(i<0||i>=fNz) return NAN;else*/ return fZ[i];}
     Double_t Rmin(Int_t i) // Return Inner radius value
-	{if(i<0||i>=fNz) return NAN;else return fRmin[i];}
+	{/*if(i<0||i>=fNz) return NAN;else*/ return fRmin[i];}
     Double_t Rmax(Int_t i) // Return Outer radius value
-	{if(i<0||i>=fNz) return NAN;else return fRmax[i];}
+	{/*if(i<0||i>=fNz) return NAN;else*/ return fRmax[i];}
     // Setters
     void Nphi(Int_t i) {fNphi = i;} // Sets fNphi
     Double_t& P0() // Returns the address of fPhi0
