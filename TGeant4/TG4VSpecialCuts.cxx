@@ -103,6 +103,7 @@ G4double TG4VSpecialCuts::PostStepGetPhysicalInteractionLength(
 
   G4ParticleDefinition* particle = track.GetDefinition();
   if (particle->GetPDGCharge() != 0.) {
+
     // min remaining range
     G4double kinEnergy = track.GetKineticEnergy();
     G4Material* material = track.GetMaterial();
@@ -115,10 +116,9 @@ G4double TG4VSpecialCuts::PostStepGetPhysicalInteractionLength(
 
     // min kinetic energy (from limits)
     // the kin energy cut can be applied only in case
-    // G4EnergyLossTables are defined for the particle
+    // G4EnergyLossTables are defined for the particle    
     if (G4EnergyLossTables::GetDEDXTable(particle)) {
       G4double minEkine = GetMinEkine(*limits, track);
-      G4EnergyLossTables::GetTables(particle);
       G4double minR 
         = G4EnergyLossTables::GetRange(particle, minEkine, material);
       temp = rangeNow - minR;

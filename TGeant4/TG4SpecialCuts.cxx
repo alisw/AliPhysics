@@ -141,7 +141,6 @@ G4double TG4SpecialCuts::PostStepGetPhysicalInteractionLength(
         }  
        G4double minEkine 
           = (tg4Limits->*fPtrMinEkineInLimits)(track);
-       G4EnergyLossTables::GetTables(particle);
        G4double minR 
           = G4EnergyLossTables::GetRange(particle, minEkine, material);
         temp = rangeNow - minR;
