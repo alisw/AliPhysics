@@ -13,6 +13,9 @@ struct AliL3ClusterModel {
   Float_t fDSigmaY2;
   Float_t fDSigmaZ2;
   UInt_t fNPads;
+#ifdef do_mc
+  Int_t fTrackID[3];
+#endif
 };
 typedef struct AliL3ClusterModel AliL3ClusterModel;
 

@@ -21,6 +21,7 @@ class AliL3ModelTrack : public AliL3Track {
   Float_t fZWidthQ;
   Int_t fSlice;
   Int_t fPatch;
+  Int_t fLabel;
   
   //Crossing points with padrows
   Float_t *fPad; //!
@@ -35,14 +36,19 @@ class AliL3ModelTrack : public AliL3Track {
   void FillModel();
   void FillTrack();
   void Print();
+  void AssignTrackID(Float_t wrong=0.10);
   
+  void SetTrackID(Int_t row,Int_t *trackID);
   void SetPadHit(Int_t row,Float_t f);
   void SetTimeHit(Int_t row,Float_t f);
   void SetOverlap(Int_t row,Int_t id);
   void SetXYResolution(Float_t f) {fXYResolution=f;}
   void SetZResolution(Float_t f) {fZResolution=f;}
+  void SetLabel(Int_t i) {fLabel = i;}
   Int_t CheckClustersQuality(UInt_t npads=3);
   
+
+  Int_t GetTrackID(Int_t row,Int_t idindex);
   AliL3ClusterModel *GetClusters() {return fClusters;}
   AliL3TrackModel *GetModel() {return fTrackModel;}
   AliL3ClusterModel *GetClusterModel(Int_t row);
@@ -60,7 +66,8 @@ class AliL3ModelTrack : public AliL3Track {
   Bool_t GetXYWidthResidual(Int_t row,Float_t &res);
   Bool_t GetZWidthResidual(Int_t row,Float_t &res);
   Int_t GetNClusters() {return fNClusters;}
-  
+  Int_t GetLabel() {return fLabel;}
+
   Double_t GetParSigmaY2(Int_t row);
   Double_t GetParSigmaZ2(Int_t row);
   

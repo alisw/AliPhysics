@@ -9,6 +9,9 @@
 
 #include "AliL3Modeller.h"
 #include "AliL3MemHandler.h"
+#ifdef use_aliroot
+#include "AliL3FileHandler.h"
+#endif
 #include "AliL3TrackArray.h"
 #include "AliL3ModelTrack.h"
 #include "AliL3DigitData.h"
@@ -45,7 +48,7 @@ AliL3Modeller::~AliL3Modeller()
     delete fTracks;
 }
 
-void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,Bool_t houghtracks)
+void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,Bool_t houghtracks,Bool_t binary=kTRUE)
 {
   fSlice = slice;
   fPatch = patch;
@@ -60,7 +63,8 @@ void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,
   
   Char_t fname[100];
   AliL3MemHandler *file = new AliL3MemHandler();
-  sprintf(fname,"%s/tracks_tr_%d_0.raw",trackdata,fSlice); //output tracks from the tracker (no merging)
+  //sprintf(fname,"%s/tracks_tr_%d_0.raw",trackdata,fSlice); //output tracks from the tracker (no merging)
+  sprintf(fname,"%s/tracks_ho_%d.raw",trackdata,fSlice);
   if(!file->SetBinaryInput(fname))
     {
       cerr<<"AliL3Modeller::Init : Error opening trackfile: "<<fname<<endl;
@@ -96,15 +100,34 @@ void AliL3Modeller::Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,
   if(!houghtracks)
     CheckForOverlaps();
 
-  fMemHandler = new AliL3MemHandler();
-  sprintf(fname,"%sdigits_%d_%d.raw",fPath,fSlice,fPatch);
-  if(!fMemHandler->SetBinaryInput(fname))
+  UInt_t ndigits=0;
+  AliL3DigitRowData *digits=0;
+#ifdef use_aliroot
+  fMemHandler = new AliL3FileHandler();
+  if(binary == kFALSE)
     {
-      cerr<<"AliL3Modeller::Init : Error opening file "<<fname<<endl;
+      sprintf(fname,"%s/digitfile",fPath);
+      fMemHandler->SetAliInput(fname);
+      digits = fMemHandler->AliDigits2Memory(ndigits);
+    }
+#else
+  fMemHandler = new AliL3MemHandler();
+  if(binary == kFALSE)
+    {
+      cerr<<"AliL3Modeller::Init : Compile with AliROOT if you want rootfile as input"<<endl;
       return;
     }
-  UInt_t ndigits;
-  AliL3DigitRowData *digits=(AliL3DigitRowData*)fMemHandler->CompBinary2Memory(ndigits);
+  else
+    {
+      sprintf(fname,"%sdigits_%d_%d.raw",fPath,fSlice,fPatch);
+      if(!fMemHandler->SetBinaryInput(fname))
+	{
+	  cerr<<"AliL3Modeller::Init : Error opening file "<<fname<<endl;
+	  return;
+	}
+    }
+  digits=(AliL3DigitRowData*)fMemHandler->CompBinary2Memory(ndigits);
+#endif
   
   SetInputData(digits);
 }
@@ -138,6 +161,7 @@ void AliL3Modeller::FindClusters()
 
   for(Int_t i=AliL3Transform::GetFirstRow(fPatch); i<=AliL3Transform::GetLastRow(fPatch); i++)
     {
+      fCurrentPadRow = i;
       memset((void*)row,0,ntimes*npads*sizeof(Digit));
       digPt = (AliL3DigitData*)rowPt->fDigitData;
       for(UInt_t j=0; j<rowPt->fNDigit; j++)
@@ -324,8 +348,44 @@ void AliL3Modeller::FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t ro
   Float_t sigmaY2,sigmaZ2;
   CalcClusterWidth(cluster,sigmaY2,sigmaZ2);
   track->SetCluster(row,fpad,ftime,fcharge,sigmaY2,sigmaZ2,npads);
-  
+#ifdef do_mc
+  Int_t trackID[3];
+  GetTrackID((Int_t)rint(fpad),(Int_t)rint(ftime),trackID);
+  track->SetTrackID(fCurrentPadRow,trackID);
+#endif
 }
+
+#ifdef do_mc
+void AliL3Modeller::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
+{
+
+  AliL3DigitRowData *rowPt = (AliL3DigitRowData*)fRowData;
+  
+  trackID[0]=trackID[1]=trackID[2]=-2;
+
+  for(Int_t i=AliL3Transform::GetFirstRow(fPatch); i<=AliL3Transform::GetLastRow(fPatch); i++)
+    {
+      if(rowPt->fRow < (UInt_t)fCurrentPadRow)
+	{
+	  AliL3MemHandler::UpdateRowPointer(rowPt);
+	  continue;
+	}
+      AliL3DigitData *digPt = (AliL3DigitData*)rowPt->fDigitData;
+      for(UInt_t j=0; j<rowPt->fNDigit; j++)
+	{
+	  Int_t cpad = digPt[j].fPad;
+	  Int_t ctime = digPt[j].fTime;
+	  if(cpad != pad) continue;
+	  if(ctime != time) continue;
+	  trackID[0] = digPt[j].fTrackID[0];
+	  trackID[1] = digPt[j].fTrackID[1];
+	  trackID[2] = digPt[j].fTrackID[2];
+	  break;
+	}
+      break;
+    }
+}
+#endif
 
 void AliL3Modeller::FillZeros(AliL3DigitRowData *rowPt,Digit *row)
 {

@@ -129,7 +129,7 @@ void AliL3Compress::ReadFile(Char_t which)
     delete fTracks;
   fTracks = new AliL3TrackArray("AliL3ModelTrack");
   
-  cout<<"Reading file "<<fname<<endl;
+  //cout<<"Reading file "<<fname<<endl;
   while(!feof(file))
     {
       AliL3ModelTrack *track = (AliL3ModelTrack*)fTracks->NextTrack();
@@ -146,7 +146,7 @@ void AliL3Compress::ReadFile(Char_t which)
     }
 
   fTracks->RemoveLast();
-  cout<<"Read "<<fTracks->GetNTracks()<<" tracks from file"<<endl;
+  //cout<<"Read "<<fTracks->GetNTracks()<<" tracks from file"<<endl;
   fclose(file);
 }
 

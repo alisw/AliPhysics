@@ -5,6 +5,7 @@
 
 #include <stream.h>
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include "AliL3ModelTrack.h"
@@ -26,6 +27,7 @@ AliL3ModelTrack::AliL3ModelTrack()
   fTime=0;
   fClusterCharge=0;
   fTrackModel=0;
+  fLabel=0;
 }
 
 
@@ -54,14 +56,17 @@ void AliL3ModelTrack::Init(Int_t slice,Int_t patch)
   fTime = new Float_t[nrows];
   fTrackModel = new AliL3TrackModel;
   fOverlap = new Int_t[nrows];
-  
+
   memset(fClusters,0,nrows*sizeof(AliL3ClusterModel));
   memset(fPad,0,nrows*sizeof(Float_t));
   memset(fTime,0,nrows*sizeof(Float_t));
   memset(fTrackModel,0,sizeof(AliL3TrackModel));
   for(Int_t i=0; i<nrows; i++)
     fOverlap[i]=-1;
-
+#ifdef do_mc
+  for(Int_t i=0; i<nrows; i++)
+    fClusters[i].fTrackID[0]=fClusters[i].fTrackID[1]=fClusters[i].fTrackID[2]=-2;
+#endif
   fClusterCharge = 100;
   
   // 100 micrometers:
@@ -178,6 +183,20 @@ void AliL3ModelTrack::FillTrack()
     }
 }
 
+
+void AliL3ModelTrack::SetTrackID(Int_t row,Int_t *trackID)
+{
+#ifdef do_mc
+  AliL3ClusterModel *cluster = GetClusterModel(row);
+  cluster->fTrackID[0] = trackID[0];
+  cluster->fTrackID[1] = trackID[1];
+  cluster->fTrackID[2] = trackID[2];
+  return;
+#endif
+  cerr<<"AliL3ModelTrack::SetTrackID : Compile with do_mc flag"<<endl;
+}
+
+
 void AliL3ModelTrack::SetPadHit(Int_t row,Float_t pad)
 {
   Int_t index = row-AliL3Transform::GetFirstRow(fPatch);
@@ -211,6 +230,18 @@ void AliL3ModelTrack::SetOverlap(Int_t row,Int_t id)
     }
   fOverlap[index]=id;
 }
+
+
+Int_t AliL3ModelTrack::GetTrackID(Int_t row,Int_t index)
+{
+  
+#ifdef do_mc
+  AliL3ClusterModel *cl = GetClusterModel(row);
+  return cl->fTrackID[index];
+#endif
+  cerr<<"AliL3ModelTrack::GetTrackID : Compile with do_mc flag"<<endl;
+}
+
 
 Int_t AliL3ModelTrack::GetNPads(Int_t row)
 {
@@ -427,4 +458,60 @@ Double_t AliL3ModelTrack::GetParSigmaZ2(Int_t row)
   sigmaZ2 = sigmaZ2/pow(AliL3Transform::GetZWidth(),2);
   return sigmaZ2;
   
+}
+
+void AliL3ModelTrack::AssignTrackID(Float_t wrong=0.10)
+{
+  //Assign a track ID to the track, corresponding to the MC TParticle ID.
+  //Can only be done if you compiled with do_mc flag, of course.
+  //The function loops over the assigned clusters, and finds the label (ID)
+  //of each clusters, and assigns the ID with the most hits to the track.
+  //If there are more than wrong% clusters of a different ID, the track is
+  //considered to be fake, and label will be assigned as negative.
+  
+#ifdef do_mc
+  Int_t *lb = new Int_t[GetNClusters()];
+  Int_t *mx = new Int_t[GetNClusters()];
+
+  Int_t i,j;
+  for(Int_t i=0; i<GetNClusters(); i++) 
+    lb[i]=mx[i]=0;
+  
+  Int_t lab=123456789;
+  
+  for(i=0; i<GetNClusters(); i++) 
+    {
+      lab = abs(GetTrackID(i,0));
+      for (j=0; j<GetNClusters(); j++) 
+	if (lb[j]==lab || mx[j]==0) break;
+      lb[j]=lab;
+      (mx[j])++;
+    }
+  
+  Int_t max=0;
+  for (i=0; i<GetNClusters(); i++) 
+    {
+      if(mx[i] > max) 
+	{
+	  max=mx[i]; 
+	  lab=lb[i];
+	}
+    }
+  
+  for (i=0; i<GetNClusters(); i++) 
+    {
+      if(abs(GetTrackID(i,1)) == lab ||
+	 abs(GetTrackID(i,2)) == lab)
+	max++;
+    }
+
+  if ((1.- Float_t(max)/GetNClusters()) > wrong) lab=-lab;
+
+  SetLabel(lab);
+
+  delete[] lb;
+  delete[] mx;
+  return;
+#endif
+  cerr<<"AliL3ModelTrack::AssignTrackID : Compile with do_mc flag"<<endl;
 }

@@ -32,6 +32,7 @@ class AliL3Modeller {
   
   Int_t fNClusters;
   Int_t fMaxClusters;
+  Int_t fCurrentPadRow;
   
   Float_t fPadOverlap;
   Float_t fTimeOverlap;
@@ -44,13 +45,16 @@ class AliL3Modeller {
   void FillCluster(AliL3ModelTrack *track,Cluster *cluster,Int_t row,Int_t npads);
   void CalcClusterWidth(Cluster *cl,Float_t &sigmaY2,Float_t &sigmaZ2);
   void FillZeros(AliL3DigitRowData *digPt,Digit *row);
-
+#ifdef do_mc
+  void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
+#endif
+    
  public:
   
   AliL3Modeller();
   virtual ~AliL3Modeller();
   
-  void Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,Bool_t houghtracks=kFALSE);
+  void Init(Int_t slice,Int_t patch,Char_t *trackdata,Char_t *path,Bool_t houghtracks,Bool_t binary=kTRUE);
   void FindClusters();
   void CheckForOverlaps();
   void CalculateCrossingPoints();
