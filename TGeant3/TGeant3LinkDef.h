@@ -11,8 +11,9 @@
 #pragma link C++ class  TGeant3-;
 #pragma link C++ class  THIGZ;
 #pragma link C++ class  TPaveTree;
-#pragma link C++ class  AliGuiGeomMain;
+#pragma link C++ class  AliGuiGeomMain-;
 #pragma link C++ class  AliDrawVolume-;
 #pragma link C++ class  AliGeant3GeometryGUI-;
-
+#pragma link C++ class  AliGUIMaterial-;
+#pragma link C++ class  AliGUIMedium-;
 #endif
