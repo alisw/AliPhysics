@@ -7,7 +7,11 @@
 // Class used for                                  //
 /////////////////////////////////////////////////////
 
+#ifdef __CINT__
 class fstream;
+#else
+#include "Riostream.h"
+#endif
 
 class AliSimDigits;
 //class TTree;
