@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2002/03/28 14:59:07  cblume
+Coding conventions
+
 Revision 1.2  2001/11/07 11:04:22  hristov
 Minor corrections needed on Sun (arrays with undefined size created by new, inline decration removed when the body was hot in the header file)
 
@@ -412,7 +415,7 @@ Int_t AliTRDpidLQ::GetIndex(const Float_t mom, const Int_t ipid)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpidLQ::GetIndex(const Int_t imom, const Int_t ipid) const
+Int_t AliTRDpidLQ::GetIndex(const Int_t imom, const Int_t ipid)
 {
   //
   // Returns the histogram index
