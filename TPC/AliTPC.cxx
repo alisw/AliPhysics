@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.59  2002/06/05 15:37:31  kowal2
+Added cross-talk from the wires beyond the first and the last rows
+
 Revision 1.58  2002/05/27 14:33:14  hristov
 The new class AliTrackReference used (M.Ivanov)
 
@@ -376,7 +379,7 @@ void AliTPC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
    AddHit2(track,vol,hits);
 }
 
-void  AliTPC::AddTrackReference(Int_t lab, TLorentzVector p, TLorentzVector x){
+void  AliTPC::AddTrackReference(Int_t lab, TLorentzVector p, TLorentzVector x, Float_t length){
   //
   // add a trackrefernce to the list
   if (!fTrackReferences) {
@@ -389,6 +392,7 @@ void  AliTPC::AddTrackReference(Int_t lab, TLorentzVector p, TLorentzVector x){
   ref->SetMomentum(p[0],p[1],p[2]);
   ref->SetPosition(x[0],x[1],x[2]);
   ref->SetTrack(lab);
+  ref->SetLength(length);
 }
  
 //_____________________________________________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.41  2002/05/27 14:33:15  hristov
+The new class AliTrackReference used (M.Ivanov)
+
 Revision 1.40  2002/01/21 17:12:00  kowal2
 New track hits structure using root containers
 
@@ -1968,7 +1971,7 @@ void AliTPCv2::StepManager()
     TLorentzVector x;
     gMC->TrackMomentum(p);
     gMC->TrackPosition(x);
-    AddTrackReference(gAlice->CurrentTrack(),p,x);
+    AddTrackReference(gAlice->CurrentTrack(),p,x,gMC->TrackLength());
   }
 
   if (gMC->IsTrackExiting() && ( (id == fIdLSec) || (id == fIdUSec))){
@@ -1977,7 +1980,7 @@ void AliTPCv2::StepManager()
     TLorentzVector x;
     gMC->TrackMomentum(p);
     gMC->TrackPosition(x);
-    AddTrackReference(gAlice->CurrentTrack(),p,x);
+    AddTrackReference(gAlice->CurrentTrack(),p,x,gMC->TrackLength());
   }
 
 
