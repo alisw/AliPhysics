@@ -20,8 +20,12 @@ public:
 
   AliPHOSv2(void) ;
   AliPHOSv2(const char *name, const char *title="") ;
+  AliPHOSv2(AliPHOSv2 & phos) : AliPHOSv1(phos){
+    phos.Copy(*this) ; 
+  }
   virtual ~AliPHOSv2(void) ;
 
+  virtual void    Copy(AliPHOSv2 & phos) ; 
   virtual void    AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits); 
   virtual Int_t   IsVersion(void) const { 
     // Gives the version number 

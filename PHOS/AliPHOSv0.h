@@ -23,12 +23,13 @@ class AliPHOSv0 : public AliPHOS {
 
   AliPHOSv0() {}
   AliPHOSv0(const char *name, const char *title="") ;
-  AliPHOSv0(const AliPHOSv0 & phos) : AliPHOS(phos) {
-    Fatal("cpy ctor", "not implemented") ;
+  AliPHOSv0(AliPHOSv0 & phos) : AliPHOS(phos) {
+    phos.Copy(*this) ; 
   } 
   virtual ~AliPHOSv0(void){
     // dtor
   } 
+  virtual void Copy(AliPHOSv0 & phos) ; 
 
 //    virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
   virtual void   AddHit( Int_t, Int_t, Int_t, Int_t, Float_t*) {

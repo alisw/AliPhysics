@@ -104,6 +104,29 @@ AliPHOSvFast::~AliPHOSvFast()
 }
 
 //____________________________________________________________________________
+void AliPHOSvFast::Copy(AliPHOSvFast & fast)
+{
+  TObject::Copy(fast) ; 
+  AliPHOS::Copy(fast) ; 
+  fast.fBigBoxX = fBigBoxX ; 
+  fast.fBigBoxY = fBigBoxY ; 
+  fast.fBigBoxZ = fBigBoxZ ;
+  fast.fNRecParticles = fNRecParticles ;
+  fast.fRan = fRan ; 
+  fast.fResPara1 = fResPara1 ; 
+  fast.fResPara2 = fResPara2 ; 
+  fast.fResPara3 = fResPara3 ;
+  fast.fPosParaA0 = fPosParaA0 ;
+  fast.fPosParaA1 = fPosParaA1 ; 
+  fast.fPosParaB0 = fPosParaB0 ;
+  fast.fPosParaB1 = fPosParaB1 ;
+  fast.fFastRecParticles = new TClonesArray(fFastRecParticles->GetClass()->GetName(), 100) ; 
+  Int_t index ; 
+  for (index = 0 ; index < fFastRecParticles->GetEntries(); index++) 
+    (fast.fFastRecParticles)->AddAt(fFastRecParticles->At(index), index) ;
+}
+
+//____________________________________________________________________________
 void AliPHOSvFast::AddRecParticle(const AliPHOSFastRecParticle & rp)
 {  
   // Add a virtually reconstructed particle to the list 

@@ -25,13 +25,12 @@ public:
 
   AliPHOSv1(void) ;
   AliPHOSv1(const char *name, const char *title="") ;
-  AliPHOSv1(const AliPHOSv1 & phos) : AliPHOSv0(phos) {
-    // cpy ctor: no implementation yet
-    // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ; 
+  AliPHOSv1(AliPHOSv1 & phos) : AliPHOSv0(phos) {
+    phos.Copy(*this) ; 
   }
   virtual ~AliPHOSv1(void) ;
 
+  virtual void   Copy(AliPHOSv1 & phos) ; 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits) ; 
   virtual void   FinishEvent() ;
   virtual void   FinishPrimary() ;

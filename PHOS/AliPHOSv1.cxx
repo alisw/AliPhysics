@@ -169,6 +169,21 @@ AliPHOSv1::~AliPHOSv1()
 }
 
 //____________________________________________________________________________
+void AliPHOSv1::Copy(AliPHOSv1 & phos)
+{
+  TObject::Copy(phos) ; 
+  AliPHOSv0::Copy(phos) ; 
+  phos.fLightYieldMean         = fLightYieldMean ; 
+  phos.fIntrinsicPINEfficiency = fIntrinsicPINEfficiency ; 
+  phos.fLightYieldAttenuation  = fLightYieldAttenuation ; 
+  phos.fRecalibrationFactor    = fRecalibrationFactor ; 
+  phos.fElectronsPerGeV        = fElectronsPerGeV ; 
+  phos.fAPDGain                = fAPDGain ; 
+  phos.fLightFactor            = fLightFactor ; 
+  phos.fAPDFactor              = fAPDFactor ; 
+}
+
+//____________________________________________________________________________
 void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.

@@ -27,12 +27,11 @@ class AliPHOS : public AliDetector {
 
   AliPHOS() ;
   AliPHOS(const char* name, const char* title="") ;  
-  AliPHOS(const AliPHOS & phos) : AliDetector(phos) {
-    // cpy ctor: no implementation yet
-    // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;
+  AliPHOS(AliPHOS & phos) : AliDetector(phos) {
+    Copy(*this) ; 
   }
   virtual ~AliPHOS() ; 
+  virtual void Copy(AliPHOS & phos) ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
     // do not use this definition but the one below
     Fatal("AddHit(Int_t, Int_t*, Float_t *)", "do not use") ;

@@ -27,13 +27,12 @@ public:
 
   AliPHOSvImpacts(void) ;
   AliPHOSvImpacts(const char *name, const char *title="") ;
-  AliPHOSvImpacts(const AliPHOSvImpacts & phos) : AliPHOSv1(phos) {
-    // cpy ctor: no implementation yet
-    // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;
+  AliPHOSvImpacts(AliPHOSvImpacts & phos) : AliPHOSv1(phos) {
+    phos.Copy(*this) ; 
   }
   virtual ~AliPHOSvImpacts(void) ;
 
+  virtual void   Copy(AliPHOSvImpacts & phos) ; 
   virtual void   AddImpact(char* detector, Int_t shunt, Int_t primary, Int_t track,
 			   Int_t module, Int_t pid, TLorentzVector p, Float_t *xyz) ;
   virtual void   MakeBranch(Option_t *opt=" ");

@@ -57,6 +57,13 @@ AliPHOSv2::~AliPHOSv2()
 }
 
 //____________________________________________________________________________
+void AliPHOSv2::Copy(AliPHOSv2 & phos)
+{
+  TObject::Copy(phos) ; 
+  AliPHOSv1::Copy(phos) ;   
+}
+
+//____________________________________________________________________________
 void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.

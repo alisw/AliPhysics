@@ -117,6 +117,14 @@ AliPHOSvImpacts::~AliPHOSvImpacts()
 }
 
 //____________________________________________________________________________
+void AliPHOSvImpacts::Copy(AliPHOSvImpacts & phos) 
+{
+  TObject::Copy(phos) ; 
+  AliPHOS::Copy(phos) ; 
+}
+
+
+//____________________________________________________________________________
 void AliPHOSvImpacts::AddImpact( char* det, Int_t shunt, Int_t primary, Int_t track, Int_t module,
 			   Int_t pid, TLorentzVector p, Float_t *xyz)
 {

@@ -58,6 +58,13 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
 }
 
 //____________________________________________________________________________
+void AliPHOSv0::Copy(AliPHOSv0 & phos) 
+{
+  TObject::Copy(phos) ; 
+  AliPHOS::Copy(phos) ; 
+}
+
+//____________________________________________________________________________
 void AliPHOSv0::BuildGeometry()
 {
   // Build the PHOS geometry for the ROOT display

@@ -32,11 +32,12 @@ public:
 
   AliPHOSvFast() ;
   AliPHOSvFast(const char *name, const char *title="") ;
-  AliPHOSvFast(const AliPHOSvFast & fast) : AliPHOS(fast) {
-    Fatal("cpy ctor", "not implemented") ; 
+  AliPHOSvFast(AliPHOSvFast & fast) : AliPHOS(fast) {
+    fast.Copy(*this) ; 
   }
   virtual ~AliPHOSvFast(void) ;
 
+  virtual void Copy(AliPHOSvFast & fast) ; 
   void           AddRecParticle(const AliPHOSFastRecParticle & rp) ; // adds primary particle to the RecParticles list
   virtual void   BuildGeometry(void) ;                               // creates the geometry for the ROOT display
   virtual void   CreateGeometry(void) ;                              // creates the geometry for GEANT

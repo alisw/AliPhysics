@@ -69,6 +69,14 @@ AliPHOS::~AliPHOS()
 }
 
 //____________________________________________________________________________
+void AliPHOS::Copy(AliPHOS & phos)
+{
+  TObject::Copy(phos) ; 
+  //  fQATask = AliPHOSQAChecker::Copy(*(phos.fQATask)) ; 
+  phos.fTreeQA = fTreeQA->CloneTree() ; 
+}
+
+//____________________________________________________________________________
 void AliPHOS::CreateMaterials()
 {
   // Definitions of materials to build PHOS and associated tracking media.
