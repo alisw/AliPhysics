@@ -189,7 +189,14 @@ Bool_t AliRawReaderDate::ReadMiniHeader()
     fCount = fMiniHeader->fSize;
     if (fPosition + fCount > fEnd) {  // check data size in mini header and sub event
       Error("ReadMiniHeader", "size in mini header exceeds event size!");
-      fMiniHeader->fSize = fCount = fEnd - fPosition;
+      Warning("ReadMiniHeader", "skipping %d bytes\n"
+	      " run: %d  event: %d %d  LDC: %d  GDC: %d\n", 
+	      fEnd - fPosition, fSubEvent->eventRunNb, 
+	      fSubEvent->eventId[0], fSubEvent->eventId[1],
+	      fSubEvent->eventLdcId, fSubEvent->eventGdcId);
+      fCount = 0;
+      fPosition = fEnd;
+      continue;
     }
   } while (!IsSelected());
   return kTRUE;

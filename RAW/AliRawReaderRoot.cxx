@@ -32,7 +32,9 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber)
 // create an object to read digits from the given input file for the
 // event with the given number
 
+  TDirectory* dir = gDirectory;
   fFile = TFile::Open(fileName);
+  dir->cd();
   if (!fFile || !fFile->IsOpen()) {
     Error("AliRawReaderRoot", "could not open file %s", fileName);
     return;
@@ -204,7 +206,11 @@ Bool_t AliRawReaderRoot::ReadMiniHeader()
     fCount = fMiniHeader->fSize;
     if (fPosition + fCount > fEnd) {  // check data size in mini header and sub event
       Error("ReadMiniHeader", "size in mini header exceeds event size!");
-      fMiniHeader->fSize = fCount = fEnd - fPosition;
+      Warning("ReadMiniHeader", "skipping %d bytes", fEnd - fPosition);
+      fSubEvent->GetHeader()->Dump();
+      fCount = 0;
+      fPosition = fEnd;
+      continue;
     }
   } while (!IsSelected());
   return kTRUE;
