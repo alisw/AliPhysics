@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2002/07/17 08:59:39  jchudoba
+Do not delete subtasks when AliRunDigitizer is deleted. Owner should delete them itself.
+
 Revision 1.17  2002/07/16 13:47:53  jchudoba
 Add methods to get access to names of files used in merging.
 
@@ -478,7 +481,7 @@ void AliRunDigitizer::FinishGlobal()
     fInputFiles[fCopyTreesFromInput]->Get("TE")->Clone()->Write();
     gAlice->Write();
   }
-  fOutput->Close();
+  fOutput->Write();
 }
 
 
