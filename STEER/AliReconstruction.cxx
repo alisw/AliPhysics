@@ -92,6 +92,7 @@
 #include <TStopwatch.h>
 
 #include "AliReconstruction.h"
+#include "AliLog.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
 #include "AliRawReaderFile.h"
@@ -239,16 +240,15 @@ Bool_t AliReconstruction::Run(const char* input)
   // open the run loader
   fRunLoader = AliRunLoader::Open(fGAliceFileName.Data());
   if (!fRunLoader) {
-    Error("Run", "no run loader found in file %s", 
-	  fGAliceFileName.Data());
+    AliError(Form("no run loader found in file %s", fGAliceFileName.Data()));
     CleanUp();
     return kFALSE;
   }
   fRunLoader->LoadgAlice();
   AliRun* aliRun = fRunLoader->GetAliRun();
   if (!aliRun) {
-    Error("Run", "no gAlice object found in file %s", 
-	  fGAliceFileName.Data());
+    AliError(Form("no gAlice object found in file %s",
+                  fGAliceFileName.Data()));
     CleanUp();
     return kFALSE;
   }
@@ -277,7 +277,7 @@ Bool_t AliReconstruction::Run(const char* input)
       pluginManager->FindHandler("AliReconstructor", detName);
     // if not, but the reconstructor class is implemented, add a plugin for it
     if (!pluginHandler && gROOT->GetClass(recName.Data())) {
-      Info("Run", "defining plugin for %s", recName.Data());
+      AliDebug(1, Form("defining plugin for %s", recName.Data()));
       pluginManager->AddHandler("AliReconstructor", detName, 
 				recName, detName, recName + "()");
       pluginHandler = pluginManager->FindHandler("AliReconstructor", detName);
@@ -287,7 +287,7 @@ Bool_t AliReconstruction::Run(const char* input)
     }
     // if there is no reconstructor class for the detector use the dummy one
     if (!reconstructor && gAlice->GetDetector(detName)) {
-      Info("Run", "using dummy reconstructor for %s", detName.Data());
+      AliDebug(1, Form("using dummy reconstructor for %s", detName.Data()));
       reconstructor = new AliDummyReconstructor(gAlice->GetDetector(detName));
     }
     if (reconstructor) {
@@ -324,7 +324,7 @@ Bool_t AliReconstruction::Run(const char* input)
   // create the ESD output file and tree
   TFile* file = TFile::Open("AliESDs.root", "RECREATE");
   if (!file->IsOpen()) {
-    Error("Run", "opening AliESDs.root failed");
+    AliError("opening AliESDs.root failed");
     if (fStopOnError) {CleanUp(file); return kFALSE;}    
   }
   AliESD* esd = new AliESD;
@@ -336,7 +336,7 @@ Bool_t AliReconstruction::Run(const char* input)
   // loop over events
   if (fRawReader) fRawReader->RewindEvents();
   for (Int_t iEvent = 0; iEvent < fRunLoader->GetNumberOfEvents(); iEvent++) {
-    Info("Run", "processing event %d", iEvent);
+    AliInfo(Form("processing event %d", iEvent));
     fRunLoader->GetEvent(iEvent);
     if (fRawReader) fRawReader->NextEvent();
 
@@ -410,8 +410,7 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
       (AliReconstructor*) fReconstructors[iDet];
     TString detName = reconstructor->GetDetectorName();
     if (IsSelected(detName, detStr)) {
-      Info("RunLocalReconstruction", "running reconstruction for %s", 
-	   detName.Data());
+      AliInfo(Form("running reconstruction for %s", detName.Data()));
       TStopwatch stopwatchDet;
       stopwatchDet.Start();
       if (fRawReader) {
@@ -420,19 +419,19 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
       } else {
 	reconstructor->Reconstruct(fRunLoader);
       }
-      Info("RunLocalReconstruction", "execution time for %s:", detName.Data());
-      stopwatchDet.Print();
+      AliInfo(Form("execution time for %s:", detName.Data()));
+      ToAliInfo(stopwatchDet.Print());
     }
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
-    Error("RunLocalReconstruction", 
-	  "the following detectors were not found: %s", detStr.Data());
+    AliError(Form("the following detectors were not found: %s",
+                  detStr.Data()));
     if (fStopOnError) return kFALSE;
   }
 
-  Info("RunLocalReconstruction", "execution time:");
-  stopwatch.Print();
+  AliInfo("execution time:");
+  ToAliInfo(stopwatch.Print());
 
   return kTRUE;
 }
@@ -455,11 +454,11 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
   }
 
   if (fITSVertexer) {
-    Info("RunVertexFinder", "running the ITS vertex finder");
+    AliInfo("running the ITS vertex finder");
     fITSVertexer->SetDebug(1);
     vertex = fITSVertexer->FindVertexForCurrentEvent(fRunLoader->GetEventNumber());
     if(!vertex){
-      Warning("RunVertexFinder","Vertex not found \n");
+      AliWarning("Vertex not found");
       vertex = new AliESDVertex();
     }
     else {
@@ -467,7 +466,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
     }
 
   } else {
-    Info("RunVertexFinder", "getting the primary vertex from MC");
+    AliInfo("getting the primary vertex from MC");
     vertex = new AliESDVertex(vtxPos, vtxErr);
   }
 
@@ -475,7 +474,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
     vertex->GetXYZ(vtxPos);
     vertex->GetSigmaXYZ(vtxErr);
   } else {
-    Warning("RunVertexFinder", "no vertex reconstructed");
+    AliWarning("no vertex reconstructed");
     vertex = new AliESDVertex(vtxPos, vtxErr);
   }
   esd->SetVertex(vertex);
@@ -484,8 +483,8 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
   if (fTRDTracker) fTRDTracker->SetVertex(vtxPos, vtxErr);
   delete vertex;
 
-  Info("RunVertexFinder", "execution time:");
-  stopwatch.Print();
+  AliInfo("execution time:");
+  ToAliInfo(stopwatch.Print());
 
   return kTRUE;
 }
@@ -499,34 +498,35 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
   stopwatch.Start();
 
   if (!fTPCTracker) {
-    Error("RunTracking", "no TPC tracker");
+    AliError("no TPC tracker");
     return kFALSE;
   }
+  AliInfo("running tracking");
 
   // TPC tracking
-  Info("RunTracking", "TPC tracking");
+  AliDebug(1, "TPC tracking");
   fTPCLoader->LoadRecPoints("read");
   TTree* tpcTree = fTPCLoader->TreeR();
   if (!tpcTree) {
-    Error("RunTracking", "Can't get the TPC cluster tree");
+    AliError("Can't get the TPC cluster tree");
     return kFALSE;
   }
   fTPCTracker->LoadClusters(tpcTree);
   if (fTPCTracker->Clusters2Tracks(esd) != 0) {
-    Error("RunTracking", "TPC Clusters2Tracks failed");
+    AliError("TPC Clusters2Tracks failed");
     return kFALSE;
   }
   if (fCheckPointLevel > 1) WriteESD(esd, "TPC.tracking");
 
   if (!fITSTracker) {
-    Warning("RunTracking", "no ITS tracker");
+    AliWarning("no ITS tracker");
   } else {
 
     GetReconstructor("TPC")->FillESD(fRunLoader, esd); // preliminary
     AliESDpid::MakePID(esd);                  // PID for the ITS tracker
 
     // ITS tracking
-    Info("RunTracking", "ITS tracking");
+    AliDebug(1, "ITS tracking");
     fITSLoader->LoadRecPoints("read");
     TTree* itsTree = fITSLoader->TreeR();
     if (!itsTree) {
@@ -535,59 +535,59 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     }
     fITSTracker->LoadClusters(itsTree);
     if (fITSTracker->Clusters2Tracks(esd) != 0) {
-      Error("RunTracking", "ITS Clusters2Tracks failed");
+      AliError("ITS Clusters2Tracks failed");
       return kFALSE;
     }
     if (fCheckPointLevel > 1) WriteESD(esd, "ITS.tracking");
 
     if (!fTRDTracker) {
-      Warning("RunTracking", "no TRD tracker");
+      AliWarning("no TRD tracker");
     } else {
       // ITS back propagation
-      Info("RunTracking", "ITS back propagation");
+      AliDebug(1, "ITS back propagation");
       if (fITSTracker->PropagateBack(esd) != 0) {
-	Error("RunTracking", "ITS backward propagation failed");
+	AliError("ITS backward propagation failed");
 	return kFALSE;
       }
       if (fCheckPointLevel > 1) WriteESD(esd, "ITS.back");
 
       // TPC back propagation
-      Info("RunTracking", "TPC back propagation");
+      AliDebug(1, "TPC back propagation");
       if (fTPCTracker->PropagateBack(esd) != 0) {
-	Error("RunTracking", "TPC backward propagation failed");
+	AliError("TPC backward propagation failed");
 	return kFALSE;
       }
       if (fCheckPointLevel > 1) WriteESD(esd, "TPC.back");
 
       // TRD back propagation
-      Info("RunTracking", "TRD back propagation");
+      AliDebug(1, "TRD back propagation");
       fTRDLoader->LoadRecPoints("read");
       TTree* trdTree = fTRDLoader->TreeR();
       if (!trdTree) {
-	Error("RunTracking", "Can't get the TRD cluster tree");
+	AliError("Can't get the TRD cluster tree");
 	return kFALSE;
       }
       fTRDTracker->LoadClusters(trdTree);
       if (fTRDTracker->PropagateBack(esd) != 0) {
-	Error("RunTracking", "TRD backward propagation failed");
+	AliError("TRD backward propagation failed");
 	return kFALSE;
       }
       if (fCheckPointLevel > 1) WriteESD(esd, "TRD.back");
 
       if (!fTOFTracker) {
-	Warning("RunTracking", "no TOF tracker");
+	AliWarning("no TOF tracker");
       } else {
 	// TOF back propagation
-	Info("RunTracking", "TOF back propagation");
+	AliDebug(1, "TOF back propagation");
 	fTOFLoader->LoadDigits("read");
 	TTree* tofTree = fTOFLoader->TreeD();
 	if (!tofTree) {
-	  Error("RunTracking", "Can't get the TOF digits tree");
+	  AliError("Can't get the TOF digits tree");
 	  return kFALSE;
 	}
 	fTOFTracker->LoadClusters(tofTree);
 	if (fTOFTracker->PropagateBack(esd) != 0) {
-	  Error("RunTracking", "TOF backward propagation failed");
+	  AliError("TOF backward propagation failed");
 	  return kFALSE;
 	}
 	if (fCheckPointLevel > 1) WriteESD(esd, "TOF.back");
@@ -596,9 +596,9 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
       }
 
       // TRD inward refit
-      Info("RunTracking", "TRD inward refit");
+      AliDebug(1, "TRD inward refit");
       if (fTRDTracker->RefitInward(esd) != 0) {
-	Error("RunTracking", "TRD inward refit failed");
+	AliError("TRD inward refit failed");
 	return kFALSE;
       }
       if (fCheckPointLevel > 1) WriteESD(esd, "TRD.refit");
@@ -606,17 +606,17 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
       fTRDLoader->UnloadRecPoints();
     
       // TPC inward refit
-      Info("RunTracking", "TPC inward refit");
+      AliInfo("TPC inward refit");
       if (fTPCTracker->RefitInward(esd) != 0) {
-	Error("RunTracking", "TPC inward refit failed");
+	AliError("TPC inward refit failed");
 	return kFALSE;
       }
       if (fCheckPointLevel > 1) WriteESD(esd, "TPC.refit");
     
       // ITS inward refit
-      Info("RunTracking", "ITS inward refit");
+      AliInfo("ITS inward refit");
       if (fITSTracker->RefitInward(esd) != 0) {
-	Error("RunTracking", "ITS inward refit failed");
+	AliError("ITS inward refit failed");
 	return kFALSE;
       }
       if (fCheckPointLevel > 1) WriteESD(esd, "ITS.refit");
@@ -629,8 +629,8 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
   fTPCTracker->UnloadClusters();
   fTPCLoader->UnloadRecPoints();
 
-  Info("RunTracking", "execution time:");
-  stopwatch.Print();
+  AliInfo("execution time:");
+  ToAliInfo(stopwatch.Print());
 
   return kTRUE;
 }
@@ -642,6 +642,7 @@ Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
 
   TStopwatch stopwatch;
   stopwatch.Start();
+  AliInfo("filling ESD");
 
   TString detStr = detectors;
   for (Int_t iDet = 0; iDet < fReconstructors.GetEntriesFast(); iDet++) {
@@ -650,7 +651,7 @@ Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
     TString detName = reconstructor->GetDetectorName();
     if (IsSelected(detName, detStr)) {
       if (!ReadESD(esd, detName.Data())) {
-	Info("FillESD", "filling ESD for %s", detName.Data());
+	AliDebug(1, Form("filling ESD for %s", detName.Data()));
 	if (fRawReader) {
 	  reconstructor->FillESD(fRunLoader, fRawReader, esd);
 	} else {
@@ -662,13 +663,13 @@ Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
-    Error("FillESD", "the following detectors were not found: %s", 
-	  detStr.Data());
+    AliError(Form("the following detectors were not found: %s", 
+                  detStr.Data()));
     if (fStopOnError) return kFALSE;
   }
 
-  Info("FillESD", "execution time:");
-  stopwatch.Print();
+  AliInfo("execution time:");
+  ToAliInfo(stopwatch.Print());
 
   return kTRUE;
 }
@@ -733,7 +734,7 @@ Bool_t AliReconstruction::CreateVertexer()
     fITSVertexer = itsReconstructor->CreateVertexer(fRunLoader);
   }
   if (!fITSVertexer) {
-    Warning("CreateVertexer", "couldn't create a vertexer for ITS");
+    AliWarning("couldn't create a vertexer for ITS");
     if (fStopOnError) return kFALSE;
   }
 
@@ -748,7 +749,7 @@ Bool_t AliReconstruction::CreateTrackers()
   fITSTracker = NULL;
   fITSLoader = fRunLoader->GetLoader("ITSLoader");
   if (!fITSLoader) {
-    Warning("CreateTrackers", "no ITS loader found");
+    AliWarning("no ITS loader found");
     if (fStopOnError) return kFALSE;
   } else {
     AliReconstructor* itsReconstructor = GetReconstructor("ITS");
@@ -756,7 +757,7 @@ Bool_t AliReconstruction::CreateTrackers()
       fITSTracker = itsReconstructor->CreateTracker(fRunLoader);
     }
     if (!fITSTracker) {
-      Warning("CreateTrackers", "couldn't create a tracker for ITS");
+      AliWarning("couldn't create a tracker for ITS");
       if (fStopOnError) return kFALSE;
     }
   }
@@ -764,7 +765,7 @@ Bool_t AliReconstruction::CreateTrackers()
   fTPCTracker = NULL;
   fTPCLoader = fRunLoader->GetLoader("TPCLoader");
   if (!fTPCLoader) {
-    Error("CreateTrackers", "no TPC loader found");
+    AliError("no TPC loader found");
     if (fStopOnError) return kFALSE;
   } else {
     AliReconstructor* tpcReconstructor = GetReconstructor("TPC");
@@ -772,7 +773,7 @@ Bool_t AliReconstruction::CreateTrackers()
       fTPCTracker = tpcReconstructor->CreateTracker(fRunLoader);
     }
     if (!fTPCTracker) {
-      Error("CreateTrackers", "couldn't create a tracker for TPC");
+      AliError("couldn't create a tracker for TPC");
       if (fStopOnError) return kFALSE;
     }
   }
@@ -780,7 +781,7 @@ Bool_t AliReconstruction::CreateTrackers()
   fTRDTracker = NULL;
   fTRDLoader = fRunLoader->GetLoader("TRDLoader");
   if (!fTRDLoader) {
-    Warning("CreateTrackers", "no TRD loader found");
+    AliWarning("no TRD loader found");
     if (fStopOnError) return kFALSE;
   } else {
     AliReconstructor* trdReconstructor = GetReconstructor("TRD");
@@ -788,7 +789,7 @@ Bool_t AliReconstruction::CreateTrackers()
       fTRDTracker = trdReconstructor->CreateTracker(fRunLoader);
     }
     if (!fTRDTracker) {
-      Warning("CreateTrackers", "couldn't create a tracker for TRD");
+      AliWarning("couldn't create a tracker for TRD");
       if (fStopOnError) return kFALSE;
     }
   }
@@ -796,7 +797,7 @@ Bool_t AliReconstruction::CreateTrackers()
   fTOFTracker = NULL;
   fTOFLoader = fRunLoader->GetLoader("TOFLoader");
   if (!fTOFLoader) {
-    Warning("CreateTrackers", "no TOF loader found");
+    AliWarning("no TOF loader found");
     if (fStopOnError) return kFALSE;
   } else {
     AliReconstructor* tofReconstructor = GetReconstructor("TOF");
@@ -804,7 +805,7 @@ Bool_t AliReconstruction::CreateTrackers()
       fTOFTracker = tofReconstructor->CreateTracker(fRunLoader);
     }
     if (!fTOFTracker) {
-      Warning("CreateTrackers", "couldn't create a tracker for TOF");
+      AliWarning("couldn't create a tracker for TOF");
       if (fStopOnError) return kFALSE;
     }
   }
@@ -853,10 +854,10 @@ Bool_t AliReconstruction::ReadESD(AliESD*& esd, const char* recStep) const
 	  esd->GetRunNumber(), esd->GetEventNumber(), recStep);
   if (gSystem->AccessPathName(fileName)) return kFALSE;
 
-  Info("ReadESD", "reading ESD from file %s", fileName);
+  AliDebug(1, Form("reading ESD from file %s", fileName));
   TFile* file = TFile::Open(fileName);
   if (!file || !file->IsOpen()) {
-    Error("ReadESD", "opening %s failed", fileName);
+    AliError(Form("opening %s failed", fileName));
     delete file;
     return kFALSE;
   }
@@ -879,10 +880,10 @@ void AliReconstruction::WriteESD(AliESD* esd, const char* recStep) const
   sprintf(fileName, "ESD_%d.%d_%s.root", 
 	  esd->GetRunNumber(), esd->GetEventNumber(), recStep);
 
-  Info("WriteESD", "writing ESD to file %s", fileName);
+  AliDebug(1, Form("writing ESD to file %s", fileName));
   TFile* file = TFile::Open(fileName, "recreate");
   if (!file || !file->IsOpen()) {
-    Error("WriteESD", "opening %s failed", fileName);
+    AliError(Form("opening %s failed", fileName));
   } else {
     esd->Write("ESD");
     file->Close();

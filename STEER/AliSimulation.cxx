@@ -143,7 +143,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fEventsPerFile(),
   fBkgrdFileNames(NULL),
   fUseBkgrdVertex(kTRUE),
-  fRegionOfInterest(kTRUE)
+  fRegionOfInterest(kFALSE)
 {
 // create simulation object with default parameters
 
@@ -334,7 +334,9 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   AliInfo(Form("initializing gAlice with config file %s",
           fConfigFileName.Data()));
-  gAlice->Init(fConfigFileName.Data());
+  StdoutToAliInfo(StderrToAliError(
+    gAlice->Init(fConfigFileName.Data());
+  ););
   AliRunLoader* runLoader = gAlice->GetRunLoader();
   if (!runLoader) {
     AliError(Form("gAlice has no run loader object. "
@@ -395,12 +397,14 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   }
 
   AliInfo("running gAlice");
-  gAlice->Run(nEvents);
+  StdoutToAliInfo(StderrToAliError(
+    gAlice->Run(nEvents);
+  ););
 
   delete runLoader;
 
   AliInfo("execution time:");
-  stopwatch.Print();
+  StdoutToAliInfo(stopwatch.Print(););
 
   return kTRUE;
 }
@@ -427,7 +431,7 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
       stopwatchDet.Start();
       det->Hits2SDigits();
       AliInfo(Form("execution time for %s:", det->GetName()));
-      stopwatchDet.Print();
+      StdoutToAliInfo(stopwatchDet.Print(););
     }
   }
 
@@ -440,7 +444,7 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
   delete runLoader;
 
   AliInfo("execution time:");
-  stopwatch.Print();
+  StdoutToAliInfo(stopwatch.Print(););
 
   return kTRUE;
 }
@@ -505,7 +509,7 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
   delete manager;
 
   AliInfo("execution time:");
-  stopwatch.Print();
+  StdoutToAliInfo(stopwatch.Print(););
 
   return kTRUE;
 }
@@ -541,7 +545,7 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
   delete runLoader;
 
   AliInfo("execution time:");
-  stopwatch.Print();
+  StdoutToAliInfo(stopwatch.Print(););
 
   return kTRUE;
 }
@@ -595,7 +599,7 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
   }
 
   AliInfo("execution time:");
-  stopwatch.Print();
+  StdoutToAliInfo(stopwatch.Print(););
 
   return kTRUE;
 }
