@@ -99,7 +99,7 @@ Bool_t AliVMERawStream::Next()
     }
 
     // number of channels
-    if (!fRawReader->ReadNextInt((UInt_t) fNChannels)) {
+    if (!fRawReader->ReadNextInt((UInt_t&) fNChannels)) {
       Error("Next", "incomplete equipment");
       return kFALSE;
     }
