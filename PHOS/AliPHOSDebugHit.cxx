@@ -46,12 +46,16 @@ AliPHOSHit::AliPHOSHit(const AliPHOSHit & hit)
   fELOS    = hit.fELOS ;
   fPrimary = hit.fPrimary ; 
   fTrack   = hit.fTrack ; 
-
+  fMomentum= hit.fMomentum ;
+  fX       = hit.fX ; 
+  fY       = hit.fY ; 
+  fZ       = hit.fZ ; 
+  fPid     = hit.fPid ;
  
 } 
 
 //____________________________________________________________________________
-AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits): AliHit(shunt, track)
+AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits, Int_t pid, TLorentzVector p, Float_t *xy): AliHit(shunt, track)
 {
   //
   // Create a CPV hit object
@@ -60,6 +64,11 @@ AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_
   fId         = id ;
   fELOS       = hits[3] ;
   fPrimary    = primary ;
+  fPid        = pid ; 
+  fMomentum  = p;
+  fX         = xy[0];  //position of particle first entering cristall/pad
+  fY         = xy[1];
+  fZ         = xy[2];  
 }
 
 //____________________________________________________________________________
@@ -69,7 +78,7 @@ Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
 
   Bool_t rv = kFALSE ; 
 
-  if ( (fId == rValue.GetId()) && ( fPrimary == rValue.GetPrimary() ) )
+  if ( (fId == rValue.GetId()) && ( fPrimary == rValue.GetPrimary() ) && (fPid*rValue.fPid == 0) )
     rv = kTRUE;
   
   return rv;
@@ -82,6 +91,13 @@ AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue)
   
   fELOS += rValue.GetEnergy() ;
     
+  if((fPid == 0) && (rValue.fPid != 0)){
+    fPid = rValue.fPid ;
+    fX    = rValue.fX ;
+    fY    = rValue.fY ;
+    fZ    = rValue.fZ ;
+   }     
+
    return *this;
 
 }

@@ -37,7 +37,7 @@ public:
   }
   virtual ~AliPHOSv1(void) ;
 
-  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits) ; 
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits, Int_t pid, TLorentzVector p, Float_t *pos) ; 
   Float_t        Calibrate(Int_t amp){ return (amp - fDigitizeA)/fDigitizeB ; }
   Int_t          Digitize(Float_t Energy){ return (Int_t ) (fDigitizeA + Energy*fDigitizeB); }
   virtual void   Hits2SDigits() ;

@@ -61,21 +61,20 @@ AliPHOSv1(name,title)
 {
   // ctor
 }
-
-//____________________________________________________________________________
+//__________________________________________________________________________
 AliPHOSv2::~AliPHOSv2()
 {
   // dtor
 }
 
 //____________________________________________________________________________
-void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits, Int_t pid, TLorentzVector p, Float_t * lpos)
+void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.
 
   AliPHOSHit *newHit ;
 
-  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits, pid, p, lpos) ;
+  newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits) ;
 
   new((*fHits)[fNhits]) AliPHOSHit(*newHit) ;    
   fNhits++ ;

@@ -107,41 +107,11 @@ void AliPHOSv3::StepManager(void)
   Int_t          absid    ;        // absolute cell ID number
   Float_t        xyze[4]={0,0,0,0}  ; // position wrt MRS and energy deposited
   TLorentzVector pos      ;        // Lorentz vector of the track current position
-  TLorentzVector pmom     ;        //momentum of the particle initiated hit
-  Float_t        xyd[2]={0,0}   ;  //local posiiton of the entering
-  Bool_t         entered = kFALSE    ;  
   Int_t          copy     ;
 
   Int_t tracknumber =  gAlice->CurrentTrack() ; 
   Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
   TString name      =  fGeom->GetName() ; 
-  Int_t trackpid    =  0  ; 
-
-  if( gMC->IsTrackEntering() ){ // create hit with position and momentum of new particle, 
-                                // but may be without energy deposition
-
-    // Current position of the hit in the local ref. system
-      gMC -> TrackPosition(pos);
-      Float_t xyzm[3], xyzd[3] ;
-      Int_t i;
-      for (i=0; i<3; i++) xyzm[i] = pos[i];
-      gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
-      xyd[0]  = xyzd[0];
-      xyd[1]  =-xyzd[2];
-      
-      // Current momentum of the hit's track in the local ref. system
-      gMC -> TrackMomentum(pmom);
-      Float_t pm[3], pd[3];
-      for (i=0; i<3; i++) pm[i]   = pmom[i];
-      gMC -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
-      pmom[0] = pd[0];
-      pmom[1] =-pd[1];
-      pmom[2] =-pd[2];
-
-      trackpid = gMC->TrackPid();
-      entered = kTRUE ;      // Mark to create hit even withou energy deposition
-
-  }
 
 
   if ( name == "GPS2" || name == "MIXT" ) {            // ======> CPV is a GPS' PPSD
@@ -154,7 +124,7 @@ void AliPHOSv3::StepManager(void)
       xyze[2] = pos[2] ;
       xyze[3] = gMC->Edep() ; 
 
-      if ( (xyze[3] != 0) || entered ) { // there is deposited energy or new particle entering  PPSD
+      if ( xyze[3] != 0) { // there is deposited energy 
        	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
 	if ( name == "MIXT" && strcmp(gMC->CurrentVolOffName(5),"PHO1") == 0 ){
 	  relid[0] += fGeom->GetNModules() - fGeom->GetNPPSDModules();
@@ -170,7 +140,7 @@ void AliPHOSv3::StepManager(void)
        	fGeom->RelToAbsNumbering(relid, absid) ; 
 
 	// add current hit to the hit list      
-	  AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid, pmom, xyd);
+	  AddHit(fIshunt, primary, tracknumber, absid, xyze);
 
 
       } // there is deposited energy 
@@ -182,8 +152,30 @@ void AliPHOSv3::StepManager(void)
     // Yuri Kharlov, 28 September 2000
 
     if( gMC->CurrentVolID(copy) == gMC->VolId("CPVQ") &&
-	entered &&
+	gMC->IsTrackEntering()  &&
 	gMC->TrackCharge() != 0) {      
+
+      gMC -> TrackPosition(pos);
+      Float_t xyzm[3], xyzd[3] ;
+      Int_t i;
+      for (i=0; i<3; i++) xyzm[i] = pos[i];
+      gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
+
+      Float_t        xyd[3]={0,0,0}   ;   //local posiiton of the entering
+      xyd[0]  = xyzd[0];
+      xyd[1]  =-xyzd[1];
+      xyd[2]  =-xyzd[2];
+
+      
+      // Current momentum of the hit's track in the local ref. system
+        TLorentzVector pmom     ;        //momentum of the particle initiated hit
+      gMC -> TrackMomentum(pmom);
+      Float_t pm[3], pd[3];
+      for (i=0; i<3; i++) pm[i]   = pmom[i];
+      gMC -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
+      pmom[0] = pd[0];
+      pmom[1] =-pd[1];
+      pmom[2] =-pd[2];
       
       // Digitize the current CPV hit:
 
@@ -241,7 +233,7 @@ void AliPHOSv3::StepManager(void)
 	xyze[2] = 0. ;
 	xyze[3] = cpvDigit->GetQpad() ;                           // amplitude in a pad
 	primary = -1;                                             // No need in primary for CPV
-	AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid, pmom, xyd);
+	AddHit(fIshunt, primary, tracknumber, absid, xyze);
 
 	if (cpvDigit->GetQpad() > 0.02) {
 	  xmean += cpvDigit->GetQpad() * (cpvDigit->GetXpad() + 0.5);
@@ -262,7 +254,7 @@ void AliPHOSv3::StepManager(void)
     xyze[3] = gMC->Edep() ;
 
   
-    if ( (xyze[3] != 0) || entered ) {  // Track is inside the crystal and deposits some energy or just entered 
+    if ( (xyze[3] != 0)  ) {  // Track is inside the crystal and deposits some energy
 
       gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
 
@@ -277,7 +269,7 @@ void AliPHOSv3::StepManager(void)
       fGeom->RelToAbsNumbering(relid, absid) ; 
 
       // add current hit to the hit list
-	AddHit(fIshunt, primary,tracknumber, absid, xyze, trackpid,pmom, xyd);
+	AddHit(fIshunt, primary,tracknumber, absid, xyze);
 
 
     } // there is deposited energy
@@ -308,7 +300,7 @@ void AliPHOSv3::StepManager(void)
 	  xyze[3] = nElectrons * fRecalibrationFactor ;
 	  
 	  // add current hit to the hit list
-	  AddHit(fIshunt, primary, tracknumber, absid, xyze, trackpid,pmom,xyd);
+	  AddHit(fIshunt, primary, tracknumber, absid, xyze);
 	  //printf("PIN volume is  %d, %d, %d, %d \n",relid[0],relid[1],relid[2],relid[3]);
 	  //printf("Lost energy in the PIN is %f \n",lostenergy) ;
       } // there is deposited energy
