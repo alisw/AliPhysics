@@ -94,6 +94,9 @@ void AliEMCAL::CreateMaterials()
   AliMaterial(3, "Al$", 26.98, 13., 2.7, 8.9, 999., 0, 0) ;
   // ---         Absorption length is ignored ^
 
+  // --- Copper ---
+  AliMaterial(4, "Cu$", 63.546, 29, 8.96, 1.43, 14.8, 0, 0) ; 
+  // ---         Absorption length is ignored ^
 
 
   // DEFINITION OF THE TRACKING MEDIA
@@ -109,7 +112,7 @@ void AliEMCAL::CreateMaterials()
   AliMedium(0, "Air          $", 0, 0,
 	     isxfld, sxmgmx, 10.0, 1.0, 0.1, 0.1, 10.0, 0, 0) ;
 
-  // The Lead                                                                       -> idtmed[1600]
+  // The Lead                                                                      -> idtmed[1600]
  
   AliMedium(1, "Lead      $", 1, 0,
 	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
@@ -119,10 +122,13 @@ void AliEMCAL::CreateMaterials()
   AliMedium(2, "CPV scint.   $", 2, 1,
             isxfld, sxmgmx, 10.0, 0.001, 0.1, 0.001, 0.001, 0, 0) ;
 
-  // Various Aluminium parts made of Al                                             -> idtmed[1602]
+  // Various Aluminium parts made of Al                                            -> idtmed[1602]
   AliMedium(3, "Al parts     $", 3, 0,
              isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
 
+  // Copper for HCal (post shower)                                                 -> idtmed[1603]
+  AliMedium(4, "Copper       $", 4, 0,
+             isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
 
 
 
@@ -139,11 +145,18 @@ void AliEMCAL::CreateMaterials()
   gMC->Gstpar(idtmed[1600], "DCUTE",0.00001) ;
   gMC->Gstpar(idtmed[1600], "DCUTM",0.00001) ;
 
-// --- and in aluminium parts ---
+// --- in aluminium parts ---
   gMC->Gstpar(idtmed[1602], "LOSS",3.) ;
   gMC->Gstpar(idtmed[1602], "DRAY",1.) ;
   gMC->Gstpar(idtmed[1602], "DCUTE",0.00001) ;
   gMC->Gstpar(idtmed[1602], "DCUTM",0.00001) ;
+
+// --- in copper parts ---
+  gMC->Gstpar(idtmed[1603], "LOSS",3.) ;
+  gMC->Gstpar(idtmed[1603], "DRAY",1.) ;
+  gMC->Gstpar(idtmed[1603], "DCUTE",0.00001) ;
+  gMC->Gstpar(idtmed[1603], "DCUTM",0.00001) ;
+
 
 
 // --- and finally thresholds for photons and electrons in the scintillator ---

@@ -166,44 +166,59 @@ void AliEMCALv0::CreateGeometry()
     if (fDebug==2) 
       Info("CreateGeometry","rXEN1 = %f, %f\n", envelopA[5], envelopA[6]); 
 
-    // Create mini-envelopes which will contain the PreShower scintillator-Lead-scintillator-lead (XU0) 
+    // Create mini-envelopes which will contain the PreShower scintillator-Lead-scintillator-lead  
    
-    TString label = "XU0";
+//     TString label = "XU0";
 
-    envelopA[5] = envelopA[5] + geom->GetGap2Active() 
-      + geom->GetAlFrontThickness();                              // rmin at z1
-    envelopA[4] = geom->ZFromEtaR(envelopA[5],
-				  geom->GetArm1EtaMin());         // z coordinate 1
-    envelopA[7] = geom->ZFromEtaR(envelopA[5],
-				  geom->GetArm1EtaMax());         // z coordinate 2
-    envelopA[6] = envelopA[5] + 2 * (geom->GetPreSintThick()
-      + geom->GetPbRadThick() );                                  // rmax at z1
-    envelopA[8] = envelopA[5] ;                                   // radii are the same.
-    envelopA[9] = envelopA[6] ;                                   // radii are the same.
+//     envelopA[5] = envelopA[5] + geom->GetGap2Active() 
+//       + geom->GetAlFrontThickness();                              // rmin at z1
+//     envelopA[4] = geom->ZFromEtaR(envelopA[5],
+// 				  geom->GetArm1EtaMin());         // z coordinate 1
+//     envelopA[7] = geom->ZFromEtaR(envelopA[5],
+// 				  geom->GetArm1EtaMax());         // z coordinate 2
+//     envelopA[6] = envelopA[5] + 2 * (geom->GetPreSintThick()
+//       + geom->GetPbRadThick() );                                  // rmax at z1
+//     envelopA[8] = envelopA[5] ;                                   // radii are the same.
+//     envelopA[9] = envelopA[6] ;                                   // radii are the same.
     
-    gMC->Gsvolu(label.Data(), "PGON", idtmed[1599], envelopA, 10);// Polygone filled with air 
+//     gMC->Gsvolu(label.Data(), "PGON", idtmed[1599], envelopA, 10);// Polygone filled with air 
 
-    // Position XU0 in XEN1
+//     // Position XU0 in XEN1
   
-    gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY");
+//     gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY");
 
     if (fDebug==2) 
-      Info("CreateGeometry","rXU0 = %f, %f\n", envelopA[5], envelopA[6]); 
+      Info("CreateGeometry","XU0 = %f, %f\n", envelopA[5], envelopA[6]); 
 
-    // Create mini-envelopes which will contain the Tower scintillator-Lead-scintillator-lead (XU1 -> XU9)
+    // Create mini-envelopes which will contain the Tower scintillator-radiator-scintillator-radiator 
     
-    Float_t tseg = geom->GetFullSintThick()+geom->GetPbRadThick(); // thickness of scintillator+Pb
+    TString label ;
+
+    envelopA[5] = envelopA[5] + geom->GetGap2Active() // we are at the first scintllator
+      + geom->GetAlFrontThickness();                  // rmin at z1
+    envelopA[6] = envelopA[5] ;
+
  
     Int_t i ; 
-    for (i = 1; i < ((geom->GetNLayers()-2)/2) + 1 ; i++ ){
+
+    Int_t nLayers = geom->GetNPRLayers() + geom->GetNECLayers() + geom->GetNHCLayers() ;
+
+    for (i = 0; i < nLayers/2 ; i++ ){
 	label = "XU" ;
 	label += i ;
+	Float_t tseg ; 
+	if (i == 0 ) 
+	  tseg = 2 *(geom->GetPreSintThick()+geom->GetPbRadThick()); // thickness of 2 * scintillator+Pb in pre shower
+	else if ( i <= geom->GetNECLayers()/2) 
+	  tseg = 2* (geom->GetFullSintThick()+geom->GetPbRadThick()); // thickness of 2 * scintillator+Pb in E Cal
+	else 
+	  tseg = 2* (geom->GetFullSintThick()+geom->GetCuRadThick()); // thickness of 2 * scintillator+Cu in H Cal 
 	envelopA[5] = envelopA[6] ;                                   // rmin at z1
 	envelopA[4] = geom->ZFromEtaR(envelopA[5],
 				      geom->GetArm1EtaMin());         // z coordinate 1
 	envelopA[7] = geom->ZFromEtaR(envelopA[5],
 				      geom->GetArm1EtaMax());         // z coordinate 2
-	envelopA[6] = envelopA[5] + 2 * tseg ;                        // rmax at z1
+	envelopA[6] = envelopA[5] + tseg ;                            // rmax at z1
 	envelopA[8] = envelopA[5] ;                                   // radii are the same.
 	envelopA[9] = envelopA[6] ;                                   // radii are the same.
  
@@ -213,15 +228,13 @@ void AliEMCALv0::CreateGeometry()
 	
 	gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
 
-	if (fDebug==2) 
-	  Info("CreateGeometry","rXEN%d = %f, %f\n", i, envelopA[5], envelopA[6]); 
+	Info("CreateGeometry","XU%d = %f, %f\n", i, envelopA[5], envelopA[6]); 
 
     } // end  i
  
   
     // Create one mini-envelope which will contain the last Tower scintillator (XU(nlayers-1)/2)
 
-    tseg = geom->GetFullSintThick() ;
     label = "XU" ;
     label += i ;
     envelopA[5] = envelopA[6] ;                                   // rmin at z1
@@ -229,18 +242,17 @@ void AliEMCALv0::CreateGeometry()
 				  geom->GetArm1EtaMin());         // z coordinate 1
     envelopA[7] = geom->ZFromEtaR(envelopA[5],
 				  geom->GetArm1EtaMax());         // z coordinate 2
-    envelopA[6] = envelopA[5] + tseg ;                            // rmax at z1
+    envelopA[6] = envelopA[5] + geom->GetFullSintThick() ;        // rmax at z1
     envelopA[8] = envelopA[5] ;                                   // radii are the same.
     envelopA[9] = envelopA[6] ;                                   // radii are the same.
 
     gMC->Gsvolu(label.Data(), "PGON", idtmed[1599], envelopA, 10); // Polygone filled with air
 
-    // Position XU10 in XEN1
+    // Position the last minienvelope in XEN1
   
     gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
   
-    if (fDebug==2) 
-      Info("CreateGeometry","rXEN%d = %f, %f\n", i, envelopA[5], envelopA[6]); 
+    Info("CreateGeometry","XEN%d = %f, %f\n", i, envelopA[5], envelopA[6]); 
   
     // Create the shapes of active material (LEAD/Aluminium/Scintillator)
     // to be placed
@@ -272,52 +284,91 @@ void AliEMCALv0::CreateGeometry()
   
     gMC->Gsvolu("XPBX", "PGON", idtmed[1600], dum, 0);      // PGON filled with Lead (shape to be defined by GSPOSP)
   
+    gMC->Gsvolu("XCUX", "PGON", idtmed[1603], dum, 0);      // PGON filled with Copper (shape to be defined by GSPOSP)
+
     gMC->Gsdvn("XPHI", "XPST", geom->GetNPhi(), 2);         // Divide eta section of scintillators into phi segments.
  
     // Position alternatively scintillator and  Lead Layers in XUi.
 
     envelopD[6] = envelopB[6] + geom->GetGap2Active() ;// gap between Al layer and XU0
+    
+    for (int i = 0; i < nLayers; i++ ){
+      label = "XU" ;
+      label += static_cast<Int_t> (i/2)  ; // we will place two layers (i = one layer) in each mini envelope)	
 
-    for (int i = 0; i < geom->GetNLayers() ; i++ ){
-	label = "XU" ;
-        label += static_cast<Int_t> (i/2)  ; // we will place two layers (i = one layer) in each mini envelope)	
-        envelopC[5] = envelopD[6] ; //rmin
-	envelopC[6] = envelopD[6] + ((i > 1)  ? geom->GetFullSintThick() : 
-				     geom->GetPreSintThick());//rmax larger for first two layers (preshower)
-	envelopC[8] = envelopD[6] ; //rmin
-	envelopC[9] = envelopD[6] + ((i > 1 ) ? geom->GetFullSintThick() :
-				     geom->GetPreSintThick());//rmax larger for first two layers (preshower)
-	for (int j =0; j < (geom->GetNEta()) ; j++){
+      Float_t scthick ; // scintillator thickness 
+      if ( i <  geom->GetNPRLayers() ) // its a preshower
+	scthick = geom->GetPreSintThick() ;
+      else if( i < geom->GetNPRLayers() + geom->GetNECLayers() ) // its an EMCAL section
+	scthick = geom->GetFullSintThick() ;
+      else  // its an HCAL section
+	scthick = geom->GetFullSintThick() ;
+
+      envelopC[5] = envelopD[6] ;           //rmin
+      envelopC[6] = envelopC[5] + scthick ; //rmax
+      envelopC[8] = envelopC[5] ;           //rmin
+      envelopC[9] = envelopC[6] ;           //rmax
+
+
+      //	envelopC[6] = envelopD[6] + ((i > 1)  ? geom->GetFullSintThick() : geom->GetPreSintThick());//rmax larger for first two layers (preshower)
+      //	envelopC[9] = envelopD[6] + ((i > 1 ) ? geom->GetFullSintThick() :geom->GetPreSintThick());//rmax larger for first two layers (preshower)
+
+      Info("CreateGeometry", "volume = %s, name = XPST thickness = %f deb = %f/%f fin = %f/%f", label.Data(), scthick, envelopC[5], envelopC[8], envelopC[6], envelopC[9]) ; 
+
+      for (int j =0; j < (geom->GetNEta()) ; j++){
+	etamin = geom->GetArm1EtaMin()+
+	  (j*geom->GetDeltaEta());
+	etamax = geom->GetArm1EtaMin()+
+	  ((j+1)*geom->GetDeltaEta());
+	envelopC[4] = geom->ZFromEtaR(envelopC[5],etamin); //z begin  
+	envelopC[7] = geom->ZFromEtaR(envelopC[5],etamax);// z end 
+	
+	gMC->Gsposp("XPST",1+j+i*(geom->GetNEta()), label.Data(), 
+		    0.0, 0.0, 0.0 , idrotm, "ONLY", envelopC, 10); // Position and define layer
+      } // end for j
+      
+      if (i < nLayers){ 
+	Float_t radthick ; // radiator thickness 
+	TString radname ;  // radiator name
+	if ( i <= 1 ) { // its a preshower
+	  radthick =  geom->GetPbRadThick();
+	  radname  =  "XPBX" ; 
+	}
+	else if( i <= geom->GetNECLayers()) {// its an EMCAL section
+	  radthick = geom->GetPbRadThick();
+	  radname  =  "XPBX" ; 
+	}
+	else {  // its an HCAL section
+	  radthick = geom->GetCuRadThick();
+	  radname  =  "XCUX" ; 
+	}
+
+	if ( i < nLayers -1 ) { // except for the last XU which contains only one scintillator layer 
+
+	  envelopD[5] = envelopC[6] ; //rmin
+	  envelopD[8] = envelopD[5] ; //rmin
+	  envelopD[6] = envelopD[5] + radthick ; // rmax
+	  //  envelopD[6] = envelopC[6] + geom->GetPbRadThick();  //rmax
+	  envelopD[9] = envelopD[6] ; //rmax
+	  // envelopD[9] = envelopC[6] + geom->GetPbRadThick();  //rmax
+
+	  Info("CreateGeometry", "volume = %s, name = %s thickness = %f deb = %f/%f fin = %f/%f", label.Data(), radname.Data(), radthick, envelopD[5], envelopD[8], envelopD[6], envelopD[9]) ; 
+
+	  for (int j =0; j < (geom->GetNEta()) ; j++){
 	    etamin = geom->GetArm1EtaMin()+
-		(j*geom->GetDeltaEta());
+	      (j*geom->GetDeltaEta());
 	    etamax = geom->GetArm1EtaMin()+
-		((j+1)*geom->GetDeltaEta());
-	    envelopC[4] = geom->ZFromEtaR(envelopD[6],etamin); //z begin  
-	    envelopC[7] = geom->ZFromEtaR(envelopD[6],etamax);// z end 
-
-	    gMC->Gsposp("XPST",1+j+i*(geom->GetNEta()), label.Data(), 
-			0.0, 0.0, 0.0 , idrotm, "ONLY", envelopC, 10); // Position and define layer
-	} // end for j
-
-	if (i < (geom->GetNLayers()-1)){ // except for the last XU which contains only one scintillator layer
-	    envelopD[5] = envelopC[6] ; //rmin
-	    envelopD[6] = envelopC[6] + geom->GetPbRadThick();  //rmax
-	    envelopD[8] = envelopC[6] ; //rmin
-	    envelopD[9] = envelopC[6] + geom->GetPbRadThick();  //rmax
-	    for (int j =0; j < (geom->GetNEta()) ; j++){
-		etamin = geom->GetArm1EtaMin()+
-		    (j*geom->GetDeltaEta());
-		etamax = geom->GetArm1EtaMin()+
-		    ((j+1)*geom->GetDeltaEta());
-		envelopD[4] = geom->ZFromEtaR(envelopC[6],etamin);//z begin  
-		envelopD[7] = geom->ZFromEtaR(envelopC[6],etamax);// z end
-
-		// Position and Define Layer
-
-		gMC->Gsposp("XPBX",1+j+i*(geom->GetNEta()), label.Data(), 
-			    0.0, 0.0, 0.0 , idrotm, "ONLY", envelopD, 10);
-	    } // end for j
-	} // end if i
+	      ((j+1)*geom->GetDeltaEta());
+	    envelopD[4] = geom->ZFromEtaR(envelopD[5],etamin);//z begin  
+	    envelopD[7] = geom->ZFromEtaR(envelopD[5],etamax);// z end
+	    
+	    // Position and Define Layer
+	    
+	    gMC->Gsposp(radname.Data(),1+j+i*(geom->GetNEta()), label.Data(), 
+			0.0, 0.0, 0.0 , idrotm, "ONLY", envelopD, 10);
+	  } // end for j
+	} // if not last layer
+      } // end if i
     }  // for i
 }
 

@@ -63,12 +63,14 @@ void AliEMCALGeometry::Init(void){
     if( name != "EMCALArch1a" &&
 	name != "EMCALArch1b" && 
 	name != "EMCALArch2a" && 
-	name != "EMCALArch2b"  ){
-      Fatal("Init", "%s is not a known geometry (choose among EMCALArch1a, EMCALArch1b, EMCALArch2a and EMCALArch2b)",  name.Data()) ;  
+	name != "EMCALArch2b" && 
+	name != "EMCALArch1aN" ){
+      Fatal("Init", "%s is not a known geometry (choose among EMCALArch1a, EMCALArch1b, EMCALArch2a and EMCALArch2b, EMCALArch1aN)",  name.Data()) ;  
     } // end if
     //
     if ( name == "EMCALArch1a"  ||
-	 name == "EMCALArch1b" ) {
+	 name == "EMCALArch1b"  || 
+	 name == "EMCALArch1aN") {
       fNZ         = 96;
       fNPhi       = 144;
     } // end if
@@ -79,30 +81,50 @@ void AliEMCALGeometry::Init(void){
     } // end if
     if ( name == "EMCALArch1a"  ||
 	 name == "EMCALArch2a" ) {
-      fNLayers    = 21;
+      fNPRLayers  = 2;
+      fNECLayers  = 19;
+      fNHCLayers  = 0;
     } // end if
     if ( name == "EMCALArch1b"  ||
 	 name == "EMCALArch2b" ) {
-	fNLayers    = 25;
+	fNPRLayers  = 2;
+	fNECLayers  = 23;
+	fNHCLayers  = 0;
     } // end if
+    if ( name == "EMCALArch1aN") { 
+      fNPRLayers   = 2;
+      fNECLayers  = 19;
+      fNHCLayers  = 14;
+    }
 
     // geometry
-    fAlFrontThick   = 3.18; // cm, Thickness of front Al layer
-    fGap2Active     = 1.0;  // cm, Gap between Al and 1st Scintillator
-    fPbRadThickness = 0.5; // cm, Thickness of the Pb radiators.
-    fPreShowerSintThick = 0.6; // cm, Thickness of the sintilator for the
-                               // preshower part of the calorimeter
-    fFullShowerSintThick = 0.5; // cm, Thickness of the sintilator for the
-                                // full shower part of the calorimeter
     fArm1PhiMin     =  60.0; // degrees, Starting EMCAL Phi position
     fArm1PhiMax     = 180.0; // degrees, Ending EMCAL Phi position
     fArm1EtaMin     = -0.7; // pseudorapidity, Starting EMCAL Eta position
     fArm1EtaMax     = +0.7; // pseudorapidity, Ending EMCAL Eta position
+
+    fAlFrontThick        = 3.18; // cm, Thickness of front Al layer
+    fGap2Active          = 1.0;  // cm, Gap between Al and 1st Scintillator
+    fPbRadThickness      = 0.5;  // cm, Thickness of the Pb radiators.
+    fPreShowerSintThick  = 0.6;  // cm, Thickness of the sintilator for the preshower part of the calorimeter
+    fFullShowerSintThick = 0.5;  // cm, Thickness of the sintilator for the dull shower part of the calorimeter
+    fCuRadThickness      = 0.0;  // cm, Thickness of the Cu radiators.
+
+    if (name ==  "EMCALArch1aN") {
+      fAlFrontThick        = 3.0;  // cm, Thickness of front Al layer
+      fGap2Active          = 1.0;  // cm, Gap between Al and 1st Scintillator
+      fPbRadThickness      = 0.6;  // cm, Thickness of the Pb radiators.
+      fPreShowerSintThick  = 0.5;  // cm, Thickness of the sintilator for the preshower part of the calorimeter
+      fFullShowerSintThick = 0.4;  // cm, Thickness of the sintilator for the full shower part of the calorimeter
+      fCuRadThickness      = 1.0;  // cm, Thickness of the Cu radiators.
+   }
+
     fIPDistance     = 454.0; // cm, Radial distance to inner surface of EMCAL
-    fShellThickness = fAlFrontThick + fGap2Active + 2.*(GetPreSintThick() + GetPbRadThick()) + 
-	(fNLayers-3)*(GetFullSintThick()+ GetPbRadThick()) + GetFullSintThick() ;
-    //below; cm, Z length of the EMCAL.
-    fZLength        = 2.*ZFromEtaR(fIPDistance+fShellThickness,fArm1EtaMax);
+    fShellThickness = fAlFrontThick + fGap2Active + 2.*(GetPreSintThick() + GetPbRadThick()) + // pre shower 
+      (fNECLayers-1)*(GetFullSintThick()+ GetPbRadThick()) + // E cal -1 because the last element is a scintillator
+      fNHCLayers*(GetFullSintThick()+ GetCuRadThick()) + // H cal
+      GetFullSintThick() ; // last scintillator
+    fZLength        = 2.*ZFromEtaR(fIPDistance+fShellThickness,fArm1EtaMax); // Z coverage
     fEnvelop[0]     = fIPDistance; // mother volume inner radius
     fEnvelop[1]     = fIPDistance + fShellThickness; // mother volume outer r.
     fEnvelop[2]     = 1.00001*fZLength; // add some padding for mother volume. 

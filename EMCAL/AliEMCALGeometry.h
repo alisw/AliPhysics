@@ -66,14 +66,15 @@ public:
 				       ((Float_t)fNZ);}
   const Float_t GetDeltaPhi() const {return (fArm1PhiMax-fArm1PhiMin)/
 				       ((Float_t)fNPhi);}
-  const Int_t   GetNLayers() const {return fNLayers ;}
+  const Int_t   GetNECLayers() const {return fNECLayers ;}
+  const Int_t   GetNHCLayers() const {return fNHCLayers ;}
+  const Int_t   GetNPRLayers() const {return fNPRLayers;}
   const Int_t   GetNZ() const {return fNZ ;}
   const Int_t   GetNEta() const {return fNZ ;}
   const Int_t   GetNPhi() const {return fNPhi ;}
   const Int_t   GetNTowers() const {return fNPhi * fNZ ;}
-  const Float_t GetPbRadThick()const { // returns Pb radiator thickness in cm.
-    return fPbRadThickness;
-  }
+  const Float_t GetPbRadThick()const {return fPbRadThickness;}
+  const Float_t GetCuRadThick()const {return fCuRadThickness;}
   const Float_t GetFullSintThick() const { // returns Full tower sintilator
     // thickness in cm.
     return fFullShowerSintThick;
@@ -131,22 +132,25 @@ private:
   Float_t fFullShowerSintThick;// Thickness of the sintilaor for the full
   // shower part of the calorimeter
   Float_t fPbRadThickness; // Thickness of Pb radiators cm.
+  Float_t fCuRadThickness; // Thickness of Cu radiators cm.
   Float_t fArm1PhiMin; // Minimum angular position of EMCAL in Phi (degrees)
   Float_t fArm1PhiMax; // Maximum angular position of EMCAL in Phi (degrees)
   Float_t fArm1EtaMin; // Minimum pseudorapidity position of EMCAL in Eta
   Float_t fArm1EtaMax; // Maximum pseudorapidity position of EMCAL in Eta
   
   // It is assumed that Arm1 and Arm2 have the same following parameters
-  Float_t fEnvelop[3];      // the GEANT TUB for the detector 
-  Float_t fIPDistance; // Radial Distance of the inner surface of the EMCAL
+  Float_t fEnvelop[3];     // the GEANT TUB for the detector 
+  Float_t fIPDistance;     // Radial Distance of the inner surface of the EMCAL
   Float_t fShellThickness; // Total thickness in (x,y) direction
   Float_t fZLength;        // Total length in z direction
   Float_t fGap2Active;     // Gap between the envelop and the active material
-  Int_t   fNLayers;        // Number of layers of material in the R direction
+  Int_t   fNECLayers;        // Number of layers of material in the R direction for the electromagnetic calorimeter 
+  Int_t   fNPRLayers;      // Number of layers of material in the R direction for the preshower
+  Int_t   fNHCLayers;      // Number of layers of material in the R direction for the hadron calorimeter
   Int_t   fNZ;             // Number of Towers in the Z direction
-  Int_t   fNPhi;           //Number of Towers in the Phi Direction
+  Int_t   fNPhi;           // Number of Towers in the Phi Direction
   
-  ClassDef(AliEMCALGeometry,4) // EMCAL geometry class 
+  ClassDef(AliEMCALGeometry,5) // EMCAL geometry class 
     
     };
 
