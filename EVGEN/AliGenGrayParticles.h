@@ -6,6 +6,7 @@
 /* $Id$ */
 
 #include "AliGenerator.h"
+class AliGrayParticleModel;
 
 class AliGenGrayParticles : public AliGenerator
 {
@@ -21,7 +22,10 @@ public:
     virtual void SetCharge(Int_t c = 1) {fCharge = c;}
     virtual void SetTemperature(Double_t t = 0.05) {fTemperature = t;}
     virtual void SetBetaSource(Double_t b = 0.05) {fBetaSource = b;}
-    
+    //
+    virtual void SetGrayParticleModel(AliGrayParticleModel* model) 
+	{fGrayParticleModel = model;}
+	    
  protected:
     void     GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q);
     Double_t Maxwell(Double_t m, Double_t p, Double_t t);
@@ -36,6 +40,8 @@ public:
     Int_t    fCharge;      // Slow nucleon charge
     Float_t  fTemperature; // Source Temperature
     Float_t  fBetaSource;  // Source beta
+    //
+    AliGrayParticleModel* fGrayParticleModel; // The gray particle model
   ClassDef(AliGenGrayParticles,1) // Gray Particle Generator
 };
 #endif

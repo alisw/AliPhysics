@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.3  2002/12/02 10:02:40  morsch
+Corrections introduced by F. Silker:
+- SetBetaSource
+- Particle type according to charge.
+
 Revision 1.2  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -32,6 +37,7 @@ Gray particle generator, first commit.
   Original code by  Ferenc Sikler  <sikler@rmki.kfki.hu>
  */
 #include "AliGenGrayParticles.h"
+#include "AliGrayParticleModel.h"
 #include "AliPDG.h"
 #include <TDatabasePDG.h>
 
