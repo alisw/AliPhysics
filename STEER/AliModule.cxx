@@ -158,13 +158,20 @@ AliModule::~AliModule()
   if(fNodes) {
     fNodes->Clear();
     delete fNodes;
+    fNodes = 0;
   }
   // Delete histograms
   if(fHistograms) {
     fHistograms->Clear();
     delete fHistograms;
+    fHistograms = 0;
   }
-  //
+  // Delete track references
+  if (fTrackReferences) {
+    fTrackReferences->Delete();
+    delete fTrackReferences;
+    fTrackReferences     = 0;
+  }
   // Delete TArray objects
   delete fIdtmed;
   delete fIdmate;
