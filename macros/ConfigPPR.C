@@ -65,7 +65,8 @@ enum PprRun_t
     kPythia6Jets35_42,   kPythia6Jets42_50,   kPythia6Jets50_60,
     kPythia6Jets60_72,   kPythia6Jets72_86,   kPythia6Jets86_104,
     kPythia6Jets104_125, kPythia6Jets125_150, kPythia6Jets150_180,
-    kD0PbPb5500, kD_TRD, kB_TRD, kJpsi_TRD,
+    kD0PbPb5500, kCharmSemiElPbPb5500, kBeautySemiElPbPb5500,
+    kD_TRD, kB_TRD, kJpsi_TRD,
     kU_TRD, kPyJJ, kPyGJ, kRunMax
 };
 
@@ -83,8 +84,8 @@ const char* pprRunName[kRunMax] = {
     "kPythia6Jets35_42",   "kPythia6Jets42_50",   "kPythia6Jets50_60",
     "kPythia6Jets60_72",   "kPythia6Jets72_86",   "kPythia6Jets86_104",
     "kPythia6Jets104_125", "kPythia6Jets125_150", "kPythia6Jets150_180",
-     "kD0PbPb5500", "kD_TRD", 
-    "kB_TRD", "kJpsi_TRD",
+    "kD0PbPb5500", "kCharmSemiElPbPb5500", "kBeautySemiElPbPb5500",
+    "kD_TRD", "kB_TRD", "kJpsi_TRD",
     "kU_TRD", "kPyJJ", "kPyGJ"
 };
 
@@ -160,7 +161,21 @@ void Config()
     // Set External decayer
     AliDecayer *decayer = new AliDecayerPythia();
 
-    decayer->SetForceDecay(kAll);
+
+    switch (srun) {
+    case kD0PbPb5500:
+      decayer->SetForceDecay(kHadronicD);
+      break;
+    case kCharmSemiElPbPb5500:
+      decayer->SetForceDecay(kSemiElectronic);
+      break;
+    case kBeautySemiElPbPb5500:
+      decayer->SetForceDecay(kSemiElectronic);
+      break;
+    default:
+      decayer->SetForceDecay(kAll);
+      break;
+    }
     decayer->Init();
     gMC->SetExternalDecayer(decayer);
     //
@@ -1108,30 +1123,69 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetPtHard(2.1,-1.0);
 	gener->SetEnergyCMS(5500.);
 	gener->SetNuclei(208,208);
+	gener->SetForceDecay(kHadronicD);
+	gener->SetYRange(-2,2);
+	gener->SetFeedDownHigherFamily(kFALSE);
+	gener->SetStackFillOpt(AliGenPythia::kParentSelection);
+	gener->SetCountMode(AliGenPythia::kCountParents);
+ 	gGener=gener;
+      }
+      break;
+    case kCharmSemiElPbPb5500:
+      {
+	comment = comment.Append(" Charm in Pb-Pb at 5.5 TeV");
+	AliGenPythia * gener = new AliGenPythia(10);
+	gener->SetProcess(kPyCharmPbPbMNR);
+	gener->SetStrucFunc(kCTEQ4L);
+	gener->SetPtHard(2.1,-1.0);
+	gener->SetEnergyCMS(5500.);
+	gener->SetNuclei(208,208);
+	gener->SetForceDecay(kSemiElectronic);
+	gener->SetYRange(-2,2);
+	gener->SetFeedDownHigherFamily(kFALSE);
+	gener->SetCountMode(AliGenPythia::kCountParents);
+	gGener=gener;
+      }
+      break;
+    case kBeautySemiElPbPb5500:
+      {
+	comment = comment.Append(" Beauty in Pb-Pb at 5.5 TeV");
+	AliGenPythia *gener = new AliGenPythia(10);
+	gener->SetProcess(kPyBeautyPbPbMNR);
+	gener->SetStrucFunc(kCTEQ4L);
+	gener->SetPtHard(2.75,-1.0);
+	gener->SetEnergyCMS(5500.);
+	gener->SetNuclei(208,208);
+	gener->SetForceDecay(kSemiElectronic);
+	gener->SetYRange(-2,2);
+	gener->SetFeedDownHigherFamily(kFALSE);
+	gener->SetCountMode(AliGenPythia::kCountParents);
 	gGener=gener;
       }
       break;
     case kD_TRD:
       {
-	comment = comment.Append(" D0 for TRD at 5.5 TeV");
+	comment = comment.Append(" Charm for TRD at 5.5 TeV");
 	AliGenPythia *gener = new AliGenPythia(1);
 	gener->SetCutOnChild(0);
 	gener->SetStrucFunc(kCTEQ4L);
 	gener->SetProcess(kPyCharm);
 	gener->SetPtHard(0.,-1);
 	gener->SetEnergyCMS(5500.);
+	gener->SetNuclei(208,208);
 	gGener=gener;
       }
       break;
     case kB_TRD:
       {
-	comment = comment.Append(" B for TRD at 5.5 TeV");
+	comment = comment.Append(" Beauty for TRD at 5.5 TeV");
 	AliGenPythia *gener = new AliGenPythia(1);
 	gener->SetCutOnChild(0);
 	gener->SetStrucFunc(kCTEQ4L);
 	gener->SetProcess(kPyBeauty);
 	gener->SetPtHard(0.,-1);
 	gener->SetEnergyCMS(5500.);
+	gener->SetNuclei(208,208);
 	gGener=gener;
       }
       break;
