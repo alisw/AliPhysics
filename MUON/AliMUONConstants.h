@@ -29,7 +29,6 @@ class AliMUONConstants : public TObject {
     AliMUONConstants(){}
     virtual ~AliMUONConstants(){}
  private:
-    static AliMUONConstants* fgConstants; // !
     static Int_t  fgNCh;                //  Number of Chambers    
     static Int_t  fgNTrackingCh;        //  Number of Tracking Chambers
     static Int_t  fgNTriggerCh;         //  Number of Trigger Chambers
