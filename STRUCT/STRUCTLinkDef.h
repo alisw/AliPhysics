@@ -11,6 +11,7 @@
 #pragma link C++ class  AliBODY;
 #pragma link C++ class  AliMAG;
 #pragma link C++ class  AliABSO;
+#pragma link C++ class  AliABSOv0;
 #pragma link C++ class  AliDIPO;
 #pragma link C++ class  AliDIPOv1;
 #pragma link C++ class  AliDIPOv2;
@@ -23,5 +24,6 @@
 #pragma link C++ class  AliPIPEv1;
 #pragma link C++ class  AliPIPEv3;
 #pragma link C++ class  AliSHIL;
+#pragma link C++ class  AliSHILv0;
 
 #endif
