@@ -93,7 +93,7 @@ DEPINC += $(patsubst %,-I%,$(ROOTSYS)/include)
 #
 #             Libraries to link binaries against
 #            Libraries will be linked againstSHLIB
-LIBS := $(ROOTLIBS) $(SYSLIBS) $(GLIBS)
+LIBS := $(GLIBS) $(ROOTLIBS) $(SYSLIBS)
 #############################################################
 
 
