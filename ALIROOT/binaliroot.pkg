@@ -25,24 +25,37 @@ ELIBS:= MUON TPCbase TPCsim TPCrec TPCfast \
 # to be ITS TPC CONTAINERS 
 
 ARLIBS:= \
-   FMD/tgt_$(ALICE_TARGET)/G__FMD.o $(LIBPATH)/libFMD.a \
+   FMD/tgt_$(ALICE_TARGET)/G__FMDbase.o $(LIBPATH)/libFMDbase.a \
+   FMD/tgt_$(ALICE_TARGET)/G__FMDsim.o $(LIBPATH)/libFMDsim.a \
+   FMD/tgt_$(ALICE_TARGET)/G__FMDrec.o $(LIBPATH)/libFMDrec.a \
    CRT/tgt_$(ALICE_TARGET)/G__CRT.o $(LIBPATH)/libCRT.a \
    RICH/tgt_$(ALICE_TARGET)/G__RICH.o $(LIBPATH)/libRICH.a \
    ZDC/tgt_$(ALICE_TARGET)/G__ZDC.o $(LIBPATH)/libZDC.a \
-   VZERO/tgt_$(ALICE_TARGET)/G__VZERO.o $(LIBPATH)/libVZERO.a \
+   VZERO/tgt_$(ALICE_TARGET)/G__VZERObase.o $(LIBPATH)/libVZERObase.a \
+   VZERO/tgt_$(ALICE_TARGET)/G__VZEROsim.o $(LIBPATH)/libVZEROsim.a \
+   VZERO/tgt_$(ALICE_TARGET)/G__VZEROrec.o $(LIBPATH)/libVZEROrec.a \
    EMCAL/tgt_$(ALICE_TARGET)/G__EMCAL.o $(LIBPATH)/libEMCAL.a \
-   START/tgt_$(ALICE_TARGET)/G__START.o $(LIBPATH)/libSTART.a \
+   START/tgt_$(ALICE_TARGET)/G__STARTbase.o $(LIBPATH)/libSTARTbase.a \
+   START/tgt_$(ALICE_TARGET)/G__STARTsim.o $(LIBPATH)/libSTARTsim.a \
+   START/tgt_$(ALICE_TARGET)/G__STARTrec.o $(LIBPATH)/libSTARTrec.a \
    TOF/tgt_$(ALICE_TARGET)/G__TOF.o $(LIBPATH)/libTOF.a \
-   TRD/tgt_$(ALICE_TARGET)/G__TRD.o $(LIBPATH)/libTRD.a \
-   PMD/tgt_$(ALICE_TARGET)/G__PMD.o $(LIBPATH)/libPMD.a \
+   TRD/tgt_$(ALICE_TARGET)/G__TRDbase.o $(LIBPATH)/libTRDbase.a \
+   TRD/tgt_$(ALICE_TARGET)/G__TRDsim.o $(LIBPATH)/libTRDsim.a \
+   TRD/tgt_$(ALICE_TARGET)/G__TRDrec.o $(LIBPATH)/libTRDrec.a \
+   TRD/tgt_$(ALICE_TARGET)/G__TRDfast.o $(LIBPATH)/libTRDfast.a \
+   PMD/tgt_$(ALICE_TARGET)/G__PMDbase.o $(LIBPATH)/libPMDbase.a \
+   PMD/tgt_$(ALICE_TARGET)/G__PMDsim.o $(LIBPATH)/libPMDsim.a \
+   PMD/tgt_$(ALICE_TARGET)/G__PMDrec.o $(LIBPATH)/libPMDrec.a \
    MUON/tgt_$(ALICE_TARGET)/G__MUON.o $(LIBPATH)/libMUON.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOS.o $(LIBPATH)/libPHOS.a \
    ITS/tgt_$(ALICE_TARGET)/G__ITS.o $(LIBPATH)/libITS.a \
    STRUCT/tgt_$(ALICE_TARGET)/G__STRUCT.o $(LIBPATH)/libSTRUCT.a \
-   TPC/tgt_$(ALICE_TARGET)/G__TPC.o $(LIBPATH)/libTPC.a \
+   TPC/tgt_$(ALICE_TARGET)/G__TPCbase.o $(LIBPATH)/libTPCbase.a \
+   TPC/tgt_$(ALICE_TARGET)/G__TPCsim.o $(LIBPATH)/libTPCsim.a \
+   TPC/tgt_$(ALICE_TARGET)/G__TPCrec.o $(LIBPATH)/libTPCrec.a \
+   TPC/tgt_$(ALICE_TARGET)/G__TPCfast.o $(LIBPATH)/libTPCfast.a \
    STEER/tgt_$(ALICE_TARGET)/G__STEER.o $(LIBPATH)/libSTEER.a \
    CONTAINERS/tgt_$(ALICE_TARGET)/G__CONTAINERS.o $(LIBPATH)/libCONTAINERS.a \
-   RAW/tgt_$(ALICE_TARGET)/G__RAW.o $(LIBPATH)/libRAW.a \
-   MONITOR/tgt_$(ALICE_TARGET)/G__MONITOR.o $(LIBPATH)/libMONITOR.a
+   RAW/tgt_$(ALICE_TARGET)/G__RAW.o $(LIBPATH)/libRAW.a
 
 SHLIBS:= $(BINLIBDIRS) -lEVGEN -lpythia6 -lAliPythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
