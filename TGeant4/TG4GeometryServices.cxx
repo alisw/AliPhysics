@@ -23,6 +23,7 @@
 #include <G3toG4.hh> 
 #include <G3EleTable.hh> 
 #include <g4std/vector>
+#include <g4std/iomanip>
 
 #include <math.h>
 
@@ -357,20 +358,57 @@ void TG4GeometryServices::PrintStatistics(G4bool open, G4bool close) const
   if (open)  TG4Globals::PrintStars(true);
      
   G4cout << "    GEANT4 Geometry statistics: " << G4endl
-         << "          " << NofG4LogicalVolumes()  
+         << "          " << G4std::setw(5) << NofG4LogicalVolumes()  
 	                 << " logical volumes" << G4endl
 	 << "          " 
-	                 << NofG4PhysicalVolumes() 
+	                 << G4std::setw(5) << NofG4PhysicalVolumes() 
 	                 << " physical volumes" << G4endl
 	 << "          " 
-	                 << G4Material::GetNumberOfMaterials()
+	                 << G4std::setw(5) << G4Material::GetNumberOfMaterials()
 			 << " materials"        << G4endl
 	 << "          " 
-	                 << TG4Limits::GetNofLimits()
+	                 << G4std::setw(5) << TG4Limits::GetNofLimits()
 			 << " user limits"      << G4endl;
 
   if (close) TG4Globals::PrintStars(false);
 }
+
+//_____________________________________________________________________________
+void 
+TG4GeometryServices::PrintLogicalVolumeStore() const
+{
+// Prints all logical volumes and their daughters.
+// ---
+
+  G4LogicalVolumeStore* lvStore = G4LogicalVolumeStore::GetInstance();
+  
+  G4cout << "Logical volume store: " << G4endl;
+
+  for (G4int i=0; i<lvStore->size(); i++) {
+  
+    G4LogicalVolume* lv = (*lvStore)[i];
+
+    G4cout << "Logical volume: " << G4endl;
+    G4cout << "  " << G4std::setw(5)  << i
+           << "  " << lv
+	   << "  " << lv->GetName()
+	   << "  " << G4std::setw(5)  << lv->GetNoDaughters() << " daughters"
+	   << "  limits: " << lv->GetUserLimits()
+	   << G4endl;
+	   
+    for (G4int j=0; j<lv->GetNoDaughters(); j++) {
+      G4cout << "  Daughter: " 
+             << G4std::setw(5)  << j
+             << "  " << lv->GetDaughter(j)
+  	     << "  " << lv->GetDaughter(j)->GetName()
+	     << "  of LV: " << lv->GetDaughter(j)->GetLogicalVolume()
+  	     << "  " << lv->GetDaughter(j)->GetLogicalVolume()->GetName()
+	     << "  copy no: " << lv->GetDaughter(j)->GetCopyNo()
+             << G4endl;
+    
+    }    	    
+  }
+}  
 
 //_____________________________________________________________________________
 Int_t TG4GeometryServices::NofG3Volumes() const
@@ -484,7 +522,6 @@ TG4GeometryServices::FindLogicalVolume(const G4String& name, G4bool silent) cons
   }
   return 0;	       	         
 }  
-
 
 //_____________________________________________________________________________
 TG4Limits* 
