@@ -12,9 +12,6 @@
 #include <TObjArray.h> // used in inline function GetModule.
 
 #include "AliDetector.h"
-#include "AliITSsimulationSPD.h"
-#include "AliITSsimulationSDD.h"
-#include "AliITSsimulationSSD.h"
 
 class TString;
 class TTree;
