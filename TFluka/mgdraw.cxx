@@ -40,7 +40,10 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 //      cout << endl << " !!! I am in mgdraw - calling Stepping()" << endl;
 //      cout << endl << " Track Id =" << trackId << endl;
 //    }
+    if (TRACKR.jtrack == -1)
+    printf("Cerenkov photon: region# %6d icode %6d \n", mreg, icode);
 
+    
     (TVirtualMCApplication::Instance())->Stepping();
     fluka->SetTrackIsNew(kFALSE);
 } // end of mgdraw

@@ -25,6 +25,9 @@ void usdraw(Int_t& icode, Int_t& mreg,
   fluka->SetXsco(xsco);
   fluka->SetYsco(ysco);
   fluka->SetZsco(zsco);
+  printf("USDRAW: Number of track segments:%d %d\n", 
+	 TRACKR.ntrack, TRACKR.mtrack);
+
   (TVirtualMCApplication::Instance())->Stepping();
   fluka->SetTrackIsNew(kFALSE);
   
