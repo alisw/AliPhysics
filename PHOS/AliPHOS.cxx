@@ -35,7 +35,7 @@ class TFile;
 
 // --- AliRoot header files ---
 #include "AliMagF.h"
-#include "AliESDCaloTrack.h" 
+#include "AliESDtrack.h" 
 #include "AliESD.h"
 #include "AliPHOS.h"
 #include "AliPHOSGetter.h"
@@ -377,15 +377,43 @@ void AliPHOS::CreateMaterials()
 //____________________________________________________________________________
 void AliPHOS::FillESD(AliESD* esd) const 
 {
-  // Fill the ESD with all RecParticles
+  // Called by AliReconstruct after Reconstruct() and global tracking and vertxing
+
+  //Creates the tracksegments and Recparticles
+  AliPHOSReconstructioner * rec = new AliPHOSReconstructioner((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
+  TList * taskslist = rec->GetListOfTasks() ; 
+  Int_t index ;
+  TTask * task ; 
+  TString name ; 
+  // set clusterizer task inactive 
+  for (index = 0; index < taskslist->GetSize(); index++) {
+    task = dynamic_cast<TTask *>(taskslist->At(index)) ; 
+    name = task->GetName() ; 
+    if ( name.Contains(AliConfig::fgkReconstructionerTaskName))
+      task->SetActive(kFALSE) ; 
+    if ( name.Contains(AliConfig::fgkTrackerTaskName))
+      (dynamic_cast<AliPHOSTrackSegmentMaker *> (task))->SetESD(esd) ; 
+  }
+  rec->SetEventRange(0, -1) ; // do all the events
+  rec->ExecuteTask("deb all") ; 
+
+  // Creates AliESDtrack from AliPHOSRecParticles 
   AliPHOSGetter *gime = AliPHOSGetter::Instance( (fLoader->GetRunLoader()->GetFileName()).Data() ) ;
   gime->Event(gime->EventNumber(), "P") ; 
   TClonesArray *recParticles = gime->RecParticles();
   Int_t nOfRecParticles = recParticles->GetEntries();
-  for (Int_t recpart=0; recpart<nOfRecParticles; recpart++) {
-    AliESDCaloTrack *ct = new AliESDCaloTrack((AliPHOSRecParticle*)recParticles->At(recpart));
-    esd->AddCaloTrack(ct);
-    delete ct;
+  for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
+    AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
+    AliESDtrack * et = new AliESDtrack() ; 
+    // fills the ESDtrack
+    Double_t xyz[3];
+    for (Int_t ixyz=0; ixyz<3; ixyz++) xyz[ixyz] = rp->GetPos()[ixyz];
+    et->SetPHOSposition(xyz) ; 
+    et->SetPHOSsignal  (rp->Energy()) ; 
+    et->SetPHOSpid     (rp->GetPID()) ; 
+    // add the track to the esd object
+    esd->AddTrack(et);
+    delete et;
   }
 }       
 
@@ -433,8 +461,25 @@ void AliPHOS::SetTreeAddress()
 //____________________________________________________________________________
 void AliPHOS::Reconstruct() const 
 { 
+  // method called by AliReconstruction; it should not be called otherwise but the AliPHOSReconstructionner 
+  // should be called for stand alone reconstruction.
+  // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
+  // segment maker needs access to the AliESD object to retrieve the tracks reconstructed by 
+  // the global tracking.
+ 
   AliPHOSReconstructioner * rec = new AliPHOSReconstructioner((fLoader->GetRunLoader()->GetFileName()).Data()) ; 
-  rec->SetEventRange(0, -1) ; // do all the events  
+  TList * taskslist = rec->GetListOfTasks() ; 
+  Int_t index ;
+  TTask * task ; 
+  TString name ; 
+  // set all tasks inactive except clusterizer
+  for (index = 0; index < taskslist->GetSize(); index++) {
+    task = dynamic_cast<TTask *>(taskslist->At(index)) ; 
+    name = task->GetName() ; 
+    if ( !name.Contains(AliConfig::fgkReconstructionerTaskName))
+      task->SetActive(kFALSE) ; 
+  }
+  rec->SetEventRange(0, -1) ; // do all the events
   rec->ExecuteTask() ; 
 }
 

@@ -30,7 +30,7 @@ class AliPHOSReconstructioner : public TTask {
 public:
 
   AliPHOSReconstructioner() ; //ctor            
-  AliPHOSReconstructioner(const char * headerFile, const char * branchName = "Default");
+  AliPHOSReconstructioner(const char * headerFile, const char * branchName = "Default",const TString taskName="CTP");
   AliPHOSReconstructioner(const AliPHOSReconstructioner & rec) : TTask(rec) {
     // cpy ctor: 
     // requested by the Coding Convention

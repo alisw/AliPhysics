@@ -87,24 +87,33 @@ ClassImp(AliPHOSReconstructioner)
 } 
 
 //____________________________________________________________________________
-AliPHOSReconstructioner::AliPHOSReconstructioner(const char* evFoldName,const char * branchName):
+AliPHOSReconstructioner::AliPHOSReconstructioner(const char* evFoldName,const char * branchName,const TString taskName):
 TTask("AliPHOSReconstructioner",evFoldName)
 {
-  // ctor
+  // Create a PHOS reconstructioner for the tasks defined by taskName
+  // "C" - clusterization
+  // "T" - track segment making
+  // "P" - PID
 
   AliPHOSGetter::Instance(evFoldName) ; 
 
-  fRecPointBranch=branchName ; 
-  fClusterizer = new AliPHOSClusterizerv1(evFoldName, GetTitle());
-  Add(fClusterizer);
+  if (taskName.Contains("C")) {
+    fRecPointBranch=branchName ; 
+    fClusterizer = new AliPHOSClusterizerv1(evFoldName, GetTitle());
+    Add(fClusterizer);
+  }
   
-  fTSBranch=branchName ; 
-  fTSMaker     = new AliPHOSTrackSegmentMakerv1(evFoldName, GetTitle());
-  Add(fTSMaker) ;
+  if (taskName.Contains("T")) {
+    fTSBranch=branchName ; 
+    fTSMaker     = new AliPHOSTrackSegmentMakerv1(evFoldName, GetTitle());
+    Add(fTSMaker) ;
+  }
   
-  fRecPartBranch=branchName ; 
-  fPID         = new AliPHOSPIDv1(evFoldName, GetTitle());
-  Add(fPID);
+  if (taskName.Contains("P")) {
+    fRecPartBranch=branchName ; 
+    fPID         = new AliPHOSPIDv1(evFoldName, GetTitle());
+    Add(fPID);
+  }
   
   fIsInitialized = kTRUE ;
 } 

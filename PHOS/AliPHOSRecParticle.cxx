@@ -105,3 +105,47 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
    } 
   //  return 0 ; 
 }
+//____________________________________________________________________________
+const Double_t * AliPHOSRecParticle::GetPID()
+{
+  // Get the probability densities that this reconstructed particle
+  // has a type of i:
+  // i       particle types
+  // ----------------------
+  // 0       electron
+  // 1       muon
+  // 2       pi+-
+  // 3       K+-
+  // 4       p/pbar
+  // 5       photon
+  // 6       pi0 at high pt
+  // 7       neutron
+  // 8       K0L
+  const Int_t nSPECIES = AliESDtrack::kSPECIES;
+  if (IsElectron()     ) fPID[0] = 1.0;
+  if (IsChargedHadron()) {
+    fPID[1] = 0.25;
+    fPID[2] = 0.25;
+    fPID[3] = 0.25;
+    fPID[4] = 0.25;
+  }
+  if (IsFastChargedHadron()) {
+    fPID[1] = 0.33;
+    fPID[2] = 0.33;
+    fPID[3] = 0.33;
+    fPID[4] = 0.00;
+  }
+  if (IsSlowChargedHadron()) {
+    fPID[1] = 0.00;
+    fPID[2] = 0.00;
+    fPID[3] = 0.00;
+    fPID[4] = 1.00;
+  }
+
+  if (IsPhoton() || IsHardPhoton()) fPID[nSPECIES]  =1.0;
+  if (IsHardPi0())                  fPID[nSPECIES+1]=1.0;
+  if (IsFastNeutralHadron())        fPID[nSPECIES+2]=1.0;
+  if (IsSlowNeutralHadron())        fPID[nSPECIES+3]=1.0;
+
+  return fPID;
+}

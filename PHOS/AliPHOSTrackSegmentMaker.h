@@ -25,6 +25,7 @@ class TFile ;
 
 class AliPHOSClusterizer ;
 class AliPHOSGeometry ;
+class AliESD ;
 
 class  AliPHOSTrackSegmentMaker : public TTask {
 
@@ -40,6 +41,7 @@ public:
   virtual void    Print()const {Warning("Print", "Not Defined" ) ; }
   void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void SetEventFolderName(TString name) { fEventFolderName = name ; }
+  void SetESD(AliESD *esd) { fESD = esd; }
 
   virtual void WriteTrackSegments() = 0;
   
@@ -47,6 +49,7 @@ protected:
   TString fEventFolderName ;  // event folder name
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
+  AliESD * fESD;              //! ESD object
 
   ClassDef( AliPHOSTrackSegmentMaker,4)  // Algorithm class to make PHOS track segments (Base Class)
 };
