@@ -143,7 +143,7 @@ class AliMUONHitForRec : public TObject {
   AliMUONTrackHit *fLastTrackHitPtr ; // pointer to last TrackHit made with HitForRec
   Int_t fNTrackHits; // number of TrackHit's made with HitForRec
   
-  ClassDef(AliMUONHitForRec, 1) // Class definition in ROOT context
+  ClassDef(AliMUONHitForRec, 1) // Hit for reconstruction in ALICE dimuon spectrometer
     };
 	
 #endif

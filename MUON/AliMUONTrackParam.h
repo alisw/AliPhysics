@@ -51,7 +51,7 @@ class AliMUONTrackParam : public TObject {
   void SetGeant3Parameters(Double_t *VGeant3, Double_t ForwardBackward);
   void GetFromGeant3Parameters(Double_t *VGeant3, Double_t Charge);
 
-  ClassDef(AliMUONTrackParam, 1) // Class definition in ROOT context
+  ClassDef(AliMUONTrackParam, 1) // Track parameters in ALICE dimuon spectrometer
     };
 	
 #endif

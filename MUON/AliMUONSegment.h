@@ -81,7 +81,7 @@ class AliMUONSegment : public TObject {
   Double_t fNonBendingImpact; // Impact parameter in non bending plane
   Bool_t fInTrack; // TRUE if segment belongs to one track
   
-  ClassDef(AliMUONSegment, 1) // Class definition in ROOT context
+  ClassDef(AliMUONSegment, 1) // Segment for reconstruction in ALICE dimuon spectrometer
     };
 	
 #endif

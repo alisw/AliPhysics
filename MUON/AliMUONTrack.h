@@ -55,7 +55,7 @@ class AliMUONTrack : public TObject {
   Int_t fNTrackHits; // Number of TrackHit's
   Int_t fFitMCS; // 0(1) for fit without(with) multiple Coulomb scattering
   
-  ClassDef(AliMUONTrack, 1) // Class definition in ROOT context
+  ClassDef(AliMUONTrack, 1) // Reconstructed track in ALICE dimuon spectrometer
     };
 	
 #endif

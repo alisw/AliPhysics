@@ -131,7 +131,7 @@ class AliMUONEventReconstructor : public TObject {
   void MakeTrackCandidates(void);
   void FollowTracks(void);
 
-  ClassDef(AliMUONEventReconstructor, 1) // Class definition in ROOT context
+  ClassDef(AliMUONEventReconstructor, 1) // MUON event reconstructor in ALICE
     };
 	
 #endif

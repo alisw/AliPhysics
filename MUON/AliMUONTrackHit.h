@@ -46,7 +46,7 @@ class AliMUONTrackHit : public TObject {
   AliMUONTrackHit *fNextTrackHitWithSameHitForRec; // Pointer to next track hit with same HitForRec
   AliMUONTrackHit *fPrevTrackHitWithSameHitForRec; // Pointer to previous track hit with same HitForRec
 
-  ClassDef(AliMUONTrackHit, 1) // Class definition in ROOT context
+  ClassDef(AliMUONTrackHit, 1) // Reconstructed track hit in ALICE dimuon spectrometer
     };
 	
 #endif
