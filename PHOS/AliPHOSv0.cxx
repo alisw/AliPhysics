@@ -329,14 +329,13 @@ void AliPHOSv0::CreateGeometry()
   Int_t idrotm[99] ;
   Double_t const kRADDEG = 180.0 / kPI ;
   Float_t * phosParams = geom->GetPHOSParams() ;
-  
+
+  Float_t r = geom->GetIPtoOuterCoverDistance() + phosParams[3] - geom->GetCPVBoxSize(1) ;
   Int_t i;
   for( i = 1; i <= geom->GetNModules()  ; i++ ) {
     
     Float_t angle = geom->GetPHOSAngle(i) ;
     AliMatrix(idrotm[i-1], 90.,angle, 0., 0., 90., 270. +angle) ;
-    
-    Float_t r = geom->GetIPtoOuterCoverDistance() + phosParams[3] ;
     
     Float_t xP1 =  r * TMath::Sin( angle / kRADDEG ) ;
     Float_t yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
