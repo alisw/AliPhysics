@@ -533,7 +533,7 @@ void AliITSsimulationSPD::ChargeToSignal(Float_t **pList)
   AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
   
 
-  TRandom *random = new TRandom(); 
+  TRandom random; 
   Float_t threshold = (float)fResponse->MinVal();
 
   Int_t digits[3], tracks[3], hits[3],gi,j1;
@@ -542,7 +542,7 @@ void AliITSsimulationSPD::ChargeToSignal(Float_t **pList)
   Float_t signal,phys;
   for(Int_t iz=0;iz<fNPixelsZ;iz++){
     for(Int_t ix=0;ix<fNPixelsX;ix++){
-      electronics = fBaseline + fNoise*random->Gaus();
+      electronics = fBaseline + fNoise*random.Gaus();
       signal = (float)fMapA2->GetSignal(iz,ix);
       signal += electronics;
       gi =iz*fNPixelsX+ix; // global index
@@ -601,8 +601,8 @@ void AliITSsimulationSPD::CreateHistograms()
       printf("SPD - create histograms\n");
 
       fHis=new TObjArray(fNPixelsZ);
-      TString spdName("spd_");
       for (Int_t i=0;i<fNPixelsZ;i++) {
+	   TString spdName("spd_");
 	   Char_t pixelz[4];
 	   sprintf(pixelz,"%d",i+1);
 	   spdName.Append(pixelz);
