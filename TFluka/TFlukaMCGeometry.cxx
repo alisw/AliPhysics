@@ -103,8 +103,9 @@ TFlukaMCGeometry::TFlukaMCGeometry(const char *name, const char *title)
   // Standard constructor
   //
   fLastMaterial = 0;
-  fNextRegion = 0;
-  fNextLattice = 0;
+  fNextRegion   = 0;
+  fNextLattice  = 0;
+  fRegionList   = 0;
   fluka = (TFluka*)gMC;
   mcgeom = this;
 }
@@ -117,8 +118,9 @@ TFlukaMCGeometry::TFlukaMCGeometry()
   // Default constructor
   //
   fLastMaterial = 0;
-  fNextRegion = 0;
-  fNextLattice = 0;
+  fNextRegion   = 0;
+  fNextLattice  = 0;
+  fRegionList   = 0;
   fluka = (TFluka*)gMC;
   mcgeom = this;
 }
@@ -130,6 +132,7 @@ TFlukaMCGeometry::~TFlukaMCGeometry()
   // Destructor
   //
   fgInstance=0;
+  if (fRegionList) delete [] fRegionList;
   if (gGeoManager) delete gGeoManager;
 }
 
@@ -358,6 +361,43 @@ Int_t TFlukaMCGeometry::GetFlukaMaterial(Int_t imed) const
    return imatfl;   
 }
 
+//_____________________________________________________________________________
+Int_t *TFlukaMCGeometry::GetRegionList(Int_t imed, Int_t &nreg)
+{
+// Get an ordered list of regions matching a given medium number
+   nreg = 0;
+   if (!fRegionList) fRegionList = new Int_t[NofVolumes()+1];
+   TIter next(gGeoManager->GetListOfUVolumes());
+   TGeoVolume *vol;
+   Int_t imedium, ireg;
+   while ((vol = (TGeoVolume*)next())) {
+      imedium = vol->GetMedium()->GetId();
+      if (imedium == imed) {
+         ireg = vol->GetNumber();
+         fRegionList[nreg++] = ireg;
+      }
+   }
+   return fRegionList;
+}         
+
+//_____________________________________________________________________________
+Int_t *TFlukaMCGeometry::GetMaterialList(Int_t imat, Int_t &nreg)
+{
+// Get an ordered list of regions matching a given medium number
+   nreg = 0;
+   if (!fRegionList) fRegionList = new Int_t[NofVolumes()+1];
+   TIter next(gGeoManager->GetListOfUVolumes());
+   TGeoVolume *vol;
+   Int_t imaterial, ireg;
+   while ((vol = (TGeoVolume*)next())) {
+      imaterial = vol->GetMedium()->GetMaterial()->GetIndex();
+      if (imaterial == imat) {
+         ireg = vol->GetNumber();
+         fRegionList[nreg++] = ireg;
+      }
+   }
+   return fRegionList;
+}         
 //_____________________________________________________________________________
 void TFlukaMCGeometry::Medium(Int_t& kmed, const char* name, Int_t nmat, Int_t isvol,
 		     Int_t ifield, Double_t fieldm, Double_t tmaxfd,

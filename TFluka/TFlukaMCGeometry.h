@@ -109,6 +109,8 @@ class TFlukaMCGeometry : public TVirtualMCGeometry {
     const char*   CurrentVolName() const;
     const char*   CurrentVolOffName(Int_t off) const;
     Int_t         GetMedium() const;
+    Int_t        *GetRegionList(Int_t imed, Int_t &nreg);
+    Int_t        *GetMaterialList(Int_t imat, Int_t &nreg);
     Int_t         GetFlukaMaterial(Int_t imed) const;
     Int_t         GetLastMaterialIndex() const {return fLastMaterial;}
     virtual Int_t VolId(const Text_t* volName) const;
@@ -135,6 +137,7 @@ class TFlukaMCGeometry : public TVirtualMCGeometry {
     Int_t        fLastMaterial;           // last FLUKA material index
     Int_t        fNextRegion;             // next region number
     Int_t        fNextLattice;            // next lattice history
+    Int_t       *fRegionList;             //! region list matching a given medium number
   ClassDef(TFlukaMCGeometry,1)  //Virtual MonteCarlo Interface
 };
 
