@@ -1,6 +1,10 @@
 // $Id$
 // Category: run
 //
+// Author: I. Hrivnacova
+//
+// Class AliRunAction
+// ------------------
 // See the class description in the header file.
 
 #include <G4Timer.hh>
@@ -8,14 +12,12 @@
    // times system function this include must be the first
 
 #include "AliRunAction.h"
-#include "AliRunActionMessenger.h"
 #include "AliSDConstruction.h"
 #include "AliGlobals.h"
 #include "AliRun.h"
 #include "AliHeader.h"
 #include "AliLego.h"
 
-#include "TG4GeometryManager.h"
 #include "TG4SDManager.h"
 #include "TG4VSDConstruction.h"
 
@@ -24,16 +26,17 @@
 
 //_____________________________________________________________________________
 AliRunAction::AliRunAction()
-  : fRunID(-1),
+  : fMessenger(this),
+    fRunID(-1),
     fVerboseLevel(0)
 {
 //
-  fMessenger = new AliRunActionMessenger(this);
   fTimer = new G4Timer;
 }
 
 //_____________________________________________________________________________
-AliRunAction::AliRunAction(const AliRunAction& right) {
+AliRunAction::AliRunAction(const AliRunAction& right) 
+  : fMessenger(this) {
 //
   AliGlobals::Exception("AliRunAction is protected from copying.");
 }
@@ -41,7 +44,6 @@ AliRunAction::AliRunAction(const AliRunAction& right) {
 //_____________________________________________________________________________
 AliRunAction::~AliRunAction() {
 //
-  delete fMessenger;
   delete fTimer;
 }
 
@@ -95,10 +97,6 @@ void AliRunAction::BeginOfRunAction(const G4Run* run)
   // aliroot
   // store runID in the event header
   gAlice->GetHeader()->SetRun(fRunID);
-
-  // clear remaining G3 tables
-  if (fRunID == 0)
-    TG4GeometryManager::Instance()->ClearG3TablesFinal();
 
   // create lego sensitive detectors 
   // if lego is instantiated
