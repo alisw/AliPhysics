@@ -530,6 +530,13 @@ void TGeant3::LoadAddress()
   gcomad(PASSCHARD("GCTLIT"),(int*&) fGctlit  PASSCHARL("GCTLIT"));
   gcomad(PASSCHARD("GCVDMA"),(int*&) fGcvdma  PASSCHARL("GCVDMA"));
 
+  // Commons for GEANE
+  gcomad(PASSCHARD("ERTRIO"),(int*&) fErtrio  PASSCHARL("ERTRIO"));
+  gcomad(PASSCHARD("EROPTS"),(int*&) fEropts  PASSCHARL("EROPTS"));
+  gcomad(PASSCHARD("EROPTC"),(int*&) fEroptc  PASSCHARL("EROPTC"));
+  gcomad(PASSCHARD("ERWORK"),(int*&) fErwork  PASSCHARL("ERWORK"));
+
+  // Variables for ZEBRA store
   gcomad(PASSCHARD("IQ"), addr  PASSCHARL("IQ"));
   fZiq = addr;
   gcomad(PASSCHARD("LQ"), addr  PASSCHARL("LQ"));
