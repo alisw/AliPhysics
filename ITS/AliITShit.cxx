@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/06/20 09:10:14  hristov
+Data member ft0 initialized
+
 Revision 1.16  2002/06/19 21:12:37  nilsen
 Fixed bug with non-zero-ed new data members in constructors. Thanks Jiri
 for finding it and pointing it out.
@@ -611,8 +614,8 @@ void AliITShit::Print(ostream *os){
     *os << fLayer << " " << fLadder << " " << fDet << " ";;
     *os << fPx << " " << fPy << " " << fPz << " ";
     *os << fDestep << " " << fTof;
-    *os << " " << fx0 << " " << fy0 << " " << fz0 << " ";
-    *os << endl;
+    *os << " " << fx0 << " " << fy0 << " " << fz0;
+//    *os << " " << endl;
     os->flags(fmt); // reset back to old formating.
     return;
 }
