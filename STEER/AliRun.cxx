@@ -276,7 +276,7 @@ void  AliRun::SetField(AliMagF* magField)
 
 //_______________________________________________________________________
 void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
-		      Float_t maxField, char* filename)
+		      Float_t maxField, const char* filename)
 {
   //
   //  Set magnetic field parameters

@@ -64,11 +64,11 @@ Bool_t  AliDebugVolume::IsVEqual(const char* name, Int_t copy) const
 }
 
 //_______________________________________________________________________
-char*   AliDebugVolume::Status() const
+const char*   AliDebugVolume::Status() const
 {
   // Returns the status of the particle with respect to 
   // the current volume (Undefined, Entering, Exiting) 
-  char* tmp;
+  const char* tmp;
   tmp = "Undefined";
   if (fStatus == 1) tmp = "Entering";
   if (fStatus == 2) tmp = "Exiting";   

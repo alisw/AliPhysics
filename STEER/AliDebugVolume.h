@@ -19,7 +19,7 @@ public:
   Float_t X()          const {return fX;}  
   Float_t Y()          const {return fY;}
   Float_t Z()          const {return fZ;}
-  char*   Status()     const;
+  const char*   Status()     const;
   
   
   Bool_t  IsVEqual(const char* name, Int_t copy) const;

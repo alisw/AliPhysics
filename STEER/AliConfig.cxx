@@ -192,7 +192,7 @@ AliConfig::AliConfig(const char *name, const char *title):
   gROOT->GetListOfBrowsables()->Add(fTopFolder, name);
 
   //Constants folder
-  TFolder *fConstFolder = fTopFolder->AddFolder (fgkConstantsFolderName, "Constant parameters");
+  fConstFolder = fTopFolder->AddFolder (fgkConstantsFolderName, "Constant parameters");
   fConstFolder->AddFolder("DatabasePDG", "PDG database");
   
   // Add the tasks to //Folders
