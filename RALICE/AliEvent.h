@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.12 2003/11/21 14:20:10 nick Exp $
+// $Id: AliEvent.h,v 1.13 2003/12/18 09:28:06 nick Exp $
 
 #include <math.h>
  
@@ -21,7 +21,7 @@ class AliEvent : public AliVertex
   AliEvent(Int_t n);                      // Create an event to hold initially n tracks
   virtual ~AliEvent();                    // Default destructor
   AliEvent(AliEvent& evt);                // Copy constructor
-  virtual TObject* Clone(const char* name="");  // Make a deep copy and provide its pointer
+  virtual TObject* Clone(const char* name=""); // Make a deep copy and provide its pointer
   virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
   void SetDayTime(TTimeStamp& stamp);     // Set the date and time stamp exactly as specified (1 ns accuracy)
   void SetDayTime(TDatime& stamp);        // Set date and time stamp interpreted as local time (1 s accuracy)
@@ -67,6 +67,6 @@ class AliEvent : public AliVertex
   TObjArray* fDevices;      // Array to hold the pointers to the various devices
   Int_t fDevCopy;           // Flag to denote creation of private copies of the devices
 
- ClassDef(AliEvent,11) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,12) // Creation and investigation of an Alice physics event.
 };
 #endif

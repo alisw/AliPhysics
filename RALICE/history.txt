@@ -470,3 +470,9 @@
                 Support for spectator tracks introduced in AliCollider.
 28-dec-2003 NvE Facility introduced in AliCollider to set minimal momentum for spectator tracks
                 to be stored. 
+06-feb-2004 NvE "char* name" changed to "const char* name" in all specific Clone memberfunctions
+                to prevent compiler warnings on Sun.
+                Memberfunction Set() of TTimeStamp used in AliEvent instead of setting the date/time
+                via the TTimeStamp constructor. This is only possible with ROOT version 3.10/02 or later,
+                since for earlier versions the TTimeStamp::Set memberfunctions were erroneously declared
+                private. 

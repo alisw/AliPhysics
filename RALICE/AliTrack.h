@@ -21,7 +21,7 @@ class AliTrack : public TNamed,public Ali4Vector
   AliTrack();                           // Default constructor
   virtual ~AliTrack();                  // Destructor
   AliTrack(AliTrack& t);                // Copy constructor
-  virtual TObject* Clone(const char* name="");// Make a deep copy and provide its pointer
+  virtual TObject* Clone(const char* name=""); // Make a deep copy and provide its pointer
   virtual void Reset();                 // Reset all values to 0
   void Set4Momentum(Ali4Vector& p);     // Set track 4-momentum
   void Set3Momentum(Ali3Vector& p);     // Set track 3-momentum
@@ -101,6 +101,6 @@ class AliTrack : public TNamed,public Ali4Vector
  private:
   void Dumps(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
  
- ClassDef(AliTrack,8) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,9) // Handling of the attributes of a reconstructed particle track.
 };
 #endif

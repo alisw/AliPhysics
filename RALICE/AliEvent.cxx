@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.17 2003/12/18 09:28:06 nick Exp $
+// $Id: AliEvent.cxx,v 1.18 2004/01/12 08:23:22 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -201,7 +201,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2003/12/18 09:28:06 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2004/01/12 08:23:22 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -213,8 +213,7 @@ AliEvent::AliEvent() : AliVertex()
 {
 // Default constructor.
 // All variables initialised to default values.
- TTimeStamp tx;
- fDaytime=tx;
+ fDaytime.Set();
  fRun=0;
  fEvent=0;
  fAproj=0;
@@ -237,8 +236,7 @@ AliEvent::AliEvent(Int_t n) : AliVertex(n)
  {
   cout << " *** This AliVertex initialisation was invoked via the AliEvent ctor." << endl;
  }
- TTimeStamp tx;
- fDaytime=tx;
+ fDaytime.Set();
  fRun=0;
  fEvent=0;
  fAproj=0;
@@ -312,8 +310,7 @@ void AliEvent::Reset()
 
  AliVertex::Reset();
 
- TTimeStamp tx;
- fDaytime=tx;
+ fDaytime.Set();
  fRun=0;
  fEvent=0;
  fAproj=0;
@@ -378,8 +375,7 @@ void AliEvent::SetDayTime(TDatime& stamp)
 // compatibility reasons. It is recommended to use the corresponding
 // function with the TTimeStamp argument.
 
- TTimeStamp ts(stamp.GetDate(),stamp.GetTime(),0,kFALSE);
- fDaytime=ts;
+ fDaytime.Set(stamp.GetDate(),stamp.GetTime(),0,kFALSE,0);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::SetRunNumber(Int_t run)
