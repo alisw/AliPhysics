@@ -26,8 +26,6 @@ SRCS= AliTRD.cxx \
       AliTRDarrayI.cxx \
       AliTRDarrayF.cxx \
       AliTRDpoints.cxx \
-      AliTRDtimeBin.cxx \
-      AliTRDtrackingSector.cxx \
       AliTRDtrack.cxx \
       AliTRDtracker.cxx \
       AliTRDtrackHits.cxx \
