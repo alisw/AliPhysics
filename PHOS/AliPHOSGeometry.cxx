@@ -477,3 +477,23 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
     z = - ( GetNumberOfCPVPadsZ()  /2. - column - 0.5 ) * GetPadSizeZ()  ; // of center of PHOS module  
   }
 }
+
+//____________________________________________________________________________
+
+TVector3 AliPHOSGeometry::GetCpvModuleCenter(Int_t module) const
+{
+  // Returns a position of the center of the CPV module
+  Float_t rCPV = GetIPtoCPVDistance();
+  Float_t angle = GetPHOSAngle(module);
+  return TVector3(rCPV*TMath::Cos(angle), rCPV*TMath::Sin(angle), 0.);
+}
+
+//____________________________________________________________________________
+
+TVector3 AliPHOSGeometry::Global2LocalCpv(TVector3 globalPosition, Int_t module) const
+{
+  // Transforms a global position of the CPV point to the local coordinate system
+  Float_t angle = GetPHOSAngle(module);
+  globalPosition.RotateZ(-angle);
+  return TVector3(globalPosition.X(),0.,globalPosition.Z());
+}
