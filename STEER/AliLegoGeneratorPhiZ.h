@@ -20,7 +20,7 @@ class AliLegoGeneratorPhiZ : public AliLegoGenerator
 
  public:
     AliLegoGeneratorPhiZ();
-    virtual ~AliLegoGeneratorPhiZ();  ;
+    virtual ~AliLegoGeneratorPhiZ();
     virtual void    Generate();
     ClassDef(AliLegoGeneratorPhiZ,1) //Lego GeneratorPhiZ
 };
