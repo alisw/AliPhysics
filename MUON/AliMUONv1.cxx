@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.40  2003/01/28 13:21:06  morsch
+Improved response simulation for station 1.
+(M. Mac Cormick, I. Hrivnacova, D. Guez)
+
 Revision 1.39  2003/01/14 10:50:19  alibrary
 Cleanup of STEER coding conventions
 
@@ -2086,6 +2090,20 @@ void AliMUONv1::Init()
 }
 
 //___________________________________________
+Int_t  AliMUONv1::GetChamberId(Int_t volId) const
+{
+// Check if the volume with specified  volId is a sensitive volume (gas) 
+// of some chamber and returns the chamber number;
+// if not sensitive volume - return 0.
+// ---
+
+  for (Int_t i = 1; i <= AliMUONConstants::NCh(); i++)
+    if (volId==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()) return i;
+
+  return 0;
+}
+
+//___________________________________________
 void AliMUONv1::StepManager()
 {
   Int_t          copy, id;
@@ -2110,16 +2128,12 @@ void AliMUONv1::StepManager()
   //
   // Only gas gap inside chamber
   // Tag chambers and record hits when track enters 
-  idvol=-1;
   id=gMC->CurrentVolID(copy);
-  
-    for (Int_t i = 1; i <= AliMUONConstants::NCh(); i++) {
-      if(id==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()){ 
-	  vol[0] = i; 
-	  idvol  = i-1;
-      }
-    }
-    if (idvol == -1) return;
+  vol[0] = GetChamberId(id);
+  idvol = vol[0] -1;
+
+  if (idvol == -1) return;
+
   //
   // Get current particle id (ipart), track position (pos)  and momentum (mom) 
   gMC->TrackPosition(pos);

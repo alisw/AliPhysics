@@ -24,20 +24,19 @@
 // The current pulse height responses do not contain any physics
 
 #include <vector>
-#include <cstdlib>
 #include <TMath.h>
 #include <TRandom.h>
 #include <TSystem.h>
 #include <Riostream.h>
-#include <MIntPair.h>
-#include <MPlaneSegmentation.h>
-#include <MPad.h>
-#include <MMotifMap.h>
-#include <MSector.h>
-#include <MPlane.h>
-#include <MZone.h>
-#include <MSubZone.h>
-#include <MVRowSegment.h>
+#include "AliMpIntPair.h"
+#include "AliMpPlaneSegmentation.h"
+#include "AliMpPad.h"
+#include "AliMpMotifMap.h"
+#include "AliMpSector.h"
+#include "AliMpPlane.h"
+#include "AliMpZone.h"
+#include "AliMpSubZone.h"
+#include "AliMpVRowSegment.h"
 #include "AliMUONSt1Response.h"
 #include "AliMUONSt1ResponseParameter.h"
 #include "AliMUONSt1ResponseRule.h"
@@ -422,10 +421,10 @@ void AliMUONSt1Response::ReadFiles()
     }
   }
   //book memory and fill them with .ini files
-  fPlane[0]=MPlane::Create(kBendingPlane);
-  fPlane[1]=MPlane::Create(kNonBendingPlane);
+  fPlane[0]=AliMpPlane::Create(kBendingPlane);
+  fPlane[1]=AliMpPlane::Create(kNonBendingPlane);
   for (i=0;i<2;i++){
-    fPlaneSegmentation[i]= new MPlaneSegmentation(fPlane[i]);
+    fPlaneSegmentation[i]= new AliMpPlaneSegmentation(fPlane[i]);
     ReadIniFile(i);
   }
 }
@@ -448,13 +447,13 @@ Float_t AliMUONSt1Response::IntPH(Float_t eloss)
 
 
 //__________________________________________________________________________
-MZone* AliMUONSt1Response::FindZone(MSector* sector,Int_t posId)
+AliMpZone* AliMUONSt1Response::FindZone(AliMpSector* sector,Int_t posId)
 {
-// to be moved to MSector::
+// to be moved to AliMpSector::
   for (Int_t izone=1;izone<=sector->GetNofZones();izone++){
-    MZone* zone = sector->GetZone(izone);
+    AliMpZone* zone = sector->GetZone(izone);
     for (Int_t isub=0;isub<zone->GetNofSubZones();isub++){
-      MSubZone* sub=zone->GetSubZone(isub);
+      AliMpSubZone* sub=zone->GetSubZone(isub);
       for (Int_t iseg=0;iseg<sub->GetNofRowSegments();iseg++){
 	if (sub->GetRowSegment(iseg)->HasMotifPosition(posId)) return zone;
       }
@@ -479,21 +478,21 @@ Int_t  AliMUONSt1Response::DigitResponse(Int_t digit,AliMUONTransientDigit* wher
 
     fCountNofCalls++;
     
-    MIntPair indices(where->PadX(),where->PadY());
-    MPad pad = fPlaneSegmentation[where->Cathode()]->PadByIndices(indices,kFALSE);
+    AliMpIntPair indices(where->PadX(),where->PadY());
+    AliMpPad pad = fPlaneSegmentation[where->Cathode()]->PadByIndices(indices,kFALSE);
     Int_t GC=0;
     Int_t numZone=0;
-    MZone* zone=0;
+    AliMpZone* zone=0;
 
     if (pad.IsValid()) {
-      MIntPair location = pad.GetLocation();
+      AliMpIntPair location = pad.GetLocation();
       //cout<<location.GetFirst()<<endl;
       Int_t posId=abs(location.GetFirst());
-      MSector* sector=0;
+      AliMpSector* sector=0;
       if (fPlane[0]->GetFrontSector()->GetMotifMap()->FindMotifPosition(posId))
-        	sector=(MSector*)fPlane[0]->GetFrontSector();
+        	sector=(AliMpSector*)fPlane[0]->GetFrontSector();
       else if (fPlane[0]->GetBackSector()->GetMotifMap()->FindMotifPosition(posId))
-         	sector=(MSector*)fPlane[0]->GetBackSector();
+         	sector=(AliMpSector*)fPlane[0]->GetBackSector();
 
       if (sector) zone=FindZone(sector,posId);
       if (zone){

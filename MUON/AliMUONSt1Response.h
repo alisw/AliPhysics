@@ -14,20 +14,16 @@
 // Individual pedestals or noise levels can be controlled separately. 
 // The current pulse height responses do not contain any physics
 
-#include <string>
-#include <map>
 #include <TString.h>
 #include <TList.h>
 #include "AliMUONResponseV0.h"
+#include "AliMUONSt1Types.h"
 #include "AliMUONSt1ElectronicElement.h"
 
-using std::string;
-using std::map;
-
-class MPlane;
-class MPlaneSegmentation;
-class MZone;
-class MSector;
+class AliMpPlane;
+class AliMpPlaneSegmentation;
+class AliMpZone;
+class AliMpSector;
 class TArrayF;
 class TObjArray;
 class AliMUONSt1ResponseParameter;
@@ -51,10 +47,7 @@ public:
 
 
 private:
-
-   //private types
-    typedef map<string,AliMUONSt1ResponseParameter*> TParamsMap;
-    typedef map<string,TList*> TListMap;
+    //private constants
     static const Int_t fgkNofZones=4;
     static const TString fgkTopDir;
     static const TString fgkDataDir;
@@ -86,7 +79,7 @@ private:
     static const TString fgkNofSigmaName ;
 
     //protected methods
-    MZone* FindZone(MSector* sector,Int_t posId); // to be moved in MSector::
+    AliMpZone* FindZone(AliMpSector* sector,Int_t posId); // to be moved in AliMpSector::
     void ReadFiles();
     void ReadIniFile(Int_t plane,const TString& fileName,Bool_t rdParam,Bool_t rdRegion,Bool_t rdRule);
     void ReadIniFile(Int_t plane);
@@ -97,8 +90,8 @@ private:
 
 
     //data members
-    MPlane* fPlane[2];       // !The mapping planes
-    MPlaneSegmentation* fPlaneSegmentation[2]; // !The mapping plane segmentation
+    AliMpPlane* fPlane[2];       // !The mapping planes
+    AliMpPlaneSegmentation* fPlaneSegmentation[2]; // !The mapping plane segmentation
     TString fIniFileName[2];// file names for initialisation of each cathode
 
     AliMUONSt1ResponseParameter* fDefaultParameters[2][fgkNofZones]; // !Response for each zone

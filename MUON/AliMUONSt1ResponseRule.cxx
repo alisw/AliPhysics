@@ -15,6 +15,10 @@
  
 /*
 $Log$
+Revision 1.1  2003/01/28 13:21:06  morsch
+Improved response simulation for station 1.
+(M. Mac Cormick, I. Hrivnacova, D. Guez)
+
 */
 
 // Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
@@ -66,7 +70,7 @@ void AliMUONSt1ResponseRule::AddParameter(AliMUONSt1ResponseParameter* param)
 }
 
 //__________________________________________________________________________
-Bool_t AliMUONSt1ResponseRule::Contains(const MPad& pad) const
+Bool_t AliMUONSt1ResponseRule::Contains(const AliMpPad& pad) const
 {
 // Is this pad is contained in this rule's list
 // ---

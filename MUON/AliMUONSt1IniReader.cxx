@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.1  2003/01/28 13:21:06  morsch
+Improved response simulation for station 1.
+(M. Mac Cormick, I. Hrivnacova, D. Guez)
+
 */
 
 // Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
@@ -30,12 +34,14 @@ $Log$
 // comment lines can be introduced if the first non-blank character
 // is either ';' or '#'
 
-#include <iostream>
-#include <sstream>
+#if !defined(__HP_aCC) && !defined(__alpha)
+  #include <sstream>
+#endif
+
+#include <Riostream.h>
+#include <Rstrstream.h>
 
 #include "AliMUONSt1IniReader.h"
-
-using namespace std;
 
 //______________________________________________________________________
 AliMUONSt1IniReader::AliMUONSt1IniReader()
@@ -92,7 +98,12 @@ bool AliMUONSt1IniReader::ReadNextLine()
   if ( line.empty()) {             // this is a blank line
     return ReadNextLine();
   }
+#if defined (__HP_aCC) || (__alpha)
+  strstream l;
+  l << line;
+#else
   istringstream l(line); 
+#endif    
   
   char c;
 
@@ -122,8 +133,9 @@ bool AliMUONSt1IniReader::ReadNextLine()
       return false;
     }
   }
-  fCurrentType=kUndef;
-  return false;
+  // fCurrentType=kUndef;
+  // return false;
+       // unreachable
 }
 
 //______________________________________________________________________
@@ -170,7 +182,9 @@ AliMUONSt1IniReader::TChapterList AliMUONSt1IniReader::MakeChapterList()
     if (fCurrentType==kChapter) {
       string s= fCurrentName;
       ReadNextLine();
-      ans.insert(TChapter(s,MakeCurrentValueList()));
+      //ans.insert(TChapter(s,MakeCurrentValueList()));
+                   // does not compile on SunOS
+      ans.insert(TChapterList::value_type(s,MakeCurrentValueList()));
     } else ReadNextLine();
     if (fEndOfFile) break;
   }

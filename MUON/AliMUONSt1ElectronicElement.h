@@ -16,7 +16,7 @@
 // a range of MANU numbers or, finally,
 // a range of gassiplex/MANAS numbers, in a given range of MANU addresses
 
-#include <MPad.h>
+#include "AliMpPad.h"
 
 class AliMUONSt1ElectronicElement : public TObject 
 {
@@ -29,7 +29,7 @@ class AliMUONSt1ElectronicElement : public TObject
     virtual ~AliMUONSt1ElectronicElement();
     
     // methods
-    Bool_t Contains(const MPad& pad) const;
+    Bool_t Contains(const AliMpPad& pad) const;
     void   SetRange(Int_t numVar,Int_t i1,Int_t i2);
     void   SetRange(Int_t numVar,Double_t x1,Double_t x2);
     Bool_t IsInRange(Int_t numVar,Int_t i) const;

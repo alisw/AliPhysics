@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.1  2003/01/28 13:21:06  morsch
+Improved response simulation for station 1.
+(M. Mac Cormick, I. Hrivnacova, D. Guez)
+
 */
 
 // Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
@@ -32,8 +36,6 @@ $Log$
 
 
 #include "AliMUONSt1Decoder.h"
-
-using namespace std;
 
 //_____________________________________________________________________
 vector<string> decoder::SplitNtuples(const string& s,

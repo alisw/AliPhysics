@@ -22,13 +22,11 @@
 #include <vector>
 #include <utility>
 #include <string>
-#include <cstdlib>
+
+#include "AliMUONSt1Types.h"
 
 namespace decoder
 {
-  using std::vector;
-  using std::pair;
-  using std::string;
   vector<string> SplitNtuples(const string& s,
                               const string& leftSep ="({[\"'/",
                               const string& rightSep=")}]\"'/");

@@ -16,7 +16,7 @@
 
 #include <TObject.h>
 #include <TList.h>
-#include <MPad.h>
+#include "AliMpPad.h"
 
 class AliMUONSt1ElectronicElement;
 class AliMUONSt1ResponseParameter;
@@ -29,7 +29,7 @@ class AliMUONSt1ResponseRule : public TObject
   
     void   AddElement(AliMUONSt1ElectronicElement* element);
     void   AddParameter(AliMUONSt1ResponseParameter* param);
-    Bool_t Contains(const MPad& pad) const;
+    Bool_t Contains(const AliMpPad& pad) const;
     TList* GetParameters() {return &fParameters;}
 
   private:

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.1  2003/01/28 13:21:06  morsch
+Improved response simulation for station 1.
+(M. Mac Cormick, I. Hrivnacova, D. Guez)
+
 */
 
 // Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
@@ -105,7 +109,7 @@ Bool_t AliMUONSt1ElectronicElement::IsInRange(Int_t numVar,Double_t x) const
 }
 
 //______________________________________________________________________________
-Bool_t AliMUONSt1ElectronicElement::Contains(const MPad& pad) const
+Bool_t AliMUONSt1ElectronicElement::Contains(const AliMpPad& pad) const
 {
 // is the pad <pad> contained in this range
 // ---

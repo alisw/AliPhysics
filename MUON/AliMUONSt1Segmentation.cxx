@@ -15,6 +15,10 @@
  
 /*
 $Log$
+Revision 1.1  2003/01/28 13:21:06  morsch
+Improved response simulation for station 1.
+(M. Mac Cormick, I. Hrivnacova, D. Guez)
+
 */
 
 // Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
@@ -24,21 +28,16 @@ $Log$
 // Segmentation for MUON station 1 using the external 
 // mapping package
 
-#include <cmath>
-
 #include <Riostream.h>
 #include <TError.h>
 #include <TObjArray.h>
 #include <TVector2.h>
 #include <TF1.h>
 
-#include <MPlane.h>
-#include <MPlaneType.h>
-#include <MPlaneSegmentation.h>
-#include <MPlaneAreaPadIterator.h>
-#include <MSector.h>
-#include <MZone.h>
-#include <MConstants.h>
+#include <AliMpPlane.h>
+#include <AliMpPlaneType.h>
+#include <AliMpPlaneSegmentation.h>
+#include <AliMpPlaneAreaPadIterator.h>
 
 #include "AliMUONSt1Segmentation.h"
 #include "AliRun.h"
@@ -51,7 +50,7 @@ const Float_t  AliMUONSt1Segmentation::fgkWireD = 0.20;
 const Float_t  AliMUONSt1Segmentation::fgkLengthUnit = 0.1; 
 
 //______________________________________________________________________________
-AliMUONSt1Segmentation::AliMUONSt1Segmentation(const MPlaneType planeType) 
+AliMUONSt1Segmentation::AliMUONSt1Segmentation(const AliMpPlaneType planeType) 
 : AliSegmentation(),
   fPlane(0),
   fPlaneSegmentation(0),
@@ -77,8 +76,8 @@ AliMUONSt1Segmentation::AliMUONSt1Segmentation(const MPlaneType planeType)
   fCorrA(0)
 {
 // Normal constructor
-  fPlane = MPlane::Create(planeType);
-  fPlaneSegmentation = new MPlaneSegmentation(fPlane);
+  fPlane = AliMpPlane::Create(planeType);
+  fPlaneSegmentation = new AliMpPlaneSegmentation(fPlane);
 
   fCorrA = new TObjArray(3);
   fCorrA->AddAt(0,0);
@@ -155,7 +154,7 @@ AliMUONSt1Segmentation::operator=(const AliMUONSt1Segmentation& rhs)
 //
 
 //______________________________________________________________________________
-void AliMUONSt1Segmentation::UpdateCurrentPadValues(const MPad& pad)
+void AliMUONSt1Segmentation::UpdateCurrentPadValues(const AliMpPad& pad)
 {
 // Updates current pad values.
 // ---
@@ -221,7 +220,7 @@ void  AliMUONSt1Segmentation::GetPadI(Float_t x, Float_t y,
 // If there is no pad, ix = 0, iy = 0 are returned.
 // ---
 
-  MPad pad = fPlaneSegmentation
+  AliMpPad pad = fPlaneSegmentation
                ->PadByPosition(TVector2(x/fgkLengthUnit, y/fgkLengthUnit), false);
 
   ix = pad.GetIndices().GetFirst();
@@ -247,7 +246,7 @@ void  AliMUONSt1Segmentation::GetPadC(Int_t ix, Int_t iy,
 // If there is no pad, x = 0., y = 0. are returned.
 // ---
 
-  MPad pad = fPlaneSegmentation->PadByIndices(MIntPair(ix,iy));
+  AliMpPad pad = fPlaneSegmentation->PadByIndices(AliMpIntPair(ix,iy));
 
   x = pad.Position().X() * fgkLengthUnit;
   y = pad.Position().Y() * fgkLengthUnit;
@@ -371,8 +370,8 @@ void  AliMUONSt1Segmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t zhit,
   
   fPlaneIterator 
     = fPlaneSegmentation
-        ->CreateIterator(MArea(TVector2(fXhit/fgkLengthUnit, fYhit/fgkLengthUnit), 
-	                       TVector2(dx/fgkLengthUnit, dy/fgkLengthUnit)));
+        ->CreateIterator(AliMpArea(TVector2(fXhit/fgkLengthUnit, fYhit/fgkLengthUnit), 
+	                           TVector2(dx/fgkLengthUnit, dy/fgkLengthUnit)));
 
   fPlaneIterator->First();		
 
@@ -412,7 +411,7 @@ Float_t AliMUONSt1Segmentation::Distance2AndOffset(Int_t iX, Int_t iY,
 // labelled by its channel numbers and a coordinate
 // ---
 
-  MPad pad = fPlaneSegmentation->PadByIndices(MIntPair(iX, iY));
+  AliMpPad pad = fPlaneSegmentation->PadByIndices(AliMpIntPair(iX, iY));
   
   if (!pad.IsValid())
     Fatal("Distance2AndOffset", "Cannot locate pad.");
@@ -440,12 +439,12 @@ void AliMUONSt1Segmentation::Neighbours(Int_t iX, Int_t iY,
 // Get next neighbours 
 // ---
 
-  MPad pad = fPlaneSegmentation->PadByIndices(MIntPair(iX,iY));
+  AliMpPad pad = fPlaneSegmentation->PadByIndices(AliMpIntPair(iX,iY));
   Int_t &i = *Nlist;
   i=0;
-  MVPadIterator* iter
+  AliMpVPadIterator* iter
     = fPlaneSegmentation
-      ->CreateIterator(MArea(pad.Position(),2.*pad.Dimensions()*1.1));
+      ->CreateIterator(AliMpArea(pad.Position(),2.*pad.Dimensions()*1.1));
 
   for( iter->First(); !iter->IsDone() && i<10; iter->Next()) {
     Xlist[i] = iter->CurrentItem().GetIndices().GetFirst();
@@ -492,7 +491,7 @@ Int_t AliMUONSt1Segmentation::Sector(Int_t ix, Int_t iy)
 // ---
 
   return fPlaneSegmentation
-           ->Zone(fPlaneSegmentation->PadByIndices(MIntPair(ix, iy)));
+           ->Zone(fPlaneSegmentation->PadByIndices(AliMpIntPair(ix, iy)));
 }
 
 //______________________________________________________________________________
