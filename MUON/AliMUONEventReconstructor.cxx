@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2000/10/12 15:17:30  gosset
+Sign of fSimpleBValue corrected: sign ox Bx and not Bz (thanks to Galina)
+
 Revision 1.14  2000/10/04 18:21:26  morsch
 Include stdlib.h
 
@@ -713,7 +716,8 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
       hitForRec->SetHitNumber(iclus);
       // Z coordinate of the chamber (cm)
       // could (should) be more exact from chamber geometry ???? 
-      hitForRec->SetZ((&(pMUON->Chamber(ch)))->Z());
+//       hitForRec->SetZ((&(pMUON->Chamber(ch)))->Z());
+      hitForRec->SetZ(clus->fZ[0]);
       if (fPrintLevel >= 10) {
 	cout << "chamber (0...): " << ch <<
 	  " raw cluster (0...): " << iclus << endl;
