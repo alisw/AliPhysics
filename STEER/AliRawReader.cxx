@@ -47,7 +47,11 @@ AliRawReader::~AliRawReader()
 // close the input file
 
   if (fStream) {
+#ifndef __HP_aCC
     if (fStream->is_open()) fStream->close();
+#else
+    if (fStream->rdbuf()->is_open()) fStream->close();
+#endif
     delete fStream;
   }
 }
@@ -56,7 +60,11 @@ AliRawReader::~AliRawReader()
 Bool_t AliRawReader::OpenNextFile()
 {
   if (fStream) {
+#ifndef __HP_aCC
     if (fStream->is_open()) fStream->close();
+#else
+    if (fStream->rdbuf()->is_open()) fStream->close();
+#endif
     delete fStream;
     fStream = NULL;
   }
@@ -66,7 +74,11 @@ Bool_t AliRawReader::OpenNextFile()
   char fileName[256];
   sprintf(fileName, "%s%d", fFileName, fFileNumber);
   fStream = new fstream(fileName, ios::binary|ios::in);
+#ifndef __HP_aCC
   return (fStream->is_open());
+#else
+  return (fStream->rdbuf()->is_open());
+#endif
 }
 
 
