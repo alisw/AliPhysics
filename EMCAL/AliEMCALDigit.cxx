@@ -50,7 +50,7 @@ ClassImp(AliEMCALDigit)
   fNprimary    = 0 ;  
   fNMaxPrimary = 20 ; 
   fNiparent     = 0 ;
-  fNMaxiparent = fNMaxPrimary*10;
+  fNMaxiparent = 40; //fNMaxPrimary*10;
   fPrimary = new Int_t[fNMaxPrimary] ;
   fIparent = new Int_t[fNMaxiparent] ; 
 }
@@ -61,7 +61,7 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
   // ctor with all data 
 
   fNMaxPrimary = 20 ; 
-  fNMaxiparent = fNMaxPrimary*10;
+  fNMaxiparent = 40 ; //fNMaxPrimary*10;
   fPrimary = new Int_t[fNMaxPrimary] ;
   fIparent = new Int_t[fNMaxiparent] ; 
   fAmp         = DigEnergy ;
@@ -85,8 +85,8 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
   for ( i = 1; i < fNMaxPrimary ; i++)
     fPrimary[i]  = -1 ; 
 
-  for ( Int_t j =1; j< fNMaxiparent ; j++)
-    fIparent[j] = -1 ;  
+  for ( i =1; i< fNMaxiparent ; i++)
+    fIparent[i] = -1 ;  
 }
 
 //____________________________________________________________________________
@@ -250,7 +250,7 @@ AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit)
 	cout << "printindex = " << printindex << "  primary = " << fPrimary[printindex];
       cout <<endl;
       cout << "AliEMCALDigit >> Increase NMaxPrimary "<< endl ;
-//	return *this ;
+	return *this ;
       }
     }
   }
@@ -268,8 +268,8 @@ AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit)
       max2++;}
       if(fNiparent==fNMaxiparent) {
 	Int_t printindex ;
-	for (printindex = 0 ; printindex < max1 ; printindex++)
-	  cout << "printindex = " << printindex << "  primary = " << fPrimary[printindex];
+	for (printindex = 0 ; printindex < max2 ; printindex++)
+	  cout << "printindex = " << printindex << "  parent  = " << fIparent[printindex];
 	cout <<endl;
 	cout << "AliEMCALDigit >> Increase NMaxiparent "<< endl ;
 	return *this ;
