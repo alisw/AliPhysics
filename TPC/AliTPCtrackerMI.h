@@ -26,6 +26,7 @@ class AliTPCclusterMI;
 class AliTPCTrackerPoint;
 class AliESD;   
 class TTree;
+class AliESDkink;
 
 class AliTPCseed : public AliTPCtrack {
   friend class AliTPCtrackerMI;
@@ -34,7 +35,7 @@ class AliTPCseed : public AliTPCtrack {
      virtual ~AliTPCseed();
      AliTPCseed(const AliTPCtrack &t);
      AliTPCseed(const AliTPCseed &s);
-  //AliTPCseed(const AliKalmanTrack &t, Double_t a);
+     //AliTPCseed(const AliTPCseed &t, Double_t a);
      AliTPCseed(UInt_t index, const Double_t xx[5], 
                 const Double_t cc[15], Double_t xr, Double_t alpha);     
      Int_t Compare(const TObject *o) const;
@@ -70,8 +71,8 @@ class AliTPCseed : public AliTPCtrack {
      //
      //
  private:
-     AliTPCseed & operator = (const AliTPCseed &)
-       {::Fatal("= operator","Not Implemented\n");return *this;}
+     //     AliTPCseed & operator = (const AliTPCseed &)
+     //  {::Fatal("= operator","Not Implemented\n");return *this;}
      AliESDtrack * fEsd; //!
      AliTPCclusterMI*   fClusterPointer[160];  //! array of cluster pointers  - 
      TClonesArray * fPoints;              // array with points along the track
@@ -137,7 +138,9 @@ public:
   void SetDebug(Int_t debug){ fDebug = debug;}
   void FindKinks(TObjArray * array, AliESD * esd);
   void UpdateKinkQualityM(AliTPCseed * seed);
-
+  void UpdateKinkQualityD(AliTPCseed * seed);
+  Int_t CheckKinkPoint(AliTPCseed*seed, AliTPCseed &mother, AliTPCseed &daughter, AliESDkink &kink);
+  Int_t RefitKink(AliTPCseed &mother, AliTPCseed &daughter, AliESDkink &kink);
    Int_t ReadSeeds(const TFile *in);
    TObjArray * GetSeeds(){return fSeeds;}
    //   
@@ -165,7 +168,6 @@ public:
    Int_t PropagateForward();
    Int_t PropagateForward2(TObjArray * arr);
 
-   Int_t CheckKinkPoint(AliTPCseed*seed, Float_t th);
    void SortTracks(TObjArray * arr, Int_t mode) const;
   
 
@@ -228,8 +230,8 @@ private:
    public:
      AliTPCSector() { fN=0; fRow = 0; }
     ~AliTPCSector() { delete[] fRow; }
-    AliTPCSector(const AliTPCSector & /*s*/){;}           //dummy copy contructor 
-    AliTPCSector& operator=(const AliTPCSector & /*s*/){return *this;}//dummy assignment operator
+    AliTPCSector(const AliTPCSector &/*s*/){;}           //dummy copy contructor 
+    AliTPCSector& operator=(const AliTPCSector &/*s*/){return *this;}//dummy assignment operator
      AliTPCRow& operator[](Int_t i) const { return *(fRow+i); }
      Int_t GetNRows() const { return fN; }
      void Setup(const AliTPCParam *par, Int_t flag);
@@ -240,7 +242,7 @@ private:
      Double_t GetAlpha() const {return fAlpha;}
      Double_t GetAlphaShift() const {return fAlphaShift;}     
      //Int_t GetFirst(){return fFirstRow;}
-     Int_t GetRowNumber(Double_t x) const;
+     Int_t GetRowNumber(Double_t  x) const;
      Double_t GetPadPitchWidth()  const {return fPadPitchWidth;}
      Double_t GetPadPitchLength() const {return fPadPitchLength;}
      Double_t GetPadPitchLength(Float_t x) const {return (x<200) ? fPadPitchLength:f2PadPitchLength ;}
@@ -275,6 +277,7 @@ private:
    inline Double_t  GetXrow(Int_t row) const;
    inline Double_t  GetMaxY(Int_t row) const;
    inline Int_t GetRowNumber(Double_t x) const;
+   Int_t GetRowNumber(Double_t x[3]) const;
    inline Double_t GetPadPitchLength(Double_t x) const;
    inline Double_t GetPadPitchLength(Int_t row) const;
 
@@ -292,6 +295,7 @@ private:
 
    AliTPCseed *MakeSeed(AliTPCseed *t, Float_t r0, Float_t r1, Float_t r2); //reseed
    AliTPCseed *ReSeed(AliTPCseed *t, Float_t r0, Float_t r1, Float_t r2); //reseed
+   AliTPCseed *ReSeed(AliTPCseed *t, Int_t r0, Bool_t forward); //reseed
 
 
   
