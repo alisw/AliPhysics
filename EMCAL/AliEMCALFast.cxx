@@ -16,6 +16,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/01/18 03:27:12  morsch
+Acceptance and random rejection added.
+
 */
 
 
@@ -38,10 +41,21 @@ Float_t AliEMCALFast::SmearMomentum(Int_t ind, Float_t p)
 //  where typically a = 0.75 and b = 0.16 - 0.24 depending on multiplicity
 //  (the lower value is for dn/d(eta) about 2000, and the higher one for 8000)
 //
+//  If we include information from TRD b will be by a factor 2/3 smaller.
+//
+//  ind = 1: high multiplicity
+//  ind = 2: low  multiplicity
+//  ind = 3: high multiplicity + TRD
+//  ind = 4: low  multiplicity + TRD
+
     Float_t pSmeared;
     Float_t a = 0.75;
     Float_t b = 0.24;
+
+    if (ind == 1) b = 0.24;
     if (ind == 2) b = 0.16;
+    if (ind == 3) b = 0.16;    
+    if (ind == 4) b = 0.11;    
     
     Float_t sigma = p*TMath::Sqrt(a*a+b*b*p*p)*0.01;
     pSmeared = p + gRandom->Gaus(0., sigma);
