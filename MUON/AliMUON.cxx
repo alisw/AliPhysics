@@ -817,9 +817,9 @@ void AliMUON::FillESD(AliESD* event) const
 
   TClonesArray * recTracksArray;
   
-  AliLoader* loader = GetLoader();
-  AliRunLoader* runLoader = loader->GetRunLoader();
-  loader->LoadTracks("READ");
+  //YS AliLoader* loader = GetLoader();
+  AliRunLoader* runLoader = fLoader->GetRunLoader(); //YS loader->GetRunLoader();
+  fLoader->LoadTracks("READ"); //YS
 
 
   // declaration  
@@ -833,14 +833,15 @@ void AliMUON::FillESD(AliESD* event) const
 
   Float_t  x11, y11, thetaX,thetaY ;
 
-  Int_t nEvents = runLoader->GetNumberOfEvents();
+  //YS Int_t nEvents = runLoader->GetNumberOfEvents();
 
   // setting pointer for tracks, triggertracks& trackparam at vertex
   AliMUONTrack * rectrack;
   AliMUONTriggerTrack * rectriggertrack;
   AliMUONTrackParam *trackParam;
-
-  for (ievent = 0; ievent < nEvents; ievent++) {
+  
+  ievent = runLoader->GetEventNumber() ; //YS 
+  //YS for (ievent = 0; ievent < nEvents; ievent++) {
     runLoader->GetEvent(ievent);
 
     // setting ESD MUON class
@@ -888,12 +889,12 @@ void AliMUON::FillESD(AliESD* event) const
     fMUONData->GetRecTriggerTracks();
     recTracksArray = fMUONData->RecTriggerTracks();
         
-    nrectracks = (Int_t) recTracksArray->GetEntriesFast(); //
+    Int_t ntrectracks = (Int_t) recTracksArray->GetEntriesFast(); //YS
  
     //  printf(">>> Event %d Number of Recconstructed tracks %d \n",ievent, nrectracks);
    
     // read trigger track infos
-    for (Int_t irectracks = 0; irectracks <  nrectracks;  irectracks++) {
+    for (Int_t irectracks = 0; irectracks <  ntrectracks;  irectracks++) {
 
       rectriggertrack = (AliMUONTriggerTrack*) recTracksArray->At(irectracks);
     
@@ -910,11 +911,12 @@ void AliMUON::FillESD(AliESD* event) const
     }
 
     // storing ESD MUON Track into ESD Event & reset muondata
-    event->AddMuonTrack(ESDTrack);
+    if (ntrectracks+ntrectracks != 0) //YS 
+      event->AddMuonTrack(ESDTrack);
     fMUONData->ResetRecTracks();
     fMUONData->ResetRecTriggerTracks();
 
-  } // end loop on event  
-  loader->UnloadTracks();
+    //YS } // end loop on event  
+    fLoader->UnloadTracks(); //YS
 }
 
