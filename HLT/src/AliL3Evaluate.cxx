@@ -3,9 +3,7 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
-#include <stdio.h>
-#include <math.h>
-#include <fstream.h>
+#include "AliL3StandardIncludes.h"
 #include <TFile.h>
 #include <TH1.h>
 #include <TParticle.h>
@@ -21,13 +19,24 @@
 #include <AliTPCParam.h>
 #include <AliComplexCluster.h>
 
+#if GCCVERSION == 3
+#include <fstream>
+#include <iosfwd>
+#else
+#include <fstream.h>
+#endif
+
+#include "AliL3Logging.h"
 #include "AliL3Transform.h"
 #include "AliL3SpacePointData.h"
 #include "AliL3Track.h"
 #include "AliL3FileHandler.h"
 #include "AliL3TrackArray.h"
 #include "AliL3Evaluate.h"
-#include "AliL3Logging.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 //_____________________________________________________________
 // AliL3Evaluate

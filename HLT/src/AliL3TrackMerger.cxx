@@ -1,8 +1,8 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ULI
 
-#include <math.h>
-#include <iostream.h>
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3Logging.h"
 #include "AliL3TrackMerger.h"
 #include "AliL3Track.h"

@@ -1,7 +1,8 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy Uli
 
-#include <iostream.h>
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3Logging.h"
 #include "AliL3VertexArray.h"
 #include "AliL3Vertex.h"

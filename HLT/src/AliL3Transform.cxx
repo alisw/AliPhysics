@@ -4,11 +4,11 @@
 //*-- Copyright &copy ASV
 // changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
 
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
+
 
 /** \class AliL3Transform 
 //<pre>
@@ -246,7 +246,7 @@ Double_t AliL3Transform::fX[176] = {84.570007324218750,
                                     243.054992675781250,
                                     244.054992675781250,
                                     245.054992675781250,
-                                    246.054992675781250,
+                                    246.054992675781250
 };
 
 Int_t AliL3Transform::fNPads[176] = {67,
@@ -424,7 +424,7 @@ Int_t AliL3Transform::fNPads[176] = {67,
                                      137,
                                      137,
                                      139,
-                                     139,
+                                     139
 };
 
 
@@ -497,7 +497,6 @@ void AliL3Transform::Init(const Char_t* path)
   fclose(fptr);
   delete pathname;
   fVersion=1; //new version
-
 }
 
 Double_t AliL3Transform::GetEta(Float_t *xyz)

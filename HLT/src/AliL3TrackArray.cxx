@@ -3,9 +3,8 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ULI
 
-#include <math.h>
-#include <string.h>
-#include <iostream.h>
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3Logging.h"
 #include "AliL3TrackArray.h"
 #include "AliL3HoughTrack.h"

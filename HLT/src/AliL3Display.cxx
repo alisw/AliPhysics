@@ -3,6 +3,7 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
+#include "AliL3StandardIncludes.h"
 #include <TCanvas.h>
 #include <TView.h>
 #include <TPolyMarker3D.h>
@@ -15,6 +16,7 @@
 #include <TParticle.h>
 #include <TFile.h>
 
+#include "AliL3Logging.h"
 #include "AliL3Display.h"
 #ifdef use_aliroot
 #include "AliRun.h"
@@ -26,8 +28,10 @@
 #include "AliL3TrackArray.h"
 #include "AliL3SpacePointData.h"
 #include "AliL3MemHandler.h"
-#include "AliL3Logging.h"
 
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 //_____________________________________________________________
 // AliL3Display

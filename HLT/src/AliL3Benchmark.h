@@ -6,7 +6,6 @@
 class TStopwatch;
 class TString;
 #else
-#include <string.h>
 #include "AliL3RootTypes.h"
 #include "AliL3Stopwatch.h"
 #endif

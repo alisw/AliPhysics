@@ -7,14 +7,20 @@
 // Basic types used by level3                                           //
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
-#include <stdio.h>
-#include <math.h>
 
 #ifndef no_root
 #include <TObject.h>
 #include <Rtypes.h>
 
 #else
+
+#if GCCVERSION == 3
+#include <cstdio>
+#include <cmath>
+#else
+#include <stdio.h>
+#include <math.h>
+#endif
 
 #ifndef ROOT_Rtypes
 //---- types -------------------------------------------------------------------
@@ -53,7 +59,6 @@ typedef void         (*VoidFuncPtr_t)();  //pointer to void function
 
 
 //---- constants ---------------------------------------------------------------
-
 #ifndef NULL
 #define NULL 0
 #endif
@@ -69,12 +74,9 @@ const Ssiz_t kNPOS        = ~(Ssiz_t)0;
 
 //---- ClassDef macros ---------------------------------------------------------
 
-
 #define ClassDef(name,id) 
-
 #define ClassImp(name) 
 #endif  //end of Rtypes 
-
 #endif  //end of root selection
 
 //---- Timms AliL3EventDataType  from AliL3EventDataType.h

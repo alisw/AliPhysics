@@ -3,12 +3,10 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
  
-#include <iostream.h>
-#include <time.h>
-#include <math.h>
+#include "AliL3StandardIncludes.h"
 #include <sys/time.h>
-#include "AliL3ConfMapper.h"
 
+#include "AliL3ConfMapper.h"
 #include "AliL3Logging.h" 
 #include "AliL3Vertex.h"
 #include "AliL3ConfMapTrack.h"
@@ -745,7 +743,7 @@ Double_t AliL3ConfMapper::CalcDistance(const AliL3ConfMapPoint *hit1,const AliL3
   Double_t phi_diff = fabs( hit1->GetPhi() - hit2->GetPhi() );
   if (phi_diff > pi) phi_diff = twopi - phi_diff;
   
-  return todeg*fabs(hit1->GetPadRow() - hit2->GetPadRow()) * (phi_diff + fabs( hit1->GetEta() - hit2->GetEta() ));
+  return todeg*fabs((Float_t)((hit1->GetPadRow() - hit2->GetPadRow()) * (phi_diff + fabs( hit1->GetEta() - hit2->GetEta()))));
 }
 
 Bool_t AliL3ConfMapper::VerifyRange(const AliL3ConfMapPoint *hit1,const AliL3ConfMapPoint *hit2) const

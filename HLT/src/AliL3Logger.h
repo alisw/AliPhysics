@@ -3,6 +3,13 @@
 
 #include "AliL3RootTypes.h"
 
+#if GCCVERSION == 3
+#include <fstream>
+#include <iosfwd>
+#else
+#include <fstream.h>
+#endif
+
 class MLUCLogServer;
 class ofstream;
 
@@ -31,7 +38,11 @@ class AliL3Logger{
   MLUCLogServer *so; //!
   MLUCLogServer *se; //!
   MLUCLogServer *sm; //!
-  ofstream *of;      //!
+#if GCCVERSION == 3
+  std::ofstream *of; //!
+#else  
+  ofstream *of; //!
+#endif
 
   ClassDef(AliL3Logger,1)
 };

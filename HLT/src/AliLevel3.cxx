@@ -3,12 +3,13 @@
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ASV
 
+#include "AliL3StandardIncludes.h"
+
 #ifndef no_root
 #include <TFile.h>
 #include <TDirectory.h>
 #include <TClonesArray.h>
 #include <TStopwatch.h>
-#include <iostream.h>
 #endif
 
 #include "AliL3Logging.h"
@@ -30,7 +31,6 @@
 #include "AliL3FileHandler.h"
 #endif
 #include "AliL3Benchmark.h"
-
 #include "AliL3DigitData.h"
 #include "AliL3TrackSegmentData.h"
 #include "AliL3SpacePointData.h"
@@ -110,7 +110,7 @@ AliLevel3::AliLevel3(TFile *in)
 }
 #endif
 
-void AliLevel3::Init(Char_t *path,Bool_t binary=kTRUE,Int_t npatches=6)
+void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
 {
   if(!binary && !fInputFile)
     {

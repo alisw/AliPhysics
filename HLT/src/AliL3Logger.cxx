@@ -3,10 +3,10 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 // changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
 
+#include "AliL3StandardIncludes.h"
 
 #include "AliL3Logging.h"
 #include "AliL3Logger.h"
-#include <fstream.h>
 
 ClassImp(AliL3Logger)
 

@@ -3,18 +3,16 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>
 //*-- Copyright &copy Uli 
 
-#include <math.h>
-#include <iostream.h>
+#include "AliL3StandardIncludes.h"
+#include <AliTPCDigitsArray.h>
+#include <AliTPCClustersArray.h>
+#include <AliTPCcluster.h>
+#include <AliTPCClustersRow.h>
 
-#include "AliL3Transform.h"
 #include "AliL3Logging.h"
+#include "AliL3Transform.h"
 #include "AliL3MemHandler.h"
 #include "AliL3FileHandler.h"
-
-#include "AliTPCDigitsArray.h"
-#include "AliTPCClustersArray.h"
-#include "AliTPCcluster.h"
-#include "AliTPCClustersRow.h"
 
 #include "AliL3DigitData.h"
 #include "AliL3TrackSegmentData.h"

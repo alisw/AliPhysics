@@ -21,7 +21,4 @@ struct AliL3TrackSegmentData
 
 typedef struct AliL3TrackSegmentData AliL3TrackSegmentData;
 
-
-
-
 #endif /* _ALIL3TRACKSEGMENTDATA_H_ */

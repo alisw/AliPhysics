@@ -3,6 +3,8 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ASV 
 
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3RootTypes.h"
 #include "AliL3Logging.h"
 #include "AliL3Vertex.h"
@@ -10,7 +12,6 @@
 #include "AliL3ConfMapFit.h"
 #include "AliL3ConfMapTrack.h"
 #include "AliL3Transform.h"
-#include <math.h>
 
 //_____________________________________________________________
 // AliL3ConfMapTrack
@@ -197,7 +198,7 @@ void AliL3ConfMapTrack::UpdateToFirstPoint()
   
   //Get the track parameters
   
-  Double_t tPhi0 = GetPsi() + GetCharge() * 0.5 * pi / fabs(GetCharge()) ;
+  Double_t tPhi0 = GetPsi() + GetCharge() * 0.5 * pi / abs(GetCharge()) ;
   Double_t x0    = GetR0() * cos(GetPhi0()) ;
   Double_t y0    = GetR0() * sin(GetPhi0()) ;
   Double_t rc    = fabs(GetPt()) / ( BFACT * AliL3Transform::GetBField() )  ;
@@ -237,7 +238,7 @@ void AliL3ConfMapTrack::UpdateToFirstPoint()
   
   //if ( tPhi < 0 ) tPhi += 2. * M_PI ;
   
-  Double_t tPsi = tPhi - GetCharge() * 0.5 * pi / fabs(GetCharge()) ;
+  Double_t tPsi = tPhi - GetCharge() * 0.5 * pi / abs(GetCharge()) ;
   if ( tPsi > 2. * pi ) tPsi -= 2. * pi ;
   if ( tPsi < 0.        ) tPsi += 2. * pi ;
   

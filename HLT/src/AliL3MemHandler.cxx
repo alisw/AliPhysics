@@ -4,12 +4,7 @@
 //*-- Copyright &copy Uli 
 // changes done by Constantin Loizides <mailto:loizides@ikf.physik.uni-frankfurt.de>
 
-
-#include <math.h>
-#include <time.h>
-#include <iostream.h>
-#include <stdio.h>
-#include <string.h>
+#include "AliL3StandardIncludes.h"
 
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"

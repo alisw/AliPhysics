@@ -3,14 +3,19 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ASV 
 
-#include <iostream.h>
-#include <math.h>
+
+#include "AliL3StandardIncludes.h"
+
 #include "AliL3Logging.h"
 #include "AliL3ClustFinderNew.h"
 #include "AliL3DigitData.h"
 #include "AliL3Transform.h"
 #include "AliL3SpacePointData.h"
 #include "AliL3MemHandler.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 /** \class AliL3ClustFinderNew
 //<pre>
