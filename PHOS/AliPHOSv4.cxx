@@ -49,6 +49,8 @@ AliPHOSv4::AliPHOSv4(const char *name, const char *title):
   // ctor
 
   // gets an instance of the geometry parameters class  
+  if (strcmp(GetTitle(),"") != 0 ) 
+    fGeom =  AliPHOSGeometry::GetInstance(GetTitle(), "") ; 
      
     
     SetBigBox(0, fGeom->GetOuterBoxSize(0) ) ;
@@ -57,7 +59,7 @@ AliPHOSv4::AliPHOSv4(const char *name, const char *title):
     
     fNRecParticles = 0 ; 
     fFastRecParticles = new AliPHOSFastRecParticle::FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
-    
+
     fResPara1 = 0.030 ;    // GeV
     fResPara2 = 0.00003 ; 
     fResPara3 = 0.00001 ; 
@@ -455,30 +457,46 @@ Double_t AliPHOSv4::SigmaP(Double_t energy, Int_t incidence)
 void AliPHOSv4::StepManager(void)
 {
   // Only verifies if the particle reaches PHOS and stops the tracking 
-  
+
   Int_t primary =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
+
   TLorentzVector lv ; 
   gMC->TrackPosition(lv) ;
   TVector3 pos = lv.Vect() ; 
   Int_t modid  ; 
   gMC->CurrentVolID(modid);
   
-  // Makes a reconstructed particle from the primary particle
+  Float_t Energy = gMC->Etot() ; //Total energy of current track
+
+  //Calculating mass of current particle
+  TDatabasePDG * PDG = TDatabasePDG::Instance() ;
+  TParticlePDG * partPDG = PDG->GetParticle(gMC->TrackPid()) ;
+  Float_t mass = partPDG->Mass() ;
 
   TClonesArray * particlelist = gAlice->Particles() ;
-  TParticle * part = (TParticle *)particlelist->At(primary) ;  
+  TParticle * part = (TParticle *)particlelist->At(primary) ;
 
-  AliPHOSFastRecParticle rp(*part) ;
-  rp.SetPrimary(primary) ; 
 
-  // Adds the response of PHOS to the particle
+  cout << "Primary " << primary << "  " << part->GetPDG()->PdgCode() << " Track " << gMC->TrackPid() << endl ;
 
-  MakeRecParticle(modid, pos, rp) ;
+  if(Energy > mass){
+    pos.SetMag(TMath::Sqrt(Energy*Energy-mass*mass)) ;
+    TLorentzVector pTrack(pos,Energy) ;  
+
+    TParticle * part = new TParticle(gMC->TrackPid(), 0,-1,-1,-1,-1, pTrack, lv)  ;
+        
+    AliPHOSFastRecParticle rp(*part) ;
+    rp.SetPrimary(primary) ; 
+
+    // Adds the response of PHOS to the particle
+    MakeRecParticle(modid, pos, rp) ;
+    
+    // add the `track' particle to the FastRecParticles list
   
-  // add the primary particle to the FastRecParticles list
-  
-  AddRecParticle(rp) ;
+    AddRecParticle(rp) ;
 
+    part->Delete() ;
+  }
   // stop the track as soon PHOS is reached
   
   gMC->StopTrack() ; 
