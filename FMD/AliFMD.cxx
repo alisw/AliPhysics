@@ -95,9 +95,18 @@ AliFMD::~AliFMD()
   if (fHits) {
       fHits->Delete();
       delete fHits;
+      fHits = 0;
   }
-  delete fDigits ;
-  delete fSDigits ;
+  if (fDigits) {
+      fDigits->Delete();
+      delete fDigits;
+      fDigits = 0;
+  }
+  if (fSDigits) {
+      fSDigits->Delete();
+      delete fSDigits;
+      fSDigits = 0;
+  }
    
 }
 //_____________________________________________________________________________

@@ -201,7 +201,11 @@ void AliFMDSDigitizer::Exec(Option_t *option) {
     gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
   }
 
-  delete sdigits ;
+  if (sdigits) {
+    sdigits->Delete();
+    delete sdigits ;
+    sdigits = 0;
+  }
   if(file)
     file->Close() ;
 
