@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.11  2000/06/12 15:35:44  jbarbosa
+  Cleaned up version.
+
   Revision 1.10  2000/06/09 14:59:25  jbarbosa
   New default version. No setters needed, no hits.
 
@@ -121,15 +124,16 @@ AliRICHv0::AliRICHv0(const char *name, const char *title)
     
     fCkovNumber=0;
     fFreonProd=0;
+    Int_t i=0;
     
     fChambers = new TObjArray(kNCH);
-    for (Int_t i=0; i<kNCH; i++) {
+    for (i=0; i<kNCH; i++) {
       
       (*fChambers)[i] = new AliRICHChamber();  
       
     }
   
-    for (Int_t i=0; i<kNCH; i++) {
+    for (i=0; i<kNCH; i++) {
       SetGeometryModel(i,geometry);
       SetSegmentationModel(i, segmentationV0);
       SetResponseModel(i, responseV0);

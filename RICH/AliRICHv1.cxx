@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/06/12 15:36:16  jbarbosa
+  Cleaned up version.
+
   Revision 1.1  2000/06/09 15:00:31  jbarbosa
   New full version. All parameters configurable.
 
@@ -80,9 +83,10 @@ AliRICHv1::AliRICHv1(const char *name, const char *title)
 
     fCkovNumber=0;
     fFreonProd=0;
+    Int_t i=0;
 
     fChambers = new TObjArray(kNCH);
-    for (Int_t i=0; i<kNCH; i++) {
+    for (i=0; i<kNCH; i++) {
     
 	(*fChambers)[i] = new AliRICHChamber();  
 	
@@ -106,7 +110,7 @@ void AliRICHv1::Init()
     // 
     // Initialize Tracking Chambers
     //
-    for (Int_t i=1; i<kNCH; i++) {
+    for (i=1; i<kNCH; i++) {
 	//printf ("i:%d",i);
 	( (AliRICHChamber*) (*fChambers)[i])->Init();  
     }  
