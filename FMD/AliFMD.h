@@ -39,7 +39,7 @@ public:
    // Digitisation
    TClonesArray *ReconParticles() const {return fReconParticles;}   
   virtual void SetHitsAddressBranch(TBranch *b){b->SetAddress(&fHits);}
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager);
+  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
  protected:
 //Granularity

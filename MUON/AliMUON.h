@@ -61,7 +61,7 @@ class AliMUON : public  AliDetector {
     virtual void   Digits2Reco();
     virtual void   FindClusters();
     // Digitisation 
-    virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager);
+    virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
     virtual void   SDigits2Digits();      
     // Configuration Methods (per station id)
     //

@@ -758,7 +758,7 @@ void AliTOF::Hits2SDigits(Int_t evNumber1, Int_t evNumber2)
 }
 
 //___________________________________________________________________________
-AliDigitizer* AliTOF::CreateDigitizer(AliRunDigitizer* manager)
+AliDigitizer* AliTOF::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliTOFDigitizer(manager);
 }

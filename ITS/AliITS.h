@@ -120,7 +120,7 @@ class AliITS : public AliDetector {
     void SetTreeAddressD(TTree *treeD);
     void Hits2SDigits(); // Turn hits into SDigits
     void Hits2PreDigits(); // Turn hits into SDigits
-    AliDigitizer* CreateDigitizer(AliRunDigitizer* manager);
+    AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
     void SDigits2Digits(){SDigitsToDigits("All");} // Turn SDigits to Digits
     void SDigitsToDigits(Option_t *opt="All"); // Turn SDigits to Digits
     void Hits2Digits(); // Turn hits straight into Digits.

@@ -343,7 +343,7 @@ void AliFMD::MakeBranchInTreeD(TTree *treeD, const char *file)
 }
 
 //____________________________________________________________________________
-AliDigitizer* AliFMD::CreateDigitizer(AliRunDigitizer* manager)
+AliDigitizer* AliFMD::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliFMDDigitizer(manager);
 }

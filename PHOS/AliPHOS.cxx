@@ -449,7 +449,7 @@ void AliPHOS::Hits2SDigits()
 }
 
 //____________________________________________________________________________
-AliDigitizer* AliPHOS::CreateDigitizer(AliRunDigitizer* manager)
+AliDigitizer* AliPHOS::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliPHOSDigitizer(manager);
 }

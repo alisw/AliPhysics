@@ -255,7 +255,7 @@ void AliEMCAL::Hits2SDigits()
 }
 
 //____________________________________________________________________________
-AliDigitizer* AliEMCAL::CreateDigitizer(AliRunDigitizer* manager)
+AliDigitizer* AliEMCAL::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliEMCALDigitizer(manager);
 }

@@ -54,7 +54,7 @@ class AliPHOS : public AliDetector {
   virtual AliLoader* MakeLoader(const char* topfoldername);
  
   virtual void    Hits2SDigits();
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager);
+  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
 protected:
   

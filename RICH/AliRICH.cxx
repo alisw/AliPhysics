@@ -81,7 +81,7 @@ AliRICH::AliRICH()
   fSdigits    =0; fNsdigits   =0;
   fDigitsNew  =0; for(int i=0;i<kNCH;i++) fNdigitsNew[i]  =0;
   fClusters   =0; for(int i=0;i<kNCH;i++) fNclusters[i]=0;
-  
+  fRecos      =0; fNrecos     =0;
   fCerenkovs  =0; fNcerenkovs =0;
   fSpecials   =0; fNspecials  =0;  
   fCkovNumber=fFreonProd=0;  
@@ -99,7 +99,8 @@ AliRICH::AliRICH(const char *name, const char *title)
   fSdigits=    0;
   fDigitsNew=  0;
   fClusters=   0;
-  
+  fRecos      =0;
+
   fCerenkovs=  0;     CreateCerenkovsOld();  gAlice->GetMCApp()->AddHitList(fCerenkovs);
   fSpecials=   0;     CreateSpecialsOld();   
   
@@ -120,7 +121,7 @@ AliRICH::~AliRICH()
   if(fDigits)    delete fDigits;
   if(fDigitsNew) {fDigitsNew->Delete();   delete fDigitsNew;}
   if(fClusters)  {fClusters->Delete();    delete fClusters;}
-  
+  if(fRecos)     delete fRecos;
   if(fCerenkovs) delete fCerenkovs;
   if(fSpecials)  delete fSpecials;
   if(GetDebug()) Info("dtor","Stop.");    

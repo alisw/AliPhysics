@@ -339,7 +339,7 @@ void   AliMUON::SetNsec(Int_t id, Int_t nsec)
     ((AliMUONChamber*) fChambers->At(id))->SetNsec(nsec);
 }
 //____________________________________________________________________
-AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager)
+AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliMUONDigitizerv1(manager);
 }

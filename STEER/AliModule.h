@@ -82,7 +82,7 @@ public:
   virtual void        AddHit(Int_t, Int_t*, Float_t *) {
   Error("AddDigit","Hits cannot be added to module %s\n",fName.Data());}
   virtual void        Hits2SDigits() {}
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* /*manager*/) 
+  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* /*manager*/) const 
     {return NULL;}
   virtual void        SDigits2Digits() {}
   virtual void        Hits2Digits() {}

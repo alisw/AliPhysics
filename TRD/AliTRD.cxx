@@ -281,7 +281,7 @@ void AliTRD::Hits2SDigits()
   }
 
 //_____________________________________________________________________________
-AliDigitizer* AliTRD::CreateDigitizer(AliRunDigitizer* manager)
+AliDigitizer* AliTRD::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliTRDdigitizer(manager);
 }

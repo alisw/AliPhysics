@@ -263,7 +263,7 @@ void AliSTART::Hit2digit(Int_t /*evnum*/)
 }
 
 //_____________________________________________________________________________
-AliDigitizer* AliSTART::CreateDigitizer(AliRunDigitizer* manager)
+AliDigitizer* AliSTART::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliSTARTDigitizer(manager);
 }

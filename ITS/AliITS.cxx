@@ -983,7 +983,7 @@ void AliITS::Hits2PreDigits(){
     HitsToPreDigits(header->GetEvent(),0,-1," ",fOpt," ");
 }
 //______________________________________________________________________
-AliDigitizer* AliITS::CreateDigitizer(AliRunDigitizer* manager)
+AliDigitizer* AliITS::CreateDigitizer(AliRunDigitizer* manager) const
 {
   return new AliITSDigitizer(manager);
 }

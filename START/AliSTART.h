@@ -44,7 +44,7 @@ public:
    virtual void   SetTreeAddress();
    TClonesArray   *Photons() {return fPhotons;}
    
-   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager);
+   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
 protected:
    Int_t fIdSens;    // Sensetive Cherenkov radiator
