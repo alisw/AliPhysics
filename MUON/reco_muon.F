@@ -3597,6 +3597,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.3  1999/10/05 17:15:45  fca
+* Minor syntax for the Alpha OSF
+*
 * Revision 1.2  1999/08/06 14:12:30  fca
 * Remove several warnings
 *
@@ -4953,6 +4956,8 @@ C --- Common containing magnetic field map data
      $,XMBEG,YMBEG,ZMBEG,XMEND,YMEND,ZMEND
      $,BV(MAXFLD)
 
+      CHARACTER*255 CHDIR
+
       ISXFMAP = 3
   
       IF(ISXFMAP.EQ.1) THEN
@@ -4963,7 +4968,10 @@ C --- Common containing magnetic field map data
 10000    FORMAT(' *SXFMAP* Magnetic field map flag: ',I5
      $        ,'; Reading magnetic field map data ')
 *
-         OPEN(77,FILE='data/field01.dat',
+         CHDIR=' '
+         CALL GETENVF('ALICE_ROOT',CHDIR)
+         LEND=LNBLNK(CHDIR)
+         OPEN(77,FILE=CHDIR(1:LEND)//'/data/field01.dat',
      $        FORM='FORMATTED',STATUS='OLD')
          READ(77,*) NX,NY,NZ,DX,DY,DZ,XMBEG,YMBEG,ZMBEG
          PRINT*,'NX,NY,NZ,DX,DY,DZ,XMBEG,YMBEG,ZMBEG',

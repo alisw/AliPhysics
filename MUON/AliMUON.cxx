@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  1999/10/05 17:15:45  fca
+Minor syntax for the Alpha OSF
+
 Revision 1.10  1999/10/01 09:24:40  fca
 Protect against no current file in FinishEvent
 
@@ -624,31 +627,30 @@ void AliMUON::StepManager()
     printf("Dummy version of muon step -- it should never happen!!\n");
     /*
     const Float_t kRaddeg = 180/TMath::Pi();
-    AliMC* pMC = AliMC::GetMC();
     Int_t nsec, ipart;
     Float_t x[4], p[4];
     Float_t pt, th0, th2;
     char proc[5];
     if(fAccCut) {
-	if((nsec=pMC->NSecondaries())>0) {
-	    pMC->ProdProcess(proc);
-	    if((pMC->TrackPid()==443 || pMC->TrackPid()==553) && !strcmp(proc,"DCAY")) {
+	if((nsec=gMC->NSecondaries())>0) {
+	    gMC->ProdProcess(proc);
+	    if((gMC->TrackPid()==443 || gMC->TrackPid()==553) && !strcmp(proc,"DCAY")) {
 		//
 		// Check angular acceptance
 		// --- and have muons from resonance decays in the wanted window --- 
 		if(nsec != 2) {
 		    printf(" AliMUON::StepManager: Strange resonance Decay into %d particles\n",nsec);
-		    pMC->StopEvent();
+		    gMC->StopEvent();
 		} else {
-		    pMC->GetSecondary(0,ipart,x,p);
+		    gMC->GetSecondary(0,ipart,x,p);
 		    pt  = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
 		    th0 = TMath::ATan2(pt,p[2])*kRaddeg;
-	 	    pMC->GetSecondary(1,ipart,x,p);
+	 	    gMC->GetSecondary(1,ipart,x,p);
 		    pt  = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
 		    th2 = TMath::ATan2(pt,p[2])*kRaddeg;
 		    if(!(fAccMin < th0 && th0 < fAccMax) ||
 		       !(fAccMin < th2 && th2 < fAccMax)) 
-			pMC->StopEvent();
+			gMC->StopEvent();
 		}
 	    }
 	}
@@ -1766,7 +1768,7 @@ void AliMUON::Reconst(Int_t &ifit, Int_t &idebug, Int_t bgd_ev, Int_t &nev, Int_
       File=new TFile(fFileName);
       cout<<"I have opened "<<fFileName<<" file "<<endl;
       fHits2     = new TClonesArray("AliMUONhit",1000  );
-      fParticles2 = new TClonesArray("GParticle",1000);
+      fParticles2 = new TClonesArray("TParticle",1000);
       first=kFALSE;
     }
     File->cd();

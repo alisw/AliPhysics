@@ -37,7 +37,7 @@ void MUONcombi (Int_t evNumber=0)
    }
 //   TClonesArray &Partarray = *(gAlice->Particles());
    TClonesArray *PartArray = gAlice->Particles();
-   GParticle *Part;
+   TParticle *Part;
    
 
 // Import the Kine and Hits Trees for the event evNumber in the file
@@ -97,7 +97,7 @@ void MUONcombi (Int_t evNumber=0)
 // Di-Muon Loop
 
    Float_t pt1,pt2;
-   GParticle* Muon1, *Muon2;
+   TParticle* Muon1, *Muon2;
 /*
    Combinator->ResetRange();
    for (Combinator->FirstMuonPairSelected(Muon1,Muon2);
