@@ -476,7 +476,9 @@ Bool_t AliRawDB::Create()
 {
    // Create a new raw DB.
 
-   const Int_t maxRetry = 10;
+   const Int_t maxRetry = 200;
+   const Int_t maxSleep = 1;      // seconds
+   const Int_t maxSleepLong = 10; // seconds
    Int_t retry = 0;
 
 again:
@@ -495,8 +497,9 @@ again:
                         Form("ALICE MDC%d raw DB", kMDC), fCompress);
    if (!fRawDB) {
       if (retry < maxRetry) {
-         Warning("Create", "failure to open file, sleeping 10 seconds before retrying...");
-         gSystem->Sleep(10000);
+         Warning("Create", "failure to open file, sleeping %d %s before retrying...",
+                 maxSleep, maxSleep==1 ? "second" : "seconds");
+         gSystem->Sleep(maxSleep*1000);
          goto again;
       }
       Error("Create", "failure to open file %s after %d tries", fname, maxRetry);
@@ -508,8 +511,9 @@ again:
           fRawDB->GetErrno() == 1027) {     // SESYSERR
          fRawDB->ResetErrno();
          delete fRawDB;
-         Warning("Create", "file is a zombie (no space), sleeping 10 seconds before retrying...");
-         gSystem->Sleep(10000);   // sleep 10 seconds before retrying
+         Warning("Create", "file is a zombie (no space), sleeping %d %s before retrying...",
+                 maxSleepLong, maxSleepLong==1 ? "second" : "seconds");
+         gSystem->Sleep(maxSleepLong*1000);   // sleep 10 seconds before retrying
          goto again;
       }
       Error("Create", "file %s is zombie", fname);
@@ -517,8 +521,9 @@ again:
       delete fRawDB;
       fRawDB = 0;
       if (retry < maxRetry) {
-         Warning("Create", "file is a zombie, sleeping 10 seconds before retrying...");
-         gSystem->Sleep(10000);
+         Warning("Create", "file is a zombie, sleeping %d %s before retrying...",
+                 maxSleep, maxSleep==1 ? "second" : "seconds");
+         gSystem->Sleep(maxSleep*1000);
          goto again;
       }
       Error("Create", "failure to open file %s after %d tries", fname, maxRetry);
