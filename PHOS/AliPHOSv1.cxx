@@ -163,7 +163,7 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
     curHit = (AliPHOSHit*) (*fHits)[hitCounter] ;
     if(curHit->GetPrimary() != primary) break ; // We add hits with the same primary, while GEANT treats primaries succesively 
     if( *curHit == *newHit ) {
-      *curHit = *curHit + *newHit ;
+      *curHit + *newHit ;
       deja = kTRUE ;
     }
   }
