@@ -76,7 +76,6 @@ class AliRICH : public  AliDetector {
     virtual void   SetGeometryModel(Int_t id, AliRICHGeometry *geometry);
     virtual void   SetSegmentationModel(Int_t id, AliSegmentation *segmentation);
     virtual void   SetResponseModel(Int_t id, AliRICHResponse *response);
-    virtual void   SetNsec(Int_t id, Int_t nsec);
 // Set Reconstruction Model
     virtual void   SetReconstructionModel(Int_t id, AliRICHClusterFinder *reconstruction);
 // Set source debugging level
