@@ -318,8 +318,34 @@ void AliTRDdigitizer::Exec(Option_t* option)
   }
 
   // Initialization
-  InitDetector();
 
+  AliRunLoader* orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  if (InitDetector()) {
+    AliLoader* ogime = orl->GetLoader("TRDLoader");
+
+    TTree* tree = 0;
+    if (fSDigits)
+      { 
+	//if we produce SDigits
+	tree = ogime->TreeS();
+	if (!tree)
+	  {
+	    ogime->MakeTree("S");
+	    tree = ogime->TreeS();
+	  }
+      }
+    else
+      {//if we produce Digits
+	tree = ogime->TreeD();
+	if (!tree)
+	  {
+	    ogime->MakeTree("D");
+	    tree = ogime->TreeD();
+	  }
+      }
+    MakeBranch(tree);
+  }
+ 
   for (iInput = 0; iInput < nInput; iInput++) {
 
     if (fDebug > 0) {
@@ -376,12 +402,11 @@ void AliTRDdigitizer::Exec(Option_t* option)
     printf("Write the digits\n");
   }
   
-  AliRunLoader* orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-  AliLoader* ogime = orl->GetLoader("TRDLoader");
-
-  fDigitsManager->MakeBranch(ogime->TreeD());
-
   fDigitsManager->WriteDigits();
+
+  //Write parameters
+  orl->CdGAFile();
+  GetParameter()->Write();
 
   if (fDebug > 0) {
     printf("<AliTRDdigitizer::Exec> ");
