@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.9  2000/11/01 15:33:11  jbarbosa
+  Updated to handle both reconstruction algorithms.
+
   Revision 1.8  2000/10/03 21:44:09  morsch
   Use AliSegmentation and AliHit abstract base classes.
 
@@ -800,7 +803,7 @@ void AliRICHDisplay::LoadCoG(Int_t chamber, Int_t cathode)
        points->SetHitIndex(-1);
        points->SetTrackIndex(-1);
        points->SetDigitIndex(-1);
-       Float_t  vectorLoc[3]={mRaw->fX,6.276,mRaw->fY};
+       Float_t  vectorLoc[3]={mRaw->fX,-5,mRaw->fY};
        Float_t  vectorGlob[3];
        iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
        points->SetPoint(iraw,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
@@ -854,7 +857,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     points1D->SetHitIndex(-1);
 	     points1D->SetTrackIndex(-1);
 	     points1D->SetDigitIndex(-1);
-	     Float_t  vectorLoc[3]={mRec1D->fX,6.276,mRec1D->fY};
+	     Float_t  vectorLoc[3]={mRec1D->fX,-5,mRec1D->fY};
 	     Float_t  vectorGlob[3];
 	     iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
 	     points1D->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
@@ -907,7 +910,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     points3D->SetHitIndex(-1);
 	     points3D->SetTrackIndex(-1);
 	     points3D->SetDigitIndex(-1);
-	     Float_t  vectorLoc[3]={mRec3D->fX,6.276,mRec3D->fY};
+	     Float_t  vectorLoc[3]={mRec3D->fX,-5,mRec3D->fY};
 	     Float_t  vectorGlob[3];
 	     iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
 	     points3D->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
@@ -938,39 +941,47 @@ void AliRICHDisplay::LoadDigits()
    AliSegmentation*      segmentation;
    Int_t nAllDigits=0;
    Int_t ich;
-   
-   for (ich=0; ich<kNCH; ich++) {
-       TClonesArray *pRICHdigits  = pRICH->DigitsAddress(ich);
-       if (pRICHdigits == 0) continue;
-       gAlice->ResetDigits();
-       gAlice->TreeD()->GetEvent(1);
-       Int_t ndigits = pRICHdigits->GetEntriesFast();
-        nAllDigits+=ndigits;
-   }
-   if (fPoints == 0) fPoints = new TObjArray(nAllDigits);   
-   Int_t counter=0;
-   for (ich=0; ich<kNCH; ich++) {
-       TClonesArray *pRICHdigits  = pRICH->DigitsAddress(ich);
-       if (pRICHdigits == 0) continue;
-       gAlice->ResetDigits();
-       gAlice->TreeD()->GetEvent(1);
-       Int_t ndigits = pRICHdigits->GetEntriesFast();
-       if (ndigits == 0) continue;
-       iChamber = &(pRICH->Chamber(ich));
-       segmentation=iChamber->GetSegmentationModel();
-       Float_t dpx  = segmentation->Dpx();
-       Float_t dpy  = segmentation->Dpy();
 
-       //printf("Dpx:%d, Dpy:%d\n",dpx,dpy);
+   printf("Entering LoadDigits\n");
+
+   if (gAlice->TreeD())
+     {
+   
+       for (ich=0; ich<kNCH; ich++) {
+	 TClonesArray *pRICHdigits  = pRICH->DigitsAddress(ich);
+	 printf ("Chamber:%d has adress:%p\n", ich, pRICHdigits );
+	 if (pRICHdigits == 0) continue;
+	 gAlice->ResetDigits();
+	 gAlice->TreeD()->GetEvent(0);
+	 Int_t ndigits = pRICHdigits->GetEntriesFast();
+	 printf("ndigits:%d\n",ndigits);
+	 nAllDigits+=ndigits;
+       }
        
-       AliRICHDigit  *mdig;
-       AliRICHPoints *points = 0;
-       TMarker3DBox  *marker = 0;
-       //
-       //loop over all digits and store their position
-       Int_t npoints=1;
-       
-       for (Int_t digit=0;digit<ndigits;digit++) {
+       if (fPoints == 0) fPoints = new TObjArray(nAllDigits);   
+       Int_t counter=0;
+       for (ich=0; ich<kNCH; ich++) {
+	 TClonesArray *pRICHdigits  = pRICH->DigitsAddress(ich);
+	 if (pRICHdigits == 0) continue;
+	 gAlice->ResetDigits();
+	 gAlice->TreeD()->GetEvent(0);
+	 Int_t ndigits = pRICHdigits->GetEntriesFast();
+	 if (ndigits == 0) continue;
+	 iChamber = &(pRICH->Chamber(ich));
+	 segmentation=iChamber->GetSegmentationModel();
+	 Float_t dpx  = segmentation->Dpx();
+	 Float_t dpy  = segmentation->Dpy();
+	 
+	 //printf("Dpx:%d, Dpy:%d\n",dpx,dpy);
+	 
+	 AliRICHDigit  *mdig;
+	 AliRICHPoints *points = 0;
+	 TMarker3DBox  *marker = 0;
+	 //
+	 //loop over all digits and store their position
+	 Int_t npoints=1;
+	 
+	 for (Int_t digit=0;digit<ndigits;digit++) {
 	   mdig    = (AliRICHDigit*)pRICHdigits->UncheckedAt(digit);
 	   points = new AliRICHPoints(npoints);
 	   fPoints->AddAt(points,counter);
@@ -984,7 +995,7 @@ void AliRICHDisplay::LoadDigits()
 	   points->SetMarkerSize(0.5);
 	   Float_t xpad, ypad, zpad;
 	   segmentation->GetPadC(mdig->fPadX, mdig->fPadY,xpad, ypad, zpad);
-	   Float_t vectorLoc[3]={xpad,6.276,ypad};
+	   Float_t vectorLoc[3]={xpad,-5,ypad};
 	   Float_t  vectorGlob[3];
 	   iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
 	   points->SetParticle(-1);
@@ -1003,8 +1014,9 @@ void AliRICHDisplay::LoadDigits()
 	   marker->SetFillColor(color);
 	   marker->SetRefObject((TObject*)points);
 	   points->Set3DMarker(0, marker);
-       } // loop over digits
-   } // loop over chambers 
+	 } // loop over digits
+       } // loop over chambers 
+     } //if TreeD
 }
 
 
@@ -1057,8 +1069,7 @@ void AliRICHDisplay::LoadHits(Int_t chamber)
 	    points = new AliRICHPoints(1);
 	    fPhits->AddAt(points,npoints);
             mHit = (AliRICHHit*)pRICHhits->UncheckedAt(hit);
-	    TParticle *current = 
-		(TParticle*)(*gAlice->Particles())[mHit->Track()];
+	    TParticle *current = (TParticle*)gAlice->Particle(mHit->Track());
 	    if (current->GetPdgCode() == 50000050) {
 		points->SetMarkerColor(kBlue);
 	    } else if (current->GetPdgCode() == 50000051) {
