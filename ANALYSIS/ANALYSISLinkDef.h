@@ -22,7 +22,7 @@
 
 #pragma link C++ class AliReader+;
 #pragma link C++ class AliReaderESD+;
-
+#pragma link C++ class AliReaderKineTree+;
 
 #pragma link C++ class AliFlowAnalysis+;
 
