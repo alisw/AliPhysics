@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/30 17:16:14  coppedis
+Changes suggested by fca
+
 Revision 1.5  2000/11/22 11:30:12  coppedis
 Major code revision
 
@@ -75,20 +78,32 @@ AliGenZDC::AliGenZDC(Int_t npart)
   fCosy  = 0.;
   fCosz  = 1.;
   fPseudoRapidity = 0.;
+  
   fFermiflag = 1;
   // LHC values for beam divergence and crossing angle
   fBeamDiv = 0.000032;
   fBeamCrossAngle = 0.0001;
   fBeamCrossPlane = 2;
+  
+  Int_t i, j;
+  for(i=0; i<201; i++){
+     fProbintp[i] = 0;
+     fProbintn[i] = 0;
+  }
+  for(j=0; j<3; j++){
+     fPp[i] = 0;
+  }
+  fDebugOpt = 0;
 }
 
 //_____________________________________________________________________________
 void AliGenZDC::Init()
 {
-  printf("		AliGenZDC initialized with:\n");
+  printf("\n\n		AliGenZDC initialized with:\n");
   printf("   Fermi flag = %d, Beam Divergence = %f, Crossing Angle "
          "= %f, Crossing Plane = %d\n\n", fFermiflag, fBeamDiv, fBeamCrossAngle,
 	 fBeamCrossPlane);
+
   //Initialize Fermi momentum distributions for Pb-Pb
   FermiTwoGaussian(207.,82.,fPp,fProbintp,fProbintn);
 }  
@@ -101,8 +116,8 @@ void AliGenZDC::Generate()
   //
   Int_t i;
 
-  Double_t mass, pLab[3], fP0, ddp[3], dddp0, dddp[3];
-  Float_t ptot = fPMin;
+  Double_t Mass, pLab[3], fP0, fP[3], fBoostP[3], ddp[3], dddp0, dddp[3]; 
+  Float_t  fPTrack[3], ptot = fPMin;
   Int_t nt;
   
   if(fPseudoRapidity==0.){ 
@@ -117,8 +132,14 @@ void AliGenZDC::Generate()
     pLab[2] = ptot*TMath::Cos(scang);
   }
   for(i=0; i<=2; i++){
-     fPInit[i] = pLab[i];
      fP[i] = pLab[i];
+  }
+  
+  if(fDebugOpt == 1){
+    printf("\n\n		Initial momentum :	\n");
+    for(i=0; i<=2; i++){
+       printf("	p[%d] = %f\n",i,pLab[i]);
+    }
   }
   
   // Beam divergence and crossing angle
@@ -140,12 +161,12 @@ void AliGenZDC::Generate()
     if((fIpart==kProton) || (fIpart==kNeutron)){
       ExtractFermi(fIpart,fPp,fProbintp,fProbintn,ddp);
     }
-    mass=gAlice->PDGDB()->GetParticle(fIpart)->Mass();
-    fP0 = TMath::Sqrt(fP[0]*fP[0]+fP[1]*fP[1]+fP[2]*fP[2]+mass*mass);
+    Mass=gAlice->PDGDB()->GetParticle(fIpart)->Mass();
+    fP0 = TMath::Sqrt(fP[0]*fP[0]+fP[1]*fP[1]+fP[2]*fP[2]+Mass*Mass);
     for(i=0; i<=2; i++){
        dddp[i] = ddp[i];
     }
-    dddp0 = TMath::Sqrt(dddp[0]*dddp[0]+dddp[1]*dddp[1]+dddp[2]*dddp[2]+mass*mass);
+    dddp0 = TMath::Sqrt(dddp[0]*dddp[0]+dddp[1]*dddp[1]+dddp[2]*dddp[2]+Mass*Mass);
     
     TVector3 b(fP[0]/fP0, fP[1]/fP0, fP[2]/fP0);
     TLorentzVector pFermi(dddp[0], dddp[1], dddp[2], dddp0);
@@ -165,20 +186,23 @@ void AliGenZDC::Generate()
   }
       
   Float_t polar[3] = {0,0,0};
-//  printf("fPTrack = %f, %f, %f \n",fPTrack[0],fPTrack[1],fPTrack[2]);
   gAlice->SetTrack(fTrackIt,-1,fIpart,fPTrack,fOrigin.GetArray(),polar,0,
   		   kPPrimary,nt);
+  if(fDebugOpt == 1){
+    printf("\n\n		Track momentum:\n");
+    printf("\n	 fPTrack = %f, %f, %f \n",fPTrack[0],fPTrack[1],fPTrack[2]);
+  }
 }
 
 //_____________________________________________________________________________
-void AliGenZDC::FermiTwoGaussian(Double_t A, Float_t Z, Double_t* fPp, Double_t*
-  		fProbintp, Double_t* fProbintn)
+void AliGenZDC::FermiTwoGaussian(Float_t A, Float_t Z, Double_t *fPp, 
+                Double_t *fProbintp, Double_t *fProbintn)
 {
 //
 // Momenta distributions according to the "double-gaussian"
 // distribution (Ilinov) - equal for protons and neutrons
 //
-//   printf("		Initialization of Fermi momenta distribution\n");
+
    fProbintp[0] = 0;
    fProbintn[0] = 0;
    Double_t sig1 = 0.113;
@@ -197,18 +221,22 @@ void AliGenZDC::FermiTwoGaussian(Double_t A, Float_t Z, Double_t* fPp, Double_t*
                       alfa*f2/(TMath::Power(sig2,3.)))*0.005;
       fProbintp[i] = fProbintp[i-1] + probp;
       fProbintn[i] = fProbintp[i];
-//      printf(" fProbintp[%d] = %f, fProbintp[%d] = %f\n",i,fProbintp[i],i,fProbintn[i]);
+   }
+   if(fDebugOpt == 1){
+     printf("\n\n		Initialization of Fermi momenta distribution \n");
+     for(Int_t i=0; i<=200; i++){
+        printf(" fProbintp[%d] = %f, fProbintn[%d] = %f\n",i,fProbintp[i],i,fProbintn[i]);
+     }
    }
 } 
 //_____________________________________________________________________________
-void AliGenZDC::ExtractFermi(Int_t id, Double_t* fPp, Double_t* fProbintp,
-                Double_t* fProbintn, Double_t* ddp)
+void AliGenZDC::ExtractFermi(Int_t id, Double_t *fPp, Double_t *fProbintp,
+                Double_t *fProbintn, Double_t *ddp)
 {
 //
 // Compute Fermi momentum for spectator nucleons
 //
-//  printf("		Extraction of Fermi momentum\n");
-
+  
   Int_t i;
   Float_t xx = gRandom->Rndm();
   assert ( id==kProton || id==kNeutron );
@@ -229,17 +257,20 @@ void AliGenZDC::ExtractFermi(Int_t id, Double_t* fPp, Double_t* fProbintp,
 	 ddp[0] = pext*TMath::Sin(tet)*TMath::Cos(phi);
 	 ddp[1] = pext*TMath::Sin(tet)*TMath::Sin(phi);
 	 ddp[2] = pext*cost;
-//  printf(" pFx = %f  pFy = %f  pFz = %f \n",ddp[0],ddp[1],ddp[2]); 
+
+  if(fDebugOpt == 1){
+    printf("\n\n		Extraction of Fermi momentum\n");
+    printf("\n 	pxFermi = %f  pyFermi = %f  pzFermi = %f \n",ddp[0],ddp[1],ddp[2]); 
+  }
 }
 
 //_____________________________________________________________________________
 void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossAngle, 
-                Int_t fBeamCrossPlane, Double_t* pLab)
+                Int_t fBeamCrossPlane, Double_t *pLab)
 {
   Double_t tetpart, fipart, tetdiv=0, fidiv=0, angleSum[2], tetsum, fisum;
   Double_t rvec;
 
-//  printf("		Beam divergence and crossing angle\n");
   Int_t i;
   Double_t pmq = 0.;
   for(i=0; i<=2; i++){
@@ -287,14 +318,17 @@ void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossA
   pLab[0] = pmod*TMath::Sin(tetsum)*TMath::Cos(fisum);
   pLab[1] = pmod*TMath::Sin(tetsum)*TMath::Sin(fisum);
   pLab[2] = pmod*TMath::Cos(tetsum);
-  for(i=0; i<=2; i++){
-     fDivP[i] = pLab[i];
+  if(fDebugOpt == 1){
+    printf("\n\n		Beam divergence and crossing angle\n");
+    for(i=0; i<=2; i++){
+       printf(" 	pLab[%d] = %f\n",i,pLab[i]);
+    }
   }
 }
   
 //_____________________________________________________________________________
 void  AliGenZDC::AddAngle(Double_t theta1, Double_t phi1, Double_t theta2,
-  	       Double_t phi2, Double_t* angleSum)
+  	       Double_t phi2, Double_t *angleSum)
 {
   Double_t temp, conv, cx, cy, cz, ct1, st1, ct2, st2, cp1, sp1, cp2, sp2;
   Double_t rtetsum, tetsum, fisum;

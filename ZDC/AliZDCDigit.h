@@ -42,9 +42,8 @@ class AliZDCDigit : public AliDigitNew {
     return *this ;
   }
   
-// protected:
+ protected:
 
-//  Int_t   fNprimary;          // Number of primaries
   Int_t   fDetector;          // Detector
   Int_t   fQuadrant;          // Quadrant
   Float_t fADCValue;          // ADC channel value

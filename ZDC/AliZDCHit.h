@@ -42,7 +42,7 @@ public:
   Int_t operator == (AliZDCHit &quad) {
      Int_t i;
 //      Superfluo finche' c'e' shunt = 1 !?!?
-//     if(fTrack!=quad.GetTrack()) return 0;
+     if(fTrack!=quad.GetTrack()) return 0;
      for(i=0; i<2; i++) if(fVolume[i]!=quad.GetVolume(i)) return 0;
      return 1;
   }

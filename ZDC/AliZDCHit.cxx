@@ -34,16 +34,18 @@ AliZDCHit::AliZDCHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
   // Add a ZDC hit
   //
   Int_t i;
-  for(i=0; i<2; i++) fVolume[i] = vol[i];
-  fX = hits[0];
-  fY = hits[1];
-  fZ = hits[2];
-  fPrimKinEn = hits[3];
-  fXImpact = hits[4];
-  fYImpact = hits[5];
-  fSFlag = hits[6];
-  fLightPMQ = hits[7];
-  fLightPMC = hits[8];
-  fEnergy = hits[9]; 
+  for(i=0; i<2; i++) {
+     fVolume[i] = vol[i];
+  }
+  fX 		= hits[0];
+  fY 		= hits[1];
+  fZ 		= hits[2];
+  fPrimKinEn 	= hits[3];
+  fXImpact 	= hits[4];
+  fYImpact 	= hits[5];
+  fSFlag 	= hits[6];
+  fLightPMQ 	= hits[7];
+  fLightPMC 	= hits[8];
+  fEnergy 	= hits[9]; 
   
 }

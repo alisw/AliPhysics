@@ -15,7 +15,6 @@
 
 // --- Standard libraries
 #include <stdlib.h>
-#include <search.h> 
 
 // --- ROOT system
 #include <TRandom.h>
@@ -23,9 +22,12 @@
 
 // --- AliRoot classes
 #include "AliZDCFragment.h"
-   
-ClassImp(AliZDCFragment)
  
+ClassImp(AliZDCFragment)
+   
+int comp(const void *i,const void *j) {return *(int *)i - *(int *)j;}
+
+
 //_____________________________________________________________________________
 AliZDCFragment::AliZDCFragment()
 {
@@ -47,13 +49,13 @@ AliZDCFragment::AliZDCFragment(Float_t b)
   fNimf = 0;
   fZmax = 0;
   fTau = 0;
-  fNalpha = 0;
-  fZtot = 0;
-  fNtot = 0;
   for(Int_t i=0; i<=99; i++){
      fZZ[i] = 0;
      fNN[i] = 0;
   }
+  fNalpha = 0;
+  fZtot = 0;
+  fNtot = 0;
   
 }
 
@@ -61,30 +63,30 @@ AliZDCFragment::AliZDCFragment(Float_t b)
 void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
 {
    // Coefficients of polynomial for average number of IMF
-   Float_t  ParamNimf[5]={0.011236,1.8364,56.572,-116.24,58.289}; 
+   const Float_t  ParamNimf[5]={0.011236,1.8364,56.572,-116.24,58.289}; 
    // Coefficients of polynomial for fluctuations on average number of IMF
-   Float_t  ParamFluctNimf[4]={-0.13176,2.9392,-5.2147,2.3092}; 
+   const Float_t  ParamFluctNimf[4]={-0.13176,2.9392,-5.2147,2.3092}; 
    // Coefficients of polynomial for average maximum Z of fragments
-   Float_t  ParamZmax[4]={0.16899,14.203,-2.8284,65.036}; 
+   const Float_t  ParamZmax[4]={0.16899,14.203,-2.8284,65.036}; 
    // Coefficients of polynomial for fluctuations on maximum Z of fragments
-   Float_t  ParamFluctZmax[5]={0.013782,-0.17282,1.5065,1.0654,-2.4317}; 
+   const Float_t  ParamFluctZmax[5]={0.013782,-0.17282,1.5065,1.0654,-2.4317}; 
    // Coefficients of polynomial for exponent tau of fragments Z distribution
-   Float_t  ParamTau[3]={6.7233,-15.85,13.047};  
+   const Float_t  ParamTau[3]={6.7233,-15.85,13.047};  
    //Coefficients of polynomial for average number of alphas
-   Float_t  ParamNalpha[4]={-0.68554,39.605,-68.311,30.165}; 
+   const Float_t  ParamNalpha[4]={-0.68554,39.605,-68.311,30.165}; 
    // Coefficients of polynomial for fluctuations on average number of alphas
-   Float_t  ParamFluctNalpha[5]={0.283,6.2141,-17.113,17.394,-6.6084}; 
+   const Float_t  ParamFluctNalpha[5]={0.283,6.2141,-17.113,17.394,-6.6084}; 
    // Coefficients of function for Pb nucleus skin
-   Float_t  ParamSkinPb[2]={0.93,11.05};
+   const Float_t  ParamSkinPb[2]={0.93,11.05};
    
    // Thickness of nuclear surface
-   Float_t  NuclearThick = 0.52;
+   const Float_t  NuclearThick = 0.52;
    // Maximum impact parameter for U [r0*A**(1/3)]
-   Float_t  bMaxU = 14.87;
+   const Float_t  bMaxU = 14.87;
    // Maximum impact parameter for Pb [r0*A**(1/3)]
-   Float_t  bMaxPb = 14.22;
+   const Float_t  bMaxPb = 14.22;
    // Z of the projectile
-   Float_t  ZProj = 82.;
+   const Float_t  ZProj = 82.;
    
    // From b(Pb) to b(U)
    Float_t  bU = fB*bMaxU/bMaxPb;
@@ -128,7 +130,6 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    Float_t y = gRandom->Rndm();
    if(y < ((AverageNimf+FluctNimf)-fNimf)) fNimf += 1;
    if(fNimf ==0 && ZbNorm>0.75) fNimf = 1;
-//   printf("\n fNimf = %d\n", fNimf);   
    
    Float_t AverageZmax = ParamZmax[0]+ParamZmax[1]*ZbNorm+ParamZmax[2]*
            TMath::Power(ZbNorm,2)+ParamZmax[3]*TMath::Power(ZbNorm,3);
@@ -143,7 +144,11 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    FluctZmax = FluctZmax*xg;
    fZmax = AverageZmax+FluctZmax;
    if(fZmax>ZProj) fZmax = ZProj;
-//   printf("\n fZmax = %f\n", fZmax);   
+   
+//   printf("\n\n ------------------------------------------------------------");   
+//   printf("\n Generation of nuclear fragments\n");   
+//   printf("\n fNimf = %d\n", fNimf);   
+//   printf("\n fZmax = %f\n", fZmax); 
 
    // Find the number of alpha particles 
    // from Singh et al. : Pb+emulsion
@@ -160,11 +165,12 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    Float_t yy = gRandom->Rndm();
    if(yy < ((AverageAlpha+FluctAlpha)-fNalpha)) fNalpha += 1;
 
-   Int_t Choice = 0;
-   Float_t ZbFrag = 0, SumZ = 0.;
    // 2 possibilities:
    // 1) for bNorm < 0.9 ==> first remove alphas, then fragments
    // 2) for bNorm > 0.9 ==> first remove fragments, then alphas
+
+   Int_t Choice = 0;
+   Float_t ZbFrag = 0, SumZ = 0.;
 
    if(bNorm<=0.9) {
    // remove alpha from zbound to find zbound for fragments  (Z>=3)
@@ -216,23 +222,22 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    }
    delete funTau;
    
-   // Sorting vector in ascending order
- 
-//   int comp(const void*, const void*);
+   // Sorting vector in ascending order with C function QSORT 
    qsort((void*)zz,fNimf,sizeof(float),comp);
 
-   for(Int_t i=0; i<fNimf; i++){
+   
+//   for(Int_t i=0; i<fNimf; i++){
 //      printf("\n After sorting -> zz[%d] = %f \n",i,zz[i]);
-   }
+//   }
    
    // Rescale the maximum charge to fZmax
    for(Int_t j=0; j<fNimf; j++){
      fZZ[j] = Int_t (zz[j]*fZmax/zz[fNimf-1]);
      if(fZZ[j]<3) fZZ[j] = 3;
-//     printf("\n fZZ[%d] = %d \n",j,fZZ[j]);
+//     printf("\n 	fZZ[%d] = %d \n",j,fZZ[j]);
    }
    
-   // Check that the sum of the bound charges is not greater than Zbound-Zalfa
+   // Check that the sum of the bound charges is not > than Zbound-Zalfa
    
    for(Int_t ii=0; ii<fNimf; ii++){
      SumZ += fZZ[ii];
@@ -271,21 +276,13 @@ void AliZDCFragment::GenerateIMF(Int_t* fZZ, Int_t &fNalpha)
    for(Int_t i=0; i<fNimf; i++){
      SumZ += fZZ[i];
    }
-//   printf("\n	The END ->  fNimf = %d, SumZ = %f, fZmax = %f\n", 
-//           fNimf, SumZ, fZmax);
-//   printf("\n fNalpha = %d\n", fNalpha);   
-//   for(Int_t j=0; j<fNimf; j++){
-//     printf("\n 	fZZ[%d] = %d \n",j,fZZ[j]);
-//   }
    
 }
-
-int comp(const void *i,const void *j){return (int*)j-(int*)i;}
 
 //_____________________________________________________________________________
 void AliZDCFragment::AttachNeutrons(Int_t *fZZ, Int_t *fNN, Int_t &fZtot,Int_t &fNtot)
 {
-   Float_t AIon[68]={1.87612,2.80943,3.7284,5.60305,6.53536,
+   const Float_t AIon[68]={1.87612,2.80943,3.7284,5.60305,6.53536,
      		     6.53622,8.39479,9.32699,10.2551,11.17793,
      		     13.04378,14.89917,17.6969,18.62284,21.41483,
      		     22.34193,25.13314,26.06034,28.85188,29.7818,
@@ -301,7 +298,7 @@ void AliZDCFragment::AttachNeutrons(Int_t *fZZ, Int_t *fNN, Int_t &fZtot,Int_t &
      		     168.554,171.349,173.4536,177.198,179.0518,
      		     180.675,183.473,188.1345,190.77,193.729,
      		     221.74295};
-   Int_t ZIon[68]={1,1,2,3,3,
+   const Int_t ZIon[68]={1,1,2,3,3,
      		     4,4,5,5,6,
      		     7,8,9,10,11,
      		     12,13,14,15,16,
@@ -318,21 +315,20 @@ void AliZDCFragment::AttachNeutrons(Int_t *fZZ, Int_t *fNN, Int_t &fZtot,Int_t &
       		     92};
     
    Int_t iZ, iA;  
-//   printf("\n jfNimf=%d\n",fNimf);  
+//   printf("\n fNimf=%d\n",fNimf);  
+
    for(Int_t i=0; i<fNimf; i++) {
       for(Int_t j=0; j<68; j++) {
         iZ = ZIon[j];
 	if((fZZ[i]-iZ) == 0){
 	  iA = Int_t(AIon[j]/0.93149432+0.5);
 	  fNN[i] = iA - iZ;
-//          printf("\n j=%d,iA=%d,fZZ[%d]=%d,fNN[%d]=%d\n",j,iA,i,fZZ[i],i,fNN[i]);
           break;
 	}
 	else if((fZZ[i]-iZ) < 0){
 	  fZZ[i] = ZIon[j-1];
 	  iA = Int_t (AIon[j-1]/0.93149432+0.5);
 	  fNN[i] = iA - ZIon[j-1];
-//          printf("\n j=%d,iA=%d,fZZ[%d]=%d,fNN[%d]=%d\n",j,iA,i,fZZ[i],i,fNN[i]);
           break;
 	}
       }

@@ -14,7 +14,7 @@
 
 #include <TMath.h>
 
-int comp(const void*, const void*);
+extern int comp(const void *, const void *);
  
 class AliZDCFragment : public TNamed {
 
@@ -40,9 +40,8 @@ protected:
    Float_t  fZmax;	 // Mean value of maximum Z of fragment
    Float_t  fTau;	 // Exponent of charge distribution: dN/dZ = Z*exp(-fTau)
    Int_t    fZZ[100];	 // Array of atomic numbers of fragments
-   Int_t    fNalpha;	 // Number of alpha particles
-   
    Int_t    fNN[100];	 // Array of number of neutrons of fragments
+   Int_t    fNalpha;	 // Number of alpha particles
    Int_t    fZtot;	 // Total number of bound protons
    Int_t    fNtot;	 // Total number of bound neutrons
 

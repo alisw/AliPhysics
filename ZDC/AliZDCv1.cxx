@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/03/12 17:47:56  hristov
+Changes needed on Sun with CC 5.0
+
 Revision 1.14  2001/02/23 16:48:28  coppedis
 Correct bug in ZEM hit definition
 
@@ -58,7 +61,7 @@ Revision 1.2  2000/07/11 11:12:34  fca
 Some syntax corrections for non standard HP aCC
 
 Revision 1.1  2000/07/10 13:58:01  fca
-New version of ZDC from E.Scomparin & C.Oppedisano
+New version of ZDC from E.Scomparin &amp; C.Oppedisano
 
 Revision 1.7  2000/01/19 17:17:40  fca
 
@@ -122,10 +125,9 @@ AliZDCv1::AliZDCv1() : AliZDC()
   fMedSensF2  = 0;
   fMedSensZN  = 0;
   fMedSensZP  = 0;
-  fMedSensGR  = 0;
   fMedSensZEM = 0;
+  fMedSensGR  = 0;
   fMedSensPI  = 0;
-  fNoShower   = 0;
 }
  
 //_____________________________________________________________________________
@@ -136,16 +138,61 @@ AliZDCv1::AliZDCv1(const char *name, const char *title)
   // Standard constructor for Zero Degree Calorimeter 
   //
 
-  fDigits = new TClonesArray("AliZDCDigit",1000);
-
   fMedSensF1  = 0;
   fMedSensF2  = 0;
   fMedSensZN  = 0;
   fMedSensZP  = 0;
-  fMedSensGR  = 0;
   fMedSensZEM = 0;
+  fMedSensGR  = 0;
   fMedSensPI  = 0;
-  fNoShower   = 0;
+
+  
+  // Parameters for light tables
+  fNalfan = 90;       // Number of Alfa (neutrons)
+  fNalfap = 90;       // Number of Alfa (protons)
+  fNben = 18;         // Number of beta (neutrons)
+  fNbep = 28;         // Number of beta (protons)
+  Int_t ip,jp,kp;
+  for(ip=0; ip<4; ip++){
+     for(kp=0; kp<fNalfap; kp++){
+        for(jp=0; jp<fNbep; jp++){
+           fTablep[ip][kp][jp] = 0;
+        } 
+     }
+  }
+  Int_t in,jn,kn;
+  for(in=0; in<4; in++){
+     for(kn=0; kn<fNalfan; kn++){
+        for(jn=0; jn<fNben; jn++){
+           fTablen[in][kn][jn] = 0;
+        } 
+     }
+  }
+
+  // Parameters for hadronic calorimeters geometry
+  fDimZP[0] = 11.2;
+  fDimZP[1] = 6.;
+  fDimZP[2] = 75.;    
+  fPosZN[0] = 0.;
+  fPosZN[1] = 0.;
+  fPosZN[2] = 11650.;
+  fPosZP[0] = -23.;
+  fPosZP[1] = 0.;
+  fPosZP[2] = 11600.;
+  fFibZN[0] = 0.;
+  fFibZN[1] = 0.01825;
+  fFibZN[2] = 50.;
+  fFibZP[0] = 0.;
+  fFibZP[1] = 0.0275;
+  fFibZP[2] = 75.;
+  
+  // Parameters for EM calorimeter geometry
+  fPosZEM[0] = 0.;
+  fPosZEM[1] = 5.8;
+  fPosZEM[2] = 11600.;
+  
+
+  fDigits = new TClonesArray("AliZDCDigit",1000);
 }
  
 //_____________________________________________________________________________
@@ -164,15 +211,12 @@ void AliZDCv1::CreateGeometry()
 void AliZDCv1::CreateBeamLine()
 {
   
-  Float_t angle;
-  Float_t zq, conpar[9], elpar[3], tubpar[3];
+  Float_t angle, zq, conpar[9], elpar[3], tubpar[3], zd1, zd2;
   Int_t im1, im2;
-  Float_t zd1, zd2;
-  
   
   Int_t *idtmed = fIdtmed->GetArray();
   
-  // -- Mother of the ZDC 
+  // -- Mother of the ZDCs 
   
   conpar[0] = 0.;
   conpar[1] = 360.;
@@ -249,7 +293,7 @@ void AliZDCv1::CreateBeamLine()
   gMC->Gsvolu("P002", "TUBE", idtmed[5], tubpar, 3);
   gMC->Gspos("P002", 1, "ZDC ", 0., 0., tubpar[2] + zd1, 0, "ONLY");
   
-  zd1 += tubpar[2] * 2.;
+  zd1 += tubpar[2]*2.;
   
   tubpar[0] = 10./2.;
   tubpar[1] = 10.4/2.;
@@ -553,9 +597,31 @@ void AliZDCv1::CreateBeamLine()
 void AliZDCv1::CreateZDC()
 {
   
-  Int_t *idtmed = fIdtmed->GetArray();
   Int_t irot1, irot2;
   Float_t DimPb[6], DimVoid[6];
+  
+  Int_t *idtmed = fIdtmed->GetArray();
+
+  // Parameters for hadronic calorimeters geometry
+  // NB -> parameters used ONLY in CreateZDC()
+  Float_t fDimZN[3] = {3.52, 3.52, 50.};  // Dimensions of neutron detector
+  Float_t fGrvZN[3] = {0.03, 0.03, 50.};  // Grooves for neutron detector
+  Float_t fGrvZP[3] = {0.04, 0.04, 75.};  // Grooves for proton detector
+  Int_t   fDivZN[3] = {11, 11, 0};  	  // Division for neutron detector
+  Int_t   fDivZP[3] = {7, 15, 0};  	  // Division for proton detector
+  Int_t   fTowZN[2] = {2, 2};  		  // Tower for neutron detector
+  Int_t   fTowZP[2] = {4, 1};  		  // Tower for proton detector
+
+  // Parameters for EM calorimeter geometry
+  // NB -> parameters used ONLY in CreateZDC()
+  Float_t fDimZEMPb  = 0.15*(TMath::Sqrt(2.));  // z-dimension of the Pb slice
+  Float_t fDimZEMAir = 0.001; 			// scotch
+  Float_t fFibRadZEM = 0.0315; 			// External fiber radius (including cladding)
+  Int_t   fDivZEM[3] = {92, 0, 20}; 		// Divisions for EM detector
+  Float_t fDimZEM0 = 2*fDivZEM[2]*(fDimZEMPb+fDimZEMAir+fFibRadZEM*(TMath::Sqrt(2.)));
+  Float_t fDimZEM[6] = {fDimZEM0, 3.5, 3.5, 45., 0., 0.}; // Dimensions of EM detector
+  Float_t fFibZEM2 = fDimZEM[2]/TMath::Sin(fDimZEM[3]*kDegrad)-fFibRadZEM;
+  Float_t fFibZEM[3] = {0., 0.0275, fFibZEM2};  // Fibers for EM calorimeter
 
   
   //-- Create calorimeters geometry
@@ -827,12 +893,11 @@ void AliZDCv1::CreateMaterials()
   Int_t *idtmed = fIdtmed->GetArray();
   
   Float_t dens, ubuf[1], wmat[2], a[2], z[2], epsil=0.001, stmin=0.01;
-  Int_t   i, isvolActive, isvol, inofld;
+  Float_t deemax = -1, stemax;
   Float_t fieldm = gAlice->Field()->Max();
   Float_t tmaxfd=gAlice->Field()->Max();
+  Int_t   i, isvolActive, isvol, inofld;
   Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t deemax=-1;
-  Float_t stemax;
   
   // --- Store in UBUF r0 for nuclear radius calculation R=r0*A**1/3 
 
@@ -1016,12 +1081,7 @@ void AliZDCv1::Init()
 void AliZDCv1::InitTables()
 {
   Int_t k, j;
-  //Initialize parameters for light tables and read them
-  fNalfan = 90;
-  fNalfap = 90;
-  fNben = 18;
-  fNbep = 28;
-  
+
   char *lightfName1,*lightfName2,*lightfName3,*lightfName4,
        *lightfName5,*lightfName6,*lightfName7,*lightfName8;
   FILE *fp1, *fp2, *fp3, *fp4, *fp5, *fp6, *fp7, *fp8;
@@ -1104,32 +1164,23 @@ Int_t AliZDCv1::Digitize(Int_t Det, Int_t Quad, Int_t Light)
     printf("\n	Digitize -> Det = %d, Quad = %d, Light = %d\n", Det, Quad, Light);
   }   
   
+  // Parameters for conversion of light yield in ADC channels
+  Float_t fPMGain[3][5];      // PM gain
+  Float_t fADCRes;            // ADC conversion factor
+  
   Int_t j,i;
   for(i=0; i<3; i++){
      for(j=0; j<5; j++){
-//        fPedMean[i][j]  = 50.;
-//        fPedSigma[i][j] = 10.;
         fPMGain[i][j]   = 100000.;
      }
   }
   fADCRes   = 0.00000064; // ADC Resolution: 250 fC/ADCch
   
-//  Float_t Ped = gRandom->Gaus(fPedMean[Det-1][Quad],fPedSigma[Det-1][Quad]);
-//  Int_t ADCch = Int_t(Light*fPMGain[Det-1][Quad]*fADCRes+Ped);
   Int_t ADCch = Int_t(Light*fPMGain[Det-1][Quad]*fADCRes);
-  
-//  if(fDebug == 1){
-//    printf("	Ped = %f, ADCch = %d\n", Ped, ADCch);
-//  }  
-   
+     
   return ADCch;
 }
 
-//____________________________________________________________________________
-//void AliZDCv1::FinishEvent()
-//{
-//  Code moved to Hits2SDigits();
-//}
 
 //_____________________________________________________________________________
 void AliZDCv1::SDigits2Digits()
@@ -1269,7 +1320,6 @@ void AliZDCv1::StepManager()
   //
 
   Int_t j;
-
   Int_t vol[2], ibeta=0, ialfa, ibe, nphe;
   Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, radius, out;
   TLorentzVector s, p;
@@ -1311,10 +1361,10 @@ void AliZDCv1::StepManager()
     if(vol[0]==1){
       xdet[0] = x[0]-fPosZN[0];
       xdet[1] = x[1]-fPosZN[1];
-      if((xdet[0]<=0.) && (xdet[1]>=0.)) vol[1]=1;
-      if((xdet[0]>0.) && (xdet[1]>0.))   vol[1]=2;
-      if((xdet[0]<0.) && (xdet[1]<0.))   vol[1]=3;
-      if((xdet[0]>0.) && (xdet[1]<0.))   vol[1]=4;
+      if((xdet[0]<=0.) && (xdet[1]>=0.))  vol[1]=1;
+      if((xdet[0]>0.)  && (xdet[1]>0.))   vol[1]=2;
+      if((xdet[0]<0.)  && (xdet[1]<0.))   vol[1]=3;
+      if((xdet[0]>0.)  && (xdet[1]<0.))   vol[1]=4;
     }
     
     //Quadrant in ZP
@@ -1328,8 +1378,8 @@ void AliZDCv1::StepManager()
          if(xqZP>=(i-3) && xqZP<(i-2)){
  	   vol[1] = i;
  	   break;
- 	}
-     }
+ 	 }
+      }
     }
     
     //ZEM has only 1 quadrant
@@ -1337,25 +1387,15 @@ void AliZDCv1::StepManager()
       vol[1] = 1;
       xdet[0] = x[0]-fPosZEM[0];
       xdet[1] = x[1]-fPosZEM[1];
-//      printf("x %f %f xdet %f %f\n",x[0],x[1],xdet[0],xdet[1]);
     }
 
-//    if(vol[1]>4){
-//    printf("\n-> Det. %d Quad. %d \n", vol[0], vol[1]);
-//    printf("x %f %f xdet %f %f\n",x[0],x[1],xdet[0],xdet[1]);}
 
   // Store impact point and kinetic energy of the ENTERING particle
-    
-//    Int_t Curtrack = gAlice->CurrentTrack();
-//    Int_t Prim = gAlice->GetPrimary(Curtrack);
-//    printf ("Primary: %d, Current Track: %d \n", Prim, Curtrack); 
     
 //    if(Curtrack==Prim){
       if(gMC->IsTrackEntering()){
         //Particle energy
         gMC->TrackMomentum(p);
-//   	 printf("p[0] = %f, p[1] = %f, p[2] = %f, p[3] = %f \n", 
-//                 p[0], p[1], p[2], p[3]);
         hits[3] = p[3];
 
         // Impact point on ZDC  
@@ -1412,8 +1452,6 @@ void AliZDCv1::StepManager()
        gMC->TrackMomentum(p);
        Float_t ptot=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
        Float_t beta =  ptot/p[3];
-//       Int_t pcID = gMC->TrackPid();
-//       printf("	Pc %d in quadrant %d -> beta = %f \n", pcID, vol[1], beta);
        if(beta<0.67) return;
        if((beta>=0.67) && (beta<=0.75)) ibeta = 0;
        if((beta>0.75)  && (beta<=0.85)) ibeta = 1;

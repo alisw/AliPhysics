@@ -9,10 +9,10 @@ void ZDCtest (Int_t detector=0, Int_t evTot = 0)
    }
       
 // Connect the Root Galice file containing Geometry, Kine, Hits and Digits
-   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("Hijing_b2.root");
+   TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
     if (!file) {
 	printf("\n Creating galice.root \n");
-	file = new TFile("Hijing_b2.root");
+	file = new TFile("galice.root");
     } else {
 	printf("\n galice.root found in file list");
     }
@@ -72,9 +72,9 @@ void ZDCtest (Int_t detector=0, Int_t evTot = 0)
    hPMQ4zp -> SetXTitle("phe");
 
 
-   TH1F *hEzem   = new TH1F("hEzem","Energy deposited in ZEM",100,0,1.e3);
+   TH1F *hEzem   = new TH1F("hEzem","Energy deposited in ZEM",100,0,5.e3);
    hEzem -> SetXTitle("E (GeV)");
-   TH1F *hPMzem  = new TH1F("hPMzem","Light produced in ZEM PM",100,0,4.e3);
+   TH1F *hPMzem  = new TH1F("hPMzem","Light produced in ZEM PM",100,0,5.e3);
    hPMzem -> SetXTitle("phe");
    
    //
@@ -111,6 +111,9 @@ void ZDCtest (Int_t detector=0, Int_t evTot = 0)
 //
 //   Loop over events 
 //
+// NB -> Il TClonesArray delle particelle va inizializzato prima del loop
+   TParticle   *particle;
+   TClonesArray *Particles = gAlice->Particles();
 
    for (Int_t evNumber=0; evNumber<evTot; evNumber++){
 
@@ -121,16 +124,14 @@ void ZDCtest (Int_t detector=0, Int_t evTot = 0)
    
    Float_t energy, EtotZN=0, EtotZP=0, LightCzn=0, LightCzp=0, LtotZN=0, LtotZP=0;
    Int_t nbytes=0, nbytesd=0, ipart, nhits, ndigits, pdgcode, ADCzn, ADCzp;
-   TParticle   *particle;
    AliZDCHit   *ZDChit;
    AliZDCDigit *ZDCdigit;
 
 // Get pointers to Alice detectors and Hits containers
    AliDetector *ZDC  = gAlice->GetDetector("ZDC");
-   TClonesArray *Particles = gAlice->Particles();
    if (ZDC) {
      TClonesArray *ZDChits    = ZDC->Hits();
-     TClonesArray *ZDCdigits  = ZDC->Digits();
+//     TClonesArray *ZDCdigits  = ZDC->Digits();
    }
 
 // # of entries in Hits tree
@@ -138,21 +139,21 @@ void ZDCtest (Int_t detector=0, Int_t evTot = 0)
    Int_t ntracks = TH->GetEntries();
 
 // # of entries in Digits tree
-   TTree *TD = gAlice->TreeD();
-   Int_t ndigen = TD->GetEntries();
+//   TTree *TD = gAlice->TreeD();
+//   Int_t ndigen = TD->GetEntries();
 
-   gAlice->ResetDigits();
-   nbytesd += TD->GetEvent(ndigen-1);
+//   gAlice->ResetDigits();
+//   nbytesd += TD->GetEvent(ndigen-1);
 
-   if (ZDC) {
-     ndigits = ZDCdigits->GetEntries();
-     printf("\n	Digits Tree --- # of entries: %d; # of digits: %d\n",ndigen, ndigits);
-   }
-   for(Int_t digit=0; digit<ndigits; digit++) {
-     ZDCdigit = (AliZDCDigit*)ZDCdigits->UncheckedAt(digit);
-     printf("\n	Digit# %d, fDetector = %d, fVolume = %d, fADCValue = %f\n",
-            digit,ZDCdigit->fDetector,ZDCdigit->fQuadrant,ZDCdigit->fADCValue);
-   }
+//   if (ZDC) {
+//     ndigits = ZDCdigits->GetEntries();
+//     printf("\n	Digits Tree --- # of entries: %d; # of digits: %d\n",ndigen, ndigits);
+//   }
+//   for(Int_t digit=0; digit<ndigits; digit++) {
+//     ZDCdigit = (AliZDCDigit*)ZDCdigits->UncheckedAt(digit);
+//     printf("\n	Digit# %d, fDetector = %d, fVolume = %d, fADCValue = %f\n",
+//            digit,ZDCdigit->fDetector,ZDCdigit->fQuadrant,ZDCdigit->fADCValue);
+//   }
    
 // Start loop on tracks in the hits containers
       for (Int_t track=0; track<ntracks; track++) {
@@ -202,7 +203,7 @@ void ZDCtest (Int_t detector=0, Int_t evTot = 0)
 	     }
 	     if(ZDChit->fVolume[0]==3) { //ZEM
 	       hEzem->Fill(ZDChit->fEnergy);
-	       hPMzem->Fill(ZDChit->fLightPMQ);
+	       hPMzem->Fill(ZDChit->fLightPMC);
 	       hspotzem->Fill(ZDChit->fXImpact,ZDChit->fYImpact);
 	     }
 	  	 
@@ -214,8 +215,8 @@ void ZDCtest (Int_t detector=0, Int_t evTot = 0)
              hEzp->Fill(EtotZP);
              hLzp->Fill(LtotZP);
              hPMCzp->Fill(LightCzp);
-             printf("\n	Histos var -> Ezn = %f, Lzn = %f, Ezp = %f, Lzp = %f \n\n",
-                     EtotZN, LtotZN, EtotZP, LtotZP);
+//             printf("\n Histos var -> Ezn = %f, Lzn = %f, Ezp = %f, Lzp = %f \n\n",
+//                     EtotZN, LtotZN, EtotZP, LtotZP);
            }
          }//ZDC        
       }//Track loop
