@@ -15,7 +15,6 @@
 #include <g4std/vector>
 
 class AliSingleModuleConstruction;
-class AliSDManager;
 class AliFiles;
 
 class AliMoreModulesConstruction
@@ -43,15 +42,9 @@ class AliMoreModulesConstruction
     AliSingleModuleConstruction* GetModuleConstruction(G4int i) const;
         
   private:    
-    // methods
-    void CreateSensitiveDetectors(G4bool allLVSensitive);
-    void CreateSensitiveDetectors1();
-    void CreateSensitiveDetectors2();
-
     // data members
     AliSingleModuleConstructionPtrVector  fModuleConstructionVector; //..
                                 //vector of AliSingleModuleConstruction
-    AliSDManager*  fSDManager;  //AliSDManager						   
 };						   
 
 // inline methods
