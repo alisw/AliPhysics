@@ -15,6 +15,11 @@
  
 /*
 $Log$
+Revision 1.1  2002/01/30 22:20:22  nilsen
+New TTask based method to do Digits To clusters. Works with files of multiple
+events in the file. Macro added to show how to use. Also the changes made
+in the nessesary complilation files.
+
 */
 #include <TROOT.h>
 #include <TFile.h>
@@ -59,7 +64,10 @@ AliITSreconstruction::AliITSreconstruction(const char* filename){
     // Standard constructor.
     // Inputs:
     //  const char* filename    filename containing the digits to be
-    //                          reconstructed
+    //                          reconstructed. If filename = 0 (nil)
+    //                          then no file is opened but a file is
+    //                          assumed to already be opened. This 
+    //                          already opened file will be used.
     // Outputs:
     //   none.
     // Return:
@@ -67,17 +75,19 @@ AliITSreconstruction::AliITSreconstruction(const char* filename){
 
     fFilename = filename;
 
-    fFile = (TFile*)gROOT->GetListOfFiles()->FindObject(fFilename.Data());
-    if(fFile) fFile->Close();
-    fFile = new TFile(fFilename.Data(),"UPDATE");
-    //
-    if(gAlice) delete gAlice;
-    gAlice = (AliRun*)fFile->Get("gAlice");
-    if(!gAlice) {
-	cout << "gAlice not found on file. Aborting." << endl;
-	fInit = kFALSE;
-	return;
-    } // end if !gAlice
+    if(filename){
+	fFile = (TFile*)gROOT->GetListOfFiles()->FindObject(fFilename.Data());
+	if(fFile) fFile->Close();
+	fFile = new TFile(fFilename.Data(),"UPDATE");
+	//
+	if(gAlice) delete gAlice;
+	gAlice = (AliRun*)fFile->Get("gAlice");
+	if(!gAlice) {
+	    cout << "gAlice not found on file. Aborting." << endl;
+	    fInit = kFALSE;
+	    return;
+	} // end if !gAlice
+    } // end if !filename.
 
     Init();
 }
