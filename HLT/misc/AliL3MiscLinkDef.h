@@ -10,5 +10,6 @@
 #pragma link C++ class AliL3AltroMemHandler;
 #pragma link C++ class AliL3DataHandler;
 #pragma link C++ class AliL3VHDLClusterFinder;
+#pragma link C++ class AliL3FFloat;
 #endif
 
