@@ -302,7 +302,7 @@ Double_t AliITSresponse::DepletedRegionThicknessB(Double_t resist,
     // Return:
     //    The thickness of the depleted region
 
-    return TMath::Sqrt(2.8*resist*mobility*dielConst*(voltage+voltBoultIn));
+    return TMath::Sqrt(2.8*resist*mobility*dielConst*(voltage+voltBuiltIn));
 }
 //----------------------------------------------------------------------
 Double_t AliITSresponse::ReverseBiasCurrent(Double_t temp,
@@ -323,7 +323,7 @@ Double_t AliITSresponse::ReverseBiasCurrent(Double_t temp,
     //    none.
     // Return:
     //    The reverse bias current at the tempeature temp.
-    const kBoltz = 8.617343E-5; //[eV/K]
+    const Double_t kBoltz = 8.617343E-5; //[eV/K]
 
     return revBiasCurT1*(temp*temp/(tempT1*tempT1))*
         TMath::Exp(-0.5*energy*(tempT1-temp)/(kBoltz*tempT1*temp));
