@@ -222,7 +222,7 @@ Bool_t AliMonitorTrend::GetEvent(Int_t)
 {
 // there is no single event trend
 
-  Info("GetEvent", "there is no trend for single events available");
+//  Info("GetEvent", "there is no trend for single events available");
   return kFALSE;
 }
 

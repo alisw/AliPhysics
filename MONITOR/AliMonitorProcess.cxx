@@ -30,6 +30,7 @@
 #include "AliMonitorTPC.h"
 #include "AliMonitorITS.h"
 #include "AliMonitorV0s.h"
+#include "AliMonitorHLT.h"
 #include "AliRawReaderRoot.h"
 #include "AliLoader.h"
 #include "AliRun.h"
@@ -98,6 +99,9 @@ AliMonitorProcess::AliMonitorProcess(const char* alienDir,
   fMonitors.Add(new AliMonitorTPC(fTPCParam));
   fMonitors.Add(new AliMonitorITS(fITSgeom));
   fMonitors.Add(new AliMonitorV0s);
+#ifdef ALI_HLT
+  fMonitors.Add(new AliMonitorHLT(fTPCParam));
+#endif
 
   for (Int_t iMonitor = 0; iMonitor < fMonitors.GetEntriesFast(); iMonitor++) {
     ((AliMonitor*) fMonitors[iMonitor])->CreateHistos(fTopFolder);
@@ -121,6 +125,9 @@ AliMonitorProcess::AliMonitorProcess(const char* alienDir,
   fServerSocket->SetOption(kNoBlock, 1);
   fDisplaySocket = NULL;
   CheckForConnections();
+#ifdef ALI_HLT
+  fHLT = NULL;
+#endif
 
   fStatus = kStopped;
   fStopping = kFALSE;
@@ -145,6 +152,10 @@ AliMonitorProcess::~AliMonitorProcess()
   fFile->Close();
   delete fFile;
   gSystem->Unlink("monitor_tree.root");
+
+#ifdef ALI_HLT
+  delete fHLT;
+#endif
 }
 
 
@@ -229,9 +240,9 @@ Bool_t AliMonitorProcess::CheckForNewFile()
     TString entryCopy(entry);
     char* p = const_cast<char*>(entryCopy.Data());
     if (!strtok(p, "_") || !p) continue;  // host name
-    char* dateStr = strtok(p, "_");
+    char* dateStr = strtok(NULL, "_");
     if (!dateStr || !p) continue;
-    char* timeStr = strtok(p, ".");
+    char* timeStr = strtok(NULL, ".");
     if (!timeStr || !p) continue;
     Long_t date = atoi(dateStr);
     Long_t time = atoi(timeStr);
@@ -261,6 +272,9 @@ Bool_t AliMonitorProcess::ProcessFile()
   if (nEvents <= 0) return kFALSE;
   Info("ProcessFile", "found %d event(s) in file %s", 
        nEvents, fFileName.Data());
+#ifdef ALI_HLT
+  CreateHLT(fFileName);
+#endif
 
   // loop over the events
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
@@ -283,6 +297,8 @@ Bool_t AliMonitorProcess::ProcessFile()
     if (!ReconstructITS(&rawReader)) return kFALSE;
     if (fStopping) break;
     if (!ReconstructV0s()) return kFALSE;
+    if (fStopping) break;
+    if (!ReconstructHLT(iEvent)) return kFALSE;
     if (fStopping) break;
 
     if (fDisplaySocket) fDisplaySocket->Send("new event");
@@ -318,6 +334,11 @@ Bool_t AliMonitorProcess::ProcessFile()
     fNEvents++;
     if (fStopping) break;
   }
+
+#ifdef ALI_HLT
+  delete fHLT;
+  fHLT = NULL;
+#endif
 
   return kTRUE;
 }
@@ -497,6 +518,77 @@ Bool_t AliMonitorProcess::ReconstructV0s()
   itsLoader->UnloadTracks();
   itsLoader->UnloadV0s();
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+#ifdef ALI_HLT
+void AliMonitorProcess::CreateHLT(const char* fileName)
+{
+// create the HLT (Level3) object
+
+  if (fHLT) delete fHLT;
+
+  char name[256];
+  strcpy(name, fileName);
+  fHLT = new AliLevel3(name);
+  fHLT->Init("./", AliLevel3::kRaw, 1);
+
+  fHLT->SetClusterFinderParam(0, 0, kTRUE);
+  
+  Int_t phi_segments = 50;
+  Int_t eta_segments = 100;
+  Int_t trackletlength = 3;
+  Int_t tracklength = 5;
+  Int_t rowscopetracklet = 2;
+  Int_t rowscopetrack = 2;
+  Double_t min_pt_fit = 0;
+  Double_t maxangle = 1.31;
+  Double_t goodDist = 5;
+  Double_t maxphi = 100;
+  Double_t maxeta = 100;
+  Double_t hitChi2Cut = 15;//100
+  Double_t goodHitChi2 = 5;//20;
+  Double_t trackChi2Cut = 10;
+  fHLT->SetTrackerParam(phi_segments, eta_segments, 
+			trackletlength, tracklength,
+			rowscopetracklet, rowscopetrack,
+			min_pt_fit, maxangle, goodDist, hitChi2Cut,
+			goodHitChi2, trackChi2Cut, 50, maxphi, maxeta, kTRUE);
+  
+  fHLT->WriteFiles("./hlt/");  
+}
+#endif
+
+//_____________________________________________________________________________
+Bool_t AliMonitorProcess::ReconstructHLT(Int_t iEvent)
+{
+// run the HLT cluster and track finder
+
+  fStatus = kRecHLT;
+
+#ifndef ALI_HLT
+  Warning("ReconstructHLT", "the code was compiled without HLT support");
+  return kTRUE;
+
+#else
+  gSystem->Exec("rm -rf hlt");
+  gSystem->MakeDirectory("hlt");
+  if (!fHLT) return kFALSE;
+
+  fHLT->ProcessEvent(0, 35, iEvent);
+
+  // remove the event number from the file names
+  char command[256];
+  sprintf(command, "rename points_%d points hlt/*.raw", iEvent);
+  gSystem->Exec(command);
+  sprintf(command, "rename tracks_tr_%d tracks_tr hlt/*.raw", iEvent);
+  gSystem->Exec(command);
+  sprintf(command, "rename tracks_gl_%d tracks_gl hlt/*.raw", iEvent);
+  gSystem->Exec(command);
+  sprintf(command, "rename tracks_%d tracks hlt/*.raw", iEvent);
+  gSystem->Exec(command);
+  return kTRUE;
+#endif
 }
 
 

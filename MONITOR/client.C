@@ -4,5 +4,8 @@
 
 void client()
 {
+  if (!gROOT->GetClass("AliMonitorClient")) {
+    gSystem->Load("libMONITOR.so");
+  }
   new AliMonitorClient;
 }

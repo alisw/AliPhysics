@@ -17,6 +17,7 @@
 #pragma link C++ class  AliMonitorDataTPC+;
 #pragma link C++ class  AliMonitorITS+;
 #pragma link C++ class  AliMonitorV0s+;
+#pragma link C++ class  AliMonitorHLT+;
 #pragma link C++ class  AliMonitorProcess+;
 #pragma link C++ class  AliMonitorControl+;
 #pragma link C++ class  AliMonitorDialog+;

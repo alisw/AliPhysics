@@ -18,6 +18,9 @@
 #include "AliRawReader.h"
 #include "AliTPCParam.h"
 #include "AliITSgeom.h"
+#ifdef ALI_HLT
+#include "AliLevel3.h"
+#endif
 
 
 class AliMonitorProcess : public TObject {
@@ -40,7 +43,7 @@ public:
   UInt_t           GetEventBunchNumber();
 
   enum EStatus     {kStopped, kWaiting, kReading, kRecTPC, kRecITS, kRecV0s,
-		    kFilling, kUpdating, kWriting, kResetting, 
+		    kRecHLT, kFilling, kUpdating, kWriting, kResetting, 
 		    kConnecting, kBroadcasting};
   EStatus          GetStatus() {return fStatus;};
   Bool_t           WillStop() {return fStopping;};
@@ -63,6 +66,10 @@ private:
   Bool_t           ReconstructTPC(AliRawReader* rawReader);
   Bool_t           ReconstructITS(AliRawReader* rawReader);
   Bool_t           ReconstructV0s();
+#ifdef ALI_HLT
+  void             CreateHLT(const char* fileName);
+#endif
+  Bool_t           ReconstructHLT(Int_t iEvent);
 
   Bool_t           WriteHistos();
   void             StartNewRun();
@@ -76,6 +83,9 @@ private:
   AliITSgeom*      fITSgeom;
   TString          fLogicalFileName;
   TString          fFileName;
+#ifdef ALI_HLT
+  AliLevel3*       fHLT;
+#endif
 
   UInt_t           fRunNumber;
   UInt_t           fSubRunNumber;

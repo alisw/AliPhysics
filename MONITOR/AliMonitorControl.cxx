@@ -511,6 +511,8 @@ void AliMonitorControl::UpdateStatus()
     status = "running ITS reconstruction"; break;
   case AliMonitorProcess::kRecV0s: 
     status = "running V0 reconstruction"; break;
+  case AliMonitorProcess::kRecHLT: 
+    status = "running HLT reconstruction"; break;
   case AliMonitorProcess::kFilling: 
     status = "filling monitor histograms"; break;
   case AliMonitorProcess::kUpdating: 

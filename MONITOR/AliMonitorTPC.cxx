@@ -193,7 +193,7 @@ void AliMonitorTPC::FillHistos(AliRunLoader* runLoader,
       fNClustersVsSector->Fill(iSector);
     }
   }
-  fNClustersVsSector->ScaleErrorBy(100.);
+  fNClustersVsSector->ScaleErrorBy(10.);
 
   delete clustersRow;
   tpcLoader->UnloadRecPoints();
