@@ -51,7 +51,7 @@ class AliZDCDigit : public AliDigitNew {
      fSector[0], fSector[1], fADCValue);
   }
     
-  ClassDef(AliZDCDigit,1)   // Digits in ZDC 
+  ClassDef(AliZDCDigit,2)   // Digits in ZDC 
 
 } ;
 

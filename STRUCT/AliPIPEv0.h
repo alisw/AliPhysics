@@ -27,7 +27,7 @@ class AliPIPEv0 : public AliPIPE {
  protected:
   Int_t   fPipeMaterial;
   
-  ClassDef(AliPIPEv0,1)  //Class for PIPE version 0
+  ClassDef(AliPIPEv0,2)  //Class for PIPE version 0
 };
  
 #endif
