@@ -339,3 +339,34 @@ void AliPMD::Hits2SDigits()
   fLoader->UnloadSDigits();
   delete pmdDigitizer;
 }
+//____________________________________________________________________________
+void AliPMD::SDigits2Digits()  
+{ 
+  // creates sdigits to digits
+}
+//____________________________________________________________________________
+void AliPMD::Hits2Digits()  
+{ 
+// create digits
+
+  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
+  AliPMDDigitizer* pmdDigitizer = new AliPMDDigitizer;
+  pmdDigitizer->OpengAliceFile(fLoader->GetRunLoader()->GetFileName().Data(),
+			       "HD");
+  pmdDigitizer->SetZPosition(361.5);
+
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+    pmdDigitizer->Hits2Digits(iEvent);
+  }
+  fLoader->UnloadHits();
+  fLoader->UnloadDigits();
+  delete pmdDigitizer;
+
+}
+//____________________________________________________________________________
+
+AliDigitizer* AliPMD::CreateDigitizer(AliRunDigitizer* manager)
+{ 
+  return new AliPMDDigitizer(manager);
+}
+
