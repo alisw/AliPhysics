@@ -403,7 +403,7 @@ Int_t AliHBTAnalysis::ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim)
 
      part1= partEvent->GetParticle(j);
      track1= trackEvent->GetParticle(j);
-
+     
      Bool_t firstcut = (this->*fkPass1)(part1,track1);
      if (fBufferSize != 0) 
        if ( (firstcut == kFALSE) || ( (this->*fkPass2)(part1,track1) == kFALSE ) )
@@ -411,8 +411,8 @@ Int_t AliHBTAnalysis::ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim)
           //accepted by any cut
           // we have to copy because reader keeps only one event
 
-          partEvent1->AddParticle(new AliAODParticle(*part1));
-          trackEvent1->AddParticle(new AliAODParticle(*track1));
+          partEvent1->AddParticle(part1);
+          trackEvent1->AddParticle(track1);
         }
 
      if (firstcut) continue;
@@ -571,7 +571,7 @@ Int_t AliHBTAnalysis::ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim)
           //accepted by any cut
           // we have to copy because reader keeps only one event
 
-          partEvent1->AddParticle(new AliAODParticle(*part1));
+          partEvent1->AddParticle(part1);
         }
 
      if (firstcut) continue;
@@ -694,7 +694,7 @@ Int_t AliHBTAnalysis::ProcessRec(AliAOD* aodrec, AliAOD* /*aodsim*/)
           //accepted by any cut
           // we have to copy because reader keeps only one event
 
-          trackEvent1->AddParticle(new AliAODParticle(*track1));
+          trackEvent1->AddParticle(track1);
         }
 
      if (firstcut) continue;
@@ -1652,8 +1652,8 @@ void AliHBTAnalysis::FilterOut(AliAOD* outpart1, AliAOD* outpart2, AliAOD* inpar
      
      if (in2)
       {
-        outpart2->AddParticle(new AliAODParticle(*part));
-        outtrack2->AddParticle(new AliAODParticle(*track));
+        outpart2->AddParticle(part);
+        outtrack2->AddParticle(track);
         continue;
       }
    }
@@ -1698,7 +1698,7 @@ void AliHBTAnalysis::FilterOut(AliAOD* out1, AliAOD* out2, AliAOD* in) const
      
      if (in2)
       {
-        out2->AddParticle(new AliAODParticle(*part));
+        out2->AddParticle(part);
         continue;
       }
    }
