@@ -16,10 +16,9 @@
 /* $Id$ */
 
 //-----------------------------------------------------------------------
-// Class to read the magnetic field map and to calculate
-// the magnetic field in a given point. For the moment uses a simple
-// linear interpolation between the nodes of a rectangular grid
+//
 // Author: Andreas Morsch <andreas.morsch@cern.ch>
+//
 //-----------------------------------------------------------------------
 
 #include <TSystem.h>
@@ -206,131 +205,61 @@ void AliFieldMap::ReadField()
 }
 
 //_______________________________________________________________________
-// void AliFieldMap::Field(Float_t *x, Float_t *b)
-// {
-//   //
-//   // Use simple interpolation to obtain field at point x
-//   //
-//     Double_t ratx, raty, ratz, hix, hiy, hiz, ratx1, raty1, ratz1, 
-// 	bhyhz, bhylz, blyhz, blylz, bhz, blz, xl[3];
-//     const Double_t kone=1;
-//     Int_t ix, iy, iz;
-//     b[0]=b[1]=b[2]=0;
-//     //
-    
-//     xl[0]=TMath::Abs(x[0])-fXbeg;
-//     xl[1]=TMath::Abs(x[1])-fYbeg;
-//     xl[2]=x[2]-fZbeg;
-    
-//     hix=xl[0]*fXdeli;
-//     ratx=hix-int(hix);
-//     ix=int(hix);
-    
-//     hiy=xl[1]*fYdeli;
-//     raty=hiy-int(hiy);
-//     iy=int(hiy);
-    
-//     hiz=xl[2]*fZdeli;
-//     ratz=hiz-int(hiz);
-//     iz=int(hiz);
-
-//     ratx1=kone-ratx;
-//     raty1=kone-raty;
-//     ratz1=kone-ratz;
-
-//     bhyhz = Bx(ix  ,iy+1,iz+1)*ratx1+Bx(ix+1,iy+1,iz+1)*ratx;
-//     bhylz = Bx(ix  ,iy+1,iz  )*ratx1+Bx(ix+1,iy+1,iz  )*ratx;
-//     blyhz = Bx(ix  ,iy  ,iz+1)*ratx1+Bx(ix+1,iy  ,iz+1)*ratx;
-//     blylz = Bx(ix  ,iy  ,iz  )*ratx1+Bx(ix+1,iy  ,iz  )*ratx;
-//     bhz   = blyhz             *raty1+bhyhz             *raty;
-//     blz   = blylz             *raty1+bhylz             *raty;
-//     b[0]  = blz               *ratz1+bhz               *ratz;
-//     //
-//     bhyhz = By(ix  ,iy+1,iz+1)*ratx1+By(ix+1,iy+1,iz+1)*ratx;
-//     bhylz = By(ix  ,iy+1,iz  )*ratx1+By(ix+1,iy+1,iz  )*ratx;
-//     blyhz = By(ix  ,iy  ,iz+1)*ratx1+By(ix+1,iy  ,iz+1)*ratx;
-//     blylz = By(ix  ,iy  ,iz  )*ratx1+By(ix+1,iy  ,iz  )*ratx;
-//     bhz   = blyhz             *raty1+bhyhz             *raty;
-//     blz   = blylz             *raty1+bhylz             *raty;
-//     b[1]  = blz               *ratz1+bhz               *ratz;
-//     //
-//     bhyhz = Bz(ix  ,iy+1,iz+1)*ratx1+Bz(ix+1,iy+1,iz+1)*ratx;
-//     bhylz = Bz(ix  ,iy+1,iz  )*ratx1+Bz(ix+1,iy+1,iz  )*ratx;
-//     blyhz = Bz(ix  ,iy  ,iz+1)*ratx1+Bz(ix+1,iy  ,iz+1)*ratx;
-//     blylz = Bz(ix  ,iy  ,iz  )*ratx1+Bz(ix+1,iy  ,iz  )*ratx;
-//     bhz   = blyhz             *raty1+bhyhz             *raty;
-//     blz   = blylz             *raty1+bhylz             *raty;
-//     b[2]  = blz               *ratz1+bhz               *ratz;
-// }
-//_______________________________________________________________________
 void AliFieldMap::Field(Float_t *x, Float_t *b)
 {
   //
   // Use simple interpolation to obtain field at point x
-  // Faster version which uses direct access to the TVector
-  // instead of Bx(...), By(...), Bz(...) interfaces.
-  // The interpolation is done first in Z (4 points),
-  // then in Y (2 points), and finally in X direction (one point).
+  //
+    Double_t ratx, raty, ratz, hix, hiy, hiz, ratx1, raty1, ratz1, 
+	bhyhz, bhylz, blyhz, blylz, bhz, blz, xl[3];
+    const Double_t kone=1;
+    Int_t ix, iy, iz;
+    b[0]=b[1]=b[2]=0;
+    //
+    
+    xl[0]=TMath::Abs(x[0])-fXbeg;
+    xl[1]=TMath::Abs(x[1])-fYbeg;
+    xl[2]=x[2]-fZbeg;
+    
+    hix=xl[0]*fXdeli;
+    ratx=hix-int(hix);
+    ix=int(hix);
+    
+    hiy=xl[1]*fYdeli;
+    raty=hiy-int(hiy);
+    iy=int(hiy);
+    
+    hiz=xl[2]*fZdeli;
+    ratz=hiz-int(hiz);
+    iz=int(hiz);
 
-    Double_t h=(x[2]-fZbeg)*fZdeli;
-    Int_t i=int(h); // ix
-    register Int_t index=i;
-    Double_t ratz=h-i;
-    Double_t ratz1=1-ratz;
+    ratx1=kone-ratx;
+    raty1=kone-raty;
+    ratz1=kone-ratz;
 
-    h=(TMath::Abs(x[1])-fYbeg)*fYdeli;
-    i=int(h);       // iy
-    index+=(i*fZn);
-    Double_t raty=h-i;
-    Double_t raty1=1-raty;
-
-    h=(TMath::Abs(x[0])-fXbeg)*fXdeli;
-    i=int(h);       // iz
-    index+=(i*fZn*fYn);
-    index*=3; //index now points to the beginning of the field data (ix,iy,iz)
-    Double_t ratx=h-i;
-    Double_t ratx1=1-ratx;
-
-    // The way we retrive data from fB should be optimized 
-    // with respect to the CPU cache
-
-    Float_t bx00=(*fB)[index++]*ratz1;
-    Float_t by00=(*fB)[index++]*ratz1;
-    Float_t bz00=(*fB)[index++]*ratz1;
-    bx00+=(*fB)[index++]*ratz;
-    by00+=(*fB)[index++]*ratz;
-    bz00+=(*fB)[index]*ratz;
-
-    index+=(3*fZn-5);
-
-    Float_t bx01=(*fB)[index++]*ratz1;
-    Float_t by01=(*fB)[index++]*ratz1;
-    Float_t bz01=(*fB)[index++]*ratz1;
-    bx01+=(*fB)[index++]*ratz;
-    by01+=(*fB)[index++]*ratz;
-    bz01+=(*fB)[index]*ratz;
-
-    index+=(3*fYn*fZn-5);
-
-    Float_t bx11=(*fB)[index++]*ratz1;
-    Float_t by11=(*fB)[index++]*ratz1;
-    Float_t bz11=(*fB)[index++]*ratz1;
-    bx11+=(*fB)[index++]*ratz;
-    by11+=(*fB)[index++]*ratz;
-    bz11+=(*fB)[index]*ratz;
-
-    index-=(3*fZn+5);
-
-    Float_t bx10=(*fB)[index++]*ratz1;
-    Float_t by10=(*fB)[index++]*ratz1;
-    Float_t bz10=(*fB)[index++]*ratz1;
-    bx10+=(*fB)[index++]*ratz;
-    by10+=(*fB)[index++]*ratz;
-    bz10+=(*fB)[index]*ratz;
-
-    b[0]= (bx00*raty1+bx01*raty)*ratx1 +(bx10*raty1+bx11*raty)*ratx;
-    b[1]= (by00*raty1+by01*raty)*ratx1 +(by10*raty1+by11*raty)*ratx;
-    b[2]= (bz00*raty1+bz01*raty)*ratx1 +(bz10*raty1+bz11*raty)*ratx;
+    bhyhz = Bx(ix  ,iy+1,iz+1)*ratx1+Bx(ix+1,iy+1,iz+1)*ratx;
+    bhylz = Bx(ix  ,iy+1,iz  )*ratx1+Bx(ix+1,iy+1,iz  )*ratx;
+    blyhz = Bx(ix  ,iy  ,iz+1)*ratx1+Bx(ix+1,iy  ,iz+1)*ratx;
+    blylz = Bx(ix  ,iy  ,iz  )*ratx1+Bx(ix+1,iy  ,iz  )*ratx;
+    bhz   = blyhz             *raty1+bhyhz             *raty;
+    blz   = blylz             *raty1+bhylz             *raty;
+    b[0]  = blz               *ratz1+bhz               *ratz;
+    //
+    bhyhz = By(ix  ,iy+1,iz+1)*ratx1+By(ix+1,iy+1,iz+1)*ratx;
+    bhylz = By(ix  ,iy+1,iz  )*ratx1+By(ix+1,iy+1,iz  )*ratx;
+    blyhz = By(ix  ,iy  ,iz+1)*ratx1+By(ix+1,iy  ,iz+1)*ratx;
+    blylz = By(ix  ,iy  ,iz  )*ratx1+By(ix+1,iy  ,iz  )*ratx;
+    bhz   = blyhz             *raty1+bhyhz             *raty;
+    blz   = blylz             *raty1+bhylz             *raty;
+    b[1]  = blz               *ratz1+bhz               *ratz;
+    //
+    bhyhz = Bz(ix  ,iy+1,iz+1)*ratx1+Bz(ix+1,iy+1,iz+1)*ratx;
+    bhylz = Bz(ix  ,iy+1,iz  )*ratx1+Bz(ix+1,iy+1,iz  )*ratx;
+    blyhz = Bz(ix  ,iy  ,iz+1)*ratx1+Bz(ix+1,iy  ,iz+1)*ratx;
+    blylz = Bz(ix  ,iy  ,iz  )*ratx1+Bz(ix+1,iy  ,iz  )*ratx;
+    bhz   = blyhz             *raty1+bhyhz             *raty;
+    blz   = blylz             *raty1+bhylz             *raty;
+    b[2]  = blz               *ratz1+bhz               *ratz;
 }
 
 //_______________________________________________________________________
