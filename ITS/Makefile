@@ -9,11 +9,11 @@ PACKAGE = ITS
 
 # C++ sources
 
-SRCS          = AliITS.cxx AliITSv0.cxx    AliITSv1.cxx      AliITSv3.cxx    AliITSv4.cxx AliITSv5.cxx  
+SRCS          = AliITS.cxx AliITSv0.cxx    AliITSv1.cxx      AliITSv3.cxx    AliITSv5.cxx  
 
 # Fortran sources
 
-FSRCS	       = AliITSf.F 
+FSRCS	       = 
 
 # C++ Headers
 
