@@ -1,0 +1,70 @@
+#ifndef ALIPHOSRAW2DIGITS_H
+#define ALIPHOSRAW2DIGITS_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $id */
+
+//_________________________________________________________________________
+//  Base Class for PHOS     
+//                  
+/*-- Author: Maxim Volkov (RRC KI)
+              Dmitri Peressounko (RRC KI & SUBATECH)
+              Yuri Kharlov (IHEP & SUBATECH)     */
+
+// --- ROOT system ---
+#include "TTask.h"
+class TClonesArray ;
+
+// --- Standard library ---
+
+// --- AliRoot header files ---
+class AliPHOSGeometry ;
+
+class AliPHOSRaw2Digits : public TTask {
+
+public:
+  AliPHOSRaw2Digits() ;          // ctor
+  virtual ~AliPHOSRaw2Digits() ; // dtor
+
+  void Exec(Option_t *option) ;
+  Bool_t OpenOutFile() ;
+
+  void SetInputFile(TString inname="Run2002.rz"){fInName=inname ; }
+  void SetDebugLevel(Int_t idebug=1){fDebug=idebug ;}
+  void SetNRaws(Int_t nraws){fProtoRaws = nraws ;}
+  void SetNcols(Int_t ncolumns){fProtoColumns = ncolumns ;}
+  void Print(Option_t *option) ;
+
+private:
+  Bool_t ProcessRawFile() ;
+  void Swab4(void *from, void *to, size_t nwords)  ;
+  void Swab2(void *from, void *to, size_t nwords)  ;
+  Int_t RawId2AbsId(Int_t raw) ;
+  Bool_t Init() ;
+
+
+  TClonesArray * fBTHeaders ; //!list of beam test headers
+  AliPHOSGeometry * fGeom ;  //!
+  Int_t   fEvent ;   //!
+  Int_t   fStatus ;  //! status of input file: OK, not found etc.
+  TString fInName ;  //!FileName of the input file
+  Bool_t  fDebug ;   //!
+  Bool_t  fIsInitialized ;
+  Int_t   fProtoRaws ;
+  Int_t   fProtoColumns ;
+  Int_t   fRawOffset ;
+  Int_t   fColOffset ;
+  Int_t   fNcrInProto ; //!Number of cristalls in prototype
+  UInt_t *fAbsIdMap ;//[fNcrInProto] Map of correspondance between Raw and PHOS ID
+  UInt_t  fMK1 ;     //!ZEBRA markers
+  UInt_t  fMK2 ;     //!
+  UInt_t  fMK3 ;     //!
+  UInt_t  fMK4 ;     //!
+  UInt_t  fCKW ;     //!
+
+  ClassDef(AliPHOSRaw2Digits,1)  // description 
+
+};
+
+#endif // AliPHOSRAW2DIGITS_H
