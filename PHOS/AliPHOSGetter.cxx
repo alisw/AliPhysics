@@ -1647,6 +1647,8 @@ Int_t AliPHOSGetter::ReadTreeD(const Int_t event)
   //read digits
   if(!Digits(fDigitsTitle) ) 
     PostDigits(fDigitsTitle);
+  else
+    Digits(fDigitsTitle)->Clear() ;
   digitsbranch->SetAddress(DigitsRef(fDigitsTitle)) ;
   digitsbranch->GetEntry(0) ;
   
@@ -1837,6 +1839,17 @@ Int_t AliPHOSGetter::ReadTreeR(const Int_t event)
   // any migh have become obsolete : to be checked
   // See AliPHOSPIDv1    
 
+  //first - clean if necessary
+  if(EmcRecPoints(fRecPointsTitle)){
+    EmcRecPoints(fRecPointsTitle)->Delete() ;
+    CpvRecPoints(fRecPointsTitle)->Delete() ;
+  }
+  //clear TrackSegments
+  if(TrackSegments(fTrackSegmentsTitle))
+    TrackSegments(fTrackSegmentsTitle)->Clear() ;
+  if(RecParticles(fRecParticlesTitle))
+    RecParticles(fRecParticlesTitle)->Clear() ;
+	
   TTree * treeR ;
   if(fToSplit){
     TFile * file = static_cast<TFile*>(gROOT->GetFile(fRecPointsFileName)); 
@@ -1889,7 +1902,6 @@ Int_t AliPHOSGetter::ReadTreeR(const Int_t event)
   } else { 
     if(!EmcRecPoints(fRecPointsTitle) ) 
       PostRecPoints(fRecPointsTitle) ;
-    
     emcbranch->SetAddress(EmcRecPointsRef(fRecPointsTitle)) ;
     emcbranch->GetEntry(0) ;
 
