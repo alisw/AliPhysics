@@ -1520,8 +1520,8 @@ void AliITS::MakeBranchR(const char *file, Option_t *opt){
     }
     
     
-
-    if (fRecPoints && fLoader->TreeR()) {
+    if(!fRecPoints)fRecPoints = new TClonesArray("AliITSRecPoint",1000);
+    if (fLoader->TreeR()) {
         if (fRecPoints == 0x0) fRecPoints = new TClonesArray("AliITSRecPoint",1000);
         MakeBranchInTree(fLoader->TreeR(),branchname,&fRecPoints,buffsz,file);
     } // end if
@@ -1589,6 +1589,7 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
     //      none.
 
     if(!GetITSgeom()) return;
+    AliITSLoader *pITSloader = (AliITSLoader*)fLoader;
     AliITSgeom *geom = GetITSgeom();
 
     const char *all = strstr(opt1,"All");
@@ -1622,8 +1623,9 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
         mod      = (AliITSmodule *)fITSmodules->At(module);
         sim->CreateFastRecPoints(mod,module,gRandom);
         cout<<module<<"\r";fflush(0);
-        //gAlice->TreeR()->Fill(); 
-        TBranch *br=fLoader->TreeR()->GetBranch("ITSRecPointsF");
+        //gAlice->TreeR()->Fill();
+	TTree *TR = pITSloader->TreeR();
+        TBranch *br=TR->GetBranch("ITSRecPointsF");
         br->Fill();
         ResetRecPoints();
     } // end for module
