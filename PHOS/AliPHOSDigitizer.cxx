@@ -90,6 +90,7 @@ ClassImp(AliPHOSDigitizer)
   fCPVDigitThreshold  = 0.09 ;
   fPPSDNoise          = 0.0000001;
   fPPSDDigitThreshold = 0.0000002 ;  
+  fDigitsInRun  = 0 ; 
 
 }
 
@@ -105,6 +106,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name):
   fCPVDigitThreshold  = 0.09 ;
   fPPSDNoise          = 0.0000001;
   fPPSDDigitThreshold = 0.0000002 ;  
+  fDigitsInRun  = 0 ; 
 
   Init() ;
   
@@ -459,6 +461,9 @@ void AliPHOSDigitizer::PrintDigits(Option_t * option){
   cout << "AliPHOSDigitiser: event " << gAlice->GetEvNumber() << endl ;
   cout << "       Number of entries in Digits list " << digits->GetEntriesFast() << endl ;
   cout << endl ;
+  
+  fDigitsInRun +=  digits->GetEntriesFast() ; 
+
   if(strstr(option,"all")){
     
     //loop over digits

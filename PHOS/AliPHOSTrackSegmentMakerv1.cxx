@@ -86,6 +86,7 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
   fHeaderFileName           = "" ;
   fRecPointsBranchTitle     = "" ;
   fTrackSegmentsBranchTitle = "" ; 
+  fTrackSegmentsInRun       = 0 ; 
 }
 
 //____________________________________________________________________________
@@ -104,7 +105,8 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
   fHeaderFileName           = GetTitle() ;
   fRecPointsBranchTitle     = GetName() ;
   fTrackSegmentsBranchTitle = GetName() ; 
-  
+  fTrackSegmentsInRun       = 0 ; 
+
   TString tempo(GetName()) ; 
   tempo.Append(Version()) ; 
   SetName(tempo.Data()) ; 
@@ -646,6 +648,8 @@ void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
   cout << "AliPHOSTrackSegmentMakerv1: event "<<gAlice->GetEvNumber()  << endl ;
   cout << "       Found " << trackSegments->GetEntriesFast() << "  trackSegments " << endl ;
   
+  fTrackSegmentsInRun += trackSegments->GetEntriesFast() ; 
+
   if(strstr(option,"all")) {  // printing found TS
     cout << "TrackSegment # " << "    EMC RP#    " << "    CPV RP#    " << "     PPSD RP#" << endl ; 
     

@@ -38,6 +38,7 @@ public:
   virtual void    Exec(Option_t * option) = 0 ;
   virtual char*   GetRecPointsBranch ()const = 0 ;
   virtual char*   GetTrackSegmentsBranch ()const = 0 ;
+  virtual const Int_t GetTrackSegmentsInRun()  const = 0 ; 
 
   virtual void    Print(Option_t * option)const = 0;
   //  virtual void Set...   // method to choose recPoints: along z only, along x ...???

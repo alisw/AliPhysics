@@ -46,9 +46,10 @@ public:
   virtual Float_t GetCpvClusteringThreshold()const{ return fCpvClusteringThreshold;  } 
   virtual Float_t GetCpvLocalMaxCut()const        { return fCpvLocMaxCut;} 
   virtual Float_t GetCpvLogWeight()const          { return fW0CPV;}  
-  virtual Float_t GetPpsdClusteringThreshold()const{ return fPpsdClusteringThreshold;  } 
-  virtual char *  GetRecPointsBranch() const      { return (char*) fRecPointsBranchTitle.Data() ;}
-  virtual char *  GetDigitsBranch() const         { return (char*) fDigitsBranchTitle.Data() ;}
+  virtual Float_t GetPpsdClusteringThreshold() const { return fPpsdClusteringThreshold;  } 
+  virtual char *  GetRecPointsBranch() const     { return (char*) fRecPointsBranchTitle.Data() ;}
+  virtual const Int_t GetRecPointsInRun() const  {return fRecPointsInRun ;}  
+  virtual char *  GetDigitsBranch() const        { return (char*) fDigitsBranchTitle.Data() ;}
 
   void    Exec(Option_t *option);                // Does the job
 
@@ -112,7 +113,8 @@ private:
   Float_t fW0 ;                      // logarithmic weight for the cluster center of gravity calculation
   Float_t fCpvLocMaxCut ;            // minimum energy difference to distinguish local maxima in a CPV cluster
   Float_t fW0CPV ;                   // logarithmic weight for the CPV cluster center of gravity calculation
-    
+  Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
+
   ClassDef(AliPHOSClusterizerv1,1)   // Clusterizer implementation version 1
 
 };

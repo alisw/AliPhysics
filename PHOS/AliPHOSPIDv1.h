@@ -35,7 +35,8 @@ public:
   virtual void Exec(Option_t * option);
   virtual char * GetRecParticlesBranch()const {return (char*) fRecParticlesTitle.Data() ;}      
   virtual char * GetTrackSegmentsBranch()const{return (char*) fTrackSegmentsTitle.Data(); }
-
+  virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
+  
   virtual void Init() ;
   virtual void PlotDispersionCuts()const ;
   virtual void Print(Option_t * option)const ; 
@@ -75,7 +76,7 @@ public:
   TFormula             * fFormula ;           // formula to define cut on the shouer elips axis
   Float_t                fDispersion ;        // dispersion cut
   Float_t                fCpvEmcDistance ;    // Max EMC-CPV distance
-
+  Int_t                  fRecParticlesInRun ; //! Total number of recparticles in one run
   ClassDef( AliPHOSPIDv1,1)  // Particle identifier implementation version 1
 
 };

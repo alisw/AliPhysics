@@ -78,6 +78,7 @@ ClassImp(AliPHOSSDigitizer)
   fA             = 0;
   fB             = 10000000.;
   fPrimThreshold = 0.01 ;
+  fSDigitsInRun  = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -87,6 +88,7 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char * headerFile, const char * sDigi
   fA             = 0;
   fB             = 10000000.;
   fPrimThreshold = 0.01 ;
+  fSDigitsInRun  = 0 ; 
   Init();
 }
 
@@ -342,6 +344,8 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
   cout << "AliPHOSSDigitizer: event "<<gAlice->GetEvNumber() << endl ;
   cout << "       Number of entries in SDigits list  " << sdigits->GetEntriesFast() << endl ;
   cout << endl ;
+
+  fSDigitsInRun +=  sdigits->GetEntriesFast() ; 
   
   if(strstr(option,"all")){// print all digits
     

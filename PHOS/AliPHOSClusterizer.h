@@ -34,6 +34,7 @@ public:
   virtual Float_t GetCpvLogWeight()const = 0 ; 
   virtual Float_t GetPpsdClusteringThreshold()const = 0 ; 
   virtual char *  GetRecPointsBranch() const = 0 ;
+  virtual const Int_t GetRecPointsInRun()  const = 0 ; 
   virtual char *  GetDigitsBranch() const = 0 ;
 
   virtual void MakeClusters() = 0 ; 

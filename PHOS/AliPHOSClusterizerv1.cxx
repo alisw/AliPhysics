@@ -104,7 +104,7 @@ ClassImp(AliPHOSClusterizerv1)
 
   fHeaderFileName          = "" ; 
   fDigitsBranchTitle       = "" ;
-  
+  fRecPointsInRun          = 0 ; 
 }
 
 //____________________________________________________________________________
@@ -135,7 +135,8 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const char* headerFile,const char* na
   TString tempo(GetName()) ; 
   tempo.Append(Version()) ; 
   SetName(tempo.Data()) ; 
-  
+  fRecPointsInRun          = 0 ; 
+
   Init() ;
 
 }
@@ -1064,6 +1065,9 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
   cout << "AliPHOSClusterizerv1: : event "<<gAlice->GetEvNumber() << endl ;
   cout << "       Found "<< emcRecPoints->GetEntriesFast() << " EMC Rec Points and " 
 	   << cpvRecPoints->GetEntriesFast() << " CPV RecPoints" << endl ;
+
+  fRecPointsInRun +=  emcRecPoints->GetEntriesFast() ; 
+  fRecPointsInRun +=  cpvRecPoints->GetEntriesFast() ; 
 
   if(strstr(option,"all")) {
     cout << "EMC clusters " << endl ;

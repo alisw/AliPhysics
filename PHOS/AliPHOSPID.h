@@ -36,6 +36,7 @@ public:
   virtual void Exec(Option_t * option) = 0 ;
   virtual char * GetRecParticlesBranch()const = 0 ;
   virtual char * GetTrackSegmentsBranch()const = 0 ;
+  virtual const Int_t GetRecParticlesInRun()  const = 0 ; 
   virtual void Init()= 0 ;
   virtual void Print(Option_t * option) const = 0 ; 
   virtual void PlotDispersionCuts()const = 0;

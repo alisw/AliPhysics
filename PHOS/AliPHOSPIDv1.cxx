@@ -98,6 +98,7 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
   fRecPointsTitle    = "" ; 
   fRecParticlesTitle = "" ; 
   fIDOptions         = "" ; 
+  fRecParticlesInRun = 0 ; 
 }
 
 //____________________________________________________________________________
@@ -118,6 +119,7 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headerFile,const char * name) : AliPHOSP
   TString tempo(GetName()) ; 
   tempo.Append(Version()) ; 
   SetName(tempo.Data()) ; 
+  fRecParticlesInRun = 0 ; 
    
   Init() ;
 
@@ -617,6 +619,8 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
  
   cout << "AliPHOSPIDv1: event "<<gAlice->GetEvNumber()  << endl ;
   cout << "       found " << recParticles->GetEntriesFast() << " RecParticles " << endl ;
+
+  fRecParticlesInRun += recParticles->GetEntriesFast() ; 
 
   if(strstr(option,"all")) {  // printing found TS
     

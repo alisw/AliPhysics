@@ -35,6 +35,7 @@ public:
   const Float_t  GetPedestalParameter()const {return fA;}
   const Float_t  GetCalibrationParameter()const{return fB;}
   const char *   GetSDigitsBranch()const{return GetName();}  
+  const Int_t    GetSDigitsInRun() const {return fSDigitsInRun ;}  
 
   virtual void Print(Option_t* option) const ;
 
@@ -55,6 +56,7 @@ private:
   Float_t fA ;              // Pedestal parameter
   Float_t fB ;              // Slope Digitizition parameters
   Float_t fPrimThreshold ;  // To store primari if Elos > threshold
+  Int_t fSDigitsInRun ;     //! Total number of sdigits in one run
 
 
   ClassDef(AliPHOSSDigitizer,1)  // description 

@@ -77,8 +77,17 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 -include tgt_$(ALICE_TARGET)/Make-depend 
 
 test:	
-		@aliroot -b -q simPHOStest.C > out
-		@aliroot -b -q anaPHOStest.C > out
+		@echo " ____________________________________________________________ "
+		@echo " "
+		@echo " Starting the test of the simulation/reconstruction software. Please don't take the warning messages into account. "
+		@echo " ____________________________________________________________ "
+		@aliroot -b -q testsim.C > out
+		@aliroot -b -q testsimexam.C > out
+		@aliroot -b -q testreconSDigits.C > out
+	      	@aliroot -b -q testreconDigits.C > out
+		@aliroot -b -q testreconRecPoints.C > out
+		@aliroot -b -q testreconTrackSegments.C > out
+		@aliroot -b -q testreconRecParticles.C > out
 		@rm out
 #		@rm galice.root
 

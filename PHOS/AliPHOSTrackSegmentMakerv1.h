@@ -37,8 +37,9 @@ public:
    
   virtual ~ AliPHOSTrackSegmentMakerv1() ; // dtor
   
-  virtual char*  GetRecPointsBranch    (void)const{return (char*)fRecPointsBranchTitle.Data() ;}
-  virtual char*  GetTrackSegmentsBranch(void)const{return (char*)fTrackSegmentsBranchTitle.Data() ;}
+  virtual char*  GetRecPointsBranch    (void)const {return (char*)fRecPointsBranchTitle.Data() ;}
+  virtual char*  GetTrackSegmentsBranch(void)const {return (char*)fTrackSegmentsBranchTitle.Data() ;}
+  virtual const Int_t GetTrackSegmentsInRun()const {return fTrackSegmentsInRun ;}  
 
   virtual void   Exec(Option_t * option) ;
           void   FillOneModule() ;       // Finds range in which RecPoints belonging current PHOS module are
@@ -85,6 +86,7 @@ private:
   Int_t fPpsdFirst;    //! Cpv low layer     
   Int_t fPpsdLast;     //!
   Int_t fModule ;      //! number of module being processed
+  Int_t fTrackSegmentsInRun ; //! Total number of track segments in one run
 
   ClassDef( AliPHOSTrackSegmentMakerv1,1)  // Implementation version 1 of algorithm class to make PHOS track segments 
 

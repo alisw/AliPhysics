@@ -37,6 +37,7 @@ public:
 
   const Float_t GetCPVNoise()     const { return fCPVNoise ;}
   const Float_t GetCPVThreshold() const { return fCPVDigitThreshold ;}
+  const Int_t   GetDigitsInRun()  const { return fDigitsInRun ;}  
   const Float_t GetEMCThreshold() const { return fEMCDigitThreshold;}
   const Float_t GetPedestal()     const { return fPedestal; }
   const Float_t GetPinNoise()     const { return fPinNoise;}
@@ -81,6 +82,7 @@ private:
   Float_t fCPVDigitThreshold  ;     // Threshold for storing digits in CPV
   Float_t fPPSDNoise ;              // Noise in PPSD
   Float_t fPPSDDigitThreshold ;     // Threshold for storing digits in PPSD
+  Int_t fDigitsInRun ;             //! Total number of digits in one run
 
 
   ClassDef(AliPHOSDigitizer,1)  // description 
