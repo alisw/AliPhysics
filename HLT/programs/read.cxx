@@ -13,8 +13,8 @@ Author: Constantin Loizides <mailto: loizides@ikf.physik.uni-frankfurt.de
 
 /**
 Example program how to open and read a raw datafile.
-In addition it shows, how to store results in an Altro like 
-data format. 
+In addition it shows, how to store (and read) the
+digits in an Altro like data format. 
 */
 
 int main(int argc,char **argv)
@@ -24,12 +24,10 @@ int main(int argc,char **argv)
   Bool_t altroout=kFALSE;
   FILE *afile=0;
   
-  /*
-    AliL3Logger l;
-    l.Set(AliL3Logger::kAll);
-    //l.UseStdout();
-    l.UseStream();
-  */
+  //AliL3Logger l;
+  //l.Set(AliL3Logger::kAll);
+  //l.UseStdout();
+  //l.UseStream();
 
   if(argc<2)
     {
@@ -60,7 +58,8 @@ int main(int argc,char **argv)
   if((patch>=0)&&(patch<6)) file.Init(slice,patch);
   else {
     Int_t srows[2]={0,175};
-    file.Init(slice,0,srows);
+    patch=0;
+    file.Init(slice,patch,srows);
   }
 
   //Open the data file:
@@ -94,14 +93,13 @@ int main(int argc,char **argv)
       
       //Loop over all digits on this padrow:
       for(UInt_t ndig=0; ndig<digits->fNDigit; ndig++)
-      //for(UInt_t ndig=digits->fNDigit;ndig>0;ndig--)
 	{
 	  lrow=row;
 	  pad = dataPt[ndig].fPad;
 	  time = dataPt[ndig].fTime;
 	  charge = dataPt[ndig].fCharge;
 	  cout << "Padrow " << row << " pad " << (int)pad << " time " <<(int) time << " charge " << (int)charge << endl;
-	  if(altroout) altromem.Write(row,pad,charge,time);
+	  if(altroout) altromem.Write(row,pad,time,charge);
 	}
       
       //Move the pointer to the next padrow:
@@ -111,6 +109,33 @@ int main(int argc,char **argv)
   if(afile) {
     altromem.WriteFinal();
     fclose(afile);
+    
+#if 0
+    //test Altro read
+    UShort_t rrow=0,rtime=0,rcharge=0;
+    UChar_t rpad=0;
+    afile=fopen(argv[4],"r");
+    altromem.SetASCIIInput(afile);
+    while(altromem.Read(rrow,rpad,rtime,rcharge)){
+      cout << "Padrow " << (int)rrow << " pad " << (int)rpad << " time " <<(int)rtime << " charge " << (int)rcharge << endl;
+    }
+    fclose(afile);  
+#endif
+#if 0
+    //test Altro read sequence
+    UShort_t rrow=0,rtime=0;
+    UChar_t rpad=0,n=100,i=100;
+    UShort_t *charges=new UShort_t[100];
+    afile=fopen(argv[4],"r");
+    altromem.SetASCIIInput(afile);
+    while(altromem.ReadSequence(rrow,rpad,rtime,i,&charges)){
+      cout << "Padrow " << (int)rrow << " pad " << (int)rpad << " time " <<(int)rtime << " charges ";
+      for(UChar_t ii=0;ii<i;ii++) cout << (int)charges[ii] << " ";
+      cout << endl;
+      i=n;
+    }
+    fclose(afile);  
+#endif
   }
 
   //cerr << "Rows: " << (file.GetRowMax()-file.GetRowMin()+1) << " Consecutive: " << crows << endl;
