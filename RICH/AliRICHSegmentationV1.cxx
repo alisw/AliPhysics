@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/12 15:34:28  jbarbosa
+  Cleaned up version.
+
 */
 
 #include "AliRICHSegmentationV1.h"
@@ -149,8 +152,8 @@ void AliRICHSegmentationV1::GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy
 
   if (sector==-1)
     {
-      ix = fixmax;
-      iy = fiymax;
+      ix = fIxmax;
+      iy = fIymax;
     }
 
   if (iy >  fNpy) iy= fNpy;
@@ -252,17 +255,17 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
 // Calculates integration limits
 
 /*
-  x1=fxt-fx-fDpx/2.;
+  x1=fXt-fX-fDpx/2.;
   x2=x1+fDpx;
-  y1=fyt-fy-fDpy/2.;
+  y1=fYt-fY-fDpy/2.;
   y2=y1+fDpy;    
 */
-  //Int_t sector=Sector(fx,fy);
+  //Int_t sector=Sector(fX,fY);
 
   //printf("Sector:%d\n",sector);
 
-  x1=fxhit-fx-fDpx/2.;
+  x1=fXhit-fX-fDpx/2.;
   x2=x1+fDpx;
-  y1=fyhit-fy-fDpy/2.;
+  y1=fYhit-fY-fDpy/2.;
   y2=y1+fDpy;
 }

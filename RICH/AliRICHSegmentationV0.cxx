@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/12 15:31:54  jbarbosa
+  Cleaned up version.
+
 */
 #include "AliRICHSegmentationV0.h"
 
@@ -83,8 +86,8 @@ SetHit(Float_t xhit, Float_t yhit)
 //
 // Find the wire position (center of charge distribution)
 //    Float_t x0a=GetAnod(xhit);
-    fxhit=xhit;
-    fyhit=yhit;
+    fXhit=xhit;
+    fYhit=yhit;
 }
 
 void AliRICHSegmentationV0::
@@ -93,7 +96,7 @@ SetPad(Int_t ix, Int_t iy)
 
 // Move to pad ix, iy
 
-    GetPadCxy(ix,iy,fx,fy);
+    GetPadCxy(ix,iy,fX,fY);
 }
 
 
@@ -105,8 +108,8 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     //
     // Find the wire position (center of charge distribution)
     Float_t x0a=GetAnod(xhit);
-    fxhit=x0a;
-    fyhit=yhit;
+    fXhit=x0a;
+    fYhit=yhit;
     //
     // and take fNsigma*sigma around this center
     Float_t x01=x0a  - dx;
@@ -115,16 +118,16 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
     Float_t y02=yhit + dy;
     //
     // find the pads over which the charge distributes
-    GetPadIxy(x01,y01,fixmin,fiymin);
-    GetPadIxy(x02,y02,fixmax,fiymax);    
+    GetPadIxy(x01,y01,fIxmin,fIymin);
+    GetPadIxy(x02,y02,fIxmax,fIymax);    
     // 
     // Set current pad to lower left corner
-    fix=fixmin;
-    fiy=fiymin;
-    GetPadCxy(fix,fiy,fx,fy);
+    fIx=fIxmin;
+    fIy=fIymin;
+    GetPadCxy(fIx,fIy,fX,fY);
     
     //if (fSector==2)
-      //printf("fix: %d, fiy: %d fx: %f, fy: %f\n",fix,fiy,fx,fy);
+      //printf("fIx: %d, fIy: %d fX: %f, fY: %f\n",fIx,fIy,fX,fY);
 }
 
 void AliRICHSegmentationV0::NextPad()
@@ -133,17 +136,17 @@ void AliRICHSegmentationV0::NextPad()
     
     // 
     // Step to next pad in integration region
-    if (fix <= fixmax) {
-//	if (fix==-1) fix++;
-	fix++;
-    } else if (fiy <= fiymax) {
-//	if (fiy==-1) fiy++;
-	fix=fixmin;
-	fiy++;
+    if (fIx <= fIxmax) {
+//	if (fIx==-1) fIx++;
+	fIx++;
+    } else if (fIy <= fIymax) {
+//	if (fIy==-1) fIy++;
+	fIx=fIxmin;
+	fIy++;
     } else {
 	printf("\n Error: Stepping outside integration region\n ");
     }
-    GetPadCxy(fix,fiy,fx,fy);
+    GetPadCxy(fIx,fIy,fX,fY);
 }
 
 Int_t AliRICHSegmentationV0::MorePads()
@@ -155,7 +158,7 @@ Int_t AliRICHSegmentationV0::MorePads()
     //printf("\n More  Pads ? \n");
   
   
-  if (fix >= fixmax && fiy >= fiymax) {
+  if (fIx >= fIxmax && fIy >= fIymax) {
     //printf("There are no more pads\n\n\n\n\n");
     return 0;
   } else {
@@ -168,10 +171,10 @@ void AliRICHSegmentationV0::SigGenInit(Float_t x,Float_t y,Float_t)
 {
 //
 //  Initialises pad and wire position during stepping
-    fxt =x;
-    fyt =y;
-    GetPadIxy(x,y,fixt,fiyt);
-    fiwt= (x>0) ? Int_t(x/fWireD)+1 : Int_t(x/fWireD)-1 ;
+    fXt =x;
+    fYt =y;
+    GetPadIxy(x,y,fIxt,fIyt);
+    fIwt= (x>0) ? Int_t(x/fWireD)+1 : Int_t(x/fWireD)-1 ;
 }
 
 Int_t AliRICHSegmentationV0::SigGenCond(Float_t x,Float_t y,Float_t)
@@ -183,7 +186,7 @@ Int_t AliRICHSegmentationV0::SigGenCond(Float_t x,Float_t y,Float_t)
     GetPadIxy(x,y,ixt,iyt);
     Int_t iwt=(x>0) ? Int_t(x/fWireD)+1 : Int_t(x/fWireD)-1;
     
-    if ((ixt != fixt) || (iyt !=fiyt) || (iwt != fiwt)) {
+    if ((ixt != fIxt) || (iyt !=fIyt) || (iwt != fIwt)) {
       return 1;
     } else {
       return 0;
@@ -196,14 +199,14 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
 // Calculate the integration limits
 
 /*
-  x1=fxt-fx-fDpx/2.;
+  x1=fXt-fX-fDpx/2.;
   x2=x1+fDpx;
-  y1=fyt-fy-fDpy/2.;
+  y1=fYt-fY-fDpy/2.;
   y2=y1+fDpy;    
 */
-  x1=fxhit-fx-fDpx/2.;
+  x1=fXhit-fX-fDpx/2.;
   x2=x1+fDpx;
-  y1=fyhit-fy-fDpy/2.;
+  y1=fYhit-fY-fDpy/2.;
   y2=y1+fDpy;
 }
 
