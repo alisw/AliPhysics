@@ -56,12 +56,12 @@ Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out, Int_t n)
 {
  
   if(fColl!=0) { 
-    cerr<<"AliTPCtrackerParam::BuildTPCtracks:  Invalid collision!\n
-                 Available:  0   ->   PbPb6000"<<endl; return 0; 
+    cerr<<"AliTPCtrackerParam::BuildTPCtracks:  Invalid collision!\n";
+    cerr<<"      Available:  0   ->   PbPb6000"<<endl; return 0; 
   }
   if(fBz!=0.4) {
-    cerr<<"AliTPCtrackerParam::BuildTPCtracks:  Invalid field!\n
-                 Available:  0.4"<<endl; return 0;
+    cerr<<"AliTPCtrackerParam::BuildTPCtracks:  Invalid field!\n";
+    cerr<<"      Available:  0.4"<<endl; return 0;
   }
 
   TFile *infile=(TFile*)inp;
