@@ -14,6 +14,7 @@ class AliITSresponse;
 class AliITSsegmentation;
 class AliITSRawCluster;
 class AliITS;
+class AliITSdigit;
 class AliITSRecPoint;
 
 //---------------------------------------------------------------
@@ -37,11 +38,16 @@ public:
     // set segmentation
     fSegmentation=segmentation;
   }
-  
   virtual void SetDigits(TClonesArray *ITSdigits) {
     // set digits
     fDigits=ITSdigits;
     fNdigits = fDigits->GetEntriesFast();
+  }
+  virtual AliITSdigit* GetDigit(Int_t i){
+      return (AliITSdigit*) fDigits->UncheckedAt(i);
+  }
+  virtual TClonesArray* Digits(){
+      return fDigits;
   }
   virtual Int_t   NDigits() {
     // Get Number of Digits
