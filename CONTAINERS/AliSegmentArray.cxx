@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/08/30 09:25:24  hristov
+The operator[] is replaced by At() or AddAt() in case of TObjArray. A temporary replacement of Branch with BranchOld is introduced
+
 Revision 1.5  2001/07/27 13:03:11  hristov
 Default Branch split level set to 99
 
@@ -79,6 +82,7 @@ AliSegmentArray::AliSegmentArray()
   fTreeIndex = 0;
   fTree  = 0;
   fClass = 0;
+  fBranch = 0;
 }
 
 AliSegmentArray::AliSegmentArray(Text_t *classname, Int_t n)
@@ -251,7 +255,7 @@ void AliSegmentArray::MakeTree(char *file)
   if (fTree) delete fTree;
   fTree = new TTree("Segment Tree","Tree with segments");
   //PH  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000);
-   fBranch = fTree->BranchOld("Segment",psegment->IsA()->GetName(),&psegment,64000);
+   fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000,99);
  if (file) {
         TString outFile = gAlice->GetBaseFile();
         outFile = outFile + "/" + file;

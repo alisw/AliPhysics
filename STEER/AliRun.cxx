@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.79  2001/10/09 18:00:35  hristov
+Temporary fix to provide unique event number in the simulation (J.Chudoba)
+
 Revision 1.78  2001/10/04 15:30:56  hristov
 Changes to accommodate the set of PHOS folders and tasks (Y.Schutz)
 
@@ -1260,7 +1263,7 @@ void AliRun::MakeTree(Option_t *option, const char *file)
   if (oE && !fTreeE) {
     fTreeE = new TTree("TE","Header");
     //    branch = fTreeE->Branch("Header", "AliHeader", &fHeader, 4000, 0);         
-    branch = fTreeE->BranchOld("Header", "AliHeader", &fHeader, 4000, 0);         
+    branch = fTreeE->Branch("Header", "AliHeader", &fHeader, 4000, 0);         
     branch->SetAutoDelete(kFALSE);	     
     TFolder *folder = (TFolder *)gROOT->FindObjectAny("/Folders/RunMC/Event/Header");
     if (folder) folder->Add(fHeader);
