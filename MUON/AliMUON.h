@@ -134,8 +134,8 @@ class AliMUON : public  AliDetector {
  protected:
     Int_t                 fNCh;                // Number of chambers   
     Int_t                 fNTrackingCh;        // Number of tracking chambers
-    TObjArray            *fChambers;           //! List of Tracking Chambers
-    TObjArray            *fTriggerCircuits;    //! List of Trigger Circuits
+    TObjArray            *fChambers;           // List of Tracking Chambers
+    TObjArray            *fTriggerCircuits;    // List of Trigger Circuits
     Int_t                 fNPadHits;           // Number of pad hits
     TClonesArray         *fPadHits;            //! List of pad hits
     TObjArray            *fDchambers;          //! List of digits
