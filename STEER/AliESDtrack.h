@@ -138,6 +138,24 @@ public:
   Float_t GetRICHsignal() const {return fRICHsignal;}
   void    SetRICHpid(const Double_t *p);
   void    GetRICHpid(Double_t *p) const;
+  void    SetRICHchi2(Double_t chi2) {fRICHchi2=chi2;}
+  Float_t GetRICHchi2() const {return fRICHchi2;}
+  void    SetRICHcluster(UInt_t index) {fRICHindex=index;}
+  UInt_t  GetRICHcluster() const {return fRICHindex;}
+  void    SetRICHnclusters(Int_t n) {fRICHncls=n;}
+  Int_t   GetRICHnclusters() const {return fRICHncls;}
+  void    SetRICHthetaPhi(Double_t theta, Double_t phi) {
+    fRICHtheta=theta; fRICHphi=phi;
+  }
+  void    GetRICHthetaPhi(Double_t &theta, Double_t &phi) const {
+    theta=fRICHtheta; phi=fRICHphi;
+  }
+  void    SetRICHdxdy(Double_t dx, Double_t dy) {
+    fRICHdx=dx; fRICHdy=dy;
+  }
+  void    GetRICHdxdy(Double_t &dx, Double_t &dy) const {
+    dx=fRICHtheta; dy=fRICHphi;
+  }
   
   void SetPHOSposition(const Double_t *pos)  {
     fPHOSpos[0] = pos[0]; fPHOSpos[1]=pos[1]; fPHOSpos[2]=pos[2];
@@ -270,10 +288,17 @@ protected:
   Float_t fEMCALr[AliPID::kSPECIESN]; // PID information from EMCAL
 
   // HMPID related track information
-  Float_t fRICHsignal;     // detector's PID signal (beta for RICH)
+  Float_t fRICHchi2;       // chi2 in the RICH
+  Int_t   fRICHncls;       // number of photon clusters
+  UInt_t  fRICHindex;      // index of the assigned MIP cluster
+  Float_t fRICHsignal;     // RICH PID signal
   Float_t fRICHr[AliPID::kSPECIES];// "detector response probabilities" (for the PID)
+  Float_t fRICHtheta;      // theta of the track extrapolated to the RICH
+  Float_t fRICHphi;        // phi of the track extrapolated to the RICH
+  Float_t fRICHdx;         // x of the track impact minus x of the MIP
+  Float_t fRICHdy;         // y of the track impact minus y of the MIP
   	
-  ClassDef(AliESDtrack,11)  //ESDtrack 
+  ClassDef(AliESDtrack,12)  //ESDtrack 
 };
 
 #endif 

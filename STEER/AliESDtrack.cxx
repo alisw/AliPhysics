@@ -32,6 +32,7 @@ ClassImp(AliESDtrack)
 AliESDtrack::AliESDtrack() : 
 fFlags(0),
 fLabel(0),
+fID(0),
 fTrackLength(0),
 fD(0),
 fZ(0),
@@ -61,12 +62,18 @@ fTOFindex(0),
 fTOFsignal(-1),
 fPHOSsignal(-1),
 fEMCALsignal(-1),
-fRICHsignal(-1)
+fRICHchi2(1e10),
+fRICHncls(0),
+fRICHindex(0),
+fRICHsignal(-1),
+fRICHtheta(0),
+fRICHphi(0),
+fRICHdx(0),
+fRICHdy(0)
 {
   //
   // The default ESD constructor 
   //
-  fID =0;
   for (Int_t i=0; i<AliPID::kSPECIES; i++) {
     fTrackTime[i]=0.;
     fR[i]=1.;
@@ -114,9 +121,9 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   //
   //copy constructor
   //
-  fID = track.fID;
   fFlags = track.fFlags;
   fLabel =track.fLabel;
+  fID = track.fID;
   fTrackLength =track.fTrackLength;
   fD=track.fD; fZ=track.fZ;
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] =track.fTrackTime[i];
@@ -193,10 +200,15 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):TObject(track){
   fEMCALsignal=track.fEMCALsignal; 
   for (Int_t i=0;i<AliPID::kSPECIESN;i++) fEMCALr[i]=track.fEMCALr[i]; 
   //
+  fRICHchi2=track.fRICHchi2;     
+  fRICHncls=track.fRICHncls;     
+  fRICHindex=track.fRICHindex;     
   fRICHsignal=track.fRICHsignal;     
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fRICHr[i]=track.fRICHr[i];
-  
-  
+  fRICHtheta=track.fRICHtheta;     
+  fRICHphi=track.fRICHphi;      
+  fRICHdx=track.fRICHdx;     
+  fRICHdy=track.fRICHdy;      
 }
 //_______________________________________________________________________
 AliESDtrack::~AliESDtrack(){ 
