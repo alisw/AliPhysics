@@ -10,6 +10,7 @@
 #include "TG4G3Defaults.h"
 
 #include <G4ParticleDefinition.hh>
+#include <G4VProcess.hh>
 
 #include <TDatabasePDG.h>
 
@@ -227,7 +228,7 @@ void TG4PhysicsManager::FillProcessMap()
   fProcessMap.Add("Rayleigh Scattering", kPRayleigh);
 
   // no mechanism is active, usually at the entrance of a new volume
-  // kPNull
+  fProcessMap.Add("Transportation", kPNull);
 
   // particle has fallen below energy threshold and tracking stops
   // kPStop
@@ -284,16 +285,19 @@ G4int TG4PhysicsManager::GetPDGEncoding(G4ParticleDefinition* particle)
   return pdgEncoding;  
 }  
      
-AliMCProcess TG4PhysicsManager::GetMCProcess(const G4String& g4ProcessName)
+AliMCProcess TG4PhysicsManager::GetMCProcess(const G4VProcess* process)
 {
-// Returns the AliMCProcess code of process specified by name.
+// Returns the AliMCProcess code of the specified G4 process.
 // ---
+ 
+  if (!process) return kPNoProcess;
 
-  G4int processCode = fProcessMap.GetSecond(g4ProcessName);
+  G4String name = process->GetProcessName();
+  G4int code = fProcessMap.GetSecond(name);
   
-  if (processCode == 0) return kPNoProcess;
+  if (code == 0) return kPNoProcess;
   
-  return (AliMCProcess)processCode; 
+  return (AliMCProcess)code; 
 }
 
 G4int TG4PhysicsManager::GetPDGEncoding(G4String particleName)
