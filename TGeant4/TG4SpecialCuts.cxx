@@ -110,31 +110,34 @@ G4double TG4SpecialCuts::PostStepGetPhysicalInteractionLength(
 
     // min remaining range
     G4ParticleDefinition* particle = track.GetDefinition();
-    G4double kinEnergy = track.GetKineticEnergy();
-    G4Material* material = track.GetMaterial();
-    G4double rangeNow 
-      = G4EnergyLossTables::GetRange(particle, kinEnergy, material);
-    temp = (rangeNow - limits->GetUserMinRange(track));
-    if (temp < 0.) return 0.;
-    if (proposedStep > temp) proposedStep = temp;
-
-    // min kinetic energy (from limits)
-    // the kin energy cut can be applied only in case
-    // G4EnergyLossTables are defined for the particle
-    if (G4EnergyLossTables::GetDEDXTable(particle)) {
-      TG4Limits* tg4Limits = dynamic_cast<TG4Limits*>(limits);
-      if (!tg4Limits) {
-        G4String text = "TG4SpecialCuts::PostStepGetPhysicalInteractionLength:\n";
-        text = text + "    Unknown limits type.";
-        TG4Globals::Exception(text);
-      }  
-      G4double minEkine 
-        = (tg4Limits->*fPtrMinEkineInLimits)(track);
-      G4double minR 
-        = G4EnergyLossTables::GetRange(particle, minEkine, material);
-      temp = rangeNow - minR;
+    if (particle->GetPDGCharge() != 0.) {
+      G4double kinEnergy = track.GetKineticEnergy();
+      G4Material* material = track.GetMaterial();
+      G4double rangeNow 
+        = G4EnergyLossTables::GetRange(particle, kinEnergy, material);
+      temp = (rangeNow - limits->GetUserMinRange(track));
       if (temp < 0.) return 0.;
-      if (proposedStep > temp) proposedStep = temp;  
+      if (proposedStep > temp) proposedStep = temp;
+
+      // min kinetic energy (from limits)
+      // the kin energy cut can be applied only in case
+      // G4EnergyLossTables are defined for the particle
+      if (G4EnergyLossTables::GetDEDXTable(particle)) {
+        TG4Limits* tg4Limits = dynamic_cast<TG4Limits*>(limits);
+        if (!tg4Limits) {
+          G4String text = "TG4SpecialCuts::PostStepGetPhysicalInteractionLength:\n";
+          text = text + "    Unknown limits type.";
+          TG4Globals::Exception(text);
+        }  
+       G4double minEkine 
+          = (tg4Limits->*fPtrMinEkineInLimits)(track);
+       G4EnergyLossTables::GetTables(particle);
+       G4double minR 
+          = G4EnergyLossTables::GetRange(particle, minEkine, material);
+        temp = rangeNow - minR;
+        if (temp < 0.) return 0.;
+        if (proposedStep > temp) proposedStep = temp;  
+      }
     }  
 
   }
