@@ -16,6 +16,9 @@
 /* $Id:  */
 /*
   $Log$
+  Revision 1.2  2002/10/14 14:55:35  hristov
+  Merging the VirtualMC branch to the main development branch (HEAD)
+
   Revision 1.1.2.1  2002/08/28 15:06:50  alibrary
   Updating to v3-09-01
 
@@ -28,13 +31,17 @@
 
 #include "AliEMCALParton.h"
 #include "Ecommon.h"
-  
 ClassImp(AliEMCALParton)   
     
 //____________________________________________________________________________
 AliEMCALParton::AliEMCALParton()
 {
   // Default constructor
+  fTrackEnergy = 0;
+  fTrackEta    = 0;
+  fTrackPhi    = 0;
+  fTrackPDG    = 0;
+  fNTracks     = 0;
 }
 
 AliEMCALParton::AliEMCALParton(Float_t energy, Float_t phi, Float_t eta)
@@ -43,11 +50,58 @@ AliEMCALParton::AliEMCALParton(Float_t energy, Float_t phi, Float_t eta)
   fEnergy = energy;
   fPhi    = phi;
   fEta    = eta;
+  fTrackEnergy = 0;
+  fTrackEta    = 0;
+  fTrackPhi    = 0;
+  fTrackPDG    = 0;
+  fNTracks     = 0;
 }
+
+void AliEMCALParton::SetTrackList(Int_t NTracks, Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG)
+{
+
+  if (fNTracks)
+  {
+    delete[] fTrackEnergy;
+    delete[] fTrackEta;
+    delete[] fTrackPhi;
+    delete[] fTrackPDG;
+  }
+  fNTracks     = NTracks;
+  fTrackEnergy = new Float_t[NTracks];
+  fTrackEta    = new Float_t[NTracks];
+  fTrackPhi    = new Float_t[NTracks];
+  fTrackPDG    = new Int_t[NTracks];
+  
+  for (Int_t i=0;i<NTracks;i++)
+  {
+    fTrackEnergy[i] = Energy[i] ;
+    fTrackEta[i]    = Eta[i];
+    fTrackPhi[i]    = Phi[i];
+    fTrackPDG[i]    = PDG[i];
+  } 
+}
+
+void AliEMCALParton::GetTrackList(Float_t* Energy,  Float_t* Eta, Float_t* Phi, Int_t* PDG)
+{
+  for (Int_t i=0;i<fNTracks;i++)
+  {
+    Energy[i] = fTrackEnergy[i] ;
+    Eta[i]    = fTrackEta[i];
+    Phi[i]    = fTrackPhi[i];
+    PDG[i]    = fTrackPDG[i];
+  } 
+}
+
 
 //____________________________________________________________________________
 
 AliEMCALParton::~AliEMCALParton()
 {
   // Destructor
+  delete[] fTrackEnergy;
+  delete[] fTrackEta;
+  delete[] fTrackPhi;
+  delete[] fTrackPDG;
+  
 }
