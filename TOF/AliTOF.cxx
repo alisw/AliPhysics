@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/05/10 16:52:18  vicinanz
+New TOF version with holes for PHOS/RICH
+
 Revision 1.11.2.1  2000/05/10 09:37:15  vicinanz
 New version with Holes for PHOS/RICH
 
@@ -93,6 +96,7 @@ AliTOF::AliTOF(const char *name, const char *title)
   // Initialization of hits and digits array
   //
   fHits   = new TClonesArray("AliTOFhit",  405);
+  gAlice->AddHitList(fHits);
   fIshunt  = 0;
   fDigits = new TClonesArray("AliTOFdigit",405);
   //
