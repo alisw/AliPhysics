@@ -53,6 +53,12 @@ class AliITSvPPRasymm : public AliITS {
     virtual void   SetThicknessChip2(Float_t v=300.){ 
 	 // Set chip thickness in layer 2
 	 fChip2 = v;}
+    virtual void   SetRails(Int_t v=1){ 
+	 // Set flag for rails
+	 fRails = v;}	 
+    virtual void   SetCoolingFluid(Int_t v=1){ 
+	 // Set flag for cooling fluid
+	 fFluid = v;}	 	 
     virtual Bool_t GetEUCLID(){return fEuclidOut;}// returns value Euclid flag.
     virtual const char  *GetEULIIDFileName() const{ // return .euc file name
 	                               return fEuclidGeometry.Data();}
@@ -80,6 +86,13 @@ class AliITSvPPRasymm : public AliITS {
     virtual Float_t GetThicknessChip2(){ 
 	 // Get chip thickness in layer 2
 	 return fChip2;}
+    virtual Int_t GetRails(){ 
+	 // Get flag for rails
+	 return fRails;}	 
+    virtual Int_t GetCoolingFluid(){ 
+	 // Get flag for cooling fluid
+	 return fFluid;}	 	 	 
+	 	 
  private:
     void InitAliITSgeom();
 
@@ -92,10 +105,12 @@ class AliITSvPPRasymm : public AliITS {
     char   fEuclidGeomDet[60];// file where detector transormation are define.
     char   fRead[60];         //! file name to read .det file
     char   fWrite[60];        //! file name to write .det file
-	 Float_t  fDet1;           // thickness of detector in SPD layer 1
-	 Float_t  fDet2;           // thickness of detector in SPD layer 2
-	 Float_t  fChip1;          // thickness of chip in SPD layer 1	 
-	 Float_t  fChip2;          // thickness of chip in SPD layer 2	 
+    Float_t  fDet1;	      // thickness of detector in SPD layer 1
+    Float_t  fDet2;	      // thickness of detector in SPD layer 2
+    Float_t  fChip1;	      // thickness of chip in SPD layer 1   
+    Float_t  fChip2;	      // thickness of chip in SPD layer 2   
+    Int_t    fRails;          // flag to switch rails on (=1) and off (=0)
+    Int_t    fFluid;          // flag to switch between water (=1) and freon (=0)
 
     ClassDef(AliITSvPPRasymm,1)  //Hits manager for set:ITS version 8 
                                  // PPR detailed Geometry asymmetric
