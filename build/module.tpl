@@ -164,6 +164,13 @@ all-@PACKAGE@: $(@PACKAGE@LIB)
 depend-@PACKAGE@: $(@PACKAGE@DEP)
 
 # determination of object files
+$(MODDIRO)/%.o: $(MODDIRO)/%.cxx $(MODDIRO)/%.d 
+ifndef ALIQUIET
+	@echo "***** Compiling $< *****";
+endif
+	@(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
+	$(MUTE)$(CXX) $(@PACKAGE@DEFINE) -c $(@PACKAGE@INC)   $< -o $@ $(@PACKAGE@CXXFLAGS)
+
 $(MODDIRO)/%.o: $(MODDIR)/%.cxx $(MODDIRO)/%.d 
 ifndef ALIQUIET
 	@echo "***** Compiling $< *****";
