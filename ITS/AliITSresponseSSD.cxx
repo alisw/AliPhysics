@@ -48,7 +48,6 @@ AliITSresponseSSD::~AliITSresponseSSD()
 {
   // destructor
   delete [] fDetPar;
-  delete fDetPar;
   
 }
 
