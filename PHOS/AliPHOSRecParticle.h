@@ -18,6 +18,7 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSFastRecParticle.h"
+class TParticle ;
 
 class AliPHOSRecParticle : public AliPHOSFastRecParticle {
 
@@ -28,6 +29,8 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
   virtual ~AliPHOSRecParticle(){  }
 
   Int_t  GetPHOSTSIndex()const {    return fPHOSTrackSegment ;  }
+  const Int_t AliPHOSRecParticle::GetNPrimaries() const ; 
+  const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const ;  
   void   SetTraskSegment(Int_t index){fPHOSTrackSegment = index; }
 
   typedef TClonesArray RecParticlesList ; 

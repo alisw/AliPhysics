@@ -31,6 +31,8 @@
 // --- AliRoot header files ---
 
 #include "AliPHOSRecParticle.h"
+#include "AliPHOSGetter.h" 
+#include "TParticle.h"
 
 ClassImp(AliPHOSRecParticle)
 
@@ -66,6 +68,30 @@ ClassImp(AliPHOSRecParticle)
   
 }
 
+//____________________________________________________________________________
+const Int_t AliPHOSRecParticle::GetNPrimaries() const  
+{ 
 
+  Int_t rv = 0 ;
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  gime->EmcRecPoint(gime->TrackSegment(GetPHOSTSIndex())->GetEmcIndex())->GetPrimaries(rv) ; 
+  return rv ; 
+}
 
-
+//____________________________________________________________________________
+const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const  
+{
+  if ( index > GetNPrimaries() ) 
+    cout << "WARNING : AliPHOSRecParticle::GetPrimary -> " << index << " is larger that the number of primaries " 
+	 <<  GetNPrimaries() << endl ; 
+  else { 
+    Int_t dummy ; 
+    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+    Int_t primaryindex = gime->EmcRecPoint(gime->TrackSegment(GetPHOSTSIndex())->GetEmcIndex())->GetPrimaries(dummy)[index] ; 
+    if (primaryindex >= 10000000) 
+      cout << "WARNING : AliPHOSRecParticle::GetPrimary -> not a signal primary" << endl ; 
+    else 
+      return gime->Primary(primaryindex) ; 
+  }
+  return 0 ; 
+}
