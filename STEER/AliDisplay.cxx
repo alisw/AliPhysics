@@ -848,8 +848,8 @@ void AliDisplay::LoadPoints()
          AliDetector* detector = dynamic_cast<AliDetector*>(module);
          if(detector)
            {
-             detector->TreeH()->GetEvent(track);
-             detector->LoadPoints(track);
+             if (detector->TreeH()->GetEvent(track))
+	       detector->LoadPoints(track);
            }
       }
       next.Reset();
