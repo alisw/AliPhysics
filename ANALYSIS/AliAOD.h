@@ -33,9 +33,11 @@ public:
   
   virtual void             Reset();
   void                     SwapParticles(Int_t i, Int_t j);//swaps particles positions; used by AliReader::Blend
+  Bool_t                   IsRandomized() const {return fIsRandomized;}
+  void                     SetRandomized(Bool_t flag = kTRUE){fIsRandomized = flag;}
 private:
   TObjArray                fParticles;   // array of AOD particles, AliAOD is owner of particles
-
+  Bool_t                   fIsRandomized;//flag indicating if positions of particles were randomized - used by HBTAN
   ClassDef(AliAOD,1)  // base class for AOD containers
 };
 
