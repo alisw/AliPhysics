@@ -31,7 +31,7 @@ class AliEMCALJetFinderPlots : public TObject
 	void SetNominalEnergy(Float_t energy){fNominalEnergy = energy;}
 	void SetDebug(Int_t debug){fDebug = debug;}
 	void SetBackHisto(TH1F* histo){fhBackHisto=histo;}
-	void FillFromOutput(AliEMCALJetFinderOutput* output);
+	void FillFromOutput(AliEMCALJetFinderOutput* output,Float_t weight);
 	//========================== CASE 1 ========================
 	// Only consider events with only 1 jet
 	TH1F* GetFragmFcn(){return fhFragmFcn;}	

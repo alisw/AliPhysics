@@ -308,7 +308,7 @@ delete 	  fhEtaPhiSpread;
 
 }	
 
-void AliEMCALJetFinderPlots::FillFromOutput(AliEMCALJetFinderOutput* output)
+void AliEMCALJetFinderPlots::FillFromOutput(AliEMCALJetFinderOutput* output, Float_t weight=1.0)
 {
 	// Fill histograms from an output object
 if (!fInitialised) InitPlots();	
@@ -399,8 +399,8 @@ if (numappjet >=1)
 	if ( 95.0 < jethighest->Energy()*fScaleFactor && jethighest->Energy()*fScaleFactor < 105.0  )
 	{
 		doesJetMeetBinCriteria = 1;
-		fhRecoBinJetEt->Fill(jethighest->Energy()*fScaleFactor);
-		fhRecoBinInputJetEt->Fill(et);
+		fhRecoBinJetEt->Fill(jethighest->Energy()*fScaleFactor,weight);
+		fhRecoBinInputJetEt->Fill(et,weight);
 	}
 	fhInputOutput->Fill(et,jethighest->Energy());
 		
@@ -414,24 +414,24 @@ if (numappjet > 1)
   AliEMCALParton* parton;
 
   // End finding highest and second highest and continue
-  fhJetEt2->Fill(jethighest->Energy()*fScaleFactor);
-  fhJetEtDiff2->Fill(jethighest->Energy()*fScaleFactor-et);
-  fhJetInvE2->Fill(1.0/(jethighest->Energy()*fScaleFactor));
-  fhJetEta2->Fill(jethighest->Eta()  );
-  fhJetPhi2->Fill(jethighest->Phi() );
+  fhJetEt2->Fill(jethighest->Energy()*fScaleFactor,weight);
+  fhJetEtDiff2->Fill(jethighest->Energy()*fScaleFactor-et,weight);
+  fhJetInvE2->Fill(1.0/(jethighest->Energy()*fScaleFactor),weight);
+  fhJetEta2->Fill(jethighest->Eta(),weight  );
+  fhJetPhi2->Fill(jethighest->Phi(),weight );
   if (nPartons ==0) return;
   parton = fOutput->GetParton(0);
   
-  fhPartonEta2->Fill( parton->Eta() );
-  fhPartonPhi2->Fill( parton->Phi() );
+  fhPartonEta2->Fill( parton->Eta(),weight );
+  fhPartonPhi2->Fill( parton->Phi(),weight );
 
   //hJetEtDiff->Fill( jet->Energy() - parton->Energy() );
-  fhEtaDiff2->Fill( jethighest->Eta() - parton->Eta() );
-  fhPhiDiff2->Fill( jethighest->Phi() - parton->Phi() );
+  fhEtaDiff2->Fill( jethighest->Eta() - parton->Eta(),weight );
+  fhPhiDiff2->Fill( jethighest->Phi() - parton->Phi(),weight );
   fhEtaPhiSpread2->Fill(jethighest->Eta()-parton->Eta(),jethighest->Phi() - parton->Phi());
-  fhJetEtSecond2->Fill(jetsecond->Energy()*fScaleFactor); 
-  fhJetEtRatio2->Fill(jetsecond->Energy()/jethighest->Energy()); 
-  fhEtaPhiDist2->Fill( TMath::Sqrt((jethighest->Eta() - jetsecond->Eta())*(jethighest->Eta() - jetsecond->Eta())
+  fhJetEtSecond2->Fill(jetsecond->Energy()*fScaleFactor,weight); 
+  fhJetEtRatio2->Fill(jetsecond->Energy()/jethighest->Energy(),weight); 
+  fhEtaPhiDist2->Fill( TMath::Sqrt((jethighest->Eta() - jetsecond->Eta())*(jethighest->Eta() - jetsecond->Eta(),weight)
 		      + (jethighest->Phi() - jetsecond->Phi())*(jethighest->Phi() - jetsecond->Phi())	  ));  
   /* 
   Float_t *pt,*phi,*eta;
@@ -473,20 +473,20 @@ if (numappjet > 1)
 		  alpha = TMath::ACos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);   
 	  }
       Double_t correctp = pt[iT]/stt; 	
-      fhPartonPL2->Fill( correctp*cos(alpha));
+      fhPartonPL2->Fill( correctp*cos(alpha),weight);
       if ( (parton->Eta()-eta[iT])*(parton->Eta()-eta[iT]) +  
       (parton->Phi()-phi[iT])*(parton->Phi()-phi[iT]) < 0.2*0.2 ) 
-    	      fhPartonJT2->Fill( correctp*sin(alpha));
-      fhPartonPT2->Fill(correctp*sin(tt));
+    	      fhPartonJT2->Fill( correctp*sin(alpha),weight);
+      fhPartonPT2->Fill(correctp*sin(tt),weight);
       if (fNominalEnergy == 0.0) {
-	      fhPartonFragmFcn2->Fill(  correctp*sin(tt)/parton->Energy()  );
+	      fhPartonFragmFcn2->Fill(  correctp*sin(tt)/parton->Energy(),weight  );
       }else 
       {
-              fhPartonFragmFcn2->Fill(correctp*sin(tt)/fNominalEnergy);
+              fhPartonFragmFcn2->Fill(correctp*sin(tt)/fNominalEnergy,weight);
       }    	  
       if (doesJetMeetBinCriteria)
       {
-	      fhRecoBinPartonPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	      fhRecoBinPartonPt->Fill(correctp*sin(tt),weight);          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
       }
   }// loop over tracks
 
@@ -518,23 +518,23 @@ if (numappjet > 1)
 		  alpha = TMath::ACos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);   
 	  }
 	  Double_t correctp = pt[iT]/stt;
-	  fhJetPL2->Fill( correctp*cos(alpha));      
+	  fhJetPL2->Fill( correctp*cos(alpha),weight);      
 	  if ( (jethighest->Eta()-eta[iT])*(jethighest->Eta()-eta[iT]) +  
 			  (jethighest->Phi()-phi[iT])*(jethighest->Phi()-phi[iT]) < 0.2*0.2 )   
-		  fhJetJT2->Fill( correctp*sin(alpha));
-	  fhJetPT2->Fill(correctp*sin(tt));
+		  fhJetJT2->Fill( correctp*sin(alpha),weight);
+	  fhJetPT2->Fill(correctp*sin(tt),weight);
 	  if (fNominalEnergy==0.0){
-		  fhFragmFcn2->Fill(  correctp*sin(tt)/(jethighest->Energy()*fScaleFactor)  );
+		  fhFragmFcn2->Fill(  correctp*sin(tt)/(jethighest->Energy()*fScaleFactor),weight  );
 	  } else
 	  {
-                  fhFragmFcn2->Fill(  correctp*sin(tt)/fNominalEnergy );
+                  fhFragmFcn2->Fill(  correctp*sin(tt)/fNominalEnergy,weight );
 	  }
     	  if (doesJetMeetBinCriteria)
     	  {
-	  	  fhRecoBinPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
-	  	  fhRecoBinPtNoBg->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
-		  fhRecoBinFragmFcn->Fill(  correctp*sin(tt)/(jethighest->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
-		  fhRecoBinFragmFcnNoBg->Fill(  correctp*sin(tt)/(jethighest->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
+	  	  fhRecoBinPt->Fill(correctp*sin(tt),weight);          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	  	  fhRecoBinPtNoBg->Fill(correctp*sin(tt),weight);          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+		  fhRecoBinFragmFcn->Fill(  correctp*sin(tt)/(jethighest->Energy()*fScaleFactor),weight  ); // This is the jet fragmentation function
+		  fhRecoBinFragmFcnNoBg->Fill(  correctp*sin(tt)/(jethighest->Energy()*fScaleFactor),weight  ); // This is the jet fragmentation function
     	  }
   }// loop over tracks
   }
@@ -548,20 +548,20 @@ if (numappjet > 1)
   AliEMCALParton* parton;
   AliEMCALJet* jet; 
   jet = jethighest;//fOutput->GetJet(0);
-  fhJetEt->Fill(jet->Energy()*fScaleFactor);
-  fhJetEtDiff->Fill(jethighest->Energy()*fScaleFactor-et);
-  fhJetInvE->Fill(1.0/(jethighest->Energy()*fScaleFactor));
-  fhJetEta->Fill(jet->Eta()  );
-  fhJetPhi->Fill(jet->Phi() );
+  fhJetEt->Fill(jet->Energy()*fScaleFactor,weight);
+  fhJetEtDiff->Fill(jethighest->Energy()*fScaleFactor-et,weight);
+  fhJetInvE->Fill(1.0/(jethighest->Energy()*fScaleFactor),weight);
+  fhJetEta->Fill(jet->Eta(),weight  );
+  fhJetPhi->Fill(jet->Phi(),weight );
   if (nPartons ==0) return;
   parton = fOutput->GetParton(0);
   
-  fhPartonEta->Fill( parton->Eta() );
-  fhPartonPhi->Fill( parton->Phi() );
+  fhPartonEta->Fill( parton->Eta(),weight );
+  fhPartonPhi->Fill( parton->Phi(),weight );
 
   //hJetEtDiff->Fill( jet->Energy() - parton->Energy() );
-  fhEtaDiff->Fill( jet->Eta() - parton->Eta() );
-  fhPhiDiff->Fill( jet->Phi() - parton->Phi() );
+  fhEtaDiff->Fill( jet->Eta() - parton->Eta(),weight );
+  fhPhiDiff->Fill( jet->Phi() - parton->Phi(),weight );
   fhEtaPhiSpread->Fill(jet->Eta()-parton->Eta(),jet->Phi() - parton->Phi());
  /* 
   Float_t *pt,*phi,*eta;
@@ -602,20 +602,20 @@ if (numappjet > 1)
 	  {
 		  alpha = TMath::ACos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt); 	  }
       Double_t correctp = pt[iT]/stt; 	
-      fhPartonPL->Fill( correctp*cos(alpha));
+      fhPartonPL->Fill( correctp*cos(alpha),weight);
       if ( (parton->Eta()-eta[iT])*(parton->Eta()-eta[iT]) +  
       (parton->Phi()-phi[iT])*(parton->Phi()-phi[iT]) < 0.2*0.2 ) 
-    	      fhPartonJT->Fill( correctp*sin(alpha));
+    	      fhPartonJT->Fill( correctp*sin(alpha),weight);
       if (fNominalEnergy == 0.0) {
-	      fhPartonFragmFcn->Fill(  correctp*sin(tt)/parton->Energy()  );
-	  fhPartonPT->Fill(correctp*sin(tt));
+	      fhPartonFragmFcn->Fill(  correctp*sin(tt)/parton->Energy(),weight  );
+	  fhPartonPT->Fill(correctp*sin(tt),weight);
       }else 
       {
-              fhPartonFragmFcn->Fill(correctp*sin(tt)/fNominalEnergy);
+              fhPartonFragmFcn->Fill(correctp*sin(tt)/fNominalEnergy,weight);
       }
       if (doesJetMeetBinCriteria)
       {
-	      fhRecoBinPartonPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	      fhRecoBinPartonPt->Fill(correctp*sin(tt),weight);          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
       }
   }// loop over tracks
 
@@ -648,23 +648,23 @@ if (numappjet > 1)
 		  alpha = TMath::ACos(crp*ctp*srt*stt+srp*stp*srt*stt+crt*ctt);   
 	  }
 	  Double_t correctp = pt[iT]/stt;
-	  fhJetPL->Fill( correctp*cos(alpha));      
+	  fhJetPL->Fill( correctp*cos(alpha),weight);      
 	  if ( (jet->Eta()-eta[iT])*(jet->Eta()-eta[iT]) +  
 	       (jet->Phi()-phi[iT])*(jet->Phi()-phi[iT]) < 0.2*0.2 )   
-		  fhJetJT->Fill( correctp*sin(alpha));
-	  fhJetPT->Fill(correctp*sin(tt));
+		  fhJetJT->Fill( correctp*sin(alpha),weight);
+	  fhJetPT->Fill(correctp*sin(tt),weight);
 	  if (fNominalEnergy==0.0){
-		  fhFragmFcn->Fill(  correctp*sin(tt)/(jet->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
+		  fhFragmFcn->Fill(  correctp*sin(tt)/(jet->Energy()*fScaleFactor),weight  ); // This is the jet fragmentation function
 	  } else
 	  {
-                  fhFragmFcn->Fill(  correctp*sin(tt)/fNominalEnergy );
+                  fhFragmFcn->Fill(  correctp*sin(tt)/fNominalEnergy,weight );
 	  }
     	  if (doesJetMeetBinCriteria)
     	  {
-	  	  fhRecoBinPt->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
-	  	  fhRecoBinPtNoBg->Fill(correctp*sin(tt));          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
-		  fhRecoBinFragmFcn->Fill(  correctp*sin(tt)/(jet->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
-		  fhRecoBinFragmFcnNoBg->Fill(  correctp*sin(tt)/(jet->Energy()*fScaleFactor)  ); // This is the jet fragmentation function
+	  	  fhRecoBinPt->Fill(correctp*sin(tt),weight);          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+	  	  fhRecoBinPtNoBg->Fill(correctp*sin(tt),weight);          // ("fhRecoBinPt","Reconstructed Pt Distribution",100,0,1);
+		  fhRecoBinFragmFcn->Fill(  correctp*sin(tt)/(jet->Energy()*fScaleFactor),weight  ); // This is the jet fragmentation function
+		  fhRecoBinFragmFcnNoBg->Fill(  correctp*sin(tt)/(jet->Energy()*fScaleFactor),weight  ); // This is the jet fragmentation function
     	  }
   }// loop over tracks
   }
@@ -673,8 +673,8 @@ if (numappjet>=1 && fhBackHisto != 0 && doesJetMeetBinCriteria)
   {
     for (Int_t count=1;count<=100;count++)
     {
-	fhRecoBinFragmFcnNoBg->Fill( ((Float_t)count)/(jethighest->Energy()*fScaleFactor),-fhBackHisto->GetBinContent(count));
-	fhRecoBinPtNoBg->AddBinContent(count,-fhBackHisto->GetBinContent(count));
+	fhRecoBinFragmFcnNoBg->Fill( ((Float_t)count)/(jethighest->Energy()*fScaleFactor),-fhBackHisto->GetBinContent(count)*weight);
+	fhRecoBinPtNoBg->AddBinContent(count,-fhBackHisto->GetBinContent(count)*weight);
     } 
   }
 
