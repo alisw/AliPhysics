@@ -101,7 +101,7 @@ void AliGenMUONCocktail::Init()
   printf(">>> Kinematical range pT:%f:%f  y:%f:%f Phi:%f:%f\n",ptMin,ptMax,yMin,yMax,phiMin,phiMax);
 
   Float_t sigmaReaction =   0.072;   // MINB pp at LHC energies 72 mb
-  
+
   // Generating J/Psi Physics
   AliGenParam * genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "Vogt", "Jpsi");
   // 4pi Generation 
@@ -126,6 +126,31 @@ void AliGenMUONCocktail::Init()
   AddGenerator(genjpsi, "Jpsi", ratiojpsi);
   fTotalRate+=ratiojpsi;
 
+ // Generating Psi prime Physics
+  AliGenParam * genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "Vogt", "PsiP");
+  // 4pi Generation 
+  genpsiP->SetPtRange(0,100.);
+  genpsiP->SetYRange(-8.,8);
+  genpsiP->SetPhiRange(0.,360.);
+  genpsiP->SetForceDecay(kDiMuon);
+  genpsiP->SetTrackingFlag(1);
+  // Calculation of the paritcle multiplicity per event in the muonic channel
+  Float_t ratiopsiP; // Ratio with respect to the reaction cross-section for the muonic channel in the kinematics limit of the MUONCocktail
+  Float_t sigmapsiP     = 4.68e-6 * 0.437;   //   section "6.7 Quarkonia Production" table 6.5 for pp  times shadowing
+  Float_t brpsiP        = 0.0103;           // Branching Ratio for PsiP
+  genpsiP->Init();  // Generating pT and Y parametrsation for the 4pi
+  ratiopsiP = sigmapsiP * brpsiP * fNumberOfCollisions / sigmaReaction * genpsiP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax);
+  printf(">>> ratio psiP %g et %g Ncol %g sigma %g\n",ratiopsiP,genpsiP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax),fNumberOfCollisions, sigmapsiP );
+  // Generation in the kinematical limits of AliGenMUONCocktail
+  genpsiP->SetPtRange(ptMin, ptMax);  
+  genpsiP->SetYRange(yMin, yMax);
+  genpsiP->SetPhiRange(phiMin, phiMax);
+  genpsiP->Init(); // Generating pT and Y parametrsation in the desired kinematic range
+  // Adding Generator 
+  AddGenerator(genpsiP, "PsiP", ratiopsiP);
+  fTotalRate+=ratiopsiP;
+
+
 // Generating Upsilon Physics
   AliGenParam * genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "Vogt", "Upsilon");  
   genupsilon->SetPtRange(0,100.);  
@@ -145,6 +170,48 @@ void AliGenMUONCocktail::Init()
   genupsilon->Init(); // Generating pT and Y parametrsation in the desired kinematic range
   AddGenerator(genupsilon,"Upsilon", ratioupsilon);
   fTotalRate+=ratioupsilon;
+
+// Generating UpsilonP Physics
+  AliGenParam * genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "Vogt", "UpsilonP");  
+  genupsilonP->SetPtRange(0,100.);  
+  genupsilonP->SetYRange(-8.,8);
+  genupsilonP->SetPhiRange(0.,360.);
+  genupsilonP->SetForceDecay(kDiMuon);
+  genupsilonP->SetTrackingFlag(1);
+  Float_t ratioupsilonP; // Ratio with respect to the reaction cross-section for the muonic channel in the kinematics limit of the MUONCocktail
+  Float_t sigmaupsilonP     = 0.246e-6 * 0.674;   //  section "6.7 Quarkonia Production" table 6.5 for pp  times shadowing
+  Float_t brupsilonP        = 0.0131;  // Branching Ratio for UpsilonP
+  genupsilonP->Init();  // Generating pT and Y parametrsation for the 4pi
+  ratioupsilonP = sigmaupsilonP * brupsilonP * fNumberOfCollisions / sigmaReaction * genupsilonP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax);
+  printf(">>> ratio upsilonP %g et %g\n",ratioupsilonP, genupsilonP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax));
+  genupsilonP->SetPtRange(ptMin, ptMax);  
+  genupsilonP->SetYRange(yMin, yMax);
+  genupsilonP->SetPhiRange(phiMin, phiMax);
+  genupsilonP->Init(); // Generating pT and Y parametrsation in the desired kinematic range
+  AddGenerator(genupsilonP,"UpsilonP", ratioupsilonP);
+  fTotalRate+=ratioupsilonP;
+
+
+// Generating UpsilonPP Physics
+  AliGenParam * genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "Vogt", "UpsilonPP");  
+  genupsilonPP->SetPtRange(0,100.);  
+  genupsilonPP->SetYRange(-8.,8);
+  genupsilonPP->SetPhiRange(0.,360.);
+  genupsilonPP->SetForceDecay(kDiMuon);
+  genupsilonPP->SetTrackingFlag(1);
+  Float_t ratioupsilonPP; // Ratio with respect to the reaction cross-section for the muonic channel in the kinematics limit of the MUONCocktail
+  Float_t sigmaupsilonPP     = 0.100e-6 * 0.674;   //  section "6.7 Quarkonia Production" table 6.5 for pp  times shadowing
+  Float_t brupsilonPP        = 0.0181;  // Branching Ratio for UpsilonPP
+  genupsilonPP->Init();  // Generating pT and Y parametrsation for the 4pi
+  ratioupsilonPP = sigmaupsilonPP * brupsilonPP * fNumberOfCollisions / sigmaReaction * genupsilonPP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax);
+  printf(">>> ratio upsilonPP %g et %g\n",ratioupsilonPP, genupsilonPP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax));
+  genupsilonPP->SetPtRange(ptMin, ptMax);  
+  genupsilonPP->SetYRange(yMin, yMax);
+  genupsilonPP->SetPhiRange(phiMin, phiMax);
+  genupsilonPP->Init(); // Generating pT and Y parametrsation in the desired kinematic range
+  AddGenerator(genupsilonPP,"UpsilonPP", ratioupsilonPP);
+  fTotalRate+=ratioupsilonPP;
+
 
 // Generating Charm Physics 
   AliGenParam * gencharm = new AliGenParam(1, AliGenMUONlib::kCharm, "Vogt", "Charm");  
