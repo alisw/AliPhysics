@@ -44,6 +44,8 @@ class AliGenPythia : public AliGenMC
     // select pt of hard scattering 
     virtual void    SetPtHard(Float_t ptmin = 0, Float_t ptmax = 1.e10)
 	{fPtHardMin = ptmin; fPtHardMax = ptmax; }
+    virtual void    SetYHard(Float_t ymin = -1.e10, Float_t ymax = 1.e10)
+	{fYHardMin = ymin; fYHardMax = ymax; }
     // set centre of mass energy
     virtual void    SetEnergyCMS(Float_t energy = 5500) {fEnergyCMS = energy;}
     // treat protons as inside nuclei
@@ -116,6 +118,8 @@ class AliGenPythia : public AliGenMC
     AliPythia   *fPythia;         //!Pythia 
     Float_t     fPtHardMin;       //lower pT-hard cut 
     Float_t     fPtHardMax;       //higher pT-hard cut
+    Float_t     fYHardMin;        //lower  y-hard cut 
+    Float_t     fYHardMax;        //higher y-hard cut
     Int_t       fNucA1;           //mass number nucleus side 1
     Int_t       fNucA2;           //mass number nucleus side 2
     Bool_t      fFullEvent;       //!Write Full event if true
@@ -147,9 +151,7 @@ class AliGenPythia : public AliGenMC
     // fCountMode = kCountTrackabless --> Only particles flagged for tracking
     //                                     are counted
     //
-
     ClassDef(AliGenPythia,2) // AliGenerator interface to Pythia
-
 };
 #endif
 
