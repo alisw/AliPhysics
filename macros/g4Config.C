@@ -50,6 +50,7 @@ void Config()
 
   // Switch on special cuts process
   geant4->ProcessGeantCommand("/mcPhysics/setSpecialCuts true");  
+  geant4->ProcessGeantCommand("/run/particle/applyCuts");  
 
   // ============================= 
   // AliRoot setup

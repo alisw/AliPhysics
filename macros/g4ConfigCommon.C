@@ -131,7 +131,7 @@ void ConfigCommon(Bool_t interactiveSetup)
   Int_t iVZERO = 1;
 
   // ONLY FOR GEANT4
-  
+
   // Exclude detectors with temporary problem
   iCRT = 0;
   iEMCAL = 0;
@@ -349,7 +349,7 @@ void ConfigCommon(Bool_t interactiveSetup)
         FMD->SetRingsSi1(256);
         FMD->SetRingsSi2(128);
         FMD->SetSectorsSi1(20);
-        FMD->SetSectorsSi2(24);
+        FMD->SetSectorsSi2(40);
    }
 
     if (iMUON)
@@ -362,7 +362,7 @@ void ConfigCommon(Bool_t interactiveSetup)
 
     if (iPHOS)
     {
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "GPS2");
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
     }
 
 
@@ -381,7 +381,7 @@ void ConfigCommon(Bool_t interactiveSetup)
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
+        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "G56_2_55_19_104_14");
     }
 
     if (iCRT)
