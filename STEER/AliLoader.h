@@ -127,62 +127,62 @@ class AliLoader: public TNamed
     TTree*         TreeP() const
       {return GetRecParticlesDataLoader()->Tree();} //returns the tree from folder; shortcut method
 
-    Int_t          LoadHits(Option_t* opt=""){
+    virtual Int_t  LoadHits(Option_t* opt=""){
       Int_t status = GetHitsDataLoader()->Load(opt);
       SetTAddrInDet();
       return status;
     }
-    Int_t          LoadSDigits(Option_t* opt=""){
+    virtual Int_t  LoadSDigits(Option_t* opt=""){
       Int_t status = GetSDigitsDataLoader()->Load(opt);
       SetTAddrInDet();
       return status;
     }
-    Int_t          LoadDigits(Option_t* opt=""){
+    virtual Int_t  LoadDigits(Option_t* opt=""){
       Int_t status = GetDigitsDataLoader()->Load(opt);
       SetTAddrInDet();
       return status;
     }
     
 
-    Int_t          LoadRecPoints(Option_t* opt="") {
+    virtual Int_t  LoadRecPoints(Option_t* opt="") {
       Int_t status = GetRecPointsDataLoader()->Load(opt);
       SetTAddrInDet();
       return status;
     }
-    Int_t          LoadTracks(Option_t* opt="") {
+    virtual Int_t  LoadTracks(Option_t* opt="") {
       Int_t status = GetTracksDataLoader()->Load(opt);
       SetTAddrInDet();
       return status;
     }
-    Int_t          LoadRecParticles(Option_t* opt="") {
+    virtual Int_t  LoadRecParticles(Option_t* opt="") {
       Int_t status = GetRecParticlesDataLoader()->Load(opt);
       SetTAddrInDet();
       return status;
     }
     
-    Int_t          LoadSDigitizer(Option_t* opt="") const {
+    virtual Int_t  LoadSDigitizer(Option_t* opt="") const {
       return GetSDigitsDataLoader()->GetBaseTaskLoader()->Load(opt);
     }
-    Int_t          LoadDigitizer(Option_t* opt="") const {
+    virtual Int_t  LoadDigitizer(Option_t* opt="") const {
       return GetDigitsDataLoader()->GetBaseTaskLoader()->Load(opt);
     }
-    Int_t          LoadReconstructioner(Option_t* opt="") const {
+    virtual Int_t  LoadReconstructioner(Option_t* opt="") const {
       return GetRecPointsDataLoader()->GetBaseTaskLoader()->Load(opt);
     }
-    Int_t          LoadTracker(Option_t* opt="") const {
+    virtual Int_t  LoadTracker(Option_t* opt="") const {
       return GetTracksDataLoader()->GetBaseTaskLoader()->Load(opt);
     }
-    Int_t          LoadPIDTask(Option_t* opt="") const {
+    virtual Int_t  LoadPIDTask(Option_t* opt="") const {
       return GetRecParticlesDataLoader()->GetBaseTaskLoader()->Load(opt);
     }
 
-    void           UnloadHits() const {GetHitsDataLoader()->Unload();}
-    void           UnloadSDigits() const {GetSDigitsDataLoader()->Unload();}
-    void           UnloadDigits() const {GetDigitsDataLoader()->Unload();}
-    void           UnloadRecPoints() const{GetRecPointsDataLoader()->Unload();}
-    void           UnloadTracks() const {GetTracksDataLoader()->Unload();}
-    void           UnloadRecParticles() const {GetRecParticlesDataLoader()->Unload();}
-    void           UnloadAll();
+    virtual void   UnloadHits() const {GetHitsDataLoader()->Unload();}
+    virtual void   UnloadSDigits() const {GetSDigitsDataLoader()->Unload();}
+    virtual void   UnloadDigits() const {GetDigitsDataLoader()->Unload();}
+    virtual void   UnloadRecPoints() const{GetRecPointsDataLoader()->Unload();}
+    virtual void   UnloadTracks() const {GetTracksDataLoader()->Unload();}
+    virtual void   UnloadRecParticles() const {GetRecParticlesDataLoader()->Unload();}
+    virtual void   UnloadAll();
 
     virtual Int_t  ReloadHits() const {return GetHitsDataLoader()->Reload();}  //unload and load again Hits
     virtual Int_t  ReloadSDigits() const {return GetSDigitsDataLoader()->Reload();} //unload and load again 
