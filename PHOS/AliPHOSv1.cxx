@@ -58,7 +58,8 @@
 ClassImp(AliPHOSv1)
 
 //____________________________________________________________________________
-AliPHOSv1::AliPHOSv1()
+AliPHOSv1::AliPHOSv1():
+AliPHOSv0()
 {
   // ctor
  
