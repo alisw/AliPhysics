@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2002/11/21 16:28:39  alibrary
+Removing AliMCProcess and AliMC
+
 Revision 1.24  2002/10/22 15:02:47  alibrary
 Introducing Riostream.h
 
@@ -140,7 +143,7 @@ void AliPIPEv0::CreateGeometry()
   
 
     Int_t *idtmed = fIdtmed->GetArray();
-    Float_t ppcon[84], ptube[3], pbox[3];
+    Float_t ppcon[90], ptube[3], pbox[3];
     Int_t i=0;
     
     
@@ -213,81 +216,89 @@ void AliPIPEv0::CreateGeometry()
 // Mother Volume QBPM
     ppcon[0]  =   0;
     ppcon[1]  = 360;
-    ppcon[2]  =  18;
-//  1: 
+    ppcon[2]  =  20;
+//  1 
     ppcon[3]  = -90.;
     ppcon[4]  =   0.;
-    ppcon[5]  =   4.4;
+    ppcon[5]  =   3.1;
 //  2
-    ppcon[6]  = -90+2.*hlenQb24[2]+2.8+2.*hlenQb24[1];
+    ppcon[6]  = -84.;
     ppcon[7]  =   0.;
-    ppcon[8]  =   4.4;
+    ppcon[8]  =   3.1;
 //  3
-    ppcon[9]  = ppcon[6];
+    ppcon[9]  = -84.;
     ppcon[10] =   0.;
-    ppcon[11] =   4.1;
-//  4 
-    ppcon[12] = ppcon[9] + 2. + 2.*dzub+0.2; 
+    ppcon[11] =   4.4;
+//  4
+    ppcon[12] = -90+2.*hlenQb24[2]+2.8+2.*hlenQb24[1];
     ppcon[13] =   0.;
-    ppcon[14] =   4.1;
-//  5 
-    ppcon[15] = ppcon[12];
+    ppcon[14] =   4.4;
+//  5
+    ppcon[15]  = ppcon[12];
     ppcon[16] =   0.;
-    ppcon[17] =   3.2;
+    ppcon[17] =   4.1;
 //  6 
-    ppcon[18] = ppcon[15] + 2.* dzbb-0.4; 
+    ppcon[18] = ppcon[15] + 2. + 2.*dzub+0.2; 
     ppcon[19] =   0.;
-    ppcon[20] =   3.2;
-//  7
-    ppcon[21] = ppcon[18]; 
+    ppcon[20] =   4.1;
+//  7 
+    ppcon[21] = ppcon[18];
     ppcon[22] =   0.;
-    ppcon[23] =   4.1;
-//  8
-    ppcon[24] = -44.;
+    ppcon[23] =   3.2;
+//  8 
+    ppcon[24] = ppcon[21] + 2.* dzbb-0.4; 
     ppcon[25] =   0.;
-    ppcon[26] =   4.1;
+    ppcon[26] =   3.2;
 //  9
-    ppcon[27] = -44.;
-    ppcon[28] =    0;
-    ppcon[29] =    3.0;
+    ppcon[27] = ppcon[24]; 
+    ppcon[28] =   0.;
+    ppcon[29] =   4.1;
 //  10
-    ppcon[30] =  38.;
-    ppcon[31] =    0;
-    ppcon[32] =    3.0;
+    ppcon[30] = -44.;
+    ppcon[31] =   0.;
+    ppcon[32] =   4.1;
 //  11
-    ppcon[33] =  38.;
+    ppcon[33] = -44.;
     ppcon[34] =    0;
-    ppcon[35] =    3.6;
+    ppcon[35] =    3.0;
 //  12
-    ppcon[36] = hlenQbbe1+2.*hlenQbab-0.1;
-    ppcon[37] =    0.;
-    ppcon[38] =    3.6;
+    ppcon[36] =  38.;
+    ppcon[37] =    0;
+    ppcon[38] =    3.0;
 //  13
-    ppcon[39] = ppcon[36];
-    ppcon[40] =    0.;
+    ppcon[39] =  38.;
+    ppcon[40] =    0;
     ppcon[41] =    3.6;
 //  14
-    ppcon[42] = ppcon[39]+2.*hlenQb29-5.;
+    ppcon[42] = hlenQbbe1+2.*hlenQbab-0.1;
     ppcon[43] =    0.;
     ppcon[44] =    3.6;
 //  15
     ppcon[45] = ppcon[42];
     ppcon[46] =    0.;
-    ppcon[47] =   56.;
+    ppcon[47] =    3.6;
 //  16
-    ppcon[48] = ppcon[45]+2.*dzb+10.;
+    ppcon[48] = ppcon[45]+2.*hlenQb29-5.;
     ppcon[49] =    0.;
-    ppcon[50] =   56.;
+    ppcon[50] =    3.6;
 //  17
-    ppcon[51] =   ppcon[48];
+    ppcon[51] = ppcon[48];
     ppcon[52] =    0.;
-    ppcon[53] =    3.6;
+    ppcon[53] =   56.;
 //  18
-    ppcon[54] =  800.;
+    ppcon[54] = ppcon[51]+2.*dzb+10.;
     ppcon[55] =    0.;
-    ppcon[56] =    3.6;
+    ppcon[56] =   56.;
+//  19
+    ppcon[57] =   ppcon[54];
+    ppcon[58] =    0.;
+    ppcon[59] =    3.6;
+//  20
+    ppcon[60] =  800.;
+    ppcon[61] =    0.;
+    ppcon[62] =    3.6;
     
-    gMC->Gsvolu("QBPM", "PCON", idtmed[kAir], ppcon,57);
+    gMC->Gsvolu("QBPM", "PCON", idtmed[kAir], ppcon,63);
 
 
 //
