@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.12  2000/10/18 11:42:06  morsch
+- AliMUONRawCluster contains z-position.
+- Some clean-up of useless print statements during initialisations.
+
 Revision 1.11  2000/10/06 09:04:05  morsch
 - Dummy z-arguments in GetPadI, SetHit, FirstPad replaced by real z-coordinate
 	to make code work with slat chambers (AM)
@@ -1767,6 +1771,7 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 	    cnew.fMultiplicity[cath]=0;
 	    cnew.fX[cath]=Float_t(fXFit[j]);
 	    cnew.fY[cath]=Float_t(fYFit[j]);
+	    cnew.fZ[cath]=fZPlane;
 	    if (j==0) {
 		cnew.fQ[cath]=Int_t(clusterInput.TotalCharge(cath)*fQrFit[cath]);
 	    } else {
