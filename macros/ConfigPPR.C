@@ -203,7 +203,7 @@ void Config()
 // Field (L3 0.4 T)
     AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., smag);
     rl->CdGAFile();
-    
+    gAlice->SetField(field);    
 //
     Int_t   iABSO   = 1;
     Int_t   iDIPO   = 1;
