@@ -82,6 +82,7 @@ public TObject {
     virtual Int_t  ISector()                                                      = 0;
     // calculate sector from pad coordinates
     virtual Int_t  Sector(Int_t ix, Int_t iy)                                     = 0;
+    virtual Int_t  Sector(Float_t x, Float_t y)                                   = 0;
     //
     // Signal Generation Condition during Stepping
     virtual Int_t SigGenCond(Float_t x, Float_t y, Float_t z)                           = 0;
