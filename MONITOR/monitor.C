@@ -6,7 +6,8 @@
 #include "MONITOR/AliMonitorControl.h"
 #endif
 
-void monitor(const char* alienHost = "alien://", const char* alienDir = ".")
+void monitor(const char* alienHost = "alien://aliens7.cern.ch:15000/?direct",
+	     const char* alienDir = "/alice_mdc/DC")
 {
   // load libraries
   if (strcmp(gSystem->Getenv("ALIHLT_USEPACKAGE"), "ALIROOT") == 0) {
