@@ -78,13 +78,13 @@ void AliRndm::ReadRandom(const char *filename)
   // Reads saved random generator status from filename
   //
   char *fntmp = gSystem->ExpandPathName(filename);
-  TFile *file = new TFile(fntmp,"r");
+  TFile *file = new TFile(fntmp,"read");
   delete [] fntmp;
   if(!file) {
     printf("AliRndm:: Could not open file %s\n",filename);
   } else {
     if(!fRandom) fRandom = new TRandom();
-    fRandom->Read("Random");
+    fRandom->Read(fRandom->GetName());
     file->Close();
     delete file;
   }
@@ -97,7 +97,7 @@ void AliRndm::WriteRandom(const char *filename) const
   // Writes random generator status to filename
   //
   char *fntmp = gSystem->ExpandPathName(filename);
-  TFile *file = new TFile(fntmp,"new");
+  TFile *file = new TFile(fntmp,"update");
   delete [] fntmp;
   if(!file) {
     printf("AliRndm:: Could not open file %s\n",filename);
