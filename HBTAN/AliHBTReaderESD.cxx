@@ -17,6 +17,7 @@
 #include <TFile.h>
 #include <TKey.h>
 #include <TParticle.h>
+#include <TH1.h>
 
 #include <AliRun.h>
 #include <AliRunLoader.h>
@@ -465,7 +466,7 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
   Info("ReadNext","Read %d tracks and %d particles from event %d (event %d in dir %d).",
          fTracksEvent->GetNumberOfParticles(), fParticlesEvent->GetNumberOfParticles(),
          fNEventsRead,fCurrentEvent,fCurrentDir);
-
+  fTrackCounter->Fill(fTracksEvent->GetNumberOfParticles());
   return 0;
 }
 
@@ -482,7 +483,7 @@ void AliHBTReaderESD::Rewind()
   fRunLoader = 0x0;
   fCurrentDir = 0;
   fNEventsRead = 0;
-  fCurrentEvent++;
+  if (fTrackCounter) fTrackCounter->Reset();
 }
 /**********************************************************/
 
