@@ -567,7 +567,7 @@ void AliEMCALClusterizerv1::Print(Option_t * /*option*/)const
     printf("\n                           Branch: "); 
     printf(GetName()); 
     printf("\n                       ECA Local Maximum cut    = %f", fECALocMaxCut); 
-    printf("\n                       ECA Logarothmic weight   = %f", fECAW0); 
+    printf("\n                       ECA Logarithmic weight   = %f", fECAW0); 
     if(fToUnfold)
       printf("\nUnfolding on\n");
     else
@@ -582,7 +582,8 @@ void AliEMCALClusterizerv1::Print(Option_t * /*option*/)const
 //____________________________________________________________________________
 void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
 {
-  // Prints list of RecPoints produced at the current pass of AliEMCALClusterizer 
+  // Prints list of RecPoints produced at the current pass of AliEMCALClusterizer
+
   TObjArray * aECARecPoints = AliEMCALGetter::Instance()->ECARecPoints() ; 
   printf("PrintRecPoints: Clusterization result:") ; 
   
