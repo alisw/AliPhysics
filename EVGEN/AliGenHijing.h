@@ -49,14 +49,15 @@ class AliGenHijing : public AliGenMC
 	fMaxImpactParam=bmax;
 	}
     virtual void    KeepFullEvent();
-    virtual void    SetJetQuenching(Int_t flag=1)     {fQuench    = flag;}
-    virtual void    SetShadowing(Int_t flag=1)        {fShadowing = flag;}
-    virtual void    SetDecaysOff(Int_t flag=1)        {fDecaysOff = flag;}
-    virtual void    SetTrigger(Int_t flag=kNoTrigger) {fTrigger   = flag;}
-    virtual void    SetFlavor(Int_t flag=0)           {fFlavor    = flag;}    
-    virtual void    SetEvaluate(Int_t flag=0)         {fEvaluate  = flag;}
-    virtual void    SetSelectAll(Int_t flag=0)        {fSelectAll = flag;}    
+    virtual void    SetJetQuenching(Int_t flag=1)     {fQuench     = flag;}
+    virtual void    SetShadowing(Int_t flag=1)        {fShadowing  = flag;}
+    virtual void    SetDecaysOff(Int_t flag=1)        {fDecaysOff  = flag;}
+    virtual void    SetTrigger(Int_t flag=kNoTrigger) {fTrigger    = flag;}
+    virtual void    SetFlavor(Int_t flag=0)           {fFlavor     = flag;}
+    virtual void    SetEvaluate(Int_t flag=0)         {fEvaluate   = flag;}
+    virtual void    SetSelectAll(Int_t flag=0)        {fSelectAll  = flag;}
     virtual void    SetSpectators(Int_t spects=1)     {fSpectators = spects;}
+    virtual void    SetPtMinJet(Float_t ptmin)        {fPtMinJet   = ptmin;}
     AliGenHijing &  operator=(const AliGenHijing & rhs);
 // Physics Routines	    
     virtual void EvaluateCrossSections();
@@ -95,7 +96,8 @@ class AliGenHijing : public AliGenMC
     Float_t     fPtHardMax;      // higher pT-hard cut
     Int_t       fSpectators;     // put spectators on stack
     TGraph*     fDsigmaDb;       // dSigma/db for the system
-    TGraph*     fDnDb;           // dNBinaryCollisions/db    
+    TGraph*     fDnDb;           // dNBinaryCollisions/db
+    Float_t     fPtMinJet;       // Minimum Pt of triggered Jet  	
 // ZDC proposal (by Chiara) to store num. of SPECTATORS protons and neutrons
     Int_t 	fSpecn;		 // Num. of spectator neutrons
     Int_t 	fSpecp;		 // Num. of spectator protons

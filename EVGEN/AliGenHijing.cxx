@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2001/10/04 08:12:24  morsch
+Redefinition of stable condition.
+
 Revision 1.25  2001/07/27 17:09:36  morsch
 Use local SetTrack, KeepTrack and SetHighWaterMark methods
 to delegate either to local stack or to stack owned by AliRun.
@@ -137,17 +140,18 @@ AliGenHijing::AliGenHijing(Int_t npart)
     SetImpactParameterRange();
     SetTarget();
     SetProjectile();
-    fKeep       = 0;
-    fQuench     = 1;
-    fShadowing  = 1;
-    fTrigger    = 0;
-    fDecaysOff  = 1;
-    fEvaluate   = 0;
-    fSelectAll  = 0;
-    fFlavor     = 0;
-    fSpectators = 1;
-    fDsigmaDb   = 0;  
-    fDnDb       = 0; 
+    fKeep       =  0;
+    fQuench     =  1;
+    fShadowing  =  1;
+    fTrigger    =  0;
+    fDecaysOff  =  1;
+    fEvaluate   =  0;
+    fSelectAll  =  0;
+    fFlavor     =  0;
+    fSpectators =  1;
+    fDsigmaDb   =  0;
+    fDnDb       =  0;
+    fPtMinJet   = -2.5; 	
 //
 // Set random number generator   
     sRandom = fRandom;
@@ -184,6 +188,7 @@ void AliGenHijing::Init()
     fHijing->SetIHPR2(6,  fShadowing);
     fHijing->SetIHPR2(12, fDecaysOff);    
     fHijing->SetIHPR2(21, fKeep);
+    fHijing->SetHIPR1(10, fPtMinJet); 	
     fHijing->Initialize();
 
     
