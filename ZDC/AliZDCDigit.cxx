@@ -48,7 +48,7 @@ AliZDCDigit::AliZDCDigit(Int_t *Sector, Int_t ADCValue)
 }
 
 //____________________________________________________________________________
-AliZDCDigit::AliZDCDigit(const AliZDCDigit & digit) 
+AliZDCDigit::AliZDCDigit(const AliZDCDigit & digit):TObject(digit)
 {
   // Copy constructor
 

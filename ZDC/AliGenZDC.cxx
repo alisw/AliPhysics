@@ -81,7 +81,7 @@ void AliGenZDC::Init()
 	 fBeamCrossPlane);
 
   //Initialize Fermi momentum distributions for Pb-Pb
-  FermiTwoGaussian(207.,82.,fPp,fProbintp,fProbintn);
+  FermiTwoGaussian(207.,fPp,fProbintp,fProbintn);
 }  
   
 //_____________________________________________________________________________
@@ -163,7 +163,7 @@ void AliGenZDC::Generate()
 }
 
 //_____________________________________________________________________________
-void AliGenZDC::FermiTwoGaussian(Float_t A, Float_t Z, Double_t *fPp, 
+void AliGenZDC::FermiTwoGaussian(Float_t A, Double_t *fPp, 
                 Double_t *fProbintp, Double_t *fProbintn)
 {
 //

@@ -28,7 +28,7 @@ public:
   void Generate();
   
   // Fermi smearing, beam divergence and crossing angle       	       
-  void FermiTwoGaussian(Float_t A, Float_t Z, Double_t *pp, 
+  void FermiTwoGaussian(Float_t A, Double_t *pp, 
         Double_t *probintp, Double_t *probintn);
   void ExtractFermi(Int_t id, Double_t *pp, Double_t *probintp, 
         Double_t *probintn, Double_t *pFermi);
