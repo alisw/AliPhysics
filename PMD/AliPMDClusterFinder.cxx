@@ -250,6 +250,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
       //   << " row = " << row << " col = " << col
       //   << " sig = " << sig << endl;
 
+      // Transform all the (0,0) coordinates to the geant frame
       if(smn < 6)
 	{
 	  irownew1 = 95 - row;
@@ -271,6 +272,12 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	  icolnew1 = 95 - col;
 	}
 
+      // for smn < 12          : row = 96, column = 48
+      // for smn>= 12 and < 24 : row = 48, column = 96
+      // In order to make it uniform dimension, smn < 12 are inverted
+      // i.i., row becomes column and column becomes row
+      // for others it remains same
+      // This is further inverted back while calculating eta and phi
       if(smn < 12)
 	{
 	  // SupeModule 1 and 2 : Rows are inverted to columns and vice versa
