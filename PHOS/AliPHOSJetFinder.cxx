@@ -183,7 +183,7 @@ void AliPHOSJetFinder::FindJetsFromDigits(const TClonesArray * digits, TObjArray
   copyDigits->Compress() ;
 
   Double_t totalEnergy = 0 ;
-  Float_t energy[copyDigits->GetEntries()] ;
+  Float_t * energy = new Float_t[copyDigits->GetEntries()] ;
   //calculate average energy of digits
   //fill array of energies
   for(iDigit=0;iDigit<copyDigits->GetEntries();iDigit++){
@@ -193,7 +193,7 @@ void AliPHOSJetFinder::FindJetsFromDigits(const TClonesArray * digits, TObjArray
   }
   
   //Sort digits in decreasing energy.
-  Int_t index[copyDigits->GetEntries()] ;
+  Int_t * index = new Int_t[copyDigits->GetEntries()] ;
   TMath::Sort(copyDigits->GetEntries(),energy,index) ;
   
   Double_t eAverage = totalEnergy/copyDigits->GetEntries()  ;
@@ -275,7 +275,8 @@ void AliPHOSJetFinder::FindJetsFromDigits(const TClonesArray * digits, TObjArray
 	break ;	
     }
   }
-
+  delete [] energy;
+  delete [] index;
   copyDigits->Delete() ;
   
 }
