@@ -658,7 +658,7 @@ if (numappjet>=1 && fhBackHisto != 0)
   {
     for (Int_t count=1;count<=100;count++)
     {
-	fhRecoBinFragmFcnNoBg->AddBinContent(count,fhBackHisto->GetBinContent(count));
+	fhRecoBinFragmFcnNoBg->AddBinContent(count,-fhBackHisto->GetBinContent(count));
     } 
   }
 
