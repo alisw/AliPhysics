@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/12 15:35:17  jbarbosa
+  Cleaned up version.
+
 */
 
 
@@ -37,3 +40,7 @@ AliRICHTransientDigit::AliRICHTransientDigit(Int_t ich, Int_t *digits):
 }
 //_____________________________________________________________________________
 
+AliRICHTransientDigit::~AliRICHTransientDigit()
+{
+  delete fTrackList;
+}
