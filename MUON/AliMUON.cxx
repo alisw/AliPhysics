@@ -49,6 +49,7 @@
 #include "AliHeader.h"
 #include "AliHitMap.h"
 #include "AliLoader.h"
+#include "AliRunDigitizer.h"
 #include "AliESD.h"
 #include "AliESDMuonTrack.h"
 #include "AliMC.h"
@@ -76,7 +77,7 @@
 #include "AliMUONTriggerDecision.h"
 #include "AliMUONVGeometryBuilder.h"	
 #include "AliRun.h"	
-#include "AliMUONDigitizerv1.h"
+#include "AliMUONDigitizerv2.h"
 #include "AliMUONSDigitizerv1.h"
 
 
@@ -417,7 +418,7 @@ void   AliMUON::SetNsec(Int_t id, Int_t nsec)
 //____________________________________________________________________
 AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
 {
-  return new AliMUONDigitizerv1(manager);
+  return new AliMUONDigitizerv2(manager);
 }
 //_____________________________________________________________________
 void AliMUON::SDigits2Digits()
@@ -443,8 +444,17 @@ void AliMUON::SDigits2Digits()
 //_____________________________________________________________________
 void AliMUON::Hits2SDigits()
 {
-  // Empty for the moment which means that AliSimulation is 
-  // using AliMUONDigitalisationv1 and SDigits are not created. MErging is done at the Hit level
+  // Adaption of AliMUONSDigitizerv1 to be excuted by the AliSimulation framework
+  AliRunLoader* runLoader = fLoader->GetRunLoader();
+  AliRunDigitizer   * manager = new AliRunDigitizer(1,1);
+  manager->SetInputStream(0,runLoader->GetFileName(),AliConfig::fgkDefaultEventFolderName);
+  AliMUONDigitizer * dMUON   = new AliMUONSDigitizerv1(manager);
+  fLoader->LoadHits("READ");
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
+    runLoader->GetEvent(iEvent);
+    dMUON->Exec("");
+  }
+  fLoader->UnloadHits();
 }
 //_______________________________________________________________________
 AliLoader* AliMUON::MakeLoader(const char* topfoldername)
