@@ -59,16 +59,12 @@ public:
   TH1F * Pedestals(void){return fhPedestals ;}
   TH1F * Gains(void){return fhGains ;}
 
-  void SetPedestalPattern(UShort_t pattern = 257)
-    {fPedPat = pattern ;} ;   //Sets trigger pattern for PEDESTAL events
-  void SetPulserPattern(UShort_t pattern = 33)
-    {fPulPat = pattern ;} ;   //Sets trigger pattern for PULSER events
-  void SetLEDPattern(UShort_t pattern = 129)
-    {fLEDPat = pattern ;} ;   //Sets trigger pattern for LED events
-  void SetWideBeamPattern(UShort_t pattern = 1027)
-    {fWBPat = pattern ;} ;    //Sets trigger pattern for WIDE BEAM events
-  void SetNarrowBeamPattern(UShort_t pattern = 1029)
-    {fNBPat = pattern ;} ;    //Sets trigger pattern for NARROW BEAM events
+  //Clean resulting histograms
+  void Reset(void){if(fhPedestals)fhPedestals->Reset("ICE");
+                   if(fhGains)fhGains->Reset("ICE");}
+
+  //Set energy of beam used to calibrate
+  void SetBeamEnergy(Float_t e){fBeamEnergy = e;}
 
   void SetConTableDB(const char * filename, const char * title = "Default") ;
        //Connection table to convert RawId to AbsId
@@ -82,19 +78,15 @@ public:
   void SetGainMax(Float_t hmax = 0.01)
     {fGainMax = hmax ;}    //Set range of gain histograms
 
-  void WritePedestals(const char * version="v1",
-		      Int_t begValidRange = 0,
-		      Int_t endValidRange = 0) ;
+  void ReadFromASCII(const char * filename) ; //Read gains and pedestals from ascii file
 
-  void ReadPedestals(const char * version="v1",
-		     Int_t ValidRange = 0) ;
+  void WritePedestals(const char * version="v1") ;
+
+  void ReadPedestals(const char * version="v1") ;
 		      
-  void WriteGains(const char * version="v1",
-		      Int_t begValidRange = 0,
-		      Int_t endValidRange = 0) ;
+  void WriteGains(const char * version="v1") ;
 
-  void ReadGains(const char * version="v1",
-		     Int_t ValidRange = 0) ;
+  void ReadGains(const char * version="v1") ;
 
   AliPHOSCalibrator & operator = (const AliPHOSCalibrator & /*rvalue*/){
     Fatal("operator =","assigment operator is not implemented") ;
@@ -120,6 +112,7 @@ private:
   TString  fConTableDB ;      //Name of ConTableDB
   TString  fConTableDBFile ;  //File where ConTableDB is stored
 
+  Float_t  fBeamEnergy ;      //Calibration beam energy
   Float_t  fGainAcceptCorr;   //Maximal deviation from mean Gain (factor)
   Float_t  fAcceptCorr ;      //Maximal deviation of Pedestal from mean for good channel
 
@@ -128,12 +121,6 @@ private:
 
   Int_t    fNch ;             //Number of channels to calibrate
   UShort_t fNChan ;           //Number of bins in pedestal histos
-
-  UShort_t fPedPat ;     //trigger pattern for PEDESTAL events
-  UShort_t fPulPat ;     //trigger pattern for PULSER events
-  UShort_t fLEDPat ;     //trigger pattern for LED events
-  UShort_t fWBPat ;      //trigger pattern for WIDE BEAM events
-  UShort_t fNBPat ;      //trigger pattern for NARROW BEAM events
 
   ClassDef(AliPHOSCalibrator,1)  // description 
 

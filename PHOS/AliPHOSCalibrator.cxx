@@ -49,6 +49,7 @@
 #include "TFile.h"
 #include "TObjString.h"
 #include "TROOT.h"
+#include "TClonesArray.h"
 
 // --- Standard library ---
 
@@ -57,7 +58,9 @@
 #include "AliPHOSCalibrationData.h"
 #include "AliPHOSCalibrator.h"
 #include "AliPHOSConTableDB.h"
-#include "AliPHOSGetter.h"
+#include "AliPHOSRawReaderDate.h"
+#include "AliPHOSRawStream.h"
+#include "AliPHOSDigit.h"
 
 ClassImp(AliPHOSCalibrator)
 
@@ -67,6 +70,7 @@ ClassImp(AliPHOSCalibrator)
 {
   //Default constuctor for root. Normally should not be used
   fRunList=0 ;
+  fBeamEnergy = 0. ;
   fNch = 0 ;
   fPedHistos = 0 ;
   fGainHistos = 0 ;
@@ -89,11 +93,7 @@ AliPHOSCalibrator::AliPHOSCalibrator(const char* file, const char* title):
   fRunList->SetOwner() ;
   fRunList->Add(new TObjString(file)) ;
   fNch = 0 ;
-  fPedPat = 257 ;  //Patterns for different kind of events
-  fPulPat = 33 ;
-  fLEDPat = 129 ;
-  fWBPat  = 1027 ;
-  fNBPat  = 1029 ;
+  fBeamEnergy = 10. ;
 
   fNChan  = 100 ;  
   fGainMax = 0.1 ;
@@ -170,14 +170,7 @@ void AliPHOSCalibrator::Init(void)
 
   //check if ConTableDB already read 
   if(!fctdb){     
-    TFile * v = gROOT->GetFile(fConTableDBFile) ;
-    if(!v)
-      v = TFile::Open(fConTableDBFile) ;
-    if(!v){
-      Fatal("Can not open file with Connection Table DB:",fConTableDBFile) ;
-      return ;
-    }  
-    fctdb = dynamic_cast<AliPHOSConTableDB *>(v->Get("AliPHOSConTableDB")) ;
+    SetConTableDB(fConTableDBFile) ;
   }
 
   fNch = fctdb->GetNchanels() ;
@@ -211,7 +204,8 @@ void AliPHOSCalibrator::SetConTableDB(const char * file,const char * name)
     Error("Can not open file with Connection Table DB:",fConTableDBFile) ;
     return ;
   }  
-  fctdb = dynamic_cast<AliPHOSConTableDB *>(v->Get("AliPHOSConTableDB")) ;
+  fctdb = new AliPHOSConTableDB(*(dynamic_cast<AliPHOSConTableDB *>(v->Get("AliPHOSConTableDB")))) ;
+  v->Close() ;
   
 }
 //____________________________________________________________________________ 
@@ -282,27 +276,39 @@ void AliPHOSCalibrator::ScanPedestals(Option_t * option )
   while((file = static_cast<TObjString *>(next()))){
     if(strstr(option,"deb"))
       printf("Processing file %s \n ",file->String().Data()) ;
-    AliPHOSGetter * gime = AliPHOSGetter::Instance(file->String().Data(),GetTitle()) ;
-    Int_t ievent ;
-    for(ievent = 0; ievent<gime->MaxEvent() ; ievent++){
-      gime->Event(ievent,"D") ;
-      if(gime->EventPattern() == fPedPat ){
-	Int_t idigit ;
-	TClonesArray * digits = gime->Digits() ;
-	for(idigit = 0; idigit<digits->GetEntriesFast() ;  idigit++){
-	  AliPHOSDigit * digit = static_cast<AliPHOSDigit *>(digits->At(idigit) ) ;
-	  ich = fctdb->AbsId2Raw(digit->GetId());
 
-	  if(ich>=0){
-	    Float_t amp = digit->GetAmp() ;
-	    TH1F * hh = dynamic_cast<TH1F*>(fPedHistos->At(ich)) ;
-	    hh->Fill(amp) ;
+    //Now open data file
+    AliPHOSRawReaderDate *rawReader = new AliPHOSRawReaderDate(file->String().Data()) ; 
+    AliPHOSRawStream     *rawStream = new AliPHOSRawStream(rawReader) ;
+    rawStream->SetConTableDB(fctdb) ;
+    TClonesArray * digits = new TClonesArray("AliPHOSDigit",300) ;
+    Int_t nevents=0 ;
+    //Scan all event in file
+    while(rawReader->NextEvent()){
+      //Is it PHYSICAL event
+      if(rawReader->GetType() == PHYSICS_EVENT){
+	nevents++ ;
+	if(rawStream->ReadDigits(digits)){
+	  if(rawStream->IsPEDevent()){
+	    for(Int_t idigit = 0; idigit<digits->GetEntriesFast() ;  idigit++){
+	      AliPHOSDigit * digit = static_cast<AliPHOSDigit *>(digits->At(idigit) ) ;
+	      ich = fctdb->AbsId2Raw(digit->GetId());
+	      if(ich>=0){
+		Float_t amp = digit->GetAmp() ;
+		TH1F * hh = dynamic_cast<TH1F*>(fPedHistos->At(ich)) ;
+		hh->Fill(amp) ;
+	      }
+	    }
 	  }
 	}
       }
     }
-  }
-   
+    if(strstr(option,"deb"))
+      printf("   found %d events \n ",nevents) ;
+    delete rawStream ;
+    delete rawReader ;
+    delete digits ;
+  } 
 }
 //____________________________________________________________________________ 
 void AliPHOSCalibrator::CalculatePedestals()
@@ -390,47 +396,52 @@ void AliPHOSCalibrator::ScanGains(Option_t * option)
     }
   }
 
-  Bool_t all =!(Bool_t)strstr(option,"narrow") ;
-
-
   TIter next(fRunList) ;
   TObjString * file ;
   while((file = static_cast<TObjString *>(next()))){
-    
-    AliPHOSGetter * gime = AliPHOSGetter::Instance(file->String().Data(),GetTitle()) ;
-    Int_t handled = 0;
-    Int_t ievent ;
-    for(ievent = 0; ievent<gime->MaxEvent() ; ievent++){
-      gime->Event(ievent,"D") ;
-      if(gime->EventPattern() == fNBPat || 
-	 (all && gime->EventPattern() == fWBPat)){
-	handled ++ ;
-	Int_t idigit ;
-	TClonesArray * digits = gime->Digits() ;
-	AliPHOSDigit * digit ;
-	Int_t max = 0 ;
-	Int_t imax = 0;
-	for(idigit = 0; idigit<digits->GetEntriesFast() ;  idigit++){
-	  digit = static_cast<AliPHOSDigit *>(digits->At(idigit) ) ;
-	  if(digit->GetAmp() > max){
-	    imax = idigit ;
-	    max = digit->GetAmp() ;
+    //Now open data file
+    AliPHOSRawReaderDate *rawReader = new AliPHOSRawReaderDate(file->String().Data()) ; 
+    AliPHOSRawStream     *rawStream = new AliPHOSRawStream(rawReader) ;
+    rawStream->SetConTableDB(fctdb) ;
+  
+    TClonesArray * digits = new TClonesArray("AliPHOSDigit",300) ;
+    Int_t nevents=0 ;
+    //Scan all event in file
+    while(rawReader->NextEvent()){
+      //Is it PHYSICAL event
+      if(rawReader->GetType() == PHYSICS_EVENT){
+	if(rawStream->ReadDigits(digits)){
+	  //Test trigger
+	  if(rawStream->IsNELevent() || rawStream->IsWELevent()){
+	    nevents ++ ;
+	    AliPHOSDigit * digit ;
+	    Int_t max = 0 ;
+	    Int_t imax = 0;
+	    for(Int_t idigit = 0; idigit<digits->GetEntriesFast() ;  idigit++){
+	      digit = static_cast<AliPHOSDigit *>(digits->At(idigit) ) ;
+	      if(digit->GetAmp() > max){
+		imax = idigit ;
+		max = digit->GetAmp() ;
+	      }
+	    }
+	    digit = static_cast<AliPHOSDigit *>(digits->At(imax) ) ;
+	    Int_t ich = fctdb->AbsId2Raw(digit->GetId());
+	    if(ich>=0){
+	      Float_t pedestal = fhPedestals->GetBinContent(ich) ;
+	      const Float_t kshowerInCrystall = 0.9 ;
+	      Float_t gain = fBeamEnergy*kshowerInCrystall/
+		(digit->GetAmp() - pedestal) ;
+	      static_cast<TH1F*>(fGainHistos->At(ich))->Fill(gain) ;
+	    } 
 	  }
 	}
-	digit = static_cast<AliPHOSDigit *>(digits->At(imax) ) ;
-	Int_t ich = fctdb->AbsId2Raw(digit->GetId());
-	if(ich>=0){
-	  Float_t pedestal = fhPedestals->GetBinContent(ich) ;
-	  const Float_t kshowerInCrystall = 0.9 ;
-	  Float_t beamEnergy = gime->BeamEnergy() ;
-	  Float_t gain = beamEnergy*kshowerInCrystall/
-		         (digit->GetAmp() - pedestal) ;
-	  static_cast<TH1F*>(fGainHistos->At(ich))->Fill(gain) ;
-	} 
       }
     }
+    delete rawReader ; 
+    delete rawStream ;
+    delete digits ;
     if(strstr(option,"deb"))
-      printf("Hadled %d events \n",handled) ;
+      printf("   found %d events \n",nevents) ;
   }
 }   
 //____________________________________________________________________________ 
@@ -486,10 +497,46 @@ void AliPHOSCalibrator::CalculateGains(void)
   delete p0 ;
     
 }
+//____________________________________________________________________________ 
+void AliPHOSCalibrator::ReadFromASCII(const char * filename){
+// We read pedestals and gains from *.dat file with following format:
+//	0	0	0	0	37.09	1972.	// next nmodrows*nmodcols*ncryrows*ncrycols lines
+//	0	0	0	1	28.53	2072.	// contains <RR CC r c ped peak>
+//	0	0	0	2	30.93	1938.	//
+// where module is an array of 8*8 crystals and RR and CC are module raw and column position 
+  FILE * file = fopen(filename, "r");
+  if (!file) {
+    Error("ReadFromASCII", "could not open file %s", filename);
+    return;
+  }
+  if(!fctdb || !fhPedestals || !fhGains){
+    Init() ;
+  }
+  else{
+    //Clean Hitograms
+    Reset() ;
+  }
 
+  Int_t modRaw,modCol,raw,col;
+  Float_t ped,pik;
+  Int_t nread = 0 ;
+  while(fscanf(file,"%d %d %d %d %f %f",&modRaw,&modCol,&raw,&col,&ped,&pik)==6){
+    //Calculate plain crystal position:
+    Int_t rawPosition = (modRaw*8+raw)*fctdb->GetNColumns()+modCol*8+col ;
+    fhPedestals->SetBinContent(rawPosition,ped) ;
+    if(pik!=0.)
+      fhGains->SetBinContent(rawPosition,1./pik);
+    else
+      fhGains->SetBinContent(rawPosition,0.);
+    nread++ ;
+  }    
+  if(nread != fctdb->GetNColumns()*fctdb->GetNRaws()){
+    Error("ReadFromASCII","Read %d parameters instead of %d\n",nread,fctdb->GetNColumns()*fctdb->GetNRaws()) ;
+  }
+  fclose(file) ;
+}
 //_____________________________________________________________________________
-void AliPHOSCalibrator::WritePedestals(const char * version,
-		                         Int_t begin,Int_t end)
+void AliPHOSCalibrator::WritePedestals(const char * version)
 {
   //Write calculated data to file using AliPHOSCalibrManager
   //version and validitirange (begin-end) will be used to identify data 
@@ -506,27 +553,27 @@ void AliPHOSCalibrator::WritePedestals(const char * version,
     ped.SetDataCheck(absid,fhPedestalsWid->GetBinContent(i)) ;
   }
 
-  //evaluate validity range
-  if(begin==0){
-    TIter next(fRunList) ;
-    Int_t ibegin=99999;
-    Int_t iend=0 ;
-    TObjString * file ;
-    while((file=((TObjString*)next()))){
-       TString s = file->GetString() ;
-       TString ss = s(s.Last('_'),s.Last('.'));
-       Int_t tmp ;
-       if(sscanf(ss.Data(),"%d",&tmp)){
-	 if(ibegin<tmp)
-	   ibegin=tmp ;	 
-         if(iend>tmp)
-	   iend=tmp ;
-       }
-    } 
-    ped.SetValidityRange(ibegin,iend) ;
-  }
-  else	  
-    ped.SetValidityRange(begin,end) ;
+//   //evaluate validity range
+//   if(begin==0){
+//     TIter next(fRunList) ;
+//     Int_t ibegin=99999;
+//     Int_t iend=0 ;
+//     TObjString * file ;
+//     while((file=((TObjString*)next()))){
+//        TString s = file->GetString() ;
+//        TString ss = s(s.Last('_'),s.Last('.'));
+//        Int_t tmp ;
+//        if(sscanf(ss.Data(),"%d",&tmp)){
+// 	 if(ibegin<tmp)
+// 	   ibegin=tmp ;	 
+//          if(iend>tmp)
+// 	   iend=tmp ;
+//        }
+//     } 
+//     ped.SetValidityRange(ibegin,iend) ;
+//   }
+//   else	  
+//     ped.SetValidityRange(begin,end) ;
 
   //check, may be Manager instance already configured?
   AliPHOSCalibrManager * cmngr = AliPHOSCalibrManager::GetInstance() ;
@@ -534,11 +581,10 @@ void AliPHOSCalibrator::WritePedestals(const char * version,
     Warning("Write Pedestals","Using database file 'PHOSBTCalibration.root'") ;
     cmngr = AliPHOSCalibrManager::GetInstance("PHOSBTCalibration.root") ;
   }
-  cmngr->WriteData(&ped) ;
+  cmngr->WriteData(ped) ;
 }	
 //_____________________________________________________________________________
-void AliPHOSCalibrator::ReadPedestals(const char * version,
-		                         Int_t range)
+void AliPHOSCalibrator::ReadPedestals(const char * version)
 { 
   //Read data from file using AliPHOSCalibrManager 
   //version and range will be used to choose proper data
@@ -549,7 +595,7 @@ void AliPHOSCalibrator::ReadPedestals(const char * version,
    Warning("ReadPedestals","Using database file 'PHOSBTCalibration.root'") ;
    cmngr = AliPHOSCalibrManager::GetInstance("PHOSBTCalibration.root") ;
   }
-  cmngr->ReadFromRoot(ped,range) ;
+  cmngr->GetParameters(ped) ;
   Int_t npeds=ped.NChannels() ;
   fNch = fctdb->GetNchanels() ;
   if(fhPedestals)
@@ -564,8 +610,7 @@ void AliPHOSCalibrator::ReadPedestals(const char * version,
   }
 }	
 //_____________________________________________________________________________
-void AliPHOSCalibrator::ReadGains(const char * version,
-		                         Int_t range)
+void AliPHOSCalibrator::ReadGains(const char * version)
 { 
   //Read data from file using AliPHOSCalibrManager 
   //version and range will be used to choose proper data
@@ -576,7 +621,7 @@ void AliPHOSCalibrator::ReadGains(const char * version,
     Warning("ReadGainss","Using database file 'PHOSBTCalibration.root'") ;
     cmngr = AliPHOSCalibrManager::GetInstance("PHOSBTCalibration.root") ;
   }
-  cmngr->ReadFromRoot(gains,range) ;
+  cmngr->GetParameters(gains) ;
   Int_t npeds=gains.NChannels() ;
   fNch = fctdb->GetNchanels() ;
   if(fhGains)
@@ -591,8 +636,7 @@ void AliPHOSCalibrator::ReadGains(const char * version,
   }
 }	
 //_____________________________________________________________________________
-void AliPHOSCalibrator::WriteGains(const char * version,
-				     Int_t begin,Int_t end)
+void AliPHOSCalibrator::WriteGains(const char * version)
 { 
   //Write gains through AliPHOSCalibrManager
   //version and validity range(begin-end) are used to identify data
@@ -608,32 +652,32 @@ void AliPHOSCalibrator::WriteGains(const char * version,
     gains.SetData(absid,fhGains->GetBinContent(i)) ;
     gains.SetDataCheck(absid,fhGainsWid->GetBinContent(i)) ;
   }
-  if(begin==0){
-    TIter next(fRunList) ;
-    Int_t ibegin=99999;
-    Int_t iend=0 ;
-    TObjString * file ;
-    while((file=((TObjString*)next()))){
-       TString s = file->GetString() ;
-       TSubString ss = s(s.Last('_'),s.Last('.'));
-       Int_t tmp ;
-       if(sscanf(ss.Data(),"%d",&tmp)){
-	 if(ibegin<tmp)
-	   ibegin=tmp ;	 
-         if(iend>tmp)
-	   iend=tmp ;
-       }
-    } 
-    gains.SetValidityRange(ibegin,iend) ;
-  }
-  else	  
-    gains.SetValidityRange(begin,end) ;
+//   if(begin==0){
+//     TIter next(fRunList) ;
+//     Int_t ibegin=99999;
+//     Int_t iend=0 ;
+//     TObjString * file ;
+//     while((file=((TObjString*)next()))){
+//        TString s = file->GetString() ;
+//        TSubString ss = s(s.Last('_'),s.Last('.'));
+//        Int_t tmp ;
+//        if(sscanf(ss.Data(),"%d",&tmp)){
+// 	 if(ibegin<tmp)
+// 	   ibegin=tmp ;	 
+//          if(iend>tmp)
+// 	   iend=tmp ;
+//        }
+//     } 
+//     gains.SetValidityRange(ibegin,iend) ;
+//   }
+//   else	  
+//     gains.SetValidityRange(begin,end) ;
   AliPHOSCalibrManager * cmngr = AliPHOSCalibrManager::GetInstance() ;
   if(!cmngr){
     Warning("WriteGains","Using database file 'PHOSBTCalibration.root'") ;
     cmngr = AliPHOSCalibrManager::GetInstance("PHOSBTCalibration.root") ;
   }
-  cmngr->WriteData(&gains) ;
+  cmngr->WriteData(gains) ;
 }	
 //_____________________________________________________________________________
 void AliPHOSCalibrator::Print()const 
@@ -654,10 +698,5 @@ void AliPHOSCalibrator::Print()const
   printf("Number of bins in Gain histos:..........%d\n",fNGainBins) ;
   printf("Number of channels to calibrate:........%d\n",fNch) ;
   printf("Number of bins in pedestal histos:......%d\n",fNChan) ;
-  printf("trigger pattern for PEDESTAL events:....%d\n",fPedPat) ;
-  printf("trigger pattern for PULSER events:......%d\n",fPulPat) ;
-  printf("trigger pattern for LED events:.........%d\n",fLEDPat) ;
-  printf("trigger pattern for WIDE BEAM events:...%d\n",fWBPat) ;
-  printf("trigger pattern for NARROW BEAM events:.%d\n",fNBPat) ;
   printf("--------------------------------------------------\n") ;
 }
