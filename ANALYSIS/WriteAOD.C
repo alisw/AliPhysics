@@ -122,7 +122,7 @@ void WriteAOD(Option_t* datatype, Int_t first = -1,Int_t last = -1,
       }
     }
 
-   reader->SetDirs(dirs);
+  reader->SetDirs(dirs);
 
   AliAODParticleCut* readerpartcut= new AliAODParticleCut();
 
