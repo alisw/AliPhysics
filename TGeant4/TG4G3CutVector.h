@@ -1,30 +1,30 @@
 // $Id$
-// Category: physics
+// Category: global
 //
 // Vector of kinetic energy cut values with
 // convenient set/get methods
 
-#ifndef TG4_CUT_VECTOR_H
-#define TG4_CUT_VECTOR_H
+#ifndef TG4_G3_CUT_VECTOR_H
+#define TG4_G3_CUT_VECTOR_H
 
 #include "TG4Globals.h"
-#include "TG3Cut.h"
+#include "TG4G3Cut.h"
 
 class G4Track;
 
-class TG4CutVector
+class TG4G3CutVector
 {
   public:
-    TG4CutVector();
-    TG4CutVector(const TG4CutVector& right);
-    virtual ~TG4CutVector();
+    TG4G3CutVector();
+    TG4G3CutVector(const TG4G3CutVector& right);
+    virtual ~TG4G3CutVector();
     
     // operators
-    TG4CutVector& operator=(const TG4CutVector& right);
+    TG4G3CutVector& operator=(const TG4G3CutVector& right);
     G4double operator[](G4int index) const;
         
     // set methods
-    void SetG3Cut(TG3Cut g3Cut, G4double cutValue);
+    void SetG3Cut(TG4G3Cut cut, G4double cutValue);
     void SetG3Defaults();
     
     // get methods

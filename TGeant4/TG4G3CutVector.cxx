@@ -1,23 +1,23 @@
 // $Id$
-// Category: physics
+// Category: global
 //
 // See the class description in the header file.
 
-#include "TG4CutVector.h"
+#include "TG4G3CutVector.h"
 #include "TG4G3Defaults.h"
 
 #include <G4Track.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4VProcess.hh>
 
-TG4CutVector::TG4CutVector()
+TG4G3CutVector::TG4G3CutVector()
 {
   // initialize fCutVector 
   fCutVector = new TG4doubleVector;
   for (G4int i=0; i<kNoG3Cuts; i++) fCutVector->insert(0.); 
 }
 
-TG4CutVector::TG4CutVector(const TG4CutVector& right)
+TG4G3CutVector::TG4G3CutVector(const TG4G3CutVector& right)
 {
   // copy fCutVector 
   fCutVector = new TG4doubleVector;
@@ -26,14 +26,14 @@ TG4CutVector::TG4CutVector(const TG4CutVector& right)
   }   
 }
 
-TG4CutVector::~TG4CutVector() {
+TG4G3CutVector::~TG4G3CutVector() {
 //
   delete fCutVector;
 }
 
 // operators
 
-TG4CutVector& TG4CutVector::operator=(const TG4CutVector& right)
+TG4G3CutVector& TG4G3CutVector::operator=(const TG4G3CutVector& right)
 {
   // check assignement to self
   if (this == &right) return *this;
@@ -47,35 +47,35 @@ TG4CutVector& TG4CutVector::operator=(const TG4CutVector& right)
   return *this;   
 }  
 
-G4double TG4CutVector::operator[](G4int index) const 
+G4double TG4G3CutVector::operator[](G4int index) const 
 {
 //
   if (index < kNoG3Cuts)
     return (*fCutVector)[index];
   else {
     TG4Globals::Exception(
-      "TG4CutVector::operator[]: index out of the vector scope");
+      "TG4G3CutVector::operator[]: index out of the vector scope");
     return 0.;  
   }    
 }  
 
 // public methods
 
-void TG4CutVector::SetG3Cut(TG3Cut g3Cut, G4double cutValue)
+void TG4G3CutVector::SetG3Cut(TG4G3Cut cut, G4double cutValue)
 {
 // Sets the cutValue for the specified cut.
 // ---
 
-  if (g3Cut<kNoG3Cuts) {
-    (*fCutVector)[g3Cut] = cutValue;
+  if (cut<kNoG3Cuts) {
+    (*fCutVector)[cut] = cutValue;
   }  
   else {
     TG4Globals::Exception(
-      "TG4CutVector::SetG3Cut: Inconsistent cut.");
+      "TG4G3CutVector::SetG3Cut: Inconsistent cut.");
   }
 }
 
-void TG4CutVector::SetG3Defaults()
+void TG4G3CutVector::SetG3Defaults()
 {
 // Sets G3 default values for all cuts.
 // ---
@@ -85,7 +85,7 @@ void TG4CutVector::SetG3Defaults()
   } 
 }
 
-G4double TG4CutVector::GetMinEkine(const G4Track& track) const
+G4double TG4G3CutVector::GetMinEkine(const G4Track& track) const
 {
 // Returns the cut value for the particle associated with
 // specified track.
@@ -112,7 +112,7 @@ G4double TG4CutVector::GetMinEkine(const G4Track& track) const
     return GetMinEkineForMuon(track);
   }  
   else {
-    G4String text = "TG4CutVector::GetMinEkine: \n";
+    G4String text = "TG4G3CutVector::GetMinEkine: \n";
     text = text + "    The kinetic energy cut for " + particleName;
     text = text + " is not defined.";   
     TG4Globals::Warning(text);
@@ -120,7 +120,7 @@ G4double TG4CutVector::GetMinEkine(const G4Track& track) const
   }    
 }
 
-G4double TG4CutVector::GetMinEkineForGamma(const G4Track& track) const
+G4double TG4G3CutVector::GetMinEkineForGamma(const G4Track& track) const
 {
 // Returns the cut value for gamma.
 // (Cut is not applied for "opticalphoton" 
@@ -128,7 +128,7 @@ G4double TG4CutVector::GetMinEkineForGamma(const G4Track& track) const
 //  from "gamma" in G4.)
 // ---
 
-  G4cout << "TG4CutVector::GetMinEkineForGamma start" << G4endl;
+  G4cout << "TG4G3CutVector::GetMinEkineForGamma start" << G4endl;
   const G4VProcess* kpCreatorProcess = track.GetCreatorProcess();
   G4String processName = "";
   if (kpCreatorProcess) processName = kpCreatorProcess->GetProcessName();
@@ -146,7 +146,7 @@ G4double TG4CutVector::GetMinEkineForGamma(const G4Track& track) const
   }
 }
 
-G4double TG4CutVector::GetMinEkineForElectron(const G4Track& track) const
+G4double TG4G3CutVector::GetMinEkineForElectron(const G4Track& track) const
 {
 // Returns the cut value for e-.
 // Should these cuts be applied to e+ too ??
@@ -171,7 +171,7 @@ G4double TG4CutVector::GetMinEkineForElectron(const G4Track& track) const
   }
 }
 
-G4double TG4CutVector::GetMinEkineForHadron(const G4Track& track) const
+G4double TG4G3CutVector::GetMinEkineForHadron(const G4Track& track) const
 {
 // Returns the cut value for charged hadron.
 // ---
@@ -179,7 +179,7 @@ G4double TG4CutVector::GetMinEkineForHadron(const G4Track& track) const
   return (*fCutVector)[kCUTHAD];
 }
 
-G4double TG4CutVector::GetMinEkineForNeutralHadron(const G4Track& track) const
+G4double TG4G3CutVector::GetMinEkineForNeutralHadron(const G4Track& track) const
 {
 // Returns the cut value for neutral hadron.
 // ---
@@ -187,7 +187,7 @@ G4double TG4CutVector::GetMinEkineForNeutralHadron(const G4Track& track) const
   return (*fCutVector)[kCUTNEU];
 }
 
-G4double TG4CutVector::GetMinEkineForMuon(const G4Track& track) const
+G4double TG4G3CutVector::GetMinEkineForMuon(const G4Track& track) const
 {
 // Returns the cut value for neutral muon.
 // ---
@@ -195,7 +195,7 @@ G4double TG4CutVector::GetMinEkineForMuon(const G4Track& track) const
   return (*fCutVector)[kCUTMUO];
 }
 
-G4double TG4CutVector::GetMinEkineForOther(const G4Track& track) const
+G4double TG4G3CutVector::GetMinEkineForOther(const G4Track& track) const
 {
 // Returns 0.
 // ---
