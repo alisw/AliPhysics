@@ -738,21 +738,15 @@ Int_t AliConfig::AddSubFolder(TFolder* topfolder, const char* infoler,
     }
    else return 0;//success
   }
- else
-  {//such an object already exists
-    TFolder* fol = dynamic_cast<TFolder*>(obj);
-    if (fol == 0x0)
-     {
-      Error("AddSubFodler(TFolder*, ....",
-             "Object named %s already exists in folder %s AND IT IS NOT A FOLDER",newfoldname,infoler);
-      return 3;
-     }
-    else
-     {
-      Warning("AddSubFodler(TFolder*, ....",
-             "Folder named %s already exists in folder %s",newfoldname,infoler);
-      return 0;
-     }
-  }
- return 0; //never reached
+ //such an object already exists
+ TFolder* fol = dynamic_cast<TFolder*>(obj);
+ if (fol == 0x0)
+   {
+     Error("AddSubFodler(TFolder*, ....",
+	   "Object named %s already exists in folder %s AND IT IS NOT A FOLDER",newfoldname,infoler);
+     return 3;
+   }
+ Warning("AddSubFodler(TFolder*, ....",
+	 "Folder named %s already exists in folder %s",newfoldname,infoler);
+ return 0;
 }

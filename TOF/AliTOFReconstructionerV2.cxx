@@ -924,9 +924,9 @@ Int_t AliTOFReconstructionerV2::SaveTracks(const Char_t *outname, const Int_t sp
   T.Write();
   savedir->cd();
   out->Close();
-  return 0;
   gBenchmark->Stop(name);
   gBenchmark->Show(name);
+  return 0;
 }
 
 //__________________________________________________________________

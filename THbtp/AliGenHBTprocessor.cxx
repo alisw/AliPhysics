@@ -352,9 +352,8 @@ Int_t AliGenHBTprocessor::GetHbtPStatusCode(Int_t part) const
     Error("GetHbtPStatusCode","GetTrackEventIndex returned error");
     return 0;
   }
- else return fHbtPStatCodes[ev][idx];
+ return fHbtPStatCodes[ev][idx];
   
- return 0;
 }
 
 /*******************************************************************/
@@ -923,12 +922,8 @@ TParticle* AliGenHBTprocessor::GetTrack(Int_t n)
     Error("GetTrack","GetTrackEventIndex returned error");
     return 0x0;
   }
- else
-  {
-    if (fgDebug > 5) Info("GetTrack","Number of Tracks in Event(%d) = %d",ev,cab->GetStack(ev)->GetNprimary());
-    return cab->GetStack(ev)->Particle(idx); //safe - in case stack does not exist 
-  }                                               //GetTrackEventIndex would have returned error
- return 0x0;  
+ if (fgDebug > 5) Info("GetTrack","Number of Tracks in Event(%d) = %d",ev,cab->GetStack(ev)->GetNprimary());
+ return cab->GetStack(ev)->Particle(idx);//safe - in case stack does not exist 
 }
 /*******************************************************************/
 

@@ -177,42 +177,39 @@ Float_t AliTPCPRF2D::GetPRF(Float_t xin, Float_t yin)
     fcharge   = &(fChargeArray[i*fNPRF]);
     return GetPRFActiv(xin);
   }
-  else{
-    //make interpolation from more fore lines
-    Int_t i= Int_t(y);
-    Float_t res;
-    if ((i<0) || (i>=fNYdiv) ) return 0;
-    Float_t z0=0;
-    Float_t z1=0;
-    Float_t z2=0;
-    Float_t z3=0;
-    if (i>0) {
-      fcharge =&(fChargeArray[(i-1)*fNPRF]);
-      z0 = GetPRFActiv(xin);
-    }
-    fcharge =&(fChargeArray[i*fNPRF]);
-    z1=GetPRFActiv(xin);
-    if ((i+1)<fNYdiv){
-      fcharge =&(fChargeArray[(i+1)*fNPRF]);
-      z2 = GetPRFActiv(xin);
-    }
-    if ((i+2)<fNYdiv){
-      fcharge =&(fChargeArray[(i+2)*fNPRF]);
-      z3 = GetPRFActiv(xin);
-    }
-    Float_t a,b,c,d,k,l;
-    a=z1;
-    b=(z2-z0)/2.;
-    k=z2-a-b;
-    l=(z3-z1)/2.-b;
-    d=l-2*k;
-    c=k-d;
-    Float_t dy=y-Float_t(i);
-
-    res = a+b*dy+c*dy*dy+d*dy*dy*dy;  
-    return res;            
-  }        
-  return 0.;
+  //make interpolation from more fore lines
+  Int_t i= Int_t(y);
+  Float_t res;
+  if ((i<0) || (i>=fNYdiv) ) return 0;
+  Float_t z0=0;
+  Float_t z1=0;
+  Float_t z2=0;
+  Float_t z3=0;
+  if (i>0) {
+    fcharge =&(fChargeArray[(i-1)*fNPRF]);
+    z0 = GetPRFActiv(xin);
+  }
+  fcharge =&(fChargeArray[i*fNPRF]);
+  z1=GetPRFActiv(xin);
+  if ((i+1)<fNYdiv){
+    fcharge =&(fChargeArray[(i+1)*fNPRF]);
+    z2 = GetPRFActiv(xin);
+  }
+  if ((i+2)<fNYdiv){
+    fcharge =&(fChargeArray[(i+2)*fNPRF]);
+    z3 = GetPRFActiv(xin);
+  }
+  Float_t a,b,c,d,k,l;
+  a=z1;
+  b=(z2-z0)/2.;
+  k=z2-a-b;
+  l=(z3-z1)/2.-b;
+  d=l-2*k;
+  c=k-d;
+  Float_t dy=y-Float_t(i);
+  
+  res = a+b*dy+c*dy*dy+d*dy*dy*dy;  
+  return res;            
 } 
 
 

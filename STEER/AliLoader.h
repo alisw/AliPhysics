@@ -114,9 +114,9 @@ class AliLoader: public TNamed
     TTree*         TreeT(){return GetTracksDataLoader()->Tree();}    //returns the tree from folder; shortcut method
     TTree*         TreeP(){return GetRecParticlesDataLoader()->Tree();} //returns the tree from folder; shortcut method
 
-    Int_t          LoadHits(Option_t* opt=""){return GetHitsDataLoader()->Load(opt);SetTAddrInDet();}
-    Int_t          LoadSDigits(Option_t* opt=""){return GetSDigitsDataLoader()->Load(opt);SetTAddrInDet();}
-    Int_t          LoadDigits(Option_t* opt=""){return GetDigitsDataLoader()->Load(opt);SetTAddrInDet();}
+    Int_t          LoadHits(Option_t* opt=""){Int_t status = GetHitsDataLoader()->Load(opt);SetTAddrInDet();return status;}
+    Int_t          LoadSDigits(Option_t* opt=""){Int_t status = GetSDigitsDataLoader()->Load(opt);SetTAddrInDet(); return status;}
+    Int_t          LoadDigits(Option_t* opt=""){Int_t status = GetDigitsDataLoader()->Load(opt);SetTAddrInDet();return status;}
     Int_t          LoadRecPoints(Option_t* opt=""){return GetRecPointsDataLoader()->Load(opt);}
     Int_t          LoadTracks(Option_t* opt=""){return GetTracksDataLoader()->Load(opt);}
     Int_t          LoadRecParticles(Option_t* opt=""){return GetRecParticlesDataLoader()->Load(opt);}

@@ -93,14 +93,11 @@ const TParticle * AliEMCALRecParticle::GetPrimary(Int_t index) const
 	      index, GetNPrimaries()) ;
     return 0 ; 
   } 
-  else { 
-    Int_t dummy ; 
-    AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+  Int_t dummy ; 
+  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
 
-    Int_t ecaRPindex = dynamic_cast<AliEMCALTrackSegment*>(gime->TrackSegments()->At(GetEMCALTSIndex()))->GetECAIndex();
-    Int_t primaryindex = dynamic_cast<AliEMCALTowerRecPoint*>(gime->ECARecPoints()->At(ecaRPindex))->GetPrimaries(dummy)[index] ; 
-    return gime->Primary(primaryindex) ;
-   } 
-  return 0 ; 
+  Int_t ecaRPindex = dynamic_cast<AliEMCALTrackSegment*>(gime->TrackSegments()->At(GetEMCALTSIndex()))->GetECAIndex();
+  Int_t primaryindex = dynamic_cast<AliEMCALTowerRecPoint*>(gime->ECARecPoints()->At(ecaRPindex))->GetPrimaries(dummy)[index] ; 
+  return gime->Primary(primaryindex) ;
 }
 

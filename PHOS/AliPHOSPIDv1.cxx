@@ -408,7 +408,7 @@ const Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoin
   return 100000000 ;
 }
 //____________________________________________________________________________
-const Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv,const Int_t effPur, const Float_t e) const
+const Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv,const Int_t effPur, Float_t e) const
 {
   if(effPur>2 || effPur<0)
     Error("GetCPVBit","Invalid Efficiency-Purity choice %d",effPur);
@@ -426,7 +426,7 @@ const Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * 
 }
 
 //____________________________________________________________________________
-const Int_t  AliPHOSPIDv1::GetPrincipalBit(TString particle, const Double_t* p,const Int_t effPur, const Float_t e)const
+const Int_t  AliPHOSPIDv1::GetPrincipalBit(TString particle, const Double_t* p,const Int_t effPur, Float_t e)const
 {
   //Is the particle inside de PCA ellipse?
   

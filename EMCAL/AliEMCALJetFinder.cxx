@@ -1037,7 +1037,7 @@ void AliEMCALJetFinder::FillFromDigits(Int_t flag)
     
     if (!fLego) BookLego();
     if (flag == 0) fLego->Reset();
-    Int_t nbytes;
+    Int_t nbytes=0;
     
 
 //

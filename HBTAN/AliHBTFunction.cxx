@@ -293,8 +293,8 @@ Double_t AliHBTFunction1D::Scale(TH1D* num,TH1D* den)
   
   if(fNBinsToScale < 1) 
    {
-    return 0.0;
     Error("Scale","Number of bins for scaling is smaller thnan 1");
+    return 0.0;
    }
   UInt_t nbins = num->GetNbinsX();
   if (fNBinsToScale > nbins) 
@@ -463,8 +463,8 @@ Double_t AliHBTFunction2D::Scale()
   
   if( (fNBinsToScaleX < 1) || (fNBinsToScaleY < 1) ) 
    {
-    return 0.0;
     Error("Scale","Number of bins for scaling is smaller thnan 1");
+    return 0.0;
    }
   UInt_t nbinsX = fNumerator->GetNbinsX();
   if (fNBinsToScaleX > nbinsX) 
@@ -654,8 +654,8 @@ Double_t AliHBTFunction3D::Scale()
   
   if( (fNBinsToScaleX < 1) || (fNBinsToScaleY < 1) || (fNBinsToScaleZ < 1)) 
    {
-    return 0.0;
     Error("Scale","Number of bins for scaling is smaller thnan 1");
+    return 0.0;
    }
   UInt_t nbinsX = fNumerator->GetNbinsX();
   if (fNBinsToScaleX > nbinsX) 
