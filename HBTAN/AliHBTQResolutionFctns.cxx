@@ -206,6 +206,20 @@ AliHBTPairThetaResolVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 /******************************************************************/
 /******************************************************************/
 
+ClassImp( AliHBTPairThetaResolVsPairThetaFctn )
+
+AliHBTPairThetaResolVsPairThetaFctn::
+AliHBTPairThetaResolVsPairThetaFctn(Int_t nXbins, Double_t maxXval, Double_t minXval, 
+                           Int_t nYbins, Double_t maxYval, Double_t minYval):
+                           AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
+{
+//ctor
+ Rename("PairThetaResolVsPairTheta","Pair Theta Angle Resolution vs. Pair Theta ");
+}
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+
 ClassImp( AliHBTPairPhiResolVsQInvFctn )
 
 AliHBTPairPhiResolVsQInvFctn::
@@ -250,3 +264,17 @@ AliHBTPairPhiResolVsKtFctn(Int_t nXbins, Double_t maxXval, Double_t minXval,
 /******************************************************************/
 
 
+ClassImp( AliHBTPairPhiResolVsPairPhiFctn )
+
+AliHBTPairPhiResolVsPairPhiFctn::
+AliHBTPairPhiResolVsPairPhiFctn(Int_t nXbins, Double_t maxXval, Double_t minXval, 
+                           Int_t nYbins, Double_t maxYval, Double_t minYval):
+                           AliHBTTwoPairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
+{
+//ctor
+ Rename("PairPhiResolVsPairPhi","Pair Phi Angle Resolution vs. Pair Phi ");
+}
+
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
