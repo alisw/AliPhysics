@@ -444,72 +444,45 @@ void PrintGeo(Float_t rotDeg=0)
                                                                                r*cos(theta));
 
   delete p;
-}//void PrintGeo()
-
-
-
+}//PrintGeo()
 //__________________________________________________________________________________________________
-void TestGain()
+void TestResponse()
 {
-  AliRICHParam *pParam=new AliRICHParam;
-  AliRICHResponse *pRes=new AliRICHResponse;
+  TCanvas *pC=new TCanvas("c","Amplification test",900,800);
+  pC->Divide(1,2);
+  pC->cd(1);
+  TF1 *pF1=new TF1("f1","9e-6*pow(x,4)+2e-7*pow(x,3)-0.0316*pow(x,2)-3e-4*x+25.367",-70,70);
+  pF1->Draw();
   
-  TLegend *pLegend=new TLegend(0.6,0.3,0.85,0.5);  
-  TH1F *pH0=new TH1F("pH1","Gain",100,0,600); 
-  TH1F *pH10=new TH1F("pH10","Gain",100,0,600);
-  TH1F *pH20=new TH1F("pH20","Gain",100,0,600);
-  TH1F *pH30=new TH1F("pH30","Gain",100,0,600);
-  TH1F *pHold=new TH1F("pHold","Mip Charge",100,0,2000);
-  for(int i=0;i<1000;i++){
-    pH0 ->Fill(pParam->Gain(0));
-    pH10->Fill(pParam->Gain(10));
-    pH20->Fill(pParam->Gain(20));
-    pH30->Fill(pParam->Gain(30));
-    pHold->Fill(pRes->IntPH(30));
-  }
-  pH0->Draw();
-  pH10->Draw("same");
-  pH20->Draw("same");
-  pH30->Draw("same");
-  pHold->Draw("same");
-  pLegend->AddEntry(pH0,"y=0");  
-  pLegend->AddEntry(pH10,"y=10");pH10->SetLineColor(kRed);
-  pLegend->AddEntry(pH20,"y=20");pH20->SetLineColor(kBlue);
-  pLegend->AddEntry(pH30,"y=30");pH30->SetLineColor(kGreen);
-  pLegend->AddEntry(pHold,"res");pHold->SetLineColor(kMagenta);
-  pLegend->Draw();
-}//void TestGain()
-//__________________________________________________________________________________________________
-void TestMipCharge()
-{
-  AliRICHParam *pParam=new AliRICHParam;
-  AliRICHResponse *pRes=new AliRICHResponse;
+  pC->cd(2);
   
-  TLegend *pLegend=new TLegend(0.6,0.3,0.85,0.5);  
-  TH1F *pH0= new TH1F("pH1", "Mip Charge",100,0,500); 
-  TH1F *pH10=new TH1F("pH10","Mip Charge",100,0,500);
-  TH1F *pH20=new TH1F("pH20","Mip Charge",100,0,500);
-  TH1F *pH30=new TH1F("pH30","Mip Charge",100,0,500);
-  TH1F *pHold=new TH1F("pHold","Mip Charge",100,0,500);
-  for(int i=0;i<1000;i++){
-    pH0 ->Fill(pParam->TotalCharge(kPiPlus,0.5e-9,0));
-    pH10->Fill(pParam->TotalCharge(kPiPlus,0.5e-9,10));
-    pH20->Fill(pParam->TotalCharge(kPiPlus,0.5e-9,20));
-    pH30->Fill(pParam->TotalCharge(kPiPlus,0.5e-9,30));
-    pHold->Fill(pRes->IntPH(0.5e-9,-30));
+  const Int_t nPoints=8;
+  THStack *pStack=new THStack("stack","photons");
+  TLegend *pLeg=new TLegend(0.6,0.2,0.9,0.5,"legend");    
+  TH1F *apH[nPoints];
+  
+  Double_t starty=AliRICHParam::DeadZone()/2;
+  Double_t deltay=AliRICHParam::SectorSizeY()/nPoints;
+  
+  for(int i=0;i<nPoints;i++){
+    apH[i]=new TH1F(Form("h%i",i),"Qdc for Photon;QDC;Counts",1000,0,1000); apH[i]->SetLineColor(i);
+    pStack->Add(apH[i]);                 
+    pLeg->AddEntry(apH[i],Form("@(0,%5.2f->%5.2f)",starty+i*deltay,starty+i*deltay-AliRICHParam::SectorSizeY()/2));
   }
-  pH0->Draw();
-  pH10->Draw("same");
-  pH20->Draw("same");
-  pH30->Draw("same");
-  pHold->Draw("same");
-  pLegend->AddEntry(pH0,"y=0");  
-  pLegend->AddEntry(pH10,"y=10");pH10->SetLineColor(kRed);
-  pLegend->AddEntry(pH20,"y=20");pH20->SetLineColor(kBlue);
-  pLegend->AddEntry(pH30,"y=30");pH30->SetLineColor(kGreen);
-  pLegend->AddEntry(pHold,"res");pHold->SetLineColor(kMagenta);
-  pLegend->Draw();
-}//void TestGain()
+        
+  
+  TVector3 x3(0,0,0);  
+  Int_t sector=10;
+//  AliRICHParam::ResetWireSag();
+  for(Int_t i=0;i<10000;i++){//events loop
+    for(int j=0;j<nPoints;j++){
+      x3.SetY(starty-j*deltay);
+      apH[j]->Fill(AliRICHParam::Loc2TotQdc(x3,400e-9,500000,sector));
+    }
+  }
+  pStack->Draw("nostack");
+  pLeg->Draw();
+}//TestResponse()
 //__________________________________________________________________________________________________
 void TestDigitsOLD()
 {
@@ -691,8 +664,7 @@ void TestMenu()
   TControlBar *pMenu = new TControlBar("vertical","RICH test");
   pMenu->AddButton("Test segmentation",  "TestSeg()",         "Test AliRICHParam segmentation methods");
   pMenu->AddButton("Test transform",     "TestTransform()",   "Test ALiRICHChamber methods");
-  pMenu->AddButton("Test gain",          "TestGain()",        "Test AliRICHParam response methods");
-  pMenu->AddButton("Test MIP charge",    "TestMipCharge()",   "Test AliRICHParam::TotalCharge() method");
+  pMenu->AddButton("Test response",      "TestResponse()",    "Test AliRICHParam response methods");
   pMenu->AddButton("Test sdigits",       "TestSD()",          "Create test set of sdigits");
   pMenu->AddButton("Test digits OLD",    "TestDigitsOLD()",   "Create test set of OLD digits");
   pMenu->AddButton("Test clusters",      "TestC()",           "Create test set of clusters");

@@ -207,40 +207,34 @@ void Opticals()
 
 //__________________________________________________________________________________________________
 Float_t AbsoCH4(Float_t x)
-{
-
-    //KLOSCH,SCH4(9),WL(9),EM(9),ALENGTH(31)
-    Float_t sch4[9] = {.12,.16,.23,.38,.86,2.8,7.9,28.,80.};              //MB X 10^22
-    //Float_t wl[9] = {153.,152.,151.,150.,149.,148.,147.,146.,145};
-    Float_t em[9] = {8.1,8.158,8.212,8.267,8.322,8.378,8.435,8.493,8.55};
-    const Float_t kLosch=2.686763E19;                                      // LOSCHMIDT NUMBER IN CM-3
-    const Float_t kIgas1=100, kIgas2=0, kOxy=10., kWater=5., kPressure=750.,kTemperature=283.;  
-    Float_t pn=kPressure/760.;
-    Float_t tn=kTemperature/273.16;
-    
-	
-// ------- METHANE CROSS SECTION -----------------
-// ASTROPH. J. 214, L47 (1978)
-	
-  Float_t sm=0;
-  if (x<7.75){ 
-    sm=.06e-22;
-  }else if(x>=7.75 && x<=8.1){
-    Float_t c0=-1.655279e-1;
-    Float_t c1=6.307392e-2;
-    Float_t c2=-8.011441e-3;
-    Float_t c3=3.392126e-4;
-    sm=(c0+c1*x+c2*x*x+c3*x*x*x)*1.e-18;
-  }else if (x>8.1){
+{//Evaluate the absorbtion lenght of CH4
+  Float_t sch4[9] = {.12,.16,.23,.38,.86,2.8,7.9,28.,80.};              //MB X 10^22
+  Float_t em[9] = {8.1,8.158,8.212,8.267,8.322,8.378,8.435,8.493,8.55};
+  const Float_t kLoschmidt=2.686763e19;                                      // LOSCHMIDT NUMBER IN CM-3
+  const Float_t kPressure=750.,kTemperature=283.;                                      
+  const Float_t pn=kPressure/760.;
+  const Float_t tn=kTemperature/273.16;
+  const Float_t c0=-1.655279e-1;
+  const Float_t c1=6.307392e-2;
+  const Float_t c2=-8.011441e-3;
+  const Float_t c3=3.392126e-4;
+    		
+  Float_t crossSection=0;                        
+  if (x<7.75) 
+    crossSection=.06e-22;
+  else if(x>=7.75 && x<=8.1){                 //------ METHANE CROSS SECTION cm-2 ASTROPH. J. 214, L47 (1978)                                               
+	crossSection=(c0+c1*x+c2*x*x+c3*x*x*x)*1.e-18;
+  }else if (x> 8.1){
     Int_t j=0;
     while (x<=em[j] || x>=em[j+1]){
       j++;
       Float_t a=(sch4[j+1]-sch4[j])/(em[j+1]-em[j]);
-      sm=(sch4[j]+a*(x-em[j]))*1e-22;
+      crossSection=(sch4[j]+a*(x-em[j]))*1e-22;
     }
-  }//if    
-  Float_t dm=(kIgas1/100.)*(1.-((kOxy+kWater)/1.e6))*kLosch*pn/tn;
-  return 1./sm/dm;
+  }//if
+    
+    Float_t density=kLoschmidt*pn/tn; //CH4 molecular density 1/cm-3
+    return 1./(density*crossSection);
 }//AbsoCH4()
 //__________________________________________________________________________________________________
 Float_t Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
