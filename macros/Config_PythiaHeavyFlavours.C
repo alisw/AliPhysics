@@ -8,7 +8,7 @@
 // For details and for the NORMALIZATION of the yields see:          //
 //   N.Carrer and A.Dainese,                                         //
 //   "Charm and beauty production at the LHC",                       //
-//   ALICE-INT-2003-019, [arXiv:hep-ph/0312255].                     //
+//   ALICE-INT-2003-019, [arXiv:hep-ph/0311225].                     //
 //*******************************************************************//
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
@@ -247,7 +247,7 @@ void Config()
 
   pythia->SetTrackingFlag(0);
   // Specify GEANT tracking limits (Rmax, Zmax)
-  //gAlice->TrackingLimits(90.,1.0e10);
+  //gAlice->GetMCApp()->TrackingLimits(90.,1.0e10);
 
 
   pythia->Init();
@@ -264,6 +264,7 @@ void Config()
   printf("\n \n Comment: %s \n \n", comment.Data());
     
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., mag);
+  field->SetL3ConstField(0); //Using const. field in the barrel
   rl->CdGAFile();
   gAlice->SetField(field);    
 
