@@ -18,8 +18,8 @@
 #pragma link C++ class AliPHOSReconstructioner ;
 #pragma link C++ class AliPHOSRecPoint ;
 #pragma link C++ class AliPHOSv0 ;
-#pragma link C++ class AliPHOSv0hits ;
 #pragma link C++ class AliPHOSv1 ;
+#pragma link C++ class AliPHOSv2 ;
 #pragma link C++ class AliPHOSTrackSegment ;
 #pragma link C++ class AliPHOSTrackSegmentMaker ;
 #pragma link C++ class AliPHOSTrackSegmentMakerv1 ;
