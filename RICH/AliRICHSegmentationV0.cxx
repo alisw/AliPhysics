@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.5  2001/02/13 20:12:39  jbarbosa
+  Moved setting of variables to constructor. Init is now responsible for calculating padplane dimensions.
+
   Revision 1.4  2001/01/22 21:38:46  jbarbosa
   Dummy padplane dimensions
 
@@ -43,6 +46,7 @@ AliRICHSegmentationV0::AliRICHSegmentationV0()
   fNpy=160;
   fDeadZone=0;
   fSector=-1;
+  fCorr = 0;
 }
 
 void AliRICHSegmentationV0::Init(Int_t id)

@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.54  2001/08/30 09:52:12  hristov
+The operator[] is replaced by At() or AddAt() in case of TObjArray.
+
 Revision 1.53  2001/07/20 10:03:13  morsch
 Changes needed to work with Root 3.01 (substitute lhs [] operator). (Jiri Chudoba)
 
@@ -295,6 +298,10 @@ AliMUON::AliMUON()
     fAccMax          = 0.;   
     fAccCut          = kFALSE;
     fMerger          = 0;
+    fFileName        = 0;
+    fTrH1            = 0;
+    fHits2           = 0;
+    fPadHits2        = 0;
 }
  
 //___________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/08/30 09:52:12  hristov
+The operator[] is replaced by At() or AddAt() in case of TObjArray.
+
 Revision 1.13  2001/07/20 10:03:14  morsch
 Changes needed to work with Root 3.01 (substitute lhs [] operator). (Jiri Chudoba)
 
@@ -77,6 +80,10 @@ ClassImp(AliMUONSegmentationSlat)
 AliMUONSegmentationSlat::AliMUONSegmentationSlat() 
 {
 // Default constructor
+  fChamber = 0;
+  fNDiv = 0;
+  fSlats = 0;
+  fCurrentSlat = 0;
 }
 
 AliMUONSegmentationSlat::AliMUONSegmentationSlat(Int_t nsec) 

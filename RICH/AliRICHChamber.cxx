@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.11  2001/05/10 12:35:39  jbarbosa
+  Update.
+
   Revision 1.10  2001/02/23 17:21:17  jbarbosa
   Re-definition of IntPH() to accomodate for wire sag effect.
 
@@ -69,9 +72,11 @@ AliRICHChamber::AliRICHChamber()
 //
 // Chamber object constructor
 
+    fChamberMatrix = 0;
     fSegmentation = 0;
     fResponse = 0;
     fGeometry = 0;
+    fReconstruction = 0;
     fTresh = 0;
     frMin = 0.1;
     frMax = 140;

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.53  2001/08/30 09:51:23  hristov
+  The operator[] is replaced by At() or AddAt() in case of TObjArray.
+
   Revision 1.52  2001/05/16 14:57:20  alibrary
   New files for folders and Stack
 
@@ -214,6 +217,7 @@ AliRICH::AliRICH()
       }
 
     fFileName = 0;
+    fMerger = 0;
 }
 
 //___________________________________________
