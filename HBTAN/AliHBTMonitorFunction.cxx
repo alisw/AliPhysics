@@ -1,4 +1,23 @@
 #include "AliHBTMonitorFunction.h"
+//__________________________________________________________________
+////////////////////////////////////////////////////////////////////
+//
+// class AliHBTMonitorFunction
+//
+// class AliHBTMonOneParticleFctn
+// class AliHBTMonTwoParticleFctn
+//
+// class AliHBTMonOneParticleFctn1D
+// class AliHBTMonOneParticleFctn2D
+// class AliHBTMonOneParticleFctn3D
+//
+// class AliHBTMonTwoParticleFctn1D
+// class AliHBTMonTwoParticleFctn2D
+// class AliHBTMonTwoParticleFctn3D
+//
+// Base Classes for monitoring functions
+// author: chajecki@if.pw.edu.pl
+//
 /******************************************************************/
 /*
 Base classes for monitor functions
@@ -19,10 +38,9 @@ Base classes for monitor functions
 Zbigniew.Chajecki@cern.ch
 
 */
-/******************************************************************/
-/******************************************************************/
+///////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
+
 ClassImp( AliHBTMonitorFunction )
 
 AliHBTMonitorFunction::AliHBTMonitorFunction():
@@ -43,20 +61,23 @@ AliHBTMonitorFunction::AliHBTMonitorFunction(const AliHBTMonitorFunction& /*in*/
  fParticleCut(new AliHBTEmptyParticleCut())
 {
   //cpy ctor
+  // We cannot copy because it is a mess with names (histogram and functions)
   MayNotUse("AliHBTMonitorFunction(const AliHBTMonitorFunction&");
 }
 /******************************************************************/
 const AliHBTMonitorFunction& AliHBTMonitorFunction::operator=(const AliHBTMonitorFunction& /*in*/)
 {
-  //assigment operator
+  //assigment operator 
+  // We cannot copy because it is a mess with names (histogram and functions)
   MayNotUse("operator=");
   return *this;
 }
+/******************************************************************/
 
 AliHBTMonitorFunction::~AliHBTMonitorFunction()
  {
   //dtor
-  if (fParticleCut) delete fParticleCut;
+  delete fParticleCut;
  }
 /******************************************************************/
 
