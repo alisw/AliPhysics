@@ -42,7 +42,6 @@ public:
   Float_t GetPedestal()     const { return fPedestal; }
   Float_t GetPinNoise()     const { return fPinNoise;}
   Float_t GetSlope()        const { return fSlope; }
-  char *  GetDigitsBranch () ;
   const Float_t GetTimeResolution() const { return fTimeResolution ; }
 
  
