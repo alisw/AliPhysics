@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/10/01 19:36:03  nilsen
+fixed a compilation warning about unused variable.
+
 Revision 1.8  2001/07/27 08:06:49  hristov
 Use global gRandom generator (M.Ivanov)
 
@@ -65,134 +68,91 @@ AliITSsimulationFastPoints::AliITSsimulationFastPoints()
 }
 
 //-------------------------------------------------------------
-void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod, Int_t module, TRandom *random){
-  // Fast points simulator 
+void AliITSsimulationFastPoints::CreateFastRecPoints(Int_t module){
+    // Fast points simulator
+    AliITS *aliITS  = (AliITS*)gAlice->GetModule("ITS");
 
-   AliITS *aliITS  = (AliITS*)gAlice->GetModule("ITS");
-   AliITSgeom *gm = aliITS->GetITSgeom();
+    CreateFastRecPoints((AliITSmodule *)(aliITS->GetModule(module)),
+			module,gRandom);
+}
+//-------------------------------------------------------------
+void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod,
+						     Int_t module,
+						     TRandom *random){
+    // Fast points simulator 
+    AliITS *aliITS  = (AliITS*)gAlice->GetModule("ITS");
+    AliITSgeom *gm = aliITS->GetITSgeom();
 
-   const Float_t kdEdXtoQ = 2.778e+8; 
+    const Float_t kdEdXtoQ = 2.778e+8; 
 
-   Int_t ihit,flag,numofhits;
-   Float_t xg,yg,zg,xl,yl,zl;
-   Float_t px,py,pz;
-   //Double_t p, theta, pt, ps;
-   Float_t locals[3];
-   Float_t globals[3];
-   //Float_t xg1,yg1,zg1;
-   Double_t sigmarphi=0., sigmaz=0., sigmade=0., thrde=0.;
-   Float_t deltaXl,deltaZl,deltaDe;
+    Int_t ihit,flag,numofhits;
+    Float_t locals[3];
+    Float_t globals[3];
+    Double_t sigmarphi=0., sigmaz=0., sigmade=0., thrde=0.;
+    Float_t deltaXl,deltaZl,deltaDe;
 
-   Int_t hitlay, hitlad, hitdet, hitstatus, hittrack;
-   Float_t hitx, hity, hitz, hitpx, hitpy, hitpz, hitdestep;
-   
+    Int_t hitlay, hitlad, hitdet, hitstatus;
+    Float_t hitpx, hitpy, hitpz, hitdestep;
 
-   Int_t   hitstatus1, hittrack1;
-   Float_t hitx1, hity1, hitz1;
-   Float_t hitdestep1;
+    Int_t   hitstatus1, hittrack1;
+    Float_t hitx1, hity1, hitz1;
+    Float_t hitdestep1;
+    Float_t xMg,yMg,zMg;
 
-   Float_t xMg,yMg,zMg;
-   //Float_t dx,dy,dz,ds;
+    numofhits = mod->GetNhits();
+    //printf("numofhits %d \n",numofhits);
+    for(ihit=0;ihit<numofhits;ihit++){
+	AliITShit *hit=mod->GetHit(ihit);
+	hit->GetPositionG(hitx1,hity1,hitz1);
+	hitstatus1 = hit->GetTrackStatus();
+	hitdestep1 = hit->GetIonization();
+	hittrack1 = hit->GetTrack();
 
+	mod->MedianHit(module,hitx1,hity1,hitz1,hitstatus1,xMg,yMg,zMg,flag);
+	if (flag!=1) {
+	    hitdestep = hit->GetIonization();
 
-   numofhits = mod->GetNhits();
-   //printf("numofhits %d \n",numofhits);
-   flag = 1;
-   for(ihit=0;ihit<numofhits;ihit++){
-     AliITShit *hit=mod->GetHit(ihit);
-     hit->GetPositionG(hitx1,hity1,hitz1);
-     hitstatus1 = hit->GetTrackStatus();
-     hitdestep1 = hit->GetIonization();
+	    if (hitdestep > 0) {
+		hit->GetDetectorID(hitlay,hitlad,hitdet);
+		hit->GetMomentumG(hitpx,hitpy,hitpz);            
+		hitstatus = hitstatus1;
+		// Transform to the module local frame
+		globals[0] = xMg; 
+		globals[1] = yMg;
+		globals[2] = zMg;
+		gm->GtoL(hitlay,hitlad,hitdet,globals,locals);
+		// Retrieve sigma values for position and energy, and energy
+		// threshold
+		sigmarphi = SigmaRPhi(hitlay);
+		sigmaz = SigmaZ(hitlay);
+		sigmade = SigmaDe(hitlay);
+		thrde = ThrDe(hitlay);
+		deltaXl = random->Gaus(0,sigmarphi);
+		deltaZl = random->Gaus(0,sigmaz);
+		deltaDe = random->Gaus(0,sigmade);
 
-     hittrack1 = hit->GetTrack();
+		// Apply energy threshold and trasform back to global reference
+		// system
 
-     mod->MedianHit(module,hitx1,hity1,hitz1,hitstatus1,xMg,yMg,zMg,flag);
-     if (flag!=1) {
-       hitx      = xMg;
-       hity      = yMg;
-       hitz      = zMg;
-       hit->GetDetectorID(hitlay,hitlad,hitdet);
-       hit->GetMomentumG(hitpx,hitpy,hitpz);            
-       hitdestep = hit->GetIonization();
-       hitstatus = hitstatus1;
-       hittrack  = hit->GetTrack();
-
-       if (hitdestep > 0) {
-	   xg = hitx;
-	   yg = hity;
-	   zg = hitz;
-           // Transform to the module local frame
-	   globals[0] = hitx;
-	   globals[1] = hity;
-	   globals[2] = hitz;
-	   gm->GtoL(hitlay,hitlad,hitdet,globals,locals);
-	   xl = locals[0];
-	   yl = locals[1];
-	   zl = locals[2];
-	   px = hitpx;
-	   py = hitpy;
-	   pz = hitpz;
-	   /*
-           // Calculate transverse momentum and pseudorapidity
-           // to allow pt and eta dependence in sigma values
-           // of the spatial resolution
-	   p  = TMath::Sqrt((px*px)+(py*py)+(pz*pz));
-	   theta = TMath::ACos(pz/p);
-	   pt = p * TMath::Sin(theta);
-	   ps = -TMath::Log(TMath::Tan(theta/2));
-	   */
-
-           // Retrieve sigma values for position and energy, and energy
-           // threshold 
-	   
-	   sigmarphi = SigmaRPhi(hitlay);
-	   sigmaz = SigmaZ(hitlay);
-	   sigmade = SigmaDe(hitlay);
-	   thrde = ThrDe(hitlay);
-	   // Randomize position and deposited energy
-//           Int_t k=3*(Int_t)((hitlay-1)/2);
-
-           //	   deltaXl = (float)(random[k].Gaus(0,sigmarphi));
-           //	   deltaZl = (float)(random[k+1].Gaus(0,sigmaz));
-           //	   deltaDe = (float)(random[k+2].Gaus(0,sigmade));
-	   deltaXl = random->Gaus(0,sigmarphi);
-	   deltaZl = random->Gaus(0,sigmaz);
-	   deltaDe = random->Gaus(0,sigmade);
-           // Apply energy threshold and trasform back to global reference 
-           // system
-
-	   if ( (hitdestep+deltaDe) > thrde ){
-	       locals[0] = xl + deltaXl;
-	       locals[1] = yl;
-	       locals[2] = zl + deltaZl;
-	       AliITSRecPoint rp;
-	       rp.fTracks[0]=hittrack;
-	       rp.fTracks[1]=-3;
-	       rp.fTracks[2]=-3;
-	       rp.SetX(locals[0]);
-	       rp.SetZ(locals[2]);
-	       rp.SetdEdX(hitdestep+deltaDe);
-	       rp.SetQ(kdEdXtoQ*(hitdestep+deltaDe));  // number of e
-	       rp.SetSigmaX2(sigmarphi*sigmarphi);
-	       rp.SetSigmaZ2(sigmaz*sigmaz);
-	       aliITS->AddRecPoint(rp);
-	       /*
-	       gm->LtoG(hitlay,hitlad,hitdet,locals,globals);
-	       xg1 = globals[0];
-	       yg1 = globals[1];
-	       zg1 = globals[2];
-	       dx = TMath::Abs(xg1-hitx);
-	       dy = TMath::Abs(yg1-hity);
-	       dz = TMath::Abs(zg1-hitz);
-	       ds = TMath::Abs(deltaDe);
-	       */
-	   } // if ( (hitdestep+deltaDe)
-	   else flag=1;
-       } // if (hitdestep > 0)
-       else flag=1;
-     } // if (flag!=1)
-   }   
-
+		if ( (hitdestep+deltaDe) > thrde ){
+		    locals[0] += deltaXl;
+		    locals[2] += deltaZl;
+		    AliITSRecPoint rp;
+		    //	   rp.fTracks[0]=hit->GetTrack();
+		    rp.fTracks[0]=mod->GetHitTrackIndex(ihit);
+		    rp.fTracks[1]=-3;
+		    rp.fTracks[2]=-3;
+		    rp.SetX(locals[0]);
+		    rp.SetZ(locals[2]);
+		    rp.SetdEdX(hitdestep+deltaDe);
+		    rp.SetQ(kdEdXtoQ*(hitdestep+deltaDe));  // number of e
+		    rp.SetSigmaX2(sigmarphi*sigmarphi);
+		    rp.SetSigmaZ2(sigmaz*sigmaz);
+		    aliITS->AddRecPoint(rp);
+		} // end if ( (hitdestep+deltaDe)
+	    } // end if (hitdestep > 0)
+	} // end if (flag!=1)
+    } // end for ihit
 }
 //_______________________________________________________________________
 void AliITSsimulationFastPoints::SetSigmaRPhi(Double_t  srphi[6])

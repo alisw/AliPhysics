@@ -13,8 +13,10 @@ public:
   AliITSsimulationFastPoints(); // default constructor
   virtual ~AliITSsimulationFastPoints() {} 
   void CreateFastRecPoints(AliITSmodule *mod,Int_t module,TRandom *rndm);
+  void CreateFastRecPoints(Int_t module);
+  
 private:
-
+  
     virtual void SetSigmaRPhi(Double_t sigmarphi[6]);  
     virtual void SetSigmaZ(Double_t sigmaz[6]);  
     virtual void SetSigmaDe(Double_t sigmade[6]);  
