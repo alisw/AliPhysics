@@ -29,7 +29,8 @@ class AliRICHTresholdMap : public AliHitMap
   virtual  void    DeleteHit(Int_t ix, Int_t iy);
   virtual Int_t    GetHitIndex(Int_t ix, Int_t iy) const;
   virtual TObject* GetHit(Int_t ix, Int_t iy) const;
-  virtual  void    FlagHit(Int_t ix, Int_t iy);    
+  virtual  void    FlagHit(Int_t ix, Int_t iy);
+  virtual  Bool_t  ValidateHit(Int_t ix, Int_t iy) {return 1;}
   virtual FlagType TestHit(Int_t ix, Int_t iy);
  private:
   Int_t CheckedIndex(Int_t ix, Int_t iy) const;
@@ -41,7 +42,7 @@ class AliRICHTresholdMap : public AliHitMap
   Int_t *fHitMap;                                        // !
   Int_t fMaxIndex;                                       //Index size
 
-  ClassDef(AliRICHTresholdMap,1) // Implements Treshold Map as a 2-dim array
+  ClassDef(AliRICHTresholdMap,2) // Implements Treshold Map as a 2-dim array
 };
 #endif	
 

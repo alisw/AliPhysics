@@ -26,7 +26,8 @@ public AliHitMap
     virtual  void    DeleteHit(Int_t ix, Int_t iy);
     virtual Int_t    GetHitIndex(Int_t ix, Int_t iy) const;
     virtual TObject* GetHit(Int_t ix, Int_t iy) const;
-    virtual  void    FlagHit(Int_t ix, Int_t iy);    
+    virtual  void    FlagHit(Int_t ix, Int_t iy);
+    virtual  Bool_t  ValidateHit(Int_t ix, Int_t iy) {return 1;}
     virtual FlagType TestHit(Int_t ix, Int_t iy);
  private:
     Int_t CheckedIndex(Int_t ix, Int_t iy) const;
@@ -40,7 +41,7 @@ public AliHitMap
     Int_t *fHitMap;                                        // !
     Int_t fMaxIndex;                                       //Index size
 
-    ClassDef(AliRICHHitMapA1,1) // Implements HitMap as a 2-dim array
+    ClassDef(AliRICHHitMapA1,2) // Implements HitMap as a 2-dim array
 };
 #endif	
 
