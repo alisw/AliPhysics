@@ -423,7 +423,7 @@ AliRunLoader* AliRunLoader::Open
  TFile * gAliceFile = TFile::Open(filename,option);//open a file
  if (!gAliceFile) 
   {//null pointer returned
-    ::Error("AliRunLoader::Open","Can not open file %s.",filename);
+    ::Fatal("AliRunLoader::Open","Can not open file %s.",filename);
     return 0x0;
   }
   

@@ -86,6 +86,10 @@ public:
   Int_t GetNumberOfPHOSParticles() const {return fPHOSParticles;}
   void  SetNumberOfPHOSParticles(Int_t part) { fPHOSParticles = part ; }
   void  SetFirstPHOSParticle(Int_t index) { fFirstPHOSParticle = index ; } 
+  Int_t GetNumberOfEMCALParticles() const {return fEMCALParticles;}
+  void  SetNumberOfEMCALParticles(Int_t part) { fEMCALParticles = part ; }
+  void  SetFirstEMCALParticle(Int_t index) { fFirstEMCALParticle = index ; } 
+
 
   Float_t GetT0zVertex() const {return fT0zVertex;}
   void SetT0zVertex(Float_t z) {fT0zVertex=z;}
@@ -110,9 +114,11 @@ protected:
   TClonesArray  fV0s;            // V0 vertices
   TClonesArray  fCascades;       // Cascade vertices
   Int_t         fPHOSParticles;  // Number of PHOS particles (stored as fTracks)
+  Int_t         fEMCALParticles; // Number of EMCAL particles (stored as fTracks)
   Int_t         fFirstPHOSParticle; // First PHOS particle in the fTracks list 
-  
-  ClassDef(AliESD,5)  //ESD class 
+  Int_t         fFirstEMCALParticle;// First EMCAL particle in the fTracks list 
+ 
+  ClassDef(AliESD,6)  //ESD class 
                       //ver. 2: Magnetic Field Added; skowron
 };
 

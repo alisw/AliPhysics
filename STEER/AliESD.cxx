@@ -41,7 +41,9 @@ AliESD::AliESD():
   fV0s("AliESDv0",200),
   fCascades("AliESDcascade",20),
   fPHOSParticles(0), 
-  fFirstPHOSParticle(-1){
+  fEMCALParticles(0), 
+  fFirstPHOSParticle(-1), 
+  fFirstEMCALParticle(-1){
 }
 
 //______________________________________________________________________________
@@ -76,8 +78,9 @@ void AliESD::Print(Option_t *) const
 	 fPrimaryVertex.GetZv(), fPrimaryVertex.GetZRes());
   printf("Event from reconstruction version %d \n",fRecoVersion);
   printf("Number of tracks: \n");
-  printf("                 charged   %d\n",GetNumberOfTracks()-GetNumberOfPHOSParticles());
+  printf("                 charged   %d\n",GetNumberOfTracks()-GetNumberOfPHOSParticles()-GetNumberOfEMCALParticles());
   printf("                 phos      %d\n", GetNumberOfPHOSParticles());
+  printf("                 emcal     %d\n", GetNumberOfEMCALParticles());
   printf("                 muon      %d\n", GetNumberOfMuonTracks());
   printf("                 pmd       %d\n", GetNumberOfPmdTracks());
   printf("                 v0        %d\n", GetNumberOfV0s());

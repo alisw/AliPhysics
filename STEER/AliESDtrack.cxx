@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------
 
 #include "TMath.h"
+#include "TString.h"
 
 #include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
@@ -56,6 +57,7 @@ fTOFchi2(0),
 fTOFindex(0),
 fTOFsignal(-1),
 fPHOSsignal(-1),
+fEMCALsignal(-1),
 fRICHsignal(-1)
 {
   //
@@ -71,10 +73,14 @@ fRICHsignal(-1)
     fRICHr[i]=1.;
   }
   
-  for (Int_t i=0; i<kSPECIESN; i++)
-    fPHOSr[i]= 1.;
+  for (Int_t i=0; i<kSPECIESN; i++) {
+    fPHOSr[i]  = 1.;
+    fEMCALr[i] = 1.;
+  }
+
  
   fPHOSpos[0]=fPHOSpos[1]=fPHOSpos[2]=0.;
+  fEMCALpos[0]=fEMCALpos[1]=fEMCALpos[2]=0.;
   Int_t i;
   for (i=0; i<5; i++)  { fRp[i]=0.; fCp[i]=0.; fIp[i]=0.; fOp[i]=0.;}
   for (i=0; i<15; i++) { fRc[i]=0.; fCc[i]=0.; fIc[i]=0.; fOc[i]=0.;   }
@@ -205,12 +211,18 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
     break;
 
   case kTRDout:
-    { //requested by the PHOS  ("temporary solution")
+    { //requested by the PHOS/EMCAL  ("temporary solution")
       Double_t r=460.;
       if (t->PropagateTo(r,30.,0.)) {  
          fOalpha=t->GetAlpha();
          t->GetExternalParameters(fOx,fOp);
          t->GetExternalCovariance(fOc);
+      }
+      r=450.;
+      if (t->PropagateTo(r,30.,0.)) {  
+         fXalpha=t->GetAlpha();
+         t->GetExternalParameters(fXx,fXp);
+         t->GetExternalCovariance(fXc);
       }
     }
   case kTOFin: 
@@ -377,26 +389,56 @@ void AliESDtrack::GetInnerExternalCovariance(Double_t cov[15]) const
  
 }
 
-void AliESDtrack::GetOuterPxPyPz(Double_t *p) const {
+void AliESDtrack::GetOuterPxPyPz(Double_t *p, TString det) const {
   //---------------------------------------------------------------------
   // This function returns the global track momentum components
   // af the radius of the PHOS
   //---------------------------------------------------------------------
-  if (fOx==0) {p[0]=p[1]=p[2]=0.; return;}
-  Double_t phi=TMath::ASin(fOp[2]) + fOalpha;
-  Double_t pt=1./TMath::Abs(fOp[4]);
-  p[0]=pt*TMath::Cos(phi); p[1]=pt*TMath::Sin(phi); p[2]=pt*fOp[3]; 
+  p[0]=p[1]=p[2]=0. ; 
+  if (det == "PHOS") { 
+    if (fOx==0) 
+      return;
+    Double_t phi=TMath::ASin(fOp[2]) + fOalpha;
+    Double_t pt=1./TMath::Abs(fOp[4]);
+    p[0]=pt*TMath::Cos(phi); 
+    p[1]=pt*TMath::Sin(phi); 
+    p[2]=pt*fOp[3];
+  } 
+  else if (det == "EMCAL" ) {
+    if (fXx==0)
+      return;
+    Double_t phi=TMath::ASin(fXp[2]) + fXalpha;
+    Double_t pt=1./TMath::Abs(fXp[4]);
+    p[0]=pt*TMath::Cos(phi); 
+    p[1]=pt*TMath::Sin(phi); 
+    p[2]=pt*fXp[3];
+  }
+  else 
+    Warning("GetOuterPxPyPz", "Only valid for PHOS or EMCAL") ; 
 }
 
-void AliESDtrack::GetOuterXYZ(Double_t *xyz) const {
+void AliESDtrack::GetOuterXYZ(Double_t *xyz, TString det) const {
   //---------------------------------------------------------------------
   // This function returns the global track position
-  // af the radius of the PHOS
+  // af the radius of the PHOS/EMCAL
   //---------------------------------------------------------------------
-  if (fOx==0) {xyz[0]=xyz[1]=xyz[2]=0.; return;}
-  Double_t phi=TMath::ATan2(fOp[0],fOx) + fOalpha;
-  Double_t r=TMath::Sqrt(fOx*fOx + fOp[0]*fOp[0]);
-  xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fOp[1]; 
+  xyz[0]=xyz[1]=xyz[2]=0.;
+  if ( det == "PHOS" ) {
+    if (fOx==0) 
+      return;
+    Double_t phi=TMath::ATan2(fOp[0],fOx) + fOalpha;
+    Double_t r=TMath::Sqrt(fOx*fOx + fOp[0]*fOp[0]);
+    xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fOp[1]; 
+  } 
+  else if ( det == "EMCAL" ) {
+    if (fXx==0) 
+      return;
+    Double_t phi=TMath::ATan2(fXp[0],fOx) + fXalpha;
+    Double_t r=TMath::Sqrt(fXx*fXx + fXp[0]*fXp[0]);
+    xyz[0]=r*TMath::Cos(phi); 
+    xyz[1]=r*TMath::Sin(phi); 
+    xyz[2]=fXp[1]; 
+  } 
 }
 
 //_______________________________________________________________________
@@ -523,6 +565,18 @@ void AliESDtrack::GetPHOSpid(Double_t *p) const {
   for (Int_t i=0; i<kSPECIESN; i++) p[i]=fPHOSr[i];
 }
 
+//_______________________________________________________________________
+void AliESDtrack::SetEMCALpid(const Double_t *p) {  
+  // Sets the probability of each particle type (in EMCAL)
+  for (Int_t i=0; i<kSPECIESN; i++) fEMCALr[i]=p[i];
+  SetStatus(AliESDtrack::kEMCALpid);
+}
+
+//_______________________________________________________________________
+void AliESDtrack::GetEMCALpid(Double_t *p) const {
+  // Gets probabilities of each particle type (in EMCAL)
+  for (Int_t i=0; i<kSPECIESN; i++) p[i]=fEMCALr[i];
+}
 
 //_______________________________________________________________________
 void AliESDtrack::SetRICHpid(const Double_t *p) {  
@@ -600,5 +654,12 @@ void AliESDtrack::Print(Option_t *) const {
     for(index = 0 ; index < kSPECIESN; index++) 
       printf("%f, ", p[index]) ;
     printf("\n           signal = %f\n", GetPHOSsignal()) ;
+  }
+  if( IsOn(kEMCALpid) ){
+    printf("From EMCAL: ") ; 
+    GetEMCALpid(p) ; 
+    for(index = 0 ; index < kSPECIESN; index++) 
+      printf("%f, ", p[index]) ;
+    printf("\n           signal = %f\n", GetEMCALsignal()) ;
   }
 } 
