@@ -23,7 +23,7 @@ Int_t AliITSFindClusters() {
    Int_t ver = ITS->IsVersion(); 
    cerr<<"ITS version "<<ver<<" has been found !\n";
 
-   ITS->MakeTreeC();
+    ITS->MakeTreeC();
 // Set the models for cluster finding
    AliITSgeom *geom = ITS->GetITSgeom();
 
@@ -34,6 +34,10 @@ Int_t AliITSFindClusters() {
    TClonesArray *recp0  = ITS->ClustersAddress(0);
    AliITSClusterFinderSPD *rec0=new AliITSClusterFinderSPD(seg0,dig0,recp0);
    ITS->SetReconstructionModel(0,rec0);
+   // test
+   printf("SPD dimensions %f %f \n",seg0->Dx(),seg0->Dz());
+   printf("SPD npixels %d %d \n",seg0->Npz(),seg0->Npx());
+
 
    // SDD
    AliITSDetType *iDetType=ITS->DetType(1);

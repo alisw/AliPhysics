@@ -19,35 +19,37 @@ public:
   //
   // Configuration methods
   //
-  virtual void    SetDiffCoeff(Float_t p1=0.00433,Float_t dummy=0.) {
-    // Diffusion coefficient
+  
+  
+  virtual  void   SetDiffCoeff(Float_t p1=0) {
+    // 
     fDiffCoeff=p1;
   }
-  virtual void DiffCoeff(Float_t &diffc,Float_t &dummy) {
-    // Get diffusion coefficient
-    diffc= fDiffCoeff;
+  virtual  Float_t   DiffCoeff() {
+    // 
+    return fDiffCoeff;
   }
-  virtual  void   SetNoiseParam(Float_t n=200., Float_t b=0.) {
-    // set noise and baseline
-    fNoise=n; fBaseline=b;
+  virtual  void   SetThresholds(Float_t thresh=2000, Float_t sigma=280) {
+    // Set Threshold and noise + threshold fluctuations parameter values
+    fThresh=thresh; fSigma=sigma;
+  }
+  virtual  void   Thresholds(Float_t &thresh, Float_t &sigma) {
+    // Get Threshold and noise + threshold fluctuations parameter values
+    thresh=fThresh; sigma=fSigma;
+  }
+  virtual  void   SetNoiseParam(Float_t col=0., Float_t row=0.) {
+    // set coupling parameters
+    fCouplCol=col; fCouplRow=row;
   }   
-  virtual  void   GetNoiseParam(Float_t &n, Float_t &b) {
-    // get noise and baseline
-    n=fNoise; b=fBaseline;
-  }   
-  virtual void     SetMinVal(Int_t p1=2000) {
-    // Zero-suppression option threshold 
-    fThreshold=p1;
-  }
-  virtual Int_t MinVal() {
-    // Get zero-suppression threshold
-    return fThreshold;
-  }
-  virtual void    SetDataType(const char *data="simulated") {
+  virtual  void   GetNoiseParam(Float_t &col, Float_t &row) {
+    // get coupling parameters
+    col=fCouplCol; row=fCouplRow;
+  }       
+  virtual void    SetDataType(char *data="simulated") {
     // Type of data - real or simulated
     fDataType=data;
   }
-  virtual const char  *DataType() const {
+  virtual const char  *DataType() {
     // Get data typer
     return fDataType.Data();
   } 
@@ -56,11 +58,12 @@ public:
     
     protected:
   
-  Float_t fDiffCoeff;       // Diffusion Coefficient
-  Float_t fNoise;           // Noise value
-  Float_t fBaseline;        // Baseline value
-  Int_t fThreshold;         // Zero-Suppression threshold
-  
+  Float_t fDiffCoeff;       // Sigma diffusion coefficient (not used) 
+  Float_t fThresh;          // Threshold value
+  Float_t fSigma;           // Noise + threshold fluctuations value
+  Float_t fCouplCol;        // Coupling probability along a column
+  Float_t fCouplRow;        // Coupling probability along a row
+
   TString fDataType;        // Type of data - real or simulated
 };
 

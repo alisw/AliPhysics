@@ -45,7 +45,10 @@ Int_t AliITSHits2Digits()
   // end test
 
   // SDD
-  // Set response parameters
+  //Set response functions
+  Float_t baseline = 10.;
+  Float_t noise = 1.75;
+
   // SDD compression param: 2 fDecrease, 2fTmin, 2fTmax or disable, 2 fTolerance
   AliITSDetType *iDetType=ITS->DetType(1);
   AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
@@ -53,25 +56,33 @@ Int_t AliITSHits2Digits()
     res1=new AliITSresponseSDD();
     ITS->SetResponseModel(1,res1);
   }
-   Float_t baseline;
-   Float_t noise;
-   res1->GetNoiseParam(noise,baseline);
-   Float_t noise_after_el = res1->GetNoiseAfterElectronics();
-   cout << "noise_after_el: " << noise_after_el << endl; 
-   Float_t fCutAmp;
-   fCutAmp = baseline;
-   fCutAmp += (2.*noise_after_el);  // noise
-   cout << "Cut amplitude: " << fCutAmp << endl;
-   Int_t cp[8]={0,0,fCutAmp,fCutAmp,0,0,0,0};
-   res1->SetCompressParam(cp);
+   res1->SetMagicValue(900.);
 
-   res1->Print();
+   Float_t maxadc = res1->MaxAdc();    
+   Float_t topValue = res1->MagicValue();
+   Float_t norm = maxadc/topValue;
+
+   Float_t fCutAmp = baseline + 2.*noise;
+   fCutAmp *= norm;
+   Int_t cp[8]={0,0,fCutAmp,fCutAmp,0,0,0,0}; //1D
+
+  //res1->SetZeroSupp("2D");
+  res1->SetZeroSupp("1D");
+  res1->SetNoiseParam(noise,baseline);
+  res1->SetDo10to8(kTRUE);
+  res1->SetCompressParam(cp);
+  res1->SetMinVal(4);
+  res1->SetDiffCoeff(3.6,40.);
+  //res1->SetMagicValue(96.95);
+
   AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->GetSegmentationModel();
   if (!seg1) {
     seg1 = new AliITSsegmentationSDD(geom,res1);
     ITS->SetSegmentationModel(1,seg1);
   }
   AliITSsimulationSDD *sim1=new AliITSsimulationSDD(seg1,res1);
+  sim1->SetDoFFT(1);
+  sim1->SetCheckNoise(kFALSE);
   ITS->SetSimulationModel(1,sim1);
 
   // SSD
@@ -82,12 +93,8 @@ Int_t AliITSHits2Digits()
   AliITSsimulationSSD *sim2=new AliITSsimulationSSD(seg2,res2);
   ITS->SetSimulationModel(2,sim2);
 
-  cerr<<"Digitizing ITS...\n";
 
-   if(!gAlice->TreeD()) gAlice->MakeTree("D");
-   printf("TreeD %p\n",gAlice->TreeD());
-   //make branch
-   ITS->MakeBranch("D");
+  cerr<<"Digitizing ITS...\n";
   
   TStopwatch timer;
   timer.Start();

@@ -23,10 +23,8 @@ ClassImp(AliITSresponseSPD)
 AliITSresponseSPD::AliITSresponseSPD()
 {
   // constructor
-   SetDiffCoeff();
+   SetThresholds();
    SetNoiseParam();
    SetDataType();
-   SetMinVal();
-
 }
 

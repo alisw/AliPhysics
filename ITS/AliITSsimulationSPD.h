@@ -20,9 +20,22 @@ public:
   AliITSsimulationSPD(const AliITSsimulationSPD &source); // copy constructor
   AliITSsimulationSPD& operator=(const AliITSsimulationSPD &source); // ass. operator
 
-  void DigitiseModule(AliITSmodule *mod,Int_t module,Int_t dummy);
-  void ChargeToSignal(Float_t **pList);
-  void GetList(Int_t track, Int_t hit, Float_t **pList, Int_t *IndexRange);
+  void DigitiseModule(AliITSmodule *mod,Int_t module, Int_t dummy);
+  void SetFluctuations(Float_t **pList);
+  void HitToDigit(AliITSmodule *mod, Int_t hitpos, Int_t module, 
+              Int_t *frowpixel, Int_t *fcolpixel, Double_t *fenepixel,
+	      Float_t **pList);
+	     
+  void UpdateMap( Int_t row, Int_t col, Double_t ene); 
+  void ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
+                    Float_t z2l,Int_t c1,Int_t r1,Int_t c2,
+				    Int_t r2,Float_t etot,
+				    Int_t &npixel,Int_t *frowpixel,
+				    Int_t *fcolpixel,Double_t *fenepixel);
+  
+  void SetCoupling(Int_t row, Int_t col, Int_t ntrack, Int_t idhit, Float_t **pList);
+  void CreateDigit(Int_t nhits, Int_t module, Float_t **pList);
+  void GetList(Int_t track,Int_t idhit, Float_t **pList, Int_t row, Int_t col);
 
   void CreateHistograms();
   void ResetHistograms();
@@ -34,8 +47,10 @@ public:
 private:
 
   AliITSMapA2  *fMapA2;        // MapA2
-  Float_t      fNoise;         // Noise
-  Float_t      fBaseline;      // Baseline
+  Float_t      fThresh;        // Threshold
+  Float_t      fSigma;         // Noise 
+  Float_t      fCouplCol;      // Coupling along columns
+  Float_t      fCouplRow;      // Coupling along rows
   Int_t        fNPixelsX;      // NPixelsX
   Int_t        fNPixelsZ;      // NPixelsZ
 
@@ -46,6 +61,4 @@ private:
 };
 
 #endif 
-
-
 

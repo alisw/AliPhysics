@@ -23,6 +23,9 @@ Int_t AliITStest() {
 
 //Test ITS reconstruction
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSFindClusters.C");
+
+   delete gAlice; gAlice=0;
+   
    if (rc=AliITSFindClusters()) return rc;
 
    //gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSgraphycs.C");

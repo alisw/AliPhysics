@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.53  2001/05/31 18:52:24 barbera 
+Bari model becomes the default
+
+Revision 1.53  2001/05/30 07:52:24  hristov
+TPC and CONTAINERS included in the search path
+
 Revision 1.52  2001/05/30 06:04:58  hristov
 Changes made to be consitant with changes in TPC tracking classes (B.Nilsen)
 
@@ -231,7 +237,7 @@ the AliITS class.
 #include "AliITSresponse.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSresponseSPD.h"
-#include "AliITSresponseSPDbari.h"
+#include "AliITSresponseSPDdubna.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSresponseSDD.h"
 #include "AliITSsegmentationSSD.h"
