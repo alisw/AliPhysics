@@ -1,7 +1,0 @@
-SRCS:=addMiniHeader.cxx
-
-ELIBS:= pythia6 pdf microcern
-
-ifdef DATE_ROOT
-EINCLUDE+= ${DATE_COMMON_DEFS}
-endif
