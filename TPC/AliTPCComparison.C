@@ -265,7 +265,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
           Int_t ncl=clrow.GetArray()->GetEntriesFast();
           while (ncl--) {
               AliTPCcluster *c=(AliTPCcluster*)clrow[ncl];
-              Int_t lab=c->fTracks[0];
+              Int_t lab=c->GetLabel(0);
               if (lab<0) continue; //noise cluster
               lab=TMath::Abs(lab);
               if (sec>=digp->GetNInnerSector())
