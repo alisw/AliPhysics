@@ -35,6 +35,7 @@ AliHBTAnalysis::AliHBTAnalysis()
    fPairCut = new AliHBTEmptyPairCut();//empty cut - accepts all particles
    
  }
+/*************************************************************************************/ 
 
 AliHBTAnalysis::~AliHBTAnalysis()
  {
@@ -50,6 +51,7 @@ AliHBTAnalysis::~AliHBTAnalysis()
  }
 
 /*************************************************************************************/ 
+
 void AliHBTAnalysis::Process(Option_t* option)
 {
  //default option  = "TracksAndParticles"
@@ -124,6 +126,7 @@ void AliHBTAnalysis::Process(Option_t* option)
 }
 
 /*************************************************************************************/ 
+
 void AliHBTAnalysis::ProcessTracksAndParticles()
 {
 
@@ -147,6 +150,9 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
   /***************************************/
   AliHBTPair * trackpair = new AliHBTPair();
   AliHBTPair * partpair = new AliHBTPair();
+
+  AliHBTPair * tmptrackpair;//temprary pointers to pairs
+  AliHBTPair * tmppartpair;
   
   for (Int_t i = 0;i<Nev;i++)
     {
@@ -159,7 +165,7 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
       
       for (Int_t j = 0; j<partEvent->GetNumberOfParticles() ; j++)
        {
-         if ( (j%10) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<i<<endl;
+         if ( (j%100) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<i<<endl;
 
          part1= partEvent->GetParticle(j);
          track1= trackEvent->GetParticle(j);	
@@ -178,19 +184,25 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
                   continue; //swaped pairs do not meet criteria of pair cut as well, take next particle
                 else 
                  { //swaped pair meets all the criteria
-                   partpair = partpair->GetSwapedPair();
-                   trackpair = trackpair->GetSwapedPair();
+                   tmppartpair = partpair->GetSwapedPair();
+                   tmptrackpair = trackpair->GetSwapedPair();
+                   
                  }
               }
+            else
+             {//meets criteria of the pair cut
+               tmptrackpair = trackpair;
+               tmppartpair = partpair;
+             }
             UInt_t ii;
             for(ii = 0;ii<fNParticleFunctions;ii++)
-                   fParticleFunctions[ii]->ProcessSameEventParticles(partpair);
+                   fParticleFunctions[ii]->ProcessSameEventParticles(tmppartpair);
                 
             for(ii = 0;ii<fNTrackFunctions;ii++)
-                   fTrackFunctions[ii]->ProcessSameEventParticles(trackpair);
+                   fTrackFunctions[ii]->ProcessSameEventParticles(tmptrackpair);
                  
             for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
-                   fParticleAndTrackFunctions[ii]->ProcessSameEventParticles(trackpair,partpair);
+                   fParticleAndTrackFunctions[ii]->ProcessSameEventParticles(tmptrackpair,tmppartpair);
            }
        }
     }
@@ -230,7 +242,7 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
               
               trackEvent2 = fReader->GetTrackEvent(k);
              
-             if ( (j%10) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<k<<endl;
+             if ( (j%100) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<k<<endl;
 	     
              for(Int_t l = 0; l<partEvent2->GetNumberOfParticles();l++)   //  ... on all particles
               {
@@ -249,19 +261,24 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
 	   continue;
 	else 
 	 {
-	   partpair = partpair->GetSwapedPair();
-	   trackpair = trackpair->GetSwapedPair();
+	   tmppartpair = partpair->GetSwapedPair();
+	   tmptrackpair = trackpair->GetSwapedPair();
 	 }
                   }
+                else
+                 {//meets criteria of the pair cut
+                  tmptrackpair = trackpair;
+                  tmppartpair = partpair;
+                 }
                 UInt_t ii;
                 for(ii = 0;ii<fNParticleFunctions;ii++)
-                  fParticleFunctions[ii]->ProcessDiffEventParticles(partpair);
+                  fParticleFunctions[ii]->ProcessDiffEventParticles(tmppartpair);
                  
                 for(ii = 0;ii<fNTrackFunctions;ii++)
-                  fTrackFunctions[ii]->ProcessDiffEventParticles(trackpair);
+                  fTrackFunctions[ii]->ProcessDiffEventParticles(tmptrackpair);
                  
                 for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
-                  fParticleAndTrackFunctions[ii]->ProcessDiffEventParticles(trackpair,partpair);
+                  fParticleAndTrackFunctions[ii]->ProcessDiffEventParticles(tmptrackpair,tmppartpair);
            
                
               }//for(Int_t l = 0; l<N2;l++)   //  ... on all particles
@@ -294,6 +311,7 @@ void AliHBTAnalysis::ProcessTracks()
   /******   filling numerators    ********/
   /***************************************/
   AliHBTPair * trackpair = new AliHBTPair();
+  AliHBTPair * tmptrackpair; //temporary pointer 
   
   for (Int_t i = 0;i<Nev;i++)
     {
@@ -303,7 +321,7 @@ void AliHBTAnalysis::ProcessTracks()
       
       for (Int_t j = 0; j<trackEvent->GetNumberOfParticles() ; j++)
        {
-         if ( (j%10) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<i<<endl;
+         if ( (j%100) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<i<<endl;
 
          track1= trackEvent->GetParticle(j);	
 	 
@@ -314,13 +332,16 @@ void AliHBTAnalysis::ProcessTracks()
             if(fPairCut->Pass(trackpair)) //check pair cut
               { //do not meets crietria of the 
                 if( fPairCut->Pass(trackpair->GetSwapedPair()) ) continue;
-                else trackpair = trackpair->GetSwapedPair();
+                else tmptrackpair = trackpair->GetSwapedPair();
               }
-            
+            else
+              {
+                tmptrackpair = trackpair;
+              }
             UInt_t ii;
                 
             for(ii = 0;ii<fNTrackFunctions;ii++)
-                   fTrackFunctions[ii]->ProcessSameEventParticles(trackpair);
+                   fTrackFunctions[ii]->ProcessSameEventParticles(tmptrackpair);
                  
            
            }
@@ -354,7 +375,7 @@ void AliHBTAnalysis::ProcessTracks()
              trackEvent2 = fReader->GetTrackEvent(k);
              if (!trackEvent2) continue;
              
-             if ( (j%10) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<k<<endl;
+             if ( (j%100) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<k<<endl;
 	     
              for(Int_t l = 0; l<trackEvent2->GetNumberOfParticles();l++)   //  ... on all particles
               {
@@ -366,11 +387,15 @@ void AliHBTAnalysis::ProcessTracks()
                 if(fPairCut->Pass(trackpair)) //check pair cut
                   { //do not meets crietria of the 
                     if( fPairCut->Pass(trackpair->GetSwapedPair()) ) continue;
-	else trackpair = trackpair->GetSwapedPair();
+	else tmptrackpair = trackpair->GetSwapedPair();
+                  }
+                else
+                  {
+                    tmptrackpair = trackpair;
                   }
                 UInt_t ii;
                 for(ii = 0;ii<fNTrackFunctions;ii++)
-                  fTrackFunctions[ii]->ProcessDiffEventParticles(trackpair);
+                  fTrackFunctions[ii]->ProcessDiffEventParticles(tmptrackpair);
                
               }//for(Int_t l = 0; l<N2;l++)   //  ... on all particles
             }//for (Int_t k = i+1; k<NNN;k++)  // ... Loop over next event
@@ -384,6 +409,7 @@ void AliHBTAnalysis::ProcessTracks()
 }
 
 /*************************************************************************************/
+
 void AliHBTAnalysis::ProcessParticles()
 {
   //In order to minimize calling AliRun::GetEvent (we need at one time particles from different events),
@@ -392,6 +418,9 @@ void AliHBTAnalysis::ProcessParticles()
   
   AliHBTEvent * partEvent;
   AliHBTEvent * partEvent2;
+
+  AliHBTPair * partpair = new AliHBTPair();
+  AliHBTPair * tmppartpair; //temporary pointer to the pair
   
 //  Int_t N1, N2, N=0; //number of particles in current event(we prcess two events in one time)
   
@@ -401,8 +430,6 @@ void AliHBTAnalysis::ProcessParticles()
   /******   Looping same events   ********/
   /******   filling numerators    ********/
   /***************************************/
-  AliHBTPair * partpair = new AliHBTPair();
-  
   for (Int_t i = 0;i<Nev;i++)
     {
       partEvent= fReader->GetParticleEvent(i);
@@ -411,7 +438,7 @@ void AliHBTAnalysis::ProcessParticles()
       
       for (Int_t j = 0; j<partEvent->GetNumberOfParticles() ; j++)
        {
-         if ( (j%10) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<i<<endl;
+         if ( (j%100) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<i<<endl;
 
          part1= partEvent->GetParticle(j);
 	 
@@ -426,14 +453,18 @@ void AliHBTAnalysis::ProcessParticles()
                   continue; //swaped pairs do not meet criteria of pair cut as well, take next particle
                 else 
                  { //swaped pair meets all the criteria
-                   partpair = partpair->GetSwapedPair();
+                   tmppartpair = partpair->GetSwapedPair();
                  }
+              }
+            else
+              {
+                tmppartpair = partpair;
               }
 
             UInt_t ii;
                 
             for(ii = 0;ii<fNParticleFunctions;ii++)
-                   fParticleFunctions[ii]->ProcessSameEventParticles(partpair);
+                   fParticleFunctions[ii]->ProcessSameEventParticles(tmppartpair);
            }
        }
     }
@@ -466,7 +497,7 @@ void AliHBTAnalysis::ProcessParticles()
              partEvent2= fReader->GetParticleEvent(k);
              if (!partEvent2) continue;
              
-             if ( (j%10) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<k<<endl;
+             if ( (j%100) == 0) cout<<"Mixing particle "<<j<<" from event "<<i<<" with particles from event "<<k<<endl;
 	     
              for(Int_t l = 0; l<partEvent2->GetNumberOfParticles();l++)   //  ... on all particles
               {
@@ -478,11 +509,15 @@ void AliHBTAnalysis::ProcessParticles()
                 if(fPairCut->Pass(partpair)) //check pair cut
                   { //do not meets crietria of the 
                     if( fPairCut->Pass(partpair->GetSwapedPair()) ) continue;
-	else partpair = partpair->GetSwapedPair();
+	else tmppartpair = partpair->GetSwapedPair();
+                  }
+                else
+                  {
+                    tmppartpair = partpair;
                   }
                 UInt_t ii;
                 for(ii = 0;ii<fNParticleFunctions;ii++)
-                  fParticleFunctions[ii]->ProcessDiffEventParticles(partpair);
+                  fParticleFunctions[ii]->ProcessDiffEventParticles(tmppartpair);
                
               }//for(Int_t l = 0; l<N2;l++)   //  ... on all particles
             }//for (Int_t k = i+1; k<NNN;k++)  // ... Loop over next event
@@ -498,7 +533,7 @@ void AliHBTAnalysis::ProcessParticles()
 /*************************************************************************************/
 
 
-void AliHBTAnalysis::Write()
+void AliHBTAnalysis::WriteFunctions()
 {
   UInt_t ii;
   for(ii = 0;ii<fNParticleFunctions;ii++)
@@ -511,6 +546,7 @@ void AliHBTAnalysis::Write()
    fParticleAndTrackFunctions[ii]->Write();
 }
 /*************************************************************************************/
+
 void AliHBTAnalysis::SetGlobalPairCut(AliHBTPairCut* cut)
 {
   if (cut == 0x0)
@@ -522,6 +558,7 @@ void AliHBTAnalysis::SetGlobalPairCut(AliHBTPairCut* cut)
 }
 
 /*************************************************************************************/
+
 void AliHBTAnalysis::AddTrackFunction(AliHBTTwoPartFctn* f)
 {
   if (f == 0x0) return;
@@ -532,6 +569,8 @@ void AliHBTAnalysis::AddTrackFunction(AliHBTTwoPartFctn* f)
   fTrackFunctions[fNTrackFunctions] = f;
   fNTrackFunctions++;
 }
+/*************************************************************************************/ 
+
 void AliHBTAnalysis::AddParticleFunction(AliHBTTwoPartFctn* f)
 {
   if (f == 0x0) return;
@@ -561,6 +600,7 @@ void AliHBTAnalysis::AddParticleAndTrackFunction(AliHBTFourPartFctn* f)
 
 
 /*************************************************************************************/  
+
 Bool_t AliHBTAnalysis::RunCoherencyCheck()
 {
  //Checks if both HBTRuns are similar

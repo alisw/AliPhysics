@@ -38,40 +38,39 @@ class AliHBTAnalysis: public TObject
      
      void SetReader(AliHBTReader* r){fReader = r;}
      
-     void Write();
+     void WriteFunctions();
    protected:
      
      Bool_t RunCoherencyCheck();
      
      
-     AliHBTReader* fReader;
+     AliHBTReader* fReader;//!
      
      virtual void ProcessTracks();
      virtual void ProcessParticles();
      virtual void ProcessTracksAndParticles();
      
      
-     AliHBTTwoPartFctn**  fTrackFunctions; //array of pointers to functions that analyze rekonstructed tracks
-     AliHBTTwoPartFctn**  fParticleFunctions; //array of pointers to functions that analyze generated particles
-     AliHBTFourPartFctn** fParticleAndTrackFunctions; //array of pointers to functions that analyze both 
+     AliHBTTwoPartFctn**  fTrackFunctions; //!array of pointers to functions that analyze rekonstructed tracks
+     AliHBTTwoPartFctn**  fParticleFunctions; //!array of pointers to functions that analyze generated particles
+     AliHBTFourPartFctn** fParticleAndTrackFunctions; //!array of pointers to functions that analyze both 
                                         //reconstructed tracks and generated particles
 		//i.e. - resolution analyzers
-     UInt_t fNTrackFunctions;
-     UInt_t fNParticleFunctions;
-     UInt_t fNParticleAndTrackFunctions;
+     UInt_t fNTrackFunctions; //!
+     UInt_t fNParticleFunctions; //!
+     UInt_t fNParticleAndTrackFunctions; //!
 		
      /**********************************************/
      /* Control parameters  */
 
-      AliHBTPairCut *fPairCut;
+      AliHBTPairCut *fPairCut;//!
       
-   // AliHBTCut *fParticleCut; 
      /**********************************************/
      
      
    private:
-     static const Int_t fgkHbtAnalyzeAll;
-     static const UInt_t fgkFctnArraySize;
+     static const Int_t fgkHbtAnalyzeAll;//!
+     static const UInt_t fgkFctnArraySize;//!
 /*********************************************/   
    public:
      ClassDef(AliHBTAnalysis,0)
