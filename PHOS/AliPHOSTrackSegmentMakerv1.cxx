@@ -318,7 +318,8 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TObjArray * emcRecPoints,
 	 
 	 nextUp.Reset();
 //          AliPHOSTrackSegment * subtr = new AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
-// 	 trsl->Add(subtr) ;  
+// 	 trsl->Add(subtr) ; 
+	 fNTrackSegments = trsl->GetEntries() ; 
 	 new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
 	 fNTrackSegments++ ;
 	 emcRecPoints->AddAt(nullpointer,linkLow->GetEmc()) ;	  
@@ -346,6 +347,7 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs(TObjArray * emcRecPoints,
       
     }
 
+    fNTrackSegments = trsl->GetEntries() ; 
     new( (*trsl)[fNTrackSegments] ) AliPHOSTrackSegment(emc, ppsdUp, ppsdLow ) ;
     fNTrackSegments++ ;
     

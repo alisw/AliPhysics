@@ -194,8 +194,8 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
       if  ( IsInEmc(digit) ) {   
 	// start a new EMC RecPoint
 	//        new ((*emcl)[fNumberOfEmcClusters]) AliPHOSEmcRecPoint(fW0, fLocMaxCut) ; if TClonesArray
+	fNumberOfEmcClusters = emcl->GetEntries() ;
 	(*emcl)[fNumberOfEmcClusters] = new  AliPHOSEmcRecPoint(fW0, fLocMaxCut) ;
-
 	clu = (AliPHOSEmcRecPoint *) emcl->At(fNumberOfEmcClusters) ; 
 	fNumberOfEmcClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp())) ; 
@@ -209,6 +209,7 @@ void AliPHOSClusterizerv1::MakeClusters(const DigitsList * dl,
 	
 	// start a new PPSD cluster
 	// new ((*ppsdl)[fNumberOfPpsdClusters]) AliPHOSPpsdRecPoint() ;  if TClonesArray
+	fNumberOfPpsdClusters = ppsdl->GetEntries() ; 
 	(*ppsdl)[fNumberOfPpsdClusters] = new AliPHOSPpsdRecPoint() ;
 	
 	clu =  (AliPHOSPpsdRecPoint *) ppsdl->At(fNumberOfPpsdClusters)  ;  
