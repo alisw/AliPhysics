@@ -1214,6 +1214,7 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
       }
     } // for (iHit = iHitMin;...
     delete extrapHitForRec;
+    extrapHitForRec = NULL;
   } // for (ch = ch2;...
   return nbCan1Seg1Hit;
 }
