@@ -10,6 +10,7 @@
 
 #include "TG4GeometryManager.h"
 #include "TG4GeometryOutputManager.h"
+#include "TG4GeometryServices.h"
 #include "TG4PhysicsManager.h"
 #include "TG4VSensitiveDetector.h"
 #include "TG4Limits.h"
@@ -52,6 +53,8 @@ TG4GeometryManager::TG4GeometryManager()
 
   fOutputManager = new TG4GeometryOutputManager();
 
+  fGeometryServices = new TG4GeometryServices(&fMediumIdVector, &fNameMap);
+
   fgInstance = this;
       
   // instantiate the default element table
@@ -68,6 +71,7 @@ TG4GeometryManager::TG4GeometryManager(const TG4GeometryManager& right) {
 TG4GeometryManager::~TG4GeometryManager() {
 //
   delete fOutputManager;
+  delete fGeometryServices;
 }
 
 //==================================================================== =========
@@ -94,38 +98,6 @@ TG4GeometryManager::operator=(const TG4GeometryManager& right)
 // private methods
 //
 //=============================================================================
-
-
-G4double* TG4GeometryManager::CreateG4doubleArray(Float_t* array, 
-               G4int size) const
-{
-// Converts Float_t* array to G4double*,
-// !! The new array has to be deleted by user.
-// ---
-
-  G4double* doubleArray;
-  if (size>0) {
-    doubleArray = new G4double[size]; 
-    for (G4int i=0; i<size; i++) doubleArray[i] = array[i];
-  }
-  else {
-    doubleArray = 0; 
-  }  
-  return doubleArray;
-}
-
-
-G4String TG4GeometryManager::CutName(const char* name) const
-{
-// Removes spaces after the name if present.
-// ---
-
-  G4String cutName = name;
-  G4int i = cutName.length();
-  while (cutName(--i) == ' ') cutName = cutName(0,i);
-
-  return cutName;
-}  
 
 
 void TG4GeometryManager::GstparCut(G4int itmed, TG3Cut par, G4double parval)
@@ -248,7 +220,7 @@ void TG4GeometryManager::Material(Int_t& kmat, const char* name, Float_t a,
 // ---
 
     kmat = ++fMaterialCounter;
-    G4double* bufin = CreateG4doubleArray(buf, nwbuf); 
+    G4double* bufin = fGeometryServices->CreateG4doubleArray(buf, nwbuf); 
 
     // write token to the output file
     if (fWriteGeometry) 
@@ -279,9 +251,9 @@ void TG4GeometryManager::Mixture(Int_t& kmat, const char *name, Float_t *a,
 // ---
 
    Int_t npar = abs(nlmat);
-   G4double *ain = CreateG4doubleArray(a, npar); 
-   G4double *zin = CreateG4doubleArray(z, npar); 
-   G4double *wmatin = CreateG4doubleArray(wmat, npar); 
+   G4double *ain = fGeometryServices->CreateG4doubleArray(a, npar); 
+   G4double *zin = fGeometryServices->CreateG4doubleArray(z, npar); 
+   G4double *wmatin = fGeometryServices->CreateG4doubleArray(wmat, npar); 
 
    kmat = ++fMaterialCounter;
 
@@ -376,43 +348,6 @@ void TG4GeometryManager::Matrix(Int_t& krot, Float_t thetaX, Float_t phiX,
 }
   
 
-G4Material* TG4GeometryManager::MixMaterials(G4String name, G4double density, 
-        TG4StringVector* matNames, TG4doubleVector* matWeights)
-{
-// Creates a mixture of selected materials
-// ---
-
-  // number of materials to be mixed  
-  G4int nofMaterials = matNames->entries();
-  if (nofMaterials != matWeights->entries()) {
-    G4String text = "TG4GeometryManager::MixMaterials: ";
-    text = text +  "different number of material names and weigths.";
-    TG4Globals::Exception(text);
-  }    
-  // add verbose
-  // G4cout << "Nof of materials to be mixed: " << nofMaterials << G4endl;
-
-  // fill vector of materials
-  TG4MaterialVector matVector;  
-  G4int im;
-  for (im=0; im< nofMaterials; im++) {
-    // material
-    G4Material* material = G4Material::GetMaterial((*matNames)[im]);
-    matVector.insert(material);
-  } 
-
-  // create the mixed material
-  G4Material* mixture = new G4Material(name, density, nofMaterials);
-  for (im=0; im< nofMaterials; im++) {
-    G4Material* material = matVector[im];
-    G4double fraction = (*matWeights)[im];
-    mixture->AddMaterial(material, fraction);
-  }
-
-  return mixture;
-}  
-
- 
 void TG4GeometryManager::Ggclos() 
 { 
 // Sets the top VTE in temporary G3 volume table.
@@ -445,8 +380,8 @@ void TG4GeometryManager::Gfmate(Int_t imat, char *name, Float_t &a,
     // !! unsafe conversion
     const char* chName = material->GetName();
     name = (char*)chName;
-    a = GetEffA(material);
-    z = GetEffZ(material);
+    a = fGeometryServices->GetEffA(material);
+    z = fGeometryServices->GetEffZ(material);
     
     dens = material->GetDensity();
     dens /= TG3Units::MassDensity();
@@ -503,7 +438,7 @@ void  TG4GeometryManager::Gstpar(Int_t itmed, const char *param,
   //TG4CutVector* cutVector = physicsManager->GetCutVector();
   //TG4FlagVector* flagVector = physicsManager->GetFlagVector();
 
-  G4String name = CutName(param); 
+  G4String name = fGeometryServices->CutName(param); 
   TG3Cut g3Cut;
   if (physicsManager->CheckCutWithCutVector(name, parval, g3Cut)) {
       GstparCut(itmed, g3Cut, parval);
@@ -547,10 +482,10 @@ void  TG4GeometryManager::Gsckov(Int_t itmed, Int_t npckov, Float_t* ppckov,
 //       RINDEX      Refraction index (if=0 metal)
 // ---
 
-  G4double* ppckovDbl = CreateG4doubleArray(ppckov, npckov); 
-  G4double* abscoDbl  = CreateG4doubleArray(absco, npckov); 
-  G4double* efficDbl  = CreateG4doubleArray(effic, npckov); 
-  G4double* rindexDbl = CreateG4doubleArray(rindex, npckov); 
+  G4double* ppckovDbl = fGeometryServices->CreateG4doubleArray(ppckov, npckov); 
+  G4double* abscoDbl  = fGeometryServices->CreateG4doubleArray(absco, npckov); 
+  G4double* efficDbl  = fGeometryServices->CreateG4doubleArray(effic, npckov); 
+  G4double* rindexDbl = fGeometryServices->CreateG4doubleArray(rindex, npckov); 
   
   // add units
   G4int i;
@@ -610,10 +545,11 @@ void  TG4GeometryManager::Gsdvn(const char *name, const char *mother,
     if (fWriteGeometry) 
       fOutputManager->WriteGsdvn(name, mother, ndiv, iaxis);
 
-    G4gsdvn(CutName(name), CutName(mother), ndiv, iaxis);
+    G4gsdvn(fGeometryServices->CutName(name), 
+            fGeometryServices->CutName(mother), ndiv, iaxis);
 
     // register name in name map
-    fNameMap.AddName(CutName(name));
+    fNameMap.AddName(fGeometryServices->CutName(name));
 } 
  
  
@@ -631,10 +567,11 @@ void  TG4GeometryManager::Gsdvn2(const char *name, const char *mother,
     if (fWriteGeometry) 
       fOutputManager->WriteGsdvn2(name, mother, ndiv, iaxis, c0i, numed);
 
-    G4gsdvn2(CutName(name),CutName(mother), ndiv, iaxis, c0i, numed);
+    G4gsdvn2(fGeometryServices->CutName(name),
+             fGeometryServices->CutName(mother), ndiv, iaxis, c0i, numed);
 
     // register name in name map
-    fNameMap.AddName(CutName(name));
+    fNameMap.AddName(fGeometryServices->CutName(name));
 } 
  
  
@@ -656,10 +593,11 @@ void  TG4GeometryManager::Gsdvt(const char *name, const char *mother,
     if (fWriteGeometry) 
       fOutputManager->WriteGsdvt(name, mother, step, iaxis, numed, ndvmx);
 
-    G4gsdvt(CutName(name), CutName(mother), step, iaxis, numed, ndvmx);
+    G4gsdvt(fGeometryServices->CutName(name), 
+            fGeometryServices->CutName(mother), step, iaxis, numed, ndvmx);
 
     // register name in name map
-    fNameMap.AddName(CutName(name));
+    fNameMap.AddName(fGeometryServices->CutName(name));
 } 
  
  
@@ -683,10 +621,11 @@ void  TG4GeometryManager::Gsdvt2(const char *name, const char *mother,
     if (fWriteGeometry) 
       fOutputManager->WriteGsdvt2(name, mother, step, iaxis, c0, numed, ndvmx);
 
-    G4gsdvt2(CutName(name), CutName(mother), step, iaxis, c0, numed, ndvmx);
+    G4gsdvt2(fGeometryServices->CutName(name), 
+             fGeometryServices->CutName(mother), step, iaxis, c0, numed, ndvmx);
 
     // register name in name map
-    fNameMap.AddName(CutName(name));
+    fNameMap.AddName(fGeometryServices->CutName(name));
 } 
  
  
@@ -737,10 +676,11 @@ void  TG4GeometryManager::Gspos(const char *vname, Int_t num,
    if (fWriteGeometry) 
      fOutputManager->WriteGspos(vname, num, vmoth, x, y, z, irot, vonly);
 
-   G4gspos(CutName(vname), num, CutName(vmoth), x, y, z, irot, vonly);
+   G4gspos(fGeometryServices->CutName(vname), num,
+           fGeometryServices->CutName(vmoth), x, y, z, irot, vonly);
 
    // register name in name map
-   fNameMap.AddName(CutName(vname));
+   fNameMap.AddName(fGeometryServices->CutName(vname));
 } 
  
  
@@ -754,19 +694,20 @@ void  TG4GeometryManager::Gsposp(const char *name, Int_t nr,
 //      NR inside MOTHER, with its parameters UPAR(1..NP)
 // ---
 
-   G4double* parin = CreateG4doubleArray(upar, np); 
+   G4double* parin = fGeometryServices->CreateG4doubleArray(upar, np); 
 
    // write token to the output file
    if (fWriteGeometry) 
      fOutputManager->WriteGsposp(name, nr, mother, x, y, z, irot, konly, parin, np);
 
-   G4gsposp(CutName(name), nr, CutName(mother), x, y, z, irot, konly, 
+   G4gsposp(fGeometryServices->CutName(name), nr, 
+            fGeometryServices->CutName(mother), x, y, z, irot, konly, 
              parin, np);
 
    delete [] parin;
 
    // register name in name map
-   fNameMap.AddName(CutName(name));
+   fNameMap.AddName(fGeometryServices->CutName(name));
 } 
  
  
@@ -784,18 +725,19 @@ Int_t TG4GeometryManager::Gsvolu(const char *name, const char *shape,
 //  It creates a new volume in the JVOLUM data structure.
 // ---  
 
-  G4double* parin = CreateG4doubleArray(upar, npar); 
+  G4double* parin = fGeometryServices->CreateG4doubleArray(upar, npar); 
 
   // write token to the output file
   if (fWriteGeometry) 
     fOutputManager->WriteGsvolu(name, shape, nmed, parin, npar);    
 
-  G4gsvolu(CutName(name), CutName(shape), nmed, parin, npar);
+  G4gsvolu(fGeometryServices->CutName(name), 
+           fGeometryServices->CutName(shape), nmed, parin, npar);
 
   delete [] parin;
   
   // register name in name map
-  fNameMap.AddName(CutName(name));
+  fNameMap.AddName(fGeometryServices->CutName(name));
 
   return 0;
 } 
@@ -839,68 +781,18 @@ void TG4GeometryManager::WriteEuclid(const char* fileName,
 Int_t TG4GeometryManager::VolId(const Text_t* volName) const
 { 
 // Returns the sensitive detector identifier.
-// !! Gives exception in case logical volume is not associated with 
-// a sensitive detector.
 // ---
 
-  G4String g4VolName = CutName(volName);
-  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  
-  for (G4int i=0; i<pLVStore->entries(); i++) {
-    G4LogicalVolume* lv = pLVStore->at(i);
-    G4VSensitiveDetector* sd = lv->GetSensitiveDetector();
-  
-    if ((sd) && (sd->GetName()==g4VolName)) {
-      TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-      if (tsd)
-        return tsd->GetID();
-      else {
-        TG4Globals::Exception(
-          "TG4GeometryManager::VolId: Unknown sensitive detector type");
-        return 0;
-      }
-    }   
-  }
-
-  G4String text = "TG4GeometryManager::VolId: Sensitive detector ";
-  text = text + g4VolName;
-  text = text + " is not defined.\n"; 
-  TG4Globals::Warning(text);
-  return 0;
+  return fGeometryServices->GetVolumeID(volName);
 }
 
 
 const char* TG4GeometryManager::VolName(Int_t id) const
 {
 // Returns the name of the sensitive detector with the given identifier.
-// !! Gives exception in case logical volume is not associated with 
-// a sensitive detector.
 // ---
 
-  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  
-  for (G4int i=0; i<pLVStore->entries(); i++) {
-    G4LogicalVolume* lv = pLVStore->at(i);
-    G4VSensitiveDetector* sd = lv->GetSensitiveDetector();
-    
-    if (sd) {
-      G4int sdID;
-      TG4VSensitiveDetector* tsd = dynamic_cast<TG4VSensitiveDetector*>(sd);
-      if (tsd)
-        sdID = tsd->GetID();
-      else {
-        TG4Globals::Exception(
-          "TG4GeometryManager::VolId: Unknown sensitive detector type");
-        return 0;
-      }
-      if (sdID == id) return sd->GetName();
-    }  
-  }
-
-  G4String text = "TG4GeometryManager::VolName:\n";
-  text = text + "    Sensitive detector with given id is not defined. \n";
-  TG4Globals::Warning(text);
-  return "";	       	         
+  return fGeometryServices->GetVolumeName(id);
 }
 
 
@@ -909,22 +801,19 @@ Int_t TG4GeometryManager::NofVolumes() const
 // Returns the total number of sensitive detectors.
 // ---
 
-  return NofSensitiveDetectors();
+  return fGeometryServices->NofSensitiveDetectors();
 }
 
  
-void TG4GeometryManager::ReadG3Geometry(G4String filePath)
+Int_t TG4GeometryManager::VolId2Mate(Int_t volumeId)  const
 {
-// Processes g3calls.dat file and fills G3 tables.
+// Return the material number for a given volume id
 // ---
 
-  // add verbose
-  G4cout << "Reading the call list file " << filePath << "..." << G4endl;
-  G3CLRead(filePath, NULL);
-  G4cout << "Call list file read completed. Build geometry" << G4endl;
+  return fGeometryServices->GetMediumId(volumeId);	       	         
 }
-
  
+
 //=============================================================================
 //
 // public methods - Geant4 only
@@ -951,9 +840,11 @@ G4VPhysicalVolume* TG4GeometryManager::CreateG4Geometry()
 
   // print G4 geometry statistics
   G4cout << "G4 Stat: instantiated " 
-         << NofG4LogicalVolumes()  << " logical volumes \n"
+         << fGeometryServices->NofG4LogicalVolumes()  
+	 << " logical volumes \n"
 	 << "                      " 
-	 << NofG4PhysicalVolumes() << " physical volumes" << G4endl;
+	 << fGeometryServices->NofG4PhysicalVolumes() 
+	 << " physical volumes" << G4endl;
 
   // position the first entry 
   // (in Geant3 the top volume cannot be positioned)
@@ -964,6 +855,18 @@ G4VPhysicalVolume* TG4GeometryManager::CreateG4Geometry()
                             first->GetLV(), 0, false, 0);
   }
   return top;		      
+}
+
+ 
+void TG4GeometryManager::ReadG3Geometry(G4String filePath)
+{
+// Processes g3calls.dat file and fills G3 tables.
+// ---
+
+  // add verbose
+  G4cout << "Reading the call list file " << filePath << "..." << G4endl;
+  G3CLRead(filePath, NULL);
+  G4cout << "Call list file read completed. Build geometry" << G4endl;
 }
 
  
@@ -1018,9 +921,6 @@ void TG4GeometryManager::ClearG3TablesFinal()
 // (the top volume is removed from the vol table)
 // ---
 
-  // fill medium id vector
-  FillMediumIdVector();
-
   G3Med.Clear();
   G3Vol.Clear();  
 
@@ -1072,159 +972,4 @@ void TG4GeometryManager::SetMapSecond(const G4String& name)
 // ---
 
   fNameMap.SetSecond(name);
-}
-
-
-Int_t TG4GeometryManager::NofG3Volumes() const
-{
-// Returns the total number of logical volumes corresponding
-// to G3 volumes. (
-// The logical volume that were created by Gsposp method 
-// with a generic name (name_copyNo) are NOT included.
-// ---
-
-  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-
-  G4int counter = 0;  
-  for (G4int i=0; i<pLVStore->entries(); i++) {
-    G4LogicalVolume* lv = (*pLVStore)[i];
-    if (IsG3Volume(lv->GetName())) counter++;
-  }
-  
-  return counter;  
-}
-
-
-Int_t TG4GeometryManager::NofG4LogicalVolumes() const
-{
-// Returns the total number of logical volumes in the geometry.
-// ---
-
-  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  return pLVStore->entries();
-}
-
-
-Int_t TG4GeometryManager::NofG4PhysicalVolumes() const
-{
-// Returns the total number of physical volumes in the geometry.
-// ---
-
-  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-
-  G4int counter = 0;
-  for (G4int i=0; i<pLVStore->entries(); i++) {
-    counter += ((*pLVStore)[i])->GetNoDaughters();
-  }
-  
-  return counter;  
-}
-
-
-Int_t TG4GeometryManager::NofSensitiveDetectors() const
-{
-// Returns the total number of sensitive detectors.
-// ---
-
-  return TG4VSensitiveDetector::GetTotalNofSensitiveDetectors();
-}
-
- 
-G4bool TG4GeometryManager::IsG3Volume(G4String lvName) const
-{
-// Returns true if the logical volume of given volumeName
-// was not created by Gsposp method with a generic name 
-// (name_copyNo).
-// ---
-
-  if (lvName.contains(gSeparator))
-    return false;  
-  else
-    return true;   
-}
-
- 
-void TG4GeometryManager::G4ToG3VolumeName(G4String& name) const
-{
-// Cuts _copyNo extension added to logical volume name in case 
-// the logical volume was created by Gsposp method.
-// ---
-
-  if (name.contains(gSeparator)) 
-  name = name(0,name.first(gSeparator));
-}
-
- 
-const G4String& TG4GeometryManager::GetMapSecond(const G4String& name)
-{ 
-// Returns the second string associated with the name in
-// the name map.
-// ---
-
-  return fNameMap.GetSecond(name); 
-}
-
- 
-G4int TG4GeometryManager::GetMediumId(G4Material* material) const
-{
-// Returns the second index for materials (having its origin in
-// G4 tracking media concept)
-// ---
-
-  return fMediumIdVector[material->GetIndex()];
-}  
-
-
-G4double TG4GeometryManager::GetEffA(G4Material* material) const
-{
-// Returns A or effective A=sum(pi*Ai) (if compound/mixture)
-// of given material.
-// ---
-
-  G4double a = 0.;
-  G4int nofElements = material->GetNumberOfElements();
-  if (nofElements > 1) {
-    G4String text = "Effective A for material mixture (";
-    text = text + material->GetName();
-    text = text + ") is used.";
-    //TG4Globals::Warning(text);
-
-    for (G4int i=0; i<nofElements; i++) {
-      G4double aOfElement = material->GetElement(i)->GetA();
-      G4double massFraction = material->GetFractionVector()[i];      
-      a += aOfElement*massFraction /(TG3Units::AtomicWeight());
-    }
-  }
-  else { 
-    a = material->GetA();
-    a /= TG3Units::AtomicWeight();
-  }
-  return a;
-}
-
-
-G4double TG4GeometryManager::GetEffZ(G4Material* material) const
-{
-// Returns Z or effective Z=sum(pi*Zi) (if compound/mixture)
-// of given material.
-// ---
-
-  G4double z = 0.;
-  G4int nofElements = material->GetNumberOfElements();
-  if (nofElements > 1) {
-    G4String text = "Effective Z for material mixture (";
-    text = text + material->GetName();
-    text = text + ") is used.";
-    //TG4Globals::Warning(text);
-
-    for (G4int i=0; i<nofElements; i++) {
-      G4double zOfElement = material->GetElement(i)->GetZ();
-      G4double massFraction = material->GetFractionVector()[i];
-      z += zOfElement*massFraction;
-    }
-  }
-  else { 
-    z = material->GetZ(); 
-  }  
-  return z;
 }

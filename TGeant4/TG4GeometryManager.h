@@ -23,9 +23,11 @@
 class TG4CutVector;
 class TG4FlagVector;
 class TG4GeometryOutputManager;
+class TG4GeometryServices;
 
 class G4Material;
 class G4VPhysicalVolume;
+class G4LogicalVolume;
 
 class TG4GeometryManager
 {
@@ -54,10 +56,6 @@ class TG4GeometryManager
     void  Matrix(Int_t& krot, Float_t thetaX, Float_t phiX, 
                      Float_t thetaY, Float_t phiY, Float_t thetaZ, 
 		     Float_t phiZ);
-
-    // NEW - for G4 only
-    G4Material* MixMaterials(G4String name, G4double density,
-                     TG4StringVector* matNames, TG4doubleVector* matWeights);
 
     // functions from GBASE 
     void  Ggclos(); 
@@ -97,8 +95,9 @@ class TG4GeometryManager
 		               
     // get methods
     Int_t VolId(const Text_t* volName) const;                
-    const char* VolName(Int_t id) const; //new
+    const char* VolName(Int_t id) const;
     Int_t NofVolumes() const; 
+    Int_t VolId2Mate(Int_t volumeId) const;
     
     // end of methods
     // 
@@ -109,6 +108,7 @@ class TG4GeometryManager
     G4VPhysicalVolume* CreateG4Geometry();
     void ReadG3Geometry(G4String filePath);
     void UseG3TrackingMediaLimits();
+    void FillMediumIdVector();
     void ClearG3Tables();       
     void ClearG3TablesFinal();
     void OpenOutFile(G4String filePath);
@@ -119,27 +119,9 @@ class TG4GeometryManager
     void SetWriteGeometry(G4bool writeGeometry);
     void SetMapSecond(const G4String& name);
 
-    // get methods
-          // volumes
-    Int_t NofG3Volumes() const; 
-    Int_t NofG4LogicalVolumes() const; 
-    Int_t NofG4PhysicalVolumes() const; 
-    Int_t NofSensitiveDetectors() const; 
-    G4bool IsG3Volume(G4String lvName) const;
-    void G4ToG3VolumeName(G4String& name) const;
-    const G4String& GetMapSecond(const G4String& name);
-
-          // sensitive volumes
+    // get methods 
     G3SensVolVector GetG3SensVolVector() const;
-
-          // materials
-    G4int GetMediumId(G4Material* material) const;    
-    G4double GetEffA(G4Material* material) const;
-    G4double GetEffZ(G4Material* material) const;
-
-    // end of methods for Geant4 only 
-    //
-    
+     
   protected:
     TG4GeometryManager(const TG4GeometryManager& right);
 
@@ -148,19 +130,17 @@ class TG4GeometryManager
 
   private:
     // methods
-    G4double* CreateG4doubleArray(Float_t* array, G4int size) const;
-    G4String  CutName(const char* name) const;
     void GstparCut(G4int itmed, TG3Cut par, G4double parval);
     void GstparFlag(G4int itmed, TG3Flag par, G4double parval);
-    void FillMediumIdVector();
         
     // static data members
     static TG4GeometryManager*  fgInstance;     //this instance
 
     // data members
-    TG4GeometryOutputManager*   fOutputManager; //output manager 
-    TG4NameMap    fNameMap;         //map of volumes names to modules names
+    TG4GeometryOutputManager*   fOutputManager;   //output manager 
+    TG4GeometryServices*        fGeometryServices;//geometry services
     TG4intVector  fMediumIdVector;  //vector of second indexes for materials
+    TG4NameMap    fNameMap;         //map of volumes names to modules names
     G4int         fMediumCounter;   //global medium counter
     G4int         fMaterialCounter; //global material counter
     G4int         fMatrixCounter;   //global matrix counter
