@@ -50,16 +50,19 @@
 
 // --- ROOT system ---
 #include "TBenchmark.h"
+	       //#include "TObjectTable.h"
 
 // --- Standard library ---
 #include "stdlib.h"
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALGetter.h"
 #include "AliEMCALHit.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
+	       //#include "AliMemoryWatcher.h"
 
 ClassImp(AliEMCALSDigitizer)
            
@@ -105,7 +108,8 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) : TTask(sd
 AliEMCALSDigitizer::~AliEMCALSDigitizer() {
   // dtor
   AliEMCALGetter * gime = 
-    AliEMCALGetter::Instance(GetTitle(), fEventFolderName.Data());  
+    //   AliEMCALGetter::Instance(GetTitle(), fEventFolderName.Data());  
+    AliEMCALGetter::Instance();  
   gime->EmcalLoader()->CleanSDigitizer();
 }
 
@@ -168,11 +172,12 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim"))
     gBenchmark->Start("EMCALSDigitizer");
 
-  AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ;
- 
+  //AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle()) ;
+  AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
+
   //switch off reloading of this task while getting event
   if (!fInit) { // to prevent overwrite existing file
-    Error( "Exec", "Give a version name different from %s", fEventFolderName.Data() ) ;
+    AliError( Form("Give a version name different from %s", fEventFolderName.Data()) ) ;
     return ;
     }
 
@@ -183,6 +188,9 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
 
   Int_t ievent ;   
+
+  //AliMemoryWatcher memwatcher;
+
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     gime->Event(ievent,"H") ;  
     TTree * treeS = gime->TreeS(); 
@@ -274,7 +282,10 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     
     if(strstr(option,"deb"))
       PrintSDigits(option) ;  
-  }
+    
+    //gObjectTable->Print() ; 
+    //memwatcher.Watch(ievent); 
+  }// event loop
 
   Unload();
   
@@ -285,6 +296,10 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     printf("Exec: took %f seconds for SDigitizing %f seconds per event", 
 	 gBenchmark->GetCpuTime("EMCALSDigitizer"), gBenchmark->GetCpuTime("EMCALSDigitizer")/nEvents ) ; 
   }
+
+  //TFile f("out.root","RECREATE");
+  //memwatcher.WriteToFile(); 
+  //f.Close();
 }
 
 
