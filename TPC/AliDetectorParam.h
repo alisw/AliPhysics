@@ -9,10 +9,6 @@
 //  Manager class for detector parameters          //
 ////////////////////////////////////////////////
 
-
-
-// rootcint problems befor including AliDetectorParam.h you must include TObject.h
-
 #include <TNamed.h>
 class AliDetectorParam : public TNamed {
 public:
