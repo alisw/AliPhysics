@@ -45,14 +45,14 @@ AliFMD1::~AliFMD1()
 
 //____________________________________________________________________
 void 
-AliFMD1::SetupGeometry(Int_t airId, Int_t kaptionId) 
+AliFMD1::SetupGeometry(Int_t airId, Int_t alId, Int_t /* cId */) 
 {
   // Setup the FMD1 sub-detector geometry 
   // 
   // Parameters:
   // 
   //     airId         Id # of the Air medium 
-  //     kaptionId     Id # of the Aluminium medium 
+  //     alId     Id # of the Aluminium medium 
   // 
   fInnerHoneyLowR  = fInner->GetLowR() + 1;
   fInnerHoneyHighR = fInner->GetHighR() + 1;
@@ -72,7 +72,7 @@ AliFMD1::SetupGeometry(Int_t airId, Int_t kaptionId)
   // Rotate the full sub-detector 
   gMC->Matrix(fRotationId, 270, 180, 90, 90, 180, 0); 
 
-  AliFMDSubDetector::SetupGeometry(airId, kaptionId);
+  AliFMDSubDetector::SetupGeometry(airId, alId);
 }
 
 //____________________________________________________________________

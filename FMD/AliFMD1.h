@@ -13,7 +13,7 @@ class AliFMD1 : public AliFMDSubDetector
 public:
   AliFMD1();
   virtual ~AliFMD1();
-  virtual void   SetupGeometry(Int_t airId, Int_t kaptionId);  
+  virtual void   SetupGeometry(Int_t airId, Int_t alId, Int_t cId=0);  
   virtual void   Geometry(const char* mother, Int_t pbRotId, 
 			  Int_t idRotId, Double_t z=0);
 protected:
