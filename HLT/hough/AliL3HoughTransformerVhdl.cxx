@@ -74,7 +74,7 @@ void AliL3HoughTransformerVhdl::CreateHistograms(Int_t nxbin,Double_t xmin,Doubl
   fNybin=nybin;
   fYmin=ymin;
   fYmax=ymax;
-  //  cout << fEpsilon << " - " << (xmax-xmin)/nxbin << endl;
+  //cout << fEpsilon << " - " << (xmax-xmin)/nxbin << endl;
 }
 
 void AliL3HoughTransformerVhdl::Init(Int_t slice,Int_t patch,Int_t n_eta_segments,Int_t n_its)
@@ -287,13 +287,13 @@ void AliL3HoughTransformerVhdl::PrintVhdl()
 {
   cout << "fSlice := " << GetSlice() << ";" << endl;
   cout << "fPatch := " << GetPatch() << ";" << endl;
-  //  cout << "fSector := " << fSector << ";" << endl;
-  //  cout << "fSectorRow := " << fSectorRow << ";" << endl;
-  //  cout << "fMinRow := " << fMinRow << ";" << endl;
-  //  cout << "fMaxRow := " << fMaxRow << ";" << endl;
-  //  cout << "fNRows := " << fNRows << ";" << endl;
-  //  cout << "fNEtas := " << fNEtas << ";" << endl;
-  //  cout << "fNPhi0 := " << fNPhi0 << ";" << endl;
+  //cout << "fSector := " << fSector << ";" << endl;
+  //cout << "fSectorRow := " << fSectorRow << ";" << endl;
+  //cout << "fMinRow := " << fMinRow << ";" << endl;
+  //cout << "fMaxRow := " << fMaxRow << ";" << endl;
+  //cout << "fNRows := " << fNRows << ";" << endl;
+  //cout << "fNEtas := " << fNEtas << ";" << endl;
+  //cout << "fNPhi0 := " << fNPhi0 << ";" << endl;
   cout << "fZSign := " << fZSign << ";" << endl;
   cout << "fZLengthPlusOff := " << fZLengthPlusOff << ";" << endl;
   cout << "fPadPitch := " << fPadPitch << ";" << endl;
@@ -316,9 +316,20 @@ void AliL3HoughTransformerVhdl::PrintVhdl()
   cout << fLUTEta[fNEtas-1] << " );\n" << endl; 
 
   if(!fNPhi0) return;
+  cout << "-- Kappa -- " << endl;
   cout << "fNxbin := " << fNxbin << endl;
   cout << "fxmin := " << fXmin << endl;
   cout << "fxmax := " << fXmax << endl;
+  Float_t kdiff=(fXmax-fXmin)/fNxbin;
+  Float_t k=fXmin;
+  cout << "fKappa := ";
+  for(Int_t i=0;i<fNxbin;i++){
+    k+=kdiff;
+    cout << k << ", ";
+  }
+  cout << k+kdiff << " );\n" << endl;
+
+  cout << "-- Phi --" << endl;
   cout << "fNybin := " << fNybin << endl;
   cout << "fymin := " << fYmin << endl;
   cout << "fymax := " << fYmax << endl;
@@ -328,11 +339,17 @@ void AliL3HoughTransformerVhdl::PrintVhdl()
   for(Int_t i=0;i<fNPhi0-1;i++) cout << fLUTphi0[i] << ", ";
   cout << fLUTphi0[fNPhi0-1] << " );\n" << endl; 
 
+  cout << "\nfNLUT2sinphi0 := " << fNPhi0 << ";" << endl;
   cout << "fLUT2sinphi0 := (";
   for(Int_t i=0;i<fNPhi0-1;i++) cout << fLUT2sinphi0[i] << ", ";
   cout << fLUT2sinphi0[fNPhi0-1] << " );\n" << endl; 
 
+  cout << "\nfNLUT2cosphi0 := " << fNPhi0 << ";" << endl;
   cout << "fLUT2cosphi0 := (";
   for(Int_t i=0;i<fNPhi0;i++) cout << fLUT2cosphi0[i] << ", ";
   cout << fLUT2cosphi0[fNPhi0-1] << " );\n" << endl; 
+
+  //cout << "\nfEpsilon := " << fEpsilon << endl;
+  //cout << "\nfSinEpsilon := " << fSinEpsilon << endl;
+  //cout << "\nfCosEpsilon := " << fCosEpsilon << endl;
 }
