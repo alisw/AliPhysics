@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  1999/10/04 13:39:54  fca
+Correct array index problem
+
 Revision 1.15  1999/09/29 09:24:34  fca
 Introduction of the Copyright and cvs Log
 
@@ -858,7 +861,7 @@ void AliTPCv2::CreateGeometry()
   dm[7] = 50.;
   dm[8] = 76.;
 
-  dm[9] = -64.5;
+  dm[9] = 64.5;
   dm[10] = 50.;
   dm[11] = 76.;
 
