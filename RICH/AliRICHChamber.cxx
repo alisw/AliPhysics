@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.10  2001/02/23 17:21:17  jbarbosa
+  Re-definition of IntPH() to accomodate for wire sag effect.
+
   Revision 1.9  2001/02/13 20:15:34  jbarbosa
   Removed fNsec (number of cathodes - obsolete) related loops and calls.
 
@@ -189,9 +192,11 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
     if (res==kMip) {
 	qtot = fResponse->IntPH(eloss, newy);
 	nFp  = fResponse->FeedBackPhotons(global,qtot);
+	//printf("feedbacks:%d\n",nFp);
     } else if (res==kCerenkov) {
 	qtot = fResponse->IntPH(newy);
 	nFp  = fResponse->FeedBackPhotons(global,qtot);
+	//printf("feedbacks:%d\n",nFp);
     }
 
     //printf("Feedbacks:%d\n",nFp);
