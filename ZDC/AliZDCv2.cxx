@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2003/04/04 11:33:34  coppedis
+Bug in geometry corrected
+
 Revision 1.10  2003/03/25 14:18:30  coppedis
 Changes in ZDC geometry to avoid overlaps with other detectors
 
@@ -1239,9 +1242,9 @@ void AliZDCv2::StepManager()
       }
       else if(gMC->GetMedium() == fMedSensTDI) fpLostTDI += 1;
       gMC->StopTrack();
-      printf("\n      # of p lost in Inner Triplet = %d\n",fpLostIT);
-      printf("\n      # of p lost in D1  = %d\n",fpLostD1);
-      printf("\n      # of p lost in TDI = %d\n\n",fpLostTDI);
+      //printf("\n      # of p lost in Inner Triplet = %d\n",fpLostIT);
+      //printf("\n      # of p lost in D1  = %d\n",fpLostD1);
+      //printf("\n      # of p lost in TDI = %d\n\n",fpLostTDI);
     }
     return;
   }
@@ -1349,7 +1352,7 @@ void AliZDCv2::StepManager()
 	if(fNoShower==1){
 	  fpDetected += 1;
 	  gMC->StopTrack();
-	  printf("\n	# of detected p = %d\n\n",fpDetected);
+	  //printf("\n	# of detected p = %d\n\n",fpDetected);
 	  return;
 	}
       }
