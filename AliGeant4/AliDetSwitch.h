@@ -19,8 +19,7 @@ class AliDetSwitch
 {
   public:
     AliDetSwitch(G4String detName, G4int nofVersions, G4int defaultVersion,
-                 G4int pprVersion, AliModuleType modType = kDetector, 
-		 G4bool isStandalone = true);
+                 AliModuleType modType = kDetector, G4bool isStandalone = true);
     AliDetSwitch(const AliDetSwitch& right);
     virtual ~AliDetSwitch();
 
