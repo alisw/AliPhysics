@@ -123,7 +123,8 @@ LIBS := $(GLIBS) $(ROOTLIBS) $(SYSLIBS)
 #-------------------------------------------------------------------------------
 # default target
 
-default: aliroot
+default:
+	$(MAKE) aliroot
 
 #-------------------------------------------------------------------------------
 # Each module will add to these macros
