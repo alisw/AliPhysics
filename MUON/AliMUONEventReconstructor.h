@@ -15,14 +15,16 @@ class TFile;
 class TTree;
 
 // Constants which should be elsewhere ????
-const Int_t MAX_MUON_TRACKING_CHAMBERS = 10;
-const Int_t MAX_MUON_TRACKING_STATIONS = MAX_MUON_TRACKING_CHAMBERS / 2;
+const Int_t kMaxMuonTrackingChambers = 10;
+const Int_t kMaxMuonTrackingStations = kMaxMuonTrackingChambers / 2;
 
 class AliMUONEventReconstructor : public TObject {
 
  public:
   AliMUONEventReconstructor(void); // Constructor
   virtual ~AliMUONEventReconstructor(void); // Destructor
+  AliMUONEventReconstructor (const AliMUONEventReconstructor& Reconstructor); // copy constructor
+  AliMUONEventReconstructor& operator=(const AliMUONEventReconstructor& Reconstructor); // assignment operator
 
   // Parameters for event reconstruction: public methods
   // Get and Set, Set to defaults
@@ -63,15 +65,17 @@ class AliMUONEventReconstructor : public TObject {
   Double_t GetBendingMomentumFromImpactParam(Double_t ImpactParam);
   void EventReconstruct(void);
 
+ protected:
+
  private:
 
   // Parameters for event reconstruction
   Double_t fMinBendingMomentum; // minimum value (GeV/c) of momentum in bending plane
   Double_t fMaxSigma2Distance; // maximum square distance in units of the variance (maximum chi2)
-  Double_t fRMin[MAX_MUON_TRACKING_CHAMBERS]; // minimum radius (cm)
-  Double_t fRMax[MAX_MUON_TRACKING_CHAMBERS]; // maximum radius (cm)
-  Double_t fSegmentMaxDistBending[MAX_MUON_TRACKING_STATIONS]; // maximum distance (cm) for segments in bending plane
-  Double_t fSegmentMaxDistNonBending[MAX_MUON_TRACKING_STATIONS]; // maximum distance (cm) for segments in bending plane
+  Double_t fRMin[kMaxMuonTrackingChambers]; // minimum radius (cm)
+  Double_t fRMax[kMaxMuonTrackingChambers]; // maximum radius (cm)
+  Double_t fSegmentMaxDistBending[kMaxMuonTrackingStations]; // maximum distance (cm) for segments in bending plane
+  Double_t fSegmentMaxDistNonBending[kMaxMuonTrackingStations]; // maximum distance (cm) for segments in bending plane
   Double_t fBendingResolution; // chamber resolution (cm) in bending plane
   Double_t fNonBendingResolution; // chamber resolution (cm) in non bending plane
   Double_t fChamberThicknessInX0; // chamber thickness in number of radiation lengths
@@ -96,12 +100,12 @@ class AliMUONEventReconstructor : public TObject {
   TClonesArray *fHitsForRecPtr; // pointer to the array of hits for reconstruction
   Int_t fNHitsForRec; // number of hits for reconstruction
   // Information per chamber (should be in AliMUONChamber ????)
-  Int_t fNHitsForRecPerChamber[MAX_MUON_TRACKING_CHAMBERS]; // number of HitsForRec
-  Int_t fIndexOfFirstHitForRecPerChamber[MAX_MUON_TRACKING_CHAMBERS]; // index (0...) of first HitForRec
+  Int_t fNHitsForRecPerChamber[kMaxMuonTrackingChambers]; // number of HitsForRec
+  Int_t fIndexOfFirstHitForRecPerChamber[kMaxMuonTrackingChambers]; // index (0...) of first HitForRec
 
   // Segments inside a station
-  TClonesArray *fSegmentsPtr[MAX_MUON_TRACKING_STATIONS]; // array of pointers to the segments for each station
-  Int_t fNSegments[MAX_MUON_TRACKING_STATIONS]; // number of segments for each station
+  TClonesArray *fSegmentsPtr[kMaxMuonTrackingStations]; // array of pointers to the segments for each station
+  Int_t fNSegments[kMaxMuonTrackingStations]; // number of segments for each station
 
   // Tracks
   TClonesArray *fRecTracksPtr; // pointer to array of reconstructed tracks
@@ -125,8 +129,6 @@ class AliMUONEventReconstructor : public TObject {
   Int_t MakeTrackCandidatesWithOneSegmentAndOnePoint(AliMUONSegment *BegSegment);
   void MakeTrackCandidates(void);
   void FollowTracks(void);
-
- protected:
 
   ClassDef(AliMUONEventReconstructor, 1) // Class definition in ROOT context
     };

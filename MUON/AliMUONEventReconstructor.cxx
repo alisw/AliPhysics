@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/16 07:27:08  gosset
+To remove problem in running RuleChecker, like in MUON-dev
+
 Revision 1.1.2.5  2000/06/16 07:00:26  gosset
 To remove problem in running RuleChecker
 
@@ -80,24 +83,24 @@ void type_of_call reco_gufld(Double_t *Coor, Double_t *Field);
 }
 
 //************* Defaults parameters for reconstruction
-static const Double_t DefaultMinBendingMomentum = 3.0;
-static const Double_t DefaultMaxSigma2Distance = 16.0;
-static const Double_t DefaultBendingResolution = 0.01;
-static const Double_t DefaultNonBendingResolution = 0.144;
-static const Double_t DefaultChamberThicknessInX0 = 0.03;
+static const Double_t kDefaultMinBendingMomentum = 3.0;
+static const Double_t kDefaultMaxSigma2Distance = 16.0;
+static const Double_t kDefaultBendingResolution = 0.01;
+static const Double_t kDefaultNonBendingResolution = 0.144;
+static const Double_t kDefaultChamberThicknessInX0 = 0.03;
 // Simple magnetic field:
 // Value taken from macro MUONtracking.C: 0.7 T, hence 7 kG
 // Length and Position from reco_muon.F, with opposite sign:
 // Length = ZMAGEND-ZCOIL
 // Position = (ZMAGEND+ZCOIL)/2
 // to be ajusted differently from real magnetic field ????
-static const Double_t DefaultSimpleBValue = 7.0;
-static const Double_t DefaultSimpleBLength = 428.0;
-static const Double_t DefaultSimpleBPosition = 1019.0;
-static const Int_t DefaultRecGeantHits = 0;
-static const Double_t DefaultEfficiency = 0.95;
+static const Double_t kDefaultSimpleBValue = 7.0;
+static const Double_t kDefaultSimpleBLength = 428.0;
+static const Double_t kDefaultSimpleBPosition = 1019.0;
+static const Int_t kDefaultRecGeantHits = 0;
+static const Double_t kDefaultEfficiency = 0.95;
 
-static const Int_t DefaultPrintLevel = 0;
+static const Int_t kDefaultPrintLevel = 0;
 
 ClassImp(AliMUONEventReconstructor) // Class implementation in ROOT context
 
@@ -112,7 +115,7 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
   fNHitsForRec = 0; // really needed or GetEntriesFast sufficient ????
   // Memory allocation for the TClonesArray's of segments in stations
   // Is 2000 the right size ????
-  for (Int_t st = 0; st < MAX_MUON_TRACKING_STATIONS; st++) {
+  for (Int_t st = 0; st < kMaxMuonTrackingStations; st++) {
     fSegmentsPtr[st] = new TClonesArray("AliMUONSegment", 2000);
     fNSegments[st] = 0; // really needed or GetEntriesFast sufficient ????
   }
@@ -144,12 +147,23 @@ AliMUONEventReconstructor::AliMUONEventReconstructor(void)
   return;
 }
 
+AliMUONEventReconstructor::AliMUONEventReconstructor (const AliMUONEventReconstructor& Reconstructor)
+{
+  // Dummy copy constructor
+}
+
+AliMUONEventReconstructor & AliMUONEventReconstructor::operator=(const AliMUONEventReconstructor& Reconstructor)
+{
+  // Dummy assignment operator
+    return *this;
+}
+
   //__________________________________________________________________________
 AliMUONEventReconstructor::~AliMUONEventReconstructor(void)
 {
   // Destructor for class AliMUONEventReconstructor
   delete fHitsForRecPtr; // Correct destruction of everything ???? or delete [] ????
-  for (Int_t st = 0; st < MAX_MUON_TRACKING_STATIONS; st++)
+  for (Int_t st = 0; st < kMaxMuonTrackingStations; st++)
     delete fSegmentsPtr[st]; // Correct destruction of everything ????
   return;
 }
@@ -159,17 +173,17 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
 {
   // Set reconstruction parameters to default values
   // Would be much more convenient with a structure (or class) ????
-  fMinBendingMomentum = DefaultMinBendingMomentum;
-  fMaxSigma2Distance = DefaultMaxSigma2Distance;
+  fMinBendingMomentum = kDefaultMinBendingMomentum;
+  fMaxSigma2Distance = kDefaultMaxSigma2Distance;
 
-  AliMUON *MUON = (AliMUON*) gAlice->GetModule("MUON");
+  AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON");
   // ******** Parameters for making HitsForRec
   // minimum radius,
   // like in TRACKF_STAT:
   // 2 degrees for stations 1 and 2, or ch(0...) from 0 to 3;
   // 30 cm for stations 3 to 5, or ch(0...) from 4 to 9
-  for (Int_t ch = 0; ch < MAX_MUON_TRACKING_CHAMBERS; ch++) {
-    if (ch < 4) fRMin[ch] = TMath::Abs((&(MUON->Chamber(ch)))->Z()) *
+  for (Int_t ch = 0; ch < kMaxMuonTrackingChambers; ch++) {
+    if (ch < 4) fRMin[ch] = TMath::Abs((&(pMUON->Chamber(ch)))->Z()) *
 		  2.0 * TMath::Pi() / 180.0;
     else fRMin[ch] = 30.0;
   }
@@ -187,7 +201,7 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
   // Maximum distance in non bending plane
   // 5 * 0.22 just to remember the way it was made in TRACKF_STAT
   // SIGCUT*DYMAX(IZ)
-  for (Int_t st = 0; st < MAX_MUON_TRACKING_STATIONS; st++)
+  for (Int_t st = 0; st < kMaxMuonTrackingStations; st++)
     fSegmentMaxDistNonBending[st] = 5. * 0.22;
   // Maximum distance in bending plane
   // values from TRACKF_STAT corresponding to (J psi 20cm)
@@ -197,15 +211,15 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
   fSegmentMaxDistBending[3] = 6.0;
   fSegmentMaxDistBending[4] = 6.0;
   
-  fBendingResolution = DefaultBendingResolution;
-  fNonBendingResolution = DefaultNonBendingResolution;
-  fChamberThicknessInX0 = DefaultChamberThicknessInX0;
-  fSimpleBValue = DefaultSimpleBValue;
-  fSimpleBLength = DefaultSimpleBLength;
-  fSimpleBPosition = DefaultSimpleBPosition;
-  fRecGeantHits = DefaultRecGeantHits;
-  fEfficiency = DefaultEfficiency;
-  fPrintLevel = DefaultPrintLevel;
+  fBendingResolution = kDefaultBendingResolution;
+  fNonBendingResolution = kDefaultNonBendingResolution;
+  fChamberThicknessInX0 = kDefaultChamberThicknessInX0;
+  fSimpleBValue = kDefaultSimpleBValue;
+  fSimpleBLength = kDefaultSimpleBLength;
+  fSimpleBPosition = kDefaultSimpleBPosition;
+  fRecGeantHits = kDefaultRecGeantHits;
+  fEfficiency = kDefaultEfficiency;
+  fPrintLevel = kDefaultPrintLevel;
   return;
 }
 
@@ -350,7 +364,7 @@ void AliMUONEventReconstructor::ResetHitsForRec(void)
   // and the index of the first HitForRec per chamber
   if (fHitsForRecPtr) fHitsForRecPtr->Clear();
   fNHitsForRec = 0;
-  for (Int_t ch = 0; ch < MAX_MUON_TRACKING_CHAMBERS; ch++)
+  for (Int_t ch = 0; ch < kMaxMuonTrackingChambers; ch++)
     fNHitsForRecPerChamber[ch] = fIndexOfFirstHitForRecPerChamber[ch] = 0;
   return;
 }
@@ -360,7 +374,7 @@ void AliMUONEventReconstructor::ResetSegments(void)
 {
   // To reset the TClonesArray of segments and the number of Segments
   // for all stations
-  for (Int_t st = 0; st < MAX_MUON_TRACKING_STATIONS; st++) {
+  for (Int_t st = 0; st < kMaxMuonTrackingStations; st++) {
     if (fSegmentsPtr[st]) fSegmentsPtr[st]->Clear();
     fNSegments[st] = 0;
   }
@@ -403,14 +417,14 @@ void AliMUONEventReconstructor::MakeEventToBeReconstructed(void)
     // Security on MUON ????
     // TreeR assumed to be be "prepared" in calling function
     // by "MUON->GetTreeR(nev)" ????
-    TTree *TR = gAlice->TreeR();
-    AddHitsForRecFromRawClusters(TR);
+    TTree *treeR = gAlice->TreeR();
+    AddHitsForRecFromRawClusters(treeR);
     // No sorting: it is done automatically in the previous function
   }
   if (fPrintLevel >= 10) {
     cout << "end of MakeEventToBeReconstructed" << endl;
     cout << "NHitsForRec: " << fNHitsForRec << endl;
-    for (Int_t ch = 0; ch < MAX_MUON_TRACKING_CHAMBERS; ch++) {
+    for (Int_t ch = 0; ch < kMaxMuonTrackingChambers; ch++) {
       cout << "chamber(0...): " << ch
 	   << "  NHitsForRec: " << fNHitsForRecPerChamber[ch]
 	   << "  index(first HitForRec): " << fIndexOfFirstHitForRecPerChamber[ch]
@@ -434,7 +448,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromGEANT(TTree *TH)
   if (fPrintLevel >= 2)
     cout << "enter AddHitsForRecFromGEANT with TH: " << TH << endl;
   if (TH == NULL) return;
-  AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
+  AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   // Security on MUON ????
   // See whether it could be the same for signal and background ????
   // Loop over tracks in tree
@@ -446,9 +460,9 @@ void AliMUONEventReconstructor::AddHitsForRecFromGEANT(TTree *TH)
     TH->GetEvent(track);
     // Loop over hits
     Int_t hit = 0;
-    for (AliMUONHit* mHit = (AliMUONHit*) MUON->FirstHit(-1); 
+    for (AliMUONHit* mHit = (AliMUONHit*) pMUON->FirstHit(-1); 
 	 mHit;
-	 mHit = (AliMUONHit*) MUON->NextHit(), hit++) {
+	 mHit = (AliMUONHit*) pMUON->NextHit(), hit++) {
       NewHitForRecFromGEANT(mHit,track, hit, 1);
     } // end of hit loop
   } // end of track loop
@@ -498,7 +512,7 @@ AliMUONHitForRec* AliMUONEventReconstructor::NewHitForRecFromGEANT(AliMUONHit* H
   Double_t bendCoor, nonBendCoor, radius;
   Int_t chamber = Hit->fChamber - 1; // chamber(0...)
   // only in tracking chambers (fChamber starts at 1)
-  if (chamber >= MAX_MUON_TRACKING_CHAMBERS) return NULL;
+  if (chamber >= kMaxMuonTrackingChambers) return NULL;
   // only if hit is efficient (keep track for checking ????)
   if (gRandom->Rndm() > fEfficiency) return NULL;
   // only if radius between RMin and RMax
@@ -537,7 +551,7 @@ void AliMUONEventReconstructor::SortHitsForRecWithIncreasingChamber()
   // Update the information for HitsForRec per chamber too.
   Int_t ch, nhits, prevch;
   fHitsForRecPtr->Sort();
-  for (ch = 0; ch < MAX_MUON_TRACKING_CHAMBERS; ch++) {
+  for (ch = 0; ch < kMaxMuonTrackingChambers; ch++) {
     fNHitsForRecPerChamber[ch] = 0;
     fIndexOfFirstHitForRecPerChamber[ch] = 0;
   }
@@ -572,7 +586,7 @@ void AliMUONEventReconstructor::SortHitsForRecWithIncreasingChamber()
 //   AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
 //   // Security on MUON ????
 //   // Loop over tracking chambers
-//   for (Int_t ch = 0; ch < MAX_MUON_TRACKING_CHAMBERS; ch++) {
+//   for (Int_t ch = 0; ch < kMaxMuonTrackingChambers; ch++) {
 //     // number of HitsForRec to 0 for the chamber
 //     fNHitsForRecPerChamber[ch] = 0;
 //     // index of first HitForRec for the chamber
@@ -619,17 +633,17 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
   Int_t iclus, nclus;
   TClonesArray *rawclusters;
   if (fPrintLevel >= 1) cout << "enter AddHitsForRecFromRawClusters" << endl;
-  AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
+  AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   // Security on MUON ????
   // Loop over tracking chambers
-  for (Int_t ch = 0; ch < MAX_MUON_TRACKING_CHAMBERS; ch++) {
+  for (Int_t ch = 0; ch < kMaxMuonTrackingChambers; ch++) {
     // number of HitsForRec to 0 for the chamber
     fNHitsForRecPerChamber[ch] = 0;
     // index of first HitForRec for the chamber
     if (ch == 0) fIndexOfFirstHitForRecPerChamber[ch] = 0;
     else fIndexOfFirstHitForRecPerChamber[ch] = fNHitsForRec;
-    rawclusters = MUON->RawClustAddress(ch);
-    MUON->ResetRawClusters();
+    rawclusters = pMUON->RawClustAddress(ch);
+    pMUON->ResetRawClusters();
     TR->GetEvent((Int_t) (TR->GetEntries()) - 1); // to be checked ????
     nclus = (Int_t) (rawclusters->GetEntries());
     // Loop over (cathode correlated) raw clusters
@@ -649,7 +663,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
       hitForRec->SetHitNumber(iclus);
       // Z coordinate of the chamber (cm) with sign opposite to GEANT sign
       // could (should) be more exact from chamber geometry ???? 
-      hitForRec->SetZ(-(&(MUON->Chamber(ch)))->Z());
+      hitForRec->SetZ(-(&(pMUON->Chamber(ch)))->Z());
       if (fPrintLevel >= 10) {
 	cout << "chamber (0...): " << ch <<
 	  " raw cluster (0...): " << iclus << endl;
@@ -669,11 +683,11 @@ void AliMUONEventReconstructor::MakeSegments(void)
   if (fPrintLevel >= 1) cout << "enter MakeSegments" << endl;
   ResetSegments();
   // Loop over stations
-  for (Int_t st = 0; st < MAX_MUON_TRACKING_STATIONS; st++)
+  for (Int_t st = 0; st < kMaxMuonTrackingStations; st++)
     MakeSegmentsPerStation(st); 
   if (fPrintLevel >= 10) {
     cout << "end of MakeSegments" << endl;
-    for (Int_t st = 0; st < MAX_MUON_TRACKING_STATIONS; st++) {
+    for (Int_t st = 0; st < kMaxMuonTrackingStations; st++) {
       cout << "station(0...): " << st
 	   << "  Segments: " << fNSegments[st]
 	   << endl;
@@ -701,7 +715,7 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
   Bool_t last2st;
   Double_t bendingSlope, distBend, distNonBend, extBendCoor, extNonBendCoor,
     impactParam, maxImpactParam;
-  AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
+  AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   if (fPrintLevel >= 1)
     cout << "enter MakeSegmentsPerStation (0...) " << Station << endl;
   // first and second chambers (0...) in the station
@@ -719,7 +733,7 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
   // extrapolation factor from Z of first chamber to Z of second chamber
   // dZ to be changed to take into account fine structure of chambers ????
   Double_t extrapFact =
-    (&(MUON->Chamber(ch2)))->Z() / (&(MUON->Chamber(ch1)))->Z();
+    (&(pMUON->Chamber(ch2)))->Z() / (&(pMUON->Chamber(ch1)))->Z();
   // index for current segment
   Int_t segmentIndex = 0;
   // Loop over HitsForRec in the first chamber of the station
@@ -965,7 +979,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
   AliMUONTrackParam *trackParam1, trackParam[2];
   Int_t ch, chBestHit, iHit, iSegment, station, trackIndex;
   Double_t bestChi2, chi2, dZ1, dZ2, maxSigma2Distance, mcsFactor;
-  AliMUON *MUON = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
+  AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   maxSigma2Distance = 4. * fMaxSigma2Distance; // sigma2cut increased by 4 !!!!
   if (fPrintLevel >= 2)
     cout << "enter FollowTracks" << endl;
@@ -996,11 +1010,11 @@ void AliMUONEventReconstructor::FollowTracks(void)
       mcsFactor = 0.0136 * trackParam1->GetInverseBendingMomentum();
       mcsFactor	= fChamberThicknessInX0 * mcsFactor * mcsFactor;
       // Z difference from previous station
-      dZ1 = (&(MUON->Chamber(2 * station)))->Z() -
-	(&(MUON->Chamber(2 * station + 2)))->Z();
+      dZ1 = (&(pMUON->Chamber(2 * station)))->Z() -
+	(&(pMUON->Chamber(2 * station + 2)))->Z();
       // Z difference between the two previous stations
-      dZ2 = (&(MUON->Chamber(2 * station + 2)))->Z() -
-	(&(MUON->Chamber(2 * station + 4)))->Z();
+      dZ2 = (&(pMUON->Chamber(2 * station + 2)))->Z() -
+	(&(pMUON->Chamber(2 * station + 4)))->Z();
       extrapSegment->SetBendingCoorReso2(fBendingResolution);
       extrapSegment->SetNonBendingCoorReso2(fNonBendingResolution);
       extrapSegment->UpdateFromStationTrackParam(trackParam, mcsFactor, dZ1, dZ2);

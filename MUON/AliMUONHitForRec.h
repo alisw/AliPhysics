@@ -26,88 +26,88 @@ class AliMUONHitForRec : public TObject {
   AliMUONHitForRec(AliMUONRawCluster* RawCluster); // Constructor from raw cluster
 
   // Inline functions for Get and Set
-  inline Double_t  GetBendingCoor(void) {
+  Double_t GetBendingCoor(void) {
     // Get fBendingCoor
     return fBendingCoor;}
-  inline void  SetBendingCoor(Double_t BendingCoor) {
+  void SetBendingCoor(Double_t BendingCoor) {
     // Set fBendingCoor
     fBendingCoor = BendingCoor;}
-  inline Double_t  GetNonBendingCoor(void) {
+  Double_t GetNonBendingCoor(void) {
     // Get fNonBendingCoor
     return fNonBendingCoor;}
-  inline void  SetNonBendingCoor(Double_t NonBendingCoor) {
+  void SetNonBendingCoor(Double_t NonBendingCoor) {
     // Set fNonBendingCoor
     fNonBendingCoor = NonBendingCoor;}
-  inline Double_t  GetZ(void) {
+  Double_t GetZ(void) {
     // Get fZ
     return fZ;}
-  inline void  SetZ(Double_t Z) {
+  void SetZ(Double_t Z) {
     // Set fZ
     fZ = Z;}
-  inline Double_t  GetBendingReso2(void) {
+  Double_t GetBendingReso2(void) {
     // Get fBendingReso2
     return fBendingReso2;}
-  inline void  SetBendingReso2(Double_t BendingReso2) {
+  void SetBendingReso2(Double_t BendingReso2) {
     // Set fBendingReso2
     fBendingReso2 = BendingReso2;}
-  inline Double_t  GetNonBendingReso2(void) {
+  Double_t GetNonBendingReso2(void) {
     // Get fNonBendingReso2
     return fNonBendingReso2;}
-  inline void  SetNonBendingReso2(Double_t NonBendingReso2) {
+  void SetNonBendingReso2(Double_t NonBendingReso2) {
     // Set fNonBendingReso2
     fNonBendingReso2 = NonBendingReso2;}
-  inline Int_t  GetChamberNumber(void) {
+  Int_t GetChamberNumber(void) {
     // Get fChamberNumber
     return fChamberNumber;}
-  inline void  SetChamberNumber(Int_t ChamberNumber) {
+  void SetChamberNumber(Int_t ChamberNumber) {
     // Set fChamberNumber
     fChamberNumber = ChamberNumber;}
-  inline Int_t  GetHitNumber(void) {
+  Int_t GetHitNumber(void) {
     // Get fHitNumber
     return fHitNumber;}
-  inline void  SetHitNumber(Int_t HitNumber) {
+  void SetHitNumber(Int_t HitNumber) {
     // Set fHitNumber
     fHitNumber = HitNumber;}
-  inline Int_t  GetTHTrack(void) {
+  Int_t GetTHTrack(void) {
     // Get fTHTrack
     return fTHTrack;}
-  inline void  SetTHTrack(Int_t THTrack) {
+  void SetTHTrack(Int_t THTrack) {
     // Set fTHTrack
     fTHTrack = THTrack;}
-  inline Int_t  GetGeantSignal(void) {
+  Int_t GetGeantSignal(void) {
     // Get fGeantSignal
     return fGeantSignal;}
-  inline void  SetGeantSignal(Int_t GeantSignal) {
+  void SetGeantSignal(Int_t GeantSignal) {
     // Set fGeantSignal
     fGeantSignal = GeantSignal;}
-  inline Int_t  GetIndexOfFirstSegment(void) {
+  Int_t GetIndexOfFirstSegment(void) {
     // Get fIndexOfFirstSegment
     return fIndexOfFirstSegment;}
-  inline void  SetIndexOfFirstSegment(Int_t IndexOfFirstSegment) {
+  void SetIndexOfFirstSegment(Int_t IndexOfFirstSegment) {
     // Set fIndexOfFirstSegment
     fIndexOfFirstSegment = IndexOfFirstSegment;}
-  inline Int_t  GetNSegments(void) {
+  Int_t GetNSegments(void) {
     // Get fNSegments
     return fNSegments;}
-  inline void  SetNSegments(Int_t NSegments) {
+  void SetNSegments(Int_t NSegments) {
     // Set fNSegments
     fNSegments = NSegments;}
-  inline AliMUONTrackHit*  GetFirstTrackHitPtr(void) {
+  AliMUONTrackHit* GetFirstTrackHitPtr(void) {
     // Get fFirstTrackHitPtr
     return fFirstTrackHitPtr;}
-  inline void  SetFirstTrackHitPtr(AliMUONTrackHit* FirstTrackHitPtr) {
+  void SetFirstTrackHitPtr(AliMUONTrackHit* FirstTrackHitPtr) {
     // Set fFirstTrackHitPtr
-  fFirstTrackHitPtr = FirstTrackHitPtr;}
-  inline AliMUONTrackHit*  GetLastTrackHitPtr(void) {
+    fFirstTrackHitPtr = FirstTrackHitPtr;}
+  AliMUONTrackHit* GetLastTrackHitPtr(void) {
     // Get fLastTrackHitPtr
     return fLastTrackHitPtr;}
-  inline void  SetLastTrackHitPtr(AliMUONTrackHit* LastTrackHitPtr) {
+  void SetLastTrackHitPtr(AliMUONTrackHit* LastTrackHitPtr) {
     // Set fLastTrackHitPtr
     fLastTrackHitPtr = LastTrackHitPtr;}
-  inline Int_t  GetNTrackHits(void) {
+  Int_t GetNTrackHits(void) {
     // Get fNTrackHits
     return fNTrackHits;}
-  inline void  SetNTrackHits(Int_t NTrackHits) {
+  void SetNTrackHits(Int_t NTrackHits) {
     // Set fNTrackHits
     fNTrackHits = NTrackHits;}
 
