@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/17 13:38:59  morsch
+Protection against division by zero in EvaluateCrossSection() and KinematicSelection(..)     (FCA)
+
 Revision 1.8  2000/10/17 12:46:31  morsch
 Protect EvaluateCrossSections() against division by zero.
 
@@ -164,24 +167,29 @@ void AliGenHijing::Generate()
 	if (np == 0 ) continue;
 	Int_t i;
 	Int_t * newPos = new Int_t[np];
+
 	for (i = 0; i<np; i++) *(newPos+i)=i;
-	
+//
+//      First write parent particles
+//
+
 	for (i = 0; i<np; i++) {
 	    TParticle *  iparticle       = (TParticle *) particles->At(i);
-
-	    Bool_t  hasMother            =  (iparticle->GetFirstMother()   >=0);
 	    Bool_t  hasDaughter          =  (iparticle->GetFirstDaughter() >=0);
+// Is this a parent particle ?
+	    if (!hasDaughter) continue;
+//
+	    Bool_t  hasMother            =  (iparticle->GetFirstMother()   >=0);
 	    Bool_t  selected             =  kTRUE;
 	    Bool_t  hasSelectedDaughters =  kFALSE;
-
-
+	    
+	    
 	    kf        = iparticle->GetPdgCode();
 	    if (!fSelectAll) selected = KinematicSelection(iparticle)&&SelectFlavor(kf);
-	    if (hasDaughter && !selected) hasSelectedDaughters = DaughtersSelection(iparticle, particles);
+	    hasSelectedDaughters = DaughtersSelection(iparticle, particles);
 //
 // Put particle on the stack if it is either selected or it is the mother of at least one seleted particle
 //
-
 	    if (selected || hasSelectedDaughters) {
 		nc++;
 		ks        = iparticle->GetStatusCode();
@@ -197,19 +205,57 @@ void AliGenHijing::Generate()
 		    imo=iparticle->GetFirstMother();
 		    imo=*(newPos+imo);
 		}
-		
-//		printf("\n selected iparent %d %d %d \n",i, kf, imo);
-		if (hasDaughter) {
-		    gAlice->SetTrack(0,imo,kf,p,origin,polar,
-				     tof,"Primary",nt);
-		} else {
-		    gAlice->SetTrack(fTrackIt,imo,kf,p,origin,polar,
-				     tof,"Secondary",nt);
-		}
+// Put particle on the stack ... 
+		gAlice->SetTrack(0,imo,kf,p,origin,polar,
+				 tof,"Primary",nt);
+// ... and keep it there
+		gAlice->KeepTrack(nt);
+//
 		*(newPos+i)=nt;
 	    } // selected
-	} // particle loop 
+	} // particle loop parents
+//
+// Now write the final state particles
+//
+
+	for (i = 0; i<np; i++) {
+	    TParticle *  iparticle       = (TParticle *) particles->At(i);
+
+	    Bool_t  hasDaughter          =  (iparticle->GetFirstDaughter() >=0);		
+// Is this a final state particle ?
+	    if (hasDaughter) continue;
+//	    
+	    Bool_t  hasMother            =  (iparticle->GetFirstMother()   >=0);
+	    Bool_t  selected             =  kTRUE;
+	    kf        = iparticle->GetPdgCode();
+	    if (!fSelectAll) selected = KinematicSelection(iparticle)&&SelectFlavor(kf);
+//
+// Put particle on the stack if selected
+//
+	    if (selected) {
+		nc++;
+		ks        = iparticle->GetStatusCode();
+		p[0]=iparticle->Px();
+		p[1]=iparticle->Py();
+		p[2]=iparticle->Pz();
+		origin[0]=origin0[0]+iparticle->Vx()/10;
+		origin[1]=origin0[1]+iparticle->Vy()/10;
+		origin[2]=origin0[2]+iparticle->Vz()/10;
+		tof=kconv*iparticle->T();
+		imo=-1;
+		if (hasMother) {
+		    imo=iparticle->GetFirstMother();
+		    imo=*(newPos+imo);
+		}
+// Put particle on the stack
+		gAlice->SetTrack(fTrackIt,imo,kf,p,origin,polar,
+				 tof,"Secondary",nt);
+		*(newPos+i)=nt;
+	    } // selected
+	} // particle loop final state
+ 
 	delete newPos;
+
 	printf("\n I've put %i particles on the stack \n",nc);
 	if (nc > 0) {
 	    jev+=nc;
