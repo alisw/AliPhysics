@@ -30,11 +30,8 @@ class AliESDV0MI;
 class AliITStrackerMI : public AliTracker {
 public:
   AliITStrackerMI():AliTracker(){}
-  virtual ~AliITStrackerMI() {
-    delete[] fCoeficients;
-  }
-
   AliITStrackerMI(const AliITSgeom *geom);
+  ~AliITStrackerMI();
   AliCluster *GetCluster(Int_t index) const;
   AliITSclusterV2 *GetClusterLayer(Int_t layn, Int_t ncl) const
                         {return fgLayers[layn].GetCluster(ncl);}
@@ -54,6 +51,8 @@ public:
   void UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
   void GetNTeor(Int_t layer, const AliITSclusterV2* cl, Float_t theta, Float_t phi, Float_t &ny, Float_t &nz);
   Int_t  GetError(Int_t layer, const AliITSclusterV2*cl, Float_t theta, Float_t phi, Float_t expQ, Float_t &erry, Float_t &errz);
+
+  void  GetDCASigma(AliITStrackMI* track, Float_t & sigmarfi, Float_t &sigmaz);
   Double_t GetPredictedChi2MI(AliITStrackMI* track, const AliITSclusterV2 *cluster,Int_t layer);
   Int_t UpdateMI(AliITStrackMI* track, const AliITSclusterV2* cl,Double_t chi2,Int_t layer) const;
   class AliITSdetector { 
@@ -174,8 +173,8 @@ public:
 
 protected:
   void FindV0(AliESD *event);  //try to find V0
-  Double_t  TestV0(AliHelix *h1, AliHelix *h2, AliESDV0MI *vertex);  //try to find V0 - return DCA
-  Double_t  FindBestPair(Int_t esdtrack0, Int_t esdtrack1,AliESDV0MI *vertex);  // try to find best pair from the tree of track hyp.
+  Double_t  TestV0(AliHelix *h1, AliHelix *h2, AliESDV0MI *vertex, Double_t &rmin);  //try to find V0 - return DCA
+  Bool_t  FindBestPair(Int_t esdtrack0, Int_t esdtrack1,AliESDV0MI *vertex, Int_t &ibest0, Int_t &ibest1);  // try to find best pair from the tree of track hyp.
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   void CookLabel(AliITStrackMI *t,Float_t wrong) const;
   Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
@@ -219,12 +218,12 @@ protected:
   AliITStrackMI fBestTrack;              // "best" track 
   AliITStrackMI fTrackToFollow;          // followed track
   TObjArray     fTrackHypothesys;        // ! array with track hypothesys- ARRAY is the owner of tracks- MI
-  TObjArray     fV0Array;                // ! array of V0
+  TObjArray     fOriginal;               // ! array with seeds from the TPC
   Int_t         fBestTrackIndex[100000]; // ! index of the best track
   Int_t         fCurrentEsdTrack;        // ! current esd track           - MI
   Int_t fPass;                           // current pass through the data 
   Int_t fConstraint[2];                  // constraint flags
-
+  Bool_t fAfterV0;                       //indicates V0 founded
   Int_t fLayersNotToSkip[kMaxLayer];     // layer masks
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
   Float_t * fCoeficients;                //! working array with errors and mean cluser shape

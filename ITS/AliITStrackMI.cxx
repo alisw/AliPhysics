@@ -48,6 +48,7 @@ AliITStrackMI::AliITStrackMI():AliITStrackV2(),
     fExpQ=40;
     fdEdxMismatch=0;
     fChi22=0;
+    fGoldV0 = kFALSE;
 }
 
 //____________________________________________________________________________
@@ -69,7 +70,7 @@ AliITStrackV2(t,c) {
   fConstrain = kFALSE;
   fdEdxMismatch=0;
   fChi22 =0;
-
+  fGoldV0 = kFALSE;
   //if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
 
 }
@@ -93,9 +94,10 @@ AliITStrackMI::AliITStrackMI(const AliITStrackMI& t) : AliITStrackV2(t) {
   fFakeRatio = t.fFakeRatio;
   fdEdxMismatch = t.fdEdxMismatch;
   fChi22 = t.fChi22;
-
+  fGoldV0 = t.fGoldV0;;
 
   fD[0]=t.fD[0]; fD[1]=t.fD[1];
+  fDnorm[0] = t.fDnorm[0]; fDnorm[1]=t.fDnorm[1];
   fExpQ= t.fExpQ;
   for(Int_t i=0; i<6; i++) {
     fClIndex[i]= t.fClIndex[i]; fNy[i]=t.fNy[i]; fNz[i]=t.fNz[i]; fNormQ[i]=t.fNormQ[i]; fNormChi2[i] = t.fNormChi2[i];
@@ -296,3 +298,25 @@ Int_t AliITStrackMI::GetProlongationFast(Double_t alp, Double_t xk,Double_t &y, 
   return 1;
 }
 
+
+Bool_t AliITStrackMI::IsGoldPrimary()
+{
+  //
+  // Indicates gold pimary track
+  //
+  Bool_t isGold=kTRUE;
+  if (!fConstrain) return kFALSE;                // 
+  if (fNDeadZone+fNDeadZone<5.5) isGold =  kFALSE; // short track
+  //
+  if (fChi2/Float_t(fN)>2.){
+    if (fChi2MIP[0]+fNUsed>3.5) isGold = kFALSE;    
+  }
+  if (fChi2MIP[2]>4.5) isGold = kFALSE;         //back propagation chi2
+  //
+  if (fDnorm[0]>0&&fDnorm[1]>0){
+    const Float_t distcut2 =2.5*2.5;  //normalize distance  cut 
+    Float_t dist2 = fD[0]*fD[0]/(fDnorm[0]*fDnorm[0])+fD[1]*fD[1]/(fDnorm[1]*fDnorm[1]);  //normalize distance to the vertex (pools)
+    if (dist2>distcut2) isGold = kFALSE;
+  }
+  return isGold;
+}

@@ -64,14 +64,14 @@ public:
   Float_t GetSigmaZ(Int_t i) const {return fSigmaZ[i];}
 
   Double_t GetPredictedChi2MI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz) const;
- 
+  Bool_t IsGoldPrimary();
 protected:
 
   Float_t fNUsed;                          // number of shared clusters
   Float_t fNSkipped;                       // number of skipped clusters
   Float_t fNDeadZone;                     // number of clusters in dead zone
   Float_t fDeadZoneProbability;          // probability to cross dead zone
-  Bool_t fReconstructed;                 // reconstructed - accepted flag
+  Bool_t  fReconstructed;                 // reconstructed - accepted flag
   Float_t fChi2MIP[12];                   // MIP chi squres 
 
   Float_t fDy[12];           //dy in layer
@@ -81,6 +81,7 @@ protected:
   Float_t fNy[6];              //expected size of cluster
   Float_t fNz[6];              //expected size of cluster
   Float_t fD[2];            //distance to the vertex
+  Float_t fDnorm[2];        // normalized distance to the vertex
   Float_t fNormQ[6];        // normalized Q
   Float_t fExpQ;            // expected Q
   Float_t fNormChi2[6];     // normalized chi2 
@@ -88,7 +89,7 @@ protected:
   Float_t fdEdxMismatch;    
   Bool_t fConstrain;        //indication of the vertex constrain
   Int_t  fClIndex[6];       //cluster Index
-
+  Bool_t fGoldV0;           //corresponding gold V0 found
   ClassDef(AliITStrackMI,1)   //ITS reconstructed track
 };
 
