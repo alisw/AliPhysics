@@ -189,8 +189,9 @@ Double_t AliL3Track::GetCrossingAngle(Int_t padrow)
   tangent[1] = (xyz[0] - GetCenterX())/GetRadius();
   
   Double_t perp_padrow[2] = {1,0}; //locally in slice
-
+  
   Double_t cos_beta = fabs(tangent[0]*perp_padrow[0] + tangent[1]*perp_padrow[1]);
+  if(cos_beta > 1) cos_beta=1;
   return acos(cos_beta);
 }
 
