@@ -24,8 +24,8 @@ Int_t AliTPCFindTracks(Int_t eventn=1) {
      printf("Processing event %d\n",i);
      AliTPCtracker *tracker = new AliTPCtracker(par,i);
      Int_t rc=tracker->Clusters2Tracks(0,out);
+     delete tracker;
    }
-   delete tracker;
    timer.Stop(); timer.Print();
  
    in->Close();
