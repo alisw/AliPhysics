@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/07/11 11:12:34  fca
+Some syntax corrections for non standard HP aCC
+
 Revision 1.1  2000/07/10 13:58:01  fca
 New version of ZDC from E.Scomparin & C.Oppedisano
 
@@ -932,7 +935,7 @@ void AliZDCv1::StepManager()
   Int_t j;
 
   Int_t vol[2], ibeta, ialfa, ibe;
-  Float_t x[3], xdet[3], destep, hits[9], m, ekin, um[3], ud[3], be, radius, out;
+  Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, radius, out;
   TLorentzVector s, p;
   const char *knamed;
   
