@@ -132,7 +132,7 @@ public:
    void    GenerNoise(Int_t tablasize);  // make noise table
    Bool_t  IsSectorActive(Int_t sec);    // check if the sector is active
    void    SetActiveSectors(Int_t * sectors, Int_t n);  //set active sectors
-   void    SetActiveSectors(); //loop over al hits and set active only hitted sectors
+   void    SetActiveSectors(Int_t flag=0); //loop over al hits and set active only hitted sectors
 
 private:
   //

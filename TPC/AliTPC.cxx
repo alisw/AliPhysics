@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.55  2002/03/29 06:57:45  kowal2
+Restored backward compatibility to use the hits from Dec. 2000 production.
+
 Revision 1.54  2002/03/18 17:59:13  kowal2
 Chnges in the pad geometry - 3 pad lengths introduced.
 
@@ -923,7 +926,7 @@ void    AliTPC::SetActiveSectors(Int_t * sectors, Int_t n)
     
 }
 
-void    AliTPC::SetActiveSectors()
+void    AliTPC::SetActiveSectors(Int_t flag)
 {
   //
   // activate sectors which were hitted by tracks 
@@ -931,6 +934,10 @@ void    AliTPC::SetActiveSectors()
   if (fHitType==0) return;  // if Clones hit - not short volume ID information
   if (fActiveSectors) delete [] fActiveSectors;
   fActiveSectors = new Bool_t[fTPCParam->GetNSector()];
+  if (flag) {
+    for (Int_t i=0;i<fTPCParam->GetNSector();i++) fActiveSectors[i]=kTRUE;
+    return;
+  }
   for (Int_t i=0;i<fTPCParam->GetNSector();i++) fActiveSectors[i]=kFALSE;
   TBranch * branch=0;
   if (fHitType>1) branch = gAlice->TreeH()->GetBranch("TPC2");
@@ -1352,7 +1359,16 @@ void AliTPC::SDigits2Digits2(Int_t eventnumber)
   sprintf(dname,"TreeD_%s_%d",fTPCParam->GetTitle(),eventnumber);
 
   //conect tree with sSDigits
-  TTree *t = (TTree *)gDirectory->Get(sname); 
+  TTree *t;
+  if (gAlice->GetTreeDFile()) {
+    t = (TTree *)gAlice->GetTreeDFile()->Get(sname); 
+  } else {
+    t = (TTree *)gDirectory->Get(sname); 
+  }
+  if (!t) {
+    cerr<<"TPC tree with sdigits not found"<<endl;
+    return;
+  }
   AliSimDigits digarr, *dummy=&digarr;
   t->GetBranch("Segment")->SetAddress(&dummy);
   Stat_t nentries = t->GetEntries();
@@ -1370,7 +1386,12 @@ void AliTPC::SDigits2Digits2(Int_t eventnumber)
   AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
   arr->SetClass("AliSimDigits");
   arr->Setup(fTPCParam);
-  arr->MakeTree(fDigitsFile);
+// Note that methods arr->MakeTree have different signatures
+  if (gAlice->GetTreeDFile()) {
+    arr->MakeTree(gAlice->GetTreeDFile());
+  } else {
+    arr->MakeTree(fDigitsFile);
+  }
   
   AliTPCParam * par =fTPCParam;
 
@@ -1436,7 +1457,7 @@ void AliTPC::SDigits2Digits2(Int_t eventnumber)
 
   
   arr->GetTree()->SetName(dname);  
-  arr->GetTree()->Write();  
+  arr->GetTree()->AutoSave();  
   delete arr;
 }
 //_________________________________________
@@ -1642,7 +1663,12 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
   AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
   arr->SetClass("AliSimDigits");
   arr->Setup(fTPCParam);
-  arr->MakeTree(fDigitsFile);
+// Note that methods arr->MakeTree have different signatures
+  if (gAlice->GetTreeDFile()) {
+    arr->MakeTree(gAlice->GetTreeDFile());
+  } else {
+    arr->MakeTree(fDigitsFile);
+  }
   SetDigitsArray(arr);
 
   fDigitsSwitch=0; // standard digits
@@ -1658,7 +1684,7 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
   sprintf(treeName,"TreeD_%s_%d",fTPCParam->GetTitle(),eventnumber);
   
   GetDigitsArray()->GetTree()->SetName(treeName);  
-  GetDigitsArray()->GetTree()->Write();  
+  GetDigitsArray()->GetTree()->AutoSave();  
 
 
 }
@@ -1687,7 +1713,12 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
   AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
   arr->SetClass("AliSimDigits");
   arr->Setup(fTPCParam);
-  arr->MakeTree(fDigitsFile);
+// Note that methods arr->MakeTree have different signatures
+  if (gAlice->GetTreeSFile()) {
+    arr->MakeTree(gAlice->GetTreeSFile());
+  } else {
+    arr->MakeTree(fDigitsFile);
+  }
   SetDigitsArray(arr);
 
   cerr<<"Digitizing TPC -- summable digits...\n"; 
@@ -1708,7 +1739,7 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
   sprintf(treeName,"TreeS_%s_%d",fTPCParam->GetTitle(),eventnumber);
   
   GetDigitsArray()->GetTree()->SetName(treeName); 
-  GetDigitsArray()->GetTree()->Write(); 
+  GetDigitsArray()->GetTree()->AutoSave(); 
 
 }
 
@@ -1738,7 +1769,12 @@ void AliTPC::Hits2SDigits()
   AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
   arr->SetClass("AliSimDigits");
   arr->Setup(fTPCParam);
-  arr->MakeTree(fDigitsFile);
+// Note that methods arr->MakeTree have different signatures
+  if (gAlice->GetTreeSFile()) {
+    arr->MakeTree(gAlice->GetTreeSFile());
+  } else {
+    arr->MakeTree(fDigitsFile);
+  }
   SetDigitsArray(arr);
 
   cerr<<"Digitizing TPC -- summable digits...\n"; 
@@ -1754,7 +1790,7 @@ void AliTPC::Hits2SDigits()
   sprintf(treeName,"TreeD_%s_%d",fTPCParam->GetTitle(),eventnumber);
   
   GetDigitsArray()->GetTree()->SetName(treeName); 
-  GetDigitsArray()->GetTree()->Write(); 
+  GetDigitsArray()->GetTree()->AutoSave(); 
 
 }
 

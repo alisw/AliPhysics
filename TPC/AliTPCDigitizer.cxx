@@ -122,6 +122,11 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
     digarr[i1]=0;
     //    intree[i1]
     TTree * treear =  fManager->GetInputTreeTPCS(i1);
+    if (!treear) {
+      cerr<<"AliTPCDigitizer: Input tree with SDigits not found in"
+	  <<" input "<< i1<<endl;
+      return;
+    }
     if (treear->GetIndex()==0) 
       treear->BuildIndex("fSegmentID","fSegmentID");
     if (!treear) {      
