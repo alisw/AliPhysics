@@ -426,7 +426,7 @@ void AliEMCALClusterizerv1::MakeClusters()
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigit())) ) { // scan over the list of digitsC
     AliEMCALRecPoint * clu = 0 ; 
     
-    TArrayI clusterECAdigitslist(50);   
+    TArrayI clusterECAdigitslist(5000);   
  
     Bool_t inECA = kFALSE;
     if( geom->IsInECA(digit->GetId()) ) {
