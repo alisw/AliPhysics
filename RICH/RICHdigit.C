@@ -26,8 +26,12 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
   if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
       loadlibs();
-   }
-
+  }else {
+    delete gAlice;
+    gAlice = 0;
+  }
+  
+  galice=0;
 
 // Connect the Root Galice file containing Geometry, Kine and Hits
 
@@ -43,11 +47,6 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
 	gROOT->LoadMacro("loadlibs.C");
 	loadlibs();
     }
-    else {
-      //delete gAlice;
-      gAlice = 0;
-    }
-   
 
 
    if (!gAlice) {
@@ -73,7 +72,6 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
        iChamber->GenerateTresholds();
      }
    
-
 //
 // Event Loop
 //
@@ -83,7 +81,13 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
        cout << "Particles       :" <<nparticles<<endl;
        if (nev < evNumber1) continue;
        if (nparticles <= 0) return;
-       if (RICH) RICH->Digitise(nev, particle_type);
+       if (RICH) 
+	 {
+	   gAlice->MakeTree("D");
+	   RICH->MakeBranch("D");
+	   RICH->Digitise(nev, particle_type);
+	 }
+       //if (RICH) gAlice->SDigits2Digits("RICH");
        //char hname[30];
        //sprintf(hname,"TreeD%d",nev);
        //gAlice->TreeD()->Write(hname);
