@@ -25,6 +25,9 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
   fluka->SetYsco(ysco);
   fluka->SetZsco(zsco);
   fluka->SetMreg(mreg);
+  
+  Float_t edep = rull;
+  
   if (icode == 11) {
     if (debug) cout << " For icode=" << icode << " Stepping is NOT called" << endl;
     return;
@@ -38,22 +41,27 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
       if (cerenkov) {
 	  Double_t eff = (cerenkov->GetQuantumEfficiency(rull));
 	  if (gRandom->Rndm() > eff) {
-	      rull = 0.;
-	      fluka->SetRull(rull);
+	      edep = 0.;
 	  }
       }
   }
   if (debug) printf("endraw: Depositing energy for : %d %e icode: %d \n", TRACKR.ispusr[mkbmx2-1], rull, icode);
 
-  (TVirtualMCApplication::Instance())->Stepping();
+  if (icode != 21 && icode != 22) {
+      fluka->SetRull(edep);
+      (TVirtualMCApplication::Instance())->Stepping();
+  } else {
   //
   // for icode 21,22 the particle has fallen below thresshold 
   // This has to be signalled to the StepManager() 
   //
-  fluka->SetTrackIsNew(kFALSE);
-  fluka->SetIcode(icode);
-  (TVirtualMCApplication::Instance())->Stepping();
-
+      fluka->SetRull(0.);
+      (TVirtualMCApplication::Instance())->Stepping();
+      fluka->SetTrackIsNew(kFALSE);
+      fluka->SetIcode(icode);
+      fluka->SetRull(edep);
+      (TVirtualMCApplication::Instance())->Stepping();
+  }
 } // end of endraw
 } // end of extern "C"
 
