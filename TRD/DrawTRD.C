@@ -2,7 +2,7 @@
 {
    geant3->Gsatt("*", "seen", -1);
    geant3->Gsatt("alic", "seen", 0);
-   AliTRD *TRD = gAlice->GetDetector("TRD");
+   AliTRD *TRD = gAlice->GetModule("TRD");
    if      (TRD->IsVersion() == 0)
      gROOT->Macro("ViewTRD0.C");
    else if (TRD->IsVersion() == 1)
