@@ -40,6 +40,11 @@ class AliGenPythia : public AliGenMC
 	{fEtaMinJet = etamin; fEtaMaxJet = etamax;}
     virtual void    SetJetPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
 	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
+    virtual void    SetGammaEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
+	{fEtaMinGamma = etamin; fEtaMaxGamma = etamax;}
+    virtual void    SetGammaPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
+	{fPhiMinGamma = TMath::Pi()*phimin/180.; fPhiMaxGamma = TMath::Pi()*phimax/180.;}
+    
     // get cross section of process
     virtual Float_t GetXsection() {return fXsection;}      
     virtual void    FinishRun();
@@ -71,14 +76,19 @@ class AliGenPythia : public AliGenMC
     Int_t       fDebugEventLast;  //!Last  event to debug
     Float_t     fEtaMinJet;      // Minimum eta of triggered Jet
     Float_t     fEtaMaxJet;      // Maximum eta of triggered Jet
-    Float_t     fPhiMinJet;      // At least one of triggered Jets must be in this
-    Float_t     fPhiMaxJet;      // phi range
+    Float_t     fPhiMinJet;      // Minimum phi of triggered Jet
+    Float_t     fPhiMaxJet;      // Maximum phi of triggered Jet
+
+    Float_t     fEtaMinGamma;    // Minimum eta of triggered gamma
+    Float_t     fEtaMaxGamma;    // Maximum eta of triggered gamma
+    Float_t     fPhiMinGamma;    // Minimum phi of triggered gamma
+    Float_t     fPhiMaxGamma;    // Maximum phi of triggered gamma
 
  private:
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
 
-    ClassDef(AliGenPythia,1) // AliGenerator interface to Pythia
+    ClassDef(AliGenPythia,2) // AliGenerator interface to Pythia
 };
 #endif
 

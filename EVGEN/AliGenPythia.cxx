@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.47  2001/12/19 14:45:00  morsch
+Store number of trials in header.
+
 Revision 1.46  2001/12/19 10:36:19  morsch
 Add possibility if jet kinematic biasing.
 
@@ -236,11 +239,11 @@ void AliGenPythia::Init()
 	fFlavorSelect    = 4;
 	break;
     case kPyCharmUnforced:
-	fParentSelect[0] =  411;
-	fParentSelect[1] =  421;
-	fParentSelect[2] =  431;
-	fParentSelect[3]=  4122;
-	fFlavorSelect    = 4;	
+	fParentSelect[0] =   411;
+	fParentSelect[1] =   421;
+	fParentSelect[2] =   431;
+	fParentSelect[3] =  4122;
+	fFlavorSelect    =     4;	
 	break;
     case kPyBeauty:
 	fParentSelect[0]=  511;
@@ -480,7 +483,7 @@ Int_t  AliGenPythia::GenerateMB()
     Int_t np = fParticles->GetEntriesFast();
     Int_t* pParent = new Int_t[np];
     for (i=0; i< np-1; i++) pParent[i] = -1;
-    if (fProcess == kPyJets) {
+    if (fProcess == kPyJets || fProcess == kPyDirectGamma) {
 	TParticle* jet1 = (TParticle *) fParticles->At(6);
 	TParticle* jet2 = (TParticle *) fParticles->At(7);
 	if (!CheckTrigger(jet1, jet2)) return 0;
@@ -567,22 +570,50 @@ Bool_t AliGenPythia::CheckTrigger(TParticle* jet1, TParticle* jet2)
 {
 // Check the kinematic trigger condition
 //
-    Double_t eta1      = jet1->Eta();
-    Double_t eta2      = jet2->Eta();
-    Double_t phi1      = jet1->Phi();
-    Double_t phi2      = jet2->Phi();
+    Double_t eta[2];
+    eta[0] = jet1->Eta();
+    eta[1] = jet2->Eta();
+    Double_t phi[2];
+    phi[0] = jet1->Phi();
+    phi[1] = jet2->Phi();
+    Int_t    pdg[2]; 
+    pdg[0] = jet1->GetPdgCode();
+    pdg[1] = jet2->GetPdgCode();    
     Bool_t   triggered = kFALSE;
-    //Check eta range first...    
-    if ((eta1 < fEtaMaxJet && eta1 > fEtaMinJet) ||
-	(eta2 < fEtaMaxJet && eta2 > fEtaMinJet))
-    {
-	//Eta is okay, now check phi range
-        if ((phi1 < fPhiMaxJet && phi1 > fPhiMinJet) ||
-            (phi2 < fPhiMaxJet && phi2 > fPhiMinJet))
-        {
-	    triggered = kTRUE;
-        }
+
+    if (fProcess == kPyJets) {
+	//Check eta range first...
+	if ((eta[0] < fEtaMaxJet && eta[0] > fEtaMinJet) ||
+	    (eta[1] < fEtaMaxJet && eta[1] > fEtaMinJet))
+	{
+	    //Eta is okay, now check phi range
+	    if ((phi[0] < fPhiMaxJet && phi[0] > fPhiMinJet) ||
+		(phi[1] < fPhiMaxJet && phi[1] > fPhiMinJet))
+	    {
+		triggered = kTRUE;
+	    }
+	}
+    } else {
+	Int_t ij = 0;
+	Int_t ig = 1;
+	if (pdg[0] == kGamma) {
+	    ij = 1;
+	    ig = 0;
+	}
+	//Check eta range first...
+	if ((eta[ij] < fEtaMaxJet   && eta[ij] > fEtaMinJet) &&
+	    (eta[ig] < fEtaMaxGamma && eta[ig] > fEtaMinGamma))
+	{
+	    //Eta is okay, now check phi range
+	    if ((phi[ij] < fPhiMaxJet   && phi[ij] > fPhiMinJet) &&
+		(phi[ig] < fPhiMaxGamma && phi[ig] > fPhiMinGamma))
+	    {
+		triggered = kTRUE;
+	    }
+	}
     }
+    
+    
     return triggered;
 }
 	  
