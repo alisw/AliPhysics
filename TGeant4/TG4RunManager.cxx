@@ -9,7 +9,7 @@
 #include "TG4Globals.h"
 #include "TG4GeometryManager.h"
 #include "TG4PhysicsManager.h"
-//#include "TG4StepManager.h"
+#include "TG4G3PhysicsManager.h"
 
 #include <G4RunManager.hh>
 #include <G4UIsession.hh>
@@ -218,12 +218,16 @@ void TG4RunManager::Initialize()
 // Initializes G4.
 // ---
 
+  // create physics constructor
+  // (this operation has to precede the "Init" phase)
+  TG4PhysicsManager* physicsManager = TG4PhysicsManager::Instance();
+  physicsManager->CreatePhysicsConstructors();
+
   // initialize Geant4 
   fRunManager->Initialize();
   
   // activate/inactivate physics processes
   // (this operation is not allowed in "Init" phase)
-  TG4PhysicsManager* physicsManager = TG4PhysicsManager::Instance();
   physicsManager->SetProcessActivation();
 }
 
@@ -323,8 +327,8 @@ void TG4RunManager::UseG3Defaults()
 // ---
 
   TG4GeometryManager::Instance()->UseG3TrackingMediaLimits();
-  TG4PhysicsManager::Instance()->SetG3DefaultCuts();
-  TG4PhysicsManager::Instance()->SetG3DefaultProcesses();
+  TG4G3PhysicsManager::Instance()->SetG3DefaultCuts();
+  TG4G3PhysicsManager::Instance()->SetG3DefaultControls();
 }
 
 Int_t TG4RunManager::CurrentEvent() const
