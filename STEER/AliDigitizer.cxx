@@ -23,6 +23,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/11/14 14:50:33  jchudoba
+Pass custom name and title to the TTask base class
+
 Revision 1.2  2001/10/04 15:56:34  jchudoba
 TTask inheritance
 
@@ -65,3 +68,14 @@ AliDigitizer::AliDigitizer(AliRunDigitizer *manager,
 
 
 AliDigitizer::~AliDigitizer() {;}
+////////////////////////////////////////////////////////////////////////
+Int_t AliDigitizer::GetNInputStreams() const
+{
+//
+// return number of input streams
+//
+  Int_t nInputStreams = 0 ;
+  if (fManager)
+    nInputStreams = fManager->GetNinputs() ;
+  return nInputStreams ; 
+}
