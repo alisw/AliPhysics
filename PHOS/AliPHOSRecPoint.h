@@ -7,20 +7,19 @@
 //  A recpoint being equivalent to a cluster in encal terminology                 
 //*-- Author: Gines Martinez (SUBATECH)
 
-#include <assert.h>
 
 // --- ROOT system ---
 
-#include "TMarker.h"
-#include "TGraph.h"
-#include "TPaveText.h"
+//#include "TMarker.h"
+//#include "TGraph.h"
+//#include "TPaveText.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
 #include "AliRecPoint.h"
-#include "AliPHOSDigit.h"
+  class AliPHOSDigit ;
 
 class AliPHOSRecPoint : public AliRecPoint {
 
@@ -30,18 +29,14 @@ class AliPHOSRecPoint : public AliRecPoint {
 
   AliPHOSRecPoint() ;                   // ctor         
   AliPHOSRecPoint(const char * opt) ;   // ctor 
-  AliPHOSRecPoint(const AliPHOSRecPoint & rp) {
-    // cpy ctor requested by Coding Convention 
-    // but not yet needed
-    assert(0==1) ; 
-  } 
+  AliPHOSRecPoint(const AliPHOSRecPoint & rp) ; //cpy ctor
   
   virtual ~AliPHOSRecPoint(){
     // dtor
   }
   virtual  void   AddDigit(AliDigitNew &){
     // do not use this definition but the one below
-    assert(0==1) ; 
+    Fatal("AddDigit", "use  AddDigit(AliPHOSDigit & digit, Float_t Energy)") ; 
   }
   virtual  void   AddDigit(AliPHOSDigit & digit, Float_t Energy) = 0 ; 
   virtual Int_t   Compare(const TObject * obj) const = 0 ;   
@@ -65,11 +60,7 @@ class AliPHOSRecPoint : public AliRecPoint {
     // Print prototype
   } 
 
-  AliPHOSRecPoint & operator = (const AliPHOSRecPoint & )  {
-    // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
-    return *this ; 
-  }
+  AliPHOSRecPoint & operator = (const AliPHOSRecPoint & )  { return *this ; }
 
 protected:
   

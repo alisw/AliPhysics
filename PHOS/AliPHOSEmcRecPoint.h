@@ -29,11 +29,7 @@ public:
 
   AliPHOSEmcRecPoint() ;
   AliPHOSEmcRecPoint(const char * opt) ;
-  AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) {
-    // cpy ctor requested by Coding Convention 
-    // but not yet needed
-    assert(0==1) ; 
-  } 
+  AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) ; 
  
   virtual ~AliPHOSEmcRecPoint() ;  
 
@@ -68,11 +64,7 @@ public:
   void        Print(Option_t * opt = "void")const ; 
   void        Purify(Float_t threshold) ;                          //Removes digits below threshold
 
-  AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & rvalue)  {
-    // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
-    return *this ; 
-  }
+  AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & rvalue)  { return *this ; }
 
  protected:
           void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             

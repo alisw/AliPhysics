@@ -27,6 +27,7 @@
 #include "TH2.h"
 #include "TMath.h" 
 #include "TCanvas.h" 
+#include "TGraph.h"
 
 // --- Standard library ---
 
@@ -68,6 +69,22 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const char * opt) : AliPHOSRecPoint(opt)
   fTime = -1. ;
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
   
+}
+
+//____________________________________________________________________________
+AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) : AliPHOSRecPoint(rp)
+{
+  // cpy ctor
+
+  fMulDigit   = rp.fMulDigit ;  
+  fAmp        = rp.fAmp ;   
+  fCoreEnergy = rp.fCoreEnergy ; 
+  fEnergyList = new Float_t[rp.fMulDigit] ;
+  Int_t index ; 
+  for(index = 0 ; index < fMulDigit ; index++) 
+    fEnergyList[index] = rp.fEnergyList[index] ; 
+  fNExMax     = rp.fNExMax ;  
+  fTime       = rp.fTime ;   
 }
 
 //____________________________________________________________________________

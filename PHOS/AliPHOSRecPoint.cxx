@@ -23,6 +23,8 @@
 // --- ROOT system ---
 #include "TPad.h"
 #include "TClonesArray.h"
+#include "TGraph.h"
+#include "TPaveText.h"
 
 // --- Standard library ---
 
@@ -54,6 +56,16 @@ AliPHOSRecPoint::AliPHOSRecPoint(const char * opt) : AliRecPoint(opt)
   
   fMaxTrack = 200 ;
   fPHOSMod = 0;
+  
+}
+
+//____________________________________________________________________________
+AliPHOSRecPoint::AliPHOSRecPoint(const AliPHOSRecPoint & rp ) : AliRecPoint(rp)
+{
+  // cpy ctor
+  
+  fMaxTrack = rp.fMaxTrack;
+  fPHOSMod = rp.fPHOSMod;
   
 }
 

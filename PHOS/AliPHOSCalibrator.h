@@ -13,7 +13,7 @@
 // --- ROOT system ---
 #include "TTask.h"
 #include "TObjArray.h"
-class TH1F ; 
+#include "TH1F.h"  
 
 // --- Standard library ---
 
