@@ -79,7 +79,7 @@ class AliITStrackerSA : public AliITStrackerV2 {
               Int_t gl17, Int_t gl18, Int_t numberofpoints=6);
  
   Int_t SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, 
-                       AliITStrackSA* trs,Double_t zvertex,Int_t flagp, AliITSclusterTable* table); 
+                       AliITStrackSA* trs,Double_t zvertex,Int_t flagp); 
  
   Double_t fPhiEstimate; //Estimation of phi angle on next layer
   Float_t fPoint1[2];   //! coord. of 1-st point to evaluate the curvature

@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -264,15 +263,15 @@ void AliITStrackerSA::FindTracks(TTree *out,Int_t evnumber){
       
       Int_t * nn = new Int_t[fGeom->GetNlayers()];//counter for clusters on each layer
       for(Int_t i=0;i<fGeom->GetNlayers();i++){ nn[i]=0;}
-      nn[0] = SearchClusters(0,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable);
-      nn[1] = SearchClusters(1,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable);
+      nn[0] = SearchClusters(0,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag);
+      nn[1] = SearchClusters(1,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag);
 
       if(nn[1]>0){
         pflag=1;
         fPoint3[0] = fPointc[0];
         fPoint3[1] = fPointc[1];
       }
-      nn[2] = SearchClusters(2,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable);
+      nn[2] = SearchClusters(2,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag);
       if(nn[1]==0 && nn[2]==0) pflag=0;
       if(nn[2]!=0 && nn[1]!=0){ pflag=1; UpdatePoints();}
       if(nn[2]!=0 && nn[1]==0){
@@ -281,13 +280,13 @@ void AliITStrackerSA::FindTracks(TTree *out,Int_t evnumber){
         fPoint3[1]=fPointc[1];
       }
 
-      nn[3] = SearchClusters(3,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable);
+      nn[3] = SearchClusters(3,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag);
       pflag=1;
       if(nn[3]!=0) UpdatePoints();
-      nn[4] = SearchClusters(4,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable); 
+      nn[4] = SearchClusters(4,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag); 
       pflag=1;
       if(nn[4]!=0) UpdatePoints();
-      nn[5] = SearchClusters(5,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable); 
+      nn[5] = SearchClusters(5,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag); 
           
 
       Int_t layOK=0;
@@ -363,7 +362,7 @@ void AliITStrackerSA::FindTracks(TTree *out,Int_t evnumber){
         for(Int_t kk=0;kk<fGeom->GetNlayers()-1;kk++)nn[kk] = 0;
         for(Int_t kk=0;kk<fGeom->GetNlayers()-1;kk++){
           nn[kk] = SearchClusters(kk+1,fPhiWin[nloop],fLambdaWin[nloop],
-                   trs,primaryVertex[2],pflag,fTable);
+                   trs,primaryVertex[2],pflag);
           if(nn[kk]==0)break;
           if(kk>0){
             UpdatePoints();
@@ -465,9 +464,13 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
       if(cl==0) continue;
       if(cl->IsUsed()==1) continue;
       if(cl->TestBit(kSAflag)==kTRUE) continue;
+      if (cl->GetQ()<=0) continue;
       
       fPhic = fTable->GetPhiCluster(0,ncl);
       fLambdac = fTable->GetLambdaCluster(0,ncl);
+
+      if (TMath::Abs(fLambdac)>0.26*TMath::Pi()) continue;
+
       fPhiEstimate = fPhic;
       AliITStrackSA* trs = new AliITStrackSA();      
       fPoint1[0]=primaryVertex[0];
@@ -476,15 +479,15 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
       fPoint2[1]=fTable->GetYCluster(0,ncl);
       Int_t * nn = new Int_t[fGeom->GetNlayers()];//counter for clusters on each layer
       for(Int_t i=0;i<fGeom->GetNlayers();i++){ nn[i]=0;}
-      nn[0] = SearchClusters(0,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable);
+      nn[0] = SearchClusters(0,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag);
           
-      nn[1] = SearchClusters(1,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable);
+      nn[1] = SearchClusters(1,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag);
       if(nn[1]>0){
         pflag=1;
         fPoint3[0] = fPointc[0];
         fPoint3[1] = fPointc[1];
       }
-      nn[2] = SearchClusters(2,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable);
+      nn[2] = SearchClusters(2,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag);
       if(nn[1]==0 && nn[2]==0) pflag=0;
       if(nn[2]!=0 && nn[1]!=0){ pflag=1; UpdatePoints();}
       if(nn[2]!=0 && nn[1]==0){
@@ -493,13 +496,13 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
         fPoint3[1]=fPointc[1];
       }
 
-      nn[3] = SearchClusters(3,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable);
+      nn[3] = SearchClusters(3,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag);
       pflag=1;
       if(nn[3]!=0) UpdatePoints();
-      nn[4] = SearchClusters(4,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable); 
+      nn[4] = SearchClusters(4,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag); 
       pflag=1;
       if(nn[4]!=0) UpdatePoints();
-      nn[5] = SearchClusters(5,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag,fTable); 
+      nn[5] = SearchClusters(5,fPhiWin[nloop],fLambdaWin[nloop],trs,primaryVertex[2],pflag); 
           
 
       Int_t layOK=0;
@@ -580,7 +583,7 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
         for(Int_t kk=0;kk<fGeom->GetNlayers()-1;kk++)nn[kk] = 0;
         for(Int_t kk=0;kk<fGeom->GetNlayers()-1;kk++){
           nn[kk] = SearchClusters(kk+1,fPhiWin[nloop],fLambdaWin[nloop],
-                   trs,primaryVertex[2],pflag,fTable);
+                   trs,primaryVertex[2],pflag);
           if(nn[kk]==0)break;
           if(kk>0){
             UpdatePoints();
@@ -976,8 +979,9 @@ void AliITStrackerSA::UseFoundTracksV2(AliESD *event){
 
 }
 
+/*
 //_______________________________________________________
-Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, AliITStrackSA* trs,Double_t zvertex,Int_t pflag,AliITSclusterTable* table){
+Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, AliITStrackSA* trs,Double_t zvertex,Int_t pflag){
   //function used to to find the clusters associated to the track
   Int_t nc=0;
   AliITSlayer &lay = fgLayers[layer];
@@ -1024,7 +1028,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
 
 
   Int_t nn=0;
-  TArrayI* array =(TArrayI*)table->GetListOfClusters(nmod);
+  TArrayI* array =(TArrayI*)fTable->GetListOfClusters(nmod);
   TArrayI* listc = new TArrayI(array->GetSize());
   for(Int_t i=0;i<array->GetSize();i++){
     Int_t in=(Int_t)array->At(i);
@@ -1050,7 +1054,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
  
   for(Int_t ii=0;ii<8;ii++){
     if(nm[ii]!=value && nm[ii]!=nmod && nm[ii]>=0){
-      TArrayI* ar =(TArrayI*)table->GetListOfClusters(nm[ii]+firstmod[layer]);
+      TArrayI* ar =(TArrayI*)fTable->GetListOfClusters(nm[ii]+firstmod[layer]);
       listc->Set(listc->GetSize()+ar->GetSize());
       for(Int_t j=0;j<ar->GetSize();j++){
 	Int_t in=(Int_t)ar->At(j);
@@ -1093,7 +1097,56 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
   return nc;
 
 }
+*/
 
+
+//_______________________________________________________
+Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, AliITStrackSA* trs,Double_t zvertex,Int_t pflag){
+  //function used to to find the clusters associated to the track
+  Int_t nc=0;
+  AliITSlayer &lay = fgLayers[layer];
+  Double_t r=lay.GetR(),tgl=TMath::Tan(fLambdac);
+
+  if(pflag==1){      
+    Float_t cx1,cx2,cy1,cy2;
+    FindEquation(fPoint1[0],fPoint1[1],fPoint2[0],fPoint2[1],fPoint3[0],fPoint3[1],fCoef1,fCoef2,fCoef3);
+    if (FindIntersection(fCoef1,fCoef2,fCoef3,-r*r,cx1,cy1,cx2,cy2)==0)
+       return 0;
+    Double_t fi1=TMath::ATan2(cy1,cx1);
+    Double_t fi2=TMath::ATan2(cy2,cx2);
+    fPhiEstimate=ChoosePoint(fi1,fi2,fPhic);
+  }
+
+  Double_t dz=r*lambdawindow*TMath::Sqrt(1+tgl*tgl) + 0.3*TMath::Abs(tgl);
+  Double_t zmax=r*tgl + zvertex + dz;
+  Double_t zmin=r*tgl + zvertex - dz;
+
+  Int_t ncl=lay.GetNumberOfClusters();
+  for (Int_t index=lay.FindClusterIndex(zmin); index<ncl; index++) {
+     AliITSclusterV2 *c=lay.GetCluster(index);
+     if (c->IsUsed()) continue;
+     if (c->GetQ()<=0) continue;
+     if (c->TestBit(kSAflag)==kTRUE) continue;
+     if (c->GetZ() > zmax) break;
+     Double_t phi   =fTable->GetPhiCluster(layer,index);
+     Double_t lambda=fTable->GetLambdaCluster(layer,index);
+
+     if (TMath::Abs(phi-fPhiEstimate)>phiwindow) continue;
+     if (TMath::Abs(lambda-fLambdac)>lambdawindow) continue;
+
+     if(trs->GetNumberOfClustersSA()==15) return 0;
+
+     trs->AddClusterSA(layer,index);
+     nc++;
+     fLambdac=lambda;
+     fPhiEstimate=phi;
+     fPointc[0]=fTable->GetXCluster(layer,index);
+     fPointc[1]=fTable->GetYCluster(layer,index);
+
+     c->SetBit(kSAflag);
+  }
+  return nc;
+}
 
 
 //________________________________________________________________
