@@ -72,7 +72,8 @@ class AliHBTAnalysis: public AliAnalysis
      void SetReader(AliReader* r){fReader = r;}
      
      void WriteFunctions();
-     
+     void SetOutputFileName(const char* fname);
+          
      void SetBufferSize(Int_t buffsize){fBufferSize=buffsize;}
      void SetOwner(Bool_t owner=kTRUE){fIsOwner=owner;}
      Bool_t IsOwner() const {return fIsOwner;}
@@ -156,6 +157,7 @@ class AliHBTAnalysis: public AliAnalysis
      
      EProcessOption  fProcessOption;//Option that says waht analysis to do (Rec, Sim or SimAndRec)
      Bool_t          fNoCorrfctns;//Internal flag indicating that no cfs are set by the user (only monitor ones)
+     TString*        fOutputFileName;//Fiele name where to dump results, if not specified reults are written to gDirectory
      
    private:
    

@@ -20,6 +20,9 @@
 //_________________________________________________________
 
 
+#include <TSystem.h>
+#include <TFile.h>
+
 #include "AliAOD.h"
 #include "AliAODParticle.h"
 #include "AliAODPairCut.h"
@@ -31,7 +34,6 @@
 #include "AliHBTFunction.h"
 #include "AliHBTMonitorFunction.h"
  
-#include <TSystem.h>
 
 ClassImp(AliHBTAnalysis)
 
@@ -62,6 +64,7 @@ AliHBTAnalysis::AliHBTAnalysis():
   fTrackBuffer(0x0),
   fProcessOption(kSimulatedAndReconstructed),
   fNoCorrfctns(kFALSE),
+  fOutputFileName(0x0),
   fkPass(&AliHBTAnalysis::PassPartAndTrack), //by default perform cut on both track and particle pair 
   fkPass1(&AliHBTAnalysis::PassPartAndTrack1), //used onluy by ProcessTracksAndParticles
   fkPass2(&AliHBTAnalysis::PassPartAndTrack2),
@@ -96,6 +99,7 @@ AliHBTAnalysis::AliHBTAnalysis(const AliHBTAnalysis& in):
   fTrackBuffer(0x0),
   fProcessOption(kSimulatedAndReconstructed),
   fNoCorrfctns(kFALSE),
+  fOutputFileName(0x0),
   fkPass(&AliHBTAnalysis::PassPartAndTrack), //by default perform cut on both track and particle pair 
   fkPass1(&AliHBTAnalysis::PassPartAndTrack1),
   fkPass2(&AliHBTAnalysis::PassPartAndTrack2),
@@ -134,6 +138,7 @@ AliHBTAnalysis::~AliHBTAnalysis()
    delete [] fParticleAndTrackMonitorFunctions;
 
    delete fPairCut; // always have an copy of an object - we create we dstroy
+   delete fOutputFileName;
  }
 
 /*************************************************************************************/ 
@@ -1258,6 +1263,11 @@ void AliHBTAnalysis::WriteFunctions()
 {
 //Calls Write for all defined functions in analysis
 //== writes all results
+  TFile* oututfile = 0x0;
+  if (fOutputFileName)
+   {
+     oututfile = TFile::Open(*fOutputFileName,"update");
+   }
   UInt_t ii;
   for(ii = 0;ii<fNParticleFunctions;ii++)
    {
@@ -1318,6 +1328,28 @@ void AliHBTAnalysis::WriteFunctions()
       }
      fParticleAndTrackMonitorFunctions[ii]->Write();
    }
+  delete oututfile; 
+}
+/*************************************************************************************/
+
+void AliHBTAnalysis::SetOutputFileName(const char* fname)
+{
+  //Sets fiele name where to dump results, 
+  //if not specified reults are written to gDirectory
+  if (fname == 0x0)
+   {
+     delete fOutputFileName;
+     fOutputFileName = 0x0;
+     return;
+   }
+  if ( strcmp(fname,"") == 0 ) 
+   {
+     delete fOutputFileName;
+     fOutputFileName = 0x0;
+     return;
+   }
+  if (fOutputFileName == 0x0) fOutputFileName = new TString(fname);
+  else *fOutputFileName = fname;
 }
 /*************************************************************************************/
 
