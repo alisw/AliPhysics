@@ -2062,7 +2062,7 @@ void AliMUONClusterFinderVS::AddRawCluster(const AliMUONRawCluster c)
   // Add a raw cluster copy to the list
   //
     AliMUON *pMUON=(AliMUON*)gAlice->GetModule("MUON");
-    pMUON->AddRawCluster(fInput->Chamber(),c); 
+    pMUON->GetMUONData()->AddRawCluster(fInput->Chamber(),c); 
     fNRawClusters++;
 //    if (fDebugLevel)
 	fprintf(stderr,"\nfNRawClusters %d\n",fNRawClusters);

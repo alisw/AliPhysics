@@ -778,7 +778,7 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     AliSegmentation*      segmentation;
     AliMUONResponse*      response;
 
-    TClonesArray *muonDigits  = pMUON->DigitsAddress(chamber-1);
+    TClonesArray *muonDigits  = pMUON->GetMUONData()->Digits(chamber-1,0);
     if (muonDigits == 0) return;
 
 //     gAlice->ResetDigits();
@@ -889,7 +889,7 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
     AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
     AliMUONChamber*  iChamber;
     
-    TClonesArray *muonRawClusters  = pMUON->RawClustAddress(chamber-1);
+    TClonesArray *muonRawClusters  = pMUON->GetMUONData()->RawClusters(chamber-1);
     if (muonRawClusters == 0) return;
 
 //     pMUON->ResetRawClusters();

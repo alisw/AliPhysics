@@ -42,7 +42,7 @@ AliMUONSegmentationSlatModuleN::AliMUONSegmentationSlatModuleN(Int_t nsec)
 }
 
 
-Float_t AliMUONSegmentationSlatModuleN::Dpx(Int_t isec) const
+Float_t AliMUONSegmentationSlatModuleN::Dpx(Int_t /*isec*/) const
 {
 //
 // Returns x-pad size for given sector isec

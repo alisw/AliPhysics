@@ -733,7 +733,7 @@ void AliMUONEventReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
     // index of first HitForRec for the chamber
     if (ch == 0) fIndexOfFirstHitForRecPerChamber[ch] = 0;
     else fIndexOfFirstHitForRecPerChamber[ch] = fNHitsForRec;
-    rawclusters = pMUON->RawClustAddress(ch);
+    rawclusters = pMUON->GetMUONData()->RawClusters(ch);
 //     pMUON->ResetRawClusters();
 //     TR->GetEvent((Int_t) (TR->GetEntries()) - 1); // to be checked ????
     nclus = (Int_t) (rawclusters->GetEntries());

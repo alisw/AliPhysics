@@ -147,7 +147,7 @@ newev:
 newchamber:
   if (ch > 9) {if (fReco) return; nev++; ch = 0; goto newev;}
   //gAlice->ResetDigits();
-  fMuonDigits  = MUON->DigitsAddress(ch);
+  fMuonDigits  = MUON->GetMUONData()->Digits(ch,0);
   if (fMuonDigits == 0) return;
   iChamber = &(MUON->Chamber(ch));
   fSegmentation[0] = iChamber->SegmentationModel(1);
@@ -185,7 +185,7 @@ next:
     Int_t cath = TMath::Odd(iii);
     gAlice->ResetDigits();
     TD->GetEvent(cath);
-    fMuonDigits  = MUON->DigitsAddress(ch);
+    fMuonDigits  = MUON->GetMUONData()->Digits(ch,0);
 
     ndigits[cath] = fMuonDigits->GetEntriesFast();
     if (!ndigits[0] && !ndigits[1]) {if (fReco) return; ch++; goto newchamber;}
@@ -432,7 +432,7 @@ next:
   } // for (Int_t i=0; i<ntracks;
 
   // Draw reconstructed coordinates
-  MUONrawclust = MUON->RawClustAddress(ch);
+  MUONrawclust = MUON->GetMUONData()->RawClusters(ch);
   TR->GetEvent(ch);
   //cout << MUONrawclust << " " << MUONrawclust->GetEntries() << endl;
   AliMUONRawCluster *mRaw;
@@ -2315,7 +2315,7 @@ void AliMUONClusterFinderAZ::AddRawCluster(Double_t x, Double_t y, Double_t fmin
     */
   } 
   //cnew.fClusterType=cnew.PhysicsContribution();
-  pMUON->AddRawCluster(AliMUONClusterInput::Instance()->Chamber(),cnew); 
+  pMUON->GetMUONData()->AddRawCluster(AliMUONClusterInput::Instance()->Chamber(),cnew); 
   //fNPeaks++;
 }
 

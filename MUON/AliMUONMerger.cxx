@@ -152,253 +152,253 @@ void AliMUONMerger::Digitise()
 
     // keep galice.root for signal and name differently the file for 
     // background when add! otherwise the track info for signal will be lost !
-  
-    AliMUONChamber*   iChamber;
-    AliSegmentation*  segmentation;
+  // Obsolete sep 2003 Gines MARTINEZ 
+  //    AliMUONChamber*   iChamber;
+//      AliSegmentation*  segmentation;
 
-    fList = new TObjArray;
+//      fList = new TObjArray;
 
-    AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
-    fHitMap= new AliHitMap* [AliMUONConstants::NCh()];
-    if (fMerge ) {
-	fBgrFile->cd();
-        //
-	// Get Hits Tree header from file
-	//if(fHitsBgr) fHitsBgr->Clear();     // Useless because line 327
-	//if(fPadHitsBgr) fPadHitsBgr->Clear(); // Useless because line 328
-	if(fTrH1) delete fTrH1;
-	fTrH1 = 0;
+//      AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+//      fHitMap= new AliHitMap* [AliMUONConstants::NCh()];
+//      if (fMerge ) {
+//  	fBgrFile->cd();
+//          //
+//  	// Get Hits Tree header from file
+//  	//if(fHitsBgr) fHitsBgr->Clear();     // Useless because line 327
+//  	//if(fPadHitsBgr) fPadHitsBgr->Clear(); // Useless because line 328
+//  	if(fTrH1) delete fTrH1;
+//  	fTrH1 = 0;
 	
-	char treeName[20];
-	sprintf(treeName,"TreeH%d",fEvNrBgr);
-	fTrH1 = (TTree*)gDirectory->Get(treeName);
-	if (!fTrH1) {
-	    printf("ERROR: cannot find Hits Tree for event:%d\n",fEvNrBgr);
-	}
-        //
-	// Set branch addresses
-	TBranch *branch;
-	char branchname[20];
-	sprintf(branchname,"%s",pMUON->GetName());
-	if (fTrH1 && fHitsBgr) {
-	    branch = fTrH1->GetBranch(branchname);
-	    if (branch) branch->SetAddress(&fHitsBgr);
-	}
-	if (fTrH1 && fPadHitsBgr) {
-	    branch = fTrH1->GetBranch("MUONCluster");
-	    if (branch) branch->SetAddress(&fPadHitsBgr);
-	}
-    }
-    //
-    // loop over cathodes
-    //
-    fSignal = kTRUE;
-    for (int icat = 0; icat < 2; icat++) { 
-	fCounter = 0;
-	for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
-	    iChamber = &(pMUON->Chamber(i));
-	    if (iChamber->Nsec() == 1 && icat == 1) {
-		continue;
-	    } else {
-		segmentation = iChamber->SegmentationModel(icat+1);
-	    }
-	    fHitMap[i] = new AliMUONHitMapA1(segmentation, fList);
-	}
+//  	char treeName[20];
+//  	sprintf(treeName,"TreeH%d",fEvNrBgr);
+//  	fTrH1 = (TTree*)gDirectory->Get(treeName);
+//  	if (!fTrH1) {
+//  	    printf("ERROR: cannot find Hits Tree for event:%d\n",fEvNrBgr);
+//  	}
+//          //
+//  	// Set branch addresses
+//  	TBranch *branch;
+//  	char branchname[20];
+//  	sprintf(branchname,"%s",pMUON->GetName());
+//  	if (fTrH1 && fHitsBgr) {
+//  	    branch = fTrH1->GetBranch(branchname);
+//  	    if (branch) branch->SetAddress(&fHitsBgr);
+//  	}
+//  	if (fTrH1 && fPadHitsBgr) {
+//  	    branch = fTrH1->GetBranch("MUONCluster");
+//  	    if (branch) branch->SetAddress(&fPadHitsBgr);
+//  	}
+//      }
+//      //
+//      // loop over cathodes
+//      //
+//      fSignal = kTRUE;
+//      for (int icat = 0; icat < 2; icat++) { 
+//  	fCounter = 0;
+//  	for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
+//  	    iChamber = &(pMUON->Chamber(i));
+//  	    if (iChamber->Nsec() == 1 && icat == 1) {
+//  		continue;
+//  	    } else {
+//  		segmentation = iChamber->SegmentationModel(icat+1);
+//  	    }
+//  	    fHitMap[i] = new AliMUONHitMapA1(segmentation, fList);
+//  	}
 
-//
-//   Loop over tracks
-//
+//  //
+//  //   Loop over tracks
+//  //
 
-/******************************************************************/
-      TTree* treeH = pMUON->TreeH();
-      if (treeH == 0x0)
-       {
-         cerr<<"AliMUONMerger::Exec: Can not get TreeH"<<endl;
-         return;
-       }
-/******************************************************************/     
+//  /******************************************************************/
+//        TTree* treeH = pMUON->TreeH();
+//        if (treeH == 0x0)
+//         {
+//           cerr<<"AliMUONMerger::Exec: Can not get TreeH"<<endl;
+//           return;
+//         }
+//  /******************************************************************/     
 
 	
 	
-	Int_t ntracks = (Int_t) treeH->GetEntries();
-	treeH->SetBranchStatus("*",0); // switch off all branches
-        treeH->SetBranchStatus("MUON*",1); // switch on only MUON
+//  	Int_t ntracks = (Int_t) treeH->GetEntries();
+//  	treeH->SetBranchStatus("*",0); // switch off all branches
+//          treeH->SetBranchStatus("MUON*",1); // switch on only MUON
 
-	for (fTrack = 0; fTrack < ntracks; fTrack++) {
-	    gAlice->ResetHits();
-	    treeH->GetEntry(fTrack,0);
-//
-//   Loop over hits
-	    for(AliMUONHit* mHit = (AliMUONHit*)pMUON->FirstHit(-1); 
-		mHit;
-		mHit = (AliMUONHit*)pMUON->NextHit()) 
-	    {
-		fNch = mHit->Chamber()-1;  // chamber number
-		if (fNch > AliMUONConstants::NCh()-1) continue;
-		iChamber = &(pMUON->Chamber(fNch));
+//  	for (fTrack = 0; fTrack < ntracks; fTrack++) {
+//  	    gAlice->ResetHits();
+//  	    treeH->GetEntry(fTrack,0);
+//  //
+//  //   Loop over hits
+//  	    for(AliMUONHit* mHit = (AliMUONHit*)pMUON->FirstHit(-1); 
+//  		mHit;
+//  		mHit = (AliMUONHit*)pMUON->NextHit()) 
+//  	    {
+//  		fNch = mHit->Chamber()-1;  // chamber number
+//  		if (fNch > AliMUONConstants::NCh()-1) continue;
+//  		iChamber = &(pMUON->Chamber(fNch));
 		
-//
-// Loop over pad hits
-		for (AliMUONPadHit* mPad =
-			 (AliMUONPadHit*)pMUON->FirstPad(mHit,pMUON->PadHits());
-		     mPad;
-		     mPad = (AliMUONPadHit*)pMUON->NextPad(pMUON->PadHits()))
-		{
-		    Int_t cathode  = mPad->Cathode();      // cathode number
-		    if (cathode != (icat+1)) continue;
-		    Int_t iqpad    = Int_t(mPad->QPad());  // charge per pad
-//		    segmentation = iChamber->SegmentationModel(cathode);
-		    fDigits[0] = mPad->PadX();  
-		    fDigits[1] = mPad->PadY();
-		    if (!(fHitMap[fNch]->ValidateHit(fDigits[0], fDigits[1]))) continue;
-		    fDigits[2] = icat;
-		    fDigits[3] = iqpad;
-		    fDigits[4] = iqpad;
-		    if (mHit->Particle() == kMuonPlus ||
-			mHit->Particle() == kMuonMinus) {
-			fDigits[5] = mPad->HitNumber();
-		    } else fDigits[5] = -1;
+//  //
+//  // Loop over pad hits
+//  		for (AliMUONPadHit* mPad =
+//  			 (AliMUONPadHit*)pMUON->FirstPad(mHit,pMUON->PadHits());
+//  		     mPad;
+//  		     mPad = (AliMUONPadHit*)pMUON->NextPad(pMUON->PadHits()))
+//  		{
+//  		    Int_t cathode  = mPad->Cathode();      // cathode number
+//  		    if (cathode != (icat+1)) continue;
+//  		    Int_t iqpad    = Int_t(mPad->QPad());  // charge per pad
+//  //		    segmentation = iChamber->SegmentationModel(cathode);
+//  		    fDigits[0] = mPad->PadX();  
+//  		    fDigits[1] = mPad->PadY();
+//  		    if (!(fHitMap[fNch]->ValidateHit(fDigits[0], fDigits[1]))) continue;
+//  		    fDigits[2] = icat;
+//  		    fDigits[3] = iqpad;
+//  		    fDigits[4] = iqpad;
+//  		    if (mHit->Particle() == kMuonPlus ||
+//  			mHit->Particle() == kMuonMinus) {
+//  			fDigits[5] = mPad->HitNumber();
+//  		    } else fDigits[5] = -1;
 
-		    // build the list of fired pads and update the info
+//  		    // build the list of fired pads and update the info
 
-		    if (!Exists(mPad)) {
-			CreateNew(mPad);
-		    } else {
-			Update(mPad);
-		    } //  end if pdigit
-		} //end loop over clusters
-	    } // hit loop
-	} // track loop
+//  		    if (!Exists(mPad)) {
+//  			CreateNew(mPad);
+//  		    } else {
+//  			Update(mPad);
+//  		    } //  end if pdigit
+//  		} //end loop over clusters
+//  	    } // hit loop
+//  	} // track loop
 
-	// open the file with background
+//  	// open the file with background
        
-	if (fMerge) {
-            fSignal = kFALSE;
-	    ntracks = (Int_t)fTrH1->GetEntries();
-//
-//   Loop over tracks
-//
-	    for (fTrack = 0; fTrack < ntracks; fTrack++) {
+//  	if (fMerge) {
+//              fSignal = kFALSE;
+//  	    ntracks = (Int_t)fTrH1->GetEntries();
+//  //
+//  //   Loop over tracks
+//  //
+//  	    for (fTrack = 0; fTrack < ntracks; fTrack++) {
 
-		if (fHitsBgr)       fHitsBgr->Clear();
-		if (fPadHitsBgr)    fPadHitsBgr->Clear();
+//  		if (fHitsBgr)       fHitsBgr->Clear();
+//  		if (fPadHitsBgr)    fPadHitsBgr->Clear();
 
-		fTrH1->GetEvent(fTrack);
-//
-//   Loop over hits
-		AliMUONHit* mHit;
-		for(Int_t i = 0; i < fHitsBgr->GetEntriesFast(); ++i) 
-		{	
-		    mHit   = (AliMUONHit*) (*fHitsBgr)[i];
-		    fNch   = mHit->Chamber()-1;  // chamber number
-		    iChamber = &(pMUON->Chamber(fNch));
-//
-// Loop over pad hits
-		    for (AliMUONPadHit* mPad =
-			     (AliMUONPadHit*)pMUON->FirstPad(mHit,fPadHitsBgr);
-			 mPad;
-			 mPad = (AliMUONPadHit*)pMUON->NextPad(fPadHitsBgr))
-		    {
-			Int_t cathode  = mPad->Cathode();     // cathode number
-			Int_t ipx      = mPad->PadX();        // pad number on X
-			Int_t ipy      = mPad->PadY();        // pad number on Y
-			Int_t iqpad    = Int_t(mPad->QPad()); // charge per pad
-			if (!(fHitMap[fNch]->ValidateHit(ipx, ipy))) continue;
+//  		fTrH1->GetEvent(fTrack);
+//  //
+//  //   Loop over hits
+//  		AliMUONHit* mHit;
+//  		for(Int_t i = 0; i < fHitsBgr->GetEntriesFast(); ++i) 
+//  		{	
+//  		    mHit   = (AliMUONHit*) (*fHitsBgr)[i];
+//  		    fNch   = mHit->Chamber()-1;  // chamber number
+//  		    iChamber = &(pMUON->Chamber(fNch));
+//  //
+//  // Loop over pad hits
+//  		    for (AliMUONPadHit* mPad =
+//  			     (AliMUONPadHit*)pMUON->FirstPad(mHit,fPadHitsBgr);
+//  			 mPad;
+//  			 mPad = (AliMUONPadHit*)pMUON->NextPad(fPadHitsBgr))
+//  		    {
+//  			Int_t cathode  = mPad->Cathode();     // cathode number
+//  			Int_t ipx      = mPad->PadX();        // pad number on X
+//  			Int_t ipy      = mPad->PadY();        // pad number on Y
+//  			Int_t iqpad    = Int_t(mPad->QPad()); // charge per pad
+//  			if (!(fHitMap[fNch]->ValidateHit(ipx, ipy))) continue;
 
-			if (cathode != (icat+1)) continue;
-			fDigits[0] = ipx;
-			fDigits[1] = ipy;
-			fDigits[2] = icat;
-			fDigits[3] = iqpad;
-			fDigits[4] = 0;
-			fDigits[5] = -1;
+//  			if (cathode != (icat+1)) continue;
+//  			fDigits[0] = ipx;
+//  			fDigits[1] = ipy;
+//  			fDigits[2] = icat;
+//  			fDigits[3] = iqpad;
+//  			fDigits[4] = 0;
+//  			fDigits[5] = -1;
 			
-			// build the list of fired pads and update the info
-			if (!Exists(mPad)) {
-			    CreateNew(mPad);
-			} else {
-			    Update(mPad);
-			} //  end if !Exists
-		    } //end loop over clusters
-		} // hit loop
-	    } // track loop
+//  			// build the list of fired pads and update the info
+//  			if (!Exists(mPad)) {
+//  			    CreateNew(mPad);
+//  			} else {
+//  			    Update(mPad);
+//  			} //  end if !Exists
+//  		    } //end loop over clusters
+//  		} // hit loop
+//  	    } // track loop
 
-	    TTree *treeK = gAlice->TreeK();
-            TFile *file = NULL;
+//  	    TTree *treeK = gAlice->TreeK();
+//              TFile *file = NULL;
 	    
-	    if (treeK) file = treeK->GetCurrentFile();
-	    file->cd();
-	} // if fMerge
+//  	    if (treeK) file = treeK->GetCurrentFile();
+//  	    file->cd();
+//  	} // if fMerge
 
-	Int_t tracks[kMAXTRACKS];
-	Int_t charges[kMAXTRACKS];
-	Int_t nentries = fList->GetEntriesFast();
+//  	Int_t tracks[kMAXTRACKS];
+//  	Int_t charges[kMAXTRACKS];
+//  	Int_t nentries = fList->GetEntriesFast();
 	
-	for (Int_t nent = 0; nent < nentries; nent++) {
-	    AliMUONTransientDigit *address = (AliMUONTransientDigit*)fList->At(nent);
-	    if (address == 0) continue; 
-	    Int_t ich = address->Chamber();
-	    Int_t   q = address->Signal(); 
-	    iChamber = &(pMUON->Chamber(ich));
-//
-//  Digit Response (noise, threshold, saturation, ...)
-	    AliMUONResponse * response = iChamber->ResponseModel();
-	    q = response->DigitResponse(q,address);
+//  	for (Int_t nent = 0; nent < nentries; nent++) {
+//  	    AliMUONTransientDigit *address = (AliMUONTransientDigit*)fList->At(nent);
+//  	    if (address == 0) continue; 
+//  	    Int_t ich = address->Chamber();
+//  	    Int_t   q = address->Signal(); 
+//  	    iChamber = &(pMUON->Chamber(ich));
+//  //
+//  //  Digit Response (noise, threshold, saturation, ...)
+//  	    AliMUONResponse * response = iChamber->ResponseModel();
+//  	    q = response->DigitResponse(q,address);
 	    
-	    if (!q) continue;
+//  	    if (!q) continue;
 	    
-	    fDigits[0] = address->PadX();
-	    fDigits[1] = address->PadY();
-	    fDigits[2] = address->Cathode();
-	    fDigits[3] = q;
-	    fDigits[4] = address->Physics();
-	    fDigits[5] = address->Hit();
+//  	    fDigits[0] = address->PadX();
+//  	    fDigits[1] = address->PadY();
+//  	    fDigits[2] = address->Cathode();
+//  	    fDigits[3] = q;
+//  	    fDigits[4] = address->Physics();
+//  	    fDigits[5] = address->Hit();
 	    
-	    Int_t nptracks = address->GetNTracks();
+//  	    Int_t nptracks = address->GetNTracks();
 
-	    if (nptracks > kMAXTRACKS) {
-	        if (fDebug>0)
-		  printf("\n Attention - nptracks > kMAXTRACKS %d \n", nptracks);
-		nptracks = kMAXTRACKS;
-	    }
-	    if (nptracks > 2) {
-	        if (fDebug>0) {
-		  printf("Attention - nptracks > 2  %d \n",nptracks);
-		  printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,fDigits[0],fDigits[1],q);
-		}
-	    }
-	    for (Int_t tr = 0; tr < nptracks; tr++) {
-		tracks[tr]   = address->GetTrack(tr);
-		charges[tr]  = address->GetCharge(tr);
-	    }      //end loop over list of tracks for one pad
-            // Sort list of tracks according to charge
-	    if (nptracks > 1) {
-		SortTracks(tracks,charges,nptracks);
-	    }
-	    if (nptracks < kMAXTRACKS ) {
-		for (Int_t i = nptracks; i < kMAXTRACKS; i++) {
-		    tracks[i]  = 0;
-		    charges[i] = 0;
-		}
-	    }
+//  	    if (nptracks > kMAXTRACKS) {
+//  	        if (fDebug>0)
+//  		  printf("\n Attention - nptracks > kMAXTRACKS %d \n", nptracks);
+//  		nptracks = kMAXTRACKS;
+//  	    }
+//  	    if (nptracks > 2) {
+//  	        if (fDebug>0) {
+//  		  printf("Attention - nptracks > 2  %d \n",nptracks);
+//  		  printf("cat,ich,ix,iy,q %d %d %d %d %d \n",icat,ich,fDigits[0],fDigits[1],q);
+//  		}
+//  	    }
+//  	    for (Int_t tr = 0; tr < nptracks; tr++) {
+//  		tracks[tr]   = address->GetTrack(tr);
+//  		charges[tr]  = address->GetCharge(tr);
+//  	    }      //end loop over list of tracks for one pad
+//              // Sort list of tracks according to charge
+//  	    if (nptracks > 1) {
+//  		SortTracks(tracks,charges,nptracks);
+//  	    }
+//  	    if (nptracks < kMAXTRACKS ) {
+//  		for (Int_t i = nptracks; i < kMAXTRACKS; i++) {
+//  		    tracks[i]  = 0;
+//  		    charges[i] = 0;
+//  		}
+//  	    }
 	    
-	    // fill digits
-	    pMUON->AddDigits(ich,tracks,charges,fDigits);
-	}
-	gAlice->TreeD()->Fill();
-	pMUON->ResetDigits();
-	fList->Delete();
+//  	    // fill digits
+//  	    pMUON->AddDigits(ich,tracks,charges,fDigits);
+//  	}
+//  	gAlice->TreeD()->Fill();
+//  	pMUON->ResetDigits();
+//  	fList->Delete();
 
 	
-	for(Int_t ii = 0; ii < AliMUONConstants::NCh(); ++ii) {
-	    if (fHitMap[ii]) {
-		delete fHitMap[ii];
-		fHitMap[ii] = 0;
-	    }
-	}
-    } //end loop over cathodes
-    delete [] fHitMap;
-    delete fList;
+//  	for(Int_t ii = 0; ii < AliMUONConstants::NCh(); ++ii) {
+//  	    if (fHitMap[ii]) {
+//  		delete fHitMap[ii];
+//  		fHitMap[ii] = 0;
+//  	    }
+//  	}
+//      } //end loop over cathodes
+//      delete [] fHitMap;
+//      delete fList;
     
 //  no need to delete ... and it makes a crash also
 //    if (fHitsBgr)    fHitsBgr->Delete();

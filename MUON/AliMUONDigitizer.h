@@ -38,8 +38,8 @@ class AliMUONDigitizer : public AliDigitizer {
     void SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr);
     
  private:
-    TClonesArray *fHits;            //! List of hits for one track only
-    TClonesArray *fPadHits;         //! List of clusters for one track only
+    TClonesArray* fHits;
+    TClonesArray* fPadHits;
     AliMUONHitMapA1 **fHitMap;      //! pointer to array of pointers to hitmaps
     Int_t fNch;                     //! chamber nr (loop variable)
     Int_t fTrack;                   //! track nr (loop variable)

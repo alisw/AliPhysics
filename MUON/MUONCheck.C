@@ -20,6 +20,7 @@
 
 // MUON includes
 #include "AliMUON.h"
+#include "AliMUONData.h"
 #include "AliMUONHit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONDigit.h"
@@ -59,9 +60,6 @@ void MUONkine(char * filename="galice.root")
 
 void MUONhits(char * filename="galice.root")
 {
-  // List of Hits per event and per track
-  TClonesArray * ListOfHits = new TClonesArray("AliMUONHit",1000);
-
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
   if (RunLoader ==0x0) {
@@ -72,6 +70,8 @@ void MUONhits(char * filename="galice.root")
   // Loading MUON subsystem
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
   MUONLoader->LoadHits("READ");
+  // Creating MUON data container
+  AliMUONData muondata(MUONLoader,"MUON","MUON");
 
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
@@ -81,8 +81,8 @@ void MUONhits(char * filename="galice.root")
 
     // Getting event ievent
     RunLoader->GetEvent(ievent); 
-    MUONLoader->TreeH()->GetBranch("MUON")->SetAddress(&ListOfHits);
-
+    muondata.SetTreeAddress("H");
+   
     Int_t itrack, ntracks;
     ntracks = (Int_t) (MUONLoader->TreeH())->GetEntries();
     for (itrack=0; itrack<ntracks; itrack++) { // Track loop
@@ -92,11 +92,11 @@ void MUONhits(char * filename="galice.root")
       (MUONLoader->TreeH())->GetEvent(itrack); 
 
       Int_t ihit, nhits;
-      nhits = (Int_t) ListOfHits->GetEntriesFast();
+      nhits = (Int_t) muondata.Hits()->GetEntriesFast();
       printf(">>> Number of hits  %d \n",nhits);
       AliMUONHit* mHit;
       for(ihit=0; ihit<nhits; ihit++) {
-	mHit = static_cast<AliMUONHit*>(ListOfHits->At(ihit));
+	mHit = static_cast<AliMUONHit*>(muondata.Hits()->At(ihit));
   	Int_t Nch      = mHit->Chamber();  // chamber number
 	Int_t hittrack = mHit->Track();
 	Float_t x      = mHit->X();
@@ -109,7 +109,7 @@ void MUONhits(char * filename="galice.root")
   	printf(">>> Hit %2d Chamber %2d Track %4d x %6.3f y %6.3f z %7.3f elos %g theta %6.3f phi %5.3f momentum %5.3f\n",
 	       ihit, Nch,hittrack,x,y,z,elos,theta,phi, momentum);
       }
-      ListOfHits->Clear();
+      muondata.ResetHits();
     } // end track loop
   }  // end event loop
   MUONLoader->UnloadHits();
@@ -118,23 +118,18 @@ void MUONhits(char * filename="galice.root")
 
 void MUONdigits(char * filename="galice.root")
 {
-  TClonesArray * ListOfDigits;
-
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
   if (RunLoader ==0x0) {
     printf(">>> Error : Error Opening %s file \n",filename);
     return;
   }
-
-  // Loading AliRun master
-  RunLoader->LoadgAlice();
-  gAlice = RunLoader->GetAliRun();
- // Getting Module MUON  
-  AliMUON *pMUON  = (AliMUON *) gAlice->GetDetector("MUON");
-
+  // Loading MUON subsystem
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
   MUONLoader->LoadDigits("READ");
+
+  // Creating MUON data container
+  AliMUONData muondata(MUONLoader,"MUON","MUON");
 
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
@@ -149,14 +144,9 @@ void MUONdigits(char * filename="galice.root")
     // Addressing
     Int_t ichamber, nchambers;
     nchambers = AliMUONConstants::NCh(); ;
-    pMUON->SetTreeAddress(); 
+    muondata.SetTreeAddress("D"); 
     char branchname[30];    
-   //for( ichamber=0; ichamber<nchambers; ichamber++) {
-    // sprintf(branchname,"MUONDigits%d",ichamber+1);
-    //(MUONLoader->TreeD()->GetBranch(branchname))->SetAddress(&((*pMUON->Dchambers())[ichamber]));
-    //}
-   
-
+ 
     Int_t icathode, ncathodes;
     ncathodes=2;
     //Loop on cathodes 
@@ -168,14 +158,13 @@ void MUONdigits(char * filename="galice.root")
 	printf(">>> Chamber %d\n",ichamber);
 	//	sprintf(branchname,"MUONDigits%d",ichamber+1);
 	//printf(">>>  branchname %s\n",branchname);
-	ListOfDigits = (TClonesArray *) pMUON->Dchambers()->At(ichamber);
 	
 	Int_t idigit, ndigits;
 
-	ndigits = (Int_t) ListOfDigits->GetEntriesFast();
+	ndigits = (Int_t) muondata.Digits(ichamber,0)->GetEntriesFast();
 	
 	for(idigit=0; idigit<ndigits; idigit++) {
-	  mDigit = static_cast<AliMUONDigit*>(ListOfDigits->At(idigit));
+	  mDigit = static_cast<AliMUONDigit*>(muondata.Digits(ichamber,0)->At(idigit));
 	  Int_t PadX   = mDigit->PadX();     // Pad X number
 	  Int_t PadY   = mDigit->PadY();     // Pad Y number
 	  Int_t Signal = mDigit->Signal();   // Physics Signal
@@ -188,6 +177,7 @@ void MUONdigits(char * filename="galice.root")
 	  printf(">>> Digit %4d cathode %1d hit %4d PadX %3d PadY %3d Signal %4d Track0 %4d Track1 %'d Track2 %4d \n",idigit, Cathode,Hit, PadX, PadY, Signal, Track0, Track1, Track2);
 	} // end digit loop
       } // end chamber loop
+      muondata.ResetDigits();
     } // end cathode loop
   }  // end event loop
   MUONLoader->UnloadDigits();
@@ -195,30 +185,23 @@ void MUONdigits(char * filename="galice.root")
 
 void MUONrecpoints(char * filename="galice.root") {
 
-  TClonesArray * ListOfRecPoints;
-  
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
   if (RunLoader ==0x0) {
     printf(">>> Error : Error Opening %s file \n",filename);
     return;
   }
-
-  // Loading AliRun master
-  RunLoader->LoadgAlice();
-  gAlice = RunLoader->GetAliRun();
- // Getting Module MUON  
-  AliMUON *pMUON  = (AliMUON *) gAlice->GetDetector("MUON");
-
+  // Getting MUONloader
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
   MUONLoader->LoadRecPoints("READ");
+  // Creating MUON data container
+  AliMUONData muondata(MUONLoader,"MUON","MUON");
 
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
 
   AliMUONRawCluster * mRecPoint;
   
-
   for(ievent=0; ievent<nevents; ievent++) {
     printf(">>> Event %d \n",ievent);
     RunLoader->GetEvent(ievent);
@@ -226,23 +209,21 @@ void MUONrecpoints(char * filename="galice.root") {
     // Addressing
     Int_t ichamber, nchambers;
     nchambers = AliMUONConstants::NTrackingCh();
-    pMUON->SetTreeAddress(); 
+    muondata.SetTreeAddress("RC"); 
     char branchname[30];    
- 
     MUONLoader->TreeR()->GetEvent(0);
     // Loop on chambers
     for( ichamber=0; ichamber<nchambers; ichamber++) {
       printf(">>> Chamber %d\n",ichamber);
       sprintf(branchname,"MUONRawClusters%d",ichamber+1);
       //printf(">>>  branchname %s\n",branchname);
-      ListOfRecPoints = (TClonesArray *) pMUON->RawClusters()->At(ichamber);
-      
+  
       Int_t irecpoint, nrecpoints;
       
-      nrecpoints = (Int_t) ListOfRecPoints->GetEntriesFast();
+      nrecpoints = (Int_t) muondata.RawClusters(ichamber)->GetEntriesFast();
       
       for(irecpoint=0; irecpoint<nrecpoints; irecpoint++) {
-	mRecPoint = static_cast<AliMUONRawCluster*>(ListOfRecPoints->At(irecpoint));
+	mRecPoint = static_cast<AliMUONRawCluster*>(muondata.RawClusters(ichamber)->At(irecpoint));
 //     Int_t       fTracks[3];        //labels of overlapped tracks
 //     Int_t       fQ[2]  ;           // Q of cluster (in ADC counts)     
 //     Float_t     fX[2]  ;           // X of cluster
@@ -281,6 +262,7 @@ void MUONrecpoints(char * filename="galice.root") {
 irecpoint, x0, x1, y0, y1, z0, z1, Q0, Q1, Track0, Track1, Track2, chi2_0, chi2_1);
       } // end recpoint loop
     } // end chamber loop
+    muondata.ResetRawClusters();
   }  // end event loop
   MUONLoader->UnloadRecPoints();
 }
@@ -297,15 +279,12 @@ void MUONTestTrigger (char * filename="galice.root"){
       return;
   }
   
-  // Loading AliRun master
-  RunLoader->LoadgAlice();
-  gAlice = RunLoader->GetAliRun();
-  // Getting Module MUON  
-  AliMUON *pMUON  = (AliMUON *) gAlice->GetDetector("MUON");
-  
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
   MUONLoader->LoadRecPoints("READ");
+  // Creating MUON data container
+  AliMUONData muondata(MUONLoader,"MUON","MUON");
   
+
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
   
@@ -315,11 +294,11 @@ void MUONTestTrigger (char * filename="galice.root"){
   for (ievent=0; ievent<nevents; ievent++) {
       RunLoader->GetEvent(ievent);
       
-      pMUON->SetTreeAddress(); 
+      muondata.SetTreeAddress("GLT"); 
       MUONLoader->TreeR()->GetEvent(0);
       
-      globalTrigger = (TClonesArray *) pMUON->GlobalTrigger();
-      localTrigger = (TClonesArray *) pMUON->LocalTrigger();
+      globalTrigger = muondata.GlobalTrigger();
+      localTrigger = muondata.LocalTrigger();
       
       Int_t nglobals = (Int_t) globalTrigger->GetEntriesFast(); // should be 1
       Int_t nlocals  = (Int_t) localTrigger->GetEntriesFast(); // up to 234
@@ -373,6 +352,7 @@ void MUONTestTrigger (char * filename="galice.root"){
 	       << locTrg->LoApt() << "\n";
 	  
       } // end of loop on Local Trigger
+      muondata.ResetTrigger();
   } // end loop on event  
 } 
 

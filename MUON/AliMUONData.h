@@ -48,9 +48,12 @@ class AliMUONData : public TNamed {
     TClonesArray*  GlobalTrigger() {return fGlobalTrigger;}
     TClonesArray*  RawClusters(Int_t DetectionPlane)
       {return ( (TClonesArray*) fRawClusters->At(DetectionPlane) );}
-    
+
+    virtual AliLoader* GetLoader() {return fLoader;}
+    virtual void       SetLoader(AliLoader * loader) {fLoader=loader;}    
+
     virtual void   MakeBranch(Option_t *opt=" ");
-    virtual void   SetTreeAddress();
+    virtual void   SetTreeAddress(Option_t *opt=" ");
 
     virtual void   ResetHits();
     virtual void   ResetDigits();

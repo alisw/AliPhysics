@@ -1987,9 +1987,10 @@ void AliMUONv1::StepManager()
     destep = gMC->Edep();
     step   = gMC->TrackStep();
     //new hit
-    AddHit(fIshunt, gAlice->GetCurrentTrackNumber(), iChamber, ipart, 
-	   pos.X(), pos.Y(), pos.Z(), tof, mom.P(), 
-	   theta, phi, step, destep);
+
+    GetMUONData()->AddHit(fIshunt, gAlice->GetCurrentTrackNumber(), iChamber, ipart, 
+			  pos.X(), pos.Y(), pos.Z(), tof, mom.P(), 
+			  theta, phi, step, destep);
   }
   // Track left chamber ...
   if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()){
@@ -2075,7 +2076,7 @@ void AliMUONv1::StepManagerOld()
       hits[3] = pos[2]+s*tz;            // Z-position for hit
       hits[4] = theta;                  // theta angle of incidence
       hits[5] = phi;                    // phi angle of incidence 
-      hits[8] = (Float_t) fNPadHits;    // first padhit
+      hits[8] = 0;//PadHits does not exist anymore  (Float_t) fNPadHits;    // first padhit
       hits[9] = -1;                     // last pad hit
       hits[10] = mom[3];                // hit momentum P
       hits[11] = mom[0];                // Px
@@ -2134,16 +2135,16 @@ void AliMUONv1::StepManagerOld()
       }
       
 
-      if (eloss >0)  MakePadHits(x0,y0,z0,eloss,tof,idvol);
+      //      if (eloss >0)  MakePadHits(x0,y0,z0,eloss,tof,idvol);
       
 	  
       hits[6] = tlength;   // track length
       hits[7] = eloss2;    // de/dx energy loss
 
-      if (fNPadHits > (Int_t)hits[8]) {
-	  hits[8] = hits[8]+1;
-	  hits[9] = (Float_t) fNPadHits;
-      }
+      //      if (fNPadHits > (Int_t)hits[8]) {
+      //	  hits[8] = hits[8]+1;
+      //	  hits[9] = 0: // PadHits does not exist anymore (Float_t) fNPadHits;
+      //}
 //
 //    new hit 
       
@@ -2168,8 +2169,8 @@ void AliMUONv1::StepManagerOld()
 
       eloss    += destep;
 
-      if (eloss > 0 && idvol < AliMUONConstants::NTrackingCh())
-	MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),pos[2],eloss,tof,idvol);
+      // if (eloss > 0 && idvol < AliMUONConstants::NTrackingCh())
+      //	MakePadHits(0.5*(xhit+pos[0]),0.5*(yhit+pos[1]),pos[2],eloss,tof,idvol);
       xhit     = pos[0];
       yhit     = pos[1]; 
       zhit     = pos[2];

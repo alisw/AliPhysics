@@ -184,7 +184,7 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
     // from raw clusters
     for (Int_t i=0; i<2; i++) {
       hit1 = (AliMUONHitForRec*) ((*fTrackHitsPtr)[i]);
-      rawclusters = fgMUON->RawClustAddress(hit1->GetChamberNumber());
+      rawclusters = fgMUON->GetMUONData()->RawClusters(hit1->GetChamberNumber());
       clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit1->GetHitNumber());
       cout << clus->fTracks[1]-1;
       if (clus->fTracks[2] != 0) cout << " " << clus->fTracks[2]-1;
@@ -1217,7 +1217,7 @@ void AliMUONTrackK::GoToVertex(void)
     // from raw clusters
     for (Int_t i1=0; i1<fNTrackHits; i1++) {
       hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
-      rawclusters = fgMUON->RawClustAddress(hit->GetChamberNumber());
+      rawclusters = fgMUON->GetMUONData()->RawClusters(hit->GetChamberNumber());
       clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
       printf ("%4d", clus->fTracks[1] - 1); 
       //cout << clus->fTracks[1] - 1 << " ";
@@ -1225,7 +1225,7 @@ void AliMUONTrackK::GoToVertex(void)
     cout << endl;
     for (Int_t i1=0; i1<fNTrackHits; i1++) {
       hit =  (AliMUONHitForRec*) ((*fTrackHitsPtr)[i1]);
-      rawclusters = fgMUON->RawClustAddress(hit->GetChamberNumber());
+      rawclusters = fgMUON->GetMUONData()->RawClusters(hit->GetChamberNumber());
       clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
       if (clus->fTracks[2] != 0) printf ("%4d", clus->fTracks[2] - 1);
       else printf ("%4s", "   ");

@@ -45,7 +45,6 @@ class AliMUONDigitizerv1 : public AliDigitizer {
     void           SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr);
     
     private:
-    TClonesArray * fHits;           // List of Hits
     AliMUONHitMapA1 **fHitMap;      //! pointer to array of pointers to hitmaps
     TObjArray *fTDList;             //! list of AliMUONTransientDigits
     Int_t fTDCounter;                 //! nr. of AliMUONTransientDigits

@@ -58,6 +58,7 @@ void MUONrawclusters (char* filename, Int_t evNumber1=0,Int_t evNumber2=0)
   // Loading MUON subsystem
   AliMUON * MUON = (AliMUON *) gAlice->GetDetector("MUON");
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+  AliMUONData * muondata = MUON->GetMUONData();
 
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
@@ -81,8 +82,8 @@ void MUONrawclusters (char* filename, Int_t evNumber1=0,Int_t evNumber2=0)
       RunLoader->GetEvent(ievent);
       MUONLoader->LoadDigits("read");
       if (MUONLoader->TreeR() == 0x0) MUONLoader->MakeTree("R");
-      MUON->MakeBranch("R");
-      MUON->SetTreeAddress();
+      muondata->MakeBranch("RC");
+      muondata->SetTreeAddress("D,RC");
       MUON->Digits2Reco(); 
       MUONLoader->UnloadDigits();
       MUONLoader->UnloadRecPoints();

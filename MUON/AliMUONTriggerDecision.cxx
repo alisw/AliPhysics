@@ -203,7 +203,7 @@ void AliMUONTriggerDecision::SetBit(){
       AliMUONChamber*   iChamber = &(pMUON->Chamber(chamber-1));
       AliSegmentation*  segmentation;
       gime->TreeD()->GetEvent(cathode-1);
-      TClonesArray *muonDigits = pMUON->DigitsAddress(chamber-1);
+      TClonesArray *muonDigits = pMUON->GetMUONData()->Digits(chamber-1,0);
       Int_t ndigits = muonDigits->GetEntriesFast();
 //      printf("\n 1 Found %d digits in %p %d \n ", ndigits, muonDigits,chamber-1);
 //    if (ndigits == 0) return;
