@@ -103,26 +103,26 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(const char* headerFile):TTask("
   
   fHeaderFileName = headerFile ;
 
-  fSDigitsBranch="" ; 
+  fSDigitsBranch="Default" ; 
   fSDigitizer  = new AliPHOSSDigitizer(fHeaderFileName.Data(),fSDigitsBranch.Data()) ; 
   Add(fSDigitizer) ;
 
-  fDigitsBranch="" ; 
+  fDigitsBranch="Default" ; 
   fDigitizer   = new AliPHOSDigitizer(fHeaderFileName.Data(),fDigitsBranch.Data()) ; 
   Add(fDigitizer) ;
 
 
-  fRecPointBranch="" ; 
+  fRecPointBranch="Default" ; 
   fClusterizer = new AliPHOSClusterizerv1(fHeaderFileName.Data(),fRecPointBranch.Data()) ; 
   Add(fClusterizer) ;
   
 
-  fTSBranch="" ; 
+  fTSBranch="Default" ; 
   fTSMaker     = new AliPHOSTrackSegmentMakerv1(fHeaderFileName.Data(),fTSBranch.Data()) ;
   Add(fTSMaker) ;
   
   
-  fRecPartBranch="" ; 
+  fRecPartBranch="Default" ; 
   fPID         = new AliPHOSPIDv1(fHeaderFileName.Data(),fRecPartBranch.Data()) ;
   Add(fPID) ;
   
@@ -361,24 +361,24 @@ void AliPHOSReconstructioner::Exec(Option_t *option)
   if(!fIsInitialized){
     // Initialisation
 
-    fSDigitsBranch="" ; 
+    fSDigitsBranch="Default" ; 
     fSDigitizer  = new AliPHOSSDigitizer(fHeaderFileName.Data(),fSDigitsBranch.Data()) ; 
     Add(fSDigitizer) ;
 
-    fDigitsBranch="" ; 
+    fDigitsBranch="Default" ; 
     fDigitizer   = new AliPHOSDigitizer(fHeaderFileName.Data(),fDigitsBranch.Data()) ; 
     Add(fDigitizer) ;
 
-    fRecPointBranch="" ; 
+    fRecPointBranch="Default" ; 
     fClusterizer = new AliPHOSClusterizerv1(fHeaderFileName.Data(),fRecPointBranch.Data()) ; 
     Add(fClusterizer) ;
 
-    fTSBranch="" ; 
+    fTSBranch="Default" ; 
     fTSMaker     = new AliPHOSTrackSegmentMakerv1(fHeaderFileName.Data(),fTSBranch.Data()) ;
     Add(fTSMaker) ;
 
 
-    fRecPartBranch="" ; 
+    fRecPartBranch="Default" ; 
     fPID         = new AliPHOSPIDv1(fHeaderFileName.Data(),fRecPartBranch.Data()) ;
     Add(fPID) ;
     
@@ -390,20 +390,20 @@ AliPHOSReconstructioner::~AliPHOSReconstructioner()
 {
   // Delete data members if any
 
-  if(fSDigitizer)
-    delete fSDigitizer ;
+//   if(fSDigitizer)
+//     delete fSDigitizer ;
   
-  if(fDigitizer)
-    delete fDigitizer ;
+//   if(fDigitizer)
+//     delete fDigitizer ;
   
-  if(fClusterizer)
-    delete fClusterizer ;
+//   if(fClusterizer)
+//     delete fClusterizer ;
   
-  if(fTSMaker)
-    delete fTSMaker ;
+//   if(fTSMaker)
+//     delete fTSMaker ;
   
-  if(fPID)
-    delete fPID ;
+//   if(fPID)
+//     delete fPID ;
 
 //    TFile * file = (TFile*) gROOT->GetFile(fHeaderFileName.Data()) ;
     

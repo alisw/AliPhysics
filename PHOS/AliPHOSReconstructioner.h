@@ -53,7 +53,7 @@ public:
   void SetBranchTitle(const char* branch,const char * title) ;
             // Sets the branch titles to separate different reconstruction flows 
 
-  void StartFrom(char * module = "SDigitizer",char * title = 0) ;
+  void StartFrom(char * module = "SDigitizer",char * title = "Default") ;
             // From wich step reconstruction begins, 
             // title to be set to all reconstructed branches
 
@@ -71,17 +71,17 @@ private:
   
   TString  fHeaderFileName ;    // File with headers and gAlice
   TString  fDigitsBranch ;      // Title of digits branch
-  TString  fRecPointBranch ;    // -"-      RecPoints     -"-
-  TString  fTSBranch  ;         // -"-      TrackSegments -"-
-  TString  fRecPartBranch ;     // -"-      RecParticles  -"-
-  TString  fSDigitsBranch ;     // -"-      SDigits       -"-
+  TString  fRecPointBranch ;    // Title of RecPoints branch   
+  TString  fTSBranch  ;         // Title of TrackSegments branch
+  TString  fRecPartBranch ;     // Title of RecParticles branch 
+  TString  fSDigitsBranch ;     // Title of SDigits branch      
 
 
-  AliPHOSDigitizer         * fDigitizer ;   // Pointer to AliPHOSDigitizer
-  AliPHOSClusterizer       * fClusterizer ; // Pointer to AliPHOSClusterizer
-  AliPHOSPID               * fPID ;         // Pointer to AliPHOSPID
-  AliPHOSTrackSegmentMaker * fTSMaker ;     // Pointer to AliPHOSTrackSegmentMaker
-  AliPHOSSDigitizer        * fSDigitizer ;  // Pointer to AliPHOSSDigitizer
+  AliPHOSDigitizer         * fDigitizer ;   //! Pointer to AliPHOSDigitizer
+  AliPHOSClusterizer       * fClusterizer ; //! Pointer to AliPHOSClusterizer
+  AliPHOSPID               * fPID ;         //! Pointer to AliPHOSPID
+  AliPHOSTrackSegmentMaker * fTSMaker ;     //! Pointer to AliPHOSTrackSegmentMaker
+  AliPHOSSDigitizer        * fSDigitizer ;  //! Pointer to AliPHOSSDigitizer
 
   Bool_t   fIsInitialized ; // kTRUE if reconstructioner is initialized
  
