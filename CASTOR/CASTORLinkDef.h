@@ -8,8 +8,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ class  AliCASTOR;
-#pragma link C++ class  AliCASTORv1;
-#pragma link C++ class  AliCASTORhit;
+#pragma link C++ class  AliCASTOR+;
+#pragma link C++ class  AliCASTORv1+;
+#pragma link C++ class  AliCASTORhit+;
 
 #endif

@@ -9,13 +9,13 @@
 #pragma link C++ class AliFast-;
 #pragma link C++ class AliFMaker-;
 
-#pragma link C++ class AliFTrackMaker;
-#pragma link C++ class AliFTrack;
-#pragma link C++ class AliFHistBrowser;
-#pragma link C++ class AliFBigBang;
-#pragma link C++ class AliFBrowsable;
-#pragma link C++ class AliFVirtualDisplay;
-#pragma link C++ class AliFDet;
+#pragma link C++ class AliFTrackMaker+;
+#pragma link C++ class AliFTrack+;
+#pragma link C++ class AliFHistBrowser+;
+#pragma link C++ class AliFBigBang+;
+#pragma link C++ class AliFBrowsable+;
+#pragma link C++ class AliFVirtualDisplay+;
+#pragma link C++ class AliFDet+;
 
 //
 // #pragma link C++ class AliFDisplay;

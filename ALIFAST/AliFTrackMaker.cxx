@@ -192,14 +192,13 @@ void AliFTrackMaker::Make()
      // Run production job  
      // Get pointers to Particles arrays and TClonesArray
 
-     TClonesArray *particles = gAliFast->Particles();	
      Int_t idPart, idTrack;
      Double_t  charge, pT, eta, phi;
      TParticle *part;
-     Int_t  nparticles = particles->GetEntriesFast();
+     Int_t  nparticles = gAlice->GetNtrack();
      printf("%10s%10d\n","nparticles",nparticles);
      for(Int_t ind=0;ind<nparticles;ind++) {       
-       part = (TParticle*)particles->UncheckedAt(ind);
+       part = gAlice->Particle(ind);
        idPart  = part->GetPdgCode();
        charge  = part->GetPDG()->Charge();
        pT      = part->Pt();  
