@@ -144,14 +144,6 @@ void guout()
 //
 //    ------------------------------------------------------------------
 //
-
-  Int_t ndet = gAlice->Modules()->GetLast();
-  TObjArray &dets = *gAlice->Modules();
-  AliModule *module;
-  Int_t i;
-  for(i=0; i<=ndet; i++)
-    if((module = (AliModule*)dets[i]))
-      module->FinishEvent();
 }
 
 //______________________________________________________________________
