@@ -15,6 +15,13 @@
 
 /*
 $Log$
+*/
+
+/*
+Old Logs: AliGUIMaterial.cxx,v $
+Revision 1.1  2000/07/13 16:19:10  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.8  2000/07/12 08:56:32  fca
 Coding convention correction and warning removal
 
@@ -53,100 +60,28 @@ The new geometry viewer from A.Morsch
  * 
  **************************************************************************/
 
-#include "AliGUIMaterial.h"
+#include "AliG3Material.h"
 
-ClassImp(AliGUIMaterial)
-
-AliGUIMaterial::AliGUIMaterial()
-{ 
-// Constructor
+ClassImp(AliG3Material)
+AliG3Material::AliG3Material(char* name, char* title,
+			       Float_t a, Float_t z, Float_t dens, Float_t radl, Float_t intl):
+    TMaterial(name, title, a, z, dens, radl, intl)
+{
     fId=-1;
-    fName = 0; 
-    fA=-1; 
-    fZ=-1; 
-    fDensity=-1;
-    fRadl=-1;   
-    fAbsl=-1;    
 }
 
-AliGUIMaterial::AliGUIMaterial(Int_t imat, char* name, Float_t a, Float_t z,
-		   Float_t dens, Float_t radl, Float_t absl)
-{ 
-// Constructor
-    fId=imat;
-    fName=name;
-    fA=a; 
-    fZ=z; 
-    fDensity=dens;
-    fRadl=radl;   
-    fAbsl=absl;    
-}
-void AliGUIMaterial::Dump()
+
+void AliG3Material::Dump()
 {
 // Dump material information
     printf("\n *****************************************");
     printf("\n Material Number:   %10d", fId);
-    printf("\n %s", fName);
+    printf("\n %s", GetName());
     printf("\n Mass   Number:     %10.2f", fA);    
     printf("\n Charge Number:     %10.2f", fZ);
     printf("\n Density:           %10.2f", fDensity);
-    printf("\n Radiation  Length: %10.2f", fRadl);
-    printf("\n Absorption Length: %10.2f", fAbsl);        	
-}
-
-Int_t AliGUIMaterial::Id()
-{
-// return material id
-    return fId;
-}
-
-char*  AliGUIMaterial::Name()
-{
-// return material name 
-    return fName;
-}
-
-Float_t  AliGUIMaterial::A()
-{
-// return atomic number
-    return fA;
-}
-
-Float_t  AliGUIMaterial::Z()
-{
-// return charge number
-    return fZ;
-}
-
-Float_t  AliGUIMaterial::Density()
-{
-// return density
-    return fDensity;
-}
-
-Float_t  AliGUIMaterial::RadiationLength()
-{
-// return radiation length
-    return fRadl;
-}
-
-Float_t  AliGUIMaterial::AbsorptionLength()
-{
-// return absorption length
-    return fAbsl;
-}
-
-
-void AliGUIMaterial::Plot()
-{
-// dummy plot routine
-    ;
-}
-
-void AliGUIMaterial::Streamer(TBuffer &)
-{
-// dummy streamner
-;
+    printf("\n Radiation  Length: %10.2f", fRadLength);
+    printf("\n Absorption Length: %10.2f", fInterLength);        	
 }
 
 

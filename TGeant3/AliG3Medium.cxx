@@ -12,9 +12,15 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /*
 $Log$
+*/
+
+/*
+Old logs: AliGUIMedium.cxx,v $
+Revision 1.1  2000/07/13 16:19:10  fca
+Mainly coding conventions + some small bug fixes
+
 Revision 1.8  2000/07/12 08:56:32  fca
 Coding convention correction and warning removal
 
@@ -53,26 +59,26 @@ The new geometry viewer from A.Morsch
  * 
  **************************************************************************/
 
-#include "AliGUIMedium.h"
+#include "AliG3Medium.h"
 
-ClassImp(AliGUIMedium)
+ClassImp(AliG3Medium)
 
-AliGUIMedium::AliGUIMedium()
+AliG3Medium::AliG3Medium()
 { 
 // constructor
     fId=-1;
-    fName = 0; 
 }
 
-AliGUIMedium::AliGUIMedium(Int_t imed, Int_t imat, char* name, Int_t isvol, 
-			   Int_t ifield,
-			   Float_t fieldm, Float_t tmaxfd, Float_t stemax, Float_t deemax,
+AliG3Medium::AliG3Medium(Int_t imed, Int_t imat, const char* name, 
+			   Int_t isvol, Int_t ifield,
+			   Float_t fieldm, Float_t tmaxfd, 
+			   Float_t stemax, Float_t deemax,
 			   Float_t epsil, Float_t stmin)
+    : TNamed(name, "Medium")
 {
 // constructor
     fId=imed;
     fIdMat=imat;
-    fName=name;
     fIsvol=isvol;
     fIfield=ifield;
     fFieldm=fieldm;
@@ -83,25 +89,20 @@ AliGUIMedium::AliGUIMedium(Int_t imed, Int_t imat, char* name, Int_t isvol,
     fStmin=stmin;
 }
 
-void AliGUIMedium::Dump()
+void AliG3Medium::Dump()
 {
 // Dummy dump
     ;
 }
 
-Int_t AliGUIMedium::Id()
+Int_t AliG3Medium::Id()
 {
 // return medium id
     return fId;
 }
 
-char*  AliGUIMedium::Name()
-{
-// return medium name
-    return fName;
-}
 
-Float_t AliGUIMedium::GetPar(Int_t ipar)
+Float_t AliG3Medium::GetPar(Int_t ipar)
 { 
 // Get parameter number ipar
     Float_t p;
@@ -116,7 +117,7 @@ Float_t AliGUIMedium::GetPar(Int_t ipar)
     return p;
 }
  
-void AliGUIMedium::Streamer(TBuffer &)
+void AliG3Medium::Streamer(TBuffer &)
 {
 // dummy streamer
 ;
