@@ -1,16 +1,14 @@
 // $Id$
-// Category: run
+// Category: physics
 //
 // Author: I. Hrivnacova
 //
-// Class TG4Messenger
-// ------------------
+// Class TG4PhysicsMessenger
+// -------------------------
 // See the class description in the header file.
 
-#include "TG4Messenger.h"
-#include "TG4GeometryManager.h"
+#include "TG4PhysicsMessenger.h"
 #include "TG4GeometryServices.h"
-#include "TG4StepManager.h"
 #include "TG4PhysicsManager.h"
 #include "TG4G3PhysicsManager.h"
 #include "TG4G3CutVector.h"
@@ -18,45 +16,45 @@
 #include "TG4ProcessControlMap.h"
 #include "TG4ProcessMCMap.h"
 
+#include <G4UIdirectory.hh>
 #include <G4UIcmdWithoutParameter.hh>
 #include <G4UIcmdWithABool.hh>
 #include <G4UIcmdWithAString.hh>
 
 //_____________________________________________________________________________
-TG4Messenger::TG4Messenger(TG4GeometryManager* geometryManager, 
-                           TG4PhysicsManager* physicsManager, 
-			   TG4StepManager* stepManager)
-  : fGeometryManager(geometryManager),
-    fPhysicsManager(physicsManager),
-    fStepManager(stepManager)
+TG4PhysicsMessenger::TG4PhysicsMessenger(TG4PhysicsManager* physicsManager)
+  : fPhysicsManager(physicsManager)
 { 
 //
+  fDirectory = new G4UIdirectory("/tg4Physics/");
+  fDirectory->SetGuidance("TGeant4 physics control commands.");
+
   fSetEMCmd
-     = new G4UIcmdWithABool("/g4mc/setEM", this);
+     = new G4UIcmdWithABool("/tg4Physics/setEM", this);
   fSetEMCmd->SetGuidance("Set electromagnetic physics.");
   fSetEMCmd->SetParameterName("EMControl", false);
   fSetEMCmd->AvailableForStates(PreInit);
 
   fSetMuonCmd
-     = new G4UIcmdWithABool("/g4mc/setMuon", this);
+     = new G4UIcmdWithABool("/tg4Physics/setMuon", this);
   fSetMuonCmd->SetGuidance("Set muon physics.");
   fSetMuonCmd->SetParameterName("EMControl", false);
   fSetMuonCmd->AvailableForStates(PreInit);
 
   fSetHadronCmd
-     = new G4UIcmdWithABool("/g4mc/setHadron", this);
+     = new G4UIcmdWithABool("/tg4Physics/setHadron", this);
   fSetHadronCmd->SetGuidance("Set hadron physics.");
   fSetHadronCmd->SetParameterName("HadronControl", false);
   fSetHadronCmd->AvailableForStates(PreInit);
 
   fSetOpticalCmd
-     = new G4UIcmdWithABool("/g4mc/setOptical", this);
+     = new G4UIcmdWithABool("/tg4Physics/setOptical", this);
   fSetOpticalCmd->SetGuidance("Set Cerenkov and optical physics.");
   fSetOpticalCmd->SetParameterName("OpticalControl", false);
   fSetOpticalCmd->AvailableForStates(PreInit);
 
   fSetSpecialCutsCmd
-     = new G4UIcmdWithABool("/g4mc/setSpecialCuts", this);
+     = new G4UIcmdWithABool("/tg4Physics/setSpecialCuts", this);
   fSetSpecialCutsCmd->SetGuidance("Set special cuts process.");
   fSetSpecialCutsCmd
     ->SetGuidance("!! Support for this option is under development.");
@@ -64,7 +62,7 @@ TG4Messenger::TG4Messenger(TG4GeometryManager* geometryManager,
   fSetSpecialCutsCmd->AvailableForStates(PreInit);
 
   fSetSpecialControlsCmd
-     = new G4UIcmdWithABool("/g4mc/setSpecialControls", this);
+     = new G4UIcmdWithABool("/tg4Physics/setSpecialControls", this);
   fSetSpecialControlsCmd->SetGuidance("Set special controls process.");
   fSetSpecialControlsCmd
     ->SetGuidance("!! Support for this option is under development.");
@@ -72,56 +70,58 @@ TG4Messenger::TG4Messenger(TG4GeometryManager* geometryManager,
   fSetSpecialControlsCmd->AvailableForStates(PreInit);
 
   fProcessActivationCmd
-     = new G4UIcmdWithoutParameter("/g4mc/setProcessActivation", this);
+     = new G4UIcmdWithoutParameter("/tg4Physics/setProcessActivation", this);
   fProcessActivationCmd->SetGuidance("Activate/inactivate physics processes.");
   fProcessActivationCmd->AvailableForStates(Idle);
 
   fPrintProcessMCMapCmd
-     = new G4UIcmdWithoutParameter("/g4mc/printProcessMCMap", this);
+     = new G4UIcmdWithoutParameter("/tg4Physics/printProcessMCMap", this);
   fPrintProcessMCMapCmd
     ->SetGuidance("Prints mapping of G4 processes to G3 controls.");
   fPrintProcessMCMapCmd->AvailableForStates(Idle);
 
   fPrintProcessControlMapCmd
-     = new G4UIcmdWithoutParameter("/g4mc/printProcessControlMap", this);
+     = new G4UIcmdWithoutParameter("/tg4Physics/printProcessControlMap", this);
   fPrintProcessControlMapCmd
     ->SetGuidance("Prints mapping of G4 processes to G3 controls.");
   fPrintProcessControlMapCmd->AvailableForStates(Idle);
 
   fPrintVolumeLimitsCmd
-     = new G4UIcmdWithAString("/g4mc/printVolumeLimits", this);
+     = new G4UIcmdWithAString("/tg4Physics/printVolumeLimits", this);
   fPrintVolumeLimitsCmd
     ->SetGuidance("Prints the limits set to the specified volume.");
   fPrintVolumeLimitsCmd->SetParameterName("PrintVolumeLimits", false);
   fPrintVolumeLimitsCmd->AvailableForStates(Idle);
 
   fPrintGeneralCutsCmd
-     = new G4UIcmdWithoutParameter("/g4mc/printGeneralCuts", this);
+     = new G4UIcmdWithoutParameter("/tg4Physics/printGeneralCuts", this);
   fPrintGeneralCutsCmd
     ->SetGuidance("Prints the general G3 cuts.");
   fPrintGeneralCutsCmd->AvailableForStates(Idle);
 
   fPrintGeneralControlsCmd
-     = new G4UIcmdWithoutParameter("/g4mc/printGeneralControls", this);
+     = new G4UIcmdWithoutParameter("/tg4Physics/printGeneralControls", this);
   fPrintGeneralControlsCmd
     ->SetGuidance("Prints the general G3 process controls.");
   fPrintGeneralControlsCmd->AvailableForStates(Idle);
 }
 
 //_____________________________________________________________________________
-TG4Messenger::TG4Messenger(){
+TG4PhysicsMessenger::TG4PhysicsMessenger(){
 //
 } 
 
 //_____________________________________________________________________________
-TG4Messenger::TG4Messenger(const TG4Messenger& right) {
+TG4PhysicsMessenger::TG4PhysicsMessenger(const TG4PhysicsMessenger& right) {
 // 
-  TG4Globals::Exception("TG4Messenger is protected from copying.");
+  TG4Globals::Exception("TG4PhysicsMessenger is protected from copying.");
 }
 
 //_____________________________________________________________________________
-TG4Messenger::~TG4Messenger() {
+TG4PhysicsMessenger::~TG4PhysicsMessenger() {
 //
+
+  delete fDirectory;
   delete fSetEMCmd;
   delete fSetMuonCmd;
   delete fSetHadronCmd;
@@ -139,12 +139,12 @@ TG4Messenger::~TG4Messenger() {
 // operators
 
 //_____________________________________________________________________________
-TG4Messenger& TG4Messenger::operator=(const TG4Messenger& right)
+TG4PhysicsMessenger& TG4PhysicsMessenger::operator=(const TG4PhysicsMessenger& right)
 {
   // check assignement to self
   if (this == &right) return *this;
 
-  TG4Globals::Exception("TG4Messenger is protected from assigning.");
+  TG4Globals::Exception("TG4PhysicsMessenger is protected from assigning.");
     
   return *this;  
 }    
@@ -152,7 +152,7 @@ TG4Messenger& TG4Messenger::operator=(const TG4Messenger& right)
 // public methods
 
 //_____________________________________________________________________________
-void TG4Messenger::SetNewValue(G4UIcommand* command, G4String newValue)
+void TG4PhysicsMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
 { 
 // Applies command to the associated object.
 // ---
