@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/03 21:48:07  morsch
+Adopt to const declaration of some of the methods in AliSegmentation.
+
 Revision 1.3  2000/06/29 12:34:09  morsch
 AliMUONSegmentation class has been made independent of AliMUONChamber. This makes
 it usable with any other geometry class. The link to the object to which it belongs is
@@ -89,7 +92,7 @@ void AliMUONSegmentationV04::Init(Int_t chamber)
     fNpy=7*nPyPCB;
 //
 //  Calculate padsize along x
-    fDpxD[fNsec-1]=fDpx;
+    (*fDpxD)[fNsec-1]=fDpx;
     if (fNsec > 1) {
 	for (Int_t i=fNsec-2; i>=0; i--){
 	    (*fDpxD)[i]=(*fDpxD)[fNsec-1]/(*fNDiv)[i];
