@@ -66,51 +66,58 @@ extern "C" {
 
   void source(Int_t& nomore) {
 #ifdef METHODDEBUG
-    cout << "==> source(" << nomore << ")" << endl;
+      cout << "==> source(" << nomore << ")" << endl;
 #endif
 
-    cout << "\t* EPISOR.lsouit = " << (EPISOR.lsouit?'T':'F') << endl;
+      cout << "\t* EPISOR.lsouit = " << (EPISOR.lsouit?'T':'F') << endl;
 
-    static Bool_t lfirst = true;
-    /*======================================================================*
-     *                                                                      *
-     *                 BASIC VERSION                                        *
-     *                                                                      *
-     *======================================================================*/
-    nomore = 0;
-    /*  +-------------------------------------------------------------------*
-     *  |  First call initializations:*/
-    if (lfirst) {
-
-      /*|  *** The following 3 cards are mandatory ***/
+      static Bool_t lfirst = true;
+      static Bool_t particleIsPrimary = true;
+      static Bool_t lastParticleWasPrimary = true;
       
-      EPISOR.tkesum = zerzer;
-      lfirst = false;
-      EPISOR.lussrc = true;
-      /*|  *** User initialization ***/
-    } else {
-	    TVirtualMCApplication::Instance()->PostTrack();
-	    TVirtualMCApplication::Instance()->FinishPrimary();
-    }
+      /*  +-------------------------------------------------------------------*
+       *    First call initializations for FLUKA:                             */
+      
 
-    
-    /*  |
-     *  +-------------------------------------------------------------------*
-     *  Push one source particle to the stack. Note that you could as well
-     *  push many but this way we reserve a maximum amount of space in the
-     *  stack for the secondaries to be generated
-     */
-
+    nomore = 0;
     // Get the pointer to the VMC
     TVirtualMC* fluka = TFluka::GetMC();
-    // Get the stack produced from the generator
+    // Get the stack 
     TVirtualMCStack* cppstack = fluka->GetStack();
-    //Get next particle
+    TParticle* particle;
     Int_t itrack = -1;
-    TParticle* particle = cppstack->PopNextTrack(itrack);
+    Int_t  nprim  = cppstack->GetNprimary();
+//  Get the next particle from the stack
+    particle  = cppstack->PopNextTrack(itrack);
+
+//  Is this a secondary not handled by Fluka, i.e. a particle added by user action ?
+    lastParticleWasPrimary = particleIsPrimary;
+    
+    if (itrack >= nprim) {
+	particleIsPrimary = kFALSE;
+    } else {
+	particleIsPrimary = kTRUE;
+    }
+
+//    printf("--->Got Particle %d %d %d\n", itrack, particleIsPrimary, lastParticleWasPrimary);    
+
+    if (lfirst) {
+	EPISOR.tkesum = zerzer;
+	lfirst = false;
+	EPISOR.lussrc = true;
+    } else {
+//
+// Post-track actions for primary track
+//
+	if (particleIsPrimary) {
+	    TVirtualMCApplication::Instance()->PostTrack();
+	    TVirtualMCApplication::Instance()->FinishPrimary();
+	}
+    }
 
     //Exit if itrack is negative (-1). Set lsouit to false to mark last track for
     //this event
+
     if (itrack<0) {
       nomore = 1;
       EPISOR.lsouit = false;
@@ -121,14 +128,18 @@ extern "C" {
 #endif
       return;
     }
-
+    
     //Get some info about the particle and print it
+    //
+    //pdg code
+    Int_t pdg = particle->GetPdgCode();
+    
     TVector3 polarisation;
     particle->GetPolarisation(polarisation);
     cout << "\t* Particle " << itrack << " retrieved..." << endl;
     cout << "\t\t+ Name = " << particle->GetName() << endl;
-    cout << "\t\t+ PDG/Fluka code = " << particle->GetPdgCode() 
-	 << " / " << fluka->IdFromPDG(particle->GetPdgCode()) << endl;
+    cout << "\t\t+ PDG/Fluka code = " << pdg 
+	 << " / " << fluka->IdFromPDG(pdg) << endl;
     cout << "\t\t+ P = (" 
 	 << particle->Px() << " , "
 	 << particle->Py() << " , "
@@ -139,60 +150,70 @@ extern "C" {
      */
     
     STACK.lstack++;
-    //cout << "\t* Storing particle parameters in the stack, lstack = " 
-    //	 << STACK.lstack << endl;
+
     /* Wt is the weight of the particle*/
     STACK.wt[STACK.lstack] = oneone;
     STARS.weipri += STACK.wt[STACK.lstack];
+
     /* Particle type (1=proton.....). Ijbeam is the type set by the BEAM
      * card
        */
+
     //STACK.ilo[STACK.lstack] = BEAM.ijbeam;
-    STACK.ilo[STACK.lstack] = fluka-> IdFromPDG(particle->GetPdgCode());
+    if (pdg == 50000050 ||  pdg ==  50000051) {
+	STACK.ilo[STACK.lstack] = fluka-> IdFromPDG(22);
+    } else {
+	STACK.ilo[STACK.lstack] = fluka-> IdFromPDG(pdg);
+    }
+    
+    
+	    
+
     /* From this point .....
      * Particle generation (1 for primaries)
-       */
+    */
     STACK.lo[STACK.lstack] = 1;
+
     /* User dependent flag:*/
     STACK.louse[STACK.lstack] = 0;
+
     /* User dependent spare variables:*/
     Int_t ispr = 0;
     for (ispr = 0; ispr < mkbmx1; ispr++)
       STACK.sparek[STACK.lstack][ispr] = zerzer;
+
     /* User dependent spare flags:*/
     for (ispr = 0; ispr < mkbmx2; ispr++)
 	STACK.ispark[STACK.lstack][ispr] = 0;
+
     /* Save the track number of the stack particle:*/
     STACK.ispark[STACK.lstack][mkbmx2-1] = itrack;
     STACK.nparma++;
     STACK.numpar[STACK.lstack] = STACK.nparma;
     STACK.nevent[STACK.lstack] = 0;
     STACK.dfnear[STACK.lstack] = +zerzer;
-      /* ... to this point: don't change anything
-       * Particle age (s)
-       */
+    
+    /* Particle age (s)*/
     STACK.agestk[STACK.lstack] = +zerzer;
     STACK.aknshr[STACK.lstack] = -twotwo;
+
     /* Group number for "low" energy neutrons, set to 0 anyway*/
     STACK.igroup[STACK.lstack] = 0;
-    /* Kinetic energy of the particle (GeV)*/
-    //STACK.tke[STACK.lstack] = 
-    //sqrt( BEAM.pbeam*BEAM.pbeam + 
-    // PAPROP.am[BEAM.ijbeam+6]*PAPROP.am[BEAM.ijbeam+6] ) 
-    //- PAPROP.am[BEAM.ijbeam+6];
-    STACK.tke[STACK.lstack] = particle->Energy() - particle->GetMass();
+    
+    /* Kinetic energy */
+    if (pdg == 50000050 ||  pdg ==  50000051) {
+	// 
+	// Special case for optical photons
+	STACK.tke[STACK.lstack] = particle->Energy();
+    } else {
+	STACK.tke[STACK.lstack] = particle->Energy() - particle->GetMass();
+    }
+    
     
     /* Particle momentum*/
-    //STACK.pmom [STACK.lstack] = BEAM.pbeam;
     STACK.pmom [STACK.lstack] = particle->P();
     
-    /*     PMOM (lstack) = SQRT ( TKE (stack) * ( TKE (lstack) + TWOTWO
-     *    &                     * AM (ILO(lstack)) ) )
-     * Cosines (tx,ty,tz)
-     */
-    //STACK.tx [STACK.lstack] = BEAM.tinx;
-    //STACK.ty [STACK.lstack] = BEAM.tiny;
-    //STACK.tz [STACK.lstack] = BEAM.tinz;
+    /* Cosines (tx,ty,tz)*/
     Double_t cosx = particle->Px()/particle->P();
     Double_t cosy = particle->Py()/particle->P();
     Double_t cosz = TMath::Sqrt(oneone - cosx*cosx - cosy*cosy);
@@ -201,30 +222,23 @@ extern "C" {
     STACK.ty [STACK.lstack] = cosy;
     STACK.tz [STACK.lstack] = cosz;
     
-    /* Polarization cosines:
-     */
-    //STACK.txpol [STACK.lstack] = -twotwo;
-    //STACK.typol [STACK.lstack] = +zerzer;
-    //STACK.tzpol [STACK.lstack] = +zerzer;
+    /* Polarization cosines:*/
     if (polarisation.Mag()) {
-      Double_t cospolx = polarisation.Px()/polarisation.Mag();
-      Double_t cospoly = polarisation.Py()/polarisation.Mag();
-      Double_t cospolz = sqrt(oneone - cospolx*cospolx - cospoly*cospoly);
-      STACK.tx [STACK.lstack] = cospolx;
-      STACK.ty [STACK.lstack] = cospoly;
-      STACK.tz [STACK.lstack] = cospolz;
+	Double_t cospolx = polarisation.Px()/polarisation.Mag();
+	Double_t cospoly = polarisation.Py()/polarisation.Mag();
+	Double_t cospolz = sqrt(oneone - cospolx*cospolx - cospoly*cospoly);
+	STACK.tx [STACK.lstack] = cospolx;
+	STACK.ty [STACK.lstack] = cospoly;
+	STACK.tz [STACK.lstack] = cospolz;
     }
     else {
-      STACK.txpol [STACK.lstack] = -twotwo;
-      STACK.typol [STACK.lstack] = +zerzer;
-      STACK.tzpol [STACK.lstack] = +zerzer;
+	STACK.txpol [STACK.lstack] = -twotwo;
+	STACK.typol [STACK.lstack] = +zerzer;
+	STACK.tzpol [STACK.lstack] = +zerzer;
     }
     
     /* Particle coordinates*/
-    //STACK.xa [STACK.lstack] = BEAM.xina;
-    //STACK.ya [STACK.lstack] = BEAM.yina;
-    //STACK.za [STACK.lstack] = BEAM.zina
-      //Vertext coordinates;
+    // Vertext coordinates;
     STACK.xa [STACK.lstack] = particle->Vx();
     STACK.ya [STACK.lstack] = particle->Vy();
     STACK.za [STACK.lstack] = particle->Vz();
@@ -232,11 +246,11 @@ extern "C" {
     /*  Calculate the total kinetic energy of the primaries: don't change*/
     Int_t st_ilo =  STACK.ilo[STACK.lstack];
     if ( st_ilo != 0 )
-      EPISOR.tkesum += 
-	((STACK.tke[STACK.lstack] + PAPROP.amdisc[st_ilo+6])
-	 * STACK.wt[STACK.lstack]);
+	EPISOR.tkesum += 
+	    ((STACK.tke[STACK.lstack] + PAPROP.amdisc[st_ilo+6])
+	     * STACK.wt[STACK.lstack]);
     else
-      EPISOR.tkesum += (STACK.tke[STACK.lstack] * STACK.wt[STACK.lstack]);
+	EPISOR.tkesum += (STACK.tke[STACK.lstack] * STACK.wt[STACK.lstack]);
     
     /*  Here we ask for the region number of the hitting point.
      *     NREG (LSTACK) = ...
@@ -246,21 +260,30 @@ extern "C" {
     geocrs( STACK.tx[STACK.lstack], 
 	    STACK.ty[STACK.lstack], 
 	    STACK.tz[STACK.lstack] );
+    
     Int_t idisc;
+
     georeg ( STACK.xa[STACK.lstack], 
 	     STACK.ya[STACK.lstack], 
 	     STACK.za[STACK.lstack],
 	     STACK.nreg[STACK.lstack], 
 	     idisc);//<-- dummy return variable not used
-    
     /*  Do not change these cards:*/
     Int_t igeohsm1 = 1;
     Int_t igeohsm2 = -11;
     geohsm ( STACK.nhspnt[STACK.lstack], igeohsm1, igeohsm2, LTCLCM.mlattc );
     STACK.nlattc[STACK.lstack] = LTCLCM.mlattc;
     soevsv();
-    TVirtualMCApplication::Instance()->BeginPrimary();
-    TVirtualMCApplication::Instance()->PreTrack();
+//
+//  Pre-track actions at for primary tracks
+//
+    if (particleIsPrimary) {
+	TVirtualMCApplication::Instance()->BeginPrimary();
+	TVirtualMCApplication::Instance()->PreTrack();
+    }
+    
+//
+
 #ifdef METHODDEBUG
     cout << "<== source(" << nomore << ")" << endl;
 #endif
