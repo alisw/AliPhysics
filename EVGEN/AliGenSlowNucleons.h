@@ -4,7 +4,12 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-
+//
+//  Generator for slow nucleons in pA interactions. 
+//  Source is modelled by a relativistic Maxwell distributions.
+//  Original code by  Ferenc Sikler  <sikler@rmki.kfki.hu>
+//  This class: andreas.morsch@cern.ch
+//
 #include "AliGenerator.h"
 class AliSlowNucleonModel;
 class TH2F;
@@ -15,6 +20,7 @@ class AliGenSlowNucleons : public AliGenerator
 public:
     AliGenSlowNucleons();
     AliGenSlowNucleons(Int_t npart);
+    AliGenSlowNucleons(const AliGenSlowNucleons &sn);
     virtual ~AliGenSlowNucleons();
     virtual void Init();
     virtual void FinishRun();
@@ -41,6 +47,8 @@ public:
     void     GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q);
     Double_t Maxwell(Double_t m, Double_t p, Double_t t);
     void     Lorentz(Double_t m, Double_t beta, Float_t* q);
+    void Copy(AliGenSlowNucleons&) const;
+    AliGenSlowNucleons & operator=(const AliGenSlowNucleons & rhs);
  protected:
     Float_t  fCMS;          // Center of mass energy
     Float_t  fMomentum;     // Target nucleus momentum

@@ -15,11 +15,14 @@
 
 /* $Id$ */
 
-/*
-  Generator for slow nucluons in pA interactions. 
-  Source is modelled by a relativistic Maxwell distributions.
-  Original code by  Ferenc Sikler  <sikler@rmki.kfki.hu>
- */
+//
+//  Generator for slow nucleons in pA interactions. 
+//  Source is modelled by a relativistic Maxwell distributions.
+//  This class cooparates with AliCollisionGeometry if used inside AliGenCocktail.
+//  In this case the number of slow nucleons is determined from the number of wounded nuclei
+//  using a realisation of AliSlowNucleonModel.
+//  Original code by  Ferenc Sikler  <sikler@rmki.kfki.hu>
+// 
 
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
@@ -56,6 +59,13 @@ AliGenSlowNucleons::AliGenSlowNucleons(Int_t npart)
     fDebug = 0;
 }
 
+AliGenSlowNucleons::AliGenSlowNucleons(const AliGenSlowNucleons & sn):
+    AliGenerator(sn)
+{
+// Copy constructor
+    sn.Copy(*this);
+}
+
 //____________________________________________________________
 AliGenSlowNucleons::~AliGenSlowNucleons()
 {
@@ -80,6 +90,8 @@ void AliGenSlowNucleons::Init()
 
 void AliGenSlowNucleons::FinishRun()
 {
+// End of run action
+// Show histogram for debugging if requested.
     if (fDebug) {
 	TCanvas *c = new TCanvas("c","Canvas 1",400,10,600,700);
 	c->Divide(2,1);
@@ -177,15 +189,15 @@ void AliGenSlowNucleons::Generate()
 
 
 void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q)
+
+{
 /* 
    Emit a slow nucleon with "temperature" T [GeV], 
    from a source moving with velocity beta         
    Three-momentum [GeV/c] is given back in q[3]    
 */
 
-{
  Double_t m, pmax, p, f, theta, phi;
- 
  TDatabasePDG * pdg = TDatabasePDG::Instance();
  const Double_t kMassProton  = pdg->GetParticle(kProton) ->Mass();
  const Double_t kMassNeutron = pdg->GetParticle(kNeutron)->Mass();
@@ -242,6 +254,22 @@ void AliGenSlowNucleons::Lorentz(Double_t m, Double_t beta, Float_t* q)
     Double_t gamma  = 1/sqrt(1-beta*beta); 
     Double_t energy = sqrt(m*m + q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
     q[2] = gamma * (q[2] + beta*energy);
+}
+
+	  
+AliGenSlowNucleons& AliGenSlowNucleons::operator=(const  AliGenSlowNucleons& rhs)
+{
+// Assignment operator
+    rhs.Copy(*this);
+    return *this;
+}
+
+void AliGenSlowNucleons::Copy(AliGenSlowNucleons&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
 }
 
 
