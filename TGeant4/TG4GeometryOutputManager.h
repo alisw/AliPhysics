@@ -11,9 +11,7 @@
 #include "TG4Globals.h"
 
 #include <globals.hh>
-
-//#include <fstream.h>
-#include "g4std/fstream"
+#include <g4std/fstream>
 
 class TG4GeometryOutputManager
 {

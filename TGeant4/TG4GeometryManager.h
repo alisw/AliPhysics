@@ -17,8 +17,8 @@
 
 #include <Rtypes.h>
 
-#include "g4std/fstream"
-#include "g4std/vector"
+#include <g4std/fstream>
+#include <g4std/vector>
 
 class TG4CutVector;
 class TG4FlagVector;

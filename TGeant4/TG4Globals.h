@@ -11,11 +11,9 @@
 #include "TG3Flag.h"
 
 #include <globals.hh>
-
+#include <g4std/vector>
 #include <g4rw/tvordvec.h>
 #include <g4rw/tpordvec.h>
-
-#include <vector.h>
 
 class G4Material;
 class G4Element;

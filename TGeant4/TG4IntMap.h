@@ -6,8 +6,8 @@
 #ifndef TG4_INT_MAP_H
 #define TG4_INT_MAP_H
 
-#include "g4std/map"
-#include "globals.hh"
+#include <g4std/map>
+#include <globals.hh>
 
 class TG4IntMap
 {

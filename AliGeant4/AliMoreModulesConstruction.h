@@ -13,7 +13,7 @@
 #include <G3VolTable.hh>
 #include <globals.hh>
 
-#include <vector.h>
+#include <g4std/vector>
 
 class AliSingleModuleConstruction;
 class AliSDManager;
