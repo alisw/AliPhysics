@@ -24,16 +24,16 @@ class AliEMCALJet : public TObject {
   void SetEta(Float_t val)    {fEta    = val;}    
   void SetIsWeightedEnergy(Bool_t flag)    {fIsWeightedEnergy    = flag;}    
   void SetTrackList(Int_t val, Float_t* pt, Float_t* eta, Float_t* phi, Int_t* pdg);
-  const Float_t Energy()  {return fEnergy;}
-  const Float_t EMCALEnergy()  {return fEMCALEnergy;}
-  const Float_t EMCALEnergyBGSub()  {return fEMCALEnergyBGSub;}
-  const Float_t TrackEnergy()  {return fTrackEnergy;}
-  const Float_t TrackEnergyPtCut()  {return fTrackEnergyPtCut;}
-  const Float_t HCEnergy()  {return fHCEnergy;}
-  const Float_t Phi()     {return fPhi;}
-  const Float_t Eta()     {return fEta;}
+  Float_t Energy() const  {return fEnergy;}
+  Float_t EMCALEnergy() const  {return fEMCALEnergy;}
+  Float_t EMCALEnergyBGSub()  const {return fEMCALEnergyBGSub;}
+  Float_t TrackEnergy() const  {return fTrackEnergy;}
+  Float_t TrackEnergyPtCut() const  {return fTrackEnergyPtCut;}
+  Float_t HCEnergy() const  {return fHCEnergy;}
+  Float_t Phi() const     {return fPhi;}
+  Float_t Eta()  const    {return fEta;}
   Int_t   TrackList(Float_t* pt, Float_t* eta, Float_t* phi, Int_t* pdg);
-  const Int_t   NTracks() {return fNt;} 
+  Int_t   NTracks() const {return fNt;} 
   
 protected:
   Float_t  fEnergy;      // Jet Energy
