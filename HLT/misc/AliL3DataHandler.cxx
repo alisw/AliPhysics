@@ -7,7 +7,7 @@
 
 #include "AliL3DataHandler.h"
 #include "AliL3Logging.h"
-#include "AliTransBit.h"
+#include "AliL3TransBit.h"
 #include "AliL3Transform.h"
 
 #if GCCVERSION == 3
@@ -38,7 +38,7 @@ using namespace std;
 // --------------------
 //
 // The data is RLE encoded, using _8_bit representation of the ADC-values.
-// Conversion is done in the class AliTransBit.
+// Conversion is done in the class AliL3TransBit.
 //
 // In the beginning of every row, the row number if written and the number of pads
 // containing data on that row. For every pad with data the pad number is written,
@@ -53,7 +53,6 @@ using namespace std;
 // (ROW < 176, PAD < 200, ADC < 255, if(NZEROS > 255) write 2 words;)
 
 ClassImp(AliL3DataHandler)
-
   
 AliL3DataHandler::AliL3DataHandler()
 {
@@ -66,7 +65,6 @@ AliL3DataHandler::~AliL3DataHandler()
 {
   if(fBitTransformer)
     delete fBitTransformer;
-  
 }
 
 void AliL3DataHandler::Convert10to8Bit()
@@ -88,7 +86,7 @@ void AliL3DataHandler::Convert10to8Bit()
   
   
   //Initialize the bit transformation class:
-  fBitTransformer = new AliTransBit_v1();
+  fBitTransformer = new AliL3TransBit_v1();
   Int_t b0=10;  // original number of bits
   Int_t b1=8;   // compressed
   fBitTransformer->SetBits(b0,b1);

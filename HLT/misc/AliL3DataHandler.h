@@ -4,13 +4,13 @@
 #include "AliL3RootTypes.h"
 #include "AliL3MemHandler.h"
 
-class AliTransBit;
+class AliL3TransBit;
 
 class AliL3DataHandler : public AliL3MemHandler {
 
  private:
   
-  AliTransBit *fBitTransformer; //!
+  AliL3TransBit *fBitTransformer; //!
   
   void Write(Byte_t *comp,UInt_t &index,UShort_t value);
   Short_t Read(Byte_t *comp,UInt_t &index);
