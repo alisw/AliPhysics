@@ -5,6 +5,8 @@
  * See cxx source for full Copyright notice                               */
 
 #include "TTask.h"
+#include "TArrayD.h"
+#include "TArrayI.h"
 
 #include "AliRICH.h"
 class AliHitMap;
@@ -33,9 +35,9 @@ protected:
   AliRICHcluster         fRawCluster;                    //Current raw cluster before deconvolution
   AliRICHcluster         fResolvedCluster;               //Current cluster after deconvolution
   Int_t                  fNlocals;                       // number of local maxima
-  Double_t               fLocalX[100],fLocalY[100];      // list of locals X,Y
-  Double_t               fLocalQ[100];                   // list of locals charge Q
-  Int_t                  fLocalC[100];                   // list of locals CombiPid
+  TArrayD                fLocalX,fLocalY;                // list of locals X,Y
+  TArrayD                fLocalQ;                        // list of locals charge Q
+  TArrayI                fLocalC;                        // list of locals CombiPid
   ClassDef(AliRICHClusterFinder,0) //Finds raw clusters, trasfers them to resolved clusters through declustering.
 };
 #endif

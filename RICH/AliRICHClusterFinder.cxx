@@ -65,6 +65,12 @@ void AliRICHClusterFinder::FindLocalMaxima()
       }
     }
     if(iNotMax==0) {
+      if (fNlocals >= fLocalX.GetSize()) {
+	fLocalX.Set(fNlocals+100);
+	fLocalY.Set(fNlocals+100);
+	fLocalQ.Set(fNlocals+100);
+	fLocalC.Set(fNlocals+100);
+      }
       TVector2 x2=AliRICHParam::Pad2Loc(padX1,padY1);
       fLocalX[fNlocals]=x2.X();fLocalY[fNlocals]=x2.Y();
       fLocalQ[fNlocals] = (Double_t)padQ1;
