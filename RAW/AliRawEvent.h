@@ -138,18 +138,12 @@ class AliRawData : public TObject {
 
 public:
    AliRawData() { fSize = fBufSize = 0; fRawData = 0; fOwner = kTRUE; }
-   AliRawData(const AliRawData& rawData): TObject(rawData) 
-     {Fatal("AliRawData", "copy constructor not implemented");};
-   AliRawData& operator = (const AliRawData& /*rawData*/) {
-     Fatal("operator =", "assignment operator not implemented"); 
-     return *this;
-   };
    virtual ~AliRawData() { if (fOwner) delete [] fRawData; }
 
    inline void SetSize(Int_t size);
-   inline void  SetBuffer(void *buf, Int_t size);
-   Int_t    GetSize() const { return fSize; }
-   void    *GetBuffer() { return fRawData; }
+   inline void SetBuffer(void *buf, Int_t size);
+   Int_t       GetSize() const { return fSize; }
+   void       *GetBuffer() { return fRawData; }
 
 private:
    Int_t   fSize;         // number of raw data bytes
@@ -157,27 +151,30 @@ private:
    char   *fRawData;      //[fSize] raw event data
    Bool_t  fOwner;        //!if true object owns fRawData buffer
 
+   AliRawData(const AliRawData &);      // not implemented, usage causes
+   void operator=(const AliRawData &);  // link time error
+
    ClassDef(AliRawData,1)  // Alice raw event buffer
 };
 
-void AliRawData::SetSize(Int_t size) 
+void AliRawData::SetSize(Int_t size)
 {
-  if (size > fBufSize) {
-    if (fOwner) delete [] fRawData;
-    fRawData = new char [size];
-    fBufSize = size;
-    fOwner   = kTRUE;
-  }
-  fSize = size;
+   if (size > fBufSize) {
+      if (fOwner) delete [] fRawData;
+      fRawData = new char [size];
+      fBufSize = size;
+      fOwner   = kTRUE;
+   }
+   fSize = size;
 }
 
-void AliRawData::SetBuffer(void *buf, Int_t size) 
+void AliRawData::SetBuffer(void *buf, Int_t size)
 {
-  if (fOwner) delete [] fRawData;
-  fRawData = (char *) buf;
-  fBufSize = size;
-  fSize    = size;
-  fOwner   = kFALSE;
+   if (fOwner) delete [] fRawData;
+   fRawData = (char *) buf;
+   fBufSize = size;
+   fSize    = size;
+   fOwner   = kFALSE;
 }
 
 
@@ -185,12 +182,6 @@ class AliRawEvent : public TObject {
 
 public:
    AliRawEvent();
-   AliRawEvent(const AliRawEvent& rawEvent): TObject(rawEvent) 
-     {Fatal("AliRawEvent", "copy constructor not implemented");};
-   AliRawEvent& operator = (const AliRawEvent& /*rawEvent*/) {
-     Fatal("operator =", "assignment operator not implemented"); 
-     return *this;
-   };
    virtual ~AliRawEvent();
 
    AliRawEventHeader     *GetHeader();
@@ -208,6 +199,9 @@ private:
    AliRawData            *fRawData;     // raw data container
    TObjArray             *fSubEvents;   // sub AliRawEvent's
 
+   AliRawEvent(const AliRawEvent &);    // not implemented, usage causes
+   void operator=(const AliRawEvent &); // link time error
+
    ClassDef(AliRawEvent,1)  // ALICE raw event object
 };
 
@@ -216,8 +210,6 @@ class AliStats : public TObject {
 
 public:
    AliStats(const char *filename = "", Int_t compmode = 0, Bool_t filter = kFALSE);
-   AliStats(const AliStats& stats): TObject(stats) 
-     {Fatal("AliStats", "copy constructor not implemented");};
    virtual ~AliStats();
    AliStats &operator=(const AliStats &rhs);
 
@@ -261,6 +253,8 @@ private:
    TH1F    *fRTHist;     // histogram of real-time to process chunck of data
    Float_t  fChunk;      //!chunk to be histogrammed
 
+   AliStats(const AliStats &);  // not implemented
+
    ClassDef(AliStats,1)  // Statistics object
 };
 
@@ -270,15 +264,10 @@ class AliRawDB : public TObject {
 public:
    AliRawDB(AliRawEvent *event, Double_t maxsize, Int_t compress,
             Bool_t create = kTRUE);
-   AliRawDB(const AliRawDB& rawDB): TObject(rawDB) 
-     {Fatal("AliRawDB", "copy constructor not implemented");};
-   AliRawDB& operator = (const AliRawDB& /*rawDB*/) {
-     Fatal("operator =", "assignment operator not implemented"); 
-     return *this;
-   };
    virtual ~AliRawDB() { Close(); }
 
    virtual const char *GetOpenOption() const { return "RECREATE"; }
+   virtual Int_t       GetNetopt() const { return 0; }
    virtual Bool_t      Create();
    virtual void        Close();
    void                Fill() { fTree->Fill(); }
@@ -306,6 +295,10 @@ protected:
    virtual Bool_t      FSHasSpace(const char *fs) const;
    virtual void        MakeTree();
 
+private:
+   AliRawDB(const AliRawDB &);       // not implemented, usage causes
+   void operator=(const AliRawDB &); // link time error
+
    ClassDef(AliRawDB,0)  // Raw DB
 };
 
@@ -332,6 +325,7 @@ public:
    ~AliRawCastorDB() { Close(); }
 
    const char *GetOpenOption() const { return "-RECREATE"; }
+   Int_t       GetNetopt() const { return 0; }
    void        Close();
 
 private:
@@ -375,12 +369,6 @@ class AliTagDB : public TObject {
 
 public:
    AliTagDB(AliRawEventHeader *header, Double_t maxsize, Bool_t create = kTRUE);
-   AliTagDB(const AliTagDB& tagDB): TObject(tagDB) 
-     {Fatal("AliTagDB", "copy constructor not implemented");};
-   AliTagDB& operator = (const AliTagDB& /*tagDB*/) {
-     Fatal("operator =", "assignment operator not implemented"); 
-     return *this;
-   };
    virtual ~AliTagDB() { Close(); }
 
    Bool_t          Create();
@@ -406,6 +394,10 @@ protected:
 
    virtual const char *GetFileName() const;
 
+private:
+   AliTagDB(const AliTagDB &);       // not implemented, usage causes
+   void operator=(const AliTagDB &); // link time error
+
    ClassDef(AliTagDB,0)  // Tag DB
 };
 
@@ -429,12 +421,6 @@ class AliRunDB : public TObject {
 
 public:
    AliRunDB(Bool_t noLocalDB = kFALSE);
-   AliRunDB(const AliRunDB& runDB): TObject(runDB) 
-     {Fatal("AliRunDB", "copy constructor not implemented");};
-   AliRunDB& operator = (const AliRunDB& /*runDB*/) {
-     Fatal("operator =", "assignment operator not implemented"); 
-     return *this;
-   };
    ~AliRunDB() { Close(); }
 
    void Update(AliStats *stats);
@@ -444,6 +430,9 @@ public:
 
 private:
    TFile  *fRunDB;     // run database
+
+   AliRunDB(const AliRunDB &);       // not implemented, usage causes
+   void operator=(const AliRunDB &); // link time error
 
    ClassDef(AliRunDB,0)  // Run (bookkeeping) DB
 };

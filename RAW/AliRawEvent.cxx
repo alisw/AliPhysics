@@ -505,7 +505,8 @@ again:
    retry++;
 
    fRawDB = TFile::Open(fname, GetOpenOption(),
-                        Form("ALICE MDC%d raw DB", kMDC), fCompress);
+                        Form("ALICE MDC%d raw DB", kMDC), fCompress,
+                        GetNetopt());
    if (!fRawDB) {
       if (retry < kMaxRetry) {
          Warning("Create", "failure to open file, sleeping %d %s before retrying...",
@@ -1180,6 +1181,21 @@ void AliRunDB::UpdateAliEn(AliStats *stats)
    TGrid *g = TGrid::Connect(kAlienHost, "");
 
    TString lfn = kAlienDir;
+   TDatime dt;
+
+   // make a subdirectory for each day
+   lfn += "/adc-";
+   lfn += dt.GetDate();
+
+   // check if directory exists, if not create it
+   if (!g->OpenDir(lfn)) {
+      // directory does not exist, create it
+      if (g->Mkdir(lfn, kTRUE) == -1) {
+         Error("UpdateAliEn", "cannot create directory %s", lfn.Data());
+         lfn = kAlienDir;
+      }
+   }
+
    lfn += "/";
    lfn += gSystem->BaseName(stats->GetFileName());
 
@@ -1208,10 +1224,10 @@ void AliRunDB::Close()
 class AliMDCInterruptHandler : public TSignalHandler {
 public:
    AliMDCInterruptHandler(AliMDC *mdc) : TSignalHandler(kSigUser1, kFALSE), fMDC(mdc) { }
-   AliMDCInterruptHandler(const AliMDCInterruptHandler& handler): TSignalHandler(handler) 
+   AliMDCInterruptHandler(const AliMDCInterruptHandler& handler): TSignalHandler(handler)
      {Fatal("AliMDCInterruptHandler", "copy constructor not implemented");};
    AliMDCInterruptHandler& operator = (const AliMDCInterruptHandler& /*rawDB*/) {
-     Fatal("operator =", "assignment operator not implemented"); 
+     Fatal("operator =", "assignment operator not implemented");
      return *this;
    };
    Bool_t Notify() {
