@@ -1772,8 +1772,6 @@ fin:
           }
         }
 	fprintf(pAliceInp,"DELTARAY  %10.4g%10.3f%10.3f%10.1f%10.1f%10.1f\n",cut->Cut(), 100., 1.03, matMin, matMax, 1.0);
-	fprintf(pAliceInp,"STEPSIZE  %10.4g%10.3f%10.3f%10.1f%10.1f\n", 0.1, 1.0, 1.00, 
-	Float_t(gGeoManager->GetListOfUVolumes()->GetEntriesFast()-1), 1.0);
       } // end of if for delta-rays by electrons
     
 
