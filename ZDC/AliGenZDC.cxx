@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/03/15 16:13:28  coppedis
+Code review
+
 Revision 1.6  2000/11/30 17:16:14  coppedis
 Changes suggested by fca
 
@@ -135,12 +138,6 @@ void AliGenZDC::Generate()
      fP[i] = pLab[i];
   }
   
-  if(fDebugOpt == 1){
-    printf("\n\n		Initial momentum :	\n");
-    for(i=0; i<=2; i++){
-       printf("	p[%d] = %f\n",i,pLab[i]);
-    }
-  }
   
   // Beam divergence and crossing angle
   if(fBeamCrossAngle!=0.) {
@@ -171,9 +168,7 @@ void AliGenZDC::Generate()
     TVector3 b(fP[0]/fP0, fP[1]/fP0, fP[2]/fP0);
     TLorentzVector pFermi(dddp[0], dddp[1], dddp[2], dddp0);
 
-    
     pFermi.Boost(b);
-
     for(i=0; i<=2; i++){
        fBoostP[i] = pFermi[i];
        fP[i] = pFermi[i];
