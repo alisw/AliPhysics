@@ -427,7 +427,7 @@ void AliALIFE::Comment(char* Comment)
 }
 
 
-void AliALIFE::Finish()
+void AliALIFE::Finish(Bool_t iremove)
 {
 // Finish geometry definition
     char s[BUFSIZ];
@@ -440,6 +440,10 @@ void AliALIFE::Finish()
     
     fclose(fFile1);
     fclose(fFile2);    
+    if (iremove) {
+	remove(fVolumeFile);
+	remove(fBodyFile);
+    }
 }
 
 void AliALIFE::Copy(AliALIFE&) const

@@ -45,7 +45,7 @@ class AliALIFE : public  TObject {
     
     void Comment(char* Comment);
 
-    void Finish();
+    void Finish(Bool_t remove = 0);
 
     void SetDefaultVolume(TString vol1, TString vol2) 
 	{fDefaultVolume1=vol1; fDefaultVolume2=vol2;}
