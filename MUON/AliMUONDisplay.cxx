@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/01/25 20:41:56  morsch
+Protect against empty TreeD and TreeR.
+
 Revision 1.9  2001/01/23 18:58:19  hristov
 Initialisation of some pointers
 
@@ -517,7 +520,7 @@ void AliMUONDisplay::DisplayColorScale()
     AliMUONChamber *iChamber = &(pMUON->Chamber(fChamber-1));
     AliMUONResponse * response=iChamber->ResponseModel();
     Int_t adcmax=1024;
-    if (response) adcmax= (Int_t) response->MaxAdc();
+    if (response) adcmax = (Int_t) response->MaxAdc();
     
 
     TBox *box;
@@ -804,13 +807,11 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 // Display MUON Chamber Geometry
     char nodeName[7];
     sprintf(nodeName,"MUON%d",100+fChamber);
-    printf("\n Node name %s %p", nodeName, gAlice->GetGeometry());
     
     TNode *node1=gAlice->GetGeometry()->GetNode(nodeName);
     if (node1) node1->Draw("same");  
 //add clusters to the pad
     DrawClusters();
-    printf("Node name %s", nodeName);   
     DrawHits();
     DrawCoG();
     DrawCoG2();
@@ -897,12 +898,12 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 
     if (chamber > 14) return;
     printf(" chamber %d \n",chamber);
-    fChamber=chamber;
-    fCathode=cathode;
+    fChamber = chamber;
+    fCathode = cathode;
     
     ResetPoints();
     
-    AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
+    AliMUON *pMUON  =     (AliMUON*)gAlice->GetModule("MUON");
     AliMUONChamber*       iChamber;
     AliSegmentation*      segmentation;
     AliMUONResponse*      response;
@@ -914,8 +915,9 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     Int_t nent = 0;
  
    if (gAlice->TreeD()) {
-	nent=(Int_t)gAlice->TreeD()->GetEntries();
-	gAlice->TreeD()->GetEvent(nent-2+cathode-1);
+	nent = (Int_t) gAlice->TreeD()->GetEntries();
+	printf(" entries %d \n", nent);
+	gAlice->TreeD()->GetEvent(cathode-1);
     }
     
     Int_t ndigits = muonDigits->GetEntriesFast();
@@ -926,51 +928,56 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 
     segmentation = iChamber->SegmentationModel(cathode);
     response     = iChamber->ResponseModel();
-    Float_t zpos=iChamber->Z();  
+    Float_t zpos = iChamber->Z();
+
+    segmentation->Dump();
+    
     AliMUONDigit  *mdig;
-    AliMUONPoints *points = 0;
-    TMarker3DBox *marker=0;
+    AliMUONPoints *points  = 0;
+    TMarker3DBox  *marker  = 0;
     //
     //loop over all digits and store their position
     
-    Int_t npoints=1;
-    Float_t adcmax=1024;
-    if (response) adcmax= response->MaxAdc();
+    Int_t npoints  = 1;
+    Float_t adcmax = 1024;
+    if (response) adcmax = response->MaxAdc();
 
-    for (Int_t digit=0;digit<ndigits;digit++) {
+    for (Int_t digit = 0; digit < ndigits; digit++) {
         mdig    = (AliMUONDigit*)muonDigits->UncheckedAt(digit);
+	if (mdig->Cathode() != cathode-1) continue;
+
         //
         // First get all needed parameters
         //
-        Int_t charge=mdig->fSignal;
-        Int_t index=Int_t(TMath::Log(charge)/(TMath::Log(adcmax)/22));
-        Int_t color=261+index;
-	Int_t colorTrigger=2;   
-        if (color>282) color=282;
+        Int_t charge = mdig->Signal();
+        Int_t index  = Int_t(TMath::Log(charge)/(TMath::Log(adcmax)/22));
+        Int_t color  = 261+index;
+	Int_t colorTrigger = 2;   
+        if (color > 282) color = 282;
 
 	if (chamber > 10) { // trigger chamber 
-	    Int_t sumCharge=0;
-	    for (Int_t icharge=0; icharge<10; icharge++) {
-		sumCharge=sumCharge+mdig->fTcharges[icharge];
+	    Int_t sumCharge = 0;
+	    for (Int_t icharge = 0; icharge < 10; icharge++) {
+		sumCharge = sumCharge+mdig->TrackCharge(icharge);
 	    }
-	    Int_t testCharge=sumCharge-(Int_t(sumCharge/10))*10;
-	    if(sumCharge<=10||testCharge>0) {
-		colorTrigger=color; 
+	    Int_t testCharge = sumCharge-(Int_t(sumCharge/10))*10;
+	    if(sumCharge <= 10 || testCharge > 0) {
+		colorTrigger = color; 
 	    } else {
-		colorTrigger=5; 
+		colorTrigger = 5; 
 	    }
 	}
 
 	// get the center of the pad - add on x and y half of pad size
 	Float_t xpad, ypad, zpad;
-	segmentation->GetPadC(mdig->fPadX, mdig->fPadY,xpad, ypad, zpad);
+	segmentation->GetPadC(mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
 	
-        Int_t isec=segmentation->Sector(mdig->fPadX, mdig->fPadY);
-        Float_t dpx=segmentation->Dpx(isec)/2;
-        Float_t dpy=segmentation->Dpy(isec)/2;
-	Int_t nPara, offset;
-        segmentation->GetNParallelAndOffset(mdig->fPadX,mdig->fPadY,
-		&nPara,&offset);
+        Int_t   isec = segmentation->Sector(mdig->PadX(), mdig->PadY());
+        Float_t  dpx = segmentation->Dpx(isec)/2;
+        Float_t  dpy = segmentation->Dpy(isec)/2;
+//
+//	segmentation->Dump();
+	
 	//
 	// Then set the objects
 	//
@@ -988,17 +995,16 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
         points->SetTrackIndex(-1);
         points->SetDigitIndex(digit);
         points->SetPoint(0,xpad,ypad,zpos);	
-	for (Int_t imark=0;imark<nPara; imark++)
-	{
-	    Int_t lineColor = (zpad-zpos > 0) ? 2:3;
-	    segmentation->GetPadC(mdig->fPadX + imark*offset, mdig->fPadY,xpad, ypad, zpad);
-	    marker=new TMarker3DBox(xpad,ypad,zpos,dpx,dpy,0,0,0);
-	    marker->SetLineColor(lineColor);
-	    marker->SetFillStyle(1001);
-	    marker->SetFillColor(color);
-	    marker->SetRefObject((TObject*)points);
-	    points->Set3DMarker(imark, marker);
-	}
+
+	Int_t lineColor = (zpad-zpos > 0) ? 2:3;
+	marker=new TMarker3DBox(xpad,ypad,zpos,dpx,dpy,0,0,0);
+
+	    
+	marker->SetLineColor(lineColor);
+	marker->SetFillStyle(1001);
+	marker->SetFillColor(color);
+	marker->SetRefObject((TObject*)points);
+	points->Set3DMarker(0, marker);
     }
 }
 //___________________________________________
@@ -1117,8 +1123,8 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
     Float_t zpos=iChamber->Z();
 
     Int_t ntracks = (Int_t)gAlice->TreeH()->GetEntries();
-    Int_t nthits=0;
-    for (track=0; track<ntracks;track++) {
+    Int_t nthits  = 0;
+    for (track = 0; track < ntracks; track++) {
 	gAlice->ResetHits();
 	gAlice->TreeH()->GetEvent(track);
 	TClonesArray *muonHits  = pMUON->Hits();
@@ -1139,7 +1145,7 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
 	Int_t npoints=1;
 	for (Int_t hit=0;hit<nhits;hit++) {
             mHit = (AliMUONHit*)muonHits->UncheckedAt(hit);
-            Int_t nch  = mHit->fChamber;              // chamber number
+            Int_t nch  = mHit->Chamber();              // chamber number
             if (nch != chamber) continue;
 	    //
 	    // Retrieve info and set the objects

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/01/23 18:58:19  hristov
+Initialisation of some pointers
+
 Revision 1.7  2000/12/21 22:14:38  morsch
 Clean-up of coding rule violations.
 
@@ -148,10 +151,10 @@ void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
 	    digit =(AliMUONDigit*)
 		(fDigits[cath]->UncheckedAt(cluster->fIndexMap[i][cath]));
 	    // pad coordinates
-	    ix = digit->fPadX;
-	    iy = digit->fPadY;
+	    ix = digit->PadX();
+	    iy = digit->PadY();
 	    // pad charge
-	    fCharge[i][cath] = digit->fSignal;
+	    fCharge[i][cath] = digit->Signal();
 	    // pad centre coordinates
 //	    fSegmentation[cath]->GetPadCxy(ix, iy, x, y);
             // globals kUsed in fitting functions
@@ -253,5 +256,3 @@ AliMUONClusterInput& AliMUONClusterInput
 // Dummy assignment operator
     return *this;
 }
-
-

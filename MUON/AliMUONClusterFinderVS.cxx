@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.17  2001/01/23 18:58:19  hristov
+Initialisation of some pointers
+
 Revision 1.16  2000/12/21 23:27:30  morsch
 Error in argument list of AddRawCluster corrected.
 
@@ -181,10 +184,10 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    // pointer to digit
 	    fDig[i][cath]=fInput->Digit(cath, c->fIndexMap[i][cath]);
 	    // pad coordinates
-	    fIx[i][cath]= fDig[i][cath]->fPadX;
-	    fIy[i][cath]= fDig[i][cath]->fPadY;
+	    fIx[i][cath]= fDig[i][cath]->PadX();
+	    fIy[i][cath]= fDig[i][cath]->PadY();
 	    // pad charge
-	    fQ[i][cath] = fDig[i][cath]->fSignal;
+	    fQ[i][cath] = fDig[i][cath]->Signal();
 	    // pad centre coordinates
 	    fSeg[cath]->
 		GetPadC(fIx[i][cath], fIy[i][cath], fX[i][cath], fY[i][cath], fZ[i][cath]);
@@ -895,12 +898,12 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* c)
 		digt=(AliMUONDigit*) fHitMap[cath]->GetHit(x[j], y[j]);
 		isec=fSeg[cath]->Sector(x[j], y[j]);
 		Float_t a1 = fSeg[cath]->Dpx(isec)*fSeg[cath]->Dpy(isec);
-		if (digt->fSignal/a1 > fQ[i][cath]/a0) {
+		if (digt->Signal()/a1 > fQ[i][cath]/a0) {
 		    isLocal[i][cath]=kFALSE;
 		    break;
 //
 // handle special case of neighbouring pads with equal signal
-		} else if (digt->fSignal == fQ[i][cath]) {
+		} else if (digt->Signal() == fQ[i][cath]) {
 		    if (fNLocal[cath]>0) {
 			for (Int_t k=0; k<fNLocal[cath]; k++) {
 			    if (x[j]==fIx[fIndLocal[k][cath]][cath] 
@@ -968,7 +971,7 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* c)
 		if (fHitMap[cath]->TestHit(ix, iy)!=kEmpty) {
 		    iNN++;
 		    digt=(AliMUONDigit*) fHitMap[cath]->GetHit(ix,iy);
-		    if (digt->fSignal > fQ[i][cath]) isLocal[i][cath]=kFALSE;
+		    if (digt->Signal() > fQ[i][cath]) isLocal[i][cath]=kFALSE;
 		}
 	    } // Loop over pad neighbours in y
 	    if (isLocal[i][cath] && iNN>0) {
@@ -1031,7 +1034,7 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* c)
 		if (fHitMap[cath]->TestHit(ix, iy)!=kEmpty) {
 		    iNN++;
 		    digt=(AliMUONDigit*) fHitMap[cath]->GetHit(ix,iy);
-		    if (digt->fSignal > fQ[i][cath]) isLocal[i][cath]=kFALSE;
+		    if (digt->Signal() > fQ[i][cath]) isLocal[i][cath]=kFALSE;
 		}
 	    } // Loop over pad neighbours in x
 	    if (isLocal[i][cath] && iNN>0) {
@@ -1077,14 +1080,14 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
     for (Int_t i=0; i<c->fMultiplicity[cath]; i++)
     {
 	dig= fInput->Digit(cath,c->fIndexMap[i][cath]);
-	ix=dig->fPadX+c->fOffsetMap[i][cath];
-	iy=dig->fPadY;
-	Int_t q=dig->fSignal;
+	ix=dig->PadX()+c->fOffsetMap[i][cath];
+	iy=dig->PadY();
+	Int_t q=dig->Signal();
 	if (!flag) q=Int_t(q*c->fContMap[i][cath]);
 //	fprintf(stderr,"q %d c->fPeakSignal[ %d ] %d\n",q,cath,c->fPeakSignal[cath]);
-	if (dig->fPhysics >= dig->fSignal) {
+	if (dig->Physics() >= dig->Signal()) {
 	    c->fPhysicsMap[i]=2;
-	} else if (dig->fPhysics == 0) {
+	} else if (dig->Physics() == 0) {
 	    c->fPhysicsMap[i]=0;
 	} else  c->fPhysicsMap[i]=1;
 //
@@ -1093,9 +1096,9 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
 // peak signal and track list
 	if (q>c->fPeakSignal[cath]) {
 	    c->fPeakSignal[cath]=q;
-	    c->fTracks[0]=dig->fHit;
-	    c->fTracks[1]=dig->fTracks[0];
-	    c->fTracks[2]=dig->fTracks[1];
+	    c->fTracks[0]=dig->Hit();
+	    c->fTracks[1]=dig->Track(0);
+	    c->fTracks[2]=dig->Track(1);
 //	    fprintf(stderr," c->fTracks[0] %d c->fTracks[1] %d\n",dig->fHit,dig->fTracks[0]);
 	}
 //
@@ -1150,7 +1153,7 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
     {
 	dig = fInput->Digit(cath,c->fIndexMap[i][cath]);
 	fSeg[cath]->
-	GetPadC(dig->fPadX,dig->fPadY,xpad,ypad, zpad);
+	GetPadC(dig->PadX(),dig->PadY(),xpad,ypad, zpad);
 	fprintf(stderr,"x %f y %f cx %f cy %f\n",xpad,ypad,c->fX[0],c->fY[0]);
 	dx = xpad - c->fX[0];
 	dy = ypad - c->fY[0];
@@ -1159,17 +1162,18 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
 	if (dr < dr0) {
 	    dr0 = dr;
 	    fprintf(stderr," dr %f\n",dr);
-	    Int_t q=dig->fSignal;
-	    if (dig->fPhysics >= dig->fSignal) {
+	    Int_t q=dig->Signal();
+	    if (dig->Physics() >= dig->Signal()) {
 		c->fPhysicsMap[i]=2;
-	    } else if (dig->fPhysics == 0) {
+	    } else if (dig->Physics() == 0) {
 		c->fPhysicsMap[i]=0;
 	    } else  c->fPhysicsMap[i]=1;
 	    c->fPeakSignal[cath]=q;
-	    c->fTracks[0]=dig->fHit;
-	    c->fTracks[1]=dig->fTracks[0];
-	    c->fTracks[2]=dig->fTracks[1];
-	    fprintf(stderr," c->fTracks[0] %d c->fTracks[1] %d\n",dig->fHit,dig->fTracks[0]);
+	    c->fTracks[0]=dig->Hit();
+	    c->fTracks[1]=dig->Track(0);
+	    c->fTracks[2]=dig->Track(1);
+	    fprintf(stderr," c->fTracks[0] %d c->fTracks[1] %d\n",dig->Hit(),
+		    dig->Track(0));
 	}
 //
     } // loop over digits
@@ -1190,15 +1194,15 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     
     Int_t idx = fHitMap[cath]->GetHitIndex(i,j);
     AliMUONDigit* dig = (AliMUONDigit*) fHitMap[cath]->GetHit(i,j);
-    Int_t q=dig->fSignal;
-    Int_t theX=dig->fPadX;
-    Int_t theY=dig->fPadY; 
+    Int_t q=dig->Signal();
+    Int_t theX=dig->PadX();
+    Int_t theY=dig->PadY(); 
    
     if (q > TMath::Abs(c.fPeakSignal[0]) && q > TMath::Abs(c.fPeakSignal[1])) {
 	c.fPeakSignal[cath]=q;
-	c.fTracks[0]=dig->fHit;
-	c.fTracks[1]=dig->fTracks[0];
-	c.fTracks[2]=dig->fTracks[1];
+	c.fTracks[0]=dig->Hit();
+	c.fTracks[1]=dig->Track(0);
+	c.fTracks[2]=dig->Track(1);
     }
 
 //
@@ -1207,9 +1211,9 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     Int_t mu=c.fMultiplicity[cath];
     c.fIndexMap[mu][cath]=idx;
     
-    if (dig->fPhysics >= dig->fSignal) {
+    if (dig->Physics() >= dig->Signal()) {
         c.fPhysicsMap[mu]=2;
-    } else if (dig->fPhysics == 0) {
+    } else if (dig->Physics() == 0) {
         c.fPhysicsMap[mu]=0;
     } else  c.fPhysicsMap[mu]=1;
 
@@ -1217,9 +1221,9 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
     if (mu > 0) {
 	for (Int_t ind = mu-1; ind >= 0; ind--) {
 	    Int_t ist=(c.fIndexMap)[ind][cath];
-	    Int_t ql=fInput->Digit(cath, ist)->fSignal;
-	    Int_t ix=fInput->Digit(cath, ist)->fPadX;
-	    Int_t iy=fInput->Digit(cath, ist)->fPadY;
+	    Int_t ql=fInput->Digit(cath, ist)->Signal();
+	    Int_t ix=fInput->Digit(cath, ist)->PadX();
+	    Int_t iy=fInput->Digit(cath, ist)->PadY();
 	    
 	    if (q>ql || (q==ql && theX > ix && theY < iy)) {
 		c.fIndexMap[ind][cath]=idx;
@@ -1339,8 +1343,8 @@ void AliMUONClusterFinderVS::FindRawClusters()
     for (cath=0; cath<2; cath++) {
 	for (ndig=0; ndig<fInput->NDigits(cath); ndig++) {
 	    dig = fInput->Digit(cath, ndig);
-	    Int_t i=dig->fPadX;
-	    Int_t j=dig->fPadY;
+	    Int_t i=dig->PadX();
+	    Int_t j=dig->PadY();
 	    if (fHitMap[cath]->TestHit(i,j)==kUsed ||fHitMap[0]->TestHit(i,j)==kEmpty) {
 		nskip++;
 		continue;
@@ -1349,10 +1353,10 @@ void AliMUONClusterFinderVS::FindRawClusters()
 	    AliMUONRawCluster c;
 	    c.fMultiplicity[0]=0;
 	    c.fMultiplicity[1]=0;
-	    c.fPeakSignal[cath]=dig->fSignal;
-	    c.fTracks[0]=dig->fHit;
-	    c.fTracks[1]=dig->fTracks[0];
-	    c.fTracks[2]=dig->fTracks[1];
+	    c.fPeakSignal[cath]=dig->Signal();
+	    c.fTracks[0]=dig->Hit();
+	    c.fTracks[1]=dig->Track(0);
+	    c.fTracks[2]=dig->Track(1);
 	    // tag the beginning of cluster list in a raw cluster
 	    c.fNcluster[0]=-1;
 	    Float_t xcu, ycu;

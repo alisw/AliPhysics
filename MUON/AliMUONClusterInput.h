@@ -47,7 +47,7 @@ class AliMUONClusterInput : public TObject {
     AliMUONClusterInput(const AliMUONClusterInput& clusterInput){;}
     AliMUONClusterInput & operator = (const AliMUONClusterInput& rhs);
  private:
-    static AliMUONClusterInput* fgClusterInput; // singleton instance
+    static AliMUONClusterInput* fgClusterInput; // ! singleton instance
     // Digits
     TClonesArray*        fDigits[2];       // ! Array of pointers to digits
     Int_t                fNDigits[2];      // ! Number of digits
@@ -65,7 +65,7 @@ class AliMUONClusterInput : public TObject {
     Float_t              fCharge[500][2];  // ! List of charges for current cluster
     Int_t                fChargeTot[2];    // ! Total charge
     Float_t              fQtot[2];         // ! Total charge
-    Float_t              fZ;                // ! Current z-position
+    Float_t              fZ;               // ! Current z-position
     // Fitter
     static TMinuit*      fgMinuit;          // ! Fitter
     ClassDef(AliMUONClusterInput, 0)        // Global data service for hit reconstruction
