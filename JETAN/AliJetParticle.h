@@ -34,7 +34,8 @@ class AliJetParticle : public TObject
   
   void SetUID(Int_t id) {fIdxInEvent = id;}
   void SetLabel(Int_t l){fLabel = l;}
-  
+  void SetType(Int_t t) {fType = t;}  
+
   Float_t P()      const {return TMath::Sqrt(fPx*fPx+fPy*fPy+fPz*fPz);}
   Float_t Y()      const {if (fE  != fPz) return 0.5*TMath::Log((fE+fPz)/(fE-fPz));
                                     else return 1.e30;}
@@ -48,6 +49,7 @@ class AliJetParticle : public TObject
   Float_t Pz()     const {return fPz;}
   Float_t Energy() const {return fE;}
 
+  Int_t GetType()  const {return fType;}
   Float_t Pt()     const {return fPt;}
   Float_t Eta()    const {return fEta;}
   Float_t Phi()    const {return fPhi;} 
@@ -68,11 +70,12 @@ class AliJetParticle : public TObject
   Float_t fPz;          // z component of momentum at vertex
   Float_t fE;           // total energy
   Int_t   fIdxInEvent;  // index of particle as appeared in complete event
-  Int_t   fLabel;
+  Int_t fType;          // -123 if marked
+  Int_t   fLabel;       // assigned label
   Float_t fPt;          // normally calculated 
   Float_t fEta;         // normally calculated 
   Float_t fPhi;         // normally calculated 
 
-  ClassDef(AliJetParticle,1)  // Basic Jet Particle class
+  ClassDef(AliJetParticle,2)  // Basic Jet Particle class
 };
 #endif

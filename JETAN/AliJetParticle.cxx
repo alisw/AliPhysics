@@ -28,6 +28,7 @@ AliJetParticle::AliJetParticle(const AliJetParticle& in) :
   SetMomentum(in.fPx,in.fPy,in.fPz,in.fE);
   fIdxInEvent=in.fIdxInEvent;
   fLabel=in.fLabel;
+  fType=in.fType;
 }
  
 AliJetParticle::AliJetParticle(const TParticle* p, Int_t idx, Int_t l) :
@@ -36,6 +37,7 @@ AliJetParticle::AliJetParticle(const TParticle* p, Int_t idx, Int_t l) :
   SetMomentum(p->Px(),p->Py(),p->Pz(),p->Energy());
   fIdxInEvent=idx;
   fLabel=l;
+  fType=0;
 }
 
 AliJetParticle::AliJetParticle(Float_t px, Float_t py, Float_t pz, 
@@ -45,6 +47,7 @@ AliJetParticle::AliJetParticle(Float_t px, Float_t py, Float_t pz,
   SetMomentum(px,py,pz,etot);
   fIdxInEvent=idx;
   fLabel=l;
+  fType=0;
 }
 
 AliJetParticle::AliJetParticle(Float_t px, Float_t py, Float_t pz, 
@@ -52,7 +55,8 @@ AliJetParticle::AliJetParticle(Float_t px, Float_t py, Float_t pz,
 			       Float_t pt, Float_t phi, Float_t eta) :
   TObject(),
   fPx(px),fPy(py),fPz(pz),
-  fE(etot),fIdxInEvent(idx),fLabel(l),
+  fE(etot),fIdxInEvent(idx),
+  fType(0),fLabel(l),
   fPt(pt),fEta(eta),fPhi(phi)
 {
 
@@ -71,6 +75,7 @@ void AliJetParticle::Calculate()
 
 void AliJetParticle::Clear(Option_t* /*t*/)
 {
+  fType=0;
   fPx=0.;
   fPy=0.;
   fPz=0.;
