@@ -17,8 +17,8 @@
 
 #include <Riostream.h>
 
-#include "AliModule.h"
-#include "AliRun.h"
+//#include "AliModule.h"
+//#include "AliRun.h"
 #include "TClonesArray.h"
 #include "TFlukaGeo.h"
 #include "TCallf77.h"      //For the fortran calls
@@ -88,6 +88,8 @@ TFluka::TFluka()
    fCurrentFlukaRegion = -1;
    fGeom = 0;
    fMaterials = 0;
+   fDummyBoundary = 0;
+   fFieldFlag = 1;
 } 
  
 //______________________________________________________________________________ 
@@ -105,6 +107,8 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
 
    fNVolumes      = 0;
    fCurrentFlukaRegion = -1;
+   fDummyBoundary = 0;
+   fFieldFlag = 1;
    fGeom = new TFlukaMCGeometry("geom", "ALICE geometry");
    if (verbosity > 2) fGeom->SetDebugMode(kTRUE);
    fMaterials = 0;
@@ -331,9 +335,6 @@ void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
    } else {
        SetCut(param, parval, fGeom->GetFlukaMaterial(itmed));
    }
-   
-   
-   
 }    
 
 // functions from GGEOM 
@@ -509,7 +510,7 @@ Int_t TFluka::PDGFromId(Int_t id) const
 	return  50000050;
     }
 // Error id    
-    if (id == 0) {
+    if (id == 0 || id < -6 || id > 250) {
 	if (fVerbosityLevel >= 1)
 	    printf("PDGFromId: Error id = 0\n");
 	return -1;
@@ -605,6 +606,7 @@ Double_t TFluka::Xsec(char*, Double_t, Int_t, Int_t)
 //______________________________________________________________________________ 
 void TFluka::InitPhysics()
 {
+   printf("=>InitPhysics\n");
   Int_t i, j, k;
   Double_t fCut;
 
