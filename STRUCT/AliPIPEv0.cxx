@@ -92,15 +92,15 @@ void AliPIPEv0::CreateGeometry()
 //
 //  distance between bellows
 //  total size of bellow section
-    const Float_t kdzb  = 15.0;
+    const Float_t kdzb  = 14.6;
 //  size of undulated region 
 //  
 //  Absorber side
 //   
 //  distance between bellows
-    const Float_t kdzbbA =  5.0;
+    const Float_t kdzbbA =  4.6;
 //  total size of bellow section
-    const Float_t kdzbA  = 15.0;
+    const Float_t kdzbA  = 14.6;
 //  size of undulated region 
     const Float_t kdzubA =  3.75;
 
@@ -123,7 +123,7 @@ void AliPIPEv0::CreateGeometry()
     Float_t hlenQbe0 = kdzbA;
 //
 //  Inox pipe between Be and Bellow (absorber side)
-    Float_t hlenQb24[3] = {10.5/2., 1.8, 3.3};
+    Float_t hlenQb24[3] = {11.3/2., 1.8, 3.3};
 //
 //
     Float_t hlenQb28 = (800.-hlenQbbe1-2.*hlenQbab-4.*hlenQb29-2.*hlenQbe0)/2.;
@@ -670,12 +670,12 @@ void AliPIPEv0::CreateGeometry()
 // 
 // Connecting tube ->
     ptube[0] =  0.0;
-    ptube[1] =  4.9;
+    ptube[1] =  4.5;
     ptube[2] = 14.6;
     gMC->Gsvolu("QI34","TUBE", idtmed[kInox], ptube, 3);
     
     ptube[0] =  0.0;
-    ptube[1] =  4.3;
+    ptube[1] =  3.9;
     ptube[2] = 14.6;
     gMC->Gsvolu("QI44","TUBE", idtmed[kAir], ptube, 3);
     gMC->Gspos("QI44", 1, "QI34", 0.0, 0.0, 0.0, 0, "ONLY");
@@ -683,7 +683,7 @@ void AliPIPEv0::CreateGeometry()
 
   //
   // Flange ->
-    ptube[0] =  5.41;
+    ptube[0] =  4.6;
     ptube[1] =  7.30;
     ptube[2] =  2.15;
     gMC->Gsvolu("QI35","TUBE", idtmed[kInox], ptube, 3);
@@ -729,6 +729,7 @@ void AliPIPEv0::CreateMaterials()
   Float_t zAir[4]={6.,7.,8.,18.};
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
   Float_t dAir = 1.20479E-3;
+  Float_t dAir1 = 1.20479E-10;
 
   //
   //     Berillium 
@@ -744,7 +745,7 @@ void AliPIPEv0::CreateMaterials()
   AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
   //
   //     Vacuum 
-  AliMaterial(16, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
+  AliMixture(16, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
   //
   //     stainless Steel 
   AliMixture(19, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
