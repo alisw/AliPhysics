@@ -33,7 +33,11 @@ AliRawReader::AliRawReader(const char* fileName, Bool_t addNumber)
   fFileName = fileName;
   if (!addNumber) {
     fFileNumber = -1;
+#ifndef __DECCXX
     fStream = new fstream(fileName, ios::binary|ios::in);
+#else
+    fStream = new fstream(fileName, ios::in);
+#endif
   } else {
     fFileNumber = 0;
     fStream = NULL;
@@ -47,10 +51,10 @@ AliRawReader::~AliRawReader()
 // close the input file
 
   if (fStream) {
-#ifndef __HP_aCC
-    if (fStream->is_open()) fStream->close();
-#else
+#if defined(__HP_aCC) || defined(__DECCXX)
     if (fStream->rdbuf()->is_open()) fStream->close();
+#else
+    if (fStream->is_open()) fStream->close();
 #endif
     delete fStream;
   }
@@ -60,10 +64,10 @@ AliRawReader::~AliRawReader()
 Bool_t AliRawReader::OpenNextFile()
 {
   if (fStream) {
-#ifndef __HP_aCC
-    if (fStream->is_open()) fStream->close();
-#else
+#if defined(__HP_aCC) || defined(__DECCXX)
     if (fStream->rdbuf()->is_open()) fStream->close();
+#else
+    if (fStream->is_open()) fStream->close();
 #endif
     delete fStream;
     fStream = NULL;
@@ -73,11 +77,15 @@ Bool_t AliRawReader::OpenNextFile()
   fFileNumber++;
   char fileName[256];
   sprintf(fileName, "%s%d", fFileName, fFileNumber);
+#ifndef __DECCXX 
   fStream = new fstream(fileName, ios::binary|ios::in);
-#ifndef __HP_aCC
-  return (fStream->is_open());
 #else
+  fStream = new fstream(fileName, ios::in);
+#endif
+#if defined(__HP_aCC) || defined(__DECCXX)
   return (fStream->rdbuf()->is_open());
+#else
+  return (fStream->is_open());
 #endif
 }
 
