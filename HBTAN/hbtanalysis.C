@@ -47,7 +47,8 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   Int_t TPC = strcmp(datatype,"TPC");
   Int_t ITSv1 = strcmp(datatype,"ITSv1");
   Int_t ITSv2 = strcmp(datatype,"ITSv2");
-
+  Int_t intern = strcmp(datatype,"Intern");
+  
   if(!kine)
    {
     reader = new AliHBTReaderKineTree();
@@ -65,6 +66,10 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
    {
     reader = new AliHBTReaderITSv2();
    }
+  else if(!intern)
+   {
+    reader = new AliHBTReaderInternal("Kine.sum.root");
+   }
   else
    {
     cerr<<"Option "<<datatype<<"  not recognized. Exiting"<<endl;
@@ -78,7 +83,6 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
      dirs = new TObjArray(last-first+1);
      for (Int_t i = first; i<=last; i++)
       {
-	if(i == 24) continue;
         sprintf(buff,"%s/%s/%s/%d",basedir,field,serie,i);
         TObjString *odir= new TObjString(buff);
         dirs->Add(odir);
@@ -107,11 +111,59 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   analysis->AddTrackFunction(qinvcfT);
   analysis->AddParticleFunction(qinvcfP);
   
-  analysis->Process(processopt);
   
   qinvcfP->Rename("qinvcfP","Particle (simulated) Qinv CF \\pi^{+} \\pi^{+}");
   qinvcfT->Rename("qinvcfT","Track (recontructed) Qinv CF \\pi^{+} \\pi^{+}");
+  
+  AliHBTQOutCMSLCCorrelFctn* qoutP = new AliHBTQOutCMSLCCorrelFctn();
+  qoutP->Rename("qoutP","Particle (simulated) Q_{out} CF \\pi^{+} \\pi^{+}");
+  AliHBTQOutCMSLCCorrelFctn* qoutT = new AliHBTQOutCMSLCCorrelFctn(); 
+  qoutT->Rename("qoutT","Track (recontructed) Q_{out} CF \\pi^{+} \\pi^{+}");
 
+  AliHBTPairCut *outPairCut = new AliHBTPairCut();
+  outPairCut->SetQOutCMSLRange(0.0,0.15);
+  outPairCut->SetQSideCMSLRange(0.0,0.02);
+  outPairCut->SetQLongCMSLRange(0.0,0.02);
+  qoutP->SetPairCut(outPairCut);
+  qoutT->SetPairCut(outPairCut);
+  
+  AliHBTQSideCMSLCCorrelFctn* qsideP = new AliHBTQSideCMSLCCorrelFctn(); 
+  qsideP->Rename("qsideP","Particle (simulated) Q_{side} CF \\pi^{+} \\pi^{+}");
+  AliHBTQSideCMSLCCorrelFctn* qsideT = new AliHBTQSideCMSLCCorrelFctn(); 
+  qsideT->Rename("qsideT","Track (recontructed) Q_{side} CF \\pi^{+} \\pi^{+}");
+
+  AliHBTPairCut *sidePairCut = new AliHBTPairCut();
+  sidePairCut->SetQOutCMSLRange(0.0,0.02);
+  sidePairCut->SetQSideCMSLRange(0.0,0.15);
+  sidePairCut->SetQLongCMSLRange(0.0,0.02);
+  qsideP->SetPairCut(sidePairCut);
+  qsideT->SetPairCut(sidePairCut);
+
+    
+  AliHBTQLongCMSLCCorrelFctn* qlongP = new AliHBTQLongCMSLCCorrelFctn(); 
+  qlongP->Rename("qlongP","Particle (simulated) Q_{long} CF \\pi^{+} \\pi^{+}");
+  AliHBTQLongCMSLCCorrelFctn* qlongT = new AliHBTQLongCMSLCCorrelFctn(); 
+  qlongT->Rename("qlongT","Track (recontructed) Q_{long} CF \\pi^{+} \\pi^{+}");
+
+  AliHBTPairCut *longPairCut = new AliHBTPairCut();
+  longPairCut->SetQOutCMSLRange(0.0,0.02);
+  longPairCut->SetQSideCMSLRange(0.0,0.02);
+  longPairCut->SetQLongCMSLRange(0.0,0.15);
+  qlongP->SetPairCut(longPairCut);
+  qlongT->SetPairCut(longPairCut);
+
+  analysis->AddTrackFunction(qoutP);
+  analysis->AddParticleFunction(qoutT);
+  
+  analysis->AddTrackFunction(qsideP);
+  analysis->AddParticleFunction(qsideT);
+  
+  analysis->AddTrackFunction(qlongT);
+  analysis->AddParticleFunction(qlongT);
+  
+
+  analysis->Process(processopt);
+  
   TFile histoOutput(outfile,"recreate"); 
   analysis->WriteFunctions();
   histoOutput.Close();

@@ -55,6 +55,7 @@
 #pragma link C++ class AliHBTReaderITSv2+;
 #pragma link C++ class AliHBTReaderPPprod+;
 #pragma link C++ class AliHBTReaderKineTree+;
+#pragma link C++ class AliHBTReaderInternal+;
 
 #pragma link C++ class AliHBTQInvCorrelFctn+;
 
@@ -77,11 +78,5 @@
 
 #pragma link C++ class AliHBTTwoTrackEffFctn+;
 #pragma link C++ class AliHBTTwoTrackEffFctn3D+;
-
-//#pragma link C++ class Xqinv+;
-//#pragma link C++ class Xqout+;
-//#pragma link C++ class Xqside+;
-//#pragma link C++ class Xqlong+;
-//#pragma link C++ class XqinvDiff+;
 
 #endif
