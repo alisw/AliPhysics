@@ -101,7 +101,7 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan) {
   TRandom *gran = new TRandom();
   
 //  cout << "modules" << endl;
-  Int_t mod[nmod];
+  Int_t * mod = new Int_t [nmod];
   for(Int_t i=0;i<nmod;i++) {
     mod[i] = (Int_t) (1.+fModules*gran->Uniform());
     cout << i+1 << ": Dead module nr: " << mod[i] << endl;
@@ -111,8 +111,8 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan) {
   }
 
 //  cout << "chips" << endl;
-  Int_t chip[nchip];
-  Int_t chip_mod[nchip];
+  Int_t * chip = new Int_t[nchip];
+  Int_t * chip_mod = new Int_t[nchip];
   Int_t i=0;
   while(i<nchip) {
     Int_t module = (Int_t) (fModules*gran->Uniform() + 1.);
@@ -130,9 +130,9 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan) {
   }
 
 //  cout << "channels" << endl;
-  Int_t channel[nchan];
-  Int_t channel_chip[nchan];
-  Int_t channel_mod[nchan];
+  Int_t * channel = new Int_t[nchan];
+  Int_t * channel_chip = new Int_t[nchan];
+  Int_t * channel_mod = new Int_t[nchan];
   i=0;
   while(i<nchan) {
     Int_t module = (Int_t) (fModules*gran->Uniform() + 1.);
@@ -154,14 +154,12 @@ void AliITSresponseSDD::SetDeadChannels(Int_t nmod, Int_t nchip, Int_t nchan) {
     cout << i << ": Dead channel nr. " << channel[i-1] << " in chip nr. " << channel_chip[i-1] << " in module nr: " << channel_mod[i-1] << endl;
   }
 
-  /*  
   delete [] mod;
   delete [] chip;
   delete [] chip_mod;
   delete [] channel;
   delete [] channel_mod;
   delete [] channel_chip;
-  */
 }
 
 void AliITSresponseSDD::PrintGains()
