@@ -231,7 +231,7 @@ c--       Include 'common_fsi_c.inc'
        GPIPI=OM/AAPI(1,J)                                                                     
        GPIPI=GPIPI*(1+(AAPI(3,J)-AAPI(1,J)**2)*XX+AAPI(4,J)*XX*XX)                            
        GPIPI=GPIPI/(1+(AAPI(3,J)+AAPI(2,J)/AAPI(1,J))*XX)                                     
-                                                                                       
+       GPIPIOLD=GPIPI                                                                
        END   
       
        FUNCTION GPIN(X,J)                                                                    
