@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2001/02/14 15:50:40  hristov
+The last particle in event marked using SetHighWaterMark
+
 Revision 1.19  2000/12/21 16:24:06  morsch
 Coding convention clean-up
 
@@ -281,7 +284,8 @@ void AliGenHijing::Generate()
         ks        = iparticle->GetStatusCode();
         if (!fSelectAll) {
           selected = KinematicSelection(iparticle)&&SelectFlavor(kf);
-          if (!fSpectators && selected) selected = (ks != 0 && ks != 10);
+	  if (!fSpectators && selected) selected = (ks != 0 && ks != 1 && ks != 10
+						    && ks != 11);
         }
 //
 // Put particle on the stack if selected
