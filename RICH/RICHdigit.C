@@ -11,7 +11,8 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
 
 // Dynamically link some shared libs
 
-   if (gClassTable->GetID("AliRun") < 0) {
+   
+  if (gClassTable->GetID("AliRun") < 0) {
       gROOT->LoadMacro("loadlibs.C");
       loadlibs();
    }
@@ -22,27 +23,41 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject("galice.root");
    if (file) file->Close(); 
    file = new TFile("galice.root","UPDATE");
-   file->ls();
-
-   printf ("I'm after Map \n");
-
+//   file->ls();
 // Get AliRun object from file or create it if not on file
+
+   
+
+   if (gClassTable->GetID("AliRun") < 0) {
+	gROOT->LoadMacro("loadlibs.C");
+	loadlibs();
+    }
+    else {
+      //delete gAlice;
+      gAlice = 0;
+    }
+   
+
 
    if (!gAlice) {
        gAlice = (AliRun*)file->Get("gAlice");
        if (gAlice) printf("AliRun object found on file\n");
        if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-   }
-   printf ("I'm after gAlice \n");
-   
+   } else {
+      delete gAlice;
+      gAlice = (AliRun*)file->Get("gAlice");
+      	if (gAlice) printf("AliRun object found on file\n");
+	if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
+    }
+      
    AliRICH *RICH  = (AliRICH*) gAlice->GetDetector("RICH");
 //
 // Event Loop
 //
    for (int nev=0; nev<= evNumber2; nev++) {
        Int_t nparticles = gAlice->GetEvent(nev);
-       cout << "nev         " <<nev<<endl;
-       cout << "nparticles  " <<nparticles<<endl;
+       cout <<endl<< "Processing event:" <<nev<<endl;
+       cout << "Particles       :" <<nparticles<<endl;
        if (nev < evNumber1) continue;
        if (nparticles <= 0) return;
        if (RICH) RICH->Digitise(nev);
@@ -50,9 +65,11 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
        sprintf(hname,"TreeD%d",nev);
        gAlice->TreeD()->Write(hname);
        gAlice->TreeD()->Reset();
-       file->ls();
    } // event loop 
    file->Close();
+
+   //delete gAlice;
+   printf("\nEnd of Macro  *************************************\n");
 }
 
 
