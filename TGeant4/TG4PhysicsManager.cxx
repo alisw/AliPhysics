@@ -37,7 +37,9 @@ TG4PhysicsManager* TG4PhysicsManager::fgInstance = 0;
 
 //_____________________________________________________________________________
 TG4PhysicsManager::TG4PhysicsManager(TG4ModularPhysicsList* physicsList)
-  : fPhysicsList(physicsList),
+  : TG4Verbose("physicsManager"),
+    fMessenger(this),
+    fPhysicsList(physicsList),
     fDecayer(0),
     fSetEMPhysics(true),
     fSetMuonPhysics(true),
@@ -66,15 +68,16 @@ TG4PhysicsManager::TG4PhysicsManager(TG4ModularPhysicsList* physicsList)
 }
 
 //_____________________________________________________________________________
-TG4PhysicsManager::TG4PhysicsManager(){
+TG4PhysicsManager::TG4PhysicsManager()
+  : TG4Verbose("physicsManager"),
+    fMessenger(this) {
 //
-  delete fDecayer;
-  delete fParticlesManager;
-  delete fG3PhysicsManager;
 }
 
 //_____________________________________________________________________________
-TG4PhysicsManager::TG4PhysicsManager(const TG4PhysicsManager& right) {
+TG4PhysicsManager::TG4PhysicsManager(const TG4PhysicsManager& right) 
+  : TG4Verbose("physicsManager"),
+    fMessenger(this) {
 // 
   TG4Globals::Exception(
     "Attempt to copy TG4PhysicsManager singleton.");
@@ -83,6 +86,9 @@ TG4PhysicsManager::TG4PhysicsManager(const TG4PhysicsManager& right) {
 //_____________________________________________________________________________
 TG4PhysicsManager::~TG4PhysicsManager() {
 //
+  delete fDecayer;
+  delete fParticlesManager;
+  delete fG3PhysicsManager;
 }
 
 // operators
@@ -249,9 +255,10 @@ void TG4PhysicsManager::GstparCut(G4int itmed, TG4G3Cut par, G4double parval)
                            *fG3PhysicsManager->GetControlVector());
     medium->SetLimits(limits);
 
-    // add verbose 
-    G4cout << "TG4PhysicsManager::GstparCut: new TG4Limits() for medium " 
-           << itmed << " has been created." << G4endl;  
+    if (VerboseLevel() > 1) {
+      G4cout << "TG4PhysicsManager::GstparCut: new TG4Limits() for medium " 
+             << itmed << " has been created." << G4endl;  
+    }	     
   }	   
 
   // add units
@@ -289,9 +296,10 @@ void TG4PhysicsManager::GstparControl(G4int itmed, TG4G3Control par,
                            *fG3PhysicsManager->GetControlVector());
     medium->SetLimits(limits);
 
-    // add verbose 
-    G4cout << "TG4PhysicsManager::GstparControl: new TG4Limits() for medium" 
-           << itmed << " has been created." << G4endl;  
+    if (VerboseLevel() > 1) {
+      G4cout << "TG4PhysicsManager::GstparControl: new TG4Limits() for medium" 
+             << itmed << " has been created." << G4endl;  
+    }	     
   }	   
   
   // set parameter
@@ -359,31 +367,50 @@ void TG4PhysicsManager::CreatePhysicsConstructors()
 // ---
 
   // general physics
-  fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorGeneral());
+  fPhysicsList->RegisterPhysics(
+                    new TG4PhysicsConstructorGeneral(VerboseLevel()));
 
   // electromagnetic physics
   if (fSetEMPhysics) 
-    fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorEM());
+    fPhysicsList->RegisterPhysics(
+                    new TG4PhysicsConstructorEM(VerboseLevel()));
 
   // muon physics
-  if (fSetMuonPhysics) 
-    fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorMuon());
+  if (fSetMuonPhysics && fSetEMPhysics)      
+    fPhysicsList->RegisterPhysics(
+                    new TG4PhysicsConstructorMuon(VerboseLevel()));
 
   // hadron physics
-  if (fSetHadronPhysics) {
-    fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorIon());
-    fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorHadron());
+  if (fSetEMPhysics || fSetHadronPhysics) { 
+    fPhysicsList->RegisterPhysics(
+                    new TG4PhysicsConstructorIon(
+    		           VerboseLevel(), fSetEMPhysics, fSetHadronPhysics));
+    fPhysicsList->RegisterPhysics(
+                    new TG4PhysicsConstructorHadron(
+		           VerboseLevel(), fSetEMPhysics, fSetHadronPhysics));
   }  
 
   // optical physics
   if (fSetOpticalPhysics) 
-    fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorOptical());
+    fPhysicsList->RegisterPhysics(
+                    new TG4PhysicsConstructorOptical(VerboseLevel()));
 
+  // special processes
   if (fSetSpecialCutsPhysics) 
-    fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorSpecialCuts());
+    fPhysicsList->RegisterPhysics(
+                    new TG4PhysicsConstructorSpecialCuts(VerboseLevel()));
 
   if (fSetSpecialControlsPhysics) 
-    fPhysicsList->RegisterPhysics(new TG4PhysicsConstructorSpecialControls());
+    fPhysicsList->RegisterPhysics(
+                    new TG4PhysicsConstructorSpecialControls(VerboseLevel()));
+
+  // warn about not allowed combinations
+  if (fSetMuonPhysics && !fSetEMPhysics) {
+    G4String text = "TG4PhysicsManager::CreatePhysicsConstructors:\n";
+    text = text + "    Muon physics cannot be constructed without EM physics.\n";
+    text = text + "    SetMuon control was ignored.";
+    TG4Globals::Warning(text);     
+  }
 
          // all created physics constructors are deleted
 	 // in the TG4ModularPhysicsList destructor
