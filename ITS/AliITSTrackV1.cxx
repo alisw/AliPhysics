@@ -145,7 +145,10 @@ AliITSTrackV1::~AliITSTrackV1() {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it 
 //destructor
  
-  if(flistCluster) delete flistCluster; 
+  if(flistCluster) {
+    flistCluster->Delete();
+    delete flistCluster;
+  }
   if(fClusterInTrack) delete fClusterInTrack;
 
 }     
@@ -318,7 +321,10 @@ AliITSTrackV1 &AliITSTrackV1::operator=(AliITSTrackV1 obj) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it  
 // assignement operator
 
-  delete flistCluster;
+  if (flistCluster) {
+    flistCluster->Delete();
+    delete flistCluster;
+  }
   delete fClusterInTrack;
   fClusterInTrack = new TMatrix(6,9);
   flistCluster = new TObjArray; 

@@ -216,7 +216,10 @@ AliITSHTable::~AliITSHTable()
     printf("HTable destructor !\n");
     if (fCodeLen) delete[] fCodeLen;
     if (fCode) delete [] fCode;
-    delete fHNodes;
+    if (fHNodes) {
+      fHNodes->Delete();
+      delete fHNodes;
+    }
 }
 
 
