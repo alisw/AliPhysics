@@ -386,6 +386,23 @@ void FGeometryInit::PrintRegionsMap(G4std::ostream& os) {
 
 ////////////////////////////////////////////////////////////////////////
 // 
+G4int FGeometryInit::GetRegionFromName(const char* volName) const {
+  for (RegionIterator i = fRegionVolumeMap.begin(); 
+       i != fRegionVolumeMap.end(); 
+       i++) {
+    
+    //Get info in the map
+    G4VPhysicalVolume* ptrVol = (*i).first;
+    if (ptrVol->GetName() == volName)
+      return ((*i).second);
+  }
+  return -1;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////
+// 
 void FGeometryInit::BuildMaterialTables() {
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "==> Flugg FGeometryInit::BuildMaterialTables()" << G4endl;

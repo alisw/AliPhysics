@@ -65,7 +65,11 @@ public:
   inline G4int * GetJrLtGeantArray();
   inline G4int GetLttcFlagGeant();
   void SetLttcFlagGeant(G4int);
-  void PrintJrLtGeant(); 
+  void PrintJrLtGeant();
+
+  //Map access methods
+  G4int GetRegionFromName(const char* volName) const;
+
 
 protected:
   void BuildRegionsMap();
@@ -105,7 +109,7 @@ private:
   //G4int NOfMaterials;
 };
 
-typedef  G4std::map<G4VPhysicalVolume*, int, G4std::less<G4VPhysicalVolume*> >::iterator RegionIterator;
+typedef  G4std::map<G4VPhysicalVolume*, int, G4std::less<G4VPhysicalVolume*> >::const_iterator RegionIterator;
 typedef  G4std::vector<G4Material*>::const_iterator MatTableIterator;
 
 
