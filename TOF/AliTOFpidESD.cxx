@@ -170,6 +170,8 @@ Int_t AliTOFpidESD::MakePID(AliESD *event)
     if ((t->GetStatus()&AliESDtrack::kTRDout)==0) continue;
     if ((t->GetStatus()&AliESDtrack::kTRDStop)!=0) continue;
 
+    Double_t time[10]; t->GetIntegratedTimes(time);
+
     Double_t x,par[5]; t->GetExternalParameters(x,par);
     Double_t cov[15]; t->GetExternalCovariance(cov);
 
@@ -189,8 +191,12 @@ Double_t dz=5*TMath::Sqrt(cov[2]) + 0.5*fDz + 2.5*TMath::Abs(par[3]);
       if (c->GetZ() > z+dz) break;
       if (c->IsUsed()) continue;
 
+      Double_t tof=50*c->GetTDC()+32;
+      if (t->GetIntegratedLength()/tof > 0.031) continue;
+      if (tof>35000) continue;
+
       Double_t dph=TMath::Abs(c->GetPhi()-phi);
-      if (dph>TMath::Pi()) dph-=2*TMath::Pi();
+      if (dph>TMath::Pi()) dph=2*TMath::Pi()-dph; //Thanks to B.Zagreev
       if (dph>dphi) continue;
 
       Double_t d2=dph*dph*fR*fR + (c->GetZ()-z)*(c->GetZ()-z);
@@ -215,8 +221,6 @@ Double_t dz=5*TMath::Sqrt(cov[2]) + 0.5*fDz + 2.5*TMath::Abs(par[3]);
     t->SetTOFcluster(c->GetIndex());
 
     if ((t->GetStatus()&AliESDtrack::kTIME)==0) continue;
-
-    Double_t time[10]; t->GetIntegratedTimes(time);
 
     //track length correction
     Double_t rc=TMath::Sqrt(c->GetR()*c->GetR() + c->GetZ()*c->GetZ());
