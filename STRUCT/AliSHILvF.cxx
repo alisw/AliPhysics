@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/01/30 12:28:27  morsch
+Recess station 1 changed do make space for chambers.
+
 Revision 1.2  2000/12/04 16:30:02  morsch
 Update to geometry defined for the Muon Spectrometer Addendum to the TDR.
 
@@ -90,7 +93,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 //
 // begin Fluka
   AliALIFE* flukaGeom = new AliALIFE("beamshield.alife", "beamshield_vol.inp");
-  Int_t ifl=0;
+  Int_t i=0,ifl=0;
   Float_t posfluka[3]={0., 0., 0.};
   Float_t zfluka[12], rfluka1[12], rfluka2[12], rfluka3[12] ;  
 //
@@ -258,9 +261,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 // end Fluka
 
 
-  { // Begin local scope for i
-      for (Int_t i=4; i<38; i+=3) par1[i]  = 0;
-  } // End local scope for i
+  for (i=4; i<38; i+=3) par1[i]  = 0;
+
   gMC->Gsvolu("YMO1", "PCON", idtmed[kVacuum+40], par1, 39);
   gMC->Gspos("YGO1", 1, "YMO1", 0., 0., 0., 0, "ONLY");  
   dZ+=dl;
@@ -333,12 +335,12 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   tpar[2]=10.*lB1/2.;
   gMC->Gsvolu("YBM1", "TUBE", idtmed[kVacuum+40], tpar, 3);
   dz=-tpar[2]+lB1/2.;
-  { // Begin local scope for i
-      for (Int_t i=0; i<10; i++) {
-	  gMC->Gspos("YBU1", i+1 , "YBM1", 0., 0., dz, 0, "ONLY"); 
-	  dz+=lB1;
-      }
-  } // End local scope for i
+
+  for (i=0; i<10; i++) {
+    gMC->Gspos("YBU1", i+1 , "YBM1", 0., 0., dz, 0, "ONLY"); 
+    dz+=lB1;
+  }
+
   dz=-dl+(zvac1-zstart)+dr11+tpar[2];
   gMC->Gspos("YBM1", 1, "YMO1", 0., 0., dz, 0, "ONLY"); 
 
@@ -389,7 +391,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   Float_t z1=zvac1+dr11;
   Float_t z2;
   
-  for (Int_t i=0; i<10; i++) {
+  for (i=0; i<10; i++) {
       z2=z1+eB1;
       flukaGeom->Cylinder(0., rB1, z1, z2, posfluka, "VACUUM", "MF", "$SHH");
       flukaGeom->Cylinder(rB1, rB1+hB1, z1, z2, posfluka, "STEEL", "MF", "$SHH");
@@ -416,7 +418,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
   flukaGeom->Comment("Second Bellow");
   z1=zvac3-dr13;
-  for (Int_t i=0; i<10; i++) {
+  for (i=0; i<10; i++) {
       z2=z1-eB1;
       flukaGeom->Cylinder(0., rB1, z2, z1, posfluka, "VACUUM", "MF", "$SHH");
       flukaGeom->Cylinder(rB1, rB1+hB1, z2, z1, posfluka, "STEEL", "MF", "$SHH");
@@ -529,8 +531,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
   flukaGeom->Comment("1st part: Beam pipe lateral struture (left)");
   flukaGeom->OnionCone(rf1, rf2,  6 , zstart, zvac1, posfluka, materialsA, fieldsA, cutsA);
-  for (Int_t i=0; i<7; i++) rf1[i]=rf2[i];
-  for (Int_t i=1; i<7; i++) rf2[i]=rf1[i]+dr11*TMath::Tan(thetaOpen1);
+  for (i=0; i<7; i++) rf1[i]=rf2[i];
+  for (i=1; i<7; i++) rf2[i]=rf1[i]+dr11*TMath::Tan(thetaOpen1);
   flukaGeom->OnionCone(rf1, rf2,  6 , zvac1, zvac1+dr11, posfluka, materialsA, fieldsA, cutsA);
   flukaGeom->Cone(rc1, rf2[5], rc1, rc1+dr11, zvac1 , zvac1+dr11, posfluka,"AIR", "MF", "$SHH");
 //
@@ -594,8 +596,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   rf2[7]=r2;
   flukaGeom->Comment("1st part: Beam pipe lateral structure (right)");
   flukaGeom->OnionCone(rf1, rf2,  8 , zvac3, zvac4, posfluka, materialsB, fieldsB, cutsB);
-  for (Int_t i=0; i<8; i++) rf2[i]=rf1[i];
-  for (Int_t i=1; i<7; i++) rf1[i]=rf2[i];
+  for (i=0; i<8; i++) rf2[i]=rf1[i];
+  for (i=1; i<7; i++) rf1[i]=rf2[i];
   rf1[7]=rf2[7];
   flukaGeom->OnionCone(rf1, rf2,  8 , zvac3-dr13, zvac3, posfluka, materialsB, fieldsB, cutsB);
 //
@@ -674,7 +676,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   rf1[4]=rfvacu2[0]; rf1[5]=rfvacu1[0]; rf1[6]=rfvacu0[0];
   rf1[7]=rfluka1[0]; rf1[9]=R11-dRSteel1;
   rf1[10]=R21;
-  for (Int_t i=1; i<7; i++) rf2[i]=rf1[i]+4.*TMath::Tan(thetaOpenB);
+  for (i=1; i<7; i++) rf2[i]=rf1[i]+4.*TMath::Tan(thetaOpenB);
   rf2[7]=rf1[7];
   rf2[9]=rf1[9]; rf2[10]=rf1[10];
   rf1[8]=13.;
@@ -684,8 +686,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   flukaGeom->OnionCone(rf1, rf2,  11 , zvac4, zvac4+4, posfluka, materials1, fields1, cuts1);
 
  
-  for (Int_t i=0; i<11; i++) rf1[i]=rf2[i];
-  for (Int_t i=1; i<7; i++) 
+  for (i=0; i<11; i++) rf1[i]=rf2[i];
+  for (i=1; i<7; i++) 
       rf2[i]=rf1[i]+20.*TMath::Tan(thetaOpenB);
   rf2[7]=rf1[7];
   rf2[8]=rf1[8]+20.*TMath::Tan(thetaOpenPb);
@@ -696,8 +698,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   flukaGeom->Comment("2nd part: Beam pipe lateral struture (1)");
   flukaGeom->OnionCone(rf1, rf2,  11 , zvac4+4, zvac4+24, posfluka, materials1, fields1, cuts1);
 
-  for (Int_t i=0; i<11; i++) rf1[i]=rf2[i];
-  for (Int_t i=1; i<7; i++) 
+  for (i=0; i<11; i++) rf1[i]=rf2[i];
+  for (i=1; i<7; i++) 
       rf2[i]=rf1[i]+(zvac6-zvac4-24.)*TMath::Tan(thetaOpenB);
   rf2[7]=rf1[7]+(zvac6-zvac4-24.)*TMath::Tan(thetaOpen2);
   rf2[8]=rf1[8]+(zvac6-zvac4-24.)*TMath::Tan(thetaOpenPb);
@@ -708,8 +710,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   flukaGeom->Comment("2nd part: Beam pipe lateral struture (2)");
   flukaGeom->OnionCone(rf1, rf2,  11 , zvac4+24, zvac6, posfluka, materials1, fields1, cuts1);
 
-  for (Int_t i=0; i<11; i++) rf1[i]=rf2[i];
-  for (Int_t i=1; i<7; i++) 
+  for (i=0; i<11; i++) rf1[i]=rf2[i];
+  for (i=1; i<7; i++) 
       rf2[i]=rf1[i]+4.*TMath::Tan(thetaOpenB);
   rf2[7]=rf1[7]+4.*TMath::Tan(thetaOpen2);
 
@@ -722,8 +724,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   flukaGeom->OnionCone(rf1, rf2,  11 , zvac6, zvac6+4, posfluka, materials1, fields1, cuts1);
 
 
-  for (Int_t i=0; i<11; i++) rf1[i]=rf2[i];
-  for (Int_t i=1; i<7; i++) 
+  for (i=0; i<11; i++) rf1[i]=rf2[i];
+  for (i=1; i<7; i++) 
       rf2[i]=rf1[i]+(zPb-(zvac6-4.))*TMath::Tan(thetaOpenB);
   rf2[7]=rf1[7]+(zPb-(zvac6-4.))*TMath::Tan(thetaOpen2);
 
@@ -736,8 +738,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   flukaGeom->OnionCone(rf1, rf2,  11 , zvac6+4, zPb, posfluka, materials1, fields1, cuts1);
 
   
-  for (Int_t i=0; i<11; i++) rf1[i]=rf2[i];
-  for (Int_t i=1; i<7; i++) 
+  for (i=0; i<11; i++) rf1[i]=rf2[i];
+  for (i=1; i<7; i++) 
       rf2[i]=rf1[i]+(zConeE-zPb)*TMath::Tan(thetaOpenB);
   rf2[7]=rf1[7]+(zConeE-zPb)*TMath::Tan(thetaOpen2);
   rf1[8]=rf2[8]+2.;
@@ -751,8 +753,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   materials1[8]="LEAD";
   flukaGeom->OnionCone(rf1, rf2,  11 , zPb, zConeE, posfluka, materials1, fields1, cuts1);
 
-  for (Int_t i=0; i<11; i++) rf1[i]=rf2[i];
-  for (Int_t i=1; i<7; i++) 
+  for (i=0; i<11; i++) rf1[i]=rf2[i];
+  for (i=1; i<7; i++) 
       rf2[i]=rf1[i]+(zvac7-zConeE)*TMath::Tan(thetaOpenB);
   rf2[7]=rf1[7]+(zvac7-zConeE)*TMath::Tan(thetaOpen2);
 
@@ -815,9 +817,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   gMC->Gsvolu("YYO2", "PCON", idtmed[iHeavy+40], parPb, 12);	  
   gMC->Gspos("YYO2", 1, "YGO2", 0., 0., (zPb-zvac4)/2., 0, "ONLY");  
 
-  { // Begin local scope for i
-      for (Int_t i=4; i<23; i+=3) par2[i]  = 0;
-  } // End local scope for i
+  for (i=4; i<23; i+=3) par2[i]  = 0;
           
   gMC->Gsvolu("YMO2", "PCON", idtmed[kVacuum+40], par2, 24);
   gMC->Gspos("YGO2", 1, "YMO2", 0., 0., 0., 0, "ONLY");  
@@ -983,7 +983,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
       rfluka3[ifl] = par3[5+3*ifl]; 
       rfvacu0[ifl] = 0.;
   }
-  for (Int_t i=0; i<8; i++) rfluka0[i]=rBox;
+  for (i=0; i<8; i++) rfluka0[i]=rBox;
   rfluka0[0]=0.; rfluka0[7]=0.;
 
   flukaGeom->Comment("3rd part: Shield");
@@ -1023,7 +1023,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   flukaGeom->Comment("First Bellow");
   z1=zvac7+dr21;
   
-  for (Int_t i=0; i<7; i++) {
+  for (i=0; i<7; i++) {
       z2=z1+eB2;
       flukaGeom->Cylinder(0., rB2, z1, z2, posfluka, "VACUUM", "MF", "$SHH");
       flukaGeom->Cylinder(rB2, rB2+hB2, z1, z2, posfluka, "STEEL", "MF", "$SHH");
@@ -1050,7 +1050,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 
   flukaGeom->Comment("Second Bellow");
   z1=zvac9-dr23;
-  for (Int_t i=0; i<7; i++) {
+  for (i=0; i<7; i++) {
       z2=z1-eB2;
       flukaGeom->Cylinder(0., rB2, z2, z1, posfluka, "VACUUM", "MF", "$SHH");
       flukaGeom->Cylinder(rB2, rB2+hB2, z2, z1, posfluka, "STEEL", "MF", "$SHH");
@@ -1117,9 +1117,9 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   parPb[4]  = 30;
   gMC->Gsvolu("YXO3", "CONE", idtmed[kPb], parPb, 5);
   gMC->Gspos("YXO3", 1, "YGO3", 0., 0., 0., 0, "ONLY");  
-  { // Begin local scope for i
-      for (Int_t i=4; i<26; i+=3) par3[i]  = 0;
-  } // End local scope for i
+
+  for (i=4; i<26; i+=3) par3[i]  = 0;
+
   gMC->Gsvolu("YMO3", "PCON", idtmed[kVacuum+40], par3, 27);
   gMC->Gspos("YGO3", 1, "YMO3", 0., 0., 0., 0, "ONLY");  
 
@@ -1185,12 +1185,12 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   tpar[2]=7.*lB2/2.;
   gMC->Gsvolu("YBM2", "TUBE", idtmed[kVacuum+40], tpar, 3);
   dz=-tpar[2]+lB2/2.;
-  { // Begin local scope for i
-      for (Int_t i=0; i<7; i++) {
-	  gMC->Gspos("YBU2", i+1 , "YBM2", 0., 0.,dz , 0, "ONLY"); 
-	  dz+=lB2;
-      }
-  } // End local scope for i
+
+  for (i=0; i<7; i++) {
+    gMC->Gspos("YBU2", i+1 , "YBM2", 0., 0.,dz , 0, "ONLY"); 
+    dz+=lB2;
+  }
+
   dz=-dl+dr21+tpar[2];
   gMC->Gspos("YBM2", 1, "YMO3", 0., 0., dz, 0, "ONLY"); 
 
@@ -1290,9 +1290,8 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   parPb[4]  = 31.;
   gMC->Gsvolu("YXO5", "CONE", idtmed[kPb], parPb, 5);
   gMC->Gspos("YXO5", 1, "YGO4", 0., 0., -dl+(zvac10-zvac9)+parPb[0], 0, "ONLY");  
-  { // Begin local scope for i
-      for (Int_t i=4; i<23; i+=3) par4[i]  = 0;
-  } // End local scope for i
+
+  for (i=4; i<23; i+=3) par4[i]  = 0;
 
   gMC->Gsvolu("YMO4", "PCON", idtmed[kVacuum+40], par4, 24);
   gMC->Gspos("YGO4", 1, "YMO4", 0., 0., 0., 0, "ONLY");  
@@ -1493,7 +1492,7 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 //
 // begin Fluka
   flukaGeom->Comment("4th part: Beam pipe lateral structure");
-  for (Int_t i=0; i<7; i++)  fieldsA[i] = "NF";
+  for (i=0; i<7; i++)  fieldsA[i] = "NF";
 
   rf1[0]=0.;       rf2[0]=0.;
 
