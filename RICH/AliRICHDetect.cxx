@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.7  2000/11/01 15:37:05  jbarbosa
+  Updated to use its own rec. point object.
+
   Revision 1.6  2000/10/02 21:28:12  fca
   Removal of useless dependecies via forward declarations
 
@@ -86,6 +89,7 @@ void AliRICHDetect::Detect()
   Float_t omega,steptheta,stepphi,x,y,cx,cy,l,aux1,aux2,aux3,maxi,maxj,maxk,max;
   //Float_t theta,phi,realomega,realtheta;
   Int_t i,j,k;
+ 
   
   //const Float_t Noise_Level=0;          //Noise Level in percentage of mesh points
   //const Float_t t=0.6;			//Softening of Noise Correction (factor)
@@ -93,18 +97,19 @@ void AliRICHDetect::Detect()
   const Float_t kPi=3.1415927;		
   
   const Float_t kHeight=10;                       //Distance from Radiator to Pads in pads
+ 
+  const Int_t kSpot=3;                                //number of passes with spot algorithm
   
+  const Int_t kDimensionTheta=50;		//Matrix dimension for angle Detection
+  const Int_t kDimensionPhi=50;
+  const Int_t kDimensionOmega=50;
   
-  const Int_t kDimensionTheta=100;		//Matrix dimension for angle Detection
-  const Int_t kDimensionPhi=100;
-  const Int_t kDimensionOmega=100;
-  
-  //const Float_t SPOTp=.2;		//Percentage of spot action
-  //const Int_t np=500;		//Number of points to reconstruct elipse 
+  const Float_t SPOTp=.2;		//Percentage of spot action
+  //const Int_t np=500;		        //Number of points to reconstruct elipse 
   const Float_t kMaxOmega=65*kPi/180;		//Maximum Cherenkov angle to identify
   
   Int_t point[kDimensionTheta][kDimensionPhi][kDimensionOmega];
-  //Int_t point1[kDimensionTheta][kDimensionPhi][kDimensionOmega];
+  Int_t point1[kDimensionTheta][kDimensionPhi][kDimensionOmega];
   
   steptheta=kPi/kDimensionTheta;
   stepphi=kPi/kDimensionPhi;
@@ -172,7 +177,8 @@ void AliRICHDetect::Detect()
     
     
     //printf("Chamber processed:%d\n",nch);
-    printf("Center processed: %3.1f %3.1f %3.1f\n",trackglob[0],trackglob[1],trackglob[2]);
+
+    printf("\nChamber %d, particle at: %3.1f %3.1f,\n",nch,trackglob[0],trackglob[2]);
 
     iChamber = &(pRICH->Chamber(nch-1));
     
@@ -233,63 +239,84 @@ void AliRICHDetect::Detect()
       }	
     
     
-    
     //SPOT execute twice
-    /*for(s=1;i<=2;s++)
+    for(Int_t s=0;s<kSpot;s++)
       {
+	printf("     Applying Spot algorithm, pass %d\n", s);
+	
 	//buffer copy
 	for(i=0;i<=kDimensionTheta;i++)
-	  for(j=0;j<=kDimensionPhi;j++)
-	    for(k=0;k<=kDimensionOmega;k++)
-	      point1[i][j][k]=point[i][j][k];	
-	
-	cout<<"COM SPOT!"<<endl;{Int_t lixo;cin>>lixo;}					
-	//SPOT algorithm			
-	for(i=1;i<kDimensionTheta;i++)
-	  for(j=1;j<kDimensionPhi;j++)
-	    for(k=1;k<kDimensionOmega;k++)
+	  {
+	    for(j=0;j<=kDimensionPhi;j++)
 	      {
-		if((point[i][k][j]>point[i-1][k][j])&&(point[i][k][j]>point[i+1][k][j])&&
-		   (point[i][k][j]>point[i][k-1][j])&&(point[i][k][j]>point[i][k+1][j])&&
-		   (point[i][k][j]>point[i][k][j-1])&&(point[i][k][j]>point[i][k][j+1]))
+		for(k=0;k<=kDimensionOmega;k++)
 		  {
-		    //cout<<"SPOT"<<endl;
-		    //Execute SPOT on point											   	
-		    point1[i][j][k]+=int(SPOTp*(point[i-1][k][j]+point[i+1][k][j]+point[i][k-1][j]+point[i][k+1][j]+point[i][k][j-1]+point[i][k][j+1]));    
-		    point1[i-1][k][j]=int(SPOTp*point[i-1][k][j]);
-		    point1[i+1][k][j]=Int_t(SPOTp*point[i+1][k][j]);
-		    point1[i][k-1][j]=Int_t(SPOTp*point[i][k-1][j]);
-		    point1[i][k+1][j]=Int_t(SPOTp*point[i][k+1][j]);
-		    point1[i][k][j-1]=Int_t(SPOTp*point[i][k][j-1]);
-		    point1[i][k][j+1]=Int_t(SPOTp*point[i][k][j+1]);
+		    point1[i][j][k]=point[i][j][k];	
 		  }
 	      }
+	  }
+
+	//SPOT algorithm			
+	for(i=1;i<kDimensionTheta;i++)
+	  {
+	    for(j=1;j<kDimensionPhi;j++)
+	      {
+		for(k=1;k<kDimensionOmega;k++)
+		  {
+		    if((point[i][k][j]>point[i-1][k][j])&&(point[i][k][j]>point[i+1][k][j])&&
+		       (point[i][k][j]>point[i][k-1][j])&&(point[i][k][j]>point[i][k+1][j])&&
+		       (point[i][k][j]>point[i][k][j-1])&&(point[i][k][j]>point[i][k][j+1]))
+		      {
+			//cout<<"SPOT"<<endl;
+			//Execute SPOT on point											   	
+			point1[i][j][k]+=Int_t(SPOTp*(point[i-1][k][j]+point[i+1][k][j]+point[i][k-1][j]+point[i][k+1][j]+point[i][k][j-1]+point[i][k][j+1]));    
+			point1[i-1][k][j]=Int_t(SPOTp*point[i-1][k][j]);
+			point1[i+1][k][j]=Int_t(SPOTp*point[i+1][k][j]);
+			point1[i][k-1][j]=Int_t(SPOTp*point[i][k-1][j]);
+			point1[i][k+1][j]=Int_t(SPOTp*point[i][k+1][j]);
+			point1[i][k][j-1]=Int_t(SPOTp*point[i][k][j-1]);
+			point1[i][k][j+1]=Int_t(SPOTp*point[i][k][j+1]);
+		      }
+		  }
+	      }
+	  }
+	
 	//copy from buffer copy
 	for(i=1;i<kDimensionTheta;i++)
-	  for(j=1;j<kDimensionPhi;j++)
-	    for(k=1;k<kDimensionOmega;k++)
-	      point[i][j][k]=point1[i][j][k];										
-	  
-	  }*/
+	  {
+	    for(j=1;j<kDimensionPhi;j++)
+	      {
+		for(k=1;k<kDimensionOmega;k++)
+		  {
+		    point[i][j][k]=point1[i][j][k];
+		    //if(point1[i][j][k] != 0)
+		      //printf("Last transfer point: %d, point1, %d\n",point[i][j][k],point1[i][j][k]);
+		  }
+	      }
+	  }
+      }
     
     
     //Identification is equivalent to maximum determination
     max=0;maxi=0;maxj=0;maxk=0;
     
-    //cout<<"Proceeding to Identification"<<endl;
+    printf("     Proceeding to identification");
     
     for(i=1;i<kDimensionTheta-3;i++)
       for(j=1;j<=kDimensionPhi-3;j++)
 	for(k=0;k<=kDimensionOmega;k++)
-	  if(point[i][j][k]>max)
-	    {
-	      //cout<<"maxi="<<i*90/dimension<<" maxj="<<j*90/dimension<<" maxk="<<k*kMaxOmega/dimension*180/kPi<<" max="<<max<<endl;
-	      maxi=i;maxj=j;maxk=k;
-	      max=point[i][j][k];
-	      //printf("Max Omega %f, Max Theta %f, Max Phi %f\n",maxk,maxi,maxj);
-	    }
+	    if(point[i][j][k]>max)
+	      {
+		//cout<<"maxi="<<i*90/dimension<<" maxj="<<j*90/dimension<<" maxk="<<k*kMaxOmega/dimension*180/kPi<<" max="<<max<<endl;
+		maxi=i;maxj=j;maxk=k;
+		max=point[i][j][k];
+		printf(".");
+		//printf("Max Omega %f, Max Theta %f, Max Phi %f\n",maxk,maxi,maxj);
+	      }
+    printf("\n");
     
     //printf("Detected angle for height %3.1f and for center %3.1f %3.1f:%f\n",h,cx,cy,maxk*kPi/(kDimensionTheta*4));
+    printf("     Indentified cerenkov angle: %f\n", maxk*kPi/(kDimensionTheta*4));
     //printf("Detected angle for height %3.1f and for center %3.1f %3.1f:%f\n",kHeight,cx,cy,maxk);
 
 
@@ -322,7 +349,7 @@ void AliRICHDetect::Detect()
     
     // fill rechits
     pRICH->AddRecHit3D(nch-1,rechit);
-    printf("Chamber:%d",nch);
+    //printf("Chamber:%d",nch);
   }			
   //printf("\n\n\n\n");
   gAlice->TreeR()->Fill();
