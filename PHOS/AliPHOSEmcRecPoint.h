@@ -28,7 +28,8 @@ class AliPHOSEmcRecPoint : public AliPHOSRecPoint  {
 public:
 
   AliPHOSEmcRecPoint(){
-    // default ctor
+   // default ctor
+    fEnergyList = 0;  
   } ;                    
   AliPHOSEmcRecPoint(Float_t W0, Float_t LocMaxCut) ;
   AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) {
