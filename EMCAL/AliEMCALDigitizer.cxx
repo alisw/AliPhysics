@@ -279,7 +279,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
 
   //remove digits below thresholds
   for(absID = 0; absID < nEMC/2 ; absID++){
-    digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
+    digit = dynamic_cast<AliEMCALDigit*>( digits->At(absID) ) ;
     if(sDigitizer->Calibrate( digit->GetAmp() ) < fTowerDigitThreshold)
       digits->RemoveAt(absID) ;
     else
@@ -288,7 +288,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
   
     
     for(absID = nEMC/2; absID < nEMC ; absID++){
-      digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
+      digit = dynamic_cast<AliEMCALDigit*>( digits->At(absID) ) ;
       if(sDigitizer->Calibrate( digit->GetAmp() ) < fPreShowerDigitThreshold)
 	digits->RemoveAt(absID) ;
       else
