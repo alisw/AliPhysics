@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.18  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.14.4.17  2000/06/14 14:36:46  morsch
 - add TriggerCircuit (PC)
 - add GlobalTrigger and LocalTrigger and specific methods (PC)
@@ -1329,24 +1332,24 @@ void AliMUON::Trigger(Int_t nev){
 			     pairUnlike, pairLike);
 // add a local trigger in the list 
   AddGlobalTrigger(singlePlus, singleMinus, singleUndef, pairUnlike, pairLike);
+  Int_t i;
   
   for (Int_t icirc=0; icirc<kNTriggerCircuit; icirc++) { 
-    if(decision->GetITrigger(icirc)==1) {
-      Int_t localtr[7]={0,0,0,0,0,0,0};      
-      Int_t loLpt[2]={0,0}; Int_t loHpt[2]={0,0}; Int_t loApt[2]={0,0};
-      decision->GetLutOutput(icirc, loLpt, loHpt, loApt);
-      localtr[0] = icirc;
-      localtr[1] = decision->GetStripX11(icirc);
-      localtr[2] = decision->GetDev(icirc);
-      localtr[3] = decision->GetStripY11(icirc);
-      for (Int_t i=0; i<2; i++) {    // convert the Lut output in 1 digit 
-	localtr[4] = localtr[4]+Int_t(loLpt[i]*pow(2,i));
-	localtr[5] = localtr[5]+Int_t(loHpt[i]*pow(2,i));
-	localtr[6] = localtr[6]+Int_t(loApt[i]*pow(2,i));
+      if(decision->GetITrigger(icirc)==1) {
+	  Int_t localtr[7]={0,0,0,0,0,0,0};      
+	  Int_t loLpt[2]={0,0}; Int_t loHpt[2]={0,0}; Int_t loApt[2]={0,0};
+	  decision->GetLutOutput(icirc, loLpt, loHpt, loApt);
+	  localtr[0] = icirc;
+	  localtr[1] = decision->GetStripX11(icirc);
+	  localtr[2] = decision->GetDev(icirc);
+	  localtr[3] = decision->GetStripY11(icirc);
+	  for (i=0; i<2; i++) {    // convert the Lut output in 1 digit 
+	      localtr[4] = localtr[4]+Int_t(loLpt[i]*TMath::Power(2,i));
+	      localtr[5] = localtr[5]+Int_t(loHpt[i]*TMath::Power(2,i));
+	      localtr[6] = localtr[6]+Int_t(loApt[i]*TMath::Power(2,i));
+	  }
+	  AddLocalTrigger(localtr);  // add a local trigger in the list
       }
-      //      cout << loApt[0] << " , " << loApt[1] << " , " << localtr[6] << "\n";
-      AddLocalTrigger(localtr);  // add a local trigger in the list
-    }
   }
   delete decision;
 
@@ -1432,106 +1435,107 @@ void AliMUON::Streamer(TBuffer &R__b)
       AliMUONResponse      *response;
       TClonesArray         *digitsaddress;
       TClonesArray         *rawcladdress;
+      Int_t i;
       
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      AliDetector::Streamer(R__b);
-      R__b >> fNPadHits;
-      R__b >> fPadHits; // diff
-      R__b >> fNLocalTrigger;       
-      R__b >> fLocalTrigger;       
-      R__b >> fNGlobalTrigger;       
-      R__b >> fGlobalTrigger;   
-      R__b >> fDchambers;
-      R__b >> fRawClusters;
-      R__b.ReadArray(fNdch);
-      R__b.ReadArray(fNrawch);
-      R__b >> fAccCut;
-      R__b >> fAccMin;
-      R__b >> fAccMax; 
-      R__b >> fChambers;
-      R__b >> fTriggerCircuits;
-      for (Int_t i =0; i<kNTriggerCircuit; i++) {
-	iTriggerCircuit=(AliMUONTriggerCircuit*) (*fTriggerCircuits)[i];
-	iTriggerCircuit->Streamer(R__b);
-      }
+      if (R__b.IsReading()) {
+	  Version_t R__v = R__b.ReadVersion(); if (R__v) { }
+	  AliDetector::Streamer(R__b);
+	  R__b >> fNPadHits;
+	  R__b >> fPadHits; // diff
+	  R__b >> fNLocalTrigger;       
+	  R__b >> fLocalTrigger;       
+	  R__b >> fNGlobalTrigger;       
+	  R__b >> fGlobalTrigger;   
+	  R__b >> fDchambers;
+	  R__b >> fRawClusters;
+	  R__b.ReadArray(fNdch);
+	  R__b.ReadArray(fNrawch);
+	  R__b >> fAccCut;
+	  R__b >> fAccMin;
+	  R__b >> fAccMax; 
+	  R__b >> fChambers;
+	  R__b >> fTriggerCircuits;
+	  for (i =0; i<kNTriggerCircuit; i++) {
+	      iTriggerCircuit=(AliMUONTriggerCircuit*) (*fTriggerCircuits)[i];
+	      iTriggerCircuit->Streamer(R__b);
+	  }
 // Stream chamber related information
-      for (Int_t i =0; i<kNCH; i++) {
-	  iChamber=(AliMUONChamber*) (*fChambers)[i];
-	  iChamber->Streamer(R__b);
-	  if (iChamber->Nsec()==1) {
-	      segmentation=iChamber->SegmentationModel(1);
-	      if (segmentation)
-	      segmentation->Streamer(R__b);
-	  } else {
-	      segmentation=iChamber->SegmentationModel(1);
-	      if (segmentation)
-	      segmentation->Streamer(R__b);
-	      if (segmentation)
-	      segmentation=iChamber->SegmentationModel(2);
-	      segmentation->Streamer(R__b);
+	  for (i =0; i<kNCH; i++) {
+	      iChamber=(AliMUONChamber*) (*fChambers)[i];
+	      iChamber->Streamer(R__b);
+	      if (iChamber->Nsec()==1) {
+		  segmentation=iChamber->SegmentationModel(1);
+		  if (segmentation)
+		      segmentation->Streamer(R__b);
+	      } else {
+		  segmentation=iChamber->SegmentationModel(1);
+		  if (segmentation)
+		      segmentation->Streamer(R__b);
+		  if (segmentation)
+		      segmentation=iChamber->SegmentationModel(2);
+		  segmentation->Streamer(R__b);
+	      }
+	      response=iChamber->ResponseModel();
+	      if (response)
+		  response->Streamer(R__b);	  
+	      digitsaddress=(TClonesArray*) (*fDchambers)[i];
+	      digitsaddress->Streamer(R__b);
+	      if (i < kNTrackingCh) {
+		  rawcladdress=(TClonesArray*) (*fRawClusters)[i];
+		  rawcladdress->Streamer(R__b);
+	      }
 	  }
-          response=iChamber->ResponseModel();
-	  if (response)
-	  response->Streamer(R__b);	  
-	  digitsaddress=(TClonesArray*) (*fDchambers)[i];
-	  digitsaddress->Streamer(R__b);
-	  if (i < kNTrackingCh) {
-	      rawcladdress=(TClonesArray*) (*fRawClusters)[i];
-	      rawcladdress->Streamer(R__b);
+	  
+      } else {
+	  R__b.WriteVersion(AliMUON::IsA());
+	  AliDetector::Streamer(R__b);
+	  R__b << fNPadHits;
+	  R__b << fPadHits; // diff
+	  R__b << fNLocalTrigger;       
+	  R__b << fLocalTrigger;       
+	  R__b << fNGlobalTrigger;       
+	  R__b << fGlobalTrigger; 
+	  R__b << fDchambers;
+	  R__b << fRawClusters;
+	  R__b.WriteArray(fNdch, kNCH);
+	  R__b.WriteArray(fNrawch, kNTrackingCh);
+	  
+	  R__b << fAccCut;
+	  R__b << fAccMin;
+	  R__b << fAccMax; 
+	  
+	  R__b << fChambers;
+	  R__b << fTriggerCircuits;
+	  for (i =0; i<kNTriggerCircuit; i++) {
+	      iTriggerCircuit=(AliMUONTriggerCircuit*) (*fTriggerCircuits)[i];
+	      iTriggerCircuit->Streamer(R__b);
+	  }
+	  for (i =0; i<kNCH; i++) {
+	      iChamber=(AliMUONChamber*) (*fChambers)[i];
+	      iChamber->Streamer(R__b);
+	      if (iChamber->Nsec()==1) {
+		  segmentation=iChamber->SegmentationModel(1);
+		  if (segmentation)
+		      segmentation->Streamer(R__b);
+	      } else {
+		  segmentation=iChamber->SegmentationModel(1);
+		  if (segmentation)
+		      segmentation->Streamer(R__b);
+		  segmentation=iChamber->SegmentationModel(2);
+		  if (segmentation)
+		      segmentation->Streamer(R__b);
+	      }
+	      response=iChamber->ResponseModel();
+	      if (response)
+		  response->Streamer(R__b);
+	      digitsaddress=(TClonesArray*) (*fDchambers)[i];
+	      digitsaddress->Streamer(R__b);
+	      if (i < kNTrackingCh) {
+		  rawcladdress=(TClonesArray*) (*fRawClusters)[i];
+		  rawcladdress->Streamer(R__b);
+	      }
 	  }
       }
-      
-   } else {
-      R__b.WriteVersion(AliMUON::IsA());
-      AliDetector::Streamer(R__b);
-      R__b << fNPadHits;
-      R__b << fPadHits; // diff
-      R__b << fNLocalTrigger;       
-      R__b << fLocalTrigger;       
-      R__b << fNGlobalTrigger;       
-      R__b << fGlobalTrigger; 
-      R__b << fDchambers;
-      R__b << fRawClusters;
-      R__b.WriteArray(fNdch, kNCH);
-      R__b.WriteArray(fNrawch, kNTrackingCh);
-
-      R__b << fAccCut;
-      R__b << fAccMin;
-      R__b << fAccMax; 
-
-      R__b << fChambers;
-      R__b << fTriggerCircuits;
-      for (Int_t i =0; i<kNTriggerCircuit; i++) {
-	iTriggerCircuit=(AliMUONTriggerCircuit*) (*fTriggerCircuits)[i];
-	iTriggerCircuit->Streamer(R__b);
-      }
-      for (Int_t i =0; i<kNCH; i++) {
-	  iChamber=(AliMUONChamber*) (*fChambers)[i];
-	  iChamber->Streamer(R__b);
-	  if (iChamber->Nsec()==1) {
-	      segmentation=iChamber->SegmentationModel(1);
-	      if (segmentation)
-	      segmentation->Streamer(R__b);
-	  } else {
-	      segmentation=iChamber->SegmentationModel(1);
-	      if (segmentation)
-	      segmentation->Streamer(R__b);
-	      segmentation=iChamber->SegmentationModel(2);
-	      if (segmentation)
-	      segmentation->Streamer(R__b);
-	  }
-          response=iChamber->ResponseModel();
-	  if (response)
-	  response->Streamer(R__b);
-	  digitsaddress=(TClonesArray*) (*fDchambers)[i];
-	  digitsaddress->Streamer(R__b);
-	  if (i < kNTrackingCh) {
-	      rawcladdress=(TClonesArray*) (*fRawClusters)[i];
-	      rawcladdress->Streamer(R__b);
-	  }
-      }
-   }
 }
 AliMUONPadHit* AliMUON::FirstPad(AliMUONHit*  hit, TClonesArray *clusters) 
 {
