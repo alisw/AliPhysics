@@ -42,7 +42,7 @@ class AliPHOSRecPoint : public AliRecPoint {
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
   virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
-  virtual void    EvalAll(TClonesArray * digits) ;  
+  void    EvalAll(TClonesArray * digits) ;  
   virtual void    EvalPHOSMod(AliPHOSDigit * digit) ;  
   virtual void    EvalPrimaries(TClonesArray * digits) ;  
   virtual void    GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const ; // return global position in ALICE
