@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/01/30 09:23:14  hristov
+Streamers removed (R.Brun)
+
 Revision 1.15  2001/01/26 21:25:48  morsch
 Empty default constructors and.
 
@@ -104,7 +107,6 @@ AliMUONSegmentationV01::AliMUONSegmentationV01(const AliMUONSegmentationV01& seg
 AliMUONSegmentationV01::AliMUONSegmentationV01() 
 {
 // Default constructor
-    printf("\n Calling Default Constructor");
     fRSec = 0;
     fNDiv = 0;      
     fDpxD = 0;
