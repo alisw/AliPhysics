@@ -1297,7 +1297,7 @@ RecPointsList * AliPHOSv0::PpsdRecPoints(Int_t evt)
 void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
 { 
   // 1. Reinitializes the existing RecPoint, TrackSegment, and RecParticles Lists and 
-  // 2. Creates TreeR wit a branch for each list
+  // 2. Creates TreeR with a branch for each list
   // 3. Steers the reconstruction processes
   // 4. Saves the 3 lists in TreeR
   // 5. Write the Tree to File
