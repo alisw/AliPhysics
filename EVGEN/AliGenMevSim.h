@@ -16,11 +16,10 @@
 #include "AliMevSimConfig.h"
 #include "AliMevSimParticle.h"
 
+class TMevSim;
 
 class AliGenMevSim : public AliGenerator { 
 
-  AliMevSimConfig *fConfig;
- 
 public:
 
   AliGenMevSim();
@@ -34,7 +33,11 @@ public:
 
   virtual void Init();
   virtual void Generate();
-
+protected:
+  TMevSim * fMevSim;
+  AliMevSimConfig *fConfig;
+public:
+      
   ClassDef(AliGenMevSim,1) // Interface class for AliMevsim
     
 };

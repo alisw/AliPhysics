@@ -15,9 +15,12 @@
 
 /*
 $Log$
+Revision 1.2  2001/03/28 07:31:48  hristov
+Loop variables declared only once (HP,Sun)
+
 Revision 1.1  2001/03/24 10:04:44  morsch
 MevSim interfaced through AliGenerator, first commit (Sylwester Radomski et al.)
-
+//Piotr Skowronski Line 104: fThetaMin-->fThetaMax
 */
 
 //
@@ -47,7 +50,7 @@ AliGenMevSim::AliGenMevSim() : AliGenerator(-1)
   //
   
   fConfig = new AliMevSimConfig();
-  fgMCEvGen = new TMevSim();
+  fMevSim = new TMevSim();
   sRandom = fRandom;
   
 }
@@ -55,7 +58,7 @@ AliGenMevSim::AliGenMevSim() : AliGenerator(-1)
 AliGenMevSim::AliGenMevSim(AliMevSimConfig *config): AliGenerator(-1) {
 
   fConfig = config;
-  fgMCEvGen = new TMevSim(); 
+  fMevSim = new TMevSim(); 
   sRandom = fRandom;
 }
 
@@ -65,7 +68,7 @@ AliGenMevSim::~AliGenMevSim()
   //
   // Standard destructor
   //
-  if (fgMCEvGen) delete fgMCEvGen;
+  if (fMevSim) delete fMevSim;
 }
 //____________________________________________________________________________
 void AliGenMevSim::SetConfig(AliMevSimConfig *config) {
@@ -75,7 +78,7 @@ void AliGenMevSim::SetConfig(AliMevSimConfig *config) {
 //____________________________________________________________________________
 void AliGenMevSim::AddParticleType(AliMevSimParticle *type) {
 
-  ((TMevSim*)fgMCEvGen)->AddPartTypeParams((TMevSimPartTypeParams*)type);
+  fMevSim->AddPartTypeParams((TMevSimPartTypeParams*)type);
 }
 //____________________________________________________________________________
 void AliGenMevSim::Init() 
@@ -86,7 +89,7 @@ void AliGenMevSim::Init()
 
   // fill data from AliMevSimConfig;
 
-  TMevSim *mevsim = (TMevSim*)fgMCEvGen;
+  TMevSim *mevsim = fMevSim;
 
   // geometry & momentum cut
 
@@ -96,8 +99,9 @@ void AliGenMevSim::Init()
     mevsim->SetPhiCutRange( fPhiMin * 180 / TMath::Pi() , fPhiMax * 180 / TMath::Pi() );
   
   if (TestBit(kThetaRange)) // from theta to eta
-    mevsim->SetEtaCutRange( -TMath::Log( TMath::Tan(fThetaMin/2)) , - TMath::Log( TMath::Tan(fThetaMin/2)) );
-
+  {
+    mevsim->SetEtaCutRange( -TMath::Log( TMath::Tan(fThetaMax/2)) , -TMath::Log( TMath::Tan(fThetaMin/2)) );
+  }  
 
   // mevsim specyfic parameters
   
@@ -148,11 +152,11 @@ void AliGenMevSim::Generate()
   TClonesArray *particles = new TClonesArray("TParticle");
   TParticle *particle;
 
-  ((TMevSim*)fgMCEvGen)->GenerateEvent();
-  nParticles = ((TMevSim*)fgMCEvGen)->ImportParticles(particles,"");
+  fMevSim->GenerateEvent();
+  fNpart= fMevSim->ImportParticles(particles,"");
 
-  cout << "Found " << nParticles << " particles ..." << endl;
-
+  cout << "Found " << fNpart << " particles ..." << endl;
+  nParticles = fNpart;
 
   for (i=0; i<nParticles; i++) {
     
@@ -163,7 +167,7 @@ void AliGenMevSim::Generate()
     p[1] = particle->Py();
     p[2] = particle->Pz();
     
-    gAlice->SetTrack(fTrackIt, parent, pdg, p, orgin, polar, time, kPPrimary, id);
+    SetTrack(fTrackIt, parent, pdg, p, orgin, polar, time, kPPrimary, id);
 
   }  
  
