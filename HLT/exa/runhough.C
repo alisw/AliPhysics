@@ -1,4 +1,4 @@
-void houghtest(Int_t slice,Char_t *path,Int_t n_eta_segments)
+void runhough(Int_t slice,Char_t *path,Int_t n_eta_segments)
 {
   
 
