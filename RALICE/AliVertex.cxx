@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  1999/11/03 14:23:18  fca
+New version of RALICE introduced
+
 Revision 1.3  1999/09/29 09:24:28  fca
 Introduction of the Copyright and cvs Log
 
@@ -123,6 +126,7 @@ AliVertex::AliVertex()
 // Initial maximum number of sec. vertices is set to the default value.
  fNvmax=0;
  fVertices=0;
+ fConnects=0;
  Reset();
  SetNtinit();
  SetNvmax();
@@ -134,6 +138,7 @@ AliVertex::AliVertex(Int_t n)
 // All variables initialised to 0
  fNvmax=0;
  fVertices=0;
+ fConnects=0;
  Reset();
  if (n > 0)
  {
@@ -155,6 +160,12 @@ AliVertex::~AliVertex()
 // Default destructor
  if (fVertices) delete fVertices;
  fVertices=0;
+ if (fConnects)
+ {
+  fConnects->Delete();
+  delete fConnects;
+  fConnects=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliVertex::SetNvmax(Int_t n)
@@ -182,6 +193,12 @@ void AliVertex::Reset()
 
  fNvtx=0;
  if (fNvmax>0) SetNvmax(fNvmax);
+ if (fConnects)
+ {
+  fConnects->Delete();
+  delete fConnects;
+  fConnects=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliVertex::Add(AliJet& j)
@@ -195,26 +212,54 @@ void AliVertex::Add(AliJet& j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliVertex::Add(AliVertex& v)
+void AliVertex::Add(AliVertex& v,Int_t connect)
 {
 // Add a (secondary) vertex to the current vertex.
 // In case the maximum number of (secondary) vertices has been reached,
 // the array space will be extended automatically
 //
-// Note : The 4-momentum of the current (primary) vertex
-//        is updated automatically, but the track connecting
-//        both vertices has to be entered separately by the user.
+// Note : By default the 4-momentum and charge of the current (primary) vertex
+//        are updated by automatically creating the track connecting
+//        both vertices. The track parameters are taken from the
+//        4-momentum and charge of the secondary vertex.
+//        The automatic creation of the connecting track and updating
+//        of the (primary) vertex 4-momentum and charge can be suppressed
+//        by specifying connect=0. In this case, however, the user
+//        has to introduce the connecting track lateron by hand
+//        explicitly in order to match the kinematics and charge.
 //
  if (fNvtx == fNvmax) // Check if maximum vertex number is reached
  {
   fNvmax++;
   fVertices->Expand(fNvmax);
  }
- 
- // Update 4-momentum for current vertex
+
+ // Add the linked (secondary) vertex to the list 
  fNvtx++;
  fVertices->Add(&v);
- (Ali4Vector)(*this)+=v;
+
+ // Create connecting track and update 4-momentum and charge for current vertex
+ if (connect)
+ {
+  AliPosition r1=GetPosition();
+  AliPosition r2=v.GetPosition();
+  Float_t q=v.GetCharge();
+  Ali3Vector p=v.Get3Momentum();
+  Double_t v2=v.GetInvariant();
+  Double_t dv2=v.Ali4Vector::GetResultError();
+
+  AliTrack* t=new AliTrack;
+  t->SetBeginPoint(r1);
+  t->SetEndPoint(r2);
+  t->SetCharge(q);
+  t->Set3Momentum(p);
+  t->SetInvariant(v2,dv2);
+
+  AliJet::Add(t);
+
+  if (!fConnects) fConnects=new TObjArray(fNvmax);
+  fConnects->Add(t);
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliVertex::Info(TString f)
