@@ -30,7 +30,7 @@ class AliPythia:public TPythia6
  private: 
     AliPythia();
 
-    ClassDef(AliPythia,1) //ALICE UI to PYTHIA
+    ClassDef(AliPythia,0) //ALICE UI to PYTHIA
 };
 
 #endif

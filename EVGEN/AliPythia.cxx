@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/06 14:18:44  morsch
+Upper cut of prim. pT distribution set to 5. GeV
+
 Revision 1.9  2000/09/18 10:41:35  morsch
 Add possibility to use nuclear structure functions from PDF library V8.
 
@@ -191,8 +194,6 @@ AliPythia* AliPythia::Instance()
 	return fgAliPythia;
     }
 }
-void AliPythia::Streamer(TBuffer &R__b) {} 
-
 
 
 
