@@ -52,6 +52,7 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void SetChildWeight(Float_t wgt)  {fChildWeight=wgt;}    
     virtual void SetAnalog(Int_t flag=1) {fAnalog=flag;}	
     virtual void SetVertexSmear(VertexSmear_t smear) {fVertexSmear = smear;}
+    virtual void SetCutVertexZ(Float_t cut=999999.) {fCutVertexZ = cut;}
     virtual void SetVertexSource(VertexSource_t smear) {fVertexSource = kInternal;}    
     virtual void SetTrackingFlag(Int_t flag=1) {fTrackIt=flag;}
     void Vertex();
@@ -107,11 +108,14 @@ class AliGenerator : public TNamed, public AliRndm
     Int_t       fAnalog;       //Flag for anolog or pt-weighted generation
    //
     VertexSmear_t     fVertexSmear;  //Vertex Smearing mode
-    VertexSource_t    fVertexSource; //Vertex source (internal/external)    
+    VertexSource_t    fVertexSource; //Vertex source (internal/external)
+    Float_t     fCutVertexZ;    // Vertex cut in units of sigma_z
     Int_t       fTrackIt;    // if 1, Track final state particles 
     TArrayF     fOrigin;     // Origin of event
     TArrayF     fOsigma;     // Sigma of the Origin of event
     TArrayF     fVertex;     //! Vertex of current event
+    TArrayF     fEventVertex;   //!The current event vertex
+
     AliStack*   fStack;      //! Local pointer to stack
     /*************************************************************************/
     enum {kThetaRange    = BIT(14),
@@ -121,10 +125,21 @@ class AliGenerator : public TNamed, public AliRndm
 	  kYRange        = BIT(18),
 	  kMomentumRange = BIT(19)     
     };
-    ClassDef(AliGenerator,1) // Base class for event generators
+    ClassDef(AliGenerator,2) // Base class for event generators
 };
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
 
 
 

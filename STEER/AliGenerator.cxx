@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2001/07/28 10:43:41  hristov
+Default argument initialised once
+
 Revision 1.14  2001/07/27 17:13:12  morsch
 - SetTrack, KeepTrack and SetHighWaterMark methods added to delegate to local
 stack or stack owned by AliRun. (Piotr Skowronski, A.M.)
@@ -260,7 +263,8 @@ void AliGenerator::SetPhiRange(Float_t phimin, Float_t phimax)
   // Set the Phi range for the generated particles
   //
   fPhiMin = TMath::Pi()*phimin/180;
-  fPhiMax = TMath::Pi()*phimax/180; SetBit(kPhiRange);
+  fPhiMax = TMath::Pi()*phimax/180;
+  SetBit(kPhiRange);
 }
 
 //_______________________________________________________________________
@@ -294,7 +298,8 @@ void AliGenerator::SetThetaRange(Float_t thetamin, Float_t thetamax)
   // Set the theta range for the generated particles
   //
   fThetaMin = TMath::Pi()*thetamin/180;
-  fThetaMax = TMath::Pi()*thetamax/180; SetBit(kThetaRange);
+  fThetaMax = TMath::Pi()*thetamax/180;
+  SetBit(kThetaRange);
 }
 
 void AliGenerator::Vertex()
