@@ -177,7 +177,7 @@ void AliITSclustererV2::Digits2Clusters(TFile *out) {
   cTree.Branch("Clusters",&array);
   delete array;
 
-  TClonesArray** clusters = new (TClonesArray*)[fNModules]; 
+  TClonesArray** clusters = new TClonesArray*[fNModules]; 
   // one TClonesArray per module
 
   AliITSRawStreamSPD inputSPD;

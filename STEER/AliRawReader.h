@@ -4,8 +4,11 @@
  * See cxx source for full Copyright notice                               */
 
 #include <TObject.h>
+#ifdef __CINT__
+class fstream;
+#else
 #include <Riostream.h>
-
+#endif
 
 struct AliMiniHeader {
   UInt_t    fSize;
