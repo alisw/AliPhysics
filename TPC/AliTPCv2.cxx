@@ -214,8 +214,8 @@ void AliTPCv2::CreateGeometry()
     for (iss = 0; iss < fTPCParam->GetNRowLow(); ++iss) {
       r1    = fTPCParam->GetPadRowRadiiLow(iss);
       r2    = r1 + dm[3] * 2.;
-      dm[0] = r1 * thl - .01;
-      dm[1] = r2 * thl - .01;
+      dm[0] = r1 * thl - 2.63;
+      dm[1] = r2 * thl - 2.63;
       
       zz    = -z0 + r1 +dm[3];
 

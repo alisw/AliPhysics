@@ -41,6 +41,9 @@ $(DICT):
 depend:
 		@$(MAKEDEPEND) -fMake-depend -- $(CXXFLAGS) $(DEPINC) -- $^
 
+Make-depend:
+		@cp $(ALICE_ROOT)/conf/Make-depend ./
+
 macroclean:
 		@rm -f $(TOCLEAN) *~ \#*
 
