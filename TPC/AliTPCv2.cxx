@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.40  2002/01/21 17:12:00  kowal2
+New track hits structure using root containers
+
 Revision 1.39  2001/05/16 14:57:25  alibrary
 New files for folders and Stack
 
@@ -1958,6 +1961,25 @@ void AliTPCv2::StepManager()
   // check the sensitive volume
 
   id = gMC->CurrentVolID(copy); // current volume Id
+
+  if (gMC->IsTrackEntering() && ( (id == fIdLSec) || (id == fIdUSec))){
+    //    printf("track  %d entering volume %d\n",gAlice->CurrentTrack(),id);
+    TLorentzVector p;
+    TLorentzVector x;
+    gMC->TrackMomentum(p);
+    gMC->TrackPosition(x);
+    AddTrackReference(gAlice->CurrentTrack(),p,x);
+  }
+
+  if (gMC->IsTrackExiting() && ( (id == fIdLSec) || (id == fIdUSec))){
+    //    printf("track  %d exiting volume %d\n",gAlice->CurrentTrack(),id);
+    TLorentzVector p;
+    TLorentzVector x;
+    gMC->TrackMomentum(p);
+    gMC->TrackPosition(x);
+    AddTrackReference(gAlice->CurrentTrack(),p,x);
+  }
+
 
   if(id == fIdLSec){
     vol[0] = copy-1; // lower sector number

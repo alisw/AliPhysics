@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.57  2002/05/07 17:23:11  kowal2
+Linear gain inefficiency instead of the step one at the wire edges.
+
 Revision 1.56  2002/04/04 16:26:33  kowal2
 Digits (Sdigits) go to separate files now.
 
@@ -205,6 +208,7 @@ Introduction of the Copyright and cvs Log
 #include <fstream.h>
 #include "AliMC.h"
 #include "AliMagF.h"
+#include "AliTrackReference.h"
 
 
 #include "AliTPCParamSR.h"
@@ -275,7 +279,7 @@ AliTPC::AliTPC()
   fDefaults = 0;
   fTrackHits = 0; 
   fTrackHitsOld = 0;   
-  fHitType = 4; //default CONTAINERS - based on ROOT structure 
+  fHitType = 2; //default CONTAINERS - based on ROOT structure 
   fTPCParam = 0;    
   fNoiseTable = 0;
   fActiveSectors =0;
@@ -310,7 +314,7 @@ AliTPC::AliTPC(const char *name, const char *title)
 
   fNoiseTable =0;
 
-  fHitType = 4;
+  fHitType = 2;
   fActiveSectors = 0;
   //
   // Initialise counters
@@ -367,6 +371,21 @@ void AliTPC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   }
   if (fHitType>1)
    AddHit2(track,vol,hits);
+}
+
+void  AliTPC::AddTrackReference(Int_t lab, TLorentzVector p, TLorentzVector x){
+  //
+  // add a trackrefernce to the list
+  if (!fTrackReferences) {
+    cerr<<"Container trackrefernce not active\n";
+    return;
+  }
+  Int_t nref = fTrackReferences->GetEntriesFast();
+  TClonesArray &lref = *fTrackReferences;
+  AliTrackReference * ref =  new(lref[nref]) AliTrackReference;
+  ref->SetMomentum(p[0],p[1],p[2]);
+  ref->SetPosition(x[0],x[1],x[2]);
+  ref->SetTrack(lab);
 }
  
 //_____________________________________________________________________________
@@ -1314,6 +1333,11 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
 	  Float_t detbz=currentIndex*(sumxz*sumx4-sumx2z*sumx3)-sumz*(sumx*sumx4-sumx2*sumx3)+
 	    sumx2*(sumx*sumx2z-sumx2*sumxz);
 	  
+	  if (TMath::Abs(det)<0.00001){
+	     tpcHit = (AliTPChit*)NextHit();
+	    continue;
+	  }
+	
 	  Float_t y=detay/det+centralPad;
 	  Float_t z=detaz/det;	
 	  Float_t by=detby/det; //y angle
