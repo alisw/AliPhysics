@@ -20,8 +20,8 @@ class AliEMCALHadronCorrectionv0: public AliEMCALHadronCorrection {
 
   public:
   static  AliEMCALHadronCorrectionv0* Instance();
-  virtual Double_t GetEnergy(const Double_t pmom,const Double_t eta,const Int_t gid); 
-  Double_t GetEnergy(const Double_t pmom, const Double_t eta) 
+  virtual Double_t GetEnergy(Double_t pmom, Double_t eta, Int_t gid); 
+  Double_t GetEnergy(Double_t pmom, Double_t eta) 
   {return GetEnergy(pmom,eta,7);}
 
   virtual ~AliEMCALHadronCorrectionv0() {}

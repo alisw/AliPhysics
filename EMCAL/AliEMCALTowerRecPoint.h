@@ -48,7 +48,7 @@ public:
   Float_t     GetMaximalEnergy(void) const ;                       // get the highest energy in the cluster
   Int_t       GetMaximumMultiplicity() const {return fMaxDigit ;}  // gets the maximum number of digits allowed
   Int_t       GetMultiplicity(void) const { return fMulDigit ; }   // gets the number of digits making this recpoint
-  Int_t       GetMultiplicityAtLevel(const Float_t level) const ;  // computes multiplicity of digits with 
+  Int_t       GetMultiplicityAtLevel(Float_t level) const ;  // computes multiplicity of digits with 
                                                                    // energy above relative level
   virtual Int_t GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * maxAtEnergy,
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 

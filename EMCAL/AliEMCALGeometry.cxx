@@ -50,7 +50,7 @@ AliEMCALGeometry::~AliEMCALGeometry(void){
 }
 
 //______________________________________________________________________
-const Bool_t AliEMCALGeometry::AreInSameTower(Int_t id1, Int_t id2) const {
+Bool_t AliEMCALGeometry::AreInSameTower(Int_t id1, Int_t id2) const {
   // Find out whether two hits are in the same tower
   Int_t idmax = TMath::Max(id1, id2) ; 
   Int_t idmin = TMath::Min(id1, id2) ;
@@ -321,7 +321,7 @@ void AliEMCALGeometry::PosInAlice(const Int_t *relid, Float_t &theta, Float_t &p
 }
 
 //______________________________________________________________________
-void AliEMCALGeometry::PosInAlice(const Int_t absid, Float_t &theta, Float_t &phi) const 
+void AliEMCALGeometry::PosInAlice(Int_t absid, Float_t &theta, Float_t &phi) const 
 {
   // Converts the relative numbering into the local EMCAL-module (x, z)
   // coordinates
@@ -386,7 +386,7 @@ void AliEMCALGeometry::XYZFromIndex(const Int_t *relid,Float_t &x,Float_t &y, Fl
 } 
 
 //______________________________________________________________________
-void AliEMCALGeometry::XYZFromIndex(const Int_t absid,  TVector3 &v) const {
+void AliEMCALGeometry::XYZFromIndex(Int_t absid,  TVector3 &v) const {
     // given the tower relative number it returns the X, Y and Z
     // of the tower.
     

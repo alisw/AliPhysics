@@ -17,8 +17,8 @@ class AliEMCALGeometry;
 class AliEMCALHadronCorrectionv1: public AliEMCALHadronCorrection {
  public:
     static  AliEMCALHadronCorrectionv1* Instance();
-    virtual Double_t GetEnergy(const Double_t pmom,const Double_t eta,const Int_t gid); 
-    Double_t GetEnergy(const Double_t pmom, const Double_t eta) 
+    virtual Double_t GetEnergy(Double_t pmom, Double_t eta, Int_t gid); 
+    Double_t GetEnergy(Double_t pmom, Double_t eta) 
 	{return GetEnergy(pmom,eta,7);}
     
     void SetGeometry(TString name, Double_t fs = 1.); 

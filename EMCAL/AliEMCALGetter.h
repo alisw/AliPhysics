@@ -71,8 +71,8 @@ class AliEMCALGetter : public TObject {
   static void Print() ; 
   
 //   //=========== General information about run ==============
-  Bool_t IsLoaded(const TString tree) const { return fLoadingStatus.Contains(tree) ; } 
-  void   SetLoaded(const TString tree) { fLoadingStatus += tree ; } 
+  Bool_t IsLoaded(TString tree) const { return fLoadingStatus.Contains(tree) ; } 
+  void   SetLoaded(TString tree) { fLoadingStatus += tree ; } 
 
   Int_t  MaxEvent() const ; 
   Int_t  EventNumber() const ; 
@@ -85,8 +85,8 @@ class AliEMCALGetter : public TObject {
   AliEMCALGeometry * EMCALGeometry() const ; 
   
 //   //========== Methods to read something from file ==========
-  void   Event(const Int_t event, const char * opt = "HSDRP") ;    
-  void   Track(const Int_t itrack) ;
+  void   Event(Int_t event, const char * opt = "HSDRP") ;    
+  void   Track(Int_t itrack) ;
   
 //   //-----------------now getter's data--------------------------------------
 // //  AliEMCALCalibrationDB * CalibrationDB(){return  fcdb; }
@@ -97,17 +97,17 @@ class AliEMCALGetter : public TObject {
   TClonesArray *    Primaries(void)  ;
   TParticle * Primary(Int_t index) const ;
   Int_t       NPrimaries()const { return fNPrimaries; }
-  TParticle * Secondary(const TParticle * p, const Int_t index=1) const ;  
+  TParticle * Secondary(const TParticle * p, Int_t index=1) const ;  
   
 //   //=========== Hits =================
 //   TTree *               TreeH(TString filename="") ; 
   TClonesArray *  Hits(void) const  ; 
-  AliEMCALHit *    Hit(const Int_t index) const { return dynamic_cast<AliEMCALHit*>(Hits()->At(index) );}
+  AliEMCALHit *    Hit(Int_t index) const { return dynamic_cast<AliEMCALHit*>(Hits()->At(index) );}
   TTree *         TreeH() const ; 
   
   //=========== SDigits ==============
   TClonesArray *      SDigits() const ;  
-  AliEMCALDigit *      SDigit(const Int_t index) const { return static_cast<AliEMCALDigit *>(SDigits()->At(index)) ;} 
+  AliEMCALDigit *      SDigit(Int_t index) const { return static_cast<AliEMCALDigit *>(SDigits()->At(index)) ;} 
   TTree *             TreeS() const ; 
   AliEMCALSDigitizer * SDigitizer() ;  
 
@@ -120,7 +120,7 @@ class AliEMCALGetter : public TObject {
   
   //========== Digits ================
   TClonesArray * Digits() const ;
-  AliEMCALDigit * Digit(const Int_t index) const { return static_cast<AliEMCALDigit *>(Digits()->At(index)) ;} 
+  AliEMCALDigit * Digit(Int_t index) const { return static_cast<AliEMCALDigit *>(Digits()->At(index)) ;} 
   TTree *        TreeD() const ; 
   AliEMCALDigitizer * Digitizer() ;
   TString             GetDigitsFileName() const { return EmcalLoader()->GetDigitsFileName() ; }  
@@ -133,7 +133,7 @@ class AliEMCALGetter : public TObject {
   
   //========== RecPoints =============
   TObjArray *             ECARecPoints() const;
-  AliEMCALTowerRecPoint * ECARecPoint(const Int_t index) const{ return static_cast<AliEMCALTowerRecPoint *>(ECARecPoints()->At(index)) ;}    
+  AliEMCALTowerRecPoint * ECARecPoint(Int_t index) const{ return static_cast<AliEMCALTowerRecPoint *>(ECARecPoints()->At(index)) ;}    
   TTree *                 TreeR() const ;
   AliEMCALClusterizer *   Clusterizer()  ;
   TString                 GetRecPointsFileName() const { return EmcalLoader()->GetRecPointsFileName() ; } 
@@ -146,7 +146,7 @@ class AliEMCALGetter : public TObject {
 
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
   TClonesArray *           TrackSegments() const ;
-  AliEMCALTrackSegment *  TrackSegments(const Int_t index) const { return static_cast<AliEMCALTrackSegment *>(TrackSegments()->At(index)) ;} 
+  AliEMCALTrackSegment *  TrackSegments(Int_t index) const { return static_cast<AliEMCALTrackSegment *>(TrackSegments()->At(index)) ;} 
   TTree *               TreeT() const ;
   AliEMCALTrackSegmentMaker * TrackSegmentMaker() ;
   TString               GetTracksFileName() const { return EmcalLoader()->GetTracksFileName() ; } 
@@ -159,7 +159,7 @@ class AliEMCALGetter : public TObject {
   //========== RecParticles ===========
 
   TClonesArray *         RecParticles() const ;
-  AliEMCALRecParticle *   RecPaticles(const Int_t index) const { return static_cast<AliEMCALRecParticle *>(RecParticles()->At(index)) ;} 
+  AliEMCALRecParticle *   RecPaticles(Int_t index) const { return static_cast<AliEMCALRecParticle *>(RecParticles()->At(index)) ;} 
   TTree *               TreeP() const ;
   AliEMCALPID * PID() ;
   TString               GetRecParticlesFileName() const { return EmcalLoader()->GetRecParticlesFileName() ; } 

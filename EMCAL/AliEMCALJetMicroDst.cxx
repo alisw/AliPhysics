@@ -159,7 +159,7 @@ Bool_t AliEMCALJetMicroDst::Open(const char *fname)
   }
 }
 
-const Char_t* AliEMCALJetMicroDst::DefineName(const Int_t mode)
+const Char_t* AliEMCALJetMicroDst::DefineName(Int_t mode)
 {
 	//DefineName member
   static TString dir, name;

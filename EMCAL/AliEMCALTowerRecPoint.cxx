@@ -580,7 +580,7 @@ Float_t AliEMCALTowerRecPoint::GetMaximalEnergy(void) const
 }
 
 //____________________________________________________________________________
-Int_t AliEMCALTowerRecPoint::GetMultiplicityAtLevel(const Float_t H) const
+Int_t AliEMCALTowerRecPoint::GetMultiplicityAtLevel(Float_t H) const
 {
   // Calculates the multiplicity of digits with energy larger than H*energy 
   

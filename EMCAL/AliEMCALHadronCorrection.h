@@ -19,7 +19,7 @@ class AliEMCALHadronCorrection : public TNamed {
   virtual ~AliEMCALHadronCorrection() {} 
 
   // Add for particle
-  virtual Double_t GetEnergy(const Double_t pmom,const Double_t eta,const Int_t gid)=0; 
+  virtual Double_t GetEnergy(Double_t pmom, Double_t eta, Int_t gid)=0; 
 
   ClassDef(AliEMCALHadronCorrection,1) // Hadron correction for EMC (abstract class)
 };

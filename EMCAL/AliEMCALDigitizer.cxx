@@ -99,7 +99,7 @@ ClassImp(AliEMCALDigitizer)
 }
 
 //____________________________________________________________________________ 
-AliEMCALDigitizer::AliEMCALDigitizer(const TString alirunFileName, const TString eventFolderName):
+AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolderName):
   AliDigitizer("EMCAL"+AliConfig::fgkDigitizerTaskName, alirunFileName),
   fInputFileNames(0), fEventNames(0), fEventFolderName(eventFolderName)
 {
@@ -158,7 +158,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd):
 }
 
 //____________________________________________________________________________
-void AliEMCALDigitizer::Digitize(const Int_t event) 
+void AliEMCALDigitizer::Digitize(Int_t event) 
 { 
 
   // Makes the digitization of the collected summable digits
@@ -467,7 +467,7 @@ void AliEMCALDigitizer::InitParameters()
 }
 
 //__________________________________________________________________
-void AliEMCALDigitizer::MixWith(const TString alirunFileName, const TString eventFolderName)
+void AliEMCALDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
 {
   // Allows to produce digits by superimposing background and signal event.
   // It is assumed, that headers file with SIGNAL events is opened in 

@@ -31,29 +31,29 @@ class AliEMCALDigitizer: public AliDigitizer {
 
 public:
   AliEMCALDigitizer() ;          // ctor
-  AliEMCALDigitizer(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;  
+  AliEMCALDigitizer(TString alirunFileNameFile, TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;  
   AliEMCALDigitizer(const AliEMCALDigitizer & dtizer) ;
   AliEMCALDigitizer(AliRunDigitizer * manager) ;
   virtual ~AliEMCALDigitizer() ;       
 
-  void    Digitize(const Int_t event);          // Make Digits from SDigits stored in fSDigits
+  void    Digitize(Int_t event);          // Make Digits from SDigits stored in fSDigits
   void    Exec(Option_t *option);               // Supervising method
 
-  const Float_t GetDigitThreshold() const { return fDigitThreshold;}
-  const Float_t GetPedestal()       const { return fPedestal; }
-  const Float_t GetPinNoise()       const { return fPinNoise;}
-  const Float_t GetSlope()          const { return fSlope; }
-  const Float_t GetTimeResolution() const { return fTimeResolution ; }
-  const Float_t GetECAchannel()     const { return fADCchannelEC ; }
-  const Float_t GetECApedestal()    const { return fADCpedestalEC ; }
+  Float_t GetDigitThreshold() const { return fDigitThreshold;}
+  Float_t GetPedestal()       const { return fPedestal; }
+  Float_t GetPinNoise()       const { return fPinNoise;}
+  Float_t GetSlope()          const { return fSlope; }
+  Float_t GetTimeResolution() const { return fTimeResolution ; }
+  Float_t GetECAchannel()     const { return fADCchannelEC ; }
+  Float_t GetECApedestal()    const { return fADCpedestalEC ; }
 
   void    SetDigitThreshold(Float_t EMCThreshold)  {fDigitThreshold = EMCThreshold;}
   void    SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
 
   //General
-  const Int_t   GetDigitsInRun()  const { return fDigitsInRun; } 
-  void  MixWith(const TString alirunFileName, 
-		const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ; // Add another one file to mix
+  Int_t   GetDigitsInRun()  const { return fDigitsInRun; } 
+  void  MixWith(TString alirunFileName, 
+		TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ; // Add another one file to mix
   void  Print()const ;
  
   AliEMCALDigitizer & operator = (const AliEMCALDigitizer & /*rvalue*/)  {

@@ -110,7 +110,7 @@ AliEMCALHadronCorrectionv1::Instance()
 }
 
 Double_t 
-AliEMCALHadronCorrectionv1::GetEnergy(const Double_t pmom,const Double_t eta,const Int_t /*gid*/)
+AliEMCALHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t /*gid*/)
 {
   Double_t etai = TMath::Abs(eta); 
   Double_t value =  fPar[5]*pmom*pmom*pmom+ fPar[0]*pmom*pmom+fPar[1]*pmom +fPar[2]*pmom*etai +fPar[3]*etai + fPar[4];

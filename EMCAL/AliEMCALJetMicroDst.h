@@ -44,9 +44,9 @@ class AliEMCALJetMicroDst: public TNamed {
   
   void    FillJetsControl(); // 18-jan-2003
 
-  Bool_t  Open(const Int_t mode=1) {return Open(DefineName(mode));}  // *MENU* 
+  Bool_t  Open(Int_t mode=1) {return Open(DefineName(mode));}  // *MENU* 
   Bool_t  Open(const char  *fname);                                  // *MENU* 
-  const Char_t* DefineName(const Int_t mode=1);                      // *MENU*
+  const Char_t* DefineName(Int_t mode=1);                      // *MENU*
   Bool_t  Initialize(TFile *file);
   void    Print(Option_t* option="") const;                          // *MENU* 
   Int_t   GetEntry(Int_t entry);

@@ -207,7 +207,7 @@ TClonesArray * AliEMCALGetter::RecParticles() const
   return rv ; 
 }
 //____________________________________________________________________________ 
-void AliEMCALGetter::Event(const Int_t event, const char* opt) 
+void AliEMCALGetter::Event(Int_t event, const char* opt) 
 {
   // Reads the content of all Tree's S, D and R
 
@@ -557,7 +557,7 @@ AliEMCALSDigitizer * AliEMCALGetter::SDigitizer()
 }
 
 //____________________________________________________________________________ 
-TParticle * AliEMCALGetter::Secondary(const TParticle* p, const Int_t index) const
+TParticle * AliEMCALGetter::Secondary(const TParticle* p, Int_t index) const
 {
   // Return first (index=1) or second (index=2) secondary particle of primary particle p 
 
@@ -576,7 +576,7 @@ TParticle * AliEMCALGetter::Secondary(const TParticle* p, const Int_t index) con
 }
 
 //____________________________________________________________________________ 
-void AliEMCALGetter::Track(const Int_t itrack) 
+void AliEMCALGetter::Track(Int_t itrack) 
 {
   // Read the first entry of EMCAL branch in hit tree gAlice->TreeH()
  

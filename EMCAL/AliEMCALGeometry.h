@@ -44,7 +44,7 @@ public:
     return *(GetInstance()) ; 
   };
 
-  const Bool_t AreInSameTower(Int_t id1, Int_t id2) const ;  
+  Bool_t AreInSameTower(Int_t id1, Int_t id2) const ;  
   virtual void GetGlobal(const AliRecPoint *, TVector3 &, TMatrix &) const {}
   virtual void GetGlobal(const AliRecPoint *, TVector3 &) const {}
   virtual Bool_t Impact(const TParticle *) const {return kTRUE;}
@@ -52,30 +52,30 @@ public:
   Bool_t  IsInitialized(void) const { return fgInit ; }
   	// Return EMCA geometrical parameters
   // geometry
-  const Float_t GetAlFrontThickness() const { return fAlFrontThick;}
-  const Float_t GetArm1PhiMin() const { return fArm1PhiMin ; }
-  const Float_t GetArm1PhiMax() const { return fArm1PhiMax ; }
-  const Float_t GetArm1EtaMin() const { return fArm1EtaMin;}
-  const Float_t GetArm1EtaMax() const { return fArm1EtaMax;}
-  const Float_t GetIPDistance() const { return fIPDistance;}   
-  const Float_t GetIP2ECASection() const { return ( GetIPDistance() + GetAlFrontThickness() + GetGap2Active() ) ; }   
-  const Float_t GetEnvelop(Int_t index) const { return fEnvelop[index] ; }  
-  const Float_t GetShellThickness() const { return fShellThickness ; }
-  const Float_t GetZLength() const { return fZLength ; } 
-  const Float_t GetGap2Active() const {return  fGap2Active ; }
-  const Float_t GetDeltaEta() const {return (fArm1EtaMax-fArm1EtaMin)/
+  Float_t GetAlFrontThickness() const { return fAlFrontThick;}
+  Float_t GetArm1PhiMin() const { return fArm1PhiMin ; }
+  Float_t GetArm1PhiMax() const { return fArm1PhiMax ; }
+  Float_t GetArm1EtaMin() const { return fArm1EtaMin;}
+  Float_t GetArm1EtaMax() const { return fArm1EtaMax;}
+  Float_t GetIPDistance() const { return fIPDistance;}   
+  Float_t GetIP2ECASection() const { return ( GetIPDistance() + GetAlFrontThickness() + GetGap2Active() ) ; }   
+  Float_t GetEnvelop(Int_t index) const { return fEnvelop[index] ; }  
+  Float_t GetShellThickness() const { return fShellThickness ; }
+  Float_t GetZLength() const { return fZLength ; } 
+  Float_t GetGap2Active() const {return  fGap2Active ; }
+  Float_t GetDeltaEta() const {return (fArm1EtaMax-fArm1EtaMin)/
 				       ((Float_t)fNZ);}
-  const Float_t GetDeltaPhi() const {return (fArm1PhiMax-fArm1PhiMin)/
+  Float_t GetDeltaPhi() const {return (fArm1PhiMax-fArm1PhiMin)/
 				       ((Float_t)fNPhi);}
-  const Int_t   GetNECLayers() const {return fNECLayers ;}
-  const Int_t   GetNZ() const {return fNZ ;}
-  const Int_t   GetNEta() const {return fNZ ;}
-  const Int_t   GetNPhi() const {return fNPhi ;}
-  const Int_t   GetNTowers() const {return fNPhi * fNZ ;}
-  const Float_t GetECPbRadThick()const {return fECPbRadThickness;}
-  const Float_t GetECScintThick() const {return fECScintThick;}
-  const Float_t GetSampling() const {return fSampling ; } 
-  const Bool_t IsInECA(Int_t index) const { if ( (index > 0 && (index <= GetNZ() * GetNPhi()))) return kTRUE; else return kFALSE ;}
+  Int_t   GetNECLayers() const {return fNECLayers ;}
+  Int_t   GetNZ() const {return fNZ ;}
+  Int_t   GetNEta() const {return fNZ ;}
+  Int_t   GetNPhi() const {return fNPhi ;}
+  Int_t   GetNTowers() const {return fNPhi * fNZ ;}
+  Float_t GetECPbRadThick()const {return fECPbRadThickness;}
+  Float_t GetECScintThick() const {return fECScintThick;}
+  Float_t GetSampling() const {return fSampling ; } 
+  Bool_t IsInECA(Int_t index) const { if ( (index > 0 && (index <= GetNZ() * GetNPhi()))) return kTRUE; else return kFALSE ;}
  
   Float_t AngleFromEta(Float_t eta){ // returns theta in radians for a given pseudorapidity
     return 2.0*TMath::ATan(TMath::Exp(-eta));
@@ -91,14 +91,14 @@ public:
   void EtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi) const;
   	// returns x, y, and z (cm) on the inner surface of a given EMCAL Cell specified by relid.
   void XYZFromIndex(const Int_t *relid,Float_t &x,Float_t &y, Float_t &z) const;
-  void XYZFromIndex(const Int_t absid, TVector3 &v) const;
+  void XYZFromIndex(Int_t absid, TVector3 &v) const;
   	// for a given eta and phi in the EMCAL it returns the tower index.
   Int_t TowerIndexFromEtaPhi(Float_t eta,Float_t phi) const;
   	// for a given eta and phi in the EMCAL it returns the pretower index.
   Int_t PreTowerIndexFromEtaPhi(Float_t eta,Float_t phi) const;
   	// Returns theta and phi (degree) for a given EMCAL cell indicated by relid or absid
   void PosInAlice(const Int_t *relid, Float_t &theta, Float_t &phi) const ;
-  void PosInAlice(const Int_t absid, Float_t &theta, Float_t &phi) const ;
+  void PosInAlice(Int_t absid, Float_t &theta, Float_t &phi) const ;
   Bool_t AbsToRelNumbering(Int_t AbsId, Int_t *relid) const;
   void SetNZ(Int_t nz) { fNZ= nz ; printf("SetNZ: Number of modules in Z set to %d", fNZ) ; }
   void SetNPhi(Int_t nphi) { fNPhi= nphi ; printf("SetNPhi: Number of modules in Phi set to %d", fNPhi) ; }
