@@ -74,6 +74,7 @@ public:
   Error("AddDigit","Hits cannot be added to module %s\n",fName.Data());}
   virtual void        Hits2SDigits() {}
   virtual void        SDigits2Digits() {}
+  virtual void        Digits2Reco() {}
   virtual void        Digits2Raw() {}
   virtual void        Raw2Digits() {}
   virtual void        Browse(TBrowser *) {}
