@@ -87,11 +87,7 @@ void AliL3ClustFinderNew::ProcessDigits()
   LOG(AliL3Log::kInformational,"AliL3ClustFinderNew::WriteClusters","Space points")
     <<"Cluster finder found "<<fNClusters<<" clusters in slice "<<fCurrentSlice
     <<" patch "<<fCurrentPatch<<ENDLOG;
-
-
 }
-
-
 
 void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 {
@@ -288,8 +284,6 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
     }//Loop over digits on this padrow
   
   WriteClusters(n_total,clusterlist);
-
-
 }
 
 void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
@@ -301,10 +295,12 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
     {
       if(!list[j].fFlags) continue; //discard 1 pad clusters
       if(list[j].fTotalCharge < fThreshold) continue; //noise cluster
-      Float_t xyz[3];
-      
+
+      Float_t xyz[3];      
       Float_t fpad=(Float_t)list[j].fPad/(Float_t)list[j].fTotalCharge;
       Float_t ftime=(Float_t)list[j].fTime/(Float_t)list[j].fTotalCharge;
+      //cout<<"WriteCluster: padrow "<<fCurrentRow<<" pad "<<fpad<<" time "<<ftime<<" charge "<<list[j].fTotalCharge<<endl;
+
       //printf("padrow %d number of pads %d totalcharge %d\n",fCurrentRow,list[j].fFlags,list[j].fTotalCharge);
       AliL3Transform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
       AliL3Transform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
@@ -315,7 +311,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
 	  LOG(AliL3Log::kError,"AliL3ClustFinder::WriteClusters","Cluster Finder")
 	    <<AliL3Log::kDec<<"Too many clusters"<<ENDLOG;
 	  return;
-	  }  
+	}  
       fSpacePointData[counter].fCharge = list[j].fTotalCharge;
       fSpacePointData[counter].fX = xyz[0];
       fSpacePointData[counter].fY = xyz[1];
@@ -324,7 +320,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
       fSpacePointData[counter].fXYErr = fXYErr;
       fSpacePointData[counter].fZErr = fZErr;
       fSpacePointData[counter].fID = counter
-	+((fCurrentSlice&0x7f)<<25)+((fCurrentPatch&0x7)<<22);//uli
+	+((fCurrentSlice&0x7f)<<25)+((fCurrentPatch&0x7)<<22);//Uli
 #ifdef do_mc
       Int_t trackID[3];
       GetTrackID((Int_t)rint(fpad),(Int_t)rint(ftime),trackID);
@@ -335,10 +331,7 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
 #endif
       fNClusters++;
       counter++;
-
     }
-
-  
 }
 
 #ifdef do_mc
