@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.27  2000/10/11 10:33:55  jbarbosa
+  Corrected bug introduced by earlier revisions  (CerenkovData array cannot be reset to zero on wach call of StepManager)
+
   Revision 1.26  2000/10/03 21:44:08  morsch
   Use AliSegmentation and AliHit abstract base classes.
 
@@ -380,6 +383,8 @@ void AliRICH::CreateGeometry()
   distance = geometry->GetFreonThickness()/2 + geometry->GetQuartzThickness() + geometry->GetGapThickness();
   geometry->SetRadiatorToPads(distance);
     
+  //Opaque quartz thickness
+  Float_t oqua_thickness = 1;
     
     Int_t *idtmed = fIdtmed->GetArray()-999;
     
@@ -408,7 +413,7 @@ void AliRICH::CreateGeometry()
     gMC->Gsvolu("SRIC", "BOX ", idtmed[1000], par, 3);
     
     //     Honeycomb 
-    par[0] = 63.1;
+    par[0] = 64.8;
     par[1] = .188;                 //Original Settings
     par[2] = 66.55;
     /*par[0] = 66.55;
@@ -417,7 +422,7 @@ void AliRICH::CreateGeometry()
     gMC->Gsvolu("HONE", "BOX ", idtmed[1001], par, 3);
     
     //     Aluminium sheet 
-    par[0] = 63.1;
+    par[0] = 64.8;
     par[1] = .025;                 //Original Settings
     par[2] = 66.55;
     /*par[0] = 66.5;
@@ -445,7 +450,7 @@ void AliRICH::CreateGeometry()
     gMC->Gsvolu("SPAC", "TUBE", idtmed[1002], par, 3);
     
     //     Opaque quartz 
-    par[0] = 61.95;
+    par[0] = 64.8;
     par[1] = .2;                   //Original Settings
     par[2] = 66.5;
     /*par[0] = 66.5;
@@ -454,9 +459,9 @@ void AliRICH::CreateGeometry()
     gMC->Gsvolu("OQUA", "BOX ", idtmed[1007], par, 3);
   
     //     Frame of opaque quartz
-    par[0] = geometry->GetOuterFreonWidth()/2;
+    par[0] = geometry->GetOuterFreonWidth()/2 + oqua_thickness;
     par[1] = geometry->GetFreonThickness()/2;
-    par[2] = geometry->GetOuterFreonLength()/2 + 1; 
+    par[2] = geometry->GetOuterFreonLength()/2 + oqua_thickness; 
     /*par[0] = 20.65;
     par[1] = .5;                   //Original Settings
     par[2] = 66.5;*/
@@ -465,9 +470,9 @@ void AliRICH::CreateGeometry()
     par[2] = 20.65;*/
     gMC->Gsvolu("OQF1", "BOX ", idtmed[1007], par, 3);
 
-    par[0] = geometry->GetInnerFreonWidth()/2;
+    par[0] = geometry->GetInnerFreonWidth()/2 + oqua_thickness;
     par[1] = geometry->GetFreonThickness()/2;
-    par[2] = geometry->GetInnerFreonLength()/2 + 1; 
+    par[2] = geometry->GetInnerFreonLength()/2 + oqua_thickness; 
     gMC->Gsvolu("OQF2", "BOX ", idtmed[1007], par, 3);
     
     //     Little bar of opaque quartz 
@@ -586,11 +591,11 @@ void AliRICH::CreateGeometry()
 
     gMC->Gspos("FRE1", 1, "OQF1", 0., 0., 0., 0, "ONLY");
     gMC->Gspos("FRE2", 1, "OQF2", 0., 0., 0., 0, "ONLY");
-    gMC->Gspos("OQF1", 1, "SRIC", geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2, 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2, 0., 0, "ONLY"); //Original settings (31.3)
+    gMC->Gspos("OQF1", 1, "SRIC", geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2 + 2*oqua_thickness, 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2, 0., 0, "ONLY"); //Original settings (31.3)
     gMC->Gspos("OQF2", 2, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");          //Original settings 
-    gMC->Gspos("OQF1", 3, "SRIC", - (geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2), 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
-    gMC->Gspos("BARR", 1, "QUAR", -21.65, 0., 0., 0, "ONLY");           //Original settings 
-    gMC->Gspos("BARR", 2, "QUAR", 21.65, 0., 0., 0, "ONLY");            //Original settings 
+    gMC->Gspos("OQF1", 3, "SRIC", - (geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2) - 2*oqua_thickness, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
+    gMC->Gspos("BARR", 1, "QUAR", - geometry->GetInnerFreonWidth()/2 - oqua_thickness, 0., 0., 0, "ONLY");           //Original settings (-21.65) 
+    gMC->Gspos("BARR", 2, "QUAR",  geometry->GetInnerFreonWidth()/2 + oqua_thickness, 0., 0., 0, "ONLY");            //Original settings (21.65)
     gMC->Gspos("QUAR", 1, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness()/2, 0., 0, "ONLY");
     gMC->Gspos("GAP ", 1, "META", 0., geometry->GetGapThickness()/2 - geometry->GetProximityGapThickness()/2 - 0.0001, 0., 0, "ONLY");
     gMC->Gspos("META", 1, "SRIC", 0., 1.276, 0., 0, "ONLY");
@@ -2146,29 +2151,28 @@ void AliRICH::Digitise(Int_t nev, Int_t flag, Option_t *option,Text_t *filename)
 	  //printf("Track:%d\n",track);
 	  //printf("Particle:%d\n",particle);
 	  
-	  if (flag == 0)
-	    digitse=1;
+	  digitse=1;
 	  
 	  if (flag == 1) 
 	    if(TMath::Abs(particle) == 211 || TMath::Abs(particle) == 111)
-	      digitse=1;
+	      digitse=0;
 	  
 	  if (flag == 2)
 	    if(TMath::Abs(particle)==321 || TMath::Abs(particle)==130 || TMath::Abs(particle)==310 
 	       || TMath::Abs(particle)==311)
-	      digitse=1;
+	      digitse=0;
 	  
 	  if (flag == 3 && TMath::Abs(particle)==2212)
-	    digitse=1;
+	    digitse=0;
 	  
 	  if (flag == 4 && TMath::Abs(particle)==13)
-	    digitse=1;
+	    digitse=0;
 	  
 	  if (flag == 5 && TMath::Abs(particle)==11)
-	    digitse=1;
+	    digitse=0;
 	  
 	  if (flag == 6 && TMath::Abs(particle)==2112)
-	    digitse=1;
+	    digitse=0;
 	  
 	  
 	  //printf ("Particle: %d, Flag: %d, Digitse: %d\n",particle,flag,digitse); 
