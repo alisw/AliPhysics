@@ -69,6 +69,7 @@ class AliPHOSIndexToObject : public TObject {
   Int_t                 GimeNSDigits() 
     {if(fSDigits) return fSDigits->GetEntriesFast(); 
      return 0 ;} 
+  TClonesArray *        GimeDigits(){return fDigits ;}
   AliPHOSDigit *        GimeDigit(Int_t index) 
                           {if(fDigits) return (AliPHOSDigit*)fDigits->At(index); 
 			  return 0 ;} 
