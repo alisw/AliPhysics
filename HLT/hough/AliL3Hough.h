@@ -5,29 +5,47 @@
 
 class AliL3HoughMaxFinder;
 class AliL3HoughTransformer;
-class TH2F;
+class AliL3Histogram;
+class AliL3FileHandler;
+class AliL3HoughEval;
+class AliL3Transform;
+class AliL3TrackArray;
 
 class AliL3Hough : public TObject {
   
  private:
 
-  TH2F *fParamSpace;  //!
-  Char_t fInputFile[100];
-  
+  Char_t fPath[256];
+  Int_t fNEtaSegments;
+  AliL3Histogram **fHistos; //!
+  AliL3FileHandler *fMemHandler; //!
+  AliL3HoughMaxFinder *fMaxFinder; 
+  AliL3HoughEval *fEval;
   AliL3HoughTransformer *fHoughTransformer;
-  AliL3HoughMaxFinder *fPeakFinder;
+  AliL3Transform *fTransform; //!
+  Bool_t fUseBinary;
+  Bool_t fDeleteTrack;
+  AliL3TrackArray *fTracks; //!
 
+  Int_t fNxbin;
+  Int_t fNybin;
+  Double_t fXmin;
+  Double_t fXmax;
+  Double_t fYmin;
+  Double_t fYmax;
 
  public:
 
   AliL3Hough(); 
-  AliL3Hough(Char_t *rootfile,TH2F *hist);
-  AliL3Hough(Char_t *rootfile,Int_t xbin,Double_t *xrange,Int_t ybin,Double_t *yrange);
+  AliL3Hough(Int_t n_eta_segments,Int_t xbin,Double_t *xrange,Int_t ybin,Double_t *yrange);
   virtual ~AliL3Hough();
   
+  void SetInput(Char_t *input,Bool_t binary);
   void ProcessSlice(Int_t slice);
-  void ProcessPatch(Int_t patch);
-  void ProcessEtaSlice(Int_t patch,Double_t *eta);
+  void ProcessPatch(Int_t slice,Int_t patch);
+  void SetDeleteTrack(Bool_t f) {fDeleteTrack = (Bool_t)f;}
+  
+  AliL3TrackArray *GetTracks() {return fTracks;}
 
   ClassDef(AliL3Hough,1)
 
