@@ -12,7 +12,7 @@
 //
 
 #include <TError.h>
-#include <TStopwatch.h>
+//#include <TStopwatch.h>
 
 class TGeometry;
 class TParticle;
@@ -145,7 +145,7 @@ protected:
   TGeometry     *fGeometry;          //  Pointer to geometry
   AliMC         *fMCApp;             //  Pointer to virtual MC Application
   AliDisplay    *fDisplay;           //! Pointer to event display
-  TStopwatch     fTimer;             //  Timer object
+  //  TStopwatch     fTimer;             //  Timer object
   AliMagF       *fField;             //  Magnetic Field Map
   TVirtualMC    *fMC;                //! Pointer to MonteCarlo object
   Int_t          fNdets;             //  Number of detectors

@@ -93,6 +93,7 @@
 #include "AliDigitizer.h"
 #include <TObjString.h>
 #include <TSystem.h>
+#include <TStopwatch.h>
 
 
 ClassImp(AliSimulation)

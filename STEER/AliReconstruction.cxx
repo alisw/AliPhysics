@@ -73,6 +73,7 @@
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TPluginManager.h>
+#include <TStopwatch.h>
 
 #include "AliReconstruction.h"
 #include "AliRunLoader.h"
