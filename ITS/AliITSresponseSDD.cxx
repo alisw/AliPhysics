@@ -47,8 +47,9 @@ AliITSresponseSDD::AliITSresponseSDD()
 //__________________________________________________________________________
 AliITSresponseSDD::AliITSresponseSDD(const AliITSresponseSDD &source){
   //     Copy Constructor 
+  Int_t i;
   if(&source == this) return;
-  this->fCPar = source.fCPar;
+  for(i=0,i<8,i++){this->fCPar[i] = source.fCPar[i]};
   this->fNoise = source.fNoise;
   this->fBaseline = source.fBaseline;
   this->fTopValue = source.fTopValue;
@@ -69,8 +70,9 @@ AliITSresponseSDD::AliITSresponseSDD(const AliITSresponseSDD &source){
 AliITSresponseSDD& 
   AliITSresponseSDD::operator=(const AliITSresponseSDD &source) {
   //    Assignment operator
+  Int_t i;
   if(&source == this) return *this;
-  this->fCPar = source.fCPar;
+  for(i=0,i<8,i++){this->fCPar[i] = source.fCPar[i]};
   this->fNoise = source.fNoise;
   this->fBaseline = source.fBaseline;
   this->fTopValue = source.fTopValue;
