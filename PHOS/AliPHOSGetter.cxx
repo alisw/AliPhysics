@@ -194,6 +194,9 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
   // Creates and returns the pointer of the unique instance
   // Must be called only when the environment has changed 
 
+  if ( fgObjGetter && !fFile) // an instance exists and getter was called without a file (case of merging) 
+    return fgObjGetter ;
+
   if ( fgObjGetter && fFile->IsOpen()) // an instance exists and the file is still open   
     if((fgObjGetter->fBranchTitle.CompareTo(branchTitle) == 0) && 
        (fgObjGetter->fHeaderFile.CompareTo(headerFile)==0)) {
