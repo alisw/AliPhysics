@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.74  2001/07/28 10:39:16  morsch
+GetEventsPerRun() method needed by afterburners added to AliRun.h
+Corresponding setters and getters have been from AliGenerator.
+
 Revision 1.73  2001/07/27 12:34:30  jchudoba
 remove the dummy argument in fStack->GetEvent call
 
@@ -894,6 +898,8 @@ Int_t AliRun::GetEvent(Int_t event)
   while((detector = (AliModule*)next())) {
     detector->SetTreeAddress();
   }
+
+  fEvent=event; //MI change
 
   return fStack->GetNtrack();
 }
