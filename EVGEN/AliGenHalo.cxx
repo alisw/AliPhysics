@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/06/09 20:36:01  morsch
+All coding rule violations except RS3 corrected
+
 Revision 1.5  1999/11/03 17:43:20  fca
 New version from G.Martinez & A.Morsch
 
@@ -38,7 +41,7 @@ Introduction of the Copyright and cvs Log
     fName="Halo";
     fTitle="Halo from LHC Tunnel";
     // Set the default file 
-    fFileName="~/marsip/marsip5.mu";
+    fFileName=TString("~/marsip/marsip5.mu");
 //
 //  Read all particles
     fNpart=-1;
@@ -52,7 +55,7 @@ AliGenHalo::AliGenHalo(Int_t npart)
     fName="Halo";
     fTitle="Halo from LHC Tunnel";
     // Set the default file 
-    fFileName="~/marsip/marsip5.mu";
+    fFileName=TString("~/marsip/marsip5.mu");
 //
 //  Read all particles
     fNpart=-1;
@@ -83,9 +86,9 @@ void AliGenHalo::Generate()
 // Generate from input file
     FILE *fp = fopen(fFileName,"r");
     if (fp) {
-	printf("\n File %s opened for reading ! \n ", fFileName);
+	printf("\n File %s opened for reading ! \n ", (char*) &fFileName);
     } else {
-	printf("\n Opening of file %s failed ! \n ", fFileName);
+	printf("\n Opening of file %s failed ! \n ",  (char*) &fFileName);
     }
 //
 // MARS particle codes

@@ -7,7 +7,7 @@
 
 
 #include "AliGenerator.h"
-
+#include <TString.h>
 // Read background particles from a FLUKA boundary source file
 
 class AliGenHalo : public AliGenerator
@@ -18,12 +18,12 @@ public:
     AliGenHalo(const AliGenHalo &Halo);
     virtual ~AliGenHalo();
     virtual void Init();
-    virtual void SetFileName(const Text_t *filname) {fFileName=filname;}
+    virtual void SetFileName(TString filename) {fFileName=TString(filename);}
     virtual void Generate();
     AliGenHalo & operator=(const AliGenHalo & rhs);
 protected:
-  FILE *fp;                             //   Pointer to file
-  const Text_t     *fFileName;          // ! Choose the file
+  FILE *fp;                             // ! Pointer to file
+  TString  fFileName;                   //   Choose the file
   ClassDef(AliGenHalo,1) // LHC background boundary source (MARS input)
 };
 #endif
