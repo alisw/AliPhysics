@@ -20,12 +20,13 @@ public:
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   Init();
-  virtual Int_t  IsVersion() const {return 1;}
+  virtual Int_t  IsVersion() const;
   virtual void   SetHoles(Int_t flag=0) {fHoles = flag;}
+  virtual Int_t  Holes() {return fHoles;}
  public:
   Int_t  fHoles;
   
-   ClassDef(AliFRAMEv2,1)  //Class for FRAME version 2
+   ClassDef(AliFRAMEv2,2)  //Class for FRAME version 2
 };
  
 #endif

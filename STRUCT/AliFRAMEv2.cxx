@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/10/16 14:33:04  morsch
+Hole() method needed by TRD to find out wheter frame has holes.
+
 Revision 1.5  2001/08/28 15:54:29  morsch
 Web frame and inner rings pointing.
 
@@ -969,7 +972,12 @@ void AliFRAMEv2::Init()
     }
 }
 
-
+Int_t AliFRAMEv2::IsVersion() const 
+{
+    Int_t version = 0;
+    if (fHoles == 0) version = 1;
+    return version;
+}
 
 
 
