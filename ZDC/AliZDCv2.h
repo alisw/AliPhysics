@@ -66,7 +66,7 @@ protected:
   // Parameters for tracking studies
   Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected; // For proton acceptance
   
-   ClassDef(AliZDCv2,2)  // Zero Degree Calorimeter version 1
+   ClassDef(AliZDCv2,3)  // Zero Degree Calorimeter version 1
 }; 
  
 #endif
