@@ -12,13 +12,8 @@ public:
   AliDebugVolume();
   AliDebugVolume(const char *name, Int_t copy,
 		 Float_t step, Float_t x, Float_t y, Float_t z, Int_t status);
-  AliDebugVolume(const AliDebugVolume &volume) {volume.Copy(*this);}
-  virtual ~AliDebugVolume(){;}
+  virtual ~AliDebugVolume(){}
   
-  void  Copy(AliDebugVolume &lego) const;
-  virtual AliDebugVolume &operator=(const AliDebugVolume &volume) 
-  {volume.Copy(*this); return(*this);}
-
   Int_t   CopyNumber() const {return fCopy;}
   Float_t Step()       const {return fStep;}
   Float_t X()          const {return fX;}  
@@ -27,7 +22,7 @@ public:
   char*   Status()     const;
   
   
-  Bool_t  IsEqual(const char* name, const Int_t copy);
+  Bool_t  IsEqual(const char* name, const Int_t copy) const;
 private:
    Int_t      fCopy;             //!Volume copy number
    Float_t    fStep;             //!Stepsize to volume boundary

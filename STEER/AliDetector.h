@@ -22,7 +22,7 @@ public:
   virtual ~AliDetector();
 
   // Inline functions
-          void  Copy(AliDetector &det) const;
+  void  Copy(AliDetector &det) const;
   virtual int   GetNdigits() const {return fNdigits;}
   virtual int   GetNhits()   const {return fNhits;}
   TClonesArray *Digits() const {return fDigits;}

@@ -1,4 +1,4 @@
-/*
+/**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/05/11 13:21:16  morsch
+Geom. volume data class. Can be used during lego run for debugging.
+
 */
 
 #include "AliDebugVolume.h"
@@ -22,64 +25,49 @@ $Log$
 ClassImp(AliDebugVolume)
 
 
-
-AliDebugVolume::AliDebugVolume()
+//_______________________________________________________________________
+AliDebugVolume::AliDebugVolume():
+  fCopy(0),
+  fStep(0),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fStatus(0)
 {
   //
   // Default constructor
   //
 }
 
-
-AliDebugVolume::AliDebugVolume(const char *name,
-		 Int_t copy, Float_t step, Float_t x, Float_t y, Float_t z, Int_t status)
-    : TNamed(name, "Debug Volume")
+//_______________________________________________________________________
+AliDebugVolume::AliDebugVolume(const char *name, Int_t copy, Float_t step, 
+                               Float_t x, Float_t y, Float_t z, Int_t status):
+  TNamed(name, "Debug Volume"),
+  fCopy(copy),
+  fStep(step),
+  fX(x),
+  fY(y),
+  fZ(z),
+  fStatus(status)
 {
-//
-// Constructor
-//
-    fCopy = copy;
-    fX    = x;
-    fY    = y;
-    fZ    = z;
-    fStep = step;
-    fStatus = status;
+  //
+  // Normal constructor
+  //
 }
 
 
-
-Bool_t  AliDebugVolume::IsEqual(const char* name, const Int_t copy)
+//_______________________________________________________________________
+Bool_t  AliDebugVolume::IsEqual(const char* name, const Int_t copy) const
 {
-    return (copy == fCopy && strcmp(name, fName) == 0);
+  return (copy == fCopy && strcmp(name, fName) == 0);
 }
 
+//_______________________________________________________________________
 char*   AliDebugVolume::Status() const
 {
-    char* tmp;
-    tmp = "Undefined";
-    if (fStatus == 1) tmp = "Entering";
-    if (fStatus == 2) tmp = "Exiting";   
-    return tmp;
+  char* tmp;
+  tmp = "Undefined";
+  if (fStatus == 1) tmp = "Entering";
+  if (fStatus == 2) tmp = "Exiting";   
+  return tmp;
 }
-
-
-void AliDebugVolume::Copy(AliDebugVolume &volume) const
-{
-  //
-  // Copy *this onto debug volume -- not implemented
-  //
-  Fatal("Copy","Not implemented!\n");
-}
-
-
-
-
-
-
-
-
-
-
-
-
-

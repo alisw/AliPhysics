@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/10/22 15:02:15  alibrary
+Introducing Riostream.h
+
 Revision 1.5  2002/10/14 14:57:32  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -65,20 +68,19 @@ AliConfig* AliConfig::Instance ()
 }
 
 //____________________________________________________________________________
-AliConfig::AliConfig(): TNamed("","")
+AliConfig::AliConfig():
+  fTopFolder(0),
+  fTasks(0),
+  fPDGFolder(0),
+  fGeneratorFolder(0),
+  fMCFolder(0),
+  fModuleFolder(0),
+  fDetectorFolder(0),
+  fDetectorTask(0)
 {
   //
   // Default constructor, mainly to keep coding conventions
   //
-  fTopFolder=0;
-  fTasks=0;
-
-  fPDGFolder=0; 
-  fGeneratorFolder=0; 
-  fMCFolder=0; 
-  fModuleFolder=0; 
-  fDetectorFolder=0;
-  fDetectorTask=0; 
   fInstance=0;
     
   Fatal("ctor",
@@ -86,20 +88,19 @@ AliConfig::AliConfig(): TNamed("","")
 }
 
 //____________________________________________________________________________
-AliConfig::AliConfig(const AliConfig&): TNamed("","")
+AliConfig::AliConfig(const AliConfig&):
+  fTopFolder(0),
+  fTasks(0),
+  fPDGFolder(0),
+  fGeneratorFolder(0),
+  fMCFolder(0),
+  fModuleFolder(0),
+  fDetectorFolder(0),
+  fDetectorTask(0)
 {
   //
   // Copy constructor, mainly to keep coding conventions
   //
-  fTopFolder=0;
-  fTasks=0;
-
-  fPDGFolder=0; 
-  fGeneratorFolder=0; 
-  fMCFolder=0; 
-  fModuleFolder=0; 
-  fDetectorFolder=0;
-  fDetectorTask=0; 
   fInstance=0;
     
   Fatal("copy ctor",
