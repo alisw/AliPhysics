@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/11/06 09:16:50  morsch
+Avoid overlap of slat volumes.
+
 Revision 1.13  2000/10/26 07:33:44  morsch
 Correct x-position of slats in station 5.
 
@@ -1892,10 +1895,6 @@ void AliMUONv1::StepManager()
   // Set maximum step size for gas
   // numed=gMC->GetMedium();
   //
-  gMC->TrackPosition(pos);
-  id = gMC->CurrentVolID(copy);
-  char* voln = gMC->VolName(id);
-  //    printf("\n pos: %f %f %f %s", pos[0], pos[1], pos[2],voln);
   // Only charged tracks
   if( !(gMC->TrackCharge()) ) return; 
   //
