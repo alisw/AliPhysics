@@ -29,12 +29,11 @@
 
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
-#include "AliTRDgeometryDetail.h"
 #include "AliTRDgeometryHole.h"
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
-#include "AliTRDPartID.h"
-#include "../TPC/AliTPCtrack.h"
+#include "AliBarrelTrack.h"
+#include "AliESD.h"
 
 #include "AliTRDtracker.h"
 
@@ -87,6 +86,8 @@ AliTRDtracker::AliTRDtracker():AliTracker(),
 			       fAddTRDseeds(kFALSE),
 			       fNoTilt(kFALSE)
 {
+  // Default constructor
+
   for(Int_t i=0;i<kTrackingSectors;i++) fTrSec[i]=0;
   for(Int_t j=0;j<5;j++)
     for(Int_t k=0;k<18;k++) fHoles[j][k]=kFALSE;
@@ -417,173 +418,6 @@ Int_t  AliTRDtracker::GetLastPlane(AliTRDtrack * track){
   return lastplane;
 }
 //___________________________________________________________________
-Int_t AliTRDtracker::Clusters2Tracks(const TFile *inp, TFile *out)
-{
-  //
-  // Finds tracks within the TRD. File <inp> is expected to contain seeds 
-  // at the outer part of the TRD. If <inp> is NULL, the seeds
-  // are found within the TRD if fAddTRDseeds is TRUE. 
-  // The tracks are propagated to the innermost time bin 
-  // of the TRD and stored in file <out>. 
-  //
-
-  LoadEvent();
- 
-  TDirectory *savedir=gDirectory;
-
-  char   tname[100];
-
-  if (!out->IsOpen()) {
-    cerr<<"AliTRDtracker::Clusters2Tracks(): output file is not open !\n";
-    return 1;
-  }    
-
-  sprintf(tname,"seedTRDtoTPC_%d",GetEventNumber()); 
-  TTree tpcTree(tname,"Tree with seeds from TRD at outer TPC pad row");
-  AliTPCtrack *iotrack=0;
-  tpcTree.Branch("tracks","AliTPCtrack",&iotrack,32000,0); 
-
-  sprintf(tname,"TreeT%d_TRD",GetEventNumber());
-  TTree trdTree(tname,"TRD tracks at inner TRD time bin");
-  AliTRDtrack *iotrackTRD=0;
-  trdTree.Branch("tracks","AliTRDtrack",&iotrackTRD,32000,0);  
-
-  Int_t timeBins = fTrSec[0]->GetNumberOfTimeBins();
-  Float_t foundMin = fgkMinClustersInTrack * timeBins; 
-
-  if (inp) {
-     TFile *in=(TFile*)inp;
-     if (!in->IsOpen()) {
-        cerr<<
-          "AliTRDtracker::Clusters2Tracks(): file with seeds is not open !\n";
-        cerr<<" ... going for seeds finding inside the TRD\n";
-     }
-     else {
-       in->cd();
-       sprintf(tname,"TRDb_%d",GetEventNumber());  
-       TTree *seedTree=(TTree*)in->Get(tname);  
-       if (!seedTree) {
-         cerr<<"AliTRDtracker::Clusters2Tracks(): ";
-         cerr<<"can't get a tree with track seeds !\n";
-         return 3;
-       }  
-       AliTRDtrack *seed=new AliTRDtrack;
-       seedTree->SetBranchAddress("tracks",&seed);
-
-       Int_t n=(Int_t)seedTree->GetEntries();
-       for (Int_t i=0; i<n; i++) {
-         seedTree->GetEvent(i);
-         seed->ResetCovariance(); 
-         AliTRDtrack *tr = new AliTRDtrack(*seed,seed->GetAlpha());
-         fSeeds->AddLast(tr);
-         fNseeds++;
-       }          
-       delete seed;
-       delete seedTree;
-     }
-  }
-
-  out->cd();
-
-
-  // find tracks from loaded seeds
-
-  Int_t nseed=fSeeds->GetEntriesFast();
-  Int_t i, found = 0;
-  Int_t innerTB = fTrSec[0]->GetInnerTimeBin();
-
-  for (i=0; i<nseed; i++) {   
-    AliTRDtrack *pt=(AliTRDtrack*)fSeeds->UncheckedAt(i), &t=*pt; 
-    FollowProlongation(t, innerTB); 
-    if (t.GetNumberOfClusters() >= foundMin) {
-      UseClusters(&t);
-      CookLabel(pt, 1-fgkLabelFraction);
-      //      t.CookdEdx();
-    }
-    iotrackTRD = pt;
-    trdTree.Fill();
-    found++;
-//    cout<<found<<'\r';     
-
-    if(PropagateToTPC(t)) {
-      AliTPCtrack *tpc = new AliTPCtrack(*pt,pt->GetAlpha());
-      iotrack = tpc;
-      tpcTree.Fill();
-      delete tpc;
-    }  
-    delete fSeeds->RemoveAt(i);
-    fNseeds--;
-  }     
-
-  cout<<"Number of loaded seeds: "<<nseed<<endl;  
-  cout<<"Number of found tracks from loaded seeds: "<<found<<endl;
-
-  // after tracks from loaded seeds are found and the corresponding 
-  // clusters are used, look for additional seeds from TRD
-
-  if(fAddTRDseeds) { 
-    // Find tracks for the seeds in the TRD
-    Int_t timeBins = fTrSec[0]->GetNumberOfTimeBins();
-  
-    Int_t nSteps = (Int_t) (fgkSeedDepth / fgkSeedStep);
-    Int_t gap = (Int_t) (timeBins * fgkSeedGap);
-    Int_t step = (Int_t) (timeBins * fgkSeedStep);
-  
-    // make a first turn with tight cut on initial curvature
-    for(Int_t turn = 1; turn <= 2; turn++) {
-      if(turn == 2) {
-        nSteps = (Int_t) (fgkSeedDepth / (3*fgkSeedStep));
-        step = (Int_t) (timeBins * (3*fgkSeedStep));
-      }
-      for(Int_t i=0; i<nSteps; i++) {
-        Int_t outer=timeBins-1-i*step; 
-        Int_t inner=outer-gap;
-
-        nseed=fSeeds->GetEntriesFast();
-      
-        MakeSeeds(inner, outer, turn);
-      
-        nseed=fSeeds->GetEntriesFast();
-	//        printf("\n turn %d, step %d: number of seeds for TRD inward %d\n", 
-	//               turn, i, nseed); 
-              
-        for (Int_t i=0; i<nseed; i++) {   
-          AliTRDtrack *pt=(AliTRDtrack*)fSeeds->UncheckedAt(i), &t=*pt; 
-          FollowProlongation(t,innerTB); 
-          if (t.GetNumberOfClusters() >= foundMin) {
-            UseClusters(&t);
-            CookLabel(pt, 1-fgkLabelFraction);
-            t.CookdEdx();
-            found++;
-//            cout<<found<<'\r';     
-            iotrackTRD = pt;
-            trdTree.Fill();
-            if(PropagateToTPC(t)) {
-              AliTPCtrack *tpc = new AliTPCtrack(*pt,pt->GetAlpha());
-              iotrack = tpc;
-              tpcTree.Fill();
-              delete tpc;
-            }        
-          }
-          delete fSeeds->RemoveAt(i);
-          fNseeds--;
-        }
-      }
-    }
-  }
-  tpcTree.Write(); 
-  trdTree.Write(); 
-  
-  cout<<"Total number of found tracks: "<<found<<endl;
-    
-  UnloadEvent();
-    
-  savedir->cd();  
-  
-  return 0;    
-}     
-          
-//___________________________________________________________________
 Int_t AliTRDtracker::Clusters2Tracks(AliESD* event)
 {
   //
@@ -688,196 +522,6 @@ Int_t AliTRDtracker::Clusters2Tracks(AliESD* event)
 }     
      
   
-
-//_____________________________________________________________________________
-Int_t AliTRDtracker::PropagateBack(const TFile *inp, TFile *out) {
-  //
-  // Reads seeds from file <inp>. The seeds are AliTPCtrack's found and
-  // backpropagated by the TPC tracker. Each seed is first propagated 
-  // to the TRD, and then its prolongation is searched in the TRD.
-  // If sufficiently long continuation of the track is found in the TRD
-  // the track is updated, otherwise it's stored as originaly defined 
-  // by the TPC tracker.   
-  //  
-
-  LoadEvent();
-
-  TDirectory *savedir=gDirectory;
-
-  TFile *in=(TFile*)inp;
-
-  if (!in->IsOpen()) {
-     cerr<<"AliTRDtracker::PropagateBack(): ";
-     cerr<<"file with back propagated TPC tracks is not open !\n";
-     return 1;
-  }                   
-
-  if (!out->IsOpen()) {
-     cerr<<"AliTRDtracker::PropagateBack(): ";
-     cerr<<"file for back propagated TRD tracks is not open !\n";
-     return 2;
-  }      
-
-  in->cd();
-  char   tname[100];
-  sprintf(tname,"seedsTPCtoTRD_%d",GetEventNumber());       
-  TTree *seedTree=(TTree*)in->Get(tname);
-  if (!seedTree) {
-     cerr<<"AliTRDtracker::PropagateBack(): ";
-     cerr<<"can't get a tree with seeds from TPC !\n";
-     cerr<<"check if your version of TPC tracker creates tree "<<tname<<"\n";
-     return 3;
-  }
-
-  AliTPCtrack *seed=new AliTPCtrack;
-  seedTree->SetBranchAddress("tracks",&seed);
-
-  Int_t n=(Int_t)seedTree->GetEntries();
-  for (Int_t i=0; i<n; i++) {
-     seedTree->GetEvent(i);
-     Int_t lbl = seed->GetLabel();
-     AliTRDtrack *tr = new AliTRDtrack(*seed,seed->GetAlpha());
-     tr->SetSeedLabel(lbl);
-     fSeeds->AddLast(tr);
-     fNseeds++;
-  }
-
-  delete seed;
-  delete seedTree;
-
-  out->cd();
-
-  AliTPCtrack *otrack=0;
-
-  sprintf(tname,"seedsTRDtoTOF1_%d",GetEventNumber());  
-  TTree tofTree1(tname,"Tracks back propagated through TPC and TRD");
-  tofTree1.Branch("tracks","AliTPCtrack",&otrack,32000,0);  
-
-  sprintf(tname,"seedsTRDtoTOF2_%d",GetEventNumber());  
-  TTree tofTree2(tname,"Tracks back propagated through TPC and TRD");
-  tofTree2.Branch("tracks","AliTPCtrack",&otrack,32000,0);  
-
-  sprintf(tname,"seedsTRDtoPHOS_%d",GetEventNumber());  
-  TTree phosTree(tname,"Tracks back propagated through TPC and TRD");
-  phosTree.Branch("tracks","AliTPCtrack",&otrack,32000,0);  
-
-  sprintf(tname,"seedsTRDtoRICH_%d",GetEventNumber());  
-  TTree richTree(tname,"Tracks back propagated through TPC and TRD");
-  richTree.Branch("tracks","AliTPCtrack",&otrack,32000,0);  
-
-  sprintf(tname,"TRDb_%d",GetEventNumber());  
-  TTree trdTree(tname,"Back propagated TRD tracks at outer TRD time bin");
-  AliTRDtrack *otrackTRD=0;
-  trdTree.Branch("tracks","AliTRDtrack",&otrackTRD,32000,0);   
-     
-  if (IsStoringBarrel()) SetBarrelTree("back");
-  out->cd();
-
-  Int_t found=0;  
-  Int_t nseed=fSeeds->GetEntriesFast();
-
-  //  Float_t foundMin = fgkMinClustersInTrack * fTimeBinsPerPlane * fGeom->Nplan(); 
-  Float_t foundMin = 40;
-
-  Int_t outermostTB  = fTrSec[0]->GetOuterTimeBin();
-
-  for (Int_t i=0; i<nseed; i++) {  
-
-    AliTRDtrack *ps=(AliTRDtrack*)fSeeds->UncheckedAt(i), &s=*ps;
-    Int_t expectedClr = FollowBackProlongation(s);
-
-    if (IsStoringBarrel()) {
-      StoreBarrelTrack(ps, fgkLastPlane, kTrackBack);
-      fBarrelTree->Fill();        
-    }
-
-    Int_t foundClr = s.GetNumberOfClusters();
-    Int_t lastTB = fTrSec[0]->GetLayerNumber(s.GetX());
-
-    //    printf("seed %d: found %d out of %d expected clusters, Min is %f\n",
-    //     i, foundClr, expectedClr, foundMin);
-
-    if (foundClr >= foundMin) {
-      if(foundClr >= 2) {
-	s.CookdEdx(); 
-	CookLabel(ps, 1-fgkLabelFraction);
-	UseClusters(ps);
-      }
-      
-      // Propagate to outer reference plane [SR, GSI, 18.02.2003]
-      ps->PropagateTo(364.8);
-      otrackTRD=ps;
-      trdTree.Fill();
-      found++;
-//      cout<<found<<'\r';
-    }
-
-    if(((expectedClr < 10) && (lastTB == outermostTB)) ||
-       ((expectedClr >= 10) && 
-        (((Float_t) foundClr) / ((Float_t) expectedClr) >= 
-         fgkMinFractionOfFoundClusters) && (lastTB == outermostTB))) {
-
-      Double_t xTOF = 375.5;
-    
-      if(PropagateToOuterPlane(s,xTOF)) {
-        AliTPCtrack *pt = new AliTPCtrack(*ps,ps->GetAlpha());
-        otrack = pt;
-        tofTree1.Fill();
-        delete pt;
-
-        xTOF = 381.5;
-    
-        if(PropagateToOuterPlane(s,xTOF)) {
-          AliTPCtrack *pt = new AliTPCtrack(*ps,ps->GetAlpha());
-          otrack = pt;
-          tofTree2.Fill();
-          delete pt;
-
-          Double_t xPHOS = 460.;
-          
-          if(PropagateToOuterPlane(s,xPHOS)) {
-            AliTPCtrack *pt = new AliTPCtrack(*ps,ps->GetAlpha());
-            otrack = pt;
-            phosTree.Fill();
-            delete pt;
-            
-            Double_t xRICH = 490+1.267;
-            
-            if(PropagateToOuterPlane(s,xRICH)) {
-              AliTPCtrack *pt = new AliTPCtrack(*ps,ps->GetAlpha());
-              otrack = pt;
-              richTree.Fill();
-              delete pt;
-            }   
-          }
-        }
-      }      
-    }
-  }
-  
-  
-  out->cd();
-  tofTree1.Write(); 
-  tofTree2.Write(); 
-  phosTree.Write(); 
-  richTree.Write(); 
-  trdTree.Write(); 
-
-  if (IsStoringBarrel()) { // [SR, 03.04.2003]
-    fBarrelFile->cd();
-    fBarrelTree->Write();
-    fBarrelFile->Flush();
-  }
-
-  savedir->cd();  
-  cerr<<"Number of seeds: "<<nseed<<endl;  
-  cerr<<"Number of back propagated TRD tracks: "<<found<<endl;
-
-  UnloadEvent();
-
-  return 0;
-
-}
 
 //_____________________________________________________________________________
 Int_t AliTRDtracker::PropagateBack(AliESD* event) {
@@ -1827,38 +1471,6 @@ Int_t AliTRDtracker::PropagateToTPC(AliTRDtrack& t)
   return 1;
 }         
 
-void AliTRDtracker::LoadEvent()
-{
-  // Fills clusters into TRD tracking_sectors 
-  // Note that the numbering scheme for the TRD tracking_sectors 
-  // differs from that of TRD sectors
-
-  ReadClusters(fClusters);
-  Int_t ncl=fClusters->GetEntriesFast();
-  cout<<"LoadSectors: sorting "<<ncl<<" clusters"<<endl;
-              
-  UInt_t index;
-  while (ncl--) {
-//    printf("\r %d left  ",ncl); 
-    AliTRDcluster *c=(AliTRDcluster*)fClusters->UncheckedAt(ncl);
-    Int_t detector=c->GetDetector();
-    Int_t localTimeBin=c->GetLocalTimeBin();
-    Int_t sector=fGeom->GetSector(detector);
-    Int_t plane=fGeom->GetPlane(detector);
-
-    Int_t trackingSector = CookSectorIndex(sector);
-
-    Int_t gtb = fTrSec[trackingSector]->CookTimeBinIndex(plane,localTimeBin);
-    if(gtb < 0) continue; 
-    Int_t layer = fTrSec[trackingSector]->GetLayerNumber(gtb);
-
-    index=ncl;
-    fTrSec[trackingSector]->GetLayer(layer)->InsertCluster(c,index);
-  }    
-  //  printf("\r\n");
-
-}
-
 //_____________________________________________________________________________
 Int_t AliTRDtracker::LoadClusters(TTree *cTree)
 {
@@ -1871,6 +1483,7 @@ Int_t AliTRDtracker::LoadClusters(TTree *cTree)
      return 1;
   }
   Int_t ncl=fClusters->GetEntriesFast();
+  fNclusters=ncl;
   cout<<"\n LoadSectors: sorting "<<ncl<<" clusters"<<endl;
               
   UInt_t index;
@@ -1916,7 +1529,7 @@ Int_t AliTRDtracker::LoadClusters(TTree *cTree)
 }
 
 //_____________________________________________________________________________
-void AliTRDtracker::UnloadEvent() 
+void AliTRDtracker::UnloadClusters() 
 { 
   //
   // Clears the arrays of clusters and tracks. Resets sectors and timebins 
@@ -1926,6 +1539,7 @@ void AliTRDtracker::UnloadEvent()
 
   nentr = fClusters->GetEntriesFast();
   for (i = 0; i < nentr; i++) delete fClusters->RemoveAt(i);
+  fNclusters = 0;
 
   nentr = fSeeds->GetEntriesFast();
   for (i = 0; i < nentr; i++) delete fSeeds->RemoveAt(i);
@@ -2115,7 +1729,7 @@ void AliTRDtracker::MakeSeeds(Int_t inner, Int_t outer, Int_t turn)
 }            
 
 //_____________________________________________________________________________
-Int_t AliTRDtracker::ReadClusters(TObjArray *array, TTree *ClusterTree) 
+Int_t AliTRDtracker::ReadClusters(TObjArray *array, TTree *ClusterTree) const
 {
   //
   // Reads AliTRDclusters (option >= 0) or AliTRDrecPoints (option < 0) 
@@ -2164,139 +1778,6 @@ Int_t AliTRDtracker::ReadClusters(TObjArray *array, TTree *ClusterTree)
   delete clusterArray;
 
   return 0;
-}
-
-//______________________________________________________________________
-void AliTRDtracker::ReadClusters(TObjArray *array, const Char_t *filename)
-{
-  //
-  // Reads AliTRDclusters from file <filename>. The names of the cluster
-  // tree and branches should match the ones used in
-  // AliTRDclusterizer::WriteClusters()
-  // if <array> == 0, clusters are added into AliTRDtracker fCluster array
-  //
-
-  TDirectory *savedir=gDirectory;
-
-  TFile *file = TFile::Open(filename);
-  if (!file->IsOpen()) {
-    cerr<<"Can't open file with TRD clusters"<<endl;
-    return;
-  }
-
-  Char_t treeName[12];
-  sprintf(treeName,"TreeR%d_TRD",GetEventNumber());
-  TTree *clusterTree = (TTree*) gDirectory->Get(treeName);
-
-  if (!clusterTree) {
-     cerr<<"AliTRDtracker::ReadClusters(): ";
-     cerr<<"can't get a tree with clusters !\n";
-     return;
-  }
-
-  TObjArray *clusterArray = new TObjArray(400);
-
-  clusterTree->GetBranch("TRDcluster")->SetAddress(&clusterArray);
-
-  Int_t nEntries = (Int_t) clusterTree->GetEntries();
-  cout<<"found "<<nEntries<<" in clusterTree"<<endl;   
-
-  // Loop through all entries in the tree
-  Int_t nbytes = 0;
-  AliTRDcluster *c = 0;
-
-  //  printf("\n");
-
-  for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) {
-
-    // Import the tree
-    nbytes += clusterTree->GetEvent(iEntry);
-
-    // Get the number of points in the detector
-    Int_t nCluster = clusterArray->GetEntriesFast();
-    //    printf("\n Read %d clusters from entry %d", nCluster, iEntry);
-
-    // Loop through all TRD digits
-    for (Int_t iCluster = 0; iCluster < nCluster; iCluster++) {
-      c = (AliTRDcluster*)clusterArray->UncheckedAt(iCluster);
-      AliTRDcluster *co = new AliTRDcluster(*c);
-      co->SetSigmaY2(c->GetSigmaY2() * fSY2corr);
-      Int_t ltb = co->GetLocalTimeBin();
-      if(ltb == 19) co->SetSigmaZ2(c->GetSigmaZ2());
-      else if(fNoTilt) co->SetSigmaZ2(c->GetSigmaZ2() * fSZ2corr);
-      array->AddLast(co);
-      delete clusterArray->RemoveAt(iCluster);
-    }
-  }
-
-  file->Close();
-  delete clusterArray;
-  savedir->cd();
-
-}                      
-
-void AliTRDtracker::ReadClusters(TObjArray *array, const TFile *inp) 
-{
-  //
-  // Reads AliTRDclusters (option >= 0) or AliTRDrecPoints (option < 0) 
-  // from the file. The names of the cluster tree and branches 
-  // should match the ones used in AliTRDclusterizer::WriteClusters()
-  //
-
-  TDirectory *savedir=gDirectory; 
-
-  if (inp) {
-     TFile *in=(TFile*)inp;
-     if (!in->IsOpen()) {
-        cerr<<"AliTRDtracker::ReadClusters(): input file is not open !\n";
-        return;
-     }
-     else{
-       in->cd();
-     }
-  }
-
-  Char_t treeName[12];
-  sprintf(treeName,"TreeR%d_TRD",GetEventNumber());
-  TTree *clusterTree = (TTree*) gDirectory->Get(treeName);
-  
-  TObjArray *clusterArray = new TObjArray(400); 
-  
-  clusterTree->GetBranch("TRDcluster")->SetAddress(&clusterArray); 
-  
-  Int_t nEntries = (Int_t) clusterTree->GetEntries();
-  //  printf("found %d entries in %s.\n",nEntries,clusterTree->GetName());
-  
-  // Loop through all entries in the tree
-  Int_t nbytes = 0;
-  AliTRDcluster *c = 0;
-  //  printf("\n");
-
-  for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) {    
-    
-    // Import the tree
-    nbytes += clusterTree->GetEvent(iEntry);  
-    
-    // Get the number of points in the detector
-    Int_t nCluster = clusterArray->GetEntriesFast();  
-//    printf("\r Read %d clusters from entry %d", nCluster, iEntry);
-    
-    // Loop through all TRD digits
-    for (Int_t iCluster = 0; iCluster < nCluster; iCluster++) { 
-      c = (AliTRDcluster*)clusterArray->UncheckedAt(iCluster);
-      AliTRDcluster *co = new AliTRDcluster(*c);
-      co->SetSigmaY2(c->GetSigmaY2() * fSY2corr);
-      Int_t ltb = co->GetLocalTimeBin();
-      if(ltb == 19) co->SetSigmaZ2(c->GetSigmaZ2());
-      else if(fNoTilt) co->SetSigmaZ2(c->GetSigmaZ2() * fSZ2corr);
-      array->AddLast(co);
-      delete clusterArray->RemoveAt(iCluster); 
-    }
-  }
-
-  delete clusterArray;
-  savedir->cd();   
-
 }
 
 //__________________________________________________________________

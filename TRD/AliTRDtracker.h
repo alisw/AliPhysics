@@ -6,8 +6,6 @@
 
 #include "AliTracker.h" 
 #include "TObjArray.h" 
-#include "AliBarrelTrack.h"
-#include "AliESD.h"
 
 class TFile;
 class TTree;
@@ -19,6 +17,8 @@ class AliTRDparameter;
 class AliTRDtrack;
 class AliTRDcluster;
 class AliTRDmcTrack;
+class AliBarrelTrack;
+class AliESD;
 
 const unsigned kMaxLayersPerSector = 1000;  
 const unsigned kMaxTimeBinIndex = 216;  // (30 drift + 6 ampl) * 6 planes  
@@ -34,14 +34,12 @@ class AliTRDtracker : public AliTracker {
   AliTRDtracker(const TFile *in);
   virtual ~AliTRDtracker(); 
 
-  Int_t         Clusters2Tracks(const TFile *in, TFile *out);
   Int_t         Clusters2Tracks(AliESD* event);
-  Int_t         PropagateBack(const TFile *in, TFile *out);
   Int_t         PropagateBack(AliESD* event);
   Int_t         RefitInward(AliESD* event);
 
   Int_t         LoadClusters(TTree *cTree);
-  void          UnloadClusters(){UnloadEvent();}
+  void          UnloadClusters();
   AliCluster   *GetCluster(Int_t index) const { if (index >= fNclusters) return NULL; 
                                                 return (AliCluster*) fClusters->UncheckedAt(index); };
   virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const;
@@ -52,8 +50,7 @@ class AliTRDtracker : public AliTracker {
 
   Double_t      GetTiltFactor(const AliTRDcluster* c);
 
-  void          ReadClusters(TObjArray *array, const Char_t *filename); 
-  Int_t         ReadClusters(TObjArray *array, TTree *in);
+  Int_t         ReadClusters(TObjArray *array, TTree *in) const;
   Int_t         CookSectorIndex(Int_t gs) const { return kTrackingSectors - 1 - gs; }
   AliTRDcluster * GetCluster(AliTRDtrack * track, Int_t plane, Int_t timebin);
   Int_t         GetLastPlane(AliTRDtrack * track); //return last updated plane
@@ -260,9 +257,6 @@ class AliTRDtracker : public AliTracker {
 
  private:
 
-  void          LoadEvent();
-  void          UnloadEvent();
-
   virtual void  MakeSeeds(Int_t inner, Int_t outer, Int_t turn);
 
   Int_t         FollowProlongation(AliTRDtrack& t, Int_t rf);
@@ -271,9 +265,6 @@ class AliTRDtracker : public AliTracker {
 
   Int_t         PropagateToTPC(AliTRDtrack& t);
   Int_t         PropagateToOuterPlane(AliTRDtrack& t, Double_t x);
-
-  Int_t         WriteTracks(); 
-  void          ReadClusters(TObjArray *array, const TFile *in=0);
 
   void          SetSY2corr(Float_t w)    {fSY2corr = w;}
   void          SetSZ2corr(Float_t w)    {fSZ2corr = w;}

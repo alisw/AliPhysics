@@ -352,7 +352,12 @@ Bool_t AliTRDpid::ReadCluster(const Char_t *name)
   printf("Open file %s\n",name);
 
   AliTRDtracker *tracker = new AliTRDtracker();
-  tracker->ReadClusters(fClusterArray,name);
+  TFile* file = TFile::Open(name);
+  file->cd("Event0");
+  TTree* tree = (TTree*) file->Get("TreeD");
+  tracker->ReadClusters(fClusterArray,tree);
+  file->Close();
+  delete file;
 
   if (!fClusterArray) {
     printf("AliTRDpid::ReadCluster -- ");
