@@ -46,6 +46,7 @@ AliPHOSHit::AliPHOSHit(const AliPHOSHit & hit)
   fELOS    = hit.fELOS ;
   fPrimary = hit.fPrimary ; 
   fTrack   = hit.fTrack ; 
+  fMomentum= hit.fMomentum ;
   fX       = hit.fX ; 
   fY       = hit.fY ; 
   fZ       = hit.fZ ; 
@@ -67,7 +68,7 @@ AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_
   fMomentum  = p;
   fX         = xy[0];  //position of particle first entering cristall/pad
   fY         = xy[1];
-  fZ         = 9999.;  //Fake Z to avoid FPE
+  fZ         = xy[2];  
 }
 
 //____________________________________________________________________________
@@ -77,29 +78,27 @@ Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
 
   Bool_t rv = kFALSE ; 
 
-  if ( (fId == rValue.GetId()) && ( fPrimary == rValue.GetPrimary() ) && (fPid*rValue.fPid ! = 0) )
+  if ( (fId == rValue.GetId()) && ( fPrimary == rValue.GetPrimary() ) && (fPid*rValue.fPid == 0) )
     rv = kTRUE;
   
   return rv;
 }
 
 //____________________________________________________________________________
-AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue) const
+AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue)
 {
   // Add the energy of the hit
   
-  AliPHOSHit added(*this);
-
-  // the accumulated hit position is the position of the first hi
-  //    added.fX    = rValue.fX  ;
-  //    added.fY    = rValue.fY ;
-  //    added.fZ    = rValue.fZ ;
-
-   added.fELOS += rValue.GetEnergy() ;
+  fELOS += rValue.GetEnergy() ;
     
-   if(fPid == 0) fPid = rValue.fPid ;
+  if((fPid == 0) && (rValue.fPid != 0)){
+    fPid = rValue.fPid ;
+    fX    = rValue.fX ;
+    fY    = rValue.fY ;
+    fZ    = rValue.fZ ;
+   }     
 
-   return added;
+   return *this;
 
 }
 

@@ -245,7 +245,7 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
 
   newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits, trackpid, p, lpos) ;
 
-  for ( hitCounter = 0 ; hitCounter < fNhits && !deja ; hitCounter++ ) {
+  for ( hitCounter = fNhits-1 ; hitCounter >= 0 && !deja ; hitCounter-- ) {
     curHit = (AliPHOSHit*) (*fHits)[hitCounter] ;
     if( *curHit == *newHit ) {
       *curHit = *curHit + *newHit ;
@@ -626,7 +626,7 @@ void AliPHOSv1::StepManager(void)
   Float_t        xyze[4]={0,0,0,0}  ; // position wrt MRS and energy deposited
   TLorentzVector pos      ;      // Lorentz vector of the track current position
   TLorentzVector pmom     ;      //momentum of the particle initiated hit
-  Float_t        xyd[2]   ;      //local posiiton of the entering
+  Float_t        xyd[3]   ;      //local posiiton of the entering
   Bool_t         entered = kFALSE    ;  
   Int_t          copy     ;
 
@@ -645,7 +645,9 @@ void AliPHOSv1::StepManager(void)
       for (i=0; i<3; i++) xyzm[i] = pos[i];
       gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
       xyd[0]  = xyzd[0];
-      xyd[1]  =-xyzd[2];
+      xyd[1]  =-xyzd[1];
+      xyd[2]  =-xyzd[2];
+
       
       // Current momentum of the hit's track in the local ref. system
       gMC -> TrackMomentum(pmom);

@@ -12,6 +12,7 @@
 //*-- Author: Maxime Volkov (RRC KI) & Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
+#include <TLorentzVector.h>
 
 // --- AliRoot header files ---
 #include "AliHit.h"
@@ -20,7 +21,6 @@
 
 #include <iostream.h>
 
-class TLorentzVector ;
 
 class AliPHOSHit : public AliHit {
 
@@ -57,7 +57,7 @@ class AliPHOSHit : public AliHit {
     // momentum of the particle which initiated this hit
 
   Bool_t operator == (AliPHOSHit const &rValue) const ;
-  AliPHOSHit operator + (const AliPHOSHit& rValue) const ;
+  AliPHOSHit operator + (const AliPHOSHit& rValue) ;
 
 
  private:
