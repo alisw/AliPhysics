@@ -36,8 +36,7 @@ ClassImp(AliFMD3);
 //____________________________________________________________________
 AliFMD3::AliFMD3() 
   : AliFMDSubDetector(3), 
-    fVolumeId(0),
-    fDz(0)
+    fVolumeId(0)
 {
   // Default constructor for the FMD3 sub-detector 
 }
@@ -52,7 +51,7 @@ AliFMD3::~AliFMD3()
 
 //____________________________________________________________________
 void 
-AliFMD3::SetupGeometry(Int_t airId, Int_t kaptionId) 
+AliFMD3::SetupGeometry(Int_t airId, Int_t alId, Int_t carbonId) 
 {
   // Setup the FMD3 sub-detector geometry 
   // 
@@ -61,22 +60,37 @@ AliFMD3::SetupGeometry(Int_t airId, Int_t kaptionId)
   //     airId         Id # of the Air medium 
   //     kaptionId     Id # of the Aluminium medium 
   // 
+  Double_t innerZl = fInnerZ;
+  Double_t innerZh = (fInnerZ 
+		      - fInner->GetModuleSpacing() 
+		      - fInner->GetLegLength() 
+		      - fInner->GetSiThickness() 
+		      - fInner->GetPrintboardThickness()
+		      - fHoneycombThickness);
+  Double_t innerRl = fInner->GetLowR();
+  Double_t outerZl = fOuterZ;
+  Double_t outerZh = (fOuterZ 
+		      - fOuter->GetModuleSpacing() 
+		      - fOuter->GetLegLength() 
+		      - fOuter->GetSiThickness() 
+		      - fOuter->GetPrintboardThickness()		      
+		      - fHoneycombThickness);
+  Double_t outerRl = fOuter->GetLowR();
+  
+  fSupport.SetupGeometry(airId, carbonId, 
+			 innerZl, innerZh, innerRl,
+			 outerZl, outerZh, outerRl);
+
   fInnerHoneyLowR  = fInner->GetLowR() + 1;
-  fInnerHoneyHighR = fInner->GetHighR() + 1;
+  fInnerHoneyHighR = fSupport.ConeR(innerZh + fHoneycombThickness, "I");
   fOuterHoneyLowR  = fOuter->GetLowR() + 1;
-  fOuterHoneyHighR = fOuter->GetHighR() + 1;
+  fOuterHoneyHighR = fSupport.GetBackLowR();
 
-  CalculateDz();
-  Double_t par[3];
-  par[0] = fInner->GetLowR();
-  par[1] = fOuterHoneyHighR;
-  par[2] = fDz;
-  fVolumeId = gMC->Gsvolu("FMD3", "TUBE", airId, par, 3);
-
+  // Identity matrix
   gMC->Matrix(fRotationId, 90, 0, 90, 90, 0, 0); 
   //0, 180, 90, 90, 180, 0);
 
-  AliFMDSubDetector::SetupGeometry(airId, kaptionId);
+  AliFMDSubDetector::SetupGeometry(airId, alId, carbonId);
 }
 
 //____________________________________________________________________
@@ -93,10 +107,10 @@ AliFMD3::Geometry(const char* mother, Int_t pbRotId,
   //     idRotId    Identity rotation matrix ID 
   //     z          Z position (not really used here, but passed down)
   //
-  z = fInnerZ - fDz;
-  gMC->Gspos("FMD3", 1, mother, 0, 0, z, fRotationId);
-  
+  z = fSupport.GetZ();
+  AliDebug(10, Form("Passing z=%lf to ring volumes", z));
   AliFMDSubDetector::Geometry("FMD3", pbRotId, idRotId, z);
+  fSupport.Geometry(mother, fRotationId, z);
 }
 
   
@@ -135,7 +149,12 @@ AliFMD3::SimpleGeometry(TList* nodes,
   //    a  = (fOuterHoneyHighR - fInnerHoneyHighR) / (x1 - x2)
   //    
   // 
-  CalculateDz();
+  Double_t dz = (TMath::Abs(fInnerZ - fOuterZ) 
+		 + fOuter->GetSiThickness() 
+		 + fOuter->GetPrintboardThickness() 
+		 + fOuter->GetLegLength() 
+		 + fOuter->GetModuleSpacing() 
+		 + fHoneycombThickness) / 2;
 #if 1
   Double_t x1  = (fOuterZ - (fOuter->GetSiThickness() 
 			     + fOuter->GetPrintboardThickness() 
@@ -160,16 +179,16 @@ AliFMD3::SimpleGeometry(TList* nodes,
     bo = fOuterHoneyHighR - ao * x1;
   }
   
-  Double_t y1o = ao * (fInnerZ - 2 * fDz) + bo;
+  Double_t y1o = ao * (fInnerZ - 2 * dz) + bo;
   Double_t y2o = ao * fInnerZ + bo;
 #endif
   // We probably need to make a PCON here. 
-  TShape* shape = new TCONS("FMD3", "FMD3", "", fDz, 
+  TShape* shape = new TCONS("FMD3", "FMD3", "", dz, 
 			    fOuter->GetLowR(),  y1o, /* fOuterHoneyHighR, */
 			    fInner->GetLowR(),  y2o, /* fInnerHoneyHighR, */
 			    0, 360);
   mother->cd();
-  zMother = fInnerZ - fDz;  
+  zMother = fInnerZ - dz;  
   TNode* node = new TNode("FMD3", "FMD3", shape, 0, 0, zMother, 0);
   node->SetVisibility(0);
   nodes->Add(node);
@@ -178,15 +197,10 @@ AliFMD3::SimpleGeometry(TList* nodes,
 
 //____________________________________________________________________
 void 
-AliFMD3::CalculateDz() 
+AliFMD3::Gsatt() 
 {
-  if (fDz > 0) return;
-  fDz = (TMath::Abs(fInnerZ - fOuterZ) 
-	 + fOuter->GetSiThickness() 
-	 + fOuter->GetPrintboardThickness() 
-	 + fOuter->GetLegLength() 
-	 + fOuter->GetModuleSpacing() 
-	 + fHoneycombThickness) / 2;
+  AliFMDSubDetector::Gsatt();
+  fSupport.Gsatt();
 }
 
 //____________________________________________________________________
