@@ -23,10 +23,13 @@ AliL3Histogram::AliL3Histogram()
   fLastYbin = 0;
   fEntries = 0;
   fContent = 0;
+  fThreshold = 0;
 }
 
   
-AliL3Histogram::AliL3Histogram(Char_t *name,Char_t *id,Int_t nxbin,Double_t xmin,Double_t xmax,Int_t nybin,Double_t ymin,Double_t ymax) 
+AliL3Histogram::AliL3Histogram(Char_t *name,Char_t *id,
+			       Int_t nxbin,Double_t xmin,Double_t xmax,
+			       Int_t nybin,Double_t ymin,Double_t ymax) 
 {
   
   strcpy(fName,name);
@@ -44,6 +47,7 @@ AliL3Histogram::AliL3Histogram(Char_t *name,Char_t *id,Int_t nxbin,Double_t xmin
   fLastXbin = nxbin;
   fLastYbin = nybin;
   fRootHisto = 0;
+  fThreshold = 0;
 
   fContent = new Double_t[fNcells];
   Reset();
@@ -128,6 +132,8 @@ Double_t AliL3Histogram::GetBinContent(Int_t bin)
       return 0;
     }
   
+  if(fContent[bin] < fThreshold)
+    return 0;
   return fContent[bin];
 }
 
@@ -229,7 +235,7 @@ void AliL3Histogram::Draw(Char_t *option)
   fRootHisto = new TH2F(fName,"",fNxbins,fXmin,fXmax,fNybins,fYmin,fYmax);
   for(Int_t bin=0; bin<fNcells; bin++)
     {
-      fRootHisto->AddBinContent(bin,fContent[bin]);
+      fRootHisto->AddBinContent(bin,GetBinContent(bin));
     }
   
   fRootHisto->Draw(option);

@@ -5,7 +5,7 @@
 #include <TH2.h>
 
 
-class AliL3Histogram : public TObject {
+class AliL3Histogram {
   
  private:
   
@@ -19,6 +19,7 @@ class AliL3Histogram : public TObject {
   Int_t fFirstYbin;
   Int_t fLastXbin;
   Int_t fLastYbin;
+  Int_t fThreshold;
 
   Double_t fXmin;
   Double_t fYmin;
@@ -33,7 +34,7 @@ class AliL3Histogram : public TObject {
   virtual ~AliL3Histogram();
   
   void Reset();
-  void Fill(Double_t x,Double_t y,Int_t weight);
+  void Fill(Double_t x,Double_t y,Int_t weight=1);
   Int_t FindBin(Double_t x,Double_t y);
   Int_t FindXbin(Double_t x);
   Int_t FindYbin(Double_t y);
@@ -45,7 +46,7 @@ class AliL3Histogram : public TObject {
   void AddBinContent(Int_t bin,Int_t weight);
   void Add(AliL3Histogram *h1,Double_t weight=1);
   void Draw(Char_t *option="hist");
-  
+  void SetThreshold(Int_t i) {fThreshold = i;}
 
   TH2F *GetRootHisto() {return fRootHisto;}
   Double_t GetXmin() {return fXmin;}
@@ -61,7 +62,8 @@ class AliL3Histogram : public TObject {
   Int_t GetNbinsX() {return fNxbins;}
   Int_t GetNbinsY() {return fNybins;}
   Int_t GetNEntries() {return fEntries;}
-
+  
+  
   ClassDef(AliL3Histogram,1)
     
 };
