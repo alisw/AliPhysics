@@ -78,7 +78,7 @@ AliHBTTwoTrackEffFctnPxPyPz::AliHBTTwoTrackEffFctnPxPyPz(Int_t nXbins, Double_t 
 }
 /******************************************************************/
 
-void AliHBTTwoTrackEffFctnPxPyPz::GetValues(AliHBTPair* pair, Double_t& x, Double_t&y ,Double_t& z)
+void AliHBTTwoTrackEffFctnPxPyPz::GetValues(AliHBTPair* pair, Double_t& x, Double_t&y ,Double_t& z) const
 {
 //Returns values to be histogrammed
 //it does not 
@@ -126,7 +126,7 @@ AliHBTTwoTrackEffFctnPtThetaPhi::AliHBTTwoTrackEffFctnPtThetaPhi(Int_t nXbins, D
 }
 /******************************************************************/
 
-void AliHBTTwoTrackEffFctnPtThetaPhi::GetValues(AliHBTPair* pair, Double_t& x, Double_t&y ,Double_t& z)
+void AliHBTTwoTrackEffFctnPtThetaPhi::GetValues(AliHBTPair* pair, Double_t& x, Double_t&y ,Double_t& z) const
 {
 //Returns values to be histogrammed
 //it does not 

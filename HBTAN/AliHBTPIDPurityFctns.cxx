@@ -18,6 +18,7 @@
 
 /******************************************************************/
 /******************************************************************/
+/******************************************************************/
 
 ClassImp(AliHBTMonPIDPurityVsPtFctn)
 
@@ -335,6 +336,9 @@ void AliHBTMonPIDContaminationVsPtFctn::Process(AliHBTParticle * track, AliHBTPa
 }
 
 /******************************************************************/
+/******************************************************************/
+/******************************************************************/
+
 ClassImp(AliHBTPairPIDProbVsQInvFctn)
 
 AliHBTPairPIDProbVsQInvFctn::AliHBTPairPIDProbVsQInvFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
@@ -369,6 +373,9 @@ void AliHBTPairPIDProbVsQInvFctn::ProcessDiffEventParticles(AliHBTPair* pair)
    if(pair) fDenominator->Fill(pair->GetQInv(),pair->GetPIDProb());
   }
 
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
 
 ClassImp(AliHBTPairPIDProbVsQOutSQideQLongFctn)
 
@@ -381,7 +388,7 @@ AliHBTPairPIDProbVsQOutSQideQLongFctn::AliHBTPairPIDProbVsQOutSQideQLongFctn(Int
   fWriteNumAndDen = kTRUE;//change default behaviour
   Rename("qoslpidpur","Pair PID Probablilty .vs. Q_{out}-Q_{side}-Q_{long} Fctn");
 }
-/*************************************************************/
+/***************1**********************************************/
 
 void AliHBTPairPIDProbVsQOutSQideQLongFctn::ProcessSameEventParticles(AliHBTPair* pair)
 {
@@ -412,6 +419,7 @@ void AliHBTPairPIDProbVsQOutSQideQLongFctn::ProcessDiffEventParticles(AliHBTPair
 TH1* AliHBTPairPIDProbVsQOutSQideQLongFctn::GetResult()
 {
  //returns the scaled ratio
+ 
  delete fRatio;
  fRatio = GetRatio(Scale());
  return fRatio;

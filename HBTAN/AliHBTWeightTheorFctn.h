@@ -31,7 +31,7 @@ class AliHBTWeightTheorQInvFctn: public AliHBTOnePairFctn1D, public AliHBTCorrel
     void   ProcessSameEventParticles(AliHBTPair* partpair);
 
   protected:
-    Double_t GetValue(AliHBTPair* partpair)
+    Double_t GetValue(AliHBTPair* partpair) const
       { return partpair->GetQInv();} 
 
     ClassDef(AliHBTWeightTheorQInvFctn,1)
@@ -49,7 +49,7 @@ class AliHBTWeightTheorQOutFctn: public AliHBTOnePairFctn1D, public AliHBTCorrel
     void   ProcessSameEventParticles(AliHBTPair* partpair);
 
   protected:
-    Double_t GetValue(AliHBTPair* partpair)
+    Double_t GetValue(AliHBTPair* partpair) const
       { return partpair->GetQOutCMSLC();}
 
     ClassDef(AliHBTWeightTheorQOutFctn,1)
@@ -66,7 +66,7 @@ class AliHBTWeightTheorQSideFctn: public AliHBTOnePairFctn1D, public AliHBTCorre
     void   ProcessSameEventParticles(AliHBTPair* partpair);
     
   protected:
-    Double_t GetValue(AliHBTPair* partpair)
+    Double_t GetValue(AliHBTPair* partpair) const
       { return partpair->GetQSideCMSLC();} 
 
     ClassDef(AliHBTWeightTheorQSideFctn,1)
@@ -83,7 +83,7 @@ class AliHBTWeightTheorQLongFctn: public AliHBTOnePairFctn1D, public AliHBTCorre
     void   ProcessSameEventParticles(AliHBTPair* partpair);
   
   protected:
-    Double_t GetValue(AliHBTPair* partpair)
+    Double_t GetValue(AliHBTPair* partpair) const
       { return partpair->GetQLongCMSLC();} 
 
     ClassDef(AliHBTWeightTheorQLongFctn,1)
@@ -103,7 +103,7 @@ class AliHBTWeightTheorOSLFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelF
     void   ProcessSameEventParticles(AliHBTPair* partpair);
   
   protected:
-    void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z)
+    void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const
       { x=TMath::Abs(pair->GetQOutCMSLC()); y=TMath::Abs(pair->GetQSideCMSLC()); z=TMath::Abs(pair->GetQLongCMSLC());} 
 
     ClassDef(AliHBTWeightTheorOSLFctn,1)

@@ -29,7 +29,7 @@ class AliHBTMonPIDPurityVsPtFctn: public AliHBTMonTwoParticleFctn1D, public AliH
     void Rename(const Char_t * name);
     void Rename(const Char_t * name, const Char_t * title);
     TH1* GetResult();
-    Double_t GetValue(AliHBTParticle * /*track*/,AliHBTParticle * /*part*/) { return 0.0; }
+    Double_t GetValue(AliHBTParticle * /*track*/,AliHBTParticle * /*part*/) const { return 0.0; }
     void Process(AliHBTParticle * track,AliHBTParticle * part);
   protected:
     TH1D* fGood;
@@ -48,7 +48,7 @@ class AliHBTMonPIDContaminationVsPtFctn: public AliHBTMonTwoParticleFctn1D, publ
     void Rename(const Char_t * name);
     void Rename(const Char_t * name, const Char_t * title);
     TH1* GetResult();
-    Double_t GetValue(AliHBTParticle * /*track*/,AliHBTParticle * /*part*/) { return 0.0; }
+    Double_t GetValue(AliHBTParticle * /*track*/,AliHBTParticle * /*part*/) const { return 0.0; }
     void Process(AliHBTParticle * track,AliHBTParticle * part);
   protected:
     TH1D* fWrong;  
@@ -68,7 +68,7 @@ class AliHBTPairPIDProbVsQInvFctn: public AliHBTOnePairFctn1D, public AliHBTCorr
    void ProcessDiffEventParticles(AliHBTPair* pair);
    TH1* GetResult();
  protected:
-   Double_t GetValue(AliHBTPair * pair){return pair->GetQInv();}
+   Double_t GetValue(AliHBTPair * pair) const {return pair->GetQInv();}
  private:
    ClassDef(AliHBTPairPIDProbVsQInvFctn,1)
 };
@@ -87,7 +87,7 @@ class AliHBTPairPIDProbVsQOutSQideQLongFctn: public AliHBTOnePairFctn3D, public 
     void ProcessDiffEventParticles(AliHBTPair* pair);
 
   protected:
-    void GetValues(AliHBTPair* /*pair*/, Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/){}
+    void GetValues(AliHBTPair* /*pair*/, Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/) const {}
 
     ClassDef(AliHBTPairPIDProbVsQOutSQideQLongFctn,1)
 };

@@ -405,7 +405,7 @@ class AliHBTOnePairFctn1D: public AliHBTOnePairFctn, public AliHBTFunction1D
   
  protected:
   //retruns velue to be histogrammed
-  virtual Double_t GetValue(AliHBTPair* pair) = 0; 
+  virtual Double_t GetValue(AliHBTPair* pair) const = 0; 
   ClassDef(AliHBTOnePairFctn1D,2)
 };
 /******************************************************************/
@@ -447,7 +447,7 @@ class AliHBTOnePairFctn2D: public AliHBTOnePairFctn, public AliHBTFunction2D
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
  protected:
-  virtual void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y) = 0;
+  virtual void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y) const = 0;
   ClassDef(AliHBTOnePairFctn2D,2)
 };
 /******************************************************************/
@@ -491,7 +491,7 @@ class AliHBTOnePairFctn3D: public AliHBTOnePairFctn, public AliHBTFunction3D
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
  protected:
-  virtual void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) = 0;
+  virtual void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const = 0;
  ClassDef(AliHBTOnePairFctn3D,2)
 };
 /******************************************************************/
@@ -529,7 +529,7 @@ class AliHBTTwoPairFctn1D: public AliHBTTwoPairFctn, public AliHBTFunction1D
   const char* Name(){return GetName();}
   
  protected:
-  virtual Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair) = 0;
+  virtual Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair) const = 0;
 
   ClassDef(AliHBTTwoPairFctn1D,2)
 };
@@ -574,7 +574,7 @@ class AliHBTTwoPairFctn2D: public AliHBTTwoPairFctn, public AliHBTFunction2D
   const char* Name(){return GetName();}
 
  protected:
-  virtual void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y) = 0;
+  virtual void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y) const = 0;
 
   ClassDef(AliHBTTwoPairFctn2D,2)
 };
@@ -621,7 +621,7 @@ class AliHBTTwoPairFctn3D: public AliHBTTwoPairFctn, public AliHBTFunction3D
   const char* Name(){return GetName();}
 
  protected:
-  virtual void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y, Double_t& z) = 0;
+  virtual void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y, Double_t& z) const = 0;
 
   ClassDef(AliHBTTwoPairFctn3D,2)
 };

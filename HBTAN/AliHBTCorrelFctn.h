@@ -32,7 +32,7 @@ class AliHBTQInvCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunct
    virtual ~AliHBTQInvCorrelFctn(){};
    TH1* GetResult();
  protected:
-   Double_t GetValue(AliHBTPair * pair){return pair->GetQInv();}
+   Double_t GetValue(AliHBTPair * pair) const {return pair->GetQInv();}
  private:  
    ClassDef(AliHBTQInvCorrelFctn,2)
  
@@ -51,7 +51,7 @@ class AliHBTOutSideLongFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelFunc
     TH1* GetResult();
  
   protected:
-    void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z)
+    void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z) const
       { x=TMath::Abs(pair->GetQOutCMSLC()); y=TMath::Abs(pair->GetQSideCMSLC()); z=TMath::Abs(pair->GetQLongCMSLC());} 
 
   ClassDef(AliHBTOutSideLongFctn,1)
@@ -68,7 +68,7 @@ class AliHBTQOutCMSLCCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrel
    virtual ~AliHBTQOutCMSLCCorrelFctn(){};
    TH1* GetResult();
  protected:
-   Double_t GetValue(AliHBTPair * pair){return pair->GetQOutCMSLC();}
+   Double_t GetValue(AliHBTPair * pair) const {return pair->GetQOutCMSLC();}
  private:  
     ClassDef(AliHBTQOutCMSLCCorrelFctn,2)
 };
@@ -83,7 +83,7 @@ class AliHBTQLongCMSLCCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorre
    virtual ~AliHBTQLongCMSLCCorrelFctn(){};
    TH1* GetResult();
  protected:
-   Double_t GetValue(AliHBTPair * pair){return pair->GetQLongCMSLC();}
+   Double_t GetValue(AliHBTPair * pair) const {return pair->GetQLongCMSLC();}
  private:  
     ClassDef(AliHBTQLongCMSLCCorrelFctn,2)
 };
@@ -98,7 +98,7 @@ class AliHBTQSideCMSLCCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorre
    virtual ~AliHBTQSideCMSLCCorrelFctn(){}
    TH1* GetResult();
  protected:
-   Double_t GetValue(AliHBTPair * pair){return pair->GetQSideCMSLC();}
+   Double_t GetValue(AliHBTPair * pair) const {return pair->GetQSideCMSLC();}
  private:  
     ClassDef(AliHBTQSideCMSLCCorrelFctn,2)
 };
@@ -112,7 +112,7 @@ class AliHBTInvMassCorrelFctn: public AliHBTOnePairFctn1D
    virtual ~AliHBTInvMassCorrelFctn(){};
    TH1* GetResult();
  protected:
-   Double_t GetValue(AliHBTPair * pair) { return pair->GetInvMass();}
+   Double_t GetValue(AliHBTPair * pair) const { return pair->GetInvMass();}
  private:  
     ClassDef(AliHBTInvMassCorrelFctn,1)
 };
@@ -127,7 +127,7 @@ class AliHBTTwoKStarCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelF
    virtual ~AliHBTTwoKStarCorrelFctn(){};
    TH1* GetResult();
  protected:
-   Double_t GetValue(AliHBTPair * pair) { return 2.0*pair->GetKStar();}
+   Double_t GetValue(AliHBTPair * pair) const { return 2.0*pair->GetKStar();}
  private:  
     ClassDef(AliHBTTwoKStarCorrelFctn,2)
 };
@@ -142,7 +142,7 @@ class AliHBTAvSeparCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFu
    virtual ~AliHBTAvSeparCorrelFctn(){};
    TH1* GetResult();
  protected:
-   Double_t GetValue(AliHBTPair * pair) { return pair->GetAvarageDistance();}
+   Double_t GetValue(AliHBTPair * pair) const { return pair->GetAvarageDistance();}
  private:  
     ClassDef(AliHBTAvSeparCorrelFctn,2)
 };

@@ -24,7 +24,7 @@ class AliHBTCorrFitFctn: public AliHBTTwoPairFctn1D
    TH1* GetResult();
    void WriteFunction();
  protected:
-   Double_t GetValue(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/){return 0.0;}//not usable
+   Double_t GetValue(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/) const {return 0.0;}//not usable
    
    TNtuple* fNtuple;//ntuple for storig pairs
    Int_t    fNPairsFitArea;//number of pairs in fitting area

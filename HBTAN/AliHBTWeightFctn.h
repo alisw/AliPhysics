@@ -36,7 +36,7 @@ class AliHBTWeightQInvFctn: public AliHBTTwoPairFctn1D, public AliHBTCorrelFunct
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   
  protected:
-  Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair)
+  Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair) const
     { return trackpair->GetQInv()-partpair->GetQInv();} //isn't use                                                                    
   ClassDef(AliHBTWeightQInvFctn,2)
 };
@@ -54,7 +54,7 @@ class AliHBTWeightQOutFctn: public AliHBTTwoPairFctn1D, public AliHBTCorrelFunct
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
       
  protected:
-  Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair)         
+  Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair) const
     { return trackpair->GetQOutCMSLC()-partpair->GetQOutCMSLC();} //isn't use                                                                    
   ClassDef(AliHBTWeightQOutFctn,2)
  
@@ -72,7 +72,7 @@ class AliHBTWeightQLongFctn: public AliHBTTwoPairFctn1D, public AliHBTCorrelFunc
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   
  protected:
-  Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair)
+  Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair) const
     { return trackpair->GetQLongCMSLC()-partpair->GetQLongCMSLC();} //isn't used
 
   ClassDef(AliHBTWeightQLongFctn,2)
@@ -91,7 +91,7 @@ class AliHBTWeightQSideFctn: public AliHBTTwoPairFctn1D, public AliHBTCorrelFunc
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
       
  protected:
-  Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair)         
+  Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair) const
     { return trackpair->GetQLongCMSLC()-partpair->GetQLongCMSLC();} //isn't used
 
   ClassDef(AliHBTWeightQSideFctn,2) 
@@ -109,7 +109,7 @@ class AliHBTWeightTwoKStarFctn: public AliHBTTwoPairFctn1D, public AliHBTCorrelF
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
       
  protected:
-  Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair)         
+  Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair) const
     { return trackpair->GetKStar()-partpair->GetKStar();} //isn't used
   ClassDef(AliHBTWeightTwoKStarFctn,2) 
 
@@ -129,7 +129,7 @@ class AliHBTWeightQOutQSideFctn: public AliHBTTwoPairFctn2D, public AliHBTCorrel
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
       
  protected:
-  void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/){}
+  void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/) const{}
   ClassDef(AliHBTWeightQOutQSideFctn,2)
  
 };
@@ -148,7 +148,7 @@ class AliHBTWeightQOutQLongFctn: public AliHBTTwoPairFctn2D, public AliHBTCorrel
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
       
  protected:
-  void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/){}
+  void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/) const{}
   ClassDef(AliHBTWeightQOutQLongFctn,2)
  
 };
@@ -167,7 +167,7 @@ class AliHBTWeightQSideQLongFctn: public AliHBTTwoPairFctn2D, public AliHBTCorre
   void   ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
       
  protected:
-  void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/){}
+  void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, Double_t& /*x*/, Double_t& /*y*/) const{}
   ClassDef(AliHBTWeightQSideQLongFctn,2)
  
 };
@@ -188,7 +188,7 @@ class AliHBTWeightQOutSQideQLongFctn: public AliHBTTwoPairFctn3D, public AliHBTC
   
   protected:
     void GetValues(AliHBTPair* /*trackpair*/, AliHBTPair* /*partpair*/, 
-                   Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/) { } 
+                   Double_t& /*x*/, Double_t& /*y*/, Double_t& /*z*/)  const{ } 
 
     ClassDef(AliHBTWeightQOutSQideQLongFctn,1)
 };

@@ -23,7 +23,7 @@ class AliHBTTwoTrackEffFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunc
     virtual ~AliHBTTwoTrackEffFctn(){}
     TH1* GetResult();
   protected:
-    Double_t GetValue(AliHBTPair* pair){return pair->GetDeltaP();}
+    Double_t GetValue(AliHBTPair* pair) const {return pair->GetDeltaP();}
   private:
     ClassDef(AliHBTTwoTrackEffFctn,2)
  };
@@ -38,7 +38,7 @@ class AliHBTTwoTrackEffFctnPxPyPz: public AliHBTOnePairFctn3D, public AliHBTCorr
     virtual ~AliHBTTwoTrackEffFctnPxPyPz(){}
     TH1* GetResult();
   protected:
-    void GetValues(AliHBTPair* pair,Double_t& x, Double_t& y,Double_t& z);
+    void GetValues(AliHBTPair* pair,Double_t& x, Double_t& y,Double_t& z) const;
   private:
     ClassDef(AliHBTTwoTrackEffFctnPxPyPz,2)
  };
@@ -53,7 +53,7 @@ class AliHBTTwoTrackEffFctnPtThetaPhi: public AliHBTOnePairFctn3D, public AliHBT
     virtual ~AliHBTTwoTrackEffFctnPtThetaPhi(){}
     TH1* GetResult();
   protected:
-    void GetValues(AliHBTPair* pair,Double_t& x, Double_t& y,Double_t& z);
+    void GetValues(AliHBTPair* pair,Double_t& x, Double_t& y,Double_t& z) const;
   private:
     ClassDef(AliHBTTwoTrackEffFctnPtThetaPhi,1)
  };
