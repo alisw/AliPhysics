@@ -213,8 +213,8 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	    fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ;
 	  }
 	  //========== Event Number>         
-	  if ( ( log10((Float_t)(ievent+1)) - (Int_t)(log10((Float_t)(ievent+1))) ) == 0. ) 
-	    cout <<  "AnalyzeManyEvents > " << "Event is " << ievent << endl ;  
+	  //  if ( ( log10((Float_t)(ievent+1)) - (Int_t)(log10((Float_t)(ievent+1))) ) == 0. ) 
+	  cout <<  "AnalyzeManyEvents > " << "Event is " << ievent << endl ;  
 	  //=========== Connects the various Tree's for evt
 	  gAlice->GetEvent(ievent);
 	  //=========== Gets the Digit TTree
@@ -226,22 +226,22 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 	      fGeom->AbsToRelNumbering(digit->GetId(), relid) ;         
 	      //	      if (fClu->IsInEmc(digit)) fhEmcDigit->Fill(fClu->Calibrate(digit->GetAmp())) ; 
 	      //else    
-		{  
-		  //	  if (relid[1]<17) fhVetoDigit->Fill(fClu->Calibrate(digit->GetAmp())); 
-		  //if (relid[1]>16) fhConvertorDigit->Fill(fClu->Calibrate(digit->GetAmp()));
-		}
+	      {  
+		//	  if (relid[1]<17) fhVetoDigit->Fill(fClu->Calibrate(digit->GetAmp())); 
+		//if (relid[1]>16) fhConvertorDigit->Fill(fClu->Calibrate(digit->GetAmp()));
+	      }
 	    }
 	  //=========== Do the reconstruction
 	  fPHOS->Reconstruction(fRec);
-
-// 	  //=========== Cluster in module
-// 	  TIter nextEmc(fPHOS->EmcRecPoints()  ) ;
-// 	  while((emc = (AliPHOSEmcRecPoint *)nextEmc())) 
-// 	    {
-// 	      if ( emc->GetPHOSMod() == module )
-// 		{  
-// 		  fhEmcCluster->Fill(  emc->GetTotalEnergy()  ); 
-// 		  TIter nextPpsd( fPHOS->PpsdRecPoints()) ;
+	  
+	  // 	  //=========== Cluster in module
+	  // 	  TIter nextEmc(fPHOS->EmcRecPoints()  ) ;
+	  // 	  while((emc = (AliPHOSEmcRecPoint *)nextEmc())) 
+	  // 	    {
+	  // 	      if ( emc->GetPHOSMod() == module )
+	  // 		{  
+	  // 		  fhEmcCluster->Fill(  emc->GetTotalEnergy()  ); 
+	  // 		  TIter nextPpsd( fPHOS->PpsdRecPoints()) ;
 // 		  while((ppsd = (AliPHOSPpsdRecPoint *)nextPpsd())) 
 // 		    {
 // 		      if ( ppsd->GetPHOSMod() == module )
@@ -315,7 +315,6 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 // 		    }
 		}
 	    }
-
 	}   // endfor
       SavingHistograms();
     }       // endif
