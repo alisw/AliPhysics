@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 
@@ -145,6 +148,11 @@ void AliMagFC::Field(Float_t *x, Float_t *b)
 	  }
 	}
       }
+    }
+    if(fFactor!=1) {
+      b[0]*=fFactor;
+      b[1]*=fFactor;
+      b[2]*=fFactor;
     }
   } else {
     printf("Invalid field map for constant field %d\n",fMap);
@@ -290,6 +298,11 @@ void AliMagFCM::Field(Float_t *x, Float_t *b)
 	}
       }
     }
+  }
+  if(fFactor!=1) {
+    b[0]*=fFactor;
+    b[1]*=fFactor;
+    b[2]*=fFactor;
   }
 }
 
