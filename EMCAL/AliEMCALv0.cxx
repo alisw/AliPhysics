@@ -215,17 +215,16 @@ void AliEMCALv0::CreateGeometry()
 
     // each section will be passed 2 z coordinates    
     envelopD[3] = envelopC[3] = envelopB[3] = 2;
-    envelopB[4] = geom->ZFromEtaR(geom->GetEnvelop(0)+geom->GetGap2Active(),
+    envelopB[4] = geom->ZFromEtaR(geom->GetEnvelop(0),
 				   geom->GetArm1EtaMin());// z co-ordinate 1
-    envelopB[5] = geom->GetEnvelop(0) + geom->GetGap2Active(); //rmin at z1
+    envelopB[5] = geom->GetEnvelop(0) ; //rmin at z1
     envelopB[6] = envelopB[5] + geom->GetAlFrontThickness();//rmax at z1
-    envelopD[6] = envelopB[6];
-    envelopB[7] = geom->ZFromEtaR(geom->GetEnvelop(0)+geom->GetGap2Active(),
+    envelopB[7] = geom->ZFromEtaR(geom->GetEnvelop(0),
 				  geom->GetArm1EtaMax()); // z co-ordinate 2
     envelopB[8] = envelopB[5] ; //
     envelopB[9] = envelopB[6] ; // radii are the same.
 
-    // filled shapes wit hactive material 
+    // filled shapes with active material 
 
     // Define Aluminium volume completely
     gMC->Gsvolu("XALU", "PGON", idtmed[1602], envelopB, 10);
@@ -241,6 +240,7 @@ void AliEMCALv0::CreateGeometry()
     gMC->Gspos("XALU", 1, "XEN1", 0.0, 0.0, 0.0 , idrotm, "ONLY") ; 
 
     // The loop below places the scintillator in Lead Layers alternately.
+    envelopD[6] = envelopB[6] + geom->GetGap2Active() ;
     for (int i = 0; i < geom->GetNLayers() ; i++ ){
 	label = "XU" ;
         label += static_cast<Int_t> (i/2)  ; // we will place two layers (i = one layer) in each mini envelope)	
