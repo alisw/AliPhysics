@@ -96,9 +96,9 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   analysis->SetReader(reader);
   /************************************************************/
   
-//  AliHBTPairCut *paircut = new AliHBTPairCut();
-//  paircut->SetQInvRange(0.0,0.20);  
-//  analysis->SetGlobalPairCut(paircut);
+  AliHBTPairCut *paircut = new AliHBTPairCut();
+  paircut->SetQInvRange(0.0,0.20);  
+  analysis->SetGlobalPairCut(paircut);
 
   AliHBTQInvCorrelFctn * qinvcfT= new AliHBTQInvCorrelFctn();
   AliHBTQInvCorrelFctn * qinvcfP= new AliHBTQInvCorrelFctn();
@@ -117,7 +117,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   
   delete qinvcfP;
   delete qinvcfT;
-//  delete paircut;
+  delete paircut;
   delete readerpartcut;
   if (dirs) 
    {
