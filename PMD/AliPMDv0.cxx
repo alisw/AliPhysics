@@ -14,6 +14,8 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.11  2001/05/14 14:01:04  morsch
+AliPMDv0 coarse geometry and AliPMDv1 detailed simulation, completely revised versions by Tapan Nayak.
 */
 
 //
@@ -275,7 +277,8 @@ void AliPMDv0::CreateSupermodule()
   z_air1= -dpara_sm1[2] + th_base + dpara_air[2]; 
   gMC->Gspos("EAIR", 1, "ESMA", 0., 0., z_air1, 0, "ONLY");
   z_gas=z_air1+dpara_air[2]+ th_pcb + dpara1[2]; 
-  gMC->Gspos("EHC1", 1, "ESMA", 0., 0., z_gas, 0, "ONLY");
+  //Line below Commented for version 0 of PMD routine
+  //  gMC->Gspos("EHC1", 1, "ESMA", 0., 0., z_gas, 0, "ONLY");
   z_air2=z_gas+dpara1[2]+ th_pcb + dpara_air[2]; 
   gMC->Gspos("EAIR", 2, "ESMA", 0., 0., z_air2, 0, "ONLY");
 
@@ -284,7 +287,8 @@ void AliPMDv0::CreateSupermodule()
   z_air1= -dpara_sm1[2] + th_pcb + dpara_air[2]; 
   gMC->Gspos("EAIR", 3, "ESMB", 0., 0., z_air1, 0, "ONLY");
   z_gas=z_air1+dpara_air[2]+ th_pcb + dpara1[2]; 
-  gMC->Gspos("EHC1", 2, "ESMB", 0., 0., z_gas, 0, "ONLY");
+  //Line below Commented for version 0 of PMD routine
+  //  gMC->Gspos("EHC1", 2, "ESMB", 0., 0., z_gas, 0, "ONLY");
   z_air2=z_gas+dpara1[2]+ th_pcb + dpara_air[2]; 
   gMC->Gspos("EAIR", 4, "ESMB", 0., 0., z_air2, 0, "ONLY");
 
@@ -349,7 +353,8 @@ void AliPMDv0::CreateSupermodule()
   z_air1= -dpara_sm2[2] + th_base + dpara2_air[2]; 
   gMC->Gspos("EAIX", 1, "ESMX", 0., 0., z_air1, 0, "ONLY");
   z_gas=z_air1+dpara2_air[2]+ th_pcb + dpara2[2]; 
-  gMC->Gspos("EHC2", 1, "ESMX", 0., 0., z_gas, 0, "ONLY");
+  //Line below Commented for version 0 of PMD routine
+  //  gMC->Gspos("EHC2", 1, "ESMX", 0., 0., z_gas, 0, "ONLY");
   z_air2=z_gas+dpara2[2]+ th_pcb + dpara2_air[2]; 
   gMC->Gspos("EAIX", 2, "ESMX", 0., 0., z_air2, 0, "ONLY");
 
@@ -358,7 +363,8 @@ void AliPMDv0::CreateSupermodule()
   z_air1= -dpara_sm2[2] + th_pcb + dpara2_air[2]; 
   gMC->Gspos("EAIX", 3, "ESMY", 0., 0., z_air1, 0, "ONLY");
   z_gas=z_air1+dpara2_air[2]+ th_pcb + dpara2[2]; 
-  gMC->Gspos("EHC2", 2, "ESMY", 0., 0., z_gas, 0, "ONLY");
+  //Line below Commented for version 0 of PMD routine
+  //  gMC->Gspos("EHC2", 2, "ESMY", 0., 0., z_gas, 0, "ONLY");
   z_air2=z_gas+dpara2[2]+ th_pcb + dpara2_air[2]; 
   gMC->Gspos("EAIX", 4, "ESMY", 0., 0., z_air2, 0, "ONLY");
 
@@ -425,7 +431,8 @@ void AliPMDv0::CreateSupermodule()
   z_air1= -dpara_sm3[2] + th_base + dpara3_air[2]; 
   gMC->Gspos("EAIP", 1, "ESMP", 0., 0., z_air1, 0, "ONLY");
   z_gas=z_air1+dpara3_air[2]+ th_pcb + dpara3[2]; 
-  gMC->Gspos("EHC3", 1, "ESMP", 0., 0., z_gas, 0, "ONLY");
+  //Line below Commented for version 0 of PMD routine
+  //  gMC->Gspos("EHC3", 1, "ESMP", 0., 0., z_gas, 0, "ONLY");
   z_air2=z_gas+dpara3[2]+ th_pcb + dpara3_air[2]; 
   gMC->Gspos("EAIP", 2, "ESMP", 0., 0., z_air2, 0, "ONLY");
 
@@ -434,7 +441,8 @@ void AliPMDv0::CreateSupermodule()
   z_air1= -dpara_sm3[2] + th_pcb + dpara3_air[2]; 
   gMC->Gspos("EAIP", 3, "ESMQ", 0., 0., z_air1, 0, "ONLY");
   z_gas=z_air1+dpara3_air[2]+ th_pcb + dpara3[2]; 
-  gMC->Gspos("EHC3", 2, "ESMQ", 0., 0., z_gas, 0, "ONLY");
+  //Line below Commented for version 0 of PMD routine
+  //  gMC->Gspos("EHC3", 2, "ESMQ", 0., 0., z_gas, 0, "ONLY");
   z_air2=z_gas+dpara3[2]+ th_pcb + dpara3_air[2]; 
   gMC->Gspos("EAIP", 4, "ESMQ", 0., 0., z_air2, 0, "ONLY");
 

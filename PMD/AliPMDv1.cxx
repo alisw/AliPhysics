@@ -649,7 +649,7 @@ void AliPMDv1::CreatePMD()
 
   Float_t Al_rod[3] ;
   Al_rod[0] = sm_length * 3/2. - gaspmd[5]/2 - boundary ;
-  Al_rod[1] = boundary;
+  Al_rod[1] = boundary - 0.5*cell_radius*root3_2;
   Al_rod[2] = dm_thick/2.;
 
   gMC->Gsvolu("EALM","BOX ", idtmed[698], Al_rod, 3);
@@ -721,13 +721,11 @@ void AliPMDv1::CreatePMD()
 	  xpos[i]=xmod[j] + xsup[i]*TMath::Cos(theta[j]) - ysup[i]*TMath::Sin(theta[j]);
 	  ypos[i]=ymod[j] + xsup[i]*TMath::Sin(theta[j]) + ysup[i]*TMath::Cos(theta[j]);
 
-	  if(fDebug) 
-	    printf("%s: %f %f \n", ClassName(), xpos[i], ypos[i]);
+	  printf("%f %f \n", xpos[i], ypos[i]);
 
 	  num_mod = num_mod+1;
 
-	  if(fDebug)
-	    printf("\n%s: Num_mod %d\n",ClassName(),num_mod);
+	  printf("\nNum_mod %d\n",num_mod);
 
 	  gMC->Gsposp("EMM1", num_mod + 6, "EPMD", xpos[i],ypos[i], 0., irotate[j], "ONLY", dpara_emm1, 6);
 
@@ -925,19 +923,17 @@ void AliPMDv1::Init()
   Int_t i;
   kdet=1;
   //
-  if(fDebug) {
-    printf("\n%s: ",ClassName());
-    for(i=0;i<35;i++) printf("*");
-    printf(" PMD_INIT ");
-    for(i=0;i<35;i++) printf("*");
-    printf("\n%s: ",ClassName());
-    printf("                 PMD simulation package (v1) initialised\n");
-    printf("%s: parameters of pmd\n",ClassName());
-    printf("%s: %10.2f %10.2f %10.2f %10.2f\n",ClassName(),cell_radius,cell_wall,cell_depth,zdist1 );
-    printf("%s: ",ClassName());
-    for(i=0;i<80;i++) printf("*");
-    printf("\n");
-  }
+  printf("\n");
+  for(i=0;i<35;i++) printf("*");
+  printf(" PMD_INIT ");
+  for(i=0;i<35;i++) printf("*");
+  printf("\n");
+  printf("                 PMD simulation package (v1) initialised\n");
+  printf(" parameters of pmd\n");
+  printf("%10.2f %10.2f %10.2f %10.2f\n", cell_radius,cell_wall,cell_depth,zdist1 );
+  
+  for(i=0;i<80;i++) printf("*");
+  printf("\n");
   
   Int_t *idtmed = fIdtmed->GetArray()-599;
   fMedSens=idtmed[605-1];
