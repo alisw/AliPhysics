@@ -44,6 +44,7 @@
 #include "TRD/AliTRDdigitizer.h"
 #include "TStopwatch.h"
 #include "TRD/AliTRDparameter.h"
+#include "TOF/AliTOFSDigitizer.h"
 #endif
 
 TFile* Init(TString fileNameSDigits, TString fileNameHits);
@@ -63,7 +64,7 @@ Int_t AliHits2SDigits(TString fileNameSDigits="sdigits.root",
 		      TString fileNameHits="rfio:galice.root", 
 		      Int_t nEvents = 1, Int_t firstEvent = 0, Int_t iITS = 0,
 		      Int_t iTPC = 0, Int_t iTRD = 0,Int_t iPHOS = 0, 
-		      Int_t iCopy = 1)
+		      Int_t iTOF = 0, Int_t iCopy = 1)
 {
 //
 // Initialization
@@ -84,8 +85,8 @@ Int_t AliHits2SDigits(TString fileNameSDigits="sdigits.root",
       iITS = 0;
       cerr<<"AliITS object not found on file." << endl;
     } else if (!ITS->GetITSgeom()) {
-      cerr<<"AliITSgeom not found." << endl;
       iITS = 0;
+      cerr<<"AliITSgeom not found." << endl;
     }
   }
 
@@ -112,7 +113,11 @@ Int_t AliHits2SDigits(TString fileNameSDigits="sdigits.root",
     sdPHOS = new AliPHOSSDigitizer(fileNameHits.Data());
   }
 
-
+// TOF
+  AliTOFSDigitizer *sdTOF;
+  if (iTOF) {
+    sdTOF = new AliTOFSDigitizer(fileNameHits.Data(),firstEvent,nEvents);
+  }
 
 //
 // loop over events
@@ -121,7 +126,7 @@ Int_t AliHits2SDigits(TString fileNameSDigits="sdigits.root",
   timer.Start();
   for (Int_t iEvent = firstEvent;iEvent<firstEvent+nEvents;iEvent++){
     gAlice->GetEvent(iEvent);
-    gAlice->MakeTree("S",fileSDigits);
+    if (!gAlice->TreeS()) gAlice->MakeTree("S",fileSDigits);
     
 // ITS
     if (iITS) {
@@ -135,7 +140,26 @@ Int_t AliHits2SDigits(TString fileNameSDigits="sdigits.root",
 // TPC
     if (iTPC) {
       if (gDEBUG) {cout<<"  Create TPC sdigits: ";}
-      TPC->SetActiveSectors(1);
+      if (iTPC == 1) {
+// process all sectors
+	TPC->SetActiveSectors(1);
+	if (gDEBUG) {cout<<"All TPC sectors set active."<<endl;}
+      } else if (iTPC == 2) {
+// process only sectors with hits
+	TPC->SetActiveSectors(0);
+	if (gDEBUG) {
+	  printf("\nActive sectors\n");
+	  Int_t iActive = 0;
+	  for (Int_t i=0;i<72;i++) {
+	    if (TPC->IsSectorActive(i)) {
+	      printf("%2d ",i);
+	      iActive++;
+	      if (iActive%10 == 0) printf("\n");
+	    }
+	  }
+	  printf("\n");
+	}
+      }    
       TPC->Hits2SDigits2(iEvent);
       if (gDEBUG) {cout<<"done"<<endl;}
     }
@@ -156,6 +180,12 @@ Int_t AliHits2SDigits(TString fileNameSDigits="sdigits.root",
     sdPHOS->ExecuteTask("deb all");
   }
 
+// TOF does its own loop
+  if (iTOF) {
+    sdTOF->Exec("");
+  }
+
+
 //
 // finish 
 //
@@ -165,11 +195,11 @@ Int_t AliHits2SDigits(TString fileNameSDigits="sdigits.root",
   if (iTRD) { 
     fileSDigits->cd();
     sdTRD->GetParameter()->Write();
-    gFileHits->cd();
   }
 
-  fileSDigits->Close();
-  delete fileSDigits;
+  gFileHits->cd();
+  delete gAlice;
+  gAlice = 0;
   if (!gSameFiles) {
     gFileHits->Close();
     delete gFileHits;
