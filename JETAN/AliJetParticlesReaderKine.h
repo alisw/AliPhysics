@@ -53,10 +53,11 @@ inline Bool_t AliJetParticlesReaderKine::IsAcceptedParticle(TParticle *p) const
 {
   Int_t pcode=TMath::Abs(p->GetPdgCode());  
   
+#if _old_
   if ((pcode==11)||(pcode==22)) {
     if(!fEM) return kFALSE;
-  }  else {
-#if 1
+  } else {
+    /*this is slighly misleading, needs fixing*/
     if(pcode!=211  && pcode!=321 && pcode!=2212 && 
        pcode!=111  && pcode!=311 && pcode!=2112 && 
        pcode!=3122 && pcode!=213 && pcode!=113 &&
@@ -64,17 +65,30 @@ inline Bool_t AliJetParticlesReaderKine::IsAcceptedParticle(TParticle *p) const
       //p->Print();
       return kFALSE;
     }
-#endif
     TParticlePDG *pdg=p->GetPDG();
     Int_t ch=(Int_t)pdg->Charge(); 
     if((!fCharged)&&(ch)) return kFALSE;
     if((!fNeutral)&&(!ch)) return kFALSE;
   }
+#else
+  if(pcode!=11 && pcode!=22 && pcode!=211 && pcode!=321 && 
+     pcode!=2212 && pcode!=111 && pcode!=211 && pcode!=2112) 
+    return kFALSE; /*keep only e-, gammas, pi, ks, p, n*/
+
+  if(fEM && (pcode==22 || pcode==111)){
+    // em particles are accepted
+  } else {
+    TParticlePDG *pdg=p->GetPDG();
+    Int_t ch=(Int_t)pdg->Charge(); 
+    if((!fCharged)&&(ch)) return kFALSE;
+    if((!fNeutral)&&(!ch)) return kFALSE;
+  }
+#endif
 
   //p->Print();
-  Float_t eta=0.;//p->Eta();
+
+  Float_t eta=0.;
   Float_t pz=p->Pz();
-  //if(TMath::Abs(pz)>150.) return kFALSE;
   Float_t pabs=p->P();
   if(pabs-TMath::Abs(pz)>1.e-8) eta=0.5*TMath::Log((pabs+pz)/(pabs-pz));
   else return kFALSE;
