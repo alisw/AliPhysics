@@ -23,6 +23,7 @@ AliFiles::AliFiles()
   : fMacroName(fgkDefaultMacroName),
     fG3CallsName(fgkDefaultG3CallsName)
 {
+//    
   if (fgInstance) {
     AliGlobals::Exception(
       "AliFiles: attempt to create two instances of singleton.");
@@ -35,6 +36,7 @@ AliFiles::AliFiles(const G4String& config)
   : fMacroName(config),
     fG3CallsName(fgkDefaultG3CallsName)
 {
+//
   if (fgInstance) {
     AliGlobals::Exception(
       "AliFiles: attempt to create two instances of singleton.");
@@ -47,6 +49,7 @@ AliFiles::AliFiles(const G4String& config, const G4String& g3calls)
   : fMacroName(config),
     fG3CallsName(g3calls)
 {
+//
   if (fgInstance) {
     AliGlobals::Exception(
       "AliFiles: attempt to create two instances of singleton.");
