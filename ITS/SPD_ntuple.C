@@ -30,7 +30,10 @@ c2->Divide(2,2);
 //             coordinates in r*phi(x) direction;
 // dz        - difference of hit(mediate) and reconstructed (from cluster)
 //             coordinates in z direction;
-// noverlaps - number of particles overlapping in one cluster;
+// noverlaps - number of particles overlapping in one cluster finded in this
+//             macros in the cluster region;
+// ntrover   - number of particles overlapping in one cluster finded in the
+//             AliITSClusterFinderSPD class; 
 // noverprim - number of primary particles overlapping in one cluster;
 // qcl       - cluster charge in electron number  
 // -------------------------------------------------------------------------
@@ -73,6 +76,7 @@ gPad->SetFillColor(33);
       ntuple->Draw("dx","lay == 1 && hitprim == 1 && nx < 4");
 */
     
+
       /*                  
 c2->cd(1);
 gPad->SetFillColor(33);
@@ -91,24 +95,7 @@ gPad->SetFillColor(33);
       ntuple->SetFillColor(46);
       ntuple->Draw("dz","lay==2&&hitprim==1&&dz>-500&&dz<500");
       */
-/*
-c2->cd(1);
-gPad->SetFillColor(33);
-      ntuple->SetFillColor(42);
-      ntuple->Draw("dx","lay==1&&hitprim==1&&dx>-150&&dx<150&&nx<5");
-c2->cd(2);
-gPad->SetFillColor(33);
-      ntuple->SetFillColor(46);
-      ntuple->Draw("dz","lay==1&&hitprim==1&&dz>-500&&dz<500&&nz<5");
-c2->cd(3);
-gPad->SetFillColor(33);
-      ntuple->SetFillColor(42);
-      ntuple->Draw("dx","lay==2&&hitprim==1&&dx>-150&&dx<150&&nx<5");
-c2->cd(4);
-gPad->SetFillColor(33);
-      ntuple->SetFillColor(46);
-      ntuple->Draw("dz","lay==2&&hitprim==1&&dz>-500&&dz<500&&nz<5");
-*/      
+
 /*
 c2->cd(1);
 gPad->SetFillColor(33);
@@ -128,7 +115,7 @@ gPad->SetFillColor(33);
       ntuple->Draw("dz","lay==2&&hitprim==1&&nz<4");
 */      
 
-/*                              
+                              
 c2->cd(1);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(42);
@@ -137,16 +124,15 @@ c2->cd(2);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(46);
       ntuple1->Draw("noverlaps","lay == 2");
-      
 c2->cd(3);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(42);
-      ntuple1->Draw("noverlaps","lay == 1 && noverprim > 0");
+      ntuple1->Draw("ntrover","lay == 1");
 c2->cd(4);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(46);
-      ntuple1->Draw("noverlaps","lay == 2 && noverprim > 0");
-*/      
+      ntuple1->Draw("ntrover","lay == 2");
+
 /*        
 c2->cd(1);
 gPad->SetFillColor(33);
@@ -165,6 +151,7 @@ gPad->SetFillColor(33);
       ntuple1->SetFillColor(46);
       ntuple1->Draw("noverprim","lay == 2 && noverprim > 1");
 */       
+
 /*
 c2->cd(1);
 gPad->SetFillColor(33);
@@ -176,7 +163,7 @@ gPad->SetFillColor(33);
       ntuple1->Draw("qcl","lay == 2&&noverprim>0");
 */
 
-      
+/*      
 c2->cd(1);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(42);
@@ -193,7 +180,7 @@ c2->cd(4);
 gPad->SetFillColor(33);
       ntuple1->SetFillColor(46);
       ntuple1->Draw("nz","lay == 2 && noverprim>0");
-
+*/
             
 /*
 c2->cd(1);
@@ -232,6 +219,7 @@ gPad->SetFillColor(33);
       ntuple1->SetFillColor(46);
       ntuple1->Draw("dz","lay == 2");
       */
+
       /*                
 c2->cd(1);
 gPad->SetFillColor(33);

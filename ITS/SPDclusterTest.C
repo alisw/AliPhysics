@@ -58,7 +58,8 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
      // fill modules with sorted by module hits
      Int_t nmodules;
      ITS->InitModules(-1,nmodules); 
-     ITS->FillModules(nev,-1,evNumber2,nmodules," "," ");
+     //    ITS->FillModules(nev,-1,evNumber2,nmodules," "," ");
+     ITS->FillModules(nev,evNumber2,nmodules," "," ");
      //get pointer to modules array
      TObjArray *ITSmodules = ITS->GetModules();
      AliITShit *itsHit;
@@ -115,6 +116,7 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	    Int_t det;
 	    Int_t nx;
 	    Int_t nz;
+	    Int_t ntrover;
 	    Int_t noverlaps;
 	    Int_t noverprim;
 	    Float_t qcl;
@@ -147,6 +149,7 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	  ntuple1->Branch("nx",&ntuple1_st.nx,"nx/I");
 	  ntuple1->Branch("nz",&ntuple1_st.nz,"nz/I");
 	  ntuple1->Branch("qcl",&ntuple1_st.qcl,"qcl/F");
+	  ntuple1->Branch("ntrover",&ntuple1_st.ntrover,"ntrover/I");
 	  ntuple1->Branch("noverlaps",&ntuple1_st.noverlaps,"noverlaps/I");
 	  ntuple1->Branch("noverprim",&ntuple1_st.noverprim,"noverprim/I");
 	  ntuple1->Branch("dx",&ntuple1_st.dx,"dx/F");
@@ -172,14 +175,12 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
               ITS->ResetClusters();
               TC->GetEvent(mod);
 	      Int_t nclust = ITSclusters->GetEntries();
-	      if (nclust) printf("Found %d clust for module %d in det type %d \n",nclust,mod,idettype);
 	      if (!nclust) continue;
 
 	      // cluster/hit loops
 
 	for (Int_t clu=0;clu<nclust;clu++) {
 		itsclu   = (AliITSRawClusterSPD*)ITSclusters->UncheckedAt(clu);
-		printf("%d %d %f %f %f\n",itsclu->NclZ(),itsclu->NclX(),itsclu->Q(),itsclu->X(),itsclu->Z());
 
 		Int_t noverlaps = 0;
 		Int_t noverprim = 0;
@@ -195,10 +196,11 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 		Float_t zstart = itsclu->ZStart();
 		Float_t zstop = itsclu->ZStop();
 		Int_t zend = itsclu->Zend();
+		Int_t ntrover = itsclu->NTracks();
 		Float_t clusterx = itsclu->X();
 		Float_t clusterz = itsclu->Z();
 		Float_t clusterQ = itsclu->Q();
-
+                
 		ntuple2_st.nx = clustersizex;
 		ntuple2_st.nz = clustersizez;
 
@@ -208,12 +210,13 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 		Float_t dxprimlast = 10.e+6;
 		Float_t dzprimlast = 10.e+6;
 
-
+		if(clustersizex>2&&clustersizez>1) {
 		//        if(module > 217 && module <  226) {
-                cout<<"mod,nclust,clu,Nxpix,Nzpix ="<<mod<<","<<nclust<<","<<clu<<","<<clustersizex<<","<<clustersizez<<endl;
-                cout<<"clusx,clusz ="<<clusterx<<","<<clusterz<<endl;
-                cout<<"XStartf,XStopf,ZStart,ZStop ="<<fxstart<<","<<fxstop<<","<<zstart<<","<<zstop<<endl;
-		//         }
+	      if (nclust) printf("Found %d clust for module %d in det type %d \n",nclust,mod,idettype);
+		cout<<"mod,nclust,clu,Nxpix,Nzpix ="<<mod<<","<<nclust<<","<<clu<<","<<clustersizex<<","<<clustersizez<<endl;
+		// cout<<"clusx,clusz ="<<clusterx<<","<<clusterz<<endl;
+		cout<<"XStartf,XStopf,Zend,Zstart,Zstop,Q ="<<xstart<<","<<xstop<<","<<zend<<","<<zstart<<","<<zstop<<","<<clusterQ<<endl;
+		}
 		
 
         	Float_t SPDlength = 83600;	
@@ -281,7 +284,7 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 		  Float_t xdif = xmed - clusterx;
 		  Float_t zdif = zmed - clusterz;
 
-      cout<<"clu,hit,xmed,fxstart,fxstop,zmed,zstart,zstop ="<<clu<<","<<hit<<","<<xmed<<","<<fxstart<<","<<fxstop<<","<<zmed<<","<<zstart<<","<<zstop<<endl;
+		  // cout<<"clu,hit,xmed,fxstart,fxstop,zmed,zstart,zstop ="<<clu<<","<<hit<<","<<xmed<<","<<fxstart<<","<<fxstop<<","<<zmed<<","<<zstart<<","<<zstop<<endl;
 
         // Consider the hits inside of cluster region only
 
@@ -305,7 +308,7 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
         Float_t pz = itsHit->GetPZL();
         Float_t pmod = 1000*sqrt(px*px+py*py+pz*pz);
 
-              cout<<"track,partcode,pmod,parent ="<<track<<","<<partcode<<","<<pmod<<","<<parent<<endl;
+	// cout<<"track,partcode,pmod,parent ="<<track<<","<<partcode<<","<<pmod<<","<<parent<<endl;
 
         Int_t hitprim = 0;
 
@@ -345,12 +348,12 @@ void SPDclusterTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
       if(hitprim > 0) {   // for primary particles
         if(hitlayer == 1) {
-     cout<<"!!!!!! lay,hitprim,xdif,zdif ="<<hitlayer<<","<<hitprim<<","<<xdif<<","<<zdif<<endl;
+	  // cout<<"!!!!!! lay,hitprim,xdif,zdif ="<<hitlayer<<","<<hitprim<<","<<xdif<<","<<zdif<<endl;
            Xres1->Fill(xdif);
            Zres1->Fill(zdif);
         }
         if(hitlayer == 2) {
-     cout<<"!!!!!! lay,hitprim,xdif,zdif ="<<hitlayer<<","<<hitprim<<","<<xdif<<","<<zdif<<endl;
+	  // cout<<"!!!!!! lay,hitprim,xdif,zdif ="<<hitlayer<<","<<hitprim<<","<<xdif<<","<<zdif<<endl;
            Xres2->Fill(xdif);
            Zres2->Fill(zdif);
         }
@@ -376,6 +379,7 @@ noverprim,dx,dz);
          ntuple1_st.nx = clustersizex;
          ntuple1_st.nz = clustersizez;
          ntuple1_st.qcl = clusterQ;
+         ntuple1_st.ntrover = ntrover;
          ntuple1_st.noverlaps = noverlaps;
          ntuple1_st.noverprim = noverprim;
          ntuple1_st.dx = dxprimlast;
@@ -438,7 +442,7 @@ noverprim,dx,dz);
          Zres2->SetFillColor(46);
          Zres2->Draw();
 
-//     cout<<"END  test for clusters and hits "<<endl;
+     cout<<"END  test for clusters and hits "<<endl;
 
 //     file->Close();   
 }
