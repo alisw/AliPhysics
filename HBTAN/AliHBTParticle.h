@@ -85,10 +85,9 @@ public:
 
   Double_t         Phi   () const { return TMath::Pi()+TMath::ATan2(-fPy,-fPx); }
 
-  Double_t         Theta () const { return (fPz==0)?TMath::Pi()/2:TMath::ACos(fPz/P()); }
+  Double_t         Theta () const { return (fPz==0)?TMath::PiOver2():TMath::ACos(fPz/P()); }
 
-                                // setters
-
+  // setters
 
   void           SetMomentum(Double_t px, Double_t py, Double_t pz, Double_t e)
                              {fPx=px; fPy=py; fPz=pz; fE=e;}
