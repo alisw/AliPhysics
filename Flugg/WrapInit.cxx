@@ -40,41 +40,41 @@ void jomiwr(const G4int & nge, const G4int& lin, const G4int& lou,
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "\t *==> JOMIWR: Setting the detector..." << G4endl;
 #endif 
-  ptrGeoInit->setDetector();
+//  ptrGeoInit->setDetector();
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "\t *==> JOMIWR: Setting mother volume..." << G4endl;
 #endif 
-  ptrGeoInit->setMotherVolume(); 
+//  ptrGeoInit->setMotherVolume(); 
   
   //close geometry for optimization
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "\t *==> JOMIWR: Closing geometry..." << G4endl;
 #endif 
-  ptrGeoInit->closeGeometry();
+//  ptrGeoInit->closeGeometry();
   
   //initialize wrappers utility histories at the beginning of run and set flag
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "\t *==> JOMIWR: InitHistories..." << G4endl;
 #endif 
-  ptrGeoInit->InitHistories();
+//  ptrGeoInit->InitHistories();
   
   //initialize lattice array
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "\t *==> JOMIWR: Init lattice array..." << G4endl;
 #endif 
-  ptrGeoInit->InitJrLtGeantArray();
+//  ptrGeoInit->InitJrLtGeantArray();
   
   //initialize debug-array
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "\t *==> JOMIWR: Init debug array..." << G4endl;
 #endif 
-  ptrGeoInit->InitHistArray();
+//  ptrGeoInit->InitHistArray();
   
   //create Fluka material cards in flukaMat.inp file
 #ifdef G4GEOMETRY_DEBUG
   G4cout << "\t *==> JOMIWR: Init fluka materials..." << G4endl;
 #endif 
-  ptrGeoInit->createFlukaMatFile();
+//  ptrGeoInit->createFlukaMatFile();
   
   //returns number of volumes + 1
 #ifdef G4GEOMETRY_DEBUG
