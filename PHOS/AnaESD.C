@@ -25,6 +25,7 @@
 #include "TFile.h"
 #include "TMath.h"
 #include "AliPHOSGetter.h"
+#include "AliPHOSGeometry.h"
 #include "Riostream.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
@@ -53,13 +54,20 @@ void Ana()
       ep = dynamic_cast<AliEMCALRecParticle*>(ct->GetRecParticle()) ; 
       if (pp) { 
 	TVector3 pos = pp->GetPos() ;
-	cout << "PHOS particle # " << index << " pos " << 
-	  TMath::Sqrt(pos.X()*pos.X() + pos.Y()*pos.Y() + pos.Z()*pos.Z() ) << endl ; 
+	cout << "PHOS particle # " << index << " pos (" 
+	     << pos.X() << ", " << pos.Y() << ", " <<pos.Z() << ") : (" << pos.Eta() 
+	     << ", " << pos.Phi()*TMath::RadToDeg() << ") : " 
+	     << TMath::Sqrt(pos.X()*pos.X() + pos.Y()*pos.Y() ) << endl ; 
+	Int_t n ; 
+	Double_t z,x ; 
+	gime->PHOSGeometry()->ImpactOnEmc(pos.Theta(), pos.Phi(), n, z, x) ; 
+	if (n) 
+	  cout << "Matching: " << n << " " << z << " " << x << endl ; 
       }
       if(ep) { 
  	TVector3 pos = ep->GetPos() ;
-	cout << "EMCAL particle # " << index << " pos " << 
-	  TMath::Sqrt(pos.X()*pos.X() + pos.Y()*pos.Y() + pos.Z()*pos.Z() ) << endl ; 
+	//cout << "EMCAL particle # " << index << " pos " << 
+	//  TMath::Sqrt(pos.X()*pos.X() + pos.Y()*pos.Y() ) << endl ; 
       }
     }
     //Charged tracks from central tracking
@@ -77,9 +85,16 @@ void Ana()
       // Gets the Global coordinate of the track at the entrance of PHOS 
       Double_t xyzAtPHOS[3] ; 
       cp->GetOuterXYZ(xyzAtPHOS) ; 
-      // cout << xyzAtPHOS[0] << " " << xyzAtPHOS[1] << " "<< xyzAtPHOS[2]  << endl ; 
-      //cout << TMath::Sqrt(xyzAtPHOS[0]*xyzAtPHOS[0] + xyzAtPHOS[1]*xyzAtPHOS[1] + xyzAtPHOS[2]*xyzAtPHOS[2]) << endl ;  
-     
+      TVector3 poscp(xyzAtPHOS[0], xyzAtPHOS[1], xyzAtPHOS[2]) ; 
+      cout << "Charged particle # " << index << " pos (" 
+	   << poscp.X() << ", " << poscp.Y() << ", " <<poscp.Z() << ") : (" << poscp.Eta() 
+	   << ", " << poscp.Phi()*TMath::RadToDeg() << ") : " 
+	   << TMath::Sqrt(poscp.X()*poscp.X() + poscp.Y()*poscp.Y() ) << endl ;
+      Int_t n ;
+      Double_t z,x ; 
+      gime->PHOSGeometry()->ImpactOnEmc(poscp.Theta(), poscp.Phi(), n, z, x) ; 
+      if (n) 
+	cout << "Matching: " << n << " " << z << " " << x << endl ; 
       // Does the matching with PHOS/EMCAL
 //       for (index = 0 ; index < esd->GetNumberOfCaloTracks() ; index++) {
 // 	ct = esd->GetCaloTrack(index) ;
