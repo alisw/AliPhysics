@@ -1,3 +1,10 @@
+enum gentype_t {hijing, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan};
+
+gentype_t gentype=param;
+
+
+ntracks=1;
+
 void Config()
 {
 
@@ -42,18 +49,173 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 // ************* STEERING parameters FOR ALICE SIMULATION **************
 // --- Specify event type to be tracked through the ALICE setup
 // --- All positions are in cm, angles in degrees, and P and E in GeV
-AliGenHIJINGpara *gener = new AliGenHIJINGpara(50);
-gener->SetMomentumRange(0,999);
-gener->SetPhiRange(0,360);
-gener->SetThetaRange(10,170);
-gener->SetOrigin(0,0,0);        //vertex position
-gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
-gener->Init();
-// 
+
+ switch(gentype)
+ {
+ case gun:
+//*********************************************
+// Example for Fixed Particle Gun             
+//*********************************************
+     AliGenFixed *gener = new AliGenFixed(ntracks);
+     gener->SetMomentum(50);
+     gener->SetPhi(180.);
+     gener->SetTheta(5.);
+     gener->SetOrigin(0,0,0);          //vertex position
+     gener->SetPart(13);                //GEANT particle type
+     break;
+ case box:  
+//*********************************************
+// Example for Moving Particle Gun            *
+//*********************************************
+     AliGenBox *gener = new AliGenBox(ntracks);
+     gener->SetMomentumRange(3,4);
+     gener->SetPhiRange(0,360);
+     gener->SetThetaRange(90, 180. );
+     gener->SetOrigin(0,0,0);   
+     //vertex position
+     gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
+     gener->SetPart(5);                //GEANT particle type
+     break;
+ case scan:  
+//*********************************************
+// Scanning on a grid                         *
+//*********************************************
+     AliGenScan *gener = new AliGenScan(-1);
+     gener->SetMomentumRange(4,4);
+     gener->SetPhiRange(0,360);
+     gener->SetThetaRange(9,9);
+     //vertex position
+     gener->SetSigma(6,6,0);           //Sigma in (X,Y,Z) (cm) on IP position
+     gener->SetPart(5); 
+     gener->SetRange(20, -100, 100, 20, -100, 100, 1, 500, 500);
+     break;
+     
+ case hijing:
+     AliGenHIJINGpara *gener = new AliGenHIJINGpara(ntracks);
+     gener->SetMomentumRange(0,999);
+     gener->SetPhiRange(0,360);
+     gener->SetThetaRange(2,10);
+     gener->SetOrigin(0,0,0);        //vertex position
+     gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
+     break;
+
+ case pythia:
+//********************************************
+// Example for Charm  Production with Pythia *
+//********************************************
+
+     AliGenPythia *gener = new AliGenPythia(ntracks);
+     gener->SetMomentumRange(0,999);
+     gener->SetPhiRange(0,360);
+     gener->SetThetaRange(0., 180.);
+     gener->SetYRange(-10,10);
+     gener->SetPtRange(0,100);
+     gener->SetOrigin(0,0,0);          // vertex position
+     gener->SetVertexSmear(perEvent); 
+     gener->SetSigma(0,0,5.6);         // Sigma in (X,Y,Z) (cm) on IP position
+//     gener->SetStrucFunc(DO_Set_1);
+     gener->SetProcess(mb); 
+     gener->SetEnergyCMS(5500.);
+     break;
+     
+ case param:
+//*******************************************************
+// Example for J/psi  Production from  Parameterisation *
+//*******************************************************
+     AliGenParam *gener = new AliGenParam(ntracks, upsilon_p);
+     gener->SetMomentumRange(0,999);
+     gener->SetPhiRange(0,360);
+     gener->SetYRange(2.5,4);
+     gener->SetThetaRange(2,9);
+     
+     gener->SetPtRange(0,10);
+     gener->SetOrigin(0,0,0);          //vertex position
+     gener->SetSigma(0,0,0);//Sigma in (X,Y,Z) (cm) on IP position
+     gener->ForceDecay(dimuon);
+     gener->SetCutOnChild(1);
+     break;
+     
+ case fluka:
+//*******************************************************
+// Example for a FLUKA Boundary Source                  *
+//*******************************************************
+     AliGenFLUKAsource *gener = new AliGenFLUKAsource(-1);
+     gener->AddFile("$(ALICE_ROOT)/data/all32.root"); 
+     gener->SetPartFlag(9);
+     gener->SetAgeMax(1.e-5);
+//  31.7 events     
+     gener->SetFraction(0.0315);     
+//     gener->SetFraction(0.75*0.0315);     
+     rootfile->cd();
+//     gener->SetPartFlag(10);
+     gener->SetMomentumRange(0,999);
+     gener->SetPhiRange(0,360);
+     gener->SetThetaRange(0., 180.); 
+     gener->SetAgeMax(1.e-5);
+     
+//  31.7 events     
+//     gener->SetFraction(0.0315);     
+     break;
+
+ case ntuple:
+//*******************************************************
+// Example for reading from a external file                  *
+//*******************************************************
+     AliGenExtFile *gener = new AliGenExtFile(-1); 
+     gener->SetFileName("$(ALICE_ROOT)/data/dtujet93.root");
+     gener->SetVertexSmear(perEvent); 
+     gener->SetTrackingFlag(1);
+     break;
+
+ case halo:
+//*******************************************************
+// Example for Tunnel Halo Source                       *
+//*******************************************************
+     AliGenHalo *gener = new AliGenHalo(ntracks); 
+     gener->SetFileName("/h1/morsch/marsip/marsip5.mu");
+     break;
+     
+ case cocktail:
+//*******************************************************
+// Example for a Cocktail                               *
+//*******************************************************
+     
+     AliGenCocktail *gener = new AliGenCocktail(); 
+
+     gener->SetPhiRange(0,360);
+     gener->SetYRange(2.5,4);
+     gener->SetThetaRange(2,9);
+     gener->SetPtRange(0,10);
+     gener->SetOrigin(0,0,0);          //vertex position
+     gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
+     gener->SetMomentumRange(0,999);
+
+     AliGenParam *jpsi = new AliGenParam(1,jpsi_p);
+     jpsi->ForceDecay(dimuon);
+     jpsi->SetCutOnChild(1);
+
+     
+     AliGenFLUKAsource *bg = new AliGenFLUKAsource(-1);
+     bg->AddFile("$(ALICE_ROOT)/data/all32.root"); 
+     rootfile->cd();
+     bg->SetPartFlag(9);
+     bg->SetAgeMax(1.e-5);
+//  31.7 events     
+//     gener->SetFraction(0.0315);     
+     bg->SetFraction(0.01*0.0315);     
+      
+     gener->AddGenerator(jpsi,"J/Psi", 1);
+     gener->AddGenerator(bg,"Background",1);
+
+     break;
+ }
+ 
 // Activate this line if you want the vertex smearing to happen
 // track by track
 //
-//gener->SetVertexSmear(perTrack); 
+// gener->SetVertexSmear(perTrack); 
+
+gener->Init();
 
 gAlice->SetField(-999,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
