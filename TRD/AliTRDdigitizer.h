@@ -47,7 +47,7 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual Bool_t       SDigits2Digits();
   virtual Bool_t       WriteDigits() const;
 
-  void         InitOutput(Int_t iEvent);
+          void         InitOutput(Int_t iEvent);
  
   virtual void         SetCompress(Int_t c = 1)             { fCompress        = c;   };
   virtual void         SetDebug(Int_t v = 1)                { fDebug           = v;   };

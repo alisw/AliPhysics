@@ -54,14 +54,18 @@ AliTRDv1::AliTRDv1():AliTRD()
   // Default constructor
   //
 
-  fSensSelect      =  0;
-  fSensPlane       = -1;
-  fSensChamber     = -1;
-  fSensSector      = -1;
-  fSensSectorRange =  0;
+  fSensSelect        =  0;
+  fSensPlane         = -1;
+  fSensChamber       = -1;
+  fSensSector        = -1;
+  fSensSectorRange   =  0;
 
-  fDeltaE          = NULL;
-  fTR              = NULL;
+  fDeltaE            = NULL;
+  fDeltaG            = NULL;
+  fTR                = NULL;
+
+  fStepSize          = 0.1;
+  fTypeOfStepManager = 2;
 
 }
 
@@ -73,14 +77,17 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
   // Standard constructor for Transition Radiation Detector version 1
   //
 
-  fSensSelect      =  0;
-  fSensPlane       = -1;
-  fSensChamber     = -1;
-  fSensSector      = -1;
-  fSensSectorRange =  0;
+  fSensSelect        =  0;
+  fSensPlane         = -1;
+  fSensChamber       = -1;
+  fSensSector        = -1;
+  fSensSectorRange   =  0;
 
-  fDeltaE          = NULL;
-  fTR              = NULL;
+  fDeltaE            = NULL;
+  fDeltaG            = NULL;
+  fTR                = NULL;
+  fStepSize          = 0.1;
+  fTypeOfStepManager = 2;
 
   SetBufferSize(128000);
 
@@ -105,6 +112,7 @@ AliTRDv1::~AliTRDv1()
   //
 
   if (fDeltaE) delete fDeltaE;
+  if (fDeltaG) delete fDeltaG;
   if (fTR)     delete fTR;
 
 }
@@ -128,13 +136,17 @@ void AliTRDv1::Copy(TObject &trd)
   // Copy function
   //
 
-  ((AliTRDv1 &) trd).fSensSelect      = fSensSelect;
-  ((AliTRDv1 &) trd).fSensPlane       = fSensPlane;
-  ((AliTRDv1 &) trd).fSensChamber     = fSensChamber;
-  ((AliTRDv1 &) trd).fSensSector      = fSensSector;
-  ((AliTRDv1 &) trd).fSensSectorRange = fSensSectorRange;
+  ((AliTRDv1 &) trd).fSensSelect        = fSensSelect;
+  ((AliTRDv1 &) trd).fSensPlane         = fSensPlane;
+  ((AliTRDv1 &) trd).fSensChamber       = fSensChamber;
+  ((AliTRDv1 &) trd).fSensSector        = fSensSector;
+  ((AliTRDv1 &) trd).fSensSectorRange   = fSensSectorRange;
+
+  ((AliTRDv1 &) trd).fTypeOfStepManager = fTypeOfStepManager;
+  ((AliTRDv1 &) trd).fStepSize          = fStepSize;
 
   fDeltaE->Copy(*((AliTRDv1 &) trd).fDeltaE);
+  fDeltaG->Copy(*((AliTRDv1 &) trd).fDeltaG);
   fTR->Copy(*((AliTRDv1 &) trd).fTR);
 
 }
@@ -246,7 +258,10 @@ void AliTRDv1::CreateTRhit(Int_t det)
       // is deposited.
       if (sigma > 0.0) {
         absLength = gRandom->Exp(1.0/sigma);
-        if (absLength > AliTRDgeometry::DrThick()) continue;
+        if (absLength > (AliTRDgeometry::DrThick()
+                       + AliTRDgeometry::AmThick())) {
+          continue;
+	}
       }
       else {
         continue;
@@ -308,7 +323,12 @@ void AliTRDv1::Init()
   // Ermilova distribution for the delta-ray spectrum
   Float_t poti = TMath::Log(kPoti);
   Float_t eEnd = TMath::Log(kEend);
-  fDeltaE = new TF1("deltae",Ermilova,poti,eEnd,0);
+
+  // Ermilova distribution for the delta-ray spectrum
+  fDeltaE = new TF1("deltae" ,Ermilova    ,poti,eEnd,0);
+
+  // Geant3 distribution for the delta-ray spectrum
+  fDeltaG = new TF1("deltaeg",IntSpecGeant,poti,eEnd,0);
 
   if(fDebug) {
     printf("%s: ",ClassName());
@@ -419,6 +439,58 @@ void AliTRDv1::StepManager()
 {
   //
   // Slow simulator. Every charged track produces electron cluster as hits 
+  // along its path across the drift volume. 
+  //
+
+  switch (fTypeOfStepManager) {
+    case 0  : StepManagerErmilova();  break;  // 0 is Ermilova
+    case 1  : StepManagerGeant();     break;  // 1 is Geant
+    case 2  : StepManagerFixedStep(); break;  // 2 is fixed step
+    default : printf("<AliTRDv1::StepManager>: Not a valid Step Manager.\n");
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDv1::SelectStepManager(Int_t t)
+{
+  //
+  // Selects a step manager type:
+  //   0 - Ermilova
+  //   1 - Geant3
+  //   2 - Fixed step size
+  //
+
+  if (t == 1) {
+    printf("<AliTRDv1::SelectStepManager>: Sorry, Geant parametrization step"
+	   "manager is not implemented yet. Please ask K.Oyama for detail.\n");
+  }
+
+  fTypeOfStepManager = t;
+  printf("<AliTRDv1::SelectStepManager>: Step Manager type %d was selected.\n"
+        , fTypeOfStepManager);
+
+}
+
+//_____________________________________________________________________________
+void AliTRDv1::StepManagerGeant()
+{
+  //
+  // Slow simulator. Every charged track produces electron cluster as hits 
+  // along its path across the drift volume. The step size is set acording
+  // to Bethe-Bloch. The energy distribution of the delta electrons follows
+  // a spectrum taken from Geant3.
+  //
+
+  printf("AliTRDv1::StepManagerGeant: Not implemented yet.\n");
+
+}
+
+//_____________________________________________________________________________
+void AliTRDv1::StepManagerErmilova()
+{
+  //
+  // Slow simulator. Every charged track produces electron cluster as hits 
   // along its path across the drift volume. The step size is set acording
   // to Bethe-Bloch. The energy distribution of the delta electrons follows
   // a spectrum taken from Ermilova et al.
@@ -456,26 +528,24 @@ void AliTRDv1::StepManager()
   const Int_t    kNcham       = AliTRDgeometry::Ncham();
   const Int_t    kNdetsec     = kNplan * kNcham;
 
-  const Double_t kBig         = 1.0E+12;
+  const Double_t kBig         = 1.0E+12; // Infinitely big
+  const Float_t  kWion        = 22.04;   // Ionization energy
+  const Float_t  kPTotMaxEl   = 0.002;   // Maximum momentum for e+ e- g 
 
-  // Ionization energy
-  const Float_t  kWion        = 22.04;
-  // Maximum momentum for e+ e- g 
-  const Float_t  kPTotMaxEl   = 0.002;
   // Minimum energy for the step size adjustment
   const Float_t  kEkinMinStep = 1.0e-5;
+
   // Plateau value of the energy-loss for electron in xenon
   // taken from: Allison + Comb, Ann. Rev. Nucl. Sci. (1980), 30, 253
   //const Double_t kPlateau = 1.70;
   // the averaged value (26/3/99)
   const Float_t  kPlateau     = 1.55;
-  // dN1/dx|min for the gas mixture (90% Xe + 10% CO2)
-  const Float_t  kPrim        = 48.0;
+
+  const Float_t  kPrim        = 48.0;  // dN1/dx|min for the gas mixture (90% Xe + 10% CO2)
   // First ionization potential (eV) for the gas mixture (90% Xe + 10% CO2)
   const Float_t  kPoti        = 12.1;
 
-  // PDG code electron
-  const Int_t    kPdgElectron = 11;
+  const Int_t    kPdgElectron = 11;  // PDG code electron
 
   // Set the maximum step size to a very large number for all 
   // neutral particles and those outside the driftvolume
@@ -506,7 +576,6 @@ void AliTRDv1::StepManager()
 
       // The sector number (0 - 17)
       // The numbering goes clockwise and starts at y = 0
-      // Not fully consistent to new corrdinate schema!!!
       Float_t phi = kRaddeg*TMath::ATan2(pos[0],pos[1]);
       if (phi < 90.) 
         phi = phi + 270.;
@@ -546,7 +615,7 @@ void AliTRDv1::StepManager()
 	// The detector number
         det = fGeometry->GetDetector(pla,cha,sec);
 
-	// Special hits and TR photons only in the drift region
+	// Special hits only in the drift region
         if (drRegion) {
 
           // Create a track reference at the entrance and
@@ -571,10 +640,12 @@ void AliTRDv1::StepManager()
 
 	// Create a new dEdx hit
         if (drRegion) {
-          AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),det,hits,qTot,kTRUE);       
+          AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
+                ,det,hits,qTot,kTRUE);       
 	}
         else {
-          AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),det,hits,qTot,kFALSE);      
+          AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
+                ,det,hits,qTot,kFALSE);      
 	}
 
         // Calculate the maximum step size for the next tracking step
@@ -614,6 +685,140 @@ void AliTRDv1::StepManager()
     }
 
   }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDv1::StepManagerFixedStep()
+{
+  //
+  // Slow simulator. Every charged track produces electron cluster as hits 
+  // along its path across the drift volume. The step size is fixed in
+  // this version of the step manager.
+  //
+
+  Int_t    pla = 0;
+  Int_t    cha = 0;
+  Int_t    sec = 0;
+  Int_t    det = 0;
+  Int_t    qTot;
+
+  Float_t  hits[3];
+  Double_t eDep;
+
+  Bool_t   drRegion = kFALSE;
+  Bool_t   amRegion = kFALSE;
+
+  TString  cIdCurrent;
+  TString  cIdSensDr = "J";
+  TString  cIdSensAm = "K";
+  Char_t   cIdChamber[3];
+  cIdChamber[2] = 0;
+
+  TLorentzVector pos, mom;
+
+  const Int_t    kNplan       = AliTRDgeometry::Nplan();
+  const Int_t    kNcham       = AliTRDgeometry::Ncham();
+  const Int_t    kNdetsec     = kNplan * kNcham;
+
+  const Double_t kBig         = 1.0E+12;
+
+  const Float_t  kWion        = 22.04;   // Ionization energy
+  const Float_t  kEkinMinStep = 1.0e-5;  // Minimum energy for the step size adjustment
+
+  // Set the maximum step size to a very large number for all 
+  // neutral particles and those outside the driftvolume
+  gMC->SetMaxStep(kBig); 
+
+  // If not charged track or already stopped or disappeared, just return.
+  if ((!gMC->TrackCharge()) || 
+        gMC->IsTrackStop()  || 
+        gMC->IsTrackDisappeared()) return;
+
+  // Inside a sensitive volume?
+  cIdCurrent = gMC->CurrentVolName();
+
+  if (cIdSensDr == cIdCurrent[1]) drRegion = kTRUE;
+  if (cIdSensAm == cIdCurrent[1]) amRegion = kTRUE;
+
+  if ((!drRegion) && (!amRegion)) return;
+
+  // The hit coordinates and charge
+  gMC->TrackPosition(pos);
+  hits[0] = pos[0];
+  hits[1] = pos[1];
+  hits[2] = pos[2];
+
+  // The sector number (0 - 17)
+  // The numbering goes clockwise and starts at y = 0
+  Float_t phi = kRaddeg*TMath::ATan2(pos[0],pos[1]);
+  if (phi < 90.) phi += 270.;
+  else           phi -=  90.;
+  sec = ((Int_t) (phi / 20.));
+
+  // The plane and chamber number
+  cIdChamber[0] = cIdCurrent[2];
+  cIdChamber[1] = cIdCurrent[3];
+  Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
+  cha = ((Int_t) idChamber / kNplan);
+  pla = ((Int_t) idChamber % kNplan);
+  
+  // Check on selected volumes
+  Int_t addthishit = 1;
+  if(fSensSelect) {
+    if ((fSensPlane   >= 0) && (pla != fSensPlane  )) addthishit = 0;
+    if ((fSensChamber >= 0) && (cha != fSensChamber)) addthishit = 0;
+    if (fSensSector  >= 0) {
+      Int_t sens1  = fSensSector;
+      Int_t sens2  = fSensSector + fSensSectorRange;
+      sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) * AliTRDgeometry::Nsect();
+      if (sens1 < sens2) {
+        if ((sec < sens1) || (sec >= sens2)) addthishit = 0;
+      }
+      else {
+        if ((sec < sens1) && (sec >= sens2)) addthishit = 0;
+      }
+    }
+  }
+
+  if (!addthishit) return;
+
+  det = fGeometry->GetDetector(pla,cha,sec);  // The detector number
+  
+  Int_t trkStat = 0;  // 0: InFlight 1:Entering 2:Exiting
+
+  // Special hits only in the drift region
+  if (drRegion) {
+
+    // Create a track reference at the entrance and exit of each
+    // chamber that contain the momentum components of the particle
+
+    if (gMC->IsTrackEntering()) {
+      gMC->TrackMomentum(mom);
+      AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+      trkStat = 1;
+    }
+    if (gMC->IsTrackExiting()) {
+      gMC->TrackMomentum(mom);
+      AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+      trkStat = 2;
+    }
+
+    // Create the hits from TR photons
+    if (fTR) CreateTRhit(det);    
+
+  }
+  
+  // Calculate the charge according to GEANT Edep
+  // Create a new dEdx hit
+  eDep = TMath::Max(gMC->Edep(),0.0) * 1.0e+09;
+  qTot = (Int_t) (eDep / kWion);
+  AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),det,hits,qTot,drRegion);
+
+  // Set Maximum Step Size
+  // Produce only one hit if Ekin is below cutoff
+  if ((gMC->Etot() - gMC->TrackMass()) < kEkinMinStep) return;
+  gMC->SetMaxStep(fStepSize);
 
 }
 
@@ -658,6 +863,49 @@ Double_t AliTRDv1::BetheBloch(Double_t bg)
   else {
     return kBBMax;
   }
+
+}
+
+//_____________________________________________________________________________
+Double_t BetheBlochGeant(Double_t bg)
+{
+  //
+  // Return dN/dx (number of primary collisions per centimeter)
+  // for given beta*gamma factor.
+  //
+  // Implemented by K.Oyama according to GEANT 3 parametrization shown in
+  // A.Andronic's webpage: http://www-alice.gsi.de/trd/papers/dedx/dedx.html
+  // This must be used as a set with IntSpecGeant.
+  //
+
+  Double_t arr_g[20] = {
+    1.100000,   1.200000,    1.300000,    1.500000,
+    1.800000,   2.000000,    2.500000,    3.000000,
+    4.000000,   7.000000,    10.000000,   20.000000,
+    40.000000,  70.000000,   100.000000,  300.000000,
+    600.000000, 1000.000000, 3000.000000, 10000.000000 };
+
+  Double_t arr_nc[20] = {
+    75.009056,   45.508083,   35.299252,   27.116327,
+    22.734999,   21.411915,   19.934095,   19.449375,
+    19.344431,   20.185553,   21.027925,   22.912676,
+    24.933352,   26.504053,   27.387468,   29.566597,
+    30.353779,   30.787134,   31.129285,   31.157350 };
+
+  // betagamma to gamma
+  Double_t g = TMath::Sqrt( 1. + bg*bg );
+
+  // Find the index just before the point we need.
+  int i;
+  for( i = 0 ; i < 18 ; i++ )
+    if( arr_g[i] < g && arr_g[i+1] > g )
+      break;
+
+  // Simple interpolation.
+  Double_t pp = ((arr_nc[i+1] - arr_nc[i]) / 
+		 (arr_g[i+1]-arr_g[i])) * (g-arr_g[i]) + arr_nc[i];
+
+  return pp;
 
 }
 
@@ -708,6 +956,79 @@ Double_t Ermilova(Double_t *x, Double_t *)
 
   // Differentiate between the sampling points
   dnde = (vye[pos1] - vye[pos2]) / (vxe[pos2] - vxe[pos1]);
+
+  return dnde;
+
+}
+
+//_____________________________________________________________________________
+Double_t IntSpecGeant(Double_t *x, Double_t *)
+{
+  //
+  // Integrated spectrum from Geant3
+  //
+
+  const Int_t n_pts = 83;
+  Double_t arr_e[n_pts] = {
+    2.421257,  2.483278,  2.534301,  2.592230,
+    2.672067,  2.813299,  3.015059,  3.216819,
+    3.418579,  3.620338,  3.868209,  3.920198,
+    3.978284,  4.063923,  4.186264,  4.308605,
+    4.430946,  4.553288,  4.724261,  4.837736,
+    4.999842,  5.161949,  5.324056,  5.486163,
+    5.679688,  5.752998,  5.857728,  5.962457,
+    6.067185,  6.171914,  6.315653,  6.393674,
+    6.471694,  6.539689,  6.597658,  6.655627,
+    6.710957,  6.763648,  6.816338,  6.876198,
+    6.943227,  7.010257,  7.106285,  7.252151,
+    7.460531,  7.668911,  7.877290,  8.085670,
+    8.302979,  8.353585,  8.413120,  8.483500,
+    8.541030,  8.592857,  8.668865,  8.820485,
+    9.037086,  9.253686,  9.470286,  9.686887,
+    9.930838,  9.994655, 10.085822, 10.176990,
+    10.268158, 10.359325, 10.503614, 10.627565,
+    10.804637, 10.981709, 11.158781, 11.335854,
+    11.593397, 11.781165, 12.049404, 12.317644,
+    12.585884, 12.854123, 14.278421, 16.975889,
+    20.829416, 24.682943, 28.536469
+  };
+  Double_t arr_dndx[n_pts] = {
+    19.344431, 18.664679, 18.136106, 17.567745,
+    16.836426, 15.677382, 14.281277, 13.140237,
+    12.207677, 11.445510, 10.697049, 10.562296,
+    10.414673, 10.182341,  9.775256,  9.172330,
+    8.240271,  6.898587,  4.808303,  3.889751,
+    3.345288,  3.093431,  2.897347,  2.692470,
+    2.436222,  2.340029,  2.208579,  2.086489,
+    1.975535,  1.876519,  1.759626,  1.705024,
+    1.656374,  1.502638,  1.330566,  1.200697,
+    1.101168,  1.019323,  0.943867,  0.851951,
+    0.755229,  0.671576,  0.570675,  0.449672,
+    0.326722,  0.244225,  0.188225,  0.149608,
+    0.121529,  0.116289,  0.110636,  0.103490,
+    0.096147,  0.089191,  0.079780,  0.063927,
+    0.047642,  0.036341,  0.028250,  0.022285,
+    0.017291,  0.016211,  0.014802,  0.013533,
+    0.012388,  0.011352,  0.009803,  0.008537,
+    0.007039,  0.005829,  0.004843,  0.004034,
+    0.003101,  0.002564,  0.001956,  0.001494,
+    0.001142,  0.000873,  0.000210,  0.000014,
+    0.000000,  0.000000,  0.000000
+  };
+
+  Int_t i;
+  Double_t energy = x[0];
+  Double_t dnde;
+
+  for( i = 0 ; i < n_pts ; i++ )
+    if( energy < arr_e[i] ) break;
+
+  if( i == 0 )
+    printf("Error in AliTRDv1::IntSpecGeant: "
+	   "given energy value is too small or zero.\n");
+
+  // Interpolate
+  dnde = (arr_dndx[i-1] - arr_dndx[i]) / (arr_e[i] - arr_e[i-1]);
 
   return dnde;
 

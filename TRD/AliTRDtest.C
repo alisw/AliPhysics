@@ -30,8 +30,8 @@ Int_t AliTRDtest()
 //    file   = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
 //    gAlice = (AliRun *) file->Get("gAlice");
 
-//    // Analyze the digits
-//    if (rc = AliTRDanalyzeDigits()) return rc;
+  // Analyze the digits
+  if (rc = AliTRDanalyzeDigits()) return rc;
 
 //    // Create the cluster
 //    if (rc = AliTRDcreateCluster()) return rc;
@@ -117,15 +117,6 @@ Int_t AliTRDanalyzeHits()
   TH2F *hXZ     = new TH2F("hXZ"   ,"Z vs X (plane 0)"  , ncol, -width/2., width/2.
                                                         , nrow,-length/2.,length/2.);
 
-  TH1F *hNprimP = new TH1F("hNprimP","Number of primary electrons per cm (MIP pion)"
-                                    ,50,0.0,100.0);
-  TH1F *hNprimE = new TH1F("hNprimE","Number of primary electrons per cm (3GeV electron)"
-                                    ,50,0.0,100.0);
-  TH1F *hNtotP  = new TH1F("hNtotP" ,"Number of electrons per cm (MIP pion)"
-                                    ,50,0.0,1000.0);
-  TH1F *hNtotE  = new TH1F("hNtotE" ,"Number of electrons per cm (3GeV electron)"
-                                    ,50,0.0,1000.0);
-
   // Get the pointer hit tree
   TTree *hitTree = loader->TreeH();  
   if (!hitTree) {
@@ -148,11 +139,6 @@ Int_t AliTRDanalyzeHits()
 
     gAlice->ResetHits();
     nBytes += hitTree->GetEvent(iTrack);
-
-    Int_t nPrimE = 0;
-    Int_t nPrimP = 0;
-    Int_t nTotE  = 0;
-    Int_t nTotP  = 0;    
 
     // Loop through the TRD hits  
     Int_t iHit = 0;
@@ -181,35 +167,9 @@ Int_t AliTRDanalyzeHits()
         hQtr->Fill(TMath::Abs(q));
       }
 
-//        printf("Getting TParticle for track %d\n",track);
-//        TParticle *part = gAlice->Particle(track);
-
-//        if ((plane == 0) && (q > 0)) {
-
-//          // 3 GeV electrons
-//          if ((part->GetPdgCode() ==   11) && 
-//              (part->P()          >   2.9)) {
-//            nPrimE++;
-//            nTotE += ((Int_t) q);
-//          }
-
-//          // MIP pions
-//          if ((part->GetPdgCode() == -211) &&
-//              (part->P()          >   0.5)) {
-//            nPrimP++;
-//            nTotP += ((Int_t) q);
-//          }
-
-//        }
-
       hit = (AliTRDhit *) trd->NextHit();         
 
     }
-
-    if (nPrimE > 0) hNprimE->Fill(((Double_t) nPrimE)/3.7);
-    if (nPrimP > 0) hNprimP->Fill(((Double_t) nPrimP)/3.7);
-    if (nTotE  > 0) hNtotE->Fill(((Double_t) nTotE)/3.7);
-    if (nTotP  > 0) hNtotP->Fill(((Double_t) nTotP)/3.7);
 
   }
 
@@ -227,28 +187,6 @@ Int_t AliTRDanalyzeHits()
   cHits->cd(4);
   gPad->SetLogy();
   hQtr->Draw();
-
-  TCanvas *cNel = new TCanvas("cNel","Ionization",50,50,600,600);
-  cNel->Divide(2,2);
-  cNel->cd(1);
-  hNprimE->SetStats();
-  hNprimE->Draw();
-  cNel->cd(2);
-  hNprimP->SetStats();
-  hNprimP->Draw();
-  cNel->cd(3);
-  hNtotE->SetStats();
-  hNtotE->Draw();
-  cNel->cd(4);
-  hNtotP->SetStats();
-  hNtotP->Draw();
-
-  TFile *fout = new TFile("TRD_ionization.root","RECREATE");
-  hNprimE->Write();
-  hNprimP->Write();
-  hNtotE->Write();
-  hNtotP->Write();
-  fout->Close(); 
 
   return rc;
 
@@ -331,24 +269,37 @@ Int_t AliTRDanalyzeDigits()
     rc = 1;
     return rc;
   }
-  Int_t nPart = gAlice->GetEvent(0);
+
+  AliRunLoader *rl = gAlice->GetRunLoader();
+  if (!rl) {
+    cout << "<AliTRDanalyzeHits> No RunLoader found" << endl;
+    rc = 2;
+    return rc;
+  }
+
+  // Import the Trees for the event nEvent in the file
+  rl->LoadKinematics();
+  rl->GetEvent(0);
+  rl->GetHeader();
+  
+  AliLoader* loader = rl->GetLoader("TRDLoader");
+  if (!loader) {
+    cout << "<AliTRDanalyzeHits> No TRDLoader found" << endl;
+    rc = 3;
+    return rc;
+  }
 
   // Get the pointer to the TRD detector 
   AliTRD *trd = (AliTRD *) gAlice->GetDetector("TRD");
   if (!trd) {
     cout << "<AliTRDanalyzeDigits> No TRD detector found" << endl;
-    rc = 2;
+    rc = 4;
     return rc;
   }
 
-  // Get the digitizer object
-  TFile *file = (TFile *) gROOT->GetListOfFiles()->FindObject("TRD_test.root");
-  AliTRDparameter *parameter = (AliTRDparameter *) file->Get("TRDparameter");
-  if (!parameter) {
-    cout << "<AliTRDanalyzeDigits> No parameter object found" << endl;
-    rc = 3;
-    return rc;
-  }
+  // Get the parameter object
+  AliTRDparameter *parameter = new AliTRDparameter("TRDparameter"
+						  ,"TRD parameter class");
 
   // Define the histograms
   Int_t adcRange = ((Int_t) parameter->GetADCoutRange());
@@ -368,7 +319,7 @@ Int_t AliTRDanalyzeDigits()
   }
   else {
     cout << "<AliTRDanalyzeDigits> No TRD geometry found" << endl;
-    rc = 4;
+    rc = 5;
     return rc;
   }
 
@@ -376,12 +327,18 @@ Int_t AliTRDanalyzeDigits()
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
   digitsManager->SetDebug(1);
 
-  digitsManager->Open("TRD_test.root");
-
   // Read the digits from the file
-  if (!(digitsManager->ReadDigits())) {
+  if (!(digitsManager->ReadDigits(loader->TreeD()))) {
     cout << "<AliTRDanalyzeDigits> Cannot read the digits" << endl;
-    rc = 5;
+    rc = 6;
+    return rc;
+  }
+
+  // Get the particle stack
+  AliStack *kineStack = rl->Stack();
+  if (!kineStack) {
+    cout << "<AliTRDanalyzeDigits> Cannot find the KINE stack" << endl;
+    rc = 7;
     return rc;
   }
 
@@ -419,7 +376,7 @@ Int_t AliTRDanalyzeDigits()
           Int_t        track1   = digitsManager->GetTrack(1,row,col,time,iDet);
           TParticle   *particle = 0;
           if (track0 > -1) {
-            particle = gAlice->Particle(track0);
+            particle = (TParticle *) kineStack->Particle(track0);
 	  }
 
           if (amp > 0) {
@@ -492,15 +449,6 @@ Int_t AliTRDanalyzeDigits()
   hAmpTimePi->SetXTitle("Timebin number");
   hAmpTimePi->SetYTitle("Mean amplitude");
   hAmpTimePi->Draw("HIST");
-
-  TFile *fileOut = new TFile("digits_test.root","RECREATE");
-  hAmpAll->Write();
-  hAmpNoise->Write();
-  hAmpEl->Write();
-  hAmpPi->Write();
-  hAmpTimeEl->Write();
-  hAmpTimePi->Write();
-  fileOut->Close();
 
   return rc;
 

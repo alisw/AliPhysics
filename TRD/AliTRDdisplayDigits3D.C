@@ -23,23 +23,34 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
   Int_t           track;
   Int_t           idict;
 
-  // Connect the AliRoot file containing Geometry, Kine, Hits, and digits
-  TFile *gafl = (TFile*) gROOT->GetListOfFiles()->FindObject(inputFile);
-  if (!gafl) {
-    printf("Open the ALIROOT-file %s\n",inputFile);
-    gafl = new TFile(inputFile);
+  TString evfoldname = AliConfig::GetDefaultEventFolderName();
+  fRunLoader = AliRunLoader::GetRunLoader(evfoldname);
+  if (!fRunLoader) {
+    fRunLoader = AliRunLoader::Open(inputFile
+                                   ,AliConfig::GetDefaultEventFolderName()
+				   ,"UPDATE");
   }
-  else {
-    printf("%s is already open",inputFile);
+  if (!fRunLoader) {
+    Printf("Can not open session for file %s.",inputFile);
+    return kFALSE;
+  }
+   
+  if (!fRunLoader->GetAliRun()) {
+    fRunLoader->LoadgAlice();
+  }
+  gAlice = fRunLoader->GetAliRun();  
+  if (!gAlice) {
+    printf("Could not find AliRun object.\n");
+    return kFALSE;
   }
 
-  // Get AliRun object from file or create it if not on file
-  gAlice = (AliRun *) gafl->Get("gAlice");
-  if (!gAlice) return 1;
-
-  // Import the Trees for the event nEvent in the file
-  Int_t nparticles = gAlice->GetEvent(event);
-  if (nparticles <= 0) return 1;
+  fRunLoader->GetEvent(event);
+  
+  AliLoader *loader = fRunLoader->GetLoader("TRDLoader");
+  if (!loader) {
+    printf("Can not get TRD loader from Run Loader");
+  }
+  loader->LoadDigits();
   
   // Get the pointer to the detector object
   trd = (AliTRDv1*) gAlice->GetDetector("TRD");
@@ -72,8 +83,16 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
   digitsManager->SetSDigits(sdigits);
 
   // Read the digits from the file
-  digitsManager->Open(inputFile);
-  digitsManager->ReadDigits();
+  if (sdigits) {
+    digitsManager->ReadDigits(loader->TreeS());
+  }
+  else {
+    if (!loader->TreeD()) {
+      printf("mist\n");
+      return kFALSE;
+    }
+    digitsManager->ReadDigits(loader->TreeD());
+  }
 
   Int_t totalsignal = 0;
   Int_t totalbgnd   = 0;
@@ -188,7 +207,7 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
 
   }
 
-  TGeometry *geoAlice = (TGeometry *) gafl->Get("AliceGeom");
+  TGeometry *geoAlice = gAlice->GetGeometry();
   TNode     *main     = (TNode *) ((geoAlice->GetListOfNodes())->First());
   TIter      next(main->GetListOfNodes());
   TNode     *module   = 0;
@@ -207,8 +226,6 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
 
   c1->Modified(); 
   c1->Update(); 
-
-  gafl->Close();
 
   printf("<AliTRDdisplayDigits3D> Number of digits:\n");
   printf("                        signal = %d, bgnd = %d, merged = %d\n"

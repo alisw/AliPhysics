@@ -478,7 +478,6 @@ Bool_t AliTRDdigitizer::Open(const Char_t *file, Int_t nEvent)
      }
     else
      {//if we produce Digits
-       tree = loader->TreeD();
        if (!tree)
         {
          loader->MakeTree("D");
@@ -657,6 +656,28 @@ Bool_t AliTRDdigitizer::MakeDigits()
   Int_t detectorOld = -1;
   Int_t countHits   =  0; 
 
+  if (fDebug > 0) {
+    printf("<AliTRDdigitizer::MakeDigits> ");
+    printf("Driftvelocity = %.2f, Sampling = %.2fns\n",fPar->GetDriftVelocity(),
+	   fPar->GetTimeBinSize() / fPar->GetDriftVelocity() * 1000.);
+    printf("<AliTRDdigitizer::MakeDigits> ");
+    printf("Gain = %d, Noise = %d\n",(Int_t)fPar->GetGasGain(),(Int_t)fPar->GetNoise());
+    if (fPar->TimeStructOn()) {
+      printf("<AliTRDdigitizer::MakeDigits> ");
+      printf("Time Structure of drift cells implemented.\n");
+      if (fPar->StaggeringOn()) {
+	printf("<AliTRDdigitizer::MakeDigits> ");
+	printf("Staggered geometry.\n");
+      } else {
+	printf("<AliTRDdigitizer::MakeDigits> ");
+	printf("Non-Staggered geometry.\n");      
+      }
+    } else {
+      printf("<AliTRDdigitizer::MakeDigits> ");
+      printf("Constant drift velocity in drift cells.\n");      
+    }
+  }
+
   // Loop through all entries in the tree
   for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
 
@@ -796,9 +817,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
         Float_t driftlength = time0 - rot[0];
 
         // Take also the drift in the amplification region into account
-        // The drift length is at the moment still the same, regardless of
-        // the position relativ to the wire. This non-isochronity needs still
-        // to be implemented.
         Float_t driftlengthL = TMath::Abs(driftlength + kAmWidth);
         if (fPar->ExBOn()) driftlengthL /= TMath::Sqrt(fPar->GetLorentzFactor());
 
@@ -810,6 +828,26 @@ Bool_t AliTRDdigitizer::MakeDigits()
           xyz[0] = rot[0];
           xyz[1] = rot[1];
           xyz[2] = rot[2];
+
+	  // Stupid patch to take care of TR photons that are absorbed
+	  // outside the chamber volume. A real fix would actually need
+	  // a more clever implementation of the TR hit generation
+          Float_t zz = xyz[2] - row0;
+          if ((zz < 0.0) || (zz > rowPadSize*nRowMax)) {
+            if (iEl == 0) {
+              printf("<AliTRDdigitizer::MakeDigits> ");
+              printf("Hit outside of sensitive volume, row (Q = %d)\n",((Int_t) q));
+	    }
+            continue;
+	  }
+          Int_t tt = ((Int_t) (10*(driftlength + 2.0*kAmWidth)));
+          if (tt < 0) {
+            if (iEl == 0) {
+              printf("<AliTRDdigitizer::MakeDigits> ");
+              printf("Hit outside of sensitive volume, time (Q = %d)\n",((Int_t) q));
+	    }
+            continue;
+	  }
 
           // Electron attachment
           if (fPar->ElAttachOn()) {
@@ -825,6 +863,15 @@ Bool_t AliTRDdigitizer::MakeDigits()
           // Apply E x B effects (depends on drift direction)
           if (fPar->ExBOn()) { 
             if (!(fPar->ExB(driftlength+kAmWidth,xyz))) continue;   
+	  }
+
+	  // Apply the drift time correction
+	  if (fPar->TimeStructOn()) {
+	    // Get z-position with respect to anode wire:
+	    Float_t Z  =  xyz[2] - row0 + fPar->GetAnodeWireOffset();
+	    while (Z>0.5)    Z -= 0.5;
+	    if    (Z>0.25)   Z  = 0.5-Z;
+            if    (!(fPar->TimeStruct(driftlength+2*kAmWidth,Z,xyz))) continue;
 	  }
 
           // The electron position after diffusion and ExB in pad coordinates 

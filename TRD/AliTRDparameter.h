@@ -66,10 +66,16 @@ class AliTRDparameter : public TNamed {
   virtual void     SetLUT(Int_t lutOn = 1)                        { fLUTOn          = lutOn;    };
   virtual void     SetClusMaxThresh(Int_t thresh)                 { fClusMaxThresh  = thresh;   };
   virtual void     SetClusSigThresh(Int_t thresh)                 { fClusSigThresh  = thresh;   };
+
+  virtual void     SetTimeStruct(Int_t timestrOn = 1)             { fTimeStructOn = timestrOn;
+                                                                    ReInit();                 };
+  virtual void     SetStaggering(Int_t staggOn = 1)               { fStaggeringOn = staggOn;
+                                                                    ReInit();                 };
+  virtual void     SetAnodeWireOffset(Float_t offset = 0.25)      { fAnodeWireOffset = offset;};
   
           Int_t    GetRowMax(Int_t p, Int_t c, Int_t s)     
                                                             const { return fRowMax[p][c][s]; };
-          Int_t    GetColMax(Int_t p)                 const { return fColMax[p];       };
+          Int_t    GetColMax(Int_t p)                       const { return fColMax[p];       };
           Int_t    GetTimeMax()                             const { return fTimeMax;         };
           Int_t    GetTimeBefore()                          const { return fTimeBefore;      }; 
           Int_t    GetTimeAfter()                           const { return fTimeAfter;       }; 
@@ -79,33 +85,34 @@ class AliTRDparameter : public TNamed {
 
           Float_t  GetRow0(Int_t p, Int_t c, Int_t s)       
                                                             const { return fRow0[p][c][s]; };
-          Float_t  GetCol0(Int_t p)                   const { return fCol0[p];       };
-          Float_t  GetTime0(Int_t p)                  const { return fTime0[p];      };
+          Float_t  GetCol0(Int_t p)                         const { return fCol0[p];       };
+          Float_t  GetTime0(Int_t p)                        const { return fTime0[p];      };
 
           Float_t  GetRowPadSize(Int_t p, Int_t c, Int_t s) 
                                                             const { return fRowPadSize[p][c][s]; };
-          Float_t  GetColPadSize(Int_t p)             const { return fColPadSize[p];       };
+          Float_t  GetColPadSize(Int_t p)                   const { return fColPadSize[p];       };
           Float_t  GetTimeBinSize()                         const { return fTimeBinSize;         };
 
-          Float_t  GetGasGain()                             const { return fGasGain;       };
-          Float_t  GetNoise()                               const { return fNoise;         };
-          Float_t  GetChipGain()                            const { return fChipGain;      };
-          Float_t  GetADCoutRange()                         const { return fADCoutRange;   };
-          Float_t  GetADCinRange()                          const { return fADCinRange;    };
-          Int_t    GetADCthreshold()                        const { return fADCthreshold;  };
-          Int_t    GetADCbaseline()                         const { return fADCbaseline;   };
-          Float_t  GetDiffusionT()                          const { return fDiffusionT;    };
-          Float_t  GetDiffusionL()                          const { return fDiffusionL;    };
-          Float_t  GetElAttachProp()                        const { return fElAttachProp;  };
-          Float_t  GetOmegaTau()                            const { return fOmegaTau;      };
-          Float_t  GetDriftVelocity()                       const { return fDriftVelocity; };
-          Float_t  GetPadCoupling()                         const { return fPadCoupling;   };
-          Float_t  GetTimeCoupling()                        const { return fTimeCoupling;  };
-          Float_t  GetTimeBinWidth()                        const { return fTimeBinWidth;  };
-          Float_t  GetTRFlo()                               const { return fTRFlo;         };
-          Float_t  GetTRFhi()                               const { return fTRFhi;         };
-          Float_t  GetLorentzFactor()                       const { return fLorentzFactor; };
-          Int_t    GetTCnexp()                              const { return fTCnexp;        };
+          Float_t  GetGasGain()                             const { return fGasGain;         };
+          Float_t  GetNoise()                               const { return fNoise;           };
+          Float_t  GetChipGain()                            const { return fChipGain;        };
+          Float_t  GetADCoutRange()                         const { return fADCoutRange;     };
+          Float_t  GetADCinRange()                          const { return fADCinRange;      };
+          Int_t    GetADCthreshold()                        const { return fADCthreshold;    };
+          Int_t    GetADCbaseline()                         const { return fADCbaseline;     };
+          Float_t  GetDiffusionT()                          const { return fDiffusionT;      };
+          Float_t  GetDiffusionL()                          const { return fDiffusionL;      };
+          Float_t  GetElAttachProp()                        const { return fElAttachProp;    };
+          Float_t  GetOmegaTau()                            const { return fOmegaTau;        };
+          Float_t  GetDriftVelocity()                       const { return fDriftVelocity;   };
+          Float_t  GetPadCoupling()                         const { return fPadCoupling;     };
+          Float_t  GetTimeCoupling()                        const { return fTimeCoupling;    };
+          Float_t  GetTimeBinWidth()                        const { return fTimeBinWidth;    };
+          Float_t  GetTRFlo()                               const { return fTRFlo;           };
+          Float_t  GetTRFhi()                               const { return fTRFhi;           };
+          Float_t  GetLorentzFactor()                       const { return fLorentzFactor;   };
+          Float_t  GetAnodeWireOffset()                     const { return fAnodeWireOffset; };
+          Int_t    GetTCnexp()                              const { return fTCnexp;          };
           Float_t  GetTiltingAngle() const;
   virtual Float_t  GetDiffusionL(Float_t vd, Float_t b);
   virtual Float_t  GetDiffusionT(Float_t vd, Float_t b);
@@ -122,6 +129,8 @@ class AliTRDparameter : public TNamed {
           Int_t    CTOn()                                   const { return fCTOn;          };
           Int_t    TCOn()                                   const { return fTCOn;          };
           Int_t    LUTOn()                                  const { return fLUTOn;         };
+          Int_t    TimeStructOn()                           const { return fTimeStructOn;  };
+          Int_t    StaggeringOn()                           const { return fStaggeringOn;  };
 
   virtual Int_t    Diffusion(Float_t driftlength, Float_t *xyz);
   virtual Int_t    ExB(Float_t driftlength, Float_t *xyz) const;  
@@ -129,6 +138,7 @@ class AliTRDparameter : public TNamed {
   virtual Int_t    PadResponse(Float_t signal, Float_t dist, Int_t plane, Float_t *pad) const;
   virtual Float_t  CrossTalk(Float_t time) const; 
   virtual Float_t  TimeResponse(Float_t time) const;  
+  virtual Int_t    TimeStruct(Float_t time, Float_t z, Float_t *xyz) const;  
   virtual Double_t LUTposition(Int_t iplane, Double_t ampL, Double_t ampC, Double_t ampR) const;
 
  protected:
@@ -184,6 +194,11 @@ class AliTRDparameter : public TNamed {
   Float_t             *fCTsmp;                              //! Integrated cross talk
   Int_t                fTCOn;                               //  Switch for the tail cancelation
   Int_t                fTCnexp;                             //  Number of exponential of the digital filter
+  Int_t                fStaggeringOn;                       //  Staggering of wire planes
+  Float_t             *fTimeStruct;                         //! Time Structure of Drift Cells
+  Int_t                fTimeStructOn;                       //  Switch for cell time structure
+  Float_t              fAnodeWireOffset;                    //  Distance of first anode wire from pad edge
+
   Float_t              fDriftVelocity;                      //  Drift velocity (cm / mus)
   Float_t              fTimeBinWidth;                       //  Time bin width in ns
   Float_t              fPadCoupling;                        //  Pad coupling factor
@@ -202,8 +217,9 @@ class AliTRDparameter : public TNamed {
   virtual void         SamplePRF();
   virtual void         SampleTRF();
   virtual void         FillLUT();
+  virtual void         SampleTimeStruct();
 
-  ClassDef(AliTRDparameter,3)                               //  TRD parameter class
+  ClassDef(AliTRDparameter,4)                               //  TRD parameter class
 
 };
 

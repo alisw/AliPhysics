@@ -177,13 +177,16 @@ void Config()
   if (iITS) {
     //=================== ITS parameters ============================
     //
-    // EUCLID is a flag to output (=1) both geometry and media to two ASCII files 
-    // (called by default ITSgeometry.euc and ITSgeometry.tme) in a format
-    // understandable to the CAD system EUCLID. The default (=0) means that you 
-    // dont want to use this facility.
-    //
 
-    AliITS *ITS  = new AliITSv5asymm("ITS","Updates ITS TDR detailed version with asymmetric services");
+    AliITSvPPRasymmFMD *ITS = new AliITSvPPRasymmFMD("ITS","ITS PPR");
+    ITS->SetMinorVersion(2);
+    ITS->SetReadDet(kTRUE);
+    ITS->SetThicknessDet1(200.);
+    ITS->SetThicknessDet2(200.);
+    ITS->SetThicknessChip1(200.);
+    ITS->SetThicknessChip2(200.);
+    ITS->SetRails(0);
+    ITS->SetCoolingFluid(1);
     ITS->SetEUCLID(0);
 
   }

@@ -11,6 +11,7 @@
 
 // Energy spectrum of the delta-rays 
 Double_t Ermilova(Double_t *x, Double_t *par);
+Double_t IntSpecGeant(Double_t *x, Double_t *par);
  
 #include "AliTRD.h"
 
@@ -37,6 +38,12 @@ class AliTRDv1 : public AliTRD {
   virtual void       StepManager();
   virtual void       Init();
 
+          void       StepManagerErmilova();
+          void       StepManagerGeant();
+          void       StepManagerFixedStep();
+          void       SelectStepManager(Int_t t);
+          void       SetStepSize(Double_t s)    { fStepSize = s; };
+
           void       SetSensPlane(Int_t iplane = 0);
           void       SetSensChamber(Int_t ichamber = 0);
           void       SetSensSector(Int_t isector);
@@ -53,6 +60,8 @@ class AliTRDv1 : public AliTRD {
 
  protected:
 
+  void        *StepManagerEntity();
+
   Int_t        fSensSelect;             // Switch to select only parts of the detector
   Int_t        fSensPlane;              // Sensitive detector plane
   Int_t        fSensChamber;            // Sensitive detector chamber
@@ -61,13 +70,17 @@ class AliTRDv1 : public AliTRD {
 
   AliTRDsim   *fTR;                     // TR simulator
 
+  Int_t        fTypeOfStepManager;      // Type of Step Manager.
+  Double_t     fStepSize;               // Used for the fixed step size
+
  private:
 
   virtual Double_t BetheBloch(Double_t bg);
 
-  TF1         *fDeltaE;                 // Energy distribution of the delta-electrons
+  TF1         *fDeltaE;                 // Energy distribution of the delta-electrons (Ermilova)
+  TF1         *fDeltaG;                 // for StepManagerGeant
    
-  ClassDef(AliTRDv1,2)                  // Transition Radiation Detector version 1 (slow simulator)
+  ClassDef(AliTRDv1,3)                  // Transition Radiation Detector version 1 (slow simulator)
 
 };
 
