@@ -226,7 +226,9 @@ void AliITSsimulationSSD::HitToDigit(Int_t & hitNo,Int_t idtrack,
         dsN    = Get2Strip(0,stripN,xI, zI); // Between 0-1
 
         sP = sigmaP * sqrt(300. * i / (fSteps));
+	if(sP<=0.0) sP = sigmaP*sqrt(300.);
         sN = sigmaN * sqrt(300. * i /(fSteps-i));
+	if(sN<=0.0) sN = sigmaN*sqrt(300.);
 
 
         sP = (i<2        && dsP>0.3 && dsP<0.7)? 20. : sP;  // square of (microns) 
