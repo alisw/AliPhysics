@@ -13,11 +13,11 @@ directory ITS in order to compare your own installation with the standard one
 looking at some distributions/histograms.
         Any difference between what is described here and what you really get
 when you run the code on your computer must be reported either to Roberto
-Barbera at roberto.barbera@ct.infn.it or to Bjorn Nilsen at
-nilsen@mps.ohio-state.edu. Please note that all the tests described here have
-been done on a PC running Linux RedHat 6.1, gcc 2.95.2, and Root 3.00/06. If
-you have different hardware/software configuration, please add it to all bug
-reports.
+Barbera at roberto.barbera@ct.infn.it or to Mariana Bondila at
+mariana.bondila@cern.ch or to Bjorn Nilsen at nilsen@mps.ohio-state.edu. 
+Please note that all the tests described here have been done on a PC running 
+Linux RedHat 6.1, gcc 2.95.2, and Root 3.00/06. If you have different 
+hardware/software configuration, please add it to all bug reports.
 
 
 2. Set the ITS geometry you want to use
@@ -52,10 +52,10 @@ ITS part of Config.C (or ConfigPPR.C) is reported here:
     ITS->SetMinorVersion(2);					   // don't touch this parameter if you're not an ITS developer
     ITS->SetReadDet(kFALSE);					   // don't touch this parameter if you're not an ITS developer
     ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
-    ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
-    ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
-    ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
-    ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
+    ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
+    ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
+    ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
     ITS->SetRails(1);	       // 1 --> rails in ; 0 --> rails out
     ITS->SetCoolingFluid(1);	 // 1 --> water ; 0 --> freon
     //
@@ -63,10 +63,10 @@ ITS part of Config.C (or ConfigPPR.C) is reported here:
     //ITS->SetMinorVersion(2);                                       // don't touch this parameter if you're not an ITS developer
     //ITS->SetReadDet(kFALSE);                                       // don't touch this parameter if you're not an ITS developer
     //ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det"); // don't touch this parameter if you're not an ITS developer
-    //ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
-    //ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
-    //ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
-    //ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    //ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
+    //ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
+    //ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
+    //ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
     //ITS->SetRails(1);              // 1 --> rails in ; 0 --> rails out
     //ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
     //
@@ -103,10 +103,10 @@ PPR detailed geometry with asymmetric services:
     ITS->SetMinorVersion(2);					   // don't touch this parameter if you're not an ITS developer
     ITS->SetReadDet(kFALSE);					   // don't touch this parameter if you're not an ITS developer
     ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
-    ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
-    ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
-    ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
-    ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
+    ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
+    ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
+    ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
     ITS->SetRails(1);	       // 1 --> rails in ; 0 --> rails out
     ITS->SetCoolingFluid(1);	 // 1 --> water ; 0 --> freon
 
@@ -115,10 +115,10 @@ values must not be modified at any time. The next four functions allow the user
 to  change the thickness of detectors and chips in the two SPD layers
 separately.  Detector thicknesses can go from 100 microns (TDR value) to 300
 microns (present default value). If a value outside this range is set a warning
-message is printed out and the default value (300 microns) is used. Chip
+message is printed out and the default value (200 microns) is used. Chip
 thicknesses can go from 150 (TDR value) to 300 (present default value)
 microns. If a value outside this range is set a warning message is printed out
-and the default value (300 microns) is used. The last two function allow people
+and the default value (200 microns) is used. The last two function allow people
 to set the ITS rails in (=1) and out (=0) (the default is in) and the cooling
 fluid as water (=1, which is the default) or freon (=0). If the switch for
 rails is different from 0 and 1 a warning message is printed out and the
@@ -132,10 +132,10 @@ the only uncommented lines must be:
     ITS->SetMinorVersion(2);					   // don't touch this parameter if you're not an ITS developer
     ITS->SetReadDet(kFALSE);					   // don't touch this parameter if you're not an ITS developer
     ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRsymm2.det"); // don't touch this parameter if you're not an ITS developer
-    ITS->SetThicknessDet1(300.);   // detector thickness on layer 1 must be in the range [100,300]
-    ITS->SetThicknessDet2(300.);   // detector thickness on layer 2 must be in the range [100,300]
-    ITS->SetThicknessChip1(300.);  // chip thickness on layer 1 must be in the range [150,300]
-    ITS->SetThicknessChip2(300.);  // chip thickness on layer 2 must be in the range [150,300]
+    ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
+    ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
+    ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
+    ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
     ITS->SetRails(1);		   // 1 --> rails in ; 0 --> rails out
     ITS->SetCoolingFluid(1);	   // 1 --> water ; 0 --> freon
 
