@@ -51,6 +51,7 @@ AliPHOS:: AliPHOS() : AliDetector()
   // Create folder and task hierarchy
   fName="PHOS";
   CreatePHOSFolders();
+  fGeom = 0 ; 
 }
 
 //____________________________________________________________________________
@@ -58,6 +59,7 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
 {
   // Create folder and task hierarchy
   CreatePHOSFolders();
+  fGeom = 0 ; 
 }
 
 //____________________________________________________________________________

@@ -64,8 +64,11 @@ ClassImp(AliPHOSv1)
 AliPHOSv1::AliPHOSv1():
 AliPHOSv0()
 {
-  // ctor
- 
+  // default ctor: initialze data memebers
+  fQAHitsMul  = 0 ;
+  fQAHitsMulB = 0 ; 
+  fQATotEner  = 0 ; 
+  fQATotEnerB = 0 ; 
 }
 
 //____________________________________________________________________________

@@ -50,6 +50,19 @@
 ClassImp(AliPHOSv3)
 
 //____________________________________________________________________________
+  AliPHOSv3::AliPHOSv3(void) : AliPHOSv1() 
+{
+  // default ctor: initialize daa members
+
+  fLightYieldMean         = 0. ;         
+  fIntrinsicPINEfficiency = 0. ; 
+  fLightYieldAttenuation  = 0. ;  
+  fRecalibrationFactor    = 0. ;    
+  fElectronsPerGeV        = 0. ;        
+  
+}
+
+//____________________________________________________________________________
   AliPHOSv3::AliPHOSv3(const char *name, const char *title):
 AliPHOSv1(name,title)
 {

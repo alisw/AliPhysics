@@ -30,10 +30,7 @@ class AliPHOSv4 : public AliPHOS {
 
 public:
 
-  AliPHOSv4() {
-    //ctor
-    fGeom=0;
-  }
+  AliPHOSv4() ;
   AliPHOSv4(const char *name, const char *title="") ;
   AliPHOSv4(const AliPHOSv4 & fast) {
     // cpy ctor: no implementation yet

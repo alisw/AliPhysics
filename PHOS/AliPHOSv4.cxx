@@ -48,6 +48,27 @@
 ClassImp(AliPHOSv4)
 
 //____________________________________________________________________________
+AliPHOSv4::AliPHOSv4() AliPHOS(name,title)
+{
+  // default ctor : initialize data member
+   fBigBoxX = 0. ;                      
+   fBigBoxY = 0. ;                      
+   fBigBoxZ = 0. ;                       
+   fFastRecParticles = 0 ;        
+   fNRecParticles = 0 ;                
+   fRan = 0 ;                            
+   fResPara1 = 0. ;                       
+   fResPara2 = 0. ;                        
+   fResPara3 = 0. ;                      
+   fPosParaA0 = 0. ;                      
+   fPosParaA1 = 0. ;
+   fPosParaB0 = 0. ;     
+   fPosParaB1 = 0. ;    
+   fPosParaB2 = 0. ;    
+
+}
+
+//____________________________________________________________________________
 AliPHOSv4::AliPHOSv4(const char *name, const char *title):
   AliPHOS(name,title)
 {
