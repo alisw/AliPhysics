@@ -14,7 +14,7 @@
  **************************************************************************/
 
 #include "AliRICHRawCluster.h"
-#include <iostream.h>
+#include <Riostream.h>
 
 
 ClassImp(AliRICHRawCluster)
