@@ -1,8 +1,5 @@
 # Makefile to build ALIROOT for SunOS
 
-# Which Machine 
-PLATFORM      = solaris
-
 # The compilers
 CXX           = /opt/SUNWspro/bin/CC
 CC	      = /opt/SUNWspro/bin/cc

@@ -1,8 +1,5 @@
 # Makefile to build ALIROOT for OSF1
 
-# Which Machine 
-PLATFORM      = alpha
-
 # The compilers
 CXX           = cxx 
 F77	      = f77
