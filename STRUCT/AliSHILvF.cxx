@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/05/02 12:50:06  morsch
+For G4: gMC->VolId(...) replaced by gAlice->GetModule(...).
+
 Revision 1.12  2002/01/21 11:31:21  morsch
 ALIFE output only on demand.
 
@@ -1144,6 +1147,9 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 //
 // Bellow2
 //
+  Float_t eps = 1.e-2;
+  Float_t lB2S = lB2-eps;
+  
   tpar[0]=rB2;
   tpar[1]=rB2+hB2;
   tpar[2]=eB2/2.;
@@ -1152,20 +1158,20 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
   
   tpar[0]=rB2+hB2-eB2;
   tpar[1]=rB2+hB2;
-  tpar[2]=(lB2/2.-2.*eB2)/2.;
+  tpar[2]=(lB2S/2.-2.*eB2)/2.;
   gMC->Gsvolu("YB22", "TUBE", idtmed[kSteel+40], tpar, 3);
   dl2=tpar[2];
 
   tpar[0]=rB2-eB2;
   tpar[1]=rB2;
-  tpar[2]=lB2/8.;
+  tpar[2]=lB2S/8.;
   gMC->Gsvolu("YB23", "TUBE", idtmed[kSteel+40], tpar, 3);
   dl3=tpar[2];
 
 
   tpar[0]=0;
   tpar[1]=rB2+hB2;
-  tpar[2]=lB2/2.;
+  tpar[2]=lB2S/2.;
   gMC->Gsvolu("YBU2", "TUBE", idtmed[kVacuum+40], tpar, 3);
 
   dz=-tpar[2]+dl3;
