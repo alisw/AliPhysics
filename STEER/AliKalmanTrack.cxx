@@ -22,6 +22,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliKalmanTrack.h"
+#include "AliLog.h"
 #include "AliPDG.h"
 #include "TPDGCode.h"
 #include "TDatabasePDG.h"
@@ -41,7 +42,7 @@ AliKalmanTrack::AliKalmanTrack():
   // Default constructor
   //
     if (fgConvConst==0) {
-      Fatal("AliKalmanTrack()", "The magnetic field has not been set!");
+      AliFatal("The magnetic field has not been set!");
     }
     
     fStartTimeIntegral = kFALSE;
@@ -62,8 +63,7 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   // Copy constructor
   //
   if (fgConvConst==0) {
-    Fatal("AliKalmanTrack(const AliKalmanTrack&)", 
-	    "The magnetic field has not been set!");
+    AliFatal("The magnetic field has not been set!");
   }
 
   fStartTimeIntegral = t.fStartTimeIntegral;
@@ -77,14 +77,14 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
 Double_t AliKalmanTrack::GetX() const
 {
   // Returns the X coordinate of the current track position
-  Warning("GetX()","Method must be overloaded !\n");
+  AliWarning("Method must be overloaded !");
   return 0.;
 }
 //_______________________________________________________________________
 Double_t AliKalmanTrack::GetdEdx() const
 {
   // Returns the dE/dx of the track
-  Warning("GetdEdx()","Method must be overloaded !\n");
+  AliWarning("Method must be overloaded !");
   return 0.;
 }
 
@@ -267,7 +267,7 @@ void AliKalmanTrack::StartTimeIntegral()
   //
   
   //if (fStartTimeIntegral) 
-  //  Warning("StartTimeIntegral", "Reseting Recorded Time.");
+  //  AliWarning("Reseting Recorded Time.");
 
   fStartTimeIntegral = kTRUE;
   for(Int_t i=0; i<fgkTypes; i++) fIntegratedTime[i] = 0;  
@@ -342,7 +342,7 @@ Double_t AliKalmanTrack::GetIntegratedTime(Int_t pdg) const
 
 
   if (!fStartTimeIntegral) {
-    Warning("GetIntegratedTime","Time integration not started");
+    AliWarning("Time integration not started");
     return 0.;
   }
 
@@ -351,7 +351,7 @@ Double_t AliKalmanTrack::GetIntegratedTime(Int_t pdg) const
   for (Int_t i=0; i<fgkTypes; i++)
     if (pdgCode[i] == TMath::Abs(pdg)) return fIntegratedTime[i];
 
-  Warning(":GetIntegratedTime","Particle type [%d] not found", pdg);
+  AliWarning(Form("Particle type [%d] not found", pdg));
   return 0;
 }
 
@@ -476,10 +476,10 @@ GetDCA(const AliKalmanTrack *p, Double_t &xthis, Double_t &xp) const {
      if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
      if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
         if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2) 
-	  Warning("GetDCA"," stopped at not a stationary point !\n");
+	  AliWarning(" stopped at not a stationary point !");
         Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
         if (lmb < 0.) 
-	  Warning("GetDCA"," stopped at not a minimum !\n");
+	  AliWarning(" stopped at not a minimum !");
         break;
      }
 
@@ -492,7 +492,7 @@ GetDCA(const AliKalmanTrack *p, Double_t &xthis, Double_t &xp) const {
 	if (dd<dm) break;
         dt1*=0.5; dt2*=0.5;
         if (div>512) {
-           Warning("GetDCA"," overshoot !\n"); break;
+           AliWarning(" overshoot !"); break;
         }   
      }
      dm=dd;
@@ -502,7 +502,7 @@ GetDCA(const AliKalmanTrack *p, Double_t &xthis, Double_t &xp) const {
 
   }
 
-  if (max<=0) Warning("GetDCA"," too many iterations !\n");  
+  if (max<=0) AliWarning(" too many iterations !");
 
   Double_t cs=TMath::Cos(GetAlpha());
   Double_t sn=TMath::Sin(GetAlpha());
@@ -526,12 +526,12 @@ PropagateToDCA(AliKalmanTrack *p, Double_t d, Double_t x0) {
   Double_t dca=GetDCA(p,xthis,xp);
 
   if (!PropagateTo(xthis,d,x0)) {
-    //Warning("PropagateToDCA"," propagation failed !\n");
+    //AliWarning(" propagation failed !");
     return 1e+33;
   }  
 
   if (!p->PropagateTo(xp,d,x0)) {
-    //Warning("PropagateToDCA"," propagation failed !\n";
+    //AliWarning(" propagation failed !";
     return 1e+33;
   }  
 

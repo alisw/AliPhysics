@@ -34,6 +34,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
+#include "AliLog.h"
 #include "AliReconstructor.h"
 #include <TString.h>
 
@@ -47,8 +48,7 @@ void AliReconstructor::Reconstruct(AliRunLoader* /*runLoader*/,
 {
 // run the local reconstruction with raw data input
 
-  Error("Reconstruct", 
-	"local reconstruction not implemented for raw data input");
+  AliError("local reconstruction not implemented for raw data input");
 }
 
 //_____________________________________________________________________________

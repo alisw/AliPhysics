@@ -26,6 +26,7 @@
 #include "AliTracker.h"
 #include "AliCluster.h"
 #include "AliKalmanTrack.h"
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliMagF.h"
 
@@ -49,7 +50,7 @@ AliTracker::AliTracker():
   // The default constructor.
   //--------------------------------------------------------------------
  AliMagF *field=gAlice->Field();
- if (field==0) Fatal("AliTracker()","Can't access the field map !");
+ if (field==0) AliFatal("Can't access the field map !");
  SetFieldMap(field);
 }
 
@@ -57,7 +58,7 @@ void AliTracker::SetFieldMap(const AliMagF* map) {
   //--------------------------------------------------------------------
   //This passes the field map to the reconstruction.
   //--------------------------------------------------------------------
-  if (map==0) ::Fatal("SetFieldMap","Can't access the field map !");
+  if (map==0) AliFatalClass("Can't access the field map !");
   AliKalmanTrack::SetConvConst(1000/0.299792458/map->SolenoidField());
   fgkFieldMap=map;
 }

@@ -30,6 +30,7 @@
 #include <TFile.h>
 #include <TTree.h>
 
+#include "AliLog.h"
 #include "AliGenEventHeader.h"
 #include "AliHeader.h"
 #include "AliVertexGenFile.h"
@@ -67,14 +68,14 @@ AliVertexGenFile::AliVertexGenFile(const char* fileName,
 
   fFile = TFile::Open(fileName);
   if (!fFile || !fFile->IsOpen()) {
-    Error("AliVertexGenFile", "could not open file %s", fileName);
+    AliError(Form("could not open file %s", fileName));
     delete fFile;
     fFile = NULL;
     return;
   }
   fTree = (TTree*) fFile->Get("TE");
   if (!fTree) {
-    Error("AliVertexGenFile", "no header tree found in file %s", fileName);
+    AliError(Form("no header tree found in file %s", fileName));
     dir->cd();
     return;
   }
@@ -102,17 +103,17 @@ TVector3 AliVertexGenFile::GetVertex()
 
   Int_t entry = fEvent++ / fEventsPerEntry;
   if (!fTree) {
-    Error("GetVertex", "no header tree");
+    AliError("no header tree");
     return TVector3(0,0,0);
   }
 
   if (fTree->GetEntry(entry) <= 0) {
-    Error("GetVertex", "error loading entry %d", entry);
+    AliError(Form("error loading entry %d", entry));
     return TVector3(0,0,0);
   }
 
   if (!fHeader->GenEventHeader()) {
-    Error("GetVertex", "no generator event header");
+    AliError("no generator event header");
     return TVector3(0,0,0);
   }
 
