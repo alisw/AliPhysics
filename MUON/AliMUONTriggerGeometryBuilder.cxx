@@ -122,8 +122,8 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
     const Float_t kYMIN=34.;                              
     const Float_t kYMAX=51.;                              
 // inner/outer radius of flange between beam shield. and chambers (1/station)
-    const Float_t kRMIN[2]={50.,50.};
-    const Float_t kRMAX[2]={64.,68.};
+//    const Float_t kRMIN[2]={50.,50.};
+//    const Float_t kRMAX[2]={64.,68.};
 // z position of the middle of the gas gap in mother vol 
     const Float_t kZm=-3.6;
     const Float_t kZp=+3.6;     
@@ -186,8 +186,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 // chamber prototype
 	    tpar[0]= 0.;
 	    tpar[1]= 0.;
-	    tpar[2]= 0.;	    
-	    char volAlu[5];     // Alu 
+	    tpar[2]= 0.;	    char volAlu[5];     // Alu 
 	    char volBak[5];     // Bakelite
 	    char volGaz[5];     // Gas streamer	    
 	    sprintf(volAlu,"SC%dA",icount+1);
