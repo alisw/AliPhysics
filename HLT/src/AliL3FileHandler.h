@@ -30,11 +30,13 @@ class AliL3FileHandler:public AliL3MemHandler{
   AliL3FileHandler();
   virtual ~AliL3FileHandler();
 
+  void FreeDigitsTree();
   Bool_t SetAliInput(char *name);
   Bool_t SetAliInput(TFile *file);
   void CloseAliInput(); 
   Bool_t IsDigit();
- 
+  
+
   Bool_t SetMCOutput(char *name);
   Bool_t SetMCOutput(FILE *file);
   void CloseMCOutput();

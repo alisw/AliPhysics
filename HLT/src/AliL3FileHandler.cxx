@@ -70,10 +70,24 @@ AliL3FileHandler::~AliL3FileHandler()
 {
   //Destructor
   if(fMC) CloseMCOutput();
-  if(fDigitsTree) delete fDigitsTree;
+  FreeDigitsTree();
   if(fInAli) CloseAliInput();
   
 }
+
+void AliL3FileHandler::FreeDigitsTree()
+{
+  if(!fDigitsTree)
+    {
+      LOG(AliL3Log::kWarning,"AliL3FileHandler::FreeDigitsTree()","Pointer")
+	<<"Cannot free digitstree, it is not present"<<ENDLOG;
+      return;
+    }
+  fDigits=0;
+  fDigitsTree->Delete();
+  fDigitsTree=0;
+}
+
 
 Bool_t AliL3FileHandler::SetMCOutput(char *name)
 {
@@ -233,7 +247,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   
   if(!fDigitsTree)
     GetDigitsTree(event);
-    
+  
   UShort_t dig;
   Int_t time,pad,sector,row;
   Int_t nrows=0;
@@ -252,7 +266,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
       if(lslice != fSlice) break;
       if(lrow < fRowMin) continue;
       if(lrow > fRowMax) break;
-
+      
       Float_t xyz[3];
       ndigits[lrow] = 0;
       fDigits->First();
@@ -352,6 +366,7 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   return data;
 }
 
+
 Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
 {
   //Connects to the TPC digit tree in the AliROOT file.
@@ -359,7 +374,7 @@ Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
   fInAli->cd();
   Char_t dname[100];
   sprintf(dname,"TreeD_75x40_100x60_%d",event);
-  fDigitsTree = (TTree*)fInAli->Get("TreeD_75x40_100x60_0");
+  fDigitsTree = (TTree*)fInAli->Get(dname);
   if(!fDigitsTree) 
     {
       LOG(AliL3Log::kError,"AliL3FileHandler::GetDigitsTree","Digits Tree")
