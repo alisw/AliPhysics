@@ -143,3 +143,19 @@ libclean:  FORCE
                 done
 
 allclean: libclean clean
+
+# IRST coding rule check
+CHECK_DIRS = $(ALIROOT_DIRS) ALIROOT
+check:     
+		@for i in $(CHECK_DIRS) ; do \
+                    echo "Checking $$i" ; \
+                    ${MAKE} -C $$i check ; \
+		done
+
+
+
+
+
+
+
+
