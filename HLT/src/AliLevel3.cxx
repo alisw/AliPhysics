@@ -259,7 +259,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
   fTrackMerger->SetRows(fRow[0]);
   for(Int_t patch=fNPatch-1;patch>=0;patch--){
     fFileHandler->Init(slice,patch,fRow[patch]);
-    fFileHandler->Init(fTransformer);
+    fFileHandler->SetTransformer(fTransformer);
     UInt_t npoints=0;
     AliL3SpacePointData *points =0;
     UInt_t ndigits=0;
@@ -514,8 +514,9 @@ void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
   char name[256];
   sprintf(name,"%spoints_%d_%d.raw",fWriteOutPath,slice,patch);
   AliL3MemHandler * memory = new AliL3MemHandler();
+  memory->SetTransformer(fTransformer);
   memory->SetBinaryOutput(name);
-  memory->Transform(npoints,points,slice,fTransformer);
+  memory->Transform(npoints,points,slice);
   memory->Memory2Binary(npoints,points);
   memory->CloseBinaryOutput();
   delete  memory;

@@ -59,7 +59,7 @@ class AliL3MemHandler{
   virtual ~AliL3MemHandler();
   
   void Reset(){CloseBinaryInput();CloseBinaryOutput();Free();}  
-  void Init(AliL3Transform *t){fTransformer = t;}
+  void SetTransformer(AliL3Transform *t){fTransformer = t;}
   void Init(Int_t s,Int_t p,const Int_t* row){fSlice=s;fPatch=p;fRowMin=row[0];fRowMax=row[1]; ResetROI();}
 
   Bool_t SetBinaryInput(char *name);
@@ -98,8 +98,7 @@ class AliL3MemHandler{
   //Point IO
   Bool_t Memory2Binary(UInt_t npoint,AliL3SpacePointData *data);
   Bool_t Binary2Memory(UInt_t & npoint,AliL3SpacePointData *data);
-  Bool_t Transform(UInt_t npoint,AliL3SpacePointData *data,
-                              Int_t slice, AliL3Transform* trans);
+  Bool_t Transform(UInt_t npoint,AliL3SpacePointData *data,Int_t slice);
   static void UpdateRowPointer(AliL3DigitRowData *&tempPt);
   
   //Track IO
@@ -112,7 +111,7 @@ class AliL3MemHandler{
   Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,
                                              AliL3TrackArray *array);
   Bool_t Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,
-			   AliL3TrackArray *array,Int_t slice, AliL3Transform* trans);
+			   AliL3TrackArray *array,Int_t slice);
   
   
   //Memory Allocation

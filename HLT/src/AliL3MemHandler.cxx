@@ -974,8 +974,7 @@ Bool_t AliL3MemHandler::Memory2Binary(UInt_t npoint,AliL3SpacePointData *data)
   return kTRUE;
 }
 
-Bool_t AliL3MemHandler::Transform(UInt_t npoint,AliL3SpacePointData *data,
-				  Int_t slice, AliL3Transform* trans)
+Bool_t AliL3MemHandler::Transform(UInt_t npoint,AliL3SpacePointData *data,Int_t slice)
 {
   //Transform the space points in data, to global coordinates in slice.
   if(!data){
@@ -983,8 +982,8 @@ Bool_t AliL3MemHandler::Transform(UInt_t npoint,AliL3SpacePointData *data,
     <<"Pointer to AliL3SpacePointData = 0x0 "<<ENDLOG;
     return kFALSE;
   }
-  if(!trans){
-    LOG(AliL3Log::kWarning,"AliL3MemHandler::Transform","Object")
+  if(!fTransformer){
+    LOG(AliL3Log::kError,"AliL3MemHandler::Transform","Object")
     <<"Pointer to AliL3Transform = 0x0 "<<ENDLOG;
     return kFALSE;
   }
@@ -993,7 +992,7 @@ Bool_t AliL3MemHandler::Transform(UInt_t npoint,AliL3SpacePointData *data,
     xyz[0] = data[i].fX;
     xyz[1] = data[i].fY;
     xyz[2] = data[i].fZ;
-    trans->Local2Global(xyz,slice);
+    fTransformer->Local2Global(xyz,slice);
     data[i].fX = xyz[0];
     data[i].fY = xyz[1];
     data[i].fZ = xyz[2];
@@ -1240,11 +1239,10 @@ Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *d
   return kTRUE;
 }
 
-Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array,Int_t slice,
-					  AliL3Transform* trans)
+Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *data,AliL3TrackArray *array,Int_t slice)
 {
   //Fill the tracks in data into trackarray, and rotate the tracks to global coordinates.
-  
+    
   if(!data){
     LOG(AliL3Log::kWarning,"AliL3MemHandler::Memory2TrackArray","Memory")
     <<"Pointer to AliL3TrackSegmentData = 0x0 "<<ENDLOG;
@@ -1255,12 +1253,12 @@ Bool_t AliL3MemHandler::Memory2TrackArray(UInt_t ntrack,AliL3TrackSegmentData *d
     <<"Pointer to AliL3TrackArray = 0x0 "<<ENDLOG;
     return kFALSE;
   }
-  if(!trans){
-    LOG(AliL3Log::kWarning,"AliL3MemHandler::Memory2TrackArray","Object")
+  if(!fTransformer){
+    LOG(AliL3Log::kError,"AliL3MemHandler::Memory2TrackArray","Object")
     <<"Pointer to AliL3Transform = 0x0 "<<ENDLOG;
     return kFALSE;
   }
-  array->FillTracks(ntrack,data,slice,trans);
+  array->FillTracks(ntrack,data,slice,fTransformer);
   return kTRUE;
 }
 
