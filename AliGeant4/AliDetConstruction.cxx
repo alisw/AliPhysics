@@ -14,48 +14,48 @@ AliDetConstruction::AliDetConstruction()
   : fTopVolumeName("ALIC")
 {
   // initialize det switch vector: 
-  // moduleName nofVersions defaultVersion [type isStandalone]     
+  // moduleName nofVersions defaultVersion PPRVersion [type isStandalone]     
         // det switch objects are deleted in
 	// tbe base class (AliModulesCompositions) destructor
 
   AliDetSwitch* detSwitch;
-  detSwitch = new AliDetSwitch("ABSO",   1, 0, kStructure);
+  detSwitch = new AliDetSwitch("ABSO",   1, 0, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("DIPO",   3, 2, kStructure);
+  detSwitch = new AliDetSwitch("DIPO",   3, 2, 2, kStructure, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("FRAME",  2, 1, kStructure, false);
+  detSwitch = new AliDetSwitch("FRAME",  2, 1, 1, kStructure, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("HALL",   1, 0, kStructure);
+  detSwitch = new AliDetSwitch("HALL",   1, 0, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("MAG",    1, 0, kStructure);
+  detSwitch = new AliDetSwitch("MAG",    1, 0, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("PIPE",   4, 0, kStructure);
+  detSwitch = new AliDetSwitch("PIPE",   4, 0, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("SHIL",   1, 0, kStructure);
+  detSwitch = new AliDetSwitch("SHIL",   1, 0, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("CASTOR", 2, 1);
+  detSwitch = new AliDetSwitch("CASTOR", 2, 1, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("FMD",    2, 1);
+  detSwitch = new AliDetSwitch("FMD",    2, 1, 0);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("ITS",    6, 5);
+  detSwitch = new AliDetSwitch("ITS",   10, 5, 7);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("MUON",   2, 0);
+  detSwitch = new AliDetSwitch("MUON",   2, 0, 0);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("PHOS",   5, 1);
+  detSwitch = new AliDetSwitch("PHOS",   5, 1, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("PMD",    3, 0);
+  detSwitch = new AliDetSwitch("PMD",    3, 0, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("RICH",   3, 1);
+  detSwitch = new AliDetSwitch("RICH",   3, 1, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("START",  2, 1);
+  detSwitch = new AliDetSwitch("START",  2, 1, 1);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("TOF",    5, 1, kDetector, false);
+  detSwitch = new AliDetSwitch("TOF",    5, 1, 2, kDetector, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("TPC",    4, 1);
+  detSwitch = new AliDetSwitch("TPC",    4, 1, 2);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("TRD",    2, 0, kDetector, false);
+  detSwitch = new AliDetSwitch("TRD",    2, 0, 1, kDetector, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("ZDC",    2, 1);
+  detSwitch = new AliDetSwitch("ZDC",    2, 1, 1, kDetector, false);
   AddDetSwitch(detSwitch);  
 }
 
@@ -162,6 +162,7 @@ void AliDetConstruction::CheckDetDependencies()
 // Dependent modules FRAME, TOF, TRD 
 // TOF always requires FRAMEv1
 // TRD can be built with both (??)
+// ZDC requires DIPO
 // ---
 
   const G4RWTPtrOrderedVector<AliDetSwitch>& krDetSwitchVector 
@@ -170,19 +171,28 @@ void AliDetConstruction::CheckDetDependencies()
   // get switched versions of dependent modules
   G4int nofDets = krDetSwitchVector.entries();
   G4int verFRAME = -1; 
+  G4int verDIPO = -1; 
   G4int verTOF = -1; 
   G4int verTRD = -1; 
+  G4int verZDC = -1; 
   AliDetSwitch* detSwitchFRAME = 0;
+  AliDetSwitch* detSwitchDIPO = 0;
   for (G4int id=0; id<nofDets; id++) {  
     G4String detName = krDetSwitchVector[id]->GetDetName();
     if (detName == "FRAME") { 
       verFRAME = krDetSwitchVector[id]->GetSwitchedVersion();  
       detSwitchFRAME = krDetSwitchVector[id];
     }  
+    if (detName == "DIPO") { 
+      verDIPO = krDetSwitchVector[id]->GetSwitchedVersion();  
+      detSwitchDIPO = krDetSwitchVector[id];
+    }  
     if (detName == "TOF")  
       verTOF = krDetSwitchVector[id]->GetSwitchedVersion();  
     if (detName == "TRD")  
       verTRD = krDetSwitchVector[id]->GetSwitchedVersion();  
+    if (detName == "ZDC")  
+      verZDC = krDetSwitchVector[id]->GetSwitchedVersion();  
   }
   
   // check dependencies  
@@ -216,6 +226,13 @@ void AliDetConstruction::CheckDetDependencies()
       AliGlobals::Warning(text);
     }  
   }
+  if (verZDC > 0 && verDIPO == -1) {
+      detSwitchDIPO->SwitchOnDefault();
+      G4String text = "AliDetConstruction::CheckDetDependencies: \n";
+      text = text + "    Switched ZDC requires DIPO.\n"; 
+      text = text + "    The det switch for DIPO has been changed."; 
+      AliGlobals::Warning(text);
+  }    
 }  
 
 // public methods
