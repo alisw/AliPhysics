@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2000/05/16 13:10:40  fca
+New method IsNewTrack and fix for a problem in Father-Daughter relations
+
 Revision 1.14  2000/04/27 10:38:21  fca
 Correct termination of Lego Run and introduce Lego getter in AliRun
 
@@ -186,12 +189,12 @@ void AliLego::StepManager()
    Float_t vect[3], dir[3];
    TLorentzVector pos, mom;
 
+   gMC->CurrentMaterial(a,z,dens,radl,absl);
+   
    if (z < 1) return;
     
    gMC->TrackPosition(pos);  
    gMC->TrackMomentum(mom);
-   gMC->CurrentMaterial(a,z,dens,radl,absl);
-   
 // --- See if we have to stop now
    if (TMath::Abs(pos[2]) > fGener->ZMax()  || 
        pos[0]*pos[0] +pos[1]*pos[1] > fGener->RadMax()*fGener->RadMax()) {
