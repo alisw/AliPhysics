@@ -61,8 +61,8 @@ class TGeant4: public AliMC
                      Float_t thetaY, Float_t phiY, Float_t thetaZ, 
 		     Float_t phiZ);
     virtual void  Gstpar(Int_t itmed, const char *param, Float_t parval); 
-    virtual void  Gsckov(Int_t itmed, Int_t npckov, Float_t *ppckov,
-			 Float_t *absco, Float_t *effic, Float_t *rindex); 
+    virtual void  SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
+                     Float_t *absco, Float_t *effic, Float_t *rindex);
 
     // functions from GGEOM 
     virtual Int_t Gsvolu(const char *name, const char *shape, Int_t nmed,  
@@ -174,9 +174,6 @@ class TGeant4: public AliMC
                     TLorentzVector& position, TLorentzVector& momentum);
     virtual AliMCProcess ProdProcess(Int_t isec) const; 
     virtual Int_t StepProcesses(TArrayI &proc) const;
-
-	// random number generator	    
-    virtual void Rndm(Float_t* array, const Int_t size) const;    
   
     //
     // methods for visualization
