@@ -47,6 +47,7 @@ void AliTRDrunSimple()
 
   // Initialize the TRD detector
   AliTRDv1     *trd    = new AliTRDv1("TRD","TRD slow simulator");
+  trd->SetHitTypeStandard();
 
   // Needed for some material properties 
   trd->CreateMaterials();
@@ -54,14 +55,15 @@ void AliTRDrunSimple()
   // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 85% Xe + 15% CO2)
   trd->SetGasMix(1);
  
-  // Get the pointer to the geometry object
-  AliTRDgeometry *geometry = trd->GetGeometry();
- 
-  // The number of timebins
-  geometry->SetNTimeBin(30);
- 
-  // The additional timebins before and after the drift region
-  geometry->SetExpandTimeBin(5,15);
+  // Define the parameter object
+  // If no external parameter object is defined, 
+  // default parameter will be used
+  AliTRDparameter *parameter = new AliTRDparameter("TRDparameter"
+						  ,"TRD parameter class");
+
+  parameter->SetADCthreshold(0);
+  parameter->SetNTimeBin(30);        // The number of timebins
+  parameter->SetExpandTimeBin(5,15); // The additional timebins
     
   // Switch on TR production
   AliTRDsim *trdsim = trd->CreateTR();
@@ -74,22 +76,15 @@ void AliTRDrunSimple()
 
   // The digitizer
   AliTRDdigitizer *digitizer = new AliTRDdigitizer("TRDdigitizer","Digitizer class");
+
+  digitizer->SetParameter(parameter);
   digitizer->SetSimple();
-  digitizer->SetGasGain(3200.);      // GEANT + new Ermilova spectrum
-  digitizer->SetChipGain(6.1);
-  digitizer->SetNoise(1000.);
-  digitizer->SetADCinRange(1000.);
-  digitizer->SetADCoutRange(1023.);
-  digitizer->SetADCthreshold(0);
   digitizer->InitDetector();
-  //digitizer->SetTimeResponse(0);
-  //digitizer->SetVerbose(1);
                                     
   // The event generator
   AliTRDsimpleGen *generator = simple->GetGenerator();         
   generator->SetMomentum(3.0,3.0);
   generator->SetPdg(11);                             // Electrons 
-  //generator->SetPdg(211);                            // Pions 
 
   //_____________________________________________________________________________ 
   //
@@ -97,8 +92,8 @@ void AliTRDrunSimple()
   //_____________________________________________________________________________ 
   //
 
-  Int_t timeMax  = geometry->GetTimeTotal();   
-  Int_t adcRange = ((Int_t) digitizer->GetADCoutRange()); 
+  Int_t timeMax  = parameter->GetTimeTotal();   
+  Int_t adcRange = ((Int_t) parameter->GetADCoutRange()); 
 
   TH1F     *hQ       = new TH1F("hQ"    ,"Charge per hit (all)" ,100,0.0,1000.0);
   TH1F     *hQdedx   = new TH1F("hQdedx","Charge per hit (dedx)",100,0.0,1000.0);
@@ -125,7 +120,7 @@ void AliTRDrunSimple()
   // Number of events (tracks)
   Int_t nEvent = 10000;
 
-  Float_t x0 = geometry->GetTime0(0) - AliTRDgeometry::DrThick(); 
+  Float_t x0 = parameter->GetTime0(0) - AliTRDgeometry::DrThick(); 
 
   TClonesArray *hitsArray = trd->Hits();
 

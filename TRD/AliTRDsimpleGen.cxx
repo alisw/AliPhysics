@@ -14,7 +14,10 @@
  **************************************************************************/
  
 /*
-$Log$                                                          
+$Log$
+Revision 1.1  2001/11/06 17:19:41  cblume
+Add detailed geometry and simple simulator
+                                                          
 */
  
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,6 +29,9 @@ $Log$
 #include <stdlib.h>
  
 #include <TRandom.h>
+#include <TMCProcess.h>
+
+#include "AliRun.h"
 
 #include "AliTRDsimpleGen.h"
 #include "AliTRDsimpleMC.h"
@@ -109,6 +115,14 @@ void AliTRDsimpleGen::NewParticle(Int_t ievent)
             ,fMomMax);
     }
     printf("\n");
+
+    // Add one dummy particle to the stack so that AddHit will work
+    Float_t mom[3] = { 0.0 };
+    Float_t vtx[3] = { 0.0 };
+    Float_t pol[3] = { 0.0 };
+    Int_t   ntr    = 0;
+    gAlice->SetTrack(0,-1,fPdg,mom,vtx,pol,0.0,kPPrimary,ntr);
+
   }
 
   Double_t p = fMomMax;

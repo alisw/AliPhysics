@@ -151,7 +151,7 @@ class AliTRDsimpleMC : public TVirtualMC {
   // Tracking volume(s) 
   virtual Int_t         CurrentVolID(Int_t& copyNo) const;
   virtual Int_t         CurrentVolOffID(Int_t off, Int_t& copyNo) const;
-  virtual const char*   CurrentVolName() const                                            { return ""; };
+  virtual const char*   CurrentVolName() const;
   virtual const char*   CurrentVolOffName(Int_t off) const                                { return ""; };
   virtual Int_t         CurrentMaterial(Float_t &a, Float_t &z, 
                                         Float_t &dens, Float_t &radl, 
