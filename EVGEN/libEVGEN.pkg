@@ -29,6 +29,6 @@ DHDR:=EVGENLinkDef.h
 
 EXPORT:=AliDecayer.h AliGenMC.h AliStructFuncType.h AliGenCocktailAfterBurner.h AliGenCocktail.h
 
-
+EINCLUDE:=FASTSIM
 
 
