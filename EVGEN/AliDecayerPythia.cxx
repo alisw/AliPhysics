@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/04/12 07:23:28  morsch
+Reactivate forcing option for dimuon and dielectron decay channels of phi (333).
+
 Revision 1.6  2001/03/27 10:53:26  morsch
 Save pythia default decay table at first initialization. Reload at each
 following Init() call.
@@ -375,6 +378,13 @@ Float_t  AliDecayerPythia::GetPartialBranchingRatio(Int_t kf)
 // Get branching ratio
     Int_t kc=fPythia->Pycomp(TMath::Abs(kf));
     return fBraPart[kc];
+}
+
+Float_t  AliDecayerPythia::GetLifetime(Int_t kf)
+{
+// Get branching ratio
+    Int_t kc=fPythia->Pycomp(TMath::Abs(kf));
+    return fPythia->GetPMAS(kc,4)*3.3333e-12;
 }
 
 #ifdef never
