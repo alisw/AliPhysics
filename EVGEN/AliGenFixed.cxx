@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.6  2001/07/27 17:09:36  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.5  2001/02/24 11:41:59  morsch
 SetGun allows specify completely the particle kinematics and position in one go. (FCA)
 
@@ -81,6 +86,7 @@ AliGenFixed::AliGenFixed(Int_t npart)
   fTitle="Fixed Particle Generator";
   // Generate Proton by default
   fIpart=kProton;
+  fExplicit = kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -99,7 +105,6 @@ void AliGenFixed::Generate()
   //
   for(i=0;i<fNpart;i++) 
     SetTrack(fTrackIt,-1,fIpart,fP,fOrigin.GetArray(),polar,0,kPPrimary,nt);
-  
 }
   
 //_____________________________________________________________________________
