@@ -187,8 +187,8 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
   fTDList = new TObjArray;
 
   //Loaders (We assume input0 to be the output too)
-  AliRunLoader * runloader;    // Input   loader
-  AliLoader    * gime; 
+  AliRunLoader *runloader, *runloaderOut;    // Input /  Output loaders
+  AliLoader    *gime, *gimeOut; 
  
   // Getting runloader
   runloader    = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
@@ -201,7 +201,7 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
   if (gime->TreeS()==0x0) {
       if (GetDebug()>2) Info("Exec","TreeS is not loaded yet. Loading...");
      gime->LoadSDigits("READ");
-       if (GetDebug()>2) Info("Exec","Now treeS is %#x. MUONLoader is %#x",gime->TreeH(),gime);
+       if (GetDebug()>2) Info("Exec","Now treeS is %#x. MUONLoader is %#x",gime->TreeS(),gime);
   }
 
   if (GetDebug()>2) Info("Exec","Loaders ready");
@@ -217,8 +217,6 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
   }
   // Getting Muon data
   AliMUONData * muondata = pMUON->GetMUONData(); 
-  muondata->SetLoader(gime);
-  muondata->SetTreeAddress("S");
 
   // Loading Event
   Int_t currentevent = fManager->GetOutputEventNr();
@@ -228,14 +226,17 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
        (Int_t(TMath::Log10(currentevent)) == TMath::Log10(currentevent) ) )
     cout <<"ALiMUONDigitizerv2::Exec() Event Number is "<< currentevent <<endl;
 
-  // Output file for digits same as hits
-  //  AliRunLoader *  runloaderout  = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-  //AliLoader * gimeout         = runloaderout->GetLoader("MUONLoader"); 
-  // New branch per chamber for MUON digit in the tree of digits
-  if (gime->TreeD() == 0x0) {
-    gime->MakeDigitsContainer();
+  // Output runloader 
+  runloaderOut  = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  runloaderOut->SetNumberOfEventsPerFile(runloader->GetNumberOfEvents());
+  gimeOut = runloaderOut->GetLoader("MUONLoader");
+  
+
+  if (gimeOut->TreeD() == 0x0) {
+    gimeOut->MakeDigitsContainer();
   }
-  TTree* treeD = gime->TreeD();
+  TTree* treeD = gimeOut->TreeD();
+  muondata->SetLoader(gimeOut);
   muondata->MakeBranch("D");
   muondata->SetTreeAddress("D");
 
@@ -256,21 +257,22 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
     fSignal = kTRUE;
     for (Int_t inputFile=0; inputFile<fManager->GetNinputs(); inputFile++) {
       if (GetDebug()>2) cerr<<"AliMUONDigitizerv2::Exec() Input File is "<<inputFile<<endl;
-
-
-      // Connect MUON Hit branch
-      if (inputFile > 0 ) {
-	fSignal = kFALSE;
-         runloader    = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
-         if (runloader == 0x0) {
-           cerr<<"AliMUONDigitizerv2::Digitize() RunLoader for inputFile "<<inputFile<< " not found !!! "<<endl;
-         }
-         gime  = runloader->GetLoader("MUONLoader");
-         if (gime->TreeS() == 0x0) gime->LoadSDigits("READ");	
+      if (inputFile == 0) {
 	 muondata->SetLoader(gime);
-	 muondata->SetTreeAddress("S");
+	 muondata->SetTreeAddress("S");	
+      } else {
+	// Connect MUON Hit branch	
+	fSignal = kFALSE;
+	runloader    = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+	if (runloader == 0x0) {
+	  cerr<<"AliMUONDigitizerv2::Digitize() RunLoader for inputFile "<<inputFile<< " not found !!! "<<endl;
+	}
+	gime  = runloader->GetLoader("MUONLoader");
+	if (gime->TreeS() == 0x0) gime->LoadSDigits("READ");	
+	muondata->SetLoader(gime);
+	muondata->SetTreeAddress("S");
       }
-
+      
       // Setting the address 
       TTree *treeS = gime->TreeS();
       if (treeS == 0x0) {
@@ -282,9 +284,9 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
 	cerr<<"AliMUONDigitizerv2::Exec inputFile is "<<inputFile<<" "<<endl;
 	cerr<<"AliMUONDigitizerv2::Exec treeS" << treeS <<endl;
       }
-	
+      
       if (GetDebug()>2) cerr<<"AliMUONDigitizerv2::Exec Setting tree addresses"<<endl;
-
+      
       fMask = fManager->GetMask(inputFile);
       //
       // Loop over SDigits
@@ -297,28 +299,28 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
 	//TClonesArray *
 	muonSDigits = muondata->SDigits(ich); 
 	ndig = muonSDigits->GetEntriesFast();
-// 	printf("\n 1 Found %d Sdigits in %p chamber %d", ndig, muonSDigits,ich);
+	// 	printf("\n 1 Found %d Sdigits in %p chamber %d", ndig, muonSDigits,ich);
 	Int_t n = 0;
 	for (k = 0; k < ndig; k++) {
-	    sDigit = (AliMUONDigit*) muonSDigits->UncheckedAt(k);
-	    MakeTransientDigitFromSDigit(ich,sDigit);
+	  sDigit = (AliMUONDigit*) muonSDigits->UncheckedAt(k);
+	  MakeTransientDigitFromSDigit(ich,sDigit);
 	}
 	muondata->ResetSDigits();
 	muondata->GetCathodeS(1);
 	//TClonesArray *
 	muonSDigits = muondata->SDigits(ich); 
 	ndig=muonSDigits->GetEntriesFast();
-// 	printf("\n 2 Found %d Sdigits in %p chamber %d", ndig, muonSDigits,ich);
+	// 	printf("\n 2 Found %d Sdigits in %p chamber %d", ndig, muonSDigits,ich);
 	n = 0;
 	for (k = 0; k < ndig; k++) {
-	    sDigit = (AliMUONDigit*) muonSDigits->UncheckedAt(k);
-	    MakeTransientDigitFromSDigit(ich,sDigit);
+	  sDigit = (AliMUONDigit*) muonSDigits->UncheckedAt(k);
+	  MakeTransientDigitFromSDigit(ich,sDigit);
 	}
 	
       } // SDigits loop end loop over chamber
     } // end file loop
     if (GetDebug()>2) cerr<<"AliMUONDigitizerv2::Exec End of Sdigits, file loops"<<endl;
-
+    
     // Loop on cathodes
     Int_t icat;
     for(icat=0; icat<2; icat++) {
@@ -381,10 +383,7 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
 	if ( digits[2] == icat ) muondata->AddDigit(ich,tracks,charges,digits);
 // 	printf("test rm ich %d padX %d padY %d \n",ich, digits[0], digits[1]);
       }
-      // Filling list of digits per chamber for a given cathode.
-      runloader    = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-      gime        = runloader->GetLoader("MUONLoader");
-      muondata->SetLoader(gime);
+      muondata->SetLoader(gimeOut);
       muondata->Fill("D");
       muondata->ResetDigits();    
     } // end loop cathode
@@ -400,15 +399,13 @@ void AliMUONDigitizerv2::Exec(Option_t* option)
     if (GetDebug()>2) 
       cerr<<"AliMUONDigitizer::Exec: writing the TreeD: "
 	  <<treeD->GetName()<<endl;
-
-    runloader    = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
-    gime        = runloader->GetLoader("MUONLoader");
-    gime->WriteDigits("OVERWRITE");
+    
+    gimeOut->WriteDigits("OVERWRITE");
     delete [] fHitMap;
     delete fTDList;
     muondata->ResetSDigits();
     gime->UnloadSDigits();
-    gime->UnloadDigits();
+    gimeOut->UnloadDigits();
 }
 //------------------------------------------------------------------------
 void AliMUONDigitizerv2::SortTracks(Int_t *tracks,Int_t *charges,Int_t ntr)
