@@ -296,7 +296,7 @@ Int_t AliCascadeComparison(Int_t code=3312, const Char_t *dir=".") {
          AliTrackReference *bref=(AliTrackReference*)brefs->UncheckedAt(i);
          AliTrackReference *nref=(AliTrackReference*)nrefs->UncheckedAt(i);
          AliTrackReference *pref=(AliTrackReference*)prefs->UncheckedAt(i);
-         Int_t pdg=(Int_t)bref->GetLength();  //this is the cascade's PDG !
+         Int_t pdg=(Int_t)nref->GetLength();  //this is the cascade's PDG !
          if (code!=pdg) continue;
          ng++;
          pxg=bref->Px()+nref->Px()+pref->Px(); 
