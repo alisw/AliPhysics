@@ -580,7 +580,7 @@ public:
   Int_t   NSecondaries() const;
   Int_t   CurrentEvent() const;
   void    ProdProcess(char*) const;
-  void    GetSecondary(Int_t, Int_t&, Float_t*, Float_t*);
+  void    GetSecondary(Int_t, Int_t&, TLorentzVector&, TLorentzVector&);
   void   StopTrack();
   void   StopEvent();
   Float_t MaxStep() const;

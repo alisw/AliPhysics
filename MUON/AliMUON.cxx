@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/10/07 21:08:10  fca
+Corrections by G.Chabratova
+
 Revision 1.11  1999/10/05 17:15:45  fca
 Minor syntax for the Alpha OSF
 
@@ -628,7 +631,7 @@ void AliMUON::StepManager()
     /*
     const Float_t kRaddeg = 180/TMath::Pi();
     Int_t nsec, ipart;
-    Float_t x[4], p[4];
+    TLorentzVector x, p;
     Float_t pt, th0, th2;
     char proc[5];
     if(fAccCut) {

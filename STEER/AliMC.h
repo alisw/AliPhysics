@@ -57,7 +57,7 @@ public:
   virtual Int_t   NSecondaries() const=0;
   virtual Int_t   CurrentEvent() const=0;
   virtual void    ProdProcess(char*) const=0;
-  virtual void    GetSecondary(Int_t, Int_t&, Float_t*, Float_t*)=0;
+  virtual void    GetSecondary(Int_t, Int_t&, TLorentzVector&, TLorentzVector&)=0;
   virtual void    StopTrack() =0;
   virtual void    StopEvent() =0;
   virtual Float_t MaxStep() const =0;

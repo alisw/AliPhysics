@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ////////////////////////////////////////////////
@@ -436,31 +439,30 @@ void AliRICH::StepManager()
 {
     printf("Dummy version of RICH step -- it should never happen!!\n");
     const Float_t kRaddeg = 180/TMath::Pi();
-    AliMC* pMC = AliMC::GetMC();
     Int_t nsec, ipart;
-    Float_t x[4], p[4];
+    TLorentzVector x, p;
     Float_t pt, th0, th1;
     char proc[5];
     if(fAccCut) {
-	if((nsec=pMC->NSecondaries())>0) {
-	    pMC->ProdProcess(proc);
-	    if((pMC->TrackPid()==113 || pMC->TrackPid()==114) && !strcmp(proc,"DCAY")) {
+	if((nsec=gMC->NSecondaries())>0) {
+	    gMC->ProdProcess(proc);
+	    if((gMC->TrackPid()==113 || gMC->TrackPid()==114) && !strcmp(proc,"DCAY")) {
 		
 		// Check angular acceptance
 		//* --- and have muons from resonance decays in the wanted window --- 
 		if(nsec != 2) {
 		    printf(" AliRICH::StepManager: Strange resonance Decay into %d particles\n",nsec);
-		    pMC->StopEvent();
+		    gMC->StopEvent();
 		} else {
-		    pMC->GetSecondary(0,ipart,x,p);
+		    gMC->GetSecondary(0,ipart,x,p);
 		    pt  = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
 		    th0 = TMath::ATan2(pt,p[2])*kRaddeg;
-		    pMC->GetSecondary(1,ipart,x,p);
+		    gMC->GetSecondary(1,ipart,x,p);
 		    pt  = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
 		    th1 = TMath::ATan2(pt,p[2])*kRaddeg;
 		    if(!(fAccMin < th0 && th0 < fAccMax) ||
 		       !(fAccMin < th1 && th1 < fAccMax)) 
-			pMC->StopEvent();
+			gMC->StopEvent();
 		}
 	    }
 	}

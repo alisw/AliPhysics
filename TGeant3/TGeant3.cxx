@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/09/29 09:24:30  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1182,7 +1185,8 @@ void    TGeant3::ProdProcess(char* proc) const
 }
 
 //_____________________________________________________________________________
-void    TGeant3::GetSecondary(Int_t isec, Int_t& ipart, Float_t* x, Float_t* p)
+void    TGeant3::GetSecondary(Int_t isec, Int_t& ipart, 
+			      TLorentzVector &x, TLorentzVector &p)
 {
   //
   // Get the parameters of the secondary track number isec produced
