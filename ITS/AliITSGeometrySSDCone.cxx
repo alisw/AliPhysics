@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2003/04/17 22:29:23  nilsen
+Geometry bug fixes and the like. Work still progressing.
+
 Revision 1.2  2003/03/25 23:27:19  nilsen
 ITS new Geometry files. Not yet ready for uses, committed to allow additional
 development.
@@ -440,7 +443,7 @@ AliITSGeometrySSDCone::AliITSGeometrySSDCone(AliITS *its,TVector3 &tran,
     fS.Rx() = fR.Rmax();
     // SDD support plate, SSD side.
     fT.dP()  = 180.0*fWsddSupportPlate/(fRsddSupportPlate*TMath::Pi());
-    fT.P0()  = fPhi0SDDsupports=90.0;
+    fT.P0()  = fPhi0SDDsupports=-0.5*fT.DPhi();
     fT.Z(0)  = fK.ZAt(2);
     fT.Rn(0) = fI.Rmin(4);
     fT.Rx(0) = fRsddSupportPlate;
@@ -622,6 +625,48 @@ void AliITSGeometrySSDCone::PositionG3Geometry(AliITSBaseVolParams &moth,
 	Pos(fN,i+1,fI,zero,irotPost+i);
 	Pos(fM,i+1,fJ,zero,irotPost+i);
     } // end for i
+    // Add SDD thermal sheald screws, and SDD suppport bracket.
+    t = fPhi0Screws;
+    v.SetX(fRcylinderScrews*Sind(t));
+    v.SetY(fRcylinderScrews*Cosd(t));
+    v.SetZ(0.0);
+    Pos(fQ,1,fK,v,0);
+    v.SetZ(fK.ZAt(2)-fR.DzAt());
+    Pos(fR,1,fK,v,0);
+    v.SetZ(fI.ZAt(4)-fS.DzAt());
+    Pos(fS,1,fI,v,0);
+    Pos(fT,1,fK,zero,0);
+    Pos(fU,1,fI,zero,0);
+    Int_t ir=2,it=2;
+    Double_t d = 360./((Double_t)fNssdSupports);
+    cout << fPhi0SDDsupports<<" " << fNssdSupports<< " " << fPhi0Screws<< endl;
+    for(i=1;i<fNinScrews;i++){
+	t = fPhi0Screws + ((Double_t)i)*360./((Double_t)fNinScrews);
+	v.SetX(fRcylinderScrews*Sind(t));
+	v.SetY(fRcylinderScrews*Cosd(t));
+	v.SetZ(0.0);
+	Pos(fQ,i+1,fK,v,0);
+	cout << " t="<<t<<endl;
+	if((t>=-0.5*fT.DPhi()&&t<=+0.5*fT.DPhi())||
+	   (t>=d-0.5*fT.DPhi()&&t<=d+0.5*fT.DPhi())||
+	   (t>=2.*d-0.5*fT.DPhi()&&t<=2.*d+0.5*fT.DPhi())){
+	    // SDD support here
+	    if((t>=-0.5*fT.DPhi()&&t<=+0.5*fT.DPhi())) continue;
+	    t = ((Double_t)(it-1))*d;
+	    cout << " Zmatrix t=" << t << endl;
+	    ZMatrix(++irot,t);
+	    Pos(fT,it,fK,zero,irot);
+	    Pos(fU,it,fI,zero,irot);
+	    it++;
+	}else{ // Air here
+	    v.SetZ(fK.ZAt(2)-fR.DzAt());
+	    Pos(fR,ir,fK,v,0);
+	    v.SetZ(fI.ZAt(4)-fS.DzAt());
+	    Pos(fS,ir,fI,v,0);
+	    ir++;
+	} // end if
+    } // end for i
+    // Air holes and bolts in SSD mounting studs, volumes I,M,N,O.
     return;
 }
 //______________________________________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2003/04/17 22:29:23  nilsen
+Geometry bug fixes and the like. Work still progressing.
+
 Revision 1.3  2003/03/27 08:49:39  hristov
 Initialization of static data members in the implementation file
 
@@ -47,6 +50,7 @@ Created February 2003.
 #include <TTUBE.h>
 #include <TTUBS.h>
 #include <TPCON.h>
+#include <TVector3.h>
 #include <TFile.h>    // only required for Tracking function?
 #include <TCanvas.h>
 #include <TObjArray.h>
@@ -211,7 +215,7 @@ Int_t AliITSBaseGeometry::ITSIndexToITSG3name(const Int_t i){
     return k;
 }
 //______________________________________________________________________
-Int_t AliITSBaseGeometry::ITSG3VnameToIndex(const char *name)const{
+Int_t AliITSBaseGeometry::ITSG3VnameToIndex(const char *name){
     // Given the last three characters of the ITS Geant3 volume name,
     // this returns the index. The valid characters must be in the range
     // '0' through 'Z'. This will include all upper case letter and the
@@ -277,7 +281,7 @@ Int_t AliITSBaseGeometry::GetVolumeIndex(const TString &a){
 //______________________________________________________________________
 void AliITSBaseGeometry::Box(const char *gnam,const TString &dis,
 			     Double_t dx,Double_t dy,Double_t dz,Int_t med){
-    // Interface to TMC->Gsvolu() for ITS bos geometries. Box with faces
+    // Interface to TMC->Gsvolu() for ITS box geometries. Box with faces
     // perpendicular to the axes. It has 3 paramters. See SetScale() for
     // units. Default units are geant 3 [cm].
     // Inputs:
@@ -300,6 +304,32 @@ void AliITSBaseGeometry::Box(const char *gnam,const TString &dis,
     param[1] = fScale*dy;
     param[2] = fScale*dz;
     G3name(gnam,name);
+    gMC->Gsvolu(name,"BOX ",GetMed(med),param,3);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::Box(AliITSBoxData &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS box geometries. Box with faces
+    // perpendicular to the axes. It has 3 paramters. See SetScale() for
+    // units. Default units are geant 3 [cm].
+    // Inputs:
+    //    AliITSBoxData &d   Structure with the Box parameters defined.
+    //    Int_t         med  media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[3];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.DxAt();
+    param[1] = fScale*d.DyAt();
+    param[2] = fScale*d.DzAt();
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
     gMC->Gsvolu(name,"BOX ",GetMed(med),param,3);
 }
 //______________________________________________________________________
@@ -333,6 +363,33 @@ void AliITSBaseGeometry::Trapezoid1(const char *gnam,const TString &dis,
     param[2] = fScale*dy;
     param[3] = fScale*dz;
     G3name(gnam,name);
+    gMC->Gsvolu(name,"TRD1",GetMed(med),param,4);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::Trapezoid1(AliITSTrapezoid1Data &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS TRD1 geometries. Trapezoid with the 
+    // x dimension varing along z. It has 4 parameters. See SetScale() for
+    // units. Default units are geant 3 [cm].
+    // Inputs:
+    //    AliITSTrapezoid1Data &d   Structure with the Trapazoid data in it.
+    //    Int_t                med  media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[4];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.DxAt(0);
+    param[1] = fScale*d.DxAt(1);
+    param[2] = fScale*d.DyAt();
+    param[3] = fScale*d.DzAt();
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
     gMC->Gsvolu(name,"TRD1",GetMed(med),param,4);
 }
 //______________________________________________________________________
@@ -370,6 +427,34 @@ void AliITSBaseGeometry::Trapezoid2(const char *gnam,const TString &dis,
     param[3] = fScale*dyp;
     param[4] = fScale*dz;
     G3name(gnam,name);
+    gMC->Gsvolu(name,"TRD2",GetMed(med),param,5);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::Trapezoid2(AliITSTrapezoid2Data &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS TRD2 geometries. Trapezoid with the 
+    // x and y dimension varing along z. It has 5 parameters. See SetScale() 
+    // for units. Default units are geant 3 [cm].
+    // Inputs:
+    //    AliITSTrapezoid2Data &d   Structure with the Trapazoid data in it.
+    //    Int_t                med  media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[5];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.DxAt(0);
+    param[1] = fScale*d.DxAt(1);
+    param[2] = fScale*d.DyAt(0);
+    param[3] = fScale*d.DyAt(1);
+    param[4] = fScale*d.DzAt();
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
     gMC->Gsvolu(name,"TRD2",GetMed(med),param,5);
 }
 //______________________________________________________________________
@@ -439,482 +524,43 @@ void AliITSBaseGeometry::Trapezoid(const char *gnam,const TString &dis,
     gMC->Gsvolu(name,"TRAP",GetMed(med),param,11);
 }
 //______________________________________________________________________
-void AliITSBaseGeometry::Tube(const char *gnam,const TString &dis,
-			      Double_t rmin,Double_t rmax,Double_t dz,
-			      Int_t med){
-    // Interface to TMC->Gsvolu() for ITS TUBE geometries. Simple Tube. It has
-    // 3 parameters. See SetScale() 
-    // for units. Default units are geant 3 [cm].
+void AliITSBaseGeometry::Trapezoid(AliITSTrapezoidData &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS TRAP geometries. General Trapezoid, 
+    // The faces perpendicular to z are trapezia and their centers are not 
+    // necessarily on a line parallel to the z axis. This shape has 11 
+    // parameters, but only cosidering that the faces should be planar, only
+    // 9 are really independent. A check is performed on the user parameters 
+    // and a message is printed in case of non-planar faces. Ignoring this
+    // warning may cause unpredictable effects at tracking time. See 
+    // SetScale() for units. Default units are geant 3 [cm].
     // Inputs:
-    //    const char *gnam  3 character geant volume name. The letter "I"
-    //                        is appended to the front to indecate that this
-    //                        is an ITS volume.
-    //    TString &dis        String containging part discription.
-    //    Double_t rmin       Inside Radius.
-    //    Double_t rmax       Outside Radius.
-    //    Double_t dz         half-length along the z-axis
+    //    AliITSTrapezoidData &d   Structure with the Trapazoid data in it.
     //    Int_t    med        media index number.
     // Output:
     //    none.
     // Return.
     //    none.
     char name[5];
-    Float_t param[3];
-
-    param[0] = fScale*rmin;
-    param[1] = fScale*rmax;
-    param[2] = fScale*dz;
-    G3name(gnam,name);
-    gMC->Gsvolu(name,"TUBE",GetMed(med),param,3);
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::Tube(AliITSTubeData &d,Int_t med){
-    // Interface to TMC->Gsvolu() for ITS TUBE geometries. Simple Tube. It has
-    // 3 parameters. See SetScale() 
-    // for units. Default units are geant 3 [cm].
-    // Inputs:
-    //    AliITSTubeData     Structure with the tube parameters
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t param[3];
+    Float_t param[11];
     Int_t i,k;
     char *j = (char *) &k;
 
-    param[0] = fScale*d.Rmin();
-    param[1] = fScale*d.Rmax();
-    param[2] = fScale*d.DzAt();
+    param[0] = fScale*d.DzAt();
+    param[1] = d.Theta();
+    param[2] = d.Phi();
+    param[3] = fScale*d.HAt(0);
+    param[4] = fScale*d.Bl(0);
+    param[5] = fScale*d.Tl(0);
+    param[6] = d.Alpha(0);
+    param[7] = fScale*d.HAt(1);
+    param[8] = fScale*d.Bl(1);
+    param[9] = fScale*d.Tl(1);
+    param[10] = d.Alpha(1);
     d.SetVid(AddVolName((d.GetName())->Data()));
     k = ITSIndexToITSG3name(d.GetVid());
     for(i=0;i<4;i++) name[i] = j[i];
     name[4] = '\0';
-    gMC->Gsvolu(name,"TUBE",GetMed(med),param,3);
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::TubeSegment(const char *gnam,const TString &dis,
-				     Double_t rmin,Double_t rmax,Double_t dz,
-				     Double_t phi1,Double_t phi2,Int_t med){
-    // Interface to TMC->Gsvolu() for ITS TUBE geometries. Phi segment of a 
-    // tube. It has 5  parameters. Phi1 should be smaller than phi2. If this
-    // is not the case, the system adds 360 degrees to phi2. See SetScale() 
-    // for units. Default units are geant 3 [cm].
-    // Inputs:
-    //    const char *gnam  3 character geant volume name. The letter "I"
-    //                        is appended to the front to indecate that this
-    //                        is an ITS volume.
-    //    TString &dis        String containging part discription.
-    //    Double_t rmin       Inside Radius.
-    //    Double_t rmax       Outside Radius.
-    //    Double_t dz         half-length along the z-axis
-    //    Double_t phi1       Starting angle of the segment [degree].
-    //    Double_t phi2       Ending angle of the segment [degree].
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t param[5];
-
-    param[0] = fScale*rmin;
-    param[1] = fScale*rmax;
-    param[2] = fScale*dz;
-    param[3] = phi1;
-    param[4] = phi2;
-    G3name(gnam,name);
-    gMC->Gsvolu(name,"TUBS",GetMed(med),param,5);
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::Cone(const char *gnam,const TString &dis,
-			      Double_t dz,Double_t rmin1,Double_t rmax1,
-			      Double_t rmin2,Double_t rmax2,Int_t med){
-    // Interface to TMC->Gsvolu() for ITS Cone geometries. Conical tube. It 
-    // has 5 parameters. See SetScale() 
-    // for units. Default units are geant 3 [cm].
-    // Inputs:
-    //    const char *gnam  3 character geant volume name. The letter "I"
-    //                        is appended to the front to indecate that this
-    //                        is an ITS volume.
-    //    TString &dis        String containging part discription.
-    //    Double_t dz         half-length along the z-axis
-    //    Double_t rmin1      Inside Radius at -dz.
-    //    Double_t rmax1      Outside Radius at -dz.
-    //    Double_t rmin2      inside radius at +dz.
-    //    Double_t rmax2      outside radius at +dz.
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t param[5];
-
-    param[0] = fScale*dz;
-    param[1] = fScale*rmin1;
-    param[2] = fScale*rmax1;
-    param[3] = fScale*rmin2;
-    param[4] = fScale*rmax2;
-    G3name(gnam,name);
-    gMC->Gsvolu(name,"CONS",GetMed(med),param,5);
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::ConeSegment(const char *gnam,const TString &dis,
-				     Double_t dz,Double_t rmin1,
-				     Double_t rmax1,Double_t rmin2,
-				     Double_t rmax2,Double_t phi1,
-				     Double_t phi2,Int_t med){
-    // Interface to TMC->Gsvolu() for ITS ConS geometries. One segment of a 
-    // conical tube. It has 7 parameters. Phi1 should be smaller than phi2. 
-    // If this is not the case, the system adds 360 degrees to phi2. See 
-    // SetScale() for units. Default units are geant 3 [cm].
-    // Inputs:
-    //    const char *gnam  3 character geant volume name. The letter "I"
-    //                        is appended to the front to indecate that 
-    //                        this is an ITS volume.
-    //    TString &dis        String containging part discription.
-    //    Double_t dz         half-length along the z-axis
-    //    Double_t rmin1      Inside Radius at -dz.
-    //    Double_t rmax1      Outside Radius at -dz.
-    //    Double_t rmin2      inside radius at +dz.
-    //    Double_t rmax2      outside radius at +dz.
-    //    Double_t phi1       Starting angle of the segment [degree].
-    //    Double_t phi2       Ending angle of the segment [degree].
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t param[7];
-
-    param[0] = fScale*dz;
-    param[1] = fScale*rmin1;
-    param[2] = fScale*rmax1;
-    param[3] = fScale*rmin2;
-    param[4] = fScale*rmax2;
-    param[5] = phi1;
-    param[6] = phi2;
-    G3name(gnam,name);
-    gMC->Gsvolu(name,"CONS",GetMed(med),param,7);
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::Sphere(const char *gnam,const TString &dis,
-				Double_t rmin,Double_t rmax,Double_t the1,
-				Double_t the2,Double_t phi1,Double_t phi2,
-				Int_t med){
-    // Interface to TMC->Gsvolu() for ITS SPHE geometries. Segment of a 
-    // sphereical shell. It has 6 parameters. See SetScale() 
-    // for units. Default units are geant 3 [cm].
-    // Inputs:
-    //    const char *gnam  3 character geant volume name. The letter "I"
-    //                        is appended to the front to indecate that this
-    //                        is an ITS volume.
-    //    TString &dis        String containging part discription.
-    //    Double_t rmin       Inside Radius.
-    //    Double_t rmax       Outside Radius.
-    //    Double_t the1       staring polar angle of the shell [degree].
-    //    Double_t the2       ending polar angle of the shell [degree].
-    //    Double_t phui       staring asimuthal angle of the shell [degree].
-    //    Double_t phi2       ending asimuthal angle of the shell [degree].
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t param[6];
-
-    param[0] = fScale*rmin;
-    param[1] = fScale*rmax;
-    param[2] = the1;
-    param[3] = the2;
-    param[4] = phi1;
-    param[5] = phi2;
-    G3name(gnam,name);
-    gMC->Gsvolu(name,"SPHE",GetMed(med),param,6);
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::Parallelepiped(const char *gnam,const TString &dis,
-					Double_t dx,Double_t dy,Double_t dz,
-					Double_t alpha,Double_t thet,
-					Double_t phi,Int_t med){
-    // Interface to TMC->Gsvolu() for ITS PARA geometries. Parallelepiped. It 
-    // has 6 parameters. See SetScale() for units. Default units are geant 3 
-    // [cm].
-    // Inputs:
-    //    const char *gnam  3 character geant volume name. The letter "I"
-    //                        is appended to the front to indecate that this
-    //                        is an ITS volume.
-    //    TString &dis        String containging part discription.
-    //    Double_t dx         half-length allong x-axis
-    //    Double_t dy         half-length allong y-axis
-    //    Double_t dz         half-length allong z-axis
-    //    Double_t alpha      angle formed by the y axis and by the plane 
-    //                        joining the center of teh faces parallel to the 
-    //                        z-x plane at -dY and +dy [degree].
-    //    Double_t thet       polar angle of the line joining the centers of 
-    //                        the faces at -dz and +dz in z [degree].
-    //    Double_t phi        azimuthal angle of teh line joing the centers 
-    //                        of the faaces at -dz and +dz in z [degree].
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t param[6];
-
-    param[0] = fScale*dx;
-    param[1] = fScale*dy;
-    param[2] = fScale*dz;
-    param[3] = alpha;
-    param[4] = thet;
-    param[5] = phi;
-    G3name(gnam,name);
-    gMC->Gsvolu(name,"PARA",GetMed(med),param,6);
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::PolyGon(const char *gnam,const TString &dis,
-				 Double_t phi1,Double_t dphi,Int_t npdv,
-				 Int_t nz,Double_t *z,Double_t *rmin,
-				 Double_t *rmax,Int_t med){
-    // Interface to TMC->Gsvolu() for ITS PGON geometry. Polygon It has 10 
-    // parameters or more. See SetScale() for units. Default units are geant
-    // 3 [cm].
-    // Inputs:
-    //    const char *gnam  3 character geant volume name. The letter "I"
-    //                        is appended to the front to indecate that this
-    //                        is an ITS volume.
-    //    TString &dis        String containging part discription.
-    //    Double_t phi1       the azimuthal angle at which the volume begins 
-    //                        (angles are counted clouterclockwise) [degrees].
-    //    Double_t dphi       opening angle of the volume, which extends from 
-    //                        phi1 to phi1+dphi [degree].
-    //    Int_t npdv          the number of sides of teh cross section 
-    //                        between the given phi limits.
-    //    Int_t nz            number of planes perpendicular to the z axis 
-    //                        where the dimension of the section is given - 
-    //                        this number should be at least 2 and NP triples 
-    //                        of number must follow.
-    //    Double_t *z         array [nz] of z coordiates of the sections..
-    //    Double_t *rmin      array [nz] of radius of teh circle tangent to 
-    //                        the sides of the inner polygon in teh 
-    //                        cross-section.
-    //    Double_t *rmax      array [nz] of radius of the circle tangent to 
-    //                        the sides of the outer polygon in the 
-    //                       cross-section.
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t *param;
-    Int_t n,i;
-
-    n = 4+3*nz;
-    param = new Float_t[n];
-    param[0] = phi1;
-    param[1] = dphi;
-    param[2] = (Float_t)npdv;
-    param[3] = (Float_t)nz;
-    for(i=0;i<nz;i++){
-	param[4+3*i] = fScale*z[i];
-	param[5+3*i] = fScale*rmin[i];
-	param[6+3*i] = fScale*rmax[i];
-    } // end for i
-    G3name(gnam,name);
-    gMC->Gsvolu(name,"PGON",GetMed(med),param,n);
-
-    delete[] param;
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::PolyGon(AliITSPGonData &d,Int_t med){
-    // Interface to TMC->Gsvolu() for ITS PCON geometry. Poly-cone It has 9 
-    // parameters or more. See SetScale() for units. Default units are geant
-    // 3 [cm].
-    // Inputs:
-    //    AliITSPGonData &d  Object with poly cone data stored in it.
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t *param;
-    Int_t n,i,k;
-    char *j = (char *) &k;
-
-    n = 4+3*d.Nz();
-    param = new Float_t[n];
-    param[0] = d.Phi0();
-    param[1] = d.DPhi();
-    param[2] = (Float_t) d.NPhi();
-    param[3] = (Float_t) d.Nz();
-    for(i=0;i<d.Nz();i++){
-	param[4+3*i] = fScale*d.ZAt(i);
-	param[5+3*i] = fScale*d.Rmin(i);
-	param[6+3*i] = fScale*d.Rmax(i);
-    } // end for i
-    d.SetVid(AddVolName((d.GetName())->Data()));
-    k = ITSIndexToITSG3name(d.GetVid());
-    for(i=0;i<4;i++) name[i] = j[i];
-    name[4] = '\0';
-    gMC->Gsvolu(name,"PGON",GetMed(med),param,n);
-
-    delete[] param;
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::PolyCone(const char *gnam,const TString &dis,
-				  Double_t phi1,Double_t dphi,Int_t nz,
-				  Double_t *z,Double_t *rmin,Double_t *rmax,
-				  Int_t med){
-    // Interface to TMC->Gsvolu() for ITS PCON geometry. Poly-cone It has 9 
-    // parameters or more. See SetScale() for units. Default units are geant
-    // 3 [cm].
-    // Inputs:
-    //    const char *gnam  3 character geant volume name. The letter "I"
-    //                        is appended to the front to indecate that this
-    //                        is an ITS volume.
-    //    TString &dis        String containging part discription.
-    //    Double_t phi1       the azimuthal angle at which the volume begins 
-    //                        (angles are counted clouterclockwise) [degrees].
-    //    Double_t dphi       opening angle of the volume, which extends from 
-    //                        phi1 to phi1+dphi [degree].
-    //    Int_t nz            number of planes perpendicular to the z axis 
-    //                        where the dimension of the section is given - 
-    //                        this number should be at least 2 and NP triples 
-    //                        of number must follow.
-    //    Double_t *z         Array [nz] of z coordinate of the section.
-    //    Double_t *rmin      Array [nz] of radius of teh inner circle in the 
-    //                        cross-section.
-    //    Double_t *rmax      Array [nz] of radius of the outer circle in the 
-    //                        cross-section.
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t *param;
-    Int_t n,i;
-
-    n = 3+3*nz;
-    param = new Float_t[n];
-    param[0] = phi1;
-    param[1] = dphi;
-    param[2] = (Float_t) nz;
-    for(i=0;i<nz;i++){
-	param[3+3*i] = fScale*z[i];
-	param[4+3*i] = fScale*rmin[i];
-	param[5+3*i] = fScale*rmax[i];
-    } // end for i
-    G3name(gnam,name);
-    gMC->Gsvolu(name,"PCON",GetMed(med),param,n);
-
-    delete[] param;
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::PolyCone(AliITSPConeData &d,Int_t med){
-    // Interface to TMC->Gsvolu() for ITS PCON geometry. Poly-cone It has 9 
-    // parameters or more. See SetScale() for units. Default units are geant
-    // 3 [cm].
-    // Inputs:
-    //    AliITSPConeData &d  Object with poly cone data stored in it.
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t *param;
-    Int_t n,i,k;
-    char *j = (char *) &k;
-
-    n = 3+3*d.Nz();
-    param = new Float_t[n];
-    param[0] = d.Phi0();
-    param[1] = d.DPhi();
-    param[2] = (Float_t) d.Nz();
-    for(i=0;i<d.Nz();i++){
-	param[3+3*i] = fScale*d.ZAt(i);
-	param[4+3*i] = fScale*d.Rmin(i);
-	param[5+3*i] = fScale*d.Rmax(i);
-    } // end for if
-    d.SetVid(AddVolName((d.GetName())->Data()));
-    k = ITSIndexToITSG3name(d.GetVid());
-    for(i=0;i<4;i++) name[i] = j[i];
-    name[4] = '\0';
-    gMC->Gsvolu(name,"PCON",GetMed(med),param,n);
-
-    delete[] param;
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::TubeElliptical(const char *gnam,const TString &dis,
-			       Double_t p1,Double_t p2,Double_t dz,Int_t med){
-    // Interface to TMC->Gsvolu() for ITS ELTU geometries. Elliptical 
-    // cross-section Tube. It has 3 parameters. See SetScale() 
-    // for units. Default units are geant 3 [cm]. The equation of the surface 
-    // is x^2 * p1^-2 + y^2 * p2^-2 = 1.
-    // Inputs:
-    //    const char *gnam  3 character geant volume name. The letter "I"
-    //                        is appended to the front to indecate that this
-    //                        is an ITS volume.
-    //    TString &dis        String containging part discription.
-    //    Double_t p1         semi-axis of the elipse along x.
-    //    Double_t p2         semi-axis of the elipse along y.
-    //    Double_t dz         half-length along the z-axis
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t param[3];
-
-    param[0] = fScale*p1;
-    param[1] = fScale*p2;
-    param[2] = fScale*dz;
-    G3name(gnam,name);
-    gMC->Gsvolu(name,"ELTU",GetMed(med),param,3);
-}
-//______________________________________________________________________
-void AliITSBaseGeometry::HyperbolicTube(const char *gnam,const TString &dis,
-			       Double_t rmin,Double_t rmax,Double_t dz,
-			       Double_t thet,Int_t med){
-    // Interface to TMC->Gsvolu() for ITS HYPE geometries. Hyperbolic tube. 
-    // Fore example the inner and outer surfaces are hyperboloids, as would 
-    // be foumed by a system of cylinderical wires which were then rotated 
-    // tangentially about their centers. It has 4 parameters. See SetScale() 
-    // for units. Default units are geant 3 [cm]. The hyperbolic surfaces are 
-    // given by r^2 = (ztan(thet)^2 + r(z=0)^2.
-    // Inputs:
-    //    const char *gnam  3 character geant volume name. The letter "I"
-    //                        is appended to the front to indecate that this
-    //                        is an ITS volume.
-    //    TString &dis        String containging part discription.
-    //    Double_t rmin       Inner radius at z=0 where tube is narrowest.
-    //    Double_t rmax       Outer radius at z=0 where tube is narrowest.
-    //    Double_t dz         half-length along the z-axis
-    //    Double_t thet       stero angel of rotation of the two faces 
-    //                       [degrees].
-    //    Int_t    med        media index number.
-    // Output:
-    //    none.
-    // Return.
-    //    none.
-    char name[5];
-    Float_t param[4];
-
-    param[0] = fScale*rmin;
-    param[1] = fScale*rmax;
-    param[2] = fScale*dz;
-    param[3] = thet;
-    G3name(gnam,name);
-    gMC->Gsvolu(name,"HYPE",GetMed(med),param,4);
+    gMC->Gsvolu(name,"TRAP",GetMed(med),param,11);
 }
 //______________________________________________________________________
 void AliITSBaseGeometry::TwistedTrapezoid(const char *gnam,
@@ -1036,6 +682,212 @@ void AliITSBaseGeometry::TwistedTrapezoid(const char *gnam,
     gMC->Gsvolu(name,"GTRA",GetMed(med),param,12);
 }
 //______________________________________________________________________
+void AliITSBaseGeometry::TwistedTrapezoid(AliITSTrapezoidTwistedData &d,
+					  Int_t med){
+    // Interface to TMC->Gsvolu() for ITS GTRA geometries. General twisted 
+    // trapazoid. The faces perpendicular to z are trapazia and their centers 
+    // are not necessarily on a line parallel to the z axis as the TRAP. 
+    // Additionally, the faces may be twisted so that none of their edges are 
+    // parallel. It is a TRAP shape, exept that it is twisted in the x-y 
+    // plane as a function of z. The parallel sides perpendicular to the x 
+    // axis are rotated with respect to the x axis by an angle TWIST, which 
+    // is one of the parameters. The shape is defined by the eight corners 
+    // and is assumed to be constructed of straight lines joingin points on 
+    // the boundry of the trapezoidal face at Z=-dz to the coresponding 
+    // points on the face at z=+dz. Divisions are not allowed. It has 12 
+    // parameters. See SetScale() for units. Default units are geant 3 [cm].
+    // Note: This shape suffers from the same limitations than the TRAP. The
+    // tracking routines assume that the faces are planar, but htis
+    // constraint is not easily expressed in terms of the 12 parameters. 
+    // Additionally, no check on th efaces is performed in this case. Users 
+    // should avoid to use this shape as much as possible, and if they have
+    // to do so, they should make sure that the faces are really planes. 
+    // If this is not the case, the result of the trasport is unpredictable. 
+    // To accelerat ethe computations necessary for trasport, 18 additioanl 
+    // parameters are calculated for this shape are 1 DXODZ dx/dz of the 
+    // line joing the centers of the faces at z=+_dz. 2 DYODZ dy/dz of the 
+    // line joing the centers of the faces at z=+_dz.
+    // 3 XO1    x at z=0 for line joing the + on parallel side, perpendicular 
+    //          corners at z=+_dz.
+    // 4 YO1    y at z=0 for line joing the + on parallel side, + on 
+    //          perpendicular corners at z=+-dz.
+    // 5 DXDZ1  dx/dz for line joing the + on parallel side, + on 
+    //          perpendicular corners at z=+-dz.
+    // 6 DYDZ1  dy/dz for line joing the + on parallel side, + on 
+    //          perpendicular corners at z=+-dz.
+    // 7 X02    x at z=0 for line joing the - on parallel side, + on 
+    //          perpendicular corners at z=+-dz.
+    // 8 YO2    y at z=0 for line joing the - on parallel side, + on 
+    //          perpendicular corners at z=+-dz.
+    // 9 DXDZ2  dx/dz for line joing the - on parallel side, + on 
+    //          perpendicular corners at z=+-dz.
+    // 10 DYDZ2dy/dz for line joing the - on parallel side, + on 
+    //          perpendicular corners at z=+-dz.
+    // 11 XO3   x at z=0 for line joing the - on parallel side, - on 
+    //          perpendicular corners at z=+-dz.
+    // 12 YO3   y at z=0 for line joing the - on parallel side, - on 
+    //          perpendicular corners at z=+-dz.
+    // 13 DXDZ3 dx/dzfor line joing the - on parallel side, - on 
+    //          perpendicular corners at z=+-dz.
+    // 14 DYDZ3 dydz for line joing the - on parallel side, - on 
+    //          perpendicular corners at z=+-dz.
+    // 15 XO4   x at z=0 for line joing the + on parallel side, - on 
+    //          perpendicular corners at z=+-dz.
+    // 16 YO4   y at z=0 for line joing the + on parallel side, - on 
+    //          perpendicular corners at z=+-dz.
+    // 17 DXDZ4 dx/dz for line joing the + on parallel side, - on 
+    //          perpendicular corners at z=+-dz.
+    // 18 DYDZ4 dydz for line joing the + on parallel side, - on 
+    //          perpendicular corners at z=+-dz.
+    // Inputs:
+    //    AliITSTrapezoidTwistedData &d   Structure with the tube parameters
+    //    Int_t                      med  media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[12];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.DzAt();
+    param[1] = d.Theta();
+    param[2] = d.Phi();
+    param[3] = d.Twist();
+    param[4] = fScale*d.HAt(0);
+    param[5] = fScale*d.Bl(0);
+    param[6] = fScale*d.Tl(0);
+    param[7] = d.Alpha(0);
+    param[8] = fScale*d.HAt(1);
+    param[9] = fScale*d.Bl(1);
+    param[10] = fScale*d.Tl(1);
+    param[11] = d.Alpha(1);
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"GTRA",GetMed(med),param,12);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::Tube(const char *gnam,const TString &dis,
+			      Double_t rmin,Double_t rmax,Double_t dz,
+			      Int_t med){
+    // Interface to TMC->Gsvolu() for ITS TUBE geometries. Simple Tube. It has
+    // 3 parameters. See SetScale() 
+    // for units. Default units are geant 3 [cm].
+    // Inputs:
+    //    const char *gnam  3 character geant volume name. The letter "I"
+    //                        is appended to the front to indecate that this
+    //                        is an ITS volume.
+    //    TString &dis        String containging part discription.
+    //    Double_t rmin       Inside Radius.
+    //    Double_t rmax       Outside Radius.
+    //    Double_t dz         half-length along the z-axis
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[3];
+
+    param[0] = fScale*rmin;
+    param[1] = fScale*rmax;
+    param[2] = fScale*dz;
+    G3name(gnam,name);
+    gMC->Gsvolu(name,"TUBE",GetMed(med),param,3);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::Tube(AliITSTubeData &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS TUBE geometries. Simple Tube. It has
+    // 3 parameters. See SetScale() 
+    // for units. Default units are geant 3 [cm].
+    // Inputs:
+    //    AliITSTubeData &d    Structure with the tube parameters
+    //    Int_t          med   media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[3];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.Rmin();
+    param[1] = fScale*d.Rmax();
+    param[2] = fScale*d.DzAt();
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"TUBE",GetMed(med),param,3);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::TubeSegment(const char *gnam,const TString &dis,
+				     Double_t rmin,Double_t rmax,Double_t dz,
+				     Double_t phi1,Double_t phi2,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS TUBE geometries. Phi segment of a 
+    // tube. It has 5  parameters. Phi1 should be smaller than phi2. If this
+    // is not the case, the system adds 360 degrees to phi2. See SetScale() 
+    // for units. Default units are geant 3 [cm].
+    // Inputs:
+    //    const char *gnam  3 character geant volume name. The letter "I"
+    //                        is appended to the front to indecate that this
+    //                        is an ITS volume.
+    //    TString &dis        String containging part discription.
+    //    Double_t rmin       Inside Radius.
+    //    Double_t rmax       Outside Radius.
+    //    Double_t dz         half-length along the z-axis
+    //    Double_t phi1       Starting angle of the segment [degree].
+    //    Double_t phi2       Ending angle of the segment [degree].
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[5];
+
+    param[0] = fScale*rmin;
+    param[1] = fScale*rmax;
+    param[2] = fScale*dz;
+    param[3] = phi1;
+    param[4] = phi2;
+    G3name(gnam,name);
+    gMC->Gsvolu(name,"TUBS",GetMed(med),param,5);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::TubeSegment(AliITSTubeSegData &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS TUBE geometries. Phi segment of a 
+    // tube. It has 5  parameters. Phi1 should be smaller than phi2. If this
+    // is not the case, the system adds 360 degrees to phi2. See SetScale() 
+    // for units. Default units are geant 3 [cm].
+    // Inputs:
+    //    AliITSTubeSegData &d   Structure with the tube parameters
+    //    Int_t             med  media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[5];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.Rmin();
+    param[1] = fScale*d.Rmax();
+    param[2] = fScale*d.DzAt();
+    param[3] = d.Phi0();
+    param[4] = d.Phi1();
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"TUBS",GetMed(med),param,5);
+}
+//______________________________________________________________________
 void AliITSBaseGeometry::CutTube(const char *gnam,const TString &dis,
 				 Double_t rmin,Double_t rmax,Double_t dz,
 				 Double_t phi1,Double_t phi2,Double_t lx,
@@ -1053,7 +905,6 @@ void AliITSBaseGeometry::CutTube(const char *gnam,const TString &dis,
     //    TString &dis        String containging part discription.
     //    Double_t rmin       Inner radius at z=0 where tube is narrowest.
     //    Double_t rmax       Outer radius at z=0 where tube is narrowest.
-    //    Double_t dz         half-length along the z-axis
     //    Double_t dz         half-length along the z-axis
     //    Double_t phi1       Starting angle of the segment [degree].
     //    Double_t phi2       Ending angle of the segment [degree].
@@ -1090,6 +941,607 @@ void AliITSBaseGeometry::CutTube(const char *gnam,const TString &dis,
     param[10] = hz;
     G3name(gnam,name);
     gMC->Gsvolu(name,"CTUB",GetMed(med),param,11);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::CutTube(AliITSTubeCutData &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS CTUB geometries. Cut tube. A tube 
+    // cut at the extremities with planes not necessarily perpendicular to 
+    // the z axis. It has 11 parameters. See SetScale() for units. Default 
+    // units are geant 3 [cm]. phi1 should be smaller than phi2. If this is 
+    // not the case, the system adds 360 degrees to phi2.
+    // Inputs:
+    //    AliITSTubeCutData &d    Structure with the tube parameters
+    //    Int_t             med    media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[11];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.Rmin();
+    param[1] = fScale*d.Rmax();
+    param[2] = fScale*d.DzAt();
+    param[3] = d.Phi0();
+    param[4] = d.Phi1();
+    param[5] = d.Normal(0,0);
+    param[6] = d.Normal(0,1);
+    param[7] = d.Normal(0,2);
+    param[8] = d.Normal(1,0);
+    param[9] = d.Normal(1,1);
+    param[10] = d.Normal(1,2);
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"CTUB",GetMed(med),param,11);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::TubeElliptical(const char *gnam,const TString &dis,
+			       Double_t p1,Double_t p2,Double_t dz,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS ELTU geometries. Elliptical 
+    // cross-section Tube. It has 3 parameters. See SetScale() 
+    // for units. Default units are geant 3 [cm]. The equation of the surface 
+    // is x^2 * p1^-2 + y^2 * p2^-2 = 1.
+    // Inputs:
+    //    const char *gnam  3 character geant volume name. The letter "I"
+    //                        is appended to the front to indecate that this
+    //                        is an ITS volume.
+    //    TString &dis        String containging part discription.
+    //    Double_t p1         semi-axis of the elipse along x.
+    //    Double_t p2         semi-axis of the elipse along y.
+    //    Double_t dz         half-length along the z-axis
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[3];
+
+    param[0] = fScale*p1;
+    param[1] = fScale*p2;
+    param[2] = fScale*dz;
+    G3name(gnam,name);
+    gMC->Gsvolu(name,"ELTU",GetMed(med),param,3);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::TubeElliptical(AliITSTubeEllipticalData &d,
+					Int_t med){
+    // Interface to TMC->Gsvolu() for ITS ELTU geometries. Elliptical 
+    // cross-section Tube. It has 3 parameters. See SetScale() 
+    // for units. Default units are geant 3 [cm]. The equation of the surface 
+    // is x^2 * p1^-2 + y^2 * p2^-2 = 1.
+    // Inputs:
+    //    AliITSTubeElipticData &d  Structure with the tube parameters
+    //    Int_t                med  media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[3];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.P0();
+    param[1] = fScale*d.P1();
+    param[2] = fScale*d.DzAt();
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"ELTU",GetMed(med),param,3);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::HyperbolicTube(const char *gnam,const TString &dis,
+			       Double_t rmin,Double_t rmax,Double_t dz,
+			       Double_t thet,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS HYPE geometries. Hyperbolic tube. 
+    // Fore example the inner and outer surfaces are hyperboloids, as would 
+    // be foumed by a system of cylinderical wires which were then rotated 
+    // tangentially about their centers. It has 4 parameters. See SetScale() 
+    // for units. Default units are geant 3 [cm]. The hyperbolic surfaces are 
+    // given by r^2 = (ztan(thet)^2 + r(z=0)^2.
+    // Inputs:
+    //    const char *gnam  3 character geant volume name. The letter "I"
+    //                        is appended to the front to indecate that this
+    //                        is an ITS volume.
+    //    TString &dis        String containging part discription.
+    //    Double_t rmin       Inner radius at z=0 where tube is narrowest.
+    //    Double_t rmax       Outer radius at z=0 where tube is narrowest.
+    //    Double_t dz         half-length along the z-axis
+    //    Double_t thet       stero angel of rotation of the two faces 
+    //                       [degrees].
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[4];
+
+    param[0] = fScale*rmin;
+    param[1] = fScale*rmax;
+    param[2] = fScale*dz;
+    param[3] = thet;
+    G3name(gnam,name);
+    gMC->Gsvolu(name,"HYPE",GetMed(med),param,4);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::HyperbolicTube(AliITSTubeHyperbolicData &d,
+					Int_t med){
+    // Interface to TMC->Gsvolu() for ITS HYPE geometries. Hyperbolic tube. 
+    // Fore example the inner and outer surfaces are hyperboloids, as would 
+    // be foumed by a system of cylinderical wires which were then rotated 
+    // tangentially about their centers. It has 4 parameters. See SetScale() 
+    // for units. Default units are geant 3 [cm]. The hyperbolic surfaces are 
+    // given by r^2 = (ztan(thet)^2 + r(z=0)^2.
+    // Inputs:
+    //    AliITSTubeHyperbolicData &d  Structure with the tube parameters
+    //    Int_t                    med  media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[4];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.Rmin();
+    param[1] = fScale*d.Rmax();
+    param[2] = fScale*d.DzAt();
+    param[3] = d.Theta();
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"HYPE",GetMed(med),param,4);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::Cone(const char *gnam,const TString &dis,
+			      Double_t dz,Double_t rmin1,Double_t rmax1,
+			      Double_t rmin2,Double_t rmax2,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS Cone geometries. Conical tube. It 
+    // has 5 parameters. See SetScale() 
+    // for units. Default units are geant 3 [cm].
+    // Inputs:
+    //    const char *gnam  3 character geant volume name. The letter "I"
+    //                        is appended to the front to indecate that this
+    //                        is an ITS volume.
+    //    TString &dis        String containging part discription.
+    //    Double_t dz         half-length along the z-axis
+    //    Double_t rmin1      Inside Radius at -dz.
+    //    Double_t rmax1      Outside Radius at -dz.
+    //    Double_t rmin2      inside radius at +dz.
+    //    Double_t rmax2      outside radius at +dz.
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[5];
+
+    param[0] = fScale*dz;
+    param[1] = fScale*rmin1;
+    param[2] = fScale*rmax1;
+    param[3] = fScale*rmin2;
+    param[4] = fScale*rmax2;
+    G3name(gnam,name);
+    gMC->Gsvolu(name,"CONS",GetMed(med),param,5);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::Cone(AliITSConeData &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS Cone geometries. Conical tube. It 
+    // has 5 parameters. See SetScale() 
+    // for units. Default units are geant 3 [cm].
+    // Inputs:
+    //    AliITSConeData &d  Structure with the tube parameters
+    //    Int_t         med  media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[5];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.DzAt();
+    param[1] = fScale*d.Rmin0();
+    param[2] = fScale*d.Rmax0();
+    param[3] = fScale*d.Rmin1();
+    param[4] = fScale*d.Rmax1();
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"CONS",GetMed(med),param,5);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::ConeSegment(const char *gnam,const TString &dis,
+				     Double_t dz,Double_t rmin1,
+				     Double_t rmax1,Double_t rmin2,
+				     Double_t rmax2,Double_t phi1,
+				     Double_t phi2,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS ConS geometries. One segment of a 
+    // conical tube. It has 7 parameters. Phi1 should be smaller than phi2. 
+    // If this is not the case, the system adds 360 degrees to phi2. See 
+    // SetScale() for units. Default units are geant 3 [cm].
+    // Inputs:
+    //    const char *gnam  3 character geant volume name. The letter "I"
+    //                        is appended to the front to indecate that 
+    //                        this is an ITS volume.
+    //    TString &dis        String containging part discription.
+    //    Double_t dz         half-length along the z-axis
+    //    Double_t rmin1      Inside Radius at -dz.
+    //    Double_t rmax1      Outside Radius at -dz.
+    //    Double_t rmin2      inside radius at +dz.
+    //    Double_t rmax2      outside radius at +dz.
+    //    Double_t phi1       Starting angle of the segment [degree].
+    //    Double_t phi2       Ending angle of the segment [degree].
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[7];
+
+    param[0] = fScale*dz;
+    param[1] = fScale*rmin1;
+    param[2] = fScale*rmax1;
+    param[3] = fScale*rmin2;
+    param[4] = fScale*rmax2;
+    param[5] = phi1;
+    param[6] = phi2;
+    G3name(gnam,name);
+    gMC->Gsvolu(name,"CONS",GetMed(med),param,7);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::ConeSegment(AliITSConeSegData &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS ConS geometries. One segment of a 
+    // conical tube. It has 7 parameters. Phi1 should be smaller than phi2. 
+    // If this is not the case, the system adds 360 degrees to phi2. See 
+    // SetScale() for units. Default units are geant 3 [cm].
+    // Inputs:
+    //    AliITSConeSegData &d   Structure with the tube parameters
+    //    Int_t             med  media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[7];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.DzAt();
+    param[1] = fScale*d.Rmin0();
+    param[2] = fScale*d.Rmax0();
+    param[3] = fScale*d.Rmin1();
+    param[4] = fScale*d.Rmax1();
+    param[5] = d.Phi0();
+    param[6] = d.Phi1();
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"CONS",GetMed(med),param,7);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::PolyCone(const char *gnam,const TString &dis,
+				  Double_t phi1,Double_t dphi,Int_t nz,
+				  Double_t *z,Double_t *rmin,Double_t *rmax,
+				  Int_t med){
+    // Interface to TMC->Gsvolu() for ITS PCON geometry. Poly-cone It has 9 
+    // parameters or more. See SetScale() for units. Default units are geant
+    // 3 [cm].
+    // Inputs:
+    //    const char *gnam  3 character geant volume name. The letter "I"
+    //                        is appended to the front to indecate that this
+    //                        is an ITS volume.
+    //    TString &dis        String containging part discription.
+    //    Double_t phi1       the azimuthal angle at which the volume begins 
+    //                        (angles are counted clouterclockwise) [degrees].
+    //    Double_t dphi       opening angle of the volume, which extends from 
+    //                        phi1 to phi1+dphi [degree].
+    //    Int_t nz            number of planes perpendicular to the z axis 
+    //                        where the dimension of the section is given - 
+    //                        this number should be at least 2 and NP triples 
+    //                        of number must follow.
+    //    Double_t *z         Array [nz] of z coordinate of the section.
+    //    Double_t *rmin      Array [nz] of radius of teh inner circle in the 
+    //                        cross-section.
+    //    Double_t *rmax      Array [nz] of radius of the outer circle in the 
+    //                        cross-section.
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t *param;
+    Int_t n,i;
+
+    n = 3+3*nz;
+    param = new Float_t[n];
+    param[0] = phi1;
+    param[1] = dphi;
+    param[2] = (Float_t) nz;
+    for(i=0;i<nz;i++){
+	param[3+3*i] = fScale*z[i];
+	param[4+3*i] = fScale*rmin[i];
+	param[5+3*i] = fScale*rmax[i];
+    } // end for i
+    G3name(gnam,name);
+    gMC->Gsvolu(name,"PCON",GetMed(med),param,n);
+
+    delete[] param;
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::PolyCone(AliITSPConeData &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS PCON geometry. Poly-cone It has 9 
+    // parameters or more. See SetScale() for units. Default units are geant
+    // 3 [cm].
+    // Inputs:
+    //    AliITSPConeData &d  Object with poly cone data stored in it.
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t *param;
+    Int_t n,i,k;
+    char *j = (char *) &k;
+
+    n = 3+3*d.Nz();
+    param = new Float_t[n];
+    param[0] = d.Phi0();
+    param[1] = d.DPhi();
+    param[2] = (Float_t) d.Nz();
+    for(i=0;i<d.Nz();i++){
+	param[3+3*i] = fScale*d.ZAt(i);
+	param[4+3*i] = fScale*d.Rmin(i);
+	param[5+3*i] = fScale*d.Rmax(i);
+    } // end for if
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"PCON",GetMed(med),param,n);
+
+    delete[] param;
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::Sphere(const char *gnam,const TString &dis,
+				Double_t rmin,Double_t rmax,Double_t the1,
+				Double_t the2,Double_t phi1,Double_t phi2,
+				Int_t med){
+    // Interface to TMC->Gsvolu() for ITS SPHE geometries. Segment of a 
+    // sphereical shell. It has 6 parameters. See SetScale() 
+    // for units. Default units are geant 3 [cm].
+    // Inputs:
+    //    const char *gnam  3 character geant volume name. The letter "I"
+    //                        is appended to the front to indecate that this
+    //                        is an ITS volume.
+    //    TString &dis        String containging part discription.
+    //    Double_t rmin       Inside Radius.
+    //    Double_t rmax       Outside Radius.
+    //    Double_t the1       staring polar angle of the shell [degree].
+    //    Double_t the2       ending polar angle of the shell [degree].
+    //    Double_t phui       staring asimuthal angle of the shell [degree].
+    //    Double_t phi2       ending asimuthal angle of the shell [degree].
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[6];
+
+    param[0] = fScale*rmin;
+    param[1] = fScale*rmax;
+    param[2] = the1;
+    param[3] = the2;
+    param[4] = phi1;
+    param[5] = phi2;
+    G3name(gnam,name);
+    gMC->Gsvolu(name,"SPHE",GetMed(med),param,6);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::Sphere(AliITSSphereData &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS SPHE geometries. Segment of a 
+    // sphereical shell. It has 6 parameters. See SetScale() 
+    // for units. Default units are geant 3 [cm].
+    // Inputs:
+    //    AliITSSphereData &d   Structure with the tube parameters
+    //    Int_t            med  media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[6];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.Rmin();
+    param[1] = fScale*d.Rmax();
+    param[2] = d.Theta0();
+    param[3] = d.Theta1();
+    param[4] = d.Phi0();
+    param[5] = d.Phi1();
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"SPHE",GetMed(med),param,6);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::Parallelepiped(const char *gnam,const TString &dis,
+					Double_t dx,Double_t dy,Double_t dz,
+					Double_t alpha,Double_t thet,
+					Double_t phi,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS PARA geometries. Parallelepiped. It 
+    // has 6 parameters. See SetScale() for units. Default units are geant 3 
+    // [cm].
+    // Inputs:
+    //    const char *gnam  3 character geant volume name. The letter "I"
+    //                        is appended to the front to indecate that this
+    //                        is an ITS volume.
+    //    TString &dis        String containging part discription.
+    //    Double_t dx         half-length allong x-axis
+    //    Double_t dy         half-length allong y-axis
+    //    Double_t dz         half-length allong z-axis
+    //    Double_t alpha      angle formed by the y axis and by the plane 
+    //                        joining the center of teh faces parallel to the 
+    //                        z-x plane at -dY and +dy [degree].
+    //    Double_t thet       polar angle of the line joining the centers of 
+    //                        the faces at -dz and +dz in z [degree].
+    //    Double_t phi        azimuthal angle of teh line joing the centers 
+    //                        of the faaces at -dz and +dz in z [degree].
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[6];
+
+    param[0] = fScale*dx;
+    param[1] = fScale*dy;
+    param[2] = fScale*dz;
+    param[3] = alpha;
+    param[4] = thet;
+    param[5] = phi;
+    G3name(gnam,name);
+    gMC->Gsvolu(name,"PARA",GetMed(med),param,6);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::Parallelepiped(AliITSParallelpipedData &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS PARA geometries. Parallelepiped. It 
+    // has 6 parameters. See SetScale() for units. Default units are geant 3 
+    // [cm].
+    // Inputs:
+    //    AliITSParrellepipedData &d  Structre witht the volume data in it.
+    //    Int_t                   med  media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t param[6];
+    Int_t i,k;
+    char *j = (char *) &k;
+
+    param[0] = fScale*d.DxAt();
+    param[1] = fScale*d.DyAt();
+    param[2] = fScale*d.DzAt();
+    param[3] = d.Alpha();
+    param[4] = d.Theta();
+    param[5] = d.Phi();
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"PARA",GetMed(med),param,6);
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::PolyGon(const char *gnam,const TString &dis,
+				 Double_t phi1,Double_t dphi,Int_t npdv,
+				 Int_t nz,Double_t *z,Double_t *rmin,
+				 Double_t *rmax,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS PGON geometry. Polygon It has 10 
+    // parameters or more. See SetScale() for units. Default units are geant
+    // 3 [cm].
+    // Inputs:
+    //    const char *gnam  3 character geant volume name. The letter "I"
+    //                        is appended to the front to indecate that this
+    //                        is an ITS volume.
+    //    TString &dis        String containging part discription.
+    //    Double_t phi1       the azimuthal angle at which the volume begins 
+    //                        (angles are counted clouterclockwise) [degrees].
+    //    Double_t dphi       opening angle of the volume, which extends from 
+    //                        phi1 to phi1+dphi [degree].
+    //    Int_t npdv          the number of sides of teh cross section 
+    //                        between the given phi limits.
+    //    Int_t nz            number of planes perpendicular to the z axis 
+    //                        where the dimension of the section is given - 
+    //                        this number should be at least 2 and NP triples 
+    //                        of number must follow.
+    //    Double_t *z         array [nz] of z coordiates of the sections..
+    //    Double_t *rmin      array [nz] of radius of teh circle tangent to 
+    //                        the sides of the inner polygon in teh 
+    //                        cross-section.
+    //    Double_t *rmax      array [nz] of radius of the circle tangent to 
+    //                        the sides of the outer polygon in the 
+    //                       cross-section.
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t *param;
+    Int_t n,i;
+
+    n = 4+3*nz;
+    param = new Float_t[n];
+    param[0] = phi1;
+    param[1] = dphi;
+    param[2] = (Float_t)npdv;
+    param[3] = (Float_t)nz;
+    for(i=0;i<nz;i++){
+	param[4+3*i] = fScale*z[i];
+	param[5+3*i] = fScale*rmin[i];
+	param[6+3*i] = fScale*rmax[i];
+    } // end for i
+    G3name(gnam,name);
+    gMC->Gsvolu(name,"PGON",GetMed(med),param,n);
+
+    delete[] param;
+}
+//______________________________________________________________________
+void AliITSBaseGeometry::PolyGon(AliITSPGonData &d,Int_t med){
+    // Interface to TMC->Gsvolu() for ITS PCON geometry. Poly-cone It has 9 
+    // parameters or more. See SetScale() for units. Default units are geant
+    // 3 [cm].
+    // Inputs:
+    //    AliITSPGonData &d  Object with poly cone data stored in it.
+    //    Int_t    med        media index number.
+    // Output:
+    //    none.
+    // Return.
+    //    none.
+    char name[5];
+    Float_t *param;
+    Int_t n,i,k;
+    char *j = (char *) &k;
+
+    n = 4+3*d.Nz();
+    param = new Float_t[n];
+    param[0] = d.Phi0();
+    param[1] = d.DPhi();
+    param[2] = (Float_t) d.NPhi();
+    param[3] = (Float_t) d.Nz();
+    for(i=0;i<d.Nz();i++){
+	param[4+3*i] = fScale*d.ZAt(i);
+	param[5+3*i] = fScale*d.Rmin(i);
+	param[6+3*i] = fScale*d.Rmax(i);
+    } // end for i
+    d.SetVid(AddVolName((d.GetName())->Data()));
+    k = ITSIndexToITSG3name(d.GetVid());
+    for(i=0;i<4;i++) name[i] = j[i];
+    name[4] = '\0';
+    gMC->Gsvolu(name,"PGON",GetMed(med),param,n);
+
+    delete[] param;
 }
 //______________________________________________________________________
 void AliITSBaseGeometry::Pos(AliITSBaseVolParams &v,Int_t cn,
@@ -1190,7 +1642,7 @@ void AliITSBaseGeometry::Matrix(Int_t irot,Double_t thet1,Double_t phi1,
     //    none.
     // Return:
     //    none.
-    Float_t t1,p1,t2,p2,t3,p3;
+    Float_t t1=0.0,p1=0.0,t2=0.0,p2=0.0,t3=0.0,p3=0.0;
 
     if(thet1==90.0&&phi1== 0.0&&
        thet2==90.0&&phi2==90.0&&
@@ -1205,6 +1657,8 @@ void AliITSBaseGeometry::Matrix(Int_t irot,Double_t thet1,Double_t phi1,
 	p3 = phi3;
 	fits->AliMatrix(fidrot[irot],t1,p1,t2,p2,t3,p3);
     } // end if
+    cout << "Matrix:: fidrot["<<irot<<"]="<<fidrot[irot];
+    cout <<" angles="<<t1<<" "<<p1<<" "<<t2<<" "<<p2<<" "<<t3<< " "<<p3<<endl;
 }
 //______________________________________________________________________
 void AliITSBaseGeometry::Matrix(Int_t irot,Int_t axis,Double_t thet){
@@ -1228,18 +1682,39 @@ void AliITSBaseGeometry::Matrix(Int_t irot,Int_t axis,Double_t thet){
 	switch (axis) {
 	case 0: //Rotate about x-axis, x-axis does not change.
 	    fits->AliMatrix(fidrot[irot],90.0,0.0,90.0+thet,90.0,thet,90.0);
+	    /*
+	    cout << "Matrix:: axis="<<axis<<" fidrot["<<irot<<"]=";
+	    cout <<fidrot[irot];
+	    cout <<" angles="<<90.0<<" "<<0.0<<" "<<90.0+thet<<" "<<90.0;
+	    cout <<" "<<thet<< " "<<90.0<<endl;
+	    */
 	    break;
 	case 1: //Rotate about y-axis, y-axis does not change.
-	    fits->AliMatrix(fidrot[irot],360.-90.0-thet,0.0,90.0,90.0,
-			    thet,90.0);
+	    fits->AliMatrix(fidrot[irot],90.0-thet,0.0,90.0,90.0,-thet,0.0);
+	    /*
+	    cout << "Matrix:: axis="<<axis<<" fidrot["<<irot<<"]=";
+	    cout << fidrot[irot];
+	    cout <<" angles="<<90.-thet<<" "<<0.0<<" "<<90.0<<" "<<90.0;
+	    cout <<" "<<-thet<< " "<<0.0<<endl;
+	    */
 	    break;
 	case 2: //Rotate about z-axis, z-axis does not change.
-	    fits->AliMatrix(fidrot[irot],90.0,thet,90.0,360.-thet-90.0,
-			    0.0,0.0);
+	    fits->AliMatrix(fidrot[irot],90.0,thet,90.0,90.+thet,0.0,0.0);
+	    /*
+	    cout << "Matrix:: axis="<<axis<<" fidrot["<<irot<<"]=";
+	    cout <<fidrot[irot];
+	    cout <<" angles="<<90.0<<" "<<thet<<" "<<90.0<<" "<<90.0+thet;
+	    cout <<" "<<0.0<< " "<<0.0<<endl;
+	    */
 	    break;
 	default:
 	    Error("Matrix","axis must be either 0, 1, or 2. for matrix=%d",
 		  irot);
+	    /*
+	    cout << "Matrix:: axis="<<axis<<" fidrot["<<irot<<"]=";
+	    cout <<fidrot[irot];
+	    cout <<" thet=" << thet<< endl;
+	    */
 	    break;
 	} // end switch
     } // end if
@@ -1258,15 +1733,14 @@ void AliITSBaseGeometry::Matrix(Int_t irot,Double_t rot[3][3]){
     //    none.
     // Return:
     //    none.
+	Double_t si,c=180./TMath::Pi();
+	Double_t ang[6]={90.0,0.0,90.0,90.0,0.0,0.0};
 
     if(rot[0][0]==1.0&&rot[1][1]==1.0&&rot[2][2]==1.0&&
        rot[0][1]==0.0&&rot[0][2]==0.0&&rot[1][0]==0.0&&
        rot[1][2]==0.0&&rot[2][0]==0.0&&rot[2][1]==0.0){
 	fidrot[irot] = 0; // Unit matrix
     }else{
-	Double_t si,c=180./TMath::Pi();
-	Double_t ang[6];
-
 	ang[1] = TMath::ATan2(rot[0][1],rot[0][0]);
 	if(TMath::Cos(ang[1])!=0.0) si = rot[0][0]/TMath::Cos(ang[1]);
 	else si = rot[0][1]/TMath::Sin(ang[1]);
@@ -1286,6 +1760,9 @@ void AliITSBaseGeometry::Matrix(Int_t irot,Double_t rot[3][3]){
 	fits->AliMatrix(fidrot[irot],ang[0],ang[1],ang[2],ang[3],
 			ang[4],ang[5]);
     } // end if
+    cout << "Matrix rot[3][3]:: fidrot["<<irot<<"]="<<fidrot[irot];
+    cout <<" angles="<<ang[0]<<" "<<ang[1]<<" "<<ang[2]<<" "<<
+	ang[3]<<" "<<ang[4]<< " "<<ang[5]<<endl;
 }
 //______________________________________________________________________
 Float_t AliITSBaseGeometry::GetA(Int_t z){
@@ -1570,6 +2047,1109 @@ Double_t AliITSBaseGeometry::RadLength(Int_t iz,Double_t a){
     return xz; // [gm/cm^2]
 }
 //======================================================================
+ClassImp(AliITSBaseVolParams)
+//______________________________________________________________________
+void AliITSBaseVolParams::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+    *os<<"Volume Id="<<fVol<<" Copy="<<fCpn<<" Name: "<<fName<<endl;
+}
+//______________________________________________________________________
+void AliITSBaseVolParams::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    is->get(s,10);
+    *is >> fVol;
+    is->get(s,6);
+    *is >> fCpn;
+    is->get(s,7);
+    *is >> fName;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSBaseVolParams &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os            The output stream
+    //    AliITSBaseVolParams &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSBaseVolParams &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is            The input stream
+    //    AliITSBaseVolParams &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSBoxData)
+//______________________________________________________________________
+void AliITSBoxData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << "fDx=" << fDx << " fDy=" << fDy << " fDz=" << fDz << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSBoxData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+    is->get(s,4);
+    *is >> fDx;
+    is->get(s,5);
+    *is >> fDy;
+    is->get(s,5);
+    *is >> fDz;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSBoxData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os      The output stream
+    //    AliITSBoxData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSBoxData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is      The input stream
+    //    AliITSBoxData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSTrapezoid1Data)
+//______________________________________________________________________
+void AliITSTrapezoid1Data::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << "fDx[0]=" << fDx[0]<< " fDx[1]=" << fDx[1]  << " fDy=" << fDy;
+    *os << " fDz=" << fDz << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSTrapezoid1Data::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+    is->get(s,7);
+    *is >> fDx[0];
+    is->get(s,8);
+    *is >> fDx[1];
+    is->get(s,5);
+    *is >> fDy;
+    is->get(s,5);
+    *is >> fDz;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSTrapezoid1Data &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os      The output stream
+    //    AliITSBoxData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSTrapezoid1Data &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is       The input stream
+    //    AliITSPGonData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSTrapezoid2Data)
+//______________________________________________________________________
+void AliITSTrapezoid2Data::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os <<  "fDx[0]=" << fDx[0]<< " fDx[1]=" << fDx[1];
+    *os << " fDy[0]=" << fDy[0] << " fDy[1]=" << fDy[1];
+    *os << " fDz=" << fDz << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSTrapezoid2Data::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+    is->get(s,7);
+    *is >> fDx[0];
+    is->get(s,8);
+    *is >> fDx[1];
+    is->get(s,8);
+    *is >> fDy[0];
+    is->get(s,8);
+    *is >> fDy[1];
+    is->get(s,5);
+    *is >> fDz;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSTrapezoid2Data &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os      The output stream
+    //    AliITSBoxData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSTrapezoid2Data &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is       The input stream
+    //    AliITSPGonData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSTrapezoidData)
+//______________________________________________________________________
+void AliITSTrapezoidData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << "fTheta=" << fTheta << " fPhi=" << fPhi << " fDz=" << fDz;
+    *os << " fH[0]=" << fH[0]<< " fH[1]=" << fH[1];
+    *os << " fBl[0]=" << fBl[0] << " fBl[1]=" << fBl[1];
+    *os << " fTl[0]=" << fTl[0] << " fTl[1]=" << fTl[1];
+    *os << " fAlp[0]=" << fAlp[0] << " fAlp[1]=" << fAlp[1];
+    *os << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSTrapezoidData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+    is->get(s,6);
+    *is >> fTheta;
+    is->get(s,6);
+    *is >> fPhi;
+    is->get(s,5);
+    *is >> fDz;
+    is->get(s,7);
+    *is >> fH[0];
+    is->get(s,7);
+    *is >> fH[1];
+    is->get(s,8);
+    *is >> fBl[0];
+    is->get(s,8);
+    *is >> fBl[1];
+    is->get(s,8);
+    *is >> fTl[0];
+    is->get(s,8);
+    *is >> fTl[1];
+    is->get(s,9);
+    *is >> fAlp[0];
+    is->get(s,9);
+    *is >> fAlp[1];
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSTrapezoidData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os      The output stream
+    //    AliITSBoxData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSTrapezoidData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is       The input stream
+    //    AliITSPGonData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSTrapezoidTwistedData)
+//______________________________________________________________________
+void AliITSTrapezoidTwistedData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << "fTheta=" << fTheta << " fPhi=" << fPhi << " fDz=" << fDz;
+    *os << " fTwist=" << fTwist;
+    *os << " fH[0]=" << fH[0]<< " fH[1]=" << fH[1];
+    *os << " fBl[0]=" << fBl[0] << " fBl[1]=" << fBl[1];
+    *os << " fTl[0]=" << fTl[0] << " fTl[1]=" << fTl[1];
+    *os << " fAlp[0]=" << fAlp[0] << " fAlp[1]=" << fAlp[1];
+    *os << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSTrapezoidTwistedData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+    is->get(s,6);
+    *is >> fTheta;
+    is->get(s,6);
+    *is >> fPhi;
+    is->get(s,5);
+    *is >> fDz;
+    is->get(s,8);
+    *is >> fTwist;
+    is->get(s,7);
+    *is >> fH[0];
+    is->get(s,7);
+    *is >> fH[1];
+    is->get(s,8);
+    *is >> fBl[0];
+    is->get(s,8);
+    *is >> fBl[1];
+    is->get(s,8);
+    *is >> fTl[0];
+    is->get(s,8);
+    *is >> fTl[1];
+    is->get(s,9);
+    *is >> fAlp[0];
+    is->get(s,9);
+    *is >> fAlp[1];
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSTrapezoidTwistedData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os      The output stream
+    //    AliITSBoxData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSTrapezoidTwistedData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is       The input stream
+    //    AliITSPGonData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSTubeData)
+//______________________________________________________________________
+void AliITSTubeData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os <<"       Z        ,      Rmin      ,      Rmax      " << endl;
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << setprecision(16) << fDz <<"\t";
+    *os << setprecision(16) << fRmin << "\t";
+    *os << setprecision(16) << fRmax << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+
+//______________________________________________________________________
+void AliITSTubeData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+
+    is->getline(s,49);
+        *is >> fDz >> fRmin >> fRmax;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSTubeData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os       The output stream
+    //    AliITSTubeData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSTubeData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is       The input stream
+    //    AliITSTubeData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSTubeSegData)
+//______________________________________________________________________
+void AliITSTubeSegData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << "fPhi0=" << fPhi0 << " fPhi1=" << fPhi1 << endl;
+    *os <<"       Z        ,      Rmin      ,      Rmax      " << endl;
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << setprecision(16) << fDz <<"\t";
+    *os << setprecision(16) << fRmin << "\t";
+    *os << setprecision(16) << fRmax << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSTubeSegData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+
+    is->get(s,6);
+    *is >> fPhi0;
+    is->get(s,7);
+    *is >> fPhi1;
+    is->getline(s,49);
+	*is >> fDz >> fRmin >> fRmax;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSTubeSegData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os       The output stream
+    //    AliITSTubeData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSTubeSegData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is       The input stream
+    //    AliITSTubeData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSTubeCutData)
+//______________________________________________________________________
+void AliITSTubeCutData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << "fPhi0=" << fPhi0 << " fPhi1=" << fPhi1;
+    *os << " Norm0=("<<(fNorm[0])[0]<<" "<<(fNorm[0])[1]<<" "<<(fNorm[0])[2];
+    *os << ") Norm1=("<<(fNorm[1])[0]<<" "<<(fNorm[1])[1]<<" "<<(fNorm[1])[2];
+    *os << ")"<< endl;
+    *os <<"       Z        ,      Rmin      ,      Rmax      " << endl;
+    *os << setprecision(16) << fDz <<"\t";
+    *os << setprecision(16) << fRmin << "\t";
+    *os << setprecision(16) << fRmax << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSTubeCutData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+
+    is->get(s,6);
+    *is >> fPhi0;
+    is->get(s,7);
+    *is >> fPhi1;
+    is->get(s,8);
+    *is >> (fNorm[0])[0]>>(fNorm[0])[1]>>(fNorm[0])[2];
+    is->get(s,9);
+    *is >> (fNorm[1])[0]>>(fNorm[1])[1]>>(fNorm[1])[2];
+    is->get(s,1);
+    is->getline(s,49);
+    *is >> fDz >> fRmin >> fRmax;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSTubeCutData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os       The output stream
+    //    AliITSTubeData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSTubeCutData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is       The input stream
+    //    AliITSTubeData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+
+//======================================================================
+ClassImp(AliITSTubeEllipticalData)
+//______________________________________________________________________
+void AliITSTubeEllipticalData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os <<"       Z        ,  Semi-axis-x      ,  Semi-axis-y      " << endl;
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << setprecision(16) << fDz <<"\t";
+    *os << setprecision(16) << fP0 << "\t";
+    *os << setprecision(16) << fP1 << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+
+//______________________________________________________________________
+void AliITSTubeEllipticalData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+
+    is->getline(s,49);
+    *is >> fDz >> fP0 >> fP1;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSTubeEllipticalData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os       The output stream
+    //    AliITSTubeData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSTubeEllipticalData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is       The input stream
+    //    AliITSTubeData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSTubeHyperbolicData)
+//______________________________________________________________________
+void AliITSTubeHyperbolicData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os <<"       Z               Rmin             Rmax         Theta"<<endl;
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << setprecision(16) << fDz <<"\t";
+    *os << setprecision(16) << fRmin << "\t";
+    *os << setprecision(16) << fRmax << "\t";
+    *os << setprecision(16) << fTheta << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+
+//______________________________________________________________________
+void AliITSTubeHyperbolicData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+
+    is->getline(s,49);
+    *is >> fDz >> fRmin >> fRmax >> fTheta;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSTubeHyperbolicData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os       The output stream
+    //    AliITSTubeData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSTubeHyperbolicData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is       The input stream
+    //    AliITSTubeData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSConeData)
+//______________________________________________________________________
+void AliITSConeData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os <<"       Z               Rmin             Rmax" << endl;
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << setprecision(16) << fDz <<"\t";
+    *os << setprecision(16) << fRmin0 << "\t";
+    *os << setprecision(16) << fRmax0 << endl;
+    *os << setprecision(16) << fDz <<"\t";
+    *os << setprecision(16) << fRmin1 << "\t";
+    *os << setprecision(16) << fRmax1 << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSConeData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+
+    is->getline(s,49);
+    *is >> fDz >> fRmin0 >> fRmax0;
+    *is >> fDz >> fRmin1 >> fRmax1;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSConeData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os       The output stream
+    //    AliITSTubeData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSConeData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is       The input stream
+    //    AliITSTubeData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSConeSegData)
+//______________________________________________________________________
+void AliITSConeSegData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << "fPhi0=" << fPhi0 << " fPhi1=" << fPhi1 << endl;
+    *os <<"       Z        ,      Rmin      ,      Rmax      " << endl;
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << setprecision(16) << fDz <<"\t";
+    *os << setprecision(16) << fRmin0 << "\t";
+    *os << setprecision(16) << fRmax0 << endl;
+    *os << setprecision(16) << fDz <<"\t";
+    *os << setprecision(16) << fRmin1 << "\t";
+    *os << setprecision(16) << fRmax1 << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSConeSegData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+    is->get(s,6);
+    *is >> fPhi0;
+    is->get(s,7);
+    *is >> fPhi1;
+    is->getline(s,49);
+    *is >> fDz >> fRmin0 >> fRmax0;
+    *is >> fDz >> fRmin1 >> fRmax1;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSConeSegData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os        The output stream
+    //    AliITSConeSegData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSConeSegData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is        The input stream
+    //    AliITSConeSegData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
 ClassImp(AliITSPConeData)
 //______________________________________________________________________
 void AliITSPConeData::Print(ostream *os){
@@ -1596,7 +3176,8 @@ void AliITSPConeData::Print(ostream *os){
 #endif
 #endif
 
-    *os << "Volume "<< GetVid() << " Name: " << *GetName() << endl;
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
     *os << "fNz=" << fNz << " fPhi0=" << fPhi0 << " fdPhi=" << fDphi << endl;
     *os <<"       Z        ,      Rmin      ,      Rmax      " << endl;
     fmt = os->setf(ios::scientific);  // set scientific floating point output
@@ -1619,12 +3200,8 @@ void AliITSPConeData::Read(istream *is){
     //   none.
     Int_t i;
     char s[50];
-    TString t;
 
-    is->get(s,7);
-    *is >> i; SetVid(i);
-    is->get(s,7);
-    *is >> t; SetName(t.Data());
+    AliITSBaseVolParams::Read(is);
     is->get(s,4);
     *is >> fNz;
     is->get(s,6);
@@ -1666,6 +3243,180 @@ istream &operator>>(istream &is,AliITSPConeData &r){
     return is;
 }
 //======================================================================
+ClassImp(AliITSSphereData)
+//______________________________________________________________________
+void AliITSSphereData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << "fTheta[0]=" << fTheta[0] << " fTheta[1]=" << fTheta[1] << endl;
+    *os << "fPhi[0]=" << fPhi[0] << " fPhi[1]=" << fPhi[1] << endl;
+    *os <<"      Rmin      ,      Rmax      " << endl;
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << setprecision(16) << fRmin << "\t";
+    *os << setprecision(16) << fRmax << endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSSphereData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+    is->get(s,10);
+    *is >> fTheta[0];
+    is->get(s,11);
+    *is >> fTheta[1];
+    is->get(s,8);
+    *is >> fPhi[0];
+    is->get(s,9);
+    *is >> fPhi[1];
+    is->getline(s,49);
+    *is >>fRmin >> fRmax;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSSphereData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os        The output stream
+    //    AliITSPConeData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSSphereData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is        The input stream
+    //    AliITSPConeData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
+ClassImp(AliITSParallelpipedData)
+//______________________________________________________________________
+void AliITSParallelpipedData::Print(ostream *os){
+    // Prints out the data kept in this class
+    // Inputs:
+    //    ostream *os The output stream pointer
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    *os << "fDx=" << fDx << " fDy=" << fDy << " fDz=" << fDz << endl;
+    *os << "fAlpha=" << fAlpha << " fTheta=" << fTheta <<" fPhi="<<fPhi<<endl;
+    os->flags(fmt); // reset back to old formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSParallelpipedData::Read(istream *is){
+    // Read in data kept in this class
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    char s[50];
+
+    AliITSBaseVolParams::Read(is);
+    is->get(s,4);
+    *is >> fDx;
+    is->get(s,5);
+    *is >> fDy;
+    is->get(s,5);
+    *is >> fDz;
+    is->get(s,7);
+    *is >> fAlpha;
+    is->get(s,8);
+    *is >> fTheta;
+    is->get(s,6);
+    *is >> fPhi;
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,AliITSParallelpipedData &p){
+    // Operator << for C++ like output
+    // Inputs:
+    //    ostream &os      The output stream
+    //    AliITSBoxData &p The class to be outputed
+    // Output:
+    //    none.
+    // Return:
+    //    ostream &os        The output stream
+
+    p.Print(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSParallelpipedData &r){
+    // Operator << for C++ like output
+    // Inputs:
+    //    istream &is      The input stream
+    //    AliITSBoxData &r The class to be read in
+    // Output:
+    //    none.
+    // Return:
+    //    istream &is        The input stream
+
+    r.Read(&is);
+    return is;
+}
+//======================================================================
 ClassImp(AliITSPGonData)
 //______________________________________________________________________
 void AliITSPGonData::Print(ostream *os){
@@ -1692,11 +3443,12 @@ void AliITSPGonData::Print(ostream *os){
 #endif
 #endif
 
-    *os << "Volume "<< GetVid() << " Name: " << *GetName() << endl;
+    AliITSBaseVolParams::Print(os);
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
+    fmt = os->setf(ios::scientific);  // set scientific floating point output
     *os << "fNz=" << fNz << " fNphi=" << fNphi << " fPhi0=" << fPhi0;
     *os << " fdPhi=" << fDphi << endl;
     *os <<"       Z        ,      Rmin      ,      Rmax      " << endl;
-    fmt = os->setf(ios::scientific);  // set scientific floating point output
     for(i=0;i<fNz;i++){
 	*os << setprecision(16) << fZ[i] <<"\t";
 	*os << setprecision(16) << fRmin[i] << "\t";
@@ -1716,12 +3468,8 @@ void AliITSPGonData::Read(istream *is){
     //   none.
     Int_t i;
     char s[50];
-    TString t;
 
-    is->get(s,7);
-    *is >> i;SetVid(i);
-    is->get(s,7);
-    *is >> t; SetName(t.Data());
+    AliITSBaseVolParams::Read(is);
     
     is->get(s,4);
     *is >> fNz;
@@ -1758,90 +3506,6 @@ istream &operator>>(istream &is,AliITSPGonData &r){
     // Inputs:
     //    istream &is       The input stream
     //    AliITSPGonData &r The class to be read in
-    // Output:
-    //    none.
-    // Return:
-    //    istream &is        The input stream
-
-    r.Read(&is);
-    return is;
-}
-//======================================================================
-ClassImp(AliITSTubeData)
-//______________________________________________________________________
-void AliITSTubeData::Print(ostream *os){
-    // Prints out the data kept in this class
-    // Inputs:
-    //    ostream *os The output stream pointer
-    // Outputs:
-    //    none.
-    // Return:
-    //    none.
-
-#if defined __GNUC__
-#if __GNUC__ > 2
-    ios::fmtflags fmt;
-#else
-    Int_t fmt;
-#endif
-#else
-#if defined __ICC || defined __ECC
-    ios::fmtflags fmt;
-#else
-    Int_t fmt;
-#endif
-#endif
-
-    *os << "Volume "<< GetVid() << " Name: " << *GetName() << endl;
-    *os <<"       Z        ,      Rmin      ,      Rmax      " << endl;
-    fmt = os->setf(ios::scientific);  // set scientific floating point output
-    *os << setprecision(16) << fDz <<"\t";
-    *os << setprecision(16) << fRmin << "\t";
-    *os << setprecision(16) << fRmax << endl;
-    os->flags(fmt); // reset back to old formating.
-    return;
-}
-//______________________________________________________________________
-void AliITSTubeData::Read(istream *is){
-    // Read in data kept in this class
-    // Inputs:
-    //   istream *is  the input stream
-    // Outputs:
-    //   none.
-    // Return:
-    //   none.
-    Int_t i;
-    char s[50];
-    TString t;
-
-    is->get(s,7);
-    *is >> i;SetVid(i);
-    is->get(s,7);
-    *is >> t; SetName(t.Data());
-    
-    is->getline(s,49);
-	*is >> fDz >> fRmin >> fRmax;
-}
-//______________________________________________________________________
-ostream &operator<<(ostream &os,AliITSTubeData &p){
-    // Operator << for C++ like output
-    // Inputs:
-    //    ostream &os       The output stream
-    //    AliITSTubeData &p The class to be outputed
-    // Output:
-    //    none.
-    // Return:
-    //    ostream &os        The output stream
-
-    p.Print(&os);
-    return os;
-}
-//______________________________________________________________________
-istream &operator>>(istream &is,AliITSTubeData &r){
-    // Operator << for C++ like output
-    // Inputs:
-    //    istream &is       The input stream
-    //    AliITSTubeData &r The class to be read in
     // Output:
     //    none.
     // Return:

@@ -28,8 +28,21 @@
 //
 #pragma link C++ class  AliITSBaseGeometry+;
 #pragma link C++ class  AliITSBaseVolParams+;
+#pragma link C++ class  AliITSBoxData+;
+#pragma link C++ class  AliITSTrapezoid1Data+;
+#pragma link C++ class  AliITSTrapezoid2Data+;
+#pragma link C++ class  AliITSTrapezoidData+;
+#pragma link C++ class  AliITSTrapezoidTwistedData+;
 #pragma link C++ class  AliITSTubeData+;
+#pragma link C++ class  AliITSTubeSegData+;
+#pragma link C++ class  AliITSTubeCutData+;
+#pragma link C++ class  AliITSTubeEllipticalData+;
+#pragma link C++ class  AliITSTubeHyperbolicData+;
+#pragma link C++ class  AliITSConeData+;
+#pragma link C++ class  AliITSConeSegData+;
 #pragma link C++ class  AliITSPConeData+;
+#pragma link C++ class  AliITSSphereData+;
+#pragma link C++ class  AliITSParallelpipedData+;
 #pragma link C++ class  AliITSPGonData+;
 #pragma link C++ class  AliITSGeometryITSV+;
 #pragma link C++ class  AliITSGeometrySSDCone+;
