@@ -1,5 +1,5 @@
-#ifndef ALI_MUON_DATA_INTERFACE_CLASS_H
-#define ALI_MUON_DATA_INTERFACE_CLASS_H
+#ifndef ALI_MUON_DATA_INTERFACE_H
+#define ALI_MUON_DATA_INTERFACE_H
 
 // Author: Artur Szostak
 //  email: artur@alice.phy.uct.ac.za
@@ -135,4 +135,4 @@ private:
 };
 
 
-#endif // ALI_MUON_DATA_INTERFACE_CLASS_H
+#endif // ALI_MUON_DATA_INTERFACE_H
