@@ -33,6 +33,7 @@ class AliHBTMonPIDPurityVsPtFctn: public AliHBTMonTwoParticleFctn1D, public AliH
     void Process(AliHBTParticle * track,AliHBTParticle * part);
   protected:
     TH1D* fGood;
+    TH1D* fAll;
     ClassDef(AliHBTMonPIDPurityVsPtFctn,1)
 };
 /***********************************************************************/
@@ -51,6 +52,7 @@ class AliHBTMonPIDContaminationVsPtFctn: public AliHBTMonTwoParticleFctn1D, publ
     void Process(AliHBTParticle * track,AliHBTParticle * part);
   protected:
     TH1D* fWrong;  
+    TH1D* fAll;
     ClassDef(AliHBTMonPIDContaminationVsPtFctn,1)
 };
 /*************************************************************************************/

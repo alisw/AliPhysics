@@ -23,7 +23,8 @@ ClassImp(AliHBTMonPIDPurityVsPtFctn)
 
 AliHBTMonPIDPurityVsPtFctn::AliHBTMonPIDPurityVsPtFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTMonTwoParticleFctn1D(nbins,maxXval,minXval),
- fGood(0x0)
+ fGood(0x0),
+ fAll(0x0)
 {
   //ctor
   Rename("pidpurityvspt","PIDPurityVsPt");
@@ -35,12 +36,14 @@ AliHBTMonPIDPurityVsPtFctn::~AliHBTMonPIDPurityVsPtFctn()
 {
  //dtor
   delete fGood;
+  delete fAll;
 }
 /******************************************************************/
 void AliHBTMonPIDPurityVsPtFctn::Write()
 {
  AliHBTMonitorFunction::Write();
  fGood->Write();
+ fAll->Write();
 }
 /******************************************************************/
 
@@ -63,10 +66,23 @@ void AliHBTMonPIDPurityVsPtFctn::Init()
      fGood = new TH1D(numstr,numstr,xax->GetNbins(),xax->GetXmin(),xax->GetXmax());
    }
 
+  if (fAll == 0x0)
+   {
+     TString numstr = fName + " All";  //title and name of the
+                                           //result histogram
+     TAxis* xax = fResult->GetXaxis();
+     fAll = new TH1D(numstr,numstr,xax->GetNbins(),xax->GetXmin(),xax->GetXmax());
+   }
+
   fResult->Reset();
   fResult->SetDirectory(0x0);
+  fResult->Sumw2();
   fGood->Reset();
   fGood->SetDirectory(0x0);
+  fGood->Sumw2();
+  fAll->Reset();
+  fAll->SetDirectory(0x0);
+  fAll->Sumw2();
 
   if (AliHBTParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
 }
@@ -90,6 +106,13 @@ void AliHBTMonPIDPurityVsPtFctn::Rename(const Char_t * name)
      TString numstr = fName + " Good";
      fGood->SetName(numstr);
      fGood->SetTitle(numstr);
+   }
+   
+  if (fAll)
+   {
+     TString numstr = fName + " All";
+     fAll->SetName(numstr);
+     fAll->SetTitle(numstr);
    }
 }
 /******************************************************************/
@@ -116,6 +139,14 @@ void AliHBTMonPIDPurityVsPtFctn::Rename(const Char_t * name, const Char_t * titl
      fGood->SetTitle(numstrt);
    }
 
+  if (fAll)
+   {
+     TString numstrn = fName + " All";  //name of the All histogram
+     TString numstrt = fTitle + " All";  //title of the All histogram
+     fAll->SetName(numstrn);
+     fAll->SetTitle(numstrt);
+   }
+
 }
 /******************************************************************/
 
@@ -124,9 +155,7 @@ TH1* AliHBTMonPIDPurityVsPtFctn::GetResult()
   //Returns the result of the fuction
   //that is histogram with effciency and contamination
   
-  TH1D* htmp = (TH1D*)fResult->Clone("PIDPurityHTMP");
-  fResult->Reset();
-  fResult->Divide(fGood,htmp);
+  fResult->Divide(fGood,fAll);
   return fResult;
 }
 /******************************************************************/
@@ -135,7 +164,7 @@ void AliHBTMonPIDPurityVsPtFctn::Process(AliHBTParticle * track,AliHBTParticle *
 {
  //process the particle/track
  Double_t pt = part->Pt();
- fResult->Fill(pt);
+ fAll->Fill(pt);
  if (track->GetPdgCode() == part->GetPdgCode()) 
   {
     fGood->Fill(pt);
@@ -154,7 +183,8 @@ ClassImp(AliHBTMonPIDContaminationVsPtFctn)
 
 AliHBTMonPIDContaminationVsPtFctn::AliHBTMonPIDContaminationVsPtFctn(Int_t nbins, Double_t maxXval, Double_t minXval):
  AliHBTMonTwoParticleFctn1D(nbins,maxXval,minXval),
- fWrong(0x0)
+ fWrong(0x0),
+ fAll(0x0)
 {
   //ctor
   Rename("pidcontaminationvspt","PIDContaminationVsPt");
@@ -165,6 +195,7 @@ AliHBTMonPIDContaminationVsPtFctn::~AliHBTMonPIDContaminationVsPtFctn()
 {
  //dtor
   delete fWrong;
+  delete fAll;
 }
 /******************************************************************/
 
@@ -173,6 +204,7 @@ void AliHBTMonPIDContaminationVsPtFctn::Write()
  //Writes the function results
  AliHBTMonitorFunction::Write();
  fWrong->Write();
+ fAll->Write();
 }
 /******************************************************************/
 
@@ -195,11 +227,23 @@ void AliHBTMonPIDContaminationVsPtFctn::Init()
      fWrong = new TH1D(numstr,numstr,xax->GetNbins(),xax->GetXmin(),xax->GetXmax());
    }
 
+  if (fAll == 0x0)
+   {
+     TString numstr = fName + " All";  //title and name of the
+                                           //result histogram
+     TAxis* xax = fResult->GetXaxis();
+     fAll = new TH1D(numstr,numstr,xax->GetNbins(),xax->GetXmin(),xax->GetXmax());
+   }
   fResult->Reset();
   fResult->SetDirectory(0x0);
+  fResult->Sumw2();
   fWrong->Reset();
   fWrong->SetDirectory(0x0);
-
+  fWrong->Sumw2();
+  fAll->Reset();
+  fAll->SetDirectory(0x0);
+  fAll->Sumw2();
+  
   if (AliHBTParticle::GetDebug()>0) Info("Init","%s Done.",GetName());
 }
 
@@ -222,6 +266,14 @@ void AliHBTMonPIDContaminationVsPtFctn::Rename(const Char_t * name)
      TString numstr = fName + " Wrong";
      fWrong->SetName(numstr);
      fWrong->SetTitle(numstr);
+   }
+
+  if (fAll)
+   {
+     TString numstrn = fName + " All";  //name of the All histogram
+     TString numstrt = fTitle + " All";  //title of the All histogram
+     fAll->SetName(numstrn);
+     fAll->SetTitle(numstrt);
    }
 }
 /******************************************************************/
@@ -247,6 +299,14 @@ void AliHBTMonPIDContaminationVsPtFctn::Rename(const Char_t * name, const Char_t
      fWrong->SetName(numstrn);
      fWrong->SetTitle(numstrt);
    }
+   
+  if (fAll)
+   {
+     TString numstr = fName + " All";
+     fAll->SetName(numstr);
+     fAll->SetTitle(numstr);
+   }
+
 }
 /******************************************************************/
 
@@ -255,9 +315,7 @@ TH1* AliHBTMonPIDContaminationVsPtFctn::GetResult()
   //Returns the result of the fuction
   //that is histogram with effciency and contamination
   
-  TH1D* htmp = (TH1D*)fResult->Clone("PIDContaminationHTMP");
-  fResult->Reset();
-  fResult->Divide(fWrong,htmp);
+  fResult->Divide(fWrong,fAll);
   return fResult;
 }
 /******************************************************************/
@@ -266,7 +324,7 @@ void AliHBTMonPIDContaminationVsPtFctn::Process(AliHBTParticle * track, AliHBTPa
 {
  //process the particle/track
  Double_t pt = part->Pt();
- fResult->Fill(pt);
+ fAll->Fill(pt);
  
  if (track->GetPdgCode() != part->GetPdgCode()) 
   {
