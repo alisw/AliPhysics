@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.17  2001/12/19 15:40:43  morsch
+For kPyJets enforce simple jet topology, i.e no initial or final state
+gluon radiation and no primordial pT.
+
 Revision 1.16  2001/10/12 11:13:59  morsch
 Missing break statements added (thanks to Nicola Carrer)
 
@@ -153,25 +157,19 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
     case kPyMb:
 // Minimum Bias pp-Collisions
 //
-// Tuning of parameters descibed in G. Ciapetti and A. Di Ciaccio
-// Proc. of the LHC Workshop, Aachen 1990, Vol. II p. 155
 //   
 //      select Pythia min. bias model
 	SetMSEL(0);
-	SetMSUB(92,1);
-	SetMSUB(93,1);
-	SetMSUB(94,1);
-	SetMSUB(95,1);	
-//      Multiple interactions switched on
-	SetMSTP(81,1);
-	SetMSTP(82,2);
-//      Low-pT cut-off for hard scattering
-	SetPARP(81,1.9);
-//      model for subsequent non-hardest interaction
-//	90% gg->gg 10% gg->qq
-	SetPARP(86,0.9);
-//      90% of gluon interactions have minimum string length
-	SetPARP(85,0.9);
+	SetMSUB(92,1);      // single diffraction AB-->XB
+	SetMSUB(93,1);      // single diffraction AB-->AX
+	SetMSUB(94,1);      // double diffraction
+	SetMSUB(95,1);	    // low pt production
+	SetMSTP(81,1);      // multiple interactions switched on
+	SetMSTP(82,3);      // model with varying impact param. & a single Gaussian
+	SetPARP(82,3.47);   // set value pT_0  for turn-off of the cross section of                  
+                            // multiple interaction at a reference energy = 14000 GeV
+	SetPARP(89,14000.); // reference energy for the above parameter
+	SetPARP(90,0.174);  // set exponent for energy dependence of pT_0 
 	break;
     case kPyJets:
 	SetMSEL(1);
@@ -192,7 +190,7 @@ void AliPythia::ProcInit(Process_t process, Float_t energy, StrucFunc_t strucfun
     }
 //
 //  Initialize PYTHIA
-    SetMSTP(41,1);
+    SetMSTP(41,1);   // all resonance decays switched on
 
     Initialize("CMS","p","p",fEcms);
 
