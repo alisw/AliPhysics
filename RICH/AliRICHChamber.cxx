@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.9  2001/02/13 20:15:34  jbarbosa
+  Removed fNsec (number of cathodes - obsolete) related loops and calls.
+
   Revision 1.8  2000/12/18 17:45:43  jbarbosa
   Cleaned up PadHits object.
 
@@ -51,6 +54,7 @@
 #include <TRotMatrix.h>
 #include <AliRICHTresholdMap.h>
 #include <AliSegmentation.h>
+#include <AliRICHSegmentationV0.h>
 #include <AliRICHGeometry.h>
 #include <AliRICHResponse.h>
 
@@ -173,11 +177,20 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 
     Int_t nFp=0;
     
+
+    // To calculate wire sag, the origin of y-position must be the middle of the photcathode
+    AliRICHSegmentationV0* segmentation = (AliRICHSegmentationV0*) GetSegmentationModel();
+    Float_t newy;
+    if (yhit>0)
+      newy = yhit - segmentation->GetPadPlaneLength()/2;
+    else
+      newy = yhit + segmentation->GetPadPlaneLength()/2;
+    
     if (res==kMip) {
-	qtot = fResponse->IntPH(eloss);
+	qtot = fResponse->IntPH(eloss, newy);
 	nFp  = fResponse->FeedBackPhotons(global,qtot);
     } else if (res==kCerenkov) {
-	qtot = fResponse->IntPH();
+	qtot = fResponse->IntPH(newy);
 	nFp  = fResponse->FeedBackPhotons(global,qtot);
     }
 
@@ -196,7 +209,7 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 	qp= fResponse->IntXY(fSegmentation);
 	qp= TMath::Abs(qp);
 	
-	//printf("Qp:%f\n",qp);
+	//printf("Qp:%f Qtot %f\n",qp,qtot);
 	
 	if (qp > 1.e-4) {
 	  qcheck+=qp;

@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2000/12/01 17:37:44  morsch
+  Replace in argument of SetTrack(..) string constant by  kPFeedBackPhoton.
+
   Revision 1.3  2000/10/03 21:44:09  morsch
   Use AliSegmentation and AliHit abstract base classes.
 
@@ -37,7 +40,7 @@
 //___________________________________________
 ClassImp(AliRICHResponseV0)
 
-Float_t AliRICHResponseV0::IntPH(Float_t eloss)
+Float_t AliRICHResponseV0::IntPH(Float_t eloss, Float_t yhit)
 {
     // Get number of electrons and return charge
     
@@ -45,19 +48,80 @@ Float_t AliRICHResponseV0::IntPH(Float_t eloss)
     nel= Int_t(eloss/fEIonisation);
     
     Float_t charge=0;
+    Double_t gain_var=1;
+
     if (nel == 0) nel=1;
-    for (Int_t i=1;i<=nel;i++) {
-	charge -= fChargeSlope*TMath::Log(gRandom->Rndm());    
-    }
+
+    if (fWireSag)
+      {
+	//printf("Voltage:%d, Yhit:%f\n",fVoltage, yhit);
+
+	if (fVoltage==2150)
+	  {
+	    gain_var = 9e-6*TMath::Power(yhit,4) + 2e-7*TMath::Power(yhit,3) - 0.0316*TMath::Power(yhit,2) - 3e-4*yhit + 25.367;
+	    //gain_var = 9e-5*TMath::Power(yhit,4) + 2e-6*TMath::Power(yhit,3) - 0.316*TMath::Power(yhit,2) - 3e-3*yhit + 253.67;
+	  }
+	if (fVoltage==2100)
+	    gain_var = 8e-6*TMath::Power(yhit,4) + 2e-7*TMath::Power(yhit,3) - 0.0283*TMath::Power(yhit,2) - 2e-4*yhit + 23.015;
+	if (fVoltage==2050)
+	    gain_var = 7e-6*TMath::Power(yhit,4) + 1e-7*TMath::Power(yhit,3) - 0.0254*TMath::Power(yhit,2) - 2e-4*yhit + 20.888;
+	if (fVoltage==2000)
+	    gain_var = 6e-6*TMath::Power(yhit,4) + 8e-8*TMath::Power(yhit,3) - 0.0227*TMath::Power(yhit,2) - 1e-4*yhit + 18.961;
+		
+	gain_var = gain_var/100;
+	//printf("Yhit:%f, Gain variation:%f\n",yhit,gain_var);
+
+	Float_t gain = (fChargeSlope + fChargeSlope*gain_var)*.9; 
+	printf(" Yhit:%f, Gain variation:%f\n",yhit, gain);
+
+	for (Int_t i=1;i<=nel;i++) {
+	  charge -= gain*TMath::Log(gRandom->Rndm());    
+	}
+      }
+    else
+      {
+	for (Int_t i=1;i<=nel;i++) {
+	  charge -= fChargeSlope*TMath::Log(gRandom->Rndm());    
+	}
+      }
+
     return charge;
 }
 
-Float_t AliRICHResponseV0::IntPH()
+Float_t AliRICHResponseV0::IntPH(Float_t yhit)
 {
 
 //  Get number of electrons and return charge, for a single photon
 
-    Float_t charge = -fChargeSlope*TMath::Log(gRandom->Rndm());
+  Float_t charge=0;
+  Double_t gain_var=1;
+
+   if (fWireSag)
+      {
+	if (fVoltage==2150)
+	  {
+	    gain_var = 9e-6*TMath::Power(yhit,4) + 2e-7*TMath::Power(yhit,3) - 0.0316*TMath::Power(yhit,2) - 3e-4*yhit + 25.367;
+	    //gain_var = 9e-5*TMath::Power(yhit,4) + 2e-6*TMath::Power(yhit,3) - 0.316*TMath::Power(yhit,2) - 3e-3*yhit + 253.67;
+	  }
+	if (fVoltage==2100)
+	    gain_var = 8e-6*TMath::Power(yhit,4) + 2e-7*TMath::Power(yhit,3) - 0.0283*TMath::Power(yhit,2) - 2e-4*yhit + 23.015;
+	if (fVoltage==2050)
+	    gain_var = 7e-6*TMath::Power(yhit,4) + 1e-7*TMath::Power(yhit,3) - 0.0254*TMath::Power(yhit,2) - 2e-4*yhit + 20.888;
+	if (fVoltage==2000)
+	    gain_var = 6e-6*TMath::Power(yhit,4) + 8e-8*TMath::Power(yhit,3) - 0.0227*TMath::Power(yhit,2) - 1e-4*yhit + 18.961;
+
+	gain_var = gain_var/100;
+	//printf(" Yhit:%f, Gain variation:%f\n",yhit, gain_var);
+	
+	Float_t gain = (fChargeSlope + fChargeSlope*gain_var)*.9; 
+	
+	charge -= gain*TMath::Log(gRandom->Rndm());
+	printf(" Yhit:%f, Gain variation:%f\n",yhit, gain);
+      }
+   else
+     {
+       charge -= fChargeSlope*TMath::Log(gRandom->Rndm());
+     }
     return charge;
 }
 
