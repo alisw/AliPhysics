@@ -8,6 +8,7 @@
 // Using with caution if you are not PAI
 #include "macroIncludePai.h"
 #include "macroIncludeAlice.h"
+extern "C++" {void loadlibs();}
 #endif
 
 class TH1F; 
@@ -34,7 +35,6 @@ Int_t nevMax = 1000;
 TString fname;
 // fitting
 class TF1 *g1;// gauss
-extern "C++" {void loadlibs();}
 
 void 
 anaDst(Int_t mode) 

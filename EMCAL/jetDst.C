@@ -7,6 +7,7 @@
 // Using with caution if you are not PAI
 #include "macroIncludePai.h"
 #include "macroIncludeAlice.h"
+extern "C++" {void loadlibs();}
 #endif
 
 // For convinience only
@@ -39,7 +40,6 @@ class AliEMCALJetMicroDst; AliEMCALJetMicroDst *dst=0;
 Int_t nevSum = 0, nevF;
 TArrayI nevInFiles(100);
 
-extern "C++" {void loadlibs();}
 
 void jetDst(Int_t mode, Int_t var, Int_t nmax) 
 { 
