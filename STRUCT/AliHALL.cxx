@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2001/06/21 12:26:52  morsch
+Simple concrete shielding around compensator dipole.
+
 Revision 1.12  2001/06/20 16:08:56  morsch
 Remove some shielding to accomodate compensator magnet.
 
@@ -289,10 +292,10 @@ void AliHALL::CreateGeometry()
   ppgon[1] =   360.;
   ppgon[2] =     4.;
   ppgon[3] =     2.;
-  ppgon[4] =  -720.;
+  ppgon[4] = -1800.;
   ppgon[5] =   150.;
   ppgon[6] =   250.;
-  ppgon[7] = -1800.;
+  ppgon[7] =  -720.;
   ppgon[8] =   150.;
   ppgon[9] =   250.;
 
