@@ -1,5 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 // ROOT includes
+#include "TTree.h"
 #include "TBranch.h"
 #include "TClonesArray.h"
 #include "TLorentzVector.h"
@@ -138,6 +139,14 @@ TH1F *hInvMassRes;
     return kFALSE;
   }
   
+  AliESD* esd = new AliESD();
+  TTree* tree = (TTree*) esdFile->Get("esdTree");
+  if (!tree) {
+    Error("CheckESD", "no ESD tree found");
+    return kFALSE;
+  }
+  tree->SetBranchAddress("ESD", &esd);
+
   runLoader->LoadHeader();
   nevents = runLoader->GetNumberOfEvents();
         
@@ -146,20 +155,18 @@ TH1F *hInvMassRes;
 
     // get current event
     runLoader->GetEvent(iEvent);
-    
+   
     // get the event summary data
-    char esdName[256]; 
-    sprintf(esdName, "ESD%d", iEvent);
-    AliESD* esd = (AliESD*) esdFile->Get(esdName);
+    tree->GetEvent(iEvent);
     if (!esd) {
-      Error("MUONmass_ESD", "no ESD object found for event %d", iEvent);
+      Error("CheckESD", "no ESD object found for event %d", iEvent);
       return kFALSE;
     }
 
-    Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks() ; //
+    Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks() ; 
 
     //    printf("\n Nb of events analysed: %d\r",iEvent);
-    //   cout << " number of tracks: " << nrectracks  <<endl;
+    //      cout << " number of tracks: " << nTracks  <<endl;
   
     // loop over all reconstructed tracks (also first track of combination)
     for (Int_t iTrack = 0; iTrack <  nTracks;  iTrack++) {
@@ -264,7 +271,7 @@ TH1F *hInvMassRes;
     } // for (Int_t iTrack = 0; iTrack < nrectracks; iTrack++)
 
     hNumberOfTrack->Fill(nTracks);
-    esdFile->Delete();
+    //    esdFile->Delete();
   } // for (Int_t iEvent = FirstEvent;
 
 // Loop over events for bg event
