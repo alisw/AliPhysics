@@ -15,14 +15,17 @@
 
 /*
 $Log$
+Revision 1.1  2003/01/17 04:10:31  morsch
+First commit.
 */
 
 //
 // Generator using the TPythia interface (via AliPythia)
-// to generate pp collisions.
+// to generate jets in pp collisions.
 // Using SetNuclei() also nuclear modifications to the structure functions
-// can be taken into account. This makes, of course, only sense for the
-// generation of the products of hard processes (heavy flavor, jets ...)
+// can be taken into account. 
+// Using SetQuenchingFactor(f) quenched jets can be modelled by superimposing 
+// two jets with energies e * f and e * (1-f)
 //
 // andreas.morsch@cern.ch
 //
@@ -209,7 +212,7 @@ Bool_t AliGenPythiaJets::CheckTrigger()
 	Float_t e    = jets[3][0];
 	Float_t beta = pz/e;
 	Float_t phi  =  TMath::Pi()+TMath::ATan2(-py,-px);
-	TransformEvent(beta, -TMath::Pi()/2. + phi);
+	TransformEvent(beta, -2. * TMath::Pi() / 3. + phi);
     }
     return triggered;
 }
@@ -225,9 +228,6 @@ void  AliGenPythiaJets::TransformEvent(Float_t beta, Float_t phi)
 //
 // Perform Lorentz Transformation and Rotation
 //
-    printf("Transforming \n");
-    
- 
     Float_t gamma = 1./TMath::Sqrt(1. - beta * beta);
     Int_t npart = (fPythia->GetPyjets())->N;
 
