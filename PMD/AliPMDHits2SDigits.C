@@ -19,7 +19,7 @@ void AliPMDHits2SDigits(Int_t nevt=1)
 {
   TStopwatch timer;
   timer.Start();
-  Float_t zpos = 365.0;
+  Float_t zpos = 361.5;
 
   // Input (and output) file name
   Char_t *alifile = "galice.root"; 

@@ -330,7 +330,7 @@ void AliPMD::Hits2SDigits()
   AliPMDDigitizer* pmdDigitizer = new AliPMDDigitizer;
   pmdDigitizer->OpengAliceFile(fLoader->GetRunLoader()->GetFileName().Data(),
 			       "HS");
-  pmdDigitizer->SetZPosition(365.0);
+  pmdDigitizer->SetZPosition(361.5);
 
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
     pmdDigitizer->Hits2SDigits(iEvent);
