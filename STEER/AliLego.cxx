@@ -222,6 +222,7 @@ void AliLego::StepManager()
    Float_t t, tt;
    Float_t a,z,dens,radl,absl;
    Int_t i;
+   Bool_t out;
    
    Float_t step  = gMC->TrackStep();
        
@@ -234,23 +235,28 @@ void AliLego::StepManager()
    
    if (z < 1) return;
    
-// --- See if we have to stop now
-   if (TMath::Abs(pos[2]) > fZMax  || 
-       pos[0]*pos[0] +pos[1]*pos[1] > fRadMax*fRadMax) {
-       gMC->StopEvent();
+// --- See how long we have to go
+   if (TMath::Abs(pos[2]) <= fZMax  && 
+       pos[0]*pos[0] +pos[1]*pos[1] <= fRadMax*fRadMax) {
+
+     tt = step;
+     out = kFALSE;
    } else {
 
-// --- See how long we have to go
       for(i=0;i<3;++i) {
 	vect[i]=pos[i];
 	dir[i]=mom[i];
       }
       t  = PropagateCylinder(vect,dir,fRadMax,fZMax);
       tt = TMath::Min(step,t);
-
-      fTotAbso += tt/absl;
-      fTotRadl += tt/radl;
-      fTotGcm2 += tt*dens;
+      out = kTRUE;
    }
+
+   fTotAbso += tt/absl;
+   fTotRadl += tt/radl;
+   fTotGcm2 += tt*dens;
+
+// --- See if we have to stop now
+   if(out) gMC->StopEvent();
 }
 
