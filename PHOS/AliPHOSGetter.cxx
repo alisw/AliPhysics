@@ -2015,6 +2015,7 @@ void AliPHOSGetter::ReadPrimaries()
     if (fDebug) 
       cout << "INFO: AliPHOSGetter::ReadPrimaries -> TreeK found in " << fHeaderFile.Data() << endl ; 
     fNPrimaries = gAlice->GetNtrack() ; 
+    fAlice = 0 ; 
   
   } else { // treeK not found in header file
 
@@ -2176,7 +2177,7 @@ TObject * AliPHOSGetter::ReturnO(TString what, TString name, TString file) const
   }
   if (!phosO) {
     if(fDebug)
-      cerr << "WARNING : AliPHOSGetter::ReturnO -> Object " << what << " not found in " << folder->GetName() << endl ; 
+      cerr << "WARNING : AliPHOSGetter::ReturnO -> Object " << what << " not found in PHOS" << endl ; 
     return 0 ;
   }
 

@@ -1906,7 +1906,8 @@ void AliEMCALGetter::ReadPrimaries()
     if (fDebug) 
       cout << "INFO: AliEMCALGetter::ReadPrimaries -> TreeK found in " << fHeaderFile.Data() << endl ; 
     fNPrimaries = gAlice->GetNtrack() ; 
-  
+    fAlice = 0 ; 
+
   } else { // treeK not found in header file
 
     TString searchFileName("") ; 
