@@ -6,7 +6,10 @@
 /* $Id$ */
 
 // start of 2deg cone
-    const Float_t zTwoDeg     = 117.40864;           
+//    const Float_t zTwoDeg     = 125.9995;
+//    const Float_t zTwoDeg     = 131.7267;
+//    const Float_t zTwoDeg     = 117.4086;
+    const Float_t zTwoDeg     = 128.863;           
 // start of the absorber 
     const Float_t zAbsStart   = 90.;    
 // end of the W-nose
@@ -36,3 +39,4 @@
 
 
 #endif
+

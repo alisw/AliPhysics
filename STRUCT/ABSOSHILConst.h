@@ -20,11 +20,20 @@
 // min acceptance angle
     const Float_t accMin = 2. *kDegrad;
 // angle of first opening cone
-    Float_t thetaOpen1 = 0.78*kDegrad;    
+    Float_t thetaOpen1 = 0.75*kDegrad;    
 //
 // inner radius of heavy shield
-    Float_t rAbs = 4.1;
+    Float_t rAbs = 4.5;
 // innner radius of beam tube
     Float_t rVacu=2.9;                     
 #endif
+
+
+
+
+
+
+
+
+
 

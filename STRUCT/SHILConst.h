@@ -6,18 +6,18 @@
 /* $Id$ */
 
 // angle of 2nd cone
-  const Float_t thetaOpen2 = 0.78*kDegrad;
+  const Float_t thetaOpen2   = 0.83*kDegrad;
 // angle of 3rd cone
-  const Float_t thetaOpen3 = 0.78*kDegrad;
+  const Float_t thetaOpen3   = 0.83*kDegrad;
 // angle of beam tube in second cone
-  const Float_t thetaOpenB = 0.83*kDegrad;
+  const Float_t thetaOpenB   = 0.83*kDegrad;
 //  const Float_t thetaOpenB = 0.84*kDegrad;
 // inner lead Cone opening angle
-  const Float_t thetaOpenPb = 0.6*kDegrad;
+  const Float_t thetaOpenPb  = 0.6*kDegrad;
 // Outer Pb Cone opening angle
   const Float_t thetaOpenPbO = 1.6*kDegrad;
 // Start of lead cone
-  const Float_t zPb     = 810.;   
+  const Float_t zPb = 810.;   
 // y-position of trigger wall
   const Float_t zFilterIn       = 1471.;
   const Float_t zFilterOut      = zFilterIn+120.;
@@ -26,11 +26,11 @@
   const Float_t zConeE    = 859.;
 //
 //
-  Float_t dTubeS=0.1;
-  const Float_t dInsuS=0.6;
+  Float_t dTubeS = 0.1;
+  const Float_t dInsuS=1.5;
   const Float_t dEnveS=0.1;
-  const Float_t dProtS=0.2;
-  const Float_t dFreeS=0.45;
+  const Float_t dProtS=0.1;
+  const Float_t dFreeS=0.00;
 
   Float_t dVacuS=dTubeS+dInsuS+dEnveS+dProtS+dFreeS;
 
@@ -39,11 +39,12 @@
 //
 // FIRST SECTION
 // delta_R for bellows
-  const Float_t dr11=1.8;
+//  const Float_t dr11=2.65;
+  const Float_t dr11=4.1;
 // delta_R for flange
-  const Float_t dr12=0.875;
+  const Float_t dr12=0.01;
 // delta_R to catch up with cone
-  const Float_t dr13=0.525;
+  const Float_t dr13=2.0;
 
 // flange length
   const Float_t dF1=2.*3.9;
@@ -88,7 +89,7 @@
   const Float_t zvac12=1900.;
 
   const Float_t R41=35.;
-  const Float_t R42=50.;
+  const Float_t R42=49.9;
   const Float_t R43=110.;
 
 //
@@ -110,7 +111,7 @@
 //
 // Bellow2
 //
-  const Float_t rB2=15.85;
+  const Float_t rB2=16.35;
   const Float_t hB2=2.25;
   const Float_t lB2=2.32;
   const Float_t eB2=0.05;

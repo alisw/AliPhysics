@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/05/16 14:57:22  alibrary
+New files for folders and Stack
+
 Revision 1.8  2001/01/12 13:16:09  morsch
 Store absorber composition information in fMLayers and fZLayers
 Rear 25 cm Fe + 35 cm Cu
@@ -112,8 +115,8 @@ void AliABSOv0::CreateGeometry()
     //
 
     enum {kC=1605, kAl=1608, kFe=1609, kCu=1610, kW=1611, kPb=1612,
-		  kNiCuW=1620, kVacuum=1615, kAir=1614, kConcrete=1616,
-		  kPolyCH2=1617, kSteel=1609, kInsulation=1613, kPolyCc=1619};	  
+	  kNiCuW=1620, kVacuum=1615, kAir=1614, kConcrete=1616,
+	  kPolyCH2=1617, kSteel=1609, kInsulation=1613, kPolyCc=1619};	  
     
     Int_t *idtmed = fIdtmed->GetArray()-1599;
     
@@ -131,7 +134,7 @@ void AliABSOv0::CreateGeometry()
     fMLayers[0][0]  = kAir;              fZLayers[0][0] = zAbsStart;
     fMLayers[0][1]  = kC;                fZLayers[0][1] = zAbsCc;             
     fMLayers[0][2]  = kConcrete;         fZLayers[0][2] = zRear-dRear-dzFe;
-    fMLayers[0][3]  = kFe;               fZLayers[0][3] = zRear-dRear;
+    fMLayers[0][3]  = kSteel;            fZLayers[0][3] = zRear-dRear;
     fMLayers[0][4]  = kCu;               fZLayers[0][4] = zRear;
 // 2 < theta < 3
     fNLayers[1] = 5; 
@@ -290,7 +293,7 @@ void AliABSOv0::CreateGeometry()
   cpar[0]  = dzFe/2.;
   cpar[1] = zr * TMath::Tan(accMin);
   cpar[2] = zr * TMath::Tan(accMax);
-  cpar[3] = cpar[1] + TMath::Tan(thetaR) * dzFe;
+  cpar[3] = cpar[1] + TMath::Tan(accMin) * dzFe;
   cpar[4] = cpar[2] + TMath::Tan(accMax) * dzFe;
   gMC->Gsvolu("ACFE", "CONE",idtmed[fMLayers[0][3]], cpar, 5);
 
@@ -375,7 +378,7 @@ void AliABSOv0::CreateGeometry()
 // cylindrical piece
   tpar0[2]=(zOpen-zAbsStart)/2;
   tpar0[0]=rVacu;
-  tpar0[1]=rAbs;
+  tpar0[1]=rVacu+dTube+dInsu+dEnve;
   gMC->Gsvolu("AV11", "TUBE", idtmed[kSteel+40], tpar0, 3);
 //
 // insulation
@@ -386,20 +389,14 @@ void AliABSOv0::CreateGeometry()
   gMC->Gsvolu("AI11", "TUBE", idtmed[kInsulation+40], tpar, 3);
   gMC->Gspos("AI11", 1, "AV11", 0., 0., 0., 0, "ONLY"); 
 //
-// clearance 
-  tpar[0]=tpar[1]+dEnve;
-  tpar[1]=tpar[0]+dFree;
-  gMC->Gsvolu("AP11", "TUBE", idtmed[kAir+40], tpar, 3);
-  gMC->Gspos("AP11", 1, "AV11", 0., 0., 0., 0, "ONLY"); 
-//
   dz=-(zRear-zAbsStart)/2.+tpar0[2];
   gMC->Gspos("AV11", 1, "ABSM", 0., 0., dz, 0, "ONLY"); 
 //
 // conical piece
 
   cpar0[0]=(zRear-dRear-zOpen)/2;
-  cpar0[1]=rVacu-0.05;
-  cpar0[2]=rAbs;
+  cpar0[1]= rVacu-0.05;
+  cpar0[2]= rVacu+dTube+dInsu+dEnve;
   Float_t dR=2.*cpar0[0]*TMath::Tan(thetaOpen1);
   cpar0[3]=cpar0[1]+dR;
   cpar0[4]=cpar0[2]+dR;
@@ -415,15 +412,6 @@ void AliABSOv0::CreateGeometry()
   cpar[4]=cpar0[3]+dTube+dInsu;
   gMC->Gsvolu("AI21", "CONE", idtmed[kInsulation+40], cpar, 5);
   gMC->Gspos("AI21", 1, "AV21", 0., 0., 0., 0, "ONLY"); 
-//
-// clearance
-  cpar[1]=cpar0[1]+dTube+dInsu+dEnve;
-  cpar[2]=rAbs;
-  cpar[3]=cpar0[1]+dTube+dInsu+dEnve+dR;
-  cpar[4]=rAbs+dR;
-
-  gMC->Gsvolu("AP21", "CONE", idtmed[kAir+40], cpar, 5);
-  gMC->Gspos("AP21", 1, "AV21", 0., 0., 0., 0, "ONLY"); 
   
   dz=(zRear-zAbsStart)/2.-cpar0[0]-dRear;
   gMC->Gspos("AV21", 1, "ABSM", 0., 0., dz, 0, "ONLY"); 
