@@ -84,15 +84,16 @@ void AliITSClusterFinderSPDbari::FindRawClusters(){
    
     // input of Cluster Finder  
     Int_t digitcount=0;
-    Int_t numberd=10000;
+    Int_t numberd=100000;
     Int_t   *digx       = new Int_t[numberd];
     Int_t   *digz       = new Int_t[numberd];
     Int_t   *digtr1     = new Int_t[numberd];
     Int_t   *digtr2     = new Int_t[numberd];
     Int_t   *digtr3     = new Int_t[numberd];
+    Int_t   *digtr4     = new Int_t[numberd];
     
     //  output of Cluster Finder    
-    Int_t numberc=1000;
+    Int_t numberc=10000;
     Float_t *xcenterl   = new Float_t[numberc];
     Float_t *zcenterl   = new Float_t[numberc];
     Float_t *errxcenter = new Float_t[numberc];
@@ -122,37 +123,39 @@ void AliITSClusterFinderSPDbari::FindRawClusters(){
          digtr1[digitcount] = dig1->fTracks[0];
          digtr2[digitcount] = dig1->fTracks[1];
          digtr3[digitcount] = dig1->fTracks[2];
+         digtr4[digitcount] = dig1->fSignal;
 
          digitcount++;
     }
 
 
-        ClusterFinder(digitcount,digx,digz,digtr1,digtr2,digtr3,
+    ClusterFinder(digitcount,digx,digz,digtr1,digtr2,digtr3,digtr4,
               nclus,xcenterl,zcenterl,errxcenter,errzcenter,
               tr1clus, tr2clus, tr3clus);
  
-        DigitToPoint(nclus,xcenterl,zcenterl,errxcenter,errzcenter,
+    DigitToPoint(nclus,xcenterl,zcenterl,errxcenter,errzcenter,
               tr1clus, tr2clus, tr3clus);
 
 
-  delete[] digx       ;
-  delete[] digz       ;
-  delete[] digtr1     ;
-  delete[] digtr2     ;
-  delete[] digtr3     ;
-  delete[] xcenterl   ;
-  delete[] zcenterl   ;
-  delete[] errxcenter ;
-  delete[] errzcenter ;
-  delete[] tr1clus    ;
-  delete[] tr2clus    ;
-  delete[] tr3clus    ;
-  
+    delete[] digx       ;
+    delete[] digz       ;
+    delete[] digtr1     ;
+    delete[] digtr2     ;
+    delete[] digtr3     ;
+    delete[] digtr4     ;
+    delete[] xcenterl   ;
+    delete[] zcenterl   ;
+    delete[] errxcenter ;
+    delete[] errzcenter ;
+    delete[] tr1clus    ;
+    delete[] tr2clus    ;
+    delete[] tr3clus    ;
+
 }
 //-----------------------------------------------------------------
 void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
                     Int_t digx[],Int_t digz[],
-                    Int_t digtr1[],Int_t digtr2[],Int_t digtr3[],
+                    Int_t digtr1[],Int_t digtr2[],Int_t digtr3[],Int_t digtr4[],
                     Int_t &nclus, Float_t xcenter[],Float_t zcenter[],
 				    Float_t errxcenter[],Float_t errzcenter[],
                     Int_t tr1clus[], Int_t tr2clus[], Int_t tr3clus[]) {
@@ -170,11 +173,14 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
 //
 
   Int_t if1, min, max, nd;
-  Int_t x1, z1, t1, t2, t3;
+  Int_t x1, z1, t1, t2, t3, t4;
   Int_t ndx, ndz, ndxmin, ndxmax, ndzmin, ndzmax;
   Float_t dx, dz; 
   Int_t i,k,ipos=0;
   Float_t xdum, zdum;      
+  Int_t kmax, sigmax;
+  Float_t deltax, deltaz;
+  Float_t ndig;
 
   Int_t numberd=10000;
   Int_t *ifpad = new Int_t[numberd];
@@ -183,31 +189,29 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
   Int_t *tr1pad  = new Int_t[numberd];
   Int_t *tr2pad  = new Int_t[numberd];
   Int_t *tr3pad  = new Int_t[numberd];
+  Int_t *tr4pad  = new Int_t[numberd];
   Int_t *iclus   = new Int_t[numberd];
 
- 
   nclus=1;
-  for (i=0; i < ndigits ; i++) ifpad[i] = -1;
+  for (i=0; i < ndigits ; i++){
+    ifpad[i] = -1;
+    iclus[i] = 0;
+  }
 
   ifpad[0]=0;
-  for (i=0; i < ndigits-1 ; i++) 
-  {
-    if ( ifpad[i] == -1 ) 
-    { 
+  for (i=0; i < ndigits-1 ; i++) {
+    if ( ifpad[i] == -1 ) { 
 	   	nclus++;
 		ipos++;
      	ifpad[i]=nclus-1;
     }
-    for (Int_t j=i+1 ; j < ndigits ; j++)  
-    {  
-      if (ifpad[j]== -1 )
-      {
+    for (Int_t j=i+1 ; j < ndigits ; j++)  {  
+      if (ifpad[j]== -1 ) {
    	     dx = TMath::Abs(digx[i]-digx[j]);
    	     dz = TMath::Abs(digz[i]-digz[j]);
 
-// 	     if ( ( dx+dz )==1 )  //  clusters are not diagonal
-   	     if ( ( dx+dz )==1 || (dx==1 && dz==1) )  //  diagonal clusters allowed
-   	     {
+// 	     if ( ( dx+dz )==1 )  //clusters are not diagonal
+   	     if ( ( dx+dz )==1 || (dx==1 && dz==1) ) { //diagonal clusters allowed
    		    ipos++;
 		    ifpad[j]=ifpad[i];
 
@@ -221,12 +225,15 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
    		    t1=digtr1[j];
    		    t2=digtr2[j];
    		    t3=digtr3[j];
+   		    t4=digtr4[j];
    		    digtr1[j]=digtr1[ipos];
    		    digtr2[j]=digtr2[ipos];
    		    digtr3[j]=digtr3[ipos];
+   		    digtr4[j]=digtr4[ipos];
    		    digtr1[ipos]=t1;
    		    digtr2[ipos]=t2;
    		    digtr3[ipos]=t3;
+   		    digtr4[ipos]=t4;
 
    		    if1=ifpad[j];
    		    ifpad[j]=ifpad[ipos];
@@ -234,28 +241,28 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
 	     }
       }
     }
-   }   
-   if ( ifpad[ndigits-1] == -1 )
-   {
+  }//end loop on digits   
+
+  if ( ifpad[ndigits-1] == -1 ) {
 	  nclus++;
 	  ifpad[ndigits-1]=nclus-1;
-   }
-   for (i=0 ; i < ndigits ; i++) iclus[ifpad[i]]++;
+  }
 
-   min=0;
-   max=0;
+  for (i=0 ; i < ndigits ; i++) iclus[ifpad[i]]++;
 
-   // loop on found clusters 
-
-   for (i=0 ; i < nclus ; i++)  
-   {
-      min = max;
-      max += iclus[i];
-      Float_t deltax = fSegmentation->Dpx(0);
-      if (iclus[i]!=1) 
-      {
+  min=0;
+  max=0;
+  // loop on found clusters 
+  for (i=0 ; i < nclus ; i++)  
+  {
+     min = max;
+     max += iclus[i];
+     deltax = fSegmentation->Dpx(0);
+     if (iclus[i]!=1) 
+     {
         //cluster with more than one digit
         nd=iclus[i];
+        ndig=(Float_t) nd;
 	    Int_t count=0;
         for (k=min;k<min+nd;k++)
         {
@@ -265,6 +272,7 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
 	       tr1pad[count] = digtr1[k];	   
 	       tr2pad[count] = digtr2[k];	   
 	       tr3pad[count] = digtr3[k];	   
+	       tr4pad[count] = digtr4[k];	   
 
 	       count++; 
         }
@@ -275,31 +283,31 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
         ndx = ndxmax - ndxmin+1;
         ndz = ndzmax - ndzmin+1;
 
+
         // calculate x and z coordinates of the center of the cluster
         fSegmentation->GetPadCxz(digx[min],digz[min]-1,xdum, zdum);
 
+	    if (ndx == 1) {	    
+	         xcenter[i] = xdum;
+	    }    
+	    else{ 
+             xcenter[i] = 0.;
+	         for (k=0;k<nd;k++) {
+                fSegmentation->GetPadCxz(xpad[k],zpad[k]-1,xdum,zdum);
+	            xcenter[i] += (xdum / nd);
+	         }	               
+	    }
 
-	if (ndx == 1) {	    
-	    xcenter[i] = xdum;
-	}    
-	else{ 
-           xcenter[i] = 0.;
-	   for (k=0;k<nd;k++) {
-             fSegmentation->GetPadCxz(xpad[k],zpad[k]-1,xdum,zdum);
-	     xcenter[i] += (xdum / nd);
-	   }	               
-	}
-
-	if (ndz == 1) {
-	    zcenter[i] = zdum;
-	}   
-	else {
-	   zcenter[i] = 0.;
-	   for (k=0;k<nd;k++) {	      
-             fSegmentation->GetPadCxz(xpad[k],zpad[k]-1,xdum,zdum);
-	     zcenter[i] += (zdum / nd);
-	   }
-	}
+	    if (ndz == 1) {
+	         zcenter[i] = zdum;
+	    }   
+	    else {
+	         zcenter[i] = 0.;
+	         for (k=0;k<nd;k++) {	      
+               fSegmentation->GetPadCxz(xpad[k],zpad[k]-1,xdum,zdum);
+	           zcenter[i] += (zdum / nd);
+	         }
+	    }
 
         // error on points in x and z directions
 
@@ -312,36 +320,47 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
                fSegmentation->GetPadCxz(xpad[k],zpad[k]-1,xdum,zdum);
                errxcenter[i] += ((xdum-xcenter[i])*(xdum-xcenter[i]))/(nd*(nd-1)); 
              }   
-	     errxcenter[i] = TMath::Sqrt(errxcenter[i]);
+	         errxcenter[i] = TMath::Sqrt(errxcenter[i]);
         }
 	
-	if (ndz == 1) {
-            Float_t deltaz = fSegmentation->Dpz(digz[min]);	              
-	    errzcenter[i] = deltaz / TMath::Sqrt(12.);
+	    if (ndz == 1) {
+            deltaz = fSegmentation->Dpz(digz[min]);	              
+	        errzcenter[i] = deltaz / TMath::Sqrt(12.);
         }
-	else {
-	     errzcenter[i] = 0.;
-	     for (k=0;k<nd;k++){ 
+	    else {
+	        errzcenter[i] = 0.;
+	        for (k=0;k<nd;k++){ 
                fSegmentation->GetPadCxz(xpad[k],zpad[k]-1,xdum,zdum);
-	       errzcenter[i] += ((zdum-zcenter[i])*(zdum-zcenter[i]))/(nd*(nd-1));
-	     }
-	     errzcenter[i] = TMath::Sqrt(errzcenter[i]);
-	}    
-
+	           errzcenter[i] += ((zdum-zcenter[i])*(zdum-zcenter[i]))/(nd*(nd-1));
+	        }
+	        errzcenter[i] = TMath::Sqrt(errzcenter[i]);
+	    }    
         // take three track numbers for the cluster
+        // choose the track numbers of the digit with higher signal 
+        kmax = 0;
+        sigmax = 0;
         for (k=0;k<nd;k++){
-          if(tr1pad[k] != -2) tr1clus[i]=tr1pad[k];
-          if(tr2pad[k] != -2) tr2clus[i]=tr2pad[k];
-          if(tr3pad[k] != -2) tr3clus[i]=tr3pad[k];
+          if(tr4pad[k] > sigmax){
+            sigmax = tr4pad[k];
+            kmax   = k;
+          }
         }
-        if(tr1clus[i] == 0) tr1clus[i]= -2;
-        if(tr2clus[i] == 0) tr2clus[i]= -2;
-        if(tr3clus[i] == 0) tr3clus[i]= -2;
-      }
-      else  {
+        if(sigmax != 0) {
+            tr1clus[i]= tr1pad[kmax];
+            tr2clus[i]= tr2pad[kmax];
+            tr3clus[i]= tr3pad[kmax];
+         }
+         else {
+            tr1clus[i]= -2;
+            tr2clus[i]= -2;
+            tr3clus[i]= -2;
+        }
+     }
+     else  {
       
         // cluster with single digit
-	ndx = 1;
+        ndig= 1.;
+	    ndx = 1;
         ndz = 1;
         fSegmentation->GetPadCxz(digx[min],digz[min]-1,xdum,zdum);
         xcenter[i] = xdum;
@@ -349,7 +368,7 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
         tr1clus[i]=digtr1[min];
         tr2clus[i]=digtr2[min];
         tr3clus[i]=digtr3[min];
-	    Float_t deltaz = fSegmentation->Dpz(digz[min]);
+	    deltaz = fSegmentation->Dpz(digz[min]);
 	    errxcenter[i] = deltax / TMath::Sqrt(12.);
   	    errzcenter[i] = deltaz / TMath::Sqrt(12.);
      }
@@ -362,17 +381,19 @@ void AliITSClusterFinderSPDbari::ClusterFinder(Int_t ndigits,
      xcenter[i] = xcenter[i] - fSegmentation->Dx()/2.; 
      zcenter[i] = zcenter[i] - fSegmentation->Dz()/2.;
 
-     AliITSRawClusterSPD *clust = new AliITSRawClusterSPD(zcenter[i],xcenter[i],1.,ndz,ndx,0.,0.,0.,0.,0.,0.,0.);
+
+     AliITSRawClusterSPD *clust = new AliITSRawClusterSPD(zcenter[i],xcenter[i],ndig,ndz,ndx,0.,0.,0.,0.,0.,0.,0.);
      iTS->AddCluster(0,clust);
      delete clust;
-   }	  
-   delete[] ifpad;
-   delete[] xpad ;
-   delete[] zpad ;
-   delete[] iclus;
-   delete [] tr1pad;
-   delete [] tr2pad;
-   delete [] tr3pad;
+  }//end loop on clusters   
+  delete[] ifpad;
+  delete[] xpad ;
+  delete[] zpad ;
+  delete[] iclus;
+  delete[] tr1pad;
+  delete[] tr2pad;
+  delete[] tr3pad;
+  delete[] tr4pad;
 }
 //______________________________________________________
 void AliITSClusterFinderSPDbari::DigitToPoint(Int_t nclus,
@@ -414,7 +435,4 @@ void AliITSClusterFinderSPDbari::DigitToPoint(Int_t nclus,
         rnew.fTracks[2]=tr3clus[i];
         iTS->AddRecPoint(rnew); 
      }
-
-
-
 }

@@ -130,16 +130,14 @@ void AliITSsimulationSPDbari::DigitiseModule(AliITSmodule *mod, Int_t module,
   SetFluctuations(pList);
 
 
+
   // loop over hits in the module
   Int_t hitpos;
-      for (hitpos=0;hitpos<nhits;hitpos++) {  
- 
+  for (hitpos=0;hitpos<nhits;hitpos++) {  
      HitToDigit(mod,hitpos,module,frowpixel,fcolpixel,fenepixel,pList);
-
-
   }// end loop over digits
 
-     CreateDigit(nhits,module,pList);
+  CreateDigit(nhits,module,pList);
 
   // clean memory
   delete[] frowpixel;
@@ -176,7 +174,7 @@ void AliITSsimulationSPDbari::HitToDigit(AliITSmodule *mod, Int_t hitpos, Int_t 
    static Float_t x1l,y1l,z1l;
    Float_t x2l,y2l,z2l,etot;
    Int_t layer,r1,r2,c1,c2,row,col,npixel = 0;
-   Int_t ntrack;
+   Int_t ntrack,idhit;
    Double_t ene;
    const Float_t kconv = 10000.;     // cm -> microns
 
@@ -185,6 +183,14 @@ void AliITSsimulationSPDbari::HitToDigit(AliITSmodule *mod, Int_t hitpos, Int_t 
    layer = hit->GetLayer();
    etot=hit->GetIonization();
    ntrack=hit->GetTrack();
+   idhit=mod->GetHitHitIndex(hitpos);     
+
+   /* //debug
+     printf("layer,etot,ntrack,status %d %f %d %d\n",layer,etot,ntrack,hit->GetTrackStatus()); //debug
+    Int_t idtrack; //debug
+    mod->GetHitTrackAndHitIndex(hitpos,idtrack,idhit);     
+    printf("idtrack,idhit %d %d\n",idtrack,idhit); //debug
+    */
 
 
         if (hit->GetTrackStatus()==66) {
@@ -248,9 +254,9 @@ void AliITSsimulationSPDbari::HitToDigit(AliITSmodule *mod, Int_t hitpos, Int_t 
 		   col = fcolpixel[npix];
 		   ene = fenepixel[npix];
 		   UpdateMap(row,col,ene);                   
-		   GetList(ntrack,pList,row,col); 
+		   GetList(ntrack,idhit,pList,row,col); 
 		   // Starting capacitive coupling effect
-		   SetCoupling(row,col,ntrack,pList); 
+		   SetCoupling(row,col,ntrack,idhit,pList); 
 	      }
 	    x1l=x2l;
 	    y1l=y2l;
@@ -413,7 +419,7 @@ void AliITSsimulationSPDbari::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
 }
 //___________________________________________________________________________
 void AliITSsimulationSPDbari::SetCoupling(Int_t row, Int_t col, Int_t ntrack,
-                                          Float_t **pList) {
+                                          Int_t idhit, Float_t **pList) {
    //
    //  Take into account the coupling between adiacent pixels.
    //  The parameters probcol and probrow are the fractions of the
@@ -461,7 +467,7 @@ void AliITSsimulationSPDbari::SetCoupling(Int_t row, Int_t col, Int_t ntrack,
          }
           else{                
 		   UpdateMap(j1,col,pulse1);                   
-		   GetList(ntrack,pList,j1,col); 
+		   GetList(ntrack,idhit,pList,j1,col); 
            flag = 0;
 	     }
 	 
@@ -483,7 +489,7 @@ void AliITSsimulationSPDbari::SetCoupling(Int_t row, Int_t col, Int_t ntrack,
          }
           else{                
 		   UpdateMap(row,j2,pulse2);                   
-		   GetList(ntrack,pList,row,j2); 
+		   GetList(ntrack,idhit,pList,row,j2); 
            flag = 0;
 	     }
 	 
@@ -510,7 +516,6 @@ void AliITSsimulationSPDbari::CreateDigit(Int_t nhits, Int_t module, Float_t
    Float_t charges[3]; 
    Int_t gi,j1;
    
-
    if (nhits > 0) {
     
      for (Int_t r=1;r<=fNPixelsZ;r++) {
@@ -521,12 +526,20 @@ void AliITSsimulationSPDbari::CreateDigit(Int_t nhits, Int_t module, Float_t
            if ( signal > fThresh) {
 	          digits[0] = r-1;  // digits starts from 0
               digits[1] = c-1;  // digits starts from 0
-              digits[2] = 1;  
+              //digits[2] = 1;  
+              signal = signal*1.0e9;  //signal in eV
+              digits[2] =  (Int_t) signal;  // the signal is stored in eV
 	          gi =r*fNPixelsX+c; // global index
 	          for(j1=0;j1<3;j1++){
                  tracks[j1] = (Int_t)(*(pList[gi]+j1));
+                 hits[j1] = (Int_t)(*(pList[gi]+j1+6));
                  charges[j1] = 0;
               }
+              /* debug
+              printf("digits %d %d %d\n",digits[0],digits[1],digits[2]); //debug
+              printf("tracks %d %d %d\n",tracks[0],tracks[1],tracks[2]); //debug
+              printf("hits %d %d %d\n",hits[0],hits[1],hits[2]); //debug
+              */
               Float_t phys = 0;        
 	          aliITS->AddSimDigit(0,phys,digits,tracks,hits,charges);
 	          if(pList[gi]) delete [] pList[gi];
@@ -538,7 +551,7 @@ void AliITSsimulationSPDbari::CreateDigit(Int_t nhits, Int_t module, Float_t
 }
 //_____________________________________________________________________________
 
-void AliITSsimulationSPDbari::GetList(Int_t label,Float_t **pList,
+void AliITSsimulationSPDbari::GetList(Int_t label,Int_t idhit, Float_t **pList,
                                       Int_t row, Int_t col) {
   // loop over nonzero digits
 
@@ -557,22 +570,26 @@ void AliITSsimulationSPDbari::GetList(Int_t label,Float_t **pList,
   if(!pList[globalIndex])
   {
      // 
-     // Create new list (6 elements - 3 signals and 3 tracks + total sig)
+     // Create new list (9 elements - 3 signals and 3 tracks + 3 hits)
      //
 
-     pList[globalIndex] = new Float_t [6];
+     pList[globalIndex] = new Float_t [9];
 
 
-     // set list to -2 
-     *(pList[globalIndex]) = -2.;
-     *(pList[globalIndex]+1) = -2.;
-     *(pList[globalIndex]+2) = -2.;
+     // set list to -3 
+     *(pList[globalIndex]) = -3.;
+     *(pList[globalIndex]+1) = -3.;
+     *(pList[globalIndex]+2) = -3.;
      *(pList[globalIndex]+3) =  0.;
      *(pList[globalIndex]+4) =  0.;
      *(pList[globalIndex]+5) =  0.;
+     *(pList[globalIndex]+6) = -1.;
+     *(pList[globalIndex]+7) = -1.;
+     *(pList[globalIndex]+8) = -1.;
 
      *pList[globalIndex] = (float)label;
      *(pList[globalIndex]+3) = signal;
+     *(pList[globalIndex]+6) = (float)idhit;
   }
   else{
 
@@ -593,6 +610,9 @@ void AliITSsimulationSPDbari::GetList(Int_t label,Float_t **pList,
 
       if (signal>highest)
       {
+         *(pList[globalIndex]+8) = *(pList[globalIndex]+7);
+         *(pList[globalIndex]+7) = *(pList[globalIndex]+6);
+         *(pList[globalIndex]+6) = idhit;
          *(pList[globalIndex]+5) = middle;
          *(pList[globalIndex]+4) = highest;
          *(pList[globalIndex]+3) = signal;
@@ -602,6 +622,8 @@ void AliITSsimulationSPDbari::GetList(Int_t label,Float_t **pList,
 	  }
         else if (signal>middle)
       {
+         *(pList[globalIndex]+8) = *(pList[globalIndex]+7);
+         *(pList[globalIndex]+7) = idhit;
          *(pList[globalIndex]+5) = middle;
          *(pList[globalIndex]+4) = signal;
          *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
@@ -609,6 +631,7 @@ void AliITSsimulationSPDbari::GetList(Int_t label,Float_t **pList,
 	  }
         else
       {
+         *(pList[globalIndex]+8) = idhit;
          *(pList[globalIndex]+5) = signal;
          *(pList[globalIndex]+2) = label;
 	  }
@@ -644,16 +667,19 @@ void AliITSsimulationSPDbari::SetFluctuations(Float_t **pList) {
       signal = fSigma*random.Gaus(); 
       fMapA2->SetHit(iz,ix,signal);
 
-      // insert in the label-signal list the pixels fired only by noise
+      // insert in the label-signal-hit list the pixels fired only by noise
       if ( signal > fThresh) {
         Int_t globalIndex = iz*fNPixelsX+ix; 
-        pList[globalIndex] = new Float_t [6];
+        pList[globalIndex] = new Float_t [9];
         *(pList[globalIndex]) = -2.;
         *(pList[globalIndex]+1) = -2.;
         *(pList[globalIndex]+2) = -2.;
         *(pList[globalIndex]+3) =  signal;
         *(pList[globalIndex]+4) =  0.;
         *(pList[globalIndex]+5) =  0.;
+        *(pList[globalIndex]+6) =  -1.;
+        *(pList[globalIndex]+7) =  -1.;
+        *(pList[globalIndex]+8) =  -1.;
       }
     } // end of loop on pixels
   } // end of loop on pixels

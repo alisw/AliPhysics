@@ -33,9 +33,9 @@ public:
 				    Int_t &npixel,Int_t *frowpixel,
 				    Int_t *fcolpixel,Double_t *fenepixel);
   
-  void SetCoupling(Int_t row, Int_t col, Int_t ntrack, Float_t **pList);
+  void SetCoupling(Int_t row, Int_t col, Int_t ntrack, Int_t idhit, Float_t **pList);
   void CreateDigit(Int_t nhits, Int_t module, Float_t **pList);
-  void GetList(Int_t track, Float_t **pList, Int_t row, Int_t col);
+  void GetList(Int_t track,Int_t idhit, Float_t **pList, Int_t row, Int_t col);
 
   void CreateHistograms();
   void ResetHistograms();
@@ -61,6 +61,4 @@ private:
 };
 
 #endif 
-
-
 

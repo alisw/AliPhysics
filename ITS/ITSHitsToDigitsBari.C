@@ -49,7 +49,6 @@ void ITSHitsToDigitsBari (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25
 
    // SDD
    // SDD compression param: 2 fDecrease, 2fTmin, 2fTmax or disable, 2 fTolerance
-
                 
    AliITSDetType *iDetType=ITS->DetType(1);
    AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
@@ -58,12 +57,13 @@ void ITSHitsToDigitsBari (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25
          ITS->SetResponseModel(1,res1);
    }
 
+
    //res1->SetChargeLoss(0.);
    Float_t baseline;
    Float_t noise;
    res1->GetNoiseParam(noise,baseline);
    Float_t noise_after_el = res1->GetNoiseAfterElectronics();
-   cout << "noise_after_el: " << noise_after_el << endl; 
+   cout << "noise_after_el: " << noise_after_el << endl;
    Float_t fCutAmp;
    fCutAmp = baseline;
    fCutAmp += (2.*noise_after_el);  // noise
@@ -87,32 +87,41 @@ void ITSHitsToDigitsBari (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25
    AliITSsimulationSDD *sim1=new AliITSsimulationSDD(seg1,res1);
    ITS->SetSimulationModel(1,sim1);
    sim1->Print();
-   
-      
+
 
    // SPD
 
    AliITSDetType *iDetType=ITS->DetType(0);
    AliITSsegmentationSPD *seg0=(AliITSsegmentationSPD*)iDetType->GetSegmentationModel();
-   AliITSresponseSPDbari *res0 = (AliITSresponseSPDbari*)iDetType->GetResponseModel();
+   //AliITSresponseSPDbari *res0 = (AliITSresponseSPDbari*)iDetType->GetResponseModel();
+   AliITSresponseSPDbari *res0= new AliITSresponseSPDbari();
+   ITS->SetResponseModel(0,res0);
+
+// to change the  parameters
+   //res0->SetThresholds(7.2e-6, 1.e-6);
+   //res0->SetNoiseParam(0., 0.);
+   //res0->SetNoiseParam(0.04, 0.08);
+
+// to monitor the  parameters
+   Float_t thresh, sigma;
+   res0->Thresholds(thresh, sigma);
+   printf("SPDbari: threshold %e sigma  %e\n",thresh, sigma);
+   Float_t col, row;
+   res0->GetNoiseParam(col, row);
+   printf("SPDbari: Coupling by column %e Coupling by row %e\n",col, row);
+
    AliITSsimulationSPDbari *sim0=new AliITSsimulationSPDbari(seg0,res0);
    ITS->SetSimulationModel(0,sim0);
-   // test
-   //printf("SPD dimensions %f %f \n",seg0->Dx(),seg0->Dz());
-   //printf("SPD npixels %d %d \n",seg0->Npz(),seg0->Npx());
-   //printf("SPD pitches %d %d \n",seg0->Dpz(0),seg0->Dpx(0));
-   // end test
-
 
    // SSD
 
    AliITSDetType *iDetType=ITS->DetType(2);
    AliITSsegmentationSSD *seg2=(AliITSsegmentationSSD*)iDetType->GetSegmentationModel();
-   seg2->SetDetSize(72960.,40000.,303.);
    AliITSresponseSSD *res2 = (AliITSresponseSSD*)iDetType->GetResponseModel();
    res2->SetSigmaSpread(3.,2.);
    AliITSsimulationSSD *sim2=new AliITSsimulationSSD(seg2,res2);
    ITS->SetSimulationModel(2,sim2);
+
 
 //
 // Event Loop
@@ -136,10 +145,10 @@ void ITSHitsToDigitsBari (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25
    for (Int_t nev=evNumber1; nev<= evNumber2; nev++) {
        cout << "nev         " <<nev<<endl;
        if(nev>0) {
-	 nparticles = gAlice->GetEvent(nev);
-	 gAlice->SetEvent(nev);
-	 if(!gAlice->TreeD()) gAlice-> MakeTree("D");
-	 ITS->MakeBranch("D");
+	      nparticles = gAlice->GetEvent(nev);
+	      gAlice->SetEvent(nev);
+	      if(!gAlice->TreeD()) gAlice-> MakeTree("D");
+	      ITS->MakeBranch("D");
        }
        cout << "nparticles  " <<nparticles<<endl;
        if (nev < evNumber1) continue;
@@ -149,27 +158,13 @@ void ITSHitsToDigitsBari (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal  =25
        if(nsignal) nbgr_ev=Int_t(nev/nsignal);
        timer.Start();
        ITS->HitsToDigits(nev,nbgr_ev,size," ","All"," ");
+       //ITS->HitsToDigits(nev,nbgr_ev,size," ","SPD"," ");
        timer.Stop(); timer.Print();
    } // event loop 
 
-   delete sim0;
+//   delete sim0;
    delete sim1;
    delete sim2;
 
-
    file->Close();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

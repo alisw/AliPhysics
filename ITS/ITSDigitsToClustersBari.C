@@ -50,12 +50,17 @@ void ITSDigitsToClustersBari (Int_t evNumber1=0,Int_t evNumber2=0)
    // simulation but in cluster finder as well, please set them via your
    // local Config.C - the streamer will take care of writing the correct
    // info and you'll no longer be obliged to set them again for your cluster
-   // finder as it's done in this macro 
+   // finder as it's done in this macro (ugly and impractical, no? )
+
 
 
    // Set the models for cluster finding
 
    // SPD
+
+   ITS->MakeTreeC();
+   Int_t nparticles=gAlice->GetEvent(0);
+
 
    AliITSDetType *iDetType=ITS->DetType(0);
    AliITSsegmentationSPD *seg0=(AliITSsegmentationSPD*)iDetType->GetSegmentationModel();
@@ -93,18 +98,17 @@ void ITSDigitsToClustersBari (Int_t evNumber1=0,Int_t evNumber2=0)
    ITS->SetReconstructionModel(1,rec1);
    rec1->Print();
 
-
    // SSD
 
    AliITSDetType *iDetType=ITS->DetType(2);
    AliITSsegmentationSSD *seg2=(AliITSsegmentationSSD*)iDetType->GetSegmentationModel();
-   seg2->SetDetSize(72960.,40000.,303.);
    TClonesArray *dig2  = ITS->DigitsAddress(2);
    AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2);
    ITS->SetReconstructionModel(2,rec2);
    // test
    //printf("SSD dimensions %f %f \n",seg2->Dx(),seg2->Dz());
    //printf("SSD nstrips %d %d \n",seg2->Npz(),seg2->Npx());
+
 
 
 //
@@ -121,10 +125,10 @@ void ITSDigitsToClustersBari (Int_t evNumber1=0,Int_t evNumber2=0)
 
    for (int nev=evNumber1; nev<= evNumber2; nev++) {
        if(nev>0) {
-	 nparticles = gAlice->GetEvent(nev);
-	 gAlice->SetEvent(nev);
-	 if(!gAlice->TreeR()) gAlice-> MakeTree("R");
-	 ITS->MakeBranch("R");
+	     nparticles = gAlice->GetEvent(nev);
+	     gAlice->SetEvent(nev);
+	     if(!gAlice->TreeR()) gAlice-> MakeTree("R");
+	     ITS->MakeBranch("R");
        }     
        cout << "nev         " <<nev<<endl;
        cout << "nparticles  " <<nparticles<<endl;
@@ -134,6 +138,7 @@ void ITSDigitsToClustersBari (Int_t evNumber1=0,Int_t evNumber2=0)
        Int_t last_entry=0;
        timer.Start();
        ITS->DigitsToRecPoints(nev,last_entry,"All");
+       //ITS->DigitsToRecPoints(nev,last_entry,"SPD");
        timer.Stop(); timer.Print(); 
    } // event loop 
 
@@ -143,17 +148,3 @@ void ITSDigitsToClustersBari (Int_t evNumber1=0,Int_t evNumber2=0)
 
    file->Close();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

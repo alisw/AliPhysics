@@ -23,6 +23,7 @@ Int_t AliITSFindClustersBari() {
    Int_t ver = ITS->IsVersion(); 
    cerr<<"ITS version "<<ver<<" has been found !\n";
 
+    ITS->MakeTreeC();
 // Set the models for cluster finding
    AliITSgeom *geom = ITS->GetITSgeom();
 
@@ -39,25 +40,21 @@ Int_t AliITSFindClustersBari() {
 
 
    // SDD
-   Float_t baseline = 10.;
-   Float_t noise = 1.67;
-   Float_t thres = baseline+3.*noise;
-
    AliITSDetType *iDetType=ITS->DetType(1);
    AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->GetSegmentationModel();
    if (!seg1) seg1 = new AliITSsegmentationSDD(geom);
    AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
    if (!res1) res1=new AliITSresponseSDD();
-   res1->SetMagicValue(900.);
-   Float_t magic = res1->MagicValue();
-   Float_t top = res1->MaxAdc();
-   thres *= top/magic;
-   res1->SetNoiseParam(noise,baseline);
+   Float_t baseline,noise;
+   res1->GetNoiseParam(noise,baseline);
+   Float_t noise_after_el = res1->GetNoiseAfterElectronics();
+   Float_t thres = baseline;
+   thres += (4.*noise_after_el);  // TB // (4.*noise_after_el);
+   printf("thres %f\n",thres);
+   res1->Print();
    TClonesArray *dig1  = ITS->DigitsAddress(1);
    TClonesArray *recp1  = ITS->ClustersAddress(1);
    AliITSClusterFinderSDD *rec1=new AliITSClusterFinderSDD(seg1,res1,dig1,recp1);
-   rec1->SetMinNCells(6);
-   rec1->SetTimeCorr(70.);
    rec1->SetCutAmplitude((int)thres);
    ITS->SetReconstructionModel(1,rec1);
 
@@ -66,8 +63,7 @@ Int_t AliITSFindClustersBari() {
    AliITSDetType *iDetType=ITS->DetType(2);
    AliITSsegmentationSSD *seg2=(AliITSsegmentationSSD*)iDetType->GetSegmentationModel();
    TClonesArray *dig2  = ITS->DigitsAddress(2);
-   TClonesArray *recp2  = ITS->ClustersAddress(2);
-   AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2,recp2);
+   AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2);
    ITS->SetReconstructionModel(2,rec2);
    // test
    printf("SSD dimensions %f %f \n",seg2->Dx(),seg2->Dz());
@@ -75,6 +71,9 @@ Int_t AliITSFindClustersBari() {
 
 
 
+   if(!gAlice->TreeR()) gAlice->MakeTree("R");
+   //make branch
+   ITS->MakeBranch("R");
 
    TStopwatch timer;
 
@@ -83,7 +82,7 @@ Int_t AliITSFindClustersBari() {
       cerr<<"Looking for clusters...\n";
       {
 	timer.Start();
-	ITS->DigitsToRecPoints(0,1,"All");
+	ITS->DigitsToRecPoints(0,0,"All");
       }
       break;
    default:
