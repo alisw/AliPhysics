@@ -24,7 +24,6 @@
 
 #include "AliITSgeomMatrix.h"
 
-
 typedef enum {kSPD=0, kSDD=1, kSSD=2, kSSDp=3,kSDDp=4} AliITSDetector;
 
 //_______________________________________________________________________
@@ -36,15 +35,15 @@ class AliITSgeom : public TObject {
     AliITSgeom(const char *filename);  // Constructor
     AliITSgeom(Int_t itype,Int_t nlayers,Int_t *nlads,Int_t *ndets,
 	       Int_t nmods); // Constructor
+    AliITSgeom(AliITSgeom &source);    // Copy constructor
+    AliITSgeom& operator=(AliITSgeom &source);// = operator
+    virtual ~AliITSgeom();             // Default destructor
     // this function allocates a AliITSgeomMatrix for a particular module.
     void CreatMatrix(Int_t mod,Int_t lay,Int_t lad,Int_t det,
 		     AliITSDetector idet,const Double_t tran[3],
 		     const Double_t rot[10]);
     void ReadNewFile(const char *filename);  // Constructor for new format.
     void WriteNewFile(const char *filename); // Output for new format.
-    AliITSgeom(AliITSgeom &source);    // Copy constructor
-    AliITSgeom& operator=(AliITSgeom &source);// = operator
-    virtual ~AliITSgeom();             // Default destructor
 // Getters
     Int_t GetTransformationType() const {return fTrans;}
 //
@@ -74,10 +73,10 @@ class AliITSgeom : public TObject {
 	return (AliITSgeomMatrix*)(fGm->At(index));}
     //     This function returns the number of detectors/ladder for a give 
     // layer. In particular it returns fNdet[layer-1].
-    Int_t GetNdetectors(Int_t lay) const {return fNdet[lay-1];}
+    Int_t GetNdetectors(Int_t lay) const;
     //     This function returns the number of ladders for a give layer. In
     // particular it returns fNlad[layer-1].
-    Int_t GetNladders(Int_t lay)   const {return fNlad[lay-1];}
+    Int_t GetNladders(Int_t lay)   const;
     //     This function returns the number of layers defined in the ITS
     // geometry. In particular it returns fNlayers.
     Int_t GetNlayers()                   const {return fNlayers;}
@@ -90,6 +89,10 @@ class AliITSgeom : public TObject {
     // Returns the detector type
     Int_t GetModuleType(Int_t index){
 	                   return GetGeomMatrix(index)->GetDetectorIndex();}
+    // Returns the detector type as a string
+    Char_t * GetModuleTypeName(Int_t index){switch(GetModuleType(index)) {
+    case kSPD: return "kSPD";case kSDD: return "kSDD";case kSSD: return "kSSD";
+    case kSSDp: return"kSSDp";case kSDDp: return "kSDDp"; default: return "";}}
 //
     Int_t GetStartDet(Int_t dtype );
     Int_t GetLastDet(Int_t dtype);
@@ -185,13 +188,7 @@ class AliITSgeom : public TObject {
     //      This function returns the Cartesian translation [cm] and the
     // 6 GEANT rotation angles [degrees]for a given layer ladder and
     // detector number, in the TVector x (at least 9 elements large).
-    void  GetCenterThetaPhi(Int_t lay,Int_t lad,Int_t det,
-			    TVector &x){Double_t t[3],ang[6];
-			    Int_t index=GetModuleIndex(lay,lad,det);
-			    GetTrans(index,t);GetGeantAngles(index,ang);
-			    x(0) =   t[0];x(1) =   t[1];x(2) =   t[2];
-			    x(3) = ang[0];x(4) = ang[1];x(5) = ang[2];
-			    x(6) = ang[3];x(7) = ang[4];x(8) = ang[5];}
+    void  GetCenterThetaPhi(Int_t lay,Int_t lad,Int_t det,TVector &x);
 //
     //     This function returns the rotation matrix in Double
     // precision for a given module.

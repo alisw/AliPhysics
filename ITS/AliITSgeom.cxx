@@ -117,10 +117,10 @@ pixel coordinate system.
 // and AliITSgeomSSD for a more detailed example.
 ////////////////////////////////////////////////////////////////////////
 #include <Riostream.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+//#include <stdlib.h>
+//#include <stdio.h>
+//#include <string.h>
+//#include <ctype.h>
 
 #include <TSystem.h>
 #include <TRandom.h>
@@ -591,6 +591,34 @@ AliITSgeom& AliITSgeom::operator=(AliITSgeom &source){
    return *this;
 }
 //______________________________________________________________________
+inline Int_t AliITSgeom::GetNdetectors(Int_t lay) const {
+    // Return the number of detectors/ladder for the given layer
+    // Inputs:
+    //   Int_t lay   the layer number
+    // Outputs:
+    //   none.
+    // Return:
+    //   Int_t the number of detectors/ladders for the give layer
+        Int_t ndet;
+
+        ndet = fNdet[lay-1];
+        return ndet;
+}
+//______________________________________________________________________
+inline Int_t AliITSgeom::GetNladders(Int_t lay) const {
+    // Return the number of ladders for the given layer
+    // Inputs:
+    //   Int_t lay   the layer number
+    // Outputs:
+    //   none.
+    // Return:
+    //   Int_t the number of ladders for the give layer
+    Int_t nlad;
+
+    nlad = fNlad[lay-1];
+    return nlad;
+}
+//______________________________________________________________________
 Int_t AliITSgeom::GetModuleIndex(Int_t lay,Int_t lad,Int_t det){
     //      This routine computes the module index number from the layer,
     // ladder, and detector numbers. The number of ladders and detectors
@@ -719,6 +747,29 @@ Int_t AliITSgeom::GetLastDet(Int_t dtype){
 
     Warning("GetLastDet","undefined detector type %d",dtype);
     return 0;
+}
+//______________________________________________________________________
+inline void AliITSgeom::GetCenterThetaPhi(Int_t lay,Int_t lad,Int_t det,
+                                   TVector &x){
+    //      This function returns the Cartesian translation [cm] and the
+    // 6 GEANT rotation angles [degrees]for a given layer ladder and
+    // detector number, in the TVector x (at least 9 elements large).
+    // Inputs:
+    //    Int_t lay    ITS Layer number
+    //    Int_t lad    ITS Ladder number
+    //    Int_t det    ITS Detector number
+    // Outputs:
+    //    TVector &x   The translation vector and the 6 rotaion angles
+    // Return:
+    //   none.
+    Double_t t[3],ang[6];
+    Int_t index=GetModuleIndex(lay,lad,det);
+
+    GetTrans(index,t);
+    GetGeantAngles(index,ang);
+    x(0) =   t[0];x(1) =   t[1];x(2) =   t[2];
+    x(3) = ang[0];x(4) = ang[1];x(5) = ang[2];
+    x(6) = ang[3];x(7) = ang[4];x(8) = ang[5];
 }
 //______________________________________________________________________
 void AliITSgeom::PrintComparison(FILE *fp,AliITSgeom *other){
