@@ -17,7 +17,7 @@ class AliMagFMaps : public AliMagF
   //Alice Magnetic Field with constant mesh
 
 public:
-    enum constants {k2kG, k4kG, k5kG};
+    enum constants {k2kG, k4kG, k5kG, k0kG};
     AliMagFMaps();
     AliMagFMaps(const char *name, const char *title, const Int_t integ,
 		const Float_t factor, const Float_t fmax, const Int_t map = k2kG,
