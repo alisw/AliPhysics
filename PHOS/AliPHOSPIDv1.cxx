@@ -515,7 +515,7 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRec
   
 
   dir = emcglobalpos ;  
-  dir.SetZ( -dir.Z() ) ;   // why ?  
+  //dir.SetZ( -dir.Z() ) ;   // why ?  
   dir.SetMag(1.) ;
 
   //account correction to the position of IP
