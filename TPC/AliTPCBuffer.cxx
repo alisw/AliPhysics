@@ -12,7 +12,13 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+/* $Id$ */
 
+// Storing digits in a binary file
+// according to the DDL mapping
+//
+// Author: D.Favretto
+//
 #include "Riostream.h"
 #include "TObjArray.h"
 #include "AliTPCBuffer.h"
@@ -24,10 +30,13 @@
 ClassImp(AliTPCBuffer)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 AliTPCBuffer::AliTPCBuffer(const char* fileName){
+  //
+  // Constructor
+  //
   f.open("AliTPCDDL.dat",ios::binary|ios::out);
   // fout=new TFile(fileName,"recreate");
   // tree=new TTree("tree","Values");
-  NumberOfDigits=0;
+  fNumberOfDigits=0;
   fVerbose=0;
 }
 
@@ -72,20 +81,20 @@ void AliTPCBuffer::WriteRow(Int_t eth,AliSimDigits *digrow,Int_t minPad,Int_t ma
       switch (flag){
       case 0:{
 	tree->Fill();
-	NumberOfDigits++;
+	fNumberOfDigits++;
       	break;
       }//end case 0
       case 1:{
 	  if((Pad>=minPad)&&(Pad<=maxPad)){
 	    tree->Fill();
-	    NumberOfDigits++;
+	    fNumberOfDigits++;
 	  }
 	break;
       }//end case 1
       case 2:{
 	if((Pad<minPad)||(Pad>maxPad)){
 	  tree->Fill();
-	  NumberOfDigits++;
+	  fNumberOfDigits++;
 	}
 	break;
       }//end case 2
@@ -121,21 +130,21 @@ void AliTPCBuffer::WriteRowBinary(Int_t eth,AliSimDigits *digrow,Int_t minPad,In
     if(data.Dig>eth){
       switch (flag){
       case 0:{
-	NumberOfDigits++;
+	fNumberOfDigits++;
 	f.write((char*)(&data),sizeof(data));
 	break;
       }//end case 0
       case 1:{
 	if((data.Pad>=minPad)&&(data.Pad<=maxPad)){
 	  f.write((char*)(&data),sizeof(data));
-	  NumberOfDigits++;
+	  fNumberOfDigits++;
 	}
 	break;
       }//end case 1
       case 2:{
 	if((data.Pad<minPad)||(data.Pad>maxPad)){
 	  f.write((char*)(&data),sizeof(data));
-	  NumberOfDigits++;
+	  fNumberOfDigits++;
 	}
 	break;
       }//end case 2
