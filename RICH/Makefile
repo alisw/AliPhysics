@@ -9,7 +9,7 @@ PACKAGE = RICH
 
 # C++ sources
 
-SRCS   = AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx AliRICHv2.cxx\
+SRCS   = AliRICH.cxx AliRICHv0.cxx AliRICHv1.cxx AliRICHv2.cxx AliRICHv3.cxx\
 	 AliRICHDisplay.cxx AliRICHPoints.cxx AliRICHGeometry.cxx\
 	 AliRICHSegmentationV0.cxx AliRICHTresholdMap.cxx\
 	 AliRICHSegmentationV1.cxx AliRICHResponse.cxx AliRICHResponseV0.cxx \
