@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/02/08 10:34:41  gosset
+Add a "real" default constructor.
+
 Revision 1.6  2001/02/05 14:49:29  hristov
 Compare() declared const (R.Brun)
 
@@ -61,19 +64,23 @@ Revision 1.1.2.1  2000/06/07 14:44:53  gosset
 Addition of files for track reconstruction in C++
 */
 
-//__________________________________________________________________________
+///////////////////////////////////////////////////////////
 //
-// Segment for reconstruction in ALICE dimuon spectrometer:
+// Segment for reconstruction
+// in 
+// ALICE 
+// dimuon 
+// spectrometer:
 // two hits for reconstruction in the two chambers of one station
-//__________________________________________________________________________
-
-#include "AliMUONSegment.h" 
+//
+///////////////////////////////////////////////////////////
 
 #include "AliMUON.h"
-#include "AliMUONHitForRec.h" 
-#include "AliMUONTrackParam.h" 
 #include "AliMUONChamber.h" 
-#include "AliRun.h"
+#include "AliMUONHitForRec.h" 
+#include "AliMUONSegment.h" 
+#include "AliMUONTrackParam.h" 
+#include "AliRun.h" // for gAlice
 
 ClassImp(AliMUONSegment) // Class implementation in ROOT context
 

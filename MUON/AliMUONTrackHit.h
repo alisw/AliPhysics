@@ -5,8 +5,12 @@
 
 /*$Id$*/
 
-#include <TROOT.h>
-#include "AliMUONTrackParam.h"
+///////////////////////////////////////////////////////
+// Reconstructed track hit in ALICE dimuon spectrometer
+///////////////////////////////////////////////////////
+
+#include <TObject.h>
+#include "AliMUONTrackParam.h" // object belongs to the class
 
 class AliMUONHitForRec;
 
@@ -21,15 +25,9 @@ class AliMUONTrackHit : public TObject {
   AliMUONTrackHit(AliMUONHitForRec* Hit); // Constructor from one HitForRec
 
   // Inline functions for Get and Set
-  AliMUONHitForRec* GetHitForRecPtr(void) {
-    // Get fHitForRecPtr
-    return fHitForRecPtr;}
-  AliMUONTrackParam* GetTrackParam(void) {
-    // Get pointer to fTrackParam
-    return &(fTrackParam);}
-  void SetTrackParam(AliMUONTrackParam* TrackParam) {
-    // Set fTrackParam
-    fTrackParam = *TrackParam;}
+  AliMUONHitForRec* GetHitForRecPtr(void) const {return fHitForRecPtr;}
+  AliMUONTrackParam* GetTrackParam(void) {return &(fTrackParam);}
+  void SetTrackParam(AliMUONTrackParam* TrackParam) {fTrackParam = *TrackParam;}
 
   // What is necessary for sorting TClonesArray's; sufficient too ????
   Bool_t IsSortable () const {

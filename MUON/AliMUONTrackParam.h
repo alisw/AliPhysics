@@ -5,10 +5,11 @@
 
 /*$Id$*/
 
-#include <TROOT.h>
+///////////////////////////////////////////////////
+// Track parameters in ALICE dimuon spectrometer
+///////////////////////////////////////////////////
 
-class AliMUONHitForRec;
-class AliMUONSegment;
+#include <TObject.h>
 
 class AliMUONTrackParam : public TObject {
  public:
@@ -20,18 +21,18 @@ class AliMUONTrackParam : public TObject {
     ;} // Destructor
 
   // Get and Set methods for data
-  Double_t GetInverseBendingMomentum(void);
-  void SetInverseBendingMomentum(Double_t InverseBendingMomentum);
-  Double_t GetBendingSlope(void);
-  void SetBendingSlope(Double_t BendingSlope);
-  Double_t GetNonBendingSlope(void);
-  void SetNonBendingSlope(Double_t NonBendingSlope);
-  Double_t GetZ(void);
-  void SetZ(Double_t Z);
-  Double_t GetBendingCoor(void);
-  void SetBendingCoor(Double_t BendingCoor);
-  Double_t GetNonBendingCoor(void);
-  void SetNonBendingCoor(Double_t NonBendingCoor);
+  Double_t GetInverseBendingMomentum(void) const {return fInverseBendingMomentum;}
+  void SetInverseBendingMomentum(Double_t InverseBendingMomentum) {fInverseBendingMomentum = InverseBendingMomentum;}
+  Double_t GetBendingSlope(void) const {return fBendingSlope;}
+  void SetBendingSlope(Double_t BendingSlope) {fBendingSlope = BendingSlope;}
+  Double_t GetNonBendingSlope(void) const {return fNonBendingSlope;}
+  void SetNonBendingSlope(Double_t NonBendingSlope) {fNonBendingSlope = NonBendingSlope;}
+  Double_t GetZ(void) const {return fZ;}
+  void SetZ(Double_t Z) {fZ = Z;}
+  Double_t GetBendingCoor(void) const {return fBendingCoor;}
+  void SetBendingCoor(Double_t BendingCoor) {fBendingCoor = BendingCoor;}
+  Double_t GetNonBendingCoor(void) const {return fNonBendingCoor;}
+  void SetNonBendingCoor(Double_t NonBendingCoor) {fNonBendingCoor = NonBendingCoor;}
 
   void ExtrapToZ(Double_t Z);
   void ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackParam);

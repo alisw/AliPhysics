@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/02/05 14:49:29  hristov
+Compare() declared const (R.Brun)
+
 Revision 1.5  2000/07/20 12:45:27  gosset
 New "EventReconstructor..." structure,
 	hopefully more adapted to tree/streamer.
@@ -50,14 +53,18 @@ Revision 1.1.2.1  2000/06/07 14:44:53  gosset
 Addition of files for track reconstruction in C++
 */
 
-//__________________________________________________________________________
+///////////////////////////////////////////////////////
 //
-// Reconstructed track hit in ALICE dimuon spectrometer
-//__________________________________________________________________________
-
-#include "AliMUONTrackHit.h" 
+// Reconstructed track hit
+// in
+// ALICE
+// dimuon
+// spectrometer
+//
+///////////////////////////////////////////////////////
 
 #include "AliMUONHitForRec.h" 
+#include "AliMUONTrackHit.h" 
 
 ClassImp(AliMUONTrackHit) // Class implementation in ROOT context
 

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/16 15:30:40  gosset
+TotalMomentumEnergyLoss:
+correction for change in the absorber composition (JP Cussonneau)
+
 Revision 1.8  2000/10/02 21:28:09  fca
 Removal of useless dependecies via forward declarations
 
@@ -63,19 +67,22 @@ Revision 1.1.2.1  2000/06/07 14:44:53  gosset
 Addition of files for track reconstruction in C++
 */
 
-//__________________________________________________________________________
+///////////////////////////////////////////////////
 //
-// Track parameters in ALICE dimuon spectrometer
-//__________________________________________________________________________
+// Track parameters
+// in
+// ALICE
+// dimuon
+// spectrometer
+//
+///////////////////////////////////////////////////
 
 #include <iostream.h>
 
 #include "AliCallf77.h" 
-#include "AliMUON.h" 
-#include "AliMUONHitForRec.h" 
-#include "AliMUONSegment.h" 
+#include "AliMUON.h"
 #include "AliMUONTrackParam.h" 
-#include "AliMUONChamber.h" 
+#include "AliMUONChamber.h"
 #include "AliRun.h" 
 #include "AliMagF.h" 
 
@@ -115,44 +122,6 @@ extern "C" {
     Field[0] = b[0]; Field[1] = b[1]; Field[2] = b[2];
   }
 }
-
-// Inline functions for Get and Set: inline removed because it does not work !!!!
-Double_t AliMUONTrackParam::GetInverseBendingMomentum(void) {
-  // Get fInverseBendingMomentum
-  return fInverseBendingMomentum;}
-void AliMUONTrackParam::SetInverseBendingMomentum(Double_t InverseBendingMomentum) {
-  // Set fInverseBendingMomentum
-  fInverseBendingMomentum = InverseBendingMomentum;}
-Double_t AliMUONTrackParam::GetBendingSlope(void) {
-  // Get fBendingSlope
-  return fBendingSlope;}
-void AliMUONTrackParam::SetBendingSlope(Double_t BendingSlope) {
-  // Set fBendingSlope
-  fBendingSlope = BendingSlope;}
-Double_t AliMUONTrackParam::GetNonBendingSlope(void) {
-  // Get fNonBendingSlope
-  return fNonBendingSlope;}
-void AliMUONTrackParam::SetNonBendingSlope(Double_t NonBendingSlope) {
-  // Set fNonBendingSlope
-  fNonBendingSlope = NonBendingSlope;}
-Double_t AliMUONTrackParam::GetZ(void) {
-  // Get fZ
-  return fZ;}
-void AliMUONTrackParam::SetZ(Double_t Z) {
-  // Set fZ
-  fZ = Z;}
-Double_t AliMUONTrackParam::GetBendingCoor(void) {
-  // Get fBendingCoor
-  return fBendingCoor;}
-void AliMUONTrackParam::SetBendingCoor(Double_t BendingCoor) {
-  // Set fBendingCoor
-  fBendingCoor = BendingCoor;}
-Double_t AliMUONTrackParam::GetNonBendingCoor(void) {
-  // Get fNonBendingCoor
-  return fNonBendingCoor;}
-void AliMUONTrackParam::SetNonBendingCoor(Double_t NonBendingCoor) {
-  // Set fNonBendingCoor
-  fNonBendingCoor = NonBendingCoor;}
 
   //__________________________________________________________________________
 void AliMUONTrackParam::ExtrapToZ(Double_t Z)

@@ -5,10 +5,13 @@
 
 /*$Id$*/
 
+///////////////////////////////////////////////////
+// Reconstructed track in ALICE dimuon spectrometer
+///////////////////////////////////////////////////
+
 #include "AliMUONTrackParam.h" // object belongs to the class
 
 class TObjArray;
-class TClonesArray;
 class TVirtualFitter;
 class AliMUONEventReconstructor;
 class AliMUONHitForRec;
@@ -27,28 +30,28 @@ class AliMUONTrack : public TObject {
   AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec, AliMUONEventReconstructor* EventReconstructor); // Constructor from one Segment and one HitForRec
   void Remove(void);
 
-  AliMUONEventReconstructor* GetEventReconstructor(void) {return fEventReconstructor;}
-  AliMUONTrackParam* GetTrackParamAtVertex(void) { return &fTrackParamAtVertex;}
+  AliMUONEventReconstructor* GetEventReconstructor(void) const {return fEventReconstructor;}
+  AliMUONTrackParam* GetTrackParamAtVertex(void) {return &fTrackParamAtVertex;}
   void SetTrackParamAtVertex(void); // Set track parameters at vertex from last stations 4 & 5
   void SetTrackParamAtVertex(AliMUONTrackParam* TrackParam) {fTrackParamAtVertex = *TrackParam;}
 
-  TObjArray* GetTrackHitsPtr(void) { return fTrackHitsPtr;}
-  Int_t GetNTrackHits(void) { return fNTrackHits;}
-  Int_t GetFitMCS(void) {return fFitMCS;}
-  Int_t GetFitNParam(void) {return fFitNParam;}
-  Int_t GetFitStart(void) {return fFitStart;}
-  Double_t GetFitFMin(void) {return fFitFMin;}
+  TObjArray* GetTrackHitsPtr(void) const {return fTrackHitsPtr;}
+  Int_t GetNTrackHits(void) const {return fNTrackHits;}
+  Int_t GetFitMCS(void) const {return fFitMCS;}
+  Int_t GetFitNParam(void) const {return fFitNParam;}
+  Int_t GetFitStart(void) const {return fFitStart;}
+  Double_t GetFitFMin(void) const {return fFitFMin;}
   void SetFitMCS(Int_t FitMCS);
   void SetFitNParam(Int_t FitNParam);
   void SetFitStart(Int_t FitStart);
 
-  AliMUONTrackParam* GetTrackParamAtFirstHit(void);
+  AliMUONTrackParam* GetTrackParamAtFirstHit(void) const;
 
-  void RecursiveDump(void); // Recursive dump (with track hits)
+  void RecursiveDump(void) const; // Recursive dump (with track hits)
   void Fit(); // Fit
   void AddSegment(AliMUONSegment* Segment); // Add Segment
   void AddHitForRec(AliMUONHitForRec* HitForRec); // Add HitForRec
-  void SetTrackParamAtHit(Int_t indexHit, AliMUONTrackParam *TrackParam);
+  void SetTrackParamAtHit(Int_t indexHit, AliMUONTrackParam *TrackParam) const;
   Int_t HitsInCommon(AliMUONTrack* Track);
 
   static TVirtualFitter* Fitter(void) {return fgFitter;}

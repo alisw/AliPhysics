@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2001/03/30 09:37:58  gosset
+Initialisations of pointers... for GEANT background events in the constructor
+
 Revision 1.23  2001/01/26 21:44:45  morsch
 Use access functions to AliMUONDigit, ...   member data.
 
@@ -128,7 +131,7 @@ Revision 1.1.2.1  2000/06/07 14:44:53  gosset
 Addition of files for track reconstruction in C++
 */
 
-//__________________________________________________________________________
+////////////////////////////////////
 //
 // MUON event reconstructor in ALICE
 //
@@ -142,28 +145,24 @@ Addition of files for track reconstruction in C++
 // * MakeEventToBeReconstructed to build the array of hits to be reconstructed
 // * MakeSegments to build the segments
 // * MakeTracks to build the tracks
-//__________________________________________________________________________
+//
+////////////////////////////////////
 
-#include <iostream.h>
-#include <stdlib.h>
+#include <iostream.h> // for cout
 
-#include <TRandom.h>
-#include <TFile.h>
 #include <TTree.h>
 
-#include "AliMUONEventReconstructor.h"
 #include "AliMUON.h"
-#include "AliMUONHitForRec.h"
-#include "AliMUONSegment.h"
-#include "AliMUONHit.h"
-#include "AliMUONRawCluster.h"
-#include "AliMUONTrack.h"
 #include "AliMUONChamber.h"
+#include "AliMUONEventReconstructor.h"
+#include "AliMUONHitForRec.h"
+#include "AliMUONRawCluster.h"
+#include "AliMUONRecoEvent.h"
+#include "AliMUONSegment.h"
+#include "AliMUONTrack.h"
 #include "AliMUONTrackHit.h"
 #include "AliMagF.h"
-#include "AliRun.h"
-#include "TParticle.h"
-#include "AliMUONRecoEvent.h"
+#include "AliRun.h" // for gAlice
 
 //************* Defaults parameters for reconstruction
 static const Double_t kDefaultMinBendingMomentum = 3.0;
@@ -331,7 +330,7 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
 }
 
 //__________________________________________________________________________
-Double_t AliMUONEventReconstructor::GetImpactParamFromBendingMomentum(Double_t BendingMomentum)
+Double_t AliMUONEventReconstructor::GetImpactParamFromBendingMomentum(Double_t BendingMomentum) const
 {
   // Returns impact parameter at vertex in bending plane (cm),
   // from the signed bending momentum "BendingMomentum" in bending plane (GeV/c),
@@ -342,7 +341,7 @@ Double_t AliMUONEventReconstructor::GetImpactParamFromBendingMomentum(Double_t B
 }
 
 //__________________________________________________________________________
-Double_t AliMUONEventReconstructor::GetBendingMomentumFromImpactParam(Double_t ImpactParam)
+Double_t AliMUONEventReconstructor::GetBendingMomentumFromImpactParam(Double_t ImpactParam) const
 {
   // Returns signed bending momentum in bending plane (GeV/c),
   // the sign being the sign of the charge for particles moving forward in Z,

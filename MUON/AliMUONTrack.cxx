@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/04/23 12:33:17  hristov
+Arrays with variable size created by new and deleted at the end
+
 Revision 1.10  2001/04/09 12:25:09  gosset
 Inversion of covariance matrices with local copy of TMinuit::mnvert,
 for symmetric positive definite matrices, instead of TMatrixD::Invert
@@ -84,14 +87,17 @@ Revision 1.1.2.1  2000/06/07 14:44:53  gosset
 Addition of files for track reconstruction in C++
 */
 
-//__________________________________________________________________________
+///////////////////////////////////////////////////
 //
-// Reconstructed track in ALICE dimuon spectrometer
-//__________________________________________________________________________
+// Reconstructed track
+// in
+// ALICE
+// dimuon
+// spectrometer
+//
+///////////////////////////////////////////////////
 
-#include "AliMUONTrack.h"
-
-#include <iostream.h>
+#include <iostream.h> // for cout
 
 #include <TClonesArray.h>
 #include <TMath.h>
@@ -102,9 +108,8 @@ Addition of files for track reconstruction in C++
 #include "AliMUONEventReconstructor.h" 
 #include "AliMUONHitForRec.h" 
 #include "AliMUONSegment.h" 
+#include "AliMUONTrack.h"
 #include "AliMUONTrackHit.h"
-
-#include <stdlib.h>
 
 // Functions to be minimized with Minuit
 void TrackChi2(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag);
@@ -259,12 +264,12 @@ void AliMUONTrack::SetFitStart(Int_t FitStart)
 }
 
   //__________________________________________________________________________
-AliMUONTrackParam* AliMUONTrack::GetTrackParamAtFirstHit(void) {
+AliMUONTrackParam* AliMUONTrack::GetTrackParamAtFirstHit(void) const {
   // Get pointer to TrackParamAtFirstHit
   return ((AliMUONTrackHit*) (fTrackHitsPtr->First()))->GetTrackParam();}
 
   //__________________________________________________________________________
-void AliMUONTrack::RecursiveDump(void)
+void AliMUONTrack::RecursiveDump(void) const
 {
   // Recursive dump of AliMUONTrack, i.e. with dump of TrackHit's and HitForRec's
   AliMUONTrackHit *trackHit;
@@ -414,7 +419,7 @@ void AliMUONTrack::AddHitForRec(AliMUONHitForRec* HitForRec)
 }
 
   //__________________________________________________________________________
-void AliMUONTrack::SetTrackParamAtHit(Int_t indexHit, AliMUONTrackParam *TrackParam)
+void AliMUONTrack::SetTrackParamAtHit(Int_t indexHit, AliMUONTrackParam *TrackParam) const
 {
   // Set track parameters at TrackHit with index "indexHit"
   // from the track parameters pointed to by "TrackParam".
@@ -726,15 +731,15 @@ Double_t MultipleScatteringAngle2(AliMUONTrackHit *TrackHit)
   Int_t localMaxint = n;
 
     /* System generated locals */
-    Int_t a_offset;
+    Int_t aOffset;
 
     /* Local variables */
     Double_t si;
     Int_t i, j, k, kp1, km1;
 
     /* Parameter adjustments */
-    a_offset = l + 1;
-    a -= a_offset;
+    aOffset = l + 1;
+    a -= aOffset;
 
     /* Function Body */
     ifail = 0;

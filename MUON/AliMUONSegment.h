@@ -5,7 +5,11 @@
 
 /*$Id$*/
 
-#include <TROOT.h>
+///////////////////////////////////////////////////////////
+// Segment for reconstruction in ALICE dimuon  spectrometer
+///////////////////////////////////////////////////////////
+
+#include <TObject.h>
 
 class AliMUONHitForRec;
 class AliMUONTrackParam;
@@ -21,57 +25,23 @@ class AliMUONSegment : public TObject {
   AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2); // Constructor from two HitForRec's
 
   // Inline functions for Get and Set
-  AliMUONHitForRec* GetHitForRec1(void) {
-    // Get fHitForRecPtr1
-    return fHitForRecPtr1;}
-  AliMUONHitForRec* GetHitForRec2(void) {
-    // Get fHitForRecPtr2
-    return fHitForRecPtr2;}
-  Double_t GetBendingCoor(void) {
-    // Get fBendingCoor
-    return fBendingCoor;}
-  void SetBendingCoor(Double_t BendingCoor) {
-    // Set fBendingCoor
-    fBendingCoor = BendingCoor;}
-  Double_t GetBendingSlope(void) {
-    // Get fBendingSlope
-    return fBendingSlope;}
-  void SetBendingSlope(Double_t BendingSlope) {
-    // Set fBendingSlope
-    fBendingSlope = BendingSlope;}
-  Double_t GetNonBendingCoor(void) {
-    // Get fNonBendingCoor
-    return fNonBendingCoor;}
-  void SetNonBendingCoor(Double_t NonBendingCoor) {
-    // Set fNonBendingCoor
-    fNonBendingCoor = NonBendingCoor;}
-  Double_t GetNonBendingSlope(void) {
-    // Get fNonBendingSlope
-    return fNonBendingSlope;}
-  void SetNonBendingSlope(Double_t NonBendingSlope) {
-    // Set fNonBendingSlope
-    fNonBendingSlope = NonBendingSlope;}
-  Double_t GetBendingCoorReso2(void) {
-    // Get fBendingCoorReso2
-    return fBendingCoorReso2;}
-  void SetBendingCoorReso2(Double_t BendingCoorReso2) {
-    // Set fBendingCoorReso2
-    fBendingCoorReso2 = BendingCoorReso2;}
-  Double_t GetNonBendingCoorReso2(void) {
-    // Get fNonBendingCoorReso2
-    return fNonBendingCoorReso2;}
-  void SetNonBendingCoorReso2(Double_t NonBendingCoorReso2) {
-    // Set fNonBendingCoorReso2
-    fNonBendingCoorReso2 = NonBendingCoorReso2;}
-  Double_t GetBendingImpact(void) {
-    // Get fBendingImpact
-    return fBendingImpact;}
-  Bool_t GetInTrack(void) {
-    // Get fInTrack
-    return fInTrack;}
-  void SetInTrack(Bool_t InTrack) {
-    // Set fInTrack
-    fInTrack = InTrack;}
+  AliMUONHitForRec* GetHitForRec1(void) const {return fHitForRecPtr1;}
+  AliMUONHitForRec* GetHitForRec2(void) const {return fHitForRecPtr2;}
+  Double_t GetBendingCoor(void) const {return fBendingCoor;}
+  void SetBendingCoor(Double_t BendingCoor) {fBendingCoor = BendingCoor;}
+  Double_t GetBendingSlope(void) const {return fBendingSlope;}
+  void SetBendingSlope(Double_t BendingSlope) {fBendingSlope = BendingSlope;}
+  Double_t GetNonBendingCoor(void) const {return fNonBendingCoor;}
+  void SetNonBendingCoor(Double_t NonBendingCoor) {fNonBendingCoor = NonBendingCoor;}
+  Double_t GetNonBendingSlope(void) const {return fNonBendingSlope;}
+  void SetNonBendingSlope(Double_t NonBendingSlope) {fNonBendingSlope = NonBendingSlope;}
+  Double_t GetBendingCoorReso2(void) const {return fBendingCoorReso2;}
+  void SetBendingCoorReso2(Double_t BendingCoorReso2) {fBendingCoorReso2 = BendingCoorReso2;}
+  Double_t GetNonBendingCoorReso2(void) const {return fNonBendingCoorReso2;}
+  void SetNonBendingCoorReso2(Double_t NonBendingCoorReso2) {fNonBendingCoorReso2 = NonBendingCoorReso2;}
+  Double_t GetBendingImpact(void) const {return fBendingImpact;}
+  Bool_t GetInTrack(void) const {return fInTrack;}
+  void SetInTrack(Bool_t InTrack) {fInTrack = InTrack;}
 
   AliMUONSegment* CreateSegmentFromLinearExtrapToStation (Int_t Station, Double_t MCSfactor);
   Double_t NormalizedChi2WithSegment(AliMUONSegment* Segment, Double_t Sigma2Cut);
