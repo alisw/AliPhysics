@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/05/21 16:45:47  hristov
+Last minute changes (C.Blume)
+
 Revision 1.10  2001/05/07 08:06:44  cblume
 Speedup of the code. Create only AliTRDcluster
 
@@ -627,7 +630,7 @@ Float_t AliTRDclusterizerV1::Unfold(Float_t eps, Float_t* padSignal)
     newRightSignal[2] = ampRight * PadResponse( 1 - maxRight);
 
     // Calculate new overlapping ratio
-    ratio = TMath::Min(1.0,newLeftSignal[2] / 
+    ratio = TMath::Min((Float_t)1.0,newLeftSignal[2] / 
                           (newLeftSignal[2] + newRightSignal[0]));
 
   }
