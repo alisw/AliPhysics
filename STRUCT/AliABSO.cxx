@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2000/10/02 21:28:15  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.9  2000/06/11 12:32:12  morsch
 Coding rule violations corrected
 
@@ -120,6 +123,17 @@ void AliABSO::CreateMaterials()
   Float_t aniwcu[3] ={58.6934, 183.84, 63.546};
   Float_t zniwcu[3] ={28., 74., 29};
   Float_t wniwcu[3] ={0.015,0.95,0.035};
+// Poly Concrete
+//                      H     Li     F       C      Al     Si      Ca      Pb     O
+  Float_t aPolyCc[9] = {1. ,  6.941, 18.998, 12.01, 26.98, 28.086, 40.078, 207.2, 15.999};
+  Float_t zPolyCc[9] = {1. ,  3.   ,  9.   ,  6.  , 13.  , 14.   , 20.   ,  82. ,  8.   };
+  Float_t wPolyCc[9] = {4.9,  1.2  ,  1.3  ,  1.1 ,  0.15,  0.02 ,  0.06 ,   0.7,  1.1  };
+  Float_t wtot=0;
+  Int_t   i=0;
+
+  for (i=0; i<9; i++) wtot+=wPolyCc[i];
+  for (i=0; i<9; i++) wPolyCc[i]/=wtot;  
+
 //
 // Insulation powder
 //                    Si         O       Ti     Al
@@ -130,9 +144,9 @@ void AliABSO::CreateMaterials()
   Float_t epsil, stmin, tmaxfd, deemax, stemax;
   //
   //     Carbon 
-  AliMaterial(6,  "CARBON$   ", 12.01, 6., 2.265, 18.8, 49.9);
-  AliMaterial(26, "CARBON$   ", 12.01, 6., 2.265, 18.8, 49.9);
-  AliMaterial(46, "CARBON$   ", 12.01, 6., 2.265, 18.8, 49.9);
+  AliMaterial( 6, "CARBON$   ", 12.01, 6., 1.75, 24.4, 49.9);
+  AliMaterial(26, "CARBON$   ", 12.01, 6., 1.75, 24.4, 49.9);
+  AliMaterial(46, "CARBON$   ", 12.01, 6., 1.75, 24.4, 49.9);
   //
   //     Aluminum 
   AliMaterial(9,  "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
@@ -199,6 +213,10 @@ void AliABSO::CreateMaterials()
   AliMixture(14, "INSULATION$", ains, zins, 0.41, 4, wins);
   AliMixture(34, "INSULATION$", ains, zins, 0.41, 4, wins);
   AliMixture(54, "INSULATION$", ains, zins, 0.41, 4, wins);
+  // Polymere Concrete 
+  AliMixture(20, "Poly Concrete$", aPolyCc, zPolyCc, 3.53, -9, wPolyCc);
+  AliMixture(40, "Poly Concrete$", aPolyCc, zPolyCc, 3.53,  9, wPolyCc);
+  AliMixture(60, "Poly Concrete$", aPolyCc, zPolyCc, 3.53,  9, wPolyCc);
 
   //
   // **************** 
@@ -274,6 +292,11 @@ void AliABSO::CreateMaterials()
   AliMedium(19, "ST_C0           ", 19, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(39, "ST_C1           ", 39, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(59, "ST_C3           ", 59, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  //
+  // Polymer Concrete 
+  AliMedium(20, "PCc_C0           ", 20, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(40, "PCc_C1           ", 40, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(60, "PCc_C3           ", 60, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 }
 
 //_____________________________________________________________________________
@@ -293,3 +316,9 @@ void AliABSO::Init()
   printf("\n");
 }
  
+Int_t  AliABSO::GetMatId(Int_t imat) 
+{
+// Get geant material number
+    Int_t kmat=(*fIdmate)[imat]; 
+    return kmat;
+}
