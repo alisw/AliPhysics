@@ -25,6 +25,7 @@
 #include <TNode.h>  
 #include <TGeometry.h>  
 #include <TF1.h> 
+#include <TVector3.h> 
 #include <TObjArray.h>
 #include <Riostream.h>
 
@@ -268,6 +269,44 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
     } else {
 	x=y=0;
     }
+
+}
+//________________________________________________________________
+
+void AliMUONSegmentationV01::
+GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
+{
+//  Returns real coordinates (x,y,z) for given pad coordinates (ix,iy)
+//
+  GetPadC(ix,iy,x,y); 
+    
+  // To be properly interfaced with chamber geometry (AliMUONSt1GeometryBuilderV2) ???
+  TVector3 scale[4];  
+  scale[0] = TVector3( 1,  1,  1);  // quadrant I
+  scale[1] = TVector3(-1,  1, -1);  // quadrant II
+  scale[2] = TVector3(-1, -1,  1);  // quadrant III
+  scale[3] = TVector3( 1, -1, -1);  // quadrant IV
+
+  Int_t iQuadrant;
+  
+  if (ix > 0) {
+    if (iy > 0) {
+      iQuadrant = 0;
+    } else {
+      iQuadrant = 3;
+    }
+  } else {
+    if (iy > 0) {
+      iQuadrant = 1;
+    } else {
+      iQuadrant = 2;
+    }
+  }      
+  if (TMath::Abs(fZ) <  600) {
+    z = fZ + scale[iQuadrant].Z()*6.5/2.; // Station 1
+  } else {
+    z = fZ;  // Station 2
+  }
 }
 
 void AliMUONSegmentationV01::
