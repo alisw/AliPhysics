@@ -462,7 +462,7 @@ void AliPHOSGeometry::RelPosInAlice(Int_t id, TVector3 & pos ) const
 } 
 
 //____________________________________________________________________________
-void AliPHOSGeometry::RelPosToAbsId(const Int_t module, const Double_t x, const Double_t z, Int_t & AbsId) const
+void AliPHOSGeometry::RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t & AbsId) const
 {
   // converts local PHOS-module (x, z) coordinates to absId 
   Int_t relid[4] ;

@@ -47,7 +47,7 @@ public:
           void   MakePairs() ;           //Finds pairs(triplets) with smallest link
   virtual void   Print() const ;
   //Switch to "on flyght" mode, without writing to TreeR and file  
-  void SetWriting(const Bool_t toWrite = kFALSE){fWrite = toWrite;} 
+  void SetWriting(Bool_t toWrite = kFALSE){fWrite = toWrite;} 
   virtual void   SetMaxEmcCPVDistance(Float_t r){ fRcpv = r ;} //Maximal distance (in PHOS plane) 
                                                                //between EMCrp and CPVrp
   virtual void   SetMaxCPVTPCDistance(Float_t r){ fRtpc = r ;} //Maximal distance 

@@ -29,7 +29,7 @@ class AliMUONTriggerTrack : public TObject
     Float_t GetThetax() const {return fthetax;}
     Float_t GetThetay() const {return fthetay;}    
 
-    void SetGTPattern(const Long_t pat) {fGTPattern = pat;}    
+    void SetGTPattern(Long_t pat) {fGTPattern = pat;}    
     Long_t GetGTPattern() const {return fGTPattern;}    
     
 protected:

@@ -22,7 +22,7 @@ class TString;
 class AliMUONSegmentManuIndex : public TNamed {
  public:
   AliMUONSegmentManuIndex();
-  AliMUONSegmentManuIndex(const Int_t channelId, const Int_t manuId, const Int_t busPatchId, const Int_t manuChannelId);
+  AliMUONSegmentManuIndex(Int_t channelId, Int_t manuId, Int_t busPatchId, Int_t manuChannelId);
 
   virtual ~AliMUONSegmentManuIndex();
 

@@ -45,7 +45,7 @@ AliMUONSegmentPosition::AliMUONSegmentPosition() : TNamed()
   fY = 0.;  
 }
 //___________________________________________
-AliMUONSegmentPosition::AliMUONSegmentPosition(const Int_t channelId, const Float_t x, const Float_t y, const Int_t cathode) : TNamed()
+AliMUONSegmentPosition::AliMUONSegmentPosition(Int_t channelId, Float_t x, Float_t y, Int_t cathode) : TNamed()
 {
   // Constructor to be used
   fName = Name(x,y,cathode);

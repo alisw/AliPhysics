@@ -44,7 +44,7 @@ AliMUONSegmentManuIndex::AliMUONSegmentManuIndex()
   fManuChannelId= 0;; 
 }
 //___________________________________________
-AliMUONSegmentManuIndex::AliMUONSegmentManuIndex(const Int_t channelId, const Int_t manuId, const Int_t busPatchId,  Int_t manuChannelId) : TNamed()
+AliMUONSegmentManuIndex::AliMUONSegmentManuIndex(Int_t channelId, Int_t manuId, Int_t busPatchId,  Int_t manuChannelId) : TNamed()
 {  
   // Constructor to be used
   fName = Name(manuId, manuChannelId).Data();

@@ -21,7 +21,7 @@
 class AliMUONSegmentIndex : public TNamed {
  public:
   AliMUONSegmentIndex();
-  AliMUONSegmentIndex(const Int_t channelId, const Int_t padX, const Int_t padY, const Int_t cathode);
+  AliMUONSegmentIndex(Int_t channelId, Int_t padX, Int_t padY, Int_t cathode);
   virtual ~AliMUONSegmentIndex();
   
 

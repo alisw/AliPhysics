@@ -21,7 +21,7 @@ class AliMpSectorPadIterator : public AliMpVPadIterator
 {
   public:
     AliMpSectorPadIterator();
-    AliMpSectorPadIterator(const AliMpSector* const sector);
+    AliMpSectorPadIterator(const AliMpSector* sector);
     AliMpSectorPadIterator(const AliMpSectorPadIterator& src);
     virtual ~AliMpSectorPadIterator();
 

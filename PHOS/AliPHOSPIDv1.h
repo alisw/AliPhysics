@@ -78,7 +78,7 @@ public:
   void SetParameterPi0Boundary   (Int_t i, Float_t param);
 
   //Switch to "on flyght" mode, without writing to TreeR and file  
-  void SetWriting(const Bool_t toWrite = kFALSE){fWrite = toWrite;} 
+  void SetWriting(Bool_t toWrite = kFALSE){fWrite = toWrite;} 
   void Print() const ; 
 
   virtual const char * Version() const { return "pid-v1" ; }  

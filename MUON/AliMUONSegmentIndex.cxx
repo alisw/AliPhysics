@@ -44,7 +44,7 @@ AliMUONSegmentIndex::AliMUONSegmentIndex() : TNamed()
   fCathode=0;  
 }
 //___________________________________________
-AliMUONSegmentIndex::AliMUONSegmentIndex(const Int_t channelId, const Int_t padX, const Int_t padY, const Int_t cathode) : TNamed()
+AliMUONSegmentIndex::AliMUONSegmentIndex(Int_t channelId, Int_t padX, Int_t padY, Int_t cathode) : TNamed()
 {
   // Constructor to be used
   fName  = Name(padX, padY, cathode).Data();

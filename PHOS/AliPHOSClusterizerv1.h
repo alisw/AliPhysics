@@ -73,7 +73,7 @@ public:
   virtual void SetCpvLogWeight(Float_t w)                { fW0CPV = w ; }
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    { fToUnfold = toUnfold ;}
   //Switch to "on flyght" mode, without writing to TreeR and file  
-  void SetWriting(const Bool_t toWrite = kFALSE){fWrite = toWrite;} 
+  void SetWriting(Bool_t toWrite = kFALSE){fWrite = toWrite;} 
   static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
