@@ -30,7 +30,7 @@ class AliEMCALv0 : public AliEMCAL {
   AliEMCALv0(const AliEMCALv0 & emcal) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    abort() ; 
+    Fatal("cpy ctor", "not implemented") ;  
   } 
   virtual ~AliEMCALv0(){} 
 
@@ -53,7 +53,7 @@ class AliEMCALv0 : public AliEMCAL {
   
   AliEMCALv0 & operator = (const AliEMCALv0 & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    abort() ;
+    Fatal("operator =", "not implemented") ;  
     return *this ; 
   }
   

@@ -16,7 +16,6 @@
 #include "TTask.h" 
 
 // --- Standard library ---
-#include <Riostream.h> 
 
 // --- AliRoot header files ---
 
@@ -30,31 +29,31 @@ public:
   AliEMCALClusterizer(const char * headerFile, const char * name, const Bool_t toSplit) ;
   virtual ~AliEMCALClusterizer() ; // dtor
 
-  virtual Float_t GetTowerClusteringThreshold()const {cout << "Not Defined" << endl ; return 0. ; }
-  virtual Float_t GetTowerLocalMaxCut()const {cout << "Not Defined" << endl ; return 0. ; }
-  virtual Float_t GetTowerLogWeight()const {cout << "Not Defined" << endl ; return 0. ; }
-  virtual Float_t GetTimeGate() const {cout << "Not Defined" << endl ; return 0. ; }
-  virtual Float_t GetPreShoClusteringThreshold()const {cout << "Not Defined" << endl ; return 0. ; }
-  virtual Float_t GetPreShoLocalMaxCut()const {cout << "Not Defined" << endl ; return 0. ; }
-  virtual Float_t GetPreShoLogWeight()const {cout << "Not Defined" << endl ; return 0. ; }
-  virtual const char *  GetRecPointsBranch() const {cout << "Not Defined" << endl ; return 0 ; }
-  virtual const Int_t GetRecPointsInRun()  const {cout << "Not Defined" << endl ; return 0 ; }
-  virtual const char *  GetDigitsBranch() const  {cout << "Not Defined" << endl ; return 0 ; }
+  virtual Float_t GetTowerClusteringThreshold()const {Warning("GetTowerClusteringThreshold", "Not Defined") ; return 0. ; }
+  virtual Float_t GetTowerLocalMaxCut()const {Warning("GetTowerLocalMaxCut", "Not Defined") ; return 0. ; }
+  virtual Float_t GetTowerLogWeight()const {Warning("GetTowerLogWeight", "Not Defined") ; return 0. ; }
+  virtual Float_t GetTimeGate() const {Warning("GetTimeGate", "Not Defined") ; return 0. ; }
+  virtual Float_t GetPreShoClusteringThreshold()const {Warning("GetPreShoClusteringThreshold", "Not Defined") ; return 0. ; }
+  virtual Float_t GetPreShoLocalMaxCut()const {Warning("GetPreShoLocalMaxCut", "Not Defined") ; return 0. ; }
+  virtual Float_t GetPreShoLogWeight()const {Warning("GetPreShoLogWeight", "Not Defined") ; return 0. ; }
+  virtual const char *  GetRecPointsBranch() const {Warning("GetRecPointsBranch", "Not Defined") ; return 0 ; }
+  virtual const Int_t GetRecPointsInRun()  const {Warning("GetRecPointsInRun", "Not Defined") ; return 0 ; }
+  virtual const char *  GetDigitsBranch() const  {Warning("GetDigitsBranch", "Not Defined") ; return 0 ; }
 
-  virtual void MakeClusters() {cout << "Not Defined" << endl ; }
-  virtual void Print(Option_t * option)const {cout << "Not Defined" << endl ; }
+  virtual void MakeClusters() {Warning("MakeClusters", "Not Defined") ; }
+  virtual void Print(Option_t * option)const {Warning("Print", "Not Defined") ; }
 
-  virtual void SetTowerClusteringThreshold(Float_t cluth) {cout << "Not Defined" << endl ; }
-  virtual void SetTowerLocalMaxCut(Float_t cut) {cout << "Not Defined" << endl ; }
-  virtual void SetTowerLogWeight(Float_t w) {cout << "Not Defined" << endl ; }
-  virtual void SetTimeGate(Float_t gate) {cout << "Not Defined" << endl ; }
-  virtual void SetPreShoClusteringThreshold(Float_t cluth) {cout << "Not Defined" << endl ; }
-  virtual void SetPreShoLocalMaxCut(Float_t cut) {cout << "Not Defined" << endl ; }
-  virtual void SetPreShoLogWeight(Float_t w) {cout << "Not Defined" << endl ; }
-  virtual void SetDigitsBranch(const char * title) {cout << "Not Defined" << endl ; }
-  virtual void SetRecPointsBranch(const char *title) {cout << "Not Defined" << endl ; } 
-  virtual void SetUnfolding(Bool_t toUnfold ) {cout << "Not Defined" << endl ; }
-  virtual const char * Version() const {cout << "Not Defined" << endl ; return 0 ; } 
+  virtual void SetTowerClusteringThreshold(Float_t cluth) {Warning("SetTowerClusteringThreshold", "Not Defined") ; }
+  virtual void SetTowerLocalMaxCut(Float_t cut) {Warning("SetTowerLocalMaxCut", "Not Defined") ; }
+  virtual void SetTowerLogWeight(Float_t w) {Warning("SetTowerLogWeight", "Not Defined") ; }
+  virtual void SetTimeGate(Float_t gate) {Warning("SetTimeGate", "Not Defined") ; }
+  virtual void SetPreShoClusteringThreshold(Float_t cluth) {Warning("SetPreShoClusteringThreshold", "Not Defined") ; }
+  virtual void SetPreShoLocalMaxCut(Float_t cut) {Warning("SetPreShoLocalMaxCut", "Not Defined") ; }
+  virtual void SetPreShoLogWeight(Float_t w) {Warning("SetPreShoLogWeight", "Not Defined") ; }
+  virtual void SetDigitsBranch(const char * title) {Warning("SetDigitsBranch", "Not Defined") ; }
+  virtual void SetRecPointsBranch(const char *title) {Warning("SetRecPointsBranch", "Not Defined") ; } 
+  virtual void SetUnfolding(Bool_t toUnfold ) {Warning("SetUnfolding", "Not Defined") ; }
+  virtual const char * Version() const {Warning("Version", "Not Defined") ; return 0 ; } 
 
 protected:
   

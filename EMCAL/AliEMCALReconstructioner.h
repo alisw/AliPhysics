@@ -35,7 +35,7 @@ public:
   AliEMCALReconstructioner(const AliEMCALReconstructioner & rec) {
     // cpy ctor: 
     // requested by the Coding Convention
-    abort() ; 
+    Fatal("cpy ctor", "not implemented") ;  
   }
    
   virtual ~AliEMCALReconstructioner() ;
@@ -52,7 +52,7 @@ public:
   
   AliEMCALReconstructioner & operator = (const AliEMCALReconstructioner & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    abort() ;
+    Fatal("operator =", "not implemented") ;  
     return *this ; 
   }
   

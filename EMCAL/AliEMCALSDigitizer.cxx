@@ -59,7 +59,6 @@
 #include "TGeometry.h"
 
 // --- Standard library ---
-#include <Riostream.h>
 
 // --- AliRoot header files ---
 #include "AliRun.h"
@@ -112,8 +111,7 @@ void AliEMCALSDigitizer::Init(){
    
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance(GetTitle(), GetName(), fToSplit) ; 
   if ( gime == 0 ) {
-    cerr << "ERROR: AliEMCALSDigitizer::Init -> Could not obtain the Getter object !" 
-	 << endl ; 
+    Error("Init", "Could not obtain the Getter object !" ) ;  
     return ;
   } 
   
@@ -341,11 +339,9 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   }
 
   if(strstr(option,"tim")){
-    gBenchmark->Stop("EMCALSDigitizer");
-    cout << "AliEMCALSDigitizer:" << endl ;
-    cout << "   took " << gBenchmark->GetCpuTime("EMCALSDigitizer") << " seconds for SDigitizing " 
-	 <<  gBenchmark->GetCpuTime("EMCALSDigitizer") << " seconds per event " << endl ;
-    cout << endl ;
+    gBenchmark->Stop("EMCALSDigitizer"); 
+    Info("Exec", "took %f seconds for SDigitizing %f seconds per event", 
+	 gBenchmark->GetCpuTime("EMCALSDigitizer"), gBenchmark->GetCpuTime("EMCALSDigitizer") ) ;
   }   
 }
 
@@ -364,11 +360,11 @@ void AliEMCALSDigitizer::SetSDigitsBranch(const char * title ){
   const char * sdigitsTitle    = sdigitsBranch ->GetTitle() ;  
   const char * sdigitizerTitle = sdigitizerBranch ->GetTitle() ;
   if ( stitle.CompareTo(sdigitsTitle)==0 || stitle.CompareTo(sdigitizerTitle)==0 ){
-    cerr << "ERROR: AliEMCALSdigitizer::SetSDigitsBranch -> Cannot overwrite existing branch with title " << title << endl ;
+    Error("SetSDigitsBranch", "Cannot overwrite existing branch with title %s", title) ;
     return ;
   }
   
-  cout << "AliEMCALSdigitizer::SetSDigitsBranch -> Changing SDigits file from " << GetName() << " to " << title << endl ;
+  Info("SetSDigitsBranch", "Changing SDigits file from %s to %s", GetName(), title) ;
 
   SetName(title) ; 
     
@@ -383,14 +379,23 @@ void AliEMCALSDigitizer::Print(Option_t* option)const
 { 
   // Prints parameters of SDigitizer
 
-  cout << "------------------- "<< GetName() << " -------------" << endl ;
-  cout << "   Writing SDigitis to branch with title  " << GetName() << endl ;
-  cout << "   with digitization parameters  A               = " << fA << endl ;
-  cout << "                                 B               = " << fB << endl ;
-  cout << "   Threshold for Primary assignment in Tower     = " << fTowerPrimThreshold << endl ; 
-  cout << "   Threshold for Primary assignment in PreShower = " << fPreShowerPrimThreshold << endl ; 
-  cout << "---------------------------------------------------"<<endl ;
+  TString message("\n") ; 
+  message += "------------------- "; 
+  message += GetName() ; 
+  message += " -------------\n" ;
+  message += "   Writing SDigitis to branch with title  " ; 
+  message += GetName() ;
+  message += "\n   with digitization parameters  A               = " ; 
+  message += fA ;
+  message += "\n                                 B               = " ; 
+  message += fB ; 
+  message += "\n   Threshold for Primary assignment in Tower     = " ; 
+  message += fTowerPrimThreshold ; 
+  message += "\n   Threshold for Primary assignment in PreShower = " ; 
+  message += fPreShowerPrimThreshold ; 
+  message += "\n---------------------------------------------------" ;
   
+  Info("Print", message.Data() ) ; 
 }
 
 //__________________________________________________________________
@@ -416,28 +421,38 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option){
   sdname.Remove(sdname.Index(GetTitle())-1) ;
   const TClonesArray * sdigits = gime->SDigits(sdname.Data()) ; 
   
-  cout << "AliEMCALSDigitiser: event " << gAlice->GetEvNumber() << endl ;
-  cout << "      Number of entries in SDigits list " << sdigits->GetEntriesFast() << endl ;
-  cout << endl ;
+  TString message("\n") ;  
+  message += "event " ; 
+  message += gAlice->GetEvNumber() ;
+  message += "\n      Number of entries in SDigits list " ;
+  message += sdigits->GetEntriesFast() ; 
   if(strstr(option,"all")||strstr(option,"EMC")){
-
+    
     //loop over digits
     AliEMCALDigit * digit;
-    cout << "SDigit Id " << " Amplitude " <<  "     Time " << "     Index "  <<  " Nprim " << " Primaries list " <<  endl;    
+    message += "\nSDigit Id  Amplitude      Time      Index  Nprim  Primaries list \n" ;    
     Int_t index ;
     for (index = 0 ; index < sdigits->GetEntries() ; index++) {
       digit = dynamic_cast<AliEMCALDigit *>( sdigits->At(index) ) ;
-      cout << setw(6)  <<  digit->GetId() << "   "  << 	setw(10)  <<  digit->GetAmp() <<   "    "  << digit->GetTime()
-	   << setw(6)  <<  digit->GetIndexInList() << "    "   
-	   << setw(5)  <<  digit->GetNprimary() <<"    ";
+       message += digit->GetId() ; 
+       message += "   " ; 
+       message += digit->GetAmp() ; 
+       message += "    "  ; 
+       message += digit->GetTime() ; 
+       message += "    ";
+       message += digit->GetIndexInList() ; 
+       message += "    " ;  
+       message += digit->GetNprimary() ; 
+       message += " : ";
       
       Int_t iprimary;
-      for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++)
-	cout << " "  <<  digit->GetPrimary(iprimary+1) << "  ";
-      cout << endl;  	 
+      for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
+	message += digit->GetPrimary(iprimary+1) ; 
+	message += "  ";
+      }  	 
     }
-    cout <<endl;
   }
+  Info("PrintSDigits", message.Data() ) ; 
 }
 
 //________________________________________________________________________
@@ -457,8 +472,7 @@ const Int_t AliEMCALSDigitizer::Layer2TowerID(Int_t ihit, Bool_t preshower)
     it = iphi+ieta*geom->GetNPhi() + ipre*geom->GetNPhi()*geom->GetNZ();
     return it;
   }else{
-    cerr << " AliEMCALSDigitizer::Layer2TowerID() -- there is an error "<< endl << "Eta number = "
-	 << ieta << "Phi number = " << iphi << endl ;
+    Error("Layer2TowerID", "there is an error: Eta number = %f Phi number = %f", ieta, iphi) ;
     return it;
   } // end if iphi>0 && ieta>0
 }
@@ -472,7 +486,7 @@ const Int_t AliEMCALSDigitizer::Layer2TowerID(Int_t ihit, Bool_t preshower)
 //     Int_t i;
 //    for (i = 0 ; i <= 2 ; i++){  // loop over 
 //      Int_t k = i*96*144+j*144+1;
-//       cout << " Hit Index = " << k << "   " << j*10 << "   TOWERID = " <<  Layer2TowerID(k, preshower) << endl ;
+//       Info("TestTowerID", " Hit Index = %d  %d   TOWERID = %d", k, j*10, Layer2TowerID(k, preshower) ) ;
 //     }
 //   }
 // }

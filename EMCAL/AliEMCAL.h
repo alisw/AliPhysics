@@ -33,12 +33,14 @@ class AliEMCAL : public AliDetector {
   AliEMCAL(const AliEMCAL & emcal) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    abort() ; 
+    Fatal("cpy ctor", "not implemented") ;  
   }
   virtual ~AliEMCAL() ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
     // do not use this definition but the one below
-    abort() ;
+    Fatal("AddHit(Int_t, Int_t*, Float_t *", 
+	  "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
+
   }
   virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, 
 			 Int_t id, Float_t *hits ) = 0 ;
@@ -54,7 +56,7 @@ class AliEMCAL : public AliDetector {
   AliEMCAL & operator = (const AliEMCAL & rvalue)  {
     // assignement operator requested by coding convention
     // but not needed
-    abort() ;
+    Fatal("operator =", "not implemented") ;  
     return *this ; 
   }
  

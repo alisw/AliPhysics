@@ -244,31 +244,27 @@ void AliEMCALv0::CreateGeometry()
 void AliEMCALv0::Init(void)
 {
     // Just prints an information message
-
-    Int_t i;
+  
+  if(fDebug) { 
+    TString message("\n") ; 
+    message += "*****************************************" ;
     
-    if(fDebug) { 
-      cout << endl;
-      for(i=0;i<35;i++) 
-	cout <<"*";
-    cout << "INFO: " << ClassName() << "::Init ";
-    for(i=0;i<35;i++) 
-      cout << "*";
-    cout << endl;
-
     // Here the EMCAL initialisation code (if any!)
-
+    
     AliEMCALGeometry * geom = GetGeometry() ; 
- 
-    if (geom!=0)  
-	cout << "AliEMCAL" << Version() << " : EMCAL geometry intialized for "
-	     << geom->GetName() << endl ;
-    else
-	cout << "AliEMCAL" << Version() << 
-	    " : EMCAL geometry initialization failed !" << endl ;
-
-    for(i=0;i<80;i++) 
-      cout << "*" ;
-    cout << endl;
+    
+    if (geom!=0) {   
+      message += "AliEMCAL " ; 
+      message += Version() ; 
+      message += "EMCAL geometry intialized for " ; 
+      message += geom->GetName()  ;
     }
+    else {
+      message += "AliEMCAL " ; 
+      message += Version() ;  
+      message += "EMCAL geometry initialization failed !" ; 
+    }
+    message += "*****************************************" ;
+    Info("Init", message.Data() ) ; 
+  }
 }

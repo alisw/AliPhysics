@@ -66,7 +66,6 @@
 #include "TFile.h"
 
 // --- Standard library ---
-#include <Riostream.h>   
 
 // --- AliRoot header files ---
 #include "AliRun.h"
@@ -184,34 +183,30 @@ AliEMCALReconstructioner::~AliEMCALReconstructioner()
 void AliEMCALReconstructioner::Print(Option_t * option)const {
   // Print reconstructioner data  
 
-  cout << "-----------------AliEMCALReconstructioner---------------" << endl ;
-  cout << " Reconstruction of the header file " <<fHeaderFileName.Data() << endl ;
-  cout << " with the following modules: " << endl ;
+  TString message("\n") ; 
+
+  message += " Reconstruction of the header file " ; 
+  message += fHeaderFileName.Data() ;
+  message += "\n with the following modules:\n" ;
 
   if(fSDigitizer->IsActive()){
-    cout << "   (+)   " << fSDigitizer->GetName() << " to branch : " << fSDigitsBranch.Data() << endl ; 
-    cout << endl ;
+     message += "   (+)   " ; 
+     message += fSDigitizer->GetName() ; 
+     message +=" to branch : " ; 
+     message += fSDigitsBranch.Data() ; 
   }
   if(fDigitizer->IsActive()){
-    cout << "   (+)   " << fDigitizer->GetName() << " to branch : " << fDigitsBranch.Data() << endl ;  
-    cout <<  endl ;
+    message += "\n   (+)   " ; 
+    message += fDigitizer->GetName() ; 
+    message += " to branch : " ; 
+    message += fDigitsBranch.Data() ; 
   }
   
   if(fClusterizer->IsActive()){
-    cout << "   (+)   " <<fClusterizer->GetName() << " to branch : " <<fRecPointBranch.Data()  << endl ;  
-    cout <<  endl ;
+    message += "\n   (+)   " ; 
+    message += fClusterizer->GetName() ; 
+    message += " to branch : " ; 
+    message += fRecPointBranch.Data() ; 
   }
-
-//   if(fTSMaker->IsActive()){
-//     cout << "   (+)   " << fTSMaker->GetName() << " to branch : " << fTSBranch.Data() << endl ;  
-//     cout <<  endl ;
-//   }
-
-
-//   if(fPID->IsActive()){
-//     cout << "   (+)   " << fPID->GetName() << " to branch : " <<fRecPartBranch.Data()  << endl ;  
-//     cout <<  endl ;
-//   }
-
-
+  Info("Print", message.Data() ) ; 
 }

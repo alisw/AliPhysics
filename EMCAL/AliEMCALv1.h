@@ -28,7 +28,8 @@ public:
   AliEMCALv1(const char *name, const char *title="") ;
   // cpy ctor: no implementation yet
   // requested by the Coding Convention
-  AliEMCALv1(const AliEMCALv0 & emcal) {abort();}
+  AliEMCALv1(const AliEMCALv0 & emcal) {
+    Fatal("cpy ctor", "not implemented") ;  }
   virtual ~AliEMCALv1(void) ;
   virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t iparent, Float_t ienergy,
 			Int_t id, Float_t *hits, Float_t *p);
@@ -37,7 +38,9 @@ public:
   virtual void StepManager(void) ;
   virtual const TString Version(void)const {return TString("v0");}
   // assignement operator requested by coding convention but not needed  
-  AliEMCALv1 & operator = (const AliEMCALv0 & rvalue){abort();return *this;}
+  AliEMCALv1 & operator = (const AliEMCALv0 & rvalue){
+    Fatal("operator =", "not implemented") ;  
+    return *this;}
  
     
 private:

@@ -30,8 +30,6 @@
 
 // --- Standard library ---
 
-#include <Riostream.h> 
-
 // --- AliRoot header files ---
 
  #include "AliGenerator.h"
@@ -681,27 +679,35 @@ void AliEMCALTowerRecPoint::Print(Option_t * option)
 {
   // Print the list of digits belonging to the cluster
   
-  cout << "AliEMCALTowerRecPoint: " << endl ;
+  TString message("\n") ; 
 
   Int_t iDigit;
-  cout << " digits # = " ;
-  for(iDigit=0; iDigit<fMulDigit; iDigit++)
-    cout << fDigitsList[iDigit] << "  " ;  
-  cout << endl ;
+  message += "digits # = " ;
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    message += fDigitsList[iDigit] ; 
+    message += "  " ;
+  } 
   
-  cout << " Energies = " ;
-  for(iDigit=0; iDigit<fMulDigit; iDigit++) 
-    cout  << fEnergyList[iDigit] << "  ";
-  cout << endl ;
+  message += "\nEnergies = " ;
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) { 
+    message += fEnergyList[iDigit] ; 
+    message += "  " ;
+  }
   
-  cout << " Primaries  " ;
-  for(iDigit = 0;iDigit < fMulTrack; iDigit++)
-    cout << fTracksList[iDigit] << " " << endl ;
-	
-  cout << "       Multiplicity    = " << fMulDigit  << endl ;
-  cout << "       Cluster Energy  = " << fAmp << endl ;
-  cout << "       Number of primaries " << fMulTrack << endl ;
-  cout << "       Stored at position " << GetIndexInList() << endl ; 
- 
+   message += "\nPrimaries  " ;
+   for(iDigit = 0;iDigit < fMulTrack; iDigit++) {
+     message += fTracksList[iDigit] ;
+     message += " " ;
+   }
+   message += "\n       Multiplicity    = " ; 
+   message += fMulDigit ;
+   message += "\n       Cluster Energy  = " ; 
+   message += fAmp ;
+   message += "\n       Number of primaries " ; 
+   message += fMulTrack ;
+   message += "\n       Stored at position " ;
+   message += GetIndexInList() ; 
+   
+   Info("Print", message.Data() ) ; 
 }
  

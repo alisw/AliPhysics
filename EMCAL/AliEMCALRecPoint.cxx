@@ -25,7 +25,6 @@
 #include "TClonesArray.h"
 
 // --- Standard library ---
-#include <Riostream.h>
 #include <stdio.h>
 
 // --- AliRoot header files ---
@@ -214,7 +213,7 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
     for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
       if ( fMulTrack > fMaxTrack ) {
 	fMulTrack = - 1 ;
-	cout << "AliEMCALRecPoint::GetNprimaries ERROR > increase fMaxTrack " << endl ;
+	Error("GetNprimaries", "increase fMaxTrack ")  ;
 	break ;
       }
       Int_t newprimary = newprimaryarray[jndex] ;

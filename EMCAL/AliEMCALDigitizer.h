@@ -59,8 +59,8 @@ public:
  
  AliEMCALDigitizer & operator = (const AliEMCALDigitizer & rvalue)  {
     // assignement operator requested by coding convention but not needed
-    abort() ;
-    return *this ; 
+   Fatal("operator =", "not implemented") ;  
+   return *this ; 
   }
 
 private:

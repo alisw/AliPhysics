@@ -68,7 +68,6 @@
 #include "TBenchmark.h"
 
 // --- Standard library ---
-#include <Riostream.h>
 
 // --- AliRoot header files ---
 #include "AliRun.h"
@@ -163,8 +162,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
  // get first the sdigitizer from the tasks list (must have same name as the digitizer)
   const AliEMCALSDigitizer * sDigitizer = gime->SDigitizer(GetName()); 
   if ( !sDigitizer) {
-    cerr << "ERROR: AliEMCALDigitizer::Digitize -> SDigitizer with name " << GetName() << " not found " << endl ; 
-    abort() ; 
+    Fatal("Digitize", "SDigitizer with name %s not found", GetName() ); 
   }
 
 // loop through the sdigits posted to the White Board and add them to the noise
@@ -178,8 +176,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
     if ( (sdigits = (TClonesArray*)folder->FindObject(GetName()) ) ) {
       TString fileName(folder->GetName()) ;
       fileName.ReplaceAll("_","/") ;
-      //      cout << "INFO: AliEMCALDigitizer::Digitize -> Adding SDigits " 
-      //	   << GetName() << " from " << fileName << endl ; 
+      //      Info("Digitize", "Adding SDigits %s from %s", GetName(), fileName) ; 
       sdigArray->AddAt(sdigits, input) ;
       input++ ;
     }
@@ -373,14 +370,12 @@ void AliEMCALDigitizer::Exec(Option_t *option)
       }
       
       if ( emcalfound ) {
-	cerr << "WARNING: AliEMCALDigitizer -> Digits branch with name " << GetName() 
-	     << " already exits" << endl ;
+	Error( "Exec", "Digits branch with name %s already exits", GetName() ) ;
 	return ; 
       }   
       if ( digitizerfound ) {
-	cerr << "WARNING: AliEMCALDigitizer -> Digitizer branch with name " << GetName() 
-	     << " already exits" << endl ;
-	return ; 
+	Error( "Exec", "Digitizer branch with name %s already exit", GetName() ) ;
+	       return ; 
       }
     }   
   }
@@ -400,7 +395,7 @@ void AliEMCALDigitizer::Exec(Option_t *option)
       for(input = 0 ; input < fManager->GetNinputs(); input ++){
   	TTree * treeS = fManager->GetInputTreeS(input) ;
 	if(!treeS){
-	  cerr << "AliEMCALDigitizer -> No Input " << endl ;
+	  Error( "Exec", "No Input") ;
 	  return ;
 	}
 	gime->ReadTreeS(treeS,input) ;
@@ -423,10 +418,8 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALDigitizer");
-    cout << "AliEMCALDigitizer:" << endl ;
-    cout << "  took " << gBenchmark->GetCpuTime("EMCALDigitizer") << " seconds for Digitizing " 
-	 <<  gBenchmark->GetCpuTime("EMCALDigitizer")/nevents << " seconds per event " << endl ;
-    cout << endl ;
+    Info("Exec", "took %f seconds for Digitizing %f seconds per event", 
+	 gBenchmark->GetCpuTime("EMCALDigitizer"), gBenchmark->GetCpuTime("EMCALDigitizer")/nevents ) ;
   }
   
 }
@@ -461,7 +454,7 @@ Bool_t AliEMCALDigitizer::Init()
   
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance(GetTitle(), GetName(), fToSplit) ; 
   if ( gime == 0 ) {
-    cerr << "ERROR: AliEMCALDigitizer::Init -> Could not obtain the Getter object !" << endl ; 
+    Error("Init", "Could not obtain the Getter object !" ) ; 
     return kFALSE;
   } 
   
@@ -545,7 +538,7 @@ void AliEMCALDigitizer::MixWith(char* headerFile)
     Init() ;
   
   if(fManager){
-    cout << "Can not use this method under AliRunDigitizer " << endl ;
+    Error("MixWith", "Cannot use this method under AliRunDigitizer") ;
     return ;
   } 
   
@@ -560,7 +553,7 @@ void AliEMCALDigitizer::MixWith(char* headerFile)
   path += "/" ; 
   path += GetName() ;
   if ( gROOT->FindObjectAny(path.Data()) ) {
-    cerr << "WARNING: AliEMCALDigitizer::MixWith -> Entry already exists, do not add" << endl ;
+    Error("MixWith", "Entry already exists, do not add" ) ;
     return;
   }
 
@@ -571,7 +564,7 @@ void AliEMCALDigitizer::MixWith(char* headerFile)
   if ( !file ) { 
     file = new TFile(headerFile, "READ") ; 
     if (!file) { 
-      cerr << "ERROR: AliEMCALDigitizer::MixWith -> File " << headerFile << " does not exist!" << endl ; 
+      Error("MixWith", "File %s does not exist!", headerFile) ; 
       return ; 
     }
   }
@@ -580,42 +573,42 @@ void AliEMCALDigitizer::MixWith(char* headerFile)
 
 //__________________________________________________________________
 void AliEMCALDigitizer::Print(Option_t* option)const {
- 
+
+  TString message("\n") ; 
+
   if( strcmp(GetName(), "") != 0) {
-    
-    cout << "------------------- "<< GetName() << " -------------" << endl ;
+    message += "------------------- " ; 
+    message += GetName() ; 
+    message += " -------------" ;
     const Int_t nStreams = GetNInputStreams() ; 
     if (nStreams) {
       Int_t index = 0 ;  
-      for (index = 0 ; index < nStreams ; index++)  
-	cout << "Adding SDigits " << GetName() << " from " <<  fManager->GetInputFileName(index, 0) << endl ; 
-      
-      cout << endl ;
-      cout << "Writing digits to " <<   fManager->GetInputFileName(0, 0) << endl ;   
+      for (index = 0 ; index < nStreams ; index++) {  
+	message += "\nAdding SDigits " ; 
+	message += GetName() ; 
+	message += " from " ; 
+	message += fManager->GetInputFileName(index, 0) ;
+      } 
+     
+      message += "\nWriting digits to " ; 
+      message += fManager->GetInputFileName(0, 0) ;   
     } else { 
-//       AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;  
-//       gime->Folder("sdigits")  ;
-//       cout << "Digitizing sDigits from file(s): " <<endl ;
-//       TCollection * folderslist = gime->Folder("sdigits")->GetListOfFolders() ; 
-//       TIter next(folderslist) ; 
-//       TFolder * folder = 0 ; 
-      
-//       while ( (folder = (TFolder*)next()) ) {
-// 	if ( folder->FindObject(GetName())  ) 
-//      cout << "Adding SDigits " << GetName() << " from " << GetSDigitsFileName() << endl ; 
-//      }
-      cout << endl ;
-      cout << "Writing digits to " << GetTitle() << endl ;
+      message += "\nWriting digits to " ;
+      message += GetTitle() ;
     }       
-    cout << endl ;
-    cout << "With following parameters: " << endl ;
-    cout << "     Electronics noise in EMC (fPinNoise) = " << fPinNoise << endl ;
-    cout << "  Threshold  in EMC  (fTowerDigitThreshold) = " << fTowerDigitThreshold  << endl;
-    cout << "  Threshold  in PreShower  (fPreShowerDigitThreshold) = " << fPreShowerDigitThreshold  << endl ; ;
-    cout << "---------------------------------------------------" << endl ;
+    message += "\nWith following parameters: " ;
+    message += "\n     Electronics noise in EMC (fPinNoise) = " ; 
+    message += fPinNoise ;
+    message += "\n  Threshold  in EMC  (fTowerDigitThreshold) = " ; 
+    message += fTowerDigitThreshold  ;
+    message += "\n  Threshold  in PreShower  (fPreShowerDigitThreshold) = " ;
+    message += fPreShowerDigitThreshold ;
+    message += "\n---------------------------------------------------"  ;
   }
   else
-    cout << "AliEMCALDigitizer not initialized " << endl ;
+    message += "\nAliEMCALDigitizer not initialized " ;
+
+  Info("Print", message.Data() ) ; 
 }
 
 //__________________________________________________________________
@@ -624,28 +617,34 @@ void AliEMCALDigitizer::PrintDigits(Option_t * option){
   AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
   TClonesArray * fDigits = gime->Digits() ;
 
-  cout << "AliEMCALDigitiser:"<< endl ;
-  cout << "       Number of entries in Digits list " << fDigits->GetEntriesFast() << endl ;
-  cout << endl ;
+  TString message("\n") ; 
+  message += "       Number of entries in Digits list " ; 
+  message += fDigits->GetEntriesFast() ;
   if(strstr(option,"all")){
     
     //loop over digits
     AliEMCALDigit * digit;
-    cout << "Digit Id " << " Amplitude " <<  " Index "  <<  " Nprim " << " Primaries list " <<  endl;      
+    message += "\nDigit Id Amplitude  Index  Nprim  Primaries list " ;      
     Int_t index ;
     for (index = 0 ; index < fDigits->GetEntries() ; index++) {
       digit = (AliEMCALDigit * )  fDigits->At(index) ;
-      cout << setw(8)  <<  digit->GetId() << " "  << 	setw(3)  <<  digit->GetAmp() <<   "  "  
-	   << setw(6)  <<  digit->GetIndexInList() << "  "   
-	   << setw(5)  <<  digit->GetNprimary() <<"  ";
+      message += digit->GetId()  ; 
+      message += " " ; 
+      message += digit->GetAmp() ;
+      message += "  " ;  
+      message += digit->GetIndexInList() ; 
+      message += "  " ;   
+      message += digit->GetNprimary() ; 
+      message += " : " ;
       
       Int_t iprimary;
-      for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++)
-	cout << setw(5)  <<  digit->GetPrimary(iprimary+1) << " ";
-      cout << endl;  	 
-    }
-    
+      for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
+	message += digit->GetPrimary(iprimary+1) ; 
+	message +=  " ";  	 
+      }
+    }   
   }
+  Info("PrintDigits", message.Data() ) ; 
 }
 
 //__________________________________________________________________
