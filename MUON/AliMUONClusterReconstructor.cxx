@@ -256,19 +256,22 @@ void AliMUONClusterReconstructor::Digits2ClustersNew()
       for (idDE = 0; idDE < idSize; idDE++) {
 	TClonesArray &lhits1 = *dig1;
 	TClonesArray &lhits2 = *dig2;
+	dig1->Clear();
+	dig2->Clear();
 	n1 = n2 = 0;
-	//	printf("idDE %d\n", id[idDE]);
 
 	for (k = 0; k < digAll->GetEntriesFast(); k++) {
 	  digit = (AliMUONDigit*) digAll->UncheckedAt(k);
 	  //	  printf("digit idDE %d\n", digit->DetElemId());
 	  if (id[idDE] == digit->DetElemId()) {
-	    if (digit->Cathode() == 1)
+	    if (digit->Cathode() == 0)
 	      new(lhits1[n1++]) AliMUONDigit(*digit);
 	    else 
 	      new(lhits2[n2++]) AliMUONDigit(*digit);
 	  }
 	}
+
+	if (id[idDE] < 500 && id[idDE] > 299) continue; // temporary patch til St2 geometry is not yet ok (CF)
 
 	// cluster finder
 	if (fRecModel) {
@@ -283,7 +286,6 @@ void AliMUONClusterReconstructor::Digits2ClustersNew()
 	}
 	dig1->Delete();
 	dig2->Delete();
-
       } // idDE
       digAll->Delete();
     } // for ich
