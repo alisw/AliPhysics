@@ -15,25 +15,25 @@ class AliMUONGlobalTrigger : public TObject {
   AliMUONGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
 		       Int_t *singleUndef, Int_t *pairUnlike, Int_t *pairLike);
   virtual ~AliMUONGlobalTrigger(){;}
-  AliMUONGlobalTrigger& operator=(const AliMUONGlobalTrigger& );
+  AliMUONGlobalTrigger& operator=(const  AliMUONGlobalTrigger& );
   
-  Int_t SinglePlusLpt();  
-  Int_t SinglePlusHpt();  
-  Int_t SinglePlusApt();   
-  Int_t SingleMinusLpt(); 
-  Int_t SingleMinusHpt(); 
-  Int_t SingleMinusApt(); 
-  Int_t SingleUndefLpt(); 
-  Int_t SingleUndefHpt();  
-  Int_t SingleUndefApt(); 
-  Int_t PairUnlikeLpt();  
-  Int_t PairUnlikeHpt();  
-  Int_t PairUnlikeApt();  
-  Int_t PairLikeLpt();    
-  Int_t PairLikeHpt();    
-  Int_t PairLikeApt();    
-
-  ClassDef(AliMUONGlobalTrigger,1)  // reconstructed Global Trigger object    
+  Int_t SinglePlusLpt()  const {return fSinglePlusLpt;} 
+  Int_t SinglePlusHpt()  const {return fSinglePlusHpt ;}    
+  Int_t SinglePlusApt()  const {return fSinglePlusApt ;}     
+  Int_t SingleMinusLpt() const {return fSingleMinusLpt ;}  
+  Int_t SingleMinusHpt() const {return fSingleMinusHpt;}  
+  Int_t SingleMinusApt() const {return fSingleMinusApt;}  
+  Int_t SingleUndefLpt() const {return fSingleUndefLpt ;}  
+  Int_t SingleUndefHpt() const {return fSingleUndefHpt ;}   
+  Int_t SingleUndefApt() const {return fSingleUndefApt ;}  
+  Int_t PairUnlikeLpt()  const {return fPairUnlikeLpt ;}   
+  Int_t PairUnlikeHpt()  const {return fPairUnlikeHpt ;}   
+  Int_t PairUnlikeApt()  const {return fPairUnlikeApt ;}   
+  Int_t PairLikeLpt()    const {return fPairLikeLpt ;}     
+  Int_t PairLikeHpt()    const {return fPairLikeHpt ;}     
+  Int_t PairLikeApt()    const {return fPairLikeApt ;}     
+  
+ ClassDef(AliMUONGlobalTrigger,1)  // reconstructed Global Trigger object    
     
 private:
   Int_t fSinglePlusLpt;  // Number of Single Plus Low pt 

@@ -16,13 +16,13 @@ class AliMUONLocalTrigger : public TObject {
   virtual ~AliMUONLocalTrigger(){;}
   AliMUONLocalTrigger& operator=(const AliMUONLocalTrigger& ); 
 
-  Int_t LoCircuit(); 
-  Int_t LoStripX();   
-  Int_t LoDev();     
-  Int_t LoStripY();  
-  Int_t LoLpt();     
-  Int_t LoHpt();     
-  Int_t LoApt();    
+  Int_t LoCircuit() const {return fLoCircuit;}; 
+  Int_t LoStripX() const {return fLoStripX;};    
+  Int_t LoDev() const {return fLoDev;};     
+  Int_t LoStripY() const {return fLoStripY;};  
+  Int_t LoLpt() const {return fLoLpt;};     
+  Int_t LoHpt() const {return fLoHpt;};     
+  Int_t LoApt() const {return fLoApt;};    
 
   ClassDef(AliMUONLocalTrigger,1)  // reconstructed Local Trigger object
 
