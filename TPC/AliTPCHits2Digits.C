@@ -61,6 +61,8 @@ void AliTPCHits2Digits(const  char * name= "pokusD_")
   param.Update();
 
     //Set z (time) response function
+
+  rf.SetOffset(3.*param.GetZSigma());
   rf.SetGauss(param.GetZSigma(),param.GetZWidth(),0.4);
   rf.Update();
   //Set two dimensional pad response function

@@ -1745,7 +1745,7 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, Int_t np, TMatrix *m1, TMatr
 
    Float_t dist = y - (Float_t)(PadNumber-CentralPad)*fTPCParam->GetPadPitchWidth();
    for (Int_t i=0;i<7;i++){
-     PadSignal[i]=fPRF2D->GetPRF(dist+(i-3)*fTPCParam->GetPadPitchWidth(),xwire)*aval;
+     PadSignal[i]=fPRF2D->GetPRF(-dist+(i-3)*fTPCParam->GetPadPitchWidth(),xwire)*aval;
      PadSignal[i] *= fTPCParam->GetPadCoupling();
    }
 
@@ -2143,7 +2143,7 @@ void AliTPC::GetCrossTalk (Int_t iFlag,TObjArray *p,Int_t ntracks,Int_t *npads,
      Float_t dist = y - (Float_t)(PadNumber-CentralPad)*fTPCParam->GetPadPitchWidth();
        
      for (Int_t i=0;i<7;i++){
-       PadSignal[i]=fPRF2D->GetPRF(dist+(3-i)*fTPCParam->GetPadPitchWidth(),xwire)*aval;
+       PadSignal[i]=fPRF2D->GetPRF(-dist+(i-3)*fTPCParam->GetPadPitchWidth(),xwire)*aval;
 
        PadSignal[i] *= fTPCParam->GetPadCoupling();
      }
