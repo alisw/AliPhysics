@@ -254,18 +254,18 @@ void AliEMCAL::Digits2Raw()
 	Double_t time = iTime * kTimeMax/kTimeBins;
 	Int_t signal = 0;
 	if (time < digit->GetTime() + kTimePeak) {	// signal is rising
-	  signal = static_cast<Int_t>(fRan->Rndm() + digit->GetAmp() * 
-			 (time - digit->GetTime()) / kTimePeak);
+	  signal = static_cast<Int_t>((fRan->Rndm() + digit->GetAmp()) * 
+				      (time - digit->GetTime() / kTimePeak) + 0.5);
 	} else {                                        // signal is decaying
-	  signal = static_cast<Int_t>(fRan->Rndm() + digit->GetAmp() * 
-                 TMath::Gaus(time, digit->GetTime() + kTimePeak, kTimeRes));
+	  signal = static_cast<Int_t>((fRan->Rndm() + digit->GetAmp()) * 
+				      TMath::Gaus(time, digit->GetTime() + kTimePeak, kTimeRes) + 0.5);
 	}
 	if (signal < 0) 
 	  signal = 0;
 	adcValuesLow[iTime] = signal;
 	if (signal > 0x3FF) // larger than 10 bits 
 	  adcValuesLow[iTime] = 0x3FF;
-	adcValuesHigh[iTime] = signal / kHighGainFactor;
+	adcValuesHigh[iTime] = static_cast<Int_t>(0.5 + (signal / kHighGainFactor));
 	if (adcValuesHigh[iTime] > 0) 
 	  highGain = kTRUE;
       }
