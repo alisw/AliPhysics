@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,7 +51,6 @@ $Log$
 #include <iostream.h>
 #include <fstream.h>
 #include "AliMC.h"
-//#include "TGeant3.h"
  
 ClassImp(AliSTART)
  
@@ -142,7 +144,6 @@ void AliSTART::Init()
   //
   // Initialis the START after it has been built
   Int_t i;
-  AliMC* pMC = AliMC::GetMC();
   //
   printf("\n");
   for(i=0;i<35;i++) printf("*");
@@ -155,7 +156,7 @@ void AliSTART::Init()
   printf("\n");
  //
  //
- fIdSens1=pMC->VolId("PTOP");
+ fIdSens1=gMC->VolId("PTOP");
 
 }
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  1999/09/29 09:24:29  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 /////////////////////////////////////////////////////////////////////
@@ -77,7 +80,6 @@ void AliSTARTv0::CreateGeometry()
   Float_t x,y,z;
 
   Float_t pstart[3]={4.5,10.7,5.3};
-  //  Float_t pscin[3]={0.,2.54/2.,1.5};
   Float_t ppmt[3]={0.,1.3,3.5};
   Float_t pdivider[3]={0.,1.2,1.75};
   Float_t pdiv2[3]={0.,1.2,1.25};
@@ -106,7 +108,6 @@ void AliSTARTv0::CreateGeometry()
     gMC->Gspos("STRT",2,"ALIC",0.,0.,-zdet,idrotm[901],"ONLY");
 
 //START interior
-    //    gMC->Gsvolu("SCIN","TUBE",idtmed[2102-1],pscin,3);
     gMC->Gsvolu("PMT ","TUBE",idtmed[2103-1],ppmt,3);     
     gMC->Gsvolu("DIVI","TUBE",idtmed[2103-1],pdivider,3);     
 
@@ -116,11 +117,8 @@ void AliSTARTv0::CreateGeometry()
       x=6.5*TMath::Sin(is*2*3.1415/13);
       y=6.5*TMath::Cos(is*2*3.1415/13);
       z=-pstart[2]+ppmt[2];
-      printf(" is %d x %f y %f r%f\n",is,x,y,sqrt(x*x+y*y));
-      //      gMC->Gspos("SCIN",is,"STRT",x,y,z,0,"ONLY");
-      //      z=z+pscin[2]+ppmt[2];
       gMC->Gspos("PMT ",is,"STRT",x,y,z,0,"ONLY");
-      z=ppmt[2]+pdivider[2];
+      z+=ppmt[2]+pdiv2[2];
       printf(" is %d, z Divider %f\n",is,z);
       gMC->Gspos("DIVI",is,"STRT",x,y,z,0,"ONLY");
     }
@@ -130,10 +128,8 @@ void AliSTARTv0::CreateGeometry()
       x=9.3*TMath::Sin(2.*3.1415/26+(is-13)*2*3.1415/20);
       y=9.3*TMath::Cos(2.*3.1315/26+(is-13)*2*3.1415/20);
       z=-pstart[2]+ppmt[2];
-      //      gMC->Gspos("SCIN",is,"STRT",x,y,z,0,"ONLY");
-      //z=z+pscin[2]+ppmt[2];
       gMC->Gspos("PMT ",is,"STRT",x,y,z,0,"ONLY");
-      z=ppmt[2]+pdiv2[2];
+      z+=ppmt[2]+pdiv2[2];
       gMC->Gspos("DIVI",is,"STRT",x,y,z,0,"ONLY");
     }
 // PMT
@@ -214,10 +210,10 @@ void AliSTARTv0::CreateMaterials()
    Int_t nbuf;
 
 // Scintillator CH
-   //    Float_t ascin[2]={1.01,12.01};
-   // Float_t zscin[2]={1,6};
-   // Float_t wscin[2]={1,1};
-   // Float_t denscin=1.03;
+   Float_t ascin[2]={1.01,12.01};
+   Float_t zscin[2]={1,6};
+   Float_t wscin[2]={1,1};
+   Float_t denscin=1.03;
 // PMT glass SiO2
     Float_t aglass[2]={28.0855,15.9994};
     Float_t zglass[2]={14.,8.};
@@ -243,11 +239,6 @@ void AliSTARTv0::CreateMaterials()
    Float_t denribber=0.8;
  
    
-//   AliMC* gMC = AliMC::GetMC();
-
- //  Int_t *idtmed = gAlice->Idtmed();
- //  Int_t imat;
-
 //*** Definition Of avaible START materials ***
  AliMaterial(0, "START Steel$", 55.850,26.,7.87,1.76,999);
  AliMaterial(1, "START Vacuum$", 1.e-16,1.e-16,1.e-16,1.e16,999);
@@ -264,7 +255,7 @@ void AliSTARTv0::CreateMaterials()
   zcer[1]=z;
   
  AliMixture( 9, "Ceramic    $", acer, zcer, denscer, 2, wcer);
- // AliMixture( 5, "Scintillator$",ascin,zscin,denscin,-2,wscin);
+ AliMixture( 5, "Scintillator$",ascin,zscin,denscin,-2,wscin);
  AliMixture( 6, "Brass    $", abrass, zbrass, denbrass, 2, wbrass);
 
  AliMixture( 7, "Ribber $",aribber,zribber,denribber,-3,wribber);
@@ -273,7 +264,7 @@ void AliSTARTv0::CreateMaterials()
 
 //**
  AliMedium(1, "START Air$", 2, 0, ISXFLD, SXMGMX, 10., .1, 1., .003, .003);
- // AliMedium(2102, "Scintillator$", 5, 1, ISXFLD, SXMGMX, 10., .01, 1., .003, .003);
+ AliMedium(2, "Scintillator$", 5, 1, ISXFLD, SXMGMX, 10., .01, 1., .003, .003);
  AliMedium(3, "Vacuum$", 1, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
  AliMedium(4, "Ceramic$", 9, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
  AliMedium(6, "Glass$", 4, 0, ISXFLD, SXMGMX, 10., .01, .1, .003, .003);
@@ -295,7 +286,6 @@ gMC->Gsatt("ALIC","SEEN",0);
 //
 //Set volumes visible
 gMC->Gsatt("STRT","SEEN",0);
-//gMC->Gsatt("SCIN","SEEN",1);
 gMC->Gsatt("PMT ","SEEN",1);
 gMC->Gsatt("DIVI","SEEN",1);
 //
@@ -367,14 +357,6 @@ void AliSTARTv0::StepManager()
        Float_t ttime=gMC->TrackTime();
        hits[6]=ttime*1e9;
        edep=0;
-       //       Float_t xV=geant3->Gckine()->vert[0];
-       //Float_t yV=geant3->Gckine()->vert[1];
-       //Float_t zV=geant3->Gckine()->vert[2];
-       //Float_t tl=gMC -> TrackLength();
-       //      if(hits[6]<2.4){     
-       //	    for (i=0; i<=6; i++){
-       //	    printf(" HITS on START entr %f\n",hits[i]);} 
-       //}
      }
      if(gMC->IsTrackInside())
      {
@@ -397,7 +379,6 @@ void AliSTARTv0::StepManager()
     }
 //---------------------------------------------------------------------
     }
- //}
 
 
 
