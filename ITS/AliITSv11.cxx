@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2003/01/29 16:01:14  nilsen
+Update today's work.
+
 Revision 1.3  2003/01/28 17:59:54  nilsen
 Work continuing.
 
@@ -1208,13 +1211,20 @@ void AliITSv11::SSDConeDetail(TVector3 &tran,const char moth[3],Int_t mat0){
     Double_t r=15.0; // mm, Radius of curvature.
     Double_t tc=51.0; // angle of SSD cone [degrees].
     Double_t sintc=Sind(tc),costc=Cosd(tc),tantc=Tand(tc);
-    Double_t z0=0.0,Routmax=0.5*985.,Routmin=0.5*945.,Rholemax=0.5*890.;
-    Double_t Rholemin=0.5*740.,Rin=0.5*560.,RoutHole=0.5*965.;
-    Int_t nspoaks=12,ninscrews=40,npost=4;
+    Double_t z0=0.0,zcylinder=170.0,zpost=196.0;
+    Double_t Routmax=0.5*985.0,RoutHole=0.5*965.0,Routmin=0.5*945.0;
+    Double_t Rholemax=0.5*890.0,Rholemin=0.5*740.0;
+    Double_t RPostmin=316.0,dRPost=23.0,zpostmax=196.0,phi0post=30.0;
+    Double_t Rinmax=0.5*590.0,Rincylinder=0.5*597.0,RinHole=0.5*575.0,
+	     Rinmin=0.5*562.0,dzin=15.0;
+    Int_t nspoaks=12,ninscrews=40,npost=4,nmounts=4;
     Int_t SSDcf=man0+1; // SSD support cone Carbon Fiber materal number.
     Int_t SSDfs=mat0+2; // SSD support cone inserto stesalite 4411w.
     Int_t SSDfo=mat0+3; // SSD support cone foam, Rohacell 50A.
     Int_t SSDsw=mat0+4; // SSD support cone screw material,Stainless steal
+    Int_t ncse=0; // number of screw ends (copy number)
+    Int_t ncpe=0; // number of pin end (copy number)
+    Int_t ncst=0; // number of screw tops (copy number)
     Double_t t; // some general angle [degrees].
     Double_t phi0=0.0,dphi=360.0,x,y,z;
     Int_t i,j,k,l,n,nz,nrad=0;
@@ -1342,44 +1352,70 @@ void AliITSv11::SSDConeDetail(TVector3 &tran,const char moth[3],Int_t mat0){
     k=l=0;
     for(i=0;i<2;i++){ // position for ITS-TPC mounting brackets
 	for(j=0;j<2;j++){ // 2 screws per bracket
-	    k++;
+	    ncse++;
 	    t = -5.0+10.0*((Double_t)j)+180.*((Double_t)i);
 	    x = RoutHole*Sind(t);
 	    y = RoutHole*Cosd(t);
 	    z = dz;
-	    Pos("SCD",k,"SCB",x,y,z,0);
+	    Pos("SCD",ncse,"SCB",x,y,z,0);
 	} // end for j
 	for(j=0;j<3;j++){ // 3 pins per bracket
-	    l++;
+	    ncpe++;
 	    t = -3.0+3.0*((Double_t)j)+180.*((Double_t)i);
 	    x = RoutHole*Sind(t);
 	    y = RoutHole*Cosd(t);
 	    z = dz;
-	    Pos("SCE",l,"SCB",x,y,z,0);
+	    Pos("SCE",ncpe,"SCB",x,y,z,0);
 	} // end for j
     } // end for i
     for(i=0;i<2;i++){ // position for ITS-rail mounting brackets
 	for(j=0;j<4;j++){ // 4 screws per bracket
 	    Double_t a[4]={0.0,2.0,5.0,7.0}; // Relative angles.
-	    k++;
+	    ncse++;
 	    t = 90.0-a[j]+187.*((Double_t)i);
 	    x = RoutHole*Sind(t);
 	    y = RoutHole*Cosd(t);
 	    z = dz;
-	    Pos("SCD",k,"SCB",x,y,z,0);
+	    Pos("SCD",kncs,"SCB",x,y,z,0);
 	} // end for j
 	for(j=0;j<2;j++){ // 2 pins per bracket
-	    l++;
+	    ncpe++;
 	    t = 88+7.0*((Double_t)j)+184.*((Double_t)i);
 	    x = RoutHole*Sind(t);
 	    y = RoutHole*Cosd(t);
 	    z = dz;
-	    Pos("SCE",l,"SCB",x,y,z,0);
+	    Pos("SCE",ncse,"SCB",x,y,z,0);
+	} // end for j
+    } // end for i
+    for(i=0;i<nmounts;i++){ // mounting holes/screws for beam pipe support
+	// and SPD cone support (dump side,non-dump side has them to).
+	for(j=0;j<2;j++){ // 2 screws per bracket
+	    ncse++;
+	    t = 180.*20./(RoutHole*TMath::Pi());
+	    t = 45.0+((Doulbe_t)(j-1))*t+90.*((Double_t)i);
+	    x = RoutHole*Sind(t);
+	    y = RoutHole*Cosd(t);
+	    z = dz;
+	    Pos("SCD",ncse,"SCB",x,y,z,0);
+	} // end for j
+	for(j=0;j<1;j++){ // 1 pins per bracket
+	    ncpe++;
+	    t = 45.0+90.*((Double_t)i);
+	    x = RoutHole*Sind(t);
+	    y = RoutHole*Cosd(t);
+	    z = dz;
+	    Pos("SCE",ncpe,"SCB",x,y,z,0);
 	} // end for j
     } // end for i
     //
     // There is no carbon fiber between this upper left section and the
     // SSD spoaks. We remove it by replacing it with Rohacell foam.
+    t = ct/(0.5*(Rholemax+Rholemin));// It is not posible to get the
+    // carbon fiber thickness uniform in this phi direction. We can only
+    // make it a fixed angular thickness.
+    t *= 180.0/TMath::Pi();
+    dphi = 5.0 - 2.0*t; // degrees
+    phi0 = 12.5+t; // degrees see drawing ALR-0767.
     nz = 4;
     Double_t *zf    = new Double_t[nz];
     Double_t *rminf = new Double_t[nz];
@@ -1399,6 +1435,10 @@ void AliITSv11::SSDConeDetail(TVector3 &tran,const char moth[3],Int_t mat0){
     PolyCone("SCF","SSD Suport cone Rohacell foam left edge",
 	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDfo);
     Pos("SCF",1,"SCA",0.0,.0,0.0,0);
+    for(i=1;i<nspoaks;i++){
+	Zmatrix(irot+i,360./((Double_t)nspoaks));
+	Pos("SCG",i+1,"SCA",0.0,.0,0.0,irot+i);
+    } // end for i
     //=================================================================
     // Now for the spoak part of the SSD cone.
     // It is not posible to inclue the radius of curvature between
@@ -1426,10 +1466,8 @@ void AliITSv11::SSDConeDetail(TVector3 &tran,const char moth[3],Int_t mat0){
     zg[3] = za[4]-(rmaxg[3]-rmaxa[4])/tantc;
     PolyCone("SCG","SSD spoak carbon fiber surfaces",
 	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDcf);
-    Zmatrix(irot,360./((Double_t)nspoaks));
     Pos("SCG",i+1,"SCA",0.0,.0,0.0,0);
     for(i=1;i<nspoaks;i++){
-	Zmatrix(irot+i,360./((Double_t)nspoaks));
 	Pos("SCG",i+1,"SCA",0.0,.0,0.0,irot+i);
     } // end for i
     // For the foam core.
@@ -1455,14 +1493,216 @@ void AliITSv11::SSDConeDetail(TVector3 &tran,const char moth[3],Int_t mat0){
     zh[3] = zg[3]-ct/sintc;
     rminh[3] = rminh[2];
     rmaxh[3] = rminh[3];
-    PolyCone("SCG","SSD spoak carbon fiber surfaces",
-	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDcf);
+    PolyCone("SCH","SSD spoak foam core",
+	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDfo);
     Pos("SCH",1,"SCG",0.0,.0,0.0,0);
     //
     //==================================================================
-
+    // Now for the Inner most part of the SSD cone.
+    phi0 = 0.0;
+    dphi = 360.0;
+    nz = 8;
+    Double_t *zi = new Double_t[nz];
+    Double_t *rmini = new Double_t[nz];
+    Double_t *rmaxi = new Double_t[nz];
+    Double_t za,rmina,rmaxa; // additional point not needed in call to pcons.
+    zi[0] = zg[2];
+    rmini[0] = rming[2];
+    rmaxi[0] = rmini[0];
+    zi[1] = zg[3];
+    rmini[1] = -tantc*(zi[1]-za[3])+rmina[3];
+    rmaxi[1] = rmaxi[0];
+    rmini[5] = Rinmin;
+    rmaxi[5] = Rinmax+rc*sintc;
+    zi[5] =za[4]+(rmaxa[4]-rmaxi[5])/tantc;
+    zia = zi[5]+rc*costc;
+    rminia = rmini[5];
+    rmaxia = Rinmax;
+    zi[3] = zia-dzin;
+    zi[2] = zi[3] -rc*costc;
+    rmini[2] = -tantc*(zi[2]-za[3])+rmina[3];
+    rmaxi[2] = -tantc*(zi[2]-za[4])+rmaxa[4];
+    rmini[3] = rmini[2] -rc*costc;
+    zi[4] = zi[3];
+    rmini[4] = Rinmin;
+    rmaxi[4] = -tantc*(zi[4]-za[4])+rmaxa[4];
+    rmaxi[3] = rmaxi[4];
+    zi[6] = zcylinder;
+    rmini[6] = Rinmin;
+    rmaxi[6] = rmaxi[5] - (zi[5]-zi[6])*(rmaxi[5]-rmaxa)/(zi[5]-zia);
+    zi[7] = zi[6];
+    rmini[7] = Rincylinder;
+    rmaxi[7] = rmaxi[6];
+    rmini[8] = Rincylinder;
+    rmaxi[8] = Rini[8];
+    zi[8] = zi[5]+(rmaxi[8]-rmaxi[5])*(zia-zi[5])/(rmaxa-rmaxi[5]);
+    PolyCone("SCI","SSD lower/inner right part of SSD cone",
+	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDcf);
+    Pos("SCI",1,mother,0.0,.0,0.0,0);
+    // Now for Inserto volume at the inner most radius.
+    phi0 = 0.0;
+    dphi = 360.0;
+    nz = 7;
+    Double_t *zk = new Double_t[nz];
+    Double_t *rmink = new Double_t[nz];
+    Double_t *rmaxk = new Double_t[nz];
+    zk[1] = zi[3]+ct;
+    zk[0] = zk[1]-(rc+ct)*costc;
+    rmink[0] = rmini[3]+(rc+ct)*sintc;
+    rmaxk[0] = rmink[0];
+    rmink[1] = rmini[3];
+    zk[2] = zk[1];
+    rmink[2] = rmini[6];
+    rmaxk[2] = rmaxk[1];
+    zk[3] = zk[0]+(th+2.0*ct)*costc;
+    rmink[3] = rmini[6];
+    rmaxk[3] = rmaxk[0]+(th+2.0*ct)*sintc;
+    rmaxk[1] = rmaxk[0]+(rmaxk[3]-rmaxk[0])*(zk[1]-zk[0])/(zk[3]-zk[0]);
+    rmink[4] = rmini[6];
+    rmaxk[4] = rmaxi[5]-ct*sintc;
+    zk[4] = zc[1]+(zc3[3]-zc[1])*(rmaxk[4]-rmaxc[1])/(rmaxc[3]-rmaxc[1]);
+    zk[5] = zi[5]-rc*costc-ct;
+    rmink[5] = rmini[6];
+    rmaxk[5] = rmini[8];
+    zk[6] = zi[6];
+    rmink[6] = rmini[6];
+    rmaxk[6] = rmaxi[6];
+    PolyCone("SCK","SSD inner most inserto material",
+	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDfs);
+    Pos("SCK",1,"SCI",0.0,.0,0.0,0);
+    // Now for foam core at the inner most radius.
+    phi0 = 0.0;
+    dphi = 360.0;
+    nz = 4;
+    Double_t *zj = new Double_t[nz];
+    Double_t *rminj = new Double_t[nz];
+    Double_t *rmaxj = new Double_t[nz];
+    rminj[0] = rmini[0]-ct;
+    zj[0] = zc[0]+(zc[2]-zc[0])*(rminj[0]-rminc[0])/(rminc[2]-rminc[0]);
+    rmaxj[0] = rminj[0];
+    rmaxj[1] = rmaxj[0];
+    zj[1] = zc[1]+(zc[3]-zc[1])*(rmaxj[1]-rmaxc[1])/(rmaxc[3]-rmaxc[1]);
+    rminj[1] = rminc[0]+(rminc[2]-rminc[0])*(zj[1]-zc[0])/(zc[2]-zc[0]);
+    zj[2] = zk[0];
+    rminj[2] = rkmin[0];
+    rmaxj[2] = rmaxc[1]+(rmaxc[3]-rmaxc[1])*(zj[2]-zc[1])/(zc[3]-zc[1]);
+    zj[3] = zk[3];
+    rminj[3] = rmaxk[3];
+    rmaxj[3] = rminj[3];
+    PolyCone("SCJ","SSD inner most foam core",
+	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDfo);
+    Pos("SCJ",1,"SCI",0.0,.0,0.0,0);
+    // Now for foam core at the top of the inner most radius where 
+    // the spoaks are.
+    t = ct/(0.5*(Rholemax+Rholemin));// It is not posible to get the
+    // carbon fiber thickness uniform in this phi direction. We can only
+    // make it a fixed angular thickness.
+    t *= 180.0/TMath::Pi();
+    dphi = 5.0 - 2.0*t; // degrees
+    phi0 = 12.5+t; // degrees see drawing ALR-0767.
+    nz = 4;
+    Double_t *zl = new Double_t[nz];
+    Double_t *rminl = new Double_t[nz];
+    Double_t *rmaxl = new Double_t[nz];
+    zl[0] = zh[2];
+    rminl[0] = rmini[0];
+    rmaxl[0] = rminl[0];
+    zl[1] = zj[0];
+    rminl[1] = rminj[1];
+    rmaxl[1] = rmaxi[0];
+    zl[2] = zh[3];
+    rminl[2] = rminl[1];
+    rmaxl[2] = rmaxl[1];
+    zl[3] = zj[1];
+    rminl[3] = rminl[2];
+    rmaxl[3] = rminl[3];
+    PolyCone("SCL","SSD inner most foam core",
+	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDfo);
+    Pos("SCL",1,"SCI",0.0,.0,0.0,0);
+    for(i=1;i<nspoaks;i++){
+	Pos("SCG",i+1,"SCA",0.0,.0,0.0,irot+i);
+    } // end for i
+    // Now for the SSD mounting posts
+    dphi = 180.0*dRPost/(RPostmin+0.5*dRPost)/TMath::Pi(); // degrees
+    phi0 = phi0post; //
+    nz = 3;
+    Double_t *zo = new Double_t[nz];
+    Double_t *rmino = new Double_t[nz];
+    Double_t *rmaxo = new Double_t[nz];
+    rmino[0] = RPostmin+dRPost;
+    rmaxo[0] = rmino[0];
+    zo[0] = za[4]+(rmaxa[4]-Rmaxo[0])/tantc;
+    rmino[1] = RPostmin;
+    zo[1] = za[4]+(rmaxa[4]-Rmino[1])/tantc;
+    rmaxo[1] = rmaxo[0];
+    zo[2] = z0+zpostmax;
+    rmino[2] = RPostmin;
+    rmaxo[2] = rmin0[2]+dRPost;
+    PolyCone("SCO","SSD mounting post, carbon fiber",
+	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDcf);
+    Pos("SCO",1,mother,0.0,.0,0.0,0);
+    for(i=1;i<nposts;i++){
+	Zmatrix(irot+i,360./((Double_t)nposts));
+	Pos("SCO",i+1,mother,0.0,.0,0.0,irot+i);
+    } // end for i
+    // Now for the SSD mounting posts
+    t = 180.0*ct/(RPostmin+0.5*dRPost)/TMath::Pi();
+    dphi = dphi-2.0*t; // degrees
+    phi0 = phi0+t; //
+    nz = 3;
+    Double_t *zp = new Double_t[nz];
+    Double_t *rminp = new Double_t[nz];
+    Double_t *rmaxp = new Double_t[nz];
+    rminp[0] = rmino[0]-ct;
+    rmaxp[0] = rminp[0];
+    zp[0] = za[4]+(rmaxa[4]-Rmaxp[0])/tantc;
+    rminp[1] = rmino[0]+ct;
+    rmaxp[1] = rmino[0]-ct;
+    zp[1] = za[4]+(rmaxa[4]-Rminp[1])/tantc;
+    rminp[2] = rminp[1];
+    rmaxp[2] = rmaxp[1];
+    zp[2] = z0-zpostmax;
+    PolyCone("SCP","SSD mounting post, Inserto",
+	     phi0,dphi,nz,*zc,*rminc,*rmaxc,SSDfs);
+    Pos("SCP",1,"SCO",0.0,.0,0.0,0);
+    // This insrto continues into the SSD cone displacing the foam
+    // and the carbon fiber surface at those points where the posts are.
+    nz = 4;
+    Double_t *zm = new Double_t[nz];
+    Double_t *rminm = new Double_t[nz];
+    Double_t *rmaxm = new Double_t[nz];
+    Double_t *zn = new Double_t[nz];
+    Double_t *rminn = new Double_t[nz];
+    Double_t *rmaxn = new Double_t[nz];
+    rminm[0] = RPostmin+dRPost-ct;
+    rmaxm[0] = rminm[0];
+    zm[0] = zj[0]+(zj[2]-zj[0])*(rminm[0]-rminj[0])/(rminj[2]-rminj[0]);
+    rmaxm[1] = rmaxm[0];
+    zm[1] = zj[1]+(zj[3]-zj[1])*(rmaxm[1]-rmaxj[1])/(rmaxj[3]-rmaxj[1]);
+    rminm[2] = RPostmin+ct;
+    zm[2] = zj[0]+(zj[2]-zj[0])*(rminm[2]-rminj[0])/(rminj[2]-rminm[0]);
+    rmaxm[2] = rjmax[1]+(rjmax[3]-rmnax[1])*(zm[2]-zj[1])/(zj[3]-zj[1]);
+    rminm[3] = rminm[2];
+    rmaxm[3] = rminm[3];
+    zn[0] = zm[1];
+    rminn[0] = rmaxm[1];
+    rmaxn[0] = rminn[0];
+    rmaxn[1] = rmaxn[0];
+    zn[1] = za4+(rmaxa[4]-rmaxn[1])/tantc;
+    rminn[1] = rmaxj[1]+(rmaxj[3]-rmaxj[1])*(zn[1]-zj[1])/(zj[3]-zj[1]);
+    zn[2] = zm[3];
+    rminn[2] = rminm[3];
+    rmaxn[2] = -tantc*(zn[2]-za[4])+rmaxa[4];
+    rminn[3] = rminn[2];
+    rmaxn[3] = rminn[3];
+    zn]3] = za[4]+(rmaxa[4]-rmaxn[3])/tantc;
+    Pos("SCM",1,"SCJ",0.0,.0,0.0,0);
+    Pos("SCN",1,"SCI",0.0,.0,0.0,0);
+    for(i=1;i<nposts;i++){
+	Pos("SCN",i+1,"SCJ",0.0,.0,0.0,irot+i);
+	Pos("SCM",i+1,"SCI",0.0,.0,0.0,irot+i);
+    } // end for i
     //
-    //Now for the carbon fiber on the sides of the spoakes.
     //==============================================================
     delete[] za;delete[] rmina;delete[] rmaxa;
     delete[] zb;delete[] rminb;delete[] rmaxb;
