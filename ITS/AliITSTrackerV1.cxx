@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.27  2002/10/31 10:17:40  hristov
+Corrected usage of AliKalmanTrack::SetConvConst (Alpha)
+
 Revision 1.26  2002/10/25 18:44:33  barbera
 Unnecessary print-out removed
 
@@ -548,11 +551,14 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
     if (!digp) { cerr<<"TPC parameters have not been found !\n"; getchar();}
 
     cf->cd();
-    AliTPCtracker *tracker = new AliTPCtracker(digp,evNumber);  
+    //AliTPCtracker *tracker = new AliTPCtracker(digp,evNumber); //I.B.  
+    AliTPCtracker *tracker = new AliTPCtracker(digp);            //I.B.
+    tracker->SetEventNumber(evNumber);                           //I.B.
 
     // Load clusters
-    tracker->LoadInnerSectors();
-    tracker->LoadOuterSectors();
+    //tracker->LoadInnerSectors(); //I.B.
+    //tracker->LoadOuterSectors(); //I.B.  
+    tracker->LoadClusters();       //I.B.
 
     // Load tracks
     TFile *tf=TFile::Open("AliTPCtracksSorted.root");  

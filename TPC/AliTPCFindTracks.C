@@ -1,9 +1,5 @@
-/****************************************************************************
- *           Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                 *
- ****************************************************************************/
-
 #ifndef __CINT__
-  #include <iostream.h>
+  #include <Riostream.h>
   #include "AliTPCParam.h"
   #include "AliTPCtracker.h"
 
@@ -11,11 +7,8 @@
   #include "TStopwatch.h"
 #endif
 
-Int_t AliTPCFindTracks(Int_t eventn=1) {
-
+Int_t AliTPCFindTracks(Int_t eventn=1) { 
    cerr<<"Looking for tracks...\n";
-   TFile f("galice.root");
-   gAlice = (AliRun*)f.Get("gAlice");
 
    TFile *out=TFile::Open("AliTPCtracks.root","new");
    if (!out->IsOpen()) {cerr<<"Delete old AliTPCtracks.root !\n"; return 1;}
@@ -29,12 +22,12 @@ Int_t AliTPCFindTracks(Int_t eventn=1) {
    TStopwatch timer;
 
    Int_t rc=0;
+   AliTPCtracker tracker(par);
    for (Int_t i=0;i<eventn;i++){
      printf("Processing event %d\n",i);
-     AliTPCtracker *tracker = new AliTPCtracker(par,i);
-     //Double_t xyz[]={0.,0.,0.}; tracker->SetVertex(xyz); //primary vertex
-     rc=tracker->Clusters2Tracks(0,out);
-     delete tracker;
+     tracker.SetEventNumber(i);
+     //Double_t xyz[]={0.,0.,0.}; tracker.SetVertex(xyz); //primary vertex
+     rc=tracker.Clusters2Tracks(0,out);
    }
    timer.Stop(); timer.Print();
  

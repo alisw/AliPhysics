@@ -26,10 +26,6 @@
 
 ClassImp(AliTracker)
 
-Double_t AliTracker::fX;
-Double_t AliTracker::fY;
-Double_t AliTracker::fZ;
-
 //__________________________________________________________________________
 void AliTracker::CookLabel(AliKalmanTrack *t, Float_t wrong) const {
   //--------------------------------------------------------------------

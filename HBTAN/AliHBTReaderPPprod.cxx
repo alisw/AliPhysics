@@ -160,14 +160,17 @@ Int_t AliHBTReaderPPprod::Read(AliHBTRun* particles, AliHBTRun *tracks)
          AliTPCtrack *iotrack=0;
          
          fClustersFile->cd();
-         AliTPCtracker *tracker = new AliTPCtracker(TPCParam,currentEvent);
+       //AliTPCtracker *tracker=new AliTPCtracker(TPCParam,currentEvent);//I.B.
+       AliTPCtracker *tracker=new AliTPCtracker(TPCParam);               //I.B.
+       tracker->SetEventNumber(currentEvent);                            //I.B.
          if (!tracker) 
           {
             Error("AliHBTReaderPPprod::Read","Can't get a tracker !\n"); 
             return 3;
           }
-         tracker->LoadInnerSectors();
-         tracker->LoadOuterSectors();
+         //tracker->LoadInnerSectors(); //I.B.
+         //tracker->LoadOuterSectors(); //I.B.
+         tracker->LoadClusters();     //I.B.
    
          for (i=0; i<NTPCtracks; i++)
           {

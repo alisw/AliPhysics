@@ -1,5 +1,7 @@
 #include "AliHBTReaderTPC.h"
 
+#include <Riostream.h>
+//#include <Riostream.h>
 #include <TTree.h>
 #include <TFile.h>
 #include <TParticle.h>
@@ -17,23 +19,17 @@
 
 
 ClassImp(AliHBTReaderTPC)
-//______________________________________________
-//
-// class AliHBTReaderTPC
-//
 //reader for TPC tracking
-//needs galice.root, AliTPCtracks.root, AliTPCclusters.root
+//needs galice.root, AliTPCtracks.root, AliTPCclusters.root, good_tracks_tpc 
 //
 //more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
 //Piotr.Skowronski@cern.ch
-//
 
-AliHBTReaderTPC:: AliHBTReaderTPC(const Char_t* trackfilename,
-                                  const Char_t* clusterfilename,
-                                  const Char_t* galicefilename):
- fTrackFileName(trackfilename),
- fClusterFileName(clusterfilename),
- fGAliceFileName(galicefilename)
+AliHBTReaderTPC::
+ AliHBTReaderTPC(const Char_t* trackfilename,const Char_t* clusterfilename,
+                 const Char_t* galicefilename):
+                 fTrackFileName(trackfilename),fClusterFileName(clusterfilename),
+                 fGAliceFileName(galicefilename)
 {
   //constructor, 
   //Defaults:
@@ -47,13 +43,13 @@ AliHBTReaderTPC:: AliHBTReaderTPC(const Char_t* trackfilename,
   fIsRead = kFALSE;
 }
 /********************************************************************/
-AliHBTReaderTPC::AliHBTReaderTPC(TObjArray* dirs,
+AliHBTReaderTPC::
+AliHBTReaderTPC(TObjArray* dirs,
                   const Char_t* trackfilename, const Char_t* clusterfilename,
                   const Char_t* galicefilename):
- AliHBTReader(dirs), 
- fTrackFileName(trackfilename),
- fClusterFileName(clusterfilename),
- fGAliceFileName(galicefilename)
+                  AliHBTReader(dirs), fTrackFileName(trackfilename),
+                  fClusterFileName(clusterfilename),fGAliceFileName(galicefilename)
+
 {
   //constructor, 
   //Defaults:
@@ -65,6 +61,7 @@ AliHBTReaderTPC::AliHBTReaderTPC(TObjArray* dirs,
   fParticles = new AliHBTRun();
   fTracks    = new AliHBTRun();
   fIsRead = kFALSE;
+  
 }
 /********************************************************************/
 
@@ -88,7 +85,6 @@ AliHBTEvent* AliHBTReaderTPC::GetParticleEvent(Int_t n)
    return fParticles->GetEvent(n);
  }
 /********************************************************************/
-
 AliHBTEvent* AliHBTReaderTPC::GetTrackEvent(Int_t n)
  {
  //returns Nth event with reconstructed tracks
@@ -134,7 +130,7 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
  //reads data and puts put to the particles and tracks objects
  //reurns 0 if everything is OK
  //
-  Info("Read","");
+  cout<<"AliHBTReaderTPC::Read()"<<endl;
   Int_t i; //iterator and some temprary values
   Int_t Nevents = 0;
   Int_t totalNevents = 0;
@@ -183,9 +179,9 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
     if (gAlice->TreeE())//check if tree E exists
      {
       Nevents = (Int_t)gAlice->TreeE()->GetEntries();//if yes get number of events in gAlice
-      Info("Read","________________________________________________________");
-      Info("Read","Found %d event(s) in directory %s",Nevents,GetDirName(currentdir).Data());
-      Info("Read","Setting Magnetic Field: B=%fT",gAlice->Field()->SolenoidField());
+      cout<<"________________________________________________________\n";
+      cout<<"Found "<<Nevents<<" event(s) in directory "<<GetDirName(currentdir)<<endl;
+      cout<<"Setting Magnetic Field: B="<<gAlice->Field()->SolenoidField()<<"T"<<endl;
       AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
      }
     else
@@ -211,7 +207,7 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
   
     for(Int_t currentEvent =0; currentEvent<Nevents;currentEvent++)//loop over all events
      {
-       Info("Read","Reading Event %d",currentEvent);
+       cout<<"Reading Event "<<currentEvent<<endl;
        /**************************************/
         /**************************************/
          /**************************************/ 
@@ -237,20 +233,23 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
             continue;
           }
          Int_t NTPCtracks=(Int_t)tracktree->GetEntries();//get number of TPC tracks 
-         Info("Read","Found %d TPC tracks.",NTPCtracks);
+         cout<<"Found "<<NTPCtracks<<" TPC tracks.\n";
          //Copy tracks to array
          
          AliTPCtrack *iotrack=0;
          
          aClustersFile->cd();//set cluster file active 
-         AliTPCtracker *tracker = new AliTPCtracker(TPCParam,currentEvent);//create the tacker for this event
+         //AliTPCtracker *tracker = new AliTPCtracker(TPCParam,currentEvent);//create the tacker for this event
+         AliTPCtracker *tracker = new AliTPCtracker(TPCParam); //I.B.
+         tracker->SetEventNumber(currentEvent);                //I.B.
          if (!tracker) //check if it has created succeffuly
           {//if not return with error
             Error("Read","Can't get a tracker !\n"); 
             continue;
           }
-         tracker->LoadInnerSectors();
-         tracker->LoadOuterSectors();
+         //tracker->LoadInnerSectors(); //I.B.
+         //tracker->LoadOuterSectors(); //I.B.
+         tracker->LoadClusters();       //I.B.
    
          for (i=0; i<NTPCtracks; i++) //loop over all tpc tracks
           {

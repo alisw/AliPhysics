@@ -1,5 +1,5 @@
 #ifndef __CINT__
-  #include <iostream.h>
+  #include <Riostream.h>
   #include "AliITSgeom.h"
   #include "AliITStrackerV2.h"
 
@@ -7,7 +7,7 @@
   #include "TStopwatch.h"
 #endif
 
-Int_t AliITSFindTracksV2() {
+Int_t AliITSFindTracksV2(Int_t nev=1) {  //number of events to process
    cerr<<"Looking for tracks...\n";
 
    TFile *out=TFile::Open("AliITStracksV2.root","new");
@@ -20,16 +20,20 @@ Int_t AliITSFindTracksV2() {
    if (!file->IsOpen()) {cerr<<"Can't open AliITSclustersV2.root !\n";return 3;}
 
    AliITSgeom *geom=(AliITSgeom*)file->Get("AliITSgeom");
+   if (!geom) {cerr<<"Can't get AliITSgeom !\n"; return 4;}
 
+   Int_t rc=0;
    TStopwatch timer;
    AliITStrackerV2 tracker(geom);
-
-   //Double_t xyz[]={0.,0.,0.}; tracker.SetVertex(xyz);  //primary vertex
-   //Int_t flag[]={1};                                   //some default flags
-   //flag[0]= 0; tracker.SetupFirstPass(flag);           //no constraint
-   //flag[0]=-1; tracker.SetupSecondPass(flag);          //skip second pass
-
-   Int_t rc=tracker.Clusters2Tracks(in,out);
+   for (Int_t i=0; i<nev; i++) {
+     cerr<<"Processing event number : "<<i<<endl;
+     tracker.SetEventNumber(i);
+     //Double_t xyz[]={0.,0.,0.}; tracker.SetVertex(xyz);  //primary vertex
+     //Int_t flag[]={1};                                   //some default flags
+     //flag[0]= 0; tracker.SetupFirstPass(flag);           //no constraint
+     //flag[0]=-1; tracker.SetupSecondPass(flag);          //skip second pass
+     rc=tracker.Clusters2Tracks(in,out);
+   }
    timer.Stop(); timer.Print();
 
    delete geom; //Thanks to Mariana Bondila

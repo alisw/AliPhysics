@@ -16,11 +16,12 @@ class TFile;
 
 class AliTracker {
 public:
-  AliTracker() { fX=fY=fZ=0.; }
+  AliTracker() { fX=fY=fZ=0.; fEventN=0; }
   virtual ~AliTracker(){}
   virtual Int_t Clusters2Tracks(const TFile *in, TFile *out)=0;
   virtual Int_t PropagateBack(const TFile *in, TFile *out)=0;
-  static void SetVertex(Double_t *xyz) { fX=xyz[0]; fY=xyz[1]; fZ=xyz[2]; }
+  void SetVertex(Double_t *xyz) { fX=xyz[0]; fY=xyz[1]; fZ=xyz[2]; }
+  void SetEventNumber(Int_t ev) { fEventN=ev; }
 
 //protected:
   virtual AliCluster *GetCluster(Int_t index) const=0;
@@ -29,11 +30,14 @@ public:
   Double_t GetX() const {return fX;}
   Double_t GetY() const {return fY;}
   Double_t GetZ() const {return fZ;}
+  Int_t GetEventNumber() const {return fEventN;}
 
 private:
-  static Double_t fX;  //X-coordinate of the primary vertex
-  static Double_t fY;  //Y-coordinate of the primary vertex
-  static Double_t fZ;  //Z-coordinate of the primary vertex
+  Int_t fEventN;//event number
+
+  Double_t fX;  //X-coordinate of the primary vertex
+  Double_t fY;  //Y-coordinate of the primary vertex
+  Double_t fZ;  //Z-coordinate of the primary vertex
 
   ClassDef(AliTracker,1) //abstract tracker
 };
