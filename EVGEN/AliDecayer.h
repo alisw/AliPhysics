@@ -32,6 +32,7 @@ public TObject
     virtual void    ForceDecay()                               =0;
     virtual Float_t GetPartialBranchingRatio(Int_t ipart)      =0;
     virtual Float_t GetLifetime(Int_t kf)                      =0;
+    virtual void    ReadDecayTable()                           =0;
     ClassDef(AliDecayer,2) // Alice Decayer Base Class
 };
 #endif

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.9  2001/12/20 10:37:13  morsch
+- Add omega forced decay.
+- Semileptonic decays for some more B and D baryons.
+
 Revision 1.8  2001/07/04 10:28:20  morsch
 Introduce GetLifetime(Int_T kf) method until functionality provided by
 TParticlePDG.
@@ -60,14 +64,19 @@ ClassImp(AliDecayerPythia)
 
 #ifndef WIN32
 # define py1ent py1ent_
+# define opendecaytable opendecaytable_
 # define type_of_call
 #else
 # define lu1ent PY1ENT
+# define opendecaytable OPENDECAYTABLE
 # define type_of_call _stdcall
 #endif
 
 extern "C" void type_of_call 
           py1ent(Int_t&, Int_t&, Double_t&, Double_t&, Double_t&);
+
+extern "C" void type_of_call 
+          opendecaytable(Int_t&);
 
 Bool_t AliDecayerPythia::fgInit = kFALSE;
 
@@ -155,6 +164,8 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay( 5332,13,1); // Omega_b    
 	break;
     case kDiMuon:
+	ForceParticleDecay(  221,13,2); // eta
+	ForceParticleDecay(  223,13,2); // omega
 	ForceParticleDecay(  333,13,2); // phi
 	ForceParticleDecay(  443,13,2); // J/Psi
 	ForceParticleDecay(20443,13,2); // Psi'
@@ -180,6 +191,8 @@ void AliDecayerPythia::ForceDecay()
 	break;
     case kDiElectron:
 	ForceParticleDecay(  333,11,2); // phi
+	ForceParticleDecay(  221,11,2); // eta
+	ForceParticleDecay(  223,11,2); // omega
 	ForceParticleDecay(  443,11,2); // J/Psi
 	ForceParticleDecay(30443,11,2); // Psi'
 	ForceParticleDecay(  553,11,2); // Upsilon
@@ -416,6 +429,22 @@ Float_t  AliDecayerPythia::GetLifetime(Int_t kf)
 // Get branching ratio
     Int_t kc=fPythia->Pycomp(TMath::Abs(kf));
     return fPythia->GetPMAS(kc,4)*3.3333e-12;
+}
+
+void AliDecayerPythia::WriteDecayTable()
+{
+//
+// Write the decay table
+    fPythia->Pyupda(1,15);
+}
+
+void AliDecayerPythia::ReadDecayTable()
+{
+//
+// Read the decay table
+    Int_t lun = 15;
+    opendecaytable(lun);
+    fPythia->Pyupda(2,lun);
 }
 
 #ifdef never
