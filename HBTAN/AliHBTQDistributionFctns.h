@@ -12,6 +12,7 @@ class AliHBTQLongDistributionVsKtFctn;   //QLongCMSLC  Distribution Vs   Kt
 class AliHBTQOutDistributionVsQInvFctn;    //QOutCMSLC   Distribution Vs   QInv
 class AliHBTQSideDistributionVsQInvFctn;   //QSideCMSLC  Distribution Vs   QInv
 class AliHBTQLongDistributionVsQInvFctn;   //QLongCMSLC  Distribution Vs   QInv
+class AliHBTPtDiffDistributionVsQInvFctn;
 
 #include "AliHBTFunction.h"
 
@@ -151,6 +152,25 @@ class AliHBTQLongDistributionVsQInvFctn: public AliHBTOnePairFctn2D
   private:
   public:
     ClassDef(AliHBTQLongDistributionVsQInvFctn,1)
+ };
+/***********************************************************************/
+/***********************************************************************/
+class AliHBTPtDiffDistributionVsQInvFctn: public AliHBTOnePairFctn2D
+ {
+  public: 
+   AliHBTPtDiffDistributionVsQInvFctn(Int_t nXbins = 800, Double_t maxXval = 4.0, Double_t minXval = 0., 
+                             Int_t nYbins = 500, Double_t maxYval = 0.1, Double_t minYval =-0.1);
+   virtual ~AliHBTPtDiffDistributionVsQInvFctn(){}
+   TH1* GetResult(){return GetNumerator();}
+   void GetValues(AliHBTPair* partpair, Double_t& x, Double_t& y)
+    {
+     y = partpair->Particle1()->Pt() - partpair->Particle2()->Pt();
+     x = partpair->GetQInv();
+    }
+  protected:
+  private:
+  public:
+    ClassDef(AliHBTPtDiffDistributionVsQInvFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/

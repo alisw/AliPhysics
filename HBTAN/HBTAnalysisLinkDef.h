@@ -113,6 +113,7 @@
 #pragma link C++ class AliHBTQOutDistributionVsQInvFctn+;
 #pragma link C++ class AliHBTQSideDistributionVsQInvFctn+;
 #pragma link C++ class AliHBTQLongDistributionVsQInvFctn+;
+#pragma link C++ class AliHBTPtDiffDistributionVsQInvFctn+;
 
 #pragma link C++ class AliHBTMonPxDistributionFctn+;
 #pragma link C++ class AliHBTMonPyDistributionFctn+;

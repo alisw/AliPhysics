@@ -9,6 +9,7 @@
 // class AliHBTQOutDistributionVsQInvFctn                         //
 // class AliHBTQSideDistributionVsQInvFctn                        //
 // class AliHBTQLongDistributionVsQInvFctn                        //
+// class AliHBTPtDiffDistributionVsQInvFctn                       //
 //                                                                //
 // Classes for Q's monitoring Vs Kt and Vs Qinv                   //
 //                                                                //
@@ -104,6 +105,18 @@ AliHBTQLongDistributionVsQInvFctn::AliHBTQLongDistributionVsQInvFctn(Int_t nXbin
  Rename("QLongDistributionVsQInv","Q_{Long} Distribution vs. Q_{inv}");
 }
 
+/******************************************************************/
+/******************************************************************/
+
+ClassImp( AliHBTPtDiffDistributionVsQInvFctn )
+
+AliHBTPtDiffDistributionVsQInvFctn::AliHBTPtDiffDistributionVsQInvFctn(Int_t nXbins, Double_t maxXval, Double_t minXval, 
+                                                                     Int_t nYbins, Double_t maxYval, Double_t minYval):
+ AliHBTOnePairFctn2D(nXbins,maxXval,minXval,nYbins,maxYval,minYval)
+{
+ //ctor
+ Rename("PtDiffDistributionVsQInv","P_{t} Difference Distribution vs. Q_{inv}");
+}
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
