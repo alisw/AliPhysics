@@ -69,7 +69,7 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   //
   //   - fTmpHits, which retains all the hits of the current event. It 
   //     is used for the digitization part.
-
+ 
   fPinElectronicNoise = 0.010 ;
   fDigitThreshold      = 1. ;   // 1 GeV 
 
@@ -241,7 +241,12 @@ void AliPHOSv1::FinishEvent()
   
   for ( i = 0 ; i < fNTmpHits ; i++ ) {
     hit = (AliPHOSHit*)fTmpHits->At(i) ;
-    newdigit = new AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
+
+    // Assign primary number only if contribution is significant
+    if( hit->GetEnergy() > fDigitThreshold)
+      newdigit = new AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
+    else
+      newdigit = new AliPHOSDigit( -1 , hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
     deja =kFALSE ;
     for ( j = 0 ; j < fNdigits ;  j++) { 
       curdigit = (AliPHOSDigit*) lDigits[j] ;
@@ -409,7 +414,7 @@ void AliPHOSv1::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   cout << "filled" << endl ;
   // 5.
 
-  gAlice->TreeR()->Write() ;
+  gAlice->TreeR()->Write(0,TObject::kOverwrite) ;
   cout << "writen" << endl ;
  
   // Deleting reconstructed objects

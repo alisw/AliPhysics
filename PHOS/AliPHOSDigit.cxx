@@ -59,8 +59,14 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Int_t index
   fAmp         = DigEnergy ;
   fId          = id ;
   fIndexInList = index ; 
-  fPrimary1    = primary ;
-  fNprimary    = 1 ; 
+  if( primary != -1){
+    fNprimary    = 1 ; 
+    fPrimary1    = primary ;
+  }
+  else{  //If the contribution of this primary smaller than fDigitThreshold (AliPHOSv1)
+    fNprimary    = 0 ; 
+    fPrimary1    = -1 ;
+  }
   fPrimary2    = -1 ; 
   fPrimary3    = -1 ;
 }
@@ -143,12 +149,13 @@ Bool_t AliPHOSDigit::operator==(AliPHOSDigit const & digit) const
 AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit) 
 {
   // Adds the amplitude of digits and completes the list of primary particles
+  // if amplitude is larger than 
 
   fAmp += digit.fAmp ;
   
   // Here comes something crummy ... but I do not know how to stream pointers
-  // because AliPHOSDigit is in a TCLonesArray
-  
+  // because AliPHOSDigit is in a TCLonesArray 
+
   Int_t tempo1[3] ; 
   tempo1[0] = fPrimary1 ; 
   tempo1[1] = fPrimary2 ; 
