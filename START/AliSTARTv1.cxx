@@ -74,7 +74,7 @@ void AliSTARTv1::CreateGeometry()
   Int_t idrotm[999];
   Float_t x,y,z;
 
-  Float_t pstart[3]={4.5,11.,7.};
+  Float_t pstart[3]={4.2,11.,7.};
   Float_t pinstart[3]={0.,1.6,6.5};
   Float_t ppmt[3]={0.,1.3,3.5};
   Float_t pdivider[3]={0.,1.2,1.75};
