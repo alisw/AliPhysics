@@ -6,11 +6,13 @@
 #include "MONITOR/AliMonitorControl.h"
 #endif
 
-void monitor(const char* alienHost = "alien://aliens7.cern.ch:15000/?direct",
+void monitor(Bool_t batchMode = kFALSE,
+	     const char* alienHost = "alien://aliens7.cern.ch:15000/?direct",
 	     const char* alienDir = "/alice_mdc/DC")
 {
   // load libraries
-  if (strcmp(gSystem->Getenv("ALIHLT_USEPACKAGE"), "ALIROOT") == 0) {
+  if (gSystem->Getenv("ALIHLT_USEPACKAGE") &&
+      (strcmp(gSystem->Getenv("ALIHLT_USEPACKAGE"), "ALIROOT") == 0)) {
     if (!gROOT->GetClass("AliLevel3")) {
       gSystem->Load("libAliL3Src.so");
       gSystem->Load("libAliL3Misc.so");
@@ -34,6 +36,10 @@ void monitor(const char* alienHost = "alien://aliens7.cern.ch:15000/?direct",
 
   // start the monitoring
   AliMonitorProcess *process = new AliMonitorProcess(alienHost, alienDir);
-  //  process->Run();
-  new AliMonitorControl(process);
+  if (batchMode) {
+    process->Run();
+    delete process;
+  } else {
+    new AliMonitorControl(process);
+  }
 }
