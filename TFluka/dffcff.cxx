@@ -7,9 +7,9 @@
 # define dffcff DFFCFF
 #endif
 extern "C" {
-Double_t dffcff(Double_t& wvlngt, Double_t& omgpho, Int_t& mmat)
+Double_t dffcff(Double_t& /*wvlngt*/, Double_t& /*omgpho*/, Int_t& /*mmat*/)
 {
-    printf("dffcff called  %e %e %d \n", wvlngt, omgpho, mmat);
+//    printf("dffcff called  %e %e %d \n", wvlngt, omgpho, mmat);
     return (0.);
 }
 }

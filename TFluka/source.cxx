@@ -123,6 +123,7 @@ extern "C" {
 	if (particleIsPrimary) {
 	    TVirtualMCApplication::Instance()->PostTrack();
 	    TVirtualMCApplication::Instance()->FinishPrimary();
+       if ((itrack%10)==0) printf("=== TRACKING PRIMARY %d ===\n", itrack);
 	}
     }
 

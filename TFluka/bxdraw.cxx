@@ -29,17 +29,20 @@ void bxdraw(Int_t& icode, Int_t& mreg, Int_t& newreg,
 //
 // Double step for boundary crossing
 //
+    fluka->SetTrackIsNew(kFALSE); // has to be called BEFORE Stepping()
     if (debug) printf("bxdraw (ex) \n");
     fluka->SetTrackIsExiting();
     fluka->SetCaller(12);
     fluka->SetMreg(mreg);
     (TVirtualMCApplication::Instance())->Stepping(); 
+
     if (debug) printf("bxdraw (en) \n");
     fluka->SetCaller(11);
     fluka->SetTrackIsEntering();
+    if (fluka->GetDummyBoundary() == 1) fluka->SetDummyBoundary(2);
     fluka->SetMreg(newreg);
     (TVirtualMCApplication::Instance())->Stepping();
-    fluka->SetTrackIsNew(kFALSE);
+
 } // end of bxdraw
 } // end of extern "C"
 
