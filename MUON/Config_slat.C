@@ -15,11 +15,14 @@ new AliGeant3("C++ Interface to Geant3");
 //=======================================================================
 //  Create the output file
    
-TFile *rootfile = new TFile("galice.root","recreate");
-rootfile->SetCompressionLevel(2);
-TGeant3 *geant3 = (TGeant3*)gMC;
- 
- 
+ TFile *rootfile = new TFile("galice.root","recreate");
+ rootfile->SetCompressionLevel(2);
+ TGeant3 *geant3 = (TGeant3*)gMC;
+ AliDecayer* decayer = new AliDecayerPythia();
+ decayer->SetForceDecay(all);
+ decayer->Init();
+ gMC->SetExternalDecayer(decayer);
+
 //=======================================================================
 // ******* GEANT STEERING parameters FOR ALICE SIMULATION *******
  geant3->fGctrak->maxnst=1000000;
@@ -50,7 +53,7 @@ Float_t tofmax = 1.e10;
 //              GAM    ELEC   NHAD   CHAD   MUON  EBREM  MUHAB EDEL MUDEL MUPA TOFMAX
 geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-3, cut,  cut,  cut, cut,  cut, 1.e-5);
 
- gAlice->TrackingLimits( 700, 1500);
+ gAlice->TrackingLimits( 700, 2000);
  
 //
 //=======================================================================
@@ -76,14 +79,14 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-3, cut,  cut,  cut, cut,  cut, 1
 // Example for Moving Particle Gun            *
 //*********************************************
      AliGenBox *gener = new AliGenBox(ntracks);
-     gener->SetMomentumRange(3,4);
-     gener->SetPhiRange(-360,360);
-     gener->SetThetaRange(2., 10.);
-     gener->SetOrigin(25,25,510.5);   
+     gener->SetMomentumRange(33,34);
+     gener->SetPhiRange(-180,180);
+     gener->SetThetaRange(2., 9.);
+     gener->SetOrigin(0,0,0);   
      gener->SetVertexSmear(kPerTrack); 
      //vertex position
-     gener->SetSigma(1.8, 1.8,0);           //Sigma in (X,Y,Z) (cm) on IP position
-     gener->SetPart(kProton);                    //GEANT particle type
+     gener->SetSigma(0, 0, 0);   // Sigma in (X,Y,Z) (cm) on IP position
+     gener->SetPart(kMuonPlus);    // GEANT particle type
      break;
  case scan:  
 //*********************************************
@@ -96,7 +99,7 @@ geant3->SetCUTS(1.e-4, 1.e-4, 1.e-3, 1.e-4, 1.e-3, cut,  cut,  cut, cut,  cut, 1
      //vertex position
      gener->SetSigma(1,1,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetPart(kMuonMinus); 
-     gener->SetRange(20, -200, 200, 20, -200., 200., 1, 900, 900);
+     gener->SetRange(60, -300, 300, 60, -300., 300., 1, 1200, 1200);
      break;
  case doublescan:  
 //*********************************************
@@ -194,11 +197,7 @@ position
 //*******************************************************
 // Example for J/psi  Production from  Parameterisation *
 //*******************************************************
-     AliGenParam *gener =
-	 new AliGenParam(ntracks,upsilon_p,
-			 AliGenMUONlib::GetPt(upsilon_p),
-			 AliGenMUONlib::GetY(upsilon_p),
-			 AliGenMUONlib::GetIp(upsilon_p));
+     AliGenParam *gener = new AliGenParam(ntracks,upsilon_p);
      gener->SetMomentumRange(0,999);
      gener->SetPhiRange(-180, 180);
      gener->SetYRange(2.5,4);
@@ -207,7 +206,7 @@ position
      gener->SetOrigin(0,0,0);          //vertex position
      gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
      gener->SetForceDecay(dimuon);
-     gener->SetTrackingFlag(0);
+     gener->SetTrackingFlag(1);
 
      break;
      
@@ -267,7 +266,7 @@ position
  
 
 gener->Init();
-gAlice->SetField(0,1);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
+gAlice->SetField(2,1);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
 Int_t iFRAME  =0;
 Int_t iMAG    =0;
@@ -357,6 +356,12 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  AliMUONResponseV0* response0 = new AliMUONResponseV0;
  response0->SetSqrtKx3AndDeriveKx2Kx4(0.7131);
  response0->SetSqrtKy3AndDeriveKy2Ky4(0.7642);
+// response0->SetSqrtKx3(0.7131);
+// response0->SetKx2(1.0107);
+// response0->SetKx4(0.4036);
+// response0->SetSqrtKy3(0.7642);
+// response0->SetKy2(0.9706);
+// response0->SetKy4(0.3831);
  response0->SetPitch(0.25);
  response0->SetSigmaIntegration(10.);
  response0->SetChargeSlope(50);
@@ -481,14 +486,15 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  Int_t   npcb5[32] = {0,0,1,1,
 		      0,1,1,1,
 		      0,2,1,1,
-		      0,1,1,1,
-		      0,1,1,1, 
+		      0,2,1,1,
+		      0,2,1,1, 
 		      0,2,1,1, 
 		      0,1,1,1, 
 		      0,0,1,1};
 
  Float_t shift = 1.5/2.;
- Float_t xpos5[8]    = {2., 2., 2., 42., 42., 2., 2., 2.};
+ // Float_t xpos5[8]    = {2., 2., 2., 42., 42., 2., 2., 2.};
+ Float_t xpos5[8]    = {2., 2., 2., 2., 2., 2., 2., 2.};
  Float_t ypos5       = -(4.*(40.-2.*shift)+shift);
 
  chamber=5;
@@ -564,7 +570,8 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 		    0,0,2,2, 
 		    0,0,0,3, 
 		    0,0,0,2};
- Float_t xpos7[11]   = {2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2.};
+ Float_t xpos7[11]   = {2., 2., 2., 2., 34.5, 39.5, 34.5, 2., 2., 2., 2.};
+ //  Float_t xpos7[11]   = {2., 2., 2., 2., 2., 39.5, 2., 2., 2., 2., 2.};
  Float_t ypos7       = -(20.+5.*(40.-2.*shift));
  
  seg71->SetNSlats(11);  
@@ -646,8 +653,8 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
 		      0,0,0,4, 
 		      0,0,0,2 };   
 
- Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 39.5 , 2., 2., 2., 2., 2., 2.};
-
+ // Float_t xpos9[13]   = {2., 2., 2., 2., 2., 2., 39.5 , 2., 2., 2., 2., 2., 2.};
+ Float_t xpos9[13]   = {2., 2., 2., 2., 2., 34.5, 39.5 , 34.5, 2., 2., 2., 2., 2.};
  Float_t ypos9       = -(20.+6.*(40.-2.*shift));
 
  seg91->SetNSlats(13);  
@@ -730,8 +737,7 @@ AliMUON *MUON  = new AliMUONv1("MUON","normal MUON");
  MUON->SetSegmentationModel(chamber-1, 2, seg122);
 
  MUON->SetResponseModel(chamber-1, responseTrigger0);      
- printf("\n %p %p \n", seg121, seg122);
- chamber=13;
+  chamber=13;
  MUON->SetNsec(chamber-1,2);
  AliMUONSegmentationTriggerX *seg131=new AliMUONSegmentationTriggerX;
  MUON->SetSegmentationModel(chamber-1, 1, seg131);
