@@ -26,4 +26,5 @@
 #pragma link C++ class  AliPMDDiscriminator+;
 #pragma link C++ class  AliPMDClusterFinder+;
 #pragma link C++ class  AliPMDtracker+;
+#pragma link C++ class  AliPMDReconstructor+;
 #endif
