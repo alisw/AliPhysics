@@ -68,6 +68,21 @@ endif
 ##################################################################
 
 ##################################################################
+# 
+#               Check if HLT code is there
+
+ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
+DEFSTR = -Duse_aliroot -Duse_root
+ifeq ($(ALIHLT_DOMC),true)
+DEFSTR += -Ddo_mc
+endif
+CXXFLAGS += -DALI_HLT $(DEFSTR) -I$(ALIHLT_TOPDIR)/src
+CINTFLAGS += -DALI_HLT $(DEFSTR) -I$(ALIHLT_TOPDIR)/src
+DEPINC += -DALI_HLT $(DEFSTR) -I$(ALIHLT_TOPDIR)/src
+endif
+##################################################################
+
+##################################################################
 #
 #                   Modules to build 
 
