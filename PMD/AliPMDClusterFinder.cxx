@@ -146,7 +146,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 
       idet = det;
       ismn = smn;
-      //      pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
+      pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
       
       Int_t nentries1 = pmdcont->GetEntries();
 //      cout << " nentries1 = " << nentries1 << endl;
