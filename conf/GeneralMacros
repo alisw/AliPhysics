@@ -5,9 +5,11 @@ $(SLIBRARY):
 		@[ -d $(dir $@) ] || mkdir $(dir $@)
 		@rm -f $@
                 ifeq ($(PLATFORM),aix)
-		   @$(SHLD) -o $@ $(LIBS) -p 0 $(filter-out dirs,$^)
+		   @cd $(ALICE_TARGET) ;\
+		   $(SHLD) -o $@ $(LIBS) -p 0 $(patsubst $(ALICE_TARGET)/%,%,$(filter-out dirs,$^))
                 else
-		   @$(SHLD) $(SOFLAGS) $(LDFLAGS) $(filter-out dirs,$^) $(SHLIB) -o $@
+		   @cd $(ALICE_TARGET) ;\
+		   $(SHLD) $(SOFLAGS) $(LDFLAGS) $(patsubst $(ALICE_TARGET)/%,%,$(filter-out dirs,$^)) $(SHLIB) -o $@
                 endif
 		@chmod 555 $@
 		@echo "$@ done"
