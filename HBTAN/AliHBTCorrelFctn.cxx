@@ -51,10 +51,19 @@ AliHBTOutSideLongFctn::AliHBTOutSideLongFctn(Int_t nXbins, Double_t maxXval, Dou
                                                    Int_t nZbins, Double_t maxZval, Double_t minZval):
  AliHBTOnePairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
 {
+//ctor
   fWriteNumAndDen = kTRUE;//change default behaviour
   Rename("qoslcf","Q_{out}-Q_{side}-Q_{long} Correlation Fctn");
 }
+/*************************************************************************************/ 
 
+TH1* AliHBTOutSideLongFctn::GetResult()
+{
+ //returns the scaled ratio
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
+}
 /*************************************************************************************/ 
 
 ClassImp(AliHBTQOutCMSLCCorrelFctn)

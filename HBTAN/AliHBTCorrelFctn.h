@@ -48,11 +48,11 @@ class AliHBTOutSideLongFctn: public AliHBTOnePairFctn3D, public AliHBTCorrelFunc
 	         Int_t nZbins = 100, Double_t maxZval = 0.15, Double_t minZval = 0.0);
     virtual  ~AliHBTOutSideLongFctn(){}
 
-  TH1* GetResult();
-  void   ProcessSameEventParticles(AliHBTPair* partpair);
-  
-  void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z)
-    { x=TMath::Abs(pair->GetQOutCMSLC()); y=TMath::Abs(pair->GetQSideCMSLC()); z=TMath::Abs(pair->GetQLongCMSLC());} 
+    TH1* GetResult();
+ 
+  protected:
+    void GetValues(AliHBTPair* pair, Double_t& x, Double_t& y, Double_t& z)
+      { x=TMath::Abs(pair->GetQOutCMSLC()); y=TMath::Abs(pair->GetQSideCMSLC()); z=TMath::Abs(pair->GetQLongCMSLC());} 
 
   ClassDef(AliHBTOutSideLongFctn,1)
 };

@@ -169,9 +169,11 @@ AliHBTWeightTheorOSLFctn::AliHBTWeightTheorOSLFctn(Int_t nXbins, Double_t maxXva
                                                    Int_t nZbins, Double_t maxZval, Double_t minZval):
  AliHBTOnePairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
 {
+  //ctor
   fWriteNumAndDen = kTRUE;//change default behaviour
   Rename("wqosltheorcf","Q_{out}-Q_{side}-Q_{long} Weight Theoretical Correlation Fctn");
 }
+
 /*************************************************************/
 
 void AliHBTWeightTheorOSLFctn::ProcessSameEventParticles(AliHBTPair* partpair)
