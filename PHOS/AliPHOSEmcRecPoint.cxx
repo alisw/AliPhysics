@@ -107,8 +107,8 @@ void AliPHOSEmcRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy)
 
   if ( fMulDigit >= fMaxDigit ) { // increase the size of the lists 
     fMaxDigit*=2 ; 
-    Int_t * tempo = new ( Int_t[fMaxDigit] ) ; 
-    Float_t * tempoE =  new ( Float_t[fMaxDigit] ) ;
+    Int_t * tempo = new Int_t[fMaxDigit]; 
+    Float_t * tempoE =  new Float_t[fMaxDigit];
 
     Int_t index ;     
     for ( index = 0 ; index < fMulDigit ; index++ ){
@@ -117,10 +117,10 @@ void AliPHOSEmcRecPoint::AddDigit(AliPHOSDigit & digit, Float_t Energy)
     }
     
     delete [] fDigitsList ; 
-    fDigitsList =  new ( Int_t[fMaxDigit] ) ;
+    fDigitsList =  new Int_t[fMaxDigit];
  
     delete [] fEnergyList ;
-    fEnergyList =  new ( Float_t[fMaxDigit] ) ;
+    fEnergyList =  new Float_t[fMaxDigit];
 
     for ( index = 0 ; index < fMulDigit ; index++ ){
       fDigitsList[index] = tempo[index] ;
@@ -813,8 +813,8 @@ void AliPHOSEmcRecPoint::EvalTime(TClonesArray * digits)
 void AliPHOSEmcRecPoint::Purify(Float_t threshold){
   //Removes digits below threshold
 
-  Int_t * tempo = new ( Int_t[fMaxDigit] ) ; 
-  Float_t * tempoE =  new ( Float_t[fMaxDigit] ) ;
+  Int_t * tempo = new Int_t[fMaxDigit]; 
+  Float_t * tempoE =  new Float_t[fMaxDigit];
 
   Int_t mult = 0 ;
   for(Int_t iDigit=0;iDigit< fMulDigit ;iDigit++){
@@ -828,8 +828,8 @@ void AliPHOSEmcRecPoint::Purify(Float_t threshold){
   fMulDigit = mult ;
   delete [] fDigitsList ;
   delete [] fEnergyList ;
-  fDigitsList = new (Int_t[fMulDigit]) ;
-  fEnergyList = new ( Float_t[fMulDigit]) ;
+  fDigitsList = new Int_t[fMulDigit];
+  fEnergyList = new Float_t[fMulDigit];
 
   fAmp = 0.; //Recalculate total energy
   for(Int_t iDigit=0;iDigit< fMulDigit ;iDigit++){
