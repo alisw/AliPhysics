@@ -162,7 +162,7 @@ void Config()
 
 
 // Generator Configuration
-    gAlice->SetDebug(1);
+    gAlice->SetDebug(0);
     AliGenerator* gener = GeneratorFactory(srun);
     gener->SetOrigin(0, 0, 0);    // vertex position
     gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position
@@ -447,7 +447,7 @@ void Config()
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "G56_2_55_19");
+        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCAL_55_25");
     }
 
      if (iCRT)

@@ -477,7 +477,7 @@ void Config()
     if (iEMCAL && !iRICH)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCALArch1a");
+        AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCAL_55_25");
     }
 
     if (iSTART)
