@@ -329,23 +329,17 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
       
       if (part && (i<=NP))
        {
-        cout<<"Jeszce zyje"<<endl;
         AliHBTEvent* partev = reader->GetParticleEvent(i);
-        cout<<"Dupa 2"<<endl;
         for ( j = 0; j< partev->GetNumberOfParticles();j++)
          {
            cout<<j<<"\r";
            new (particles[j]) AliHBTParticle(*(partev->GetParticle(j)));
          }
-       cout<<endl;
-       cout<<"Dupa 3"<<endl;
        
        }
 
-      cout<<"Dupa 4"<<endl;
       histoOutput->cd();
       tracktree->Fill();
-      cout<<"Dupa 40"<<endl;
       tbuffer->Delete();
       pbuffer->Delete();
 
@@ -354,9 +348,7 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
   
   
   histoOutput->cd();
-  cout<<"Dupa 5"<<endl;
   tracktree->Write(0,TObject::kOverwrite);
-  cout<<"Dupa 6"<<endl;
   histoOutput->Close();
 
   return 0;
