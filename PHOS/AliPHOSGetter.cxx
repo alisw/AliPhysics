@@ -90,29 +90,31 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
 
   fPrimaries = new TObjArray(1) ;
 
-  //open headers file
-  TFile * file = (TFile*) gROOT->GetFile(fHeaderFile.Data() ) ;
-
- if(file == 0){    //if file was not opened yet, read gAlice
-    if(fHeaderFile.Contains("rfio")) // if we read file using HPSS
-      file =	TFile::Open(fHeaderFile.Data(),"update") ;
-    else
-      file = new TFile(fHeaderFile.Data(),"update") ;
-  
-  if (!file->IsOpen()) {
-    cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot open " << fHeaderFile.Data() << endl ; 
-    abort() ; 
-  }
+  if ( fHeaderFile != "aliroot" ) { // to call the getter without a file
     
-     gAlice = (AliRun *) file->Get("gAlice") ;
+    //open headers file
+    TFile * file = (TFile*) gROOT->GetFile(fHeaderFile.Data() ) ;
     
-    if (!gAlice) {
-      cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot find gAlice in " << fHeaderFile.Data() << endl ; 
-      abort() ; 
+    if(file == 0){    //if file was not opened yet, read gAlice
+      if(fHeaderFile.Contains("rfio")) // if we read file using HPSS
+	file =	TFile::Open(fHeaderFile.Data(),"update") ;
+      else
+	file = new TFile(fHeaderFile.Data(),"update") ;
+      
+      if (!file->IsOpen()) {
+	cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot open " << fHeaderFile.Data() << endl ; 
+	abort() ; 
+      }
+      
+      gAlice = (AliRun *) file->Get("gAlice") ;
+      
+      if (!gAlice) {
+	cerr << "ERROR : AliPHOSGetter::AliPHOSGetter -> Cannot find gAlice in " << fHeaderFile.Data() << endl ; 
+	abort() ; 
+      }
     }
   }
 }
-
 //____________________________________________________________________________ 
 void AliPHOSGetter::CreateWhiteBoard() const
 {
@@ -1064,6 +1066,8 @@ const TTask * AliPHOSGetter::ReturnT(TString what, TString name) const
     path += "/Reconstructioner" ; 
   else if ( what.CompareTo("PID") == 0 ) 
     path += "/Reconstructioner" ; 
+  else if ( what.CompareTo("QATasks") == 0 ) 
+    path += "/QA" ; 
 
   TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
   TTask * aliceT  = (TTask*)aliceF->FindObject(path) ; 
@@ -1098,7 +1102,11 @@ const TTask * AliPHOSGetter::ReturnT(TString what, TString name) const
     if ( name.IsNull() )
       name =  fRecParticlesTitle ;
   }
-  
+    else  if (what.CompareTo("QATasks") == 0){ 
+    if ( name.IsNull() )
+      return phosT ;
+  }
+
   TTask * task = (TTask*)l->FindObject(name) ; 
 
   if (!task)

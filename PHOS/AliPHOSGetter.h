@@ -76,6 +76,9 @@ class AliPHOSGetter : public TObject {
   // Alarms
   TFolder * Alarms(const char * name = 0) const { return (TFolder*)(ReturnO("Alarms", name)) ; }
 
+  // QA Tasks
+  TTask * QATasks(const char * name = 0) const { return (TTask*)(ReturnT("QATasks", name)) ; }
+
   // Hits
   TClonesArray * Hits(const char * name = 0) const { return (TClonesArray*)(ReturnO("Hits", name)) ; }
   const AliPHOSHit * Hit(Int_t index)
