@@ -41,7 +41,8 @@ Double_t AliITSpidESD::Bethe(Double_t bg) {
   // This is the Bethe-Bloch function normalised to 1 at the minimum
   //
   Double_t bg2=bg*bg;
-  Double_t bethe=(1.+ bg2)/bg2*(log(5940*bg2) - bg2/(1.+ bg2));
+  Double_t bethe;
+  bethe=(1.+ bg2)/bg2*(log(5940*bg2) - bg2/(1.+ bg2));
   return bethe/11.091;
 }
 
@@ -59,19 +60,19 @@ Int_t AliITSpidESD::MakePID(AliESD *event)
     AliESDtrack *t=event->GetTrack(i);
     if ((t->GetStatus()&AliESDtrack::kITSin )==0)
       if ((t->GetStatus()&AliESDtrack::kITSout)==0) continue;
+    Double_t mom=t->GetP();
+    Double_t dedx=t->GetITSsignal()/fMIP;
     Int_t ns=AliESDtrack::kSPECIES;
     Double_t p[10];
     for (Int_t j=0; j<ns; j++) {
       Double_t mass=masses[j];
-      Double_t mom=t->GetP();
-      Double_t dedx=t->GetITSsignal()/fMIP;
       Double_t bethe=Bethe(mom/mass); 
       Double_t sigma=fRes*bethe;
       if (TMath::Abs(dedx-bethe) > fRange*sigma) {
-	p[j]=TMath::Exp(-0.5*fRange*fRange);
+	p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
         continue;
       }
-      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma));
+      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
     }
     t->SetITSpid(p);
   }

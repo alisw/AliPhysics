@@ -111,7 +111,7 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
    AliITStrackerV2 itsTracker(geom);
    
    //An instance of the ITS PID maker
-   Double_t parITS[]={34.,0.15,10.};
+   Double_t parITS[]={35.5,0.11,10.};
    AliITSpidESD itsPID(parITS);
 
    //An instance of the V0 finder
@@ -156,7 +156,7 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
    AliTPCtracker tpcTracker(par);
 
    //An instance of the TPC PID maker
-   Double_t parTPC[]={47.,0.10,10.};
+   Double_t parTPC[]={45.0,0.08,10.};
    AliTPCpidESD tpcPID(parTPC);
 
 
@@ -206,7 +206,6 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
       return 5;
    }
    tofl->LoadDigits("read");
-
 
    //Instance of the TOF PID maker
    Double_t parTOF[]={130.,5.};
@@ -265,10 +264,8 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
 
 //***** Back propagation towards the outer barrel detectors
      rc+=itsTracker.PropagateBack(event); 
-     //itsPID.MakePID(event);
      
      rc+=tpcTracker.PropagateBack(event);
-     tpcPID.MakePID(event);
 
      TTree *trdTree=trdl->TreeR();
      if (!trdTree) {
@@ -277,12 +274,14 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
      } 
      trdTracker.LoadClusters(trdTree);
      rc+=trdTracker.PropagateBack(event);
+
 /*
      for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
        AliESDtrack* track = event->GetTrack(iTrack);
        trdPID->MakePID(track);
      }
 */
+
      TTree *tofTree=tofl->TreeD();
      if (!tofTree) {
         cerr<<"Can't get the TOF cluster tree !\n";
@@ -293,22 +292,21 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
      tofPID.UnloadClusters();
 
 
-
-//***** Here is the combined PID
-     AliESDpid::MakePID(event);
-
-
-
 //***** Now the final refit at the primary vertex...
      rc+=trdTracker.RefitInward(event);
      trdTracker.UnloadClusters();
 
      rc+=tpcTracker.RefitInward(event);
      tpcTracker.UnloadClusters();
+     tpcPID.MakePID(event);
 
      rc+=itsTracker.RefitInward(event); 
      itsTracker.UnloadClusters();
+     itsPID.MakePID(event);
 
+
+//***** Here is the combined PID
+     AliESDpid::MakePID(event);
 
 
 //***** Hyperon reconstruction 

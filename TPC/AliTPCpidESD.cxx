@@ -68,10 +68,10 @@ Int_t AliTPCpidESD::MakePID(AliESD *event)
       Double_t bethe=Bethe(mom/mass); 
       Double_t sigma=fRes*bethe;
       if (TMath::Abs(dedx-bethe) > fRange*sigma) {
-	p[j]=TMath::Exp(-0.5*fRange*fRange);
+	p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
         continue;
       }
-      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma));
+      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
     }
     t->SetTPCpid(p);
   }

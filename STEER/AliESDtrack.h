@@ -123,7 +123,7 @@ protected:
   Int_t   fITSncls;        // number of clusters assigned in the ITS
   UInt_t  fITSindex[6];    //! indices of the assigned ITS clusters
   Float_t fITSsignal;      // detector's PID signal
-  Float_t fITSr[kSPECIES]; //! "detector response probabilities" (for the PID)
+  Float_t fITSr[kSPECIES]; // "detector response probabilities" (for the PID)
 
   // TPC related track information
   Float_t fTPCchi2;        // chi2 in the TPC
@@ -137,7 +137,7 @@ protected:
   Int_t   fTRDncls;        // number of clusters assigned in the TRD
   UInt_t  fTRDindex[90];   //! indices of the assigned TRD clusters
   Float_t fTRDsignal;      // detector's PID signal
-  Float_t fTRDr[kSPECIES]; //! "detector response probabilities" (for the PID)
+  Float_t fTRDr[kSPECIES]; // "detector response probabilities" (for the PID)
 
   // TOF related track information
   Float_t fTOFchi2;        // chi2 in the TOF
