@@ -16,7 +16,7 @@ void bxdraw(Int_t& icode, Int_t& mreg, Int_t& newreg,
   ((TFluka*) gMC)->SetXsco(xsco);
   ((TFluka*) gMC)->SetYsco(ysco);
   ((TFluka*) gMC)->SetZsco(zsco);
-  cout << endl << " !!! I am in bxdraw - calling Stepping()" << endl;
+//  cout << endl << " !!! I am in bxdraw - calling Stepping()" << mreg << endl;
   ((TFluka*) gMC)->FutoTest();
   (TVirtualMCApplication::Instance())->Stepping();
 } // end of bxdraw
