@@ -7,6 +7,7 @@
 #define TGEANT4_H
 
 #include "AliMC.h"
+#include "AliMCProcess.h"
 
 class TG4VRunConfiguration;
 class TG4GeometryManager;
@@ -168,7 +169,7 @@ class TGeant4: public AliMC
     virtual Int_t NSecondaries() const;
     virtual void  GetSecondary(Int_t isec, Int_t& particleId, 
                     TLorentzVector& position, TLorentzVector& momentum);
-    virtual const char* ProdProcess() const; 
+    virtual AliMCProcess ProdProcess() const; 
 
 	// random number generator	    
     virtual void Rndm(Float_t* array, const Int_t size) const;    

@@ -193,7 +193,7 @@ inline void  TGeant4::GetSecondary(Int_t isec, Int_t& particleId,
   fStepManager->GetSecondary(isec, particleId, position, momentum); 
 } 
 
-inline const char* TGeant4::ProdProcess() const 
+inline AliMCProcess TGeant4::ProdProcess() const 
 { 
   return fStepManager->ProdProcess(); 
 } 
