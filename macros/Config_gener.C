@@ -31,7 +31,7 @@ enum gentype_t {hijing, hijingParam, gun, box, pythia,
 		param1, param2, param3, param4, 
 		cocktail, fluka, halo, ntuple, scan, doublescan};
 
-gentype_t gentype=param4;
+gentype_t gentype = hijing;
 
 Int_t ntracks=1;
 
@@ -188,7 +188,7 @@ void Config()
 // impact parameter range
 	gener->SetImpactParameterRange(0, 3.);
 // evaluate cross section before run
-	gener->SetEvaluate(1);
+	gener->SetEvaluate(0);
 // tell hijing to keep the full parent child chain
 	gener->KeepFullEvent();
 // enable jet quenching
@@ -204,11 +204,11 @@ void Config()
 // momentum range
 	gener->SetMomentumRange(0,999);
 // phi range
-	gener->SetPhiRange(-180,180);
+	gener->SetPhiRange(0.,360.);
 // theta range 
 	gener->SetThetaRange(0,180.);
 // select flavor (0: no, 4: charm+beauty, 5:beauty)
-	gener->SetFlavor(4);
+	gener->SetFlavor(0);
 //     
 	gener->SetOrigin(0., 0.0 ,0);
 	gener->SetSigma(0,0,5.3);
@@ -227,7 +227,7 @@ void Config()
 	AliGenPythia *gener = new AliGenPythia(-1);
 //   final state kinematic cuts
 	gener->SetMomentumRange(0,999);
-	gener->SetPhiRange(-180,180);
+	gener->SetPhiRange(0. ,360.);
 	gener->SetThetaRange(0., 180.);
 	gener->SetYRange(-10,10);
 	gener->SetPtRange(0,100);
@@ -265,7 +265,7 @@ void Config()
 	  new AliGenParam(ntracks, AliGenMUONlib::kUpsilon);
 	gener->SetMomentumRange(0,999);
 	gener->SetPtRange(0,999);     
-	gener->SetPhiRange(-180, 180);
+	gener->SetPhiRange(0. , 360.);
 	gener->SetYRange(2.5,4);
 	gener->SetCutOnChild(1);
 	gener->SetChildThetaRange(2,9);
@@ -305,7 +305,7 @@ void Config()
 					     AliGenGSIlib::kUpsilon, "MUON");
 	gener->SetMomentumRange(0,999);
 	gener->SetPtRange(0,999);     
-	gener->SetPhiRange(-180, 180);
+	gener->SetPhiRange(0., 360.);
 	gener->SetYRange(2.5,4);
 	gener->SetCutOnChild(1);
 	gener->SetChildThetaRange(2,9);
@@ -353,7 +353,7 @@ void Config()
 	rl->CdGAFile();
 //     gener->SetPartFlag(10);
 	gener->SetMomentumRange(0,999);
-	gener->SetPhiRange(0,360);
+	gener->SetPhiRange(0.,360.);
 	gener->SetThetaRange(0., 180.); 
 	gener->SetAgeMax(1.e-5);
      
