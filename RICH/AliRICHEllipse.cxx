@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.4  2001/05/10 12:34:43  jbarbosa
+  Changed drwaing routines.
+
   Revision 1.3  2000/11/01 15:37:44  jbarbosa
   Removed verbose output.
 
@@ -26,10 +29,12 @@
 
 */
 
+#include "TMath.h"
 #include "AliRICHEllipse.h"
 #include "AliRICH.h"
 #include "AliRun.h"
 #include "AliRICHPatRec.h"
+#include "AliRICHGeometry.h"
 
 #include <TRandom.h>
 
@@ -80,72 +85,87 @@ AliRICHEllipse::AliRICHEllipse(Float_t cx, Float_t cy, Float_t omega, Float_t th
 }
 
 //________________________________________________________________________________
-/*void AliRICHEllipse::CreatePoints(Int_t chamber)
+void AliRICHEllipse::CreatePoints(Int_t chamber)
 {
 
 // Create points along the ellipse equation
-
-  Int_t s1,s2;
-  Float_t fiducial=fh*TMath::Tan(fOmega+fTheta), l=fh/TMath::Cos(fTheta), xtrial, y=0, c0, c1, c2;
-  //TRandom *random=new TRandom();
+  
+  Float_t x, y, rotx, roty, h, cx, cy, phi, omega, theta, omega1, theta1, phiinc;
+  Float_t a,b,c,r,e, offset;
+  
+  Float_t kPi=TMath::Pi();
 
   AliRICH *pRICH  = (AliRICH*)gAlice->GetModule("RICH");
   AliRICHChamber*       iChamber;
+  AliRICHGeometry*  geometry;
   
   iChamber = &(pRICH->Chamber(chamber));
-  //cout<<"fiducial="<<fiducial<<endl;
+  geometry=iChamber->GetGeometryModel();
   
+  //h = 2.3 * geometry->GetRadiatorToPads();
+  h = geometry->GetRadiatorToPads();
+  //printf("h: %f",h);
+
+  cx = fCx;
+  cy = fCy;
+  theta = fTheta;
+  omega = fOmega;
+  phiinc = fPhi+kPi/2;
+  
+  printf("Omega: %f, Theta: %f, Phi: %f\n", omega, theta, phiinc); 
+
+
   for(Float_t i=0;i<1000;i++)
     {
-      
-      Float_t counter=0;
-      
-      c0=0;c1=0;c2=0;
-      while((c1*c1-4*c2*c0)<=0 && counter<1000)
-	{
-	  //Choose which side to go...
-	  if(i>250 && i<750) s1=1; 
-	  //if (gRandom->Rndm(1)>.5) s1=1;
-	  else s1=-1;
-	  //printf("s1:%d\n",s1);
-	  //Trial a y
-	  y=s1*i*gRandom->Rndm(Int_t(fiducial/50));
-	  //printf("Fiducial %f  for omega:%f theta:%f phi:%f\n",fiducial,fOmega,fTheta,fPhi);
-	  Float_t alfa1=fTheta;
-	  Float_t theta1=fPhi;
-	  Float_t omega1=fOmega;
-	  
-	  //Solve the eq for a trial x
-	  c0=-TMath::Power(y*TMath::Cos(alfa1)*TMath::Cos(theta1),2)-TMath::Power(y*TMath::Sin(alfa1),2)+TMath::Power(l*TMath::Tan(omega1),2)+2*l*y*TMath::Cos(alfa1)*TMath::Sin(theta1)*TMath::Power(TMath::Tan(omega1),2)+TMath::Power(y*TMath::Cos(alfa1)*TMath::Sin(theta1)*TMath::Tan(omega1),2);
-	  c1=2*y*TMath::Cos(alfa1)*TMath::Sin(alfa1)-2*y*TMath::Cos(alfa1)*TMath::Power(TMath::Cos(theta1),2)*TMath::Sin(alfa1)+2*l*TMath::Sin(alfa1)*TMath::Sin(theta1)*TMath::Power(TMath::Tan(omega1),2)+2*y*TMath::Cos(alfa1)*TMath::Sin(alfa1)*TMath::Power(TMath::Sin(theta1),2)*TMath::Power(TMath::Tan(omega1),2);
-	  c2=-TMath::Power(TMath::Cos(alfa1),2)-TMath::Power(TMath::Cos(theta1)*TMath::Sin(alfa1),2)+TMath::Power(TMath::Sin(alfa1)*TMath::Sin(theta1)*TMath::Tan(omega1),2);
-	  //cout<<"Trial: y="<<y<<"c0="<<c0<<" c1="<<c1<<" c2="<<c2<<endl;
-	  //printf("Result:%f\n\n",c1*c1-4*c2*c0);
-	  //i+=.01;
-	  counter +=1;
-	}
-      
-      if (counter>=1000)
-	y=0; 
+      phi=((Float_t)(i)/1000)*2*kPi;
+      //printf("Phi: %f\n",phi);
 
-      //Choose which side to go...
-      //if(gRandom->Rndm(1)>.5) s=1; 
-      //else s=-1;
-      if(i>500) s2=1;
-      //if (gRandom->Rndm(1)>.5) s2=1;
-      else s2=-1;
-      xtrial=fCx+(-c1+s2*TMath::Sqrt(c1*c1-4*c2*c0))/(2*c2);
-      //cout<<"x="<<xtrial<<" y="<<cy+y<<endl;
-      //printf("Coordinates: %f %f\n",xtrial,fCy+y);
+      //theta1=SnellAngle(theta1);
+      
+      //if(phi<=TMath::Pi())
+      omega1=SnellAngle(omega);
+      theta1=SnellAngle(theta);
+      //omega1=SnellAngle(omega+cos(phi)*theta);
+      //if(phi>TMath::Pi())
+	//omega1=SnellAngle(omega+(1-2*(2*TMath::Pi()-phi)/(TMath::Pi()))*theta);
 
-      Float_t vectorLoc[3]={xtrial,6.276,(fCy+y)};
+   
+      //Omega1->Fill(omega1,(float) 1);
+
+      a = h*(tan(omega1+theta1)+tan(omega1-theta1))/2;
+      b = h*tan(omega1);
+      e = sqrt(1 - (b*b)/(a*a));
+      c = a*e;
+      r = (a*(1-e*e))/(1+e*cos(e));
+      offset = h*(tan(omega1+theta1)-tan(omega1-theta1))/2;
+	
+      x = b* sin(phi);
+      y = a* cos(phi) + offset;
+		
+      rotx = x*cos(phiinc)-y*sin(phiinc);
+      roty = x*sin(phiinc)+y*cos(phiinc);
+   
+      //x = h * 1/(tan(omega1)) * sin(phi+phiinc);
+      //y = x * 1/(tan(phi+phiinc));
+
+      
+
+      //Rings->Fill(x,y,(float) 1);
+
+      rotx += cx;
+      roty += cy;
+
+      //printf("x:%f, y: %f\n",x,y);
+
+      Float_t vectorLoc[3]={rotx,6.276,roty};
       Float_t  vectorGlob[3];
       iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
-      SetPoint(i,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
+      SetPoint((Int_t) i,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
       //printf("Coordinates: %f %f %f\n",vectorGlob[0],vectorGlob[1],vectorGlob[2]);
+      
     }
-    }*/
 
+}
 
 void AliRICHEllipse::CerenkovRingDrawing(Int_t chamber,Int_t track)
 {
@@ -244,7 +264,34 @@ void AliRICHEllipse::CerenkovRingDrawing(Int_t chamber,Int_t track)
 
 
 
+Float_t AliRICHEllipse:: SnellAngle(Float_t iangle)
+{ 
 
+// Compute the Snell angle
+
+  Float_t nfreon  = 1.295;
+  Float_t nquartz = 1.585;
+  Float_t ngas = 1;
+
+  Float_t sinrangle;
+  Float_t rangle;
+  Float_t a1, a2;
+
+  a1=nfreon/nquartz;
+  a2=nquartz/ngas;
+
+  sinrangle = a1*a2*sin(iangle);
+
+  if(sinrangle>1.) {
+     rangle = 999.;
+     return rangle;
+  }
+  
+  rangle = asin(sinrangle);  
+  //printf("iangle %f, a1*a2, %f, sinranlge, %f, rangle, %f\n", iangle, a1*a2, sinrangle, rangle);
+  return rangle;
+
+}
 
 
 

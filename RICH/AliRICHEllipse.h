@@ -16,6 +16,9 @@ class AliRICHEllipse :  public TPolyMarker3D {
     
     virtual          ~AliRICHEllipse();
     virtual void CerenkovRingDrawing(Int_t chamber, Int_t track);
+    virtual void CreatePoints(Int_t chamber);
+    Float_t SnellAngle(Float_t iangle);
+
  private:
     Float_t fOmega;                    //Cherenkov angle 
     Float_t fTheta;                    //Incidence angle (dip angle)
