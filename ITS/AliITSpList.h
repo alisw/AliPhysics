@@ -6,8 +6,6 @@
 
 #include <TObject.h>
 
-class ostream;
-class istream;
 
 class AliITSpListItem: public TObject {
  public:
