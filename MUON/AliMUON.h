@@ -1,5 +1,5 @@
-#ifndef MUON_H
-#define MUON_H
+#ifndef ALIMUON_H
+#define ALIMUON_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -9,196 +9,81 @@
 //  Manager and hits classes for set:MUON     //
 ////////////////////////////////////////////////
 #include "AliDetector.h"
-#include "AliHit.h"
-#include "AliMUONConst.h"
-#include "AliDigit.h"
-#include "AliMUONchamber.h"
-#include "AliMUONSegRes.h"
-#include <TVector.h>
-#include <TObjArray.h>
-#include <TArrayF.h>
-#include <TFile.h>
-#include <TTree.h>
-typedef enum {simple, medium, big} Cluster_t;
+#include "AliMUONTriggerCircuit.h" // cp
 
-static const int NCH=14;
+static const int kNCH=14;
+static const int kNTrackingCh=10;
+static const int kNTriggerCh=4;
+static const int kNTriggerCircuit=234;   
 
-class AliMUONcluster;
+class AliMUONChamber;
+class AliMUONLocalTrigger;
+class AliMUONGlobalTrigger;
+class AliMUONTriggerCircuit;
+class AliMUONTriggerDecision;
+class AliMUONSegmentation;
+class AliMUONResponse;
+class AliMUONHit;
+class AliMUONPadHit;
 class AliMUONRawCluster;
 class AliMUONClusterFinder;
-class AliMUONcorrelation;
+class AliMUONReconstHit;
+class TVector;
+class TObjArray;
+class TFile;
+class TTree;
 
-
-//----------------------------------------------
-
- 
-class AliMUONcluster : public TObject {
-public:
-
-   Int_t     fHitNumber;    // Hit number
-   Int_t     fCathode;      // Cathode number
-   Int_t     fQ  ;          // Total charge      
-   Int_t     fPadX  ;       // Pad number along X
-   Int_t     fPadY  ;       // Pad number along Y
-   Int_t     fQpad  ;       // Charge per pad
-   Int_t     fRSec  ;       // R -sector of pad
- 
-public:
-   AliMUONcluster() {
-      fHitNumber=fQ=fPadX=fPadY=fQpad=fRSec=0;   
-}
-   AliMUONcluster(Int_t *clhits);
-   virtual ~AliMUONcluster() {;}
- 
-   ClassDef(AliMUONcluster,1)  //Cluster object for set:MUON
-};
-
- 
-class AliMUONreccluster : public TObject {
-public:
-
-   Int_t     fTracks[3];      //labels of overlapped tracks
-
-   Int_t       fQ  ;          // Q of cluster (in ADC counts)     
-   Float_t     fX  ;          // X of cluster
-   Float_t     fY  ;          // Y of cluster
-
-public:
-   AliMUONreccluster() {
-       fTracks[0]=fTracks[1]=fTracks[2]=-1; 
-       fQ=0; fX=fY=0; 
-   }
-   virtual ~AliMUONreccluster() {;}
- 
-   ClassDef(AliMUONreccluster,1)  //Cluster object for set:MUON
-};
-
-//_____________________________________________________________________________
-
-class AliMUONdigit : public TObject {
- public:
-    Int_t     fPadX;        // Pad number along x
-    Int_t     fPadY ;       // Pad number along y
-    Int_t     fSignal;      // Signal amplitude
-    Int_t     fTcharges[10];   // charge per track making this digit (up to 10)
-    Int_t     fTracks[10];     // primary tracks making this digit (up to 10)
-    Int_t     fPhysics;        // physics contribution to signal 
-    Int_t     fHit;            // hit number - temporary solution
-
-
- 
- public:
-    AliMUONdigit() {}
-    AliMUONdigit(Int_t *digits);
-    AliMUONdigit(Int_t *tracks, Int_t *charges, Int_t *digits);
-    virtual ~AliMUONdigit();
-    
-    ClassDef(AliMUONdigit,1)  //Digits for set:MUON
-};
-//_____________________________________________________________________________
-
-class AliMUONlist : public AliMUONdigit {
- public:
-    Int_t          fChamber;       // chamber number of pad
-    TObjArray     *fTrackList; 
- public:
-    AliMUONlist() {fTrackList=0;}
-    AliMUONlist(Int_t rpad, Int_t *digits);
-    virtual ~AliMUONlist() {delete fTrackList;}
-    TObjArray  *TrackList()   {return fTrackList;}
-    ClassDef(AliMUONlist,1)  //Digits for set:MUON
-};
-//___________________________________________
-
-
-//___________________________________________
- 
-class AliMUONhit : public AliHit {
- public:
-    Int_t     fChamber;       // Chamber number
-    Float_t   fParticle;      // Geant3 particle type
-    Float_t   fTheta ;        // Incident theta angle in degrees      
-    Float_t   fPhi   ;        // Incident phi angle in degrees
-    Float_t   fTlength;       // Track length inside the chamber
-    Float_t   fEloss;         // ionisation energy loss in gas   
-    Int_t     fPHfirst;       // first padhit
-    Int_t     fPHlast;        // last padhit
-
-// modifs perso
-    Float_t   fPTot;          // hit momentum P
-    Float_t   fCxHit;            // Px/P
-    Float_t   fCyHit;            // Py/P
-    Float_t   fCzHit;            // Pz/P
-
- public:
-    AliMUONhit() {}
-    AliMUONhit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
-    virtual ~AliMUONhit() {}
-    
-    ClassDef(AliMUONhit,1)  //Hits object for set:MUON
-};
 
 class AliMUON : public  AliDetector {
  public:
     AliMUON();
     AliMUON(const char *name, const char *title);
+    AliMUON(const AliMUON& rMUON);
     virtual       ~AliMUON();
-    virtual void   AddHit(Int_t, Int_t*, Float_t*);
-    virtual void   AddCluster(Int_t*);
-    virtual void   AddDigits(Int_t, Int_t*, Int_t*, Int_t*);
-    virtual void   AddRawCluster(Int_t, const AliMUONRawCluster&);
-    virtual void   AddCathCorrel(Int_t, Int_t*, Float_t*, Float_t*);
+    virtual void   AddHit(Int_t track , Int_t *vol, Float_t *hits);
+    virtual void   AddPadHit(Int_t* clhits);
+    virtual void   AddDigits(Int_t id, Int_t* tracks, Int_t* charges,
+			     Int_t* digits);
+    virtual void   AddRawCluster(Int_t id, const AliMUONRawCluster& clust);
     virtual void   BuildGeometry();
-    virtual void   CreateGeometry() {}
-    virtual void   CreateMaterials() {}
-    virtual void   StepManager();
+    void           AddGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
+				    Int_t *singleUndef, Int_t *pairUnlike, 
+				    Int_t *pairLike);
+    void           AddLocalTrigger(Int_t* ltrigger);
     Int_t          DistancetoPrimitive(Int_t px, Int_t py);
-    virtual Int_t  IsVersion() const =0;
-//
-    TClonesArray  *Clusters() {return fClusters;}
-    virtual  void  MakeTreeC(Option_t *option="C");
-    void           GetTreeC(Int_t);
+    virtual Int_t  IsVersion() const {return 0;}
+    TClonesArray  *PadHits() {return fPadHits;}
+    TClonesArray  *LocalTrigger() {return fLocalTrigger;}
+    TClonesArray  *GlobalTrigger() {return fGlobalTrigger;}
     virtual void   MakeBranch(Option_t *opt=" ");
     void           SetTreeAddress();
     virtual void   ResetHits();
     virtual void   ResetDigits();
+    virtual void   ResetTrigger();
     virtual void   ResetRawClusters();
-    virtual void   ResetCorrelation();
-    virtual void   FindClusters(Int_t,Int_t);
-    virtual void   Digitise(Int_t,Int_t,Option_t *opt1=" ",Option_t *opt2=" ",Text_t *name=" ");
-    virtual void   CathodeCorrelation(Int_t);
-    virtual void   SortTracks(Int_t *,Int_t *,Int_t);
-//
-// modifs perso
-
-    void     InitTracking(Double_t &, Double_t &, Double_t &);
-    void     Reconst(Int_t &,Int_t &,Int_t,Int_t &,Int_t&,Int_t&, Option_t *option,Text_t *filename);
-    void     FinishEvent();
-    void     CloseTracking();
-    void     SetCutPxz(Double_t p) {fSPxzCut=p;}
-    void     SetSigmaCut(Double_t p) {fSSigmaCut=p;}
-    void     SetXPrec(Double_t p) {fSXPrec=p;}
-    void     SetYPrec(Double_t p) {fSYPrec=p;}
-    Double_t GetCutPxz() {return fSPxzCut;}
-    Double_t GetSigmaCut() {return fSSigmaCut;}
-    Double_t GetXPrec() {return fSXPrec;}
-    Double_t GetYPrec() {return fSYPrec;}
-// fin modifs perso 
-    
+    // Cluster Finding
+    virtual void   FindClusters(Int_t event ,Int_t lastEntry);
+    // Digitisation 
+    virtual void   Digitise(Int_t nev,Int_t bgrEvent, Option_t *opt1=" ",
+    			    Option_t *opt2=" ",Text_t *name=" ");
+    virtual void   SortTracks(Int_t *tracks,Int_t *charges, Int_t ntr);
 // Configuration Methods (per station id)
 //
 // Set Chamber Segmentation Parameters
-// id refers to the station and isec to the cathode plane   
-    virtual void   SetPADSIZ(Int_t id, Int_t isec, Float_t p1, Float_t p2);
-
+// id refers to the station and isec to the cathode plane
+// Set Z values for all chambers
+    virtual void SetChambersZ(const Float_t *Z);
+    virtual void SetChambersZToDefault(void);
+    virtual void SetPadSize(Int_t id, Int_t isec, Float_t p1, Float_t p2);
 // Set Signal Generation Parameters
     virtual void   SetSigmaIntegration(Int_t id, Float_t p1);
     virtual void   SetChargeSlope(Int_t id, Float_t p1);
     virtual void   SetChargeSpread(Int_t id, Float_t p1, Float_t p2);
     virtual void   SetMaxAdc(Int_t id, Float_t p1);
 // Set Segmentation and Response Model
-    virtual void   SetSegmentationModel(Int_t id, Int_t isec, AliMUONsegmentation *segmentation);
-    virtual void   SetResponseModel(Int_t id, AliMUONresponse *response);
+    virtual void   SetSegmentationModel(Int_t id, Int_t isec,
+					AliMUONSegmentation *segmentation);
+    virtual void   SetResponseModel(Int_t id, AliMUONResponse *response);
     virtual void   SetNsec(Int_t id, Int_t nsec);
 // Set Reconstruction Model
     virtual void   SetReconstructionModel(Int_t id, AliMUONClusterFinder *reconstruction);
@@ -209,46 +94,49 @@ class AliMUON : public  AliDetector {
     virtual void   SetMaxDestepAlu(Float_t p1);
     virtual void   SetMuonAcc(Bool_t acc=0, Float_t angmin=2, Float_t angmax=9);
 // Response Simulation
-    virtual void   MakePadHits(Float_t xhit,Float_t yhit,Float_t eloss,Int_t id);
+    virtual void   MakePadHits(Float_t xhit,Float_t yhit,
+			       Float_t eloss, Float_t tof, Int_t id);
+// get Trigger answer
+    void   Trigger(Int_t nev);
 // Return reference to Chamber #id
-    virtual AliMUONchamber& Chamber(Int_t id) {return *((AliMUONchamber *) (*fChambers)[id]);}
+    virtual AliMUONChamber& Chamber(Int_t id)
+	{return *((AliMUONChamber *) (*fChambers)[id]);}
+// Return reference to Circuit #id
+    virtual AliMUONTriggerCircuit& TriggerCircuit(Int_t id)
+      {return *((AliMUONTriggerCircuit *) (*fTriggerCircuits)[id]);}
 // Retrieve pad hits for a given Hit
-    virtual AliMUONcluster* FirstPad(AliMUONhit *, TClonesArray *);
-    virtual AliMUONcluster* NextPad(TClonesArray *);
-// Return pointers to digits 
+    virtual AliMUONPadHit* FirstPad(AliMUONHit *hit, TClonesArray *padHits);
+    virtual AliMUONPadHit* NextPad(TClonesArray *padHits);
+// Return pointers to digits
     TObjArray            *Dchambers() {return fDchambers;}
     Int_t                *Ndch() {return fNdch;}
-    virtual TClonesArray *DigitsAddress(Int_t id) {return ((TClonesArray *) (*fDchambers)[id]);}
+    virtual TClonesArray *DigitsAddress(Int_t id)
+	{return ((TClonesArray *) (*fDchambers)[id]);}
 // Return pointers to reconstructed clusters
     TObjArray            *RawClusters() {return fRawClusters;}
-    Int_t                *Nrawch() {return fNrawch;}
-    virtual TClonesArray *RawClustAddress(Int_t id) {return ((TClonesArray *) (*fRawClusters)[id]);}
+    Int_t                *Nrawch() {return fNrawch;} 
+    virtual TClonesArray *RawClustAddress(Int_t id) 
+	{return ((TClonesArray *) (*fRawClusters)[id]);}
 
-// modifs perso
-    AliMUONRawCluster *RawCluster(Int_t ichamber, Int_t icathod, Int_t icluster);
+    AliMUONRawCluster    *RawCluster(Int_t ichamber, Int_t icathod,
+				     Int_t icluster);
+// Copy Operator
+    AliMUON& operator = (const AliMUON& rhs);
     
-    
-    // Return pointers to list of correlated clusters
-    TObjArray            *CathCorrel() {return fCathCorrel;}
-    Int_t                *Ncorch() {return fNcorch;}
-    virtual TClonesArray *CathCorrelAddress(Int_t id)
-	{return ((TClonesArray *) (*fCathCorrel)[id]);}
-
-// Return pointer to TreeC
-    TTree      *TreeC() {return fTreeC;} 
+	    
  protected:
     TObjArray            *fChambers;           // List of Tracking Chambers
-    Int_t                fNclusters;           // Number of clusters
-    TClonesArray         *fClusters;           // List of clusters
+    TObjArray            *fTriggerCircuits;   // List of Trigger Circuits
+    Int_t                 fNPadHits;           // Number of pad hits
+    TClonesArray         *fPadHits;            // List of pad hits
     TObjArray            *fDchambers;          // List of digits
     Int_t                *fNdch;               // Number of digits
-
-
-    TObjArray            *fRawClusters;            // List of raw clusters
-    Int_t                *fNrawch;                 // Number of raw clusters
-    TObjArray            *fCathCorrel;             // List of correlated clusters
-    Int_t                *fNcorch;                 // Number of correl clusters
-    TTree                *fTreeC;                  // Cathode correl index tree
+    TObjArray            *fRawClusters;        // List of raw clusters
+    Int_t                *fNrawch;             // Number of raw clusters
+    Int_t                 fNLocalTrigger;      // Number of Local Trigger 
+    TClonesArray         *fLocalTrigger;       // List of Local Trigger      
+    Int_t                 fNGlobalTrigger;     // Number of Global Trigger
+    TClonesArray         *fGlobalTrigger;      // List of Global Trigger  
 
 //
     Bool_t   fAccCut;          //Transport acceptance cut
@@ -261,84 +149,20 @@ class AliMUON : public  AliDetector {
    Float_t fMaxStepAlu;      // Maximum step size inside the chamber aluminum
    Float_t fMaxDestepGas;    // Maximum relative energy loss in gas
    Float_t fMaxDestepAlu;    // Maximum relative energy loss in aluminum
-//
-// modifs perso
-//  Parameters for reconstruction program
-   Double_t fSPxzCut;        // Pxz cut  (GeV/c) to begin the track finding
-   Double_t fSSigmaCut;      // Number of sig. delimiting the searching areas
-   Double_t fSXPrec;         // Chamber precision in X (cm) 
-   Double_t fSYPrec;         // Chamber precision in Y (cm)
 
-   Text_t *fFileName;
-   
- protected:
+
+
+// Pad Iterator
+   Int_t fMaxIterPad;        // Maximum pad index
+   Int_t fCurIterPad;        // Current pad index
+// Background eent for event mixing
+   Text_t *fFileName;           // File with background hits
+   TTree *fTrH1;                 // Hits Tree for background event
+   TClonesArray *fHits2;        // List of hits for one track only
+   TClonesArray *fPadHits2;     // List of clusters for one track only
 
    ClassDef(AliMUON,1)  //Hits manager for set:MUON
 };
-//___________________________________________
-
-class AliMUONRawCluster : public TObject {
-public:
-
-   Int_t     fTracks[3];      //labels of overlapped tracks
-   Int_t       fQ  ;          // Q of cluster (in ADC counts)     
-   Float_t     fX  ;          // X of cluster
-   Float_t     fY  ;          // Y of cluster
-   Int_t       fPeakSignal;
-   Int_t       fIndexMap[50];  //indeces of digits
-   Int_t       fOffsetMap[50]; //Emmanuel special
-   Float_t     fContMap[50];   //Contribution from digit
-   Int_t       fPhysicsMap[50];
-   Int_t       fMultiplicity;  //cluster multiplicity
-   Int_t       fNcluster[2];
-   Int_t       fClusterType;   
- public:
-   AliMUONRawCluster() {
-       fTracks[0]=fTracks[1]=fTracks[2]=-1; 
-       fQ=0; fX=fY=0; fMultiplicity=0;
-       for (int k=0;k<50;k++) {
-           fIndexMap[k]=-1;
-           fOffsetMap[k]=0;
-	   fContMap[k]=0;
-	   fPhysicsMap[k]=-1;
-       }
-       fNcluster[0]=fNcluster[1]=-1;
-   }
-   virtual ~AliMUONRawCluster() {}
-
-   Float_t GetRadius() {return TMath::Sqrt(fX*fX+fY*fY);}
-
-   Bool_t IsSortable() const {return kTRUE;}
-   Int_t  Compare(TObject *obj);
-   Int_t PhysicsContribution();
-   static Int_t BinarySearch(Float_t r, TArrayF, Int_t from, Int_t upto);
-   static void  SortMin(Int_t *,Float_t *,Float_t *,Float_t *,Float_t *,Int_t);
- 
-   ClassDef(AliMUONRawCluster,1)  //Cluster object for set:MUON
-};
-
-//___________________________________________
-class AliMUONcorrelation : public TObject {
-public:
-
-  // correlation starts from the 1-st cathode  
-  // last number in arrays corresponds to cluster on 1-st cathode
-
-   Int_t       fCorrelIndex[4];  // entry number in TreeR for the associated 
-                                 // cluster candidates on the 2-nd cathode
-   Float_t     fX[4]  ;          // X of clusters on the 2-nd cathode  
-   Float_t     fY[4]  ;          // Y of clusters
-
-public:
-   AliMUONcorrelation() {
-       fCorrelIndex[0]=fCorrelIndex[1]=fCorrelIndex[2]=fCorrelIndex[3]=0;
-       fX[0]=fX[1]=fX[2]=fX[3]=0; fY[0]=fY[1]=fY[2]=fY[3]=0; 
-   }
-   AliMUONcorrelation(Int_t *idx, Float_t *x, Float_t *y);
-   virtual ~AliMUONcorrelation() {}
-   ClassDef(AliMUONcorrelation,1)  //Cathode correlation object for set:MUON
-};
-
 #endif
 
 

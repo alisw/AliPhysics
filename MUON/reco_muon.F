@@ -85,6 +85,10 @@
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
 
       COMMON/DEBEVT/IDEBUG
+      common/dstation/idstation
+
+*      idsation = 8
+      idstation = 20
 
       IDEBUG=IDEBUGC
 
@@ -112,36 +116,23 @@
       PARAMETER(NBSTATION=5)
 * --
       COMMON/ZDEFIN/ZPLANE(NBSTATION),ZCOIL,ZMAGEND,DZ_PL(NBSTATION)
-
-      DATA DZ_PL/8.,8.,24.3,8.,8./     
       
-**      DATA DZ_PL/8.,8.,8.,8.,8./     
-*      DATA DZ_PL/20.,20.,20.,20.,20./     
-*      DATA DZ_PL/20.,20.,24.3,20.,20./  
-*      DATA DZ_PL/20.,40.,40.,40.,40./   
-*      DATA DZ_PL/20.,50.,50.,50.,50./  
-*      DATA DZ_PL/20.,55.,55.,55.,55./  
-*      DATA DZ_PL/20.,60.,60.,60.,60./ 
-*      DATA DZ_PL/20.,80.,80.,80.,80./ 
-*      DATA DZ_PL/20.,100.,100.,100.,100./ 
+* ZPLANE = position de la premiere chambre de chaque station
+* exemple (pour la premiere station) : 
+*           zch (dans AliMUONv0) = 540 (position du centre des 2 chambres) 
+*           implique :
+*           ZPLANE = -530 si DZ_PL = 20cm
 
-      DATA ZPLANE/-511.,-686.0,-962.7,-1245.,-1445./ ! dstation=8cm
+*     dstation = 8cm :
+*         DATA DZ_PL/8.,8.,8.,8.,8./   
+*         DATA ZPLANE/-511.,-686.0,-971.,-1245.,-1445./ 
 
-*      DATA ZPLANE/-507.5,-682.5,-967.5,-1241.5,-1441.5/ ! dstation=20cm CCC
-*      DATA ZPLANE/-505.,-680.,-965.,-1239.,-1439./ ! dstation=20cm
-**      DATA ZPLANE/-511.,-686.0,-971.,-1245.,-1445./ ! dstation=8cm
-*      DATA ZPLANE/-511.,-686.0,-962.7,-1245.,-1445./ ! dstation=8cm
-*      DATA ZPLANE/-505.,-680.,-962.7,-1239.,-1439./   ! dstation=20cm
-*      DATA ZPLANE/-505.,-670.,-954.,-1229.,-1429./ ! dstation=40cm
-*      DATA ZPLANE/-505.,-665.,-949.,-1224.,-1424./ ! dstation=50cm
-*      DATA ZPLANE/-505.,-663.,-947.,-1222.,-1422./ ! dstation=50cm
-*      DATA ZPLANE/-505.,-660.,-944.,-1219.,-1419./ ! dstation=60cm
-*      DATA ZPLANE/-505.,-650.,-935.,-1209.,-1409./ ! dstation=80cm
-*      DATA ZPLANE/-505.,-640.,-925.,-1199.,-1399./ ! dstation=100cm
+*     dstation=20cm :
+         DATA DZ_PL/20.,20.,20.,20.,20./     
+         DATA ZPLANE/-518.,-680.,-965.,-1239.,-1439./ 
+*      end if
 
-**      DATA ZPLANE/-507.,-682.0,-950.7,-1241.,-1441./
-
-**      DATA ZCOIL,ZMAGEND/-825.0,-1125./  ! Constant field 3 Tm
+*      DATA ZCOIL,ZMAGEND/-825.0,-1125./  ! Constant field 3 Tm
       DATA ZCOIL,ZMAGEND/-805.0,-1233./ ! CCC magn. field map M.B 
 **      DATA ZCOIL,ZMAGEND/-795.1,-1242.9/ ! CCC magn. field map M.B 
 
@@ -167,8 +158,7 @@
       COMMON/TRACKFI/EFF,EFF1,EFF2,XPREC,YPREC,PHIPREC,ALAMPREC,
      &                 HCUT,LBKG,SIGCUT,ALPHATOP,HTOP
 
-**      SIGCUT = SSIGCUT
-      SIGCUT=5.  ! CCC
+      SIGCUT = SSIGCUT
 
       END
 
@@ -180,8 +170,7 @@
       COMMON/TRACKFI/EFF,EFF1,EFF2,XPREC,YPREC,PHIPREC,ALAMPREC,
      &                 HCUT,LBKG,SIGCUT,ALPHATOP,HTOP
 
-**      XPREC = SXPREC
-      XPREC = 0.01 ! CCC
+      XPREC = SXPREC
  
       END
 
@@ -194,7 +183,6 @@
      &                 HCUT,LBKG,SIGCUT,ALPHATOP,HTOP
 
       YPREC = SYPREC
-**      YPREC = 0.2 ! CCC
 
       END
 
@@ -309,7 +297,7 @@
       DATA B0,BL3/7.,2.0/ ! Magnetic field in the dipole & L3 in kgauss
       DATA ZMAGS/805.0D0/,ZMAGE/1233.0D0/,ZABS/503.D0/ ! CCC not used when
                                                        ! magn. field map 
-**      DATA ZMAGS/825.0D0/,ZMAGE/1125.0D0/,ZABS/503.D0/
+*      DATA ZMAGS/825.0D0/,ZMAGE/1125.0D0/,ZABS/503.D0/
       DATA XMAG/190.0D0/
 
 **      DATA XPREC/0.0100D0/,YPREC/0.144337D0/ ! CCC
@@ -324,6 +312,10 @@
          J = J+1
          ZPLANEP(J) = -ZPLANE(I)+DZ_PL(I)  
       ENDDO 
+
+      do i=1,10
+         print*,'zplanep(',i,')=',ZPLANEP(I)
+      end do
 
       PCUT = 3.        ! Coupure en PXZ muon (GeV/c)
       PTCUT = 0.       ! Coupure en Pt muon (GeV/c)
@@ -419,7 +411,7 @@
          CALL TRACKF_READ_GEANT(ITYPG,XTRG,YTRG,PTOTG,IDG,IZCH,PVERT1G,
      &        PVERT2G,PVERT3G,ZVERTG,NHITTOT1,CX,CY,CZ,IEVR,NEV,
      &        XGEANT,YGEANT,CLSIZE1,CLSIZE2)
-      ELSE
+      ELSE ! reconstructed hits
          CALL TRACKF_READ_SPOINT(ITYPG,XTRG,YTRG,PTOTG,IDG,IZCH,PVERT1G,
      &        PVERT2G,PVERT3G,ZVERTG,NHITTOT1,CX,CY,CZ,IEVR,NEV,
      &        XGEANT,YGEANT,CLSIZE1,CLSIZE2)
@@ -439,12 +431,6 @@
          call chfill(108,sngl(zvertg(i)),R1,R2)
          call chfill(109,sngl(ytrg(i)),R1,R2)
          call chfill(110,sngl(xtrg(i)),R1,R2)
-         dx=xgeant(i)-xtrg(i)
-         dy=ygeant(i)-ytrg(i)
-         call chfill(111,sngl(dy),R1,R2)
-         call chfill(112,sngl(dx),R1,R2)
-         call chfill(119+int(zch(i)),sngl(dy),R1,R2)
-         call chfill(129+int(zch(i)),sngl(dx),R1,R2)
       enddo
 
       do i=1,NHITTOT1
@@ -475,8 +461,8 @@
 *
 * HITS GEANT initiaux par chambre
       COMMON/RHITG/ITYPG(MAXIDG),XTRG(MAXIDG),YTRG(MAXIDG),
-     &     PTOTG(MAXIDG),IDG(MAXIDG),IZCH(MAXIDG),
-     &     PVERT1G(MAXIDG),PVERT2G(MAXIDG),PVERT3G(MAXIDG),
+     &             PTOTG(MAXIDG),IDG(MAXIDG),IZCH(MAXIDG),
+     &             PVERT1G(MAXIDG),PVERT2G(MAXIDG),PVERT3G(MAXIDG),
      &     ZVERTG(MAXIDG),NHITTOT1,CX(MAXIDG),CY(MAXIDG),CZ(MAXIDG),
      &     XGEANT(MAXIDG),YGEANT(MAXIDG),CLSIZE1(MAXIDG),CLSIZE2(MAXIDG)
 
@@ -494,6 +480,7 @@
      &             XMR(NBSTATION,MAXHITCH,2),YMR(NBSTATION,MAXHITCH,2) 
 *
       COMMON/DEBEVT/IDEBUG
+      common/dstation/idstation
 *
       DIMENSION RMIN(NBCHAMBER),RMAX1(NBCHAMBER)
       DIMENSION XMA(NBCHAMBER,MAXHITCH),YMA(NBCHAMBER,MAXHITCH),
@@ -509,16 +496,18 @@
 * Chambre 10 deg.      
       DATA RMAX1/91.5,91.5,122.5,122.5,158.3,158.3,260.,260.,260.,260./
 * Zone de recherche entre deux plans d'une station 
-**      DATA DXMAX/2.,1.5,2.5,3.,3./
-      DATA DXMAX/1.5,1.5,3.,6.,6./  ! J psi 20cm
-**      DATA DXMAX/1.,1.,1.,1.,1./  ! Upsilon dz_ch = 8 cm
-**      DATA DYMAX/0.22,0.22,0.21,0.21,0.21/  ! CCC Upsilon dz_ch = 8cm
-**      DATA DXMAX/1.,1.,1.5,2.,2./  ! Upsilon dz_ch = 20 cm
-      DATA DYMAX/0.22,0.22,0.22,0.22,0.22/  ! CCC Upsilon dz_ch = 20 cm
-**      DATA DXMAX/5.,5.,5.,5.,5./ 
-**      DATA DXMAX/10.,10.,10.,10.,10./ 
-      DATA R1,R2/0.,1./
 
+*      if (idstation.eq.8) then
+*         DATA DXMAX/1.,1.,1.2,2.4,2.4/ ! dz_ch = 8 cm
+*      else if (idstation.eq.20) then
+         DATA DXMAX/1.5,1.5,3.,6.,6./ ! dz_ch = 20cm
+*      end if
+
+      DATA DYMAX/0.22,0.22,0.22,0.22,0.22/  ! CCC Upsilon dz_ch = 20 cm
+
+      DATA R1,R2/0.,1./
+       
+       
       ICH = 0
       DO IZ=1,5
          ICH = ICH+1
@@ -529,14 +518,13 @@
          IF (IZ.GT.2) RMIN(ICH) = 30.
       ENDDO   
 
-*    Initialisations 
+*  Initialisations 
       DO ICH = 1,10
          NHIT(ICH) = 0
       ENDDO
          
-* 1 ere boucle Lecture des hits initiaux 
+*  1 ere boucle de lecture des hits initiaux 
 
-      print*,'TRACKF_STAT NHITTOT1=',NHITTOT1
       
       IF (IREADGEANT.EQ.1) THEN
          DO I = 1,2
@@ -547,6 +535,12 @@
          IMU = 0 
          DO I = 1,NHITTOT1
             ICH = IZCH(I)
+            IZ = INT(FLOAT(ICH+1)/2.)
+            IMOD = MOD(ICH,2)
+
+            IF (IMOD.NE.0.AND.IZ.LE.5) THEN
+               CALL CHFILL2(1000+IZ,SNGL(XGEANT(I)),SNGL(YGEANT(I)),R2)
+            ENDIF   
             IF (ICH.EQ.9) THEN
                ISTAK = IDG(I)
                ISTAK = MOD(ISTAK,30000)
@@ -569,6 +563,8 @@
 
          ICH = IZCH(I)
          
+         IF (ICH.GT.10) GO TO 1
+         
          IF (IREADGEANT.EQ.1) THEN ! GEANT hits
 
             IF (ICH.EQ.9.OR.ICH.EQ.10) THEN
@@ -578,17 +574,40 @@
      &                 (YGEANT(I)-VRES(2,IM))**2)
                   IF (DNU.LT.DNUM) DNUM = DNU
                ENDDO
-               IF (DNUM.GT.20.) GO TO 1 
+               IF (DNUM.GT.50.) GO TO 1 ! discard hits far from MUONS
             ENDIF
 
-            CALL RANNOR(RN1,RN2)          ! CCCC
-            X = XGEANT(I) + RN1 * XPREC
-            Y = YGEANT(I) + RN2 * YPREC
+            CALL RANNOR(RN1,RN2)          ! CCC
+            X = XGEANT(I)
+            Y = YGEANT(I)
+*            X = XGEANT(I) + RN1 * XPREC
+*            Y = YGEANT(I) + RN2 * YPREC
 *     efficacite des chambres        
             IEFFI(I) = 1
             RN = RNDM()              
             IF (RN.GT.EFF) IEFFI(I) = 0
+**            IF (ICH.EQ.9.OR.ICH.EQ.10) THEN 
+**               PRINT *,' HIT GEANT',' ICH=',ICH,' I=',I,' X =',X,' Y=',
+**     &              Y,' IDG=',IDG(I)
+**            ENDIF   
 
+            IF (ITYPG(I).EQ.5.OR.ITYPG(I).EQ.6) THEN
+               ISTAK = IDG(I)
+               ISTAK = MOD(ISTAK,30000)
+               ISTAK = MOD(ISTAK,10000)
+
+               IF (ISTAK.EQ.IDRES) then
+                  dx=xgeant(i)-x
+                  dy=ygeant(i)-y
+                  IZ = INT(FLOAT(IZCH(i)+1)/2.)
+                  ichx=110+IZ
+                  ichy=120+IZ
+                  call chfill(ichx,sngl(dy),R1,R2)
+                  call chfill(ichy,sngl(dx),R1,R2)
+                  if (iz.eq.1) call chfill(116,sngl(dy),R1,R2)	
+                  if (iz.eq.2) call chfill(117,sngl(dy),R1,R2)	
+               end if
+            end if
 
          ELSE  ! reconstructed hits 
 
@@ -597,18 +616,40 @@
             X = XTRG(I)
             Y = YTRG(I)
 
+*     étude des hits geant avec un seul fichier
+*            CALL RANNOR(RN1,RN2)          ! CCCC
+*            X = XGEANT(I) + RN1 * XPREC
+*            Y = YGEANT(I) + RN2 * YPREC
+
+            IF (ITYPG(I).EQ.5.OR.ITYPG(I).EQ.6) THEN
+               ISTAK = IDG(I)
+               ISTAK = MOD(ISTAK,30000)
+               ISTAK = MOD(ISTAK,10000)
+
+               IF (ISTAK.EQ.IDRES) then
+                  dx=xgeant(i)-x
+                  dy=ygeant(i)-y
+                  IZ = INT(FLOAT(IZCH(i)+1)/2.)
+                  ichx=110+IZ
+                  ichy=120+IZ
+                  call chfill(ichx,sngl(dy),R1,R2)
+                  call chfill(ichy,sngl(dx),R1,R2)
+                  if (iz.eq.1) call chfill(116,sngl(dy),R1,R2)	
+                  if (iz.eq.2) call chfill(117,sngl(dy),R1,R2)	
+               end if
+            end if
+
          ENDIF
 
          R = SQRT(X**2+Y**2)
-         IF (R.LT.RMIN(ICH).OR.R.GT.RMAX1(ICH)) then
-            if (ich.le.10.and.i.le.28) then
-               print*,'* chambre ',ich,' * hit ',i
-               print*,'ityp=',itypg(i)
-               print*,'x=',X,' y=',Y
-               print*,'R=',R,' RMIN=',RMIN(ICH),' RMAX1=',RMAX1(ICH)
-           endif
-            GO TO 1   
-         end if
+**         IF (R.LT.RMIN(ICH).OR.R.GT.RMAX1(ICH)) then
+**            if (ich.le.10) then
+**               print*,'* chambre ',ich,' * hit ',i
+**               print*,'ityp=',itypg(i),' x=',X,' y=',Y
+**               print*,'R=',R,' RMIN=',RMIN(ICH),' RMAX1=',RMAX1(ICH)
+**            endif
+**            GO TO 1        ! CCC   
+**         end if
 
  	 NHIT(ICH) = NHIT(ICH)+1
 	 IH(ICH,NHIT(ICH)) = I
@@ -618,15 +659,15 @@
 
   1      CONTINUE
       ENDDO
-      
+
 * Association des hits entre chambres d'une station
       II = 0            ! nombre de hits GEANT par station
-      DO ICH1 = 1,10,2
+      DO ICH1 = 1,10,2  ! loop on chamber
          IZ = INT(FLOAT(ICH1+1)/2.)
          JHIT(IZ) = 0
          ICH2 = ICH1+1
 
-         DO I1 = 1,NHIT(ICH1)
+         DO I1 = 1,NHIT(ICH1) ! loop on hits in 1st chamber
             II = II+1
             IFIND = 0 
             I = IH(ICH1,I1)
@@ -649,7 +690,7 @@
                XEXT1 = (ZPLANE(IZ)-DZ_PL(IZ))/ZPLANE(IZ)*X1
                YEXT1 = (ZPLANE(IZ)-DZ_PL(IZ))/ZPLANE(IZ)*Y1
     
-               DO I2 = 1,NHIT(ICH2)
+               DO I2 = 1,NHIT(ICH2)  ! loop on hits in 2nd chamber
                   J = IH(ICH2,I2)
 
                   IF (IEFFI(J).EQ.1) THEN
@@ -682,13 +723,14 @@
                         YMR(IZ,JHIT(IZ),1) = Y1
                         XMR(IZ,JHIT(IZ),2) = X2
                         YMR(IZ,JHIT(IZ),2) = Y2
+                        IP(IZ,JHIT(IZ)) = II
                   
                         ISTAK = ID2
                         ISTAK = MOD(ISTAK,30000)
                         ISTAK = MOD(ISTAK,10000)
 
                         IF ((ITYPG(J).EQ.5.OR.ITYPG(J).EQ.6).AND.
-     &                       ISTAK.EQ.IDRES) THEN ! upsilon
+     &                       ISTAK.EQ.IDRES) THEN ! upsilon or J/psi
                           
                            ITYP(II) = ITYPG(J) 
                            XTR(II) = XTRG(J) 
@@ -701,14 +743,12 @@
                            ZVERT(II) = ZVERTG(J)
 
                         ENDIF   
-  
-                        IP(IZ,JHIT(IZ)) = II
 
                      ENDIF
                   ENDIF 
-               ENDDO
+               ENDDO  ! loop on hits in 2nd chamber
 
-               IF (IFIND.EQ.0) THEN
+               IF (IFIND.EQ.0) THEN ! No possible association
                   JHIT(IZ) =  JHIT(IZ)+1
                   XM(IZ,JHIT(IZ)) = X1
                   YM(IZ,JHIT(IZ)) = Y1
@@ -721,19 +761,19 @@
                   XMR(IZ,JHIT(IZ),2) = 0.
                   YMR(IZ,JHIT(IZ),2) = 0.
                ENDIF
-               CALL CHFILL2(1000+IZ,SNGL(X1),SNGL(Y1),R2)
             ENDIF
-         ENDDO
-      ENDDO  
+         ENDDO  ! end loop on hits in 1st chamber
+      ENDDO  ! end loop on chamber 
 
-* On conserve les HITS de la 2nde chambre des stations      
 
-      DO ICH = 2,10,2 
+* On conserve les HITS (x,y) de la 2nde chambre des stations      
+
+      DO ICH = 2,10,2 ! Loop on 2nd chambers
          IZ = INT(FLOAT(ICH+1)/2.)
-         DO I = 1,NHIT(ICH)
+         DO I = 1,NHIT(ICH) ! Loop on hits
             J = IH(ICH,I)
 
-            IF (IMARK(ICH,I).EQ.0) THEN
+            IF (IMARK(ICH,I).EQ.0) THEN ! hit not already associated
   
                II = II+1
             
@@ -762,23 +802,27 @@
                   YMR(IZ,JHIT(IZ),2) = YMA(ICH,I)                    
                ENDIF 
             ENDIF
-         ENDDO
-      ENDDO
+         ENDDO ! End loop on hits
+      ENDDO  ! End loop on 2nd chambers
 
 
-      NHITTOT = II
+      NHITTOT = II ! total number of hits in stations
 *      
 
       IF (IDEBUG.GE.2) THEN
          PRINT *,'TRACKF_STAT nb hits:',NHITTOT 
       ENDIF     
 
-**      DO IZ = 1,NBSTATION
+**      DO IZ = 5,5
 **         PRINT *,' IZ=',IZ,' JHIT(IZ)=',JHIT(IZ)
 **         DO J = 1,JHIT(IZ)
 **            II = IP(IZ,J)
-**            print*,'II=',II
-**           PRINT *,' ID(II)=',ID(II)
+**            PRINT *,' HIT ASS.',' IZ=',IZ,' II=',II,' X =',
+**     &           XM(IZ,J),' Y=',YM(IZ,J),' ID=',ID(II)
+**            PRINT *,' HIT ASS.',' IZ=',IZ,' II=',II,' X1 =',
+**     &           XMR(IZ,J,1),' Y1=',YMR(IZ,J,1),' ID=',ID(II)
+**            PRINT *,' HIT ASS.',' IZ=',IZ,' II=',II,' X2 =',
+**     &           XMR(IZ,J,2),' Y2=',YMR(IZ,J,2),' ID=',ID(II)
 **         ENDDO
 **      ENDDO 
 
@@ -810,8 +854,8 @@
 *
 * HITS GEANT initiaux par chambre
       COMMON/RHITG/ITYPG(MAXIDG),XTRG(MAXIDG),YTRG(MAXIDG),
-     &     PTOTG(MAXIDG),IDG(MAXIDG),IZCH(MAXIDG),
-     &     PVERT1G(MAXIDG),PVERT2G(MAXIDG),PVERT3G(MAXIDG),
+     &             PTOTG(MAXIDG),IDG(MAXIDG),IZCH(MAXIDG),
+     &             PVERT1G(MAXIDG),PVERT2G(MAXIDG),PVERT3G(MAXIDG),
      &     ZVERTG(MAXIDG),NHITTOT1,CX(MAXIDG),CY(MAXIDG),CZ(MAXIDG),
      &     XGEANT(MAXIDG),YGEANT(MAXIDG),CLSIZE1(MAXIDG),CLSIZE2(MAXIDG)
 
@@ -841,7 +885,7 @@
   
       DIMENSION DIST(2),NMUON(2),NHITMUON(2,5),NMUONGOOD(2)
 
-*      REAL*4 RNDM,RN,RN1,RN2,R1,R2
+      REAL*4 RNDM,RN,RN1,RN2,R1,R2
 
 * Chambre 10 deg.      
       DATA RMAX1/91.5,91.5,122.5,122.5,158.3,158.3,260.,260.,260.,260./
@@ -1193,25 +1237,30 @@
      &                 HCUT,LBKG,SIGCUT,ALPHATOP,HTOP
 *
       COMMON/DEBEVT/IDEBUG
+      common/dstation/idstation
 
-      DIMENSION PEST(5),PSTEP(5),NERR(NBSTATION)
+      DIMENSION PEST(5),PSTEP(5),NERR(NBSTATION),IFIND2(10),NMU45(2)
+      DIMENSION NMU345(2),NMUONF(2)
 *
       REAL*4 R2
       DATA R2/1./
 
 ** GEANT informations   
       DO I = 1,MAXTRK
-         IT_LIST(I)= 0
+         IT_LIST(I)= 0  ! ID of the GEANT tracks
       ENDDO
       DO I = 1,MAXHITTOT
-         ITRACK(I) = 0
+         ITRACK(I) = 0  ! Track number associated to hit number I
       ENDDO
+
       NTRTOT = 0
 *  BOUCLE SUR LES HITS
-      
       DO IH = 1,NHITTOT
          DO IT = 1,NTRTOT            
-            IF (ID(IH).EQ.IT_LIST(IT))  GOTO 4
+            IF (ID(IH).EQ.IT_LIST(IT))  THEN
+               IT1 = IT
+               GOTO 4
+            ENDIF   
          ENDDO
          NTRTOT = NTRTOT +1     ! NB de trace GEANT
          IT_LIST(NTRTOT) = ID(IH) ! ID DE LA TRACE NTRTOT
@@ -1219,27 +1268,23 @@
          DO II=1,NBSTATION
             ITTROUGH(NTRTOT,II) = 0
          ENDDO
-         IT = NTRTOT
- 4       IT_NP(IT) = IT_NP(IT)+1
-         ITTROUGH(IT,IZST(IH))=IH ! =IH si la trace IT touche le plan IZST
-         ITRACK(IH) = IT
+         IT1 = NTRTOT
+ 4       IT_NP(IT1) = IT_NP(IT1)+1 ! Number of crossed stations per track
+         ITTROUGH(IT1,IZST(IH))=IH ! =IH si la trace IT touche le plan IZST
+         ITRACK(IH) = IT1
       ENDDO
       IF (IDEBUG.GE.2) THEN
          PRINT *,'RECO_TRACKF nb total de trace GEANT:',NTRTOT
       ENDIF 
+
       NTRPART=0
       NTRMU = 0
       
       DO IT = 1,NTRTOT
-*     print*,'(ITTROUGH(IT,1)=',ITTROUGH(IT,1)
-*     print*,'(ITTROUGH(IT,2)=',ITTROUGH(IT,2)
-*     print*,'(ITTROUGH(IT,3)=',ITTROUGH(IT,3)
-*     print*,'(ITTROUGH(IT,4)=',ITTROUGH(IT,4)
-*     print*,'(ITTROUGH(IT,5)=',ITTROUGH(IT,5)
          ITCHECK(IT) = 0
          IF ((ITTROUGH(IT,1)*ITTROUGH(IT,2)*ITTROUGH(IT,3)*
      &        ITTROUGH(IT,4)*ITTROUGH(IT,5)).NE.0)
-     &        THEN
+     &        THEN  ! track crossing all stations
             NTRPART=NTRPART+1
             IH = ITTROUGH(IT,NBSTATION)
             IF (ITYP(IH).EQ.5.OR.ITYP(IH).EQ.6) THEN
@@ -1251,10 +1296,7 @@
                thet=datan2(pt,pvert3(ih))*180/3.1416
                pp=sqrt(pt**2+pvert3(ih)**2)
                
-*     print*,'istak=',istak
-               
                IF (ISTAK.EQ.IDRES) THEN ! psi or upsilon
-                  print*,'resonance'
                   NTRMU = NTRMU+1
                   NTRMUALL = NTRMUALL+1
                   ITCHECK(IT) = 1
@@ -1277,7 +1319,6 @@
       NCAN = 0 
 
 *  Recherche 5 -> 4
-
       CALL ORDONNE_HIT(5,HCUT)
 
       DO IH = 1,INDEXMAX
@@ -1288,27 +1329,11 @@
          X2 = XM(5,JJ)-(ZPLANE(5)-ZPLANE(4)+DZ_PL(4))*TAN(PHM(5,JJ))
          Y2 = YM(5,JJ)+(ZPLANE(5)-ZPLANE(4)+DZ_PL(4))*TAN(ALM(5,JJ))
      &                                            /COS(PHM(5,JJ))
+
 *  Domaine de recherche dans la st. 4
          HCONST = 0.0136*SQRT(0.06)/HTOP  ! -> X/X0=0.03 % / chamber
          EPH2 = 2.0*PHIPREC**2  + (HCONST*HHIT(JJ))**2  
          EAL2 = 2.0*ALAMPREC**2 + (HCONST*HHIT(JJ))**2
-** 29.07
-         EXM2 = 2.0*(XPREC/SQRT(2.))**2    
-     &          + (ZPLANE(5)-ZPLANE(4))**2/2.*EPH2
-         EYM2 = 2.0*YPREC**2    + (ZPLANE(5)-ZPLANE(4))**2/2.*EAL2
-         P1 = PTOT(IP(5,JJ))
-         CALL CHFILL2(2500,SNGL(P1),SNGL(HHIT(JJ)),1.)
-         CALL CHFILL2(2501,SNGL(P1),SNGL(HHIT(JJ)**2),1.)
-         CALL CHFILL2(2502,SNGL(P1),SNGL(EPH2),1.)
-         CALL CHFILL2(2503,SNGL(P1),SNGL(EAL2),1.)
-         CALL CHFILL2(2504,SNGL(P1),SNGL(EXM2),1.)
-         CALL CHFILL2(2505,SNGL(P1),SNGL(EYM2),1.)
-
-         CALL CHFILL2(2507,SNGL(P1),SNGL(SQRT(EPH2)),1.)
-         CALL CHFILL2(2508,SNGL(P1),SNGL(SQRT(EAL2)),1.)
-         CALL CHFILL2(2509,SNGL(P1),SNGL(SQRT(EXM2)),1.)
-         CALL CHFILL2(2510,SNGL(P1),SNGL(SQRT(EYM2)),1.)
-** end 29.07
          EXM12 = (PHIPREC**2+(HCONST*HHIT(JJ))**2)*
      &        (ZPLANE(5)-ZPLANE(4))**2 + XPREC**2
          EYM12 = (ALAMPREC**2+(HCONST*HHIT(JJ))**2)*
@@ -1324,14 +1349,7 @@
          EY1 = SIGCUT*SQRT(EYM12)
          EX2 = SIGCUT*SQRT(EXM22)
          EY2 = SIGCUT*SQRT(EYM22)
-** 29.07
-         EXM = SIGCUT*SQRT(EXM2)
-         EYM = SIGCUT*SQRT(EYM2)
-         CALL CHFILL2(2511,SNGL(P1),SNGL(EPH),1.)
-         CALL CHFILL2(2512,SNGL(P1),SNGL(EAL),1.)
-         CALL CHFILL2(2513,SNGL(P1),SNGL(EXM),1.)
-         CALL CHFILL2(2514,SNGL(P1),SNGL(EYM),1.)
-** end 29.07        
+         
 **         P2 = (HTOP/HHIT(JJ))**2
 
 **         EPH=SIGCUT*SQRT(9.14D-7+1.2D-3/P2)
@@ -1344,18 +1362,20 @@
 * renvoie le num de hit de 4 le plus pres dans le domaine de recherche
 
          CALL DISTMIN4(X1,Y1,PHM(5,JJ),ALM(5,JJ),4,EX1,EY1,EPH,EAL,
-     &        IFIND)
+     &        IFIND,IFIND2)
          P1 = PTOT(IP(5,JJ))
          CALL CHECK_HISTO4(11,4,IFIND,5,JJ,X1,Y1,PHM(5,JJ),ALM(5,JJ),P1,
      &                     EX1,EY1,EPH,EAL)   
          IF (IFIND.GT.0) THEN 
-            CALL STOCK_CANDIDAT(5,JJ,4,IFIND,EX1,EY1,EPH,EAL,NCAN,1)
+            CALL STOCK_CANDIDAT(5,JJ,4,IFIND,IFIND2,EX1,EY1,EPH,EAL,
+     &           NCAN,1)
          ELSE
-            CALL DISTMIN2(X1,Y1,X2,Y2,4,EX1,EY1,EX2,EY2,IFIND)
+            CALL DISTMIN2(X1,Y1,X2,Y2,4,EX1,EY1,EX2,EY2,IFIND,IFIND2)
             CALL CHECK_HISTO2(0,4,IFIND,5,JJ,X1,Y1,X2,Y2,P1,EX1,EY1,
      &           EX2,EY2)   
             IF (IFIND.GT.0) THEN
-               CALL STOCK_CANDIDAT(5,JJ,4,IFIND,EX1,EY1,EPH,EAL,NCAN,2)
+               CALL STOCK_CANDIDAT(5,JJ,4,IFIND,IFIND2,EX1,EY1,EPH,EAL,
+     &              NCAN,2)
             ENDIF 
          ENDIF   
       ENDDO
@@ -1385,24 +1405,6 @@
 **     &        *EAL2
          EPH2 = 2.0*PHIPREC**2  + (HCONST*HHIT(JJ))**2  
          EAL2 = 2.0*ALAMPREC**2 + (HCONST*HHIT(JJ))**2
-** 29.07
-         EXM2 = 2.0*(XPREC/SQRT(2.))**2    
-     &          + (ZPLANE(5)-ZPLANE(4))**2/2.*EPH2
-         EYM2 = 2.0*YPREC**2    + (ZPLANE(5)-ZPLANE(4))**2/2.*EAL2
-         P1 = PTOT(IP(4,JJ))
-         CALL CHFILL2(2400,SNGL(P1),SNGL(HHIT(JJ)),1.)
-         CALL CHFILL2(2401,SNGL(P1),SNGL(HHIT(JJ)**2),1.)
-         CALL CHFILL2(2402,SNGL(P1),SNGL(EPH2),1.)
-         CALL CHFILL2(2403,SNGL(P1),SNGL(EAL2),1.)
-         CALL CHFILL2(2404,SNGL(P1),SNGL(EXM2),1.)
-         CALL CHFILL2(2405,SNGL(P1),SNGL(EYM2),1.)
-
-         CALL CHFILL2(2407,SNGL(P1),SNGL(SQRT(EPH2)),1.)
-         CALL CHFILL2(2408,SNGL(P1),SNGL(SQRT(EAL2)),1.)
-         CALL CHFILL2(2409,SNGL(P1),SNGL(SQRT(EXM2)),1.)
-         CALL CHFILL2(2410,SNGL(P1),SNGL(SQRT(EYM2)),1.)
-** end 29.07
-
          EXM12 = (PHIPREC**2+(HCONST*HHIT(JJ))**2)*
      &        (ZPLANE(5)-ZPLANE(4))**2 + XPREC**2
          EYM12 = (ALAMPREC**2+(HCONST*HHIT(JJ))**2)*
@@ -1418,14 +1420,7 @@
          EY1 = SIGCUT*SQRT(EYM12)
          EX2 = SIGCUT*SQRT(EXM22)
          EY2 = SIGCUT*SQRT(EYM22)
-** 29.07
-         EXM = SIGCUT*SQRT(EXM2)
-         EYM = SIGCUT*SQRT(EYM2)
-         CALL CHFILL2(2411,SNGL(P1),SNGL(EPH),1.)
-         CALL CHFILL2(2412,SNGL(P1),SNGL(EAL),1.)
-         CALL CHFILL2(2413,SNGL(P1),SNGL(EXM),1.)
-         CALL CHFILL2(2414,SNGL(P1),SNGL(EYM),1.)
-** end 29.07
+
 
 **         P2 = (HTOP/HHIT(JJ))**2
 
@@ -1436,23 +1431,38 @@
 **         EX2=EX1
 **         EY2=EY2
 *   Renvoie le num de hit de 5 le plus pres dans le domaine de recherche
-         CALL DISTMIN2(X1,Y1,X2,Y2,5,EX1,EY1,EX2,EY2,IFIND)
+         CALL DISTMIN2(X1,Y1,X2,Y2,5,EX1,EY1,EX2,EY2,IFIND,IFIND2)
          P1 = PTOT(IP(4,JJ))
          CALL CHECK_HISTO2(0,5,IFIND,4,JJ,X1,Y1,X2,Y2,P1,EX1,EY1,
      &        EX2,EY2)   
          IF (IFIND.GT.0) THEN
             DO ICAN=1,NCAN 
                IF (IFIND.EQ.JCAN(5,ICAN).AND.JJ.EQ.JCAN(4,ICAN)) GOTO 40 
-               IF (ABS(XM(5,JCAN(5,ICAN))-XM(5,IFIND)).LT.XPREC/10.)
+**               IF (JJ.EQ.JCAN(4,ICAN).AND.
+**     &              ABS(XM(5,JCAN(5,ICAN))-XM(5,IFIND)).LT.XPREC/10.)
+**     &            GO TO 40 ! elimine les doubles comptages de traces ccc
+**               IF (IFIND.EQ.JCAN(5,ICAN).AND.
+**     &              ABS(XM(4,JCAN(4,ICAN))-XM(4,JJ)).LT.XPREC/10.)
+**     &            GO TO 40 ! elimine les doubles comptages de traces ccc
+
+               DIST1 = SQRT(((XM(5,JCAN(5,ICAN))-XM(5,IFIND))
+     &              /(0.1*XPREC))**2+((YM(5,JCAN(5,ICAN))-YM(5,IFIND))
+     &              /(0.1*YPREC))**2)
+               DIST2 = SQRT(((XM(4,JCAN(4,ICAN))-XM(4,JJ))
+     &              /(0.1*XPREC))**2+((YM(4,JCAN(4,ICAN))-YM(4,JJ))
+     &              /(0.1*YPREC))**2)
+               IF (DIST1.LT.2..AND.DIST2.LT.2.)
      &            GO TO 40 ! elimine les doubles comptages de traces ccc
             ENDDO   
-            CALL STOCK_CANDIDAT(4,JJ,5,IFIND,EX1,EY1,EPH,EAL,NCAN,3)
+            CALL STOCK_CANDIDAT(4,JJ,5,IFIND,IFIND2,EX1,EY1,EPH,EAL,NCAN
+     &           ,3)
          ENDIF
 40       CONTINUE           
       ENDDO
 
 
-      NMU45 = 0
+      NMU45(1) = 0
+      NMU45(2) = 0
       DO ICAN = 1,NCAN
          JJ4 = JCAN(4,ICAN)  
          JJ5 = JCAN(5,ICAN)  
@@ -1462,32 +1472,38 @@
             IT = ITRACK(IP(5,JJ5))
             IF (ITCHECK(IT).EQ.1) THEN
                IF (ID4.EQ.ID5) THEN
-                  NMU45 = NMU45 + 1
+                  IF (ITYP(IP(5,JJ5)).EQ.5) NMU45(1) = 1
+                  IF (ITYP(IP(5,JJ5)).EQ.6) NMU45(2) = 1
                ENDIF   
             ENDIF
          ENDIF   
       ENDDO
-      IF (NMU45.GE.2) NRES(1) = NRES(1)+1   
+      IF (NMU45(1).GE.1.AND.NMU45(2).EQ.1) NRES(1) = NRES(1)+1   
 
       IF (IDEBUG.GE.2) THEN         
          PRINT *,'RECO_TRACKF nb candidat recherche 4->5 et 5->4 :'
      &        ,NCAN
          PRINT *,'RECO_TRACKF nb of good muons 4->5 et 5->4 :'
-     &        ,NMU45
+     &        ,(NMU45(1)+NMU45(2))
         
       ENDIF
 
-      NMU345 = 0
+
+      NMU345(1) = 0
+      NMU345(2) = 0
 *
 * -- Boucle sur les candidats (4,5) NCAN
 *         
       DO I = 1,NBSTATION
          NERR(I) = 0
       ENDDO
-      NMUONF = 0
+      NMUONF(1) = 0
+      NMUONF(2) = 0
       NGHOST = 0
       NTRACKF = 0
      
+**      GO TO 125 ! CCC
+
       DO ICAN = 1,NCAN
          JJ1 = 0
          JJ2 = 0
@@ -1559,42 +1575,23 @@
 * -- Recherche dans la station 3
          
          P2 = (1.0D0 + TALAM45**2)/(PXZINV45**2) ! P**2
-**         EPH=SIGCUT*SQRT(3.6D-6+0.011/P2)
-**         EAL=SIGCUT*SQRT(6.85D-4)
-**         EXM=SIGCUT*SQRT(0.034+446./P2)
-**         EYM=SIGCUT*SQRT(0.049+354./P2)
-         EPH=SIGCUT*SQRT(4.1D-7+0.015/P2)
-         EAL=SIGCUT*SQRT(1.04D-4)
-         EXM=SIGCUT*SQRT(0.0+459./P2)
-         EYM=SIGCUT*SQRT(0.042+345./P2)
+
+         if (idstation.eq.8) then !  DZ_CH = 8 CM
+            EPH=SIGCUT*SQRT(3.6D-6+0.011/P2)
+            EAL=SIGCUT*SQRT(6.85D-4)
+            EXM=SIGCUT*SQRT(0.034+446./P2)
+            EYM=SIGCUT*SQRT(0.049+354./P2)
+         else if (idstation.eq.20) then ! DZ_CH = 20 CM
+            EPH=SIGCUT*SQRT(4.1D-7+0.015/P2)
+            EAL=SIGCUT*SQRT(1.04D-4)
+            EXM=SIGCUT*SQRT(0.0+459./P2)
+            EYM=SIGCUT*SQRT(0.042+345./P2)
+         end if
+
          EEXM(3) = EXM/SIGCUT
          EEYM(3) = EYM/SIGCUT
          EEPH(3) = EPH/SIGCUT
          EEAL(3) = EAL/SIGCUT
-** 29.07
-         CALL CHF1(2301,SNGL(SQRT(P2)),1.)
-         P1 = PTOT(IP(5,JJ5))
-         CALL CHFILL2(2311,SNGL(P1),SNGL(EPH),1.)
-         CALL CHFILL2(2312,SNGL(P1),SNGL(EAL),1.)
-         CALL CHFILL2(2313,SNGL(P1),SNGL(EXM),1.)
-         CALL CHFILL2(2314,SNGL(P1),SNGL(EYM),1.)
-
-         CALL CHFILL2(2315,SNGL(SQRT(P2)),SNGL(EPH),1.)
-         CALL CHFILL2(2316,SNGL(SQRT(P2)),SNGL(EAL),1.)
-         CALL CHFILL2(2317,SNGL(SQRT(P2)),SNGL(EXM),1.)
-         CALL CHFILL2(2318,SNGL(SQRT(P2)),SNGL(EYM),1.)
-
-         CALL CHFILL2(2302,SNGL(SQRT(P2)),SNGL((EPH/SIGCUT)**2),1.)
-         CALL CHFILL2(2303,SNGL(SQRT(P2)),SNGL((EAL/SIGCUT)**2),1.)
-         CALL CHFILL2(2304,SNGL(SQRT(P2)),SNGL((EXM/SIGCUT)**2),1.)
-         CALL CHFILL2(2305,SNGL(SQRT(P2)),SNGL((EYM/SIGCUT)**2),1.)
-
-         CALL CHFILL2(2307,SNGL(P1),SNGL((EPH/SIGCUT)**2),1.)
-         CALL CHFILL2(2308,SNGL(P1),SNGL((EAL/SIGCUT)**2),1.)
-         CALL CHFILL2(2309,SNGL(P1),SNGL((EXM/SIGCUT)**2),1.)
-         CALL CHFILL2(2310,SNGL(P1),SNGL((EYM/SIGCUT)**2),1.)
-** end 29.07
-
 **         DO IEX = 4,5
 **            EEXM(IEX) = EEXM(3) 
 **            EEYM(IEX) = EEYM(3)
@@ -1607,11 +1604,11 @@
          Y2 = YPL(3,2) 
          PHI1 = PHPL(3)
          ALAM1 = ALPL(3)
-         
-         CALL DISTMIN4(X1,Y1,PHI1,ALAM1,3,EXM,EYM,EPH,EAL,IPA3)
+
+         CALL DISTMIN4(X1,Y1,PHI1,ALAM1,3,EXM,EYM,EPH,EAL,IPA3,IFIND2)
          
          P1 = PTOT(IP(5,JJ5))
-         
+
          CALL CHECK_HISTO4(61,3,IPA3,5,JJ5,X1,Y1,PHI1,ALAM1,P1,
      &        EXM,EYM,EPH,EAL)
          
@@ -1626,7 +1623,7 @@
             MANG(3) = 1
             GO TO 124
          ELSE
-            CALL DISTMIN2(X1,Y1,X2,Y2,3,EXM,EYM,0.D0,0.D0,IP3)
+            CALL DISTMIN2(X1,Y1,X2,Y2,3,EXM,EYM,0.D0,0.D0,IP3,IFIND2)
             CALL CHECK_HISTO2(0,3,IP3,5,JJ5,X1,Y1,X2,Y2,P1,EXM,EYM,
      &           0.D0,0.D0)   
          ENDIF
@@ -1653,12 +1650,13 @@
             IT = ITRACK(IP(5,JJ5))
             IF (ITCHECK(IT).EQ.1) THEN
                IF ((ID5.EQ.ID3).AND.(ID5.EQ.ID4)) THEN
-                  NMU345 = NMU345 + 1
+                  IF (ITYP(IP(5,JJ5)).EQ.5) NMU345(1) = 1
+                  IF (ITYP(IP(5,JJ5)).EQ.6) NMU345(2) = 1
                ENDIF   
             ENDIF
          ENDIF   
 
-         IVERTEX = 0    
+         IVERTEX = 1 ! CCC    
 
          PEST(1) = PXZINV45
          PEST(2) = TPHI45
@@ -1670,49 +1668,30 @@
          PSTEP(3) = 0.001
          PSTEP(4) = 1.
          PSTEP(5) = 1. 
-         
+
          CALL TRACKF_FIT(IVERTEX,PEST,PSTEP,PXZINV345,TPHI345,
      &        TALAM345,XVERT,YVERT)
          
 *     -- Recherche dans la st. 2
          
          P2 = (1.0D0 + TALAM345**2)/(PXZINV345**2) ! P**2
-**         EPH=SIGCUT*SQRT(3.63D-6+4.8D-3/P2)
-**         EAL=SIGCUT*SQRT(6.49D-4)
-**         EXM=SIGCUT*SQRT(1.64D-2+821./P2)
-**         EYM=SIGCUT*SQRT(4.83D-2+866./P2)
-         EPH=SIGCUT*SQRT(5.78D-7+5.97D-3/P2)
-         EAL=SIGCUT*SQRT(1.D-4)
-         EXM=SIGCUT*SQRT(0.+1453./P2)
-         EYM=SIGCUT*SQRT(2.78D-2+504./P2)
+
+         if (idstation.eq.8) then !  DZ_CH = 8 CM
+            EPH=SIGCUT*SQRT(3.63D-6+4.8D-3/P2)
+            EAL=SIGCUT*SQRT(6.49D-4)
+            EXM=SIGCUT*SQRT(1.64D-2+821./P2)
+            EYM=SIGCUT*SQRT(4.83D-2+866./P2)
+         else if (idstation.eq.20) then ! DZ_CH = 20 CM
+            EPH=SIGCUT*SQRT(5.78D-7+5.97D-3/P2)
+            EAL=SIGCUT*SQRT(1.D-4)
+            EXM=SIGCUT*SQRT(0.+1453./P2)
+            EYM=SIGCUT*SQRT(2.78D-2+504./P2)
+         end if
+
          EEXM(2) = EXM/SIGCUT
          EEYM(2) = EYM/SIGCUT
          EEPH(2) = EPH/SIGCUT
          EEAL(2) = EAL/SIGCUT
-** 29.07
-         CALL CHF1(2201,SNGL(SQRT(P2)),1.)
-         P1 = PTOT(IP(5,JJ5))
-         CALL CHFILL2(2211,SNGL(P1),SNGL(EPH),1.)
-         CALL CHFILL2(2212,SNGL(P1),SNGL(EAL),1.)
-         CALL CHFILL2(2213,SNGL(P1),SNGL(EXM),1.)
-         CALL CHFILL2(2214,SNGL(P1),SNGL(EYM),1.)
-
-         CALL CHFILL2(2215,SNGL(SQRT(P2)),SNGL(EPH),1.)
-         CALL CHFILL2(2216,SNGL(SQRT(P2)),SNGL(EAL),1.)
-         CALL CHFILL2(2217,SNGL(SQRT(P2)),SNGL(EXM),1.)
-         CALL CHFILL2(2218,SNGL(SQRT(P2)),SNGL(EYM),1.)
-
-         CALL CHFILL2(2202,SNGL(SQRT(P2)),SNGL((EPH/SIGCUT)**2),1.)
-         CALL CHFILL2(2203,SNGL(SQRT(P2)),SNGL((EAL/SIGCUT)**2),1.)
-         CALL CHFILL2(2204,SNGL(SQRT(P2)),SNGL((EXM/SIGCUT)**2),1.)
-         CALL CHFILL2(2205,SNGL(SQRT(P2)),SNGL((EYM/SIGCUT)**2),1.)
-
-         CALL CHFILL2(2207,SNGL(P1),SNGL((EPH/SIGCUT)**2),1.)
-         CALL CHFILL2(2208,SNGL(P1),SNGL((EAL/SIGCUT)**2),1.)
-         CALL CHFILL2(2209,SNGL(P1),SNGL((EXM/SIGCUT)**2),1.)
-         CALL CHFILL2(2210,SNGL(P1),SNGL((EYM/SIGCUT)**2),1.)
-** end 29.07
-
 **         DO IEX = 3,5
 **            EEXM(IEX) = EEXM(2) 
 **            EEYM(IEX) = EEYM(2)
@@ -1724,46 +1703,28 @@
          Y1 = YPL(2,1) 
          PHI1 = PHPL(2)
          ALAM1 = ALPL(2)
-         CALL DISTMIN4(X1,Y1,PHI1,ALAM1,2,EXM,EYM,EPH,EAL,IPA2)
+         CALL DISTMIN4(X1,Y1,PHI1,ALAM1,2,EXM,EYM,EPH,EAL,IPA2,IFIND2)
          P1 = PTOT(IP(5,JJ5))
          CALL CHECK_HISTO4(21,2,IPA2,5,JJ5,X1,Y1,PHI1,ALAM1,P1,
      &        EXM,EYM,EPH,EAL)   
 *     -- Recherche dans la st. 1
-**         EPH=SIGCUT*SQRT(3.54D-6+4.49D-3/P2)
-**         EAL=SIGCUT*SQRT(6.14D-4)
-**         EXM=SIGCUT*SQRT(6.43D-2+986./P2)  
-**         EYM=SIGCUT*SQRT(4.66D-2+1444./P2)  
-         EPH=SIGCUT*SQRT(4.96D-7+5.87D-3/P2)
-         EAL=SIGCUT*SQRT(1.D-4)
-         EXM=SIGCUT*SQRT(6.98D-4+1467./P2)  
-         EYM=SIGCUT*SQRT(5.22D-2+1013./P2)  
+
+         if (idstation.eq.8) then !  DZ_CH = 8 CM
+            EPH=SIGCUT*SQRT(3.54D-6+4.49D-3/P2)
+            EAL=SIGCUT*SQRT(6.14D-4)
+            EXM=SIGCUT*SQRT(6.43D-2+986./P2)  
+            EYM=SIGCUT*SQRT(4.66D-2+1444./P2) 
+         else if (idstation.eq.20) then ! DZ_CH = 20 CM
+            EPH=SIGCUT*SQRT(4.96D-7+5.87D-3/P2)
+            EAL=SIGCUT*SQRT(1.D-4)
+            EXM=SIGCUT*SQRT(6.98D-4+1467./P2)  
+            EYM=SIGCUT*SQRT(5.22D-2+1013./P2)  
+         end if
+
          EEXM(1) = EXM/SIGCUT
          EEYM(1) = EYM/SIGCUT
          EEPH(1) = EPH/SIGCUT
          EEAL(1) = EAL/SIGCUT
-** 29.07
-         CALL CHFILL2(2111,SNGL(P1),SNGL(EPH),1.)
-         CALL CHFILL2(2112,SNGL(P1),SNGL(EAL),1.)
-         CALL CHFILL2(2113,SNGL(P1),SNGL(EXM),1.)
-         CALL CHFILL2(2114,SNGL(P1),SNGL(EYM),1.)
-
-         CALL CHFILL2(2115,SNGL(SQRT(P2)),SNGL(EPH),1.)
-         CALL CHFILL2(2116,SNGL(SQRT(P2)),SNGL(EAL),1.)
-         CALL CHFILL2(2117,SNGL(SQRT(P2)),SNGL(EXM),1.)
-         CALL CHFILL2(2118,SNGL(SQRT(P2)),SNGL(EYM),1.)
-
-         CALL CHFILL2(2102,SNGL(SQRT(P2)),SNGL((EPH/SIGCUT)**2),1.)
-         CALL CHFILL2(2103,SNGL(SQRT(P2)),SNGL((EAL/SIGCUT)**2),1.)
-         CALL CHFILL2(2104,SNGL(SQRT(P2)),SNGL((EXM/SIGCUT)**2),1.)
-         CALL CHFILL2(2105,SNGL(SQRT(P2)),SNGL((EYM/SIGCUT)**2),1.)
-
-         CALL CHFILL2(2107,SNGL(P1),SNGL((EPH/SIGCUT)**2),1.)
-         CALL CHFILL2(2108,SNGL(P1),SNGL((EAL/SIGCUT)**2),1.)
-         CALL CHFILL2(2109,SNGL(P1),SNGL((EXM/SIGCUT)**2),1.)
-         CALL CHFILL2(2110,SNGL(P1),SNGL((EYM/SIGCUT)**2),1.)
-** end 29.07
-
-
 **         DO IEX = 2,5
 **            EEXM(IEX) = EEXM(1) 
 **            EEYM(IEX) = EEYM(1)
@@ -1775,7 +1736,7 @@
          Y1 = YPL(1,1) 
          PHI1 = PHPL(1)
          ALAM1 = ALPL(1)
-         CALL DISTMIN4(X1,Y1,PHI1,ALAM1,1,EXM,EYM,EPH,EAL,IPA1)
+         CALL DISTMIN4(X1,Y1,PHI1,ALAM1,1,EXM,EYM,EPH,EAL,IPA1,IFIND2)
          CALL CHECK_HISTO4(31,1,IPA1,5,JJ5,X1,Y1,PHI1,ALAM1,P1,
      &        EXM,EYM,EPH,EAL)   
 *     -- A partir de P+A dans la st. 2     
@@ -1807,43 +1768,23 @@
 *     !!! ATTENTION aux erreurs
             
             P2 = (1.0D0 + TALAM**2)/(PXZINV**2)
-**            EPH=SIGCUT*SQRT(3.15D-6+9.21D-3/P2)
-**            EAL=SIGCUT*SQRT(5.94D-4)
-**            EXM=SIGCUT*SQRT(4.16D-2+182./P2)
-**            EYM=SIGCUT*SQRT(2.13)
-            EPH=SIGCUT*SQRT(9.58D-7+8.93D-3/P2)
-            EAL=SIGCUT*SQRT(1.D-4)
-            EXM=SIGCUT*SQRT(1.92D-2+103.3/P2)
-            EYM=SIGCUT*SQRT(6.3D-2+81.1/P2)
+
+            if (idstation.eq.8) then !  DZ_CH = 8 CM
+               EPH=SIGCUT*SQRT(3.15D-6+9.21D-3/P2)
+               EAL=SIGCUT*SQRT(5.94D-4)
+               EXM=SIGCUT*SQRT(4.16D-2+182./P2)
+               EYM=SIGCUT*SQRT(2.13)
+            else if (idstation.eq.20) then ! DZ_CH = 20 CM
+               EPH=SIGCUT*SQRT(9.58D-7+8.93D-3/P2)
+               EAL=SIGCUT*SQRT(1.D-4)
+               EXM=SIGCUT*SQRT(1.92D-2+103.3/P2)
+               EYM=SIGCUT*SQRT(6.3D-2+81.1/P2)
+            end if
+
             EEXM(1) = EXM/SIGCUT
             EEYM(1) = EYM/SIGCUT
             EEPH(1) = EPH/SIGCUT
             EEAL(1) = EAL/SIGCUT
-** 29.07
-         CALL CHF1(2701,SNGL(SQRT(P2)),1.)
-         CALL CHFILL2(2711,SNGL(P1),SNGL(EPH),1.)
-         CALL CHFILL2(2712,SNGL(P1),SNGL(EAL),1.)
-         CALL CHFILL2(2713,SNGL(P1),SNGL(EXM),1.)
-         CALL CHFILL2(2714,SNGL(P1),SNGL(EYM),1.)
-
-         CALL CHFILL2(2715,SNGL(SQRT(P2)),SNGL(EPH),1.)
-         CALL CHFILL2(2716,SNGL(SQRT(P2)),SNGL(EAL),1.)
-         CALL CHFILL2(2717,SNGL(SQRT(P2)),SNGL(EXM),1.)
-         CALL CHFILL2(2718,SNGL(SQRT(P2)),SNGL(EYM),1.)
-
-         CALL CHFILL2(2702,SNGL(SQRT(P2)),SNGL((EPH/SIGCUT)**2),1.)
-         CALL CHFILL2(2703,SNGL(SQRT(P2)),SNGL((EAL/SIGCUT)**2),1.)
-         CALL CHFILL2(2704,SNGL(SQRT(P2)),SNGL((EXM/SIGCUT)**2),1.)
-         CALL CHFILL2(2705,SNGL(SQRT(P2)),SNGL((EYM/SIGCUT)**2),1.)
-
-
-         CALL CHFILL2(2707,SNGL(P1),SNGL((EPH/SIGCUT)**2),1.)
-         CALL CHFILL2(2708,SNGL(P1),SNGL((EAL/SIGCUT)**2),1.)
-         CALL CHFILL2(2709,SNGL(P1),SNGL((EXM/SIGCUT)**2),1.)
-         CALL CHFILL2(2710,SNGL(P1),SNGL((EYM/SIGCUT)**2),1.)
-** end 29.07
-
-
 **            DO IEX = 2,5
 **               EEXM(IEX) = EEXM(1) 
 **               EEYM(IEX) = EEYM(1)
@@ -1858,12 +1799,14 @@
             PHI1 = PHPL(1)
             ALAM1 = ALPL(1)
             CALL DISTMIN4(X1,Y1,PHI1,ALAM1,1,EXM,EYM,EPH,EAL,
-     &           IPA2PA1)
+     &           IPA2PA1,IFIND2)
             CALL CHECK_HISTO4(41,1,IPA2PA1,5,JJ5,X1,Y1,PHI1,ALAM1,
      &           P1,EXM,EYM,EPH,EAL)
             IF (IPA2PA1.GT.0) THEN
                JJ2 = IPA2
                JJ1 = IPA2PA1
+
+               
                XMES(1) = XM(1,JJ1)
                YMES(1) = YM(1,JJ1)
                IZMES(1) = IZM(1,JJ1)
@@ -1873,7 +1816,8 @@
                MANG(1) = 1
                GOTO 123
             ELSE
-               CALL DISTMIN2(X1,Y1,X2,Y2,1,EXM,EYM,0.D0,0.D0,IPA2P1)
+               CALL DISTMIN2(X1,Y1,X2,Y2,1,EXM,EYM,0.D0,0.D0,IPA2P1,
+     &              IFIND2)
                CALL CHECK_HISTO2(0,1,IPA2P1,5,JJ5,X1,Y1,X2,Y2,P1,
      &              EXM,EYM,0.D0,0.D0)   
             ENDIF 
@@ -1909,47 +1853,23 @@
 *     !!! ATTENTION aux erreurs
             
             P2 = (1.0D0 + TALAM**2)/(PXZINV**2)
-**            EPH=SIGCUT*SQRT(3.15D-6+9.21D-3/P2)
-**            EAL=SIGCUT*SQRT(5.94D-4)
-**            EXM=SIGCUT*SQRT(4.16D-2+182./P2)
-**            EYM=SIGCUT*SQRT(2.13)
-            EPH=SIGCUT*SQRT(9.58D-7+8.93D-3/P2)
-            EAL=SIGCUT*SQRT(1.D-4)
-            EXM=SIGCUT*SQRT(4.0D-2+11.4/P2)
-            EYM=SIGCUT*SQRT(5.5D-2+44.35/P2)
-     
+
+            if (idstation.eq.8) then !  DZ_CH = 8 CM
+               EPH=SIGCUT*SQRT(3.15D-6+9.21D-3/P2)
+               EAL=SIGCUT*SQRT(5.94D-4)
+               EXM=SIGCUT*SQRT(4.16D-2+182./P2)
+               EYM=SIGCUT*SQRT(2.13)
+            else if (idstation.eq.20) then ! DZ_CH = 20 CM
+               EPH=SIGCUT*SQRT(9.58D-7+8.93D-3/P2)
+               EAL=SIGCUT*SQRT(1.D-4)
+               EXM=SIGCUT*SQRT(4.0D-2+11.4/P2)
+               EYM=SIGCUT*SQRT(5.5D-2+44.35/P2)
+            end if
+
             EEXM(2) = EXM/SIGCUT
             EEYM(2) = EYM/SIGCUT
             EEPH(2) = EPH/SIGCUT
             EEAL(2) = EAL/SIGCUT
-** 29.07
-         CALL CHF1(2801,SNGL(SQRT(P2)),1.)
-         CALL CHFILL2(2811,SNGL(P1),SNGL(EPH),1.)
-         CALL CHFILL2(2812,SNGL(P1),SNGL(EAL),1.)
-         CALL CHFILL2(2813,SNGL(P1),SNGL(EXM),1.)
-         CALL CHFILL2(2814,SNGL(P1),SNGL(EYM),1.)
-
-         CALL CHFILL2(2815,SNGL(SQRT(P2)),SNGL(EPH),1.)
-         CALL CHFILL2(2816,SNGL(SQRT(P2)),SNGL(EAL),1.)
-         CALL CHFILL2(2817,SNGL(SQRT(P2)),SNGL(EXM),1.)
-         CALL CHFILL2(2818,SNGL(SQRT(P2)),SNGL(EYM),1.)
-
-         CALL CHFILL2(2802,SNGL(SQRT(P2)),SNGL((EPH/SIGCUT)**2),1.)
-         CALL CHFILL2(2803,SNGL(SQRT(P2)),SNGL((EAL/SIGCUT)**2),1.)
-         CALL CHFILL2(2804,SNGL(SQRT(P2)),SNGL((EXM/SIGCUT)**2),1.)
-         CALL CHFILL2(2805,SNGL(SQRT(P2)),SNGL((EYM/SIGCUT)**2),1.)
-
-
-         CALL CHFILL2(2807,SNGL(P1),SNGL((EPH/SIGCUT)**2),1.)
-         CALL CHFILL2(2808,SNGL(P1),SNGL((EAL/SIGCUT)**2),1.)
-         CALL CHFILL2(2809,SNGL(P1),SNGL((EXM/SIGCUT)**2),1.)
-         CALL CHFILL2(2810,SNGL(P1),SNGL((EYM/SIGCUT)**2),1.)
-
-** end 29.07
-
-
-
-
 **            DO IEX = 1,5
 **               EEXM(IEX) = EEXM(2) 
 **               EEYM(IEX) = EEYM(2)
@@ -1965,7 +1885,7 @@
             ALAM1 = ALPL(2)
             
             CALL DISTMIN4(X1,Y1,PHI1,ALAM1,2,EXM,EYM,EPH,EAL,
-     &           IPA1PA2)
+     &           IPA1PA2,IFIND2)
             
             CALL CHECK_HISTO4(51,2,IPA1PA2,5,JJ5,X1,Y1,PHI1,ALAM1,
      &           P1,EXM,EYM,EPH,EAL)
@@ -1981,7 +1901,8 @@
                MANG(2) = 1
                GOTO 123
             ELSE
-               CALL DISTMIN2(X1,Y1,X2,Y2,2,EXM,EYM,0.D0,0.D0,IPA1P2)
+               CALL DISTMIN2(X1,Y1,X2,Y2,2,EXM,EYM,0.D0,0.D0,IPA1P2,
+     &              IFIND2)
                CALL CHECK_HISTO2(0,2,IPA1P2,5,JJ5,X1,Y1,X2,Y2,P1,
      &              EXM,EYM,0.D0,0.D0) 
             ENDIF 
@@ -2014,14 +1935,14 @@
  123     CONTINUE 
 ***   
          NTRACKFOLD = NTRACKF
-         NMUONFOLD = NMUONF
+         NMUONFOLD = NMUONF(1)+NMUONF(2)
          NGHOSTOLD = NGHOST
          CALL CHECK_MUON(JJ1,JJ2,JJ3,JJ4,JJ5,NTRACKF,NMUONF,
      &        NGHOST,NERR,PXZINV,TPHI,TALAM,XVERT,YVERT)
          
          IF (NTRACKF.GT.NTRACKFOLD) THEN
             ISTAT(NTRACKF) = 0 
-            IF (NMUONF.GT.NMUONFOLD) ISTAT(NTRACKF) = 1 ! Good muon
+            IF ((NMUONF(1)+NMUONF(2)).GT.NMUONFOLD) ISTAT(NTRACKF) = 1 ! Good muon
             IF (NGHOST.GT.NGHOSTOLD) ISTAT(NTRACKF) = 2 ! ghost track
             PXZOUT(NTRACKF) = 1./PXZINV
             TPHIOUT(NTRACKF) = TPHI  
@@ -2036,25 +1957,25 @@
 ***   
       ENDDO                     ! end loop on candidats NCAN
       
-      IF (NMU345.GE.2) NRES(2) = NRES(2) + 1
+ 125  IF (NMU345(1).EQ.1.AND.NMU345(2).EQ.1) NRES(2) = NRES(2) + 1
 
       IF (IDEBUG.GE.2) THEN         
          PRINT *,'RECO_TRACKF nb of good muons 3 4 5 :'
-     &        ,NMU345
+     &        ,(NMU345(1)+NMU345(2))
         
       ENDIF
      
       IF (IDEBUG.GE.2) THEN
-         PRINT *,'RECO_TRACKF nb of track /evt     :',NTRACKF        
-         PRINT *,'RECO_TRACKF nb of good muon /evt :',NMUONF         
-         PRINT *,'RECO_TRACKF nb of ghost /evt     :',NGHOST         
+         PRINT *,'RECO_TRACKF nb of track/evt     :',NTRACKF        
+         PRINT *,'RECO_TRACKF nb of good muon/evt :',NMUONF(1)+NMUONF(2)         
+         PRINT *,'RECO_TRACKF nb of ghost/evt     :',NGHOST         
          DO I = 1,4
             PRINT *,'RECO_TRACKF nb of error in st',I,'/evt:',NERR(I)
          ENDDO 
       ENDIF           
       IF (NTRMU.GE.2) NRES(5) = NRES(5)+1
-      IF (NMUONF.GE.2) NRESF = NRESF+1
-      NMUONALL = NMUONALL+NMUONF
+      IF ((NMUONF(1)+NMUONF(2)).EQ.2) NRESF = NRESF+1
+      NMUONALL = NMUONALL+NMUONF(1)+NMUONF(2)
       NGHOSTALL = NGHOSTALL+NGHOST
       NTRACKFALL = NTRACKFALL+NTRACKF
       DO I = 1,4
@@ -2152,7 +2073,7 @@
       REAL*4 R1,R2
       DATA R1,R2/0.,1./
  
-      DIMENSION NERR(NBSTATION),JJK(NBSTATION) 
+      DIMENSION NERR(NBSTATION),JJK(NBSTATION),NMUONF(2) 
       
 *      print*,' *** appel de la subroutine check_muon ***'
 
@@ -2200,8 +2121,9 @@
      &           ID(IP(2,JJ2)).EQ.IDFIND .AND.
      &           ID(IP(3,JJ3)).EQ.IDFIND .AND.
      &           ID(IP(4,JJ4)).EQ.IDFIND) THEN
-               
-               NMUONF = NMUONF+1 ! Bon muon
+
+               IF (ITYP(IP(5,JJ5)).EQ.5) NMUONF(1) = 1 ! Bon muon
+               IF (ITYP(IP(5,JJ5)).EQ.6) NMUONF(2) = 1 ! Bon muon
                
                PT = SQRT(PVERT1(IP(5,JJ5))**2+PVERT2(IP(5,JJ5))**2)
                PZ =  PVERT3(IP(5,JJ5))
@@ -2229,8 +2151,12 @@
       IF (ITCHECK(ITRACK(IP(5,JJ5))).EQ.1) THEN
          IF (JJ3.EQ.0) NERR(3) = NERR(3)+1
          IF (JJ3.NE.0) THEN
+
             IF (JJ1.EQ.0) NERR(1) = NERR(1)+1
             IF (JJ2.EQ.0) NERR(2) = NERR(2)+1
+            IF (JJ1.EQ.0) print*,'hit not found stations 1', NERR(1) 
+            IF (JJ2.EQ.0) print*,'hit not found stations 2', NERR(2) 
+
          ENDIF   
          PT = SQRT(PVERT1(IP(5,JJ5))**2+PVERT2(IP(5,JJ5))**2)
          PZ =  PVERT3(IP(5,JJ5))
@@ -2290,37 +2216,49 @@
      &              CHI2R(NTRMAX),PXV(NTRMAX),PYV(NTRMAX),PZV(NTRMAX)
 *
       COMMON/DEBEVT/IDEBUG
+*      
+      DIMENSION ISEL(NTRMAX)
+
 *  
+      CALL RECO_SELECT(ISEL)
+*
       NMUF = 0
       NGHF = 0
+
       DO ITR = 1,NTREVT
-         NTRACKFALL1 =  NTRACKFALL1 + 1
-         IF (ISTAT(ITR).EQ.1) THEN
-            NMUF = NMUF + 1
-            NMUONALL1 = NMUONALL1 + 1
-         ELSEIF (ISTAT(ITR).EQ.2) THEN 
-            NGHF = NGHF + 1
-            NGHOSTALL1 = NGHOSTALL1 + 1
-         ENDIF
+         IF (ISEL(ITR).EQ.1) THEN
+            NTRACKFALL1 =  NTRACKFALL1 + 1
+            IF (ISTAT(ITR).EQ.1) THEN
+               NMUF = NMUF + 1
+               NMUONALL1 = NMUONALL1 + 1
+            ELSEIF (ISTAT(ITR).EQ.2) THEN 
+               NGHF = NGHF + 1
+               NGHOSTALL1 = NGHOSTALL1 + 1
+            ENDIF
+         ENDIF   
       ENDDO
-      IF (NMUF.EQ.2) NRESF1 = NRESF1 + 1 
+      
+      IF (NMUF.GE.2) NRESF1 = NRESF1 + 1 
 *
-      NTRACKR = NTREVT
+      NTRACKR = 0
       DO ITR = 1,NTREVT
-         ISTATR(ITR) = ISTAT(ITR)
-         ISIGNR(ITR) = 1 
-         IF (PXZOUT(ITR).LT.0.) ISIGNR(ITR) = -1
-         PXZ = ABS(PXZOUT(ITR))
-         PHI = ATAN(TPHIOUT(ITR)) 
-         ALAM = ATAN(TALAMOUT(ITR)) 
-         PYR(ITR) = PXZ*SIN(PHI)
-         PXR(ITR) = PXZ*TAN(ALAM)
-         PZR(ITR) = PXZ*COS(PHI)
-         ZVR(ITR) = 0.
-         CHI2R(ITR) =  CHI2OUT(ITR)
-         PXV(ITR) = PXVOUT(ITR)
-         PYV(ITR) = PYVOUT(ITR) 
-         PZV(ITR) = PZVOUT(ITR)         
+         IF (ISEL(ITR).EQ.1) THEN
+            NTRACKR = NTRACKR + 1
+            ISTATR(NTRACKR) = ISTAT(ITR)
+            ISIGNR(NTRACKR) = 1 
+            IF (PXZOUT(ITR).LT.0.) ISIGNR(NTRACKR) = -1
+            PXZ = ABS(PXZOUT(ITR))
+            PHI = ATAN(TPHIOUT(ITR)) 
+            ALAM = ATAN(TALAMOUT(ITR)) 
+            PYR(NTRACKR) = PXZ*SIN(PHI)
+            PXR(NTRACKR) = PXZ*TAN(ALAM)
+            PZR(NTRACKR) = PXZ*COS(PHI)
+            ZVR(NTRACKR) = 0.
+            CHI2R(NTRACKR) =  CHI2OUT(ITR)
+            PXV(NTRACKR) = PXVOUT(ITR)
+            PYV(NTRACKR) = PYVOUT(ITR) 
+            PZV(NTRACKR) = PZVOUT(ITR)   
+         ENDIF   
       ENDDO     
 
       CALL CHFNT(IEVR,NTRACKR,ISTATR,ISIGNR,
@@ -2328,14 +2266,13 @@
 
       IF (IDEBUG.GE.2) THEN 
          PRINT *,'RECO_SUM evt number :',IEVOUT
-         PRINT *,'RECO_SUM nb of track /evt     :',NTREVT        
+         PRINT *,'RECO_SUM nb of track /evt     :',NTRACKR        
          PRINT *,'RECO_SUM nb of good muon /evt :',NMUF         
          PRINT *,'RECO_SUM nb of ghost /evt     :',NGHF         
-         IF (NTREVT.GT.0) THEN
-            DO ITR = 1,NTREVT
+         IF (NTRACKR.GT.0) THEN
+            DO ITR = 1,NTRACKR
                PRINT *,'RECO_SUM track number :',ITR
-               PRINT *,'RECO_SUM PXZOUT :',PXZOUT(ITR)
-               PRINT *,'RECO_SUM CHI2OUT :',CHI2OUT(ITR)
+               PRINT *,'RECO_SUM CHI2OUT :',CHI2R(ITR)
                PRINT *,' PX GEANT= ', PXV(ITR),' PX RECONS= ',PYR(ITR)
                PRINT *,' PY GEANT= ', PYV(ITR),' PY RECONS= ',PXR(ITR)
                PRINT *,' PZ GEANT= ', PZV(ITR),' PZ RECONS= ',PZR(ITR)
@@ -2343,12 +2280,12 @@
                PXZR = SQRT( PXR(ITR)**2+PZR(ITR)**2) 
                PRINT *,' PXZ GEANT= ', PXZV,' PXZ RECONS= ',PXZR
                FIV=ATAN2(PYV(ITR),PZV(ITR))
-               ALAMV=ATAN2(DBLE(PXV(ITR)),PXZV)
+               ALAMV=ATAN2(PXV(ITR),PXZV)
                FIR=ATAN2(PXR(ITR),PZR(ITR))
-               ALAMR=ATAN2(DBLE(PYR(ITR)),PXZR)
+               ALAMR=ATAN2(PYR(ITR),PXZR)
 **               PRINT *,' PHI GEANT= ',FIV,' PXZ RECONS= ',FIR
 **               PRINT *,' ALAM GEANT= ',ALAMV,' ALAM RECONS= ',ALAMR
-          ENDDO
+            ENDDO
          ENDIF
       ENDIF 
 
@@ -2372,7 +2309,7 @@
 *
       COMMON/DEBEVT/IDEBUG
 *
-*      CHARACTER*50 FILEBKG,FILERES,FILEOUT,FILEMIN
+      CHARACTER*50 FILEBKG,FILERES,FILEOUT,FILEMIN
 *
       IF (IDEBUG.GE.1) THEN
          PRINT *,'    '
@@ -2529,7 +2466,6 @@
 **     &          ZPLANEP(IPL3),ZPLANEP(IPL4)
 **         PRINT *,' CONST= ',CONST 
 
-         PRINT *,' RECO_PRECISION CHI2OUT avant fit ',CHI2OUT(ICAN)
 
          IF (CHI2OUT(ICAN).GT.CHI2CUT) GO TO 2
 
@@ -2564,7 +2500,6 @@
          YVERTOUT(NTRACK) = YEA 
          CHI2OUT(NTRACK) =  CHI2/FLOAT(2*NPLU-5) 
 
-         PRINT *,' RECO_PRECISION CHI2OUT apres fit',CHI2OUT(NTRACK) 
 
 **         print *,' reco_precision pxz tphi talam xvert yvert chi2',
 **     &       PXZEA,PHIEA,ALAMEA,
@@ -2657,7 +2592,8 @@
       RETURN
       END
 ***********************************************************************************
-      SUBROUTINE DISTMIN4(X1,Y1,PHI1,ALAM1,ICH,EX,EY,EPHI,ELAM,IFIND)
+      SUBROUTINE DISTMIN4(X1,Y1,PHI1,ALAM1,ICH,EX,EY,EPHI,ELAM,IFIND,
+     &     IFIND2)
 ***********************************************************************************
 *    Find the nearest hit in station ICH in the (X,Y,lambda,phi) phase space
 *
@@ -2672,11 +2608,17 @@
      &             IZM(NBSTATION,MAXHITCH),
      &             IP(NBSTATION,MAXHITCH),JHIT(NBSTATION),
      &             XMR(NBSTATION,MAXHITCH,2),YMR(NBSTATION,MAXHITCH,2) 
- 
+      DIMENSION IFIND2(10)
+
       IFIND = 0
+      DO I = 1,10
+         IFIND2(I) = 0
+      ENDDO
+     
       DISTMIN=4.
+      NF = 0  
       DO I=1,JHIT(ICH)
-         IF (PHM(ICH,I).LE.6.3) THEN ! angles measured
+         IF (PHM(ICH,I).LE.6.3) THEN ! vector measurement
             IF (ABS(PHI1-PHM(ICH,I)) .LT. EPHI .AND.
      &         ABS(ALAM1-ALM(ICH,I)) .LT. ELAM .AND.
      &         ABS(X1-XM(ICH,I)) .LT. EX .AND.
@@ -2685,6 +2627,8 @@
      &                ((ALAM1-ALM(ICH,I))/ELAM)**2 +
      &                ((X1-XM(ICH,I))/EX)**2 +
      &                ((Y1-YM(ICH,I))/EY)**2
+               NF = NF+1
+               IF (NF.LE.10) IFIND2(NF) = I 
                IF (DIST .LT. DISTMIN) THEN
                   DISTMIN = DIST
                   IFIND = I
@@ -2696,7 +2640,7 @@
       RETURN
       END
 ***********************************************************************************
-      SUBROUTINE DISTMIN2(X1,Y1,X2,Y2,ICH,EX1,EY1,EX2,EY2,IFIND)
+      SUBROUTINE DISTMIN2(X1,Y1,X2,Y2,ICH,EX1,EY1,EX2,EY2,IFIND,IFIND2)
 ***********************************************************************************
 *    Find the nearest hit in station ICH in the (X,Y) space
 *
@@ -2710,14 +2654,20 @@
      &             IZM(NBSTATION,MAXHITCH),
      &             IP(NBSTATION,MAXHITCH),JHIT(NBSTATION),
      &             XMR(NBSTATION,MAXHITCH,2),YMR(NBSTATION,MAXHITCH,2) 
+      DIMENSION IFIND2(10)
 
       IFIND = 0
+      DO I = 1,10
+         IFIND2(I) = 0
+      ENDDO
+
       DISTMIN=2.
+      NF = 0
       DO I=1,JHIT(ICH)
-         IF (IZM(ICH,I).EQ.1) THEN
+         IF (IZM(ICH,I).EQ.1) THEN ! 1st chamber
             X = X1
             Y = Y1
-         ELSE
+         ELSE ! 2nd chamber
             X = X2
             Y = Y2
          ENDIF    
@@ -2736,6 +2686,8 @@
      &      ABS(Y-YM(ICH,I)) .LT. EY) THEN
             DIST = ((X-XM(ICH,I))/EX)**2 +
      &             ((Y-YM(ICH,I))/EY)**2
+            NF = NF+1
+            IF (NF.LE.10) IFIND2(NF) = I
             IF (DIST .LT. DISTMIN) THEN
                DISTMIN = DIST
                IFIND = I
@@ -2823,7 +2775,7 @@
       END
 
 ********************************************************************************
-       SUBROUTINE FOLLOW(ZSTR,PEST,IFLAG,XPL,YPL,PHPL,ALPL)
+       SUBROUTINE OLDFOLLOW(ZSTR,PEST,IFLAG,XPL,YPL,PHPL,ALPL)
 ********************************************************************************
 *   Calculate the particle trajectory in the spectrometer and
 *   (XPL,YPL,PHPL,ALPL)
@@ -2949,7 +2901,7 @@
        RETURN
        END
 ********************************************************************************
-       SUBROUTINE NEWFOLLOW(ZSTR,PEST,IFLAG,XPL,YPL,PHPL,ALPL)
+       SUBROUTINE FOLLOW(ZSTR,PEST,IFLAG,XPL,YPL,PHPL,ALPL)
 ********************************************************************************
 *   Calculate the particle trajectory in the spectrometer 
 *   (XPL,YPL,PHPL,ALPL)
@@ -3014,7 +2966,8 @@
      &         .AND.NSTEP.LE.NSTEPMAX)
              NSTEP = NSTEP+1 
 **          WRITE(6,*) NSTEP,(VECT(I),I=1,7)
-             CALL RECO_GRKUTA (ASIGN,STEP,VECT,VOUT)
+**             CALL RECO_GRKUTA (ASIGN,STEP,VECT,VOUT) ! CCC
+             CALL RECO_GHELIX (ASIGN,STEP,VECT,VOUT) 
              DO I = 1,7
                 VECT(I) = VOUT(I)
              ENDDO   
@@ -3043,6 +2996,153 @@
        END
 *******************************************************************************
        SUBROUTINE FCN(NPAR,GRAD,FVAL,PEST,IFLAG,FUTIL)
+*******************************************************************************
+*   Calculate FVAL=CHI2 the function minimized by minuit for a given track
+*
+*******************************************************************************
+       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+
+       PARAMETER(NBSTATION=5)
+
+*       DIMENSION PEST(*),GRAD(*)
+       DIMENSION PEST(5),GRAD(5)
+       DIMENSION PEEST(NBSTATION)
+
+       COMMON/ZDEFIN/ZPLANE(NBSTATION),ZCOIL,ZMAGEND,DZ_PL(NBSTATION)
+       
+     
+       COMMON/PRECIS/EEXM(NBSTATION),EEYM(NBSTATION),EEPH(NBSTATION),
+     &     EEAL(NBSTATION)
+
+       COMMON /MEASUR/XMES(NBSTATION),YMES(NBSTATION),IZMES(NBSTATION),
+     &               PHMES(NBSTATION),ALMES(NBSTATION), MPOS(NBSTATION),
+     &               MANG(NBSTATION)
+
+       COMMON /PLANE/XPL(NBSTATION,2),YPL(NBSTATION,2),PHPL(NBSTATION),
+     &               ALPL(NBSTATION),CHI2PL
+
+       COMMON/VERTEX/ERRV,IVERTEX
+
+       DIMENSION XC(NBSTATION),YC(NBSTATION)
+
+       EXTERNAL RECOCHI2
+
+       PEEST(1)=PEST(1)
+       PEEST(2)=PEST(2)
+       PEEST(3)=PEST(3)
+       IF(IVERTEX.EQ.1) THEN
+          PEEST(4)=PEST(4)	! position du vertex
+          PEEST(5)=PEST(5)
+       ELSE
+          PEEST(4)=0.0D0
+          PEEST(5)=0.0D0
+       ENDIF
+
+       ALAM = DATAN(PEST(3))
+       PXZ = DABS(1./PEST(1))
+       PTOT = PXZ/DCOS(ALAM)
+       
+
+       CALL FOLLOW (0.0D0,PEEST,IFLAG,XPL,YPL,PHPL,ALPL) ! calcul des 
+       IF(IFLAG.EQ.1) THEN                       ! points d impacts dans les
+          PRINT *,'FCN ',XPL(4,1),XMES(4)        ! plans
+          PRINT *,'FCN ',YPL(4,1),YMES(4)
+          PRINT *,'FCN ',XPL(5,1),XMES(5)
+          PRINT *,'FCN ',YPL(5,1),YMES(5)
+       ENDIF
+
+       DO I = 1,NBSTATION
+          XC(I) = XPL(I,1)
+          YC(I) = YPL(I,1)
+       ENDDO
+
+       IF (IVERTEX.EQ.1) THEN 
+
+          FVAL = RECOCHI2(MPOS,MANG,XMES,YMES,ALMES,PHMES,
+     &     XC,YC,ALPL,PHPL,PTOT,IZMES,NPLPL)
+
+       ELSE
+
+          FVAL = 0.0D0
+
+          NPLPL = 0 
+          DO J = 1,NBSTATION           
+             IF (MPOS(J).EQ.1) THEN
+                NPLPL = NPLPL+1
+                XPLC = XPL(J,IZMES(J)) 
+                YPLC = YPL(J,IZMES(J))
+                FF = (XMES(J) - XPLC)/EEXM(J)
+                FVAL = FVAL + FF**2
+                FF = (YMES(J) - YPLC)/EEYM(J)
+                FVAL = FVAL + FF**2
+             ENDIF
+             IF (MANG(J).EQ.1) THEN
+                NPLPL = NPLPL+1
+                FF = (PHMES(J) - PHPL(J))/EEPH(J)
+                FVAL = FVAL + FF**2
+                FF = (ALMES(J) - ALPL(J))/EEAL(J)
+                FVAL = FVAL + FF**2
+             ENDIF
+          ENDDO
+
+       ENDIF   
+
+       NPARAM = 3
+       IF (IVERTEX.EQ.1) NPARAM = 5
+       CHI2PL = FVAL/FLOAT(2*NPLPL-NPARAM)       
+
+       RETURN
+       END
+********************************************************************************
+      SUBROUTINE STOCK_CANDIDAT(ICH1,JHITCH1,ICH2,IFIND,IFIND2,EXM,EYM,
+     &     EPH,EAL,NCAN,ICODE)
+********************************************************************************
+*   Fill common CANDIDAT with track candidates from the search in stations 4&5
+*
+********************************************************************************
+      
+      IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+
+      PARAMETER (MAXHITTOT=20000,MAXHITCH=10000,NBSTATION=5,MAXCAN=1000)
+      
+      COMMON/CHHIT/XM(NBSTATION,MAXHITCH),YM(NBSTATION,MAXHITCH),
+     &             PHM(NBSTATION,MAXHITCH),ALM(NBSTATION,MAXHITCH),
+     &             IZM(NBSTATION,MAXHITCH),
+     &             IP(NBSTATION,MAXHITCH),JHIT(NBSTATION),
+     &             XMR(NBSTATION,MAXHITCH,2),YMR(NBSTATION,MAXHITCH,2) 
+      
+      COMMON/RHIT/ITYP(MAXHITTOT),XTR(MAXHITTOT),YTR(MAXHITTOT),
+     &            PTOT(MAXHITTOT),ID(MAXHITTOT),IZST(MAXHITTOT),
+     &            PVERT1(MAXHITTOT),PVERT2(MAXHITTOT),PVERT3(MAXHITTOT),
+     &            ZVERT(MAXHITTOT),NHITTOT
+
+            
+      COMMON/CANDIDAT/JCAN(NBSTATION,MAXCAN),JCANTYP(MAXCAN),
+     &          EEX(MAXCAN),EEY(MAXCAN),EEP(MAXCAN),EEA(MAXCAN)
+      DIMENSION IFIND2(10)
+      
+**      PRINT *,'STOCK st. init.=',ICH1,'id. init.=',ID(IP(ICH1,JHITCH1))
+**      PRINT *,'STOCK st. finale=',ICH2,'id. final=',ID(IP(ICH2,IFIND))
+**      PRINT *,'STOCK ifind=',IFIND 
+**      PRINT *,'STOCK icode=',ICODE 
+
+      DO I = 1,10 
+         IF (IFIND2(I).GT.0) THEN
+            NCAN = NCAN+1
+            JCAN(ICH1,NCAN) = JHITCH1
+            JCAN(ICH2,NCAN) = IFIND2(I)
+            JCANTYP(NCAN) = ICODE 
+            EEX(NCAN) = EXM
+            EEY(NCAN) = EYM
+            EEP(NCAN) = EPH
+            EEA(NCAN) = EAL
+         ENDIF   
+      ENDDO
+   
+      RETURN
+      END
+*******************************************************************************
+       SUBROUTINE FCNOLD(NPAR,GRAD,FVAL,PEST,IFLAG,FUTIL)
 *******************************************************************************
 *   Calculate FVAL=CHI2 the function minimized by minuit for a given track
 *
@@ -3124,49 +3224,7 @@
 
        RETURN
        END
-********************************************************************************
-      SUBROUTINE STOCK_CANDIDAT(ICH1,JHITCH1,ICH2,IFIND,EXM,EYM,EPH,EAL,
-     &                          NCAN,ICODE)
-********************************************************************************
-*   Fill common CANDIDAT with track candidates from the search in stations 4&5
-*
-********************************************************************************
-      
-      IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-
-      PARAMETER (MAXHITTOT=20000,MAXHITCH=10000,NBSTATION=5,MAXCAN=1000)
-      
-      COMMON/CHHIT/XM(NBSTATION,MAXHITCH),YM(NBSTATION,MAXHITCH),
-     &             PHM(NBSTATION,MAXHITCH),ALM(NBSTATION,MAXHITCH),
-     &             IZM(NBSTATION,MAXHITCH),
-     &             IP(NBSTATION,MAXHITCH),JHIT(NBSTATION),
-     &             XMR(NBSTATION,MAXHITCH,2),YMR(NBSTATION,MAXHITCH,2) 
-      
-      COMMON/RHIT/ITYP(MAXHITTOT),XTR(MAXHITTOT),YTR(MAXHITTOT),
-     &            PTOT(MAXHITTOT),ID(MAXHITTOT),IZST(MAXHITTOT),
-     &            PVERT1(MAXHITTOT),PVERT2(MAXHITTOT),PVERT3(MAXHITTOT),
-     &            ZVERT(MAXHITTOT),NHITTOT
-
-            
-      COMMON/CANDIDAT/JCAN(NBSTATION,MAXCAN),JCANTYP(MAXCAN),
-     &          EEX(MAXCAN),EEY(MAXCAN),EEP(MAXCAN),EEA(MAXCAN)
-      
-**      PRINT *,'STOCK st. init.=',ICH1,'id. init.=',ID(IP(ICH1,JHITCH1))
-**      PRINT *,'STOCK st. finale=',ICH2,'id. final=',ID(IP(ICH2,IFIND))
-**      PRINT *,'STOCK ifind=',IFIND 
-**      PRINT *,'STOCK icode=',ICODE 
-      NCAN = NCAN+1
-      JCAN(ICH1,NCAN) = JHITCH1
-      JCAN(ICH2,NCAN) = IFIND
-      JCANTYP(NCAN) = ICODE 
-      EEX(NCAN) = EXM
-      EEY(NCAN) = EYM
-      EEP(NCAN) = EPH
-      EEA(NCAN) = EAL
-
-      RETURN
-      END
-*****************************************************************************
+****************************************************************************
       SUBROUTINE CHECK_HISTO4(IDHIST,ICH2,IHIT2,ICH1,IHIT1,
      &                        X1,Y1,PHI1,ALAM1,P1,EXM,EYM,EPH,EAL)   
 *****************************************************************************
@@ -3205,27 +3263,17 @@
       JOK = 0
        
       DO I=1,JHIT(ICH2)
-         IF (PHM(ICH2,I).LE.6.3) THEN
+         IF (PHM(ICH2,I).LE.6.3) THEN ! vector measurement
             IF (ID(IP(ICH1,IHIT1)).EQ.ID(IP(ICH2,I))) THEN
                JOK = I 
                IF (IDHIST.GT.0) THEN
-                  CALL CHFILL2(IDHIST,SNGL(P1),
-     &                        SNGL((X1-XM(ICH2,I))**2),1.)
-                  CALL CHFILL2(IDHIST+1,SNGL(P1),
-     &                        SNGL((Y1-YM(ICH2,I))**2),1.)
-                  CALL CHFILL2(IDHIST+2,SNGL(P1),
-     &                     SNGL((PHI1-PHM(ICH2,I))**2),1.)
-                  CALL CHFILL2(IDHIST+3,SNGL(P1),
-     &                     SNGL((ALAM1-ALM(ICH2,I))**2),1.)
-                  CALL CHF1(400+IDHIST,
-     &                        SNGL(X1-XM(ICH2,I)),1.)
-                  CALL CHF1(400+IDHIST+1,
-     &                        SNGL(Y1-YM(ICH2,I)),1.)
-                  CALL CHF1(400+IDHIST+2,
-     &                     SNGL(PHI1-PHM(ICH2,I)),1.)
-                  CALL CHF1(400+IDHIST+3,
-     &                     SNGL(ALAM1-ALM(ICH2,I)),1.)
-                  CALL CHF1(IDHIST+4,SNGL(P1),R2)
+*                  CALL CHF1(IDHIST,SNGL(P1),SNGL((X1-XM(ICH2,I))**2))
+*                  CALL CHF1(IDHIST+1,SNGL(P1),SNGL((Y1-YM(ICH2,I))**2))
+*                  CALL CHF1(IDHIST+2,SNGL(P1),
+*     &                     SNGL((PHI1-PHM(ICH2,I))**2))
+*                  CALL CHF1(IDHIST+3,SNGL(P1),
+*     &                     SNGL((ALAM1-ALM(ICH2,I))**2))
+*                  CALL CHF1(IDHIST+4,SNGL(P1),R2)
                ENDIF   
             ENDIF
          ENDIF
@@ -3251,6 +3299,7 @@
      &                    ID(IP(ICH1,IHIT1))
                   PRINT *,'CHECK4 id ghost trouve    :',
      &                    ID(IP(ICH2,IHIT2))  
+                  PRINT *,'CHECK4 JOK=',JOK,' IHIT2=',IHIT2
                ENDIF
             ENDIF
          ENDIF
@@ -3301,22 +3350,16 @@
          IF (ID(IP(ICH1,IHIT1)).EQ.ID(IP(ICH2,I))) THEN
             JOK = I 
             IF (IDHIST.GT.0) THEN
-               IF (IZM(ICH2,I).EQ.1) THEN
+               IF (IZM(ICH2,I).EQ.1) THEN ! 1st chamber
                   X = X1
                   Y = Y1
-               ELSE
+               ELSE  ! 2nd chamber
                   X = X2
                   Y = Y2
-               ENDIF 
-               CALL CHFILL2(200+IDHIST,SNGL(P1),
-     &                       SNGL((X-XM(ICH2,I))**2),1.)
-               CALL CHFILL2(200+IDHIST+1,SNGL(P1),
-     &                       SNGL((Y-YM(ICH2,I))**2),1.)
-               CALL CHF1(200+IDHIST+2,
-     &                       SNGL(X-XM(ICH2,I)),1.)
-               CALL CHF1(200+IDHIST+3,
-     &                       SNGL(Y-YM(ICH2,I)),1.)
-               CALL CHF1(200+IDHIST+4,SNGL(P1),R2)
+               ENDIF      
+               CALL CHF1(IDHIST,SNGL(P1),SNGL((X-XM(ICH2,I))**2))
+               CALL CHF1(IDHIST+1,SNGL(P1),SNGL((Y-YM(ICH2,I))**2))
+               CALL CHF1(IDHIST+4,SNGL(P1),R2)
             ENDIF   
          ENDIF
       ENDDO
@@ -3355,6 +3398,7 @@
      &                    ID(IP(ICH1,IHIT1))
                   PRINT *,'CHECK2 id ghost trouve    :',
      &                    ID(IP(ICH2,IHIT2))  
+                  PRINT *,'CHECK2 JOK=',JOK,' IHIT2=',IHIT2  
                ENDIF
             ENDIF
          ENDIF
@@ -3363,10 +3407,71 @@
       RETURN
       END
 
-
+      DOUBLE PRECISION FUNCTION DEDX(P,THET,XEA,YEA)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      REA = DSQRT(XEA**2+YEA**2)
+      IF (REA.lT.26.3611) THEN
+         if (p .lt. 15.) then
+            DP=2.737+0.0494*p-0.001123*p*p
+         else 
+	    DP=3.0643+0.01346*p
+         endif
+      ELSE
+         if (p .lt. 15.) then
+	    DP = 2.1380+0.0351*p-0.000853*p*p
+         else 
+	    DP = 2.407+0.00702*p
+         endif
+      ENDIF
+      P=P+DP/DCOS(THET)
+      DEDX=P
+      RETURN
+      END
 
 ************************************************************************        
-      DOUBLE PRECISION FUNCTION DEDX (P,THET,XEA,YEA)
+      DOUBLE PRECISION FUNCTION DEDX_oldold(P,THET,XEA,YEA)
+************************************************************************        
+*    DEDX est la nouvelle impulsion au vertex, corrigee de la perte    
+*    d'energie dans l'absorbeur
+*
+************************************************************************        
+      
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION PPB(6), PW(6)
+*   FIT RESULT FOR PB REGION (5TH ORDER POLY)
+*   1  p0           2.24358e+03   2.55765e+00   1.06982e-03   6.30474e-07
+*   2  p1           1.16393e+01   4.45081e-02   6.58627e-06  -1.15822e-04
+*   3  p2          -1.82314e-01   3.28429e-04   8.69340e-08  -1.27281e-02
+*   4  p3           1.60930e-03   2.23812e-06   7.67374e-10  -4.15573e-01
+*   5  p4          -6.96885e-06   1.35405e-08   3.32301e-12   1.22136e+02
+*   6  p5           1.16339e-08   5.91665e-11   1.06532e-14   3.33965e+04     
+
+      DATA PPB /2.24358d+03, 1.16393d+01, -1.82314d-01, 1.60930d-03
+     +         ,-6.96885d-06, 1.16339d-08/
+*   FIT RESULT FOR W REGION (5TH ORDER POLY)
+*   1  p0           2.90155e+03   3.49066e+00   1.38357e-03  -2.79916e-05
+*   2  p1           1.57716e+01   6.09946e-02   9.03687e-06  -6.63098e-03
+*   3  p2          -2.48349e-01   4.50365e-04   1.18422e-07  -8.27199e-01
+*   4  p3           2.19908e-03   3.07148e-06   1.04860e-09  -1.03290e+02
+*   5  p4          -9.54046e-06   1.85908e-08   4.54924e-12  -1.51284e+04
+*   6  p5           1.59463e-08   8.11346e-11   1.46446e-14  -2.69491e+06     
+      DATA PW /2.90155d+03, 1.57716d+01, -2.48349d-01, 2.19908d-03 
+     +         , -9.54046d-06, 1.59463d-08/
+* 
+      REA = DSQRT(XEA**2+YEA**2)
+      IF (REA.GT.26.3611) THEN
+         DP=PPB(1)+PPB(2)*P+PPB(3)*P**2
+     &    +PPB(4)*P**3+PPB(5)*P**4+PPB(6)*P**5
+      ELSE
+         DP=PW(1)+PW(2)*P+PW(3)*P**2
+     &    +PW(4)*P**3+PW(5)*P**4+PW(6)*P**5
+      ENDIF
+      P=P+DP/1000.D0/DCOS(THET)
+      DEDX=P
+      RETURN
+      END
+************************************************************************        
+      DOUBLE PRECISION FUNCTION DEDX_OLD(P,THET,XEA,YEA)
 ************************************************************************        
 *    DEDX est la nouvelle impulsion au vertex, corrigee de la perte    
 *    d'energie dans l'absorbeur
@@ -3418,6 +3523,8 @@
       RETURN
  
       END
+*/
+
 ************************************************************************        
       SUBROUTINE BRANSON(PXZ,PHI,ALAM,XEA,YEA)
 ************************************************************************        
@@ -3449,7 +3556,7 @@
       ELSE            ! Abso. W  pour theta < 3 deg
          ZBP = ZBP2
       ENDIF
-             
+*      ZBP = ZEA ! Andreas
       XBP = XEA-PX/PZ*(ZEA-ZBP)
       YBP = YEA-PY/PZ*(ZEA-ZBP)
       PZ = PTOT*ZBP/DSQRT(XBP**2+YBP**2+ZBP**2)
@@ -3597,14 +3704,12 @@
 * $Id$
 *
 * $Log$
-* Revision 1.3  1999/10/05 17:15:45  fca
-* Minor syntax for the Alpha OSF
+* Revision 1.4.4.2  2000/04/26 15:48:37  morsch
+* Some routines from obsolete algo.F are needed by reco_muon.F and have been
+* copied there.
 *
-* Revision 1.2  1999/08/06 14:12:30  fca
-* Remove several warnings
-*
-* Revision 1.1  1999/07/30 10:53:20  fca
-* New version of MUON from M.Bondila & A.Morsch
+* Revision 1.4.4.1  2000/01/12 16:00:55  morsch
+* New version of MUON code
 *
 * Revision 1.1.1.1  1996/02/15 17:48:35  mclareni
 * Kernlib
@@ -3726,6 +3831,7 @@
      
       COMMON/FCNOUT/PXZEA,ALAMEA,PHIEA,XEA,YEA,NPLU,CHI2
                  
+
       DIMENSION GRAD(*),XVAL(*),AMS(500),DISTAZ(500)
   
       DIMENSION XP(NPLANE),YP(NPLANE),
@@ -3784,7 +3890,8 @@
 **     &            .AND. (THETA*PITODEG).LT.9.) 
             NSTEP = NSTEP+1 
 **          WRITE(6,*) NSTEP,(VECT(I),I=1,7)
-            CALL RECO_GRKUTA(ASIGN,STEP,VECT,VOUT)
+**            CALL RECO_GRKUTA(ASIGN,STEP,VECT,VOUT) ! CCC
+            CALL RECO_GHELIX(ASIGN,STEP,VECT,VOUT)
             DO I = 1,7
                VECT(I) = VOUT(I)
             ENDDO   
@@ -3818,11 +3925,11 @@
                  ENDIF      
                  
 *     IF (I .EQ. 10 .AND. J .EQ. 10) PRINT *,'10 10   ',COV(J,I)
-                 DO L = 1,NTMAX
-                    COV(J,I) = COV(J,I)
-     &                   +  (ZPLANEP(II) + DISTAZ(L))*(ZPLANEP(JJ) + 
-     &                   DISTAZ(L))*AMS(L)**2
-                 ENDDO
+**                 DO L = 1,NTMAX
+**                    COV(J,I) = COV(J,I)
+**     &                   +  (ZPLANEP(II) + DISTAZ(L))*(ZPLANEP(JJ) + 
+**     &                   DISTAZ(L))*AMS(L)**2
+**                 ENDDO
                  DO K = 1, II-1
                     COV(J,I) = COV(J,I)
      &                   +  (ZPLANEP(II)-ZPLANEP(K))*
@@ -4679,6 +4786,7 @@ C
 
  999  END
 
+
 *******************************************************************
       SUBROUTINE RECO_GUFLD(X,B)
 C
@@ -4756,13 +4864,13 @@ C
             B(1)=0.
             B(2)=0.
             B(3)=0.
-          ENDIF
+         ENDIF
       ELSE IF(ISXFMAP.LE.3) THEN
          IF (-700.LT.X(3).AND.X(3).LT.ZMBEG
      +      .AND. X(1)**2+(X(2)+30.)**2 .LT. 560.**2 ) THEN
             B(1)=0.
             B(2)=0.
-            B(3)=2.
+            B(3)=0.
          ELSE IF ((X(3) .GE. ZMBEG .AND. X(3) .LT. ZMEND) .AND.
      +            (XMBEG.LE.ABS(X(1)).AND.ABS(X(1)).LT.XMEND) .AND.
      +            (YMBEG.LE.ABS(X(2)).AND.ABS(X(2)).LT.YMEND)) THEN
@@ -4956,8 +5064,6 @@ C --- Common containing magnetic field map data
      $,XMBEG,YMBEG,ZMBEG,XMEND,YMEND,ZMEND
      $,BV(MAXFLD)
 
-      CHARACTER*255 CHDIR
-
       ISXFMAP = 3
   
       IF(ISXFMAP.EQ.1) THEN
@@ -4968,10 +5074,7 @@ C --- Common containing magnetic field map data
 10000    FORMAT(' *SXFMAP* Magnetic field map flag: ',I5
      $        ,'; Reading magnetic field map data ')
 *
-         CHDIR=' '
-         CALL GETENVF('ALICE_ROOT',CHDIR)
-         LEND=LNBLNK(CHDIR)
-         OPEN(77,FILE=CHDIR(1:LEND)//'/data/field01.dat',
+         OPEN(77,FILE='/home/morsch/AliRoot/V3.02/data/field01.dat',
      $        FORM='FORMATTED',STATUS='OLD')
          READ(77,*) NX,NY,NZ,DX,DY,DZ,XMBEG,YMBEG,ZMBEG
          PRINT*,'NX,NY,NZ,DX,DY,DZ,XMBEG,YMBEG,ZMBEG',
@@ -5271,4 +5374,748 @@ C
       RETURN
       END
 
+*
+* $Id$
+*
+* $Log$
+* Revision 1.4.4.2  2000/04/26 15:48:37  morsch
+* Some routines from obsolete algo.F are needed by reco_muon.F and have been
+* copied there.
+*
+* Revision 1.4.4.1  2000/01/12 16:00:55  morsch
+* New version of MUON code
+*
+* Revision 1.1.1.1  1995/10/24 10:21:41  cernlib
+* Geant
+*
+*
+*CMZ :  3.21/02 29/03/94  15.41.23  by  S.Giani
+*-- Author :
+      SUBROUTINE RECO_GHELIX (CHARGE, STEP, VECT, VOUT)
+C.
+C.    ******************************************************************
+C.    *                                                                *
+C.    *  Performs the tracking of one step in a magnetic field         *
+C.    *  The trajectory is assumed to be a helix in a constant field   *
+C.    *  taken at the mid point of the step.                           *
+C.    *  Parameters:                                                   *
+C.    *   input                                                        *
+C.    *     STEP =arc length of the step asked                         *
+C.    *     VECT =input vector (position,direction cos and momentum)   *
+C.    *     CHARGE=  electric charge of the particle                   *
+C.    *   output                                                       *
+C.    *     VOUT = same as VECT after completion of the step           *
+C.    *                                                                *
+C.    *    ==>Called by : <USER>, GUSWIM                               *
+C.    *       Author    M.Hansroul  *********                          *
+C.    *       Modified  S.Egli, S.V.Levonian                           *
+C.    *       Modified  V.Perevoztchikov
+C.    *                                                                *
+C.    ******************************************************************
+C.
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 
+      DIMENSION      VECT(7),VOUT(7)
+      DIMENSION      XYZ(3),H(4),HXP(3)
+      PARAMETER      (IX=1,IY=2,IZ=3,IPX=4,IPY=5,IPZ=6,IPP=7)
+      PARAMETER      (SIXTH = 1./6.)
+      PARAMETER      (EC=2.9979251E-4)
+C.
+C.    ------------------------------------------------------------------
+C.
+C       units are kgauss,centimeters,gev/c
+C
+      VOUT(IPP) = VECT(IPP)
+      IF (CHARGE.EQ.0.)         GO TO 10
+      XYZ(1)    = VECT(IX) + 0.5 * STEP * VECT(IPX)
+      XYZ(2)    = VECT(IY) + 0.5 * STEP * VECT(IPY)
+      XYZ(3)    = VECT(IZ) + 0.5 * STEP * VECT(IPZ)
+C
+      CALL RECO_GUFLD (XYZ, H)
+ 
+      H2XY = H(1)**2 + H(2)**2
+      H(4) = H(3)**2 + H2XY
+      IF (H(4).LE.1.E-12)       GO TO 10
+      IF (H2XY.LE.1.E-12*H(4))  THEN
+         CALL RECO_GHELX3 (CHARGE*H(3), STEP, VECT, VOUT)
+         GO TO 999
+      ENDIF
+      H(4) = SQRT(H(4))
+      H(1) = H(1)/H(4)
+      H(2) = H(2)/H(4)
+      H(3) = H(3)/H(4)
+      H(4) = H(4)*EC
+*
+      HXP(1) = H(2)*VECT(IPZ) - H(3)*VECT(IPY)
+      HXP(2) = H(3)*VECT(IPX) - H(1)*VECT(IPZ)
+      HXP(3) = H(1)*VECT(IPY) - H(2)*VECT(IPX)
+ 
+      HP = H(1)*VECT(IPX) + H(2)*VECT(IPY) + H(3)*VECT(IPZ)
+*
+      RHO = -CHARGE*H(4)/VECT(IPP)
+      TET = RHO * STEP
+      IF (ABS(TET).GT.0.15)     THEN
+         SINT = SIN(TET)
+         SINTT = (SINT/TET)
+         TSINT = (TET-SINT)/TET
+         COS1T = 2.*(SIN(0.5*TET))**2/TET
+      ELSE
+         TSINT = SIXTH*TET**2
+         SINTT = (1. - TSINT)
+         SINT = TET*SINTT
+         COS1T = 0.5*TET
+      ENDIF
+*
+      F1 = STEP * SINTT
+      F2 = STEP * COS1T
+      F3 = STEP * TSINT * HP
+      F4 = -TET*COS1T
+      F5 = SINT
+      F6 = TET * COS1T * HP
+ 
+      VOUT(IX) = VECT(IX) + (F1*VECT(IPX) + F2*HXP(1) + F3*H(1))
+      VOUT(IY) = VECT(IY) + (F1*VECT(IPY) + F2*HXP(2) + F3*H(2))
+      VOUT(IZ) = VECT(IZ) + (F1*VECT(IPZ) + F2*HXP(3) + F3*H(3))
+ 
+      VOUT(IPX) = VECT(IPX) + (F4*VECT(IPX) + F5*HXP(1) + F6*H(1))
+      VOUT(IPY) = VECT(IPY) + (F4*VECT(IPY) + F5*HXP(2) + F6*H(2))
+      VOUT(IPZ) = VECT(IPZ) + (F4*VECT(IPZ) + F5*HXP(3) + F6*H(3))
+ 
+      GO TO 999
+ 
+   10 CONTINUE
+      DO 20 I   = 1,3
+         VOUT(I) = VECT(I) + STEP * VECT(I+3)
+         VOUT(I+3) = VECT(I+3)
+   20 CONTINUE
+C
+  999 END
+
+*
+* $Id$
+*
+* $Log$
+* Revision 1.4.4.2  2000/04/26 15:48:37  morsch
+* Some routines from obsolete algo.F are needed by reco_muon.F and have been
+* copied there.
+*
+* Revision 1.4.4.1  2000/01/12 16:00:55  morsch
+* New version of MUON code
+*
+* Revision 1.1.1.1  1995/10/24 10:21:41  cernlib
+* Geant
+*
+*
+
+*CMZ :  3.21/02 29/03/94  15.41.23  by  S.Giani
+*-- Author :
+      SUBROUTINE RECO_GHELX3 (FIELD, STEP, VECT, VOUT)
+C.
+C.    ******************************************************************
+C.    *                                                                *
+C.    *       Tracking routine in a constant field oriented            *
+C.    *       along axis 3                                             *
+C.    *       Tracking is performed with a conventional                *
+C.    *       helix step method                                        *
+C.    *                                                                *
+C.    *    ==>Called by : <USER>, GUSWIM                               *
+C.    *       Authors    R.Brun, M.Hansroul  *********                 *
+C     *       Rewritten  V.Perevoztchikov
+C.    *                                                                *
+C.    ******************************************************************
+C.
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+
+      DIMENSION      VECT(7),VOUT(7),HXP(3)
+      PARAMETER      (IX=1,IY=2,IZ=3,IPX=4,IPY=5,IPZ=6,IPP=7)
+      PARAMETER      (SIXTH = 1./6.)
+      PARAMETER      (EC=2.9979251E-4)
+C.
+C.    ------------------------------------------------------------------
+C.
+C       units are kgauss,centimeters,gev/c
+C
+      VOUT(IPP) = VECT(IPP)
+      H4 = FIELD * EC
+*
+      HXP(1) = - VECT(IPY)
+      HXP(2) = + VECT(IPX)
+ 
+      HP = VECT(IPZ)
+*
+      RHO = -H4/VECT(IPP)
+      TET = RHO * STEP
+      IF (ABS(TET).GT.0.15)     THEN
+         SINT = SIN(TET)
+         SINTT = (SINT/TET)
+         TSINT = (TET-SINT)/TET
+         COS1T = 2.*(SIN(0.5*TET))**2/TET
+      ELSE
+         TSINT = SIXTH*TET**2
+         SINTT = (1. - TSINT)
+         SINT = TET*SINTT
+         COS1T = 0.5*TET
+      ENDIF
+*
+      F1 = STEP * SINTT
+      F2 = STEP * COS1T
+      F3 = STEP * TSINT * HP
+      F4 = -TET*COS1T
+      F5 = SINT
+      F6 = TET * COS1T * HP
+ 
+      VOUT(IX) = VECT(IX) + (F1*VECT(IPX) + F2*HXP(1))
+      VOUT(IY) = VECT(IY) + (F1*VECT(IPY) + F2*HXP(2))
+      VOUT(IZ) = VECT(IZ) + (F1*VECT(IPZ) + F3)
+ 
+      VOUT(IPX) = VECT(IPX) + (F4*VECT(IPX) + F5*HXP(1))
+      VOUT(IPY) = VECT(IPY) + (F4*VECT(IPY) + F5*HXP(2))
+      VOUT(IPZ) = VECT(IPZ) + (F4*VECT(IPZ) + F6)
+ 
+C
+  999 END
+
+************************************************************************
+      DOUBLE PRECISION FUNCTION RECOCHI2 (MPOS,MANG,XM,YM,ALAMM,APHIM,
+     &     XC,YC,ALAMC,APHIC,PTOT,IZMES,NPLPL)
+C.
+C.    ******************************************************************
+C.    *   Calculate chi2 taking into account MSC                       *
+C.    *                                                                *
+C.    ******************************************************************
+C.
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER(NBSTATION=5,NPLANE=10)
+
+      COMMON/ZDEFIN/ZPLANE(NBSTATION),ZCOIL,ZMAGEND,DZ_PL(NBSTATION)
+
+      COMMON/PARAM/ZPLANEP(NPLANE),THICK,XPREC,YPREC,B0,BL3,ZMAGS,
+     &             ZMAGE,ZABS,XMAG,ZBP1,ZBP2,CONST
+C
+      DIMENSION MPOS(NBSTATION),MANG(NBSTATION),
+     &    XM(NBSTATION),YM(NBSTATION),ALAMM(NBSTATION),APHIM(NBSTATION),
+     &    XC(NBSTATION),YC(NBSTATION),ALAMC(NBSTATION),APHIC(NBSTATION),
+     &    ALAMP(NBSTATION),APHIP(NBSTATION)
+
+      DIMENSION AP(NPLANE),IZMES(NBSTATION),IPLANE(NPLANE)  
+      DIMENSION COVX(NPLANE,NPLANE),COVY(NPLANE,NPLANE)
+      DIMENSION XM1(NPLANE),YM1(NPLANE),XC1(NPLANE),YC1(NPLANE)
+
+
+      ICH = 0 
+      NPLPL = 0 
+      DO IZ = 1,NBSTATION    
+          ICH = ICH + 1 
+          IPLANE(ICH) = 0   
+          AL   = THICK/(COS(ALAMC(IZ))*COS(APHIC(IZ)))
+          AP(ICH) = (0.0136D0/PTOT)*DSQRT(AL)*(1.+0.038D0*DLOG(AL))
+          IF (MPOS(IZ).EQ.1.AND.IZMES(IZ).EQ.1) THEN
+             IPLANE(ICH) = 1
+             XM1(ICH) = XM(IZ)
+             YM1(ICH) = YM(IZ)
+          ENDIF
+          XC1(ICH) = XC(IZ)
+          YC1(ICH) = YC(IZ)
+
+          ICH = ICH + 1    
+          IPLANE(ICH) = 0   
+          AP(ICH) = (0.0136D0/PTOT)*DSQRT(AL)*(1.+0.038D0*DLOG(AL))
+          IF (MPOS(IZ).EQ.1.AND.IZMES(IZ).EQ.2) THEN
+             IPLANE(ICH) = 1
+             XM1(ICH) = XM(IZ)
+             YM1(ICH) = YM(IZ)
+          ENDIF
+          IF (MANG(IZ).EQ.1) THEN
+             IPLANE(ICH) = 1
+             XM1(ICH) = XM(IZ) - DZ_PL(IZ) * TAN(APHIM(IZ))
+             YM1(ICH) = YM(IZ) + DZ_PL(IZ)/COS(APHIM(IZ))*TAN(ALAMM(IZ))
+          ENDIF 
+          XC1(ICH) = XC(IZ) - DZ_PL(IZ) * TAN(APHIC(IZ))
+          YC1(ICH) = YC(IZ) + DZ_PL(IZ)/COS(APHIC(IZ))*TAN(ALAMC(IZ))
+          IF (IPLANE(ICH).EQ.1) NPLPL = NPLPL+1          
+      ENDDO
+
+
+
+** Matrice de covariance X et Y   
+      I = 0
+      DO II = 1,NPLANE
+
+        IF (IPLANE(II).EQ.1) THEN
+           I = I + 1
+
+           J = I - 1
+           DO JJ = II, NPLANE
+              IF (IPLANE(JJ).EQ.1) THEN
+                 J = J + 1
+
+                 COVX (I,J) = 0.
+                 COVX (J,I) = 0.
+                 IF (I .EQ. J) THEN
+                    COVX(J,I) =COVX(J,I) + XPREC**2
+                 ENDIF      
+
+                 DO K = 1, II-1
+                    COVX(J,I) = COVX(J,I)
+     &                   +  (-ZPLANEP(II)+ZPLANEP(K))*
+     &                   (-ZPLANEP(JJ)+ZPLANEP(K))*AP(K)**2
+
+                 ENDDO
+                 COVY(I,J) = 0.
+                 COVY(J,I) = COVX(J,I)
+                 IF (I .EQ. J) THEN
+                    COVY(J,I) = COVY(J,I) - XPREC**2 + YPREC**2
+                 ENDIF
+              ENDIF   
+           ENDDO
+        ENDIF
+      ENDDO
+
+      NPLUP = I
+
+ 
+*  Inversion des matrices de covariance
+      IFAIL = 0
+      CALL DSINV(NPLUP, COVX, NPLANE, IFAIL)
+**      IF (JFAIL.NE.0 .AND. IFAIL .NE. 0) STOP 'ERROR'
+      IF (IFAIL .NE. 0) STOP 'RECOCHI2 ERROR COVX'
+
+      IFAIL = 0
+      CALL DSINV(NPLUP, COVY, NPLANE, IFAIL)
+**      IF (JFAIL.NE.0 .AND. IFAIL .NE. 0) STOP 'ERROR'
+      IF (IFAIL .NE. 0) STOP 'RECOCHI2 ERROR COVY'
+
+** Calcul de FVAL ou CHI2
+      FVAL = 0.
+
+      I = 0
+      DO II = 1,NPLANE
+        IF (IPLANE(II).EQ.1) THEN
+           I = I+1
+           J = 0
+**           print *,' II=',ii,' XM1,YM1 =',xm1(ii),ym1(ii),
+**     &          ' XC,YC =',xc1(ii),yc1(ii)
+           DO JJ = 1,NPLANE
+              IF (IPLANE(JJ).EQ.1) THEN
+                 J = J+1
+                 FVAL = FVAL + COVX(J,I)*(XM1(II)-XC1(II))
+     &                *(XM1(JJ)-XC1(JJ))
+                 FVAL = FVAL + COVY(J,I)*(YM1(II)-YC1(II))
+     &                *(YM1(JJ)-YC1(JJ))
+              ENDIF
+           ENDDO
+        ENDIF
+      ENDDO
+
+      RECOCHI2 = FVAL
+**      print *,' recochi2 =',recochi2  
+        
+C
+      RETURN
+      END
+
+************************************************************************        
+      SUBROUTINE RECO_SELECT(ISEL)
+************************************************************************       *    ISEL(I) = 1 if track number I is OK, ISEL(I) = 0 otherwise  
+************************************************************************        
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+
+      PARAMETER (NPLANE=10,NBCHAMBER=10,NTRMAX=500)
+
+      COMMON/DEBEVT/IDEBUG
+
+      COMMON/PARAM/ZPLANEP(NPLANE),THICK,XPREC,YPREC,B0,BL3,ZMAGS,
+     &             ZMAGE,ZABS,XMAG,ZBP1,ZBP2,CONST
+
+      COMMON/TRACKFOUT/IEVOUT,NTREVT,JJOUT(NBCHAMBER,NTRMAX),
+     &               ISTAT(NTRMAX),PXZOUT(NTRMAX),TPHIOUT(NTRMAX),
+     &               TALAMOUT(NTRMAX),XVERTOUT(NTRMAX),YVERTOUT(NTRMAX),
+     &               CHI2OUT(NTRMAX),
+     &               XMESOUT(NBCHAMBER,NTRMAX),YMESOUT(NBCHAMBER,NTRMAX)  
+     &              ,PXVOUT(NTRMAX),PYVOUT(NTRMAX),PZVOUT(NTRMAX)
+
+      DIMENSION ISEL(NTRMAX)
+
+      DO I = 1,NTREVT
+         ISEL(I) = 1
+      ENDDO   
+ 
+      DO I = 1,NTREVT
+      
+         ICH1 = 9
+         JJ1 = JJOUT(ICH1,I)
+         IF (JJ1.EQ.0) ICH1 = 10
+         X1 = XMESOUT(ICH1,I)
+         Y1 = YMESOUT(ICH1,I)
+
+         DO J = I+1,NTREVT
+            ICH2 = 9
+            JJ2 = JJOUT(ICH2,J)
+            IF (JJ2.EQ.0) ICH2 = 10
+            X2 = XMESOUT(ICH2,J)
+            Y2 = YMESOUT(ICH2,J)
+            DIST = SQRT(((X2-X1)/(10.*XPREC))**2
+     &           +((Y2-Y1)/(10.*YPREC))**2)
+            IF (DIST.LT.2.) THEN
+               CHI21 =  CHI2OUT(I)
+               CHI22 =  CHI2OUT(J)
+               IF (CHI22.LT.CHI21) THEN
+                  ISEL(I) = 0
+                  IF (IDEBUG.EQ.2) THEN 
+                     PRINT *,' RECO_SELECT I,ISEL= ',I,ISEL(I)
+                  ENDIF
+               ELSE
+                  ISEL(J) = 0
+                  IF (IDEBUG.EQ.2) THEN
+                     PRINT *,' RECO_SELECT J,ISEL= ',J,ISEL(J)
+                  ENDIF   
+               ENDIF   
+            ENDIF
+         ENDDO
+ 
+      ENDDO   
+            
+
+      RETURN
+      END
+
+***************************************************
+      SUBROUTINE reconstmuon2(IFIT,IDEBUGC,NEV)
+***************************************************
+      IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+
+      PARAMETER(NPLANE=10,MAXIDG=28,NTRMAX=500)
+
+      REAL*4 PXR,PYR,PZR,ZVR,CHI2R,PXV,PYV,PZV
+
+      COMMON/TRACKFI/EFF,EFF1,EFF2,XPREC,YPREC,PHIPREC,ALAMPREC,
+     &                 HCUT,LBKG,SIGCUT,ALPHATOP,HTOP
+
+      COMMON/PAWCR4/IEVR,NTRACKR,ISTATR(NTRMAX),ISIGNR(NTRMAX),
+     &              PXR(NTRMAX),PYR(NTRMAX),PZR(NTRMAX),ZVR(NTRMAX),
+     &              CHI2R(NTRMAX),PXV(NTRMAX),PYV(NTRMAX),PZV(NTRMAX)
+
+      COMMON/MEAS/LPLANE(NPLANE),XMP(NPLANE),YMP(NPLANE)
+
+      COMMON/FIT/NHITTOT1,izch(maxidg),xgeant(maxidg),
+     &     ygeant(nplane)
+
+      COMMON/PRECCUT/PCUT,PTCUT,CHI2CUT
+
+      REAL*4 RN1,RN2
+
+** Read events          
+      CALL trackf_read_fit(IEVR,NEV,NHITTOT1,IZCH,XGEANT,YGEANT)
+      print*,'nhittot1 ',nhittot1
+
+*      do i=1,NHITTOT1
+*         print*,'x=',xgeant(i),' y=',ygeant(i),' ch=',izch(i)
+*      enddo
+
+      if (nhittot1.ne.20) goto 55
+      nhit1=1
+      nhit2=10
+      do ntr=1,2                ! loop over tracks
+         do nhit=nhit1,nhit2 ! loop over hits
+            ich=izch(nhit)
+            lplane(ich)=1
+            
+            CALL RANNOR(RN1,RN2) ! CCC
+*            xmp(ich)=xgeant(nhit)
+*            ymp(ich)=ygeant(nhit)
+            xmp(ich)=xgeant(nhit) + RN1 * XPREC
+            ymp(ich)=ygeant(nhit) + RN2 * YPREC
+         end do
+         call fit_trace(ntr)
+         nhit1=11
+         nhit2=20
+      end do   
+
+      CALL CHFNT(IEVR,NTRACK,ISTATR,ISIGNR,
+     &     PXR,PYR,PZR,ZVR,CHI2R,PXV,PYV,PZV)
+            
+ 55   continue
+
+      END
+
+*********************************
+      subroutine fit_trace(ntr)
+*********************************
+*
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+
+      PARAMETER(NPLANE=10,NTRACK=2,NTRMAX=500)
+
+      COMMON/FCNOUT/PXZEA,ALAMEA,PHIEA,XEA,YEA,NPLU,CHI2
+
+      REAL*4 PXR,PYR,PZR,ZVR,CHI2R,PXV,PYV,PZV
+      COMMON/PAWCR4/IEVR,NTRACKR,ISTATR(NTRMAX),ISIGNR(NTRMAX),
+     &              PXR(NTRMAX),PYR(NTRMAX),PZR(NTRMAX),ZVR(NTRMAX),
+     &              CHI2R(NTRMAX),PXV(NTRMAX),PYV(NTRMAX),PZV(NTRMAX)
+
+      COMMON/MEAS/LPLANE(NPLANE),XMP(NPLANE),YMP(NPLANE)
+
+      COMMON/PARAM/ZPLANEP(NPLANE),THICK,XPREC,YPREC,B0,BL3,ZMAGS,
+     &     ZMAGE,ZABS,XMAG,ZBP1,ZBP2,CONST
+
+      COMMON/PRECCUT/PCUT,PTCUT,CHI2CUT 
+ 
+      dimension PXZOUT(NTRMAX),TPHIOUT(NTRMAX),TALAMOUT(NTRMAX),
+     &     CHI2OUT(NTRMAX)
+
+      x1=xmp(1)
+      y1=ymp(1)
+      ipl1=1
+      x2=xmp(3)
+      y2=ymp(3)
+      ipl2=3
+      x3=xmp(7)
+      ipl3=7
+      x4=xmp(9)
+      ipl4=9
+
+      PHIAV = DATAN2((X2-X1),(ZPLANEP(IPL2)-ZPLANEP(IPL1)))          
+      PHIAP = DATAN2((X4-X3),(ZPLANEP(IPL4)-ZPLANEP(IPL3)))
+
+      DPHI = (PHIAP-PHIAV)
+      ASIGN = 1.
+      IF (DPHI.LT.0.) ASIGN = -1. ! CCC
+      PXZ = CONST/DABS(DPHI)
+
+*     * Cuts PXZ           
+      IF (PXZ.LT.PCUT) GO TO 66       
+      
+      PXZINVI = ASIGN/PXZ       ! CCC
+      PHII = PHIAV
+      ALAMI = DATAN2((Y2-Y1),DSQRT((X2-X1)**2
+     &     +(ZPLANEP(IPL2)-ZPLANEP(IPL1))**2))
+      XVR = X1
+      YVR = Y1
+      
+*         print *,' avant prec_fit pxzi phii alami x y',1./ PXZINVI,
+*     &         PHII, ALAMI ,XVR,YVR             
+*         PRINT *,' X1 X2 X3 X4',X1,X2,X3,X4
+*         PRINT *,' Z1 Z2 Z3 Z4',ZPLANEP(IPL1),ZPLANEP(IPL2),
+*     &          ZPLANEP(IPL3),ZPLANEP(IPL4)
+*         PRINT *,' CONST= ',CONST 
+
+*     * Fit des traces apres l'absorbeur           
+      CALL PREC_FIT (PXZINVI,PHII,ALAMI,XVR,YVR,
+     &     PXZINVF,PHIF,ALAMF,XVERTF,YVERTF,EPXZINV,EPHI,EALAM,
+     &     EXVERT,EYVERT)
+      
+*     * Correction de Branson       
+      CALL BRANSON(PXZEA,PHIEA,ALAMEA,XEA,YEA)
+
+      PXZ1 = DABS(PXZEA)
+      PX1 = PXZ1*DSIN(PHIEA)
+      PY1 = PXZ1*DTAN(ALAMEA)
+      PT1 = DSQRT(PX1**2+PY1**2)
+ 
+*      print*,'pt1=',pt1
+*      print*,'ptcut=',ptcut
+*      print*,'chi2=',CHI2/FLOAT(2*NPLU-5)
+*      print*,'chi2cut=',CHI2CUT
+
+*     * Cuts PT
+      IF (PT1.LT.PTCUT) GO TO 66
+*     * Cuts CHI2
+      IF ((CHI2/FLOAT(2*NPLU-5)).GT.CHI2CUT) GO TO 66
+
+      PXZOUT(NTR) = PXZEA
+      TPHIOUT(NTR) = DTAN(PHIEA)
+      TALAMOUT(NTR) = DTAN(ALAMEA) 
+      CHI2OUT(NTR) =  CHI2/FLOAT(2*NPLU-5) 
+
+      ISIGNR(NTR) = 1 
+      IF (PXZOUT(NTR).LT.0.) ISIGNR(NTR) = -1
+      PXZ = ABS(PXZOUT(NTR))
+      PHI = ATAN(TPHIOUT(NTR)) 
+      ALAM = ATAN(TALAMOUT(NTR)) 
+      PYR(NTR) = PXZ*SIN(PHI)
+      PXR(NTR) = PXZ*TAN(ALAM)
+      PZR(NTR) = PXZ*COS(PHI)
+
+ 66   CONTINUE 
+      
+      return
+      end
+
+      SUBROUTINE SORTZV (A,INDEX,N1,MODE,NWAY,NSORT)
+C
+C CERN PROGLIB# M101    SORTZV          .VERSION KERNFOR  3.15  820113
+C ORIG. 02/10/75
+C
+      DIMENSION A(N1),INDEX(N1)
+C
+C
+      N = N1
+      IF (N.LE.0)            RETURN
+      IF (NSORT.NE.0) GO TO 2
+      DO 1 I=1,N
+    1 INDEX(I)=I
+C
+    2 IF (N.EQ.1)            RETURN
+      IF (MODE)    10,20,30
+   10 CALL SORTTI (A,INDEX,N)
+      GO TO 40
+C
+   20 CALL SORTTC(A,INDEX,N)
+      GO TO 40
+C
+   30 CALL SORTTF (A,INDEX,N)
+C
+   40 IF (NWAY.EQ.0) GO TO 50
+      N2 = N/2
+      DO 41 I=1,N2
+      ISWAP = INDEX(I)
+      K = N+1-I
+      INDEX(I) = INDEX(K)
+   41 INDEX(K) = ISWAP
+   50 RETURN
+      END
+
+      SUBROUTINE SORTTI (A,INDEX,N1)
+C
+      INTEGER A,AI
+      DIMENSION A(N1),INDEX(N1)
+C
+      N = N1
+      DO 3 I1=2,N
+      I3 = I1
+      I33 = INDEX(I3)
+      AI = A(I33)
+    1 I2 = I3/2
+      IF (I2) 3,3,2
+    2 I22 = INDEX(I2)
+      IF (AI.LE.A (I22)) GO TO 3
+      INDEX (I3) = I22
+      I3 = I2
+      GO TO 1
+    3 INDEX (I3) = I33
+    4 I3 = INDEX (N)
+      INDEX (N) = INDEX (1)
+      AI = A(I3)
+      N = N-1
+      IF (N-1) 12,12,5
+    5 I1 = 1
+    6 I2 = I1 + I1
+      IF (I2.LE.N) I22= INDEX(I2)
+      IF (I2-N) 7,9,11
+    7 I222 = INDEX (I2+1)
+      IF (A(I22)-A(I222)) 8,9,9
+    8 I2 = I2+1
+      I22 = I222
+    9 IF (AI-A(I22)) 10,11,11
+   10 INDEX(I1) = I22
+      I1 = I2
+      GO TO 6
+   11 INDEX (I1) = I3
+      GO TO 4
+   12 INDEX (1) = I3
+      RETURN
+      END
+
+*     ========================================
+      SUBROUTINE SORTTC (A,INDEX,N1)
+C
+      INTEGER A,AI
+      DIMENSION A(N1),INDEX(N1)
+C
+      N = N1
+      DO 3 I1=2,N
+      I3 = I1
+      I33 = INDEX(I3)
+      AI = A(I33)
+    1 I2 = I3/2
+      IF (I2) 3,3,2
+    2 I22 = INDEX(I2)
+      IF(ICMPCH(AI,A(I22)))3,3,21
+   21 INDEX (I3) = I22
+      I3 = I2
+      GO TO 1
+    3 INDEX (I3) = I33
+    4 I3 = INDEX (N)
+      INDEX (N) = INDEX (1)
+      AI = A(I3)
+      N = N-1
+      IF (N-1) 12,12,5
+    5 I1 = 1
+    6 I2 = I1 + I1
+      IF (I2.LE.N) I22= INDEX(I2)
+      IF (I2-N) 7,9,11
+    7 I222 = INDEX (I2+1)
+      IF (ICMPCH(A(I22),A(I222))) 8,9,9
+    8 I2 = I2+1
+      I22 = I222
+    9 IF (ICMPCH(AI,A(I22))) 10,11,11
+   10 INDEX(I1) = I22
+      I1 = I2
+      GO TO 6
+   11 INDEX (I1) = I3
+      GO TO 4
+   12 INDEX (1) = I3
+      RETURN
+      END
+*     ========================================
+      FUNCTION ICMPCH(IC1,IC2)
+C     FUNCTION TO COMPARE TWO 4 CHARACTER EBCDIC STRINGS - IC1,IC2
+C     ICMPCH=-1 IF HEX VALUE OF IC1 IS LESS THAN IC2
+C     ICMPCH=0  IF HEX VALUES OF IC1 AND IC2 ARE THE SAME
+C     ICMPCH=+1 IF HEX VALUES OF IC1 IS GREATER THAN IC2
+      I1=IC1
+      I2=IC2
+      IF(I1.GE.0.AND.I2.GE.0)GOTO 40
+      IF(I1.GE.0)GOTO 60
+      IF(I2.GE.0)GOTO 80
+      I1=-I1
+      I2=-I2
+      IF(I1-I2)80,70,60
+ 40   IF(I1-I2)60,70,80
+ 60   ICMPCH=-1
+      RETURN
+ 70   ICMPCH=0
+      RETURN
+ 80   ICMPCH=1
+      RETURN
+      END
+
+      SUBROUTINE SORTTF (A,INDEX,N1)
+C
+      DIMENSION A(N1),INDEX(N1)
+C
+      N = N1
+      DO 3 I1=2,N
+      I3 = I1
+      I33 = INDEX(I3)
+      AI = A(I33)
+    1 I2 = I3/2
+      IF (I2) 3,3,2
+    2 I22 = INDEX(I2)
+      IF (AI.LE.A (I22)) GO TO 3
+      INDEX (I3) = I22
+      I3 = I2
+      GO TO 1
+    3 INDEX (I3) = I33
+    4 I3 = INDEX (N)
+      INDEX (N) = INDEX (1)
+      AI = A(I3)
+      N = N-1
+      IF (N-1) 12,12,5
+    5 I1 = 1
+    6 I2 = I1 + I1
+      IF (I2.LE.N) I22= INDEX(I2)
+      IF (I2-N) 7,9,11
+    7 I222 = INDEX (I2+1)
+      IF (A(I22)-A(I222)) 8,9,9
+    8 I2 = I2+1
+      I22 = I222
+    9 IF (AI-A(I22)) 10,11,11
+   10 INDEX(I1) = I22
+      I1 = I2
+      GO TO 6
+   11 INDEX (I1) = I3
+      GO TO 4
+   12 INDEX (1) = I3
+      RETURN
+      END

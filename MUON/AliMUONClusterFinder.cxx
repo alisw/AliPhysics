@@ -15,38 +15,57 @@
 
 /*
 $Log$
+Revision 1.4.4.2  2000/06/09 21:58:15  morsch
+Most coding rule violations corrected.
+
 */
 
 #include "AliMUONClusterFinder.h"
-#include "TTree.h"
+#include "AliMUON.h"
+#include "AliMUONHitMap.h"
+#include "AliMUONHitMapA1.h"
+#include "AliMUONSegmentation.h"
+#include "AliMUONResponse.h"
+#include "AliMUONDigit.h"
+#include "AliMUONRawCluster.h"
 #include "AliRun.h"
+
+
+#include <TTree.h>
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TF1.h>
 #include <TPad.h>
 #include <TGraph.h> 
 #include <TPostScript.h> 
 #include <TMinuit.h> 
+#include <TClonesArray.h> 
 
-//----------------------------------------------------------
-static AliMUONsegmentation* gSegmentation;
-static AliMUONresponse*     gResponse;
-static Int_t                gix[500];
-static Int_t                giy[500];
-static Float_t              gCharge[500];
-static Int_t                gNbins;
-static Int_t                gFirst=kTRUE;
-static TMinuit *gMyMinuit ;
-void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
-static Int_t                gChargeTot;
+//_____________________________________________________________________
+static AliMUONSegmentation* fgSegmentation;
+static AliMUONResponse*     fgResponse;
+static Int_t                fgix[500];
+static Int_t                fgiy[500];
+static Float_t              fgCharge[500];
+static Int_t                fgNbins;
+static Int_t                fgFirst=kTRUE;
+static Int_t                fgChargeTot;
+static Float_t              fgQtot;
+static TMinuit*             fgMyMinuit ;
+// This function is minimized in the double-Mathieson fit
+void fcn2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
+void fcn1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 
-//----------------------------------------------------------
+
 
 ClassImp(AliMUONClusterFinder)
 
     AliMUONClusterFinder::AliMUONClusterFinder
-(AliMUONsegmentation *segmentation, AliMUONresponse *response, 
- TClonesArray *digits, Int_t chamber)   
+	(AliMUONSegmentation *segmentation, 
+	AliMUONResponse *response, 
+ 	TClonesArray *digits, Int_t chamber)   
 {
+// Constructor    
     fSegmentation=segmentation;
     fResponse=response;
     
@@ -64,9 +83,9 @@ ClassImp(AliMUONClusterFinder)
 
     AliMUONClusterFinder::AliMUONClusterFinder()
 {
+// Default constructor
     fSegmentation=0;
     fResponse=0;
-    
     fDigits=0;
     fNdigits = 0;
     fChamber=-1;
@@ -80,13 +99,33 @@ ClassImp(AliMUONClusterFinder)
     fNPeaks=-1;
 }
 
+AliMUONClusterFinder::AliMUONClusterFinder(
+    const AliMUONClusterFinder & clusterFinder)
+{
+// Dummy copy Constructor
+    ;
+}
+
+AliMUONClusterFinder::~AliMUONClusterFinder()
+{
+// Destructor
+    delete fRawClusters;
+}
+
+void AliMUONClusterFinder::SetDigits(TClonesArray *MUONdigits) 
+{
+// Set pointer to digits
+    fDigits=MUONdigits;
+    fNdigits = fDigits->GetEntriesFast();
+}
+
 void AliMUONClusterFinder::AddRawCluster(const AliMUONRawCluster c)
 {
   //
   // Add a raw cluster copy to the list
   //
-    AliMUON *MUON=(AliMUON*)gAlice->GetModule("MUON");
-    MUON->AddRawCluster(fChamber,c); 
+    AliMUON *pMUON=(AliMUON*)gAlice->GetModule("MUON");
+    pMUON->AddRawCluster(fChamber,c); 
     fNRawClusters++;
 }
 
@@ -94,15 +133,14 @@ void AliMUONClusterFinder::AddRawCluster(const AliMUONRawCluster c)
 
 void AliMUONClusterFinder::Decluster(AliMUONRawCluster *cluster)
 {
-//    AliMUONdigit *dig;
-//    Int_t q;
-
+// Decluster composite clusters
+    Bool_t fitted;
     
-    Int_t mul = cluster->fMultiplicity;
-//    printf("Decluster - multiplicity   %d \n",mul);
-
+    Int_t mul = cluster->fMultiplicity[0];
     if (mul == 1 || mul ==2) {
-//	printf("\n Nothing special for 1- and 2-clusters \n");
+	if (mul==2) {
+	    fitted=SingleMathiesonFit(cluster);
+	}
 //
 // Nothing special for 1- and 2-clusters
 	if (fNPeaks != 0) {
@@ -114,15 +152,15 @@ void AliMUONClusterFinder::Decluster(AliMUONRawCluster *cluster)
     } else if (mul ==3) {
 //
 // 3-cluster, check topology
-//	printf("\n 3-cluster, check topology \n");
+// 
+// This part could be activated again in the future
 	if (fDeclusterFlag) {
-	  if (Centered(cluster)) {
-	    // ok, cluster is centered 
-	    //	    printf("\n ok, cluster is centered \n");
-	  } else {
-	    // cluster is not centered, split into 2+1
-	    //	    printf("\n cluster is not centered, split into 2+1 \n");
-	  }
+	    if (Centered(cluster)) {
+		// ok, cluster is centered
+		fitted = SingleMathiesonFit(cluster); 	    
+	    } else {
+		// cluster is not centered, split into 2+1
+	    }
 	} else {
 	  if (fNPeaks != 0) {
             cluster->fNcluster[0]=fNPeaks;
@@ -132,44 +170,42 @@ void AliMUONClusterFinder::Decluster(AliMUONRawCluster *cluster)
 	  fNPeaks++;
 	}	    
     } else {
-      //if (mul < 12) {
-	  //	  printf("Decluster - multiplicity > 45   %d \n",mul);
-	  //printf("Decluster - multiplicity < 25   %d \n",mul);
 // 
 // 4-and more-pad clusters
 //
-      if (mul <= fClusterSize) {
-	if (fDeclusterFlag) {
-	    SplitByLocalMaxima(cluster);
-	} else {
-	    if (fNPeaks != 0) {
-		cluster->fNcluster[0]=fNPeaks;
-		cluster->fNcluster[1]=0;
-            } 
-	    AddRawCluster(*cluster);
-	    fNPeaks++;
-	}	
-      }
-	//}
+	if (mul <= fClusterSize) {
+	    if (fDeclusterFlag) {
+		SplitByLocalMaxima(cluster);
+	    } else {
+		if (fNPeaks != 0) {
+		    cluster->fNcluster[0]=fNPeaks;
+		    cluster->fNcluster[1]=0;
+		} 
+		fitted=SingleMathiesonFit(cluster);
+		AddRawCluster(*cluster);
+		fNPeaks++;
+	    } // if Declustering selected
+	} // if < maximum clustersize for deconvolution 
     } // multiplicity 
 }
 
 
 Bool_t AliMUONClusterFinder::Centered(AliMUONRawCluster *cluster)
 {
-    AliMUONdigit* dig;
-    dig= (AliMUONdigit*)fDigits->UncheckedAt(cluster->fIndexMap[0]);
+// True if cluster is centered
+    AliMUONDigit* dig;
+    dig= (AliMUONDigit*)fDigits->UncheckedAt(cluster->fIndexMap[0][0]);
     Int_t ix=dig->fPadX;
     Int_t iy=dig->fPadY;
     Int_t nn;
-    Int_t X[kMaxNeighbours], Y[kMaxNeighbours], XN[kMaxNeighbours], YN[kMaxNeighbours];
+    Int_t x[kMaxNeighbours], y[kMaxNeighbours], xN[kMaxNeighbours], yN[kMaxNeighbours];
     
-    fSegmentation->Neighbours(ix,iy,&nn,X,Y);
+    fSegmentation->Neighbours(ix,iy,&nn,x,y);
     Int_t nd=0;
     for (Int_t i=0; i<nn; i++) {
-	if (fHitMap->TestHit(X[i],Y[i]) == used) {
-	    XN[nd]=X[i];
-	    YN[nd]=Y[i];
+	if (fHitMap->TestHit(x[i],y[i]) == kUsed) {
+	    xN[nd]=x[i];
+	    yN[nd]=y[i];
 	    nd++;
 	}
     }
@@ -179,41 +215,41 @@ Bool_t AliMUONClusterFinder::Centered(AliMUONRawCluster *cluster)
 	if (fNPeaks != 0) {
             cluster->fNcluster[0]=fNPeaks;
             cluster->fNcluster[1]=0;
-        }  
+	}  
 	AddRawCluster(*cluster);
 	fNPeaks++;
 	return kTRUE;
-    } else if (nd ==1) {
+    } else if (nd == 1) {
 //
 // Highest signal on an edge, split cluster into 2+1
 //
 // who is the neighbour ?
-	Int_t nind=fHitMap->GetHitIndex(XN[0], YN[0]);
-	Int_t i1= (nind==cluster->fIndexMap[1]) ? 1:2;
-	Int_t i2= (nind==cluster->fIndexMap[1]) ? 2:1;    
+	Int_t nind=fHitMap->GetHitIndex(xN[0], yN[0]);
+	Int_t i1= (nind==cluster->fIndexMap[1][0]) ? 1:2;
+	Int_t i2= (nind==cluster->fIndexMap[1][0]) ? 2:1;    
 //
 // 2-cluster
 	AliMUONRawCluster cnew;
 	if (fNPeaks == 0) {
-            cnew.fNcluster[0]=-1;
+	    cnew.fNcluster[0]=-1;
             cnew.fNcluster[1]=fNRawClusters;
         } else {
             cnew.fNcluster[0]=fNPeaks;
             cnew.fNcluster[1]=0;
         }
-	cnew.fMultiplicity=2;
-	cnew.fIndexMap[0]=cluster->fIndexMap[0];
-	cnew.fIndexMap[1]=cluster->fIndexMap[i1];
+	cnew.fMultiplicity[0]=2;
+	cnew.fIndexMap[0][0]=cluster->fIndexMap[0][0];
+	cnew.fIndexMap[1][0]=cluster->fIndexMap[i1][0];
 	FillCluster(&cnew);
 	cnew.fClusterType=cnew.PhysicsContribution();
 	AddRawCluster(cnew);
         fNPeaks++;
 //
 // 1-cluster
-	cluster->fMultiplicity=1;
-	cluster->fIndexMap[0]=cluster->fIndexMap[i2];
-	cluster->fIndexMap[1]=0;
-	cluster->fIndexMap[2]=0;	
+	cluster->fMultiplicity[0]=1;
+	cluster->fIndexMap[0][0]=cluster->fIndexMap[i2][0];
+	cluster->fIndexMap[1][0]=0;
+	cluster->fIndexMap[2][0]=0;	
 	FillCluster(cluster);
         if (fNPeaks != 0) {
             cluster->fNcluster[0]=fNPeaks;
@@ -225,304 +261,176 @@ Bool_t AliMUONClusterFinder::Centered(AliMUONRawCluster *cluster)
 	return kFALSE;
     } else {
 	printf("\n Completely screwed up %d !! \n",nd);
-	
     }
     
-	return kFALSE;
+    return kFALSE;
 }
+
 void AliMUONClusterFinder::SplitByLocalMaxima(AliMUONRawCluster *c)
 {
-    AliMUONdigit* dig[100], *digt;
-    Int_t ix[100], iy[100], q[100];
-    Float_t x[100], y[100];
-    Int_t i; // loops over digits
-    Int_t j; // loops over local maxima
-    //    Float_t xPeak[2];
-    //    Float_t yPeak[2];
-    //    Int_t threshold=500;
-    Int_t mul=c->fMultiplicity;
+// Search for local maxima and split cluster accordingly
+    Bool_t fitted;
+    
+    AliMUONDigit* digt;
+     Int_t i; // loops over digits
+     Int_t j; // loops over local maxima
+     fMul=c->fMultiplicity[0];
 //
 //  dump digit information into arrays
 //
-    for (i=0; i<mul; i++)
+    for (i=0; i<fMul; i++)
     {
-	dig[i]= (AliMUONdigit*)fDigits->UncheckedAt(c->fIndexMap[i]);
-	ix[i]= dig[i]->fPadX;
-	iy[i]= dig[i]->fPadY;
-	q[i] = dig[i]->fSignal;
-	fSegmentation->GetPadCxy(ix[i], iy[i], x[i], y[i]);
+	fDig[i]= (AliMUONDigit*)fDigits->UncheckedAt(c->fIndexMap[i][0]);
+	fIx[i]= fDig[i]->fPadX;
+	fIy[i]= fDig[i]->fPadY;
+	fQ[i] = fDig[i]->fSignal;
+	fSegmentation->GetPadCxy(fIx[i], fIy[i], fX[i], fY[i]);
     }
 //
 //  Find local maxima
 //
-    Bool_t IsLocal[100];
-    Int_t NLocal=0;
-    Int_t AssocPeak[100];
-    Int_t IndLocal[100];
+    fNLocal=0;
+    Bool_t isLocal[100];
+    Int_t assocPeak[100];
     Int_t nn;
-    Int_t X[kMaxNeighbours], Y[kMaxNeighbours];
-    for (i=0; i<mul; i++) {
-	fSegmentation->Neighbours(ix[i], iy[i], &nn, X, Y);
-	IsLocal[i]=kTRUE;
+    Int_t x[kMaxNeighbours], y[kMaxNeighbours];
+    for (i=0; i<fMul; i++) {
+	fSegmentation->Neighbours(fIx[i], fIy[i], &nn, x, y);
+	isLocal[i]=kTRUE;
 	for (j=0; j<nn; j++) {
-	    if (fHitMap->TestHit(X[j],Y[j])==empty) continue;
-	    digt=(AliMUONdigit*) fHitMap->GetHit(X[j], Y[j]);
-	    if (digt->fSignal > q[i]) {
-		IsLocal[i]=kFALSE;
+	    if (fHitMap->TestHit(x[j], y[j])==kEmpty) continue;
+	    digt=(AliMUONDigit*) fHitMap->GetHit(x[j], y[j]);
+	    if (digt->fSignal > fQ[i]) {
+		isLocal[i]=kFALSE;
 		break;
 //
 // handle special case of neighbouring pads with equal signal
-	    } else if (digt->fSignal == q[i]) {
-		if (NLocal >0) {
-		    for (Int_t k=0; k<NLocal; k++) {
-			if (X[j]==ix[IndLocal[k]] && Y[j]==iy[IndLocal[k]]){
-			    IsLocal[i]=kFALSE;
-			}
-		    }
-		}
+	    } else if (digt->fSignal == fQ[i]) {
+		if (fNLocal >0) {
+		    for (Int_t k=0; k<fNLocal; k++) {
+			if (x[j]==fIx[fIndLocal[k]] && y[j]==fIy[fIndLocal[k]])
+			{
+			    isLocal[i]=kFALSE;
+			} 
+		    } // loop over local maxima
+		} // are there are already local maxima
 	    } 
 	} // loop over next neighbours
 	// Maxima should not be on the edge
-	if (IsLocal[i]) {
-	    IndLocal[NLocal]=i;
-	    NLocal++;
+	if (isLocal[i]) {
+	    fIndLocal[fNLocal]=i;
+	    fNLocal++;
 	} 
     } // loop over all digits
-//    printf("Found %d local Maxima",NLocal);
+//    printf("Found %d local Maxima",fNLocal);
 //
 // If only one local maximum found but multiplicity is high 
 // take global maximum from the list of digits.    
-    if (NLocal==1 && mul>12) {
+// 12 should not be hard wired but a parameter 
+// 
+    if (fNLocal==1 && fMul>=1) {
 	Int_t nnew=0;
-	for (i=0; i<mul; i++) {
-	    if (!IsLocal[i]) {
-		IndLocal[NLocal]=i;
-		IsLocal[i]=kTRUE;
-		NLocal++;
+	for (i=0; i<fMul; i++) {
+	    if (!isLocal[i]) {
+		fIndLocal[fNLocal]=i;
+		isLocal[i]=kTRUE;
+		fNLocal++;
 		nnew++;
 	    }
 	    if (nnew==1) break;
 	}
     }
     
-// If number of local maxima is 2 try to fit a double gaussian
-    if (NLocal==2) {
-//
-//  Initialise global variables for fit
-	gFirst=1;
-	gSegmentation=fSegmentation;
-	gResponse    =fResponse;
-	gNbins=mul;
-	
-	for (i=0; i<mul; i++) {
-	    gix[i]=ix[i];
-	    giy[i]=iy[i];
-	    gCharge[i]=Float_t(q[i]);
+// If number of local maxima is 2 try to fit a double mathieson
+    if (fNLocal==2) {
+	fitted = DoubleMathiesonFit(c);
+    }
+    
+    if (fNLocal !=2 || !fitted) {
+	// Check if enough local clusters have been found,
+	// if not add global maxima to the list 
+	//
+	Int_t nPerMax;
+	if (fNLocal!=0) {
+	    nPerMax=fMul/fNLocal;
+	} else {
+	    printf("\n Warning, no local maximum found \n");
+	    nPerMax=fNperMax+1;
 	}
-//
-	if (gFirst) {
-	  gFirst=kFALSE;
-	  gMyMinuit = new TMinuit(5);
+
+	if (nPerMax > fNperMax) {
+	    Int_t nGlob=fMul/fNperMax-fNLocal+1;
+	    if (nGlob > 0) {
+		Int_t nnew=0;
+		for (i=0; i<fMul; i++) {
+		    if (!isLocal[i]) {
+			fIndLocal[fNLocal]=i;
+			isLocal[i]=kTRUE;
+			fNLocal++;
+			nnew++;
+		    }
+		    if (nnew==nGlob) break;
+		}
+	    }
 	}
-	gMyMinuit->SetFCN(fcn);
-	gMyMinuit->mninit(5,10,7);
-	Double_t arglist[20];
-	Int_t ierflag=0;
-	arglist[0]=1;
-//	gMyMinuit->mnexcm("SET ERR",arglist,1,ierflag);
-// Set starting values 
-	static Double_t vstart[5];
-	vstart[0]=x[IndLocal[0]];
-	vstart[1]=y[IndLocal[0]];	
-	vstart[2]=x[IndLocal[1]];
-	vstart[3]=y[IndLocal[1]];	
-	vstart[4]=Float_t(q[IndLocal[0]])/
-	    Float_t(q[IndLocal[0]]+q[IndLocal[1]]);
-// lower and upper limits
-	static Double_t lower[5], upper[5];
-	Int_t isec=fSegmentation->Sector(ix[IndLocal[0]], iy[IndLocal[0]]);
-	lower[0]=vstart[0]-fSegmentation->Dpx(isec)/2;
-	lower[1]=vstart[1]-fSegmentation->Dpy(isec)/2;
-//	lower[1]=vstart[1];
-	
-	upper[0]=lower[0]+fSegmentation->Dpx(isec);
-	upper[1]=lower[1]+fSegmentation->Dpy(isec);
-//	upper[1]=vstart[1];
-	
-	isec=fSegmentation->Sector(ix[IndLocal[1]], iy[IndLocal[1]]);
-	lower[2]=vstart[2]-fSegmentation->Dpx(isec)/2;
-	lower[3]=vstart[3]-fSegmentation->Dpy(isec)/2;
-//	lower[3]=vstart[3];
-	
-	upper[2]=lower[2]+fSegmentation->Dpx(isec);
-	upper[3]=lower[3]+fSegmentation->Dpy(isec);
-//	upper[3]=vstart[3];
-	
-	lower[4]=0.;
-	upper[4]=1.;
-// step sizes
-	static Double_t step[5]={0.005, 0.03, 0.005, 0.03, 0.01};
-	
-	gMyMinuit->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
-	gMyMinuit->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
-	gMyMinuit->mnparm(2,"x2",vstart[2],step[2],lower[2],upper[2],ierflag);
-	gMyMinuit->mnparm(3,"y2",vstart[3],step[3],lower[3],upper[3],ierflag);
-	gMyMinuit->mnparm(4,"a0",vstart[4],step[4],lower[4],upper[4],ierflag);
-// ready for minimisation	
-	gMyMinuit->SetPrintLevel(-1);
-	gMyMinuit->mnexcm("SET OUT", arglist, 0, ierflag);
-	arglist[0]= -1;
-	arglist[1]= 0;
-	
-	gMyMinuit->mnexcm("SET NOGR", arglist, 0, ierflag);
-	gMyMinuit->mnexcm("SCAN", arglist, 0, ierflag);
-	gMyMinuit->mnexcm("EXIT" , arglist, 0, ierflag);
-// Print results
-//	Double_t amin,edm,errdef;
-//	Int_t nvpar,nparx,icstat;
-//	gMyMinuit->mnstat(amin,edm,errdef,nvpar,nparx,icstat);
-//	gMyMinuit->mnprin(3,amin);
-// Get fitted parameters
-
-	Double_t xrec[2], yrec[2], qfrac;
-	TString chname;
-	Double_t epxz, b1, b2;
-	Int_t ierflg;
-	gMyMinuit->mnpout(0, chname, xrec[0], epxz, b1, b2, ierflg);	
-	gMyMinuit->mnpout(1, chname, yrec[0], epxz, b1, b2, ierflg);	
-	gMyMinuit->mnpout(2, chname, xrec[1], epxz, b1, b2, ierflg);	
-	gMyMinuit->mnpout(3, chname, yrec[1], epxz, b1, b2, ierflg);	
-	gMyMinuit->mnpout(4, chname, qfrac,   epxz, b1, b2, ierflg);	
-	printf("\n %f %f %f %f %f\n", xrec[0], yrec[0], xrec[1], yrec[1],qfrac);
-//	delete gMyMinuit;
-	
-	
- //
- // One cluster for each maximum
- //
-	 for (j=0; j<2; j++) {
-	     AliMUONRawCluster cnew;
-	     if (fNPeaks == 0) {
-		 cnew.fNcluster[0]=-1;
-		 cnew.fNcluster[1]=fNRawClusters;
-	     } else {
-		 cnew.fNcluster[0]=fNPeaks;
-		 cnew.fNcluster[1]=0;
-	     }
-	     cnew.fMultiplicity=0;
-	     cnew.fX=Float_t(xrec[j]);
-	     cnew.fY=Float_t(yrec[j]);
-	     if (j==0) {
-		 cnew.fQ=Int_t(gChargeTot*qfrac);
-	     } else {
-		 cnew.fQ=Int_t(gChargeTot*(1-qfrac));
-	     }
-	     gSegmentation->SetHit(xrec[j],yrec[j]);
-	     for (i=0; i<mul; i++) {
-		 cnew.fIndexMap[cnew.fMultiplicity]=c->fIndexMap[i];
-		 gSegmentation->SetPad(gix[i], giy[i]);
-		 Float_t q1=gResponse->IntXY(gSegmentation);
-		 cnew.fContMap[cnew.fMultiplicity]=Float_t(q[i])/(q1*cnew.fQ);
-		 cnew.fMultiplicity++;
-	     }
-	     FillCluster(&cnew,0);
-	     //printf("\n x,y %f %f ", cnew.fX, cnew.fY);
-	     cnew.fClusterType=cnew.PhysicsContribution();
-	     AddRawCluster(cnew);
-	     fNPeaks++;
-	 }
-     }
-
-     Bool_t fitted=kTRUE;
-
-     if (NLocal !=2 || !fitted) {
- // Check if enough local clusters have been found,
- // if not add global maxima to the list 
- //
-	 Int_t nPerMax;
-	 if (NLocal!=0) {
-	     nPerMax=mul/NLocal;
-	 } else {
-	     printf("\n Warning, no local maximum found \n");
-	     nPerMax=fNperMax+1;
-	 }
-
-	 if (nPerMax > fNperMax) {
-	     Int_t nGlob=mul/fNperMax-NLocal+1;
-	     if (nGlob > 0) {
-		 Int_t nnew=0;
-		 for (i=0; i<mul; i++) {
-		     if (!IsLocal[i]) {
-			 IndLocal[NLocal]=i;
-			 IsLocal[i]=kTRUE;
-			 NLocal++;
-			 nnew++;
-		     }
-		     if (nnew==nGlob) break;
-		 }
-	     }
-	 }
- //
- // Associate hits to peaks
- //
-	 for (i=0; i<mul; i++) {
-	     Float_t dmin=1.E10;
-	     Float_t qmax=0;
-	     if (IsLocal[i]) continue;
-	     for (j=0; j<NLocal; j++) {
-		 Int_t il=IndLocal[j];
-		 Float_t d=TMath::Sqrt((x[i]-x[il])*(x[i]-x[il])
-				   +(y[i]-y[il])*(y[i]-y[il]));
-		 Float_t ql=q[il];
+	//
+	// Associate hits to peaks
+	//
+	for (i=0; i<fMul; i++) {
+	    Float_t dmin=1.E10;
+	    Float_t qmax=0;
+	    if (isLocal[i]) continue;
+	    for (j=0; j<fNLocal; j++) {
+		Int_t il=fIndLocal[j];
+		Float_t d=TMath::Sqrt((fX[i]-fX[il])*(fX[i]-fX[il])
+				      +(fY[i]-fY[il])*(fY[i]-fY[il]));
+		Float_t ql=fQ[il];
  //
  // Select nearest peak
  //
-		 if (d<dmin) {
-		     dmin=d;
-		     qmax=ql;
-		     AssocPeak[i]=j;
-		 } else if (d==dmin) {
+		if (d<dmin) {
+		    dmin=d;
+		    qmax=ql;
+		    assocPeak[i]=j;
+		} else if (d==dmin) {
  //
  // If more than one take highest peak
  //
-		     if (ql>qmax) {
-			 dmin=d;
-			 qmax=ql;
-			 AssocPeak[i]=j;
-		     }
-		 }
-	     }
-	 }
-
-
- //
- // One cluster for each maximum
- //
-	 for (j=0; j<NLocal; j++) {
-	     AliMUONRawCluster cnew;
-	     if (fNPeaks == 0) {
-		 cnew.fNcluster[0]=-1;
-		 cnew.fNcluster[1]=fNRawClusters;
-	     } else {
-		 cnew.fNcluster[0]=fNPeaks;
-		 cnew.fNcluster[1]=0;
-	     }
-	     cnew.fIndexMap[0]=c->fIndexMap[IndLocal[j]];
-	     cnew.fMultiplicity=1;
-	     for (i=0; i<mul; i++) {
-		 if (IsLocal[i]) continue;
-		 if (AssocPeak[i]==j) {
-		     cnew.fIndexMap[cnew.fMultiplicity]=c->fIndexMap[i];
-		     cnew.fMultiplicity++;
-		 }
-	     }
-	     FillCluster(&cnew);
-	     cnew.fClusterType=cnew.PhysicsContribution();
-	     AddRawCluster(cnew);
-	     fNPeaks++;
-	 }
-     }
-     
+		    if (ql>qmax) {
+			dmin=d;
+			qmax=ql;
+			assocPeak[i]=j;
+		    }
+		}
+	    }
+	}
+	//
+	// One cluster for each maximum
+	//
+	for (j=0; j<fNLocal; j++) {
+	    AliMUONRawCluster cnew;
+	    if (fNPeaks == 0) {
+		cnew.fNcluster[0]=-1;
+		cnew.fNcluster[1]=fNRawClusters;
+	    } else {
+		cnew.fNcluster[0]=fNPeaks;
+		cnew.fNcluster[1]=0;
+	    }
+	    cnew.fIndexMap[0][0]=c->fIndexMap[fIndLocal[j]][0];
+	    cnew.fMultiplicity[0]=1;
+	    for (i=0; i<fMul; i++) {
+		if (isLocal[i]) continue;
+		if (assocPeak[i]==j) {
+		    cnew.fIndexMap[cnew.fMultiplicity[0]][0]=c->fIndexMap[i][0];
+		    cnew.fMultiplicity[0]++;
+		}
+	    }
+	    FillCluster(&cnew);
+	    cnew.fClusterType=cnew.PhysicsContribution();
+	    AddRawCluster(cnew);
+	    fNPeaks++;
+	}
+    }
 }
 
 
@@ -531,92 +439,77 @@ void  AliMUONClusterFinder::FillCluster(AliMUONRawCluster* c, Int_t flag)
 //
 //  Completes cluster information starting from list of digits
 //
-    AliMUONdigit* dig;
+    AliMUONDigit* dig;
     Float_t x, y;
     Int_t  ix, iy;
     Float_t frac=0;
     
-    c->fPeakSignal=0;
+    c->fPeakSignal[0]=0;
     if (flag) {
-	c->fX=0;
-	c->fY=0;
-	c->fQ=0;
+	c->fX[0]=0;
+	c->fY[0]=0;
+	c->fQ[0]=0;
     }
-    //c->fQ=0;
  
 
-    for (Int_t i=0; i<c->fMultiplicity; i++)
+    for (Int_t i=0; i<c->fMultiplicity[0]; i++)
     {
-	dig= (AliMUONdigit*)fDigits->UncheckedAt(c->fIndexMap[i]);
-	ix=dig->fPadX+c->fOffsetMap[i];
+	dig= (AliMUONDigit*)fDigits->UncheckedAt(c->fIndexMap[i][0]);
+	ix=dig->fPadX+c->fOffsetMap[i][0];
 	iy=dig->fPadY;
 	Int_t q=dig->fSignal;
 	if (dig->fPhysics >= dig->fSignal) {
-	  c->fPhysicsMap[i]=2;
+	    c->fPhysicsMap[i]=2;
 	} else if (dig->fPhysics == 0) {
-	  c->fPhysicsMap[i]=0;
+	    c->fPhysicsMap[i]=0;
 	} else  c->fPhysicsMap[i]=1;
 //
 //
 // peak signal and track list
 	if (flag) {
-	   if (q>c->fPeakSignal) {
-	      c->fPeakSignal=q;
-/*
-	    c->fTracks[0]=dig->fTracks[0];
-	    c->fTracks[1]=dig->fTracks[1];
-	    c->fTracks[2]=dig->fTracks[2];
-*/
-	      //c->fTracks[0]=dig->fTrack;
-	    c->fTracks[0]=dig->fHit;
-	    c->fTracks[1]=dig->fTracks[0];
-	    c->fTracks[2]=dig->fTracks[1];
-	   }
+	    if (q>c->fPeakSignal[0]) {
+		c->fPeakSignal[0]=q;
+		c->fTracks[0]=dig->fHit;
+		c->fTracks[1]=dig->fTracks[0];
+		c->fTracks[2]=dig->fTracks[1];
+	    }
 	} else {
-	   if (c->fContMap[i] > frac) {
-              frac=c->fContMap[i];
-	      c->fPeakSignal=q;
-/*
-	    c->fTracks[0]=dig->fTracks[0];
-	    c->fTracks[1]=dig->fTracks[1];
-	    c->fTracks[2]=dig->fTracks[2];
-*/
-	      //c->fTracks[0]=dig->fTrack;
-	    c->fTracks[0]=dig->fHit;
-	    c->fTracks[1]=dig->fTracks[0];
-	    c->fTracks[2]=dig->fTracks[1];
-	   }
+	    if (c->fContMap[i][0] > frac) {
+		frac=c->fContMap[i][0];
+		c->fPeakSignal[0]=q;
+		c->fTracks[0]=dig->fHit;
+		c->fTracks[1]=dig->fTracks[0];
+		c->fTracks[2]=dig->fTracks[1];
+	    }
 	}
 //
 	if (flag) {
 	    fSegmentation->GetPadCxy(ix, iy, x, y);
-	    c->fX += q*x;
-	    c->fY += q*y;
-	    c->fQ += q;
+	    c->fX[0] += q*x;
+	    c->fY[0] += q*y;
+	    c->fQ[0] += q;
 	}
-
     } // loop over digits
-
- if (flag) {
-     
-     c->fX/=c->fQ;
-     c->fX=fSegmentation->GetAnod(c->fX);
-     c->fY/=c->fQ; 
+    
+    if (flag) {
+    	c->fX[0]/=c->fQ[0];
+     	c->fX[0]=fSegmentation->GetAnod(c->fX[0]);
+     	c->fY[0]/=c->fQ[0]; 
 //
 //  apply correction to the coordinate along the anode wire
 //
-     x=c->fX;   
-     y=c->fY;
-     fSegmentation->GetPadIxy(x, y, ix, iy);
-     fSegmentation->GetPadCxy(ix, iy, x, y);
-     Int_t isec=fSegmentation->Sector(ix,iy);
-     TF1* CogCorr = fSegmentation->CorrFunc(isec-1);
-     
-     if (CogCorr) {
-	 Float_t YonPad=(c->fY-y)/fSegmentation->Dpy(isec);
-	 c->fY=c->fY-CogCorr->Eval(YonPad, 0, 0);
-     }
- }
+     	x=c->fX[0];   
+     	y=c->fY[0];
+     	fSegmentation->GetPadIxy(x, y, ix, iy);
+     	fSegmentation->GetPadCxy(ix, iy, x, y);
+     	Int_t isec=fSegmentation->Sector(ix,iy);
+    	TF1* cogCorr = fSegmentation->CorrFunc(isec-1);
+	
+     	if (cogCorr) {
+	    Float_t yOnPad=(c->fY[0]-y)/fSegmentation->Dpy(isec);
+	    c->fY[0]=c->fY[0]-cogCorr->Eval(yOnPad, 0, 0);
+     	}
+    }
 }
 
 
@@ -627,18 +520,11 @@ void  AliMUONClusterFinder::FindCluster(Int_t i, Int_t j, AliMUONRawCluster &c){
 //
 //  Add i,j as element of the cluster
 //    
-    
     Int_t idx = fHitMap->GetHitIndex(i,j);
-    AliMUONdigit* dig = (AliMUONdigit*) fHitMap->GetHit(i,j);
+    AliMUONDigit* dig = (AliMUONDigit*) fHitMap->GetHit(i,j);
     Int_t q=dig->fSignal;
-    if (q > TMath::Abs(c.fPeakSignal)) {
-	c.fPeakSignal=q;
-/*
-	c.fTracks[0]=dig->fTracks[0];
-	c.fTracks[1]=dig->fTracks[1];
-	c.fTracks[2]=dig->fTracks[2];
-*/
-	//c.fTracks[0]=dig->fTrack;
+    if (q > TMath::Abs(c.fPeakSignal[0])) {
+	c.fPeakSignal[0]=q;
 	c.fTracks[0]=dig->fHit;
 	c.fTracks[1]=dig->fTracks[0];
 	c.fTracks[2]=dig->fTracks[1];
@@ -646,54 +532,54 @@ void  AliMUONClusterFinder::FindCluster(Int_t i, Int_t j, AliMUONRawCluster &c){
 //
 //  Make sure that list of digits is ordered 
 // 
-    Int_t mu=c.fMultiplicity;
-    c.fIndexMap[mu]=idx;
-
+    Int_t mu=c.fMultiplicity[0];
+    c.fIndexMap[mu][0]=idx;
+    
     if (dig->fPhysics >= dig->fSignal) {
         c.fPhysicsMap[mu]=2;
     } else if (dig->fPhysics == 0) {
         c.fPhysicsMap[mu]=0;
     } else  c.fPhysicsMap[mu]=1;
-
+    
     if (mu > 0) {
 	for (Int_t ind=mu-1; ind>=0; ind--) {
-	    Int_t ist=(c.fIndexMap)[ind];
-	    Int_t ql=((AliMUONdigit*)fDigits
+	    Int_t ist=(c.fIndexMap)[ind][0];
+	    Int_t ql=((AliMUONDigit*)fDigits
 		      ->UncheckedAt(ist))->fSignal;
 	    if (q>ql) {
-		c.fIndexMap[ind]=idx;
-		c.fIndexMap[ind+1]=ist;
+		c.fIndexMap[ind][0]=idx;
+		c.fIndexMap[ind+1][0]=ist;
 	    } else {
 		break;
 	    }
 	}
     }
     
-    c.fMultiplicity++;
+    c.fMultiplicity[0]++;
     
-    if (c.fMultiplicity >= 50 ) {
-	printf("FindCluster - multiplicity >50  %d \n",c.fMultiplicity);
-	c.fMultiplicity=49;
+    if (c.fMultiplicity[0] >= 50 ) {
+	printf("FindCluster - multiplicity >50  %d \n",c.fMultiplicity[0]);
+	c.fMultiplicity[0]=49;
     }
 
 // Prepare center of gravity calculation
     Float_t x, y;
     fSegmentation->GetPadCxy(i, j, x, y);
-    c.fX += q*x;
-    c.fY += q*y;
-    c.fQ += q;
+    c.fX[0] += q*x;
+    c.fY[0] += q*y;
+    c.fQ[0] += q;
 // Flag hit as taken  
     fHitMap->FlagHit(i,j);
 //
 //  Now look recursively for all neighbours
 //  
     Int_t nn;
-    Int_t Xlist[kMaxNeighbours], Ylist[kMaxNeighbours];
-    fSegmentation->Neighbours(i,j,&nn,Xlist,Ylist);
+    Int_t xList[kMaxNeighbours], yList[kMaxNeighbours];
+    fSegmentation->Neighbours(i,j,&nn,xList,yList);
     for (Int_t in=0; in<nn; in++) {
-	Int_t ix=Xlist[in];
-	Int_t iy=Ylist[in];
-	if (fHitMap->TestHit(ix,iy)==unused) FindCluster(ix, iy, c);
+	Int_t ix=xList[in];
+	Int_t iy=yList[in];
+	if (fHitMap->TestHit(ix,iy)==kUnused) FindCluster(ix, iy, c);
     }
 }
 
@@ -705,76 +591,67 @@ void AliMUONClusterFinder::FindRawClusters()
   // simple MUON cluster finder from digits -- finds neighbours and 
   // fill the tree with raw clusters
   //
-
     if (!fNdigits) return;
 
     fHitMap = new AliMUONHitMapA1(fSegmentation, fDigits);
 
-
-    AliMUONdigit *dig;
+    AliMUONDigit *dig;
 
     Int_t ndig;
     Int_t nskip=0;
     Int_t ncls=0;
     fHitMap->FillHits();
     for (ndig=0; ndig<fNdigits; ndig++) {
-	dig = (AliMUONdigit*)fDigits->UncheckedAt(ndig);
+	dig = (AliMUONDigit*)fDigits->UncheckedAt(ndig);
 	Int_t i=dig->fPadX;
 	Int_t j=dig->fPadY;
-	if (fHitMap->TestHit(i,j)==used ||fHitMap->TestHit(i,j)==empty) {
+	if (fHitMap->TestHit(i,j)==kUsed ||fHitMap->TestHit(i,j)==kEmpty) {
 	    nskip++;
 	    continue;
 	}
 	AliMUONRawCluster c;
-	c.fMultiplicity=0;
-	c.fPeakSignal=dig->fSignal;
-/*
-	c.fTracks[0]=dig->fTracks[0];
-	c.fTracks[1]=dig->fTracks[1];
-	c.fTracks[2]=dig->fTracks[2];
-*/
-	//c.fTracks[0]=dig->fTrack;
+	c.fMultiplicity[0]=0;
+	c.fPeakSignal[0]=dig->fSignal;
 	c.fTracks[0]=dig->fHit;
 	c.fTracks[1]=dig->fTracks[0];
 	c.fTracks[2]=dig->fTracks[1];
-        // tag the beginning of cluster list in a raw cluster
-        c.fNcluster[0]=-1;
+	// tag the beginning of cluster list in a raw cluster
+	c.fNcluster[0]=-1;
 	FindCluster(i,j, c);
 	// center of gravity
-	c.fX /= c.fQ;
-	c.fX=fSegmentation->GetAnod(c.fX);
-	c.fY /= c.fQ;
+	c.fX[0] /= c.fQ[0];
+	c.fX[0]=fSegmentation->GetAnod(c.fX[0]);
+	c.fY[0] /= c.fQ[0];
 //
 //  apply correction to the coordinate along the anode wire
 //
 	Int_t ix,iy;
-	Float_t x=c.fX;   
-	Float_t y=c.fY;
+	Float_t x=c.fX[0];   
+	Float_t y=c.fY[0];
 	fSegmentation->GetPadIxy(x, y, ix, iy);
 	fSegmentation->GetPadCxy(ix, iy, x, y);
 	Int_t isec=fSegmentation->Sector(ix,iy);
-	TF1* CogCorr=fSegmentation->CorrFunc(isec-1);
-	if (CogCorr) {
-	    Float_t YonPad=(c.fY-y)/fSegmentation->Dpy(isec);
-	    c.fY=c.fY-CogCorr->Eval(YonPad,0,0);
+	TF1* cogCorr=fSegmentation->CorrFunc(isec-1);
+	if (cogCorr) {
+	    Float_t yOnPad=(c.fY[0]-y)/fSegmentation->Dpy(isec);
+	    c.fY[0]=c.fY[0]-cogCorr->Eval(yOnPad,0,0);
 	}
-
 //
 //      Analyse cluster and decluster if necessary
 //	
-    ncls++;
-    c.fNcluster[1]=fNRawClusters;
-    c.fClusterType=c.PhysicsContribution();
-    Decluster(&c);
-    fNPeaks=0;
+	ncls++;
+	c.fNcluster[1]=fNRawClusters;
+	c.fClusterType=c.PhysicsContribution();
+	Decluster(&c);
+	fNPeaks=0;
 //
 //
 //
 //      reset Cluster object
-	for (int k=0;k<c.fMultiplicity;k++) {
-	    c.fIndexMap[k]=0;
+	for (int k=0;k<c.fMultiplicity[0];k++) {
+	    c.fIndexMap[k][0]=0;
 	}
-	c.fMultiplicity=0;
+	c.fMultiplicity[0]=0;
     } // end loop ndig    
     delete fHitMap;
 }
@@ -782,6 +659,7 @@ void AliMUONClusterFinder::FindRawClusters()
 void AliMUONClusterFinder::
 CalibrateCOG()
 {
+// Calibrate the cog method
     Float_t x[5];
     Float_t y[5];
     Int_t n, i;
@@ -801,18 +679,18 @@ CalibrateCOG()
 void AliMUONClusterFinder::
 SinoidalFit(Float_t x, Float_t y, TF1 &func)
 {
-//
+// Perform a senoidal fit to the residuals of the cog method
     static Int_t count=0;
     char canvasname[3];
     count++;
     sprintf(canvasname,"c%d",count);
-
-    const Int_t ns=101;
-    Float_t xg[ns], yg[ns], xrg[ns], yrg[ns];
-    Float_t xsig[ns], ysig[ns];
-   
-    AliMUONsegmentation *segmentation=fSegmentation;
-
+    
+    const Int_t kns=101;
+    Float_t xg[kns], yg[kns], xrg[kns], yrg[kns];
+    Float_t xsig[kns], ysig[kns];
+    
+    AliMUONSegmentation *segmentation=fSegmentation;
+    
     Int_t ix,iy;
     segmentation->GetPadIxy(x,y,ix,iy);   
     segmentation->GetPadCxy(ix,iy,x,y);   
@@ -824,7 +702,7 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
 //      Integration Limits
     Float_t dxI=fResponse->SigmaIntegration()*fResponse->ChargeSpreadX();
     Float_t dyI=fResponse->SigmaIntegration()*fResponse->ChargeSpreadY();
-
+    
 //
 //  Scanning
 //
@@ -833,9 +711,9 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
 //
 //  y-position
     Float_t yscan=ymin;
-    Float_t dy=segmentation->Dpy(isec)/(ns-1);
+    Float_t dy=segmentation->Dpy(isec)/(kns-1);
 
-    for (i=0; i<ns; i++) {
+    for (i=0; i<kns; i++) {
 //
 //      Pad Loop
 //      
@@ -869,9 +747,9 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
 //
 //  x-position
     Float_t xscan=xmin;
-    Float_t dx=segmentation->Dpx(isec)/(ns-1);
-
-    for (i=0; i<ns; i++) {
+    Float_t dx=segmentation->Dpx(isec)/(kns-1);
+    
+    for (i=0; i<kns; i++) {
 //
 //      Pad Loop
 //      
@@ -908,71 +786,294 @@ SinoidalFit(Float_t x, Float_t y, TF1 &func)
 // Creates a Root function based on function sinoid above
 // and perform the fit
 //
-    //    TGraph *graphx = new TGraph(ns,xg ,xsig);
-    //    TGraph *graphxr= new TGraph(ns,xrg,xsig);   
-    //    TGraph *graphy = new TGraph(ns,yg ,ysig);
-    TGraph *graphyr= new TGraph(ns,yrg,ysig);
+/*
+        TGraph *graphx = new TGraph(kns,xg ,xsig);
+        TGraph *graphxr= new TGraph(kns,xrg,xsig);   
+        TGraph *graphy = new TGraph(kns,yg ,ysig);
+*/
+    TGraph *graphyr= new TGraph(kns,yrg,ysig);
 
     Double_t sinoid(Double_t *x, Double_t *par);
     new TF1("sinoidf",sinoid,0.5,0.5,5);
     graphyr->Fit("sinoidf","Q");
     func = *((TF1*)((graphyr->GetListOfFunctions())->At(0)));
+
 /*
-    
-    TCanvas *c1=new TCanvas(canvasname,canvasname,400,10,600,700);
-    TPad* pad11 = new TPad("pad11"," ",0.01,0.51,0.49,0.99);
-    TPad* pad12 = new TPad("pad12"," ",0.51,0.51,0.99,0.99);
-    TPad* pad13 = new TPad("pad13"," ",0.01,0.01,0.49,0.49);
-    TPad* pad14 = new TPad("pad14"," ",0.51,0.01,0.99,0.49);
-    pad11->SetFillColor(11);
-    pad12->SetFillColor(11);
-    pad13->SetFillColor(11);
-    pad14->SetFillColor(11);
-    pad11->Draw();
-    pad12->Draw();
-    pad13->Draw();
-    pad14->Draw();
+  TCanvas *c1=new TCanvas(canvasname,canvasname,400,10,600,700);
+  TPad* pad11 = new TPad("pad11"," ",0.01,0.51,0.49,0.99);
+  TPad* pad12 = new TPad("pad12"," ",0.51,0.51,0.99,0.99);
+  TPad* pad13 = new TPad("pad13"," ",0.01,0.01,0.49,0.49);
+  TPad* pad14 = new TPad("pad14"," ",0.51,0.01,0.99,0.49);
+  pad11->SetFillColor(11);
+  pad12->SetFillColor(11);
+  pad13->SetFillColor(11);
+  pad14->SetFillColor(11);
+  pad11->Draw();
+  pad12->Draw();
+  pad13->Draw();
+  pad14->Draw();
     
 //
-    pad11->cd();
-    graphx->SetFillColor(42);
-    graphx->SetMarkerColor(4);
-    graphx->SetMarkerStyle(21);
-    graphx->Draw("AC");
-    graphx->GetHistogram()->SetXTitle("x on pad");
-    graphx->GetHistogram()->SetYTitle("xcog-x");   
+pad11->cd();
+graphx->SetFillColor(42);
+graphx->SetMarkerColor(4);
+graphx->SetMarkerStyle(21);
+graphx->Draw("AC");
+graphx->GetHistogram()->SetXTitle("x on pad");
+graphx->GetHistogram()->SetYTitle("xcog-x");   
 
 
-    pad12->cd();
-    graphxr->SetFillColor(42);
-    graphxr->SetMarkerColor(4);
-    graphxr->SetMarkerStyle(21);
-    graphxr->Draw("AP");
-    graphxr->GetHistogram()->SetXTitle("xcog on pad");
-    graphxr->GetHistogram()->SetYTitle("xcog-x");   
+pad12->cd();
+graphxr->SetFillColor(42);
+graphxr->SetMarkerColor(4);
+graphxr->SetMarkerStyle(21);
+graphxr->Draw("AP");
+graphxr->GetHistogram()->SetXTitle("xcog on pad");
+graphxr->GetHistogram()->SetYTitle("xcog-x");   
     
 
-    pad13->cd();
-    graphy->SetFillColor(42);
-    graphy->SetMarkerColor(4);
-    graphy->SetMarkerStyle(21);
-    graphy->Draw("AF");
-    graphy->GetHistogram()->SetXTitle("y on pad");
-    graphy->GetHistogram()->SetYTitle("ycog-y");   
-    
+pad13->cd();
+graphy->SetFillColor(42);
+graphy->SetMarkerColor(4);
+graphy->SetMarkerStyle(21);
+graphy->Draw("AF");
+graphy->GetHistogram()->SetXTitle("y on pad");
+graphy->GetHistogram()->SetYTitle("ycog-y");   
 
 
-    pad14->cd();
-    graphyr->SetFillColor(42);
-    graphyr->SetMarkerColor(4);
-    graphyr->SetMarkerStyle(21);
-    graphyr->Draw("AF");
-    graphyr->GetHistogram()->SetXTitle("ycog on pad");
-    graphyr->GetHistogram()->SetYTitle("ycog-y");   
+
+pad14->cd();
+graphyr->SetFillColor(42);
+graphyr->SetMarkerColor(4);
+graphyr->SetMarkerStyle(21);
+graphyr->Draw("AF");
+graphyr->GetHistogram()->SetXTitle("ycog on pad");
+graphyr->GetHistogram()->SetYTitle("ycog-y");   
     
     c1->Update();
 */
 }
+
+Bool_t AliMUONClusterFinder::SingleMathiesonFit(AliMUONRawCluster *c)
+{
+//
+//  Initialise global variables for fit
+    Int_t i;
+    fMul=c->fMultiplicity[0];
+    fgSegmentation=fSegmentation;
+    fgResponse    =fResponse;
+    fgNbins=fMul;
+    Float_t qtot=0;
+//
+//  dump digit information into arrays
+//
+    for (i=0; i<fMul; i++)
+    {
+	fDig[i]= (AliMUONDigit*)fDigits->UncheckedAt(c->fIndexMap[i][0]);
+	fIx[i]= fDig[i]->fPadX;
+	fIy[i]= fDig[i]->fPadY;
+	fQ[i] = fDig[i]->fSignal;
+	fSegmentation->GetPadCxy(fIx[i], fIy[i], fX[i], fY[i]);
+	fgix[i]=fIx[i];
+	fgiy[i]=fIy[i];
+	fgCharge[i]=Float_t(fQ[i]);
+	qtot+=fgCharge[i];
+    }
+
+    fgQtot=qtot;
+    fgChargeTot=Int_t(qtot);
+    
+//
+    if (fgFirst) {
+	fgFirst=kFALSE;
+	fgMyMinuit = new TMinuit(5);
+    }
+
+    fgMyMinuit->SetFCN(fcn1);
+    fgMyMinuit->mninit(2,10,7);
+    Double_t arglist[20];
+    Int_t ierflag=0;
+    arglist[0]=1;
+//	fgMyMinuit->mnexcm("SET ERR",arglist,1,ierflag);
+// Set starting values 
+    static Double_t vstart[2];
+    vstart[0]=c->fX[0];
+    vstart[1]=c->fY[0];	
+// lower and upper limits
+    static Double_t lower[2], upper[2];
+    Int_t ix,iy;
+    fSegmentation->GetPadIxy(c->fX[0], c->fY[0], ix, iy);
+    Int_t isec=fSegmentation->Sector(ix, iy);
+    lower[0]=vstart[0]-fSegmentation->Dpx(isec)/2;
+    lower[1]=vstart[1]-fSegmentation->Dpy(isec)/2;
+    
+    upper[0]=lower[0]+fSegmentation->Dpx(isec);
+    upper[1]=lower[1]+fSegmentation->Dpy(isec);
+    
+// step sizes
+    static Double_t step[2]={0.0005, 0.0005};
+    
+    fgMyMinuit->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
+    fgMyMinuit->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
+// ready for minimisation	
+    fgMyMinuit->SetPrintLevel(1);
+    fgMyMinuit->mnexcm("SET OUT", arglist, 0, ierflag);
+    arglist[0]= -1;
+    arglist[1]= 0;
+    
+    fgMyMinuit->mnexcm("SET NOGR", arglist, 0, ierflag);
+    fgMyMinuit->mnexcm("MIGRAD", arglist, 0, ierflag);
+    fgMyMinuit->mnexcm("EXIT" , arglist, 0, ierflag);
+// Print results
+// Get fitted parameters
+    Double_t xrec, yrec;
+    TString chname;
+    Double_t epxz, b1, b2;
+    Int_t ierflg;
+    fgMyMinuit->mnpout(0, chname, xrec, epxz, b1, b2, ierflg);	
+    fgMyMinuit->mnpout(1, chname, yrec, epxz, b1, b2, ierflg);	
+    c->fX[0]=xrec;
+    c->fY[0]=yrec;
+    return kTRUE;
+}
+
+Bool_t AliMUONClusterFinder::DoubleMathiesonFit(AliMUONRawCluster *c)
+{
+//
+//  Initialise global variables for fit
+    Int_t i,j;
+    
+    fgSegmentation=fSegmentation;
+    fgResponse    =fResponse;
+    fgNbins=fMul;
+    Float_t qtot=0;
+	
+    for (i=0; i<fMul; i++) {
+	fgix[i]=fIx[i];
+	fgiy[i]=fIy[i];
+	fgCharge[i]=Float_t(fQ[i]);
+	qtot+=fgCharge[i];
+    }
+    fgQtot=qtot;
+    fgChargeTot=Int_t(qtot);
+    
+//
+    if (fgFirst) {
+	fgFirst=kFALSE;
+	fgMyMinuit = new TMinuit(5);
+    }
+    fgMyMinuit->SetFCN(fcn2);
+    fgMyMinuit->mninit(5,10,7);
+    Double_t arglist[20];
+    Int_t ierflag=0;
+    arglist[0]=1;
+//	fgMyMinuit->mnexcm("SET ERR",arglist,1,ierflag);
+// Set starting values 
+    static Double_t vstart[5];
+    vstart[0]=fX[fIndLocal[0]];
+    vstart[1]=fY[fIndLocal[0]];	
+    vstart[2]=fX[fIndLocal[1]];
+    vstart[3]=fY[fIndLocal[1]];	
+    vstart[4]=Float_t(fQ[fIndLocal[0]])/
+	Float_t(fQ[fIndLocal[0]]+fQ[fIndLocal[1]]);
+// lower and upper limits
+    static Double_t lower[5], upper[5];
+    Int_t isec=fSegmentation->Sector(fIx[fIndLocal[0]], fIy[fIndLocal[0]]);
+    lower[0]=vstart[0]-fSegmentation->Dpx(isec);
+    lower[1]=vstart[1]-fSegmentation->Dpy(isec);
+    
+    upper[0]=lower[0]+2.*fSegmentation->Dpx(isec);
+    upper[1]=lower[1]+2.*fSegmentation->Dpy(isec);
+    
+    isec=fSegmentation->Sector(fIx[fIndLocal[1]], fIy[fIndLocal[1]]);
+    lower[2]=vstart[2]-fSegmentation->Dpx(isec)/2;
+    lower[3]=vstart[3]-fSegmentation->Dpy(isec)/2;
+    
+    upper[2]=lower[2]+fSegmentation->Dpx(isec);
+    upper[3]=lower[3]+fSegmentation->Dpy(isec);
+    
+    lower[4]=0.;
+    upper[4]=1.;
+// step sizes
+    static Double_t step[5]={0.0005, 0.0005, 0.0005, 0.0005, 0.01};
+    
+    fgMyMinuit->mnparm(0,"x1",vstart[0],step[0],lower[0],upper[0],ierflag);
+    fgMyMinuit->mnparm(1,"y1",vstart[1],step[1],lower[1],upper[1],ierflag);
+    fgMyMinuit->mnparm(2,"x2",vstart[2],step[2],lower[2],upper[2],ierflag);
+    fgMyMinuit->mnparm(3,"y2",vstart[3],step[3],lower[3],upper[3],ierflag);
+    fgMyMinuit->mnparm(4,"a0",vstart[4],step[4],lower[4],upper[4],ierflag);
+// ready for minimisation	
+    fgMyMinuit->SetPrintLevel(-1);
+    fgMyMinuit->mnexcm("SET OUT", arglist, 0, ierflag);
+    arglist[0]= -1;
+    arglist[1]= 0;
+    
+    fgMyMinuit->mnexcm("SET NOGR", arglist, 0, ierflag);
+    fgMyMinuit->mnexcm("MIGRAD", arglist, 0, ierflag);
+    fgMyMinuit->mnexcm("EXIT" , arglist, 0, ierflag);
+// Get fitted parameters
+    Double_t xrec[2], yrec[2], qfrac;
+    TString chname;
+    Double_t epxz, b1, b2;
+    Int_t ierflg;
+    fgMyMinuit->mnpout(0, chname, xrec[0], epxz, b1, b2, ierflg);	
+    fgMyMinuit->mnpout(1, chname, yrec[0], epxz, b1, b2, ierflg);	
+    fgMyMinuit->mnpout(2, chname, xrec[1], epxz, b1, b2, ierflg);	
+    fgMyMinuit->mnpout(3, chname, yrec[1], epxz, b1, b2, ierflg);	
+    fgMyMinuit->mnpout(4, chname, qfrac,   epxz, b1, b2, ierflg);	
+
+    Double_t fmin, fedm, errdef;
+    Int_t   npari, nparx, istat;
+      
+    fgMyMinuit->mnstat(fmin, fedm, errdef, npari, nparx, istat);  
+    
+    printf("\n fmin %f \n", fmin);
+    
+//
+// One cluster for each maximum
+//
+    for (j=0; j<2; j++) {
+	AliMUONRawCluster cnew;
+	cnew.fChi2[0]=Float_t(fmin);
+	
+	if (fNPeaks == 0) {
+	    cnew.fNcluster[0]=-1;
+	    cnew.fNcluster[1]=fNRawClusters;
+	} else {
+	    cnew.fNcluster[0]=fNPeaks;
+	    cnew.fNcluster[1]=0;
+	}
+	cnew.fMultiplicity[0]=0;
+	cnew.fX[0]=Float_t(xrec[j]);
+	cnew.fY[0]=Float_t(yrec[j]);
+	if (j==0) {
+	    cnew.fQ[0]=Int_t(fgChargeTot*qfrac);
+	} else {
+	    cnew.fQ[0]=Int_t(fgChargeTot*(1-qfrac));
+	}
+	fgSegmentation->SetHit(xrec[j],yrec[j]);
+	for (i=0; i<fMul; i++) {
+	    cnew.fIndexMap[cnew.fMultiplicity[0]][0]=c->fIndexMap[i][0];
+	    fgSegmentation->SetPad(fgix[i], fgiy[i]);
+	    Float_t q1=fgResponse->IntXY(fgSegmentation);
+	    cnew.fContMap[cnew.fMultiplicity[0]][0]=(q1*cnew.fQ[0])/Float_t(fQ[i]);
+	    cnew.fMultiplicity[0]++;
+	}
+	FillCluster(&cnew,0);
+	cnew.fClusterType=cnew.PhysicsContribution();
+	AddRawCluster(cnew);
+	fNPeaks++;
+    }
+    return kTRUE;
+}
+
+AliMUONClusterFinder& AliMUONClusterFinder
+::operator = (const AliMUONClusterFinder& rhs)
+{
+// Dummy assignment operator
+    return *this;
+}
+
 
 Double_t sinoid(Double_t *x, Double_t *par)
 {
@@ -995,7 +1096,22 @@ Double_t DoubleGauss(Double_t *x, Double_t *par)
     return fitval;
  }
 
-Float_t DiscrCharge(Int_t i,Double_t *par) 
+Float_t DiscrCharge1(Int_t i,Double_t *par) 
+{
+// par[0]    x-position of cluster
+// par[1]    y-position of cluster
+
+   fgSegmentation->SetPad(fgix[i], fgiy[i]);
+//  First Cluster
+   fgSegmentation->SetHit(par[0],par[1]);
+   Float_t q1=fgResponse->IntXY(fgSegmentation);
+    
+   Float_t value = fgQtot*q1;
+   return value;
+}
+
+
+Float_t DiscrCharge2(Int_t i,Double_t *par) 
 {
 // par[0]    x-position of first  cluster
 // par[1]    y-position of first  cluster
@@ -1004,33 +1120,23 @@ Float_t DiscrCharge(Int_t i,Double_t *par)
 // par[4]    charge fraction of first  cluster
 // 1-par[4]  charge fraction of second cluster
 
-    static Float_t qtot;
-    if (gFirst) {
-	qtot=0;
-	for (Int_t jbin=0; jbin<gNbins; jbin++) {
-	    qtot+=gCharge[jbin];
-	}
-	gFirst=0;
-	//printf("\n sum of charge from DiscrCharge %f\n", qtot);
-	gChargeTot=Int_t(qtot);
-	
-    }
-    gSegmentation->SetPad(gix[i], giy[i]);
+   fgSegmentation->SetPad(fgix[i], fgiy[i]);
 //  First Cluster
-    gSegmentation->SetHit(par[0],par[1]);
-    Float_t q1=gResponse->IntXY(gSegmentation);
+   fgSegmentation->SetHit(par[0],par[1]);
+   Float_t q1=fgResponse->IntXY(fgSegmentation);
     
 //  Second Cluster
-    gSegmentation->SetHit(par[2],par[3]);
-    Float_t q2=gResponse->IntXY(gSegmentation);
+   fgSegmentation->SetHit(par[2],par[3]);
+   Float_t q2=fgResponse->IntXY(fgSegmentation);
     
-    Float_t value = qtot*(par[4]*q1+(1.-par[4])*q2);
-    return value;
+   Float_t value = fgQtot*(par[4]*q1+(1.-par[4])*q2);
+   return value;
 }
 
 //
-// Minimisation function
-void fcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t )
+// Minimisation functions
+// Single Mathieson
+void fcn1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 {
     Int_t i;
     Float_t delta;
@@ -1038,15 +1144,36 @@ void fcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t )
     Float_t qcont=0;
     Float_t qtot=0;
     
-    for (i=0; i<gNbins; i++) {
-	Float_t q0=gCharge[i];
-	Float_t q1=DiscrCharge(i,par);
+    for (i=0; i<fgNbins; i++) {
+	Float_t q0=fgCharge[i];
+	Float_t q1=DiscrCharge1(i,par);
 	delta=(q0-q1)/TMath::Sqrt(q0);
 	chisq+=delta*delta;
 	qcont+=q1;
 	qtot+=q0;
     }
-    chisq=chisq+=(qtot-qcont)*(qtot-qcont)*0.5;
+    f=chisq;
+}
+
+// Double Mathieson
+void fcn2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+{
+    Int_t i;
+    Float_t delta;
+    Float_t chisq=0;
+    Float_t qcont=0;
+    Float_t qtot=0;
+    
+    for (i=0; i<fgNbins; i++) {
+
+	Float_t q0=fgCharge[i];
+	Float_t q1=DiscrCharge2(i,par);
+	delta=(q0-q1)/TMath::Sqrt(q0);
+	chisq+=delta*delta;
+	qcont+=q1;
+	qtot+=q0;
+    }
+//    chisq=chisq+=(qtot-qcont)*(qtot-qcont)*0.5;
     f=chisq;
 }
 

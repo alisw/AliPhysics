@@ -9,16 +9,32 @@ PACKAGE = MUON
 
 # C++ sources
 
-SRCS          = AliMUONchamber.cxx AliMUONSegResV0.cxx AliMUONSegResV01.cxx \
-               AliMUONSegResV02.cxx AliMUONSegResV04.cxx AliMUONSegResV05.cxx\
-               AliMUONSegResV1.cxx AliMUON.cxx AliMUONv0.cxx \
-               AliMUONdisplay.cxx AliMUONpoints.cxx \
-               AliMUONClusterFinder.cxx  AliMUONClusterFinderv0.cxx \
-               AliMUONHitMap.cxx AliMUONTUBE.cxx
+SRCS         = AliMUONChamber.cxx AliMUONChamberTrigger.cxx \
+	       AliMUONSegmentation.cxx  AliMUONSegmentationV0.cxx\
+	       AliMUONResponse.cxx AliMUONResponseV0.cxx \
+	       AliMUONSegmentationV01.cxx \
+               AliMUONSegmentationV02.cxx AliMUONSegmentationV04.cxx \
+	       AliMUONSegmentationV05.cxx\
+	       AliMUONSegmentationTrigger.cxx  AliMUONResponseTrigger.cxx\
+	       AliMUONSegmentationTriggerX.cxx AliMUONSegmentationTriggerY.cxx \
+               AliMUONSegmentationV1.cxx AliMUON.cxx AliMUONv0.cxx AliMUONv1.cxx\
+               AliMUONDisplay.cxx AliMUONPoints.cxx \
+               AliMUONClusterFinderVS.cxx AliMUONClusterFinder.cxx \
+               AliMUONHitMap.cxx AliMUONHitMapA1.cxx \
+	       AliMUONHit.cxx AliMUONPadHit.cxx AliMUONDigit.cxx \
+               AliMUONTransientDigit.cxx AliMUONRawCluster.cxx \
+	       AliMUONReconstHit.cxx \
+	       AliMUONTrackReconstructor.cxx \
+               AliMUONEventReconstructor.cxx \
+	       AliMUONTriggerDecision.cxx \
+               AliMUONHitForRec.cxx AliMUONSegment.cxx \
+               AliMUONTrack.cxx AliMUONTrackHit.cxx AliMUONTrackParam.cxx \
+               AliMUONTriggerCircuit.cxx AliMUONTriggerLut.cxx \
+               AliMUONGlobalTrigger.cxx AliMUONLocalTrigger.cxx \
 
 # C++ Headers
 
-HDRS          = $(SRCS:.cxx=.h) AliMUONConst.h MUONLinkDef.h
+HDRS          = $(SRCS:.cxx=.h) MUONLinkDef.h
 
 # Library dictionary
 
@@ -28,7 +44,7 @@ DICTO         = $(patsubst %.cxx,tgt_$(ALICE_TARGET)/%.o,$(DICT))
 
 # Fortran sources
 
-FSRCS	      = algo.F reco_muon.F
+FSRCS	      = reco_muon.F
 
 # FORTRAN Objectrs
 
@@ -77,3 +93,4 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 
 -include tgt_$(ALICE_TARGET)/Make-depend 
 
+# DO NOT DELETE

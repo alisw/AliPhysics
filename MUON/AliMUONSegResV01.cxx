@@ -13,10 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/
-
 /////////////////////////////////////////////////////
 //  Segmentation and Response classes version 01   //
 /////////////////////////////////////////////////////
@@ -32,19 +28,10 @@ $Log$
 #include "iostream.h"
 
 //___________________________________________
-ClassImp(AliMUONsegmentationV01)
+ClassImp(AliMUONSegmentationV01)
 
-Float_t AliMUONsegmentationV01::Dpx(Int_t isec)
-{
-   return fDpxD[isec];
-}
 
-Float_t AliMUONsegmentationV01::Dpy(Int_t )
-{
-   return fDpy;
-}
-
-AliMUONsegmentationV01::AliMUONsegmentationV01() 
+AliMUONSegmentationV01::AliMUONSegmentationV01() 
 {
     fNsec=4;
     fRSec.Set(fNsec);    
@@ -58,46 +45,65 @@ AliMUONsegmentationV01::AliMUONsegmentationV01()
     (*fCorr)[1]=0;
     (*fCorr)[2]=0;
 } 
-    
-void   AliMUONsegmentationV01::SetSegRadii(Float_t  r[4])
+
+Float_t AliMUONSegmentationV01::Dpx(Int_t isec)
 {
+//
+// Returns x-pad size for given sector isec
+   return fDpxD[isec];
+}
+
+Float_t AliMUONSegmentationV01::Dpy(Int_t isec)
+{
+//
+// Returns y-pad size for given sector isec
+   return fDpy;
+}
+    
+void   AliMUONSegmentationV01::SetSegRadii(Float_t  r[4])
+{
+//
+// Set the radii of the segmentation zones 
     for (Int_t i=0; i<4; i++) {
 	fRSec[i]=r[i];
-	//printf("\n R %d %f \n",i,fRSec[i]);
+	printf("\n R %d %f \n",i,fRSec[i]);
 	
     }
 }
 
 
-void AliMUONsegmentationV01::SetPadDivision(Int_t ndiv[4])
+void AliMUONSegmentationV01::SetPadDivision(Int_t ndiv[4])
 {
 //
 // Defines the pad size perp. to the anode wire (y) for different sectors. 
-//
+// Pad sizes are defined as integral fractions ndiv of a basis pad size
+// fDpx
+// 
     for (Int_t i=0; i<4; i++) {
 	fNDiv[i]=ndiv[i];
-	//printf("\n Ndiv %d %d \n",i,fNDiv[i]);
+	printf("\n Ndiv %d %d \n",i,fNDiv[i]);
     }
     ndiv[0]=ndiv[1];
 }
 
 
-void AliMUONsegmentationV01::Init(AliMUONchamber* )
+void AliMUONSegmentationV01::Init(AliMUONChamber* Chamber)
 {
 //
 //  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector
 //  These arrays help in converting from real to pad co-ordinates and
-//  vice versa
+//  vice versa.
+//  This version approximates concentric segmentation zones
 //
     Int_t isec;
-    //printf("\n Initialise segmentation v01 -- test !!!!!!!!!!!!!! \n");
+    printf("\n Initialise segmentation v01 -- test !!!!!!!!!!!!!! \n");
     fNpy=Int_t(fRSec[fNsec-1]/fDpy)+1;
 
     fDpxD[fNsec-1]=fDpx;
     if (fNsec > 1) {
 	for (Int_t i=fNsec-2; i>=0; i--){
 	    fDpxD[i]=fDpxD[fNsec-1]/fNDiv[i];
-	    //printf("\n test ---dx %d %f \n",i,fDpxD[i]);
+	    printf("\n test ---dx %d %f \n",i,fDpxD[i]);
 	}
     }
 //
@@ -115,7 +121,7 @@ void AliMUONsegmentationV01::Init(AliMUONchamber* )
 	    Float_t x=iy*fDpy-fDpy/2;
 	    if (x > fRSec[isec]) {
 		fNpxS[isec][iy]=0;
-		 fCx[isec][iy]=0;
+		fCx[isec][iy]=0;
 	    } else {
 		ry=TMath::Sqrt(fRSec[isec]*fRSec[isec]-x*x);
 		if (isec > 1) {
@@ -140,14 +146,12 @@ void AliMUONsegmentationV01::Init(AliMUONchamber* )
 	    }
 	} // y-pad loop
     } // sector loop
-    //   
-    // for debugging only 
-   
-    //printf("segmentationv01 - I was here ! \n");
 }
 
-Int_t AliMUONsegmentationV01::Sector(Int_t ix, Int_t iy)
+Int_t AliMUONSegmentationV01::Sector(Int_t ix, Int_t iy)
 {
+// Returns sector number for given pad position
+//
     Int_t absix=TMath::Abs(ix);
     Int_t absiy=TMath::Abs(iy);
     Int_t isec=0;
@@ -160,10 +164,10 @@ Int_t AliMUONsegmentationV01::Sector(Int_t ix, Int_t iy)
     return isec;
 }
 
-    void AliMUONsegmentationV01::
-    GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
+void AliMUONSegmentationV01::
+GetPadIxy(Float_t x, Float_t y, Int_t &ix, Int_t &iy)
 {
-//  returns pad coordinates (ix,iy) for given real coordinates (x,y)
+//  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 //
     iy = (y>0)? Int_t(y/fDpy)+1 : Int_t(y/fDpy)-1;
     if (iy >  fNpy) iy= fNpy;
@@ -187,20 +191,18 @@ Int_t AliMUONsegmentationV01::Sector(Int_t ix, Int_t iy)
     } else {
 	ix=fNpxS[fNsec-1][absiy]+1;	
     }
-//    printf("\n something %d %d \n",isec,absiy);
-    
     ix = (x>0) ? ix:-ix;
 }
 
-void AliMUONsegmentationV01::
+void AliMUONSegmentationV01::
 GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
 {
-//  returns real coordinates (x,y) for given pad coordinates (ix,iy)
+//  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 //
     y = (iy>0) ? Float_t(iy*fDpy)-fDpy/2. : Float_t(iy*fDpy)+fDpy/2.;
 //
 //  Find sector isec
-    Int_t isec=AliMUONsegmentationV01::Sector(ix,iy);
+    Int_t isec=AliMUONSegmentationV01::Sector(ix,iy);
 //
     Int_t absix=TMath::Abs(ix);
     Int_t absiy=TMath::Abs(iy);
@@ -212,17 +214,22 @@ GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Float_t &y)
     }
 }
 
-void AliMUONsegmentationV01::
+void AliMUONSegmentationV01::
 SetPad(Int_t ix, Int_t iy)
 {
+    //
+    // Sets virtual pad coordinates, needed for evaluating pad response 
+    // outside the tracking program 
     GetPadCxy(ix,iy,fx,fy);
     fSector=Sector(ix,iy);
 }
 
 
-void AliMUONsegmentationV01::
+void AliMUONSegmentationV01::
 FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
 {
+// Initialises iteration over pads for charge distribution algorithm
+//
     //
     // Find the wire position (center of charge distribution)
     Float_t x0a=GetAnod(xhit);
@@ -254,8 +261,11 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
 }
 
 
-void AliMUONsegmentationV01::NextPad()
+void AliMUONSegmentationV01::NextPad()
 {
+// Stepper for the iteration over pads
+//
+// Step to next pad in the integration region
   // 
   // Step to next pad in integration region
     Float_t xc,yc;
@@ -271,7 +281,7 @@ void AliMUONsegmentationV01::NextPad()
 	fiy++;
 //      get y-position of next row (yc), xc not used here 	
 	GetPadCxy(fix,fiy,xc,yc);
-//      get x-pad coordiante for 1 pad in row (fix)
+//      get x-pad coordiante for first pad in row (fix)
 	GetPadIxy(fxmin,yc,fix,iyc);
     } else {
 	printf("\n Error: Stepping outside integration region\n ");
@@ -279,15 +289,12 @@ void AliMUONsegmentationV01::NextPad()
     GetPadCxy(fix,fiy,fx,fy);
     fSector=Sector(fix,fiy);
     if (MorePads() && 
-	(fSector ==-1 || fSector==0 || 
-	 TMath::Abs(fx)<1.5 || TMath::Abs(fy)<1.5)) 
+	(fSector ==-1 || fSector==0)) 
 	NextPad();
-    
-//    printf("\n this pad %f %f %d %d \n",fx,fy,fix,fiy);
-    
 }
 
-Int_t AliMUONsegmentationV01::MorePads()
+Int_t AliMUONSegmentationV01::MorePads()
+// Stopping condition for the iterator over pads
 //
 // Are there more pads in the integration region
 {
@@ -298,61 +305,67 @@ Int_t AliMUONsegmentationV01::MorePads()
     }
 }
 
-void AliMUONsegmentationV01::
+void AliMUONSegmentationV01::
 IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
 {
+//  Returns integration limits for current pad
+//
     x1=fxhit-fx-Dpx(fSector)/2.;
     x2=x1+Dpx(fSector);
     y1=fyhit-fy-Dpy(fSector)/2.;
     y2=y1+Dpy(fSector);    
 }
 
-void AliMUONsegmentationV01::
+void AliMUONSegmentationV01::
 Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 {
+// Returns list of next neighbours for given Pad (iX, iY)
+//
     const Float_t epsilon=fDpy/1000;
     
     Float_t x,y;
     Int_t   ixx, iyy, isec1;
 //
-    Int_t   isec0=AliMUONsegmentationV01::Sector(iX,iY);
+    Int_t   isec0=AliMUONSegmentationV01::Sector(iX,iY);
     Int_t i=0;
 //    
 //  step right
     Xlist[i]=iX+1;
+    if (Xlist[i]==0) Xlist[i]++;
     Ylist[i++]=iY;
 //
 //  step left    
     Xlist[i]=iX-1;
+    if (Xlist[i]==0) Xlist[i]--;
     Ylist[i++]=iY;
 //
 //  step up 
-    AliMUONsegmentationV01::GetPadCxy(iX,iY,x,y);
-    AliMUONsegmentationV01::GetPadIxy(x+epsilon,y+fDpy,ixx,iyy);
+    AliMUONSegmentationV01::GetPadCxy(iX,iY,x,y);
+    AliMUONSegmentationV01::GetPadIxy(x+epsilon,y+fDpy,ixx,iyy);
     Xlist[i]=ixx;
-    Ylist[i++]=iY+1;
-    isec1=AliMUONsegmentationV01::Sector(ixx,iyy);
+    Ylist[i++]=iyy;
+    isec1=AliMUONSegmentationV01::Sector(ixx,iyy);
     if (isec1==isec0) {
 //
 //  no sector boundary crossing
-	Xlist[i]=ixx+1;
-	Ylist[i++]=iY+1;
+//	Xlist[i]=ixx+1;
+//	Ylist[i++]=iY+1;
 	
-	Xlist[i]=ixx-1;
-	Ylist[i++]=iY+1;
+//	Xlist[i]=ixx-1;
+//	Ylist[i++]=iY+1;
     } else if (isec1 < isec0) {
 // finer segmentation
-	Xlist[i]=ixx+1;
-	Ylist[i++]=iY+1;
+//	Xlist[i]=ixx+1;
+//	Ylist[i++]=iY+1;
 	
 	Xlist[i]=ixx-1;
-	Ylist[i++]=iY+1;
+	Ylist[i++]=iyy;
 	
-	Xlist[i]=ixx-2;
-	Ylist[i++]=iY+1;
+//	Xlist[i]=ixx-2;
+//	Ylist[i++]=iY+1;
     } else {
 // coarser segmenation	
-
+/*
 	if (TMath::Odd(iX-fNpxS[isec1-1][iY+1])) {
 	    Xlist[i]=ixx-1;
 	    Ylist[i++]=iY+1;
@@ -360,35 +373,39 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 	    Xlist[i]=ixx+1;
 	    Ylist[i++]=iY+1;
 	}
+*/
     }
+
 //
 // step down 
-    AliMUONsegmentationV01::GetPadCxy(iX,iY,x,y);
-    AliMUONsegmentationV01::GetPadIxy(x+epsilon,y-fDpy,ixx,iyy);
+    AliMUONSegmentationV01::GetPadCxy(iX,iY,x,y);
+    AliMUONSegmentationV01::GetPadIxy(x+epsilon,y-fDpy,ixx,iyy);
     Xlist[i]=ixx;
-    Ylist[i++]=iY-1;
-    isec1=AliMUONsegmentationV01::Sector(ixx,iyy);
+    Ylist[i++]=iyy;
+    isec1=AliMUONSegmentationV01::Sector(ixx,iyy);
     if (isec1==isec0) {
 //
 //  no sector boundary crossing
+/*
     Xlist[i]=ixx+1;
     Ylist[i++]=iY-1;
 	
     Xlist[i]=ixx-1;
     Ylist[i++]=iY-1;
+*/
     } else if (isec1 < isec0) {
 // finer segmentation
-	Xlist[i]=ixx+1;
-	Ylist[i++]=iY-1;
+//	Xlist[i]=ixx+1;
+//	Ylist[i++]=iY-1;
 	
 	Xlist[i]=ixx-1;
-	Ylist[i++]=iY-1;
+	Ylist[i++]=iyy;
 	
-	Xlist[i]=ixx-2;
-	Ylist[i++]=iY-1;
+//	Xlist[i]=ixx-2;
+//	Ylist[i++]=iY-1;
     } else {
 // coarser segmentation	
-
+/*
 	if (TMath::Odd(iX-fNpxS[isec1-1][iY-1])) {
 	    Xlist[i]=ixx-1;
 	    Ylist[i++]=iY-1;
@@ -396,13 +413,16 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 	    Xlist[i]=ixx+1;
 	    Ylist[i++]=iY-1;
 	}
-
+*/
     }
     *Nlist=i;
 }
 
-void AliMUONsegmentationV01::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
+void AliMUONSegmentationV01::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
 {
+// Returns test point on the pad plane.
+// Used during determination of the segmoid correction of the COG-method
+
     n=3;
     x[0]=(fRSec[0]+fRSec[1])/2/TMath::Sqrt(2.);
     y[0]=x[0];
@@ -412,8 +432,10 @@ void AliMUONsegmentationV01::GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)
     y[2]=x[2];
 }
 
-void AliMUONsegmentationV01::Draw(Option_t *)
+void AliMUONSegmentationV01::Draw()
 {
+// Draws the segmentation zones
+//
     TBox *box;
     
     Float_t dx=0.95/fCx[3][1]/2;
@@ -452,13 +474,12 @@ void AliMUONsegmentationV01::Draw(Option_t *)
 	}
     }
 }
-void AliMUONsegmentationV01::SetCorrFunc(Int_t isec, TF1* func)
+void AliMUONSegmentationV01::SetCorrFunc(Int_t isec, TF1* func)
 {
     (*fCorr)[isec]=func;
-    
 }
 
-TF1* AliMUONsegmentationV01::CorrFunc(Int_t isec)
+TF1* AliMUONSegmentationV01::CorrFunc(Int_t isec)
 { 
     return (TF1*) (*fCorr)[isec];
 }

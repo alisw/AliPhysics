@@ -22,7 +22,7 @@ MUONdisplay (Int_t nevent=0) {
    }
    
 // Create Event Display object
-   AliMUONdisplay *muondisplay = new AliMUONdisplay(750);
+   AliMUONDisplay *muondisplay = new AliMUONDisplay(750);
 
 // Display first event
    gAlice->GetEvent(nevent);
