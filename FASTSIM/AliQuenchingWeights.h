@@ -22,7 +22,7 @@ class TH1F;
 
 class AliQuenchingWeights : public TObject {
  public:
-  enum kECMethod {kDefault=0,kReweight=1};
+  enum kECMethod {kDefault=0,kReweight=1,kReweightCont=2};
 
   AliQuenchingWeights();
   AliQuenchingWeights(const AliQuenchingWeights& a);
@@ -41,6 +41,13 @@ class AliQuenchingWeights : public TObject {
   Double_t GetELossRandomKFast(Int_t ipart, Double_t I0, Double_t I1, Double_t e=1.e10);
   Double_t GetELossRandomKFastR(Int_t ipart, Double_t R, Double_t wc, Double_t e=1.e10);
   Double_t CalcQuenchedEnergyKFast(Int_t ipart, Double_t I0, Double_t I1, Double_t e);
+
+  Double_t GetDiscreteWeight(Int_t ipart, Double_t I0, Double_t I1);
+  Double_t GetDiscreteWeightR(Int_t ipart, Double_t R);
+  void GetZeroLossProb(Double_t &p,Double_t &prw,Double_t &prw_cont,
+		       Int_t ipart,Double_t I0,Double_t I1,Double_t e=1.e10);
+  void GetZeroLossProbR(Double_t &p,Double_t &prw, Double_t &prw_cont,
+			Int_t ipart,Double_t R,Double_t wc,Double_t e=1.e10);
 
   //multiple soft scattering approximation
   Int_t InitMult(const Char_t *contall="$(ALICE_ROOT)/FASTSIM/data/cont_mult.all",
@@ -147,7 +154,7 @@ class AliQuenchingWeights : public TObject {
   Int_t fInstanceNumber; //instance number of class
 
   Bool_t fMultSoft;     //approximation type
-  Bool_t fECMethod;     //energy constraint method
+  kECMethod fECMethod;     //energy constraint method
   Double_t fQTransport; //transport coefficient [GeV^2/fm]]
   Double_t fMu;         //Debye screening mass
   Double_t fK;          //proportional constant [fm]

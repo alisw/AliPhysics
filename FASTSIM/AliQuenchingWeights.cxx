@@ -72,7 +72,6 @@ AliQuenchingWeights::AliQuenchingWeights()
   SetQTransport();
   SetK();
   fECMethod=kDefault; 
-  //SetECMethod();
   SetLengthMax();
   fLengthMaxOld=0;
   fInstanceNumber=fgCounter++;
@@ -135,8 +134,9 @@ void AliQuenchingWeights::SetECMethod(kECMethod type)
   fECMethod=type;
   if(fECMethod==kDefault)
     Info("SetECMethod","Energy Constraint Method set to DEFAULT:\nIf (sampled energy loss > parton energy) then sampled energy loss = parton energy.");
-  else
+  else if(fECMethod==kReweight)
     Info("SetECMethod","Energy Constraint Method set to REWEIGHT:\nRequire sampled energy loss <= parton energy.");
+  else Info("SetECMethod","Energy Constraint Method set to REWEIGHTCONT:\nRequire sampled energy loss <= parton energy (only implemented for FAST method.");
 }
 
 Int_t AliQuenchingWeights::InitMult(const Char_t *contall,const Char_t *discall) 
@@ -1010,7 +1010,7 @@ Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t R, Doub
   if(R>=fgkRMax) {
     R=fgkRMax-1;
   }  
-
+  
   Double_t discrete=0.;
   Double_t continuous=0.;
   Int_t bin=1;
@@ -1020,12 +1020,13 @@ Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t R, Doub
   else
     CalcSingleHard(ipart,R,xxxx,continuous,discrete);
 
-  if(discrete>0.999) {
+  if(discrete>=1.0) {
     return 0.; //no energy loss
   }
 
   fHisto->SetBinContent(bin,continuous);
-  const Int_t kbinmax=fHisto->FindBin(e/wc);
+  Int_t kbinmax=fHisto->FindBin(e/wc);
+  if(kbinmax>=fgkBins) kbinmax=fgkBins-1;
   if(kbinmax==1) return e; //maximum energy loss
 
   if(fMultSoft) {
@@ -1042,19 +1043,24 @@ Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t R, Doub
     }
   }
 
-  const Double_t kdelta=fHisto->Integral(1,kbinmax);
-  Double_t val=discrete*fgkBins/fgkMaxBin;
-  fHisto->Fill(0.,val);
-
-  if(fECMethod==kReweight)
+  if(fECMethod==kReweight){
     fHisto->SetBinContent(kbinmax+1,0);
-  else
+    fHisto->Fill(0.,discrete*fgkBins/fgkMaxBin);
+  } else if (fECMethod==kReweightCont) {
+    fHisto->SetBinContent(kbinmax+1,0);
+    const Double_t kdelta=fHisto->Integral(1,kbinmax);
+    fHisto->Scale(1./kdelta*(1-discrete));
+    fHisto->Fill(0.,discrete);
+  } else {
+    const Double_t kdelta=fHisto->Integral(1,kbinmax);
+    Double_t val=discrete*fgkBins/fgkMaxBin;
+    fHisto->Fill(0.,val);
     fHisto->SetBinContent(kbinmax+1,(1-discrete)*fgkBins/fgkMaxBin-kdelta);
-
+  }
   for(Int_t bin=kbinmax+2; bin<=fgkBins; bin++) {
     fHisto->SetBinContent(bin,0);
   }
-
+  //cout << kbinmax << " " << discrete << " " << fHisto->Integral() << endl;
   Double_t ret=fHisto->GetRandom()*wc;
   if(ret>e) return e;
   return ret;
@@ -1067,6 +1073,98 @@ Double_t AliQuenchingWeights::CalcQuenchedEnergyKFast(Int_t ipart, Double_t I0, 
 
   Double_t loss=GetELossRandomKFast(ipart,I0,I1,e);
   return e-loss;
+}
+
+Double_t AliQuenchingWeights::GetDiscreteWeight(Int_t ipart, Double_t I0, Double_t I1)
+{
+  // return discrete weight
+
+  Double_t R=CalcRk(I0,I1);
+  if(R<=0.){
+    return 1.;
+  }
+  return GetDiscreteWeightR(ipart,R);
+}
+
+Double_t AliQuenchingWeights::GetDiscreteWeightR(Int_t ipart, Double_t R)
+{
+  // return discrete weight
+
+  if(R>=fgkRMax) {
+    R=fgkRMax-1;
+  }  
+
+  Double_t discrete=0.;
+  Double_t continuous=0.;
+  Int_t bin=1;
+  Double_t xxxx = fHisto->GetBinCenter(bin);
+  if(fMultSoft)
+    CalcMult(ipart,R,xxxx,continuous,discrete);
+  else
+    CalcSingleHard(ipart,R,xxxx,continuous,discrete);
+  return discrete;
+}
+
+void AliQuenchingWeights::GetZeroLossProb(Double_t &p,Double_t &prw,Double_t &prw_cont,
+					  Int_t ipart,Double_t I0,Double_t I1,Double_t e)
+{
+  p=1.;prw=1.;prw_cont=1.;
+  Double_t R=CalcRk(I0,I1);
+  if(R<=0.){
+    return;
+  }
+  Double_t wc=CalcWCk(I1);
+  if(wc<=0.){
+    return;
+  }
+  GetZeroLossProbR(p,prw,prw_cont,ipart,R,wc,e);
+}
+
+void AliQuenchingWeights::GetZeroLossProbR(Double_t &p,Double_t &prw,Double_t &prw_cont,
+					   Int_t ipart, Double_t R,Double_t wc,Double_t e)
+{
+  if(R>=fgkRMax) {
+    R=fgkRMax-1;
+  }  
+
+  Double_t discrete=0.;
+  Double_t continuous=0.;
+
+  Int_t kbinmax=fHisto->FindBin(e/wc);
+  if(kbinmax>=fgkBins) kbinmax=fgkBins-1;
+  if(fMultSoft) {
+    for(Int_t bin=1; bin<=kbinmax; bin++) {
+      Double_t xxxx = fHisto->GetBinCenter(bin);
+      CalcMult(ipart,R,xxxx,continuous,discrete);
+      fHisto->SetBinContent(bin,continuous);
+    }
+  } else {
+    for(Int_t bin=1; bin<=kbinmax; bin++) {
+      Double_t xxxx = fHisto->GetBinCenter(bin);
+      CalcSingleHard(ipart,R,xxxx,continuous,discrete);
+      fHisto->SetBinContent(bin,continuous);
+    }
+  }
+
+  //non-reweighted P(Delta E = 0)
+  const Double_t kdelta=fHisto->Integral(1,kbinmax);
+  Double_t val=discrete*fgkBins/fgkMaxBin;
+  fHisto->Fill(0.,val);
+  fHisto->SetBinContent(kbinmax+1,(1-discrete)*fgkBins/fgkMaxBin-kdelta);
+  Double_t hint=fHisto->Integral(1,kbinmax+1);
+  p=fHisto->GetBinContent(1)/hint;
+
+  // reweighted
+  hint=fHisto->Integral(1,kbinmax);
+  prw=fHisto->GetBinContent(1)/hint;
+
+  Double_t xxxx = fHisto->GetBinCenter(1);
+  CalcMult(ipart,R,xxxx,continuous,discrete);
+  fHisto->SetBinContent(1,continuous);
+  hint=fHisto->Integral(1,kbinmax);
+  fHisto->Scale(1./hint*(1-discrete));
+  fHisto->Fill(0.,discrete);
+  prw_cont=fHisto->GetBinContent(1);
 }
 
 Int_t AliQuenchingWeights::SampleEnergyLoss() 
