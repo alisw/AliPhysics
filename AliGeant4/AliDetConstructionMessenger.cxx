@@ -87,10 +87,12 @@ void AliDetConstructionMessenger::SetNewValue(G4UIcommand* command, G4String new
                          fSetAllSensitiveCmd->GetNewBoolValue(newValues));
   }
   else if (command == fSetReadGeometryCmd) {
-    fDetConstruction->SetReadGeometry(newValues);
+    fDetConstruction->SetReadGeometry(
+                         fSetReadGeometryCmd->GetNewBoolValue(newValues));
   }  
   else if (command == fSetWriteGeometryCmd) {
-    fDetConstruction->SetWriteGeometry(newValues);
+    fDetConstruction->SetWriteGeometry(
+                         fSetReadGeometryCmd->GetNewBoolValue(newValues));
   }    
 }
 
