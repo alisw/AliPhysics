@@ -70,7 +70,9 @@ AliPHOSv1(name,title)
   //fIntrinsicPINEfficiency = 0.02655 ; //APD= 0.1875/0.1271 * 0.018 (PIN)
   fLightYieldAttenuation = 0.0045 ;
   //fRecalibrationFactor = 6.2 / fLightYieldMean ;
-    fRecalibrationFactor = 5.67/ fLightYieldMean ; //25.04.2001 OHO
+  //  fRecalibrationFactor = 5.67/ fLightYieldMean ; //25.04.2001 OHO
+  //fRecalibrationFactor = 1.881/ fLightYieldMean ; //23.05.2001 OHO
+  fRecalibrationFactor = 1.9/ fLightYieldMean ;//05.06.2001 OHO 
   fElectronsPerGeV = 2.77e+8 ; 
 }
 
@@ -110,6 +112,7 @@ void AliPHOSv3::StepManager(void)
   Int_t          relid[4] ;        // (box, layer, row, column) indices
   Int_t          absid    ;        // absolute cell ID number
   Float_t        xyze[4]={0,0,0,0}  ; // position wrt MRS and energy deposited
+ //Double_t        xyze[4]={0,0,0,0}  ; // position wrt MRS and energy deposited
   TLorentzVector pos      ;        // Lorentz vector of the track current position
   Int_t          copy     ;
   Float_t        lightyield ;   // Light Yield per GeV
@@ -120,6 +123,7 @@ void AliPHOSv3::StepManager(void)
   Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
   TString name      =  fGeom->GetName() ; 
   Float_t        lostenergy ;
+  //Double_t       lostenergy ;
   Float_t        global[3] ;
   Float_t        local[3] ;
 
@@ -288,14 +292,20 @@ if(gMC->CurrentVolID(copy)==gMC->VolId("PXTL")){// We are inside a PBWO4 crystal
    lightyield = gRandom->Poisson(fLightYieldMean) ;
 
    apdgain = gRandom->Poisson(300.) ;
+   //apdgain = 300.;
 
  //calculate the number of electrons produced in the PIN due to this energy
 
- nElectrons = apdgain * lostenergy * lightyield * fIntrinsicPINEfficiency *exp(-fLightYieldAttenuation * (local[1]+fGeom->GetCrystalSize(1)/2.0 ) ) ;
+ //nElectrons = apdgain * lostenergy * lightyield * fIntrinsicPINEfficiency *exp(-fLightYieldAttenuation * (local[1]+fGeom->GetCrystalSize(1)/2.0 ) ) ;
+
+  xyze[3] = (fRecalibrationFactor/100.) * apdgain * lostenergy * lightyield * fIntrinsicPINEfficiency *exp(-fLightYieldAttenuation * (local[1]+fGeom->GetCrystalSize(1)/2.0 ) ) ;
+    
+   //cout<<"xyze[3]:    "<<xyze[3]<<   endl;
+   //cout<<"lostenergy: "<<lostenergy<<endl; 
 
  //nElectrons = lostenergy * lightyield * fIntrinsicPINEfficiency *exp(-fLightYieldAttenuation * (local[1]+fGeom->GetCrystalSize(1)/2.0 ) ) ;
 
-        xyze[3] = nElectrons * fRecalibrationFactor/100. ;
+        //xyze[3] = nElectrons * fRecalibrationFactor/10000. ;
 
       // add current hit to the hit list
 
@@ -331,12 +341,21 @@ if(gMC->CurrentVolID(copy)==gMC->VolId("PXTL")){// We are inside a PBWO4 crystal
 
 // calculating number of electrons in the PIN diode asociated to this hit
 
-	  nElectrons = lostenergy * fElectronsPerGeV ;
+	  //nElectrons = lostenergy * fElectronsPerGeV ;
        //  xyze[3] = nElectrons * fRecalibrationFactor ;
           apdgain = gRandom->Poisson(300.) ;
-   if(local[1]<-0.0045) xyze[3] = apdgain * nElectrons * fRecalibrationFactor/100.;
-   if((local[1]>-0.0045)&&(gMC->TrackPid()==-11)) xyze[3] = apdgain * nElectrons * fRecalibrationFactor/100.;
-   if(local[1]>-0.0045) xyze[3] = nElectrons *fRecalibrationFactor/100.;
+           // apdgain = 300.;
+   //if(local[1]<-0.0045) xyze[3] = apdgain * nElectrons * fRecalibrationFactor/10000.;
+
+    if(local[1]<-0.0045) xyze[3] = apdgain * lostenergy * fElectronsPerGeV* (fRecalibrationFactor/100.);
+
+   //if((local[1]>-0.0045)&&(gMC->TrackPid()==-11)) xyze[3] = apdgain * nElectrons * fRecalibrationFactor/10000.;
+
+     if((local[1]>-0.0045)&&(gMC->TrackPid()==-11)) xyze[3] = apdgain * lostenergy * fElectronsPerGeV * (fRecalibrationFactor/100.);
+
+   //if(local[1]>-0.0045) xyze[3] = nElectrons * fRecalibrationFactor/10000.;
+
+     if(local[1]>-0.0045) xyze[3] = lostenergy * fElectronsPerGeV * (fRecalibrationFactor/100.);
 	  
 	  // add current hit to the hit list
 
