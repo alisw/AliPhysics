@@ -11,13 +11,8 @@
 
 #include "AliHBTWeights.h"
 
-#ifdef __DECCXX
-#include <complex.h>
-#else
 class Complex;
 typedef Complex double_complex;
-#endif
-#include <math.h>
 
 class AliHBTPair;
 
@@ -31,45 +26,46 @@ class AliHBTCrab: public AliHBTWeights
 
      Double_t GetWeight(const AliHBTPair* partpair);
      void Init(Int_t pid1,Int_t pid2); //put the initial values in fortran commons fsiini, led_bldata
+     
    private:
      AliHBTCrab();
      AliHBTCrab(const AliHBTCrab &/*source*/);
      AliHBTCrab & operator=(const AliHBTCrab& /*source*/);
 
-     void get_com_quantities(const AliHBTPair* pair, double *qred,double *r,double *qdotr,double *mom, int *test);
-     double  corrcalc(double trueqred,double trueqdotr,double truer);
+     void GetComQuantities(const AliHBTPair* pair, double *qred,double *r,double *qdotr,double *mom, int *test);
+     double  CorrCalc(double trueqred,double trueqdotr,double truer);
      
-     Bool_t fBreitWigner;
-     Bool_t fReducedMom;
-     Float_t fMaxMomentum;
+     Bool_t fBreitWigner;//switch if to calculated BW
+     Bool_t fReducedMom;//switch if
+     Float_t fMaxMomentum;//switch if
      
      Bool_t  SetConfig(const AliHBTPair* pair);
      
-     Int_t fPid1;
-     Int_t fPid2;
+     Int_t fPid1;//PID of the first particle
+     Int_t fPid2;//PID of the second particle
      
-     Double_t MASS1;
-     Double_t MASS2;
+     Double_t fMass1;//mass of the first particle
+     Double_t fMass2;//mass of the second particle
  
-     Float_t INTERACTION_WSYM;/* fractions of symmetric and antisym weights of the various spin channels */
-     Float_t INTERACTION_WANTI;
-     Float_t INTERACTION_WNOSYM;
+     Float_t fInteractionWsym;// fractions of symmetric and antisym weights of the various spin channels 
+     Float_t fInteractionWanti;//comment
+     Float_t fInteractionWnosym;//comment
      
-     Float_t INTERACTION_DELK;
-     Int_t INTERACTION_NKMAX;/* number of momentum points in mesh for strong/coul. interaction */
+     Float_t fInteractionDelk;//comment
+     Int_t fInteractionNkmax;// number of momentum points in mesh for strong/coul. interaction 
      
 #ifdef __DECCXX
-     static const complex ci;
+     static const complex fgkCI;//complex (1,0)
 #else
-     static const double_complex ci;
+     static const double_complex fgkCI;//complex (1,0)
 #endif
      static const Double_t fgkROOT2;//! some const
      static const Double_t fgkWcons; //constant for fm->GeV conversion 1/0.1973
      
 #ifdef __DECCXX
-     complex cgamma(complex c);
+     complex CGamma(complex c);
 #else
-     double_complex cgamma(double_complex c);
+     double_complex CGamma(double_complex c);
 #endif
      
      static AliHBTCrab* fgCrab;

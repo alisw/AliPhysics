@@ -6,6 +6,7 @@
 // taken from http://www.nscl.msu.edu/~pratt/freecodes/crab/home.html  //
 // written by Scott Pratt                                              //
 //                                                                     //
+//                                                                     //
 /////////////////////////////////////////////////////////////////////////
  
 #include "AliHBTPair.h"
@@ -22,9 +23,9 @@ AliHBTCrab* AliHBTCrab::fgCrab = 0x0;
 const Double_t AliHBTCrab::fgkWcons = 1./0.1973;
 const Double_t AliHBTCrab::fgkROOT2=1.41421356237309504880;
 #ifdef __DECCXX
-const complex AliHBTCrab::ci(0.0,1.0);
+const complex AliHBTCrab::fgkCI(0.0,1.0);
 #else
-const double_complex AliHBTCrab::ci(0.0,1.0);
+const double_complex AliHBTCrab::fgkCI(0.0,1.0);
 #endif
 
 /************************************************************/
@@ -39,9 +40,10 @@ AliHBTCrab* AliHBTCrab::Instance()
  return fgCrab;
 }
 //===================================================================
+
 void AliHBTCrab::Set()
 {
- //sets this as weighitng class
+//sets this as weighitng class
  Info("Set","Setting CRAB as Weighing Class");
  
  if ( fgWeights == 0x0 )  
@@ -65,21 +67,22 @@ fMaxMomentum(100.0)
 //===================================================================
 void AliHBTCrab::Init(Int_t pid1,Int_t pid2)
 {
-  MASS1 = TDatabasePDG::Instance()->GetParticle(pid1)->Mass();
-  MASS2 = TDatabasePDG::Instance()->GetParticle(pid2)->Mass();
-  INTERACTION_WSYM = 1.0;
-  INTERACTION_WANTI = 0.0;
-  INTERACTION_WNOSYM = 0.0;
-  INTERACTION_DELK  = 1.0;
-  INTERACTION_NKMAX = 100;
+  fMass1 = TDatabasePDG::Instance()->GetParticle(pid1)->Mass();
+  fMass2 = TDatabasePDG::Instance()->GetParticle(pid2)->Mass();
+  fInteractionWsym = 1.0;
+  fInteractionWanti = 0.0;
+  fInteractionWnosym = 0.0;
+  fInteractionDelk  = 1.0;
+  fInteractionNkmax = 100;
      
   fPid1 = pid1;   
   fPid2 = pid2;
-  
 }
 
 Bool_t AliHBTCrab::SetConfig(const AliHBTPair* pair)
 {
+//returns the SetConfig
+  
   Int_t pdg1 = pair->Particle1()->GetPdgCode();
   Int_t pdg2 = pair->Particle2()->GetPdgCode();
   
@@ -92,23 +95,24 @@ Bool_t AliHBTCrab::SetConfig(const AliHBTPair* pair)
 
 Double_t AliHBTCrab::GetWeight(const AliHBTPair* partpair)
 {
+//returns the weight
   Double_t qred, r, qdotr, mom;
   Int_t test;
   
   SetConfig(partpair);
   
-  get_com_quantities(partpair, &qred, &r, &qdotr, &mom, &test);
+  GetComQuantities(partpair, &qred, &r, &qdotr, &mom, &test);
   if(test==0) 
    {
      Info("GetWeight","Test is 0");
    }
-  Double_t corr = corrcalc(qred,qdotr,r);
+  Double_t corr = CorrCalc(qred,qdotr,r);
   
   return corr;
 }
 //===================================================================
 
-void AliHBTCrab::get_com_quantities(const AliHBTPair* pair, 
+void AliHBTCrab::GetComQuantities(const AliHBTPair* pair, 
        double *qred,double *r,double *qdotr,double *mom, int *test)
  {
 //************************************
@@ -119,8 +123,8 @@ void AliHBTCrab::get_com_quantities(const AliHBTPair* pair,
  double r1[4]; 
  double r2[4]; 
  
- static const Double_t cmtofm = 1.e13;
-// static const Double_t cmtoOneOverGeV = cmtofm*fgkWcons;
+ static const Double_t kCmToFm = 1.e13;
+// static const Double_t cmtoOneOverGeV = kCmToFm*fgkWcons;
  
  AliHBTParticle *part1 = pair->Particle1();
  AliHBTParticle *part2 = pair->Particle2();
@@ -136,14 +140,14 @@ void AliHBTCrab::get_com_quantities(const AliHBTPair* pair,
  p2[3] = part2->Pz()*1000.0;
 
  r1[0] = part1->T();
- r1[1] = part1->Vx()*cmtofm;
- r1[2] = part1->Vy()*cmtofm;
- r1[3] = part1->Vz()*cmtofm;
+ r1[1] = part1->Vx()*kCmToFm;
+ r1[2] = part1->Vy()*kCmToFm;
+ r1[3] = part1->Vz()*kCmToFm;
 
  r2[0] = part2->T();
- r2[1] = part2->Vx()*cmtofm;
- r2[2] = part2->Vy()*cmtofm;
- r2[3] = part2->Vz()*cmtofm;
+ r2[1] = part2->Vx()*kCmToFm;
+ r2[2] = part2->Vy()*kCmToFm;
+ r2[3] = part2->Vz()*kCmToFm;
 
 //  END OF ALICE STUFF
 
@@ -203,7 +207,7 @@ void AliHBTCrab::get_com_quantities(const AliHBTPair* pair,
    }  
   else //identical
   {
-  //  const double  kdotp=MASS2*MASS2-MASS1*MASS1;
+  //  const double  kdotp=fMass2*fMass2-fMass1*fMass1;
    const double  kdotp = part2->GetMass()*part2->GetMass()- part1->GetMass()*part1->GetMass();
    *test=1;
    *mom=-(p2[0]-p1[0])*(p2[0]-p1[0]);
@@ -250,7 +254,7 @@ void AliHBTCrab::get_com_quantities(const AliHBTPair* pair,
 
 //===================================================================
 
-double  AliHBTCrab::corrcalc(double trueqred,double trueqdotr,double truer)
+double  AliHBTCrab::CorrCalc(double trueqred,double trueqdotr,double truer)
 {
 //#define REDUCED_MOM
 // This code is written by Scott Pratt
@@ -261,7 +265,7 @@ double  AliHBTCrab::corrcalc(double trueqred,double trueqdotr,double truer)
   int kk;
   double wsym_leftover,wanti_leftover,wnosym_leftover;
   double qred,qdotr,r;
-//  const double rmass=MASS1*MASS2/(MASS1+MASS2);
+//  const double rmass=fMass1*fMass2/(fMass1+fMass2);
 #ifdef __DECCXX
   complex cphi1,cphi2,cphis,cphia;
 #else
@@ -269,23 +273,23 @@ double  AliHBTCrab::corrcalc(double trueqred,double trueqdotr,double truer)
 #endif
 
   arg=trueqdotr/197.323-2.0*TMath::Pi()*TMath::Floor(trueqdotr/(197.323*2.0*TMath::Pi()));
-  cphi1=exp(ci*arg);
+  cphi1=exp(fgkCI*arg);
   cphis=fgkROOT2*real(cphi1);
-  cphia=ci*fgkROOT2*imag(cphi1);
-  corr0=real(INTERACTION_WSYM*cphis*conj(cphis)
-	     +INTERACTION_WANTI*cphia*conj(cphia)
-	     +INTERACTION_WNOSYM*cphi1*conj(cphi1));
+  cphia=fgkCI*fgkROOT2*imag(cphi1);
+  corr0=real(fInteractionWsym*cphis*conj(cphis)
+	     +fInteractionWanti*cphia*conj(cphia)
+	     +fInteractionWnosym*cphi1*conj(cphi1));
   goto OUTSIDE_INTERACTION_RANGE;
 
 #ifdef REDUCED_MOM
-  kk=(int)TMath::Floor(trueqred/INTERACTION_DELK);
-  qred=(0.5+kk)*INTERACTION_DELK;
+  kk=(int)TMath::Floor(trueqred/fInteractionDelk);
+  qred=(0.5+kk)*fInteractionDelk;
 #else
-  kk=(int)TMath::Floor(2.0*trueqred/INTERACTION_DELK);
-  qred=(0.5+kk)*INTERACTION_DELK/2.0;
+  kk=(int)TMath::Floor(2.0*trueqred/fInteractionDelk);
+  qred=(0.5+kk)*fInteractionDelk/2.0;
 #endif
   qdotr=trueqdotr*qred/trueqred;
-  if(kk>=INTERACTION_NKMAX){
+  if(kk>=fInteractionNkmax){
     corr0=1.0;
     goto OUTSIDE_INTERACTION_RANGE;
   }
@@ -293,7 +297,7 @@ double  AliHBTCrab::corrcalc(double trueqred,double trueqdotr,double truer)
 
   eta=0.0;
   arg=qdotr/197.323-2.0*TMath::Pi()*TMath::Floor(qdotr/(197.323*2.0*TMath::Pi()));
-  cphi1=exp(ci*arg);
+  cphi1=exp(fgkCI*arg);
   cphi2=conj(cphi1);
 
   cphis=(cphi1+cphi2)/fgkROOT2;
@@ -302,9 +306,9 @@ double  AliHBTCrab::corrcalc(double trueqred,double trueqdotr,double truer)
   /* If there are corrections for strong interactions, add the
      change for each partial wave.  If npartial = 0 then there
      are no strong int. corrections. */
-  wsym_leftover=INTERACTION_WSYM;
-  wanti_leftover=INTERACTION_WANTI;
-  wnosym_leftover=INTERACTION_WNOSYM;
+  wsym_leftover=fInteractionWsym;
+  wanti_leftover=fInteractionWanti;
+  wnosym_leftover=fInteractionWnosym;
 
   corr0=corr0+real(wsym_leftover*cphis*conj(cphis)
 		   +wanti_leftover*cphia*conj(cphia)
@@ -319,9 +323,9 @@ OUTSIDE_INTERACTION_RANGE:
 }
 
 #ifdef __DECCXX
-complex AliHBTCrab::cgamma(complex c){
+complex AliHBTCrab::CGamma(complex c){
 #else
-double_complex AliHBTCrab::cgamma(double_complex c){
+double_complex AliHBTCrab::CGamma(double_complex c){
 #endif
   /* This calc.s gamma functions which are in the form gamma(n+i*y)
      where n is an int and y is real. */
@@ -340,26 +344,24 @@ double_complex AliHBTCrab::cgamma(double_complex c){
   for(j=1;j<=100000;j++){
     delp=(y/(double)j)-atan(y/(double)j);
     phase=phase+delp;
-    if(TMath::Abs(delp)<1E-10) goto CGAMMA_ESCAPE;
+    if(TMath::Abs(delp)<1E-10) goto CGamma_ESCAPE;
   }
   printf("oops not accurate enough, increase jmax\n");
-CGAMMA_ESCAPE:
+CGamma_ESCAPE:
   phase=phase-2.0*TMath::Pi()*TMath::Floor(phase/(2.0*TMath::Pi()));
-  cphase=exp(ci*phase);
+  cphase=exp(fgkCI*phase);
   cgmag=sqrt(TMath::Pi()*y/sinh(TMath::Pi()*y));
   mm=(int)TMath::Floor(x+0.5);
   cg=cgmag*cphase;
   if(mm<1){
     for(j=1;j<=-mm+1;j++){
-      cg=cg/(1.0+(double)(-j)+ci*y);
+      cg=cg/(1.0+(double)(-j)+fgkCI*y);
     }
   }
   if(mm>1) {
     for(j=1;j<=mm-1;j++){
-      cg=cg*((double)(j)+ci*y);
+      cg=cg*((double)(j)+fgkCI*y);
     }
   }
   return cg;
 }
-//===================================================================
-
