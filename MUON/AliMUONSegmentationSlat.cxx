@@ -40,7 +40,7 @@ AliMUONSegmentationSlat::AliMUONSegmentationSlat()
   fCurrentSlat = 0;
 }
 
-AliMUONSegmentationSlat::AliMUONSegmentationSlat(Int_t nsec) 
+AliMUONSegmentationSlat::AliMUONSegmentationSlat(Int_t /*nsec*/) 
 {
 // Non default constructor
     fSlats=0;            
@@ -61,7 +61,7 @@ AliMUONSegmentationSlat::~AliMUONSegmentationSlat(){
   }
 
 }
-
+//-----------------------------------------------------------
 void AliMUONSegmentationSlat::SetPadSize(Float_t p1, Float_t p2)
 {
 //  Sets the pad (strip) size 
@@ -69,14 +69,28 @@ void AliMUONSegmentationSlat::SetPadSize(Float_t p1, Float_t p2)
     fDpx=p1;
     fDpy=p2;
 }
-
+//-----------------------------------------------------------
 Float_t AliMUONSegmentationSlat::GetAnod(Float_t xhit) const
 {
 // Returns for a hit position xhit the position of the nearest anode wire    
     Float_t wire= (xhit>0)? Int_t(xhit/fWireD)+0.5:Int_t(xhit/fWireD)-0.5;
     return fWireD*wire;
 }
-
+//-----------------------------------------------------------
+void AliMUONSegmentationSlat::GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/, Int_t *Nparallel, Int_t *Offset) 
+{
+  *Nparallel=1;
+  *Offset=0;
+}
+//-----------------------------------------------------------
+void AliMUONSegmentationSlat::GiveTestPoints(Int_t & /*n*/, Float_t */*x*/, Float_t */*y*/)  const 
+{;}
+//-----------------------------------------------------------
+Float_t AliMUONSegmentationSlat::Distance2AndOffset(Int_t /*iX*/, Int_t /*iY*/, Float_t /*X*/, Float_t /*Y*/, Int_t * /*dummy*/) 
+{
+  return 0.;
+}
+//-----------------------------------------------------------
 Float_t AliMUONSegmentationSlat::Dpx(Int_t isec) const
 {
 //
@@ -89,7 +103,7 @@ Float_t AliMUONSegmentationSlat::Dpx(Int_t isec) const
     return Slat(islat)->Dpx(iregion);
 }
 
-Float_t AliMUONSegmentationSlat::Dpy(Int_t isec) const
+Float_t AliMUONSegmentationSlat::Dpy(Int_t /*isec*/) const
 {
 //
 // Returns y-pad (strip)  size for given sector isec

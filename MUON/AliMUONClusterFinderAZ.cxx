@@ -2201,7 +2201,7 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t nfit, Int_t *clustFit, TObjArray **clust
 }  
 
 //_____________________________________________________________________________
-void fcn1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+void fcn1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
 {
   // Fit for one track
   AliMUONClusterFinderAZ& c = *(AliMUONClusterFinderAZ::fgClusterFinder);    
@@ -2240,7 +2240,7 @@ void fcn1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 }
 
 //_____________________________________________________________________________
-void AliMUONClusterFinderAZ::UpdatePads(Int_t nfit, Double_t *par)
+void AliMUONClusterFinderAZ::UpdatePads(Int_t /*nfit*/, Double_t *par)
 {
   // Subtract the fitted charges from pads with strong coupling
 
@@ -2269,7 +2269,7 @@ void AliMUONClusterFinderAZ::UpdatePads(Int_t nfit, Double_t *par)
 }  
 
 //_____________________________________________________________________________
-Bool_t AliMUONClusterFinderAZ::TestTrack(Int_t t) {
+Bool_t AliMUONClusterFinderAZ::TestTrack(Int_t /*t*/) {
 // Test if track was user selected
   return kTRUE;
   /*

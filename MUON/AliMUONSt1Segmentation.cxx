@@ -108,7 +108,7 @@ AliMUONSt1Segmentation::AliMUONSt1Segmentation()
 }
 
 //______________________________________________________________________________
-AliMUONSt1Segmentation::AliMUONSt1Segmentation(const AliMUONSt1Segmentation& rhs) 
+AliMUONSt1Segmentation::AliMUONSt1Segmentation(const AliMUONSt1Segmentation& rhs) :AliSegmentation(rhs)
 {
 // Copy constructor
   Fatal("Copy constructor", 
@@ -165,7 +165,7 @@ void AliMUONSt1Segmentation::UpdateCurrentPadValues(const AliMpPad& pad)
 //
 
 //______________________________________________________________________________
-void AliMUONSt1Segmentation::SetPadSize(Float_t p1, Float_t p2)
+void AliMUONSt1Segmentation::SetPadSize(Float_t /*p1*/, Float_t /*p2*/)
 {
 // Set pad size Dx*Dy 
 // ---
@@ -197,7 +197,7 @@ Float_t AliMUONSt1Segmentation::GetAnod(Float_t xhit) const
 }
 
 //______________________________________________________________________________
-void  AliMUONSt1Segmentation::GetPadI(Float_t x, Float_t y, Float_t z, 
+void  AliMUONSt1Segmentation::GetPadI(Float_t x, Float_t y, Float_t /*z*/, 
                                       Int_t& ix, Int_t& iy)
 {					
 //  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
@@ -336,7 +336,7 @@ void  AliMUONSt1Segmentation::SetPad(Int_t ix, Int_t iy)
 }
 
 //______________________________________________________________________________
-void  AliMUONSt1Segmentation::SetHit(Float_t xhit, Float_t yhit, Float_t zhit)
+void  AliMUONSt1Segmentation::SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
 {
 // Set hit position
 // Sets virtual hit position, needed for evaluating pad response 
@@ -348,7 +348,7 @@ void  AliMUONSt1Segmentation::SetHit(Float_t xhit, Float_t yhit, Float_t zhit)
 }
     
 //______________________________________________________________________________
-void  AliMUONSt1Segmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, 
+void  AliMUONSt1Segmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t /*zhit*/, 
                                        Float_t dx, Float_t dy) 
 {					 
 // Iterate over pads - initialiser
@@ -399,7 +399,7 @@ Int_t AliMUONSt1Segmentation::MorePads()
 
 //______________________________________________________________________________
 Float_t AliMUONSt1Segmentation::Distance2AndOffset(Int_t iX, Int_t iY, 
-                                         Float_t x, Float_t y, Int_t* dummy)
+						   Float_t x, Float_t y, Int_t* /*dummy*/)
 {					   
 // Returns the square of the distance between 1 pad
 // labelled by its channel numbers and a coordinate
@@ -414,8 +414,8 @@ Float_t AliMUONSt1Segmentation::Distance2AndOffset(Int_t iX, Int_t iY,
 }
 
 //______________________________________________________________________________
-void AliMUONSt1Segmentation::GetNParallelAndOffset(Int_t iX, Int_t iY,
-				         Int_t* Nparallel, Int_t* Offset)
+void AliMUONSt1Segmentation::GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/,
+						   Int_t* /*Nparallel*/, Int_t* /*Offset*/)
 {					   
 // Number of pads read in parallel and offset to add to x 
 // (specific to LYON, but mandatory for display)
@@ -514,7 +514,7 @@ void  AliMUONSt1Segmentation::IntegrationLimits(Float_t& x1, Float_t& x2,
 }
 
 //______________________________________________________________________________
-Int_t AliMUONSt1Segmentation::SigGenCond(Float_t x, Float_t y, Float_t z)
+Int_t AliMUONSt1Segmentation::SigGenCond(Float_t x, Float_t y, Float_t /*z*/)
 {
 // Signal Generation Condition during Stepping
 //  0: don't generate signal
@@ -546,7 +546,7 @@ Int_t AliMUONSt1Segmentation::SigGenCond(Float_t x, Float_t y, Float_t z)
 
 
 //______________________________________________________________________________
-void  AliMUONSt1Segmentation::SigGenInit(Float_t x, Float_t y, Float_t z)
+void  AliMUONSt1Segmentation::SigGenInit(Float_t x, Float_t y, Float_t /*z*/)
 {
 // Initialise signal generation at coord (x,y,z)
 // Initialises pad and wire position during stepping.
@@ -574,7 +574,7 @@ void AliMUONSt1Segmentation::GiveTestPoints(Int_t& n, Float_t* x, Float_t* y) co
 }
 
 //______________________________________________________________________________
-void AliMUONSt1Segmentation::Draw(const char *opt) const
+void AliMUONSt1Segmentation::Draw(const char * /*opt*/) const
 {
 // Draw the segmentation zones.
 // (Called from AliMUON::BuildGeometry)

@@ -39,7 +39,7 @@ AliMUONSegmentationSlatN::AliMUONSegmentationSlatN(Int_t nsec)
 }
 
 
-Float_t AliMUONSegmentationSlatN::Dpx(Int_t isec) const
+Float_t AliMUONSegmentationSlatN::Dpx(Int_t /*isec*/) const
 {
 //
 // Returns y-pad size for given sector isec

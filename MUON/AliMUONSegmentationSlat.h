@@ -74,9 +74,8 @@ public AliSegmentation {
     // Get next neighbours 
     virtual void Neighbours
 	(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]);
-    virtual Float_t Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y, Int_t *dummy) {return 0.;}
-    virtual void GetNParallelAndOffset(Int_t iX, Int_t iY,
-				       Int_t *Nparallel, Int_t *Offset) {*Nparallel=1;*Offset=0;}
+    virtual Float_t Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y, Int_t *dummy);
+    virtual void GetNParallelAndOffset(Int_t iX, Int_t iY, Int_t *Nparallel, Int_t *Offset);
     //
     // Current Pad during Integration
     // x-coordinate
@@ -116,7 +115,7 @@ public AliSegmentation {
     
 // Not used
     // Test points for auto calibration
-    virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y)  const {;}
+    virtual void GiveTestPoints(Int_t &n, Float_t *x, Float_t *y) const;
     // Draw the segmentation zones
     virtual void Draw(const char *opt = "") const;
 

@@ -96,7 +96,7 @@ AliMUONRecoTrack* AliMUONRecoEvent::AddEmptyTrack()
 }
 
 //-------------------------------------------------------------------
-void AliMUONRecoEvent::Clear(Option_t *option)
+void AliMUONRecoEvent::Clear(Option_t * /*option*/)
 {
 // Clears all track pointers from the list
 //   fTracks->Clear(option);

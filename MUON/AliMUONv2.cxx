@@ -148,7 +148,7 @@ AliMUONv2::AliMUONv2(const char *name, const char *title)
 }
  
 //______________________________________________________________________________
-AliMUONv2::AliMUONv2(const AliMUONv2& rMUON)
+AliMUONv2::AliMUONv2(const AliMUONv2& rMUON):AliMUONv1(rMUON)
 {
 // Dummy copy constructor
 }

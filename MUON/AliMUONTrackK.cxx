@@ -212,7 +212,7 @@ AliMUONTrackK::~AliMUONTrackK()
 }
 
   //__________________________________________________________________________
-AliMUONTrackK::AliMUONTrackK (const AliMUONTrackK& source)
+AliMUONTrackK::AliMUONTrackK (const AliMUONTrackK& source):TObject(source)
 {
 // Dummy copy constructor
 }
