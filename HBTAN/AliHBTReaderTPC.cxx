@@ -294,7 +294,7 @@ Int_t AliHBTReaderTPC::ReadNext()
 
        if (label < 0) continue;
        
-       if (CheckTrack(iotrack)) continue;
+       if (CheckTrack(iotrack)) continue;//Checks the cuts on track parameters cov. mtx etc
        
        TParticle *p = (TParticle*)stack->Particle(label);
 
