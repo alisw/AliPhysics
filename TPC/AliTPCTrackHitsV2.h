@@ -18,9 +18,17 @@ class AliTPCCurrentHitV2;
 class AliHit;
 
 class AliTrackHitsParamV2 : public TObject {
+  friend class   AliTPC;
+  friend class   AliTRD;
+  friend class   AliTPCTrackHitsV2;
+  friend class   AliTPCTempHitInfoV2;
+  friend class   AliTRDtrackHits;
+
 public:
+  
   AliTrackHitsParamV2();
   ~AliTrackHitsParamV2();
+ private:
   Int_t fTrackID; // ID of the track
   Short_t fVolumeID;// volume ID
   Float_t fR;  //radius
@@ -41,6 +49,7 @@ public:
 
 
 class AliTPCTrackHitsV2 : public TObject {
+  friend class AliTPCTempHitInfoV2;
 public:
   AliTPCTrackHitsV2(); 
   ~AliTPCTrackHitsV2();
@@ -66,6 +75,7 @@ public:
 public:
   void AddVolume(Int_t volume); //add volumes to tthe list of volumes
   void FlushHitStack2(Int_t index1, Int_t index2);   //
+ protected:
   TClonesArray * fArray;  //array of compressed hits
   Int_t fSize;            //total number of hits in track
   Double_t fPrecision;  // required precision

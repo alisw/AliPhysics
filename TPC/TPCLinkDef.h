@@ -31,7 +31,6 @@
 #pragma link C++ class AliDetectorParam+;
 
 #pragma link C++ class AliComplexCluster+;
-#pragma link C++ class AliDigitCluster+;
 #pragma link C++ class AliClusters+;
 #pragma link C++ class AliClustersArray+;
 
@@ -44,7 +43,6 @@
 #pragma link C++ class AliTPCDigitsArray+;
 
 
-#pragma link C++ class AliTPCClusterFinder+;
 
 #pragma link C++ class AliTPCTrackHits+;
 #pragma link C++ class AliTPCTrackHitsV2+;

@@ -37,18 +37,6 @@ private:
     // Cluster manager
 };
 
-class AliDigitCluster : public AliComplexCluster {
-public:
-  friend class AliTPCClusterFinder;
-private:
-  Int_t fNx; //number of accepted x bins
-  Int_t fNy; //number of accepted y bins
-  Float_t fMaxX; //maximum x bin
-  Float_t fMaxY; //maximum y bin
-
-  ClassDef(AliDigitCluster,1)  // Tclusters
-};
-
 
 
 class AliTPCTrackerPoint  {  

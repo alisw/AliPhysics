@@ -1,5 +1,5 @@
 SRCS:=  AliTPCLoader.cxx\
-        AliTPCClusterFinder.cxx AliTPC.cxx AliTPCv0.cxx AliTPCv1.cxx AliTPCv2.cxx  \
+        AliTPC.cxx AliTPCv0.cxx AliTPCv1.cxx AliTPCv2.cxx  \
         AliTPCv3.cxx AliDetectorParam.cxx AliTPCParam.cxx \
         AliTPCParamSR.cxx AliTPCParamCR.cxx  AliTPCPRF2D.cxx \
         AliTPCRF1D.cxx \

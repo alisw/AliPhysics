@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2003/09/29 11:27:39  kowal2
+new classes added
+
 Revision 1.3  2002/11/15 14:27:45  hristov
 First version of the parallel TPC tracking (M.Ivanov)
 
@@ -63,7 +66,6 @@ Bool_t AliComplexCluster::IsSortable() const
   return kTRUE; 
 }
 
-ClassImp(AliDigitCluster)
 ClassImp(AliTPCExactPoint)
 ClassImp(AliTPCClusterPoint)
 ClassImp(AliTPCTrackerPoint)
