@@ -53,3 +53,5 @@ DHDR:= MUONLinkDef.h
 include MUON/libMUON.pkg.mapping
 
 SUBDIR := mapping
+
+EINCLUDE+= RAW
