@@ -1,4 +1,6 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliTrackReference.h"
+#endif
 
 class AliTRDExactPoint: public TObject {
   public : 

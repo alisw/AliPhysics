@@ -1,3 +1,4 @@
+void TestSimDigits() {
 AliSimDigits dig;
 dig.Allocate(10,10);
 dig.AllocateTrack(3);
@@ -31,4 +32,4 @@ dig.GetTrackIDFast(5,5,0);
 dig.GetTrackIDFast(5,5,0);
 dig.GetTrackIDFast(5,5,1);
 dig.GetTrackIDFast(5,5,2);
-f
+}

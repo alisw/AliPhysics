@@ -21,6 +21,7 @@
 // The output is a TClonesArray of AliMUONTracks.
 // Gines MARTINEZ, Subatech, sep 2003
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TClonesArray.h>
 
 #include "AliRun.h"
@@ -30,6 +31,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackHit.h"
 #include "AliMUONTrackParam.h"
+#endif
 
 void MUONTracker (Text_t *FileName = "galice.root", Int_t FirstEvent = 0, Int_t LastEvent = 9999)
 {

@@ -1,8 +1,10 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <iostream>
 
 #include "TString.h"
 
 #include "PHOS/AliPHOSReconstructioner.h"
+#endif
 
 void Go(TString deb = ""){
   AliPHOSReconstructioner * a ;   

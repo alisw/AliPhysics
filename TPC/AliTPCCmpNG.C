@@ -464,7 +464,7 @@ private:
   static const Int_t seedRow12 = 139;  // nRowUp - 1 - (Int_t) 0.125*nRowUp
   static const Int_t seedRow21 = 149;  // seedRow11 - shift
   static const Int_t seedRow22 = 130;  // seedRow12 - shift
-  static const Double_t kRaddeg = 180./kPI;
+  static const Double_t kRaddeg = 180./TMath::Pi();
 
   static const Int_t fgMaxIndexTR = 50000; // maximum number of tracks with a track ref
   static const Int_t fgMaxParticles = 2000000; // maximum number of generated particles
@@ -1251,8 +1251,8 @@ Int_t TPCCmpTr::TreeGenLoop(Int_t eventNr)
 	}
 	fTPCTrack->GetExternalParameters(Localx,par);
 	fRecPhi=TMath::ASin(par[2]) + fTPCTrack->GetAlpha();
-	if (fRecPhi<0) fRecPhi+=2*kPI;
-	if (fRecPhi>=2*kPI) fRecPhi-=2*kPI;
+	if (fRecPhi<0) fRecPhi+=2*TMath::Pi();
+	if (fRecPhi>=2*TMath::Pi()) fRecPhi-=2*TMath::Pi();
 //	  fRecPhi = (fRecPhi)*kRaddeg;
 	fLambda = TMath::ATan(par[3]);
 	fRecPt_1 = TMath::Abs(par[4]);

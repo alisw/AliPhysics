@@ -21,6 +21,7 @@
 //
 
 // ROOT includes
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TBranch.h"
 #include "TClonesArray.h"
 #include "TFile.h"
@@ -45,6 +46,7 @@
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
+#ENDIF
 
 void MUONkine(char * filename="galice.root")
 {

@@ -1,6 +1,8 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <iostream>
 
 #include "EMCAL/AliEMCALGetter.h"
+#endif
 
 
 void Go(){

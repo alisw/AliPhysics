@@ -1,6 +1,8 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "iostream.h"
 #include "/home/alice/guernane/date/tmp/ionlx/event.h"
 #include "/home/alice/guernane/date/tmp/ionlx/monitor.h"
+#endif
 
 //=======================================================================
 //

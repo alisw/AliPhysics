@@ -1,3 +1,4 @@
+void ClassTree()
 {
 //=========Macro generated from canvas: ClassTree/
 //=========  (Tue Jun  1 17:01:38 1999) by ROOT version 2.21/07

@@ -5,6 +5,7 @@
 // Hits -> SDigits -> Digits -> RecPoints -> TrackSegments -> RecParticles
 
 //Root
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TString.h"
 
 //AliRoot
@@ -14,6 +15,7 @@
 #include "EMCAL/AliEMCALClusterizerv1.h"
 // #include "EMCAL/AliEMCALTrackSegmentMakerv1.h"
 // #include "EMCAL/AliEMCALPIDv1.h"
+#endif
 
 void EMCALHits2SDigits( Bool_t split=kFALSE, TString fileName = "galice.root") {
 

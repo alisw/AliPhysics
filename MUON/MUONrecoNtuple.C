@@ -37,6 +37,7 @@
 // 2. ".x loadlibs.C" to load the shared libraries
 // 3. ".x MUONrecoNtuple.C+()" with the right arguments, without forgetting the "+" which implies the compilation of the macro before its execution
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <iostream.h>
 
 #include <TClassTable.h>
@@ -54,6 +55,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackHit.h"
 #include "AliMUONTrackParam.h"
+#endif
 
 // Classes for Ntuple ////////////////////////////////////////////////////
 

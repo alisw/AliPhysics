@@ -1,3 +1,4 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
 // ROOT includes
 #include "TBranch.h"
 #include "TClonesArray.h"
@@ -26,7 +27,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliESDMuonTrack.h"
-
+#endif
 //
 // Macro MUONmassPlot.C for new I/O
 // Ch. Finck, Subatech, Jan. 2004

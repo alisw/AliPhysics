@@ -15,12 +15,13 @@
 
 /* $Id$ */
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliMUON.h"
 #include "AliMUONData.h"
-
+#endif
 
 AliRun * gAlice;
 

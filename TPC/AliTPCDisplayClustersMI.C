@@ -1,13 +1,13 @@
-//#ifndef __CINT__
-  #include "alles.h"
-  #include "AliTPCtracker.h"
-  #include "TView.h"
-  #include "TPolyMarker3D.h"
-  #include "AliSimDigits.h"
-  #include "AliTPCParam.h"
-  #include "AliRunLoader.h"
-  #include "AliTPCclusterMI.h"
-//#endif
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "alles.h"
+#include "AliTPCtracker.h"
+#include "TView.h"
+#include "TPolyMarker3D.h"
+#include "AliSimDigits.h"
+#include "AliTPCParam.h"
+#include "AliRunLoader.h"
+#include "AliTPCclusterMI.h"
+#endif
 
 /*
   Author:   marian.ivanov@cern.ch

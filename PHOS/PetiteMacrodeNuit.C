@@ -1,3 +1,4 @@
+void PetiteMacroDeNuit()
 {
 Int_t evt = 0 ; 
 RecAna * t = new RecAna("junk.root"); 

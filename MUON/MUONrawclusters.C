@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "iostream.h"
 
 #include <TClassTable.h>
@@ -30,6 +31,7 @@
 #include "AliMUON.h"
 
 #include "AliMUONClusterFinderVS.h"
+#endif
 
 void MUONrawclusters (char* filename="galice.root", Int_t evNumber1=0,Int_t evNumber2=9999) 
 {

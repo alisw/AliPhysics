@@ -102,9 +102,9 @@
 #include "AliTPCParamSR.h"
 #include "AliTracker.h"
 #include "AliComplexCluster.h"
-#include "AliTPCComparisonMI.h"
 #include "AliMagF.h"
 #endif
+#include "AliTPCComparisonMI.h"
 
 
 

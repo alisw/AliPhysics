@@ -1,25 +1,25 @@
-//#ifndef __CINT__
-  #include <iostream.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <iostream.h>
 
-  #include "AliTRDtracker.h"
-  #include "AliTRDclusterMI.h"
-  #include "AliTRDhit.h"
-  #include "AliTRDv1.h"
-  #include "AliTRDgeometry.h"
-  #include "AliTRDgeometryDetail.h"
-  #include "AliTRDparameter.h"
+#include "AliTRDtracker.h"
+#include "AliTRDclusterMI.h"
+#include "AliTRDhit.h"
+#include "AliTRDv1.h"
+#include "AliTRDgeometry.h"
+#include "AliTRDgeometryDetail.h"
+#include "AliTRDparameter.h"
 
-  #include "alles.h"
-  #include "TFile.h"
-  #include "TStopwatch.h"
-  #include "Rtypes.h"
-  #include "TTree.h"
+#include "alles.h"
+#include "TFile.h"
+#include "TStopwatch.h"
+#include "Rtypes.h"
+#include "TTree.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"
-#include "AliTRDclusterErrors.h"
 #include "TF1.h"
 #include "AliTrackReference.h"
-//#endif    
+#endif    
+#include "AliTRDclusterErrors.h"
 
 
 ClassImp(AliTRDCI)

@@ -5,6 +5,7 @@
 // Hits -> SDigits -> Digits -> RecPoints -> TrackSegments -> RecParticles
 
 //Root
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TString.h"
 
 //AliRoot
@@ -17,6 +18,7 @@
 #include "EMCAL/AliEMCALSDigitizer.h"
 #include "EMCAL/AliEMCALDigitizer.h"
 #include "EMCAL/AliEMCALClusterizerv1.h"
+#endif
 
 void PHOSHits2SDigits( Bool_t split=kFALSE, TString fileName = "galice.root") {
 

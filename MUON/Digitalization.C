@@ -1,3 +1,4 @@
+void Digitalization()
 {
 Int_t nInputStreams = 1;
 Int_t sperb=1;
