@@ -549,8 +549,10 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
           lcoor[1]=0.;
           geom->LtoG(mod,lcoor,gcoor);  // global coord. in cm
           ragdig=sqrt(gcoor[0]*gcoor[0]+gcoor[1]*gcoor[1]);
-          if(verbose)cout<<"global coordinates "<<gcoor[0]<<" "<<gcoor[1];
-          cout<<" "<<gcoor[2]<<" Radius "<<ragdig<<endl;
+          if(verbose){
+	     cout<<"global coordinates "<<gcoor[0]<<" "<<gcoor[1];
+             cout<<" "<<gcoor[2]<<" Radius "<<ragdig<<endl;
+	  }   
           //Fill histograms
           TH2F *bidi = (TH2F*)histos.At(subd*9);
           TH1F *uni = (TH1F*)histos.At(3+subd*9);
