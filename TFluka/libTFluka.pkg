@@ -1,71 +1,21 @@
 # Sources
-ifndef WITH_ROOT
-SRCS:=  TFluka.cxx \
-        magfld.cxx source.cxx mgdraw.cxx bxdraw.cxx eedraw.cxx \
-	endraw.cxx sodraw.cxx usdraw.cxx FlukaVolume.cxx stupre.cxx \
-	stuprf.cxx \
-	abscff.cxx dffcff.cxx queffc.cxx rflctv.cxx rfrndx.cxx TFlukaCerenkov.cxx
-
-# Headers
-HDRS:= TFluka.h FlukaVolume.h TFlukaCerenkov.h
-else
-SRCS:=  TFlukaGeo.cxx TFlukaMCGeometry.cxx TFlukaCerenkov.cxx \
+SRCS:=  TFluka.cxx TFlukaMCGeometry.cxx TFlukaCerenkov.cxx \
         magfld.cxx source.cxx mgdraw.cxx bxdraw.cxx eedraw.cxx \
 	endraw.cxx sodraw.cxx usdraw.cxx stupre.cxx stuprf.cxx \
 	abscff.cxx dffcff.cxx queffc.cxx rflctv.cxx rfrndx.cxx
 
 # Headers
-HDRS:= TFlukaGeo.h TFlukaMCGeometry.h TFlukaCerenkov.h
-endif
+HDRS:= TFluka.h TFlukaMCGeometry.h TFlukaCerenkov.h
 
 FSRCS:= FLUKA_input.f crnkvp.f
 
 # ROOT Dictionary
-ifndef WITH_ROOT
 DHDR:= TFlukaLinkDef.h
-else
-DHDR:= TFlukaMCLinkDef.h
-endif
 
 # Extra includes and libraries
-ifndef WITH_ROOT
-EINCLUDE:= Flugg $(ALICE)/geant4_vmc/include $(G4INSTALL)/include $(CLHEP_BASE_DIR)/include $(FLUPRO)/flukapro
-else
 EINCLUDE:= $(FLUPRO)/flukapro
-endif
 ELIBSDIR:= $(FLUPRO)
 ELIBS   := flukahp
 
-######################
-#Handle Geant4 flags
-######################
-
-# If G4DEBUG or G4NO_OPTIMISE are not specified,
-# the default compilation is optimised ...
-#
-ifndef WITH_ROOT
-ifdef G4DEBUG
-  CXXFLAGS += -DG4DEBUG
-else
-  ifndef G4NO_OPTIMISE
-    CXXFLAGS += -DG4OPTIMISE
-  endif
-endif
-# Verbosity code can be left out (for better performance)
-# by defining G4_NO_VERBOSE.
-#
-ifndef G4_NO_VERBOSE
-  CXXFLAGS += -DG4VERBOSE
-endif
-# Trajectory related classes can be left out (for better performance)
-# by defining G4_NO_STORE_TRAJECTORY.
-#
-ifndef G4_NO_STORE_TRAJECTORY
-  CPPFLAGS += -DG4_STORE_TRAJECTORY
-endif
-
-PACKCXXFLAGS:= $(CXXFLAGS) -DGNU_GCC -DG4USE_STL -DG4USE_STD_NAMESPACE
-else 
-PACKCXXFLAGS:= $(CXXFLAGS) -DWITH_ROOT
-endif
+PACKCXXFLAGS:= $(CXXFLAGS)
 

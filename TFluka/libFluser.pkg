@@ -3,17 +3,9 @@ SRCS:=  source_pp.cxx source_bg.cxx source_halo.cxx source_ray.cxx source_pbpb.c
 
 
 # Extra includes and libraries
-ifndef WITH_ROOT
-EINCLUDE:= Flugg $(ALICE)/geant4_vmc/include $(G4INSTALL)/include $(CLHEP_BASE_DIR)/include $(FLUPRO)/flukapro
-else
 EINCLUDE:= $(FLUPRO)/flukapro
-endif
 ELIBSDIR:= $(FLUPRO)
 ELIBS   := flukahp
-
-ifndef WITH_ROOT
-PACKCXXFLAGS:= $(CXXFLAGS) -DGNU_GCC -DG4USE_STL -DG4USE_STD_NAMESPACE
-endif
 
 
 
