@@ -15,7 +15,7 @@ class AliPIPEv0 : public AliPIPE {
   
  public:
     enum constants {kC=6, kAlu=9, kInox=19, kGetter=20, kBe=5, kVac=16,
-	  kAir=15, kAlBe=21};
+	  kAir=15, kAlBe=21, kPA = 22};
 	
   AliPIPEv0();
   AliPIPEv0(const char *name, const char *title);
