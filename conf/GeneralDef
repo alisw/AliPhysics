@@ -2,6 +2,11 @@
  
 .SUFFIXES: .cxx .h
 
+# IRST coding rule check
+STRIP=$(ALICE)/local/IRST/syntax/strip-cpp.prl
+CODE_CHECK=java syntax.CPPParser
+export CLASSPATH=$(ALICE)/local/IRST
+
 $(ALICE_ROOT)/include/%.h : %.h
 	@[ -d $(dir $@) ] || mkdir $(dir $@)
 	@cp -p $? $(ALICE_ROOT)/include
@@ -9,6 +14,19 @@ $(ALICE_ROOT)/include/%.h : %.h
 tgt_$(ALICE_TARGET)/%.o : %.cxx
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@$(CXX) $(CXXFLAGS) -c $*.cxx -o tgt_$(ALICE_TARGET)/$*.o
+
+# IRST coding rule check 
+check/%.i : %.cxx
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@$(CXX) -E $(CXXFLAGS) $*.cxx > check/$*.i
+
+# IRST coding rule check
+check/%.ii : check/%.i
+	@$(STRIP) check/$*.i > check/$*.ii
+
+# IRST coding rule check
+check/%.viol : check/%.ii
+	@$(CODE_CHECK) check/$*.ii ./ > check/$*.viol
 
 tgt_$(ALICE_TARGET)/%.o : %.c
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
@@ -54,4 +72,14 @@ ROOTGLIBS     = -lGpad -lGui -lGX11 -lX3d  -lXpm
 
 CLIBS         = -lminicern
 G3LIBS        = -lgeant321
+
+
+
+
+
+
+
+
+
+
 
