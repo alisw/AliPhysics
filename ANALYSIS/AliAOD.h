@@ -39,7 +39,7 @@ public:
   void                     GetPrimaryVertex(Double_t&x, Double_t&y, Double_t&z);
   void                     SetPrimaryVertex(Double_t x, Double_t y, Double_t z);
   
-  Int_t                    GetNumberOfCharged(Double_t etamin = -10.0, Double_t etamax = -10.0) const;
+  Int_t                    GetNumberOfCharged(Double_t etamin = -10.0, Double_t etamax = 10.0) const;
   void                     Move(Double_t x, Double_t y, Double_t z);//moves all spacial coordinates about this vector
 private:
   TObjArray                fParticles;   // array of AOD particles, AliAOD is owner of particles
