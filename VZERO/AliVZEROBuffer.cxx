@@ -18,10 +18,11 @@
 // according to the DDL mapping
 // To be used in Alice Data Challenges
 // This class is used by AliVZERODDL.C macro
-// Author: 
+// Author: B. Cheynis
 
 #include <Riostream.h>
 #include <TObjArray.h>
+#include "AliRawDataHeader.h"
 #include "AliVZEROBuffer.h"
 
 //#include "TFile.h"
@@ -38,6 +39,8 @@ AliVZEROBuffer::AliVZEROBuffer(const char* fileName){
 #endif
   // fout=new TFile(fileName,"recreate");
   // tree=new TTree("tree","Values");
+  AliRawDataHeader header;
+  f.write((char*)(&header), sizeof(header));
   fNumberOfDigits=0;
   fVerbose=0;
   remove("VZEROdigits.txt");
@@ -46,6 +49,11 @@ AliVZEROBuffer::AliVZEROBuffer(const char* fileName){
 //_____________________________________________________________________________
 AliVZEROBuffer::~AliVZEROBuffer(){
   // Destructor, it closes the IO stream
+  AliRawDataHeader header;
+  header.fSize = f.tellp();
+  header.SetAttribute(0);  // valid data
+  f.seekp(0);
+  f.write((char*)(&header), sizeof(header));
   f.close();
   //delete tree;
   //delete fout;
