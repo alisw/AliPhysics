@@ -18,6 +18,7 @@
 #include "TObjString.h"
 class TArrayI ;
 class TClonesArray ; 
+class TFile ; 
 
 // --- Standard library ---
 

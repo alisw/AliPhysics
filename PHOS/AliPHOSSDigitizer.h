@@ -16,6 +16,8 @@
 // --- ROOT system ---
 #include "TTask.h"
 #include "TString.h"
+  class TFile ;
+
 // --- Standard library ---
 
 // --- AliRoot header files ---

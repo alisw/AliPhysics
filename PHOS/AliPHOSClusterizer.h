@@ -11,12 +11,11 @@
 // --- ROOT system ---
 
 #include "TTask.h" 
+class TFile ; 
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
-//#include "AliPHOSDigit.h"
 
 class AliPHOSClusterizer : public TTask {
 

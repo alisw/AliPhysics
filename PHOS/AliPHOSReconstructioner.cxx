@@ -59,23 +59,16 @@
 
 // --- ROOT system ---
 
-#include "TClonesArray.h"
-#include "TROOT.h"
-#include "TTree.h"
-#include "TFile.h"
-
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliRun.h"
 #include "AliPHOSReconstructioner.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSPIDv1.h"
-#include "AliPHOSFastRecParticle.h"
-#include "AliPHOSCpvRecPoint.h"
+
 
 ClassImp(AliPHOSReconstructioner)
 
