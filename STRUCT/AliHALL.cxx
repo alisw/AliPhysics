@@ -95,7 +95,7 @@ void AliHALL::CreateGeometry()
 
   
   Float_t r2;
-  Float_t phid, phim, tpar[3], pbox[3], h, r, tspar[5];
+  Float_t phid, phim, pbox[3], h, r, tspar[5];
   Float_t w1, dh, am, bm, dl,cm, hm, dr, dx, xl;
   Int_t idrotm[1999];
   Float_t trdpar[4], trapar[11], hullen;
@@ -142,22 +142,19 @@ void AliHALL::CreateGeometry()
   gMC->Gsvolu("HUWA", "TUBS", idtmed[1956], tspar, 5);
   gMC->Gspos("HUWA", 1, "ALIC", 70., 40.,2020+hullen , 0, "ONLY");
   
-  //     tunnelplug 
-  
-  tpar[0] = 0.;
-  tpar[1] = 50.;
-  tpar[2] = 60.;
-  gMC->Gsvolu("HUP2", "TUBE", idtmed[1954], tpar, 3);
-  
   //     END WALL 
-  
-  pbox[0] = 1200.;
-  pbox[1] = 1300.;
+  gMC->Gsvolu("HEW1", "BOX ", idtmed[1956], pbox, 0);
+  pbox[0] = 600.;
+  pbox[1] = 418.;
   pbox[2] = 60.;
-  gMC->Gsvolu("HEW1", "BOX ", idtmed[1956], pbox, 3);
-  gMC->Gspos("HUP2", 1, "HEW1", 0.,-404., 0.,   0, "ONLY");
-  gMC->Gspos("HEW1", 1, "ALIC", 0., 404., 1960, 0, "ONLY");
-  
+  gMC->Gsposp("HEW1", 1, "ALIC", 0., -pbox[1]-60., 1960, 0, "ONLY", pbox, 3);
+  pbox[1] = 822.;
+  gMC->Gsposp("HEW1", 2, "ALIC", 0.,  pbox[1]+60., 1960, 0, "ONLY", pbox, 3);
+  pbox[0] = 270.;
+  pbox[1] =  60.;
+  gMC->Gsposp("HEW1", 3, "ALIC",  pbox[0]+60.,  0. , 1960, 0, "ONLY", pbox, 3);
+  gMC->Gsposp("HEW1", 4, "ALIC", -pbox[0]-60.,  0. , 1960, 0, "ONLY", pbox, 3);
+
   //     hall floor 
   
   phid      = 16.197;
