@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/10/18 14:11:35  morsch
+Some changes/bug corrections for SetHole(1) option.
+
 Revision 1.7  2001/10/16 14:50:59  morsch
 ... or better use modified IsVersion() method.
 
@@ -117,11 +120,26 @@ void AliFRAMEv2::CreateGeometry()
 //
 // Frame mother volume
 //
-  ptube[0] = 280.;
-//  ptube[1] = 428.2;
-  ptube[1] = 430.;
-  ptube[2] = 376.;
-  gMC->Gsvolu("B077", "TUBE", kAir, ptube, 3);
+//  ptube[0] = 280.;
+//  ptube[1] = 430.;
+//  ptube[2] = 376.;
+  ppgon[0] =   0.;
+  ppgon[1] = 360.;
+  ppgon[2] =  18.;
+  
+  ppgon[3] =   2.;
+
+  ppgon[4] = -376.;
+  ppgon[5] =  280.;
+  ppgon[6] =  421.;
+  
+  ppgon[7] =  -ppgon[4]; 
+  ppgon[8] =   ppgon[5];
+  ppgon[9] =   ppgon[6];
+
+  gMC->Gsvolu("B077", "PGON", kAir, ppgon, 10);
+
+//  gMC->Gsvolu("B077", "TUBE", kAir, ptube, 3);
   gMC->Gspos("B077", 1, "ALIC", 0., 0., 0., 0, "ONLY");
 //
 //  The outer Frame
@@ -189,8 +207,8 @@ void AliFRAMEv2::CreateGeometry()
   
 
   gMC->Gsvolu("B080", "BOX", kSteel, pbox, 3);
-  gMC->Gspos("B080", 1, "B077",  281.01, 0., 0., 0, "ONLY");
-  gMC->Gspos("B080", 2, "B077", -281.01, 0., 0., 0, "ONLY");
+  gMC->Gspos("B080", 1, "B077",  286.01, 0., 0., 0, "ONLY");
+  gMC->Gspos("B080", 2, "B077", -286.01, 0., 0., 0, "ONLY");
 
 //
 // Diagonal bars (1) 
@@ -925,6 +943,68 @@ void AliFRAMEv2::CreateGeometry()
       gMC->Gspos("BTO3", 1, "B075", 0., -295.75, 42.69, idrotm[2070], "ONLY");
       gMC->Gspos("BTO3", 2, "B075", 0.,  295.75, 42.69,            0, "ONLY");
   }
+  
+//
+//    Geometry of Rails starts here
+//
+//
+//
+//    Rails for space-frame
+//
+  Float_t rbox[3];
+
+  rbox[0] =  25.00;
+  rbox[1] =  27.50;
+  rbox[2] = 600.00;
+  gMC->Gsvolu("BRS1", "BOX", kAir, rbox, 3);
+  
+  rbox[0] =  25.00;
+  rbox[1] =   3.75;
+  gMC->Gsvolu("BRS2", "BOX", kSteel, rbox, 3);
+  
+  rbox[0] =   3.00;
+  rbox[1] =  20.00;
+  gMC->Gsvolu("BRS3", "BOX", kSteel, rbox, 3);
+  
+  gMC->Gspos("BRS2", 1, "BRS1", 0., -27.5+3.75, 0., 0, "ONLY");
+  gMC->Gspos("BRS2", 2, "BRS1", 0.,  27.5-3.75, 0., 0, "ONLY");
+  gMC->Gspos("BRS3", 1, "BRS1", 0.,         0., 0., 0, "ONLY");
+  gMC->Gspos("BRS1", 1, "ALIC", -430.-3.,    -180., 0., 0, "ONLY");
+  gMC->Gspos("BRS1", 2, "ALIC",  430.+3.,    -180., 0., 0, "ONLY");
+
+  rbox[0] =    3.0;
+  rbox[1] =  175./2.;
+  rbox[2] =   25.0;
+  gMC->Gsvolu("BRS4", "BOX", kSteel, rbox, 3);
+
+  gMC->Gspos("BRS4", 1, "ALIC",  430.+3.,    -180.+55./2.+rbox[1],  224., 0, "ONLY");
+  gMC->Gspos("BRS4", 2, "ALIC",  430.+3.,    -180.+55./2.+rbox[1], -224., 0, "ONLY");
+  gMC->Gspos("BRS4", 3, "ALIC", -430.-3.,    -180.+55./2.+rbox[1],  224., 0, "ONLY");
+  gMC->Gspos("BRS4", 4, "ALIC", -430.-3.,    -180.+55./2.+rbox[1], -224., 0, "ONLY");
+
+//
+//  Rails for EMCAL
+//    
+/*
+  rbox[0] =  27.50;
+  rbox[1] =  32.50;
+  gMC->Gsvolu("BRE1", "BOX", kAir, rbox, 3);
+  
+  rbox[0] =  27.50;
+  rbox[1] =   2.50;
+  gMC->Gsvolu("BRE2", "BOX", kSteel, rbox, 3);
+  
+  rbox[0] =   0.50;
+  rbox[1] =  27.50;
+  gMC->Gsvolu("BRE3", "BOX", kSteel, rbox, 3);
+  
+  gMC->Gspos("BRE2", 1, "BRE1", 0., -32.5+2.50, 0., 0, "ONLY");
+  gMC->Gspos("BRE2", 2, "BRE1", 0.,  32.5-2.50, 0., 0, "ONLY");
+  gMC->Gspos("BRE3", 1, "BRE1", -20.,         0., 0., 0, "ONLY");
+  gMC->Gspos("BRE3", 2, "BRE1", 20.,         0., 0., 0, "ONLY");
+  gMC->Gspos("BRE1", 1, "ALIC", -496.,    -190., 0., 0, "ONLY");
+  gMC->Gspos("BRE1", 2, "ALIC",  496.,    -190., 0., 0, "ONLY");
+*/
 }
  
 
