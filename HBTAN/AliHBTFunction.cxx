@@ -35,6 +35,13 @@ AliHBTFunction::AliHBTFunction()
  
  fPairCut = new AliHBTEmptyPairCut(); //dummy cut
 }
+/******************************************************************/
+
+AliHBTFunction::~AliHBTFunction()
+ {
+  if (fPairCut) delete fPairCut;
+ }
+/******************************************************************/
 
 void AliHBTFunction::
 Write()
@@ -49,8 +56,7 @@ Write()
 TH1* AliHBTFunction::
 GetRatio(Double_t normfactor)
  {
-   //if (gDebug>0) 
-   cout<<"Mormfactor is "<<normfactor<<" for "<<fName<<endl;
+   if (gDebug>0) cout<<"Mormfactor is "<<normfactor<<" for "<<fName<<endl;
    
    if (normfactor == 0.0)
     {
@@ -206,6 +212,7 @@ void AliHBTTwoPartFctn1D::ProcessDiffEventParticles(AliHBTPair* pair)
 /******************************************************************/
 Double_t AliHBTTwoPartFctn1D::Scale()
 {
+  if (gDebug>0) cout<<"Enetered Scale()"<<endl;
   if(!fNumerator) 
    {
      Error("Scale","No numerator");
@@ -228,33 +235,31 @@ Double_t AliHBTTwoPartFctn1D::Scale()
     Error("Scale","Number of bins for scaling is bigger thnan number of bins in histograms");
     return 0.0;
    }
-  Double_t ratios[fNBinsToScale];
+  if (gDebug>0) cout<<"No errors detected"<<endl;
 
+  Double_t ratio;
+  Double_t sum = 0;
+  Int_t N = 0;
+  
   Int_t offset = nbins - fNBinsToScale - 1; 
   Int_t i;
   for ( i = offset; i< nbins; i++)
    {
-    if ( fNumerator->GetBinContent(i) == 0.0 )
+    if ( fNumerator->GetBinContent(i) > 0.0 )
      {
-       ratios[i - offset] = -1.0; //since we play with histograms negative is impossible 
-                                  //so it is good flag
-     }
-    else
-     {
-       ratios[i - offset] = fDenominator->GetBinContent(i)/fNumerator->GetBinContent(i);
+       ratio = fDenominator->GetBinContent(i)/fNumerator->GetBinContent(i);
+       sum += ratio;
+       N++;
      }
    }
- 
-  Double_t sum = 0;
-  Int_t skipped = 0;
-  for (i = 0; i<fNBinsToScale; i++)
-   {
-    if (ratios[i] == -1.0) skipped++;
-    else sum += ratios[i];
-   }
-  cout<<"sum="<<sum<<" fNBinsToScale="<<fNBinsToScale<<" skipped="<<skipped<<endl;
+  
+  if(gDebug > 0) cout<<"sum="<<sum<<" fNBinsToScale="<<fNBinsToScale<<" N="<<N<<endl;
+  
+  if (N == 0) return 0.0;
+  Double_t ret = sum/((Double_t)N);
 
-  return sum/(Double_t)(fNBinsToScale - skipped);
+  if(gDebug > 0) cout<<"Scale() returning "<<ret<<endl;
+  return ret;
 } 
 
 /******************************************************************/
