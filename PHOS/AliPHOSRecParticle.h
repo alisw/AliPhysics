@@ -28,12 +28,13 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
   AliPHOSRecParticle(const AliPHOSRecParticle & rp) ;  // ctor
   virtual ~AliPHOSRecParticle(){  }
 
-  Int_t  GetPHOSTSIndex()const {    return fPHOSTrackSegment ;  }
-  virtual const Int_t GetNPrimaries() const ; 
-  virtual const TParticle * GetPrimary(Int_t index) const ; 
-  void SetDebug() { fDebug = kTRUE ; } 
-  void UnsetDebug() { fDebug = kFALSE ; }
-  void   SetTraskSegment(Int_t index){fPHOSTrackSegment = index; }
+  Int_t   GetPHOSTSIndex()const {    return fPHOSTrackSegment ;  }
+  virtual const Int_t GetNPrimariesToRecParticles() const ;
+  virtual const Int_t GetNPrimaries() const ;
+  virtual const TParticle * GetPrimary(Int_t index) const ;
+  void    SetDebug() { fDebug = kTRUE ; } 
+  void    UnsetDebug() { fDebug = kFALSE ; }
+  void    SetTrackSegment(Int_t index){fPHOSTrackSegment = index; }
 
   typedef TClonesArray RecParticlesList ; 
   

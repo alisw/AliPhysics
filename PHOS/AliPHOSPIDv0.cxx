@@ -283,7 +283,7 @@ void  AliPHOSPIDv0::MakeRecParticles(){
     
     new( (*recParticles)[index] ) AliPHOSRecParticle() ;
     rp = (AliPHOSRecParticle *)recParticles->At(index) ; 
-    rp->SetTraskSegment(index) ;
+    rp->SetTrackSegment(index) ;
     rp->SetIndexInList(index) ;
     
     AliPHOSEmcRecPoint * emc = 0 ;
