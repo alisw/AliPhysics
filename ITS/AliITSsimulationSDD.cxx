@@ -127,6 +127,11 @@ AliITSsimulationSDD::AliITSsimulationSDD(){
   fT1.Set(0);
   fT2.Set(0);
   fTol.Set(0);
+  fInZR = 0;
+  fInZI = 0;
+  fOutZR = 0;
+  fOutZI = 0;
+
 }
 //_____________________________________________________________________________
 AliITSsimulationSDD::AliITSsimulationSDD(AliITSsimulationSDD &source){
@@ -226,6 +231,11 @@ AliITSsimulationSDD::AliITSsimulationSDD(AliITSsegmentation *seg,
         Int_t size=fNofMaps*fMaxNofSamples;
 	fStream = new AliITSInStream(size); 
 	
+   fInZR = new Double_t [fMaxNofSamples];
+   fInZI = new Double_t [fMaxNofSamples];
+   fOutZR = new Double_t [fMaxNofSamples];
+   fOutZI = new Double_t [fMaxNofSamples];  
+
 }
 
 
@@ -248,7 +258,17 @@ AliITSsimulationSDD::~AliITSsimulationSDD() {
   if (fHis) {
      fHis->Delete(); 
      delete fHis;     
-  }                
+  }  
+  
+   delete [] fInZR;
+   delete [] fInZI;	
+	delete [] fOutZR;
+	delete [] fOutZI;
+	
+	delete  fInZR;
+   delete  fInZI;  
+	delete  fOutZR;
+	delete  fOutZI;				 
 }
 //_____________________________________________________________________________
 
@@ -688,10 +708,12 @@ void AliITSsimulationSDD::SortTracks(Int_t *tracks,Float_t *charges,Int_t ntr){
 void AliITSsimulationSDD::ChargeToSignal() {
   // add baseline, noise, electronics and ADC saturation effects
 
-  Double_t InZR[fMaxNofSamples];
-  Double_t InZI[fMaxNofSamples];
-  Double_t OutZR[fMaxNofSamples];
-  Double_t OutZI[fMaxNofSamples];
+//  Double_t InZR[fMaxNofSamples];
+//  Double_t InZI[fMaxNofSamples];
+//  Double_t OutZR[fMaxNofSamples];
+//  Double_t OutZI[fMaxNofSamples];
+  
+   
 
 
   Float_t maxadc = fResponse->MaxAdc();    
@@ -719,11 +741,11 @@ void AliITSsimulationSDD::ChargeToSignal() {
     Int_t i,k; 
     for(i=0;i<=fNofMaps;i++) {
     if  (read) GetAnodeBaseline(i,baseline,noise);
-    if (!first) FastFourierTransform(fElectronics,&InZR[0],&InZI[0],1);
+    if (!first) FastFourierTransform(fElectronics,&fInZR[0],&fInZI[0],1);
     for(k=0;k<fMaxNofSamples;k++) {
         if (!first) {
 	   // analog to digital ?
-	   Double_t signal = OutZR[k]*norm;
+	   Double_t signal = fOutZR[k]*norm;
            if (signal > maxadc) signal = maxadc;
 	   // back to analog: ?
 	   signal /=norm;
@@ -732,36 +754,36 @@ void AliITSsimulationSDD::ChargeToSignal() {
 
  	   Double_t rw = fElectronics->GetTraFunReal(k);
 	   Double_t iw = fElectronics->GetTraFunImag(k);
-	   OutZR[k] = InZR[k]*rw - InZI[k]*iw;
-	   OutZI[k] = InZR[k]*iw + InZI[k]*rw;
-	   if(i+1 < fNofMaps) InZR[k] = fHitMap2->GetSignal(i+1,k);
+	   fOutZR[k] = fInZR[k]*rw - fInZI[k]*iw;
+	   fOutZI[k] = fInZR[k]*iw + fInZI[k]*rw;
+	   if(i+1 < fNofMaps) fInZR[k] = fHitMap2->GetSignal(i+1,k);
 	}
 
         if (first) {
-             InZR[k] = fHitMap2->GetSignal(i,k);
+             fInZR[k] = fHitMap2->GetSignal(i,k);
 	 }
-        InZI[k] = 0.;
+        fInZI[k] = 0.;
         // add baseline and noise 
         contrib = baseline + noise*random->Gaus();
-        InZR[k] += contrib;
+        fInZR[k] += contrib;
 
     } // loop over time
     
     if (first) {
-         FastFourierTransform(fElectronics,&InZR[0],&InZI[0],1);
+         FastFourierTransform(fElectronics,&fInZR[0],&fInZI[0],1);
 	 for(k=0; k<fMaxNofSamples; k++) {
 	     Double_t rw = fElectronics->GetTraFunReal(k);
 	     Double_t iw = fElectronics->GetTraFunImag(k);
-	     OutZR[k] = InZR[k]*rw - InZI[k]*iw;
-	     OutZI[k] = InZR[k]*iw + InZI[k]*rw;
-	     InZR[k] = fHitMap2->GetSignal(i+1,k);
-	     InZI[k] = 0.;
+	     fOutZR[k] = fInZR[k]*rw - fInZI[k]*iw;
+	     fOutZI[k] = fInZR[k]*iw + fInZI[k]*rw;
+	     fInZR[k] = fHitMap2->GetSignal(i+1,k);
+	     fInZI[k] = 0.;
 	     // add baseline and noise 
 	     contrib = baseline + noise*random->Gaus();
-	     InZR[k] += contrib;
+	     fInZR[k] += contrib;
 	  }
     }
-    FastFourierTransform(fElectronics,&OutZR[0],&OutZI[0],-1);
+    FastFourierTransform(fElectronics,&fOutZR[0],&fOutZI[0],-1);
     first = kFALSE;
   } // loop over anodes
 
@@ -946,7 +968,8 @@ void AliITSsimulationSDD::Init2D(){
 
     Int_t na,pos,tempTh;
     Float_t mu,sigma;
-    Float_t savemu[fNofMaps], savesigma[fNofMaps];
+    Float_t *savemu = new Float_t [fNofMaps];
+	 Float_t *savesigma = new Float_t [fNofMaps];
     const char *kinput,*kbasel,*kpar;
     char *filtmp;
 
@@ -991,7 +1014,11 @@ void AliITSsimulationSDD::Init2D(){
     
     fclose(param);
     delete [] filtmp;
-
+    delete [] savemu;
+	 delete [] savesigma;
+	 delete savemu;
+	 delete savesigma;
+	 
 
 
 } 
