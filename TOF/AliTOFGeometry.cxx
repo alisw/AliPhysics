@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2003/12/29 17:26:01  hristov
+Using enum to initaialize static ints in the header file, the initialization of static floats moved to the implementation file
+
 Revision 1.1  2003/12/29 15:18:03  decaro
 TOF geometry updating (addition of AliTOFGeometry)
 
@@ -38,31 +41,31 @@ Revision 0.03  2003/12/14 S.Arcelli
 
 ClassImp(AliTOFGeometry)
 
-static const Int_t fgkTimeDiff   = 25000;// Min signal separation (ps)
+const Int_t AliTOFGeometry::fgkTimeDiff   = 25000;// Min signal separation (ps)
 
-static const Float_t fgkRmin     = 370.; // Inner radius of the TOF (cm)
-static const Float_t fgkRmax     = 399;  // Outer radius of the TOF (cm)
-static const Float_t fgkZlenA    = 106.0;// length (cm) of the A module
-static const Float_t fgkZlenB    = 141.0;// length (cm) of the B module
-static const Float_t fgkZlenC    = 177.5;// length (cm) of the C module
-static const Float_t fgkXPad     = 2.5;  // Pad size in the x direction (cm)
-static const Float_t fgkZPad     = 3.5;  // Pad size in the z direction (cm)
-static const Float_t fgkMaxhZtof = 371.5;// Max half z-size of TOF (cm)
-
-
-static const Float_t fgkSigmaForTail1= 2.;//Sig1 for simulation of TDC tails 
-static const Float_t fgkSigmaForTail2= 0.5;//Sig2 for simulation of TDC tails
-static const Float_t fgkSpeedOfLight = 0.299792458;// c (10^9 m/s)
-static const Float_t fgkPionMass     = 0.13957;// pion mass (Gev/c^2)
-static const Float_t fgkKaonMass     = 0.49368;// kaon mass (Gev/c^2)
-static const Float_t fgkProtonMass   = 0.93827;// proton mass (Gev/c^2)
-static const Float_t fgkElectronMass = 0.00051;// electron mass (Gev/c^2)
-static const Float_t fgkMuonMass     = 0.10566;// muon mass (Gev/c^2)
+const Float_t AliTOFGeometry::fgkRmin     = 370.; // Inner radius of the TOF (cm)
+const Float_t AliTOFGeometry::fgkRmax     = 399;  // Outer radius of the TOF (cm)
+const Float_t AliTOFGeometry::fgkZlenA    = 106.0;// length (cm) of the A module
+const Float_t AliTOFGeometry::fgkZlenB    = 141.0;// length (cm) of the B module
+const Float_t AliTOFGeometry::fgkZlenC    = 177.5;// length (cm) of the C module
+const Float_t AliTOFGeometry::fgkXPad     = 2.5;  // Pad size in the x direction (cm)
+const Float_t AliTOFGeometry::fgkZPad     = 3.5;  // Pad size in the z direction (cm)
+const Float_t AliTOFGeometry::fgkMaxhZtof = 371.5;// Max half z-size of TOF (cm)
 
 
-static const Float_t fgkDprecMin = 0.0000075;//num.prec.tolerance on Thmin 
-static const Float_t fgkDprecMax = 0.0000100;//num.prec.tolerance on Thma 
-static const Float_t fgkDprecCen = 0.0000005;//num.prec.tolerance on <Theta> 
+const Float_t AliTOFGeometry::fgkSigmaForTail1= 2.;//Sig1 for simulation of TDC tails 
+const Float_t AliTOFGeometry::fgkSigmaForTail2= 0.5;//Sig2 for simulation of TDC tails
+const Float_t AliTOFGeometry::fgkSpeedOfLight = 0.299792458;// c (10^9 m/s)
+const Float_t AliTOFGeometry::fgkPionMass     = 0.13957;// pion mass (Gev/c^2)
+const Float_t AliTOFGeometry::fgkKaonMass     = 0.49368;// kaon mass (Gev/c^2)
+const Float_t AliTOFGeometry::fgkProtonMass   = 0.93827;// proton mass (Gev/c^2)
+const Float_t AliTOFGeometry::fgkElectronMass = 0.00051;// electron mass (Gev/c^2)
+const Float_t AliTOFGeometry::fgkMuonMass     = 0.10566;// muon mass (Gev/c^2)
+
+
+const Float_t AliTOFGeometry::fgkDprecMin = 0.0000075;//num.prec.tolerance on Thmin 
+const Float_t AliTOFGeometry::fgkDprecMax = 0.0000100;//num.prec.tolerance on Thma 
+const Float_t AliTOFGeometry::fgkDprecCen = 0.0000005;//num.prec.tolerance on <Theta> 
 
 //_____________________________________________________________________________
 AliTOFGeometry::AliTOFGeometry()
