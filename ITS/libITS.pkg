@@ -1,7 +1,9 @@
 SRCS = 	AliITS.cxx \
 		AliITSvSPD02.cxx \
+          AliITSvSDD03.cxx \
 		AliITSvPPRcoarseasymm.cxx \
 		AliITSvPPRasymmFMD.cxx \
+		AliITSv11.cxx \
 		AliITShit.cxx \
 		AliITSDetType.cxx \
 		AliITSgeom.cxx \
@@ -18,13 +20,13 @@ SRCS = 	AliITS.cxx \
 		AliITSsimulationSPD.cxx \
 		AliITSsimulationSPDdubna.cxx \
 		AliITSsimulationSDD.cxx \
+		AliITSsimulationSSD.cxx \
 		AliITSTableSSD.cxx \
 		AliITSetfSDD.cxx \
-		AliITSsimulationSSD.cxx \
 		AliITSdcsSSD.cxx \
-		AliITSdigit.cxx \
 		AliITSRawCluster.cxx \
 		AliITSRecPoint.cxx \
+		AliITSdigit.cxx \
 		AliITSdigitSPD.cxx \
 		AliITSdigitSDD.cxx \
 		AliITSTransientDigit.cxx \
@@ -37,7 +39,7 @@ SRCS = 	AliITS.cxx \
 		AliITSsegmentation.cxx \
 		AliITSsegmentationSPD.cxx \
 		AliITSsegmentationSDD.cxx \
-		AliITSsegmentationSSD.cxx\
+		AliITSsegmentationSSD.cxx \
 		AliITSresponse.cxx \
 		AliITSresponseSPD.cxx \
 		AliITSresponseSPDdubna.cxx \
@@ -47,9 +49,9 @@ SRCS = 	AliITS.cxx \
 		AliITSClusterFinderSPD.cxx \
 		AliITSClusterFinderSPDdubna.cxx \
 		AliITSClusterFinderSDD.cxx \
+		AliITSClusterFinderSSD.cxx \
 		AliITSRawData.cxx \
 		AliITSHuffman.cxx \
-		AliITSClusterFinderSSD.cxx \
 		AliITSclusterSSD.cxx \
 		AliITSpackageSSD.cxx \
 		AliITSstatistics.cxx \
@@ -93,9 +95,12 @@ SRCS = 	AliITS.cxx \
 		AliITSpidESD.cxx \
 		AliITSRawClusterSPD.cxx \
 		AliITSRawClusterSDD.cxx \
-		AliITSRawClusterSSD.cxx \
-#		AliITSBaseGeometry.cxx \
-#		AliITSv11.cxx \
+		AliITSRawClusterSSD.cxx\
+          AliITSspdTestBeam.cxx \
+          DisplayITSv11.cxx \
+		AliITSBaseGeometry.cxx \
+          AliITSv11Geometry.cxx \
+          AliITSv11GeometrySupport.cxx \
 
 #		AliITSAlignmentTrack.cxx AliITSAlignmentModule.cxx \
 # 		AliACORDEFunctions.cxx \
