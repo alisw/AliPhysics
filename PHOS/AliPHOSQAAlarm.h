@@ -19,7 +19,7 @@
 
 // --- Standard library ---
 
-#include <assert.h>
+//#include <assert.h>
 
 // --- AliRoot header files ---
 
