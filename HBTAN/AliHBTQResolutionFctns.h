@@ -1,5 +1,5 @@
-#ifndef ALIHBTQOUTVSQINVRESOLFCTN_H
-#define ALIHBTQOUTVSQINVRESOLFCTN_H
+#ifndef ALIHBTQOUTVsQINVRESOLFCTN_H
+#define ALIHBTQOUTVsQINVRESOLFCTN_H
 //General Remark:
 //CMSLC means
 //Center of Mass System Longitudially Co-moving
@@ -12,30 +12,62 @@
 //  it needs two pairs to compare
 //  and is two dimentional: numerator and denominator are TH2D
 
-class AliHBTQOutResolVSQInvFctn;  //QOutCMSLC  Res   VS   QInvCMSLC 
-class AliHBTQSideResolVSQInvFctn; //QSideCMSLC Res   VS   QInvCMSLC 
-class AliHBTQLongResolVSQInvFctn; //QLongCMSLC Res   VS   QInvCMSLC 
+class AliHBTQOutResolVsQInvFctn;  //QOutCMSLC  Res   Vs   QInvCMSLC 
+class AliHBTQSideResolVsQInvFctn; //QSideCMSLC Res   Vs   QInvCMSLC 
+class AliHBTQLongResolVsQInvFctn; //QLongCMSLC Res   Vs   QInvCMSLC 
+class AliHBTQInvResolVsQInvFctn;  //QInvCMSLC Res   Vs   QInvCMSLC 
 
-class AliHBTQInvResolVSKtFctn;    //QInvCMSLC  Res   VS   Kt
-class AliHBTQOutResolVSKtFctn;    //QOutCMSLC  Res   VS   Kt
-class AliHBTQSideResolVSKtFctn;   //QSideCMSLC Res   VS   Kt
-class AliHBTQLongResolVSKtFctn;   //QLongCMSLC Res   VS   Kt
+class AliHBTPairThetaResolVsQInvFctn;//PairTheta Res   Vs   QInvCMSLC
+class AliHBTPairPhiResolVsQInvFctn;  //PairPhi   Res   Vs   QInvCMSLC
 
-class AliHBTQOutResolVSQOutFctn;  //QOutCMSLC  Res   VS   QOut
-class AliHBTQSideResolVSQSideFctn;//QSideCMSLC Res   VS   QSide
-class AliHBTQLongResolVSQLongFctn;//QLongCMSLC Res   VS   QLong
+class AliHBTQInvResolVsKtFctn;    //QInvCMSLC  Res   Vs   Kt
+class AliHBTQOutResolVsKtFctn;    //QOutCMSLC  Res   Vs   Kt
+class AliHBTQSideResolVsKtFctn;   //QSideCMSLC Res   Vs   Kt
+class AliHBTQLongResolVsKtFctn;   //QLongCMSLC Res   Vs   Kt
+
+class AliHBTPairThetaResolVsKtFctn;   //PairTheta Res   Vs   Kt
+class AliHBTPairPhiResolVsKtFctn;   //PairPhi Res   Vs   Kt
 
 
+class AliHBTQOutResolVsQOutFctn;  //QOutCMSLC  Res   Vs   QOut
+class AliHBTQSideResolVsQSideFctn;//QSideCMSLC Res   Vs   QSide
+class AliHBTQLongResolVsQLongFctn;//QLongCMSLC Res   Vs   QLong
+
+
+ 
 #include "AliHBTFunction.h"
 /***********************************************************************/
 /***********************************************************************/
-class AliHBTQOutResolVSQInvFctn: public AliHBTTwoPairFctn2D
+class AliHBTQInvResolVsQInvFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQOutResolVSQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
+   AliHBTQInvResolVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
    
-   virtual ~AliHBTQOutResolVSQInvFctn(){}
+   virtual ~AliHBTQInvResolVsQInvFctn(){}
+   
+   TH1* GetResult(){return fNumerator;}  
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+    {
+     y = partpair->GetQInv() - trackpair->GetQInv();
+     x = partpair->GetQInv();
+    }
+  protected:
+  private: 
+  public:
+    ClassDef(AliHBTQInvResolVsQInvFctn,1)
+ };
+
+
+/***********************************************************************/
+/***********************************************************************/
+class AliHBTQOutResolVsQInvFctn: public AliHBTTwoPairFctn2D
+ {
+  public: 
+   AliHBTQOutResolVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
+                             Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
+   
+   virtual ~AliHBTQOutResolVsQInvFctn(){}
    
    TH1* GetResult(){return fNumerator;}  
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
@@ -46,17 +78,17 @@ class AliHBTQOutResolVSQInvFctn: public AliHBTTwoPairFctn2D
   protected:
   private: 
   public:
-    ClassDef(AliHBTQOutResolVSQInvFctn,1)
+    ClassDef(AliHBTQOutResolVsQInvFctn,1)
  };
 
 /***********************************************************************/
 /***********************************************************************/
-class AliHBTQSideResolVSQInvFctn: public AliHBTTwoPairFctn2D
+class AliHBTQSideResolVsQInvFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQSideResolVSQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
+   AliHBTQSideResolVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
-   virtual ~AliHBTQSideResolVSQInvFctn(){}
+   virtual ~AliHBTQSideResolVsQInvFctn(){}
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair,  Double_t& x, Double_t& y)
     {
@@ -67,17 +99,17 @@ class AliHBTQSideResolVSQInvFctn: public AliHBTTwoPairFctn2D
   protected:
   private:
   public:
-    ClassDef(AliHBTQSideResolVSQInvFctn,1)
+    ClassDef(AliHBTQSideResolVsQInvFctn,1)
  };
 
 /***********************************************************************/
 /***********************************************************************/
-class AliHBTQLongResolVSQInvFctn: public AliHBTTwoPairFctn2D
+class AliHBTQLongResolVsQInvFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQLongResolVSQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
+   AliHBTQLongResolVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
-   virtual ~AliHBTQLongResolVSQInvFctn(){}
+   virtual ~AliHBTQLongResolVsQInvFctn(){}
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
@@ -88,17 +120,17 @@ class AliHBTQLongResolVSQInvFctn: public AliHBTTwoPairFctn2D
   protected:
   private:
   public:
-    ClassDef(AliHBTQLongResolVSQInvFctn,1)
+    ClassDef(AliHBTQLongResolVsQInvFctn,1)
  };
 
 /***********************************************************************/
 /***********************************************************************/
-class AliHBTQInvResolVSKtFctn: public AliHBTTwoPairFctn2D
+class AliHBTQInvResolVsKtFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQInvResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
+   AliHBTQInvResolVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
-   virtual ~AliHBTQInvResolVSKtFctn(){};
+   virtual ~AliHBTQInvResolVsKtFctn(){};
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
@@ -109,16 +141,16 @@ class AliHBTQInvResolVSKtFctn: public AliHBTTwoPairFctn2D
   protected:
   private:
   public:
-    ClassDef(AliHBTQInvResolVSKtFctn,1)
+    ClassDef(AliHBTQInvResolVsKtFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/
-class AliHBTQOutResolVSKtFctn: public AliHBTTwoPairFctn2D
+class AliHBTQOutResolVsKtFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQOutResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
+   AliHBTQOutResolVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
-   virtual ~AliHBTQOutResolVSKtFctn(){}
+   virtual ~AliHBTQOutResolVsKtFctn(){}
    TH1* GetResult(){return GetNumerator();}
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
@@ -128,16 +160,16 @@ class AliHBTQOutResolVSKtFctn: public AliHBTTwoPairFctn2D
   protected:
   private:
   public:
-    ClassDef(AliHBTQOutResolVSKtFctn,1)
+    ClassDef(AliHBTQOutResolVsKtFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/
-class AliHBTQSideResolVSKtFctn: public AliHBTTwoPairFctn2D
+class AliHBTQSideResolVsKtFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQSideResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
+   AliHBTQSideResolVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                             Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
-   virtual ~AliHBTQSideResolVSKtFctn(){}
+   virtual ~AliHBTQSideResolVsKtFctn(){}
    TH1* GetResult(){return GetNumerator();}
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
@@ -147,36 +179,36 @@ class AliHBTQSideResolVSKtFctn: public AliHBTTwoPairFctn2D
   protected:
   private:
   public:
-    ClassDef(AliHBTQSideResolVSKtFctn,1)
+    ClassDef(AliHBTQSideResolVsKtFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/
-class AliHBTQLongResolVSKtFctn: public AliHBTTwoPairFctn2D
+class AliHBTQLongResolVsKtFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQLongResolVSKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
+   AliHBTQLongResolVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 1., Double_t minXval = 0.0, 
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
-   virtual ~AliHBTQLongResolVSKtFctn(){}
+   virtual ~AliHBTQLongResolVsKtFctn(){}
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
      y = partpair->GetQLongCMSLC() - trackpair->GetQLongCMSLC();
      x = partpair->GetKt();
     }
-   TH1* GetResult(){return fNumerator;}  
+   TH1* GetResult(){return fNumerator;}
   protected:
   private:
   public:
-    ClassDef(AliHBTQLongResolVSKtFctn,1)
+    ClassDef(AliHBTQLongResolVsKtFctn,1)
  };
 /***********************************************************************/
 /***********************************************************************/
-class AliHBTQOutResolVSQOutFctn: public AliHBTTwoPairFctn2D
+class AliHBTQOutResolVsQOutFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQOutResolVSQOutFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = -0.2, 
+   AliHBTQOutResolVsQOutFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = -0.2, 
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
-   virtual ~AliHBTQOutResolVSQOutFctn(){}
+   virtual ~AliHBTQOutResolVsQOutFctn(){}
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
@@ -187,18 +219,18 @@ class AliHBTQOutResolVSQOutFctn: public AliHBTTwoPairFctn2D
   protected:
   private:
   public:
-    ClassDef(AliHBTQOutResolVSQOutFctn,1)
+    ClassDef(AliHBTQOutResolVsQOutFctn,1)
  };
 
 /***********************************************************************/
 /***********************************************************************/
 
-class AliHBTQSideResolVSQSideFctn: public AliHBTTwoPairFctn2D
+class AliHBTQSideResolVsQSideFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQSideResolVSQSideFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = -0.2, 
+   AliHBTQSideResolVsQSideFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = -0.2, 
                              Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
-   virtual ~AliHBTQSideResolVSQSideFctn(){}
+   virtual ~AliHBTQSideResolVsQSideFctn(){}
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
@@ -209,19 +241,19 @@ class AliHBTQSideResolVSQSideFctn: public AliHBTTwoPairFctn2D
   protected:
   private:
   public:
-    ClassDef(AliHBTQSideResolVSQSideFctn,1)
+    ClassDef(AliHBTQSideResolVsQSideFctn,1)
  };
 
 
 /***********************************************************************/
 /***********************************************************************/
 
-class AliHBTQLongResolVSQLongFctn: public AliHBTTwoPairFctn2D
+class AliHBTQLongResolVsQLongFctn: public AliHBTTwoPairFctn2D
  {
   public: 
-   AliHBTQLongResolVSQLongFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = -0.2,
+   AliHBTQLongResolVsQLongFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = -0.2,
                              Int_t nYbins = 500, Double_t maxYval = .05, Double_t minYval =-0.05);
-   virtual ~AliHBTQLongResolVSQLongFctn(){}
+   virtual ~AliHBTQLongResolVsQLongFctn(){}
 
    void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
     {
@@ -232,9 +264,104 @@ class AliHBTQLongResolVSQLongFctn: public AliHBTTwoPairFctn2D
   protected:
   private:
   public:
-    ClassDef(AliHBTQLongResolVSQLongFctn,1)
+    ClassDef(AliHBTQLongResolVsQLongFctn,1)
  };
 
 
+/***********************************************************************/
+/***********************************************************************/
+class AliHBTPairThetaResolVsQInvFctn: public AliHBTTwoPairFctn2D
+ {
+  public: 
+   AliHBTPairThetaResolVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
+                             Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
+   
+   virtual ~AliHBTPairThetaResolVsQInvFctn(){}
+   
+   TH1* GetResult(){return fNumerator;}  
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+    {
+     Double_t partTheta = partpair->Particle1()->Theta() - partpair->Particle2()->Theta();
+     Double_t trackTheta = trackpair->Particle1()->Theta() - trackpair->Particle2()->Theta();
+     y = partTheta - trackTheta;
+     x = partpair->GetQInv();
+    }
+  protected:
+  private: 
+  public:
+    ClassDef(AliHBTPairThetaResolVsQInvFctn,1)
+ };
+
+/***********************************************************************/
+/***********************************************************************/
+class AliHBTPairPhiResolVsQInvFctn: public AliHBTTwoPairFctn2D
+ {
+  public: 
+   AliHBTPairPhiResolVsQInvFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
+                             Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
+   
+   virtual ~AliHBTPairPhiResolVsQInvFctn(){}
+   
+   TH1* GetResult(){return fNumerator;}  
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+    {
+     Double_t partPhi = partpair->Particle1()->Phi() - partpair->Particle2()->Phi();
+     Double_t trackPhi = trackpair->Particle1()->Phi() - trackpair->Particle2()->Phi();
+     y = partPhi - trackPhi;
+     x = partpair->GetQInv();
+    }
+  protected:
+  private: 
+  public:
+    ClassDef(AliHBTPairPhiResolVsQInvFctn,1)
+ };
+
+/***********************************************************************/
+/***********************************************************************/
+class AliHBTPairThetaResolVsKtFctn: public AliHBTTwoPairFctn2D
+ {
+  public: 
+   AliHBTPairThetaResolVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
+                             Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
+   
+   virtual ~AliHBTPairThetaResolVsKtFctn(){}
+   
+   TH1* GetResult(){return fNumerator;}  
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+    {
+     Double_t partTheta = partpair->Particle1()->Theta() - partpair->Particle2()->Theta();
+     Double_t trackTheta = trackpair->Particle1()->Theta() - trackpair->Particle2()->Theta();
+     y = partTheta - trackTheta;
+     x = partpair->GetKt();
+    }
+  protected:
+  private: 
+  public:
+    ClassDef(AliHBTPairThetaResolVsKtFctn,1)
+ };
+
+/***********************************************************************/
+/***********************************************************************/
+class AliHBTPairPhiResolVsKtFctn: public AliHBTTwoPairFctn2D
+ {
+  public: 
+   AliHBTPairPhiResolVsKtFctn(Int_t nXbins = 200, Double_t maxXval = 0.2, Double_t minXval = 0.0, 
+                             Int_t nYbins = 500, Double_t maxYval = .15, Double_t minYval =-0.15);
+   
+   virtual ~AliHBTPairPhiResolVsKtFctn(){}
+   
+   TH1* GetResult(){return fNumerator;}  
+   void GetValues(AliHBTPair* trackpair, AliHBTPair* partpair, Double_t& x, Double_t& y)
+    {
+     Double_t partPhi = partpair->Particle1()->Phi() - partpair->Particle2()->Phi();
+     Double_t trackPhi = trackpair->Particle1()->Phi() - trackpair->Particle2()->Phi();
+     y = partPhi - trackPhi;
+     x = partpair->GetKt();
+    }
+  protected:
+  private: 
+  public:
+    ClassDef(AliHBTPairPhiResolVsKtFctn,1)
+ };
 
 #endif
