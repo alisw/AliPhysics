@@ -19,6 +19,7 @@ $Log $
 
 #include "AliMUONTransientDigit.h"
 #include <TObjArray.h>
+#include "TVector.h"
 
 ClassImp(AliMUONTransientDigit)
 
@@ -38,18 +39,59 @@ AliMUONTransientDigit::AliMUONTransientDigit(Int_t ich, Int_t *digits):
     // Creates a MUON digit list object
     //
     fChamber     = ich;
-    fTrackList   = new TObjArray;
+    fTrackList   = new TObjArray(5);   
+    // 5 is arbitrary number, just to decrease default 16
 }
 
+////////////////////////////////////////////////////////////////////////
 AliMUONTransientDigit::~AliMUONTransientDigit() 
 {
-delete fTrackList;
+  fTrackList->Delete();
+  delete fTrackList;
 }
 
+////////////////////////////////////////////////////////////////////////
 AliMUONTransientDigit& AliMUONTransientDigit::operator =(const AliMUONTransientDigit& rhs)
 {
 // Dummy assignment operator
     return *this;
 }
 
+////////////////////////////////////////////////////////////////////////
+void AliMUONTransientDigit::AddToTrackList(Int_t track, Int_t charge)
+{
+  TVector *pTrInfo = new TVector(2);
+  TVector &trInfo = *pTrInfo;
+  trInfo(0) = track;
+  trInfo(1) = charge;
+  fTrackList->Add(pTrInfo);
+}
 
+////////////////////////////////////////////////////////////////////////
+void AliMUONTransientDigit::UpdateTrackList(Int_t track, Int_t charge)
+{
+  Int_t lastEntry = fTrackList->GetLast();
+  TVector *pVect = static_cast<TVector*>(fTrackList->At(lastEntry));
+  if ( static_cast<Int_t>((*pVect)(0)) == track) {
+    (*pVect)(1) += charge;  // update charge
+  } else {
+    AddToTrackList(track,charge);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////
+Int_t AliMUONTransientDigit::GetTrack(Int_t i)
+{
+  if (i > fTrackList->GetEntriesFast()) return 0;
+  TVector *pVect = static_cast<TVector*>(fTrackList->At(i));
+  return static_cast<Int_t>((*pVect)(0));
+}
+
+
+////////////////////////////////////////////////////////////////////////
+Int_t AliMUONTransientDigit::GetCharge(Int_t i)
+{
+  if (i > fTrackList->GetEntriesFast()) return 0;
+  TVector *pVect = static_cast<TVector*>(fTrackList->At(i));
+  return static_cast<Int_t>((*pVect)(1));
+}
