@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.45  2002/12/16 09:44:49  morsch
+Default for fRadiation is 3.
+
 Revision 1.44  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -712,7 +715,8 @@ void AliGenHijing::MakeHeader()
     ((AliGenHijingEventHeader*) header)->SetTrials(fTrials);
 // Event Vertex
     header->SetPrimaryVertex(fEventVertex);
-    gAlice->SetGenEventHeader(header);    
+    gAlice->SetGenEventHeader(header);   
+    fCollisionGeometry = (AliGenHijingEventHeader*)  header;
 }
 
 Bool_t AliGenHijing::CheckTrigger()
