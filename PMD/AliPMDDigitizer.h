@@ -44,7 +44,7 @@ class AliPMDDigitizer
   void Hits2Digits(Int_t ievt);
   void SDigits2Digits(Int_t ievt);
   void TrackAssignment2Cell();
-  void MeV2ADC(Float_t mev, Float_t & adc);
+  void MeV2ADC(Float_t mev, Float_t & adc) const;
   void AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
 		 Int_t cellnumber, Float_t adc);
   void AddDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
@@ -59,7 +59,6 @@ class AliPMDDigitizer
 
  protected:
   AliRunLoader *fRunLoader;  // Pointer to Run Loader
-  AliRun       *gAlice;      // Pointer to a Run
   AliPMDhit    *fPMDHit;     // Pointer to specific detector hits
   AliDetector  *fPMD;        // Get pointers to Alice detectors 
                              // and Hits containers 

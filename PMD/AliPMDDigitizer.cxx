@@ -50,9 +50,7 @@
 #include "AliMC.h"
 
 ClassImp(AliPMDDigitizer)
-//
-// Constructor
-//
+
 AliPMDDigitizer::AliPMDDigitizer()
 {
   // Default Constructor
@@ -168,6 +166,8 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   Float_t edep;
   Float_t vx = -999.0, vy = -999.0, vz = -999.0;
 
+
+  FILE *fpw = fopen("junk_digit1.dat","w");
   
   ResetSDigit();
 
@@ -175,7 +175,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   printf("Number of Particles = %d \n", nparticles);
   fRunLoader->GetEvent(ievt);
-  fPArray = gAlice->GetMCApp()->Particles();
+  //  fPArray = gAlice->GetMCApp()->Particles();
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
   // Get pointers to Alice detectors and Hits containers
@@ -197,7 +197,7 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
   if (fPMD) fHits   = fPMD->Hits();
 
   // Start loop on tracks in the hits containers
-  
+
   for (Int_t track=0; track<ntracks;track++) 
     {
       gAlice->ResetHits();
@@ -209,12 +209,13 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 	    {
 	      fPMDHit = (AliPMDhit*) fHits->UncheckedAt(ipmd);
 	      trackno = fPMDHit->GetTrack();
-
 	      //  get kinematics of the particles
 
 	      fParticle = gAlice->GetMCApp()->Particle(trackno);
 	      trackpid  = fParticle->GetPdgCode();
 
+	      fprintf(fpw,"track =%d trackno = %d trackpid = %d\n",
+		      track, trackno, trackpid);
 	      Int_t igatr = -999;
 	      Int_t ichtr = -999;
 	      Int_t igapid = -999;
@@ -402,7 +403,6 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   Float_t edep;
   Float_t vx = -999.0, vy = -999.0, vz = -999.0;
 
-  
   ResetDigit();
 
   printf("Event Number =  %d \n",ievt); 
@@ -410,7 +410,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   printf("Number of Particles = %d \n", nparticles);
   fRunLoader->GetEvent(ievt);
-  fPArray = gAlice->GetMCApp()->Particles();
+  //  fPArray = gAlice->GetMCApp()->Particles();
   // ------------------------------------------------------- //
   // Pointer to specific detector hits.
   // Get pointers to Alice detectors and Hits containers
@@ -888,7 +888,7 @@ void AliPMDDigitizer::TrackAssignment2Cell()
 }
 
 
-void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc)
+void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
 {
   // This converts the simulated edep to ADC according to the
   // Test Beam Data

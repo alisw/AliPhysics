@@ -49,7 +49,6 @@ class AliPMDClusterFinder
 
  protected:
   AliRunLoader *fRunLoader; // Pointer to Run Loader
-  AliRun       *gAlice;     // Pointer to Run
   AliDetector  *fPMD;       // Pointers to Alice detectors & Hits containers
   AliLoader    *fPMDLoader; // Pointer to specific detector loader
 
