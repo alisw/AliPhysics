@@ -68,8 +68,11 @@ public:
   void PrintJrLtGeant();
 
   //Map access methods
-  G4int GetRegionFromName(const char* volName) const;
-
+  void  BuildMediaMap();
+  void  SetMediumFromName(const char* volName, int med);
+    //G4int GetRegionFromName(const char* volName) const;
+  G4int GetMedium(int) const;
+    
 
 protected:
   void BuildRegionsMap();
@@ -102,8 +105,12 @@ private:
   G4TouchableHistory * ptrTempNavHist;
   G4int * ptrJrLtGeant;
   G4int flagLttcGeant;
-
+  G4int  fNRegions;
+  int* fRegionMediumMap;
+    
   G4std::map<G4VPhysicalVolume*, int, G4std::less<G4VPhysicalVolume*> > fRegionVolumeMap;
+  G4std::map<G4VPhysicalVolume*, int, G4std::less<G4VPhysicalVolume*> > fMediumVolumeMap;
+
   G4std::map<G4Material*, FlukaMaterial*, G4std::less<G4Material*> > G4FlukaMaterialMap;
   G4std::map<G4Material*, FlukaCompound*, G4std::less<G4Material*> > G4FlukaCompoundMap;
   //G4int NOfMaterials;

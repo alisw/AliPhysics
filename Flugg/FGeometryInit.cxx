@@ -385,18 +385,55 @@ void FGeometryInit::PrintRegionsMap(G4std::ostream& os) {
 }
 
 ////////////////////////////////////////////////////////////////////////
-// 
-G4int FGeometryInit::GetRegionFromName(const char* volName) const {
+//
+void    FGeometryInit::BuildMediaMap()
+{
+    fRegionMediumMap = new int[fNRegions+1];
+    for (RegionIterator i = fRegionVolumeMap.begin(); 
+	 i != fRegionVolumeMap.end(); 
+	 i++) {
+	//Get info in the map
+	G4VPhysicalVolume* ptrVol = (*i).first;
+	int region = (*i).second;
+	G4int imed = fMediumVolumeMap[ptrVol];
+	fRegionMediumMap[region] = imed;
+	printf("BuildMediaMap %s %d %d\n",(ptrVol->GetName()).data(), region, imed);
+	
+    }
+}
+
+G4int FGeometryInit::GetMedium(int region) const
+{
+    return fRegionMediumMap[region];
+}
+
+
+void  FGeometryInit::SetMediumFromName(const char* volName, int medium) 
+ {
+  char name4[5];
+  char tmp[5];
+  strncpy(tmp, volName, 4);
+  tmp[4]='\0';
+  fNRegions = 0;
+  
   for (RegionIterator i = fRegionVolumeMap.begin(); 
        i != fRegionVolumeMap.end(); 
        i++) {
-    
+    fNRegions++;
     //Get info in the map
     G4VPhysicalVolume* ptrVol = (*i).first;
-    if (ptrVol->GetName() == volName)
-      return ((*i).second);
+    strncpy(name4, (ptrVol->GetName()).data(), 4);
+    name4[4]='\0';
+    for (int j = 0; j < 4; j++) {
+	if (name4[j] == '\0') {
+	    for (int k = j; k < 4; k++) {
+		name4[k] = ' ';
+	    }
+	    break;
+	}
+    }
+    if (! strncmp(name4, tmp, 4)) fMediumVolumeMap[ptrVol] = medium;
   }
-  return -1;
 }
 
 
