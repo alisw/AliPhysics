@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/07/27 12:34:20  jchudoba
+remove the dummy argument in GetEvent method
+
 Revision 1.10  2001/07/20 10:13:54  morsch
 In Particle(Int_t) use GetEntriesFast to speed up the procedure.
 
@@ -750,7 +753,7 @@ void AliStack::MakeTree(Int_t event, const char *file)
     sprintf(hname,"TreeK%d",event);
     fTreeK = new TTree(hname,"Kinematics");
     //  Create a branch for particles
-    branch = fTreeK->Branch("Particles", "TParticle", &fParticleBuffer, 4000, 1);          
+    branch = fTreeK->Branch("Particles", "TParticle", &fParticleBuffer, 4000);          
     fTreeK->Write(0,TObject::kOverwrite);
   }
 }

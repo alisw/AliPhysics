@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2001/05/03 08:11:31  hristov
+stdlib.h included to define exit()
+
 Revision 1.25  2001/04/25 14:50:42  gosset
 Corrections to violations of coding conventions
 
@@ -1506,7 +1509,7 @@ void AliMUONEventReconstructor::FillEvent()
    if (fRecoEvent->MakeDumpTracks(fRecTracksPtr)) {
       if (fPrintLevel > 1) fRecoEvent->EventInfo();
       TBranch *branch = fEventTree->GetBranch("Event");
-      if (!branch) branch = fEventTree->Branch("Event", "AliMUONRecoEvent", &fRecoEvent, 64000,1);
+      if (!branch) branch = fEventTree->Branch("Event", "AliMUONRecoEvent", &fRecoEvent, 64000);
       branch->SetAutoDelete();
       fTreeFile->cd();
       fEventTree->Fill();

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.39  2001/07/26 09:09:34  kowal2
+Hits2Reco method added
+
 Revision 1.38  2001/07/20 14:32:43  kowal2
 Processing of many events possible now
 
@@ -2117,7 +2120,7 @@ void AliTPC::MakeBranch2(Option_t *option,const char *file)
   //
   if (fTrackHits   && gAlice->TreeH() && cH) {    
     AliObjectBranch * branch = new AliObjectBranch(branchname,"AliTPCTrackHits",&fTrackHits, 
-						   gAlice->TreeH(),fBufferSize,1);
+						   gAlice->TreeH(),fBufferSize);
     gAlice->TreeH()->GetListOfBranches()->Add(branch);
     if (GetDebug()>1) 
       printf("* AliDetector::MakeBranch * Making Branch %s for trackhits\n",branchname);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/05/21 17:22:51  buncic
+Fixed problem with missing AliConfig while reading galice.root
+
 Revision 1.13  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -178,7 +181,7 @@ void AliDetector::Publish(const char *dir, void *address, const char *name)
 //_____________________________________________________________________________
 TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name, void* address, Int_t size,const char *file)
 { 
-    return(MakeBranchInTree(tree,name,0,address,size,1,file));
+    return(MakeBranchInTree(tree,name,0,address,size,99,file));
 }
 
 //_____________________________________________________________________________

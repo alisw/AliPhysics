@@ -50,7 +50,7 @@ public:
   virtual AliHit*     NextHit();
   virtual void        SetBufferSize(Int_t bufsize=8000) {fBufferSize = bufsize;}  
   virtual TBranch*    MakeBranchInTree(TTree *tree, const char* cname, void* address, Int_t size=32000, const char *file=0);
-  virtual TBranch*    MakeBranchInTree(TTree *tree, const char* cname, const char* name, void* address, Int_t size=32000, Int_t splitlevel=1, const char *file=0);
+  virtual TBranch*    MakeBranchInTree(TTree *tree, const char* cname, const char* name, void* address, Int_t size=32000, Int_t splitlevel=99, const char *file=0);
    
   // Data members
 protected:      

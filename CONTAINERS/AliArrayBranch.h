@@ -74,9 +74,9 @@ public:
   AliTree():TTree(){;}
   AliTree(const char *name,const char *title, Int_t maxvirtualsize=0);
   TBranch* AliBranch(const char *name, void *clonesaddress, Int_t bufsize =32000, 
-		     Int_t splitlevel=1,Int_t compres=1);
+		     Int_t splitlevel=99,Int_t compres=1);
   TBranch* AliBranch(const char *name, const char *classname, void *addobj, 
-  		     Int_t bufsize=32000, Int_t splitlevel=1);
+  		     Int_t bufsize=32000, Int_t splitlevel=99);
   ClassDef(AliTree,1)  
 };
 

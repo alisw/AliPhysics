@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.4  2000/12/22 16:17:15  hristov
+Updated  START code from Alla
+
 Revision 1.3  2000/10/02 21:28:13  fca
 Removal of useless dependecies via forward declarations
  
@@ -65,7 +68,6 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
   AliSTARTvertex *vertex;
  
   Int_t buffersize=256;
-  Int_t split=1;
  
   // TParticle *particle;
   digits = new AliSTARTdigit();
@@ -81,7 +83,7 @@ void AliSTARTvertex::Reconstruct(Int_t evNumber=1)
   bd->GetEvent(0);
   sprintf(nameTR,"TreeR%d",evNumber);
   TTree *tr = new TTree(nameTR,"START");
-  bRec = tr->Branch("START","AliSTARTvertex",&vertex,buffersize,split);
+  bRec = tr->Branch("START","AliSTARTvertex",&vertex,buffersize);
   if(digits->GetTime()!=999999)
     {
       timediff=digits->GetTime();     //time in number of channels

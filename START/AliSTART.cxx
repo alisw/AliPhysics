@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2001/06/27 16:06:59  hristov
+Rotation matrix in BuildGeometry has been changed to rotx999
+
 Revision 1.20.2.1  2001/06/27 10:51:15  alla
 Rotation matrix in BuildGeometry has benn changed to rotx999
 
@@ -280,7 +283,6 @@ void AliSTART::Hit2digit(Int_t evnum)
   AliSTARThit  *startHit;
 
   Int_t buffersize=256;
-  Int_t split=1;
 
   digits= new AliSTARTdigit();
   TBranch *bDig=0;
@@ -290,7 +292,7 @@ void AliSTART::Hit2digit(Int_t evnum)
  
     sprintf(nameTD,"TreeD%d",evnum);
     TTree *td = new TTree(nameTD,"START");
-    bDig = td->Branch("START","AliSTARTdigit",&digits,buffersize,split);
+    bDig = td->Branch("START","AliSTARTdigit",&digits,buffersize);
 
     besttimeright=9999.;
     besttimeleft=9999.;

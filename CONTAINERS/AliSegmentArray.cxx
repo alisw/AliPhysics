@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/06/07 18:23:52  buncic
+TPC branches now correctly diverted into Digits.TPS.root file
+
 Revision 1.3  2001/02/05 14:34:54  hristov
 Avoid deleting of Root class dictionary (R.Brun, M.Ivanov)
 
@@ -242,7 +245,7 @@ void AliSegmentArray::MakeTree(char *file)
   AliSegmentID * psegment = NewSegment();  
   if (fTree) delete fTree;
   fTree = new TTree("Segment Tree","Tree with segments");
-  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000,1);
+  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000);
   if (file) {
         TString outFile = gAlice->GetBaseFile();
         outFile = outFile + "/" + file;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/01/26 19:56:57  hristov
+Major upgrade of AliRoot code
+
 Revision 1.7  2000/11/20 08:56:07  cblume
 Cleanup of data arrays
 
@@ -319,7 +322,7 @@ void AliTRDsegmentArrayBase::MakeTree(char *file)
   if (fTree) delete fTree;
   fTree   = new TTree("Segment Tree","Tree with segments");
 
-  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000,1);
+  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000);
   if (file) 
       fBranch->SetFile(file);      
 

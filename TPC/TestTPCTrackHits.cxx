@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/11/02 10:22:50  kowal2
+Logs added
+
 */
 
 /*
@@ -64,7 +67,7 @@ void ConvertHits(const char * benchmark, Bool_t debug)
   TFile f3("treehcl.root","recreate");
   f3.SetCompressionLevel(2);
   TTree * treeh3 = new TTree("TreeTPCH","TreeTPCH");
-  treeh3->Branch("TPC", &arr,64000,2);
+  treeh3->Branch("TPC", &arr,64000,100);
 
   gBenchmark->Start(benchmark); 
   Int_t trsize = (Int_t)treeCl->GetEntries();
@@ -150,7 +153,7 @@ void CompareHitsG(const char * benchmark, Bool_t debug)
   f3.SetCompressionLevel(2);
   TTree * treeh3 = new TTree("DelataH","DeltaH");
   TClonesArray *arrd = new TClonesArray("AliTPChitD",100);
-  treeh3->Branch("TPC", &arrd,64000,2);
+  treeh3->Branch("TPC", &arrd,64000,100);
    
   cout<<"Lets go!\n"; 
   gBenchmark->Start(benchmark);

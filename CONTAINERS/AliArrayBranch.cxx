@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/11/01 16:01:22  kowal2
+Classes for handling the new hits structures
+
 */
 #include "TROOT.h"
 #include "AliArrayBranch.h"
@@ -812,7 +815,7 @@ AliObjectBranch::AliObjectBranch(const Text_t *name, const Text_t *classname, vo
             char *cpointer  =(char*)pointer;
             char **ppointer =(char**)cpointer;
             TClonesArray *list = (TClonesArray*)(*ppointer);
-            if (splitlevel != 2) {
+            if (splitlevel != 100) {
                if (isDot) branch1 = new TBranchClones(&branchname[0],pointer,bufsize);
                else       branch1 = new TBranchClones(&branchname[1],pointer,bufsize);
                blist->Add(branch1);
@@ -827,7 +830,7 @@ AliObjectBranch::AliObjectBranch(const Text_t *name, const Text_t *classname, vo
 	     char *cpointer  =(char*)pointer;
 	     char **ppointer =(char**)cpointer;
 	     TClonesArray *list = (TClonesArray*)(*ppointer);
-	     if (splitlevel != 2) {
+	     if (splitlevel != 100) {
                if (isDot) branch1 = new AliArrayBranch(&branchname[0],pointer,fTree,bufsize,compress);
                else       branch1 = new AliArrayBranch(&branchname[1],pointer,fTree,bufsize,compress);
                blist->Add(branch1);
