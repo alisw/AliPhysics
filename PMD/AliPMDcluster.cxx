@@ -5,7 +5,8 @@
 //  Store cluster information                          //
 //                                                     //
 //-----------------------------------------------------//
-
+#include "Riostream.h"
+#include "Rtypes.h"
 #include "AliPMDcluster.h"
 #include <stdio.h>
 
@@ -13,6 +14,7 @@ ClassImp(AliPMDcluster)
 
 AliPMDcluster::AliPMDcluster()
 {
+  // Default constructor
   for (Int_t i = 0; i < 5; i++)
     {
       fClusData[i] = 0.;
@@ -20,14 +22,37 @@ AliPMDcluster::AliPMDcluster()
 }
 AliPMDcluster::AliPMDcluster(Float_t *clusdata)
 {
+  // Constructor
   for (Int_t i = 0; i < 5; i++)
     {
       fClusData[i] = clusdata[i];
     }
 }
+AliPMDcluster::AliPMDcluster(const AliPMDcluster &pmdcluster):TObject(pmdcluster)
+{
+  //Copy Constructor 
+  if(&pmdcluster == this) return;
+  for(Int_t i=0; i<5; i++)
+    {
+      this->fClusData[i] = pmdcluster.fClusData[i];
+    }
+  return;
+}
+
+AliPMDcluster & AliPMDcluster::operator=(const AliPMDcluster &pmdcluster)
+{
+  // Assignment operator 
+  if(&pmdcluster == this) return *this;
+  for(Int_t i=0; i<5; i++)
+    {
+      this->fClusData[i] = pmdcluster.fClusData[i];
+    }
+  return *this;
+}
+
 AliPMDcluster::~AliPMDcluster()
 {
-
+  // Destructor
 }
 Float_t AliPMDcluster::GetClusX() const
 {

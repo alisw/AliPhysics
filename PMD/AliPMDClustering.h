@@ -1,5 +1,5 @@
-#ifndef PMDClustering_H
-#define PMDClustering_H
+#ifndef ALIPMDCLUSTERING_H
+#define ALIPMDCLUSTERING_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -32,11 +32,6 @@
 -----------------------------------------------------------------------
 */
 
-
-#include <Riostream.h> // define cout stream
-#include <stdlib.h>   // defines exit() functions
-#include <time.h> // for time function
-#include <math.h> // for mathematical functions
 #include "Rtypes.h"
 
 class TNtuple;
@@ -44,75 +39,72 @@ class TObjArray;
 class AliPMDcluster;
 class AliPMDClustering
 {
+
+ public:
+  AliPMDClustering();
+  virtual ~AliPMDClustering();
+  
+  void DoClust(Double_t celladc[][96], TObjArray *pmdcont);
+  void Order();
+
+  Int_t CrClust(Double_t ave, Double_t cutoff, Int_t nmx1);
+  void RefClust(Int_t incr);
+  void GaussFit(Int_t ncell, Int_t nclust, Double_t &x, 
+		Double_t &y, Double_t &z, Double_t &xc,
+		Double_t &yc, Double_t &zc, Double_t &rc);
+  Double_t Distance(Double_t x1, Double_t y1,
+		    Double_t x2, Double_t y2);
+  Double_t Ranmar() const;
+  void SetEdepCut(Float_t decut);
+  void SetDebug(Int_t idebug);
   
  protected:
 
-  static const double pi;
-  static const double sqrth;  // sqrth = sqrt(3.)/2.
+  static const Double_t fgkSqroot3by2;  // fgkSqroot3by2 = sqrt(3.)/2.
   enum {
-    nmx=4608,
-    ndimx=48,
-    ndimy=96
+    kNMX   = 4608,
+    kNDIMX = 48,
+    kNDIMY = 96
   };
 
   /*
-    nmx : # of cells in a supermodule
-    ndimx : maximum number of cells along x direction (origin at one corner)
-    ndimy : maximum number of cells along axis at 60 degrees with x axis
+    kNMX   : # of cells in a supermodule
+    kNDIMX : maximum number of cells along x direction (origin at one corner)
+    kNDIMY : maximum number of cells along axis at 60 degrees with x axis
   */
 
-  double d[ndimx][ndimy], clusters[5][5000]; 
-  int clno;
+  Double_t fEdepCell[kNDIMX][kNDIMY]; //energy(ADC) in each cell of the supermodule
+  Double_t fClusters[5][5000]; // Cluster informations
+  Int_t    fClno;   // number of clusters in a supermodule
 
   /*
-    d ---- energy deposited ( or ADC ) in each cell of the supermodule
-    clno --- number of clusters in a supermodule
-    A cell is defined in terms of two integers (i,j) giving the its location
     clusters[0][i] --- x position of the cluster center
     clusters[1][i] --- y position of the cluster center
     clusters[2][i] --- total energy in the cluster
     clusters[3][i] --- number of cells forming the cluster 
                        ( possibly fractional )
     clusters[4][i] --- cluster radius
-    One corner of the supermodule is chosen as the origin
   */
 
-
-  int iord[2][nmx], infocl[2][ndimx][ndimy], infcl[3][nmx];
-  double coord[2][ndimx][ndimy];
+  Int_t    fIord[2][kNMX]; // ordered list of i and j according to decreasing energy dep.
+  Int_t    fInfocl[2][kNDIMX][kNDIMY]; // cellwise information on the cluster to which the cell
+  Int_t    fInfcl[3][kNMX]; // cluster information [0][i] -- cluster number
+  Double_t fCoord[2][kNDIMX][kNDIMY];
 
   /* 
-     iord --- ordered list of i and j according to decreasing energy dep.
-     infocl --- cellwise information on the cluster to which the cell
+     fIord --- ordered list of i and j according to decreasing energy dep.
+     fInfocl --- cellwise information on the cluster to which the cell
      belongs and whether it has largest energy dep. or not
      ( now redundant - probably )
-     infcl ---  cluster information [0][i] -- cluster number
+     fInfcl ---  cluster information [0][i] -- cluster number
      [1][i] -- i of the cell
      [2][i] -- j of the cell
      coord --- x and y coordinates of center of each cell
   */
 
-  Int_t fDebug;
-  Float_t fCutoff;
+  Int_t fDebug;    // Switch for debug (1:Print, 0:Noprint)
+  Float_t fCutoff; // Energy(ADC) cutoff per cell before clustering
 
- public:
-  AliPMDClustering();
-  virtual ~AliPMDClustering();
-  
-  void DoClust(double /*celladc*/[][96], TObjArray * /* pmdcont */);
-  void order();
-
-  int crclust(double /* ave */, double /* cutoff */ , int /* nmx1 */);
-  void refclust(int /* incr */);
-  void gaussfit(int /*ncell*/, int /*nclust*/, double &/*x*/, 
-		double &/*y*/, double &/*z*/, double &/*xc*/,
-		double &/*yc*/, double &/*zc*/, double &/*rc*/);
-  double Dist(double /* x1 */, double /* y1 */ ,
-	      double /* x2 */, double /* y2 */);
-  double ranmar();
-  void SetEdepCut(Float_t /* decut */);
-  void SetDebug(Int_t /* idebug */);
-
-  ClassDef(AliPMDClustering,2)
+  ClassDef(AliPMDClustering,2) // Does clustering for PMD
 };
 #endif

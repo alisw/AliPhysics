@@ -20,7 +20,8 @@
 //  Store recpoints for ALICE-PMD                      //
 //                                                     //
 //-----------------------------------------------------//
-
+#include "Riostream.h"
+#include "Rtypes.h"
 #include "AliPMDrecpoint1.h"
 #include <stdio.h>
 
@@ -28,6 +29,7 @@ ClassImp(AliPMDrecpoint1)
 
 AliPMDrecpoint1::AliPMDrecpoint1()
 {
+  // Default constructor
   for (Int_t i = 0; i < 7; i++)
     {
       fClusData[i] = 0.;
@@ -36,14 +38,38 @@ AliPMDrecpoint1::AliPMDrecpoint1()
 
 AliPMDrecpoint1::AliPMDrecpoint1(Float_t *clusdata)
 {
+  // Constructor
   for (Int_t i = 0; i < 7; i++)
     {
       fClusData[i] = clusdata[i];
     }
 }
+
+AliPMDrecpoint1::AliPMDrecpoint1(const AliPMDrecpoint1 &pmdrecpoint):TObject(pmdrecpoint)
+{
+  //Copy Constructor 
+  if(&pmdrecpoint == this) return;
+  for(Int_t i=0; i<7; i++)
+    {
+      this->fClusData[i] = pmdrecpoint.fClusData[i];
+    }
+  return;
+}
+
+AliPMDrecpoint1 & AliPMDrecpoint1::operator=(const AliPMDrecpoint1 &pmdrecpoint)
+{
+  // Assignment operator 
+  if(&pmdrecpoint == this) return *this;
+  for(Int_t i=0; i<7; i++)
+    {
+      this->fClusData[i] = pmdrecpoint.fClusData[i];
+    }
+  return *this;
+}
+
 AliPMDrecpoint1::~AliPMDrecpoint1()
 {
-
+  // Default destructor
 }
 
 Float_t AliPMDrecpoint1::GetDetector() const

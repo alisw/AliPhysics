@@ -1,3 +1,17 @@
+/***************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 //-----------------------------------------------------//
 //                                                     //
 //                                                     //
@@ -7,14 +21,18 @@
 //                                                     //
 //-----------------------------------------------------//
 
+#include "Riostream.h"
 #include "AliPMDUtility.h"
 #include "TMath.h"
 #include <stdio.h>
+#include <math.h>
+
 
 ClassImp(AliPMDUtility)
 
 AliPMDUtility::AliPMDUtility()
 {
+  // Default constructor
   fPx    = 0.;
   fPy    = 0.;
   fPz    = 0.;
@@ -23,11 +41,12 @@ AliPMDUtility::AliPMDUtility()
   fPhi   = 0.;
 }
 
-AliPMDUtility::AliPMDUtility(Float_t Px, Float_t Py, Float_t Pz)
+AliPMDUtility::AliPMDUtility(Float_t px, Float_t py, Float_t pz)
 {
-  fPx = Px;
-  fPy = Py;
-  fPz = Pz;
+  // Constructor
+  fPx = px;
+  fPy = py;
+  fPz = pz;
   fTheta = 0.;
   fEta   = 0.;
   fPhi   = 0.;
@@ -35,27 +54,24 @@ AliPMDUtility::AliPMDUtility(Float_t Px, Float_t Py, Float_t Pz)
 
 AliPMDUtility::~AliPMDUtility()
 {
-
+  // Default destructor
 }
 void AliPMDUtility::HexGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad, Float_t &xpos, Float_t &ypos)
 {
+  // This converts PMD cluster or CELL coordinates
+  // to Global coordinates.
+  // Written by Prof. S.C. Phatak
 
+  const Float_t  kCellDia = 0.5;
+  const Float_t  kPi      = TMath::Pi();    //3.14159;
+  const Double_t kSqroot3by2   = 0.8660254;  // sqrth = sqrt(3.)/2.
+
+  Int_t i;
   Int_t j = xpad;
   Int_t k = ypad;
 
-  // Supermodeule number starting from 0
-
   /*
-    This converts PMD cluster or CELL coordinates
-    to Global coordinates.
-    Written by Prof. S.C. Phatak
-  */
-
-  Int_t i;
-  Float_t celldia = 0.5;
-  const Float_t pi = 3.14159;
-  const double sqrth=0.8660254;  // sqrth = sqrt(3.)/2.
-  /*
+    Supermodeule number starting from 0
     ism --> supermodule no ( 0 - 26 )
     idet --> detector ( pmd or cpv : not required now )
     j --> xpad ( goes from 1 to 72 )
@@ -66,7 +82,7 @@ void AliPMDUtility::HexGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad, Float_t &x
     (xp0,yp0) corner positions of all supermodules in global
     coordinate system. That is the origin
     of the local ( supermodule ) coordinate system.
-*/ 
+  */ 
   
   Float_t xp0[27] = 
   {
@@ -94,15 +110,15 @@ void AliPMDUtility::HexGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad, Float_t &x
      supermodules 
   */
   
-  Float_t th[3] = {0., -2.*pi/3., 2.*pi/3.};
+  Float_t th[3] = {0., -2.*kPi/3., 2.*kPi/3.};
   Float_t xr, yr, xinit, yinit, cs, sn;
   
   /* 
      xinit and yinit are coordinates of the cell in local coordinate system
   */
   
-  xinit = (j)*celldia+(k)/2.*celldia;
-  yinit = sqrth*(k)/2.;
+  xinit = (j)*kCellDia+(k)/2.*kCellDia;
+  yinit = kSqroot3by2*(k)/2.;
   i=ism/9;
   cs=cos(th[i]);
   sn=sin(th[i]);
@@ -133,16 +149,16 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Int_t xpad, Int_t ypad
   //
   // ism   : number of supermodules in one plane = 4
   // ium   : number of unitmodules  in one SM    = 6
-  // gb_um : (global) unit module numbering in a supermodule
+  // gbum  : (global) unit module numbering in a supermodule
   //
 
-  Int_t gb_um = ism*6 + ium;
+  Int_t gbum = ism*6 + ium;
   Int_t irow  = xpad;
   Int_t icol  = ypad;
 
   // Corner positions (x,y) of the 24 unit moudles in ALICE PMD
   
-  double xcorner[24] =
+  Double_t xcorner[24] =
   {
     85.15,  60.85,  36.55,  85.15,  60.85,  36.55, //SMA 
     -85.15, -60.85, -36.55, -85.15, -60.85, -36.55, //SMAR
@@ -150,7 +166,7 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Int_t xpad, Int_t ypad
     -84.90, -36.60, -84.90, -36.60, -84.90, -36.60  //SMBR
   };
   
-  double ycorner[24] =
+  Double_t ycorner[24] =
   { 
     32.45708755,  32.45708755,  32.45708755,        //SMA
     -9.30645245,  -9.30645245,  -9.30645245,        //SMA
@@ -162,8 +178,8 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Int_t xpad, Int_t ypad
     52.61435544,  73.59330270,  73.59330270         //SMBR
   };
   
-  const Float_t root_3      = 1.73205;  // sqrt(3.);
-  const Float_t cell_radius = 0.25;
+  const Float_t kSqroot3      = 1.73205;  // sqrt(3.);
+  const Float_t kCellRadius   = 0.25;
   
   //
   //Every even row of cells is shifted and placed
@@ -180,19 +196,19 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Int_t xpad, Int_t ypad
     }
   if(ism == 0 || ism == 2)
     {
-      ypos = ycorner[gb_um] + 
-	irow*cell_radius*root_3;
+      ypos = ycorner[gbum] + 
+	irow*kCellRadius*kSqroot3;
 
-      xpos = xcorner[gb_um] - 
-	icol*2.0*cell_radius - shift;
+      xpos = xcorner[gbum] - 
+	icol*2.0*kCellRadius - shift;
     }
   else if(ism == 1 || ism == 3)
     {
-      ypos = ycorner[gb_um] -
-	irow*cell_radius*root_3;
+      ypos = ycorner[gbum] -
+	irow*kCellRadius*kSqroot3;
 
-      xpos = xcorner[gb_um] +
-	icol*2.0*cell_radius + shift;
+      xpos = xcorner[gbum] +
+	icol*2.0*kCellRadius + shift;
     }
 }
 
@@ -212,16 +228,16 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Float_t xpad, Float_t 
   //
   // ism   : number of supermodules in one plane = 4
   // ium   : number of unitmodules  in one SM    = 6
-  // gb_um : (global) unit module numbering in a supermodule
+  // gbum  : (global) unit module numbering in a supermodule
   //
 
-  Int_t gb_um = ism*6 + ium;
+  Int_t gbum    = ism*6 + ium;
   Float_t irow  = xpad;
   Float_t icol  = ypad;
 
   // Corner positions (x,y) of the 24 unit moudles in ALICE PMD
   
-  double xcorner[24] =
+  Double_t xcorner[24] =
   {
     85.15,  60.85,  36.55,  85.15,  60.85,  36.55, //SMA 
     -85.15, -60.85, -36.55, -85.15, -60.85, -36.55, //SMAR
@@ -229,7 +245,7 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Float_t xpad, Float_t 
     -84.90, -36.60, -84.90, -36.60, -84.90, -36.60  //SMBR
   };
   
-  double ycorner[24] =
+  Double_t ycorner[24] =
   { 
     32.45708755,  32.45708755,  32.45708755,        //SMA
     -9.30645245,  -9.30645245,  -9.30645245,        //SMA
@@ -241,8 +257,8 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Float_t xpad, Float_t 
     52.61435544,  73.59330270,  73.59330270         //SMBR
   };
   
-  const Float_t root_3      = 1.73205;  // sqrt(3.);
-  const Float_t cell_radius = 0.25;
+  const Float_t kSqroot3    = 1.73205;  // sqrt(3.);
+  const Float_t kCellRadius = 0.25;
   
   //
   //Every even row of cells is shifted and placed
@@ -260,34 +276,34 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Float_t xpad, Float_t 
     }
   if(ism == 0 || ism == 2)
     {
-      ypos = ycorner[gb_um] + 
-	irow*cell_radius*root_3;
+      ypos = ycorner[gbum] + 
+	irow*kCellRadius*kSqroot3;
 
-      xpos = xcorner[gb_um] - 
-	icol*2.0*cell_radius - shift;
+      xpos = xcorner[gbum] - 
+	icol*2.0*kCellRadius - shift;
     }
   else if(ism == 1 || ism == 3)
     {
-      ypos = ycorner[gb_um] -
-	irow*cell_radius*root_3;
+      ypos = ycorner[gbum] -
+	irow*kCellRadius*kSqroot3;
 
-      xpos = xcorner[gb_um] +
-	icol*2.0*cell_radius + shift;
+      xpos = xcorner[gbum] +
+	icol*2.0*kCellRadius + shift;
     }
 }
 
-void AliPMDUtility::SetPxPyPz(Float_t Px, Float_t Py, Float_t Pz)
+void AliPMDUtility::SetPxPyPz(Float_t px, Float_t py, Float_t pz)
 {
-  fPx = Px;
-  fPy = Py;
-  fPz = Pz;
+  fPx = px;
+  fPy = py;
+  fPz = pz;
 }
 
-void AliPMDUtility::SetXYZ(Float_t xPos, Float_t yPos, Float_t zPos)
+void AliPMDUtility::SetXYZ(Float_t xpos, Float_t ypos, Float_t zpos)
 {
-  fPx = xPos;
-  fPy = yPos;
-  fPz = zPos;
+  fPx = xpos;
+  fPy = ypos;
+  fPz = zpos;
 }
 void AliPMDUtility::CalculateEta()
 {

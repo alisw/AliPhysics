@@ -1,5 +1,7 @@
-#ifndef PMDUtility_H
-#define PMDUtility_H
+#ifndef ALIPMDUTILITY_H
+#define ALIPMDUTILITY_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 //-----------------------------------------------------//
 //                                                     //
 //                                                     //
@@ -8,34 +10,24 @@
 //  Utility class for PMD                              //
 //                                                     //
 //-----------------------------------------------------//
-
-#include <math.h>
-#include "Riostream.h"
-#include "TMath.h"
 #include "Rtypes.h"
-
 class AliPMDUtility
 {
-  
- protected:
-  Float_t fPx, fPy, fPz;
-  Float_t fTheta, fEta, fPhi;
-
  public:
   AliPMDUtility();
-  AliPMDUtility(Float_t /* Px */, Float_t /* Py */, Float_t /* Pz */);
+  AliPMDUtility(Float_t px, Float_t py, Float_t pz);
   virtual ~AliPMDUtility();
 
-  void HexGeomCellPos(Int_t /* ism */, Int_t /* xpad */, Int_t /* ypad */,
-		Float_t & /* xpos */, Float_t & /* ypos */);
-  void RectGeomCellPos(Int_t /* ism */, Int_t /* ium */, 
-		       Int_t /* xpad */, Int_t /* ypad */,
-		       Float_t & /* xpos */, Float_t & /* ypos */);
-  void RectGeomCellPos(Int_t /* ism */, Int_t /* ium */, 
-		       Float_t /* xpad */, Float_t /* ypad */,
-		       Float_t & /* xpos */, Float_t & /* ypos */);
-  void SetPxPyPz(Float_t /* Px */, Float_t /* Py */, Float_t /* Pz */);
-  void SetXYZ(Float_t /* xPos */, Float_t /* yPos */, Float_t /* zPos */);
+  void HexGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad,
+		Float_t & xpos, Float_t & ypos);
+  void RectGeomCellPos(Int_t ism, Int_t ium, 
+		       Int_t xpad, Int_t ypad,
+		       Float_t & xpos, Float_t & ypos);
+  void RectGeomCellPos(Int_t ism, Int_t ium, 
+		       Float_t xpad, Float_t ypad,
+		       Float_t & xpos, Float_t & ypos);
+  void SetPxPyPz(Float_t px, Float_t py, Float_t pz);
+  void SetXYZ(Float_t xpos, Float_t ypos, Float_t zpos);
   void CalculateEta();
   void CalculatePhi();
   void CalculateEtaPhi();
@@ -43,7 +35,15 @@ class AliPMDUtility
   Float_t GetEta() const;
   Float_t GetPhi() const;
   
-  ClassDef(AliPMDUtility,2)
+ protected:
+  Float_t fPx;     // Momentum along x
+  Float_t fPy;     // Momentum along y
+  Float_t fPz;     // Momentum along z
+  Float_t fTheta;  // Polar angle in radian
+  Float_t fEta;    // Pseudo-rapidity
+  Float_t fPhi;    // Azimuthal angle in radian
+  
+  ClassDef(AliPMDUtility,2) // Utility class for the detector set:PMD
 };
 
 #endif
