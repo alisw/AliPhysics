@@ -57,6 +57,20 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() : AliPHOSRecPoint()
 }
 
 //____________________________________________________________________________
+AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const char * opt) : AliPHOSRecPoint(opt)
+{
+  // ctor
+  
+  fMulDigit   = 0 ;  
+  fAmp   = 0. ;   
+  fCoreEnergy = 0 ; 
+  fEnergyList = 0 ;
+  fTime = -1. ;
+  fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
+  
+}
+
+//____________________________________________________________________________
 AliPHOSEmcRecPoint::~AliPHOSEmcRecPoint()
 {
   // dtor

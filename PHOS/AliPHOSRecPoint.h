@@ -29,6 +29,7 @@ class AliPHOSRecPoint : public AliRecPoint {
   typedef TObjArray RecPointsList ; 
 
   AliPHOSRecPoint() ;                   // ctor         
+  AliPHOSRecPoint(const char * opt) ;   // ctor 
   AliPHOSRecPoint(const AliPHOSRecPoint & rp) {
     // cpy ctor requested by Coding Convention 
     // but not yet needed

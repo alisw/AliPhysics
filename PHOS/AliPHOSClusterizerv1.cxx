@@ -594,7 +594,7 @@ void AliPHOSClusterizerv1::MakeClusters()
 	if(fNumberOfEmcClusters >= emcRecPoints->GetSize()) 
 	  emcRecPoints->Expand(2*fNumberOfEmcClusters+1) ;
   	
-	emcRecPoints->AddAt(new  AliPHOSEmcRecPoint(), fNumberOfEmcClusters) ;
+	emcRecPoints->AddAt(new  AliPHOSEmcRecPoint(""), fNumberOfEmcClusters) ;
 	clu = (AliPHOSEmcRecPoint *) emcRecPoints->At(fNumberOfEmcClusters) ; 
   	fNumberOfEmcClusters++ ; 
 	clu->AddDigit(*digit, Calibrate(digit->GetAmp(),digit->GetId())) ; 
@@ -608,7 +608,7 @@ void AliPHOSClusterizerv1::MakeClusters()
 	if(fNumberOfCpvClusters >= cpvRecPoints->GetSize()) 
 	  cpvRecPoints->Expand(2*fNumberOfCpvClusters+1);
 
-	cpvRecPoints->AddAt(new AliPHOSCpvRecPoint(), fNumberOfCpvClusters) ;
+	cpvRecPoints->AddAt(new AliPHOSCpvRecPoint(""), fNumberOfCpvClusters) ;
 
 	clu =  (AliPHOSCpvRecPoint *) cpvRecPoints->At(fNumberOfCpvClusters)  ;  
 	fNumberOfCpvClusters++ ; 
@@ -845,7 +845,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
       if(fNumberOfEmcClusters >= emcRecPoints->GetSize())
 	emcRecPoints->Expand(2*fNumberOfEmcClusters) ;
       
-      (*emcRecPoints)[fNumberOfEmcClusters] = new AliPHOSEmcRecPoint() ;
+      (*emcRecPoints)[fNumberOfEmcClusters] = new AliPHOSEmcRecPoint("") ;
       emcRP = (AliPHOSEmcRecPoint *) emcRecPoints->At(fNumberOfEmcClusters);
       fNumberOfEmcClusters++ ;
     }
@@ -853,7 +853,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
       if(fNumberOfCpvClusters >= cpvRecPoints->GetSize())
 	cpvRecPoints->Expand(2*fNumberOfCpvClusters) ;
       
-      (*cpvRecPoints)[fNumberOfCpvClusters] = new AliPHOSCpvRecPoint() ;
+      (*cpvRecPoints)[fNumberOfCpvClusters] = new AliPHOSCpvRecPoint("") ;
       emcRP = (AliPHOSEmcRecPoint *) cpvRecPoints->At(fNumberOfCpvClusters);
       fNumberOfCpvClusters++ ;
     }

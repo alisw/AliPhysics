@@ -50,6 +50,16 @@ AliPHOSRecPoint::AliPHOSRecPoint()
 }
 
 //____________________________________________________________________________
+AliPHOSRecPoint::AliPHOSRecPoint(const char * opt) : AliRecPoint(opt)
+{
+  // ctor
+  
+  fMaxTrack = 200 ;
+  fPHOSMod = 0;
+  
+}
+
+//____________________________________________________________________________
 Int_t AliPHOSRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
 {
   // Compute distance from point px,py to  a AliPHOSRecPoint considered as a Tmarker

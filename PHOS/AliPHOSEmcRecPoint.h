@@ -28,6 +28,7 @@ class AliPHOSEmcRecPoint : public AliPHOSRecPoint  {
 public:
 
   AliPHOSEmcRecPoint() ;
+  AliPHOSEmcRecPoint(const char * opt) ;
   AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) {
     // cpy ctor requested by Coding Convention 
     // but not yet needed

@@ -29,6 +29,7 @@ class AliPHOSCpvRecPoint : public AliPHOSEmcRecPoint  {
 public:
 
   AliPHOSCpvRecPoint() ;
+  AliPHOSCpvRecPoint(const char * opt) ;
   AliPHOSCpvRecPoint(const AliPHOSCpvRecPoint & rp) {
     // cpy ctor requested by Coding Convention 
     // but not yet needed

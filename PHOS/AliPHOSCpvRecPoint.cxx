@@ -49,11 +49,19 @@ AliPHOSCpvRecPoint::AliPHOSCpvRecPoint() : AliPHOSEmcRecPoint()
 }
 
 //____________________________________________________________________________
+AliPHOSCpvRecPoint::AliPHOSCpvRecPoint(const char * opt) : AliPHOSEmcRecPoint(opt)
+{
+   // ctor
+ 
+   fLengX = -1;
+   fLengZ = -1;
+ }
+
+//____________________________________________________________________________
 AliPHOSCpvRecPoint::~AliPHOSCpvRecPoint()
 {
   // dtor
 }
-
 
 //____________________________________________________________________________
 Bool_t AliPHOSCpvRecPoint::AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) const
