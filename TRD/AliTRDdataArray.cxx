@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.4.1  2000/05/08 15:13:59  cblume
 Introduce boundary checking
 
@@ -29,6 +32,8 @@ Add new TRD classes
 //  Adapted from AliDigits (origin: M.Ivanov).                               //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <stdlib.h> 
 
 #include "TClass.h"
 #include "TError.h"
