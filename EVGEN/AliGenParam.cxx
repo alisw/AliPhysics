@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.25  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -318,12 +321,17 @@ void AliGenParam::Generate()
 // Calculating vertex position per event
   for (j=0;j<3;j++) origin0[j]=fOrigin[j];
   if(fVertexSmear==kPerEvent) {
-      Rndm(random,6);
-      for (j=0;j<3;j++) {
-	  origin0[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-	      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-      }
+//      Rndm(random,6);
+//      for (j=0;j<3;j++) {
+//	  origin0[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
+//	      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+//	      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+//      }
+//    }
+      Vertex();
+      for (j=0;j<3;j++) origin0[j]=fVertex[j];
   }
+  
   Int_t ipa=0;
 // Generating fNpart particles
   while (ipa<fNpart) {
@@ -460,6 +468,8 @@ void AliGenParam::Generate()
 	  break;
     } // while
   } // event loop
+  gAlice->SetHighWaterMark(nt);
+  
 }
 
 Bool_t AliGenParam::ChildSelected(Int_t ip)
