@@ -11,7 +11,7 @@ Int_t particle_type=0;
 
 #include "iostream.h"
 
-void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0) 
+void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0, Int_t merging) 
 {
 /////////////////////////////////////////////////////////////////////////
 //   This macro is a small example of a ROOT macro
@@ -62,16 +62,24 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
       
    AliRICH *RICH  = (AliRICH*) gAlice->GetDetector("RICH");
 
-   AliRICHChamber*       iChamber;
-   
-   printf("Generating tresholds...\n");
+   if (merging)
+     printf("Merging is ON\n");
+   else
+     printf("Merging is OFF\n");
 
-   for(Int_t i=0;i<7;i++)
-     {
-       iChamber = &(RICH->Chamber(i));
-       iChamber->GenerateTresholds();
-     }
+// Creation of merger object
+   AliRICHMerger* merger = new AliRICHMerger();
    
+// Configuration
+   merger->SetMode(merging);
+   merger->SetSignalEventNumber(0);
+   merger->SetBackgroundEventNumber(0);
+   merger->SetBackgroundFileName("bg.root");
+       
+// Pass
+   RICH->SetMerger(merger);
+
+
 //
 // Event Loop
 //
@@ -85,30 +93,18 @@ void RICHdigit (Int_t evNumber1=0,Int_t evNumber2=0)
 	 {
 	   //gAlice->MakeTree("D");
 	   //RICH->MakeBranch("D");
-	   RICH->Digitise(nev, particle_type);
+	   //RICH->Digitise(nev, particle_type);
+	   //gAlice->SDigits2Digits("RICH");
+	   //gAlice->Tree2Tree("D");
+	   RICH->MakeBranch("D");
+	   RICH->SDigits2Digits(nev, particle_type);
 	 }
-       //if (RICH) gAlice->SDigits2Digits("RICH");
-       //char hname[30];
-       //sprintf(hname,"TreeD%d",nev);
-       //gAlice->TreeD()->Write(hname);
-       //gAlice->TreeD()->Reset();
    } // event loop 
    file->Close();
 
    //delete gAlice;
    printf("\nEnd of Macro  *************************************\n");
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
