@@ -15,8 +15,10 @@
 
 #include <TROOT.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <TH3.h>
 #include <TF1.h>
+#include <TF2.h>
 #include <TF3.h>
 #include <TError.h>
 #include <TDirectory.h>
@@ -165,7 +167,115 @@ Double_t AliHBTFits::QOutQSideQLongCylSurf(Double_t *x, Double_t *par)
 
 //  ::Info("QSideCylSurf","Final: result=%f",result);
   return result;
-;  
+}
+/******************************************************************************************/
+/********    Qout Qside Cyl Surf   ********************************************************/
+/******************************************************************************************/
+
+void AliHBTFits::FitQOutQSideCylSurf(const TString& hname,Option_t* fopt,Float_t xmax, Float_t ymax)
+{
+  //Fits 3D histo with QOutQSideQLongCylSurf
+ TH2* h = dynamic_cast<TH2*>(gDirectory->Get(hname));
+ if (h == 0x0)
+  {
+    ::Error("FitQOutCylSurf","Can not find histogram %s",hname.Data());
+    return;
+  }
+  
+ delete gROOT->GetListOfFunctions()->FindObject("BorisTomasikCylSurfQOutQSide");
+
+ delete  fgF1;
+ delete  fgF2;
+ // here x is phi
+ //par 0: R
+ //par 1: Phi
+ //par 2: qOut
+ //par 3: qSide
+ fgF1 = new TF1("ff1","sin([0]*([2]*cos(x)+[3]*sin(x))/0.197)*exp(cos(x)/[1])",-TMath::Pi(),TMath::Pi());
+ fgF2 = new TF1("ff2","cos([0]*([2]*cos(x)+[3]*sin(x))/0.197)*exp(cos(x)/[1])",-TMath::Pi(),TMath::Pi());
+ fgF1->SetNpx(1000);
+ fgF2->SetNpx(1000);
+ 
+ if (xmax <= 0.0) xmax = h->GetXaxis()->GetXmax();
+ if (ymax <= 0.0) ymax = h->GetYaxis()->GetXmax();
+ 
+ TF2 *theory = new TF2("BorisTomasikCylSurfQOutQSide",&AliHBTFits::QOutQSideCylSurf,0.0,xmax,0.0,ymax,4);//par :aLambda, aR, aJ,aPhi,
+ theory->SetNpx(1000);
+ 
+ theory->SetParameter(0,.75);
+ theory->SetParameter(1,6.0);
+ theory->SetParameter(2,1.0);
+ theory->SetParameter(3,0.9);
+ 
+ theory->SetParName(0,"\\lambda");
+ theory->SetParName(1,"R");
+ theory->SetParName(2,"J");
+ theory->SetParName(3,"\\Phi");
+ 
+ h->Fit(theory,fopt,"E");
+  
+}
+/******************************************************************************************/
+
+Double_t AliHBTFits::QOutQSideCylSurf(Double_t *x, Double_t *par)
+{
+  //QOutQSideQLongCylSurf Function
+  Double_t qout = x[0];
+  Double_t qside = x[1];
+  
+  Double_t aLambda = par[0];
+  Double_t aR = par[1];
+  Double_t aJ = par[2];
+  Double_t aPhi = par[3];
+  
+  static Double_t oldlam = aLambda;
+  
+  if (oldlam != aLambda)
+   {
+    ::Info("QOutQSideQLongCylSurf","out=%f, side=%f, lambda=%f, R=%f, J=%f, Phi=%f",
+                                 qout,qside,aLambda,aR,aJ,aPhi);
+    oldlam = aLambda;
+   }
+  
+  Double_t result=aLambda*TMath::Exp(-(qout*qout+qside*qside)*aJ*aJ/0.0389273);
+  
+  if (aPhi > 0.0)
+   {
+    fgF1->SetParameter(0,aR);
+    fgF2->SetParameter(0,aR);
+  
+    fgF1->SetParameter(1,aPhi);
+    fgF2->SetParameter(1,aPhi);
+  
+    fgF1->SetParameter(2,qout);
+    fgF2->SetParameter(2,qout);
+
+    fgF1->SetParameter(3,qside);
+    fgF2->SetParameter(3,qside);
+    
+    Double_t sp = fgF1->Integral(-TMath::Pi(),TMath::Pi(),(Double_t*)0x0,1.e-8);
+    Double_t cp = fgF2->Integral(-TMath::Pi(),TMath::Pi(),(Double_t*)0x0,1.e-8);
+    
+//    ::Info("QSideCylSurf","sp=%f, cp=%f",cp,sp);
+    
+    result *= cp*cp + sp*sp;
+//    ::Info("QSideCylSurf","2: result=%f",result);
+
+    Double_t tmp = TMath::BesselI0(1./aPhi);
+    tmp = tmp*tmp*TMath::TwoPi()*TMath::TwoPi();
+    if (tmp == 0.0)
+     {
+       ::Error("QOutCylSurf","Div by 0");
+       return 1.0;
+     }
+    result=result/tmp;
+   }
+   
+  result+=1.; 
+
+//  ::Info("QSideCylSurf","Final: result=%f",result);
+  return result;
+
 }
 /******************************************************************************************/
 /********    Qout  Cyl Surf   *************************************************************/
