@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.12  2001/05/28 17:07:58  hristov
+Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
+
 Revision 1.8  2000/12/20 13:00:44  cblume
 Modifications for the HP-compiler
 
@@ -136,6 +139,8 @@ AliTRDtracker::~AliTRDtracker()
 //___________________________________________________________________
 void AliTRDtracker::Clusters2Tracks(TH1F *hs, TH1F *hd)
 {
+  Int_t i;
+
   Int_t inner, outer;
   Int_t fTotalNofTimeBins = fGeom->GetTimeMax() * AliTRDgeometry::Nplan();
   Int_t nSteps = (Int_t) (fSeedDepth / fSeedStep);
@@ -153,7 +158,7 @@ void AliTRDtracker::Clusters2Tracks(TH1F *hs, TH1F *hd)
   // make a first turn looking for seed ends in the same (n,n) 
   // and in the adjacent sectors (n,n+1)
 
-  for(Int_t i=0; i<nSteps; i++) {
+  for(i=0; i<nSteps; i++) {
     printf("step %d out of %d \n", i+1, nSteps);
     outer=fTotalNofTimeBins-1-i*step; inner=outer-gap;
     MakeSeeds(inner,outer, fTrSec, 1, hs, hd);
@@ -163,7 +168,7 @@ void AliTRDtracker::Clusters2Tracks(TH1F *hs, TH1F *hd)
   // make a second turn looking for seed ends in next-to-adjacent 
   // sectors (n,n+2)
 
-  for(Int_t i=0; i<nSteps; i++) {
+  for(i=0; i<nSteps; i++) {
     printf("step %d out of %d \n", i+1, nSteps);
     outer=fTotalNofTimeBins-1-i*step; inner=outer-gap;
     MakeSeeds(inner, outer, fTrSec, 2, hs, hd);

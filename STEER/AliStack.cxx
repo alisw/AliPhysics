@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/05/25 07:25:20  hristov
+AliStack destructor corrected (I.Hrivnacova)
+
 Revision 1.3  2001/05/22 14:33:16  hristov
 Minor changes
 
@@ -606,9 +609,11 @@ void AliStack::DumpPStack ()
   // Dumps the particle stack
   //
 
+  Int_t i;
+
   printf(
 	 "\n\n=======================================================================\n");
-  for (Int_t i=0;i<fNtrack;i++) 
+  for (i=0;i<fNtrack;i++) 
     {
       TParticle* particle = Particle(i);
       if (particle) {
@@ -624,7 +629,7 @@ void AliStack::DumpPStack ()
   
   // print  particle file map
   printf("\nParticle file map: \n");
-  for (Int_t i=0; i<fNtrack; i++) 
+  for (i=0; i<fNtrack; i++) 
       printf("   %d th entry: %d \n",i,fParticleFileMap[i]);
 }
 

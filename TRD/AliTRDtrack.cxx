@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/05/28 17:07:58  hristov
+Last minute changes; ExB correction in AliTRDclusterizerV1; taking into account of material in G10 TEC frames and material between TEC planes (C.Blume,S.Sedykh)
+
 Revision 1.4  2000/12/08 16:07:02  cblume
 Update of the tracking by Sergei
 
@@ -407,6 +410,8 @@ void AliTRDtrack::GetPxPyPz(Double_t& px, Double_t& py, Double_t& pz) const
 //____________________________________________________________________________
 void AliTRDtrack::Streamer(TBuffer &R__b)
 {
+  Int_t i;
+
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       TObject::Streamer(R__b);
@@ -436,8 +441,8 @@ void AliTRDtrack::Streamer(TBuffer &R__b)
       R__b >> fCte;
       R__b >> fCtt;
       R__b >> fN;
-      for (Int_t i=0; i<fN; i++) R__b >> fIndex[i];
-      for (Int_t i=0; i<fN; i++) R__b >> fdQdl[i];
+      for (i=0; i<fN; i++) R__b >> fIndex[i];
+      for (i=0; i<fN; i++) R__b >> fdQdl[i];
    } else {                                
       R__b.WriteVersion(AliTRDtrack::IsA());
       TObject::Streamer(R__b);
@@ -467,8 +472,8 @@ void AliTRDtrack::Streamer(TBuffer &R__b)
       R__b << fCte;
       R__b << fCtt;
       R__b << fN;
-      for (Int_t i=0; i<fN; i++) R__b << fIndex[i];
-      for (Int_t i=0; i<fN; i++) R__b << fdQdl[i];
+      for (i=0; i<fN; i++) R__b << fIndex[i];
+      for (i=0; i<fN; i++) R__b << fdQdl[i];
    }
 }                                                          
 
