@@ -124,6 +124,10 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
     //    printf(" %f  %d  %f  %f  %f \n", mom, timbin, p[0], p[1], p[2]);
     if(p[0]) p[0]= p[0]/(p[0]+p[2]); 
     if(p[2]) p[2]= 1.-p[0];
+    if(p[0]==0&p[2]==0){
+      p[0]=1.;
+      p[2]=1.;
+    }
     t->SetTRDpid(p);
   } //loop over track
   delete pd;
