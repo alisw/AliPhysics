@@ -14,15 +14,16 @@
 
 #include <TObject.h>
 #include <TString.h>
-#include <TVector2.h>
 
+#include "AliMpStationType.h"
 #include "AliMpPlaneType.h"
+#include "AliMpXDirection.h"
 
 class AliMpSector;
 class AliMpZone;
 class AliMpSubZone;
 class AliMpRow;
-class AliMpRowSegmentSpecial;
+class AliMpVRowSegmentSpecial;
 class AliMpVMotif;
 class AliMpMotifSpecial;
 class AliMpMotifType;
@@ -30,14 +31,14 @@ class AliMpMotifType;
 class AliMpReader : public TObject
 {
   public:
-    AliMpReader(AliMpPlaneType plane);
+    AliMpReader(AliMpStationType station, AliMpPlaneType plane);
     AliMpReader();
     virtual ~AliMpReader();
   
     // methods   
     AliMpSector*        BuildSector();
-    AliMpMotifType*     BuildMotifType(TString motifTypeId);
-    AliMpMotifSpecial*  BuildMotifSpecial(TString motifID, 
+    AliMpMotifType*     BuildMotifType(const TString& motifTypeId);
+    AliMpMotifSpecial*  BuildMotifSpecial(const TString& motifID, 
                                           AliMpMotifType* motifType);
 
     // set methods
@@ -51,28 +52,30 @@ class AliMpReader : public TObject
     void  ReadRowSegmentsData(ifstream& in,
                           AliMpZone* zone, AliMpSubZone* subZone);
     AliMpVMotif*  ReadMotifData(ifstream& in, AliMpZone* zone);
-    void  ReadSectorSpecialData(ifstream& in);
+    void  ReadSectorSpecialData(ifstream& in, AliMpXDirection direction);
     void  ReadMotifsSpecialData(ifstream& in);
-    void  ReadRowSpecialData(ifstream& in);
+    void  ReadRowSpecialData(ifstream& in, AliMpXDirection direction);
     void  ReadRowSegmentSpecialData(ifstream& in,
-                          AliMpRowSegmentSpecial* segment);
+                          AliMpVRowSegmentSpecial* segment,
+			  AliMpXDirection direction);
     
     // static data members
-    static const TString  fgkSectorKeyword;
-    static const TString  fgkZoneKeyword;
-    static const TString  fgkSubZoneKeyword;
-    static const TString  fgkRowKeyword;
-    static const TString  fgkEofKeyword;
-    static const TString  fgkSectorSpecialKeyword;
-    static const TString  fgkMotifKeyword;
-    static const TString  fgkRowSpecialKeyword;
-    static const TString  fgkPadRowsKeyword;
-    static const TString  fgkPadRowSegmentKeyword;
+    static const TString  fgkSectorKeyword;        // sector keyword
+    static const TString  fgkZoneKeyword;          // zone keyword
+    static const TString  fgkSubZoneKeyword;       // subzone keyword
+    static const TString  fgkRowKeyword;           // row keyword
+    static const TString  fgkEofKeyword;           // eof keyword
+    static const TString  fgkSectorSpecialKeyword; // sector special keyword
+    static const TString  fgkMotifKeyword;         // motif keyword
+    static const TString  fgkRowSpecialKeyword;    // row special keyword
+    static const TString  fgkPadRowsKeyword;       // pad rows keyword
+    static const TString  fgkPadRowSegmentKeyword; // pad row segment keyword
   
-    // data members    
-    AliMpPlaneType  fPlaneType;   // plane type 
-    AliMpSector*    fSector;      // sector
-    Int_t           fVerboseLevel;// verbose level
+    // data members  
+    AliMpStationType  fStationType; // station type 
+    AliMpPlaneType    fPlaneType;   // plane type 
+    AliMpSector*      fSector;      // sector
+    Int_t             fVerboseLevel;// verbose level
 
   ClassDef(AliMpReader,1)  // Data reader
 };

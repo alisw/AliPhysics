@@ -26,9 +26,9 @@
 #include "AliMpRow.h"
 #include "AliMpVRowSegment.h"
 #include "AliMpRowSegment.h"
-#include "AliMpRowSegmentSpecial.h"
+#include "AliMpRowSegmentLSpecial.h"
+#include "AliMpRowSegmentRSpecial.h"
 #include "AliMpPadRow.h"
-#include "AliMpPadRowSegment.h"
 #include "AliMpMotifMap.h"
 #include "AliMpMotif.h"
 #include "AliMpMotifSpecial.h"
@@ -51,8 +51,9 @@ const TString  AliMpReader::fgkPadRowsKeyword        = "PAD_ROWS";
 const TString  AliMpReader::fgkPadRowSegmentKeyword  = "PAD_ROW_SEGMENT";
 
 //_____________________________________________________________________________
-AliMpReader::AliMpReader(AliMpPlaneType plane) 
+AliMpReader::AliMpReader(AliMpStationType station, AliMpPlaneType plane) 
   : TObject(),
+    fStationType(station),
     fPlaneType(plane),
     fSector(0),
     fVerboseLevel(0)
@@ -63,6 +64,7 @@ AliMpReader::AliMpReader(AliMpPlaneType plane)
 //_____________________________________________________________________________
 AliMpReader::AliMpReader() 
   : TObject(),
+    fStationType(kStation1),
     fPlaneType(kBendingPlane),
     fSector(0),
     fVerboseLevel(0)
@@ -275,7 +277,7 @@ void AliMpReader::ReadRowSegmentsData(ifstream& in,
 }   
 
 //_____________________________________________________________________________
-void AliMpReader::ReadSectorSpecialData(ifstream& in)
+void AliMpReader::ReadSectorSpecialData(ifstream& in, AliMpXDirection direction)
 {
 // Reads sector input data
 // with a special (irregular) motifs.
@@ -302,7 +304,7 @@ void AliMpReader::ReadSectorSpecialData(ifstream& in)
   }  
 
   ReadMotifsSpecialData(in);     
-  ReadRowSpecialData(in); 
+  ReadRowSpecialData(in, direction); 
 }  
 
 //_____________________________________________________________________________
@@ -316,11 +318,11 @@ void AliMpReader::ReadMotifsSpecialData(ifstream& in)
 
   TString nextKeyword;
   do {
-
-    AliMpVMotif* motif =  ReadMotifData(in, fSector->GetZone(1));
+    Int_t zone;
+    in >> zone;
+    AliMpVMotif* motif =  ReadMotifData(in, fSector->GetZone(zone));
     AliMpSubZone* subZone = new AliMpSubZone(motif); 
-    fSector->GetZone(1)->AddSubZone(subZone); 
-             // special row segments are always in zone 1
+    fSector->GetZone(zone)->AddSubZone(subZone); 
   
     in >> nextKeyword;
     if (fVerboseLevel>0) 
@@ -335,7 +337,7 @@ void AliMpReader::ReadMotifsSpecialData(ifstream& in)
 }  
 
 //_____________________________________________________________________________
-void AliMpReader::ReadRowSpecialData(ifstream& in)
+void AliMpReader::ReadRowSpecialData(ifstream& in, AliMpXDirection direction)
 {
 // Reads row input data
 // with a special (irregular) motifs.
@@ -348,13 +350,26 @@ void AliMpReader::ReadRowSpecialData(ifstream& in)
   
   // Get the row and its border
   AliMpRow* row = fSector->GetRow(id);
-  AliMpVRowSegment* firstNormalSeg = row->GetRowSegment(0);
-  Double_t offsetX = firstNormalSeg->LeftBorderX();
+
+  AliMpVRowSegmentSpecial* segment = 0;
+  if (direction == kLeft) {
+    AliMpVRowSegment* firstNormalSeg = row->GetRowSegment(0);
+    Double_t offsetX = firstNormalSeg->LeftBorderX();
   
-  // Create a special row segment
-  AliMpRowSegmentSpecial* segment = new AliMpRowSegmentSpecial(row, offsetX);
-  row->AddRowSegmentInFront(segment);
+    // Create a special row segment
+    segment = new AliMpRowSegmentLSpecial(row, offsetX);
+    row->AddRowSegmentInFront(segment);
+  }
+  else { 
+    AliMpVRowSegment* precedentNormalSeg 
+      = row->GetRowSegment(row->GetNofRowSegments()-1);
+    Double_t offsetX = precedentNormalSeg->RightBorderX();
   
+    // Create a special row segment
+    segment = new AliMpRowSegmentRSpecial(row, offsetX);
+    row->AddRowSegment(segment);
+  }  
+      
   TString nextKeyword;
   in >> nextKeyword;
   if (fVerboseLevel>0) 
@@ -365,7 +380,7 @@ void AliMpReader::ReadRowSpecialData(ifstream& in)
      return;
   }  
     
-  ReadRowSegmentSpecialData(in, segment); 
+  ReadRowSegmentSpecialData(in, segment, direction); 
   
   // Update row segment and set it to all subzones associated with
   // contained motifs
@@ -373,13 +388,20 @@ void AliMpReader::ReadRowSpecialData(ifstream& in)
   segment->UpdateMotifVector();
   segment->UpdatePadsOffset();
   
-  for (Int_t i=0; i<segment->GetNofMotifs(); i++)
-    fSector->GetZone(1)->FindSubZone(segment->GetMotif(i))->AddRowSegment(segment);
+  for (Int_t i=0; i<segment->GetNofMotifs(); i++) {
+    AliMpSubZone* subZone = 0;
+    Int_t j = 0;
+    while (!subZone && j<fSector->GetNofZones())
+      subZone = fSector->GetZone(++j)->FindSubZone(segment->GetMotif(i));
+    
+    subZone->AddRowSegment(segment);
+  }  
 }  
 
 //_____________________________________________________________________________
 void AliMpReader::ReadRowSegmentSpecialData(ifstream& in, 
-                                            AliMpRowSegmentSpecial* segment)
+                                            AliMpVRowSegmentSpecial* segment,
+					    AliMpXDirection direction)
 {
 // Reads row segment input data
 // with a special (irregular) motifs.
@@ -408,7 +430,7 @@ void AliMpReader::ReadRowSegmentSpecialData(ifstream& in,
   for (Int_t i=0; i<nofPadRows; i++) {
     
      // Create pad row
-     AliMpPadRow* padRow = new AliMpPadRow();
+     AliMpPadRow* padRow = new AliMpPadRow(direction);
      segment->AddPadRow(padRow);
      
      // Keep the new rows in a temporary vector
@@ -451,10 +473,8 @@ void AliMpReader::ReadRowSegmentSpecialData(ifstream& in,
       }
 
       // Create pad row segment
-      AliMpPadRowSegment* padRowSegment 
-        = new AliMpPadRowSegment(padRow, dynamic_cast<AliMpMotif *>(motif), 
-                             motifPositionId, nofPadsInRow);
-      padRow->AddPadRowSegment(padRowSegment);	 
+      padRow->AddPadRowSegment(dynamic_cast<AliMpMotif *>(motif), 
+                               motifPositionId, nofPadsInRow);
     }  
   }
   while (!in.eof() && (nextKeyword == fgkPadRowSegmentKeyword));
@@ -462,10 +482,10 @@ void AliMpReader::ReadRowSegmentSpecialData(ifstream& in,
   if (in.eof()) return;
 
   if (nextKeyword == fgkPadRowsKeyword) {
-    ReadRowSegmentSpecialData(in, segment);
+    ReadRowSegmentSpecialData(in, segment, direction);
   }
   else if (nextKeyword == fgkRowSpecialKeyword) {
-    ReadRowSpecialData(in);
+    ReadRowSpecialData(in, direction);
   }   
   else {
     Fatal("ReadRowSegmentSpecialData", "Wrong file format.");
@@ -485,26 +505,46 @@ AliMpSector* AliMpReader::BuildSector()
 // ---
 
   // Open input file
-  ifstream in(AliMpFiles::Instance()->SectorFilePath(fPlaneType).Data(), ios::in);
-  if (!in) {	
-     Error("Read", "File not found.");
+  ifstream in(AliMpFiles::Instance()
+              ->SectorFilePath(fStationType, fPlaneType).Data(), ios::in);
+  if (!in) {
+     cerr << AliMpFiles::Instance()
+              ->SectorFilePath(fStationType, fPlaneType) << endl;	
+     Error("BuildSector", "File not found.");
      return 0;
   }
   
   ReadSectorData(in);
   fSector->SetRowSegmentOffsets();
 
-  // Open second input file
+  // Open input file for special inner zone
   TString sectorSpecialFileName 
-    = AliMpFiles::Instance()->SectorSpecialFilePath(fPlaneType);
+    = AliMpFiles::Instance()->SectorSpecialFilePath(fStationType, fPlaneType);
   if (!gSystem->AccessPathName(sectorSpecialFileName.Data())) {
     ifstream in2(sectorSpecialFileName.Data(), ios::in);
     if (!in2) {	
-       Error("Read", "File not found.");
+       cerr << AliMpFiles::Instance()
+              ->SectorSpecialFilePath(fStationType, fPlaneType) << endl;	
+       Error("BuildSector", "File not found.");
        return 0;
     }
     
-    ReadSectorSpecialData(in2);
+    ReadSectorSpecialData(in2, kLeft);
+  }   
+
+  // Open input file for special outer zone
+  TString sectorSpecialFileName2 
+    = AliMpFiles::Instance()->SectorSpecialFilePath2(fStationType, fPlaneType);
+  if (!gSystem->AccessPathName(sectorSpecialFileName2.Data())) {
+    ifstream in3(sectorSpecialFileName2.Data(), ios::in);
+    if (!in3) {	
+       cerr << AliMpFiles::Instance()
+              ->SectorSpecialFilePath2(fStationType, fPlaneType) << endl;	
+       Error("Build", "File not found.");
+       return 0;
+    }
+    
+    ReadSectorSpecialData(in3, kRight);
   }   
 
   fSector->Initialize();
@@ -513,7 +553,7 @@ AliMpSector* AliMpReader::BuildSector()
 }  
 
 //_____________________________________________________________________________
-AliMpMotifType* AliMpReader::BuildMotifType(TString motifTypeId)
+AliMpMotifType* AliMpReader::BuildMotifType(const TString& motifTypeId)
 {
 
   // Read the files describing a motif in the "$MINSTALL/data" directory
@@ -524,7 +564,8 @@ AliMpMotifType* AliMpReader::BuildMotifType(TString motifTypeId)
   AliMpMotifType*  motifType = new AliMpMotifType(motifTypeId);	
 
   TString strPadPos 
-    = AliMpFiles::Instance()->PadPosFilePath(fPlaneType,motifTypeId);
+    = AliMpFiles::Instance()
+      ->PadPosFilePath(fStationType, fPlaneType, motifTypeId);
   ifstream padPos(strPadPos.Data());
   if (fVerboseLevel>0) cout<<"Opening file "<<strPadPos<<endl;
 
@@ -554,28 +595,30 @@ AliMpMotifType* AliMpReader::BuildMotifType(TString motifTypeId)
 
   padPos.close();
 
-  if (fVerboseLevel>0) cout <<"Opening file "
-                            <<AliMpFiles::Instance()->BergToGCFilePath()
-                            <<endl;
+  if (fVerboseLevel>0) 
+    cout << "Opening file "
+         << AliMpFiles::Instance()->BergToGCFilePath(fStationType)
+         << endl;
 
-  ifstream bergToGCFile(AliMpFiles::Instance()->BergToGCFilePath());
-  Int_t GassiChannel[80];
+  ifstream bergToGCFile(AliMpFiles::Instance()->BergToGCFilePath(fStationType));
+  Int_t gassiChannel[80];
   while(1) {
     Int_t bergNum;
-    TString GCStr;
-    bergToGCFile>>bergNum>>GCStr;
+    TString gcStr;
+    bergToGCFile>>bergNum>>gcStr;
     if (!bergToGCFile.good()) break;
-    if (GCStr=="GND") continue;
+    if (gcStr=="GND") continue;
     if (bergNum>80) {
         Fatal("BuildMotifType","Berg number > 80 ...");
         continue;
     }
-    GassiChannel[bergNum-1]= atoi(GCStr);
+    gassiChannel[bergNum-1]= atoi(gcStr);
   }
   bergToGCFile.close();
   
   TString strMotif 
-    = AliMpFiles::Instance()->MotifFilePath(fPlaneType,motifTypeId);
+    = AliMpFiles::Instance()
+      ->MotifFilePath(fStationType, fPlaneType, motifTypeId);
   ifstream motif(strMotif);
   if (fVerboseLevel>0) cout<<"Opening file "<<strMotif<<endl;
 
@@ -632,7 +675,7 @@ AliMpMotifType* AliMpReader::BuildMotifType(TString motifTypeId)
         continue;
     }
     
-    gassiNum  = GassiChannel[numBerg-1];
+    gassiNum  = gassiChannel[numBerg-1];
 
     PadMapTypeIterator iter = positions.find(padName);
     if (iter==positions.end()) {
@@ -663,7 +706,8 @@ AliMpMotifType* AliMpReader::BuildMotifType(TString motifTypeId)
 
 //_____________________________________________________________________________
 AliMpMotifSpecial*  
-AliMpReader::BuildMotifSpecial(TString motifID,AliMpMotifType* motifType)
+AliMpReader::BuildMotifSpecial(const TString& motifID,
+                               AliMpMotifType* motifType)
 {
 // Build a special motif by reading the file motifSpecial<motifId>.dat
 // in the data directory
@@ -671,7 +715,8 @@ AliMpReader::BuildMotifSpecial(TString motifID,AliMpMotifType* motifType)
 
   // Open the input file
   ifstream in(AliMpFiles::Instance()
-                ->MotifSpecialFilePath(fPlaneType, motifID).Data(), ios::in);
+              ->MotifSpecialFilePath(fStationType, fPlaneType, motifID).Data(), 
+	      ios::in);
   if (!in) {	
      Error("BuildMotifSpecial", "File not found.");
      return 0;
