@@ -5,10 +5,24 @@
 
 /* $Id$ */
 
-#include "TShape.h"
+#include <TObject.h>
 #include "TBRIK.h"
+#include "AliITSgeom.h"
+
+// temporary 
 
 class AliITSgeomSDD: public TObject {
+ public:
+    AliITSgeomSDD();
+    AliITSgeomSDD(AliITSgeomSDD &source);
+    virtual ~AliITSgeomSDD(){};
+    AliITSgeomSDD& operator=(AliITSgeomSDD &source);
+    TBRIK *GetShape() const {return fShapeSDD;}
+    Float_t GetDx() {return fDx;}
+    Float_t GetDy() {return fDy;}
+    Float_t GetDz() {return fDz;}
+    // or what other or different information that is needed.
+
  private:
     // define shape of active area using ROOT shapes so that they can
     // be easly plotted. Inputs to TBRIK are
@@ -18,16 +32,10 @@ class AliITSgeomSDD: public TObject {
     // dx => 1/2 thickness of wafer's active volume (cm)
     // dy => 1/2 r*phi size of active volume (cm)
     // dz => 1/2 size of active volume (cm)
-    TBRIK *fShapeSDD;
-    // Other infomation like.
-    // Int_t   fNAnodes;         // count
-    // Float_t fAnodePitch;      // cm
-    // Float_t fAnodeWidth;      // cm
-    // or what other or different information that is needed.
- public:
-    AliITSgeomSDD();
-    virtual ~AliITSgeomSDD(){};
-    TBRIK *GetShape() const {return fShapeSDD;}
+    Float_t fDx;          // Brick half width cm
+    Float_t fDy;          // Brick half thickness cm
+    Float_t fDz;          // Brick half length cm
+    TBRIK *fShapeSDD;     // shape of sensitive volume
 
     ClassDef(AliITSgeomSDD,1) // ITS SDD detector geometry class
 };

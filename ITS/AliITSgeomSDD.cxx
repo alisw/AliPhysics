@@ -35,10 +35,29 @@ AliITSgeomSDD::AliITSgeomSDD(){
 //    default constructor
 ////////////////////////////////////////////////////////////////////////
 
-    Float_t dx = 3.5;  // cm. (Geant 3.12 units) Orthonormal to y and z
-    Float_t dy = 0.014;  // cm. (Geant 3.12 units) Radialy from the Beam Pipe
-    Float_t dz = 3.763;  // cm. (Geant 3.12 units) Allong the Beam Pipe
+    Float_t fDx = 3.5;  // cm. (Geant 3.12 units) Orthonormal to y and z
+    Float_t fDy = 0.014;  // cm. (Geant 3.12 units) Radialy from the Beam Pipe
+    Float_t fDz = 3.763;  // cm. (Geant 3.12 units) Allong the Beam Pipe
 
     fShapeSDD = new TBRIK("ActiveSDD","Active volume of SDD","SDD SI DET",
-			    dx,dy,dz);
+			    fDx,fDy,fDz);
+}
+//________________________________________________________________________
+AliITSgeomSDD::AliITSgeomSDD(AliITSgeomSDD &source){
+  // Copy constructor
+   if(this==&source) return;
+   this->fShapeSDD = source.fShapeSDD;
+   this->fDx = source.fDx;
+   this->fDy = source.fDy;
+   this->fDz = source.fDz;
+}
+//________________________________________________________________________
+AliITSgeomSDD& AliITSgeomSDD::operator=(AliITSgeomSDD &source){
+  // = operator
+   if(this==&source) return *this;
+   this->fShapeSDD = source.fShapeSDD;
+   this->fDx = source.fDx;
+   this->fDy = source.fDy;
+   this->fDz = source.fDz;
+   return *this;
 }
