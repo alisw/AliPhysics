@@ -16,6 +16,7 @@ AliMagneticField::AliMagneticField()
   : G4UniformMagField(G4ThreeVector()) 
 {
 //
+  GetGlobalFieldManager()->SetDetectorField(this);
   GetGlobalFieldManager()->CreateChordFinder(this);
 }
 
@@ -23,6 +24,7 @@ AliMagneticField::AliMagneticField(G4ThreeVector fieldVector)
   : G4UniformMagField(fieldVector)
 {    
 //
+  GetGlobalFieldManager()->SetDetectorField(this);
   GetGlobalFieldManager()->CreateChordFinder(this);
 }
 
@@ -30,6 +32,7 @@ AliMagneticField::AliMagneticField(const AliMagneticField& right)
   : G4UniformMagField(right)
 {
 //  
+  GetGlobalFieldManager()->SetDetectorField(this);
   GetGlobalFieldManager()->CreateChordFinder(this);
 }
 
@@ -76,7 +79,7 @@ void AliMagneticField::SetFieldValue(G4ThreeVector fieldVector)
   else {
     // If the new field's value is Zero, then it is best to
     //  insure that it is not used for propagation.
-    G4MagneticField* magField = NULL;
+    G4MagneticField* magField = 0;
     fieldMgr->SetDetectorField(magField);
   }
 }
