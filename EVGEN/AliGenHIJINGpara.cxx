@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.9  2001/07/27 17:09:36  morsch
+Use local SetTrack, KeepTrack and SetHighWaterMark methods
+to delegate either to local stack or to stack owned by AliRun.
+(Piotr Skowronski, A.M.)
+
 Revision 1.8  2001/07/20 11:03:58  morsch
 Issue warning message if used outside allowed eta range (-8 to 8).
 
@@ -67,10 +72,13 @@ All coding rule violations except RS3 corrected (AM)
 ///////////////////////////////////////////////////////////////////
 
 #include "AliGenHIJINGpara.h"
-#include "TF1.h"
+#include "AliGenEventHeader.h"
 #include "AliRun.h"
 #include "AliConst.h"
 #include "AliPDG.h"
+
+#include <TF1.h>
+#include <TArrayF.h>
 
 ClassImp(AliGenHIJINGpara)
 
@@ -186,6 +194,7 @@ AliGenHIJINGpara::AliGenHIJINGpara()
     fPtka = 0;
     fETApic = 0;
     fETAkac = 0;
+    SetCutVertexZ();
 }
 
 //_____________________________________________________________________________
@@ -201,6 +210,7 @@ AliGenHIJINGpara::AliGenHIJINGpara(Int_t npart)
     fPtka = 0;
     fETApic = 0;
     fETAkac = 0;
+    SetCutVertexZ();
 }
 
 //_____________________________________________________________________________
@@ -296,13 +306,25 @@ void AliGenHIJINGpara::Generate()
     Float_t random[6];
     //
     for (j=0;j<3;j++) origin[j]=fOrigin[j];
-    if(fVertexSmear==kPerEvent) {
-	Rndm(random,6);
-	for (j=0;j<3;j++) {
-	    origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+
+    if(fVertexSmear == kPerEvent) {
+	Float_t dv[3];
+	dv[2] = 1.e10;
+	while(TMath::Abs(dv[2]) > fCutVertexZ*fOsigma[2]) {
+	    Rndm(random,6);
+	    for (j=0; j < 3; j++) {
+		dv[j] = fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
+		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+	    }
 	}
-    }
+	for (j=0; j < 3; j++) origin[j] += dv[j];
+    } // if kPerEvent
+    TArrayF eventVertex;
+    eventVertex.Set(3);
+    eventVertex[0] = origin[0];
+    eventVertex[1] = origin[1];
+    eventVertex[2] = origin[2];
+
     for(i=0;i<fNpart;i++) {
 	while(1) {
 	    Rndm(random,3);
@@ -336,6 +358,11 @@ void AliGenHIJINGpara::Generate()
 	    break;
 	}
     }
+// Header
+    AliGenEventHeader* header = new AliGenEventHeader("HIJINGparam");
+// Event Vertex
+    header->SetPrimaryVertex(eventVertex);
+    gAlice->SetGenEventHeader(header); 
 }
 
 AliGenHIJINGpara& AliGenHIJINGpara::operator=(const  AliGenHIJINGpara& rhs)

@@ -21,17 +21,18 @@ class AliGenHIJINGpara : public AliGenerator
   AliGenHIJINGpara(const AliGenHIJINGpara &HIJINGpara);
      
   virtual ~AliGenHIJINGpara();
+  virtual void SetCutVertexZ(Float_t cut=999999.) {fCutVertexZ = cut;}
   virtual void Generate();
   virtual void Init();
   AliGenHIJINGpara & operator=(const AliGenHIJINGpara & rhs);
  protected:
+  Float_t fCutVertexZ; // Vertex truncation
+  TF1* fPtpi;          // Parametrised pt distribution for pi
+  TF1* fPtka;          // Parametrised pt distribution for ka
+  TF1* fETApic;        // Parametrised eta distribution for pi
+  TF1* fETAkac;        // Parametrised eta distribution fro ka
 
-  TF1* fPtpi; // Parametrised pt distribution for pi
-  TF1* fPtka; // Parametrised pt distribution for ka
-  TF1* fETApic; // Parametrised eta distribution for pi
-  TF1* fETAkac; // Parametrised eta distribution fro ka
-
-  ClassDef(AliGenHIJINGpara,1) // Hijing parametrisation generator
+  ClassDef(AliGenHIJINGpara,2) // Hijing parametrisation generator
 };
 #endif
 
