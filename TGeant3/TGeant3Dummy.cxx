@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2000/05/16 13:10:41  fca
+New method IsNewTrack and fix for a problem in Father-Daughter relations
+
 Revision 1.19  2000/04/09 19:00:26  fca
 Small corrections left over from removal of AliVMC for G4 compatibility
 
@@ -294,6 +297,7 @@ void TGeant3::SetPAIR(Int_t)  {}
 void TGeant3::SetPFIS(Int_t)  {}
 void TGeant3::SetPHOT(Int_t)  {}
 void TGeant3::SetRAYL(Int_t)  {}
+void TGeant3::SetSTRA(Int_t)  {}
 void TGeant3::SetSWIT(Int_t , Int_t)  {}
 void TGeant3::SetTRIG(Int_t)  {}
 void TGeant3::SetUserDecay(Int_t) {}
