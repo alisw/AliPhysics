@@ -178,8 +178,9 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
   
   TClonesArray &lInputStreams = *fInputStreams;
   
-  for (i=0;i<nInputStreams;i++) {
-    new(lInputStreams[i]) AliStream(fgkBaseInFolderName+(Long_t)i,"UPDATE");
+  new(lInputStreams[0]) AliStream(fgkBaseInFolderName+(Long_t)0,"UPDATE");
+  for (i=1;i<nInputStreams;i++) {
+    new(lInputStreams[i]) AliStream(fgkBaseInFolderName+(Long_t)i,"READ");
   }
 }
 //_______________________________________________________________________
