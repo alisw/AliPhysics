@@ -10,30 +10,40 @@
 /////////////////////////////////////////////////////////
  
 #include "AliITS.h"
- 
+
 class AliITSv3 : public AliITS {
 
- private:
-    Int_t fId3N; // The number of layers for geometry version 5
-    // The name of the layers as defined in the Geant tree.
-    char  **fId3Name;
-
- protected:
-    Int_t fMinorVersionV3;  //Minor version identifier
- 
  public:
     AliITSv3();
     AliITSv3(const char *name, const char *title);
+    AliITSv3(const AliITSv3 &source); // copy constructor
+    AliITSv3& operator=(const AliITSv3 &source); // assignment operator
     virtual       ~AliITSv3() ;
-    virtual void   BuildGeometry();  // for event display
-    virtual void   CreateGeometry(); // for Geant simulation
-    virtual void   CreateMaterials();// for Geant simulation
+    virtual void   BuildGeometry();
+    virtual void   CreateGeometry();
+    virtual void   CreateMaterials();
     virtual void   Init();   
-    virtual Int_t  IsVersion() const {return 3;}
-    virtual void   SetMinorVersion(Int_t version) {fMinorVersionV3=version;}
+    virtual Int_t  IsVersion() const {
+	                                   // returns the ITS version number 
+	                                   return 3;
+												 }
+    virtual void   SetMinorVersion(Int_t version) {
+	                                                // sets the minor version 
+	                                                fMinorVersionV3=version;
+																   }
     virtual void   StepManager();
+
+ protected:
+    Int_t fMinorVersionV3;  //Minor version identifier
+
+ private:
+    Int_t fId3N; // The number of layers for geometry version 5
+                 // The name of the layers as defined in the Geant tree.
+    char  **fId3Name; // They are the names of the sensitive volumes
+
+
    
-    ClassDef(AliITSv3,1)  //Hits manager for set:ITS version 3, TP detailed geometry
+    ClassDef(AliITSv3,1)//Hits manager for set:ITS version 3, TP detailed geometry
 };
  
 #endif

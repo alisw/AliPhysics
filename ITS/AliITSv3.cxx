@@ -15,9 +15,8 @@
 
 /*
 $Log$
-Revision 1.13  2000/04/04 14:22:06  nilsen
-Fixed volume error with vomule SFR5. Loop positioning this volume is now from
-<=23 (was <=24). This may not be the final version.
+Revision 1.11.4.4  2000/05/19 10:09:51  nilsen
+fix for bug with HP and Sun unix + fix for event display in ITS-working branch
 
 Revision 1.11.4.3  2000/04/04 14:18:03  nilsen
 Fixed volume error with vomule SFR5. Loop positioning this volume is now from
@@ -72,6 +71,10 @@ Introduction of the Copyright and cvs Log
 #include <TGeometry.h>
 #include <TNode.h>
 #include <TTUBE.h>
+#include <TFile.h>    // only required for Tracking function?
+#include <TCanvas.h>
+#include <TObjArray.h>
+#include <TClonesArray.h>
 
 #include "AliMC.h"
 #include "AliConst.h"
@@ -80,6 +83,8 @@ Introduction of the Copyright and cvs Log
 #include "AliITSv3.h"
 #include "AliRun.h"
 
+#include "AliMC.h"
+#include "AliConst.h"
 
 ClassImp(AliITSv3)
  
@@ -98,6 +103,28 @@ AliITSv3::AliITSv3() {
     fId3Name[5] = "ITS6";
     fMinorVersionV3=1;
 }
+//____________________________________________________________________________
+AliITSv3::AliITSv3(const AliITSv3 &source){
+////////////////////////////////////////////////////////////////////////
+//     Copy Constructor for ITS version 3.
+////////////////////////////////////////////////////////////////////////
+    if(&source == this) return;
+    this->fId3N = source.fId3N;
+    this->fId3Name = new char*[fId3N];
+	 for(Int_t i=0;i<6;i++) strcpy(this->fId3Name[i],source.fId3Name[i]);
+	return;
+}
+//_____________________________________________________________________________
+AliITSv3& AliITSv3::operator=(const AliITSv3 &source){
+////////////////////////////////////////////////////////////////////////
+//    Assignment operator for the ITS version 3.
+////////////////////////////////////////////////////////////////////////
+	if(&source == this) return *this;
+    this->fId3N = source.fId3N;
+    this->fId3Name = new char*[fId3N];
+	 for(Int_t i=0;i<6;i++) strcpy(this->fId3Name[i],source.fId3Name[i]);
+	return *this;
+}
 //_____________________________________________________________________________
 AliITSv3::~AliITSv3() {
 ////////////////////////////////////////////////////////////////////////
@@ -105,7 +132,6 @@ AliITSv3::~AliITSv3() {
 ////////////////////////////////////////////////////////////////////////
   delete [] fId3Name;
 }
-
 //_____________________________________________________________________________
 AliITSv3::AliITSv3(const char *name, const char *title) : AliITS(name, title){
 ////////////////////////////////////////////////////////////////////////
@@ -120,48 +146,51 @@ AliITSv3::AliITSv3(const char *name, const char *title) : AliITS(name, title){
     fId3Name[4] = "ITS5";
     fId3Name[5] = "ITS6";
     fMinorVersionV3=1;
-}
-//__________________________________________________________________________
+}//__________________________________________________________________________
 void AliITSv3::BuildGeometry(){
-    TNode *Node, *Top;
+////////////////////////////////////////////////////////////////////////
+//    Geometry builder for the ITS version 3.
+////////////////////////////////////////////////////////////////////////
+    TNode *node, *top;
     const int kColorITS=kYellow;
     //
-    Top = gAlice->GetGeometry()->GetNode("alice");
+    top = gAlice->GetGeometry()->GetNode("alice");
 
     new TTUBE("S_layer1","Layer1 of ITS","void",3.9,3.9+0.05475,12.25);
-    Top->cd();
-    Node = new TNode("Layer1","Layer1","S_layer1",0,0,0,"");
-    Node->SetLineColor(kColorITS);  fNodes->Add(Node);
+    top->cd();
+    node = new TNode("Layer1","Layer1","S_layer1",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 
     new TTUBE("S_layer2","Layer2 of ITS","void",7.6,7.6+0.05475,16.3);
-    Top->cd();
-    Node = new TNode("Layer2","Layer2","S_layer2",0,0,0,"");
-    Node->SetLineColor(kColorITS);
-    fNodes->Add(Node);
+    top->cd();
+    node = new TNode("Layer2","Layer2","S_layer2",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 
     new TTUBE("S_layer3","Layer3 of ITS","void",14,14+0.05288,21.1);
-    Top->cd();
-    Node = new TNode("Layer3","Layer3","S_layer3",0,0,0,"");
-    Node->SetLineColor(kColorITS);
-    fNodes->Add(Node);
+    top->cd();
+    node = new TNode("Layer3","Layer3","S_layer3",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 
     new TTUBE("S_layer4","Layer4 of ITS","void",24,24+0.05288,29.6);
-    Top->cd();
-    Node = new TNode("Layer4","Layer4","S_layer4",0,0,0,"");
-    Node->SetLineColor(kColorITS);  fNodes->Add(Node);
+    top->cd();
+    node = new TNode("Layer4","Layer4","S_layer4",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 
     new TTUBE("S_layer5","Layer5 of ITS","void",40,40+0.05382,45.1);
-    Top->cd();
-    Node = new TNode("Layer5","Layer5","S_layer5",0,0,0,"");
-    Node->SetLineColor(kColorITS);
-    fNodes->Add(Node);
+    top->cd();
+    node = new TNode("Layer5","Layer5","S_layer5",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 
     new TTUBE("S_layer6","Layer6 of ITS","void",45,45+0.05382,50.4);
-    Top->cd();
-    Node = new TNode("Layer6","Layer6","S_layer6",0,0,0,"");
-    Node->SetLineColor(kColorITS);
-    fNodes->Add(Node);
-
+    top->cd();
+    node = new TNode("Layer6","Layer6","S_layer6",0,0,0,"");
+    node->SetLineColor(kColorITS);
+    fNodes->Add(node);
 }
 //_____________________________________________________________________________
 void AliITSv3::CreateGeometry(){
@@ -169,39 +198,39 @@ void AliITSv3::CreateGeometry(){
 //    This routine creates and defines the version 3 geometry of the ITS.
 ////////////////////////////////////////////////////////////////////////
   
-  const Float_t xx[14] = {  0.000,  0.000,-14.002, -6.288,-25.212,-16.292,
+  const Float_t kxx[14] = {  0.000,  0.000,-14.002, -6.288,-25.212,-16.292,
                           -35.713,-26.401,-45.340,-36.772,-18.740,-12.814,
                           -14.358,  0.000};
-  const Float_t yy[14] = {  0.000, 27.056, 31.408, 25.019, 27.768, 22.664,
+  const Float_t kyy[14] = {  0.000, 27.056, 31.408, 25.019, 27.768, 22.664,
                            22.420, 18.727, 15.479, 13.680, -9.984, -6.175,
                            -3.775, 0.000 };
-  const Float_t xbeg[13] = {  0.000, -0.352,-12.055, -8.755,-23.035,-19.085,
+  const Float_t kxbeg[13] = {  0.000, -0.352,-12.055, -8.755,-23.035,-19.085,
                             -33.362,-28.859,-42.774,-36.644,-18.352,-13.085,
                             -13.426 };
-  const Float_t ybeg[13] = {  0.386, 27.165, 29.795, 25.377, 26.480, 22.632,
+  const Float_t kybeg[13] = {  0.386, 27.165, 29.795, 25.377, 26.480, 22.632,
                              21.487, 18.305, 14.940, 13.509, -9.735, -5.755,
                              -3.53 };
-  const Float_t xend[13] = {  0.000,-11.588, -8.208,-22.709,-18.738,-33.184,
+  const Float_t kxend[13] = {  0.000,-11.588, -8.208,-22.709,-18.738,-33.184,
                             -28.719,-42.756,-37.027,-19.002,-13.235,-13.837,
                               -.373 };
-  const Float_t yend[13] = { 26.688, 30.658, 26.609, 27.405, 23.935, 22.452,
+  const Float_t kyend[13] = { 26.688, 30.658, 26.609, 27.405, 23.935, 22.452,
                              19.646, 15.922, 13.733, -9.639, -6.446, -4.585,
                               -.098 };
-  const Float_t xarc[13] = { -0.500,-13.248,-13.505,-18.622,-37.171,-42.671,
+  const Float_t kxarc[13] = { -0.500,-13.248,-13.505,-18.622,-37.171,-42.671,
                             -28.977,-33.178,-19.094,-22.781, -8.655,-11.736,
                              -0.500 };
-  const Float_t yarc[13] = {  0.500, -4.093, -5.911, -9.200, 13.162, 15.543,
+  const Float_t kyarc[13] = {  0.500, -4.093, -5.911, -9.200, 13.162, 15.543,
                              19.109, 22.066, 23.446, 27.024, 26.184, 30.294,
                              26.802 };
-  const Float_t rarc[13] = { 0.5,0.7,0.5,0.5,0.7,0.5,0.7,
+  const Float_t krarc[13] = { 0.5,0.7,0.5,0.5,0.7,0.5,0.7,
                              0.5,0.7,0.5,0.7,0.5,0.5 };
-  const Float_t  rr     =   4.064516;
-  const Float_t  tteta  =  63.00;
-  const Float_t  pphi   = -35.00;
-  const Float_t  gteta  =  87.78;
-  const Double_t degrad = kPI/180.;
-  const Double_t raddeg = 180./kPI;
-  const Double_t twopi  = 2*kPI;
+  const Float_t  krr     =   4.064516;
+  const Float_t  ktteta  =  63.00;
+  const Float_t  kpphi   = -35.00;
+  const Float_t  kgteta  =  87.78;
+  const Double_t kdegrad = kPI/180.;
+  const Double_t kraddeg = 180./kPI;
+  const Double_t ktwopi  = 2*kPI;
   
   Double_t biga, bigb;
   Float_t  dcei[3], dela[3], dchi[3], dpcb[3], darc[5], 
@@ -231,15 +260,15 @@ void AliITSv3::CreateGeometry(){
   Float_t  r1, r2, r3;
   Double_t xcc1, ycc1, xcc2, ycc2;
   Float_t  atheta910;
-  const char natra[][5] ={ "TR01","TR02","TR03","TR04",
+  const char knatra[][5] ={ "TR01","TR02","TR03","TR04",
                            "TR05","TR06","TR07","TR08"};
-  const char natra1[][5] ={"TR11","TR12","TR13","TR14",
+  const char knatra1[][5] ={"TR11","TR12","TR13","TR14",
                            "TR15","TR16","TR17","TR18",
                            "TR19","TR20","TR21","TR22",
                            "TR23","TR24","TR25","TR26"};
-  const char natra2[][5] ={"TR31","TR32","TR33","TR34","TR35","TR36"};
-  const char natra3[][5] ={"TR41","TR42","TR43","TR44","TR45","TR46"};
-  const char natra4[][5] ={"TR51","TR52","TR53","TR54","TR55","TR56",
+  const char knatra2[][5] ={"TR31","TR32","TR33","TR34","TR35","TR36"};
+  const char knatra3[][5] ={"TR41","TR42","TR43","TR44","TR45","TR46"};
+  const char knatra4[][5] ={"TR51","TR52","TR53","TR54","TR55","TR56",
                            "TR57","TR58","TR59","TR60","TR61","TR62",
                            "TR63","TR64","TR65","TR66"};
   
@@ -456,31 +485,31 @@ void AliITSv3::CreateGeometry(){
     // number of carbon fiber supports (see sketch) 
     offset1 = -35.;
     dsup[0] = .01;
-    dsup[1] = TMath::Sqrt((xend[0] - xbeg[0]) * (xend[0] - xbeg[0]) + 
-                          (yend[0] - ybeg[0]) * (yend[0] - ybeg[0])   ) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[0] - kxbeg[0]) * (kxend[0] - kxbeg[0]) + 
+                          (kyend[0] - kybeg[0]) * (kyend[0] - kybeg[0])   ) / 20.;
     dsup[2] = 25.0;
-    xcc     = (  xx[0] +   xx[1]) / 20.;
-    ycc     = (  yy[0] +   yy[1]) / 20.;
-    xccc    = (xbeg[0] + xend[0]) / 20.;
-    yccc    = (ybeg[0] + yend[0]) / 20.;
-    if (xx[0] == xx[1]) {
+    xcc     = (  kxx[0] +   kxx[1]) / 20.;
+    ycc     = (  kyy[0] +   kyy[1]) / 20.;
+    xccc    = (kxbeg[0] + kxend[0]) / 20.;
+    yccc    = (kybeg[0] + kyend[0]) / 20.;
+    if (kxx[0] == kxx[1]) {
       offset2 = 0.;
     } else {
-      r1 = yy[1] - yy[0];
-      r2 = xx[1] - xx[0];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
-    } // end if xx[0] == xx[1]
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero =     rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero =     rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+      r1 = kyy[1] - kyy[0];
+      r2 = kxx[1] - kxx[0];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
+    } // end if kxx[0] == kxx[1]
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero =     krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero =     krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 =   xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 =   xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  =  xpos1 * TMath::Cos(gteta * degrad) +
-             ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + 
-             ypos1 * TMath::Cos(gteta * degrad);
+    xpos  =  xpos1 * TMath::Cos(kgteta * kdegrad) +
+             ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+             ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.0;
-    atheta12 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta12 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1100], 90., atheta12, 90.,
                                              atheta12 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 1, "IT12", xpos, ypos, zpos,
@@ -490,31 +519,31 @@ void AliITSv3::CreateGeometry(){
     
     offset1 = -35.0;
     dsup[0] = 0.01;
-    dsup[1] = TMath::Sqrt((xend[1] - xbeg[1]) * (xend[1] - xbeg[1]) + 
-                          (yend[1] - ybeg[1]) * (yend[1] - ybeg[1])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[1] - kxbeg[1]) * (kxend[1] - kxbeg[1]) + 
+                          (kyend[1] - kybeg[1]) * (kyend[1] - kybeg[1])) / 20.;
     dsup[2] = 25.0;
-    xcc     = (  xx[1] +   xx[2]) / 20.;
-    ycc     = (  yy[1] +   yy[2]) / 20.;
-    xccc    = (xbeg[1] + xend[1]) / 20.;
-    yccc    = (ybeg[1] + yend[1]) / 20.;
-    if (xx[1] == xx[2]) {
+    xcc     = (  kxx[1] +   kxx[2]) / 20.;
+    ycc     = (  kyy[1] +   kyy[2]) / 20.;
+    xccc    = (kxbeg[1] + kxend[1]) / 20.;
+    yccc    = (kybeg[1] + kyend[1]) / 20.;
+    if (kxx[1] == kxx[2]) {
       offset2 = 0.;
     } else {
-      r1 = yy[2] - yy[1];
-      r2 = xx[2] - xx[1];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
-    } // end if xx[1] == xx[2]
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero =     rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero =     rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+      r1 = kyy[2] - kyy[1];
+      r2 = kxx[2] - kxx[1];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
+    } // end if kxx[1] == kxx[2]
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero =     krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero =     krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 =   xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 =   xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  =  xpos1 * TMath::Cos(gteta * degrad) + 
-             ypos1 * TMath::Sin(gteta * degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + 
-             ypos1 * TMath::Cos(gteta * degrad);
+    xpos  =  xpos1 * TMath::Cos(kgteta * kdegrad) + 
+             ypos1 * TMath::Sin(kgteta * kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+             ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.0;
-    atheta23 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta23 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1101], 90., atheta23, 90.,
                                              atheta23 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 2, "IT12", xpos, ypos, zpos,
@@ -522,8 +551,8 @@ void AliITSv3::CreateGeometry(){
 
     // --- Place an element of layer #2
 
-    biga   = (yy[2] - yy[1]) / (xx[2] - xx[1]);
-    bigb   = (xx[2] * yy[1] - xx[1] * yy[2]) / (xx[2] - xx[1]) / 10.;
+    biga   = (kyy[2] - kyy[1]) / (kxx[2] - kxx[1]);
+    bigb   = (kxx[2] * kyy[1] - kxx[1] * kyy[2]) / (kxx[2] - kxx[1]) / 10.;
     coeffa = biga * biga + 1.;
     coeffb = biga * bigb - biga * ycc - xcc;
     coeffc = xcc * xcc + ycc * ycc - ycc * 2. * bigb + 
@@ -542,10 +571,10 @@ void AliITSv3::CreateGeometry(){
     ycc2   =  biga1 * xcc2 + bigb1;
     xpos1  =   xcc2 * TMath::Cos(aphi) - ycc2 * TMath::Sin(aphi) + xzero;
     ypos1  =   xcc2 * TMath::Sin(aphi) + ycc2 * TMath::Cos(aphi) + yzero;
-    xpos   =  xpos1 * TMath::Cos(gteta * degrad) + 
-              ypos1 * TMath::Sin(gteta *degrad);
-    ypos   = -xpos1 * TMath::Sin(gteta * degrad) + 
-              ypos1 * TMath::Cos(gteta * degrad);
+    xpos   =  xpos1 * TMath::Cos(kgteta * kdegrad) + 
+              ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos   = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+              ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.0;
     ++jbox2;
     gMC->Gspos("IPV2", jbox2, "IT12", xpos, ypos, zpos, 
@@ -555,31 +584,31 @@ void AliITSv3::CreateGeometry(){
 
     offset1 = -35.0;
     dsup[0] = 0.01;
-    dsup[1] = TMath::Sqrt((xend[2] - xbeg[2]) * (xend[2] - xbeg[2]) + 
-                          (yend[2] - ybeg[2]) * (yend[2] - ybeg[2])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[2] - kxbeg[2]) * (kxend[2] - kxbeg[2]) + 
+                          (kyend[2] - kybeg[2]) * (kyend[2] - kybeg[2])) / 20.;
     dsup[2] = 25.;
-    xcc     = (xx[1] + xx[2]) / 20.;
-    ycc     = (yy[1] + yy[2]) / 20.;
-    xccc    = (xbeg[2] + xend[2]) / 20.;
-    yccc    = (ybeg[2] + yend[2]) / 20.;
-    if (xx[2] == xx[3]) {
+    xcc     = (kxx[1] + kxx[2]) / 20.;
+    ycc     = (kyy[1] + kyy[2]) / 20.;
+    xccc    = (kxbeg[2] + kxend[2]) / 20.;
+    yccc    = (kybeg[2] + kyend[2]) / 20.;
+    if (kxx[2] == kxx[3]) {
       offset2 = 0.;
     } else {
-      r1 = yy[3] - yy[2];
-      r2 = xx[3] - xx[2];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
-    } // end if xx[2] == xx[3]
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero =     rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero =     rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+      r1 = kyy[3] - kyy[2];
+      r2 = kxx[3] - kxx[2];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
+    } // end if kxx[2] == kxx[3]
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero =     krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero =     krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 =   xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 =   xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  =  xpos1 * TMath::Cos(gteta * degrad) + 
-             ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + 
-             ypos1 * TMath::Cos(gteta * degrad);
+    xpos  =  xpos1 * TMath::Cos(kgteta * kdegrad) + 
+             ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+             ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.0;
-    atheta34 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta34 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1102], 90., atheta34, 90., 
                                              atheta34 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 3, "IT12", xpos, ypos, zpos, 
@@ -589,31 +618,31 @@ void AliITSv3::CreateGeometry(){
 
     offset1 = -35.0;
     dsup[0] = 0.01;
-    dsup[1] = TMath::Sqrt((xend[3] - xbeg[3]) * (xend[3] - xbeg[3]) + 
-                          (yend[3] - ybeg[3]) * (yend[3] - ybeg[3])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[3] - kxbeg[3]) * (kxend[3] - kxbeg[3]) + 
+                          (kyend[3] - kybeg[3]) * (kyend[3] - kybeg[3])) / 20.;
     dsup[2] = 25.0;
-    xcc     = (  xx[3] +   xx[4]) / 20.;
-    ycc     = (  yy[3] +   yy[4]) / 20.;
-    xccc    = (xbeg[3] + xend[3]) / 20.;
-    yccc    = (ybeg[3] + yend[3]) / 20.;
-    if (xx[3] == xx[4]) {
+    xcc     = (  kxx[3] +   kxx[4]) / 20.;
+    ycc     = (  kyy[3] +   kyy[4]) / 20.;
+    xccc    = (kxbeg[3] + kxend[3]) / 20.;
+    yccc    = (kybeg[3] + kyend[3]) / 20.;
+    if (kxx[3] == kxx[4]) {
       offset2 = 0.;
     } else {
-      r1 = yy[4] - yy[3];
-      r2 = xx[4] - xx[3];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
-    } // end if xx[3] == xx[4]
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero =     rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero =     rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+      r1 = kyy[4] - kyy[3];
+      r2 = kxx[4] - kxx[3];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
+    } // end if kxx[3] == kxx[4]
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero =     krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero =     krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 =   xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 =   xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  =  xpos1 * TMath::Cos(gteta * degrad) + 
-             ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + 
-             ypos1 * TMath::Cos(gteta * degrad);
+    xpos  =  xpos1 * TMath::Cos(kgteta * kdegrad) + 
+             ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+             ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.0;
-    atheta45 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta45 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1103], 90., atheta45, 90., 
                                         atheta45 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 4, "IT12", xpos, ypos, zpos, 
@@ -621,8 +650,8 @@ void AliITSv3::CreateGeometry(){
 
     // --- Place an element of layer #2
 
-    biga   = (yy[4] - yy[3]) / (xx[4] - xx[3]);
-    bigb   = (xx[4] * yy[3] - xx[3] * yy[4]) / (xx[4] - xx[3]) / 10.;
+    biga   = (kyy[4] - kyy[3]) / (kxx[4] - kxx[3]);
+    bigb   = (kxx[4] * kyy[3] - kxx[3] * kyy[4]) / (kxx[4] - kxx[3]) / 10.;
     coeffa = biga * biga + 1.;
     coeffb = biga * bigb - biga * ycc - xcc;
     coeffc = xcc * xcc + ycc * ycc - ycc * 2. * bigb + 
@@ -641,10 +670,10 @@ void AliITSv3::CreateGeometry(){
     ycc2   =  biga1 * xcc2 + bigb1;
     xpos1  =   xcc2 * TMath::Cos(aphi) - ycc2 * TMath::Sin(aphi) + xzero;
     ypos1  =   xcc2 * TMath::Sin(aphi) + ycc2 * TMath::Cos(aphi) + yzero;
-    xpos   =  xpos1 * TMath::Cos(gteta * degrad) + 
-              ypos1 * TMath::Sin(gteta *degrad);
-    ypos   = -xpos1 * TMath::Sin(gteta * degrad) + 
-              ypos1 * TMath::Cos(gteta * degrad);
+    xpos   =  xpos1 * TMath::Cos(kgteta * kdegrad) + 
+              ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos   = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+              ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos   = 0.0;
     ++jbox2;
     gMC->Gspos("IPV2", jbox2, "IT12", xpos, ypos, zpos, 
@@ -654,31 +683,31 @@ void AliITSv3::CreateGeometry(){
     
     offset1 = -35.;
     dsup[0] = .01;
-    dsup[1] = TMath::Sqrt((xend[4] - xbeg[4]) * (xend[4] - xbeg[4]) + 
-                          (yend[4] - ybeg[4]) * (yend[4] - ybeg[4])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[4] - kxbeg[4]) * (kxend[4] - kxbeg[4]) + 
+                          (kyend[4] - kybeg[4]) * (kyend[4] - kybeg[4])) / 20.;
     dsup[2] = 25.;
-    xcc     = (xx[4] + xx[5]) / 20.;
-    ycc     = (yy[4] + yy[5]) / 20.;
-    xccc    = (xbeg[4] + xend[4]) / 20.;
-    yccc    = (ybeg[4] + yend[4]) / 20.;
-    if (xx[4] == xx[5]) {
+    xcc     = (kxx[4] + kxx[5]) / 20.;
+    ycc     = (kyy[4] + kyy[5]) / 20.;
+    xccc    = (kxbeg[4] + kxend[4]) / 20.;
+    yccc    = (kybeg[4] + kyend[4]) / 20.;
+    if (kxx[4] == kxx[5]) {
       offset2 = 0.;
     } else {
-      r1 = yy[5] - yy[4];
-      r2 = xx[5] - xx[4];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
+      r1 = kyy[5] - kyy[4];
+      r2 = kxx[5] - kxx[4];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
     }
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero =     rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero =     rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero =     krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero =     krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 =   xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 =   xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  =  xpos1 * TMath::Cos(gteta * degrad) + 
-             ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + 
-             ypos1 * TMath::Cos(gteta * degrad);
+    xpos  =  xpos1 * TMath::Cos(kgteta * kdegrad) + 
+             ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+             ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.;
-    atheta56 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta56 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1104], 90., atheta56, 90., 
                                               atheta56 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 5, "IT12", xpos, ypos, zpos,
@@ -688,31 +717,31 @@ void AliITSv3::CreateGeometry(){
     
     offset1 = -35.0;
     dsup[0] = 0.01;
-    dsup[1] = TMath::Sqrt((xend[5] - xbeg[5]) * (xend[5] - xbeg[5]) + 
-                          (yend[5] - ybeg[5]) * (yend[5] - ybeg[5])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[5] - kxbeg[5]) * (kxend[5] - kxbeg[5]) + 
+                          (kyend[5] - kybeg[5]) * (kyend[5] - kybeg[5])) / 20.;
     dsup[2] = 25.0;
-    xcc     = (xx[5] + xx[6]) / 20.;
-    ycc     = (yy[5] + yy[6]) / 20.;
-    xccc    = (xbeg[5] + xend[5]) / 20.;
-    yccc    = (ybeg[5] + yend[5]) / 20.;
-    if (xx[5] == xx[6]) {
+    xcc     = (kxx[5] + kxx[6]) / 20.;
+    ycc     = (kyy[5] + kyy[6]) / 20.;
+    xccc    = (kxbeg[5] + kxend[5]) / 20.;
+    yccc    = (kybeg[5] + kyend[5]) / 20.;
+    if (kxx[5] == kxx[6]) {
       offset2 = 0.;
     } else {
-      r1 = yy[6] - yy[5];
-      r2 = xx[6] - xx[5];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
-    } // end if xx[5] == xx[6]
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero =     rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero =     rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+      r1 = kyy[6] - kyy[5];
+      r2 = kxx[6] - kxx[5];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
+    } // end if kxx[5] == kxx[6]
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero =     krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero =     krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 =   xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 =   xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  =  xpos1 * TMath::Cos(gteta * degrad) + 
-             ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + 
-             ypos1 * TMath::Cos(gteta * degrad);
+    xpos  =  xpos1 * TMath::Cos(kgteta * kdegrad) + 
+             ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+             ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.;
-    atheta67 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta67 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1105], 90., atheta67, 90., 
                                              atheta67 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 6, "IT12", xpos, ypos, zpos, 
@@ -720,8 +749,8 @@ void AliITSv3::CreateGeometry(){
 
     // --- Place an element of layer #2 
     
-    biga   = (yy[6] - yy[5]) / (xx[6] - xx[5]);
-    bigb   = (xx[6] * yy[5] - xx[5] * yy[6]) / (xx[6] - xx[5]) / 10.;
+    biga   = (kyy[6] - kyy[5]) / (kxx[6] - kxx[5]);
+    bigb   = (kxx[6] * kyy[5] - kxx[5] * kyy[6]) / (kxx[6] - kxx[5]) / 10.;
     coeffa = biga * biga + 1.;
     coeffb = biga * bigb - biga * ycc - xcc;
     coeffc = xcc * xcc + ycc * ycc - ycc * 2. * bigb + 
@@ -740,10 +769,10 @@ void AliITSv3::CreateGeometry(){
     ycc2   =  biga1 * xcc2 + bigb1;
     xpos1  =   xcc2 * TMath::Cos(aphi) - ycc2 * TMath::Sin(aphi) + xzero;
     ypos1  =   xcc2 * TMath::Sin(aphi) + ycc2 * TMath::Cos(aphi) + yzero;
-    xpos   =  xpos1 * TMath::Cos(gteta * degrad) + 
-              ypos1 * TMath::Sin(gteta *degrad);
-    ypos   = -xpos1 * TMath::Sin(gteta * degrad) + 
-              ypos1 * TMath::Cos(gteta * degrad);
+    xpos   =  xpos1 * TMath::Cos(kgteta * kdegrad) + 
+              ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos   = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+              ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos   = 0.0;
     ++jbox2;
     gMC->Gspos("IPV2", jbox2, "IT12", xpos, ypos, zpos,
@@ -753,31 +782,31 @@ void AliITSv3::CreateGeometry(){
     
     offset1 = -35.;
     dsup[0] = .01;
-    dsup[1] = TMath::Sqrt((xend[6] - xbeg[6]) * (xend[6] - xbeg[6]) +
-                          (yend[6] - ybeg[6]) * (yend[6] - ybeg[6])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[6] - kxbeg[6]) * (kxend[6] - kxbeg[6]) +
+                          (kyend[6] - kybeg[6]) * (kyend[6] - kybeg[6])) / 20.;
     dsup[2] = 25.;
-    xcc     = (xx[6] + xx[7]) / 20.;
-    ycc     = (yy[6] + yy[7]) / 20.;
-    xccc    = (xbeg[6] + xend[6]) / 20.;
-    yccc    = (ybeg[6] + yend[6]) / 20.;
-    if (xx[6] == xx[7]) {
+    xcc     = (kxx[6] + kxx[7]) / 20.;
+    ycc     = (kyy[6] + kyy[7]) / 20.;
+    xccc    = (kxbeg[6] + kxend[6]) / 20.;
+    yccc    = (kybeg[6] + kyend[6]) / 20.;
+    if (kxx[6] == kxx[7]) {
       offset2 = 0.;
     } else {
-      r1 = yy[7] - yy[6];
-      r2 = xx[7] - xx[6];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
+      r1 = kyy[7] - kyy[6];
+      r2 = kxx[7] - kxx[6];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
     } // end if
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero =     rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero =     rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero =     krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero =     krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 =   xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 =   xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  =  xpos1 * TMath::Cos(gteta * degrad) + 
-             ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + 
-             ypos1 * TMath::Cos(gteta * degrad);
+    xpos  =  xpos1 * TMath::Cos(kgteta * kdegrad) + 
+             ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+             ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.;
-    atheta78 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta78 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1106], 90., atheta78, 90., 
                                              atheta78 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 7, "IT12", xpos, ypos, zpos, 
@@ -787,31 +816,31 @@ void AliITSv3::CreateGeometry(){
     
     offset1 = -35.;
     dsup[0] = .01;
-    dsup[1] = TMath::Sqrt((xend[7] - xbeg[7]) * (xend[7] - xbeg[7]) + 
-                          (yend[7] - ybeg[7]) * (yend[7] - ybeg[7])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[7] - kxbeg[7]) * (kxend[7] - kxbeg[7]) + 
+                          (kyend[7] - kybeg[7]) * (kyend[7] - kybeg[7])) / 20.;
     dsup[2] = 25.;
-    xcc     = (xx[7] + xx[8]) / 20.;
-    ycc     = (yy[7] + yy[8]) / 20.;
-    xccc    = (xbeg[7] + xend[7]) / 20.;
-    yccc    = (ybeg[7] + yend[7]) / 20.;
-    if (xx[1] == xx[2]) {
+    xcc     = (kxx[7] + kxx[8]) / 20.;
+    ycc     = (kyy[7] + kyy[8]) / 20.;
+    xccc    = (kxbeg[7] + kxend[7]) / 20.;
+    yccc    = (kybeg[7] + kyend[7]) / 20.;
+    if (kxx[1] == kxx[2]) {
       offset2 = 0.;
     } else {
-      r1 = yy[8] - yy[7];
-      r2 = xx[8] - xx[7];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
+      r1 = kyy[8] - kyy[7];
+      r2 = kxx[8] - kxx[7];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
     }
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero =     rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero =     rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero =     krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero =     krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 =   xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 =   xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  =  xpos1 * TMath::Cos(gteta * degrad) + 
-             ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + 
-             ypos1 * TMath::Cos(gteta * degrad);
+    xpos  =  xpos1 * TMath::Cos(kgteta * kdegrad) + 
+             ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+             ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.;
-    atheta89 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta89 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1107], 90., atheta89, 90., 
                                              atheta89 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 8, "IT12", xpos, ypos, zpos, 
@@ -819,8 +848,8 @@ void AliITSv3::CreateGeometry(){
     
     // --- Place an element of layer #2 
     
-    biga   = (yy[8] - yy[7]) / (xx[8] - xx[7]);
-    bigb   = (xx[8] * yy[7] - xx[7] * yy[8]) / (xx[8] - xx[7]) / 10.;
+    biga   = (kyy[8] - kyy[7]) / (kxx[8] - kxx[7]);
+    bigb   = (kxx[8] * kyy[7] - kxx[7] * kyy[8]) / (kxx[8] - kxx[7]) / 10.;
     coeffa = biga * biga + 1.;
     coeffb = biga * bigb - biga * ycc - xcc;
     coeffc = xcc * xcc + ycc * ycc - ycc * 2. * bigb +
@@ -839,10 +868,10 @@ void AliITSv3::CreateGeometry(){
     ycc2   =  biga1 * xcc2 + bigb1;
     xpos1  =   xcc2 * TMath::Cos(aphi) - ycc2 * TMath::Sin(aphi) + xzero;
     ypos1  =   xcc2 * TMath::Sin(aphi) + ycc2 * TMath::Cos(aphi) + yzero;
-    xpos   =  xpos1 * TMath::Cos(gteta * degrad) + 
-              ypos1 * TMath::Sin(gteta *degrad);
-    ypos   = -xpos1 * TMath::Sin(gteta * degrad) + 
-              ypos1 * TMath::Cos(gteta * degrad);
+    xpos   =  xpos1 * TMath::Cos(kgteta * kdegrad) + 
+              ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos   = -xpos1 * TMath::Sin(kgteta * kdegrad) + 
+              ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos   = 0.0;
     ++jbox2;
     gMC->Gspos("IPV2", jbox2, "IT12", xpos, ypos, zpos, 
@@ -852,29 +881,29 @@ void AliITSv3::CreateGeometry(){
     
     offset1 = -35.;
     dsup[0] = .01;
-    dsup[1] = TMath::Sqrt((xend[8] - xbeg[8]) * (xend[8] - xbeg[8]) +
-                          (yend[8] - ybeg[8]) * (yend[8] - ybeg[8])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[8] - kxbeg[8]) * (kxend[8] - kxbeg[8]) +
+                          (kyend[8] - kybeg[8]) * (kyend[8] - kybeg[8])) / 20.;
     dsup[2] = 25.;
-    xcc     = (xx[8] + xx[9]) / 20.;
-    ycc     = (yy[8] + yy[9]) / 20.;
-    xccc    = (xbeg[8] + xend[8]) / 20.;
-    yccc    = (ybeg[8] + yend[8]) / 20.;
-    if (xx[8] == xx[9]) {
+    xcc     = (kxx[8] + kxx[9]) / 20.;
+    ycc     = (kyy[8] + kyy[9]) / 20.;
+    xccc    = (kxbeg[8] + kxend[8]) / 20.;
+    yccc    = (kybeg[8] + kyend[8]) / 20.;
+    if (kxx[8] == kxx[9]) {
       offset2 = 0.;
     } else {
-      r1 = yy[9] - yy[8];
-      r2 = xx[9] - xx[8];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
+      r1 = kyy[9] - kyy[8];
+      r2 = kxx[9] - kxx[8];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
     }
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 = xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 = xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos  = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.;
-    atheta910 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta910 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1108], 90., atheta910, 90., atheta910 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 9, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1108], "ONLY", dsup, 3);
     
@@ -882,28 +911,28 @@ void AliITSv3::CreateGeometry(){
     
     offset1 = -35.;
     dsup[0] = .01;
-    dsup[1] = TMath::Sqrt((xend[9] - xbeg[9]) * (xend[9] - xbeg[9]) + (yend[9] - ybeg[9]) * (yend[9] - ybeg[9])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[9] - kxbeg[9]) * (kxend[9] - kxbeg[9]) + (kyend[9] - kybeg[9]) * (kyend[9] - kybeg[9])) / 20.;
     dsup[2] = 25.;
-    xcc     = (xx[9] + xx[10]) / 20.;
-    ycc     = (yy[9] + yy[10]) / 20.;
-    xccc    = (xbeg[9] + xend[9]) / 20.;
-    yccc    = (ybeg[9] + yend[9]) / 20.;
-    if (xx[9] == xx[10]) {
+    xcc     = (kxx[9] + kxx[10]) / 20.;
+    ycc     = (kyy[9] + kyy[10]) / 20.;
+    xccc    = (kxbeg[9] + kxend[9]) / 20.;
+    yccc    = (kybeg[9] + kyend[9]) / 20.;
+    if (kxx[9] == kxx[10]) {
       offset2 = 0.;
     } else {
-      r1 = yy[10] - yy[9];
-      r2 = xx[10] - xx[9];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
+      r1 = kyy[10] - kyy[9];
+      r2 = kxx[10] - kxx[9];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
     }
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 = xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 = xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos  = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.;
-    atheta1011 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta1011 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1109], 90., atheta1011, 90.,atheta1011 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 10, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1109], "ONLY", dsup, 3);
     
@@ -911,35 +940,35 @@ void AliITSv3::CreateGeometry(){
     
     offset1 = -35.;
     dsup[0] = .01;
-    dsup[1] = TMath::Sqrt((xend[12] - xbeg[12]) * (xend[12] - xbeg[12]) + (yend[12] - ybeg[12]) * (yend[12] - ybeg[12])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[12] - kxbeg[12]) * (kxend[12] - kxbeg[12]) + (kyend[12] - kybeg[12]) * (kyend[12] - kybeg[12])) / 20.;
     dsup[2] = 25.;
-    xcc     = (xx[12] + xx[13]) / 20.;
-    ycc     = (yy[12] + yy[13]) / 20.;
-    xccc    = (xbeg[12] + xend[12]) / 20.;
-    yccc    = (ybeg[12] + yend[12]) / 20.;
-    if (xx[12] == xx[13]) {
+    xcc     = (kxx[12] + kxx[13]) / 20.;
+    ycc     = (kyy[12] + kyy[13]) / 20.;
+    xccc    = (kxbeg[12] + kxend[12]) / 20.;
+    yccc    = (kybeg[12] + kyend[12]) / 20.;
+    if (kxx[12] == kxx[13]) {
       offset2 = 0.;
     } else {
-      r1 = yy[12] - yy[13];
-      r2 = xx[12] - xx[13];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
+      r1 = kyy[12] - kyy[13];
+      r2 = kxx[12] - kxx[13];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
     }
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 = xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 = xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos  = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.;
-    atheta1314 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta1314 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1112], 90., atheta1314, 90.,atheta1314 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 13, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1112], "ONLY", dsup, 3);
     
     // --- Place an element of layer #1 
     
-    biga   = (yy[13] - yy[12]) / (xx[13] - xx[12]);
-    bigb   = (xx[13] * yy[12] - xx[12] * yy[13]) / (xx[13] - xx[12]) / 10.;
+    biga   = (kyy[13] - kyy[12]) / (kxx[13] - kxx[12]);
+    bigb   = (kxx[13] * kyy[12] - kxx[12] * kyy[13]) / (kxx[13] - kxx[12]) / 10.;
     coeffa = biga * biga + 1.;
     coeffb = biga * bigb - biga * ycc - xcc;
     coeffc = xcc * xcc + ycc * ycc - ycc * 2. * bigb + bigb * bigb - .050216328100000006;
@@ -954,8 +983,8 @@ void AliITSv3::CreateGeometry(){
     ycc2   = biga1 * xcc2 + bigb1;
     xpos1  = xcc2 * TMath::Cos(aphi) - ycc2 * TMath::Sin(aphi) + xzero;
     ypos1  = xcc2 * TMath::Sin(aphi) + ycc2 * TMath::Cos(aphi) + yzero;
-    xpos   = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos   = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos   = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos   = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos   = 0.;
     ++jbox1;
     gMC->Gspos("IPV1", jbox1, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1112], "ONLY");
@@ -964,28 +993,28 @@ void AliITSv3::CreateGeometry(){
     
     offset1 = -35.;
     dsup[0] = .01;
-    dsup[1] = TMath::Sqrt((xend[11] - xbeg[11]) * (xend[11] - xbeg[11]) + (yend[11] - ybeg[11]) * (yend[11] - ybeg[11])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[11] - kxbeg[11]) * (kxend[11] - kxbeg[11]) + (kyend[11] - kybeg[11]) * (kyend[11] - kybeg[11])) / 20.;
     dsup[2] = 25.;
-    xcc     = (xx[11] + xx[12]) / 20.;
-    ycc     = (yy[11] + yy[12]) / 20.;
-    xccc    = (xbeg[11] + xend[11]) / 20.;
-    yccc    = (ybeg[11] + yend[11]) / 20.;
-    if (xx[11] == xx[12]) {
+    xcc     = (kxx[11] + kxx[12]) / 20.;
+    ycc     = (kyy[11] + kyy[12]) / 20.;
+    xccc    = (kxbeg[11] + kxend[11]) / 20.;
+    yccc    = (kybeg[11] + kyend[11]) / 20.;
+    if (kxx[11] == kxx[12]) {
       offset2 = 0.;
     } else {
-      r1 = yy[12] - yy[11];
-      r2 = xx[12] - xx[11];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
+      r1 = kyy[12] - kyy[11];
+      r2 = kxx[12] - kxx[11];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
     }
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 = xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 = xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos  = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.;
-    atheta1213 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta1213 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1111], 90., atheta1213, 90.,atheta1213 + 90., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 12, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1111], "ONLY", dsup, 3);
     
@@ -993,35 +1022,35 @@ void AliITSv3::CreateGeometry(){
     
     offset1 = -35.;
     dsup[0] = .01;
-    dsup[1] = TMath::Sqrt((xend[10] - xbeg[10]) * (xend[10] - xbeg[10]) + (yend[10] - ybeg[10]) * (yend[10] - ybeg[10])) / 20.;
+    dsup[1] = TMath::Sqrt((kxend[10] - kxbeg[10]) * (kxend[10] - kxbeg[10]) + (kyend[10] - kybeg[10]) * (kyend[10] - kybeg[10])) / 20.;
     dsup[2] = 25.;
-    xcc     = (xx[10] + xx[11]) / 20.;
-    ycc     = (yy[10] + yy[11]) / 20.;
-    xccc    = (xbeg[10] + xend[10]) / 20.;
-    yccc    = (ybeg[10] + yend[10]) / 20.;
-    if (xx[10] == xx[11]) {
+    xcc     = (kxx[10] + kxx[11]) / 20.;
+    ycc     = (kyy[10] + kyy[11]) / 20.;
+    xccc    = (kxbeg[10] + kxend[10]) / 20.;
+    yccc    = (kybeg[10] + kyend[10]) / 20.;
+    if (kxx[10] == kxx[11]) {
       offset2 = 0.;
     } else {
-      r1 = yy[11] - yy[10];
-      r2 = xx[11] - xx[10];
-      offset2 = TMath::ATan2(r1, r2) * raddeg - 90.;
+      r1 = kyy[11] - kyy[10];
+      r2 = kxx[11] - kxx[10];
+      offset2 = TMath::ATan2(r1, r2) * kraddeg - 90.;
     }
-    aphi  = (pphi + (i-1) * 36.) * degrad;
-    xzero = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    aphi  = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1 = xccc * TMath::Cos(aphi) - yccc * TMath::Sin(aphi) + xzero;
     ypos1 = xccc * TMath::Sin(aphi) + yccc * TMath::Cos(aphi) + yzero;
-    xpos  = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos  = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos  = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos  = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos  = 0.;
-    atheta1112 = (i-1) * 36. + offset1 + offset2 - gteta;
+    atheta1112 = (i-1) * 36. + offset1 + offset2 - kgteta;
     AliMatrix(idrotm[(i-1) * 13 + 1110], 270., atheta1112, 90., atheta1112 + 270., 0., 0.);
     gMC->Gsposp("SPIX", (i-1) * 13 + 11, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1110], "ONLY", dsup, 3);
 
     // --- Place an element of layer #1 
     
-    biga   = (yy[11] - yy[10]) / (xx[11] - xx[10]);
-    bigb   = (xx[11] * yy[10] - xx[10] * yy[11]) / (xx[11] - xx[10]) / 10.;
+    biga   = (kyy[11] - kyy[10]) / (kxx[11] - kxx[10]);
+    bigb   = (kxx[11] * kyy[10] - kxx[10] * kyy[11]) / (kxx[11] - kxx[10]) / 10.;
     coeffa = biga * biga + 1.;
     coeffb = biga * bigb - biga * ycc - xcc;
     coeffc = xcc * xcc + ycc * ycc - ycc * 2. * bigb + bigb * bigb - .0035712576000000002;
@@ -1036,261 +1065,261 @@ void AliITSv3::CreateGeometry(){
     ycc2   = biga1 * xcc2 + bigb1;
     xpos1  = xcc2 * TMath::Cos(aphi) - ycc2 * TMath::Sin(aphi) + xzero;
     ypos1  = xcc2 * TMath::Sin(aphi) + ycc2 * TMath::Cos(aphi) + yzero;
-    xpos   = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos   = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos   = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos   = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos   = 0.;
     ++jbox1;
     gMC->Gspos("IPV1", jbox1, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1110], "ONLY");
     
     // --- Place arc # 13 (between part 1-2 and part 2-3) (see sketch) 
     
-    darc[0] = rarc[12] / 10. - .02;
-    darc[1] = rarc[12] / 10.;
+    darc[0] = krarc[12] / 10. - .02;
+    darc[1] = krarc[12] / 10.;
     darc[2] = 25.;
     darc[3] = atheta12 - (i-1) * 36.;
     darc[4] = atheta23 - (i-1) * 36.;
-    xcc     = xarc[12] / 10.;
-    ycc     = yarc[12] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[12] / 10.;
+    ycc     = kyarc[12] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 13, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1112], "ONLY", darc, 5);
     
     // --- Place arc # 12 (between part 2-3 and part 3-4) (see sketch) 
     
-    darc[0] = rarc[11] / 10. - .02;
-    darc[1] = rarc[11] / 10.;
+    darc[0] = krarc[11] / 10. - .02;
+    darc[1] = krarc[11] / 10.;
     darc[2] = 25.;
     darc[3] = atheta23 + 90. - (i-1) * 36.;
     darc[4] = atheta34 + 90. - (i-1) * 36.;
-    xcc     = xarc[11] / 10.;
-    ycc     = yarc[11] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[11] / 10.;
+    ycc     = kyarc[11] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 12, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1111], "ONLY", darc, 5);
     
     // --- Place arc # 11 (between part 3-4 and part 4-5) (see sketch) 
     
-    darc[0] = rarc[10] / 10. - .02;
-    darc[1] = rarc[10] / 10.;
+    darc[0] = krarc[10] / 10. - .02;
+    darc[1] = krarc[10] / 10.;
     darc[2] = 25.;
     darc[3] = atheta45 + 180. - (i-1) * 36.;
     darc[4] = atheta34 + 180. - (i-1) * 36.;
-    xcc     = xarc[10] / 10.;
-    ycc     = yarc[10] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[10] / 10.;
+    ycc     = kyarc[10] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 11, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1110], "ONLY", darc, 5);
     
     // --- Place arc # 10 (between part 4-5 and part 5-6) (see sketch) 
     
-    darc[0] = rarc[9] / 10. - .02;
-    darc[1] = rarc[9] / 10.;
+    darc[0] = krarc[9] / 10. - .02;
+    darc[1] = krarc[9] / 10.;
     darc[2] = 25.;
     darc[3] = atheta45 - 90. - (i-1) * 36.;
     darc[4] = atheta56 - 90. - (i-1) * 36.;
-    xcc     = xarc[9] / 10.;
-    ycc     = yarc[9] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[9] / 10.;
+    ycc     = kyarc[9] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 10, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1109], "ONLY", darc, 5);
     
     // --- Place arc # 9 (between part 5-6 and part) (see sketch) 
     
-    darc[0] = rarc[8] / 10. - .02;
-    darc[1] = rarc[8] / 10.;
+    darc[0] = krarc[8] / 10. - .02;
+    darc[1] = krarc[8] / 10.;
     darc[2] = 25.;
     darc[3] = atheta67 + 45. - (i-1) * 36.;
     darc[4] = atheta56 + 45. - (i-1) * 36.;
-    xcc     = xarc[8] / 10.;
-    ycc     = yarc[8] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[8] / 10.;
+    ycc     = kyarc[8] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 9, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1108], "ONLY", darc, 5);
     
     // --- Place arc # 8 (between part 6-7 and part 7-8) (see sketch) 
     
-    darc[0] = rarc[7] / 10. - .02;
-    darc[1] = rarc[7] / 10.;
+    darc[0] = krarc[7] / 10. - .02;
+    darc[1] = krarc[7] / 10.;
     darc[2] = 25.;
     darc[3] = atheta67 - (i-1) * 36.;
     darc[4] = atheta78 - (i-1) * 36.;
-    xcc     = xarc[7] / 10.;
-    ycc     = yarc[7] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[7] / 10.;
+    ycc     = kyarc[7] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 8, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1107], "ONLY", darc, 5);
     
     // --- Place arc # 7 (between part 7-8 and part 8-9) (see sketch) 
     
-    darc[0] = rarc[6] / 10. - .02;
-    darc[1] = rarc[6] / 10.;
+    darc[0] = krarc[6] / 10. - .02;
+    darc[1] = krarc[6] / 10.;
     darc[2] = 25.;
     darc[3] = atheta89 + 45. - (i-1) * 36.;
     darc[4] = atheta78 + 45. - (i-1) * 36.;
-    xcc     = xarc[6] / 10.;
-    ycc     = yarc[6] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[6] / 10.;
+    ycc     = kyarc[6] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 7, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1106], "ONLY", darc, 5);
     
     // --- Place arc # 6 (between part 8-9 and part 9-10) (see sketch) 
     
-    darc[0] = rarc[5] / 10. - .02;
-    darc[1] = rarc[5] / 10.;
+    darc[0] = krarc[5] / 10. - .02;
+    darc[1] = krarc[5] / 10.;
     darc[2] = 25.;
     darc[3] = atheta89 + 45. - (i-1) * 36.;
     darc[4] = atheta910 + 45. - (i-1) * 36.;
-    xcc     = xarc[5] / 10.;
-    ycc     = yarc[5] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[5] / 10.;
+    ycc     = kyarc[5] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 6, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1105], "ONLY", darc, 5);
     
     // --- Place arc # 5 (between part 9-10 and part 10-11) 
     //     (see sketch) 
     
-    darc[0] = rarc[4] / 10. - .02;
-    darc[1] = rarc[4] / 10.;
+    darc[0] = krarc[4] / 10. - .02;
+    darc[1] = krarc[4] / 10.;
     darc[2] = 25.;
     darc[3] = atheta1011 + 45. - (i-1) * 36.;
     darc[4] = atheta910 + 45. - (i-1) * 36.;
-    xcc     = xarc[4] / 10.;
-    ycc     = yarc[4] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[4] / 10.;
+    ycc     = kyarc[4] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 5, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1104], "ONLY", darc, 5);
     
     // --- Place arc # 4 (between part 10-11 and part 11-12) 
     //     (see sketch) 
     
-    darc[0] = rarc[3] / 10. - .02;
-    darc[1] = rarc[3] / 10.;
+    darc[0] = krarc[3] / 10. - .02;
+    darc[1] = krarc[3] / 10.;
     darc[2] = 25.;
     darc[3] = atheta1112 - 45. - (i-1) * 36.;
     darc[4] = atheta1011 - 225. - (i-1) * 36.;
-    xcc     = xarc[3] / 10.;
-    ycc     = yarc[3] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[3] / 10.;
+    ycc     = kyarc[3] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 4, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1103], "ONLY", darc, 5);
     
     // --- Place arc # 3 (between part 11-12 and part 12-13) 
     //     (see sketch) 
     
-    darc[0] = rarc[2] / 10. - .02;
-    darc[1] = rarc[2] / 10.;
+    darc[0] = krarc[2] / 10. - .02;
+    darc[1] = krarc[2] / 10.;
     darc[2] = 25.;
     darc[3] = atheta1112 - 90. - (i-1) * 36.;
     darc[4] = atheta1213 - 90. - (i-1) * 36.;
-    xcc     = xarc[2] / 10.;
-    ycc     = yarc[2] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[2] / 10.;
+    ycc     = kyarc[2] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 3, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1102], "ONLY", darc, 5);
     
     // --- Place arc # 2 (between part 12-13 and part 13-14) 
     //     (see sketch) 
     
-    darc[0] = rarc[1] / 10. - .02;
-    darc[1] = rarc[1] / 10.;
+    darc[0] = krarc[1] / 10. - .02;
+    darc[1] = krarc[1] / 10.;
     darc[2] = 25.;
     darc[3] = atheta1213 + 135. - (i-1) * 36.;
     darc[4] = atheta1314 + 165. - (i-1) * 36.;
-    xcc     = xarc[1] / 10.;
-    ycc     = yarc[1] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[1] / 10.;
+    ycc     = kyarc[1] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 2, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1101], "ONLY", darc, 5);
     
     // --- Place arc # 1 (between part 13-14 and part 1-2) 
     //     (see sketch) 
     
-    darc[0] = rarc[0] / 10. - .02;
-    darc[1] = rarc[0] / 10.;
+    darc[0] = krarc[0] / 10. - .02;
+    darc[1] = krarc[0] / 10.;
     darc[2] = 25.;
     darc[3] = atheta12 + 45. - (i-1) * 36.;
     darc[4] = atheta1314 - (i-1) * 36.;
-    xcc     = xarc[0] / 10.;
-    ycc     = yarc[0] / 10.;
-    aphi    = (pphi + (i-1) * 36.) * degrad;
-    xzero   = rr * TMath::Cos((tteta + (i-1) * 36.) * degrad);
-    yzero   = rr * TMath::Sin((tteta + (i-1) * 36.) * degrad);
+    xcc     = kxarc[0] / 10.;
+    ycc     = kyarc[0] / 10.;
+    aphi    = (kpphi + (i-1) * 36.) * kdegrad;
+    xzero   = krr * TMath::Cos((ktteta + (i-1) * 36.) * kdegrad);
+    yzero   = krr * TMath::Sin((ktteta + (i-1) * 36.) * kdegrad);
     xpos1   = xcc * TMath::Cos(aphi) - ycc * TMath::Sin(aphi) + xzero;
     ypos1   = xcc * TMath::Sin(aphi) + ycc * TMath::Cos(aphi) + yzero;
-    xpos    = xpos1 * TMath::Cos(gteta * degrad) + ypos1 * TMath::Sin(gteta *degrad);
-    ypos    = -xpos1 * TMath::Sin(gteta * degrad) + ypos1 * TMath::Cos(gteta * degrad);
+    xpos    = xpos1 * TMath::Cos(kgteta * kdegrad) + ypos1 * TMath::Sin(kgteta *kdegrad);
+    ypos    = -xpos1 * TMath::Sin(kgteta * kdegrad) + ypos1 * TMath::Cos(kgteta * kdegrad);
     zpos    = 0.;
     gMC->Gsposp("SARC", (i-1) * 13 + 1, "IT12", xpos, ypos, zpos, idrotm[(i-1) * 13 + 1100], "ONLY", darc, 5);
     
@@ -1854,14 +1883,14 @@ void AliITSv3::CreateGeometry(){
     AliMatrix(idrotm[i+1299], 90., atheta, 90., atheta + 90., 0.,0.);
     if (i % 2 == 0) {
       rzero = 14.;
-      xpos = rzero * TMath::Cos((i-1) * twopi / 12.);
-      ypos = rzero * TMath::Sin((i-1) * twopi / 12.);
+      xpos = rzero * TMath::Cos((i-1) * ktwopi / 12.);
+      ypos = rzero * TMath::Sin((i-1) * ktwopi / 12.);
       zpos = 0.;
       gMC->Gspos("IDV1", i, "IT34", xpos, ypos, zpos, idrotm[i+1299], "ONLY");
     } else {
       rzero = 13.85;
-      xpos = rzero * TMath::Cos((i-1) * twopi / 12.);
-      ypos = rzero * TMath::Sin((i-1) * twopi / 12.);
+      xpos = rzero * TMath::Cos((i-1) * ktwopi / 12.);
+      ypos = rzero * TMath::Sin((i-1) * ktwopi / 12.);
       zpos = 0.;
       gMC->Gspos("IDV2", i, "IT34", xpos, ypos, zpos, idrotm[i+1299], "ONLY");
     }
@@ -2414,14 +2443,14 @@ void AliITSv3::CreateGeometry(){
     AliMatrix(idrotm[i+1399], 90., atheta, 90., atheta + 90., 0.,0.);
     if (i % 2 == 0) {
       rzero = 23.5;
-      xpos = rzero * TMath::Cos((i-1) * twopi / 24.);
-      ypos = rzero * TMath::Sin((i-1) * twopi / 24.);
+      xpos = rzero * TMath::Cos((i-1) * ktwopi / 24.);
+      ypos = rzero * TMath::Sin((i-1) * ktwopi / 24.);
       zpos = 0.;
       gMC->Gspos("IDV3", i, "IT34", xpos, ypos, zpos, idrotm[i+1399], "ONLY");
     } else {
       rzero = (24.0+22.8)/2.;
-      xpos = rzero * TMath::Cos((i-1) * twopi / 24.);
-      ypos = rzero * TMath::Sin((i-1) * twopi / 24.);
+      xpos = rzero * TMath::Cos((i-1) * ktwopi / 24.);
+      ypos = rzero * TMath::Sin((i-1) * ktwopi / 24.);
       zpos = 0.;
       gMC->Gspos("IDV4", i, "IT34", xpos, ypos, zpos, idrotm[i+1399], "ONLY");
     }
@@ -2698,27 +2727,27 @@ void AliITSv3::CreateGeometry(){
     runo    = dbox1[0] * 2. + 40. + dsrv[0];
     rtwo    = dbox1[0] * 2. + 40. + dela[0];
     for (i = 1; i <= 35; ++i) {
-      atheta = (i-1) * twopi * raddeg / 35. + offset2;
+      atheta = (i-1) * ktwopi * kraddeg / 35. + offset2;
       AliMatrix(idrotm[i+1499], 90., atheta, 90., atheta + 90., 0., 0.);
       
       // --- Strip ladders 
       
-      xpos = rzero * TMath::Cos((i-1) * twopi / 35. + offset1);
-      ypos = rzero * TMath::Sin((i-1) * twopi / 35. + offset1);
+      xpos = rzero * TMath::Cos((i-1) * ktwopi / 35. + offset1);
+      ypos = rzero * TMath::Sin((i-1) * ktwopi / 35. + offset1);
       zpos = 0.;
       gMC->Gspos("ISV1", i, "IT56", xpos, ypos, zpos, idrotm[i+1499], "ONLY");
       
       // --- Electronics/cooling 
       
-      xpos = runo * TMath::Cos((i-1) * twopi / 35. + offset1);
-      ypos = runo * TMath::Sin((i-1) * twopi / 35. + offset1);
+      xpos = runo * TMath::Cos((i-1) * ktwopi / 35. + offset1);
+      ypos = runo * TMath::Sin((i-1) * ktwopi / 35. + offset1);
       zpos = 0.;
       gMC->Gspos("SSV1", i, "IT56", xpos, ypos, zpos, idrotm[i+1499], "ONLY");
       
       // --- End-ladders (nagative-Z and positive-Z) 
       
-      xpos = rtwo * TMath::Cos((i-1) * twopi / 35. + offset1);
-      ypos = rtwo * TMath::Sin((i-1) * twopi / 35. + offset1);
+      xpos = rtwo * TMath::Cos((i-1) * ktwopi / 35. + offset1);
+      ypos = rtwo * TMath::Sin((i-1) * ktwopi / 35. + offset1);
       zpos = -(dbox1[2] + dela[2] + 6.);
       gMC->Gspos("ELL5", i, "IT56", xpos, ypos, zpos, idrotm[i+1499], "ONLY");
       zpos = dbox1[2] + dela[2] + 6.;
@@ -2955,27 +2984,27 @@ void AliITSv3::CreateGeometry(){
     runo    = dbox2[0] * 2. + 45. + dsrv[0];
     rtwo    = dbox2[0] * 2. + 45. + dela[0];
     for (i = 1; i <= 39; ++i) {
-      atheta = (i-1) * twopi * raddeg / 39. + offset2;
+      atheta = (i-1) * ktwopi * kraddeg / 39. + offset2;
       AliMatrix(idrotm[i+1599], 90., atheta, 90., atheta + 90., 0., 0.);
       
       // --- Strip ladders 
       
-      xpos = rzero * TMath::Cos((i-1) * twopi / 39. + offset1);
-      ypos = rzero * TMath::Sin((i-1) * twopi / 39. + offset1);
+      xpos = rzero * TMath::Cos((i-1) * ktwopi / 39. + offset1);
+      ypos = rzero * TMath::Sin((i-1) * ktwopi / 39. + offset1);
       zpos = 0.;
       gMC->Gspos("ISV2", i, "IT56", xpos, ypos, zpos, idrotm[i+1599], "ONLY");
       
       // --- Electronics/cooling 
       
-      xpos = runo * TMath::Cos((i-1) * twopi / 39. + offset1);
-      ypos = runo * TMath::Sin((i-1) * twopi / 39. + offset1);
+      xpos = runo * TMath::Cos((i-1) * ktwopi / 39. + offset1);
+      ypos = runo * TMath::Sin((i-1) * ktwopi / 39. + offset1);
       zpos = 0.;
       gMC->Gspos("SSV2", i, "IT56", xpos, ypos, zpos, idrotm[i+1599], "ONLY");
       
       // --- End-ladders (nagative-Z and positive-Z) 
       
-      xpos = rtwo * TMath::Cos((i-1) * twopi / 39. + offset1);
-      ypos = rtwo * TMath::Sin((i-1) * twopi / 39. + offset1);
+      xpos = rtwo * TMath::Cos((i-1) * ktwopi / 39. + offset1);
+      ypos = rtwo * TMath::Sin((i-1) * ktwopi / 39. + offset1);
       zpos = -(dbox2[2] + dela[2] + 6.);
       gMC->Gspos("ELL6", i, "IT56", xpos, ypos, zpos, idrotm[i+1599], "ONLY");
       zpos = dbox2[2] + dela[2] + 6.;
@@ -3244,27 +3273,27 @@ void AliITSv3::CreateGeometry(){
     runo    = dbox1[0] * 2. + 36.6 + dsrv[0];
     rtwo    = dbox1[0] * 2. + 36.6 + dela[0];
     for (i = 1; i <= 32; ++i) {
-      atheta = (i-1) * twopi * raddeg / 32. + offset2;
+      atheta = (i-1) * ktwopi * kraddeg / 32. + offset2;
       AliMatrix(idrotm[i+1499], 90., atheta, 90., atheta + 90., 0., 0.);
       
       // --- Strip ladders 
       
-      xpos = rzero * TMath::Cos((i-1) * twopi / 32. + offset1);
-      ypos = rzero * TMath::Sin((i-1) * twopi / 32. + offset1);
+      xpos = rzero * TMath::Cos((i-1) * ktwopi / 32. + offset1);
+      ypos = rzero * TMath::Sin((i-1) * ktwopi / 32. + offset1);
       zpos = 0.;
       gMC->Gspos("ISV1", i, "IT56", xpos, ypos, zpos, idrotm[i+1499], "ONLY");
       
       // --- Electronics/cooling 
       
-      xpos = runo * TMath::Cos((i-1) * twopi / 32. + offset1);
-      ypos = runo * TMath::Sin((i-1) * twopi / 32. + offset1);
+      xpos = runo * TMath::Cos((i-1) * ktwopi / 32. + offset1);
+      ypos = runo * TMath::Sin((i-1) * ktwopi / 32. + offset1);
       zpos = 0.;
       gMC->Gspos("SSV1", i, "IT56", xpos, ypos, zpos, idrotm[i+1499], "ONLY");
       
       // --- End-ladders (nagative-Z and positive-Z) 
       
-      xpos = rtwo * TMath::Cos((i-1) * twopi / 32. + offset1);
-      ypos = rtwo * TMath::Sin((i-1) * twopi / 32. + offset1);
+      xpos = rtwo * TMath::Cos((i-1) * ktwopi / 32. + offset1);
+      ypos = rtwo * TMath::Sin((i-1) * ktwopi / 32. + offset1);
       zpos = -(dbox1[2] + dela[2] + 6.);
       gMC->Gspos("ELL5", i, "IT56", xpos, ypos, zpos, idrotm[i+1499], "ONLY");
       zpos = dbox1[2] + dela[2] + 6.;
@@ -3501,27 +3530,27 @@ void AliITSv3::CreateGeometry(){
     runo    = dbox2[0] * 2. + 41.2 + dsrv[0];
     rtwo    = dbox2[0] * 2. + 41.2 + dela[0];
     for (i = 1; i <= 36; ++i) {
-      atheta = (i-1) * twopi * raddeg / 36. + offset2;
+      atheta = (i-1) * ktwopi * kraddeg / 36. + offset2;
       AliMatrix(idrotm[i+1599], 90., atheta, 90., atheta + 90., 0., 0.);
       
       // --- Strip ladders 
       
-      xpos = rzero * TMath::Cos((i-1) * twopi / 36. + offset1);
-      ypos = rzero * TMath::Sin((i-1) * twopi / 36. + offset1);
+      xpos = rzero * TMath::Cos((i-1) * ktwopi / 36. + offset1);
+      ypos = rzero * TMath::Sin((i-1) * ktwopi / 36. + offset1);
       zpos = 0.;
       gMC->Gspos("ISV2", i, "IT56", xpos, ypos, zpos, idrotm[i+1599], "ONLY");
       
       // --- Electronics/cooling 
       
-      xpos = runo * TMath::Cos((i-1) * twopi / 36. + offset1);
-      ypos = runo * TMath::Sin((i-1) * twopi / 36. + offset1);
+      xpos = runo * TMath::Cos((i-1) * ktwopi / 36. + offset1);
+      ypos = runo * TMath::Sin((i-1) * ktwopi / 36. + offset1);
       zpos = 0.;
       gMC->Gspos("SSV2", i, "IT56", xpos, ypos, zpos, idrotm[i+1599], "ONLY");
       
       // --- End-ladders (nagative-Z and positive-Z) 
       
-      xpos = rtwo * TMath::Cos((i-1) * twopi / 36. + offset1);
-      ypos = rtwo * TMath::Sin((i-1) * twopi / 36. + offset1);
+      xpos = rtwo * TMath::Cos((i-1) * ktwopi / 36. + offset1);
+      ypos = rtwo * TMath::Sin((i-1) * ktwopi / 36. + offset1);
       zpos = -(dbox2[2] + dela[2] + 6.);
       gMC->Gspos("ELL6", i, "IT56", xpos, ypos, zpos, idrotm[i+1599], "ONLY");
       zpos = dbox2[2] + dela[2] + 6.;
@@ -3581,156 +3610,156 @@ void AliITSv3::CreateGeometry(){
     angle    = 45.;
     offset   = angle / 2.;
     for (i = 0; i < 8; ++i) {
-      xtra[i] = rzero * TMath::Cos(i * angle * degrad);
-      ytra[i] = rzero * TMath::Sin(i * angle * degrad);
+      xtra[i] = rzero * TMath::Cos(i * angle * kdegrad);
+      ytra[i] = rzero * TMath::Sin(i * angle * kdegrad);
       ztra[i] = 0.;
-      gMC->Gsvolu(natra[i], "TUBE", idtmed[274], dtra, 3);
-      gMC->Gspos(natra[i], 1, "ITSV", xtra[i], ytra[i], ztra[i], 0, "ONLY");
+      gMC->Gsvolu(knatra[i], "TUBE", idtmed[274], dtra, 3);
+      gMC->Gspos(knatra[i], 1, "ITSV", xtra[i], ytra[i], ztra[i], 0, "ONLY");
     }
     
     atheta = 22.5;
-    aphi1  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi1  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi2  = 180. - aphi1;
     xpos   = (xtra[0] + xtra[1]) / 2.;
     ypos   = (ytra[0] + ytra[1]) / 2.;
     zpos   = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[0], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[0], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5100], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5100], "ONLY");
+    gMC->Gspos(knatra1[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5100], "ONLY");
     zpos   = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[1], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[1], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5101], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5101], "ONLY");
+    gMC->Gspos(knatra1[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5101], "ONLY");
     
     atheta = 67.5;
-    aphi2  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi2  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi1  = 180. - aphi2;
     xpos   = (xtra[1] + xtra[2]) / 2.;
     ypos   = (ytra[1] + ytra[2]) / 2.;
     zpos   = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[2], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[2], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5102], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5102], "ONLY");
+    gMC->Gspos(knatra1[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5102], "ONLY");
     zpos   = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[3], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[3], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5103], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5103], "ONLY");
+    gMC->Gspos(knatra1[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5103], "ONLY");
     
     atheta = 112.5;
-    aphi1  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi1  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi2  = 180. - aphi1;
     xpos   = (xtra[2] + xtra[3]) / 2.;
     ypos   = (ytra[2] + ytra[3]) / 2.;
     zpos   = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[4], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[4], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5104], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5104], "ONLY");
+    gMC->Gspos(knatra1[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5104], "ONLY");
     zpos   = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[5], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[5], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5105], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5105], "ONLY");
+    gMC->Gspos(knatra1[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5105], "ONLY");
     
     atheta = 157.5;
-    aphi2  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi2  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi1  = 180. - aphi2;
     xpos   = (xtra[3] + xtra[4]) / 2.;
     ypos   = (ytra[3] + ytra[4]) / 2.;
     zpos   = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[6], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[6], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5106], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[6], 1, "ITSV", xpos, ypos, zpos, idrotm[5106], "ONLY");
+    gMC->Gspos(knatra1[6], 1, "ITSV", xpos, ypos, zpos, idrotm[5106], "ONLY");
     zpos   = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[7], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[7], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5107], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[7], 1, "ITSV", xpos, ypos, zpos, idrotm[5107], "ONLY");
+    gMC->Gspos(knatra1[7], 1, "ITSV", xpos, ypos, zpos, idrotm[5107], "ONLY");
     
     atheta = 22.5;
-    aphi2  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi2  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi1  = 180. - aphi2;
     xpos   = (xtra[4] + xtra[5]) / 2.;
     ypos   = (ytra[4] + ytra[5]) / 2.;
     zpos   = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[8], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[8], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5108], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[8], 1, "ITSV", xpos, ypos, zpos, idrotm[5108], "ONLY");
+    gMC->Gspos(knatra1[8], 1, "ITSV", xpos, ypos, zpos, idrotm[5108], "ONLY");
     zpos   = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[9], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[9], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5109], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[9], 1, "ITSV", xpos, ypos, zpos, idrotm[5109], "ONLY");
+    gMC->Gspos(knatra1[9], 1, "ITSV", xpos, ypos, zpos, idrotm[5109], "ONLY");
     
     atheta = 67.5;
-    aphi1  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi1  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi2  = 180. - aphi1;
     xpos   = (xtra[5] + xtra[6]) / 2.;
     ypos   = (ytra[5] + ytra[6]) / 2.;
     zpos   = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[10], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[10], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5110], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[10], 1, "ITSV", xpos, ypos, zpos, idrotm[5110], "ONLY");
+    gMC->Gspos(knatra1[10], 1, "ITSV", xpos, ypos, zpos, idrotm[5110], "ONLY");
     zpos   = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[11], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[11], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5111], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[11], 1, "ITSV", xpos, ypos, zpos, idrotm[5111], "ONLY");
+    gMC->Gspos(knatra1[11], 1, "ITSV", xpos, ypos, zpos, idrotm[5111], "ONLY");
     
     atheta = 112.5;
-    aphi2  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi2  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi1  = 180. - aphi2;
     xpos   = (xtra[6] + xtra[7]) / 2.;
     ypos   = (ytra[6] + ytra[7]) / 2.;
     zpos   = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[12], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[12], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5112], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[12], 1, "ITSV", xpos, ypos, zpos, idrotm[5112], "ONLY");
+    gMC->Gspos(knatra1[12], 1, "ITSV", xpos, ypos, zpos, idrotm[5112], "ONLY");
     zpos   = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[13], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[13], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5113], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[13], 1, "ITSV", xpos, ypos, zpos, idrotm[5113], "ONLY");
+    gMC->Gspos(knatra1[13], 1, "ITSV", xpos, ypos, zpos, idrotm[5113], "ONLY");
     
     atheta = 157.5;
-    aphi1  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi1  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi2  = 180. - aphi1;
     xpos   = (xtra[7] + xtra[0]) / 2.;
     ypos   = (ytra[7] + ytra[0]) / 2.;
     zpos   = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[14], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[14], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5114], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[14], 1, "ITSV", xpos, ypos, zpos, idrotm[5114], "ONLY");
+    gMC->Gspos(knatra1[14], 1, "ITSV", xpos, ypos, zpos, idrotm[5114], "ONLY");
     zpos   = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[15], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[15], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5115], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[15], 1, "ITSV", xpos, ypos, zpos, idrotm[5115], "ONLY");
+    gMC->Gspos(knatra1[15], 1, "ITSV", xpos, ypos, zpos, idrotm[5115], "ONLY");
     
     
   } else if (fMinorVersionV3 == 4) {
@@ -3746,156 +3775,156 @@ void AliITSv3::CreateGeometry(){
     angle    = 45.;
     offset   = angle / 2.;
     for (i = 0; i < 8; ++i) {
-      xtra[i] = rzero * TMath::Cos(i * angle * degrad);
-      ytra[i] = rzero * TMath::Sin(i * angle * degrad);
+      xtra[i] = rzero * TMath::Cos(i * angle * kdegrad);
+      ytra[i] = rzero * TMath::Sin(i * angle * kdegrad);
       ztra[i] = 0.;
-      gMC->Gsvolu(natra[i], "TUBE", idtmed[274], dtra, 3);
-      gMC->Gspos(natra[i], 1, "ITSV", xtra[i], ytra[i], ztra[i], 0, "ONLY");
+      gMC->Gsvolu(knatra[i], "TUBE", idtmed[274], dtra, 3);
+      gMC->Gspos(knatra[i], 1, "ITSV", xtra[i], ytra[i], ztra[i], 0, "ONLY");
     }
     
     atheta = 22.5;
-    aphi1  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi1  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi2  = 180. - aphi1;
     xpos   = (xtra[0] + xtra[1]) / 2.;
     ypos   = (ytra[0] + ytra[1]) / 2.;
     zpos   = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[0], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[0], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5100], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5100], "ONLY");
+    gMC->Gspos(knatra1[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5100], "ONLY");
     zpos   = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[1], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[1], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5101], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5101], "ONLY");
+    gMC->Gspos(knatra1[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5101], "ONLY");
     
     atheta = 67.5;
-    aphi2  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi2  = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi1  = 180. - aphi2;
     xpos   = (xtra[1] + xtra[2]) / 2.;
     ypos   = (ytra[1] + ytra[2]) / 2.;
     zpos   = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[2], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[2], "TUBE", idtmed[274], dtra1, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5102], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5102], "ONLY");
+    gMC->Gspos(knatra1[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5102], "ONLY");
     zpos = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[3], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[3], "TUBE", idtmed[274], dtra1, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5103], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5103], "ONLY");
+    gMC->Gspos(knatra1[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5103], "ONLY");
     
     atheta = 112.5;
-    aphi1 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi1 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi2 = 180. - aphi1;
     xpos  = (xtra[2] + xtra[3]) / 2.;
     ypos  = (ytra[2] + ytra[3]) / 2.;
     zpos  = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[4], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[4], "TUBE", idtmed[274], dtra1, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5104], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5104], "ONLY");
+    gMC->Gspos(knatra1[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5104], "ONLY");
     zpos  = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[5], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[5], "TUBE", idtmed[274], dtra1, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5105], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5105], "ONLY");
+    gMC->Gspos(knatra1[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5105], "ONLY");
     
     atheta = 157.5;
-    aphi2 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi2 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi1 = 180. - aphi2;
     xpos  = (xtra[3] + xtra[4]) / 2.;
     ypos  = (ytra[3] + ytra[4]) / 2.;
     zpos  = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[6], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[6], "TUBE", idtmed[274], dtra1, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5106], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[6], 1, "ITSV", xpos, ypos, zpos, idrotm[5106], "ONLY");
+    gMC->Gspos(knatra1[6], 1, "ITSV", xpos, ypos, zpos, idrotm[5106], "ONLY");
     zpos  = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[7], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[7], "TUBE", idtmed[274], dtra1, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5107], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[7], 1, "ITSV", xpos, ypos, zpos, idrotm[5107], "ONLY");
+    gMC->Gspos(knatra1[7], 1, "ITSV", xpos, ypos, zpos, idrotm[5107], "ONLY");
     
     atheta = 22.5;
-    aphi2 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi2 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi1 = 180. - aphi2;
     xpos  = (xtra[4] + xtra[5]) / 2.;
     ypos  = (ytra[4] + ytra[5]) / 2.;
     zpos  = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[8], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[8], "TUBE", idtmed[274], dtra1, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5108], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[8], 1, "ITSV", xpos, ypos, zpos, idrotm[5108], "ONLY");
+    gMC->Gspos(knatra1[8], 1, "ITSV", xpos, ypos, zpos, idrotm[5108], "ONLY");
     zpos  = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[9], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[9], "TUBE", idtmed[274], dtra1, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5109], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[9], 1, "ITSV", xpos, ypos, zpos, idrotm[5109], "ONLY");
+    gMC->Gspos(knatra1[9], 1, "ITSV", xpos, ypos, zpos, idrotm[5109], "ONLY");
     
     atheta = 67.5;
-    aphi1 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi1 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi2 = 180. - aphi1;
     xpos = (xtra[5] + xtra[6]) / 2.;
     ypos = (ytra[5] + ytra[6]) / 2.;
     zpos = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[10], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[10], "TUBE", idtmed[274], dtra1, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5110], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[10], 1, "ITSV", xpos, ypos, zpos, idrotm[5110], "ONLY");
+    gMC->Gspos(knatra1[10], 1, "ITSV", xpos, ypos, zpos, idrotm[5110], "ONLY");
     zpos = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[11], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[11], "TUBE", idtmed[274], dtra1, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5111], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[11], 1, "ITSV", xpos, ypos, zpos, idrotm[5111], "ONLY");
+    gMC->Gspos(knatra1[11], 1, "ITSV", xpos, ypos, zpos, idrotm[5111], "ONLY");
     
     atheta = 112.5;
-    aphi2 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi2 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi1 = 180. - aphi2;
     xpos  = (xtra[6] + xtra[7]) / 2.;
     ypos  = (ytra[6] + ytra[7]) / 2.;
     zpos  = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[12], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[12], "TUBE", idtmed[274], dtra1, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5112], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[12], 1, "ITSV", xpos, ypos, zpos, idrotm[5112], "ONLY");
+    gMC->Gspos(knatra1[12], 1, "ITSV", xpos, ypos, zpos, idrotm[5112], "ONLY");
     zpos  = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[13], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[13], "TUBE", idtmed[274], dtra1, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5113], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[13], 1, "ITSV", xpos, ypos, zpos, idrotm[5113], "ONLY");
+    gMC->Gspos(knatra1[13], 1, "ITSV", xpos, ypos, zpos, idrotm[5113], "ONLY");
     
     atheta = 157.5;
-    aphi1 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*degrad) * (50.5 / cos(28.*degrad))- 50.5*50.5))) * raddeg;
+    aphi1 = TMath::ACos(dtra[2] / TMath::Sqrt(dtra[2] * dtra[2] + (50.5 / cos(28.*kdegrad) * (50.5 / cos(28.*kdegrad))- 50.5*50.5))) * kraddeg;
     aphi2 = 180. - aphi1;
     xpos  = (xtra[7] + xtra[0]) / 2.;
     ypos  = (ytra[7] + ytra[0]) / 2.;
     zpos  = dtra[2] / 2.;
-    gMC->Gsvolu(natra1[14], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[14], "TUBE", idtmed[274], dtra1, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5114], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra1[14], 1, "ITSV", xpos, ypos, zpos, idrotm[5114], "ONLY");
+    gMC->Gspos(knatra1[14], 1, "ITSV", xpos, ypos, zpos, idrotm[5114], "ONLY");
     zpos  = -dtra[2] / 2.;
-    gMC->Gsvolu(natra1[15], "TUBE", idtmed[274], dtra1, 3);
+    gMC->Gsvolu(knatra1[15], "TUBE", idtmed[274], dtra1, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5115], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra1[15], 1, "ITSV", xpos, ypos, zpos, idrotm[5115], "ONLY");
+    gMC->Gspos(knatra1[15], 1, "ITSV", xpos, ypos, zpos, idrotm[5115], "ONLY");
   } else {
     goto L9012;
   }
@@ -3920,11 +3949,11 @@ void AliITSv3::CreateGeometry(){
     angle = 60.;
     offset = angle / 2.;
     for (i = 0; i < 6; ++i) {
-      xtra1[i] = rzero * TMath::Cos((i * angle + offset) *degrad);
-      ytra1[i] = rzero * TMath::Sin((i * angle + offset) *degrad);
+      xtra1[i] = rzero * TMath::Cos((i * angle + offset) *kdegrad);
+      ytra1[i] = rzero * TMath::Sin((i * angle + offset) *kdegrad);
       ztra1[i] = 0.;
-      gMC->Gsvolu(natra2[i], "TUBE", idtmed[274], dtra2, 3);
-      gMC->Gspos(natra2[i], 1, "ITSV", xtra1[i], ytra1[i], ztra1[i], 0, "ONLY");
+      gMC->Gsvolu(knatra2[i], "TUBE", idtmed[274], dtra2, 3);
+      gMC->Gspos(knatra2[i], 1, "ITSV", xtra1[i], ytra1[i], ztra1[i], 0, "ONLY");
     }
     
     atheta = 60.;
@@ -3932,209 +3961,209 @@ void AliITSv3::CreateGeometry(){
     xpos = (xtra1[0] + xtra1[1]) / 2.;
     ypos = (ytra1[0] + ytra1[1]) / 2.;
     zpos = 0.;
-    gMC->Gsvolu(natra3[0], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[0], "TUBE", idtmed[274], dtra3, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5200], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5200], "ONLY");
+    gMC->Gspos(knatra3[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5200], "ONLY");
     
     atheta = 120.;
     aphi = 90.;
     xpos = (xtra1[1] + xtra1[2]) / 2.;
     ypos = (ytra1[1] + ytra1[2]) / 2.;
     zpos = 0.;
-    gMC->Gsvolu(natra3[1], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[1], "TUBE", idtmed[274], dtra3, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5201], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5201], "ONLY");
+    gMC->Gspos(knatra3[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5201], "ONLY");
     
     atheta = 180.;
     aphi = 90.;
     xpos = (xtra1[2] + xtra1[3]) / 2.;
     ypos = (ytra1[2] + ytra1[3]) / 2.;
     zpos = 0.;
-    gMC->Gsvolu(natra3[2], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[2], "TUBE", idtmed[274], dtra3, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5202], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5202], "ONLY");
+    gMC->Gspos(knatra3[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5202], "ONLY");
     
     atheta = 60.;
     aphi = 90.;
     xpos = (xtra1[3] + xtra1[4]) / 2.;
     ypos = (ytra1[3] + ytra1[4]) / 2.;
     zpos = 0.;
-    gMC->Gsvolu(natra3[3], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[3], "TUBE", idtmed[274], dtra3, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5203], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5203], "ONLY");
+    gMC->Gspos(knatra3[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5203], "ONLY");
     
     atheta = 120.;
     aphi = 90.;
     xpos = (xtra1[4] + xtra1[5]) / 2.;
     ypos = (ytra1[4] + ytra1[5]) / 2.;
     zpos = 0.;
-    gMC->Gsvolu(natra3[4], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[4], "TUBE", idtmed[274], dtra3, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5204], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5204], "ONLY");
+    gMC->Gspos(knatra3[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5204], "ONLY");
     
     atheta = 180.;
     aphi = 90.;
     xpos = (xtra1[5] + xtra1[0]) / 2.;
     ypos = (ytra1[5] + ytra1[0]) / 2.;
     zpos = 0.;
-    gMC->Gsvolu(natra3[5], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[5], "TUBE", idtmed[274], dtra3, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5205], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5205], "ONLY");
+    gMC->Gspos(knatra3[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5205], "ONLY");
     
     atheta = 60.;
-    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi1 = 180. - aphi2;
     xpos  = (xtra1[0] + xtra1[1]) / 2.;
     ypos  = (ytra1[0] + ytra1[1]) / 2.;
     zpos  = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[0], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[0], "TUBE", idtmed[274], dtra4, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5210], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5210], "ONLY");
+    gMC->Gspos(knatra4[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5210], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[1], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[1], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5211], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5211], "ONLY");
+    gMC->Gspos(knatra4[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5211], "ONLY");
     
     atheta = 120.;
-    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi2 = 180. - aphi1;
     xpos = (xtra1[1] + xtra1[2]) / 2.;
     ypos = (ytra1[1] + ytra1[2]) / 2.;
     zpos = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[2], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[2], "TUBE", idtmed[274], dtra4, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5212], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5212], "ONLY");
+    gMC->Gspos(knatra4[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5212], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[3], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[3], "TUBE", idtmed[274], dtra4, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5213], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5213], "ONLY");
+    gMC->Gspos(knatra4[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5213], "ONLY");
     
     atheta = 180.;
-    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi1 = 180. - aphi2;
     xpos  = (xtra1[2] + xtra1[3]) / 2.;
     ypos  = (ytra1[2] + ytra1[3]) / 2.;
     zpos  = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[4], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[4], "TUBE", idtmed[274], dtra4, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5214], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5214], "ONLY");
+    gMC->Gspos(knatra4[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5214], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[5], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[5], "TUBE", idtmed[274], dtra4, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5215], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5215], "ONLY");
+    gMC->Gspos(knatra4[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5215], "ONLY");
     atheta = 180.;
-    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad)) 
-								      - 50.*50.))) * raddeg;
+    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad)) 
+								      - 50.*50.))) * kraddeg;
     aphi2 = 180. - aphi1;
     xpos = (xtra1[2] + xtra1[3]) / 2.;
     ypos = (ytra1[2] + ytra1[3]) / 2.;
     zpos = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[6], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[6], "TUBE", idtmed[274], dtra4, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5216], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[6], 1, "ITSV", xpos, ypos, zpos, idrotm[5216], "ONLY");
+    gMC->Gspos(knatra4[6], 1, "ITSV", xpos, ypos, zpos, idrotm[5216], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[7], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[7], "TUBE", idtmed[274], dtra4, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5217], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[7], 1, "ITSV", xpos, ypos, zpos, idrotm[5217], "ONLY");
+    gMC->Gspos(knatra4[7], 1, "ITSV", xpos, ypos, zpos, idrotm[5217], "ONLY");
     
     atheta = 60.;
-    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi1 = 180. - aphi2;
     xpos = (xtra1[3] + xtra1[4]) / 2.;
     ypos = (ytra1[3] + ytra1[4]) / 2.;
     zpos = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[8], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[8], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5218], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[8], 1, "ITSV", xpos, ypos, zpos, idrotm[5218], "ONLY");
+    gMC->Gspos(knatra4[8], 1, "ITSV", xpos, ypos, zpos, idrotm[5218], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[9], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[9], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5219], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[9], 1, "ITSV", xpos, ypos, zpos, idrotm[5219], "ONLY");
+    gMC->Gspos(knatra4[9], 1, "ITSV", xpos, ypos, zpos, idrotm[5219], "ONLY");
     
     atheta = 120.;
-    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi2 = 180. - aphi1;
     xpos  = (xtra1[4] + xtra1[5]) / 2.;
     ypos  = (ytra1[4] + ytra1[5]) / 2.;
     zpos  = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[10], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[10], "TUBE", idtmed[274], dtra4, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5220], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[10], 1, "ITSV", xpos, ypos, zpos, idrotm[5220], "ONLY");
+    gMC->Gspos(knatra4[10], 1, "ITSV", xpos, ypos, zpos, idrotm[5220], "ONLY");
     zpos  = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[11], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[11], "TUBE", idtmed[274], dtra4, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5221], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[11], 1, "ITSV", xpos, ypos, zpos, idrotm[5221], "ONLY");
+    gMC->Gspos(knatra4[11], 1, "ITSV", xpos, ypos, zpos, idrotm[5221], "ONLY");
     
     atheta = 180.;
-    aphi2  = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi2  = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi1  = 180. - aphi2;
     xpos   = (xtra1[5] + xtra1[0]) / 2.;
     ypos   = (ytra1[5] + ytra1[0]) / 2.;
     zpos   = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[12], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[12], "TUBE", idtmed[274], dtra4, 3);
     r2     = atheta + 90.;
     r3     = atheta + 90.;
     AliMatrix(idrotm[5222], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[12], 1, "ITSV", xpos, ypos, zpos, idrotm[5222], "ONLY");
+    gMC->Gspos(knatra4[12], 1, "ITSV", xpos, ypos, zpos, idrotm[5222], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[13], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[13], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5223], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[13], 1, "ITSV", xpos, ypos, zpos, idrotm[5223], "ONLY");
+    gMC->Gspos(knatra4[13], 1, "ITSV", xpos, ypos, zpos, idrotm[5223], "ONLY");
     atheta = 180.;
-    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi2 = 180. - aphi1;
     xpos  = (xtra1[5] + xtra1[0]) / 2.;
     ypos  = (ytra1[5] + ytra1[0]) / 2.;
     zpos  = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[14], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[14], "TUBE", idtmed[274], dtra4, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5224], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[14], 1, "ITSV", xpos, ypos, zpos, idrotm[5224], "ONLY");
+    gMC->Gspos(knatra4[14], 1, "ITSV", xpos, ypos, zpos, idrotm[5224], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[15], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[15], "TUBE", idtmed[274], dtra4, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5225], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[15], 1, "ITSV", xpos, ypos, zpos, idrotm[5225], "ONLY");
+    gMC->Gspos(knatra4[15], 1, "ITSV", xpos, ypos, zpos, idrotm[5225], "ONLY");
     
     
   } else if (fMinorVersionV3 == 5) {
@@ -4153,11 +4182,11 @@ void AliITSv3::CreateGeometry(){
     angle  = 60.;
     offset = angle / 2.;
     for (i = 0; i < 6; ++i) {
-      xtra1[i] = rzero * TMath::Cos((i * angle + offset) *degrad);
-      ytra1[i] = rzero * TMath::Sin((i * angle + offset) *degrad);
+      xtra1[i] = rzero * TMath::Cos((i * angle + offset) *kdegrad);
+      ytra1[i] = rzero * TMath::Sin((i * angle + offset) *kdegrad);
       ztra1[i] = 0.;
-      gMC->Gsvolu(natra2[i], "TUBE", idtmed[274], dtra2, 3);
-      gMC->Gspos(natra2[i], 1, "ITSV", xtra1[i], ytra1[i], ztra1[i], 0, "ONLY");
+      gMC->Gsvolu(knatra2[i], "TUBE", idtmed[274], dtra2, 3);
+      gMC->Gspos(knatra2[i], 1, "ITSV", xtra1[i], ytra1[i], ztra1[i], 0, "ONLY");
     }
     
     atheta = 60.;
@@ -4165,208 +4194,208 @@ void AliITSv3::CreateGeometry(){
     xpos = (xtra1[0] + xtra1[1]) / 2.;
     ypos = (ytra1[0] + ytra1[1]) / 2.;
     zpos = 0.;
-    gMC->Gsvolu(natra3[0], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[0], "TUBE", idtmed[274], dtra3, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5200], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5200], "ONLY");
+    gMC->Gspos(knatra3[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5200], "ONLY");
     
     atheta = 120.;
     aphi = 90.;
     xpos = (xtra1[1] + xtra1[2]) / 2.;
     ypos = (ytra1[1] + ytra1[2]) / 2.;
     zpos = 0.;
-    gMC->Gsvolu(natra3[1], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[1], "TUBE", idtmed[274], dtra3, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5201], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5201], "ONLY");
+    gMC->Gspos(knatra3[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5201], "ONLY");
     
     atheta = 180.;
     aphi = 90.;
     xpos = (xtra1[2] + xtra1[3]) / 2.;
     ypos = (ytra1[2] + ytra1[3]) / 2.;
     zpos = 0.;
-    gMC->Gsvolu(natra3[2], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[2], "TUBE", idtmed[274], dtra3, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5202], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5202], "ONLY");
+    gMC->Gspos(knatra3[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5202], "ONLY");
     
     atheta = 60.;
     aphi   = 90.;
     xpos   = (xtra1[3] + xtra1[4]) / 2.;
     ypos   = (ytra1[3] + ytra1[4]) / 2.;
     zpos   = 0.;
-    gMC->Gsvolu(natra3[3], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[3], "TUBE", idtmed[274], dtra3, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5203], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5203], "ONLY");
+    gMC->Gspos(knatra3[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5203], "ONLY");
     
     atheta = 120.;
     aphi = 90.;
     xpos = (xtra1[4] + xtra1[5]) / 2.;
     ypos = (ytra1[4] + ytra1[5]) / 2.;
     zpos = 0.;
-    gMC->Gsvolu(natra3[4], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[4], "TUBE", idtmed[274], dtra3, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5204], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5204], "ONLY");
+    gMC->Gspos(knatra3[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5204], "ONLY");
     
     atheta = 180.;
     aphi   = 90.;
     xpos   = (xtra1[5] + xtra1[0]) / 2.;
     ypos   = (ytra1[5] + ytra1[0]) / 2.;
     zpos   = 0.;
-    gMC->Gsvolu(natra3[5], "TUBE", idtmed[274], dtra3, 3);
+    gMC->Gsvolu(knatra3[5], "TUBE", idtmed[274], dtra3, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5205], 90., atheta, aphi + 90., r2, aphi, r3);
-    gMC->Gspos(natra3[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5205], "ONLY");
+    gMC->Gspos(knatra3[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5205], "ONLY");
     
     atheta = 60.;
-    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi1 = 180. - aphi2;
     xpos = (xtra1[0] + xtra1[1]) / 2.;
     ypos = (ytra1[0] + ytra1[1]) / 2.;
     zpos = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[0], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[0], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5210], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5210], "ONLY");
+    gMC->Gspos(knatra4[0], 1, "ITSV", xpos, ypos, zpos, idrotm[5210], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[1], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[1], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5211], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5211], "ONLY");
+    gMC->Gspos(knatra4[1], 1, "ITSV", xpos, ypos, zpos, idrotm[5211], "ONLY");
     
     atheta = 120.;
-    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi2 = 180. - aphi1;
     xpos = (xtra1[1] + xtra1[2]) / 2.;
     ypos = (ytra1[1] + ytra1[2]) / 2.;
     zpos = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[2], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[2], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5212], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5212], "ONLY");
+    gMC->Gspos(knatra4[2], 1, "ITSV", xpos, ypos, zpos, idrotm[5212], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[3], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[3], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5213], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5213], "ONLY");
+    gMC->Gspos(knatra4[3], 1, "ITSV", xpos, ypos, zpos, idrotm[5213], "ONLY");
     
     atheta = 180.;
-    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi1 = 180. - aphi2;
     xpos = (xtra1[2] + xtra1[3]) / 2.;
     ypos = (ytra1[2] + ytra1[3]) / 2.;
     zpos = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[4], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[4], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5214], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5214], "ONLY");
+    gMC->Gspos(knatra4[4], 1, "ITSV", xpos, ypos, zpos, idrotm[5214], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[5], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[5], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5215], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5215], "ONLY");
+    gMC->Gspos(knatra4[5], 1, "ITSV", xpos, ypos, zpos, idrotm[5215], "ONLY");
     atheta = 180.;
-    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi2 = 180. - aphi1;
     xpos = (xtra1[2] + xtra1[3]) / 2.;
     ypos = (ytra1[2] + ytra1[3]) / 2.;
     zpos = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[6], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[6], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5216], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[6], 1, "ITSV", xpos, ypos, zpos, idrotm[5216], "ONLY");
+    gMC->Gspos(knatra4[6], 1, "ITSV", xpos, ypos, zpos, idrotm[5216], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[7], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[7], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5217], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[7], 1, "ITSV", xpos, ypos, zpos, idrotm[5217], "ONLY");
+    gMC->Gspos(knatra4[7], 1, "ITSV", xpos, ypos, zpos, idrotm[5217], "ONLY");
     
     atheta = 60.;
-    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi1 = 180. - aphi2;
     xpos = (xtra1[3] + xtra1[4]) / 2.;
     ypos = (ytra1[3] + ytra1[4]) / 2.;
     zpos = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[8], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[8], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5218], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[8], 1, "ITSV", xpos, ypos, zpos, idrotm[5218], "ONLY");
+    gMC->Gspos(knatra4[8], 1, "ITSV", xpos, ypos, zpos, idrotm[5218], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[9], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[9], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5219], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[9], 1, "ITSV", xpos, ypos, zpos, idrotm[5219], "ONLY");
+    gMC->Gspos(knatra4[9], 1, "ITSV", xpos, ypos, zpos, idrotm[5219], "ONLY");
     
     atheta = 120.;
-    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi1 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi2 = 180. - aphi1;
     xpos  = (xtra1[4] + xtra1[5]) / 2.;
     ypos  = (ytra1[4] + ytra1[5]) / 2.;
     zpos  = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[10], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[10], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5220], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[10], 1, "ITSV", xpos, ypos, zpos, idrotm[5220], "ONLY");
+    gMC->Gspos(knatra4[10], 1, "ITSV", xpos, ypos, zpos, idrotm[5220], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[11], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[11], "TUBE", idtmed[274], dtra4, 3);
     r2 = atheta + 90.;
     r3 = atheta + 90.;
     AliMatrix(idrotm[5221], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[11], 1, "ITSV", xpos, ypos, zpos, idrotm[5221], "ONLY");
+    gMC->Gspos(knatra4[11], 1, "ITSV", xpos, ypos, zpos, idrotm[5221], "ONLY");
     
     atheta = 180.;
-    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi2 = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi1 = 180. - aphi2;
     xpos  = (xtra1[5] + xtra1[0]) / 2.;
     ypos  = (ytra1[5] + ytra1[0]) / 2.;
     zpos  = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[12], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[12], "TUBE", idtmed[274], dtra4, 3);
     r2    = atheta + 90.;
     r3    = atheta + 90.;
     AliMatrix(idrotm[5222], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[12], 1, "ITSV", xpos, ypos, zpos, idrotm[5222], "ONLY");
+    gMC->Gspos(knatra4[12], 1, "ITSV", xpos, ypos, zpos, idrotm[5222], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[13], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[13], "TUBE", idtmed[274], dtra4, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5223], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[13], 1, "ITSV", xpos, ypos, zpos, idrotm[5223], "ONLY");
+    gMC->Gspos(knatra4[13], 1, "ITSV", xpos, ypos, zpos, idrotm[5223], "ONLY");
     atheta = 180.;
-    aphi1  = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*degrad) * (50. / cos(34.*degrad))- 50.*50.))) * raddeg;
+    aphi1  = TMath::ACos(dtra2[2] / TMath::Sqrt(dtra2[2] * dtra2[2] + (50. / cos(34.*kdegrad) * (50. / cos(34.*kdegrad))- 50.*50.))) * kraddeg;
     aphi2 = 180. - aphi1;
     xpos = (xtra1[5] + xtra1[0]) / 2.;
     ypos = (ytra1[5] + ytra1[0]) / 2.;
     zpos = dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[14], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[14], "TUBE", idtmed[274], dtra4, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5224], 90., atheta, aphi1 + 90., r2, aphi1, r3);
-    gMC->Gspos(natra4[14], 1, "ITSV", xpos, ypos, zpos, idrotm[5224], "ONLY");
+    gMC->Gspos(knatra4[14], 1, "ITSV", xpos, ypos, zpos, idrotm[5224], "ONLY");
     zpos = -dtra2[2] / 2.;
-    gMC->Gsvolu(natra4[15], "TUBE", idtmed[274], dtra4, 3);
+    gMC->Gsvolu(knatra4[15], "TUBE", idtmed[274], dtra4, 3);
     r2   = atheta + 90.;
     r3   = atheta + 90.;
     AliMatrix(idrotm[5225], 90., atheta, aphi2 + 90., r2, aphi2, r3);
-    gMC->Gspos(natra4[15], 1, "ITSV", xpos, ypos, zpos, idrotm[5225], "ONLY");
+    gMC->Gspos(knatra4[15], 1, "ITSV", xpos, ypos, zpos, idrotm[5225], "ONLY");
   } else {
     goto L9123;
   }
@@ -4384,7 +4413,7 @@ void AliITSv3::CreateGeometry(){
   dcone[1] = 12.;
   dcone[2] = 12.02;
   dcone[3] = (338.-3.)*455./(338.-3.-10.)/10.;
-  dcone[4] = .02 / TMath::Cos(45.*degrad) + (338.-3.)*455./(338.-3.-10.)/10.;
+  dcone[4] = .02 / TMath::Cos(45.*kdegrad) + (338.-3.)*455./(338.-3.-10.)/10.;
   xpos     = 0.;
   ypos     = 0.;
   zpos     = dpcb[2] * 2. + (583.+(338.-3.))/2./10. - 10.5;
@@ -4392,7 +4421,7 @@ void AliITSv3::CreateGeometry(){
   gMC->Gsvolu("RCON", "CONE", idtmed[274], dcone, 5);
   gMC->Gspos("RCON", 1, "ITSV", xpos, ypos, zpos, 0, "ONLY");
   
-  dtube[0] = .02 / TMath::Cos(45.*degrad) + (338.-3.)*455./(338.-3.-10.)/10.;
+  dtube[0] = .02 / TMath::Cos(45.*kdegrad) + (338.-3.)*455./(338.-3.-10.)/10.;
   dtube[1] = 49.9;
   // In the Simonetti's drawings 52. In the TP 50. 
   dtube[2] = .15;
@@ -4493,11 +4522,11 @@ void AliITSv3::CreateGeometry(){
     dpgon[1] = 360.;
     dpgon[2] = 32.;
     dpgon[3] = 2.;
-    dpgon[4] = (583./2.+(338.-106.))/10. - (40.-36.6) / TMath::Tan(45.*degrad) + dpcb[2] * 2. - 10.5;
+    dpgon[4] = (583./2.+(338.-106.))/10. - (40.-36.6) / TMath::Tan(45.*kdegrad) + dpcb[2] * 2. - 10.5;
     // end-ladder electronics 
     dpgon[5] = 34.3;
     dpgon[6] = 36.6;
-    dpgon[7] = (583./2.+(338.-106.+15.))/10. - (40.-36.6) / TMath::Tan(45.*degrad) + dpcb[2] * 2. - 10.5;
+    dpgon[7] = (583./2.+(338.-106.+15.))/10. - (40.-36.6) / TMath::Tan(45.*kdegrad) + dpcb[2] * 2. - 10.5;
     // end-ladder electr 
     dpgon[8] = 34.3;
     dpgon[9] = 36.6;
@@ -4511,11 +4540,11 @@ void AliITSv3::CreateGeometry(){
     dpgon[1] = 360.;
     dpgon[2] = 36.;
     dpgon[3] = 2.;
-    dpgon[4] = (583./2.+(338.-56.))/10. - (45.-41.2) / TMath::Tan(45.*degrad) + dpcb[2] * 2. - 10.5;
+    dpgon[4] = (583./2.+(338.-56.))/10. - (45.-41.2) / TMath::Tan(45.*kdegrad) + dpcb[2] * 2. - 10.5;
     // end-ladder electronics 
     dpgon[5] = 38.9;
     dpgon[6] = 41.2;
-    dpgon[7] = (583./2.+(338.-56.+15.))/10. - (45.-41.2) / TMath::Tan(45.*degrad) + dpcb[2] * 2. - 10.5;
+    dpgon[7] = (583./2.+(338.-56.+15.))/10. - (45.-41.2) / TMath::Tan(45.*kdegrad) + dpcb[2] * 2. - 10.5;
     // end-ladder electr 
     dpgon[8] = 38.9;
     dpgon[9] = 41.2;
@@ -4534,7 +4563,7 @@ void AliITSv3::CreateGeometry(){
   
   dcone[0] = 16.75;
   dcone[1] = (338.-3.)*455./(338.-3.-10.)/10.;
-  dcone[2] = .02 / TMath::Cos(45.*degrad) + (338.-3.)*455./(338.-3.-10.)/10.;
+  dcone[2] = .02 / TMath::Cos(45.*kdegrad) + (338.-3.)*455./(338.-3.-10.)/10.;
   dcone[3] = 12.;
   dcone[4] = 12.02;
   xpos     = 0.;
@@ -4545,7 +4574,7 @@ void AliITSv3::CreateGeometry(){
   
   gMC->Gspos("LCON", 1, "ITSV", xpos, ypos, zpos, 0, "ONLY");
   
-  dtube[0] = .02 / TMath::Cos(45.*degrad) +  (338.-3.)*455./(338.-3.-10.)/10.;
+  dtube[0] = .02 / TMath::Cos(45.*kdegrad) +  (338.-3.)*455./(338.-3.-10.)/10.;
   dtube[1] = 49.9;
   // In the Simonetti's drawings 52. In the TP 50. 
   dtube[2] = .15;
@@ -4648,11 +4677,11 @@ void AliITSv3::CreateGeometry(){
     dpgon[1] = 360.;
     dpgon[2] = 32.;
     dpgon[3] = 2.;
-    dpgon[4] = (40.-36.6) / TMath::Tan(45.*degrad) - (583./2.+(338.-106.))/10. - dpcb[2] * 2. + 10.5;
+    dpgon[4] = (40.-36.6) / TMath::Tan(45.*kdegrad) - (583./2.+(338.-106.))/10. - dpcb[2] * 2. + 10.5;
     // end-ladder electronics 
     dpgon[5] = 34.3;
     dpgon[6] = 36.6;
-    dpgon[7] = (40.-36.6) / TMath::Tan(45.*degrad) - (583./2.+(338.-106.+15.))/10. - dpcb[2] * 2. + 10.5;
+    dpgon[7] = (40.-36.6) / TMath::Tan(45.*kdegrad) - (583./2.+(338.-106.+15.))/10. - dpcb[2] * 2. + 10.5;
     // end-ladder electr 
     dpgon[8] = 34.3;
     dpgon[9] = 36.6;
@@ -4666,11 +4695,11 @@ void AliITSv3::CreateGeometry(){
     dpgon[1] = 360.;
     dpgon[2] = 36.;
     dpgon[3] = 2.;
-    dpgon[4] = (45.-41.2) / TMath::Tan(45.*degrad) - (583./2.+(338.-56.))/10. - dpcb[2] * 2. + 10.5;
+    dpgon[4] = (45.-41.2) / TMath::Tan(45.*kdegrad) - (583./2.+(338.-56.))/10. - dpcb[2] * 2. + 10.5;
     // end-ladder electronics 
     dpgon[5] = 38.9;
     dpgon[6] = 41.2;
-    dpgon[7] = (45.-41.2) / TMath::Tan(45.*degrad) - (583./2.+(338.-56.+15.))/10. - dpcb[2] * 2. + 10.5;
+    dpgon[7] = (45.-41.2) / TMath::Tan(45.*kdegrad) - (583./2.+(338.-56.+15.))/10. - dpcb[2] * 2. + 10.5;
     // end-ladder electr 
     dpgon[8] = 38.9;
     dpgon[9] = 41.2;
@@ -4697,7 +4726,8 @@ void AliITSv3::CreateMaterials(){
   //
   // Create ITS materials
   //     This function defines the default materials used in the Geant
-  // Monte Carlo simulations. In general it is automatically replaced by
+  // Monte Carlo simulations for the geometries AliITSv1 and AliITSv3.
+  // In general it is automatically replaced by
   // the CreatMaterials routine defined in AliITSv?. Should the function
   // CreateMaterials not exist for the geometry version you are using this
   // one is used. See the definition found in AliITSv5 or the other routine
@@ -4735,8 +4765,8 @@ void AliITSv3::CreateMaterials(){
   Float_t aserv[4] = { 1.,12.,55.8,63.5 };
   Float_t wserv[4] = { .014,.086,.42,.48 };
   
-  Int_t  ISXFLD  = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
+  Int_t  isxfld  = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
   
   
   // --- Define the various materials for GEANT --- 
@@ -4754,15 +4784,15 @@ void AliITSv3::CreateMaterials(){
   AliMixture( 7, "SPD Water $", awat, zwat, denswat, -2, wwat);
   AliMixture( 8, "SPD Freon$",  afre, zfre, densfre, -2, wfre);
   // ** 
-  AliMedium(0, "SPD Si$",      0, 1,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(1, "SPD Si chip$", 1, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(2, "SPD Si bus$",  2, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(3, "SPD C$",       3, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(4, "SPD Air$",     4, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(5, "SPD Vacuum$",  5, 0,ISXFLD,SXMGMX, 10.,1.00, .1, .100,10.00);
-  AliMedium(6, "SPD Al$",      6, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(7, "SPD Water $",  7, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(8, "SPD Freon$",   8, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(0, "SPD Si$",      0, 1,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(1, "SPD Si chip$", 1, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(2, "SPD Si bus$",  2, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(3, "SPD C$",       3, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(4, "SPD Air$",     4, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(5, "SPD Vacuum$",  5, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
+  AliMedium(6, "SPD Al$",      6, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(7, "SPD Water $",  7, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(8, "SPD Freon$",   8, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   
   //  225-249 --> Silicon Drift Detectors (detectors, chips, buses, cooling,..)
   
@@ -4790,19 +4820,19 @@ void AliITSv3::CreateMaterials(){
   AliMaterial(37, "SDD Kapton$", 12.011, 6., 1.3, 31.27, 999);
   // ** 
   // check A and Z 
-  AliMedium(25, "SDD Si$",      25, 1,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(26, "SDD Si chip$", 26, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(27, "SDD Si bus$",  27, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(28, "SDD C$",       28, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(29, "SDD Air$",     29, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(30, "SDD Vacuum$",  30, 0,ISXFLD,SXMGMX, 10.,1.00, .1, .100,10.00);
-  AliMedium(31, "SDD Al$",      31, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(32, "SDD Water $",  32, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(33, "SDD Freon$",   33, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(34, "SDD PCB$",     34, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(35, "SDD Copper$",  35, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(36, "SDD Ceramics$",36, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(37, "SDD Kapton$",  37, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(25, "SDD Si$",      25, 1,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(26, "SDD Si chip$", 26, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(27, "SDD Si bus$",  27, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(28, "SDD C$",       28, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(29, "SDD Air$",     29, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(30, "SDD Vacuum$",  30, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
+  AliMedium(31, "SDD Al$",      31, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(32, "SDD Water $",  32, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(33, "SDD Freon$",   33, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(34, "SDD PCB$",     34, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(35, "SDD Copper$",  35, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(36, "SDD Ceramics$",36, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(37, "SDD Kapton$",  37, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   
   //  250-274 --> Silicon Strip Detectors (detectors, chips, buses, cooling,..)
   
@@ -4835,20 +4865,20 @@ void AliITSv3::CreateMaterials(){
   // check A and Z 
   AliMaterial(63, "SDD G10FR4$", 17.749, 8.875, 1.8, 21.822, 999.);
   // ** 
-  AliMedium(50, "SSD Si$",      50, 1,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(51, "SSD Si chip$", 51, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(52, "SSD Si bus$",  52, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(53, "SSD C$",       53, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(54, "SSD Air$",     54, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(55, "SSD Vacuum$",  55, 0,ISXFLD,SXMGMX, 10.,1.00, .1, .100,10.00);
-  AliMedium(56, "SSD Al$",      56, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(57, "SSD Water $",  57, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(58, "SSD Freon$",   58, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(59, "SSD PCB$",     59, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(60, "SSD Copper$",  60, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(61, "SSD Ceramics$",61, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(62, "SSD Kapton$",  62, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(63, "SSD G10FR4$",  63, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
+  AliMedium(50, "SSD Si$",      50, 1,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(51, "SSD Si chip$", 51, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(52, "SSD Si bus$",  52, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(53, "SSD C$",       53, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(54, "SSD Air$",     54, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(55, "SSD Vacuum$",  55, 0,isxfld,sxmgmx, 10.,1.00, .1, .100,10.00);
+  AliMedium(56, "SSD Al$",      56, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(57, "SSD Water $",  57, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(58, "SSD Freon$",   58, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(59, "SSD PCB$",     59, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(60, "SSD Copper$",  60, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(61, "SSD Ceramics$",61, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(62, "SSD Kapton$",  62, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(63, "SSD G10FR4$",  63, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   
   //     275-299 --> General (end-caps, frames, cooling, cables, etc.) 
   
@@ -4865,14 +4895,13 @@ void AliITSv3::CreateMaterials(){
   // positive 
   AliMixture(81, "GEN Water $", awat, zwat, denswat, 2, wwat);
   // ** 
-  AliMedium(75,"GEN C$",        75, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(76,"GEN Air$",      76, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(77,"GEN Vacuum$",   77, 0,ISXFLD,SXMGMX, 10., .10, .1, .100,10.00);
-  AliMedium(78,"GEN POLYETHYL$",78, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(79,"GEN SERVICES$", 79, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(80,"GEN Copper$",   80, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-  AliMedium(81,"GEN Water $",   81, 0,ISXFLD,SXMGMX, 10., .01, .1, .003, .003);
-
+  AliMedium(75,"GEN C$",        75, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(76,"GEN Air$",      76, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(77,"GEN Vacuum$",   77, 0,isxfld,sxmgmx, 10., .10, .1, .100,10.00);
+  AliMedium(78,"GEN POLYETHYL$",78, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(79,"GEN SERVICES$", 79, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(80,"GEN Copper$",   80, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(81,"GEN Water $",   81, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
 }
 //_____________________________________________________________________________
 void AliITSv3::Init(){
@@ -5040,6 +5069,8 @@ void AliITSv3::Streamer(TBuffer &R__b){
 // only streams the AliITS class as it is required. Since this class
 // dosen't contain any "real" data to be saved, it doesn't.
 ////////////////////////////////////////////////////////////////////////
+
+    printf("AliITSv3Streamer Starting\n");
    if (R__b.IsReading()) {
       Version_t R__v = R__b.ReadVersion();
       if (R__v==1) {
@@ -5058,4 +5089,5 @@ void AliITSv3::Streamer(TBuffer &R__b){
       //R__b << fId3N;
       //R__b.WriteArray(fId3Name, __COUNTER__);
    } // end if R__b.IsReading()
+    printf("AliITSv3Streamer Finishing\n");
 }
