@@ -15,7 +15,7 @@ AliL3ClustFinderNew::AliL3ClustFinderNew()
   fMatch = 4;
   fThreshold =10;
   fDeconvPad = kTRUE;
-  fDeconvTime = fTRUE;
+  fDeconvTime = kTRUE;
 }
 
 AliL3ClustFinderNew::AliL3ClustFinderNew(AliL3Transform *transform)
