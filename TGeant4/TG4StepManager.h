@@ -108,7 +108,7 @@ class TG4StepManager
   private:
     // methods
     void CheckTrack() const;
-    void CheckStep() const;
+    void CheckStep(const G4String& method) const;
     void CheckSteppingManager() const;
     void SetTLorentzVector(G4ThreeVector xyz, G4double t, 
                            TLorentzVector& lv) const;    
