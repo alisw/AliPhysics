@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/04/20 10:08:45  coppedis
+Preliminary version of optics 6.2 - Insertion of TDI
+
 Revision 1.17  2001/03/16 16:18:10  coppedis
 Correction for superposition of ZDC volumes with MUON arm one
 
@@ -1383,12 +1386,12 @@ void AliZDCv1::StepManager()
     if((gMC->GetMedium() == fMedSensPI) || (gMC->GetMedium() == fMedSensTDI)){ 
       // If option NoShower is set -> StopTrack
       if(fNoShower==1) {
-	if(gMC->GetMedium() == fMedSensPI) {
-          knamed = gMC->CurrentVolName();
-          if((!strncmp(knamed,"MQ",2)) || (!strncmp(knamed,"YM",2)))  fpLostIT += 1;
-          if((!strncmp(knamed,"MD1",3))|| (!strncmp(knamed,"YD1",2))) fpLostD1 += 1;
-	}
-	if(gMC->GetMedium() == fMedSensTDI) fpLostTDI += 1;
+//	if(gMC->GetMedium() == fMedSensPI) {
+//          knamed = gMC->CurrentVolName();
+//          if((!strncmp(knamed,"MQ",2)) || (!strncmp(knamed,"YM",2)))  fpLostIT += 1;
+//          if((!strncmp(knamed,"MD1",3))|| (!strncmp(knamed,"YD1",2))) fpLostD1 += 1;
+//	}
+//	if(gMC->GetMedium() == fMedSensTDI) fpLostTDI += 1;
         gMC->StopTrack();
 //	printf("\n	# of p lost in Inner Triplet = %d\n",fpLostIT);
 //	printf("\n	# of p lost in D1  = %d\n",fpLostD1);
@@ -1466,7 +1469,7 @@ void AliZDCv1::StepManager()
 	AddHit(gAlice->CurrentTrack(), vol, hits);
 	
 	if(fNoShower==1){
-	  fpDetected += 1;
+//	  fpDetected += 1;
 	  gMC->StopTrack();
 //	  printf("\n	# of detected p = %d\n",fpDetected);
 	  return;
