@@ -305,6 +305,7 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
     if(iD==1) zmin=det(2)-(Detz[layer-1])*epsz;		
     Double_t zmax=det(2)+Detz[layer-1];
     if(iD==NDetector[layer-1]) zmax=det(2)+(Detz[layer-1])*epsz;
+    //added to take into account problem on drift
     if(layer == 3 || layer==2) zmin=zmin-epszpixel; zmax=zmax+epszpixel;
     //cout<<"zmin zinters zmax det(2)= "<<zmin<<" "<<zinters<<" "<<zmax<<" "<<det(2)<<"\n";	
     if(zinters > zmin && zinters <= zmax) { 
@@ -331,12 +332,10 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
   for(iLd = 1; iLd<= NLadder[layer-1]; iLd++) {
           g1->GetCenterThetaPhi(layer,iLd,detector,det);
   Double_t phidet=PhiDef(Double_t(det(0)),Double_t(det(1)));
-
-  
   // cout<<" layer phidet e det(6) = "<< layer<<" "<<phidet<<" "<<det(6)<<"\n"; getchar();
   Double_t xmin,ymin,xmax,ymax;	
-  Double_t phiconfr;
-  //cout<<" phiconfr =  "<<phiconfr <<"\n";  
+ // Double_t phiconfr=0.0;
+  //cout<<" phiconfr inizio =  "<<phiconfr <<"\n"; getchar();  
   local[1]=local[2]=0.;  
   local[0]= -(Detx[layer-1]);
   if(layer==1)    local[0]= (Detx[layer-1]);  //take into account different reference system
@@ -350,14 +349,16 @@ Int_t AliITStracking::NewIntersection(AliITStrack &track, Double_t rk,Int_t laye
   Double_t phimax=PhiDef(xmax,ymax);
   //cout<<" xmin ymin = "<<xmin<<" "<<ymin<<"\n";
   // cout<<" xmax ymax = "<<xmax<<" "<<ymax<<"\n";  
-  // cout<<" iLd phimin phimax ="<<iLd<<" "<<phimin<<" "<<phimax<<"\n"; getchar();
-  if(phimin>phimax ){
-    if(phimin <5.5) {cout<<" Error in NewIntersection for phi \n"; getchar();}
+  // cout<<" iLd phimin phimax ="<<iLd<<" "<<phimin<<" "<<phimax<<"\n";
+
+  Double_t phiconfr=phinters;
+ if(phimin>phimax ){    
+     if(phimin <5.5) {cout<<" Error in NewIntersection for phi \n"; getchar();}
     phimin=phimin-(2.*pigre);
-    if(phinters>(1.5*pigre)) phiconfr=phinters-(2.*pigre);
+    if(phinters>(1.5*pigre)) phiconfr=phinters-(2.*pigre); 
     if(phidet>(1.5*pigre)) phidet=phidet-(2.*pigre);
-  }
-    else phiconfr=phinters;
+  }              
+  //  cout<<" phiconfr finale = "<<phiconfr<<"\n"; getchar(); 
   if(phiconfr>phimin && phiconfr<= phimax) {
     if(ip>1) {
       cout<< " Errore su ip in NewIntersection \n"; getchar();
