@@ -899,8 +899,8 @@ void AliMUONData::SetTreeAddress(Option_t* option)
   
   //
   // Branch address for digit tree
-  if ( TreeD() && cD) {
-    if (fDigits == 0x0) { 
+  if ( TreeD() ) {      
+    if (fDigits == 0x0 && cD) {
       fDigits = new TObjArray(AliMUONConstants::NCh());
       fNdigits= new Int_t[AliMUONConstants::NCh()];
       for (Int_t i=0; i<AliMUONConstants::NCh() ;i++) {

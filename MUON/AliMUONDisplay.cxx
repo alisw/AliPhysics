@@ -1073,7 +1073,7 @@ void AliMUONDisplay::Trigger()
   AliMUONGlobalTrigger* globalTrig;
 
   GetMUONData()->SetTreeAddress("GLT");
-  GetMUONData()->GetTrigger();
+  GetMUONData()->GetTriggerD();
 
   globalTrig =  (AliMUONGlobalTrigger*)GetMUONData()->GlobalTrigger()->UncheckedAt(0);
   if (globalTrig == 0) return;
