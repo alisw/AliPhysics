@@ -72,9 +72,14 @@ AliRICHv3::~AliRICHv3()
 // Dtor deletes RICH models. In future (???) AliRICHChamber will be responsible for that.
    if(GetDebug()) cout<<ClassName()<<"::dtor()>\n";
       
-   delete GetChamber(0)->GetGeometryModel();
-   delete GetChamber(0)->GetResponseModel();
-   delete GetChamber(0)->GetSegmentationModel();
+   if(fChambers) {
+     AliRICHChamber *ch = GetChamber(0); 
+     if(ch) {
+       delete ch->GetGeometryModel();
+       delete ch->GetResponseModel();
+       delete ch->GetSegmentationModel();
+     }
+   }
 }//AliRICHv3::dtor()
 
 

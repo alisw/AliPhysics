@@ -206,7 +206,7 @@ class AliRICH : public AliDetector
 public:
             AliRICH();                                            
             AliRICH(const char *name, const char *title);         
-            AliRICH(const AliRICH& RICH)                    {;}   
+            AliRICH(const AliRICH& RICH) : AliDetector(RICH) {}   
   virtual  ~AliRICH();                                            
           
   AliRICH& operator=(const AliRICH& rhs) { return *this;}

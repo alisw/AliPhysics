@@ -31,7 +31,7 @@ public:
 public:
            AliRICHChamber();                                        //default ctor
            AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam);
-           AliRICHChamber(const AliRICHChamber &chamber ) {;}//copy ctor 
+           AliRICHChamber(const AliRICHChamber &chamber ) : TNamed(chamber) {}//copy ctor 
   virtual ~AliRICHChamber()                               {;}//dtor
   AliRICHChamber& operator=(const AliRICHChamber& rhs){return *this;}
   void LocaltoGlobal(Float_t pos[3],Float_t Localpos[3]);//Transformation from local to global coordinates, chamber-dependant
