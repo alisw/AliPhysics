@@ -5,6 +5,36 @@
    cvs2cl.pl.  See http://www.red-bean.com/~kfogel/cvs2cl.shtml for more.
   -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+- -+-
 
+1999-06-25 06:24  fca
+
+	* ChangeLog, CASTOR/AliCASTOR.cxx, FMD/AliFMDv0.cxx,
+	FMD/AliFMDv1.cxx, ITS/AliITS.cxx, ITS/AliITSv0.cxx,
+	ITS/AliITSv1.cxx, ITS/AliITSv3.cxx, ITS/AliITSv4.cxx,
+	MUON/AliMUONv0.cxx, PHOS/AliPHOS.cxx, PHOS/AliPHOS.h,
+	PHOS/AliPHOSv0.cxx, PHOS/AliPHOSv2.cxx, PMD/AliPMDv0.cxx,
+	PMD/AliPMDv1.cxx, PMD/AliPMDv2.cxx, RICH/AliRICH.cxx,
+	STEER/AliDisplay.h, STEER/AliModule.cxx, STEER/AliModule.h,
+	STEER/AliPDG.h, STEER/AliRun.cxx, STEER/AliRun.h,
+	STRUCT/AliABSO.cxx, STRUCT/AliBODY.cxx, STRUCT/AliDIPOv1.cxx,
+	STRUCT/AliDIPOv2.cxx, STRUCT/AliFRAMEv1.cxx, STRUCT/AliHALL.cxx,
+	STRUCT/AliMAG.cxx, STRUCT/AliPIPEv1.cxx, STRUCT/AliPIPEv3.cxx,
+	STRUCT/AliSHIL.cxx, TOF/AliTOF.cxx, TOF/AliTOFv0.cxx,
+	TOF/AliTOFv1.cxx, TOF/AliTOFv2.cxx, TOF/AliTOFv3.cxx,
+	TPC/AliTPC.cxx, TPC/AliTPCv0.cxx, TPC/AliTPCv1.cxx,
+	TPC/AliTPCv2.cxx, TRD/AliTRD.cxx, TRD/AliTRDv0.cxx,
+	TRD/AliTRDv1.cxx, TRD/AliTRDv2.cxx, ZDC/AliZDC.cxx,
+	conf/MachineDef.Linux, data/galice.cuts: Medium array is now
+	private for each module
+
+1999-06-24 22:08  fca
+
+	* TPC/AliTPCv2.cxx: need stdlib.h for exit
+
+1999-06-24 19:21  fca
+
+	* STEER/GParticle.cxx, STEER/GParticle.h: GParticle not used any
+	more
+
 1999-06-24 14:29  fca
 
 	* EVGEN/AliGenFLUKAsource.cxx, EVGEN/AliGenHalo.cxx,
@@ -109,9 +139,9 @@
 	TGeant3/TPaveTree.cxx, TOF/AliTOF.cxx, TOF/AliTOFv0.cxx,
 	TOF/AliTOFv1.cxx, TOF/AliTOFv2.cxx, TOF/AliTOFv3.cxx,
 	TPC/AliTPC.cxx, TPC/AliTPCD.cxx, TPC/AliTPCv0.cxx,
-	TPC/AliTPCv1.cxx, TPC/AliTPCv2.cxx, TRD/AliTRD.cxx,
-	TRD/AliTRDv0.cxx, TRD/AliTRDv1.cxx, TRD/AliTRDv2.cxx,
-	ZDC/AliZDC.cxx, html/AliRootHelp.html, html/AliceHelp.html,
+	TPC/AliTPCv1.cxx, TRD/AliTRD.cxx, TRD/AliTRDv0.cxx,
+	TRD/AliTRDv1.cxx, TRD/AliTRDv2.cxx, ZDC/AliZDC.cxx,
+	html/AliRootHelp.html, html/AliceHelp.html,
 	html/EXAMPLE_Index_head.html, html/EXAMPLE_Index_tail.html,
 	html/GeantALICE.html, html/HandsOn.html, html/Installation.html,
 	html/Manual.html, html/Overview.html, html/Packages.html,
@@ -122,6 +152,10 @@
 
 	* TGeant3/TGeant3.cxx: branches:  1.5.2; Some rationalisation of
 	the documentation. In particular pictures are all now in picts
+	subdirectory
+
+	* TPC/AliTPCv2.cxx: branches:  1.6.2; Some rationalisation of the
+	documentation. In particular pictures are all now in picts
 	subdirectory
 
 	* ITS/AliITS.cxx, STEER/AliLego.cxx: branches:	1.2.2; Some
