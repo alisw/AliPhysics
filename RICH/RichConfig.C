@@ -1,16 +1,17 @@
-class RichConfig
+class RichConfig : public TGMainFrame
 {
 RQ_OBJECT()
 public:
  
           RichConfig(const char*sFileName);
-         ~RichConfig()                    {Info("ctor","");fMainFM->Cleanup(); delete fMainFM;}
+         ~RichConfig()                    {Info("ctor","");Cleanup();}
 //protected:
   enum ERichVers  {kNoRich=-1,kNormalRich,kTestBeam,kTestRadio,kAerogel,kOnTop};
   enum EGenTypes  {kProton15=100,kBox1,kGun7,kPythia7,kHijing,kHijingPara,kRichLib,kSignalHijing,kHijingPara2Proton};
   
   enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kCRT,kHALL,kPHOS,kSTART,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
   enum EProcesses {kDCAY=1,kPAIR,kCOMP,kPHOT,kPFIS,kDRAY,kANNI,kBREM,kMUNU,kCKOV,kHADR,kLOSS,kMULS,kRAYL,kALL};
+  enum ERawFiles  {kNoRaw=0,kRawDdl,kRawDate,kRawRoot};
   
   void    AddDetector(Int_t id)          {if(id==kTRD || id==kTOF) fDetBG->SetButton(kFRAME);}
   void    RemoveDetector(Int_t id)       {if(id==kFRAME) {fDetBG->SetButton(kTRD,kFALSE);fDetBG->SetButton(kTOF,kFALSE);}}
@@ -23,22 +24,21 @@ public:
   void    CreateRichBatch();
   void    Exit();
      
-  TGMainFrame  *fMainFM;//main window poiter
   TGComboBox   *fRichVerCombo;  TGButton *fRichDeclusterBC,*fRichSagBC,*fRichDebugBC,*fRichFeedbackBC;//RICH
   TGButton     *fMagFldBC;                               //MAG
   TGComboBox   *fGenTypeCombo,*fGenPartIdCombo,*fGenMinMomCombo,*fGenMaxMomCombo,*fGenChamberCombo; TGNumberEntry *fGenNprimEntry;//GEN
   TGButtonGroup *fDetBG;       //DETECTORS
   TGButtonGroup *fProcBG;      //PROCESSES
+  TGButtonGroup *fRawBtnGrp; //controls RichBatch.C creation
   char         *fFileName;
 };//class RichConfig
 //__________________________________________________________________________________________________	 
-RichConfig::RichConfig(const char *sFileName)
+RichConfig::RichConfig(const char *sFileName):TGMainFrame(gClient->GetRoot(),650,400)
 {// creates configuration file  
   fFileName=sFileName;
-// Create main frame       
-  fMainFM=new TGMainFrame(gClient->GetRoot(),500,400);
-//  fMain->Connect("CloseWindow()","RichConfig",this,"CloseWindow()");   
-  fMainFM->AddFrame(pHorFrame=new TGHorizontalFrame(fMainFM,100,200));
+
+// Connect("CloseWindow()","RichConfig",this,"CloseWindow()");   
+  AddFrame(pHorFrame=new TGHorizontalFrame(this,100,200));
 //RICH
   pHorFrame->AddFrame(pVerFrame=new TGVerticalFrame(pHorFrame,100,200));  
   pVerFrame->AddFrame(pRichFG=new TGGroupFrame(pHorFrame,"RICH"));
@@ -147,16 +147,22 @@ RichConfig::RichConfig(const char *sFileName)
     new TGCheckButton(fProcBG,"LOSS Energy losses"          ,kLOSS));  fProcBG->SetButton(kLOSS);       
     new TGCheckButton(fProcBG,"MULS Multiple scattering"    ,kMULS));  fProcBG->SetButton(kMULS);       
     new TGCheckButton(fProcBG,"RAYL"                        ,kRAYL));  fProcBG->SetButton(kRAYL);       
+//RichBatch.C control    
+  pHorFrame->AddFrame(fRawBtnGrp=new TGButtonGroup(pHorFrame,"RAW data"));
+    new TGRadioButton(fRawBtnGrp,"No RAW files"      ,kNoRaw)) ;   fRawBtnGrp->SetButton(kNoRaw);
+    new TGRadioButton(fRawBtnGrp,"RAW DDL"           ,kRawDdl)) ;
+    new TGRadioButton(fRawBtnGrp,"RAW DATE"          ,kRawDate)) ;
+    new TGRadioButton(fRawBtnGrp,"RAW ROOT"          ,kRawRoot)) ;
 //File    
-  fMainFM->AddFrame(pFileHorFrm=new TGHorizontalFrame(fMainFM,100,200));
+  AddFrame(pFileHorFrm=new TGHorizontalFrame(this,100,200));
   pFileHorFrm->AddFrame(pCreateB=new TGTextButton(pFileHorFrm,"Create"));
   pCreateB->Connect("Clicked()","RichConfig",this,"Exit()");                                 
   pFileHorFrm->AddFrame(new TGLabel(pFileHorFrm,Form(" config file as %s",fFileName)));  
   
-  fMainFM->MapSubwindows();   
-  fMainFM->Layout();
-  fMainFM->SetWindowName("Create AliROOT scripts");
-  fMainFM->MapWindow();      
+  MapSubwindows();   
+  Layout();
+  SetWindowName("Create AliROOT scripts");
+  MapWindow();      
 }//KirCondig::ctor
 //__________________________________________________________________________________________________          
 void RichConfig::CreateConfig()
@@ -370,37 +376,43 @@ void RichConfig::CreateConfig()
   fprintf(fp,"}\n");
 out:  
   fclose(fp);  
-//  fMain->CloseWindow();
+//  CloseWindow();
 }//CreateConfig
 //__________________________________________________________________________________________________
 void RichConfig::CreateRichBatch()
 {//creates RichBatch.C file
   FILE *fp=fopen("RichBatch.C","w"); if(!fp){Info("CreateRichBatch","Cannot open output file: RichBatch.C");return;}
-  
+//header and debug   
   fprintf(fp,"void RichBatch(const Int_t iNevents,const Bool_t isDebug,const char *sConfigFileName)\n");
   fprintf(fp,"{\n");
-  fprintf(fp,"  gSystem->Exec(\"rm -rf *.root hlt hough fort* ZZZ*\");\n");
+  fprintf(fp,"  gSystem->Exec(\"rm -rf *.root hlt hough fort* raw* ZZZ*\");\n");
   fprintf(fp,"  if(isDebug)   AliLog::SetGlobalDebugLevel(AliLog::kDebug);\n");
-  fprintf(fp,"  TStopwatch sw;TDatime time;\n\n");
-  
+  fprintf(fp,"  gBenchmark->Start(\"ALICE\");TDatime time;\n\n");
+//simulation section  
   fprintf(fp,"  AliSimulation     *pSim=new AliSimulation(sConfigFileName);\n");
   if(fGenTypeCombo->GetSelected()==kBox1||fGenTypeCombo->GetSelected()==kGun7) {
     fprintf(fp,"  pSim->SetRegionOfInterest(kTRUE);\n");
     fprintf(fp,"  pSim->SetMakeSDigits(\"TOF RICH\");\n");
     fprintf(fp,"  pSim->SetMakeDigitsFromHits(\"ITS TPC TRD\");\n");
   }
+//RAW data generation  
+  if(fRawBtnGrp->GetButton(kRawDdl)->GetState())  fprintf(fp,"  pSim->SetWriteRawData(\"ALL\");");
+  if(fRawBtnGrp->GetButton(kRawDate)->GetState()) fprintf(fp,"  pSim->SetWriteRawData(\"ALL\",\".date\");");
+  if(fRawBtnGrp->GetButton(kRawRoot)->GetState()) fprintf(fp,"  pSim->SetWriteRawData(\"ALL\",\".root\");");
+  
   fprintf(fp,"  pSim->Run(iNevents); delete pSim;\n\n");
+//reconstraction section  
   if(fRichVerCombo->GetSelected()==kNormalRich){
     fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
     fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH\");\n");
     fprintf(fp,"  pRec->SetFillESD(\"ITS TPC TRD TOF RICH\");\n");
     fprintf(fp,"  pRec->Run();         delete pRec;\n\n");
   }
-  
+//benchmarks  
   fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/RichBatch.C>: Start time: \";time.Print();\n");
   fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/RichBatch.C>: Stop  time: \";time.Set();  time.Print();\n");
-  fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/RichBatch.C>: Time  used: \";sw.Print();\n\n");
-  
+  fprintf(fp,"  gBenchmark->Show(\"ALICE\");");
+//indicate end of job  
   fprintf(fp,"  gSystem->Exec(\"touch ZZZ______finished_______ZZZ\");\n");
   fprintf(fp,"  gSystem->Exec(\"playwave ~/bin/end.wav\");\n");
   fprintf(fp,"}\n");
@@ -413,7 +425,7 @@ void RichConfig::Exit()
 //slot to be invoked by clik on the Create button  
   CreateConfig();
   CreateRichBatch();
-//  fMainFM->SendCloseMessage();
+//  SendCloseMessage();
 }
 //__________________________________________________________________________________________________
 RichConfig *rc;
