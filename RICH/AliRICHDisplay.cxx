@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.11  2001/02/27 15:21:34  jbarbosa
+  Transition to SDigits.
+
   Revision 1.10  2001/02/13 20:18:48  jbarbosa
   Corrected some more positioning of points. Changes in LoadDigits to accomodate the new IO.
 
@@ -530,7 +533,7 @@ void AliRICHDisplay::DrawRecHits()
     points = fRecpoints;
     if (!points) return;
     nrec = points->GetEntriesFast();
-    printf("Nrec %d\n",nrec);
+    //printf("Nrec %d\n",nrec);
     for (irec=0; irec < nrec; irec++) {
 	pm = (AliRICHPoints*)points->UncheckedAt(irec);
 	if (!pm) continue;
@@ -681,10 +684,13 @@ void AliRICHDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
    DrawClusters();
    DrawHits();
 //   DrawCerenkovs();
-   printf("Calling DrawCoG\n");
-   DrawCoG();
-   printf("Calling DrawRecHits\n");
-   DrawRecHits();
+   if (gAlice->TreeR())
+     {
+       //printf("Calling DrawCoG\n");
+       DrawCoG();
+       //printf("Calling DrawRecHits\n");
+       DrawRecHits();
+     }
    /*for (Int_t i=0;i<7;i++)
      LoadRecHits(i,1);*/
    
@@ -770,14 +776,14 @@ void AliRICHDisplay::LoadCoG(Int_t chamber, Int_t cathode)
 
    if (chamber > 6) return;
 
-   printf("Entering LoadCoG\n");
+   //printf("Entering LoadCoG\n");
 
 
    AliRICH *pRICH  = (AliRICH*)gAlice->GetModule("RICH");
    AliRICHChamber*  iChamber;
 
    TClonesArray *pRICHrawclust  = pRICH->RawClustAddress(chamber);
-   printf ("Chamber:%d has adress:%p\n", chamber, pRICHrawclust );
+   //printf ("Chamber:%d has adress:%p\n", chamber, pRICHrawclust );
    if (pRICHrawclust == 0) return;
 
    pRICH->ResetRawClusters();
@@ -786,7 +792,7 @@ void AliRICHDisplay::LoadCoG(Int_t chamber, Int_t cathode)
    Int_t nent=(Int_t)gAlice->TreeR()->GetEntries();
    gAlice->TreeR()->GetEvent(nent-1+cathode-1);
    Int_t nrawcl = pRICHrawclust->GetEntriesFast();
-   printf ("nrawcl:%d\n",nrawcl);
+   //printf ("nrawcl:%d\n",nrawcl);
    if (nrawcl == 0) return;
    if (fRpoints == 0) fRpoints = new TObjArray(nrawcl);
    
@@ -820,14 +826,14 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 
    if (chamber > 6) return;
 
-   printf("Entering LoadRecHits\n");
+   ///printf("Entering LoadRecHits\n");
 
 
    AliRICH *pRICH  = (AliRICH*)gAlice->GetModule("RICH");
    AliRICHChamber*  iChamber;
 
    TClonesArray *pRICHrechits1D  = pRICH->RecHitsAddress1D(chamber);
-   printf ("Chamber:%d\n", chamber);
+   //printf ("Chamber:%d\n", chamber);
    if (pRICHrechits1D != 0)
      {
 
@@ -837,7 +843,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
        Int_t nent1D=(Int_t)gAlice->TreeR()->GetEntries();
        gAlice->TreeR()->GetEvent(nent1D-1+cathode-1);
        Int_t nrechits1D = pRICHrechits1D->GetEntriesFast();
-       printf ("nrechits1D:%d\n",nrechits1D);
+       //printf ("nrechits1D:%d\n",nrechits1D);
        if (nrechits1D != 0)
 	 {
 	   if (fRecpoints == 0) fRecpoints = new TObjArray(50);
@@ -867,7 +873,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     //Float_t theta = iChamber->GetRotMatrix()->GetTheta();
 	     //Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
 	     //ellipse=new TEllipse(vectorGlob[0],vectorGlob[2],10,10,0,360,phi);
-	     printf("Generating ellipse %d\n",irec);
+	     //printf("Generating ellipse %d\n",irec);
 	     AliRICHEllipse *ellipse=new AliRICHEllipse(mRec1D->fX,mRec1D->fY,mRec1D->fOmega,mRec1D->fTheta,mRec1D->fPhi,mRec1D->fEmissPoint);
 	     ellipse->CerenkovRingDrawing(chamber,irec);
 	     //ellipse->SetFillStyle(1001);
@@ -880,7 +886,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
      }
 
    TClonesArray *pRICHrechits3D  = pRICH->RecHitsAddress3D(chamber);
-   printf ("Chamber:%d\n", chamber);
+   //printf ("Chamber:%d\n", chamber);
    if (pRICHrechits3D != 0)
      {
        
@@ -890,7 +896,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
        Int_t nent3D=(Int_t)gAlice->TreeR()->GetEntries();
        gAlice->TreeR()->GetEvent(nent3D-1+cathode-1);
        Int_t nrechits3D = pRICHrechits3D->GetEntriesFast();
-       printf ("nrechits3D:%d\n",nrechits3D);
+       //printf ("nrechits3D:%d\n",nrechits3D);
        if (nrechits3D != 0)
 	 {
 	   if (fRecpoints == 0) fRecpoints = new TObjArray(50);
@@ -920,7 +926,7 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	     //Float_t theta = iChamber->GetRotMatrix()->GetTheta();
 	     //Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
 	     //ellipse=new TEllipse(vectorGlob[0],vectorGlob[2],10,10,0,360,phi);
-	     printf("Generating ellipse %d\n",irec);
+	     //printf("Generating ellipse %d\n",irec);
 	     AliRICHEllipse *ellipse=new AliRICHEllipse(mRec3D->fX,mRec3D->fY,mRec3D->fOmega,mRec3D->fTheta,mRec3D->fPhi,0.75);
 	     ellipse->CerenkovRingDrawing(chamber,irec);
 	     //ellipse->SetFillStyle(1001);
@@ -945,19 +951,19 @@ void AliRICHDisplay::LoadDigits()
    Int_t nAllDigits=0;
    Int_t ich;
 
-   printf("Entering LoadDigits\n");
+   //printf("Entering LoadDigits\n");
 
    if (gAlice->TreeD())
      {
    
        for (ich=0; ich<kNCH; ich++) {
 	 TClonesArray *pRICHdigits  = pRICH->DigitsAddress(ich);
-	 printf ("Chamber:%d has adress:%p\n", ich, pRICHdigits );
+	 //printf ("Chamber:%d has adress:%p\n", ich, pRICHdigits );
 	 if (pRICHdigits == 0) continue;
 	 gAlice->ResetDigits();
-	 gAlice->TreeD()->GetEvent(1);
+	 gAlice->TreeD()->GetEvent(0);
 	 Int_t ndigits = pRICHdigits->GetEntriesFast();
-	 printf("ndigits:%d\n",ndigits);
+	 //printf("ndigits:%d\n",ndigits);
 	 nAllDigits+=ndigits;
        }
        
@@ -967,7 +973,7 @@ void AliRICHDisplay::LoadDigits()
 	 TClonesArray *pRICHdigits  = pRICH->DigitsAddress(ich);
 	 if (pRICHdigits == 0) continue;
 	 gAlice->ResetDigits();
-	 gAlice->TreeD()->GetEvent(1);
+	 gAlice->TreeD()->GetEvent(0);
 	 Int_t ndigits = pRICHdigits->GetEntriesFast();
 	 if (ndigits == 0) continue;
 	 iChamber = &(pRICH->Chamber(ich));
@@ -1197,7 +1203,7 @@ void AliRICHDisplay::SetChamberAndCathode(Int_t chamber, Int_t cathode)
     fChamber = chamber;
     fCathode = cathode;
     
-    printf("SetChamberAndCathode - fChamber fCathode %d %d\n",fChamber,fCathode);
+    //printf("SetChamberAndCathode - fChamber fCathode %d %d\n",fChamber,fCathode);
     if (!fPad) return;
     fPad->Clear();
     LoadDigits();
