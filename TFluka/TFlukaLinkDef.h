@@ -8,9 +8,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-
 #pragma link C++ class  TFluka+;
-#pragma link C++ class  FlukaVolume+;
+#pragma link C++ class  TFlukaMCGeometry+;
 #pragma link C++ class  TFlukaCerenkov+;
 #endif
 
