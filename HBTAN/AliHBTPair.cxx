@@ -6,28 +6,102 @@ ClassImp(AliHBTPair)
 /************************************************************************/
 AliHBTPair::AliHBTPair(Bool_t rev):
  fPart1(0x0),
- fPart2(0x0)
+ fPart2(0x0),
+ fSwapedPair(0x0),
+ fQSideCMSLC(0.0),
+ fQSideCMSLCNotCalc(kTRUE),
+ fQOutCMSLC(0.0),
+ fQOutCMSLCNotCalc(kTRUE),
+ fQLongCMSLC(0.0),
+ fQLongCMSLCNotCalc(kTRUE),
+ fQInv(0.0),
+ fQInvNotCalc(kTRUE),
+ fInvMass(0.0),
+ fInvMassNotCalc(kTRUE),
+ fKt(0.0),
+ fKtNotCalc(kTRUE),
+ fKStar(0.0),
+ fKStarNotCalc(kTRUE),
+ fPInv(0.0),
+ fQSide(0.0),
+ fOut(0.0),
+ fQLong(0.0),
+ fMt(0.0),
+ fMtNotCalc(kTRUE),
+ fInvMassSqr(0.0),
+ fMassSqrNotCalc(kTRUE),
+ fQInvL(0.0),
+ fQInvLNotCalc(kTRUE),
+ fPxSum(0.0),
+ fPySum(0.0),
+ fPzSum(0.0),
+ fESum(0.0),
+ fSumsNotCalc(kTRUE),
+ fPxDiff(0.0),
+ fPyDiff(0.0),
+ fPzDiff(0.0),
+ fEDiff(0.0),
+ fDiffsNotCalc(kTRUE),
+ fGammaCMSLC(0.0),
+ fGammaCMSLCNotCalc(kTRUE),
+ fChanged(kTRUE)
  {
 //value of rev defines if it is Swaped
 //if you pass kTRUE swpaped pair will NOT be created
 //though you wont be able to get the swaped pair from this pair
 
   if(!rev) fSwapedPair = new AliHBTPair(kTRUE); //if false create swaped pair
-  else fSwapedPair = 0x0; //if true set the pointer to NULL
   
  }
 /************************************************************************/
 
 AliHBTPair::AliHBTPair(AliHBTParticle* part1, AliHBTParticle* part2, Bool_t rev):
  fPart1(part1),
- fPart2(part2)
+ fPart2(part2),
+ fSwapedPair(0x0),
+ fQSideCMSLC(0.0),
+ fQSideCMSLCNotCalc(kTRUE),
+ fQOutCMSLC(0.0),
+ fQOutCMSLCNotCalc(kTRUE),
+ fQLongCMSLC(0.0),
+ fQLongCMSLCNotCalc(kTRUE),
+ fQInv(0.0),
+ fQInvNotCalc(kTRUE),
+ fInvMass(0.0),
+ fInvMassNotCalc(kTRUE),
+ fKt(0.0),
+ fKtNotCalc(kTRUE),
+ fKStar(0.0),
+ fKStarNotCalc(kTRUE),
+ fPInv(0.0),
+ fQSide(0.0),
+ fOut(0.0),
+ fQLong(0.0),
+ fMt(0.0),
+ fMtNotCalc(kTRUE),
+ fInvMassSqr(0.0),
+ fMassSqrNotCalc(kTRUE),
+ fQInvL(0.0),
+ fQInvLNotCalc(kTRUE),
+ fPxSum(0.0),
+ fPySum(0.0),
+ fPzSum(0.0),
+ fESum(0.0),
+ fSumsNotCalc(kTRUE),
+ fPxDiff(0.0),
+ fPyDiff(0.0),
+ fPzDiff(0.0),
+ fEDiff(0.0),
+ fDiffsNotCalc(kTRUE),
+ fGammaCMSLC(0.0),
+ fGammaCMSLCNotCalc(kTRUE),
+ fChanged(kTRUE)
  {
 //value of rev defines if it is Swaped
 //if you pass kTRUE swpaped pair will NOT be created
 //though you wont be able to get the swaped pair from this pair
 
   if(!rev) fSwapedPair = new AliHBTPair(part2,part1,kTRUE); //if false create swaped pair
-  else fSwapedPair = 0x0; //if true set the pointer to NULL
   
  }
 /************************************************************************/
