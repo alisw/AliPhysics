@@ -16,6 +16,9 @@
 
 /*
 $Log$
+Revision 1.1  2002/01/17 23:52:43  morsch
+First commit.
+
 */
 
 
@@ -60,7 +63,7 @@ Double_t
 AliEMCALHadronCorrectionv0::GetEnergy(const Double_t pmom,const Double_t eta,const Int_t gid)
 {
   Int_t iEta=0; // index 
-  Double_t etaw = fabs(eta);
+  Double_t etaw = TMath::Abs(eta);
   if(etaw > etaGrid[maxVariant-1]) etaw = etaGrid[maxVariant-1];
   for(Int_t i=0; i<maxVariant; i++) if(eta>=etaGrid[i]) {iEta = i; break;}
 
