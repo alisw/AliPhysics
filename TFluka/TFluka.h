@@ -200,7 +200,9 @@ class TFluka : public TVirtualMC {
   virtual Bool_t   IsTrackAlive() const;
  
   // Secondaries
-  virtual Int_t    NSecondaries() const ;
+  virtual Int_t    NSecondaries() const;
+  virtual void     SetNCerenkov(Int_t nc) {fNCerenkov = nc;}
+	  
   virtual void     GetSecondary(Int_t isec, Int_t& particleId, 
 			TLorentzVector& position, TLorentzVector& momentum);
   virtual Bool_t   SecondariesAreOrdered() const {return kFALSE;}
@@ -373,7 +375,8 @@ class TFluka : public TVirtualMC {
   //
   Int_t*               fMaterials;          //!Array of indices
   Int_t                fNVolumes;           //!Current number of volumes
-  Int_t                fCurrentFlukaRegion; //Index of fluka region at each step
+  Int_t                fCurrentFlukaRegion; // Index of fluka region at each step
+  Int_t                fNCerenkov;          // Number of cerekov photons 
   TFlukaMCGeometry    *fGeom;               // TGeo-FLUKA interface
   TGeoMCGeometry      *fMCGeo;              // Interface to TGeo builder
 

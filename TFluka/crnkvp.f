@@ -148,6 +148,7 @@ D    &   ' ###CRNKVP:LSTOPP:',LSTOPP,NEMPHO
 *  +-------------------------------------------------------------------*
 *  +-------------------------------------------------------------------*
 *  |  Stacking loop for Cerenkov photons:
+      NPROD = 0
  1000 CONTINUE
 D        IF ( SIGMCK .LT. ZERZER ) WRITE (77,*)
 D    &      ' ^^^CRNKVP:SIGMCK,BTNFCR',SIGMCK,BTNFCR
@@ -422,6 +423,7 @@ D    &              SCADOT
          POZ  = TZPOPP(LSTOPP)
          CALL PushCerenkovPhoton(PXCR, PYCR, PZCR, EPHSMP, XTRKCR, 
      &        YTRKCR , ZTRKCR, ATRKCR, POX, POY, POZ, WTRACK, ITFL)
+         NPROD = NPROD + 1
 *
 *
 *
@@ -458,6 +460,7 @@ D    &              SCADOT
 *  |
 *  +-------------------------------------------------------------------*
  7000 CONTINUE
+      CALL UserSteppingCKV(NPROD, MREG, XTRKCR, YTRKCR, ZTRKCR)
       RETURN
 *=== End of subroutine Crnkvp =========================================*
       END

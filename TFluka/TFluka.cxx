@@ -45,6 +45,7 @@
 #include "Fopphst.h"       //(OPPHST) fluka common
 #include "Fstack.h"        //(STACK)  fluka common
 #include "Fstepsz.h"       //(STEPSZ) fluka common
+#include "Fopphst.h"       //(OPPHST) fluka common
 
 #include "TVirtualMC.h"
 #include "TMCProcess.h"
@@ -552,9 +553,14 @@ void TFluka::Matrix(Int_t& krot, Double_t thetaX, Double_t phiX,
 void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
 //
 //
-    
-   if (fVerbosityLevel >=3) printf("Gstpar called with %6d %5s %12.4e %6d\n", itmed, param, parval, fGeom->GetFlukaMaterial(itmed));
- 
+// Check if material is used    
+   if (fVerbosityLevel >=3) 
+       printf("Gstpar called with %6d %5s %12.4e %6d\n", itmed, param, parval, fGeom->GetFlukaMaterial(itmed));
+   Int_t* reglist;
+   Int_t nreg;
+   reglist = fGeom->GetMaterialList(itmed, nreg);
+   if (nreg == 0) return;
+//
    Bool_t process = kFALSE;
    if (strncmp(param, "DCAY",  4) == 0 ||
        strncmp(param, "PAIR",  4) == 0 ||
@@ -841,6 +847,8 @@ void TFluka::SetCut(const char* cutName, Double_t cutValue, Int_t imed)
 {
 // Set user cut value for material imed
 //
+    printf("TFluka::SetCut %s %e %d \n", cutName, cutValue, imed);
+    
     TFlukaConfigOption* cut = new TFlukaConfigOption(cutName, cutValue, imed);
     fCuts->Add(cut);
 }
@@ -1001,9 +1009,17 @@ fin:
       Float_t matMax = fLastMaterial;
       Bool_t  global = kTRUE;
       if (proc->Medium() != -1) {
-	  matMin = Float_t(proc->Medium());
+	  Int_t mat;
+	  if ((mat = proc->Medium()) >= GetFlukaMaterials()->GetEntries()) continue;
+	  matMin = Float_t(mat);
 	  matMax = matMin;
 	  global = kFALSE;
+
+	  fprintf(pFlukaVmcInp,"*\n*Material specific process setting for #%8d \n", mat);
+	  printf("Process for %d \n", mat);
+	  TGeoMaterial*    material =  (TGeoMaterial*) (GetFlukaMaterials())->At(GetMaterialIndex(mat));
+	  printf("Process for %d %s\n", mat, material->GetName());
+	  
       }
       
     // annihilation
@@ -1771,10 +1787,15 @@ fin:
       Float_t matMax = fLastMaterial;
       Bool_t global  = kTRUE;
       if (cut->Medium() != -1) {
-	matMin = Float_t(cut->Medium());
-	matMax = matMin;
-	global = kFALSE;
-      }
+	  Int_t mat;
+	  if ((mat = cut->Medium()) >= GetFlukaMaterials()->GetEntries()) continue;
+	  matMin = Float_t(mat);
+	  matMax = matMin;
+	  global = kFALSE;
+	  TGeoMaterial*    material =  (TGeoMaterial*) (GetFlukaMaterials())->At(GetMaterialIndex(mat));
+	  fprintf(pFlukaVmcInp,"*\n*Material specific cut setting for #%8d %s %s %13.3e\n", mat, material->GetName(), cut->GetName(), cut->Cut());  
+
+      } 
 
       // cuts handled in SetProcess calls
       if (strncmp(cut->GetName(),"BCUTM",5) == 0) continue;
@@ -1787,8 +1808,7 @@ fin:
       // G3 default value: 10**4 GeV
       // gMC ->SetCut("DCUTE",cut);  // cut for deltarays by electrons 
       else if (strncmp(cut->GetName(),"DCUTE",5) == 0) {
-	fprintf(pFlukaVmcInp,"*\n*Cut for delta rays by electrons\n");
-	fprintf(pFlukaVmcInp,"*Generated from call: SetCut('DCUTE',cut);\n");
+	fprintf(pFlukaVmcInp,"*Cut for delta rays by electrons\n");
 	// -cut->Cut();
 	// zero = ignored
 	// zero = ignored
@@ -1823,9 +1843,6 @@ fin:
 	fprintf(pFlukaVmcInp,"PART-THR  %10.4g%10.1f\n",-cut->Cut(),7.0);
       }
       else if (strncmp(cut->GetName(),"CUTGAM",6) == 0 && !global) {
-	fprintf(pFlukaVmcInp,"*\n*Cut specific to  material for gamma\n");
-	fprintf(pFlukaVmcInp,"*Generated from call: SetCut('CUTGAM',cut);\n");
-	// cut->Cut();
         // loop over materials for EMFCUT FLUKA cards
         for (j=0; j < matMax-matMin+1; j++) {
           Int_t nreg, imat, *reglist;
@@ -1833,7 +1850,7 @@ fin:
           imat = (Int_t) matMin + j;
           reglist = fGeom->GetMaterialList(imat, nreg);
           // loop over regions of a given material
-          for (Int_t k=0; k<nreg; k++) {
+          for (Int_t k = 0; k < nreg; k++) {
             ireg = reglist[k];
 	    fprintf(pFlukaVmcInp,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", zero, cut->Cut(), zero, ireg, ireg, one);
           }
@@ -1856,9 +1873,6 @@ fin:
 	fprintf(pFlukaVmcInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-cut->Cut(),three,4.0,one);
       }
       else if (strncmp(cut->GetName(),"CUTELE",6) == 0 && !global) {
-	fprintf(pFlukaVmcInp,"*\n*Cut specific to material for electrons\n");
-	fprintf(pFlukaVmcInp,"*Generated from call: SetCut('CUTELE',cut);\n");
-	// -cut->Cut();
         // loop over materials for EMFCUT FLUKA cards
         for (j=0; j < matMax-matMin+1; j++) {
           Int_t nreg, imat, *reglist;
@@ -2438,10 +2452,13 @@ Int_t TFluka::NSecondaries() const
 // Number of secondary particles generated in the current step
 // FINUC.np = number of secondaries except light and heavy ions
 // FHEAVY.npheav = number of secondaries for light and heavy secondary ions
-  Int_t caller = GetCaller();
-  if (caller == 6)  // valid only after usdraw
-    return FINUC.np + FHEAVY.npheav;
-  else
+    Int_t caller = GetCaller();
+    if (caller == 6)  // valid only after usdraw
+	return FINUC.np + FHEAVY.npheav;
+    else if (caller == 50) {
+	// Cerenkov Photon production
+	return fNCerenkov;
+    }
     return 0;
 } // end of NSecondaries
 
@@ -2452,40 +2469,57 @@ void TFluka::GetSecondary(Int_t isec, Int_t& particleId,
 // Copy particles from secondary stack to vmc stack
 //
 
-  Int_t caller = GetCaller();
-  if (caller == 6) {  // valid only after usdraw
-    if (isec >= 0 && isec < FINUC.np) {
-      particleId = PDGFromId(FINUC.kpart[isec]);
-      position.SetX(fXsco);
-      position.SetY(fYsco);
-      position.SetZ(fZsco);
-      position.SetT(TRACKR.atrack);
-      momentum.SetPx(FINUC.plr[isec]*FINUC.cxr[isec]);
-      momentum.SetPy(FINUC.plr[isec]*FINUC.cyr[isec]);
-      momentum.SetPz(FINUC.plr[isec]*FINUC.czr[isec]);
-      momentum.SetE(FINUC.tki[isec] + PAPROP.am[FINUC.kpart[isec]+6]);
-    }
-    else if (isec >= FINUC.np && isec < FINUC.np + FHEAVY.npheav) {
-      Int_t jsec = isec - FINUC.np;
-      particleId = FHEAVY.kheavy[jsec]; // this is Fluka id !!!
-      position.SetX(fXsco);
-      position.SetY(fYsco);
-      position.SetZ(fZsco);
-      position.SetT(TRACKR.atrack);
-      momentum.SetPx(FHEAVY.pheavy[jsec]*FHEAVY.cxheav[jsec]);
-      momentum.SetPy(FHEAVY.pheavy[jsec]*FHEAVY.cyheav[jsec]);
-      momentum.SetPz(FHEAVY.pheavy[jsec]*FHEAVY.czheav[jsec]);
-      if (FHEAVY.tkheav[jsec] >= 3 && FHEAVY.tkheav[jsec] <= 6) 
-        momentum.SetE(FHEAVY.tkheav[jsec] + PAPROP.am[jsec+6]);
-      else if (FHEAVY.tkheav[jsec] > 6)
-        momentum.SetE(FHEAVY.tkheav[jsec] + FHEAVY.amnhea[jsec]); // to be checked !!!
+    Int_t caller = GetCaller();
+    if (caller == 6) {  // valid only after usdraw
+	if (FINUC.np > 0) {
+	    // Hadronic interaction
+	    if (isec >= 0 && isec < FINUC.np) {
+		particleId = PDGFromId(FINUC.kpart[isec]);
+		position.SetX(fXsco);
+		position.SetY(fYsco);
+		position.SetZ(fZsco);
+		position.SetT(TRACKR.atrack);
+		momentum.SetPx(FINUC.plr[isec]*FINUC.cxr[isec]);
+		momentum.SetPy(FINUC.plr[isec]*FINUC.cyr[isec]);
+		momentum.SetPz(FINUC.plr[isec]*FINUC.czr[isec]);
+		momentum.SetE(FINUC.tki[isec] + PAPROP.am[FINUC.kpart[isec]+6]);
+	    }
+	    else if (isec >= FINUC.np && isec < FINUC.np + FHEAVY.npheav) {
+		Int_t jsec = isec - FINUC.np;
+		particleId = FHEAVY.kheavy[jsec]; // this is Fluka id !!!
+		position.SetX(fXsco);
+		position.SetY(fYsco);
+		position.SetZ(fZsco);
+		position.SetT(TRACKR.atrack);
+		momentum.SetPx(FHEAVY.pheavy[jsec]*FHEAVY.cxheav[jsec]);
+		momentum.SetPy(FHEAVY.pheavy[jsec]*FHEAVY.cyheav[jsec]);
+		momentum.SetPz(FHEAVY.pheavy[jsec]*FHEAVY.czheav[jsec]);
+		if (FHEAVY.tkheav[jsec] >= 3 && FHEAVY.tkheav[jsec] <= 6) 
+		    momentum.SetE(FHEAVY.tkheav[jsec] + PAPROP.am[jsec+6]);
+		else if (FHEAVY.tkheav[jsec] > 6)
+		    momentum.SetE(FHEAVY.tkheav[jsec] + FHEAVY.amnhea[jsec]); // to be checked !!!
+	    }
+	    else
+		Warning("GetSecondary","isec out of range");
+	} 
+    } else if (caller == 50) {
+	Int_t index = OPPHST.lstopp - isec;
+	position.SetX(OPPHST.xoptph[index]);
+	position.SetY(OPPHST.yoptph[index]);
+	position.SetZ(OPPHST.zoptph[index]);
+	position.SetT(OPPHST.agopph[index]);
+	Double_t p = OPPHST.poptph[index];
+	
+	momentum.SetPx(p * OPPHST.txopph[index]);
+	momentum.SetPy(p * OPPHST.tyopph[index]);
+	momentum.SetPz(p * OPPHST.tzopph[index]);
+	momentum.SetE(p);
     }
     else
-      Warning("GetSecondary","isec out of range");
-  }
-  else
-    Warning("GetSecondary","no secondaries available");
+	Warning("GetSecondary","no secondaries available");
+    
 } // end of GetSecondary
+
 
 //______________________________________________________________________________ 
 TMCProcess TFluka::ProdProcess(Int_t) const
@@ -2776,6 +2810,7 @@ void TFluka::Gfpart(Int_t pdg, char* name, Int_t& type, Float_t& mass, Float_t& 
 
 
 #define pushcerenkovphoton pushcerenkovphoton_
+#define usersteppingckv    usersteppingckv_
 
 
 extern "C" {
@@ -2795,6 +2830,22 @@ extern "C" {
                             vx, vy, vz, tof,
 			    polx, poly, polz,
 			    kPCerenkov, ntr, wgt, 0); 
+    }
+
+    void usersteppingckv(Int_t & nphot, Int_t & mreg, Double_t & x, Double_t & y, Double_t & z)
+    {
+	//
+	// Calls stepping in order to signal cerenkov production
+	//
+	TFluka *fluka = (TFluka*)gMC;
+	fluka->SetMreg(mreg);
+	fluka->SetXsco(x);
+	fluka->SetYsco(y);
+	fluka->SetZsco(z);
+	fluka->SetNCerenkov(nphot);
+	fluka->SetCaller(50);
+	printf("userstepping ckv: %10d %10d %13.3f %13.3f %13.2f\n", nphot, mreg, x, y, z);
+	(TVirtualMCApplication::Instance())->Stepping();
     }
 }
 
