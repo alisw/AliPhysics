@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.40  2003/04/08 08:14:53  morsch
+AddTrackReference moved to AliModule.
+
 Revision 1.39  2003/02/11 16:54:07  hristov
 Updated AliTrackReference class (S.Radomski)
 
@@ -333,7 +336,7 @@ void AliTRDv1::CreateTRhit(Int_t det)
       // Take the absorbtion in the entrance window into account
       Double_t muMy = fTR->GetMuMy(energyMeV);
       sigma = muMy * fFoilDensity;
-      absLength = gRandom->Exp(sigma);
+      absLength = gRandom->Exp(-sigma);
       if (absLength < AliTRDgeometry::MyThick()) continue;
 
       // The absorbtion cross sections in the drift gas
@@ -352,7 +355,7 @@ void AliTRDv1::CreateTRhit(Int_t det)
 
       // The distance after which the energy of the TR photon
       // is deposited.
-      absLength = gRandom->Exp(sigma);
+      absLength = gRandom->Exp(-sigma);
       if (absLength > AliTRDgeometry::DrThick()) continue;
 
       // The position of the absorbtion
