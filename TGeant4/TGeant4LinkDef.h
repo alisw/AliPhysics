@@ -14,5 +14,6 @@
 #pragma link C++ class  TG4GuiVolume+;
 #pragma link C++ class  TG4MaterialsFrames+;
 #pragma link C++ class  TG4VolumesFrames+;
+#pragma link C++ class  TG4ListTreeFrame+;
 
 #endif
