@@ -139,11 +139,11 @@ class TFluka : public TVirtualMC {
   // Action methods
   virtual void   StopTrack();
   virtual void   ResetStoppingCondition() {fStopped = kFALSE;}
-  virtual Bool_t GetStoppingCondition()   {return fStopped;}
+  virtual Bool_t GetStoppingCondition() const   {return fStopped;}
 
   virtual void   StopEvent() {fStopEvent = kTRUE;}   
   virtual void   StopRun()   {fStopEvent = kTRUE; fStopRun   = kTRUE;}
-  virtual Bool_t EventIsStopped() {return fStopEvent;}
+  virtual Bool_t EventIsStopped() const {return fStopEvent;}
   virtual void   SetStopEvent(Bool_t flag) {fStopEvent = flag;}
   
   // Set methods
