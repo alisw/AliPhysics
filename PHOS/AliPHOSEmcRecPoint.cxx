@@ -292,20 +292,40 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
 {
   // Calculates the dispersion of the shower at the origine of the RecPoint
 
-  Float_t d    = 0 ;
-  Float_t wtot = 0 ;
+  Float_t d    = 0. ;
+  Float_t wtot = 0. ;
 
-  TVector3 locpos;
-  GetLocalPosition(locpos);
-  Float_t x = locpos.X() ;
-  Float_t z = locpos.Z() ;
+  Float_t x = 0 ;
+  Float_t z = 0 ;
 
   AliPHOSDigit * digit ;
  
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
   
+
+ // Calculates the center of gravity in the local PHOS-module coordinates 
+  
   Int_t iDigit;
+
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    digit = (AliPHOSDigit *) digits->At(fDigitsList[iDigit]) ;
+    Int_t relid[4] ;
+    Float_t xi ;
+    Float_t zi ;
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);
+    Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
+    x    += xi * w ;
+    z    += zi * w ;
+    wtot += w ;
+  }
+  x /= wtot ;
+  z /= wtot ;
+
+
+// Calculates the dispersion in coordinates 
+  wtot = 0.;
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
     digit = (AliPHOSDigit *) digits->At(fDigitsList[iDigit])  ;
     Int_t relid[4] ;
@@ -314,17 +334,19 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
     phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
     phosgeom->RelPosInModule(relid, xi, zi);
     Float_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+    printf(">>> x=%f z=%f fAmp %f , IDigit %d, fEnergyList[iDigit] %f w_i %f and w0 %f xi=%f zi=%f \n",x,z,fAmp, iDigit, fEnergyList[iDigit], w, logWeight,xi,zi); 
     d += w*((xi-x)*(xi-x) + (zi-z)*(zi-z) ) ; 
     wtot+=w ;
   }
-
+  
 
   d /= wtot ;
 
   fDispersion = TMath::Sqrt(d) ;
+  printf(">>> Dispersion is %f \n",fDispersion);
 }
 //______________________________________________________________________________
-void AliPHOSEmcRecPoint::EvalCoreEnergy(TClonesArray * digits)
+void AliPHOSEmcRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
 {
   // This function calculates energy in the core, 
   // i.e. within a radius rad = 3cm around the center. Beyond this radius
@@ -333,10 +355,8 @@ void AliPHOSEmcRecPoint::EvalCoreEnergy(TClonesArray * digits)
 
   Float_t coreRadius = 3 ;
 
-  TVector3 locpos;
-  GetLocalPosition(locpos);
-  Float_t x = locpos.X() ;
-  Float_t z = locpos.Z() ;
+  Float_t x = 0 ;
+  Float_t z = 0 ;
 
   AliPHOSDigit * digit ;
 
@@ -344,6 +364,25 @@ void AliPHOSEmcRecPoint::EvalCoreEnergy(TClonesArray * digits)
   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
     
   Int_t iDigit;
+
+// Calculates the center of gravity in the local PHOS-module coordinates 
+  Float_t wtot = 0;
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    digit = (AliPHOSDigit *) digits->At(fDigitsList[iDigit]) ;
+    Int_t relid[4] ;
+    Float_t xi ;
+    Float_t zi ;
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);
+    Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
+    x    += xi * w ;
+    z    += zi * w ;
+    wtot += w ;
+  }
+  x /= wtot ;
+  z /= wtot ;
+
+
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
     digit = (AliPHOSDigit *) ( digits->At(fDigitsList[iDigit]) ) ;
     Int_t relid[4] ;
@@ -376,6 +415,7 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
   AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
 
   Int_t iDigit;
+
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = (AliPHOSDigit *) digits->At(fDigitsList[iDigit])  ;
@@ -436,7 +476,7 @@ void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
   EvalLocalPosition(logWeight, digits) ;
   EvalElipsAxis(logWeight, digits) ;
   EvalDispersion(logWeight, digits) ;
-  EvalCoreEnergy(digits);
+  EvalCoreEnergy(logWeight, digits);
 }
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digits)

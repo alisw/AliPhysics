@@ -40,7 +40,7 @@ public:
   Int_t       Compare(const TObject * obj) const;                         // method for sorting  
 
   virtual void  EvalAll(Float_t logWeight,TClonesArray * digits) ;
-          void  EvalCoreEnergy(TClonesArray * digits) ;             
+          void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             
   virtual void  EvalLocalPosition(Float_t logWeight,TClonesArray * digits) ;// computes the position in the PHOS module 
   virtual void  EvalDispersion(Float_t logWeight,TClonesArray * digits) ;   // computes the dispersion of the shower
   virtual void  EvalElipsAxis(Float_t logWeight, TClonesArray * digits );   // computes the axis of shower ellipsoide
