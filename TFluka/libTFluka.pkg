@@ -1,15 +1,19 @@
 # Sources
-SRCS:=  TFluka.cxx magfld.cxx source.cxx mgdraw.cxx bxdraw.cxx eedraw.cxx endraw.cxx sodraw.cxx usdraw.cxx FlukaVolume.cxx stupre.cxx stuprf.cxx
-FSRCS:= FLUKA_input.f 
+SRCS:=  TFluka.cxx magfld.cxx source.cxx mgdraw.cxx bxdraw.cxx eedraw.cxx \
+	endraw.cxx sodraw.cxx usdraw.cxx FlukaVolume.cxx stupre.cxx \
+	 stuprf.cxx \
+	 abscff.cxx dffcff.cxx queffc.cxx rflctv.cxx rfrndx.cxx
+#SRCS:=  TFluka.cxx FlukaVolume.cxx Fwrap.cxx 
+FSRCS:= FLUKA_input.f
 
 # Headers
-HDRS:= TFluka.h FlukaVolume.h
+HDRS:= TFluka.h FlukaVolume.h 
 
 # ROOT Dictionary
 DHDR:=  TFlukaLinkDef.h
 
 # Extra includes and libraries
-EINCLUDE:= Flugg $(ALICE)/geant4_vmc/include $(G4INSTALL)/include $(CLHEP_BASE_DIR)/include
+EINCLUDE:= Flugg $(ALICE)/geant4_vmc/include $(G4INSTALL)/include $(CLHEP_BASE_DIR)/include $(FLUPRO)/flukapro
 ELIBSDIR:= $(FLUPRO)
 ELIBS   := flukahp
 
