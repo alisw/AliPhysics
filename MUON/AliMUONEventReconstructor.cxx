@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1.2.5  2000/06/16 07:00:26  gosset
+To remove problem in running RuleChecker
+
 Revision 1.1.2.4  2000/06/12 08:00:07  morsch
 Dummy streamer to solve CINT compilation problem (to be investigated !)
 
@@ -987,7 +990,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
 		     (track->GetTrackHitsPtr()->First()))->GetTrackParam();
       // extrapolation to station
       trackParam1->ExtrapToStation(station, trackParam);
-      extrapSegment = new AliMUONSegment::AliMUONSegment(); //  empty segment
+      extrapSegment = new AliMUONSegment(); //  empty segment
       // multiple scattering factor corresponding to one chamber
       // and momentum in bending plane (not total)
       mcsFactor = 0.0136 * trackParam1->GetInverseBendingMomentum();
@@ -1038,7 +1041,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	// Look for best compatible HitForRec in station:
 	// should consider all possibilities ????
 	// multiple scattering ???? do about like for extrapSegment !!!!
-	extrapHit = new AliMUONHitForRec::AliMUONHitForRec(); //  empty hit
+	extrapHit = new AliMUONHitForRec(); //  empty hit
 	bestChi2 = 3.0;
 	bestHit = NULL;
 	if (fPrintLevel >= 10) {
