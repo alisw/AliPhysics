@@ -39,10 +39,11 @@ AliGenCocktail::AliGenCocktail()
 // Constructor
     fName = "Cocktail";
     fTitle= "Particle Generator using cocktail of generators";
-    fEntries = new TList;
     flnk1 = 0;
     flnk2 = 0;
     fNGenerators=0;
+    fEntries = 0;
+    
 }
 
 AliGenCocktail::AliGenCocktail(const AliGenCocktail & cocktail):
@@ -61,6 +62,11 @@ AliGenCocktail::~AliGenCocktail()
 void AliGenCocktail::
 AddGenerator(AliGenerator *Generator, char* Name, Float_t RateExp)
 {
+//
+// Add a generator to the list 
+// First check that list exists
+    if (!fEntries) fEntries = new TList();
+
 //
 //  Forward parameters to the new generator
     if(TestBit(kPtRange) && !(Generator->TestBit(kPtRange)) && !(Generator->TestBit(kMomentumRange))) 
