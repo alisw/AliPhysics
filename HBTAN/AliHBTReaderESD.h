@@ -17,6 +17,7 @@
 class TFile;
 class AliRunLoader;
 class AliESD;
+class AliESDtrack;
 
 class AliHBTReaderESD: public AliHBTReader
 {
@@ -32,12 +33,15 @@ class AliHBTReaderESD: public AliHBTReader
     void          ReadParticles(Bool_t flag){fReadParticles = flag;}
     Bool_t        ReadsTracks() const {return kTRUE;}
     Bool_t        ReadsParticles() const {return fReadParticles;}
-    
+    void          SetCheckParticlePID(Bool_t flag){fCheckParticlePID = flag;}
+        
     void          ReadDataTPC(){}
     void          ReadDataITS(){}
 
     void          SetTPCNClustersRange(Int_t min,Int_t max);
     void          SetTPCChi2PerCluserRange(Float_t min, Float_t max);
+    
+    void          SetChi2(Float_t min, Float_t max);
     void          SetC00Range(Float_t min, Float_t max);
     void          SetC11Range(Float_t min, Float_t max);
     void          SetC22Range(Float_t min, Float_t max);
@@ -52,16 +56,19 @@ class AliHBTReaderESD: public AliHBTReader
     static Int_t  GetSpeciesPdgCode(ESpecies spec);//skowron
     
     Int_t         ReadESD(AliESD* esd);
+    
   protected:
     Int_t         ReadNext();
     TFile*        OpenFile(Int_t evno);//opens files to be read for given event
-
+    Bool_t        CheckTrack(AliESDtrack* t) const;
+    
     TString       fESDFileName;//name of the file with tracks
     TString       fGAlFileName;//name of the file with tracks
     TFile*        fFile;//! pointer to current ESD file
     AliRunLoader* fRunLoader;//!Run Loader
     TIter*        fKeyIterator;
     Bool_t        fReadParticles;//flag indicating wether to read particles from kinematics
+    Bool_t        fCheckParticlePID;//flag indicating to perform the check on PID of simulated particle
     
     Int_t         fNTrackPoints;//number of track points; if==0 track points are not created
     Float_t       fdR;//spacing between points (along radius) in cm
@@ -80,6 +87,9 @@ class AliHBTReaderESD: public AliHBTReader
 
 
     // Required parameters at vertex
+    Float_t       fChi2Min;//Chi^2 min value
+    Float_t       fChi2Max;//Chi^2 max value
+
     Float_t       fC00Min;//C00 (0th diagonal element of covariance matrix) min value
     Float_t       fC00Max;//C00 (0th diagonal element of covariance matrix) max value
             

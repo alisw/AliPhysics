@@ -41,6 +41,7 @@ AliHBTReaderESD::AliHBTReaderESD(const Char_t* esdfilename, const Char_t* galfil
  fRunLoader(0x0),
  fKeyIterator(0x0),
  fReadParticles(kFALSE),
+ fCheckParticlePID(kFALSE),
  fNTrackPoints(0),
  fdR(0.0),
  fClusterMap(kFALSE),
@@ -84,6 +85,7 @@ AliHBTReaderESD::AliHBTReaderESD(TObjArray* dirs,const Char_t* esdfilename, cons
  fRunLoader(0x0),
  fKeyIterator(0x0),
  fReadParticles(kFALSE),
+ fCheckParticlePID(kFALSE),
  fNTrackPoints(0),
  fdR(0.0),
  fClusterMap(kFALSE),
@@ -319,9 +321,7 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
         continue;
       } 
      esdtrack->GetESDpid(pidtable);
-     //esdtrack->GetVertexPxPyPz(mom[0],mom[1],mom[2]); 
      esdtrack->GetConstrainedPxPyPz(mom);
-     //esdtrack->GetVertexXYZ(pos[0],pos[1],pos[2]);
      esdtrack->GetConstrainedXYZ(pos);
      pos[0] -= vertexpos[0];//we are interested only in relative position to Primary vertex at this point
      pos[1] -= vertexpos[1];
@@ -341,11 +341,19 @@ Int_t AliHBTReaderESD::ReadESD(AliESD* esd)
            Error("ReadNext","Can not find track with such label.");
            continue;
          }
+        if(Pass(p->GetPdgCode())) 
+         {
+           if ( AliHBTParticle::GetDebug() > 5 )
+             Info("ReadNext","Simulated Particle PID (%d) did not pass the cut.",p->GetPdgCode());
+           continue; //check if we are intersted with particles of this type 
+         }
 //           if(p->GetPdgCode()<0) charge = -1;
         particle = new AliHBTParticle(*p,i);
 
       }
-
+      
+     if(CheckTrack(esdtrack)) continue;
+      
      //Here we apply Bayes' formula
      Double_t rc=0.;
      for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) rc+=concentr[s]*pidtable[s];
@@ -563,6 +571,47 @@ Int_t AliHBTReaderESD::GetSpeciesPdgCode(ESpecies spec)//skowron
        break;
    }
   return 0;
+}
+/********************************************************************/
+Bool_t AliHBTReaderESD::CheckTrack(AliESDtrack* t) const
+{
+  //Performs check of the track
+  
+  if ( (t->GetConstrainedChi2() < fChi2Min) || (t->GetConstrainedChi2() > fChi2Min) ) return kTRUE;
+  
+  if ( (t->GetTPCclusters(0x0) < fNTPCClustMin) || (t->GetTPCclusters(0x0) > fNTPCClustMax) ) return kTRUE;
+
+  Float_t chisqpercl = t->GetTPCchi2()/((Double_t)t->GetTPCclusters(0x0));
+  if ( (chisqpercl < fTPCChi2PerClustMin) || (chisqpercl > fTPCChi2PerClustMin) ) return kTRUE;
+
+  Double_t cc[15];
+  t->GetConstrainedExternalCovariance(cc);
+
+  if ( (cc[0]  < fC00Min) || (cc[0]  > fC00Max) ) return kTRUE;
+  if ( (cc[2]  < fC11Min) || (cc[2]  > fC11Max) ) return kTRUE;
+  if ( (cc[5]  < fC22Min) || (cc[5]  > fC22Max) ) return kTRUE;
+  if ( (cc[9]  < fC33Min) || (cc[9]  > fC33Max) ) return kTRUE;
+  if ( (cc[14] < fC44Min) || (cc[14] > fC44Max) ) return kTRUE;
+
+
+  t->GetInnerExternalCovariance(cc);
+
+  if ( (cc[0]  < fTPCC00Min) || (cc[0]  > fTPCC00Max) ) return kTRUE;
+  if ( (cc[2]  < fTPCC11Min) || (cc[2]  > fTPCC11Max) ) return kTRUE;
+  if ( (cc[5]  < fTPCC22Min) || (cc[5]  > fTPCC22Max) ) return kTRUE;
+  if ( (cc[9]  < fTPCC33Min) || (cc[9]  > fTPCC33Max) ) return kTRUE;
+  if ( (cc[14] < fTPCC44Min) || (cc[14] > fTPCC44Max) ) return kTRUE;
+
+  return kFALSE;
+
+}
+/********************************************************************/
+
+void AliHBTReaderESD::SetChi2(Float_t min, Float_t max)
+{
+  //sets range of Chi2 per Cluster
+  fChi2Min = min;
+  fChi2Max = max;
 }
 /********************************************************************/
 
