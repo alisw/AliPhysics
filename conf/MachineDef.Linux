@@ -31,9 +31,11 @@ CLIBFOPT      =
 
 # Additional directories for dependencies
 
-DEPINC        = -I/usr/local/include/g++ -I/usr/local/include \
-		-I/usr/local/i686-pc-linux-gnu/include \
-		-I/usr/local/lib/gcc-lib/i686-pc-linux-gnu/egcs-2.91.60/include
+DEPINC	      = `rm -f /tmp/d.cxx; touch /tmp/d.cxx ; \
+                 g++ -v -c /tmp/d.cxx -o /dev/null 2>&1 | \
+                 awk 'BEGIN {i=0} {if(substr($$0,1,10)=="End of sea") i=0; \
+                 if(i==1) printf "%s",$$sub(" ","-I")" "; \
+                 if(substr($$0,1,10) == "\#include <") i=1}' ; rm /tmp/d.cxx`
 		
 LD            = g++
 LDFLAGS       = $(OPT)
