@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2000/10/24 09:26:20  gosset
+Comments updated
+
 Revision 1.16  2000/10/24 09:22:35  gosset
 Method AddHitsForRecFromRawClusters: real Z of raw cluster and not Z of chamber
 
@@ -248,13 +251,19 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
   // SIGCUT*DYMAX(IZ)
   for (Int_t st = 0; st < kMaxMuonTrackingStations; st++)
     fSegmentMaxDistNonBending[st] = 5. * 0.22;
-  // Maximum distance in bending plane
-  // values from TRACKF_STAT corresponding to (J psi 20cm)
-  fSegmentMaxDistBending[0] = 1.5;
-  fSegmentMaxDistBending[1] = 1.5;
-  fSegmentMaxDistBending[2] = 3.0;
-  fSegmentMaxDistBending[3] = 6.0;
-  fSegmentMaxDistBending[4] = 6.0;
+  // Maximum distance in bending plane:
+  // values from TRACKF_STAT, corresponding to (J psi 20cm),
+  // scaled to the real distance between chambers in a station
+  fSegmentMaxDistBending[0] = 1.5 *
+    ((&(pMUON->Chamber(1)))->Z() - (&(pMUON->Chamber(0)))->Z()) / 20.0;
+  fSegmentMaxDistBending[1] = 1.5 *
+    ((&(pMUON->Chamber(3)))->Z() - (&(pMUON->Chamber(2)))->Z()) / 20.0;
+  fSegmentMaxDistBending[2] = 3.0 *
+    ((&(pMUON->Chamber(5)))->Z() - (&(pMUON->Chamber(4)))->Z()) / 20.0;
+  fSegmentMaxDistBending[3] = 6.0 *
+    ((&(pMUON->Chamber(7)))->Z() - (&(pMUON->Chamber(6)))->Z()) / 20.0;
+  fSegmentMaxDistBending[4] = 6.0 *
+    ((&(pMUON->Chamber(9)))->Z() - (&(pMUON->Chamber(8)))->Z()) / 20.0;
   
   fBendingResolution = kDefaultBendingResolution;
   fNonBendingResolution = kDefaultNonBendingResolution;
