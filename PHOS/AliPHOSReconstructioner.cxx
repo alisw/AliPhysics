@@ -97,32 +97,33 @@ ClassImp(AliPHOSReconstructioner)
 } 
 
 //____________________________________________________________________________
-AliPHOSReconstructioner::AliPHOSReconstructioner(const char* headerFile):TTask("AliPHOSReconstructioner","")
+AliPHOSReconstructioner::AliPHOSReconstructioner(const char* headerFile,const char * branchName):
+TTask("AliPHOSReconstructioner","")
 {
   // ctor
   
   fHeaderFileName = headerFile ;
 
-  fSDigitsBranch="Default" ; 
+  fSDigitsBranch= branchName; 
   fSDigitizer  = new AliPHOSSDigitizer(fHeaderFileName.Data(),fSDigitsBranch.Data()) ; 
   Add(fSDigitizer) ;
 
-  fDigitsBranch="Default" ; 
+  fDigitsBranch=branchName ; 
   fDigitizer   = new AliPHOSDigitizer(fHeaderFileName.Data(),fDigitsBranch.Data()) ; 
   Add(fDigitizer) ;
 
 
-  fRecPointBranch="Default" ; 
+  fRecPointBranch=branchName ; 
   fClusterizer = new AliPHOSClusterizerv1(fHeaderFileName.Data(),fRecPointBranch.Data()) ; 
   Add(fClusterizer) ;
   
 
-  fTSBranch="Default" ; 
+  fTSBranch=branchName ; 
   fTSMaker     = new AliPHOSTrackSegmentMakerv1(fHeaderFileName.Data(),fTSBranch.Data()) ;
   Add(fTSMaker) ;
   
   
-  fRecPartBranch="Default" ; 
+  fRecPartBranch=branchName ; 
   fPID         = new AliPHOSPIDv1(fHeaderFileName.Data(),fRecPartBranch.Data()) ;
   Add(fPID) ;
   
