@@ -56,6 +56,9 @@
 #include "TGraph.h"
 #include "TH2.h"
 #include "TStopwatch.h"
+
+ClassImp(AliPHOSMemoryWatcher)
+
 //_____________________________________________________________________________
 AliPHOSMemoryWatcher::AliPHOSMemoryWatcher(unsigned int maxsize)
 {
