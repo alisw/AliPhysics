@@ -138,10 +138,6 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
   // the event header
   AliRawDataHeader header;
 
-  if (fDebug) {
-    printf("Event header size: %d \n",sizeof(header));
-  }
-
   // Open the output files
   for (Int_t iDDL = 0; iDDL < kNumberOfDDLs; iDDL++) {
     char name[20];
