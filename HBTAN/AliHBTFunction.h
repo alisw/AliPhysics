@@ -61,15 +61,19 @@ class AliHBTFunction: public TNamed
 inline AliHBTPair* AliHBTFunction::CheckPair(AliHBTPair* pair)
 {
   //check if pair and both particles meets the cut criteria
-  if(fPairCut->Pass(pair)) //if the pair is BAD
-   {//it is BAD 
-    pair = pair->GetSwapedPair();
-    if(pair)
-     if(fPairCut->Pass(pair)) //so try reverse combination
-       { 
-        return 0x0;//it is BAD as well - so return
-       }
-   }
+  if(fPairCut->Pass(pair)) return 0x0; //if the pair is BAD
+
+//   It is notallowed to change the order here beacause analysis enforce the order
+
+//   {//it is BAD 
+//    pair = pair->GetSwapedPair();
+//    if(pair)
+//     if(fPairCut->Pass(pair)) //so try reverse combination
+//       { 
+//        return 0x0;//it is BAD as well - so return
+//       }
+//   }
+
   return pair; 
 }
 
