@@ -16,7 +16,12 @@
 
 //_________________________________________________________________________
 // Class for the analysis of gamma-jet correlations 
-//   
+//  Basically it seaches for a prompt photon in the PHOS acceptance, 
+//  if so we construct a jet around the highest pt particle in the opposite 
+//  side in azimuth, inside the TPC and EMCAL acceptances. First the leading 
+//  particle and then the jet have to fullfill several conditions 
+//  (energy, direction ..) to be accepted. Then the fragmentation function 
+//  of this jet is constructed   
 // 
 //*-- Author: Gustavo Conesa & Yves Schutz (IFIC, CERN) 
 //////////////////////////////////////////////////////////////////////////////
@@ -24,24 +29,17 @@
 
 // --- ROOT system ---
 
-#include "TString.h"
-#include "TFile.h"
-#include "TLorentzVector.h"
-#include "TList.h"
-#include "TTree.h"
-#include "TNtuple.h"
 #include "TParticle.h"
 #include "TCanvas.h"
 #include "TPaveLabel.h"
 #include "TPad.h"
-#include "TArrayC.h"
-#include "AliRun.h"
 #include "AliPHOSGammaJet.h" 
 #include "AliPHOSGetter.h" 
+#include "TH2.h"
 #include "AliPHOSGeometry.h"
-#include "TF1.h"
-#include "Riostream.h"
-#include "../PYTHIA6/AliGenPythia.h"
+#include "AliPHOSFastGlobalReconstruction.h"
+//#include "Riostream.h"
+//#include "../PYTHIA6/AliGenPythia.h"
 
 ClassImp(AliPHOSGammaJet)
 
@@ -51,9 +49,9 @@ AliPHOSGammaJet::AliPHOSGammaJet() : TTask()
   // ctor
   fAngleMaxParam.Set(4) ;
   fAngleMaxParam.Reset(0.);
-  fAnyConeOrPt      = kFALSE ;
+  fAnyConeOrPt      = 0  ;
   fEtaCut           = 0. ;
-  fFastRec          = 0 ;
+  fFastRec          = 0  ;
   fInvMassMaxCut    = 0. ;
   fInvMassMinCut    = 0. ;
   fJetRatioMaxCut   = 0. ;
@@ -61,11 +59,11 @@ AliPHOSGammaJet::AliPHOSGammaJet() : TTask()
   fJetTPCRatioMaxCut   = 0. ;
   fJetTPCRatioMinCut   = 0. ;
   fMinDistance      = 0. ;
-  fNEvent           = 0 ;
-  fNCone            = 0 ;
-  fNPt              = 0 ;
-  fOnlyCharged      = kFALSE ;
-  fOptFast          = kFALSE ;
+  fNEvent           = 0  ;
+  fNCone            = 0  ;
+  fNPt              = 0  ;
+  fOnlyCharged      = 0  ;
+  fOptFast          = 0  ;
   fPhiMaxCut        = 0. ;
   fPhiMinCut        = 0. ;
   fPtCut            = 0. ;
@@ -75,8 +73,8 @@ AliPHOSGammaJet::AliPHOSGammaJet() : TTask()
   fRatioMinCut      = 0. ;
   fCone             = 0  ;
   fPtThreshold      = 0  ;
-  fTPCCutsLikeEMCAL = kFALSE ;
-  fSelect           = kFALSE ;
+  fTPCCutsLikeEMCAL = 0  ;
+  fSelect           = 0  ;
   for(Int_t i = 0; i<10; i++){
     fCones[i]         = 0.0 ;
     fNameCones[i]     = ""  ;
@@ -100,7 +98,7 @@ AliPHOSGammaJet::AliPHOSGammaJet() : TTask()
     }
   }
 
-  fOption         = "" ;
+  fOptionGJ       = "" ;
   fOutputFile     = new TFile(gDirectory->GetName()) ;
   fInputFileName  = gDirectory->GetName() ;
   fOutputFileName = gDirectory->GetName() ;
@@ -149,7 +147,7 @@ AliPHOSGammaJet::AliPHOSGammaJet(const AliPHOSGammaJet & gj) : TTask(gj)
   fInvMassMaxCut     = gj.fInvMassMaxCut ;
   fInvMassMinCut     = gj.fInvMassMinCut ;
   fFastRec           = gj.fFastRec ;
-  fOption            = gj.fOption ;
+  fOptionGJ          = gj.fOptionGJ ;
   fMinDistance       = gj.fMinDistance ;
   fOptFast           = gj.fOptFast ;
   fOnlyCharged       = gj.fOnlyCharged ;
@@ -242,11 +240,11 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
   Char_t fi[100];
   sprintf(fi,"bgrd/%d/list.root",iEvent);
   TFile * f = TFile::Open(fi) ;
-  cout<<f->GetName()<<endl;
+  //cout<<f->GetName()<<endl;
 
   TParticle *particle = new TParticle();
-  TTree *T = (TTree*) f->Get("T");
-  TBranch *branch = T->GetBranch("primaries");
+  TTree *t = (TTree*) f->Get("T");
+  TBranch *branch = t->GetBranch("primaries");
   branch->SetAddress(&particle);
 
   Int_t index   = particleList->GetEntries() ; 
@@ -257,10 +255,10 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
   Int_t iParticle = 0 ; 
   Int_t m = 0;
   Double_t x = 0., z = 0.;
-  //  cout<<"bkg entries "<<T->GetEntries()<<endl;
+  //  cout<<"bkg entries "<<t->GetEntries()<<endl;
   if(!fOptFast){
-    for (iParticle=0 ; iParticle < T->GetEntries() ; iParticle++) {
-      T->GetEvent(iParticle) ;
+    for (iParticle=0 ; iParticle < t->GetEntries() ; iParticle++) {
+      t->GetEvent(iParticle) ;
  
       m = 0 ;
       x = 0. ;
@@ -280,7 +278,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 	  (dynamic_cast<TParticle*>(plCh->At(indexCh)))->SetStatusCode(0) ;
 	  indexCh++ ;
 	  
-	  if(strstr(fOption,"deb all")||strstr(fOption,"deb")){
+	  if(strstr(fOptionGJ,"deb all")||strstr(fOptionGJ,"deb")){
 	    dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 	      Fill(particle->Pt());
 	  }
@@ -290,7 +288,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 	 
 	  if(m != 0)
 	    {//Is in PHOS
-	      if(strstr(fOption,"deb all")|| strstr(fOption,"deb"))
+	      if(strstr(fOptionGJ,"deb all")|| strstr(fOptionGJ,"deb"))
 		dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 		  Fill(particle->Pt());
 	
@@ -302,7 +300,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 	  if((particle->Phi()>fPhiEMCALCut[0]) && 
 	     (particle->Phi()<fPhiEMCALCut[1]) && m == 0)
 	    {//Is in EMCAL 
-	      if(strstr(fOption,"deb all")|| strstr(fOption,"deb"))
+	      if(strstr(fOptionGJ,"deb all")|| strstr(fOptionGJ,"deb"))
 		dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 		  Fill(particle->Pt());
 
@@ -328,8 +326,8 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
     //     fFastRec = new AliPHOSFastGlobalReconstruction(fHIJINGFileName);
     //     fFastRec->FastReconstruction(iiEvent);
     
-    for (iParticle=0 ; iParticle <   T->GetEntries() ; iParticle++) {
-      T->GetEvent(iParticle) ;
+    for (iParticle=0 ; iParticle <   t->GetEntries() ; iParticle++) {
+      t->GetEvent(iParticle) ;
       m = 0 ;
       x = 0. ;
       z = 0. ;
@@ -397,7 +395,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 	    //Check if decay photons are too close for PHOS
 	    cellDistance = angle*460; //cm
 	    if (cellDistance < fMinDistance) {
-	      if(strstr(fOption,"deb all")|| strstr(fOption,"deb"))
+	      if(strstr(fOptionGJ,"deb all")|| strstr(fOptionGJ,"deb"))
 		dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 		  Fill(particle->Pt());
 	      
@@ -423,7 +421,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 		  indexNe++ ; 
 		}
 		if(m != 0){
-		  if(strstr(fOption,"deb all")|| strstr(fOption,"deb"))
+		  if(strstr(fOptionGJ,"deb all")|| strstr(fOptionGJ,"deb"))
 		    dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 		      Fill(particle->Pt());
 		  new((*plNePHOS)[indexNePHOS])       TParticle(*particle) ;
@@ -452,7 +450,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 		  geom->ImpactOnEmc(photon1->Theta(),photon1->Phi(), m,z,x);
 		  if( photon1->Phi()>fPhiEMCALCut[0] && photon1->Phi()<fPhiEMCALCut[1]
 		      && m == 0){
-		    if(strstr(fOption,"deb all") || strstr(fOption,"deb"))
+		    if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))
 		      dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 			Fill(photon1->Pt());
 		    new((*particleList)[index]) TParticle(*photon1) ;
@@ -465,7 +463,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 		    p1 = kTRUE;
 		  }
 		  if(m != 0){
-		    if(strstr(fOption,"deb all") || strstr(fOption,"deb"))
+		    if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))
 		      dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 			Fill(photon1->Pt());
 		    new((*plNePHOS)[indexNePHOS])       TParticle(*photon1) ;
@@ -486,7 +484,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 		  geom->ImpactOnEmc(photon2->Theta(),photon2->Phi(), m,z,x);
 		  if(photon2->Phi()>fPhiEMCALCut[0] && 
 		     photon2->Phi()<fPhiEMCALCut[1] && m == 0){
-		    if(strstr(fOption,"deb all") || strstr(fOption,"deb"))
+		    if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))
 		      dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 			Fill(photon2->Pt());
 		    new((*particleList)[index]) TParticle(*photon2) ;
@@ -498,7 +496,7 @@ void AliPHOSGammaJet::AddHIJINGToList(Int_t iEvent, TClonesArray * particleList,
 		    indexNe++ ; 
 		  }
 		  if(m != 0){
-		    if(strstr(fOption,"deb all") || strstr(fOption,"deb"))
+		    if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))
 		      dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 			Fill(photon2->Pt());
 		    new((*plNePHOS)[indexNePHOS])       TParticle(*photon2) ;
@@ -529,14 +527,14 @@ Double_t AliPHOSGammaJet::CalculateJetRatioLimit(const Double_t ptg,
 						 const Double_t *x) {
 
   //Info("CalculateLimit","x1 %f, x2%f",x[0],x[1]);
-  Double_t Epp = par[0] + par[1] * ptg ;
-  Double_t Spp = par[2] + par[3] * ptg ;
+  Double_t epp = par[0] + par[1] * ptg ;
+  Double_t spp = par[2] + par[3] * ptg ;
   Double_t f   = x[0]   + x[1]   * ptg ;
-  Double_t Epb = Epp + par[4] ;
-  Double_t Spb = TMath::Sqrt(Spp*Spp+ par[5]*par[5]) ;
-  Double_t rat = (Epb - Spb * f) / ptg ;
-  //Info("CalculateLimit","Epp %f, Spp %f, f %f", Epp, Spp, f);
-  //Info("CalculateLimit","Epb %f, Spb %f, rat %f", Epb, Spb, rat);
+  Double_t epb = epp + par[4] ;
+  Double_t spb = TMath::Sqrt(spp*spp+ par[5]*par[5]) ;
+  Double_t rat = (epb - spb * f) / ptg ;
+  //Info("CalculateLimit","epp %f, spp %f, f %f", epp, spp, f);
+  //Info("CalculateLimit","epb %f, spb %f, rat %f", epb, spb, rat);
   return rat ;
 }
 
@@ -579,7 +577,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 	    ->GetParticle(particle->GetPdgCode())->Charge();
 	  if((charge != 0) && (particle->Pt() > fChargedPtCut)){
 	    
-	    if(strstr(fOption,"deb all")|| strstr(fOption,"deb"))
+	    if(strstr(fOptionGJ,"deb all")|| strstr(fOptionGJ,"deb"))
 	      dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 		Fill(particle->Pt());
 	    new((*plCh)[indexCh++])       TParticle(*particle) ;
@@ -589,7 +587,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 	    geom->ImpactOnEmc(particle->Theta(),particle->Phi(), m,z,x);
 	    if(m != 0)
 	      {//Is in PHOS
-		if(strstr(fOption,"deb all")|| strstr(fOption,"deb"))
+		if(strstr(fOptionGJ,"deb all")|| strstr(fOptionGJ,"deb"))
 		  dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 		    Fill(particle->Pt());
 		
@@ -598,7 +596,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 	    if((particle->Phi()>fPhiEMCALCut[0]) && 
 	       (particle->Phi()<fPhiEMCALCut[1]) && m == 0)
 	      {//Is in EMCAL 
-		if(strstr(fOption,"deb all")|| strstr(fOption,"deb"))
+		if(strstr(fOptionGJ,"deb all")|| strstr(fOptionGJ,"deb"))
 		  dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 		    Fill(particle->Pt());
 		new((*plNe)[indexNe++])       TParticle(*particle) ;
@@ -693,7 +691,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 		    if(part.Pt() > fNeutralPtCut){
 		      if(particle->Phi()>fPhiEMCALCut[0] && 
 			 particle->Phi()<fPhiEMCALCut[1] && m == 0){
-			if(strstr(fOption,"deb all")|| strstr(fOption,"deb"))
+			if(strstr(fOptionGJ,"deb all")|| strstr(fOptionGJ,"deb"))
 			  dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 			    Fill(particle->Pt());
 			
@@ -707,7 +705,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 			indexNe++;
 		      }//InEMCAL
 		      if(m != 0){
-			if(strstr(fOption,"deb all")|| strstr(fOption,"deb"))
+			if(strstr(fOptionGJ,"deb all")|| strstr(fOptionGJ,"deb"))
 			  dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 			    Fill(particle->Pt());
 			new((*plNePHOS)[indexNePHOS])       TParticle(*particle) ;
@@ -734,7 +732,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 		      geom->ImpactOnEmc(photon1->Theta(),photon1->Phi(), m,z,x);
 		      if( photon1->Phi()>fPhiEMCALCut[0] && photon1->Phi()<fPhiEMCALCut[1]
 			  && m == 0){
-		      if(strstr(fOption,"deb all") || strstr(fOption,"deb"))
+		      if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))
 			dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 			  Fill(photon1->Pt());
 		      new((*plNe)[indexNe++])       TParticle(*photon1) ;
@@ -743,7 +741,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 		      p1 = kTRUE;
 		      }
 		      if(m != 0){
-			if(strstr(fOption,"deb all") || strstr(fOption,"deb"))
+			if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))
 			  dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 			    Fill(photon1->Pt());
 			new((*plNePHOS)[indexNePHOS++])       TParticle(*photon1) ;
@@ -761,14 +759,14 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 		      geom->ImpactOnEmc(photon2->Theta(),photon2->Phi(), m,z,x);
 		      if(photon2->Phi()>fPhiEMCALCut[0] && 
 			 photon2->Phi()<fPhiEMCALCut[1] && m == 0){
-			if(strstr(fOption,"deb all") || strstr(fOption,"deb"))
+			if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))
 			  dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 			    Fill(photon2->Pt());
 			new((*plNe)[indexNe++])       TParticle(*photon2) ;
 			new((*particleList)[index++]) TParticle(*photon2) ;
 		      }
 		      if(m != 0){
-			if(strstr(fOption,"deb all") || strstr(fOption,"deb"))
+			if(strstr(fOptionGJ,"deb all") || strstr(fOptionGJ,"deb"))
 			  dynamic_cast<TH1F*>(fListHistos->FindObject("PtSpectra"))->
 			    Fill(photon2->Pt());
 			new((*plNePHOS)[indexNePHOS++])       TParticle(*photon2) ;
@@ -798,7 +796,7 @@ void AliPHOSGammaJet::CreateParticleList(Int_t iEvent,
 void AliPHOSGammaJet::Exec(Option_t *option) 
 {
   // does the job
-  fOption = option;
+  fOptionGJ = option;
   MakeHistos() ; 
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
@@ -814,7 +812,7 @@ void AliPHOSGammaJet::Exec(Option_t *option)
   TClonesArray * plNePHOS     = new TClonesArray("TParticle",1000);
 
   for (Int_t iEvent = 0 ; iEvent < fNEvent ; iEvent++) {
-    if(strstr(fOption,"deb")||strstr(fOption,"deb all"))
+    if(strstr(fOptionGJ,"deb")||strstr(fOptionGJ,"deb all"))
       Info("Exec", "Event %d", iEvent) ;
 
     fRan.SetSeed(0);
@@ -860,10 +858,10 @@ void AliPHOSGammaJet::Exec(Option_t *option)
       AddHIJINGToList(iEvent, particleList, plCh,plNe, plNePHOS, geom);
 
 
-    Bool_t IsInPHOS = kFALSE ;
-    GetGammaJet(plNePHOS, ptg, phig, etag, IsInPHOS) ; 
+    Bool_t iIsInPHOS = kFALSE ;
+    GetGammaJet(plNePHOS, ptg, phig, etag, iIsInPHOS) ; 
 
-    if(IsInPHOS){
+    if(iIsInPHOS){
 
       //Info("Exec"," In PHOS") ;
       dynamic_cast<TH1F*>(fListHistos->FindObject("NGamma"))->Fill(ptg);
@@ -871,7 +869,7 @@ void AliPHOSGammaJet::Exec(Option_t *option)
  	->Fill(ptg,phig);
       dynamic_cast<TH2F*>(fListHistos->FindObject("EtaGamma"))
  	->Fill(ptg,etag);
-      if(strstr(fOption,"deb")||strstr(fOption,"deb all"))
+      if(strstr(fOptionGJ,"deb")||strstr(fOptionGJ,"deb all"))
  	Info("Exec", "Gamma: pt %f, phi %f, eta %f", ptg,
  	     phig,etag) ;
 
@@ -912,7 +910,7 @@ void AliPHOSGammaJet::Exec(Option_t *option)
 	    ->Fill(ptg,phig-phich);
 	  dynamic_cast<TH2F*>(fListHistos->FindObject("DeltaEtaCharge"))
 	    ->Fill(ptg,etag-etach);
-	  if(strstr(fOption,"deb"))
+	  if(strstr(fOptionGJ,"deb"))
 	  Info("Exec"," Charged Leading") ;
 	}
 	if((ptpi > ptch) && insidepi){
@@ -927,18 +925,18 @@ void AliPHOSGammaJet::Exec(Option_t *option)
 	  dynamic_cast<TH2F*>(fListHistos->FindObject("DeltaEtaPi0"))
 	    ->Fill(ptg,etag-etapi);
 	  
-	  if(ptpi > 0. && strstr(fOption,"deb"))
+	  if(ptpi > 0. && strstr(fOptionGJ,"deb"))
 	    Info("Exec"," Pi0 Leading") ;
 	}
 		
-	if(strstr(fOption,"deb"))
+	if(strstr(fOptionGJ,"deb"))
 	  Info("Exec","Leading pt %f, phi %f",ptl,phil);
 	if(insidech || insidepi){
 	  if(!fAnyConeOrPt){
 	   
 	    MakeJet(particleList, ptg, phig, ptl, phil, etal, "", jet);
 
-	    if(strstr(fOption,"deb")){
+	    if(strstr(fOptionGJ,"deb")){
 // 	      Info("Exec","Pythia Jet: Phi %f, Eta %f, Pt %f",
 // 		   pyjet.Phi(),pyjet.Eta(),pyjet.Pt());
 	      Info("Exec","TPC+EMCAL Jet: Phi %f, Eta %f, Pt %f",
@@ -958,7 +956,7 @@ void AliPHOSGammaJet::Exec(Option_t *option)
 	//TPC
 	if(fOnlyCharged && ptch > 0.)
 	  {
-	    if(strstr(fOption,"deb"))
+	    if(strstr(fOptionGJ,"deb"))
 	      Info("Exec","Leading TPC pt %f, phi %f",ptch,phich);
 
 	    dynamic_cast<TH2F*>(fListHistos->FindObject("TPCRatio"))
@@ -972,7 +970,7 @@ void AliPHOSGammaJet::Exec(Option_t *option)
 	   
 	      MakeJet(plCh, ptg, phig, ptch, phich, etach, "TPC",jettpc);
 
-	      if(strstr(fOption,"deb")){
+	      if(strstr(fOptionGJ,"deb")){
 // 		Info("Exec","Pythia Jet: Phi %f, Eta %f, Pt %f",
 // 		     pyjet.Phi(),pyjet.Eta(),pyjet.Pt());
 		Info("Exec","TPC Jet: Phi %f, Eta %f, Pt %f",
@@ -1011,7 +1009,8 @@ void AliPHOSGammaJet::Exec(Option_t *option)
 void AliPHOSGammaJet::FillJetHistos(TClonesArray * pl, Double_t ptg, 
 				    TString conf, TString type)
 {
-  
+  //Fill jet fragmentation histograms if !fAnyCone, 
+  //only for fCone and fPtThres 
   TParticle * particle = 0 ;
   Int_t ipr = -1 ;
   Float_t  charge = 0;
@@ -1042,7 +1041,8 @@ void AliPHOSGammaJet::FillJetHistosAnyConeOrPt(TClonesArray * pl, Double_t ptg,
 					       TString conf, TString type,
 					       TString cone, TString ptcut)
 {
-  
+   //Fill jet fragmentation histograms if fAnyCone, 
+   //for several cones and pt thresholds  
    TParticle *particle = 0;
    Int_t ipr=-1;
    Float_t  charge = 0;
@@ -1072,9 +1072,9 @@ void AliPHOSGammaJet::FillJetHistosAnyConeOrPt(TClonesArray * pl, Double_t ptg,
 
 //____________________________________________________________________________
 void AliPHOSGammaJet::GetGammaJet(TClonesArray * pl, Double_t &pt, 
-				  Double_t &phi, Double_t &eta, Bool_t &Is)
-
+				  Double_t &phi, Double_t &eta, Bool_t &Is) const 
 {
+  //Search for the prompt photon in PHOS with pt > fPtCut
   pt  = -10.;
   eta = -10.;
   phi = -10.;
@@ -1098,9 +1098,10 @@ void AliPHOSGammaJet::GetGammaJet(TClonesArray * pl, Double_t &pt,
 //____________________________________________________________________________
 void  AliPHOSGammaJet::GetLeadingCharge(TClonesArray * pl, 
 					Double_t ptg, Double_t phig, 
-					Double_t &pt, Double_t &eta, Double_t &phi)
+					Double_t &pt, Double_t &eta, Double_t &phi) const 
 {  
-
+  //Search for the charged particle with highest with 
+  //Phi=Phi_gamma-Pi and pT=0.1E_gamma 
   pt  = -100.;
   eta = -100;
   phi = -100;
@@ -1129,8 +1130,11 @@ void  AliPHOSGammaJet::GetLeadingCharge(TClonesArray * pl,
 //____________________________________________________________________________
 void  AliPHOSGammaJet::GetLeadingPi0(TClonesArray * pl, 
 				     Double_t ptg, Double_t phig, 
-				     Double_t &pt,  Double_t &eta, Double_t &phi)
+				     Double_t &pt,  Double_t &eta, Double_t &phi)  
 {  
+
+  //Search for the neutral pion with highest with 
+  //Phi=Phi_gamma-Pi and pT=0.1E_gamma 
   pt  = -100.;
   eta = -100.;
   phi = -100.;
@@ -1314,6 +1318,9 @@ void  AliPHOSGammaJet::GetLeadingPi0(TClonesArray * pl,
 //____________________________________________________________________________
 void AliPHOSGammaJet::InitParameters()
 {
+
+  //Initialize the parameters of the analysis.
+
   fAngleMaxParam.Set(4) ;
   fAngleMaxParam.AddAt(0.4,0);//={0.4,-0.25,0.025,-2e-4};
   fAngleMaxParam.AddAt(-0.25,1) ;
@@ -1321,7 +1328,7 @@ void AliPHOSGammaJet::InitParameters()
   fAngleMaxParam.AddAt(-2e-4,3) ;
   fAnyConeOrPt    = kFALSE ;
   fOutputFileName = "GammaJet.root" ;
-  fOption         = "";
+  fOptionGJ         = "";
   fHIJINGFileName = "galice.root" ;
   fHIJING         = kFALSE ;
   fMinDistance    = 3.6 ;
@@ -1408,7 +1415,9 @@ void AliPHOSGammaJet::InitParameters()
 }
 
 //__________________________________________________________________________-
-Bool_t AliPHOSGammaJet::IsAngleInWindow(const Float_t angle,const Float_t e){
+Bool_t AliPHOSGammaJet::IsAngleInWindow(const Float_t angle,const Float_t e) {
+  //Check if the opening angle of the candidate pairs is inside 
+  //our selection windowd
   Bool_t result = kFALSE;
   Double_t mpi0 = 0.1349766;
   Double_t max =  fAngleMaxParam.At(0)*TMath::Exp(fAngleMaxParam.At(1)*e)
@@ -1427,6 +1436,7 @@ Bool_t AliPHOSGammaJet::IsAngleInWindow(const Float_t angle,const Float_t e){
 //__________________________________________________________________________-
 Bool_t AliPHOSGammaJet::IsJetSelected(const Double_t ptg, const Double_t ptj, 
 				      const TString type ){
+  //Check if the energy of the reconstructed jet is within an energy window
 
   Double_t par[6];
   Double_t xmax[2];
@@ -2184,7 +2194,9 @@ void AliPHOSGammaJet::MakeJet(TClonesArray * pl,
 			      Double_t ptl, Double_t  phil, Double_t  etal,
 			      TString conf, TLorentzVector & jet)
 {
-  
+  //Fill the jet with the particles around the leading particle with 
+  //R=fCone and pt_th = fPtThres. Calculate the energy of the jet and 
+  //check if we select it. Fill jet histograms
   Float_t ptcut = 0. ;
   if(fHIJING){
     if(ptg > fPtJetSelectionCut)  ptcut = 2. ;
@@ -2239,7 +2251,7 @@ void AliPHOSGammaJet::MakeJet(TClonesArray * pl,
   ptjet = jet.Pt();
   ptbkg = bkg.Pt();
 
-  if(strstr(fOption,"deb") || strstr(fOption,"deb all"))
+  if(strstr(fOptionGJ,"deb") || strstr(fOptionGJ,"deb all"))
     Info("MakeJet","Gamma   pt %f, Jet pt %f, Bkg pt %f",ptg,ptjet,ptbkg);
  
 
@@ -2259,7 +2271,7 @@ void AliPHOSGammaJet::MakeJet(TClonesArray * pl,
 
 
   if(IsJetSelected(ptg,ptjet,conf) || fSelect){
-    if(strstr(fOption,"deb") || strstr(fOption,"deb all"))
+    if(strstr(fOptionGJ,"deb") || strstr(fOptionGJ,"deb all"))
       Info("MakeJet","JetSelected");
     dynamic_cast<TH1F*>(fListHistos->FindObject("N"+conf+"Jet"))->
       Fill(ptg);
@@ -2278,6 +2290,10 @@ void AliPHOSGammaJet::MakeJetAnyConeOrPt(TClonesArray * pl, Double_t ptg,
 					 Double_t  phig, Double_t ptl, 
 					 Double_t  phil, Double_t  etal, 
 					 TString conf){
+
+  //Fill the jet with the particles around the leading particle with 
+  //R=fCone(i) and pt_th = fPtThres(i). Calculate the energy of the jet and 
+  //check if we select it. Fill jet i histograms
   
   TClonesArray * jetList = new TClonesArray("TParticle",1000);
   TClonesArray * bkgList = new TClonesArray("TParticle",1000);
@@ -2337,7 +2353,7 @@ void AliPHOSGammaJet::MakeJetAnyConeOrPt(TClonesArray * pl, Double_t ptg,
       //Fill histograms
       if(ptjet > 0.) {
 
-	if(strstr(fOption,"deb")){
+	if(strstr(fOptionGJ,"deb")){
 	  Info("MakeJetAnyPt","cone %f, ptcut %f",fCones[icone],fPtThres[ipt]);
 	  Info("MakeJetAnyPt","pT: Gamma %f, Jet %f, Bkg  %f",ptg,ptjet,ptbkg);
 	}
@@ -2387,7 +2403,7 @@ void AliPHOSGammaJet::MakeJetAnyConeOrPt(TClonesArray * pl, Double_t ptg,
 //____________________________________________________________________________
 void  AliPHOSGammaJet::MakePhoton(TLorentzVector & particle)
 {
-  
+  //Fast reconstruction for photons
   Double_t energy = particle.E()  ;
   Double_t modenergy = MakeEnergy(energy) ;
   //Info("MakePhoton","Energy %f, Modif %f",energy,modenergy);
@@ -2475,6 +2491,7 @@ void AliPHOSGammaJet::Pi0Decay(Double_t mPi0, TLorentzVector &p0,
 //____________________________________________________________________________
 void AliPHOSGammaJet::Plot(TString what, Option_t * option) const
 {
+  //Plot some relevant histograms of the analysis
   TH2F * h = dynamic_cast<TH2F*>(fOutputFile->Get(what));
   if(h){
     h->Draw();
@@ -2522,10 +2539,11 @@ void AliPHOSGammaJet::Plot(TString what, Option_t * option) const
 //____________________________________________________________________________
 void AliPHOSGammaJet::Print(char * opt) 
 {
+
+  //Print some relevant parameters set for the analysis
   if(! opt)
     return;
 
-  // Print 
   Info("Print", "%s %s", GetName(), GetTitle() ) ;
  
   printf("Eta cut           : %f\n", fEtaCut) ;
@@ -2547,7 +2565,8 @@ void AliPHOSGammaJet::Print(char * opt)
 void AliPHOSGammaJet::SetJet(TParticle * part, Bool_t & b, Float_t cone, 
 			     Double_t eta, Double_t phi)
 {
-  
+
+  //Check if the particle is inside the cone defined by the leading particle
   b = kFALSE;
   
   if(phi > TMath::TwoPi())

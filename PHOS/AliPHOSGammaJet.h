@@ -5,19 +5,21 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  Class for the analysis of gamma-jet correlations     
-//                  
+//  Class for the analysis of gamma-jet correlations.     
+//  Basically it seaches for a prompt photon in the PHOS acceptance, 
+//  if so we construct a jet around the highest pt particle in the opposite 
+//  side in azimuth. This jet has to fullfill several conditions to be 
+//  accepted. Then the fragmentation function of this jet is constructed 
+
 //*-- Author: Gustavo Conesa & Yves Schutz (IFIC, CERN)
 
 // --- ROOT system ---
 #include "TTask.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TMatrix.h"
-#include "TList.h"
-#include "AliPHOSGeometry.h"
-#include "AliPHOSFastGlobalReconstruction.h"
-#include "../PYTHIA6/AliGenPythia.h"
+#include "TRandom.h"
+#include "TArrayD.h"
+class AliPHOSGeometry ;
+class AliPHOSFastGlobalReconstruction ;
+//#include "../PYTHIA6/AliGenPythia.h"
 // --- AliRoot header files ---
 
 class AliPHOSGammaJet : public TTask {
@@ -27,43 +29,44 @@ public:
   AliPHOSGammaJet() ; // default ctor
   AliPHOSGammaJet(const TString inputfilename) ; //ctor 
   AliPHOSGammaJet(const AliPHOSGammaJet & gj) ; // cpy ctor
-  ~AliPHOSGammaJet() ; // dtor
+  AliPHOSGammaJet & operator = (const AliPHOSGammaJet & /*rvalue*/) 
+    { return *this ;} //assignement operator requested by coding convention but not needed
+  virtual ~AliPHOSGammaJet() ; //virtual dtor
   virtual void   Exec(Option_t *option); 
   void List() const; 
-  Double_t GetAngleMaxParam(Int_t i){return fAngleMaxParam.At(i) ; }
-  Double_t GetEtaCut(){return fEtaCut;}
-  Double_t GetPhiEMCALCut(Int_t i){return fPhiEMCALCut[i];}
-  TString  GetHIJINGFileName(){return fHIJINGFileName ; }
-  TString  GetHistosFileName(){return fOutputFileName ; }
-  Double_t GetInvMassMaxCut(){return fInvMassMaxCut ; }
-  Double_t GetInvMassMinCut(){return fInvMassMinCut ; }
-  Double_t GetPhiMaxCut(){return fPhiMaxCut ; }
-  Double_t GetPhiMinCut(){return fPhiMinCut ; }
-  Double_t GetPtCut(){return fPtCut ; }
-  Double_t GetNeutralPtCut(){return fNeutralPtCut ; }
-  Double_t GetChargedPtCut(){return fChargedPtCut ; }
-  Double_t GetPtJetSelectionCut(){return fPtJetSelectionCut ; }
-  Double_t GetMinDistance(){return fMinDistance ; }
-  Double_t GetJetRatioMaxCut(){return fJetRatioMaxCut ; }
-  Double_t GetJetRatioMinCut(){return fJetRatioMinCut ; }
-  Double_t GetRatioMaxCut(){return fRatioMaxCut ; }
-  Double_t GetRatioMinCut(){return fRatioMinCut ; }
-  Int_t    GetNEvent(){return fNEvent ; }
-  Int_t    GetNCones(){return fNCone ; }
-  Int_t    GetNPtThres(){return fNPt ; }
-  Float_t  GetCone(){return fCone ; }
-  Float_t  GetPtThreshold(){return fPtThreshold ; }
-  Float_t  GetCones(Int_t i){return fCones[i] ; }
-  Float_t  GetPtThreshold(Int_t i){return fPtThres[i] ; }
-  TString  GetConeName(Int_t i){return fNameCones[i] ; }
-  TString  GetPtThresName(Int_t i){return fNamePtThres[i] ; }
-  Bool_t   GetTPCCutsLikeEMCAL(){return fTPCCutsLikeEMCAL ; }
- 
+   Double_t GetAngleMaxParam(Int_t i) const {return fAngleMaxParam.At(i) ; }
+   Double_t GetEtaCut() const {return fEtaCut;}
+   Double_t GetPhiEMCALCut(Int_t i) const {return fPhiEMCALCut[i];}
+   TString  GetHIJINGFileName() const {return fHIJINGFileName ; }
+   TString  GetHistosFileName() const {return fOutputFileName ; }
+   Double_t GetInvMassMaxCut() const {return fInvMassMaxCut ; }
+   Double_t GetInvMassMinCut() const {return fInvMassMinCut ; }
+   Double_t GetPhiMaxCut() const {return fPhiMaxCut ; }
+   Double_t GetPhiMinCut() const {return fPhiMinCut ; }
+   Double_t GetPtCut() const {return fPtCut ; }
+   Double_t GetNeutralPtCut() const {return fNeutralPtCut ; }
+   Double_t GetChargedPtCut() const {return fChargedPtCut ; }
+   Double_t GetPtJetSelectionCut() const {return fPtJetSelectionCut ; }
+   Double_t GetMinDistance() const {return fMinDistance ; }
+   Double_t GetJetRatioMaxCut() const {return fJetRatioMaxCut ; }
+   Double_t GetJetRatioMinCut() const {return fJetRatioMinCut ; }
+   Double_t GetRatioMaxCut() const {return fRatioMaxCut ; }
+   Double_t GetRatioMinCut() const {return fRatioMinCut ; }
+   Int_t    GetNEvent() const {return fNEvent ; }
+   Int_t    GetNCones() const {return fNCone ; }
+   Int_t    GetNPtThres() const {return fNPt ; }
+   Float_t  GetCone() const {return fCone ; }
+   Float_t  GetPtThreshold() const {return fPtThreshold ; }
+   Float_t  GetCones(Int_t i) const {return fCones[i] ; }
+   Float_t  GetPtThreshold(Int_t i) const {return fPtThres[i] ; }
+   TString  GetConeName(Int_t i) const {return fNameCones[i] ; }
+   TString  GetPtThresName(Int_t i) const {return fNamePtThres[i] ; }
+   Bool_t   GetTPCCutsLikeEMCAL() const {return fTPCCutsLikeEMCAL ; }
 
-  Bool_t   IsAnyConeOrPt(){return fAnyConeOrPt ; }
-  Bool_t   IsFastReconstruction(){return fOptFast ; }
-  Bool_t   IsHIJING(){return fHIJING ; }
-  Bool_t   IsOnlyCharged(){return fOnlyCharged ; }
+   Bool_t   IsAnyConeOrPt() const {return fAnyConeOrPt ; }
+   Bool_t   IsFastReconstruction() const {return fOptFast ; }
+   Bool_t   IsHIJING() const {return fHIJING ; }
+   Bool_t   IsOnlyCharged() const {return fOnlyCharged ; }
 
   void Plot(TString what="all", Option_t *option="") const;
   void Print(char * opt);
@@ -145,14 +148,14 @@ public:
 			  Double_t phil, Double_t ptl, Double_t phil, 
 			  Double_t etal, TString  type); 
   void GetGammaJet(TClonesArray * pl,  Double_t &pt, 
-		   Double_t &phi, Double_t &eta, Bool_t &Is) ;
+		   Double_t &phi, Double_t &eta, Bool_t &Is)  const;
 
   void GetLeadingCharge(TClonesArray * pl, 
 			Double_t ptg,  Double_t phig, 
-			Double_t &pt, Double_t &eta, Double_t &phi) ;
+			Double_t &pt, Double_t &eta, Double_t &phi) const ;
   void GetLeadingPi0   (TClonesArray * pl, 
 			Double_t ptg, Double_t phig, 
-			Double_t &pt, Double_t &eta, Double_t &phi) ;
+			Double_t &pt, Double_t &eta, Double_t &phi)  ;
 
   void InitParameters();
   Double_t MakeEnergy(const Double_t energy) ;
@@ -169,14 +172,14 @@ public:
 	      Double_t phi);
 
  private: 
-  Bool_t     fAnyConeOrPt; 
-  Option_t * fOption ;         //! Fill most interesting histograms 
+  Bool_t     fAnyConeOrPt;     //  To play with the jet cone size and pt th.
+  Option_t * fOptionGJ ;       //! Fill most interesting histograms 
 		               // and give interesting information
   TFile *    fOutputFile ;     //! Output file
   TString    fOutputFileName;  //! Output file Name
   TString    fInputFileName;   //!
   TString    fHIJINGFileName;  //!
-  Bool_t     fHIJING;
+  Bool_t     fHIJING;          // Add HIJING event to PYTHIA event?
   Double_t   fEtaCut ;         // Eta cut
   Bool_t     fOnlyCharged ;    // Only jets of charged particles
   Double_t   fPhiEMCALCut[2] ; // Phi cut maximum
@@ -200,30 +203,30 @@ public:
   Double_t   fJetRatioMinCut ; // Jet/gamma Ratio cut minimum
 
   //Cuts depending on jet pt
-  Double_t fJetE1[2];
-  Double_t fJetE2[2];
-  Double_t fJetSigma1[2];
-  Double_t fJetSigma2[2];
-  Double_t fBkgMean[6];
-  Double_t fBkgRMS[6];
-  Double_t fJetXMin1[6];
-  Double_t fJetXMin2[6];
-  Double_t fJetXMax1[6];
-  Double_t fJetXMax2[6];
+  Double_t fJetE1[2];    //Rec. jet energy parameters
+  Double_t fJetE2[2];    //Rec. jet energy parameters
+  Double_t fJetSigma1[2];//Rec. sigma of jet energy  parameters
+  Double_t fJetSigma2[2];//Rec. sigma of jet energy  parameters
+  Double_t fBkgMean[6];  //Background mean energy 
+  Double_t fBkgRMS[6];   //Background RMS
+  Double_t fJetXMin1[6]; //X Factor to set jet min limit for pp
+  Double_t fJetXMin2[6]; //X Factor to set jet min limit for PbPb
+  Double_t fJetXMax1[6]; //X Factor to set jet max limit for pp
+  Double_t fJetXMax2[6]; //X Factor to set jet max limit for PbPb
 
-  Int_t      fNEvent ;         // Number of events to analyze
-  Int_t      fNCone ;          // Number of jet cones sizes
-  Int_t      fNPt   ;          // Number of jet particle pT threshold
-  Double_t   fCone  ;        // Jet cone sizes under study
-  Double_t   fCones[10];        // Jet cone sizes under study
-  TString    fNameCones[10];
-  Double_t   fPtThreshold;
-  Double_t   fPtThres[10];     // Jet pT threshold under study
-  Double_t   fPtJetSelectionCut;     // Jet pT threshold under study
-  TString    fNamePtThres[10]; 
-  TObjArray * fListHistos ;    //! list of Histograms
-  AliPHOSFastGlobalReconstruction * fFastRec;
-  Bool_t     fOptFast;
+  Int_t      fNEvent ;           // Number of events to analyze
+  Int_t      fNCone ;            // Number of jet cones sizes
+  Int_t      fNPt   ;            // Number of jet particle pT threshold
+  Double_t   fCone  ;            // Jet cone sizes under study (!fAnyConeSize)
+  Double_t   fCones[10];         // Jet cone sizes under study (fAnyConeSize)
+  TString    fNameCones[10];     // String name of cone to append to histos
+  Double_t   fPtThreshold;       // Jet pT threshold under study(!fAnyConeSize)
+  Double_t   fPtThres[10];       // Jet pT threshold under study(fAnyConeSize)
+  Double_t   fPtJetSelectionCut; // Jet pt to change to low pt jets analysis
+  TString    fNamePtThres[10];   // String name of pt th to append to histos
+  TObjArray * fListHistos ;      //! list of Histograms
+  AliPHOSFastGlobalReconstruction * fFastRec; //Pointer to fast recons.
+  Bool_t     fOptFast;    // Do we want fast Rec?
   TRandom    fRan ;       //! random number generator
   //Energy and position parameters
   Double_t   fResPara1 ;  // parameter for the energy resolution dependence  
@@ -231,7 +234,7 @@ public:
   Double_t   fResPara3 ;  // parameter for the energy resolution dependence 
   Double_t   fPosParaA ;  // parameter for the position resolution
   Double_t   fPosParaB ;  // parameter for the position resolution 
-  TArrayD    fAngleMaxParam ;
+  TArrayD    fAngleMaxParam ; //Max opening angle selection parameters
   Bool_t fSelect  ;  //Select jet within limits
 
   ClassDef(AliPHOSGammaJet,2)
