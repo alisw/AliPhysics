@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.12  2001/09/07 08:38:10  hristov
+  Pointers initialised to 0 in the default constructors
+
   Revision 1.11  2001/05/10 12:35:39  jbarbosa
   Update.
 
@@ -72,7 +75,7 @@ AliRICHChamber::AliRICHChamber()
 //
 // Chamber object constructor
 
-    fChamberMatrix = 0;
+    fpRotMatrix = 0;
     fSegmentation = 0;
     fResponse = 0;
     fGeometry = 0;
@@ -113,44 +116,35 @@ void AliRICHChamber::LocaltoGlobal(Float_t pos[3],Float_t Globalpos[3])
 
 // Local coordinates to global coordinates transformation
 
-    Double_t *fMatrix;
-    fMatrix =  fChamberMatrix->GetMatrix();
-    Globalpos[0]=pos[0]*fMatrix[0]+pos[1]*fMatrix[3]+pos[2]*fMatrix[6];
-    Globalpos[1]=pos[0]*fMatrix[1]+pos[1]*fMatrix[4]+pos[2]*fMatrix[7];
-    Globalpos[2]=pos[0]*fMatrix[2]+pos[1]*fMatrix[5]+pos[2]*fMatrix[8];
-    Globalpos[0]+=fChamberTrans[0];
-    Globalpos[1]+=fChamberTrans[1];
-    Globalpos[2]+=fChamberTrans[2];
+    Double_t *pMatrix;
+    pMatrix =  fpRotMatrix->GetMatrix();
+    Globalpos[0]=pos[0]*pMatrix[0]+pos[1]*pMatrix[3]+pos[2]*pMatrix[6];
+    Globalpos[1]=pos[0]*pMatrix[1]+pos[1]*pMatrix[4]+pos[2]*pMatrix[7];
+    Globalpos[2]=pos[0]*pMatrix[2]+pos[1]*pMatrix[5]+pos[2]*pMatrix[8];
+    Globalpos[0]+=fX;
+    Globalpos[1]+=fY;
+    Globalpos[2]+=fZ;
 }
 
 void AliRICHChamber::GlobaltoLocal(Float_t pos[3],Float_t Localpos[3])
 {
-
+//
 // Global coordinates to local coordinates transformation
-
-    Double_t *fMatrixOrig;
-    TMatrix fMatrixCopy(3,3);
-    fMatrixOrig = fChamberMatrix->GetMatrix();
+//
+    TMatrix matrixCopy(3,3);
+    Double_t *pMatrixOrig = fpRotMatrix->GetMatrix();
     for(Int_t i=0;i<3;i++)
       {
 	for(Int_t j=0;j<3;j++)
-	  fMatrixCopy(j,i)=fMatrixOrig[j+3*i];
+	  matrixCopy(j,i)=pMatrixOrig[j+3*i];
       }
-    fMatrixCopy.Invert();
-    //Int_t elements=fMatrixCopy.GetNoElements();
-    //printf("Elements:%d\n",elements);
-    //fMatrixOrig= (Double_t*) fMatrixCopy;
-    Localpos[0] = pos[0] - fChamberTrans[0];
-    Localpos[1] = pos[1] - fChamberTrans[1];
-    Localpos[2] = pos[2] - fChamberTrans[2];
-    //printf("r1:%f, r2:%f, r3:%f\n",Localpos[0],Localpos[1],Localpos[2]);
-    //printf("t1:%f t2:%f t3:%f\n",fChamberTrans[0],fChamberTrans[1],fChamberTrans[2]);
-    Localpos[0]=Localpos[0]*fMatrixCopy(0,0)+Localpos[1]*fMatrixCopy(0,1)+Localpos[2]*fMatrixCopy(0,2);
-    Localpos[1]=Localpos[0]*fMatrixCopy(1,0)+Localpos[1]*fMatrixCopy(1,1)+Localpos[2]*fMatrixCopy(1,2);
-    Localpos[2]=Localpos[0]*fMatrixCopy(2,0)+Localpos[1]*fMatrixCopy(2,1)+Localpos[2]*fMatrixCopy(2,2);
-    //Localpos[0]-=fChamberTrans[0];
-    //Localpos[1]-=fChamberTrans[1];
-    //Localpos[2]-=fChamberTrans[2];
+    matrixCopy.Invert();
+    Localpos[0] = pos[0] - fX;
+    Localpos[1] = pos[1] - fY;
+    Localpos[2] = pos[2] - fZ;
+    Localpos[0]=Localpos[0]*matrixCopy(0,0)+Localpos[1]*matrixCopy(0,1)+Localpos[2]*matrixCopy(0,2);
+    Localpos[1]=Localpos[0]*matrixCopy(1,0)+Localpos[1]*matrixCopy(1,1)+Localpos[2]*matrixCopy(1,2);
+    Localpos[2]=Localpos[0]*matrixCopy(2,0)+Localpos[1]*matrixCopy(2,1)+Localpos[2]*matrixCopy(2,2);
 } 
 
 
