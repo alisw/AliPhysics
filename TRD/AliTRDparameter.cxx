@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/10/14 14:57:44  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.5.6.3  2002/10/11 07:26:37  hristov
 Updating VirtualMC to v3-09-02
 
@@ -1242,7 +1245,7 @@ Float_t AliTRDparameter::GetTiltingAngle() const
   // Get the tilting angle for the readout pads
   //
 
-  return TMath::ATan(180.0/TMath::Pi() * fTiltingAngle);
+  return 180.0 / TMath::Pi() * TMath::ATan(fTiltingAngle);
 
 }
 
