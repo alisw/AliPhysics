@@ -4,8 +4,6 @@
 // See the class description in the header file.
 
 #include "AliSingleModuleConstruction.h"
-#include "AliSingleModuleConstructionMessenger.h"
-#include "AliSDManager.h"
 #include "AliGlobals.h"
 #include "AliFiles.h"
 #include "AliRun.h"
@@ -13,56 +11,49 @@
 
 #include "TG4GeometryManager.h"
 
-#include <G3SensVolVector.hh>
 #include <G4UImanager.hh>
 //#include <G4Element.hh>
-#include <G4LogicalVolume.hh>
-#include <G4LogicalVolumeStore.hh>
 
 #include <TROOT.h> 
 #include <TCint.h> 
 
 G4VPhysicalVolume* AliSingleModuleConstruction::fgWorld = 0;
 
+//_____________________________________________________________________________
 AliSingleModuleConstruction::AliSingleModuleConstruction(
                                 G4String moduleName, G4int version,
 				AliModuleType moduleType)
   : AliModuleConstruction(moduleName),
     fVersion(version),
     fType(moduleType),
-    fProcessConfig(true),
-    fAllLVSensitive(false)
+    fProcessConfig(true)
 {
 //
-  fSDManager = AliSDManager::Instance();
-
-  moduleName.toLower();
-  fMessenger = new AliSingleModuleConstructionMessenger(this, moduleName);
 }
 
+//_____________________________________________________________________________
 AliSingleModuleConstruction::AliSingleModuleConstruction(
                                 const AliSingleModuleConstruction& right)
   : AliModuleConstruction(right)				
 {
 //
-  // allocation in assignement operator
-  fMessenger = 0;
-  
   // copy stuff
   *this = right;
 }
 
+//_____________________________________________________________________________
 AliSingleModuleConstruction::AliSingleModuleConstruction() {
 //
 }
 
+//_____________________________________________________________________________
 AliSingleModuleConstruction::~AliSingleModuleConstruction() {
 //
-  delete fMessenger;
 }
 
 // operators
 
+//_____________________________________________________________________________
 AliSingleModuleConstruction& 
 AliSingleModuleConstruction::operator=(const AliSingleModuleConstruction& right)
 {    
@@ -75,81 +66,20 @@ AliSingleModuleConstruction::operator=(const AliSingleModuleConstruction& right)
   fVersion = right.fVersion;
   fType = right.fType;
   fProcessConfig = right.fProcessConfig;
-  fAllLVSensitive = right.fAllLVSensitive;
-  fSDManager = right.fSDManager;
- 
-  // messenger is protected from copying  
-  if (fMessenger) delete fMessenger;
-  G4String moduleName = right.fModuleName;
-  moduleName.toLower();
-  fMessenger = new AliSingleModuleConstructionMessenger(this, moduleName);
  
   return *this;
 }
 
-// private methods
-
-void AliSingleModuleConstruction::CreateSensitiveDetectors()
-{
-// Creates sensitive detectors.
-// ---
-
-  if (fAllLVSensitive)
-    CreateSensitiveDetectors1();
-  else
-    CreateSensitiveDetectors2();
-
-  // set static number of logical volumes already processed
-  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  fSDManager->SetNofLVWithSD(pLVStore->size());  
-}   
-
-void AliSingleModuleConstruction::CreateSensitiveDetectors1()
-{ 
-// Creates sensitive detectors.
-// Sensitive detectors are set to all logical volumes
-// ---
-
-  G4LogicalVolumeStore* pLVStore = G4LogicalVolumeStore::GetInstance();
-  G4int nofLV = pLVStore->size();
-  
-  G4int nofLVWithSD = fSDManager->GetNofLVWithSD();
-  
-  for (G4int i=nofLVWithSD; i<nofLV; i++) {
-    G4LogicalVolume* lv = (*pLVStore)[i];
-    fSDManager->CreateSD(lv, fAliModule);
-  }
-}
-
-void AliSingleModuleConstruction::CreateSensitiveDetectors2()
-{ 
-// Creates sensitive detectors.
-// Sensitive detectors are set only to logical volumes
-// in G3SensVolVector.
-// ---
-
-  TG4GeometryManager* pGeometryManager = TG4GeometryManager::Instance();
-
-  G3SensVolVector pSVVector
-    = pGeometryManager->GetG3SensVolVector();
-
-  G4int nofSV = pSVVector.entries();
-  if (nofSV>0)
-    for (G4int isv=0; isv<nofSV; isv++) {
-      G4LogicalVolume* lv = pSVVector[isv];
-      fSDManager->CreateSD(lv, fAliModule);
-    } 
-}
-
 // public methods 
 
+//_____________________________________________________________________________
 void AliSingleModuleConstruction::Configure(const AliFiles& files)
 { 
 // Executes the detector setup Root macro
 // (extracted from AliRoot Config.C) and
 // G4 macro.
 // ---
-   	  
+
   // filepaths and macro names 
   G4bool isStructure = (fType == kStructure);
   G4String rootFilePath 
@@ -185,6 +115,7 @@ void AliSingleModuleConstruction::Configure(const AliFiles& files)
   }  
 }
 
+//_____________________________________________________________________________
 void AliSingleModuleConstruction::Construct()
 { 
 // Constructs geometry.
@@ -236,21 +167,11 @@ void AliSingleModuleConstruction::Construct()
   // (without warning output if enevelope is not defined)
   SetDetFrame(false);
 
-  // create sensitive detectors
-  CreateSensitiveDetectors();
-
-  // build sensitive detectors table
-  fAliModule->Init();
-
   // construct geometry for display
   fAliModule->BuildGeometry();
 
   // reset TG4GeometryManager 
   pGeometryManager->ClearG3Tables();
-  
-  // print current total number of logical volumes
-  G4cout << "Current total number of sensitive volumes: "
-         << pGeometryManager->NofVolumes() << G4endl;
 
 #ifdef ALICE_VISUALIZE
   if (GetDetFrame()) {
