@@ -37,12 +37,14 @@
 #include "AliKalmanTrack.h"
 #endif
 
-Double_t Match(TParticle * pp, AliESDtrack * cp) ; 
-TH1D * heta = new TH1D("heta", "Eta correlation", 100, -2., 2.) ; 
-TH1D * hphi = new TH1D("hphi", "Phi correlation", 360, 0., 360.) ; 
+void Match(TParticle * pp, AliESDtrack * cp, Double_t * dist) ; 
+TH1D * heta = new TH1D("heta", "Eta correlation", 100, 0., 360.) ; 
+TH1D * hphi = new TH1D("hphi", "Phi correlation", 100, 0., 360.) ; 
  
+
 void Ana() 
 { 
+  Double_t dist[3] ; 
   AliPHOSGetter * gime = AliPHOSGetter::Instance("galice.root") ; 
   Int_t nEvent = gime->MaxEvent() ;  
   Int_t event ; 
@@ -63,22 +65,21 @@ void Ana()
       for (cpindex = 0 ; cpindex < esd->GetNumberOfTracks() ; cpindex++) {
 	// get the charged tracks from central tracking
 	cp = esd->GetTrack(cpindex) ;
-	Double_t dist = Match(part, cp) ; 
-	
-	if (dist < 99999.) 
-	  cout << "================ Distance = " << dist << endl ; 
+	Match(part, cp, dist) ; 
       }
+      heta->Fill( dist[1] ) ; 
+      hphi->Fill( dist[2] ) ; 
     }
   }
-  //  heta->Draw() ; 
-  hphi->Draw() ; 
+  heta->Draw() ; 
+  //hphi->Draw() ; 
 }
-Double_t Match(TParticle * part, AliESDtrack * cp) 
+
+void Match(TParticle * part, AliESDtrack * cp, Double_t * dist) 
 {
   // Calculates the distance (x,z) between  the particle detected by PHOS and 
   // the charged particle reconstructed by the global tracking 
 
-  Double_t dist = 99999. ;
    
   AliPHOSRecParticle * pp  = dynamic_cast<AliPHOSRecParticle*>(part) ;  
   AliEMCALRecParticle * ep = dynamic_cast<AliEMCALRecParticle*>(part) ;  
@@ -87,9 +88,11 @@ Double_t Match(TParticle * part, AliESDtrack * cp)
   Double_t phZ, phX ; 
   
   if (pp) { // it is a PHOS particle 
-    
- //    cout << "PHOS particle # " << " pos (" 
-// 	 << pp->GetPos().X() << ", " << pp->GetPos().Y() << ", " << pp->GetPos().Z() << ")" << endl ;
+    Double_t cpTheta,  cpPhi ;  
+    Double_t phTheta,  phPhi ; 
+    cpTheta = cpPhi = phTheta = phPhi = 0. ; 
+   //    cout << "PHOS particle # " << " pos (" 
+    // 	 << pp->GetPos().X() << ", " << pp->GetPos().Y() << ", " << pp->GetPos().Z() << ")" << endl ;
     
     AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
     gime->PHOSGeometry()->ImpactOnEmc(*pp, phN, phZ, phX) ; 
@@ -102,33 +105,32 @@ Double_t Match(TParticle * part, AliESDtrack * cp)
       // 	do not continue;
       //       if ((status & AliESDtrack::kTRDStop)!=0) 
       // 	do not continue;  
-//       cout << "Charged particle # " << " pos (" 
-// 	   << xyzAtPHOS[0] << ", " << xyzAtPHOS[1] << ", " << xyzAtPHOS[2] << ")" <<  endl ;     
+      //       cout << "Charged particle # " << " pos (" 
+      // 	   << xyzAtPHOS[0] << ", " << xyzAtPHOS[1] << ", " << xyzAtPHOS[2] << ")" <<  endl ;     
       TVector3 poscp(xyzAtPHOS[0], xyzAtPHOS[1], xyzAtPHOS[2]) ;
       Int_t cpN ;
       Double_t cpZ,cpX ; 
       gime->PHOSGeometry()->ImpactOnEmc(poscp, cpN, cpZ, cpX) ; 
       if (cpN) {// we are inside the PHOS acceptance 
-// 	cout << "Charged Matching 1: " << cpN << " " << cpZ << " " << cpX << endl ; 
-// 	cout << "Charged Matching 2: " << phN << " " << phZ << " " << phX << endl ; 
-	dist = TMath::Sqrt( (cpZ-phZ)*(cpZ-phZ) + (cpX-phX)*(cpX-phX)) ;  
+	// 	cout << "Charged Matching 1: " << cpN << " " << cpZ << " " << cpX << endl ; 
+	// 	cout << "Charged Matching 2: " << phN << " " << phZ << " " << phX << endl ; 
+	dist[0] = TMath::Sqrt( (cpZ-phZ)*(cpZ-phZ) + (cpX-phX)*(cpX-phX)) ;  
       } 
-      Double_t phTheta = pp->Theta() ; 
-      Double_t phPhi   = pp->Phi() ;
+      phTheta = pp->Theta() ; 
+      phPhi   = pp->Phi() ;
       TParticle tempo ; 
       tempo.SetMomentum(xyzAtPHOS[0], xyzAtPHOS[1], xyzAtPHOS[2], 0.) ;  
-      Double_t cpTheta = tempo.Theta() ; 
-      Double_t cpPhi   = tempo.Phi() ;
+      cpTheta = tempo.Theta() ; 
+      cpPhi   = tempo.Phi() ;
       //cout << phTheta << " " << phPhi << " " << endl 
       //cout <<	 cpTheta << " " << cpPhi-phPhi << " " << endl ; 
-      heta->Fill( (phTheta - cpTheta)*TMath::RadToDeg() ) ; 
-      hphi->Fill( (phPhi - cpPhi)*TMath::RadToDeg() ) ; 
     }
+    dist[1] = (phTheta - cpTheta)*TMath::RadToDeg() ; 
+    dist[2] = (phPhi - cpPhi)*TMath::RadToDeg() ; 
   }
   
   if (ep) {
     //cout << "EMCAL particle # " << endl ; 
   }
-  return dist ; 
 }
  
