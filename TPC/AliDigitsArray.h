@@ -8,18 +8,20 @@
 ////////////////////////////////////////////////
 //  Manager class for AliDigitsArray        //
 ////////////////////////////////////////////////
+
+#include "AliSegmentArray.h"
 class AliDetectorParam;
 
 class AliDigitsArray : public AliSegmentArray {
 public:
   AliDigitsArray();
-  ~AliDigitsArray();  
+  virtual ~AliDigitsArray();  
   virtual   Bool_t Setup(AliDetectorParam *param);  //setup array according parameters
   const AliDetectorParam *  GetParam() {return fParam;} 
   virtual Bool_t SetParam(AliDetectorParam * param);
 protected:  
   AliDetectorParam * fParam;      //pointer to detector parameters 
-  ClassDef(AliDigitsArray,1) 
+  ClassDef(AliDigitsArray,1) // Digits manager  
 };
   
 #endif //ALIDIGITSARRAY_H
