@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/10/02 21:28:09  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.6  2000/07/03 11:54:57  morsch
 AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
 The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
@@ -977,9 +980,10 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
         points->SetPoint(0,xpad,ypad,zpos);	
 	for (Int_t imark=0;imark<nPara; imark++)
 	{
+	    Int_t lineColor = (zpad-zpos > 0) ? 2:3;
 	    segmentation->GetPadC(mdig->fPadX + imark*offset, mdig->fPadY,xpad, ypad, zpad);
 	    marker=new TMarker3DBox(xpad,ypad,zpos,dpx,dpy,0,0,0);
-	    marker->SetLineColor(2);
+	    marker->SetLineColor(lineColor);
 	    marker->SetFillStyle(1001);
 	    marker->SetFillColor(color);
 	    marker->SetRefObject((TObject*)points);
