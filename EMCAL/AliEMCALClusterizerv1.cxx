@@ -298,6 +298,7 @@ void AliEMCALClusterizerv1::InitParameters()
   fTimeGate = 1.e-8 ; 
   fToUnfold = kFALSE ;
   fRecPointsInRun  = 0 ;
+  fMinECut = 0;
 }
 
 //____________________________________________________________________________
@@ -325,7 +326,6 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
   Int_t coldiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
   
   if (( coldiff <= 1 )  && ( rowdiff <= 1 )){
-    if(TMath::Abs(d1->GetTime() - d2->GetTime() ) < fTimeGate)
       rv = 1 ; 
   }
   else {
@@ -445,7 +445,9 @@ void AliEMCALClusterizerv1::MakeClusters()
       while (index < iDigitInECACluster){ // scan over digits already in cluster 
 	digit =  (AliEMCALDigit*)digits->At(clusterECAdigitslist[index])  ;      
 	index++ ; 
-        while ( (digitN = (AliEMCALDigit *)nextdigit()) ) { // scan over the reduced list of digits 
+        while ( (digitN = (AliEMCALDigit *)nextdigit())) { // scan over the reduced list of digits 
+          // check that the digit is above the min E Cut
+          if(Calibrate(digitN->GetAmp()) < fMinECut  )  digitsC->Remove(digitN);
 	  Int_t ineb = AreNeighbours(digit, digitN);       // call (digit,digitN) in THAT oder !!!!! 
          switch (ineb ) {
           case 0 :   // not a neighbour
@@ -459,16 +461,15 @@ void AliEMCALClusterizerv1::MakeClusters()
           case 2 :   // too far from each other
 	    goto endofloop1;   
 	  } // switch
-	  
 	} // while digitN
 	
       endofloop1: ;
 	nextdigit.Reset() ; 
       } // loop over ECA cluster
-    } // energy theshold
-    else{ // if below the energy threshold then we remove it
+    } // energy threshold
+    else if(Calibrate(digit->GetAmp()) < fMinECut  ){
       digitsC->Remove(digit);
-    }     
+    }
   } // while digit  
   delete digitsC ;
 }

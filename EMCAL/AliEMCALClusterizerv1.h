@@ -46,7 +46,8 @@ public:
   virtual void    GetNumberOfClustersFound(int numb )const{ numb = fNumberOfECAClusters ;} 
   virtual Float_t GetECAClusteringThreshold()const{ return fECAClusteringThreshold;}  
   virtual Float_t GetECALocalMaxCut()const       { return fECALocMaxCut;} 
-  virtual Float_t GetECALogWeight()const         { return fECAW0;}   
+  virtual Float_t GetECALogWeight()const         { return fECAW0;}
+  virtual Float_t GetMinECut()const              { return fMinECut;}
 
   virtual Float_t GetTimeGate() const            { return fTimeGate ; }
   virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
@@ -57,6 +58,7 @@ public:
   virtual void Print(Option_t * option)const ;
 
   virtual void SetECAClusteringThreshold(Float_t cluth)  { fECAClusteringThreshold = cluth ; }
+  virtual void SetMinECut(Float_t mine)                  { fMinECut = mine; }
   virtual void SetECALocalMaxCut(Float_t cut)            { fECALocMaxCut = cut ; }
   virtual void SetECALogWeight(Float_t w)                { fECAW0 = w ; }
   virtual void SetTimeGate(Float_t gate)                 { fTimeGate = gate ;}
@@ -102,13 +104,15 @@ private:
   Float_t fADCchannelECA ;          // width of one ADC channel for EC section (GeV)
   Float_t fADCpedestalECA ;         // pedestal of ADC for EC section (GeV) 
  
-  Float_t fECAClusteringThreshold ;  // minimum energy to include a EC digit in a cluster
+  Float_t fECAClusteringThreshold ;  // minimum energy to seed a EC digit in a cluster
   Float_t fECALocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
   Float_t fECAW0 ;                   // logarithmic weight for the cluster center of gravity calculation
   Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fTimeGate ;                // Maximum time difference between the digits in ont EMC cluster
+  Float_t fMinECut;                  // Minimum energy for a digit to be a member of a cluster
+
     
-  ClassDef(AliEMCALClusterizerv1,3)   // Clusterizer implementation version 1
+  ClassDef(AliEMCALClusterizerv1,4)   // Clusterizer implementation version 1
 
 };
 
