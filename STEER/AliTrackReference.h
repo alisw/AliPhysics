@@ -13,6 +13,8 @@ public:
   virtual ~AliTrackReference() {}
   virtual Int_t GetTrack() const {return fTrack;}
   virtual void SetTrack(Int_t track) {fTrack=track;}
+  virtual void SetLength(Float_t length){fLength=length;}
+  virtual Float_t GetLength(){return fLength;}
   virtual Float_t X() const {return fX;}
   virtual Float_t Y() const {return fY;}
   virtual Float_t Z() const {return fZ;}
@@ -30,7 +32,8 @@ protected:
   Float_t   fPx;     // momentum
   Float_t   fPy;     // momentum
   Float_t   fPz;     // momentum
+  Float_t   fLength; // track lenght from its origin
 
-  ClassDef(AliTrackReference,1)  //Base class for all Alice hits
+  ClassDef(AliTrackReference,2)  //Base class for all Alice hits
 };
 #endif
