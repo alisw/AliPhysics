@@ -24,12 +24,20 @@ void AliTOFhits2sdigits(TString fileNameHits, Int_t firstEvent=0,Int_t nEvents=1
 
   // Create the TOF sdigitzer and sdigitize by default the first event
   // (in fact by default Int_t firstEvent=0,Int_t nEvents=1)
-  AliTOFSDigitizer *sdigitizer = new AliTOFSDigitizer(fileNameHits.Data(),fileNameHits.Data(),firstEvent,nEvents); // it is the same nevents numbering
+  AliTOFSDigitizer *sdigitizer = new AliTOFSDigitizer(fileNameHits.Data(),firstEvent,nEvents); // it is the same nevents numbering
   // scheme used by STEER/AliHits2SDigits.C
 
   // Activate this line if you want to print the parameters
   // used in sdigitization
   // sdigitizer->PrintParameters();
+
+  // e.g. Activate this line if you want to sdigitize only hits from plate 3
+  // in sector 15
+  // pay attention that sector must be in the range [1,18]
+  //                and plate  must be in the range [1,5]
+  // by default we sdigitize hits of all plates in all sectors
+  // sdigitizer->SelectSectorAndPlate(15,3);
+
 
   // performs sdigitization of the above events with "all" verbose option
   // "tim" option is also available for benchmarking only

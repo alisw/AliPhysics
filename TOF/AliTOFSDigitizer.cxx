@@ -61,6 +61,8 @@ ClassImp(AliTOFSDigitizer)
   fEvent1=0;
   fEvent2=0;
   ftail    = 0;
+  fSelectedSector=0;
+  fSelectedPlate =0;
 }
            
 //____________________________________________________________________________ 
@@ -69,6 +71,8 @@ ClassImp(AliTOFSDigitizer)
   fEvent1=evNumber1;
   fEvent2=fEvent1+nEvents;
   ftail    = 0;
+  fSelectedSector=0; // by default we sdigitize all sectors
+  fSelectedPlate =0; // by default we sdigitize all plates in all sectors
 
   fHeadersFile = HeaderFile ; // input filename (with hits)
   TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data() ) ;
@@ -164,6 +168,17 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
     return;
   }
 
+  // is pointer to fSDigits non zero after changes?
+  cout<<"TOF fSDigits pointer:"<<TOF->SDigits()<<endl;
+
+  // recreate TClonesArray fSDigits - for backward compatibility
+  if (TOF->SDigits() == 0) {
+    TOF->CreateSDigitsArray();
+  } else {
+    TOF->RecreateSDigitsArray();
+  }
+
+
   if (fEdgeTails) ftail = new TF1("tail",TimeWithTail,-2,2,3);
 
   Int_t nselectedHits=0;
@@ -179,6 +194,8 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
     fEvent1=0;
     fEvent2= (Int_t) gAlice->TreeE()->GetEntries();
   }
+
+  Bool_t thereIsNotASelection=(fSelectedSector==0) && (fSelectedPlate==0);
 
   for (Int_t ievent = fEvent1; ievent < fEvent2; ievent++) {
     cout << "------------------- "<< GetName() << " -------------" << endl ;
@@ -215,7 +232,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
     // create hit map
     AliTOFHitMap *hitMap = new AliTOFHitMap(TOF->SDigits());
 
-    // decrease required CPU time
+    // increase performances in terms of CPU time
     TH->SetBranchStatus("*",0); // switch off all branches
     TH->SetBranchStatus("TOF*",1); // switch on only TOF
 
@@ -242,96 +259,101 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption, Option_t *allEvents) {
 	Int_t tracknum = tofHit->GetTrack();
 	vol[0] = tofHit->GetSector();
 	vol[1] = tofHit->GetPlate();
-	vol[2] = tofHit->GetStrip();
-	vol[3] = tofHit->GetPadx();
-	vol[4] = tofHit->GetPadz();
 
-	Bool_t dummy=((tracknum==previousTrack) && (vol[0]==previousSector) && (vol[1]==previousPlate) && (vol[2]==previousStrip));
-
-	Bool_t isCloneOfThePrevious=dummy && ((vol[3]==previousPadX) && (vol[4]==previousPadZ));
-
-	// much stronger check to be inserted here
-
-	if(!isCloneOfThePrevious){
-	  // update "previous" values
-	  // in fact, we are yet in the future, so the present is past
-	  previousTrack=tracknum;
-	  previousSector=vol[0];
-	  previousPlate=vol[1];
-	  previousStrip=vol[2];
-	  previousPadX=vol[3];
-	  previousPadZ=vol[4];
-
-	  nselectedHits++;
-	  nselectedHitsinEv++;
-	  if (particle->GetFirstMother() < 0){
-	    nHitsFromPrim++;
-	  } // counts hits due to primary particles
-
-	  Float_t Xpad = tofHit->GetDx();
-	  Float_t Zpad = tofHit->GetDz();
-	  Float_t xStrip=AliTOFConstants::fgkXPad*(vol[3]-0.5-0.5*AliTOFConstants::fgkNpadX)+Xpad;
-	  Float_t zStrip=AliTOFConstants::fgkZPad*(vol[4]-0.5-0.5*AliTOFConstants::fgkNpadZ)+Zpad;
-	  Float_t geantTime = tofHit->GetTof(); // unit [s]
-	  geantTime *= 1.e+09;  // conversion from [s] to [ns]
-
-	  //cout << "geantTime " << geantTime << " [ns]" << endl;
-	  Int_t nActivatedPads = 0, nFiredPads = 0;
-	  Bool_t isFired[4] = {kFALSE, kFALSE, kFALSE, kFALSE};
-	  Float_t tofAfterSimul[4] = {0., 0., 0., 0.};
-	  Float_t qInduced[4] = {0.,0.,0.,0.};
-	  Int_t nPlace[4] = {0, 0, 0, 0};
-	  Float_t averageTime = 0.;
-	  SimulateDetectorResponse(zStrip,xStrip,geantTime,nActivatedPads,nFiredPads,isFired,nPlace,qInduced,tofAfterSimul,averageTime);
-	  if(nFiredPads) {
-	    for(Int_t indexOfPad=0; indexOfPad<nActivatedPads; indexOfPad++) {
-	      if(isFired[indexOfPad]){ // the pad has fired
-		Float_t timediff=geantTime-tofAfterSimul[indexOfPad];
-
-		if(timediff>=0.2) nlargeTofDiff++;
-
-		digit[0] = (Int_t) ((tofAfterSimul[indexOfPad]*1.e+03)/fTdcBin); // TDC bin number (each bin -> 25. ps)
-
-		Float_t landauFactor = gRandom->Landau(fAdcMean, fAdcRms); 
-		digit[1] = (Int_t) (qInduced[indexOfPad] * landauFactor); // ADC bins (each bin -> 0.25 (or 0.03) pC)
-
-		// recalculate the volume only for neighbouring pads
-		if(indexOfPad){
-		  (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[4] = 1 : vol[4] = 2;
-		  (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[3] = nPlace[indexOfPad] : vol[3] = nPlace[indexOfPad] - AliTOFConstants::fgkNpadX;
-		}
-
-		// check if two sdigit are on the same pad; in that case we sum
-		// the two or more sdigits
-		if (hitMap->TestHit(vol) != kEmpty) {
-		  AliTOFSDigit *sdig = static_cast<AliTOFSDigit*>(hitMap->GetHit(vol));
-		  Int_t tdctime = (Int_t) digit[0];
-		  Int_t adccharge = (Int_t) digit[1];
-		  sdig->Update(tdctime,adccharge,tracknum);
-		  ntotalupdatesinEv++;
-		  ntotalupdates++;
-		} else {
-
-		  TOF->AddSDigit(tracknum, vol, digit);
-
+	// selection case for sdigitizing only hits in a given plate of a given sector
+	if(thereIsNotASelection || (vol[0]==fSelectedSector && vol[1]==fSelectedPlate)){
+	  
+	  vol[2] = tofHit->GetStrip();
+	  vol[3] = tofHit->GetPadx();
+	  vol[4] = tofHit->GetPadz();
+	  
+	  Bool_t dummy=((tracknum==previousTrack) && (vol[0]==previousSector) && (vol[1]==previousPlate) && (vol[2]==previousStrip));
+	  
+	  Bool_t isCloneOfThePrevious=dummy && ((vol[3]==previousPadX) && (vol[4]==previousPadZ));
+	  
+	  // much stronger check to be inserted here
+	  
+	  if(!isCloneOfThePrevious){
+	    // update "previous" values
+	    // in fact, we are yet in the future, so the present is past
+	    previousTrack=tracknum;
+	    previousSector=vol[0];
+	    previousPlate=vol[1];
+	    previousStrip=vol[2];
+	    previousPadX=vol[3];
+	    previousPadZ=vol[4];
+	    
+	    nselectedHits++;
+	    nselectedHitsinEv++;
+	    if (particle->GetFirstMother() < 0){
+	      nHitsFromPrim++;
+	    } // counts hits due to primary particles
+	    
+	    Float_t Xpad = tofHit->GetDx();
+	    Float_t Zpad = tofHit->GetDz();
+	    Float_t xStrip=AliTOFConstants::fgkXPad*(vol[3]-0.5-0.5*AliTOFConstants::fgkNpadX)+Xpad;
+	    Float_t zStrip=AliTOFConstants::fgkZPad*(vol[4]-0.5-0.5*AliTOFConstants::fgkNpadZ)+Zpad;
+	    Float_t geantTime = tofHit->GetTof(); // unit [s]
+	    geantTime *= 1.e+09;  // conversion from [s] to [ns]
+	    
+	    //cout << "geantTime " << geantTime << " [ns]" << endl;
+	    Int_t nActivatedPads = 0, nFiredPads = 0;
+	    Bool_t isFired[4] = {kFALSE, kFALSE, kFALSE, kFALSE};
+	    Float_t tofAfterSimul[4] = {0., 0., 0., 0.};
+	    Float_t qInduced[4] = {0.,0.,0.,0.};
+	    Int_t nPlace[4] = {0, 0, 0, 0};
+	    Float_t averageTime = 0.;
+	    SimulateDetectorResponse(zStrip,xStrip,geantTime,nActivatedPads,nFiredPads,isFired,nPlace,qInduced,tofAfterSimul,averageTime);
+	    if(nFiredPads) {
+	      for(Int_t indexOfPad=0; indexOfPad<nActivatedPads; indexOfPad++) {
+		if(isFired[indexOfPad]){ // the pad has fired
+		  Float_t timediff=geantTime-tofAfterSimul[indexOfPad];
+		  
+		  if(timediff>=0.2) nlargeTofDiff++;
+		  
+		  digit[0] = (Int_t) ((tofAfterSimul[indexOfPad]*1.e+03)/fTdcBin); // TDC bin number (each bin -> 25. ps)
+		  
+		  Float_t landauFactor = gRandom->Landau(fAdcMean, fAdcRms); 
+		  digit[1] = (Int_t) (qInduced[indexOfPad] * landauFactor); // ADC bins (each bin -> 0.25 (or 0.03) pC)
+		  
+		  // recalculate the volume only for neighbouring pads
 		  if(indexOfPad){
-		    nnoisesdigits++;
-		    nnoisesdigitsinEv++;
-		  } else {
-		    nsignalsdigits++;
-		    nsignalsdigitsinEv++;
+		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[4] = 1 : vol[4] = 2;
+		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[3] = nPlace[indexOfPad] : vol[3] = nPlace[indexOfPad] - AliTOFConstants::fgkNpadX;
 		  }
-		  ntotalsdigitsinEv++;  
-		  ntotalsdigits++;
-		  hitMap->SetHit(vol);
-		} // if (hitMap->TestHit(vol) != kEmpty)
-	      } // if(isFired[indexOfPad])
-	    } // end loop on nActivatedPads
-	  } // if(nFiredPads) i.e. if some pads has fired
-	} // close if(!isCloneOfThePrevious)
+		  
+		  // check if two sdigit are on the same pad; in that case we sum
+		  // the two or more sdigits
+		  if (hitMap->TestHit(vol) != kEmpty) {
+		    AliTOFSDigit *sdig = static_cast<AliTOFSDigit*>(hitMap->GetHit(vol));
+		    Int_t tdctime = (Int_t) digit[0];
+		    Int_t adccharge = (Int_t) digit[1];
+		    sdig->Update(tdctime,adccharge,tracknum);
+		    ntotalupdatesinEv++;
+		    ntotalupdates++;
+		  } else {
+		    
+		    TOF->AddSDigit(tracknum, vol, digit);
+		    
+		    if(indexOfPad){
+		      nnoisesdigits++;
+		      nnoisesdigitsinEv++;
+		    } else {
+		      nsignalsdigits++;
+		      nsignalsdigitsinEv++;
+		    }
+		    ntotalsdigitsinEv++;  
+		    ntotalsdigits++;
+		    hitMap->SetHit(vol);
+		  } // if (hitMap->TestHit(vol) != kEmpty)
+		} // if(isFired[indexOfPad])
+	      } // end loop on nActivatedPads
+	    } // if(nFiredPads) i.e. if some pads has fired
+	  } // close if(!isCloneOfThePrevious)
+	} // close the selection on sector and plate
       } // end loop on hits for the current track
     } // end loop on ntracks
-
+    
     delete hitMap;
       
     gAlice->TreeS()->Reset();
@@ -390,6 +412,22 @@ void AliTOFSDigitizer::Print(Option_t* opt)const
 {
   cout << "------------------- "<< GetName() << " -------------" << endl ;
 
+}
+
+//__________________________________________________________________
+void AliTOFSDigitizer::SelectSectorAndPlate(Int_t sector, Int_t plate)
+{
+  Bool_t isaWrongSelection=(sector < 1) || (sector > AliTOFConstants::fgkNSectors) || (plate < 1) || (plate > AliTOFConstants::fgkNPlates);
+  if(isaWrongSelection){
+    cout << "You have selected an invalid value for sector or plate " << endl;
+    cout << "The correct range for sector is [1,"<< AliTOFConstants::fgkNSectors <<"]" << endl;
+    cout << "The correct range for plate  is [1,"<< AliTOFConstants::fgkNPlates  <<"]" << endl;
+    cout << "By default we continue sdigitizing all hits in all plates of all sectors" << endl;
+  } else {
+    fSelectedSector=sector;
+    fSelectedPlate =plate;
+    cout << "SDigitizing only hits in plate " << fSelectedPlate << " of the sector " << fSelectedSector << endl;
+  }
 }
 
 //__________________________________________________________________

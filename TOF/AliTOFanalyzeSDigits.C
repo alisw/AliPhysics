@@ -1,24 +1,36 @@
-Int_t AliTOFanalyzeSDigits(TString headersFile, Int_t iEvNum=0)
+Int_t AliTOFanalyzeSDigits(TString headersFile, Int_t ndump=15, Int_t iEvNum=0)
 {
   //
   // Analyzes the TOF sdigits and fills QA-histograms 
-  //
+  // report problems to pierella@bo.infn.it
   // iEvNum=0 means all events in the file
 
+  // Dynamically link some shared libs
+  if (gClassTable->GetID("AliRun") < 0) {
+    gROOT->LoadMacro("loadlibs.C");
+    loadlibs();
+  } else {
+    delete gAlice;
+    gAlice = 0;
+  }
+  
   Int_t rc=0;
 
-  TFile * file = (TFile*) gROOT->GetFile(headersFile.Data() ) ;
-
-  //File was not opened yet
-
-  if(file == 0){
-    if(headersFile.Contains("rfio"))
-      file =	TFile::Open(headersFile,"update") ;
-    else
-      file = new TFile(headersFile.Data(),"update") ;
-    gAlice = (AliRun *) file->Get("gAlice") ;
+  
+  TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(headersFile.Data());
+  if(file){
+    cout<<"headerFile already open \n";
   }
-
+  else {
+    if(!file)file=TFile::Open(headersFile.Data());
+  }
+  
+  // Get AliRun object from file
+  if (!gAlice) {
+    gAlice = (AliRun*)file->Get("gAlice");
+    if (gAlice) printf("AliRun object found on file\n");
+  }
+  
 
   if (iEvNum == 0) iEvNum = (Int_t) gAlice->TreeE()->GetEntries();
 
@@ -46,6 +58,7 @@ Int_t AliTOFanalyzeSDigits(TString headersFile, Int_t iEvNum=0)
   // ADC-TDC correlation
   TH2F *h2tdcVSadc = new TH2F("h2tdcVSadc","TDC [bin] VS ADC [bin]",500,0.,150000.,100,0.,3000.);
 
+  cout << "First " << ndump << " SDigits found in TOF TreeS branch have:" << endl;
 
   for (Int_t ievent = 0; ievent < iEvNum; ievent++) {
 
@@ -84,9 +97,15 @@ Int_t AliTOFanalyzeSDigits(TString headersFile, Int_t iEvNum=0)
       Bool_t isSDigitBad = (sector<1 || sector>18 || plate<1 || plate >5 || padz<1 || padz>2 || padx<1 || padx>48);
 
       if (isSDigitBad) {
-	cout << "<AliTOFanalyzeHits>  strange hit found" << endl;
+	cout << "<AliTOFanalyzeSDigits>  strange sdigit found" << endl;
 	rc = 3;
 	return rc;
+      }
+      
+      if(k<ndump){
+	cout << k << "-th | " << "Sector " << sector << " | Plate " << plate << " | Strip " << strip << " | PadZ " << padz << " | PadX " << padx << endl;
+	cout << k << "-th | ADC " << firstADC << " [bin] | TDC " << firstTDC << " [bin]" << endl;
+	cout << "----------------------------------------------------"<< endl;
       }
 
       // filling sdigit volume histos
@@ -100,7 +119,7 @@ Int_t AliTOFanalyzeSDigits(TString headersFile, Int_t iEvNum=0)
       //cout << "firstTDC " << firstTDC << " firstADC " << firstADC << endl;
     }
   
-  }
+  } // end loop on events
 
   TFile *fout = new TFile("TOF_sdigitsQA.root","RECREATE");
   htdc->Write();

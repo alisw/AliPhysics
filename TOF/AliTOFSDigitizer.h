@@ -37,6 +37,7 @@ public:
   Int_t GetFirstEvent()  const {return fEvent1;}
   Int_t GetSecondEvent() const {return fEvent2;}
   Int_t GetNEvents() const {return (fEvent2-fEvent1);}
+  void  SelectSectorAndPlate(Int_t sector, Int_t plate);
 
   // setters and getters for detector simulation
   // it summarizes all it is known about TOF strip 
@@ -107,6 +108,8 @@ private:
   Int_t   fEvent2;          // upper bound for events to sdigitize
   TF1     *ftail;           // pointer to formula for time with tail
   TString fHeadersFile;     // input file
+  Int_t fSelectedSector;    // sector number for sdigitization
+  Int_t fSelectedPlate ;    // plate  number for sdigitization
 
   // detector response simulation
   // Intrisic MRPC time resolution and pad (edge effect) parameters
@@ -152,7 +155,7 @@ private:
  protected:
 
 
-  ClassDef(AliTOFSDigitizer,1)  // creates TOF SDigits
+  ClassDef(AliTOFSDigitizer,2)  // creates TOF SDigits
 
 };
 

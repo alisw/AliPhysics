@@ -83,13 +83,16 @@ public:
   virtual void    ResetDigits();
   TClonesArray *SDigits() const {return fSDigits;}
   TClonesArray *ReconParticles() const {return fReconParticles;}
+  void RecreateSDigitsArray();
+  void CreateSDigitsArray();
+
   Int_t   fNevents ;        // Number of events to digitize
 
 protected:
   TFolder* fFGeom ;       //  Folder that holds the Geometry definition
   TTask*   fDTask ;       //  TOF Digitizer container
   TTask*   fReTask;       //  TOF Reconstructioner container
-  TClonesArray* fSDigits; // List of summable digits
+  TClonesArray* fSDigits; //! List of summable digits
   Int_t    fNSDigits;           // Number of sdigits
   TClonesArray* fReconParticles; // List of reconstructed particles
   AliTOFMerger *fMerger;   // ! pointer to merger
@@ -126,7 +129,7 @@ protected:
 
 private:
 
-  ClassDef(AliTOF,3)  // Time Of Flight base class
+  ClassDef(AliTOF,4)  // Time Of Flight base class
 };
  
 #endif /* ALITOF_H */
