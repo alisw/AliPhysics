@@ -26,12 +26,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliVertexGenFile.h"
-#include "AliHeader.h"
-#include "AliGenEventHeader.h"
+#include <TArrayF.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TArrayF.h>
+
+#include "AliGenEventHeader.h"
+#include "AliHeader.h"
+#include "AliVertexGenFile.h"
 
 
 ClassImp(AliVertexGenFile)

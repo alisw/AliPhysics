@@ -15,7 +15,9 @@
 
 //-----------------------------------------------------------------
 //           Implementation of the Primary Vertex class
-//
+//           for the Event Data Summary class
+//           This class contains the Primary Vertex
+//           of the event coming from reconstruction
 // Origin: A.Dainese, Padova, andrea.dainese@pd.infn.it
 //-----------------------------------------------------------------
 
@@ -24,7 +26,6 @@
 //---- Root headers --------
 #include <TMath.h>
 #include <TROOT.h>
-#include <TNamed.h>
 //---- AliRoot headers -----
 #include "AliESDVertex.h"
 

@@ -5,18 +5,22 @@
 
 /* $Id$ */
 
-#include <TArrayI.h>
-#include <TVirtualMCStack.h>
+//  Particles stack class
+//  Implements the TMCVirtualStack of the Virtual Monte Carlo
+//  Author A.Morsch
 
-#include "AliConfig.h"
-
-class AliHeader;
 class TClonesArray;
 class TFile;
 class TObjArray;
 class TParticle;
-class TTree;
 class TString;
+class TTree;
+#include <TArrayI.h>
+#include <TVirtualMCStack.h>
+
+class AliHeader;
+#include "AliConfig.h"
+
 
 class AliStack : public TVirtualMCStack
 {

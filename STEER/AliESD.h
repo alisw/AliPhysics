@@ -1,5 +1,5 @@
-#ifndef ALIESDEVENT_H
-#define ALIESDEVENT_H
+#ifndef ALIESD_H
+#define ALIESD_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -13,27 +13,21 @@
 //         Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 
-#include "TObject.h"
-#include "TClonesArray.h"
-#include  "AliESDVertex.h"
-#include  "AliESDtrack.h"
-#include  "AliESDCaloTrack.h"
-#include  "AliESDMuonTrack.h"
-#include  "AliESDPmdTrack.h"
-#include  "AliESDv0.h"
-#include  "AliESDcascade.h"
+#include <TClonesArray.h>
+#include <TObject.h>
+
+#include "AliESDCaloTrack.h"
+#include "AliESDMuonTrack.h"
+#include "AliESDPmdTrack.h"
+#include "AliESDVertex.h"
+#include "AliESDcascade.h"
+#include "AliESDtrack.h"
+#include "AliESDv0.h"
 
 class AliESD : public TObject {
 public:
   AliESD();
-  virtual ~AliESD() {
-    fTracks.Delete();
-    fCaloTracks.Delete();
-    fMuonTracks.Delete();
-    fPmdTracks.Delete();
-    fV0s.Delete();
-    fCascades.Delete();
-  }
+  virtual ~AliESD(); 
 
   void SetEventNumber(Int_t n) {fEventNumber=n;}
   void SetRunNumber(Int_t n) {fRunNumber=n;}

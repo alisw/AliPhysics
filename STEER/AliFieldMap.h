@@ -6,8 +6,11 @@
 /* $Id$ */
 
 //
+// Class to handle the field map of ALICE
+// I/O and interpolation
 // Author: Andreas Morsch <andreas.morsch@cern.ch>
 //
+
 #include <TNamed.h>
 #include <TVector.h>
 
@@ -23,7 +26,7 @@ public:
     void Copy(TObject &map) const;
     virtual AliFieldMap & operator=(const AliFieldMap &map);
 
-    virtual void Field(Float_t *x, Float_t *b);
+    virtual void Field(Float_t *x, Float_t *b) const;
     Float_t Bx(Int_t ix, Int_t iy, Int_t iz) const{
 	return (*fB)(3*((ix*fYn+iy)*fZn+iz));
     }

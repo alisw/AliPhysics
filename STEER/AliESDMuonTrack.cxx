@@ -1,7 +1,43 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//  Class to describe the MUON tracks
+//  in the Event Summary Data class
+//  This is where the results of reconstruction
+//  are stored for the muons
+//  Author: G.Martinez
+//
+///////////////////////////////////////////////////////////////////////////////
+
+
 #include "AliESDMuonTrack.h"
 
-AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& MUONTrack):TObject(MUONTrack)
+ClassImp(AliESDMuonTrack)
+
+//_____________________________________________________________________________
+AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& MUONTrack):
+  TObject(MUONTrack)
 {
+  //
+  // Copy constructor
+  // Deep copy implemented
+  //
   fInverseBendingMomentum = MUONTrack.fInverseBendingMomentum; 
   fThetaX                 = MUONTrack.fThetaX;           
   fThetaY                 = MUONTrack.fThetaY ;           
@@ -15,8 +51,12 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& MUONTrack):TObject(MUON
   fChi2MatchTrigger       = MUONTrack.fChi2MatchTrigger; 
 }
 
+//_____________________________________________________________________________
 AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& MUONTrack)
 {
+  // 
+  // Equal operator for a deep copy
+  //
   if (this == &MUONTrack)
     return *this;
 
@@ -35,5 +75,4 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& MUONTrack)
   return *this;
 }
 
-ClassImp(AliESDMuonTrack)
 

@@ -48,7 +48,7 @@
 // The default output is to the signal file (stream 0). This can be 
 // changed with the SetOutputFile(TString fn)  method.
 //
-// Single input file is permitted. Maximum kMaxStreamsToMerge can be merged.
+// Single input file is permitted. Maximum MAXSTREAMSTOMERGE can be merged.
 // Input from the memory (on-the-fly merging) is not yet 
 // supported, as well as access to the input data by invoking methods
 // on the output data.
@@ -151,7 +151,7 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
  fOutRunLoader(0x0),
  fOutputInitialized(kFALSE),
  fCombi(new AliMergeCombi(nInputStreams,sperb)),
- fCombination(kMaxStreamsToMerge),
+ fCombination(MAXSTREAMSTOMERGE),
  fCombinationFileName(0),
  fDebug(0)
 
@@ -169,7 +169,7 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
   
   fkMASK[0] = 0;
   
-  for (i=1;i<kMaxStreamsToMerge;i++) 
+  for (i=1;i<MAXSTREAMSTOMERGE;i++) 
    {
     fkMASK[i] = fkMASK[i-1] + fkMASKSTEP;
    }
@@ -301,7 +301,7 @@ Bool_t AliRunDigitizer::ConnectInputTrees()
   //
   // loads events 
   //
-  Int_t eventNr[kMaxStreamsToMerge], delta[kMaxStreamsToMerge];
+  Int_t eventNr[MAXSTREAMSTOMERGE], delta[MAXSTREAMSTOMERGE];
   fCombi->Combination(eventNr, delta);
   for (Int_t i=0;i<fNinputs;i++) 
    {
@@ -531,7 +531,7 @@ Int_t* AliRunDigitizer::GetInputEventNumbers(Int_t event) const
 // merged in the output event event
 
 // simplified for now, implement later
-  Int_t * a = new Int_t[kMaxStreamsToMerge];
+  Int_t * a = new Int_t[MAXSTREAMSTOMERGE];
   for (Int_t i = 0; i < fNinputs; i++) {
     a[i] = event;
   }

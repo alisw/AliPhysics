@@ -5,6 +5,10 @@
 
 /* $Id$ */
 
+// Generator for vertices taken from a file
+// The file name of the galice file is passed as argument
+// to the constructor.
+
 #include "AliVertexGenerator.h"
 
 class TFile;
@@ -21,6 +25,11 @@ class AliVertexGenFile: public AliVertexGenerator {
   virtual TVector3 GetVertex();
 
  private:
+  AliVertexGenFile(const AliVertexGenFile &vgf):    
+    AliVertexGenerator(vgf)
+    {Fatal("copy ctor","Not implemented\n");}
+  AliVertexGenFile & operator-(const AliVertexGenFile &)
+    {Fatal("= operator","Not implemented\n"); return *this;}
   TFile*           fFile;           //! galice file with vertices
   TTree*           fTree;           //! tree with headers
   AliHeader*       fHeader;         //! event header

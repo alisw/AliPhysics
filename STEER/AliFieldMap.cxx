@@ -17,12 +17,15 @@
 
 //-----------------------------------------------------------------------
 //
+// Class to handle the field
+// I/O and interpolation
+// of the field map to return the value
+// of the magnetic field in an arbitrary position
 // Author: Andreas Morsch <andreas.morsch@cern.ch>
 //
 //-----------------------------------------------------------------------
 
 #include <TSystem.h>
-#include <TVector.h>
 
 #include "AliFieldMap.h"
 
@@ -205,7 +208,7 @@ void AliFieldMap::ReadField()
 }
 
 //_______________________________________________________________________
-void AliFieldMap::Field(Float_t *x, Float_t *b)
+void AliFieldMap::Field(Float_t *x, Float_t *b) const
 {
   //
   // Use simple interpolation to obtain field at point x

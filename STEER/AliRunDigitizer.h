@@ -29,7 +29,7 @@ class AliDigitizer;
 class AliMergeCombi;
 class AliRunLoader;
 
-static const Int_t kMaxStreamsToMerge = 4;
+#define MAXSTREAMSTOMERGE 4
 
 class AliRunDigitizer: public TTask {
 
@@ -109,7 +109,7 @@ private:
   void              FinishEvent();
   void              FinishGlobal();
 
-  Int_t             fkMASK[kMaxStreamsToMerge];  //! masks for track ids from
+  Int_t             fkMASK[MAXSTREAMSTOMERGE];  //! masks for track ids from
                                               //  different source files
   Int_t             fkMASKSTEP;           // step to increase MASK for
                                           // each input file

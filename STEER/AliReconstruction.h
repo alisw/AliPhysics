@@ -5,6 +5,18 @@
 
 /* $Id$ */
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// class for running the reconstruction                                      //
+// Clusters and tracks are created for all detectors and all events by       //
+// typing:                                                                   //
+//                                                                           //
+//   AliReconstruction rec;                                                  //
+//   rec.Run();                                                              //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
+
 #include <TNamed.h>
 #include <TString.h>
 #include <TObjArray.h>
@@ -61,6 +73,11 @@ private:
     virtual const char*  GetDetectorName() const
       {return fDetector->GetName();};
   private:
+    AliDummyReconstructor(const AliDummyReconstructor &drc):
+      AliReconstructor(drc)
+      {Fatal("copy ctor","Not implemented\n");}
+    AliDummyReconstructor & operator=(const AliDummyReconstructor &)
+      {Fatal("= operator","Not implemented\n"); return *this;}
     AliDetector*         fDetector;   // detector object
   };
 

@@ -7,7 +7,7 @@
 
 //-------------------------------------------------------
 //                    Primary Vertex Class
-//
+//          for the Event Data Summary Class
 //   Origin: A.Dainese, Padova, andrea.dainese@pd.infn.it
 //-------------------------------------------------------
 
@@ -73,10 +73,6 @@ class AliESDVertex : public TNamed {
   void GetTruePos(Double_t &x,Double_t &y,Double_t &z) const 
        {x=fTruePos[0]; y=fTruePos[1]; z=fTruePos[2];}
         
- private:
-
-  void SetToZero();
-
  protected:
 
   Double_t fPosition[3];  // vertex position
@@ -86,8 +82,13 @@ class AliESDVertex : public TNamed {
   Int_t    fNContributors;  // # of tracklets/tracks used for the estimate 
   Int_t    fDebug;  //! for debugging
   Double_t fTruePos[3];   //true vertex position (for comparison purposes)
+
+ private:
+
+  void SetToZero();
+
   ClassDef(AliESDVertex,4)  // Class for Primary Vertex
-    };
+};
 
 #endif
 

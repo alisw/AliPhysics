@@ -16,8 +16,11 @@
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//                                                                           //
+// Random number class for AliRoot
+// This class allows to have different 
+// random number generator for different
+// elements of AliRoot                                                                          //
+// It also allows saving and retrieving of the random number seeds
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TFile.h"

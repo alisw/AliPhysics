@@ -35,6 +35,7 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 #include <TGenerator.h>
+#include <TMCProcess.h>
 
 #include "AliCollisionGeometry.h"
 #include "AliConfig.h"

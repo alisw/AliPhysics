@@ -5,6 +5,14 @@
 
 /* $Id$ */
 
+//
+// class for running generation, simulation and digitization
+// Hits, sdigits and digits are created for all detectors by typing:
+//
+//   AliSimulation sim;
+//   sim.Run();
+//
+
 #include <TNamed.h>
 #include <TString.h>
 

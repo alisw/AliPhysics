@@ -17,7 +17,7 @@ class AliRndm
 {
 public:
   AliRndm();
-  AliRndm(const AliRndm &);
+  AliRndm(const AliRndm &rn);
   virtual ~AliRndm() {fRandom=0;}
   AliRndm & operator=(const AliRndm& rn) 
     {rn.Copy(*this); return (*this);}

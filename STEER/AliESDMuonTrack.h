@@ -1,18 +1,24 @@
 #ifndef ALIESDMUONTRACK_H
 #define ALIESDMUONTRACK_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+//  Class to describe the MUON tracks
+//  in the Event Summary Data class
+//  Author: G.Martinez
+
+
 #include "TObject.h"
 
 class AliESDMuonTrack : public TObject {
 public:
- AliESDMuonTrack(){
-    // Constructor;
- } // Constructor
- virtual ~AliESDMuonTrack(){
-    // Destructor;
- } // Destructor
- AliESDMuonTrack(const AliESDMuonTrack& );
- AliESDMuonTrack& operator=(const AliESDMuonTrack& );
+  AliESDMuonTrack(){} //Constructor
+  virtual ~AliESDMuonTrack(){} // Destructor
+  AliESDMuonTrack(const AliESDMuonTrack& esdm);
+  AliESDMuonTrack& operator=(const AliESDMuonTrack& esdm);
 
 
  // Get and Set methods for data

@@ -17,13 +17,15 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Particles stack class
+//  Particles stack class                                                    //
+//  Implements the TMCVirtualStack of the Virtual Monte Carlo                //
+//  Holds the particles transported during simulation                        //
+//  Is used to compare results of reconstruction with simulation             //
+//  Author A.Morsch                                                          //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
  
-#include <TFile.h>
-#include <TFolder.h>
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>

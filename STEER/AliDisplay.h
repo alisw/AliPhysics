@@ -22,8 +22,6 @@ class TSlider;
 class TButton;
 class TArc;
 
-static const Int_t kMAXZOOMS = 20;
-
 class AliDisplay : public TObject {
    
 public:
@@ -68,6 +66,9 @@ public:
    
    void              SetTracksToDisplay(Int_t *tracks, Int_t n);  // set tracks to display
 protected:
+   static const Float_t  fgkPtCutMax;       //Max Pt cut for the slider
+   static const Float_t  fgkEtaCutMax;      //Max eta cut for the slider
+   static const Int_t    fgkMaxZooms;       //Max number of zooms
    Int_t             fZoomMode;             //=1 if in zoom mode
    Bool_t            fDrawAllViews;         //Flag True if AllViews selected
    Bool_t            fDrawParticles;        //Flag True if particles to be drawn

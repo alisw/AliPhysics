@@ -82,19 +82,18 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-
-#include "AliSimulation.h"
-#include "AliRunLoader.h"
-#include "AliRun.h"
-#include "AliModule.h"
-#include "AliGenerator.h"
-#include "AliVertexGenFile.h"
-#include "AliRunDigitizer.h"
-#include "AliDigitizer.h"
 #include <TObjString.h>
-#include <TSystem.h>
 #include <TStopwatch.h>
+#include <TSystem.h>
 
+#include "AliDigitizer.h"
+#include "AliGenerator.h"
+#include "AliModule.h"
+#include "AliRun.h"
+#include "AliRunDigitizer.h"
+#include "AliRunLoader.h"
+#include "AliSimulation.h"
+#include "AliVertexGenFile.h"
 
 ClassImp(AliSimulation)
 

@@ -31,6 +31,7 @@
 // - open and close files
 // - return serial event number of the next event in the stream
 // and the TFile pointer for a proper file
+//  Author: Jiri Chudoba (CERN), 2001
 //
 ////////////////////////////////////////////////////////////////////////
 

@@ -33,7 +33,7 @@
 #include <TPaveText.h>
 #include <TSlider.h>
 #include <TSliderBox.h>
-#include <TTree.h>
+//#include <TTree.h>
 #include <TView.h>
 #include <TVirtualX.h>
 
@@ -47,8 +47,10 @@
 #include "TParticle.h"
 #include "AliMC.h"
 
-static const Float_t kptcutmax  = 2;
-static const Float_t ketacutmax = 1.5;
+const Float_t AliDisplay::fgkPtCutMax  = 2;
+const Float_t AliDisplay::fgkEtaCutMax = 1.5;
+const Int_t   AliDisplay::fgkMaxZooms = 20;
+
 
 ClassImp(AliDisplay)
 
@@ -247,13 +249,13 @@ AliDisplay::AliDisplay(Int_t size):
   fCutPad->SetFillColor(22);
   fCutPad->SetBorderSize(2);
   fCutSlider = new TSlider("pcut","Momentum cut",0,0,1,1);
-  fCutSlider->SetRange(fPTcut/kptcutmax,1);
+  fCutSlider->SetRange(fPTcut/fgkPtCutMax,1);
   fCutSlider->SetObject(this);
   fCutSlider->SetFillColor(45);
   TSliderBox *sbox = dynamic_cast<TSliderBox*>(fCutSlider->GetListOfPrimitives()->First());
   sbox->SetFillColor(46);
   fCutSlider->cd();
-  TGaxis *cutaxis = new TGaxis(0.02,0.8,0.98,0.8,0,kptcutmax,510,"");
+  TGaxis *cutaxis = new TGaxis(0.02,0.8,0.98,0.8,0,fgkPtCutMax,510,"");
   cutaxis->SetLabelSize(0.5);
   cutaxis->SetTitleSize(0.6);
   cutaxis->SetTitleOffset(0.5);
@@ -272,7 +274,7 @@ AliDisplay::AliDisplay(Int_t size):
   TSliderBox *sbox2 = dynamic_cast<TSliderBox*>(fEtaSlider->GetListOfPrimitives()->First());
   sbox2->SetFillColor(46);
   fEtaSlider->cd();
-  TGaxis *etaaxis = new TGaxis(0.9,0.02,0.9,0.98,-ketacutmax,ketacutmax,510,"");
+  TGaxis *etaaxis = new TGaxis(0.9,0.02,0.9,0.98,-fgkEtaCutMax,fgkEtaCutMax,510,"");
   etaaxis->SetLabelSize(0.5);
   etaaxis->SetTitleSize(0.6);
   etaaxis->SetTitleOffset(0.2);
@@ -586,15 +588,15 @@ void AliDisplay::DrawHits()
    //Get cut slider
    smax   = fCutSlider->GetMaximum();
    smin   = fCutSlider->GetMinimum();
-   cutmin = kptcutmax*smin;
-   if (smax < 0.98) cutmax = kptcutmax*smax;
+   cutmin = fgkPtCutMax*smin;
+   if (smax < 0.98) cutmax = fgkPtCutMax*smax;
    else             cutmax = 100000;
    
    //Get eta slider
    smax   = fEtaSlider->GetMaximum();
    smin   = fEtaSlider->GetMinimum();
-   etamin = ketacutmax*(2*smin-1);
-   etamax = ketacutmax*(2*smax-1);
+   etamin = fgkEtaCutMax*(2*smin-1);
+   etamax = fgkEtaCutMax*(2*smax-1);
    if (smin < 0.02) etamin = -1000;
    if (smax > 0.98) etamax =  1000;
       
@@ -781,7 +783,7 @@ void AliDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
       if (x1 < x0) {temp = x0; x0 = x1; x1 = temp;}
       if (y1 < y0) {temp = y0; y0 = y1; y1 = temp;}
       gPad->Range(x0,y0,x1,y1);
-      if (fZooms < kMAXZOOMS-1) {
+      if (fZooms < fgkMaxZooms-1) {
          fZooms++;
          fZoomX0[fZooms] = x0;
          fZoomY0[fZooms] = y0;

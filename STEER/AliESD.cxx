@@ -18,7 +18,7 @@
 //-----------------------------------------------------------------
 //           Implementation of the ESD class
 //   This is the class to deal with during the phisical analysis of data
-//
+//   This class is generated directly by the reconstruction methods
 //      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
 
@@ -26,7 +26,7 @@
 
 ClassImp(AliESD)
 
-//_______________________________________________________________________
+//______________________________________________________________________________
 AliESD::AliESD():
   fEventNumber(0),
   fRunNumber(0),
@@ -44,8 +44,27 @@ AliESD::AliESD():
 {
 }
 
-void AliESD::Print(Option_t *) const {
-  //Print header information of the event
+//______________________________________________________________________________
+AliESD::~AliESD()
+{
+  //
+  // Standard destructor
+  //
+  fTracks.Delete();
+  fCaloTracks.Delete();
+  fMuonTracks.Delete();
+  fPmdTracks.Delete();
+  fV0s.Delete();
+  fCascades.Delete();
+}
+
+
+//______________________________________________________________________________
+void AliESD::Print(Option_t *) const 
+{
+  //
+  // Print header information of the event
+  //
   Info("Print","ESD run information");
   printf("Event # %d Run # %d Trigger %ld Magnetic field %f \n",
 	 GetEventNumber(),
