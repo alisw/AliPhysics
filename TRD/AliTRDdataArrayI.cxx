@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.2.1  2000/05/08 15:14:34  cblume
 Add new data array classes
 
@@ -56,6 +59,17 @@ AliTRDdataArrayI::AliTRDdataArrayI(Int_t nrow, Int_t ncol, Int_t ntime)
 }
 
 //_____________________________________________________________________________
+AliTRDdataArrayI::AliTRDdataArrayI(AliTRDdataArrayI &a)
+{
+  //
+  // AliTRDdataArrayI copy constructor
+  //
+
+  a.Copy(*this);
+
+}
+
+//_____________________________________________________________________________
 AliTRDdataArrayI::~AliTRDdataArrayI()
 {
   //
@@ -80,6 +94,21 @@ void AliTRDdataArrayI::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
   if (fElements) delete fElements;
   fElements = new AliTRDarrayI;
   fElements->Set(fNelems);
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdataArrayI::Copy(AliTRDdataArrayI &a)
+{
+  //
+  // Copy function
+  //
+
+  fElements->Copy(*a.fElements);
+
+  a.fThreshold = fThreshold;
+
+  AliTRDdataArray::Copy(a);
 
 }
 
@@ -287,9 +316,9 @@ void AliTRDdataArrayI::Expand1()
 
   Int_t idx1 = 0;
   Int_t idx2 = 0;
-  Int_t N    = fElements->fN;
+  Int_t n    = fElements->fN;
 
-  for (i = 0; i < N; i++){
+  for (i = 0; i < n; i++){
 
     // Negative sign counts the unwritten values (under threshold)
     if ((*fElements)[i] < 0) {
@@ -391,8 +420,8 @@ void AliTRDdataArrayI::Expand2()
 
   Int_t idx1 = 0;
   Int_t idx2 = 0;
-  Int_t N    = fElements->fN;
-  for (i = 0; i < N; i++){
+  Int_t n    = fElements->fN;
+  for (i = 0; i < n; i++){
     // Negative sign counts the unwritten values (under threshold)
     if ((*fElements)[i] < 0) {
       idx1 -= fElements->At(i); 
@@ -420,6 +449,9 @@ void AliTRDdataArrayI::Expand2()
 //_____________________________________________________________________________
 void AliTRDdataArrayI::Compress2()
 {
+  //
+  // Compress a buffer of type 2 - not implemented!
+  //
 
 }
 

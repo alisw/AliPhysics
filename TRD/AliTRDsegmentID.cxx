@@ -15,20 +15,46 @@
 
 /*
 $Log$
+Revision 1.1  2000/02/28 19:03:35  cblume
+Add new TRD classes
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Alice  AliSementID   object                                             //
-//                                
-//                                                                           //
-//                                                                          //
+//     Base class for a detector segment                                     // 
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDsegmentID.h"
 
 ClassImp(AliTRDsegmentID)
 
-AliTRDsegmentID::AliTRDsegmentID()
+//_____________________________________________________________________________
+AliTRDsegmentID::AliTRDsegmentID():TObject()
 {
+  //
+  // AliTRDsegmentID default constructor
+  //
+
+  fSegmentID = 0;
+
+}
+
+//_____________________________________________________________________________
+AliTRDsegmentID::AliTRDsegmentID(Int_t index):TObject()
+{
+  //
+  // Defines a detector segment
+  //
+
+  fSegmentID = index;
+
+}
+
+//_____________________________________________________________________________
+AliTRDsegmentID::~AliTRDsegmentID()
+{
+  //
+  // AliTRDsegmentID destructor
+  //
+
 }

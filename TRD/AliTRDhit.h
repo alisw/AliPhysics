@@ -1,5 +1,5 @@
-#ifndef TRDhit_H
-#define TRDhit_H
+#ifndef ALITRDHIT_H
+#define ALITRDHIT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -13,17 +13,20 @@
 
 //_____________________________________________________________________________
 class AliTRDhit : public AliHit {
-
- public:
-
-  Int_t        fDetector;   // TRD detector number
-  Float_t      fQ;          // Charge created by a hit (slow simulator only)
  
  public:
 
-  AliTRDhit() {}
+  AliTRDhit();
   AliTRDhit(Int_t shunt, Int_t track, Int_t *det, Float_t *hits);
-  virtual ~AliTRDhit() {};
+  virtual ~AliTRDhit();
+
+          Int_t   GetDetector() { return fDetector; };
+          Float_t GetCharge()   { return fQ;        };
+
+ protected:
+
+  Int_t        fDetector;   // TRD detector number
+  Float_t      fQ;          // Charge created by a hit (slow simulator only)
  
   ClassDef(AliTRDhit,2)     // Hit for the Transition Radiation Detector
 

@@ -1,5 +1,5 @@
-#ifndef TRDgeometryFull_h
-#define TRDgeometryFull_h
+#ifndef ALITRDGEOMETRYFULL_h
+#define ALITRDGEOMETRYFULL_h
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -14,7 +14,7 @@ class AliTRDgeometryFull : public AliTRDgeometry {
   AliTRDgeometryFull();
   ~AliTRDgeometryFull();
 
-          void    CreateGeometry(Int_t *);
+          void    CreateGeometry(Int_t *idtmed);
           Int_t   IsVersion() const { return 1; };
           void    Init();
 
@@ -31,10 +31,10 @@ class AliTRDgeometryFull : public AliTRDgeometry {
 
   Float_t         fClengthI[kNplan];               // Length of the inner chambers
   Float_t         fClengthM1[kNplan];              // Length of the middle chambers
-  Float_t         fClengthM2[kNplan];              // 
+  Float_t         fClengthM2[kNplan];              // Length of the middle chambers
   Float_t         fClengthO1[kNplan];              // Length of the outer chambers
-  Float_t         fClengthO2[kNplan];              // 
-  Float_t         fClengthO3[kNplan];              // 
+  Float_t         fClengthO2[kNplan];              // Length of the outer chambers
+  Float_t         fClengthO3[kNplan];              // Length of the outer chambers
 
   ClassDef(AliTRDgeometryFull,1)                   // TRD geometry without hole
 

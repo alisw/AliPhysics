@@ -7,23 +7,31 @@
 /* $Id: AliTRDsegmentID.h,v */
 
 ////////////////////////////////////////////////
-//  Manager class generaol Alice segment 
-//  segment is for example one pad row in TPC //
+//     Base class for a detector segment      // 
 ////////////////////////////////////////////////
 
 #include "TObject.h"
 
-class AliTRDsegmentID: public TObject{
-public:
+class AliTRDsegmentID : public TObject {
+
+ public:
+
   AliTRDsegmentID();
-  AliTRDsegmentID(Int_t index){fSegmentID = index;}
-  Int_t GetID() {return fSegmentID;}
-  void  SetID(Int_t index){fSegmentID = index;} 
-  virtual Int_t  GetSize() {return sizeof(*this);} //function which return size of object 
-protected:
-  Int_t fSegmentID;   //identification number of Segment
-  ClassDef(AliTRDsegmentID,1) 
+  AliTRDsegmentID(Int_t index);
+  virtual ~AliTRDsegmentID();
+
+          Int_t  GetID()            { return fSegmentID;    }
+  virtual Int_t  GetSize()          { return sizeof(*this); }
+
+          void   SetID(Int_t index) { fSegmentID = index;} 
+
+ protected:
+
+  Int_t fSegmentID;           // Identification number of a segment
+
+  ClassDef(AliTRDsegmentID,1) // Detector segment base class
+
 };
    
-#endif //ALISEGMENTID_H
+#endif 
 

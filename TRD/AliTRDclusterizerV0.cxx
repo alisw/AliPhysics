@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/07 16:27:01  cblume
+Try to remove compiler warnings on Sun and HP
+
 Revision 1.2  2000/05/08 16:17:27  cblume
 Merge TRD-develop
 
@@ -73,6 +76,9 @@ AliTRDclusterizerV0::AliTRDclusterizerV0(const Text_t* name, const Text_t* title
 //_____________________________________________________________________________
 AliTRDclusterizerV0::~AliTRDclusterizerV0()
 {
+  //
+  // AliTRDclusterizerV0 destructor
+  //
 
 }
 
@@ -98,72 +104,72 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
   //
 
   // Get the pointer to the detector class and check for version 1
-  AliTRD *TRD = (AliTRD*) gAlice->GetDetector("TRD");
-  if (TRD->IsVersion() != 0) {
+  AliTRD *trd = (AliTRD*) gAlice->GetDetector("TRD");
+  if (trd->IsVersion() != 0) {
     printf("AliTRDclusterizerV0::MakeCluster -- ");
     printf("TRD must be version 0 (fast simulator).\n");
     return kFALSE; 
   }
 
   // Get the geometry
-  AliTRDgeometry *Geo = TRD->GetGeometry();
+  AliTRDgeometry *geo = trd->GetGeometry();
   
   printf("AliTRDclusterizerV0::MakeCluster -- ");
   printf("Start creating cluster.\n");
 
   Int_t nBytes = 0;
 
-  AliTRDhit      *Hit;
+  AliTRDhit *hit;
   
   // Get the pointer to the hit tree
-  TTree *HitTree     = gAlice->TreeH();
+  TTree     *hitTree      = gAlice->TreeH();
   // Get the pointer to the reconstruction tree
-  TTree *ClusterTree = gAlice->TreeR();
+  TTree     *clusterTree  = gAlice->TreeR();
 
-  TObjArray *Chamber = new TObjArray();
+  TObjArray *chamberArray = new TObjArray();
 
   // Get the number of entries in the hit tree
   // (Number of primary particles creating a hit somewhere)
-  Int_t nTrack = (Int_t) HitTree->GetEntries();
+  Int_t nTrack = (Int_t) hitTree->GetEntries();
 
   // Loop through all the chambers
   for (Int_t icham = 0; icham < kNcham; icham++) {
     for (Int_t iplan = 0; iplan < kNplan; iplan++) {
       for (Int_t isect = 0; isect < kNsect; isect++) {
 
-        Int_t   nColMax     = Geo->GetColMax(iplan);
-        Float_t row0        = Geo->GetRow0(iplan,icham,isect);
-        Float_t col0        = Geo->GetCol0(iplan);
-        Float_t time0       = Geo->GetTime0(iplan);
+        Int_t   nColMax     = geo->GetColMax(iplan);
+        Float_t row0        = geo->GetRow0(iplan,icham,isect);
+        Float_t col0        = geo->GetCol0(iplan);
+        Float_t time0       = geo->GetTime0(iplan);
 
-        Float_t rowPadSize  = Geo->GetRowPadSize();
-        Float_t colPadSize  = Geo->GetColPadSize();
-        Float_t timeBinSize = Geo->GetTimeBinSize();
+        Float_t rowPadSize  = geo->GetRowPadSize();
+        Float_t colPadSize  = geo->GetColPadSize();
+        Float_t timeBinSize = geo->GetTimeBinSize();
 
         // Loop through all entries in the tree
         for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
 
           gAlice->ResetHits();
-          nBytes += HitTree->GetEvent(iTrack);
+          nBytes += hitTree->GetEvent(iTrack);
 
           // Get the number of hits in the TRD created by this particle
-          Int_t nHit = TRD->Hits()->GetEntriesFast();
+          Int_t nHit = trd->Hits()->GetEntriesFast();
 
           // Loop through the TRD hits  
           for (Int_t iHit = 0; iHit < nHit; iHit++) {
 
-            if (!(Hit = (AliTRDhit *) TRD->Hits()->UncheckedAt(iHit))) 
+            if (!(hit = (AliTRDhit *) trd->Hits()->UncheckedAt(iHit))) 
               continue;
 
             Float_t pos[3];
-                    pos[0]   = Hit->fX;
-                    pos[1]   = Hit->fY;
-                    pos[2]   = Hit->fZ;
-            Int_t   track    = Hit->fTrack;
-            Int_t   detector = Hit->fDetector;
-            Int_t   plane    = Geo->GetPlane(detector);
-            Int_t   sector   = Geo->GetSector(detector);
-            Int_t   chamber  = Geo->GetChamber(detector);        
+                    pos[0]   = hit->fX;
+                    pos[1]   = hit->fY;
+                    pos[2]   = hit->fZ;
+            Int_t   track    = hit->fTrack;
+            Int_t   detector = hit->GetDetector();
+            Int_t   plane    = geo->GetPlane(detector);
+            Int_t   sector   = geo->GetSector(detector);
+            Int_t   chamber  = geo->GetChamber(detector);        
 
             if ((sector  != isect) ||
                 (plane   != iplan) ||
@@ -172,58 +178,60 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
 
             // Rotate the sectors on top of each other
             Float_t rot[3];
-            Geo->Rotate(detector,pos,rot);
+            geo->Rotate(detector,pos,rot);
 
             // Add this recPoint to the temporary array for this chamber
-            AliTRDrecPoint *RecPoint = new AliTRDrecPoint();
-            RecPoint->SetLocalRow(rot[2]);
-            RecPoint->SetLocalCol(rot[1]);
-            RecPoint->SetLocalTime(rot[0]);
-            RecPoint->SetEnergy(0);
-            RecPoint->SetDetector(detector);
-            RecPoint->AddDigit(track);
-            Chamber->Add(RecPoint);
+            AliTRDrecPoint *recPoint = new AliTRDrecPoint();
+            recPoint->SetLocalRow(rot[2]);
+            recPoint->SetLocalCol(rot[1]);
+            recPoint->SetLocalTime(rot[0]);
+            recPoint->SetEnergy(0);
+            recPoint->SetDetector(detector);
+            recPoint->AddDigit(track);
+            chamberArray->Add(recPoint);
 
 	  }
 
 	}
   
         // Loop through the temporary cluster-array
-        for (Int_t iClus1 = 0; iClus1 < Chamber->GetEntries(); iClus1++) {
+        for (Int_t iClus1 = 0; iClus1 < chamberArray->GetEntries(); iClus1++) {
 
-          AliTRDrecPoint *RecPoint1 = (AliTRDrecPoint *) Chamber->UncheckedAt(iClus1);
-          Float_t row1  = RecPoint1->GetLocalRow();
-          Float_t col1  = RecPoint1->GetLocalCol();
-          Float_t time1 = RecPoint1->GetLocalTime();
+          AliTRDrecPoint *recPoint1 = (AliTRDrecPoint *) 
+                                      chamberArray->UncheckedAt(iClus1);
+          Float_t row1  = recPoint1->GetLocalRow();
+          Float_t col1  = recPoint1->GetLocalCol();
+          Float_t time1 = recPoint1->GetLocalTime();
 
-          if (RecPoint1->GetEnergy() < 0) continue;        // Skip marked cluster  
+          if (recPoint1->GetEnergy() < 0) continue;        // Skip marked cluster  
 
-          const Int_t nSave  = 5;
-          Int_t idxSave[nSave];
+          const Int_t kNsave  = 5;
+          Int_t idxSave[kNsave];
           Int_t iSave = 0;
 
-          const Int_t nSaveTrack = 3;
-          Int_t tracks[nSaveTrack];
-          tracks[0] = RecPoint1->GetDigit(0);
+          const Int_t kNsaveTrack = 3;
+          Int_t tracks[kNsaveTrack];
+          tracks[0] = recPoint1->GetDigit(0);
 
           // Check the other cluster to see, whether there are close ones
-          for (Int_t iClus2 = iClus1 + 1; iClus2 < Chamber->GetEntries(); iClus2++) {
+          for (Int_t iClus2 = iClus1 + 1; iClus2 < chamberArray->GetEntries(); iClus2++) {
 
-            AliTRDrecPoint *RecPoint2 = (AliTRDrecPoint *) Chamber->UncheckedAt(iClus2);
-            Float_t row2 = RecPoint2->GetLocalRow();
-            Float_t col2 = RecPoint2->GetLocalCol();
+            AliTRDrecPoint *recPoint2 = (AliTRDrecPoint *) 
+                                        chamberArray->UncheckedAt(iClus2);
+            Float_t row2 = recPoint2->GetLocalRow();
+            Float_t col2 = recPoint2->GetLocalCol();
 
             if ((TMath::Abs(row1 - row2) < rowPadSize) ||
                 (TMath::Abs(col1 - col2) <  fRphiDist)) {
-              if (iSave == nSave) {
+              if (iSave == kNsave) {
                 printf("AliTRDclusterizerV0::MakeCluster -- ");
-                printf("Boundary error: iSave = %d, nSave = %d.\n"
-                      ,iSave,nSave);
+                printf("Boundary error: iSave = %d, kNsave = %d.\n"
+                      ,iSave,kNsave);
 	      }
               else {                              
                 idxSave[iSave]  = iClus2;
                 iSave++;
-                if (iSave < nSaveTrack) tracks[iSave] = RecPoint2->GetDigit(0);
+                if (iSave < kNsaveTrack) tracks[iSave] = recPoint2->GetDigit(0);
 	      }
 	    }
 	  }
@@ -233,11 +241,11 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
           Float_t colMerge = col1;
           if (iSave) {
             for (Int_t iMerge = 0; iMerge < iSave; iMerge++) {
-              AliTRDrecPoint *RecPoint2 =
-                (AliTRDrecPoint *) Chamber->UncheckedAt(idxSave[iMerge]);
-              rowMerge += RecPoint2->GetLocalRow();
-              colMerge += RecPoint2->GetLocalCol();
-              RecPoint2->SetEnergy(-1);     // Mark merged cluster
+              AliTRDrecPoint *recPoint2 =
+                (AliTRDrecPoint *) chamberArray->UncheckedAt(idxSave[iMerge]);
+              rowMerge += recPoint2->GetLocalRow();
+              colMerge += recPoint2->GetLocalCol();
+              recPoint2->SetEnergy(-1);     // Mark merged cluster
 	    }
             rowMerge /= (iSave + 1);
             colMerge /= (iSave + 1);
@@ -265,24 +273,24 @@ Bool_t AliTRDclusterizerV0::MakeCluster()
           smear[2] = (Int_t) ((smear[2] - time0) / timeBinSize);
 
           // Add the smeared cluster to the output array 
-          Int_t detector  = RecPoint1->GetDetector();
+          Int_t detector  = recPoint1->GetDetector();
           Int_t digits[3] = {0};
-          TRD->AddRecPoint(smear,digits,detector,0.0);
+          trd->AddRecPoint(smear,digits,detector,0.0);
 
 	}
 
         // Clear the temporary cluster-array and delete the cluster
-        Chamber->Delete();
+        chamberArray->Delete();
 
       }
     }
   }
 
   printf("AliTRDclusterizerV0::MakeCluster -- ");
-  printf("Found %d points.\n",TRD->RecPoints()->GetEntries());
+  printf("Found %d points.\n",trd->RecPoints()->GetEntries());
   printf("AliTRDclusterizerV0::MakeCluster -- ");
   printf("Fill the cluster tree.\n");
-  ClusterTree->Fill();
+  clusterTree->Fill();
 
   return kTRUE;
 

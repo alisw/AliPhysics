@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/07 16:25:37  cblume
+Try to remove compiler warnings on Sun and HP
+
 Revision 1.2  2000/05/08 16:17:27  cblume
 Merge TRD-develop
 
@@ -65,5 +68,14 @@ AliTRDdigit::AliTRDdigit(Bool_t isRaw, Int_t *digits, Int_t *amp):AliDigitNew()
   fAmp  = amp[0];
 
   if (isRaw) SetBit(kRawDigit);
+
+}
+
+//_____________________________________________________________________________
+AliTRDdigit::~AliTRDdigit()
+{
+  //
+  // AliTRDdigit destructor
+  //
 
 }

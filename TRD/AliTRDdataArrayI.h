@@ -1,5 +1,5 @@
-#ifndef TRDdataArrayI_H
-#define TRDdataArrayI_H
+#ifndef ALITRDDATAARRAYI_H
+#define ALITRDDATAARRAYI_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -22,9 +22,11 @@ class AliTRDdataArrayI : public AliTRDdataArray {
 
   AliTRDdataArrayI();
   AliTRDdataArrayI(Int_t nrow, Int_t ncol, Int_t ntime);
-  ~AliTRDdataArrayI();
+  AliTRDdataArrayI(AliTRDdataArrayI &a);
+  virtual ~AliTRDdataArrayI();
 
   virtual void   Allocate(Int_t nrow, Int_t ncol, Int_t ntime);
+  virtual void   Copy(AliTRDdataArrayI &a);
   virtual void   Compress(Int_t bufferType, Int_t threshold);
   virtual void   Compress(Int_t bufferType); 
   virtual void   Expand();
@@ -41,6 +43,8 @@ class AliTRDdataArrayI : public AliTRDdataArray {
   virtual Int_t  GetSize();
   virtual Int_t  GetDataSize(); 
   virtual Int_t  GetOverThreshold(Int_t threshold);  
+
+  inline  AliTRDdataArrayI &operator=(AliTRDdataArrayI &a);
 
  protected:
 
@@ -66,7 +70,7 @@ class AliTRDdataArrayI : public AliTRDdataArray {
  
 
 //_____________________________________________________________________________
-inline Int_t AliTRDdataArrayI::GetDataFast(Int_t idx1, Int_t idx2)
+Int_t AliTRDdataArrayI::GetDataFast(Int_t idx1, Int_t idx2)
 {
   //
   // Returns the value at a given position in the array
@@ -77,8 +81,7 @@ inline Int_t AliTRDdataArrayI::GetDataFast(Int_t idx1, Int_t idx2)
 }
 
 //_____________________________________________________________________________
-inline void AliTRDdataArrayI::SetData(Int_t row, Int_t col, Int_t time
-                                                          , Int_t value)
+void AliTRDdataArrayI::SetData(Int_t row, Int_t col, Int_t time, Int_t value)
 {
   //
   // Sets the data value at a given position of the array
@@ -102,7 +105,7 @@ inline void AliTRDdataArrayI::SetData(Int_t row, Int_t col, Int_t time
 }
 
 //_____________________________________________________________________________
-inline void  AliTRDdataArrayI::SetDataFast(Int_t idx1, Int_t idx2, Int_t value)
+void  AliTRDdataArrayI::SetDataFast(Int_t idx1, Int_t idx2, Int_t value)
 {
   //
   // Set the value at a given position in the array
@@ -116,6 +119,18 @@ inline void  AliTRDdataArrayI::SetDataFast(Int_t idx1, Int_t idx2, Int_t value)
   }
 
   (*fElements)[fIndex->fArray[idx2] + idx1] = value; 
+
+}
+
+//_____________________________________________________________________________
+AliTRDdataArrayI &AliTRDdataArrayI::operator=(AliTRDdataArrayI &a)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &a) a.Copy(*this);
+  return *this;
 
 }
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/07 16:25:37  cblume
+Try to remove compiler warnings on Sun and HP
+
 Revision 1.2  2000/05/08 16:17:27  cblume
 Merge TRD-develop
 
@@ -51,6 +54,9 @@ AliTRDgeometry::AliTRDgeometry():AliGeometry()
 //_____________________________________________________________________________
 AliTRDgeometry::~AliTRDgeometry()
 {
+  //
+  // AliTRDgeometry destructor
+  //
 
 }
 
@@ -145,82 +151,82 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   //    UL10       (PE)    --- The cooling devices
   //    UL11       (Water) --- The cooling water
 
-  const Int_t npar_cha = 3;
+  const Int_t kNparCha = 3;
 
-  Float_t par_dum[3];
-  Float_t par_cha[npar_cha];
+  Float_t parDum[3];
+  Float_t parCha[kNparCha];
 
   Float_t xpos, ypos, zpos;
 
   // The aluminum frames - readout + electronics (Al)
   // The inner chambers
-  gMC->Gsvolu("UAFI","BOX ",idtmed[1301-1],par_dum,0);
+  gMC->Gsvolu("UAFI","BOX ",idtmed[1301-1],parDum,0);
   // The middle chambers
-  gMC->Gsvolu("UAFM","BOX ",idtmed[1301-1],par_dum,0);
+  gMC->Gsvolu("UAFM","BOX ",idtmed[1301-1],parDum,0);
   // The outer chambers
-  gMC->Gsvolu("UAFO","BOX ",idtmed[1301-1],par_dum,0);
+  gMC->Gsvolu("UAFO","BOX ",idtmed[1301-1],parDum,0);
 
   // The inner part of the aluminum frames (Air)
   // The inner chambers
-  gMC->Gsvolu("UAII","BOX ",idtmed[1302-1],par_dum,0);
+  gMC->Gsvolu("UAII","BOX ",idtmed[1302-1],parDum,0);
   // The middle chambers
-  gMC->Gsvolu("UAIM","BOX ",idtmed[1302-1],par_dum,0);
+  gMC->Gsvolu("UAIM","BOX ",idtmed[1302-1],parDum,0);
   // The outer chambers
-  gMC->Gsvolu("UAIO","BOX ",idtmed[1302-1],par_dum,0);
+  gMC->Gsvolu("UAIO","BOX ",idtmed[1302-1],parDum,0);
 
   // The carbon frames - radiator + driftchamber (C)
   // The inner chambers
-  gMC->Gsvolu("UCFI","BOX ",idtmed[1307-1],par_dum,0);
+  gMC->Gsvolu("UCFI","BOX ",idtmed[1307-1],parDum,0);
   // The middle chambers
-  gMC->Gsvolu("UCFM","BOX ",idtmed[1307-1],par_dum,0);
+  gMC->Gsvolu("UCFM","BOX ",idtmed[1307-1],parDum,0);
   // The outer chambers
-  gMC->Gsvolu("UCFO","BOX ",idtmed[1307-1],par_dum,0);
+  gMC->Gsvolu("UCFO","BOX ",idtmed[1307-1],parDum,0);
 
   // The inner part of the carbon frames (Air)
   // The inner chambers
-  gMC->Gsvolu("UCII","BOX ",idtmed[1302-1],par_dum,0);
+  gMC->Gsvolu("UCII","BOX ",idtmed[1302-1],parDum,0);
   // The middle chambers
-  gMC->Gsvolu("UCIM","BOX ",idtmed[1302-1],par_dum,0);
+  gMC->Gsvolu("UCIM","BOX ",idtmed[1302-1],parDum,0);
   // The outer chambers
-  gMC->Gsvolu("UCIO","BOX ",idtmed[1302-1],par_dum,0);
+  gMC->Gsvolu("UCIO","BOX ",idtmed[1302-1],parDum,0);
 
   // The material layers inside the chambers
-  par_cha[0] = -1.;
-  par_cha[1] = -1.;
+  parCha[0] = -1.;
+  parCha[1] = -1.;
   // G10 layer (radiator seal)
-  par_cha[2] = kSeThick/2;
-  gMC->Gsvolu("UL01","BOX ",idtmed[1313-1],par_cha,npar_cha);
+  parCha[2] = kSeThick/2;
+  gMC->Gsvolu("UL01","BOX ",idtmed[1313-1],parCha,kNparCha);
   // CO2 layer (radiator)
-  par_cha[2] = kRaThick/2;
-  gMC->Gsvolu("UL02","BOX ",idtmed[1312-1],par_cha,npar_cha);
+  parCha[2] = kRaThick/2;
+  gMC->Gsvolu("UL02","BOX ",idtmed[1312-1],parCha,kNparCha);
   // PE layer (radiator)
-  par_cha[2] = kPeThick/2;
-  gMC->Gsvolu("UL03","BOX ",idtmed[1303-1],par_cha,npar_cha);
+  parCha[2] = kPeThick/2;
+  gMC->Gsvolu("UL03","BOX ",idtmed[1303-1],parCha,kNparCha);
   // Mylar layer (entrance window + HV cathode) 
-  par_cha[2] = kMyThick/2;
-  gMC->Gsvolu("UL04","BOX ",idtmed[1308-1],par_cha,npar_cha);
+  parCha[2] = kMyThick/2;
+  gMC->Gsvolu("UL04","BOX ",idtmed[1308-1],parCha,kNparCha);
   // Xe/Isobutane layer (drift volume, sensitive) 
-  par_cha[2] = kDrThick/2.;
-  gMC->Gsvolu("UL05","BOX ",idtmed[1309-1],par_cha,npar_cha);
+  parCha[2] = kDrThick/2.;
+  gMC->Gsvolu("UL05","BOX ",idtmed[1309-1],parCha,kNparCha);
   // Xe/Isobutane layer (amplification volume, not sensitive)
-  par_cha[2] = kAmThick/2.;
-  gMC->Gsvolu("UL06","BOX ",idtmed[1309-1],par_cha,npar_cha);
+  parCha[2] = kAmThick/2.;
+  gMC->Gsvolu("UL06","BOX ",idtmed[1309-1],parCha,kNparCha);
   
   // Cu layer (pad plane)
-  par_cha[2] = kCuThick/2;
-  gMC->Gsvolu("UL07","BOX ",idtmed[1305-1],par_cha,npar_cha);
+  parCha[2] = kCuThick/2;
+  gMC->Gsvolu("UL07","BOX ",idtmed[1305-1],parCha,kNparCha);
   // G10 layer (support structure)
-  par_cha[2] = kSuThick/2;
-  gMC->Gsvolu("UL08","BOX ",idtmed[1313-1],par_cha,npar_cha);
+  parCha[2] = kSuThick/2;
+  gMC->Gsvolu("UL08","BOX ",idtmed[1313-1],parCha,kNparCha);
   // Cu layer (FEE + signal lines)
-  par_cha[2] = kFeThick/2;
-  gMC->Gsvolu("UL09","BOX ",idtmed[1305-1],par_cha,npar_cha);
+  parCha[2] = kFeThick/2;
+  gMC->Gsvolu("UL09","BOX ",idtmed[1305-1],parCha,kNparCha);
   // PE layer (cooling devices)
-  par_cha[2] = kCoThick/2;
-  gMC->Gsvolu("UL10","BOX ",idtmed[1303-1],par_cha,npar_cha);
+  parCha[2] = kCoThick/2;
+  gMC->Gsvolu("UL10","BOX ",idtmed[1303-1],parCha,kNparCha);
   // Water layer (cooling)
-  par_cha[2] = kWaThick/2;
-  gMC->Gsvolu("UL11","BOX ",idtmed[1314-1],par_cha,npar_cha);
+  parCha[2] = kWaThick/2;
+  gMC->Gsvolu("UL11","BOX ",idtmed[1314-1],parCha,kNparCha);
 
   // Position the layers in the chambers
   xpos = 0;

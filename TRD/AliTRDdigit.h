@@ -1,5 +1,5 @@
-#ifndef TRDdigit_h
-#define TRDdigit_h
+#ifndef ALITRDDIGIT_H
+#define ALITRDDIGIT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -16,7 +16,7 @@ class AliTRDdigit : public AliDigitNew {
 
   AliTRDdigit();
   AliTRDdigit(Bool_t isRaw, Int_t *digits, Int_t *amp);
-  ~AliTRDdigit() {};
+  virtual ~AliTRDdigit();
 
           Int_t GetAmp() const    { if (TestBit(kRawDigit))
                                       return DecodeAmp();
@@ -31,11 +31,11 @@ class AliTRDdigit : public AliDigitNew {
 
  protected:
 
-  Int_t        fRow;        // Pad row number
-  Int_t        fCol;        // Pad col number
-  Int_t        fTime;       // Time bucket
+  Int_t        fRow;              // Pad row number
+  Int_t        fCol;              // Pad col number
+  Int_t        fTime;             // Time bucket
 
-  ClassDef(AliTRDdigit,1)   // Digit for the TRD
+  ClassDef(AliTRDdigit,1)         // Digit for the TRD
 
 };
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.2.1  2000/05/08 14:35:38  cblume
 Add float array
 
@@ -41,6 +44,18 @@ AliTRDarrayF::~AliTRDarrayF()
   //
   // Default destructor
   //
+
+}
+
+//_____________________________________________________________________________
+void AliTRDarrayF::Copy(AliTRDarrayF &a)
+{
+  //
+  // Copy function
+  //
+
+  TObject::Copy(a);
+  TArrayF::Copy(a);
 
 }
 

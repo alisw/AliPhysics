@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/07 16:25:37  cblume
+Try to remove compiler warnings on Sun and HP
+
 Revision 1.2  2000/05/08 16:17:27  cblume
 Merge TRD-develop
 
@@ -32,7 +35,16 @@ AliTRDhit class now in separate files
 #include "AliTRDhit.h"
 
 ClassImp(AliTRDhit)
- 
+
+//_____________________________________________________________________________
+AliTRDhit::AliTRDhit():AliHit()
+{
+  //
+  // AliTRDhit default constructor
+  //
+
+}
+
 //_____________________________________________________________________________
 AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t *det, Float_t *hits)
           :AliHit(shunt, track)
@@ -49,5 +61,14 @@ AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t *det, Float_t *hits)
   fY        = hits[1];
   fZ        = hits[2];
   fQ        = hits[3];
+
+}
+
+//_____________________________________________________________________________
+AliTRDhit::~AliTRDhit()
+{
+  //
+  // AliTRDhit destructor
+  //
 
 }

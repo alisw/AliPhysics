@@ -1,5 +1,5 @@
-#ifndef TRDdataArray_H
-#define TRDdataArray_H
+#ifndef ALITRDDATAARRAY_H
+#define ALITRDDATAARRAY_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -21,8 +21,10 @@ class AliTRDdataArray : public AliTRDsegmentID {
 
   AliTRDdataArray();
   AliTRDdataArray(Int_t nrow, Int_t ncol,Int_t ntime);
-  ~AliTRDdataArray();
+  AliTRDdataArray(AliTRDdataArray &d);
+  virtual ~AliTRDdataArray();
 
+  virtual void   Copy(AliTRDdataArray &d);
   virtual void   Allocate(Int_t nrow, Int_t ncol,Int_t ntime);
   virtual void   Reset();
 
@@ -31,6 +33,7 @@ class AliTRDdataArray : public AliTRDsegmentID {
   virtual Int_t  GetNtime()                    { return fNtime;      };
 
           Int_t  GetIndex(Int_t row, Int_t col, Int_t time);
+  inline  AliTRDdataArray &operator=(AliTRDdataArray &d);
 
  protected:
 
@@ -57,8 +60,7 @@ class AliTRDdataArray : public AliTRDsegmentID {
 };
  
 //_____________________________________________________________________________
-inline Bool_t AliTRDdataArray::CheckBounds(const char *where
-                                          , Int_t idx1, Int_t idx2) 
+Bool_t AliTRDdataArray::CheckBounds(const char *where, Int_t idx1, Int_t idx2) 
 {
   //
   // Does the boundary checking
@@ -76,8 +78,7 @@ inline Bool_t AliTRDdataArray::CheckBounds(const char *where
 }
 
 //_____________________________________________________________________________
-inline Bool_t AliTRDdataArray::OutOfBoundsError(const char *where
-                                               , Int_t idx1, Int_t idx2) 
+Bool_t AliTRDdataArray::OutOfBoundsError(const char *where, Int_t idx1, Int_t idx2) 
 {
   //
   // Generate an out-of-bounds error. Always returns false.
@@ -87,6 +88,18 @@ inline Bool_t AliTRDdataArray::OutOfBoundsError(const char *where
 	   ,idx1,idx2,fNdim1,fNdim2,this);
 
   return kFALSE;
+
+}
+
+//_____________________________________________________________________________
+AliTRDdataArray &AliTRDdataArray::operator=(AliTRDdataArray &d)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &d) d.Copy(*this);
+  return *this;
 
 }
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/02/28 19:01:42  cblume
+Add new TRD classes
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,6 +44,9 @@ AliTRDgeometryHole::AliTRDgeometryHole():AliTRDgeometry()
 //_____________________________________________________________________________
 AliTRDgeometryHole::~AliTRDgeometryHole()
 {
+  //
+  // AliTRDgeometryHole destructor
+  //
 
 }
 
@@ -166,36 +172,36 @@ void AliTRDgeometryHole::CreateGeometry(Int_t *idtmed)
 
   Int_t iplan;
 
-  const Int_t npar_trd = 4;
-  const Int_t npar_cha = 3;
+  const Int_t kNparTrd = 4;
+  const Int_t kNparCha = 3;
 
-  Float_t par_trd[npar_trd];
-  Float_t par_cha[npar_cha];
+  Float_t parTrd[kNparTrd];
+  Float_t parCha[kNparCha];
 
   Float_t xpos, ypos, zpos;
 
   AliTRDgeometry::CreateGeometry(idtmed);
 
   // The TRD mother volume for one sector (Air) (dimensions identical to BTR1)
-  par_trd[0] = kSwidth1/2.;
-  par_trd[1] = kSwidth2/2.;
-  par_trd[2] = kSlenTR1/2.;
-  par_trd[3] = kSheight/2.;
-  gMC->Gsvolu("TRD1","TRD1",idtmed[1302-1],par_trd,npar_trd);
+  parTrd[0] = kSwidth1/2.;
+  parTrd[1] = kSwidth2/2.;
+  parTrd[2] = kSlenTR1/2.;
+  parTrd[3] = kSheight/2.;
+  gMC->Gsvolu("TRD1","TRD1",idtmed[1302-1],parTrd,kNparTrd);
   
   // The TRD mother volume for one sector (Air) (dimensions identical to BTR2)
-  par_trd[0] = kSwidth1/2.;
-  par_trd[1] = kSwidth2/2.;
-  par_trd[2] = kSlenTR2/2.;
-  par_trd[3] = kSheight/2.;
-  gMC->Gsvolu("TRD2","TRD1",idtmed[1302-1],par_trd,npar_trd);
+  parTrd[0] = kSwidth1/2.;
+  parTrd[1] = kSwidth2/2.;
+  parTrd[2] = kSlenTR2/2.;
+  parTrd[3] = kSheight/2.;
+  gMC->Gsvolu("TRD2","TRD1",idtmed[1302-1],parTrd,kNparTrd);
 
   // The TRD mother volume for one sector (Air) (dimensions identical to BTR3)
-  par_trd[0] = kSwidth1/2.;
-  par_trd[1] = kSwidth2/2.;
-  par_trd[2] = kSlenTR3/2.;
-  par_trd[3] = kSheight/2.;
-  gMC->Gsvolu("TRD3","TRD1",idtmed[1302-1],par_trd,npar_trd);
+  parTrd[0] = kSwidth1/2.;
+  parTrd[1] = kSwidth2/2.;
+  parTrd[2] = kSlenTR3/2.;
+  parTrd[3] = kSheight/2.;
+  gMC->Gsvolu("TRD3","TRD1",idtmed[1302-1],parTrd,kNparTrd);
 
   // Position the chambers in the TRD mother volume
   for (iplan = 1; iplan <= kNplan; iplan++) {
@@ -203,208 +209,208 @@ void AliTRDgeometryHole::CreateGeometry(Int_t *idtmed)
     // The inner chambers ---------------------------------------------------------------
 
     // the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthI[iplan-1]/2.;
-    par_cha[2] = kCaframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthI[iplan-1]/2.;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = 0.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAFI",iplan       ,"TRD1",xpos,ypos,zpos,0,"MANY",par_cha,npar_cha);
+    gMC->Gsposp("UAFI",iplan       ,"TRD1",xpos,ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.   - kCathick;
-    par_cha[1] = fClengthI[iplan-1]/2. - kCathick;
-    par_cha[2] = kCaframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.   - kCathick;
+    parCha[1] = fClengthI[iplan-1]/2. - kCathick;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = 0.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAII",iplan       ,"TRD1",xpos,ypos,zpos,0,"ONLY",par_cha,npar_cha);
+    gMC->Gsposp("UAII",iplan       ,"TRD1",xpos,ypos,zpos,0,"ONLY",parCha,kNparCha);
 
     // the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthI[iplan-1]/2.;
-    par_cha[2] = kCcframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthI[iplan-1]/2.;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = 0.;
     zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCFI",iplan       ,"TRD1",xpos,ypos,zpos,0,"MANY",par_cha,npar_cha);
+    gMC->Gsposp("UCFI",iplan       ,"TRD1",xpos,ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.   - kCcthick;
-    par_cha[1] = fClengthI[iplan-1]/2. - kCcthick;
-    par_cha[2] = kCcframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.   - kCcthick;
+    parCha[1] = fClengthI[iplan-1]/2. - kCcthick;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = 0.;
     zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCII",iplan       ,"TRD1",xpos,ypos,zpos,0,"ONLY",par_cha,npar_cha);
+    gMC->Gsposp("UCII",iplan       ,"TRD1",xpos,ypos,zpos,0,"ONLY",parCha,kNparCha);
 
     // The middle chambers --------------------------------------------------------------
 
     // the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthM1[iplan-1]/2.;
-    par_cha[2] = kCaframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthM1[iplan-1]/2.;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = fClengthI[iplan-1]/2.  + fClengthM1[iplan-1]/2.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAFM",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-    gMC->Gsposp("UAFM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthM2[iplan-1]/2.;
-    par_cha[2] = kCaframe/2.;
+    gMC->Gsposp("UAFM",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
+    gMC->Gsposp("UAFM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthM2[iplan-1]/2.;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = fClengthM2[iplan-1]/2. - kSlenTR2/2.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAFM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
+    gMC->Gsposp("UAFM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCathick;
-    par_cha[1] = fClengthM1[iplan-1]/2. - kCathick;
-    par_cha[2] = kCaframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.    - kCathick;
+    parCha[1] = fClengthM1[iplan-1]/2. - kCathick;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = fClengthI[iplan-1]/2.  + fClengthM1[iplan-1]/2.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAIM",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    gMC->Gsposp("UAIM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCathick;
-    par_cha[1] = fClengthM2[iplan-1]/2. - kCathick;
-    par_cha[2] = kCaframe/2.;
+    gMC->Gsposp("UAIM",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
+    gMC->Gsposp("UAIM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.    - kCathick;
+    parCha[1] = fClengthM2[iplan-1]/2. - kCathick;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = fClengthM2[iplan-1]/2. - kSlenTR2/2.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAIM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
+    gMC->Gsposp("UAIM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
 
     // the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthM1[iplan-1]/2.;
-    par_cha[2] = kCcframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthM1[iplan-1]/2.;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]/2.;
     zpos       = kCcframe/2.           - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCFM",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-    gMC->Gsposp("UCFM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthM2[iplan-1]/2.;
-    par_cha[2] = kCcframe/2.;
+    gMC->Gsposp("UCFM",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
+    gMC->Gsposp("UCFM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthM2[iplan-1]/2.;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = fClengthM2[iplan-1]/2. - kSlenTR2/2.;
     zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCFM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
+    gMC->Gsposp("UCFM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCcthick;
-    par_cha[1] = fClengthM1[iplan-1]/2. - kCcthick;
-    par_cha[2] = kCcframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.    - kCcthick;
+    parCha[1] = fClengthM1[iplan-1]/2. - kCcthick;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]/2.;
     zpos       = kCcframe/2.           - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCIM",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    gMC->Gsposp("UCIM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCcthick;
-    par_cha[1] = fClengthM2[iplan-1]/2. - kCcthick;
-    par_cha[2] = kCcframe/2.;
+    gMC->Gsposp("UCIM",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
+    gMC->Gsposp("UCIM",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.    - kCcthick;
+    parCha[1] = fClengthM2[iplan-1]/2. - kCcthick;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = fClengthM2[iplan-1]/2. - kSlenTR2/2.;
     zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCIM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
+    gMC->Gsposp("UCIM",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
 
     // The outer chambers ---------------------------------------------------------------
 
     // the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthO1[iplan-1]/2.;
-    par_cha[2] = kCaframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthO1[iplan-1]/2.;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]    + fClengthO1[iplan-1]/2.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAFO",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-    gMC->Gsposp("UAFO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthO2[iplan-1]/2.;
-    par_cha[2] = kCaframe/2.;
+    gMC->Gsposp("UAFO",iplan         ,"TRD1",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
+    gMC->Gsposp("UAFO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthO2[iplan-1]/2.;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = fClengthM2[iplan-1]    + fClengthO2[iplan-1]/2. - kSlenTR2/2.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAFO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthO3[iplan-1]/2.;
-    par_cha[2] = kCaframe/2.;
+    gMC->Gsposp("UAFO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthO3[iplan-1]/2.;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = fClengthO3[iplan-1]/2. - kSlenTR3/2.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAFO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
+    gMC->Gsposp("UAFO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the aluminum frame
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCathick;
-    par_cha[1] = fClengthO1[iplan-1]/2. - kCathick;
-    par_cha[2] = kCaframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.    - kCathick;
+    parCha[1] = fClengthO1[iplan-1]/2. - kCathick;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]    + fClengthO1[iplan-1]/2.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAIO",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    gMC->Gsposp("UAIO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCathick;
-    par_cha[1] = fClengthO2[iplan-1]/2. - kCathick;
-    par_cha[2] = kCaframe/2.;
+    gMC->Gsposp("UAIO",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
+    gMC->Gsposp("UAIO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.    - kCathick;
+    parCha[1] = fClengthO2[iplan-1]/2. - kCathick;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = fClengthM2[iplan-1]    + fClengthO2[iplan-1]/2. - kSlenTR2/2.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAIO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCathick;
-    par_cha[1] = fClengthO3[iplan-1]/2. - kCathick;
-    par_cha[2] = kCaframe/2.;
+    gMC->Gsposp("UAIO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.    - kCathick;
+    parCha[1] = fClengthO3[iplan-1]/2. - kCathick;
+    parCha[2] = kCaframe/2.;
     xpos       = 0.;
     ypos       = fClengthO3[iplan-1]/2. - kSlenTR3/2.;
     zpos       = kCheight - kCaframe/2. - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UAIO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
+    gMC->Gsposp("UAIO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
 
     // the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthO1[iplan-1]/2.;
-    par_cha[2] = kCcframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthO1[iplan-1]/2.;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]    + fClengthO1[iplan-1]/2.;
     zpos       = kCcframe/2.           - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCFO",iplan,         "TRD1",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-    gMC->Gsposp("UCFO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthO2[iplan-1]/2.;
-    par_cha[2] = kCcframe/2.;
+    gMC->Gsposp("UCFO",iplan,         "TRD1",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
+    gMC->Gsposp("UCFO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"MANY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthO2[iplan-1]/2.;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = fClengthM2[iplan-1]    + fClengthO2[iplan-1]/2. - kSlenTR2/2.;
     zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCFO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.;
-    par_cha[1] = fClengthO3[iplan-1]/2.;
-    par_cha[2] = kCcframe/2.;
+    gMC->Gsposp("UCFO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.;
+    parCha[1] = fClengthO3[iplan-1]/2.;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = fClengthO3[iplan-1]/2. - kSlenTR3/2.;
     zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCFO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"MANY",par_cha,npar_cha);
+    gMC->Gsposp("UCFO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"MANY",parCha,kNparCha);
 
     // the inner part of the carbon frame
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCcthick;
-    par_cha[1] = fClengthO1[iplan-1]/2. - kCcthick;
-    par_cha[2] = kCcframe/2.;
+    parCha[0] = fCwidth[iplan-1]/2.    - kCcthick;
+    parCha[1] = fClengthO1[iplan-1]/2. - kCcthick;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = fClengthI[iplan-1]/2. + fClengthM1[iplan-1]    + fClengthO1[iplan-1]/2.;
     zpos       = kCcframe/2.           - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCIO",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    gMC->Gsposp("UCIO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCcthick;
-    par_cha[1] = fClengthO2[iplan-1]/2. - kCcthick;
-    par_cha[2] = kCcframe/2.;
+    gMC->Gsposp("UCIO",iplan         ,"TRD1",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
+    gMC->Gsposp("UCIO",iplan+  kNplan,"TRD1",xpos,-ypos,zpos,0,"ONLY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.    - kCcthick;
+    parCha[1] = fClengthO2[iplan-1]/2. - kCcthick;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = fClengthM2[iplan-1]    + fClengthO2[iplan-1]/2. - kSlenTR2/2.;
     zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCIO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
-    par_cha[0] = fCwidth[iplan-1]/2.    - kCcthick;
-    par_cha[1] = fClengthO3[iplan-1]/2. - kCcthick;
-    par_cha[2] = kCcframe/2.;
+    gMC->Gsposp("UCIO",iplan+2*kNplan,"TRD2",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
+    parCha[0] = fCwidth[iplan-1]/2.    - kCcthick;
+    parCha[1] = fClengthO3[iplan-1]/2. - kCcthick;
+    parCha[2] = kCcframe/2.;
     xpos       = 0.;
     ypos       = fClengthO3[iplan-1]/2. - kSlenTR3/2.;
     zpos       = kCcframe/2.            - kSheight/2. + (iplan-1) * (kCheight + kCspace);
-    gMC->Gsposp("UCIO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"ONLY",par_cha,npar_cha);
+    gMC->Gsposp("UCIO",iplan+4*kNplan,"TRD3",xpos, ypos,zpos,0,"ONLY",parCha,kNparCha);
 
   }
 

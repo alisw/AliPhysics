@@ -1,5 +1,5 @@
-#ifndef AliTRDArrayF_H
-#define AliTRDArrayF_H
+#ifndef ALITRDARRAYF_H
+#define ALITRDARRAYF_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -13,6 +13,7 @@ class AliTRDarrayF: public TObject ,public TArrayF {
 public:
 
   ~AliTRDarrayF();
+  void Copy(AliTRDarrayF &a);
   void Expand(Int_t n);  
 
   ClassDef(AliTRDarrayF,1)  

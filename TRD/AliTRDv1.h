@@ -1,5 +1,5 @@
-#ifndef TRDv1_H
-#define TRDv1_H
+#ifndef ALITRDV1_H
+#define ALITRDV1_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -21,12 +21,15 @@ class AliTRDv1 : public AliTRD {
 
  public:
 
-  AliTRDv1() {};
+  AliTRDv1();
   AliTRDv1(const char *name, const char *title);
-  ~AliTRDv1();
+  AliTRDv1(AliTRDv1 &trd);
+  virtual ~AliTRDv1();
+
+  virtual void    Copy(AliTRDv1 &trd);
   virtual void    CreateGeometry();
   virtual void    CreateMaterials();
-  virtual Int_t   IsVersion() const { return 1; };
+  virtual Int_t   IsVersion() const    { return 1; };
   virtual void    StepManager();
   virtual void    Init();
 
@@ -35,18 +38,20 @@ class AliTRDv1 : public AliTRD {
           void    SetSensSector(Int_t isector);
           void    SetSensSector(Int_t isector, Int_t nsector);
 
-          Int_t   GetSensPlane()       { return fSensPlane;   };
-          Int_t   GetSensChamber()     { return fSensChamber; };
-          Int_t   GetSensSector()      { return fSensSector; };
+          Int_t   GetSensPlane()       { return fSensPlane;       };
+          Int_t   GetSensChamber()     { return fSensChamber;     };
+          Int_t   GetSensSector()      { return fSensSector;      };
           Int_t   GetSensSectorRange() { return fSensSectorRange; };
+
+  inline  AliTRDv1 &operator=(AliTRDv1 &trd);
 
  protected:
 
   Int_t        fIdSens;                 // Sensitive volume identifier
 
   Int_t        fIdChamber1;             // Driftchamber volume identifier
-  Int_t        fIdChamber2;             // 
-  Int_t        fIdChamber3;             // 
+  Int_t        fIdChamber2;             // Driftchamber volume identifier 
+  Int_t        fIdChamber3;             // Driftchamber volume identifier 
 
   Int_t        fSensSelect;             // Switch to select only parts of the detector
   Int_t        fSensPlane;              // Sensitive detector plane
@@ -63,5 +68,17 @@ class AliTRDv1 : public AliTRD {
   ClassDef(AliTRDv1,1)                  // Transition Radiation Detector version 1 (slow simulator)
 
 };
+
+//_____________________________________________________________________________
+AliTRDv1 &AliTRDv1::operator=(AliTRDv1 &trd)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &trd) trd.Copy(*this);
+  return *this;
+
+}
 
 #endif

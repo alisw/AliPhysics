@@ -1,5 +1,5 @@
-#ifndef TRDsegmentArray_H
-#define TRDsegmentArray_H
+#ifndef ALITRDSEGMENTARRAY_H
+#define ALITRDSEGMENTARRAY_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -19,8 +19,10 @@ class AliTRDsegmentArray : public AliTRDsegmentArrayBase {
 
   AliTRDsegmentArray();
   AliTRDsegmentArray(Text_t *classname, Int_t n);
-  ~AliTRDsegmentArray() { };
+  AliTRDsegmentArray(AliTRDsegmentArray &a);
+  virtual ~AliTRDsegmentArray();
 
+  virtual void             Copy(AliTRDsegmentArray &a);
   virtual void             Delete();
   virtual void             Delete(const char *) { Delete(); };
 

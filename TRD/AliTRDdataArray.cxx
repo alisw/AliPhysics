@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/07 16:27:01  cblume
+Try to remove compiler warnings on Sun and HP
+
 Revision 1.3  2000/05/18 07:56:44  cblume
 Added #include <stdlib.h>
 
@@ -80,14 +83,50 @@ AliTRDdataArray::AliTRDdataArray(Int_t nrow, Int_t ncol, Int_t ntime)
 }
 
 //_____________________________________________________________________________
+AliTRDdataArray::AliTRDdataArray(AliTRDdataArray &d)
+{
+  //
+  // AliTRDdataArray copy constructor
+  //
+
+  d.Copy(*this);
+
+}
+
+//_____________________________________________________________________________
 AliTRDdataArray::~AliTRDdataArray()
 {
   //
-  // Destructor
+  // AliTRDdataArray destructor
   //
 
   if (fIndex) fIndex->Delete();
   
+}
+
+//_____________________________________________________________________________
+void AliTRDdataArray::Copy(AliTRDdataArray &d)
+{
+  //
+  // Copy function
+  //
+
+  d.fNrow         = fNrow;
+  d.fNcol         = fNcol;
+  d.fNtime        = fNtime;
+
+  d.fNdim1        = fNdim1;
+  d.fNdim2        = fNdim2;
+
+  d.fBufType      = fBufType;
+  d.fNelems       = fNelems;
+
+  d.fCurrentIdx1  = 0;
+  d.fCurrentIdx2  = 0;
+  d.fCurrentIndex = 0;
+
+  fIndex->Copy(*d.fIndex);
+
 }
 
 //_____________________________________________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/06/07 16:27:32  cblume
+Try to remove compiler warnings on Sun and HP
+
 Revision 1.5  2000/05/09 16:38:57  cblume
 Removed PadResponse(). Merge problem
 
@@ -115,8 +118,22 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
 }
 
 //_____________________________________________________________________________
+AliTRDdigitizer::AliTRDdigitizer(AliTRDdigitizer &d)
+{
+  //
+  // AliTRDdigitizer copy constructor
+  //
+
+  d.Copy(*this);
+
+}
+
+//_____________________________________________________________________________
 AliTRDdigitizer::~AliTRDdigitizer()
 {
+  //
+  // AliTRDdigitizer destructor
+  //
 
   if (fInputFile) {
     fInputFile->Close();
@@ -128,6 +145,39 @@ AliTRDdigitizer::~AliTRDdigitizer()
   }
 
   if (fPRF) delete fPRF;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdigitizer::Copy(AliTRDdigitizer &d)
+{
+  //
+  // Copy function
+  //
+
+  d.fInputFile     = NULL;
+  d.fDigits        = NULL;
+  d.fTRD           = NULL;
+  d.fGeo           = NULL;
+
+  d.fEvent         = 0;
+
+  d.fGasGain       = fGasGain;
+  d.fNoise         = fNoise;
+  d.fChipGain      = fChipGain;
+  d.fADCoutRange   = fADCoutRange;
+  d.fADCinRange    = fADCinRange;
+  d.fADCthreshold  = fADCthreshold;
+  d.fDiffusionOn   = fDiffusionOn; 
+  d.fDiffusionT    = fDiffusionT;
+  d.fDiffusionL    = fDiffusionL;
+  d.fElAttachOn    = fElAttachOn;
+  d.fElAttachProp  = fElAttachProp;
+  d.fExBOn         = fExBOn;
+  d.fLorentzAngle  = fLorentzAngle;
+  d.fLorentzFactor = fLorentzFactor;
+
+  fPRF->Copy(*d.fPRF);
 
 }
 
@@ -256,7 +306,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   ///////////////////////////////////////////////////////////////
 
   // Converts number of electrons to fC
-  const Float_t el2fC  = 1.602E-19 * 1.0E15; 
+  const Float_t kEl2fC  = 1.602E-19 * 1.0E15; 
 
   ///////////////////////////////////////////////////////////////
 
@@ -269,8 +319,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
   Int_t   totalSizeDict1  = 0;
   Int_t   totalSizeDict2  = 0;
 
-  AliTRDdataArrayI *Digits;
-  AliTRDdataArrayI *Dictionary[kNDict];
+  AliTRDdataArrayI *digits;
+  AliTRDdataArrayI *dictionary[kNDict];
 
   if (!fGeo) {
     printf("AliTRDdigitizer::MakeDigits -- ");
@@ -282,18 +332,18 @@ Bool_t AliTRDdigitizer::MakeDigits()
   fDigits = new AliTRDdigitsManager();
 
   // Create detector arrays to keep the signal and track numbers
-  AliTRDdataArrayF *Signal = new AliTRDdataArrayF();
-  AliTRDdataArrayI *Tracks[kNDict];
+  AliTRDdataArrayF *signal = new AliTRDdataArrayF();
+  AliTRDdataArrayI *tracks[kNDict];
   for (iDict = 0; iDict < kNDict; iDict++) {
-    Tracks[iDict] = new AliTRDdataArrayI();
+    tracks[iDict] = new AliTRDdataArrayI();
   }
 
   // Get the pointer to the hit tree
-  TTree *HitTree = gAlice->TreeH();
+  TTree *hitTree = gAlice->TreeH();
 
   // Get the number of entries in the hit tree
   // (Number of primary particles creating a hit somewhere)
-  Int_t nTrack = (Int_t) HitTree->GetEntries();
+  Int_t nTrack = (Int_t) hitTree->GetEntries();
 
   printf("AliTRDdigitizer::MakeDigits -- ");
   printf("Start creating digits.\n");
@@ -321,7 +371,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   Int_t sectBeg = 0;
   Int_t sectEnd = kNsect;
 
-  Int_t count_hits = 0;
+  Int_t countHits = 0;
 
   // Loop through all the chambers
   for (Int_t iCham = chamBeg; iCham < chamEnd; iCham++) {
@@ -356,16 +406,16 @@ Bool_t AliTRDdigitizer::MakeDigits()
         Float_t timeBinSize = fGeo->GetTimeBinSize();
 
         // Adjust the size of the detector arrays
-        Signal->Allocate(nRowMax,nColMax,nTimeMax);
+        signal->Allocate(nRowMax,nColMax,nTimeMax);
         for (iDict = 0; iDict < kNDict; iDict++) {
-          Tracks[iDict]->Allocate(nRowMax,nColMax,nTimeMax);
+          tracks[iDict]->Allocate(nRowMax,nColMax,nTimeMax);
 	}
 
         // Loop through all entries in the tree
         for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
 
           gAlice->ResetHits();
-          nBytes += HitTree->GetEvent(iTrack);
+          nBytes += hitTree->GetEvent(iTrack);
 
           // Get the number of hits in the TRD created by this particle
           Int_t nHit = fTRD->Hits()->GetEntriesFast();
@@ -373,16 +423,16 @@ Bool_t AliTRDdigitizer::MakeDigits()
           // Loop through the TRD hits  
           for (Int_t iHit = 0; iHit < nHit; iHit++) {
 
-            count_hits++;
+            countHits++;
 
-            AliTRDhit *Hit = (AliTRDhit *) fTRD->Hits()->UncheckedAt(iHit);
+            AliTRDhit *hit = (AliTRDhit *) fTRD->Hits()->UncheckedAt(iHit);
             Float_t pos[3];
-                    pos[0]   = Hit->fX;
-                    pos[1]   = Hit->fY;
-                    pos[2]   = Hit->fZ;
-            Float_t q        = Hit->fQ;
-            Int_t   track    = Hit->fTrack;
-            Int_t   detector = Hit->fDetector;
+                    pos[0]   = hit->fX;
+                    pos[1]   = hit->fY;
+                    pos[2]   = hit->fZ;
+            Float_t q        = hit->GetCharge();
+            Int_t   track    = hit->fTrack;
+            Int_t   detector = hit->GetDetector();
             Int_t   plane    = fGeo->GetPlane(detector);
             Int_t   sector   = fGeo->GetSector(detector);
             Int_t   chamber  = fGeo->GetChamber(detector);
@@ -406,13 +456,13 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
             // Array to sum up the signal in a box surrounding the
             // hit postition
-            const Int_t timeBox = 7;
-            const Int_t  colBox = 9;
-            const Int_t  rowBox = 7;
-            Float_t signalSum[rowBox][colBox][timeBox];
-            for (iRow  = 0;  iRow <  rowBox; iRow++ ) {
-              for (iCol  = 0;  iCol <  colBox; iCol++ ) {
-                for (iTime = 0; iTime < timeBox; iTime++) {
+            const Int_t kTimeBox = 7;
+            const Int_t  kColBox = 9;
+            const Int_t  kRowBox = 7;
+            Float_t signalSum[kRowBox][kColBox][kTimeBox];
+            for (iRow  = 0;  iRow <  kRowBox; iRow++ ) {
+              for (iCol  = 0;  iCol <  kColBox; iCol++ ) {
+                for (iTime = 0; iTime < kTimeBox; iTime++) {
                   signalSum[iRow][iCol][iTime] = 0;
 		}
 	      }
@@ -470,23 +520,23 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
               // Sum up the signal in the different pixels
               // and apply the pad response
-              Int_t  rowIdx =  rowD + (Int_t) ( rowBox / 2);
-              Int_t  colIdx =  colD + (Int_t) ( colBox / 2);
-              Int_t timeIdx = timeD + (Int_t) (timeBox / 2);
+              Int_t  rowIdx =  rowD + (Int_t) ( kRowBox / 2);
+              Int_t  colIdx =  colD + (Int_t) ( kColBox / 2);
+              Int_t timeIdx = timeD + (Int_t) (kTimeBox / 2);
 
-              if (( rowIdx < 0) || ( rowIdx >  rowBox)) {
+              if (( rowIdx < 0) || ( rowIdx >  kRowBox)) {
                 printf("AliTRDdigitizer::MakeDigits -- ");
-                printf("Boundary error. rowIdx = %d (%d)\n", rowIdx, rowBox);
+                printf("Boundary error. rowIdx = %d (%d)\n", rowIdx, kRowBox);
                 continue;
 	      }
-              if (( colIdx < 0) || ( colIdx >  colBox)) {
+              if (( colIdx < 0) || ( colIdx >  kColBox)) {
                 printf("AliTRDdigitizer::MakeDigits -- ");
-                printf("Boundary error. colIdx = %d (%d)\n", colIdx, colBox);
+                printf("Boundary error. colIdx = %d (%d)\n", colIdx, kColBox);
                 continue;
 	      }
-              if ((timeIdx < 0) || (timeIdx > timeBox)) {
+              if ((timeIdx < 0) || (timeIdx > kTimeBox)) {
                 printf("AliTRDdigitizer::MakeDigits -- ");
-                printf("Boundary error. timeIdx = %d (%d)\n",timeIdx,timeBox);
+                printf("Boundary error. timeIdx = %d (%d)\n",timeIdx,kTimeBox);
                 continue;
 	      }
               signalSum[rowIdx][colIdx-1][timeIdx] += fPRF->Eval(dist-1.0,0,0) * signal;
@@ -496,13 +546,13 @@ Bool_t AliTRDdigitizer::MakeDigits()
             }
 
             // Add the padcluster to the detector matrix
-            for (iRow  = 0;  iRow <  rowBox; iRow++ ) {
-              for (iCol  = 0;  iCol <  colBox; iCol++ ) {
-                for (iTime = 0; iTime < timeBox; iTime++) {
+            for (iRow  = 0;  iRow <  kRowBox; iRow++ ) {
+              for (iCol  = 0;  iCol <  kColBox; iCol++ ) {
+                for (iTime = 0; iTime < kTimeBox; iTime++) {
 
-                  Int_t  rowB =  rowH + iRow  - (Int_t) ( rowBox / 2); 
-                  Int_t  colB =  colH + iCol  - (Int_t) ( colBox / 2);
-                  Int_t timeB = timeH + iTime - (Int_t) (timeBox / 2);
+                  Int_t  rowB =  rowH + iRow  - (Int_t) ( kRowBox / 2); 
+                  Int_t  colB =  colH + iCol  - (Int_t) ( kColBox / 2);
+                  Int_t timeB = timeH + iTime - (Int_t) (kTimeBox / 2);
                   Float_t signalB = signalSum[iRow][iCol][iTime];
                   if (( rowB < 0) || ( rowB >=  nRowMax)) continue;
                   if (( colB < 0) || ( colB >=  nColMax)) continue;
@@ -510,16 +560,16 @@ Bool_t AliTRDdigitizer::MakeDigits()
                   if (signalB > 0.0) {
 
                     // Add the signal sum  
-                    signalB += Signal->GetData(rowB,colB,timeB);
-                    Signal->SetData(rowB,colB,timeB,signalB);  
+                    signalB += signal->GetData(rowB,colB,timeB);
+                    signal->SetData(rowB,colB,timeB,signalB);  
                     // Store the track index in the dictionary
                     // Note: We store index+1 in order to allow the array to be compressed
                     for (iDict = 0; iDict < kNDict; iDict++) {
-                      Int_t oldTrack = Tracks[iDict]->GetData(rowB,colB,timeB);
+                      Int_t oldTrack = tracks[iDict]->GetData(rowB,colB,timeB);
                       if (oldTrack == track+1) break;
                       if (oldTrack ==      -1) break;
                       if (oldTrack ==       0) {
-                        Tracks[iDict]->SetData(rowB,colB,timeB,track+1);
+                        tracks[iDict]->SetData(rowB,colB,timeB,track+1);
                         break;
                       }
                     }
@@ -538,14 +588,14 @@ Bool_t AliTRDdigitizer::MakeDigits()
  	}
 
         // Add a container for the digits of this detector
-        Digits = fDigits->GetDigits(iDet);        
+        digits = fDigits->GetDigits(iDet);        
         // Allocate memory space for the digits buffer
-        Digits->Allocate(nRowMax,nColMax,nTimeMax);
+        digits->Allocate(nRowMax,nColMax,nTimeMax);
 
 	// Do the same for the dictionary arrays
         for (iDict = 0; iDict < kNDict; iDict++) {
-          Dictionary[iDict] = fDigits->GetDictionary(iDet,iDict);
-          Dictionary[iDict]->Allocate(nRowMax,nColMax,nTimeMax);
+          dictionary[iDict] = fDigits->GetDictionary(iDet,iDict);
+          dictionary[iDict]->Allocate(nRowMax,nColMax,nTimeMax);
 	}
 
         // Create the digits for this chamber
@@ -553,13 +603,13 @@ Bool_t AliTRDdigitizer::MakeDigits()
           for (iCol  = 0; iCol  <  nColMax; iCol++ ) {
             for (iTime = 0; iTime < nTimeMax; iTime++) {         
 
-              Float_t signalAmp = Signal->GetData(iRow,iCol,iTime);
+              Float_t signalAmp = signal->GetData(iRow,iCol,iTime);
 
               // Add the noise
               signalAmp  = TMath::Max((Float_t) gRandom->Gaus(signalAmp,fNoise)
                                      ,(Float_t) 0.0);
 	      // Convert to fC
-              signalAmp *= el2fC;
+              signalAmp *= kEl2fC;
               // Convert to mV
               signalAmp *= fChipGain;
 	      // Convert to ADC counts
@@ -570,13 +620,13 @@ Bool_t AliTRDdigitizer::MakeDigits()
                 nDigits++;
 
                 // Store the amplitude of the digit
-                Digits->SetData(iRow,iCol,iTime,adc);
+                digits->SetData(iRow,iCol,iTime,adc);
 
                 // Store the track index in the dictionary
                 // Note: We store index+1 in order to allow the array to be compressed
                 for (iDict = 0; iDict < kNDict; iDict++) {
-                  Dictionary[iDict]->SetData(iRow,iCol,iTime
-                                            ,Tracks[iDict]->GetData(iRow,iCol,iTime));
+                  dictionary[iDict]->SetData(iRow,iCol,iTime
+                                            ,tracks[iDict]->GetData(iRow,iCol,iTime));
 	        }
 
 	      }
@@ -586,23 +636,23 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	}
 
         // Compress the arrays
-        Digits->Compress(1,0);
+        digits->Compress(1,0);
         for (iDict = 0; iDict < kNDict; iDict++) {
-          Dictionary[iDict]->Compress(1,0);
+          dictionary[iDict]->Compress(1,0);
 	}
 
-        totalSizeDigits += Digits->GetSize();
-        totalSizeDict0  += Dictionary[0]->GetSize();
-        totalSizeDict1  += Dictionary[1]->GetSize();
-        totalSizeDict2  += Dictionary[2]->GetSize();
+        totalSizeDigits += digits->GetSize();
+        totalSizeDict0  += dictionary[0]->GetSize();
+        totalSizeDict1  += dictionary[1]->GetSize();
+        totalSizeDict2  += dictionary[2]->GetSize();
 
         printf("AliTRDdigitizer::MakeDigits -- ");
         printf("Number of digits found: %d.\n",nDigits);
  
 	// Reset the arrays
-        Signal->Reset();
+        signal->Reset();
         for (iDict = 0; iDict < kNDict; iDict++) {
-          Tracks[iDict]->Reset();
+          tracks[iDict]->Reset();
 	}
 
       }
@@ -610,7 +660,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   }
 
   printf("AliTRDdigitizer::MakeDigits -- ");
-  printf("Total number of analyzed hits = %d\n",count_hits);
+  printf("Total number of analyzed hits = %d\n",countHits);
 
   printf("AliTRDdigitizer::MakeDigits -- ");
   printf("Total digits data size = %d, %d, %d, %d\n",totalSizeDigits

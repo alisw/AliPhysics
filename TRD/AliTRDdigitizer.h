@@ -1,5 +1,5 @@
-#ifndef TRDdigitizer_h
-#define TRDdigitizer_h
+#ifndef ALITRDDIGITIZER_h
+#define ALITRDDIGITIZER_h
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -26,8 +26,10 @@ class AliTRDdigitizer : public TNamed {
 
   AliTRDdigitizer();
   AliTRDdigitizer(const Text_t* name, const Text_t* title);
-  ~AliTRDdigitizer();
+  AliTRDdigitizer(AliTRDdigitizer &d);
+  virtual ~AliTRDdigitizer();
 
+  virtual void         Copy(AliTRDdigitizer &d);
   virtual void         Init();
   virtual Bool_t       Open(const Char_t *name, Int_t nEvent = 0);
   virtual Bool_t       MakeDigits();
@@ -39,12 +41,12 @@ class AliTRDdigitizer : public TNamed {
   virtual void         SetADCoutRange(Float_t range)   { fADCoutRange   = range;    };
   virtual void         SetADCinRange(Float_t range)    { fADCinRange    = range;    };
   virtual void         SetADCthreshold(Int_t thresh)   { fADCthreshold  = thresh;   };
-  virtual void         SetDiffusion(Int_t diff_on = 1) { fDiffusionOn   = diff_on;  };
+  virtual void         SetDiffusion(Int_t diffOn = 1)  { fDiffusionOn   = diffOn;   };
   virtual void         SetDiffusionT(Float_t diff)     { fDiffusionT    = diff;     };
   virtual void         SetDiffusionL(Float_t diff)     { fDiffusionL    = diff;     };
-  virtual void         SetElAttach(Int_t el_on = 1)    { fElAttachOn    = el_on;    };
+  virtual void         SetElAttach(Int_t elOn = 1)     { fElAttachOn    = elOn;     };
   virtual void         SetElAttachProp(Float_t prop)   { fElAttachProp  = prop;     };
-  virtual void         SetExB(Int_t exb_on = 1)        { fExBOn         = exb_on;   };
+  virtual void         SetExB(Int_t exbOn = 1)         { fExBOn         = exbOn;    };
   virtual void         SetLorentzAngle(Float_t angle)  { fLorentzAngle  = angle;    };
   virtual void         SetPadResponse(TF1 *PRF)        { if (fPRF) delete fPRF;
                                                          fPRF           = PRF;      };
@@ -62,6 +64,8 @@ class AliTRDdigitizer : public TNamed {
   virtual Float_t      GetElAttachProp()               { return fElAttachProp;  };
   virtual Float_t      GetLorentzAngle()               { return fLorentzAngle;  };
   virtual TF1         *GetPadResponse()                { return fPRF;           };
+
+  inline  AliTRDdigitizer &operator=(AliTRDdigitizer &d);
 
  protected:
 
@@ -96,5 +100,17 @@ class AliTRDdigitizer : public TNamed {
   ClassDef(AliTRDdigitizer,1)            // Produces TRD-Digits
 
 };
+
+//_____________________________________________________________________________
+AliTRDdigitizer &AliTRDdigitizer::operator=(AliTRDdigitizer &d)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &d) d.Copy(*this);
+  return *this;
+
+}
 
 #endif

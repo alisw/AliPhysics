@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/05/08 15:48:30  cblume
+Resolved merge conflict
+
 Revision 1.4.2.2  2000/05/08 14:50:58  cblume
 Add functions ProjRow(), ProjCol(), and ProjTime()
 
@@ -88,8 +91,22 @@ AliTRDmatrix::AliTRDmatrix(Int_t nRow, Int_t nCol, Int_t nTime
 }
 
 //_____________________________________________________________________________
+AliTRDmatrix::AliTRDmatrix(AliTRDmatrix &m)
+{
+  //
+  // AliTRDmatrix copy constructor
+  //
+
+  m.Copy(*this);
+
+}
+
+//_____________________________________________________________________________
 AliTRDmatrix::~AliTRDmatrix()
 {
+  //
+  // AliTRDmatrix destructor
+  //
 
   if (fPixelArray) {
     fPixelArray->Delete();
@@ -110,6 +127,25 @@ void AliTRDmatrix::AddSignal(Int_t iRow, Int_t iCol, Int_t iTime, Float_t signal
     signal += pixel->GetSignal();
     pixel->SetSignal(signal);
   }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDmatrix::Copy(AliTRDmatrix &m)
+{
+  //
+  // Copy function
+  //
+
+  m.fRow        = fRow;
+  m.fCol        = fCol;
+  m.fTime       = fTime;
+  m.fPixel      = fPixel;
+  m.fSector     = fSector;
+  m.fChamber    = fChamber;
+  m.fPlane      = fPlane;
+
+  m.fPixelArray = new TObjArray(*fPixelArray);
 
 }
 

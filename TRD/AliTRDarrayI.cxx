@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.4.1  2000/05/08 14:35:54  cblume
 Update
 
@@ -46,6 +49,19 @@ AliTRDarrayI::~AliTRDarrayI()
   //
 
 }
+
+//_____________________________________________________________________________
+void AliTRDarrayI::Copy(AliTRDarrayI &a)
+{
+  //
+  // Copy function
+  //
+
+  TObject::Copy(a);
+  TArrayI::Copy(a);
+
+}
+
 
 //_____________________________________________________________________________
 void AliTRDarrayI::Expand(Int_t n)

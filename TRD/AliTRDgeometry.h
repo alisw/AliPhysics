@@ -1,5 +1,5 @@
-#ifndef TRDgeometry_h
-#define TRDgeometry_h
+#ifndef ALITRDGEOMETRY_h
+#define ALITRDGEOMETRY_h
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -18,9 +18,9 @@ class AliTRDgeometry : public AliGeometry {
  public:
 
   AliTRDgeometry();
-  ~AliTRDgeometry();
+  virtual ~AliTRDgeometry();
 
-  virtual void    CreateGeometry(Int_t *);
+  virtual void    CreateGeometry(Int_t *idtmed);
   virtual Int_t   IsVersion() const = 0;
   virtual void    Init();
   virtual Bool_t  Local2Global(Int_t d, Float_t *local, Float_t *global);
@@ -55,8 +55,8 @@ class AliTRDgeometry : public AliGeometry {
   virtual Float_t GetColPadSize()                      { return fColPadSize;  };
   virtual Float_t GetTimeBinSize()                     { return fTimeBinSize; };
 
-  virtual void    GetGlobal(const AliRecPoint * p, TVector3 & pos, TMatrix & mat); 
-  virtual void    GetGlobal(const AliRecPoint * p, TVector3 & pos);   
+  virtual void    GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat); 
+  virtual void    GetGlobal(const AliRecPoint *p, TVector3 &pos);   
 
  protected:
 

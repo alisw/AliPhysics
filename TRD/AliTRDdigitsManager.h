@@ -1,5 +1,5 @@
-#ifndef TRDdigitsManager_H
-#define TRDdigitsManager_H
+#ifndef ALITRDDIGITSMANAGER_H
+#define ALITRDDIGITSMANAGER_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -23,8 +23,10 @@ class AliTRDdigitsManager : public TObject {
  public:
 
   AliTRDdigitsManager();
-  ~AliTRDdigitsManager();
+  AliTRDdigitsManager(AliTRDdigitsManager &m);
+  virtual ~AliTRDdigitsManager();
 
+  virtual void                Copy(AliTRDdigitsManager &m);
   virtual Bool_t              MakeBranch();
   virtual Bool_t              ReadDigits();
   virtual Bool_t              WriteDigits();
@@ -42,6 +44,8 @@ class AliTRDdigitsManager : public TObject {
   inline  AliTRDdataArrayI   *GetDictionary(Int_t det, Int_t i);
   inline  Int_t               GetTrack(Int_t track, AliTRDdigit *Digit);
 
+  inline  AliTRDdigitsManager &operator=(AliTRDdigitsManager &m);
+
  protected:
 
   AliTRDsegmentArray *fDigits;             //! Digits data Array
@@ -54,7 +58,7 @@ class AliTRDdigitsManager : public TObject {
 };
 
 //_____________________________________________________________________________
-inline AliTRDdataArrayI *AliTRDdigitsManager::GetDigits(Int_t det) 
+AliTRDdataArrayI *AliTRDdigitsManager::GetDigits(Int_t det) 
 {
   //
   // Returns the digits array for one detector
@@ -65,7 +69,7 @@ inline AliTRDdataArrayI *AliTRDdigitsManager::GetDigits(Int_t det)
 }
 
 //_____________________________________________________________________________
-inline AliTRDdataArrayI *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i) 
+AliTRDdataArrayI *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i) 
 {
   //
   // Returns the dictionary for one detector
@@ -76,7 +80,7 @@ inline AliTRDdataArrayI *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i)
 }
 
 //_____________________________________________________________________________
-inline Int_t AliTRDdigitsManager::GetTrack(Int_t track, AliTRDdigit *Digit)
+Int_t AliTRDdigitsManager::GetTrack(Int_t track, AliTRDdigit *Digit)
 {
   // 
   // Returns the MC-track numbers from the dictionary for a given digit
@@ -88,6 +92,18 @@ inline Int_t AliTRDdigitsManager::GetTrack(Int_t track, AliTRDdigit *Digit)
   Int_t det  = Digit->GetDetector();
 
   return GetTrack(track,row,col,time,det);
+
+}
+
+//_____________________________________________________________________________
+AliTRDdigitsManager &AliTRDdigitsManager::operator=(AliTRDdigitsManager &m)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &m) m.Copy(*this);
+  return *this;
 
 }
 

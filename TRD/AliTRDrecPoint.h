@@ -1,5 +1,5 @@
-#ifndef TRDrecPoint_h
-#define TRDrecPoint_h
+#ifndef ALITRDRECPOINT_H
+#define ALITRDRECPOINT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -12,7 +12,8 @@ class AliTRDrecPoint : public AliRecPoint {
  public:
 
   AliTRDrecPoint();
-  ~AliTRDrecPoint() {};
+  virtual ~AliTRDrecPoint();
+
   virtual void    Print(Option_t* ) {};
   virtual void    AddDigit(Int_t digit);
   virtual void    AddDigit(AliDigitNew &digit) {};

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2000/06/07 16:25:37  cblume
+Try to remove compiler warnings on Sun and HP
+
 Revision 1.18  2000/05/08 16:17:27  cblume
 Merge TRD-develop
 
@@ -104,18 +107,18 @@ AliTRD::AliTRD(const char *name, const char *title)
 
   // Check that FRAME is there otherwise we have no place where to
   // put TRD
-  AliModule* FRAME=gAlice->GetModule("FRAME");
-  if (!FRAME) {
+  AliModule* frame = gAlice->GetModule("FRAME");
+  if (!frame) {
     Error("Ctor","TRD needs FRAME to be present\n");
     exit(1);
   } 
 
   // Define the TRD geometry according to the FRAME geometry
-  if      (FRAME->IsVersion() == 0) {
+  if      (frame->IsVersion() == 0) {
     // Geometry with hole
     fGeometry = new AliTRDgeometryHole();
   }
-  else if (FRAME->IsVersion() == 1) {
+  else if (frame->IsVersion() == 1) {
     // Geometry without hole
     fGeometry = new AliTRDgeometryFull();
   }
@@ -143,6 +146,17 @@ AliTRD::AliTRD(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
+AliTRD::AliTRD(AliTRD &trd)
+{
+  //
+  // Copy constructor
+  //
+
+  trd.Copy(*this);
+
+}
+
+//_____________________________________________________________________________
 AliTRD::~AliTRD()
 {
   //
@@ -164,16 +178,16 @@ void AliTRD::AddRecPoint(Float_t *pos, Int_t *digits, Int_t det, Float_t amp)
   // Add a reconstructed point for the TRD
   //
   
-  AliTRDrecPoint *RecPoint = new AliTRDrecPoint();
+  AliTRDrecPoint *recPoint = new AliTRDrecPoint();
   TVector3        posVec(pos[0],pos[1],pos[2]);
-  RecPoint->SetLocalPosition(posVec);
-  RecPoint->SetDetector(det);
-  RecPoint->SetEnergy(amp);
+  recPoint->SetLocalPosition(posVec);
+  recPoint->SetDetector(det);
+  recPoint->SetEnergy(amp);
   for (Int_t iDigit = 0; iDigit < 3; iDigit++) {
-    RecPoint->AddDigit(digits[iDigit]);
+    recPoint->AddDigit(digits[iDigit]);
   }
 
-  fRecPoints->Add(RecPoint);
+  fRecPoints->Add(recPoint);
 
 }
 
@@ -190,7 +204,7 @@ void AliTRD::AddDigit(Int_t *digits, Int_t *amp)
 }
 
 //_____________________________________________________________________________
-void AliTRD::AddHit(Int_t track, Int_t* det, Float_t *hits)
+void AliTRD::AddHit(Int_t track, Int_t *det, Float_t *hits)
 {
   //
   // Add a hit for the TRD
@@ -208,12 +222,12 @@ void AliTRD::BuildGeometry()
   // Create the ROOT TNode geometry for the TRD
   //
 
-  TNode *Node, *Top;
+  TNode *node, *top;
   TPGON *pgon;
   const Int_t kColorTRD = 46;
   
   // Find the top node alice
-  Top = gAlice->GetGeometry()->GetNode("alice");
+  top = gAlice->GetGeometry()->GetNode("alice");
   
   pgon = new TPGON("S_TRD","TRD","void",0,360,kNsect,4);
   Float_t ff    = TMath::Cos(kDegrad * 180 / kNsect);
@@ -223,13 +237,29 @@ void AliTRD::BuildGeometry()
   pgon->DefineSection(1,-kZmax2,rrmin,rrmax);
   pgon->DefineSection(2, kZmax2,rrmin,rrmax);
   pgon->DefineSection(3, kZmax1,rrmax,rrmax);
-  Top->cd();
-  Node = new TNode("TRD","TRD","S_TRD",0,0,0,"");
-  Node->SetLineColor(kColorTRD);
-  fNodes->Add(Node);
+  top->cd();
+  node = new TNode("TRD","TRD","S_TRD",0,0,0,"");
+  node->SetLineColor(kColorTRD);
+  fNodes->Add(node);
 
 }
  
+//_____________________________________________________________________________
+void AliTRD::Copy(AliTRD &trd)
+{
+  //
+  // Copy function
+  //
+
+  trd.fGasMix     = fGasMix;
+  trd.fGeometry   = fGeometry;
+  trd.fRecPoints  = fRecPoints;
+  trd.fNRecPoints = fNRecPoints;
+
+  //AliDetector::Copy(trd);
+
+}
+
 //_____________________________________________________________________________
 void AliTRD::CreateGeometry()
 {
@@ -238,8 +268,8 @@ void AliTRD::CreateGeometry()
   //
 
   // Check that FRAME is there otherwise we have no place where to put the TRD
-  AliModule* FRAME = gAlice->GetModule("FRAME");
-  if (!FRAME) {
+  AliModule* frame = gAlice->GetModule("FRAME");
+  if (!frame) {
     printf(" The TRD needs the FRAME to be defined first\n");
     return;
   }
@@ -256,8 +286,8 @@ void AliTRD::CreateMaterials()
   // Origin Y.Foka
   //
 
-  Int_t   ISXFLD = gAlice->Field()->Integ();
-  Float_t SXMGMX = gAlice->Field()->Max();
+  Int_t   isxfld = gAlice->Field()->Integ();
+  Float_t sxmgmx = gAlice->Field()->Max();
   
   // For polyethilene (CH2) 
   Float_t ape[2] = { 12., 1. };
@@ -353,53 +383,53 @@ void AliTRD::CreateMaterials()
   //////////////////////////////////////////////////////////////////////////
 
   // Al Frame 
-  AliMedium(1, "Al Frame$",   1, 0, ISXFLD, SXMGMX
+  AliMedium(1, "Al Frame$",   1, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Air 
-  AliMedium(2, "Air$",        2, 0, ISXFLD, SXMGMX
+  AliMedium(2, "Air$",        2, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Polyethilene 
-  AliMedium(3, "Radiator$",   3, 0, ISXFLD, SXMGMX
+  AliMedium(3, "Radiator$",   3, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Xe 
-  AliMedium(4, "Xe$",         4, 1, ISXFLD, SXMGMX
+  AliMedium(4, "Xe$",         4, 1, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Cu pads 
-  AliMedium(5, "Padplane$",   5, 1, ISXFLD, SXMGMX
+  AliMedium(5, "Padplane$",   5, 1, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Fee + cables 
-  AliMedium(6, "Readout$",    1, 0, ISXFLD, SXMGMX
+  AliMedium(6, "Readout$",    1, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // C frame 
-  AliMedium(7, "C Frame$",    6, 0, ISXFLD, SXMGMX
+  AliMedium(7, "C Frame$",    6, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Mylar foils 
-  AliMedium(8, "Mylar$",      7, 0, ISXFLD, SXMGMX
+  AliMedium(8, "Mylar$",      7, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   if (fGasMix == 1) {
     // Gas-mixture (Xe/CO2) 
-    AliMedium(9, "Gas-mix$",   10, 1, ISXFLD, SXMGMX
+    AliMedium(9, "Gas-mix$",   10, 1, isxfld, sxmgmx
                   , tmaxfd, stemax, deemax, epsil, stmin);
   }
   else {
     // Gas-mixture (Xe/Isobutane) 
-    AliMedium(9, "Gas-mix$",   11, 1, ISXFLD, SXMGMX
+    AliMedium(9, "Gas-mix$",   11, 1, isxfld, sxmgmx
                   , tmaxfd, stemax, deemax, epsil, stmin);
   }
   // Nomex-honeycomb (use carbon for the time being) 
-  AliMedium(10, "Nomex$",      6, 0, ISXFLD, SXMGMX
+  AliMedium(10, "Nomex$",      6, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Kapton foils (use Mylar for the time being) 
-  AliMedium(11, "Kapton$",     7, 0, ISXFLD, SXMGMX
+  AliMedium(11, "Kapton$",     7, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Gas-filling of the radiator 
-  AliMedium(12, "CO2$",        8, 0, ISXFLD, SXMGMX
+  AliMedium(12, "CO2$",        8, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // G10-plates
-  AliMedium(13, "G10-plates$",12, 0, ISXFLD, SXMGMX
+  AliMedium(13, "G10-plates$",12, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Cooling water
-  AliMedium(14, "Water$",     13, 0, ISXFLD, SXMGMX
+  AliMedium(14, "Water$",     13, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
 
 }
@@ -521,9 +551,9 @@ void AliTRD::MakeBranch(Option_t* option)
 
   AliDetector::MakeBranch(option);
 
-  Char_t *R = strstr(option,"R");
+  Char_t *r = strstr(option,"R");
   sprintf(branchname,"%srecPoints",GetName());
-  if (fRecPoints && gAlice->TreeR() && R) {
+  if (fRecPoints && gAlice->TreeR() && r) {
     gAlice->TreeR()->Branch(branchname,fRecPoints->IsA()->GetName()
                            ,&fRecPoints,buffersize,0);
     printf("* AliTRD::MakeBranch * Making Branch %s for points in TreeR\n",branchname);

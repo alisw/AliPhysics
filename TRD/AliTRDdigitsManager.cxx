@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/06/07 16:27:01  cblume
+Try to remove compiler warnings on Sun and HP
+
 Revision 1.2  2000/05/08 16:17:27  cblume
 Merge TRD-develop
 
@@ -55,8 +58,22 @@ AliTRDdigitsManager::AliTRDdigitsManager():TObject()
 }
 
 //_____________________________________________________________________________
+AliTRDdigitsManager::AliTRDdigitsManager(AliTRDdigitsManager &m)
+{
+  //
+  // AliTRDdigitsManager copy constructor
+  //
+
+  m.Copy(*this);
+
+}
+
+//_____________________________________________________________________________
 AliTRDdigitsManager::~AliTRDdigitsManager()
 {
+  //
+  // AliTRDdigitsManager destructor
+  //
 
   if (fDigits) {
     fDigits->Delete();
@@ -67,6 +84,19 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
     fDictionary[iDict]->Delete();
     delete fDictionary[iDict];
   }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdigitsManager::Copy(AliTRDdigitsManager &m)
+{
+  //
+  // Copy function
+  //
+
+  m.fIsRaw = fIsRaw;
+
+  TObject::Copy(m);
 
 }
 
@@ -95,11 +125,11 @@ Bool_t AliTRDdigitsManager::MakeBranch()
 
     // Make the branch for the digits
     if (fDigits) {
-      const AliTRDdataArrayI *Digits = 
+      const AliTRDdataArrayI *kDigits = 
            (AliTRDdataArrayI *) fDigits->At(0);
-      if (Digits) {
-        gAlice->TreeD()->Branch("TRDdigits",Digits->IsA()->GetName()
-                                           ,&Digits,buffersize,1);
+      if (kDigits) {
+        gAlice->TreeD()->Branch("TRDdigits",kDigits->IsA()->GetName()
+                                           ,&kDigits,buffersize,1);
         printf("AliTRDdigitsManager::MakeBranch -- ");
         printf("Making branch TRDdigits\n");
       }
@@ -117,11 +147,11 @@ Bool_t AliTRDdigitsManager::MakeBranch()
       Char_t branchname[15];
       sprintf(branchname,"TRDdictionary%d",iDict);
       if (fDictionary[iDict]) {
-        const AliTRDdataArrayI *Dictionary = 
+        const AliTRDdataArrayI *kDictionary = 
              (AliTRDdataArrayI *) fDictionary[iDict]->At(0);
-        if (Dictionary) {
-          gAlice->TreeD()->Branch(branchname,Dictionary->IsA()->GetName()
-                                            ,&Dictionary,buffersize,1);
+        if (kDictionary) {
+          gAlice->TreeD()->Branch(branchname,kDictionary->IsA()->GetName()
+                                            ,&kDictionary,buffersize,1);
           printf("AliTRDdigitsManager::MakeBranch -- ");
           printf("Making branch %s\n",branchname);
 	}
@@ -146,6 +176,9 @@ Bool_t AliTRDdigitsManager::MakeBranch()
 //_____________________________________________________________________________
 Bool_t AliTRDdigitsManager::ReadDigits()
 {
+  //
+  // Reads the digit information from the input file
+  //
 
   Bool_t status = kTRUE;
 

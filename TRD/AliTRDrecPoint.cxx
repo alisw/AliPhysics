@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2000/02/28 19:02:07  cblume
+Add new TRD classes
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,14 +41,23 @@ AliTRDrecPoint::AliTRDrecPoint():AliRecPoint()
 
   fDetector = 0;
 
-  AliTRD *TRD;
+  AliTRD *trd;
   if ((gAlice) &&
-      (TRD = ((AliTRD*) gAlice->GetDetector("TRD")))) {
-    fGeom = TRD->GetGeometry();
+      (trd = ((AliTRD*) gAlice->GetDetector("TRD")))) {
+    fGeom = trd->GetGeometry();
   }
   else {
     fGeom = NULL;
   }
+
+}
+
+//_____________________________________________________________________________
+AliTRDrecPoint::~AliTRDrecPoint()
+{
+  //
+  // AliTRDrecPoint destructor
+  //
 
 }
 
@@ -87,7 +99,7 @@ void AliTRDrecPoint::SetLocalPosition(TVector3 &pos)
   // system.
   //
 
-  const Float_t sq12 = 3.464101615;
+  const Float_t kSq12 = 3.464101615;
 
   // Set the position
   fLocPos = pos;
@@ -97,9 +109,9 @@ void AliTRDrecPoint::SetLocalPosition(TVector3 &pos)
   // col:  not defined yet
   // time: bin-size / sqrt(12)
   fLocPosM->operator()(0,0) = ((AliTRDgeometry *) fGeom)->GetRowPadSize()  
-                            / sq12;
+                            / kSq12;
   fLocPosM->operator()(1,1) = 0.0;
   fLocPosM->operator()(2,2) = ((AliTRDgeometry *) fGeom)->GetTimeBinSize() 
-                            / sq12;
+                            / kSq12;
 
 }

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2000/06/07 16:25:37  cblume
+Try to remove compiler warnings on Sun and HP
+
 Revision 1.14  2000/02/28 19:10:26  cblume
 Include the new TRD classes
 
@@ -60,7 +63,23 @@ Introduction of the Copyright and cvs Log
 #include "AliTRDgeometry.h"
 
 ClassImp(AliTRDv0)
- 
+  
+//_____________________________________________________________________________
+AliTRDv0::AliTRDv0():AliTRD() 
+{
+  //
+  // AliTRDv0 default constructor
+  //
+
+  fIdSens     = 0;
+  fHitsOn     = 0;
+
+  fIdChamber1 = 0;
+  fIdChamber2 = 0;
+  fIdChamber3 = 0;
+
+}
+
 //_____________________________________________________________________________
 AliTRDv0::AliTRDv0(const char *name, const char *title) 
          :AliTRD(name, title) 
@@ -79,6 +98,15 @@ AliTRDv0::AliTRDv0(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
+AliTRDv0::~AliTRDv0()
+{
+  //
+  // AliTRDv0 destructor
+  //
+
+}
+
+//_____________________________________________________________________________
 void AliTRDv0::CreateGeometry()
 {
   //
@@ -87,8 +115,8 @@ void AliTRDv0::CreateGeometry()
   //
 
   // Check that FRAME is there otherwise we have no place where to put the TRD
-  AliModule* FRAME = gAlice->GetModule("FRAME");
-  if (!FRAME) return;
+  AliModule* frame = gAlice->GetModule("FRAME");
+  if (!frame) return;
 
   // Define the chambers
   AliTRD::CreateGeometry();

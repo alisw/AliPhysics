@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.4.1  2000/05/08 15:08:03  cblume
 Remove the class AliTRDcluster
 
@@ -64,13 +67,39 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t* name, const Text_t* title)
 }
 
 //_____________________________________________________________________________
+AliTRDclusterizer::AliTRDclusterizer(AliTRDclusterizer &c)
+{
+  //
+  // AliTRDclusterizer copy constructor
+  //
+
+  c.Copy(*this);
+
+}
+
+//_____________________________________________________________________________
 AliTRDclusterizer::~AliTRDclusterizer()
 {
+  //
+  // AliTRDclusterizer destructor
+  //
 
   if (fInputFile) {
     fInputFile->Close();
     delete fInputFile;
   }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDclusterizer::Copy(AliTRDclusterizer &c)
+{
+  //
+  // Copy function
+  //
+
+  c.fInputFile = NULL;
+  c.fEvent     = 0;  
 
 }
 

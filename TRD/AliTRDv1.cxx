@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2000/06/07 16:27:32  cblume
+Try to remove compiler warnings on Sun and HP
+
 Revision 1.18  2000/05/08 16:17:27  cblume
 Merge TRD-develop
 
@@ -77,6 +80,30 @@ Introduction of the Copyright and cvs Log
 
 ClassImp(AliTRDv1)
 
+ 
+//_____________________________________________________________________________
+AliTRDv1::AliTRDv1():AliTRD()
+{
+  //
+  // Default constructor
+  //
+
+  fIdSens          =  0;
+
+  fIdChamber1      =  0;
+  fIdChamber2      =  0;
+  fIdChamber3      =  0;
+
+  fSensSelect      =  0;
+  fSensPlane       = -1;
+  fSensChamber     = -1;
+  fSensSector      = -1;
+  fSensSectorRange =  0;
+
+  fDeltaE          = NULL;
+
+}
+
 //_____________________________________________________________________________
 AliTRDv1::AliTRDv1(const char *name, const char *title) 
          :AliTRD(name, title) 
@@ -95,11 +122,22 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
   fSensPlane       = -1;
   fSensChamber     = -1;
   fSensSector      = -1;
-  fSensSectorRange = 0;
+  fSensSectorRange =  0;
 
   fDeltaE          = NULL;
 
   SetBufferSize(128000);
+
+}
+
+//_____________________________________________________________________________
+AliTRDv1::AliTRDv1(AliTRDv1 &trd)
+{
+  //
+  // Copy constructor
+  //
+
+  trd.Copy(*this);
 
 }
 
@@ -111,6 +149,30 @@ AliTRDv1::~AliTRDv1()
 
 }
  
+ 
+//_____________________________________________________________________________
+void AliTRDv1::Copy(AliTRDv1 &trd)
+{
+  //
+  // Copy function
+  //
+
+  trd.fIdSens          = fIdSens;
+
+  trd.fIdChamber1      = fIdChamber1;
+  trd.fIdChamber2      = fIdChamber2;
+  trd.fIdChamber3      = fIdChamber3;
+
+  trd.fSensSelect      = fSensSelect;
+  trd.fSensPlane       = fSensPlane;
+  trd.fSensChamber     = fSensChamber;
+  trd.fSensSector      = fSensSector;
+  trd.fSensSectorRange = fSensSectorRange;
+
+  trd.fDeltaE          = NULL;
+
+}
+
 //_____________________________________________________________________________
 void AliTRDv1::CreateGeometry()
 {
@@ -120,8 +182,8 @@ void AliTRDv1::CreateGeometry()
   //
 
   // Check that FRAME is there otherwise we have no place where to put the TRD
-  AliModule* FRAME = gAlice->GetModule("FRAME");
-  if (!FRAME) return;
+  AliModule* frame = gAlice->GetModule("FRAME");
+  if (!frame) return;
 
   // Define the chambers
   AliTRD::CreateGeometry();
@@ -168,9 +230,9 @@ void AliTRDv1::Init()
   // Maximum energy (50 keV);
   const Float_t kEend = 50000.0;
   // Ermilova distribution for the delta-ray spectrum
-  Float_t Poti = TMath::Log(kPoti);
-  Float_t Eend = TMath::Log(kEend);
-  fDeltaE  = new TF1("deltae",Ermilova,Poti,Eend,0);
+  Float_t poti = TMath::Log(kPoti);
+  Float_t eEnd = TMath::Log(kEend);
+  fDeltaE  = new TF1("deltae",Ermilova,poti,eEnd,0);
 
   // Identifier of the sensitive volume (drift region)
   fIdSens     = gMC->VolId("UL05");
@@ -319,7 +381,7 @@ void AliTRDv1::StepManager()
   const Float_t  kPoti    = 12.1;
 
   // PDG code electron
-  const Int_t    pdgElectron = 11;
+  const Int_t    kPdgElectron = 11;
 
   // Set the maximum step size to a very large number for all 
   // neutral particles and those outside the driftvolume
@@ -408,8 +470,8 @@ void AliTRDv1::StepManager()
         gMC->TrackMomentum(mom);
         pTot = mom.Rho();
         iPdg = TMath::Abs(gMC->TrackPid());
-        if ( (iPdg != pdgElectron) ||
-	    ((iPdg == pdgElectron) && (pTot < kPTotMax))) {
+        if ( (iPdg != kPdgElectron) ||
+	    ((iPdg == kPdgElectron) && (pTot < kPTotMax))) {
           aMass     = gMC->TrackMass();
           betaGamma = pTot / aMass;
           pp        = kPrim * BetheBloch(betaGamma);
@@ -491,23 +553,23 @@ Double_t Ermilova(Double_t *x, Double_t *)
 
   Int_t    pos1, pos2;
 
-  const Int_t nV = 31;
+  const Int_t kNv = 31;
 
-  Float_t vxe[nV] = { 2.3026, 2.9957, 3.4012, 3.6889, 3.9120  
-                    , 4.0943, 4.2485, 4.3820, 4.4998, 4.6052
-                    , 4.7005, 5.0752, 5.2983, 5.7038, 5.9915
-                    , 6.2146, 6.5221, 6.9078, 7.3132, 7.6009
-                    , 8.0064, 8.5172, 8.6995, 8.9872, 9.2103
-                    , 9.4727, 9.9035,10.3735,10.5966,10.8198
-                    ,11.5129 };
+  Float_t vxe[kNv] = { 2.3026, 2.9957, 3.4012, 3.6889, 3.9120  
+                     , 4.0943, 4.2485, 4.3820, 4.4998, 4.6052
+                     , 4.7005, 5.0752, 5.2983, 5.7038, 5.9915
+                     , 6.2146, 6.5221, 6.9078, 7.3132, 7.6009
+                     , 8.0064, 8.5172, 8.6995, 8.9872, 9.2103
+                     , 9.4727, 9.9035,10.3735,10.5966,10.8198
+                     ,11.5129 };
 
-  Float_t vye[nV] = { 80.0  , 31.0  , 23.3  , 21.1  , 21.0
-                    , 20.9  , 20.8  , 20.0  , 16.0  , 11.0
-                    ,  8.0  ,  6.0  ,  5.2  ,  4.6  ,  4.0
-                    ,  3.5  ,  3.0  ,  1.4  ,  0.67 ,  0.44
-                    ,  0.3  ,  0.18 ,  0.12 ,  0.08 ,  0.056
-                    ,  0.04 ,  0.023,  0.015,  0.011,  0.01
-		    ,  0.004 };
+  Float_t vye[kNv] = { 80.0  , 31.0  , 23.3  , 21.1  , 21.0
+                     , 20.9  , 20.8  , 20.0  , 16.0  , 11.0
+                     ,  8.0  ,  6.0  ,  5.2  ,  4.6  ,  4.0
+                     ,  3.5  ,  3.0  ,  1.4  ,  0.67 ,  0.44
+                     ,  0.3  ,  0.18 ,  0.12 ,  0.08 ,  0.056
+                     ,  0.04 ,  0.023,  0.015,  0.011,  0.01
+		     ,  0.004 };
 
   energy = x[0];
 
@@ -519,7 +581,7 @@ Double_t Ermilova(Double_t *x, Double_t *)
   } 
   while (dpos > 0);
   pos2--; 
-  if (pos2 > nV) pos2 = nV;
+  if (pos2 > kNv) pos2 = kNv;
   pos1 = pos2 - 1;
 
   // Differentiate between the sampling points

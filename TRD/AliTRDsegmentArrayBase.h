@@ -1,20 +1,17 @@
-#ifndef ALISEGARRAYBASE_H
-#define ALISEGARRAYBASE_H
+#ifndef ALITRDSEGMENTARRAYBASE_H
+#define ALITRDSEGMENTARRAYBASE_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id: AliTRDsegmentArrayBase.h,v */
 
 ////////////////////////////////////////////////
-//  Manager class generaol Alice segment 
-//  segment is for example one pad row in TPC //
+//  Manager class for a general Alice segment // 
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
 #include "TError.h"
 #include "TObjArray.h"
-
-//#include "AliTRDsegmentID.h"
 
 class TTree;
 class TBranch;
@@ -22,39 +19,62 @@ class AliTRDarrayI;
 class AliTRDsegmentID;
 class TObjArray;
  
-class AliTRDsegmentArrayBase: public TNamed{
-public:
-  AliTRDsegmentArrayBase();
-  AliTRDsegmentArrayBase(Text_t *classname, Int_t n);  //
-  Bool_t  SetClass(Text_t *classname);  //set class of stored object
-  ~AliTRDsegmentArrayBase();
-  const AliTRDsegmentID * At(Int_t i); //return pointer to segment with index i 
-  const AliTRDsegmentID * operator[](Int_t i); //return pointer to segment with index i
+class AliTRDsegmentArrayBase: public TNamed {
 
-  Bool_t AddSegment(AliTRDsegmentID *segment); // add segment to array
-  AliTRDsegmentID * AddSegment(Int_t index);   //create objet and set index
-  Bool_t   MakeArray(Int_t n);       //make array of pointers to Segments
-  void ClearSegment(Int_t index); //remove segment from active   
-  virtual AliTRDsegmentID * NewSegment(); //dynamicaly create new segment 
-  //input output functions
-  TTree * GetTree(){return fTree;}      //return pointer to connected tree
-  
-  virtual void MakeTree();              //Make tree with the name
-  virtual Bool_t ConnectTree(const char * treeName); //connect tree from current directory 
-  virtual AliTRDsegmentID * LoadSegment(Int_t index);//load segment with index to the memory
-  virtual AliTRDsegmentID * LoadEntry(Int_t index); //load segment entry from position index in tree
-  virtual void StoreSegment(Int_t index);//write segmen persistent  
-  Bool_t  MakeDictionary(Int_t size);//create index table for tree
-  TClass * GetClass() {return fClass;}
-public:
-  TObjArray  * fSegment;  //!pointer to array of pointers to segment
-  AliTRDarrayI    * fTreeIndex; //!pointers(index) table in tree
-  Int_t      fNSegment;   
-  TTree    * fTree;   //!tree with segment objects
-  TBranch  * fBranch; //!total branch 
-private: 
-  TClass  *   fClass;    //!class type of included objects 
-  ClassDef(AliTRDsegmentArrayBase,1) 
+ public:
+
+  AliTRDsegmentArrayBase();
+  AliTRDsegmentArrayBase(Text_t *classname, Int_t n); 
+  AliTRDsegmentArrayBase(AliTRDsegmentArrayBase &a);
+  virtual ~AliTRDsegmentArrayBase();
+ 
+  const AliTRDsegmentID *At(Int_t i); 
+  const AliTRDsegmentID *operator[](Int_t i); 
+
+          Bool_t           AddSegment(AliTRDsegmentID *segment);
+          AliTRDsegmentID *AddSegment(Int_t index);  
+          void             ClearSegment(Int_t index); 
+  virtual void             Copy(AliTRDsegmentArrayBase &a);
+  virtual Bool_t           ConnectTree(const char *treeName);
+          Bool_t           MakeArray(Int_t n);    
+  virtual AliTRDsegmentID *NewSegment(); 
+  virtual void             MakeTree();           
+  virtual AliTRDsegmentID *LoadSegment(Int_t index);
+  virtual AliTRDsegmentID *LoadEntry(Int_t index); 
+  virtual void             StoreSegment(Int_t index);
+          Bool_t           MakeDictionary(Int_t size);
+
+          Bool_t           SetClass(Text_t *classname);
+ 
+          TClass          *GetClass() { return fClass; };
+          TTree           *GetTree()  { return fTree;  };   
+
+  inline  AliTRDsegmentArrayBase &operator=(AliTRDsegmentArrayBase &a);
+
+ protected:
+
+  TObjArray    *fSegment;            //! Pointer to an array of pointers to a segment
+  AliTRDarrayI *fTreeIndex;          //! Pointers(index) table
+  Int_t         fNSegment;           //  Number of segments 
+  TTree        *fTree;               //! Tree with segment objects
+  TBranch      *fBranch;             //! Branchaddress
+  TClass       *fClass;              //! Class type of included objects 
+
+  ClassDef(AliTRDsegmentArrayBase,1) // TRD detextor segment array base class
+
 };
 
-#endif //ALISEGARRAY_H
+//_____________________________________________________________________________
+AliTRDsegmentArrayBase &AliTRDsegmentArrayBase
+                        ::operator=(AliTRDsegmentArrayBase &a)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &a) a.Copy(*this);
+  return *this;
+
+}
+
+#endif 

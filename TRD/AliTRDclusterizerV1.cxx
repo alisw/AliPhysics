@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/06/07 16:27:01  cblume
+Try to remove compiler warnings on Sun and HP
+
 Revision 1.3  2000/05/08 16:17:27  cblume
 Merge TRD-develop
 
@@ -69,12 +72,42 @@ AliTRDclusterizerV1::AliTRDclusterizerV1(const Text_t* name, const Text_t* title
 }
 
 //_____________________________________________________________________________
+AliTRDclusterizerV1::AliTRDclusterizerV1(AliTRDclusterizerV1 &c)
+{
+  //
+  // AliTRDclusterizerV1 copy constructor
+  //
+
+  c.Copy(*this);
+
+}
+
+//_____________________________________________________________________________
 AliTRDclusterizerV1::~AliTRDclusterizerV1()
 {
+  //
+  // AliTRDclusterizerV1 destructor
+  //
 
   if (fDigitsManager) {
     delete fDigitsManager;
   }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDclusterizerV1::Copy(AliTRDclusterizerV1 &c)
+{
+  //
+  // Copy function
+  //
+
+  c.fClusMaxThresh = fClusMaxThresh;
+  c.fClusSigThresh = fClusSigThresh;
+  c.fClusMethod    = fClusMethod;
+  c.fDigitsManager = NULL;
+
+  AliTRDclusterizer::Copy(c);
 
 }
 
@@ -120,20 +153,20 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
   Int_t row, col, time;
 
   // Get the pointer to the detector class and check for version 1
-  AliTRD *TRD = (AliTRD*) gAlice->GetDetector("TRD");
-  if (TRD->IsVersion() != 1) {
+  AliTRD *trd = (AliTRD*) gAlice->GetDetector("TRD");
+  if (trd->IsVersion() != 1) {
     printf("AliTRDclusterizerV1::MakeCluster -- ");
     printf("TRD must be version 1 (slow simulator).\n");
     return kFALSE; 
   }
 
   // Get the geometry
-  AliTRDgeometry *Geo = TRD->GetGeometry();
+  AliTRDgeometry *geo = trd->GetGeometry();
 
   printf("AliTRDclusterizerV1::MakeCluster -- ");
   printf("Start creating clusters.\n");
 
-  AliTRDdataArrayI *Digits;
+  AliTRDdataArrayI *digits;
 
   // Parameters
   Float_t maxThresh        = fClusMaxThresh;   // threshold value for maximum
@@ -141,21 +174,21 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
   Int_t   clusteringMethod = fClusMethod;      // clustering method option (for testing)
 
   // Iteration limit for unfolding procedure
-  const Float_t epsilon = 0.01;             
+  const Float_t kEpsilon = 0.01;             
 
-  const Int_t   nClus   = 3;  
-  const Int_t   nSig    = 5;
+  const Int_t   kNclus   = 3;  
+  const Int_t   kNsig    = 5;
 
   Int_t chamBeg = 0;
   Int_t chamEnd = kNcham;
-  if (TRD->GetSensChamber()  >= 0) {
-    chamBeg = TRD->GetSensChamber();
+  if (trd->GetSensChamber()  >= 0) {
+    chamBeg = trd->GetSensChamber();
     chamEnd = chamBeg + 1;
   }
   Int_t planBeg = 0;
   Int_t planEnd = kNplan;
-  if (TRD->GetSensPlane()    >= 0) {
-    planBeg = TRD->GetSensPlane();
+  if (trd->GetSensPlane()    >= 0) {
+    planBeg = trd->GetSensPlane();
     planEnd = planBeg + 1;
   }
   Int_t sectBeg = 0;
@@ -166,9 +199,9 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
     for (Int_t iplan = planBeg; iplan < planEnd; iplan++) {
       for (Int_t isect = sectBeg; isect < sectEnd; isect++) {
 
-        if (TRD->GetSensSector() >= 0) {
-          Int_t sens1 = TRD->GetSensSector();
-          Int_t sens2 = sens1 + TRD->GetSensSectorRange();
+        if (trd->GetSensSector() >= 0) {
+          Int_t sens1 = trd->GetSensSector();
+          Int_t sens2 = sens1 + trd->GetSensSectorRange();
           sens2 -= ((Int_t) (sens2 / kNsect)) * kNsect;
           if (sens1 < sens2) 
             if ((isect < sens1) || (isect >= sens2)) continue;
@@ -176,16 +209,16 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
             if ((isect < sens1) && (isect >= sens2)) continue;
 	}
 
-        Int_t idet = Geo->GetDetector(iplan,icham,isect);
+        Int_t idet = geo->GetDetector(iplan,icham,isect);
 
         Int_t nClusters = 0;
         printf("AliTRDclusterizerV1::MakeCluster -- ");
         printf("Analyzing chamber %d, plane %d, sector %d.\n"
                ,icham,iplan,isect);
 
-        Int_t   nRowMax  = Geo->GetRowMax(iplan,icham,isect);
-        Int_t   nColMax  = Geo->GetColMax(iplan);
-        Int_t   nTimeMax = Geo->GetTimeMax();
+        Int_t   nRowMax  = geo->GetRowMax(iplan,icham,isect);
+        Int_t   nColMax  = geo->GetColMax(iplan);
+        Int_t   nTimeMax = geo->GetTimeMax();
 
         // Create a detector matrix to keep maxima
         AliTRDmatrix *digitMatrix  = new AliTRDmatrix(nRowMax,nColMax,nTimeMax
@@ -195,15 +228,15 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                                                      ,isect,icham,iplan);
 
         // Read in the digits
-        Digits = fDigitsManager->GetDigits(idet);
+        digits = fDigitsManager->GetDigits(idet);
 
         // Loop through the detector pixel
         for (time = 0; time < nTimeMax; time++) {
           for ( col = 0;  col <  nColMax;  col++) {
             for ( row = 0;  row <  nRowMax;  row++) {
 
-              Int_t signal = Digits->GetData(row,col,time);
-              Int_t index  = Digits->GetIndex(row,col,time);
+              Int_t signal = digits->GetData(row,col,time);
+              Int_t index  = digits->GetIndex(row,col,time);
 
               // Fill the detector matrix
               if (signal > signalThresh) {
@@ -248,18 +281,18 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                   && (digitMatrix->GetSignal(row,col,time) > maxThresh)) {
 
                 // Ratio resulting from unfolding
-                Float_t ratio                =  0;    
+                Float_t ratio                 =  0;    
                 // Signals on max and neighbouring pads
-                Float_t padSignal[nSig]      = {0};   
+                Float_t padSignal[kNsig]      = {0};   
                 // Signals from cluster
-                Float_t clusterSignal[nClus] = {0};
+                Float_t clusterSignal[kNclus] = {0};
                 // Cluster pad info
-                Float_t clusterPads[nClus]   = {0};   
+                Float_t clusterPads[kNclus]   = {0};   
                 // Cluster digit info
-                Int_t   clusterDigit[nClus]  = {0};
+                Int_t   clusterDigit[kNclus]  = {0};
 
                 Int_t iPad;
-                for (iPad = 0; iPad < nClus; iPad++) {
+                for (iPad = 0; iPad < kNclus; iPad++) {
                   clusterSignal[iPad] = digitMatrix->GetSignal(row,col-1+iPad,time);
                   clusterDigit[iPad]  = digitMatrix->GetTrack(row,col-1+iPad,time,0);
                 }
@@ -273,7 +306,7 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                     }
 
                     // unfold:
-                    ratio = Unfold(epsilon, padSignal);
+                    ratio = Unfold(kEpsilon, padSignal);
 
                     // set signal on overlapping pad to ratio
                     clusterSignal[2] *= ratio;
@@ -319,7 +352,7 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
                                         + clusterSignal[2];
 
                 // Add the cluster to the output array 
-                TRD->AddRecPoint(clusterPads,clusterDigit,idet,clusterCharge);
+                trd->AddRecPoint(clusterPads,clusterDigit,idet,clusterCharge);
 
               }
             }  // time
@@ -338,15 +371,15 @@ Bool_t AliTRDclusterizerV1::MakeCluster()
 
   printf("AliTRDclusterizerV1::MakeCluster -- ");
   printf("Total number of points found: %d\n"
-        ,TRD->RecPoints()->GetEntries());
+        ,trd->RecPoints()->GetEntries());
 
   // Get the pointer to the cluster branch
-  TTree *ClusterTree = gAlice->TreeR(); 
+  TTree *clusterTree = gAlice->TreeR(); 
 
   // Fill the cluster-branch
   printf("AliTRDclusterizerV1::MakeCluster -- ");
   printf("Fill the cluster tree.\n");
-  ClusterTree->Fill();
+  clusterTree->Fill();
   printf("AliTRDclusterizerV1::MakeCluster -- ");
   printf("Done.\n");
 
@@ -416,12 +449,12 @@ Float_t AliTRDclusterizerV1::PadResponse(Float_t x)
   //
 
   // The parameters for the response function
-  const Float_t aa  =  0.8872;
-  const Float_t bb  = -0.00573;
-  const Float_t cc  =  0.454;
-  const Float_t cc2 =  cc*cc;
+  const Float_t kA  =  0.8872;
+  const Float_t kB  = -0.00573;
+  const Float_t kC  =  0.454;
+  const Float_t kC2 =  kC*kC;
 
-  Float_t pr = aa * (bb + TMath::Exp(-x*x / (2. * cc2)));
+  Float_t pr = kA * (kB + TMath::Exp(-x*x / (2. * kC2)));
 
   return (pr);
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
 Revision 1.1.4.1  2000/05/08 14:55:03  cblume
 Bug fixes
 
@@ -24,6 +27,8 @@ Add new TRD classes
 */
 
 ///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  Alice segment manager class                                              //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -50,11 +55,41 @@ AliTRDsegmentArray::AliTRDsegmentArray(Text_t *classname, Int_t n)
   // Constructor creating an array of AliTRDdataArray of size <n>
   //
 
-  AliTRDdataArray *DataArray;  
+  AliTRDdataArray *dataArray;  
 
   for (Int_t i = 0; i < n; i++) {
-    DataArray = (AliTRDdataArray *) AddSegment(i);
+    dataArray = (AliTRDdataArray *) AddSegment(i);
   }
+
+}
+
+//_____________________________________________________________________________
+AliTRDsegmentArray::AliTRDsegmentArray(AliTRDsegmentArray &a)
+{
+  //
+  // AliTRDsegmentArray copy constructor
+  //
+
+  a.Copy(*this);
+
+}
+
+//_____________________________________________________________________________
+AliTRDsegmentArray::~AliTRDsegmentArray()
+{
+  //
+  // AliTRDsegmentArray destructor
+  //
+}
+
+//_____________________________________________________________________________
+void AliTRDsegmentArray::Copy(AliTRDsegmentArray &a)
+{
+  //
+  // Copy function
+  //
+
+  AliTRDsegmentArrayBase::Copy(a);
 
 }
 
@@ -90,12 +125,12 @@ Bool_t AliTRDsegmentArray::LoadArray(const Char_t *branchname)
   // Loop through all segments and read them from the tree
   Bool_t status = kTRUE;
   for (Int_t iSegment = 0; iSegment < fNSegment; iSegment++) {
-    AliTRDdataArray *DataArray = (AliTRDdataArray *) fSegment->At(iSegment);
-    if (!DataArray) {
+    AliTRDdataArray *dataArray = (AliTRDdataArray *) fSegment->At(iSegment);
+    if (!dataArray) {
       status = kFALSE;
       break;    
     }
-    fBranch->SetAddress(&DataArray);
+    fBranch->SetAddress(&dataArray);
     fBranch->GetEntry(iSegment);
   }
 
@@ -122,13 +157,13 @@ Bool_t AliTRDsegmentArray::StoreArray(const Char_t *branchname)
   // Loop through all segments and fill them into the tree
   Bool_t status = kTRUE;
   for (Int_t iSegment = 0; iSegment < fNSegment; iSegment++) {
-    const AliTRDdataArray *DataArray = 
+    const AliTRDdataArray *kDataArray = 
          (AliTRDdataArray *) AliTRDsegmentArrayBase::At(iSegment);
-    if (!DataArray) {
+    if (!kDataArray) {
       status = kFALSE;
       break;
     }
-    fBranch->SetAddress(&DataArray);
+    fBranch->SetAddress(&kDataArray);
     fBranch->Fill();
   }
 
@@ -156,8 +191,8 @@ AliTRDdataArray *AliTRDsegmentArray::GetDataArray(Int_t pla, Int_t cha, Int_t se
 
   if (gAlice) {
 
-    AliTRDgeometry *Geo = ((AliTRD*) gAlice->GetDetector("TRD"))->GetGeometry();  
-    Int_t det = Geo->GetDetector(pla,cha,sec);
+    AliTRDgeometry *geo = ((AliTRD*) gAlice->GetDetector("TRD"))->GetGeometry();  
+    Int_t det = geo->GetDetector(pla,cha,sec);
     return GetDataArray(det);
 
   }

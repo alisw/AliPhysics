@@ -1,5 +1,5 @@
-#ifndef TRDclusterizerV0_h
-#define TRDclusterizerV0_h
+#ifndef ALITRDCLUSTERIZERV0_h
+#define ALITRDCLUSTERIZERV0_h
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -18,7 +18,7 @@ class AliTRDclusterizerV0 : public AliTRDclusterizer {
 
   AliTRDclusterizerV0();
   AliTRDclusterizerV0(const Text_t* name, const Text_t* title);
-  ~AliTRDclusterizerV0();
+  virtual ~AliTRDclusterizerV0();
 
   virtual void    Init();
   virtual Bool_t  MakeCluster();
