@@ -435,7 +435,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       return ;
     }
     branch = TreeH()->Branch(branchname,&fHits,kBufferSize);
-    Info("MakeBranch","Making Branch %s for hits \n",branchname);
+    //Info("MakeBranch","Making Branch %s for hits \n",branchname);
   }  
   
   //Creating Branches for Digits
@@ -463,7 +463,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       }
       TClonesArray * digits = Digits(iDetectionPlane); 
       branch = TreeD()->Branch(branchname, &digits, kBufferSize,1);
-      Info("MakeBranch","Making Branch %s for digits in detection plane %d\n",branchname,iDetectionPlane+1);
+      //Info("MakeBranch","Making Branch %s for digits in detection plane %d\n",branchname,iDetectionPlane+1);
       }
   }
   
@@ -494,7 +494,7 @@ void AliMUONData::MakeBranch(Option_t* option)
 	return;
       }
       branch = TreeR()->Branch(branchname, &((*fRawClusters)[i]),kBufferSize);
-      Info("MakeBranch","Making Branch %s for rawcluster in detection plane %d\n",branchname,i+1);
+      //Info("MakeBranch","Making Branch %s for rawcluster in detection plane %d\n",branchname,i+1);
     }
   }
 
@@ -515,7 +515,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       return ;
     }
     branch = TreeR()->Branch(branchname, &fGlobalTrigger, kBufferSize);
-    Info("MakeBranch", "Making Branch %s for Global Trigger\n",branchname);
+    //Info("MakeBranch", "Making Branch %s for Global Trigger\n",branchname);
     
     //
     // one branch for local trigger
@@ -533,7 +533,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       return;
     }
     branch = TreeR()->Branch(branchname, &fLocalTrigger, kBufferSize);
-    Info("MakeBranch", "Making Branch %s for Global Trigger\n",branchname);  
+    //Info("MakeBranch", "Making Branch %s for Global Trigger\n",branchname);  
   }
   
   if (TreeT() && cRT ) {
@@ -546,7 +546,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       return ;
     }
     branch = TreeT()->Branch(branchname,&fRecTracks,kBufferSize);
-    Info("MakeBranch","Making Branch %s for tracks \n",branchname);
+    //Info("MakeBranch","Making Branch %s for tracks \n",branchname);
   }  
 // trigger tracks
   if (TreeT() && cRL ) {
@@ -559,7 +559,7 @@ void AliMUONData::MakeBranch(Option_t* option)
       return ;
     }
     branch = TreeT()->Branch(branchname,&fRecTriggerTracks,kBufferSize);
-    Info("MakeBranch","Making Branch %s for trigger tracks \n",branchname);
+    //Info("MakeBranch","Making Branch %s for trigger tracks \n",branchname);
   }  
 }
 //____________________________________________________________________________
