@@ -80,7 +80,8 @@ ClassImp(AliPHOSReconstructioner)
   fClusterizer = 0 ;
   fTSMaker     = 0 ;
   fPID         = 0 ; 
-
+  fFirstEvent  = 0 ; 
+  fLastEvent   = -1 ; 
   fIsInitialized = kFALSE ;
 
 } 
@@ -94,17 +95,14 @@ TTask("AliPHOSReconstructioner",evFoldName)
   AliPHOSGetter::Instance(evFoldName) ; 
 
   fRecPointBranch=branchName ; 
-  Info("ctor", "Creating Clusterizer") ;
   fClusterizer = new AliPHOSClusterizerv1(evFoldName, GetTitle());
   Add(fClusterizer);
   
   fTSBranch=branchName ; 
-  Info("ctor", "Creating Track Segment Maker") ;
   fTSMaker     = new AliPHOSTrackSegmentMakerv1(evFoldName, GetTitle());
   Add(fTSMaker) ;
   
   fRecPartBranch=branchName ; 
-  Info("ctor", "Creating PID") ;
   fPID         = new AliPHOSPIDv1(evFoldName, GetTitle());
   Add(fPID);
   
@@ -200,4 +198,15 @@ void AliPHOSReconstructioner::Print()const {
        fClusterizer->GetName(), fRecPointBranch.Data(), 
        fTSMaker->GetName(), fTSBranch.Data() , 
        fPID->GetName(), fRecPartBranch.Data() ) ; 
+}
+
+//____________________________________________________________________________
+void AliPHOSReconstructioner::SetEventRange(Int_t first, Int_t last)
+{
+  // Set the event range to process
+  fFirstEvent=first; 
+  fLastEvent=last; 
+  fClusterizer->SetEventRange(fFirstEvent, fLastEvent) ; 
+  fTSMaker->SetEventRange(fFirstEvent, fLastEvent) ;
+  fPID->SetEventRange(fFirstEvent, fLastEvent) ;
 }

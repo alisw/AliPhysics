@@ -45,6 +45,7 @@ public:
   AliPHOSClusterizer       * GetClusterizer()const { return fClusterizer ; }
   AliPHOSPID               * GetPID()        const { return fPID;          }
   AliPHOSTrackSegmentMaker * GetTSMaker()    const { return fTSMaker ;     }
+  void SetEventRange(Int_t first=0, Int_t last=-1) ; 
 
   void Print()const ;
 
@@ -68,8 +69,9 @@ private:
   AliPHOSClusterizer       * fClusterizer ; //! Pointer to AliPHOSClusterizer
   AliPHOSPID               * fPID ;         //! Pointer to AliPHOSPID
   AliPHOSTrackSegmentMaker * fTSMaker ;     //! Pointer to AliPHOSTrackSegmentMaker
-
-  Bool_t   fIsInitialized ; // kTRUE if reconstructioner is initialized
+  Bool_t  fIsInitialized ; // kTRUE if reconstructioner is initialized
+  Int_t   fFirstEvent;        // first event to process
+  Int_t   fLastEvent;         // last  event to process
  
   ClassDef(AliPHOSReconstructioner,1)  // Reconstruction algorithm class (Base Class)
 
