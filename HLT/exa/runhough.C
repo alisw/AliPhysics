@@ -1,19 +1,19 @@
 void runhough(Int_t slice,Char_t *path,Int_t n_eta_segments)
 {
   
-
+  AliL3Transform::Init("/prog/alice/data/new/fixed-slice0/");
+  
   hough = new AliL3Hough();
-  hough->Init(path,kTRUE,n_eta_segments,kTRUE);
+  Bool_t binary = kTRUE;
+  Bool_t bit8 = kTRUE;
+  hough->Init(path,binary,n_eta_segments,bit8);
+  
+  hough->GetMaxFinder()->SetThreshold(14000);
   
   hough->ReadData(slice);
-
   hough->Transform();
-
-  hough->SetPeakThreshold(1);
   hough->AddAllHistograms();
   hough->FindTrackCandidates();
-  
-  hough->WriteTracks(slice);
   
   //hough->Evaluate();
   tracks = (AliL3TrackArray*)hough->GetTracks(0);
@@ -21,11 +21,12 @@ void runhough(Int_t slice,Char_t *path,Int_t n_eta_segments)
     {
       track = (AliL3HoughTrack*)tracks->GetCheckedTrack(i);
       if(!track) continue;
-      cout<<"pt "<<track->GetPt()<<" psi "<<track->GetPsi()<<" etaindex "<<track->GetEtaIndex()<<" weight "<<track->GetWeight()<<endl;
+      cout<<"pt "<<track->GetPt()<<" psi "<<track->GetPsi()<<" eta "<<track->GetEta()<<" etaindex "<<track->GetEtaIndex()<<" weight "<<track->GetWeight()<<endl;
     }
   
-
-  display(hough,0);
+  hough->WriteTracks(slice);
+  cout<<"Found in total "<<tracks->GetNTracks()<<" tracks"<<endl;
+  display(hough,25);
   
 }
 
@@ -56,11 +57,42 @@ void display(AliL3Hough *hough,Int_t eta_index)
   
   //Draw the parameter space
   c1 = new TCanvas("c1","",2);
-  hough->GetTransformer(0)->GetHistogram(eta_index)->Draw("lego");
-  return;
+  hough->GetTransformer(0)->GetHistogram(eta_index)->Draw("box");
+  
   //Draw the tracks
   c2 = new TCanvas("c2","",2);
   digitd->Draw();
   trackd->Draw("same");
   ((TH1F*)trackd->GetRootHisto())->SetMarkerColor(2);
+}
+
+struct GoodTrack
+{
+  Int_t event;
+  Int_t label;
+  Double_t eta;
+  Int_t code;
+  Double_t px,py,pz;
+  Double_t pt;
+  Int_t nhits;
+};
+
+void geteff(char *fname)
+{
+  GoodTrack gt[15000];
+  int counter=0;
+  ifstream in(fname);
+  if(!in)
+    {
+      cerr<<"Could not open "<<fname<<endl;
+      return;
+    }
+  while(in>>gt[counter].event>>gt[counter].label>>gt[counter].code
+	>>gt[counter].px>>gt[counter].py>>gt[counter].pz>>gt[counter].pt>>gt[counter].eta>>gt[counter].nhits)
+    counter++;
+  
+  char filename[100];
+  file = new AliL3MemHandler();
+  
+  
 }
