@@ -210,7 +210,7 @@ void AliL3HoughTransformer::GetEtaIndexes(Double_t eta,Int_t *indexes) const
     }
 }
 
-inline AliL3Histogram *AliL3HoughTransformer::GetHistogram(Int_t etaindex)
+AliL3Histogram *AliL3HoughTransformer::GetHistogram(Int_t etaindex)
 {
   // Return a pointer to the histogram which contains etaindex eta slice
   if(!fParamSpace || etaindex >= GetNEtaSegments() || etaindex < 0)
