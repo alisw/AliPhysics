@@ -5,6 +5,7 @@ SRCS:=  TFluka.cxx \
 	endraw.cxx sodraw.cxx usdraw.cxx FlukaVolume.cxx stupre.cxx \
 	stuprf.cxx \
 	abscff.cxx dffcff.cxx queffc.cxx rflctv.cxx rfrndx.cxx TFlukaCerenkov.cxx
+
 # Headers
 HDRS:= TFluka.h FlukaVolume.h TFlukaCerenkov.h
 else
@@ -12,11 +13,12 @@ SRCS:=  TFlukaGeo.cxx TFlukaMCGeometry.cxx TFlukaCerenkov.cxx \
         magfld.cxx source.cxx mgdraw.cxx bxdraw.cxx eedraw.cxx \
 	endraw.cxx sodraw.cxx usdraw.cxx stupre.cxx stuprf.cxx \
 	abscff.cxx dffcff.cxx queffc.cxx rflctv.cxx rfrndx.cxx
+
 # Headers
 HDRS:= TFlukaGeo.h TFlukaMCGeometry.h TFlukaCerenkov.h
 endif
 
-FSRCS:= FLUKA_input.f
+FSRCS:= FLUKA_input.f crnkvp.f
 
 # ROOT Dictionary
 ifndef WITH_ROOT
