@@ -15,6 +15,19 @@
 
 /*
 $Log$
+Revision 1.68  2002/05/02 18:51:53  nilsen
+AliITS.h
+   Method MakeBranchR has now a second argument, with a default value:
+       Option_t *opt=" ". Opt="Fast" is to create a separate branch
+       for fast points in TreeR
+   New method MakeBranchRF: it a separate branch in TreeR for Fast Points
+
+AliITS.cxx
+1) TTree->Write() replaced with TTree->AutoSave for TreeS, TreeD and
+   TreeR
+2) Changes in MakeBranchR to allow the creation of a special branch
+   for fast points
+
 Revision 1.67  2002/03/15 17:22:51  nilsen
 Intoduced SDigits2Digits and SDigitsToDigits functions.
 
@@ -595,29 +608,57 @@ void AliITS::SetDefaultSimulation(){
     //      none.
 
     AliITSDetType *iDetType;
+    AliITSsimulation *sim;
     iDetType=DetType(0);
-    if (!iDetType->GetSimulationModel()) {
+    sim = iDetType->GetSimulationModel();
+    if (!sim) {
 	AliITSsegmentation *seg0=
 	    (AliITSsegmentation*)iDetType->GetSegmentationModel();
 	AliITSresponse *res0 = (AliITSresponse*)iDetType->GetResponseModel();
 	AliITSsimulationSPD *sim0=new AliITSsimulationSPD(seg0,res0);
 	SetSimulationModel(0,sim0);
+    }else{ // simulation exists, make sure it is set up properly.
+	((AliITSsimulationSPD*)sim)->Init(
+	    (AliITSsegmentationSPD*) iDetType->GetSegmentationModel(),
+	    (AliITSresponseSPD*) iDetType->GetResponseModel());
+//	if(sim->GetResponseModel()==0) sim->SetResponseModel(
+//	    (AliITSresponse*)iDetType->GetResponseModel());
+//	if(sim->GetSegmentationModel()==0) sim->SetSegmentationModel(
+//	    (AliITSsegmentation*)iDetType->GetSegmentationModel());
     } // end if
     iDetType=DetType(1);
-    if (!iDetType->GetSimulationModel()) {
+    sim = iDetType->GetSimulationModel();
+    if (!sim) {
 	AliITSsegmentation *seg1=
 	    (AliITSsegmentation*)iDetType->GetSegmentationModel();
 	AliITSresponse *res1 = (AliITSresponse*)iDetType->GetResponseModel();
 	AliITSsimulationSDD *sim1=new AliITSsimulationSDD(seg1,res1);
 	SetSimulationModel(1,sim1);
+    }else{ // simulation exists, make sure it is set up properly.
+	((AliITSsimulationSDD*)sim)->Init(
+	    (AliITSsegmentationSDD*) iDetType->GetSegmentationModel(),
+	    (AliITSresponseSDD*) iDetType->GetResponseModel());
+//	if(sim->GetResponseModel()==0) sim->SetResponseModel(
+//	    (AliITSresponse*)iDetType->GetResponseModel());
+//	if(sim->GetSegmentationModel()==0) sim->SetSegmentationModel(
+//	    (AliITSsegmentation*)iDetType->GetSegmentationModel());
     } //end if
     iDetType=DetType(2);
-    if (!iDetType->GetSimulationModel()) {
+    sim = iDetType->GetSimulationModel();
+    if (!sim) {
 	AliITSsegmentation *seg2=
 	    (AliITSsegmentation*)iDetType->GetSegmentationModel();
 	AliITSresponse *res2 = (AliITSresponse*)iDetType->GetResponseModel();
 	AliITSsimulationSSD *sim2=new AliITSsimulationSSD(seg2,res2);
 	SetSimulationModel(2,sim2);
+    }else{ // simulation exists, make sure it is set up properly.
+	((AliITSsimulationSSD*)sim)->Init(
+	    (AliITSsegmentationSSD*) iDetType->GetSegmentationModel(),
+	    (AliITSresponseSSD*) iDetType->GetResponseModel());
+//	if(sim->GetResponseModel()==0) sim->SetResponseModel(
+//	    (AliITSresponse*)iDetType->GetResponseModel());
+//	if(sim->GetSegmentationModel()==0) sim->SetSegmentationModel(
+//	    (AliITSsegmentation*)iDetType->GetSegmentationModel());
     } // end if
 }
 //______________________________________________________________________

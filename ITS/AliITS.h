@@ -14,12 +14,13 @@
 
 #include "AliRun.h"
 #include "AliDetector.h"
+#include "AliITSDetType.h"
 
 class TString;
 class TTree;
 class TFile;
 
-class AliITSDetType;
+//class AliITSDetType;
 class AliITSsimulation;
 class AliITSClusterFinder;
 class AliITSsegmentation;
@@ -88,6 +89,9 @@ class AliITS : public AliDetector {
     virtual void SetSegmentationModel(Int_t id, AliITSsegmentation *seg);
     // Set simulation - temporary 
     virtual void SetSimulationModel(Int_t id, AliITSsimulation *sim);
+    // Set simulation - temporary 
+    virtual AliITSsimulation* GetSimulationModel(Int_t id){
+	return ((AliITSDetType*)(fDetTypes->At(id)))->GetSimulationModel();}
     // Set reconstruction 
     virtual void SetReconstructionModel(Int_t id, AliITSClusterFinder *rec);
     // Set class names for digit and rec point 
