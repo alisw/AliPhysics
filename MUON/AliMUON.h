@@ -77,7 +77,6 @@ public TObject {
 	(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2)  = 0;
     //
     // Identification
-    virtual char* YourName()                           =0;
     ClassDef(AliMUONsegmentation,1)
 };
 //----------------------------------------------
@@ -108,7 +107,6 @@ public TObject {
     virtual Float_t IntXY(AliMUONsegmentation *)       =0;
     //
     // Identification
-    virtual char* YourName()                           =0;
     ClassDef(AliMUONresponse,1)
 };
 
