@@ -18,7 +18,7 @@
 
 #include "AliEMCALHadronCorrectionv1.h"
 #include "AliEMCALGeometry.h"
-#include "iostream.h"
+#include "Riostream.h"
 #include "TMath.h"
 static Double_t par_look_up[HCPARAMETERS][HCPARAMETERSETS] = 
 {  
@@ -52,7 +52,7 @@ void AliEMCALHadronCorrectionv1::SetGeometry(AliEMCALGeometry *geometry)
     return;	
 }	
 	
-void AliEMCALHadronCorrectionv1::SetGeometry(TString name,Double_t fs = 1.0)
+void AliEMCALHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
 {
   cout << "Setting sampling fraction to "<<fSamplingFraction<<endl;	
    fSamplingFraction = fs;	

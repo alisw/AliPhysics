@@ -21,20 +21,23 @@ class AliEMCALHadronCorrectionv1: public AliEMCALHadronCorrection {
     Double_t GetEnergy(const Double_t pmom, const Double_t eta) 
 	{return GetEnergy(pmom,eta,7);}
     
-    void SetGeometry(TString name); 
-    void SetGeometry(AliEMCALGeometry *geometry); 
+    void SetGeometry(TString name, Double_t fs = 1.); 
     virtual ~AliEMCALHadronCorrectionv1() {}
  protected:
     AliEMCALHadronCorrectionv1(const char *name="HadronCorrectionv1", const char *title="Hadron Correction");
     
 //    AliEMCALHadronCorrectionv1(const char *name="HadronCorrectionv1", const char *title="Hadron Correction",AliEMCALGeometry *geometry = NULL);
+    void SetGeometry(AliEMCALGeometry *geometry);
+    
  private:
     void SetParameters(TString name = "") {;}
     
     static AliEMCALHadronCorrectionv1* fHadrCorr;
     Double_t fPar[6];
+    Float_t  fSamplingFraction;
     
-    ClassDef(AliEMCALHadronCorrectionv1,1) // Hadron correction for EMC (version for MDC)
+    
+    ClassDef(AliEMCALHadronCorrectionv1,2) // Hadron correction for EMC (version for MDC)
 };
 
 #endif // ALIEMCALHADRONCORRECTIONV1_H
