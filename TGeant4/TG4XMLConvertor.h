@@ -57,6 +57,10 @@ class TG4XMLConvertor : public TG4VXMLConvertor
     virtual void WriteEmptyLine();
     virtual void IncreaseIndention();
     virtual void DecreaseIndention();
+    
+    // set methods
+    void SetNumWidth(G4int width);
+    void SetNumPrecision(G4int precision);
 
   private:
     //methods
@@ -79,14 +83,24 @@ class TG4XMLConvertor : public TG4VXMLConvertor
     // static data members
     static const G4int fgkMaxVolumeNameLength;  //maximal volume name length
     static const G4int fgkMaxMaterialNameLength;//maximal material name length
+    static const G4int fgkDefaultNumWidth;      //default output numbers width
+    static const G4int fgkDefaultNumPrecision;  //default output numbers precision 
 
     // data members
     G4std::ofstream&  fOutFile;          //output file
     const G4String    fkBasicIndention;  //basic indention 
     G4String          fIndention;        //indention string
+    G4int             fNW;               //output numbers width
+    G4int             fNP;               //output numbers precision 
     G4int             fRotationCounter;  //counter of rotations
-    TG4RotationMatrixVector  fRotations; // vector of rot matrices
+    TG4RotationMatrixVector  fRotations; //vector of rot matrices
 };
+
+inline void TG4XMLConvertor::SetNumWidth(G4int width)
+{ fNW = width; }
+
+inline void TG4XMLConvertor::SetNumPrecision(G4int precision)
+{ fNP = precision; }
 
 #endif //TG4_XML_CONVERTOR_H
 
