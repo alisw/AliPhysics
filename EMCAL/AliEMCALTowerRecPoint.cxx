@@ -148,7 +148,7 @@ Int_t AliEMCALTowerRecPoint::Compare(const TObject * obj) const
 {
   // Compares two RecPoints according to their position in the EMCAL modules
 
-  Float_t delta = 1 ; //Width of "Sorting row". If you changibg this 
+  Float_t delta = 1 ; //Width of "Sorting row". If you change this 
                       //value (what is senseless) change as vell delta in
                       //AliEMCALTrackSegmentMakerv* and other RecPoints...
   Int_t rv ; 
@@ -305,60 +305,52 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
 
   AliEMCALDigit * digit ;
  
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  AliEMCALGeometry * emcalgeom =  (AliEMCALGeometry*)gime->EMCALGeometry();
+  AliEMCALGeometry * emcalgeom = AliEMCALGetter::GetInstance()->EMCALGeometry();
   
 
  // Calculates the center of gravity in the local EMCAL-module coordinates 
   
   Int_t iDigit;
-  Int_t relid[4] ;
 
-  if (!fTheta || !fPhi ) {
-    for(iDigit=0; iDigit<fMulDigit; iDigit++) {
-      digit = dynamic_cast<AliEMCALDigit *>(digits->At(fDigitsList[iDigit])) ;
-      
-      Float_t thetai ;
-      Float_t phii ;
-      emcalgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-      emcalgeom->PosInAlice(relid, thetai, phii);
-      Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
-      fTheta = fTheta + thetai * w ;
-      fPhi   += (phii * w );
-      wtot  += w ;
-    }
+  if (!fTheta || !fPhi ) 
+    EvalGlobalPosition(logWeight, digits) ;
+  
+  const Float_t kDeg2Rad = TMath::DegToRad() ; 
     
-    if (wtot > 0 ) {
-      fTheta /= wtot ;
-      fPhi   /= wtot ;
-    } else {
-      fTheta = -1. ;
-      fPhi   = -1. ; 
-    }
-	
-  }
+  Float_t cyl_radius = 0 ;  
+  
+  if (IsInPRE()) 
+    cyl_radius = emcalgeom->GetIP2PRESection() ;
+  else if (IsInECAL()) 
+    cyl_radius = emcalgeom->GetIP2ECALSection() ;
+  else if (IsInHCAL()) 
+    cyl_radius = emcalgeom->GetIP2HCALSection() ;
+  else 
+    Fatal("EvalDispersion", "Unexpected tower section!") ; 
+  
+  Float_t x =  fLocPos.X() ; 
+  Float_t y =  fLocPos.Y() ; 
+  Float_t z =  fLocPos.Z() ; 
+  
+  if (gDebug == 2) 
+    Info("EvalDispersion", "x,y,z = %f,%f,%f", x, y, z) ;
 
-  const Float_t kDeg2Rad = TMath::Pi() / static_cast<Double_t>(180) ; 
-  
-  Float_t cyl_radius = emcalgeom->GetIP2Tower() ;
-  Float_t x =  cyl_radius * TMath::Cos(fPhi * kDeg2Rad ) ;
-  Float_t y =  cyl_radius * TMath::Sin(fPhi * kDeg2Rad ) ; 
-  Float_t z =  cyl_radius / TMath::Tan(fTheta * kDeg2Rad ) ; 
-  
 // Calculates the dispersion in coordinates 
   wtot = 0.;
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
     Float_t thetai = 0. ;
     Float_t phii = 0.;
-    emcalgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    emcalgeom->PosInAlice(relid, thetai, phii);
+    emcalgeom->PosInAlice(digit->GetId(), thetai, phii);
     Float_t xi =  cyl_radius * TMath::Cos(phii * kDeg2Rad ) ;
     Float_t yi =  cyl_radius * TMath::Sin(phii * kDeg2Rad ) ; 
     Float_t zi =  cyl_radius / TMath::Tan(thetai * kDeg2Rad ) ; 
 
+    if (gDebug == 2) 
+      Info("EvalDispersion", "id = %d, xi,yi,zi = %f,%f,%f", digit->GetId(), xi, yi, zi) ;
+
     Float_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
-    d += w*((xi-x)*(xi-x) + (yi-y)*(yi-y)+ (zi-z)*(zi-z) ) ; 
+    d += w * ( (xi-x)*(xi-x) + (zi-z)*(zi-z) ) ; 
     wtot+=w ;
   }
   
@@ -381,12 +373,9 @@ void AliEMCALTowerRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * dig
   Float_t coreRadius = 10. ;
 
   AliEMCALDigit * digit ;
-  Int_t relid[4] ;
   Float_t wtot = 0. ;
 
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  AliEMCALGeometry * emcalgeom =  (AliEMCALGeometry*)gime->EMCALGeometry();
-    
+  AliEMCALGeometry * emcalgeom = AliEMCALGetter::GetInstance()->EMCALGeometry();    
   Int_t iDigit;
 
   if (!fTheta || !fPhi ) {
@@ -395,8 +384,7 @@ void AliEMCALTowerRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * dig
       
       Float_t thetai ;
       Float_t phii ;
-      emcalgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-      emcalgeom->PosInAlice(relid, thetai, phii);
+      emcalgeom->PosInAlice(digit->GetId(), thetai, phii);
       Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
       fTheta = fTheta + thetai * w ;
       fPhi   += (phii * w );
@@ -411,21 +399,19 @@ void AliEMCALTowerRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * dig
       fPhi   = -1 ; 
     }
   }
-
-  const Float_t kDeg2Rad = TMath::Pi() / static_cast<Double_t>(180) ; 
-
-  Float_t cyl_radius = emcalgeom->GetIP2Tower();
+  
+  const Float_t kDeg2Rad = TMath::DegToRad() ; 
+  
+  Float_t cyl_radius = emcalgeom->GetIP2ECALSection();
   Float_t x =  cyl_radius * TMath::Cos(fPhi * kDeg2Rad ) ;
   Float_t y =  cyl_radius * TMath::Cos(fPhi * kDeg2Rad ) ; 
   Float_t z =  cyl_radius * TMath::Tan(fTheta * kDeg2Rad ) ; 
 
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) ( digits->At(fDigitsList[iDigit]) ) ;
-    Int_t relid[4] ;
     Float_t thetai = 0. ;
     Float_t phii = 0. ;
-    emcalgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    emcalgeom->PosInAlice(relid, thetai, phii);
+    emcalgeom->PosInAlice(digit->GetId(), thetai, phii);
     
     Float_t xi =  cyl_radius * TMath::Cos(phii * kDeg2Rad ) ;
     Float_t yi =  cyl_radius * TMath::Sin(phii * kDeg2Rad ) ; 
@@ -435,7 +421,7 @@ void AliEMCALTowerRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * dig
     if(distance < coreRadius)
       fCoreEnergy += fEnergyList[iDigit] ;
   }
-
+  
 }
 
 //____________________________________________________________________________
@@ -452,24 +438,30 @@ void  AliEMCALTowerRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digi
 
   AliEMCALDigit * digit ;
 
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  AliEMCALGeometry * emcalgeom =  (AliEMCALGeometry*)gime->EMCALGeometry();
+  AliEMCALGeometry * emcalgeom = AliEMCALGetter::GetInstance()->EMCALGeometry();
 
   Int_t iDigit;
-  const Float_t kDeg2Rad = TMath::Pi() / static_cast<Double_t>(180) ; 
+  const Float_t kDeg2Rad = TMath::DegToRad() ; 
   
-  Float_t cyl_radius = emcalgeom->GetIP2Tower() ;
+   Float_t cyl_radius = 0 ;  
+  
+  if (IsInPRE()) 
+    cyl_radius = emcalgeom->GetIP2PRESection() ;
+  else if (IsInECAL()) 
+    cyl_radius = emcalgeom->GetIP2ECALSection() ;
+  else if (IsInHCAL()) 
+    cyl_radius = emcalgeom->GetIP2HCALSection() ;
+  else 
+    Fatal("EvalDispersion", "Unexpected tower section!") ; 
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) digits->At(fDigitsList[iDigit])  ;
-    Int_t relid[4] ;
     Float_t thetai = 0. ;
     Float_t phii = 0. ; 
-    emcalgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    emcalgeom->PosInAlice(relid, thetai, phii);
+    emcalgeom->PosInAlice(digit->GetId(), thetai, phii);
     Double_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
     Float_t xi =  cyl_radius * TMath::Cos(fPhi * kDeg2Rad ) ;
-    Float_t zi =  cyl_radius * TMath::Tan(fTheta * kDeg2Rad ) ; 
+    Float_t zi =  cyl_radius / TMath::Tan(fTheta * kDeg2Rad ) ; 
     dxx  += w * xi * xi ;
     x    += w * xi ;
     dzz  += w * zi * zi ;
@@ -537,12 +529,10 @@ void AliEMCALTowerRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray *
   // Calculates the center of gravity in the local EMCAL-module coordinates 
   Float_t wtot = 0. ;
  
-  Int_t relid[4] ;
+  //  Int_t relid[4] ;
   
   AliEMCALDigit * digit ;
-
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
-  AliEMCALGeometry * emcalgeom  =  static_cast<AliEMCALGeometry*>(gime->EMCALGeometry());
+  AliEMCALGeometry * emcalgeom  =  AliEMCALGetter::GetInstance()->EMCALGeometry();
   Int_t iDigit;
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
@@ -550,8 +540,7 @@ void AliEMCALTowerRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray *
 
     Float_t thetai ;
     Float_t phii ;
-    emcalgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    emcalgeom->PosInAlice(relid, thetai, phii);
+    emcalgeom->PosInAlice(digit->GetId(), thetai, phii);
     Float_t w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ) ) ;
     fTheta = fTheta + thetai * w ;
     fPhi   += (phii * w );
@@ -566,9 +555,31 @@ void AliEMCALTowerRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray *
     fPhi   = -1.; 
   }
   
-  fLocPos.SetX(0.)  ;
-  fLocPos.SetY(0.) ;
-  fLocPos.SetZ(0.)  ;
+
+  const Float_t kDeg2Rad = TMath::DegToRad() ; 
+  
+  Float_t cyl_radius = 0 ;  
+
+  if (IsInPRE()) 
+    cyl_radius = emcalgeom->GetIP2PRESection() ;
+  else if (IsInECAL()) 
+    cyl_radius = emcalgeom->GetIP2ECALSection() ;
+  else if (IsInHCAL()) 
+    cyl_radius = emcalgeom->GetIP2HCALSection() ;
+  else 
+    Fatal("EvalGlobalPosition", "Unexpected tower section!") ; 
+  
+  Float_t x =  cyl_radius * TMath::Cos(fPhi * kDeg2Rad ) ;
+  Float_t y =  cyl_radius * TMath::Sin(fPhi * kDeg2Rad ) ; 
+  Float_t z =  cyl_radius / TMath::Tan(fTheta * kDeg2Rad ) ; 
+  
+  fLocPos.SetX(x)  ;
+  fLocPos.SetY(y) ;
+  fLocPos.SetZ(z)  ;
+    
+  if (gDebug==2)
+    Info("EvalGlobalPosition", "x,y,z = %f,%f,%f", fLocPos.X(), fLocPos.Y(), fLocPos.Z()) ; 
+
 
   fLocPosM = 0 ;
 }
@@ -709,3 +720,30 @@ void AliEMCALTowerRecPoint::Print(Option_t * option)
    Info("Print", message.Data() ) ; 
 }
  
+//____________________________________________________________________________
+const TVector3 AliEMCALTowerRecPoint::XYZInAlice(Float_t r, Float_t theta, Float_t phi) const 
+{
+  // spherical coordinates of recpoint in Alice reference frame
+
+  if (gDebug == 2) 
+    Info("XYZInAlice", "this= %d , r = %f, theta = %f, phi = %f", this, r, theta, phi) ; 
+
+  if (theta == 9999. || phi == 9999. || r == 9999.) {
+    TVector3  globalpos;  
+    GetGlobalPosition(globalpos);
+    phi   =  globalpos.X() * TMath::DegToRad() ; 
+    r     =  globalpos.Y() ; 
+    theta =  globalpos.Z() * TMath::DegToRad() ; 
+  }
+  else {
+    theta *= TMath::DegToRad() ; 
+    phi   *= TMath::DegToRad() ; 
+  }
+  
+  Float_t y = r * TMath::Cos(phi) ; 
+  Float_t x = r * TMath::Sin(phi) * TMath::Sin(theta) ; 
+  Float_t z = r * TMath::Sin(phi) * TMath::Cos(theta) ; 
+  
+  TVector3 vec(z, x, y) ; 
+  return vec ; 
+}  

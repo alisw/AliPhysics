@@ -14,9 +14,9 @@
 
 // --- ROOT system ---
 
-//#include "TObject.h"
 #include "TArrayI.h"
- 
+class TVector3 ;  
+
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -60,9 +60,9 @@ public:
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 
                                                                    // searches for the local maxima 
   Float_t     GetTime(void) const{return  fTime ; } 
-  Bool_t      IsTower(void) const { return kTRUE ; }                 // true if the recpoint is in EMC
   Bool_t      IsSortable() const {return kTRUE ; }                 // says that emcrecpoints are sortable objects 
   void        Print(Option_t * opt = "void") ; 
+  const TVector3 XYZInAlice(Float_t r = 9999., Float_t theta = 9999., Float_t phi = 9999.) const ;  
 
   AliEMCALTowerRecPoint & operator = (const AliEMCALTowerRecPoint & rvalue)  {
     // assignement operator requested by coding convention but not needed
