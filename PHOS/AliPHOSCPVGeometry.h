@@ -15,7 +15,6 @@
 //#include "AliPHOSCPVBaseGeometry.h"
 #include "TObject.h"
 
-// class AliPHOSCPVGeometry : public AliPHOSCPVBaseGeometry {
 class AliPHOSCPVGeometry : public TObject {
 
 public: 
@@ -61,7 +60,7 @@ private:
   Float_t fCPVFrameSize[3];        // CPV frame size (0 - in phi, 1 - in z, 2 - thickness (along ALICE radius))
 
 
-  ClassDef(AliPHOSCPVGeometry,1)       // CPV geometry base class 
+  ClassDef(AliPHOSCPVGeometry,2)       // CPV geometry base class 
 
 } ;
 
