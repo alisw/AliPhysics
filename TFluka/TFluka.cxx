@@ -86,8 +86,8 @@ TFluka::TFluka()
   //
 } 
  
-TFluka::TFluka(const char *title, Int_t verbosity)
-  :TVirtualMC("TFluka",title),
+TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupported)
+  :TVirtualMC("TFluka",title, isRootGeometrySupported),
    fVerbosityLevel(verbosity),
    sInputFileName(""),
    fTrackIsEntering(0),

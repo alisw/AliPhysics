@@ -29,7 +29,7 @@ class TClonesArray;
 class TFluka : public TVirtualMC {
   
  public:
-  TFluka(const char *title, Int_t verbosity = 0);
+  TFluka(const char *title, Int_t verbosity = 0,  Bool_t isRootGeometrySupported = 0);
   TFluka();
   virtual ~TFluka();
   

@@ -107,7 +107,7 @@ extern "C" {
     TVirtualMCStack* cppstack = fluka->GetStack();
     //Get next particle
     Int_t itrack = -1;
-    TParticle* particle = cppstack->GetNextTrack(itrack);
+    TParticle* particle = cppstack->PopNextTrack(itrack);
 
     //Exit if itrack is negative (-1). Set lsouit to false to mark last track for
     //this event
