@@ -133,29 +133,29 @@ dummy);
     
     
     // Chamber region consideres during disintegration   
-    Int_t fIxmin; // lower left  x
-    Int_t fIxmax; // lower left  y
-    Int_t fIymin; // upper right x
-    Int_t fIymax; // upper right y 
+    Int_t fIxmin; // ! lower left  x
+    Int_t fIxmax; // ! lower left  y
+    Int_t fIymin; // ! upper right x
+    Int_t fIymax; // ! upper right y 
     //
     // Current pad during integration (cursor for disintegration)
-    Int_t fIx;  // pad coord.  x 
-    Int_t fIy;  // pad coord.  y 
-    Float_t fX; // real coord. x
-    Float_t fY; // real ccord. y
+    Int_t fIx;  // ! pad coord.  x 
+    Int_t fIy;  // ! pad coord.  y 
+    Float_t fX; // ! real coord. x
+    Float_t fY; // ! real ccord. y
     //
     // Current pad and wire during tracking (cursor at hit centre)
     //
     //
-    Float_t fXhit;  // x-position of hit
-    Float_t fYhit;  // y-position of hit
+    Float_t fXhit;  // ! x-position of hit
+    Float_t fYhit;  // ! y-position of hit
     // Reference point to define signal generation condition
-    Int_t fIxt;     // pad coord. x
-    Int_t fIyt;     // pad coord. y
-    Int_t fIwt;     // wire number
-    Float_t fXt;    // x
-    Float_t fYt;    // y
-    TF1*    fCorr;  // !correction function
+    Int_t fIxt;     // ! pad coord. x
+    Int_t fIyt;     // ! pad coord. y
+    Int_t fIwt;     // ! wire number
+    Float_t fXt;    // ! x
+    Float_t fYt;    // ! y
+    TF1*    fCorr;  // ! correction function
     //
     AliMUONChamber* fChamber; // ! Reference to mother chamber
     Int_t fId;                // Identifier

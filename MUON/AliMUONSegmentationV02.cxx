@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2000/12/21 22:12:41  morsch
+Clean-up of coding rule violations,
+
 Revision 1.6  2000/10/18 08:41:32  morsch
 Make NextPad() and MorePads() to iterate until the end.
 
@@ -51,6 +54,13 @@ AliMUONSegmentationV02 code  from  AliMUONSegResV02.cxx
 
 //___________________________________________
 ClassImp(AliMUONSegmentationV02)
+
+    
+AliMUONSegmentationV02::AliMUONSegmentationV02(Int_t nsec): 
+    AliMUONSegmentationV01(nsec) 
+{
+// Non default constructor
+}
 
 void AliMUONSegmentationV02::SetPadSize(Float_t p1, Float_t p2)
 {

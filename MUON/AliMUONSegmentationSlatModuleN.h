@@ -16,6 +16,7 @@ class  AliMUONSegmentationSlatModuleN :
 public AliMUONSegmentationSlatModule {
  public:
     AliMUONSegmentationSlatModuleN();
+    AliMUONSegmentationSlatModuleN(Int_t nsec);
     virtual ~AliMUONSegmentationSlatModuleN(){}
     // Transform from pad to real coordinates
     virtual void    GetPadI(Float_t x ,Float_t y ,Int_t   &ix,Int_t &iy);

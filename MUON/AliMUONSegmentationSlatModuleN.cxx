@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/12/21 22:12:41  morsch
+Clean-up of coding rule violations,
+
 Revision 1.5  2000/10/26 19:32:04  morsch
 Problem with iteration over y-pads for 2nd cathode corrected.
 
@@ -51,6 +54,12 @@ ClassImp(AliMUONSegmentationSlatModuleN)
 AliMUONSegmentationSlatModuleN::AliMUONSegmentationSlatModuleN() 
 {
 // Default constructor
+}
+
+AliMUONSegmentationSlatModuleN::AliMUONSegmentationSlatModuleN(Int_t nsec) 
+ : AliMUONSegmentationSlatModule(nsec) 
+{
+// Non default constructor
 }
 
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/12/21 22:12:41  morsch
+Clean-up of coding rule violations,
+
 Revision 1.13  2000/12/07 10:41:51  hristov
 fCorr replaced by fCorrA
 
@@ -94,13 +97,26 @@ AliMUONSegmentationV01::AliMUONSegmentationV01(const AliMUONSegmentationV01& seg
 {
 // Dummy copy constructor
 }
+
 AliMUONSegmentationV01::AliMUONSegmentationV01() 
 {
 // Default constructor
-    fNsec=4;
+    printf("\n Calling Default Constructor");
+    fRSec = 0;
+    fNDiv = 0;      
+    fDpxD = 0;   
+}
+
+AliMUONSegmentationV01::AliMUONSegmentationV01(Int_t nsec) 
+{
+//  Non default constructor
+
+    fNsec = nsec;
     fRSec = new TArrayF(fNsec);
     fNDiv = new TArrayI(fNsec);      
     fDpxD = new TArrayF(fNsec);      
+
+
     (*fRSec)[0]=(*fRSec)[1]=(*fRSec)[2]=(*fRSec)[3]=0;     
     (*fNDiv)[0]=(*fNDiv)[1]=(*fNDiv)[2]=(*fNDiv)[3]=0;     
     (*fDpxD)[0]=(*fDpxD)[1]=(*fDpxD)[2]=(*fDpxD)[3]=0;     
@@ -110,6 +126,19 @@ AliMUONSegmentationV01::AliMUONSegmentationV01()
     (*fCorrA)[2]=0;
     fOffsetY=0;
 } 
+
+AliMUONSegmentationV01::~AliMUONSegmentationV01() 
+{
+// Destructor
+    if (fRSec) delete fRSec;
+    if (fNDiv) delete fNDiv;
+    if (fDpxD) delete fDpxD;
+    if (fCorrA) {
+	fCorrA->Delete();
+	delete fCorrA;
+    }
+} 
+
 
 Float_t AliMUONSegmentationV01::Dpx(Int_t isec) const
 {
@@ -160,6 +189,8 @@ void AliMUONSegmentationV01::Init(Int_t chamber)
 //
     Int_t isec;
     printf("\n Initialise Segmentation V01\n");
+
+
     fNpy=Int_t((*fRSec)[fNsec-1]/fDpy)+1;
 
     (*fDpxD)[fNsec-1]=fDpx;

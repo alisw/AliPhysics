@@ -15,7 +15,9 @@
 class AliMUONSegmentationV02 :
 public AliMUONSegmentationV01 {
  public:
-    AliMUONSegmentationV02(){};
+    AliMUONSegmentationV02(){}
+    AliMUONSegmentationV02(Int_t nsec);
+    
     virtual ~AliMUONSegmentationV02(){}
     //
     // Pad size Dx*Dy 

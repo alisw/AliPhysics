@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/01/23 18:58:19  hristov
+Initialisation of some pointers
+
 Revision 1.9  2001/01/17 20:53:40  hristov
 Destructors corrected to avoid memory leaks
 
@@ -65,6 +68,11 @@ ClassImp(AliMUONSegmentationSlat)
 AliMUONSegmentationSlat::AliMUONSegmentationSlat() 
 {
 // Default constructor
+}
+
+AliMUONSegmentationSlat::AliMUONSegmentationSlat(Int_t nsec) 
+{
+// Non default constructor
     fSlats=0;            
     fNDiv = new TArrayI(4);
     fChamber = 0;
@@ -77,6 +85,11 @@ AliMUONSegmentationSlat::~AliMUONSegmentationSlat(){
     fSlats->Delete();
     delete fSlats;
   }
+
+  if (fNDiv) {
+    delete fNDiv;
+  }
+
 }
 
 void AliMUONSegmentationSlat::SetPadSize(Float_t p1, Float_t p2)
@@ -539,7 +552,7 @@ AliMUONSegmentationSlatModule* AliMUONSegmentationSlat::
 CreateSlatModule()
 {
     // Factory method for slat module
-    return new AliMUONSegmentationSlatModule();
+    return new AliMUONSegmentationSlatModule(4);
 }
 
 

@@ -21,9 +21,11 @@ class AliMUONSegmentationV01 :
 public AliMUONSegmentationV0 {
  public:
     AliMUONSegmentationV01();
+    AliMUONSegmentationV01(Int_t nsec);
     AliMUONSegmentationV01(const AliMUONSegmentationV01 & segmentation);
     
-    virtual ~AliMUONSegmentationV01(){}
+    virtual ~AliMUONSegmentationV01();
+    
     //    
     // Set Chamber Segmentation Parameters
     // 
@@ -102,21 +104,21 @@ public AliMUONSegmentationV0 {
     TArrayF*    fDpxD;           // y pad width per sector
     Float_t     fOffsetY;        // Staggering offset in y
     // Segmentation map
-    Int_t      fNpxS[10][1000]; // Number of pads per sector in x
-    Float_t    fCx[10][1000];   // pad-sector contour x vs y  
+    Int_t      fNpxS[10][1000];  //  Number of pads per sector in x
+    Float_t    fCx[10][1000];    //  pad-sector contour x vs y  
     // Chamber region consideres during disintegration
     // (lower left and upper right corner)
     //
-    Float_t fXmin; // lower left  x
-    Float_t fXmax; // lower left  y
-    Float_t fYmin; // upper right x
-    Float_t fYmax; // upper right y 
+    Float_t fXmin; // ! lower left  x
+    Float_t fXmax; // ! lower left  y
+    Float_t fYmin; // ! upper right x
+    Float_t fYmax; // ! upper right y 
 
     //
     // Current pad during integration (cursor for disintegration)
-    Int_t   fSector;   // Current sector
+    Int_t   fSector;   // ! Current sector
     //
-    TObjArray *fCorrA; // Array of correction functions
+    TObjArray *fCorrA; // ! Array of correction functions
 };
 #endif
 

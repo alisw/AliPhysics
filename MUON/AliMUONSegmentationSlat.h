@@ -22,6 +22,7 @@ class AliMUONSegmentationSlat :
 public AliSegmentation {
  public:
     AliMUONSegmentationSlat();
+    AliMUONSegmentationSlat(Int_t nsec);    
     virtual ~AliMUONSegmentationSlat();
     //    
     // Set Chamber Segmentation Parameters

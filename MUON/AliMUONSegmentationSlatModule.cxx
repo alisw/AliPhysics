@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/01/17 20:53:40  hristov
+Destructors corrected to avoid memory leaks
+
 Revision 1.7  2000/12/21 22:12:41  morsch
 Clean-up of coding rule violations,
 
@@ -60,11 +63,23 @@ ClassImp(AliMUONSegmentationSlatModule)
 AliMUONSegmentationSlatModule::AliMUONSegmentationSlatModule() 
 {
 // Default constructor
-    fNsec=4;
+}
+
+AliMUONSegmentationSlatModule::AliMUONSegmentationSlatModule(Int_t nsec) 
+{
+// Non default constructor
+    fNsec = nsec;
     fNDiv = new TArrayI(fNsec);      
     fDpxD = new TArrayF(fNsec);      
     (*fNDiv)[0]=(*fNDiv)[1]=(*fNDiv)[2]=(*fNDiv)[3]=0;     
     (*fDpxD)[0]=(*fDpxD)[1]=(*fDpxD)[2]=(*fDpxD)[3]=0;     
+}
+
+AliMUONSegmentationSlatModule::~AliMUONSegmentationSlatModule() 
+{
+// Destructor
+    if (fNDiv) delete fNDiv;
+    if (fDpxD) delete fDpxD;
 }
 
 void AliMUONSegmentationSlatModule::SetPcbBoards(Int_t n[4])

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/22 16:55:43  morsch
+Use only x-symmetry in global to local transformations and delegation.
+
 Revision 1.2  2000/10/09 14:06:18  morsch
 Some type cast problems of type  (TMath::Sign((Float_t)1.,x)) corrected (P.H.)
 
@@ -34,11 +37,16 @@ Segmentation class for chambers built out of slats.
 //___________________________________________
 ClassImp(AliMUONSegmentationSlatN);
 
-
-
 AliMUONSegmentationSlatN::AliMUONSegmentationSlatN()
 {
 // Default constructor
+}
+
+
+AliMUONSegmentationSlatN::AliMUONSegmentationSlatN(Int_t nsec)
+    : AliMUONSegmentationSlat(nsec)
+{
+// Non default constructor
 }
 
 
@@ -137,7 +145,7 @@ AliMUONSegmentationSlatModule* AliMUONSegmentationSlatN::
 CreateSlatModule()
 {
     // Factory method for slat module
-    return new AliMUONSegmentationSlatModuleN();
+    return new AliMUONSegmentationSlatModuleN(4);
 }
 
 
