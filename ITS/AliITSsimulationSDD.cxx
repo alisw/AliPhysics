@@ -371,7 +371,7 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
       Float_t xL1[3];
       if(fFlag && (depEnergy != 0.)) continue;
       if(depEnergy == 0.) {	
-	  ii++;
+	  if(ii<nhits-1) ii++;
 	  hit1 = (AliITShit*) fHits->At(ii);
 	  hit1->GetPositionL(xL1[0],xL1[1],xL1[2]);
       } else {
