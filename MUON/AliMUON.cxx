@@ -820,17 +820,18 @@ void AliMUON::Reconstruct() const
 
     //---------------------------- Track & TriggerTrack ---------------------
     if (!fLoader->TreeT()) fLoader->MakeTracksContainer();
-    // tracking branch
-    dataEvent->MakeBranch("RT"); //track
-    dataEvent->SetTreeAddress("RT");
-    recoEvent->EventReconstruct();
-    dataEvent->Fill("RT");
 
     // trigger branch
     dataEvent->MakeBranch("RL"); //trigger track
     dataEvent->SetTreeAddress("RL");
     recoEvent->EventReconstructTrigger();
     dataEvent->Fill("RL");
+
+    // tracking branch
+    dataEvent->MakeBranch("RT"); //track
+    dataEvent->SetTreeAddress("RT");
+    recoEvent->EventReconstruct();
+    dataEvent->Fill("RT");
 
     fLoader->WriteTracks("OVERWRITE");  
   

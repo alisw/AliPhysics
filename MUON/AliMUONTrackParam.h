@@ -14,11 +14,15 @@
 class AliMUONTrackParam : public TObject {
  public:
   AliMUONTrackParam(){
+    fInverseBendingMomentum = 0;
+    fBendingSlope = 0;
+    fNonBendingSlope = 0;
+    fZ = 0;
+    fBendingCoor = 0;
+    fNonBendingCoor = 0;
     // Constructor
-    ;} // Constructor
-  virtual ~AliMUONTrackParam(){
-    // Destructor
-    ;} // Destructor
+  } // Constructor
+  virtual ~AliMUONTrackParam(){} // Destructor
   
   AliMUONTrackParam(const AliMUONTrackParam& );// copy constructor (should be added per default !)
   AliMUONTrackParam& operator=(const  AliMUONTrackParam& );// (should be added per default !)

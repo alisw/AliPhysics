@@ -184,7 +184,7 @@ class AliMUONEventReconstructor : public TObject {
   void ResetSegments(void);
   void MakeSegmentsPerStation(Int_t Station);
   void MakeTracks(void);
-  void MakeTriggerTracks(void);
+  Bool_t MakeTriggerTracks(void);
   void ResetTrackHits(void);
   void ResetTracks(void);
   void ResetTriggerTracks(void);
@@ -193,7 +193,8 @@ class AliMUONEventReconstructor : public TObject {
   void MakeTrackCandidates(void);
   void FollowTracks(void);
   void RemoveDoubleTracks(void);
-
+  void UpdateTrackParamAtHit(void);
+  void ValidateTracksWithTrigger(void);
 
 
   //AZ - for Kalman Filter

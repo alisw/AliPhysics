@@ -371,6 +371,15 @@ void AliMUONEventReconstructor::EventReconstruct(void)
   MakeEventToBeReconstructed();
   MakeSegments();
   MakeTracks();
+  if (fMUONData->IsTriggerTrackBranchesInTree()) 
+    ValidateTracksWithTrigger(); 
+
+  // Add tracks to MUON data container 
+  for(Int_t i=0; i<GetNRecTracks(); i++) {
+    AliMUONTrack * track = (AliMUONTrack*) GetRecTracksPtr()->At(i);
+    fMUONData->AddRecTrack(*track);
+  }
+
   return;
 }
 
@@ -966,24 +975,33 @@ void AliMUONEventReconstructor::MakeTracks(void)
     RemoveDoubleTracksK();
     // Propagate tracks to the vertex thru absorber
     GoToVertex();
-  } else { //AZ
+  } else { 
     // Look for candidates from at least 3 aligned points in stations(1..) 4 and 5
     MakeTrackCandidates();
     // Follow tracks in stations(1..) 3, 2 and 1
     FollowTracks();
     // Remove double tracks
     RemoveDoubleTracks();
-  }
-  //  AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
-  for(Int_t i=0; i<GetNRecTracks(); i++) {
-    AliMUONTrack * track = (AliMUONTrack*) GetRecTracksPtr()->At(i);
-     fMUONData->AddRecTrack(*track);
+    UpdateTrackParamAtHit();
   }
   return;
 }
 
   //__________________________________________________________________________
-void AliMUONEventReconstructor::MakeTriggerTracks(void)
+void AliMUONEventReconstructor::ValidateTracksWithTrigger(void)
+{
+  AliMUONTrack *track;
+  TClonesArray *recTriggerTracks = fMUONData->RecTriggerTracks();
+  
+  track = (AliMUONTrack*) fRecTracksPtr->First();
+  while (track) {
+    track->MatchTriggerTrack(recTriggerTracks);
+    track = (AliMUONTrack*) fRecTracksPtr->After(track);
+  } 
+}
+
+  //__________________________________________________________________________
+Bool_t AliMUONEventReconstructor::MakeTriggerTracks(void)
 {
     // To make the trigger tracks from Local Trigger
     if (fPrintLevel >= 1) cout << "enter MakeTriggerTracks" << endl;
@@ -997,38 +1015,22 @@ void AliMUONEventReconstructor::MakeTriggerTracks(void)
     AliMUONGlobalTrigger *gloTrg;
     AliMUONTriggerCircuit *circuit;
     AliMUONTriggerTrack *recTriggerTrack = 0;
-//     TString evfoldname = AliConfig::fgkDefaultEventFolderName;//to be interfaced properly
-//     AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
-//     if (rl == 0x0)
-//     {
-// 	Error("MakeTriggerTracks",
-// 	      "Can not find Run Loader in Event Folder named %s.",
-// 	      evfoldname.Data());
-// 	return;
-//     }
-//     AliLoader* gime = rl->GetLoader("MUONLoader");
-//     if (gime == 0x0)
-//     {
-// 	Error("MakeTriggerTracks","Can not get MUON Loader from Run Loader.");
-// 	return;
-//     }
+
     TTree* TR = fLoader->TreeR();
-    
-    // Loading AliRun master
-//     rl->LoadgAlice();
-//     gAlice = rl->GetAliRun();
     
     // Loading MUON subsystem
     AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
     
     nTRentries = Int_t(TR->GetEntries());
-    if (nTRentries != 1) {
-      cout << "Error in AliMUONEventReconstructor::MakeTriggerTracks"
+     
+    TR->GetEvent(0); // only one entry  
+
+    if (!(fMUONData->IsTriggerBranchesInTree())) {
+      cout << "Warning in AliMUONEventReconstructor::MakeTriggerTracks"
 	   << endl;
-      cout << "nTRentries = " << nTRentries << " not equal to 1" << endl;
-      exit(0);
+      cout << "Trigger information is not avalaible, nTRentries = " << nTRentries << " not equal to 1" << endl;
+      return kFALSE;
     }
-    fLoader->TreeR()->GetEvent(0); // only one entry  
 
     fMUONData->SetTreeAddress("GLT");
     fMUONData->GetTrigger();
@@ -1081,7 +1083,7 @@ void AliMUONEventReconstructor::MakeTriggerTracks(void)
       // 	fNRecTriggerTracks++;
       fMUONData->AddRecTriggerTrack(*recTriggerTrack);
     } // end of loop on Local Trigger
-    return;    
+    return kTRUE;    
 }
 
   //__________________________________________________________________________
@@ -1543,6 +1545,26 @@ void AliMUONEventReconstructor::RemoveDoubleTracks(void)
       track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
     } // track1
   }
+  return;
+}
+
+  //__________________________________________________________________________
+void AliMUONEventReconstructor::UpdateTrackParamAtHit()
+{
+  // Set track parameters after track fitting. Fill fTrackParamAtHit of AliMUONTrack's
+  AliMUONTrack *track;
+  AliMUONTrackHit *trackHit;
+  AliMUONTrackParam *trackParam;
+  track = (AliMUONTrack*) fRecTracksPtr->First();
+  while (track) {
+    trackHit = (AliMUONTrackHit*) (track->GetTrackHitsPtr())->First();
+    while (trackHit) {
+      trackParam = trackHit->GetTrackParam();
+      track->AddTrackParamAtHit(trackParam);
+      trackHit = (AliMUONTrackHit*) (track->GetTrackHitsPtr())->After(trackHit); 
+    } // trackHit    
+    track = (AliMUONTrack*) fRecTracksPtr->After(track);
+  } // track
   return;
 }
 

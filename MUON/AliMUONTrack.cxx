@@ -39,6 +39,8 @@
 #include "AliMUONSegment.h" 
 #include "AliMUONTrack.h"
 #include "AliMUONTrackHit.h"
+#include "AliMUONTriggerTrack.h"
+#include "AliMUONConstants.h"
 
 // Functions to be minimized with Minuit
 void TrackChi2(Int_t &NParam, Double_t *Gradient, Double_t &Chi2, Double_t *Param, Int_t Flag);
@@ -53,6 +55,16 @@ ClassImp(AliMUONTrack) // Class implementation in ROOT context
 TVirtualFitter* AliMUONTrack::fgFitter = NULL; 
 
   //__________________________________________________________________________
+AliMUONTrack::AliMUONTrack() 
+{
+  // Default constructor
+  fgFitter = 0;
+  fEventReconstructor = 0;
+  fTrackHitsPtr = 0;
+  fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);  
+}
+
+  //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegment, AliMUONEventReconstructor* EventReconstructor)
 {
   // Constructor from two Segment's
@@ -64,11 +76,14 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegmen
   AddSegment(EndSegment); // add hits from EndSegment
   fTrackHitsPtr->Sort(); // sort TrackHits according to increasing Z
   SetTrackParamAtVertex(); // set track parameters at vertex
+  fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);
   // set fit conditions...
   fFitMCS = 0;
   fFitNParam = 3;
   fFitStart = 1;
   fFitFMin = -1.0;
+  fMatchTrigger = kFALSE;
+  fChi2MatchTrigger = 0;
   return;
 }
 
@@ -84,11 +99,14 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec,
   AddHitForRec(HitForRec); // add HitForRec
   fTrackHitsPtr->Sort(); // sort TrackHits according to increasing Z
   SetTrackParamAtVertex(); // set track parameters at vertex
+  fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);
   // set fit conditions...
   fFitMCS = 0;
   fFitNParam = 3;
   fFitStart = 1;
   fFitFMin = -1.0;
+  fMatchTrigger = kFALSE;
+  fChi2MatchTrigger = 0;
   return;
 }
 
@@ -100,19 +118,28 @@ AliMUONTrack::~AliMUONTrack()
     delete fTrackHitsPtr; // delete the TObjArray of pointers to TrackHit's
     fTrackHitsPtr = NULL;
   }
+  
+  if (fTrackParamAtHit) {
+    // delete the TClonesArray of pointers to TrackParam
+    delete fTrackParamAtHit;
+    fTrackParamAtHit = NULL;
+  }
 }
 
   //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack (const AliMUONTrack& MUONTrack):TObject(MUONTrack)
 {
-  fEventReconstructor = new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor);
+  fEventReconstructor = new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor); // is it right ?
   fTrackParamAtVertex = MUONTrack.fTrackParamAtVertex;
-  fTrackHitsPtr =  new TObjArray(*MUONTrack.fTrackHitsPtr);
-  fNTrackHits =  MUONTrack.fNTrackHits;
-  fFitMCS     =  MUONTrack.fFitMCS;
-  fFitNParam  =  MUONTrack.fFitNParam;
-  fFitFMin    =  MUONTrack.fFitFMin;
-  fFitStart   =  MUONTrack.fFitStart;
+  fTrackHitsPtr     =  new TObjArray(*MUONTrack.fTrackHitsPtr);  // is it right ?
+  fTrackParamAtHit  =  new TClonesArray(*MUONTrack.fTrackParamAtHit);
+  fNTrackHits       =  MUONTrack.fNTrackHits;
+  fFitMCS           =  MUONTrack.fFitMCS;
+  fFitNParam        =  MUONTrack.fFitNParam;
+  fFitFMin          =  MUONTrack.fFitFMin;
+  fFitStart         =  MUONTrack.fFitStart;
+  fMatchTrigger     =  MUONTrack.fMatchTrigger;
+  fChi2MatchTrigger =  MUONTrack.fChi2MatchTrigger;
 }
 
   //__________________________________________________________________________
@@ -121,14 +148,17 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& MUONTrack)
   if (this == &MUONTrack)
     return *this;
 
-  fEventReconstructor = new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor);
-  fTrackParamAtVertex = MUONTrack.fTrackParamAtVertex;
-  fTrackHitsPtr =  new TObjArray(*MUONTrack.fTrackHitsPtr);
-  fNTrackHits =  MUONTrack.fNTrackHits;
-  fFitMCS     =  MUONTrack.fFitMCS;
-  fFitNParam  =  MUONTrack.fFitNParam;
-  fFitFMin    =  MUONTrack.fFitFMin;
-  fFitStart   =  MUONTrack.fFitStart;
+  fEventReconstructor =  new AliMUONEventReconstructor(*MUONTrack.fEventReconstructor); // is it right ?
+  fTrackParamAtVertex =  MUONTrack.fTrackParamAtVertex;
+  fTrackHitsPtr       =  new TObjArray(*MUONTrack.fTrackHitsPtr); // is it right ?
+  fTrackParamAtHit    =  new TClonesArray(*MUONTrack.fTrackParamAtHit);
+  fNTrackHits         =  MUONTrack.fNTrackHits;
+  fFitMCS             =  MUONTrack.fFitMCS;
+  fFitNParam          =  MUONTrack.fFitNParam;
+  fFitFMin            =  MUONTrack.fFitFMin;
+  fFitStart           =  MUONTrack.fFitStart;
+  fMatchTrigger       =  MUONTrack.fMatchTrigger;
+  fChi2MatchTrigger   =  MUONTrack.fChi2MatchTrigger;
   return *this;
 }
 
@@ -260,6 +290,47 @@ Int_t AliMUONTrack::HitsInCommon(AliMUONTrack* Track)
   return hitsInCommon;
 }
 
+  //__________________________________________________________________________
+void AliMUONTrack::MatchTriggerTrack(TClonesArray *triggerTrackArray)
+{
+  // Match this track with one trigger track if possible
+  AliMUONTrackParam *trackParam; 
+  AliMUONTriggerTrack *triggerTrack;
+  Double_t xTrack, yTrack, ySlopeTrack, dTrigTrackMin2, dTrigTrack2;
+  Double_t nSigmaCut2;
+
+  Double_t distSigma[3]={1,1,0.02}; // sigma of distributions (trigger-track) X,Y,slopeY
+  Double_t distTriggerTrack[3] = {0,0,0};
+
+  fMatchTrigger = kFALSE;
+  fChi2MatchTrigger = 0;
+
+  trackParam = (AliMUONTrackParam*) fTrackParamAtHit->Last(); 
+  trackParam->ExtrapToZ(AliMUONConstants::DefaultChamberZ(10)); // extrap to 1st trigger chamber
+
+  nSigmaCut2 =  fEventReconstructor->GetMaxSigma2Distance(); // nb of sigma**2 for cut
+  xTrack = trackParam->GetNonBendingCoor();
+  yTrack = trackParam->GetBendingCoor();
+  ySlopeTrack = trackParam->GetBendingSlope();
+  dTrigTrackMin2 = 999;
+  
+  triggerTrack = (AliMUONTriggerTrack*) triggerTrackArray->First();
+  while(triggerTrack){
+    distTriggerTrack[0] = (triggerTrack->GetX11()-xTrack)/distSigma[0];
+    distTriggerTrack[1] = (triggerTrack->GetY11()-yTrack)/distSigma[1];
+    distTriggerTrack[2] = (TMath::Tan(triggerTrack->GetThetay())-ySlopeTrack)/distSigma[2];
+    dTrigTrack2 = 0;
+    for (Int_t iVar = 0; iVar < 3; iVar++)
+      dTrigTrack2 += distTriggerTrack[iVar]*distTriggerTrack[iVar];
+    if (dTrigTrack2 < dTrigTrackMin2 && dTrigTrack2 < nSigmaCut2) {
+      dTrigTrackMin2 = dTrigTrack2;
+      fMatchTrigger = kTRUE;
+      fChi2MatchTrigger =  dTrigTrack2/3.; // Normalized Chi2, 3 variables (X,Y,slopeY)
+    }
+    triggerTrack = (AliMUONTriggerTrack*) triggerTrackArray->After(triggerTrack);
+  }
+
+}
   //__________________________________________________________________________
 void AliMUONTrack::Fit()
 {
