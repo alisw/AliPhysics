@@ -54,7 +54,7 @@
 //            where path is a char* 
 //            either providing the rootfile containing the geometry or 
 //            the path to the rootfile which  should then be called alirunfile.root. 
-//            Note that for both cases you have to
+//            Note that for both of these cases you have to
 //            compile with USEPACKAGE=ALIROOT set (see level3code/Makefile.conf).
 //</pre>
 */
@@ -522,7 +522,7 @@ Bool_t AliL3Transform::ReadInit(Char_t *path)
   Char_t filename[1024];
   //first test whether provided path is the rootfile itself
   TFile *rootfile = TFile::Open(path);
-  if(!rootfile) //ok assume its path to file
+  if(rootfile->IsZombie()) //ok assume its path to file
     {
       sprintf(filename,"%s/alirunfile.root",path); //create rootfile name
     } else {
@@ -534,10 +534,9 @@ Bool_t AliL3Transform::ReadInit(Char_t *path)
     { 
       Bool_t ret=Init("/tmp/");
       //Move the temp file to /tmp/l3transform.config-"time in seconds"
-      TUnixSystem sys;
       TTimeStamp time;
       sprintf(filename,"/tmp/l3transform.config-%ld",(long)time.GetSec()); 
-      sys.Rename("/tmp/l3transform.config",filename);
+      gSystem->Rename("/tmp/l3transform.config",filename);
       return ret;
     }
 
