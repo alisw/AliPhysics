@@ -21,8 +21,8 @@ class AliITSRawStreamSPD: public AliITSRawStream {
 
     virtual Bool_t   Next();
 
-    Int_t            GetRow() const {return fCoord1;};
-    Int_t            GetColumn() const {return fCoord2;};
+    Int_t            GetRow() const {return fCoord2;};
+    Int_t            GetColumn() const {return fCoord1;};
 
     enum {kDDLOffset = 0x100};    // offset for DDL numbers
     enum {kDDLsNumber = 20};      // number of DDLs in SPD
