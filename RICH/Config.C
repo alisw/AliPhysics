@@ -1,7 +1,7 @@
 enum gentype_t {hijing, gun, box, pythia, param, cocktail, fluka, halo, ntuple, scan, doublescan};
 
 gentype_t gentype=box;
-ntracks=40;
+ntracks=100;
 
 void Config()
 {
@@ -69,8 +69,8 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //*********************************************
      AliGenBox *gener = new AliGenBox(ntracks);
      gener->SetMomentumRange(3,3);
-     gener->SetPhiRange(65,125);
-     gener->SetThetaRange(65,125);
+     gener->SetPhiRange(65,115);
+     gener->SetThetaRange(65,115);
      gener->SetOrigin(0,0,0);   
      gener->SetVertexSmear(perTrack); 
      //vertex position
@@ -82,26 +82,26 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 // Scanning on a grid                         *
 //*********************************************
      AliGenScan *gener = new AliGenScan(-1);
-     gener->SetMomentumRange(20,20);
+     gener->SetMomentumRange(3,3);
      gener->SetPhiRange(90,90);
-     gener->SetThetaRange(0,0);
+     gener->SetThetaRange(90,90);
      //vertex position
-     gener->SetSigma(3,3,0);           //Sigma in (X,Y,Z) (cm) on IP position
-     gener->SetPart(8); 
-     gener->SetRange(20, -100, 100, 20, -100, 100, 1, 500, 500);
+     gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
+     gener->SetPart(kPiPlus); 
+     gener->SetRange(4, -60, 60, 1, 480, 480, 4, -60, 60);
      break;
  case doublescan:  
 //*********************************************
 // Scanning on a grid                         *
 //*********************************************
      AliGenDoubleScan *gener = new AliGenDoubleScan(-1);
-     gener->SetMomentumRange(4,4);
+     gener->SetMomentumRange(3,3);
      gener->SetPhiRange(0,360);
      gener->SetThetaRange(0,0);
      //vertex position
-     gener->SetSigma(3,3,0);           //Sigma in (X,Y,Z) (cm) on IP position
-     gener->SetPart(8); 
-     gener->SetRange(20, -100, 100, 20, -100, 100, 1, 500, 500);
+     gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
+     gener->SetPart(kPiPlus); 
+     gener->SetRange(20, -60, 60, 1, 480, 480, 20, -60, 60);
      gener->SetDistance(1);
      
      break;
@@ -234,7 +234,7 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
 //
 gener->SetVertexSmear(perTrack); 
 gener->Init();
-gAlice->SetField(0,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
+gAlice->SetField(-999,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
 Int_t iMAG=0;
 Int_t iITS=0;
@@ -254,6 +254,7 @@ Int_t iFMD=0;
 Int_t iMUON=0;
 Int_t iPHOS=0;
 Int_t iPMD=0;
+Int_t iSTART=0; 
 
 //=================== Alice BODY parameters =============================
 AliBODY *BODY = new AliBODY("BODY","Alice envelop");
@@ -266,10 +267,45 @@ if(iMAG) {
 AliMAG *MAG  = new AliMAG("MAG","Magnet");
 }
 
+
+if(iABSO) {
+//=================== ABSO parameters ============================
+AliABSO *ABSO  = new AliABSOv0("ABSO","Muon Absorber");
+}
+
+if(iDIPO) {
+//=================== DIPO parameters ============================
+
+AliDIPO *DIPO  = new AliDIPOv2("DIPO","Dipole version 2");
+}
+
+if(iHALL) {
+//=================== HALL parameters ============================
+
+AliHALL *HALL  = new AliHALL("HALL","Alice Hall");
+}
+
+
 if(iFRAME) {
 //=================== FRAME parameters ============================
+
 AliFRAME *FRAME  = new AliFRAMEv1("FRAME","Space Frame");
+
 }
+
+if(iSHIL) {
+//=================== SHIL parameters ============================
+
+AliSHIL *SHIL  = new AliSHILv0("SHIL","Shielding");
+}
+
+
+if(iPIPE) {
+//=================== PIPE parameters ============================
+
+AliPIPE *PIPE  = new AliPIPEv0("PIPE","Beam Pipe");
+}
+
 
 if(iITS) {
 //=================== ITS parameters ============================
@@ -280,8 +316,9 @@ if(iITS) {
 // dont want to use this facility.
 //
 AliITS *ITS  = new AliITSvn("ITS","normal ITS");
-ITS->SetEUCLID(1);
+ITS->SetEUCLID(0);
 }
+
 
 if(iTPC) {
 //============================ TPC parameters ================================
@@ -300,40 +337,21 @@ if(iTPC) {
 //
 //-----------------------------------------------------------------------------
 
-AliTPC *TPC  = new AliTPCvn("TPC","Normal TPC");
-AliTPCD *paramd = TPC->GetDigParam();
-AliTPCParam *param = &(paramd->GetParam());
-
-// Set geometrical parameters
-
-param->SetSectorAngles(20.,0.,20.,0.);
-param->SetInnerRadiusLow(83.9);
-param->SetInnerRadiusUp(141.3);
-param->SetOuterRadiusLow(146.9);
-param->SetOuterRadiusUp(249.4);
-param->SetInSecLowEdge(81.6);
-param->SetInSecUpEdge(143.6);
-param->SetOuSecLowEdge(144.2);
-param->SetOuSecUpEdge(252.1);
-param->SetEdge(1.5);
-param->SetDeadZone(1.15);
-param->SetPadLength(2.0);
-param->SetPadWidth(0.3);
-param->SetPadPitchLength(2.05);
-param->SetPadPitchWidth(0.35);
-param->Update();
-
-if (TPC->IsVersion() != 2) paramd->Write("Param1");
+  gROOT->LoadMacro("SetTPCParam.C");
+  AliTPCParam *param = SetTPCParam();
+  AliTPC *TPC  = new AliTPCvn("TPC","Normal TPC"); //v1 is default
+  TPC->SetParam(param); // pass the parameter object to the TPC
 
 // set gas mixture
 
 TPC->SetGasMixt(2,20,10,-1,0.9,0.1,0.);
-TPC->SetSecAL(1);
-TPC->SetSecAU(1);
-// Meaningless with versions other than 2
-TPC->SetSecLows(1, 2, 3, 1+18, 2+18, 3+18);
-TPC->SetSecUps(1+36, 2+36, 3+36, 1+38+18, 2+38+18, 3+38+18, -1,-1,-1,-1,-1,-1);
+TPC->SetSecAL(4);
+TPC->SetSecAU(4);
+TPC->SetSecLows(1,  2,  3, 19, 20, 21);
+TPC->SetSecUps(37, 38, 39, 37+18, 38+18, 39+18, -1, -1, -1, -1, -1, -1);
 TPC->SetSens(1);
+
+if (TPC->IsVersion()==1) param->Write(param->GetTitle());
 }
 
 if(iTOF) {
@@ -349,11 +367,14 @@ if(iRICH) {
 // Version 0
 // Default Segmentation
     AliRICHSegmentationV0* SegmentationV0 = new AliRICHSegmentationV0;
+//
+//  Segmentation parameters
     SegmentationV0->SetPadSize(0.84,0.80);
     SegmentationV0->SetDAnod(0.84/2);
-
+//
+//  Geometry parameters
     AliRICHGeometry* GeometryV0 = new AliRICHGeometryV0;
-    GeometryV0->SetGapThickness(7.6);
+    GeometryV0->SetGapThickness(8);
     GeometryV0->SetProximityGapThickness(.4);
     GeometryV0->SetQuartzLength(131);
     GeometryV0->SetQuartzWidth(126.2);
@@ -363,14 +384,13 @@ if(iRICH) {
     GeometryV0->SetInnerFreonLength(131);
     GeometryV0->SetInnerFreonWidth(40.3);
     GeometryV0->SetFreonThickness(1);
-    
-// Default Response (new electronics,old electronics Slope=.41, Max=1024, Alpha=0.05 )
+//
+//  Response parameters
     AliRICHResponseV0*  Rresponse0   = new AliRICHResponseV0;
     Rresponse0->SetSigmaIntegration(5.);
-    Rresponse0->SetChargeSlope(41.);
+    Rresponse0->SetChargeSlope(20.);
     Rresponse0->SetChargeSpread(0.18, 0.18);
     Rresponse0->SetMaxAdc(1024);
-//    Rresponse0->SetAlphaFeedback(0.05);
     Rresponse0->SetAlphaFeedback(0.05);
     Rresponse0->SetEIonisation(26.e-9);
     Rresponse0->SetSqrtKx3(0.77459667);
@@ -380,8 +400,8 @@ if(iRICH) {
     Rresponse0->SetKy2(0.962);
     Rresponse0->SetKy4(0.379);
     Rresponse0->SetPitch(0.25);
-    
-   
+//
+//      
   for (Int_t i=0; i<7; i++) {
     RICH->SetGeometryModel(i,GeometryV0);
     RICH->SetSegmentationModel(i, SegmentationV0);
@@ -389,6 +409,7 @@ if(iRICH) {
     RICH->SetNsec(i,1);
   }
 }
+
 
 if(iZDC) {
 //=================== ZDC parameters ============================
@@ -405,41 +426,10 @@ AliCASTOR *CASTOR  = new AliCASTORv1("CASTOR","normal CASTOR");
 if(iTRD) {
 //=================== TRD parameters ============================
 
-AliTRD *TRD  = new AliTRDvn("TRD","TRD version 2");
+AliTRD *TRD  = new AliTRDvn("TRD","TRD version 0");
+// Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
+TRD->SetGasMix(0);
 }
-
-
-if(iABSO) {
-//=================== ABSO parameters ============================
-AliABSO *ABSO  = new AliABSO("ABSO","Muon Absorber");
-}
-
-if(iDIPO) {
-//=================== DIPO parameters ============================
-
-AliDIPO *DIPO  = new AliDIPOv2("DIPO","Dipole version 2");
-}
-
-if(iHALL) {
-//=================== HALL parameters ============================
-
-AliHALL *HALL  = new AliHALL("HALL","Alice Hall");
-}
-
-
-if(iSHIL) {
-//=================== SHIL parameters ============================
-
-AliSHILv1 *SHIL  = new AliSHILv1("SHIL","Shielding");
-}
-
-
-if(iPIPE) {
-//=================== PIPE parameters ============================
-
-AliPIPE *PIPE  = new AliPIPEv0("PIPE","Beam Pipe");
-}
-
 
 if(iFMD) {
 //=================== FMD parameters ============================
@@ -767,82 +757,28 @@ AliMUON *MUON  = new AliMUONv0("MUON","normal MUON");
  MUON->SetPADSIZ(station, 1, 0.75, 0.5);
 }
  
-
-if(iPHOS) {
 //=================== PHOS parameters ===========================
 
-AliPHOS *PHOS  = new AliPHOSv1("PHOS","normal PHOS");
-// * PHOSflags:    YES: X<>0   NO: X=0
-// * PHOSflags(1) : -----X  Create branch for TObjArray of AliPHOSCradle
-// *                ----X-  Create file (ftn03 on HP-UX) with list of SHAKER particles (7Mb/event)
-// *                
-PHOS->SetFlags(000001);
-PHOS->SetRadius(460); //Distance from beam to PHOS crystals.
-// (crystal_side_size,crystal_length,wrap_thikness,air_thikness,PIN_size,PIN length)
-PHOS->SetCell(2.2,          18.,         0.01,        0.01,        1.,      0.1);
-PHOS->SetCradleSize(104, 88, 4); // Nz (along beam), Nphi, Ncradles
-PHOS->SetCradleA(0);   //Angle between Cradles
-PHOS->SetCPV(1., 2.); //CPV thikness, CPV-PHOS distance
-// *  ===============
-// * PHOS extra parameters (contact Maxim Volkov volkov@mail.cern.ch)
-// * 1. STE_THICK         Steel cover thickness
-// * 2. SUP_Y             Crystal support height
-// * 3. FTIU_THICK        Thermo Insulating outer cover Upper plate thickness
-// * 4. UFP_Y             Upper Polystyrene Foam plate thickness
-// * 5. TCB_THICK         Thermo insulating Crystal Block wall thickness
-// * 6. UCP_Y             Upper Cooling Plate thickness
-// * 7. ASP_Y             Al Support Plate thickness
-// * 8. TIP_Y             Lower Thermo Insulating Plate thickness
-// * 9. TXP_Y             Lower Textolit Plate thickness
-PHOS->SetExtra(0.001, 6.95, 4., 5., 2., 0.06, 10., 3., 1.);   
-PHOS->SetTextolitWall(209., 71., 250.);    //Textolit Wall box dimentions
-PHOS->SetInnerAir(206.,    66.,     244.); //Inner AIR volume dimensions
-// *  ===============================
-// * 1. FTI_X             Foam Thermo Insulating outer cover dimensions
-// * 2. FTI_Y             ==//==
-// * 3. FTI_Z             ==//==
-// * 4. FTI_R             Distance from IP to Foam Thermo Insulating top plate
-PHOS->SetFoam(214.6,  80.,  260., 467.); 
-//    =================================
-// *******************************************************************************
-// * KINE 700  - SHAKER generator
-// * KINE 700 x y z NDNDY YLIM PTLIM ChargeFlag
-// *     JWEAK=0
-// *     JPI0=JETA=1
-// *     JPIC=JPRO=JKAC=JKA0=JRHO=JOME=JPHI=JPSI=JDRY=ChargeFlag
-// *     Int_t               JWEI;           // Unweighted generation
-// *     Int_t               NDNDY;          // Density of charged particles
-// *     Float_t             YLIM;           // Rapidity Limit
-// *     Float_t             PTLIM;          // Pt limit in GeV/c
-// *     Int_t               JWEAK;          // Disable weak decays
-// *     Int_t               JPI0;           // pi0 generation
-// *     Int_t               JETA;           // eta generation
-// *     Int_t               JPIC;           // pi+/- generation
-// *     Int_t               JPRO;           // proton generation
-// *     Int_t               JKAC;           // K+/- generation
-// *     Int_t               JKA0;           // K0 generation
-// *     Int_t               JRHO;           // rho generation
-// *     Int_t               JOME;           // omega generation
-// *     Int_t               JPHI;           // phi generation
-// *     Int_t               JPSI;           // J/psi generation
-// *     Int_t               JDRY;           // Drell-Yan generation
-// * KINE  700     5.    175.    0.          800. 1.5 5. 1.
-// *******************************************************************************
+if(iPHOS) {
+  AliPHOS *PHOS  = new AliPHOSv0("PHOS","GPS2");
 }
+
 
 if(iPMD) {
 //=================== PMD parameters ============================
 
-//         Must be defined AFTER PHOS
-AliPMD *PMD  = new AliPMDv1("PMD","normal PMD");
+AliPMD *PMD  = new AliPMDv0("PMD","normal PMD");
 PMD->SetPAR(1., 1., 0.8, 0.02);
-PMD->SetIN(6., 20., 600., 27., 27.);
+PMD->SetIN(6., 18., -580., 27., 27.);
 PMD->SetGEO(0.0, 0.2, 4.);
-PMD->SetPadSize(0.8, 1.0, 1.2, 1.5);
+PMD->SetPadSize(0.8, 1.0, 1.0, 1.5);
+
 }
- 
+
+if(iSTART) {
+//=================== START parameters ============================
+AliSTART *START  = new AliSTARTv0("START","START Detector");
 }
-		
 
-
-
+         
+}
