@@ -1,11 +1,9 @@
 #include "AliHBTReaderInternal.h"
 
-#include <Riostream.h>
-//#include <Riostream.h>
 #include <TTree.h>
 #include <TFile.h>
 #include <TParticle.h>
-
+#include <TError.h>
 #include <AliRun.h>
 #include <AliMagF.h>
 
@@ -20,6 +18,7 @@ ClassImp(AliHBTReaderInternal)
 
 AliHBTReaderInternal::AliHBTReaderInternal()
 {
+//Defalut constructor
   fParticles = 0x0; 
   fTracks = 0x0;
   fIsRead = kFALSE;
@@ -28,18 +27,26 @@ AliHBTReaderInternal::AliHBTReaderInternal()
 
 AliHBTReaderInternal::AliHBTReaderInternal(const char *filename):fFileName(filename)
 { 
+//constructor 
+//filename - name of file to open
  fParticles = new AliHBTRun();
  fTracks    = new AliHBTRun();
  fIsRead = kFALSE;
 }
 /********************************************************************/
+
 AliHBTReaderInternal::AliHBTReaderInternal(TObjArray* dirs, const char *filename):
   AliHBTReader(dirs),fFileName(filename)
 { 
+//ctor
+//dirs contains strings with directories to look data in
+//filename - name of file to open
  fParticles = new AliHBTRun();
  fTracks    = new AliHBTRun();
  fIsRead = kFALSE;
 }
+/********************************************************************/
+
 AliHBTReaderInternal::~AliHBTReaderInternal()
  {
  //desctructor
@@ -47,6 +54,7 @@ AliHBTReaderInternal::~AliHBTReaderInternal()
    delete fTracks;
  }
 /********************************************************************/
+
 AliHBTEvent* AliHBTReaderInternal::GetParticleEvent(Int_t n)
  {
  //returns Nth event with simulated particles
@@ -59,6 +67,7 @@ AliHBTEvent* AliHBTReaderInternal::GetParticleEvent(Int_t n)
    return fParticles->GetEvent(n);
  }
 /********************************************************************/
+
 AliHBTEvent* AliHBTReaderInternal::GetTrackEvent(Int_t n)
  {
  //returns Nth event with reconstructed tracks
@@ -98,19 +107,18 @@ Int_t AliHBTReaderInternal::GetNumberOfTrackEvents()
  }
 /********************************************************************/
 
-
 Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
  {
  //reads data and puts put to the particles and tracks objects
  //reurns 0 if everything is OK
  //
-  cout<<"AliHBTReaderInternal::Read()"<<endl;
+  Info("Read","");
   Int_t i; //iterator and some temprary values
   Int_t totalNevents = 0; //total number of read events
   Int_t Nevents = 0;
   Int_t currentdir = 0;
   Int_t Ndirs;
-  
+  Int_t counter;
   TFile *aFile;//file with tracks
   AliHBTParticle* tpart = 0x0, *ttrack = 0x0;
   
@@ -177,40 +185,40 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
       }
      
      Nevents = (Int_t)tree->GetEntries();
-     cout<<"________________________________________________________\n";
-     cout<<"Found "<<Nevents<<" event(s) in directory "<<GetDirName(currentdir)<<endl;
+     Info("Read","________________________________________________________");
+     Info("Read","Found %d event(s) in directory %s",Nevents,GetDirName(currentdir).Data());
      
      for (Int_t currentEvent =0; currentEvent<Nevents;currentEvent++)
       {
-       cout<<"Event "<<currentEvent<<"\n";
+       Info("Read","Event %d",currentEvent);
        tree->GetEvent(currentEvent);
-         
+       
+       counter = 0;  
        if (partbranch && trackbranch)
         {
            for(i = 0; i < pbuffer->GetEntries(); i++)
              {
-               cout<<i<<"\r";
                tpart = dynamic_cast<AliHBTParticle*>(pbuffer->At(i));
                ttrack =  dynamic_cast<AliHBTParticle*>(tbuffer->At(i));
 
-               if( (tpart == 0x0) || (ttrack == 0x0) ) continue; //if returned pointer is NULL
-               if( (tpart->GetPDG()==0x0)||(ttrack->GetPDG()==0x0) ) continue; //if particle has crezy PDG code (not known to our database)
-               if((Pass(tpart))||(Pass(ttrack))) continue; //check if we are intersted with particles of this type 
+               if( tpart == 0x0 ) continue; //if returned pointer is NULL
+               if( tpart->GetPDG()==0x0 ) continue; //if particle has crezy PDG code (not known to our database)
+               if( Pass(tpart) ) continue; //check if we are intersted with particles of this type 
                                                           //if not take next partilce
                AliHBTParticle* part = new AliHBTParticle(*tpart);
                AliHBTParticle* track = new AliHBTParticle(*ttrack);
                particles->AddParticle(totalNevents,part);//put track and particle on the run
                tracks->AddParticle(totalNevents,track);
+               counter++;
              }
-            cout<<"Read: "<<particles->GetNumberOfParticlesInEvent(totalNevents)<<" particles and tracks \n";
+            Info("Read","   Read: %d particles and tracks",counter);
         }
        else
-        { 
+        {  
          if (partbranch)
           {
             for(i = 0; i < pbuffer->GetEntries(); i++)
              {
-               cout<<i<<"\r";
                tpart = dynamic_cast<AliHBTParticle*>(pbuffer->At(i));
                if(tpart == 0x0) continue; //if returned pointer is NULL
                if(tpart->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
@@ -219,16 +227,16 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
  
                AliHBTParticle* part = new AliHBTParticle(*tpart);
                particles->AddParticle(totalNevents,part);//put track and particle on the run
+               counter++;
              }
-            cout<<"\nRead: "<<particles->GetNumberOfParticlesInEvent(totalNevents)<<" particles  \n";
+            Info("Read","   Read: %d particles and tracks",counter);
           }
-         else cout<<"Read: 0 particles  \n";
+         else Info("Read","   Read: 0 particles");
          
          if (trackbranch)
           {
             for(i = 0; i < tbuffer->GetEntries(); i++)
              {
-               cout<<i<<"\r";
                tpart = dynamic_cast<AliHBTParticle*>(tbuffer->At(i));
                if(tpart == 0x0) continue; //if returned pointer is NULL
                if(tpart->GetPDG() == 0x0) continue; //if particle has crezy PDG code (not known to our database)
@@ -236,13 +244,13 @@ Int_t AliHBTReaderInternal::Read(AliHBTRun* particles, AliHBTRun *tracks)
                                                    //if not take next partilce
                AliHBTParticle* part = new AliHBTParticle(*tpart);
                tracks->AddParticle(totalNevents,part);//put track and particle on the run
+               counter++;
              }
-            cout<<"\nRead: "<<tracks->GetNumberOfParticlesInEvent(totalNevents)<<" tracks"<<endl;
+            Info("Read","   Read: %d tracks",counter);
           }
-         else cout<<" 0 tracks"<<endl;
+         else Info("Read","   Read: 0 tracks");
         }
         totalNevents++;
-         
        }
 
    /***************************/
@@ -284,29 +292,25 @@ Int_t AliHBTReaderInternal::OpenFile(TFile*& aFile,Int_t event)
      }
    return 0; 
 }
-
-
-
+/********************************************************************/
 
 Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
  {
-  //reads tracks from runs and writes them to file
-    Int_t i,j;
+  //reads tracks from reader and writes runs to file
+  Int_t i,j;
   
-  
-  cout<<"________________________________________________________\n";
-  cout<<"________________________________________________________\n";
-  cout<<"________________________________________________________\n";
+  ::Info("AliHBTReaderInternal::Write","________________________________________________________");
+  ::Info("AliHBTReaderInternal::Write","________________________________________________________");
+  ::Info("AliHBTReaderInternal::Write","________________________________________________________");
 
   TFile *histoOutput = TFile::Open(outfile,"recreate");
   
   if (!histoOutput->IsOpen())
    {
-     cout<<"File is not opened"<<endl;
+     ::Error("AliHBTReaderInternal::Write","File is not opened");
      return 1;
    }
     
-
   TTree *tracktree = new TTree("data","Tree with tracks");
 
   TClonesArray* pbuffer = new TClonesArray("AliHBTParticle",15000);
@@ -316,7 +320,6 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
   TClonesArray &tracks = *tbuffer;
     
   TString name("Tracks");
- 
   
   Int_t NT = reader->GetNumberOfTrackEvents();
   Int_t NP = reader->GetNumberOfPartEvents();
@@ -326,15 +329,12 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
 
   TBranch *trackbranch = 0x0, *partbranch = 0x0;
   
-  
   if (trck) trackbranch = tracktree->Branch("tracks","TClonesArray",&tbuffer);
   if (part) partbranch = tracktree->Branch("particles","TClonesArray",&pbuffer);
-
-
   
   if ( (trck) && (part) && (NP != NT))
    {
-     cerr<<"Warning number of track and particle events is different"<<endl;
+     ::Warning("AliHBTReaderInternal::Write","Number of track and particle events is different");
    }
   
   Int_t N;
@@ -342,34 +342,28 @@ Int_t AliHBTReaderInternal::Write(AliHBTReader* reader,const char* outfile)
 
   for ( i =0;i< N; i++)
     {
-      cout<<"Event "<<i+1<<"\n";
+      ::Info("AliHBTReaderInternal::Write","Event %d",i+1);
       if (trck && (i<=NT))
        {
-         cout<<"Tracks: \n";
          AliHBTEvent* trackev = reader->GetTrackEvent(i);
          for ( j = 0; j< trackev->GetNumberOfParticles();j++)
           {
-            cout<<j<<"\r";
             const AliHBTParticle& t= *(trackev->GetParticle(j));
             new (tracks[j]) AliHBTParticle(t);
           }
-
-       }else cout<<"NO TRACKS";
-      
-      cout<<endl;
+         ::Info("AliHBTReaderInternal::Write","    Tracks: %d",j);
+       }else ::Info("AliHBTReaderInternal::Write","NO TRACKS");
       
       if (part && (i<=NP))
        {
-        cout<<"Particles: \n";
         AliHBTEvent* partev = reader->GetParticleEvent(i);
         for ( j = 0; j< partev->GetNumberOfParticles();j++)
          {
            const AliHBTParticle& part= *(partev->GetParticle(j));
-           cout<<j<<"\r";
            new (particles[j]) AliHBTParticle(part);
          }
-       }else cout<<"NO PARTICLES";
-      cout<<endl;
+         ::Info("AliHBTReaderInternal::Write","    Particles: %d",j);
+       }else ::Info("AliHBTReaderInternal::Write","NO PARTICLES");
 
       histoOutput->cd();
       tracktree->Fill();
