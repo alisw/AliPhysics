@@ -210,7 +210,7 @@ void AliRICHClusterFinder::WriteRawCluster()
   if(GetDebug()) Info("WriteRawCluster","Start.");
   
   FindClusterContribs(&fRawCluster);
-  if(GetDebug()>1) fRawCluster.Dump();
+  if(GetDebug()) fRawCluster.Dump();
   Rich()->AddCluster(fRawCluster);
 //  fRawCluster.Print();
 }//WriteRawCluster()
