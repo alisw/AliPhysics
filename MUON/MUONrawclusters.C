@@ -90,6 +90,7 @@ void MUONrawclusters (char* filename="galice.root", Int_t evNumber1=0,Int_t evNu
 	MUONLoader->MakeRecPointsContainer();
       else {
 	if (muondata->IsRawClusterBranchesInTree()){ // Test if rawcluster has already been done before
+	  if (ievent==evNumber1) MUONLoader->UnloadRecPoints();
 	  MUONLoader->MakeRecPointsContainer();  // Redoing clusterisation
 	  Info("RecPointsContainer","Recreating RecPointsContainer and deleting previous ones");
 	}

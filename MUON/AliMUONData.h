@@ -1,6 +1,11 @@
 #ifndef ALIMUONDATA_H
 #define ALIMUONDATA_H
 //
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 // AliMUONData
 // Class containing MUON data: hits, digits, rawclusters, globaltrigger, localtrigger, etc ...
 // Gines Martinez, Subatech,  September 2003
