@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2002/04/09 13:38:47  jchudoba
+Add const to the filename argument
+
 Revision 1.4  2001/12/03 07:10:13  jchudoba
 Default ctor cannot create new objects, create dummy default ctor which leaves object in not well defined state - to be used only by root for I/O
 
@@ -77,7 +80,10 @@ AliStream::AliStream(Option_t *option)
 AliStream::~AliStream()
 {
 // default dtor
-  if (fFileNames) delete fFileNames;
+  if (fFileNames) {
+    fFileNames->Delete();
+    delete fFileNames;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -172,3 +178,16 @@ Bool_t AliStream::ImportgAlice()
   if (!gAlice)  return kFALSE;
   return kTRUE;
 }
+////////////////////////////////////////////////////////////////////////
+TString AliStream::GetFileName(const Int_t order) const
+// returns name of the order-th file
+// returns empty string if such file does not exist
+// first file in the input stream is 0
+{
+  TString fileName("");
+  if (order > fFileNames->GetLast()) return fileName;
+  TObjString *fileNameStored = dynamic_cast<TObjString*>(fFileNames->At(order));
+  if (fileNameStored) fileName = fileNameStored->GetString();
+  return fileName;
+}
+////////////////////////////////////////////////////////////////////////
