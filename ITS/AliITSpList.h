@@ -217,6 +217,19 @@ class AliITSpList: public AliITSMap {
     void SetHit(Int_t i,Int_t j,Int_t k){;}
     // Flags a hit. Not of relavence in this case.
     void FlagHit(Int_t i,Int_t j){;}
+    // returns the i,j index numbers from the liniarized index computed
+    // from GetIndex above.
+    void GetCell(Int_t index,Int_t &i,Int_t &j){
+	if(index<0 || index>=fNi*fNj){
+	    Warning("GetCell","Index out of range 0<=index=%d<%d",
+		    index,fNi*fNj);
+	    i=-1;j=-1;
+	    return;
+	} // end if
+	i = index/fNj;
+	j = index - fNj*i;
+	return;
+    }
 
  private:
     Int_t     fNi,fNj;   // The max index in i,j.
