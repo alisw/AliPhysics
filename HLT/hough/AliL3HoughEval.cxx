@@ -95,9 +95,6 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
     
   for(Int_t padrow = AliL3Transform::GetFirstRow(fPatch); padrow <= AliL3Transform::GetLastRow(fPatch); padrow++)
     {
-      //if(AliL3Transform::Row2X(padrow) > maxrow) break;//The track has left this slice
-      //rows_crossed++;
-      
       Int_t prow = padrow - AliL3Transform::GetFirstRow(fPatch);
       if(!track->GetCrossingPoint(padrow,xyz))  
 	{
@@ -106,6 +103,7 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
       
       AliL3Transform::Slice2Sector(fSlice,padrow,sector,row);
       AliL3Transform::Local2Raw(xyz,sector,row);
+
       npixs=0;
       
       //Get the timebins for this pad
@@ -130,7 +128,6 @@ Bool_t AliL3HoughEval::LookInsideRoad(AliL3HoughTrack *track,Int_t &nrows_crosse
 	      UShort_t time = digPt[j].fTime;
 	      Double_t eta = AliL3Transform::GetEta(padrow,pad,time);
 	      Int_t pixel_index = fHoughTransformer->GetEtaIndex(eta);
-	      if(pixel_index > track->GetEtaIndex()) continue;
 	      if(pixel_index != track->GetEtaIndex()) continue;
 	      total_charge += digPt[j].fCharge;
 	      if(remove)

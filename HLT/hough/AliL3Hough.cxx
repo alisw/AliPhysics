@@ -14,6 +14,7 @@
 #include "AliL3Histogram.h"
 #include "AliL3Hough.h"
 #include "AliL3HoughTransformer.h"
+#include "AliL3HoughClusterTransformer.h"
 #include "AliL3HoughTransformerVhdl.h"
 #include "AliL3HoughMaxFinder.h"
 #ifdef use_aliroot
@@ -165,6 +166,9 @@ void AliL3Hough::Init(Bool_t doit=kFALSE, Bool_t addhists=kFALSE)
       case 1: 
 	fHoughTransformer[i] = new AliL3HoughTransformerVhdl(0,i,fNEtaSegments);
 	break;
+      case 2:
+	fHoughTransformer[i] = new AliL3HoughClusterTransformer(0,i,fNEtaSegments);
+	break;
       default:
 	fHoughTransformer[i] = new AliL3HoughTransformer(0,i,fNEtaSegments);
       }
@@ -298,10 +302,49 @@ void AliL3Hough::ProcessSliceIter()
 {
   //Process current slice (after ReadData(slice)) iteratively.
   
-  for(Int_t i=0; i<fNPatches; i++)
+  if(!fAddHistograms)
     {
-      ProcessPatchIter(i);
-      fMerger->FillTracks(fTracks[i],i); //Copy tracks to merger
+      for(Int_t i=0; i<fNPatches; i++)
+	{
+	  ProcessPatchIter(i);
+	  fMerger->FillTracks(fTracks[i],i); //Copy tracks to merger
+	}
+    }
+  else
+    {
+      for(Int_t i=0; i<10; i++)
+	{
+	  Transform();
+	  AddAllHistograms();
+	  InitEvaluate();
+	  AliL3HoughBaseTransformer *tr = fHoughTransformer[0];
+	  for(Int_t j=0; j<fNEtaSegments; j++)
+	    {
+	      AliL3Histogram *hist = tr->GetHistogram(j);
+	      if(hist->GetNEntries()==0) continue;
+	      fPeakFinder->Reset();
+	      fPeakFinder->SetHistogram(hist);
+	      fPeakFinder->FindAbsMaxima();
+	      AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[0]->NextTrack();
+	      track->SetTrackParameters(fPeakFinder->GetXPeak(0),fPeakFinder->GetYPeak(0),fPeakFinder->GetWeight(0));
+	      track->SetEtaIndex(j);
+	      track->SetEta(tr->GetEta(j,fCurrentSlice));
+	      for(Int_t k=0; k<fNPatches; k++)
+		{
+		  fEval[i]->SetNumOfPadsToLook(2);
+		  fEval[i]->SetNumOfRowsToMiss(2);
+		  fEval[i]->RemoveFoundTracks();
+		  Int_t nrows=0;
+		  if(!fEval[i]->LookInsideRoad(track,nrows))
+		    {
+		      fTracks[0]->Remove(fTracks[0]->GetNTracks()-1);
+		      fTracks[0]->Compress();
+		    }
+		}
+	    }
+	  
+	}
+      
     }
 }
 
@@ -310,14 +353,14 @@ void AliL3Hough::ProcessPatchIter(Int_t patch)
   //Process patch in a iterative way. 
   //transform + peakfinding + evaluation + transform +...
 
-  Int_t num_of_tries = 10;
+  Int_t num_of_tries = 5;
   AliL3HoughBaseTransformer *tr = fHoughTransformer[patch];
   AliL3TrackArray *tracks = fTracks[patch];
   tracks->Reset();
   AliL3HoughEval *ev = fEval[patch];
   ev->InitTransformer(tr);
-  ev->RemoveFoundTracks();
-  ev->SetNumOfRowsToMiss(2);
+  //ev->RemoveFoundTracks();
+  ev->SetNumOfRowsToMiss(3);
   ev->SetNumOfPadsToLook(2);
   AliL3Histogram *hist;
   for(Int_t t=0; t<num_of_tries; t++)
@@ -328,20 +371,23 @@ void AliL3Hough::ProcessPatchIter(Int_t patch)
 	{
 	  hist = tr->GetHistogram(i);
 	  if(hist->GetNEntries()==0) continue;
+	  fPeakFinder->Reset();
 	  fPeakFinder->SetHistogram(hist);
-	  //Int_t n=1;
-	  Float_t x,y;
-	  //fPeakFinder->FindAbsMaxima(*x,*y);
-	  fPeakFinder->FindPeak(3,0.95,5,x,y);
+	  fPeakFinder->FindAbsMaxima();
+	  //fPeakFinder->FindPeak1();
 	  AliL3HoughTrack *track = (AliL3HoughTrack*)tracks->NextTrack();
-	  track->SetTrackParameters(x,y,1);
-	  if(!ev->LookInsideRoad(track,i))
+	  track->SetTrackParameters(fPeakFinder->GetXPeak(0),fPeakFinder->GetYPeak(0),fPeakFinder->GetWeight(0));
+	  track->SetEtaIndex(i);
+	  track->SetEta(tr->GetEta(i,fCurrentSlice));
+	  Int_t nrows=0;
+	  if(!ev->LookInsideRoad(track,nrows))
 	    {	
 	      tracks->Remove(tracks->GetNTracks()-1);
 	      tracks->Compress();
 	    }
 	}
     }
+  fTracks[0]->QSort();
   LOG(AliL3Log::kInformational,"AliL3Hough::ProcessPatch","NTracks")
     <<AliL3Log::kDec<<"Found "<<tracks->GetNTracks()<<" tracks in patch "<<patch<<ENDLOG;
 }
@@ -385,7 +431,7 @@ void AliL3Hough::FindTrackCandidates()
     {
       AliL3HoughBaseTransformer *tr = fHoughTransformer[i];
       fTracks[i]->Reset();
-
+      
       for(Int_t j=0; j<fNEtaSegments; j++)
 	{
 	  AliL3Histogram *hist = tr->GetHistogram(j);
@@ -395,7 +441,6 @@ void AliL3Hough::FindTrackCandidates()
 	  //fPeakFinder->FindPeak1(3,1);
 	  fPeakFinder->FindMaxima(0,0); //Simple maxima finder
 	  //fPeakFinder->FindAbsMaxima();
-
 	  for(Int_t k=0; k<fPeakFinder->GetEntries(); k++)
 	    {
 	      if(fPeakFinder->GetWeight(k) == 0) continue;
