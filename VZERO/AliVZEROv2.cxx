@@ -335,7 +335,7 @@ void AliVZEROv2::CreateGeometry()
 	n_detec_R++;
        }
 
-  gMC->Gspos("V0RI",1,"alic",0.0,0.0,zdet,0,"ONLY");
+  gMC->Gspos("V0RI",1,"ALIC",0.0,0.0,zdet,0,"ONLY");
  
   n_cells_R = (n_detec_R - 1) * 6;  
   printf("    Number of cells on Right side =   %d\n",  n_cells_R);    
@@ -350,7 +350,7 @@ void AliVZEROv2::CreateGeometry()
         n_detec_L++;
        }
 
-  gMC->Gspos("V0LE",1,"alic",0.0,0.0,-350.0-fThickness1/2.0,0,"ONLY");
+  gMC->Gspos("V0LE",1,"ALIC",0.0,0.0,-350.0-fThickness1/2.0,0,"ONLY");
  
   n_cells_L = (n_detec_L - 1) * 6;
   printf("    Number of cells on Left side  =   %d\n",  n_cells_L);    
