@@ -41,6 +41,7 @@
 #include <TPostScript.h> 
 #include <TMinuit.h> 
 #include <Riostream.h> 
+#include <TError.h>
 
 //----------------------------------------------------------------------
 ClassImp(AliMUONTriggerDecision)
@@ -117,6 +118,17 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint)
     fTriggerCircuit->AddAt(pCir, icirc);
   }
 }
+
+//----------------------------------------------------------------------
+AliMUONTriggerDecision::AliMUONTriggerDecision(const AliMUONTriggerDecision& rhs)
+  : TObject(rhs) 
+{
+// Protected copy constructor
+
+  Fatal("AliMUONTriggerDecision", "Not implemented.");
+}
+
+
 //----------------------------------------------------------------------
 AliMUONTriggerDecision::~AliMUONTriggerDecision()
 {
@@ -128,6 +140,21 @@ AliMUONTriggerDecision::~AliMUONTriggerDecision()
   if (fMUONData)
     delete fMUONData;
 }
+
+//----------------------------------------------------------------------
+AliMUONTriggerDecision& 
+AliMUONTriggerDecision::operator=(const AliMUONTriggerDecision& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
+
 //----------------------------------------------------------------------
 void AliMUONTriggerDecision::Trigger(){
 // main method of the class which calls the overall Trigger procedure

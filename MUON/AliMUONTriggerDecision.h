@@ -18,7 +18,7 @@ class AliMUON;
 class AliMUONTriggerDecision :
 public TObject {
  public:
-  AliMUONTriggerDecision(AliLoader*, Int_t iprint = 0);         // constructor
+  AliMUONTriggerDecision(AliLoader* loader, Int_t iprint = 0); // constructor
   ~AliMUONTriggerDecision();                  // destructor
   
   AliMUONData*   GetMUONData() {return fMUONData;}
@@ -67,6 +67,9 @@ public TObject {
   ClassDef(AliMUONTriggerDecision,1) // Trigger Decision class
 
     protected:     
+  AliMUONTriggerDecision(const AliMUONTriggerDecision& rhs);
+  AliMUONTriggerDecision& operator=(const AliMUONTriggerDecision& rhs);
+
   Int_t fDebug;               // print option     
 
   // Global Trigger information [0] : Low pt, [1] : High pt, [2] : All pt 

@@ -40,14 +40,13 @@ class AliMUONData : public TNamed
   public:
     AliMUONData();
     AliMUONData(AliLoader * loader, const char* name, const char* title);
-    AliMUONData(const AliMUONData& rMUONData);
     virtual ~AliMUONData();  
     virtual void   AddDigit(Int_t id, Int_t* tracks, Int_t* charges,
 			     Int_t* digits); 
     virtual void   AddSDigit(Int_t id, Int_t* tracks, Int_t* charges,
 			     Int_t* digits); 
-    virtual void   AddDigit(Int_t, const AliMUONDigit& ); // use copy constructor
-    virtual void   AddSDigit(Int_t, const AliMUONDigit& ); // use copy constructor
+    virtual void   AddDigit(Int_t id, const AliMUONDigit& digit); // use copy constructor
+    virtual void   AddSDigit(Int_t id, const AliMUONDigit& digit); // use copy constructor
     virtual void   AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
 			  Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
 			  Float_t tof, Float_t momentum, Float_t theta, 
@@ -57,7 +56,7 @@ class AliMUONData : public TNamed
 			  Float_t tof, Float_t momentum, Float_t theta, 
 			  Float_t phi, Float_t length, Float_t destep, 
 			  Float_t Xref,Float_t Yref,Float_t Zref);
-    virtual void   AddHit(const AliMUONHit& ); // use copy constructor
+    virtual void   AddHit(const AliMUONHit& hit); // use copy constructor
     
     virtual void   AddGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
 				    Int_t *singleUndef, Int_t *pairUnlike, 
@@ -123,6 +122,9 @@ class AliMUONData : public TNamed
     TTree*         TreeP() {return fLoader->TreeP(); }
 
   protected: 
+    AliMUONData(const AliMUONData& rhs);
+    AliMUONData& operator=(const AliMUONData& rhs);
+
     AliLoader*  fLoader; //! Detector Loader pointer
     TClonesArray*   fHits;  // One event in treeH per primary track
     TObjArray*      fDigits; // One event in treeD and one branch per detection plane

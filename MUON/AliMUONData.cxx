@@ -108,12 +108,15 @@ AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title
 
 
 }
+
 //_____________________________________________________________________________
 AliMUONData::AliMUONData(const AliMUONData& rMUONData):TNamed(rMUONData)
 {
-  // Dummy copy constructor
-  ;
+// Protected copy constructor
+
+  Fatal("AliMUONData", "Not implemented.");
 }
+
 //_____________________________________________________________________________
 AliMUONData::~AliMUONData()
 {
@@ -152,6 +155,20 @@ AliMUONData::~AliMUONData()
   }
   //detructor 
 }
+
+//_____________________________________________________________________________
+AliMUONData& AliMUONData::operator=(const AliMUONData& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
+
 //_____________________________________________________________________________
 void AliMUONData::AddDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
 {
