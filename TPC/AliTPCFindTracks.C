@@ -11,7 +11,9 @@
   #include "TStopwatch.h"
 #endif
 
-Int_t AliTPCFindTracks(Int_t eventn=1) { 
+Int_t AliTPCFindTracks(Int_t eventn=1) {
+
+AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField()); 
    cerr<<"Looking for tracks...\n";
 
    TFile *out=TFile::Open("AliTPCtracks.root","new");
