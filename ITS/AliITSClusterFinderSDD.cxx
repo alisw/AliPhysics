@@ -83,7 +83,7 @@ void AliITSClusterFinderSDD::SetCutAmplitude(Float_t nsigma){
 
     fResponse->GetNoiseParam(noise,baseline);
     noise_after_el = ((AliITSresponseSDD*)fResponse)->GetNoiseAfterElectronics();
-    fCutAmplitude=(Int_t)((baseline + nsigma*noise_after_el) + 0.2);
+    fCutAmplitude=(Int_t)((baseline + nsigma*noise_after_el));
 }
 //______________________________________________________________________
 void AliITSClusterFinderSDD::Find1DClusters(){
