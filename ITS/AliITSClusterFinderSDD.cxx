@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -292,6 +293,7 @@ void AliITSClusterFinderSDD::Find1DClusters()
 
 void AliITSClusterFinderSDD::Find1DClustersE()
 {
+    // find 1D clusters
 
 	AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
 
@@ -319,7 +321,7 @@ void AliITSClusterFinderSDD::Find1DClustersE()
 		{
       		Int_t idx = j*fNofAnodes+k;
 			
-			Bool_t On = kFALSE;
+			Bool_t on = kFALSE;
 			Int_t start = 0;
 			Int_t nTsteps = 0;
 			Float_t fmax = 0.;
@@ -334,7 +336,7 @@ void AliITSClusterFinderSDD::Find1DClustersE()
 				Float_t fadc = (Float_t)fMap->GetSignal( idx, l );
 				if( fadc > 0.0 )
 				{
-					if( On == kFALSE && l<fMaxNofSamples-4)  // star RawCluster (reset var.)
+					if( on == kFALSE && l<fMaxNofSamples-4)  // star RawCluster (reset var.)
 					{ 
 						Float_t fadc1 = (Float_t)fMap->GetSignal( idx, l+1 );
 						if( fadc1 < fadc ) continue;
@@ -343,7 +345,7 @@ void AliITSClusterFinderSDD::Find1DClustersE()
 						lmax = 0;
 						time = 0.;
 						charge = 0.; 
-						On = kTRUE; 
+						on = kTRUE; 
 						nTsteps = 0;
 					}
 					
@@ -363,14 +365,14 @@ void AliITSClusterFinderSDD::Find1DClustersE()
 						Int_t shift = (Int_t)(fTimeCorr/fTimeStep + 0.5);
 	                    if( l > shift && l < (fMaxNofSamples-shift) )  
 							peakpos = fMap->GetHitIndex( idx, l+shift );
-	      				else 
+	    				else
 							peakpos = fMap->GetHitIndex( idx, l );
-	      				if( peakpos < 0 ) peakpos = fMap->GetHitIndex( idx, l );
+					    if( peakpos < 0 ) peakpos = fMap->GetHitIndex( idx, l );
 					}
 				}
 				else
 				{
-					if( On == kTRUE )
+					if( on == kTRUE )
 					{	
 						if( nTsteps > 2 ) //  min # of timesteps for a RawCluster
 						{
@@ -380,19 +382,19 @@ void AliITSClusterFinderSDD::Find1DClustersE()
 				//			time = lmax*fTimeStep;   // ns
 							if( time > fTimeCorr ) time -= fTimeCorr;   // ns
 							Float_t anodePath = (anode - fNofAnodes/2)*anodePitch;
-	  						Float_t DriftPath = time*fDriftSpeed;
-	  						DriftPath = fSddLength-DriftPath;
+							Float_t driftPath = time*fDriftSpeed;
+							driftPath = fSddLength-driftPath;
 					  		AliITSRawClusterSDD clust( j+1, anode, time, charge,
-	                            fmax, peakpos, 0., 0., DriftPath, anodePath, nTsteps
+	                            fmax, peakpos, 0., 0., driftPath, anodePath, nTsteps
 				    			, start, stop, start, stop, 1, k, k );
-	  						iTS->AddCluster( 1, &clust );
+							iTS->AddCluster( 1, &clust );
 						//	clust.PrintInfo();
 							nClu++;
 						}
-						On = kFALSE;
+						on = kFALSE;
 					}
 				}
-      		} // samples
+    		} // samples
     	} // anodes
 	} // wings
 
@@ -406,6 +408,7 @@ void AliITSClusterFinderSDD::Find1DClustersE()
 Int_t AliITSClusterFinderSDD::SearchPeak( Float_t *spect, Int_t xdim, Int_t zdim, 
 										  Int_t *peakX, Int_t *peakZ, Float_t *peakAmp, Float_t minpeak )
 {
+	// search peaks on a 2D cluster
 	Int_t npeak = 0;    // # peaks
     Int_t i,j;
 
@@ -414,39 +417,39 @@ Int_t AliITSClusterFinderSDD::SearchPeak( Float_t *spect, Int_t xdim, Int_t zdim
 	{
 		for( Int_t x=2; x<xdim-3; x++ )
 		{
-			Float_t Sxz = spect[x*zdim+z];
-			Float_t Sxz1 = spect[(x+1)*zdim+z];
-			Float_t Sxz2 = spect[(x-1)*zdim+z];
+			Float_t sxz = spect[x*zdim+z];
+			Float_t sxz1 = spect[(x+1)*zdim+z];
+			Float_t sxz2 = spect[(x-1)*zdim+z];
 
 			// search a local max. in s[x,z]
-			if( Sxz < minpeak || Sxz1 <= 0 || Sxz2 <= 0 ) continue;
-			if( Sxz >= spect[(x+1)*zdim+z  ] && Sxz >= spect[(x-1)*zdim+z  ] &&
-				Sxz >= spect[x*zdim    +z+1] && Sxz >= spect[x*zdim    +z-1] &&
-				Sxz >= spect[(x+1)*zdim+z+1] && Sxz >= spect[(x+1)*zdim+z-1] &&
-				Sxz >= spect[(x-1)*zdim+z+1] && Sxz >= spect[(x-1)*zdim+z-1] )
+			if( sxz < minpeak || sxz1 <= 0 || sxz2 <= 0 ) continue;
+			if( sxz >= spect[(x+1)*zdim+z  ] && sxz >= spect[(x-1)*zdim+z  ] &&
+				sxz >= spect[x*zdim    +z+1] && sxz >= spect[x*zdim    +z-1] &&
+				sxz >= spect[(x+1)*zdim+z+1] && sxz >= spect[(x+1)*zdim+z-1] &&
+				sxz >= spect[(x-1)*zdim+z+1] && sxz >= spect[(x-1)*zdim+z-1] )
 			{
 				// peak found
 				peakX[npeak] = x;
 				peakZ[npeak] = z;
-				peakAmp[npeak] = Sxz;
+				peakAmp[npeak] = sxz;
 				npeak++;
 			}
 		}
 	}			
 
 	// search groups of peaks with same amplitude.
-	Int_t *Flag = new Int_t[npeak];
-	for( i=0; i<npeak; i++ ) Flag[i] = 0;
+	Int_t *flag = new Int_t[npeak];
+	for( i=0; i<npeak; i++ ) flag[i] = 0;
 	for( i=0; i<npeak; i++ )
 	{
 		for( j=0; j<npeak; j++ )
 		{
 			if( i==j) continue;
-			if( Flag[j] > 0 ) continue;
+			if( flag[j] > 0 ) continue;
 			if( peakAmp[i] == peakAmp[j] && TMath::Abs(peakX[i]-peakX[j])<=1 && TMath::Abs(peakZ[i]-peakZ[j])<=1 )
 			{
-				if( Flag[i] == 0) Flag[i] = i+1;
-				Flag[j] = Flag[i];
+				if( flag[i] == 0) flag[i] = i+1;
+				flag[j] = flag[i];
 			}
 		}
 	}
@@ -455,11 +458,11 @@ Int_t AliITSClusterFinderSDD::SearchPeak( Float_t *spect, Int_t xdim, Int_t zdim
 	for( i=0; i<npeak; i++ )
 	{
 		Int_t nFlag = 1;
-		if( Flag[i] <= 0 ) continue;
+		if( flag[i] <= 0 ) continue;
 		for( j=0; j<npeak; j++ )
 		{
 			if( i==j ) continue;
-			if( Flag[j] != Flag[i] ) continue;
+			if( flag[j] != flag[i] ) continue;
 			peakX[i] += peakX[j];
 			peakZ[i] += peakZ[j];
 			nFlag++;
@@ -469,7 +472,7 @@ Int_t AliITSClusterFinderSDD::SearchPeak( Float_t *spect, Int_t xdim, Int_t zdim
 				peakX[k] = peakX[k+1];
 				peakZ[k] = peakZ[k+1];
 				peakAmp[k] = peakAmp[k+1];
-				Flag[k] = Flag[k+1];
+				flag[k] = flag[k+1];
 			}	
 			j--;
 		}
@@ -481,103 +484,72 @@ Int_t AliITSClusterFinderSDD::SearchPeak( Float_t *spect, Int_t xdim, Int_t zdim
 		}
 	}
 	
-	delete [] Flag;
+	delete [] flag;
 	return( npeak );
 }
 
 
-void AliITSClusterFinderSDD::PeakFunc( Int_t xdim, Int_t zdim, Float_t *par, Float_t *spe, Float_t *Integral) 
+void AliITSClusterFinderSDD::PeakFunc( Int_t xdim, Int_t zdim, Float_t *par, Float_t *spe, Float_t
+*integral) 
 {
-  Int_t Electronics = fResponse->Electronics(); // 1 = PASCAL, 2 = OLA
-  Int_t param_peak = 5;
-  // par -> paramiters..
-  // par[0]  number of peaks.
-  // for each peak i=1, ..., par[0]
-  // 		par[i] = Ampl.
-  // 		par[i+1] = xpos
-  // 		par[i+2] = zpos
-  // 		par[i+3] = tau
-  // 		par[i+4] = sigma.
-  Int_t npeak = (Int_t)par[0];
+    // function used to fit the clusters
+    // par -> paramiters..
+    // par[0]  number of peaks.
+    // for each peak i=1, ..., par[0]
+    // 		par[i] = Ampl.
+    // 		par[i+1] = xpos
+    // 		par[i+2] = zpos
+    // 		par[i+3] = tau
+    // 		par[i+4] = sigma.
+
+    Int_t electronics = fResponse->Electronics(); // 1 = PASCAL, 2 = OLA
+    const Int_t knParam = 5;
+    Int_t npeak = (Int_t)par[0];
   
-  memset( spe, 0, sizeof( Float_t )*zdim*xdim );
+    memset( spe, 0, sizeof( Float_t )*zdim*xdim );
   
-  Int_t k = 1;
-  for( Int_t i=0; i<npeak; i++ )
+    Int_t k = 1;
+    for( Int_t i=0; i<npeak; i++ )
     {
-      if( Integral != 0 ) Integral[i] = 0.;
-      Float_t sigmaA2 = par[k+4]*par[k+4]*2.;
-      Float_t T2 = par[k+3];   //PASCAL
-      if(Electronics == 2) { T2 *= T2; T2 *= 2; } // OLA
-      for( Int_t z=0; z<zdim; z++ ) {
-	for( Int_t x=0; x<xdim; x++ ) {
-	  Float_t z2 = (z-par[k+2])*(z-par[k+2])/sigmaA2;
-	  Float_t x2 = 0.;
-	  if(Electronics == 1) // PASCAL
-	    x2 = (x-par[k+1]+T2)/T2;
-	  else if(Electronics == 2) //OLA
-	    x2 = (x-par[k+1])*(x-par[k+1])/T2;
-	  else
-	    cout << "Wrong Electronics" << endl;
-	  // Float_t signal = (x2 > 0.) ? par[k] * x2*x2 * exp( -2*x2+2. - z2 ) : 0.0; // RCCR
-	  Float_t signal = 0.;
-          if(Electronics == 1)
-	    signal = (x2 > 0.) ? par[k] * x2 * exp( -x2+1. - z2 ) : 0.0;
-	  else if(Electronics == 2) //OLA
-	    signal = par[k]  * exp( -x2 - z2 );
-	  else
-	    cout << "Wrong Electronics" << endl;
-	  
-	  spe[x*zdim+z] += signal;
-	  if( Integral != 0 ) Integral[i] += signal; 
-	}
-      }	
-      k += param_peak;
+        if( integral != 0 ) integral[i] = 0.;
+        Float_t sigmaA2 = par[k+4]*par[k+4]*2.;
+        Float_t T2 = par[k+3];   // PASCAL
+        if( electronics == 2 ) { T2 *= T2; T2 *= 2; } // OLA
+        for( Int_t z=0; z<zdim; z++ )
+        {
+            for( Int_t x=0; x<xdim; x++ )
+            {
+                Float_t z2 = (z-par[k+2])*(z-par[k+2])/sigmaA2;
+                Float_t x2 = 0.;
+                Float_t signal = 0.;
+                if( electronics == 1 ) // PASCAL
+                {
+                    x2 = (x-par[k+1]+T2)/T2;
+                    signal = (x2 > 0.) ? par[k] * x2 * exp( -x2+1. - z2 ) : 0.0;
+                //  signal = (x2 > 0.) ? par[k] * x2*x2 * exp( -2*x2+2. - z2 ) : 0.0; // RCCR
+                }
+                else
+                    if( electronics == 2 ) // OLA
+                    {
+                        x2 = (x-par[k+1])*(x-par[k+1])/T2;
+                        signal = par[k]  * exp( -x2 - z2 );
+                    }
+                    else
+                    {
+                        cout << "Wrong SDD Electronics =" << electronics << endl;
+                        // exit( 1 );
+                    }
+                spe[x*zdim+z] += signal;
+                if( integral != 0 ) integral[i] += signal;
+            }
+        }
+        k += knParam;
     }
-  return;
+    return;
 }
 
 
-/*
-void AliITSClusterFinderSDD::PeakFunc( Int_t xdim, Int_t zdim, Float_t *par, Float_t *spe, Float_t *Integral=0 ) 
-{
- Int_t param_peak = 5;
-// par -> paramiters..
-// par[0]  number of peaks.
-// for each peak i=1, ..., par[0]
-// 		par[i] = Ampl.
-// 		par[i+1] = xpos
-// 		par[i+2] = zpos
-// 		par[i+3] = tau
-// 		par[i+4] = sigma.
-	Int_t npeak = (Int_t)par[0];
-
-	memset( spe, 0, sizeof( Float_t )*zdim*xdim );
-	
-	Int_t k = 1;
-	for( Int_t i=0; i<npeak; i++ )
-	{
-		if( Integral != 0 ) Integral[i] = 0.;
-		Float_t sigmaA2 = par[k+4]*par[k+4]*2.;
-		Float_t T2 = par[k+3]*par[k+3]*2.; 
-		for( Int_t z=0; z<zdim; z++ )
-		{
-			for( Int_t x=0; x<xdim; x++ )
-			{
-				Float_t z2 = (z-par[k+2])*(z-par[k+2])/sigmaA2;
-				Float_t x2 = (x-par[k+1])*(x-par[k+1])/T2;
-				Float_t signal = par[k]  * exp( -x2 - z2 );
-				spe[x*zdim+z] += signal;
-				if( Integral != 0 ) Integral[i] += signal; 
-			}
-		}	
-		k += param_peak;
-	}
-	return;
-}
-*/
-
-Float_t AliITSClusterFinderSDD::chisq( Int_t xdim, Int_t zdim, Float_t *spe, Float_t *speFit )
+Float_t AliITSClusterFinderSDD::ChiSqr( Int_t xdim, Int_t zdim, Float_t *spe, Float_t *speFit )
 {
 	// EVALUATES UNNORMALIZED CHI-SQUARED
 	
@@ -595,17 +567,18 @@ Float_t AliITSClusterFinderSDD::chisq( Int_t xdim, Int_t zdim, Float_t *spe, Flo
 }
 
 
-void AliITSClusterFinderSDD::minim( Int_t xdim, Int_t zdim, Float_t *param, Float_t *prm0, Float_t *steprm, Float_t *chisqr, 
+void AliITSClusterFinderSDD::Minim( Int_t xdim, Int_t zdim, Float_t *param, Float_t *prm0, Float_t *steprm, Float_t *chisqr, 
 		Float_t *spe, Float_t *speFit )
 {
+	// 
 	Int_t   k, nnn, mmm, i;
 	Float_t p1, delta, d1, chisq1, p2, chisq2, t, p3, chisq3, a, b, p0, chisqt;
 	
-	Int_t param_peak = 5;
+	const Int_t knParam = 5;
 	Int_t npeak = (Int_t)param[0];
-	for( k=1; k<(npeak*param_peak+1); k++ ) prm0[k] = param[k];
+	for( k=1; k<(npeak*knParam+1); k++ ) prm0[k] = param[k];
 
-	for( k=1; k<(npeak*param_peak+1); k++ ) 
+	for( k=1; k<(npeak*knParam+1); k++ ) 
 	{
 		p1 = param[k];
 		delta = steprm[k];
@@ -618,13 +591,13 @@ void AliITSClusterFinderSDD::minim( Int_t xdim, Int_t zdim, Float_t *param, Floa
 
 		//  EVALUATE CHI-SQUARED AT FIRST TWO SEARCH POINTS
 		PeakFunc( xdim, zdim, param, speFit );
-		chisq1 = chisq( xdim, zdim, spe, speFit );
+		chisq1 = ChiSqr( xdim, zdim, spe, speFit );
 
 		p2 = p1+delta;
 		param[k] = p2;
 
 		PeakFunc( xdim, zdim, param, speFit );
-		chisq2 = chisq( xdim, zdim, spe, speFit );
+		chisq2 = ChiSqr( xdim, zdim, spe, speFit );
 
 		if( chisq1 < chisq2 ) 
 		{
@@ -652,7 +625,7 @@ void AliITSClusterFinderSDD::minim( Int_t xdim, Int_t zdim, Float_t *param, Floa
     		param[k] = p3;
 
 			// Constrain paramiters
-			Int_t kpos = (k-1) % param_peak;
+			Int_t kpos = (k-1) % knParam;
 			switch( kpos ) 
 			{
 				case 0 :
@@ -668,7 +641,7 @@ void AliITSClusterFinderSDD::minim( Int_t xdim, Int_t zdim, Float_t *param, Floa
 			};
 	
 			PeakFunc( xdim, zdim, param, speFit );
-			chisq3 = chisq( xdim, zdim, spe, speFit );
+			chisq3 = ChiSqr( xdim, zdim, spe, speFit );
 		
 	    	if( chisq3 < chisq2 && nnn < 50 ) 
 			{
@@ -696,7 +669,7 @@ void AliITSClusterFinderSDD::minim( Int_t xdim, Int_t zdim, Float_t *param, Floa
 		param[k] = p0;
 		
 		// Constrain paramiters
-		Int_t kpos = (k-1) % param_peak;
+		Int_t kpos = (k-1) % knParam;
 		switch( kpos ) 
 		{
 			case 0 :
@@ -712,7 +685,7 @@ void AliITSClusterFinderSDD::minim( Int_t xdim, Int_t zdim, Float_t *param, Floa
 		};
 	
 		PeakFunc( xdim, zdim, param, speFit );
-		chisqt = chisq( xdim, zdim, spe, speFit );
+		chisqt = ChiSqr( xdim, zdim, spe, speFit );
 
 		// DO NOT ALLOW ERRONEOUS INTERPOLATION
 		if( chisqt <= *chisqr ) 
@@ -727,43 +700,45 @@ void AliITSClusterFinderSDD::minim( Int_t xdim, Int_t zdim, Float_t *param, Floa
 
 	// EVALUATE FIT AND CHI-SQUARED FOR OPTIMIZED PARAMETERS
 	PeakFunc( xdim, zdim, param, speFit );
-	*chisqr = chisq( xdim, zdim, spe, speFit );
+	*chisqr = ChiSqr( xdim, zdim, spe, speFit );
 	return;
 }
 
-Int_t AliITSClusterFinderSDD::noLinearFit( Int_t xdim, Int_t zdim, Float_t *param, Float_t *spe, Int_t *niter, Float_t *chir )
+
+Int_t AliITSClusterFinderSDD::NoLinearFit( Int_t xdim, Int_t zdim, Float_t *param, Float_t *spe, Int_t *niter, Float_t *chir )
 {
-	const Float_t chilmt = 0.01; 		   //	relative accuracy 	  
-	const Int_t   nel = 3;				   //	for parabolic minimization  
-	const Int_t   nstop = 50;			   //	Max. iteration number	  
-	const Int_t   param_peak = 5;
+	// fit method from Comput. Phys. Commun 46(1987) 149
+	const Float_t kchilmt = 0.01; 		   //	relative accuracy 	  
+	const Int_t   knel = 3;				   //	for parabolic minimization  
+	const Int_t   knstop = 50;			   //	Max. iteration number	  
+	const Int_t   knParam = 5;
 
 	Int_t npeak = (Int_t)param[0];
 	
 	// RETURN IF NUMBER OF DEGREES OF FREEDOM IS NOT POSITIVE 
-	if( (xdim*zdim - npeak*param_peak) <= 0 ) return( -1 );
-	Float_t deg_free = (xdim*zdim - npeak*param_peak)-1;
+	if( (xdim*zdim - npeak*knParam) <= 0 ) return( -1 );
+	Float_t degFree = (xdim*zdim - npeak*knParam)-1;
 
-	Int_t   n, k, iter_num = 0;
-	Float_t *prm0 = new Float_t[npeak*param_peak+1];
-	Float_t *step = new Float_t[npeak*param_peak+1];
-	Float_t *schi = new Float_t[npeak*param_peak+1]; 
+	Int_t   n, k, iterNum = 0;
+	Float_t *prm0 = new Float_t[npeak*knParam+1];
+	Float_t *step = new Float_t[npeak*knParam+1];
+	Float_t *schi = new Float_t[npeak*knParam+1]; 
 	Float_t *sprm[3];
-	sprm[0] = new Float_t[npeak*param_peak+1];
-	sprm[1] = new Float_t[npeak*param_peak+1];
-	sprm[2] = new Float_t[npeak*param_peak+1];
+	sprm[0] = new Float_t[npeak*knParam+1];
+	sprm[1] = new Float_t[npeak*knParam+1];
+	sprm[2] = new Float_t[npeak*knParam+1];
 	
 	Float_t  chi0, chi1, reldif, a, b, prmin, dp;
 	
 	Float_t *speFit = new Float_t[ xdim*zdim ];
 	PeakFunc( xdim, zdim, param, speFit );
-	chi0 = chisq( xdim, zdim, spe, speFit );
+	chi0 = ChiSqr( xdim, zdim, spe, speFit );
 	chi1 = chi0;
 
 
-	for( k=1; k<(npeak*param_peak+1); k++) prm0[k] = param[k];
+	for( k=1; k<(npeak*knParam+1); k++) prm0[k] = param[k];
 
-	for( k=1 ; k<(npeak*param_peak+1); k+=param_peak ) 
+	for( k=1 ; k<(npeak*knParam+1); k+=knParam ) 
 	{
     	step[k] = param[k] / 20.0 ; 		
     	step[k+1] = param[k+1] / 50.0;
@@ -775,49 +750,49 @@ Int_t AliITSClusterFinderSDD::noLinearFit( Int_t xdim, Int_t zdim, Float_t *para
 	Int_t out = 0;
 	do 
 	{
-	    iter_num++;
+	    iterNum++;
     	chi0 = chi1;
 		
-    	minim( xdim, zdim, param, prm0, step, &chi1, spe, speFit );
+    	Minim( xdim, zdim, param, prm0, step, &chi1, spe, speFit );
     	reldif = ( chi1 > 0 ) ? ((Float_t) fabs( chi1-chi0)/chi1 ) : 0;
 
 	    // EXIT conditions
-		if( reldif < (float) chilmt ) 	
+		if( reldif < (float) kchilmt ) 	
 		{
-   		 	*chir  = (chi1>0) ? (float) TMath::Sqrt (chi1/deg_free) :0;
-    		*niter = iter_num;
+   		 	*chir  = (chi1>0) ? (float) TMath::Sqrt (chi1/degFree) :0;
+    		*niter = iterNum;
 			out = 0;
 			break;
     	}
 
-    	if( (reldif < (float)(5*chilmt)) && (iter_num > nstop) ) 
+    	if( (reldif < (float)(5*kchilmt)) && (iterNum > knstop) ) 
 		{
-    		*chir = (chi1>0) ?(float) TMath::Sqrt (chi1/deg_free):0;
-    		*niter = iter_num;
+    		*chir = (chi1>0) ?(float) TMath::Sqrt (chi1/degFree):0;
+    		*niter = iterNum;
 			out = 0;
 			break;
     	}
 
-    	if( iter_num > 5*nstop ) 
+    	if( iterNum > 5*knstop ) 
 		{
-    		*chir  = (chi1>0) ?(float) TMath::Sqrt (chi1/deg_free):0;
-    		*niter = iter_num;
+    		*chir  = (chi1>0) ?(float) TMath::Sqrt (chi1/degFree):0;
+    		*niter = iterNum;
 			out = 1;
 			break;
     	}
 
-    	if( iter_num <= nel ) continue;
+    	if( iterNum <= knel ) continue;
 
-    	n = iter_num - (iter_num/nel)*nel; // EXTRAPOLATION LIMIT COUNTER N
+    	n = iterNum - (iterNum/knel)*knel; // EXTRAPOLATION LIMIT COUNTER N
     	if( n > 3 || n == 0 ) continue;
     	schi[n-1] = chi1;
-    	for( k=1; k<(npeak*param_peak+1); k++ ) sprm[n-1][k] = param[k];
+    	for( k=1; k<(npeak*knParam+1); k++ ) sprm[n-1][k] = param[k];
     	if( n != 3 ) continue;
 
  		//   -EVALUATE EXTRAPOLATED VALUE OF EACH PARAMETER BY FINDING MINIMUM OF
  		//    PARABOLA DEFINED BY LAST THREE CALLS OF MINIM
 
-    	for( k=1; k<(npeak*param_peak+1); k++ ) 
+    	for( k=1; k<(npeak*knParam+1); k++ ) 
 		{
     		Float_t tmp0 = sprm[0][k];
     		Float_t tmp1 = sprm[1][k];
@@ -852,7 +827,7 @@ void AliITSClusterFinderSDD::ResolveClustersE()
 {
 	// The function to resolve clusters if the clusters overlapping exists
 
-  Int_t i;
+    Int_t i;
 
 	AliITS *iTS = (AliITS*)gAlice->GetModule( "ITS" );
 	// get number of clusters for this module
@@ -869,7 +844,7 @@ void AliITSClusterFinderSDD::ResolveClustersE()
 	Double_t anodePitch = fSegmentation->Dpz( dummy );
 	Float_t n, baseline;
 	fResponse->GetNoiseParam( n, baseline );
-	Int_t Electronics = fResponse->Electronics(); // 1 = PASCAL, 2 = OLA
+	Int_t electronics = fResponse->Electronics(); // 1 = PASCAL, 2 = OLA
 	
 	// fill Map of signals
 	fMap->FillMap(); 
@@ -907,10 +882,10 @@ void AliITSClusterFinderSDD::ResolveClustersE()
 		} // anode loop
 		
 		// search peaks on cluster
-		const Int_t np = 150;
-		Int_t peakX1[np];
-		Int_t peakZ1[np];
-		Float_t peakAmp1[np];
+		const Int_t kNp = 150;
+		Int_t peakX1[kNp];
+		Int_t peakZ1[kNp];
+		Float_t peakAmp1[kNp];
 		Int_t npeak = SearchPeak( sp, xdim, zdim, peakX1, peakZ1, peakAmp1, fMinPeak );
 
 		// if multiple peaks, split cluster
@@ -924,30 +899,31 @@ void AliITSClusterFinderSDD::ResolveClustersE()
 			
 			// Initial paramiters in cell dimentions
 			Int_t k1 = 1;
-			for( i=0; i<npeak; i++ ) {
-			  par[k1] = peakAmp1[i];
-			  par[k1+1] = peakX1[i]; // local time pos. [timebin]
-			  par[k1+2] = peakZ1[i]; // local anode pos. [anodepitch]
-			  if(Electronics == 1) 
-			    par[k1+3] = 2.; // PASCAL
-			  else if(Electronics == 2) 
-			    par[k1+3] = 0.7; // tau [timebin]  OLA 
-			  par[k1+4] = .4;    // sigma	[anodepich]
-			  k1+=5;
+			for( i=0; i<npeak; i++ ) 
+			{
+			  	par[k1] = peakAmp1[i];
+			  	par[k1+1] = peakX1[i]; // local time pos. [timebin]
+			  	par[k1+2] = peakZ1[i]; // local anode pos. [anodepitch]
+			  	if( electronics == 1 ) 
+			    	par[k1+3] = 2.; // PASCAL
+			  	else if( electronics == 2 ) 
+			    	par[k1+3] = 0.7; // tau [timebin]  OLA 
+			  	par[k1+4] = .4;    // sigma	[anodepich]
+			  	k1+=5;
 			}			
 			Int_t niter;
 			Float_t chir;			
-			noLinearFit( xdim, zdim, par, sp, &niter, &chir );
+			NoLinearFit( xdim, zdim, par, sp, &niter, &chir );
 
-			Float_t peakX[np];
-			Float_t peakZ[np];
-			Float_t sigma[np];
-			Float_t tau[np];
-			Float_t peakAmp[np];
-			Float_t Integral[np];
+			Float_t peakX[kNp];
+			Float_t peakZ[kNp];
+			Float_t sigma[kNp];
+			Float_t tau[kNp];
+			Float_t peakAmp[kNp];
+			Float_t integral[kNp];
 			
 			//get integrals => charge for each peak
-			PeakFunc( xdim, zdim, par, sp, Integral );
+			PeakFunc( xdim, zdim, par, sp, integral );
 			
 			k1 = 1;
 			for( i=0; i<npeak; i++ ) 
@@ -976,25 +952,26 @@ void AliITSClusterFinderSDD::ResolveClustersE()
 				Float_t newAnodef = peakZ[i] - 0.5 + astart;
 				Float_t newiTimef = peakX[i] - 1 + tstart;				
 				if( wing == 2 ) newAnodef -= fNofAnodes; 
-				Float_t AnodePath = (newAnodef - fNofAnodes/2)*anodePitch;
+				Float_t anodePath = (newAnodef - fNofAnodes/2)*anodePitch;
 				newiTimef *= fTimeStep;
 				if( newiTimef > fTimeCorr ) newiTimef -= fTimeCorr;
-				if(Electronics == 1) {
-				  newiTimef *= 0.999438;    // PASCAL
-				  newiTimef += (6./fDriftSpeed - newiTimef/3000.); 
+				if( electronics == 1 )
+				{
+				    newiTimef *= 0.999438;    // PASCAL
+				    newiTimef += (6./fDriftSpeed - newiTimef/3000.);
 				}
-				else if(Electronics == 2)
-				  newiTimef *= 0.99714;    // OLA
+				else if( electronics == 2 )
+				    newiTimef *= 0.99714;    // OLA
 
-				Float_t DriftPath = fSddLength - newiTimef * fDriftSpeed;
+				Float_t driftPath = fSddLength - newiTimef * fDriftSpeed;
 				Float_t sign = ( wing == 1 ) ? -1. : 1.;
-				clusterI.SetX( DriftPath*sign * 0.0001 );	
-				clusterI.SetZ( AnodePath * 0.0001 );
+				clusterI.SetX( driftPath*sign * 0.0001 );	
+				clusterI.SetZ( anodePath * 0.0001 );
 				clusterI.SetAnode( newAnodef );
 				clusterI.SetTime( newiTimef );
 				clusterI.SetAsigma( sigma[i]*anodePitch );
 				clusterI.SetTsigma( tau[i]*fTimeStep );
-				clusterI.SetQ( Integral[i] );
+				clusterI.SetQ( integral[i] );
 				
 			//	clusterI.PrintInfo();
 				iTS->AddCluster( 1, &clusterI );
@@ -1091,7 +1068,7 @@ void AliITSClusterFinderSDD::SelectClusters()
 
 void AliITSClusterFinderSDD::ResolveClusters()
 {
-
+/*
 // The function to resolve clusters if the clusters overlapping exists
 
    AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
@@ -1401,7 +1378,7 @@ void AliITSClusterFinderSDD::ResolveClusters()
 
   fClusters->Compress();
   fMap->ClearMap(); 
-	    
+*/	    
   return;
 }
 

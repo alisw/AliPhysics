@@ -100,15 +100,17 @@ public:
   void ResolveClustersE(); // Ernesto 
   Int_t SearchPeak( Float_t *spect, Int_t xdim, Int_t zdim, Int_t *peakX, Int_t
                     *peakZ, Float_t *peakAmp, Float_t minpeak ); // Ernesto
-  Int_t noLinearFit( Int_t xdim, Int_t zdim, Float_t *param, Float_t *spe, Int_t
+  Int_t NoLinearFit( Int_t xdim, Int_t zdim, Float_t *param, Float_t *spe, Int_t
                      *niter, Float_t *chir );
-  void minim( Int_t xdim, Int_t zdim, Float_t *param, Float_t *prm0, Float_t *steprm, Float_t *chisqr, 
+  void Minim( Int_t xdim, Int_t zdim, Float_t *param, Float_t *prm0, Float_t *steprm, Float_t *chisqr,
 		      Float_t *spe, Float_t *speFit );
-  Float_t chisq( Int_t xdim, Int_t zdim, Float_t *spe, Float_t *speFit );
+  Float_t ChiSqr( Int_t xdim, Int_t zdim, Float_t *spe, Float_t *speFit );
   void PeakFunc( Int_t xdim, Int_t zdim, Float_t *par, Float_t *spe, Float_t
                  *Integral=0 ); 
 
   virtual void Print();
+  
+protected:
 
 private:
   
