@@ -12,7 +12,7 @@ struct AliRawDataHeader {
     fVersion(1),
     fEventID2(0),
     fAttributesSubDetectors(0),
-    fStatusMiniEventID(0),
+    fStatusMiniEventID(0x1000),  // status bit 4: no L1/L2 trigger information
     fTriggerClassLow(0),
     fROILowTriggerClassHigh(0),
     fROIHigh(0)
