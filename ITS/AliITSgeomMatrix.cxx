@@ -15,6 +15,14 @@
 
 /*
 $Log$
+Revision 1.3  2000/09/05 14:25:50  nilsen
+Made fixes for HP compiler. All function parameter default values placed
+in .h file. Fixed the usual problem with HP comilers and the "for(Int_t i..."
+business. Replaced casting (Double_t [3][3]) to (Double_t (*)[3]) for HP.
+Lastly removed all "const" before function parameters which were 2 dim. arrays,
+because on HP root generates some strange code (?). Thanks Peter for the
+changes.
+
 Revision 1.2  2000/08/29 20:16:50  nilsen
 New class for ITS coordiante transformations used by AliITSgeom nearly
 exclusively.
@@ -165,12 +173,12 @@ void AliITSgeomMatrix::SixAnglesFromMatrix(Double_t *ang){
     ang[3] = TMath::ATan2(fm[1][1],fm[1][0]);
     if(TMath::Cos(ang[3])!=0.0) si = fm[1][0]/TMath::Cos(ang[3]);
     else si = fm[1][1]/TMath::Sin(ang[3]);
-    ang[4] = TMath::ATan2(si,fm[1][2]);
+    ang[2] = TMath::ATan2(si,fm[1][2]);
 
-    ang[6] = TMath::ATan2(fm[2][1],fm[2][0]);
-    if(TMath::Cos(ang[6])!=0.0) si = fm[2][0]/TMath::Cos(ang[6]);
-    else si = fm[2][1]/TMath::Sin(ang[6]);
-    ang[5] = TMath::ATan2(si,fm[2][2]);
+    ang[5] = TMath::ATan2(fm[2][1],fm[2][0]);
+    if(TMath::Cos(ang[5])!=0.0) si = fm[2][0]/TMath::Cos(ang[5]);
+    else si = fm[2][1]/TMath::Sin(ang[5]);
+    ang[4] = TMath::ATan2(si,fm[2][2]);
 
     for(Int_t i=0;i<6;i++) {ang[i] *= c; if(ang[i]<0.0) ang[i] += 360.;}
 }
