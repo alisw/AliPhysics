@@ -261,7 +261,7 @@ void AliITSclustererV2::RecPoints2Clusters
     lp[1]=  -p->GetZ()+fZshift[idx];
     lp[2]=p->GetSigmaX2();
     lp[3]=p->GetSigmaZ2();
-    lp[4]=p->GetQ();
+    lp[4]=p->GetQ()*36./23333.;  //electrons -> ADC
     Int_t lab[4]; 
     lab[0]=p->GetLabel(0); lab[1]=p->GetLabel(1); lab[2]=p->GetLabel(2);
     lab[3]=fNdet[idx];
