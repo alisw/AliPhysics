@@ -3,16 +3,7 @@
 #include "AliITSIOTrack.h"
 #include <Riostream.h>
 ClassImp(AliITSPid)
-
-Float_t AliITSPid::qcorr(Float_t xc)
-{
-    assert(0);
-  Float_t fcorr;
-  fcorr=( 0.766 +0.9692*xc -1.267*xc*xc )*( 1.-TMath::Exp(-xc*64.75) );
-  if(fcorr<=0.1)fcorr=0.1;
-return qtot/fcorr;
-}
-
+//
 Float_t AliITSPid::qtrm(Int_t track)
 {
     TVector q(*( this->GetVec(track)  ));
@@ -63,80 +54,69 @@ Float_t AliITSPid::qtrm(Float_t qarr[6],Int_t narr)
     }
     return qm;
 }
-//-----------------------------------------------------------
-//inline
-Int_t	AliITSPid::wpik(Int_t nc,Float_t q)
+
+Int_t	AliITSPid::wpik(Float_t pm,Float_t q)
 {
-  //         return pion();   
+  Double_t par[6];
+  for(int i=0;i<6;i++){par[i]=fGGpi[i]->Eval(pm);}
+  fggpi->SetParameters(par);
 
-    Float_t qmpi,qmk,sigpi,sigk,dpi,dk,ppi,pk;
-    Float_t appi,apk;
-    qmpi =cut[nc][1];
-    sigpi=cut[nc][2];
-    qmk  =cut[nc][3];
-    sigk =cut[nc][4];
-    appi = aprob[0][nc-5];
-    apk  = aprob[1][nc-5];
-//    cout<<"qmpi,sigpi,qmk,sigk="<<qmpi<<"  "<<sigpi<<"  "<<qmk<<"  "<<sigk<<endl;
-//    cout<<"appi,apk="<<appi<<","<<apk<<endl;
-    Float_t dqpi=(q-qmpi)/sigpi;
-    Float_t dqk =(q-qmk )/sigk;
-    if( dqk<-1. )return pion();
-    dpi =TMath::Abs(dqpi);
-    dk  =TMath::Abs(dqk);
-    //ppi =1.- TMath::Erf(dpi);  // +0.5;
-    //pk  =1.- TMath::Erf(dk);   // +0.5;
-    ppi=appi*TMath::Gaus(q,qmpi,sigpi)
-        /(appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk));
-    pk = apk*TMath::Gaus(q,qmk, sigk )
-        /(appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk));
+  for(int i=0;i<3;i++){par[i]=fGGka[i]->Eval(pm);}
+  fggka->SetParameters(par);
 
-//    Float_t rpik=ppi/(pk+0.0000001); 
-//	cout<<"q,dqpi,dqk, wpik: ppi,pk,rpik="
-//	<<q<<"  "<<dqpi<<"  "<<dqk<<"  "<<ppi<<"  "<<pk<<"  "<<rpik<<endl;
+  Float_t ppi=fggpi->Eval(q);
+  Float_t pka=fggka->Eval(q);
+  Float_t p=ppi+pka;
+  /*
+  if(!fSilent){
+    fggka->Print();
+    fggpi->Print();
+    if(p>0)cout<<" ppi,pka="<<ppi/p<<"  "<<pka/p<<endl;
+  }
+  */
 
-    fWp=0.; fWpi=ppi; fWk=pk;
-    if( pk>ppi){return kaon();}else{return pion();}
+  if(p>0){
+    ppi=ppi/p; 
+    pka=pka/p;
+    fWp=0.; fWpi=ppi; fWk=pka;
+    if( pka>ppi){return fPcode=321;}else{return fPcode=211;}
+  }else{return 0;}
 }
 //-----------------------------------------------------------
-//inline
-Int_t	AliITSPid::wpikp(Int_t nc,Float_t q)
+Int_t	AliITSPid::wpikp(Float_t pm,Float_t q)
 {
-   Float_t qmpi,qmk,qmp,sigpi,sigk,sigp,ppi,pk,pp;
-   Float_t appi,apk,app;
+  Double_t par[6];
+  for(int i=0;i<6;i++){par[i]=fGGpi[i]->Eval(pm);}
+  fggpi->SetParameters(par);
 
-    qmpi =cut[nc][1];
-    sigpi=cut[nc][2];
-    qmk  =cut[nc][3];
-    sigk =cut[nc][4];
-    qmp  =cut[nc][5];
-    sigp =cut[nc][6];
+  for(int i=0;i<3;i++){par[i]=fGGka[i]->Eval(pm);}
+  fggka->SetParameters(par);
 
-    //appi = apk = app = 1.;
-    appi = aprob[0][nc-5];
-    apk  = aprob[1][nc-5];
-    app  = aprob[2][nc-5];
+  for(int i=0;i<3;i++){par[i]=fGGpr[i]->Eval(pm);}
+  fggpr->SetParameters(par);
 
-    //ppi =TMath::Erf( TMath::Abs((q-qmpi)/sigpi) )+0.5;
-    //pka =TMath::Erf( TMath::Abs((q-qmk )/sigk)  )+0.5;
-    //ppr =TMath::Erf( TMath::Abs((q-qmp )/sigp)  )+0.5;
+  Float_t p,ppi,pka,ppr;
+  if( q>(fggpr->GetParameter(1)+fggpr->GetParameter(2)) )
+      { p=1.0; ppr=1.0; ppi=pka=0.0;
+    }else{ 
+    ppi=fggpi->Eval(q);
+    pka=fggka->Eval(q);
+    ppr=fggpr->Eval(q);
+    p=ppi+pka+ppr;
+  }
+  if(p>0){
+    ppi=ppi/p; 
+    pka=pka/p;
+    ppr=ppr/p;
+    fWp=ppr; fWpi=ppi; fWk=pka;
+    //if(!fSilent)cout<<" ppi,pka,ppr="<<ppi<<"  "<<pka<<" "<<ppr<<endl;
 
-    ppi=appi*TMath::Gaus(q,qmpi,sigpi)
-      /( appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk)+app*TMath::Gaus(q,qmp,sigp) );
-    pk = apk*TMath::Gaus(q,qmk, sigk )
-      /( appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk)+app*TMath::Gaus(q,qmp,sigp) );
-    pp = app*TMath::Gaus(q,qmp, sigp )
-      /( appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk)+app*TMath::Gaus(q,qmp,sigp) );
+   if( ppi>pka&&ppi>ppr )
+           {return fPcode=211;}
+   else{ if(pka>ppr){return fPcode=321;}else{return fPcode=2212;}
+   }
 
-    fWp=pp; fWpi=ppi; fWk=pk;
-
-//cout<<" wpikp: mid,sig pi,k,p="<<qmpi<<" "<<sigpi<<";   "<<qmk<<" "<<sigk<<";   "
-//    <<qmp<<" "<<sigp<<"; "<<endl;
-// cout<<" aprob: "<<appi<<"  "<<apk<<"  "<<app<<endl;
-//cout<<" ppi,pk,pp="<<ppi<<"  "<<pk<<"  "<<pp<<endl;
-
-    if( ppi>pk&&ppi>pp )  { return pion(); }
-    if(pk>pp){return kaon();}else{return proton();}
+  }else{return 0;}
 }
 //-----------------------------------------------------------
 Int_t	AliITSPid::GetPcode(TClonesArray* rps,Float_t pm)
@@ -196,46 +176,19 @@ return pcode?pcode:211;
 Int_t	AliITSPid::GetPcode(Float_t q,Float_t pm)
 {
     fWpi=fWk=fWp=0.;     fPcode=0;
-//1)---------------------- 0-120 MeV/c --------------
-    if ( pm<=cut[1][0] )
-	{ return pion(); }
-//2)----------------------120-200 Mev/c ------------- 
-    if ( pm<=cut[2][0] )
-	{ if( q<cut[2][2] ){ return pion(); } else { return  kaon();} }
-//3)----------------------200-300 Mev/c -------------
-    if ( pm<=cut[3][0] )
-	if( q<cut[3][2])
-		{ return pion(); }
-	     else
-		{ if ( q<=cut[3][5] ) {return kaon();} else {return proton();}}
-//4)----------------------300-410 Mev/c -------------
-    if ( pm<=cut[4][0] )
-	if( q<cut[4][2] )
-		{ return pion(); }
-	    else
-		{ if( q<=cut[4][4] ) {return kaon();} else {return proton(); }}
-//5)----------------------410-470 Mev/c -------------
-    if ( pm<=cut[5][0] )
-	if ( q>cut[5][5] ) {return proton();} else {return wpik(5,q);};
-//6)----------------------470-530 Mev/c -------------
-    if ( pm<=cut[6][0] )
-	if ( q>cut[6][5] ) {return proton();} else {return wpik(6,q);};
-//7)----------------------530-590 Mev/c -------------
-    if ( pm<=cut[7][0] )
-	if ( q<=cut[7][5] ) {return wpik(7,q);} else {return proton();};
-//8)----------------------590-650 Mev/c -------------
-    if ( pm<=cut[8][0] )
-	if ( q<=cut[8][5] ) {return wpik(8,q);} else {return proton();}; 
-//9)----------------------650-730 Mev/c -------------
-    if ( pm<=cut[9][0] )
-	if ( q<=cut[9][5] ) {return wpik(9,q);} else {return proton();};
-//10)----------------------730-830 Mev/c -------------
-    if( pm<=cut[10][0] ){ return wpikp(10,q); }
-//11)----------------------830-930 Mev/c -------------
-    if( pm<=cut[11][0] ){ return wpikp(11,q); }
-//12)----------------------930-1030 Mev/c -------------
-    if( pm<=cut[12][0] ){ return wpikp(12,q); }
 
+    if ( pm<=0.400 )
+	{ if( q<fCutKa->Eval(pm) )
+	    {return pion();}
+	else{ if( q<fCutPr->Eval(pm) )
+		{return kaon();}
+	    else{return proton();}
+	    } 
+	}
+    if ( pm<=0.750 )
+	if ( q>fCutPr->Eval(pm)  )
+	    {return proton();} else {return wpik(pm,q);};
+    if( pm<=1.10 ){ return wpikp(pm,q); }
     return fPcode;    
 }
 //-----------------------------------------------------------
@@ -366,6 +319,77 @@ AliITSPid::AliITSPid(Int_t ntrack)
     TClonesArray &arr=*trs;
     for(Int_t i=0;i<ntrack;i++)new(arr[i])TVector(0,11);
     mxtrs=0;
+    //   
+    fCutKa=new TF1("fcutka","pol4",0.05,0.4);
+    Double_t ka[5]={25.616, -161.59, 408.97, -462.17, 192.86};
+    fCutKa->SetParameters(ka);
+    //
+    fCutPr=new TF1("fcutpr","[0]/x/x+[1]",0.05,1.1);
+    Double_t pr[2]={0.70675,0.4455};
+    fCutPr->SetParameters(pr);
+    //
+    //---------- signal fit ----------
+{//Pions
+fGGpi[0]=new TF1("fp1pi","pol4",0.34,1.2);
+  Double_t parpi_0[10]={ -1.9096471071e+03, 4.5354331545e+04, -1.1860738840e+05,
+   1.1405329025e+05, -3.8289694496e+04  };
+  fGGpi[0]->SetParameters(parpi_0);
+fGGpi[1]=new TF1("fp2pi","[0]/x/x+[1]",0.34,1.2);
+  Double_t parpi_1[10]={ 1.0791668283e-02, 9.7347716496e-01  };
+  fGGpi[1]->SetParameters(parpi_1);
+fGGpi[2]=new TF1("fp3pi","[0]/x/x+[1]",0.34,1.2);
+  Double_t parpi_2[10]={ 5.8191602279e-04, 9.7285601334e-02  };
+  fGGpi[2]->SetParameters(parpi_2);
+fGGpi[3]=new TF1("fp4pi","pol4",0.34,1.2);
+  Double_t parpi_3[10]={ 6.6267353195e+02, 7.1595101104e+02, -5.3095111914e+03,
+   6.2900977606e+03, -2.2935862292e+03  };
+  fGGpi[3]->SetParameters(parpi_3);
+fGGpi[4]=new TF1("fp5pi","[0]/x/x+[1]",0.34,1.2);
+  Double_t parpi_4[10]={ 9.0419011783e-03, 1.1628922525e+00  };
+  fGGpi[4]->SetParameters(parpi_4);
+fGGpi[5]=new TF1("fp6pi","[0]/x/x+[1]",0.34,1.2);
+  Double_t parpi_5[10]={ 1.8324872519e-03, 2.1503968838e-01  };
+  fGGpi[5]->SetParameters(parpi_5);
+}//End Pions
+{//Kaons
+fGGka[0]=new TF1("fp1ka","pol4",0.24,1.2);
+  Double_t parka_0[20]={
+  -1.1204243395e+02,4.6716191428e+01,2.2584059281e+03,
+  -3.7123338009e+03,1.6003647641e+03  };
+  fGGka[0]->SetParameters(parka_0);
+fGGka[1]=new TF1("fp2ka","[0]/x/x+[1]",0.24,1.2);
+  Double_t parka_1[20]={
+  2.5181172905e-01,8.7566001814e-01  };
+  fGGka[1]->SetParameters(parka_1);
+fGGka[2]=new TF1("fp3ka","pol6",0.24,1.2);
+  Double_t parka_2[20]={
+  8.6236021573e+00,-7.0970427531e+01,2.4846827669e+02,
+  -4.6094401290e+02,4.7546751408e+02,-2.5807112462e+02,
+  5.7545491696e+01  };
+  fGGka[2]->SetParameters(parka_2);
+}//End Kaons
+{//Protons
+fGGpr[0]=new TF1("fp1pr","pol4",0.4,1.2);
+  Double_t parpr_0[10]={
+  6.0150106543e+01,-8.8176206410e+02,3.1222644604e+03,
+  -3.5269200901e+03,1.2859128345e+03  };
+  fGGpr[0]->SetParameters(parpr_0);
+fGGpr[1]=new TF1("fp2pr","[0]/x/x+[1]",0.4,1.2);
+  Double_t parpr_1[10]={
+  9.4970837607e-01,7.3573504201e-01  };
+  fGGpr[1]->SetParameters(parpr_1);
+fGGpr[2]=new TF1("fp3pr","[0]/x/x+[1]",0.4,1.2);
+  Double_t parpr_2[10]={
+  1.2498403757e-01,2.7845072306e-02  };
+  fGGpr[2]->SetParameters(parpr_2);
+}//End Protons
+    //----------- end fit -----------
+
+    fggpr=new TF1("ggpr","gaus",0.4,1.2);
+    fggpi=new TF1("ggpi","gaus+gaus(3)",0.4,1.2);
+    fggka=new TF1("ggka","gaus",0.4,1.2);
+
+    //-------------------------------------------------
 const int inf=10;
 //         Ncut Pmom   pilo  pihi    klo    khi     plo    phi
 //       cut[j] [0]    [1]    [2]    [3]    [4]     [5]    [6]
@@ -398,5 +422,4 @@ const int inf=10;
     aprob[0][7]= 355.;    aprob[1][7]=
                           355.*(20.74/469.5);  aprob[2][7]=34.08;
 }
-//-----------------------------------------------------------
-
+//End AliITSPid.cxx

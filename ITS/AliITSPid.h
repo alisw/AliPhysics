@@ -6,6 +6,7 @@
 #include "../TPC/AliTPCtrack.h"
 #include "AliITSIOTrack.h"
 #include "AliITStrackV2.h"
+#include <TF1.h>
 #include <assert.h>
 //___________________________________________________________________________
 class  AliITSPid :
@@ -46,16 +47,24 @@ public:
 	Int_t 	fPcode;
 //private:
 public:
-	Float_t qcorr(Float_t);
 	int	qcomp(Float_t* qa,Float_t* qb){return qa[0]>qb[0]?1:0;}
 	Float_t qtrm(Int_t track);
 	Float_t qtrm(Float_t qarr[6],Int_t narr);
 	Float_t fSigmin;
-	Int_t	wpik(Int_t,Float_t);
-	Int_t	wpikp(Int_t,Float_t);
+	Int_t	wpik(Float_t,Float_t);
+        Int_t	wpikp(Float_t,Float_t);
 	Int_t	pion(){return fWpi=1.,fPcode=211;}
 	Int_t	kaon(){return fWk=1.,fPcode=321;}
 	Int_t	proton(){return fWp=1.,fPcode=2212;}
+        Int_t   fSilent;
+	TF1*    fCutKa;
+	TF1*    fCutPr;
+	TF1*    fGGpi[6];
+	TF1*    fGGka[3];
+        TF1*    fGGpr[3];
+	TF1*    fggpi;
+	TF1*    fggka;
+	TF1*    fggpr;
 public:
   ClassDef(AliITSPid,1) // Class for ITS PID
 };
