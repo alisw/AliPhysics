@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:20  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:24  cernlib
 * Geant
 *
@@ -58,7 +61,12 @@ C.
 #if defined(CERNLIB_ASHO)
       PARAMETER (ASHMIN=1,ASHMAX=30)
 #endif
+* These parameters are needed by M.Kowalski's fluctuation algorithm
+      PARAMETER (FPOT=20.77E-9, EEND=10E-6, EEXPO=2.2)
+      PARAMETER (XEXPO=-EEXPO+1, YEXPO=1/XEXPO)
+* These parameters are needed by M.Kowalski's fluctuation algorithm
       DIMENSION RNDM(2)
+      DE2(DPOT,RAN)=(DPOT**XEXPO*(1-RAN)+EEND**XEXPO*RAN)**YEXPO
       FLAND(X) = P1+P6*X+(P2+P3*X)*EXP(P4*X+P5)
 *
       IF(STEP.LE.0) THEN
@@ -66,8 +74,14 @@ C.
       ELSE
          DEDX = DEMEAN/STEP
          POTI=Q(JPROB+9)
-         IF(ISTRA.EQ.0.AND.ILOSS.NE.2) THEN
+         IF(ISTRA.EQ.0.AND.(ILOSS.EQ.1.OR.ILOSS.EQ.3)) THEN
             CALL GLANDZ(Z,STEP,VECT(7),GETOT,DEDX,DE,POTI,Q(JPROB+10))
+         ELSEIF (ILOSS.EQ.5) THEN
+* This is Marek Kowalski's fluctuation algorithm, it works only when
+* the step size has been limited to one ionisation on average
+            CALL GRNDM(RNDM,1)
+            DE=DE2(FPOT,RNDM(1))
+*
          ELSE
 *
 * *** mean ionization potential (GeV)
