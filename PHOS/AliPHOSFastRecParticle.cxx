@@ -131,12 +131,12 @@ void AliPHOSFastRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 {
   //  Execute action corresponding to one event
   //  This member function is called when a AliPHOSFastRecParticle is clicked with the locator
-     
+  
   if (!gPad->IsEditable()) 
     return ;
-
+  
   static TPaveText * clustertext = 0 ; 
-
+  
   switch (event) {
     
   case kButton1Down: {
@@ -162,49 +162,60 @@ void AliPHOSFastRecParticle::ExecuteEvent(Int_t event, Int_t px, Int_t py)
     break ;
   }
   }
+  
 }
-// Bool_t GetPhotonHiPu_LoEf() {
-//   Bool_t pid=kFALSE ;
-//   if((TestPIDBit(9)==kTRUE)&&(TestPIDBit(8)==kTRUE)&&(TestPIDBit(7)==kTRUE)) pid = kTRUE;
-//   return pid ;
-// }
-// Bool_t GetPhotonMed_Pu_Ef() {
-//   Bool_t pid=kFALSE ;
-//   if((TestPIDBit(8))&&(TestPIDBit(7))) pid = kTRUE ;
-//   return pid ;
-// }
-// Bool_t GetPhotonHiEf_LoPu() {
-//   Bool_t pid=kFALSE ;
-//   if(TestPIDBit(7)) pid = kTRUE ;
-//   return pid ;
-// }
+
 //____________________________________________________________________________
 TString AliPHOSFastRecParticle::Name()
 {
-  // Returns the name of the particle type
-  
-  TString  name ; 
-  switch (fType) {
-  case kNEUTRALEMFAST:
-    name = "PHOTON" ;
-    break ; 
-   case kCHARGEDEMFAST:
-     name = "ELECTRON" ;
-    break ; 
-   case kCHARGEDHAFAST:
-    name = "CHARGED_HA_FAST" ;
-    break ; 
-  case kNEUTRALHASLOW:
-    name = "NEUTRAL_HA_SLOW" ; 
-    break ; 
-  case kNEUTRALEMSLOW:
-    name = "NEUTRAL_EM_SLOW" ; 
-    break ; 
-  case kNEUTRALHAFAST:
-    name = "NEUTRAL_HA_FAST" ; 
-    break ; 
+  // Returns the name of the particle type (only valid if PIDv1 is employed)
 
-  }
+  TString  name ; 
+  
+  if(fType == 127)
+    name = "PHOTON_LOPU_HIEF" ;    //PCA = 001 TOF = 111 CPV = 111
+  
+  if(fType == 511)
+    name = "PHOTON_HIPU_LOEF" ;    //PCA = 011 TOF = 111 CPV = 111
+  
+  if(fType == 255)
+	name = "PHOTON_MED_PU_EF" ;    //PCA = 111 TOF = 111 CPV = 111
+  
+  if((fType == 383)||(fType == 447)) 
+    name = "PHOTON_STRANGE" ;      //PCA = 101 or 110 TOF = 111 CPV = 111
+  
+  if(fType == 63)
+    name = "NEUTRAL_FAST_HADRON" ; //PCA = 000 TOF = 111 CPV = 111
+  
+  if((fType == 504) || (fType == 505) ||(fType == 248)||(fType == 249)||(fType == 120)||(fType == 121))
+    name = "CHARGED_FAST_EM" ;     //PCA = 111, 011 or 001 TOF =111 CPV = 000 or 001  
+  
+  if((fType == 56)||(fType == 57))
+    name = "CHARGED_FAST_HADRON" ; //PCA = 000 TOF = 111 CPV = 000 or 001 
+  
+  if((fType < 8)&&(fType > 0))
+    name = "NEUTRAL_SLOW_HADRON" ; //PCA = 000 TOF = 000 CPV = 001 or 011 or 111
+  
+  if((fType == 0))
+    name = "CHARGED_SLOW_HADRON" ; //PCA = 000 TOF = 000 CPV = 000
+  
+  if((fType == 448) || (fType == 449) ||(fType == 192)||(fType == 193)||(fType == 64)||(fType == 64))
+    name = "CHARGED_SLOW_EM" ;    //PCA = 111, 011 or 001 TOF =000 CPV = 000 or 001  
+  
+  
+  if ( name.Contains("PHOTON") )
+    fPdgCode = 22 ; // Sets the pdg GetName() to gamma  
+  if ( name.Contains("NEUTRAL") )
+    fPdgCode = 2112 ; // Sets the pdg GetName() to neutron 
+  if ( name.Contains("CHARGED_FAST_EM") )
+    fPdgCode = 11 ; // Sets the pdg GetName() to electron 
+  if ( name.Contains("CHARGED_SLOW_EM") )
+    fPdgCode = 13 ; // Sets the pdg GetName() to muon
+  if ( name.Contains("CHARGED_FAST_HADRON") )
+    fPdgCode = 211 ; // Sets the pdg GetName() to pion
+  if ( name.Contains("CHARGED_SLOW_HADRON") )
+    fPdgCode = 2212 ; // Sets the pdg GetName() to proton
+  
   return name ; 
 }
 

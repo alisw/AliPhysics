@@ -38,7 +38,8 @@ class AliPHOSFastRecParticle : public TParticle {
     // returns the index of this in the list
     return fIndexInList ; 
   } 
-  Int_t GetPrimary(){return fPrimary;}
+  virtual const Int_t GetNPrimaries() const {return 0 ;}
+  virtual const TParticle * GetPrimary(Int_t index=0) const  {return 0 ;} 
   
   const Int_t GetType() const { 
     // returns the type of the particle
@@ -72,7 +73,8 @@ class AliPHOSFastRecParticle : public TParticle {
        TestPIDBit(2)&&TestPIDBit(1)&&TestPIDBit(0))  //RCPV
       pid = kTRUE ;
     return pid ;
-  } 
+  }
+ 
   Bool_t IsPhotonHiEf_LoPu()  {
     Bool_t pid=kFALSE ;
     if(TestPIDBit(6)&& //PCA
@@ -82,18 +84,56 @@ class AliPHOSFastRecParticle : public TParticle {
     return pid ;
   }
 
- Bool_t IsPhoton()  {
+  Bool_t IsPhoton()  {
     Bool_t pid=kFALSE ;
     if(IsPhotonHiEf_LoPu()) pid = kTRUE ;
     return pid ;
   }
+  
+  Bool_t IsFastChargedHadron()  {
+    Bool_t pid=kFALSE ;
+    if(TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3)) //TOF
+      pid = kTRUE ;
+    return pid ;
+  }
+  Bool_t IsSlowChargedHadron()  {
+    Bool_t pid=kFALSE ;
+    if(TestPIDBit(1)||TestPIDBit(0)) //CPV
+      pid = kTRUE ;
+    return pid ;
+  }
+  Bool_t IsFastNeutralHadron()  {
+    Bool_t pid=kFALSE ;
+    if(TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3)&& //TOF
+       TestPIDBit(2)&&TestPIDBit(1)&&TestPIDBit(0))//RCPV
+      pid = kTRUE ;
+    return pid ;
+  }
+  Bool_t IsSlowNeutralHadron()  {
+    Bool_t pid=kFALSE ;
+    if(TestPIDBit(2)&&TestPIDBit(1)&&TestPIDBit(0))//RCPV
+      pid = kTRUE ;
+    return pid ;
+  }
 
+  Bool_t IsFastChargedEM()  {
+    Bool_t pid=kFALSE ;
+    if((TestPIDBit(8)||TestPIDBit(7)||TestPIDBit(6))&&
+       TestPIDBit(5)&&TestPIDBit(4)&&TestPIDBit(3))//TOF
+      pid = kTRUE ;
+    return pid ;
+  }
+
+  Bool_t IsSlowChargedEM()  {
+    Bool_t pid=kFALSE ;
+    if(TestPIDBit(8)||TestPIDBit(7)||TestPIDBit(6))
+      pid = kTRUE ;
+    return pid ;
+  }
+  
   TString Name() ; 
   virtual void Paint(Option_t * option="");
   virtual void Print(const char * opt) ; 
-  void SetPrimary(Int_t index) { // sets the primary particle index
-    fPrimary = index ; 
-  }
   
   void SetType(Int_t type) { 
     // sets the particle type 
@@ -114,13 +154,12 @@ class AliPHOSFastRecParticle : public TParticle {
  protected:
 
   Int_t fIndexInList ; // the index of this RecParticle in the list stored in TreeR (to be set by analysis)
-  Int_t fPrimary ;     //  primary particle index 
   Int_t fType ;        // particle type obtained by "virtual" reconstruction
 
  private:
 
 
-  ClassDef(AliPHOSFastRecParticle,1)  // Reconstructed Particle produced by the fast simulation 
+  ClassDef(AliPHOSFastRecParticle,2)  // Reconstructed Particle produced by the fast simulation 
 
 };
 
