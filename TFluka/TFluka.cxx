@@ -583,15 +583,15 @@ void TFluka::InitPhysics()
   TString sAliceInp = GetInputFileName();
   sAliceCoreInp += GetCoreInputFileName();
 /* open files */
-  if ((pAliceCoreInp = fopen("AliceCoreInp.Data()","r")) == NULL) {
+  if ((pAliceCoreInp = fopen(sAliceCoreInp.Data(),"r")) == NULL) {
     printf("\nCannot open file %s\n",sAliceCoreInp.Data());
     exit(1);
   }
-  if ((pAliceFlukaMat = fopen("sAliceTmp.Data()","r")) == NULL) {
+  if ((pAliceFlukaMat = fopen(sAliceTmp.Data(),"r")) == NULL) {
     printf("\nCannot open file %s\n",sAliceTmp.Data());
     exit(1);
   }
-  if ((pAliceInp = fopen("sAliceInp.Data()","w")) == NULL) {
+  if ((pAliceInp = fopen(sAliceInp.Data(),"w")) == NULL) {
     printf("\nCannot open file %s\n",sAliceInp.Data());
     exit(1);
   }
@@ -602,7 +602,7 @@ void TFluka::InitPhysics()
 
   while ((fgets(sLine,255,pAliceCoreInp)) != NULL) {
     if (strncmp(sLine,"GEOEND",6) != 0)
-      fprintf(pAliceInp,"%s\n",sLine); // copy until GEOEND card
+      fprintf(pAliceInp,"%s",sLine); // copy until GEOEND card
     else {
       fprintf(pAliceInp,"GEOEND\n");   // add GEOEND card
       goto flukamat;
@@ -664,7 +664,7 @@ fin:
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
         // one = step length in assigning indices
         // "ANNH-THR"; 
-        fprintf(pAliceInp,"EMFCUT    %f10.1%f10.1%f10.1%f10.1%f10.1%f10.1ANNH-THR\n",-one,zero,zero,three,fLastMaterial,one);
+        fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fANNH-THR\n",-one,zero,zero,three,fLastMaterial,one);
       }
       else if (iProcessValue[i] == 0) {
         fprintf(pAliceInp,"*\n*No annihilation - no FLUKA card generated\n");
@@ -707,7 +707,7 @@ fin:
           fprintf(pAliceInp,"*Energy threshold set by call SetCut('BCUTM',cut) or set to 0.\n");
           fprintf(pAliceInp,"*Energy threshold set by call SetCut('PPCUTM',cut) or set to 0.\n");
           // three = bremsstrahlung and pair production by muons and charged hadrons both are activated
-          fprintf(pAliceInp,"PAIRBREM  %f10.1",three);
+          fprintf(pAliceInp,"PAIRBREM  %10.1f",three);
           // direct pair production by muons
           // G4 particles: "e-", "e+"
           // G3 default value: 0.01 GeV
@@ -716,7 +716,7 @@ fin:
           for (k=0; k<iNbOfCut; k++) {
             if (strncmp(&sCutFlag[k][0],"PPCUTM",6) == 0) fCut = fCutValue[k];
           }
-          fprintf(pAliceInp,"%e10.4",fCut);
+          fprintf(pAliceInp,"%10.4g",fCut);
           // fCut; = e+, e- kinetic energy threshold (in GeV) for explicit pair production.
           // muon and hadron bremsstrahlung
           // G4 particles: "gamma"
@@ -726,7 +726,7 @@ fin:
           for (k=0; k<iNbOfCut; k++) {
             if (strncmp(&sCutFlag[k][0],"BCUTM",5) == 0) fCut = fCutValue[k];
           }
-          fprintf(pAliceInp,"%e10.4%f10.1%10.1\n",fCut,three,fLastMaterial);
+          fprintf(pAliceInp,"%10.4g%10.1f%10.1f\n",fCut,three,fLastMaterial);
           // fCut = photon energy threshold (GeV) for explicit bremsstrahlung production
           // three = lower bound of the material indices in which the respective thresholds apply
           // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
@@ -745,7 +745,7 @@ fin:
           // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
           // one = step length in assigning indices
           // "ELPO-THR"; 
-          fprintf(pAliceInp,"EMFCUT    %e10.4%f10.1%f10.1%f10.1%f10.1%f10.1ELPO-THR\n",fCut,zero,zero,three,fLastMaterial,one);
+          fprintf(pAliceInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",fCut,zero,zero,three,fLastMaterial,one);
       
           // for e+ and e-
           fprintf(pAliceInp,"*\n*Pair production by electrons is activated\n");
@@ -758,7 +758,7 @@ fin:
           // three = lower bound of the material indices in which the respective thresholds apply
           // fLastMaterial =  upper bound of the material indices in which the respective thresholds apply
           // one = step length in assigning indices
-          fprintf(pAliceInp,"EMFCUT    %f10.1%f10.1%e10.4%f10.1%f10.1%f10.1PHOT-THR\n",zero,zero,fCut,three,fLastMaterial,one);
+          fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",zero,zero,fCut,three,fLastMaterial,one);
 	  goto BOTH;
         } // end of if for BREM
       } // end of loop for BREM
@@ -776,7 +776,7 @@ fin:
       // zero = no explicit bremsstrahlung production is simulated
       // three = lower bound of the material indices in which the respective thresholds apply
       // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-      fprintf(pAliceInp,"PAIRBREM  %f10.1%f10.1%f10.1%f10.1%f10.1\n",one,zero,zero,three,fLastMaterial);
+      fprintf(pAliceInp,"PAIRBREM  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,zero,zero,three,fLastMaterial);
       
       // for e+ and e-
       fprintf(pAliceInp,"*\n*Pair production by electrons is activated\n");
@@ -791,7 +791,7 @@ fin:
       // three = lower bound of the material indices in which the respective thresholds apply
       // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
       // one = step length in assigning indices
-      fprintf(pAliceInp,"EMFCUT    %f10.1%f10.1%e10.4%f10.1%f10.1%f10.1PHOT-THR\n",zero,zero,fCut,three,fLastMaterial,one);
+      fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",zero,zero,fCut,three,fLastMaterial,one);
 
 BOTH:
     k = 0;
@@ -832,7 +832,7 @@ BOTH:
         // fCut = photon energy threshold (GeV) for explicit bremsstrahlung production
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        fprintf(pAliceInp,"PAIRBREM  %f10.1%f10.1%e10.4%f10.1%f10.1\n",two,zero,fCut,three,fLastMaterial);
+        fprintf(pAliceInp,"PAIRBREM  %10.1f%10.1f%10.4g%10.1f%10.1f\n",two,zero,fCut,three,fLastMaterial);
  
         // for e+ and e-
         fprintf(pAliceInp,"*\n*Kinetic energy threshold (GeV) for e+/e- bremsstrahlung - resets to default=0.\n");
@@ -844,7 +844,7 @@ BOTH:
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
         // one = step length in assigning indices
         //"ELPO-THR"; 
-        fprintf(pAliceInp,"EMFCUT    %f10.1%f10.1%f10.1%f10.1%f10.1%f10.1ELPO-THR\n",-one,zero,zero,three,fLastMaterial,one);
+        fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",-one,zero,zero,three,fLastMaterial,one);
       }
       else if (iProcessValue[i] == 0) {
         fprintf(pAliceInp,"*\n*No bremsstrahlung - no FLUKA card generated\n");
@@ -875,7 +875,7 @@ NOBREM:
         fprintf(pAliceInp,"*Generated from call: SetProcess('CKOV',1) or SetProcess('CKOV',2)\n");
         Double_t emin = 2.07e-9; // minimum Cerenkov photon emission energy (in GeV!). Default: 2.07E-9 GeV (corresponding to 600 nm)
         Double_t emax = 4.96e-9; // maximum Cerenkov photon emission energy (in GeV!). Default: 4.96E-9 GeV (corresponding to 250 nm)
-        fprintf(pAliceInp,"OPT-PROD  %e10.4%e10.4%f10.1%f10.1%f10.1%f10.1CERENKOV\n",emin,emax,zero,three,fLastMaterial,one);
+        fprintf(pAliceInp,"OPT-PROD  %10.4g%10.4g%10.1f%10.1f%10.1f%10.1fCERENKOV\n",emin,emax,zero,three,fLastMaterial,one);
       }
       else if (iProcessValue[i] == 0) {
         fprintf(pAliceInp,"*\n*No Cerenkov photon generation\n");
@@ -887,7 +887,7 @@ NOBREM:
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
         // one = step length in assigning indices
         //"CERE-OFF"; 
-        fprintf(pAliceInp,"OPT-PROD  %f10.1%f10.1%f10.1%f10.1%f10.1%f10.1CERE-OFF\n",zero,zero,zero,three,fLastMaterial,one);
+        fprintf(pAliceInp,"OPT-PROD  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fCERE-OFF\n",zero,zero,zero,three,fLastMaterial,one);
       }
       else  {
         fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('CKOV',?) call.\n");
@@ -918,7 +918,7 @@ NOBREM:
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
         // one = step length in assigning indices
         //"PHOT-THR"; 
-        fprintf(pAliceInp,"EMFCUT    %f10.1%f10.1%f10.1%f10.1%f10.1%f10.1PHOT-THR\n",-one,zero,zero,three,fLastMaterial,one);
+        fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",-one,zero,zero,three,fLastMaterial,one);
       }
       else if (iProcessValue[i] == 0) {
         fprintf(pAliceInp,"*\n*No Compton scattering - no FLUKA card generated\n");
@@ -968,7 +968,7 @@ NOBREM:
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
         // one = step length in assigning indices
-        fprintf(pAliceInp,"DELTARAY  %e10.4%f10.1%f10.1%f10.1%f10.1%f10.1\n",emin,zero,zero,three,fLastMaterial,one);
+        fprintf(pAliceInp,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n",emin,zero,zero,three,fLastMaterial,one);
       }
       else if (iProcessValue[i] == 1 || iProcessValue[i] == 2 || iProcessValue[i] == 3) {
         fprintf(pAliceInp,"*\n*Kinetic energy threshold (GeV) for delta ray production\n");
@@ -985,7 +985,7 @@ NOBREM:
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial =  upper bound of the material indices in which the respective thresholds apply
         // one = step length in assigning indices
-        fprintf(pAliceInp,"DELTARAY  %e10.4%f10.1%f10.1%f10.1%f10.1%f10.1\n",fCut,zero,zero,three,fLastMaterial,one);
+        fprintf(pAliceInp,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n",fCut,zero,zero,three,fLastMaterial,one);
       }
       else  {
         fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('DRAY',?) call.\n");
@@ -1017,7 +1017,7 @@ NOBREM:
         // zero = no spin-relativistic corrections
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        fprintf(pAliceInp,"MULSOPT   %f10.1%f10.1%f10.1%f10.1%f10.1\n",zero,three,zero,three,fLastMaterial);
+        fprintf(pAliceInp,"MULSOPT   %10.1f%10.1f%10.1f%10.1f%10.1f\n",zero,three,zero,three,fLastMaterial);
 
       }
       else  {
@@ -1058,7 +1058,7 @@ NOBREM:
         // one = minimal accuracy
         // three = lower bound of the material indices in which the respective thresholds apply
         // upper bound of the material indices in which the respective thresholds apply
-        fprintf(pAliceInp,"IONFLUCT  %f10.1%f10.1%f10.1%f10.1%f10.1\n",one,one,one,three,fLastMaterial);
+        fprintf(pAliceInp,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,one,one,three,fLastMaterial);
       }
       else if (iProcessValue[i] == 4) { // no energy loss fluctuations
         fprintf(pAliceInp,"*\n*No energy loss fluctuations\n");
@@ -1068,7 +1068,7 @@ NOBREM:
         // one = minimal accuracy
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        fprintf(pAliceInp,"IONFLUCT  %f10.1%f10.1%f10.1%f10.1%f10.1\n",-one,-one,one,three,fLastMaterial);
+        fprintf(pAliceInp,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",-one,-one,one,three,fLastMaterial);
       }
       else  {
         fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('LOSS',?) call.\n");
@@ -1101,7 +1101,7 @@ NOBREM:
         // three = multiple scattering for e+ and e- is completely suppressed
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        fprintf(pAliceInp,"MULSOPT   %f10.1%f10.1%f10.1%f10.1%f10.1\n",zero,three,three,three,fLastMaterial);
+        fprintf(pAliceInp,"MULSOPT   %10.1f%10.1f%10.1f%10.1f%10.1f\n",zero,three,three,three,fLastMaterial);
       }
       else  {
         fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('MULS',?) call.\n");
@@ -1124,13 +1124,13 @@ NOBREM:
     else if (strncmp(&sProcessFlag[i][0],"MUNU",4) == 0) {
       if (iProcessValue[i] == 1) {
         fprintf(pAliceInp,"*\n*Muon nuclear interactions with production of secondary hadrons\n");
-        fprintf(pAliceInp,"*\n*Generated from call: SetProcess('MUNU',1);\n");
+        fprintf(pAliceInp,"*Generated from call: SetProcess('MUNU',1);\n");
         // one = full simulation of muon nuclear interactions and production of secondary hadrons
         // zero = ratio of longitudinal to transverse virtual photon cross-section - Default = 0.25.
         // zero = fraction of rho-like interactions ( must be < 1) - Default = 0.75.
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        fprintf(pAliceInp,"MUPHOTON  %f10.1%f10.1%f10.1%f10.1%f10.1\n",one,zero,zero,three,fLastMaterial);
+        fprintf(pAliceInp,"MUPHOTON  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,zero,zero,three,fLastMaterial);
       }
       else if (iProcessValue[i] == 2) {
         fprintf(pAliceInp,"*\n*Muon nuclear interactions without production of secondary hadrons\n");
@@ -1140,7 +1140,7 @@ NOBREM:
         // zero = fraction of rho-like interactions ( must be < 1) - Default = 0.75.
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        fprintf(pAliceInp,"MUPHOTON  %f10.1%f10.1%f10.1%f10.1%f10.1\n",two,zero,zero,three,fLastMaterial);
+        fprintf(pAliceInp,"MUPHOTON  %10.1f%10.1f%10.1f%10.1f%10.1f\n",two,zero,zero,three,fLastMaterial);
       }
       else if (iProcessValue[i] == 0) {
         fprintf(pAliceInp,"*\n*No muon nuclear interaction - no FLUKA card generated\n");
@@ -1172,7 +1172,7 @@ NOBREM:
         // zero = not used
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        fprintf(pAliceInp,"PHOTONUC  %f10.1%f10.1%f10.1%f10.1%f10.1\n",-one,zero,zero,three,fLastMaterial);
+        fprintf(pAliceInp,"PHOTONUC  %10.1f%10.1f%10.1f%10.1f%10.1f\n",-one,zero,zero,three,fLastMaterial);
       }
       else if (iProcessValue[i] == 1) {
         fprintf(pAliceInp,"*\n*Photon nuclear interactions are activated at all energies\n");
@@ -1182,7 +1182,7 @@ NOBREM:
         // zero = not used
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        fprintf(pAliceInp,"PHOTONUC  %f10.1%f10.1%f10.1%f10.1%f10.1\n",one,zero,zero,three,fLastMaterial);
+        fprintf(pAliceInp,"PHOTONUC  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,zero,zero,three,fLastMaterial);
       }
       else if (iProcessValue[i] == 0) {
         fprintf(pAliceInp,"*\n*No photofission - no FLUKA card generated\n");
@@ -1216,7 +1216,7 @@ NOBREM:
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
         // one = step length in assigning indices
         //"PHOT-THR"; 
-        fprintf(pAliceInp,"EMFCUT    %f10.1%f10.1%f10.1%f10.1%f10.1%f10.1PHOT-THR\n",zero,-one,zero,three,fLastMaterial,one);
+        fprintf(pAliceInp,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",zero,-one,zero,three,fLastMaterial,one);
       }
       else if (iProcessValue[i] == 0) {
         fprintf(pAliceInp,"*\n*No photo electric effect - no FLUKA card generated\n");
@@ -1249,7 +1249,7 @@ NOBREM:
         // - one = no Rayleigh scattering and no binding corrections for Compton
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        fprintf(pAliceInp,"EMFRAY    %f10.1%f10.1%f10.1%f10.1\n",-one,three,three,fLastMaterial);
+        fprintf(pAliceInp,"EMFRAY    %10.1f%10.1f%10.1f%10.1f\n",-one,three,three,fLastMaterial);
       }
       else  {
         fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('RAYL',?) call.\n");
@@ -1297,7 +1297,7 @@ NOBREM:
         // one = minimal accuracy
         // three = lower bound of the material indices in which the respective thresholds apply
         // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-        fprintf(pAliceInp,"IONFLUCT  %f10.1%f10.1%f10.1%f10.1%f10.1\n",one,one,one,three,fLastMaterial);
+        fprintf(pAliceInp,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",one,one,one,three,fLastMaterial);
       }
       else {
         fprintf(pAliceInp,"*\n*Illegal flag value in SetProcess('STRA',?) call.\n");
@@ -1346,7 +1346,7 @@ NOBREM:
       fprintf(pAliceInp,"*Generated from call: SetCut('CUTGAM',cut);\n");
       // -fCutValue[i];
       // 7.0 = lower bound of the particle id-numbers to which the cut-off
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1\n",-fCutValue[i],7.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f\n",-fCutValue[i],7.0);
     }
 
     // electrons
@@ -1361,7 +1361,7 @@ NOBREM:
       // three = lower bound of the particle id-numbers to which the cut-off
       // 4.0 = upper bound of the particle id-numbers to which the cut-off
       // one = step length in assigning numbers
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1%f10.1\n",-fCutValue[i],three,4.0,one);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],three,4.0,one);
     }
 
     // neutral hadrons
@@ -1374,47 +1374,47 @@ NOBREM:
 
       // 8.0 = Neutron
       // 9.0 = Antineutron
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],8.0,9.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],8.0,9.0);
 
       // 12.0 = Kaon zero long
       // 12.0 = Kaon zero long
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],12.0,12.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],12.0,12.0);
 
       // 17.0 = Lambda, 18.0 = Antilambda
       // 19.0 = Kaon zero short
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],17.0,19.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],17.0,19.0);
 
       // 22.0 = Sigma zero, Pion zero, Kaon zero
       // 25.0 = Antikaon zero
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],22.0,25.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],22.0,25.0);
 
       // 32.0 = Antisigma zero
       // 32.0 = Antisigma zero
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],32.0,32.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],32.0,32.0);
 
       // 34.0 = Xi zero
       // 35.0 = AntiXi zero
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],34.0,35.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],34.0,35.0);
 
       // 47.0 = D zero
       // 48.0 = AntiD zero
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],47.0,48.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],47.0,48.0);
 
       // 53.0 = Xi_c zero
       // 53.0 = Xi_c zero
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],53.0,53.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],53.0,53.0);
 
       // 55.0 = Xi'_c zero
       // 56.0 = Omega_c zero
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],55.0,56.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],55.0,56.0);
 
       // 59.0 = AntiXi_c zero
       // 59.0 = AntiXi_c zero
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],59.0,59.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],59.0,59.0);
 
       // 61.0 = AntiXi'_c zero
       // 62.0 = AntiOmega_c zero
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],61.0,62.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],61.0,62.0);
     }
 
     // charged hadrons
@@ -1427,41 +1427,41 @@ NOBREM:
 
       // 1.0 = Proton
       // 2.0 = Antiproton
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],1.0,2.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],1.0,2.0);
 
       // 13.0 = Positive Pion, Negative Pion, Positive Kaon
       // 16.0 = Negative Kaon
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],13.0,16.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],13.0,16.0);
 
       // 20.0 = Negative Sigma
       // 21.0 = Positive Sigma
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],20.0,21.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],20.0,21.0);
 
       // 31.0 = Antisigma minus
       // 33.0 = Antisigma plus
       // 2.0 = step length
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1%f10.1\n",-fCutValue[i],31.0,33.0,2.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],31.0,33.0,2.0);
 
       // 36.0 = Negative Xi, Positive Xi, Omega minus
       // 39.0 = Antiomega
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],36.0,39.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],36.0,39.0);
 
       // 45.0 = D plus
       // 46.0 = D minus
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],45.0,46.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],45.0,46.0);
 
       // 49.0 = D_s plus, D_s minus, Lambda_c plus
       // 52.0 = Xi_c plus
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],49.0,52.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],49.0,52.0);
 
       // 54.0 = Xi'_c plus
       // 60.0 = AntiXi'_c minus
       // 6.0 = step length
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1%f10.1\n",-fCutValue[i],54.0,60.0,6.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f%10.1f\n",-fCutValue[i],54.0,60.0,6.0);
 
       // 57.0 = Antilambda_c minus
       // 58.0 = AntiXi_c minus
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],57.0,58.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],57.0,58.0);
     }
 
     // muons
@@ -1473,7 +1473,7 @@ NOBREM:
       fprintf(pAliceInp,"*Generated from call: SetCut('CUTMUO',cut);\n");
       // 10.0 = Muon+
       // 11.0 = Muon-
-      fprintf(pAliceInp,"PART-THR  %e10.4%f10.1%f10.1\n",-fCutValue[i],10.0,11.0);
+      fprintf(pAliceInp,"PART-THR  %10.4g%10.1f%10.1f\n",-fCutValue[i],10.0,11.0);
     }
 
     // delta-rays by electrons
@@ -1488,7 +1488,7 @@ NOBREM:
       // zero = ignored
       // three = lower bound of the material indices in which the respective thresholds apply
       // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
-      fprintf(pAliceInp,"EMFCUT    %e10.4%f10.1%f10.1%f10.1%f10.1\n",-fCutValue[i],zero,zero,three,fLastMaterial);
+      fprintf(pAliceInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f\n",-fCutValue[i],zero,zero,three,fLastMaterial);
     }
     
     //
@@ -1503,16 +1503,16 @@ NOBREM:
       // zero = ignored
       // -6.0 = lower bound of the particle numbers for which the transport time cut-off and/or the start signal is to be applied
       // 64.0 = upper bound of the particle numbers for which the transport time cut-off and/or the start signal is to be applied
-      fprintf(pAliceInp,"TIME-CUT  %e10.4%f10.1%f10.1%f10.1%f10.1\n",fCutValue[i]*1.e9,zero,zero,-6.0,64.0);
+      fprintf(pAliceInp,"TIME-CUT  %10.4g%10.1f%10.1f%10.1f%10.1f\n",fCutValue[i]*1.e9,zero,zero,-6.0,64.0);
     }
 
     else {
       cout << "SetCut for flag=" << &sCutFlag[i][0] << " value=" << fCutValue[i] << " not yet implemented!" << endl;
     }
-  } //end of loop over SeCut calls
+  } //end of loop over SetCut calls
     
 // Add START and STOP card
-   fprintf(pAliceInp,"START     %f10.1\n",fEventsPerRun);
+   fprintf(pAliceInp,"START     %10.1f\n",fEventsPerRun);
    fprintf(pAliceInp,"STOP      \n");
 
 } // end of InitPhysics
