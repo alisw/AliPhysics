@@ -112,6 +112,9 @@ class AliHBTPair: public TObject
    Double_t fWeight;//Value of the weight
    Bool_t   fWeightNotCalc;//flag indicating if fWeight is calculated for current pair
    
+   Double_t fAvarageDistance;//value of the avarage distance calculated out of track points
+   Bool_t   fAvarageDistanceNotCalc;//flag indicating if the avarage distance is calculated
+   
    Double_t fPxSum;// Sum of Px momenta
    Double_t fPySum;// Sum of Py momenta
    Double_t fPzSum;// Sum of Pz momenta
@@ -129,8 +132,10 @@ class AliHBTPair: public TObject
    Double_t fGammaCMSLC;//gamma of boost in CMSLC
    Bool_t   fGammaCMSLCNotCalc;//flag indicating if fGammaCMSLC is calculated for current pair
    /***************************************************/
-   void CalculateBase();
-   Bool_t fChanged;//flag indicating if object has been changed
+   Bool_t   fChanged;//flag indicating if object has been changed
+
+   void     CalculateBase();
+   Double_t AvDistance();
    
    
  private:
@@ -170,6 +175,7 @@ void AliHBTPair::Changed()
  fQInvLNotCalc      = kTRUE;
  fGammaCMSLCNotCalc = kTRUE;
  fWeightNotCalc = kTRUE;
+ fAvarageDistanceNotCalc = kTRUE;
 }
 /****************************************************************/
 inline 

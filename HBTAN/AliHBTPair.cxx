@@ -48,6 +48,8 @@ AliHBTPair::AliHBTPair(Bool_t rev):
  fQInvLNotCalc(kTRUE),
  fWeight(0.0),
  fWeightNotCalc(kTRUE),
+ fAvarageDistance(0.0),
+ fAvarageDistanceNotCalc(kTRUE),
  fPxSum(0.0),
  fPySum(0.0),
  fPzSum(0.0),
@@ -101,6 +103,8 @@ AliHBTPair::AliHBTPair(AliHBTParticle* part1, AliHBTParticle* part2, Bool_t rev)
  fQInvLNotCalc(kTRUE),
  fWeight(0.0),
  fWeightNotCalc(kTRUE),
+ fAvarageDistance(0.0),
+ fAvarageDistanceNotCalc(kTRUE),
  fPxSum(0.0),
  fPySum(0.0),
  fPzSum(0.0),
@@ -154,6 +158,8 @@ AliHBTPair::AliHBTPair(const AliHBTPair& in):
  fQInvLNotCalc(kTRUE),
  fWeight(0.0),
  fWeightNotCalc(kTRUE),
+ fAvarageDistance(0.0),
+ fAvarageDistanceNotCalc(kTRUE),
  fPxSum(0.0),
  fPySum(0.0),
  fPzSum(0.0),
@@ -196,9 +202,10 @@ Double_t AliHBTPair::GetInvMass()
   return fInvMass;
 }
 /************************************************************************/
+
 Double_t AliHBTPair::GetQSideCMSLC()
 {
-  //return Q Side in Central Of Mass System in Longitudialy Comoving Frame
+//return Q Side in Central Of Mass System in Longitudialy Comoving Frame
  
   if (fQSideCMSLCNotCalc)
    {
@@ -208,6 +215,7 @@ Double_t AliHBTPair::GetQSideCMSLC()
   return fQSideCMSLC;
 }
 /************************************************************************/
+
 Double_t AliHBTPair::GetQOutCMSLC()
 {
  //caculates Qout in Center Of Mass Longitudionally Co-Moving
@@ -281,6 +289,7 @@ Double_t AliHBTPair::GetQOutCMSLC()
  return fQOutCMSLC;
 }
 /************************************************************************/
+
 Double_t AliHBTPair::GetQLongCMSLC()
 {
  //return Q Long in Central Of Mass System in Longitudialy Comoving Frame
@@ -295,6 +304,7 @@ Double_t AliHBTPair::GetQLongCMSLC()
  return fQLongCMSLC; 
 }
 /************************************************************************/
+
 Double_t AliHBTPair::GetKt()
 {
  //calculates the evarage momentum of the pair
@@ -391,10 +401,23 @@ Double_t AliHBTPair::GetWeight()
    }
   return fWeight; 
 }
-
 /************************************************************************/
 
 Double_t AliHBTPair::GetAvarageDistance()
+{
+//returns and buffers avarage distance between two tracks calculated 
+// out of track points (see AliHBTTrackPoints class)
+
+  if (fAvarageDistanceNotCalc)
+   {
+     fAvarageDistance = AvDistance();
+     fAvarageDistanceNotCalc = kFALSE;
+   }
+  return fAvarageDistance;
+}
+/************************************************************************/
+
+Double_t AliHBTPair::AvDistance()
 {
   //returns avarage distance between two tracks in range 
   //as defined in Track-Points of AliHBTParticle

@@ -228,6 +228,7 @@ void AliHBTPairCut::SetKStarRange(Double_t min, Double_t max)
   else fCuts[fNCuts++] = new AliHBTKStarCut(min,max);
 }
 /**********************************************************/
+
 void AliHBTPairCut::SetAvSeparationRange(Double_t min, Double_t max)
 {
   //sets avarage separation cut ->Anti-Merging cut
@@ -251,6 +252,7 @@ void AliHBTPairCut::SetClusterOverlapRange(Double_t min,Double_t max)
   if(cut) cut->SetRange(min,max);
   else fCuts[fNCuts++] = new AliHBTCluterOverlapCut(min,max);
 }
+/**********************************************************/
 
 AliHbtBasePairCut* AliHBTPairCut::FindCut(AliHBTPairCutProperty property)
 {
