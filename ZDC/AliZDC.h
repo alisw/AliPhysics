@@ -26,7 +26,11 @@ public:
   virtual Int_t IsVersion() const =0;
   virtual void  StepManager();
   virtual void  ResetDigits(); 
-
+  
+  // Switching off the shower development in ZDCs
+  virtual void  NoShower(){fNoShower=1;}
+  virtual void  Shower()  {fNoShower=0;}
+  
 protected:
 
   // Parameters for hadronic calorimeters geometry
@@ -58,6 +62,9 @@ protected:
   Int_t fNStHits;
   
   Int_t   fNPrimaryHits;
+
+  //Flag to switch off the shower
+  Int_t   fNoShower;
 
    ClassDef(AliZDC,1)  // Zero Degree Calorimeter base class
 };

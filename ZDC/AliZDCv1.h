@@ -23,7 +23,7 @@ public:
   virtual void  CreateZDC();
   virtual void  CreateMaterials();
   Int_t         Digitize(Int_t Det, Int_t Quad, Int_t Light);
-  virtual void  FinishEvent();
+//  virtual void  FinishEvent();
   virtual void  SDigits2Digits();
   virtual void  MakeBranch(Option_t* opt, char *file=0);
   virtual Int_t IsVersion() const {return 1;}
@@ -32,10 +32,6 @@ public:
   virtual void  InitTables();
   virtual void  Hits2Digits(Int_t ntracks = 0);
   virtual void  StepManager();
-  
-  // Switching off the shower development in ZDCs
-  void  NoShower(){fNoShower=1;}
-  void  Shower()  {fNoShower=0;}
   
   // Digitization parameters setters and getters
 
@@ -82,10 +78,6 @@ protected:
   Float_t fPedSigma[3][5];    // ADC pedestal width
   Float_t fPMGain[3][5];      // PM gain
   Float_t fADCRes;            // ADC conversion factor
-
-public:
-  //Flag for fast simulation (no shower)
-  Int_t   fNoShower;
   
    ClassDef(AliZDCv1,1)  // Zero Degree Calorimeter version 1
 }; 
