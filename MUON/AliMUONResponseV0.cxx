@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2000/07/03 11:54:57  morsch
+AliMUONSegmentation and AliMUONHitMap have been replaced by AliSegmentation and AliHitMap in STEER
+The methods GetPadIxy and GetPadXxy of AliMUONSegmentation have changed name to GetPadI and GetPadC.
+
 Revision 1.2  2000/06/15 07:58:48  morsch
 Code from MUON-dev joined
 
@@ -38,7 +42,9 @@ Float_t AliMUONResponseV0::IntPH(Float_t eloss)
   Float_t charge=0;
   if (nel == 0) nel=1;
   for (Int_t i=1;i<=nel;i++) {
-    charge -= fChargeSlope*TMath::Log(gRandom->Rndm());    
+      Float_t arg=0.;
+      while(!arg) arg = gRandom->Rndm();
+      charge -= fChargeSlope*TMath::Log(arg);    
   }
   return charge;
 }
