@@ -677,7 +677,7 @@ AliHBTTwoTrackEffFctnPtThetaPhiPerfectPID::AliHBTTwoTrackEffFctnPtThetaPhiPerfec
 //ctor
 //Set Axis Title
  fWriteNumAndDen = kTRUE;
- Rename("tteffptthetaphi","P_{t} \\theta \\phi Two Track Efficiency Function");
+ Rename("tteffptthetaphipfctPID","P_{t} \\theta \\phi Two Track Efficiency Function");
  if(fNumerator)
   {
    fNumerator->GetXaxis()->SetTitle("\\Delta P_{t} [GeV]");
@@ -756,7 +756,7 @@ AliHBTPairPIDProbVsPtThetaPhiFctn::AliHBTPairPIDProbVsPtThetaPhiFctn(Int_t nXbin
 {
   //ctor
   fWriteNumAndDen = kTRUE;//change default behaviour
-  Rename("qptthetaphipidpur","Pair PID Probablilty .vs. \\Delta P_{t}-\\Delta \\theta-\\Delta \\phi Fctn");
+  Rename("ptthetaphipidpur","Pair PID Probablilty .vs. \\Delta P_{t}-\\Delta \\theta-\\Delta \\phi Fctn");
   if(fNumerator)
    {
     fNumerator->GetXaxis()->SetTitle("\\Delta P_{t} [GeV]");
