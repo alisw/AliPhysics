@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/12/21 16:24:06  morsch
+Coding convention clean-up
+
 Revision 1.3  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -61,6 +64,7 @@ AliGenFixed::AliGenFixed()
   // Default constructor
   //
   fIpart = 0;
+  fExplicit = kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -83,14 +87,16 @@ void AliGenFixed::Generate()
   // Generate one trigger
   //
   Float_t polar[3]= {0,0,0};
-  Float_t p[3] = {fPMin*TMath::Cos(fPhiMin)*TMath::Sin(fThetaMin),
-		  fPMin*TMath::Sin(fPhiMin)*TMath::Sin(fThetaMin),
-		  fPMin*TMath::Cos(fThetaMin)};
+  if(!fExplicit) {
+    fP[0] = fPMin*TMath::Cos(fPhiMin)*TMath::Sin(fThetaMin);
+    fP[1] = fPMin*TMath::Sin(fPhiMin)*TMath::Sin(fThetaMin);
+    fP[2] = fPMin*TMath::Cos(fThetaMin);
+  }
   Int_t i, nt;
   //
-  for(i=0;i<fNpart;i++) {
-    gAlice->SetTrack(fTrackIt,-1,fIpart,p,fOrigin.GetArray(),polar,0,kPPrimary,nt);
-  }
+  for(i=0;i<fNpart;i++) 
+    gAlice->SetTrack(fTrackIt,-1,fIpart,fP,fOrigin.GetArray(),polar,0,kPPrimary,nt);
+  
 }
   
 //_____________________________________________________________________________

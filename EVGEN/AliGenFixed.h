@@ -25,10 +25,15 @@ class AliGenFixed : public AliGenerator
   virtual void SetPhi(Float_t phi) {fPhiMin=phi*TMath::Pi()/180; fPhiMax=phi*TMath::Pi()/180;}
   virtual void SetTheta(Float_t theta) {fThetaMin=theta*TMath::Pi()/180; fThetaMax=theta*TMath::Pi()/180;}
   virtual void SetPart(Int_t part) {fIpart=part;}
+  virtual void SetGun(Double_t px, Double_t py, Double_t pz, Double_t x, 
+  Double_t y, Double_t z) {fP[0]=px;fP[1]=py;fP[2]=pz;fOrigin[0]=x;fOrigin[1]=y;
+  fOrigin[2]=z;fExplicit=kTRUE;}
  
 protected:
 
   Int_t fIpart; // Particle type
+  Int_t fExplicit;
+  Float_t fP[3];
 
   ClassDef(AliGenFixed,1) // Single particle generator
 };
