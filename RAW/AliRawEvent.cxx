@@ -1146,7 +1146,11 @@ void AliRunDB::UpdateAliEn(AliStats *stats)
    //printf("AliEn: AddFile(%s, %s, %d)\n", lfn.Data(), stats->GetFileName(),
    //       (int)stats->GetFileSize());
 
-   g->AddFile(lfn, stats->GetFileName(), (int)stats->GetFileSize());
+//   g->AddFile(lfn, stats->GetFileName(), (int)stats->GetFileSize());
+   Int_t result = g->AddFile(lfn, stats->GetFileName(), 
+			     (int)stats->GetFileSize());
+   ALIDEBUG(1)
+      Info("UpdateAliEn", "TGrid::AddFile returned %d\n", result);
 
    delete g;
 }
@@ -1311,7 +1315,9 @@ Int_t AliMDC::Run()
 
    // Process input stream
 #ifdef USE_EB
-   while (!ebEor()) {
+   Int_t eorFlag = 0;
+   while (!(eorFlag = ebEor())) {
+//   while (!ebEor()) {
       struct iovec *ebvec;
       if ((ebvec = ebGetNextEvent()) == (void *)-1) {
          Error("Run", "error getting next event (%s)", ebGetLastError());
@@ -1342,6 +1348,8 @@ Int_t AliMDC::Run()
          }
          return 1;
       }
+      ALIDEBUG(3) 
+         header.Dump();
 
       // If we were in looping mode stop directly after a SIGUSR1 signal
       if (StopLoop()) {
@@ -1385,6 +1393,12 @@ Int_t AliMDC::Run()
       // If there is less data for this event than the next sub-event
       // header, something is wrong. Skip to next event...
       if (toRead < header.HeaderSize()) {
+	 ALIDEBUG(1) {
+            Warning("Run", 
+		    "header size (%d) exceeds number of bytes to read (%d)\n",
+		    header.HeaderSize(), toRead);
+	    header.Dump();
+         }
          if ((status = DumpEvent(toRead)) != toRead) {
             if (status == 0)
                break;
@@ -1395,8 +1409,8 @@ Int_t AliMDC::Run()
       }
 
       // Loop over all sub-events... (LDCs)
+      Int_t nsub = 1;
       while (toRead > 0) {
-         Int_t nsub = 1;
 #ifdef USE_EB
          ebdata = (char *)ebvec[nsub].iov_base;
 #endif
@@ -1415,6 +1429,9 @@ Int_t AliMDC::Run()
             }
             return 1;
          }
+
+         ALIDEBUG(3)
+            subHeader.Dump();
 
          toRead -= subHeader.HeaderSize();
 
@@ -1447,6 +1464,11 @@ Int_t AliMDC::Run()
 
          // Make sure raw data less than left over bytes for current event
          if (rawSize > toRead) {
+            ALIDEBUG(1) {
+               Warning("Run", "raw data size (%d) exceeds number of bytes "
+		       "to read (%d)\n", rawSize, toRead);
+	       subHeader.Dump();
+            }
             if ((status = DumpEvent(toRead)) != toRead) {
                if (status == 0)
                   break;
@@ -1565,6 +1587,13 @@ Int_t AliMDC::Run()
    if (fUseFifo && ::unlink(kFifo) == -1) {
       SysError("Run", "unlink");
       return 1;
+   }
+#endif
+
+#ifdef USE_EB
+   // Print eor flag
+   if (eorFlag) {
+      printf("Event builder reported end of run: %d\n", eorFlag);
    }
 #endif
 

@@ -174,5 +174,8 @@ int main(int argc, char **argv)
    mdcproc.SetDebugLevel(3);
 #endif
 
-   return mdcproc.Run();
+   Int_t result = 0;
+   result = mdcproc.Run();
+   printf( "Run exits, status:%d\n", result );
+   return result;
 }
