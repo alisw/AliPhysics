@@ -60,7 +60,6 @@ Both read digits from raw data or use the Monte-Carlo.
 //#include "chainalice2.h"
 #include "AliMUONSegmentationV0.h"
 //#include "AliMUONSegResV11.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONproto)
 
@@ -68,7 +67,7 @@ ClassImp(AliMUONproto)
 AliMUONproto::AliMUONproto()
         : AliMUON()
 {
-    AliInfo(" Calling AliMUONproto constructor...");
+    cout << "\n Calling AliMUONproto constructor..." << endl;
     
         //
         //
@@ -547,7 +546,7 @@ void AliMUONproto::SetThreshold()
     ifstream inputFile("/home/alice/guernane/aliroot/pro/MUON/crped190.dat", ios::in);
 
     if (inputFile.fail()) {
-        AliError("Error opening file");
+        cout << "Error opening file" << endl;
         exit(2);
     }
 

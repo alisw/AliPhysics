@@ -21,7 +21,6 @@
 #include "AliMUONHitMapA1.h"
 #include "AliSegmentation.h"
 #include "AliMUONDigit.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONHitMapA1)
 
@@ -55,7 +54,7 @@ AliMUONHitMapA1::AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap)
 {
 // Protected copy constructor
 
-  AliFatal("Not implemented.");
+  Fatal("AliMUONHitMapA1", "Not implemented.");
 }
 
  
@@ -165,7 +164,7 @@ AliMUONHitMapA1 & AliMUONHitMapA1::operator = (const AliMUONHitMapA1 & rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal( "Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }

@@ -29,7 +29,6 @@
 #include "AliMUONRawStream.h"
 
 #include "AliRawReader.h"
-#include "AliLog.h"
 
 
 ClassImp(AliMUONRawStream)
@@ -50,13 +49,13 @@ AliMUONRawStream::AliMUONRawStream(AliRawReader* rawReader)
 AliMUONRawStream::AliMUONRawStream(const AliMUONRawStream& stream) :
   TObject(stream)
 {
-  AliFatal("copy constructor not implemented");
+  Fatal("AliMUONRawStream", "copy constructor not implemented");
 }
 
 AliMUONRawStream& AliMUONRawStream::operator = (const AliMUONRawStream& 
 					      /* stream */)
 {
-  AliFatal("assignment operator not implemented");
+  Fatal("operator =", "assignment operator not implemented");
   return *this;
 }
 
@@ -73,7 +72,7 @@ Bool_t AliMUONRawStream::Next()
 // read the next raw digit
 // returns kFALSE if there is no digit left
 
-  AliFatal("method not implemented for raw data input");
+  Fatal("Next","method not implemented for raw data input");
 
 
   return kFALSE;

@@ -39,6 +39,7 @@
 #include <TGeometry.h>
 #include <TMarker3DBox.h>
 #include <TParticle.h>
+#include <TPolyLine3D.h>
 
 #include "AliMUONDisplay.h"
 #include "AliRun.h"
@@ -58,7 +59,6 @@
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
 #include "AliMC.h"
-#include "AliLog.h"
 // to manage the same zoom on both cathodes
 
 
@@ -233,7 +233,7 @@ AliMUONDisplay::AliMUONDisplay(const AliMUONDisplay & display)
 {
 // Protected copy constructor
 
-  AliFatal("Not implemented.");
+  Fatal("AliMUONDisplay", "Not implemented.");
 }
 
 
@@ -1486,7 +1486,7 @@ AliMUONDisplay & AliMUONDisplay::operator = (const AliMUONDisplay & rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal("Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }

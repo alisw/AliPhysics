@@ -21,7 +21,6 @@
 #include "AliMUONResponseV0.h"
 #include "AliSegmentation.h"
 
-
 ClassImp(AliMUONResponseV0)
 	
 //__________________________________________________________________________

@@ -23,7 +23,6 @@
 #include "AliMUONHitForRec.h" 
 #include "AliMUONRawCluster.h"
 #include "AliMUONHit.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONHitForRec) // Class implementation in ROOT context
 
@@ -103,7 +102,7 @@ AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& rhs)
 {
 // Protected copy constructor
 
-  AliFatal( "Not implemented.");
+  Fatal("AliMUONHitForRec", "Not implemented.");
 }
 
   //__________________________________________________________________________
@@ -113,7 +112,7 @@ AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal( "Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }

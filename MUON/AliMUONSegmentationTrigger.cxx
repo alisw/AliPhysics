@@ -26,7 +26,6 @@
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONSegmentationTrigger)
 
@@ -46,7 +45,7 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
   AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
   AliMUONChamber* iChamber=&(pMUON->Chamber(chamber));
 
-  AliDebug(2,"Initialize Trigger Chamber Module Geometry");
+  if(pMUON->GetDebug()>1) printf("%s: Initialize Trigger Chamber Module Geometry\n",ClassName());
 
   Float_t zPos=iChamber->Z();
   Float_t z1Pos=AliMUONConstants::DefaultChamberZ(10); //cp changed
@@ -62,7 +61,8 @@ void AliMUONSegmentationTrigger::Init(Int_t chamber)
   Float_t z1pm=z1PosPlus/z1PosMinus;
   Float_t z1mp=z1PosMinus/z1PosPlus;
 
-  AliDebug(2,Form("fZscale = %f ",fZscale));
+  if(pMUON->GetDebug()>1) printf("%s: fZscale = %f \n",ClassName(),fZscale);
+  
 // calculate yCmin and fYcmax 
   Int_t i;  
   for (i=62; i>=0; i--) {

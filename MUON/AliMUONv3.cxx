@@ -43,7 +43,6 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONv3)
  
@@ -115,7 +114,7 @@ AliMUONv3::AliMUONv3(const AliMUONv3& right)
 {  
   // copy constructor (not implemented)
 
-  AliFatal("Copy constructor not provided.");
+  Fatal("AliMUONv3", "Copy constructor not provided.");
 }
 
 //_____________________________________________________________________________
@@ -126,7 +125,7 @@ AliMUONv3& AliMUONv3::operator=(const AliMUONv3& right)
   // check assignement to self
   if (this == &right) return *this;
 
-  AliFatal("Assignement operator not provided.");
+  Fatal("operator =", "Assignement operator not provided.");
     
   return *this;  
 }    
@@ -1624,7 +1623,7 @@ void AliMUONv3::Init()
    // Initialize Tracking Chambers
    //
 
-   AliDebug(0,"Start Init for version 1 - CPC chamber type");
+   if(fDebug) printf("\n%s: Start Init for version 1 - CPC chamber type\n\n",ClassName());
    Int_t i;
    for (i=0; i<AliMUONConstants::NCh(); i++) {
        ( (AliMUONChamber*) (*fChambers)[i])->Init();
@@ -1652,13 +1651,14 @@ void AliMUONv3::Init()
    ((AliMUONChamber*)(*fChambers)[12])->GetGeometry()->SetSensitiveVolume("SG3A");
    ((AliMUONChamber*)(*fChambers)[13])->GetGeometry()->SetSensitiveVolume("SG4A");
 
-   AliDebug(0,"Finished Init for version 1 - CPC chamber type");
+   if(fDebug) printf("\n%s: Finished Init for version 1 - CPC chamber type\n",ClassName());
+
    //cp 
-   AliDebug(0,"Start Init for Trigger Circuits");
+   if(fDebug) printf("\n%s: Start Init for Trigger Circuits\n",ClassName());
    for (i=0; i<AliMUONConstants::NTriggerCircuit(); i++) {
      ( (AliMUONTriggerCircuit*) (*fTriggerCircuits)[i])->Init(i);
    }
-   AliDebug(0,"Finished Init for Trigger Circuits");
+   if(fDebug) printf("%s: Finished Init for Trigger Circuits\n",ClassName());
    //cp
 
 }

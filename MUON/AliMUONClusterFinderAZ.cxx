@@ -41,7 +41,6 @@
 #include "AliMUONClusterInput.h"
 #include "AliMUONPixel.h"
 #include "AliMC.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONClusterFinderAZ)
  
@@ -80,7 +79,7 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs
 {
 // Protected copy constructor
 
-  AliFatal("Not implemented.");
+  Fatal("AliMUONClusterFinderAZModule", "Not implemented.");
 }
 
 //_____________________________________________________________________________
@@ -158,7 +157,8 @@ newev:
       muon->ResetRawClusters();
       nent = (Int_t) treeR->GetEntries();
       if (nent != 1) {
-		AliError(Form("nent = %d not equal to 1",nent));
+	cout << "Error in MUONdrawClust" << endl;
+	cout << " nent = " <<  nent << " not equal to 1" << endl;
 	//exit(0);
       }
     } // if (treeR)
@@ -2499,7 +2499,7 @@ AliMUONClusterFinderAZ::operator=(const AliMUONClusterFinderAZ& rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal("Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }    

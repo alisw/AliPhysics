@@ -19,7 +19,6 @@
 #include <TVector.h>
 
 #include "AliMUONTransientDigit.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONTransientDigit)
 
@@ -39,7 +38,7 @@ AliMUONTransientDigit::AliMUONTransientDigit()
 {
 // Protected copy constructor
 
-  AliFatal( "Not implemented.");
+  Fatal("AliMUONFTransientDigit", "Not implemented.");
 }
 
 
@@ -69,7 +68,7 @@ AliMUONTransientDigit::operator =(const AliMUONTransientDigit& rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal("Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }

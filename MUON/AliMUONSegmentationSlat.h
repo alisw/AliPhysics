@@ -112,7 +112,7 @@ class AliMUONSegmentationSlat : public AliSegmentation
     virtual void SetShift(Float_t shift) {fShift = shift;}
     virtual void SetNPCBperSector(Int_t *npcb);
     virtual void SetSlatXPositions(Float_t *xpos);
-    virtual void SetSlatYPosition(Float_t ypos) {fYPosOrigin = ypos;}    
+    virtual void SetSlatYPositions(Float_t *ypos);    
     virtual AliMUONSegmentationSlatModule* Slat(Int_t index) const;
     
 // Not used
@@ -167,15 +167,16 @@ class AliMUONSegmentationSlat : public AliSegmentation
     Int_t      fNpy;                              // maximum number of pads in y
     Int_t      fSym;                              // signs for symmetry trafo
     Float_t    fShift;                            // Half overlap of pad planes
-    Float_t    fDz;                               // Half distance between slat planes
-    
+    Float_t    fDzSlat;                           // Half distance between slat planes
+    Float_t    fDzCh;                             // Half distance between half-chamber planes
+
     TArrayI*    fNDiv;                             // Pad size division
     // Slats
     TObjArray*  fSlats;                            // Array of Slats
     // Proxy data
     AliMUONSegmentationSlatModule* fCurrentSlat;   // Pointer to current slat
     Int_t       fSlatIndex;                        // Current slat index
-    ClassDef(AliMUONSegmentationSlat,1)            // Segmentation for Muon Chamber built from Slat Modules
+    ClassDef(AliMUONSegmentationSlat,2)            // Segmentation for Muon Chamber built from Slat Modules
 };
 	
 

@@ -20,7 +20,6 @@
 #include <TError.h>
 //#include <TTree.h> 
 //#include <TDirectory.h>
-#include "AliLog.h"
 
 #include "AliMUONMerger.h"
 #include "AliMUON.h"
@@ -59,7 +58,7 @@ AliMUONMerger::AliMUONMerger(const AliMUONMerger&)
 {
 // Protected copy constructor
 
-  Fatal("copy constructor","Not implemented.");
+  Fatal("AliMUONMergerModule", "Not implemented.");
 }
 
 //------------------------------------------------------------------------

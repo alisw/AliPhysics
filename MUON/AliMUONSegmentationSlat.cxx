@@ -27,8 +27,7 @@
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliRun.h"
-#include "AliLog.h"
-
+#include "AliMUONConstants.h"
 //___________________________________________
 ClassImp(AliMUONSegmentationSlat)
 
@@ -57,7 +56,7 @@ AliMUONSegmentationSlat::AliMUONSegmentationSlat(const AliMUONSegmentationSlat& 
 {
 // Protected copy constructor
 
-  AliFatal("Not implemented.");
+  Fatal("AliMUONSegmentationSlatModule", "Not implemented.");
 }
 
 AliMUONSegmentationSlat::~AliMUONSegmentationSlat(){
@@ -81,12 +80,11 @@ AliMUONSegmentationSlat::operator=(const AliMUONSegmentationSlat& rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal("Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }    
           
-
 //-----------------------------------------------------------
 void AliMUONSegmentationSlat::SetPadSize(Float_t p1, Float_t p2)
 {
@@ -95,6 +93,7 @@ void AliMUONSegmentationSlat::SetPadSize(Float_t p1, Float_t p2)
     fDpx=p1;
     fDpy=p2;
 }
+
 //-----------------------------------------------------------
 Float_t AliMUONSegmentationSlat::GetAnod(Float_t xhit) const
 {
@@ -102,20 +101,23 @@ Float_t AliMUONSegmentationSlat::GetAnod(Float_t xhit) const
     Float_t wire= (xhit>0)? Int_t(xhit/fWireD)+0.5:Int_t(xhit/fWireD)-0.5;
     return fWireD*wire;
 }
+
 //-----------------------------------------------------------
 void AliMUONSegmentationSlat::GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/, Int_t *Nparallel, Int_t *Offset) 
 {
-  *Nparallel=1;
-  *Offset=0;
+  *Nparallel = 1;
+  *Offset = 0;
 }
 //-----------------------------------------------------------
 void AliMUONSegmentationSlat::GiveTestPoints(Int_t & /*n*/, Float_t */*x*/, Float_t */*y*/)  const 
 {;}
+
 //-----------------------------------------------------------
 Float_t AliMUONSegmentationSlat::Distance2AndOffset(Int_t /*iX*/, Int_t /*iY*/, Float_t /*X*/, Float_t /*Y*/, Int_t * /*dummy*/) 
 {
   return 0.;
 }
+
 //-----------------------------------------------------------
 Float_t AliMUONSegmentationSlat::Dpx(Int_t isec) const
 {
@@ -143,8 +145,8 @@ void AliMUONSegmentationSlat::SetPadDivision(Int_t ndiv[4])
 // Pad sizes are defined as integral fractions ndiv of a basis pad size
 // fDpx
 // 
-    for (Int_t i=0; i<4; i++) {
-	(*fNDiv)[i]=ndiv[i];
+    for (Int_t i = 0; i < 4; i++) {
+	(*fNDiv)[i] = ndiv[i];
     }
 }
 
@@ -156,7 +158,7 @@ void AliMUONSegmentationSlat::GlobalToLocal(
 //
     Float_t zlocal;
     Int_t i;
-    Int_t index=-1;
+    Int_t index = -1;
     Float_t eps = 1.e-4;
     
 // Transform According to slat plane z-position: negative side is shifted down 
@@ -165,32 +167,37 @@ void AliMUONSegmentationSlat::GlobalToLocal(
     zlocal = z-fChamber->Z();
 
 //     zlocal = (x>0) ? zlocal-2.*fDz : zlocal+2.*fDz;
-    zlocal = (x>0) ? zlocal+2.*fDz : zlocal-2.*fDz;      //Change?
+//      zlocal = (x>0) ? zlocal+2.*fDz : zlocal-2.*fDz;      //Change?
+
+
+  
 
 //  Set the signs for the symmetry transformation and transform to first quadrant
     SetSymmetry(x);
-    Float_t xabs=TMath::Abs(x);
+    Float_t xabs = TMath::Abs(x);
 
 
 // Find slat number                      
-    for (i=0; i<fNSlats; i+=1) {       //Loop on all slats (longuer but more secure)
-	index=i;
+    for (i = 0; i < fNSlats; i++) {       //Loop on all slats (longuer but more secure)
+	index = i;
 	if ((y >= fYPosition[i]-eps) && (y <= fYPosition[i]+fSlatY+eps)) break;
     }
-    
+
 //
 // Transform to local coordinate system
 
     
     if (index >= fNSlats || index < 0 ) {
-      islat = -1; xlocal=-1; ylocal = -1; }
-    else {
-      ylocal = y   -fYPosition[index];
-      xlocal = xabs-fXPosition[index];
+      islat  = -1; 
+      xlocal = -1; 
+      ylocal = -1; 
+    } else {
       islat  = index;
+      xlocal = xabs - fXPosition[index];
+      ylocal = y    - fYPosition[index];
     }
 }
-
+//_________________________________________________
 void AliMUONSegmentationSlat::GlobalToLocal(
     Int_t ix, Int_t iy, Int_t &islat, Int_t &ixlocal, Int_t &iylocal) const
 {
@@ -215,6 +222,7 @@ void AliMUONSegmentationSlat::GlobalToLocal(
     islat=index;
 }
 
+//_________________________________________________
 void AliMUONSegmentationSlat::
 LocalToGlobal(Int_t islat, Float_t  xlocal, Float_t  ylocal, Float_t  &x, Float_t  &y, Float_t &z) const
 {
@@ -226,16 +234,21 @@ LocalToGlobal(Int_t islat, Float_t  xlocal, Float_t  ylocal, Float_t  &x, Float_
 // lower plane (y<0)  odd slat number is shifted down
 //
 
-    x = (xlocal+fXPosition[islat])*fSym;
-    y=(ylocal+fYPosition[islat]);
+    x = (xlocal + fXPosition[islat])*fSym;
+    y = (ylocal + fYPosition[islat]);
 
-    z = (TMath::Even(islat)) ?     fDz : -fDz ; //Change for new referential
-    z = (x>0)                ? z+2.*fDz : z-2.*fDz ; 
+//     z = (TMath::Even(islat)) ?     fDz : -fDz ; //Change for new referential
+//     z = (x>0)                ? z+2.*fDz : z-2.*fDz ; 
+//     z+=fChamber->Z();
 
-    z+=fChamber->Z();
+// z-position
+    z = (TMath::Even(islat)) ?      -fDzSlat : fDzSlat ; //Change for new referential
+    z = (x>0)                ?  -z + fDzCh : z - fDzCh; 
+    z += fChamber->Z();
+
 }
 
-
+//_________________________________________________
 void AliMUONSegmentationSlat::LocalToGlobal (
     Int_t islat, Int_t ixlocal, Int_t iylocal, Int_t &ix, Int_t &iy) const
 {
@@ -252,19 +265,21 @@ void AliMUONSegmentationSlat::LocalToGlobal (
     iy=iy;
 }
 
-
+//_________________________________________________
 void AliMUONSegmentationSlat::SetSymmetry(Int_t   ix)
 {
 // Set set signs for symmetry transformation
-    fSym=TMath::Sign(1,ix);
+    fSym = TMath::Sign(1,ix);
 }
 
+//_________________________________________________
 void AliMUONSegmentationSlat::SetSymmetry(Float_t  x)
 {
 // Set set signs for symmetry transformation
-    fSym=Int_t (TMath::Sign((Float_t)1.,x));
+    fSym = Int_t (TMath::Sign((Float_t)1.,x));
 }
 
+//_________________________________________________
 void AliMUONSegmentationSlat::
 GetPadI(Float_t x, Float_t y, Float_t z, Int_t &ix, Int_t &iy)
 {
@@ -275,16 +290,17 @@ GetPadI(Float_t x, Float_t y, Float_t z, Int_t &ix, Int_t &iy)
     
     GlobalToLocal(x,y,z,islat,xlocal,ylocal);
     if (islat == -1) {
-	ix=0; iy=0; return;
+	ix = 0; iy = 0; 
+	return;
     }
     
     Slat(islat)->GetPadI(xlocal, ylocal, ix, iy);
-    for (i=0; i<islat; i++) iy+=Slat(islat)->Npy();
+    for (i = 0; i < islat; i++) iy += Slat(islat)->Npy();
 
-    ix=ix*Int_t(TMath::Sign((Float_t)1.,x));    
+    ix = ix*Int_t(TMath::Sign((Float_t)1.,x));    
 }
 
-
+//_________________________________________________
 void AliMUONSegmentationSlat::
 GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
 {
@@ -296,18 +312,19 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
     GlobalToLocal(ix,iy,islat,ixlocal,iylocal);
     Slat(islat)->GetPadC(ixlocal, iylocal, x, y);
 // Slat offset
-    x+=fXPosition[islat];
-    y+=fYPosition[islat];    
+    x += fXPosition[islat];
+    y += fYPosition[islat];    
 
 // Symmetry transformation of half planes
-    x=x*TMath::Sign(1,ix);
+    x = x * TMath::Sign(1,ix);
 
 // z-position
-    z = (TMath::Even(islat)) ?      fDz : -fDz ; //Change for new referential
-    z = (x>0)                ?  z+2.*fDz : z-2.*fDz ; 
+    z  = (TMath::Even(islat)) ?      -fDzSlat : fDzSlat ; //Change for new referential
+    z  = (x>0)                ?  -z + fDzCh : z - fDzCh; 
     z += fChamber->Z();
 }
 
+//_________________________________________________
 Int_t AliMUONSegmentationSlat::ISector()
 {
 // Returns current sector during tracking
@@ -317,6 +334,7 @@ Int_t AliMUONSegmentationSlat::ISector()
     return 100*fSlatIndex+iregion;
 }
 
+//_________________________________________________
 Int_t AliMUONSegmentationSlat::Sector(Int_t ix, Int_t iy)
 {
 // Returns sector for pad coordiantes (ix,iy)
@@ -328,7 +346,7 @@ Int_t AliMUONSegmentationSlat::Sector(Int_t ix, Int_t iy)
     return 100*islat+iregion;
 }
 
-
+//_________________________________________________
 void AliMUONSegmentationSlat::SetPad(Int_t ix, Int_t iy)
 {
     //
@@ -344,6 +362,7 @@ void AliMUONSegmentationSlat::SetPad(Int_t ix, Int_t iy)
     fCurrentSlat->SetPad(ixlocal, iylocal);
 }
 
+//_________________________________________________
 void  AliMUONSegmentationSlat::SetHit(Float_t xhit, Float_t yhit, Float_t zhit)
 {   //
     // Sets current hit coordinates
@@ -361,7 +380,7 @@ void  AliMUONSegmentationSlat::SetHit(Float_t xhit, Float_t yhit, Float_t zhit)
     fCurrentSlat->SetHit(xlocal, ylocal);
 }
 
-
+//_________________________________________________
 void AliMUONSegmentationSlat::
 FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy)
 {
@@ -380,7 +399,7 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy)
 
 }
 
-
+//_________________________________________________
 void AliMUONSegmentationSlat::NextPad()
 {
 // Stepper for the iteration over pads
@@ -388,7 +407,7 @@ void AliMUONSegmentationSlat::NextPad()
     fCurrentSlat->NextPad();
 }
 
-
+//_________________________________________________
 Int_t AliMUONSegmentationSlat::MorePads()
 // Stopping condition for the iterator over pads
 //
@@ -397,6 +416,7 @@ Int_t AliMUONSegmentationSlat::MorePads()
     return fCurrentSlat->MorePads();
 }
 
+//_________________________________________________
 void AliMUONSegmentationSlat::
 IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
 {
@@ -407,6 +427,7 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
 
 }
 
+//_________________________________________________
 void AliMUONSegmentationSlat::
 Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 {
@@ -424,7 +445,7 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 
 }
 
-
+//_________________________________________________
 Int_t  AliMUONSegmentationSlat::Ix()
 {
 // Return current pad coordinate ix during stepping
@@ -441,7 +462,7 @@ Int_t  AliMUONSegmentationSlat::Ix()
     return ix;
 }
 
-
+//_________________________________________________
 Int_t  AliMUONSegmentationSlat::Iy()
 {
 // Return current pad coordinate iy during stepping
@@ -452,11 +473,10 @@ Int_t  AliMUONSegmentationSlat::Iy()
     return iy;
 }
 
-
-
-   // Signal Generation Condition during Stepping
+//_________________________________________________
 Int_t AliMUONSegmentationSlat::SigGenCond(Float_t x, Float_t y, Float_t z)
 { 
+ // Signal Generation Condition during Stepping
 //
 //  True if signal generation condition fullfilled
     Float_t xlocal, ylocal;
@@ -465,9 +485,10 @@ Int_t AliMUONSegmentationSlat::SigGenCond(Float_t x, Float_t y, Float_t z)
     return Slat(islat)->SigGenCond(xlocal, ylocal, z);
 }
 
-// Initialise signal generation at coord (x,y,z)
+//_________________________________________________
 void  AliMUONSegmentationSlat::SigGenInit(Float_t x, Float_t y, Float_t z)
 {
+
 // Initialize the signal generation condition
 //
     Float_t xlocal, ylocal;
@@ -477,8 +498,7 @@ void  AliMUONSegmentationSlat::SigGenInit(Float_t x, Float_t y, Float_t z)
     Slat(islat)->SigGenInit(xlocal, ylocal, z);
 }
 
-
-
+//_________________________________________________
 void AliMUONSegmentationSlat::Init(Int_t chamber)
 {
 //    
@@ -493,12 +513,15 @@ void AliMUONSegmentationSlat::Init(Int_t chamber)
     Int_t ndiv[4];
 // Pad division
     for (i=0; i<4; i++) ndiv[i]=(*fNDiv)[i];
-//
-    fDz=0.813;
+
 // Slat height    
     fSlatY=40.;
     for (i=0; i<15; i++) fSlatX[i]=0.;
-    
+ 
+// shifts in z direction
+     fDzSlat = AliMUONConstants::DzSlat();
+     fDzCh   = AliMUONConstants::DzCh();
+ 
 // Initialize array of slats 
     fSlats  = new TObjArray(fNSlats);
 // Maximum number of strips (pads) in x and y
@@ -522,7 +545,7 @@ void AliMUONSegmentationSlat::Init(Int_t chamber)
 // Initialize slat module
 	slat->Init(chamber);
 // y-position of slat module relative to the first (closest to the beam)
-	fYPosition[islat]= fYPosOrigin+islat*(fSlatY-2.*fShift);
+//	fYPosition[islat]= fYPosOrigin+islat*(fSlatY-2.*fShift);
 //
 	fNpy+=slat->Npy();
 	if (slat->Npx() > fNpx) fNpx=slat->Npx();
@@ -539,10 +562,7 @@ void AliMUONSegmentationSlat::Init(Int_t chamber)
     fId=chamber;
 }
 
-
-
-
-
+//_________________________________________________
 void AliMUONSegmentationSlat::SetNPCBperSector(Int_t *npcb)
 { 
     //  PCB distribution for station 4 (6 rows with 1+3 segmentation regions)
@@ -554,18 +574,28 @@ void AliMUONSegmentationSlat::SetNPCBperSector(Int_t *npcb)
     }
 }
 
-
+//_________________________________________________
 void  AliMUONSegmentationSlat::SetSlatXPositions(Float_t *xpos)
 {
 // Set x-positions of Slats
     for (Int_t islat=0; islat<fNSlats; islat++) fXPosition[islat]=xpos[islat];
 }
 
+//_________________________________________________
+void  AliMUONSegmentationSlat::SetSlatYPositions(Float_t *ypos)
+{
+// Set y-positions of Slats
+    for (Int_t islat=0; islat<fNSlats; islat++) fYPosition[islat]=ypos[islat];
+}
+
+//_________________________________________________
 AliMUONSegmentationSlatModule*  AliMUONSegmentationSlat::Slat(Int_t index) const
   //PH { return ((AliMUONSegmentationSlatModule*) (*fSlats)[index]);}
-{ return ((AliMUONSegmentationSlatModule*) fSlats->At(index));}
+{ 
+  return ((AliMUONSegmentationSlatModule*) fSlats->At(index));
+}
 
-
+//_________________________________________________
 AliMUONSegmentationSlatModule* AliMUONSegmentationSlat::
 CreateSlatModule() const
 {
@@ -573,11 +603,11 @@ CreateSlatModule() const
     return new AliMUONSegmentationSlatModule(4);
 }
 
-
+//_________________________________________________
 void AliMUONSegmentationSlat::Draw(const char* opt)
 {
-// Draw method for event display
-// 
+  // Draw method for event display
+  // 
   if (!strcmp(opt,"eventdisplay")) { 
     const int kColorMUON1 = kYellow;
     const int kColorMUON2 = kBlue; 
@@ -589,9 +619,9 @@ void AliMUONSegmentationSlat::Draw(const char* opt)
     
     //
     // Number of modules per slat
-    for (i=0; i<fNSlats; i++) {
-      npcb[i]=0;
-      for (j=0; j<4; j++) npcb[i]+=fPcb[i][j];
+    for (i = 0; i < fNSlats; i++) {
+      npcb[i] = 0;
+      for (j = 0; j < 4; j++) npcb[i] += fPcb[i][j];
     }  
     //
     TNode* top=gAlice->GetGeometry()->GetNode("alice");
@@ -607,25 +637,24 @@ void AliMUONSegmentationSlat::Draw(const char* opt)
     TNode* nodeSlat;
     Int_t color;
     
-    for (j=0; j<fNSlats; j++)
-      {
-	sprintf(nameSlat,"SLAT%d",100*fId+1+j);
-	Float_t dx = 20.*npcb[j];
-	Float_t dy = 20;
-	new TBRIK(nameSlat,"Slat Module","void",dx,20.,0.25);
-	node->cd();
-	color =  TMath::Even(j) ? kColorMUON1 : kColorMUON2;
+    for (j = 0; j < fNSlats; j++) {
+      sprintf(nameSlat,"SLAT%d",100*fId+1+j);
+      Float_t dx = 20.*npcb[j];
+      Float_t dy = 20;
+      new TBRIK(nameSlat,"Slat Module","void",dx,20.,0.25);
+      node->cd();
+      color =  TMath::Even(j) ? kColorMUON1 : kColorMUON2;
 	
-	sprintf(nameNode,"SLAT%d",100*fId+1+j);
-	nodeSlat = 
-	  new TNode(nameNode,"Slat Module",nameSlat, dx+fXPosition[j],fYPosition[j]+dy,0,"");
-	nodeSlat->SetLineColor(color);
-	node->cd();
-	sprintf(nameNode,"SLAT%d",100*fId+1+j+fNSlats);
-	nodeSlat = 
-	  new TNode(nameNode,"Slat Module",nameSlat,-dx-fXPosition[j],fYPosition[j]+dy,0,"");
-	nodeSlat->SetLineColor(color);
-      }
+      sprintf(nameNode,"SLAT%d",100*fId+1+j);
+      nodeSlat = 
+	new TNode(nameNode,"Slat Module",nameSlat, dx+fXPosition[j],fYPosition[j]+dy,0,"");
+      nodeSlat->SetLineColor(color);
+      node->cd();
+      sprintf(nameNode,"SLAT%d",100*fId+1+j+fNSlats);
+      nodeSlat = 
+	new TNode(nameNode,"Slat Module",nameSlat,-dx-fXPosition[j],fYPosition[j]+dy,0,"");
+      nodeSlat->SetLineColor(color);
+    }
   }
 }
 

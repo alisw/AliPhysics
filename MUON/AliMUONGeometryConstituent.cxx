@@ -24,7 +24,6 @@
 #include <TGeoMatrix.h>
 
 #include "AliMUONGeometryConstituent.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONGeometryConstituent)
 
@@ -131,7 +130,8 @@ AliMUONGeometryConstituent::AliMUONGeometryConstituent(
                                         const AliMUONGeometryConstituent& rhs)
   : TNamed(rhs)
 {
-  AliFatal("Copy constructor is not implemented.");
+  Fatal("Copy constructor", 
+        "Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
@@ -149,7 +149,8 @@ AliMUONGeometryConstituent::operator = (const AliMUONGeometryConstituent& rhs)
   // check assignement to self
   if (this == &rhs) return *this;
 
-  AliFatal("Assignment operator is not implemented.");
+  Fatal("operator=", 
+        "Assignment operator is not implemented.");
     
   return *this;  
 }

@@ -27,7 +27,6 @@
 
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryConstituent.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONGeometryEnvelope)
 
@@ -99,7 +98,8 @@ AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(
                                         const AliMUONGeometryEnvelope& rhs)
   : TNamed(rhs)
 {
-  AliFatal("Copy constructor is not implemented.");
+  Fatal("Copy constructor", 
+        "Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
@@ -123,7 +123,8 @@ AliMUONGeometryEnvelope::operator = (const AliMUONGeometryEnvelope& rhs)
   // check assignement to self
   if (this == &rhs) return *this;
 
-  AliFatal("Assignment operator is not implemented.");
+  Fatal("operator=", 
+        "Assignment operator is not implemented.");
     
   return *this;  
 }

@@ -37,7 +37,6 @@
 #include "AliRun.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONSt1Segmentation)
 
@@ -113,7 +112,8 @@ AliMUONSt1Segmentation::AliMUONSt1Segmentation(const AliMUONSt1Segmentation& rhs
   : AliSegmentation(rhs)
 {
 // Copy constructor
-  AliFatal("Copy constructor is not implemented.");
+  Fatal("Copy constructor", 
+        "Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
@@ -138,7 +138,8 @@ AliMUONSt1Segmentation::operator=(const AliMUONSt1Segmentation& rhs)
   // check assignement to self
   if (this == &rhs) return *this;
 
-  AliFatal("Assignment operator is not implemented.");
+  Fatal("operator=", 
+        "Assignment operator is not implemented.");
     
   return *this;  
 }
@@ -170,7 +171,7 @@ void AliMUONSt1Segmentation::SetPadSize(Float_t /*p1*/, Float_t /*p2*/)
 // Set pad size Dx*Dy 
 // ---
 
-  AliFatal("Not uniform pad size.");
+  Fatal("SetPadSize", "Not uniform pad size.");
 }
 
 //______________________________________________________________________________
@@ -270,7 +271,7 @@ Float_t AliMUONSt1Segmentation::Dpx() const
 // Get pad size in x
 // ---
 
-  AliFatal( "Not uniform pad size.");
+  Fatal("Dpx", "Not uniform pad size.");
   return 0.;
 }
 
@@ -280,7 +281,7 @@ Float_t AliMUONSt1Segmentation::Dpy() const
 // Get pad size in y
 // ---
 
-  AliFatal("Not uniform pad size.");
+  Fatal("Dpy", "Not uniform pad size.");
   return 0.;
 }
  
@@ -408,7 +409,7 @@ Float_t AliMUONSt1Segmentation::Distance2AndOffset(Int_t iX, Int_t iY,
   AliMpPad pad = fPlaneSegmentation->PadByIndices(AliMpIntPair(iX, iY));
   
   if (!pad.IsValid())
-    AliFatal("Cannot locate pad.");
+    Fatal("Distance2AndOffset", "Cannot locate pad.");
 
   return (pad.Position()*fgkLengthUnit - TVector2(x, y)).Mod2();
 }
@@ -421,7 +422,7 @@ void AliMUONSt1Segmentation::GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/,
 // (specific to LYON, but mandatory for display)
 // ---
 
-  AliFatal( "Not yet implemented.");
+  Fatal("GetNParallelAndOffset", "Not yet implemented.");
 }
 
 
@@ -580,7 +581,7 @@ void AliMUONSt1Segmentation::Draw(const char * /*opt*/) const
 // (Called from AliMUON::BuildGeometry)
 // ---
 
-  AliWarning("Not yet implemented.");
+  Warning("Draw", "Not yet implemented.");
 }
 
 //______________________________________________________________________________

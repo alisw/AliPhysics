@@ -21,7 +21,6 @@
 //AliRoot includes
 #include "AliMUONLoader.h"
 #include "AliMUONConstants.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONLoader)
 //___________________________________________________________________
@@ -50,7 +49,7 @@ AliMUONLoader::AliMUONLoader(const AliMUONLoader& rhs)
 {
 // Protected copy constructor
 
-  AliFatal("Not implemented.");
+  Fatal("AliMUONLoader", "Not implemented.");
 }
 
 //_______________________________________________________________________________
@@ -66,7 +65,7 @@ AliMUONLoader::operator=(const AliMUONLoader& rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal("Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }    

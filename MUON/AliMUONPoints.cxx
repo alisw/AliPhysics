@@ -41,7 +41,6 @@
 #include "AliMUON.h"
 #include "AliMUONHit.h"
 #include "AliMUONDigit.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONPoints)
 
@@ -79,7 +78,7 @@ AliMUONPoints::AliMUONPoints(const AliMUONPoints& points)
 {
 // Protected copy constructor
 
-  AliFatal("Not implemented.");
+  Fatal("AliMUONPoints", "Not implemented.");
 }
 	 
 //_____________________________________________________________________________
@@ -248,7 +247,7 @@ AliMUONPoints& AliMUONPoints::operator= (const AliMUONPoints& rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal("Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }

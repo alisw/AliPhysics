@@ -83,7 +83,7 @@ AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t iChamber, Int_t idpart,
     fPTot      = momentum;
     fPx        = momentum * TMath::Sin(theta) * TMath::Cos(phi);
     fPy        = momentum * TMath::Sin(theta) * TMath::Sin(phi);
-    fPx        = momentum * TMath::Cos(theta) ;
+    fPz        = momentum * TMath::Cos(theta) ;
     fAge       = tof;
     fXref      = 0.;
     fYref      = 0.;
@@ -111,7 +111,7 @@ AliMUONHit::AliMUONHit(Int_t shunt, Int_t track, Int_t iChamber, Int_t idpart,
     fPTot      = momentum;
     fPx        = momentum * TMath::Sin(theta) * TMath::Cos(phi);
     fPy        = momentum * TMath::Sin(theta) * TMath::Sin(phi);
-    fPx        = momentum * TMath::Cos(theta) ;
+    fPz        = momentum * TMath::Cos(theta) ;
     fAge       = tof;
     fXref      = Xref;
     fYref      = Yref;

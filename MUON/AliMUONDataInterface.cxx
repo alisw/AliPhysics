@@ -13,7 +13,6 @@
 #include "AliMUONHit.h"
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
-#include "AliLog.h"
 
 
 ClassImp(AliMUONDataInterface)
@@ -32,7 +31,7 @@ AliMUONDataInterface::AliMUONDataInterface(const AliMUONDataInterface& rhs)
 {
 // Protected copy constructor
 
-  AliFatal("Not implemented.");
+  Fatal("AliMUONDataInterface", "Not implemented.");
 }
 
 AliMUONDataInterface::~AliMUONDataInterface()
@@ -52,7 +51,7 @@ AliMUONDataInterface::operator=(const AliMUONDataInterface& rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal("Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }    
@@ -86,15 +85,15 @@ Bool_t AliMUONDataInterface::LoadLoaders(TString filename, TString foldername)
 	fRunloader = AliRunLoader::Open(filename, foldername, "READ");
 	if (fRunloader == NULL)
 	{
-		AliError(Form("Could not find or load the run loader for the file: %s and folder: %s", 
-			(const char*)filename, (const char*)foldername));
+		Error("LoadLoaders", "Could not find or load the run loader for the file: %s and folder: %s", 
+			(const char*)filename, (const char*)foldername);
 		return kFALSE;
 	};
 	fMuonloader = fRunloader->GetLoader("MUONLoader");
 	if (fMuonloader == NULL)
 	{
-		AliError(Form("Could not find the MUON loader in file: %s and folder: %s", 
-			(const char*)filename, (const char*)foldername));
+		Error("LoadLoaders", "Could not find the MUON loader in file: %s and folder: %s", 
+			(const char*)filename, (const char*)foldername);
 		fRunloader = NULL;
 		return kFALSE;
 	};
@@ -183,7 +182,7 @@ Bool_t AliMUONDataInterface::FetchTreeK()
 		fRunloader->LoadKinematics("READ");
 		if (fRunloader->TreeK() == NULL)
 		{
-			AliError("Could not load TreeK.");
+			Error("FetchTreeK", "Could not load TreeK.");
 			return kFALSE;
 		};
 	};
@@ -201,7 +200,7 @@ Bool_t AliMUONDataInterface::FetchTreeH()
 		fMuonloader->LoadHits("READ");
 		if (fMuonloader->TreeH() == NULL)
 		{
-			AliError("Could not load TreeH.");
+			Error("FetchTreeH", "Could not load TreeH.");
 			return kFALSE;
 		};
 		fData.SetTreeAddress("H");
@@ -226,7 +225,7 @@ Bool_t AliMUONDataInterface::FetchTreeS()
 		fMuonloader->LoadSDigits("READ");
 		if (fMuonloader->TreeS() == NULL)
 		{
-			AliError("Could not load TreeS.");
+			Error("FetchTreeS", "Could not load TreeS.");
 			return kFALSE;
 		};
 		fData.SetTreeAddress("S");
@@ -251,7 +250,7 @@ Bool_t AliMUONDataInterface::FetchTreeD()
 		fMuonloader->LoadDigits("READ");
 		if (fMuonloader->TreeD() == NULL)
 		{
-			AliError("Could not load TreeD.");
+			Error("FetchTreeD", "Could not load TreeD.");
 			return kFALSE;
 		};
 		fData.SetTreeAddress("D");
@@ -276,7 +275,7 @@ Bool_t AliMUONDataInterface::FetchTreeR()
 		fMuonloader->LoadRecPoints("READ");
 		if (fMuonloader->TreeR() == NULL)
 		{
-			AliError("Could not load TreeR.");
+			Error("FetchTreeR", "Could not load TreeR.");
 			return kFALSE;
 		};
 		
@@ -596,7 +595,7 @@ Int_t AliMUONDataInterface::NumberOfEvents()
 
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("NumberOfEvents", "File not set.");
 		return -1;
 	};
 	return fRunloader->GetNumberOfEvents();
@@ -610,7 +609,7 @@ Int_t AliMUONDataInterface::NumberOfParticles()
 
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("NumberOfParticles", "File not set.");
 		return -1;
 	};
 	if ( ! FetchTreeK() ) return -1;
@@ -625,12 +624,12 @@ TParticle* AliMUONDataInterface::Particle(Int_t particle)
 
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("Particle", "File not set.");
 		return NULL;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError("Event not chosen.");
+		Error("Particle", "Event not chosen.");
 		return NULL;
 	};
 	if ( ! FetchTreeK() ) return NULL;
@@ -649,12 +648,12 @@ Int_t AliMUONDataInterface::NumberOfTracks()
 
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("NumberOfTracks", "File not set.");
 		return -1;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError( "Event not chosen.");
+		Error("NumberOfTracks", "Event not chosen.");
 		return -1;
 	};
 	if ( ! FetchTreeH() ) return -1;
@@ -669,12 +668,12 @@ Int_t AliMUONDataInterface::NumberOfHits(Int_t track)
 
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("NumberOfHits", "File not set.");
 		return -1;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError("Event not chosen.");
+		Error("NumberOfHits", "Event not chosen.");
 		return -1;
 	};
 	if ( ! FetchTreeH() ) return -1;
@@ -695,12 +694,12 @@ AliMUONHit* AliMUONDataInterface::Hit(Int_t track, Int_t hit)
 
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("Hit", "File not set.");
 		return NULL;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError("Event not chosen.");
+		Error("Hit", "Event not chosen.");
 		return NULL;
 	};
 	if ( ! FetchTreeH() ) return NULL;
@@ -724,12 +723,12 @@ Int_t AliMUONDataInterface::NumberOfSDigits(Int_t chamber, Int_t cathode)
 	
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("NumberOfSDigits", "File not set.");
 		return -1;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError("Event not chosen.");
+		Error("NumberOfSDigits", "Event not chosen.");
 		return -1;
 	};
 
@@ -754,12 +753,12 @@ AliMUONDigit* AliMUONDataInterface::SDigit(Int_t chamber, Int_t cathode, Int_t s
 	
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("SDigit", "File not set.");
 		return NULL;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError("Event not chosen.");
+		Error("SDigit", "Event not chosen.");
 		return NULL;
 	};
 
@@ -784,12 +783,12 @@ Int_t AliMUONDataInterface::NumberOfDigits(Int_t chamber, Int_t cathode)
 	
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("NumberOfDigits", "File not set.");
 		return -1;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError("Event not chosen.");
+		Error("NumberOfDigits", "Event not chosen.");
 		return -1;
 	};
 	
@@ -814,12 +813,12 @@ AliMUONDigit* AliMUONDataInterface::Digit(Int_t chamber, Int_t cathode, Int_t di
 	
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("Digit", "File not set.");
 		return NULL;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError("Event not chosen.");
+		Error("Digit", "Event not chosen.");
 		return NULL;
 	};
 
@@ -843,12 +842,12 @@ Int_t AliMUONDataInterface::NumberOfRawClusters(Int_t chamber)
 
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("NumberOfRawClusters", "File not set.");
 		return -1;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError("Event not chosen.");
+		Error("NumberOfRawClusters", "Event not chosen.");
 		return -1;
 	};
 
@@ -873,12 +872,12 @@ AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t cluster
 
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("RawCluster", "File not set.");
 		return NULL;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError("Event not chosen.");
+		Error("RawCluster", "Event not chosen.");
 		return NULL;
 	};
 
@@ -901,12 +900,12 @@ Int_t AliMUONDataInterface::NumberOfLocalTriggers()
 
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("NumberOfLocalTriggers", "File not set.");
 		return -1;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError("Event not chosen.");
+		Error("NumberOfLocalTriggers", "Event not chosen.");
 		return -1;
 	};
 
@@ -929,12 +928,12 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t trigger)
 
 	if (fRunloader == NULL)
 	{
-		AliError("File not set.");
+		Error("LocalTrigger", "File not set.");
 		return NULL;
 	};
 	if (fEventnumber < 0)
 	{
-		AliError( "Event not chosen.");
+		Error("LocalTrigger", "Event not chosen.");
 		return NULL;
 	};
 

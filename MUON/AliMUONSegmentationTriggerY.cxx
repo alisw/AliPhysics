@@ -21,7 +21,6 @@
 #include "AliMUONTriggerConstants.h"
 #include "AliMUON.h"
 #include "AliRun.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONSegmentationTriggerY)
 
@@ -36,7 +35,8 @@ AliMUONSegmentationTriggerY::AliMUONSegmentationTriggerY()
 void AliMUONSegmentationTriggerY::Init(Int_t chamber)
 {
 // intialize Y segmentation 
-  AliDebug(2,"Initialize Trigger Chamber Geometry Y");
+  AliMUON *pMUON  = (AliMUON *) gAlice->GetModule("MUON");
+  if(pMUON->GetDebug()>1) printf("%s: Initialize Trigger Chamber Geometry Y\n",ClassName());
   AliMUONSegmentationTrigger::Init(chamber);  
 
 // calculate x & y position of Y strips

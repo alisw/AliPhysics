@@ -55,7 +55,6 @@
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliRun.h"
 #include "AliMagF.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONSt1GeometryBuilderV2)
 
@@ -143,7 +142,8 @@ AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(const AliMUONSt1Geometr
 {
 // Dummy copy constructor
 
- AliFatal("Copy constructor is not implemented.");
+ Fatal("Copy constructor", 
+        "Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
@@ -160,7 +160,8 @@ AliMUONSt1GeometryBuilderV2::operator = (const AliMUONSt1GeometryBuilderV2& rhs)
   // check assignement to self
   if (this == &rhs) return *this;
 
-  AliFatal("Assignment operator is not implemented.");
+  Fatal("operator=", 
+        "Assignment operator is not implemented.");
     
   return *this;  
 }

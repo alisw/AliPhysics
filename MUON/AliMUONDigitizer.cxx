@@ -31,7 +31,6 @@
 #include "AliMUONTransientDigit.h"
 #include "AliMUONHitMapA1.h"
 #include "AliMUONTriggerDecision.h"
-#include "AliLog.h"
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +92,7 @@ AliMUONDigitizer::AliMUONDigitizer(const AliMUONDigitizer& rhs)
 {
 // Protected copy constructor
 
-  AliFatal("Not implemented.");
+  Fatal("AliMUONDigitizer", "Not implemented.");
 }
 
 //___________________________________________
@@ -115,7 +114,7 @@ AliMUONDigitizer::operator=(const AliMUONDigitizer& rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal("Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }    
@@ -137,12 +136,12 @@ void AliMUONDigitizer::Exec(Option_t* option)
 // 2) Loop over the generated transient digits and write them to the output
 //    stream. Done in CreateDigits()
 
-	AliDebug(1, "Running digitiser.");
+	if (GetDebug() > 0) Info("Exec", "Running digitiser.");
 	ParseOptions(option);
 
 	if (fManager->GetNinputs() == 0)
 	{
-		AliWarning("No inputs set, nothing to do.");
+		Warning("Exec", "No inputs set, nothing to do.");
 		return;
 	};
 
@@ -152,15 +151,16 @@ void AliMUONDigitizer::Exec(Option_t* option)
 
 	InitArrays();
 	
-	AliDebug(2, Form("Event Number is %d.", fManager->GetOutputEventNr()));
+	if (GetDebug() > 1) Info("Exec", "Event Number is %d.", fManager->GetOutputEventNr());
 
 	// Loop over files to merge and to digitize
 	fSignal = kTRUE;
 	for (Int_t inputFile = 0; inputFile < fManager->GetNinputs(); inputFile++)
 	{
 		fMask = fManager->GetMask(inputFile);
-		AliDebug(2, Form("Digitising folder %d, with fMask = %d: %s", inputFile, fMask,
-			     (const char*)fManager->GetInputFolderName(inputFile)));
+		if (GetDebug() > 1) 
+			Info("Exec", "Digitising folder %d, with fMask = %d: %s", inputFile, fMask,
+			     (const char*)fManager->GetInputFolderName(inputFile));
 
 		if (inputFile != 0)
 			// If this is the first file then we already have the loaders loaded.
@@ -206,7 +206,8 @@ void AliMUONDigitizer::UpdateTransientDigit(AliMUONTransientDigit* mTD)
 // Update the transient digit that is already in the fTDList by adding the new
 // transient digits charges and track lists to the existing one.
 
-	AliDebug(4,Form( "Updating transient digit 0x%X", (void*)mTD));
+	if (GetDebug() > 3)
+		Info("UpdateTransientDigit", "Updating transient digit 0x%X", (void*)mTD);
 	// Choosing the maping of the cathode plane of the chamber:
 	Int_t iNchCpl= mTD->Chamber() + (mTD->Cathode()-1) * AliMUONConstants::NCh();
 	AliMUONTransientDigit *pdigit = 
@@ -220,10 +221,13 @@ void AliMUONDigitizer::UpdateTransientDigit(AliMUONTransientDigit* mTD)
 	Int_t ntracks = mTD->GetNTracks();
 	if (ntracks > kMAXTRACKS)  // Truncate the number of tracks to kMAXTRACKS if we have to.
 	{
-		AliDebug(1,Form( 
-			"TransientDigit returned the number of tracks to be %d, which is bigger than kMAXTRACKS.",
-			ntracks));
-		AliDebug(1,Form( "Reseting the number of tracks to be %d.", kMAXTRACKS));
+		if (GetDebug() > 0)
+		{
+			Warning("UpdateTransientDigit", 
+				"TransientDigit returned the number of tracks to be %d, which is bigger than kMAXTRACKS.",
+				ntracks);
+			Warning("UpdateTransientDigit", "Reseting the number of tracks to be %d.", kMAXTRACKS);
+		}
 		ntracks = kMAXTRACKS;
 	};
 	
@@ -239,7 +243,8 @@ void AliMUONDigitizer::AddTransientDigit(AliMUONTransientDigit* mTD)
 // Adds the transient digit to the fTDList and sets the appropriate entry
 // in the fHitMap arrays. 
 
-	AliDebug(4,Form( "Adding transient digit 0x%X", (void*)mTD));
+	if (GetDebug() > 3)
+		Info("AddTransientDigit", "Adding transient digit 0x%X", (void*)mTD);
 	// Choosing the maping of the cathode plane of the chamber:
 	Int_t iNchCpl= mTD->Chamber() + (mTD->Cathode()-1) * AliMUONConstants::NCh();
 	fTDList->AddAtAndExpand(mTD, fTDCounter);
@@ -265,7 +270,7 @@ void AliMUONDigitizer::CreateDigits()
 // Loops over the fTDList for each cathode, gets the correct signal for the 
 // digit and adds the new digit to the output stream.
 
-	AliDebug(2, "Creating digits...");
+	if (GetDebug() > 1) Info("CreateDigits", "Creating digits...");
 	for (Int_t icat = 0; icat < 2; icat++)
 	{
 		//
@@ -280,7 +285,8 @@ void AliMUONDigitizer::CreateDigits()
 			// of digits from both cathodes.
 			if (icat != td->Cathode() - 1) continue;
 			
-			AliDebug(3,Form( "Creating digit from transient digit 0x%X", (void*)td));
+			if (GetDebug() > 2)
+				Info("CreateDigits", "Creating digit from transient digit 0x%X", (void*)td);
 
 			Int_t q = GetSignalFrom(td);
 			if (q > 0) AddDigit(td, q);
@@ -315,10 +321,13 @@ void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t responseCharge)
 	Int_t nptracks = td->GetNTracks();
 	if (nptracks > kMAXTRACKS)
 	{
-		AliDebug(1, Form(
-			"TransientDigit returned the number of tracks to be %d, which is bigger than kMAXTRACKS.",
-			nptracks));
-		AliDebug(1, Form("Reseting the number of tracks to be %d.", kMAXTRACKS));
+		if (GetDebug() > 0)
+		{
+			Warning("AddDigit", 
+				"TransientDigit returned the number of tracks to be %d, which is bigger than kMAXTRACKS.",
+				nptracks);
+			Warning("AddDigit", "Reseting the number of tracks to be %d.", kMAXTRACKS);
+		}
 		nptracks = kMAXTRACKS;
 	};
 	
@@ -340,7 +349,7 @@ void AliMUONDigitizer::AddDigit(AliMUONTransientDigit* td, Int_t responseCharge)
 		};
 	};
 
-	AliDebug(4,Form( "Adding digit with charge %d.", responseCharge));
+	if (GetDebug() > 3) Info("AddDigit", "Adding digit with charge %d.", responseCharge);
 
 	OnWriteTransientDigit(td);
 	AddDigit(td->Chamber(), tracks, charges, digits);
@@ -372,18 +381,19 @@ Bool_t AliMUONDigitizer::FetchLoaders(const char* foldername, AliRunLoader*& run
 // The muon loader is then loaded from the fetched run loader. 
 // kTRUE is returned if no error occurred otherwise kFALSE is returned. 
 
-	AliDebug(3, Form("Fetching run loader and muon loader from folder: %s", foldername));
+	if (GetDebug() > 2)
+		Info("FetchLoaders", "Fetching run loader and muon loader from folder: %s", foldername);
 
 	runloader = AliRunLoader::GetRunLoader(foldername);
 	if (runloader == NULL)
 	{
-		AliError(Form("RunLoader not found in folder: %s", foldername));
+		Error("FetchLoaders", "RunLoader not found in folder: %s", foldername);
 		return kFALSE; 
 	}                                                                                       
 	muonloader = (AliMUONLoader*) runloader->GetLoader("MUONLoader");
 	if (muonloader == NULL) 
 	{
-		AliError(Form("MUONLoader not found in folder: %s", foldername));
+		Error("FetchLoaders", "MUONLoader not found in folder: %s", foldername);
 		return kFALSE; 
 	}
 	return kTRUE;
@@ -399,28 +409,29 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 // AliMUONData fetched from the MUON module. 
 // kTRUE is returned if no error occurred otherwise kFALSE is returned. 
 
-        AliDebug(3, Form("Fetching gAlice, MUON module and AliMUONData from runloader 0x%X.",
+        if (GetDebug() > 2)
+		Info("FetchGlobalPointers", "Fetching gAlice, MUON module and AliMUONData from runloader 0x%X.",
 			(void*)runloader
-		    ));
+		    );
 
 	if (runloader->GetAliRun() == NULL) runloader->LoadgAlice();
 	gAlice = runloader->GetAliRun();
 	if (gAlice == NULL)
 	{
-		AliError(Form("Could not find the AliRun object in runloader 0x%X.", (void*)runloader));
+		Error("FetchGlobalPointers", "Could not find the AliRun object in runloader 0x%X.", (void*)runloader);
 		return kFALSE;
 	};
 	fMUON = (AliMUON*) gAlice->GetDetector("MUON");
 	if (fMUON == NULL)
 	{
-		AliError(Form("Could not find the MUON module in runloader 0x%X.", (void*)runloader));
+		Error("FetchGlobalPointers", "Could not find the MUON module in runloader 0x%X.", (void*)runloader);
 		return kFALSE;
 	};
 
 	AliMUONLoader *muonloader = (AliMUONLoader*) runloader->GetLoader("MUONLoader");
 	if (muonloader == NULL) 
 	{
-		AliError( "MUONLoader not found ");
+		Error("FetchGlobalPointers", "MUONLoader not found ");
 		return kFALSE; 
 	}
 
@@ -428,7 +439,7 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 	if (fMUONData == NULL) fMUONData = new AliMUONData(muonloader,"MUON","MUON");
 	if (fMUONData == NULL)
 	{
-		AliError(Form("Could not find AliMUONData object in runloader 0x%X.", (void*)runloader));
+		Error("FetchGlobalPointers", "Could not find AliMUONData object in runloader 0x%X.", (void*)runloader);
 		return kFALSE;
 	};
 
@@ -438,7 +449,7 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 Bool_t  AliMUONDigitizer::FetchTriggerPointer(AliMUONLoader* loader)
 {
   if (fMUONData == NULL) {
-    AliError("MUONData not found");
+    Error("FetchTriggerPointer", "MUONData not found");
     return kFALSE;
   }
 
@@ -463,7 +474,7 @@ void AliMUONDigitizer::ParseOptions(Option_t* options)
 		optionString.Data() == "deb"   // maintained for compatability.
 	   )
 	{
-		AliInfo("Called with option \"debug\".");
+		Info("ParseOptions", "Called with option \"debug\".");
 		SetDebug(99);
 	};
 };
@@ -478,8 +489,8 @@ void AliMUONDigitizer::InitArrays()
 //
 // Note: the fTDList and fHitMap arrays must be NULL before calling this method.
 
-	AliDebug(2, "Initialising internal arrays.");
-	AliDebug(4, "Creating transient digits list.");
+	if (GetDebug() > 1) Info("InitArrays", "Initialising internal arrays.");
+	if (GetDebug() > 3) Info("InitArrays", "Creating transient digits list.");
 	fTDList = new TObjArray;
 	
 	// Array of pointer of the AliMUONHitMapA1:
@@ -489,11 +500,11 @@ void AliMUONDigitizer::InitArrays()
 	// Loop over chambers for the definition AliMUONHitMap
 	for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) 
 	{
-		AliDebug(4,Form( "Creating hit map for chamber %d, cathode 1.", i+1));
+		if (GetDebug() > 3) Info("InitArrays", "Creating hit map for chamber %d, cathode 1.", i+1);
 		AliMUONChamber* chamber = &(fMUON->Chamber(i));
 		AliSegmentation* c1Segmentation = chamber->SegmentationModel(1); // Cathode plane 1
 		fHitMap[i] = new AliMUONHitMapA1(c1Segmentation, fTDList);
-		AliDebug(4,Form( "Creating hit map for chamber %d, cathode 2.", i+1));
+		if (GetDebug() > 3) Info("InitArrays", "Creating hit map for chamber %d, cathode 2.", i+1);
 		AliSegmentation* c2Segmentation = chamber->SegmentationModel(2); // Cathode plane 2
 		fHitMap[i+AliMUONConstants::NCh()] = new AliMUONHitMapA1(c2Segmentation, fTDList);
 	};
@@ -504,17 +515,17 @@ void AliMUONDigitizer::CleanupArrays()
 {
 // The arrays fTDList and fHitMap are deleted and the pointers set to NULL.
 
-	AliDebug(2, "Deleting internal arrays.");
+	if (GetDebug() > 1) Info("CleanupArrays", "Deleting internal arrays.");
 	for(Int_t i = 0; i < 2*AliMUONConstants::NCh(); i++)
 	{
-		AliDebug(4,Form( "Deleting hit map for chamber %d, cathode %d.", 
-			i%AliMUONConstants::NCh()+1, i/AliMUONConstants::NCh()+1));
+		if (GetDebug() > 3) Info("CleanupArrays", "Deleting hit map for chamber %d, cathode %d.", 
+			i%AliMUONConstants::NCh()+1, i/AliMUONConstants::NCh()+1);
 		delete fHitMap[i];
 	};
 	delete [] fHitMap;
 	fHitMap = NULL;
 	
-	AliDebug(4, "Deleting transient digits list.");
+	if (GetDebug() > 3) Info("CleanupArrays", "Deleting transient digits list.");
 	fTDList->Delete();
 	delete fTDList;
 	fTDList = NULL;

@@ -30,7 +30,6 @@
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
 #include "AliMUONTransientDigit.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONSDigitizerv1)
 
@@ -66,7 +65,8 @@ void AliMUONSDigitizerv1::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_
 Int_t AliMUONSDigitizerv1::GetSignalFrom(AliMUONTransientDigit* td)
 {
 // Returns the transient digit signal as is without applying the chamber response.
-	AliDebug(4,"Returning TransientDigit signal.");
+
+	if (GetDebug() > 3) Info("GetSignalFrom", "Returning TransientDigit signal.");
 	return td->Signal(); 
 };
 
@@ -74,7 +74,9 @@ Int_t AliMUONSDigitizerv1::GetSignalFrom(AliMUONTransientDigit* td)
 Bool_t AliMUONSDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
 {
 // Overridden to initialise the output tree to be TreeS rather than TreeD.
-	AliDebug(3,"Creating s-digits branch and setting the tree address.");
+
+	if (GetDebug() > 2)
+		Info("InitOutputData", "Creating s-digits branch and setting the tree address.");
 
 	fMUONData->SetLoader(muonloader);
 
@@ -84,7 +86,7 @@ Bool_t AliMUONSDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
 		muonloader->MakeSDigitsContainer();
 		if (muonloader->TreeS() == NULL)
 		{
-			AliError("Could not create TreeS.");
+			Error("InitOutputData", "Could not create TreeS.");
 			return kFALSE;
 		};
 	};
@@ -100,7 +102,7 @@ void AliMUONSDigitizerv1::FillOutputData()
 {
 // Overridden to fill TreeS rather than TreeD.
 
-	AliDebug(3,"Filling trees with s-digits.");
+	if (GetDebug() > 2) Info("FillOutputData", "Filling trees with s-digits.");
 	fMUONData->Fill("S");
 	fMUONData->ResetSDigits();
 };
@@ -109,7 +111,8 @@ void AliMUONSDigitizerv1::FillOutputData()
 void AliMUONSDigitizerv1::CleanupOutputData(AliMUONLoader* muonloader)
 {
 // Overridden to write and then cleanup TreeS that was initialised in InitOutputData.
-	AliDebug(3,"Writing s-digits and releasing pointers.");
+
+	if (GetDebug() > 2) Info("CleanupOutputData", "Writing s-digits and releasing pointers.");
 	muonloader->WriteSDigits("OVERWRITE");
 	fMUONData->ResetSDigits();
 	muonloader->UnloadSDigits();

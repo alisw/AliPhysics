@@ -28,7 +28,6 @@
 #include <TString.h>
 
 #include "AliMUONSegmentIndex.h"
-#include "AliLog.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentIndex)
@@ -79,5 +78,5 @@ TString AliMUONSegmentIndex::Name(Int_t padx, Int_t pady, Int_t cathode)
 void AliMUONSegmentIndex::Print() const
 {
   // Printing information of AliMUONSegmentIndex
-  AliInfo(Form("Name=%s Id=%d PadX=%d PadY=%d Cathode=%d\n",fName.Data(),fChannelId,fPadX,fPadY,fCathode));   
+  Info("Print", "Name=%s Id=%d PadX=%d PadY=%d Cathode=%d\n",fName.Data(),fChannelId,fPadX,fPadY,fCathode);   
 }

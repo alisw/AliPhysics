@@ -30,7 +30,6 @@
 #include "AliMUONSegmentationSlatN.h"
 #include "AliMUONSegmentationTriggerX.h"
 #include "AliMUONSegmentationTriggerY.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONFactory)
 
@@ -49,7 +48,7 @@ AliMUONFactory::AliMUONFactory(const AliMUONFactory& rhs)
 {
 // Protected copy constructor
 
-  AliFatal("Not implemented.");
+  Fatal("AliMUONFactory", "Not implemented.");
 }
 
 //__________________________________________________________________________
@@ -66,7 +65,7 @@ AliMUONFactory&  AliMUONFactory::operator=(const AliMUONFactory& rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal("Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }    
@@ -246,10 +245,13 @@ void AliMUONFactory::BuildStation3()
 			     0,0,3,0,
 			     0,0,2,0};
 	
-	Float_t shift = 1.5/2.;
-	Float_t xpos5[9]    = {4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5};
-	Float_t ypos5       = -(20.+4.*(40.-2.*shift));
-	
+	Float_t shift = 0.; // no more constant overlap between slats
+
+	Float_t xpos5[9]    = {1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25};
+	Float_t ypos5[9]    = {-146.5, -112.8, -75.5, -37.8, 0.0, 37.8, 75.5, 112.8, 146.5};	
+
+	for (Int_t i = 0; i < 9; i++) ypos5[i] -= 20.; // origin in segmentation at the bottom of the slat !
+
 	Int_t chamber=5;
 	fMUON->SetNsec(chamber-1,2);
 	AliMUONSegmentationSlat *seg51=new AliMUONSegmentationSlat(4);
@@ -257,7 +259,7 @@ void AliMUONFactory::BuildStation3()
 	seg51->SetShift(shift);  
 	seg51->SetNPCBperSector(npcb5); 
 	seg51->SetSlatXPositions(xpos5);
-	seg51->SetSlatYPosition(ypos5);
+	seg51->SetSlatYPositions(ypos5);
 	seg51->SetPadSize(10.,0.5);
 	seg51->SetDAnod(0.25);
 	seg51->SetPadDivision(nseg3);
@@ -268,7 +270,7 @@ void AliMUONFactory::BuildStation3()
 	seg52->SetShift(shift);  
 	seg52->SetNPCBperSector(npcb5); 
 	seg52->SetSlatXPositions(xpos5);
-	seg52->SetSlatYPosition(ypos5);
+	seg52->SetSlatYPositions(ypos5);
 	seg52->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
 	seg52->SetDAnod(0.25);
 	seg52->SetPadDivision(nseg3);
@@ -283,7 +285,7 @@ void AliMUONFactory::BuildStation3()
 	seg61->SetShift(shift);  
 	seg61->SetNPCBperSector(npcb5); 
 	seg61->SetSlatXPositions(xpos5);
-	seg61->SetSlatYPosition(ypos5);
+	seg61->SetSlatYPositions(ypos5);
 	seg61->SetPadSize(10.,0.5);
 	seg61->SetDAnod(0.25);
 	seg61->SetPadDivision(nseg3);
@@ -294,7 +296,7 @@ void AliMUONFactory::BuildStation3()
 	seg62->SetShift(shift);  
 	seg62->SetNPCBperSector(npcb5); 
 	seg62->SetSlatXPositions(xpos5);
-	seg62->SetSlatYPosition(ypos5);
+	seg62->SetSlatYPositions(ypos5);
 	seg62->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
 	seg62->SetDAnod(0.25);
 	seg62->SetPadDivision(nseg3);
@@ -319,7 +321,8 @@ void AliMUONFactory::BuildStation4()
 	fMUON->SetNsec(chamber-1,2);
 //
 	AliMUONSegmentationSlat *seg71=new AliMUONSegmentationSlat(4);
-	Float_t shift = 1.5/2.;
+	Float_t shift = 0.;
+
 	Int_t npcb7[52] = {0,0,0,2,
 			   0,0,0,3,
 			   0,0,2,2,
@@ -333,14 +336,21 @@ void AliMUONFactory::BuildStation4()
 			   0,0,2,2, 
 			   0,0,0,3,
 			   0,0,0,2};
-	Float_t xpos7[13]   = {4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 44., 4.5, 4.5, 4.5, 4.5, 4.5, 4.5};
-	Float_t ypos7       = -(20.+6.*(40.-2.*shift));  
+	Float_t xpos7[13]   = {1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 39.45, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25};
+	Float_t ypos7[13]   = {-204.1, -175.5, -138.5, -109.2, -72.6, -38.2, 0.0, 
+			       38.2, 72.6, 109.2, 138.5, 175.5, 204.1};
+	Float_t ypos8[13]   = {-208.6, -180.0, -143.0, -113.6, -76.05, -38.2, 0.0, 
+			       38.2, 76.05, 113.6, 143.0, 180.0, 208.6};
+	for (Int_t i = 0; i < 13; i++) {
+	  ypos7[i] -= 20.;
+	  ypos8[i] -= 20.;
+	}
 	
 	seg71->SetNSlats(13);  
 	seg71->SetShift(shift);  
 	seg71->SetNPCBperSector(npcb7); 
 	seg71->SetSlatXPositions(xpos7);
-	seg71->SetSlatYPosition(ypos7);
+	seg71->SetSlatYPositions(ypos7);
 	
 	seg71->SetPadSize(10.,0.5);
 	seg71->SetDAnod(0.25);
@@ -354,7 +364,7 @@ void AliMUONFactory::BuildStation4()
 	seg72->SetShift(shift);   
 	seg72->SetNPCBperSector(npcb7); 
 	seg72->SetSlatXPositions(xpos7);
-	seg72->SetSlatYPosition(ypos7);
+	seg72->SetSlatYPositions(ypos7);
 	seg72->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
 	seg72->SetDAnod(0.25);
 	seg72->SetPadDivision(nseg4);
@@ -372,7 +382,7 @@ void AliMUONFactory::BuildStation4()
 	seg81->SetShift(shift);  
 	seg81->SetNPCBperSector(npcb7); 
 	seg81->SetSlatXPositions(xpos7);
-	seg81->SetSlatYPosition(ypos7);
+	seg81->SetSlatYPositions(ypos8);
 	seg81->SetPadSize(10.,0.5);
 	seg81->SetDAnod(0.25);
 	seg81->SetPadDivision(nseg4);
@@ -385,7 +395,7 @@ void AliMUONFactory::BuildStation4()
 	seg82->SetShift(shift);  
 	seg82->SetNPCBperSector(npcb7); 
 	seg82->SetSlatXPositions(xpos7);
-	seg82->SetSlatYPosition(ypos7);
+	seg82->SetSlatYPositions(ypos8);
 	seg82->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
 	seg82->SetDAnod(0.25);
 	seg82->SetPadDivision(nseg4);
@@ -409,7 +419,8 @@ void AliMUONFactory::BuildStation5()
 	AliMUONSegmentationSlat *seg91=new AliMUONSegmentationSlat(4);
 
 	Int_t   nseg4[4]={4, 4, 2, 1};
-	Float_t shift = 1.5/2.;
+	Float_t shift = 0.;
+
 	Int_t   npcb9[52] = {0,0,0,3,
 			     0,0,0,4,
 			     0,0,2,3,
@@ -424,14 +435,18 @@ void AliMUONFactory::BuildStation5()
 			     0,0,0,4, 
 			     0,0,0,3};   
 	
-	Float_t xpos9[13]   = {4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 44., 4.5, 4.5, 4.5, 4.5, 4.5, 4.5};
-	Float_t ypos9       = -(20.+6.*(40.-2.*shift));
+	Float_t xpos9[13]   = {1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 39.45, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25};
+	Float_t ypos9[13]   = {-224.8, -188.05, -151.0, -113.7, -76.1, -38.2, 0.0, 
+			       38.2, 76.1, 113.7, 151.0, 188.05, 224.8};
+
+	for (Int_t i = 0; i < 13; i++)  ypos9[i] -= 20.;
+
 	
 	seg91->SetNSlats(13);  
 	seg91->SetShift(shift);  
 	seg91->SetNPCBperSector(npcb9); 
 	seg91->SetSlatXPositions(xpos9);
-	seg91->SetSlatYPosition(ypos9);
+	seg91->SetSlatYPositions(ypos9);
 	seg91->SetPadSize(10.,0.5);
 	seg91->SetDAnod(0.25);
 	seg91->SetPadDivision(nseg4);
@@ -444,7 +459,7 @@ void AliMUONFactory::BuildStation5()
 	seg92->SetShift(shift);   
 	seg92->SetNPCBperSector(npcb9); 
 	seg92->SetSlatXPositions(xpos9);
-	seg92->SetSlatYPosition(ypos9);
+	seg92->SetSlatYPositions(ypos9);
 	seg92->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
 	seg92->SetDAnod(0.25);
 	seg92->SetPadDivision(nseg4);
@@ -462,7 +477,7 @@ void AliMUONFactory::BuildStation5()
 	seg101->SetShift(shift);  
 	seg101->SetNPCBperSector(npcb9); 
 	seg101->SetSlatXPositions(xpos9);
-	seg101->SetSlatYPosition(ypos9);
+	seg101->SetSlatYPositions(ypos9);
 	seg101->SetPadSize(10.,0.5);
 	seg101->SetDAnod(0.25);
 	seg101->SetPadDivision(nseg4);
@@ -475,7 +490,7 @@ void AliMUONFactory::BuildStation5()
 	seg102->SetShift(shift);   
 	seg102->SetNPCBperSector(npcb9); 
 	seg102->SetSlatXPositions(xpos9);
-	seg102->SetSlatYPosition(ypos9);
+	seg102->SetSlatYPositions(ypos9);
 	seg102->SetPadSize(1., 10.); // DeltaX(non bending) = 2 * DeltaY(bending)
 	seg102->SetDAnod(0.25);
 	seg102->SetPadDivision(nseg4);
@@ -563,8 +578,14 @@ void AliMUONFactory::Build(AliMUON* where, const char* what)
       BuildStation5();
       BuildStation6();
     } 
-    else
-	  AliDebug(0,"Non default version of MUON selected. You have to construct yourself the MUON elements !!");
+    else {
+      if(fMUON->GetDebug()) {
+	printf("\nAliMUONFactory: --------AliMUONFactory------------------------------");
+	printf("\nAliMUONFactory:  Non default version of MUON selected               ");
+	printf("\nAliMUONFactory:  You have to construct yourself the MUON elements !!");	
+	printf("\nAliMUONFactory: ----------------------------------------------------");
+      }
+    }
 }
 
 //__________________________________________________________________________
@@ -594,6 +615,6 @@ void AliMUONFactory::BuildStation(AliMUON* where, Int_t stationNumber)
       case 5:  BuildStation5(); break;
       case 6:  BuildStation6(); break;
     
-      default: AliFatal("Wrong station number");
+      default: Fatal("Build", "Wrong station number");
     }  
 }         

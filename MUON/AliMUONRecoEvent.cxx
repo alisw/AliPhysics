@@ -54,7 +54,6 @@
 #include "AliMUONTrackHit.h"
 #include "AliRun.h"
 #include "AliHeader.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONRecoEvent)
 
@@ -74,7 +73,7 @@ AliMUONRecoEvent::AliMUONRecoEvent(const AliMUONRecoEvent& rhs)
 {
 // Protected copy constructor
 
-  AliFatal("Not implemented.");
+  Fatal("AliMUONRecoEventModule", "Not implemented.");
 }
 
 //-------------------------------------------------------------------
@@ -94,7 +93,7 @@ AliMUONRecoEvent::operator=(const AliMUONRecoEvent& rhs)
 
   if (this == &rhs) return *this;
 
-  AliFatal("Not implemented.");
+  Fatal("operator=", "Not implemented.");
     
   return *this;  
 }    

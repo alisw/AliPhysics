@@ -15,13 +15,13 @@ public:
 
    UInt_t  GetRegWord() const {return fRegWord;}
    Int_t   GetRegInput(Int_t n)  const {return fRegInput[n];}
-   Int_t   GetRegOutput() const {return fRegOutput;}
    Int_t   GetLocalData(Int_t n)  const {return fLocalData[n];}
 
-   //serialNB:5,RegId:5,Version:8,MBZ:14
-   Char_t   GetSerialNb()  {return (Char_t)(fRegWord >> 27) &  0x1F;}
-   Char_t   GetRegId()     {return (Char_t)(fRegWord >> 22) &  0x1F;}
-   Char_t   GetVersion()   {return (Char_t)(fRegWord >> 14) &  0xFF;}
+   //MBZ:3,serialNb:5,Version:8,RegId:4,MBZ:4,RegOut:8
+   Char_t   GetSerialNb()  {return (Char_t)(fRegWord >> 24) &  0x1F;}
+   Char_t   GetVersion()   {return (Char_t)(fRegWord >> 16) &  0xFF;}
+   Char_t   GetRegId()     {return (Char_t)(fRegWord >> 12) &  0x0F;}
+   Char_t   GetRegOutput() {return (Char_t)(fRegWord)       &  0xFF;}
 
    UShort_t GetX2(Int_t n) {return (fLocalData[16*n]     >> 16) &  0xFFFF;}
    UShort_t GetX1(Int_t n) {return (fLocalData[16*n])           &  0xFFFF;}
@@ -42,7 +42,6 @@ public:
 
    void    SetRegWord(UInt_t w) {fRegWord = w;}
    void    SetRegInput(Int_t in, Int_t n) {fRegInput[n] = in;}
-   void    SetRegOutput(Int_t out) { fRegOutput = out;}  
    void    SetLocalData(Int_t d, Int_t n) {fLocalData[n] = d;}
    
    UInt_t* GetAddress() {return &fRegWord;}
@@ -50,10 +49,9 @@ public:
  private:
    
    UInt_t    fRegWord;          // first word
-   Int_t     fLocalData[16*5];  // local data
    Int_t     fRegInput[2];      // regional input
-   Int_t     fRegOutput;        // regional output
- 
-   ClassDef(AliMUONSubEventTrigger,1)  // MUON Pad Hit
+   Int_t     fLocalData[16*5];  // local data
+    
+   ClassDef(AliMUONSubEventTrigger,2)  // MUON Pad Hit
 };
 #endif

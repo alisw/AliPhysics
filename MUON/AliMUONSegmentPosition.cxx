@@ -28,7 +28,6 @@
 #include <TMath.h>
 
 #include "AliMUONSegmentPosition.h"
-#include "AliLog.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentPosition)
@@ -94,5 +93,5 @@ TString AliMUONSegmentPosition::Name(Float_t x, Float_t y, Int_t cathode)
 void AliMUONSegmentPosition::Print() const
 {
   // Printing AliMUONSegmentManuIndex information
-  AliInfo(Form("Name=%s Id=%d X=%f Y=%f Cathode=%d\n",fName.Data(),fChannelId, fX, fY,fCathode));   
+  Info("Print","Name=%s Id=%d X=%f Y=%f Cathode=%d\n",fName.Data(),fChannelId, fX, fY,fCathode);   
 }

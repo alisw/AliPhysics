@@ -31,7 +31,6 @@
 #include <TString.h>
 
 #include "AliMUONSt1ResponseParameter.h"
-#include "AliLog.h"
 
 ClassImp(AliMUONSt1ResponseParameter);
 
@@ -111,7 +110,7 @@ void AliMUONSt1ResponseParameter::SetPedestal(const TString& fileName)
     }
     file.close();
   } else {
-    AliWarning(Form("Can't read file %s",fileName.Data()));
+    Warning("SetPedestal",Form("Can't read file %s",fileName.Data()));
     SetPedestal(150.,10.);
   }
 }
@@ -163,7 +162,7 @@ void AliMUONSt1ResponseParameter::SetNoise(const TString& fileName)
     }
     file.close();
   } else {
-    AliWarning(Form("Can't read file %s",fileName.Data()));
+    Warning("SetNoise",Form("Can't read file %s",fileName.Data()));
     SetNoise(150.,10.);
   }
 }
@@ -239,6 +238,6 @@ Double_t AliMUONSt1ResponseParameter::Choose(TMode mode,TParam param,Int_t GC) c
     case kGauss : return gRandom->Gaus(param.gauss.mean,param.gauss.sigma);
     case kFile  : return param.values[GC];
   }
-  AliFatal("No mode is given");
+  Fatal("Choose","No mode is given");
   return 0;
 }
