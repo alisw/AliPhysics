@@ -99,9 +99,9 @@ Int_t AliRICHParam::Loc2Sec(Double_t &x,Double_t &y)
   else if(x>=x5&&x<=x6)    {sector=3;x-=SectorSizeX()/2+DeadZone();}
   else                     {return kBad;} //in dead zone
 
-  if     (y>=-PcSizeY()/2   &&y<=-DeadZone()/2)  {y+=PcSizeY()/2;  return -sector;}
+  if     (y>=-PcSizeY()/2   &&y<=-DeadZone()/2)  {y+=PcSizeY()/2;  return sector;}
   else if(y> -DeadZone()/2  &&y<  DeadZone()/2)  {return kBad;} //in dead zone
-  else if(y>= DeadZone()/2  &&y<= PcSizeY()/2)   {y-=DeadZone()/2; return  sector;}
+  else if(y>= DeadZone()/2  &&y<= PcSizeY()/2)   {y-=DeadZone()/2; return sector+3;}
   else                                           {return kBad;}
 }//Loc2Sec(Double_t x, Double_t y)
 //__________________________________________________________________________________________________
@@ -113,8 +113,8 @@ Int_t AliRICHParam::Pad2Sec(Int_t &padx, Int_t &pady)
   else if(padx> NpadsXsec()*2&&padx<=NpadsX())         {sector=3;padx-=NpadsXsec()*2;}
   else                                                 {return kBad;}
 
-  if     (pady>=1         &&pady<= NpadsYsec())     {return -sector;}
-  else if(pady>NpadsYsec()&&pady<= NpadsY())        {pady-=NpadsYsec();return sector;} 
+  if     (pady>=1         &&pady<= NpadsYsec())     {return sector;}
+  else if(pady>NpadsYsec()&&pady<= NpadsY())        {pady-=NpadsYsec();return sector+3;} 
   else                                              {return kBad;}
 }//Pad2Sec()
 //__________________________________________________________________________________________________
@@ -128,8 +128,8 @@ Int_t AliRICHParam::Loc2Pad(Double_t x, Double_t y, Int_t &padx, Int_t &pady)
   
   padx=Int_t(x/PadSizeX())+1; 
   if(padx>NpadsXsec())            padx= NpadsXsec();
-  if(sector==2||sector==-2)       padx+=NpadsXsec();
-  else if(sector==3||sector==-3)  padx+=NpadsXsec()*2;
+  if(sector==2||sector==5)       padx+=NpadsXsec();
+  else if(sector==3||sector==6)  padx+=NpadsXsec()*2;
   
   pady=Int_t(y/PadSizeY())+1;
   if(pady>NpadsYsec())            padx= NpadsYsec();
@@ -141,15 +141,14 @@ Int_t AliRICHParam::Loc2Pad(Double_t x, Double_t y, Int_t &padx, Int_t &pady)
 void AliRICHParam::Pad2Loc(Int_t padx,Int_t pady,Double_t &x,Double_t &y)
 {
   Int_t sector=Pad2Sec(padx,pady);  
-  if(sector>0)
+  if(sector>3)
     y=0.5*DeadZone()+pady*PadSizeY()-0.5*PadSizeY();
   else{
-    sector=-sector;
     y=-0.5*PcSizeY()+pady*PadSizeY()-0.5*PadSizeY();
   }
-  if(sector==1)
+  if(sector==1||sector==4)
     x=-0.5*PcSizeX()+padx*PadSizeX()-0.5*PadSizeX();
-  else if(sector==2)
+  else if(sector==2||sector==5)
     x=-0.5*SectorSizeX()+padx*PadSizeX()-0.5*PadSizeX();
   else
     x= 0.5*SectorSizeX()+DeadZone()+padx*PadSizeX()-0.5*PadSizeX();

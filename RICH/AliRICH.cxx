@@ -32,18 +32,25 @@ ClassImp(AliRICHhit)
 //__________________________________________________________________________________________________
 void AliRICHhit::Print(Option_t*)const
 {
-  Info("","chamber=%2i, PID=%9i, TID=%6i, eloss=%9.3f eV",fChamber,fPid,fTrack,fEloss*1e9);
-}//void AliRICHdigit::Print(Option_t *option)const
+  Info("","chamber=%2i, PID=%9i, TID=%6i, eloss=%8.3f eV",fChamber,fPid,fTrack,fEloss*1e9);
+}
 //__________________________________________________________________________________________________
 ClassImp(AliRICHdigit)
 //__________________________________________________________________________________________________
 void AliRICHdigit::Print(Option_t*)const
 {
-  Info("","ID=%6i, chamber=%2i, PadX=%3i, PadY=%3i, Qdc=%4i, TID1=%5i, TID2=%5i, TID3=%5i",
+  Info("","ID=%6i, chamber=%2i, PadX=%3i, PadY=%3i, Q=%6.2f, TID1=%5i, TID2=%5i, TID3=%5i",
          Id(),fChamber,fPadX,fPadY,fQdc,fTracks[0],fTracks[1],fTracks[2]);
-}//void AliRICHdigit::Print(Option_t *option)const
+}
 //__________________________________________________________________________________________________
-
+ClassImp(AliRICHcluster)
+//__________________________________________________________________________________________________
+void AliRICHcluster::Print(Option_t*)const
+{
+  Info("","chamber=%2i,size=%3i,dim=%5i,x=%6.3f,y=%6.3f,Q=%4i,status=%i",
+            fChamber,fSize,fDimXY,fX,fY,fQdc,fStatus);
+}
+//__________________________________________________________________________________________________
 ClassImp(AliRICH)    
 //__________________________________________________________________________________________________
 // RICH manager class   
@@ -84,8 +91,8 @@ AliRICH::AliRICH(const char *name, const char *title)
   
   fCerenkovs=  0;     CreateCerenkovsOld();  gAlice->GetMCApp()->AddHitList(fCerenkovs);
   fSpecials=   0;     CreateSpecialsOld();   
-  fDchambers=  0;   //CreateDigitsOld();
-  fRawClusters=0;   //CreateRawClustersOld();
+  fDchambers=  0;  
+  fRawClusters=0;  
   
   fCkovNumber=fFreonProd=0;  
   if(GetDebug())Info("named ctor","Stop.");
@@ -122,17 +129,25 @@ void AliRICH::Hits2SDigits()
     if(!GetLoader()->TreeS()) GetLoader()->MakeTree("S");  
     MakeBranch("S");
     
-    ResetSdigits();  ResetSpecialsOld();  
+    ResetHits();  ResetSDigits();  
     for(Int_t iPrimN=0;iPrimN<GetLoader()->TreeH()->GetEntries();iPrimN++){//prims loop
       GetLoader()->TreeH()->GetEntry(iPrimN);
-      for(Int_t i=0;i<Specials()->GetEntries();i++){//specials loop          
-        Int_t padx= ((AliRICHSDigit*)Specials()->At(i))->PadX();
-        Int_t pady= ((AliRICHSDigit*)Specials()->At(i))->PadY();
-        Int_t qdc=  ((AliRICHSDigit*)Specials()->At(i))->QPad();
-        Int_t hitN= ((AliRICHSDigit*)Specials()->At(i))->HitNumber()-1;//!!! important -1
-        Int_t chamber=((AliRICHhit*)Hits()->At(hitN))->C();
-        Int_t track=((AliRICHhit*)Hits()->At(hitN))->GetTrack();
-        AddSdigit(chamber,padx+Param()->NpadsX()/2,pady+Param()->NpadsY()/2,qdc,track);
+      for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop          
+        AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);        
+        
+        TVector3 globX3(pHit->X(),pHit->Y(),pHit->Z());        
+        TVector3 locX3=C(pHit->C())->Glob2Loc(globX3);
+        
+        Int_t sector;
+        Int_t iTotQdc=Param()->Loc2TotQdc(locX3,pHit->Eloss(),pHit->Pid(),sector);
+        
+        Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
+        AliRICHParam::Loc2Area(locX3,iPadXmin,iPadYmin,iPadXmax,iPadYmax);
+        for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)
+          for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++){
+            Double_t padQdc=iTotQdc*Param()->Loc2PadFrac(locX3,iPadX,iPadY);
+            if(padQdc>0.1) AddSDigit(pHit->C(),iPadX,iPadY,padQdc,pHit->GetTrack());
+          }            
       }//specials loop
     }//prims loop
     GetLoader()->TreeS()->Fill();
@@ -140,7 +155,7 @@ void AliRICH::Hits2SDigits()
     if(GetDebug()) Info("Hit2SDigits","Event %i processed.",iEventN);
   }//events loop  
   GetLoader()->UnloadHits();   GetLoader()->UnloadSDigits();  
-  ResetHits();                 ResetSdigits();
+  ResetHits();                 ResetSDigits();
   if(GetDebug()) Info("Hit2SDigits","Stop.");
 }//void AliRICH::Hits2SDigits()
 //__________________________________________________________________________________________________
@@ -154,38 +169,40 @@ void AliRICH::SDigits2Digits()
     gAlice->GetRunLoader()->GetEvent(iEventN);
     
     if(!GetLoader()->TreeD()) GetLoader()->MakeTree("D");  MakeBranch("D"); //create TreeD with RICH branches 
-    ResetSdigits();ResetDigitsOld();//reset lists of sdigits and digits
+    ResetSDigits();ResetDigitsOld();//reset lists of sdigits and digits
     GetLoader()->TreeS()->GetEntry(0);  
-    Sdigits()->Sort();
+    SDigits()->Sort();
   
-    Int_t kBad=-101;
-    
-    Int_t tr[3],q[3],dig[5]; for(Int_t i=0;i<3;i++) tr[i]=q[i]=kBad;    for(Int_t i=0;i<5;i++) dig[i]=kBad;        
-    Int_t chamber=kBad,id=kBad,iNdigitsPerPad=kBad;//how many sdigits for a given pad
+    Int_t chamber,x,y,tr[3],id;
+    chamber=x=y=tr[0]=tr[1]=tr[2]=id=kBad;
+    Double_t q=kBad;
+    Int_t iNdigitsPerPad=kBad;//how many sdigits for a given pad
         
-    for(Int_t i=0;i<Sdigits()->GetEntries();i++){//sdigits loop (sorted)
-      AliRICHdigit *pSdig=(AliRICHdigit*)Sdigits()->At(i);
+    for(Int_t i=0;i<SDigits()->GetEntries();i++){//sdigits loop (sorted)
+      AliRICHdigit *pSdig=(AliRICHdigit*)SDigits()->At(i);
       if(pSdig->Id()==id){//still the same pad
         iNdigitsPerPad++;
-        dig[2]+=pSdig->Qdc();//sum up qdc
+        q+=pSdig->Q();
         if(iNdigitsPerPad<=3)
           tr[iNdigitsPerPad-1]=pSdig->T(0);
         else
           Info("","More then 3 sdigits for the given pad");
       }else{//new pad, add the pevious one
-        if(id!=kBad) AddDigitOld(chamber,tr,q,dig);
-        chamber=pSdig->C();dig[0]=pSdig->X();dig[1]=pSdig->Y();dig[2]=pSdig->Qdc();tr[0]=pSdig->T(0);id=pSdig->Id();
+        if(id!=kBad) AddDigit(chamber,x,y,(Int_t)q,tr[0],tr[1],tr[2]);//ch-xpad-ypad-qdc-tr1-2-3
+        chamber=pSdig->C();x=pSdig->X();y=pSdig->Y();q=pSdig->Q();tr[0]=pSdig->T(0);id=pSdig->Id();
         iNdigitsPerPad=1;tr[1]=tr[2]=kBad;
       }
     }//sdigits loop (sorted)
-    if(Sdigits()->GetEntries()) AddDigitOld(chamber,tr,q,dig);//add the last digit
+  
+    if(SDigits()->GetEntries())AddDigit(chamber,x,y,(Int_t)q,tr[0],tr[1],tr[2]);//add the last digit
+        
         
     GetLoader()->TreeD()->Fill();  
     GetLoader()->WriteDigits("OVERWRITE");
     if(GetDebug()) Info("SDigits2Digits","Event %i processed.",iEventN);
   }//events loop
   GetLoader()->UnloadSDigits();  GetLoader()->UnloadDigits();  
-  ResetSdigits();                ResetDigitsOld();
+  ResetSDigits();                ResetDigitsOld();
   if(GetDebug()) Info("SDigits2Digits","Stop.");
 }//void AliRICH::SDigits2Digits()
 //__________________________________________________________________________________________________
@@ -625,7 +642,7 @@ void AliRICH::MakeBranch(Option_t* option)
   AliDetector::MakeBranch(option);//this is after cH because we need to guarantee that fHits array is created
       
   if(cS&&fLoader->TreeS()){//S  
-    CreateSdigits();   MakeBranchInTree(fLoader->TreeS(),"RICH",&fSdigits,kBufferSize,0) ;
+    CreateSDigits();   MakeBranchInTree(fLoader->TreeS(),"RICH",&fSdigits,kBufferSize,0) ;
   }//S
    
   if(cD&&fLoader->TreeD()){//D
@@ -661,7 +678,7 @@ void AliRICH::SetTreeAddress()
 
   if(fLoader->TreeS()){//S
     if(GetDebug())Info("SetTreeAddress","tree S is requested.");
-    branch=fLoader->TreeS()->GetBranch(GetName());        if(branch){CreateSdigits();   branch->SetAddress(&fSdigits);}
+    branch=fLoader->TreeS()->GetBranch(GetName());        if(branch){CreateSDigits();   branch->SetAddress(&fSdigits);}
   }//S
     
   if(fLoader->TreeD()){//D    

@@ -1,11 +1,27 @@
 void ss()
 {
-  rl->LoadSDigits();
+  if(rl->LoadSDigits()) return;
   rl->TreeS()->GetEntry(0);
   r->SDigits()->Print();
+  Info("sd","totally %i",r->SDigits()->GetEntries());
   rl->UnloadSDigits();
 }
 
+void sd()
+{
+  if(rl->LoadDigits()) return;
+  rl->TreeD()->GetEntry(0);
+  for(int i=1;i<=7;i++) r->Digits(i)->Print();
+  rl->UnloadDigits();
+}
+
+void sc()
+{
+  if(rl->LoadRecPoints()) return;
+  rl->TreeR()->GetEntry(0);
+  for(int i=1;i<=7;i++) r->Clusters(i)->Print();
+  rl->UnloadRecPoints();
+}
 
 Double_t r2d = TMath::RadToDeg();
 Double_t d2r = TMath::DegToRad();

@@ -160,29 +160,29 @@ AliRICHCerenkov::AliRICHCerenkov(Int_t shunt, Int_t track, Int_t *vol, Float_t *
 class AliRICHdigit :public AliDigit
 {
 public:
-           AliRICHdigit() {fPadX=fPadY=fChamber=fQdc=fTracks[0]=fTracks[1]=fTracks[2]=kBad;}
-  inline   AliRICHdigit(Int_t iC,Int_t iX,Int_t iY,Int_t iQdc,Int_t iT1,Int_t iT2,Int_t iT3);
+           AliRICHdigit() {fPadX=fPadY=fChamber=fTracks[0]=fTracks[1]=fTracks[2]=kBad;fQdc=kBad;}
+  inline   AliRICHdigit(Int_t iC,Int_t iX,Int_t iY,Double_t iQdc,Int_t iT1,Int_t iT2,Int_t iT3);
   virtual ~AliRICHdigit() {;}  
-  inline   Int_t Compare(const TObject *pObj) const;//virtual
-           Bool_t IsSortable()                                 const{return kTRUE;}//virtual
-           Int_t C()                                           const{return fChamber;}
-           Int_t X()                                           const{return fPadX;}
-           Int_t Y()                                           const{return fPadY;}
-           Int_t Id()                                          const{return fChamber*1000000+fPadX*1000+fPadY;}
-           Int_t Qdc()                                         const{return fQdc;}
-           Int_t T(Int_t i)                                    const{return fTracks[i];}
-           void  Print(Option_t *option)const;      //virtual
+  inline   Int_t    Compare(const TObject *pObj) const;                               //virtual
+           Bool_t   IsSortable()                                  const{return kTRUE;}//virtual
+           Int_t    C()                                           const{return fChamber;}
+           Int_t    X()                                           const{return fPadX;}
+           Int_t    Y()                                           const{return fPadY;}
+           Int_t    Id()                                          const{return fChamber*1000000+fPadX*1000+fPadY;}
+           Double_t Q()                                           const{return fQdc;}
+           Int_t    T(Int_t i)                                    const{return fTracks[i];}
+           void  Print(Option_t *option)const;                                       //virtual
 protected:
-  Int_t fChamber;  //module number 
-  Int_t fPadX;     //pad number along X
-  Int_t fPadY;     //pad number along Y
-  Int_t fQdc;      //ADC value
+  Int_t    fChamber;  //module number 
+  Int_t    fPadX;     //pad number along X
+  Int_t    fPadY;     //pad number along Y
+  Double_t fQdc;      //QDC value, fractions are permitted for summable procedure
   ClassDef(AliRICHdigit,1) //RICH digit class       
 };//class AliRICHdigit
 //__________________________________________________________________________________________________
-AliRICHdigit::AliRICHdigit(Int_t iC,Int_t iX,Int_t iY,Int_t iQdc,Int_t iT0,Int_t iT1,Int_t iT2)
+AliRICHdigit::AliRICHdigit(Int_t iC,Int_t iX,Int_t iY,Double_t q,Int_t iT0,Int_t iT1,Int_t iT2)
 {
-  fChamber=iC;fPadX=iX;fPadY=iY;fQdc=iQdc;
+  fChamber=iC;fPadX=iX;fPadY=iY;fQdc=q;
   fTracks[0]=iT0;fTracks[1]=iT1;fTracks[2]=iT2;
 }
 //__________________________________________________________________________________________________
@@ -195,6 +195,42 @@ Int_t AliRICHdigit::Compare(const TObject *pObj)const
   else
     return -1;
 } 
+//__________________AliRICHcluster__________________________________________________________________
+//__________________________________________________________________________________________________
+//__________________________________________________________________________________________________
+class AliRICHcluster :public TObject
+{
+public:
+ enum ClusterStatus {kOK,kEdge,kShape,kSize};
+
+           AliRICHcluster()                                       {fStatus=fSize=fDimXY=fChamber=fQdc=kBad;fX=fY=kBad;fDigits=0;}
+  virtual ~AliRICHcluster() {delete fDigits;}  
+           Int_t    Size()                                        const{return fSize;}
+           Int_t    DimXY()                                       const{return fDimXY;}
+           Int_t    Chamber()                                     const{return fChamber/10;}
+           Int_t    Sector()                                      const{return fChamber-(fChamber/10)*10;} 
+           Int_t    Q()                                           const{return fQdc;}
+           Double_t X()                                           const{return fX;}
+           Double_t Y()                                           const{return fY;}
+           Int_t    Status()                                      const{return fStatus;}
+           void  Print(Option_t *option)const;                                       //virtual
+   inline  void  AddDigit(AliRICHdigit *pDig);
+protected:
+  Int_t         fSize;        //how many digits belong to this cluster    
+  Int_t         fDimXY;       //100*xdim+ydim box containing the cluster
+  Int_t         fQdc;         //QDC value
+  Int_t         fChamber;     //10*module number+sector number 
+  Double_t      fX;           //local x postion 
+  Double_t      fY;           //local y postion  
+  Int_t         fStatus;      //flag to mark the quality of the cluster   
+  TObjArray    *fDigits;      //! list of digits forming this cluster
+  ClassDef(AliRICHcluster,1)  //RICH digit class       
+};//class AliRICHcluster
+//__________________________________________________________________________________________________
+void AliRICHcluster::AddDigit(AliRICHdigit *pDig)
+{  
+  fSize++; fQdc+=(Int_t)pDig->Q(); fDigits->Add(pDig);
+}
 //__________________AliRICH_________________________________________________________________________
 //__________________________________________________________________________________________________
 //__________________________________________________________________________________________________
@@ -216,19 +252,19 @@ public:
           void    Digits2Reco();                                                                                  //virtual
   
   inline  void    CreateHits();    
-  inline  void    CreateSdigits();  
+  inline  void    CreateSDigits();  
   inline  void    CreateDigits();  
   inline  void    CreateClusters();  
   inline  void    AddHit(Int_t track, Int_t *vol, Float_t *hits);                                                 //virtual
-  inline  void    AddSdigit(Int_t iC,Int_t iX,Int_t iY,Int_t iAdc,Int_t iT0,Int_t iT1=kBad,Int_t iT2=kBad);
-  inline  void    AddDigit (Int_t iC,Int_t iX,Int_t iY,Int_t iAdc,Int_t iT0,Int_t iT1=kBad,Int_t iT2=kBad);     
-          void    AddCluster()                                                                                {;}     
+  inline  void    AddSDigit(Int_t iC,Int_t iX,Int_t iY,Double_t q,Int_t iT0,Int_t iT1=kBad,Int_t iT2=kBad);
+  inline  void    AddDigit (Int_t iC,Int_t iX,Int_t iY,Int_t iQ,Int_t iT0,Int_t iT1=kBad,Int_t iT2=kBad);     
+  inline  void    AddCluster(AliRICHcluster clus);
           void    ResetHits()     {AliDetector::ResetHits();fNcerenkovs=0;if(fCerenkovs)fCerenkovs->Clear();fNspecials=0;if(fSpecials)fSpecials->Clear();}  //virtual
-          void    ResetSdigits()  {fNsdigits=0;  if(fSdigits)  fSdigits ->Clear();}                                 
+          void    ResetSDigits()  {fNsdigits=0;  if(fSdigits)  fSdigits ->Clear();}                                 
           void    ResetDigits()   {if(fDigitsNew)for(int i=0;i<kNCH;i++){fDigitsNew->At(i)->Clear();fNdigitsNew[i]=0;}}
           void    ResetClusters() {if(fClusters) for(int i=0;i<kNCH;i++){fClusters ->At(i)->Clear();fNclusters[i]=0;}}
                   //Hits provided by AliDetector
-  TClonesArray*   Sdigits()             const{return fSdigits;}
+  TClonesArray*   SDigits()             const{return fSdigits;}
   TClonesArray*   Digits(Int_t iC)      const{if(fDigitsNew) return (TClonesArray *)fDigitsNew->At(iC-1);else return 0;}
   TClonesArray*   Clusters(Int_t iC)    const{if(fClusters)  return (TClonesArray *)fClusters->At(iC-1);else return 0;}
           
@@ -310,16 +346,22 @@ void AliRICH::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   new(tmp[fNhits++])AliRICHhit(fIshunt,track,vol,hits);
 }
 //__________________________________________________________________________________________________
-void AliRICH::AddSdigit(Int_t iC,Int_t iX,Int_t iY,Int_t iAdc,Int_t iT0,Int_t iT1,Int_t iT2)
+void AliRICH::AddSDigit(Int_t iC,Int_t iX,Int_t iY,Double_t q,Int_t iT0,Int_t iT1,Int_t iT2)
 {//Adds the current Sdigit to the RICH list of Sdigits   
   TClonesArray &tmp=*fSdigits;
-  new(tmp[fNsdigits++])AliRICHdigit(iC,iX,iY,iAdc,iT0,iT1,iT2);
+  new(tmp[fNsdigits++])AliRICHdigit(iC,iX,iY,q,iT0,iT1,iT2);
 } 
 //__________________________________________________________________________________________________
 void AliRICH::AddDigit(Int_t iC,Int_t iX,Int_t iY,Int_t iAdc,Int_t iT0,Int_t iT1,Int_t iT2)
 {//Adds the current digit to the corresponding RICH list of digits (individual list per chamber)
   TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(iC-1));
   new(tmp[fNdigitsNew[iC-1]++]) AliRICHdigit(iC,iX,iY,iAdc,iT0,iT1,iT2);
+}
+//__________________________________________________________________________________________________
+void AliRICH::AddCluster(AliRICHcluster clus)
+{//Adds the current cluster to the corresponding RICH list of clusters (individual list per chamber)
+  TClonesArray &tmp=*((TClonesArray*)fClusters->At(clus.Chamber()-1));
+  new(tmp[fNclusters[clus.Chamber()-1]++]) AliRICHcluster(clus);
 }
 //__________________________________________________________________________________________________
 void AliRICH::CreateHits()
@@ -329,10 +371,10 @@ void AliRICH::CreateHits()
   fHits=new TClonesArray("AliRICHhit",10000);   fNhits=0;
 }
 //__________________________________________________________________________________________________
-void AliRICH::CreateSdigits()
+void AliRICH::CreateSDigits()
 {
   if(fSdigits) return;
-  if(GetDebug())Info("CreateSdigits","creating sdigits container.");
+  if(GetDebug())Info("CreateSDigits","creating sdigits container.");
   fSdigits=new TClonesArray("AliRICHdigit",10000); fNsdigits=0;
 }
 //__________________________________________________________________________________________________
