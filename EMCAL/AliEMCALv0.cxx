@@ -145,6 +145,7 @@ void AliEMCALv0::BuildGeometry(){
     // Difine the shape of the Calorimeter 
 
   
+    TNode * top = gAlice->GetGeometry()->GetNode("alice") ;
 
     new TTUBS("Envelop1", "Tubs that contains arm 1", "void", 
 
@@ -161,8 +162,10 @@ void AliEMCALv0::BuildGeometry(){
 	);
 
     // Place the Node
-
-    TNode * envelop1node = new TNode("Envelop1", "Arm1 Envelop", "Envelop1") ;
+    top->cd();
+    
+    TNode * envelop1node = new TNode("Envelop1", "Arm1 Envelop", "Envelop1"
+				     ,0., 0., 0., "") ;
 
     envelop1node->SetLineColor(kColorArm1) ;
 
@@ -378,6 +381,8 @@ void AliEMCALv0::CreateGeometry(){
 
 	for (int j =0; j < (fGeom->GetNEta()) ; j++){
 
+	    
+
 	    etamin = fGeom->GetArm1EtaMin()+
 
 		(j*fGeom->GetDeltaEta());
@@ -431,7 +436,6 @@ void AliEMCALv0::CreateGeometry(){
 	} // end if i
 
     }  // for i
-
 }
 
 //______________________________________________________________________
