@@ -209,6 +209,7 @@ void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) c
   Int_t slicerange[2]={0,35};
   Int_t good = (int)(0.4*AliL3Transform::GetNRows());
   Int_t nclusters = (int)(0.4*AliL3Transform::GetNRows());
+  Int_t nminpointsontracks = (int)(0.3*AliL3Transform::GetNRows());
   Float_t ptmin = 0.;
   Float_t ptmax = 0.;
   Float_t maxfalseratio = 0.1;
@@ -227,6 +228,7 @@ void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) c
     {
       AliL3Track *tpt = (AliL3Track *)fTracks->GetCheckedTrack(i);
       if(!tpt) continue; 
+      if(tpt->GetNumberOfPoints() < nminpointsontracks) continue;
       
       AliESDHLTtrack *esdtrack = new AliESDHLTtrack() ; 
 
