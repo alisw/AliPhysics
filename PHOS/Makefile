@@ -76,7 +76,11 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 
 -include tgt_$(ALICE_TARGET)/Make-depend 
 
-
+test:	
+		@aliroot -b -q simPHOStest.C > out
+		@aliroot -b -q anaPHOStest.C > out
+		@rm out
+#		@rm galice.root
 
 
 

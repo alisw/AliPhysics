@@ -295,8 +295,8 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
   Float_t d    = 0. ;
   Float_t wtot = 0. ;
 
-  Float_t x = 0 ;
-  Float_t z = 0 ;
+  Float_t x = 0.;
+  Float_t z = 0.;
 
   AliPHOSDigit * digit ;
  
@@ -334,9 +334,10 @@ void  AliPHOSEmcRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * digits
     phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
     phosgeom->RelPosInModule(relid, xi, zi);
     Float_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
-  
     d += w*((xi-x)*(xi-x) + (zi-z)*(zi-z) ) ; 
     wtot+=w ;
+
+  
   }
   
 
