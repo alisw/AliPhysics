@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  1999/10/06 20:56:55  fca
+Introducing new frame 1099
+
 Revision 1.9  1999/09/29 09:24:30  fca
 Introduction of the Copyright and cvs Log
 
@@ -24,14 +27,8 @@ Introduction of the Copyright and cvs Log
 //  space frame class                            /
 ////////////////////////////////////////////////
 
-#include <stdio.h> 
-#include <TMath.h>
-#include <TRandom.h>
-#include <TVector.h>
 #include "AliFRAMEv0.h"
 #include "AliRun.h"
-#include "stdlib.h"
-#include "AliMC.h"
 #include "TSystem.h"
  
 ClassImp(AliFRAMEv0)
@@ -114,6 +111,23 @@ void AliFRAMEv0::CreateMaterials()
   }
 }
 
+//_____________________________________________________________________________
+void AliFRAMEv0::Init()
+{
+  //
+  // Initialise the module after the geometry has been defined
+  //
+
+  printf("**************************************"
+	 " FRAME "
+	 "**************************************\n");
+  printf("\n     Version 0 of FRAME initialised, "
+	 "with openings for PHOS and RICH\n\n");
+  printf("**************************************"
+	 " FRAME "
+	 "**************************************\n");
+
+}
 
 
 

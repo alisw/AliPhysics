@@ -18,6 +18,7 @@ public:
   AliFRAME();
   AliFRAME(const char *name, const char *title);
   virtual      ~AliFRAME() {}
+  virtual void   Init() {}
   virtual Int_t IsVersion() const =0;
  
    ClassDef(AliFRAME,1)  //Class for Space Frame

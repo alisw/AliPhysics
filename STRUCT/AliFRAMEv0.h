@@ -19,6 +19,7 @@ public:
   virtual       ~AliFRAMEv0() {}
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
+  virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
    
    ClassDef(AliFRAMEv0,1)  //Class for FRAME version 0
