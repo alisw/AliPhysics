@@ -38,7 +38,7 @@ Flugg/module.mk:         Flugg/libFlugg.pkg
 VZERO/module.mk:         VZERO/libVZERO.pkg
 EPEMGEN/module.mk:       EPEMGEN/libEPEMGEN.pkg
 TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg
-RAW/module.mk:           RAW/libRAW.pkg
-MONITOR/module.mk:       MONITOR/libMONITOR.pkg
+RAW/module.mk:           RAW/libRAW.pkg RAW/binaddMiniHeader.pkg RAW/binprintMiniHeader.pkg RAW/binraw2date.pkg
+MONITOR/module.mk:       MONITOR/libMONITOR.pkg MONITOR/binmonitorGDC.pkg
 
 
