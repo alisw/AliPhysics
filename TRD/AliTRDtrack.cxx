@@ -72,6 +72,8 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
     fIndex[i] = 0;
     fIndexBackup[i] = 0;  //bacup indexes MI    
   }
+  fNCross =0;
+  fBackupTrack =0;  
 }                              
            
 //_____________________________________________________________________________
@@ -115,6 +117,8 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t) {
     fIndex[i] = 0;
     fIndexBackup[i] = 0;  //MI backup indexes
   }
+  fNCross =0;
+  fBackupTrack =0;
 }                                
 
 //_____________________________________________________________________________
@@ -173,6 +177,8 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
     fIndex[i] = 0;
     fIndexBackup[i] = 0;  // MI backup indexes    
   }
+  fNCross =0;
+  fBackupTrack =0;
 }              
 //_____________________________________________________________________________
 AliTRDtrack::AliTRDtrack(const AliESDtrack& t) 
@@ -236,13 +242,24 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
     fdQdl[i] = 0;
     //    fIndex[i] = 0; //MI store indexes
   }
+  fNCross =0;
+  fBackupTrack =0;
 
   if ((t.GetStatus()&AliESDtrack::kTIME) == 0) return;
   StartTimeIntegral();
   Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
   SetIntegratedLength(t.GetIntegratedLength());
 
-}              
+}  
+
+AliTRDtrack::~AliTRDtrack()
+{
+  //
+  //
+  if (fBackupTrack) delete fBackupTrack;
+  fBackupTrack=0;
+}
+            
 //_____________________________________________________________________________
 
 void  AliTRDtrack::GetBarrelTrack(AliBarrelTrack *track) {
@@ -906,3 +923,12 @@ void AliTRDtrack::ResetCovariance(Float_t mult) {
   fCty*=0.;  fCtz*=0.;  fCte*=0.;  fCtt*=mult;
   fCcy*=0.;  fCcz*=0.;  fCce*=0.;  fCct*=0.;  fCcc*=mult;  
 }                                                         
+
+
+void AliTRDtrack::MakeBackupTrack()
+{
+  //
+  //
+  if (fBackupTrack) delete fBackupTrack;
+  fBackupTrack = new AliTRDtrack(*this);
+}

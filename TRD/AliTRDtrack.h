@@ -23,13 +23,13 @@ class AliTRDtrack : public AliKalmanTrack {
 
 public:
 
-   AliTRDtrack():AliKalmanTrack(){}
+   AliTRDtrack():AliKalmanTrack(){fBackupTrack=0;}
    AliTRDtrack(const AliTRDcluster *c, UInt_t index, const Double_t xx[5],
                const Double_t cc[15], Double_t xr, Double_t alpha);  
    AliTRDtrack(const AliTRDtrack& t);    
    AliTRDtrack(const AliKalmanTrack& t, Double_t alpha); 
    AliTRDtrack(const AliESDtrack& t);    
-
+   ~AliTRDtrack();
    Int_t    Compare(const TObject *o) const;
    void     CookdEdx(Double_t low=0.05, Double_t up=0.70);   
 
@@ -114,6 +114,10 @@ public:
   
   Int_t GetNWrong() const {return fNWrong;}
   Int_t GetNRotate() const {return fNRotate;}
+  Int_t GetNCross() const {return fNCross;}
+  void  IncCross() {fNCross++;}
+  AliTRDtrack *  GetBackupTrack(){return fBackupTrack;}
+  void    MakeBackupTrack();
   //
 
 
@@ -145,8 +149,9 @@ protected:
                            
    Float_t fLhElectron;    // Likelihood to be an electron    
    Int_t fNWrong;    // number of wrong clusters
-   Int_t fNRotate;
-
+   Int_t fNRotate;   // number of rotation
+   Int_t fNCross;     // number of the cross materials
+   AliTRDtrack * fBackupTrack; //! backup track
    ClassDef(AliTRDtrack,2) // TRD reconstructed tracks
 
 };                     

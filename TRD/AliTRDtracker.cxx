@@ -579,13 +579,15 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
       
       //seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
       //found++;
-      seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
+      if (track->GetNCross()==0) seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
+      else{
+	if (track->GetBackupTrack()) seed->UpdateTrackParams(track->GetBackupTrack(), AliESDtrack::kTRDbackup);
+      }
     }
 
     //Propagation to the TOF (I.Belikov)
     
     if (track->GetStop()==kFALSE){
-      if (track->GetNumberOfClusters()>15) seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
 
       Double_t xtof=371.;
       Double_t c2=track->GetC()*xtof - track->GetEta();
@@ -594,10 +596,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
 	continue;
       }
       Double_t xTOF0 = 371. ;          
-      if (!PropagateToOuterPlane(*track,xTOF0)) {
-        delete track;
-        continue;
-      }
+      PropagateToOuterPlane(*track,xTOF0); 
       //      
       Double_t ymax=xtof*TMath::Tan(0.5*AliTRDgeometry::GetAlpha());
       Double_t y=track->GetYat(xtof);
@@ -621,7 +620,7 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
     }else{
       if (track->GetNumberOfClusters()>15&&track->GetNumberOfClusters()>0.5*expectedClr){
 	seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
-	seed->SetStatus(AliESDtrack::kTRDStop);    
+	//seed->SetStatus(AliESDtrack::kTRDStop);    
 	seed->SetTRDtrack(new AliTRDtrack(*track));
 	found++;
       }
@@ -989,6 +988,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
   // layers confirms prolongation if a close cluster is found. 
   // Returns the number of clusters expected to be found in sensitive layers
 
+
   Float_t  wIndex, wTB, wChi2;
   Float_t  wYrt, wYclosest, wYcorrect, wYwindow;
   Float_t  wZrt, wZclosest, wZcorrect, wZwindow;
@@ -1038,15 +1038,23 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack& t)
     //
     // MI -fix untill correct material desription will be implemented
     //
-    Float_t angle =  t.GetAlpha();  // MI - if rotation - we go through the material - 
+    Float_t angle =  t.GetAlpha();  // MI - if rotation - we go through the material 
     if (!AdjustSector(&t)) break;
-    if (TMath::Abs(angle -  t.GetAlpha())>0.000001) break; //better to stop track
+    Int_t cross = kFALSE;
+    
+    if (TMath::Abs(angle -  t.GetAlpha())>0.000001) cross = kTRUE; //better to stop track
     Int_t currentzone = fTrSec[s]->GetLayer(nr)->GetZone(z);
-    if (currentzone==-10) break;  // we are in the frame
+    if (currentzone==-10) cross = kTRUE;  // we are in the frame
     if (currentzone>-10){   // layer knows where we are
       if (zone==-10) zone = currentzone;
-      if (zone!=currentzone) break;  
+      if (zone!=currentzone) cross=kTRUE;  
     }
+    if (cross) {
+      t.IncCross();
+      if (t.GetNCross()==1) t.MakeBackupTrack();
+      if (t.GetNCross()>2) break;
+    }
+    
     //
     //
     s = t.GetSector();

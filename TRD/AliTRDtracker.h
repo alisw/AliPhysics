@@ -7,7 +7,6 @@
 #include "AliTracker.h" 
 #include "TObjArray.h" 
 
-class TClonesArray;
 class TFile;
 class TTree;
 class TParticle;
