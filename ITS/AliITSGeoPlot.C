@@ -9,6 +9,7 @@
 #include<TFile.h>
 #include<TH1.h>
 #include<TH2.h>
+#include <TInterpreter.h>
 #include<TObject.h>
 #include<TObjArray.h>
 #include<TTree.h>
@@ -18,7 +19,9 @@
 #include <AliITSgeom.h>
 #include <AliITSDetType.h>
 #include <AliITSRecPoint.h>
+#include <AliITSclusterV2.h>
 #include <AliITSdigit.h>
+#include <AliITSdigitSSD.h>
 #include <AliITShit.h>
 #include <AliITSmodule.h> 
 #include <AliITSsegmentation.h>
@@ -31,12 +34,13 @@
 #endif
 void GetHitsCoor(TObject *its, Int_t mod, TObjArray & histos, Int_t subd,Bool_t verb);
 Int_t GetRecCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h1, Bool_t verb);
+Int_t GetClusCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h1, Bool_t verb);
 void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, Int_t mod, Bool_t verbose, TObjArray & histos);
 
 Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice.root", Int_t isfastpoints = 0) {
   /*******************************************************************
    *  This macro displays geometrical information related to the
-   *  hits, digits and rec points in ITS.
+   *  hits, digits and rec points (or V2 clusters) in ITS.
    *  There are histograms that are not displayed (i.e. energy
    *  deposition) but that are saved onto a file (see below)
    *
@@ -50,7 +54,9 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
    *                          it is wise to redirect the output onto a file
    *                    e.g.: .x AliITSGeoPlot.C("All+Verbose") > out.log 
    *    3) Rec Points option: "Rec"   ---> Uses Rec. Points (default)
-   *                           otherwise ---> uses hits and digits only
+   * 
+   *    4) ClustersV2 option: "ClustersV2" ---->Uses ClustersV2
+   *                           otherwise ---->uses hits and digits only
    *    Examples:
    *       .x AliITSGeoPlot();  (All subdetectors; no-verbose; no-recpoints)
    *       .x AliITSGeoPlot("SPD+SSD+Verbose+Rec"); 
@@ -59,10 +65,6 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
    *    isfastpoints: integer. It is set to 0 by defaults. This means that
    *                slow reconstruction is assumed. If fast recpoint are in
    *                in use, isfastpoints must be set =1.
-   *    BEWARE:     to analyze digits/recpoints  produced with aliroot 
-   *                versions older than v3-07-Release, the input parameters 
-   *                filename, FileDigits, FileRec and isfastpoints must be left
-   *                to their default value 
    *
    *  OUTPUT: It produces a root file with a list of histograms
    *    
@@ -82,7 +84,7 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
    *                 ---  AliITSGeoPlot();
    *     
    *  M.Masera  14/05/2001 18:30
-   *  Last rev. 09/06/2003 17:00 (Adapted to NewIO)  m.m.          
+   *  Last rev. 31/05/2004 14:00 (Clusters V2 added)  E.C.          
    ********************************************************************/
 
   //Options
@@ -90,56 +92,53 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+Rec", char *filename="galice
   Bool_t All = choice.Contains("All");
   Bool_t verbose=choice.Contains("Verbose");
   Bool_t userec=choice.Contains("Rec");
+  Bool_t useclustersv2=choice.Contains("ClustersV2");
   Int_t retcode=1; //return code
-#if !(!defined(__CINT__) || defined(__MAKECINT__))
+ 
   if (gClassTable->GetID("AliRun") < 0) {
-    gROOT->LoadMacro("loadlibs.C");
-    loadlibs();
+    gInterpreter->ExecuteMacro("loadlibs.C");
   }
-  else {
-#endif
+  else { 
     if(gAlice){
       delete gAlice->GetRunLoader();
       delete gAlice;
       gAlice=0;
     }
-#if !(!defined(__CINT__) || defined(__MAKECINT__))
   }
-#endif
+ 
+  AliRunLoader* rl = AliRunLoader::Open(filename);
+  if (rl == 0x0){
+    cerr<<"AliITSGeoPlot.C : Can not open session RL=NULL"<< endl;
+    return -1;
+  }
+  Int_t retval = rl->LoadgAlice();
+  if (retval){
+    cerr<<"AliITSGeoPlot.C : LoadgAlice returned error"<<endl;
+    return -1;
+  }
+  gAlice=rl->GetAliRun();
 
-AliRunLoader* rl = AliRunLoader::Open(filename);
- if (rl == 0x0){
-   cerr<<"AliITSGeoPlot.C : Can not open session RL=NULL"<< endl;
-   return -1;
- }
- Int_t retval = rl->LoadgAlice();
- if (retval){
-   cerr<<"AliITSGeoPlot.C : LoadgAlice returned error"<<endl;
-   return -1;
- }
- gAlice=rl->GetAliRun();
+  retval = rl->LoadHeader();
+  if (retval){
+    cerr<<"AliITSGeoPlot.C : LoadHeader returned error"<<endl;
+    return -1;
+  }
 
- retval = rl->LoadHeader();
- if (retval){
-   cerr<<"AliITSGeoPlot.C : LoadHeader returned error"<<endl;
-   return -1;
- }
+  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
 
- AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  if(!ITSloader){
+    cerr<<"AliITSGeoPlot.C :  ITS loader not found"<<endl;
+    return -1;
+  }
 
- if(!ITSloader){
-   cerr<<"AliITSGeoPlot.C :  ITS loader not found"<<endl;
-   return -1;
- }
-
- ITSloader->LoadHits("read");
- ITSloader->LoadDigits("read");
- if(isfastpoints==1)ITSloader->SetRecPointsFileName("ITS.FastRecPoints.root");
- ITSloader->LoadRecPoints("read");
- rl->GetEvent(evesel);
- Int_t nparticles = rl->GetHeader()->GetNtrack();
- AliITS *ITS  = (AliITS*)gAlice->GetModule("ITS");
- ITS->SetTreeAddress();
+  ITSloader->LoadHits("read");
+  ITSloader->LoadDigits("read");
+  if(isfastpoints==1)ITSloader->SetRecPointsFileName("ITS.FastRecPoints.root");
+  ITSloader->LoadRecPoints("read");
+  rl->GetEvent(evesel);
+  Int_t nparticles = rl->GetHeader()->GetNtrack();
+  AliITS *ITS  = (AliITS*)gAlice->GetModule("ITS");
+  ITS->SetTreeAddress();
   if(verbose) {
     cout<<" "<<endl<<" "<<endl;
     cout<<"******* Event processing started   *******"<<endl;
@@ -164,7 +163,7 @@ AliRunLoader* rl = AliRunLoader::Open(filename);
   // DIGITS
   TTree *TD = ITSloader->TreeD();
 
-  //RECPOINTS
+  //RECPOINTS (V2 clusters)
   TTree *TR = ITSloader->TreeR();
   TClonesArray *ITSrec  = ITS->RecPoints();
   TBranch *branch = 0;
@@ -185,6 +184,19 @@ AliRunLoader* rl = AliRunLoader::Open(filename);
     cout<<"WARNING: there are no RECPOINTS on this file ! \n";
     cout<<"======================================================= \n \n";
   }
+  if(useclustersv2 && TR && ITSrec){
+  
+    branch = ITSloader->TreeR()->GetBranch("Clusters");
+    if(branch)branch->SetAddress(&ITSrec);
+  }
+
+  if(useclustersv2 && (!TR || !ITSrec || !branch)){
+    useclustersv2 = kFALSE;
+    cout<<"\n ======================================================= \n";
+    cout<<"WARNING: there are no CLUSTERSV2 on this file ! \n";
+    cout<<"======================================================= \n \n";
+  }
+
 
   //local variables
   Int_t mod;   //module number
@@ -204,8 +216,19 @@ AliRunLoader* rl = AliRunLoader::Open(filename);
   TH1F *zspd = new TH1F("zspd","Z of digits - SPD",100,-30.,30.);
   TH1F *zhspd = new TH1F("zhspd","Z of hits - SPD",100,-30.,30.);
   TH1F *zmspd = new TH1F("zmspd","Z of SPD modules",100,-30,30.);
-  TH2F *rrspd = new TH2F("rrspd","Radii of recpoints - SPD",50,-10.,10.,50,-10.,10.);
-  TH1F *zrspd = new TH1F("zrspd","Z of recpoints - SPD",100,-30.,30.);
+
+  Char_t title1[50]="";
+  Char_t title2[50]="";
+  if(userec){ 
+    sprintf(title1,"Radii of recpoints - %s","SPD");
+    sprintf(title2,"Z of recpoints - %s","SPD");
+  }
+  if(useclustersv2){
+    sprintf(title1,"Radii of clustersV2 - %s","SPD");
+    sprintf(title2,"Z of clustersV2 - %s","SPD");
+  }
+  TH2F *rrspd = new TH2F("rrspd",title1,50,-10.,10.,50,-10.,10.);
+  TH1F *zrspd = new TH1F("zrspd",title2,100,-30.,30.);
   TH1F *enespd = new TH1F("enespd","Energy deposition SPD (KeV)",100,0.,1000.);
   histos.AddLast(rspd);  // 0
   histos.AddLast(rhspd); // 1
@@ -223,8 +246,18 @@ AliRunLoader* rl = AliRunLoader::Open(filename);
   TH1F *zsdd = new TH1F("zsdd","Z of digits - SDD",100,-40.,40.);
   TH1F *zhsdd = new TH1F("zhsdd","Z of hits - SDD",100,-40.,40.);
   TH1F *zmsdd = new TH1F("zmsdd","Z of SDD modules",100,-40,40.);
-  TH2F *rrsdd = new TH2F("rrsdd","Radii of recpoints - SDD",50,-40.,40.,50,-40.,40.);
-  TH1F *zrsdd = new TH1F("zrsdd","Z of recpoints - SDD",100,-40.,40.);
+  Char_t title3[50];
+  Char_t title4[50];
+  if(userec){ 
+    sprintf(title3,"Radii of recpoints - %s","SDD");
+    sprintf(title4,"Z of recpoints - %s","SDD");
+  }
+  if(useclustersv2){
+    sprintf(title3,"Radii of clustersV2 - %s","SDD");
+    sprintf(title4,"Z of clustersV2 - %s","SDD");
+  }
+  TH2F *rrsdd = new TH2F("rrsdd",title3,50,-40.,40.,50,-40.,40.);   
+  TH1F *zrsdd = new TH1F("zrsdd",title4,100,-40.,40.);
   TH1F *enesdd = new TH1F("enesdd","Energy deposition SDD (KeV)",100,0.,1000.);
   histos.AddLast(rsdd);  // 9
   histos.AddLast(rhsdd); // 10
@@ -242,8 +275,19 @@ AliRunLoader* rl = AliRunLoader::Open(filename);
   TH1F *zssd = new TH1F("zssd","Z of digits - SSD",100,-70.,70.);
   TH1F *zhssd = new TH1F("zhssd","Z of hits - SSD",100,-70.,70.);
   TH1F *zmssd = new TH1F("zmssd","Z of SSD modules",100,-70,70.);
-  TH2F *rrssd = new TH2F("rrssd","Radii of recpoints - SSD",50,-50.,50.,50,-50.,50.);
-  TH1F *zrssd = new TH1F("zrssd","Z of recpoints - SSD",100,-70.,70.);
+  Char_t title5[50];
+  Char_t title6[50];
+  if(userec){ 
+    sprintf(title5,"Radii of recpoints - %s","SSD");
+    sprintf(title6,"Z of recpoints - %s","SSD");
+  }
+  if(useclustersv2){
+    sprintf(title5,"Radii of clustersV2 - %s","SSD");
+    sprintf(title6,"Z of clustersV2 - %s","SSD");
+  }
+
+  TH2F *rrssd = new TH2F("rrssd",title5,50,-50.,50.,50,-50.,50.);
+  TH1F *zrssd = new TH1F("zrssd",title6,100,-70.,70.);
   TH1F *enessd = new TH1F("enessd","Energy deposition SSD (KeV)",100,0.,1000.);
   histos.AddLast(rssd);  // 18
   histos.AddLast(rhssd); // 19
@@ -307,11 +351,17 @@ AliRunLoader* rl = AliRunLoader::Open(filename);
         //RecPoints     
         if(userec){
           ITS->ResetRecPoints();
-          //          TR->GetEvent(mod);
           branch->GetEvent(mod);
           TH2F *bidi=(TH2F*)histos.At(6+subd*9);
           TH1F *uni=(TH1F*)histos.At(7+subd*9);
           nrecp=GetRecCoor(geom,ITSrec,mod,bidi,uni,verbose);
+        }
+        if(useclustersv2){
+          ITS->ResetRecPoints();
+          branch->GetEvent(mod);
+          TH2F *bidi=(TH2F*)histos.At(6+subd*9);
+          TH1F *uni=(TH1F*)histos.At(7+subd*9);
+          nrecp=GetClusCoor(geom,ITSrec,mod,bidi,uni,verbose);
         }
      
         // Digits
@@ -357,7 +407,7 @@ AliRunLoader* rl = AliRunLoader::Open(filename);
       h1tmp=(TH1F*)histos.At(4+subd*9);
       h1tmp->Draw();
    
-      if(userec){
+      if(userec || useclustersv2){
         current->cd(5);
         h2tmp=(TH2F*)histos.At(6+9*subd);
         h2tmp->Draw();
@@ -429,6 +479,47 @@ void GetHitsCoor(TObject *its, Int_t mod, TObjArray & histos, Int_t subd,Bool_t 
 }
 
 
+Int_t GetClusCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h1, Bool_t verb){
+  AliITSgeom *geom = (AliITSgeom*)ge;
+  Int_t nrecp = ITSrec->GetEntries();
+  if(nrecp>0){
+    Float_t lc[3]; for(Int_t i=0; i<3; i++) lc[i]=0.;
+    Float_t gc[3]; for(Int_t i=0; i<3; i++) gc[i]=0.;
+    if(verb){
+      cout<<"-------------------------------------------------------"<<endl;
+      cout<<"Number of CLUSTERS for module "<<mod<<": "<<nrecp<<endl;
+    }
+    for(Int_t irec=0;irec<nrecp;irec++) {
+      AliITSclusterV2 *recp = (AliITSclusterV2*)ITSrec->At(irec);
+      Double_t rot[9];     
+      geom->GetRotMatrix(mod,rot);
+      Int_t lay,lad,det;   
+      geom->GetModuleId(mod,lay,lad,det);
+      Float_t tx,ty,tz;    
+      geom->GetTrans(lay,lad,det,tx,ty,tz);     
+
+      Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
+      Double_t phi1=TMath::Pi()/2+alpha;
+      if(lay==1) phi1+=TMath::Pi();
+
+      Float_t cp=TMath::Cos(phi1), sp=TMath::Sin(phi1);
+      Float_t  r=tx*cp+ty*sp;
+      gc[0]= r*cp - recp->GetY()*sp;
+      gc[1]= r*sp + recp->GetY()*cp;
+      gc[2]=recp->GetZ();
+  
+      if(verb){
+        Float_t r=sqrt(gc[0]*gc[0]+gc[1]*gc[1]);
+        cout<<"Global coor. + radius "<<gc[0]<<" "<<gc[1]<<" "<<gc[2]<<" ";
+        cout<<r<<endl;
+        cout<<"Associated track "<<recp->GetLabel(0)<<endl;
+      }
+      h2->Fill(gc[0],gc[1]);
+      h1->Fill(gc[2]);
+    }
+  }
+  return nrecp;
+}
 Int_t GetRecCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h1, Bool_t verb){
   AliITSgeom *geom = (AliITSgeom*)ge;
   Int_t nrecp = ITSrec->GetEntries();
@@ -557,8 +648,8 @@ void GetDigits(TObject *tmps,TObject *ge,TClonesArray *ITSdigits, Int_t subd, In
           geom->LtoG(mod,lcoor,gcoor);  // global coord. in cm
           ragdig=sqrt(gcoor[0]*gcoor[0]+gcoor[1]*gcoor[1]);
           if(verbose){
-	     cout<<"global coordinates "<<gcoor[0]<<" "<<gcoor[1];
-             cout<<" "<<gcoor[2]<<" Radius "<<ragdig<<endl;
+	    cout<<"global coordinates "<<gcoor[0]<<" "<<gcoor[1];
+	    cout<<" "<<gcoor[2]<<" Radius "<<ragdig<<endl;
 	  }   
           //Fill histograms
           TH2F *bidi = (TH2F*)histos.At(subd*9);
