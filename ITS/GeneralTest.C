@@ -38,11 +38,12 @@ Int_t GeneralTest(Int_t verpoint=2) {
      exit(5);
    }
            
-   Int_t ver=gAlice->GetDetector("ITS")->IsVersion();
+   AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
    delete gAlice; gAlice=0;
 
-   if (ver!=5) {
-      cerr<<"Invalid ITS version: "<<ver<<" ! (must be 5 for the moment)\n";
+   if (!gm) {
+       cerr  << "This version of the ITS geometry does not have a AliITSgeom"
+	     << " defined" << endl;
       return 12345;
    }
 cout<<" verpoint = "<<verpoint<<"\n";
@@ -56,11 +57,9 @@ cout<<" verpoint = "<<verpoint<<"\n";
     break;  
   case 2:
   printf("Start digitization \n");
-  
-   if (ver==5) {
-     gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSHits2Digits.C");
-     if (rc=AliITSHits2Digits()) return rc;
-   }
+
+  gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSHits2DigitsDefault.C");
+  if (rc=AliITSHits2Digits()) return rc;
 
    printf("start reconstruction\n");
 

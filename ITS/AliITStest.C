@@ -5,23 +5,23 @@ Int_t AliITStest() {
    gROOT->LoadMacro("$(ALICE_ROOT)/macros/grun.C");
    grun();
 
-   Int_t ver=gAlice->GetDetector("ITS")->IsVersion();
+   AliITSgeom *gm = ((AliITS*)(gAlice->GetDetector("ITS")))->GetITSgeom();
    delete gAlice; gAlice=0;
 
-   if (ver!=5) {
-      cerr<<"Invalid ITS version: "<<ver<<" ! (must be 5 for the moment)\n";
+   if (!gm) {
+       cerr << "This version of the ITS geometry does not have a"
+	    << " AliITSgeom defined" << endl;
       return 12345;
    }
 
-   if (ver==5) {
-     gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSHits2Digits.C");
-     if (rc=AliITSHits2Digits()) return rc;
-
+   if (gm) {
+     gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSHits2DigitsDefault.C");
+     if (rc=AliITSHits2DigitsDefault()) return rc;
    }
 
-   printf("start reconstruction\n");
+   cout << "start reconstruction" << endl;
 
-//Test ITS reconstruction
+   //Test ITS reconstruction
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSFindClusters.C");
 
    delete gAlice; gAlice=0;
