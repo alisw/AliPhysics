@@ -61,7 +61,13 @@ inline Bool_t AliJetParticlesReaderKine::IsAcceptedParticle(TParticle *p) const
     if((!fNeutral)&&(!ch)) return kFALSE;
   }
 
-  Float_t eta=p->Eta();
+  Float_t eta=0.;//p->Eta();
+  Float_t pz=p->Pz();
+  //if(TMath::Abs(pz)>150.) return kFALSE;
+  Float_t pabs=p->P();
+  if(pabs-TMath::Abs(pz)>1.e-8) eta=0.5*TMath::Log((pabs+pz)/(pabs-pz));
+  else return kFALSE;
+
   if((eta<fEtaMin)||(eta>fEtaMax)) return kFALSE;
 
   Float_t phi=p->Phi();
