@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/05/30 14:04:31  hristov
+Dynamic cast replaced (F.Carminati)
+
 Revision 1.8  2001/02/13 16:53:35  nilsen
 Fixed a but when trying to use GEANT4. Needed to replace
 if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
@@ -238,7 +241,7 @@ void AliITSvtest::InitAliITSgeom(){
 //     Based on the geometry tree defined in Geant 3.21, this
 // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
 // sturture.
-    if(gMC->IsA()!=TGeant3::Class()) {
+    if(strcmp(gMC->GetName(),"TGeant3")) {
 	Error("InitAliITSgeom",
 		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
 	return;

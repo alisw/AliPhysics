@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.33  2001/05/30 14:04:31  hristov
+Dynamic cast replaced (F.Carminati)
+
 Revision 1.32  2001/03/23 00:12:23  nilsen
 Set Reading of AliITSgeom data from Geant3 common blocks as the default and
 not a .det file. Removed redundent calls to BuildGeometry.
@@ -637,7 +640,7 @@ void AliITSv5::InitAliITSgeom(){
 //     Based on the geometry tree defined in Geant 3.21, this
 // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
 // sturture.
-    if(gMC->IsA()!=TGeant3::Class()) {
+    if(strcmp(gMC->GetName(),"TGeant3")) {
 	Error("InitAliITSgeom",
 		"Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
 	return;
