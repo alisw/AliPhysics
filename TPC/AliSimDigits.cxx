@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/11/24 16:10:22  kowal2
+Faster algorithms.
+
 Revision 1.4  2000/10/05 16:01:49  kowal2
 Corrected for memory leaks.
 
@@ -281,7 +284,7 @@ void  AliSimDigits::CompresTrackBuffer1()
 	if (id <= 0) {
 	  if ( inum> 0 ) { //if we have some tracks in buffer
 	    icurrent++;
-	    if ((icurrent+1)>=buf->fN) buf->Expand(icurrent*2);
+	    if ((icurrent+1)>=buf->fN) buf->Expand(icurrent*2+1); //MI change - allocate +1
 	    (*buf)[icurrent] = inum;
 	    icurrent++;
 	    (*buf)[icurrent] = lastID;	
@@ -295,7 +298,7 @@ void  AliSimDigits::CompresTrackBuffer1()
 	    if ( izero > 0 ) { 
 	      //if we have currently izero count of non tracks digits
 	      icurrent++;	  
-	      if (icurrent>=buf->fN) buf->Expand(icurrent*2);
+	      if (icurrent>=buf->fN) buf->Expand(icurrent*2+1);
 	      (*buf)[icurrent]= -izero;  //write how many under zero
 	      inum++;
 	      izero = 0;	     
@@ -304,7 +307,7 @@ void  AliSimDigits::CompresTrackBuffer1()
 	    else{ 
 	      //if we change track id from another track id	    
 	      icurrent++;	  
-	      if ((icurrent+1)>=buf->fN) buf->Expand(icurrent*2);
+	      if ((icurrent+1)>=buf->fN) buf->Expand(icurrent*2+1);
 	      (*buf)[icurrent] = inum;
 	      icurrent++;
 	      (*buf)[icurrent] = lastID;	
