@@ -98,7 +98,7 @@ inline AliRICHGeometry::AliRICHGeometry()
    SetInnerFreonWidth      (41.3);  // Inner Freon Width
    SetFreonThickness       (1.5);   // Freon Thickness
    SetRadiatorToPads       (0);     // Distance from radiator to pads
-   SetRotationAngle        (-60);   // Azimuthal rotation angle in X-Y plane
+   SetRotationAngle        (60);    // Azimuthal rotation angle in X-Y plane
    SetAlphaAngle           (19.5);  // Angle between modules in YZ plane
    SetBetaAngle            (20);    // Angle vetween modules in XY plane     
    SetOffset               (490+1.267); // ???1.267??? Modules offset from IP 

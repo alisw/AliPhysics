@@ -48,14 +48,14 @@ fWireSag(0),
 fVoltage(0)
 {//defines the default parameters
   Segmentation         (144,160);           //nx,ny  for the whole chamber
-  DeadZone             (3*kcm);              //spacer between PC planes
+  DeadZone             (3*kcm);             //spacer between PC planes
   PadSize              (8.4*kmm,8.0*kmm);     
   fWirePitch=PadSizeX()/2;
   
   Size                 (132.6*kcm,26*kcm,136.7*kcm);  //full length, not GEANT half notation
-  AngleRot             (60);                       //rotation of the whole RICH around Z, deg
-  Angles               (20,19.5);                  //XY angle, YZ angle  deg  
-  Offset               (490*kcm+1.267*kcm);          //1.267???????cm distance from IP to the center of module 
+  AngleRot             (-60);                         //rotation of the whole RICH around Z, deg
+  Angles               (20,19.5);                     //XY angle, YZ angle  deg  
+  Offset               (490*kcm+1.267*kcm);           //1.267???????cm distance from IP to the center of module 
   GapThickness         (8*kcm);              
   ProximityGapThickness(0.4*kcm);            
   QuartzLength         (133*kcm);            
