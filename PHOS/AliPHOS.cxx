@@ -47,7 +47,7 @@ ClassImp(AliPHOS)
 //____________________________________________________________________________
 AliPHOS:: AliPHOS() : AliDetector()
 {
-  // Create folder and task hierarchy
+  // Default ctor
   fName="PHOS";
   fQATask = 0;
   fTreeQA = 0;
@@ -56,6 +56,8 @@ AliPHOS:: AliPHOS() : AliDetector()
 //____________________________________________________________________________
 AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title) 
 {
+  //   ctor : title is used to identify the layout
+  
   fQATask = 0;
   fTreeQA = 0;
 }
@@ -64,9 +66,7 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
 //____________________________________________________________________________
 AliPHOS::~AliPHOS() 
 {  
-  // remove the alice folder and alice QA task that PHOS creates instead of AliRun
-
-  //  delete fTreeQA ; 
+  
 }
 
 //____________________________________________________________________________
@@ -359,6 +359,7 @@ void AliPHOS::CreateMaterials()
   gMC->Gstpar(idtmed[715], "STRA",2.) ;
 
 }
+
 //____________________________________________________________________________
 AliPHOSGeometry * AliPHOS::GetGeometry() const 
 {  

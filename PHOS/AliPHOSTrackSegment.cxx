@@ -84,7 +84,7 @@ void AliPHOSTrackSegment::Print(Option_t * opt) const
   cout << "Stored at position " << fIndexInList << endl ;
   cout << "Emc RecPoint #     " << fEmcRecPoint << endl ;
   if(fPpsdUpRecPoint >= 0)
-    cout << "CPV RecPoint #      " << fPpsdUpRecPoint << endl ;
+    cout << "CPV RecPoint #     " << fPpsdUpRecPoint << endl ;
   else
     cout << "No CPV RecPoint " << endl ;
 

@@ -39,15 +39,16 @@ class AliPHOS : public AliDetector {
     // do not use this definition but the one below
     abort() ; 
   }
-  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) = 0 ;   
+  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, 
+			 Int_t id, Float_t *hits ) = 0 ;   
   virtual void   CreateMaterials() ;                     
-  virtual  void  FinishRun() {WriteQA();}
-  virtual  AliPHOSGeometry * GetGeometry() const ;
+  virtual void  FinishRun() {WriteQA();}
+  virtual AliPHOSGeometry * GetGeometry() const ;
   virtual Int_t   IsVersion(void) const = 0 ;  
   AliPHOSQAChecker * QAChecker() {return fQATask;}  
   virtual void    SetTreeAddress();   
   virtual TTree * TreeQA() const {return fTreeQA; } 
-  virtual TString Version() {return TString(" ") ; } 
+  virtual const TString Version() const {return TString(" ") ; } 
   virtual void WriteQA() ; 
   AliPHOS & operator = (const AliPHOS & rvalue)  {
     // assignement operator requested by coding convention
