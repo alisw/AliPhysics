@@ -103,7 +103,7 @@ class AliITSRawClusterSPD : public AliITSRawCluster {
     Int_t     fTracks[3];   // tracks created a cluster
     Int_t     fModule;      // Module number for this culuster
   
-  ClassDef(AliITSRawClusterSPD,1)  // AliITSRawCluster class for SPD
+  ClassDef(AliITSRawClusterSPD,2)  // AliITSRawCluster class for SPD
 };
 //----------------------------------------------------------------------
 class AliITSRawClusterSDD : public AliITSRawCluster {
