@@ -12,6 +12,7 @@
 #pragma link C++ class  AliPMDv0+;
 #pragma link C++ class  AliPMDv1+;
 #pragma link C++ class  AliPMDv2+;
+#pragma link C++ class  AliPMDv3+;
 #pragma link C++ class  AliPMDhit+;
 #pragma link C++ class  AliPMDRecPoint+;
 #endif

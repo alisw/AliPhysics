@@ -9,7 +9,7 @@ PACKAGE = PMD
 
 # C++ sources
 
-SRCS          = AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDv2.cxx AliPMDRecPoint.cxx
+SRCS          = AliPMD.cxx AliPMDv0.cxx AliPMDv1.cxx AliPMDv2.cxx AliPMDv3.cxx AliPMDRecPoint.cxx
 
 # C++ Headers
 
