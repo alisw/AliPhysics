@@ -52,6 +52,12 @@ AliGenCocktailEntry:: AliGenCocktailEntry
     fBias=1;
 }
 
+AliGenCocktailEntry::AliGenCocktailEntry(const AliGenCocktailEntry &entry)
+{
+// Dummy copy constructor
+}
+
+
 void AliGenCocktailEntry::PrintInfo()
 {
 // Print out information about generator entry
