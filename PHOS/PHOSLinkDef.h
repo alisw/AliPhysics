@@ -29,5 +29,12 @@
 #pragma link C++ class AliPHOSPID ;
 #pragma link C++ class AliPHOSPIDv1 ;
 #pragma link C++ class AliPHOSAnalyze ;
+#pragma link C++ class AliEMCAGeometry ;
+#pragma link C++ class AliCPVBaseGeometry ;
+#pragma link C++ class AliCPVGeometry ;
+#pragma link C++ class AliPPSDGeometry ;
+#pragma link C++ class CPVModule ;
+#pragma link C++ class CPVHit ;
+#pragma link C++ class CPVDigit ;
 
 #endif
