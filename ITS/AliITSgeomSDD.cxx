@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.9  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 Revision 1.8  2000/10/02 16:32:35  barbera
 Forward declaration added
 
@@ -72,6 +77,25 @@ AliITSgeomSDD::AliITSgeomSDD(const Float_t *box,Float_t per,Float_t vel,
 ////////////////////////////////////////////////////////////////////////
 //    Standard constructor
 ////////////////////////////////////////////////////////////////////////
+    fPeriod        = 0.0;
+    fDvelocity     = 0.0;
+    fNAnodesL      = 0;
+    fNAnodesR      = 0;
+    fAnodeXL       = 0.0;
+    fAnodeXR       = 0.0;
+    fAnodeLowEdgeL = 0;
+    fAnodeLowEdgeR = 0;
+    fShapeSDD      = 0;
+    ResetSDD(box,per,vel,axL,axR,nAL,leL,nAR,leR);
+}
+//________________________________________________________________________
+void AliITSgeomSDD::ResetSDD(const Float_t *box,Float_t per,Float_t vel,
+			     Float_t axL,Float_t axR,
+			     Int_t nAL,Float_t *leL,
+			     Int_t nAR,Float_t *leR){
+////////////////////////////////////////////////////////////////////////
+//    Standard Filler
+////////////////////////////////////////////////////////////////////////
     Int_t i;
 
     fPeriod        = per;
@@ -80,9 +104,9 @@ AliITSgeomSDD::AliITSgeomSDD(const Float_t *box,Float_t per,Float_t vel,
     fNAnodesR      = nAR;
     fAnodeXL       = axL;
     fAnodeXR       = axR;
-    if(fAnodeLowEdgeL!=0) delete fAnodeLowEdgeL;
+//    if(fAnodeLowEdgeL!=0) delete fAnodeLowEdgeL;
     fAnodeLowEdgeL = new Float_t[fNAnodesL];
-    if(fAnodeLowEdgeR!=0) delete fAnodeLowEdgeR;
+//    if(fAnodeLowEdgeR!=0) delete fAnodeLowEdgeR;
     fAnodeLowEdgeR = new Float_t[fNAnodesR];
     for(i=0;i<fNAnodesL;i++) fAnodeLowEdgeL[i] = leL[i];
     for(i=0;i<fNAnodesR;i++) fAnodeLowEdgeR[i] = leR[i];
@@ -190,12 +214,12 @@ void AliITSgeomSDD::Det2Local(Int_t a,Int_t t,Int_t s,Float_t &xl,Float_t &zl){
     return;
 }
 //______________________________________________________________________
-void AliITSgeomSDD::Print(ostream *os){
+void AliITSgeomSDD::Print(ostream *os) const {
 ////////////////////////////////////////////////////////////////////////
 // Standard output format for this class.
 ////////////////////////////////////////////////////////////////////////
     Int_t i;
-    ios::fmtflags fmt;
+    Int_t fmt;
 
     fmt = os->setf(ios::scientific);  // set scientific floating point output
     *os << "TBRIK" << " ";
@@ -259,6 +283,11 @@ istream &operator>>(istream &is,AliITSgeomSDD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.9  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 */
 //#include <iostream.h>
 //#include <TBRIK.h>
@@ -267,7 +296,7 @@ $Log$
 
 ClassImp(AliITSgeomSDD256)
 
-AliITSgeomSDD256::AliITSgeomSDD256(){
+AliITSgeomSDD256::AliITSgeomSDD256() : AliITSgeomSDD(){
 ////////////////////////////////////////////////////////////////////////
 //    default constructor
 /*
@@ -661,7 +690,7 @@ _____________________________________________
 #R              (37779, 35085), pad size (184, 140)
 */
 ////////////////////////////////////////////////////////////////////////
-    const Float_t kDxyz[]   = {3.6250,0.0150,4.3794};//cm. (Geant 3.12 units)
+    const Float_t kDxyz[]   = {3.6250,0.01499,4.3794};//cm. (Geant 3.12 units)
                                       // Size of sensitive region of detector
     const Float_t kPeriod   = 25.0E-09; // 40 MHz sampling frequence
     const Float_t kVelocity = 5.46875E+03; // cm/s drift velocity
@@ -676,9 +705,9 @@ _____________________________________________
 //    cout << "AliITSgeomSDD256 default creator called: start" << end;
     AnodeLowEdges[0] = kAnodesZ;
     for(i=0;i<kNAnodes;i++) AnodeLowEdges[i+1] = kAnodePitch+AnodeLowEdges[i];
-    AliITSgeomSDD::AliITSgeomSDD(kDxyz,kPeriod,kVelocity,kAnodeXL,kAnodeXR,
-				 kNAnodes+1,AnodeLowEdges,
-				 kNAnodes+1,AnodeLowEdges);
+    AliITSgeomSDD::ResetSDD(kDxyz,kPeriod,kVelocity,kAnodeXL,kAnodeXR,
+			    kNAnodes+1,AnodeLowEdges,
+			    kNAnodes+1,AnodeLowEdges);
 //    cout << "AliITSgeomSDD256 default creator called: end" << endl;
 }
 //________________________________________________________________________
@@ -702,6 +731,11 @@ istream &operator>>(istream &is,AliITSgeomSDD256 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.9  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 */
 //#include <iostream.h>
 //#include <TBRIK.h>
@@ -728,9 +762,9 @@ AliITSgeomSDD300::AliITSgeomSDD300() : AliITSgeomSDD(){
 //    cout << "AliITSgeomSDD300 default creator called: start" << endl;
     AnodeLowEdges[0] = kAnodesZ;
     for(i=0;i<kNAnodes;i++) AnodeLowEdges[i+1] = kanode+AnodeLowEdges[i];
-    AliITSgeomSDD::AliITSgeomSDD(kDxyz,kPeriod,kVelocity,kAnodeXL,kAnodeXR,
-				 kNAnodes+1,AnodeLowEdges,
-				 kNAnodes+1,AnodeLowEdges);
+    AliITSgeomSDD::ResetSDD(kDxyz,kPeriod,kVelocity,kAnodeXL,kAnodeXR,
+			    kNAnodes+1,AnodeLowEdges,
+			    kNAnodes+1,AnodeLowEdges);
 //    cout << "AliITSgeomSDD300 default creator called: end" << endl;
 }
 //________________________________________________________________________

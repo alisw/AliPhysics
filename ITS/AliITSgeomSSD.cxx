@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.9  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 Revision 1.8  2000/10/02 16:32:43  barbera
 Forward declaration added
 
@@ -44,6 +49,19 @@ Introduction of the Copyright and cvs Log
 #include "AliITSgeomSSD.h"
 
 ClassImp(AliITSgeomSSD)
+
+
+AliITSgeomSSD::AliITSgeomSSD(){
+// Default constructor
+    fShapeSSD = 0;
+    fNp       = 0;
+    fNn       = 0;
+    fLowEdgeP = 0;
+    fLowEdgeN = 0;
+    fAngleP   = 0.0;
+    fAngleN   = 0.0;
+}
+//----------------------------------------------------------------------
 AliITSgeomSSD::AliITSgeomSSD(const Float_t *box,Float_t ap,Float_t an,
 			     Int_t np,Float_t *p,Int_t nn,Float_t *n){
 ////////////////////////////////////////////////////////////////////////
@@ -51,12 +69,29 @@ AliITSgeomSSD::AliITSgeomSSD(const Float_t *box,Float_t ap,Float_t an,
 // nn= number of cathodes+1,*n= array of cathode low edges+highest edge,
 // np= number of anodes+1, *p= array of anode low edges+lighest edge.
 ///////////////////////////////////////////////////////////////////////
+    fShapeSSD = 0;
+    fNp       = 0;
+    fNn       = 0;
+    fLowEdgeP = 0;
+    fLowEdgeN = 0;
+    fAngleP   = 0.0;
+    fAngleN   = 0.0;
+    ResetSSD(box,ap,an,np,p,nn,n);
+}
+//----------------------------------------------------------------------
+void AliITSgeomSSD::ResetSSD(const Float_t *box,Float_t ap,Float_t an,
+			     Int_t np,Float_t *p,Int_t nn,Float_t *n){
+////////////////////////////////////////////////////////////////////////
+//    Standard Filler. *box={dx,dy,dz}, ap=anode angle, an=cathode angle,
+// nn= number of cathodes+1,*n= array of cathode low edges+highest edge,
+// np= number of anodes+1, *p= array of anode low edges+lighest edge.
+///////////////////////////////////////////////////////////////////////
     Int_t i;
 
     fShapeSSD = new TBRIK("ActiveSSD","Active volume of SSD","SSD SI DET",
 			  box[0],box[1],box[2]);
-    if(fLowEdgeP!=0) delete fLowEdgeP;
-    if(fLowEdgeN!=0) delete fLowEdgeN;
+//    if(fLowEdgeP!=0) delete fLowEdgeP;
+//    if(fLowEdgeN!=0) delete fLowEdgeN;
     fNp = np;
     fNn = nn;
     fAngleP = ap;
@@ -147,11 +182,11 @@ void AliITSgeomSSD::Det2Local(Int_t a,Int_t c,Float_t &x,Float_t &z){
     return;
 }
 //______________________________________________________________________
-void AliITSgeomSSD::Print(ostream *os){
+void AliITSgeomSSD::Print(ostream *os) const {
 ////////////////////////////////////////////////////////////////////////
 // Standard output format for this class.
 ////////////////////////////////////////////////////////////////////////
-    ios::fmtflags fmt;
+    Int_t fmt;
     Int_t i;
 
     fmt = os->setf(ios::scientific);  // set scientific floating point output
@@ -188,7 +223,7 @@ void AliITSgeomSSD::Read(istream *is){
     if(fLowEdgeN !=0) delete fLowEdgeN;
     fLowEdgeP = new Float_t[fNp];
     fLowEdgeN = new Float_t[fNn];
-    for(i=0;0<fNp;i++) *is >> fLowEdgeP[i];
+    for(i=0;i<fNp;i++) *is >> fLowEdgeP[i];
     for(i=0;i<fNn;i++) *is >> fLowEdgeN[i];
     return;
 }
@@ -213,6 +248,11 @@ istream &operator>>(istream &is,AliITSgeomSSD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.9  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 */
 
 //#include "AliITSgeomSSD175.h"
@@ -244,7 +284,7 @@ AliITSgeomSSD175::AliITSgeomSSD175() : AliITSgeomSSD(){
     leA[kNstrips] =  kDxyz[0];
     leC[kNstrips] = -kDxyz[0];
 //    cout << "AliITSgeomSSD175 default creator called: start" << endl;
-    AliITSgeomSSD::AliITSgeomSSD(kDxyz,kangle,-kangle,
+    AliITSgeomSSD::ResetSSD(kDxyz,kangle,-kangle,
 				 kNstrips+1,leA,kNstrips+1,leC);
     delete leA;
     delete leC;
@@ -271,6 +311,11 @@ istream &operator>>(istream &is,AliITSgeomSSD175 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.9  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 */
 
 //#include "AliITSgeomSSD275and75.h"
@@ -303,7 +348,7 @@ AliITSgeomSSD275and75::AliITSgeomSSD275and75() : AliITSgeomSSD(){
     leA[kNstrips] =  kDxyz[0];
     leC[kNstrips] = -kDxyz[0];
 //    cout << "AliITSgeomSSD275and75 default creator called: start" << endl;
-    AliITSgeomSSD::AliITSgeomSSD(kDxyz,kangleA,kangleC,
+    AliITSgeomSSD::ResetSSD(kDxyz,kangleA,kangleC,
 				 kNstrips+1,leA,kNstrips+1,leC);
     delete leA;
     delete leC;
@@ -330,6 +375,11 @@ istream &operator>>(istream &is,AliITSgeomSSD275and75 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.9  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 */
 //#include "AliITSgeomSSD75and275.h"
 
@@ -361,7 +411,7 @@ AliITSgeomSSD75and275::AliITSgeomSSD75and275() : AliITSgeomSSD(){
     leA[kNstrips] =  kDxyz[0];
     leC[kNstrips] = -kDxyz[0];
 //    cout << "AliITSgeomSSD275and75 default creator called: start" << endl;
-    AliITSgeomSSD::AliITSgeomSSD(kDxyz,kangleA,kangleC,
+    AliITSgeomSSD::ResetSSD(kDxyz,kangleA,kangleC,
 				 kNstrips+1,leA,kNstrips+1,leC);
     delete leA;
     delete leC;

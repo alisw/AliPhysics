@@ -15,11 +15,17 @@
 
 /*
 $Log$
+Revision 1.8  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 */
 
 #include <iostream.h>
 #include <iomanip.h>
 #include <TShape.h>
+#include <TMath.h>
 
 #include "AliITSgeomSPD.h"
 
@@ -143,10 +149,10 @@ void AliITSgeomSPD::DetToL(Int_t row,Int_t col,Float_t &xl,Float_t &zl){
     return;
 }
 //______________________________________________________________________
-void AliITSgeomSPD::Print(ostream *os){
+void AliITSgeomSPD::Print(ostream *os) const {
 // Standard output format for this class
     Int_t i;
-    ios::fmtflags fmt;
+    Int_t fmt;
 
     fmt = os->setf(ios::scientific); // set scientific floating point output
     *os << "TBRIK" << " ";
@@ -155,7 +161,7 @@ void AliITSgeomSPD::Print(ostream *os){
     *os << setprecision(16) << GetDz() << " ";
     *os << fNbinx-1 << " " << fNbinz-1 << " ";
     for(i=0;i<fNbinx;i++) *os << setprecision(16) << fLowBinEdgeX[i] << " ";
-    for(i=0;i<fNbinx;i++) *os << setprecision(16) << fLowBinEdgeZ[i] << " ";
+    for(i=0;i<fNbinz;i++) *os << setprecision(16) << fLowBinEdgeZ[i] << " ";
     *os << endl;
     os->flags(fmt);
     return;
@@ -204,6 +210,11 @@ istream &operator>>(istream &is,AliITSgeomSPD &r){
 
 /*
 $Log$
+Revision 1.8  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 Revision 1.7  2000/10/02 16:32:35  barbera
 Forward declaration added
 
@@ -262,8 +273,8 @@ const Int_t   knbinz = 279;    // number of pixels along z direction.
     for(i=1;i<knbinz;i++) SetLowBinEdgeZ(i+1,GetBinLowEdgeZ(i)+kbinz0);
     SetLowBinEdgeZ(knbinz,GetBinLowEdgeZ(knbinz-1)+kbinz1);
 
-    if(dx!=kdx || dz!=kdz) Warning("::Default Creator",
-				   "Detector size may not be write.");
+    if(TMath::Abs(dx-kdx)>1.0E-4 || TMath::Abs(dz-kdz)>1.0E-4) 
+	Warning("Default Creator","Detector size may not be write.");
     SetShape("ActiveSPD","Active volume of SPD","SPD SI DET",dx,kdy,dz);
 //    cout << "AliITSgeomSPD300 default creator called: end" << endl;
 }
@@ -288,6 +299,11 @@ istream &operator>>(istream &is,AliITSgeomSPD300 &r){
 //=====================================================================
 /*
 $Log$
+Revision 1.8  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 Revision 1.7  2000/10/02 16:32:35  barbera
 Forward declaration added
 
@@ -318,7 +334,7 @@ AliITSgeomSPD425Short::AliITSgeomSPD425Short(){
 // micron pixels (large detector).
 ////////////////////////////////////////////////////////////////////////
 
-    const Float_t kdx=0.6400,kdy=0.0075,kdz=4.2650; // cm; Standard pixel
+    const Float_t kdx=0.6400,kdy=0.015,kdz=3.480;   // cm; Standard pixel
                                                     // detector size is 2dx
                                                     //  wide, 2dz long, and
                                                     //  2dy thick. Geant 3.12
@@ -327,7 +343,7 @@ AliITSgeomSPD425Short::AliITSgeomSPD425Short(){
     const Int_t   knbinx = 256;    // number of pixels along x direction.
     const Float_t kbinz0 = 0.0425; // cm; Standard pixel size in z direction.
     const Float_t kbinz1 = 0.0625; // cm; Special pixel size in z direction.
-    const Int_t   knbinz = 163;    // number of pixels along z direction.
+    const Int_t   knbinz = 160;    // number of pixels along z direction.
     Int_t i;
     Float_t dx,dz,*binSizeX,*binSizeZ;
 
@@ -341,14 +357,14 @@ AliITSgeomSPD425Short::AliITSgeomSPD425Short(){
     binSizeZ[ 31] = kbinz1;
     binSizeZ[ 32] = kbinz1;
 
+    binSizeZ[ 63] = kbinz1;
     binSizeZ[ 64] = kbinz1;
-    binSizeZ[ 65] = kbinz1;
 
-    binSizeZ[ 97] = kbinz1;
-    binSizeZ[ 98] = kbinz1;
+    binSizeZ[ 95] = kbinz1;
+    binSizeZ[ 96] = kbinz1;
 
-    binSizeZ[130] = kbinz1;
-    binSizeZ[131] = kbinz1;
+    binSizeZ[127] = kbinz1;
+    binSizeZ[128] = kbinz1;
 
     // correct detector size for bin size.
     dx = 0.0;
@@ -359,8 +375,8 @@ AliITSgeomSPD425Short::AliITSgeomSPD425Short(){
     dz *= 0.5;
 
     SetShape("ActiveSPD","Active volume of SPD","SPD SI DET",dx,kdy,dz);
-    if(dx!=kdx || dz!=kdz) Warning("AliITSgeomSPD425Short::Default Creator",
-				   "Detector size may not be write.");
+    if(TMath::Abs(dx-kdx)>1.0E-4 || TMath::Abs(dz-kdz)>1.0E-4) 
+	Warning("Default Creator","Detector size may not be write.");
 
     InitLowBinEdgeX(); // array of bin sizes along x.
     InitLowBinEdgeZ(); // array of bin sizes along x.
@@ -391,6 +407,11 @@ istream &operator>>(istream &is,AliITSgeomSPD425Short &r){
 
 /*
 $Log$
+Revision 1.8  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 Revision 1.7  2000/10/02 16:32:35  barbera
 Forward declaration added
 
@@ -465,8 +486,8 @@ AliITSgeomSPD425Long::AliITSgeomSPD425Long(){
     dz *= 0.5;
 
     SetShape("ActiveSPD","Active volume of SPD","SPD SI DET",dx,kdy,dz);
-    if(dx!=kdx || dz!=kdz) Warning("AliITSgeomSPD425Long::Default Creator",
-				   "Detector size may not be write.");
+    if(TMath::Abs(dx-kdx)>1.0E-4 || TMath::Abs(dz-kdz)>1.0E-4) 
+	Warning("Default Creator","Detector size may not be write.");
 
     InitLowBinEdgeX(); // array of bin sizes along x.
     InitLowBinEdgeZ(); // array of bin sizes along x.

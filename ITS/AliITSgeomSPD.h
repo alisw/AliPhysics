@@ -24,27 +24,27 @@ class AliITSgeomSPD : public TObject {
     virtual void ReSetBins(Float_t dy,Int_t nx,Float_t *bx,
 			   Int_t nz,Float_t *bz);
     virtual TShape *GetShape() const {return fShapeSPD;}
-    virtual Float_t GetDx() { // Get TBRIK Dx
+    virtual Float_t GetDx() const { // Get TBRIK Dx
         if(fShapeSPD!=0) return fShapeSPD->GetDx();
         else return 0.0;}
-    virtual Float_t GetDy() {// Get TBRIK Dy
+    virtual Float_t GetDy() const {// Get TBRIK Dy
         if(fShapeSPD!=0) return fShapeSPD->GetDy();
         else return 0.0;}
-    virtual Float_t GetDz() {// Get TBRIK Dz
+    virtual Float_t GetDz() const {// Get TBRIK Dz
         if(fShapeSPD!=0) return fShapeSPD->GetDz();
         else return 0.0;}
-    virtual Int_t GetNbinxX(){return fNbinx-1;} // returns the number of bins x
-    virtual Int_t GetNbinxZ(){return fNbinz-1;} // returns the number of bins z
-    virtual Float_t GetBinSizeX(Int_t i)
+    virtual Int_t GetNbinxX() const {return fNbinx-1;} // returns the number of bins x
+    virtual Int_t GetNbinxZ() const {return fNbinz-1;} // returns the number of bins z
+    virtual Float_t GetBinSizeX(Int_t i) const
 	{if(i<fNbinx-1&&i>=0) return fLowBinEdgeX[i+1]-fLowBinEdgeX[i];
 	else return 0.0;}; // give size of bin i in x.
-    virtual Float_t GetBinSizeZ(Int_t i)
+    virtual Float_t GetBinSizeZ(Int_t i) const
 	{if(i<fNbinx-1&&i>=0) return fLowBinEdgeZ[i+1]-fLowBinEdgeZ[i];
 	else return 0.0;}; // give size of bin i in z.
-    virtual Float_t GetBinLowEdgeX(Int_t i)
+    virtual Float_t GetBinLowEdgeX(Int_t i) const
 	{if(i<fNbinx-1&&i>=0) return fLowBinEdgeX[i];
 	else return 0.0;}; // give size of bin i in x.
-    virtual Float_t GetBinLowEdgeZ(Int_t i)
+    virtual Float_t GetBinLowEdgeZ(Int_t i) const
 	{if(i<fNbinz-1&&i>=0) return fLowBinEdgeZ[i];
 	else return 0.0;}; // give size of bin i in z.
     virtual void InitLowBinEdgeX(){// allocate memory for fLowBinEdgeX.
@@ -64,7 +64,7 @@ class AliITSgeomSPD : public TObject {
 	if(i>=0&&i<fNbinz) fLowBinEdgeZ[i] = s;};
     virtual void LToDet(Float_t xl,Float_t zl,Int_t &row,Int_t &col);
     virtual void DetToL(Int_t row,Int_t col,Float_t &xl,Float_t &zl);
-    virtual void Print(ostream *os); // output streamer to standard out.
+    virtual void Print(ostream *os) const; // output streamer to standard out.
     virtual void Read(istream *is); // input streamer from standard in.
 
  protected:

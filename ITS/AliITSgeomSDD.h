@@ -20,19 +20,22 @@ class AliITSgeomSDD: public TObject {
     AliITSgeomSDD(AliITSgeomSDD &source);
     AliITSgeomSDD& operator=(AliITSgeomSDD &source);
     virtual ~AliITSgeomSDD();
+    void ResetSDD(const Float_t *box,Float_t per,Float_t vel,
+		  Float_t axL,Float_t axR,
+		  Int_t nA0,Float_t *le0,Int_t nA1,Float_t *le1);
     virtual TShape *GetShape() const {return fShapeSDD;}
-    virtual Float_t GetDx() { // Get TBRIK Dx
+    virtual Float_t GetDx() const { // Get TBRIK Dx
 	if(fShapeSDD!=0) return fShapeSDD->GetDx();
 	else return 0.0;}
-    virtual Float_t GetDy() {// Get TBRIK Dy
+    virtual Float_t GetDy() const {// Get TBRIK Dy
 	if(fShapeSDD!=0) return fShapeSDD->GetDy();
 	else return 0.0;}
-    virtual Float_t GetDz() {// Get TBRIK Dz
+    virtual Float_t GetDz() const {// Get TBRIK Dz
 	if(fShapeSDD!=0) return fShapeSDD->GetDz();
 	else return 0.0;}
-    virtual Float_t GetAnodeX(Int_t a,Int_t s){ // returns X position of anode
+    virtual Float_t GetAnodeX(Int_t a,Int_t s) const { // returns X position of anode
 	if(s==0) return fAnodeXL; else return fAnodeXR;}
-    virtual Float_t GetAnodeZ(Int_t a,Int_t s){ // returns X position of anode
+    virtual Float_t GetAnodeZ(Int_t a,Int_t s)const { // returns X position of anode
 	if(s==0) return 0.5*(fAnodeLowEdgeL[a]+fAnodeLowEdgeL[a+1]);
 	else return 0.5*(fAnodeLowEdgeR[a]+fAnodeLowEdgeR[a+1]);}
     virtual void SetNAnodesL(Int_t s)
@@ -48,7 +51,7 @@ class AliITSgeomSDD: public TObject {
 	                 {fShapeSDD = new TBRIK(name,title,mat,dx,dy,dz);}
     virtual void Local2Det(Float_t xl,Float_t zl,Int_t &a,Int_t &t,Int_t &s);
     virtual void Det2Local(Int_t a,Int_t t,Int_t s,Float_t &xl,Float_t &zl);
-    virtual void Print(ostream *os);  // Output streamer to standard out.
+    virtual void Print(ostream *os) const; // Output streamer to standard out.
     virtual void Read(istream *is);   // Input streamer to standard in.
     // or what other or different information that is needed.
 

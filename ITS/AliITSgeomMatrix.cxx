@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.7  2001/02/03 00:00:30  nilsen
+New version of AliITSgeom and related files. Now uses automatic streamers,
+set up for new formatted .det file which includes detector information.
+Additional smaller modifications are still to come.
+
 Revision 1.5  2000/10/02 16:32:35  barbera
 Forward declaration added
 
@@ -624,7 +629,7 @@ void AliITSgeomMatrix::Print(ostream *os){
 // Standard output format for this class.
 ////////////////////////////////////////////////////////////////////////
     Int_t i,j;
-    ios::fmtflags fmt;
+    Int_t fmt;
 
     fmt = os->setf(ios::scientific);  // set scientific floating point output
     *os << fDetectorIndex << " ";

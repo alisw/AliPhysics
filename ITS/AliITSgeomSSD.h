@@ -15,27 +15,29 @@ class istream;
 class AliITSgeomSSD : public TObject {
 
  public:
-    AliITSgeomSSD(){;}; // default constructor
+    AliITSgeomSSD(); // default constructor
     AliITSgeomSSD(const Float_t *box,Float_t ap,Float_t an,
 		  Int_t np,Float_t *p,Int_t nn,Float_t *n); // Constructor
     virtual ~AliITSgeomSSD(); // Destructor
     AliITSgeomSSD(const AliITSgeomSSD &source);// copy constructor
     virtual AliITSgeomSSD& operator=(const AliITSgeomSSD &source); // = opt.
+    void ResetSSD(const Float_t *box,Float_t ap,Float_t an,
+		  Int_t np,Float_t *p,Int_t nn,Float_t *n); // Filler
     virtual TShape *GetShape() const {return fShapeSSD;}// get shape
-    virtual Float_t GetDx(){if(fShapeSSD!=0) return fShapeSSD->GetDx();
+    virtual Float_t GetDx() const {if(fShapeSSD!=0) return fShapeSSD->GetDx();
                     else return 0.0;}// get Dx
-    virtual Float_t GetDy(){if(fShapeSSD!=0) return fShapeSSD->GetDy();
+    virtual Float_t GetDy() const {if(fShapeSSD!=0) return fShapeSSD->GetDy();
                     else return 0.0;}// get Dy
-    virtual Float_t GetDz(){if(fShapeSSD!=0) return fShapeSSD->GetDz();
+    virtual Float_t GetDz() const {if(fShapeSSD!=0) return fShapeSSD->GetDz();
                     else return 0.0;}// get Dz
-    virtual Int_t GetNAnodes() {return fNp-1;}//the number of Anodes "P"
-    virtual Int_t GetNCathodess() {return fNn-1;}//the number of Cathodes "N"
-    virtual Float_t GetAnodePitch(Int_t i=0){ //anode pitch for anode i
+    virtual Int_t GetNAnodes() const {return fNp-1;}//the number of Anodes "P"
+    virtual Int_t GetNCathodess() const {return fNn-1;}//the number of Cathodes "N"
+    virtual Float_t GetAnodePitch(Int_t i=0) const { //anode pitch for anode i
 	if(i>=0&&i<fNp) return fLowEdgeP[i+1]-fLowEdgeP[i];else return 0.0;}
-    virtual Float_t GetCathodePitch(Int_t i=0){ // cathode pitch for cathode i
+    virtual Float_t GetCathodePitch(Int_t i=0) const { // cathode pitch for cathode i
 	if(i>0&&i<fNn) return fLowEdgeN[1]-fLowEdgeN[0];else return 0.0;}
-    virtual Float_t GetAnodeAngle(){return fAngleP;}//anode strip angle.
-    virtual Float_t GetCathodeAngle(){return fAngleN;}//cathode strip angle.
+    virtual Float_t GetAnodeAngle() const {return fAngleP;}//anode strip angle.
+    virtual Float_t GetCathodeAngle() const {return fAngleN;}//cathode strip angle.
     virtual void SetShape(char *name,char *title,char *mat,
                           Float_t dx,Float_t dy,Float_t dz){
 	// defines TBRIK with given paramters
@@ -56,7 +58,7 @@ class AliITSgeomSSD : public TObject {
     virtual void Local2Det(Float_t x,Float_t z,Int_t &a,Int_t &c);
     virtual void Det2Local(Int_t a,Int_t c,Float_t &x,Float_t &z);
 
-    virtual void Print(ostream *os);  // Output streamer to standard out.
+    virtual void Print(ostream *os) const;  // Output streamer to standard out.
     virtual void Read(istream *is);   // Input streamer to standard in.
 
  protected:
