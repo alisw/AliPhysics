@@ -33,6 +33,7 @@ public:
    virtual void   DrawDetector(){}
    virtual Int_t  IsVersion()const {return 0;}
    virtual void   Init();
+   virtual void SetHitsAddressBranch(TBranch *b){b->SetAddress(&fHits);}
    void Hit2digit(Int_t iEventNum);
    void Hit2digit(){return;}
    virtual void   MakeBranch(Option_t *opt=" ", const char *file=0);
