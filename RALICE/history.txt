@@ -289,3 +289,4 @@
                 Also user identifier facility introduced for AliJet and AliVertex.
 12-jul-2001 NvE Memberfunction GetDistance() introduced for AliPosition and support for
                 point of closest approach introduced in AliTrack.
+24-jul-2001 NvE Support for Chi2 and NDF information of track fit introduced in AliTrack.

@@ -126,6 +126,8 @@ void AliTrack::Reset()
 {
 // Reset all variables to 0 and delete all auto-generated decay tracks.
  fQ=0;
+ fChi2=0;
+ fNdf=0;
  fUserId=0;
  fNdec=0;
  fNsig=0;
@@ -868,5 +870,43 @@ AliPosition AliTrack::GetClosestPoint()
 {
 // Provide the point of closest approach w.r.t. some reference
  return fClosest;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetChi2(Float_t chi2)
+{
+// Set the chi-squared value of the track fit.
+ if (chi2<0)
+ {
+  cout << " *AliTrack::SetChi2* Invalid chi2 value : " << chi2 << endl;
+ }
+ else
+ {
+  fChi2=chi2;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliTrack::SetNdf(Int_t ndf)
+{
+// Set the number of degrees of freedom for the track fit.
+ if (ndf<0)
+ {
+  cout << " *AliTrack::SetNdf* Invalid ndf value : " << ndf << endl;
+ }
+ else
+ {
+  fNdf=ndf;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliTrack::GetChi2()
+{
+// Provide the chi-squared value of the track fit.
+ return fChi2;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliTrack::GetNdf()
+{
+// Provide the number of degrees of freedom for the track fit.
+ return fNdf;
 }
 ///////////////////////////////////////////////////////////////////////////

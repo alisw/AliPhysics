@@ -63,6 +63,11 @@ class AliTrack : public TObject,public Ali4Vector
   Int_t GetId();                    // Provide the user defined identifier
   void SetClosestPoint(AliPosition p); // Set position p as point of closest approach w.r.t. some reference
   AliPosition GetClosestPoint();       // Provide point of closest approach w.r.t. some reference
+  void SetChi2(Float_t chi2);       // Set the chi-squared value of the track fit
+  void SetNdf(Int_t ndf);           // Set the number of degrees of freedom for the track fit
+  Float_t GetChi2();                // Provide the chi-squared value of the track fit
+  Int_t GetNdf();                   // Provide the number of degrees of freedom for the track fit
+
  
  protected:
   Float_t fQ;            // The charge of the particle
@@ -81,6 +86,8 @@ class AliTrack : public TObject,public Ali4Vector
   AliPosition fImpactYZ; // The (extrapolated) impact-point in the plane x=0
   Int_t fUserId;         // The user defined identifier
   AliPosition fClosest;  // The (extrapolated) point of closest approach w.r.t some reference
+  Float_t fChi2;         // The Chi-squared of the track fit
+  Int_t fNdf;            // The number of degrees of freedom of the track fit
 
  private:
   void Dump(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
