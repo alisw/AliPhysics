@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/10/24 12:04:24  morsch
+Expand divisions only on request.
+
 Revision 1.2  2001/07/09 11:45:15  morsch
 Reduced functionality: mediate between GUI and Geometry Conversion.
 
@@ -65,7 +68,6 @@ The new geometry viewer from A.Morsch
 #include "AliG3Material.h"
 #include "AliG3Medium.h"
 #include "AliGuiGeomMain.h"
-#include "AliRun.h"
 #include "AliG3toRoot.h"
 
 #include <TArrayF.h>
@@ -91,7 +93,7 @@ ClassImp(AliGeant3GeometryGUI)
     AliG3toRoot* geometry = new AliG3toRoot();
     if (strcmp(tmp, "expand") == 0) geometry->SetExpandDivisions();
     geometry->G3toRoot();
-    geometry->ConvertToRootShapes();
+    //   geometry->ConvertToRootShapes();
     
     AliG3Volume* top = (AliG3Volume*) 
 	(geometry->GetTopFolder()->FindObject("ALIC"));

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2001/07/18 14:59:13  morsch
+Unactive code in dialog removed (caused compiling problems with ROOT 3.01/06)
+
 Revision 1.3  2001/07/17 09:50:21  morsch
 Index on media and material arrays corrected
 
@@ -91,7 +94,6 @@ The new geometry viewer from A.Morsch
 #include "AliGuiGeomDialog.h"
 #include "AliG3Volume.h"
 #include "AliG3Medium.h"
-#include "AliRun.h"
 #include "AliG3Material.h"
 #include "AliNode.h"
 
