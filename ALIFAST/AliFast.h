@@ -76,7 +76,7 @@ public:
    virtual void       Finish();
    virtual void       GetTreeEvent(Int_t event);  // *MENU*
    virtual void       Init();
-   Bool_t             IsFolder() {return kTRUE;}
+   Bool_t             IsFolder() const {return kTRUE;}
    virtual void       Make(Int_t i=0);
    virtual void       Paint(Option_t *option="");
    virtual void       PrintInfo();

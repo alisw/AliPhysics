@@ -19,7 +19,7 @@ public:
                      AliFHistBrowser();
    virtual          ~AliFHistBrowser() {;}
    virtual void      Browse(TBrowser *b);
-   Bool_t            IsFolder() {return kTRUE;}
+   Bool_t            IsFolder() const {return kTRUE;}
 
    ClassDef(AliFHistBrowser, 0)   //helper class to browse AliFast Makers histograms
 };

@@ -39,7 +39,7 @@ public:
    virtual void   Finish();
    TList         *Histograms() {return fHistograms;}
    virtual void   Init();
-   Bool_t         IsFolder() {return kTRUE;}
+   Bool_t         IsFolder() const {return kTRUE;}
    TObject       *Fruit() {return fFruits;}
    TClonesArray  *Fruits() {return (TClonesArray*)fFruits;}
    TObject       *Clones() {return fClones;}

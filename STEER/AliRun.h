@@ -76,7 +76,7 @@ public:
    virtual  Int_t GetPrimary(Int_t track);
    virtual  void  InitMC(const char *setup="Config.C");
    virtual  void  Init(const char *setup="Config.C") {InitMC(setup);}
-   Bool_t         IsFolder() {return kTRUE;}
+   Bool_t         IsFolder() const {return kTRUE;}
    virtual AliLego* Lego() const {return fLego;}
    virtual  void  MakeTree(Option_t *option="KH");
    TClonesArray  *Particles() {return fParticles;};

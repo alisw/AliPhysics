@@ -25,7 +25,7 @@ public:
                      AliFBrowsable();
    virtual          ~AliFBrowsable() {;}
    virtual void      Browse(TBrowser *b);
-   Bool_t            IsFolder() {return kTRUE;}
+   Bool_t            IsFolder() const {return kTRUE;}
    virtual void      SetBigBang(AliFBigBang *bigbang) {fBigBang = bigbang;}
    virtual void      SetRefObject(TObject *obj) {fRefObject = obj;}
 

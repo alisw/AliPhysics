@@ -28,7 +28,7 @@ public:
    virtual          ~AliFBigBang();
    virtual void      Browse(TBrowser *b);
    AliFBrowsable    *GetBrowsable(Int_t i);
-   Bool_t            IsFolder() {return kTRUE;}
+   Bool_t            IsFolder() const {return kTRUE;}
 
    ClassDef(AliFBigBang, 0)   //helper class to browse generated particles.
 };

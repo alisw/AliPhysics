@@ -35,7 +35,7 @@ public:
   virtual  Int_t         GetIshunt() {return 0;}
   virtual  void          SetIshunt(Int_t) {}
   virtual  Bool_t        IsActive() const {return fActive;}
-  virtual  Bool_t        IsFolder() {return kTRUE;}
+  virtual  Bool_t        IsFolder() const {return kTRUE;}
   virtual  Int_t&        LoMedium() {return fLoMedium;}
   virtual  Int_t&        HiMedium() {return fHiMedium;}
 
