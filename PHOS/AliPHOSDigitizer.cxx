@@ -772,9 +772,7 @@ void AliPHOSDigitizer::WriteDigits(Int_t event)
     cwd->cd();
   }
   
-  digitsBranch->Fill() ;      
-  digitizerBranch->Fill() ;
-
+  treeD->Fill() ;
   treeD->Write(0,kOverwrite) ;  
  
 }
