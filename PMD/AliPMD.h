@@ -52,7 +52,7 @@ public:
   virtual void  Reconstruct() const;
   virtual void  FillESD(AliESD* esd) const;
 
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager);
+  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
   
  protected:
