@@ -24,7 +24,7 @@ class AliITSvSPD02 : public AliITS{
                                       return 1;} 
     virtual void   Init(); 
     virtual void   SetDefaults();
-    virtual void   DrawModule();
+    virtual void   DrawModule() const;
     virtual void   StepManager(); 
     virtual void   SetWriteDet(Bool_t det=kTRUE){ // set .det write
                                                  fGeomDetOut = det;}

@@ -16,26 +16,15 @@
 /* $Id$ */
 
 #include <Riostream.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <TMath.h>
 #include <TGeometry.h>
 #include <TNode.h>
-#include <TTUBE.h>
-#include <TTUBS.h>
-#include <TPCON.h>
-#include <TFile.h>    // only required for Tracking function?
-#include <TCanvas.h>
-#include <TObjArray.h>
 #include <TLorentzVector.h>
-#include <TObjString.h>
 #include <TClonesArray.h>
 #include <TBRIK.h>
-#include <TSystem.h>
 
 #include "AliRun.h"
 #include "AliMagF.h"
-#include "AliConst.h"
 #include "AliITSGeant3Geometry.h"
 #include "AliTrackReference.h"
 #include "AliITShit.h"
@@ -43,7 +32,6 @@
 #include "AliITSvSPD02.h"
 #include "AliITSgeom.h"
 #include "AliITSgeomSPD.h"
-#include "AliITSgeomSDD.h"
 #include "AliITSgeomSSD.h"
 #include "AliITSDetType.h"
 #include "AliITSresponseSPDdubna.h"
@@ -55,12 +43,16 @@
 #include "AliITSsimulationSPDdubna.h"
 #include "AliITSsimulationSDD.h"
 #include "AliITSsimulationSSD.h"
-#include "AliITSClusterFinderSPD.h"
-#include "AliITSClusterFinderSDD.h"
-#include "AliITSClusterFinderSSD.h"
 #include "AliMC.h"
 
-
+///////////////////////////////////////////////////////////////////////
+// Step manager and 
+// geometry class
+// for the ITS 
+// SPD test beam
+// geometry of summer 2002
+// 
+///////////////////////////////////////////////////////////////////////
 ClassImp(AliITSvSPD02)
 
 //______________________________________________________________________
@@ -188,8 +180,8 @@ void AliITSvSPD02::BuildGeometry(){
     //    none.
     ////////////////////////////////////////////////////////////////////////
     // Get the top alice volume.
-    TNode *ALIC = gAlice->GetGeometry()->GetNode("alice");
-    ALIC->cd();
+    TNode *aALIC = gAlice->GetGeometry()->GetNode("alice");
+    aALIC->cd();
 
     // Define ITS Mother Volume
     Float_t data[3];
@@ -201,34 +193,34 @@ void AliITSvSPD02::BuildGeometry(){
     data[0] = 10.0;
     data[1] = 50.0;
     data[2] = 100.0;
-    TBRIK *ITSVshape = new TBRIK("ITSVshape","ITS Logical Mother Volume","Air",
+    TBRIK *iITSVshape = new TBRIK("ITSVshape","ITS Logical Mother Volume","Air",
 				 data[0],data[1],data[2]);
-    TNode *ITSV = new TNode("ITSV","ITS Mother Volume",ITSVshape,
+    TNode *iITSV = new TNode("ITSV","ITS Mother Volume",iITSVshape,
 			    0.0,0.0,0.0,0,0);
-    ITSV->cd(); // set ourselve into ITSV subvolume of ALIC
+    iITSV->cd(); // set ourselve into ITSV subvolume of aALIC
 
     // SPD part of telescope (MiniBuS)
     data[0] = 0.705;
     data[1] = 0.5*ddettelescope;
     data[2] = 3.536;
-    TBRIK *IMB0shape = new TBRIK("IMB0shape","SPD wafer","Si",
+    TBRIK *iIMB0shape = new TBRIK("IMB0shape","SPD wafer","Si",
 				 data[0],data[1],data[2]);
     Float_t detMiniBusX,detMiniBusY,detMiniBusZ;
     data[0] = detMiniBusX = 0.64;
     data[1] = detMiniBusY = 0.5*ddettelescope;
     data[2] = detMiniBusZ = 3.48;
-    TBRIK *IMBSshape = new TBRIK("IMBSshape","SPD Sensitive volume","Si",
+    TBRIK *iIMBSshape = new TBRIK("IMBSshape","SPD Sensitive volume","Si",
 				 data[0],data[1],data[2]);
     Float_t chipMiniBusX,chipMiniBusY,chipMiniBusZ;
     data[0] = chipMiniBusX = 0.793;
     data[1] = chipMiniBusY = 0.5*dchipMiniBus;
     data[2] = chipMiniBusZ = 0.68;
-    TBRIK *ICMBshape = new TBRIK("ICMBshape","chip Minibus","Si",
+    TBRIK *iICMBshape = new TBRIK("ICMBshape","chip Minibus","Si",
 				 data[0],data[1],data[2]);
     data[0] = TMath::Max(detMiniBusX,chipMiniBusX);
     data[1] = detMiniBusY+chipMiniBusY;
     data[2] = TMath::Max(detMiniBusZ,chipMiniBusZ);
-    TBRIK *ITELshape = new TBRIK("ITELshape","ITELshape","Air",
+    TBRIK *iITELshape = new TBRIK("ITELshape","ITELshape","Air",
 				 data[0],data[1],data[2]);
 
     // SPD under test
@@ -236,23 +228,23 @@ void AliITSvSPD02::BuildGeometry(){
     data[0] = 0.705;
     data[1] = ddettest;
     data[2] = 3.536;
-    TBRIK *ITS0shape = new TBRIK("ITS0shape","SPD wafer","Si",
+    TBRIK *iITS0shape = new TBRIK("ITS0shape","SPD wafer","Si",
 				 data[0],data[1],data[2]); // contains detector
     data[0] = spdX = 0.64;
     data[1] = spdY = ddettest;
     data[2] = spdZ = 3.48;
-    TBRIK *ITSTshape = new TBRIK("ITSTshape","SPD sensitive volume","Si",
+    TBRIK *iITSTshape = new TBRIK("ITSTshape","SPD sensitive volume","Si",
 				 data[0],data[1],data[2]);
     // ITS0 with no translation and unit rotation matrix.
     data[0] = spdchipX = 0.793;
     data[1] = spdchipY = dchiptest;
     data[2] = spdchipZ = 0.68;
-    TBRIK *IPC0shape = new TBRIK("IPC0shape","Readout Chips","Si",
+    TBRIK *iIPC0shape = new TBRIK("IPC0shape","Readout Chips","Si",
 				 data[0],data[1],data[2]); // chip under test
     data[0] = TMath::Max(spdchipX,spdX);
     data[1] = spdY+spdchipY;
     data[2] = TMath::Max(spdchipZ,spdZ);
-    TBRIK *IDETshape = new TBRIK("IDETshape","Detector Under Test","Air",
+    TBRIK *iIDETshape = new TBRIK("IDETshape","Detector Under Test","Air",
 				 data[0],data[1],data[2]);
     // Place volumes in geometry
     Int_t i,j;
@@ -261,44 +253,44 @@ void AliITSvSPD02::BuildGeometry(){
     pz[1] = pz[0]+2.0;
     pz[2] = pz[1]+38.0+spdY+spdchipY+34.5;
     pz[3] = pz[2]+2.0;
-    TNode *ITEL[4],*ICMB[4],*IMB0[4],*IMBS[4];
-    TNode *IDET = new TNode("IDET","Detector Under Test",IDETshape,
+    TNode *iITEL[4],*iICMB[4],*iIMB0[4],*iIMBS[4];
+    TNode *iIDET = new TNode("IDET","Detector Under Test",iIDETshape,
 			    0.0,0.0,pz[1]+38.0,r0,0);
-    IDET->cd();
-    TNode *ITS0 = new TNode("ITS0","SPD Chip",ITS0shape,
-			    0.0,IDETshape->GetDy()-spdY,0.0,0,0);
-    TNode *IPC0[5];
+    iIDET->cd();
+    TNode *iITS0 = new TNode("ITS0","SPD Chip",iITS0shape,
+			    0.0,iIDETshape->GetDy()-spdY,0.0,0,0);
+    TNode *iIPC0[5];
     for(i=0;i<5;i++) { //place readout chips on the back of SPD chip under test
 	sprintf(name,"IPC0%d",i);
 	sprintf(title,"Readout chip #%d",i+1);
 	j = i-2;
-	IPC0[i] = new TNode(name,title,IPC0shape,
-			    0.0,spdchipY-IDETshape->GetDy(),
+	iIPC0[i] = new TNode(name,title,iIPC0shape,
+			    0.0,spdchipY-iIDETshape->GetDy(),
 			    j*2.0*spdchipZ+j*0.25*(spdZ-5.*spdchipZ),0,0);
     } // end for i
-    ITS0->cd();
-    TNode *ITST = new TNode("ITST","SPD sensitive volume",ITSTshape,
+    iITS0->cd();
+    TNode *iITST = new TNode("ITST","SPD sensitive volume",iITSTshape,
 			    0.0,0.0,0.0,0,0);
     for(Int_t i=0;i<4;i++){
-	ITSV->cd();
+	iITSV->cd();
 	sprintf(name,"ITEL%d",i);
 	sprintf(title,"Test beam telescope element #%d",i+1);
-	ITEL[i] = new TNode(name,title,ITELshape,px,py,pz[i],r0,0);
-	ITEL[i]->cd();
-	ICMB[i] = new TNode("ICMB","Chip MiniBus",ICMBshape,
-			    0.0,-ITELshape->GetDy()+detMiniBusY,0.0,0,0);
-	IMB0[i] = new TNode("IMB0","Chip MiniBus",IMB0shape,
-			    0.0, ITELshape->GetDy()-detMiniBusY,0.0,0,0);
-	IMB0[i]->cd();
-	IMBS[i] = new TNode("IMBS","IMBS",IMBSshape,0.0,0.0,0.0,0,0);
+	iITEL[i] = new TNode(name,title,iITELshape,px,py,pz[i],r0,0);
+	iITEL[i]->cd();
+	iICMB[i] = new TNode("ICMB","Chip MiniBus",iICMBshape,
+			    0.0,-iITELshape->GetDy()+detMiniBusY,0.0,0,0);
+	iIMB0[i] = new TNode("IMB0","Chip MiniBus",iIMB0shape,
+			    0.0, iITELshape->GetDy()-detMiniBusY,0.0,0,0);
+	iIMB0[i]->cd();
+	iIMBS[i] = new TNode("IMBS","IMBS",iIMBSshape,0.0,0.0,0.0,0,0);
 	// place IMBS inside IMB0 with no translation and unit rotation matrix.
     } // end for i
-    ALIC->cd();
-    ITST->SetLineColor(kYellow);
-    fNodes->Add(ITST);
+    aALIC->cd();
+    iITST->SetLineColor(kYellow);
+    fNodes->Add(iITST);
     for(i=0;i<4;i++){
-	IMBS[i]->SetLineColor(kGreen);
-	fNodes->Add(IMBS[i]);
+	iIMBS[i]->SetLineColor(kGreen);
+	fNodes->Add(iIMBS[i]);
     } // end for i
 }
 //______________________________________________________________________
@@ -475,24 +467,24 @@ void AliITSvSPD02::InitAliITSgeom(){
 	return;
     } // end if
     cout << "Reading Geometry transformation directly from Geant 3." << endl;
-    const Int_t ltypess = 2;
-    const Int_t nlayers = 5;
-    const Int_t ndeep = 5;
-    Int_t itsGeomTreeNames[ltypess][ndeep],lnam[20],lnum[20];
-    Int_t nlad[nlayers],ndet[nlayers];
+    const Int_t kltypess = 2;
+    const Int_t knlayers = 5;
+    const Int_t kndeep = 5;
+    Int_t itsGeomTreeNames[kltypess][kndeep],lnam[20],lnum[20];
+    Int_t nlad[knlayers],ndet[knlayers];
     Double_t t[3],r[10];
     Float_t  par[20],att[20];
     Int_t    npar,natt,idshape,imat,imed;
     AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
     Int_t mod,typ,lay,lad,det,cpy,i,j,k;
-    Char_t names[ltypess][ndeep][4];
-    Int_t itsGeomTreeCopys[ltypess][ndeep];
-    Char_t *namesA[ltypess][ndeep] = {
+    Char_t names[kltypess][kndeep][4];
+    Int_t itsGeomTreeCopys[kltypess][kndeep];
+    Char_t *namesA[kltypess][kndeep] = {
      {"ALIC","ITSV","ITEL","IMB0","IMBS"}, // lay=1
      {"ALIC","ITSV","IDET","ITS0","ITST"}};// Test SPD
-    Int_t itsGeomTreeCopysA[ltypess][ndeep]= {{1,1,4,1,1},// lay=1
+    Int_t itsGeomTreeCopysA[kltypess][kndeep]= {{1,1,4,1,1},// lay=1
 					      {1,1,1,1,1}};//lay=2 TestSPD
-    for(i=0;i<ltypess;i++)for(j=0;j<ndeep;j++){
+    for(i=0;i<kltypess;i++)for(j=0;j<kndeep;j++){
 	for(k=0;k<4;k++) names[i][j][k] = namesA[i][j][k];
 	itsGeomTreeCopys[i][j] = itsGeomTreeCopysA[i][j];
     } // end for i,j
@@ -501,17 +493,17 @@ void AliITSvSPD02::InitAliITSgeom(){
     // tree its self.
     cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
     for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
-    for(i=0;i<ltypess;i++)for(j=0;j<ndeep;j++) 
+    for(i=0;i<kltypess;i++)for(j=0;j<kndeep;j++) 
         strncpy((char*) &itsGeomTreeNames[i][j],names[i][j],4);
     //	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
     mod = 5;
     if(fITSgeom!=0) delete fITSgeom;
     nlad[0]=1;nlad[1]=1;nlad[2]=1;nlad[3]=1;nlad[4]=1;
     ndet[0]=1;ndet[1]=1;ndet[2]=1;ndet[3]=1;ndet[4]=1;
-    fITSgeom = new AliITSgeom(0,nlayers,nlad,ndet,mod);
-    for(typ=1;typ<=ltypess;typ++){
-	for(j=0;j<ndeep;j++) lnam[j] = itsGeomTreeNames[typ-1][j];
-	for(j=0;j<ndeep;j++) lnum[j] = itsGeomTreeCopys[typ-1][j];
+    fITSgeom = new AliITSgeom(0,knlayers,nlad,ndet,mod);
+    for(typ=1;typ<=kltypess;typ++){
+	for(j=0;j<kndeep;j++) lnam[j] = itsGeomTreeNames[typ-1][j];
+	for(j=0;j<kndeep;j++) lnum[j] = itsGeomTreeCopys[typ-1][j];
 	lad = 1;
 	det = 1;
 	for(cpy=1;cpy<=itsGeomTreeCopys[typ-1][2];cpy++){
@@ -520,7 +512,7 @@ void AliITSvSPD02::InitAliITSgeom(){
 	    if(cpy>2 && typ==1) lay = cpy +1;
 	    if(typ==2) lay = 3;
 	    mod = lay-1;
-	    ig->GetGeometry(ndeep,lnam,lnum,t,r,idshape,npar,natt,par,att,
+	    ig->GetGeometry(kndeep,lnam,lnum,t,r,idshape,npar,natt,par,att,
 			    imat,imed);
 	    fITSgeom->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
 	    if(!(fITSgeom->IsShapeDefined((Int_t)kSPD)))
@@ -689,7 +681,7 @@ void AliITSvSPD02::SetDefaultSimulation(){
     } // end if
 }
 //______________________________________________________________________
-void AliITSvSPD02::DrawModule(){
+void AliITSvSPD02::DrawModule() const {
     ////////////////////////////////////////////////////////////////////////
     //     Draw a shaded view of the ITS SPD test beam version 1.
     // Inputs:
