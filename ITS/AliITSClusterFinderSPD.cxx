@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
+#include <iostream.h>
 #include "AliITSClusterFinderSPD.h"
 #include "AliITSMapA1.h"
 #include "AliITS.h"
@@ -39,7 +39,7 @@ AliITSClusterFinderSPD::AliITSClusterFinderSPD
     fNclusters= fClusters->GetEntriesFast();
     SetDx();
     SetDz();
-    fMap=new AliITSMapA1(fSegmentation,fDigits);
+    SetMap();
     SetNCells();
 }
 
@@ -200,23 +200,12 @@ void AliITSClusterFinderSPD::Find1DClusters()
             Float_t fRphiPitch = fSegmentation->Dpx(dummy);
 	    clusterX /= (clusterSizeX/fRphiPitch); // center of gravity for x 
 	    
-	    
-	    //printf("ClusterZ ClusterX %f %f \n",clusterZ, clusterX);
-	    
-            // Int_t nclusters = fClusters->GetEntriesFast();
-	    //	    	    cout << nclusters << " clusters" << endl;
-	    //            cout<< "Create point"<<endl;
-	    
 	    // Write the points (coordinates and some cluster information) to the
 	    // AliITSRawClusterSPD object
 	    
 	    AliITSRawClusterSPD *clust = new AliITSRawClusterSPD(clusterZ,clusterX,clusterCharge,clusterSizeZ,clusterSizeX,xstart,xstop,xstartfull,xstopfull,zstart,zstop,k);
-	    // fClusters->Add(point);
+
 	    iTS->AddCluster(0,clust);
-	    delete clust;
-	    //    	    cout << "Cluster at Ladder: " << fLadder << ", Detector: " <<fDetector<<endl;
-	    
-	    // cout<<" end of cluster finding for Z pixel "<<endl;
 	    
       }    // new cluster (ilcl=1)
     } // X direction loop (it)
@@ -236,7 +225,7 @@ void  AliITSClusterFinderSPD::GroupClusters()
   // get number of clusters for this module
   Int_t nofClusters = fClusters->GetEntriesFast();
   nofClusters -= fNclusters;
-  
+
   AliITSRawClusterSPD *clusterI;
   AliITSRawClusterSPD *clusterJ;
   
@@ -253,27 +242,34 @@ void  AliITSClusterFinderSPD::GroupClusters()
       if(pair) {     
 	
 	//    if((clusterI->XStop() == clusterJ->XStart()-1)||(clusterI->XStart()==clusterJ->XStop()+1)) cout<<"!! Diagonal cluster"<<endl;
-	/*    	
-      cout << "clusters " << i << "," << j << " before grouping" << endl;
+
+	/*
+	      cout << "clusters " << i << "," << j << " before grouping" << endl;
 	      clusterI->PrintInfo();
 	      clusterJ->PrintInfo();
-	*/    
+	*/
+
 	clusterI->Add(clusterJ);
-	//        cout << "remove cluster " << j << endl;
+	//	cout << "remove cluster " << j << endl;
 	label[j] = 1;
 	fClusters->RemoveAt(j);
+
 	/*
 	  cout << "cluster  " << i << " after grouping" << endl;
 	  clusterI->PrintInfo();
 	*/
+
       }  // pair
     } // J clusters  
     label[i] = 1;
   } // I clusters
   fClusters->Compress();
-  //  Int_t totalNofClusters = fClusters->GetEntriesFast();
-  //  cout << " Nomber of clusters at the group end ="<< totalNofClusters<<endl;
-  
+
+  /*
+    Int_t totalNofClusters = fClusters->GetEntriesFast();
+    cout << " Nomber of clusters at the group end ="<< totalNofClusters<<endl;
+  */
+
   delete [] label;
 
   return;
@@ -291,20 +287,16 @@ void AliITSClusterFinderSPD::TracksInCluster()
   Int_t nofClusters = fClusters->GetEntriesFast();
   nofClusters -= fNclusters;
 
-  //printf("nofClusters fNclusters %d %d\n",nofClusters,fNclusters);   //commented 18-09-00
-
   Int_t i, ix, iz, jx, jz, xstart, xstop, zstart, zstop, nclx, nclz;
-  //  Int_t signal, track0, track1, track2;
-  const Int_t trmax = 100;
+  Int_t trmax = 100;
   Int_t cltracks[trmax], itr, tracki, ii, is, js, ie, ntr, tr0, tr1, tr2;
 
   for(i=0; i<nofClusters; i++) { 
     ii = 0;
     memset(cltracks,-1,sizeof(int)*trmax);
-    tr0=tr1=tr2=-3;
+    tr0=tr1=tr2=-1;
 
     AliITSRawClusterSPD *clusterI = (AliITSRawClusterSPD*) fClusters->At(i);
-    //printf("clusterI %p\n",clusterI);               //commented 18-09-00
 
     nclx = clusterI->NclX();
     nclz = clusterI->NclZ();
@@ -312,7 +304,6 @@ void AliITSClusterFinderSPD::TracksInCluster()
     xstop = clusterI->XStopf();
     zstart = clusterI->Zend()-nclz+1;
     zstop = clusterI->Zend();
-
     Int_t ind; 
 
      for(iz=0; iz<nclz; iz++) { 
@@ -320,11 +311,9 @@ void AliITSClusterFinderSPD::TracksInCluster()
        for(ix=0; ix<nclx; ix++) { 
 	 jx = xstart + ix;
 	 ind = fMap->GetHitIndex(jz,jx);
-	 //printf("ind %d\n",ind);                              // commented 18-09-00
-	 // this part must be wrong - the index of the digit 
-	 // can be zero but not -1 !!! comment out this part
-	 // and replace it - see below
-	 /*
+	 if(ind < 0) {
+          continue;
+         }
 	 if(ind == 0 && iz >= 0 && ix > 0) {
           continue;
          }
@@ -334,24 +323,23 @@ void AliITSClusterFinderSPD::TracksInCluster()
 	 if(ind == 0 && iz == 0 && ix == 0 && i > 0) {
           continue;
          }
-	 */
-	 // change the conditions above to :
-	 if (ind < 0) continue;
 
         AliITSdigitSPD *dig = (AliITSdigitSPD*)fMap->GetHit(jz,jx);
-	if (!dig) printf("SPD: something wrong ! dig %p\n",dig);
+
 	/*
          signal=dig->fSignal;
          track0=dig->fTracks[0];
          track1=dig->fTracks[1];
          track2=dig->fTracks[2];
 	*/
+
           for(itr=0; itr<3; itr++) { 
 	    tracki = dig->fTracks[itr];
-	    //printf("tracki %d\n",tracki);                        //commented 18-09-00
             if(tracki >= 0) {
 	      ii += 1;
-             cltracks[ii-1] = tracki;
+	      if(ii > 90) { 
+	      }
+	      if(ii < 99) cltracks[ii-1] = tracki;
             }
 	  }
        } // ix pixel
@@ -395,7 +383,7 @@ void AliITSClusterFinderSPD::GetRecPoints()
   nofClusters -= fNclusters;
   const Float_t kconv = 1.0e-4;
   const Float_t kRMSx = 12.0*kconv; // microns -> cm ITS TDR Table 1.3
-  const Float_t kRMSz = 120.0*kconv; // resolution for 425 micron pixel
+  const Float_t kRMSz = 70.0*kconv; // microns -> cm ITS TDR Table 1.3
 
   Float_t spdLength = fSegmentation->Dz();
   Float_t spdWidth = fSegmentation->Dx();
@@ -435,4 +423,6 @@ void AliITSClusterFinderSPD::FindRawClusters()
   GetRecPoints();
 
 }
+
+
 
