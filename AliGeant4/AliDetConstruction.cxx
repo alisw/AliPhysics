@@ -29,7 +29,7 @@ AliDetConstruction::AliDetConstruction()
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("MAG",    1, 0, 0, kStructure);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("PIPE",   5, 4, 4, kStructure);
+  detSwitch = new AliDetSwitch("PIPE",   5, 0, 0, kStructure);
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("SHIL",   1, 0, 0, kStructure);
   AddDetSwitch(detSwitch); 
