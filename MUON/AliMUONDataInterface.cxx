@@ -269,7 +269,7 @@ Bool_t AliMUONDataInterface::FetchTreeD()
 Bool_t AliMUONDataInterface::FetchTreeR()
 {
 // Fetch the reconstructed objects tree from the current muon loader.
-// Nore: The addresses must still be set. 
+// Note: The addresses must still be set. 
 
 	if (fMuonloader->TreeR() == NULL)
 	{
@@ -585,7 +585,13 @@ Bool_t AliMUONDataInterface::GetEvent(Int_t event)
 // Select the current event from which to fetch data.
 // kTRUE is returned if the event was found, else kFALSE is returned.
 
-	return FetchEvent(event);
+	if (fRunloader == NULL)
+	{
+		AliError("File not set.");
+		return kFALSE;
+	}
+	else
+		return FetchEvent(event);
 }
 
 
