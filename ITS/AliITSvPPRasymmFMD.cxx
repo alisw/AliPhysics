@@ -894,6 +894,9 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     // Services
     AliMatrix(idrotm[200], 90., 0., 90., 90., 180., 0.);
 
+    // New reference frame: z--->  -z;   x ---> -x;   y ---> y
+    AliMatrix(idrotm[199], 90.,180., 90.,90., 180.,0.);
+
     //     CONVERT INTO CM (RL(SI)=9.36 CM)
     for (i = 0; i < 6; ++i) {
 	drl[i] = drl[i] / 100. * 9.36;
@@ -960,7 +963,8 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
 
     // --- Place the ghost volume in its mother volume (ALIC) and make it 
     //     invisible
-    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+    //    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., idrotm[199], "ONLY");
     //gMC->Gsatt("ITSV", "SEEN", 0);
 
     // --- Define ghost volume containing the six layers and fill it with air 
@@ -4557,8 +4561,8 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   dgh[1] = 59.;
   dgh[2] = 0.6;    
   gMC->Gsvolu("ICYL", "TUBE", idtmed[210], dgh, 3);   
-  gMC->Gspos("ICYL", 1, "ALIC", 0., 0., 74.1, 0, "ONLY");   
-  gMC->Gspos("ICYL", 2, "ALIC", 0., 0., -74.1, idrotm[200], "ONLY");  
+  gMC->Gspos("ICYL", 1, "ALIC", 0., 0., -74.1,idrotm[199], "ONLY");   
+  gMC->Gspos("ICYL", 2, "ALIC", 0., 0., 74.1, 0, "ONLY"); 
 
   // --- DEFINE SUPPORTS FOR RAILS ATTACHED TO THE CYLINDERS
 
@@ -4581,9 +4585,9 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   dgh[1] = 12.;         
   dgh[2] = 5.;         
   gMC->Gsvolu("ISR2", "BOX ", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR2", 1, "ALIC", 53.5, 0., 125.5, 0, "ONLY");
+  gMC->Gspos("ISR2", 1, "ALIC", -53.5, 0., -125.5, idrotm[199], "ONLY");
   gMC->Gsvolu("ISR3", "BOX ", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR3", 1, "ALIC", -53.5, 0., 125.5, 0, "ONLY");  
+  gMC->Gspos("ISR3", 1, "ALIC", 53.5, 0., -125.5, idrotm[199], "ONLY");  
   
   dgh[0] = 5.-2.;        
   dgh[1] = 12.-2.;         
@@ -4599,9 +4603,9 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
   dgh[1] = 5.;         
   dgh[2] = 2.;         
   gMC->Gsvolu("ISR6", "TUBE", idtmed[210], dgh, 3);   
-  gMC->Gspos("ISR6", 1, "ALIC", 0., 54., 77., 0, "ONLY"); 
-  gMC->Gspos("ISR6", 2, "ALIC", 0., 54., -77., 0, "ONLY"); 
-  gMC->Gspos("ISR6", 3, "ALIC", 0., -54., -77., 0, "ONLY");                   
+  gMC->Gspos("ISR6", 1, "ALIC", 0., 54., -77., idrotm[199], "ONLY"); 
+  gMC->Gspos("ISR6", 2, "ALIC", 0., 54., 77., idrotm[199], "ONLY"); 
+  gMC->Gspos("ISR6", 3, "ALIC", 0., -54., 77., idrotm[199], "ONLY");                   
 
   // --- Outputs the geometry tree in the EUCLID/CAD format 
   
