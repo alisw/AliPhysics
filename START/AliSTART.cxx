@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.20.2.1  2001/06/27 10:51:15  alla
+Rotation matrix in BuildGeometry has benn changed to rotx999
+
+Revision 1.20  2001/05/16 14:57:21  alibrary
+New files for folders and Stack
+
 Revision 1.19  2001/04/04 12:10:18  alla
 changes according Coding Convension
 
@@ -178,7 +184,7 @@ void AliSTART::BuildGeometry()
   top=gAlice->GetGeometry()->GetNode("alice");
 
   // START define the different volumes
-  new TRotMatrix("rot999","rot999",  90,0,90,90,180,0);
+  new TRotMatrix("rotx999","rot999",  90,0,90,90,180,0);
 
   new TTUBE("S_0ST1","START  volume 1","void",5.,10.7,5.3);
   top->cd();
@@ -188,7 +194,7 @@ void AliSTART::BuildGeometry()
 
   new TTUBE("S_0ST2","START volume 2","void",5.,10.7,5.3);
   top->cd();
-  node = new TNode("0ST2","0ST2","S_0ST2",0,0,-75,"rot999");
+  node = new TNode("0ST2","0ST2","S_0ST2",0,0,-75,"rotx999");
   node->SetLineColor(kColorSTART);
   fNodes->Add(node);
 }
