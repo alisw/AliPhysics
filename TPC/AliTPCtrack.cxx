@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/07/10 20:57:39  hristov
+Update of TPC code and macros by M.Kowalski
+
 Revision 1.2  2000/06/30 12:07:50  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -407,74 +410,4 @@ void AliTPCtrack::CookLabel(AliTPCClustersArray *ca) {
   delete[] mx;
   delete[] clusters;
 }
-
-//____________________________________________________________________________
-void AliTPCtrack::Streamer(TBuffer &R__b)
-{
-  //-----------------------------------------------------
-  // This is AliTPCtrack streamer.
-  //-----------------------------------------------------
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(); if (R__v) { }
-      TObject::Streamer(R__b);
-      R__b >> fLab;
-      R__b >> fChi2;
-      R__b >> fdEdx;
-      R__b >> fAlpha;
-      R__b >> fX;
-      R__b >> fY;
-      R__b >> fZ;
-      R__b >> fC;
-      R__b >> fE;
-      R__b >> fT;
-      R__b >> fCyy;
-      R__b >> fCzy;
-      R__b >> fCzz;
-      R__b >> fCcy;
-      R__b >> fCcz;
-      R__b >> fCcc;
-      R__b >> fCey;
-      R__b >> fCez;
-      R__b >> fCec;
-      R__b >> fCee;
-      R__b >> fCty;
-      R__b >> fCtz;
-      R__b >> fCtc;
-      R__b >> fCte;
-      R__b >> fCtt;
-      R__b >> fN;
-      for (Int_t i=0; i<fN; i++) R__b >> fIndex[i];
-   } else {
-      R__b.WriteVersion(AliTPCtrack::IsA());
-      TObject::Streamer(R__b);
-      R__b << fLab;
-      R__b << fChi2;
-      R__b << fdEdx;
-      R__b << fAlpha;
-      R__b << fX;
-      R__b << fY;
-      R__b << fZ;
-      R__b << fC;
-      R__b << fE;
-      R__b << fT;
-      R__b << fCyy;
-      R__b << fCzy;
-      R__b << fCzz;
-      R__b << fCcy;
-      R__b << fCcz;
-      R__b << fCcc;
-      R__b << fCey;
-      R__b << fCez;
-      R__b << fCec;
-      R__b << fCee;
-      R__b << fCty;
-      R__b << fCtz;
-      R__b << fCtc;
-      R__b << fCte;
-      R__b << fCtt;
-      R__b << fN;
-      for (Int_t i=0; i<fN; i++) R__b << fIndex[i];
-   }
-}
-
 
