@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/03/15 16:01:11  coppedis
+Code review
+
 Revision 1.15  2001/01/26 19:56:27  hristov
 Major upgrade of AliRoot code
 
@@ -102,8 +105,9 @@ AliZDC::AliZDC(const char *name, const char *title)
   // Check that DIPO is there (otherwise tracking is wrong!!!)
   
   AliModule* DIPO=gAlice->GetModule("DIPO");
-  if(!DIPO) {
-    Error("Constructor","ZDC needs DIPO!!!\n");
+  AliModule* SHIL=gAlice->GetModule("SHIL");
+  if((!DIPO) || (!SHIL)) {
+    Error("Constructor","ZDC needs DIPO and SHIL for tracking!!!\n");
     exit(1);
   } 
 

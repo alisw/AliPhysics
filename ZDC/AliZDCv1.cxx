@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/03/15 16:12:04  coppedis
+Code review
+
 Revision 1.15  2001/03/12 17:47:56  hristov
 Changes needed on Sun with CC 5.0
 
@@ -221,7 +224,7 @@ void AliZDCv1::CreateBeamLine()
   conpar[0] = 0.;
   conpar[1] = 360.;
   conpar[2] = 2.;
-  conpar[3] = 805.;
+  conpar[3] = 2000.;
   conpar[4] = 0.;
   conpar[5] = 55.;
   conpar[6] = 13060.;
@@ -233,20 +236,21 @@ void AliZDCv1::CreateBeamLine()
   // -- FIRST SECTION OF THE BEAM PIPE (from compensator dipole to 
   //    beginning of D1) 
   
-  zd1 = 1921.6;
+  zd1 = 2000.;
   
   tubpar[0] = 6.3/2.;
   tubpar[1] = 6.7/2.;
-  tubpar[2] = 3916.7/2.;
+  tubpar[2] = 3838.3/2.;
   gMC->Gsvolu("P001", "TUBE", idtmed[5], tubpar, 3);
   gMC->Gspos("P001", 1, "ZDC ", 0., 0., tubpar[2] + zd1, 0, "ONLY");
   
   //-- SECOND SECTION OF THE BEAM PIPE (FROM THE END OF D1 TO THE BEGINNING OF
   //    D2) 
   
-  //-- FROM MAGNETIC BEGINNING OG D1 TO MAGNETIC END OF D1 + 23.5 cm
-  //-- Elliptic pipe
+  //-- FROM MAGNETIC BEGINNING OF D1 TO MAGNETIC END OF D1 + 23.5 cm
+  //-- Elliptic pipe -> ELLIPTIC PIPE NOT INSERTED FOR THE MOMENT!
   
+  //-> D1 begins at (6310.8-472.5)
   zd1 = 6310.8-472.5;
   
   elpar[0] = 6.84/2.;
@@ -464,6 +468,9 @@ void AliZDCv1::CreateBeamLine()
   // --  END OF BEAM PIPE VOLUME DEFINITION. MAGNET DEFINITION FOLLOWS 
   //     (LHC OPTICS 6) 
   
+  // ----------------------------------------------------------------
+  // 			Replaced by the muon dipole
+  // ----------------------------------------------------------------
   // -- COMPENSATOR DIPOLE (MBXW) 
   //     GAP (VACUUM WITH MAGNETIC FIELD) 
   
@@ -481,22 +488,25 @@ void AliZDCv1::CreateBeamLine()
 //  gMC->Gsvolu("YMBX", "TUBE", idtmed[5], tubpar, 3);
 //  gMC->Gspos("YMBX", 1, "ZDC ", 0., 0., tubpar[2] + 805., 0, "ONLY");
   
+  // ----------------------------------------------------------------
+  // 		      Replaced by the muon compesator
+  // ----------------------------------------------------------------
   // -- COMPENSATOR DIPOLE (MCBWA) 
   //     GAP (VACUUM WITH MAGNETIC FIELD) 
   
-  tubpar[0] = 0.;
-  tubpar[1] = 4.5;
-  tubpar[2] = 170./2.;
-  gMC->Gsvolu("MCBW", "TUBE", idtmed[11], tubpar, 3);
-  gMC->Gspos("MCBW", 1, "ZDC ", 0., 0., tubpar[2] + 1921.6, 0, "ONLY");
+//  tubpar[0] = 0.;
+//  tubpar[1] = 4.5;
+//  tubpar[2] = 170./2.;
+//  gMC->Gsvolu("MCBW", "TUBE", idtmed[11], tubpar, 3);
+//  gMC->Gspos("MCBW", 1, "ZDC ", 0., 0., tubpar[2] + 1921.6, 0, "ONLY");
   
   // --  YOKE (IRON WITHOUT MAGNETIC FIELD) 
   
-  tubpar[0] = 4.5;
-  tubpar[1] = 55.;
-  tubpar[2] = 170./2.;
-  gMC->Gsvolu("YMCB", "TUBE", idtmed[5], tubpar, 3);
-  gMC->Gspos("YMCB", 1, "ZDC ", 0., 0., tubpar[2] + 1921.6, 0, "ONLY");
+//  tubpar[0] = 4.5;
+//  tubpar[1] = 55.;
+//  tubpar[2] = 170./2.;
+//  gMC->Gsvolu("YMCB", "TUBE", idtmed[5], tubpar, 3);
+//  gMC->Gspos("YMCB", 1, "ZDC ", 0., 0., tubpar[2] + 1921.6, 0, "ONLY");
   
   // -- INNER TRIPLET 
   
