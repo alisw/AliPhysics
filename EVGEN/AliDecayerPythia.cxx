@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.6  2001/03/27 10:53:26  morsch
+Save pythia default decay table at first initialization. Reload at each
+following Init() call.
+
 Revision 1.5  2001/03/09 13:04:06  morsch
 Decay_t moved to AliDecayer.h
 
@@ -43,6 +47,7 @@ Realisation of AliDecayer using Pythia6
 #include "AliDecayerPythia.h"
 #include "AliPythia.h"
 #include <TLorentzVector.h>
+#include <TClonesArray.h>
 
 ClassImp(AliDecayerPythia)
 
@@ -135,7 +140,7 @@ void AliDecayerPythia::ForceDecay()
 	ForceParticleDecay( 5122,13,1); // Lambda_b    
     break;
     case kDiMuon:
-//	ForceParticleDecay(   41,13,2); // phi
+	ForceParticleDecay(  333,13,2); // phi
 	ForceParticleDecay(  443,13,2); // J/Psi
 	ForceParticleDecay(20443,13,2); // Psi'
 	ForceParticleDecay(  553,13,2); // Upsilon
@@ -156,7 +161,7 @@ void AliDecayerPythia::ForceDecay()
 	break;
     case kDiElectron:
 
-	ForceParticleDecay(   41,11,2); // phi
+	ForceParticleDecay(  333,11,2); // phi
 	ForceParticleDecay(  443,11,2); // J/Psi
 	ForceParticleDecay(30443,11,2); // Psi'
 	ForceParticleDecay(  553,11,2); // Upsilon
