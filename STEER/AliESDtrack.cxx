@@ -328,16 +328,16 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags) {
 
   case kTRDout:
     //requested by the PHOS/EMCAL  ("temporary solution")
-    fOalpha=t->GetAlpha();
-    fOx=460.;
-    rc=GetExternalParametersAt(fOx,fOp);
-    t->GetExternalCovariance(fOc); //can be done better
-
-    fXalpha=t->GetAlpha();
-    fXx=450.;
-    rc=GetExternalParametersAt(fXx,fXp);
-    t->GetExternalCovariance(fXc); //can be done better
-
+    if (GetExternalParametersAt(460.,fOp)) {
+       fOalpha=t->GetAlpha();
+       fOx=460.;
+       t->GetExternalCovariance(fOc); //can be done better
+    }
+    if (GetExternalParametersAt(450.,fXp)) {
+       fXalpha=t->GetAlpha();
+       fXx=450.;
+       t->GetExternalCovariance(fXc); //can be done better
+    }
   case kTRDin: case kTRDrefit:
     fTRDLabel = t->GetLabel();
  
