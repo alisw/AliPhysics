@@ -15,6 +15,9 @@
 #include "TNamed.h"
 #endif
 
+class TGeoMaterial;
+
+
 class TFlukaMCGeometry :public TNamed {
 
   public:
