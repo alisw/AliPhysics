@@ -748,7 +748,7 @@ TObject** AliPHOSGetter::ClusterizerRef(const char * name) const
 
   if ( !tasks ) {
     cerr << "ERROR: AliPHOSGetter::Post RerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
-    return kFALSE ;
+    return 0 ;
   }        
         
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
@@ -945,7 +945,7 @@ TObject** AliPHOSGetter::TSMakerRef(const char * name) const
 
   if ( !tasks ) {
     cerr << "ERROR: AliPHOSGetter::Post TerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
-    return kFALSE ;
+    return 0 ;
   }        
         
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
@@ -1115,7 +1115,7 @@ TObject** AliPHOSGetter::PIDRef(const char * name) const
 
   if ( !tasks ) {
     cerr << "ERROR: AliPHOSGetter::Post PerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
-    return kFALSE ;
+    return 0 ;
   }        
         
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 

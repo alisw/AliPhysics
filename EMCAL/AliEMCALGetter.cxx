@@ -700,7 +700,7 @@ TObject ** AliEMCALGetter::ClusterizerRef(const char * name) const
 
   if ( !tasks ) {
     cerr << "ERROR: AliEMCALGetter::Post RerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
-    return kFALSE ;
+    return 0 ;
   }        
         
   TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
@@ -897,7 +897,7 @@ TObject ** AliEMCALGetter::TSMakerRef(const char * name) const
 
   if ( !tasks ) {
     cerr << "ERROR: AliEMCALGetter::Post TerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
-    return kFALSE ;
+    return 0 ;
   }        
         
   TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
@@ -1067,7 +1067,7 @@ TObject ** AliEMCALGetter::PIDRef(const char * name) const
 
   if ( !tasks ) {
     cerr << "ERROR: AliEMCALGetter::Post PerRef -> Task //" << fTasksFolder << "/Reconstructioner not found!" << endl;
-    return kFALSE ;
+    return 0 ;
   }        
         
   TTask * emcal = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("EMCAL")) ; 
