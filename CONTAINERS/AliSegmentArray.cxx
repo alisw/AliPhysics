@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/02/05 14:34:54  hristov
+Avoid deleting of Root class dictionary (R.Brun, M.Ivanov)
+
 Revision 1.2  2001/01/26 20:29:00  hristov
 Major upgrade of AliRoot code
 
@@ -241,14 +244,16 @@ void AliSegmentArray::MakeTree(char *file)
   fTree = new TTree("Segment Tree","Tree with segments");
   fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000,1);
   if (file) {
+        TString outFile = gAlice->GetBaseFile();
+        outFile = outFile + "/" + file;
+        fBranch->SetFile(outFile.Data());
         TDirectory *wd = gDirectory;
-        fBranch->SetFile(file);
         TBranch *b = fBranch;
         TIter next( b->GetListOfBranches());
         while ((b=(TBranch*)next())) {
-           b->SetFile(file);
+           b->SetFile(outFile.Data());
         }
-   	    cout << "Diverting branch " << "Segment" << " to file " << file << endl;  
+   	    cout << "Diverting branch " << "Segment" << " to file " << outFile << endl;  
         wd->cd(); 
     }
   delete psegment;
