@@ -37,9 +37,9 @@ void reco(TString opt="TRE", TString name="all")
   if ( !opt.Contains("T") )
     rec.SetRunTracking(kFALSE) ;
   if ( opt.Contains("R") ) 
-    rec.SetRunReconstruction(name.Data()) ; 
+    rec.SetRunLocalReconstruction(name.Data()) ; 
   else 
-    rec.SetRunReconstruction("") ;
+    rec.SetRunLocalReconstruction("") ;
   if ( !opt.Contains("E") )
     rec.SetFillESD("") ; 
   else 
