@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2002/02/19 16:14:35  morsch
+Reading of 0.2 T solenoid field map enabled.
+
 Revision 1.1  2002/02/14 11:41:28  morsch
 Magnetic field map for ALICE for L3+muon spectrometer stored in 3 seperate
 root files.
@@ -47,27 +50,29 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
   
   fMap = map;
   TFile* file = 0;
-  if(fDebug>-1) printf("%s: Constant Mesh Field %s created: map= %d, factor= %f, file= %s\n",
-	 ClassName(),fName.Data(), fMap, factor,fTitle.Data());
-    if (fMap == k2kG) {
-	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B02.root");
-	file = new TFile(fname);
-	fFieldMap[0] = (AliFieldMap*) file->Get("L3B02");
-	file->Close();
-	delete file;
-
-	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB02.root");
-	file = new TFile(fname);
-	fFieldMap[1] = (AliFieldMap*) file->Get("DipB02");
-	file->Close();
-	delete file;;
-
-	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB02.root");
-	file = new TFile(fname);
-	fFieldMap[2] = (AliFieldMap*) file->Get("ExtB02");
-	file->Close();
-	delete file;
-	
+  if (fMap == k2kG) {
+      if (fL3Option) {
+	  fFieldMap[0] = new AliFieldMap();
+	  fFieldMap[0]->SetLimits(-800., 800., -800., 800., -700., 700.);
+      } else {
+	  fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B02.root");
+	  file = new TFile(fname);
+	  fFieldMap[0] = (AliFieldMap*) file->Get("L3B02");
+	  file->Close();
+	  delete file;
+	  
+	  fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB02.root");
+	  file = new TFile(fname);
+	  fFieldMap[1] = (AliFieldMap*) file->Get("DipB02");
+	  file->Close();
+	  delete file;;
+	  
+	  fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB02.root");
+	  file = new TFile(fname);
+	  fFieldMap[2] = (AliFieldMap*) file->Get("ExtB02");
+	  file->Close();
+	  delete file;
+      }
 	fSolenoid = 2.;
     } else if (fMap == k4kG) {
 	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B04.root");
@@ -149,11 +154,7 @@ void AliMagFMaps::Field(Float_t *x, Float_t *b)
   //
   // Method to calculate the magnetic field
   //
-  Double_t ratx, raty, ratz, hix, hiy, hiz, ratx1, raty1, ratz1, 
-    bhyhz, bhylz, blyhz, blylz, bhz, blz, xl[3];
   const Double_t kone=1;
-  Int_t ix, iy, iz;
-  
   // --- find the position in the grid ---
   
   b[0]=b[1]=b[2]=0;
