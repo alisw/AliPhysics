@@ -173,6 +173,9 @@ static void CheckLabels(Int_t lab[3]) {
        while (part->P() < 0.005) {
           Int_t m=part->GetFirstMother();
           if (m<0) {cerr<<"Primary momentum: "<<part->P()<<endl; break;}
+          if (part->GetStatusCode()>0) {
+             cerr<<"Primary momentum: "<<part->P()<<endl; break;
+          }
           label=m;
           part=(TParticle*)gAlice->Particle(label);
         }
@@ -182,24 +185,25 @@ static void CheckLabels(Int_t lab[3]) {
     }
 }
 
-static void RecPoints2Clusters(const TClonesArray *points, 
-Double_t ys, Double_t zs, Int_t idx, Int_t sgn, TClonesArray *clusters) {
+void AliITSclustererV2::RecPoints2Clusters
+(const TClonesArray *points, Int_t idx, TClonesArray *clusters) {
   //------------------------------------------------------------
-  // Conversion AliITSRecPoint -> AliITSclusterV2
+  // Conversion AliITSRecPoint -> AliITSclusterV2 for the ITS 
+  // subdetector indexed by idx 
   //------------------------------------------------------------
   TClonesArray &cl=*clusters;
   Int_t ncl=points->GetEntriesFast();
   for (Int_t i=0; i<ncl; i++) {
     AliITSRecPoint *p = (AliITSRecPoint *)points->UncheckedAt(i);
     Float_t lp[5];
-    lp[0]=-p->GetX()-ys;  lp[0]*=sgn; //SPD1
-    lp[1]=p->GetZ()+zs;
-    lp[2]=p->GetSigmaX2()*0.5;
-    lp[3]=p->GetSigmaZ2()*0.5;
-    lp[4]=p->GetQ()/12.;   //to be roughly consistent with SSD
+    lp[0]=-p->GetX()-fYshift[idx]; if (idx<=fLastSPD1) lp[0]*=-1; //SPD1
+    lp[1]=p->GetZ()+fZshift[idx];
+    lp[2]=p->GetSigmaX2();
+    lp[3]=p->GetSigmaZ2();
+    lp[4]=p->GetQ();
     Int_t lab[4]; 
     lab[0]=p->GetLabel(0); lab[1]=p->GetLabel(1); lab[2]=p->GetLabel(2);
-    lab[3]=idx;
+    lab[3]=fNdet[idx];
     CheckLabels(lab);
     new (cl[i]) AliITSclusterV2(lab,lp);
   }  
@@ -247,8 +251,7 @@ void AliITSclustererV2::Hits2Clusters(const TFile *in, TFile *out) {
     AliITSmodule *mod=its->GetModule(m);      
     sim.CreateFastRecPoints(mod,m,gRandom);      
 
-    Int_t s = (m<=fLastSPD1) ? -1 : 1;
-    RecPoints2Clusters(points, fYshift[m], fZshift[m], fNdet[m], s, clusters);
+    RecPoints2Clusters(points, m, clusters);
     its->ResetRecPoints();
 
     ncl+=clusters->GetEntriesFast();
@@ -809,8 +812,7 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
   static AliITSClusterFinderSPD cf(seg, (TClonesArray*)digits, points);
 
   cf.FindRawClusters(fI);
-  Int_t s = (fI<=fLastSPD1) ? -1 : 1;
-  RecPoints2Clusters(points, fYshift[fI], fZshift[fI], fNdet[fI], s, clusters);
+  RecPoints2Clusters(points, fI, clusters);
   its->ResetRecPoints();
 
 }
@@ -830,7 +832,12 @@ FindClustersSDD(const TClonesArray *digits, TClonesArray *clusters) {
          cf(seg,resp,(TClonesArray*)digits,its->ClustersAddress(1));
 
   cf.FindRawClusters(fI);
-  RecPoints2Clusters(points, fYshift[fI], fZshift[fI], fNdet[fI], 1, clusters);
+  Int_t nc=points->GetEntriesFast();
+  while (nc--) { //To be consistent with the SSD cluster charges
+     AliITSRecPoint *p=(AliITSRecPoint*)points->UncheckedAt(nc);
+     p->SetQ(p->GetQ/12.);
+  }
+  RecPoints2Clusters(points, fI, clusters);
   its->ResetClusters(1);
   its->ResetRecPoints();
 
@@ -848,7 +855,7 @@ FindClustersSSD(const TClonesArray *digits, TClonesArray *clusters) {
   static AliITSClusterFinderSSD cf(seg,(TClonesArray*)digits);
 
   cf.FindRawClusters(fI);
-  RecPoints2Clusters(points, fYshift[fI], fZshift[fI], fNdet[fI], 1, clusters);
+  RecPoints2Clusters(points, fI, clusters);
   its->ResetRecPoints();
 
 }

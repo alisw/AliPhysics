@@ -28,6 +28,7 @@ public:
   void FindClustersSDD(const TClonesArray *dig, TClonesArray *cls);
   void FindClustersSSD(const TClonesArray *dig, TClonesArray *cls);
 
+  void RecPoints2Clusters(const TClonesArray *p, Int_t idx, TClonesArray *c);
   void Hits2Clusters(const TFile *in, TFile *out);
 
 private:
