@@ -130,7 +130,17 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
     else fR[3]=1.;}                 //
     break;
 
-  case kTRDin: case kTRDout: case kTRDrefit:
+  case kTRDout:
+    { //requested by the PHOS  ("temporary solution")
+      Double_t r=474.;
+      t->PropagateTo(r,30.,0.);  
+      fOalpha=fRalpha;
+      fOx=fRx;
+      Int_t i;
+      for (i=0; i<5; i++) fOp[i]=fRp[i];
+      for (i=0; i<15;i++) fOc[i]=fRc[i];
+    }
+  case kTRDin: case kTRDrefit:
     fTRDncls=t->GetNumberOfClusters();
     fTRDchi2=t->GetChi2();
     for (Int_t i=0;i<fTRDncls;i++) fTRDindex[i]=t->GetClusterIndex(i);
@@ -199,6 +209,26 @@ void AliESDtrack::GetInnerXYZ(Double_t *xyz) const {
   Double_t phi=TMath::ATan2(fIp[0],fIx) + fIalpha;
   Double_t r=TMath::Sqrt(fIx*fIx + fIp[0]*fIp[0]);
   xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fIp[1]; 
+}
+
+void AliESDtrack::GetOuterPxPyPz(Double_t *p) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track momentum components
+  // af the radius of the PHOS
+  //---------------------------------------------------------------------
+  Double_t phi=TMath::ASin(fOp[2]) + fOalpha;
+  Double_t pt=1./TMath::Abs(fOp[4]);
+  p[0]=pt*TMath::Cos(phi); p[1]=pt*TMath::Sin(phi); p[2]=pt*fOp[3]; 
+}
+
+void AliESDtrack::GetOuterXYZ(Double_t *xyz) const {
+  //---------------------------------------------------------------------
+  // This function returns the global track position
+  // af the radius of the PHOS
+  //---------------------------------------------------------------------
+  Double_t phi=TMath::ATan2(fOp[0],fOx) + fOalpha;
+  Double_t r=TMath::Sqrt(fOx*fOx + fOp[0]*fOp[0]);
+  xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fOp[1]; 
 }
 
 //_______________________________________________________________________

@@ -33,6 +33,8 @@ AliESD::AliESD():
   fTrigger(0),
   fRecoVersion(0),
   fTracks("AliESDtrack",15000),
+  fCaloTracks("AliESDCaloTrack",500),
+  fMuonTracks("AliESDMuonTrack",30),
   fV0s("AliESDv0",200),
   fCascades("AliESDcascade",20)
 {

@@ -40,6 +40,9 @@ public:
   void GetInnerPxPyPz(Double_t *p) const;
   void GetInnerXYZ(Double_t *r) const;
 
+  void GetOuterPxPyPz(Double_t *p) const;
+  void GetOuterXYZ(Double_t *r) const;
+
   void SetTPCpid(const Double_t *p);
   void GetTPCpid(Double_t *p) const;
   Float_t GetTPCsignal() const {return fTPCsignal;}
@@ -90,11 +93,11 @@ protected:
   Double_t fRp[5];   // external track parameters  
   Double_t fRc[15];  // external cov. matrix of the track parameters
 
-//Track parameters at the innermost measured point in the TPC
+//Track parameters at the inner wall of the TPC
   Double_t fIalpha,fIx,fIp[5],fIc[15];
 
-//Track parameters at the outermost measured point
-  //Double_t fOalpha,fOx,fOp[5],fOc[15];
+//Track parameters at the radius of the PHOS
+  Double_t fOalpha,fOx,fOp[5],fOc[15];
 
   // ITS related track information
   Float_t fITSchi2;        // chi2 in the ITS
