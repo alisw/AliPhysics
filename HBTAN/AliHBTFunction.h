@@ -18,6 +18,7 @@ class AliHBTFunction: public TNamed
 {
   public:
     AliHBTFunction();
+    AliHBTFunction(const char* name,const char* title);
     virtual ~AliHBTFunction();
     
     virtual TH1* GetNumerator() =0;
@@ -179,6 +180,29 @@ class AliHBTOnePairFctn3D: public AliHBTOnePairFctn
 /******************************************************************/
 /******************************************************************/
 
+class AliHBTTwoPairFctn1D: public AliHBTTwoPairFctn
+{
+ public:
+  AliHBTTwoPairFctn1D(Int_t nbins = 200, Double_t maxval = 1.5, Double_t minval = 0.0);
+  AliHBTTwoPairFctn1D(const char*,const char*,
+                      Int_t nbins = 200, Double_t maxval = 1.5, Double_t minval = 0.0);
+  ~AliHBTTwoPairFctn1D();
+  
+  TH1* GetNumerator(){return fNumerator;}
+  TH1* GetDenominator(){return fDenominator;}
+  
+  void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+  void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
+ 
+ protected:
+  virtual Double_t GetValue(AliHBTPair* trackpair, AliHBTPair* partpair) = 0;
+
+  TH1D* fNumerator;
+  TH1D* fDenominator;
+  
+ public:
+  ClassDef(AliHBTTwoPairFctn1D,1)
+};
 
 
 /******************************************************************/
@@ -189,7 +213,7 @@ class AliHBTTwoPairFctn2D: public AliHBTTwoPairFctn
  public:
   AliHBTTwoPairFctn2D(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
                        Int_t nYbins = 200, Double_t maxYval = .15, Double_t minYval =-0.15);
-  ~AliHBTTwoPairFctn2D();
+  virtual ~AliHBTTwoPairFctn2D();
   
   TH1* GetNumerator(){return fNumerator;}
   TH1* GetDenominator(){return fDenominator;}
@@ -212,6 +236,30 @@ class AliHBTTwoPairFctn2D: public AliHBTTwoPairFctn
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
+class AliHBTTwoPairFctn3D: public AliHBTTwoPairFctn
+{
+ public:
+  AliHBTTwoPairFctn3D(Int_t nXbins = 200, Double_t maxXval = 1.5, Double_t minXval = 0.0, 
+                       Int_t nYbins = 200, Double_t maxYval = .15, Double_t minYval =-0.15, 
+                       Int_t nZbins = 200, Double_t maxZval = .15, Double_t minZval =-0.15){}
+  virtual ~AliHBTTwoPairFctn3D(){}
+  
+  TH1* GetNumerator(){return fNumerator;}
+  TH1* GetDenominator(){return fDenominator;}
+  
+  void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair){}
+  void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair){}
+ 
+  
+ protected:
+  virtual void GetValues(AliHBTPair*,AliHBTPair*, Double_t&, Double_t&,Double_t&) = 0;
+
+  TH3D* fNumerator;
+  TH3D* fDenominator;
+  
+ public:
+  ClassDef(AliHBTTwoPairFctn3D,1)
+};
 
 /******************************************************************/
 /******************************************************************/

@@ -295,11 +295,11 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
 //       delete tracker;
        
        totalNevents++;
-       CloseFiles(aTracksFile,aClustersFile,aGAliceFile);     
        cout<<"all: "<<i<<"   accepted: "<<accepted<<"   tpc faults: "<<tpcfault<<"   its faults: "<<itsfault<<endl;
      
      }//end of loop over events in current directory
-     currentdir++;
+    CloseFiles(aTracksFile,aClustersFile,aGAliceFile);     
+    currentdir++;
    }while(currentdir < Ndirs);//end of loop over directories specified in fDirs Obj Array
 
  delete iotrack;

@@ -98,7 +98,7 @@ Double_t AliHBTPair::GetKStar()
     CalculateQInvL();
     
     Q = TMath::Sqrt( Q*Q - fQInvL);
-    fKStar = Q/2;
+    fKStar = Q/2.;
     fKStarNotCalc = kFALSE;
    }
   return fKStar;
@@ -120,19 +120,19 @@ Double_t AliHBTPair::GetQInv()
 Double_t  AliHBTPair::GetQSide()
 {
  //returns Q side
-  return -1;
+  return fPart1->Py() - fPart1->Py();
 }
 
 Double_t  AliHBTPair::GetQLong()
 {
  //returns Q long
-  return -1;
+  return fPart1->Pz() - fPart1->Pz();
 }
 
 Double_t  AliHBTPair::GetQOut()
 {
  //returns Q out
-  return -1;
+  return fPart1->Px() - fPart1->Px();
 }
 /************************************************************************/
 

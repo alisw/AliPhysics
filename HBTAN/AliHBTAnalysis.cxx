@@ -113,12 +113,22 @@ void AliHBTAnalysis::Process(Option_t* option)
 
  if(oT)
   {
+    if (fReader->GetNumberOfTrackEvents() <1)
+     {
+       Error("Process","There is no data to analyze.");
+       return;
+     }
     ProcessTracks();
     return;
   }
  
  if(oP)
   {
+    if (fReader->GetNumberOfPartEvents() <1)
+     {
+       Error("Process","There is no data to analyze.");
+       return;
+     }
     ProcessParticles();
     return;
   }

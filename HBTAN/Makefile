@@ -19,7 +19,8 @@ SRCS          = AliHBTAnalysis.cxx AliHBTFunction.cxx \
                 AliHBTReader.cxx AliHBTReaderTPC.cxx\
                 AliHBTQResolutionFctns.cxx AliHBTReaderPPprod.cxx\
 		AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx\
-		AliHBTReaderKineTree.cxx
+		AliHBTReaderKineTree.cxx\
+		AliTwoTrackEff.cxx
 
 # Fortran sources
 

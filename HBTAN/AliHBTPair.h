@@ -37,6 +37,10 @@ class AliHBTPair: public TObject
    Double_t GetQLong(); //returns Q long 
    Double_t GetQOut(); //returns Q out
    
+   Double_t GetDeltaP(); //return difference of momenta
+   Double_t GetDeltaPx();
+   Double_t GetDeltaPy();
+   Double_t GetDeltaPz();
    
  protected:
    AliHBTParticle* fPart1;  //pointer to first particle
@@ -157,6 +161,7 @@ void AliHBTPair::CalculateInvMassSqr()
 inline 
 void AliHBTPair::CalculateQInvL()
  {
+ //Calculates square root of Qinv
   if (fQInvLNotCalc)
   {
    CalculateDiffs();
@@ -190,5 +195,36 @@ void AliHBTPair::CalculateDiffs()
      fDiffsNotCalc = kFALSE;
     }
  }
+
+/****************************************************************/
+inline 
+Double_t AliHBTPair::GetDeltaP() //return difference of momenta
+{
+ CalculateDiffs();
+ return TMath::Sqrt(fPxDiff*fPxDiff + fPyDiff*fPyDiff + fPzDiff*fPzDiff);
+}
+/****************************************************************/
+inline 
+Double_t AliHBTPair::GetDeltaPx()
+ {
+   CalculateDiffs();
+   return fPxDiff;
+ }
+/****************************************************************/
+inline 
+Double_t AliHBTPair::GetDeltaPy()
+ {
+   CalculateDiffs();
+   return fPyDiff;
+ }
+
+/****************************************************************/
+inline 
+Double_t AliHBTPair::GetDeltaPz()
+ {
+   CalculateDiffs();
+   return fPzDiff;
+ }
+
 
 #endif
