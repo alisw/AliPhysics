@@ -23,13 +23,19 @@
 //*-- Author: Yves Schutz (SUBATECH)
 //*-- and   : Sahal Yacoob (LBL / UCT)
 
+// This Version of AliEMCALv0 reduces the number of volumes placed in XEN1 (the envelope) to less than five hundred
+// The Envelope is Placed in Alice, And the Aluminium layer. Mini envelopes (XU) are then placed in XEN1.
+// Each mini envelope contains 2 scintillator, and 2 lead layers, except the last one which contains just one scintillator layer.
+// At the moment I cannot place the 36 and above layers in the mini envelopes so all layers are still placed in XEN1
+
+
 // --- ROOT system ---
 #include "TPGON.h"
 #include "TTUBS.h"
 #include "TNode.h"
 #include "TRandom.h"
 #include "TGeometry.h"
-
+//#include "Tstring.h"
 
 // --- Standard library ---
 
@@ -93,14 +99,44 @@ void AliEMCALv0::CreateGeometry(){
 
     // Create an Envelope within which to place the Detector 
  
-    Float_t envelopA[5] ; 
-    envelopA[0] = fGeom->GetEnvelop(0) ;         // rmin
-    envelopA[1] = fGeom->GetEnvelop(1) + 30 ;    // rmax
-    envelopA[2] = fGeom->GetEnvelop(2) / 2.0 ;   // dz
-    envelopA[3] = fGeom->GetArm1PhiMin() ;       // minimun phi angle
-    envelopA[4] = fGeom->GetArm1PhiMax() ;       // maximun phi angle
-
+    Float_t envelopA[5]  ; 
+      envelopA[0] = fGeom->GetEnvelop(0) ;         // rmin
+      envelopA[1] = fGeom->GetEnvelop(1) + 30 ;    // rmax
+      envelopA[2] = fGeom->GetEnvelop(2) / 2.0 ;   // dz
+      envelopA[3] = fGeom->GetArm1PhiMin() ;       // minimun phi angle
+      envelopA[4] = fGeom->GetArm1PhiMax() ;       // maximun phi angle
+    
+    
+     // create XEN1
     gMC->Gsvolu("XEN1", "TUBS ", idtmed[1599], envelopA, 5) ; //filled with air
+    
+    Int_t idrotm = 1;
+    AliMatrix(idrotm, 90.0, 0., 90.0, 90.0, 0.0, 0.0) ;
+
+    // Position the Envelope in Alice  
+    gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "MANY") ;
+     envelopA[1]  =envelopA[0] + fGeom->GetGap2Active(); 
+    TString label = "XU0";
+
+         envelopA[0] = envelopA[1]+ 3.18 ; //rmin Start mini envelopes after the aluminium layer
+	envelopA[1] = envelopA[0] + 2.2    ;  //rmax larger for first two layers (preshower)
+
+    gMC->Gsvolu(label.Data(), "TUBS ", idtmed[1599], envelopA, 5) ; //filled with air
+    gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "MANY") ; // Place XU0 in to XEN1
+
+ for (int i = 1; i < ((fGeom->GetNLayers()-1)/2) + 1 ; i++ ){
+       label = "XU" ;
+       label += i ;	
+       
+       envelopA[0] = envelopA[1] ; //rmin
+       envelopA[1] = envelopA[0] + 2.0  ;  //rmax 
+
+    gMC->Gsvolu(label.Data(), "TUBS ", idtmed[1599], envelopA, 5) ; //filled with air
+    gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "MANY") ;
+
+	} // end  i
+
+    
 
     // Create the shapes of active material (LEAD/Aluminium/Scintillator) to be placed 
 
@@ -129,31 +165,31 @@ void AliEMCALv0::CreateGeometry(){
     gMC->Gsvolu("XPBX", "PGON", idtmed[1600], 0, 0) ; //  as will the lead layers 
     gMC->Gsdvn("XPHI", "XPST", fGeom->GetNPhi(), 2) ; //  Dividind eta polystyrene divisions into phi segments.
     
-    Int_t idrotm = 1;
-    AliMatrix(idrotm, 90.0, 0., 90.0, 90.0, 0.0, 0.0) ;
-
-    // Position the Envelope in Alice  
-    gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "MANY") ;
     // Position Aluminium Layer in the Envelope 
     gMC->Gspos("XALU", 1, "XEN1", 0.0, 0.0, 0.0 , idrotm, "ONLY") ;
 
 // The loop below places the scintillator in Lead Layers alternately.
  
-    for (int i = 0; i < (fGeom->GetNLayers()); i++ ){
-	envelopC[5] = envelopD[6] ; //rmin
-	envelopC[6] = envelopD[6] + ((i > +2)  ? 0.5 : 0.6)  ;  //rmax larger for first two layers (preshower)
+    for (int i = 0; i < fGeom->GetNLayers() ; i++ ){
+
+       label = "XU" ;
+       
+        label += (int) i/2  ; // we will place two layers (i = one layer) in each mini envelope)	
+        envelopC[5] = envelopD[6] ; //rmin
+	envelopC[6] = envelopD[6] + ((i > 1)  ? 0.5 : 0.6)  ;  //rmax larger for first two layers (preshower)
 	envelopC[8] = envelopD[6] ; //rmin
-	envelopC[9] = envelopD[6] + ((i > 2 ) ? 0.5 : 0.6)  ;  //rmax larger for first two layers (preshower)
+	envelopC[9] = envelopD[6] + ((i > 1 ) ? 0.5 : 0.6)  ;  //rmax larger for first two layers (preshower)
 	for (int j =0; j < (fGeom->GetNZ()) ; j++){
 	    envelopC[4] = envelopD[6]/tan(2*atan(exp(0.7-(j*1.4/
                                                       (fGeom->GetNZ()))))); //z begin  
 	    envelopC[7] = envelopD[6]/tan(2*atan(exp(0.7-((j+1)*1.4/
                                                       (fGeom->GetNZ()))))); // z end 
-	    gMC->Gsposp("XPST",1+j+i*(fGeom->GetNZ()), "XEN1", 
+	    gMC->Gsposp("XPST",1+j+i*(fGeom->GetNZ()), label.Data(), // should be used but there's a weird crash above i = 18, 
 			0.0, 0.0, 0.0 , idrotm, "ONLY", envelopC, 10); // Position and define layer
 	} // end for j
 	if (i < (fGeom->GetNLayers()-1)){
-	    envelopD[5] = envelopC[6] ; //rmin
+	   
+             envelopD[5] = envelopC[6] ; //rmin
 	    envelopD[6] = envelopC[6] + 0.5;  //rmax
 	    envelopD[8] = envelopC[6] ; //rmin
 	    envelopD[9] = envelopC[6] + 0.5;  //rmax
@@ -162,8 +198,8 @@ void AliEMCALv0::CreateGeometry(){
                                                        (fGeom->GetNZ()))))); // z begin 
 		envelopD[7] = envelopC[6]/tan(2*atan(exp(0.7-((j+1)*1.4/
                                                         (fGeom->GetNZ()))))); // z end
-		gMC->Gsposp("XPBX",1+ j+i*(fGeom->GetNZ()), "XEN1", 
-			    0.0, 0.0, 0.0 , idrotm, "MANY", envelopD, 10) ; // Position and Define Layer
+		gMC->Gsposp("XPBX",1+ j+i*(fGeom->GetNZ()), label.Data(), 
+			    0.0, 0.0, 0.0 , idrotm, "ONLY", envelopD, 10) ; // Position and Define Layer
 	    } // end for j
 	} // end if i
     }  // for i
