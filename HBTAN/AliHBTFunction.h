@@ -49,10 +49,11 @@ inline AliHBTPair* AliHBTFunction::CheckPair(AliHBTPair* pair)
   if(fPairCut->Pass(pair)) //if the pair is BAD
    {//it is BAD 
     pair = pair->GetSwapedPair();
-    if(fPairCut->Pass(pair)) //so try reverse combination
-     { 
-       return 0x0;//it is BAD as well - so return
-     }
+    if(pair)
+     if(fPairCut->Pass(pair)) //so try reverse combination
+       { 
+        return 0x0;//it is BAD as well - so return
+       }
    }
   return pair; 
 }
