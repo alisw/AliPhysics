@@ -48,3 +48,5 @@ EHDRS        =	$(ROOTSYS)/include/TF1.h \
 DHDR:= MUONLinkDef.h
 
 include MUON/libMUON.pkg.mapping
+
+SUBDIR = mapping
