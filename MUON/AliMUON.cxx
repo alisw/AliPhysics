@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/09/29 09:24:20  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ////////////////////////////////////////////////
@@ -1812,9 +1815,10 @@ void AliMUON::InitTracking(Double_t &seff, Double_t &sb0, Double_t &sbl3)
 void AliMUON::FinishEvent()
 {
     TTree *TK = gAlice->TreeK();
-    TFile *file1 = 0;
-    if (TK) file1 = TK->GetCurrentFile();
-    file1->cd();
+    if (TK) {
+      TFile *file1 = TK->GetCurrentFile();
+      if(file1) file1->cd();
+    }
 }
 
 void AliMUON::CloseTracking()
