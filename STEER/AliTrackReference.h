@@ -43,6 +43,6 @@ protected:
   Float_t   fLength; // track lenght from its origin in cm
   Float_t   fTime;   // time of flight in cm  
 
-  ClassDef(AliTrackReference,2)  //Base class for all Alice track references
+  ClassDef(AliTrackReference,3)  //Base class for all Alice track references
 };
 #endif

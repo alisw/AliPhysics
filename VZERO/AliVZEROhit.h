@@ -59,6 +59,6 @@ private:
   Float_t fTleng;         //  track length in VZERO detector
   
     
-  ClassDef(AliVZEROhit,1)  //Hits for detector VZERO
+  ClassDef(AliVZEROhit,2)  //Hits for detector VZERO
 };
 #endif

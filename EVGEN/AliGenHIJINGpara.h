@@ -39,7 +39,7 @@ class AliGenHIJINGpara : public AliGenerator
   TF1* fETApic;        // Parametrised eta distribution for pi
   TF1* fETAkac;        // Parametrised eta distribution fro ka
   AliDecayerPythia  *fDecayer; // ! Pointer to pythia object for decays
-  ClassDef(AliGenHIJINGpara,2) // Hijing parametrisation generator
+  ClassDef(AliGenHIJINGpara,3) // Hijing parametrisation generator
 };
 #endif
 
