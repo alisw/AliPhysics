@@ -276,11 +276,13 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
         time=fDigits->CurrentRow();
         pad=fDigits->CurrentColumn();
         dig = fDigits->GetDigit(time,pad);
-        if(dig<=fParam->GetZeroSup()) continue;
-        
+        if(dig <= fParam->GetZeroSup()) continue;
+	if(dig >= AliL3Transform::GetADCSat())
+	  dig = AliL3Transform::GetADCSat();
+	
 	AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
-        if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
-          continue;
+	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
+	  continue;
 
         ndigits[lrow]++; //for this row only
         ndigitcount++;   //total number of digits to be published
@@ -320,11 +322,13 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
         pad=fDigits->CurrentColumn();
         dig = fDigits->GetDigit(time,pad);
 	if (dig <= fParam->GetZeroSup()) continue;
-	
+	if(dig >= AliL3Transform::GetADCSat())
+	  dig = AliL3Transform::GetADCSat();
+
 	//Exclude data outside cone:
-        AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
-        if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
-          continue;
+	AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
+	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
+	  continue;
 
         if(localcount >= ndigits[lrow])
           LOG(AliL3Log::kFatal,"AliL3FileHandler::AliDigits2Binary","Memory")
@@ -397,13 +401,13 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
     }
   
   //Get the original digitstree:
+  Char_t dname[100];
+  sprintf(dname,"TreeD_%s_0",AliL3Transform::GetParamName());
+
   fInAli->cd();
   AliTPCDigitsArray *old_array = new AliTPCDigitsArray();
   old_array->Setup(fParam);
   old_array->SetClass("AliSimDigits");
-
-  Char_t dname[100];
-  sprintf(dname,"TreeD_%s_0",AliL3Transform::GetParamName());
 
   Bool_t ok = old_array->ConnectTree(dname);
   if(!ok)
@@ -411,7 +415,7 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
       printf("AliL3FileHandler::AliDigits2RootFile : No digits tree object\n");
       return;
     }
-  
+
   Bool_t create=kFALSE;
   TFile *digFile;
   
@@ -438,7 +442,7 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
   digFile->cd();
     
   //setup a new one, or connect it to the existing one:
-  AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
+  AliTPCDigitsArray *arr = new AliTPCDigitsArray(); 
   arr->SetClass("AliSimDigits");
   arr->Setup(fParam);
   if(create)
@@ -452,69 +456,59 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
 	  return;
 	}
     }
-  Int_t digcounter=0;
+  Int_t digcounter=0,trackID[3];
 
   for(Int_t i=fRowMin; i<=fRowMax; i++)
     {
       
-      if((Int_t)rowPt->fRow != i) printf("AliL3FileHandler::AliDigits2RootFile : Mismatching row numbering!!!\n");
+      if((Int_t)rowPt->fRow != i) 
+	cerr<<"AliL3FileHandler::AliDigits2RootFile : Mismatching row numbering!!!"<<endl;
             
       Int_t sector,row;
       AliL3Transform::Slice2Sector(fSlice,i,sector,row);
-      AliSimDigits * dig = (AliSimDigits*)arr->CreateRow(sector,row);
+      
       AliSimDigits *old_dig = (AliSimDigits*)old_array->LoadRow(sector,row);
+      AliSimDigits * dig = (AliSimDigits*)arr->CreateRow(sector,row);
+      old_dig->ExpandBuffer();
+      old_dig->ExpandTrackBuffer();
+      dig->ExpandBuffer();
+      dig->ExpandTrackBuffer();
+      
       if(!old_dig)
-	printf("AliL3FileHandler::AliDigits2RootFile : No padrow %d %d\n",sector,row);
+      	printf("AliL3FileHandler::AliDigits2RootFile : No padrow %d %d\n",sector,row);
       
       AliL3DigitData *digPt = rowPt->fDigitData;
       digcounter=0;
       for(UInt_t j=0; j<rowPt->fNDigit; j++)
 	{
-	  Int_t charge = (Int_t)digPt[j].fCharge;
+	  Short_t charge = (Short_t)digPt[j].fCharge;
 	  Int_t pad = (Int_t)digPt[j].fPad;
 	  Int_t time = (Int_t)digPt[j].fTime;
 	  
 	  if(charge == 0) //Only write the digits that has not been removed
-	    continue;
+	    {
+	      cerr<<"AliL3FileHandler::AliDigits2RootFile : Zero charge!!! "<<endl;
+	      continue;
+	    }
+
 	  digcounter++;
+	  
+	  //Tricks to get and set the correct track id's. 
+	  for(Int_t t=0; t<3; t++)
+	    {
+	      Int_t label = old_dig->GetTrackIDFast(time,pad,t);
+	      if(label > 1)
+		trackID[t] = label - 2;
+	      else if(label==0)
+		trackID[t] = -2;
+	      else
+		trackID[t] = -1;
+	    }
+	  
 	  dig->SetDigitFast(charge,time,pad);
 	  
-	  Int_t trackID[3] = {old_dig->GetTrackID(time,pad,0),old_dig->GetTrackID(time,pad,1),old_dig->GetTrackID(time,pad,2)};
-	  /*
-	    Int_t s_pad = pad;
-	    Int_t s_time = time - 1;
-	    while(trackID[0] < 0)
-	    {
-	    if(s_time >= 0 && s_time < AliL3Transform::GetNTimeBins() && s_pad >= 0 && s_pad < AliL3Transform::GetNPads(i))
-	    {
-	    if(old_dig->GetTrackID(s_time,s_pad,0) > 0)
-	    {
-	    trackID[0]=old_dig->GetTrackID(s_time,s_pad,0); 
-	    trackID[1]=old_dig->GetTrackID(s_time,s_pad,1); 
-	    trackID[2]=old_dig->GetTrackID(s_time,s_pad,2); 
-	    }
-	    }
-	    if(s_pad == pad && s_time == time - 1)
-	    s_time = time + 1;
-	    else if(s_pad == pad && s_time == time + 1)
-	    {s_pad = pad - 1; s_time = time;}
-	    else if(s_pad == pad - 1 && s_time == time)
-	    s_time = time - 1;
-	    else if(s_pad == pad - 1 && s_time == time - 1)
-	    s_time = time + 1;
-	    else if(s_pad == pad - 1 && s_time == time + 1)
-	    {s_pad = pad + 1; s_time = time;}
-	    else if(s_pad == pad + 1 && s_time == time)
-	    s_time = time - 1;
-	    else if(s_pad == pad + 1 && s_time == time - 1)
-	    s_time = time + 1;
-	    else 
-	    break;
-	    }
-	  */
-	  dig->SetTrackIDFast(trackID[0],time,pad,0);
-	  dig->SetTrackIDFast(trackID[1],time,pad,1);
-	  dig->SetTrackIDFast(trackID[2],time,pad,2);
+	  for(Int_t t=0; t<3; t++)
+	    ((AliSimDigits*)dig)->SetTrackIDFast(trackID[t],time,pad,t);
 	  
 	}
       //cout<<"Wrote "<<digcounter<<" on row "<<i<<endl;
@@ -526,12 +520,13 @@ void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_d
   digFile->cd();
   char treeName[100];
   sprintf(treeName,"TreeD_%s_0",fParam->GetTitle());
-  printf("Writing tree to file.....");
-  arr->GetTree()->Write(treeName,TObject::kOverwrite);
-  printf("done\n");
+  
+  arr->GetTree()->SetName(treeName);
+  arr->GetTree()->AutoSave();
+  delete arr;
+  delete old_array;
   digFile->Close();
-  //arr->GetTree()->Delete();
-  //delete arr;
+  
 }
 
 ///////////////////////////////////////// Point IO  
