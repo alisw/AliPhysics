@@ -26,6 +26,7 @@
 #include "AliAOD.h"
 #include "AliAODParticle.h"
 #include "AliAODPairCut.h"
+#include "AliEventCut.h"
 
 #include "AliEventBuffer.h"
 
@@ -56,7 +57,7 @@ AliHBTAnalysis::AliHBTAnalysis():
   fParticleMonitorFunctions ( new AliHBTMonOneParticleFctn* [fgkFctnArraySize]),    
   fTrackMonitorFunctions ( new AliHBTMonOneParticleFctn* [fgkFctnArraySize]),    
   fParticleAndTrackMonitorFunctions ( new AliHBTMonTwoParticleFctn* [fgkFctnArraySize]),    
-  fPairCut(new AliAODEmptyPairCut()),//empty cut - accepts all particles
+  fBkgEventCut(0x0),
   fBufferSize(2),
   fDisplayMixingInfo(fgkDefaultMixingInfo),
   fIsOwner(kFALSE),
@@ -64,11 +65,7 @@ AliHBTAnalysis::AliHBTAnalysis():
   fTrackBuffer(0x0),
   fProcessOption(kSimulatedAndReconstructed),
   fNoCorrfctns(kFALSE),
-  fOutputFileName(0x0),
-  fkPass(&AliHBTAnalysis::PassPartAndTrack), //by default perform cut on both track and particle pair 
-  fkPass1(&AliHBTAnalysis::PassPartAndTrack1), //used onluy by ProcessTracksAndParticles
-  fkPass2(&AliHBTAnalysis::PassPartAndTrack2),
-  fkPassPairProp(&AliHBTAnalysis::PassPairPropPartAndTrack)
+  fOutputFileName(0x0)
  {
    //default constructor
    
@@ -91,7 +88,7 @@ AliHBTAnalysis::AliHBTAnalysis(const AliHBTAnalysis& in):
   fParticleMonitorFunctions(0x0),
   fTrackMonitorFunctions(0x0),
   fParticleAndTrackMonitorFunctions(0x0),
-  fPairCut(0x0),
+  fBkgEventCut(0x0),
   fBufferSize(fgkDefaultBufferSize),
   fDisplayMixingInfo(fgkDefaultMixingInfo),
   fIsOwner(kFALSE),
@@ -99,11 +96,7 @@ AliHBTAnalysis::AliHBTAnalysis(const AliHBTAnalysis& in):
   fTrackBuffer(0x0),
   fProcessOption(kSimulatedAndReconstructed),
   fNoCorrfctns(kFALSE),
-  fOutputFileName(0x0),
-  fkPass(&AliHBTAnalysis::PassPartAndTrack), //by default perform cut on both track and particle pair 
-  fkPass1(&AliHBTAnalysis::PassPartAndTrack1),
-  fkPass2(&AliHBTAnalysis::PassPartAndTrack2),
-  fkPassPairProp(&AliHBTAnalysis::PassPairPropPartAndTrack)
+  fOutputFileName(0x0)
  {
 //copy constructor
    Fatal("AliHBTAnalysis(const AliHBTAnalysis&)","Sensless");
@@ -137,11 +130,12 @@ AliHBTAnalysis::~AliHBTAnalysis()
    delete [] fTrackMonitorFunctions; 
    delete [] fParticleAndTrackMonitorFunctions;
 
-   delete fPairCut; // always have an copy of an object - we create we dstroy
+   delete fBkgEventCut;
    delete fOutputFileName;
  }
 
 /*************************************************************************************/ 
+
 Int_t AliHBTAnalysis::ProcessEvent(AliAOD* aodrec, AliAOD* aodsim)
 {
   //Processes one event
@@ -1699,45 +1693,6 @@ Bool_t AliHBTAnalysis::IsNonIdentAnalysis()
    return kFALSE;
  
  return kTRUE;
-}
-/*************************************************************************************/ 
-
-void AliHBTAnalysis::SetCutsOnParticles()
-{
- // -- aplies only to Process("TracksAndParticles")
- // (ProcessTracksAndParticles and ProcessTracksAndParticlesNonIdentAnal)
- // Only particles properties are checkes against cuts
-  fkPass = &AliHBTAnalysis::PassPart;
-  fkPass1 = &AliHBTAnalysis::PassPart1;
-  fkPass2 = &AliHBTAnalysis::PassPart2;
-  fkPassPairProp = &AliHBTAnalysis::PassPairPropPart;
-  
-}
-/*************************************************************************************/ 
-
-void AliHBTAnalysis::SetCutsOnTracks()
-{
- // -- aplies only to Process("TracksAndParticles")
- // (ProcessTracksAndParticles and ProcessTracksAndParticlesNonIdentAnal)
- // Only tracks properties are checkes against cuts
-  Info("SetCutsOnTracks","Only reconstructed particles will be checked");
-  fkPass = &AliHBTAnalysis::PassTrack;
-  fkPass1 = &AliHBTAnalysis::PassTrack1;
-  fkPass2 = &AliHBTAnalysis::PassTrack2;
-  fkPassPairProp = &AliHBTAnalysis::PassPairPropTrack;
- 
-}
-/*************************************************************************************/ 
-
-void AliHBTAnalysis::SetCutsOnTracksAndParticles()
-{
- // -- aplies only to Process("TracksAndParticles")
- // (ProcessTracksAndParticles and ProcessTracksAndParticlesNonIdentAnal)
- // Both, tracks and particles, properties are checked against cuts
-  fkPass = &AliHBTAnalysis::PassPartAndTrack;
-  fkPass1 = &AliHBTAnalysis::PassPartAndTrack1;
-  fkPass2 = &AliHBTAnalysis::PassPartAndTrack2;
-  fkPassPairProp = &AliHBTAnalysis::PassPairPropPartAndTrack;
 }
 /*************************************************************************************/ 
 

@@ -15,8 +15,6 @@
 #include <TLorentzVector.h>
 #include <TVector3.h>
 
-#include "AliAnalysis.h"
-
 class AliTrackPoints;
 class AliClusterMap;
 

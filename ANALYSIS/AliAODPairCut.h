@@ -7,7 +7,8 @@
 //Class implements cut on the pair of particles
 //
 //more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
- 
+#include <TNamed.h> 
+
 #include "AliAODPair.h"
 
 class AliAODParticleCut;
