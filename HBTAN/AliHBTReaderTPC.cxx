@@ -3,14 +3,17 @@
 #include <iostream.h>
 #include <fstream.h>
 #include <TString.h>
+#include <TObjString.h>
 #include <TTree.h>
 #include <TFile.h>
+#include <TParticle.h>
 
+#include <AliRun.h>
+#include <AliMagF.h>
 #include <AliTPCtrack.h>
 #include <AliTPCParam.h>
 #include <AliTPCtracker.h>
 
-#include "AliRun.h"
 #include "AliHBTRun.h"
 #include "AliHBTEvent.h"
 #include "AliHBTParticle.h"
@@ -26,26 +29,49 @@ ClassImp(AliHBTReaderTPC)
 
 AliHBTReaderTPC::
  AliHBTReaderTPC(const Char_t* trackfilename,const Char_t* clusterfilename,
-                 const Char_t* goodtracksfilename,const Char_t* galicefilename):
+                 const Char_t* galicefilename):
                  fTrackFileName(trackfilename),fClusterFileName(clusterfilename),
-                 fGAliceFileName(galicefilename),
-                 fGoodTPCTracksFileName(goodtracksfilename)
+                 fGAliceFileName(galicefilename)
 {
-  //constructor, only file names are set
+  //constructor, 
   //Defaults:
   //  trackfilename = "AliTPCtracks.root"
   //  clusterfilename = "AliTPCclusters.root"
-  //  goodtracksfilename = "good_tracks_tpc"
   //  galicefilename = ""  - this means: Do not open gAlice file - 
   //                         just leave the global pointer untached
   
   fParticles = new AliHBTRun();
   fTracks    = new AliHBTRun();
+  fDirs      = new TObjArray();
+  fIsRead = kFALSE;
+}
+/********************************************************************/
+AliHBTReaderTPC::
+AliHBTReaderTPC(TObjArray* dirs,
+                  const Char_t* trackfilename = "AliTPCtracks.root",
+                  const Char_t* clusterfilename = "AliTPCclusters.root",
+                  const Char_t* galicefilename = "galice.root"):
+                 fDirs(dirs), fTrackFileName(trackfilename),
+                 fClusterFileName(clusterfilename),fGAliceFileName(galicefilename)
 
-  fTracksFile   = 0x0;  //files are opened during reading only
-  fClustersFile = 0x0;
+{
+  //constructor, 
+  //Defaults:
+  //  trackfilename = "AliTPCtracks.root"
+  //  clusterfilename = "AliTPCclusters.root"
+  //  galicefilename = ""  - this means: Do not open gAlice file - 
+  //                         just leave the global pointer untached
+  
+  if (fDirs == 0x0)
+   {
+    Fatal("Contructor with TObjArray","Null pointer to TObjArray passed. Fatal Error. Exiting.\n");
+   }
+  
+  fParticles = new AliHBTRun();
+  fTracks    = new AliHBTRun();
   
   fIsRead = kFALSE;
+  
 }
 /********************************************************************/
 
@@ -60,14 +86,24 @@ AliHBTReaderTPC::~AliHBTReaderTPC()
 AliHBTEvent* AliHBTReaderTPC::GetParticleEvent(Int_t n)
  {
  //returns Nth event with simulated particles
-   if (!fIsRead) Read(fParticles,fTracks);
+   if (!fIsRead) 
+    if(Read(fParticles,fTracks))
+     {
+       Error("GetParticleEvent","Error in reading");
+       return 0x0;
+     }
    return fParticles->GetEvent(n);
  }
 /********************************************************************/
 AliHBTEvent* AliHBTReaderTPC::GetTrackEvent(Int_t n)
  {
  //returns Nth event with reconstructed tracks
-   if (!fIsRead) Read(fParticles,fTracks);
+   if (!fIsRead) 
+    if(Read(fParticles,fTracks))
+     {
+       Error("GetTrackEvent","Error in reading");
+       return 0x0;
+     }
    return fTracks->GetEvent(n);
  }
 /********************************************************************/
@@ -75,7 +111,12 @@ AliHBTEvent* AliHBTReaderTPC::GetTrackEvent(Int_t n)
 Int_t AliHBTReaderTPC::GetNumberOfPartEvents()
  {
  //returns number of events of particles
-   if (!fIsRead) Read(fParticles,fTracks);
+   if (!fIsRead) 
+    if ( Read(fParticles,fTracks))
+     {
+       Error("GetNumberOfPartEvents","Error in reading");
+       return 0;
+     }
    return fParticles->GetNumberOfEvents();
  }
 
@@ -83,7 +124,12 @@ Int_t AliHBTReaderTPC::GetNumberOfPartEvents()
 Int_t AliHBTReaderTPC::GetNumberOfTrackEvents()
  {
  //returns number of events of tracks
-  if (!fIsRead) Read(fParticles,fTracks);
+  if (!fIsRead)
+    if(Read(fParticles,fTracks))
+     {
+       Error("GetNumberOfTrackEvents","Error in reading");
+       return 0;
+     }
   return fTracks->GetNumberOfEvents();
  }
 /********************************************************************/
@@ -95,7 +141,12 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
  //reurns 0 if everything is OK
  //
   Int_t i; //iterator and some temprary values
-  Int_t Nevents;
+  Int_t Nevents = 0;
+  Int_t totalNevents = 0;
+  TFile *aTracksFile;//file with tracks
+  TFile *aClustersFile;//file with clusters
+  TFile *aGAliceFile;//!ile name with galice
+
   if (!particles) //check if an object is instatiated
    {
      Error("AliHBTReaderTPC::Read"," particles object must instatiated before passing it to the reader");
@@ -106,62 +157,64 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
    }
   particles->Reset();//clear runs == delete all old events
   tracks->Reset();
-    
-  if( (i=OpenFiles()) )
-   {
-     Error("AliHBTReaderTPC::Read","Exiting due to problems with opening files. Errorcode %d",i);
-     return i;
-   }
-  
-  AliGoodTracks *goodTPCTracks = new AliGoodTracks(fGoodTPCTracksFileName);
-  if (!goodTPCTracks)
-   {
-     Error("AliHBTReaderTPC::Read","Exiting due to problems with opening files. Errorcode %d",i);
-     return 1;
-   }
-  
-    
-  if (gAlice->TreeE())//check if tree E exists
-   {
-    Nevents = (Int_t)gAlice->TreeE()->GetEntries();//if yes get number of events in gAlice
-    cout<<"Found "<<Nevents<<endl;
-   }
-  else
-   {//if not return an error
-     Error("AliHBTReaderPPprod::Read","Can not find Header tree (TreeE) in gAlice");
-     return 1;
-   }
-  
-  fClustersFile->cd();//set cluster file active 
-  AliTPCParam *TPCParam= (AliTPCParam*)fClustersFile->Get("75x40_100x60");
-  if (!TPCParam) 
-    { 
-     Error("AliHBTReaderTPC::Read","TPC parameters have not been found !\n");
-     return 1;
-    }
-
+ 
   TObjArray *tarray = new TObjArray(5000); //cotainer for tpc tracks
   tarray->SetOwner(); //set the ownership of the objects it contains
                       //when array is is deleted or cleared all objects 
                       //that it contains are deleted
-  
-  for(Int_t currentEvent =0; currentEvent<Nevents;currentEvent++)//loop over all events
+  Int_t currentdir = 0;
+  do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
    {
-     cout<<"Reading Event "<<currentEvent<<endl;
-     /**************************************/
-      /**************************************/
-       /**************************************/ 
-         fTracksFile->cd();//set track file active
+    
+    if( (i=OpenFiles(aTracksFile,aClustersFile,aGAliceFile,currentdir)) )
+     {
+       Error("AliHBTReaderTPC::Read","Exiting due to problems with opening files. Errorcode %d",i);
+       return i;
+     }
+  
+    
+    if (gAlice->TreeE())//check if tree E exists
+     {
+      Nevents = (Int_t)gAlice->TreeE()->GetEntries();//if yes get number of events in gAlice
+      cout<<"________________________________________________________\n";
+      cout<<"Found "<<Nevents<<" event(s) in directory "<<GetDirName(currentdir)<<endl;
+      cout<<"Setting Magnetic Field. Factor is "<<gAlice->Field()->Factor()<<endl;
+      AliKalmanTrack::SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());  
+     }
+    else
+     {//if not return an error
+       Error("AliHBTReaderPPprod::Read","Can not find Header tree (TreeE) in gAlice");
+       return 1;
+     }
+  
+    aClustersFile->cd();//set cluster file active 
+    AliTPCParam *TPCParam= (AliTPCParam*)aClustersFile->Get("75x40_100x60");
+    if (!TPCParam) 
+      { 
+       Error("AliHBTReaderTPC::Read","TPC parameters have not been found !\n");
+       return 1;
+      }
+
+  
+    for(Int_t currentEvent =0; currentEvent<Nevents;currentEvent++)//loop over all events
+     {
+       cout<<"Reading Event "<<currentEvent<<endl;
+       /**************************************/
+        /**************************************/
+         /**************************************/ 
          
+         aTracksFile->cd();//set track file active
+          
          Char_t  treename[100];
          sprintf(treename,"TreeT_TPC_%d",currentEvent);//prepare name of the tree
    
          TTree *tracktree=0;
          
-         tracktree=(TTree*)fTracksFile->Get(treename);//get the tree 
+         tracktree=(TTree*)aTracksFile->Get(treename);//get the tree 
          if (!tracktree) //check if we got the tree
           {//if not return with error
             Error("AliHBTReaderTPC::Read","Can't get a tree with TPC tracks !\n"); 
+            
             return 1;
           }
    
@@ -177,7 +230,7 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
          
          AliTPCtrack *iotrack=0;
          
-         fClustersFile->cd();//set cluster file active 
+         aClustersFile->cd();//set cluster file active 
          AliTPCtracker *tracker = new AliTPCtracker(TPCParam,currentEvent);//create the tacker for this event
          if (!tracker) //check if it has created succeffuly
           {//if not return with error
@@ -197,55 +250,42 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
             tarray->AddLast(iotrack); //put the track in the array
           }
          
-         fTracksFile->Delete(treename);//delete tree from memmory (and leave untached on disk)- we do not need it any more
-         fTracksFile->Delete("tracks");//delete branch from memmory
+         aTracksFile->Delete(treename);//delete tree from memmory (and leave untached on disk)- we do not need it any more
+         aTracksFile->Delete("tracks");//delete branch from memmory
          delete tracker; //delete tracker
          
          tracker = 0x0;
          trackbranch = 0x0;
          tracktree = 0x0;
-
-         Int_t & ngood = goodTPCTracks->fGoodInEvent[currentEvent]; //number of good tracks in the current event
    
          Double_t xk;
          Double_t par[5];
          Float_t phi, lam, pt;//angles and transverse momentum
          Int_t label; //label of the current track
-         Bool_t found; //flag indicated wether we managed to match good_tpc_track with track
-   
-         for (i=0; i<ngood; i++) //loop over all good tracks
+         
+         aGAliceFile->cd();
+         gAlice->GetEvent(currentEvent); 
+
+         gAlice->Particles();
+         
+         for (i=0; i<NTPCtracks; i++) //loop over all good tracks
           { 
-            const struct GoodTrack & gt = goodTPCTracks->GetTrack(currentEvent,i); //get ith goog track
+            iotrack = (AliTPCtrack*)tarray->At(i);
+            label = iotrack->GetLabel();
+
+            if (label < 0) continue;
             
-            if(Pass(gt.code)) continue; //check if we are intersted with particles of this type 
+            TParticle *p = (TParticle*)gAlice->Particle(label);
+            
+            if(Pass(p->GetPdgCode())) continue; //check if we are intersted with particles of this type 
                                         //if not take next partilce
             
-            label = gt.lab;
-            found = kFALSE; //guard in case we don't find track with such a label
-            for (Int_t j=0;j<NTPCtracks;j++)//lopp over all tpc tracks
-              {
-                iotrack = (AliTPCtrack*)tarray->At(j);
-                if (iotrack->GetLabel() == label) //if the label is the same 
-                  {
-                    found = kTRUE; //we found the track
-                    break;
-                  }
-              }  
-            if(!found) //check if we found the track
-              {
-                Warning("Read",
-                "Sth is going wrong with tracks - there is no TPC track corresponding to goodtrack.\nGood tack label %d",label);
-                continue; //put comunicate on the screen and continue loop
-              }
-        
-            Double_t mass = TDatabasePDG::Instance()->GetParticle(gt.code)->Mass();//CMS mass of this particle 
-            Double_t pEtot = TMath::Sqrt(gt.px*gt.px + gt.py*gt.py + gt.pz*gt.pz + mass*mass); //particle total energy
-            
-            AliHBTParticle* part = new AliHBTParticle(gt.code, gt.px, gt.py, gt.pz, pEtot, gt.x, gt.y, gt.z, 0.0);
+            AliHBTParticle* part = new AliHBTParticle(*p);
             if(Pass(part)) { delete part; continue;}//check if meets all criteria of any of our cuts
                                                     //if it does not delete it and take next good track
          
-            iotrack->PropagateTo(gt.x);
+         
+            iotrack->PropagateToVertex();
             iotrack->GetExternalParameters(xk,par);     //get properties of the track
             phi=TMath::ASin(par[2]) + iotrack->GetAlpha(); 
             if (phi<-TMath::Pi()) phi+=2*TMath::Pi();
@@ -257,65 +297,148 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
             Double_t tpy = pt * TMath::Sin(phi); //track y coordinate of momentum
             Double_t tpz = pt * lam; //track z coordinate of momentum
             
+            Double_t mass = p->GetMass();
             Double_t tEtot = TMath::Sqrt( tpx*tpx + tpy*tpy + tpz*tpz + mass*mass);//total energy of the track
             
-            AliHBTParticle* track = new AliHBTParticle(gt.code, tpx, tpy , tpz, tEtot, 0., 0., 0., 0.);
+            AliHBTParticle* track = new AliHBTParticle(p->GetPdgCode(), tpx, tpy , tpz, tEtot, 0., 0., 0., 0.);
             if(Pass(track)) { delete  track;continue;}//check if meets all criteria of any of our cuts
                                                       //if it does not delete it and take next good track
             
-            particles->AddParticle(currentEvent,part);//put track and particle on the run
-            tracks->AddParticle(currentEvent,track);
+            particles->AddParticle(totalNevents,part);//put track and particle on the run
+            tracks->AddParticle(totalNevents,track);
 
           }
          tarray->Clear(); //clear the array
-    
+         
+        /**************************************/
        /**************************************/
-      /**************************************/
-     /**************************************/  
-   }
+      /**************************************/  
+     totalNevents++;
+    }
   
-  //save environment (resouces) --
-  //clean your place after the work
-  CloseFiles(); 
+    //save environment (resouces) --
+    //clean your place after the work
+    CloseFiles(aTracksFile,aClustersFile,aGAliceFile); 
+    currentdir++;
+   }while(currentdir < fDirs->GetEntries());
+
+
   delete tarray;
-  delete goodTPCTracks;
   fIsRead = kTRUE;
   return 0;
  }
 
 /********************************************************************/
-Int_t AliHBTReaderTPC::OpenFiles()
+Int_t AliHBTReaderTPC::OpenFiles
+(TFile*& aTracksFile, TFile*& aClustersFile, TFile*& agAliceFile,Int_t event)
 {
  //opens all the files
-   fTracksFile = 0;
-   fTracksFile=TFile::Open(fTrackFileName.Data());
-   if (!fTracksFile->IsOpen()) 
+   
+   
+   const TString& dirname = GetDirName(event); 
+   if (dirname == "")
+    {
+      Error("OpenFiles","Can not get directory name");
+      return 4;
+    }
+   
+   TString filename = dirname +"/"+ fTrackFileName;
+   aTracksFile = TFile::Open(filename.Data());
+   if ( aTracksFile  == 0x0 ) 
      {
-       Error("AliHBTReaderTPC::OpenFiles","Can't open file with tacks named ",fTrackFileName.Data());
+       Error("OpenFiles","Can't open file with tacks named %s",filename.Data());
        return 1;
      }
-   
-   fClustersFile = 0;
-   
-   fClustersFile=TFile::Open(fClusterFileName.Data());
-   if (!fClustersFile->IsOpen()) 
+   if (!aTracksFile->IsOpen())
+     {
+       Error("OpenFiles","Can't open file with tacks named %s",filename.Data());
+       return 1;
+     }
+  
+   filename = dirname +"/"+ fClusterFileName;
+   aClustersFile = TFile::Open(filename.Data());
+   if ( aClustersFile == 0x0 )
     {
-      Error("AliHBTReaderTPC::OpenFiles","Can't open file with TPC clusters named ",fClusterFileName.Data());
+      Error("OpenFiles","Can't open file with TPC clusters named %s",filename.Data());
+      return 2;
+    }
+   if (!aClustersFile->IsOpen())
+    {
+      Error("OpenFiles","Can't open file with TPC clusters named %s",filename.Data());
       return 2;
     }
 
- return 0; 
-}
-  
+   filename = dirname +"/"+ fGAliceFileName;
+   agAliceFile = TFile::Open(filename.Data());
+   if ( agAliceFile== 0x0)
+    {
+      Error("OpenFiles","Can't open file with TPC clusters named %s",filename.Data());
+      return 3;
+    }
+   if (!agAliceFile->IsOpen())
+    {
+      Error("OpenFiles","Can't open file with TPC clusters named %s",filename.Data());
+      return 3;
+    } 
+   
+   if (!(gAlice=(AliRun*)agAliceFile->Get("gAlice"))) 
+    {
+      Error("OpenFiles","gAlice have not been found on %s !\n",filename.Data());
+      return 5;
+    }
 
+   return 0; 
+}
+/********************************************************************/
+  
+TString& AliHBTReaderTPC::GetDirName(Int_t entry)
+ {
+   
+   TString* retval;//return value
+
+   
+   if ( (entry>fDirs->GetEntries()) || (entry<0))//if out of bounds return empty string
+    {                                            //note that entry==0 is accepted even if array is empty (size=0)
+      Error("GetDirName","Name out of bounds");
+      retval = new TString();
+      return *retval;
+    }
+   
+   if (fDirs->GetEntries() == 0)
+    { 
+      
+      retval = new TString(".");
+      return *retval;
+    }
+   
+   TClass *objclass = fDirs->At(entry)->IsA();
+   TClass *stringclass = TObjString::Class();
+   
+   TObjString *dir = (TObjString*)objclass->DynamicCast(stringclass,fDirs->At(entry));
+   
+   if(dir == 0x0)
+    {
+      Error("GetDirName","Object in TObjArray is not a TObjString or its descendant");
+      retval = new TString();
+      return *retval;
+    }
+   if (gDebug > 0) cout<<"Returned ok "<<dir->String().Data()<<endl;
+   return dir->String();
+ }
 
 /********************************************************************/
   
-void AliHBTReaderTPC::CloseFiles()
+void AliHBTReaderTPC::CloseFiles(TFile*& tracksFile, TFile*& clustersFile, TFile*& gAliceFile)
 {
   //closes the files
-  fTracksFile->Close();
-  fClustersFile->Close();
+  tracksFile->Close();
+  tracksFile = 0x0;
+  clustersFile->Close();
+  clustersFile = 0x0;
+  gAliceFile->Close();
+  gAliceFile = 0x0;
+//  delete gAlice;
+//  gAlice = 0;
 }
 
 /********************************************************************/
@@ -324,104 +447,3 @@ void AliHBTReaderTPC::CloseFiles()
 /********************************************************************/
 /********************************************************************/
 
-
-AliGoodTracks::~AliGoodTracks()
-{
-//destructor
- delete [] fGoodInEvent;
- for (Int_t i = 0;i<fNevents;i++)
-   delete [] fData[i];
- delete [] fData;
-}
-/********************************************************************/
-AliGoodTracks::AliGoodTracks(const TString& infilename)
-{
-
-  cout<<"AliGoodTracks::AliGoodTracks()  ....\n";
-  if(!gAlice) 
-    {
-      cerr<<"There is no gAlice"<<endl;
-      delete this;
-      return;
-    }
-  
-  if (!gAlice->TreeE())
-   {
-     cerr<<"Can not find Header tree (TreeE) in gAlice"<<endl;
-     delete this;
-     return;
-   }
-   
-  fNevents = (Int_t)gAlice->TreeE()->GetEntries();
-  //fNevents = 100;
-  cout<<fNevents<<" FOUND"<<endl;
-  ifstream in(infilename.Data());
-
-  if(!in)
-    {
-      cerr<<"Can not open file with Good TPC Tracks named:"<<infilename.Data()<<endl;
-      delete this;
-      return;
-    }
-
-  
-  fGoodInEvent = new Int_t[fNevents];
-  fData = new struct GoodTrack* [fNevents];
-
-  Int_t i;
-  for( i = 0;i<fNevents;i++)
-   {
-    fGoodInEvent[i] =0;
-    fData[i] = new struct GoodTrack[50000];
-   }
-
-  Int_t evno;
-  while(in>>evno)
-   {
-    if(fGoodInEvent[evno]>=50000)
-     {
-      cerr<<"AliGoodTracks::AliGoodTracks() : Not enough place in the array\n";
-      continue;
-     }
-    in>>fData[evno][fGoodInEvent[evno]].lab;
-    in>>fData[evno][fGoodInEvent[evno]].code;
-    in>>fData[evno][fGoodInEvent[evno]].px;
-    in>>fData[evno][fGoodInEvent[evno]].py;
-    in>>fData[evno][fGoodInEvent[evno]].pz;
-    in>>fData[evno][fGoodInEvent[evno]].x;
-    in>>fData[evno][fGoodInEvent[evno]].y;
-    in>>fData[evno][fGoodInEvent[evno]].z;
-    
- /* cout<<evno<<" ";
-  cout<<fData[evno][fGoodInEvent[evno]].lab;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].code;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].px;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].py;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].pz;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].x;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].y;
-  cout<<" ";cout<<fData[evno][fGoodInEvent[evno]].z;
-  cout<<"\n";
- */ 
-  fGoodInEvent[evno]++;
- }
- in.close();
- cout<<"AliGoodTracks::AliGoodTracks()  ....  Done\n";
-}
-
-
-
-const GoodTrack& AliGoodTracks::GetTrack(Int_t event, Int_t n) const
- {
-  
-  if( (event>fNevents) || (event<0))
-   {
-     gAlice->Fatal("AliGoodTracks::GetTrack","No such Event %d",event);
-   }
-  if( (n>fGoodInEvent[event]) || (n<0))
-   {
-     gAlice->Fatal("AliGoodTracks::GetTrack","No such Good TPC Track %d",n);
-   }
-  return fData[event][n];
-
- }

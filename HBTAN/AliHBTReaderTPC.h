@@ -1,12 +1,12 @@
-#ifndef ALIHBTREADERTPC_H
-#define ALIHBTREADERTPC_H
+#ifndef AliHBTReaderTPC_H
+#define AliHBTReaderTPC_H
 
 #include "AliHBTReader.h"
 
-
+//Multi file reader for TPC
+//
 //This reader reads tracks AliTPCtracks.root
-//                  particles form tpc_good_tracks 
-//I am aware that this file is temporary however we do not have any other PID
+//                  particles form gAlice
 //Piotr.Skowronski@cern.ch
 //more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
 
@@ -17,10 +17,14 @@ class AliHBTReaderTPC: public AliHBTReader
 {
   public:
     AliHBTReaderTPC(const Char_t* trackfilename = "AliTPCtracks.root",
-                    const Char_t* clusterfilename = "AliTPCclusters.root",
-	const Char_t* goodtracksfilename = "good_tracks_tpc",
-	const Char_t* galicefilename = "");
-	
+                      const Char_t* clusterfilename = "AliTPCclusters.root",
+	  const Char_t* galicefilename = "galice.root");
+
+    AliHBTReaderTPC(TObjArray* dirs,
+                      const Char_t* trackfilename = "AliTPCtracks.root",
+                      const Char_t* clusterfilename = "AliTPCclusters.root",
+	  const Char_t* galicefilename = "galice.root");
+
     virtual ~AliHBTReaderTPC();
     
     Int_t Read(AliHBTRun* particles, AliHBTRun *tracks);//reads tracks and particles and puts them in runs
@@ -34,52 +38,27 @@ class AliHBTReaderTPC: public AliHBTReader
     //in the future this class is will read global tracking
 
     
-    Int_t OpenFiles();//opens files to be read
-    void CloseFiles();//close files
+    Int_t OpenFiles(TFile*&,TFile*&,TFile*&,Int_t);//opens files to be read for given event
+    void CloseFiles(TFile*&,TFile*&,TFile*&);//close files
+    TString& GetDirName(Int_t);
+    
     
     AliHBTRun* fParticles; //!simulated particles
     AliHBTRun* fTracks; //!reconstructed tracks (particles)
+    
+    TObjArray* fDirs;
 
     TString fTrackFileName;//name of the file with tracks
     TString fClusterFileName;//name of the file with clusters
     TString fGAliceFileName;//name of the file with galice.root
-    TString fGoodTPCTracksFileName;//name of text file with good tracks
-    
-    TFile *fTracksFile;//file with tracks
-    TFile *fClustersFile;//file with clusters
-    
-    Bool_t fIsRead;//flag indicating if the data are already read
-    
-    
+
+
+        
+    Bool_t fIsRead;//!flag indicating if the data are already read
   private:
   public:
-    ClassDef(AliHBTReaderTPC,1)
+    ClassDef(AliHBTReaderTPC,2)
 };
-
-
-struct GoodTrack //data of good tracks produced by AliTPCComparison.C  
- {
-  Int_t lab;
-  Int_t code;
-  Float_t px,py,pz;
-  Float_t x,y,z;
- };
-
-class AliGoodTracks
- { 
-   //this class is for internal use only
-   friend class AliHBTReaderTPC;
-   
-   private:
-     AliGoodTracks(const TString& infilename = TString("good_tracks_tpc"));
-     ~AliGoodTracks();
-   
-     const GoodTrack& GetTrack(Int_t event, Int_t n) const;
-
-     Int_t  fNevents;  //Number of events
-     Int_t* fGoodInEvent; //Numbers of good track in event
-     struct GoodTrack **fData;
- };
 
 
 #endif
