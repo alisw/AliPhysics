@@ -22,7 +22,7 @@ class AliHBTMonitorFunction: public TNamed
     virtual TH1* GetResult() = 0;
 
     virtual void Write();
-    
+    virtual void Init(){}
     void Rename(const Char_t * name); 
     void Rename(const Char_t * name, const Char_t * title); 
     
@@ -59,7 +59,7 @@ class AliHBTMonOneParticleFctn: public AliHBTMonitorFunction
     AliHBTMonOneParticleFctn(const Char_t *name, const Char_t *title):AliHBTMonitorFunction(name,title){}
     virtual ~AliHBTMonOneParticleFctn(){}
     
-    virtual void ProcessSameEventParticles(AliHBTParticle* particle) = 0;
+    virtual void Process(AliHBTParticle* particle) = 0;
     
   protected:
   public:  
@@ -78,7 +78,7 @@ class AliHBTMonOneParticleFctn1D: public AliHBTMonOneParticleFctn
   
   TH1* GetResult(){return fResult;}
 
-  void ProcessSameEventParticles(AliHBTParticle* particle);
+  void Process(AliHBTParticle* particle);
 
  protected:
   virtual Double_t GetValue(AliHBTParticle* particle) = 0; 
@@ -99,7 +99,7 @@ class AliHBTMonOneParticleFctn2D: public AliHBTMonOneParticleFctn
   
   TH1* GetResult(){return fResult;}
   
-  void ProcessSameEventParticles(AliHBTParticle* particle);
+  void Process(AliHBTParticle* particle);
 
  protected:
   virtual void GetValues(AliHBTParticle* particle, Double_t&, Double_t&) = 0;
@@ -140,7 +140,7 @@ class AliHBTMonTwoParticleFctn: public AliHBTMonitorFunction
     virtual ~AliHBTMonTwoParticleFctn(){};
     
     virtual void 
-    ProcessSameEventParticles(AliHBTParticle* trackparticle, AliHBTParticle* partparticle) = 0;
+    Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle) = 0;
 	     
   protected:
   public:  
@@ -159,7 +159,7 @@ class AliHBTMonTwoParticleFctn1D: public AliHBTMonTwoParticleFctn
   
   TH1* GetResult(){return fResult;}
   
-  void ProcessSameEventParticles(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);
+  void Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);
   
  protected:
   virtual Double_t GetValue(AliHBTParticle* trackparticle, AliHBTParticle* partparticle) = 0;
@@ -179,9 +179,7 @@ class AliHBTMonTwoParticleFctn2D: public AliHBTMonTwoParticleFctn
   
   TH1* GetResult(){return fResult;}
   
-  void ProcessSameEventParticles(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);
-  void ProcessDiffEventParticles(AliHBTParticle* trackparticle, AliHBTParticle* partparticle){};
- 
+  void Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);
   
  protected:
   virtual void GetValues(AliHBTParticle*,AliHBTParticle*, Double_t&, Double_t&) = 0;
@@ -204,10 +202,8 @@ class AliHBTMonTwoParticleFctn3D: public AliHBTMonTwoParticleFctn
   
   TH1* GetResult(){return fResult;}
   
-  void ProcessSameEventParticles(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);
-  void ProcessDiffEventParticles(AliHBTParticle* trackparticle, AliHBTParticle* partparticle){};
- 
-  
+  void Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);
+
  protected:
   virtual void GetValues(AliHBTParticle*,AliHBTParticle*, Double_t&, Double_t&,Double_t&) = 0;
 

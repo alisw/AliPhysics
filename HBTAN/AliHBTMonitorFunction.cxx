@@ -149,7 +149,7 @@ AliHBTMonOneParticleFctn1D::~AliHBTMonOneParticleFctn1D()
 }
 /******************************************************************/
 
-void AliHBTMonOneParticleFctn1D::ProcessSameEventParticles(AliHBTParticle* particle)
+void AliHBTMonOneParticleFctn1D::Process(AliHBTParticle* particle)
 {
  //Fills the result
    particle = CheckParticle(particle);
@@ -178,7 +178,7 @@ AliHBTMonOneParticleFctn2D::~AliHBTMonOneParticleFctn2D()
 {
   delete fResult;
 }
-void AliHBTMonOneParticleFctn2D::ProcessSameEventParticles(AliHBTParticle* particle)
+void AliHBTMonOneParticleFctn2D::Process(AliHBTParticle* particle)
 {
   particle = CheckParticle(particle);
   if(particle) 
@@ -256,7 +256,7 @@ AliHBTMonTwoParticleFctn1D::~AliHBTMonTwoParticleFctn1D()
 }
 /******************************************************************/
 void AliHBTMonTwoParticleFctn1D::
-ProcessSameEventParticles(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
+Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
 {
   partparticle  = CheckParticle(partparticle);
   trackparticle = CheckParticle(trackparticle);
@@ -292,7 +292,7 @@ AliHBTMonTwoParticleFctn2D::~AliHBTMonTwoParticleFctn2D()
 }
 /******************************************************************/
 void AliHBTMonTwoParticleFctn2D::
-ProcessSameEventParticles(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
+Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
 {
   partparticle  = CheckParticle(partparticle);
   trackparticle = CheckParticle(trackparticle);
@@ -309,7 +309,7 @@ ProcessSameEventParticles(AliHBTParticle* trackparticle, AliHBTParticle* partpar
 ClassImp(AliHBTMonTwoParticleFctn3D)
 
 void AliHBTMonTwoParticleFctn3D::
-ProcessSameEventParticles(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
+Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle)
 {
   partparticle  = CheckParticle(partparticle);
   trackparticle = CheckParticle(trackparticle);

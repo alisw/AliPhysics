@@ -19,6 +19,10 @@ class AliHBTMonTwoParticleFctn;
 
 class TList;
 
+//____________________
+//Central Object of HBT Analyser
+//Performs looping over events/particles
+
 class AliHBTAnalysis: public TObject
  {
    public:
@@ -49,6 +53,8 @@ class AliHBTAnalysis: public TObject
      void SetOwner(Bool_t owner=kTRUE){fIsOwner=owner;}
      Bool_t IsOwner() const {return fIsOwner;}
      Bool_t IsNonIdentAnalysis();
+     void   Init();
+     void   ResetFunctions();
    protected:
      
      Bool_t RunCoherencyCheck();

@@ -12,6 +12,23 @@
 #include <TBenchmark.h>
 #include <TList.h>
 
+//_________________________________________________________
+///////////////////////////////////////////////////////////
+//
+//Central Object Of HBTAnalyser: 
+//This class performs main looping within HBT Analysis
+//User must plug a reader of Type AliHBTReader
+//User plugs in coorelation and monitor functions
+//as well as monitor functions
+//
+//HBT Analysis Tool, which is integral part of AliRoot,
+//ALICE Off-Line framework:
+//
+//Piotr.Skowronski@cern.ch
+//more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html
+//
+//_________________________________________________________
+
 ClassImp(AliHBTAnalysis)
 
 const UInt_t AliHBTAnalysis::fgkFctnArraySize = 100;
@@ -90,27 +107,77 @@ AliHBTAnalysis::~AliHBTAnalysis()
  }
 
 /*************************************************************************************/ 
+
 void AliHBTAnalysis::DeleteFunctions()
 {
+ //Deletes all functions added to analysis
  UInt_t ii;
  for(ii = 0;ii<fNParticleFunctions;ii++)
    delete fParticleFunctions[ii];
+ fNParticleFunctions = 0;
                 
  for(ii = 0;ii<fNTrackFunctions;ii++)
    delete fTrackFunctions[ii];
-
+ fNTrackFunctions = 0;
+ 
  for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
    delete fParticleAndTrackFunctions[ii];
+ fNParticleAndTrackFunctions = 0;
  
  for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
    delete fParticleMonitorFunctions[ii];
+ fNParticleMonitorFunctions = 0;
    
  for(ii = 0; ii<fNTrackMonitorFunctions; ii++)
    delete fTrackMonitorFunctions[ii];
+ fNTrackMonitorFunctions = 0;
    
  for(ii = 0; ii<fNParticleAndTrackMonitorFunctions; ii++)
    delete fParticleAndTrackMonitorFunctions[ii];
+ fNParticleAndTrackMonitorFunctions = 0;
 }
+/*************************************************************************************/ 
+
+void AliHBTAnalysis::Init()
+{
+ UInt_t ii;
+ for(ii = 0;ii<fNParticleFunctions;ii++)
+   fParticleFunctions[ii]->Init();
+                
+ for(ii = 0;ii<fNTrackFunctions;ii++)
+   fTrackFunctions[ii]->Init();
+
+ for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
+   fParticleAndTrackFunctions[ii]->Init();
+ 
+ for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
+   fParticleMonitorFunctions[ii]->Init();
+   
+ for(ii = 0; ii<fNTrackMonitorFunctions; ii++)
+   fTrackMonitorFunctions[ii]->Init();
+   
+ for(ii = 0; ii<fNParticleAndTrackMonitorFunctions; ii++)
+   fParticleAndTrackMonitorFunctions[ii]->Init();
+}
+/*************************************************************************************/ 
+
+void AliHBTAnalysis::ResetFunctions()
+{
+//In case fOwner is true, deletes all functions
+//in other case, just set number of analysis to 0
+ if (fIsOwner) DeleteFunctions();
+ else
+  {
+    fNParticleFunctions = 0;
+    fNTrackFunctions = 0;
+    fNParticleAndTrackFunctions = 0;
+    fNParticleMonitorFunctions = 0;
+    fNTrackMonitorFunctions = 0;
+    fNParticleAndTrackMonitorFunctions = 0;
+  }
+}
+/*************************************************************************************/ 
+
 void AliHBTAnalysis::Process(Option_t* option)
 {
  //default option  = "TracksAndParticles"
@@ -142,7 +209,6 @@ void AliHBTAnalysis::Process(Option_t* option)
    Error("Process","The reader is not set");
    return;
   }
- 
  
  const char *oT = strstr(option,"Tracks");
  const char *oP = strstr(option,"Particles");
@@ -198,7 +264,6 @@ void AliHBTAnalysis::Process(Option_t* option)
   }
  
 }
-
 /*************************************************************************************/ 
 
 void AliHBTAnalysis::ProcessTracksAndParticles()
@@ -252,11 +317,11 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
          if (fPairCut->GetFirstPartCut()->Pass(part1)) continue;
 
          for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
-           fParticleMonitorFunctions[ii]->ProcessSameEventParticles(part1);
+           fParticleMonitorFunctions[ii]->Process(part1);
          for(ii = 0; ii<fNTrackMonitorFunctions; ii++)
-           fTrackMonitorFunctions[ii]->ProcessSameEventParticles(track1);
+           fTrackMonitorFunctions[ii]->Process(track1);
          for(ii = 0; ii<fNParticleAndTrackMonitorFunctions; ii++)
-           fParticleAndTrackMonitorFunctions[ii]->ProcessSameEventParticles(track1,part1);
+           fParticleAndTrackMonitorFunctions[ii]->Process(track1,part1);
 
          if ( (fNParticleFunctions == 0) && (fNTrackFunctions ==0) && (fNParticleAndTrackFunctions == 0))
            continue; 
@@ -415,7 +480,7 @@ void AliHBTAnalysis::ProcessTracks()
          if (fPairCut->GetFirstPartCut()->Pass(track1)) continue;
 
          for(ii = 0; ii<fNTrackMonitorFunctions; ii++)
-           fTrackMonitorFunctions[ii]->ProcessSameEventParticles(track1);
+           fTrackMonitorFunctions[ii]->Process(track1);
 
          if ( fNTrackFunctions ==0 )
            continue; 
@@ -539,7 +604,7 @@ void AliHBTAnalysis::ProcessParticles()
         
          UInt_t zz;
          for(zz = 0; zz<fNParticleMonitorFunctions; zz++)
-           fParticleMonitorFunctions[zz]->ProcessSameEventParticles(part1);
+           fParticleMonitorFunctions[zz]->Process(part1);
 
          if ( fNParticleFunctions ==0 )
            continue; 
@@ -890,11 +955,11 @@ void AliHBTAnalysis::ProcessTracksAndParticlesNonIdentAnal()
          track1= trackEvent1->GetParticle(j);
 
          for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
-           fParticleMonitorFunctions[ii]->ProcessSameEventParticles(part1);
+           fParticleMonitorFunctions[ii]->Process(part1);
          for(ii = 0; ii<fNTrackMonitorFunctions; ii++)
-           fTrackMonitorFunctions[ii]->ProcessSameEventParticles(track1);
+           fTrackMonitorFunctions[ii]->Process(track1);
          for(ii = 0; ii<fNParticleAndTrackMonitorFunctions; ii++)
-           fParticleAndTrackMonitorFunctions[ii]->ProcessSameEventParticles(track1,part1);
+           fParticleAndTrackMonitorFunctions[ii]->Process(track1,part1);
 
          /***************************************/
          /******   filling numerators    ********/
@@ -1046,7 +1111,7 @@ void AliHBTAnalysis::ProcessTracksNonIdentAnal()
          track1= trackEvent1->GetParticle(j);
 
          for(ii = 0; ii<fNTrackMonitorFunctions; ii++)
-           fTrackMonitorFunctions[ii]->ProcessSameEventParticles(track1);
+           fTrackMonitorFunctions[ii]->Process(track1);
 
          /***************************************/
          /******   filling numerators    ********/
@@ -1172,7 +1237,7 @@ void AliHBTAnalysis::ProcessParticlesNonIdentAnal()
 
          UInt_t zz;
          for(zz = 0; zz<fNParticleMonitorFunctions; zz++)
-           fParticleMonitorFunctions[zz]->ProcessSameEventParticles(part1);
+           fParticleMonitorFunctions[zz]->Process(part1);
 
          /***************************************/
          /******   filling numerators    ********/
