@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/03/05 23:57:44  morsch
+Writing of digit tree moved to macro.
+
 Revision 1.2  2001/03/05 08:40:25  morsch
 Method SortTracks(..) imported from AliMUON.
 
@@ -64,6 +67,7 @@ AliMUONMerger::AliMUONMerger()
     fList       = 0;
     fTrList     = 0;
     fAddress    = 0; 
+    fBgrFile    = 0;
 }
 
 //------------------------------------------------------------------------
@@ -77,6 +81,7 @@ AliMUONMerger::~AliMUONMerger()
     if (fList)       delete fList;
     if (fTrList)     delete fTrList;
     if (fAddress)    delete fAddress; 
+    if (fBgrFile)    delete fBgrFile;
 }
 
 //------------------------------------------------------------------------
@@ -148,8 +153,8 @@ void AliMUONMerger::CreateNew(AliMUONPadHit *mergable)
 void AliMUONMerger::Init()
 {
 // Initialisation
-    
-    if (fMerge) fBgrFile = InitBgr();
+    // open only once the background file !!
+    if (fMerge && !fBgrFile) fBgrFile = InitBgr();
 }
 
 
@@ -187,8 +192,8 @@ void AliMUONMerger::Digitise()
 	fBgrFile->ls();
         //
 	// Get Hits Tree header from file
-	if(fHitsBgr) fHitsBgr->Clear();
-	if(fPadHitsBgr) fPadHitsBgr->Clear();
+	//if(fHitsBgr) fHitsBgr->Clear();     // Useless because line 327
+	//if(fPadHitsBgr) fPadHitsBgr->Clear(); // Useless because line 328
 	if(fTrH1) delete fTrH1;
 	fTrH1 = 0;
 	
@@ -463,8 +468,9 @@ void AliMUONMerger::Digitise()
     delete fList;
     
     if (fAddress)    fAddress->Delete();
-    if (fHitsBgr)    fHitsBgr->Delete();
-    if (fPadHitsBgr) fPadHitsBgr->Delete();
+//  no need to delete ... and it makes a crash also
+//    if (fHitsBgr)    fHitsBgr->Delete();
+//    if (fPadHitsBgr) fPadHitsBgr->Delete();
     // gObjectTable->Print();
 }
 
