@@ -121,7 +121,8 @@ LIBS := $(GLIBS) $(ROOTLIBS) $(SYSLIBS)
 #-------------------------------------------------------------------------------
 # default target
 
-default:     alilibs  aliroot
+default:
+	$(MAKE) aliroot
 
 
 #-------------------------------------------------------------------------------
@@ -168,12 +169,14 @@ ifneq ($(findstring modules,$(MAKECMDGOALS)),modules)
 # Include dependencies if not making them!
 
 ifneq ($(MAKECMDGOALS),depend)
+ifneq ($(MAKECMDGOALS),)
 
 ifdef ALIVERBOSE
 $(warning INCLUDEFILES=$(INCLUDEFILES))
 endif
 -include $(INCLUDEFILES)
 
+endif
 endif
 endif
 endif
@@ -188,18 +191,17 @@ include build/dummy.d
 # Targets
 
 .PHONY:		alilibs aliroot makedistr clean distclean clean-all \
-		htmldoc profile
+		htmldoc profile modules depend
 
 modules: $(patsubst %,%/module.mk,$(MODULES)) 
-
-
-aliroot: $(BINPATH) $(ALLEXECS) alilibs
 
 ifeq ($(ALIPROFILE),YES)
 alilibs: $(LIBPATH) modules $(ALLLIBS) $(ALLALIBS)
 else
 alilibs: $(LIBPATH) modules $(ALLLIBS)
 endif
+
+aliroot: $(BINPATH) $(ALLEXECS) alilibs
 
 #-------------------------------------------------------------------------------
 # Single Makefile "distribution": Makefile + modules + mkdepend scripts
