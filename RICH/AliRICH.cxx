@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.30  2000/10/24 13:19:12  jbarbosa
+  Geometry updates.
+
   Revision 1.29  2000/10/19 19:39:25  jbarbosa
   Some more changes to geometry. Further correction of digitisation "per part. type"
 
@@ -393,6 +396,10 @@ void AliRICH::CreateGeometry()
     
   //Opaque quartz thickness
   Float_t oqua_thickness = .5;
+  //CsI dimensions
+
+  Float_t csi_length = 160*.8 + 2.6;
+  Float_t csi_width = 144*.84 + 2*2.6;
     
     Int_t *idtmed = fIdtmed->GetArray()-999;
     
@@ -411,10 +418,10 @@ void AliRICH::CreateGeometry()
     par[2] = 71.1;*/
     gMC->Gsvolu("RICH", "BOX ", idtmed[1009], par, 3);
     
-    //     Sensitive part of the whole RICH 
-    par[0] = 66.31;
+    //     Air 
+    par[0] = 66.3;
     par[1] = 11.5;                 //Original Settings
-    par[2] = 68.36;
+    par[2] = 68.35;
     /*par[0] = 66.55;
     par[1] = 11.5;
     par[2] = 64.8;*/
@@ -457,6 +464,13 @@ void AliRICH::CreateGeometry()
     par[2] = geometry->GetFreonThickness()/2;
     gMC->Gsvolu("SPAC", "TUBE", idtmed[1002], par, 3);
     
+    //     Feet (freon slabs supports)
+
+    par[0] = .7;
+    par[1] = .3;
+    par[2] = 1.9;
+    gMC->Gsvolu("FOOT", "BOX", idtmed[1009], par, 3);
+
     //     Opaque quartz 
     par[0] = geometry->GetQuartzWidth()/2;
     par[1] = .2;
@@ -521,28 +535,28 @@ void AliRICH::CreateGeometry()
     
     //     Methane 
     //par[0] = 64.8;
-    par[0] = geometry->GetQuartzWidth()/2;
+    par[0] = csi_width/2;
     par[1] = geometry->GetGapThickness()/2;
     //printf("\n\n\n\n\n\n\n\\n\n\n\n Gap Thickness: %f\n\n\n\n\n\n\n\n\n\n\n\n\n\n",par[1]);
     //par[2] = 64.8;
-    par[2] = geometry->GetQuartzLength()/2;
+    par[2] = csi_length/2;
     gMC->Gsvolu("META", "BOX ", idtmed[1004], par, 3);
     
     //     Methane gap 
     //par[0] = 64.8;
-    par[0] = geometry->GetQuartzWidth()/2;
+    par[0] = csi_width/2;
     par[1] = geometry->GetProximityGapThickness()/2;
     //printf("\n\n\n\n\n\n\n\\n\n\n\n Gap Thickness: %f\n\n\n\n\n\n\n\n\n\n\n\n\n\n",par[1]);
     //par[2] = 64.8;
-    par[2] = geometry->GetQuartzLength()/2;
+    par[2] = csi_length/2;
     gMC->Gsvolu("GAP ", "BOX ", idtmed[1008], par, 3);
     
     //     CsI photocathode 
     //par[0] = 64.8;
-    par[0] = geometry->GetQuartzWidth()/2;
+    par[0] = csi_width/2;
     par[1] = .25;
     //par[2] = 64.8;
-    par[2] = geometry->GetQuartzLength()/2;
+    par[2] = csi_length/2;
     gMC->Gsvolu("CSI ", "BOX ", idtmed[1005], par, 3);
     
     //     Anode grid 
@@ -550,15 +564,73 @@ void AliRICH::CreateGeometry()
     par[1] = .001;
     par[2] = 20.;
     gMC->Gsvolu("GRID", "TUBE", idtmed[1006], par, 3);
+
+    // Aluminium supports for methane and CsI
+    // Short bar
+
+    par[0] = csi_width/2;
+    par[1] = geometry->GetGapThickness()/2 + .25;
+    par[2] = (68.35 - csi_length/2)/2;
+    gMC->Gsvolu("SMSH", "BOX", idtmed[1009], par, 3);
     
+    // Long bar
+
+    par[0] = (66.3 - csi_width/2)/2;
+    par[1] = geometry->GetGapThickness()/2 + .25;
+    par[2] = csi_length/2 + 68.35 - csi_length/2;
+    gMC->Gsvolu("SMLG", "BOX", idtmed[1009], par, 3);
+    
+    // Aluminium supports for freon
+    // Short bar
+
+    par[0] = geometry->GetQuartzWidth()/2;
+    par[1] = .3;
+    par[2] = (68.35 - geometry->GetQuartzLength()/2)/2;
+    gMC->Gsvolu("SFSH", "BOX", idtmed[1009], par, 3);
+    
+    // Long bar
+
+    par[0] = (66.3 - geometry->GetQuartzWidth()/2)/2;
+    par[1] = .3;
+    par[2] = geometry->GetQuartzLength()/2 + 68.35 - geometry->GetQuartzLength()/2;
+    gMC->Gsvolu("SFLG", "BOX", idtmed[1009], par, 3);
+    
+      
+    
+
     // --- Places the detectors defined with GSVOLU 
     //     Place material inside RICH 
     gMC->Gspos("SRIC", 1, "RICH", 0., 0., 0., 0, "ONLY");
-    
-    gMC->Gspos("ALUM", 1, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 -.05 - .376 -.025, 0., 0, "ONLY");
-    gMC->Gspos("HONE", 1, "SRIC", 0., 1.276- geometry->GetGapThickness()/2  - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 -.05 - .188, 0., 0, "ONLY");
-    gMC->Gspos("ALUM", 2, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .025, 0., 0, "ONLY");
+      
+    gMC->Gspos("ALUM", 1, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .6 - .05 - .376 -.025, 0., 0, "ONLY");
+    gMC->Gspos("HONE", 1, "SRIC", 0., 1.276- geometry->GetGapThickness()/2  - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .6 - .05 - .188, 0., 0, "ONLY");
+    gMC->Gspos("ALUM", 2, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .6 - .025, 0., 0, "ONLY");
+    gMC->Gspos("FOOT", 1, "SRIC", 64.95, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .3, 36.9, 0, "ONLY");
+    gMC->Gspos("FOOT", 2, "SRIC", 21.65, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .3 , 36.9, 0, "ONLY");
+    gMC->Gspos("FOOT", 3, "SRIC", -21.65, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .3, 36.9, 0, "ONLY");
+    gMC->Gspos("FOOT", 4, "SRIC", -64.95, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .3, 36.9, 0, "ONLY");
+    gMC->Gspos("FOOT", 5, "SRIC", 64.95, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .3, -36.9, 0, "ONLY");
+    gMC->Gspos("FOOT", 6, "SRIC", 21.65, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .3, -36.9, 0, "ONLY");
+    gMC->Gspos("FOOT", 7, "SRIC", -21.65, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .3, -36.9, 0, "ONLY");
+    gMC->Gspos("FOOT", 8, "SRIC", -64.95, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .4 - .3, -36.9, 0, "ONLY");
     gMC->Gspos("OQUA", 1, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()- .2, 0., 0, "ONLY");
+    
+    // Supports placing
+
+    // Methane supports
+    gMC->Gspos("SMLG", 1, "SRIC", csi_width/2 + (66.3 - csi_width/2)/2, 1.276 + .25, 0., 0, "ONLY");
+    gMC->Gspos("SMLG", 2, "SRIC", - csi_width/2 - (66.3 - csi_width/2)/2, 1.276 + .25, 0., 0, "ONLY");
+    gMC->Gspos("SMSH", 1, "SRIC", 0., 1.276 + .25, csi_length/2 + (68.35 - csi_length/2)/2, 0, "ONLY");
+    gMC->Gspos("SMSH", 2, "SRIC", 0., 1.276 + .25, - csi_length/2 - (68.35 - csi_length/2)/2, 0, "ONLY");
+
+    //Freon supports
+
+    Float_t supp_y = 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness() - .2 + .3; //y position of freon supports
+
+    gMC->Gspos("SFLG", 1, "SRIC", geometry->GetQuartzWidth()/2 + (66.3 - geometry->GetQuartzWidth()/2)/2, supp_y, 0., 0, "ONLY");
+    gMC->Gspos("SFLG", 2, "SRIC", - geometry->GetQuartzWidth()/2 - (66.3 - geometry->GetQuartzWidth()/2)/2, supp_y, 0., 0, "ONLY");
+    gMC->Gspos("SFSH", 1, "SRIC", 0., supp_y, geometry->GetQuartzLength()/2 + (68.35 - geometry->GetQuartzLength()/2)/2, 0, "ONLY");
+    gMC->Gspos("SFSH", 2, "SRIC", 0., supp_y, - geometry->GetQuartzLength()/2 - (68.35 - geometry->GetQuartzLength()/2)/2, 0, "ONLY");
     
     AliMatrix(idrotm[1019], 0., 0., 90., 0., 90., 90.);
     
@@ -613,9 +685,9 @@ void AliRICH::CreateGeometry()
 
     gMC->Gspos("FRE1", 1, "OQF1", 0., 0., 0., 0, "ONLY");
     gMC->Gspos("FRE2", 1, "OQF2", 0., 0., 0., 0, "ONLY");
-    gMC->Gspos("OQF1", 1, "SRIC", geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2, 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2, 0., 0, "ONLY"); //Original settings (31.3)
+    gMC->Gspos("OQF1", 1, "SRIC", geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2 + 2, 1.276 - geometry->GetGapThickness()/2- geometry->GetQuartzThickness() -geometry->GetFreonThickness()/2, 0., 0, "ONLY"); //Original settings (31.3)
     gMC->Gspos("OQF2", 2, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");          //Original settings 
-    gMC->Gspos("OQF1", 3, "SRIC", - (geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2), 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
+    gMC->Gspos("OQF1", 3, "SRIC", - (geometry->GetOuterFreonWidth()/2 + geometry->GetInnerFreonWidth()/2) - 2, 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness() - geometry->GetFreonThickness()/2, 0., 0, "ONLY");       //Original settings (-31.3)
     //gMC->Gspos("BARR", 1, "QUAR", - geometry->GetInnerFreonWidth()/2 - oqua_thickness, 0., 0., 0, "ONLY");           //Original settings (-21.65) 
     //gMC->Gspos("BARR", 2, "QUAR",  geometry->GetInnerFreonWidth()/2 + oqua_thickness, 0., 0., 0, "ONLY");            //Original settings (21.65)
     gMC->Gspos("QUAR", 1, "SRIC", 0., 1.276 - geometry->GetGapThickness()/2 - geometry->GetQuartzThickness()/2, 0., 0, "ONLY");
