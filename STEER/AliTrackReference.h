@@ -22,6 +22,12 @@ public:
   virtual void SetTime(Float_t time) {fTime = time;}
   virtual Float_t GetLength(){return fLength;}
   virtual Float_t GetTime(){return fTime;}
+  virtual Int_t Label() const {return fTrack;}
+  virtual void SetLabel(Int_t track) {fTrack=track;}
+  virtual Float_t R() const {return TMath::Sqrt(fX*fX+fY*fY);}
+  virtual Float_t Pt() const {return TMath::Sqrt(fPx*fPx+fPy*fPy);}
+  virtual Float_t Phi() const {return TMath::Pi()+TMath::ATan2(-fPy,-fPx);}
+  virtual Float_t Theta() const {return (fZ==0)?TMath::Pi()/2:TMath::ACos(fZ/TMath::Sqrt(fX*fX+fY*fY+fZ*fZ)); }
   virtual Float_t X() const {return fX;}
   virtual Float_t Y() const {return fY;}
   virtual Float_t Z() const {return fZ;}
