@@ -192,12 +192,16 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
      }
   
     aClustersFile->cd();//set cluster file active 
-    AliTPCParam *TPCParam= (AliTPCParam*)aClustersFile->Get("75x40_100x60");
+    AliTPCParam *TPCParam= (AliTPCParam*)aClustersFile->Get("75x40_100x60_150x60");
     if (!TPCParam) 
       { 
-       Error("Read","TPC parameters have not been found !\n");
-       currentdir++;
-       continue;
+       TPCParam= (AliTPCParam*)aClustersFile->Get("75x40_100x60");
+       if (!TPCParam) 
+        { 
+          Error("Read","TPC parameters have not been found !\n");
+          currentdir++;
+          continue;
+        }
       }
 
   
