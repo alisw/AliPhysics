@@ -7,12 +7,12 @@
 //                          ITS tracker
 //     reads AliITSclusterMI clusters and creates AliITStrackV2 tracks
 //           Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
+//                   Marian Ivanov, CERN, Marian.Ivanov@cern.ch
 //-------------------------------------------------------------------------
 
 #include <TObjArray.h>
 
 #include "AliTracker.h"
-#include "AliITSrecoV2.h"
 #include "AliITStrackV2.h"
 #include "AliITSclusterV2.h"
 
@@ -26,7 +26,8 @@ class AliV0vertex;
 
 
 class AliITSRecV0Info: public TObject {
-public:
+  friend class AliITStrackerMI;
+protected:
   void Update(Float_t vertex[3], Float_t mass1, Float_t mass2);
   Double_t       fDist1;    //info about closest distance according closest MC - linear DCA
   Double_t       fDist2;    //info about closest distance parabolic DCA
@@ -74,7 +75,7 @@ public:
   void GetNTeor(Int_t layer, const AliITSclusterV2* cl, Float_t theta, Float_t phi, Float_t &ny, Float_t &nz);
   Int_t  GetError(Int_t layer, const AliITSclusterV2*cl, Float_t theta, Float_t phi, Float_t expQ, Float_t &erry, Float_t &errz);
   Double_t GetPredictedChi2MI(AliITStrackV2* track, const AliITSclusterV2 *cluster,Int_t layer);
-  Int_t UpdateMI(AliITStrackV2* track, const AliITSclusterV2* cl,Double_t chi2,Int_t layer);
+  Int_t UpdateMI(AliITStrackV2* track, const AliITSclusterV2* cl,Double_t chi2,Int_t layer) const;
   class AliITSdetector { 
   public:
     AliITSdetector(){}
@@ -119,7 +120,7 @@ public:
     Double_t GetR() const {return fR;}
     Int_t FindClusterIndex(Float_t z) const;
     AliITSclusterV2 *GetCluster(Int_t i) const {return i<fN? fClusters[i]:0;} 
-    Float_t         *GetWeight(Int_t i) {return i<fN ?&fClusterWeight[i]:0;}
+    Float_t         *GetWeight(Int_t i)   {return i<fN ?&fClusterWeight[i]:0;}
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
     Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
     Double_t GetThickness(Double_t y, Double_t z, Double_t &x0) const;
@@ -132,6 +133,7 @@ public:
     void IncAccepted(){fAccepted++;}
     Int_t GetAccepted() const {return fAccepted;}
   protected:
+    AliITSlayer(const AliITSlayer& layer){;}
     Double_t fR;                // mean radius of this layer
     Double_t fPhiOffset;        // offset of the first detector in Phi
     Int_t fNladders;            // number of ladders
@@ -158,16 +160,16 @@ public:
     Float_t fY10[11][kMaxClusterPerLayer10];                // y position of the clusters  slice in y    
     Float_t fZ10[11][kMaxClusterPerLayer10];                // z position of the clusters  slice in y 
     Int_t fN10[11];                                       // number of cluster in slice
-    Float_t fDy10;
-    Float_t fBy10[11][2];                  
+    Float_t fDy10;                                        // delta y
+    Float_t fBy10[11][2];                                 // slice borders
     //
     AliITSclusterV2 *fClusters20[21][kMaxClusterPerLayer20]; // pointers to clusters -     slice in y
     Int_t        fClusterIndex20[21][kMaxClusterPerLayer20]; // pointers to clusters -     slice in y    
     Float_t fY20[21][kMaxClusterPerLayer20];                // y position of the clusters  slice in y    
     Float_t fZ20[21][kMaxClusterPerLayer20];                // z position of the clusters  slice in y 
     Int_t fN20[21];                                       // number of cluster in slice
-    Float_t fDy20;
-    Float_t fBy20[21][2];
+    Float_t fDy20;                                        //delta y 
+    Float_t fBy20[21][2];                                 //slice borders
     //
     AliITSclusterV2** fClustersCs;                         //clusters table in current slice
     Int_t   *fClusterIndexCs;                             //cluster index in current slice 
@@ -184,7 +186,7 @@ public:
     Int_t fI;            // index of the current cluster within the "window"
     Int_t fImax;            // index of the last cluster within the "window"    
     Int_t fSkip;     // indicates possibility to skip cluster
-    Int_t fAccepted;
+    Int_t fAccepted;     // accept indicator 
     Double_t fRoad;      // road defined by the cluster density
   };
   AliITStrackerMI::AliITSlayer    & GetLayer(Int_t layer) const;
@@ -230,7 +232,7 @@ protected:
   Float_t  * GetNz(Int_t trackindex) const {return &fCoeficients[trackindex*48+36];}
   void       SignDeltas( TObjArray *ClusterArray, Float_t zv);
   void MakeCoeficients(Int_t ntracks);
-  void UpdateESDtrack(AliITStrackV2* track, ULong_t flags);
+  void UpdateESDtrack(AliITStrackV2* track, ULong_t flags) const;
   Int_t fI;                              // index of the current layer
   static AliITSlayer fgLayers[kMaxLayer];// ITS layers
   AliITStrackV2 fTracks[kMaxLayer];      // track estimations at the ITS layers
@@ -245,6 +247,8 @@ protected:
   Int_t fLayersNotToSkip[kMaxLayer];     // layer masks
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
   Float_t * fCoeficients;                //! working array with errors and mean cluser shape
+ private:
+  AliITStrackerMI(const AliITStrackerMI * tracker){;}
   ClassDef(AliITStrackerMI,1)   //ITS tracker V2
 };
 

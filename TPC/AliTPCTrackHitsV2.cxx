@@ -53,14 +53,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 
-#include <stdlib.h>
-//#include "TVector3.h"
 #include "AliTPCTrackHitsV2.h"
-
 #include "TClonesArray.h"    
 #include "AliTPC.h"
-
-#include <Riostream.h>
 
 
 
@@ -81,6 +76,8 @@ const Double_t AliTPCTrackHitsV2::fgkPrecision2=1e-20;  //precision
 
 
 struct  AliTPCTempHitInfoV2 {
+  friend class AliTPCTrackHitsV2;
+protected:
   enum    { kStackSize = 10000};
   AliTPCTempHitInfoV2();   
   AliTPCTempHitInfoV2(const AliTPCTempHitInfoV2 &hit)

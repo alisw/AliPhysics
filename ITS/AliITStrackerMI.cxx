@@ -18,25 +18,21 @@
 //    It reads AliITSclusterV2 clusters and creates AliITStrackV2 tracks
 //                   and fills with them the ESD
 //          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//                  Marian Ivanov, CERN, Marian.Ivanov@cern.ch 
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
+//     
 //-------------------------------------------------------------------------
-
-#include <new>
-
-#include <TFile.h>
+#include "AliITSrecoV2.h"
 #include <TTree.h>
-#include <TRandom.h>
-
 #include "AliITSgeom.h"
-#include "AliITSRecPoint.h"
 #include "AliTPCtrack.h"
 #include "AliESD.h"
 #include "AliITSclusterV2.h"
-//#include "AliITStrackerV2.h"
 #include "AliITStrackerMI.h"
 #include "TMatrixD.h"
 #include "AliHelix.h"
-#include "AliV0vertex.h"
+
+
 
 ClassImp(AliITStrackerMI)
 ClassImp(AliITSRecV0Info)
@@ -2837,7 +2833,7 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackV2* track, const AliITSc
 
 }
 
-Int_t    AliITStrackerMI::UpdateMI(AliITStrackV2* track, const AliITSclusterV2* cl,Double_t chi2,Int_t index)
+Int_t    AliITStrackerMI::UpdateMI(AliITStrackV2* track, const AliITSclusterV2* cl,Double_t chi2,Int_t index) const 
 {
   //
   //
@@ -3101,7 +3097,7 @@ void AliITStrackerMI::SignDeltas( TObjArray *ClusterArray, Float_t vz)
 }
 
 
-void AliITStrackerMI::UpdateESDtrack(AliITStrackV2* track, ULong_t flags)
+void AliITStrackerMI::UpdateESDtrack(AliITStrackV2* track, ULong_t flags) const
 {
   //
   //
@@ -3221,6 +3217,9 @@ Double_t  AliITStrackerMI::FindBestPair(Int_t esdtrack0, Int_t esdtrack1,AliITSR
 
 void  AliITSRecV0Info::Update(Float_t vertex[3], Float_t mass1, Float_t mass2)
 {
+  //
+  //Update V0 information
+  //
   Float_t v[3] = {fXr[0]-vertex[0],fXr[1]-vertex[1],fXr[2]-vertex[2]};
   Float_t p[3] = {fPdr[0]+fPm[0], fPdr[1]+fPm[1],fPdr[2]+fPm[2]};
 
