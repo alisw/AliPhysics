@@ -1,9 +1,8 @@
-enum gentype_t {hijing, hijing_p, gun, box, pythia, 
+enum gentype_t {hijing, hijingParam, gun, box, pythia, 
 		param1, param2, param3, 
 		cocktail, fluka, halo, ntuple, scan, doublescan};
 
 gentype_t gentype=param1;
-
 
 ntracks=1;
 
@@ -101,7 +100,6 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
      gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
      break;
  case hijing:
-      case hijing:
      AliGenHijing *gener = new AliGenHijing(-1);
 // centre of mass energy 
      gener->SetEnergyCMS(5500);
