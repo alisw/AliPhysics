@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2000/01/12 11:29:27  fca
+Close material file
+
 Revision 1.19  1999/12/17 09:03:12  fca
 Introduce a names array
 
@@ -550,6 +553,7 @@ void TGeant3::LoadAddress()
   gcomad(PASSCHARD("GCBANK"),(int*&) fGcbank  PASSCHARL("GCBANK"));
   gcomad(PASSCHARD("GCLINK"),(int*&) fGclink  PASSCHARL("GCLINK"));
   gcomad(PASSCHARD("GCCUTS"),(int*&) fGccuts  PASSCHARL("GCCUTS"));
+  gcomad(PASSCHARD("GCMULO"),(int*&) fGcmulo  PASSCHARL("GCMULO"));
   gcomad(PASSCHARD("GCFLAG"),(int*&) fGcflag  PASSCHARL("GCFLAG"));
   gcomad(PASSCHARD("GCKINE"),(int*&) fGckine  PASSCHARL("GCKINE"));
   gcomad(PASSCHARD("GCKING"),(int*&) fGcking  PASSCHARL("GCKING"));
@@ -3177,6 +3181,20 @@ void TGeant3::SetDRAY(Int_t par)
   //       =2 Delta rays. No secondaries stored.
   //  
   fGcphys->idray = par;
+}
+ 
+//_____________________________________________________________________________
+void TGeant3::SetERAN(Float_t ekmin, Float_t ekmax, Int_t nekbin)
+{
+  //
+  //  To control cross section tabulations
+  //   ekmin = minimum kinetic energy in GeV
+  //   ekmax = maximum kinetic energy in GeV
+  //   nekbin = number of logatithmic bins (<200)
+  //  
+  fGcmulo->ekmin = ekmin;
+  fGcmulo->ekmax = ekmax;
+  fGcmulo->nekbin = nekbin;
 }
  
 //_____________________________________________________________________________

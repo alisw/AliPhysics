@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/11/03 16:31:36  fca
+Dummy ProdProcess should return a value
+
 Revision 1.13  1999/11/03 13:17:08  fca
 Have ProdProcess return const char*
 
@@ -253,6 +256,7 @@ void TGeant3::SetCUTS(Float_t,Float_t,Float_t,Float_t,
 void TGeant3::SetDCAY(Int_t)  {}
 void TGeant3::SetDEBU(Int_t, Int_t, Int_t)  {}
 void TGeant3::SetDRAY(Int_t)  {}
+void TGeant3::SetERAN(Float_t, Float_t, Int_t) {}
 void TGeant3::SetHADR(Int_t)  {}
 void TGeant3::SetKINE(Int_t, Float_t, Float_t, Float_t, Float_t,
                      Float_t, Float_t, Float_t, Float_t, Float_t,

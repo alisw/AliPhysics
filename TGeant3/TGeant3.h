@@ -274,6 +274,26 @@ typedef struct {
   Float_t gcuts[5]; 
 } Gccuts_t; 
 
+//----------GCMULO
+//      COMMON/GCMULO/SINMUL(101),COSMUL(101),SQRMUL(101),OMCMOL,CHCMOL
+//     +  ,EKMIN,EKMAX,NEKBIN,NEK1,EKINV,GEKA,GEKB,EKBIN(200),ELOW(200)
+typedef struct {
+  Float_t sinmul[101];
+  Float_t cosmul[101];
+  Float_t sqrmul[101];
+  Float_t omcmol;
+  Float_t chcmol;
+  Float_t ekmin;
+  Float_t ekmax;
+  Int_t   nekbin;
+  Int_t   nek1;
+  Float_t ekinv;
+  Float_t geka;
+  Float_t gekb;
+  Float_t ekbin[200];
+  Float_t elow[200];
+} Gcmulo_t;
+
 //----------GCPHYS
 //      COMMON/GCPHYS/IPAIR,SPAIR,SLPAIR,ZINTPA,STEPPA
 //     +             ,ICOMP,SCOMP,SLCOMP,ZINTCO,STEPCO
@@ -503,6 +523,7 @@ private:
   Gcbank_t *fGcbank;
   Gclink_t *fGclink; 
   Gccuts_t *fGccuts; 
+  Gcmulo_t *fGcmulo; 
   Gcmate_t *fGcmate; 
   Gctpol_t *fGctpol; 
   Gcnum_t  *fGcnum; 
@@ -621,6 +642,7 @@ public:
   virtual Gcbank_t* Gcbank() const {return fGcbank;}
   virtual Gclink_t* Gclink() const {return fGclink;}
   virtual Gccuts_t* Gccuts() const {return fGccuts;}
+  virtual Gcmulo_t* Gcmulo() const {return fGcmulo;}
   virtual Gcmate_t* Gcmate() const {return fGcmate;}
   virtual Gctpol_t* Gctpol() const {return fGctpol;}
   virtual Gcnum_t* Gcnum() const {return fGcnum;}
@@ -782,6 +804,8 @@ public:
    virtual  void  SetDCAY(Int_t par=1);
    virtual  void  SetDEBU(Int_t emin=1, Int_t emax=999, Int_t emod=1);
    virtual  void  SetDRAY(Int_t par=1);
+   virtual  void  SetERAN(Float_t ekmin=1.e-5, Float_t ekmax=1.e4,
+			  Int_t nekbin=90);
    virtual  void  SetHADR(Int_t par=1);
    virtual  void  SetKINE(Int_t kine, Float_t xk1=0, Float_t xk2=0, Float_t xk3=0, Float_t xk4=0,
                          Float_t xk5=0, Float_t xk6=0, Float_t xk7=0, Float_t xk8=0, Float_t xk9=0,
