@@ -166,8 +166,8 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
 	  continue;
 	track->GetOuterPxPyPz(pxyz); // track momentum ibid.
 	vecDist = PropagateToPlane(xyz,pxyz,"CPV",cpvClu->GetPHOSMod());
- 	Info("GetDistanceInPHOSPlane","Track %d propagation to CPV = (%f,%f,%f)",
- 	     iTrack,vecDist.X(),vecDist.Y(),vecDist.Z());
+	// 	Info("GetDistanceInPHOSPlane","Track %d propagation to CPV = (%f,%f,%f)",
+ 	//     iTrack,vecDist.X(),vecDist.Y(),vecDist.Z());
 	vecDist -= vecCpv;
 	distance2Track = TMath::Sqrt(vecDist.X()*vecDist.X() + vecDist.Z()*vecDist.Z());
 	// Find the closest track to the EMC recpoint
