@@ -18,8 +18,9 @@
 class G4Material;
 class G4Element;
 
-typedef G4std::vector<G4bool>  TG4boolVector;
-typedef G4std::vector<G4int>   TG4intVector;
+typedef G4std::vector<G4bool>   TG4boolVector;
+typedef G4std::vector<G4int>    TG4intVector;
+typedef G4std::vector<G4String> TG4StdStringVector;
 typedef G4std::vector<const G4RotationMatrix*> TG4RotationMatrixVector;
 typedef G4std::set <G4String, G4std::less<G4String> > TG4StringSet; 
 typedef G4RWTValOrderedVector<G4double> TG4doubleVector;
