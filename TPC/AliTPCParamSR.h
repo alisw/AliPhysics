@@ -40,15 +40,22 @@ public:
   Bool_t Update();            //recalculate and check geometric parameters 
   void SetDefault();          //set default parameters
   void   SetInnerPRF(AliTPCPRF2D * prf) {fInnerPRF = prf;}
-  void   SetOuterPRF(AliTPCPRF2D * prf) {fOuterPRF = prf;}
+  void   SetOuter1PRF(AliTPCPRF2D * prf) {fOuter1PRF = prf;} //e.k
+  void   SetOuter2PRF(AliTPCPRF2D * prf) {fOuter2PRF = prf;} //e.k
   void   SetTimeRF(AliTPCRF1D * timerf) {fTimeRF = timerf;}
 
   AliTPCPRF2D * GetInnerPRF() const {return fInnerPRF;}
-  AliTPCPRF2D * GetOuterPRF() const {return fOuterPRF;}
+  AliTPCPRF2D * GetOuter1PRF() const {return fOuter1PRF;} //e.k
+  AliTPCPRF2D * GetOuter2PRF() const {return fOuter2PRF;} //e.k
   AliTPCRF1D  * GetTimeRF()   const {return fTimeRF;}
   void SetFacSigmaPadRow(Float_t fac=3.) {fFacSigmaPadRow=fac;}
   void SetFacSigmaPad(Float_t fac=3.) {fFacSigmaPad=fac;}
   void SetFacSigmaTime(Float_t fac=3.) {fFacSigmaTime=fac;}
+
+  //  Float_t GetPadRowRadiiLow(Int_t irow) const;
+  //  Float_t GetPadRowRadiiUp(Int_t irow) const;
+  Float_t GetYInner(Int_t irow) const; //e,k
+  Float_t GetYOuter(Int_t irow) const; //e.k
 
   virtual Float_t GetPrimaryLoss(Float_t *x, Int_t *index, Float_t *angle);
   virtual Float_t GetTotalLoss(Float_t *x, Int_t *index, Float_t *angle);
@@ -59,8 +66,9 @@ public:
   virtual Float_t * GetAnglesAccMomentum(Float_t *x, Int_t * index, Float_t* momentum, Float_t *angle); 
  
 protected:
-  AliTPCPRF2D * fInnerPRF;         //pad response function object for inner sector
-  AliTPCPRF2D * fOuterPRF;         //pad response function object for inner sector  
+  AliTPCPRF2D * fInnerPRF;         //pad response function  for inner sector
+  AliTPCPRF2D * fOuter1PRF;        //pad response function  for outer sector  
+  AliTPCPRF2D * fOuter2PRF; 
   AliTPCRF1D  * fTimeRF;           //time response function object
   Float_t      fFacSigmaPadRow;    //factor-how many sigma of response I accept
   Float_t      fFacSigmaPad;       //factor-how many sigma of response I accept

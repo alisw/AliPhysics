@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/11/08 16:39:03  hristov
+Additional protection (M.Masera)
+
 Revision 1.15  2001/11/08 16:36:33  hristov
 Updated V2 stream of tracking (Yu.Belikov). The new long waited features are: 1) Possibility to pass the primary vertex position to the trackers (both for the TPC and the ITS) 2) Possibility to specify the number of tracking passes together with applying (or not applying) the vertex constraint (ITS only) 3) Possibility to make some use of partial PID provided by the TPC when doing tracking in the ITS (ITS only) 4) V0 reconstruction with a helix minimisation of the DCA. (new macros: AliV0FindVertices.C and AliV0Comparison.C) 4a) ( Consequence of the 4) )  All the efficiencies and resolutions are from now on calculated including *secondary*particles* too. (Don't be surprised by the drop in efficiency etc)
 
@@ -311,7 +314,8 @@ Int_t AliTPCtracker::FollowProlongation(AliTPCseed& t, Int_t rf) {
   if (alpha < 0.            ) alpha += 2.*TMath::Pi();  
   Int_t s=Int_t(alpha/fSectors->GetAlpha())%fN;
 
-  for (Int_t nr=fSectors->GetRowNumber(xt)-1; nr>=rf; nr--) {
+  Int_t nrows=fSectors->GetRowNumber(xt)-1;
+  for (Int_t nr=nrows; nr>=rf; nr--) {
     Double_t x=fSectors->GetX(nr), ymax=fSectors->GetMaxY(nr);
     if (!t.PropagateTo(x)) return 0;
 
@@ -924,11 +928,14 @@ void AliTPCtracker::AliTPCSector::Setup(const AliTPCParam *par, Int_t f) {
      fAlpha=par->GetOuterAngle();
      fAlphaShift=par->GetOuterAngleShift();
      fPadPitchWidth=par->GetOuterPadPitchWidth();
-     fPadPitchLength=par->GetOuterPadPitchLength();
+     f1PadPitchLength=par->GetOuter1PadPitchLength();
+     f2PadPitchLength=par->GetOuter2PadPitchLength();
 
      fN=par->GetNRowUp();
      fRow=new AliTPCRow[fN];
-     for (Int_t i=0; i<fN; i++) fRow[i].SetX(par->GetPadRowRadiiUp(i));
+     for (Int_t i=0; i<fN; i++){ 
+     fRow[i].SetX(par->GetPadRowRadiiUp(i));
+     }
   } 
 }
 

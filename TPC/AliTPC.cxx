@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.53  2002/02/25 11:02:56  kowal2
+Changes towards speeding up the code. Thanks to Marian Ivanov.
+
 Revision 1.52  2002/02/18 09:26:09  kowal2
 Removed compiler warning
 
@@ -1572,7 +1575,8 @@ void AliTPC::SetDefaults(){
 
   AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60");
   AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;
-  AliTPCPRF2D    * prfouter   = new AliTPCPRF2D;
+  AliTPCPRF2D    * prfouter1   = new AliTPCPRF2D;
+  AliTPCPRF2D    * prfouter2   = new AliTPCPRF2D;  
   AliTPCRF1D     * rf    = new AliTPCRF1D(kTRUE);
   rf->SetGauss(param->GetZSigma(),param->GetZWidth(),1.);
   rf->SetOffset(3*param->GetZSigma());
@@ -1585,12 +1589,14 @@ void AliTPC::SetDefaults(){
      exit(3);
   }
   prfinner->Read("prf_07504_Gati_056068_d02");
-  prfouter->Read("prf_10006_Gati_047051_d03");
+  prfouter1->Read("prf_10006_Gati_047051_d03");
+  prfouter2->Read("prf_15006_Gati_047051_d03");  
   f->Close();
   savedir->cd();
 
   param->SetInnerPRF(prfinner);
-  param->SetOuterPRF(prfouter); 
+  param->SetOuter1PRF(prfouter1); 
+  param->SetOuter2PRF(prfouter2);
   param->SetTimeRF(rf);
 
   // set fTPCParam
@@ -1626,8 +1632,8 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
 
   cerr<<"Digitizing TPC -- normal digits...\n";
 
- for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) if (IsSectorActive(isec)) Hits2DigitsSector(isec);
-
+  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) if (IsSectorActive(isec)) Hits2DigitsSector(isec); 
+   
   // write results
 
   char treeName[100];
@@ -2244,7 +2250,24 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	  rowNumber = index[2];
 	  //transform position to local digit coordinates
 	  //relative to nearest pad row 
-	  if ((rowNumber<0)||rowNumber>=fTPCParam->GetNRow(isec)) continue;	  
+	  if ((rowNumber<0)||rowNumber>=fTPCParam->GetNRow(isec)) continue;
+  Float_t x1,y1;
+	  if (isec <fTPCParam->GetNInnerSector()) {
+	    x1 = xyz[1]*fTPCParam->GetInnerPadPitchWidth();
+	    y1 = fTPCParam->GetYInner(rowNumber);
+	  }
+	  else{
+	    x1=xyz[1]*fTPCParam->GetOuterPadPitchWidth();
+	    y1 = fTPCParam->GetYOuter(rowNumber);
+	  }
+
+	  x1=TMath::Abs(x1);
+	  if (y1-0.5 <x1) {
+	    xyz[3]=0.;}
+	  else{ 
+	    if (y1 -1.<x1){
+	      xyz[3]*=0.5;}
+	  }          	       
 	  nofElectrons[rowNumber]++;	  
 	  //----------------------------------
 	  // Expand vector if necessary

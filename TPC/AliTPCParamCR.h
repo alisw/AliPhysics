@@ -35,15 +35,18 @@ public:
   Bool_t Update();            //recalculate and check geometric parameters 
   void SetDefault();          //set default parameters
   void   SetInnerPRF(AliTPCPRF2D * prf) {fInnerPRF = prf;}
-  void   SetOuterPRF(AliTPCPRF2D * prf) {fOuterPRF = prf;}
+  void   SetOuter1PRF(AliTPCPRF2D * prf) {fOuter1PRF = prf;}
+  void   SetOuter2PRF(AliTPCPRF2D * prf) {fOuter2PRF = prf;}
   void   SetTimeRF(AliTPCRF1D * timerf) {fTimeRF = timerf;}
 
   AliTPCPRF2D * GetInnerPRF() const {return fInnerPRF;}
-  AliTPCPRF2D * GetOuterPRF() const {return fOuterPRF;}
+  AliTPCPRF2D * GetOuter1PRF() const {return fOuter1PRF;}
+  AliTPCPRF2D * GetOuter2PRF() const {return fOuter2PRF;}
   AliTPCRF1D  * GetTimeRF()   const {return fTimeRF;}
 protected:
   AliTPCPRF2D * fInnerPRF;         //!pad response function object for inner sector
-  AliTPCPRF2D * fOuterPRF;         //!pad response function object for inner sector  
+  AliTPCPRF2D * fOuter1PRF;         //!pad response function object for inner sector 
+  AliTPCPRF2D * fOuter2PRF;  
   AliTPCRF1D  * fTimeRF;           //!time response function object
   Float_t       fFacSigma;         //factor-how many sigma of response I accept
   ClassDef(AliTPCParamCR,1)  //parameter  object for set:TPC

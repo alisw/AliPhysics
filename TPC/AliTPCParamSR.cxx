@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2002/02/25 11:02:56  kowal2
+Changes towards speeding up the code. Thanks to Marian Ivanov.
+
 Revision 1.5  2001/12/06 07:49:30  kowal2
 corrected number of pads calculation
 
@@ -75,7 +78,8 @@ AliTPCParamSR::AliTPCParamSR()
   //
   //constructor set the default parameters
   fInnerPRF=0;
-  fOuterPRF=0;
+  fOuter1PRF=0;
+  fOuter2PRF=0;
   fTimeRF = 0;
   fFacSigmaPadRow = Float_t(kFacSigmaPadRow);
   fFacSigmaPad = Float_t(kFacSigmaPad);
@@ -89,7 +93,8 @@ AliTPCParamSR::~AliTPCParamSR()
   //
   //destructor destroy some dynmicaly alocated variables
   if (fInnerPRF != 0) delete fInnerPRF;
-  if (fOuterPRF != 0) delete fOuterPRF;
+  if (fOuter1PRF != 0) delete fOuter1PRF;
+  if (fOuter2PRF != 0) delete fOuter2PRF;
   if (fTimeRF != 0) delete fTimeRF;
 }
 
@@ -109,7 +114,7 @@ Int_t  AliTPCParamSR::CalcResponse(Float_t* xyz, Int_t * index, Int_t row)
   //we suppose that coordinate is expressed in float digits 
   // it's mean coordinate system 8
   //xyz[0] - float padrow xyz[1] is float pad  (center pad is number 0) and xyz[2] is float time bin
-  if ( (fInnerPRF==0)||(fOuterPRF==0)||(fTimeRF==0) ){ 
+  if ( (fInnerPRF==0)||(fOuter1PRF==0)||(fOuter2PRF==0) ||(fTimeRF==0) ){ 
     Error("AliTPCParamSR", "response function was not adjusted");
     return -1;
   }
@@ -120,9 +125,15 @@ Int_t  AliTPCParamSR::CalcResponse(Float_t* xyz, Int_t * index, Int_t row)
   if (index[1]<fNInnerSector){
     sfpadrow =fFacSigmaPadRow*fInnerPRF->GetSigmaY()/fInnerPadPitchLength;
     sfpad    =fFacSigmaPad*fInnerPRF->GetSigmaX()/fInnerPadPitchWidth;
-  }else{
-    sfpadrow =fFacSigmaPadRow*fOuterPRF->GetSigmaY()/fOuterPadPitchLength;
-    sfpad    =fFacSigmaPad*fOuterPRF->GetSigmaX()/fOuterPadPitchWidth;
+  }
+  else{
+  if(row<fNRowUp1){
+    sfpadrow =fFacSigmaPadRow*fOuter1PRF->GetSigmaY()/fOuter1PadPitchLength;
+    sfpad    =fFacSigmaPad*fOuter1PRF->GetSigmaX()/fOuterPadPitchWidth;}
+    else{
+      sfpadrow =fFacSigmaPadRow*fOuter2PRF->GetSigmaY()/fOuter2PadPitchLength;
+      sfpad    =fFacSigmaPad*fOuter2PRF->GetSigmaX()/fOuterPadPitchWidth;
+    }   
   }
 
   Int_t fpadrow = TMath::Max(TMath::Nint(index[2]+xyz[0]-sfpadrow),0);  //"first" padrow
@@ -161,12 +172,15 @@ Int_t  AliTPCParamSR::CalcResponse(Float_t* xyz, Int_t * index, Int_t row)
   Int_t padrow, pad;
   for (padrow = fpadrow;padrow<=lpadrow;padrow++)
     for (pad = fpad;pad<=lpad;pad++){
-      Float_t dy = (-xyz[0]+Float_t(index[2]-padrow));
-      Float_t dx = (-xyz[1]+Float_t(pad));
+      Float_t dy = (xyz[0]+Float_t(index[2]-padrow));
+      Float_t dx = (xyz[1]+Float_t(pad));
       if (index[1]<fNInnerSector)
 	padres[padrow-fpadrow][pad-fpad]=fInnerPRF->GetPRF(dx*fInnerPadPitchWidth,dy*fInnerPadPitchLength);
-      else
-	padres[padrow-fpadrow][pad-fpad]=fOuterPRF->GetPRF(dx*fOuterPadPitchWidth,dy*fOuterPadPitchLength);          }
+      else{
+	if(row<fNRowUp1){
+	padres[padrow-fpadrow][pad-fpad]=fOuter1PRF->GetPRF(dx*fOuterPadPitchWidth,dy*fOuter1PadPitchLength);}
+	else{
+	  padres[padrow-fpadrow][pad-fpad]=fOuter2PRF->GetPRF(dx*fOuterPadPitchWidth,dy*fOuter2PadPitchLength);}}}
   //calculate time response function
   Int_t time;
   for (time = ftime;time<=ltime;time++) 
@@ -306,8 +320,10 @@ void AliTPCParamSR::GetClusterSize(Float_t *x, Int_t *index, Float_t *angle, Int
   if (GetTimeRF()!=0) sigma[0]+=GetTimeRF()->GetSigma()*GetTimeRF()->GetSigma();
   if ( (index[1]<fNInnerSector) &&(GetInnerPRF()!=0))   
     sigma[1]+=GetInnerPRF()->GetSigmaX()*GetInnerPRF()->GetSigmaX();
-  if ( (index[1]>=fNInnerSector) && (GetOuterPRF()!=0))
-    sigma[1]+=GetOuterPRF()->GetSigmaX()*GetOuterPRF()->GetSigmaX();
+  if ( (index[1]>=fNInnerSector) &&(index[2]<fNRowUp1) && (GetOuter1PRF()!=0))
+    sigma[1]+=GetOuter1PRF()->GetSigmaX()*GetOuter1PRF()->GetSigmaX();
+  if( (index[1]>=fNInnerSector) &&(index[2]>=fNRowUp1) && (GetOuter2PRF()!=0))
+    sigma[1]+=GetOuter2PRF()->GetSigmaX()*GetOuter2PRF()->GetSigmaX();
 
 
   sigma[0]/= GetZWidth()*GetZWidth();
@@ -350,57 +366,58 @@ Float_t * AliTPCParamSR::GetAnglesAccMomentum(Float_t *x, Int_t * index, Float_t
          
 Bool_t AliTPCParamSR::Update()
 {
-  
-  //
-  // update some calculated parameter which must be updated after changing "base"
-  // parameters 
-  // for example we can change size of pads and according this recalculate number
-  // of pad rows, number of of pads in given row ....
   Int_t i;
   if (AliTPCParam::Update()==kFALSE) return kFALSE;
   fbStatus = kFALSE;
 
-  // adjust lower sectors pad row positions and pad numbers 
-  fNRowLow   =  (Int_t(1.001+((fRInnerLastWire-fRInnerFirstWire)/fInnerWWPitch))
-	       -2*fInnerDummyWire)/fNInnerWiresPerPad;  
-  if ( kMaxRows<fNRowLow) fNRowUp = kMaxRows;
-  if (1>fNRowLow) return kFALSE;
- 
-  //Float_t firstpad = fRInnerFirstWire+(fInnerDummyWire-0.5)*fInnerWWPitch
-  //    +fInnerPadPitchLength/2.;
-  Float_t lastpad = fRInnerLastWire-(fInnerDummyWire-0.5)*fInnerWWPitch
-    -fInnerPadPitchLength/2.;
-  Float_t firstpad = lastpad-Float_t(fNRowLow-1)*fInnerPadPitchLength;  
-  for (i = 0;i<fNRowLow;i++) 
-    {
-       Float_t x  = firstpad +fInnerPadPitchLength*(Float_t)i;       
-       Float_t y = (x-0.5*fInnerPadPitchLength)*tan(fInnerAngle/2.)-fInnerWireMount-
-	            fInnerPadPitchWidth/2.;
-       fPadRowLow[i] = x;
-       fNPadsLow[i] = 1+2*(Int_t)(y/fInnerPadPitchWidth) ;
+ Float_t firstrow = fInnerRadiusLow + 2.225 ;   
+ for( i= 0;i<fNRowLow;i++)
+   {
+     Float_t x = firstrow + fInnerPadPitchLength*(Float_t)i;  
+     fPadRowLow[i]=x;
+     // number of pads per row
+     Float_t y = (x-0.5*fInnerPadPitchLength)*tan(fInnerAngle/2.)-fInnerWireMount-
+       fInnerPadPitchWidth/2.;
+     fYInner[i]  = x*tan(fInnerAngle/2.)-fInnerWireMount;
+     fNPadsLow[i] = 1+2*(Int_t)(y/fInnerPadPitchWidth) ;
+   }
+ firstrow = fOuterRadiusLow + 1.6;
+ for(i=0;i<fNRowUp;i++)
+   {
+     if(i<fNRowUp1){
+       Float_t x = firstrow + fOuter1PadPitchLength*(Float_t)i; 
+       fPadRowUp[i]=x;
+    Float_t y =(x-0.5*fOuter1PadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount-
+	  fOuterPadPitchWidth/2.;
+     fYOuter[i]= x*tan(fOuterAngle/2.)-fOuterWireMount;
+     fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ;
+     if(i==fNRowUp1-1) {
+       fLastWireUp1=fPadRowUp[i] +0.375;
+       firstrow = fPadRowUp[i] + 0.5*(fOuter1PadPitchLength+fOuter2PadPitchLength);
+     }
+     }
+     else
+       {
+	 Float_t x = firstrow + fOuter2PadPitchLength*(Float_t)(i-64);
+         fPadRowUp[i]=x;
+Float_t y =(x-0.5*fOuter2PadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount-
+	   fOuterPadPitchWidth/2.;
+         fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ; 
        }
-
-  // adjust upper sectors pad row positions and pad numbers
-  fNRowUp   = (Int_t(1.001+((fROuterLastWire-fROuterFirstWire)/fOuterWWPitch))
-	       -2*fOuterDummyWire)/fNOuterWiresPerPad; 
-  if ( kMaxRows<fNRowUp) fNRowUp = kMaxRows;
-  if (1>fNRowUp) return kFALSE;
-  firstpad = fROuterFirstWire+(fOuterDummyWire-0.5)*fOuterWWPitch
-    +fOuterPadPitchLength/2.;
- 
-  for (i = 0;i<fNRowUp;i++) 
-    {
-       Float_t x  = firstpad + fOuterPadPitchLength*(Float_t)i;      
-       Float_t y = (x-0.5*fOuterPadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount-
-	            fOuterPadPitchWidth/2.;
-       fPadRowUp[i] = x;
-       fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ;
-    }
-  fNtRows = fNInnerSector*fNRowLow+fNOuterSector*fNRowUp;
-  fbStatus = kTRUE;
-  return kTRUE;
+     fYOuter[i]  = fPadRowUp[i]*tan(fOuterAngle/2.)-fOuterWireMount;
+   }
+ fNtRows = fNInnerSector*fNRowLow+fNOuterSector*fNRowUp;
+ fbStatus = kTRUE;
+ return kTRUE;
 }
-
+Float_t AliTPCParamSR::GetYInner(Int_t irow) const
+{
+  return fYInner[irow];
+}
+Float_t AliTPCParamSR::GetYOuter(Int_t irow) const
+{
+  return fYOuter[irow];
+}
 
 void AliTPCParamSR::Streamer(TBuffer &R__b)
 {
@@ -427,7 +444,7 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
   //we suppose that coordinate is expressed in float digits 
   // it's mean coordinate system 8
   //xyz[0] - float padrow xyz[1] is float pad  (center pad is number 0) and xyz[2] is float time bin
-  if ( (fInnerPRF==0)||(fOuterPRF==0)||(fTimeRF==0) ){ 
+  if ( (fInnerPRF==0)||(fOuter1PRF==0)||(fOuter2PRF==0) ||(fTimeRF==0) ){ 
     Error("AliTPCParamSR", "response function was not adjusted");
     return -1;
   }
@@ -442,8 +459,9 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
  
 
   static Float_t prfinner[2*padrn][5*padn];  //pad divided by 50
-  static Float_t prfouter[2*padrn][5*padn];  //prfouter division
-  
+  static Float_t prfouter1[2*padrn][5*padn];  //prfouter division
+  static Float_t prfouter2[2*padrn][5*padn];
+
   static Float_t rftime[5*timen];         //time division
   static Int_t blabla=0;
   static Float_t zoffset=0;
@@ -470,15 +488,21 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
 	prfinner[j][i] =
 	  fInnerPRF->GetPRF((i-2.5*fpadn)/fpadn
 			    *fInnerPadPitchWidth,(j-fpadrn)/fpadrn*fInnerPadPitchLength);
-	prfouter[j][i] =
-	  fOuterPRF->GetPRF((i-2.5*fpadn)/fpadn
-			    *fOuterPadPitchWidth,(j-fpadrn)/fpadrn*fOuterPadPitchLength);
+	prfouter1[j][i] =
+	  fOuter1PRF->GetPRF((i-2.5*fpadn)/fpadn
+			    *fOuterPadPitchWidth,(j-fpadrn)/fpadrn*fOuter1PadPitchLength);
+
+	//
+	prfouter2[j][i] =
+	  fOuter2PRF->GetPRF((i-2.5*fpadn)/fpadn
+			    *fOuterPadPitchWidth,(j-fpadrn)/fpadrn*fOuter2PadPitchLength);
       }
     }      
-  }
+  } // the above is calculated only once
+
   // calculate central padrow, pad, time
-  Int_t npads = GetNPads(index[1],index[2]);
-  Int_t cpadrow = index[2];
+  Int_t npads = GetNPads(index[1],index[3]);
+  Int_t cpadrow = index[2]; // electrons are here
   Int_t cpad    = TMath::Nint(xyz[1]);
   Int_t ctime   = TMath::Nint(xyz[2]+zoffset2);
   //calulate deviation
@@ -504,9 +528,22 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
   Int_t ftime =  (ctime>1) ? -2: -ctime;
   Int_t ltime =  (ctime<maxt-2) ? 2: maxt-ctime-1;
 
-  Int_t apadrow= TMath::Nint((dpadrow-fpadrow)*fpadrn+fpadrn);
-  //Int_t apadrow= TMath::Nint((-dpadrow-fpadrow)*fpadrn+fpadrn);
-  
+  // cross talk from long pad to short one
+  if(row==fNRowUp1-1 && fpadrow==-1) {
+    dpadrow *= fOuter2PadPitchLength;
+    dpadrow += fOuterWWPitch;
+    dpadrow /= fOuter1PadPitchLength;
+  }    
+  // cross talk from short pad to long one
+  if(row==fNRowUp1 && fpadrow==1){ 
+    dpadrow *= fOuter1PadPitchLength;
+    if(dpadrow < -0.) dpadrow = -1.; //protection against 3rd wire
+    dpadrow += fOuterWWPitch;
+    dpadrow /= fOuter2PadPitchLength;
+    
+  }
+  // "normal"
+  Int_t apadrow = TMath::Nint((dpadrow-fpadrow)*fpadrn+fpadrn);
   for (Int_t ipadrow = fpadrow; ipadrow<=lpadrow;ipadrow++){
     if ( (apadrow<0) || (apadrow>=2*padrn)) 
       continue;
@@ -515,8 +552,12 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
 	Float_t cweight;
 	if (index[1]<fNInnerSector)
 	  cweight=prfinner[apadrow][apad];
-	else
-	  cweight=prfouter[apadrow][apad];
+	else{
+	  if(row < fNRowUp1)
+	    cweight=prfouter1[apadrow][apad];
+          else cweight=prfouter2[apadrow][apad];
+	}
+
 	//	if (cweight<fResponseThreshold) continue;
 	Int_t atime = TMath::Nint((dtime-ftime)*ftimen+2.5*ftimen);
 	for (Int_t itime = ftime;itime<=ltime;itime++){	

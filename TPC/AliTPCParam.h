@@ -126,25 +126,42 @@ public:
   void  SetZLength(Float_t zlength) {fZLength = zlength;} 
   void  SetGeometryType(Int_t type) {fGeometryType = type;}
   //
+  // pad rows geometry
+  //
+  void SetRowNLow( Int_t NRowLow){fNRowLow = NRowLow;}
+  void SetRowNUp1 (Int_t NRowUp1){fNRowUp1 = NRowUp1 ;} //upper sec short pads 
+  void SetRowNUp2 (Int_t NRowUp2){fNRowUp2 = NRowUp2 ;} //upper sec long pads
+  void SetRowNUp (Int_t NRowUp){fNRowUp = NRowUp ;}  
+  //
   //set wire parameters
   //
   void  SetInnerNWires(Int_t nWires){  fNInnerWiresPerPad=nWires;}
   void  SetInnerDummyWire(Int_t dummy) {fInnerDummyWire  = dummy;}
   void  SetInnerOffWire(Float_t offset) {fInnerOffWire =offset;}    
-  void  SetOuterNWires(Int_t nWires){  fNOuterWiresPerPad=nWires;}
+  void  SetOuter1NWires(Int_t nWires){  fNOuter1WiresPerPad=nWires;}
+  void  SetOuter2NWire(Int_t nWires){  fNOuter2WiresPerPad=nWires;}
   void  SetOuterDummyWire(Int_t dummy) {fOuterDummyWire  = dummy;}
-  void  SetOuterOffWire(Float_t offset) {fOuterOffWire =offset;}    
+  void  SetOuterOffWire(Float_t offset) {fOuterOffWire =offset;} 
+  void  SetInnerWWPitch( Float_t wwPitch) {fInnerWWPitch = wwPitch;}
+  void  SetRInnerFirstWire(Float_t firstWire){fRInnerFirstWire = firstWire;}
+  void  SetRInnerLastWire(Float_t lastWire){fRInnerLastWire = lastWire;}
+  void  SetOuterWWPitch(Float_t wwPitch){fOuterWWPitch = wwPitch;}
+  void  SetLastWireUp1(Float_t wireUp1){fLastWireUp1 = wireUp1;} 
+  void  SetROuterFirstWire(Float_t firstWire){fROuterFirstWire = firstWire;}
+  void  SetROuterLastWire(Float_t lastWire){fROuterLastWire = lastWire;}   
   //
   //set pad parameter
   //
   void  SetInnerPadPitchLength(Float_t PadPitchLength){  fInnerPadPitchLength=PadPitchLength;}
   void  SetInnerPadPitchWidth(Float_t PadPitchWidth){  fInnerPadPitchWidth = PadPitchWidth;}
   void  SetInnerPadLength(Float_t PadLength){  fInnerPadLength=PadLength;}
-  void  SetInnerPadWidth(Float_t PadWidth) {  fInnerPadWidth=PadWidth;}  
-  void  SetOuterPadPitchLength(Float_t PadPitchLength){  fOuterPadPitchLength=PadPitchLength;}
+  void  SetInnerPadWidth(Float_t PadWidth) {  fInnerPadWidth=PadWidth;} 
+  void  SetOuter1PadPitchLength(Float_t PadPitchLength){  fOuter1PadPitchLength=PadPitchLength;}
+  void  SetOuter2PadPitchLength(Float_t PadPitchLength){  fOuter2PadPitchLength=PadPitchLength;}
   void  SetOuterPadPitchWidth(Float_t PadPitchWidth){  fOuterPadPitchWidth = PadPitchWidth;}
-  void  SetOuterPadLength(Float_t PadLength){  fOuterPadLength=PadLength;}
-  void  SetOuterPadWidth(Float_t PadWidth) {  fOuterPadWidth=PadWidth;} 
+  void  SetOuter1PadLength(Float_t PadLength){  fOuter1PadLength=PadLength;}
+  void  SetOuter2PadLength(Float_t PadLength){  fOuter2PadLength=PadLength;}
+  void  SetOuterPadWidth(Float_t PadWidth) {  fOuterPadWidth=PadWidth;}
   void  SetMWPCReadout(Bool_t type) {fBMWPCReadout = type;}
   void  SetNCrossRows(Int_t rows){fNCrossRows = rows;}
   //
@@ -205,10 +222,12 @@ public:
   Float_t  GetInnerOffWire() const {return fInnerOffWire;}
   Float_t  GetRInnerFirstWire() const {return fRInnerFirstWire;}
   Float_t  GetRInnerLastWire() const {return fRInnerLastWire;}
-  Int_t    GetOuterNWires() const {return fNOuterWiresPerPad;}
+  Int_t    GetOuter1NWires() const {return fNOuter1WiresPerPad;}
+  Int_t    GetOuter2NWires() const {return fNOuter2WiresPerPad;}
   Float_t  GetOuterWWPitch() const {return fOuterWWPitch;}  
   Int_t    GetOuterDummyWire() const {return fOuterDummyWire;}
   Float_t  GetOuterOffWire() const {return fOuterOffWire;}
+  Float_t  GetLastWireUp1()  {return fLastWireUp1;}
   Float_t  GetROuterFirstWire() const {return fROuterFirstWire;}
   Float_t  GetROuterLastWire() const {return fROuterLastWire;}  
   Float_t  GetWWPitch(Int_t isector = 0) const  {
@@ -219,20 +238,28 @@ public:
   Float_t  GetInnerPadPitchLength() const {return fInnerPadPitchLength;}
   Float_t  GetInnerPadPitchWidth() const {return fInnerPadPitchWidth;}
   Float_t  GetInnerPadLength() const {return fInnerPadLength;}
-  Float_t  GetInnerPadWidth() const  {return fInnerPadWidth;}  
-  Float_t  GetOuterPadPitchLength() const {return fOuterPadPitchLength;}
+  Float_t  GetInnerPadWidth() const  {return fInnerPadWidth;}
+  Float_t  GetOuter1PadPitchLength() const {return fOuter1PadPitchLength;}
+  Float_t  GetOuter2PadPitchLength() const {return fOuter2PadPitchLength;}  
   Float_t  GetOuterPadPitchWidth() const {return fOuterPadPitchWidth;}
-  Float_t  GetOuterPadLength() const {return fOuterPadLength;}
+  Float_t  GetOuter1PadLength() const {return fOuter1PadLength;}
+  Float_t  GetOuter2PadLength() const {return fOuter2PadLength;}
   Float_t  GetOuterPadWidth()  const {return fOuterPadWidth;}  
   Bool_t   GetMWPCReadout() const {return fBMWPCReadout;}
   Int_t    GetNCrossRows() const {return fNCrossRows;}
   Float_t  GetPadPitchWidth(Int_t isector = 0) const  {
     return ( (isector < fNInnerSector) ? fInnerPadPitchWidth :fOuterPadPitchWidth);}
-  Float_t  GetPadPitchLength(Int_t isector = 0)  const {
-    return ( (isector < fNInnerSector) ? fInnerPadPitchLength :fOuterPadPitchLength);} 
-
+  Float_t  GetPadPitchLength(Int_t isector = 0, Int_t padrow=0)  const
+  {
+    if (isector < fNInnerSector) {return fInnerPadPitchLength;} 
+    else { 
+     return ((padrow<fNRowUp1) ? fOuter1PadPitchLength:fOuter2PadPitchLength);
+    }
+  }
   Int_t GetNRowLow() const;   //get the number of pad rows in low sector
   Int_t GetNRowUp() const;    //get the number of pad rows in up sector
+  Int_t GetNRowUp1() const;  // number of short rows in up sector  
+  Int_t GetNRowUp2() const;  // number of long rows in up sector
   Int_t GetNRow(Int_t isec) const {return  ((isec<fNInnerSector) ?  fNRowLow:fNRowUp);}
   Int_t GetNRowsTotal(){return fNtRows;}  //get total nuber of rows
   Float_t GetPadRowRadiiLow(Int_t irow) const; //get the pad row (irow) radii
@@ -243,7 +270,10 @@ public:
   Int_t GetNPadsLow(Int_t irow) const;    //get the number of pads in row irow 
   Int_t GetNPadsUp(Int_t irow) const;     //get the number of pads in row irow
   Int_t GetNPads(Int_t isector,Int_t irow) const{
-     return ( (isector < fNInnerSector) ?GetNPadsLow(irow) : GetNPadsUp(irow));}    
+     return ( (isector < fNInnerSector) ?GetNPadsLow(irow) : GetNPadsUp(irow));} 
+
+  Float_t GetYInner(Int_t irow) const; // wire length in low sec row
+  Float_t GetYOuter(Int_t irow) const; // wire length in up sec row  
   //
   //get GAS parameters 
   //
@@ -314,7 +344,9 @@ protected :
   Float_t fInnerOffWire;      //oofset of first wire to the begining of the sector
   Float_t fRInnerFirstWire;   //position of the first wire                -calculated
   Float_t fRInnerLastWire;    //position of the last wire                 -calculated
-  Int_t   fNOuterWiresPerPad; //Number of wires per pad
+  Float_t fLastWireUp1;     //position of the last wire in outer1 sector
+  Int_t   fNOuter1WiresPerPad; //Number of wires per pad
+  Int_t   fNOuter2WiresPerPad;  
   Float_t fOuterWWPitch;      //pitch between wires in outer sector      -calculated
   Int_t   fOuterDummyWire;    //number of wires without pad readout
   Float_t fOuterOffWire;      //oofset of first wire to the begining of the sector
@@ -327,20 +359,26 @@ protected :
   Float_t   fInnerPadPitchWidth;     //Inner pad pitch width
   Float_t   fInnerPadLength;         //Inner pad  length
   Float_t   fInnerPadWidth;          //Inner pad  width
-  Float_t   fOuterPadPitchLength;    //Outer pad pitch length
+  Float_t   fOuter1PadPitchLength;    //Outer pad pitch length
+  Float_t   fOuter2PadPitchLength;    
   Float_t   fOuterPadPitchWidth;     //Outer pad pitch width
-  Float_t   fOuterPadLength;         //Outer pad  length
+  Float_t   fOuter1PadLength;         //Outer pad  length
+  Float_t   fOuter2PadLength;
   Float_t   fOuterPadWidth;          //Outer pad  width
   Bool_t    fBMWPCReadout;           //indicate wire readout - kTRUE or GEM readout -kFALSE
   Int_t     fNCrossRows;             //number of rows to crostalk calculation
       
-  Int_t fNRowLow;           //number of pad rows per low sector    -calculated
+  Int_t fNRowLow;           //number of pad rows per low sector        -set
+  Int_t fNRowUp1;            //number of short pad rows per sector up  -set
+  Int_t fNRowUp2;            //number of long pad rows per sector up   -set
   Int_t fNRowUp;            //number of pad rows per sector up     -calculated
   Int_t fNtRows;            //total number of rows in TPC          -calculated
   Float_t  fPadRowLow[600]; //Lower sector, pad row radii          -calculated
   Float_t  fPadRowUp[600];  //Upper sector, pad row radii          -calculated 
   Int_t    fNPadsLow[600];  //Lower sector, number of pads per row -calculated
-  Int_t    fNPadsUp[600];   //Upper sector, number of pads per row -calculated  
+  Int_t    fNPadsUp[600];   //Upper sector, number of pads per row -calculated
+  Float_t  fYInner[600];     //Inner sector, wire-length
+  Float_t  fYOuter[600];     //Outer sector, wire-length   
   //---------------------------------------------------------------------
   //   ALICE TPC Gas Parameters
   //--------------------------------------------------------------------
@@ -490,7 +528,10 @@ inline Int_t   AliTPCParam::Transform2to3(Float_t *xyz, Int_t *index)  const
   if  (index[1]<fNInnerSector)   
     index[2] =TMath::Nint((xyz[0]-fPadRowLow[0])/fInnerPadPitchLength);
   else
-    index[2] = TMath::Nint((xyz[0]-fPadRowUp[0])/fOuterPadPitchLength);
+    if (xyz[0] < fLastWireUp1 )
+      index[2] = TMath::Nint((xyz[0]-fPadRowUp[0])/fOuter1PadPitchLength);
+    else 
+      index[2] = TMath::Nint(fNRowUp1+(xyz[0]-fPadRowUp[64])/fOuter2PadPitchLength);
   index[0]=3;
   return index[2];
 }
@@ -504,7 +545,10 @@ inline void   AliTPCParam::Transform3to4(Float_t *xyz, Int_t *index)  const
   if  (index[1]<fNInnerSector)   
     xyz[0] -=index[2]*fInnerPadPitchLength+fPadRowLow[0];
   else
-    xyz[0] -=index[2]*fOuterPadPitchLength+fPadRowUp[0];
+    if (index[2]<fNRowUp1)
+      xyz[0] -=index[2]*fOuter1PadPitchLength+fPadRowUp[0];
+    else 
+      xyz[0] -=(index[2]-fNRowUp1)*fOuter2PadPitchLength+fPadRowUp[64];
   index[0]  =4;
 }
 
@@ -517,7 +561,10 @@ inline void   AliTPCParam::Transform4to3(Float_t *xyz, Int_t *index) const
   if  (index[1]<fNInnerSector)   
     xyz[0] +=index[2]*fInnerPadPitchLength+fPadRowLow[0];
   else
-    xyz[0] +=index[2]*fOuterPadPitchLength+fPadRowUp[0];
+    if(index[2]<fNRowUp1)
+      xyz[0] +=index[2]*fOuter1PadPitchLength+fPadRowUp[0];
+    else 
+      xyz[0] +=index[2]*fOuter2PadPitchLength+fPadRowUp[64];
   index[0]  =3;
 }
 
@@ -558,16 +605,17 @@ inline void AliTPCParam::Transform4to8(Float_t *xyz, Int_t *index) const
   //
   //transform xyz coordinates to 'digit' coordinates
   //
+
+  xyz[2]/=fZWidth;  
   if  (index[1]<fNInnerSector) {    
     xyz[0]/=fInnerPadPitchLength;
     xyz[1]/=fInnerPadPitchWidth;
-    xyz[2]/=fZWidth;
   }
-  else{    
-    xyz[0]/=fOuterPadPitchLength;
-    xyz[1]/=fOuterPadPitchWidth;
-    xyz[2]/=fZWidth;
-  }        
+  else{  
+    xyz[1]/=fOuterPadPitchWidth;  
+    if (index[2]<fNRowUp1 ) xyz[0]/=fOuter1PadPitchLength;      
+    else xyz[0]/=fOuter2PadPitchLength;     
+  }
   index[0]=8;
 }
 
@@ -576,16 +624,16 @@ inline void AliTPCParam::Transform8to4(Float_t *xyz, Int_t *index) const
   //
   //transforms 'digit' coordinates to xyz coordinates
   //
+  xyz[2]*=fZWidth;
   if  (index[1]<fNInnerSector) {    
     xyz[0]*=fInnerPadPitchLength;
-    xyz[1]*=fInnerPadPitchWidth;
-    xyz[2]*=fZWidth;
+    xyz[1]*=fInnerPadPitchWidth;    
   }
-  else{    
-    xyz[0]*=fOuterPadPitchLength;
-    xyz[1]*=fOuterPadPitchWidth;
-    xyz[2]*=fZWidth;
-  }        
+  else{  
+    xyz[1]*=fOuterPadPitchWidth;  
+    if (index[2] < fNRowUp1 ) xyz[0]*=fOuter1PadPitchLength;
+    else xyz[0]*=fOuter2PadPitchLength;           
+  } 
   index[0]=4;
 }
 
@@ -594,17 +642,16 @@ inline void  AliTPCParam::Transform6to8(Float_t *xyz, Int_t *index) const
   //
   //transforms cylindrical xyz coordinates to 'digit' coordinates
   //
-  
+  xyz[2]/=fZWidth;
   if  (index[1]<fNInnerSector) {    
     xyz[0]/=fInnerPadPitchLength;
     xyz[1]*=xyz[0]/fInnerPadPitchWidth;
-    xyz[2]/=fZWidth;
   }
-  else{   
-    xyz[0]/=fOuterPadPitchLength;
+  else{ 
     xyz[1]*=xyz[0]/fOuterPadPitchWidth;
-    xyz[2]/=fZWidth;
-  }        
+    if (index[2] < fNRowUp1 ) xyz[0]/=fOuter1PadPitchLength;
+    else xyz[0]/=fOuter2PadPitchLength;       
+  }
   index[0]=8;
 }
 
@@ -613,20 +660,17 @@ inline void  AliTPCParam::Transform8to6(Float_t *xyz, Int_t *index) const
   //
   //transforms 'digit' coordinates to cylindrical xyz coordinates 
   //
-  
+  xyz[2]*=fZWidth;
   if  (index[1]<fNInnerSector) {    
     xyz[0]*=fInnerPadPitchLength;
     xyz[1]/=xyz[0]/fInnerPadPitchWidth;
-    xyz[2]*=fZWidth;
   }
-  else{   
-    xyz[0]*=fOuterPadPitchLength;
-    xyz[1]/=xyz[0]/fOuterPadPitchWidth;
-    xyz[2]*=fZWidth;
-  }        
+  else{ 
+    xyz[1]/=xyz[0]/fOuterPadPitchWidth;  
+    if (index[2] < fNRowUp1 ) xyz[0]*=fOuter1PadPitchLength;
+    else xyz[0]*=fOuter2PadPitchLength;                
+  }  
   index[0]=6;
 }
-
-
 
 #endif  
