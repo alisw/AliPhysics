@@ -58,6 +58,7 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name,title)
   fPpsdRecPoints = new AliPHOSRecPoint::RecPointsList(10) ;
   fTrackSegments = new AliPHOSTrackSegment::TrackSegmentsList("AliPHOSTrackSegment", 10) ;
   fRecParticles  = new AliPHOSRecParticle::RecParticlesList("AliPHOSRecParticle", 10) ;
+  fDebugLevel    = 0;
   
 }
 //____________________________________________________________________________
