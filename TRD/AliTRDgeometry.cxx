@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2001/03/13 09:30:35  cblume
+Update of digitization. Moved digit branch definition to AliTRD
+
 Revision 1.7  2001/02/14 18:22:26  cblume
 Change in the geometry of the padplane
 
@@ -123,7 +126,7 @@ ClassImp(AliTRDgeometry)
   // Thickness of the the material layers
   //
   const Float_t AliTRDgeometry::fgkSeThick = 0.02;  
-  const Float_t AliTRDgeometry::fgkRaThick = 4.8;  
+  const Float_t AliTRDgeometry::fgkRaThick = 4.78;  
   const Float_t AliTRDgeometry::fgkPeThick = 0.20;    
   const Float_t AliTRDgeometry::fgkMyThick = 0.005;
   const Float_t AliTRDgeometry::fgkXeThick = 3.5;
@@ -139,14 +142,12 @@ ClassImp(AliTRDgeometry)
   //
   // Position of the material layers
   //
-  const Float_t AliTRDgeometry::fgkSeZpos  = -4.1525; 
-  const Float_t AliTRDgeometry::fgkRaZpos  = -1.7425;
+  const Float_t AliTRDgeometry::fgkSeZpos  = -4.14; 
+  const Float_t AliTRDgeometry::fgkRaZpos  = -1.74;
   const Float_t AliTRDgeometry::fgkPeZpos  =  0.0000;
-//const Float_t AliTRDgeometry::fgkMyZpos  =  0.6600;
-//const Float_t AliTRDgeometry::fgkDrZpos  =  2.1625;
-  const Float_t AliTRDgeometry::fgkMyZpos  =  0.8500;
-  const Float_t AliTRDgeometry::fgkDrZpos  =  2.3625;
-  const Float_t AliTRDgeometry::fgkAmZpos  =  4.1125;
+  const Float_t AliTRDgeometry::fgkMyZpos  =  0.6550;
+  const Float_t AliTRDgeometry::fgkDrZpos  =  2.1600;
+  const Float_t AliTRDgeometry::fgkAmZpos  =  3.9100;
   const Float_t AliTRDgeometry::fgkCuZpos  = -1.3370; 
   const Float_t AliTRDgeometry::fgkSuZpos  =  0.0000;
   const Float_t AliTRDgeometry::fgkFeZpos  =  1.3053;
