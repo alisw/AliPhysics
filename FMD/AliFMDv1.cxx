@@ -125,10 +125,9 @@ void AliFMDv1::CreateGeometry()
     sprintf(nameSi,"GSI%d",ifmd+1);
     sprintf(nameSector,"GSC%d",ifmd+1);
     sprintf(nameRing,"GRN%d",ifmd+1);
-    printf(name,nameSi);
-    
+
     zfmd=TMath::Abs(z[ifmd]);
-    printf("zfmd %f z[ifmd] %f",zfmd,z[ifmd]);
+
     AliFMD::Eta2Radius(etain[ifmd],zfmd,&rin[ifmd]);
     AliFMD::Eta2Radius(etaout[ifmd],zfmd,&rout[ifmd]);
     
@@ -136,10 +135,8 @@ void AliFMDv1::CreateGeometry()
     par[1]=rout[ifmd];
     par[2]=zFMD/2;
     gMC->Gsvolu(name,"TUBE", idtmed[3], par, 3);
-    //    par[2]=zDet/2;
     gMC->Gsvolu(nameSi,"TUBE", idtmed[1], par, 0);
     
-    printf ("rin %f rout %f ZFMD %f\n",par[0],par[1],z[ifmd]);
     if (z[ifmd] < 0){  
       gMC->Gspos(name,1,"ALIC",0,0,z[ifmd],0, "ONLY");}
     else { 
@@ -148,13 +145,12 @@ void AliFMDv1::CreateGeometry()
     par[2]=zDet/2;
     zpos=zFMD/2 -par[2];
     gMC->Gsposp(nameSi,ifmd+1,name,0,0,zpos,0, "ONLY",par,3);
-    cout<<" Si "<<nameSi<<" ifmd "<<ifmd<<" rin "<<par[0]<<" rout "<<par[1]<<
-      " zDet "<<par[2]<<endl;
+
     //Granularity
-    cout<<"fSectorsSi1 "<<fSectorsSi1<<
-      " fRingsSi1 "<<fRingsSi1<<
-      " fSectorsSi2 "<<fSectorsSi2<<
-      " fRingsSi2 "<<fRingsSi2<<endl;
+    fSectorsSi1=20;
+    fRingsSi1=256;
+    fSectorsSi2=40;
+    fRingsSi2=128;
    if(ifmd==1||ifmd==3)
       { 
 	gMC->Gsdvn(nameSector, nameSi , fSectorsSi2, 2);
@@ -292,12 +288,12 @@ void AliFMDv1::StepManager()
 	   vol[1]=copy1;
 	   gMC->CurrentVolOffID(2,copy2);
 	   vol[0]=copy2;
-	   //  printf("vol0 %d vol1 %d vol2 %d\n",vol[0],vol[1],vol[2]); 
+
 	   gMC->TrackPosition(pos);
 	   hits[0]=pos[0];
 	   hits[1]=pos[1];
 	   hits[2]=pos[2];
-	   //	   printf(" Zpos %f \n",hits[2]);
+
 	   gMC->TrackMomentum(mom);
 	   hits[3]=mom[0];
 	   hits[4]=mom[1];
@@ -311,8 +307,6 @@ void AliFMDv1::StepManager()
 	 }
        if(gMC->IsTrackInside()){
 	   de=de+1000.*gMC->Edep();
-	   //	   cout<<" de "<<de<<endl;
-	   // cout<<" step "<<gMC->TrackStep()<<endl;
        }
        
        if(gMC->IsTrackExiting()
@@ -320,9 +314,6 @@ void AliFMDv1::StepManager()
 	  gMC->IsTrackStop())
 	 {
 	     hits[6]=de+1000.*gMC->Edep();
-	     //     cout<<" idSens "<<id<<endl;
-	     //cout<<" hits "<<hits[6]<<endl;
-	     //     for(Int_t i=0; i<9; i++) printf(" i %d hits %f \n",i,hits[i]);
       new(lhits[fNhits++]) AliFMDhit(fIshunt,gAlice->CurrentTrack(),vol,hits);
 	 } // IsTrackExiting()
      }
