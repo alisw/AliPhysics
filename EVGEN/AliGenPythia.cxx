@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  1999/11/09 07:38:48  fca
+Changes for compatibility with version 2.23 of ROOT
+
 Revision 1.12  1999/11/03 17:43:20  fca
 New version from G.Martinez & A.Morsch
 
@@ -184,6 +187,8 @@ void AliGenPythia::Generate()
 	if (fProcess != mb) {
 	    for (Int_t i = 0; i<np; i++) {
 		TParticle *  iparticle = (TParticle *) particles->At(i);
+		Int_t ks = iparticle->GetStatusCode();
+		if (ks==21) continue;
 		kf = CheckPDGCode(iparticle->GetPdgCode());
 		fChildWeight=(fPythia->GetBraPart(kf))*fParentWeight;	  
 //
@@ -281,7 +286,7 @@ void AliGenPythia::Generate()
 	    jev+=nc;
 	    if (jev >= fNpart) {
 		fKineBias=Float_t(fNpart)/Float_t(fTrials);
-		printf("\n Trials: %i\n",fTrials);
+		printf("\n Trials: %i %i %i\n",fTrials, fNpart, jev);
 		break;
 	    }
 	}
@@ -377,7 +382,7 @@ void AliGenPythia::AdjustWeights()
 Int_t AliGenPythia::CheckPDGCode(Int_t pdgcode)
 {
 //
-//  If the particle is in a diffractive state, then take action accordigly
+//  If the particle is in a diffractive state, then take action accordingly
   switch (pdgcode) {
   case 110:
     //rho_diff0 -- difficult to translate, return rho0
