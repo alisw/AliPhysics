@@ -30,7 +30,7 @@ public:
   AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *name, const char *title="") ;
   virtual ~AliPHOSv0(void) ;
 
-  virtual void   AddHit( Int_t track, Int_t id, Float_t *hits ) ;   // adds a pre-digitilized hit to the hit tree 
+  virtual void   AddHit( Int_t primary, Int_t id, Float_t *hits ) ; // adds a pre-digitilized hit to the hit tree 
   virtual void   BuildGeometry(void) ;                              // creates the geometry for the ROOT display
   void           BuildGeometryforPHOS(void) ;                       // creates the PHOS geometry for the ROOT display
   void           BuildGeometryforPPSD(void) ;                       // creates the PPSD geometry for the ROOT display

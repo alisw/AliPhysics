@@ -32,12 +32,19 @@
 ClassImp(AliPHOSDigit)
 
 //____________________________________________________________________________
-AliPHOSDigit::AliPHOSDigit(Int_t id, Int_t DigEnergy) : AliDigitNew( ), fId(id),fAmp(DigEnergy)
+AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy) 
 {  
-  // This part should be a true Digitization, but is not for the moment.
-  //  fAmp = energy ;
   fId = id;
   fAmp = DigEnergy ;
+  fPrimary = new Int_t[1] ; 
+  fPrimary[0] = primary ;
+  fNprimary = 1 ; 
+}
+
+//____________________________________________________________________________
+AliPHOSDigit::~AliPHOSDigit()
+{
+  delete fPrimary ; 
 }
 
 //____________________________________________________________________________
@@ -53,7 +60,33 @@ Bool_t AliPHOSDigit::operator==(AliPHOSDigit const &Digit) const
 AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const &Digit) 
 {
   fAmp += Digit.fAmp ;
+  
+  Int_t * tempo = new Int_t[fNprimary] ; 
+  Int_t index ; 
+  
+  Int_t oldfNprimary = fNprimary ; 
 
+  for ( index = 0 ; index < oldfNprimary ; index++ ){
+    cout << " 1 " << index << endl ; 
+    tempo[index] = fPrimary[index] ; 
+  }  
+ 
+  delete fPrimary ; 
+  fNprimary += Digit.GetNprimary() ; 
+  fPrimary = new Int_t[fNprimary] ; 
+  
+  for ( index = 0 ; index < oldfNprimary  ; index++ ) { 
+    cout << " 2 " << index << endl ; 
+    fPrimary[index] = tempo[index] ; 
+  }
+
+  Int_t jndex = 0 ; 
+  for ( index = oldfNprimary ; index < fNprimary ; index++ ) { 
+    cout << " 1 " << index << " " << jndex << endl ; 
+    fPrimary[index] = Digit.fPrimary[jndex] ; 
+    jndex++ ; 
+  }
+      
   return *this ;
 }
 

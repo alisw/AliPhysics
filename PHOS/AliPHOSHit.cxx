@@ -21,10 +21,11 @@
 // --- ROOT system ---
 
 // --- Standard library ---
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <strstream.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <strstream>
+#include <cassert>
 
 // --- AliRoot header files ---
 #include "AliPHOSHit.h"
@@ -35,23 +36,26 @@
 ClassImp(AliPHOSHit)
 
 //____________________________________________________________________________
-AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t track, Int_t id, Float_t *hits):
-AliHit(shunt, track)
+AliPHOSHit::AliPHOSHit(Int_t primary, Int_t id, Float_t *hits)
 {
 
-   fId      = id ;
-   fX       = hits[0];
-   fY       = hits[1];
-   fZ       = hits[2];
-   fELOS    = hits[3];
+   fId         = id ;
+   fX          = hits[0] ;
+   fY          = hits[1] ;
+   fZ          = hits[2] ;
+   fELOS       = hits[3] ;
+   fPrimary    = primary ;
 }
 
 //____________________________________________________________________________
 Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
 { 
-  if ( fId != rValue.GetId() ) return kFALSE;
+  Bool_t rv = kFALSE ; 
+
+  if ( fId == rValue.GetId() && fPrimary == rValue.GetPrimary() ) 
+    rv = kTRUE;
   
-  return kTRUE;
+  return rv;
 }
 
 //____________________________________________________________________________
@@ -64,9 +68,11 @@ AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue) const
    added.fY    = rValue.fY ;
    added.fZ    = rValue.fZ ;
 
-  added.fELOS += rValue.GetEnergy() ;
+   added.fELOS += rValue.GetEnergy() ;
+    
+   assert ( added.fPrimary == rValue.fPrimary ) ; 
 
-  return added;
+   return added;
 
 }
 

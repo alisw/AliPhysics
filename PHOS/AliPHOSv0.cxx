@@ -143,23 +143,23 @@ AliPHOSv0::~AliPHOSv0()
 }
 
 //____________________________________________________________________________
-void AliPHOSv0::AddHit(Int_t track, Int_t Id, Float_t * hits)
+void AliPHOSv0::AddHit(Int_t primary, Int_t Id, Float_t * hits)
 {
   Int_t hitCounter ;
   TClonesArray &ltmphits = *fTmpHits ;
   AliPHOSHit *newHit ;
   AliPHOSHit *curHit ;
-  Bool_t deja = false ;
+  Bool_t deja = kFALSE ;
 
   // In any case, fills the fTmpHit TClonesArray (with "accumulated hits")
 
-  newHit = new AliPHOSHit(fIshunt, track, Id, hits) ;
+  newHit = new AliPHOSHit(primary, Id, hits) ;
 
   for ( hitCounter = 0 ; hitCounter < fNTmpHits && !deja ; hitCounter++ ) {
     curHit = (AliPHOSHit*) ltmphits[hitCounter] ;
     if( *curHit == *newHit ) {
-      *curHit = *curHit + *newHit ;
-      deja = true ;
+     *curHit = *curHit + *newHit ;
+      deja = kTRUE ;
     }
   }
        
@@ -179,7 +179,7 @@ void AliPHOSv0::AddHit(Int_t track, Int_t Id, Float_t * hits)
   //    fNhits++ ;
   //  }
 
-   delete newHit;
+  delete newHit;
 
 }
 
@@ -1042,29 +1042,49 @@ Int_t AliPHOSv0::Digitize(Float_t Energy){
 //___________________________________________________________________________
 void AliPHOSv0::FinishEvent()
 {
-  cout << "//_____________________________________________________" << endl ;
-  cout << "<I> AliPHOSv0::FinishEvent() -- Starting digitalization" << endl ;
+  //  cout << "//_____________________________________________________" << endl ;
+  //  cout << "<I> AliPHOSv0::FinishEvent() -- Starting digitalization" << endl ;
   Int_t i ;
+  Int_t j ; 
   TClonesArray &lDigits = *fDigits ;
   AliPHOSHit  * hit ;
-  AliPHOSDigit * digit ;
+  AliPHOSDigit * newdigit ;
+  AliPHOSDigit * curdigit ;
+  Bool_t deja = kFALSE ; 
 
   for ( i = 0 ; i < fNTmpHits ; i++ ) {
     hit = (AliPHOSHit*)fTmpHits->At(i) ;
-    digit = new AliPHOSDigit(hit->GetId(),Digitize(hit->GetEnergy())) ;
-    new(lDigits[fNdigits]) AliPHOSDigit(* digit) ;
-    fNdigits++;  delete digit ;    
+    cout << "FinishEvent hit" << hit->GetPrimary() << " " << hit->GetId() << endl ; 
+    newdigit = new AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
+    for ( j = 0 ; j < fNdigits ;  j++) { 
+      curdigit = (AliPHOSDigit*) lDigits[j] ; 
+      if ( *curdigit == *newdigit) {
+	*curdigit = *newdigit + *curdigit  ; 
+	deja = kTRUE ; 
+      }
+    }
+    if ( !deja ) {
+      new(lDigits[fNdigits]) AliPHOSDigit(* newdigit) ;
+      fNdigits++ ;  
+    }
+ 
+    delete newdigit ;    
   } 
+  
+  for ( i = 0 ; i < fNdigits ; i++ ) {
+    newdigit = (AliPHOSDigit*)lDigits[i] ; 
+    Int_t * prim = newdigit->GetPrimary() ;
+    for ( j = 0 ; j < newdigit->GetNprimary() ; j++) 
+      cout << "FinishEvent digit " << prim[j] << " " << newdigit->GetId() << endl ; 
+  }
+
   Float_t energyandnoise ;
   for ( i = 0 ; i < fNdigits ; i++ ) {
-    digit =  (AliPHOSDigit * ) fDigits->At(i) ;
-    //    printf("GetId is %d and GetAmp is %d \n",digit->GetId(), digit->GetAmp()) ;
-    energyandnoise = digit->GetAmp() + Digitize(gRandom->Gaus(0.,fPINElectronicNoise)) ;
+    newdigit =  (AliPHOSDigit * ) fDigits->At(i) ;
+    energyandnoise = newdigit->GetAmp() + Digitize(gRandom->Gaus(0., fPINElectronicNoise)) ;
     if (energyandnoise < 0 ) energyandnoise = 0 ;
-    digit->SetAmp(energyandnoise);
-    //    printf("GetId is %d and GetAmp is %d \n",digit->GetId(), digit->GetAmp()) ;
+    newdigit->SetAmp(energyandnoise) ;
    
-
   }
 
 
@@ -1156,13 +1176,13 @@ void AliPHOSv0::StepManager(void)
   Int_t          relid[4] ;      // (box, layer, row, column) indices
   Float_t        xyze[4] ;       // position wrt MRS and energy deposited
   TLorentzVector pos ;
-  Int_t copy;
+  Int_t copy ;
 
+  Int_t primary =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
   TString name = fGeom->GetName() ; 
 
   if ( name == "GPS2" ) { // the CPV is a PPSD
     if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") )
-    //     if( strcmp ( gMC->CurrentVolName(), "GCEL" ) == 0 )  // We are inside a gas cell 
     {
       gMC->TrackPosition(pos) ;
       xyze[0] = pos[0] ;
@@ -1181,17 +1201,16 @@ void AliPHOSv0::StepManager(void)
 	// get the absolute Id number
 
 	Int_t absid ; 
-       	fGeom->RelToAbsNumbering(relid,absid) ; 
+       	fGeom->RelToAbsNumbering(relid, absid) ; 
 
 	// add current hit to the hit list      
-	AddHit(gAlice->CurrentTrack(), absid, xyze);
+	AddHit(primary, absid, xyze);
 
       } // there is deposited energy 
      } // We are inside the gas of the CPV  
    } // GPS2 configuration
   
-   if(gMC->CurrentVolID(copy) == gMC->VolId("PXTL") ) 
-  //      if( strcmp ( gMC->CurrentVolName(), "PXTL" ) == 0 ) { //  We are inside a PWO crystal
+   if(gMC->CurrentVolID(copy) == gMC->VolId("PXTL") )  //  We are inside a PBWO crystal
      {
        gMC->TrackPosition(pos) ;
        xyze[0] = pos[0] ;
@@ -1201,7 +1220,7 @@ void AliPHOSv0::StepManager(void)
 
        if ( xyze[3] != 0 ) {
           gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
-          relid[1] = 0   ;                    // means PW04
+          relid[1] = 0   ;                    // means PBW04
           gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
           gMC->CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
 
@@ -1212,7 +1231,7 @@ void AliPHOSv0::StepManager(void)
  
       // add current hit to the hit list
 
-          AddHit(gAlice->CurrentTrack(), absid, xyze);
+          AddHit(primary, absid, xyze);
     
        } // there is deposited energy
     } // we are inside a PHOS Xtal
