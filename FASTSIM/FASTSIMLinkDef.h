@@ -18,7 +18,7 @@
 #pragma link C++ class  AliFastMuonTriggerEff+;
 #pragma link C++ class  AliMUONFastTracking+;
 #pragma link C++ class  AliMUONFastTrackingEntry+;
-
+#pragma link C++ class  AliFastGlauber+;
 #endif
 
 
