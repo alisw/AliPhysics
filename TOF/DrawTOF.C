@@ -1,7 +1,7 @@
 //void DrawTOF()
 {
    gMC->Gsatt("*", "seen", -1);
-   gMC->Gsatt("alic", "seen", 0);
+   gMC->Gsatt("alic", "seen", 0);   
    gROOT->Macro("ViewTOF.C");
    gMC->Gdopt("hide", "on");
    gMC->Gdopt("shad", "on");

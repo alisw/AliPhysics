@@ -1,7 +1,7 @@
 #ifndef TOFv3_H
 #define TOFv3_H
 ///////////////////////////////////////////////////////
-//  Manager and hits classes for set:TOF  version 2  //
+//  Manager and hits classes for set:TOF  version 3  //
 ///////////////////////////////////////////////////////
  
 #include "AliTOF.h"
@@ -16,20 +16,22 @@ private:
   Int_t fIdFLT1; // Third sensitive volume identifier
   Int_t fIdFLT2; // Fourth sensitive volume identifier
   Int_t fIdFLT3; // Fifth sensitive volume identifier
-  
+ 
 public:
   AliTOFv3();
   AliTOFv3(const char *name, const char *title);
-  virtual      ~AliTOFv3() {}
-  virtual void  CreateGeometry();
-  virtual void  CreateMaterials();
-  virtual void  Init();
-  virtual Int_t IsVersion() const {return 3;}
-  virtual void  TOFpc(Float_t, Float_t, Float_t, Float_t, Float_t);
-  virtual void  StepManager();
-  virtual void  DrawModule();
-  
-  ClassDef(AliTOFv3,1)  // Time Of Flight version 3
+  virtual       ~AliTOFv3() {}
+  virtual void   CreateGeometry();
+  virtual void   CreateMaterials();
+  virtual void   Init();
+  virtual Int_t  IsVersion() const {return 3;}
+  virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t, Float_t);
+  virtual void   StepManager();
+  virtual void   DrawModule();
+ 
+   ClassDef(AliTOFv3,1)  //Time Of Flight version 3
 };
  
 #endif
+
+

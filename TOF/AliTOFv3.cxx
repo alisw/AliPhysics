@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Time Of Flight                                                           //
+//  Time Of Flight: as for version 1 but full coverage                       //
 //  This class contains the functions for version 3 of the Time Of Flight    //
 //  detector.                                                                //
 //                                                                           //
@@ -14,6 +14,7 @@
 
 #include "AliTOFv3.h"
 #include "AliRun.h"
+#include "AliConst.h"
  
 ClassImp(AliTOFv3)
  
@@ -38,7 +39,7 @@ AliTOFv3::AliTOFv3(const char *name, const char *title)
 void AliTOFv3::CreateGeometry()
 {
   //
-  // Create geometry for Time Of Flight version 2
+  // Create geometry for Time Of Flight version 0
   //
   //Begin_Html
   /*
@@ -46,9 +47,8 @@ void AliTOFv3::CreateGeometry()
   */
   //End_Html
   //
-
   //
-  // Create common geometry between version 2 and 3
+  // Create common geometry
   //
   AliTOF::CreateGeometry();
 }
@@ -58,177 +58,177 @@ void AliTOFv3::TOFpc(Float_t xm, Float_t ym, Float_t zm0,
 		     Float_t zm1, Float_t zm2)
 {
   //
-  // Definition of the Time Of Fligh Parallel Plate Chambers
-  //
-
-  Int_t inum;
-  Float_t xcor, zcor, ytop;
-  Int_t inum1;
-  Float_t xcor1, xcor2, ycoor;
-  Float_t stepx, stepz, dx, dy, dz, xp, yp, zp, shiftx, shiftz, ywidth;
-  Float_t shiftx1, shiftx2, xad, zad;
-  Int_t ink;
+  // Definition of the Time Of Fligh Resistive Plate Chambers
+  // xm, ym, zm - sizes of TOF modules (large)
+  
+  Float_t  ycoor;
+  Float_t zazor, xp, yp, zp;
   Float_t par[10];
-  Int_t inz;
-  Float_t xzd;
-  Int_t nxp, npx, npz;
-  Float_t xsz, ysz, zsz;
-  Int_t nzp0, nzp1, nzp2;
   
   Int_t *idtmed = fIdtmed->GetArray()-499;
   
-  // X size of PPC plate 
-  xsz = 54.;
-  // Y size of PPC plate 
-  ysz = .2;
-  // Z size of PPC plate 
-  zsz = 48.;
-  // First return additional shift along X 
-  xad = 1.5;
-  // Second return additional shift along X 
-  xzd = .5;
-  // Return additional shift along Z 
-  zad = .25;
-  // Width of DME box 
-  ywidth = 4.;
-  // X size of PPC chamber 
-  xp = 5.7;
-  // Y size of PPC chamber 
-  yp = .32;
-  // Z size of PPC chamber 
-  zp = 5.7;
-  // Frame width along X,Y and Z axis of PPC chambers 
-  dx = .2;
-  dy = .1;
-  dz = .2;
-  // No sensitive volumes with DME 
-  par[0] = xm / 2.;
-  par[1] = ywidth / 2.;
-  par[2] = zm0 / 2.;
-  ycoor = ym / 3. - ywidth / 2.;
-  gMC->Gsvolu("FBT1", "BOX ", idtmed[505], par, 3);
+  // gap in RPC chamber 
+  zazor = .03;
+  // Sizes of RPC chamber 
+  xp = 3.0; //small pixel
+//xp = 3.9; //large pixel 
+  yp = 12.3*0.05; // 5% X0 of glass 
+  zp = 3.0; //small pixel
+//zp = 4.1; //large pixel
+  // Large not sensitive volumes with CO2 
+  par[0] = xm/2;
+  par[1] = ym/2;
+  par[2] = zm0/2;
+  gMC->Gsvolu("FBT1", "BOX ", idtmed[506], par, 3); // CO2
   gMC->Gspos("FBT1", 0, "FTO1", 0., 0., 0., 0, "ONLY");
-  par[2] = zm1 / 2.;
-  gMC->Gsvolu("FBT2", "BOX ", idtmed[505], par, 3);
+  gMC->Gsdvn("FDT1", "FBT1", 2, 3); // 2 large modules along Z
+  par[2] = zm1 / 2;
+  gMC->Gsvolu("FBT2", "BOX ", idtmed[506], par, 3); // CO2
   gMC->Gspos("FBT2", 1, "FTO2", 0., 0., 0., 0, "ONLY");
-  par[2] = zm2 / 2.;
-  gMC->Gsvolu("FBT3", "BOX ", idtmed[505], par, 3);
+  gMC->Gsdvn("FDT2", "FBT2", 2, 3); // 2 (PHOS) modules along Z
+  par[2] = zm2 / 2;
+  gMC->Gsvolu("FBT3", "BOX ", idtmed[506], par, 3); // CO2
   gMC->Gspos("FBT3", 2, "FTO3", 0., 0., 0., 0, "ONLY");
-  // Electronic plate 
-  par[1] = ysz / 2.;
-  par[2] = zm0 / 2.;
-  ycoor = ywidth / 2. - ysz / 2.;
-  gMC->Gsvolu("FPE1", "BOX ", idtmed[504], par, 3);
-  gMC->Gspos("FPE1", 0, "FBT1", 0., ycoor, 0., 0, "ONLY");
-  gMC->Gspos("FPE1", 1, "FBT1", 0., -ycoor, 0., 0, "ONLY");
-  par[2] = zm1 / 2.;
-  gMC->Gsvolu("FPE2", "BOX ", idtmed[504], par, 3);
-  gMC->Gspos("FPE2", 0, "FBT2", 0., ycoor, 0., 0, "ONLY");
-  gMC->Gspos("FPE2", 1, "FBT2", 0., -ycoor, 0., 0, "ONLY");
-  par[2] = zm2 / 2.;
-  gMC->Gsvolu("FPE3", "BOX ", idtmed[504], par, 3);
-  gMC->Gspos("FPE3", 0, "FBT3", 0., ycoor, 0., 0, "ONLY");
-  gMC->Gspos("FPE3", 1, "FBT3", 0., -ycoor, 0., 0, "ONLY");
-  // Electronic insensitive volumes 
-  par[1] = yp / 2.;
-  par[2] = zm0 / 2.;
-  ytop = ywidth / 2. - (ysz * 2 + yp) / 2.;
-  gMC->Gsvolu("FST1", "BOX ", idtmed[505], par, 3);
-  gMC->Gsvolu("FLT1", "BOX ", idtmed[505], par, 3);
-  gMC->Gspos("FST1", 0, "FBT1", 0., ytop, 0., 0, "ONLY");
-  gMC->Gspos("FLT1", 0, "FBT1", 0., -ytop, 0., 0, "ONLY");
-  par[2] = zm1 / 2.;
-  gMC->Gsvolu("FST2", "BOX ", idtmed[505], par, 3);
-  gMC->Gsvolu("FLT2", "BOX ", idtmed[505], par, 3);
-  gMC->Gspos("FST2", 0, "FBT2", 0., ytop, 0., 0, "ONLY");
-  gMC->Gspos("FLT2", 0, "FBT2", 0., -ytop, 0., 0, "ONLY");
-  par[2] = zm2 / 2.;
-  gMC->Gsvolu("FST3", "BOX ", idtmed[505], par, 3);
-  gMC->Gsvolu("FLT3", "BOX ", idtmed[505], par, 3);
-  gMC->Gspos("FST3", 0, "FBT3", 0., ytop, 0., 0, "ONLY");
-  gMC->Gspos("FLT3", 0, "FBT3", 0., -ytop, 0., 0, "ONLY");
-  // PPC-plate number along X axis 
-  nxp = Int_t (xm / xsz);
-  // PPC-plate number along Z axis 
-  nzp0 = Int_t (zm0 / zsz);
-  nzp1 = Int_t (zm1 / zsz);
-  nzp2 = Int_t (zm2 / zsz);
-  // Position of big PPC-plate 
-  par[0] = xm * .5 / nxp;
-  par[2] = zm0 * .5 / nzp0;
-  gMC->Gsvolu("FSK1", "BOX ", idtmed[505], par, 3);
-  gMC->Gsvolu("FLK1", "BOX ", idtmed[505], par, 3);
-  inum = 0;
-  for (ink = 1; ink <= nxp; ++ink) {
-    xcor = xm * .5 * ((ink * 2 - 1) / (Float_t) nxp - 1.);
-    for (inz = 1; inz <= nzp0; ++inz) {
-      zcor = zm0 * .5 * ((inz * 2 - 1) / (Float_t) nzp0 - 1.);
-      ++inum;
-      gMC->Gspos("FSK1", inum, "FST1", xcor, 0., zcor, 0, "ONLY");
-      gMC->Gspos("FLK1", inum, "FLT1", xcor, 0., zcor, 0, "ONLY");
-    }
-    for (inz = 1; inz <= nzp1; ++inz) {
-      zcor = zm1 * .5 * ((inz * 2 - 1) / (Float_t) nzp1 - 1.);
-      ++inum;
-      gMC->Gspos("FSK1", inum, "FST2", xcor, 0., zcor, 0, "ONLY");
-      gMC->Gspos("FLK1", inum, "FLT2", xcor, 0., zcor, 0, "ONLY");
-    }
-    for (inz = 1; inz <= nzp2; ++inz) {
-      zcor = zm2 * .5 * ((inz * 2 - 1) / (Float_t) nzp2 - 1.);
-      ++inum;
-      gMC->Gspos("FSK1", inum, "FST3", xcor, 0., zcor, 0, "ONLY");
-      gMC->Gspos("FLK1", inum, "FLT3", xcor, 0., zcor, 0, "ONLY");
-    }
-  }
-  par[0] = xsz / 2.;
-  par[1] = yp / 2.;
-  par[2] = zsz / 2.;
-  gMC->Gsvolu("FSL1", "BOX ", idtmed[505], par, 3);
-  gMC->Gsvolu("FLL1", "BOX ", idtmed[505], par, 3);
-  shiftx = (xp / 2. + xad / 2.) / 2.;
-  shiftz = (zm0 / nzp0 - zsz) / 2.;
-  gMC->Gspos("FSL1", 0, "FSK1", -shiftx, 0., -shiftz, 0, "ONLY");
-  gMC->Gspos("FLL1", 0, "FLK1", shiftx, 0., shiftz, 0, "ONLY");
-  // PPC position on PPC-plate 
-  npx = 4;
-  npz = 8;
-  par[0] = xp / 2.;
-  par[1] = yp / 2.;
-  par[2] = zp / 2.;
-  stepx = (xad + xzd + xp * 2) / 2.;
-  stepz = (zp + zad) / 2.;
-  shiftz = npz * (zad + zp) / 2.;
-  shiftx = npx * (xp * 2 + xad + xzd) / 2.;
-  shiftx1 = (xp * 2 + xzd + xad) / 2. - xp / 2.;
-  shiftx2 = (xp * 2 + xzd + xad) / 2. - xp / 2. - xzd;
-  gMC->Gsvolu("FPG1", "BOX ", idtmed[507], par, 3);
-  for (ink = 1; ink <= npx; ++ink) {
-    xcor1 = -shiftx + stepx * (ink * 2 - 1) - shiftx1;
-    xcor2 = -shiftx + stepx * (ink * 2 - 1) + shiftx2;
-    for (inz = 1; inz <= npz; ++inz) {
-      zcor = -shiftz + stepz * (inz * 2 - 1);
-      ++inum;
-      inum1 = npx * npz + inum;
-      gMC->Gspos("FPG1", inum, "FSL1", xcor1, 0., zcor, 0, "ONLY");
-      gMC->Gspos("FPG1", inum1, "FSL1", xcor2, 0., zcor, 0, "ONLY");
-      gMC->Gspos("FPG1", inum, "FLL1", xcor1, 0., zcor, 0, "ONLY");
-      gMC->Gspos("FPG1", inum1, "FLL1", xcor2, 0., zcor, 0, "ONLY");
-    }
-  }
-  par[0] = xp / 2. - dx;
-  par[1] = yp / 2. - dy;
-  par[2] = zp / 2. - dz;
-  gMC->Gsvolu("FPG2", "BOX ", idtmed[509], par, 3);
-  gMC->Gspos("FPG2", 0, "FPG1", 0., 0., 0., 0, "ONLY");
+  gMC->Gsdvn("FDT3", "FBT3", 1, 3); // 1 (RICH) module along Z
+  //
+  //  subtraction of dead boundaries in X=2 cm and Z=7/2 cm 
+  par[0] = par[0]-2.;
+  Int_t nz0, nz1, nz2, nx; //- numbers of pixels
+  nx = Int_t (par[0]*2/xp);
+  cout <<"************************* TOF geometry **************************"<<endl;
+  cout<< "nx = "<< nx << " x size = "<< par[0]*2/nx << endl;
+  par[1] = -1;
+  par[2] = (zm0 / 2.)/2.; //this is half size of module after division by 2
+  par[2]=par[2]-7/2.;
+  nz0 = Int_t (par[2]*2/zp);
+cout<< "nz0 = "<< nz0 << " z0 size = "<< par[2]*2/nz0 << endl;
+  gMC->Gsvolu("FLT1", "BOX ", idtmed[506], par, 3); // CO2
+  gMC->Gspos("FLT1", 0, "FDT1", 0., 0., 0., 0, "ONLY");
+  par[2] = (zm1 / 2.)/2.; //this is half size of module after division by 2
+  par[2]=par[2]-7/2.;
+  nz1 = Int_t (par[2]*2/zp);
+cout<< "nz1 = "<< nz1 << " z1 size = "<< par[2]*2/nz1 << endl;
+  gMC->Gsvolu("FLT2", "BOX ", idtmed[506], par, 3); // CO2
+  gMC->Gspos("FLT2", 0, "FDT2", 0., 0., 0., 0, "ONLY");
+  par[2] = (zm2 / 2.); //this is half size of module after division by 1
+  par[2]=par[2]-7/2.;
+  nz2 = Int_t (par[2]*2/zp);
+cout<< "nz2 = "<< nz2 << " z2 size = "<< par[2]*2/nz2 << endl;
+  gMC->Gsvolu("FLT3", "BOX ", idtmed[506], par, 3); // CO2
+  gMC->Gspos("FLT3", 0, "FDT3", 0., 0., 0., 0, "ONLY");
+  //
+////////// Layers before detector ////////////////////
+// Mylar layer in front 0.5mm thick at the beginning
+  par[0] = -1;
+  par[1] = 0.05 / 2;
+  par[2] = -1;
+  ycoor = -ym/2 + par[1];
+  gMC->Gsvolu("FMY1", "BOX ", idtmed[511], par, 3); // Mylar
+  gMC->Gspos("FMY1", 0, "FLT1", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FMY2", "BOX ", idtmed[511], par, 3); // Mylar
+  gMC->Gspos("FMY2", 0, "FLT2", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FMY3", "BOX ", idtmed[511], par, 3); // Mylar
+  gMC->Gspos("FMY3", 0, "FLT3", 0., ycoor, 0., 0, "ONLY");
+// Honeycomb layer (1cm of special!!! polyethilene)
+  ycoor = ycoor + par[1];
+  par[0] = -1;
+  par[1] = 1. / 2;
+  par[2] = -1;
+  ycoor = ycoor + par[1];
+  gMC->Gsvolu("FPL1", "BOX ", idtmed[503], par, 3); // Hony
+  gMC->Gspos("FPL1", 0, "FLT1", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FPL2", "BOX ", idtmed[503], par, 3); // Hony
+  gMC->Gspos("FPL2", 0, "FLT2", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FPL3", "BOX ", idtmed[503], par, 3); // Hony
+  gMC->Gspos("FPL3", 0, "FLT3", 0., ycoor, 0., 0, "ONLY");
+  //
+///////////////// Detector itself //////////////////////
+  par[0] = -1;
+  par[1] = yp/2; // 5 %X0 thick of glass  
+  par[2] = -1;
+  ycoor = -ym/2 + 2;
+  gMC->Gsvolu("FLD1", "BOX ", idtmed[514], par, 3); // Glass
+  gMC->Gspos("FLD1", 0, "FLT1", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FLD2", "BOX ", idtmed[514], par, 3); // Glass
+  gMC->Gspos("FLD2", 0, "FLT2", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FLD3", "BOX ", idtmed[514], par, 3); // Glass
+  gMC->Gspos("FLD3", 0, "FLT3", 0., ycoor, 0., 0, "ONLY");
+  //
+  gMC->Gsdvn("FLZ1", "FLD1", nz0, 3); //pixel size xp=zp=3
+  gMC->Gsdvn("FLZ2", "FLD2", nz1, 3); 
+  gMC->Gsdvn("FLZ3", "FLD3", nz2, 3); 
+  gMC->Gsdvn("FLX1", "FLZ1", nx, 1); 
+  gMC->Gsdvn("FLX2", "FLZ2", nx, 1); 
+  gMC->Gsdvn("FLX3", "FLZ3", nx, 1); 
+  // RPC pixel itself 
+  par[0] = -1;//xp/2;
+  par[1] = -1;//yp/2; // 5 %X0 thick of glass  
+  par[2] = -1;//zp/2;
+  gMC->Gsvolu("FPA0", "BOX ", idtmed[514], par, 3);// Glass
+  gMC->Gspos("FPA0", 1, "FLX1", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("FPA0", 2, "FLX2", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("FPA0", 3, "FLX3", 0., 0., 0., 0, "ONLY");
+  // Freon gas sencitive volume
+  par[0] = -1;
+  par[1] = zazor/2;
+  par[2] = -1;
+  gMC->Gsvolu("FPG0", "BOX ", idtmed[513], par, 3);// Freon 
+  gMC->Gspos("FPG0", 0, "FPA0", 0., 0., 0., 0, "ONLY");
+  //
+////////// Layers after detector ////////////////////
+  // Honeycomb layer after (3cm)
+  par[0] = -1;
+  par[1] = 1.2 / 2.;
+  par[2] = -1;
+  ycoor = -ym/2 + 6. - par[1];
+  gMC->Gsvolu("FPE1", "BOX ", idtmed[503], par, 3); // Hony
+  gMC->Gspos("FPE1", 0, "FLT1", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FPE2", "BOX ", idtmed[503], par, 3); // Hony
+  gMC->Gspos("FPE2", 0, "FLT2", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FPE3", "BOX ", idtmed[503], par, 3); // Hony
+  gMC->Gspos("FPE3", 0, "FLT3", 0., ycoor, 0., 0, "ONLY");
+  // Electronics (Cu) after
+  par[0] = -1;
+  par[1] = 1.43*0.05 / 2.; // 5% of X0
+  par[2] = -1;
+  ycoor = -ym/2 + 6.+par[1];
+  gMC->Gsvolu("FEC1", "BOX ", idtmed[501], par, 3); // Cu
+  gMC->Gspos("FEC1", 0, "FLT1", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FEC2", "BOX ", idtmed[501], par, 3); // Cu
+  gMC->Gspos("FEC2", 0, "FLT2", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FEC3", "BOX ", idtmed[501], par, 3); // Cu
+  gMC->Gspos("FEC3", 0, "FLT3", 0., ycoor, 0., 0, "ONLY");
+ // Cooling water after
+  ycoor = ycoor+par[1];
+  par[0] = -1;
+  par[1] = 36.1*0.02 / 2.; // 2% of X0
+  par[2] = -1;
+  ycoor = ycoor+par[1];
+  gMC->Gsvolu("FWA1", "BOX ", idtmed[515], par, 3); // Water
+  gMC->Gspos("FWA1", 0, "FLT1", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FWA2", "BOX ", idtmed[515], par, 3); // Water
+  gMC->Gspos("FWA2", 0, "FLT2", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FWA3", "BOX ", idtmed[515], par, 3); // Water
+  gMC->Gspos("FWA3", 0, "FLT3", 0., ycoor, 0., 0, "ONLY");
+  //back plate honycomb (2cm)
+  par[0] = -1;
+  par[1] = 2 / 2.;
+  par[2] = -1;
+  ycoor = ym/2 - par[1];
+  gMC->Gsvolu("FEG1", "BOX ", idtmed[503], par, 3); // Hony
+  gMC->Gspos("FEG1", 0, "FLT1", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FEG2", "BOX ", idtmed[503], par, 3); // Hony
+  gMC->Gspos("FEG2", 0, "FLT2", 0., ycoor, 0., 0, "ONLY");
+  gMC->Gsvolu("FEG3", "BOX ", idtmed[503], par, 3); // Hony
+  gMC->Gspos("FEG3", 0, "FLT3", 0., ycoor, 0., 0, "ONLY");
 }
 
 //_____________________________________________________________________________
 void AliTOFv3::DrawModule()
 {
   //
-  // Draw a shaded view of the Time Of Flight version 3
+  // Draw a shaded view of the Time Of Flight version 0
   //
-
   // Set everything unseen
   gMC->Gsatt("*", "seen", -1);
   // 
@@ -237,23 +237,19 @@ void AliTOFv3::DrawModule()
   //
   // Set the volumes visible
   gMC->Gsatt("ALIC","SEEN",0);
-  gMC->Gsatt("FBAR","SEEN",0);
-  gMC->Gsatt("FTO1","SEEN",0);
-  gMC->Gsatt("FTO2","SEEN",0);
-  gMC->Gsatt("FTO3","SEEN",0);
-  gMC->Gsatt("FBT1","SEEN",0);
-  gMC->Gsatt("FBT2","SEEN",0);
-  gMC->Gsatt("FBT3","SEEN",0);
-  gMC->Gsatt("FST1","SEEN",0);
-  gMC->Gsatt("FLT1","SEEN",0);
-  gMC->Gsatt("FST2","SEEN",0);
-  gMC->Gsatt("FLT2","SEEN",0);
-  gMC->Gsatt("FST3","SEEN",0);
-  gMC->Gsatt("FLT3","SEEN",0);
-  gMC->Gsatt("FSK1","SEEN",0);
-  gMC->Gsatt("FLK1","SEEN",0);
-  gMC->Gsatt("FSL1","SEEN",1);
-  gMC->Gsatt("FLL1","SEEN",1);
+  gMC->Gsatt("FBAR","SEEN",1);
+  gMC->Gsatt("FTO1","SEEN",1);
+  gMC->Gsatt("FTO2","SEEN",1);
+  gMC->Gsatt("FTO3","SEEN",1);
+  gMC->Gsatt("FBT1","SEEN",1);
+  gMC->Gsatt("FBT2","SEEN",1);
+  gMC->Gsatt("FBT3","SEEN",1);
+  gMC->Gsatt("FDT1","SEEN",1);
+  gMC->Gsatt("FDT2","SEEN",1);
+  gMC->Gsatt("FDT3","SEEN",1);
+  gMC->Gsatt("FLT1","SEEN",1);
+  gMC->Gsatt("FLT2","SEEN",1);
+  gMC->Gsatt("FLT3","SEEN",1);
   //
   gMC->Gdopt("hide", "on");
   gMC->Gdopt("shad", "on");
@@ -273,7 +269,7 @@ void AliTOFv3::CreateMaterials()
   //
   // Define materials for the Time Of Flight
   //
-   AliTOF::CreateMaterials();
+  AliTOF::CreateMaterials();
 }
  
 //_____________________________________________________________________________
@@ -282,7 +278,6 @@ void AliTOFv3::Init()
   //
   // Initialise the detector after the geometry has been defined
   //
-
   AliTOF::Init();
   fIdFTO2=gMC->VolId("FTO2");
   fIdFTO3=gMC->VolId("FTO3");
@@ -302,7 +297,7 @@ void AliTOFv3::StepManager()
   Int_t vol[3];
   Int_t copy, id, i;
   Int_t *idtmed = fIdtmed->GetArray()-499;
-  if(gMC->GetMedium()==idtmed[510-1] && 
+  if(gMC->GetMedium()==idtmed[514-1] && 
      gMC->IsTrackEntering() && gMC->TrackCharge()
      && gMC->CurrentVolID(copy)==fIdSens) {
     TClonesArray &lhits = *fHits;
@@ -312,22 +307,23 @@ void AliTOFv3::StepManager()
     vol[2]=copy;
     gMC->CurrentVolOffID(3,copy);
     vol[1]=copy;
-    id=gMC->CurrentVolOffID(6,copy);
+    id=gMC->CurrentVolOffID(8,copy);
     vol[0]=copy;
     if(id==fIdFTO3) {
       vol[0]+=22;
-      id=gMC->CurrentVolOffID(4,copy);
+      id=gMC->CurrentVolOffID(5,copy);
       if(id==fIdFLT3) vol[1]+=6;
     } else if (id==fIdFTO2) {
       vol[0]+=20;
-      id=gMC->CurrentVolOffID(4,copy);
+      id=gMC->CurrentVolOffID(5,copy);
       if(id==fIdFLT2) vol[1]+=8;
     } else {
-      id=gMC->CurrentVolOffID(4,copy);
+      id=gMC->CurrentVolOffID(5,copy);
       if(id==fIdFLT1) vol[1]+=14;
     }
     gMC->TrackPosition(pos);
     gMC->TrackMomentum(mom);
+    //
     Double_t ptot=mom.Rho();
     Double_t norm=1/ptot;
     for(i=0;i<3;++i) {
