@@ -89,7 +89,7 @@ class AliGenGeVSim : public AliGenerator {
 
   AliGenGeVSim(const AliGenGeVSim & ggs): AliGenerator(ggs)
     {Fatal("copy ctor","Not implemented\n");}
-  AliGenGeVSim & operator=(const AliGenGeVSim & ggs)
+  AliGenGeVSim & operator=(const AliGenGeVSim & /*ggs*/)
     {Fatal("= operator","Not implemented\n"); return *this;}
 
   Int_t   fModel;            // Selected model (1-7)

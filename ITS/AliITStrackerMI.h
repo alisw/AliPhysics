@@ -113,7 +113,7 @@ public:
     void IncAccepted(){fAccepted++;}
     Int_t GetAccepted() const {return fAccepted;}
   protected:
-    AliITSlayer(const AliITSlayer& layer){;}
+    AliITSlayer(const AliITSlayer& /*layer*/){;}
     Double_t fR;                // mean radius of this layer
     Double_t fPhiOffset;        // offset of the first detector in Phi
     Int_t fNladders;            // number of ladders
@@ -229,7 +229,7 @@ protected:
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
   Float_t * fCoeficients;                //! working array with errors and mean cluser shape
  private:
-  AliITStrackerMI(const AliITStrackerMI * tracker){;}
+  AliITStrackerMI(const AliITStrackerMI * /*tracker*/){;}
   ClassDef(AliITStrackerMI,2)   //ITS tracker MI
 };
 

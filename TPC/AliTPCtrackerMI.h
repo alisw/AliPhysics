@@ -190,8 +190,8 @@ public:
      friend class AliTPCtrackerMI::AliTPCSector;
    public:
      AliTPCRow();
-     AliTPCRow(const AliTPCRow& r){;}           //dummy copy constructor
-     AliTPCRow &operator=(const AliTPCRow& r){return *this;} //dummy assignment operator
+     AliTPCRow(const AliTPCRow& /*r*/){;}           //dummy copy constructor
+     AliTPCRow &operator=(const AliTPCRow& /*r*/){return *this;} //dummy assignment operator
      ~AliTPCRow();
      void InsertCluster(const AliTPCclusterMI *c, UInt_t index);
      void ResetClusters();
@@ -228,8 +228,8 @@ private:
    public:
      AliTPCSector() { fN=0; fRow = 0; }
     ~AliTPCSector() { delete[] fRow; }
-     AliTPCSector(const AliTPCSector &s){;}           //dummy copy contructor 
-     AliTPCSector& operator=(const AliTPCSector &s){return *this;}//dummy assignment operator
+    AliTPCSector(const AliTPCSector & /*s*/){;}           //dummy copy contructor 
+    AliTPCSector& operator=(const AliTPCSector & /*s*/){return *this;}//dummy assignment operator
      AliTPCRow& operator[](Int_t i) const { return *(fRow+i); }
      Int_t GetNRows() const { return fN; }
      void Setup(const AliTPCParam *par, Int_t flag);
