@@ -41,8 +41,10 @@
 #include <TClonesArray.h>
 #include <TDatabasePDG.h>
 #include <TF1.h>
+#include <TH1.h>
 #include <TParticle.h>
 #include <TPDGCode.h>
+#include <TCanvas.h>
 #include <TVirtualMC.h>
 
 #include "AliConst.h"
@@ -69,23 +71,24 @@ static Double_t ptpi(Double_t *px, Double_t *)
   //     POWER LAW FOR PT > 500 MEV
   //     MT SCALING BELOW (T=160 MEV)
   //
-  const Double_t kp0 = 1.3;
-  const Double_t kxn = 8.28;
-  const Double_t kxlim=0.5;
-  const Double_t kt=0.160;
-  const Double_t kxmpi=0.139;
-  const Double_t kb=1.;
+  const Double_t kp0    = 1.3;
+  const Double_t kxn    = 8.28;
+  const Double_t kxlim  = 0.5;
+  const Double_t kt     = 0.160;
+  const Double_t kxmpi  = 0.139;
+  const Double_t kb     = 1.;
   Double_t y, y1, xmpi2, ynorm, a;
-  Double_t x=*px;
+  Double_t x = *px;
   //
-  y1=TMath::Power(kp0/(kp0+kxlim),kxn);
-  xmpi2=kxmpi*kxmpi;
-  ynorm=kb*(TMath::Exp(-sqrt(kxlim*kxlim+xmpi2)/kt));
-  a=ynorm/y1;
+  y1 = TMath::Power(kp0 / (kp0 + kxlim), kxn);
+  xmpi2 = kxmpi * kxmpi;
+  ynorm = kb * (TMath::Exp(-sqrt(kxlim * kxlim + xmpi2) / kt ));
+  a = ynorm / y1;
   if (x > kxlim)
-    y=a*TMath::Power(kp0/(kp0+x),kxn);
+    y = a * TMath::Power(kp0 / (kp0 + x), kxn);
   else
-    y=kb*TMath::Exp(-sqrt(x*x+xmpi2)/kt);
+    y = kb* TMath::Exp(-sqrt(x * x + xmpi2) / kt);
+  
   return y*x;
 }
 
@@ -219,6 +222,8 @@ void AliGenHIJINGpara::Init()
 	TMath::Max((Double_t)fThetaMin/2,1.e-10)));
     fPtpi   = new TF1("ptpi",&ptpi,0,20,0);
     fPtka   = new TF1("ptka",&ptka,0,20,0);
+    fPtpi->SetNpx(1000);
+    fPtka->SetNpx(1000);
     fETApic = new TF1("etapic",&etapic,etaMin,etaMax,0);
     fETAkac = new TF1("etakac",&etakac,etaMin,etaMax,0);
 
@@ -425,4 +430,21 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
 void AliGenHIJINGpara::Copy(TObject &) const
 {
   Fatal("Copy","Not implemented!\n");
+}
+
+
+void AliGenHIJINGpara::Draw( const char * /*opt*/)
+{
+    //
+    // Draw the pT and y Distributions
+    //
+     TCanvas *c0 = new TCanvas("c0","Canvas 0",400,10,600,700);
+     c0->Divide(2,1);
+     c0->cd(1);
+     fPtpi->Draw();
+     fPtpi->GetHistogram()->SetXTitle("p_{T} (GeV)");     
+     c0->cd(2);
+     fPtka->Draw();
+     fPtka->GetHistogram()->SetXTitle("p_{T} (GeV)");     
+
 }

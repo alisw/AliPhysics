@@ -29,7 +29,8 @@ class AliGenHIJINGpara : public AliGenerator
   virtual void SetPtRange(Float_t ptmin = 0., Float_t ptmax=15.);
   virtual void SetPi0Decays(Bool_t flag = kFALSE) {fPi0Decays = flag;}
   virtual void SetWeighting(Int_t flag = 0) {fAnalog = flag;}
-
+  virtual void Draw( const char *);
+  
  protected:
   Int_t   fNt;          // CurrentTrack;
   Bool_t  fPi0Decays;   // Flag for pi0 decays
