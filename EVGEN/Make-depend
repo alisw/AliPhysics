@@ -162,29 +162,30 @@ AliGenPythia.o: /hdb2/offline/pro/include/GParticle.h
 AliGenPythia.o: /soft/root/include/TMath.h
 AliPythia.o: AliPythia.h /soft/root/include/TPythia.h GenTypeDefs.h
 AliPythia.o: /hdb2/offline/pro/include/AliMC.h /soft/root/include/TNamed.h
-DimuonCombinator.o: DimuonCombinator.h /hdb2/offline/pro/include/GParticle.h
-DimuonCombinator.o: /soft/root/include/TObject.h /soft/root/include/TMath.h
-DimuonCombinator.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
-DimuonCombinator.o: /soft/root/include/TTree.h /soft/root/include/TROOT.h
-DimuonCombinator.o: /hdb2/offline/pro/include/AliRun.h
-DimuonCombinator.o: /soft/root/include/TStopwatch.h
-DimuonCombinator.o: /soft/root/include/TGeometry.h
-DimuonCombinator.o: /hdb2/offline/pro/include/AliModule.h
-DimuonCombinator.o: /soft/root/include/TNamed.h
-DimuonCombinator.o: /soft/root/include/TClonesArray.h
-DimuonCombinator.o: /soft/root/include/TAttLine.h
-DimuonCombinator.o: /soft/root/include/TAttMarker.h
-DimuonCombinator.o: /soft/root/include/TArrayI.h
-DimuonCombinator.o: /hdb2/offline/pro/include/AliHit.h
-DimuonCombinator.o: /hdb2/offline/pro/include/AliHeader.h
-DimuonCombinator.o: /hdb2/offline/pro/include/AliMagF.h
-DimuonCombinator.o: /soft/root/include/TVector.h
-DimuonCombinator.o: /hdb2/offline/pro/include/AliMC.h
-DimuonCombinator.o: /hdb2/offline/pro/include/AliGenerator.h
-DimuonCombinator.o: /soft/root/include/TArrayF.h
-DimuonCombinator.o: /soft/root/include/TGenerator.h
-DimuonCombinator.o: /hdb2/offline/pro/include/AliLego.h
-DimuonCombinator.o: /soft/root/include/TH2.h /soft/root/include/TRandom.h
+AliDimuCombinator.o: AliDimuCombinator.h
+AliDimuCombinator.o: /hdb2/offline/pro/include/GParticle.h
+AliDimuCombinator.o: /soft/root/include/TObject.h /soft/root/include/TMath.h
+AliDimuCombinator.o: /soft/root/include/TBrowser.h /soft/root/include/TList.h
+AliDimuCombinator.o: /soft/root/include/TTree.h /soft/root/include/TROOT.h
+AliDimuCombinator.o: /hdb2/offline/pro/include/AliRun.h
+AliDimuCombinator.o: /soft/root/include/TStopwatch.h
+AliDimuCombinator.o: /soft/root/include/TGeometry.h
+AliDimuCombinator.o: /hdb2/offline/pro/include/AliModule.h
+AliDimuCombinator.o: /soft/root/include/TNamed.h
+AliDimuCombinator.o: /soft/root/include/TClonesArray.h
+AliDimuCombinator.o: /soft/root/include/TAttLine.h
+AliDimuCombinator.o: /soft/root/include/TAttMarker.h
+AliDimuCombinator.o: /soft/root/include/TArrayI.h
+AliDimuCombinator.o: /hdb2/offline/pro/include/AliHit.h
+AliDimuCombinator.o: /hdb2/offline/pro/include/AliHeader.h
+AliDimuCombinator.o: /hdb2/offline/pro/include/AliMagF.h
+AliDimuCombinator.o: /soft/root/include/TVector.h
+AliDimuCombinator.o: /hdb2/offline/pro/include/AliMC.h
+AliDimuCombinator.o: /hdb2/offline/pro/include/AliGenerator.h
+AliDimuCombinator.o: /soft/root/include/TArrayF.h
+AliDimuCombinator.o: /soft/root/include/TGenerator.h
+AliDimuCombinator.o: /hdb2/offline/pro/include/AliLego.h
+AliDimuCombinator.o: /soft/root/include/TH2.h /soft/root/include/TRandom.h
 AliGenHalo.o: AliGenHalo.h /hdb2/offline/pro/include/AliGenerator.h
 AliGenHalo.o: /soft/root/include/TNamed.h /soft/root/include/TArrayF.h
 AliGenHalo.o: /soft/root/include/TGenerator.h /soft/root/include/TF1.h

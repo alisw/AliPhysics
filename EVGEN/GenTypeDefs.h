@@ -22,7 +22,7 @@ typedef enum
     MRS_D0=3030,
     MRS_G=3041,
     CTEQ_2pM=4024,
-    CTEQ_4M=4034,
+    CTEQ_4M=4034
 }
 StrucFunc_t;
 
