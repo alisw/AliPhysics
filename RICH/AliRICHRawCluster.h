@@ -27,18 +27,8 @@ public:
     Int_t       fClusterType;    //??
     Int_t       fCtype;          //CL0, CL1, etc...
  public:
-    AliRICHRawCluster() {
-	fTracks[0]=fTracks[1]=fTracks[2]=-1; 
-	fQ=0; fX=fY=0; fMultiplicity=0;
-	for (int k=0;k<50;k++) {
-	    fIndexMap[k]=-1;
-	    fOffsetMap[k]=0;
-	    fContMap[k]=0;
-	    fPhysicsMap[k]=-1;
-	    fCtype=-1;
-	}
-	fNcluster[0]=fNcluster[1]=-1;
-    }
+    
+    AliRICHRawCluster();
     virtual ~AliRICHRawCluster() {}
     
     Float_t GetRadius() {return TMath::Sqrt(fX*fX+fY*fY);}

@@ -15,13 +15,34 @@
 
 /*
   $Log$
+  Revision 1.1  2000/06/12 15:27:26  jbarbosa
+  Cleaned up version.
+
 */
 
 
 #include "AliRICHRawCluster.h"
 
+#include <TMath.h>
+#include <TArrayF.h>
+
 
 ClassImp(AliRICHRawCluster)
+
+AliRICHRawCluster :: AliRICHRawCluster() 
+{
+  fTracks[0]=fTracks[1]=fTracks[2]=-1; 
+  fQ=0; fX=fY=0; fMultiplicity=0;
+  for (int k=0;k<50;k++) {
+    fIndexMap[k]=-1;
+    fOffsetMap[k]=0;
+    fContMap[k]=0;
+    fPhysicsMap[k]=-1;
+    fCtype=-1;
+  }
+  fNcluster[0]=fNcluster[1]=-1;
+}
+
 Int_t AliRICHRawCluster::Compare(TObject *obj)
 {
 
