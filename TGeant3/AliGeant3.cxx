@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.8  2000/09/06 14:56:34  morsch
+gudcay() method implemented.
+Decays are performed using  the AliDecayer interface. The pointer to the instance of AliDecayer
+is obtained from geant3 (will be gMC once it has been implemented for Geant4).
+
 Revision 1.7  2000/07/13 16:19:10  fca
 Mainly coding conventions + some small bug fixes
 
@@ -434,6 +439,9 @@ void gudcay()
 //
     
     TGeant3* geant3=(TGeant3*) gMC;
+  // set decay table
+  gMC->Decayer()->ForceDecay();
+
 // Initialize 4-momentum vector    
     Int_t ipart = geant3->Gckine()->ipart;
     TLorentzVector p;
@@ -442,7 +450,6 @@ void gudcay()
     p[1]=geant3->Gctrak()->vect[4];
     p[2]=geant3->Gctrak()->vect[5];
     p[3]=geant3->Gctrak()->vect[6];    
-//    printf("\n Theta: %f\n", TMath::ATan2(TMath::Sqrt(p[0]*p[0]+p[1]*p[1]), p[2]));
     
 // Convert from geant to lund particle code
     Int_t iplund=gMC->PDGFromId(ipart);
@@ -450,7 +457,7 @@ void gudcay()
     static TClonesArray *particles;
     if(!particles) particles=new TClonesArray("TParticle",1000);
 // Decay
-    geant3->Decayer()->Decay(iplund, &p);
+    gMC->Decayer()->Decay(iplund, &p);
     
 // Fetch Particles
     Int_t np = geant3->Decayer()->ImportParticles(particles);
@@ -471,17 +478,13 @@ void gudcay()
 	Int_t index=geant3->Gcking()->ngkine;
 // Put particle on geant stack
 // momentum vector
-//	printf("\n Theta: %f\n", TMath::ATan2(TMath::Sqrt(
-//	    iparticle->Px()*iparticle->Px()+
-//	    iparticle->Py()*iparticle->Py()), iparticle->Pz()));
 
 	(geant3->Gcking()->gkin[index][0]) = iparticle->Px();
 	(geant3->Gcking()->gkin[index][1]) = iparticle->Py();
 	(geant3->Gcking()->gkin[index][2]) = iparticle->Pz();
 	(geant3->Gcking()->gkin[index][3]) = iparticle->Energy();
 	Int_t ilu = gMC->IdFromPDG(kf);
-//	printf("\n Put Particle %d %d %d %f %f %d on stack\n ",kf,  ilu, index, 
-//	    (geant3->Gcking()->gkin[index][0]), iparticle->T(),ks);
+
 // particle type	
 	(geant3->Gcking()->gkin[index][4]) = Float_t(ilu);
 // position
@@ -781,9 +784,9 @@ void gustep()
   Float_t polar[3]={0,0,0};
   Float_t mom[3];
   const char *kChproc;
+
   
   TGeant3* geant3 = (TGeant3*) gMC;
-
   //     Stop particle if outside user defined tracking region 
   gMC->TrackPosition(x);
   r=TMath::Sqrt(x[0]*x[0]+x[1]*x[1]);
