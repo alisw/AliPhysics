@@ -213,16 +213,16 @@ Bool_t  AliMUONGeometrySegmentation::GetPadI(Int_t detElemId,
 // ---
 
   if (!Notify(detElemId)) return false;
-  
-  if (!fCurrentSegmentation->HasPad(xg, yg, zg)) return false;
 
   Float_t xl, yl, zl;
   fCurrentDetElement->Global2Local(xg, yg, zg, xl, yl, zl); 
 
+  if (!fCurrentSegmentation->HasPad(xl, yl, zl)) return false;
+
   fCurrentSegmentation->GetPadI(xl, yl, zl, ix, iy);
   return true;
 }
-		       
+	       
 //______________________________________________________________________________
 Bool_t  AliMUONGeometrySegmentation::GetPadC(Int_t detElemId,
                                         Int_t ix, Int_t iy, 
