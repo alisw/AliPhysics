@@ -747,6 +747,7 @@ void AliPMDDigitizer::Exec(Option_t *option)
 {
   // Does the event merging and digitization
 
+  fpw = fopen("digits_test.dat","w");
   fDebug = 0;
   const char *cdeb = strstr(option,"deb");
   if(cdeb)
@@ -1098,7 +1099,41 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
   // Test Beam Data
   // To be done
   //
-  adc = mev*1.;
+
+  //  adc = mev*1.;
+
+  
+  // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+  // PS Test in September 2003
+  // MeV - ADC conversion for 10bit ADC
+
+  const Float_t kConstant   = 7.181;
+  const Float_t kErConstant = 0.6899;
+  const Float_t kSlope      = 35.93;
+  const Float_t kErSlope    = 0.306;
+
+  //gRandom->SetSeed();
+
+  Float_t cons   = gRandom->Gaus(kConstant,kErConstant);
+  Float_t slop   = gRandom->Gaus(kSlope,kErSlope);
+
+  Float_t adc10bit = slop*mev*0.001 + cons;
+
+  // 12 bit adc
+
+  Int_t adc12bit = (Int_t) (4.0*adc10bit);
+
+  if(adc12bit < 3000)
+    {
+      adc = (Float_t) adc12bit;
+    }
+  else if (adc12bit >= 3000)
+    {
+      adc = 3000.0;
+    }
+
+  // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+
 }
 //____________________________________________________________________________
 void AliPMDDigitizer::AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
