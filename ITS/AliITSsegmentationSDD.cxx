@@ -158,7 +158,7 @@ void AliITSsegmentationSDD::GetGlobal(Int_t module,Float_t *l ,Float_t *g){
 
 }
 //----------------------------------------------------------------------
-void AliITSsegmentationSDD::Print(){
+void AliITSsegmentationSDD::Print(Option_t *opt) const {
   // Print SDD segmentation Parameters
 
    cout << "**************************************************" << endl;

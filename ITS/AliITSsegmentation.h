@@ -66,7 +66,7 @@ public TObject {
     // Maximum number of Cells in z
     virtual Int_t    Npz() {return 0;}
     // Layer
-    virtual Int_t GetLayer() {return 0;}
+    virtual Int_t GetLayer() const {return 0;}
     // Angles 
     virtual void Angles(Float_t &, Float_t&) {}
     // Set cell position
@@ -85,8 +85,8 @@ public TObject {
     virtual Int_t MorePads() {return 0;}
     //
     // Get next neighbours 
-    virtual void Neighbours
-      (Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[10], Int_t Zlist[10]) {}
+    virtual void Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist,
+			    Int_t Xlist[10], Int_t Zlist[10]) {}
     //
     // Current cell cursor during disintegration
     // x-coordinate
