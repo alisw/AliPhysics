@@ -581,8 +581,8 @@ Bool_t AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
 	<<"No TPC parameters found"<<ENDLOG;
       return kFALSE;
     }
-  
-  AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;
+
+  AliTPCPRF2D    * prfinner    = new AliTPCPRF2D;
   AliTPCPRF2D    * prfouter1   = new AliTPCPRF2D;
   AliTPCPRF2D    * prfouter2   = new AliTPCPRF2D;  
   AliTPCRF1D     * rf    = new AliTPCRF1D(kTRUE);
@@ -598,7 +598,7 @@ Bool_t AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
 	<<"Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !"<<ENDLOG;
       return kFALSE;
     }
-  prfinner->Read("prf_07504_Gati_056068_d02");
+  prfinner ->Read("prf_07504_Gati_056068_d02");
   prfouter1->Read("prf_10006_Gati_047051_d03");
   prfouter2->Read("prf_15006_Gati_047051_d03");  
   prf_file->Close();
