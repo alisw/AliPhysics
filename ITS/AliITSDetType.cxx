@@ -15,6 +15,9 @@
 
 #include "AliITSDetType.h"
 
+#include "AliITSClusterFinder.h"
+#include "AliITSsimulation.h"
+
 ClassImp(AliITSDetType)	 
 
 AliITSDetType::AliITSDetType() 
@@ -26,9 +29,14 @@ AliITSDetType::AliITSDetType()
     fReconst=0;
 }
 
+AliITSDetType::~AliITSDetType() 
+{
+  // destructor
+}
 //__________________________________________________________________________
 AliITSDetType::AliITSDetType(const AliITSDetType &source){
   //     Copy Constructor 
+
   if(&source == this) return;
   this->fReconst = source.fReconst;
   this->fSimulation = source.fSimulation;

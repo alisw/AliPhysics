@@ -17,38 +17,36 @@ class AliITSDetType:public TObject
 
  public:
     AliITSDetType();
-    ~AliITSDetType(){
-      //destructor
-    }
+    virtual ~AliITSDetType();
     AliITSDetType(const AliITSDetType &source); // copy constructor
     AliITSDetType& operator=(const AliITSDetType &source); // assign. operator
 
 // Set the defaults
-  void   Init() {}
+  virtual void   Init() {}
 
 //
-  void    SegmentationModel(AliITSsegmentation* thisSegmentation){ 
+  virtual void    SegmentationModel(AliITSsegmentation* thisSegmentation){ 
     // Configure segmentation model
     if(fSegmentation) delete fSegmentation;
     fSegmentation=thisSegmentation;
   }
   //
-  void    ResponseModel(AliITSresponse* thisResponse) { 
+  virtual void    ResponseModel(AliITSresponse* thisResponse) { 
     // Configure response model
     if(fResponse) delete fResponse;
     fResponse=thisResponse;
   }
   //
-  void    SimulationModel(AliITSsimulation *thisSimulation) {
+  virtual void    SimulationModel(AliITSsimulation *thisSimulation) {
     // Configure simulation model
     fSimulation = thisSimulation;
   }
   //
-  void    ReconstructionModel(AliITSClusterFinder *thisReconstruction) {
+  virtual void    ReconstructionModel(AliITSClusterFinder *thisReconstruction) {
 // Configure reconstruction model
       fReconst = thisReconstruction;
   }
-  void    ClassNames(const char *digit, const char *cluster) { 
+  virtual void    ClassNames(const char *digit, const char *cluster) { 
     // Set class names for digits and clusters
     fDigClassName=digit; fClustClassName=cluster; 
   } 
@@ -87,7 +85,7 @@ protected:
   TString              fDigClassName;      // string
   TString              fClustClassName;    // string
   
-  ClassDef(AliITSDetType,1)     // container for simulation and reconstruction
+  ClassDef(AliITSDetType,1)
     
 };
 
