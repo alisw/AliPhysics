@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.6  2000/11/06 09:20:43  morsch
+AliMUON delegates part of BuildGeometry() to AliMUONSegmentation using the
+Draw() method. This avoids code and parameter replication.
+
 Revision 1.5  2000/10/23 13:37:40  morsch
 Correct z-position of slat planes.
 
@@ -115,6 +119,7 @@ void AliMUONSegmentationSlat::GlobalToLocal(
 //                                                 positive side is shifted up
 // by half the overlap
     zlocal = z-fChamber->Z();
+    zlocal = (x>0) ? zlocal-2.*fDz : zlocal+2.*fDz;
 //  Set the signs for the symmetry transformation and transform to first quadrant
     SetSymmetry(x);
     Float_t xabs=TMath::Abs(x);
@@ -177,7 +182,9 @@ LocalToGlobal(Int_t islat, Float_t  xlocal, Float_t  ylocal, Float_t  &x, Float_
     x = (xlocal+fXPosition[islat])*fSym;
     y=(ylocal+fYPosition[islat]);
 
-    z = (TMath::Even(islat)) ? -fDz : fDz ; 
+    z = (TMath::Even(islat)) ?     -fDz : fDz ; 
+    z = (x>0)                ? z+2.*fDz : z-2.*fDz ; 
+
     z+=fChamber->Z();
 }
 
@@ -249,7 +256,8 @@ GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z)
     x=x*TMath::Sign(1,ix);
 
 // z-position
-    z = (TMath::Even(islat)) ? -fDz : fDz ; 
+    z = (TMath::Even(islat)) ?      -fDz : fDz ; 
+    z = (x>0)                ?  z+2.*fDz : z-2.*fDz ; 
     z += fChamber->Z();
 }
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2000/11/06 11:39:02  morsch
+Bug in StepManager() corrected.
+
 Revision 1.14  2000/11/06 09:16:50  morsch
 Avoid overlap of slat volumes.
 
@@ -615,21 +618,22 @@ void AliMUONv1::CreateGeometry()
 	 spar[0] = slatLength3[i]/2.; 
 	 spar[1] = slatHeight/2.;
 	 spar[2] = slatWidth/2.; 
+	 Float_t dzCh3=spar[2];
 	 // zSlat to be checked (odd downstream or upstream?)
 	 Float_t zSlat = (i%2 ==0)? -slatWidth/2. : slatWidth/2.; 
 	 zSlat*=1.01;
 	 sprintf(volNam5,"S05%d",i);
 	 gMC->Gsvolu(volNam5,"BOX",slatMaterial,spar,3);
-	 gMC->Gspos(volNam5, i*4+1,"C05M", xSlat3, ySlat31, zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam5, i*4+2,"C05M",-xSlat3, ySlat31, zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam5, i*4+3,"C05M", xSlat3, ySlat32,-zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam5, i*4+4,"C05M",-xSlat3, ySlat32,-zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam5, i*4+1,"C05M", xSlat3, ySlat31, zSlat+2.*dzCh3, 0, "ONLY");
+	 gMC->Gspos(volNam5, i*4+2,"C05M",-xSlat3, ySlat31, zSlat-2.*dzCh3, 0, "ONLY");
+	 gMC->Gspos(volNam5, i*4+3,"C05M", xSlat3, ySlat32,-zSlat+2.*dzCh3, 0, "ONLY");
+	 gMC->Gspos(volNam5, i*4+4,"C05M",-xSlat3, ySlat32,-zSlat-2.*dzCh3, 0, "ONLY");
 	 sprintf(volNam6,"S06%d",i);
 	 gMC->Gsvolu(volNam6,"BOX",slatMaterial,spar,3);
-	 gMC->Gspos(volNam6, i*4+1,"C06M", xSlat3, ySlat31, zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam6, i*4+2,"C06M",-xSlat3, ySlat31, zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam6, i*4+3,"C06M", xSlat3, ySlat32,-zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam6, i*4+4,"C06M",-xSlat3, ySlat32,-zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam6, i*4+1,"C06M", xSlat3, ySlat31, zSlat+2.*dzCh3, 0, "ONLY");
+	 gMC->Gspos(volNam6, i*4+2,"C06M",-xSlat3, ySlat31, zSlat-2.*dzCh3, 0, "ONLY");
+	 gMC->Gspos(volNam6, i*4+3,"C06M", xSlat3, ySlat32,-zSlat+2.*dzCh3, 0, "ONLY");
+	 gMC->Gspos(volNam6, i*4+4,"C06M",-xSlat3, ySlat32,-zSlat-2.*dzCh3, 0, "ONLY");
 	 // 1st pcb in 1st slat made by some rectangular divisions
 /*
 	 if (i==0) {                        
@@ -842,24 +846,25 @@ void AliMUONv1::CreateGeometry()
 	 spar[0] = slatLength4[i]/2.; 
 	 spar[1] = slatHeight/2.;
 	 spar[2] = slatWidth/2.; 
+	 Float_t dzCh4=spar[2];
 	 // zSlat to be checked (odd downstream or upstream?)
-	 Float_t zSlat = (i%2 ==0)? slatWidth/2. : -slatWidth/2.; 
+	 Float_t zSlat = (i%2 ==0)? dzCh4 : -dzCh4; 
 	 zSlat*=1.01;
 	 sprintf(volNam7,"S07%d",i);
 	 gMC->Gsvolu(volNam7,"BOX",slatMaterial,spar,3);
-	 gMC->Gspos(volNam7, i*4+1,"C07M", xSlat4, ySlat4, zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam7, i*4+2,"C07M",-xSlat4, ySlat4, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam7, i*4+1,"C07M", xSlat4, ySlat4, zSlat+2.*dzCh4, 0, "ONLY");
+	 gMC->Gspos(volNam7, i*4+2,"C07M",-xSlat4, ySlat4, zSlat-2.*dzCh4, 0, "ONLY");
 	 if (i>0) { 
-	   gMC->Gspos(volNam7, i*4+3,"C07M", xSlat4,-ySlat4, zSlat, 0, "ONLY");
-	   gMC->Gspos(volNam7, i*4+4,"C07M",-xSlat4,-ySlat4, zSlat, 0, "ONLY");
+	   gMC->Gspos(volNam7, i*4+3,"C07M", xSlat4,-ySlat4, zSlat+2.*dzCh4, 0, "ONLY");
+	   gMC->Gspos(volNam7, i*4+4,"C07M",-xSlat4,-ySlat4, zSlat-2.*dzCh4, 0, "ONLY");
 	 }
 	 sprintf(volNam8,"S08%d",i);
 	 gMC->Gsvolu(volNam8,"BOX",slatMaterial,spar,3);
-	 gMC->Gspos(volNam8, i*4+1,"C08M", xSlat4, ySlat4, zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam8, i*4+2,"C08M",-xSlat4, ySlat4, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam8, i*4+1,"C08M", xSlat4, ySlat4, zSlat+2.*dzCh4, 0, "ONLY");
+	 gMC->Gspos(volNam8, i*4+2,"C08M",-xSlat4, ySlat4, zSlat-2.*dzCh4, 0, "ONLY");
 	 if (i>0) { 
-	   gMC->Gspos(volNam8, i*4+3,"C08M", xSlat4,-ySlat4, zSlat, 0, "ONLY");
-	   gMC->Gspos(volNam8, i*4+4,"C08M",-xSlat4,-ySlat4, zSlat, 0, "ONLY");
+	   gMC->Gspos(volNam8, i*4+3,"C08M", xSlat4,-ySlat4, zSlat+2.*dzCh4, 0, "ONLY");
+	   gMC->Gspos(volNam8, i*4+4,"C08M",-xSlat4,-ySlat4, zSlat-2.*dzCh4, 0, "ONLY");
 	 }
      }
 
@@ -1004,7 +1009,7 @@ void AliMUONv1::CreateGeometry()
      zpos2=iChamber2->Z();
      dstation = zpos2 - zpos1;
      zfpos=-(iChamber->DGas()+dframez+iChamber->DAlu())/2;
-     
+     printf("\n %f %f %f", zpos1, zpos2, dstation);
 //
 //   Mother volume
      tpar[0] = iChamber->RInner()-dframep; 
@@ -1035,24 +1040,26 @@ void AliMUONv1::CreateGeometry()
        spar[0] = slatLength5[i]/2.; 
        spar[1] = slatHeight/2.;
        spar[2] = slatWidth/2.; 
+       Float_t dzCh5=spar[2];
        // zSlat to be checked (odd downstream or upstream?)
-       Float_t zSlat = (i%2 ==0)? -slatWidth/2. : slatWidth/2.; 
+       Float_t zSlat = (i%2 ==0)? -dzCh5 : dzCh5; 
        zSlat*=1.01;
        sprintf(volNam9,"S09%d",i);
        gMC->Gsvolu(volNam9,"BOX",slatMaterial,spar,3);
-       gMC->Gspos(volNam9, i*4+1,"C09M", xSlat5, ySlat5, zSlat, 0, "ONLY");
-       gMC->Gspos(volNam9, i*4+2,"C09M",-xSlat5, ySlat5, zSlat, 0, "ONLY");
+       gMC->Gspos(volNam9, i*4+1,"C09M", xSlat5, ySlat5, zSlat+2.*dzCh5, 0, "ONLY");
+       gMC->Gspos(volNam9, i*4+2,"C09M",-xSlat5, ySlat5, zSlat-2.*dzCh5, 0, "ONLY");
        if (i>0) { 
-	 gMC->Gspos(volNam9, i*4+3,"C09M", xSlat5,-ySlat5, zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam9, i*4+4,"C09M",-xSlat5,-ySlat5, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam9, i*4+3,"C09M", xSlat5,-ySlat5, zSlat+2.*dzCh5, 0, "ONLY");
+	 gMC->Gspos(volNam9, i*4+4,"C09M",-xSlat5,-ySlat5, zSlat-2.*dzCh5, 0, "ONLY");
        }
+
        sprintf(volNam10,"S10%d",i);
        gMC->Gsvolu(volNam10,"BOX",slatMaterial,spar,3);
-       gMC->Gspos(volNam10, i*4+1,"C10M", xSlat5, ySlat5, zSlat, 0, "ONLY");
-       gMC->Gspos(volNam10, i*4+2,"C10M",-xSlat5, ySlat5, zSlat, 0, "ONLY");
+       gMC->Gspos(volNam10, i*4+1,"C10M", xSlat5, ySlat5, zSlat+2.*dzCh5, 0, "ONLY");
+       gMC->Gspos(volNam10, i*4+2,"C10M",-xSlat5, ySlat5, zSlat-2.*dzCh5, 0, "ONLY");
        if (i>0) { 
-	 gMC->Gspos(volNam10, i*4+3,"C10M", xSlat5,-ySlat5, zSlat, 0, "ONLY");
-	 gMC->Gspos(volNam10, i*4+4,"C10M",-xSlat5,-ySlat5, zSlat, 0, "ONLY");
+	 gMC->Gspos(volNam10, i*4+3,"C10M", xSlat5,-ySlat5, zSlat+2.*dzCh5, 0, "ONLY");
+	 gMC->Gspos(volNam10, i*4+4,"C10M",-xSlat5,-ySlat5, zSlat-2.*dzCh5, 0, "ONLY");
        }
      }
 
