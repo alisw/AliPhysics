@@ -53,8 +53,8 @@ ALIBRARY	= $(LIBDIR)/libHBTP.a $(LIBDIR)/libdummyHBTP.a
 
 default:	$(SLIBRARY)
 
-$(LIBDIR)/libhbtprocessor.$(SL):  $(OBJS)
-$(LIBDIR)/libdummyhbtproc.$(SL):  $(DOBJS)
+$(LIBDIR)/libHBTP.$(SL):  $(OBJS)
+$(LIBDIR)/libdummyHBTP.$(SL):  $(DOBJS)
 
 depend:			$(CSRCS) $(DSRCS)
 
