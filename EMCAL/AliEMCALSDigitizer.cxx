@@ -76,6 +76,8 @@ ClassImp(AliEMCALSDigitizer)
 {
   // ctor
   InitParameters() ; 
+  fSplitFile           = 0 ; 
+  fToSplit             = kFALSE ;
   fDefaultInit = kTRUE ; 
 }
 
@@ -84,9 +86,9 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char* headerFile, const char *sDigi
 TTask(sDigitsTitle, headerFile)
 {
   // ctor
-  InitParameters() ; 
   fToSplit = toSplit ;
   Init();
+  InitParameters() ; 
   fDefaultInit = kFALSE ; 
 }
 
@@ -118,6 +120,7 @@ void AliEMCALSDigitizer::Init(){
   gime->PostSDigits( GetName(), GetTitle() ) ; 
   
   fSplitFile = 0 ;
+ 
   if(fToSplit){
     // construct the name of the file as /path/EMCAL.SDigits.root
     // First - extract full path if necessary
@@ -147,6 +150,7 @@ void AliEMCALSDigitizer::Init(){
   sdname.Append(GetTitle() ) ;
   SetName(sdname) ;
   gime->PostSDigitizer(this) ;
+
 }
 
 //____________________________________________________________________________ 
@@ -154,17 +158,27 @@ void AliEMCALSDigitizer::InitParameters()
 {
   fA                      = 0;
   fB                      = 10000000.;
-  fTowerPrimThreshold     = 0.01 ;
-  fPreShowerPrimThreshold = 0.0001 ; 
-  fPhotonElectronFactor   = 5000. ; // photoelectrons per GeV 
-  fSplitFile              = 0 ; 
-  fToSplit                = kFALSE ;
+
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;
+  const AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
+  if (geom->GetSampling() == 0.) {
+    Error("InitParameters", "Sampling factor not set !") ; 
+    abort() ;
+  }
+  else
+    Info("InitParameters", "Sampling factor set to %f\n", geom->GetSampling()) ; 
+  
+  // this threshold corresponds approximately to 100 MeV
+  fECPrimThreshold     = 100E-3 / ( geom->GetSampling() * ( geom->GetNPRLayers() + geom->GetNECLayers()) ) * geom->GetNECLayers() ;
+  fPREPrimThreshold    = 100E-3 / ( geom->GetSampling() * ( geom->GetNPRLayers() + geom->GetNECLayers()) ) * geom->GetNPRLayers() ; 
+  fHCPrimThreshold     = fECPrimThreshold/5. ; // 5 is totally arbitrary
+
 }
 
 //____________________________________________________________________________
 void AliEMCALSDigitizer::Exec(Option_t *option) 
 { 
-  // Collects all hits in the same active volume into digit
+  // Collects all hits in the section (PRE/ECAL/HCAL) of the same tower into digit
 
   if( strcmp(GetName(), "") == 0 )
     Init() ;
@@ -186,163 +200,137 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   sdname.Remove(sdname.Index(GetTitle())-1) ;
 
   Int_t nevents = gime->MaxEvent() ; 
-  Int_t ievent ;
-   
-    for(ievent = 0; ievent < nevents; ievent++){     
-      gime->Event(ievent,"H") ;
-     
-      const TClonesArray * hits = gime->Hits() ;
-   
+  Int_t ievent ;   
+  for(ievent = 0; ievent < nevents; ievent++){     
+    gime->Event(ievent,"H") ;  
+    const TClonesArray * hits = gime->Hits() ; 
     TClonesArray * sdigits = gime->SDigits(sdname.Data()) ;
     sdigits->Clear();
     Int_t nSdigits = 0 ;
-
-    //Collects all hits in the same active volume into digit
     
     //Now make SDigits from hits, for EMCAL it is the same, so just copy    
     Int_t nPrim =  static_cast<Int_t>((gAlice->TreeH())->GetEntries()) ; 
     // Attention nPrim is the number of primaries tracked by Geant 
     // and this number could be different to the number of Primaries in TreeK;
     Int_t iprim ;
-      for ( iprim = 0 ; iprim < nPrim ; iprim++ ) { 
-	//=========== Get the EMCAL branch from Hits Tree for the Primary iprim
-	gime->Track(iprim) ;
-	Int_t i;
-	for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
-	  AliEMCALHit * hit = dynamic_cast<AliEMCALHit*>(hits->At(i)) ;
-	  AliEMCALDigit * curSDigit = 0 ;
-	  AliEMCALDigit * sdigit = 0 ;
-	  Bool_t newsdigit = kTRUE; 
-	  // Assign primary number only if deposited energy is significant
-   
-	  if( (!hit->IsInPreShower() && hit->GetEnergy() > fTowerPrimThreshold) || 
-	      (hit->IsInPreShower() && hit->GetEnergy() > fPreShowerPrimThreshold)) 
+    for ( iprim = 0 ; iprim < nPrim ; iprim++ ) { 
+      //=========== Get the EMCAL branch from Hits Tree for the Primary iprim
+      gime->Track(iprim) ;
+      Int_t i;
+      for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
+	AliEMCALHit * hit = dynamic_cast<AliEMCALHit*>(hits->At(i)) ;
+	AliEMCALDigit * curSDigit = 0 ;
+	AliEMCALDigit * sdigit = 0 ;
+	Bool_t newsdigit = kTRUE; 
+
+	// Assign primary number only if deposited energy is significant
+
+	const AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
+
+	if (gDebug) 
+	  Info("Exec", "id = %d energy = %f thresholdPRE = %f thresholdEC = %f thresholdHC = %f \n", 
+	       hit->GetId(), hit->GetEnergy(), fPREPrimThreshold, fECPrimThreshold, fHCPrimThreshold) ;    
+	
+	if( geom->IsInPRE(hit->GetId()) )  
+	  if( hit->GetEnergy() > fPREPrimThreshold )
 	    curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
-					    hit->GetIparent(),Layer2TowerID(hit->GetId(),hit->IsInPreShower()), 
+					    hit->GetIparent(), hit->GetId(), 
 					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
-	  else 
+	  else
 	    curSDigit =  new AliEMCALDigit( -1               , 
 					    -1               ,
-					    Layer2TowerID(hit->GetId(),hit->IsInPreShower()), 
-					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;	
-	  Int_t check = 0 ;
-	  for(check= 0; check < nSdigits ; check++) {
-	    sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(check)) ;
-	    if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same tower or the same preshower ?              
-	      *sdigit = *sdigit + *curSDigit;
-	      newsdigit = kFALSE;
-	    }
-	  }
-	  if (newsdigit) { 
-	    new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
-	    nSdigits++ ;  
-	  }
-	  delete curSDigit ; 
-	}  // loop over all hits (hit = deposited energy/layer/entering particle)
-      } // loop over iprim
-      
-      sdigits->Sort() ;
-      
-      nSdigits = sdigits->GetEntriesFast() ;
-      fSDigitsInRun += nSdigits ;  
-      sdigits->Expand(nSdigits) ;
+					    hit->GetId(), 
+					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
+	else if( geom->IsInECAL(hit->GetId()) )
+	  if( hit->GetEnergy() >  fECPrimThreshold )
+	    curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
+					    hit->GetIparent(), hit->GetId(), 
+					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
+	  else
+	    curSDigit =  new AliEMCALDigit( -1               , 
+					    -1               ,
+					    hit->GetId(), 
+					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
+	else if( geom->IsInHCAL(hit->GetId()) )
+	  if( hit->GetEnergy() >  fHCPrimThreshold )
+	    
+	    curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
+					    hit->GetIparent(), hit->GetId(), 
+					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
+	  else
+	    curSDigit =  new AliEMCALDigit( -1               , 
+					    -1               ,
+					    hit->GetId(), 
+					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
 	
-      const AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
-      
-      if (nSdigits != 0 ) {
-	Int_t lastPreShowerIndex = nSdigits - 1 ;
-       
-	
-	if (!(dynamic_cast<AliEMCALDigit *>(sdigits->At(lastPreShowerIndex))->IsInPreShower()))
-	  
-	  lastPreShowerIndex = -2; 
-	
-	Int_t firstPreShowerIndex = 100000 ; 
-	Int_t index ; 
-	AliEMCALDigit * sdigit = 0 ;
-	
-	for ( index = 0; index < nSdigits ; index++) {	  
-	  sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(index) ) ;
-	  if (sdigit->IsInPreShower() ){ 
-	    firstPreShowerIndex = index ;
-	    break ;
+	Int_t check = 0 ;
+	for(check= 0; check < nSdigits ; check++) {
+	  sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(check)) ;
+	  if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same ECAL/HCAL/preshower tower ?              
+	    *sdigit = *sdigit + *curSDigit;
+	    newsdigit = kFALSE;
 	  }
 	}
-	
-	AliEMCALDigit * preshower ;
-	AliEMCALDigit * tower ;
-	Int_t lastIndex = lastPreShowerIndex +1 ; 
-	
-	for (index = firstPreShowerIndex ; index <= lastPreShowerIndex; index++) {  
-	  preshower = dynamic_cast<AliEMCALDigit *>(sdigits->At(index) ); 
-	  Bool_t towerFound = kFALSE ;
-	  Int_t jndex ;
-	  for (jndex = 0; jndex < firstPreShowerIndex; jndex++) {
-	    tower  = dynamic_cast<AliEMCALDigit *>(sdigits->At(jndex) ); 
-	    if ( (preshower->GetId() - (geom->GetNZ() * geom->GetNPhi()) ) == tower->GetId() ) {	  
-	      Float_t towerEnergy  = static_cast<Float_t>(tower->GetAmp()) ; 
-	      Float_t preshoEnergy = static_cast<Float_t>(preshower->GetAmp()) ; 
-	      towerEnergy +=preshoEnergy ; 
-	      *tower = *tower + *preshower    ; // and add preshower multiplied by layer ratio to tower
-	      tower->SetAmp(static_cast<Int_t>(TMath::Ceil(towerEnergy))) ; 
-	      towerFound = kTRUE ;
-	    }
-	  }
-	  if ( !towerFound ) {  
-	    new((*sdigits)[lastIndex])  AliEMCALDigit(*preshower);
-	    AliEMCALDigit * temp = dynamic_cast<AliEMCALDigit *>(sdigits->At(lastIndex)) ;
-	    temp->SetId(temp->GetId() - (geom->GetNZ() * geom->GetNPhi()) ) ;
-	    lastIndex++ ; 
-	  }
+	if (newsdigit) { 
+	  new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
+	  nSdigits++ ;  
 	}
-	sdigits->Sort() ;
-	Int_t NPrimarymax = -1 ; 
-	Int_t i ;
-	for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
-	  sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(i)) ;
-	  sdigit->SetIndexInList(i) ;
-	}
-	
-	for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) {   
-	  if (((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) > NPrimarymax)
-	    NPrimarymax = ((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) ;
-	}
-      }
-      
-      //Now write SDigits
-      
-      if(gAlice->TreeS() == 0 || (fSplitFile))  //<--- To be checked: we should not create TreeS if it is already here
-	gAlice->MakeTree("S",fSplitFile);
-     
-      if(fSplitFile)
-	fSplitFile->cd() ;
-      
-      //First list of sdigits
-      Int_t bufferSize = 32000 ;    
-      TBranch * sdigitsBranch = gAlice->TreeS()->Branch("EMCAL",&sdigits,bufferSize);
-      sdigitsBranch->SetTitle(sdname);
-      
-      //NEXT - SDigitizer
-      Int_t splitlevel = 0 ;
-      AliEMCALSDigitizer * sd = this ;
-      TBranch * sdigitizerBranch = gAlice->TreeS()->Branch("AliEMCALSDigitizer","AliEMCALSDigitizer",
-							   &sd,bufferSize,splitlevel); 
-      sdigitizerBranch->SetTitle(sdname);
-      
-      sdigitsBranch->Fill() ; 
-      sdigitizerBranch->Fill() ; 
-      gAlice->TreeS()->AutoSave() ;
+	delete curSDigit ; 
+      }  // loop over all hits (hit = deposited energy/layer/entering particle)
+    } // loop over iprim
+    
+    sdigits->Sort() ;
+    
+    nSdigits = sdigits->GetEntriesFast() ;
+    fSDigitsInRun += nSdigits ;  
+    sdigits->Expand(nSdigits) ;
 
-      if(strstr(option,"deb"))
-	PrintSDigits(option) ;
-      
+    Int_t NPrimarymax = -1 ; 
+    Int_t i ;
+    for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
+      AliEMCALDigit * sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(i)) ;
+      sdigit->SetIndexInList(i) ;
+    }
+    
+    for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) {   
+      if (((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) > NPrimarymax)
+	NPrimarymax = ((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) ;
+    }
+    
+    // Now write SDigits
+    
+    if(gAlice->TreeS() == 0 || (fSplitFile))  //<--- To be checked: we should not create TreeS if it is already here
+      gAlice->MakeTree("S",fSplitFile);
+  
+    if(fSplitFile)
+      fSplitFile->cd() ;
+    
+    //First list of sdigits
+    Int_t bufferSize = 32000 ;    
+    TBranch * sdigitsBranch = gAlice->TreeS()->Branch("EMCAL",&sdigits,bufferSize);
+    sdigitsBranch->SetTitle(sdname);
+    
+    //NEXT - SDigitizer
+    Int_t splitlevel = 0 ;
+    AliEMCALSDigitizer * sd = this ;
+    TBranch * sdigitizerBranch = gAlice->TreeS()->Branch("AliEMCALSDigitizer","AliEMCALSDigitizer",
+							 &sd,bufferSize,splitlevel); 
+    sdigitizerBranch->SetTitle(sdname);
+    
+    sdigitsBranch->Fill() ; 
+    sdigitizerBranch->Fill() ; 
+  
+    gAlice->TreeS()->AutoSave() ;
+    
+    if(strstr(option,"deb"))
+      PrintSDigits(option) ;  
   }
-
+   
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALSDigitizer"); 
     Info("Exec", "took %f seconds for SDigitizing %f seconds per event", 
-	 gBenchmark->GetCpuTime("EMCALSDigitizer"), gBenchmark->GetCpuTime("EMCALSDigitizer") ) ;
-  }   
+	 gBenchmark->GetCpuTime("EMCALSDigitizer"), gBenchmark->GetCpuTime("EMCALSDigitizer") ) ; 
+  }
 }
 
 //__________________________________________________________________
@@ -389,10 +377,12 @@ void AliEMCALSDigitizer::Print(Option_t* option)const
   message += fA ;
   message += "\n                                 B               = " ; 
   message += fB ; 
-  message += "\n   Threshold for Primary assignment in Tower     = " ; 
-  message += fTowerPrimThreshold ; 
   message += "\n   Threshold for Primary assignment in PreShower = " ; 
-  message += fPreShowerPrimThreshold ; 
+  message += fPREPrimThreshold ; 
+  message += "\n   Threshold for Primary assignment in EC section= " ; 
+  message += fECPrimThreshold ; 
+  message += "\n   Threshold for Primary assignment in HC section= " ; 
+  message += fHCPrimThreshold ; 
   message += "\n---------------------------------------------------" ;
   
   Info("Print", message.Data() ) ; 
@@ -405,8 +395,9 @@ Bool_t AliEMCALSDigitizer::operator==( AliEMCALSDigitizer const &sd )const
   // SDititizers are equal if their pedestal, slope and threshold are equal
 
   if( (fA==sd.fA)&&(fB==sd.fB)&&
-      (fTowerPrimThreshold==sd.fTowerPrimThreshold) &&
-      (fPreShowerPrimThreshold==sd.fPreShowerPrimThreshold))
+      (fECPrimThreshold==sd.fECPrimThreshold) &&
+      (fHCPrimThreshold==sd.fHCPrimThreshold) &&
+      (fPREPrimThreshold==sd.fPREPrimThreshold))
     return kTRUE ;
   else
     return kFALSE ;
@@ -450,27 +441,6 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option){
   Info("PrintSDigits", message.Data() ) ; 
 }
 
-//________________________________________________________________________
-const Int_t AliEMCALSDigitizer::Layer2TowerID(Int_t ihit, Bool_t preshower)
-{
-  // Method to Transform from Hit Id to Digit Id
-  // This function should be one to one
-  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ;
-  const AliEMCALGeometry * geom = gime->EMCALGeometry();
-  Int_t ieta  = ((ihit-1)/geom->GetNPhi())%geom->GetNZ(); // eta Tower Index
-  Int_t iphi = (ihit-1)%(geom->GetNPhi())+1; //phi Tower Index
-  Int_t it = -10;
-  Int_t ipre = 0;
-
-  if (preshower)ipre = 1;
-  if (iphi > 0 && ieta >= 0){
-    it = iphi+ieta*geom->GetNPhi() + ipre*geom->GetNPhi()*geom->GetNZ();
-    return it;
-  }else{
-    Error("Layer2TowerID", "there is an error: Eta number = %f Phi number = %f", ieta, iphi) ;
-    return it;
-  } // end if iphi>0 && ieta>0
-}
 //_______________________________________________________________________________________
 // void AliEMCALSDigitizer::TestTowerID(void)
 // {
