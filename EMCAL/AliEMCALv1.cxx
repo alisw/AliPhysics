@@ -179,7 +179,7 @@ void AliEMCALv1::StepManager(void){
       gMC->CurrentVolOffID(1, id[0]); // get the POLY copy number;
       gMC->CurrentVolID(id[1]); // get the phi number inside the layer
       
-      Int_t tower = (id[0]-1) % geom->GetNZ() + 1 + (id[1] - 1) * 96 ;  
+      Int_t tower = (id[0]-1) % geom->GetNZ() + 1 + (id[1] - 1) * geom->GetNZ() ;  
       Int_t layer = static_cast<Int_t>((id[0]-1)/(geom->GetNZ())) + 1 ; 
       Int_t absid = tower ; 
       if (layer <= geom->GetNPRLayers() )
