@@ -27,14 +27,17 @@ Int_t AliTPCHits2Digits(Int_t nevent=1)
 
   // gAlice->GetEvent(0);
   AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");      
-
   TStopwatch timer;
   timer.Start();
 
-  for(Int_t eventn =0;eventn<nevent;eventn++){
-    printf("Processing event %d",eventn);
-    gAlice->GetEvent(eventn);
+  // uncomment below lines to set sectors active
+  //Int_t sec[10]={0,1,2,3,4,5,6,7,8,9};
+  //TPC->SetActiveSectors(sec,10);
 
+  for(Int_t eventn =0;eventn<nevent;eventn++){
+    printf("Processing event %d \n",eventn);
+    gAlice->GetEvent(eventn);
+    TPC->SetActiveSectors(); // all sectors set active
     TPC->Hits2Digits(eventn);
   }
 

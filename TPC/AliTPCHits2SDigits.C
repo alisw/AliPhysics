@@ -31,10 +31,16 @@ Int_t AliTPCHits2SDigits(Int_t nevent=1)
   TStopwatch timer;
   timer.Start();
 
-  for(Int_t eventn =0;eventn<nevent;eventn++){
-    printf("Processing event %d\n",eventn);
-    gAlice->GetEvent(eventn);
+  // uncomment lines below to set active sectors 
+  //Int_t sec[10]={4,5,6,7,8,4+36,5+36,6+36,7+36,8+36};
+  //TPC->SetActiveSectors(sec,10);
 
+  for(Int_t eventn =0;eventn<nevent;eventn++){
+    printf("Processing event %d \n",eventn);
+    gAlice->GetEvent(eventn);
+    TPC->SetActiveSectors(); // all sectors set active
+    printf("\nActive sectors\n");
+    for (Int_t i=0;i<72;i++) if (TPC->IsSectorActive(i)) printf("%d\t",i);
     TPC->Hits2SDigits2(eventn);
   } 
 
