@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/01/26 19:57:22  hristov
+Major upgrade of AliRoot code
+
 Revision 1.6  2000/06/30 12:07:50  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -195,7 +198,7 @@ void AliTPCRF1D::SetGauss(Float_t sigma, Float_t padWidth,
   fpadWidth = padWidth;
   fkNorm = kNorm;
   if (fGRF !=0 ) fGRF->Delete();
-  fGRF = new TF1("fun",funGauss,-5,5,2);
+  fGRF = new TF1("fun",funGauss,-5,5,1);
   funParam[0]=sigma;
   forigsigma=sigma;
   fGRF->SetParameters(funParam);
