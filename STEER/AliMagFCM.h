@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------
 
 #include "AliMagFC.h"
-class TVector;
+#include <TVector.h>
 
 class AliMagFCM : public AliMagFC
 {
