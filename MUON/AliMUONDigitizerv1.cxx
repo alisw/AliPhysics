@@ -39,6 +39,7 @@
 #include "AliMUONHit.h"
 #include "AliMUONTransientDigit.h"
 #include "AliMUONTriggerDecision.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONDigitizerv1)
 
@@ -75,15 +76,14 @@ void AliMUONDigitizerv1::GenerateTransientDigits()
 // Note: Charge correlation is applied to the tracking chambers. 
 
 	TTree* treeH = fGime->TreeH();
-	if (GetDebug() > 1)
-		Info("GenerateTransientDigits", "Generating transient digits using treeH = 0x%X"
-			, (void*)treeH);
+	AliDebug(2, Form("Generating transient digits using treeH = 0x%X"
+			, (void*)treeH));
 	//
 	// Loop over tracks
 	Int_t ntracks = (Int_t) treeH->GetEntries();
 	for (Int_t itrack = 0; itrack < ntracks; itrack++) 
 	{
-		if (GetDebug() > 2) Info("GenerateTransientDigits", "Processing track %d...", itrack);
+		AliDebug(3, Form("Processing track %d...", itrack));
 		fMUONData->ResetHits();
 		treeH->GetEvent(itrack);
 		//
@@ -95,19 +95,14 @@ void AliMUONDigitizerv1::GenerateTransientDigits()
 			Int_t ichamber = mHit->Chamber()-1;  // chamber number
 			if (ichamber > AliMUONConstants::NCh()-1) 
 			{
-				Error("GenerateTransientDigits", 
-					"Hit 0x%X has a invalid chamber number: %d", ichamber);
+				AliError(Form("Hit 0x%X has a invalid chamber number: %d", ichamber));
 				continue;
 			}
 			//
 			//Dumping Hit content:
-			if (GetDebug() > 2) 
-			{
-				Info("GenerateTransientDigits", 
-					"Hit %d: chamber = %d\tX = %f\tY = %f\tZ = %f\teloss = %f",
+			AliDebug(3,Form("Hit %d: chamber = %d\tX = %f\tY = %f\tZ = %f\teloss = %f",
 					ihit, mHit->Chamber(), mHit->X(), mHit->Y(), mHit->Z(), mHit->Eloss()
-				    );
-			}
+				    ));
 			// 
 			// Inititializing Correlation
 			AliMUONChamber& chamber = fMUON->Chamber(ichamber);
@@ -133,13 +128,11 @@ void AliMUONDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Ali
 // fired for a given hit. We then loop over the fired pads and add an AliMUONTransientDigit
 // for each pad.
 
-	if (GetDebug() > 3)
-		Info("MakeTransientDigitsFromHit", "Making transient digit for hit number %d.", iHit);
+	AliDebug(4,Form("Making transient digit for hit number %d.", iHit));
 		
 	//
 	// Calls the charge disintegration method of the current chamber 
-	if (GetDebug() > 4)
-		Info("MakeTransientDigitsFromHit", "Calling AliMUONChamber::DisIngtegration...");
+	AliDebug(5,"Calling AliMUONChamber::DisIngtegration...");
 
 	Float_t newdigit[6][500];  // Pad information
 	Int_t nnew=0;              // Number of touched Pads per hit
@@ -169,10 +162,9 @@ void AliMUONDigitizerv1::MakeTransientDigitsFromHit(Int_t track, Int_t iHit, Ali
 		};
 		digits[5] = iHit+fMask;    // Hit number in the list
 
-		if (GetDebug() > 4)
-			Info("MakeTransientDigitsFromHit", 
+		AliDebug(5,Form("MakeTransientDigitsFromHit", 
 				"DisIntegration result %d: PadX %d\tPadY %d\tPlane %d\tCharge %d\tHit %d",
-				iTD, digits[0], digits[1], digits[2], digits[3], digits[5]);
+				iTD, digits[0], digits[1], digits[2], digits[3], digits[5]));
 
 		AliMUONTransientDigit* mTD = new AliMUONTransientDigit(ichamber, digits);
 		mTD->AddToTrackList(track + fMask, charge);
@@ -201,7 +193,7 @@ void AliMUONDigitizerv1::FillTriggerOutput()
 {
 // Derived to fill TreeD and resets the trigger array in fMUONData.
 
-	if (GetDebug() > 2) Info("FillTriggerOutput", "Filling trees with trigger.");
+	AliDebug(3,"Filling trees with trigger.");
 	fMUONData->Fill("GLT");
 	fMUONData->ResetTrigger();
 };
@@ -222,8 +214,7 @@ Int_t AliMUONDigitizerv1::GetSignalFrom(AliMUONTransientDigit* td)
 // Derived to apply the chamber response model to the digit. 
 // Using AliMUONChamber::ResponseModel() for this.
 
-	if (GetDebug() > 3)
-		Info("GetSignalFrom", "Applying response of chamber to TransientDigit signal.");
+	AliDebug(4, "Applying response of chamber to TransientDigit signal.");
 	//
 	//  Digit Response (noise, threshold, saturation, ...)
 	Int_t q = td->Signal(); 
@@ -239,8 +230,7 @@ Bool_t AliMUONDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
 // Derived to initialize the output digits tree TreeD, create it if necessary
 // and sets the fMUONData tree address to treeD.
 
-	if (GetDebug() > 2)
-		Info("InitOutputData", "Creating digits branch and setting the tree address.");
+	AliDebug(3, "Creating digits branch and setting the tree address.");
 
 	fMUONData->SetLoader(muonloader);
 
@@ -250,7 +240,7 @@ Bool_t AliMUONDigitizerv1::InitOutputData(AliMUONLoader* muonloader)
 		muonloader->MakeDigitsContainer();
 		if (muonloader->TreeD() == NULL)
 		{
-			Error("InitOutputData", "Could not create TreeD.");
+			AliError("Could not create TreeD.");
 			return kFALSE;
 		};
 	};
@@ -266,7 +256,7 @@ void AliMUONDigitizerv1::FillOutputData()
 {
 // Derived to fill TreeD and resets the digit array in fMUONData.
 
-	if (GetDebug() > 2) Info("FillOutputData", "Filling trees with digits.");
+	AliDebug(3, "Filling trees with digits.");
 	fMUONData->Fill("D");
 	fMUONData->ResetDigits();
 };
@@ -276,7 +266,7 @@ void AliMUONDigitizerv1::CleanupOutputData(AliMUONLoader* muonloader)
 {
 // Derived to write the digits tree and then unload the digits tree once written.
 
-	if (GetDebug() > 2) Info("CleanupOutputData", "Writing digits and releasing pointers.");
+	AliDebug(3, "Writing digits and releasing pointers.");
 	muonloader->WriteDigits("OVERWRITE");
 	muonloader->UnloadDigits();
 };
@@ -288,8 +278,7 @@ Bool_t AliMUONDigitizerv1::InitInputData(AliMUONLoader* muonloader)
 // Derived to initialise the input to read from TreeH the hits tree. 
 // If the hits are not loaded then we load the hits using the muon loader.
 
-	if (GetDebug() > 2)
-		Info("InitInputData", "Loading hits in READ mode and setting the tree address.");
+	AliDebug(3, "Loading hits in READ mode and setting the tree address.");
 
 	fMUONData->SetLoader(muonloader);
 
@@ -298,7 +287,7 @@ Bool_t AliMUONDigitizerv1::InitInputData(AliMUONLoader* muonloader)
 		muonloader->LoadHits("READ");
 		if (muonloader->TreeH() == NULL)
 		{
-			Error("InitInputData", "Can not load the hits tree.");
+			AliError("Can not load the hits tree.");
 			return kFALSE;
 		};
 	};
@@ -312,7 +301,7 @@ void AliMUONDigitizerv1::CleanupInputData(AliMUONLoader* muonloader)
 {
 // Derived to release the loaded hits and unload them.
 
-	if (GetDebug() > 2) Info("CleanupInputData", "Releasing loaded hits.");
+	AliDebug(3, "Releasing loaded hits.");
 	fMUONData->ResetHits();
 	muonloader->UnloadHits();
 };

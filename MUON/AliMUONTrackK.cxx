@@ -29,6 +29,7 @@
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrackParam.h"
 #include "AliRun.h"
+#include "AliLog.h"
 //#include "AliMagF.h"
 
 const Int_t AliMUONTrackK::fgkSize = 5;
@@ -224,7 +225,7 @@ AliMUONTrackK::AliMUONTrackK (const AliMUONTrackK& source)
 {
 // Protected copy constructor
 
-  Fatal("AliMUONTrackK", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
   //__________________________________________________________________________
@@ -299,7 +300,7 @@ void AliMUONTrackK::EvalCovariance(Double_t dZ)
     Int_t ifailWeight;
     mnvertLocalK(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifailWeight);
   } else {
-    cout << " ***** Warning in EvalCovariance: Determinant fWeight=0:" << endl;
+    AliWarning(" Determinant fWeight=0:");
   }
   return;
 }
@@ -678,7 +679,7 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd)
     Int_t ifailCov;
     mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
   } else {
-    cout << " ***** Warning in WeightPropagation: Determinant fCovariance=0:" << endl;
+    AliWarning(" Determinant fCovariance=0:");
   }
 
   // Loop over parameters to find change of the initial vs propagated ones
@@ -740,7 +741,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
       Int_t ifailCov;
       mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
   } else {
-    cout << " ***** Warning in FindPoint: Determinant fCovariance=0:" << endl;
+    AliWarning("Determinant fCovariance=0:");
   }
   //windowB = fgkNSigma*TMath::Sqrt((*fCovariance)(0,0)+sigmaB*sigmaB);
   //windowNonB = fgkNSigma*TMath::Sqrt((*fCovariance)(1,1)+sigmaNonB*sigmaNonB);
@@ -774,7 +775,7 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    Int_t ifailCov;
 	    mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
 	  } else {
-	    cout << " ***** Warning in FindPoint: Determinant fCovariance=0:" << endl;
+	    AliWarning("Determinant fCovariance=0:");
 	  }
 	}
 	y = hit->GetBendingCoor();
@@ -882,7 +883,7 @@ void AliMUONTrackK::TryPoint(TMatrixD &point, const TMatrixD &pointWeight, TMatr
      Int_t ifailWU;
       mnvertLocalK(&((wu)(0,0)), fgkSize,fgkSize,fgkSize,ifailWU);
   } else {
-    cout << " ***** Warning in TryPoint: Determinant wu=0:" << endl;
+    AliWarning("Determinant wu=0:");
   }
   trackParTmp = TMatrixD(wu,TMatrixD::kMult,right); 
 
@@ -913,7 +914,7 @@ void AliMUONTrackK::MSThin(Int_t sign)
     Int_t ifailWeight;
     mnvertLocalK(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifailWeight);
   } else {
-    cout << " ***** Warning in MSThin: Determinant fWeight=0:" << endl;
+    AliWarning("Determinant fWeight=0:");
   }
 
   cosAlph = TMath::Cos((*fTrackParNew)(2,0));
@@ -1082,7 +1083,7 @@ void AliMUONTrackK::Branson(void)
       Int_t ifailCov;
       mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
   } else {
-    cout << " ***** Warning in Branson: Determinant fCovariance=0:" << endl;
+    AliWarning("Determinant fCovariance=0:");
   }
 }
 
@@ -1263,7 +1264,7 @@ void AliMUONTrackK::GoToVertex(void)
       Int_t ifailCov;
       mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
   } else {
-    cout << " ***** Warning in GoToVertex: Determinant fCovariance=0:" << endl;
+   AliWarning("Determinant fCovariance=0:" );
   }
 }
 
@@ -1305,7 +1306,7 @@ void AliMUONTrackK::MSLine(Double_t dZ, Double_t x0)
        Int_t ifailCov;
        mnvertLocalK(&((*fCovariance)(0,0)), fgkSize,fgkSize,fgkSize,ifailCov);
   } else {
-    cout << " ***** Warning in MSLine: Determinant fCovariance=0:" << endl;
+    AliWarning("Determinant fCovariance=0:" );
   }
 
   (*fCovariance)(0,0) += dl3*(dYdT*dYdT+dYdB*dYdB); // <yy>
@@ -1339,7 +1340,7 @@ void AliMUONTrackK::MSLine(Double_t dZ, Double_t x0)
        Int_t ifailWeight;
        mnvertLocalK(&((*fWeight)(0,0)), fgkSize,fgkSize,fgkSize,ifailWeight);
   } else {
-    cout << " ***** Warning in MSLine: Determinant fWeight=0:" << endl;
+    AliWarning("Determinant fWeight=0:");
   }
 }
  

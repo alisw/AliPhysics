@@ -64,6 +64,7 @@
 #include "AliMUONDigitizerv2.h"
 #include "AliMUONSDigitizerv1.h"
 #include "AliMUONRawData.h"
+#include "AliLog.h"
 
 // Defaults parameters for Z positions of chambers
 // taken from values for "stations" in AliMUON::AliMUON
@@ -179,14 +180,14 @@ AliMUON::AliMUON(const AliMUON& rMUON)
 {
 // Protected copy constructor
 
-  Fatal("AliMUONMergerModule", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 //____________________________________________________________________
 AliMUON::~AliMUON()
 {
 // Destructor
-  if(fDebug) printf("%s: Calling AliMUON destructor !!!\n",ClassName());
+  AliDebug(1,"Calling AliMUON destructor");
   fIshunt  = 0;
   if (fMerger) delete fMerger;
 
@@ -209,7 +210,7 @@ AliMUON& AliMUON::operator = (const AliMUON& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }
@@ -431,11 +432,9 @@ void AliMUON::SDigits2Digits()
 // write TreeD here 
 
     if (!fMerger) {
-      if (gAlice->GetDebug()>0) {
-	cerr<<"AliMUON::SDigits2Digits: create default AliMUONMerger "<<endl;
-	cerr<<" no merging, just digitization of 1 event will be done"<<endl;
-      }
-      fMerger = new AliMUONMerger();
+		AliDebug(1,"Create default AliMUONMerger ");
+		AliDebug(1," no merging, just digitization of 1 event will be done");
+     	fMerger = new AliMUONMerger();
     }
     fMerger->Init();
     fMerger->Digitise();
@@ -467,7 +466,7 @@ void AliMUON::Digits2Raw()
   AliMUONRawData* rawData;
 
   rawData = new AliMUONRawData(fLoader);
-  if (!rawData->WriteRawData()) Info("MUON","pb writting raw data");
+  if (!rawData->WriteRawData()) AliInfo("pb writting raw data");
   delete rawData;
   return;
 }
@@ -477,10 +476,9 @@ AliLoader* AliMUON::MakeLoader(const char* topfoldername)
 //builds standard getter (AliLoader type)
 //if detector wants to use castomized getter, it must overload this method
 
- if (GetDebug())
-   Info("MakeLoader",
-        "Creating standard getter for detector %s. Top folder is %s.",
-         GetName(),topfoldername);
+ 
+ AliDebug(1,Form("Creating standard getter for detector %s. Top folder is %s.",
+         GetName(),topfoldername));
  fLoader   = new AliLoader(GetName(),topfoldername);
  fMUONData = new AliMUONData(fLoader,GetName(),GetName()); 
  fMUONData->SetSplitLevel(fSplitLevel);

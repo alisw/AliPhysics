@@ -36,6 +36,7 @@
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryConstituent.h"
 #include "AliMUONConstants.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONVGeometryBuilder)
 
@@ -84,8 +85,7 @@ AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& 
 {
 // Protected copy constructor
 
-  Fatal("Copy constructor", 
-        "Copy constructor is not implemented.");
+  AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
@@ -106,8 +106,7 @@ AliMUONVGeometryBuilder::operator = (const AliMUONVGeometryBuilder& rhs)
   // check assignement to self
   if (this == &rhs) return *this;
 
-  Fatal("operator=", 
-        "Assignment operator is not implemented.");
+  AliFatal("Assignment operator is not implemented.");
     
   return *this;  
 }
@@ -180,7 +179,7 @@ void AliMUONVGeometryBuilder::MapSV(const TString& /*path0*/,
 // and map it to the detection element Id if it is a sensitive volume
 // ---
 
-  Warning("MapSV", "Not yet available");
+  AliWarning("Not yet available");
 }     
 
 //______________________________________________________________________________
@@ -501,7 +500,7 @@ AliMUONVGeometryBuilder::GetEnvelopes(Int_t chamberId) const
   AliMUONChamber* chamber = GetChamber(chamberId);
   
   if (!chamber) {
-    Fatal("GetEnvelopes", "Chamber %d is not defined", chamberId); 
+    AliFatal(Form("Chamber %d is not defined", chamberId)); 
     return 0;
   }
   
@@ -518,7 +517,7 @@ AliMUONVGeometryBuilder::GetTransforms(Int_t chamberId) const
   AliMUONChamber* chamber = GetChamber(chamberId);
   
   if (!chamber) {
-    Fatal("GetTransforms", "Chamber %d is not defined", chamberId); 
+    AliFatal(Form("Chamber %d is not defined", chamberId)); 
     return 0;
   }
   
@@ -535,7 +534,7 @@ AliMUONVGeometryBuilder::GetSVMap(Int_t chamberId) const
   AliMUONChamber* chamber = GetChamber(chamberId);
   
   if (!chamber) {
-    Fatal("GetSVMap", "Chamber %d is not defined", chamberId); 
+    AliFatal(Form("Chamber %d is not defined", chamberId)); 
     return 0;
   }
   
@@ -649,7 +648,7 @@ Bool_t  AliMUONVGeometryBuilder::ReadTransformations() const
   ifstream in(filePath, ios::in);
   if (!in) {
     cerr << filePath << endl;	
-    Fatal("ReadTransformations", "File not found.");
+    AliFatal("File not found.");
     return false;
   }
 
@@ -661,7 +660,7 @@ Bool_t  AliMUONVGeometryBuilder::ReadTransformations() const
     else if (key == TString("DE"))
       key = ReadData2(in);
     else {
-      Fatal("ReadTransformations", "%s key not recognized",  key.Data());
+      AliFatal(Form("%s key not recognized",  key.Data()));
       return false;
     }
   }     
@@ -685,7 +684,7 @@ Bool_t  AliMUONVGeometryBuilder::ReadSVMap() const
   ifstream in(filePath, ios::in);
   if (!in) {
     cerr << filePath << endl;	
-    Fatal("ReadSVMap", "File not found.");
+    AliFatal("File not found.");
     return false;
   }
 
@@ -695,7 +694,7 @@ Bool_t  AliMUONVGeometryBuilder::ReadSVMap() const
     if (key == TString("SV")) 
       key = ReadData3(in);
     else {
-      Fatal("ReadSVMap", "%s key not recognized",  key.Data());
+      AliFatal(Form("%s key not recognized",  key.Data()));
       return false;
     }
   }     
@@ -720,12 +719,11 @@ Bool_t  AliMUONVGeometryBuilder::WriteTransformations() const
   ofstream out(filePath, ios::out);
   if (!out) {
     cerr << filePath << endl;	
-    Error("WriteTransformations", "File not found.");
+    AliError("File not found.");
     return false;
   }
-#if !defined (__DECCXX)
   out.setf(std::ios::fixed);
-#endif
+
   WriteData1(out);
   WriteData2(out);
   
@@ -749,12 +747,11 @@ Bool_t  AliMUONVGeometryBuilder::WriteSVMap(Bool_t rebuild) const
   ofstream out(filePath, ios::out);
   if (!out) {
     cerr << filePath << endl;	
-    Error("WriteTransformations", "File not found.");
+    AliError("File not found.");
     return false;
   }
-#if !defined (__DECCXX)
   out.setf(std::ios::fixed);
-#endif  
+  
   if (rebuild)  RebuildSVMaps();
 
   WriteData3(out);

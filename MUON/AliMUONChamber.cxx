@@ -22,6 +22,7 @@
 // --- MUON includes ---
 #include "AliMUONChamber.h"
 #include "AliMUONChamberGeometry.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONChamber)	
 
@@ -71,7 +72,7 @@ AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber)
 {
 // Protected copy constructor
 
-  Fatal("AliMUONMergerModule", "Not implemented.");
+  AliFatal("Not implemented.");
  // Dummy copy constructor
 }
 
@@ -91,7 +92,7 @@ AliMUONChamber & AliMUONChamber::operator =(const AliMUONChamber& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }
@@ -208,7 +209,7 @@ void AliMUONChamber::DisIntegration(Float_t eloss, Float_t /*tof*/,
 		if (nnew >= 500) // Perform a bounds check on nnew since it is assumed
 		                 // newclust only contains 500 elements.
 		{
-			Error("DisIntegration", "Limit of 500 pad responses reached.");
+			AliError("Limit of 500 pad responses reached.");
 			return;
 		};
 		//

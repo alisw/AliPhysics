@@ -35,6 +35,7 @@
 #include "AliMUONClusterInput.h"
 #include "AliMUONRawCluster.h"
 #include "AliRawReader.h" // for raw data
+#include "AliLog.h"
 
 
 const Int_t AliMUONClusterReconstructor::fgkDefaultPrintLevel = 0;
@@ -104,7 +105,7 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor (const AliMUONClusterRe
 {
 // Protected copy constructor
 
-  Fatal("AliMUONClusterReconstructor", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 //_______________________________________________________________________
@@ -115,7 +116,7 @@ AliMUONClusterReconstructor::operator=(const AliMUONClusterReconstructor& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }
@@ -158,8 +159,7 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 	//TClonesArray *
 	muonDigits = fMUONData->Digits(ich); 
 	ndig=muonDigits->GetEntriesFast();
-	if(fDebug)
-	  printf("1 Found %d digits in %p chamber %d\n", ndig, (void*)muonDigits,ich);
+	AliDebug(1,Form("1 Found %d digits in %p chamber %d", ndig, (void*)muonDigits,ich));
 	TClonesArray &lhits1 = *dig1;
 	Int_t n = 0;
 	for (k = 0; k < ndig; k++) {
@@ -171,8 +171,7 @@ void AliMUONClusterReconstructor::Digits2Clusters()
 	fMUONData->GetCathode(1);
 	muonDigits =  fMUONData->Digits(ich);  
 	ndig=muonDigits->GetEntriesFast();
-	if(fDebug)
-	  printf("\n 2 Found %d digits in %p %d", ndig, (void*)muonDigits, ich);
+	AliDebug(1,Form("2 Found %d digits in %p %d", ndig, (void*)muonDigits, ich));
 	TClonesArray &lhits2 = *dig2;
 	n=0;
 	
@@ -205,5 +204,5 @@ void AliMUONClusterReconstructor::Digits2Clusters(AliRawReader* /*rawReader*/)
 
 //  Perform cluster finding form raw data
 
-   Fatal("Digits2Clusters","clusterization not implemented for raw data input");
+   AliFatal("clusterization not implemented for raw data input");
 }

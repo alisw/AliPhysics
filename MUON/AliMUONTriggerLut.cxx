@@ -24,6 +24,7 @@
 #include "AliMUONTriggerCircuit.h"
 #include "AliRun.h"
 #include "AliMUON.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONTriggerLut)
 
@@ -59,7 +60,7 @@ AliMUONTriggerLut::AliMUONTriggerLut (const AliMUONTriggerLut& theMUONTriggerLut
 {
 // Protected copy constructor
 
-  Fatal("AliMUONTriggerLut", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 //----------------------------------------------------------------------
@@ -70,7 +71,7 @@ AliMUONTriggerLut::operator=(const AliMUONTriggerLut& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal( "Not implemented.");
     
   return *this;  
 }

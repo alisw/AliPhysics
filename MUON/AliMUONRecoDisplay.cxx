@@ -72,6 +72,7 @@
 #include "AliMUONRecoEvent.h"
 #include "AliMUONRecoTrack.h"
 #include "AliMUONHit.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONRecoDisplay)
 
@@ -125,7 +126,7 @@ AliMUONRecoDisplay::AliMUONRecoDisplay(const AliMUONRecoDisplay& rhs)
 {
 // Protected copy constructor
 
-  Fatal("AliMUONRecoDisplay", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 //-------------------------------------------------------------------
@@ -151,7 +152,7 @@ AliMUONRecoDisplay::operator=(const AliMUONRecoDisplay& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }    
@@ -450,20 +451,20 @@ void AliMUONRecoDisplay::ShowNextEvent(Int_t delta)
       TFolder* topfold = (TFolder*)config->GetTopFolder();
       if (topfold == 0x0)
        {
-         Error("Exec","Can not get Alice top folder");
+         AliError("Can not get Alice top folder");
          return; 
        }
       TString fmdfoldname(config->GetDataFolderName()+"/"+"MUON");
       TFolder* fmdfold = (TFolder*)topfold->FindObject(fmdfoldname);
       if (fmdfold == 0x0)
        {
-         Error("Exec","Can not get MUON folder");
+         AliError("Can not get MUON folder");
          return; 
        }
       TTree* treeH = dynamic_cast<TTree*>(fmdfold->FindObject("TreeH"));
       if (treeH == 0x0)
        {
-         Error("Exec","Can not get TreeH");
+         AliError("Can not get TreeH");
          return;
        }
 /******************************************************************/     

@@ -25,6 +25,7 @@
 #include "AliMUONResponse.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONHitMapA1.h"
+#include "AliLog.h"
 
 //_____________________________________________________________________
 // This function is minimized in the double-Mathieson fit
@@ -70,7 +71,7 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS(const AliMUONClusterFinderVS & cl
 {
 // Protected copy constructor
 
-  Fatal("AliMUONClusterFinderAZModule", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 //____________________________________________________________________________
 void AliMUONClusterFinderVS::ResetRawClusters()
@@ -146,16 +147,14 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 	    fXInit[0]=c->GetX(1);
 	    fYInit[0]=c->GetY(1);
 	}
-	if (fDebugLevel)
-	    fprintf(stderr,"\n cas (1) CombiSingleMathiesonFit(c)\n");
+	AliDebug(1,"cas (1) CombiSingleMathiesonFit(c)");
 	chi2=CombiSingleMathiesonFit(c);
 // 	Int_t ndf = fgNbins[0]+fgNbins[1]-2;
 // 	Float_t prob = TMath::Prob(Double_t(chi2),ndf);
 // 	prob1->Fill(prob);
 // 	chi2_1->Fill(chi2);
 	oldchi2=chi2;
-	if (fDebugLevel)
-	    fprintf(stderr," chi2 %f ",chi2);
+	AliDebug(1,Form(" chi2 %f ",chi2));	   
 
 	c->SetX(0, fXFit[0]);
 	c->SetY(0, fYFit[0]);
@@ -204,16 +203,13 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 //	    chi2_2->Fill(chi2);
 	    
 // Was this any better ??
-	    if (fDebugLevel)
-	      fprintf(stderr," Old and new chi2 %f %f ", oldchi2, chi2);
+	    AliDebug(1,Form(" Old and new chi2 %f %f ", oldchi2, chi2));
 	    if (fFitStat!=0 && chi2>0 && (2.*chi2 < oldchi2)) {
-	      if (fDebugLevel)
-		fprintf(stderr," Split\n");
+	      AliDebug(1,"Split");
 		// Split cluster into two according to fit result
 		Split(c);
 	    } else {
-	      if (fDebugLevel)
-		fprintf(stderr," Don't Split\n");
+	      AliDebug(1,"Do not Split");
 		// Don't split
 		AddRawCluster(*c);
 	    }
@@ -354,39 +350,37 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 // 1 maximum is initialised with the maximum of the combination found (X->cathode 2, Y->cathode 1)
 // 1 maximum is initialised with the other maximum of the first cathode  
 	    if (accepted[0]){
-		if (fDebugLevel) fprintf(stderr,"ico=0\n");
+		AliDebug(1,"ico=0");
 		fXInit[0]=xm[0][1];
 		fYInit[0]=ym[0][0];
 		fXInit[1]=xm[3][0];
 		fYInit[1]=ym[3][0];
 	    } else if (accepted[1]){
-		if (fDebugLevel) fprintf(stderr,"ico=1\n");
+		AliDebug(1,"ico=1");
 		fXInit[0]=xm[1][1];
 		fYInit[0]=ym[1][0];
 		fXInit[1]=xm[2][0];
 		fYInit[1]=ym[2][0];
 	    } else if (accepted[2]){
-		if (fDebugLevel) fprintf(stderr,"ico=2\n");
+		AliDebug(1,"ico=2");
 		fXInit[0]=xm[2][1];
 		fYInit[0]=ym[2][0];
 		fXInit[1]=xm[1][0];
 		fYInit[1]=ym[1][0];
 	    } else if (accepted[3]){
-		if (fDebugLevel) fprintf(stderr,"ico=3\n");
+		AliDebug(1,"ico=3");
 		fXInit[0]=xm[3][1];
 		fYInit[0]=ym[3][0];
 		fXInit[1]=xm[0][0];
 		fYInit[1]=ym[0][0];
 	    }
-	    if (fDebugLevel)
-		fprintf(stderr,"\n cas (2) CombiDoubleMathiesonFit(c)\n");
+		AliDebug(1,"cas (2) CombiDoubleMathiesonFit(c)");
 	    chi2=CombiDoubleMathiesonFit(c);
 // 	    Int_t ndf = fgNbins[0]+fgNbins[1]-6;
 // 	    Float_t prob = TMath::Prob(chi2,ndf);
 // 	    prob2->Fill(prob);
 // 	    chi2_2->Fill(chi2);
-	    if (fDebugLevel)
-		fprintf(stderr," chi2 %f\n",chi2);
+	    AliDebug(1,Form(" chi2 %f\n",chi2));
 
 // If reasonable chi^2 add result to the list of rawclusters
 	    if (chi2<10) {
@@ -396,32 +390,31 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 // 1 maximum is initialised with the maximum of the combination found (X->cathode 2, Y->cathode 1)
 // 1 maximum is initialised with the other maximum of the second cathode  
 		if (accepted[0]){
-		    if (fDebugLevel) fprintf(stderr,"ico=0\n");
+			AliDebug(1,"ico=0");
 		    fXInit[0]=xm[0][1];
 		    fYInit[0]=ym[0][0];
 		    fXInit[1]=xm[3][1];
 		    fYInit[1]=ym[3][1];
 		} else if (accepted[1]){
-		    if (fDebugLevel) fprintf(stderr,"ico=1\n");
+			AliDebug(1,"ico=1");
 		    fXInit[0]=xm[1][1];
 		    fYInit[0]=ym[1][0];
 		    fXInit[1]=xm[2][1];
 		    fYInit[1]=ym[2][1];
 		} else if (accepted[2]){
-		    if (fDebugLevel) fprintf(stderr,"ico=2\n");
+			AliDebug(1,"ico=2");
 		    fXInit[0]=xm[2][1];
 		    fYInit[0]=ym[2][0];
 		    fXInit[1]=xm[1][1];
 		    fYInit[1]=ym[1][1];
 		} else if (accepted[3]){
-		    if (fDebugLevel) fprintf(stderr,"ico=3\n");
+			AliDebug(1,"ico=3");
 		    fXInit[0]=xm[3][1];
 		    fYInit[0]=ym[3][0];
 		    fXInit[1]=xm[0][1];
 		    fYInit[1]=ym[0][1];
 		}
-		if (fDebugLevel)
-		    fprintf(stderr,"\n cas (2) CombiDoubleMathiesonFit(c)\n");
+		AliDebug(1,"\n cas (2) CombiDoubleMathiesonFit(c)\n");
 		chi2=CombiDoubleMathiesonFit(c);
 // 		Int_t ndf = fgNbins[0]+fgNbins[1]-6;
 // 		Float_t prob = TMath::Prob(chi2,ndf);
@@ -2108,7 +2101,7 @@ AliMUONClusterFinderVS& AliMUONClusterFinderVS
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }

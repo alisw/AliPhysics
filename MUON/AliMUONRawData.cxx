@@ -42,6 +42,7 @@
 
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
+#include "AliLog.h"
 
 const Int_t AliMUONRawData::fgkDefaultPrintLevel = 0;
 
@@ -96,7 +97,7 @@ AliMUONRawData::AliMUONRawData (const AliMUONRawData& rhs)
 {
 // Protected copy constructor
 
-  Fatal("AliMUONRawData", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 //_______________________________________________________________________
@@ -107,7 +108,7 @@ AliMUONRawData::operator=(const AliMUONRawData& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }
@@ -431,7 +432,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
   Int_t index;
   Int_t iEntries = 0;
   Int_t iLocCard, locCard;
-  Char_t locDec, trigY, posY, devX, posX,regOut;
+  Char_t locDec, trigY, posY, devX, posX;
   Int_t version = 1; // software version
   Int_t eventType =1; // trigger type: 1 for physics ?
   Int_t serialNb = 0xF; // serial nb of card: all bits on for the moment
@@ -444,7 +445,7 @@ Int_t AliMUONRawData::WriteTriggerDDL()
   }
 
   if (!nEntries)
-    Error("AliMUONRawData::WriteTriggerDDL","No Trigger information available");
+    AliError("No Trigger information available");
 
   buffer = new Int_t [680]; // [16(local)*5 words + 4 words]*8(reg) + 8 words = 680
 
@@ -470,17 +471,11 @@ Int_t AliMUONRawData::WriteTriggerDDL()
 
       // Regional card header
       word = 0;
-      regOut  = 0;
-      AliBitPacking::PackWord((UInt_t)serialNb,word,24,28); //see  AliMUONSubEventTrigger.h for details
-      AliBitPacking::PackWord((UInt_t)version,word,16,23);
-      AliBitPacking::PackWord((UInt_t)iReg,word,12,15);
-      AliBitPacking::PackWord((UInt_t)regOut,word,0,7); // whenever regional output will be implemented
-
+      AliBitPacking::PackWord((UInt_t)serialNb,word,27,31); //see  AliMUONSubEventTrigger.h for details
+      AliBitPacking::PackWord((UInt_t)iReg,word,22,26);
+      AliBitPacking::PackWord((UInt_t)version,word,14,21);
       subEvent->SetRegWord(word);
       memcpy(&buffer[index++],subEvent->GetAddress(),4);
-
-      buffer[index++] = 0;// 2 words of regional input
-      buffer[index++] = 0;
 
       for (Int_t iLoc = 0; iLoc < 16; iLoc++) {
 
@@ -533,6 +528,9 @@ Int_t AliMUONRawData::WriteTriggerDDL()
 
 	}
       } // local card 
+      buffer[index++] = 0;// 2 words of regional input
+      buffer[index++] = 0;
+      buffer[index++] = 0;// regional output
 
       delete subEvent;	
 

@@ -30,10 +30,6 @@ class AliMUONConstants : public TObject {
     static Float_t  Dmax(Int_t i) {return fgDmax[i];}
     // return maximum zoom for event display
     static Int_t    MaxZoom() {return fgMaxZoom;}
-    // return half-distance between two half-chambers
-    static Float_t    DzCh() {return fgDzCh;}
-    // return half-distance between two slats
-    static Float_t    DzSlat() {return fgDzSlat;}
 
     // Conversion functions between chamber Id and detection element Id
     static  Int_t GetChamberId(Int_t detElemId); 
@@ -53,10 +49,6 @@ class AliMUONConstants : public TObject {
     static Float_t  fgDefaultChamberZ[14];    // ! Z-positions of chambers
     static Float_t  fgDmin[7];                // ! inner diameter
     static Float_t  fgDmax[7];                // ! outer diameter
-
-    static Float_t  fgDzCh;             // half-distance between two half-chambers 
-    static Float_t  fgDzSlat;           // half-distance between two slat on the same chamber
-
 //
     static Int_t    fgMaxZoom;                // Maximum Zoom for event display
     ClassDef(AliMUONConstants, 0)             // MUON global constants 

@@ -45,6 +45,7 @@
 #include "AliMUONSt1IniReader.h"
 #include "AliMUONSt1Decoder.h"
 #include "AliMUONTransientDigit.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONSt1Response);
 
@@ -117,8 +118,7 @@ AliMUONSt1Response::AliMUONSt1Response(const AliMUONSt1Response& rhs)
 {
 // Copy constructor
 
-  Fatal("Copy constructor", 
-        "Copy constructor is not implemented.");
+  AliFatal("Copy constructor is not implemented.");
 }
 
 //__________________________________________________________________________
@@ -146,8 +146,7 @@ AliMUONSt1Response::operator=(const AliMUONSt1Response& rhs)
   // check assignement to self
   if (this == &rhs) return *this;
 
-  Fatal("operator=", 
-        "Assignment operator is not implemented.");
+  AliFatal("Assignment operator is not implemented.");
     
   return *this;  
 }
@@ -174,7 +173,7 @@ void AliMUONSt1Response::ReadCouplesOfIntRanges(const string& value,
     StringVector lst = decoder::SplitList(lstCpl[n],","); 
                                               // should have 2 elements
     if (lst.size() != 2) {
-      Warning("ReadIniFile","Bad pad definition");
+      AliWarning("Bad pad definition");
       continue;
     }
     IntPairVector lst1 = decoder::DecodeListOfIntRanges(lst[0],";");
@@ -206,7 +205,7 @@ void AliMUONSt1Response::ReadCouplesOfFloatRanges(const string& value,
     StringVector lst = decoder::SplitList(lstCpl[n],","); 
                                               // should have 2 elements
     if (lst.size() != 2) {
-      Warning("ReadIniFile","Bad pad definition");
+      AliWarning("Bad pad definition");
       continue;
     }
     DoublePairVector lst1 = decoder::DecodeListOfFloatRanges(lst[0],";");
@@ -311,8 +310,7 @@ void AliMUONSt1Response::ReadIniFile(Int_t plane)
   TString path = fgkTopDir + fgkDataDir ;
   //read .ini file
   if (gSystem->AccessPathName(path+fIniFileName[plane],kReadPermission)){
-    Fatal("ReadIniFile",
-          Form("Unable to Read the file %s",fIniFileName[plane].Data()));
+    AliFatal(Form("Unable to Read the file %s",fIniFileName[plane].Data()));
     return;
   }
   fRegions.clear();
@@ -420,7 +418,7 @@ void AliMUONSt1Response::ReadIniFile(Int_t plane,const TString& fileName,
             while ((el = static_cast<AliMUONSt1ElectronicElement*>(next()))){
               rule->AddElement(el);
             }
-          } else Warning("ReadIniFile",Form("Can't find region named %s",value.c_str()));
+          } else AliWarning(Form("Can't find region named %s",value.c_str()));
         }
       }
       for (itValue = vals.begin() ; itValue != vals.end(); ++itValue){
@@ -434,7 +432,7 @@ void AliMUONSt1Response::ReadIniFile(Int_t plane,const TString& fileName,
               fDefaultParameters[plane][i]=param;
             }
             if (rule) rule->AddParameter(param);
-          } else Warning("ReadIniFile",Form("Can't find parameter named %s",value.c_str()));
+          } else AliWarning(Form("Can't find parameter named %s",value.c_str()));
         }
       }
       if (rule) fRulesList[plane].AddFirst(rule);

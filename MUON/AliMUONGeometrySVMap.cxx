@@ -20,6 +20,7 @@
 #include <TObjString.h>
 
 #include "AliMUONGeometrySVMap.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONGeometrySVMap)
 
@@ -43,8 +44,7 @@ AliMUONStringIntMap::AliMUONStringIntMap()
 AliMUONStringIntMap::AliMUONStringIntMap(const AliMUONStringIntMap& rhs)
   : TObject(rhs)
 {
-  Fatal("Copy constructor", 
-        "Copy constructor is not implemented.");
+  AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
@@ -54,8 +54,7 @@ AliMUONStringIntMap::operator = (const AliMUONStringIntMap& rhs)
   // check assignement to self
   if (this == &rhs) return *this;
 
-  Fatal("operator=", 
-        "Assignment operator is not implemented.");
+  AliFatal("Assignment operator is not implemented.");
     
   return *this;  
 }
@@ -77,7 +76,7 @@ Bool_t  AliMUONStringIntMap::Add(const TString& first, Int_t second)
 
   Int_t second2 = Get(first);
   if ( second2 > 0 ) {
-    Error("Add", "%s is already present in the map", first.Data());
+    AliError(Form("%s is already present in the map", first.Data()));
     return false;
   }
   
@@ -189,8 +188,7 @@ AliMUONGeometrySVMap::AliMUONGeometrySVMap()
 AliMUONGeometrySVMap::AliMUONGeometrySVMap(const AliMUONGeometrySVMap& rhs)
   : TObject(rhs)
 {
-  Fatal("Copy constructor", 
-        "Copy constructor is not implemented.");
+  AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
@@ -206,8 +204,7 @@ AliMUONGeometrySVMap::operator = (const AliMUONGeometrySVMap& rhs)
   // check assignement to self
   if (this == &rhs) return *this;
 
-  Fatal("operator=", 
-        "Assignment operator is not implemented.");
+  AliFatal("Assignment operator is not implemented.");
     
   return *this;  
 }
@@ -326,16 +323,10 @@ void  AliMUONGeometrySVMap::PrintPositions() const
 
     const double* translation = matrix->GetTranslation();
     cout << "   translation: "
-#if defined (__DECCXX)
-         << translation[0] << ", " 
-         << translation[1] << ", "
-         << translation[2] << endl;
-#else
          << std::fixed
          << std::setw(7) << std::setprecision(4) << translation[0] << ", " 
          << std::setw(7) << std::setprecision(4) << translation[1] << ", "
          << std::setw(7) << std::setprecision(4) << translation[2] << endl;
-#endif
   }
 }     
 

@@ -60,7 +60,7 @@ AliMUONTrack::AliMUONTrack()
   // Default constructor
   fgFitter = 0;
   fEventReconstructor = 0;
-  fTrackHitsPtr = new TObjArray(10);
+  fTrackHitsPtr = 0;
   fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);  
 }
 
@@ -138,21 +138,8 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
 			       // and AliMUONTrack is not the owner of its EventReconstructor 
   fEventReconstructor = theMUONTrack.fEventReconstructor;
   fTrackParamAtVertex = theMUONTrack.fTrackParamAtVertex;
-
- // necessary to make a copy of the objects and not only the pointers in TObjArray.
-  fTrackHitsPtr  =  new TObjArray(10);
-  for (Int_t index = 0; index < (theMUONTrack.fTrackHitsPtr)->GetEntriesFast(); index++) {
-    AliMUONTrackHit *trackHit = new AliMUONTrackHit(*(AliMUONTrackHit*)(theMUONTrack.fTrackHitsPtr)->At(index));
-    fTrackHitsPtr->Add(trackHit);
-  }
-
-  // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  fTrackParamAtHit  =  new TClonesArray("AliMUONTrackParam",10);
-  for (Int_t index = 0; index < (theMUONTrack.fTrackParamAtHit)->GetEntriesFast(); index++) {
-    {new ((*fTrackParamAtHit)[fTrackParamAtHit->GetEntriesFast()]) 
-	AliMUONTrackParam(*(AliMUONTrackParam*)(theMUONTrack.fTrackParamAtHit)->At(index));}
-  }
-
+  fTrackHitsPtr     =  new TObjArray(*theMUONTrack.fTrackHitsPtr);  // is it right ?
+  fTrackParamAtHit  =  new TClonesArray(*theMUONTrack.fTrackParamAtHit);
   fNTrackHits       =  theMUONTrack.fNTrackHits;
   fFitMCS           =  theMUONTrack.fFitMCS;
   fFitNParam        =  theMUONTrack.fFitNParam;
@@ -177,21 +164,8 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
                                // is it right ? NO because it would use dummy copy constructor
   fEventReconstructor =  theMUONTrack.fEventReconstructor;
   fTrackParamAtVertex =  theMUONTrack.fTrackParamAtVertex;
-
- // necessary to make a copy of the objects and not only the pointers in TObjArray.
-  fTrackHitsPtr  =  new TObjArray(10);
-  for (Int_t index = 0; index < (theMUONTrack.fTrackHitsPtr)->GetEntriesFast(); index++) {
-    AliMUONTrackHit *trackHit = new AliMUONTrackHit(*(AliMUONTrackHit*)(theMUONTrack.fTrackHitsPtr)->At(index));
-    fTrackHitsPtr->Add(trackHit);
-  }
-
-  // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  fTrackParamAtHit  =  new TClonesArray("AliMUONTrackParam",10);
-  for (Int_t index = 0; index < (theMUONTrack.fTrackParamAtHit)->GetEntriesFast(); index++) {
-    {new ((*fTrackParamAtHit)[fTrackParamAtHit->GetEntriesFast()]) 
-	AliMUONTrackParam(*(AliMUONTrackParam*)(theMUONTrack.fTrackParamAtHit)->At(index));}
-  }
-
+  fTrackHitsPtr       =  new TObjArray(*theMUONTrack.fTrackHitsPtr); // is it right ?
+  fTrackParamAtHit    =  new TClonesArray(*theMUONTrack.fTrackParamAtHit);
   fNTrackHits         =  theMUONTrack.fNTrackHits;
   fFitMCS             =  theMUONTrack.fFitMCS;
   fFitNParam          =  theMUONTrack.fFitNParam;

@@ -20,8 +20,6 @@ class AliMUONTrackHit : public TObject
  public:
   AliMUONTrackHit(); // Constructor
   virtual ~AliMUONTrackHit(); // Destructor
-  AliMUONTrackHit (const AliMUONTrackHit& AliMUONTrackHit); // copy constructor
-  AliMUONTrackHit& operator=(const AliMUONTrackHit& AliMUONTrackHit); // assignment operator
   AliMUONTrackHit(AliMUONHitForRec* Hit); // Constructor from one HitForRec
 
   // Inline functions for Get and Set
@@ -35,6 +33,9 @@ class AliMUONTrackHit : public TObject
     return kTRUE; }
   Int_t Compare(const TObject* TrackHit) const; // "Compare" function for sorting
 
+ protected:
+  AliMUONTrackHit (const AliMUONTrackHit& AliMUONTrackHit); // copy constructor
+  AliMUONTrackHit& operator=(const AliMUONTrackHit& AliMUONTrackHit); // assignment operator
 
  private:
   void SetNextTrackHitWithSameHitForRec(AliMUONTrackHit *Next) {fNextTrackHitWithSameHitForRec = Next;}

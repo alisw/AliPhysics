@@ -24,6 +24,7 @@
 #include "AliSegmentation.h"
 #include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONTriggerCircuit)
 
@@ -55,7 +56,7 @@ AliMUONTriggerCircuit::AliMUONTriggerCircuit(const AliMUONTriggerCircuit& theMUO
 {
 // Protected copy constructor
 
-  Fatal("AliMUONTriggerCircuit", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 //----------------------------------------------------------------------
@@ -66,7 +67,7 @@ AliMUONTriggerCircuit::operator=(const AliMUONTriggerCircuit& rhs)
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }

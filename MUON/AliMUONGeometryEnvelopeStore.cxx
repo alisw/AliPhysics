@@ -17,6 +17,7 @@
 #include "AliMUONGeometryTransformStore.h"
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONConstants.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONGeometryEnvelopeStore)
 
@@ -51,8 +52,7 @@ AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore()
 AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore(const AliMUONGeometryEnvelopeStore& rhs)
   : TObject(rhs)
 {
-  Fatal("Copy constructor", 
-        "Copy constructor is not implemented.");
+  AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
@@ -75,8 +75,7 @@ AliMUONGeometryEnvelopeStore::operator = (const AliMUONGeometryEnvelopeStore& rh
   // check assignement to self
   if (this == &rhs) return *this;
 
-  Fatal("operator=", 
-        "Assignment operator is not implemented.");
+  AliFatal("Assignment operator is not implemented.");
     
   return *this;  
 }
@@ -116,7 +115,7 @@ Bool_t AliMUONGeometryEnvelopeStore::AlignEnvelope(
   
   const TGeoCombiTrans* kTransform = fDETransforms->Get(detElemId);
   if (!kTransform) {
-    Warning("AlignEnvelope", "Transformation not found.");
+    AliWarning("Transformation not found.");
     return false;
   };
 
@@ -138,12 +137,8 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelope(const TString& name,
 // to the list of envelopes.
 // ---  					   
 
-  if (fDebug) {
-    cout << "... Adding ";
-    if (!isVirtual) cout << " non-";
-    cout << "virtual envelope " << name 
-         << "  id " << id << endl;
-  }  
+  if (!isVirtual) AliDebug(1,Form("Adding non-virtual envelope %s id %d",name.Data(),id));
+//  else AliDebug(1,Form("Adding virtual envelope %s id %d",name.Data(),id));
 
   AliMUONGeometryEnvelope* envelope 
     = new AliMUONGeometryEnvelope(name, id, isVirtual, only);

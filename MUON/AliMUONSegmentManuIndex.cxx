@@ -28,6 +28,7 @@
 #include <TString.h>
 
 #include "AliMUONSegmentManuIndex.h"
+#include "AliLog.h"
 
 //___________________________________________
 ClassImp(AliMUONSegmentManuIndex)
@@ -78,5 +79,5 @@ TString AliMUONSegmentManuIndex::Name(Int_t manuid, Int_t manuchannel)
 void AliMUONSegmentManuIndex::Print() const
 {
   // Printing AliMUONSegmentManuIndex information
-  Info("Print","Name=%s Id=%d BusPatch=%d ManuId=%d ManuChannelId=%d\n",fName.Data(),fChannelId,fBusPatchId,fManuId,fManuChannelId);   
+  AliInfo(Form("Name=%s Id=%d BusPatch=%d ManuId=%d ManuChannelId=%d\n",fName.Data(),fChannelId,fBusPatchId,fManuId,fManuChannelId));   
 }

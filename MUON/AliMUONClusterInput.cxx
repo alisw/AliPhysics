@@ -25,6 +25,7 @@
 #include "AliMUONResponse.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONDigit.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONClusterInput)
 
@@ -65,7 +66,7 @@ AliMUONClusterInput::AliMUONClusterInput(const AliMUONClusterInput& clusterInput
 {
 // Protected copy constructor
 
-  Fatal("AliMUONClusterInput", "Not implemented.");
+  AliFatal("Not implemented.");
 }
 
 void AliMUONClusterInput::SetDigits(Int_t chamber, TClonesArray* dig1, TClonesArray* dig2)
@@ -222,7 +223,7 @@ AliMUONClusterInput& AliMUONClusterInput
 
   if (this == &rhs) return *this;
 
-  Fatal("operator=", "Not implemented.");
+  AliFatal("Not implemented.");
     
   return *this;  
 }

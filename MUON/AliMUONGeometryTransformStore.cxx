@@ -13,6 +13,7 @@
 #include <TObjString.h>
 
 #include "AliMUONGeometryTransformStore.h"
+#include "AliLog.h"
 
 ClassImp(AliMUONGeometryTransformStore)
 
@@ -50,8 +51,7 @@ AliMUONGeometryTransformStore::AliMUONGeometryTransformStore(
                                    const AliMUONGeometryTransformStore& rhs)
   : TObject(rhs)
 {
-  Fatal("Copy constructor", 
-        "Copy constructor is not implemented.");
+  AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
@@ -67,8 +67,7 @@ AliMUONGeometryTransformStore::operator = (const AliMUONGeometryTransformStore& 
   // check assignement to self
   if (this == &rhs) return *this;
 
-  Fatal("operator=", 
-        "Assignment operator is not implemented.");
+  AliFatal("Assignment operator is not implemented.");
     
   return *this;  
 }
@@ -135,8 +134,8 @@ void AliMUONGeometryTransformStore::Add(Int_t detElemId,
     fDETransforms.AddAt(newTransform, GetDetElementIndex(detElemId));
   } 
   else 
-    Warning("Add", "The aligned volume %s is already present", 
-            alignedVolume.Data());  
+    AliWarning(Form("The aligned volume %s is already present", 
+            alignedVolume.Data()));  
 }		      
     
 //______________________________________________________________________________
@@ -154,26 +153,13 @@ void  AliMUONGeometryTransformStore::Print(Option_t* /*option*/) const
 
     const double* translation = matrix->GetTranslation();
     cout << "   translation: "
-#if defined (__DECCXX)
-         << translation[0] << ", " 
-         << translation[1] << ", "
-         << translation[2] << endl;
-#else
          << std::fixed
          << std::setw(7) << std::setprecision(4) << translation[0] << ", " 
          << std::setw(7) << std::setprecision(4) << translation[1] << ", "
          << std::setw(7) << std::setprecision(4) << translation[2] << endl;
-#endif
 	 
     const double* rotation = matrix->GetRotationMatrix();
     cout << "   rotation matrix:  "
-#if defined (__DECCXX)
-         << rotation[0] << ", " << rotation[1] << ", " << rotation[2] << endl
-	 << "                     "	    
-         << rotation[3] << ", " << rotation[4] << ", " << rotation[5] << endl	    
-	 << "                     "	    
-         << rotation[6] << ", " << rotation[7] << ", " << rotation[8] << endl;
-#else
          << std::fixed
          << std::setw(7) << std::setprecision(4) 
          << rotation[0] << ", " << rotation[1] << ", " << rotation[2] << endl
@@ -181,7 +167,7 @@ void  AliMUONGeometryTransformStore::Print(Option_t* /*option*/) const
          << rotation[3] << ", " << rotation[4] << ", " << rotation[5] << endl	    
 	 << "                     "	    
          << rotation[6] << ", " << rotation[7] << ", " << rotation[8] << endl;
-#endif
+
   }
 }     
 
@@ -197,7 +183,7 @@ AliMUONGeometryTransformStore::Get(Int_t detElemId) const
   if ( index >= 0 && index < fNofDetElems )
     return (const TGeoCombiTrans*)fDETransforms.At(index);
   else {
-    Warning("Get","Index %d out of limits", index);
+    AliWarning(Form("Index %d out of limits", index));
     return 0;  
   }  
 }  
