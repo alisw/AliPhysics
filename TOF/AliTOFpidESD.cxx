@@ -168,6 +168,7 @@ Int_t AliTOFpidESD::MakePID(AliESD *event)
     AliESDtrack *t=tracks[i];
 
     if ((t->GetStatus()&AliESDtrack::kTRDout)==0) continue;
+    if ((t->GetStatus()&AliESDtrack::kTRDStop)!=0) continue;
 
     Double_t x,par[5]; t->GetExternalParameters(x,par);
     Double_t cov[15]; t->GetExternalCovariance(cov);
