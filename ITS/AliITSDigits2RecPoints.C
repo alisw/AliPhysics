@@ -16,8 +16,8 @@ TFile* AccessFile(TString inFile="galice.root", TString acctype="R");
 void writeAR(TFile * fin, TFile *fou);
 Int_t ChangeITSDefaults(TFile *hitfile,AliITS *ITS,TString opt="");
 #define DEBUG
-Int_t AliITSDigits2RecPoints(TString digFile="galiceD.root", 
-			    TString recFile="galiceR.root",TString opt=""){
+Int_t AliITSDigits2RecPoints(TString digFile="galice.root", 
+			    TString recFile="galice.root",TString opt=""){
     // Standard ITS Digits to RecPoints.
 
     // Dynamically link some shared libs

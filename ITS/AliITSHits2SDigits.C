@@ -17,7 +17,7 @@ void writeAR(TFile * fin, TFile *fou);
 Int_t ChangeITSDefaults(TFile *hitfile,AliITS *ITS,TString opt="");
 //#define DEBUG
 Int_t AliITSHits2SDigits(TString  hitFile = "galice.root",
-			 TString sdigFile = "galiceS.root",TString opt=""){
+			 TString sdigFile = "galice.root",TString opt=""){
     // Standeard ITS Hits to SDigits.
 
     // Dynamically link some shared libs
