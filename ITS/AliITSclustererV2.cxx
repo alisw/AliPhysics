@@ -414,7 +414,7 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
      new (cl[n]) AliITSclusterV2(lab,lp); n++; 
   }
 
-  delete bins;
+  delete [] bins;
 }
 
 void AliITSclustererV2::FindClustersSPD(AliITSRawStream* input, 
