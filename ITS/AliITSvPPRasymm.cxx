@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.45  2001/06/07 14:42:14  barbera
+Both chip and det thicknesses set to [100,300]
+
 Revision 1.44  2001/05/31 19:24:47  barbera
 Default values of SPD detector and chip thickness set to 200 microns as defined by the Technical Board
 
@@ -4897,9 +4900,9 @@ void AliITSvPPRasymm::InitAliITSgeom(){
                                          new AliITSgeomSSD275and75(npar,par));
 			    break;
 			case 6:
-			    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSDp,t,r);
-			    if(!(fITSgeom->IsShapeDefined(kSSDp))) 
-				fITSgeom->ReSetShape(kSSDp,
+			    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
+			    if(!(fITSgeom->IsShapeDefined(kSSD))) 
+				fITSgeom->ReSetShape(kSSD,
                                          new AliITSgeomSSD75and275(npar,par));
 			    break;
 			} // end switch

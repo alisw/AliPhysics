@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.12  2001/08/24 21:04:36  nilsen
+Added some include files. Needed due to new forward declorations in other
+files
+
 Revision 1.11  2001/05/30 16:15:47  fca
 Correct comparison wiht AliGeant3::Class() introduced. Thanks to I.Hrivnacova
 
@@ -347,9 +351,9 @@ void AliITSvtest::InitAliITSgeom(){
 				fITSgeom->ReSetShape(kSSD,new AliITSgeomSSD275and75());
 			    break;
 			case 6:
-			    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSDp,t,r);
-			    if(!(fITSgeom->IsShapeDefined(kSSDp))) 
-				fITSgeom->ReSetShape(kSSDp,new AliITSgeomSSD75and275());
+			    fITSgeom->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
+			    if(!(fITSgeom->IsShapeDefined(kSSD))) 
+				fITSgeom->ReSetShape(kSSD,new AliITSgeomSSD75and275());
 			    break;
 			} // end switch
 		} // end for det
