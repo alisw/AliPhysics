@@ -246,11 +246,12 @@ void  AliMUON::SetTreeAddress()
   GetMUONData()->SetTreeAddress("H");
   if (fHits !=  GetMUONData()->Hits())  {
     if ( gAlice->GetMCApp() )
-      if ( gAlice->GetMCApp()->GetHitLists() )
-      gAlice->GetMCApp()->AddHitList (fHits); // For purifyKine, only necessary when Hit list is created in AliMUONData
+      if ( gAlice->GetMCApp()->GetHitLists() ) {
+	fHits = GetMUONData()->Hits();
+	gAlice->GetMCApp()->AddHitList(fHits); // For purifyKine, only necessary when Hit list is created in AliMUONData
+      }  
   }
-  fHits = GetMUONData()->Hits(); // Added by Ivana to use the methods FisrtHit, NextHit of AliDetector
-	    
+  fHits = GetMUONData()->Hits(); // Added by Ivana to use the methods FisrtHit, NextHit of AliDetector    
 }
 
 //____________________________________________________________________
