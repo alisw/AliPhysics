@@ -77,12 +77,16 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
   //                                                      Make the track segments 
   //                                                      Make the reconstructed particles
   Int_t index ;   
-  cout << "Start making reconstructed points (clusterizing!!)" << endl;
+  if  (fDebugReconstruction)
+    cout << "DebugReconstruction>>> " << "Start making reconstructed points (clusterizing!!)" << endl;
+  
   fClusterizer->MakeClusters(dl, emccl, ppsdl);
-
-  cout << "AliPHOSReconstructioner: Digit list entries is " << dl->GetEntries() << endl ;
-  cout << "AliPHOSReconstructioner: Emc  list entries is " << emccl->GetEntries() << endl ;
-  cout << "AliPHOSReconstructioner: Ppsd list entries is " << ppsdl->GetEntries() << endl ;
+  
+  if  (fDebugReconstruction){
+    cout << "DebugReconstruction>>> " << "AliPHOSReconstructioner: Digit list entries is " << dl->GetEntries() << endl ;
+    cout << "AliPHOSReconstructioner: Emc  list entries is " << emccl->GetEntries() << endl ;
+    cout << "AliPHOSReconstructioner: Ppsd list entries is " << ppsdl->GetEntries() << endl ;
+  }
 
   // Digit Debuging
   if  (fDebugReconstruction)     {
