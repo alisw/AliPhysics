@@ -20,6 +20,9 @@
 /*
  
 $Log$
+Revision 1.10  2004/03/06 01:56:09  mhorner
+Pythai comp code
+
 Revision 1.9  2004/02/23 20:37:32  mhorner
 changed geometry call
 
@@ -327,12 +330,12 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 	     for(Int_t k=numTracks; k < fNumUnits; k++)
 	     {
 		     fUnit[k].SetUnitID(k);
-		     fUnit[k].SetUnitFlag(kOutJet);
+		     fUnit[k].SetUnitFlag(kBelowMinEt);
 		     fUnit[k].SetUnitEta(0.0);
 		     fUnit[k].SetUnitPhi(0.0);
 		     fUnit[k].SetUnitEnergy(0.0);		     
 		     fUnitNoCuts[k].SetUnitID(k);
-		     fUnitNoCuts[k].SetUnitFlag(kOutJet);
+		     fUnitNoCuts[k].SetUnitFlag(kBelowMinEt);
 		     fUnitNoCuts[k].SetUnitEta(0.0);
 		     fUnitNoCuts[k].SetUnitPhi(0.0);
 		     fUnitNoCuts[k].SetUnitEnergy(0.0);		          
@@ -495,8 +498,11 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
      fJetEtaSum += fEnergy * fDEta;
      fJetPhiSum += fEnergy * fDPhi;
      fJetESum += fEnergy;
-     fJetEta = fEtaInit + (fJetEtaSum / fJetESum);
-     fJetPhi = fPhiInit + (fJetPhiSum / fJetESum);
+     if (fJetESum >1.0e-7)
+     {
+	     fJetEta = fEtaInit + (fJetEtaSum / fJetESum);
+	     fJetPhi = fPhiInit + (fJetPhiSum / fJetESum);
+     }
    }
 
 
@@ -783,7 +789,7 @@ if (fDebug>0) Info("AliEMCALJetFinderAlgoOmni","Beginning Default Constructor");
 
 		      //Find the distance cone centre is from initiator cell
 		      if (fDebug>10) Info("FindJets","Checking if cone move too large");
-		      if ( ((fJetEtaSum)*(fJetEtaSum))+((fJetPhiSum)*(fJetPhiSum)) >1.e-4)
+		      if ( ((fJetEtaSum)*(fJetEtaSum))+((fJetPhiSum)*(fJetPhiSum)) >1.e-7)
 		      {
 			      fDistI = TMath::Sqrt( ((fJetEtaSum/fJetESum)*(fJetEtaSum/fJetESum)) + ((fJetPhiSum/fJetESum)*
 												    (fJetPhiSum/fJetESum)));
