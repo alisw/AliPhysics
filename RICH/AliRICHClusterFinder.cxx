@@ -94,17 +94,16 @@ void AliRICHClusterFinder::Exec()
 //__________________________________________________________________________________________________
 void AliRICHClusterFinder::FindRawClusters(Int_t iChamber)
 {//finds neighbours and fill the tree with raw clusters
-  Info("FindRawClusters","Start for Chamber %i.",iChamber);
-  
   Int_t nDigits=Rich()->Digits(iChamber)->GetEntriesFast();
+  Info("FindRawClusters","Start for Chamber %i with %i digits.",iChamber,nDigits);  
   if(nDigits==0)return;
 
   fHitMap=new AliRICHMap(Rich()->Digits(iChamber));
 
   AliRICHcluster *pRawCluster;
-  
+    
   for(Int_t iDig=0;iDig<nDigits;iDig++){    
-    AliRICHdigit *dig=(AliRICHdigit*)Rich()->Digits(iChamber)->UncheckedAt(iDig);
+    AliRICHdigit *dig=(AliRICHdigit*)Rich()->Digits(iChamber)->At(iDig);
     Int_t i=dig->X();   Int_t j=dig->Y();
     if(fHitMap->TestHit(i,j)==kUsed) continue;
 	

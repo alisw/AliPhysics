@@ -49,12 +49,14 @@ public:
   static Double_t QdcSlope(Int_t sec)        {HV(sec);return 27;}
   static Double_t AlphaFeedback(Int_t sec)   {HV(sec);return 0.036;}
   
+  static Bool_t  IsResolveClusters()         {return fgIsResolveClusters;}  
   static Bool_t   IsWireSag()                {return fgIsWireSag;}
   static Int_t    HV(Int_t)                  {return fgHV;}
-  static Double_t AngleRot()                {return fgAngleRot*TMath::DegToRad();} 
-    static void  SetWireSag(Bool_t status)  {fgIsWireSag=status;}  
-    static void  SetHV(Int_t hv)            {fgHV       =hv;}  
-    static void  SetAngleRot(Double_t rot)  {fgAngleRot =rot;}         
+  static Double_t AngleRot()                 {return fgAngleRot*TMath::DegToRad();} 
+    static void  SetResolveClusters(Bool_t a){fgIsResolveClusters=a;}  
+    static void  SetWireSag(Bool_t status)   {fgIsWireSag=status;}  
+    static void  SetHV(Int_t hv)             {fgHV       =hv;}  
+    static void  SetAngleRot(Double_t rot)   {fgAngleRot =rot;}         
 
   inline static Double_t Mathienson(Double_t lx1,Double_t lx2,Double_t ly1,Double_t ly2);   
   inline static void    Loc2Area(TVector3 hitX3,Int_t &padxMin,Int_t &padyMin,Int_t &padxMax,Int_t &padyMax);
@@ -69,11 +71,12 @@ public:
          Bool_t SigGenCond(Double_t,Double_t){return kFALSE;}
   inline static Int_t   Loc2Sec(Double_t &x,Double_t &y); 
   inline static Int_t   Pad2Sec(Int_t &padx,Int_t &pady); 
-  inline static Bool_t  IsResolveClusters() {return kTRUE;}  
+  
 protected:
-  static Bool_t  fgIsWireSag;      //is wire sagitta taken into account
-  static Int_t   fgHV;             //HV applied to anod wires
-  static Double_t fgAngleRot;       //rotation of RICH from up postion (0,0,490)cm
+  static Bool_t  fgIsWireSag;              //is wire sagitta taken into account
+  static Bool_t  fgIsResolveClusters;      //performs declustering or not
+  static Int_t   fgHV;                     //HV applied to anod wires
+  static Double_t fgAngleRot;              //rotation of RICH from up postion (0,0,490)cm
   
   ClassDef(AliRICHParam,4)    //RICH main parameters
 };

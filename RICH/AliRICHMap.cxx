@@ -14,8 +14,7 @@
  **************************************************************************/
 
 #include "AliRICHMap.h"
-#include "AliRICHParam.h"
-#include "AliRICHDigit.h"
+#include "AliRICH.h"
 
 ClassImp(AliRICHMap)
 
@@ -32,8 +31,8 @@ void  AliRICHMap::FillHits()
 {//Fill hits into HitMap
   if(!fNdigits) return;    
   for(Int_t iDigN=0;iDigN<fNdigits;iDigN++){
-    AliRICHDigit *pDig= (AliRICHDigit*)fDigits->At(iDigN);
-    SetHit(pDig->PadX(),pDig->PadY(),iDigN);
+    AliRICHdigit *pDig= (AliRICHdigit*)fDigits->At(iDigN);
+    SetHit(pDig->X(),pDig->Y(),iDigN);
   }
 }
 //__________________________________________________________________________________________________

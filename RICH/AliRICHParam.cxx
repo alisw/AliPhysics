@@ -14,8 +14,9 @@
  **************************************************************************/
 #include "AliRICHParam.h"
 
-Bool_t   AliRICHParam::fgIsWireSag    =kTRUE;
-Double_t AliRICHParam::fgAngleRot     =-60;
-Int_t    AliRICHParam::fgHV           =2150;
+Bool_t   AliRICHParam::fgIsWireSag            =kTRUE;
+Bool_t   AliRICHParam::fgIsResolveClusters    =kFALSE;
+Double_t AliRICHParam::fgAngleRot             =-60;
+Int_t    AliRICHParam::fgHV                   =2150;
 
 ClassImp(AliRICHParam)
