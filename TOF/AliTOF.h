@@ -22,17 +22,20 @@ class TDirectory;
 class TString ;  
 class TTask ;
 class TFolder ;
+class AliTOFMerger;
 
 #include "TObject.h"
 #include "TTree.h" 
 #include "AliDetector.h"
 #include <iostream.h>
+#include "AliTOFMerger.h"
+#include "AliTOFSDigitizer.h"
+
 
 class AliTOF : public AliDetector {
 public:
   AliTOF(); 
   AliTOF(const char *name, const char *title);
-//  virtual        ~AliTOF() {} 
   virtual ~AliTOF() ;
 // getters for AliTOF object status
   Int_t GetNStripA() const {return fNStripA;}
@@ -41,13 +44,18 @@ public:
   Int_t GetNpadX()   const {return fNpadX;}
   Int_t GetNpadZ()   const {return fNpadZ;}
   Int_t GetPadXStr() const {return fPadXStr;}
+  Float_t GetTimeRes() const {return fTimeRes;}
+  Float_t GetChrgRes() const {return fChrgRes;}
 
+  virtual void    SetTreeAddress();
   virtual void    AddHit(Int_t track, Int_t* vol, Float_t* hits);
   virtual void    AddDigit(Int_t* tracks, Int_t* vol, Float_t* digits);
+  virtual void    AddSDigit(Int_t* tracks, Int_t* vol, Float_t* digits);
   virtual void    CreateGeometry();
   virtual void    CreateMaterials();
   virtual void    Init();
-  virtual void    MakeBranch(Option_t* option, const char *file=0);
+//  virtual void    MakeBranch(Option_t* option, const char *file=0);
+  virtual void    MakeBranch(Option_t *opt=" ",const char *file=0);
   virtual void    Makehits(Bool_t hits=1);
   virtual void    FinishEvent();
   virtual Int_t   IsVersion() const =0;
@@ -56,19 +64,35 @@ public:
   virtual void    TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
                         Float_t zlenB, Float_t zlenA, Float_t ztof0){}
   virtual void    DrawModule() const;
+  virtual void    DrawDetectorModules()=0;
+  virtual void    DrawDetectorStrips()=0;
+//  virtual void   DrawDetectorModulesinFrame()=0;
+//  virtual void   DrawDetectorStripsinFrame()=0;
           void    CreateTOFFolders();
+  Bool_t    CheckOverlap(Int_t* vol, Float_t* digit, Int_t Track);
   virtual void    SDigits2Digits();
-  virtual void    Hits2Digits();   
-  virtual void    Hits2SDigits(){cout << "AliTOF::Hits2SDigits() dummy function called" << endl;}
+  virtual void    SetMerger(AliTOFMerger* merger);
+  virtual AliTOFMerger* Merger();
+//  virtual void    Hits2Digits();   
+  virtual void    TOFHits2SDigits();
+  virtual void    Hits2SDigits();
   virtual void    Digits2Reco() {cout << "AliTOF::Digits2Reco()  dummy function called" << endl;}
           void    Digits2Raw (Int_t evNumber=0);
           void    Raw2Digits (Int_t evNumber=0);
+  virtual void    ResetHits();
+  virtual void    ResetDigits();
+  TClonesArray *SDigits() const {return fSDigits;}
+  TClonesArray *ReconParticles() const {return fReconParticles;}
+  Int_t   fNevents ;        // Number of events to digitize
 
 protected:
   TFolder* fFGeom ;       //  Folder that holds the Geometry definition
   TTask*   fDTask ;       //  TOF Digitizer container
   TTask*   fReTask;       //  TOF Reconstructioner container
   TClonesArray* fSDigits; // List of summable digits
+  Int_t    fNSDigits;           // Number of sdigits
+  TClonesArray* fReconParticles; // List of reconstructed particles
+  AliTOFMerger *fMerger;   // ! pointer to merger
   Int_t   fNTof;  // number of TOF sectors
   Float_t fRmax;  // upper bound for radial extension of TOF detector
   Float_t fRmin;  // lower bound for radial extension of TOF detector
@@ -101,9 +125,8 @@ protected:
   Int_t   fIdSens;     // the unique numeric identifier for sensitive volume FPAD 
 
 private:
-  Bool_t    CheckOverlap(Int_t* vol, Float_t* digit, Int_t Track);
 
-  ClassDef(AliTOF,2)  // Time Of Flight base class
+  ClassDef(AliTOF,3)  // Time Of Flight base class
 };
  
 #endif /* ALITOF_H */

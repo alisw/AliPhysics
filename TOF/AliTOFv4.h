@@ -20,7 +20,7 @@ class AliTOFv4 : public AliTOF {
 public:
   AliTOFv4();
   AliTOFv4(const char *name, const char *title);
-  virtual ~AliTOFv4(void) ;
+  virtual ~AliTOFv4() {}
   virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
@@ -30,6 +30,10 @@ public:
                        Float_t zlenA,Float_t ztof0);
   virtual void   StepManager();
   virtual void   DrawModule() const;
+  virtual void   DrawDetectorModules();
+  virtual void   DrawDetectorStrips();
+//  virtual void   DrawDetectorModulesinFrame();
+//  virtual void   DrawDetectorStripsinFrame();
 
 private:
   Int_t fIdFTOA; // FTOA volume identifier (outer plate A)

@@ -146,16 +146,16 @@ Int_t AliTOFdigit::GetTotPad() const
 void AliTOFdigit::AddTrack(Int_t track)
 {
 //
-// Add a track to the digit 
+// Add a new and different track to the digit 
 //
-
-  if (fTracks[1]==0){
-     fTracks[1] = track;
-  }else if (fTracks[2]==0){
-     fTracks[2] = track;
-  }else{
-  //   printf("AliTOFdigit::AddTrack ERROR: Too many Tracks (>3) \n");
-  }
+  if (track==fTracks[0] || track==fTracks[1] || track==fTracks[2]) return;
+   if (fTracks[1]==0){
+      fTracks[1] = track;
+   }else if (fTracks[2]==0){
+      fTracks[2] = track;
+   }else{
+   // printf("AliTOFdigit::AddTrack ERROR: Too many Tracks (>3) \n");
+   }
 }
 
 // Overloading of Streaming, Sum and Comparison operators
