@@ -178,7 +178,6 @@ Bool_t AliPHOSFastRecParticle::IsPhoton(TString purity) const
   if      (purity == "low"   ) photonLike = TestPIDBit(6);
   else if (purity == "medium") photonLike = TestPIDBit(7);
   else if (purity == "high"  ) photonLike = TestPIDBit(8);
-  else Error("IsPhoton","Wrong purity type: \'%s\'",purity.Data());
   if (photonLike                                   && //  photon by PCA
       (TestPIDBit(5)||TestPIDBit(4)||TestPIDBit(3))&& //  fast by TOF
       (TestPIDBit(2)||TestPIDBit(1)||TestPIDBit(0)))  //  neutral by CPV
@@ -219,6 +218,7 @@ Bool_t AliPHOSFastRecParticle::IsElectron(TString purity) const
   else if (purity == "medium") photonLike = TestPIDBit(7);
   else if (purity == "high"  ) photonLike = TestPIDBit(8);
   else Error("IsElectron","Wrong purity type: %s",purity.Data());
+  
   if (photonLike                                   && //  photon by PCA
       (TestPIDBit(5)|| TestPIDBit(4)|| TestPIDBit(3))&& //  fast by TOF
      (!TestPIDBit(2)||!TestPIDBit(1)||!TestPIDBit(0)))  //  charged by CPV
