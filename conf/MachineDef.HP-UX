@@ -8,7 +8,7 @@ CXX           = CC
 F77	      = f77
 
 # Global optimisation
-OPT	      = -O +Onolimit
+OPT	      = -O
 
 # Shared library suffix
 SL	      = sl
