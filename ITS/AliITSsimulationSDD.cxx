@@ -1416,6 +1416,9 @@ void AliITSsimulationSDD::Compress1D(){
             Int_t idx=i+k*fNofMaps/2;
             if( !fAnodeFire[idx] ) continue;
             CompressionParam(idx,decr,thres); 
+
+            decr=20;  thres=3; //I.Belikov's temporary fix (needed for the PID)
+
             for (j=0; j<fMaxNofSamples; j++) {
                 Int_t signal=(Int_t)(fHitMap2->GetSignal(idx,j));
                 signal -= decr;  // if baseline eq.
