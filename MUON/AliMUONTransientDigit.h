@@ -22,7 +22,7 @@ class AliMUONTransientDigit : public AliMUONDigit {
     TObjArray  *TrackList()   {return fTrackList;}
     AliMUONTransientDigit & operator =(const AliMUONTransientDigit & rhs);
     
-    ClassDef(AliMUONTransientDigit,1)  // Transient digit for set MUON
+    ClassDef(AliMUONTransientDigit,1)  // Transient digit for MUON
 };
 #endif
 

@@ -22,7 +22,7 @@ public:
    virtual Int_t  IsVersion() const {return 1;}
    virtual void   StepManager();
 private:
-   ClassDef(AliMUONv1,1)  //Hits manager for set:MUON version 0
+   ClassDef(AliMUONv1,1)  // MUON Detector class Version 1
 };
 #endif
 

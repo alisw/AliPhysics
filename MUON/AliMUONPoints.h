@@ -45,7 +45,7 @@ protected:
   TMarker3DBox     *fMarker[3];        // pointer to  associated 3D-marker
   TMatrix          *fMatrix;           // test
   
-  ClassDef(AliMUONPoints,1) //Class to draw detector clusters (is PolyMarker3D)
+  ClassDef(AliMUONPoints,1) //Class to draw detector clusters (is PolyMarker3D) for MUON
 };
 #endif
 

@@ -41,7 +41,7 @@ class AliMUONConstants : public TObject {
     static Float_t  fgDmax[7];                // ! outer diameter
 //
     static Int_t    fgMaxZoom;                // Maximum Zoom for event display
-    ClassDef(AliMUONConstants, 1)     // Class definition in ROOT context
+    ClassDef(AliMUONConstants, 1)             // MUON global constants 
 };
 	
 #endif

@@ -29,6 +29,6 @@ class AliMUONHit : public AliHit {
     AliMUONHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
     virtual ~AliMUONHit() {}
     
-    ClassDef(AliMUONHit,1)  //Hit object for set:MUON
+    ClassDef(AliMUONHit,1)  //Hit object for MUON
 };
 #endif

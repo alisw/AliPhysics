@@ -67,7 +67,7 @@ class AliMUONClusterInput : public TObject {
     Float_t              fQtot[2];         // ! Total charge
     // Fitter
     static TMinuit*      fgMinuit;          // ! Fitter
-    ClassDef(AliMUONClusterInput, 1) // Class definition in ROOT context
+    ClassDef(AliMUONClusterInput, 1)        // Global data service for hit reconstruction
 };
 #endif
 

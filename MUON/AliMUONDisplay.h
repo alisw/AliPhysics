@@ -119,7 +119,7 @@ private:
    TObjArray        *fR2points;             //Array of cog points for each cathode
    TObjArray        *fCpoints;              //Array of correlated points for each first cathode
    Int_t            fNextCathode;           //Flagging next cathode
-   ClassDef(AliMUONDisplay, 0)   //Utility class to display MUON clusters...
+   ClassDef(AliMUONDisplay, 0)   //Utility class to display MUON events
 };
 
 #endif

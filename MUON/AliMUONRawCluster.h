@@ -38,7 +38,7 @@ public:
    static Int_t BinarySearch(Float_t r, TArrayF ccord, Int_t from, Int_t upto);
    static void  SortMin(Int_t *idx,Float_t *xdarray, Float_t *xarray,
 			Float_t *yarray, Float_t *qarray,Int_t ntr);
-   ClassDef(AliMUONRawCluster,1)  //Cluster object for set:MUON
+   ClassDef(AliMUONRawCluster,1)  //Cluster class for MUON
 };
 #endif
 

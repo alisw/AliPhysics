@@ -156,7 +156,7 @@ class AliMUON : public  AliDetector {
    TClonesArray *fHits2;        // List of hits for one track only
    TClonesArray *fPadHits2;     // List of clusters for one track only
 
-   ClassDef(AliMUON,1)  //Hits manager for set:MUON
+   ClassDef(AliMUON,1)  // MUON Detector base class
 };
 #endif
 

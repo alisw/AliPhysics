@@ -21,6 +21,6 @@ class AliMUONDigit : public TObject {
     AliMUONDigit(Int_t *digits);
     AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits);
     virtual ~AliMUONDigit();
-    ClassDef(AliMUONDigit,1)  //Digits for set:MUON
+    ClassDef(AliMUONDigit,1)  //Digits for MUON
 };
 #endif

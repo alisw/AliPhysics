@@ -6,7 +6,7 @@
 /* $Id$ */
 
 /////////////////////////////////////////////////////
-//  Segmentation and Response classes version 05   //
+//  Segmentation                      version 05   //
 /////////////////////////////////////////////////////
  
 #include "AliMUONSegmentationV02.h"

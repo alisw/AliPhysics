@@ -28,7 +28,7 @@ class AliMUONproto : public AliMUON {
     void FindClusters(Int_t, Int_t);
 
   private:
-    ClassDef(AliMUONproto,1) // Hits manager for set:MUON version 2
+    ClassDef(AliMUONproto,1) // MUON Detector class for test beam prototypes
   protected:
     Int_t fNsigma;
     Float_t fThreshold[100];

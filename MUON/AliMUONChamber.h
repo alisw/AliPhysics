@@ -123,7 +123,7 @@ public TObject
   TObjArray              *fSegmentation;    // pointer to segmentation
   AliMUONClusterFinderVS *fReconstruction;  // pointer to reconstruction
   AliMUONResponse        *fResponse;        // pointer to response
-  ClassDef(AliMUONChamber,1) // Muon tracking and trigger chamber class
+  ClassDef(AliMUONChamber,1) // Muon tracking chamber class
 };
 
 #endif
