@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2003/12/29 18:40:39  hristov
+Copy/paste error corrected
+
 Revision 1.2  2003/12/29 17:26:01  hristov
 Using enum to initaialize static ints in the header file, the initialization of static floats moved to the implementation file
 
@@ -26,6 +29,9 @@ Revision 0.02  2003/12/10 S.Arcelli:
         Implement Global methods GetPos & GetDetID 
 Revision 0.03  2003/12/14 S.Arcelli
         Set Phi range [-180,180]->[0,360] 
+Revision 0.03  2004/4/05 S.Arcelli
+        Implement Global methods IsInsideThePad 
+                                  DistanceToPad 
 */
 
 #include <stdlib.h>
@@ -43,6 +49,7 @@ ClassImp(AliTOFGeometry)
 
 const Int_t AliTOFGeometry::fgkTimeDiff   = 25000;// Min signal separation (ps)
 
+const Float_t AliTOFGeometry::fgkxTOF     = 371.; // Inner radius of the TOF for Reconstruction (cm)
 const Float_t AliTOFGeometry::fgkRmin     = 370.; // Inner radius of the TOF (cm)
 const Float_t AliTOFGeometry::fgkRmax     = 399;  // Outer radius of the TOF (cm)
 const Float_t AliTOFGeometry::fgkZlenA    = 106.0;// length (cm) of the A module
@@ -93,7 +100,7 @@ void AliTOFGeometry::Init()
   //
   // Strips Tilt Angles
  
-  const Float_t angles[fgkNPlates][fgkMaxNstrip] ={
+  Float_t const kangles[kNPlates][kMaxNstrip] ={
 
  {44.494, 43.725, 42.946, 42.156, 41.357, 40.548, 39.729, 38.899, 
   38.060, 37.211, 36.353, 35.484, 34.606, 33.719, 32.822, 31.916, 
@@ -118,7 +125,7 @@ void AliTOFGeometry::Init()
 
   //Strips Heights
 
-   const Float_t heights[fgkNPlates][fgkMaxNstrip]= {
+   Float_t const kheights[kNPlates][kMaxNstrip]= {
 
   {-5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5,
    -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5, -5.5 },
@@ -138,14 +145,127 @@ void AliTOFGeometry::Init()
 
    // Deposit in fAngles, fHeights
 
-  for (Int_t iplate = 0; iplate < fgkNPlates; iplate++) {
-    for (Int_t istrip = 0; istrip < fgkMaxNstrip; istrip++) {
-      fAngles[iplate][istrip]   = angles[iplate][istrip];
-      fHeights[iplate][istrip]  = heights[iplate][istrip];
+  for (Int_t iplate = 0; iplate < kNPlates; iplate++) {
+    for (Int_t istrip = 0; istrip < kMaxNstrip; istrip++) {
+      fAngles[iplate][istrip]   = kangles[iplate][istrip];
+      fHeights[iplate][istrip]  = kheights[iplate][istrip];
     }
   }
 
-  fPhiSec   = 360./fgkNSectors;
+  fPhiSec   = 360./kNSectors;
+}
+
+//_____________________________________________________________________________
+Float_t AliTOFGeometry::DistanceToPad(Int_t *det, Float_t *pos) 
+{
+//
+// Returns distance of  space point with coor pos (x,y,z) (cm) wrt 
+// pad with Detector Indices idet (iSect,iPlate,iStrip,iPadX,iPadZ) 
+//
+    
+  //Transform pos into Sector Frame
+
+  Float_t x = pos[0];
+  Float_t y = pos[1];
+  Float_t z = pos[2];
+
+  Float_t radius = TMath::Sqrt(x*x+y*y);
+  Float_t phi=TMath::ATan2(y,x);	
+  if(phi<0) phi=2.*TMath::Pi()+phi;
+  //  Get the local angle in the sector philoc
+  Float_t angle   = phi*kRaddeg-( Int_t (kRaddeg*phi/20.) + 0.5)*fPhiSec;
+  Float_t xs = radius*TMath::Cos(angle/kRaddeg);
+  Float_t ys = radius*TMath::Sin(angle/kRaddeg);
+  Float_t zs = z;
+
+  // Do the same for the selected pad
+
+  Float_t g[3];
+  GetPos(det,g);
+
+  Float_t padRadius = TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
+  Float_t padPhi=TMath::ATan2(g[1],g[0]);	
+  if(padPhi<0) padPhi=2.*TMath::Pi()+padPhi;
+  //  Get the local angle in the sector philoc
+  Float_t padAngle   = padPhi*kRaddeg-( Int_t (padPhi*kRaddeg/20.)+ 0.5) * fPhiSec; 
+  Float_t padxs = padRadius*TMath::Cos(padAngle/kRaddeg);
+  Float_t padys = padRadius*TMath::Sin(padAngle/kRaddeg);
+  Float_t padzs = g[2];
+  
+  //Now move to local pad coordinate frame. Translate:
+  
+  Float_t xt = xs-padxs;
+  Float_t yt = ys-padys;
+  Float_t zt = zs-padzs;
+  //Now Rotate:
+  
+  Float_t alpha = GetAngles(det[1],det[2]);
+  Float_t xr = xt*TMath::Cos(alpha/kRaddeg)+zt*TMath::Sin(alpha/kRaddeg);
+  Float_t yr = yt;
+  Float_t zr = -xt*TMath::Sin(alpha/kRaddeg)+zt*TMath::Cos(alpha/kRaddeg);
+
+  Float_t dist = TMath::Sqrt(xr*xr+yr*yr+zr*zr);
+  return dist;
+
+}
+
+
+//_____________________________________________________________________________
+Bool_t AliTOFGeometry::IsInsideThePad(Int_t *det, Float_t *pos) 
+{
+//
+// Returns true if space point with coor pos (x,y,z) (cm) falls 
+// inside pad with Detector Indices idet (iSect,iPlate,iStrip,iPadX,iPadZ) 
+//
+
+  Bool_t isInside=false; 
+
+    
+  //Transform pos into Sector Frame
+
+  Float_t x = pos[0];
+  Float_t y = pos[1];
+  Float_t z = pos[2];
+
+  Float_t radius = TMath::Sqrt(x*x+y*y);
+  Float_t phi=TMath::ATan2(y,x);	
+  if(phi<0) phi=2.*TMath::Pi()+phi;
+  //  Get the local angle in the sector philoc
+  Float_t angle   = phi*kRaddeg-( Int_t (kRaddeg*phi/20.) + 0.5) *fPhiSec;
+  Float_t xs = radius*TMath::Cos(angle/kRaddeg);
+  Float_t ys = radius*TMath::Sin(angle/kRaddeg);
+  Float_t zs = z;
+
+  // Do the same for the selected pad
+
+  Float_t g[3];
+  GetPos(det,g);
+
+  Float_t padRadius = TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
+  Float_t padPhi=TMath::ATan2(g[1],g[0]);	
+  if(padPhi<0) padPhi=2.*TMath::Pi()+padPhi;
+  //  Get the local angle in the sector philoc
+  Float_t padAngle   = padPhi*kRaddeg-( Int_t (padPhi*kRaddeg/20.)+ 0.5) * fPhiSec; 
+  Float_t padxs = padRadius*TMath::Cos(padAngle/kRaddeg);
+  Float_t padys = padRadius*TMath::Sin(padAngle/kRaddeg);
+  Float_t padzs = g[2];
+  
+  //Now move to local pad coordinate frame. Translate:
+  
+  Float_t xt = xs-padxs;
+  Float_t yt = ys-padys;
+  Float_t zt = zs-padzs;
+  //Now Rotate:
+  
+  Float_t alpha = GetAngles(det[1],det[2]);
+  Float_t xr = xt*TMath::Cos(alpha/kRaddeg)+zt*TMath::Sin(alpha/kRaddeg);
+  Float_t yr = yt;
+  Float_t zr = -xt*TMath::Sin(alpha/kRaddeg)+zt*TMath::Cos(alpha/kRaddeg);
+
+  if(fabs(xr)<=0.75 && fabs(yr)<= (fgkXPad*0.5) && fabs(zr)<= (fgkZPad*0.5))
+    isInside=true; 
+  return isInside;
+
 }
 
 //_____________________________________________________________________________
@@ -190,7 +310,7 @@ Float_t AliTOFGeometry::GetX(Int_t *det)
   Int_t ipadx   = det[4];
 
   // Find out distance d on the plane wrt median phi:
-  Float_t d = (ipadx+0.5)*fgkXPad-(fgkNpadX*fgkXPad)*0.5;
+  Float_t d = (ipadx+0.5)*fgkXPad-(kNpadX*fgkXPad)*0.5;
 
   // The radius r in xy plane:
   Float_t r = (fgkRmin+fgkRmax)/2.+fHeights[iplate][istrip]+
@@ -220,7 +340,7 @@ Float_t AliTOFGeometry::GetY(Int_t *det)
   Int_t ipadx   = det[4];
 
   // Find out distance d on the plane wrt median phi:
-  Float_t d = (ipadx+0.5)*fgkXPad-(fgkNpadX*fgkXPad)*0.5;
+  Float_t d = (ipadx+0.5)*fgkXPad-(kNpadX*fgkXPad)*0.5;
 
   // The radius r in xy plane:
   Float_t r = (fgkRmin+fgkRmax)/2.+fHeights[iplate][istrip]+
@@ -252,7 +372,7 @@ Float_t AliTOFGeometry::GetZ(Int_t *det)
   // The radius r in xy plane:
   Float_t r = (fgkRmin+fgkRmax)/2.+fHeights[iplate][istrip];
 
-  Float_t zCoor = r*TMath::Tan(0.5*TMath::Pi()-GetStripTheta(iplate, istrip))-
+  Float_t zCoor = r*TMath::Tan(0.5*TMath::Pi()-GetStripTheta(iplate,istrip))-
          (ipadz-0.5)*fgkZPad*TMath::Cos(fAngles[iplate][istrip]/kRaddeg);
   return zCoor;
 
@@ -319,7 +439,7 @@ Int_t AliTOFGeometry::GetPadX(Float_t *pos)
    * 2.*fgkZPad*TMath::Sin(fAngles[iplate][istrip]/kRaddeg)-0.25;
 
   // Find out distance projected onto the strip plane 
-  Float_t d = (r*TMath::Tan(philoc)+(fgkNpadX*fgkXPad)*0.5);
+  Float_t d = (r*TMath::Tan(philoc)+(kNpadX*fgkXPad)*0.5);
 
   iPadX  =  (Int_t) ( d/fgkXPad);  
   return iPadX;
@@ -351,7 +471,7 @@ Int_t AliTOFGeometry::GetPlate(Float_t *pos)
   // theta projected on the median of the sector
   Float_t theta=TMath::ATan2(rho*TMath::Cos(philoc),z);
 
-  for (Int_t i=0; i<fgkNPlates; i++){
+  for (Int_t i=0; i<kNPlates; i++){
     if ( GetMaxPlateTheta(i) >= theta && 
          GetMinPlateTheta(i) <= theta)iPlate=i;
   }
@@ -384,9 +504,9 @@ Int_t AliTOFGeometry::GetStrip(Float_t *pos)
   Float_t z = pos[2];
 
   Int_t nstrips=0;
-  if(iplate==0 || iplate == 4)nstrips=fgkNStripC;
-  if(iplate==1 || iplate == 3)nstrips=fgkNStripB;
-  if(iplate==2)               nstrips=fgkNStripA;
+  if(iplate==0 || iplate == 4)nstrips=kNStripC;
+  if(iplate==1 || iplate == 3)nstrips=kNStripB;
+  if(iplate==2)               nstrips=kNStripA;
 
   Float_t rho=TMath::Sqrt(x*x+y*y);
   Float_t phi=TMath::ATan2(y,x);	
@@ -478,9 +598,9 @@ Float_t AliTOFGeometry::GetMaxPlateTheta(Int_t iPlate)
   // Returns the maximum theta angle of a given plate iPlate (rad)
   
   Int_t index=0;
-  if(iPlate==0 ||iPlate == 4)index=fgkNStripC-1;
-  if(iPlate==1 ||iPlate == 3)index=fgkNStripB-1;
-  if(iPlate==2)              index=fgkNStripA-1;
+  if(iPlate==0 ||iPlate == 4)index=kNStripC-1;
+  if(iPlate==1 ||iPlate == 3)index=kNStripB-1;
+  if(iPlate==2)              index=kNStripA-1;
 
   Float_t delta =0.;
   if(iPlate==0)delta = -1. ;

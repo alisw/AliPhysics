@@ -50,10 +50,6 @@
 #include "AliTOFSDigitizer.h"
 #include "AliTOFhit.h"
 #include "AliTOFhitT0.h"
-#include "AliTOFv1.h"
-#include "AliTOFv2.h"
-#include "AliTOFv3.h"
-#include "AliTOFv4.h"
 #include "AliMC.h"
 
 ClassImp(AliTOFSDigitizer)

@@ -19,19 +19,20 @@ class AliTOFGeometry{
   AliTOFGeometry();
   virtual ~AliTOFGeometry();
 
-  static  Int_t NStripA()     { return fgkNStripA;};
-  static  Int_t NStripB()     { return fgkNStripB;};
-  static  Int_t NStripC()     { return fgkNStripC;};
-  static  Int_t NpadX()       { return fgkNpadX;};
-  static  Int_t NpadZ()       { return fgkNpadZ;};
-  static  Int_t NSectors()    { return fgkNSectors;};
-  static  Int_t NPlates()     { return fgkNPlates;};
-  static  Int_t NPadXSector() { return (fgkNStripA + 2*fgkNStripB +
-				       2*fgkNStripC)*fgkNpadX*fgkNpadZ;};
+  static  Int_t NStripA()     { return kNStripA;};
+  static  Int_t NStripB()     { return kNStripB;};
+  static  Int_t NStripC()     { return kNStripC;};
+  static  Int_t NpadX()       { return kNpadX;};
+  static  Int_t NpadZ()       { return kNpadZ;};
+  static  Int_t NSectors()    { return kNSectors;};
+  static  Int_t NPlates()     { return kNPlates;};
+  static  Int_t NPadXSector() { return (kNStripA + 2*kNStripB +
+				       2*kNStripC)*kNpadX*kNpadZ;};
   static  Int_t TimeDiff()    { return fgkTimeDiff;};
-  static  Int_t MaxTOFTree()  { return fgkMaxTOFTree;};
+  static  Int_t MaxTOFTree()  { return kMaxTOFTree;};
 
 
+  static  Float_t RinTOF()   { return fgkxTOF;};
   static  Float_t Rmin()     { return fgkRmin;};
   static  Float_t Rmax()     { return fgkRmax;};
   static  Float_t ZlenA()    { return fgkZlenA;};
@@ -51,9 +52,14 @@ class AliTOFGeometry{
   static  Float_t ElectronMass()  { return fgkElectronMass;};
   static  Float_t MuonMass()      { return fgkMuonMass;};
  
+  static  Double_t GetAlpha()  { return 2 * 3.14159265358979323846 / kNSectors; }; 
  
 
   virtual void    Init();
+  virtual void    SetHoles(Bool_t holes) {fHoles = holes;};
+  virtual Bool_t  GetHoles() const {return fHoles;};
+  virtual Bool_t  IsInsideThePad(Int_t *det, Float_t *pos); 
+  virtual Float_t DistanceToPad(Int_t *det, Float_t *pos); 
   virtual void    GetPos(Int_t *det,Float_t *pos);
   virtual void    GetDetID(Float_t *pos,Int_t *det);
   virtual Int_t   GetPlate(Float_t *pos);
@@ -75,15 +81,15 @@ class AliTOFGeometry{
   private:
 
   enum {
-    fgkNStripA    = 15, // number of strips in A type module 
-    fgkNStripB    = 19, // number of strips in B type module 
-    fgkNStripC    = 20, // number of strips in C type module 
-    fgkNpadX      = 48, // Number of pads along X 
-    fgkNpadZ      = 2,  // Number of pads along Z
-    fgkNSectors   = 18, // Number of Sectors
-    fgkNPlates    = 5,  // Number of Plates
-    fgkMaxNstrip  = 20, // Max. number of strips
-    fgkMaxTOFTree = 5   // numer of geom. levels: 
+    kNStripA    = 15, // number of strips in A type module 
+    kNStripB    = 19, // number of strips in B type module 
+    kNStripC    = 20, // number of strips in C type module 
+    kNpadX      = 48, // Number of pads along X 
+    kNpadZ      = 2,  // Number of pads along Z
+    kNSectors   = 18, // Number of Sectors
+    kNPlates    = 5,  // Number of Plates
+    kMaxNstrip  = 20, // Max. number of strips
+    kMaxTOFTree = 5   // numer of geom. levels: 
   };
 
   static const Int_t fgkTimeDiff;  // Min signal separation (ps)
@@ -97,6 +103,7 @@ class AliTOFGeometry{
   static const Float_t fgkZPad;    // Pad size in the z direction (cm)
   static const Float_t fgkMaxhZtof;// Max half z-size of TOF (cm)
 
+  static const Float_t fgkxTOF;// Inner TOF Radius used in Reconstruction (cm)
 
   static const Float_t fgkSigmaForTail1;//Sig1 for simulation of TDC tails 
   static const Float_t fgkSigmaForTail2;//Sig2 for simulation of TDC tails
@@ -111,12 +118,12 @@ class AliTOFGeometry{
   static const Float_t fgkDprecMin;//num.prec.tolerance on Thmin 
   static const Float_t fgkDprecMax;//num.prec.tolerance on Thma 
   static const Float_t fgkDprecCen;//num.prec.tolerance on <Theta> 
- 
-  Float_t fAngles[fgkNPlates][fgkMaxNstrip]; //Strip Tilt Angles
-  Float_t fHeights[fgkNPlates][fgkMaxNstrip];//Strip heights
+  Bool_t fHoles; //logical for geometry version (w/wo holes) 
+  Float_t fAngles[kNPlates][kMaxNstrip]; //Strip Tilt Angles
+  Float_t fHeights[kNPlates][kMaxNstrip];//Strip heights
   Float_t fPhiSec; //sector Phi width (deg)
 
-  ClassDef(AliTOFGeometry,0) // TOF Geometry base class
+  ClassDef(AliTOFGeometry,1) // TOF Geometry base class
 };
 
 #endif

@@ -93,6 +93,7 @@ AliTOFv4T0::AliTOFv4T0(const char *name, const char *title)
       cout << " TOF with Holes for PHOS " << endl;
       fTOFHoles=true;}      
   }
+  fTOFGeometry->SetHoles(fTOFHoles);
 } 
 
 //____________________________________________________________________________
@@ -949,7 +950,10 @@ void AliTOFv4T0::StepManager()
   if(gMC->GetMedium()==idtmed[513] && 
      gMC->IsTrackEntering() && gMC->TrackCharge()
      && gMC->CurrentVolID(copy)==fIdSens) 
-  {    
+  {
+
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+
     // getting information about hit volumes
     
     padzid=gMC->CurrentVolOffID(2,copy);
