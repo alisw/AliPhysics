@@ -44,7 +44,11 @@
 //*-- Author: Laurent Aphecetche(SUBATECH)
 // --- std system ---
 class assert ; 
+#ifdef __APPLE__
+#include <stdlib.h>
+#else
 #include <malloc.h>
+#endif
 // --- AliRoot header files ---
 #include "AliMemoryWatcher.h"
 // --- ROOT system ---
