@@ -24,12 +24,16 @@ public:
     virtual void SetFileName(TString filename) {fFileName=TString(filename);}
     virtual void Generate();
     virtual Float_t GassPressureWeight(Float_t zPrimary);
+    virtual void SetSide(Int_t flag = 1) {fSide = flag;}
+    
     AliGenHaloProtvino & operator=(const AliGenHaloProtvino & rhs);
 
 protected:
-  FILE *fp;                             // ! Pointer to file
+  FILE*    fFile;                       // ! Pointer to file
   TString  fFileName;                   //   Choose the file
-  ClassDef(AliGenHaloProtvino,1)        // LHC background boundary source (Protvino Group results)
+  Int_t    fSide;                       //   Muon arm side (1) / Castor side (-1) 
+  
+  ClassDef(AliGenHaloProtvino,1)        //   LHC background boundary source (Protvino Group results)
 };
 #endif
 

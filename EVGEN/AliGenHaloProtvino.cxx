@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2001/01/23 15:04:33  morsch
+Generator to read beam halo file from Protvino group.
+
 */
 
 // Read background particles from a boundary source
@@ -36,24 +39,28 @@ $Log$
 	 :AliGenerator(-1)
 {
 // Constructor
-    fName="HaloProtvino";
-    fTitle="Halo from LHC Tunnel";
+    printf("\n Calling Default Constructor");
+    
+    fName  = "HaloProtvino";
+    fTitle = "Halo from LHC Tunnel";
 //
 //  Read all particles
-    fNpart=-1;
-    fp=0;
+    fNpart = -1;
+    fFile  =  0;
+    fSide  =  1;
 }
 
 AliGenHaloProtvino::AliGenHaloProtvino(Int_t npart)
     :AliGenerator(npart)
 {
 // Constructor
-    fName="Halo";
-    fTitle="Halo from LHC Tunnel";
+    printf("\n Calling Constructor");
+    fName = "Halo";
+    fTitle= "Halo from LHC Tunnel";
 //
-//  Read all particles
-    fNpart=-1;
-    fp=0;
+    fNpart   = npart;
+    fFile    = 0;
+    fSide    = 1;
 }
 
 AliGenHaloProtvino::AliGenHaloProtvino(const AliGenHaloProtvino & HaloProtvino)
@@ -72,18 +79,18 @@ AliGenHaloProtvino::~AliGenHaloProtvino()
 void AliGenHaloProtvino::Init() 
 {
 // Initialisation
+    fFile = fopen(fFileName,"r");
+    if (fFile) {
+	printf("\n File %s opened for reading, %p ! \n ",  fFileName.Data(), fFile);
+    } else {
+	printf("\n Opening of file %s failed,  %p ! \n ",  fFileName.Data(), fFile);
+    }
 }
 
 //____________________________________________________________
 void AliGenHaloProtvino::Generate()
 {
 // Generate from input file
-    FILE *fp = fopen(fFileName,"r");
-    if (fp) {
-	printf("\n File %s opened for reading ! \n ", (char*) &fFileName);
-    } else {
-	printf("\n Opening of file %s failed ! \n ",  (char*) &fFileName);
-    }
  
   Float_t polar[3]= {0,0,0};
   Float_t origin[3];
@@ -94,23 +101,21 @@ void AliGenHaloProtvino::Generate()
   Int_t   inuc;
   //
   Int_t ipart, ncols, nt;
-  
-  Int_t nread=0;
-  origin[2]=2650;
-  
+  Int_t nread = 0;
   while(1) {
-    
-      ncols = fscanf(fp,"%f %d %d %f %f %f %f %f %f",
+      ncols = fscanf(fFile,"%f %d %d %f %f %f %f %f %f",
 		     &zPrimary, &inuc, &ipart, &wgt, 
 		     &ekin, &origin[0], &origin[1],
 		     &tx, &ty);
+/*
       printf(" \n %f %d %d %f %f %f %f %f %f",
 		     zPrimary, inuc, ipart, wgt, 
 		     ekin, origin[0], origin[1],
 		     tx, ty);
- 
+*/
       if (ncols < 0) break;
       nread++;
+
       if (fNpart !=-1 && nread > fNpart) break;
 
 
@@ -131,33 +136,44 @@ void AliGenHaloProtvino::Generate()
     
       p[0]=p0*tx;
       p[1]=p0*ty;
-      p[2]=p0*tz;
-      //
-      // Origin: backtracking to tunnel entrance 
-      // 
-      Float_t zTunnelEntrance = -20.;
-      origin[2] = zTunnelEntrance;
-      Float_t dzBack = -1-zTunnelEntrance;
-      Float_t dsBack = -dzBack/tz;
-      
-      origin[0]+=tx*dsBack;
-      origin[1]+=ty*dsBack;
+      p[2]=-p0*tz;
+
+      origin[2] = 21.965;
 
       //
       //
       // Particle weight
 
-
+      Float_t originP[3] = {0., 0., 0.};
+      originP[2] = zPrimary;
+      
+      Float_t pP[3] = {0., 0., 0.};
+      Int_t ntP;
+      
+      if (fSide == -1) {
+	  originP[2] = -zPrimary;
+	  origin[2]  = -origin[2];
+	  p[2]       = -p[2];
+      }
+      
+      gAlice->SetTrack(0,-1,kProton,pP,originP,polar,0,kPNoProcess,ntP);
+      gAlice->KeepTrack(ntP);
+      
+      
       fParentWeight=wgt*GassPressureWeight(zPrimary);
-      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
+      gAlice->SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
+      gAlice->SetHighWaterMark(nt);
+      
       //
       // Assume particles come from two directions with same probability
+
       origin[2]=-origin[2];
       p[2]=-p[2];
       fParentWeight=wgt*GassPressureWeight(-zPrimary);
-      gAlice->SetTrack(fTrackIt,-1,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
+      gAlice->SetTrack(fTrackIt,ntP,ipart,p,origin,polar,0,kPNoProcess,nt,fParentWeight);
       origin[2]=-origin[2];
       p[2]=-p[2];
+      origin[2]=-origin[2];
   }
 }
  
@@ -173,7 +189,11 @@ Float_t AliGenHaloProtvino::GassPressureWeight(Float_t zPrimary)
 {
   // Return z-dependent gasspressure weight
   //
-  return 1.;
+    Float_t weight = 500.;
+    
+    if (zPrimary > 45000.) weight = 2.e4;
+    
+  return weight;
 }
 
 /*
