@@ -378,7 +378,7 @@ void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t ptmin,Int_t patc
   Double_t alpha1 = AliL3Transform::GetMaxY(mrow)/pow(lineradius,2);
   Double_t kappa = 1*AliL3Transform::GetBField()*AliL3Transform::GetBFact()/ptmin;
   Double_t psi = AliL3Transform::Deg2Rad(10) - asin(lineradius*kappa/2);
-  cout<<"Calculated psi range "<<psi<<" in patch "<<patch<<endl;
+  //  cout<<"Calculated psi range "<<psi<<" in patch "<<patch<<endl;
   AliL3HoughTrack track;
   track.SetTrackParameters(kappa,psi,1);
   Float_t hit[3];
@@ -386,7 +386,7 @@ void AliL3Hough::SetTransformerParams(Int_t nx,Int_t ny,Float_t ptmin,Int_t patc
   track.GetCrossingPoint(mrow2,hit);
   Double_t lineradius2 = sqrt(pow(AliL3Transform::Row2X(mrow2),2) + pow(AliL3Transform::GetMaxY(mrow2),2));
   Double_t alpha2 = hit[1]/pow(lineradius2,2);
-  cout<<"Calculated alphas range "<<alpha1<<" "<<alpha2<<" in patch "<<patch<<endl;
+  //  cout<<"Calculated alphas range "<<alpha1<<" "<<alpha2<<" in patch "<<patch<<endl;
 
   Int_t i=0;
   while(i < 6)
