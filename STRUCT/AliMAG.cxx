@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2002/10/17 16:33:07  hristov
+Corrected check of the MC type
+
 Revision 1.10  2002/10/17 16:14:05  hristov
 MAG geometry with resolved MANY (I.Hrivnacova)
 
@@ -112,7 +115,7 @@ void AliMAG::CreateGeometry()
   //  Define Mother 
   
   par[0] = 22.5;
-  par[1] = 337.5;
+  par[1] = 360.;
   par[2] = 8.;
   par[3] = 2.;
   par[4] = -600.;
@@ -179,7 +182,7 @@ void AliMAG::CreateGeometry()
   //     DOOR OPENING 
   
   dpar[0] = 22.5;
-  dpar[1] = 337.5;
+  dpar[1] = 360;
   dpar[2] = 8.;
   dpar[3] = 3.;
   dpar[4] = 610.;
