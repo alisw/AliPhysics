@@ -24,7 +24,6 @@
 #include "AliRICH.h"
 #include "AliRICHParam.h"
 #include "AliRICHRecHit1D.h"
-#include "AliRICHRecHit3D.h"
 #include <AliRun.h>
 #include <AliRunDigitizer.h>
  
@@ -68,7 +67,6 @@ AliRICH::AliRICH()
   fDchambers  =0; for(int i=0;i<kNCH;i++) fNdch[i]=0;
   fRawClusters=0; for(int i=0;i<kNCH;i++) fNrawch[i]=0;  
   fRecHits1D  =0; for(int i=0;i<kNCH;i++) fNrechits1D[i]=0;
-  fRecHits3D  =0; for(int i=0;i<kNCH;i++) fNrechits3D[i]=0;
   fCkovNumber=fFreonProd=0;  
 }//AliRICH::AliRICH()
 //__________________________________________________________________________________________________
@@ -89,7 +87,6 @@ AliRICH::AliRICH(const char *name, const char *title)
   fDchambers=  0;   //CreateDigitsOld();
   fRawClusters=0;   //CreateRawClustersOld();
   fRecHits1D=  0;   //CreateRecos1Old();
-  fRecHits3D=  0;   //CreateRecos3Old();
   
   fCkovNumber=fFreonProd=0;  
   if(GetDebug())Info("named ctor","Stop.");
@@ -113,7 +110,6 @@ AliRICH::~AliRICH()
   if(fDchambers)   {fDchambers->Delete();     delete fDchambers;}
   if(fRawClusters) {fRawClusters->Delete();   delete fRawClusters;}          
   if(fRecHits1D) {fRecHits1D->Delete();       delete fRecHits1D;}
-  if(fRecHits3D) {fRecHits3D->Delete();       delete fRecHits3D;}                     
   if(GetDebug()) Info("dtor","Stop.");    
 }//AliRICH::~AliRICH()
 //__________________________________________________________________________________________________
@@ -207,13 +203,6 @@ void AliRICH::AddRecHit1D(Int_t id, Float_t *rechit, Float_t *photons, Int_t *pa
     new(lrec1D[fNrechits1D[id]++]) AliRICHRecHit1D(id,rechit,photons,padsx,padsy);
 }
 //_____________________________________________________________________________
-void AliRICH::AddRecHit3D(Int_t id, Float_t *rechit, Float_t omega, Float_t theta, Float_t phi)
-{// Add a RICH reconstructed hit to the list
-
-    TClonesArray &lrec3D = *((TClonesArray*)fRecHits3D->At(id));
-    new(lrec3D[fNrechits3D[id]++]) AliRICHRecHit3D(id,rechit,omega,theta,phi);
-}
-//______________________________________________________________________________
 void AliRICH::BuildGeometry() 
 {//Builds a TNode geometry for event display
   if(GetDebug())Info("BuildGeometry","Start.");
@@ -663,11 +652,7 @@ void AliRICH::MakeBranch(Option_t* option)
 
     CreateRecos1Old();   
     for(int i=0; i<kNCH ;i++) 
-      MakeBranchInTree(fLoader->TreeR(),Form("%sRecHits1D%d",GetName(),i+1),&((*fRecHits1D)[i]),kBufferSize,0);
-    
-    CreateRecos3Old();   
-    for(int i=0; i<kNCH ;i++)
-      MakeBranchInTree(fLoader->TreeR(),Form("%sRecHits3D%d",GetName(),i+1), &((*fRecHits3D)[i]), kBufferSize, 0);
+      MakeBranchInTree(fLoader->TreeR(),Form("%sRecHits1D%d",GetName(),i+1),&((*fRecHits1D)[i]),kBufferSize,0);    
    }//R
   if(GetDebug())Info("MakeBranch","Stop.");   
 }//void AliRICH::MakeBranch(Option_t* option)
@@ -716,9 +701,6 @@ void AliRICH::SetTreeAddress()
       
       branch=fLoader->TreeR()->GetBranch(Form("%sRecHits1D%d",GetName(),i+1));
       if(branch){CreateRecos1Old(); branch->SetAddress(&((*fRecHits1D)[i]));}
-      
-      branch=fLoader->TreeR()->GetBranch(Form("%sRecHits3D%d",GetName(),i+1));
-      if(branch){CreateRecos3Old();branch->SetAddress(&((*fRecHits3D)[i]));}
     }
   }//R
   if(GetDebug())Info("SetTreeAddress","Stop.");

@@ -15,7 +15,6 @@
 #pragma link C++ class  AliRICHTransientDigit+;
 #pragma link C++ class  AliRICHRawCluster+;
 #pragma link C++ class  AliRICHRecHit1D+;
-#pragma link C++ class  AliRICHRecHit3D+;
 #pragma link C++ class  AliRICHSegmentationV0+;
 #pragma link C++ class  AliRICHSegmentationV1+;
 #pragma link C++ class  AliRICHResponse+;
@@ -24,8 +23,6 @@
 #pragma link C++ class  AliRICHChamber+;
 #pragma link C++ class  AliRICHPoints+;
 #pragma link C++ class  AliRICHDisplay+;
-#pragma link C++ class  AliRICHDetect+;
-#pragma link C++ class  AliRICHDetectV1+;
 #pragma link C++ class  AliRICHMap+;
 #pragma link C++ class  AliRICHHitMapA1+;
 #pragma link C++ class  AliRICHTresholdMap+;

@@ -18,7 +18,6 @@
 #include "AliRICHSDigit.h"
 #include "AliRICHRawCluster.h"
 class AliRICHRecHit1D;
-class AliRICHRecHit3D;
 
 //__________________AliRICHhit______________________________________________________________________
 //__________________________________________________________________________________________________
@@ -258,7 +257,6 @@ public:
   inline  void    AddDigitOld(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits);          
   inline  void    AddClusterOld(Int_t iChamber, const AliRICHRawCluster& cluster);
           void    AddRecHit1D(Int_t id, Float_t* rechit, Float_t* photons, Int_t* padsx, Int_t* padsy);
-          void    AddRecHit3D(Int_t id, Float_t* rechit, Float_t omega, Float_t theta, Float_t phi);
           
   inline  void    CreateCerenkovsOld();  
   inline  void    CreateSpecialsOld();   
@@ -270,7 +268,6 @@ public:
           void    ResetSpecialsOld(){fNspecials=0; if(fSpecials) fSpecials->Clear();}   
           void    ResetRawClusters(){if(fRawClusters)for(int i=0;i<kNCH;i++){fRawClusters->At(i)->Clear();fNrawch[i]=0;}}
           void    ResetRecHits1D()  {if(fRecHits1D)  for(int i=0;i<kNCH;i++){fRecHits1D  ->At(i)->Clear();fNrechits1D[i]=0;}}
-          void    ResetRecHits3D()  {if(fRecHits3D)  for(int i=0;i<kNCH;i++){fRecHits3D  ->At(i)->Clear();fNrechits3D[i]=0;}}
   
   TClonesArray*   DigitsOld(Int_t iC)   const{if(fDchambers) return (TClonesArray *)fDchambers->At(iC-1);else return 0;}
   TClonesArray*   ClustersOld(Int_t iC) const{if(fRawClusters)return (TClonesArray *)fRawClusters->At(iC-1);else return 0;}
@@ -281,14 +278,11 @@ public:
             
   AliRICHChamber& Chamber(Int_t id)      {return *((AliRICHChamber *) (*fChambers)[id]);}  
   TObjArray     *Dchambers()                const{return fDchambers;}
-  TObjArray     *RecHits3D()                const{return fRecHits3D;}
   TObjArray     *RecHits1D()                const{return fRecHits1D;}
   Int_t         *Ndch()                          {return fNdch;}
   Int_t         *Nrechits1D()                    {return fNrechits1D;} 
-  Int_t         *Nrechits3D()                    {return fNrechits3D;} 
   TClonesArray  *DigitsAddress(Int_t id)    const{return ((TClonesArray *) (*fDchambers)[id]);}
   TClonesArray  *RecHitsAddress1D(Int_t id) const{return ((TClonesArray *) (*fRecHits1D)[id]);}
-  TClonesArray  *RecHitsAddress3D(Int_t id) const{return ((TClonesArray *) (*fRecHits3D)[id]);}
   TClonesArray  *RawClustAddress(Int_t id)  const{return ((TClonesArray *) (*fRawClusters)[id]);}    
 //          Int_t DistancetoPrimitive(Int_t /*px*/, Int_t /*py*/)      {return 9999;}
     
@@ -313,8 +307,6 @@ protected:
   Int_t                 fNrawch[kNCH];       //Array of current numbers of raw clusters
   TObjArray            *fRecHits1D;          //!List of rec. hits
   Int_t                 fNrechits1D[kNCH];   //Array of current numbers of rec hits 1D
-  TObjArray            *fRecHits3D;          //!List of rec. hits
-  Int_t                 fNrechits3D[kNCH];   //Array of current numbers of rec hits 3D 
   Int_t fCkovNumber;                         // Number of Cerenkov photons
   Int_t fFreonProd;                          // Cerenkovs produced in freon
   Int_t fFeedbacks;                          // Number of feedback photons
@@ -409,14 +401,6 @@ void AliRICH::CreateRecos1Old()
   if(GetDebug())Info("CreateRecos1DOld","creating recos 1 containers.");
   fRecHits1D = new TObjArray(kNCH);
   for(Int_t i=0; i<kNCH ;i++)  fRecHits1D->AddAt(new TClonesArray("AliRICHRecHit1D",1000), i);
-}
-//__________________________________________________________________________________________________
-void AliRICH::CreateRecos3Old()
-{
-  if(fRecHits3D) return;
-  if(GetDebug())Info("CreateRecos3DOld","creating recos 3 containers.");
-  fRecHits3D = new TObjArray(kNCH);
-  for(Int_t i=0; i<kNCH ;i++)  fRecHits3D->AddAt(new TClonesArray("AliRICHRecHit3D",1000), i);
 }
 //__________________________________________________________________________________________________
 void AliRICH::AddCerenkov(Int_t track, Int_t *vol, Float_t *cerenkovs)

@@ -20,7 +20,6 @@ public:
   virtual void   CreateGeometry();  
   virtual void   Init();            // Makes nothing for a while          
           void   DiagnosticsFE(Int_t evNumber1,Int_t evNumber2);
-          void   DiagnosticsSE(Int_t diaglevel,Int_t evNumber1,Int_t evNumber2);
          Int_t   Hits2SDigits(Float_t xhit,Float_t yhit,Float_t eloss, Int_t idvol, ResponseType res);
   void     SetGeometryModel(Int_t c,AliRICHGeometry *pRICHGeo)                    {C(c)->SetGeometryModel(pRICHGeo);}
   void     SetSegmentationModel(Int_t c, AliSegmentation *pAliSeg)                {C(c)->SetSegmentationModel(pAliSeg);}

@@ -64,7 +64,6 @@
 #include "AliRICHDigit.h"
 #include "AliRICHRawCluster.h"
 #include "AliRICHRecHit1D.h"
-#include "AliRICHRecHit3D.h"
 
 ClassImp(AliRICHDisplay)
     
@@ -840,50 +839,6 @@ void AliRICHDisplay::LoadRecHits(Int_t chamber, Int_t cathode)
 	 }
      }
 
-   TClonesArray *pRICHrechits3D  = pRICH->RecHitsAddress3D(chamber);
-   //printf ("Chamber:%d\n", chamber);
-   if (pRICHrechits3D != 0)
-     {
-       
-       //RICH->ResetRecHits();
-       
-       
-       Int_t nent3D=(Int_t)gAlice->TreeR()->GetEntries();
-       gAlice->TreeR()->GetEvent(nent3D-1+cathode-1);
-       Int_t nrechits3D = pRICHrechits3D->GetEntriesFast();
-       //printf ("nrechits3D:%d\n",nrechits3D);
-       if (nrechits3D != 0)
-	 {
-	   if (fRecpoints == 0) fRecpoints = new TObjArray(50);
-	   
-	   iChamber = &(pRICH->Chamber(chamber));
-	   AliRICHRecHit3D  *mRec3D;
-	   AliRICHPoints *points3D = 0;
-	   //
-	   //loop over all rechits and store their position  
-	   
-	   points3D = new AliRICHPoints(nrechits3D);
-	   for (Int_t irec=0;irec<nrechits3D;irec++) {
-	     mRec3D   = (AliRICHRecHit3D*)pRICHrechits3D->UncheckedAt(irec);
-	     fRecpoints->AddAt(points3D,irec);
-	     points3D->SetMarkerColor(42);
-	     points3D->SetMarkerStyle(8);
-	     points3D->SetMarkerSize(1.);
-	     points3D->SetParticle(-1);
-	     points3D->SetHitIndex(-1);
-	     points3D->SetTrackIndex(-1);
-	     points3D->SetDigitIndex(-1);
-	     Float_t  vectorLoc[3]={mRec3D->fX,5,mRec3D->fY};
-	     Float_t  vectorGlob[3];
-	     iChamber->LocaltoGlobal(vectorLoc,vectorGlob);
-	     points3D->SetPoint(irec,vectorGlob[0],vectorGlob[1],vectorGlob[2]);
-	     //Float_t theta = iChamber->GetRotMatrix()->GetTheta();
-	     //Float_t phi   = iChamber->GetRotMatrix()->GetPhi();	   
-	     //marker->SetRefObject((TObject*)points3D);
-	     //points3D->Set3DMarker(0, marker); 
-	   }
-	 }
-     }
 }
 //___________________________________________
 void AliRICHDisplay::LoadDigits()
