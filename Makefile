@@ -258,7 +258,10 @@ endif
 
 clean-aliroot:   $(patsubst %,%/module.mk,$(ALIROOTMODULES)) $(patsubst %,clean-%,$(ALIROOTMODULES))
 
-CHECKMODULES := $(filter-out HBTP,$(filter-out MEVSIM,$(ALIROOTMODULES)))
+CHECKMODULES := $(ALIROOTMODULES)
+CHECKMODULES := $(filter-out HBTP,$(CHECKMODULES))
+CHECKMODULES := $(filter-out MEVSIM,$(CHECKMODULES))
+CHECKMODULES := $(filter-out EPEMGEN,$(CHECKMODULES))
 
 check-all:			$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,check-%,$(CHECKMODULES))
 
