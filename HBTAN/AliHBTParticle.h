@@ -97,6 +97,7 @@ public:
                              {fVx=vx; fVy=vy; fVz=vz; fVt=t;}
   void           SetProductionVertex(const TLorentzVector& v)
                              {SetProductionVertex(v.X(),v.Y(),v.Z(),v.T());}
+  void           SetCalcMass(Double_t mass) {fCalcMass = mass;}
   const Char_t*  GetName() const; 
   void           Print() const;
 

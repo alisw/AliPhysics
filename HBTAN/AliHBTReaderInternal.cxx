@@ -126,13 +126,14 @@ Int_t AliHBTReaderInternal::ReadNext()
 
     counter = 0;  
     if (fPartBranch && fTrackBranch)
-    {
+     {
        for(i = 0; i < fPartBuffer->GetEntries(); i++)
          {
            tpart = dynamic_cast<AliHBTParticle*>(fPartBuffer->At(i));
            ttrack =  dynamic_cast<AliHBTParticle*>(fTrackBuffer->At(i));
 
            if( tpart == 0x0 ) continue; //if returned pointer is NULL
+           if( ttrack == 0x0 ) continue; //if returned pointer is NULL
 
            if (ttrack->GetUID() != tpart->GetUID())
              {
@@ -140,19 +141,39 @@ Int_t AliHBTReaderInternal::ReadNext()
                Error("ReadNext","They probobly do not correspond to each other.");
              }
 
-           for (Int_t s = 0; s < tpart->GetNumberOfPids(); s++)
+           for (Int_t s = 0; s < ttrack->GetNumberOfPids(); s++)
             {
-              if( pdgdb->GetParticle(tpart->GetNthPid(s)) == 0x0 ) continue; //if particle has crazy PDG code (not known to our database)
-              if( Pass(tpart->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
+              if( pdgdb->GetParticle(ttrack->GetNthPid(s)) == 0x0 ) continue; //if particle has crazy PDG code (not known to our database)
+              if( Pass(ttrack->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
                                           //if not take next partilce
-              AliHBTParticle* part = new AliHBTParticle(*tpart);
-              part->SetPdgCode(tpart->GetNthPid(s),tpart->GetNthPidProb(s));
-              if( Pass(part) )
+              
+              AliHBTParticle* track = new AliHBTParticle(*ttrack);
+              
+              //apart of setting PDG code of an incarnation
+              //it is necessary tu recalculate energy on the basis of
+              //new PDG code (mass) hypothesis
+              TParticlePDG* pdgp = pdgdb->GetParticle(ttrack->GetNthPid(s));
+              if (pdgp == 0x0)//PDG part corresponding to new incarnation
+               {
+                 Error("ReadNext","Particle code unknown to PDG DB.");
+                 continue;
+               }
+              Double_t mass = pdgp->Mass();//mass of new incarnation
+              Double_t tEtot = TMath::Sqrt( ttrack->Px()*ttrack->Px() + 
+                                            ttrack->Py()*ttrack->Py() + 
+                                            ttrack->Pz()*ttrack->Pz() + 
+                                            mass*mass);//total energy of the new incarnation
+              //update Energy and Calc Mass 
+              track->SetMomentum(ttrack->Px(),ttrack->Py(),ttrack->Pz(),tEtot);
+              track->SetCalcMass(mass);
+              track->SetPdgCode(ttrack->GetNthPid(s),ttrack->GetNthPidProb(s));
+              
+              if( Pass(track) )
                 {
-                  delete part;
+                  delete track;
                   continue; 
                 }
-              AliHBTParticle* track = new AliHBTParticle(*ttrack);
+              AliHBTParticle* part = new AliHBTParticle(*tpart);//particle has only 1 incarnation (real)
 
               fParticlesEvent->AddParticle(part);
               fTracksEvent->AddParticle(track);
@@ -176,7 +197,6 @@ Int_t AliHBTReaderInternal::ReadNext()
             {
               if( pdgdb->GetParticle(tpart->GetNthPid(s)) == 0x0 ) continue; //if particle has crazy PDG code (not known to our database)
               if( Pass(tpart->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
-
               AliHBTParticle* part = new AliHBTParticle(*tpart);
               part->SetPdgCode(tpart->GetNthPid(s),tpart->GetNthPidProb(s));
               if( Pass(part) )
@@ -196,21 +216,42 @@ Int_t AliHBTReaderInternal::ReadNext()
       {
         for(i = 0; i < fTrackBuffer->GetEntries(); i++)
          {
-           tpart = dynamic_cast<AliHBTParticle*>(fTrackBuffer->At(i));
-           if(tpart == 0x0) continue; //if returned pointer is NULL
-           for (Int_t s = 0; s < tpart->GetNumberOfPids(); s++)
-            {
-              if( pdgdb->GetParticle(tpart->GetNthPid(s)) == 0x0 ) continue; //if particle has crazy PDG code (not known to our database)
-              if( Pass(tpart->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
+           ttrack =  dynamic_cast<AliHBTParticle*>(fTrackBuffer->At(i));
+           if( ttrack == 0x0 ) continue; //if returned pointer is NULL
 
-              AliHBTParticle* part = new AliHBTParticle(*tpart);
-              part->SetPdgCode(tpart->GetNthPid(s),tpart->GetNthPidProb(s));
-              if( Pass(part) )
+           for (Int_t s = 0; s < ttrack->GetNumberOfPids(); s++)
+            {
+              if( pdgdb->GetParticle(ttrack->GetNthPid(s)) == 0x0 ) continue; //if particle has crazy PDG code (not known to our database)
+              if( Pass(ttrack->GetNthPid(s)) ) continue; //check if we are intersted with particles of this type
+                                          //if not take next partilce
+              AliHBTParticle* track = new AliHBTParticle(*ttrack);
+              
+              //apart of setting PDG code of an incarnation
+              //it is necessary tu recalculate energy on the basis of
+              //new PDG code (mass) hypothesis
+              TParticlePDG* pdgp = pdgdb->GetParticle(ttrack->GetNthPid(s));
+              if (pdgp == 0x0)//PDG part corresponding to new incarnation
+               {
+                 Error("ReadNext","Particle code unknown to PDG DB.");
+                 continue;
+               }
+              Double_t mass = pdgp->Mass();//mass of new incarnation
+              Double_t tEtot = TMath::Sqrt( ttrack->Px()*ttrack->Px() + 
+                                            ttrack->Py()*ttrack->Py() + 
+                                            ttrack->Pz()*ttrack->Pz() + 
+                                            mass*mass);//total energy of the new incarnation
+              //update Energy and Calc Mass 
+              track->SetMomentum(ttrack->Px(),ttrack->Py(),ttrack->Pz(),tEtot);
+              track->SetCalcMass(mass);
+              track->SetPdgCode(ttrack->GetNthPid(s),ttrack->GetNthPidProb(s));
+              
+              if( Pass(track) )
                 {
-                  delete part;
+                  delete track;
                   continue; 
                 }
-              fTracksEvent->AddParticle(part);
+              fTracksEvent->AddParticle(track);
+
               counter++;
             }
          }
