@@ -24,13 +24,15 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
 
  public:
   
-  AliPHOSRecParticle() {  }
+  AliPHOSRecParticle() { fPHOSTrackSegment = 0 ; fDebug = kFALSE ; } 
   AliPHOSRecParticle(const AliPHOSRecParticle & rp) ;  // ctor
   virtual ~AliPHOSRecParticle(){  }
 
   Int_t  GetPHOSTSIndex()const {    return fPHOSTrackSegment ;  }
-  const Int_t AliPHOSRecParticle::GetNPrimaries() const ; 
-  const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const ;  
+  virtual const Int_t GetNPrimaries() const ; 
+  virtual const TParticle * GetPrimary(Int_t index) const ; 
+  void SetDebug() { fDebug = kTRUE ; } 
+  void UnsetDebug() { fDebug = kFALSE ; }
   void   SetTraskSegment(Int_t index){fPHOSTrackSegment = index; }
 
   typedef TClonesArray RecParticlesList ; 
@@ -38,8 +40,9 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
  private:
 
   Int_t fPHOSTrackSegment ; // pointer to the associated track segment in PHOS  
-  
-  ClassDef(AliPHOSRecParticle,1)  // Reconstructed Particle
+  Bool_t fDebug ; 
+
+  ClassDef(AliPHOSRecParticle,2)  // Reconstructed Particle
 };
 
 #endif // AliPHOSRECPARTICLE_H
