@@ -135,7 +135,7 @@ void AliRICH::Hits2SDigits()
         AliRICHhit *pHit=(AliRICHhit*)Hits()->At(iHitN);                
         TVector2 x2 = Param()->ShiftToWirePos(C(pHit->C())->Glob2Loc(pHit->OutX3()));                
         Int_t iTotQdc=Param()->TotQdc(x2,pHit->Eloss());
-        
+        if(iTotQdc==0) continue;
         Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
         Param()->Loc2Area(x2,iPadXmin,iPadYmin,iPadXmax,iPadYmax);//determine affected pads
         if(GetDebug()) Info("Hits2SDigits","left-down=(%i,%i) right-up=(%i,%i)",iPadXmin,iPadYmin,iPadXmax,iPadYmax);

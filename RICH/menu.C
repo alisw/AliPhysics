@@ -1,43 +1,3 @@
-//__________________________________________________________________________________________________
-void H_SD()
-{
-  Info("H_SD","Start.");
-  
-  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
-    al->GetEvent(iEventN);
-  
-    if(!rl->TreeH()) rl->LoadHits();  al->LoadHeader(); al->LoadKinematics();//from
-    if(!rl->TreeS()) rl->MakeTree("S");    r->MakeBranch("S");//to
-          
-    for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
-      rl->TreeH()->GetEntry(iPrimN);
-      for(Int_t iHitN=0;iHitN<r->Hits()->GetEntries();iHitN++){//hits loop  ???
-        AliRICHhit *pHit=r->Hits()->At(iHitN);        
-        
-        TVector2 x2 = r->Param()->ShiftToWirePos(r->C(pHit->C())->Glob2Loc(pHit->OutX3()));        
-        
-        Int_t iTotQdc=r->Param()->TotQdc(x2,pHit->Eloss());
-        
-        Int_t iPadXmin,iPadXmax,iPadYmin,iPadYmax;
-        r->Param()->Loc2Area(x2,iPadXmin,iPadYmin,iPadXmax,iPadYmax);
-        cout<<"left-down=("<<iPadXmin<<","<<iPadYmin<<") right-up=("<<iPadXmax<<','<<iPadYmax<<')'<<endl;
-        for(Int_t iPadY=iPadYmin;iPadY<=iPadYmax;iPadY++)
-          for(Int_t iPadX=iPadXmin;iPadX<=iPadXmax;iPadX++){
-            Double_t padQdc=iTotQdc*r->Param()->FracQdc(x2,iPadX,iPadY);
-            cout<<padQdc<<endl;
-            if(padQdc>0.1) r->AddSDigit(pHit->C(),iPadX,iPadY,padQdc,al->Stack()->Particle(pHit->GetTrack())->GetPdgCode(),pHit->GetTrack());
-          }            
-      }//hits loop
-    }//prims loop
-    rl->TreeS()->Fill();
-    rl->WriteSDigits("OVERWRITE");
-  }//events loop
-  
-  rl->UnloadHits(); al->UnloadHeader(); al->UnloadKinematics();
-  rl->UnloadSDigits();  
-  Info("H_SD","Stop.");  
-}//H_SD()
-//__________________________________________________________________________________________________
 
 Int_t countContrib[7][3];
 
@@ -156,7 +116,7 @@ void sd()
   Info("sd","totally %i digits",iTotalDigits);
   rl->UnloadDigits();
 }
-
+//__________________________________________________________________________________________________
 void sc()
 {
   if(rl->LoadRecPoints()) return;
@@ -165,6 +125,22 @@ void sc()
   for(int i=1;i<=7;i++) r->Clusters(i)->Print();
   rl->UnloadRecPoints();
 }
+//__________________________________________________________________________________________________
+void sp(int tid)
+{
+  al->LoadHeader();  al->LoadKinematics();
+  PrintParticleInfo(tid);
+  al->UnloadKinematics();  al->UnloadHeader();
+}
+//__________________________________________________________________________________________________
+void PrintParticleInfo(int tid)
+{
+  TParticle *p=al->Stack()->Particle(tid);
+  cout<<p->GetName();
+  if(p->GetMother(0)!=-1){cout<<" from "; PrintParticleInfo(p->GetMother(0));}
+  else                   {cout<<endl;} 
+}    
+//__________________________________________________________________________________________________
 
 Double_t r2d = TMath::RadToDeg();
 Double_t d2r = TMath::DegToRad();
@@ -197,70 +173,36 @@ void D_C()
    cout << "Info in Digits->Clusters: Time  used: ";sw.Print();
 }
 //__________________________________________________________________________________________________
-void OLD_S_SD()
-{
-  Info("OLD_S_SD","Start.");  
-  rl->LoadHits();   
-  for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
-    al->GetEvent(iEventN);    Info("OLD_S_SD","Processing event %i",iEventN);  
-    
-    rl->MakeTree("S");  r->MakeBranch("S");
-    r->ResetSDigits();  r->ResetSpecialsOld();
 
-    for(Int_t iPrimN=0;iPrimN<rl->TreeH()->GetEntries();iPrimN++){//prims loop
-      rl->TreeH()->GetEntry(iPrimN);
-      for(Int_t i=0;i<r->Specials()->GetEntries();i++){//specials loop
-        Int_t padx=1+ ((AliRICHSDigit*)r->Specials()->At(i))->PadX()+r->Param()->NpadsX()/2;
-        Int_t pady=1+ ((AliRICHSDigit*)r->Specials()->At(i))->PadY()+r->Param()->NpadsY()/2;
-        Double_t q=  ((AliRICHSDigit*)r->Specials()->At(i))->QPad();
-        
-        Int_t hitN= ((AliRICHSDigit*)r->Specials()->At(i))->HitNumber()-1;//!!! important -1
-        Int_t chamber=((AliRICHhit*)r->Hits()->At(hitN))->C();
-        Int_t tid=((AliRICHhit*)r->Hits()->At(hitN))->GetTrack();
-        Int_t pid=((AliRICHhit*)r->Hits()->At(hitN))->Pid();
-        if(padx<1 || padx>r->Param()->NpadsX() ||pady<1 || pady>r->Param()->NpadsY())
-          Warning("OLD_S_SD","pad is out of valid range padx= %i pady=%i event %i",padx,pady,iEventN);
-        else
-          r->AddSDigit(chamber,padx,pady,q,pid,tid);
-      }//specials loop
-    }//prims loop
-    rl->TreeS()->Fill();
-    rl->WriteSDigits("OVERWRITE");
-  }//events loop  
-    rl->UnloadHits();     rl->UnloadSDigits();  
-  Info("OLD_S_SD","Stop.");    
-}//OLD_S_SD()
-//__________________________________________________________________________________________________
+AliRICH * Rich() {return r;}
 void SD_D()
 {
   Info("SD_D","Start.");  
   extern Int_t kBad; 
-  r->Param()->GenSigmaThMap();
+  Rich()->Param()->GenSigmaThMap();
   rl->LoadSDigits();
   
   for(Int_t iEventN=0;iEventN<a->GetEventsPerRun();iEventN++){//events loop
     al->GetEvent(iEventN);    cout<<"Event "<<iEventN<<endl;  
-    rl->MakeTree("D");r->MakeBranch("D"); //create TreeD with RICH branches 
-    r->ResetSDigits();r->ResetDigits();//reset lists of sdigits and digits
-    rl->TreeS()->GetEntry(0);  
-    r->SDigits()->Sort();
+    rl->MakeTree("D");      Rich()->MakeBranch("D"); //create TreeD with RICH branches 
+    Rich()->ResetSDigits(); Rich()->ResetDigits();   //reset lists of sdigits and digits
+    rl->TreeS()->GetEntry(0);                        //get sdigits to memory container
+    Rich()->SDigits()->Sort();
       
-    Int_t combiPid,chamber,x,y,tid[3],id; Double_t q;
+    Int_t combiPid=0,chamber=0,x=0,y=0,tid[3],id=0; Double_t q=0;
     Int_t iNdigitsPerPad;//how many sdigits for a given pad
     const int kBad=-101;//??? to be removed in code    
-    for(Int_t i=0;i<r->SDigits()->GetEntries();i++){//sdigits loop (sorted)
-      AliRICHdigit *pSdig=(AliRICHdigit*)r->SDigits()->At(i);
+    for(Int_t i=0;i<Rich()->SDigits()->GetEntries();i++){//sdigits loop (sorted)
+      AliRICHdigit *pSdig=(AliRICHdigit*)Rich()->SDigits()->At(i);
       if(pSdig->Id()==id){//still the same pad
-        iNdigitsPerPad++;
-        q+=pSdig->Q();
-        combiPid+=pSdig->CombiPid();
+        iNdigitsPerPad++; q+=pSdig->Q();  combiPid+=pSdig->CombiPid();
         if(iNdigitsPerPad<=3)
           tid[iNdigitsPerPad-1]=pSdig->Tid(0);
         else
           Warning("SDigits2Digits","More then 3 sdigits for the given pad");
       }else{//new pad, add the pevious one
-        if(id!=kBad&&r->Param()->IsOverTh(chamber,x,y,q)) {
-           r->AddDigit(chamber,x,y,q,combiPid,tid);
+        if(id!=kBad&&Rich()->Param()->IsOverTh(chamber,x,y,q)) {
+           Rich()->AddDigit(chamber,x,y,q,combiPid,tid);
          }
         combiPid=pSdig->CombiPid();chamber=pSdig->C();id=pSdig->Id();
         x=pSdig->X();y=pSdig->Y();
@@ -270,14 +212,14 @@ void SD_D()
       }
     }//sdigits loop (sorted)
   
-    if(r->SDigits()->GetEntries()&&r->Param()->IsOverTh(chamber,x,y,q))
-      r->AddDigit(chamber,x,y,q,combiPid,tid);//add the last digit
+    if(Rich()->SDigits()->GetEntries() && Rich()->Param()->IsOverTh(chamber,x,y,q))
+      Rich()->AddDigit(chamber,x,y,q,combiPid,tid);//add the last digit
         
     rl->TreeD()->Fill();  
     rl->WriteDigits("OVERWRITE");
   }//events loop
   rl->UnloadSDigits();     rl->UnloadDigits();  
-  r->ResetSDigits();r->ResetDigits();//reset lists of sdigits and digits
+  Rich()->ResetSDigits(); Rich()->ResetDigits();//reset lists of sdigits and digits
   Info("SD_D","Stop.");  
 }//SD_D()
 //__________________________________________________________________________________________________
@@ -302,11 +244,7 @@ void Show()
       iTotalHits+=r->Hits()->GetEntries();
       TParticle *pPrim=al->Stack()->Particle(iPrimN);
       Info("Show","Evt %4i prim %4i has %4i hits from %s (,%7.2f,%7.2f)",
-                           iEventN,
-                                    iPrimN,
-                                             r->Hits()->GetEntries(),
-                                                                                         pPrim->GetName(),
-                                                                                 pPrim->Theta()*r2d,pPrim->Phi()*r2d);
+                  iEventN,iPrimN, r->Hits()->GetEntries(), pPrim->GetName(), pPrim->Theta()*r2d,pPrim->Phi()*r2d);
     }//prims loop
     Info("Show-HITS","Evt %i total:  %i particles %i primaries %i hits",
                         iEventN,   iNparticles, iNprims,     iTotalHits);
@@ -319,7 +257,8 @@ void Show()
       for(int i=1;i<=7;i++)
         Info("Show-DIGITS","Evt %i chamber %i contains %5i digits",
                                  iEventN,   i,           r->Digits(i)->GetEntries());
-    }
+    }else
+        Info("Show-DIGITS","There is no digits for this event");
     if(isClusters){
       rl->TreeR()->GetEntry(0);
       for(int i=1;i<=7;i++)
@@ -518,7 +457,6 @@ void menu()
   if(ReadAlice()){//it's from file, reconstruct
     pMenu->AddButton("hits->sdigits->digits->clusters","MainTrank()","Convert");
     
-    pMenu->AddButton("hits->sdigits"    ,"H_SD()" ,"AliRICH::Hits2SDigits");
     pMenu->AddButton("sdigits->digits"  ,"SD_D()" ,"AliRICHDigitizer");
     pMenu->AddButton("digits->clusters" ,"D_C()"  ,"AliRICHClusterFinder");
     pMenu->AddButton("clusters->recos"  ,"C_R()"  ,"AliRICHRecon");

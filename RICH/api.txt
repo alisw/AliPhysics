@@ -1,5 +1,3 @@
-pointer to the stack:
-AliRunLoader::Stack()
 
 total amount of particles in stack for a given event:
 AliStack::GetNtrack() or AliRun::GetEvent()
@@ -8,22 +6,23 @@ AliStack::GetNtrack() or AliRun::GetEvent()
 total amount of primiry particles in stack for a given event:
 AliStack::GetNprimary() or TreeH()::GetEntries()
 
-to open session 
-AliRunLoader::Open(
+How to open session?
+                     use static methode  AliRunLoader::Open(
 
 
-Hits a stored on primiry by primiry basis. To retrieve all hits one needs to do:
+How to retrive hits:
+	Hits a stored on primiry by primiry basis. To retrieve all hits one needs to do:
+	initialise the root tree and containers:    AliLoader::LoadHits() 
+	read number of primiries in current event:
+	loop on the list of primiries:
 
-initialise the root tree and containers:    AliLoader::LoadHits() 
-read number of primiries in current event:
-loop on the list of primiries:
 
 
-
-How to retrive sdigits? Sdigits stored in tree S with the branch of TClonesArray, all sdigits in a single TClonesArray
-                        So the tree has only one entry.
-                        One needs to say:
-                        pRich->GetLoader()->LoadSDigits(); this one open file, get the tree and invoke AliRICH::SetTreeAddress()    
+How to retrive sdigits? 
+	Sdigits stored in tree S with the branch of TClonesArray, all sdigits in a single TClonesArray
+	So the tree has only one entry.
+	One needs to say:
+	pRich->GetLoader()->LoadSDigits(); this one open file, get the tree and invoke AliRICH::SetTreeAddress()    
 
 
 
@@ -38,11 +37,19 @@ AliRun::GetDebug()
 AliRun::SetDebug()
 
 
+How to get info for tid number?
+	Header and Kinematics trees must be loaded, then possible to retrive pointer to Stack of particles
+	Int_t AliRunLoader::LoadHeader(); Int_t AliRunLoader::LoadKinematics()
+	AliStack *AliRunLoader::Stack()
+	TParticle *AliStack::Particle(tid)
+	TParticle::Print()
+
+How to deal with AliRunDigitizer?
+	AliRunDigitizer::Exec() just call AliRunDigitizer::Digitize()	
 
 
 
-
-pointer to gAlice
+How to avoid using the pointer to gAlice?
 
 
 

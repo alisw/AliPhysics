@@ -202,9 +202,10 @@ void AliRICHClusterFinder::ResolveCluster()
 void AliRICHClusterFinder::WriteRawCluster()
 {
 // out the current raw cluster
-//  Info("WriteRawCluster","Start.");
+  Info("WriteRawCluster","Start.");
   
   FindClusterContribs(&fRawCluster);
+  fRawCluster.Dump();
   Rich()->AddCluster(fRawCluster);
 //  fRawCluster.Print();
 }//WriteRawCluster()
@@ -212,7 +213,7 @@ void AliRICHClusterFinder::WriteRawCluster()
 void AliRICHClusterFinder::WriteResolvedCluster()
 {
 // out the current resolved cluster
-//  Info("WriteResolvedCluster","Start.");
+  Info("WriteResolvedCluster","Start.");
   
 //  FindClusterContribs(&fResolvedCluster);
   Rich()->AddCluster(fResolvedCluster);
@@ -304,10 +305,11 @@ void AliRICHClusterFinder::FitCoG()
     WriteResolvedCluster();
   }
 if(fNlocals==5)  Info("CoG","Stop.");
-}
+}//FitCoG()
 //__________________________________________________________________________________________________
 void RICHMinMathieson(Int_t &npar, Double_t *, Double_t &chi2, Double_t *par, Int_t )
-{// Minimization function of Mathieson
+{
+// Mathieson minimization function 
   
   AliRICHcluster *pRawCluster = ((AliRICHClusterFinder*)gMinuit->GetObjectFit())->GetRawCluster();
 

@@ -12,6 +12,7 @@
 #include <AliDigit.h>
 #include "AliRICHDigitizer.h"
 #include "AliRICHParam.h"
+#include <Riostream.h>
 
 //__________________AliRICHhit______________________________________________________________________
 class AliRICHhit : public AliHit
@@ -219,7 +220,7 @@ public:
              {TClonesArray &tmp=*fHits;new(tmp[fNhits++])AliRICHhit(chamber,tid,iX3,oX3,eloss);} 
   inline void AddSDigit(Int_t c,Int_t x,Int_t y,Double_t q,Int_t pid,Int_t tid); 
   void AddDigit(int c,int x,int y,int q,int cpid,int *tid){TClonesArray &tmp=*((TClonesArray*)fDigitsNew->At(c-1));new(tmp[fNdigitsNew[c-1]++])AliRICHdigit(c,x,y,q,cpid,tid[0],tid[1],tid[2]);}  
-  void AddCluster(AliRICHcluster &cl)                     {TClonesArray &tmp=*((TClonesArray*)fClusters->At(cl.C()-1));new(tmp[fNclusters[cl.C()-1]++])AliRICHcluster(cl);}
+  void AddCluster(AliRICHcluster &cl)                     {Int_t c=cl.C()-1;cout<<c<<endl;TClonesArray &tmp=*((TClonesArray*)fClusters->At(c));new(tmp[fNclusters[c]++])AliRICHcluster(cl);}
   void AddReco(Int_t tid,Double_t thetaCherenkov,Int_t nPhotons) {TClonesArray &tmp=*(TClonesArray*)fRecos;new(tmp[fNrecos++])AliRICHreco(tid,thetaCherenkov,nPhotons);}  
 //  void ResetHits()     {AliDetector::ResetHits();}  //virtual  
   void ResetSDigits()  {fNsdigits=0;  if(fSdigits)  fSdigits ->Clear();}                                 

@@ -13,11 +13,13 @@ class AliRICH;
 class AliRICHDigitizer : public AliDigitizer 
 {
 public:
-           AliRICHDigitizer();
-           AliRICHDigitizer(AliRunDigitizer * manager);
-  virtual ~AliRICHDigitizer();
+           AliRICHDigitizer()                                                {;}
+           AliRICHDigitizer(AliRunDigitizer * manager):AliDigitizer(manager) {if(GetDebug())Info("main ctor","Start.");}
+  virtual ~AliRICHDigitizer()                                                {if(GetDebug())Info("dtor","Start.");}
+
         
   void     Exec(Option_t* option=0);                //virtual
+  Bool_t   Init();                                  //virtual
   Bool_t   GetDebug() const {return gAlice->GetDebug();}
   AliRICH* Rich()     const {return fRich;}
 protected:

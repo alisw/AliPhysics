@@ -232,7 +232,8 @@ Int_t AliRICHParam::TotQdc(TVector2 x2,Double_t eloss)
 // Calculates the total charge produced by the eloss in point x2 (Chamber RS).
 // Returns this change parametrised in QDC channels.
 // eloss=0 means photons which provided for only 1 electron
-// eloss > 0 for Mip     
+// eloss > 0 for Mip
+  if(Sector(x2)==kBad) return 0; //hit in the dead zone     
   Int_t iNelectrons=Int_t(eloss/IonisationPotential()); if(iNelectrons==0) iNelectrons=1;
   Double_t qdc=0;
   for(Int_t i=1;i<=iNelectrons;i++) qdc+=-Gain(x2)*TMath::Log(gRandom->Rndm());
