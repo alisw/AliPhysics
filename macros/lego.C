@@ -37,14 +37,4 @@ void lego() {
    hradl->SetContour(ncont);
    hradl->SetMaximum(5);
    hradl->Draw("lego2sphe");
-
-   TCanvas *cetar = new TCanvas("cetar","etar",10,10,600,400);
-   cetar->SetTheta(theta);
-   cetar->SetPhi(phi);
-   TH2F *hetar = (TH2F*)file->Get("hetar");
-   hetar->SetFillColor(2);
-   hetar->SetMaximum(1);
-   hetar->SetContour(ncont);
-   hetar->SetMaximum(5);
-   hetar->Draw("lego2sphe");
 }   
