@@ -11,9 +11,9 @@ HIJING/module.mk:	HIJING/libhijing.pkg HIJING/libdummyhijing.pkg
 HERWIG/module.mk:	HERWIG/libherwig.pkg 
 ITS/module.mk:		ITS/libITS.pkg
 MEVSIM/module.mk:	MEVSIM/libmevsim.pkg MEVSIM/libdummymevsim.pkg
-MINICERN/module.mk:	MINICERN/libminicern.pkg
+MINICERN/module.mk:	MINICERN/libminicern.pkg HERWIG/libdummyherwig.pkg
 MUON/module.mk:		MUON/libMUON.pkg
-PDF/moudle.mk:		PDF/libpdf.pkg
+PDF/module.mk:		PDF/libpdf.pkg
 PHOS/module.mk:		PHOS/libPHOS.pkg
 PMD/module.mk:		PMD/libPMD.pkg
 PYTHIA/module.mk:	PYTHIA/libpythia.pkg
@@ -36,3 +36,5 @@ HBTP/module.mk:		HBTP/libHBTP.pkg HBTP/libdummyHBTP.pkg
 HBTAN/module.mk:	HBTAN/libHBTAN.pkg
 TGeant4/module.mk:	TGeant4/libTGeant4.pkg
 AliGeant4/module.mk:    AliGeant4/libAliGeant4.pkg
+TFluka/module.mk:       TFluka/libTFluka.pkg
+VZERO/module.mk:        VZERO/libVZERO.pkg
