@@ -148,6 +148,14 @@ AliPHOSGetter::~AliPHOSGetter(){
     fPrimaries->Delete() ; 
     delete fPrimaries ; 
   }
+
+  TFolder * phosF = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject("PHOS")) ;
+  TCollection * folderslist = phosF->GetListOfFolders() ; 
+  TIter next(folderslist) ; 
+  TFolder * folder = 0 ; 
+  while ( (folder = static_cast<TFolder*>(next())) ) 
+    phosF->Remove(folder) ; 
+
   fFile->Close() ;  
   delete fFile ;
   fFile = 0 ;
@@ -189,10 +197,14 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
       fgObjGetter->~AliPHOSGetter() ;  // delete it already exists another version
  
   fgObjGetter = new AliPHOSGetter(headerFile,branchTitle) ; 
+
+  if (fgObjGetter->HasFailed() ) 
+    fgObjGetter = 0 ; 
+  
   
   // Posts a few item to the white board (folders)
   // fgObjGetter->CreateWhiteBoard() ;
-    
+  
   return fgObjGetter ; 
   
 }

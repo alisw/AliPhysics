@@ -148,6 +148,14 @@ AliEMCALGetter::~AliEMCALGetter()
     fPrimaries->Delete() ; 
     delete fPrimaries ; 
   }
+
+  TFolder * emcalF = dynamic_cast<TFolder *>(fSDigitsFolder->FindObject("EMCAL")) ;
+  TCollection * folderslist = emcalF->GetListOfFolders() ; 
+  TIter next(folderslist) ; 
+  TFolder * folder = 0 ; 
+  while ( (folder = static_cast<TFolder*>(next())) ) 
+    emcalF->Remove(folder) ; 
+
   fFile->Close() ;  
   delete fFile ; 
   fFile = 0 ;
@@ -188,7 +196,10 @@ AliEMCALGetter * AliEMCALGetter::GetInstance(const char* headerFile,
       fgObjGetter->~AliEMCALGetter() ;  // delete it already exists another version
   
   fgObjGetter = new AliEMCALGetter(headerFile,branchTitle, rw) ; 
-  
+
+  if (fgObjGetter->HasFailed() ) 
+    fgObjGetter = 0 ; 
+
   // Posts a few item to the white board (folders)
   // fgObjGetter->CreateWhiteBoard() ;
     
