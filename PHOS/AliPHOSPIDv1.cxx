@@ -95,6 +95,7 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
 AliPHOSPIDv1::AliPHOSPIDv1(const char * headeFile,const char * tsBranchTitle):AliPHOSPID()
 { 
   //ctor with the indication on where to look for the track segments
+
   fHeaderFileName = headeFile ;
 
   fTSTitle = tsBranchTitle ;
@@ -126,7 +127,8 @@ AliPHOSPIDv1::AliPHOSPIDv1(const char * headeFile,const char * tsBranchTitle):Al
   
   // add Task to //root/Tasks folder
   TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  roottasks->Add(this) ; 
+  TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
+  phostasks->Add(this) ; 
 
   fDispersion = 2.0; 
   fCpvEmcDistance = 3.0 ;
@@ -167,7 +169,8 @@ void AliPHOSPIDv1::Init()
     
     // add Task to //root/Tasks folder
     TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-    roottasks->Add(this) ; 
+    TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
+    phostasks->Add(this) ; 
 
     fDispersion = 2.0; 
     fCpvEmcDistance = 3.0 ;
@@ -523,7 +526,7 @@ void  AliPHOSPIDv1::WriteRecParticles()
   
   rpBranch->Fill() ;
   pidBranch->Fill() ;
-  gAlice->TreeR()->Fill() ;  
+//    gAlice->TreeR()->Fill() ;    // YK 28.05.01  
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
 }
@@ -532,7 +535,7 @@ void  AliPHOSPIDv1::PlotDispersionCuts()const
 {
   // produces a plot of the dispersion cut
   TCanvas*  lambdas = new TCanvas("lambdas","Cuts on the ellipse axis",200,10,700,500);
-  
+ 
   if(fIDOptions.Contains("ell",TString::kIgnoreCase ) ){
     TF2 * ell = new TF2("Elliptic Cuts",fFormula->GetName(),0,3,0,3) ;
     ell->SetMinimum(0.0000001) ;
@@ -610,7 +613,8 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRec
 //____________________________________________________________________________
 void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
 {
-  // Prints the list of reconstructed particles
+  // Print table of reconstructed particles
+
   cout << "AliPHOSPIDv1: " << endl ;
   cout << "       found " << fRecParticles->GetEntriesFast() << " RecParticles " << endl ;
 

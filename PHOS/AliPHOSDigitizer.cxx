@@ -65,8 +65,7 @@
 
 #include "AliRun.h"
 #include "AliPHOSDigit.h"
-#include "AliPHOSHit.h"
-#include "AliPHOSv1.h"
+#include "AliPHOS.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSGeometry.h"
@@ -138,7 +137,8 @@ void AliPHOSDigitizer::Init()
     
     // add Task to //root/Tasks folder
     TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-    roottasks->Add(this) ; 
+    TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
+    phostasks->Add(this) ; 
     
     fInitialized = kTRUE ;
   }
@@ -195,7 +195,8 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char *sDigitsTit
   
   // add Task to //root/Tasks folder
   TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
-  roottasks->Add(this) ; 
+  TTask * phostasks = (TTask*)(roottasks->GetListOfTasks()->FindObject("PHOS"));
+  phostasks->Add(this) ; 
   fInitialized = kTRUE ;
   
 }
@@ -229,8 +230,7 @@ Bool_t AliPHOSDigitizer::Combinator()
   // Makes all desirable combinations of Signal+Background,
   // returns kFALSE when all combinations are made.
   // May be useful to introduce options like "One-to-One", "All-to-One" and "All-to-All" ?
-
-  // realizing "One-to-One" option...
+  //realizing "One-to-One" option...
 
   if(!fInitialized)
     Init() ;
@@ -268,8 +268,8 @@ void AliPHOSDigitizer::Digitize(Option_t *option)
 
   fDigits->Clear() ;
 
-  AliPHOS * PHOS = (AliPHOS *) gAlice->GetDetector("PHOS") ;   
-  AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance( PHOS->GetGeometry()->GetName(), PHOS->GetGeometry()->GetTitle() );
+  AliPHOS * phos = (AliPHOS *) gAlice->GetDetector("PHOS") ;   
+  AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance( phos->GetGeometry()->GetName(), phos->GetGeometry()->GetTitle() );
 
   //Making digits with noise, first EMC
   Int_t nEMC = geom->GetNModules()*geom->GetNPhi()*geom->GetNZ();
@@ -449,9 +449,10 @@ void AliPHOSDigitizer::WriteDigits()
     cwd->cd();
   }
 
-  digitsBranch->Fill() ;
+  digitsBranch->Fill() ;      
   digitizerBranch->Fill() ;
   
+//    gAlice->TreeD()->Fill() ;  // YK 28.05.2001
   gAlice->TreeD()->Write(0,kOverwrite) ;  
 
   //remove fSDigitizer before new event.  
@@ -658,9 +659,8 @@ void AliPHOSDigitizer::MixWith(char* HeaderFile, char* sDigitsTitle)
   
 }
 //__________________________________________________________________
-void AliPHOSDigitizer::Print(Option_t* option)const 
-{
-  // Prints the parameters of the digitizer  
+void AliPHOSDigitizer::Print(Option_t* option)const {
+  // Print Digitizer's parameters
   if(fInitialized){
     
     cout << "------------------- "<< GetName() << " -------------" << endl ;
@@ -688,9 +688,8 @@ void AliPHOSDigitizer::Print(Option_t* option)const
   
 }
 //__________________________________________________________________
-void AliPHOSDigitizer::PrintDigits(Option_t * option)
-{
-  // Prints the list of produced digits
+void AliPHOSDigitizer::PrintDigits(Option_t * option){
+  // Print a table of digits
 
   cout << "AliPHOSDigitiser:"<< endl ;
   cout << "       Number of entries in Digits list " << fDigits->GetEntriesFast() << endl ;
@@ -733,3 +732,5 @@ void AliPHOSDigitizer::SetDigitsBranch(const char* title)
   fDigitsTitle = title ;
 
 }
+//__________________________________________________________________
+ 
