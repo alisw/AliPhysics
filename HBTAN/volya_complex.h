@@ -22,9 +22,11 @@ Version 1.0.1
 #define PI 3.141592653589793238462643
 #endif
 
-#include <iostream.h>
-#include <math.h>
-#include <stdlib.h>
+
+#include <TMath.h>
+#include <Riostream.h>
+//#include <math.h>
+//#include <stdlib.h>
 
 /////////////////////////// Helper Error Function
 
@@ -760,8 +762,8 @@ void Solve3 (Complex* z, const Complex &a2, const Complex &a1, const Complex &a0
   t = sqrt((r^2) - (q^3));
 	a = ((!r * t) >=0.0) ? -((r+t)^(1.0/3)) : -((r-t)^(1.0/3));
   b = ((a == zero) ? zero : (q/a));
-  z[0] = -(a+b)/2 - a2/3 + ImUnit*sqrt(3)*(a-b)/2;
-  z[1] = -(a+b)/2 - a2/3 - ImUnit*sqrt(3)*(a-b)/2;
+  z[0] = -(a+b)/2 - a2/3 + ImUnit*sqrt(3.0)*(a-b)/2;
+  z[1] = -(a+b)/2 - a2/3 - ImUnit*sqrt(3.0)*(a-b)/2;
   z[2] = a + b - a2/3;
 }
 

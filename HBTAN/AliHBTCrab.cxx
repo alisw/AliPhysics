@@ -7,7 +7,7 @@
 // written by Scott Pratt                                              //
 //                                                                     //
 /////////////////////////////////////////////////////////////////////////
-
+ 
 #include "AliHBTPair.h"
 
 #include <TMath.h>
@@ -116,7 +116,7 @@ void AliHBTCrab::get_com_quantities(const AliHBTPair* pair,
  double r2[4]; 
  
  static const Double_t cmtofm = 1.e13;
- static const Double_t cmtoOneOverGeV = cmtofm*fgkWcons;
+// static const Double_t cmtoOneOverGeV = cmtofm*fgkWcons;
  
  AliHBTParticle *part1 = pair->Particle1();
  AliHBTParticle *part2 = pair->Particle2();
@@ -147,13 +147,14 @@ void AliHBTCrab::get_com_quantities(const AliHBTPair* pair,
 // taken from http://www.nscl.msu.edu/~pratt/freecodes/crab/home.html
   int alpha;
   double kdotr;
+  double momtest;
   if (fReducedMom)
    {
-     const double momtest=4.0*fMaxMomentum*fMaxMomentum;
+     momtest=4.0*fMaxMomentum*fMaxMomentum;
    }  
   else
    {
-     const double momtest=fMaxMomentum*fMaxMomentum;
+     momtest=fMaxMomentum*fMaxMomentum;
    }  
    
   double ptot2,pdotr,pp,rr;
@@ -250,12 +251,13 @@ double  AliHBTCrab::corrcalc(double trueqred,double trueqdotr,double truer)
 //#define REDUCED_MOM
 // This code is written by Scott Pratt
 // taken from http://www.nscl.msu.edu/~pratt/freecodes/crab/home.html
-  double eta,arg,krmax,corr0;
-  double xx,xxprime,xxjj,p1,zk;
-  int jj,kk,ipart,ipartcount,ispin;
-  double pfactor,wsym_leftover,wanti_leftover,wnosym_leftover;
+  double eta,arg,corr0;
+//  double xx,xxprime,xxjj,p1,zk;
+//  int jj,kk,ipart,ipartcount,ispin;
+  int kk;
+  double wsym_leftover,wanti_leftover,wnosym_leftover;
   double qred,qdotr,r;
-  const double rmass=MASS1*MASS2/(MASS1+MASS2);
+//  const double rmass=MASS1*MASS2/(MASS1+MASS2);
   double_complex cphi1,cphi2,cphis,cphia;
 
   arg=trueqdotr/197.323-2.0*TMath::Pi()*floor(trueqdotr/(197.323*2.0*TMath::Pi()));
