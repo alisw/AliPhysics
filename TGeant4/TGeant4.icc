@@ -1,0 +1,199 @@
+// $Id$
+// Category: run
+
+#include "TG4StepManager.h" 
+
+// methods for step management
+// ------------------------------------------------
+
+inline void TGeant4::StopTrack()
+{ 
+  fStepManager->StopTrack(); 
+} 
+
+inline void TGeant4::StopEvent()   
+{ 
+  fStepManager->StopEvent(); 
+} 
+
+inline void TGeant4::SetMaxStep(Float_t step)
+{ 
+  fStepManager->SetMaxStep(step); 
+} 
+
+inline void TGeant4::SetMaxNStep(Int_t number)
+{ 
+  fStepManager->SetMaxNStep(number); 
+} 
+
+inline void TGeant4::SetUserDecay(Int_t number)
+{ 
+  fStepManager->SetUserDecay(number); 
+} 
+
+inline Int_t TGeant4::CurrentVolID(Int_t& copyNo) const
+{ 
+  return fStepManager->CurrentVolID(copyNo); 
+} 
+
+inline Int_t TGeant4::CurrentVolOffID(Int_t off, Int_t& copyNo) const
+{ 
+  return fStepManager->CurrentVolOffID(off, copyNo); 
+} 
+
+inline const char* TGeant4::CurrentVolName() const
+{ 
+  return fStepManager->CurrentVolName(); 
+} 
+
+inline const char* TGeant4::CurrentVolOffName(Int_t off) const
+{ 
+  return fStepManager->CurrentVolOffName(off); 
+} 
+
+inline Int_t TGeant4::CurrentMaterial(Float_t &a, Float_t &z, 
+                    Float_t &dens, Float_t &radl, Float_t &absl) const  
+{ 
+  return fStepManager->CurrentMaterial(a, z, dens, radl, absl); 
+} 
+
+inline void TGeant4::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
+{ 
+  fStepManager->Gmtod(xm, xd, iflag); 
+} 
+
+inline void TGeant4::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag)
+{ 
+  fStepManager->Gdtom(xd, xm, iflag); 
+} 
+    
+inline Float_t TGeant4::MaxStep() const
+{ 
+  return fStepManager->MaxStep(); 
+} 
+
+inline Int_t TGeant4::GetMaxNStep() const
+{ 
+  return fStepManager->GetMaxNStep(); 
+} 
+
+inline Int_t TGeant4::GetMedium() const
+{ 
+  return fStepManager->GetMedium(); 
+} 
+
+inline void TGeant4::TrackPosition(TLorentzVector& position) const
+{ 
+  fStepManager->TrackPosition(position); 
+} 
+
+inline void TGeant4::TrackMomentum(TLorentzVector& momentum) const
+{ 
+  fStepManager->TrackMomentum(momentum); 
+} 
+
+inline void TGeant4::TrackVertexPosition(TLorentzVector& position) const
+{ 
+  fStepManager->TrackVertexPosition(position); 
+} 
+
+inline void TGeant4::TrackVertexMomentum(TLorentzVector& momentum) const
+{ 
+  fStepManager->TrackVertexMomentum(momentum); 
+} 
+
+inline Float_t TGeant4::TrackStep() const
+{ 
+  return fStepManager->TrackStep(); 
+} 
+
+inline Float_t TGeant4::TrackLength() const 
+{ 
+  return fStepManager->TrackLength(); 
+} 
+
+inline Float_t TGeant4::TrackTime() const
+{ 
+  return fStepManager->TrackTime(); 
+} 
+
+inline Float_t TGeant4::Edep() const
+{ 
+  return fStepManager->Edep(); 
+} 
+
+inline Int_t TGeant4::TrackPid() const
+{ 
+  return fStepManager->TrackPid(); 
+} 
+
+inline Float_t TGeant4::TrackCharge() const
+{ 
+  return fStepManager->TrackCharge(); 
+} 
+
+inline Float_t TGeant4::TrackMass() const
+{ 
+  return fStepManager->TrackMass(); 
+} 
+
+inline Float_t TGeant4::Etot() const
+{ 
+  return fStepManager->Etot(); 
+} 
+
+inline Bool_t  TGeant4::IsTrackInside() const
+{   
+  return fStepManager->IsTrackInside(); 
+} 
+
+inline Bool_t  TGeant4::IsTrackEntering() const
+{   
+  return fStepManager->IsTrackEntering(); 
+} 
+
+inline Bool_t  TGeant4::IsTrackExiting() const
+{   
+  return fStepManager->IsTrackExiting(); 
+} 
+
+inline Bool_t  TGeant4::IsTrackOut() const
+{   
+  return fStepManager->IsTrackOut(); 
+} 
+
+inline Bool_t  TGeant4::IsTrackDisappeared() const
+{   
+  return fStepManager->IsTrackDisappeared(); 
+} 
+
+inline Bool_t  TGeant4::IsTrackStop() const
+{  
+  return  fStepManager->IsTrackStop(); 
+} 
+
+inline Bool_t  TGeant4::IsTrackAlive() const
+{   
+  return fStepManager->IsTrackAlive(); 
+} 
+
+inline Bool_t TGeant4::IsNewTrack() const
+{
+  return fStepManager->IsNewTrack();
+}  
+
+inline Int_t TGeant4::NSecondaries() const
+{ 
+  return fStepManager->NSecondaries(); 
+} 
+
+inline void  TGeant4::GetSecondary(Int_t isec, Int_t& particleId, 
+                         TLorentzVector& position, TLorentzVector& momentum)
+{ 
+  fStepManager->GetSecondary(isec, particleId, position, momentum); 
+} 
+
+inline const char* TGeant4::ProdProcess() const 
+{ 
+  return fStepManager->ProdProcess(); 
+} 
