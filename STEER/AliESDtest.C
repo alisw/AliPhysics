@@ -20,7 +20,6 @@
   #include "TFile.h"
   #include "TSystem.h"
   #include "TStopwatch.h"
-  #include "TGeant3.h"
   #include "TArrayF.h"
 
   #include "AliMagF.h"
@@ -50,9 +49,10 @@
   #include "AliTRDPartID.h"
 
   #include "AliTOFpidESD.h"
+  #include "AliTOF.h"
+  #include "AliTOFGeometry.h"
 #endif
 
-extern TSystem *gSystem;
 extern AliRun *gAlice;
 extern TFile *gFile;
 
@@ -65,9 +65,6 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
       delete gAlice; 
       gAlice=0;
    }
-
-   gSystem->Load("libgeant321");     // needed for the PID in TOF 
-   new TGeant3("");                  // must be re-done !
 
    AliRunLoader *rl = AliRunLoader::Open("galice.root");
    if (rl == 0x0) {
@@ -192,6 +189,16 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
 
 
 /**** The TOF corner ********************/
+   AliTOF *dTOF = (AliTOF*)gAlice->GetDetector("TOF");
+   if (!dTOF) {
+      cerr<<"AliESDtest.C : Can not find the TOF detector !"<<endl;
+      return 4;
+   }
+   AliTOFGeometry *tofGeo = dTOF->GetGeometry();
+   if (!tofGeo) {
+      cerr<<"AliESDtest.C : Can not find the TOF geometry !"<<endl;
+      return 4;
+   }
 
    AliLoader* tofl = rl->GetLoader("TOFLoader");
    if (tofl == 0x0) {
@@ -281,7 +288,7 @@ Int_t AliESDtest(Int_t nev=1,Int_t run=0) {
         cerr<<"Can't get the TOF cluster tree !\n";
         return 4;
      } 
-     tofPID.LoadClusters(tofTree);
+     tofPID.LoadClusters(tofTree,tofGeo);
      tofPID.MakePID(event);
      tofPID.UnloadClusters();
 

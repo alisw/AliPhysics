@@ -10,8 +10,8 @@
 //-------------------------------------------------------
 
 #include <TObject.h>
-#include "AliTOFGeometry.h"
 
+class AliTOFGeometry;
 class AliESD;
 class TFile;
 class TTree;
@@ -20,12 +20,11 @@ class AliTOFpidESD : public TObject {
 enum {kMaxCluster=77777}; //maximal number of the TOF clusters
 public:
   AliTOFpidESD(){fR=376.; fDy=2.5; fDz=3.5; fN=0; fEventN=0;}
-  AliTOFpidESD(Double_t *param) throw (const Char_t *);
+  AliTOFpidESD(Double_t *param);
   ~AliTOFpidESD(){UnloadClusters();}
 
   Int_t MakePID(AliESD *event);
-  Int_t LoadClusters(const TFile *f);
-  Int_t LoadClusters(TTree *f);
+  Int_t LoadClusters(TTree *f, AliTOFGeometry *geom);
   void  UnloadClusters();
   void SetEventNumber(Int_t n) {fEventN=n;}
 
@@ -74,8 +73,6 @@ private:
 
   Int_t fN;                  // number of the TOF clusters
   AliTOFcluster *fClusters[kMaxCluster];  // pointers to the TOF clusters
-
-  AliTOFGeometry *fTOFGeometry; //The TOF Geometry
 
   ClassDef(AliTOFpidESD,1)   // TOF PID class
 };

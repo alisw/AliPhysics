@@ -27,11 +27,7 @@
 #include "AliESD.h"
 #include "AliESDtrack.h"
 #include "AliTOFdigit.h"
-
-#include <TGeant3.h>              // For DtoM and InitGeo, should  
-#include "../STRUCT/AliBODY.h"    // be removed after we switch to 
-#include "../STRUCT/AliFRAMEv2.h" // AliTOGeometry::GetPos
-#include "AliTOFv4T0.h"
+#include "AliTOFGeometry.h"
 
 #include <stdlib.h>
 
@@ -39,225 +35,12 @@
 ClassImp(AliTOFpidESD)
 
 //_________________________________________________________________________
-static Int_t InitGeo() {
-  //gSystem->Load("libgeant321");
-  //new TGeant3("C++ Interface to Geant3");
-
-  AliBODY *body = new AliBODY("BODY", "Alice envelop");
-  body->CreateGeometry();
-
-  AliFRAMEv2 *frame = new AliFRAMEv2("FRAME", "Space Frame");
-  frame->SetHoles(1);
-  frame->CreateGeometry();
-
-  AliTOF *tof = new AliTOFv4T0("TOF", "TOF with Holes");
-  tof->CreateGeometry();
-
-  return 0;
-} 
-
-//_________________________________________________________________________
-static Int_t DtoM(Int_t *dig, Float_t *g) {
-  const Int_t kMAX=13;
-  Int_t lnam[kMAX],lnum[kMAX];
-
-  TGeant3 *geant3=(TGeant3*)gMC;
-  if (!geant3) {::Info("DtoM","no geant3 found !"); return 1;}
-
-  strncpy((Char_t*)(lnam+0),"ALIC",4); lnum[0]=1;
-  strncpy((Char_t*)(lnam+1),"B077",4); lnum[1]=1;
-
-//4 padx  if z<=0 then ...
-if ((dig[1]==4)||(dig[1]==3)) dig[4]=AliTOFGeometry::NpadX()-dig[4];
-else if (dig[1]==2) {
-   if (dig[2]>7) dig[4]=AliTOFGeometry::NpadX()-dig[4];
-   else if (dig[2]==7) {
-      if (dig[3]==1) dig[4]=AliTOFGeometry::NpadX()-dig[4];
-      else dig[4]+=1; 
-   } else dig[4]+=1; 
-} else dig[4]+=1;
-
-//3 padz
-if ((dig[1]==3)||(dig[1]==4)) dig[3]=AliTOFGeometry::NpadZ()-dig[3];
-else dig[3]+=1;
-
-//2 strip
-if (dig[1]==0) dig[2]=AliTOFGeometry::NStripC()-dig[2]; 
-else if (dig[1]==1) dig[2]=AliTOFGeometry::NStripB()-dig[2];
-else dig[2]+=1; 
-
-//1 module
-dig[1]=AliTOFGeometry::NPlates()-dig[1];
-
-//0 sector
-dig[0]+=(AliTOFGeometry::NSectors()/2); dig[0]%=AliTOFGeometry::NSectors();
-dig[0]+=1;
-
-  //sector
-  switch (dig[0]) {
-     case 1:
-         strncpy((Char_t*)(lnam+2),"B071",4); lnum[2]=9;
-         strncpy((Char_t*)(lnam+3),"BTO1",4); lnum[3]=1;
-         break;
-     case 2:
-         strncpy((Char_t*)(lnam+2),"B071",4); lnum[2]=10;
-         strncpy((Char_t*)(lnam+3),"BTO1",4); lnum[3]=1;
-         break;
-     case 3:
-         strncpy((Char_t*)(lnam+2),"B074",4); lnum[2]=4;
-         strncpy((Char_t*)(lnam+3),"BTO2",4); lnum[3]=1;
-         if (dig[1]>3) lnum[3]=2;
-         break;
-     case 4:
-         strncpy((Char_t*)(lnam+2),"B074",4); lnum[2]=5;
-         strncpy((Char_t*)(lnam+3),"BTO2",4); lnum[3]=1;
-         if (dig[1]>3) lnum[3]=2;
-         break;
-     case 5:
-         strncpy((Char_t*)(lnam+2),"B074",4); lnum[2]=1;
-         strncpy((Char_t*)(lnam+3),"BTO2",4); lnum[3]=1;
-         if (dig[1]>3) lnum[3]=2;
-         break;
-     case 6:
-         strncpy((Char_t*)(lnam+2),"B074",4); lnum[2]=2;
-         strncpy((Char_t*)(lnam+3),"BTO2",4); lnum[3]=1;
-         if (dig[1]>3) lnum[3]=2;
-         break;
-     case 7:
-         strncpy((Char_t*)(lnam+2),"B074",4); lnum[2]=3;
-         strncpy((Char_t*)(lnam+3),"BTO2",4); lnum[3]=1;
-         if (dig[1]>3) lnum[3]=2;
-         break;
-     case 8:
-         strncpy((Char_t*)(lnam+2),"B071",4); lnum[2]=1;
-         strncpy((Char_t*)(lnam+3),"BTO1",4); lnum[3]=1;
-         break;
-     case 9:
-         strncpy((Char_t*)(lnam+2),"B071",4); lnum[2]=2;
-         strncpy((Char_t*)(lnam+3),"BTO1",4); lnum[3]=1;
-         break;
-     case 10:
-         strncpy((Char_t*)(lnam+2),"B075",4); lnum[2]=1;
-         strncpy((Char_t*)(lnam+3),"BTO3",4); lnum[3]=1;
-         if (dig[1]>4) lnum[3]=2;
-         break;
-     case 11:
-         strncpy((Char_t*)(lnam+2),"B075",4); lnum[2]=2;
-         strncpy((Char_t*)(lnam+3),"BTO3",4); lnum[3]=1;
-         if (dig[1]>4) lnum[3]=2;
-         break;
-     case 12:
-         strncpy((Char_t*)(lnam+2),"B075",4); lnum[2]=3;
-         strncpy((Char_t*)(lnam+3),"BTO3",4); lnum[3]=1;
-         if (dig[1]>4) lnum[3]=2;
-         break;
-     case 13:
-         strncpy((Char_t*)(lnam+2),"B071",4); lnum[2]=3;
-         strncpy((Char_t*)(lnam+3),"BTO1",4); lnum[3]=1;
-         break;
-     case 14:
-         strncpy((Char_t*)(lnam+2),"B071",4); lnum[2]=4;
-         strncpy((Char_t*)(lnam+3),"BTO1",4); lnum[3]=1;
-         break;
-     case 15:
-         strncpy((Char_t*)(lnam+2),"B071",4); lnum[2]=5;
-         strncpy((Char_t*)(lnam+3),"BTO1",4); lnum[3]=1;
-         break;
-     case 16:
-         strncpy((Char_t*)(lnam+2),"B071",4); lnum[2]=6;
-         strncpy((Char_t*)(lnam+3),"BTO1",4); lnum[3]=1;
-         break;
-     case 17:
-         strncpy((Char_t*)(lnam+2),"B071",4); lnum[2]=7;
-         strncpy((Char_t*)(lnam+3),"BTO1",4); lnum[3]=1;
-         break;
-     case 18:
-         strncpy((Char_t*)(lnam+2),"B071",4); lnum[2]=8;
-         strncpy((Char_t*)(lnam+3),"BTO1",4); lnum[3]=1;
-         break;
-     default:
-         ::Info("DtoM","Wrong sector number : %d !",dig[0]);
-         return 2;
-  }
-  //module
-  switch (dig[1]) {
-     case 1:
-        strncpy((Char_t*)(lnam+4),"FTOC",4); lnum[4]=1;
-        if (dig[0]==1  || dig[0]==2 ) lnum[4]=2;
-        if (dig[0]>=8  && dig[0]<=9) lnum[4]=2;
-        if (dig[0]>=13 && dig[0]<=18) lnum[4]=2;
-        strncpy((Char_t*)(lnam+5),"FLTC",4); lnum[5]=0;
-        break;
-     case 2:
-        strncpy((Char_t*)(lnam+4),"FTOB",4); lnum[4]=1;
-        if (dig[0]==1  || dig[0]==2 ) lnum[4]=2;
-        if (dig[0]>=8  && dig[0]<=9) lnum[4]=2;
-        if (dig[0]>=13 && dig[0]<=18) lnum[4]=2;
-        strncpy((Char_t*)(lnam+5),"FLTB",4); lnum[5]=0;
-        break;
-     case 3:
-        strncpy((Char_t*)(lnam+4),"FTOA",4); lnum[4]=0;
-        strncpy((Char_t*)(lnam+5),"FLTA",4); lnum[5]=0;
-        break;
-     case 4:
-        strncpy((Char_t*)(lnam+4),"FTOB",4); lnum[4]=1;
-        strncpy((Char_t*)(lnam+5),"FLTB",4); lnum[5]=0;
-        break;
-     case 5:
-        strncpy((Char_t*)(lnam+4),"FTOC",4); lnum[4]=1;
-        strncpy((Char_t*)(lnam+5),"FLTC",4); lnum[5]=0;
-        break;
-     default:
-        ::Info("DtoM","Wrong module number : %d !",dig[1]);
-        return 3;
-  }
-
-  //strip
-  if (dig[2]<0/*1*/ || dig[2]>19) {
-     ::Info("DtoM","Wrong strip number : %d !",dig[2]);
-     return 3;
-  }
-  strncpy((Char_t*)(lnam+6),"FSTR",4); lnum[6]=dig[2];
-  strncpy((Char_t*)(lnam+7),"FSEN",4); lnum[7]=0;
-
-  //divz
-  if (dig[3]<1 || dig[3]>2) {
-     ::Info("DtoM","Wrong z-division number : %d !",dig[3]);
-     return 3;
-  }
-  strncpy((Char_t*)(lnam+8),"FSEZ",4); lnum[8]=dig[3];
-
-  //divx
-  if (dig[4]<1 || dig[4]>48) {
-     ::Info("DtoM","Wrong x-division number : %d !",dig[4]);
-     return 3;
-  }
-  strncpy((Char_t*)(lnam+9),"FSEX",4); lnum[9]=dig[4];
-  strncpy((Char_t*)(lnam+10),"FPAD",4); lnum[10]=0;
-
-  Gcvolu_t *gcvolu=geant3->Gcvolu(); gcvolu->nlevel=0;
-  Int_t err=geant3->Glvolu(11,lnam,lnum);  //11-th level
-  if (err) {
-    ::Info("DtoM","Wrong volume !"); return 3;
-  }
-  Float_t l[3]={0.,0.,0}; geant3->Gdtom(l,g,1);
-  return 0;
-}
-
-
-//_________________________________________________________________________
-AliTOFpidESD::AliTOFpidESD(Double_t *param) throw (const Char_t *) {
+AliTOFpidESD::AliTOFpidESD(Double_t *param) {
   //
   //  The main constructor
   //
-  if (InitGeo()) throw "AliTOFpidESD: can not initialize the geometry !\n";
-
-
-  if (fTOFGeometry) delete fTOFGeometry;
-  fTOFGeometry = new AliTOFGeometry();
-
   fR=378.; 
-  fDy=fTOFGeometry->XPad(); fDz=fTOFGeometry->ZPad(); 
+  fDy=AliTOFGeometry::XPad(); fDz=AliTOFGeometry::ZPad(); 
   fN=0; fEventN=0;
 
   fSigma=param[0];
@@ -265,68 +48,8 @@ AliTOFpidESD::AliTOFpidESD(Double_t *param) throw (const Char_t *) {
 
 }
 
-
 //_________________________________________________________________________
-
-//_________________________________________________________________________
-Int_t AliTOFpidESD::LoadClusters(const TFile *df) {
-
-  //--------------------------------------------------------------------
-  //This function loads the TOF clusters
-  //--------------------------------------------------------------------
-
-  if (!((TFile *)df)->IsOpen()) {
-    Error("LoadClusters","file with the TOF digits has not been open !\n");
-    return 1;
-  }
-
-  Char_t   name[100]; 
-  sprintf(name,"TreeD%d",GetEventNumber());
-  TTree *dTree=(TTree*)((TFile *)df)->Get(name);
-  if (!dTree) { 
-    Error("LoadClusters"," can't get the tree with digits !\n");
-    return 1;
-  }
-  TBranch *branch=dTree->GetBranch("TOF");
-  if (!branch) { 
-    Error("LoadClusters"," can't get the branch with the TOF digits !\n");
-    return 1;
-  }
-
-  TClonesArray dummy("AliTOFdigit",10000), *digits=&dummy;
-  branch->SetAddress(&digits);
-
-  dTree->GetEvent(0);
-  Int_t nd=digits->GetEntriesFast();
-  Info("LoadClusters","number of digits: %d",nd);
-
-  for (Int_t i=0; i<nd; i++) {
-    AliTOFdigit *d=(AliTOFdigit*)digits->UncheckedAt(i);
-    Int_t dig[5]; Float_t g[3];
-    dig[0]=d->GetSector();
-    dig[1]=d->GetPlate();
-    dig[2]=d->GetStrip();
-    dig[3]=d->GetPadz();
-    dig[4]=d->GetPadx();
-
-    // fTOFGeometry->GetPos(dig,g);   // uncomment this 
-    DtoM(dig,g);
-
-    Double_t h[5];
-    h[0]=TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
-    h[1]=TMath::ATan2(g[1],g[0]); h[2]=g[2]; 
-    h[3]=d->GetTdc(); h[4]=d->GetAdc();
-
-    AliTOFcluster *cl=new AliTOFcluster(h,d->GetTracks(),i);
-    InsertCluster(cl);
-  }  
-
-  delete dTree;
-  return 0;
-}
-
-//_________________________________________________________________________
-Int_t AliTOFpidESD::LoadClusters(TTree *dTree) {
+Int_t AliTOFpidESD::LoadClusters(TTree *dTree, AliTOFGeometry *geom) {
   //--------------------------------------------------------------------
   //This function loads the TOF clusters
   //--------------------------------------------------------------------
@@ -352,8 +75,7 @@ Int_t AliTOFpidESD::LoadClusters(TTree *dTree) {
     dig[3]=d->GetPadz();
     dig[4]=d->GetPadx();
 
-    //fTOFGeometry->GetPos(dig,g);
-    DtoM(dig,g);
+    geom->GetPos(dig,g);
 
     Double_t h[5];
     h[0]=TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
