@@ -16,6 +16,7 @@
 
 // --- ROOT system ---
 //#include "TClonesArray.h"
+#include <assert.h>
 #include "TRandom.h"
 
 class TVector3 ;
