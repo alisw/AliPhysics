@@ -15,6 +15,14 @@
 
 /*
 $Log$
+Revision 1.14  2001/02/13 16:53:35  nilsen
+Fixed a but when trying to use GEANT4. Needed to replace
+if(!((TGeant3*)gMC)) with if(!(dynamic_casst<TGeant3*>(gMC)))
+because just casting gMC to be TGeant3* even when it realy is a TGeant3 pointer
+did not result in a zero value. For AliITSv5asymm and AliITSv5symm, needed
+to fix a bug in the initilizers and a bug in BuildGeometry. This is now done
+in the same way as in AliITSv5.cxx.
+
 Revision 1.13  2001/02/09 20:06:26  nilsen
 Fixed bug in distructor. Can't distroy fixxed length arrays. Thanks Peter.
 
@@ -4894,11 +4902,11 @@ void AliITSvPPRasymm::CreateMaterials(){
   AliMaterial(4,"C (M55J)$",0.12011E+02,0.60000E+01,0.1930E+01,0.22100E+02,0.99900E+03);
   AliMedium(4,"C (M55J)$",4,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
 
-  AliMaterial(5,"AIR$",0.14610E+02,0.73000E+01,0.12050E02,0.30423E+05,0.99900E+03);
+  AliMaterial(5,"AIR$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
   AliMedium(5,"AIR$",5,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
 
   AliMaterial(6,"GEN AIR$",0.14610E+02,0.73000E+01,0.12050E02,0.30423E+05,0.99900E+03);
-  AliMedium(6,"GEN AIR$",6,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
+  AliMedium(6,"GEN AIR$",6,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E-02,.10000E+01,0);
 
   AliMaterial(7,"SDD SI CHIP$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
   AliMedium(7,"SDD SI CHIP$",7,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
@@ -4906,8 +4914,8 @@ void AliITSvPPRasymm::CreateMaterials(){
   AliMaterial(9,"SDD C (M55J)$",0.12011E+02,0.60000E+01,0.1930E+01,0.22100E+02,0.99900E+03);
   AliMedium(9,"SDD C (M55J)$",9,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
 
-  AliMaterial(10,"SDD AIR$",0.14610E+02,0.73000E+01,0.12050E02,0.30423E+05,0.99900E+03);
-  AliMedium(10,"SDD AIR$",10,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
+  AliMaterial(10,"SDD AIR$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+  AliMedium(10,"SDD AIR$",10,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E-02,.10000E+01,0);
 
   AliMaterial(11,"AL$",0.26982E+02,0.13000E+02,0.26989E+01,0.89000E+01,0.99900E+03);
   AliMedium(11,"AL$",11,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
@@ -4924,8 +4932,8 @@ void AliITSvPPRasymm::CreateMaterials(){
   AliMaterial(20,"SSD C (M55J)$",0.12011E+02,0.60000E+01,0.1930E+01,0.22100E+02,0.99900E+03);
   AliMedium(20,"SSD C (M55J)$",20,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
 
-  AliMaterial(21,"SSD AIR$",0.14610E+02,0.73000E+01,0.12050E02,0.30423E+05,0.99900E+03);
-  AliMedium(21,"SSD AIR$",21,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
+  AliMaterial(21,"SSD AIR$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+  AliMedium(21,"SSD AIR$",21,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E-02,.10000E+01,0);
 
   AliMaterial(25,"G10FR4$",0.17749E+02,0.88750E+01,0.18000E+01,0.21822E+02,0.99900E+03);
   AliMedium(25,"G10FR4$",25,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
@@ -4933,8 +4941,8 @@ void AliITSvPPRasymm::CreateMaterials(){
   AliMaterial(26,"GEN C (M55J)$",0.12011E+02,0.60000E+01,0.1930E+01,0.22100E+02,0.99900E+03);
   AliMedium(26,"GEN C (M55J)$",26,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
 
-  AliMaterial(27,"GEN Air$",0.14610E+02,0.73000E+01,0.12050E02,0.30423E+05,0.99900E+03);
-  AliMedium(27,"GEN Air$",27,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
+  AliMaterial(27,"GEN Air$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+  AliMedium(27,"GEN Air$",27,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E-02,.10000E+01,0);
 
   AliMaterial(51,"SPD SI$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
   AliMedium(51,"SPD SI$",51,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
@@ -4948,8 +4956,8 @@ void AliITSvPPRasymm::CreateMaterials(){
   AliMaterial(54,"SPD C (M55J)$",0.12011E+02,0.60000E+01,0.1930E+01,0.22100E+02,0.99900E+03);
   AliMedium(54,"SPD C (M55J)$",54,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
 
-  AliMaterial(55,"SPD AIR$",0.14610E+02,0.73000E+01,0.12050E02,0.30423E+05,0.99900E+03);
-  AliMedium(55,"SPD AIR$",55,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
+  AliMaterial(55,"SPD AIR$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
+  AliMedium(55,"SPD AIR$",55,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E-02,.10000E+01,0);
 
   AliMaterial(56,"SPD KAPTON(POLYCH2)$",0.14000E+02,0.71770E+01,0.13000E+01,0.31270E+02,0.99900E+03);
   AliMedium(56,"SPD KAPTON(POLYCH2)$",56,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
