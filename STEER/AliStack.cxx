@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2001/07/27 13:03:13  hristov
+Default Branch split level set to 99
+
 Revision 1.11  2001/07/27 12:34:20  jchudoba
 remove the dummy argument in GetEvent method
 
@@ -118,7 +121,7 @@ AliStack::~AliStack()
     delete fParticles;
   }
   delete fParticleMap;
-  delete fTreeK;
+  if (fTreeK) delete fTreeK;
 }
 
 //
