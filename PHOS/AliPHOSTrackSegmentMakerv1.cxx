@@ -400,7 +400,7 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
     Init() ;
 
   if(strstr(option,"tim"))
-    gBenchmark->Start("PHOSTrackSegmentMakerv1");  
+    gBenchmark->Start("PHOSTSMaker");
  
   if(strstr(option,"print")) {
     Print("") ; 
