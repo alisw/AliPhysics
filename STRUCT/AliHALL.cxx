@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2001/11/16 12:38:26  morsch
+Reverse z-ordering in HMBS. (I. Hrivnacova)
+
 Revision 1.13  2001/06/21 12:26:52  morsch
 Simple concrete shielding around compensator dipole.
 
@@ -279,7 +282,7 @@ void AliHALL::CreateGeometry()
   //     pillars for working platform 
   
   pbox[0] = 40.;
-  pbox[1] = 120.;
+  pbox[1] = 97.;
   pbox[2] = 550.;
   gMC->Gsvolu("HPIL", "BOX ", idtmed[1956], pbox, 3);
   gMC->Gspos("HPIL", 1, "ALIC", 165.,-706+pbox[1] , 1350., 0, "ONLY");
@@ -301,6 +304,26 @@ void AliHALL::CreateGeometry()
 
   gMC->Gsvolu("HMBS", "PGON", idtmed[1956], ppgon, 10);
   gMC->Gspos("HMBS", 1, "ALIC", 0., 70., 0., 0, "ONLY");
+/*
+  ppgon[4] = -1800.;
+  ppgon[5] =     0.;
+  ppgon[6] =   150.;
+  ppgon[7] = -1300.;
+  ppgon[8] =     0.;
+  ppgon[9] =   150.;
+  gMC->Gsvolu("HMBT", "PGON", idtmed[1956], ppgon, 10);
+
+  ppgon[4] = -1800.;
+  ppgon[5] =     0.;
+  ppgon[6] =    10.;
+  ppgon[7] = -1300.;
+  ppgon[8] =     0.;
+  ppgon[9] =    10.;
+  gMC->Gsvolu("HMBU", "PGON", idtmed[1954], ppgon, 10);
+
+  gMC->Gspos("HMBU", 1, "HMBT", 0., -70., 0., 0, "ONLY");
+*/
+  gMC->Gspos("HMBT", 1, "ALIC", 0.,  70., 0., 0, "ONLY");
   
 }
 
