@@ -15,6 +15,14 @@
 
 /*
 $Log$
+Revision 1.65  2001/11/27 16:27:28  nilsen
+Adding AliITSDigitizer class to do merging and digitization . Based on the
+TTask method. AliITSDigitizer class added to the Makefile and ITSLinkDef.h
+file. The following files required minor changes. AliITS, added functions
+SetHitsAddressBranch, MakeBranchInTreeD and modified MakeBranchD.
+AliITSsimulationSDD.cxx needed a Tree indepenent way of returning back to
+the original Root Directory in function Compress1D. Now it uses gDirectory.
+
 Revision 1.64  2001/11/19 16:17:02  nilsen
 Applyed fixes to bugs found by Rene Brun. With many thanks. Some additonal
 bugs found by Rene require more work to fix. Will be fixed soon.
@@ -306,7 +314,8 @@ AliITS::AliITS() : AliDetector() {
     fEuclidOut  = 0;
     fITSgeom    = 0;
     fITSmodules = 0;
-    SetDetectors(); // default to fOpt="All". This variable not written out.
+    fOpt        = "All";
+//    SetDetectors(); // default to fOpt="All". This variable not written out.
 
     fIdN        = 0;
     fIdName     = 0;
@@ -536,7 +545,7 @@ void AliITS::SetDefaults(){
     // SDD
     iDetType=DetType(1); 
     if (!iDetType->GetResponseModel()) {
-	SetResponseModel(1,new AliITSresponseSDD()); 
+	SetResponseModel(1,new AliITSresponseSDD("simulated")); 
     } // end if
     AliITSresponse *resp1=iDetType->GetResponseModel();
     if (!iDetType->GetSegmentationModel()) {
@@ -556,7 +565,7 @@ void AliITS::SetDefaults(){
 	SetSegmentationModel(2,seg2); 
     } // end if
     if (!iDetType->GetResponseModel()) {
-	SetResponseModel(2,new AliITSresponseSSD()); 
+	SetResponseModel(2,new AliITSresponseSSD("simulated"));
     } // end if
     const char *kData2=(iDetType->GetResponseModel())->DataType();
     if (strstr(kData2,"real")) {

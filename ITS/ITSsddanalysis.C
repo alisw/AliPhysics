@@ -160,7 +160,7 @@ void ITSsddanalysis (Int_t evNumber1=0,Int_t evNumber2=0)
   
   AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
   if (!res1) {
-    res1=new AliITSresponseSDD();
+    res1=new AliITSresponseSDD("simulated");
     ITS->SetResponseModel(1,res1);
   }
   res1->SetZeroSupp("2D");  // 1D

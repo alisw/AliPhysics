@@ -78,7 +78,7 @@ void ITSDigitsToClustersDubna (Int_t evNumber1=0,Int_t evNumber2=0)
    AliITSsegmentationSDD *seg1=(AliITSsegmentationSDD*)iDetType->GetSegmentationModel();
    if (!seg1) seg1 = new AliITSsegmentationSDD(geom);
    AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
-   if (!res1) res1=new AliITSresponseSDD();
+   if (!res1) res1=new AliITSresponseSDD("simulated");
 
    Float_t baseline,noise;
    res1->GetNoiseParam(noise,baseline);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.52  2001/10/22 11:00:54  hristov
+New naming schema of the rotation matrices in BuildGeometry() to avoid redefinition in other detectors (R.Barbera)
+
 Revision 1.51  2001/10/19 10:18:49  barbera
 A typo corrected.
 
@@ -29164,7 +29167,7 @@ void AliITSvPPRasymm::SetDefaults(){
     // SDD
     iDetType=DetType(kSDD);
     s1 = (AliITSgeomSDD*) fITSgeom->GetShape(kSDD);// Get shape info. Do it this way for now.
-    AliITSresponseSDD *resp1=new AliITSresponseSDD();
+    AliITSresponseSDD *resp1=new AliITSresponseSDD("simulated");
     resp1->SetZeroSupp("1D");
     resp1->SetDriftSpeed(7.3); // set drift speed to 7.3 microns/ns.
     Float_t a,b;
@@ -29190,7 +29193,7 @@ void AliITSvPPRasymm::SetDefaults(){
     // SSD  Layer 5
     iDetType=DetType(kSSD);
     s2 = (AliITSgeomSSD*) fITSgeom->GetShape(kSSD);// Get shape info. Do it this way for now.
-    AliITSresponse *resp2=new AliITSresponseSSD();
+    AliITSresponse *resp2=new AliITSresponseSSD("simulated");
     SetResponseModel(kSSD,resp2);
     AliITSsegmentationSSD *seg2=new AliITSsegmentationSSD(fITSgeom);
     seg2->SetDetSize(s2->GetDx()*2.*kconv, // base this on AliITSgeomSSD
