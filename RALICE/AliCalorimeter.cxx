@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/11/03 14:23:17  fca
+New version of RALICE introduced
+
 Revision 1.2  1999/09/29 09:24:28  fca
 Introduction of the Copyright and cvs Log
 
@@ -53,7 +56,7 @@ Introduction of the Copyright and cvs Log
 //                      // Note : Module gain, edge and dead flags remain
 //
 //--- Author: Nick van Eijndhoven 13-jun-1997 UU-SAP Utrecht
-//- Modified: NvE 31-oct-1999 UU-SAP Utrecht
+//- Modified: NvE 03-mar-2000 UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCalorimeter.h"
@@ -74,41 +77,76 @@ AliCalorimeter::AliCalorimeter()
  fHclusters=0;
  fNvetos=0;
  fVetos=0;
+ fAttributes=0;
+ fGains=0;
+ fPositions=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalorimeter::~AliCalorimeter()
 {
-// Destructor to delete memory allocated for matrix and cluster array
- if (fMatrix)
+// Destructor to delete memory allocated to the various arrays and matrix
+ if (fModules)
  {
-  for (Int_t i=0; i<fNrows; i++)
-  {
-   delete [] fMatrix[i];
-  }
-   delete [] fMatrix;
+  fModules->Delete();
+  delete fModules;
+  fModules=0;
  }
- fMatrix=0;
- if (fModules) delete fModules;
- fModules=0;
  if (fClusters)
  {
   fClusters->Delete();
   delete fClusters;
   fClusters=0;
  }
- if (fHmodules) delete fHmodules;
- fHmodules=0;
- if (fHclusters) delete fHclusters;
- fHclusters=0;
  if (fVetos)
  {
   fVetos->Delete();
   delete fVetos;
   fVetos=0;
  }
+ if (fHmodules)
+ {
+  delete fHmodules;
+  fHmodules=0;
+ }
+ if (fHclusters)
+ {
+  delete fHclusters;
+  fHclusters=0;
+ }
+ if (fMatrix || fPositions)
+ {
+  for (Int_t i=0; i<fNrows; i++)
+  {
+   for (Int_t j=0; j<fNcolumns; j++)
+   {
+    fMatrix[i][j]=0;
+    if (fPositions[i][j]) delete fPositions[i][j];
+   }
+  }
+  if (fMatrix)
+  {
+   delete [] fMatrix;
+   fMatrix=0;
+  }
+  if (fPositions)
+  {
+   delete [] fPositions;
+   fPositions=0;
+  }
+ }
+ if (fGains)
+ {
+  delete fGains;
+  fGains=0;
+ }
+ if (fAttributes)
+ {
+  delete fAttributes;
+  fAttributes=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalorimeter::AliCalorimeter(Int_t nrow, Int_t ncol)
+AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol)
 {
 // Create a calorimeter module matrix
  fNrows=nrow;
@@ -116,21 +154,34 @@ AliCalorimeter::AliCalorimeter(Int_t nrow, Int_t ncol)
  fNsignals=0;
  fNclusters=0;
  fClusters=0;
- fMatrix=new AliCalmodule*[nrow];
- for (Int_t i=0; i<nrow; i++)
+ fAttributes=new TMatrix(nrow,ncol);
+ fGains=new TMatrix(nrow,ncol);
+ fMatrix=new AliCalmodule**[nrow];
+ fPositions=new AliPosition**[nrow];
+ for (Int_t row=0; row<nrow; row++)
  {
-  fMatrix[i]=new AliCalmodule[ncol];
+  fMatrix[row]=new AliCalmodule*[ncol];
+  fPositions[row]=new AliPosition*[ncol];
+  // Initialise the various matrices
+  for (Int_t col=0; col<ncol; col++)
+  {
+   fMatrix[row][col]=0;
+   fPositions[row][col]=0;
+   (*fGains)(row,col)=1;
+   (*fAttributes)(row,col)=0;
+  }
  }
+
  // Mark the edge modules
  for (Int_t j=0; j<ncol; j++)
  {
-  fMatrix[0][j].SetEdgeOn();
-  fMatrix[nrow-1][j].SetEdgeOn();
+  (*fAttributes)(0,j)=10;
+  (*fAttributes)(nrow-1,j)=10;
  }
- for (Int_t k=0; k<nrow; k++)
+ for (Int_t i=0; i<nrow; i++)
  {
-  fMatrix[k][0].SetEdgeOn();
-  fMatrix[k][ncol-1].SetEdgeOn();
+  (*fAttributes)(i,0)=10;
+  (*fAttributes)(i,ncol-1)=10;
  }
  
  fModules=new TObjArray();  // Default size, expanded automatically
@@ -154,7 +205,7 @@ Int_t AliCalorimeter::GetNcolumns()
  return fNcolumns;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalorimeter::SetSignal(Int_t row, Int_t col, Float_t sig)
+void AliCalorimeter::SetSignal(Int_t row,Int_t col,Float_t sig)
 {
 // Set the signal for a certain calorimeter module
  
@@ -162,12 +213,17 @@ void AliCalorimeter::SetSignal(Int_t row, Int_t col, Float_t sig)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  if (fMatrix[row-1][col-1].GetSignal() <= 0.) // only count new modules
+  AliCalmodule* m=fMatrix[row-1][col-1];
+  if (!m) // only count new modules
   {
    fNsignals++;
-   fModules->Add(&(fMatrix[row-1][col-1]));
+   m=new AliCalmodule;
+   AliPosition* r=fPositions[row-1][col-1];
+   if (r) m->SetPosition(*r);
+   fModules->Add(m);
+   fMatrix[row-1][col-1]=m;
   }
-  fMatrix[row-1][col-1].SetSignal(row,col,sig);
+  m->SetSignal(row,col,sig);
  }
  else
  {
@@ -185,12 +241,15 @@ void AliCalorimeter::AddSignal(Int_t row, Int_t col, Float_t sig)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  if (fMatrix[row-1][col-1].GetSignal() <= 0.) // only count new modules
+  AliCalmodule* m=fMatrix[row-1][col-1];
+  if (!m) // only count new modules
   {
-   fNsignals++;
-   fModules->Add(&(fMatrix[row-1][col-1]));
+   SetSignal(row,col,sig);
   }
-  fMatrix[row-1][col-1].AddSignal(row,col,sig);
+  else
+  {
+   m->AddSignal(row,col,sig);
+  }
  }
  else
  {
@@ -200,7 +259,41 @@ void AliCalorimeter::AddSignal(Int_t row, Int_t col, Float_t sig)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalorimeter::Reset(Int_t row, Int_t col)
+void AliCalorimeter::AddSignal(AliCalmodule* mod)
+{
+// Add the signal of module mod to the current calorimeter data.
+// This enables mixing of calorimeter data of various events.
+ 
+ if (!fMatrix) LoadMatrix(); // Restore matrix data in case of reading input
+ 
+ Int_t row=mod->GetRow();
+ Int_t col=mod->GetColumn();
+ Float_t sig=mod->GetSignal();
+ AliPosition r=mod->GetPosition();
+
+ if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
+ {
+  AliCalmodule* m=fMatrix[row-1][col-1];
+  if (!m) // No module existed yet at this position
+  {
+   fNsignals++;
+   m=new AliCalmodule;
+   fModules->Add(m);
+   fMatrix[row-1][col-1]=m;
+   m->SetPosition(r);
+  }
+  m->AddSignal(row,col,sig);
+  if (!fPositions[row-1][col-1]) fPositions[row-1][col-1]=new AliPosition(r);
+ }
+ else
+ {
+  cout << " *AliCalorimeter::AddSignal* row,col : " << row << "," << col
+       << " out of range." << endl;
+  cout << " Nrows,Ncols = " << fNrows << "," << fNcolumns << endl;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliCalorimeter::Reset(Int_t row,Int_t col)
 {
 // Reset the signal for a certain calorimeter module
  
@@ -208,12 +301,14 @@ void AliCalorimeter::Reset(Int_t row, Int_t col)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  fMatrix[row-1][col-1].SetSignal(row,col,0);
-  AliCalmodule* m=(AliCalmodule*)fModules->Remove(&(fMatrix[row-1][col-1]));
+  AliCalmodule* m=fMatrix[row-1][col-1];
   if (m)
   {
+   fModules->Remove(m);
    fNsignals--;
    fModules->Compress();
+   delete m;
+   fMatrix[row-1][col-1]=0;
   }
  }
  else
@@ -233,14 +328,14 @@ void AliCalorimeter::Reset()
  if (!fMatrix) LoadMatrix(); // Restore matrix data in case of reading input
  
  fNsignals=0;
+ if (fModules) fModules->Delete();
  for (Int_t i=0; i<fNrows; i++)
  {
   for (Int_t j=0; j<fNcolumns; j++)
   {
-   fMatrix[i][j].SetSignal(i+1,j+1,0);
+   fMatrix[i][j]=0;
   }
  }
- if (fModules) fModules->Clear();
 
  fNclusters=0;
  if (fClusters)
@@ -259,7 +354,7 @@ void AliCalorimeter::Reset()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalorimeter::GetSignal(Int_t row, Int_t col)
+Float_t AliCalorimeter::GetSignal(Int_t row,Int_t col)
 {
 // Provide the signal of a certain calorimeter module.
 // In case the module was marked dead, 0 is returned.
@@ -268,9 +363,13 @@ Float_t AliCalorimeter::GetSignal(Int_t row, Int_t col)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  Int_t dead=fMatrix[row-1][col-1].GetDeadValue();
   Float_t signal=0;
-  if (!dead) signal=fMatrix[row-1][col-1].GetSignal();
+  AliCalmodule* m=fMatrix[row-1][col-1];
+  if (m)
+  {
+   Int_t dead=m->GetDeadValue();
+   if (!dead) signal=m->GetSignal();
+  }
   return signal;
  }
  else
@@ -282,7 +381,7 @@ Float_t AliCalorimeter::GetSignal(Int_t row, Int_t col)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalorimeter::SetEdgeOn(Int_t row, Int_t col)
+void AliCalorimeter::SetEdgeOn(Int_t row,Int_t col)
 {
 // Indicate a certain calorimeter module as 'edge module'
  
@@ -290,7 +389,11 @@ void AliCalorimeter::SetEdgeOn(Int_t row, Int_t col)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  fMatrix[row-1][col-1].SetEdgeOn();
+  Float_t word=(*fAttributes)(row-1,col-1);
+  Int_t iword=int(word+0.1);
+  Int_t dead=iword%10;
+  Int_t edge=1;
+  (*fAttributes)(row-1,col-1)=float(dead+10*edge); 
  }
  else
  {
@@ -300,7 +403,7 @@ void AliCalorimeter::SetEdgeOn(Int_t row, Int_t col)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalorimeter::SetEdgeOff(Int_t row, Int_t col)
+void AliCalorimeter::SetEdgeOff(Int_t row,Int_t col)
 {
 // Indicate a certain calorimeter module as 'non-edge module'
  
@@ -308,7 +411,11 @@ void AliCalorimeter::SetEdgeOff(Int_t row, Int_t col)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  fMatrix[row-1][col-1].SetEdgeOff();
+  Float_t word=(*fAttributes)(row-1,col-1);
+  Int_t iword=int(word+0.1);
+  Int_t dead=iword%10;
+  Int_t edge=0;
+  (*fAttributes)(row-1,col-1)=float(dead+10*edge); 
  }
  else
  {
@@ -318,7 +425,7 @@ void AliCalorimeter::SetEdgeOff(Int_t row, Int_t col)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalorimeter::SetDead(Int_t row, Int_t col)
+void AliCalorimeter::SetDead(Int_t row,Int_t col)
 {
 // Indicate a certain calorimeter module as 'dead module'
  
@@ -326,7 +433,12 @@ void AliCalorimeter::SetDead(Int_t row, Int_t col)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  fMatrix[row-1][col-1].SetDead();
+  Float_t word=(*fAttributes)(row-1,col-1);
+  Int_t iword=int(word+0.1);
+  Int_t edge=iword/10;
+  Int_t dead=1;
+  (*fAttributes)(row-1,col-1)=float(dead+10*edge);
+  if (fMatrix[row-1][col-1]) (fMatrix[row-1][col-1])->SetDead();
  
   // Increase the 'edge value' of surrounding modules
   Int_t rlow=row-1;
@@ -343,12 +455,17 @@ void AliCalorimeter::SetDead(Int_t row, Int_t col)
   {
    for (Int_t j=clow; j<=cup; j++)
    {
-    fMatrix[i-1][j-1].EdgeUp();
+    if (i!=row || j!=col) // No increase of edge value for the dead module itself
+    {
+     word=(*fAttributes)(i-1,j-1);
+     iword=int(word+0.1);
+     edge=iword/10;
+     dead=iword%10;
+     edge++;
+     (*fAttributes)(i-1,j-1)=float(dead+10*edge);
+    }
    }
   }
- 
-  // Correct the 'edge value' for the dead module itself
-  fMatrix[row-1][col-1].EdgeDown();
  }
  else
  {
@@ -358,7 +475,7 @@ void AliCalorimeter::SetDead(Int_t row, Int_t col)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalorimeter::SetAlive(Int_t row, Int_t col)
+void AliCalorimeter::SetAlive(Int_t row,Int_t col)
 {
 // Indicate a certain calorimeter module as 'active module'
  
@@ -366,7 +483,12 @@ void AliCalorimeter::SetAlive(Int_t row, Int_t col)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  fMatrix[row-1][col-1].SetAlive();
+  Float_t word=(*fAttributes)(row-1,col-1);
+  Int_t iword=int(word+0.1);
+  Int_t edge=iword/10;
+  Int_t dead=0;
+  (*fAttributes)(row-1,col-1)=float(dead+10*edge);
+  if (fMatrix[row-1][col-1]) (fMatrix[row-1][col-1])->SetAlive();
  
   // Decrease the 'edge value' of surrounding modules
   Int_t rlow=row-1;
@@ -383,12 +505,17 @@ void AliCalorimeter::SetAlive(Int_t row, Int_t col)
   {
    for (Int_t j=clow; j<=cup; j++)
    {
-    fMatrix[i-1][j-1].EdgeDown();
+    if (i!=row || j!=col) // No decrease of edge value for the dead module itself
+    {
+     word=(*fAttributes)(i-1,j-1);
+     iword=int(word+0.1);
+     edge=iword/10;
+     dead=iword%10;
+     if (edge>0) edge--;
+     (*fAttributes)(i-1,j-1)=float(dead+10*edge);
+    }
    }
   }
- 
-  // Correct the 'edge value' for the dead module itself
-  fMatrix[row-1][col-1].EdgeUp();
  }
  else
  {
@@ -398,7 +525,7 @@ void AliCalorimeter::SetAlive(Int_t row, Int_t col)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalorimeter::SetGain(Int_t row, Int_t col, Float_t gain)
+void AliCalorimeter::SetGain(Int_t row,Int_t col,Float_t gain)
 {
 // Set the gain value for a certain calorimeter module
  
@@ -406,7 +533,8 @@ void AliCalorimeter::SetGain(Int_t row, Int_t col, Float_t gain)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  fMatrix[row-1][col-1].SetGain(gain);
+  (*fGains)(row-1,col-1)=gain;
+  if (fMatrix[row-1][col-1]) (fMatrix[row-1][col-1])->SetGain(gain);
  }
  else
  {
@@ -424,7 +552,9 @@ void AliCalorimeter::SetPosition(Int_t row,Int_t col,Float_t* vec,TString f)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  fMatrix[row-1][col-1].SetPosition(vec,f);
+  if (!fPositions[row-1][col-1]) fPositions[row-1][col-1]=new AliPosition;
+  (fPositions[row-1][col-1])->SetVector(vec,f);
+  if (fMatrix[row-1][col-1]) (fMatrix[row-1][col-1])->SetPosition(vec,f);
  }
  else
  {
@@ -434,15 +564,36 @@ void AliCalorimeter::SetPosition(Int_t row,Int_t col,Float_t* vec,TString f)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetEdgeValue(Int_t row, Int_t col)
+void AliCalorimeter::SetPosition(Int_t row,Int_t col,Ali3Vector& r)
 {
-// Provide the value of the edge flag of a certain module
+// Set the position for a certain calorimeter module
  
  if (!fMatrix) LoadMatrix(); // Restore matrix data in case of reading input
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  return fMatrix[row-1][col-1].GetEdgeValue();
+  if (!fPositions[row-1][col-1]) fPositions[row-1][col-1]=new AliPosition;
+  (fPositions[row-1][col-1])->SetPosition(r);
+  if (fMatrix[row-1][col-1]) (fMatrix[row-1][col-1])->SetPosition(r);
+ }
+ else
+ {
+  cout << " *AliCalorimeter::SetPosition* row,col : " << row << "," << col
+       << " out of range." << endl;
+  cout << " Nrows,Ncols = " << fNrows << "," << fNcolumns << endl;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliCalorimeter::GetEdgeValue(Int_t row,Int_t col)
+{
+// Provide the value of the edge flag of a certain module
+ 
+ if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
+ {
+  Float_t word=(*fAttributes)(row-1,col-1);
+  Int_t iword=int(word+0.1);
+  Int_t edge=iword/10;
+  return edge;
  }
  else
  {
@@ -453,15 +604,16 @@ Int_t AliCalorimeter::GetEdgeValue(Int_t row, Int_t col)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliCalorimeter::GetDeadValue(Int_t row, Int_t col)
+Int_t AliCalorimeter::GetDeadValue(Int_t row,Int_t col)
 {
 // Provide the value of the dead flag of a certain module
  
- if (!fMatrix) LoadMatrix(); // Restore matrix data in case of reading input
- 
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  return fMatrix[row-1][col-1].GetDeadValue();
+  Float_t word=(*fAttributes)(row-1,col-1);
+  Int_t iword=int(word+0.1);
+  Int_t dead=iword%10;
+  return dead;
  }
  else
  {
@@ -472,15 +624,13 @@ Int_t AliCalorimeter::GetDeadValue(Int_t row, Int_t col)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalorimeter::GetGain(Int_t row, Int_t col)
+Float_t AliCalorimeter::GetGain(Int_t row,Int_t col)
 {
 // Provide the gain value of a certain module
  
- if (!fMatrix) LoadMatrix(); // Restore matrix data in case of reading input
- 
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  return fMatrix[row-1][col-1].GetGain();
+   return (*fGains)(row-1,col-1);
  }
  else
  {
@@ -499,7 +649,8 @@ void AliCalorimeter::GetPosition(Int_t row,Int_t col,Float_t* vec,TString f)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  fMatrix[row-1][col-1].GetPosition(vec,f);
+//  if (fMatrix[row-1][col-1]) (fMatrix[row-1][col-1])->GetPosition(vec,f);
+  if (fPositions[row-1][col-1]) (fPositions[row-1][col-1])->GetVector(vec,f);
  }
  else
  {
@@ -509,7 +660,26 @@ void AliCalorimeter::GetPosition(Int_t row,Int_t col,Float_t* vec,TString f)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Float_t AliCalorimeter::GetClusteredSignal(Int_t row, Int_t col)
+AliPosition* AliCalorimeter::GetPosition(Int_t row,Int_t col)
+{
+// Access to the position of a certain calorimeter module
+ 
+ if (!fMatrix) LoadMatrix(); // Restore matrix data in case of reading input
+ 
+ if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
+ {
+  return fPositions[row-1][col-1];
+ }
+ else
+ {
+  cout << " *AliCalorimeter::GetPosition* row,col : " << row << "," << col
+       << " out of range." << endl;
+  cout << " Nrows,Ncols = " << fNrows << "," << fNcolumns << endl;
+  return 0;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliCalorimeter::GetClusteredSignal(Int_t row,Int_t col)
 {
 // Provide the module signal after clustering
  
@@ -517,7 +687,14 @@ Float_t AliCalorimeter::GetClusteredSignal(Int_t row, Int_t col)
  
  if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
  {
-  return fMatrix[row-1][col-1].GetClusteredSignal();
+  if (fMatrix[row-1][col-1])
+  {
+   return (fMatrix[row-1][col-1])->GetClusteredSignal();
+  }
+  else
+  {
+   return 0;
+  }
  }
  else
  {
@@ -564,18 +741,23 @@ void AliCalorimeter::Group(Int_t n)
   Int_t row=0;
   Int_t col=0;
   AliCalcluster* c=0;
+  AliCalmodule* m=0;
   for (Int_t i=0; i<nord; i++)
   {
    row=ordered[i]->GetRow();    // row number of cluster center
    col=ordered[i]->GetColumn(); // column number of cluster center
    if (row>0 && row<=fNrows && col>0 && col<=fNcolumns)
    {
+    m=fMatrix[row-1][col-1];
+    if (!m) continue;
+
     // only use modules not yet used in a cluster
-    if (fMatrix[row-1][col-1].GetClusteredSignal() > 0.)
+    if (m->GetClusteredSignal() > 0.)
     {
+     Int_t edge=GetEdgeValue(row,col);
      c=new AliCalcluster;
-     c->Start(fMatrix[row-1][col-1]); // module to start the cluster
-     if (c->GetNmodules() > 0)        // cluster started successfully (no edge)
+     if (!edge) c->Start(*m);   // module to start the cluster if not on edge
+     if (c->GetNmodules() > 0)  // cluster started successfully (no edge)
      {
       fClusters->Add(c);
       fNclusters++;       // update cluster counter
@@ -616,7 +798,7 @@ void AliCalorimeter::Sortm(AliCalmodule** ordered,Int_t& nord)
    if (nord == 0) // store the first module with a signal at the first ordered position
    {
     nord++;
-    ordered[nord-1]=&(fMatrix[i][ii]);
+    ordered[nord-1]=fMatrix[i][ii];
     continue;
    }
  
@@ -625,7 +807,7 @@ void AliCalorimeter::Sortm(AliCalmodule** ordered,Int_t& nord)
     if (j == nord) // module has smallest signal seen so far
     {
      nord++;
-     ordered[j]=&(fMatrix[i][ii]); // add module at the end
+     ordered[j]=fMatrix[i][ii]; // add module at the end
      break; // go for next matrix module
     }
  
@@ -636,7 +818,7 @@ void AliCalorimeter::Sortm(AliCalmodule** ordered,Int_t& nord)
     {
      ordered[k]=ordered[k-1];
     }
-    ordered[j]=&(fMatrix[i][ii]); // put module at empty position
+    ordered[j]=fMatrix[i][ii]; // put module at empty position
     break; // go for next matrix module
    }
   }
@@ -665,7 +847,8 @@ void AliCalorimeter::AddRing(Int_t row, Int_t col, Int_t n)
     // add module(i,j) to cluster if the signal <= signal(row,col)
     if (GetSignal(i,j) <= signal)
     {
-     ((AliCalcluster*)fClusters->At(fNclusters-1))->Add(fMatrix[i-1][j-1]);
+     AliCalmodule* m=fMatrix[i-1][j-1];
+     if (m) ((AliCalcluster*)fClusters->At(fNclusters-1))->Add(*m);
     }
     AddRing(i,j,n-1); // Go for ring of modules around this (i,j) one
    }
@@ -722,7 +905,7 @@ AliCalmodule* AliCalorimeter::GetModule(Int_t row,Int_t col)
 
  if (row>=1 && row<=fNrows && col>=1 && col<=fNcolumns)
  {
-  return &(fMatrix[row-1][col-1]);
+  return fMatrix[row-1][col-1];
  }
  else
  {
@@ -807,27 +990,41 @@ void AliCalorimeter::LoadMatrix()
 {
 // Load the Calorimeter module matrix data back from the TObjArray
 
- // Create the module matrix space
- if (fMatrix)
+ // Initialise the module matrix
+ if (!fMatrix)
  {
-  for (Int_t k=0; k<fNrows; k++)
+  fMatrix=new AliCalmodule**[fNrows];
+  for (Int_t i=0; i<fNrows; i++)
   {
-   delete [] fMatrix[k];
+   fMatrix[i]=new AliCalmodule*[fNcolumns];
   }
-   delete [] fMatrix;
  }
- fMatrix=new AliCalmodule*[fNrows];
- for (Int_t i=0; i<fNrows; i++)
+
+ // Initialise the position matrix
+ if (!fPositions)
  {
-  fMatrix[i]=new AliCalmodule[fNcolumns];
+  fPositions=new AliPosition**[fNrows];
+  for (Int_t j=0; j<fNrows; j++)
+  {
+   fPositions[j]=new AliPosition*[fNcolumns];
+  }
+ }
+
+ for (Int_t jrow=0; jrow<fNrows; jrow++)
+ {
+  for (Int_t jcol=0; jcol<fNcolumns; jcol++)
+  {
+   fMatrix[jrow][jcol]=0;
+   fPositions[jrow][jcol]=0;
+  }
  }
  
- // Copy the module data back into the matrix
+ // Copy the module pointers back into the matrix
  AliCalmodule* m=0;
  Int_t row=0;
  Int_t col=0;
  Int_t nsig=0;
- if (fModules) nsig=fModules->GetSize();
+ if (fModules) nsig=fModules->GetEntries();
  for (Int_t j=0; j<nsig; j++)
  {
   m=(AliCalmodule*)fModules->At(j);
@@ -835,11 +1032,11 @@ void AliCalorimeter::LoadMatrix()
   {
    row=m->GetRow();
    col=m->GetColumn();
-   fMatrix[row-1][col-1]=*m;
-   fModules->AddAt(&(fMatrix[row-1][col-1]),j); // Store new pointer
+   AliPosition r=m->GetPosition();
+   fMatrix[row-1][col-1]=m;
+   fPositions[row-1][col-1]=new AliPosition(r);
   }
  }
-
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliCalorimeter::Ungroup()
@@ -848,13 +1045,18 @@ void AliCalorimeter::Ungroup()
  
  if (!fMatrix) LoadMatrix(); // Restore matrix data in case of reading input
  
+ Int_t nsig=0;
+ if (fModules) nsig=fModules->GetEntries();
+
  Float_t signal=0;
- for (Int_t i=0; i<fNrows; i++)
+ AliCalmodule* m=0;
+ for (Int_t j=0; j<nsig; j++)
  {
-  for (Int_t j=0; j<fNcolumns; j++)
+  m=(AliCalmodule*)fModules->At(j);
+  if (m)
   {
-   signal=fMatrix[i][j].GetSignal();
-   fMatrix[i][j].SetClusteredSignal(signal);
+   signal=m->GetSignal();
+   m->SetClusteredSignal(signal);
   }
  }
 }

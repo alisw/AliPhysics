@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/11/03 14:23:17  fca
+New version of RALICE introduced
+
 Revision 1.2  1999/09/29 09:24:28  fca
 Introduction of the Copyright and cvs Log
 
@@ -30,7 +33,7 @@ Introduction of the Copyright and cvs Log
 // to enable EM or hadronic cluster identification.
 //
 //--- Author: Nick van Eijndhoven 13-jun-1997 UU-SAP Utrecht
-//- Modified: NvE 31-oct-1999 UU-SAP Utrecht 
+//- Modified: NvE 18-jan-2000 UU-SAP Utrecht 
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCalcluster.h"
@@ -66,17 +69,21 @@ AliCalcluster::~AliCalcluster()
 AliCalcluster::AliCalcluster(AliCalmodule& m)
 {
 // Cluster constructor with module m as center.
-// Module data is only entered for a module which contains
-// a signal and has not been used in a cluster yet.
-// Modules situated at a detector edge are not allowed to start a cluster.
+// Module data is only entered for a module which contains a signal,
+// has not been used in a cluster yet, and is not declared dead.
+//
+// Note :
+// It is advised NOT to start a cluster with modules situated at a detector edge.
+// This feature is automatically checked when using the built-in clustering
+// of AliCalorimeter.  
 
- Float_t pos[3]={0,0,0};
+ Ali3Vector r;
 
- if ((m.GetClusteredSignal() > 0.) && (m.GetEdgeValue() == 0))
+ if (m.GetClusteredSignal()>0. && m.GetDeadValue()==0)
  {
   fCenter=&m;
-  m.GetPosition(pos,"sph");
-  SetPosition(pos,"sph");
+  r=m.GetPosition();
+  SetPosition(r);
   fSig=m.GetClusteredSignal();
   fNmods=1;
   fSig11=m.GetClusteredSignal();
@@ -91,7 +98,7 @@ AliCalcluster::AliCalcluster(AliCalmodule& m)
  else
  {
   fCenter=0;
-  SetPosition(pos,"sph");
+  SetPosition(r);
   fSig=0.;
   fNmods=0;
   fSig11=0.;
@@ -191,17 +198,21 @@ Float_t AliCalcluster::GetColumnDispersion()
 void AliCalcluster::Start(AliCalmodule& m)
 {
 // Reset cluster data and start with module m.
-// A module can only start a cluster when it contains
-// a signal, has not been used in a cluster yet, is not
-// situated at a detector edge and is not declared dead.
+// A module can only start a cluster when it contains a signal,
+// has not been used in a cluster yet, and is not declared dead.
+//
+// Note :
+// It is advised NOT to start a cluster with modules situated at a detector edge.
+// This feature is automatically checked when using the built-in clustering
+// of AliCalorimeter.  
 
- Float_t pos[3]={0,0,0};
+ Ali3Vector r;
 
- if (m.GetClusteredSignal()>0. && m.GetEdgeValue()==0 && m.GetDeadValue()==0)
+ if (m.GetClusteredSignal()>0. && m.GetDeadValue()==0)
  {
   fCenter=&m;
-  m.GetPosition(pos,"sph");
-  SetPosition(pos,"sph");
+  r=m.GetPosition();
+  SetPosition(r);
   fSig=m.GetSignal();
   fNmods=1;
   fSig11=m.GetSignal();
@@ -214,7 +225,7 @@ void AliCalcluster::Start(AliCalmodule& m)
  else
  {
   fCenter=0;
-  SetPosition(pos,"sph");
+  SetPosition(r);
   fSig=0.;
   fNmods=0;
   fSig11=0.;
@@ -227,11 +238,12 @@ void AliCalcluster::Start(AliCalmodule& m)
 ///////////////////////////////////////////////////////////////////////////
 void AliCalcluster::Add(AliCalmodule& m)
 {
-// Add module data to the cluster
+// Add module data to the cluster.
+// Dead modules are NOT added to the cluster.
 
  Float_t signal=m.GetClusteredSignal();
  
- if (signal > 0.) // only add unused modules
+ if (signal>0. && m.GetDeadValue()==0) // only add unused modules
  {
   fSig+=signal;
   fNmods+=1;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/11/03 14:23:17  fca
+New version of RALICE introduced
+
 Revision 1.2  1999/09/29 09:24:28  fca
 Introduction of the Copyright and cvs Log
 
@@ -28,7 +31,7 @@ Introduction of the Copyright and cvs Log
 // Note : row and col start counting at 1.
 //
 //--- Author: Nick van Eijndhoven 13-jun-1997 UU-SAP Utrecht
-//- Modified: NvE 31-oct-1999 UU-SAP Utrecht
+//- Modified: NvE 18-jan-2000 UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCalmodule.h"
@@ -41,7 +44,6 @@ AliCalmodule::AliCalmodule()
  fRow=0;
  fCol=0;
  fSigc=0;
- fEdge=0;
  fDead=0;
  fGain=1;
 }
@@ -58,7 +60,6 @@ AliCalmodule::AliCalmodule(Int_t row,Int_t col,Float_t sig)
  fCol=col;
  AliSignal::SetSignal(sig);
  fSigc=sig;
- fEdge=0;
  fDead=0;
  fGain=1;
 }
@@ -97,32 +98,6 @@ void AliCalmodule::SetClusteredSignal(Float_t sig)
 {
 // Set or change the signal of the module after clustering
  fSigc=sig;
-}
-///////////////////////////////////////////////////////////////////////////
-void AliCalmodule::SetEdgeOn()
-{
-// Indicate the module as edge module
- fEdge=1;
-}
-///////////////////////////////////////////////////////////////////////////
-void AliCalmodule::SetEdgeOff()
-{
-// Indicate the module as non-edge module
- fEdge=0;
-}
-///////////////////////////////////////////////////////////////////////////
-void AliCalmodule::EdgeUp()
-{
-// Increase the edge value by 1
-// This simplifies treatment of edge modules around temp. dead modules
- fEdge+=1;
-}
-///////////////////////////////////////////////////////////////////////////
-void AliCalmodule::EdgeDown()
-{
-// Decrease the edge value by 1
-// This simplifies treatment of edge modules around temp. dead modules
- if (fEdge > 0) fEdge-=1;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliCalmodule::SetDead()
@@ -166,12 +141,6 @@ Float_t AliCalmodule::GetClusteredSignal()
  {
   return 0;
  }
-}
-///////////////////////////////////////////////////////////////////////////
-Int_t AliCalmodule::GetEdgeValue()
-{
-// Provide the value of the edge indicator (1=edge 0=no-edge)
- return fEdge;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliCalmodule::GetDeadValue()

@@ -221,3 +221,12 @@
                 AliCalcluster::Start updated accordingly.
                 New memberfunctions GetVetoLevel() and HasVetoHit() introduced 
                 for AliCalcluster. 
+18-jan-2000 NvE AliCalorimeter updated to remove memory leak and to enable event mixing.
+                Module and position pointers and various attributes (like edge values etc...)
+                are now saved in separate matrices for the complete calorimeter. 
+                AliCalmodule and AliCalcluster updated accordingly and also cleaned up
+                a little to remove unneeded datamembers. 
+03-mar-2000 NvE AliCalorimeter::SetSignal() updated to provide position for new modules
+                and AliCalorimeter::AddSignal() updated to invoke AliCalorimeter::SetSignal()
+                in case of new modules instead of having duplicate code.
+                (Thanks to Eugene van der Pijll).
