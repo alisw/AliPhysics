@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/01/18 13:21:30  morsch
+Take pi from TMath.
+
 Revision 1.9  2001/01/17 20:02:20  morsch
 In the AliMagFDM tree  call-by-reference functions were changed to
 call-by-value, what is more adequate for our task. There were added
@@ -282,7 +285,6 @@ if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2]
    b[2]=bint[2]; 
 
    } 
- printf("x %f, y %f, z %f:: bx %f, by %f, bz %f\n",xfi[0],xfi[1],xfi[2],b[0],b[1],b[2]); 
 
 
   } else {
