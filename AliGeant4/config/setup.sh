@@ -323,16 +323,8 @@ fi
 # ==================================
 #
 
-if [ -d $LHCXX_BASE/CLHEP/new ]; then
-  export CLHEP_BASE_DIR=$LHCXX_BASE/CLHEP/new
-  if [ "$SYSTEM" = "OSF1" ]; then
-    # temporarily needed 
-    export CLHEP_BASE_DIR=$LHCXX_BASE/CLHEP/1.5.0.0
-  fi
-  if [ "$SYSTEM" = "SunOS" ]; then
-    # temporarily needed 
-    export CLHEP_BASE_DIR=$LHCXX_BASE/CLHEP/1.5.0.0
-  fi
+if [ -d $LHCXX_BASE/CLHEP/1.5.0.0 ]; then
+  export CLHEP_BASE_DIR=$LHCXX_BASE/CLHEP/1.5.0.0
 else
   echo "WARNING: CLHEP has not been found in the default path."
   if [ "$VERBOSE" = "YES" ]; then
