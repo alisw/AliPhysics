@@ -29,6 +29,7 @@
 #include <TNode.h> 
 #include <TCint.h> 
 #include <TSystem.h>
+#include <TObjectTable.h>
 
 #include "TParticle.h"
 #include "AliRun.h"
@@ -367,6 +368,8 @@ void AliRun::FinishPrimary()
   // Called  at the end of each primary track
   //
   
+  static Int_t count=0;
+  const Int_t times=10;
   // This primary is finished, purify stack
   gAlice->PurifyKine();
 
@@ -377,6 +380,9 @@ void AliRun::FinishPrimary()
   
   // Reset Hits info
   gAlice->ResetHits();
+
+  //
+  //  if(++count%times==1) gObjectTable->Print();
 }
 
 //_____________________________________________________________________________
@@ -703,7 +709,7 @@ void AliRun::GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
   //
   // Return next track from stack of particles
   //
-  const TVector3 *pol;
+  TVector3 pol;
   fCurrent=-1;
   TParticle *track;
   for(Int_t i=fNtrack-1; i>=0; i--) {
@@ -720,10 +726,10 @@ void AliRun::GetNextTrack(Int_t &mtrack, Int_t &ipart, Float_t *pmom,
       vpos[0]=track->Vx();
       vpos[1]=track->Vy();
       vpos[2]=track->Vz();
-      pol = track->GetPolarisation();
-      polar[0]=pol->X();
-      polar[1]=pol->Y();
-      polar[2]=pol->Z();
+      track->GetPolarisation(pol);
+      polar[0]=pol.X();
+      polar[1]=pol.Y();
+      polar[2]=pol.Z();
       tof=track->T();
       track->SetBit(Done_Bit);
       break;
