@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.16  2002/06/19 21:12:37  nilsen
+Fixed bug with non-zero-ed new data members in constructors. Thanks Jiri
+for finding it and pointing it out.
+
 Revision 1.15  2002/06/12 18:59:47  nilsen
 Added Starting track location to hit class and related changes to modules.
 This is at present still fully backwards compatible since starting hits
@@ -304,6 +308,7 @@ AliITShit::AliITShit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,
     fx0         = x0.X();  // Track X global position
     fy0         = x0.Y();  // Track Y global position
     fz0         = x0.Z();  // Track Z global position
+    ft0         = x0.T();     // Starting point of this step
 }
 //______________________________________________________________________
 AliITShit::AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
