@@ -71,6 +71,7 @@
 #ifndef __IOSTREAM__
 # include <iostream>
 #endif
+#include <math.h>
 
 const Char_t* AliFMDRing::fgkRingFormat         = "FRG%c";
 const Char_t* AliFMDRing::fgkVirtualFormat      = "FV%c%c";

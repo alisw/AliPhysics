@@ -9,12 +9,7 @@
 #ifndef ALIFMDPARTICLES_H
 # include "AliFMDParticles.h"
 #endif
-#ifndef __IOSTREAM__
-# include <iostream>
-#endif
-#ifndef __IOMANIP__
-# include <iomanip>
-#endif
+# include <Riostream.h>
 
 //____________________________________________________________________
 ClassImp(AliFMDParticles)
@@ -71,18 +66,18 @@ AliFMDParticles::AliFMDParticles(UShort_t detector,  Char_t ring,
 void
 AliFMDParticles::Print(Option_t* /* opt*/) const
 {
-  std::cout << "FMD Reconstructed particles: " << fParticles << "\n" 
-	    << "  Detector:      FMD" << fDetector << fRing << "\n"
-	    << "  Sector range:  [" << fMinSector << "," << fMaxSector << "\n"
-	    << "  Strip range:   [" << fMinStrip << "," << fMaxStrip << "\n"
-	    << "  Eta range:     [" << fMinEta << "," << fMaxEta << "\n"
-	    << "  Phi range:     [" << fMinPhi << "," << fMaxPhi << "\n"
-	    << "  Method:        " << std::flush;
+  cout << "FMD Reconstructed particles: " << fParticles << "\n" 
+       << "  Detector:      FMD" << fDetector << fRing << "\n"
+       << "  Sector range:  [" << fMinSector << "," << fMaxSector << "\n"
+       << "  Strip range:   [" << fMinStrip << "," << fMaxStrip << "\n"
+       << "  Eta range:     [" << fMinEta << "," << fMaxEta << "\n"
+       << "  Phi range:     [" << fMinPhi << "," << fMaxPhi << "\n"
+       << "  Method:        " << flush;
   switch (fMethod) {
-  case kPoission:  std::cout << "Poission"  << std::endl; break;
-  case kIterative: std::cout << "Iterative" << std::endl; break;
-  case kNaive:     std::cout << "Naive"     << std::endl; break; 
-  default:         std::cout << "Unknown"   << std::endl; break;
+  case kPoission:  cout << "Poission"  << endl; break;
+  case kIterative: cout << "Iterative" << endl; break;
+  case kNaive:     cout << "Naive"     << endl; break; 
+  default:         cout << "Unknown"   << endl; break;
   }
 }
 

@@ -62,12 +62,7 @@
 #ifndef ALIFMDDIGIT_H
 # include "AliFMDDigit.h"
 #endif
-#ifndef __IOSTREAM__
-# include <iostream>
-#endif
-#ifndef __IOMANIP__
-# include <iomanip>
-#endif
+# include <Riostream.h>
 
 //====================================================================
 ClassImp(AliFMDBaseDigit);
@@ -106,10 +101,10 @@ void
 AliFMDBaseDigit::Print(Option_t* /* option*/) const 
 {
   // Print digit to standard out 
-  std::cout << ClassName() << ": FMD" << fDetector << fRing << "[" 
-	    << std::setw(3) << fSector << ","
-	    << std::setw(3) << fStrip << "]" 
-	    << std::endl;
+  cout << ClassName() << ": FMD" << fDetector << fRing << "[" 
+	    << setw(3) << fSector << ","
+	    << setw(3) << fStrip << "]" 
+	    << endl;
 }
 
 //====================================================================
@@ -155,9 +150,9 @@ AliFMDDigit::Print(Option_t* /* option*/) const
 {
   // Print digit to standard out 
   AliFMDBaseDigit::Print();
-  std::cout << "\t" 
-	    << fCount1 << " (+ " << fCount2 << " + " << fCount2 << ") = " 
-	    << Counts() << std::endl;
+  cout << "\t" 
+       << fCount1 << " (+ " << fCount2 << " + " << fCount2 << ") = " 
+       << Counts() << endl;
 }
 
 //====================================================================
@@ -207,9 +202,9 @@ AliFMDSDigit::Print(Option_t* /* option*/) const
 {
   // Print digit to standard out 
   AliFMDBaseDigit::Print();
-  std::cout << "\t" << fEdep << " -> "
-	    << fCount1 << " (+ " << fCount2 << " + " << fCount2 << ") = " 
-	    << Counts() << std::endl;
+  cout << "\t" << fEdep << " -> "
+       << fCount1 << " (+ " << fCount2 << " + " << fCount2 << ") = " 
+       << Counts() << endl;
 }
 
 //____________________________________________________________________

@@ -28,12 +28,7 @@
 #ifndef ALILOG_H
 # include "AliLog.h"
 #endif
-#ifndef __IOSTREAM__
-# include <iostream>
-#endif
-#ifndef __IOMANIP__
-# include <iomanip>
-#endif
+# include <Riostream.h>
 
 //____________________________________________________________________
 ClassImp(AliFMDHit);
@@ -114,11 +109,11 @@ void
 AliFMDHit::Print(Option_t* /* option */) const 
 {
   // Print Hit to standard out 
-  std::cout << "AliFMDHit: FMD" 
-	    << fDetector << fRing << "[" 
-	    << std::setw(3) << fSector << ","
-	    << std::setw(3) << fStrip << "] = " 
-	    << fEdep << std::endl;
+  cout << "AliFMDHit: FMD" 
+       << fDetector << fRing << "[" 
+       << setw(3) << fSector << ","
+       << setw(3) << fStrip << "] = " 
+       << fEdep << endl;
 }
 
 //____________________________________________________________________

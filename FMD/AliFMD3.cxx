@@ -42,7 +42,7 @@
 #ifndef ALIFMDRING_H
 # include "AliFMDRing.h"
 #endif 
-#include <iostream>
+#include <Riostream.h>
 
 //____________________________________________________________________
 ClassImp(AliFMD3);
@@ -165,7 +165,7 @@ AliFMD3::SimpleGeometry(TList* nodes,
 		   / (fOuterZ - fInnerZ));
   Double_t bo   = 0;
   if (ao2 > ao1) {
-    std::cout << "Wafer determinds the size" << std::endl;
+    cout << "Wafer determinds the size" << endl;
     ao  = ao2;
     bo  = fInner->GetHighR() - ao * fInnerZ;
   }

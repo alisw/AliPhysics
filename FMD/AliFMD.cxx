@@ -163,6 +163,7 @@
 #ifndef ALIALTROBUFFER_H
 # include "AliAltroBuffer.h"
 #endif
+#include <Riostream.h>
 
 //____________________________________________________________________
 ClassImp(AliFMD);
@@ -547,15 +548,15 @@ AliFMD::Init()
   Int_t i;
   //
   if (fDebug) {
-    std::cout << "\n" << ClassName() << ": " << std::flush;
-    for (i = 0; i < 35; i++) std::cout << "*";
-    std::cout << " FMD_INIT ";
-    for (i = 0; i < 35; i++) std::cout << "*";
-    std::cout << "\n" << ClassName() << ": " << std::flush;
+    cout << "\n" << ClassName() << ": " << flush;
+    for (i = 0; i < 35; i++) cout << "*";
+    cout << " FMD_INIT ";
+    for (i = 0; i < 35; i++) cout << "*";
+    cout << "\n" << ClassName() << ": " << flush;
     //
     // Here the FMD initialisation code (if any!)
-    for (i = 0; i < 80; i++) std::cout << "*";
-    std::cout << std::endl;
+    for (i = 0; i < 80; i++) cout << "*";
+    cout << endl;
   }
   //
   //
