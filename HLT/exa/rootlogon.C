@@ -18,7 +18,7 @@
       }
       cout<<"TPC libraries loaded"<<endl;
     }
-  if(1)
+  if(0)
     {
       if(getenv("MLUCDIR")) {
         gSystem->Load("$(MLUCDIR/lib/linux-i386/libMLUC");
