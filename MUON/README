@@ -263,12 +263,14 @@ MuonSim.Run(XXX)
 .q
 EOF
 
-aliroot -b << EOF
-AliReconstruction MuonRec("galice.root")
+aliroot -b << EOF 
+TPluginManager* pluginManager = gROOT->GetPluginManager();
+pluginManager->AddHandler("AliReconstructor", "MUON","AliMUONReconstructor", "MUON","AliMUONReconstructor()")
+AliReconstruction MuonRec("galice.root") 
 MuonRec.SetRunVertexFinder(kFALSE)
 MuonRec.SetRunLocalReconstruction("MUON")
 MuonRec.SetFillESD("MUON")
-MuonRec.Run()
+MuonRec.Run() 
 .q
 EOF
 
