@@ -88,15 +88,31 @@ void AliABSO::CreateMaterials()
   //
   Int_t   isxfld = gAlice->Field()->Integ();
   Float_t sxmgmx = gAlice->Field()->Max();
-  
+//
+// Air
+//
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+
+//
+// Polyethylene
+//
   Float_t apoly[2]  = { 12.01,1. };
   Float_t zpoly[2]  = { 6.,1. };
   Float_t wpoly[2]  = { .33,.67 };
+//
+// Concrete
+//
   Float_t aconc[10] = { 1.,12.01,15.994,22.99,24.305,26.98,
 			28.086,39.1,40.08,55.85 };
   Float_t zconc[10] = { 1.,6.,8.,11.,12.,13.,14.,19.,20.,26. };
   Float_t wconc[10] = { .01,.001,.529107,.016,.002,.033872,
 			.337021,.013,.044,.014 };
+//
+// Steel
+//  
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
   Float_t zsteel[4] = { 26.,24.,28.,14. };
   Float_t wsteel[4] = { .715,.18,.1,.005 };
@@ -162,9 +178,9 @@ void AliABSO::CreateMaterials()
   AliMaterial(53, "LEAD$     ", 207.19, 82., 11.35, .56, 18.5);
   //
   //     Air 
-  AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  AliMaterial(35, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  AliMaterial(55, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(35, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(55, "AIR$      ", aAir, zAir, dAir, 4, wAir);
   //
   //     Vacuum 
   AliMaterial(16, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);

@@ -290,16 +290,24 @@ void AliHALL::CreateMaterials()
   Float_t zconc[10] = { 1.,6.,8.,11.,12.,13.,14.,19.,20.,26. };
   Float_t wconc[10] = { .01,.001,.529107,.016,.002,.033872,.337021,.013,.044,.014 };
   
+
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+
   Float_t epsil, stmin, deemax, tmaxfd, stemax;
 
   //     FOR CONCRETE 
   
   AliMaterial(10, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
   AliMaterial(30, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(50, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
-  AliMaterial(35, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
-  AliMaterial(55, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
+  AliMaterial(50, "IRON$     ", 55.85, 26., 7.87, 1.76, 17.1); 
+
+  AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(35, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(55, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+
   AliMixture(17, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
   AliMixture(37, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
   AliMixture(57, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);

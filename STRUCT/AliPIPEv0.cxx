@@ -722,7 +722,14 @@ void AliPIPEv0::CreateMaterials()
   Float_t aPA[4] = {16., 14., 12.,  1.};
   Float_t zPA[4] = { 8.,  7.,  6.,  1.};
   Float_t wPA[4] = { 1.,  1.,  6., 11.};
-  
+  //
+  // Air 
+  //
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+
   //
   //     Berillium 
   AliMaterial(5, "BERILLIUM$", 9.01, 4., 1.848, 35.3, 36.7);
@@ -734,7 +741,7 @@ void AliPIPEv0::CreateMaterials()
   AliMaterial(9,  "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
   //
   //     Air 
-  AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
   //
   //     Vacuum 
   AliMaterial(16, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);

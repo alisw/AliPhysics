@@ -96,7 +96,15 @@ void AliSHIL::CreateMaterials()
   Float_t ains[4] ={28.0855, 15.9994, 47.867,  26.982};
   Float_t zins[4] ={14.,      8.    , 22.   ,  13.   };
   Float_t wins[4] ={ 0.3019,  0.4887,  0.1914,  0.018};
+//
+// Air
+//
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
 
+  
   Float_t epsil, stmin, tmaxfd, deemax, stemax;
   
   //     STEEL 
@@ -133,10 +141,10 @@ void AliSHIL::CreateMaterials()
   AliMaterial(53, "LEAD$     ", 207.19, 82., 11.35, .56, 18.5);
   
   //     Air 
-  AliMaterial(15, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
-  AliMaterial(35, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
-  AliMaterial(55, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500);
-  
+  AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(35, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(55, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  //
   //     Vacuum 
   AliMaterial(16, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
   AliMaterial(36, "VACUUM$ ", 1e-16, 1e-16, 1e-16, 1e16, 1e16);

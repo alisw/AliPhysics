@@ -232,8 +232,16 @@ void AliMAG::CreateMaterials()
   Float_t sxmgmx = gAlice->Field()->Max();
   
   Float_t epsil, stmin, deemax, tmaxfd, stemax;
+
+
   // --- Define the various materials for GEANT --- 
   
+  Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
+  Float_t zAir[4]={6.,7.,8.,18.};
+  Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
+  Float_t dAir = 1.20479E-3;
+
+
   //     Aluminum 
   AliMaterial(9, "Al$", 26.98, 13., 2.7, 8.9, 37.2);
   AliMaterial(29, "Al$", 26.98, 13., 2.7, 8.9, 37.2);
@@ -243,8 +251,8 @@ void AliMAG::CreateMaterials()
   AliMaterial(30, "Fe$", 55.85, 26., 7.87, 1.76, 17.1);
   
   //     Air 
-  AliMaterial(15, "Air$", 14.61, 7.3, .001205, 30420., 67500);
-  AliMaterial(35, "Air$", 14.61, 7.3, .001205, 30420., 67500);
+  AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(35, "AIR$      ", aAir, zAir, dAir, 4, wAir);
   
   // **************** 
   //     Defines tracking media parameters. 
