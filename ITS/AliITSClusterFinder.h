@@ -24,40 +24,43 @@ class AliITSRecPoint;
 //----------------------------------------------------------------------
 class AliITSClusterFinder :public TObject{
  public:
-    AliITSClusterFinder();
+    AliITSClusterFinder(); // Default constructor
     AliITSClusterFinder(AliITSsegmentation *seg, AliITSresponse *resp,
-			TClonesArray *digits);
-    virtual ~AliITSClusterFinder();
+			TClonesArray *digits);// Standard Constructor
+    virtual ~AliITSClusterFinder(); // Destructor
     AliITSClusterFinder(const AliITSClusterFinder &source); // copy constructor
     // assignment operator
     AliITSClusterFinder& operator=(const AliITSClusterFinder &source);
-    virtual void SetResponse(AliITSresponse *response) {
-	// set response
-	fResponse=response;
-    }
+    virtual void SetResponse(AliITSresponse *response) {// set response
+	fResponse=response;}
     virtual void SetSegmentation(AliITSsegmentation *segmentation) {
 	// set segmentation
-	fSegmentation=segmentation;
-    }
-    virtual void SetDigits(TClonesArray *ITSdigits) {
-	// set digits
-	fDigits=ITSdigits;
-	fNdigits = fDigits->GetEntriesFast();
-    }
-    virtual AliITSdigit* GetDigit(Int_t i){
-	return (AliITSdigit*) fDigits->UncheckedAt(i);
-    }
-    virtual TClonesArray* Digits(){
-	return fDigits;
-    }
-    virtual Int_t   NDigits() const {
-	// Get Number of Digits
-	return fNdigits;
-    }
-    AliITSMap   *Map() {
-	// map
-	return fMap;
-    }
+	fSegmentation=segmentation;}
+    virtual void SetDigits(TClonesArray *ITSdigits) {// set digits
+	fDigits=ITSdigits;fNdigits = fDigits->GetEntriesFast();}
+    virtual AliITSdigit* GetDigit(Int_t i){ // Returns ith digit
+	return (AliITSdigit*) fDigits->UncheckedAt(i);}
+    virtual TClonesArray* Digits(){ // Gets fDigits
+	return fDigits;}
+    virtual Int_t   NDigits() const {// Get Number of Digits
+	return fNdigits;}
+    // Standard Getters.
+    virtual AliITSresponse * GetResp(){// Returns fResponse
+	return fResponse;}
+    virtual AliITSsegmentation * GetSeg(){// Returns fSegmentation
+	return fSegmentation;}
+    virtual Int_t GetNRawClusters(){ // returns fNRawClusters
+	return fNRawClusters;}
+    AliITSMap   *Map() {// map
+	return fMap;}
+    virtual Int_t GetNperMax(){ // returns fNperMax
+	return fNperMax;}
+    virtual Int_t GetDeclusterFlag(){ // returns fDeclusterFlag
+	return fDeclusterFlag;}
+    virtual Int_t GetClusterSize(){ // returns fClusterSize
+	return fClusterSize;}
+    virtual Int_t GetNPeaks(){ // returns fNPeaks
+	return fNPeaks;}
     //
     virtual void AddCluster(Int_t branch, AliITSRawCluster *c);
     virtual void AddCluster(Int_t branch, AliITSRawCluster *c,
