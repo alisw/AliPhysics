@@ -131,6 +131,7 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
  //reads data and puts put to the particles and tracks objects
  //reurns 0 if everything is OK
  //
+  cout<<"AliHBTReaderTPC::Read()"<<endl;
   Int_t i; //iterator and some temprary values
   Int_t Nevents = 0;
   Int_t totalNevents = 0;
@@ -154,6 +155,17 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
                       //when array is is deleted or cleared all objects 
                       //that it contains are deleted
   Int_t currentdir = 0;
+
+  Int_t Ndirs;
+  if (fDirs) //if array with directories is supplied by user
+   {
+     Ndirs = fDirs->GetEntries(); //get the number if directories
+   }
+  else
+   {
+     Ndirs = 0; //if the array is not supplied read only from current directory
+   }
+
   do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
    {
     
@@ -316,7 +328,7 @@ Int_t AliHBTReaderTPC::Read(AliHBTRun* particles, AliHBTRun *tracks)
     //clean your place after the work
     CloseFiles(aTracksFile,aClustersFile,aGAliceFile); 
     currentdir++;
-   }while(currentdir < fDirs->GetEntries());
+   }while(currentdir < Ndirs);
 
 
   delete tarray;
