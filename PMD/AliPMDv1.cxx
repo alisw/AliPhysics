@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.18  2002/11/21 22:57:02  alibrary
+Removing AliMC and AliMCProcess
+
 Revision 1.17  2002/10/23 07:36:35  alibrary
 Introducing Riostream.h
 
@@ -219,7 +222,7 @@ void AliPMDv1::CreateSupermodule()
 
   // --- place  inner hex inside outer hex 
 
-  gMC->Gsposp("ECAR", 1, "ECCU", 0., 0., 0., 0, "ONLY", hexd2, 10);
+  gMC->Gspos("ECAR", 1, "ECCU", 0., 0., 0., 0, "ONLY");
 
 // Rhombus shaped supermodules (defined by PARA) 
 
@@ -273,7 +276,7 @@ void AliPMDv1::CreateSupermodule()
     }
     for (i = 1; i <= ncell_sm; ++i) {
       number = i+(j-1)*ncell_sm;
-      gMC->Gsposp("ECCU", number, "EHC1", xb,yb,zb, ihrotm, "ONLY", hexd1,10);
+      gMC->Gspos("ECCU", number, "EHC1", xb,yb,zb, ihrotm, "ONLY");
       xb += (hexd1[6]*2.);
     }
     xrow = xrow+1;
@@ -350,7 +353,7 @@ void AliPMDv1::CreateSupermodule()
     }
     for (i = 1; i <= ncell_sm; ++i) {
       number = i+(j-1)*ncell_sm;
-	  gMC->Gsposp("ECCU", number, "EHC2", xb,yb,zb, ihrotm, "ONLY", hexd1,10);
+	  gMC->Gspos("ECCU", number, "EHC2", xb,yb,zb, ihrotm, "ONLY");
       xb += (hexd1[6]*2.);
     }
     xrow = xrow+1;
@@ -427,7 +430,7 @@ void AliPMDv1::CreateSupermodule()
     }
     for (i = 1; i <= (ncell_sm - ncell_hole); ++i) {
       number = i+(j-1)*(ncell_sm - ncell_hole);
-	  gMC->Gsposp("ECCU", number, "EHC3", xb,yb,zb, ihrotm, "ONLY", hexd1,10);
+      gMC->Gspos("ECCU", number, "EHC3", xb,yb,zb, ihrotm, "ONLY");
       xb += (hexd1[6]*2.);
     }
     xrow = xrow+1;
@@ -719,16 +722,16 @@ void AliPMDv1::CreatePMD()
   num_mod=0;
   for (j=0; j<3; ++j)
     {
-      gMC->Gsposp("EALM", j+1, "EPMD", xalm[j],yalm[j], 0., irotate[j], "ONLY", Al_rod, 3);
+      gMC->Gspos("EALM", j+1, "EPMD", xalm[j],yalm[j], 0., irotate[j], "ONLY");
       x2=xemm2*TMath::Cos(theta[j]) - yemm2*TMath::Sin(theta[j]);
       y2=xemm2*TMath::Sin(theta[j]) + yemm2*TMath::Cos(theta[j]);
 
-      gMC->Gsposp("EMM2", j+1, "EPMD", x2,y2, 0., irotate[j], "ONLY", dpara_emm2, 6);
+      gMC->Gspos("EMM2", j+1, "EPMD", x2,y2, 0., irotate[j], "ONLY");
 
       x3=xemm3*TMath::Cos(theta[j]) - yemm3*TMath::Sin(theta[j]);
       y3=xemm3*TMath::Sin(theta[j]) + yemm3*TMath::Cos(theta[j]);
 
-      gMC->Gsposp("EMM3", j+4, "EPMD", x3,y3, 0., irotate[j], "ONLY", dpara_emm3, 6);
+      gMC->Gspos("EMM3", j+4, "EPMD", x3,y3, 0., irotate[j], "ONLY");
 
       for (i=1; i<9; ++i)
 	{
@@ -743,7 +746,7 @@ void AliPMDv1::CreatePMD()
 	  if(fDebug) 
 	      printf("\n%s: Num_mod %d\n",ClassName(),num_mod);
 
-	  gMC->Gsposp("EMM1", num_mod + 6, "EPMD", xpos[i],ypos[i], 0., irotate[j], "ONLY", dpara_emm1, 6);
+	  gMC->Gspos("EMM1", num_mod + 6, "EPMD", xpos[i],ypos[i], 0., irotate[j], "ONLY");
 
 	}
     }
@@ -1042,6 +1045,7 @@ void AliPMDv1::GetParameters()
   //
   zdist1 = -365.;
 }
+
 
 
 
