@@ -92,7 +92,7 @@
 
   const Float_t kR41=35.;
   const Float_t kR42=49.9;
-  const Float_t kR43=40.;
+  const Float_t kR43=110.;
 
 //
 // Vacuum System

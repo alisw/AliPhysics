@@ -1372,23 +1372,18 @@ enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 // Magnet element 
 //
   tpar[0]=0.;
-  tpar[1]=kR43;
-  tpar[2]=60.;
+  tpar[1]=40.;
+  tpar[2]=85.;
   gMC->Gsvolu("YAEM", "TUBE", idtmed[kAir], tpar, 3);
-  tpar[0]=kRAbs;
-  tpar[1]=kR43;
-  tpar[2]=60.;
+  tpar[0]=17.6/2.;
+  tpar[1]=40.;
+  tpar[2]=85.;
   gMC->Gsvolu("YFEM", "TUBE", idtmed[kFe], tpar, 3);
   gMC->Gspos("YFEM", 1, "YAEM", 0., 0., 0., 0, "ONLY"); 
 
 //
-
-  if (gAlice->GetModule("HALL")) {
-      gMC->Gspos("YAEM", 1, "HUP2", 0., 0., 0., 0, "ONLY");
-  } else {
-      dz=kZvac12+60.;
-      gMC->Gspos("YAEM", 1, "ALIC", 0., 0., dz, 0, "ONLY"); 
-  }
+  dz=1921.6 + tpar[2];
+  gMC->Gspos("YAEM", 1, "ALIC", 0., 0.,  dz, 0, "ONLY"); 
   
 // 
 //

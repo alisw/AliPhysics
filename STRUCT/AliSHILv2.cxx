@@ -1445,7 +1445,7 @@ void AliSHILv2::CreateGeometry()
   tpar[1]= 40.;
   tpar[2]=85.;
   gMC->Gsvolu("YAEM", "TUBE", idtmed[kAir], tpar, 3);
-  tpar[0]=6.3/2.;
+  tpar[0]=17.6/2.;
   tpar[1]=40.;
   tpar[2]=85.;
   gMC->Gsvolu("YFEM", "TUBE", idtmed[kFe], tpar, 3);
