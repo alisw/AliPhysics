@@ -2,15 +2,13 @@
 // Category: geometry
 //
 // Geant4 implementation of the MonteCarlo interface methods                    
-// for building Geant4 geometry and access to it
+// for building Geant4 geometry and access to it.
 
 #ifndef TG4_GEOMETRY_MANAGER_H
 #define TG4_GEOMETRY_MANAGER_H
 
 #include "TG4NameMap.h"
 #include "TG4Globals.h"
-#include "TG4G3Cut.h"
-#include "TG4G3Control.h"
 
 #include <globals.hh>
 #include <G3SensVolVector.hh>
@@ -109,12 +107,6 @@ class TG4GeometryManager
     void WriteEuclid(const char* fileName, const char* topVolName, 
                          Int_t number, Int_t nlevel); //new
 		               
-    // get methods
-    Int_t VolId(const Text_t* volName) const;                
-    const char* VolName(Int_t id) const;
-    Int_t NofVolumes() const; 
-    Int_t VolId2Mate(Int_t volumeId) const;
-    
     // end of methods
     // 
 
@@ -134,9 +126,6 @@ class TG4GeometryManager
     // set methods
     void SetWriteGeometry(G4bool writeGeometry);
     void SetMapSecond(const G4String& name);
-
-    // get methods 
-    G3SensVolVector GetG3SensVolVector() const;
      
   protected:
     TG4GeometryManager(const TG4GeometryManager& right);
@@ -146,8 +135,6 @@ class TG4GeometryManager
 
   private:
     // methods
-    void GstparCut(G4int itmed, TG4G3Cut par, G4double parval);
-    void GstparControl(G4int itmed, TG4G3Control control, G4double parval);
     void SetUserLimits();
         
     // static data members
@@ -170,9 +157,6 @@ class TG4GeometryManager
 // inline methods
 inline TG4GeometryManager* TG4GeometryManager::Instance()
 { return fgInstance; }
-
-inline G3SensVolVector TG4GeometryManager::GetG3SensVolVector() const
-{ return G3SensVol; }
 
 #endif //TG4_GEOMETRY_MANAGER_H
 
