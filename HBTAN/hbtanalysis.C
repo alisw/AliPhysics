@@ -35,7 +35,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   gROOT->LoadMacro("loadlibs.C");
   loadlibs();
   
-  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libHBTAnalysis");
+  gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libHBTAN");
   
 
   /***********************************************************/
@@ -78,6 +78,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
      dirs = new TObjArray(last-first+1);
      for (Int_t i = first; i<=last; i++)
       {
+	if(i == 24) continue;
         sprintf(buff,"%s/%s/%s/%d",basedir,field,serie,i);
         TObjString *odir= new TObjString(buff);
         dirs->Add(odir);
