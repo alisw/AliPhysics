@@ -11,35 +11,22 @@
 #ifndef AliDISPLAY2_H
 #define AliDISPLAY2_H
 
+#include <TObject.h>
 #include <RQ_OBJECT.h>
-#include <TGFrame.h>
-#include <TGDoubleSlider.h>
-#include <TRootEmbeddedCanvas.h>
 #include <TGStatusBar.h>
-#include <TGToolBar.h>
-#include <TGDimension.h>
-#include <TVirtualPad.h>
 
-class TGButton;
-class TGMenu;
-class TGMenuBar;
-class TGPopupMenu;
-class TGPopupMenu;
-class TGPopupMenu;
-class TGTab;
-class TGLayoutHints;
+#include "AliDisplayFrame.h"
+#include "AliSliderFrame.h"
+
 class TObjArray;
-class TPolyMarker3D;
-class TGNumberEntry;
-class TGNumberEntryField;
-class TGCheckButton;
-class TGTextButton;
-class TGShutter;
-class TGShutterItem;
 class TGWindow;
 class TEnv;
-class TGLabel;
-class TCanvas;
+
+class AliModuleInfo;
+class AliShutterFrame;
+class AliInfoFrame;
+class AliDetectorFrame;
+class AliMenu;
 
 enum AliDisplay2Id {
 	kIdsVIEW,		//id of the view shutter
@@ -113,399 +100,13 @@ enum AliDisplay2Id {
 	kmPOINTS
 };
 
-const char helpTxt[] = "\tAliDisplay v2.0\n\t\tHelp\n\n\nWelcome in the AliDisplay help.\nHere is a list of useful subjects which discribes\nthe main functionnalities of the software\n \nEvent:Use the arrows to get the next or previous event\nView:Each button corresponds to a different view\nDetectors:Select the module you want to see\nOptions:Select the view mode\nSliders:Use the rapidity (or eta) slider to cut the set of hits\n\tAnd the momentum slider to cut with respect to the momentum\n";
-
-
-//const char *filetypes[] = {"ROOT files","*.root","All files","*",0,0};
-
-
 //Constants to set the display mode
 const Int_t kHits = BIT(0);
 const Int_t kClusters = BIT(1);
 const Int_t kHLT = BIT(2);
 const Int_t kTracks = BIT(3);
 
-//***Class ModulesInfo***//
-class AliModuleInfo{
- public:
-  AliModuleInfo(int n);
-  virtual ~AliModuleInfo();
 
-  void     SetId(char* name,Int_t id);
-  void     Add(const char * name,Int_t i);
-  Int_t    Id(char *name);
-  char*    Name(Int_t id);
-  Bool_t   IsEnabled(Int_t id);
-  Bool_t   IsEnabled(char *name){return IsEnabled(Id(name));};
-  void     Disable(Int_t id);
-  void     Disable(char* name){Disable(Id(name));};
-  void     Enable(Int_t id);
-  void     Enable(char *name){Enable(Id(name));};
-  void     Print();
-  
- private:
-  //The purposes of this class is to link each module to its Id
-  char     **fName;
-  Int_t    *fId;
-  Bool_t   *fEnabled;
-  Int_t    fNb;
-
-  ClassDef(AliModuleInfo,0);
-};
-
-//***Class DisplayCluster***//
-
-class AliDisplayClusters{
-  //This class is an interface to the clusters data
-
-public:
- AliDisplayClusters();
- virtual ~AliDisplayClusters();
-
- void          LoadClusters(char * name,Int_t nevent);
- void          LoadITSClusters(Int_t nevent);
- void          LoadTPCClusters(Int_t nevent);
- void          Draw();
- Int_t         GetNbClusters();
-
-private: 
- TPolyMarker3D *fPoints; //fPoints[i]=set of cluster coordinates in detector i;
- Int_t         fNb;
- char          **fName; //fName[i]=name of the detector i 
-
- RQ_OBJECT("AliDisplayClusters")
-
- ClassDef(AliDisplayClusters,0);
-};
-
-//***class AliDisplayHLT***//
-
-class AliDisplayHLT{
-  //This classes is an interface to the HLT data
-  //For the moment only for TPC, for adding modules there is two choices:
-  //1) add the function LoadHLT[module](Int_t) and update the function LoadHLT
-  //2) or inherit your class from AliDisplayHLT and overload LoadHLT
-
- public:
-
-  AliDisplayHLT();
-  virtual ~AliDisplayHLT();
-
-  virtual void  LoadHLT(char *name,Int_t e);//Load L3 datas whose belong to detector name and from the event e
-  virtual void  LoadHLTTPC(Int_t nevent);
-  virtual void  Draw();
-
- private:
-  TPolyMarker3D *fPoints; //fPoints[i]=set of cluster coordinates in detector i;
-  Int_t         fNb;
-  char          **fName; //fName[i]=name of the detector i 
-
- ClassDef(AliDisplayHLT,0);
-};
-
-//***Class AliSliderFrame***//
-class AliSliderFrame{
-  //This class implements the cuts manager
-
-public:
-
- AliSliderFrame(const TGWindow *p, UInt_t w, UInt_t h);
- virtual ~AliSliderFrame();
-
- //Setters
- void		      	SetMomentumRange(Float_t min, Float_t max){fMomentumSlider->SetRange(min,max);};
- void		       	SetRapidityRange(Float_t min, Float_t max){fRapiditySlider->SetRange(min,max);};
- 
- Float_t       	       	GetMomentumMax(){return fMomentumSlider->GetMaxPosition();};
- Float_t       		GetMomentumMin(){return fMomentumSlider->GetMinPosition();};
- Float_t	      	GetRapidityMax(){return fRapiditySlider->GetMaxPosition();};
- Float_t       		GetRapidityMin(){return fRapiditySlider->GetMinPosition();};
- TGCompositeFrame*	GetSliderFrame(){return fMainFrame;};
-
- //Slots
- void		     	CloseWindow();
- void		       	DoSlider(Int_t pos=0);
- void		       	DoField(Long_t pos=0);
- void		       	DoReleased(Int_t pos=0);
- void                   DoPositionChanged(Int_t pos=0);
-
- //I/O
- void		       	SaveToRC();
- void		       	LoadFromRC();
-
-private:
- 
- TGCompositeFrame  	*fMainFrame;
- TGCompositeFrame	*fMomentumFrame;
- TGCompositeFrame	*fRapidityFrame;
- TGLayoutHints		*fLayout;//Layout of the frame
- TGLayoutHints		*fMomentumLayout;
- TGLayoutHints		*fRapidityLayout;
- TGDoubleHSlider       	*fMomentumSlider;
- TGDoubleHSlider       	*fRapiditySlider;
- TGLabel       		*fMomentumLabel;
- TGLabel	       	*fRapidityLabel;
- TGNumberEntry		*fMomentumMaxValue;
- TGNumberEntry		*fMomentumMinValue;
- TGNumberEntry		*fRapidityMaxValue;
- TGNumberEntry		*fRapidityMinValue;
-
- RQ_OBJECT("AliSliderFrame")
-
- ClassDef(AliSliderFrame,0);
-};
-
-//***Class AliDetectorFrame***//
-class AliDetectorFrame{
-  //This classe implements the frame which contains the list of enabled detectors
-  //and allows the user to change the current status of the detector (enabled/disabled)
-
-public:
-
- AliDetectorFrame(const TGWindow *p, Int_t w, Int_t h,UInt_t bgc);
- virtual ~AliDetectorFrame();
- 
- TGCompositeFrame*	GetDetectorFrame(){return fMainFrame;};
- 
- //Slots
- void		      	DoButton(Int_t pos=0);
- void		      	DoCheckButton(Int_t pos=0);
- void		       	DoSpecific();	
-
-private:
-
- TGCompositeFrame	*fMainFrame;
- TGCompositeFrame	*fButtonFrame;
- TGCheckButton		**fCheckButton;
- TGTextButton		*fButtonAll;
- TGTextButton		*fButtonInvert;
- Bool_t		       	*fCheckedButton; //fEnabledButton[i]=kTRUE if button checked
- Int_t		       	*fCheckButtonId;
- Bool_t		       	fCheckedMode;
- static int	       	fgBaseId;
-
- RQ_OBJECT("AliDetectorFrame")
-
- ClassDef(AliDetectorFrame,0);
-};
-
-//***Class AliShutterItem**//
-class AliShutterItem{
-  //This class implements the shutter item, ie the base element of a shutter and provides functions to add button... in the shutter
-public:
-	
- AliShutterItem(TGShutter *s,char *text,UInt_t id);
- virtual ~AliShutterItem();
-
- //Getters
- TGShutterItem*		GetShutterItem(){return fShutterItem;};
- TGCompositeFrame*	GetShutterItemFrame(){return fMainFrame;};
-
- //Fill functions
- void	      		AddTextButton(char *text,char *tiptext,  UInt_t idb);
- void	       		AddPictureButton(char *file,char *tiptext,UInt_t idb);
- void	       		AddCheckButton(char *txt,Int_t idb);
-
- //Slot
- void	       		DoButton(Int_t pos=0);
-
-private:
-
- TGCompositeFrame	*fMainFrame;
- TGShutterItem		*fShutterItem;
- TGButton		*fButton;
-
- RQ_OBJECT("AliShutterItem")
-
- ClassDef(AliShutterItem,0);
-};
-
-
-//***Class AliShutterFrame***//
-class AliShutterFrame{
-  //This class implements the shutter frame
-public:
-
- AliShutterFrame(TGCompositeFrame *p, UInt_t w, UInt_t h);
- virtual ~AliShutterFrame();
-
- TGCompositeFrame*	GetShutterFrame(){return fMainFrame;};
-
-private:
-
- TGCompositeFrame	*fMainFrame;
- TGLayoutHints		*fLayout;
- TGShutter	       	*fShutter;
- AliDetectorFrame	*fDetectorFrame;
- TGLayoutHints		*fDetectorFrameLayout;
-
- RQ_OBJECT("AliShutterFrame")
-
- ClassDef(AliShutterFrame,0);
-};
-
-//***Class AliDisplayFrame***//
-class AliDisplayFrame{
-  //This class implements the display of the event
-
-public:
-
- AliDisplayFrame(const TGWindow *p, UInt_t w, UInt_t h);
- virtual ~AliDisplayFrame();
- 
- //Getters
- TGCompositeFrame*		GetDisplayFrame(){return fMainFrame;};
- TCanvas*	       		GetMainCanvas(){return fMainCanvas;};
- Int_t		       		GetPreviousW(){return fPreviousW;};
- Int_t		       		GetPreviousH(){return fPreviousH;};
- TGDimension	       		GetFrameDimension(){return ((TGCanvas*)fMainEmbeddedCanvas)->GetViewPort()->GetDefaultSize();};
- Int_t		       		GetNbActivePoints();
- Int_t                          GetNbClusters(){return fClusters->GetNbClusters();};
-
- //Setters
- void		       		SetPreviousW(Int_t w){fPreviousW=w;};
- void	       			SetPreviousH(Int_t h){fPreviousH=h;};
- void	       			SetEditable(Bool_t b){gPad->SetEditable(b);};
- 
- void	       			DoView(Int_t view);
- void	       			Draw(Float_t theta,Float_t phi,Float_t psi);
- void	       			DrawDetector(const char *name);
- void	       			DrawHits();
- void	       			DrawX3d();
- void	       			DrawGL();
- void	       			LoadEnabledModules();
- void                           LoadClusters(Int_t nevent);
- void                           LoadHLTClusters(Int_t nevent);
- void		       		LoadHits();
- void		       		ApplyCuts();
- void		       		EnableDetector(const char *name);
- void		       		DisableDetector(const char *name);
- void		       		ExecuteEvent(Int_t event, Int_t px,Int_t py,TObject *);
- void                           SavePadGIF(const char *file);
-
-private:
-
- TGCompositeFrame		*fMainFrame,*fFrame1,*fFrame2;
- TGTab			       	*fMainTab;
- Bool_t			       	fAllViews;
- TRootEmbeddedCanvas		*fMainEmbeddedCanvas;//embedded Canvas which contains the main view(s)
- TRootEmbeddedCanvas		*fSelectionEmbeddedCanvas;
- TCanvas	       		*fMainCanvas;
- TCanvas       			*fSelectionCanvas;
- Float_t     			fClipMin,fClipMax;
- Int_t				fPreviousW,fPreviousH;
- Float_t	      		fRange;
- AliDisplayClusters             *fClusters;
- AliDisplayHLT                  *fHLT;
- TObjArray	      		*fPoints;
- TObjArray		       	*fPoints2;
- TObjArray		        *fModules;
- Int_t			       	fNbModules;
- Bool_t		       		*fActivePoints;
- TObjArray	       		*fPolyMarkers;//Array for TPolyMarker3D
- Float_t	       		*fClustersPos;
- Int_t		       		fNbClusters;
-	
- RQ_OBJECT("AliDisplayFrame")
-
- ClassDef(AliDisplayFrame,0);
-};
-
-//***Class AliInfoFrame***//
-class AliInfoFrame{
-  //This class implements the info frame where the number of particles... are displayed
-
-public:
-	
- AliInfoFrame(TGCompositeFrame *p, UInt_t w, UInt_t h);
- virtual ~AliInfoFrame(void);
- 
- void			AddLabel(char *text, UInt_t options);
- TGCompositeFrame	*GetInfoFrame(){return fMainFrame;};
- void 			Update();
- 
-private:
-
- TGCompositeFrame	*fMainFrame,*fTitleFrame,*fFiguresFrame;
- TGLabel       		*fNbParticuleLabel;
- TGLabel       	      	*fNbEventLabel;
- TGLabel       	       	*fNbHitsLabel;
- TGLabel                *fNbClustersLabel;        
-
- RQ_OBJECT("AliInfoFrame")
-
- ClassDef(AliInfoFrame,0);
-};
-
-
-//***Class AliSettingFrame***//
-class AliSettingFrame:public TGTransientFrame{
-  //This classe implement the setting frame where the different otption can be set
-
-public:
-
- AliSettingFrame(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h);
- virtual ~AliSettingFrame();
-
- //Slots
- void					DoSettings(Int_t id=0);
-
-private:
-
- TGCompositeFrame		*fMainFrame;
- TGCompositeFrame		*fZoomStepFrame;
- TGLayoutHints			*fZoomStepLayout;
- TGNumberEntryField		*fZoomStepEntry;
- TGLabel       			*fZoomStepLabel;     
- TGCompositeFrame		*fSliderStepFrame;
- TGLayoutHints			*fSliderStepLayout;
- TGNumberEntryField		*fSliderStepEntry;
- TGLabel       			*fSliderStepLabel;
- TGCompositeFrame		*fSliderUpdateFrame;
- TGLayoutHints			*fSliderUpdateLayout;
- TGCheckButton                  *fSliderUpdateButton; 
- Bool_t                         fIsLoading;//Used when retrieving the state of the check button
-
- RQ_OBJECT("AliSettingFrame")
-
- ClassDef(AliSettingFrame,0);
-};
-
-
-//***Class AliMenu***//
-class AliMenu {
-  //This class implement both the menu and the toolbar
-
-public:
-
- AliMenu(TGCompositeFrame *p, UInt_t w, UInt_t h, UInt_t options);
- virtual ~AliMenu();
- 
- void 		      		AddPictureButton(char *fname,char *tiptext,UInt_t id, UInt_t spacing);//add a picture button to the toolbar
- //slots
- void		      		DoMenu(Int_t id=0);
- void		       		DoToolBar(Int_t id=0);
-
-private:
-
- TGMenuBar			*fMenuBar;
- TGToolBar		       	*fToolBar;
- TGLayoutHints			*fMenuBarLayout;
- TGLayoutHints			*fMenuBarItemLayout;
- TGPopupMenu		       	*fMenuFile;
- TGPopupMenu		       	*fMenuOptions;
- TGPopupMenu		       	*fMenuHelp;
- TGPopupMenu		       	*fMenuView;
- TGLayoutHints			*fToolBarLayout;
- ToolBarData_t 			*fTBD;
- TGButton                       *fButton;
-
- RQ_OBJECT("AliMenu")
-
- ClassDef(AliMenu,0);
-};
-
-//***Class AliDisplay2***//
 class AliDisplay2 : public TObject{
   //This classe is the main component of the new display. 
   //It aggregates all the subframes and manage the relationnships 
@@ -524,34 +125,34 @@ public:
  void				LoadSettings();//load the settings from the ressource file
 
  //Getter
- Int_t				GetCurrentView(void){return fCurrentView;};//return current view
- TGMainFrame*		        GetMainFrame(){return fMainFrame;};//
- Float_t		    	GetZoomStep(){return fZoomStep;};//
- Float_t	       		GetZoomFactor(){return fZoomFactor;};//
- Float_t	      		GetRapidityMin(){return fSliderFrame->GetRapidityMin();};//
- Float_t       			GetRapidityMax(){return fSliderFrame->GetRapidityMax();};//
- Float_t	      		GetMomentumMin(){return fSliderFrame->GetMomentumMin();};//
- Float_t       			GetMomentumMax(){return fSliderFrame->GetMomentumMax();};//
- Int_t				GetNbParticles(){return fNbParticles;};//
- Int_t		       		GetEventNumber(){return fEventNumber;};//
- Int_t			       	GetNbHits(){return fNbHits;};//
- Int_t                          GetNbClusters(){return fDisplayFrame->GetNbClusters();};//
- Float_t		       	GetSliderStep(){return fSliderStep;};//
- Bool_t			       	GetZoomMode(){return fZoomMode;};//
- Int_t			       	GetMode(){return fMode;};//
- TObjArray*		       	GetModules(){return fModules;};//
- Bool_t*	       		GetEnabledModules(){return fEnabledModules;};//
- Int_t			       	GetNbModules(){return fNbModules;};//
- char*                          GetIconsPath(){return fIconsPath;};//
- AliModuleInfo*                    GetModuleInfo(){return fModuleInfo;};//
- Bool_t                         GetSliderUpdate(){return fSliderUpdate;};//
- char*                          GetRawDataPath(){return fRawDataPath;};
+ Int_t				GetCurrentView(void) const {return fCurrentView;};//return current view
+ TGMainFrame*		        GetMainFrame() const {return fMainFrame;};//
+ Float_t		    	GetZoomStep() const {return fZoomStep;};//
+ Float_t	       		GetZoomFactor() const {return fZoomFactor;};//
+ Float_t	      		GetRapidityMin() const {return fSliderFrame->GetRapidityMin();};//
+ Float_t       			GetRapidityMax() const {return fSliderFrame->GetRapidityMax();};//
+ Float_t	      		GetMomentumMin() const {return fSliderFrame->GetMomentumMin();};//
+ Float_t       			GetMomentumMax() const {return fSliderFrame->GetMomentumMax();};//
+ Int_t				GetNbParticles() const {return fNbParticles;};//
+ Int_t		       		GetEventNumber() const {return fEventNumber;};//
+ Int_t			       	GetNbHits() const {return fNbHits;};//
+ Int_t                          GetNbClusters() const {return fDisplayFrame->GetNbClusters();};//
+ Float_t		       	GetSliderStep() const {return fSliderStep;};//
+ Bool_t			       	GetZoomMode() const {return fZoomMode;};//
+ Int_t			       	GetMode() const {return fMode;};//
+ TObjArray*		       	GetModules() const {return fModules;};//
+ Bool_t*	       		GetEnabledModules() const {return fEnabledModules;};//
+ Int_t			       	GetNbModules() const {return fNbModules;};//
+ char*                          GetIconsPath() const {return fIconsPath;};//
+ AliModuleInfo*                    GetModuleInfo() const {return fModuleInfo;};//
+ Bool_t                         GetSliderUpdate() const {return fSliderUpdate;};//
+ char*                          GetRawDataPath() const {return fRawDataPath;};
 
  //Setter	
  void                           SetSliderUpdate(Bool_t b){fSliderUpdate = b;};//
  void			       	SetMode(Int_t m){fMode=m;};//
  void                           Enable(Int_t m);//Enable the given mode 
- Bool_t                         IsEnabled(Int_t m);//Return if the given mode is enabled
+ Bool_t                         IsEnabled(Int_t m) const;//Return if the given mode is enabled
  void                           Disable(Int_t m);//Disable the given mode
  void		      		SetZoomMode(Bool_t b=kTRUE){fZoomMode = b;};//
  void		       		SetCurrentView(Int_t id){fCurrentView = id;};//
@@ -585,7 +186,7 @@ public:
 
  //I/O
  void                           LoadFromRC();
- void                           SaveToRC();
+ void                           SaveToRC() const;
 
 private:
 
@@ -615,35 +216,37 @@ private:
  TGCompositeFrame       	*fSubFrame;//frame used for the layout	
 
  //Slider Frame
- TGLayoutHints	        	*fSliderFrameLayout;
+ TGLayoutHints	        	*fSliderFrameLayout; // Slider Frame Layout
  AliSliderFrame			*fSliderFrame;//Frame which contains the rapidity and momentum sliders
 
  //Shutter Frame
- TGLayoutHints		        *fShutterFrameLayout;
- AliShutterFrame	        *fShutterFrame;
+ TGLayoutHints		        *fShutterFrameLayout; // Shutter Frame Layout
+ AliShutterFrame	        *fShutterFrame;// Shutter Frame
 
  //Display Frame
- TGLayoutHints	        	*fDisplayFrameLayout;
- AliDisplayFrame	        	*fDisplayFrame;
+ TGLayoutHints	        	*fDisplayFrameLayout; // Display Frame Layout
+ AliDisplayFrame	        	*fDisplayFrame;// Display Frame
 
  //Info Frame
- TGLayoutHints	        	*fInfoFrameLayout;
- AliInfoFrame			*fInfoFrame;
+ TGLayoutHints	        	*fInfoFrameLayout; // Info Frame Layout
+ AliInfoFrame			*fInfoFrame; // Info Frame
 
  //Detector Option Frame
- TGLayoutHints	        	*fDetectorFrameLayout;
- AliDetectorFrame	        *fDetectorFrame;
+ TGLayoutHints	        	*fDetectorFrameLayout;// Detector Frame Layout
+ AliDetectorFrame	        *fDetectorFrame; // Detector Frame
 
  //MenuBar
- AliMenu				*fMenu;
+ AliMenu				*fMenu; // Menu
 
  //Status bar
- TGStatusBar			*fStatusBar;
+ TGStatusBar			*fStatusBar; // Status Bar
 
  RQ_OBJECT("AliDisplay2")
 
  ClassDef(AliDisplay2,0);
 };
+
+R__EXTERN  AliDisplay2* gAliDisplay2;
 
 #endif
 
