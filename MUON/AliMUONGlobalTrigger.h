@@ -10,6 +10,29 @@
 
 class AliMUONGlobalTrigger : public TObject {
  public:
+  AliMUONGlobalTrigger();
+  AliMUONGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
+		       Int_t *singleUndef, Int_t *pairUnlike, Int_t *pairLike);
+  virtual ~AliMUONGlobalTrigger(){;}
+  Int_t SinglePlusLpt();  
+  Int_t SinglePlusHpt();  
+  Int_t SinglePlusApt();   
+  Int_t SingleMinusLpt(); 
+  Int_t SingleMinusHpt(); 
+  Int_t SingleMinusApt(); 
+  Int_t SingleUndefLpt(); 
+  Int_t SingleUndefHpt();  
+  Int_t SingleUndefApt(); 
+  Int_t PairUnlikeLpt();  
+  Int_t PairUnlikeHpt();  
+  Int_t PairUnlikeApt();  
+  Int_t PairLikeLpt();    
+  Int_t PairLikeHpt();    
+  Int_t PairLikeApt();    
+
+  ClassDef(AliMUONGlobalTrigger,1)  // reconstructed Global Trigger object    
+    
+private:
   Int_t fSinglePlusLpt;  // Number of Single Plus Low pt 
   Int_t fSinglePlusHpt;  // Number of Single Plus High pt 
   Int_t fSinglePlusApt;  // Number of Single Plus All pt 
@@ -26,13 +49,6 @@ class AliMUONGlobalTrigger : public TObject {
   Int_t fPairLikeHpt;    // Number of Like sign pair High pt
   Int_t fPairLikeApt;    // Number of Like sign pair All pt
 
- public:
-  AliMUONGlobalTrigger();
-  AliMUONGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
-		       Int_t *singleUndef, Int_t *pairUnlike, Int_t *pairLike);
-  virtual ~AliMUONGlobalTrigger(){;}
- 
-  ClassDef(AliMUONGlobalTrigger,1)  // reconstructed Global Trigger object    
 };
 #endif
 
