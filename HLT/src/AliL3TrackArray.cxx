@@ -311,14 +311,9 @@ void AliL3TrackArray::AddTracks(AliL3TrackArray *newtrack){
     if(!tpt) continue;
     newtrack->Remove(i);
     AliL3Track *track = NextTrack();
-    track->SetNHits(tpt->GetNHits());
-    track->SetHits(tpt->GetNHits(),(UInt_t *)tpt->GetHitNumbers());
-    track->SetFirstPoint(tpt->GetFirstPointX(),tpt->GetFirstPointY(),tpt->GetFirstPointZ());
-    track->SetLastPoint(tpt->GetLastPointX(),tpt->GetLastPointY(),tpt->GetLastPointZ());
-    track->SetPt(tpt->GetPt());
-    track->SetPsi(tpt->GetPsi());
-    track->SetTgl(tpt->GetTgl());
-    track->SetCharge(tpt->GetCharge());
+    
+    track->Set(tpt);
+
   }
 }
 
