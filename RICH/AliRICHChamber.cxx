@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 #include "AliRICHChamber.h"
 #include "AliRICHConst.h" //for r2d
 #include "AliRICHParam.h"
@@ -38,8 +36,6 @@ AliRICHChamber::AliRICHChamber()
     fGeometry = 0;
     fReconstruction = 0;
     fTresh = 0;
-    frMin = 0.1;
-    frMax = 140;
     for(Int_t i=0; i<50; ++i) fIndexMap[i] = 0;
 }
 //______________________________________________________________________________
@@ -51,7 +47,7 @@ AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
   SetCenter(0,pParam->Offset()-pParam->GapThickness()/2,0);//put to up position   
   switch(iModuleN){
     case 1:
-      RotateX(-pParam->AngleYZ());  //порядок важен, поворот не комутативен    
+      RotateX(-pParam->AngleYZ());   
       RotateZ(-pParam->AngleXY());      
       fName="RICHc1";fTitle="RICH chamber 1";
       break;      
@@ -90,20 +86,20 @@ AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
 }
 //______________________________________________________________________________
 
-void AliRICHChamber::LocaltoGlobal(Float_t pos[3],Float_t Globalpos[3])
+void AliRICHChamber::LocaltoGlobal(Float_t local[3],Float_t global[3])
 {//Local coordinates to global coordinates transformation
 
     Double_t *pMatrix;
     pMatrix =  fpRotMatrix->GetMatrix();
-    Globalpos[0]=pos[0]*pMatrix[0]+pos[1]*pMatrix[3]+pos[2]*pMatrix[6];
-    Globalpos[1]=pos[0]*pMatrix[1]+pos[1]*pMatrix[4]+pos[2]*pMatrix[7];
-    Globalpos[2]=pos[0]*pMatrix[2]+pos[1]*pMatrix[5]+pos[2]*pMatrix[8];
-    Globalpos[0]+=fX;
-    Globalpos[1]+=fY;
-    Globalpos[2]+=fZ;
+    global[0]=local[0]*pMatrix[0]+local[1]*pMatrix[3]+local[2]*pMatrix[6];
+    global[1]=local[0]*pMatrix[1]+local[1]*pMatrix[4]+local[2]*pMatrix[7];
+    global[2]=local[0]*pMatrix[2]+local[1]*pMatrix[5]+local[2]*pMatrix[8];
+    global[0]+=fX;
+    global[1]+=fY;
+    global[2]+=fZ;
 }
 
-void AliRICHChamber::GlobaltoLocal(Float_t pos[3],Float_t Localpos[3])
+void AliRICHChamber::GlobaltoLocal(Float_t global[3],Float_t local[3])
 {// Global coordinates to local coordinates transformation
     TMatrix matrixCopy(3,3);
     Double_t *pMatrixOrig = fpRotMatrix->GetMatrix();
@@ -113,20 +109,19 @@ void AliRICHChamber::GlobaltoLocal(Float_t pos[3],Float_t Localpos[3])
 	  matrixCopy(j,i)=pMatrixOrig[j+3*i];
       }
     matrixCopy.Invert();
-    Localpos[0] = pos[0] - fX;
-    Localpos[1] = pos[1] - fY;
-    Localpos[2] = pos[2] - fZ;
-    Localpos[0]=Localpos[0]*matrixCopy(0,0)+Localpos[1]*matrixCopy(0,1)+Localpos[2]*matrixCopy(0,2);
-    Localpos[1]=Localpos[0]*matrixCopy(1,0)+Localpos[1]*matrixCopy(1,1)+Localpos[2]*matrixCopy(1,2);
-    Localpos[2]=Localpos[0]*matrixCopy(2,0)+Localpos[1]*matrixCopy(2,1)+Localpos[2]*matrixCopy(2,2);
+    local[0] = global[0] - fX;
+    local[1] = global[1] - fY;
+    local[2] = global[2] - fZ;
+    local[0]=local[0]*matrixCopy(0,0)+local[1]*matrixCopy(0,1)+local[2]*matrixCopy(0,2);
+    local[1]=local[0]*matrixCopy(1,0)+local[1]*matrixCopy(1,1)+local[2]*matrixCopy(1,2);
+    local[2]=local[0]*matrixCopy(2,0)+local[1]*matrixCopy(2,1)+local[2]*matrixCopy(2,2);
 } 
 
 void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 				    Int_t& iNpads,Float_t cluster[5][500],ResponseType res) 
 {//Generates pad hits (simulated cluster) using the segmentation and the response model
-    
-  Float_t local[3];
-  Float_t global[3];
+
+  Float_t local[3],global[3];
 // Width of the integration area
   Float_t dx=(fResponse->SigmaIntegration())*(fResponse->ChargeSpreadX());
   Float_t dy=(fResponse->SigmaIntegration())*(fResponse->ChargeSpreadY());
@@ -139,8 +134,8 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
 
   LocaltoGlobal(local,global);
 
-  Int_t nFp=0;
-    
+
+
 //To calculate wire sag, the origin of y-position must be the middle of the photcathode
   AliRICHSegmentationV0* segmentation = (AliRICHSegmentationV0*) GetSegmentationModel();
   Float_t newy;
@@ -148,22 +143,22 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
     newy = yhit - segmentation->GetPadPlaneLength()/2;
   else
     newy = yhit + segmentation->GetPadPlaneLength()/2;
-    
+
   if(res==kMip){
     qtot = fResponse->IntPH(eloss, newy);
-    nFp  = fResponse->FeedBackPhotons(global,qtot);
-  }else if(res==kCerenkov){
+    fResponse->FeedBackPhotons(global,qtot);
+  }else if(res==kPhoton){
     qtot = fResponse->IntPH(newy);
-    nFp  = fResponse->FeedBackPhotons(global,qtot);
+    fResponse->FeedBackPhotons(global,qtot);
   }
 
     // Loop Over Pads
-    
+
   Float_t qcheck=0, qp=0;
-    
+
   iNpads=0;
-  for(fSegmentation->FirstPad(xhit, yhit, 0, dx, dy); 
-      fSegmentation->MorePads(); 
+  for(fSegmentation->FirstPad(xhit, yhit, 0, dx, dy);
+      fSegmentation->MorePads();
       fSegmentation->NextPad()) {
     qp= fResponse->IntXY(fSegmentation);
     qp= TMath::Abs(qp);
@@ -173,13 +168,13 @@ void AliRICHChamber::DisIntegration(Float_t eloss, Float_t xhit, Float_t yhit,
       cluster[1][iNpads]=fSegmentation->Ix();
       cluster[2][iNpads]=fSegmentation->Iy();
       cluster[3][iNpads]=fSegmentation->ISector();
-      iNpads++;	
+      iNpads++;
     }
   }//pad loop
 }//void AliRICHChamber::DisIntegration(...
-//______________________________________________________________________________
+//__________________________________________________________________________________________________
 void AliRICHChamber::GenerateTresholds()
-{//Generates random treshold charges for all pads 
+{//Generates random treshold charges for all pads
   Int_t nx = fSegmentation->Npx();
   Int_t ny = fSegmentation->Npy();
 
@@ -191,10 +186,11 @@ void AliRICHChamber::GenerateTresholds()
     }
   }      
 }//void AliRICHChamber::GenerateTresholds()
-//______________________________________________________________________________
+//__________________________________________________________________________________________________
 void AliRICHChamber::Print(Option_t *) const
 {
-  Info(fName.Data(),"r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f\n %5.2f,%5.2f %5.2f,%5.2f %5.2f,%5.2f",
-                     Rho(), Theta()*r2d,Phi()*r2d ,   X(),    Y(),    Z(),
+  printf("%s r=%8.3f theta=%5.1f phi=%5.1f x=%8.3f y=%8.3f z=%8.3f  %6.2f,%6.2f %6.2f,%6.2f %6.2f,%6.2f\n",fName.Data(),
+                     Rho(), ThetaD(),PhiD(),   X(),    Y(),    Z(),
                      ThetaXd(),PhiXd(),ThetaYd(),PhiYd(),ThetaZd(),PhiZd());
 }//void AliRICHChamber::Print(Option_t *option)const
+//__________________________________________________________________________________________________
