@@ -60,7 +60,7 @@ AliDetConstruction::AliDetConstruction()
   AddDetSwitch(detSwitch); 
   detSwitch = new AliDetSwitch("TRD",    2, 1, 1, kDetector, false);
   AddDetSwitch(detSwitch); 
-  detSwitch = new AliDetSwitch("ZDC",    2, 1, 1, kDetector, false);
+  detSwitch = new AliDetSwitch("ZDC",    2, 1, 2, kDetector, false);
   AddDetSwitch(detSwitch);  
 }
 
