@@ -26,7 +26,7 @@ Version 1.0.1
 #include <TMath.h>
 #include <Riostream.h>
 //#include <math.h>
-//#include <stdlib.h>
+#include <stdlib.h>
 
 /////////////////////////// Helper Error Function
 
@@ -203,7 +203,7 @@ inline Complex Complex::operator ! ()       //  complex conjugate  //
 
 double operator += (double &a, const Complex &b)
 {
-	if (fabs(b.Im) < small_epsilon) a+=b.Re;
+	if (TMath::Abs(b.Im) < small_epsilon) a+=b.Re;
 	else
 		ComplexError ("Error in double+=Complex: Complex is not double number");
 	return a;
@@ -211,7 +211,7 @@ double operator += (double &a, const Complex &b)
 
 double operator -= (double &a, const Complex &b)
 {
-	if (fabs(b.Im) < small_epsilon) a-=b.Re;
+	if (TMath::Abs(b.Im) < small_epsilon) a-=b.Re;
 	else
 		ComplexError ("Error in double -=Complex: Complex is not double number");
 	return a;
@@ -219,7 +219,7 @@ double operator -= (double &a, const Complex &b)
 
 double operator *= (double &a, const Complex &b)
 {
-	if (fabs(b.Im) < small_epsilon) a*=b.Re;
+	if (TMath::Abs(b.Im) < small_epsilon) a*=b.Re;
 	else
 		ComplexError ("Error in double *=Complex: Complex is not double number");
 	return a;
@@ -227,7 +227,7 @@ double operator *= (double &a, const Complex &b)
 
 double operator /= (double &a, const Complex &b)
 {
-	if (fabs(b.Im) < small_epsilon) a/=b.Re;
+	if (TMath::Abs(b.Im) < small_epsilon) a/=b.Re;
 	else
 		ComplexError ("Error in double /=Complex: Complex is not double number");
 	return a;
@@ -277,7 +277,7 @@ inline Complex Complex::operator *= (double a)
 Complex Complex::operator /= (const Complex &a)
 {
     double t1, t2, temp;
-    if (fabs(a.Re) >= fabs(a.Im))
+    if (TMath::Abs(a.Re) >= TMath::Abs(a.Im))
     {
       t1   = a.Im / a.Re;
       t2   = a.Re + a.Im * t1;
@@ -360,7 +360,7 @@ inline Complex operator / (const Complex &a, double b)
 inline Complex operator / (const Complex &a, const Complex &b)
 {
     double t1, t2;
-    if (fabs(b.Re) >= fabs(b.Im))
+    if (TMath::Abs(b.Re) >= TMath::Abs(b.Im))
     {
       t1   = b.Im / b.Re;
       t2   = b.Re + b.Im * t1;
@@ -397,12 +397,12 @@ istream& operator >> (istream &stream, Complex &a)
 
 inline int operator == (const Complex &a, double b)
 {
-	return (a.Re==b) && (fabs(a.Im)<small_epsilon);
+	return (a.Re==b) && (TMath::Abs(a.Im)<small_epsilon);
 }
 
 inline int operator == (double b, const Complex &a)
 {
-	return (a.Re==b) && (fabs(a.Im)<small_epsilon);
+	return (a.Re==b) && (TMath::Abs(a.Im)<small_epsilon);
 }
 
 inline int operator == (const Complex &a, const Complex &b)
@@ -412,12 +412,12 @@ inline int operator == (const Complex &a, const Complex &b)
 
 inline int operator != (const Complex &a, double b)
 {
-	return (a.Re!=b) || (fabs(a.Im)>small_epsilon);
+	return (a.Re!=b) || (TMath::Abs(a.Im)>small_epsilon);
 }
 
 inline int operator != (double b, const Complex &a)
 {
-	return (a.Re!=b) || (fabs(a.Im)>small_epsilon);
+	return (a.Re!=b) || (TMath::Abs(a.Im)>small_epsilon);
 }
 
 inline int operator != (const Complex &a, const Complex &b)
@@ -500,9 +500,9 @@ double  imag (const Complex &a)
 }
 double abs (const Complex &a)
 {
-	if (a.Im == 0) return fabs(a.Re);
-	if (a.Re == 0) return fabs(a.Im);
-    double R = fabs(a.Re), I = fabs(a.Im);
+	if (a.Im == 0) return TMath::Abs(a.Re);
+	if (a.Re == 0) return TMath::Abs(a.Im);
+    double R = TMath::Abs(a.Re), I = TMath::Abs(a.Im);
 	return (R >= I) ?
            (R * sqrt (1 + sqr(a.Im/a.Re))) :
            (I * sqrt (1 + sqr(a.Re/a.Im))) ;
@@ -529,9 +529,9 @@ inline Complex sqr (const Complex &a) { return a*a; }
 
 Complex sqrt (const Complex &a, int flag)
 {
-	if ((a.Re>=0) && (fabs(a.Im)<small_epsilon))
+	if ((a.Re>=0) && (TMath::Abs(a.Im)<small_epsilon))
        return flag ? -sqrt(a.Re) : sqrt(a.Re);
-    double R = fabs(a.Re), I = fabs(a.Im);
+    double R = TMath::Abs(a.Re), I = TMath::Abs(a.Im);
 	double w = (R >= I) ?
            sqrt (R/2 * (  1 + sqrt (1 + sqr(a.Im/a.Re)))):
            sqrt (I/2 * (R/I + sqrt (1 + sqr(a.Re/a.Im))));

@@ -260,7 +260,7 @@ double  AliHBTCrab::corrcalc(double trueqred,double trueqdotr,double truer)
 //  const double rmass=MASS1*MASS2/(MASS1+MASS2);
   double_complex cphi1,cphi2,cphis,cphia;
 
-  arg=trueqdotr/197.323-2.0*TMath::Pi()*floor(trueqdotr/(197.323*2.0*TMath::Pi()));
+  arg=trueqdotr/197.323-2.0*TMath::Pi()*TMath::Floor(trueqdotr/(197.323*2.0*TMath::Pi()));
   cphi1=exp(ci*arg);
   cphis=fgkROOT2*real(cphi1);
   cphia=ci*fgkROOT2*imag(cphi1);
@@ -270,10 +270,10 @@ double  AliHBTCrab::corrcalc(double trueqred,double trueqdotr,double truer)
   goto OUTSIDE_INTERACTION_RANGE;
 
 #ifdef REDUCED_MOM
-  kk=(int)floor(trueqred/INTERACTION_DELK);
+  kk=(int)TMath::Floor(trueqred/INTERACTION_DELK);
   qred=(0.5+kk)*INTERACTION_DELK;
 #else
-  kk=(int)floor(2.0*trueqred/INTERACTION_DELK);
+  kk=(int)TMath::Floor(2.0*trueqred/INTERACTION_DELK);
   qred=(0.5+kk)*INTERACTION_DELK/2.0;
 #endif
   qdotr=trueqdotr*qred/trueqred;
@@ -284,7 +284,7 @@ double  AliHBTCrab::corrcalc(double trueqred,double trueqdotr,double truer)
   r=truer;
 
   eta=0.0;
-  arg=qdotr/197.323-2.0*TMath::Pi()*floor(qdotr/(197.323*2.0*TMath::Pi()));
+  arg=qdotr/197.323-2.0*TMath::Pi()*TMath::Floor(qdotr/(197.323*2.0*TMath::Pi()));
   cphi1=exp(ci*arg);
   cphi2=conj(cphi1);
 
@@ -324,14 +324,14 @@ double_complex AliHBTCrab::cgamma(double_complex c){
   for(j=1;j<=100000;j++){
     delp=(y/(double)j)-atan(y/(double)j);
     phase=phase+delp;
-    if(fabs(delp)<1E-10) goto CGAMMA_ESCAPE;
+    if(TMath::Abs(delp)<1E-10) goto CGAMMA_ESCAPE;
   }
   printf("oops not accurate enough, increase jmax\n");
 CGAMMA_ESCAPE:
-  phase=phase-2.0*TMath::Pi()*floor(phase/(2.0*TMath::Pi()));
+  phase=phase-2.0*TMath::Pi()*TMath::Floor(phase/(2.0*TMath::Pi()));
   cphase=exp(ci*phase);
   cgmag=sqrt(TMath::Pi()*y/sinh(TMath::Pi()*y));
-  mm=(int)floor(x+0.5);
+  mm=(int)TMath::Floor(x+0.5);
   cg=cgmag*cphase;
   if(mm<1){
     for(j=1;j<=-mm+1;j++){
