@@ -139,6 +139,7 @@ void  TG4ParticlesManager::MapParticles()
   fParticleNameMap.Add("opticalphoton","Cherenkov");
   // fParticleNameMap.Add("???","FeedbackPhoton");
   fParticleNameMap.Add("geantino", "Rootino");
+  fParticleNameMap.Add("chargedgeantino", "Rootino");
   
   // map G4 particle names to TDatabasePDG encodings
   fParticlePDGMap.Add("deuteron", GetPDGEncoding("deuteron"));
@@ -148,6 +149,7 @@ void  TG4ParticlesManager::MapParticles()
   fParticlePDGMap.Add("opticalphoton", GetPDGEncoding("opticalphoton"));
   // fParticlePDGMap.Add("???","FeedbackPhoton");
   fParticlePDGMap.Add("geantino", GetPDGEncoding("geantino"));
+  fParticlePDGMap.Add("chargedgeantino", GetPDGEncoding("chargedgeantino"));
 
   // add verbose
   if (VerboseLevel() > 0) {
@@ -161,6 +163,7 @@ void  TG4ParticlesManager::MapParticles()
 
 // public methods
 
+//_____________________________________________________________________________
 G4int TG4ParticlesManager::GetPDGEncodingFast(G4ParticleDefinition* particle)
 {
 // Returns the PDG code of particle;
@@ -171,12 +174,39 @@ G4int TG4ParticlesManager::GetPDGEncodingFast(G4ParticleDefinition* particle)
   // get PDG encoding from G4 particle definition
   G4int pdgEncoding = particle->GetPDGEncoding();
 
+  // use fParticlePDGMap if standard/ENDF-6 PDG code is not defined
   if (pdgEncoding == 0) {
-    // use FParticlePDGMap if standard PDG code is not defined
-    G4String name = particle->GetParticleName();
-    pdgEncoding = fParticlePDGMap.GetSecond(name);
+      G4String name = particle->GetParticleName();
+      pdgEncoding = fParticlePDGMap.GetSecond(name, false);
   }
-    
+
+  // if a nucleus - add it to PDG table 
+  if (pdgEncoding == 0 && particle->GetParticleType() == "nucleus") {
+
+    // use ENDF-6 mapping 10000*z+10*a+iso + 10000000 for nuclei
+    G4int a = particle->GetBaryonNumber();
+    G4int z = G4int(particle->GetPDGCharge()/eplus);          
+    pdgEncoding = 10000000 + 10000*z + 10*a;
+
+    // add nucleus to PDG database
+    TDatabasePDG::Instance()
+      ->AddParticle(particle->GetParticleName(), particle->GetParticleName(),
+                    particle->GetPDGMass(), particle->GetPDGStable(), particle->GetPDGWidth(),
+                    z, "Ion", pdgEncoding);  
+
+    // add nucleus to PDG map
+    fParticlePDGMap.Add(particle->GetParticleName(), pdgEncoding);
+  }  
+
+  if (pdgEncoding == 0 && 
+      particle->GetParticleName() != "geantino" && 
+      particle->GetParticleName() != "chargedgeantino" ) {
+    // unknown particle
+    G4String text = "TG4ParticlesManager::GetPDGEncodingFast: ";
+    text = text + particle->GetParticleName() + " is not defined.";
+    TG4Globals::Warning(text);
+  }      
+
   return pdgEncoding;  
 }  
      
