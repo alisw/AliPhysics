@@ -35,6 +35,23 @@ class AliRICHHit : public AliHit {
     AliRICHHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
     virtual ~AliRICHHit() {}
     
+    Int_t   Chamber()             {return fChamber;}
+    Float_t Particle()            {return fParticle;}    
+    Float_t Theta()               {return fTheta;}
+    Float_t Phi()                 {return fPhi;}
+    Float_t Tlength()             {return fTlength;}
+    Float_t Eloss()               {return fEloss;}
+    Float_t   PHfirst()           {return fPHfirst;}
+    Float_t   PHlast()            {return fPHlast;}
+    Float_t MomX()                {return fMomX;}
+    Float_t MomY()                {return fMomY;}
+    Float_t MomZ()                {return fMomZ;}
+    Float_t CerenkovAngle()       {return fMomX;}
+    Float_t MomFreoX()            {return fMomX;}
+    Float_t MomFreoY()            {return fMomY;}
+    Float_t MomFreoZ()            {return fMomZ;}
+    
+    
     ClassDef(AliRICHHit,1)  //Hits object for set:RICH
 };
 #endif

@@ -25,6 +25,17 @@ class AliRICHDigit : public TObject {
     AliRICHDigit(Int_t *digits);
     AliRICHDigit(Int_t *tracks, Int_t *charges, Int_t *digits);
     virtual ~AliRICHDigit() {}
+    
+    virtual Int_t    PadX()               {return fPadX;}
+    virtual Int_t    PadY()               {return fPadY;}
+    virtual Int_t    Signal()             {return fSignal;}
+    virtual Int_t    Physics()            {return fPhysics;}
+    virtual Int_t    Hit()                {return fHit;}    
+    virtual Int_t    Track(Int_t i)       {return fTracks[i];}
+    virtual Int_t    TrackCharge(Int_t i) {return fTcharges[i];}    
+    virtual void     AddSignal(Int_t q)   {fSignal += q;}
+    virtual void     AddPhysicsSignal(Int_t q)   {fPhysics += q;}	
+    
     ClassDef(AliRICHDigit,1)  //Digits for set:RICH
 };
 #endif
