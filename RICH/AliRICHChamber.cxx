@@ -39,11 +39,8 @@ AliRICHChamber::AliRICHChamber()
 }
 //______________________________________________________________________________
 AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
-{//named ctor. Defines all geometry parameters for the given module.
- //   6 7 |----> X
- // 3 4 5 | 
- // 1 2   V Z  
-  SetCenter(0,pParam->Offset()-pParam->GapThickness()/2,0);//put to up position   
+{//main ctor. Defines all geometry parameters for the given module.
+  SetToZenith();//put to up position   
   switch(iModuleN){
     case 1:
       RotateX(-pParam->AngleYZ());   
@@ -75,7 +72,7 @@ AliRICHChamber::AliRICHChamber(Int_t iModuleN,AliRICHParam *pParam)
       fName="RICHc7";fTitle="RICH chamber 7";
       break;      
     default:
-      Fatal("named ctor","Wrong chamber number %i, check muster class ctor",iModuleN);
+      Fatal("named ctor","Wrong chamber number %i, check CreateChamber ctor",iModuleN);
   }//switch(iModuleN)
   RotateZ(pParam->AngleRot());//apply common rotation  
   fpRotMatrix=new TRotMatrix("rot"+fName,"rot"+fName, Rot().ThetaX()*kR2d, Rot().PhiX()*kR2d,
@@ -194,8 +191,3 @@ void AliRICHChamber::Print(Option_t *) const
                      ThetaXd(),PhiXd(),ThetaYd(),PhiYd(),ThetaZd(),PhiZd());
 }//void AliRICHChamber::Print(Option_t *option)const
 //__________________________________________________________________________________________________
-void AliRICHChamber::SetChamberTransform(Float_t x,Float_t y,Float_t z,TRotMatrix *pRotMatrix) 
-{
-  SetCenter(x,y,z);
-  fpRotMatrix=pRotMatrix;    
-}

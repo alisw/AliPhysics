@@ -10,7 +10,7 @@
 #include <TRotation.h>
 #include <TLorentzVector.h>
 #include "AliRICHConst.h"
-
+#include "AliRICHParam.h"
 #include "AliRICHTresholdMap.h"
 #include "AliSegmentation.h"
 #include "AliRICHGeometry.h"
@@ -45,9 +45,9 @@ public:
   Double_t    PhiYd()              const{return fRot.PhiY()*TMath::RadToDeg();}    
   Double_t    ThetaZd()            const{return fRot.ThetaZ()*TMath::RadToDeg();}    
   Double_t    PhiZd()              const{return fRot.PhiZ()*kR2d;}    
-  void        RotateX(Double_t a)       {fRot.RotateX(a);fCenterV3.RotateX(a);}
-  void        RotateY(Double_t a)       {fRot.RotateY(a);fCenterV3.RotateY(a);}
-  void        RotateZ(Double_t a)       {fRot.RotateZ(a);fCenterV3.RotateZ(a);}
+  void        RotateX(Double_t a)       {fRot.RotateX(a);fCenterV3.RotateX(a);fPcX3.RotateX(a);}
+  void        RotateY(Double_t a)       {fRot.RotateY(a);fCenterV3.RotateY(a);fPcX3.RotateY(a);}
+  void        RotateZ(Double_t a)       {fRot.RotateZ(a);fCenterV3.RotateZ(a);fPcX3.RotateZ(a);}
   Double_t    X()                  const{return fCenterV3.X();}  
   Double_t    Y()                  const{return fCenterV3.Y();}   
   Double_t    Z()                  const{return fCenterV3.Z();}
@@ -81,10 +81,8 @@ public:
   Double_t    GetX()               const{return fX;}
   Double_t    GetY()               const{return fY;}
   Double_t    GetZ()               const{return fZ;}    
-  inline void SetCenter(Double_t x,Double_t y,Double_t z);
-  TRotMatrix *GetRotMatrix()       const{return fpRotMatrix;}
-  void        SetChamberTransform(Float_t x,Float_t y,Float_t z,TRotMatrix *pRotMatrix);
-  
+  inline void SetToZenith();
+  TRotMatrix *GetRotMatrix()       const{return fpRotMatrix;}  
 protected:
   Float_t fX,fY,fZ;                                      // Position of the center of the chamber in MRS (cm)
 
@@ -93,24 +91,25 @@ protected:
   AliRICHGeometry               *fGeometry;              //???Geometry model for each chamber
    
   TVector3      fCenterV3;        //chamber center position in MRS (cm)
+  TVector3      fPcX3;            //PC center position in MRS (cm)
   TRotation     fRot;             //chamber rotation in MRS
   TRotMatrix   *fpRotMatrix;      //rotation matrix of the chamber with respect to MRS 
   AliRICHParam *fpParam;          //main RICH parameters description  
-  ClassDef(AliRICHChamber,2)      //single RICH chamber description
+  ClassDef(AliRICHChamber,3)      //single RICH chamber description
 };//class AliRICHChamber
-
-void AliRICHChamber::SetCenter(Double_t x,Double_t y,Double_t z)
+//__________________________________________________________________________________________________
+void AliRICHChamber::SetToZenith()
 {
-  fCenterV3.SetXYZ(x,y,z);
-  fX=x;fY=y;fZ=z;
+  fCenterV3.SetXYZ(fX=0,fY=AliRICHParam::Offset()-AliRICHParam::GapThickness()/2,fZ=0); 
+  fPcX3.SetXYZ(0,AliRICHParam::Offset()-AliRICHParam::GapThickness()/2+5.276+0.25,0);   
 }
-
+//__________________________________________________________________________________________________
 TVector3 AliRICHChamber::Global2Local(TVector3 x3,Bool_t isVector)const
 {
-  if(!isVector) x3-=fCenterV3;
+  if(!isVector) x3-=fPcX3;
   x3.Transform(fRot.Inverse()); 
-  Double_t tmp=x3.Y(); x3.SetY(-x3.Z()); x3.SetZ(tmp);
+  Double_t tmp=x3.Y(); x3.SetY(x3.Z()); x3.SetZ(tmp);
   return x3;
 }
-  
+//__________________________________________________________________________________________________  
 #endif //AliRICHChamber_h
