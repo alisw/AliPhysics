@@ -39,8 +39,8 @@ class AliPHOSDigit : public AliDigitNew {
   Bool_t operator==(const AliPHOSDigit &rValue) const;
   AliPHOSDigit& operator+(AliPHOSDigit const &rValue) ;
   AliPHOSDigit& operator*(Float_t factor) ; 
-  AliPHOSDigit& operator=(const AliPHOSDigit) {
-    Fatal("operator = ", "not implemented") ; return *this ; } 
+  //  AliPHOSDigit& operator=(const AliPHOSDigit) {
+  //  Fatal("operator = ", "not implemented") ; return *this ; } 
   Int_t   Compare(const TObject * obj) const ;  
   Int_t   GetNprimary() const { return fNprimary ; }
   Int_t   GetPrimary(Int_t index) const ; 
