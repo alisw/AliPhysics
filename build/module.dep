@@ -39,7 +39,7 @@ THbtp/module.mk:	 THbtp/libTHbtp.pkg
 THerwig/module.mk:	 THerwig/libTHerwig.pkg
 THijing/module.mk:	 THijing/libTHijing.pkg
 TMEVSIM/module.mk:	 TMEVSIM/libTMEVSIM.pkg
-TOF/module.mk:		 TOF/libTOF.pkg
+TOF/module.mk:		 TOF/libTOFbase.pkg TOF/libTOFrec.pkg TOF/libTOFsim.pkg
 TPC/module.mk:		 TPC/libTPCbase.pkg TPC/libTPCsim.pkg TPC/libTPCrec.pkg TPC/libTPCfast.pkg
 TPHIC/module.mk:	 TPHIC/libTPHIC.pkg
 TRD/module.mk:		 TRD/libTRDbase.pkg TRD/libTRDsim.pkg TRD/libTRDrec.pkg TRD/libTRDfast.pkg

@@ -5,7 +5,7 @@ ELIBSDIR:=
 
 ELIBS:= MUONrec MUONsim MUONbase MUONmapping TPCbase TPCsim TPCrec TPCfast \
 	ITS PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec TRDfast \
-	FMDbase FMDsim FMDrec TOF PHOS CRT RICH \
+	FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOS CRT RICH \
         ZDCbase ZDC ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCAL \
         STRUCT STARTbase STARTsim STARTrec EVGEN ESD STEER CONTAINERS \
         pythia6 AliPythia6 pdf THijing \
@@ -40,7 +40,9 @@ ARLIBS:= \
    START/tgt_$(ALICE_TARGET)/G__STARTbase.o $(LIBPATH)/libSTARTbase.a \
    START/tgt_$(ALICE_TARGET)/G__STARTsim.o $(LIBPATH)/libSTARTsim.a \
    START/tgt_$(ALICE_TARGET)/G__STARTrec.o $(LIBPATH)/libSTARTrec.a \
-   TOF/tgt_$(ALICE_TARGET)/G__TOF.o $(LIBPATH)/libTOF.a \
+   TOF/tgt_$(ALICE_TARGET)/G__TOFbase.o $(LIBPATH)/libTOFbase.a \
+   TOF/tgt_$(ALICE_TARGET)/G__TOFsim.o $(LIBPATH)/libTOFsim.a \
+   TOF/tgt_$(ALICE_TARGET)/G__TOFrec.o $(LIBPATH)/libTOFrec.a \
    TRD/tgt_$(ALICE_TARGET)/G__TRDbase.o $(LIBPATH)/libTRDbase.a \
    TRD/tgt_$(ALICE_TARGET)/G__TRDsim.o $(LIBPATH)/libTRDsim.a \
    TRD/tgt_$(ALICE_TARGET)/G__TRDrec.o $(LIBPATH)/libTRDrec.a \
