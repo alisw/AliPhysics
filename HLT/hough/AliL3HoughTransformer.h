@@ -20,7 +20,7 @@ class AliL3HoughTransformer : public AliL3HoughBaseTransformer {
 
  public:
   AliL3HoughTransformer(); 
-  AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments);
+  AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments,Bool_t DoMC=kFALSE);
   virtual ~AliL3HoughTransformer();
   
   void CreateHistograms(Int_t nxbin,Double_t ptmin,Int_t nybin,Double_t phimin,Double_t phimax);

@@ -28,17 +28,23 @@ AliL3HoughTransformer::AliL3HoughTransformer()
 {
   //Default constructor
   fParamSpace = 0;
-  fDoMC = kFALSE;
+  fDoMC = kFALSE;;
 #ifdef do_mc
   fTrackID = 0;
 #endif
 }
 
-AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments)
+AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Int_t n_eta_segments,Bool_t DoMC) : AliL3HoughBaseTransformer(slice,patch,n_eta_segments)
 {
   //Normal constructor
   fParamSpace = 0;
-  fDoMC = kFALSE;
+  if(DoMC)
+    {
+      if(patch==0)
+	fDoMC = kTRUE;
+      else
+	fDoMC = kFALSE;
+    }
 #ifdef do_mc
   fTrackID = 0;
 #endif
@@ -101,7 +107,7 @@ void AliL3HoughTransformer::CreateHistograms(Int_t nxbin,Double_t xmin,Double_t 
   for(Int_t i=0; i<GetNEtaSegments(); i++)
     {
       sprintf(histname,"paramspace_%d",i);
-      //fParamSpace[i] = new AliL3HistogramAdaptive(histname,0.1,1,0.05,64,ymin,ymax);
+      //fParamSpace[i] = new AliL3HistogramAdaptive(histname,0.1,2,0.02,nybin,ymin,ymax);
       fParamSpace[i] = new AliL3Histogram(histname,"",nxbin,xmin,xmax,nybin,ymin,ymax);
     }
   
@@ -164,7 +170,6 @@ Double_t AliL3HoughTransformer::GetEta(Int_t eta_index,Int_t slice)
 {
   Double_t eta_slice = (GetEtaMax()-GetEtaMin())/GetNEtaSegments();
   Double_t eta=(Double_t)((eta_index+0.5)*eta_slice);
-  if(slice>17) eta*=-1;
   return eta;
 }
 
@@ -200,7 +205,7 @@ void AliL3HoughTransformer::TransformCircle()
 	  cerr<<"AliL3HoughTransform::TransformCircle : Mismatching padrow numbering "<<i<<" "<<(Int_t)tempPt->fRow<<endl;
 	  continue;
 	}
-
+      
       //Loop over the data on this padrow:
       for(UInt_t j=0; j<tempPt->fNDigit; j++)
 	{
@@ -209,6 +214,7 @@ void AliL3HoughTransformer::TransformCircle()
 	  UShort_t time = digPt[j].fTime;
 	  if((Int_t)charge <= GetLowerThreshold() || (Int_t)charge > GetUpperThreshold())
 	    continue;
+	  
 	  Int_t sector,row;
 	  Float_t xyz[3];
 	  
@@ -241,7 +247,7 @@ void AliL3HoughTransformer::TransformCircle()
 	    {
 	      Float_t phi0 = hist->GetBinCenterY(b);
 	      Float_t kappa = 2*sin(phi - phi0)/R;
-	      hist->Fill(kappa,phi0,charge);
+	      hist->Fill(kappa,phi0,1);//charge);
 #ifdef do_mc
 	      if(fDoMC)
 		{
@@ -360,7 +366,7 @@ void AliL3HoughTransformer::TransformCircleC(Int_t row_range)
 	  phi_0 = atan( (r2*sin(phi1)-r1*sin(phi2))/(r2*cos(phi1)-r1*cos(phi2)) );
 	  kappa = 2*sin(phi2-phi_0)/r2;
 	  tot_charge = digits[i].charge + digits[j].charge;
-	  hist->Fill(kappa,phi_0,tot_charge);
+	  hist->Fill(kappa,phi_0,1);//tot_charge);
 #ifdef do_mc
 	  if(fDoMC)
 	    {

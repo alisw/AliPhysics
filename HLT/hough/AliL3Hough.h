@@ -63,12 +63,12 @@ class AliL3Hough {
   void ProcessPatchIter(Int_t patch);
   void MergePatches();
   void MergeInternally();
-  
+  void MergeEtaSlices();
+
   void FindTrackCandidates();
   void AddAllHistograms();
   Int_t Evaluate(Int_t road_width=1,Int_t nrowstomiss=1);
   void EvaluatePatch(Int_t i,Int_t road_width,Int_t nrowstomiss);
-  void EvaluateWithEta();
   void WriteTracks(Int_t slice,Char_t *path="./");
   void WriteDigits(Char_t *outfile="output_digits.root");
   void InitEvaluate();

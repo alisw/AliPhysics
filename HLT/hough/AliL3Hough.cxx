@@ -188,7 +188,7 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 	  fMemHandler[i] = new AliL3FileHandler();
 	  if(!fBinary)
 	    {
-	      Char_t filename[100];
+	      Char_t filename[1024];
 	      sprintf(filename,"%s/digitfile.root",fPath);
 	      fMemHandler[i]->SetAliInput(filename);
 	    }
@@ -579,21 +579,37 @@ void AliL3Hough::EvaluatePatch(Int_t i,Int_t road_width,Int_t nrowstomiss)
 
 }
 
-void AliL3Hough::EvaluateWithEta()
+void AliL3Hough::MergeEtaSlices()
 {
-  if(!fTracks[0])
+  //Merge tracks found in neighbouring eta slices.
+  //Removes the track with the lower weight.
+  
+  AliL3TrackArray *tracks = fTracks[0];
+  if(!tracks)
     {
-      printf("AliL3Hough::EvaluateWithEta: NO TRACKS\n");
+      cerr<<"AliL3Hough::MergeEtaSlices : No tracks "<<endl;
       return;
     }
-  printf("Number of tracks before evaluation %d\n",fTracks[0]->GetNTracks());
- 
-  for(Int_t i=0; i<fNPatches; i++)
+  for(Int_t j=0; j<tracks->GetNTracks(); j++)
     {
-      fEval[i]->InitTransformer(fHoughTransformer[i]);
-      fEval[i]->FindEta(fTracks[0]);
+      AliL3HoughTrack *track1 = (AliL3HoughTrack*)tracks->GetCheckedTrack(j);
+      if(!track1) continue;
+      for(Int_t k=j+1; k<tracks->GetNTracks(); k++)
+	{
+	  AliL3HoughTrack *track2 = (AliL3HoughTrack*)tracks->GetCheckedTrack(k);
+	  if(!track2) continue;
+	  if(abs(track1->GetEtaIndex() - track2->GetEtaIndex()) != 1) continue;
+	  if(track1->GetKappa() == track2->GetKappa() && track1->GetPsi() == track2->GetPsi())
+	    {
+	      cout<<"Merging track in slices "<<track1->GetEtaIndex()<<" "<<track2->GetEtaIndex()<<endl;
+		if(track1->GetWeight() > track2->GetWeight())
+		  tracks->Remove(k);
+		else
+		  tracks->Remove(j);
+	    }
+	}
     }
-  fMerger->FillTracks(fTracks[0],0);
+  tracks->Compress();
 }
 
 void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
