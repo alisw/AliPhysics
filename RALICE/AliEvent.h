@@ -3,16 +3,16 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.10 2003/08/29 09:05:11 nick Exp $
+// $Id: AliEvent.h,v 1.11 2003/10/26 14:53:44 nick Exp $
 
 #include <math.h>
  
 #include "TObject.h"
 #include "TObjArray.h"
 #include "TDatime.h"
+#include "TTimeStamp.h"
  
 #include "AliVertex.h"
-#include "AliCalorimeter.h"
  
 class AliEvent : public AliVertex
 {
@@ -22,7 +22,8 @@ class AliEvent : public AliVertex
   virtual ~AliEvent();                    // Default destructor
   AliEvent(AliEvent& evt);                // Copy constructor
   virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
-  void SetDayTime(TDatime& stamp);        // Set the date and time stamp
+  void SetDayTime(TTimeStamp& stamp);     // Set the date and time stamp exactly as specified (1 ns accuracy)
+  void SetDayTime(TDatime& stamp);        // Set date and time stamp interpreted as local time (1 s accuracy)
   void SetRunNumber(Int_t run);           // Set the run number
   void SetEventNumber(Int_t evt);         // Set the event number
   void SetProjectile(Int_t a,Int_t z,Double_t pnuc,Int_t id=0); // Set projectile A, Z, p per nucleon and id
@@ -36,7 +37,7 @@ class AliEvent : public AliVertex
   Double_t GetTargetPnuc();               // Provide the target momentum value per nucleon
   Int_t GetTargetId();                    // Provide the user defined particle ID of the target
   void Reset();                           // Reset all values
-  TDatime GetDayTime();                   // Provide the date and time stamp
+  TTimeStamp GetDayTime();                // Provide the date and time stamp
   Int_t GetRunNumber();                   // Provide the run number
   Int_t GetEventNumber();                 // Provide the event number
   virtual void HeaderData();              // Print the event header information
@@ -51,7 +52,7 @@ class AliEvent : public AliVertex
   TObject* GetDevice(TString name);       // Provide device with name "name"
 
  protected:
-  TDatime fDaytime;         // The date and time stamp
+  TTimeStamp fDaytime;      // The date and time stamp
   Int_t fRun;               // The run number
   Int_t fEvent;             // The event number
   Int_t fAproj;             // The projectile A value
@@ -65,6 +66,6 @@ class AliEvent : public AliVertex
   TObjArray* fDevices;      // Array to hold the pointers to the various devices
   Int_t fDevCopy;           // Flag to denote creation of private copies of the devices
 
- ClassDef(AliEvent,9) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,10) // Creation and investigation of an Alice physics event.
 };
 #endif

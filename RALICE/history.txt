@@ -432,3 +432,17 @@
 26-oct-2003 NvE Class AliSignal derived from TNamed and MakeCopy() memberfunction replaced by Clone()
                 like was done for AliCalorimeter.
                 The latter was also done for AliCalmodule and AliAttribObj.
+29-oct-2003 NvE Obsolete include of AliCalorimeter.h removed from AliEvent header file.
+11-nov-2003 NvE Double_t dum=GetScalar() replaced by e[0]=GetScalar() in Ali4Vector.cxx to prevent
+                a warning for the gcc compiler (thanks to Thomas Burgess).
+                AliJet derived from TNamed instead of TObject to allow identification via name.
+12-nov-2003 NvE fDaytime datamember of AliEvent changed from TDatime to TTimeStamp in order to
+                obtain nanosecond precision. Setting of date and time via a TDatime argument is
+                still supported to provide backward compatibility.
+13-nov-2003 NvE Invokation of AliAttrib memberfunction Data() replaced by List() in the example
+                in AliAttrib.cxx (was just a typo; thanks Adam Bouchta).
+                Also test on pointer value introduced in AliAttrib::GetSlotIndex to prevent
+                crash when first slot is empty (thanks to Adam Bouchta).
+21-nov-2003 NvE Variable names of type "const" started with the character "k" in various
+                memberfunctions of AliMath in order to comply with the strict Alice
+                coding conventions.

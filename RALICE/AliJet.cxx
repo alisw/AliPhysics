@@ -95,7 +95,7 @@
  
 ClassImp(AliJet) // Class implementation to enable ROOT I/O
  
-AliJet::AliJet() : TObject(),Ali4Vector()
+AliJet::AliJet() : TNamed(),Ali4Vector()
 {
 // Default constructor
 // All variables initialised to 0
@@ -103,6 +103,8 @@ AliJet::AliJet() : TObject(),Ali4Vector()
  Init();
  Reset();
  SetNtinit();
+ SetName("Unspecified");
+ SetTitle("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliJet::Init()
@@ -113,7 +115,7 @@ void AliJet::Init()
  fTrackCopy=0;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliJet::AliJet(Int_t n) : TObject(),Ali4Vector()
+AliJet::AliJet(Int_t n) : TNamed(),Ali4Vector()
 {
 // Create a jet to hold initially a maximum of n tracks
 // All variables initialised to 0
@@ -131,6 +133,8 @@ AliJet::AliJet(Int_t n) : TObject(),Ali4Vector()
   cout << endl;
   SetNtinit();
  }
+ SetName("Unspecified");
+ SetTitle("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
 AliJet::~AliJet()
@@ -170,7 +174,7 @@ void AliJet::SetOwner(Bool_t own)
  fTrackCopy=mode;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliJet::AliJet(AliJet& j) : TObject(j),Ali4Vector(j)
+AliJet::AliJet(AliJet& j) : TNamed(j),Ali4Vector(j)
 {
 // Copy constructor
  fNtinit=j.fNtinit;
@@ -276,7 +280,8 @@ void AliJet::AddTrack(AliTrack& t,Int_t copy)
 void AliJet::Data(TString f)
 {
 // Provide jet information within the coordinate frame f
- cout << " *AliJet::Data* Id : " << fUserId << " Invmass : " << GetInvmass() << " Charge : " << fQ
+ cout << " *AliJet::Data* Name : " << GetName() << " Title : " << GetTitle() << endl;
+ cout << " Id : " << fUserId << " Invmass : " << GetInvmass() << " Charge : " << fQ
       << " Momentum : " << GetMomentum() << " Ntracks : " << fNtrk << endl;
 
  Ali4Vector::Data(f); 

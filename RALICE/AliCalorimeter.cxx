@@ -81,6 +81,7 @@ AliCalorimeter::AliCalorimeter() : TNamed()
  fAttributes=0;
  fPositions=0;
  SetName("Unspecified");
+ SetTitle("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalorimeter::~AliCalorimeter()
@@ -163,6 +164,7 @@ AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol) : TNamed()
  fVetos=0;
 
  SetName("Unspecified");
+ SetTitle("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalorimeter::AliCalorimeter(AliCalorimeter& c) : TNamed(c)

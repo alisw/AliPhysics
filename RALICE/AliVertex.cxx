@@ -542,7 +542,8 @@ void AliVertex::AddVertex(AliVertex& v,Int_t connect)
 void AliVertex::Data(TString f)
 {
 // Provide vertex information within the coordinate frame f
- cout << " *AliVertex::Data* Id : " << fUserId << " Invmass : " << GetInvmass()
+ cout << " *AliVertex::Data* Name : " << GetName() << " Title : " << GetTitle() << endl;
+ cout << " Id : " << fUserId << " Invmass : " << GetInvmass()
       << " Charge : " << GetCharge() << " Momentum : " << GetMomentum()
       << " Ntracks : " << GetNtracks() << " Nvertices : " << fNvtx 
       << " Njets : " << fNjets << endl;

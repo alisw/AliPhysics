@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.13 2003/08/29 09:05:11 nick Exp $
+// $Id: AliEvent.cxx,v 1.14 2003/10/26 14:53:44 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -201,7 +201,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2003/08/29 09:05:11 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2003/10/26 14:53:44 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -213,7 +213,8 @@ AliEvent::AliEvent() : AliVertex()
 {
 // Default constructor.
 // All variables initialised to default values.
- fDaytime.Set();
+ TTimeStamp tx;
+ fDaytime=tx;
  fRun=0;
  fEvent=0;
  fAproj=0;
@@ -236,7 +237,8 @@ AliEvent::AliEvent(Int_t n) : AliVertex(n)
  {
   cout << " *** This AliVertex initialisation was invoked via the AliEvent ctor." << endl;
  }
- fDaytime.Set();
+ TTimeStamp tx;
+ fDaytime=tx;
  fRun=0;
  fEvent=0;
  fAproj=0;
@@ -310,7 +312,8 @@ void AliEvent::Reset()
 
  AliVertex::Reset();
 
- fDaytime.Set();
+ TTimeStamp tx;
+ fDaytime=tx;
  fRun=0;
  fEvent=0;
  fAproj=0;
@@ -358,10 +361,25 @@ void AliEvent::SetOwner(Bool_t own)
  AliVertex::SetOwner(own);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliEvent::SetDayTime(TTimeStamp& stamp)
+{
+// Set the date and time stamp for this event.
+// An exact copy of the entered date/time stamp will be saved with an
+// accuracy of 1 second.
+ fDaytime=stamp;
+}
+///////////////////////////////////////////////////////////////////////////
 void AliEvent::SetDayTime(TDatime& stamp)
 {
-// Set the date and time stamp for this event
- fDaytime=stamp;
+// Set the date and time stamp for this event.
+// The entered date/time will be interpreted as being the local date/time
+// and the accuracy is 1 second.
+// This function with the TDatime argument is mainly kept for backward
+// compatibility reasons. It is recommended to use the corresponding
+// function with the TTimeStamp argument.
+
+ TTimeStamp ts(stamp.GetDate(),stamp.GetTime(),0,kFALSE);
+ fDaytime=ts;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::SetRunNumber(Int_t run)
@@ -376,7 +394,7 @@ void AliEvent::SetEventNumber(Int_t evt)
  fEvent=evt;
 }
 ///////////////////////////////////////////////////////////////////////////
-TDatime AliEvent::GetDayTime()
+TTimeStamp AliEvent::GetDayTime()
 {
 // Provide the date and time stamp for this event
  return fDaytime;
@@ -465,8 +483,10 @@ Int_t AliEvent::GetTargetId()
 void AliEvent::HeaderData()
 {
 // Provide event header information
- cout << " *" << ClassName() << "::Data* Run : " << fRun << " Event : " << fEvent
-      << " Date : " << fDaytime.AsString() << endl;
+ cout << " *" << ClassName() << "::Data* Name : " << GetName()
+      << " Title : " << GetTitle() << endl;
+ cout << "  " << fDaytime.AsString() << endl;
+ cout << "  Run : " << fRun << " Event : " << fEvent << endl;
 
  ShowDevices();
 }

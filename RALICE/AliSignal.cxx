@@ -100,6 +100,7 @@ AliSignal::AliSignal() : TNamed(),AliPosition(),AliAttrib()
  fDsignals=0;
  fWaveforms=0;
  SetName("Unspecified");
+ SetTitle("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSignal::~AliSignal()
@@ -418,7 +419,8 @@ void AliSignal::Data(TString f)
 {
 // Provide all signal information within the coordinate frame f.
 
- cout << " *" << ClassName() << "::Data* Signal of kind : " << GetName() << endl;
+ cout << " *" << ClassName() << "::Data* Name : " << GetName()
+      << " Title : " << GetTitle() << endl;
  cout << " Position";
  Ali3Vector::Data(f);
 
@@ -439,12 +441,15 @@ void AliSignal::List(Int_t j)
   return;
  }
 
- if (j != -1) cout << " *" << ClassName() << "::List* Signal of kind : " << GetName() << endl;
+ if (j != -1) cout << " *" << ClassName() << "::List* Name : " << GetName()
+                   << " Title : " << GetTitle() << endl;
 
  Int_t nvalues=GetNvalues();
  Int_t nerrors=GetNerrors();
+ Int_t nwforms=GetNwaveforms();
  Int_t n=nvalues;
  if (nerrors>n) n=nerrors;
+ if (nwforms>n) n=nwforms;
 
  if (j<=0)
  {
@@ -455,6 +460,8 @@ void AliSignal::List(Int_t j)
    if (i<=nerrors) cout << " error : " << GetSignalError(i);
    AliAttrib::List(i);
    cout << endl;
+   if (GetWaveform(i)) cout << "    Waveform : " << GetWaveform(i)->ClassName()
+                            << " " << GetWaveform(i)->GetTitle() << endl;
   }
  }
  else
@@ -466,6 +473,8 @@ void AliSignal::List(Int_t j)
    if (j<=nerrors) cout << " error : " << GetSignalError(j);
    AliAttrib::List(j);
    cout << endl;
+   if (GetWaveform(j)) cout << "    Waveform : " << GetWaveform(j)->ClassName()
+                            << " " << GetWaveform(j)->GetTitle() << endl;
   }
  }
 } 

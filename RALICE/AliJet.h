@@ -7,13 +7,13 @@
  
 #include <math.h>
  
-#include "TObject.h"
+#include "TNamed.h"
 #include "TObjArray.h"
 
 #include "Ali4Vector.h"
 #include "AliTrack.h"
  
-class AliJet : public TObject,public Ali4Vector
+class AliJet : public TNamed,public Ali4Vector
 {
  public:
   AliJet();                                // Default constructor
@@ -59,6 +59,6 @@ class AliJet : public TObject,public Ali4Vector
   Int_t fTrackCopy;                      // Flag to denote creation of private copies in fTracks
   Int_t fUserId;                         // The user defined identifier
  
- ClassDef(AliJet,5) // Creation and investigation of a jet of particle tracks.
+ ClassDef(AliJet,6) // Creation and investigation of a jet of particle tracks.
 };
 #endif

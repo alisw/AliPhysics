@@ -34,7 +34,7 @@
 // a.SetOffset(-22.5,2);
 // a.SetSlotName("Time of flight in ns",2);
 // a.SetDead(1);
-// a.Data();
+// a.List();
 //
 //--- Author: Nick van Eijndhoven 18-sep-2003 Utrecht University
 //- Modified: NvE $Date$ Utrecht University
@@ -787,7 +787,7 @@ Int_t AliAttrib::GetSlotIndex(TString name)
   for (Int_t i=0; i<size; i++)
   {
    TObjString* so=(TObjString*)fNames->At(i);
-   s=so->GetString();
+   if (so) s=so->GetString();
    if (s==name) index=i+1;
   }
  }

@@ -261,11 +261,11 @@ Double_t AliMath::Erfc(Double_t x)
 //--- Nve 14-nov-1998 UU-SAP Utrecht
  
  // The parameters of the Chebyshev fit
- const Double_t a1=-1.26551223,  a2=1.00002368,
-                a3= 0.37409196,  a4=0.09678418,
-                a5=-0.18628806,  a6=0.27886807,
-                a7=-1.13520398,  a8=1.48851587,
-                a9=-0.82215223, a10=0.17087277;
+ const Double_t ka1=-1.26551223,  ka2=1.00002368,
+                ka3= 0.37409196,  ka4=0.09678418,
+                ka5=-0.18628806,  ka6=0.27886807,
+                ka7=-1.13520398,  ka8=1.48851587,
+                ka9=-0.82215223, ka10=0.17087277;
  
  Double_t v=1.; // The return value
  
@@ -276,7 +276,7 @@ Double_t AliMath::Erfc(Double_t x)
  Double_t t=1./(1.+0.5*z);
  
  v=t*exp((-z*z)
-         +a1+t*(a2+t*(a3+t*(a4+t*(a5+t*(a6+t*(a7+t*(a8+t*(a9+t*a10)))))))));
+   +ka1+t*(ka2+t*(ka3+t*(ka4+t*(ka5+t*(ka6+t*(ka7+t*(ka8+t*(ka9+t*ka10)))))))));
  
  if (x < 0.) v=2.-v; // erfc(-x)=2-erfc(x)
  
@@ -350,12 +350,12 @@ Double_t AliMath::BesselI0(Double_t x)
 //--- NvE 12-mar-2000 UU-SAP Utrecht
 
  // Parameters of the polynomial approximation  
- const Double_t p1=1.0,          p2=3.5156229,    p3=3.0899424,
-                p4=1.2067492,    p5=0.2659732,    p6=3.60768e-2,  p7=4.5813e-3;
+ const Double_t kp1=1.0,          kp2=3.5156229,    kp3=3.0899424,
+                kp4=1.2067492,    kp5=0.2659732,    kp6=3.60768e-2,  kp7=4.5813e-3;
 
- const Double_t q1= 0.39894228,  q2= 1.328592e-2, q3= 2.25319e-3,
-                q4=-1.57565e-3,  q5= 9.16281e-3,  q6=-2.057706e-2,
-                q7= 2.635537e-2, q8=-1.647633e-2, q9= 3.92377e-3; 
+ const Double_t kq1= 0.39894228,  kq2= 1.328592e-2, kq3= 2.25319e-3,
+                kq4=-1.57565e-3,  kq5= 9.16281e-3,  kq6=-2.057706e-2,
+                kq7= 2.635537e-2, kq8=-1.647633e-2, kq9= 3.92377e-3; 
 
  Double_t ax=fabs(x);
 
@@ -364,12 +364,13 @@ Double_t AliMath::BesselI0(Double_t x)
  if (ax < 3.75)
  {
   y=pow(x/3.75,2);
-  result=p1+y*(p2+y*(p3+y*(p4+y*(p5+y*(p6+y*p7)))));
+  result=kp1+y*(kp2+y*(kp3+y*(kp4+y*(kp5+y*(kp6+y*kp7)))));
  }
  else
  {
   y=3.75/ax;
-  result=(exp(ax)/sqrt(ax))*(q1+y*(q2+y*(q3+y*(q4+y*(q5+y*(q6+y*(q7+y*(q8+y*q9))))))));
+  result=(exp(ax)/sqrt(ax))
+         *(kq1+y*(kq2+y*(kq3+y*(kq4+y*(kq5+y*(kq6+y*(kq7+y*(kq8+y*kq9))))))));
  }
 
  return result;
@@ -388,11 +389,11 @@ Double_t AliMath::BesselK0(Double_t x)
 //--- NvE 12-mar-2000 UU-SAP Utrecht
 
  // Parameters of the polynomial approximation  
- const Double_t p1=-0.57721566,  p2=0.42278420,   p3=0.23069756,
-                p4= 3.488590e-2, p5=2.62698e-3,   p6=1.0750e-4,    p7=7.4e-5;
+ const Double_t kp1=-0.57721566,  kp2=0.42278420,   kp3=0.23069756,
+                kp4= 3.488590e-2, kp5=2.62698e-3,   kp6=1.0750e-4,    kp7=7.4e-5;
 
- const Double_t q1= 1.25331414,  q2=-7.832358e-2, q3= 2.189568e-2,
-                q4=-1.062446e-2, q5= 5.87872e-3,  q6=-2.51540e-3,  q7=5.3208e-4;
+ const Double_t kq1= 1.25331414,  kq2=-7.832358e-2, kq3= 2.189568e-2,
+                kq4=-1.062446e-2, kq5= 5.87872e-3,  kq6=-2.51540e-3,  kq7=5.3208e-4;
 
  if (x <= 0)
  {
@@ -405,12 +406,14 @@ Double_t AliMath::BesselK0(Double_t x)
  if (x <= 2)
  {
   y=x*x/4.;
-  result=(-log(x/2.)*BesselI0(x))+(p1+y*(p2+y*(p3+y*(p4+y*(p5+y*(p6+y*p7))))));
+  result=(-log(x/2.)*BesselI0(x))
+         +(kp1+y*(kp2+y*(kp3+y*(kp4+y*(kp5+y*(kp6+y*kp7))))));
  }
  else
  {
   y=2./x;
-  result=(exp(-x)/sqrt(x))*(q1+y*(q2+y*(q3+y*(q4+y*(q5+y*(q6+y*q7))))));
+  result=(exp(-x)/sqrt(x))
+         *(kq1+y*(kq2+y*(kq3+y*(kq4+y*(kq5+y*(kq6+y*kq7))))));
  }
 
  return result;
@@ -429,12 +432,12 @@ Double_t AliMath::BesselI1(Double_t x)
 //--- NvE 12-mar-2000 UU-SAP Utrecht
 
  // Parameters of the polynomial approximation  
- const Double_t p1=0.5,          p2=0.87890594,   p3=0.51498869,
-                p4=0.15084934,   p5=2.658733e-2,  p6=3.01532e-3,  p7=3.2411e-4;
+ const Double_t kp1=0.5,          kp2=0.87890594,   kp3=0.51498869,
+                kp4=0.15084934,   kp5=2.658733e-2,  kp6=3.01532e-3,  kp7=3.2411e-4;
 
- const Double_t q1= 0.39894228,  q2=-3.988024e-2, q3=-3.62018e-3,
-                q4= 1.63801e-3,  q5=-1.031555e-2, q6= 2.282967e-2,
-                q7=-2.895312e-2, q8= 1.787654e-2, q9=-4.20059e-3; 
+ const Double_t kq1= 0.39894228,  kq2=-3.988024e-2, kq3=-3.62018e-3,
+                kq4= 1.63801e-3,  kq5=-1.031555e-2, kq6= 2.282967e-2,
+                kq7=-2.895312e-2, kq8= 1.787654e-2, kq9=-4.20059e-3; 
 
  Double_t ax=fabs(x);
 
@@ -443,12 +446,13 @@ Double_t AliMath::BesselI1(Double_t x)
  if (ax < 3.75)
  {
   y=pow(x/3.75,2);
-  result=x*(p1+y*(p2+y*(p3+y*(p4+y*(p5+y*(p6+y*p7))))));
+  result=x*(kp1+y*(kp2+y*(kp3+y*(kp4+y*(kp5+y*(kp6+y*kp7))))));
  }
  else
  {
   y=3.75/ax;
-  result=(exp(ax)/sqrt(ax))*(q1+y*(q2+y*(q3+y*(q4+y*(q5+y*(q6+y*(q7+y*(q8+y*q9))))))));
+  result=(exp(ax)/sqrt(ax))
+         *(kq1+y*(kq2+y*(kq3+y*(kq4+y*(kq5+y*(kq6+y*(kq7+y*(kq8+y*kq9))))))));
   if (x < 0) result=-result;
  }
 
@@ -468,11 +472,11 @@ Double_t AliMath::BesselK1(Double_t x)
 //--- NvE 12-mar-2000 UU-SAP Utrecht
 
  // Parameters of the polynomial approximation  
- const Double_t p1= 1.,          p2= 0.15443144,  p3=-0.67278579,
-                p4=-0.18156897,  p5=-1.919402e-2, p6=-1.10404e-3,  p7=-4.686e-5;
+ const Double_t kp1= 1.,          kp2= 0.15443144,  kp3=-0.67278579,
+                kp4=-0.18156897,  kp5=-1.919402e-2, kp6=-1.10404e-3,  kp7=-4.686e-5;
 
- const Double_t q1= 1.25331414,  q2= 0.23498619,  q3=-3.655620e-2,
-                q4= 1.504268e-2, q5=-7.80353e-3,  q6= 3.25614e-3,  q7=-6.8245e-4;
+ const Double_t kq1= 1.25331414,  kq2= 0.23498619,  kq3=-3.655620e-2,
+                kq4= 1.504268e-2, kq5=-7.80353e-3,  kq6= 3.25614e-3,  kq7=-6.8245e-4;
 
  if (x <= 0)
  {
@@ -485,12 +489,14 @@ Double_t AliMath::BesselK1(Double_t x)
  if (x <= 2)
  {
   y=x*x/4.;
-  result=(log(x/2.)*BesselI1(x))+(1./x)*(p1+y*(p2+y*(p3+y*(p4+y*(p5+y*(p6+y*p7))))));
+  result=(log(x/2.)*BesselI1(x))
+         +(1./x)*(kp1+y*(kp2+y*(kp3+y*(kp4+y*(kp5+y*(kp6+y*kp7))))));
  }
  else
  {
   y=2./x;
-  result=(exp(-x)/sqrt(x))*(q1+y*(q2+y*(q3+y*(q4+y*(q5+y*(q6+y*q7))))));
+  result=(exp(-x)/sqrt(x))
+         *(kq1+y*(kq2+y*(kq3+y*(kq4+y*(kq5+y*(kq6+y*kq7))))));
  }
 
  return result;
