@@ -25,6 +25,9 @@ ifeq ($(ALICE_TARGET),Linux)
 	     -Wtrigraphs -Wformat -Wchar-subscripts \
 	     -Wparentheses              
   CXXOPTS := $(patsubst -O%,-O% -Wuninitialized,$(CXXOPTS))
+
+# Motif, Xt libraries
+  G4GLIBS := -L/usr/lib/Motif1.2_R6 -lXm -L/usr/lib -lXt
 endif
 
 ifeq ($(ALICE_TARGET),HP-UX.aCC)
@@ -36,6 +39,9 @@ ifeq ($(ALICE_TARGET),HP-UX.aCC)
   CXXOPTS := $(patsubst -O%,-O% +Onolimit,$(CXXOPTS))
   CXXOPTS := $(patsubst +O%,+O% +Onolimit,$(CXXOPTS))
   CXXOPTS += +DAportable
+
+# Motif, Xt libraries
+  G4GLIBS := -L/usr/lib/Motif1.2_R6 -lXm -L/usr/lib -lXt                   
 endif  
  
 ifeq ($(ALICE_TARGET),OSF1)
@@ -200,7 +206,7 @@ endif
 
 # LDLIBS3 contains the first set of low level libraries...
 #
-  LDLIBS3 += $(INTYLIBS)
+  LDLIBS3 += $(INTYLIBS) $(G4GLIBS)
 
 endif # ifndef USER_DEFINED_LDLIBS
 
