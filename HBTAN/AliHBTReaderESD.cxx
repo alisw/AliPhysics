@@ -1,4 +1,14 @@
 #include "AliHBTReaderESD.h"
+//____________________________________________________________________
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
+// class AliHBTReaderESD                                            //
+//                                                                  //
+// reader for ALICE Event Summary Data (ESD).                       //
+//                                                                  //
+// Piotr.Skowronski@cern.ch                                         //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
 
 #include <TPDGCode.h>
 #include <TString.h>
@@ -49,8 +59,8 @@ AliHBTReaderESD::AliHBTReaderESD(TObjArray* dirs,const Char_t* esdfilename, cons
 AliHBTReaderESD::~AliHBTReaderESD()
 {
  //desctructor
-  delete fFile;
   delete fRunLoader;
+  delete fFile;
 }
 /**********************************************************/
 Int_t AliHBTReaderESD::ReadNext()
@@ -109,6 +119,7 @@ Int_t AliHBTReaderESD::ReadNext()
         delete fFile;//we have to assume there is no more ESD objects in the fFile
         delete fRunLoader;
         fFile = 0x0;
+        fRunLoader = 0x0;
         continue;
       }
      AliStack* stack = 0x0;
@@ -129,16 +140,24 @@ Int_t AliHBTReaderESD::ReadNext()
            Error("Next","Can not get track %d", i);
            continue;
          }
+        
+        if (esdtrack->HasVertexParameters() == kFALSE)
+         {
+           if (AliHBTParticle::fgDebug > 2) 
+             Info("ReadNext","Particle skipped: Data at vertex not available.");
+           continue;
+         }
+         
         if ((esdtrack->GetStatus()&AliESDtrack::kESDpid) == kFALSE) 
          {
            if (AliHBTParticle::fgDebug > 2) 
              Info("ReadNext","Particle skipped: PID BIT is not set.");
            continue;
          }
-
+       
         esdtrack->GetESDpid(pidtable);
-        esdtrack->GetPxPyPz(mom);
-        esdtrack->GetXYZ(pos);
+        esdtrack->GetVertexPxPyPz(mom[0],mom[1],mom[2]);
+        esdtrack->GetVertexXYZ(pos[0],pos[1],pos[2]);
         
         Double_t extx;
         Double_t extp[5];
@@ -254,13 +273,13 @@ Int_t AliHBTReaderESD::ReadNext()
 /**********************************************************/
 void AliHBTReaderESD::Rewind()
 {
+  //rewinds reading 
   delete fFile;
   fFile = 0;
   delete fRunLoader;
   fCurrentDir = 0;
   fNEventsRead = 0;
   fCurrentEvent++;
-  
 }
 /**********************************************************/
 
