@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2001/01/26 21:38:49  morsch
+Use access functions to AliMUONDigit member data.
+
 Revision 1.8  2001/01/23 18:58:19  hristov
 Initialisation of some pointers
 
@@ -175,16 +178,8 @@ void  AliMUONClusterInput::SetCluster(AliMUONRawCluster* cluster)
 
 Float_t AliMUONClusterInput::DiscrChargeS1(Int_t i,Double_t *par) 
 {
-// par[0]    x-position of cluster
-// par[1]    y-position of cluster
-
-   fSegmentation[0]->SetPad(fix[i][0], fiy[i][0]);
-//  First Cluster
-   fSegmentation[0]->SetHit(par[0],par[1],fZ);
-   Float_t q1=fResponse->IntXY(fSegmentation[0]);
-    
-   Float_t value = fQtot[0]*q1;
-   return value;
+// Compute the charge on first cathod only.
+return DiscrChargeCombiS1(i,par,0);
 }
 
 Float_t AliMUONClusterInput::DiscrChargeCombiS1(Int_t i,Double_t *par, Int_t cath) 
@@ -230,8 +225,9 @@ Float_t AliMUONClusterInput::DiscrChargeCombiS2(Int_t i,Double_t *par, Int_t cat
 // par[1]    y-position of first  cluster
 // par[2]    x-position of second cluster
 // par[3]    y-position of second cluster
-// par[4]    charge fraction of first  cluster
-// 1-par[4]  charge fraction of second cluster
+// par[4]    charge fraction of first  cluster - first cathode
+// 1-par[4]  charge fraction of second cluster 
+// par[5]    charge fraction of first  cluster - second cathode
 
    fSegmentation[cath]->SetPad(fix[i][cath], fiy[i][cath]);
 //  First Cluster
