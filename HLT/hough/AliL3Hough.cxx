@@ -353,6 +353,9 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 void AliL3Hough::SetTransformerParams(Float_t ptres,Float_t ptmin,Float_t ptmax,Int_t ny,Int_t patch)
 {
   // Setup the parameters for the Hough Transformer
+  // This includes the bin size and limits for
+  // the parameter space histograms
+
   Int_t mrow;
   Float_t psi=0;
   if(patch==-1)
@@ -819,6 +822,13 @@ void AliL3Hough::AddAllHistogramsRows()
 
 void AliL3Hough::PrepareForNextPatch(Int_t nextpatch)
 {
+  // Prepare the parameter space for the processing of
+  // the next read patch. According to the already
+  // accumulated number of gaps in parameter space
+  // bins, the routine updates the dynamic
+  // pointers used in order to jump rapidly during the
+  // filling of the parameter space.
+
   char buf[256];
   sprintf(buf,"Prepare For Patch %d",nextpatch);
   fBenchmark->Start(buf);
@@ -1295,6 +1305,10 @@ void AliL3Hough::WriteTracks(Int_t slice,Char_t *path)
 #ifdef use_aliroot
 Int_t AliL3Hough::FillESD(AliESD *esd)
 {
+  // Fill the found hough transform tracks
+  // into the ESD. The tracks are stored as
+  // AliESDHLTtrack objects.
+
   if(!fGlobalTracks) return 0;
   Int_t nglobaltracks = 0;
   for(Int_t i=0; i<fGlobalTracks->GetNTracks(); i++)
@@ -1353,6 +1367,9 @@ Double_t AliL3Hough::GetCpuTime()
 
 void *AliL3Hough::ProcessInThread(void *args)
 {
+  // Called in case Hough transform tracking
+  // is executed in a thread
+
   AliL3Hough *instance = (AliL3Hough *)args;
   Int_t minslice = instance->GetMinSlice();
   Int_t maxslice = instance->GetMaxSlice();
@@ -1369,6 +1386,10 @@ void *AliL3Hough::ProcessInThread(void *args)
 
 void AliL3Hough::StartProcessInThread(Int_t minslice,Int_t maxslice)
 {
+  // Starts the Hough transform tracking as a
+  // separate thread. Takes as parameters the
+  // range of TPC slices (sectors) to be reconstructed
+
   if(!fThread) {
     char buf[255];
     sprintf(buf,"houghtrans_%d_%d",minslice,maxslice);
@@ -1382,6 +1403,11 @@ void AliL3Hough::StartProcessInThread(Int_t minslice,Int_t maxslice)
 
 Int_t AliL3Hough::WaitForThreadFinish()
 {
+  // Routine is used in case we run the
+  // Hough transform tracking in several
+  // threads and want to sync them before
+  // writing the results to the ESD
+
 #if ROOT_VERSION_CODE < 262403
   return TThread::Join(fThread->GetId());
 #else

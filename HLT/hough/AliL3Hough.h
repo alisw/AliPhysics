@@ -135,8 +135,8 @@ class AliL3Hough {
 
   Float_t fZVertex; // Z position of the primary vertex
 
-  Int_t fMinSlice;
-  Int_t fMaxSlice;
+  Int_t fMinSlice; // First TPC slice (sector) to process while running in a thread
+  Int_t fMaxSlice; // Last TPC slice (sector) to process while running in a thread
 
   AliL3MemHandler **fMemHandler; //!
   AliL3HoughBaseTransformer **fHoughTransformer; //!
@@ -156,7 +156,7 @@ class AliL3Hough {
   void CleanUp();
   Double_t GetCpuTime();
 
-  TThread *fThread;
+  TThread *fThread; // Pointer to the TThread object in case of running in a thread
 
   ClassDef(AliL3Hough,1) //Hough transform base class
 };
