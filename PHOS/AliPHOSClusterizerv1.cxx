@@ -464,8 +464,9 @@ Bool_t AliPHOSClusterizerv1::ReadDigits(){
   
   digitsBranch->SetAddress(&fDigits) ;
   digitizerBranch->SetAddress(&fDigitizer) ;
-  
-  treeD->GetEvent(0) ;
+
+  digitsBranch->GetEntry(0) ;
+  digitizerBranch->GetEntry(0) ;
   
   fPedestal = fDigitizer->GetPedestal() ;
   fSlope    = fDigitizer->GetSlope() ;
@@ -488,6 +489,8 @@ void AliPHOSClusterizerv1::WriteRecPoints(){
   for(index = 0; index < fEmcRecPoints->GetEntries(); index++)
     ((AliPHOSEmcRecPoint *)fEmcRecPoints->At(index))->SetIndexInList(index) ;
 
+  fEmcRecPoints->Expand(fEmcRecPoints->GetEntriesFast()) ; 
+
   //Now the same for CPV
   for(index = 0; index < fCpvRecPoints->GetEntries(); index++)
     ((AliPHOSRecPoint *)fCpvRecPoints->At(index))->EvalAll(fW0CPV,fDigits)  ;
@@ -496,6 +499,8 @@ void AliPHOSClusterizerv1::WriteRecPoints(){
 
   for(index = 0; index < fCpvRecPoints->GetEntries(); index++)
     ((AliPHOSRecPoint *)fCpvRecPoints->At(index))->SetIndexInList(index) ;
+
+  fCpvRecPoints->Expand(fCpvRecPoints->GetEntriesFast()) ;
 
   if(gAlice->TreeR()==0)
     gAlice->MakeTree("R") ;
@@ -568,8 +573,9 @@ void AliPHOSClusterizerv1::WriteRecPoints(){
   if (filename) {
     emcBranch->SetFile(filename);
     TIter next( emcBranch->GetListOfBranches());
-    while ((emcBranch=(TBranch*)next())) {
-      emcBranch->SetFile(filename);
+    TBranch * sb ;
+    while ((sb=(TBranch*)next())) {
+      sb->SetFile(filename);
     }   
     cwd->cd();
   }
@@ -580,8 +586,9 @@ void AliPHOSClusterizerv1::WriteRecPoints(){
   if (filename) {
     cpvBranch->SetFile(filename);
     TIter next( cpvBranch->GetListOfBranches());
-    while ((cpvBranch=(TBranch*)next())) {
-      cpvBranch->SetFile(filename);
+    TBranch * sb;
+    while ((sb=(TBranch*)next())) {
+      sb->SetFile(filename);
     }   
     cwd->cd();
   } 
@@ -594,14 +601,17 @@ void AliPHOSClusterizerv1::WriteRecPoints(){
   if (filename) {
     clusterizerBranch->SetFile(filename);
     TIter next( clusterizerBranch->GetListOfBranches());
-    while ((clusterizerBranch=(TBranch*)next())) {
-      clusterizerBranch->SetFile(filename);
+    TBranch * sb ;
+    while ((sb=(TBranch*)next())) {
+      sb->SetFile(filename);
     }   
     cwd->cd();
   }
   
-  gAlice->TreeR()->Fill() ;
   
+  emcBranch->Fill() ;
+  cpvBranch->Fill() ;
+  clusterizerBranch->Fill() ;
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
 }

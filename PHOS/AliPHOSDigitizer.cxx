@@ -368,9 +368,8 @@ void AliPHOSDigitizer::WriteDigits(){
   gAlice->SetEvent(fIevent->At(0)) ;  // for all-to-all will produce a lot of branches in TreeD
 
   if(gAlice->TreeD()==0)
-    gAlice->MakeTree("D") ;
+    gAlice->MakeTree("D") ;  
 
-  
   //Check, if this branch already exits?
   TBranch * digitsBranch = 0;
   TBranch * digitizerBranch = 0;
@@ -422,8 +421,9 @@ void AliPHOSDigitizer::WriteDigits(){
   if (file) {
     digitsBranch->SetFile(file);
     TIter next( digitsBranch->GetListOfBranches());
-    while ((digitsBranch=(TBranch*)next())) {
-      digitsBranch->SetFile(file);
+    TBranch * sbr ;
+    while ((sbr=(TBranch*)next())) {
+      sbr->SetFile(file);
     }   
     cwd->cd();
   } 
@@ -437,13 +437,15 @@ void AliPHOSDigitizer::WriteDigits(){
   if (file) {
     digitizerBranch->SetFile(file);
     TIter next( digitizerBranch->GetListOfBranches());
-    while ((digitizerBranch=(TBranch*)next())) {
-      digitizerBranch->SetFile(file);
+    TBranch * sbr;
+    while ((sbr=(TBranch*)next())) {
+      sbr->SetFile(file);
     }   
     cwd->cd();
   }
 
-  gAlice->TreeD()->Fill() ;
+  digitsBranch->Fill() ;
+  digitizerBranch->Fill() ;
   
   gAlice->TreeD()->Write(0,kOverwrite) ;  
 
@@ -559,7 +561,9 @@ Bool_t AliPHOSDigitizer::ReadSDigits(){
     
     AliPHOSSDigitizer *sDigitizer = new AliPHOSSDigitizer();
     sdigitizerBranch->SetAddress(&sDigitizer) ;
-    treeS->GetEvent(0) ;
+
+    sdigitsBranch->GetEntry(0) ;
+    sdigitizerBranch->GetEntry(0) ;
     
     if(fSDigitizer == 0)
       fSDigitizer = sDigitizer ;

@@ -232,7 +232,8 @@ Bool_t AliPHOSPIDv1::ReadTrackSegments()
   tsMakerBranch->SetAddress(&fTSMaker) ;
   tsBranch->SetAddress(&fTrackSegments) ;
 
-  treeR->GetEvent(0) ;
+  tsMakerBranch->GetEntry(0) ;
+  tsBranch->GetEntry(0) ;
 
   fRecPointsTitle = fTSMaker->GetRecPointsBranch() ;
 
@@ -276,7 +277,10 @@ Bool_t AliPHOSPIDv1::ReadTrackSegments()
   cpvBranch->SetAddress(&fCpvRecPoints) ;
   cluBranch->SetAddress(&fClusterizer) ;
 
-  treeR->GetEvent(0) ;
+  emcBranch->GetEntry(0) ;
+  cpvBranch->GetEntry(0) ;
+  cluBranch->GetEntry(0) ;
+
   return kTRUE ;
 
 
@@ -493,8 +497,9 @@ void  AliPHOSPIDv1::WriteRecParticles()
   if (filename) {
     rpBranch->SetFile(filename);
     TIter next( rpBranch->GetListOfBranches());
-    while ((rpBranch=(TBranch*)next())) {
-      rpBranch->SetFile(filename);
+    TBranch * sb ;
+    while ((sb=(TBranch*)next())) {
+      sb->SetFile(filename);
     }   
     cwd->cd();
   }
@@ -507,13 +512,15 @@ void  AliPHOSPIDv1::WriteRecParticles()
   if (filename) {
     pidBranch->SetFile(filename);
     TIter next( pidBranch->GetListOfBranches());
-    while ((pidBranch=(TBranch*)next())) {
-      pidBranch->SetFile(filename);
+    TBranch * sb ;
+    while ((sb=(TBranch*)next())) {
+      sb->SetFile(filename);
     }   
     cwd->cd();
   }    
   
-  gAlice->TreeR()->Fill() ;    
+  rpBranch->Fill() ;
+  pidBranch->Fill() ;
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
 }

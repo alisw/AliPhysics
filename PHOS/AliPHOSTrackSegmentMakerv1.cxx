@@ -523,8 +523,10 @@ Bool_t AliPHOSTrackSegmentMakerv1::ReadRecPoints(){
   emcBranch->SetAddress(&fEmcRecPoints) ;
   cpvBranch->SetAddress(&fCpvRecPoints) ;
   clusterizerBranch->SetAddress(&fClusterizer) ;
-  
-  gAlice->TreeR()->GetEvent(0) ;
+
+  emcBranch->GetEntry(0) ;
+  cpvBranch->GetEntry(0) ;
+  clusterizerBranch->GetEntry(0) ;
   
   return kTRUE ;
   
@@ -587,8 +589,9 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(){
   if (filename) {
     tsBranch->SetFile(filename);
     TIter next( tsBranch->GetListOfBranches());
-    while ((tsBranch=(TBranch*)next())) {
-      tsBranch->SetFile(filename);
+    TBranch * sb ;
+    while ((sb=(TBranch*)next())) {
+      sb->SetFile(filename);
     }   
     cwd->cd();
   } 
@@ -602,13 +605,15 @@ void AliPHOSTrackSegmentMakerv1::WriteTrackSegments(){
   if (filename) {
     tsMakerBranch->SetFile(filename);
     TIter next( tsMakerBranch->GetListOfBranches());
-    while ((tsMakerBranch=(TBranch*)next())) {
-      tsMakerBranch->SetFile(filename);
+    TBranch * sb;
+    while ((sb=(TBranch*)next())) {
+      sb->SetFile(filename);
     }   
     cwd->cd();
   } 
   
-  gAlice->TreeR()->Fill() ;    
+  tsBranch->Fill() ;  
+  tsMakerBranch->Fill() ;
   gAlice->TreeR()->Write(0,kOverwrite) ;  
   
 }

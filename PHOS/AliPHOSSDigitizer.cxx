@@ -268,8 +268,9 @@ void AliPHOSSDigitizer::Exec(Option_t *option) {
     if (file) {
       sdigitsBranch->SetFile(file);
       TIter next( sdigitsBranch->GetListOfBranches());
-      while ((sdigitsBranch=(TBranch*)next())) {
-	sdigitsBranch->SetFile(file);
+      TBranch * subbr;
+      while ((subbr=(TBranch*)next())) {
+	subbr->SetFile(file);
       }   
       cwd->cd();
     } 
@@ -283,14 +284,16 @@ void AliPHOSSDigitizer::Exec(Option_t *option) {
     if (file) {
       sdigitizerBranch->SetFile(file);
       TIter next( sdigitizerBranch->GetListOfBranches());
-      while ((sdigitizerBranch=(TBranch*)next())) {
-	sdigitizerBranch->SetFile(file);
+      TBranch * subbr ;
+      while ((subbr=(TBranch*)next())) {
+	subbr->SetFile(file);
       }   
       cwd->cd();
       delete file;
     }
 
-    gAlice->TreeS()->Fill() ;
+    sdigitsBranch->Fill() ;
+    sdigitizerBranch->Fill() ;
     gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
     
     if(strstr(option,"deb"))
