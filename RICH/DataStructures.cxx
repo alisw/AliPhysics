@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.2  2000/05/26 17:31:04  jbarbosa
+  New data member (cerenkov angle) in Cerenkov data structure.
+
   Revision 1.1  2000/04/19 13:32:48  morsch
   Data classes for RICH (completely updated) (JB,AM)
 
@@ -49,6 +52,7 @@ AliRICHHit::AliRICHHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
     fMomX=hits[14];
     fMomY=hits[15];
     fMomZ=hits[16];
+    fNPads=hits[17];
 }
 
 ClassImp(AliRICHCerenkov)
@@ -72,7 +76,8 @@ AliRICHCerenkov::AliRICHCerenkov(Int_t shunt, Int_t track, Int_t *vol, Float_t *
     fMomX=hits[14];
     fMomY=hits[15];
     fMomZ=hits[16];
-    fCerenkovAngle=hits[17];
+    fNPads=hits[17];
+    fCerenkovAngle=hits[18];
 }
 
 //___________________________________________

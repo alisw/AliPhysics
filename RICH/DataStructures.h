@@ -29,6 +29,7 @@ class AliRICHHit : public AliHit {
     Float_t   fMomX;            // Local Momentum
     Float_t   fMomY;            // Local Momentum
     Float_t   fMomZ;            // Local Momentum
+    Float_t   fNPads;           // Pads hit
  public:
     AliRICHHit() {}
     AliRICHHit(Int_t fIshunt, Int_t track, Int_t *vol, Float_t *hits);
@@ -57,6 +58,7 @@ class AliRICHCerenkov: public AliHit {
     Float_t   fMomX;            // Local Momentum
     Float_t   fMomY;            // Local Momentum
     Float_t   fMomZ;            // Local Momentum
+    Float_t   fNPads;           // Pads hit
     Float_t   fCerenkovAngle;   // Cerenkov Angle
  public:
     AliRICHCerenkov() {}
