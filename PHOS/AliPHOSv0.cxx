@@ -144,21 +144,30 @@ AliPHOSv0::~AliPHOSv0()
 {
   // dtor
 
-  fTmpHits->Delete() ; 
-  delete fTmpHits ;
-  fTmpHits = 0 ; 
+  if ( fTmpHits) {
+    fTmpHits->Delete() ; 
+    delete fTmpHits ;
+    fTmpHits = 0 ; 
+  }
 
-  fEmcRecPoints->Delete() ; 
-  delete fEmcRecPoints ; 
-  fEmcRecPoints = 0 ; 
+  if ( fEmcRecPoints ) {
+    fEmcRecPoints->Delete() ; 
+    delete fEmcRecPoints ; 
+    fEmcRecPoints = 0 ; 
+  }
 
-  fPpsdRecPoints->Delete() ;
-  delete fPpsdRecPoints ;
-  fPpsdRecPoints = 0 ; 
+  if ( fPpsdRecPoints ) { 
+    fPpsdRecPoints->Delete() ;
+    delete fPpsdRecPoints ;
+    fPpsdRecPoints = 0 ; 
+  }
+  
+  if ( fTrackSegments ) {
+    fTrackSegments->Delete() ; 
+    delete fTrackSegments ;
+    fTrackSegments = 0 ; 
+  }
 
-  fTrackSegments->Delete() ; 
-  delete fTrackSegments ;
-  fTrackSegments = 0 ; 
 }
 
 //____________________________________________________________________________
