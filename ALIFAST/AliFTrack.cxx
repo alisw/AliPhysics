@@ -6,7 +6,6 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "AliFTrack.h"
-#include "AliFast.h"
 
 ClassImp(AliFTrack)
 
@@ -16,6 +15,9 @@ AliFTrack::AliFTrack(Int_t code, Double_t charge,
                      Double_t v11, Double_t v22,Double_t v33,
                      Double_t v12, Double_t v13, Double_t v23, Int_t iFlag)
 {
+  //
+  // Class constructor
+  //
    fIdTrack    = code;
    fChTrack    = charge;
    fPT         = pT;
