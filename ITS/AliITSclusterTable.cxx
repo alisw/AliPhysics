@@ -23,7 +23,10 @@
 // -Function FillArrayLabel fills an array wich contains, for each       //
 //  particle label, and for each layer, the information on clusters:     //
 //  0 if there is no cluster, 1 if there is a cluster with this label.   //
-//  This function is used to define trackable tracks.                    //   
+//  This function is used to define trackable tracks.                    //
+// -Function FillArrayCoorAngles fills arrays wich contains, for each    //
+//  layer, the global coordinates, errors on x,y,z and angles lambda     //
+//  and phi for each cluster                                             //
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -44,10 +47,15 @@ AliITSclusterTable::AliITSclusterTable(){
   fLbl=0;
   fGeom = 0;
   fTracker = 0;
+  fPhiList = 0; 
+  fLambdaList = 0;
+  fXList = 0;
+  fYList =0;
+  for(Int_t i=0;i<3;i++){fPrimaryVertex[i]=0;}
 }
 
 //__________________________________________________________
-AliITSclusterTable::AliITSclusterTable(AliITSgeom* geom, AliITStrackerSA* tracker) {
+AliITSclusterTable::AliITSclusterTable(AliITSgeom* geom, AliITStrackerSA* tracker,Double_t* primaryVertex) {
 // Standard constructor
   fDet=0;
   Int_t nm = geom->GetIndexMax();
@@ -56,6 +64,11 @@ AliITSclusterTable::AliITSclusterTable(AliITSgeom* geom, AliITStrackerSA* tracke
   fLbl=0;
   fGeom = geom;
   fTracker = tracker;
+  for(Int_t i=0;i<3;i++){fPrimaryVertex[i]=primaryVertex[i];}
+  fPhiList = 0;
+  fLambdaList = 0;
+  fXList = 0;
+  fYList = 0;
 }
 
 //______________________________________________________________________
@@ -85,14 +98,12 @@ AliITSclusterTable::~AliITSclusterTable(){
     }
     delete fDet;
   }
-  /*  if(fLbl){
-    for (Int_t i=0; i<nm; i++){
-      delete fLbl[i];
-    }
-    delete fLbl;
-    }*/
   if (fLbl)delete [] fLbl;
   if (fNCl)delete [] fNCl;
+  if (fPhiList)delete [] fPhiList;
+  if (fLambdaList) delete [] fLambdaList;
+  if (fXList) delete [] fXList;
+  if (fYList) delete [] fYList;
 }
 
 //__________________________________________________________
@@ -213,4 +224,101 @@ Int_t AliITSclusterTable::FindIndex(Int_t ndim, Int_t *ptr, Int_t value){
     }
   }
   return retval;
+}
+
+void AliITSclusterTable::FillArrayCoorAngles(TTree* clusterTree,Int_t evnumber){
+  //Fill arrays with phi,lambda and indices of clusters for each layer
+  Info("FillArrayCoorAngles","Filling Array...");
+
+  fPhiList = new TArrayD*[fGeom->GetNlayers()];
+  fLambdaList = new TArrayD*[fGeom->GetNlayers()];
+  fXList = new TArrayD*[fGeom->GetNlayers()];
+  fYList = new TArrayD*[fGeom->GetNlayers()];
+  fZList = new TArrayD*[fGeom->GetNlayers()];
+  fSxList = new TArrayD*[fGeom->GetNlayers()];
+  fSyList = new TArrayD*[fGeom->GetNlayers()];
+  fSzList = new TArrayD*[fGeom->GetNlayers()];
+
+  fTracker->SetEventNumber(evnumber);
+  fTracker->LoadClusters(clusterTree);
+  Int_t * firstmod = new Int_t[fGeom->GetNlayers()+1];
+  firstmod[fGeom->GetNlayers()]=fGeom->GetIndexMax();  // upper limit
+
+  for(Int_t nlay=0;nlay<fGeom->GetNlayers();nlay++){
+    firstmod[nlay] = fGeom->GetModuleIndex(nlay+1,1,1);
+    Int_t ncl = fTracker->GetNumberOfClustersLayer(nlay);
+    fPhiList[nlay] = new TArrayD(ncl);
+    fLambdaList[nlay]=new TArrayD(ncl);
+    fXList[nlay]=new TArrayD(ncl);
+    fYList[nlay]=new TArrayD(ncl);
+    fZList[nlay]=new TArrayD(ncl);
+    fSxList[nlay]=new TArrayD(ncl);
+    fSyList[nlay]=new TArrayD(ncl);
+    fSzList[nlay]=new TArrayD(ncl);
+
+    for(Int_t j=0;j<ncl;j++){
+      AliITSclusterV2* cl = fTracker->GetClusterLayer(nlay,j);
+      Double_t phi=0;Double_t lambda=0;
+      Double_t x=0;Double_t y=0;Double_t z=0;
+      Double_t sx=0;Double_t sy=0;Double_t sz=0;
+      Int_t module = cl->GetDetectorIndex()+firstmod[nlay];
+      GetCoorAngles(cl,module,phi,lambda,x,y,z);
+      GetCoorErrors(cl,module,sx,sy,sz);
+      fPhiList[nlay]->AddAt(phi,j);
+      fLambdaList[nlay]->AddAt(lambda,j);
+      fXList[nlay]->AddAt(x,j);
+      fYList[nlay]->AddAt(y,j);
+      fZList[nlay]->AddAt(z,j);
+      fSxList[nlay]->AddAt(sx,j);
+      fSyList[nlay]->AddAt(sy,j);
+      fSzList[nlay]->AddAt(sz,j);
+      
+    }
+    
+  }
+  
+  fTracker->UnloadClusters();
+  delete [] firstmod;
+}
+
+void AliITSclusterTable::GetCoorAngles(AliITSclusterV2* cl,Int_t module,Double_t &phi,Double_t &lambda, Double_t &x, Double_t &y,Double_t &z){
+  //Returns values of phi (azimuthal) and lambda angles for a given cluster
+  
+  Double_t rot[9];     fGeom->GetRotMatrix(module,rot);
+  Int_t lay,lad,det; fGeom->GetModuleId(module,lay,lad,det);
+  Float_t tx,ty,tz;  fGeom->GetTrans(lay,lad,det,tx,ty,tz);     
+
+  Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
+  Double_t phi1=TMath::Pi()/2+alpha;
+  if (lay==1) phi1+=TMath::Pi();
+
+  Double_t cp=TMath::Cos(phi1), sp=TMath::Sin(phi1);
+  Double_t r=tx*cp+ty*sp;
+
+  x= r*cp - cl->GetY()*sp;
+  y= r*sp + cl->GetY()*cp;
+  z=cl->GetZ();
+  
+  phi=TMath::ATan2(y,x);
+  lambda=TMath::ATan2(z-fPrimaryVertex[2],TMath::Sqrt((x-fPrimaryVertex[0])*(x-fPrimaryVertex[0])+(y-fPrimaryVertex[1])*(y-fPrimaryVertex[1])));
+}
+
+void AliITSclusterTable::GetCoorErrors(AliITSclusterV2* cl, Int_t module,Double_t &sx,Double_t &sy, Double_t &sz){
+
+  //returns x,y,z of cluster in global coordinates
+
+  Double_t rot[9];     fGeom->GetRotMatrix(module,rot);
+  Int_t lay,lad,det; fGeom->GetModuleId(module,lay,lad,det);
+ 
+  Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
+  Double_t phi=TMath::Pi()/2+alpha;
+  if (lay==1) phi+=TMath::Pi();
+
+  Double_t cp=TMath::Cos(phi), sp=TMath::Sin(phi);
+
+ 
+  sx = TMath::Sqrt(sp*sp*cl->GetSigmaY2());
+  sy = TMath::Sqrt(cp*cp*cl->GetSigmaY2());
+  sz = TMath::Sqrt(cl->GetSigmaZ2());
+
 }

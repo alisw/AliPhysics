@@ -30,15 +30,17 @@ class AliITStrackerSA : public AliITStrackerV2 {
   AliITStrackerSA(AliITStrackerSA& tracker);
   virtual ~AliITStrackerSA();  
   void     FindTracks(TTree *clusterTree, TTree *out,Int_t evnumber=0,
-		      const char *opt="6/6");
-
+                      char *opt="6/6");
+  void     FindTracks(TTree *clusterTree, AliESD* event, Int_t evnumber=0,
+		      char *opt="6/6");
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex,
-			  Double_t *errorprimvert, const char *opt="6/6");
+                          Double_t *errorprimvert,char *opt="6/6");
 
   AliITStrackV2* FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const;
   void SetVertex(AliITSVertex *vtx){fVert = vtx;}
   void SetWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
   void UseFoundTracksV2(Int_t evnum,TTree* treev2, TTree* clustertree);
+  void UseFoundTracksV2(Int_t evnum,AliESD *event, TTree* clustertree);
 
  protected:
 
@@ -50,19 +52,14 @@ class AliITStrackerSA : public AliITStrackerV2 {
   //Initialization
   void Init();
   Int_t     GetFlagLoadedClusters() const {return fFlagLoad;}
-  
-  void     GetClusterGCoordinates(AliITSclusterV2* cluster,
-				  Int_t module,Double_t& x, Double_t& y,Double_t& z);
-  void     GetClusterGErrors(AliITSclusterV2* cluster,
-			     Int_t module,Double_t& sigmax, Double_t& sigmay,
-			     Double_t& sigmaz);
+   
   void     ResetForFinding();
   void     SetFlagLoadedClusters(Int_t d) {fFlagLoad=d;}
 
   void     UpdatePoints();
 
   static Double_t Curvature(Double_t x1,Double_t y1,Double_t x2,Double_t y2,
-		     Double_t x3,Double_t y3);
+                     Double_t x3,Double_t y3);
 
   Double_t ChoosePoint(Double_t p1, Double_t p2, Double_t pp); 
 
@@ -77,17 +74,16 @@ class AliITStrackerSA : public AliITStrackerV2 {
               Int_t gl6,Int_t gl7, Int_t gl8, Int_t gl9, Int_t gl10,Int_t gl11,
               Int_t gl12, Int_t gl13, Int_t gl14,Int_t gl15, Int_t gl16, 
               Int_t gl17, Int_t gl18, Int_t numberofpoints=6);
-
+ 
   Int_t SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, 
-		       AliITStrackSA* trs,Double_t zvertex,Double_t yvertex,
-		       Double_t xvertex, Int_t flagp, AliITSclusterTable* table); 
+                       AliITStrackSA* trs,Double_t zvertex,Int_t flagp, AliITSclusterTable* table); 
  
 
   Double_t fPhiEstimate; //Estimation of phi angle on next layer
-  Float_t fPoint1[2];   //! coord. of 1-st point to evaluate the curvature
-  Float_t fPoint2[2];   //! coord. of 2-nd point to evaluate the curvature
-  Float_t fPoint3[2];   //! coord. of 3-rd point to evaluate the curvature
-  Float_t fPointc[2];   //! current point coord (for curvature eval.)
+  Double_t fPoint1[2];   //! coord. of 1-st point to evaluate the curvature
+  Double_t fPoint2[2];   //! coord. of 2-nd point to evaluate the curvature
+  Double_t fPoint3[2];   //! coord. of 3-rd point to evaluate the curvature
+  Double_t fPointc[2];   //! current point coord (for curvature eval.)
   Double_t fLambdac;    //! current value of the Lambda angle in the window
   Double_t fPhic;       //! current value of the Phi angle in the window
   Float_t fCoef1;       //! param. of the equation of the circ. approx a layer
@@ -105,6 +101,4 @@ class AliITStrackerSA : public AliITStrackerV2 {
 };
 
 #endif
-
-
 
