@@ -50,19 +50,102 @@ TH1* AliHBTTwoTrackEffFctn::GetResult()
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
-ClassImp(AliHBTTwoTrackEffFctn3D)
+ClassImp(AliHBTTwoTrackEffFctnPxPyPz)
 
-AliHBTTwoTrackEffFctn3D::AliHBTTwoTrackEffFctn3D()
+AliHBTTwoTrackEffFctnPxPyPz::AliHBTTwoTrackEffFctnPxPyPz(Int_t nXbins, Double_t maxXval, Double_t minXval,
+                                                   Int_t nYbins, Double_t maxYval, Double_t minYval,
+                                                   Int_t nZbins, Double_t maxZval, Double_t minZval):
+ AliHBTOnePairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
 {
+//ctor
 //Set Axis Title
+ fWriteNumAndDen = kTRUE;
+ Rename("tteffpxpypz","P_{x} P_{y} P_{z} Two Track Efficiency Function");
+ if(fNumerator)
+  {
+   fNumerator->GetXaxis()->SetTitle("\\Delta P_{x} [GeV]");
+   fNumerator->GetYaxis()->SetTitle("\\Delta P_{y} [GeV]");
+   fNumerator->GetZaxis()->SetTitle("\\Delta P_{z} [GeV]");
+  }
+
+ if(fDenominator)
+  {
+   fDenominator->GetXaxis()->SetTitle("\\Delta P_{x} [GeV]");
+   fDenominator->GetYaxis()->SetTitle("\\Delta P_{y} [GeV]");
+   fDenominator->GetZaxis()->SetTitle("\\Delta P_{z} [GeV]");
+  }
+
 }
 /******************************************************************/
 
-void AliHBTTwoTrackEffFctn3D::GetValues(AliHBTPair* pair, Double_t& x, Double_t&y ,Double_t& z)
+void AliHBTTwoTrackEffFctnPxPyPz::GetValues(AliHBTPair* pair, Double_t& x, Double_t&y ,Double_t& z)
 {
 //Returns values to be histogrammed
 //it does not 
  x = pair->GetDeltaPx();
  y = pair->GetDeltaPy();
  z = pair->GetDeltaPz();
+}
+/******************************************************************/
+
+TH1* AliHBTTwoTrackEffFctnPxPyPz::GetResult()
+{
+//returns ratio of numerator and denominator
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ return fRatio;
+}
+
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+ClassImp(AliHBTTwoTrackEffFctnPtThetaPhi)
+
+AliHBTTwoTrackEffFctnPtThetaPhi::AliHBTTwoTrackEffFctnPtThetaPhi(Int_t nXbins, Double_t maxXval, Double_t minXval,
+                                                   Int_t nYbins, Double_t maxYval, Double_t minYval,
+                                                   Int_t nZbins, Double_t maxZval, Double_t minZval):
+ AliHBTOnePairFctn3D(nXbins,maxXval,minXval,nYbins,maxYval,minYval,nZbins,maxZval,minZval)
+{
+//ctor
+//Set Axis Title
+ fWriteNumAndDen = kTRUE;
+ Rename("tteffptthetaphi","P_{t} \\theta \\phi Two Track Efficiency Function");
+ if(fNumerator)
+  {
+   fNumerator->GetXaxis()->SetTitle("\\Delta P_{t} [GeV]");
+   fNumerator->GetYaxis()->SetTitle("\\Delta \\theta [rad]");
+   fNumerator->GetZaxis()->SetTitle("\\Delta \\phi [rad]");
+  }
+
+ if(fDenominator)
+  {
+   fDenominator->GetXaxis()->SetTitle("\\Delta P_{t} [GeV]");
+   fDenominator->GetYaxis()->SetTitle("\\Delta \\theta [rad]");
+   fDenominator->GetZaxis()->SetTitle("\\Delta \\phi [rad]");
+  }
+}
+/******************************************************************/
+
+void AliHBTTwoTrackEffFctnPtThetaPhi::GetValues(AliHBTPair* pair, Double_t& x, Double_t&y ,Double_t& z)
+{
+//Returns values to be histogrammed
+//it does not 
+ x = pair->GetDeltaPt();
+ y = pair->GetDeltaTheta();
+ z = pair->GetDeltaPhi();
+}
+/******************************************************************/
+
+TH1* AliHBTTwoTrackEffFctnPtThetaPhi::GetResult()
+{
+//returns ratio of numerator and denominator
+ delete fRatio;
+ fRatio = GetRatio(Scale());
+ if(fRatio)
+  {
+   fRatio->GetXaxis()->SetTitle("\\Delta P_{t} [GeV]");
+   fRatio->GetYaxis()->SetTitle("\\Delta \\theta [rad]");
+   fRatio->GetZaxis()->SetTitle("\\Delta \\phi [rad]");
+  }
+ return fRatio;
 }

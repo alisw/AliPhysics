@@ -27,19 +27,35 @@ class AliHBTTwoTrackEffFctn: public AliHBTOnePairFctn1D, public AliHBTCorrelFunc
   private:
     ClassDef(AliHBTTwoTrackEffFctn,2)
  };
+/******************************************************************/
 
-class AliHBTTwoTrackEffFctn3D: public AliHBTOnePairFctn3D, public AliHBTCorrelFunction
+class AliHBTTwoTrackEffFctnPxPyPz: public AliHBTOnePairFctn3D, public AliHBTCorrelFunction
  {
   public:
-    AliHBTTwoTrackEffFctn3D();
-    virtual ~AliHBTTwoTrackEffFctn3D(){}
-
-    void ProcessSameEventParticles(AliHBTPair* /*pair*/){}
-    void ProcessDiffEventParticles(AliHBTPair* /*pair*/){}
-
+    AliHBTTwoTrackEffFctnPxPyPz(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+                                Int_t nYbins = 100, Double_t maxYval = 0.15, Double_t minYval = 0.0,
+	            Int_t nZbins = 100, Double_t maxZval = 0.15, Double_t minZval = 0.0);
+    virtual ~AliHBTTwoTrackEffFctnPxPyPz(){}
+    TH1* GetResult();
   protected:
-    void GetValues(AliHBTPair*,Double_t&, Double_t&,Double_t&);
+    void GetValues(AliHBTPair* pair,Double_t& x, Double_t& y,Double_t& z);
   private:
-    ClassDef(AliHBTTwoTrackEffFctn3D,2)
+    ClassDef(AliHBTTwoTrackEffFctnPxPyPz,2)
  };
+/******************************************************************/
+
+class AliHBTTwoTrackEffFctnPtThetaPhi: public AliHBTOnePairFctn3D, public AliHBTCorrelFunction
+ {
+  public:
+    AliHBTTwoTrackEffFctnPtThetaPhi(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
+                                    Int_t nYbins = 100, Double_t maxYval = 0.5, Double_t minYval = 0.0,
+	                Int_t nZbins = 100, Double_t maxZval = 0.5, Double_t minZval = 0.0);
+    virtual ~AliHBTTwoTrackEffFctnPtThetaPhi(){}
+    TH1* GetResult();
+  protected:
+    void GetValues(AliHBTPair* pair,Double_t& x, Double_t& y,Double_t& z);
+  private:
+    ClassDef(AliHBTTwoTrackEffFctnPtThetaPhi,1)
+ };
+
 #endif
