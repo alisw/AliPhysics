@@ -49,6 +49,7 @@
 #include "AliEMCALLoader.h"
 #include "AliEMCAL.h"
 #include "AliEMCALHit.h"
+#include "AliEMCALGetter.h"
 
 ClassImp(AliEMCALLoader)
   
@@ -89,6 +90,9 @@ AliEMCALLoader::~AliEMCALLoader()
   Clean(fgkECARecPointsName);
   Clean(fgkTracksName);
   Clean(fgkRecParticlesName);
+  // set to 0x0 the objgetter in AliGetter ... weird isn it !
+  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+  gime->Reset() ;
 }
 
 //____________________________________________________________________________ 

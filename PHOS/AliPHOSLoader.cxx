@@ -52,6 +52,7 @@
 #include "AliPHOS.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSCalibrationDB.h"
+#include "AliPHOSGetter.h"
 
 ClassImp(AliPHOSLoader)
 
@@ -91,16 +92,19 @@ AliPHOSLoader::~AliPHOSLoader()
   Clean(fgkCpvRecPointsName);
   Clean(fgkTracksName);
   Clean(fgkRecParticlesName);
+  // set to 0x0 the objgetter in AliGetter ... weird isn it !
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  gime->Reset() ;
 }
-//____________________________________________________________________________ 
 
+//____________________________________________________________________________ 
 void AliPHOSLoader::CleanFolders()
  {
    CleanRecParticles();
    AliLoader::CleanFolders();
  }
-//____________________________________________________________________________ 
 
+//____________________________________________________________________________ 
 Int_t AliPHOSLoader::SetEvent()
 {
 //Cleans loaded stuff and and sets Files and Directories
@@ -125,8 +129,8 @@ Int_t AliPHOSLoader::SetEvent()
    
   return 0;
 }
-//____________________________________________________________________________ 
 
+//____________________________________________________________________________ 
 Int_t AliPHOSLoader::GetEvent()
 {
 //Overloads GetEvent method called by AliRunLoader::GetEvent(Int_t) method
@@ -153,8 +157,6 @@ Int_t AliPHOSLoader::GetEvent()
 //Now, check if RecPart were loaded  
   return 0;
 }
-//____________________________________________________________________________ 
-
 
 //____________________________________________________________________________ 
 const AliPHOS * AliPHOSLoader::PHOS() 
