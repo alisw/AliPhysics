@@ -291,7 +291,7 @@ Bool_t AliL3Compress::CompressFile()
 	  if(fWriteShape)
 	    {
 	      //Write shape information:
-	      temp = (Int_t)cluster.fDSigmaY;
+	      temp = (Int_t)rint(cluster.fDSigmaY);
 	      if(temp<0)
 		OutputBit(output,0);
 	      else
@@ -304,7 +304,7 @@ Bool_t AliL3Compress::CompressFile()
 		}
 	      OutputBits(output,abs(temp),(AliL3DataCompressorHelper::GetNShapeBits()-1));
 	      
-	      temp = (Int_t)cluster.fDSigmaZ;
+	      temp = (Int_t)rint(cluster.fDSigmaZ);
 	      if(temp<0)
 		OutputBit(output,0);
 	      else
@@ -512,35 +512,42 @@ void AliL3Compress::CompressRemaining(AliL3SpacePointData *clusters[36][6],UInt_
 	      Float_t padw = sqrt(cl[i].fSigmaY2) / AliL3Transform::GetPadPitchWidth(AliL3Transform::GetPatch(padrow));
 	      Float_t timew = sqrt(cl[i].fSigmaZ2) / AliL3Transform::GetZWidth();
 	      
+	      //Check for saturation in the widths.
+	      //Basically only store a certain number of decimals here, and cut the widths which is higher:
+	      if(padw >= (1<<AliL3DataCompressorHelper::GetNShapeBitsRemaining()) / AliL3DataCompressorHelper::GetPadPrecisionFactor())
+		padw = (1<<AliL3DataCompressorHelper::GetNShapeBitsRemaining()) / AliL3DataCompressorHelper::GetPadPrecisionFactor() - 1/AliL3DataCompressorHelper::GetPadPrecisionFactor();
+	      if(timew >= (1<<AliL3DataCompressorHelper::GetNShapeBitsRemaining()) / AliL3DataCompressorHelper::GetTimePrecisionFactor())
+		timew = (1<<AliL3DataCompressorHelper::GetNShapeBitsRemaining()) / AliL3DataCompressorHelper::GetTimePrecisionFactor() - 1/AliL3DataCompressorHelper::GetTimePrecisionFactor();;
+	      
 	      //Write pad
-	      buff = (Int_t)rint(xyz[1]*10);
+	      buff = (Int_t)rint(xyz[1]*AliL3DataCompressorHelper::GetPadPrecisionFactor());
 	      if(buff<0)
 		{
 		  cerr<<"AliL3Compress:CompressRemaining : Wrong pad value "<<buff<<endl;
 		  exit(5);
 		}
-	      OutputBits(output,buff,11);
-
+	      OutputBits(output,buff,AliL3DataCompressorHelper::GetNPadBitsRemaining());
+	      
 	      //Write time
-	      buff = (Int_t)rint(xyz[2]*10);
+	      buff = (Int_t)rint(xyz[2]*AliL3DataCompressorHelper::GetTimePrecisionFactor());
 	      if(buff<0)
 		{
 		  cerr<<"AliL3Compress:CompressRemaining : Wrong time value "<<buff<<endl;
 		  exit(5);
 		}
-	      OutputBits(output,buff,13);
-
+	      OutputBits(output,buff,AliL3DataCompressorHelper::GetNTimeBitsRemaining());
+	      
 	      //Write widths
-	      buff = (Int_t)rint(padw*100);
-	      OutputBits(output,buff,8);
-	      buff = (Int_t)rint(timew*100);
-	      OutputBits(output,buff,8);
+	      buff = (Int_t)rint(padw*AliL3DataCompressorHelper::GetPadPrecisionFactor());
+	      OutputBits(output,buff,AliL3DataCompressorHelper::GetNShapeBitsRemaining());
+	      buff = (Int_t)rint(timew*AliL3DataCompressorHelper::GetTimePrecisionFactor());
+	      OutputBits(output,buff,AliL3DataCompressorHelper::GetNShapeBitsRemaining());
 	      
 	      //Write charge 
 	      buff = cl[i].fCharge;
-	      if(buff >= 1<<14)
-		buff = (1<<14)-1;
-	      OutputBits(output,buff,14);
+	      if(buff >= 1<<(AliL3DataCompressorHelper::GetNChargeBits()))
+		buff = (1<<(AliL3DataCompressorHelper::GetNChargeBits()))-1;
+	      OutputBits(output,buff,AliL3DataCompressorHelper::GetNChargeBits());
 	    }
 	  
 	  CloseOutputBitFile(output);
@@ -582,23 +589,23 @@ void AliL3Compress::ExpandRemaining(TempCluster **clusters,Int_t *ncl,const Int_
 		  clusters[slice][ncl[slice]].padrow = padrow;
 
 		  //Read pad
-		  buff = InputBits(input,11);
-		  clusters[slice][ncl[slice]].pad = (Float_t)buff/10.;
+		  buff = InputBits(input,AliL3DataCompressorHelper::GetNPadBitsRemaining());
+		  clusters[slice][ncl[slice]].pad = (Float_t)buff/AliL3DataCompressorHelper::GetPadPrecisionFactor();
 		  
 		  //Read time
-		  buff = InputBits(input,13);
-		  clusters[slice][ncl[slice]].time = (Float_t)buff/10.;
+		  buff = InputBits(input,AliL3DataCompressorHelper::GetNTimeBitsRemaining());
+		  clusters[slice][ncl[slice]].time = (Float_t)buff/AliL3DataCompressorHelper::GetTimePrecisionFactor();
 		  
 		  //Read widths 
-		  buff = InputBits(input,8);
-		  clusters[slice][ncl[slice]].sigmaY2 = pow((Float_t)buff/100.,2);
-		  buff = InputBits(input,8);
-		  clusters[slice][ncl[slice]].sigmaZ2 = pow((Float_t)buff/100.,2);
+		  buff = InputBits(input,AliL3DataCompressorHelper::GetNShapeBitsRemaining());
+		  clusters[slice][ncl[slice]].sigmaY2 = pow((Float_t)buff/AliL3DataCompressorHelper::GetPadPrecisionFactor(),2);
+		  buff = InputBits(input,AliL3DataCompressorHelper::GetNShapeBitsRemaining());
+		  clusters[slice][ncl[slice]].sigmaZ2 = pow((Float_t)buff/AliL3DataCompressorHelper::GetPadPrecisionFactor(),2);
 		  
 		  //Read charge
-		  buff = InputBits(input,14);
+		  buff = InputBits(input,AliL3DataCompressorHelper::GetNChargeBits());
 		  clusters[slice][ncl[slice]].charge = buff;
-		  //cout<<"padrow "<<padrow<<" pad "<<clusters[slice][ncl[slice]].pad<<" time "<<clusters[slice][ncl[slice]].time<<" charge "<<clusters[slice][ncl[slice]].charge<<" widths "<<clusters[slice][ncl[slice]].sigmaY2<<" "<<clusters[slice][ncl[slice]].sigmaZ2<<endl;
+		  
 		  ncl[slice]++;
 		}
 	      
@@ -647,29 +654,31 @@ void AliL3Compress::PrintCompRatio(ofstream *outfile)
   
   Float_t compratio = (Float_t)(compress_size + remain_size)/(Float_t)digit_size;
   Float_t entropy[2];
-  GetEntropy(entropy[0],entropy[1]);
+  Int_t track_size = GetEntropy(entropy[0],entropy[1])*sizeof(AliL3TrackModel);
   if(outfile)
     {
       ofstream &out = *outfile;
-      out<<compress_size<<' '<<remain_size<<' '<<digit_size<<' '<<entropy[0]<<' '<<entropy[1]<<endl;
+      out<<compress_size<<' '<<remain_size<<' '<<digit_size<<' '<<track_size<<' '<<entropy[0]<<' '<<entropy[1]<<endl;
     }
   
   cout<<"=========================================="<<endl;
   cout<<"Original digits size : "<<digit_size/1000<<" kByte ( 100 % )"<<endl;
   cout<<"Compressed file size : "<<compress_size/1000<<" kByte ( "<<(Float_t)compress_size*100/(Float_t)digit_size<<" % )"<<endl;
-  cout<<"Entropy of residuals : "<<entropy[0]<<" "<<entropy[1]<<endl;
-  cout<<"Remainig file size   : "<<remain_size/1000<<" kByte ( "<<(Float_t)remain_size*100/(Float_t)digit_size<<" % )"<<endl;
+  cout<<"Remaining file size  : "<<remain_size/1000<<" kByte ( "<<(Float_t)remain_size*100/(Float_t)digit_size<<" % )"<<endl;
+  cout<<"Relative track size  : "<<track_size/1000<<" kByte ( "<<(Float_t)track_size*100/(Float_t)digit_size<<" % )"<<endl;
+  cout<<"Relative cluster size: "<<(compress_size-track_size)/1000<<" kByte ( "<<(Float_t)(compress_size-track_size)*100/(Float_t)digit_size<<" % )"<<endl;
   cout<<"---------------------- "<<endl;
   cout<<"Compression ratio    : "<<compratio*100<<" %"<<endl;
   cout<<"=========================================="<<endl;
+  cout<<"Entropy of residuals : "<<entropy[0]<<" "<<entropy[1]<<endl;
 }
 
-void AliL3Compress::GetEntropy(Float_t &pad_entropy,Float_t &time_entropy)
+Int_t AliL3Compress::GetEntropy(Float_t &pad_entropy,Float_t &time_entropy)
 {
   //Calculate the entropy of the quantized residuals in both directions
   
   if(!ReadFile('m'))
-    return;
+    return 0;
   const Int_t nmax=100000;
   Float_t pads[nmax];
   Float_t times[nmax];
@@ -707,4 +716,5 @@ void AliL3Compress::GetEntropy(Float_t &pad_entropy,Float_t &time_entropy)
   
   pad_entropy*=-1;
   time_entropy*=-1;
+  return fTracks->GetNTracks();
 }

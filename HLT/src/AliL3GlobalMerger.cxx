@@ -83,7 +83,7 @@ Double_t AliL3GlobalMerger::CheckTracks(AliL3Track *innertrack,AliL3Track *outer
   point[0]=innertrack->GetLastPointX();
   point[1]=innertrack->GetLastPointY();
   point[2]=innertrack->GetLastPointZ();
-  AliL3Transform::Global2Local(point,slice,kTRUE);
+  AliL3Transform::Global2LocHLT(point,slice);
   
   outertrack->CalculateReferencePoint(angle,point[0]);//local x = global distance to padrowplane
   if(!outertrack->IsPoint()) return diff;
@@ -94,7 +94,7 @@ Double_t AliL3GlobalMerger::CheckTracks(AliL3Track *innertrack,AliL3Track *outer
   point[0]=innertrack->GetFirstPointX();
   point[1]=innertrack->GetFirstPointY();
   point[2]=innertrack->GetFirstPointZ();
-  AliL3Transform::Global2Local(point,slice,kTRUE);
+  AliL3Transform::Global2LocHLT(point,slice);
   
   outertrack->CalculateReferencePoint(angle,point[0]);//local x = global distance to padrowplane
   if(!outertrack->IsPoint()) return diff;
@@ -138,7 +138,8 @@ void AliL3GlobalMerger::SlowMerge(Char_t *path)
       if(slice2 == 18) slice2=0;
       else if(slice2 == 36) slice2=18;
       AliL3TrackArray *ttt1=GetInTracks(slice2);
-      Float_t angle = PI/18.; //10 degrees -> the border of the slices in local coordinates
+      //10 degrees -> the border of the slices in local coordinates
+      Float_t angle = AliL3Transform::Pi()/18; 
       AliL3Transform::Local2GlobalAngle(&angle,slice);
       
       //In the two following cases, the angle is 2*pi, so set it back to 0 in order for
@@ -199,7 +200,7 @@ void AliL3GlobalMerger::SlowMerge(Char_t *path)
 	      track[0] = track0;
 	      track[1] = track1;
 	      SortGlobalTracks(track,2);
-	      track1->CalculateEdgePoint((angle+PI/9));
+	      track1->CalculateEdgePoint((angle+AliL3Transform::Pi()/9));
 	      if(track1->IsPoint())//Check if the track will cross the boundary of yet another slice.
 		MultiMerge(ttt1,track,2);
 	      else
@@ -250,7 +251,8 @@ void AliL3GlobalMerger::Merge()
       if(slice2 == 18) slice2=0;
       else if(slice2 == 36) slice2=18;
       AliL3TrackArray *ttt1=GetInTracks(slice2);
-      Float_t angle = PI/18.; //10 degrees -> the border of the slices in local coordinates
+      //10 degrees -> the border of the slices in local coordinates
+      Float_t angle = AliL3Transform::Pi()/18; 
       AliL3Transform::Local2GlobalAngle(&angle,slice);
       
       //In the two following cases, the angle is 2*pi, so set it back to 0 in order for

@@ -145,7 +145,7 @@ void AliL3HoughMerger::MergePatches(Bool_t slow)
 
 void AliL3HoughMerger::Merge()
 {
-  Double_t edge0 = PI/18.;
+  Double_t edge0 = AliL3Transform::Pi()/18;
   //Double_t edge1 = 2*PI - edge0;
   AliL3TrackArray *ttt = GetOutTracks();
   

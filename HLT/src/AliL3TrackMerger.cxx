@@ -170,8 +170,8 @@ void AliL3TrackMerger::InterMerge(){
 
 void AliL3TrackMerger::Merge(){
   //Loop over tracks and pass them to the track merger.
-  Double_t edge0 = PI/18.;
-  Double_t edge1 = 2*PI - edge0;
+  Double_t edge0 = AliL3Transform::Pi()/18;
+  Double_t edge1 = AliL3Transform::TwoPi() - edge0;
   AliL3TrackArray *ttt = GetOutTracks();
   if(fNSubSector==1) {
     GetOutTracks()->AddTracks(GetInTracks(0)); 

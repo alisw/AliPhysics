@@ -32,13 +32,11 @@ AliL3HoughTrack::AliL3HoughTrack()
   fIsHelix = true;
   fEtaIndex = -1;
   fEta = 0;
-  
 }
 
 
 AliL3HoughTrack::~AliL3HoughTrack()
 {
-  
 }
 
 void AliL3HoughTrack::Set(AliL3Track *track)
@@ -82,7 +80,7 @@ void AliL3HoughTrack::SetEta(Double_t f)
 
   fEta = f;
   Double_t theta = 2*atan(exp(-1.*fEta));
-  Double_t dipangle = AliL3Transform::Pi()/2 - theta;
+  Double_t dipangle = AliL3Transform::PiHalf() - theta;
   Double_t tgl = tan(dipangle);
   SetTgl(tgl);
 }
@@ -91,7 +89,7 @@ void AliL3HoughTrack::SetEta(Double_t f)
 void AliL3HoughTrack::UpdateToFirstRow()
 {
   //Update the track parameters to the point where track cross
-  //its first padrow.
+  //its first padrow.`
   
   //Get the crossing point with the first padrow:
   Float_t xyz[3];
@@ -111,8 +109,8 @@ void AliL3HoughTrack::UpdateToFirstRow()
     Double_t x0    = GetR0() * cos(GetPhi0()) ;
     Double_t y0    = GetR0() * sin(GetPhi0()) ;
   */
-  Double_t rc    = GetRadius();//fabs(GetPt()) / ( BFACT * AliL3Transform::GetBField() )  ;
-  Double_t tPhi0 = GetPsi() + GetCharge() * 0.5 * pi / abs(GetCharge()) ;
+  Double_t rc    = GetRadius();//fabs(GetPt()) / AliL3Transform::GetBFieldValue();
+  Double_t tPhi0 = GetPsi() + GetCharge() * AliL3Transform::PiHalf() / abs(GetCharge()) ;
   Double_t xc    = GetCenterX();//x0 - rc * cos(tPhi0) ;
   Double_t yc    = GetCenterY();//y0 - rc * sin(tPhi0) ;
   
@@ -132,12 +130,11 @@ void AliL3HoughTrack::UpdateToFirstRow()
   Double_t td     = atan2(radius*sin(phi) - yc,radius*cos(phi) - xc) ;
   
   //Intersection in z
-  if ( td < 0 ) td = td + 2. * pi ;
-  Double_t deltat = fmod((-GetCharge()*td + GetCharge()*tPhi0),2*pi) ;
-  if ( deltat < 0.      ) deltat += 2. * pi ;
-  if ( deltat > 2.*pi ) deltat -= 2. * pi ;
+  if ( td < 0 ) td = td + AliL3Transform::TwoPi();
+  Double_t deltat = fmod((-GetCharge()*td + GetCharge()*tPhi0),AliL3Transform::TwoPi());
+  if ( deltat < 0. ) deltat += AliL3Transform::TwoPi();
+  else if ( deltat > AliL3Transform::TwoPi() ) deltat -= AliL3Transform::TwoPi();
   Double_t z = GetZ0() + rc * GetTgl() * deltat ;
-  
   
   Double_t xExtra = radius * cos(phi) ;
   Double_t yExtra = radius * sin(phi) ;
@@ -145,10 +142,9 @@ void AliL3HoughTrack::UpdateToFirstRow()
   Double_t tPhi = atan2(yExtra-yc,xExtra-xc);
   
   //if ( tPhi < 0 ) tPhi += 2. * M_PI ;
-  
-  Double_t tPsi = tPhi - GetCharge() * 0.5 * pi / abs(GetCharge()) ;
-  if ( tPsi > 2. * pi ) tPsi -= 2. * pi ;
-  if ( tPsi < 0.        ) tPsi += 2. * pi ;
+  Double_t tPsi = tPhi - GetCharge() * AliL3Transform::PiHalf() / abs(GetCharge()) ;
+  if ( tPsi > AliL3Transform::TwoPi() ) tPsi -= AliL3Transform::TwoPi() ;
+  else if ( tPsi < 0. ) tPsi += AliL3Transform::TwoPi();
   
   //And finally, update the track parameters
   SetR0(radius);
@@ -172,7 +168,7 @@ void AliL3HoughTrack::SetTrackParameters(Double_t kappa,Double_t eangle,Int_t we
   fWeight = weight;
   fMinDist = 100000;
   SetKappa(kappa);
-  Double_t pt = fabs(BFACT*AliL3Transform::GetBField()/kappa);
+  Double_t pt = fabs(AliL3Transform::GetBFieldValue()/kappa);
   SetPt(pt);
   Double_t radius = 1/fabs(kappa);
   SetRadius(radius);
@@ -237,4 +233,3 @@ void AliL3HoughTrack::GetLineCrossingPoint(Int_t padrow,Float_t *xy)
   xy[1] = yhit;
 
 }
-

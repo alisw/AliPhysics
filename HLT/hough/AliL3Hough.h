@@ -43,6 +43,10 @@ class AliL3Hough {
   Int_t fNBinY[6];
   Int_t fThreshold[6];
   Int_t fNSaveIterations; //for HoughtransformerVhdl
+  
+  //parameters for the peak finder:
+  Int_t fKappaSpread;
+  Float_t fPeakRatio;
 
   AliL3MemHandler **fMemHandler; //!
   AliL3HoughBaseTransformer **fHoughTransformer; //!
@@ -100,6 +104,8 @@ class AliL3Hough {
   void SetThreshold(Int_t t=3,Int_t patch=-1);
   void SetNSaveIterations(Int_t t=10) {fNSaveIterations=t;}
   void SetPeakThreshold(Int_t threshold=0,Int_t patch=-1);
+  
+  void SetPeakParameters(Int_t kspread,Float_t pratio) {fKappaSpread=kspread; fPeakRatio=pratio;}
   
   //Getters
   AliL3HoughBaseTransformer *GetTransformer(Int_t i) {if(!fHoughTransformer[i]) return 0; return fHoughTransformer[i];}

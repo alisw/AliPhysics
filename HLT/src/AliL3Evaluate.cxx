@@ -661,7 +661,8 @@ void AliL3Evaluate::CalculateResiduals()
 	  xyz[1] = points[pos].fY;
 	  xyz[2] = points[pos].fZ;
 	  padrow = points[pos].fPadRow;
-	  AliL3Transform::Global2Local(xyz,slice,kTRUE);
+	  //AliL3Transform::Global2Local(xyz,slice,kTRUE);
+	  AliL3Transform::Global2LocHLT(xyz,slice);
 	  
 	  Float_t angle = 0;
 	  AliL3Transform::Local2GlobalAngle(&angle,slice);
@@ -673,7 +674,8 @@ void AliL3Evaluate::CalculateResiduals()
 	    }
 	  
 	  Float_t xyz_cross[3] = {track->GetPointX(),track->GetPointY(),track->GetPointZ()};
-	  AliL3Transform::Global2Local(xyz_cross,slice,kTRUE);
+	  //AliL3Transform::Global2Local(xyz_cross,slice,kTRUE);	  
+	  AliL3Transform::Global2LocHLT(xyz_cross,slice);
 	  
 	  Double_t beta = track->GetCrossingAngle(padrow,slice);
 	  

@@ -26,10 +26,6 @@
 
 ClassImp(AliL3ConfMapper)
 
-Double_t AliL3ConfMapper::pi=3.14159265358979323846;
-Double_t AliL3ConfMapper::twopi=2*pi;
-Double_t AliL3ConfMapper::todeg=180./pi;
-
 AliL3ConfMapper::AliL3ConfMapper()
 {
   //Default constructor
@@ -136,8 +132,8 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
     }
   
   //Set the angles to sector 2:
-  fPhiMin = -1.*10/todeg;//fParam->GetAngle(sector) - 10/todeg;
-  fPhiMax = 10/todeg;//fParam->GetAngle(sector) + 10/todeg;
+  fPhiMin = -10*AliL3Transform::ToRad();//fParam->GetAngle(sector) - 10/todeg;
+  fPhiMax =  10*AliL3Transform::ToRad();//fParam->GetAngle(sector) + 10/todeg;
 
   nTracks=0;
   fMainVertexTracks = 0;
@@ -767,9 +763,9 @@ Double_t AliL3ConfMapper::CalcDistance(const AliL3ConfMapPoint *hit1,const AliL3
   //Return distance between two clusters, defined by Pablo
   
   Double_t phi_diff = fabs( hit1->GetPhi() - hit2->GetPhi() );
-  if (phi_diff > pi) phi_diff = twopi - phi_diff;
+  if (phi_diff > AliL3Transform::Pi()) phi_diff = AliL3Transform::TwoPi() - phi_diff;
   
-  return todeg*fabs((Float_t)((hit1->GetPadRow() - hit2->GetPadRow()) * (phi_diff + fabs( hit1->GetEta() - hit2->GetEta()))));
+  return AliL3Transform::ToDeg()*fabs((Float_t)((hit1->GetPadRow() - hit2->GetPadRow()) * (phi_diff + fabs( hit1->GetEta() - hit2->GetEta()))));
 }
 
 Bool_t AliL3ConfMapper::VerifyRange(const AliL3ConfMapPoint *hit1,const AliL3ConfMapPoint *hit2) const
@@ -777,7 +773,7 @@ Bool_t AliL3ConfMapper::VerifyRange(const AliL3ConfMapPoint *hit1,const AliL3Con
   //Check if the hit are within reasonable range in phi and eta
   Double_t dphi,deta;//maxphi=0.1,maxeta=0.1;
   dphi = fabs(hit1->GetPhi() - hit2->GetPhi());
-  if(dphi > pi) dphi = fabs(twopi - dphi);
+  if(dphi > AliL3Transform::Pi()) dphi = fabs(AliL3Transform::TwoPi() - dphi);
   if(dphi > fMaxPhi) return false;
   
   deta = fabs(hit1->GetEta() - hit2->GetEta());

@@ -9,11 +9,19 @@
 LIBS = src hough comp misc
 MAKEDIRS = $(LIBS) programs
 
-all:
+default: so
+
+all: 
 	for i in $(MAKEDIRS) ; do cd $$i && $(MAKE) ; cd .. ; done
 
+so:
+	for i in $(LIBS) ; do cd $$i && $(MAKE) so ; cd .. ; done
+
+static: 
+	for i in $(LIBS) ; do cd $$i && $(MAKE) static ; cd .. ; done
+
 libs: 
-	for i in $(LIBS) ; do cd $$i && $(MAKE) ; cd .. ; done
+	for i in $(LIBS) ; do cd $$i && $(MAKE) libs ; cd .. ; done
 
 clean:
 	for i in $(MAKEDIRS) ; do cd $$i && $(MAKE) clean ; cd .. ; done

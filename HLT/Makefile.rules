@@ -70,13 +70,20 @@ OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif
 endif
 
-ALIHLT_LIBSO = $(ALIHLT_LIBDIR)/lib$(MODNAME).so
-ALIHLT_DYLIB = $(ALIHLT_LIBDIR)/lib$(MODNAME).dylib
+STATICOBJS = $(patsubst %.o,%.sto,$(OBJS))
 
-#Default Targets  
-#
+ALIHLT_LIBSO  = $(ALIHLT_LIBDIR)/lib$(MODNAME).so
+ALIHLT_DYLIB  = $(ALIHLT_LIBDIR)/lib$(MODNAME).dylib
+ALIHLT_STATIC = $(ALIHLT_LIBDIR)/lib$(MODNAME).a
 
-all: $(OBJDIR) $(ALIHLT_LIBDIR) $(ALIHLT_LIBSO) 
+#Default Target
+default: so
+
+libs: so static
+
+so: $(OBJDIR) $(ALIHLT_LIBDIR) $(ALIHLT_LIBSO) 
+
+static: $(OBJDIR) $(ALIHLT_LIBDIR) $(ALIHLT_STATIC)
 
 $(ALIHLT_LIBSO): $(OBJS)
 ifeq ($(ARCH),Darwin)
@@ -84,6 +91,8 @@ ifeq ($(ARCH),Darwin)
 endif
 	$(LD) $(SOFLAGS) $^ $(LDFLAGS) -o $@
 
+$(ALIHLT_STATIC): $(STATICOBJS)
+	$(LDSTATIC) $(STATICFLAGS) $@ $^ 
 
 $(DICT): $(HDRS)
 	@echo "Generating dictionary..."
@@ -92,6 +101,9 @@ $(DICT): $(HDRS)
 
 $(OBJDIR)/%.o: %.cxx 
 	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
+
+$(OBJDIR)/%.sto: %.cxx 
+	$(CXX) $(PROFILEFLAGS) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
 
 $(OBJDIR): 
 	test ! -e $(OBJDIR) && mkdir -p $(OBJDIR)
@@ -125,14 +137,14 @@ printall: print
 	@echo "OBJS              = $(OBJS)"
 
 clean:
-	rm -f $(OBJDIR)/*.o
+	rm -f $(OBJDIR)/*.o $(OBJDIR)/*.sto
 	rm -f $(DICT) $(DICTH) 
 	rm -rf $(OBJDIR)
 
-so:
-	rm -f $(ALIHLT_LIBSO) $(ALIHLT_DYLIB)
+cleanlib:
+	rm -f $(ALIHLT_LIBSO) $(ALIHLT_DYLIB) $(ALIHLT_STATIC)
 
-realclean: clean so
+realclean: clean cleanlib
 
 
 .phony: help print printall clean so realclean

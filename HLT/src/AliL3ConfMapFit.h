@@ -13,10 +13,7 @@ class AliL3ConfMapFit {
  private:
   AliL3ConfMapTrack *fTrack; //!
   AliL3Vertex *fVertex; //!
-  Double_t BFACT;
   
-  static Double_t pi;
-
  public:
   AliL3ConfMapFit (AliL3ConfMapTrack *track,AliL3Vertex *vertex);
   virtual ~AliL3ConfMapFit() {};

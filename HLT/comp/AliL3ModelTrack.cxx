@@ -36,10 +36,16 @@ AliL3ModelTrack::AliL3ModelTrack()
   fCrossingAngle=0;
   fParSigmaY2=0;
   fParSigmaZ2=0;
+  fArraysCreated=kFALSE;
 }
 
 
 AliL3ModelTrack::~AliL3ModelTrack()
+{
+  DeleteArrays();
+}
+
+void AliL3ModelTrack::DeleteArrays()
 {
   if(fClusters)
     delete [] fClusters;
@@ -63,12 +69,16 @@ AliL3ModelTrack::~AliL3ModelTrack()
 	delete [] fOverlap[i];
       delete [] fOverlap;
     }
+  fArraysCreated=kFALSE;
 }
 
 void AliL3ModelTrack::Init(Int_t slice,Int_t patch)
 {
-  fNClusters=AliL3Transform::GetNRows(patch);//is not incremented in setcluster anymore
-  //fSlice=slice;
+  if(fArraysCreated)
+    {               
+      DeleteArrays();
+    }
+  fNClusters=AliL3Transform::GetNRows(patch);
   fPatch=patch;
   Int_t nrows = AliL3Transform::GetNRows(fPatch);
   fClusters = new AliL3ClusterModel[nrows];
@@ -98,8 +108,10 @@ void AliL3ModelTrack::Init(Int_t slice,Int_t patch)
 	fOverlap[i][j]=-1;
       fClusters[i].fSlice = -1;
     }
-
+  fArraysCreated=kTRUE;
 }
+
+
 
 void AliL3ModelTrack::CalculateClusterWidths(Int_t row,Bool_t parametrize)
 {
@@ -454,7 +466,7 @@ Bool_t AliL3ModelTrack::GetTimeResidual(Int_t row,Float_t &res)
   return IsPresent(row);
 }
 
-Bool_t AliL3ModelTrack::GetXYWidthResidual(Int_t row,Float_t &res)
+Bool_t AliL3ModelTrack::GetSigmaYResidual(Int_t row,Float_t &res)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
   Int_t patch = AliL3Transform::GetPatch(row);
@@ -462,7 +474,7 @@ Bool_t AliL3ModelTrack::GetXYWidthResidual(Int_t row,Float_t &res)
   return IsPresent(row);
 }
 
-Bool_t AliL3ModelTrack::GetZWidthResidual(Int_t row,Float_t &res)
+Bool_t AliL3ModelTrack::GetSigmaZResidual(Int_t row,Float_t &res)
 {
   AliL3ClusterModel *cl = GetClusterModel(row);
   res = cl->fDSigmaZ*(AliL3DataCompressorHelper::GetZWidthStep()/AliL3Transform::GetZWidth());
@@ -584,7 +596,11 @@ void AliL3ModelTrack::Print(Bool_t everything)
       AliL3ClusterModel *cl = GetClusterModel(i);
       
       if(!IsPresent(i))
-	cout<<i<<" Empty"<<" Slice "<<cl->fSlice<<" Padcrossing "<<GetPadHit(i)<<" Timecrossing "<<GetTimeHit(i)<<" ";
+	{
+	  cout<<i<<" Empty"<<" Slice "<<cl->fSlice<<" Padcrossing "<<GetPadHit(i)<<" Timecrossing "<<GetTimeHit(i)<<" ";
+	  //AliL3Transform::RawHLT2Global(xyz,cl->fSlice,i,GetPadHit(i),GetTimeHit(i));
+	  //cout<<i<<" slice "<<cl->fSlice<<" x "<<xyz[0]<<" y "<<xyz[1]<<" z "<<xyz[2];
+	}
       else
 	{
 	  GetPad(i,fpad);

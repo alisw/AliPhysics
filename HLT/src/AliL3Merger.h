@@ -1,7 +1,7 @@
 // @(#) $Id$
 #ifndef ALIL3MERGER_H
 #define ALIL3MERGER_H
-#define PI 3.14159265358979312
+//#define PI 3.14159265358979312
 
 #include "AliL3RootTypes.h"
 

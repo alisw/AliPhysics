@@ -168,8 +168,8 @@ void AliL3ConfMapTrack::Fill(AliL3Vertex *vertex,Double_t max_Dca)
   Double_t radius = sqrt(a2Xy*a2Xy+1)/(2*fabs(a1Xy));
   SetRadius(radius);
 
-  //fPt = (Double_t)(BFACT * AliL3Transform::GetBField() * fRadius);
-  Double_t pt = (Double_t)(BFACT * AliL3Transform::GetBField() * GetRadius());
+  //fPt = (Double_t)(AliL3Transform::GetBFieldValue() * fRadius);
+  Double_t pt = (Double_t)(AliL3Transform::GetBFieldValue() * GetRadius());
   SetPt(pt);
 
   if(GetPt() > max_Dca) //go for fit of helix in real space

@@ -291,8 +291,8 @@ void AliL3Merger::FillNtuple(void *nt,AliL3Track *innertrack,AliL3Track *outertr
       data[2] =Float_t(innertrack->GetPointZ()-outertrack->GetPointZ());
       data[3] =Float_t(innertrack->GetKappa()-outertrack->GetKappa());
       Double_t psi= innertrack->GetPointPsi() - outertrack->GetPointPsi();
-      if(psi>PI) psi-=2*PI;
-      if(psi<-PI)psi+=2*PI;
+      if(psi>AliL3Transform::Pi()) psi-=AliL3Transform::TwoPi();
+      else if(psi<-AliL3Transform::Pi()) psi+=AliL3Transform::TwoPi();
       data[4] =Float_t(psi);
       data[5] =Float_t(innertrack->GetTgl()-outertrack->GetTgl());
       data[6] =Float_t(innertrack->GetCharge()-outertrack->GetCharge());
@@ -323,9 +323,9 @@ void AliL3Merger::FillNtuple(void *nt,Float_t *data)
 
 Double_t AliL3Merger::GetAngle(Double_t a1,Double_t a2)
 {
-  Double_t da = a1 - a2 +4*PI;
-  da = fmod(da,2*PI);
-  if(da>PI) da = 2*PI -da;
+  Double_t da = a1 - a2 + 4*AliL3Transform::Pi();
+  da = fmod(da,AliL3Transform::TwoPi());
+  if(da>AliL3Transform::Pi()) da = AliL3Transform::TwoPi()-da;
   return da;
 }
 
@@ -428,8 +428,8 @@ void AliL3Merger::PrintDiff(AliL3Track *innertrack,AliL3Track *outertrack)
   Double_t dz = innertrack->GetPointZ()-outertrack->GetPointZ();
   Double_t dk = innertrack->GetKappa()-outertrack->GetKappa();
   Double_t dpsi= innertrack->GetPointPsi() - outertrack->GetPointPsi();
-  if(dpsi>PI) dpsi-=2*PI;
-  if(dpsi<-PI)dpsi+=2*PI;
+  if(dpsi>AliL3Transform::Pi()) dpsi-=AliL3Transform::TwoPi();
+  else if(dpsi<-AliL3Transform::Pi())dpsi+=AliL3Transform::TwoPi();
   //Double_t dpsi = GetAngle(innertrack->GetPointPsi(),outertrack->GetPointPsi());
   Double_t dtgl= innertrack->GetTgl()-outertrack->GetTgl();
   Double_t dq =innertrack->GetCharge()-outertrack->GetCharge();
@@ -452,14 +452,14 @@ void AliL3Merger::Print()
 	  if(!track) continue;
 	  track->CalculateHelix();
 	  //      Double_t angle = atan2(track->GetLastPointY(),track->GetLastPointX());
-	  //      if(angle<0) angle+=PI;
+	  //      if(angle<0) angle+=AliL3Transform::Pi();
 	  if(track->CalculatePoint(135))
 	    //      if(!track->CalculateEdgePoint(angle)) cerr<<"**************"<<endl;     
 	    //      if(track->CalculatePoint(track->GetLastPointX()))
 	    //      if(track->CalculatePoint(0))
 	    {
 	      //      PrintTrack(track);
-	      //      track->CalculateReferencePoint(PI/180.);
+	      //      track->CalculateReferencePoint(AliL3Transform::Pi()/180.);
 	      track->CalculateReferencePoint(0.001);
 	      Float_t dx=(float)track->GetPointX()-track->GetPointX();
 	      Float_t dy=(float)track->GetPointY()-track->GetPointY();

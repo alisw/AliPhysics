@@ -57,11 +57,6 @@ class AliL3Track {
 
   UInt_t fHitNumbers[159];  //Array of hit numbers for this track
 
- protected:
-
-  static Float_t BFACT;
-  static Double_t pi;
- 
  public:
   
   AliL3Track();

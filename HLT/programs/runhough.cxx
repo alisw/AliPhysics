@@ -73,8 +73,8 @@ int main(Int_t argc,Char_t **argv)
   AliL3HoughBaseTransformer *fh1 = new AliL3HoughTransformerVhdl(0,0,segs);
   AliL3HoughBaseTransformer *fh2 = new AliL3HoughTransformerLUT(0,0,segs);
 
-  fh1->CreateHistograms(64,0.1,64,-30,30);
-  fh2->CreateHistograms(64,0.1,64,-30,30);
+  fh1->CreateHistograms(64,0.1,64,-30.,30.);
+  fh2->CreateHistograms(64,0.1,64,-30.,30.);
 
   fh1->Print();
 

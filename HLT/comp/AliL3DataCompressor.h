@@ -77,7 +77,8 @@ class AliL3DataCompressor {
   Bool_t fKeepRemaining;
   Bool_t fSinglePatch;
   Bool_t fWriteIdsToFile;
-  
+  Bool_t fNoCompression; //Just process the data through the chain, but do not compress. (input=output). Mostly for debugging...
+
  public:
   AliL3DataCompressor();
   AliL3DataCompressor(Char_t *path,Bool_t keep,Bool_t writeshape);
@@ -90,7 +91,8 @@ class AliL3DataCompressor {
   void CompressAndExpand();
   void RestoreData(Bool_t remaining_only=kFALSE);
   void DoBench(Char_t *fname="benchmark");
-  
+  void DoNotCompress() {fNoCompression=kTRUE;}
+
   /*
   void SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shapepad,Int_t shapetime);
   void SetTransverseResolutions(Float_t res1,Float_t res2,Float_t res3,Float_t width=0.005);

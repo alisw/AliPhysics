@@ -38,7 +38,9 @@ Float_t AliL3DataCompressorHelper::fZResidualStep3 = 0.05;
 Float_t AliL3DataCompressorHelper::fXYWidthStep = 0.005;
 Float_t AliL3DataCompressorHelper::fZWidthStep = 0.005;
 Int_t AliL3DataCompressorHelper::fClusterCharge = 100;
-
+Int_t AliL3DataCompressorHelper::fNumPadBitsRemaining = 18;
+Int_t AliL3DataCompressorHelper::fNumTimeBitsRemaining = 19;
+Int_t AliL3DataCompressorHelper::fNumShapeBitsRemaining = 11;
 
 void AliL3DataCompressorHelper::SetBitNumbers(Int_t pad,Int_t time,Int_t charge,Int_t shape)
 {
@@ -62,6 +64,13 @@ void AliL3DataCompressorHelper::SetLongitudinalResolutions(Float_t res1,Float_t 
   fZResidualStep2 = res2;
   fZResidualStep3 = res3;
   fZWidthStep = width;
+}
+
+void AliL3DataCompressorHelper::SetRemainingBitNumbers(Int_t pad,Int_t time,Int_t shape)
+{
+  fNumPadBitsRemaining = pad;
+  fNumTimeBitsRemaining = time;
+  fNumShapeBitsRemaining = shape;
 }
 
 const Float_t AliL3DataCompressorHelper::GetXYResidualStep(Int_t row) 
@@ -91,5 +100,45 @@ const Float_t AliL3DataCompressorHelper::GetZResidualStep(Int_t row)
     {
       cerr<<"AliL3DataCompressorHelper::GetXYResidualStep : Wrong row number "<<row<<endl;
       return -1;
+    }
+}
+
+const Float_t AliL3DataCompressorHelper::GetPadPrecisionFactor()
+{
+  Int_t nbits = fNumPadBitsRemaining;
+  if(nbits >=21)
+    return 10000;
+  if(nbits >= 18)
+    return 1000;
+  if(nbits >= 14) 
+    return 100;
+  if(nbits >= 11)
+    return 10;
+  if(nbits >= 8)
+    return 1;
+  else 
+    {
+      cerr<<"AliL3DataCompressorHelper::GetRemainingPadFactor : Too few bits for the pad direction: "<<nbits<<endl;
+      return 1;
+    }
+}
+
+const Float_t AliL3DataCompressorHelper::GetTimePrecisionFactor()
+{
+  Int_t nbits = fNumTimeBitsRemaining;
+  if(nbits >=23)
+    return 10000;
+  if(nbits >= 19)
+    return 1000;
+  if(nbits >= 16) 
+    return 100;
+  if(nbits >= 13)
+    return 10;
+  if(nbits >= 9)
+    return 1;
+  else 
+    {
+      cerr<<"AliL3DataCompressorHelper::GetRemainingPadFactor : Too few bits for the pad direction: "<<nbits<<endl;
+      return 1;
     }
 }

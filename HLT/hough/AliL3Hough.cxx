@@ -16,6 +16,7 @@
 #include "AliL3HoughClusterTransformer.h"
 #include "AliL3HoughTransformerLUT.h"
 #include "AliL3HoughTransformerVhdl.h"
+#include "AliL3HoughTransformerGap.h"
 #include "AliL3HoughMaxFinder.h"
 #include "AliL3Benchmark.h"
 #ifdef use_aliroot
@@ -81,7 +82,10 @@ AliL3Hough::AliL3Hough()
   fVersion          = 0;
   fCurrentSlice     = 0;
   fEvent            = 0;
-
+  
+  fKappaSpread=6;
+  fPeakRatio=0.5;
+  
   SetTransformerParams();
   SetThreshold();
   SetNSaveIterations();
@@ -102,6 +106,8 @@ AliL3Hough::AliL3Hough(Char_t *path,Bool_t binary,Int_t n_eta_segments,Bool_t bi
   fWriteDigits   = kFALSE;
   fUse8bits      = bit8;
   fVersion       = tv;
+  fKappaSpread=6;
+  fPeakRatio=0.5;
   if(!fBinary)
     fInputFile = infile;
   else
@@ -206,6 +212,9 @@ void AliL3Hough::Init(Bool_t doit, Bool_t addhists)
 	break;
       case 3:
 	fHoughTransformer[i] = new AliL3HoughTransformerVhdl(0,i,fNEtaSegments,fNSaveIterations);
+	break;
+      case 4:
+	fHoughTransformer[i] = new AliL3HoughTransformerGap(0,i,fNEtaSegments);
 	break;
       default:
 	fHoughTransformer[i] = new AliL3HoughTransformer(0,i,fNEtaSegments,kFALSE,kFALSE);
@@ -381,7 +390,6 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
   if(fEvent!=eventnr) //just be sure that index is empty for new event
     AliL3FileHandler::CleanStaticIndex(); 
 #endif
-  fEvent=eventnr;
   fCurrentSlice = slice;
 
   for(Int_t i=0; i<fNPatches; i++)
@@ -405,6 +413,8 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
       else //read data from root file
 	{
 #ifdef use_aliroot
+	  if(fEvent!=eventnr)
+	    fMemHandler[i]->FreeDigitsTree();//or else the new event is not loaded
 	  digits=(AliL3DigitRowData *)fMemHandler[i]->AliAltroDigits2Memory(ndigits,eventnr);
 #else
 	  cerr<<"You cannot read from rootfile now"<<endl;
@@ -415,6 +425,8 @@ void AliL3Hough::ReadData(Int_t slice,Int_t eventnr)
       fHoughTransformer[i]->SetInputData(ndigits,digits);
       fHoughTransformer[i]->Init(slice,i,fNEtaSegments);
     }
+
+  fEvent=eventnr;
 }
 
 void AliL3Hough::Transform(Int_t *row_range)
@@ -624,7 +636,7 @@ void AliL3Hough::FindTrackCandidates()
 	  fPeakFinder->SetHistogram(hist);
 
 	  fPeakFinder->SetThreshold(fPeakThreshold[i]);
-	  fPeakFinder->FindAdaptedPeaks(6,0.5);
+	  fPeakFinder->FindAdaptedPeaks(fKappaSpread,fPeakRatio);
 
 	  //fPeakFinder->FindMaxima(fPeakThreshold[i]); //Simple maxima finder
 	  

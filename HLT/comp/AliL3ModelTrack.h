@@ -21,10 +21,13 @@ class AliL3ModelTrack : public AliL3Track {
   Float_t *fParSigmaZ2;    //!
   Float_t *fCrossingAngle; //!
   Int_t fPatch;
+  Bool_t fArraysCreated;
 
   //Crossing points with padrows
   Float_t *fPad;  //!
   Float_t *fTime;  //!
+  
+  void DeleteArrays();
   
  public:
   AliL3ModelTrack();
@@ -68,8 +71,8 @@ class AliL3ModelTrack : public AliL3Track {
   Bool_t GetSigmaZ2(Int_t row,Float_t &sigma2);
   Bool_t GetPadResidual(Int_t row,Float_t &res);
   Bool_t GetTimeResidual(Int_t row,Float_t &res);
-  Bool_t GetXYWidthResidual(Int_t row,Float_t &res);
-  Bool_t GetZWidthResidual(Int_t row,Float_t &res);
+  Bool_t GetSigmaYResidual(Int_t row,Float_t &res);
+  Bool_t GetSigmaZResidual(Int_t row,Float_t &res);
   Int_t GetNClusters() {return fNClusters;}
   void GetClusterLabel(Int_t row,Int_t *trackID);
     

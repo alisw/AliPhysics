@@ -80,10 +80,6 @@ class AliL3ConfMapper {
   Int_t fMainVertexTracks; //number of tracks coming from the main vertex
   Int_t fClustersUnused;   //number of unused clusters
 
-  static Double_t todeg;
-  static Double_t pi;
-  static Double_t twopi;
-
   //setter:
   void SetMinPoints(Int_t f,Bool_t vertex_constraint) {fMinPoints[(Int_t)vertex_constraint] = f; }  
   void SetVertexConstraint(Bool_t f) {fVertexConstraint =f;}

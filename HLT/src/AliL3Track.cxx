@@ -29,8 +29,6 @@ using namespace std;
 
 ClassImp(AliL3Track)
 
-Float_t AliL3Track::BFACT = 0.0029980;
-Double_t AliL3Track::pi=3.14159265358979323846;
 
 AliL3Track::AliL3Track()
 {
@@ -109,7 +107,7 @@ Double_t AliL3Track::GetEta() const
 
 Double_t AliL3Track::GetRapidity() const
 {
-  Double_t m_pi = 0.13957;
+  const Double_t m_pi = 0.13957;
   return 0.5 * log((m_pi + GetPz()) / (m_pi - GetPz()));
 }
 
@@ -133,7 +131,8 @@ void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
   if(!tolocal)
     AliL3Transform::Local2Global(first,slice);
   else
-    AliL3Transform::Global2Local(first,slice,kTRUE);
+    AliL3Transform::Global2LocHLT(first,slice);
+  //AliL3Transform::Global2Local(first,slice,kTRUE);
   
   SetFirstPoint(first[0],first[1],first[2]);
   Float_t last[3];
@@ -143,14 +142,16 @@ void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
   if(!tolocal)
     AliL3Transform::Local2Global(last,slice);
   else
-    AliL3Transform::Global2Local(last,slice,kTRUE);
+    AliL3Transform::Global2LocHLT(last,slice);    
+  //AliL3Transform::Global2Local(last,slice,kTRUE);
   SetLastPoint(last[0],last[1],last[2]);
   
   Float_t center[3] = {GetCenterX(),GetCenterY(),0};
   if(!tolocal)
     AliL3Transform::Local2Global(center,slice);
   else
-    AliL3Transform::Global2Local(center,slice,kTRUE);
+    AliL3Transform::Global2LocHLT(center,slice);
+  //AliL3Transform::Global2Local(center,slice,kTRUE);
   SetCenterX(center[0]);
   SetCenterY(center[1]);
   
@@ -167,10 +168,10 @@ void AliL3Track::CalculateHelix(){
   //Calculate Radius, CenterX and CenterY from Psi, X0, Y0
   //
   
-  fRadius = fPt / (BFACT*AliL3Transform::GetBField());
+  fRadius = fPt / (AliL3Transform::GetBFieldValue());
   if(fRadius) fKappa = -fQ*1./fRadius;
   else fRadius = 999999;  //just zero
-  Double_t trackPhi0 = fPsi + fQ *0.5 * pi;
+  Double_t trackPhi0 = fPsi + fQ * AliL3Transform::PiHalf();
 
   fCenterX = fFirstPoint[0] - fRadius *  cos(trackPhi0);
   fCenterY = fFirstPoint[1] - fRadius *  sin(trackPhi0);
@@ -245,10 +246,10 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
   Double_t angle1 = atan2((yHit - GetCenterY()),(xHit - GetCenterX()));
   if(angle1 < 0) angle1 += 2.*AliL3Transform::Pi();
   Double_t angle2 = atan2((GetFirstPointY() - GetCenterY()),(GetFirstPointX() - GetCenterX()));
-  if(angle2 < 0) angle2 += 2.*AliL3Transform::Pi();
+  if(angle2 < 0) angle2 += AliL3Transform::TwoPi();
   Double_t diff_angle = angle1 - angle2;
-  diff_angle = fmod(diff_angle,2*AliL3Transform::Pi());
-  if((GetCharge()*diff_angle) > 0) diff_angle = diff_angle - GetCharge()*2.*AliL3Transform::Pi();
+  diff_angle = fmod(diff_angle,AliL3Transform::TwoPi());
+  if((GetCharge()*diff_angle) > 0) diff_angle = diff_angle - GetCharge()*AliL3Transform::TwoPi();
   Double_t s_tot = fabs(diff_angle)*GetRadius();
   Double_t zHit = GetFirstPointZ() + s_tot*GetTgl();
   xyz[2] = zHit;
@@ -257,15 +258,15 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
 
 }
 
-
 Bool_t AliL3Track::CalculateReferencePoint(Double_t angle,Double_t radius){
-  // Global coordinate: crossing point with y = ax+ b; a=tan(angle-AliL3Transform::Pi()/2);
+  // Global coordinate: crossing point with y = ax+ b; 
+  // a=tan(angle-AliL3Transform::PiHalf());
   //
-  const Double_t rr=radius;//132; //position of reference plane
+  const Double_t rr=radius; //position of reference plane
   const Double_t xr = cos(angle) * rr;
   const Double_t yr = sin(angle) * rr;
   
-  Double_t a = tan(angle-pi/2);
+  Double_t a = tan(angle-AliL3Transform::PiHalf());
   Double_t b = yr - a * xr;
 
   Double_t pp=(fCenterX+a*fCenterY-a*b)/(1+pow(a,2));
@@ -294,16 +295,16 @@ Bool_t AliL3Track::CalculateReferencePoint(Double_t angle,Double_t radius){
 
   Double_t pointPhi0  = atan2(fPoint[1]-fCenterY,fPoint[0]-fCenterX);
   Double_t trackPhi0  = atan2(fFirstPoint[1]-fCenterY,fFirstPoint[0]-fCenterX);
-  if(fabs(trackPhi0-pointPhi0)>pi){
-    if(trackPhi0<pointPhi0) trackPhi0 += 2*pi;
-    else                    pointPhi0 += 2*pi;
+  if(fabs(trackPhi0-pointPhi0)>AliL3Transform::Pi()){
+    if(trackPhi0<pointPhi0) trackPhi0 += AliL3Transform::TwoPi();
+    else                    pointPhi0 += AliL3Transform::TwoPi();
   }
   Double_t stot = -fQ * (pointPhi0-trackPhi0) * fRadius ;
   fPoint[2]   = fFirstPoint[2] + stot * fTanl;
 
-  fPointPsi = pointPhi0 - fQ * 0.5 * pi;
-  if(fPointPsi<0.)  fPointPsi+= 2*pi;
-  fPointPsi = fmod(fPointPsi, 2*pi);
+  fPointPsi = pointPhi0 - fQ * AliL3Transform::PiHalf();
+  if(fPointPsi<0.)  fPointPsi+= AliL3Transform::TwoPi();
+  fPointPsi = fmod(fPointPsi, AliL3Transform::TwoPi());
 
   return IsPoint(kTRUE);
 }
@@ -334,13 +335,13 @@ Bool_t AliL3Track::CalculateEdgePoint(Double_t angle){
 
   if(r0>rmin&&r0<rmax){
     Double_t da=atan2(y0,x0);
-    if(da<0) da+=2*pi;
+    if(da<0) da+=AliL3Transform::TwoPi();
     if(fabs(da-angle)<0.5)
       ok0 = kTRUE;
   }
   if(r1>rmin&&r1<rmax){
     Double_t da=atan2(y1,x1);
-    if(da<0) da+=2*pi;
+    if(da<0) da+=AliL3Transform::TwoPi();
     if(fabs(da-angle)<0.5)
       ok1 = kTRUE;
   }
@@ -357,16 +358,16 @@ Bool_t AliL3Track::CalculateEdgePoint(Double_t angle){
 
   Double_t pointPhi0  = atan2(fPoint[1]-fCenterY,fPoint[0]-fCenterX);
   Double_t trackPhi0  = atan2(fFirstPoint[1]-fCenterY,fFirstPoint[0]-fCenterX);
-  if(fabs(trackPhi0-pointPhi0)>pi){
-    if(trackPhi0<pointPhi0) trackPhi0 += 2*pi;
-    else                    pointPhi0 += 2*pi;
+  if(fabs(trackPhi0-pointPhi0)>AliL3Transform::Pi()){
+    if(trackPhi0<pointPhi0) trackPhi0 += AliL3Transform::TwoPi();
+    else                    pointPhi0 += AliL3Transform::TwoPi();
   }
   Double_t stot = -fQ * (pointPhi0-trackPhi0) * fRadius ;
   fPoint[2]   = fFirstPoint[2] + stot * fTanl;
 
-  fPointPsi = pointPhi0 - fQ * 0.5 * pi;
-  if(fPointPsi<0.)  fPointPsi+= 2*pi;
-  fPointPsi = fmod(fPointPsi, 2*pi);
+  fPointPsi = pointPhi0 - fQ * AliL3Transform::PiHalf();
+  if(fPointPsi<0.)  fPointPsi+= AliL3Transform::TwoPi();
+  fPointPsi = fmod(fPointPsi, AliL3Transform::TwoPi());
 
   return IsPoint(kTRUE);
 }
@@ -391,16 +392,16 @@ Bool_t AliL3Track::CalculatePoint(Double_t xplane){
 
   Double_t pointPhi0  = atan2(fPoint[1]-fCenterY,fPoint[0]-fCenterX);
   Double_t trackPhi0  = atan2(fFirstPoint[1]-fCenterY,fFirstPoint[0]-fCenterX);
-  if(fabs(trackPhi0-pointPhi0)>pi){
-    if(trackPhi0<pointPhi0) trackPhi0 += 2*pi;
-    else                    pointPhi0 += 2*pi;
+  if(fabs(trackPhi0-pointPhi0)>AliL3Transform::Pi()){
+    if(trackPhi0<pointPhi0) trackPhi0 += AliL3Transform::TwoPi();
+    else                    pointPhi0 += AliL3Transform::TwoPi();
   }
   Double_t stot = -fQ * (pointPhi0-trackPhi0) * fRadius ;  
   fPoint[2]   = fFirstPoint[2] + stot * fTanl;
 
-  fPointPsi = pointPhi0 - fQ * 0.5 * pi;
-  if(fPointPsi<0.)  fPointPsi+= 2*pi;
-  fPointPsi = fmod(fPointPsi, 2*pi);
+  fPointPsi = pointPhi0 - fQ * AliL3Transform::PiHalf();
+  if(fPointPsi<0.)  fPointPsi+= AliL3Transform::TwoPi();
+  fPointPsi = fmod(fPointPsi, AliL3Transform::TwoPi());
 
   return IsPoint(kTRUE);
 }
@@ -446,8 +447,8 @@ void AliL3Track::UpdateToFirstPoint()
     }
 
   Double_t pointpsi = atan2(point[1]-GetCenterY(),point[0]-GetCenterX());
-  pointpsi -= GetCharge()*0.5*AliL3Transform::Pi();
-  if(pointpsi < 0) pointpsi += 2*AliL3Transform::Pi();
+  pointpsi -= GetCharge()*AliL3Transform::PiHalf();
+  if(pointpsi < 0) pointpsi += AliL3Transform::TwoPi();
   
   //Update the track parameters
   SetR0(sqrt(point[0]*point[0]+point[1]*point[1]));
@@ -488,15 +489,15 @@ void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_
   
   //Get the z coordinate:
   Double_t angle1 = atan2((closest_y-GetCenterY()),(closest_x-GetCenterX()));
-  if(angle1 < 0) angle1 = angle1 + 2*AliL3Transform::Pi();
+  if(angle1 < 0) angle1 = angle1 + AliL3Transform::TwoPi();
  
   Double_t angle2 = atan2((GetFirstPointY()-GetCenterY()),(GetFirstPointX()-GetCenterX()));
-  if(angle2 < 0) angle2 = angle2 + 2*AliL3Transform::Pi();
+  if(angle2 < 0) angle2 = angle2 + AliL3Transform::TwoPi();
   
   Double_t diff_angle = angle1 - angle2;
-  diff_angle = fmod(diff_angle,2*AliL3Transform::Pi());
+  diff_angle = fmod(diff_angle,AliL3Transform::TwoPi());
   
-  if((GetCharge()*diff_angle) < 0) diff_angle = diff_angle + GetCharge()*2*AliL3Transform::Pi();
+  if((GetCharge()*diff_angle) < 0) diff_angle = diff_angle + GetCharge()*AliL3Transform::TwoPi();
   Double_t s_tot = fabs(diff_angle)*GetRadius();
   
   closest_z = GetFirstPointZ() - s_tot*GetTgl();

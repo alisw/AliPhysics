@@ -23,11 +23,11 @@ struct AliL3ClusterModel {
 typedef struct AliL3ClusterModel AliL3ClusterModel;
 
 struct AliL3RemainingCluster {
-  UShort_t fPad;    //2 bytes
-  UShort_t fTime;   //2 bytes
-  Byte_t fSigmaY2;  //1 byte
-  Byte_t fSigmaZ2;  //1 byte
-  UShort_t fCharge; //2 bytes
+  Float_t fPad;   
+  Float_t fTime;  
+  Float_t fSigmaY2;  
+  Float_t fSigmaZ2;  
+  UShort_t fCharge;
 };
 typedef struct AliL3RemainingCluster AliL3RemainingCluster;
 

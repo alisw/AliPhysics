@@ -80,7 +80,10 @@ ClassImp(AliL3Transform)
 
 const Double_t AliL3Transform::fAnodeWireSpacing = 0.25; //Taken from the TDR
 const Double_t AliL3Transform::fBFACT = 0.0029980;       //Conversion Factor
-const Double_t AliL3Transform::fPi = 3.141592653589793;
+const Double_t AliL3Transform::fPi  =   3.141592653589793;
+const Double_t AliL3Transform::f2Pi = 2*3.141592653589793;
+const Double_t AliL3Transform::fPi2 = 0.5*3.141592653589793;
+const Double_t AliL3Transform::fToDeg = 180/3.141592653589793;
 
 //Defined by HLT and GSI
 Int_t AliL3Transform::fNPatches = 6;
@@ -846,12 +849,11 @@ Bool_t AliL3Transform::ReadInitFile(Char_t* pathname)
       for(Int_t i=1;i<fNSlice;i++){fscanf(fptr,"%s %s %lf %s",d1,d2,&ddummy,d3);fSin[i]=(Double_t)ddummy;}
     }
   }
+  fclose(fptr);
 
   //The first multiplier gives the scale factor used to modify the field map 
   //defined by the second multiplier.
   fBField=fBFieldFactor*fSolenoidBField*0.1;
-
-  fclose(fptr);
 
   //Test if new config file has been used.
   if(fVersion==fV_deprecated){
@@ -1430,6 +1432,16 @@ Bool_t AliL3Transform::Sector2Slice(Int_t & slice, Int_t & slicerow, Int_t secto
   return kTRUE;
 }
 
+Double_t AliL3Transform::GetMaxY(Int_t slicerow)
+{
+ if(slicerow < fNRowLow)
+     return fPadPitchWidthLow*fNPads[slicerow]/2; 
+ 
+ else
+     return fPadPitchWidthUp*fNPads[slicerow]/2;
+
+}
+
 Double_t AliL3Transform::Row2X(Int_t slicerow){
   if(slicerow<0||slicerow>=fNRow){
     LOG(AliL3Log::kError,"AliL3Transform::Row2X","Slicerow")
@@ -1437,6 +1449,16 @@ Double_t AliL3Transform::Row2X(Int_t slicerow){
     return 0;
   }
   return fX[slicerow];
+}
+
+Double_t AliL3Transform::GetZFast(Int_t slice, Int_t time, Float_t vertex)
+{
+  Double_t ret=0;
+  if(slice < 18)
+    ret=fZLength-fZWidth*time+fZOffset;
+  else
+    ret=fZWidth*time-fZOffset-fZLength;
+  return ret;
 }
 
 void AliL3Transform::Local2Global(Float_t *xyz,Int_t slice)
@@ -1478,12 +1500,79 @@ void AliL3Transform::Raw2Local(Float_t *xyz,Int_t sector,Int_t row,Float_t pad,F
     xyz[1]=(pad-0.5*(npads-1))*fPadPitchWidthUp;
 
   //Z-Value (remember PULSA Delay)
-  //xyz[2]=fZWidth*time-3.*fZSigma;
-  xyz[2]=fZWidth*time-fZOffset;
   if(slice < 18)
-    xyz[2]=fZLength-xyz[2];
+    xyz[2]=fZLength-fZWidth*time+fZOffset;
   else
-    xyz[2]=xyz[2]-fZLength;
+    xyz[2]=fZWidth*time-fZOffset-fZLength;
+}
+
+void AliL3Transform::Raw2Local(Float_t *xyz,Int_t sector,Int_t row,Int_t pad,Int_t time)
+{
+  //Transformation from rawdata to local coordinate system
+  
+  Int_t slice,slicerow;
+  Sector2Slice(slice, slicerow, sector, row);  
+
+  //X-Value
+  xyz[0]=Row2X(slicerow); 
+
+  //Y-Value
+  Int_t npads= fNPads[slicerow];
+
+  if(fSectorLow[sector])
+    xyz[1]=(pad-0.5*(npads-1))*fPadPitchWidthLow;
+  else
+    xyz[1]=(pad-0.5*(npads-1))*fPadPitchWidthUp;
+
+  //Z-Value (remember PULSA Delay)
+  if(slice < 18)
+    xyz[2]=fZLength-fZWidth*time+fZOffset;
+  else
+    xyz[2]=fZWidth*time-fZOffset-fZLength;
+}
+
+void AliL3Transform::RawHLT2Local(Float_t *xyz,Int_t slice,
+                               Int_t slicerow,Float_t pad,Float_t time)
+{
+  //Transformation from HLT rawdata to local coordinate system
+  
+  //X-Value
+  xyz[0]=Row2X(slicerow); 
+
+  //Y-Value
+  Int_t npads= fNPads[slicerow];
+  if(slicerow<fNRowLow)
+    xyz[1]=(pad-0.5*(npads-1))*fPadPitchWidthLow;
+  else
+    xyz[1]=(pad-0.5*(npads-1))*fPadPitchWidthUp;
+
+  //Z-Value
+  if(slice < 18)
+    xyz[2]=fZLength-fZWidth*time+fZOffset;
+  else
+    xyz[2]=fZWidth*time-fZOffset-fZLength;
+}
+
+void AliL3Transform::RawHLT2Local(Float_t *xyz,Int_t slice,
+                               Int_t slicerow,Int_t pad,Int_t time)
+{
+  //Transformation from HLT rawdata to local coordinate system
+  
+  //X-Value
+  xyz[0]=Row2X(slicerow); 
+
+  //Y-Value
+  Int_t npads= fNPads[slicerow];
+  if(slicerow<fNRowLow)
+    xyz[1]=(pad-0.5*(npads-1))*fPadPitchWidthLow;
+  else
+    xyz[1]=(pad-0.5*(npads-1))*fPadPitchWidthUp;
+
+  //Z-Value
+  if(slice < 18)
+    xyz[2]=fZLength-fZWidth*time+fZOffset;
+  else
+    xyz[2]=fZWidth*time-fZOffset-fZLength;
 }
 
 void AliL3Transform::Local2Global(Float_t *xyz,Int_t sector,Int_t row)
@@ -1498,25 +1587,32 @@ void AliL3Transform::Local2Global(Float_t *xyz,Int_t sector,Int_t row)
   xyz[2]=xyz[2];//global z=local z
 }
 
-Double_t AliL3Transform::GetMaxY(Int_t slicerow)
+void AliL3Transform::LocHLT2Global(Float_t *xyz,Int_t slice,Int_t slicerow)
 {
-
- if(slicerow < fNRowLow)
-     return fPadPitchWidthLow*fNPads[slicerow]/2; 
- 
- else
-     return fPadPitchWidthUp*fNPads[slicerow]/2;
-
+  //Transformation from HLT to global coordinate system
+  Float_t r=Row2X(slicerow); //have to get x value first
+                             
+  xyz[0]=r*fCos[slice]-xyz[1]*fSin[slice];
+  xyz[1]=r*fSin[slice]+xyz[1]*fCos[slice];
+  xyz[2]=xyz[2];//global z=local z
 }
 
-void AliL3Transform::Global2Local(Float_t *xyz,Int_t sector,Bool_t isSlice)
-{
+void AliL3Transform::Global2Local(Float_t *xyz,Int_t sector)
+{ //check code
   Int_t slice;
-  if(!isSlice)
+  //if(!isSlice)
     Sector2Slice(slice, sector);  
-  else
-    slice = sector;
+    //else
+    //slice = sector;
 
+  Float_t x1 =  xyz[0]*fCos[slice] + xyz[1]*fSin[slice];
+  Float_t y1 = -xyz[0]*fSin[slice] + xyz[1]*fCos[slice];
+  xyz[0] = x1;
+  xyz[1] = y1;
+}
+
+void AliL3Transform::Global2LocHLT(Float_t *xyz,Int_t slice)
+{
   Float_t x1 =  xyz[0]*fCos[slice] + xyz[1]*fSin[slice];
   Float_t y1 = -xyz[0]*fSin[slice] + xyz[1]*fCos[slice];
   xyz[0] = x1;
@@ -1526,9 +1622,35 @@ void AliL3Transform::Global2Local(Float_t *xyz,Int_t sector,Bool_t isSlice)
 void AliL3Transform::Raw2Global(Float_t *xyz,Int_t sector,Int_t row,Float_t pad,Float_t time)
 {
   //Transformation from raw to global coordinates
-  
+ 
   Raw2Local(xyz,sector,row,pad,time);
   Local2Global(xyz,sector,row);
+}
+
+void AliL3Transform::Raw2Global(Float_t *xyz,Int_t sector,Int_t row,Int_t pad,Int_t time)
+{
+  //Transformation from raw to global coordinates
+ 
+  Raw2Local(xyz,sector,row,pad,time);
+  Local2Global(xyz,sector,row);
+}
+
+void AliL3Transform::RawHLT2Global(Float_t *xyz,Int_t slice,
+                                   Int_t slicerow,Float_t pad,Float_t time)
+{
+  //Transformation from raw to global coordinates
+ 
+  RawHLT2Local(xyz,slice,slicerow,pad,time);
+  LocHLT2Global(xyz,slice,slicerow);
+}
+
+void AliL3Transform::RawHLT2Global(Float_t *xyz,Int_t slice,
+                                   Int_t slicerow,Int_t pad,Int_t time)
+{
+  //Transformation from raw to global coordinates
+ 
+  RawHLT2Local(xyz,slice,slicerow,pad,time);
+  LocHLT2Global(xyz,slice,slicerow);
 }
 
 void AliL3Transform::Local2Raw(Float_t *xyz,Int_t sector,Int_t row)
@@ -1539,17 +1661,33 @@ void AliL3Transform::Local2Raw(Float_t *xyz,Int_t sector,Int_t row)
   Sector2Slice(slice, slicerow, sector, row);  
    
   xyz[0]=slicerow;
-  //xyz[0]=GetPadRow(xyz[0]);
 
   if(fSectorLow[sector])
     xyz[1]=xyz[1]/fPadPitchWidthLow+0.5*(fNPads[slicerow]-1);
   else
     xyz[1]=xyz[1]/fPadPitchWidthUp+0.5*(fNPads[slicerow]-1);
 
-  Int_t sign=-1;
-  if(slice < 18) sign = 1;
-  xyz[2]=fZLength-sign*xyz[2];
-  xyz[2]=(xyz[2]+fZOffset)/fZWidth;
+  if(slice < 18)
+    xyz[2]=(fZLength-xyz[2]+fZOffset)/fZWidth;
+  else
+    xyz[2]=(fZLength+xyz[2]+fZOffset)/fZWidth;
+}
+
+void AliL3Transform::LocHLT2Raw(Float_t *xyz,Int_t slice,Int_t slicerow)
+{
+  //Transformation from local coordinates to raw
+
+  xyz[0]=slicerow;
+
+  if(slicerow<fNRowLow)
+    xyz[1]=xyz[1]/fPadPitchWidthLow+0.5*(fNPads[slicerow]-1);
+  else
+    xyz[1]=xyz[1]/fPadPitchWidthUp+0.5*(fNPads[slicerow]-1);
+
+  if(slice < 18)
+    xyz[2]=(fZLength-xyz[2]+fZOffset)/fZWidth;
+  else
+    xyz[2]=(fZLength+xyz[2]+fZOffset)/fZWidth;
 }
 
 void AliL3Transform::Global2Raw(Float_t *xyz,Int_t sector,Int_t row)
@@ -1558,6 +1696,14 @@ void AliL3Transform::Global2Raw(Float_t *xyz,Int_t sector,Int_t row)
 
   Global2Local(xyz,sector);
   Local2Raw(xyz,sector,row);
+}
+
+void AliL3Transform::Global2HLT(Float_t *xyz,Int_t slice,Int_t slicerow)
+{
+  //Transformation from global coordinates to raw. 
+
+  Global2LocHLT(xyz,slice);
+  LocHLT2Raw(xyz,slice,slicerow);
 }
 
 void AliL3Transform::PrintCompileOptions()

@@ -42,10 +42,19 @@ include $(ALIHLT_TOPDIR)/Makefile.rules
 
 
 $(OBJDIR)/bitio.o: bitio.c
-	$(CXX) -c -o $(OBJDIR)/bitio.o bitio.c
+	$(CXX) $(CXXFLAGS) -c -o $(OBJDIR)/bitio.o bitio.c
 
 $(OBJDIR)/errhand.o: errhand.c
-	$(CXX) -c -o $(OBJDIR)/errhand.o errhand.c
+	$(CXX) $(CXXFLAGS) -c -o $(OBJDIR)/errhand.o errhand.c
 
 $(OBJDIR)/AliL3FitUtilities.o: AliL3FitUtilities.c
-	$(CXX) -c -o $(OBJDIR)/AliL3FitUtilities.o AliL3FitUtilities.c
+	$(CXX) $(CXXFLAGS) -c -o $(OBJDIR)/AliL3FitUtilities.o AliL3FitUtilities.c
+
+$(OBJDIR)/bitio.sto: bitio.c
+	$(CXX) $(PROFILEFLAGS) $(CXXFLAGS) -c -o $(OBJDIR)/bitio.sto bitio.c
+
+$(OBJDIR)/errhand.sto: errhand.c
+	$(CXX) $(PROFILEFLAGS) $(CXXFLAGS) -c -o $(OBJDIR)/errhand.sto errhand.c
+
+$(OBJDIR)/AliL3FitUtilities.sto: AliL3FitUtilities.c
+	$(CXX) $(PROFILEFLAGS) $(CXXFLAGS) -c -o $(OBJDIR)/AliL3FitUtilities.sto AliL3FitUtilities.c

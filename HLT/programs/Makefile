@@ -13,8 +13,10 @@ endif
 include $(ALIHLT_TOPDIR)/Makefile.conf
 
 DEFSTR = -Dno_root
-INCLUDES = -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/comp -I$(ALIHLT_TOPDIR)/misc
+INCLUDES = -I$(ALIHLT_TOPDIR)/src -I$(ALIHLT_TOPDIR)/hough -I$(ALIHLT_TOPDIR)/comp -I$(ALIHLT_TOPDIR)/misc -I$(ALIHLT_TOPDIR)/trigger -I$(ALIHLT_TOPDIR)/kalman
+
 LIBS = -L$(ALIHLT_LIBDIR) -lAliL3Src -lAliL3Hough -lAliL3Comp -lAliL3Misc 
+STATICLIBS = $(ALIHLT_LIBDIR)/libAliL3Src.a  $(ALIHLT_LIBDIR)/libAliL3Hough.a  $(ALIHLT_LIBDIR)/libAliL3Comp.a  $(ALIHLT_LIBDIR)/libAliL3Misc.a 
 
 ifneq ($(ALIHLT_USEPACKAGE),STANDALONE)
 ROOTCFLAGS := $(shell root-config --cflags)
@@ -27,6 +29,7 @@ DEFSTR = -Duse_root
 INCLUDES += -I$(ROOTSYS)/include 
 RLIBS = $(ROOTLIBS) -lMinuit -lEG 
 LIBS += $(RLIBS)
+STATICLIBS += $(RLIBS)
 endif
 
 ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
@@ -40,15 +43,17 @@ endif
 INCLUDES += -I$(ROOTSYS)/include -I$(ALICE_ROOT)/include/ -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/CONTAINERS -I$(ALICE_ROOT)/STEER
 RLIBS = $(ROOTLIBS) -lMinuit -lEG
 LIBS += $(ALICELIBS) $(RLIBS)
+STATICLIBS += $(ALICELIBS) $(RLIBS)
 endif
 
 ifeq ($(ALIHLT_USEPACKAGE),STANDALONE)
 DEFSTR = -Dno_root
 RLIBS =  -lpthread -lm -ldl -rdynamic
 LIBS += $(RLIBS)
+STATICLIBS += $(RLIBS)
 endif
 
-ifdef DO_MC
+ifeq ($(DOMC),1)
 DEFSTR += -Ddo_mc
 endif
 
@@ -63,9 +68,10 @@ INCLUDES += -I/prog/alice/level3/kip/MLUC/include
 MLUCLIBS += -L/prog/alice/level3/kip/MLUC/lib/linux-i386 -lMLUC
 endif
 LIBS += $(MLUCLIBS)
+STATICLIBS += $(MLUCLIBS)
 endif
 
-DEFSTR += $(EXTRADEF)
+DEFSTR += -D$(ARCH) $(EXTRADEF)
 
 CXX          = g++
 LD           = $(CXX)
@@ -76,11 +82,14 @@ CXXGCC3FLAGS = -DGCCVERSION=$(GCCVERSION)
 #CXXGCC3FLAGS += -Wno-deprecated
 #CXXGCC3FLAGS += -Woverloaded-virtual
 
-CXXFLAGS = -O2 -Wall -ggdb $(CXXGCC3FLAGS) $(EXTRACXXFLAGS) 
-LDFLAGS  = -O2 $(EXTRALDFLAGS) $(LIBS)
+CXXFLAGS       = -O2 -Wall -ggdb $(CXXGCC3FLAGS) $(EXTRACXXFLAGS) 
+LDFLAGS        = -O2 $(EXTRALDFLAGS) $(LIBS)
+STATICLDFLAGS  = -O2 $(PROFILEFLAGS) $(EXTRALDFLAGS) $(STATICLIBS)
 
 PRGS	= runit read runvhdlcf runhough runvhdlhough runtracker
+STPRGS	= 
 UTILS   = ccfile gettransform
+STUTILS = gettransform_st runit_st
 UTILS_not_working  = convbin speedtest 
 
 all: $(PRGS) $(UTILS)
@@ -88,6 +97,10 @@ all: $(PRGS) $(UTILS)
 programs: $(PRGS)
 
 utils: $(UTILS)
+
+stprograms: $(STPRGS)
+
+stutils: $(STUTILS)
 
 #run hough transform on l3 data.
 runhough: runhough.o
@@ -105,9 +118,12 @@ runvhdlcf: runvhdlcf.o
 runit: runit.o
 	$(LD) $< $(LDFLAGS) -o $@
 
+runit_st: runit.sto
+	$(LD) $< $(LDFLAGS) -o $@
+
 #run conventional tracker
 runtracker: runtracker.o
-	$(LD) $< $(LDFLAGS) -o $@
+	$(LD) $< $(STATICLDFLAGS) -o $@
 
 #read l3 raw data, print it and convert to altro data
 read: read.o
@@ -125,6 +141,10 @@ convbin: ali2raw.o
 gettransform: gettransform.o
 	$(LD) $< $(LDFLAGS) -o $@
 
+gettransform_st: gettransform.sto
+	$(LD) $< $(STATICLDFLAGS) -o $@
+
+
 speedtest: speedtest.cxx
 	g++ -O -Wall -fPIC -ffast-math $(CXXFLAGS) speedtest.cxx -o speedtest
 #       g++ -O -Wall -fPIC -mcpu=ev6   $(CXXFLAGS) speedtest.cxx -o speedtest
@@ -133,7 +153,10 @@ speedtest: speedtest.cxx
 %.o:%.cxx 
 	$(CXX) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
 
+%.sto:%.cxx 
+	$(CXX) $(PROFILEFLAGS) $(CXXFLAGS) $(DEFSTR) -c $(INCLUDES) -o $@ $<
+
 clean :
-	rm -f *.o $(PRGS) $(UTILS) $(UTILS_not_working)
+	rm -f *.o *.sto $(PRGS) $(UTILS) $(STPRGS) $(STUTILS) $(UTILS_not_working)
 
 

@@ -13,7 +13,10 @@ class AliL3Transform {
  private:
   static const Double_t fBFACT;
   static const Double_t fPi;
+  static const Double_t fPi2;
+  static const Double_t f2Pi;
   static const Double_t fAnodeWireSpacing; 
+  static const Double_t fToDeg;
 
   static Int_t fNPatches; //6 (dont change this) 
   static Int_t fRows[6][2];
@@ -122,6 +125,13 @@ class AliL3Transform {
 
   //getters
   static const Char_t* GetParamName() {return "75x40_100x60_150x60";}
+  static const Double_t Pi()     {return fPi;}
+  static const Double_t PiHalf() {return fPi2;}
+  static const Double_t TwoPi()  {return f2Pi;}
+  static const Double_t GetAnodeWireSpacing() {return fAnodeWireSpacing;}
+  static const Double_t GetBFact() {return fBFACT;}
+  static const Double_t ToRad() {return 1./fToDeg;}
+  static const Double_t ToDeg() {return fToDeg;}
 
   static Int_t GetFirstRow(Int_t patch);
   static Int_t GetLastRow(Int_t patch);
@@ -137,11 +147,10 @@ class AliL3Transform {
   static Int_t GetNTimeBins(){return fNTimeBins;}
   static Double_t GetBField() {return fBField;}
   static Double_t GetSolenoidField() {return fSolenoidBField;}
-  static Double_t GetBFact() {return fBFACT;}
   static Double_t GetBFactFactor() {return fBFieldFactor;}
   static Double_t GetBFieldValue() {return (fBField*fBFACT);}
-  static Float_t Deg2Rad(Float_t angle) {return angle*fPi/180;}
-  static Double_t Pi() {return fPi;}
+  static Float_t Deg2Rad(Float_t angle) {return angle/fToDeg;}
+  static Float_t Rad2Deg(Float_t angle) {return angle*fToDeg;}
   static Int_t GetVersion(){return fVersion;}
   static Double_t GetPadPitchWidthLow() {return fPadPitchWidthLow;}
   static Double_t GetPadPitchWidthUp() {return fPadPitchWidthUp;}
@@ -154,7 +163,6 @@ class AliL3Transform {
   static Double_t GetParSigmaY2(Int_t padrow,Float_t z,Float_t angle);
   static Double_t GetParSigmaZ2(Int_t padrow,Float_t z,Float_t tgl);
   static Double_t GetOmegaTau() {return fOmegaTau;}
-  static Double_t GetAnodeWireSpacing() {return fAnodeWireSpacing;}
   static Double_t GetPadLength(Int_t padrow);
   static Double_t GetPRFSigma(Int_t padrow);
   static Double_t GetTimeSigma() {return fTimeSigma;}
@@ -175,18 +183,37 @@ class AliL3Transform {
   static Double_t GetEta(Float_t *xyz);
   static Double_t GetEta(Int_t slice,Int_t padrow, Int_t pad, Int_t time);
   static Double_t GetPhi(Float_t *xyz);
+  static Double_t GetZFast(Int_t slice, Int_t time, Float_t vertex=0.);
 
   static void XYZtoRPhiEta(Float_t *rpe, Float_t *xyz);
   static void Local2Global(Float_t *xyz, Int_t slice);
   static void Local2GlobalAngle(Float_t *angle, Int_t slice);
   static void Global2LocalAngle(Float_t *angle, Int_t slice);
 
+  //we have 3 different system: Raw   : row, pad, time
+  //                            Local : x,y and global z
+  //                            Global: global x,y and global z
+  //the methods with HLT in the name differ from the other
+  //as you specify slice and slicerow, instead of sector
+  //and sector row. In that way we safe "a few ifs"
   static void Raw2Local(Float_t *xyz, Int_t sector, Int_t row, Float_t pad, Float_t time);
+  static void RawHLT2Local(Float_t *xyz,Int_t slice,Int_t slicerow,Float_t pad,Float_t time);
+  static void Raw2Local(Float_t *xyz, Int_t sector, Int_t row, Int_t pad, Int_t time);
+  static void RawHLT2Local(Float_t *xyz,Int_t slice,Int_t slicerow,Int_t pad,Int_t time);
   static void Local2Global(Float_t *xyz, Int_t sector, Int_t row);
-  static void Global2Local(Float_t *xyz, Int_t sector, Bool_t isSlice=kFALSE);
+  static void LocHLT2Global(Float_t *xyz, Int_t slice, Int_t slicerow);
+  static void Global2Local(Float_t *xyz, Int_t sector);
+  static void Global2LocHLT(Float_t *xyz, Int_t slice);
   static void Raw2Global(Float_t *xyz, Int_t sector, Int_t row, Float_t pad, Float_t time);
+  static void RawHLT2Global(Float_t *xyz, Int_t slice, 
+                            Int_t slicerow, Float_t pad, Float_t time);
+  static void Raw2Global(Float_t *xyz, Int_t sector, Int_t row, Int_t pad, Int_t time);
+  static void RawHLT2Global(Float_t *xyz, Int_t slice, 
+                            Int_t slicerow, Int_t pad, Int_t time);
   static void Local2Raw(Float_t *xyz, Int_t sector, Int_t row);
+  static void LocHLT2Raw(Float_t *xyz, Int_t slice, Int_t slicerow);
   static void Global2Raw(Float_t *xyz, Int_t sector, Int_t row);
+  static void Global2HLT(Float_t *xyz, Int_t slice, Int_t slicerow);
 
   static void PrintCompileOptions();
   

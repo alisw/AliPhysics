@@ -23,15 +23,12 @@
 
 ClassImp(AliL3ConfMapFit)
 
-Double_t AliL3ConfMapFit::pi=3.14159265358979323846;
 
 AliL3ConfMapFit::AliL3ConfMapFit(AliL3ConfMapTrack *track,AliL3Vertex *vertex)
 {
   //constructor
   fTrack = track;
   fVertex = vertex;
-  BFACT = 0.0029980;
-  
 }
 
 Int_t AliL3ConfMapFit::FitHelix()
@@ -367,7 +364,7 @@ Int_t AliL3ConfMapFit::FitCircle()
       x0   =  lHit->GetX()  ;
       y0   =  lHit->GetY()  ;
       phi0 =  atan2(lHit->GetY(),lHit->GetX());
-      if ( phi0 < 0 ) phi0 += 2*pi;
+      if ( phi0 < 0 ) phi0 += AliL3Transform::TwoPi();
       r0   =  sqrt ( lHit->GetX() * lHit->GetX() + lHit->GetY() * lHit->GetY() )  ;
       fTrack->SetPhi0(phi0);
       fTrack->SetR0(r0);
@@ -379,9 +376,9 @@ Int_t AliL3ConfMapFit::FitCircle()
   fTrack->SetFirstPoint(x0,y0,0); //Z-value is set in FitLine
 
   psi  = (Double_t)atan2(bcent-y0,acent-x0) ;
-  psi  = psi + q * 0.5F * pi ;
-  if ( psi < 0 ) psi = psi + 2*pi;
-  pt   = (Double_t)(BFACT * AliL3Transform::GetBField() * radius ) ;
+  psi  = psi + q * AliL3Transform::PiHalf();
+  if ( psi < 0 ) psi = psi + AliL3Transform::TwoPi();
+  pt   = (Double_t)(AliL3Transform::GetBFieldValue() * radius ) ;
   
   //Update the track parameters with the parameters from this fit:
   fTrack->SetPsi(psi);
@@ -416,7 +413,7 @@ Int_t AliL3ConfMapFit::FitLine ( )
   //find sum , sums ,sumz, sumss 
   // 
   Double_t dx, dy ;
-  Double_t radius = (Double_t)(fTrack->GetPt() / ( BFACT * AliL3Transform::GetBField() ) ) ;
+  Double_t radius = (Double_t)(fTrack->GetPt() / AliL3Transform::GetBFieldValue() ) ;
 
   //TObjArray *hits = fTrack->GetHits();
   //Int_t num_of_hits = fTrack->GetNumberOfPoints();
@@ -443,7 +440,7 @@ Int_t AliL3ConfMapFit::FitLine ( )
     } 
   else 
     { 
-      total_s = 2.0 * radius * pi ;
+      total_s = 2.0 * radius * AliL3Transform::Pi() ;
     } 
   
   AliL3ConfMapPoint *previousHit = NULL;
