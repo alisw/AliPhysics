@@ -31,6 +31,8 @@
 // AliL3Evaluate
 //
 // Evaluation class for tracking. Plots efficiencies etc..
+//
+
 
 ClassImp(AliL3Evaluate)
 
@@ -1110,7 +1112,7 @@ Bool_t AliL3Evaluate::GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t
   AliL3Transform::Global2LocalAngle(angl,slice);
   
   Double_t charge = -1.*kappa;
-  Double_t trackPhi0 = angl[0] + charge*0.5*Pi/fabs(charge);
+  Double_t trackPhi0 = angl[0] + charge*0.5*AliL3Transform::Pi()/fabs(charge);
   
   Double_t x0=0;
   Double_t y0=0;
@@ -1136,12 +1138,12 @@ Bool_t AliL3Evaluate::GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t
 
   Double_t yHit = xyz[1];
   Double_t angle1 = atan2((yHit - yc),(xHit - xc));
-  if(angle1 < 0) angle1 += 2.*Pi;
+  if(angle1 < 0) angle1 += 2.*AliL3Transform::Pi();
   Double_t angle2 = atan2((0 - yc),(0 - xc));
-  if(angle2 < 0) angle2 += 2.*Pi;
+  if(angle2 < 0) angle2 += 2.*AliL3Transform::Pi();
   Double_t diff_angle = angle1 - angle2;
-  diff_angle = fmod(diff_angle,2*Pi);
-  if((charg*diff_angle) > 0) diff_angle = diff_angle - charg*2.*Pi;
+  diff_angle = fmod(diff_angle,2*AliL3Transform::Pi());
+  if((charg*diff_angle) > 0) diff_angle = diff_angle - charg*2.*AliL3Transform::Pi();
   Double_t s_tot = fabs(diff_angle)*radius;
   Double_t zHit = 0 + s_tot*tgl;
   xyz[2] = zHit;

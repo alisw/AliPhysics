@@ -58,7 +58,7 @@ SRCS	= AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx AliLevel3.cxx\
           AliL3Vertex.cxx AliL3VertexFinder.cxx \
           AliL3Merger.cxx AliL3GlobalMerger.cxx AliL3ClustFinderNew.cxx \
           AliL3TrackArray.cxx AliL3InterMerger.cxx AliL3Logger.cxx \
-          AliL3MemHandler.cxx  AliL3Benchmark.cxx AliL3Display.cxx\
+          AliL3MemHandler.cxx  AliL3Benchmark.cxx AliL3Display.cxx 
 
 DICT = AliL3Cint.cxx
 DICTH = AliL3Cint.h
@@ -70,8 +70,8 @@ OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(DICTO)
 endif
 
 ifeq ($(USEPACKAGE),ALIROOT)
-HDRS = $(SRCS:.cxx=.h) AliL3FileHandler.h AliL3LinkDef.h
-OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(OBJDIR)/AliL3FileHandler.o $(DICTO)
+HDRS = $(SRCS:.cxx=.h) AliL3FileHandler.h AliL3Evaluate.h AliL3LinkDef.h
+OBJS = $(patsubst %.cxx,$(OBJDIR)/%.o,$(SRCS)) $(OBJDIR)/AliL3Evaluate.o $(OBJDIR)/AliL3FileHandler.o $(DICTO)
 endif
 
 LEVELSO = $(LIBDIR)/libAliL3.so
