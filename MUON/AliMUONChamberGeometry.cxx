@@ -14,6 +14,9 @@
 
 #include "AliMUONChamberGeometry.h"
 #include "AliMUONGeometryEnvelope.h"
+#include "AliMUONGeometryEnvelopeStore.h"
+#include "AliMUONGeometryTransformStore.h"	
+#include "AliMUONConstants.h"
 
 ClassImp(AliMUONChamberGeometry)
 
@@ -22,18 +25,31 @@ AliMUONChamberGeometry::AliMUONChamberGeometry(Int_t chamberId)
  : TObject(),
    fChamberId(chamberId),
    fMotherVolume("ALIC"),
+   fNofSVs(0),
+   fSVVolumeIds(0),
    fTransformation(0),
+   fDETransforms(0),
    fEnvelopes(0),
-   fNofSensVolumeIds(0),
-   fSensVolumeIds(0),
-   fDebug(kFALSE)
+   fSVMap(0)
 {
 // Standard constructor
 
-  // Create the chamber transformation
+  // Chamber transformation
   fTransformation = new TGeoCombiTrans("");
-  fEnvelopes = new TObjArray(20);
-  fSensVolumeIds = new TArrayI(20);
+
+  // Arrays of volumes Ids
+  fSVVolumeIds = new TArrayI(20);
+
+  // Sensitive volumes map
+  fSVMap = new AliMUONGeometrySVMap(100);
+
+  // Det elements transformation store
+  fDETransforms = new AliMUONGeometryTransformStore(
+                         AliMUONConstants::GetFirstDetElemId(chamberId), 
+			 AliMUONConstants::NofDetElements(chamberId),
+			 fSVMap);  
+  // Envelope store
+  fEnvelopes = new AliMUONGeometryEnvelopeStore(fDETransforms);  
 }
 
 
@@ -42,11 +58,12 @@ AliMUONChamberGeometry::AliMUONChamberGeometry()
  : TObject(),
    fChamberId(0),
    fMotherVolume(),
+   fNofSVs(0),
+   fSVVolumeIds(0),
    fTransformation(0),
+   fDETransforms(0),
    fEnvelopes(0),
-   fNofSensVolumeIds(0),
-   fSensVolumeIds(0),
-   fDebug(kFALSE)
+   fSVMap(0)
 {
 // Default constructor
 }
@@ -64,14 +81,11 @@ AliMUONChamberGeometry::AliMUONChamberGeometry(const AliMUONChamberGeometry& rhs
 AliMUONChamberGeometry::~AliMUONChamberGeometry() {
 //
 
-  // Add deleting rotation matrices 
-  
   delete fTransformation;
-  
-  if (fEnvelopes) {
-    fEnvelopes->Delete();
-    delete fEnvelopes;
-  }  
+  delete fSVVolumeIds;
+  delete fEnvelopes;
+  delete fDETransforms;
+  delete fSVMap;
 }
 
 //______________________________________________________________________________
@@ -92,324 +106,21 @@ AliMUONChamberGeometry::operator = (const AliMUONChamberGeometry& rhs)
 //
 
 //______________________________________________________________________________
-AliMUONGeometryEnvelope* 
-AliMUONChamberGeometry::FindEnvelope(const TString& name) const
+Int_t AliMUONChamberGeometry::GetSVIndex(Int_t svVolId) const
 {
-// Finds the envelope specified by name.
-// ---
-
-  for (Int_t i=0; i<fEnvelopes->GetEntriesFast(); i++) {
-    AliMUONGeometryEnvelope* envelope 
-      = (AliMUONGeometryEnvelope*)fEnvelopes->At(i);
-    
-    if (envelope->GetName() == name) return envelope;
+// Returns the index of the volume specified by volId
+// if it is present in the list of sensitive volumes 
+// (or -1 if not present).
+ 
+  for (Int_t i=0; i<fNofSVs; i++) {
+      if (fSVVolumeIds->At(i) == svVolId) return i;
   }
-  
-  return 0;    
-}  
+  return -1;
+}
 
 //
 // public methods
 //
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual,
-                                          const char* only) 
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding ";
-    if (!isVirtual) cout << " non-";
-    cout << "virtual envelope " << name << endl;
-  }  
-
-  AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, isVirtual, only);
-
-  fEnvelopes->Add(envelope);
-}
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual,
-                                          const TGeoTranslation& translation,
-					  const char* only)
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding ";
-    if (!isVirtual) cout << " non-";
-    cout << "virtual envelope " << name 
-         << " with translation" << endl;
-  }  
-
-  AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, isVirtual, only);
-  envelope->SetTranslation(translation);
-
-  fEnvelopes->Add(envelope);
-}
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Bool_t isVirtual, 
-                                          const TGeoTranslation& translation,
-		                          const TGeoRotation& rotation,
-					  const char* only)
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding ";
-    if (!isVirtual) cout << " non-";
-    cout << "virtual envelope " << name 
-         << " with translation and rotation" << endl;
-  }  
-
-  // fEnvelopes->Add(new TGeoCombiTrans(name, translation, rotation));
-           // would be nice to be so simple 
-
-  AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, isVirtual, only);
-  envelope->SetRotation(rotation);
-  envelope->SetTranslation(translation);
-
-  fEnvelopes->Add(envelope);
-}
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Int_t copyNo,
-                                          const char* only) 
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding "
-         << " non-virtual envelope " << name 
-         << " with copyNo " << copyNo << endl;
-   }  
-
-  AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, copyNo, only);
-
-  fEnvelopes->Add(envelope);
-}
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Int_t copyNo,
-                                          const TGeoTranslation& translation,
-					  const char* only)
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding "
-         << " non-virtual envelope " << name 
-         << " with copyNo " << copyNo
-         << " with translation " << endl;
-  }  
-
-  AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, copyNo, only);
-  envelope->SetTranslation(translation);
-
-  fEnvelopes->Add(envelope);
-}
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelope(const TString& name, Int_t copyNo, 
-                                          const TGeoTranslation& translation,
-		                          const TGeoRotation& rotation,
-					  const char* only)
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding "
-         << " non-virtual envelope " << name 
-         << " with copyNo " << copyNo
-         << " with translation and rotation" << endl;
-  }  
-
-  // fEnvelopes->Add(new TGeoCombiTrans(name, translation, rotation));
-           // would be nice to be so simple 
-
-  AliMUONGeometryEnvelope* envelope 
-    = new AliMUONGeometryEnvelope(name, copyNo, only);
-  envelope->SetRotation(rotation);
-  envelope->SetTranslation(translation);
-
-  fEnvelopes->Add(envelope);
-}
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelopeConstituent(const TString& name, 
-                                         const TString& envName, Int_t copyNo) 
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding constituent " << name
-         << " to envelope " << envName 
-         << " with copyNo " << copyNo << endl;
-  }  
-
-  AliMUONGeometryEnvelope* envelope = FindEnvelope(envName);
-  
-  if (!envelope) {
-    // add warning
-    return;
-  }  
-   
-  envelope->AddConstituent(name, copyNo);
-}
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelopeConstituent(const TString& name, 
-                                          const TString& envName, Int_t copyNo,
-                                          const TGeoTranslation& translation)
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding constituent " << name
-         << " to envelope " << envName 
-         << " with copyNo " << copyNo
-         << " with translation" << endl;
-  }  
-
-  AliMUONGeometryEnvelope* envelope = FindEnvelope(envName);
-  
-  if (!envelope) {
-    // add warning
-    return;
-  }  
-   
-  envelope->AddConstituent(name, copyNo, translation);
-}
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelopeConstituent(const TString& name, 
-                                          const TString& envName, Int_t copyNo, 
-                                          const TGeoTranslation& translation,
-		                          const TGeoRotation& rotation)
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding constituent " << name
-         << " to envelope " << envName 
-         << " with copyNo " << copyNo
-         << " with translation and rotation" << endl;
-  }  
-
-  AliMUONGeometryEnvelope* envelope = FindEnvelope(envName);
-  
-  if (!envelope) {
-    // add warning
-    return;
-  }  
-   
-  envelope->AddConstituent(name, copyNo, translation, rotation);
-}
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelopeConstituentParam(const TString& name, 
-                                         const TString& envName, Int_t copyNo,
-					 Int_t npar, Double_t* param) 
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding parameterised constituent " << name
-         << " to envelope " << envName 
-         << " with copyNo " << copyNo << endl;
-  }  
-
-  AliMUONGeometryEnvelope* envelope = FindEnvelope(envName);
-  
-  if (!envelope) {
-    // add warning
-    return;
-  }  
-   
-  envelope->AddConstituentParam(name, copyNo, npar, param);
-}
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelopeConstituentParam(const TString& name, 
-                                          const TString& envName, Int_t copyNo,
-                                          const TGeoTranslation& translation,
-					  Int_t npar, Double_t* param)
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding parameterised constituent " << name
-         << " to envelope " << envName 
-         << " with copyNo " << copyNo
-         << " with translation" << endl;
-  }  
-
-  AliMUONGeometryEnvelope* envelope = FindEnvelope(envName);
-  
-  if (!envelope) {
-    // add warning
-    return;
-  }  
-   
-  envelope->AddConstituentParam(name, copyNo, translation, npar, param);
-}
-
-//______________________________________________________________________________
-void  AliMUONChamberGeometry::AddEnvelopeConstituentParam(const TString& name, 
-                                          const TString& envName, Int_t copyNo, 
-                                          const TGeoTranslation& translation,
-		                          const TGeoRotation& rotation,
-					  Int_t npar, Double_t* param)
-{
-// Adds the volume with the specified name and transformation
-// to the list of envelopes.
-// ---  					   
-
-  if (fDebug) {
-    cout << "... Adding parameterised constituent " << name
-         << " to envelope " << envName 
-         << " with copyNo " << copyNo
-         << " with translation and rotation" << endl;
-  }  
-
-  AliMUONGeometryEnvelope* envelope = FindEnvelope(envName);
-  
-  if (!envelope) {
-    // add warning
-    return;
-  }  
-   
-  envelope->AddConstituentParam(name, copyNo, translation, rotation, npar, param);
-}
 
 //______________________________________________________________________________
 void  AliMUONChamberGeometry::SetTranslation(const TGeoTranslation& translation)
@@ -434,31 +145,56 @@ void  AliMUONChamberGeometry::SetRotation(const TGeoRotation& rotation)
 }  
 
 //______________________________________________________________________________
-void  AliMUONChamberGeometry::SetSensitiveVolume(Int_t volId)
+void  AliMUONChamberGeometry::SetSensitiveVolume(Int_t svVolId)
 {
 // Adds the volume specified by volId to the list of sensitive
 // volumes
+// ---
   
-  fSensVolumeIds->AddAt(volId,fNofSensVolumeIds++);
+  // Resize TArrayI if needed
+  if (fSVVolumeIds->GetSize() == fNofSVs) fSVVolumeIds->Set(2*fNofSVs);
+
+  fSVVolumeIds->AddAt(svVolId, fNofSVs++);
 }      
 
 //______________________________________________________________________________
 void  AliMUONChamberGeometry::SetSensitiveVolume(const TString& volName)
 {
-// Adds the volume specified by volId to the list of sensitive
+// Adds the volume specified by volName to the list of sensitive
 // volumes
+// ---
 
-  fSensVolumeIds->AddAt(gMC->VolId(volName),fNofSensVolumeIds++);
+  SetSensitiveVolume(gMC->VolId(volName));
 }      
+
+//______________________________________________________________________________
+void  AliMUONChamberGeometry::SetAlign(Bool_t align)
+{
+// Sets alignement option to enevelope store.
+// ---
+  
+  fEnvelopes->SetAlign(align);
+}  
 
 //______________________________________________________________________________
 Bool_t AliMUONChamberGeometry::IsSensitiveVolume(Int_t volId) const
 {
 // Checks if the volume specified by volId is present in the list
 // of sensitive volumes.
+// ---
 
-  for (Int_t i=0; i<fNofSensVolumeIds; i++) {
-      if (fSensVolumeIds->At(i) == volId) return kTRUE;
+  for (Int_t i=0; i<fNofSVs; i++) {
+      if (fSVVolumeIds->At(i) == volId) return kTRUE;
   }
   return kFALSE;
+}
+
+//______________________________________________________________________________
+Bool_t AliMUONChamberGeometry::IsSensitiveVolume(const TString& volName) const
+{
+// Checks if the volume specified by volName  is present in the list
+// of sensitive volumes.
+// ---
+
+  return IsSensitiveVolume(gMC->VolId(volName));
 }
