@@ -21,7 +21,8 @@ ClassImp(AliL3InterMerger)
 AliL3InterMerger::AliL3InterMerger():AliL3Merger(1){
   //Default constructor
   Is2Global(kFALSE);
-  SetParameter(2,2,.3,.3,.3);
+//  SetParameter(2,2,.3,.3,.3);
+  SetParameter(1,0.5,0.0005,0.05,0.1);
   fRowMax = fRowMin = 0;
 }
 
@@ -115,8 +116,13 @@ Int_t AliL3InterMerger::Merge(){
       if(IsTrack(innertrack,outertrack)){
         tr[0]=innertrack;
         tr[1]=outertrack;
-        SortTracks(tr,2);
-        if(tr[0]->GetLastPointX()<tr[1]->GetFirstPointX()){
+        SortGlobalTracks(tr,2);
+
+        Double_t r0 = pow(tr[0]->GetLastPointX(),2)+
+                      pow(tr[0]->GetLastPointY(),2);
+        Double_t r1 = pow(tr[1]->GetFirstPointX(),2)+
+                      pow(tr[1]->GetFirstPointY(),2);
+        if(r0<r1){
           MultiMerge(tracks,tr,2);
           tracks->Remove(out);
           tracks->Remove(in);
