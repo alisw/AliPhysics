@@ -139,7 +139,7 @@ void Config()
   if(iPIPE) {
     //=================== PIPE parameters ============================
 
-    AliPIPE *PIPE  = new AliPIPEv0("PIPE","Beam Pipe");
+    AliPIPE *PIPE  = new AliPIPEvTemp("PIPE","Beam Pipe");
   }
 
 
