@@ -12,7 +12,7 @@
   #include "TParticle.h"
 #endif
 
-Int_t AliITSFindClustersV2() {
+Int_t AliITSFindClustersV2(Char_t SlowOrFast='f') {
 /****************************************************************
  *  This macro converts AliITSRecPoint(s) to AliITSclusterV2(s) *
  ****************************************************************/
@@ -46,14 +46,20 @@ Int_t AliITSFindClustersV2() {
 
    TTree *pTree=gAlice->TreeR();
    if (!pTree) { cerr<<"Can't get TreeR !\n"; return 5; }
-   TBranch *branch=pTree->GetBranch("ITSRecPoints");
+   TBranch *branch = 0;
+   if (SlowOrFast=='f') {
+     branch = pTree->GetBranch("ITSRecPointsF");
+   }
+   else {
+     branch = pTree->GetBranch("ITSRecPoints");
+   }
    if (!branch) { cerr<<"Can't get ITSRecPoints branch !\n"; return 6; }
    TClonesArray *points=new TClonesArray("AliITSRecPoint",10000);
    branch->SetAddress(&points);
 
    TClonesArray &cl=*clusters;
    Int_t nclusters=0;
-   Int_t nentr=(Int_t)pTree->GetEntries();
+   Int_t nentr=(Int_t)branch->GetEntries();
 
    cerr<<"Number of entries: "<<nentr<<endl;
 
@@ -61,7 +67,7 @@ Int_t AliITSFindClustersV2() {
 
    for (Int_t i=0; i<nentr; i++) {
        points->Clear();
-       pTree->GetEvent(i);
+       branch->GetEvent(i);
        Int_t ncl=points->GetEntriesFast(); if (ncl==0){cTree->Fill();continue;}
        Int_t lay,lad,det; geom->GetModuleId(i,lay,lad,det);
        Float_t x,y,zshift; geom->GetTrans(lay,lad,det,x,y,zshift); 

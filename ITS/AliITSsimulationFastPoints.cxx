@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/06/10 17:30:24  nilsen
+A new CreateFastRecPoints has been made and the old one made compatible.
+
 Revision 1.9  2001/10/01 19:36:03  nilsen
 fixed a compilation warning about unused variable.
 
@@ -138,8 +141,8 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod,
 		    locals[0] += deltaXl;
 		    locals[2] += deltaZl;
 		    AliITSRecPoint rp;
-		    //	   rp.fTracks[0]=hit->GetTrack();
-		    rp.fTracks[0]=mod->GetHitTrackIndex(ihit);
+		    rp.fTracks[0]=hit->GetTrack();
+		    //		    rp.fTracks[0]=mod->GetHitTrackIndex(ihit);
 		    rp.fTracks[1]=-3;
 		    rp.fTracks[2]=-3;
 		    rp.SetX(locals[0]);
