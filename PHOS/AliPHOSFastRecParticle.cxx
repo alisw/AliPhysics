@@ -227,6 +227,28 @@ Bool_t AliPHOSFastRecParticle::IsElectron(TString purity) const
 }
 
 //____________________________________________________________________________
+Bool_t AliPHOSFastRecParticle::IsHardPhoton() const
+{
+  // Rec.Particle is a hard photon (E > 30 GeV) if its second moment M2x
+  // corresponds to photons
+  if (TestPIDBit(12))
+    return kTRUE;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
+Bool_t AliPHOSFastRecParticle::IsHardPi0() const
+{
+  // Rec.Particle is a hard pi0 (E > 30 GeV) if its second moment M2x
+  // corresponds to pi0
+  if (TestPIDBit(13))
+    return kTRUE;
+  else
+    return kFALSE;
+}
+
+//____________________________________________________________________________
 Bool_t AliPHOSFastRecParticle::IsHadron() const
 {
   // Rec.Particle is an hadron if it does not look like
