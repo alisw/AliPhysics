@@ -10,7 +10,6 @@
  
 
 #pragma link C++ class  TFluka+;
-#pragma link C++ class  AliFluka+;
 #endif
 
 

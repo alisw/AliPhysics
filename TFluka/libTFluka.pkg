@@ -1,6 +1,5 @@
 # Sources
-SRCS:=  TFluka.cxx AliFluka.cxx \
-	source.cxx
+SRCS:=  TFluka.cxx source.cxx
 FSRCS:= FLUKA_input.f
 
 # Headers
