@@ -15,12 +15,14 @@ class TG4PhysicsManager;
 class TG4StepManager;
 
 class G4UIcmdWithoutParameter;
+class G4UIcmdWithABool;
 
 class TG4Messenger: public G4UImessenger
 {
   public:
     TG4Messenger(TG4GeometryManager* geometryManager, 
-       TG4PhysicsManager* physicsManager, TG4StepManager* stepManager);
+                 TG4PhysicsManager* physicsManager, 
+		 TG4StepManager* stepManager);
     // --> protected   
     // TG4Messenger();
     // TG4Messenger(const TG4Messenger& right);
@@ -41,8 +43,14 @@ class TG4Messenger: public G4UImessenger
     TG4GeometryManager*       fGeometryManager; //geometry manager
     TG4PhysicsManager*        fPhysicsManager;  //physics manager
     TG4StepManager*           fStepManager;     //step manager
-    G4UIcmdWithoutParameter*  fProcessActivationCmd; //command 
-                                                //setProcessActivation    
+    
+    G4UIcmdWithABool*  fSetEMCmd;             //setEM command   
+    G4UIcmdWithABool*  fSetOpticalCmd;        //setOptical command   
+    G4UIcmdWithABool*  fSetHadronCmd;         //setHadron command   
+    G4UIcmdWithABool*  fSetSpecialCutsCmd;    //setSpecialCuts command   
+    G4UIcmdWithABool*  fSetSpecialControlsCmd;//setSpecialControls command   
+    G4UIcmdWithoutParameter*  fProcessActivationCmd; //.
+                                              //setProcessActivation command    
 };
 
 #endif //TG4_MESSENGER_H
