@@ -35,7 +35,6 @@ public:
 
   void ActivePPSD(Int_t Nevents) ;
   void AnalyzeManyEvents(Int_t Nevtents = 100, Int_t Module=0) ;  // analyzes many events   ;
-  void ReconstructCPV(Int_t Nevents = 1) ;  // reconstruct points in EMC and CPV
   void AnalyzeResolutions(Int_t Nevtents) ; // analyzes Energy and Position resolutions   ;
   void ReadAndPrintCPV(Int_t Nevents);      // Read & print generated and reconstructed hits in CPV
   void AnalyzeCPV(Int_t Nevents);           // analyzes various CPV characteristics
