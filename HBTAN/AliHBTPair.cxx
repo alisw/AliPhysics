@@ -249,7 +249,16 @@ Double_t AliHBTPair::GetKStar()
     
     CalculateQInvL();
     
-    Q = TMath::Sqrt( Q*Q - fQInvL);
+    Q = Q*Q - fQInvL;
+    if ( Q < 0)
+     {
+        Info("GetKStar","Q = %f",Q);
+        fPart1->Print();
+        fPart2->Print();
+        Q = TMath::Abs(Q);
+     }
+     
+    Q = TMath::Sqrt(Q);
     fKStar = Q/2.;
     fKStarNotCalc = kFALSE;
    }
