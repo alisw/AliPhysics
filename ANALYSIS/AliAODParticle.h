@@ -49,9 +49,6 @@ public:
   
   void           Clear(Option_t* /*option*/ ="");//Must be implemented in order to store this object in Clones Array
   
-  TLorentzVector FourMomentum() const {TLorentzVector v(fPx,fPy,fPz,fE);return v;}
-  TVector3       ProductionVertex() const {TVector3 v(fVx,fVy,fVz);return v;}
-  
   void           SetPIDprobability(Int_t pdg, Float_t prob = 1.0);
   Float_t        GetPIDprobability(Int_t pdg) const;
   Double_t       GetProbability(Int_t pdg) const {return GetPIDprobability(pdg);}

@@ -20,7 +20,7 @@ class AliClusterMap;
 
 class AliVAODParticle : public TObject {
 public:
-  AliVAODParticle(){}
+  AliVAODParticle() : TObject(){}
   virtual ~AliVAODParticle(){}
 
   AliVAODParticle(const AliVAODParticle& in);
@@ -28,19 +28,17 @@ public:
    
 
   // kinematics
-  virtual TLorentzVector   FourMomentum() const = 0;
-  virtual TVector3         Momentum() const {return FourMomentum().Vect();};
-  virtual Double_t         Mass() const {return FourMomentum().M();};
-  virtual Double_t         E() const {return FourMomentum().E();};
-  virtual Double_t         P() const {return FourMomentum().P();};
-  virtual Double_t         Pt() const {return FourMomentum().Pt();};
-  virtual Double_t         Px() const {return FourMomentum().Px();};
-  virtual Double_t         Py() const {return FourMomentum().Py();};
-  virtual Double_t         Pz() const {return FourMomentum().Pz();};
-  virtual Double_t         Phi() const {return FourMomentum().Phi();};
-  virtual Double_t         Theta() const {return FourMomentum().Theta();};
-  virtual Double_t         Eta() const {return FourMomentum().Eta();};
-  virtual Double_t         Y() const {return FourMomentum().Rapidity();};
+  virtual Double_t         Mass() const = 0;
+  virtual Double_t         E() const = 0;
+  virtual Double_t         P() const = 0;
+  virtual Double_t         Pt() const = 0;
+  virtual Double_t         Px() const = 0;
+  virtual Double_t         Py() const = 0;
+  virtual Double_t         Pz() const = 0;
+  virtual Double_t         Phi() const = 0;
+  virtual Double_t         Theta() const = 0;
+  virtual Double_t         Eta() const = 0;
+  virtual Double_t         Y() const = 0;
   
   virtual void             SetMomentum(Double_t/*px*/,Double_t/*py*/,Double_t/*pz*/,Double_t/*E*/) = 0;
   virtual void             SetProductionVertex(Double_t /*vx*/, Double_t /*vy*/, Double_t /*vz*/, Double_t /*t*/) = 0;
@@ -60,10 +58,9 @@ public:
   virtual Double_t         Charge() const = 0;
   
   // vertices
-  virtual TVector3         ProductionVertex() const = 0;
-  virtual Double_t         Vx() const {return ProductionVertex().X();};
-  virtual Double_t         Vy() const {return ProductionVertex().Y();};
-  virtual Double_t         Vz() const {return ProductionVertex().Z();};
+  virtual Double_t         Vx() const = 0;
+  virtual Double_t         Vy() const = 0;
+  virtual Double_t         Vz() const = 0;
   virtual Double_t         T()  const {return 0.0;};
 
   virtual AliVAODParticle*  Mother() const {return NULL;};

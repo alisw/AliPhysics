@@ -128,7 +128,10 @@ void AliMuonAnalysis::GetInvMass(AliAOD* aod)
       continue;
     }
 
-    lorV1 = aodPart1->FourMomentum();
+    lorV1.SetPxPyPzE(aodPart1->Px(),
+			 aodPart1->Py(),
+			 aodPart1->Pz(),
+			 aodPart1->E());
 
     fHPtMuon->Fill(lorV1.Pt());
     fHPMuon->Fill(lorV1.P());
@@ -145,12 +148,17 @@ void AliMuonAnalysis::GetInvMass(AliAOD* aod)
 
       AliAODParticle* aodPart2 =  (AliAODParticle*)aod->GetParticle(iPart2);
 
-      lorV2 = aodPart2->FourMomentum();
+      lorV2.SetPxPyPzE(aodPart2->Px(),
+			 aodPart2->Py(),
+			 aodPart2->Pz(),
+			 aodPart2->E());
+
       charge2 = TMath::Sign(1,aodPart2->GetPdgCode());
 
       if ((charge1 * charge2) == -1) {
 
-	lorVtot = lorV1 + lorV2;
+	lorVtot = lorV1;
+	lorVtot += lorV2;
 	Float_t invMass = lorVtot.M();
 
 	fHInvMassAll->Fill(invMass);
