@@ -1,3 +1,4 @@
+//
 #ifndef ALIITSBASEVOLPARAMS_H
 #define ALIITSBASEVOLPARAMS_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -49,11 +50,9 @@ istream &operator>>(istream &os,AliITSBaseVolParams &source);
 
 #ifndef ALIITSBOXDATA_H
 #define ALIITSBOXDATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Box data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSBoxData : public AliITSBaseVolParams {
  public:
@@ -83,11 +82,9 @@ istream &operator>>(istream &os,AliITSBoxData &source);
 
 #ifndef ALIITSTRAPEZOID1DATA_H
 #define ALIITSTRAPEZOID1DATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Trapezoid 1 data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSTrapezoid1Data : public AliITSBaseVolParams {
  public:
@@ -117,11 +114,9 @@ istream &operator>>(istream &os,AliITSTrapezoid1Data &source);
 
 #ifndef ALIITSTRAPEZOID2DATA_H
 #define ALIITSTRAPEZOID2DATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Trapezoid 2 data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSTrapezoid2Data : public AliITSBaseVolParams {
  public:
@@ -151,11 +146,9 @@ istream &operator>>(istream &os,AliITSTrapezoid2Data &source);
 
 #ifndef ALIITSTRAPEZOIDDATA_H
 #define ALIITSTRAPEZOIDDATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Trapezoid General data structure.
-/////////////////////////////////////////////////////////////////////////
-class TString;
+/////////////////////////////////////////////////////////////////////////;
 
 class AliITSTrapezoidData : public AliITSBaseVolParams {
  public:
@@ -204,11 +197,9 @@ istream &operator>>(istream &os,AliITSTrapezoidData &source);
 
 #ifndef ALIITSTRAPEZOIDTWISTEDDATA_H
 #define ALIITSTRAPEZOIDTWISTEDDATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Trapezoid General data structure.
-/////////////////////////////////////////////////////////////////////////
-class TString;
+/////////////////////////////////////////////////////////////////////////;
 
 class AliITSTrapezoidTwistedData : public AliITSBaseVolParams {
  public:
@@ -261,11 +252,9 @@ istream &operator>>(istream &os,AliITSTrapezoidTwistedData &source);
 
 #ifndef ALIITSTUBEDATA_H
 #define ALIITSTUBEDATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Tube data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSTubeData : public AliITSBaseVolParams {
  public:
@@ -295,11 +284,9 @@ istream &operator>>(istream &os,AliITSTubeData &source);
 
 #ifndef ALIITSTUBESEGDATA_H
 #define ALIITSTUBESEGDATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Tube Segment data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSTubeSegData : public AliITSBaseVolParams {
  public:
@@ -340,7 +327,6 @@ istream &operator>>(istream &os,AliITSTubeSegData &source);
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Tube Cut data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSTubeCutData : public AliITSBaseVolParams {
  public:
@@ -392,7 +378,6 @@ istream &operator>>(istream &os,AliITSTubeCutData &source);
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Tube Elliptical data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSTubeEllipticalData : public AliITSBaseVolParams {
  public:
@@ -427,7 +412,6 @@ istream &operator>>(istream &os,AliITSTubeEllipticalData &source);
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Tube Hyperbolic data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSTubeHyperbolicData : public AliITSBaseVolParams {
  public:
@@ -460,11 +444,9 @@ istream &operator>>(istream &os,AliITSTubeHyperbolicData &source);
 
 #ifndef ALIITSCONEDATA_H
 #define ALIITSCONEDATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Cone data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSConeData : public AliITSBaseVolParams {
  public:
@@ -498,11 +480,9 @@ istream &operator>>(istream &os,AliITSConeData &source);
   
 #ifndef ALIITSCONESEGDATA_H
 #define ALIITSCONESEGDATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Cone Segment data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSConeSegData : public AliITSBaseVolParams {
  public:
@@ -541,12 +521,10 @@ istream &operator>>(istream &os,AliITSConeSegData &source);
 
 #ifndef ALIITSPCONEDATA_H
 #define ALIITSPCONEDATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Poly-Cone data structure.
 /////////////////////////////////////////////////////////////////////////
 #include <math.h> // for the definision of NAN.
-class TString;
 
 class AliITSPConeData : public AliITSBaseVolParams {
  public:
@@ -617,16 +595,13 @@ class AliITSPConeData : public AliITSBaseVolParams {
 // Input and output function for standard C++ input/output.
 ostream &operator<<(ostream &os,AliITSPConeData &source);
 istream &operator>>(istream &os,AliITSPConeData &source);
-
 #endif
 
 #ifndef ALIITSSPHEREDATA_H
 #define ALIITSSPHEREDATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Tube Segment data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSSphereData : public AliITSBaseVolParams {
  public:
@@ -663,11 +638,9 @@ istream &operator>>(istream &os,AliITSSphereData &source);
 
 #ifndef ALIITSPARALLELEPIPEDDATA_H
 #define ALIITSPARALLELEPIPEDDATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Box data structure.
 /////////////////////////////////////////////////////////////////////////
-class TString;
 
 class AliITSParallelpipedData : public AliITSBaseVolParams {
  public:
@@ -710,12 +683,10 @@ istream &operator>>(istream &os,AliITSParallelpipedData &source);
 
 #ifndef ALIITSPGONDATA_H
 #define ALIITSPGONDATA_H
-
 /////////////////////////////////////////////////////////////////////////
 //  Geant 3 Poly-Gon data structure.
 /////////////////////////////////////////////////////////////////////////
 #include <math.h> // for the definision of NAN.
-class TString;
 
 class AliITSPGonData : public AliITSBaseVolParams {
  public:
@@ -789,16 +760,16 @@ class AliITSPGonData : public AliITSBaseVolParams {
 // Input and output function for standard C++ input/output.
 ostream &operator<<(ostream &os,AliITSPGonData &source);
 istream &operator>>(istream &os,AliITSPGonData &source);
-
 #endif
+
 #ifndef ALIITSBASEGEOMETRY_H
 #define ALIITSBASEGEOMETRY_H
-
 /////////////////////////////////////////////////////////////////////////
 //  A basic geometry class for the ITS simulation geometry stucture
 /////////////////////////////////////////////////////////////////////////
 #include <TObject.h>
-#include "AliModule.h"
+
+class AliModule;
 class TString;
 class TVector3;
 
