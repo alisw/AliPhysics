@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/02 21:28:14  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.3  2000/07/13 16:19:09  fca
 Mainly coding conventions + some small bug fixes
 
@@ -68,8 +71,8 @@ void AliMagFDM::Field(Float_t *xfi, Float_t *b)
   static  const    Int_t  kmiic=0;    
   static  const    Int_t  kliic=0;       
 
-  static  const Double_t    kfdZbg=502.92;  // Start of Map using in z
-  static  const Double_t    kfdZL3=600;  // Beginning of L3 door in z
+  static  const Double_t    kfZbg=502.92;  // Start of Map using in z
+  static  const Double_t    kfZL3=600;  // Beginning of L3 door in z
 
   Double_t   x[3];   
   Double_t   xL3[3]; 
@@ -88,38 +91,51 @@ void AliMagFDM::Field(Float_t *xfi, Float_t *b)
   x[0] = xfi[0];
   x[1] = xfi[1];
   x[2] = xfi[2];
-  b[0]=b[1]=b[2]=0;
+    
+  /*  
+  if (x[0]==0) x[0]=0.1E-06;
+  if (x[1]==0) x[1]=0.1E-06;
+  */ 
+ b[0]=b[1]=b[2]=0;
   //       printf("x[0]  %f,x[1] %f,x[2]  %f\n",x[0],x[1],x[2]); 
 
   Double_t rr=TMath::Sqrt(x[0]*x[0]+x[1]*x[1]);
            r0=rr/100;
   Double_t rPmax;
-  rPmax=fdRmax; 
-  if ( (-700<x[2] && x[2]<=kfdZbg && 
+  rPmax=fRmax; 
+  if ( (-700<x[2] && x[2]<=kfZbg && 
         (x[0]*x[0]+(x[1]+30)*(x[1]+30))< 560*560)
-       || (kfdZbg<x[2] && x[2]<=kfdZL3 && rr>=rPmax*100) )
+       || (kfZbg<x[2] && x[2]<=kfZL3 && (rr>rPmax*100 && rr< 560)) )
        {
+        b[0]=b[1]=0;
         b[2]=2;
        }
 
   xL3[0]=x[0]/100;
   xL3[1]=(x[1]+30)/100;
   xL3[2]=x[2]/100; 
+
  
-  Double_t xminn=xL3[2]*fdAx1+fdCx1;
-  Double_t xmaxx=xL3[2]*fdAx2+fdCx2;
+  if (TMath::Abs(xL3[0])<=0.1E-06) xL3[0]=TMath::Sign(0.1E-05,xL3[0]);
+  if (TMath::Abs(xL3[1])<=0.1E-06) xL3[1]=TMath::Sign(0.1E-05,xL3[1]);
+
+  Double_t xminn=xL3[2]*fAx1+fCx1;
+  Double_t xmaxx=xL3[2]*fAx2+fCx2;
   Double_t zCmin,zCmax,yCmin,yCmax;
 
-  zCmin=fdZmin;
-  zCmax=fdZmax;
-  yCmin=fdYmin;
-  yCmax=fdYmax;
-          
-if ((kfdZbg/100<xL3[2] && xL3[2]<zCmin && r0<rPmax) || ((zCmin<=xL3[2] && xL3[2] <= zCmax ) && (yCmin<=xL3[1] && xL3[1]<= yCmax) &&  (xminn <= xL3[0] && xL3[0] <= xmaxx)))
+  zCmin=fZmin;
+  zCmax=fZmax;
+  yCmin=fYmin;
+  yCmax=fYmax;
+  /*          
+if ((kfZbg/100<xL3[2] && xL3[2]<zCmin && r0<rPmax) || ((zCmin<=xL3[2] && xL3[2] <= zCmax ) && (yCmin<=xL3[1] && xL3[1]<= yCmax) &&  (xminn <= xL3[0] && xL3[0] <= xmaxx)))
+  */
+if ((kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax) || ((zCmin<xL3[2] && xL3[2] <= zCmax ) && (yCmin<xL3[1] && xL3[1]<= yCmax) &&  (xminn<xL3[0] && xL3[0] <= xmaxx)))
     {
      if(fMap==3) 
       { 
-       if (xL3[2]<zCmin && r0<rPmax)   
+        if (kfZbg/100<xL3[2] && xL3[2]<=zCmin && r0<=rPmax)
+	//       if (xL3[2]<zCmin && r0<rPmax)   
        {
        //---------------------  Polar part ----------------------
        
@@ -135,7 +151,7 @@ if ((kfdZbg/100<xL3[2] && xL3[2]<zCmin && r0<rPmax) || ((zCmin<=xL3[2] && xL3[2]
    
        zpz=xL3[2];
 
-       FZ(&zpz, fdZp ,&fdZpdl,&kpi,&kp0,&zp1 ,&zp2,&fdZpl) ;
+       FZ(&zpz, fZp ,&fZpdl,&kpi,&kp0,&zp1 ,&zp2,&fZpl) ;
 
        yyp=xL3[1]- 0.3;
        cphi=yyp/r0;
@@ -143,39 +159,40 @@ if ((kfdZbg/100<xL3[2] && xL3[2]<zCmin && r0<rPmax) || ((zCmin<=xL3[2] && xL3[2]
        if (xL3[0]< 0) {ph0=kpi2 - ph0;}  
                                   
        fip=ph0;
-       FZ(&fip,fdPhi,&fdPhid ,&mpi,&mp0, &xp1,&xp2,&fdPhin); 
+       FZ(&fip,fPhi,&fPhid ,&mpi,&mp0, &xp1,&xp2,&fPhin); 
 
        Double_t rDel;
-       rDel=fdRdel;
+       rDel=fRdel;
 
-       if (r0<= fdRdel)
+       if (r0<= fRdel)
         {
 
          if(r0< keps) 
          {
 
-          bint[0]=(zp1*fdBpx[kp0][0][0] + zp2*fdBpx[kp0+1][0][0])*10;     
-          bint[1]=(zp1*fdBpy[kp0][0][0] + zp2*fdBpy[kp0+1][0][0])*10;      
-          bint[2]=(zp1*fdBpz[kp0][0][0] + zp2*fdBpz[kp0+1][0][0])*10; 
+          bint[0]=(zp1*fBpx[kp0][0][0] + zp2*fBpx[kp0+1][0][0])*10;     
+          bint[1]=(zp1*fBpy[kp0][0][0] + zp2*fBpy[kp0+1][0][0])*10;      
+          bint[2]=(zp1*fBpz[kp0][0][0] + zp2*fBpz[kp0+1][0][0])*10; 
 
-         }  
+         } else { 
       
-        alp2= fdB[0][0][mp0]*yyp + fdB[0][1][mp0]*xL3[0]; 
-        alp3= fdB[1][0][mp0]*yyp + fdB[1][1][mp0]*xL3[0];      
+        alp2= fB[0][0][mp0]*yyp + fB[0][1][mp0]*xL3[0]; 
+        alp3= fB[1][0][mp0]*yyp + fB[1][1][mp0]*xL3[0];      
         alp1= kone - alp2 - alp3;
      
         for (jb=0; jb<3 ; jb++) 
-        {
-         iKvar=jb;     
-         FRfuncBi(&iKvar,&zp1,&zp2,&alp1,&alp2,&alp3, &kp0,&mp0, &bbj);
-         bint[jb] = bbj*10 ;
-        }  
+         {
+          iKvar=jb;     
+          FRfuncBi(&iKvar,&zp1,&zp2,&alp1,&alp2,&alp3, &kp0,&mp0, &bbj);
+          bint[jb] = bbj*10 ;
+         } 
+        } // end   of keps <=r0 
        }
         else
        {
         rp=r0;
 
-        FZ(&rp,fdR ,&fdRdel,&lpi,&lp0,&yp1,&yp2,&fdRn);
+        FZ(&rp,fR ,&fRdel,&lpi,&lp0,&yp1,&yp2,&fRn);
 
         for (jb=0; jb<3 ; jb++) 
         {
@@ -206,16 +223,16 @@ if ((kfdZbg/100<xL3[2] && xL3[2]<zCmin && r0<rPmax) || ((zCmin<=xL3[2] && xL3[2]
    lci=kliic;
    mci=kmiic;
 
-   xx1 = fdAx1*xL3[2] + fdCx1;
-   xx2 = fdAx2*xL3[2] + fdCx2;
+   xx1 = fAx1*xL3[2] + fCx1;
+   xx2 = fAx2*xL3[2] + fCx2;
 
    zzc=xL3[2];
-   FZ(&zzc, fdZc ,&fdZdel, &kci,&k0, &zz1, &zz2, &fdZl);     
+   FZ(&zzc, fZc ,&fZdel, &kci,&k0, &zz1, &zz2, &fZl);     
 
    yyc=xL3[1];
-   FZ(&yyc, fdY , &fdYdel,&lci, &l0, &yy1, &yy2,&fdYl);  
+   FZ(&yyc, fY , &fYdel,&lci, &l0, &yy1, &yy2,&fYl);  
 
-   xXl = fdXl-kone; 
+   xXl = fXl-kone; 
    dx = (xx2-xx1)/xXl;
    xxx= xL3[0]-xx1;
    //     xm = xxx/dx; 
@@ -334,20 +351,28 @@ void AliMagFDM::FZ(Double_t *u, Float_t  *Ar, Float_t *du,Int_t *ki,Int_t *kf,Do
   ddu=temp-ar;
 
   ku=int(ddu/delu);
-  ikj=ik+ku;
+  //  ikj=ik+ku; //falsh
+    ikj=ik+ku+1; //correct
   if (ddu<=0) ikj=0;
 
    for(l=ikj; l<nk; l++)
    {
-
-    if(temp < Ar[l])
+     //    if(temp < Ar[l])
+    if(temp <= Ar[l])
      {
+       
+      *kf=l-1;
+      *a2=(temp-Ar[l-1])/(Ar[l]-Ar[l-1]);
+      
+       /*
       *kf=l;
       *a2=(temp-Ar[l])/(Ar[l+1]-Ar[l]);
-      *a1= kone - *a2;
-      break;     
+      */
+       break;
      }
     }
+   //    *a2=(temp-Ar[*kf])/(Ar[*kf+1]-Ar[*kf]);
+    *a1= kone - *a2;
   }
 
 /*-------------FRfuncBi----------------*/
@@ -375,28 +400,28 @@ void AliMagFDM::FRfuncBi(Int_t *kai,Double_t *za1, Double_t *za2, Double_t *al1,
   
   switch (kaai) {
   case 0:
-    fa11 = fdBpx[kaa][0][0];
-    fa12 = fdBpx[kaa][0][maa];
-    fa13 = fdBpx[kaa][0][maa+1];
-    fa21 = fdBpx[kaa+1][0][0];
-    fa22 = fdBpx[kaa+1][0][maa];               
-    fa23 = fdBpx[kaa+1][0][maa+1]; 
+    fa11 = fBpx[kaa][0][0];
+    fa12 = fBpx[kaa][0][maa];
+    fa13 = fBpx[kaa][0][maa+1];
+    fa21 = fBpx[kaa+1][0][0];
+    fa22 = fBpx[kaa+1][0][maa];               
+    fa23 = fBpx[kaa+1][0][maa+1]; 
     break;
   case 1:
-    fa11 = fdBpy[kaa][0][0];
-    fa12 = fdBpy[kaa][0][maa];
-    fa13 = fdBpy[kaa][0][maa+1];
-    fa21 = fdBpy[kaa+1][0][0];
-    fa22 = fdBpy[kaa+1][0][maa];               
-    fa23 = fdBpy[kaa+1][0][maa+1]; 
+    fa11 = fBpy[kaa][0][0];
+    fa12 = fBpy[kaa][0][maa];
+    fa13 = fBpy[kaa][0][maa+1];
+    fa21 = fBpy[kaa+1][0][0];
+    fa22 = fBpy[kaa+1][0][maa];               
+    fa23 = fBpy[kaa+1][0][maa+1]; 
     break;
   case 2:
-    fa11 = fdBpz[kaa][0][0];
-    fa12 = fdBpz[kaa][0][maa];
-    fa13 = fdBpz[kaa][0][maa+1];
-    fa21 = fdBpz[kaa+1][0][0];
-    fa22 = fdBpz[kaa+1][0][maa];               
-    fa23 = fdBpz[kaa+1][0][maa+1]; 
+    fa11 = fBpz[kaa][0][0];
+    fa12 = fBpz[kaa][0][maa];
+    fa13 = fBpz[kaa][0][maa+1];
+    fa21 = fBpz[kaa+1][0][0];
+    fa22 = fBpz[kaa+1][0][maa];               
+    fa23 = fBpz[kaa+1][0][maa+1]; 
     break;
   default:
     Fatal("FRfuncBi","Invalid value of kaai %d\n",kaai);
@@ -443,76 +468,76 @@ void AliMagFDM::FGfuncBi(Double_t *zz1,Double_t *zz2, Double_t *yy1,Double_t *yy
   
   switch (kv) {
   case 0:
-    bf11=fdBpx[k][l][m];
-    bf12=fdBpx[k+1][l][m];
-    bf21=fdBpx[k+1][l+1][m];
-    bf22=fdBpx[k][l+1][m];
+    bf11=fBpx[k][l][m];
+    bf12=fBpx[k+1][l][m];
+    bf21=fBpx[k+1][l+1][m];
+    bf22=fBpx[k][l+1][m];
     
-    bg11=fdBpx[k][l][m+1];
-    bg12=fdBpx[k+1][l][m+1];
-    bg21=fdBpx[k+1][l+1][m+1];
-    bg22=fdBpx[k][l+1][m+1];
+    bg11=fBpx[k][l][m+1];
+    bg12=fBpx[k+1][l][m+1];
+    bg21=fBpx[k+1][l+1][m+1];
+    bg22=fBpx[k][l+1][m+1];
     break;
 
   case 1:
-    bf11=fdBpy[k][l][m];
-    bf12=fdBpy[k+1][l][m];
-    bf21=fdBpy[k+1][l+1][m];
-    bf22=fdBpy[k][l+1][m];
+    bf11=fBpy[k][l][m];
+    bf12=fBpy[k+1][l][m];
+    bf21=fBpy[k+1][l+1][m];
+    bf22=fBpy[k][l+1][m];
     
-    bg11=fdBpy[k][l][m+1];
-    bg12=fdBpy[k+1][l][m+1];
-    bg21=fdBpy[k+1][l+1][m+1];
-    bg22=fdBpy[k][l+1][m+1];
+    bg11=fBpy[k][l][m+1];
+    bg12=fBpy[k+1][l][m+1];
+    bg21=fBpy[k+1][l+1][m+1];
+    bg22=fBpy[k][l+1][m+1];
     break;
 
   case 2:
-    bf11=fdBpz[k][l][m];
-    bf12=fdBpz[k+1][l][m];
-    bf21=fdBpz[k+1][l+1][m];
-    bf22=fdBpz[k][l+1][m];
+    bf11=fBpz[k][l][m];
+    bf12=fBpz[k+1][l][m];
+    bf21=fBpz[k+1][l+1][m];
+    bf22=fBpz[k][l+1][m];
     
-    bg11=fdBpz[k][l][m+1];
-    bg12=fdBpz[k+1][l][m+1];
-    bg21=fdBpz[k+1][l+1][m+1];
-    bg22=fdBpz[k][l+1][m+1]; 
+    bg11=fBpz[k][l][m+1];
+    bg12=fBpz[k+1][l][m+1];
+    bg21=fBpz[k+1][l+1][m+1];
+    bg22=fBpz[k][l+1][m+1]; 
     break;
   /*-----------------Cartensian part ---------------*/ 
   
   case 3:
-    bf11=fdBcx[k][l][m];
-    bf12=fdBcx[k+1][l][m];
-    bf21=fdBcx[k+1][l+1][m];
-    bf22=fdBcx[k][l+1][m];
+    bf11=fBcx[k][l][m];
+    bf12=fBcx[k+1][l][m];
+    bf21=fBcx[k+1][l+1][m];
+    bf22=fBcx[k][l+1][m];
     
-    bg11=fdBcx[k][l][m+1];
-    bg12=fdBcx[k+1][l][m+1];
-    bg21=fdBcx[k+1][l+1][m+1];
-    bg22=fdBcx[k][l+1][m+1];
+    bg11=fBcx[k][l][m+1];
+    bg12=fBcx[k+1][l][m+1];
+    bg21=fBcx[k+1][l+1][m+1];
+    bg22=fBcx[k][l+1][m+1];
     break;
 
   case 4:
-    bf11=fdBcy[k][l][m];
-    bf12=fdBcy[k+1][l][m];
-    bf21=fdBcy[k+1][l+1][m];
-    bf22=fdBcy[k][l+1][m];
+    bf11=fBcy[k][l][m];
+    bf12=fBcy[k+1][l][m];
+    bf21=fBcy[k+1][l+1][m];
+    bf22=fBcy[k][l+1][m];
     
-    bg11=fdBcy[k][l][m+1];
-    bg12=fdBcy[k+1][l][m+1];
-    bg21=fdBcy[k+1][l+1][m+1];
-    bg22=fdBcy[k][l+1][m+1];
+    bg11=fBcy[k][l][m+1];
+    bg12=fBcy[k+1][l][m+1];
+    bg21=fBcy[k+1][l+1][m+1];
+    bg22=fBcy[k][l+1][m+1];
     break;
 
   case 5:
-    bf11=fdBcz[k][l][m];
-    bf12=fdBcz[k+1][l][m];
-    bf21=fdBcz[k+1][l+1][m];
-    bf22=fdBcz[k][l+1][m];
+    bf11=fBcz[k][l][m];
+    bf12=fBcz[k+1][l][m];
+    bf21=fBcz[k+1][l+1][m];
+    bf22=fBcz[k][l+1][m];
     
-    bg11=fdBcz[k][l][m+1];
-    bg12=fdBcz[k+1][l][m+1];
-    bg21=fdBcz[k+1][l+1][m+1];
-    bg22=fdBcz[k][l+1][m+1];
+    bg11=fBcz[k][l][m+1];
+    bg12=fBcz[k+1][l][m+1];
+    bg21=fBcz[k+1][l+1][m+1];
+    bg22=fBcz[k][l+1][m+1];
     break;
 
   default:
@@ -561,41 +586,41 @@ void AliMagFDM::ReadField()
   
 //  Cartensian part 
  
-    fscanf(magfile,"%d %d %d ",&fdYl, &fdXl, &fdZl); 
+    fscanf(magfile,"%d %d %d ",&fYl, &fXl, &fZl); 
     
-    printf("fdYl %d, fdXl %d, fdZl %d\n",fdYl, fdXl, fdZl);     
+    printf("fYl %d, fXl %d, fZl %d\n",fYl, fXl, fZl);     
     
-    for (ik=0; ik<fdZl; ik++)
+    for (ik=0; ik<fZl; ik++)
     { 
    
       fscanf(magfile, " %e ", &zz);
-      fdZc[ik]=zz; 
+      fZc[ik]=zz; 
 
     } 
    
-    for (ik=0; ik<fdYl; ik++)
+    for (ik=0; ik<fYl; ik++)
     {    
        fscanf(magfile, " %e ", &yy); 
-       fdY[ik]=yy;
+       fY[ik]=yy;
  
     } 
     for (ik=0; ik<81; ik++)
     {    
-           printf("fdZc %e,fdY %e\n", fdZc[ik],fdY[ik]); 
+           printf("fZc %e,fY %e\n", fZc[ik],fY[ik]); 
     }   
              
-    fscanf(magfile," %e %e %e %e %e %e %e %e %e %e %e ", &fdYdel,&fdXdel,&fdZdel,&fdZmax,&fdZmin,&fdYmax,&fdYmin,&fdAx1,&fdCx1,&fdAx2,&fdCx2); 
+    fscanf(magfile," %e %e %e %e %e %e %e %e %e %e %e ", &fYdel,&fXdel,&fZdel,&fZmax,&fZmin,&fYmax,&fYmin,&fAx1,&fCx1,&fAx2,&fCx2); 
 
-printf("fdYdel %e, fdXdel %e, fdZdel %e\n",fdYdel,fdXdel,fdZdel);
-printf("fdZmax %e, fdZmin %e, fdYmax %e,fdYmin %e\n",fdZmax,fdZmin,fdYmax,fdYmin);
-printf("fdAx1 %e, fdCx1 %e, fdAx2 %e, fdCx %e\n",fdAx1,fdCx1,fdAx2,fdCx2);
+printf("fYdel %e, fXdel %e, fZdel %e\n",fYdel,fXdel,fZdel);
+printf("fZmax %e, fZmin %e, fYmax %e,fYmin %e\n",fZmax,fZmin,fYmax,fYmin);
+printf("fAx1 %e, fCx1 %e, fAx2 %e, fCx %e\n",fAx1,fCx1,fAx2,fCx2);
 
     for (il=0; il<44; il++)  { 
      for (im=0; im<81; im++)  {      
       for (ik=0; ik<81; ik++)  {      
       
       fscanf(magfile, " %e ", &by); 
-      fdBcy[ik][im][il]=by;        
+      fBcy[ik][im][il]=by;        
       }
      }
     } 
@@ -605,7 +630,7 @@ printf("fdAx1 %e, fdCx1 %e, fdAx2 %e, fdCx %e\n",fdAx1,fdCx1,fdAx2,fdCx2);
       for (ik=0; ik<81; ik++)  {      
       
       fscanf(magfile, " %e ", &bx); 
-      fdBcx[ik][im][il]=bx;        
+      fBcx[ik][im][il]=bx;        
       }    
      }     
     }
@@ -615,53 +640,53 @@ printf("fdAx1 %e, fdCx1 %e, fdAx2 %e, fdCx %e\n",fdAx1,fdCx1,fdAx2,fdCx2);
       for (ik=0; ik<81; ik++)  {      
       
       fscanf(magfile, " %e ", &bz); 
-      fdBcz[ik][im][il]=bz;          
+      fBcz[ik][im][il]=bz;          
       }              
      }     
     } 
 //----------------------   Polar part ---------------------------------
 
     printf("Polar part\n");
-    fscanf(magfile,"%d %d %d ", &fdZpl, &fdRn, &fdPhin); 
-    printf("fdZpl %d, fdRn %d, fdPhin %d\n",fdZpl,fdRn,fdPhin);   
+    fscanf(magfile,"%d %d %d ", &fZpl, &fRn, &fPhin); 
+    printf("fZpl %d, fRn %d, fPhin %d\n",fZpl,fRn,fPhin);   
 
-    printf(" fdZp array\n"); 
+    printf(" fZp array\n"); 
      
     for (ik=0; ik<51; ik++) 
     {    
      fscanf(magfile, " %e ", &zzp);
-     fdZp[ik]=zzp; 
-     printf(" %e\n",fdZp[ik]);      
+     fZp[ik]=zzp; 
+     printf(" %e\n",fZp[ik]);      
     } 
   
-    printf(" fdR array\n"); 
+    printf(" fR array\n"); 
          
     for (ik=0; ik<10; ik++) 
     {    
      fscanf(magfile, " %e ", &rr); 
-     fdR[ik]=rr;
-     printf(" %e\n",fdR[ik]);
+     fR[ik]=rr;
+     printf(" %e\n",fR[ik]);
     } 
     
-//    printf("fdPhi array\n"); 
+//    printf("fPhi array\n"); 
      
      for (il=0; il<33; il++)  
      {
        fscanf(magfile, " %e ", &phii); 
-       fdPhi[il]=phii; 
-//        printf(" %e\n",fdPhi[il]);          
+       fPhi[il]=phii; 
+//        printf(" %e\n",fPhi[il]);          
      }
 
-    fscanf(magfile," %e %e %e %e %e %e %e ",&fdZpdl,&fdPhid,&fdRdel,&fdZpmx,&fdZpmn,&fdRmax, &fdRmin); 
+    fscanf(magfile," %e %e %e %e %e %e %e ",&fZpdl,&fPhid,&fRdel,&fZpmx,&fZpmn,&fRmax, &fRmin); 
 
-printf("fdZpdl %e, fdPhid %e, fdRdel %e, fdZpmx %e, fdZpmn %e,fdRmax %e,fdRmin %e \n", fdZpdl,fdPhid, fdRdel,fdZpmx, fdZpmn,fdRmax, fdRmin);
+printf("fZpdl %e, fPhid %e, fRdel %e, fZpmx %e, fZpmn %e,fRmax %e,fRmin %e \n", fZpdl,fPhid, fRdel,fZpmx, fZpmn,fRmax, fRmin);
 
                       
     for (il=0; il<33; il++)  { 
      for (im=0; im<10; im++)  {      
       for (ik=0; ik<51; ik++)  {
       fscanf(magfile, " %e ", &by); 
-        fdBpy[ik][im][il]=by;        
+        fBpy[ik][im][il]=by;        
       }
      }
     } 
@@ -670,7 +695,7 @@ printf("fdZpdl %e, fdPhid %e, fdRdel %e, fdZpmx %e, fdZpmn %e,fdRmax %e,fdRmin %
      for (im=0; im<10; im++)  {      
       for (ik=0; ik<51; ik++)  {
       fscanf(magfile, " %e ", &bx); 
-        fdBpx[ik][im][il]=bx;                     
+        fBpx[ik][im][il]=bx;                     
       }    
      }     
     }      
@@ -680,7 +705,7 @@ printf("fdZpdl %e, fdPhid %e, fdRdel %e, fdZpmx %e, fdZpmn %e,fdRmax %e,fdRmin %
      for (im=0; im<10; im++)  {      
       for (ik=0; ik<51; ik++)  {
       fscanf(magfile, " %e ", &bz); 
-        fdBpz[ik][im][il]=bz;                      
+        fBpz[ik][im][il]=bz;                      
       }              
      }     
     } 
@@ -690,7 +715,7 @@ printf("fdZpdl %e, fdPhid %e, fdRdel %e, fdZpmx %e, fdZpmn %e,fdRmax %e,fdRmin %
      for (im=0; im<2; im++)  {      
       for (ik=0; ik<2; ik++)  {
       fscanf(magfile, " %e ", &bb);    
-        fdB[ik][im][il]=bb;  
+        fB[ik][im][il]=bb;  
       }              
      } 
     }

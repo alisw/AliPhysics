@@ -29,53 +29,53 @@ protected:
 
 //
 
-  Int_t      fdInd;   // Character number of validity Map region
+  Int_t      fInd;   // Character number of validity Map region
 
-  Float_t fdZmin;  // Start of the cartesian  part  of MAP in z
-  Float_t fdZmax;  // End of Map in z   
-  Float_t fdYmax;  // Start of the cartesian  part  of MAP in y
-  Float_t fdYmin;  // End  of the cartesian  part  of MAP in y
-  Float_t fdZpmx;  // End of the polar  part  of MAP in z
-  Float_t fdZpmn;  // Start of the polar  part  of MAP in z
-  Float_t fdRmax;  // Maximal radius of the polar  part  of MAP 
-  Float_t fdRmin;  // Minimal radius of the polar  part  of MAP  
+  Float_t fZmin;  // Start of the cartesian  part  of MAP in z
+  Float_t fZmax;  // End of Map in z   
+  Float_t fYmax;  // Start of the cartesian  part  of MAP in y
+  Float_t fYmin;  // End  of the cartesian  part  of MAP in y
+  Float_t fZpmx;  // End of the polar  part  of MAP in z
+  Float_t fZpmn;  // Start of the polar  part  of MAP in z
+  Float_t fRmax;  // Maximal radius of the polar  part  of MAP 
+  Float_t fRmin;  // Minimal radius of the polar  part  of MAP  
               
 
-  Float_t    fdXdel;  //  step in x - cartesian  part  of MAP
-  Float_t    fdYdel;  //  step in y - cartesian  part  of MAP
-  Float_t    fdZdel;  //  step in z - cartesian  part  of MAP
+  Float_t    fXdel;  //  step in x - cartesian  part  of MAP
+  Float_t    fYdel;  //  step in y - cartesian  part  of MAP
+  Float_t    fZdel;  //  step in z - cartesian  part  of MAP
   
-  Float_t    fdRdel;  //  step in r - polar  part  of MAP
-  Float_t    fdPhid;  //  step in Phi - polar  part  of MAP
-  Float_t    fdZpdl;  //  step in z - polar  part  of MAP 
+  Float_t    fRdel;  //  step in r - polar  part  of MAP
+  Float_t    fPhid;  //  step in Phi - polar  part  of MAP
+  Float_t    fZpdl;  //  step in z - polar  part  of MAP 
   
-  Float_t    fdCx1;   // Field constant
-  Float_t    fdCx2;   // Field constant
-  Float_t    fdAx1;   // Field constant
-  Float_t    fdAx2;   // Field constant
+  Float_t    fCx1;   // Field constant
+  Float_t    fCx2;   // Field constant
+  Float_t    fAx1;   // Field constant
+  Float_t    fAx2;   // Field constant
    
-  Float_t fdZc[81];  // z coordinates in cartesian  part
-  Float_t fdY[81];   // y coordinates in cartesian  part 
-  Float_t fdBcx[81][81][44]; // Bx array for cartesian  part
-  Float_t fdBcy[81][81][44]; // By array for cartesian  part
-  Float_t fdBcz[81][81][44]; // Bz array for cartesian  part
+  Float_t fZc[81];  // z coordinates in cartesian  part
+  Float_t fY[81];   // y coordinates in cartesian  part 
+  Float_t fBcx[81][81][44]; // Bx array for cartesian  part
+  Float_t fBcy[81][81][44]; // By array for cartesian  part
+  Float_t fBcz[81][81][44]; // Bz array for cartesian  part
 
-  Float_t  fdZp[51];  // z coordinates in polar  part
-  Float_t  fdR[10];   // r coordinates in polar  part  
-  Float_t  fdPhi[33]; // Phi coordinates in polar  part
+  Float_t  fZp[51];  // z coordinates in polar  part
+  Float_t  fR[10];   // r coordinates in polar  part  
+  Float_t  fPhi[33]; // Phi coordinates in polar  part
 
-  Float_t  fdBpx[51][10][33]; // Bx array for polar  part
-  Float_t  fdBpy[51][10][33]; // By array for polar  part
-  Float_t  fdBpz[51][10][33]; // Bx array for polar  part 
-  Float_t  fdB[2][2][32];     // Limits of field
+  Float_t  fBpx[51][10][33]; // Bx array for polar  part
+  Float_t  fBpy[51][10][33]; // By array for polar  part
+  Float_t  fBpz[51][10][33]; // Bx array for polar  part 
+  Float_t  fB[2][2][32];     // Limits of field
   
-  Int_t      fdXl;    // Number steps in x for cartesian  part
-  Int_t      fdYl;    // Number steps in y  for cartesian  par
-  Int_t      fdZl;    // Number steps in z  for cartesian  part
+  Int_t      fXl;    // Number steps in x for cartesian  part
+  Int_t      fYl;    // Number steps in y  for cartesian  par
+  Int_t      fZl;    // Number steps in z  for cartesian  part
     
-  Int_t      fdRn;    // Number steps in r for polar  part
-  Int_t      fdPhin;  // Number steps in Phi for polar  part
-  Int_t      fdZpl;   // Number steps in z for polar  part 
+  Int_t      fRn;    // Number steps in r for polar  part
+  Int_t      fPhin;  // Number steps in Phi for polar  part
+  Int_t      fZpl;   // Number steps in z for polar  part 
   
 
   ClassDef(AliMagFDM,1) //Class Magnetic field map from IP till muon filter
