@@ -1,4 +1,3 @@
-#include "AliHBTMonitorFunction.h"
 /******************************************************************/
 /*
 Base classes for monitor functions
@@ -23,6 +22,11 @@ Zbigniew.Chajecki@cern.ch
 /******************************************************************/
 
 #include <Riostream.h>
+#include "TH1.h"
+#include "TH2.h"
+#include "TH3.h"
+
+#include "AliHBTMonitorFunction.h"
 ClassImp( AliHBTMonitorFunction )
 
 AliHBTMonitorFunction::AliHBTMonitorFunction()
