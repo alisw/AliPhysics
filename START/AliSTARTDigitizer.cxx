@@ -293,26 +293,12 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 
 // trick to find out output dir:
 
-
-/*
-   // trick to find out output dir:
-    TTree *outTree = fManager->GetTreeD();
-    if (!outTree) {
-      cerr<<"something wrong with output...."<<endl;
-      exit(111);
-    }
-
     Char_t nameDigits[20];
-    TDirectory *wd = gDirectory;
-    outTree->GetDirectory()->cd();
-    fdigits->Write(nameDigits);
-    cout<<nameDigits<<endl;
-    wd->cd();
-*/  
-
-     Char_t nameDigits[20];
     sprintf(nameDigits,"START_D_%d",fManager->GetOutputEventNr());
+    TDirectory *wd = gDirectory;
+    outgime->GetDigitsDataLoader()->GetDirectory()->cd();
     fdigits->Write(nameDigits);
+    wd->cd();
 
     //    outgime->WriteDigits("OVERWRITE");
   }
