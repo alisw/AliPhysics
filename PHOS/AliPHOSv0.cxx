@@ -80,11 +80,11 @@ AliPHOSv0::AliPHOSv0(const char *name, const char *title):
   // It is put in the Digit Tree because the TreeH is filled after each primary
   // and the TreeD at the end of the event (branch is set in FinishEvent() ).
   
-  fTmpHits= new TClonesArray("AliPHOSHit",100) ;
+  fTmpHits= new TClonesArray("AliPHOSHit",1000) ;
 
   fNTmpHits = fNhits = 0 ;
 
-  fDigits = new TClonesArray("AliPHOSDigit",100) ;
+  fDigits = new TClonesArray("AliPHOSDigit",1000) ;
 
 
   fIshunt     =  1 ; // All hits are associated with primary particles
@@ -119,8 +119,8 @@ AliPHOSv0::AliPHOSv0(AliPHOSReconstructioner * Reconstructioner, const char *nam
   // We do not want to save in TreeH the raw hits
   //fHits   = new TClonesArray("AliPHOSHit",100) ;
 
-  fDigits = new TClonesArray("AliPHOSDigit",100) ;
-  fTmpHits= new TClonesArray("AliPHOSHit",100) ;
+  fDigits = new TClonesArray("AliPHOSDigit",1000) ;
+  fTmpHits= new TClonesArray("AliPHOSHit",1000) ;
 
   fNTmpHits = fNhits = 0 ;
 
@@ -1166,14 +1166,6 @@ void AliPHOSv0::FinishEvent()
   // It is put in the Digit Tree because the TreeH is filled after each primary
   // and the TreeD at the end of the event.
   
-  if ( ! (gAlice->IsLegoRun()) ) { // only when not in lego plot mode 
-    if ( fTmpHits && gAlice->TreeD() ) {
-      char branchname[10] ;
-      sprintf(branchname, "%sCH", GetName()) ;
-      gAlice->TreeD()->Branch(branchname, &fTmpHits, fBufferSize) ; 
-    } else 
-      cout << "AliPHOSv0::AliPHOSv0: Failed to create branch PHOSCH in TreeD " << endl ;  
-  }
   
   Int_t i ;
   Int_t relid[4];
@@ -1228,7 +1220,7 @@ void AliPHOSv0::FinishEvent()
     newdigit = (AliPHOSDigit *) fDigits->At(i) ; 
     newdigit->SetIndexInList(i) ; 
   }
-
+  
 }
 
 //____________________________________________________________________________
@@ -1261,10 +1253,20 @@ void AliPHOSv0::MakeBranch(Option_t* opt)
   char branchname[10];
   sprintf(branchname,"%s",GetName());
   char *cdD = strstr(opt,"D");
-  
   if (fDigits && gAlice->TreeD() && cdD) {
     gAlice->TreeD()->Branch(branchname, &fDigits, fBufferSize);
   }
+
+  // Create new branche PHOSCH in the current Root Tree in the digit Tree for accumulated Hits
+  if ( ! (gAlice->IsLegoRun()) ) { // only when not in lego plot mode 
+    if ( fTmpHits && gAlice->TreeD()  && cdD) {
+      char branchname[10] ;
+      sprintf(branchname, "%sCH", GetName()) ;
+      gAlice->TreeD()->Branch(branchname, &fTmpHits, fBufferSize) ;
+    } else 
+      cout << "AliPHOSv0::AliPHOSv0: Failed to create branch PHOSCH in TreeD " << endl ;  
+   }
+
 }
 
 //____________________________________________________________________________
@@ -1375,30 +1377,34 @@ void AliPHOSv0::Reconstruction(AliPHOSReconstructioner * Reconstructioner)
   Int_t size ;
   
   size = fEmcRecPoints->GetEntries() ;
+  cout << size << endl ;
   fEmcRecPoints->Expand(size) ;
  
   size = fPpsdRecPoints->GetEntries() ;
+ cout << size << endl ;
   fPpsdRecPoints->Expand(size) ;
 
   size = fTrackSegments->GetEntries() ;
+ cout << size << endl ;
   fTrackSegments->Expand(size) ;
 
   size = fRecParticles->GetEntries() ;
+ cout << size << endl ;
   fRecParticles->Expand(size) ;
 
   gAlice->TreeR()->Fill() ;
- 
+  cout << "filled" << endl ;
   // 5.
 
   gAlice->TreeR()->Write() ;
-   
+   cout << "writen" << endl ;
 }
 
 //____________________________________________________________________________
-void AliPHOSv0::ResetDigits()
-{
+void AliPHOSv0::ResetDigits() 
+{ 
   // May sound strange, but cumulative hits are store in digits Tree
-
+  AliDetector::ResetDigits();
   if(  fTmpHits ) {
     fTmpHits->Delete();
     fNTmpHits = 0 ;
