@@ -72,14 +72,3 @@ ROOTGLIBS     = -lGpad -lGui -lGX11 -lX3d  -lXpm
 
 CLIBS         = -lminicern
 G3LIBS        = -lgeant321
-
-
-
-
-
-
-
-
-
-
-
