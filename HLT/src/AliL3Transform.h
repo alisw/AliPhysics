@@ -62,10 +62,10 @@ class AliL3Transform {
 
  public:
   static Bool_t Init(Char_t* path,Bool_t UseAliTPCParam=kFALSE); //init transformer settings (versions)
-  static Bool_t MakeInitFile(Char_t *filename,Char_t *path);     //create the init file in path
-  static Bool_t ReadInit(Char_t *path);                          //read init (possibly from root file)
-  static Bool_t ReadInitFile(Char_t *path);                      //read init from text file 
-  static Bool_t SaveInitFile(Char_t *filename);                  //save parameters in init file
+  static Bool_t MakeInitFile(Char_t *rootfilename,Char_t *filename); //create the init file from rootfile
+  static Bool_t ReadInit(Char_t *path);         //read init (possibly from root file)
+  static Bool_t ReadInitFile(Char_t *path);     //read init from text file 
+  static Bool_t SaveInitFile(Char_t *filename); //save parameters in init file
 
   //setters
   static void SetNPatches(Int_t i){fNPatches = i;}

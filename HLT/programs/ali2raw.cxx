@@ -1,6 +1,7 @@
 // $Id$ 
 
-//   Author: Constantin Loizides <loizides@ikf.uni-frankfurt.de>
+// Author: Constantin Loizides <loizides@ikf.uni-frankfurt.de>
+//*-- Copyright &copy ALICE HLT Group
 
 #ifndef use_aliroot
 BOMB THE COMPILE: USEPACKAGE=ALIROOT

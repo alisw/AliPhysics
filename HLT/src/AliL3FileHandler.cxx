@@ -1,12 +1,13 @@
 // @(#) $Id$
 
-// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>
+// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>, C. Loizides <mailto:loizides@ikf.uni-frankfurt.de>
 //*-- Copyright &copy ALICE HLT Group 
 
 #include "AliL3StandardIncludes.h"
 #include <TClonesArray.h>
 #include <TSystem.h>
 
+#include <AliTPCParamSR.h>
 #include <AliTPCDigitsArray.h>
 #include <AliTPCClustersArray.h>
 #include <AliTPCcluster.h>
@@ -75,6 +76,11 @@ AliL3FileHandler::AliL3FileHandler()
   fLastIndex=0;
   fDigits=0;
   fDigitsTree=0;
+  for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
+    for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
+      fIndex[i][j]=-1;
+  }
+  fIndexCreated=kFALSE;
 }
 
 AliL3FileHandler::~AliL3FileHandler()
@@ -83,7 +89,6 @@ AliL3FileHandler::~AliL3FileHandler()
   if(fMC) CloseMCOutput();
   FreeDigitsTree();
   if(fInAli) CloseAliInput();
-  
 }
 
 void AliL3FileHandler::FreeDigitsTree()
@@ -98,6 +103,11 @@ void AliL3FileHandler::FreeDigitsTree()
   fDigitsTree->Delete();
   fDigitsTree=0;
   fLastIndex=0;
+  for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
+    for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
+      fIndex[i][j]=-1;
+  }
+  fIndexCreated=kFALSE;
 }
 
 Bool_t AliL3FileHandler::SetMCOutput(Char_t *name)
@@ -141,6 +151,13 @@ Bool_t AliL3FileHandler::SetAliInput()
     return kFALSE;
   }
   fParam = (AliTPCParam*)fInAli->Get(AliL3Transform::GetParamName());
+  if(!fParam){
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::SetAliInput","File")
+      <<"No TPC parameters found in \""<<fInAli->GetName()
+      <<"\", creating standard parameters "
+      <<"which might not be what you want!"<<ENDLOG;
+    fParam = new AliTPCParamSR;
+  }
   if(!fParam){ 
     LOG(AliL3Log::kError,"AliL3FileHandler::SetAliInput","File Open")
       <<"No AliTPCParam "<<AliL3Transform::GetParamName()<<" in File "<<fInAli->GetName()<<ENDLOG;
@@ -185,7 +202,6 @@ void AliL3FileHandler::CloseAliInput()
   if(fInAli->IsOpen()) fInAli->Close();
   delete fInAli;
   fInAli = 0;
-  
 }
 
 Bool_t AliL3FileHandler::IsDigit(Int_t event)
@@ -236,13 +252,50 @@ Bool_t AliL3FileHandler::AliDigits2CompBinary(Int_t event,Bool_t altro)
   Bool_t out = kTRUE;
   UInt_t ndigits=0;
   AliL3DigitRowData *digits=0;
-  if(!altro)
-    digits = AliDigits2Memory(ndigits,event);
-  else
+  if(altro)
     digits = AliAltroDigits2Memory(ndigits,event);
+  else
+    digits = AliDigits2Memory(ndigits,event);
   out = Memory2CompBinary(ndigits,digits);
   Free();
   return out;
+}
+
+Bool_t AliL3FileHandler::CreateIndex()
+{
+  //create the access index
+
+  LOG(AliL3Log::kInformational,"AliL3FileHandler::CreateIndex","Index")
+    <<"Starting to create index, this can take a while."<<ENDLOG;
+
+  fIndexCreated=kFALSE;
+  for(Int_t i=0;i<AliL3Transform::GetNSlice();i++){
+    for(Int_t j=0;j<AliL3Transform::GetNRows();j++)
+      fIndex[i][j]=-1;
+  }
+
+  for(Int_t n=0; n<fDigitsTree->GetEntries(); n++){
+    Int_t sector, row;
+    Int_t lslice,lrow;
+    fDigitsTree->GetEvent(n);
+    fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
+    if(!AliL3Transform::Sector2Slice(lslice,lrow,sector,row)){
+      LOG(AliL3Log::kError,"AliL3FileHandler::CreateIndex","Slice/Row")
+	<<AliL3Log::kDec<<"Index could not be created. Wrong values "
+	<<sector<<" "<<row<<ENDLOG;
+      return kFALSE;
+    }
+    //cout << lslice << " " << lrow << " " << sector << " " << row << endl;
+    if(fIndex[lslice][lrow]==-1) fIndex[lslice][lrow]=n;
+  }
+
+  //for(Int_t i=0;i<AliL3Transform::GetNSlice();i++) cout << i << " " << fIndex[i][0] << endl;
+
+  LOG(AliL3Log::kInformational,"AliL3FileHandler::CreateIndex","Index")
+    <<"Index successfully created."<<ENDLOG;
+
+  fIndexCreated=kTRUE;
+  return fIndexCreated;
 }
 
 AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event)
@@ -269,45 +322,47 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   
   UShort_t dig;
   Int_t time,pad,sector,row;
+  Int_t lslice,lrow;
   Int_t nrows=0;
   Int_t ndigitcount=0;
   Int_t entries = (Int_t)fDigitsTree->GetEntries();
   Int_t ndigits[entries];
-  Int_t lslice,lrow;
   Float_t xyz[3];
-  
-  for(Int_t n=fLastIndex; n<fDigitsTree->GetEntries(); n++)
-    {
-      fDigitsTree->GetEvent(n);
-      fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
-      //if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
-      if(lslice < fSlice) continue;
-      if(lslice != fSlice) break;
-      if(lrow < fRowMin) continue;
-      if(lrow > fRowMax) break;
-      
-      ndigits[lrow] = 0;
-      fDigits->First();
-      do {
-        time=fDigits->CurrentRow();
-        pad=fDigits->CurrentColumn();
-        dig = fDigits->GetDigit(time,pad);
-        if(dig <= fParam->GetZeroSup()) continue;
-	if(dig >= AliL3Transform::GetADCSat())
-	  dig = AliL3Transform::GetADCSat();
-	
-	AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
-	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
-	  continue;
 
-        ndigits[lrow]++; //for this row only
-        ndigitcount++;   //total number of digits to be published
+  for(Int_t r=fRowMin;r<=fRowMax;r++){
+    Int_t n=fIndex[fSlice][r];
+    if(n==-1) continue; //no data on that row
+    
+    fDigitsTree->GetEvent(n);
+    fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
+    AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
 
-      } while (fDigits->Next());
-      //cout << lrow << " " << ndigits[lrow] << " - " << ndigitcount << endl;
-      nrows++;
+    if(lrow!=r){
+      LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2Memory","Row")
+	<<AliL3Log::kDec<<"Rows dont match "<<lrow<<" "<<r<<ENDLOG;
     }
+
+    ndigits[lrow] = 0;
+    fDigits->First();
+    do {
+      time=fDigits->CurrentRow();
+      pad=fDigits->CurrentColumn();
+      dig = fDigits->GetDigit(time,pad);
+      if(dig <= fParam->GetZeroSup()) continue;
+      if(dig >= AliL3Transform::GetADCSat())
+	dig = AliL3Transform::GetADCSat();
+      
+      AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
+      if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
+	continue; // why 230???
+
+      ndigits[lrow]++; //for this row only
+      ndigitcount++;   //total number of digits to be published
+
+    } while (fDigits->Next());
+    //cout << lrow << " " << ndigits[lrow] << " - " << ndigitcount << endl;
+    nrows++;
+  }
 
   Int_t size = sizeof(AliL3DigitData)*ndigitcount
     + nrows*sizeof(AliL3DigitRowData);
@@ -318,63 +373,59 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   data=(AliL3DigitRowData*) Allocate(size);
   nrow = (UInt_t)nrows;
   AliL3DigitRowData *tempPt = data;
-  for(Int_t n=fLastIndex; n<fDigitsTree->GetEntries(); n++)
-    {
-      fDigitsTree->GetEvent(n);
-      fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
-      //if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
-      if(lslice < fSlice) continue;
-      if(lslice != fSlice) break;
-      if(lrow < fRowMin) continue;
-      if(lrow > fRowMax) break;
 
-      tempPt->fRow = lrow;
-      tempPt->fNDigit = ndigits[lrow];
+  for(Int_t r=fRowMin;r<=fRowMax;r++){
+    Int_t n=fIndex[fSlice][r];
 
-      Int_t localcount=0;
-      fDigits->First();
-      do {
-	time=fDigits->CurrentRow();
-        pad=fDigits->CurrentColumn();
-        dig = fDigits->GetDigit(time,pad);
-	if (dig <= fParam->GetZeroSup()) continue;
-	if(dig >= AliL3Transform::GetADCSat())
-	  dig = AliL3Transform::GetADCSat();
-
-	//Exclude data outside cone:
-	AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
-	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
-	  continue;
-
-        if(localcount >= ndigits[lrow])
-          LOG(AliL3Log::kFatal,"AliL3FileHandler::AliDigits2Binary","Memory")
-	    <<AliL3Log::kDec<<"Mismatch: localcount "<<localcount<<" ndigits "
-	    <<ndigits[lrow]<<ENDLOG;
-	
-        tempPt->fDigitData[localcount].fCharge=dig;
-        tempPt->fDigitData[localcount].fPad=pad;
-        tempPt->fDigitData[localcount].fTime=time;
-#ifdef do_mc
-	tempPt->fDigitData[localcount].fTrackID[0] = fDigits->GetTrackID(time,pad,0);
-	tempPt->fDigitData[localcount].fTrackID[1] = fDigits->GetTrackID(time,pad,1);
-	tempPt->fDigitData[localcount].fTrackID[2] = fDigits->GetTrackID(time,pad,2);
-#endif
-        localcount++;
-      } while (fDigits->Next());
-
-      Byte_t *tmp = (Byte_t*)tempPt;
-      Int_t size = sizeof(AliL3DigitRowData)
-                                      + ndigits[lrow]*sizeof(AliL3DigitData);
-      tmp += size;
-      tempPt = (AliL3DigitRowData*)tmp;
-#ifdef ASVVERSION
-      fLastIndex=n;
-#endif
+    if(n==-1) continue; //no data on that row
+    
+    fDigitsTree->GetEvent(n);
+    fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
+    AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
+    if(lrow!=r){
+      LOG(AliL3Log::kError,"AliL3FileHandler::AliDigits2Memory","Row")
+	<<AliL3Log::kDec<<"Rows dont match "<<lrow<<" "<<r<<ENDLOG;
     }
-#ifdef ASVVERSION
-  fLastIndex++;
+    tempPt->fRow = lrow;
+    tempPt->fNDigit = ndigits[lrow];
+
+    Int_t localcount=0;
+    fDigits->First();
+    do {
+      time=fDigits->CurrentRow();
+      pad=fDigits->CurrentColumn();
+      dig = fDigits->GetDigit(time,pad);
+      if (dig <= fParam->GetZeroSup()) continue;
+      if(dig >= AliL3Transform::GetADCSat())
+	dig = AliL3Transform::GetADCSat();
+
+      //Exclude data outside cone:
+      AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
+      if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
+	continue; // why 230???
+
+      if(localcount >= ndigits[lrow])
+	LOG(AliL3Log::kFatal,"AliL3FileHandler::AliDigits2Binary","Memory")
+	  <<AliL3Log::kDec<<"Mismatch: localcount "<<localcount<<" ndigits "
+	  <<ndigits[lrow]<<ENDLOG;
+	
+      tempPt->fDigitData[localcount].fCharge=dig;
+      tempPt->fDigitData[localcount].fPad=pad;
+      tempPt->fDigitData[localcount].fTime=time;
+#ifdef do_mc
+      tempPt->fDigitData[localcount].fTrackID[0] = fDigits->GetTrackID(time,pad,0);
+      tempPt->fDigitData[localcount].fTrackID[1] = fDigits->GetTrackID(time,pad,1);
+      tempPt->fDigitData[localcount].fTrackID[2] = fDigits->GetTrackID(time,pad,2);
 #endif
+      localcount++;
+    } while (fDigits->Next());
+
+    Byte_t *tmp = (Byte_t*)tempPt;
+    Int_t size = sizeof(AliL3DigitRowData)
+                                      + ndigits[lrow]*sizeof(AliL3DigitData);
+    tmp += size;
+    tempPt = (AliL3DigitRowData*)tmp;
+  }
   return data;
 }
 
@@ -406,7 +457,6 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
       return 0;
     }
   
-  
   if(!fDigitsTree)
     if(!GetDigitsTree(event)) return 0;
   
@@ -417,132 +467,134 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
   Int_t entries = (Int_t)fDigitsTree->GetEntries();
   Int_t ndigits[entries];
   Int_t lslice,lrow;
+  Int_t zerosupval=AliL3Transform::GetZeroSup();
   Float_t xyz[3];
   
-  for(Int_t n=fLastIndex; n<fDigitsTree->GetEntries(); n++)
-    {
-      fDigitsTree->GetEvent(n);
-      fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
-      //if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
-      if(lslice < fSlice) continue;
-      if(lslice != fSlice) break;
-      if(lrow < fRowMin) continue;
-      if(lrow > fRowMax) break;
+  for(Int_t r=fRowMin;r<=fRowMax;r++){
+    Int_t n=fIndex[fSlice][r];
+    if(n==-1) continue; //no data on that row
+    
+    fDigitsTree->GetEvent(n);
+    fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
+    AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
 
-      ndigits[lrow] = 0;
-      fDigits->ExpandBuffer();
-      fDigits->ExpandTrackBuffer();
-      for(Int_t i=0; i<fDigits->GetNCols(); i++)
-	{
-	  for(Int_t j=0; j<fDigits->GetNRows(); j++)
-	    {
-	      pad=i;
-	      time=j;
-	      dig = fDigits->GetDigitFast(time,pad);
-	      if(dig <= fParam->GetZeroSup()) continue;
-	      if(dig >= AliL3Transform::GetADCSat())
-		dig = AliL3Transform::GetADCSat();
-	      
-	      //Check for single timebins, and remove them because they are noise for sure.
-	      if(i>0 && i<fDigits->GetNCols()-1 && j>0 && j<fDigits->GetNRows()-1)
-		if(fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup() &&
-		   fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup() &&
-		   fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup() &&
-		   fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup())
-		  continue;
-	      
-	      //Boundaries:
-	      if(i==0) //pad ==0
-		{
-		  if(j < fDigits->GetNRows()-1 && j > 0) 
-		    {
-		      if(fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else if(j > 0)
-		    {
-		      if(fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup())
-			continue;
-		    }
-		}
-	      if(j==0)
-		{
-		  if(i < fDigits->GetNCols()-1 && i > 0)
-		    {
-		      if(fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else if(i > 0)
-		    {
-		      if(fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup())
-			continue;
-		    }
-		}
-
-	      if(i == fDigits->GetNCols()-1)
-		{
-		  
-		  if(j>0 && j<fDigits->GetNRows()-1)
-		    {
-		      if(fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else if(j==0 && j<fDigits->GetNRows()-1)
-		    {
-		      if(fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else 
-		    {
-		      if(fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup())
-			continue;
-		    }
-		}
-	      
-	      if(j==fDigits->GetNRows()-1)
-		{
-		  if(i>0 && i<fDigits->GetNCols()-1)
-		    {
-		      if(fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else if(i==0 && fDigits->GetNCols()-1)
-		    {
-		      if(fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else 
-		    {
-		      if(fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup())
-			continue;
-		    }
-		}
-	      
-	      AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
-	      if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
-		continue;
-	      
-	      ndigits[lrow]++; //for this row only
-	      ndigitcount++;   //total number of digits to be published
-	    }
-	}
-      nrows++;
+    if(lrow!=r){
+      LOG(AliL3Log::kError,"AliL3FileHandler::AliAltroDigits2Memory","Row")
+	<<AliL3Log::kDec<<"Rows dont match "<<lrow<<" "<<r<<ENDLOG;
     }
+
+    ndigits[lrow] = 0;
+    fDigits->ExpandBuffer();
+    fDigits->ExpandTrackBuffer();
+    for(Int_t i=0; i<fDigits->GetNCols(); i++){
+      for(Int_t j=0; j<fDigits->GetNRows(); j++){
+	pad=i;
+	time=j;
+	dig = fDigits->GetDigitFast(time,pad);
+	if(dig <= zerosupval) continue;
+	if(dig >= AliL3Transform::GetADCSat())
+	  dig = AliL3Transform::GetADCSat();
+
+  	//Check for single timebins, and remove them because they are noise for sure.
+	if(i>0 && i<fDigits->GetNCols()-1 && j>0 && j<fDigits->GetNRows()-1)
+	  if(fDigits->GetDigitFast(time,pad-1)<=zerosupval &&
+	     fDigits->GetDigitFast(time-1,pad)<=zerosupval &&
+	     fDigits->GetDigitFast(time+1,pad)<=zerosupval &&
+	     fDigits->GetDigitFast(time,pad+1)<=zerosupval)
+	    continue;
+	      
+	//Boundaries:
+	if(i==0) //pad==0
+	  {
+	    if(j < fDigits->GetNRows()-1 && j > 0) 
+	      {
+		if(fDigits->GetDigitFast(time-1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time+1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad+1)<=zerosupval)
+		  continue;
+	      }
+	    else if(j > 0)
+	      {
+		      if(fDigits->GetDigitFast(time-1,pad)<=zerosupval &&
+			 fDigits->GetDigitFast(time,pad+1)<=zerosupval)
+			continue;
+		    }
+	  }
+	if(j==0)
+	  {
+	    if(i < fDigits->GetNCols()-1 && i > 0)
+	      {
+		if(fDigits->GetDigitFast(time,pad-1)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad+1)<=zerosupval &&
+		   fDigits->GetDigitFast(time+1,pad)<=zerosupval)
+		  continue;
+	      }
+	    else if(i > 0)
+	      {
+		if(fDigits->GetDigitFast(time,pad-1)<=zerosupval &&
+		   fDigits->GetDigitFast(time+1,pad)<=zerosupval)
+		  continue;
+	      }
+	  }
+
+	if(i==fDigits->GetNCols()-1)
+	  {
+	    if(j>0 && j<fDigits->GetNRows()-1)
+	      {
+		if(fDigits->GetDigitFast(time-1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time+1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad-1)<=zerosupval)
+		  continue;
+	      }
+	    else if(j==0 && j<fDigits->GetNRows()-1)
+	      {
+		if(fDigits->GetDigitFast(time+1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad-1)<=zerosupval)
+		  continue;
+	      }
+	    else 
+	      {
+		if(fDigits->GetDigitFast(time-1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad-1)<=zerosupval)
+		  continue;
+	      }
+	  }
+	
+	if(j==fDigits->GetNRows()-1)
+	  {
+	    if(i>0 && i<fDigits->GetNCols()-1)
+	      {
+		if(fDigits->GetDigitFast(time,pad-1)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad+1)<=zerosupval &&
+		   fDigits->GetDigitFast(time-1,pad)<=zerosupval)
+		  continue;
+	      }
+	    else if(i==0 && fDigits->GetNCols()-1)
+	      {
+		if(fDigits->GetDigitFast(time,pad+1)<=zerosupval &&
+		   fDigits->GetDigitFast(time-1,pad)<=zerosupval)
+		  continue;
+	      }
+	    else 
+	      {
+		if(fDigits->GetDigitFast(time,pad-1)<=zerosupval &&
+		   fDigits->GetDigitFast(time-1,pad)<=zerosupval)
+		  continue;
+	      }
+	  }
+
+	AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
+	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
+	  continue; 
+	      
+	ndigits[lrow]++; //for this row only
+	ndigitcount++;   //total number of digits to be published
+      }
+    }
+    
+    nrows++;
+  }
+  
   Int_t size = sizeof(AliL3DigitData)*ndigitcount
     + nrows*sizeof(AliL3DigitRowData);
 
@@ -552,169 +604,161 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
   data=(AliL3DigitRowData*) Allocate(size);
   nrow = (UInt_t)nrows;
   AliL3DigitRowData *tempPt = data;
-  for(Int_t n=fLastIndex; n<fDigitsTree->GetEntries(); n++)
-    {
-      fDigitsTree->GetEvent(n);
-      fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
-      //if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
-      if(lslice < fSlice) continue;
-      if(lslice != fSlice) break;
-      if(lrow < fRowMin) continue;
-      if(lrow > fRowMax) break;
+ 
+  for(Int_t r=fRowMin;r<=fRowMax;r++){
+    Int_t n=fIndex[fSlice][r];
+    if(n==-1) continue; //no data on that row
+    
+    fDigitsTree->GetEvent(n);
+    fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
+    AliL3Transform::Sector2Slice(lslice,lrow,sector,row);
 
-      tempPt->fRow = lrow;
-      tempPt->fNDigit = ndigits[lrow];
-
-      Int_t localcount=0;
-      fDigits->ExpandBuffer();
-      fDigits->ExpandTrackBuffer();
-      for(Int_t i=0; i<fDigits->GetNCols(); i++)
-	{
-	  for(Int_t j=0; j<fDigits->GetNRows(); j++)
-	    {
-	      pad=i;
-	      time=j;
-	      dig = fDigits->GetDigitFast(time,pad);
-	      if(dig <= fParam->GetZeroSup()) continue;
-	      if(dig >= AliL3Transform::GetADCSat())
-		dig = AliL3Transform::GetADCSat();
-	      
-	      //Check for single timebins, and remove them because they are noise for sure.
-	      if(i>0 && i<fDigits->GetNCols()-1 && j>0 && j<fDigits->GetNRows()-1)
-		if(fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup() &&
-		   fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup() &&
-		   fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup() &&
-		   fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup())
-		  continue;
-
-	      //Boundaries:
-	      if(i==0) //pad ==0
-		{
-		  if(j < fDigits->GetNRows()-1 && j > 0) 
-		    {
-		      if(fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else if(j > 0)
-		    {
-		      if(fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup())
-			continue;
-		    }
-		}
-	      if(j==0)
-		{
-		  if(i < fDigits->GetNCols()-1 && i > 0)
-		    {
-		      if(fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else if(i > 0)
-		    {
-		      if(fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup())
-			continue;
-		    }
-		}
-
-	      if(i == fDigits->GetNCols()-1)
-		{
-		  
-		  if(j>0 && j<fDigits->GetNRows()-1)
-		    {
-		      if(fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else if(j==0 && j<fDigits->GetNRows()-1)
-		    {
-		      if(fDigits->GetDigitFast(time+1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else 
-		    {
-		      if(fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup())
-			continue;
-		    }
-		}
-	      
-	      if(j==fDigits->GetNRows()-1)
-		{
-		  if(i>0 && i<fDigits->GetNCols()-1)
-		    {
-		      if(fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else if(i==0 && fDigits->GetNCols()-1)
-		    {
-		      if(fDigits->GetDigitFast(time,pad+1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup())
-			continue;
-		    }
-		  else 
-		    {
-		      if(fDigits->GetDigitFast(time,pad-1)<=fParam->GetZeroSup() &&
-			 fDigits->GetDigitFast(time-1,pad)<=fParam->GetZeroSup())
-			continue;
-		    }
-		}
-	      
-	      
-	      AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
-	      if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
-		continue;
-	    
-	      if(localcount >= ndigits[lrow])
-		LOG(AliL3Log::kFatal,"AliL3FileHandler::AliDigits2Binary","Memory")
-		  <<AliL3Log::kDec<<"Mismatch: localcount "<<localcount<<" ndigits "
-		  <<ndigits[lrow]<<ENDLOG;
-	      
-	      tempPt->fDigitData[localcount].fCharge=dig;
-	      tempPt->fDigitData[localcount].fPad=pad;
-	      tempPt->fDigitData[localcount].fTime=time;
-#ifdef do_mc
-	      tempPt->fDigitData[localcount].fTrackID[0] = (fDigits->GetTrackIDFast(time,pad,0)-2);
-	      tempPt->fDigitData[localcount].fTrackID[1] = (fDigits->GetTrackIDFast(time,pad,1)-2);
-	      tempPt->fDigitData[localcount].fTrackID[2] = (fDigits->GetTrackIDFast(time,pad,2)-2);
-	      if(eventmerge == kTRUE) //careful track mc info will be touched
-		{//Event are going to be merged, so event number is stored in the upper 10 bits.
-		  tempPt->fDigitData[localcount].fTrackID[0] += 128; //leave some room
-		  tempPt->fDigitData[localcount].fTrackID[1] += 128; //for neg. numbers
-		  tempPt->fDigitData[localcount].fTrackID[2] += 128;
-		  tempPt->fDigitData[localcount].fTrackID[0] += ((event&0x3ff)<<22);
-		  tempPt->fDigitData[localcount].fTrackID[1] += ((event&0x3ff)<<22);
-		  tempPt->fDigitData[localcount].fTrackID[2] += ((event&0x3ff)<<22);
-		}
-#endif
-	      localcount++;
-	    }
-	}
-      
-      Byte_t *tmp = (Byte_t*)tempPt;
-      Int_t size = sizeof(AliL3DigitRowData)
-	+ ndigits[lrow]*sizeof(AliL3DigitData);
-      tmp += size;
-      tempPt = (AliL3DigitRowData*)tmp;
-#ifdef ASVVERSION
-      fLastIndex=n;
-#endif
+    if(lrow!=r){
+      LOG(AliL3Log::kError,"AliL3FileHandler::AliAltroDigits2Memory","Row")
+	<<AliL3Log::kDec<<"Rows dont match "<<lrow<<" "<<r<<ENDLOG;
     }
-#ifdef ASVVERSION
-  fLastIndex++;
+
+    tempPt->fRow = lrow;
+    tempPt->fNDigit = ndigits[lrow];
+
+    Int_t localcount=0;
+    fDigits->ExpandBuffer();
+    fDigits->ExpandTrackBuffer();
+    for(Int_t i=0; i<fDigits->GetNCols(); i++){
+      for(Int_t j=0; j<fDigits->GetNRows(); j++){
+	pad=i;
+	time=j;
+	dig = fDigits->GetDigitFast(time,pad);
+	if(dig <= zerosupval) continue;
+	if(dig >= AliL3Transform::GetADCSat())
+	  dig = AliL3Transform::GetADCSat();
+	      
+	//Check for single timebins, and remove them because they are noise for sure.
+	if(i>0 && i<fDigits->GetNCols()-1 && j>0 && j<fDigits->GetNRows()-1)
+	  if(fDigits->GetDigitFast(time,pad-1)<=zerosupval &&
+	     fDigits->GetDigitFast(time-1,pad)<=zerosupval &&
+	     fDigits->GetDigitFast(time+1,pad)<=zerosupval &&
+	     fDigits->GetDigitFast(time,pad+1)<=zerosupval)
+	    continue;
+
+	//Boundaries:
+	if(i==0) //pad ==0
+	  {
+	    if(j < fDigits->GetNRows()-1 && j > 0) 
+	      {
+		if(fDigits->GetDigitFast(time-1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time+1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad+1)<=zerosupval)
+		  continue;
+	      }
+	    else if(j > 0)
+	      {
+		if(fDigits->GetDigitFast(time-1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad+1)<=zerosupval)
+		  continue;
+	      }
+	  }
+	if(j==0)
+	  {
+	    if(i < fDigits->GetNCols()-1 && i > 0)
+	      {
+		if(fDigits->GetDigitFast(time,pad-1)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad+1)<=zerosupval &&
+		   fDigits->GetDigitFast(time+1,pad)<=zerosupval)
+		  continue;
+	      }
+	    else if(i > 0)
+	      {
+		if(fDigits->GetDigitFast(time,pad-1)<=zerosupval &&
+		   fDigits->GetDigitFast(time+1,pad)<=zerosupval)
+		  continue;
+	      }
+	  }
+	
+	if(i == fDigits->GetNCols()-1)
+	  {
+	    if(j>0 && j<fDigits->GetNRows()-1)
+	      {
+		if(fDigits->GetDigitFast(time-1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time+1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad-1)<=zerosupval)
+		  continue;
+	      }
+	    else if(j==0 && j<fDigits->GetNRows()-1)
+	      {
+		if(fDigits->GetDigitFast(time+1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad-1)<=zerosupval)
+		  continue;
+	      }
+	    else 
+	      {
+		if(fDigits->GetDigitFast(time-1,pad)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad-1)<=zerosupval)
+		  continue;
+	      }
+	  }
+	if(j==fDigits->GetNRows()-1)
+	  {
+	    if(i>0 && i<fDigits->GetNCols()-1)
+	      {
+		if(fDigits->GetDigitFast(time,pad-1)<=zerosupval &&
+		   fDigits->GetDigitFast(time,pad+1)<=zerosupval &&
+		   fDigits->GetDigitFast(time-1,pad)<=zerosupval)
+		  continue;
+	      }
+	    else if(i==0 && fDigits->GetNCols()-1)
+	      {
+		if(fDigits->GetDigitFast(time,pad+1)<=zerosupval &&
+		   fDigits->GetDigitFast(time-1,pad)<=zerosupval)
+		  continue;
+	      }
+	    else 
+	      {
+		if(fDigits->GetDigitFast(time,pad-1)<=zerosupval &&
+		   fDigits->GetDigitFast(time-1,pad)<=zerosupval)
+		  continue;
+	      }
+	  }
+	
+	AliL3Transform::Raw2Local(xyz,sector,row,pad,time);
+	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
+	  continue;
+	    
+	if(localcount >= ndigits[lrow])
+	  LOG(AliL3Log::kFatal,"AliL3FileHandler::AliAltroDigits2Binary","Memory")
+	    <<AliL3Log::kDec<<"Mismatch: localcount "<<localcount<<" ndigits "
+	    <<ndigits[lrow]<<ENDLOG;
+	
+	tempPt->fDigitData[localcount].fCharge=dig;
+	tempPt->fDigitData[localcount].fPad=pad;
+	tempPt->fDigitData[localcount].fTime=time;
+#ifdef do_mc
+	tempPt->fDigitData[localcount].fTrackID[0] = (fDigits->GetTrackIDFast(time,pad,0)-2);
+	tempPt->fDigitData[localcount].fTrackID[1] = (fDigits->GetTrackIDFast(time,pad,1)-2);
+	tempPt->fDigitData[localcount].fTrackID[2] = (fDigits->GetTrackIDFast(time,pad,2)-2);
+	if(eventmerge == kTRUE) //careful track mc info will be touched
+	  {//Event are going to be merged, so event number is stored in the upper 10 bits.
+	    tempPt->fDigitData[localcount].fTrackID[0] += 128; //leave some room
+	    tempPt->fDigitData[localcount].fTrackID[1] += 128; //for neg. numbers
+	    tempPt->fDigitData[localcount].fTrackID[2] += 128;
+	    tempPt->fDigitData[localcount].fTrackID[0] += ((event&0x3ff)<<22);
+	    tempPt->fDigitData[localcount].fTrackID[1] += ((event&0x3ff)<<22);
+	    tempPt->fDigitData[localcount].fTrackID[2] += ((event&0x3ff)<<22);
+	  }
 #endif
+	localcount++;
+      }
+    }
+      
+    Byte_t *tmp = (Byte_t*)tempPt;
+    Int_t size = sizeof(AliL3DigitRowData)
+      + ndigits[lrow]*sizeof(AliL3DigitData);
+    tmp += size;
+    tempPt = (AliL3DigitRowData*)tmp;
+  }
   return data;
 }
-
+ 
 Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
 {
   //Connects to the TPC digit tree in the AliROOT file.
@@ -730,7 +774,8 @@ Bool_t AliL3FileHandler::GetDigitsTree(Int_t event)
       return kFALSE;
     }
   fDigitsTree->GetBranch("Segment")->SetAddress(&fDigits);
-  return kTRUE;
+
+  return CreateIndex();
 }
 
 void AliL3FileHandler::AliDigits2RootFile(AliL3DigitRowData *rowPt,Char_t *new_digitsfile)

@@ -22,6 +22,8 @@
 
 ClassImp(AliL3ConfMapPoint)
 
+Bool_t AliL3ConfMapPoint::fDontMap=kFALSE;
+
 AliL3ConfMapPoint::AliL3ConfMapPoint()
 {
   //Constructor
@@ -93,10 +95,8 @@ void AliL3ConfMapPoint::Setup(AliL3Vertex *vertex)
   return;
 }
 
-void AliL3ConfMapPoint::SetIntPoint(const Double_t in_x,const Double_t in_y, 
-			       const Double_t in_z,
-			       const Double_t in_x_err, const Double_t in_y_err, 
-			       const Double_t in_z_err)
+void AliL3ConfMapPoint::SetIntPoint(const Double_t in_x,const Double_t in_y,const Double_t in_z,
+			            const Double_t in_x_err,const Double_t in_y_err,const Double_t in_z_err)
 {
   // Defines a new interaction point. This point is needed to calculate
   // the conformal coordinates.
@@ -155,6 +155,15 @@ void AliL3ConfMapPoint::SetConfCoord()
   // assumed to be at (0, 0, 0). Otherwise the function will use the
   // interaction point specified by fXt and fYt.
 
+  if(fDontMap){
+    fXprime = x;
+    fYprime = y;
+    fWxy = 0;
+    s = 0; //track trajectory
+    fWz = 0;
+    return;
+  }
+
   Double_t r2;
   Double_t xyErrorScale = 1;
   Double_t szErrorScale = 1;
@@ -163,19 +172,12 @@ void AliL3ConfMapPoint::SetConfCoord()
     {
       fXprime =  fXv / r2;
       fYprime = -fYv / r2;
-      //  fXprimeerr = TMath::Sqrt(TMath::Power((-fXv * fXv +   fYv*fYv) * fXverr, 2) + TMath::Power( 2*fXv*fYv*fYverr, 2)) / TMath::Power(fXv*fXv + fYv*fYv, 2);
-      // fXprimeerr = TMath::Sqrt(TMath::Power((-fXv * fXv - 3*fYv*fYv) * fYverr, 2) + TMath::Power(-2*fXv*fYv*fXverr, 2)) / TMath::Power(fXv*fXv + fYv*fYv, 2);
-    
       
       //set weights:
-      //fWxy = r2*r2 / (TMath::Power(xyErrorScale,2)*(TMath::Power(xerr,2)+TMath::Power(yerr,2)));
       fWxy = r2*r2 / ((xyErrorScale*xyErrorScale)*((xerr*xerr)+(yerr*yerr)));
       s = 0; //track trajectory
-      //fWz = (Double_t)(1./TMath::Power(szErrorScale*zerr,2));
       fWz = (Double_t)(1./(szErrorScale*zerr*zerr));
-    }
-  
-  else {
+    } else {
     fXprime    = 0.;
     fYprime    = 0.;
     fXprimeerr = 0.;

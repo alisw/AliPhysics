@@ -1,6 +1,7 @@
 // $Id$
 
 // Author: Constantin Loizides <loizides@ikf.uni-frankfurt.de>
+//*-- Copyright &copy ALICE HLT Group
 
 /**
  Program to convert big <-> little endian cosmics data of 02/2003.

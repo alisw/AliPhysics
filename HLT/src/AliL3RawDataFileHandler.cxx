@@ -223,13 +223,13 @@ Bool_t AliL3RawDataFileHandler::SetRawPedestalsInput(ifstream *file)
 
 void AliL3RawDataFileHandler::CloseRawPedestalsInput()
 {
-  if(!fInRaw){
+  if(!fInRawPed){
     LOG(AliL3Log::kWarning,"AliL3RawDataFileHandler::CloseRawPedestalsInput","File Close")
       <<"Nothing to Close"<<ENDLOG;
     return;
   }
-  if(fInRawPed->is_open()) fInRaw->close();
-  delete fInRaw;
+  if(fInRawPed->is_open()) fInRawPed->close();
+  delete fInRawPed;
   fInRaw = 0;
 }
 

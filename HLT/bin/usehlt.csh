@@ -13,5 +13,4 @@ setenv ALIHLT_LIBDIR ${ALIHLT_TOPDIR}/lib_${ALIHLT_USEPACKAGE}
 
 #setenv ALIHLT_NOLOGGING false
 #setenv ALIHLT_DOMC true
-#setenv ALIHLT_HAVEASV true
 #setenv ALIHLT_ALIDETECT true

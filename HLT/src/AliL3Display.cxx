@@ -152,7 +152,7 @@ void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don,Float_t thr)
     {
       AliL3Track *gtrack = fTracks->GetCheckedTrack(j); 
       if(!gtrack) continue;
-      if(gtrack->GetPt()<thr) continue;        
+      if((thr>=0)&&(gtrack->GetPt()<thr)) continue;        
       Int_t nHits = gtrack->GetNHits();
       UInt_t *hitnum = gtrack->GetHitNumbers();
       if(nHits < min_hits) continue;
@@ -160,10 +160,12 @@ void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don,Float_t thr)
       Int_t hitcount=0;
       for(Int_t h=0; h<nHits; h++)
 	{
+
 	  UInt_t id=hitnum[h];
 	  Int_t slice = (id>>25) & 0x7f;
 	  Int_t patch = (id>>22) & 0x7;
 	  UInt_t pos = id&0x3fffff;	      
+	  //cout << h << " id " << pos << endl;
 	  AliL3SpacePointData *points = fClusters[slice][patch];
 	  if(slice < fMinSlice || slice > fMaxSlice)
 	    continue;
@@ -173,7 +175,12 @@ void AliL3Display::DisplayTracks(Int_t min_hits,Bool_t x3don,Float_t thr)
 	      <<"No points at slice "<<slice<<" patch "<<patch<<" pos "<<pos<<ENDLOG;
 	    continue;
 	  }
-	  if(pos>=fNcl[slice][patch]) {printf("Error \n"); continue;}
+	  if(pos>=fNcl[slice][patch]){
+	    LOG(AliL3Log::kError,"AliL3Display::DisplayTracks","Clusterarray")
+	      <<"Pos is too large: pos "<<pos <<" ncl "<<fNcl[slice][patch]<<ENDLOG;
+	    continue;
+	  }
+
 	  Float_t xyz_tmp[3];
 	  xyz_tmp[0] = points[pos].fX;
 	  xyz_tmp[1] = points[pos].fY;
@@ -249,14 +256,12 @@ void AliL3Display::DisplayClusters(Bool_t x3don)
 	  Float_t xyz[3];
 	  for(Int_t i=0; i<npoints; i++)
 	    {
-	      
 	      xyz[0] = points[i].fX;
 	      xyz[1] = points[i].fY;
 	      xyz[2] = points[i].fZ;
 	      //AliL3Transform::Local2Global(xyz,s);
 	      pm->SetPoint(i,xyz[0],xyz[1],xyz[2]); 
-	      
-	    }
+ 	    }
 	  pm->SetMarkerColor(2);
 	  pm->Draw("");
 	}
@@ -329,11 +334,15 @@ void AliL3Display::DisplayAll(Int_t min_hits,Bool_t x3don)
 	  
 	  AliL3SpacePointData *points = fClusters[slice][patch];
 	  if(!points) {
-	    LOG(AliL3Log::kError,"AliL3Display::DisplayTracks","Clusterarray")
+	    LOG(AliL3Log::kError,"AliL3Display::DisplayAll","Clusterarray")
 	      <<"No points at slice "<<slice<<" patch "<<patch<<" pos "<<pos<<ENDLOG;
 	    continue;
 	  }
-	  if(pos>=fNcl[slice][patch]) {printf("Error \n"); continue;}
+	  if(pos>=fNcl[slice][patch]) {
+	    LOG(AliL3Log::kError,"AliL3Display::DisplayAll","Clusterarray")
+	      <<"Pos is too large: pos "<<pos <<" ncl "<<fNcl[slice][patch]<<ENDLOG;
+	    continue;
+	  }
 	  xcl[h] = points[pos].fX;
 	  ycl[h] = points[pos].fY;
 	  zcl[h] = points[pos].fZ;

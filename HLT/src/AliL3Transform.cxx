@@ -724,9 +724,7 @@ Bool_t AliL3Transform::Init(Char_t* path,Bool_t UseAliTPCParam)
   strcpy(pathname,path);
 
   //test whether provided path is the file itself
-  //Long_t id=0,size=0,flags=0,modtime=0;
-  //gSystem->GetPathInfo(pathname, &id, &size, &flags, &modtime);
-  Int_t isdir = 0;// (Int_t)flags & 2;
+  Int_t isdir = 0;
   DIR *testdir=opendir(pathname);
   if(testdir){
     isdir=1;
@@ -889,22 +887,19 @@ Bool_t AliL3Transform::ReadInit(Char_t *path)
       sprintf(filename,"%s",path); 
     }
   gErrorIgnoreLevel=saveErrIgLevel;
-  //finally make dummy init file /tmp/l3transform.config
-  if(MakeInitFile(filename,"/tmp/"))
-    { 
-      Bool_t ret=Init("/tmp/");
-      //Move the temp file to /tmp/l3transform.config-"time in seconds"
-      TTimeStamp time;
-      sprintf(filename,"/tmp/l3transform.config-%ld",(long)time.GetSec()); 
-      gSystem->Rename("/tmp/l3transform.config",filename);
-      return ret;
-    }
 
-  return kFALSE;
+  //finally make dummy init file /tmp/$USER/l3transform.config-`date`
+  Char_t tmppath[1024];
+  sprintf(tmppath,"/tmp/%s",gSystem->Getenv("USER"));
+  gSystem->mkdir(tmppath);
+  TTimeStamp time;
+  Char_t tmpfile[1024];
+  sprintf(tmpfile,"%s/l3transform.config-%d",tmppath,(Int_t)time.GetSec());
+  return MakeInitFile(filename,tmpfile);
 #endif  
 }
 
-Bool_t AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
+Bool_t AliL3Transform::MakeInitFile(Char_t *rootfilename,Char_t *filename)
 {
   //Get the parameters from rootfile, and store it on the file "l3transform.config"
   //which is being read by Init. fVersion will be fV_aliroot!
@@ -914,26 +909,28 @@ Bool_t AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
     <<"You have to compile with use_aliroot flag in order to use this function"<<ENDLOG;
   return kFALSE;
 #else
-  TFile *rootfile = TFile::Open(filename);
+  TFile *rootfile = TFile::Open(rootfilename);
   if(!rootfile)
     {
       LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","File")
-	<<"Could not open file: "<<filename<<ENDLOG;
+	<<"Could not open file: "<<rootfilename<<ENDLOG;
       return kFALSE;
     }
   AliRun *gAlice = (AliRun*)rootfile->Get("gAlice");
   if(!gAlice)
     {
       LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","File")
-	<<"No gAlice in file: "<<filename<<ENDLOG;
+	<<"No gAlice in file: "<<rootfilename<<ENDLOG;
       return kFALSE;
     }  
   AliTPCParamSR *param=(AliTPCParamSR*)rootfile->Get(GetParamName());
   if(!param)
     {
-      LOG(AliL3Log::kError,"AliL3Transform::MakeInitFile","File")
-	<<"No TPC parameters found"<<ENDLOG;
-      return kFALSE;
+      LOG(AliL3Log::kWarning,"AliL3Transform::MakeInitFile","File")
+	<<"No TPC parameters found in \""<<rootfilename
+        <<"\", creating standard parameters "
+	<<"which might not be what you want!"<<ENDLOG;
+      param=new AliTPCParamSR;
     }
 
   AliTPCPRF2D    * prfinner    = new AliTPCPRF2D;
@@ -1034,11 +1031,7 @@ Bool_t AliL3Transform::MakeInitFile(Char_t *filename,Char_t *path)
     if(i<fNSectorLow) fSectorLow[i]=1;
     else fSectorLow[i]=0;
   }
-  //generate filename
-  Char_t tofile[1024];
-  sprintf(tofile,"%s/l3transform.config",path);
-  //cout << tofile <<endl;
-  return SaveInitFile(tofile);
+  return SaveInitFile(filename);
 #endif
 }
 
@@ -1048,7 +1041,8 @@ Bool_t AliL3Transform::SaveInitFile(Char_t *filenamepath)
   
   FILE *f = fopen(filenamepath,"w");
   if(!f){
-    //todo
+    LOG(AliL3Log::kError,"AliL3Transform::SaveInitFile","File")
+	<<"Could not open file: "<<filenamepath<<ENDLOG;
     return kFALSE;
   }
 
@@ -1600,11 +1594,5 @@ void AliL3Transform::PrintCompileOptions()
   cout << "Using logging classes (MLUC): -Duse_logging was given." << endl;
 #else
   cout << "NOT using logging classes (MLUC): -Duse_logging not was given." << endl;
-#endif
-
-#ifdef ASVVERSION
-  cout << "Using ASV version for the digitization: -DASVVERSION was given." << endl;
-#else
-  cout << "NOT using ASV version for the digitization: -DASVVERSION was not given." << endl;
 #endif
 }

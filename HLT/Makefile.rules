@@ -3,11 +3,12 @@
 # Makefile.rules for HLT code. #
 #                              #
 # Author: Anders Vestbo,       #
-#         Constantin Loizide   #                    
+#         Constantin Loizides  #                    
 ################################
 
 #----------------------------------------------------
-# !!! Dont change anything here !!!
+# !!! Dont change anything here                 !!!
+# !!! and if you have to send a mail to authors !!!
 #----------------------------------------------------
 
 DEFSTR = -Dno_root
@@ -50,9 +51,6 @@ INCLUDES += -I/prog/alice/level3/kip/MLUC/include
 endif
 endif
 
-ifeq ($(ASVVERSION),1)
-DEFSTR += -DASVVERSION
-endif
 
 DEFSTR += $(EXTRADEF)
 
@@ -105,7 +103,6 @@ print:
 	@echo "ALIHLT_USEPACKAGE = $(ALIHLT_USEPACKAGE)"
 	@echo "ALIHLT_NOLOGGING  = $(ALIHLT_NOLOGGING)"
 	@echo "ALIHLT_DOMC       = $(ALIHLT_DOMC)"
-	@echo "ALIHLT_HAVEASV    = $(ALIHLT_HAVEASV)"
 	@echo "ALIHLT_ALIDETECT  = $(ALIHLT_ALIDETECT)"
 	@echo "ROOTSTR           = $(ROOTSTR)"
 	@echo "ALIROOTSTR        = $(ALIROOTSTR)"
@@ -121,12 +118,14 @@ printall: print
 
 clean:
 	rm -f $(OBJDIR)/*.o
-	rm -f $(ALIHLT_LIBSO)
 	rm -f $(DICT) $(DICTH) 
 	rm -rf $(OBJDIR)
 
 so:
 	rm -f $(ALIHLT_LIBSO)
 
+realclean: clean so
 
-.phony: print clean so
+
+.phony: help print printall clean so realclean
+

@@ -4,21 +4,23 @@
    Macro for converting AliRoot digits into L3 RawData. 
    Binary creates for each patch its own file. 
    Singlepatch uses one file per slice (sp=kTRUE). 
-   Run with ALIROOT (not root)
+   Use altro=kFALSE if you dont want to 
+   filter out single timebins
+
+   Run with ALIROOT (not ROOT)
 */
 
-binary(Char_t* inpath,Char_t *outpath,Int_t first,Int_t last,Int_t event,Bool_t sp=kFALSE){
+binary(Char_t* inpath,Char_t *outpath,Int_t first,Int_t last,Int_t event,Bool_t sp=kFALSE,Bool_t altro=kTRUE){
 
   AliL3Transform::Init(inpath,kTRUE);
 
   if(sp) {
-    singlepatch(inpath,outpath,first,last,event);
+    singlepatch(inpath,outpath,first,last,event,altro);
     return;
   }
 
   Char_t name[256];
   const Int_t npatch = 6;
-  Bool_t altrodigits=kFALSE;
 
   sprintf(name,"%s/digitfile.root",inpath);
   AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
@@ -30,13 +32,38 @@ binary(Char_t* inpath,Char_t *outpath,Int_t first,Int_t last,Int_t event,Bool_t 
       fFileHandler->Init(slice,patch);      
       sprintf(name,"%s/digits_%d_%d_%d.raw",outpath,event,slice,patch);
       fFileHandler->SetBinaryOutput(name);
-      fFileHandler->AliDigits2CompBinary(event,altrodigits);
+      fFileHandler->AliDigits2CompBinary(event,altro);
       fFileHandler->CloseBinaryOutput();      
       fFileHandler->Free();
       cerr<<" done"<<endl;
     }      
   }
   fFileHandler->CloseAliInput();
+}
+
+ 
+void singlepatch(Char_t* inpath,Char_t *outpath,Int_t first=0, Int_t last=0,Int_t event=0,Bool_t altro=kTRUE)
+{
+   
+  Char_t name[256];
+  AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
+  sprintf(name,"%s/digitfile.root",inpath);
+  fFileHandler->SetAliInput(name);
+  
+  Int_t patch=-1;
+  for(Int_t slice=first; slice<=last; slice++)
+    {
+      cerr<<"reading slice: "<<slice;
+      fFileHandler->Free();
+      fFileHandler->Init(slice,patch);
+      sprintf(name,"%s/digits_%d_%d_%d.raw",outpath,event,slice,patch);
+      fFileHandler->SetBinaryOutput(name);
+      fFileHandler->AliDigits2CompBinary(event,altro);
+      fFileHandler->CloseBinaryOutput();      
+      cerr<<" done"<<endl;
+    }
+  fFileHandler->CloseAliInput();
+  
 }
 
 void write2rootfile(Char_t *in,Int_t first,Int_t last,Char_t *path)
@@ -61,31 +88,6 @@ void write2rootfile(Char_t *in,Int_t first,Int_t last,Char_t *path)
 	  delete c;
 	}
     }
-  
-}
- 
-void singlepatch(Char_t* inpath,Char_t *outpath,Int_t first=0, Int_t last=0,Int_t event=0)
-{
-   
-  Char_t name[256];
-  AliL3FileHandler *fFileHandler = new AliL3FileHandler(); 
-  sprintf(name,"%s/digitfile.root",inpath);
-  fFileHandler->SetAliInput(name);
-  
-  Bool_t altrodigits=kFALSE;
-  Int_t patch=-1;
-  for(Int_t slice=first; slice<=last; slice++)
-    {
-      cerr<<"reading slice: "<<slice;
-      fFileHandler->Free();
-      fFileHandler->Init(slice,patch);
-      sprintf(name,"%s/digits_%d_%d_%d.raw",outpath,event,slice,patch);
-      fFileHandler->SetBinaryOutput(name);
-      fFileHandler->AliDigits2CompBinary(event,altrodigits);
-      fFileHandler->CloseBinaryOutput();      
-      cerr<<" done"<<endl;
-    }
-  fFileHandler->CloseAliInput();
   
 }
 

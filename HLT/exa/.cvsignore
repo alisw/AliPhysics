@@ -1,0 +1,9 @@
+*.so 
+*.root 
+*.eps 
+AliLevel3.log 
+alice.geo 
+tracker 
+*transform.config
+
+

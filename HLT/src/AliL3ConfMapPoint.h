@@ -17,7 +17,7 @@ class AliL3ConfMapPoint {
   Int_t fTrackNumber;
   Int_t fNextHitNumber;
   Bool_t fUsed;
-    Int_t fPadrow;
+  Int_t fPadrow;
   Int_t fSector;
 
   //global coordinates and their errors
@@ -63,7 +63,8 @@ class AliL3ConfMapPoint {
   Double_t   fPhi;         // angle phi
   Double_t   fEta;         // pseudorapidity
   
-  
+  static Bool_t fDontMap; //flag to switch off mapping  
+
  public:
 
   AliL3ConfMapPoint();
@@ -100,27 +101,27 @@ class AliL3ConfMapPoint {
   //AliL3ConfMapTrack *GetTrack(TClonesArray *tracks) const;
   
   Bool_t GetUsage() const {return fUsed;}
-  Double_t   GetPhi() const          { return fPhi;        }
-  Double_t   GetEta() const          { return fEta;        }
+  Double_t GetPhi() const {return fPhi;}
+  Double_t GetEta() const {return fEta;}
   
-  Double_t   GetXprime() const       { return fXprime;     }
-  Double_t   GetYprime() const       { return fYprime;     }
-  Double_t   GetXprimeerr() const    { return fXprimeerr;  }
-  Double_t   GetYprimeerr() const    { return fYprimeerr;  }
+  Double_t GetXprime() const    {return fXprime;}
+  Double_t GetYprime() const    {return fYprime;}
+  Double_t GetXprimeerr() const {return fXprimeerr;}
+  Double_t GetYprimeerr() const {return fYprimeerr;}
   
-  Double_t   GetXt() const           { return fXt;         }
-  Double_t   GetYt() const           { return fYt;         }
-  Double_t   GetZt() const           { return fZt;         }
-  Double_t   GetXterr() const        { return fXterr;      }
-  Double_t   GetYterr() const        { return fYterr;      }
-  Double_t   GetZterr() const        { return fZterr;      }
+  Double_t GetXt() const           { return fXt;         }
+  Double_t GetYt() const           { return fYt;         }
+  Double_t GetZt() const           { return fZt;         }
+  Double_t GetXterr() const        { return fXterr;      }
+  Double_t GetYterr() const        { return fYterr;      }
+  Double_t GetZterr() const        { return fZterr;      }
   
-  Double_t   GetXv() const           { return fXv;         }
-  Double_t   GetYv() const           { return fYv;         }
-  Double_t   GetZv() const           { return fZv;         }
-  Double_t   GetXverr() const        { return fXverr;      }
-  Double_t   GetYverr() const        { return fYverr;      }
-  Double_t   GetZverr() const        { return fZverr;      }
+  Double_t GetXv() const           { return fXv;         }
+  Double_t GetYv() const           { return fYv;         }
+  Double_t GetZv() const           { return fZv;         }
+  Double_t GetXverr() const        { return fXverr;      }
+  Double_t GetYverr() const        { return fYverr;      }
+  Double_t GetZverr() const        { return fZverr;      }
 
   Int_t GetHitNumber() const {return fHitNumber;}
   Int_t GetNextHitNumber() const {return fNextHitNumber;}
@@ -128,6 +129,8 @@ class AliL3ConfMapPoint {
   //  Int_t const *GetMCTrackID()     const {return fMCTrackID;}
   
   // setter
+  static void SetDontMap(Bool_t b){fDontMap=b;}
+
   void SetX(Double_t f) {x=f;}
   void SetY(Double_t f) {y=f;}
   void SetZ(Double_t f) {z=f;}
@@ -144,42 +147,42 @@ class AliL3ConfMapPoint {
 
   void SetUsage(Bool_t f) {fUsed=f;}
     
-  void    SetPhi(Double_t f)         {           fPhi = f; }
-  void    SetEta(Double_t f)         {           fEta = f; }
+  void SetPhi(Double_t f)         {           fPhi = f; }
+  void SetEta(Double_t f)         {           fEta = f; }
   
-  void    SetXprime(Double_t f)      {        fXprime = f; }
-  void    SetYprime(Double_t f)      {        fYprime = f; }
-  void    SetXprimeerr(Double_t f)   {     fXprimeerr = f; }
-  void    SetYprimeerr(Double_t f)   {     fYprimeerr = f; }
+  void SetXprime(Double_t f)      {        fXprime = f; }
+  void SetYprime(Double_t f)      {        fYprime = f; }
+  void SetXprimeerr(Double_t f)   {     fXprimeerr = f; }
+  void SetYprimeerr(Double_t f)   {     fYprimeerr = f; }
   
-  void    SetXt(Double_t f)          {            fXt = f; }
-  void    SetYt(Double_t f)          {            fYt = f; }
-  void    SetZt(Double_t f)          {            fZt = f; }
-  void    SetXterr(Double_t f)       {         fXterr = f; }
-  void    SetYterr(Double_t f)       {         fYterr = f; }
-  void    SetZterr(Double_t f)       {         fZterr = f; }
+  void SetXt(Double_t f)          {            fXt = f; }
+  void SetYt(Double_t f)          {            fYt = f; }
+  void SetZt(Double_t f)          {            fZt = f; }
+  void SetXterr(Double_t f)       {         fXterr = f; }
+  void SetYterr(Double_t f)       {         fYterr = f; }
+  void SetZterr(Double_t f)       {         fZterr = f; }
   
-  void    SetXv(Double_t f)          {            fXv = f; }
-  void    SetYv(Double_t f)          {            fYv = f; }
-  void    SetZv(Double_t f)          {            fZv = f; }
-  void    SetXverr(Double_t f)       {         fXverr = f; }
-  void    SetYverr(Double_t f)       {         fYverr = f; }
-  void    SetZverr(Double_t f)       {         fZverr = f; }
+  void SetXv(Double_t f)          {            fXv = f; }
+  void SetYv(Double_t f)          {            fYv = f; }
+  void SetZv(Double_t f)          {            fZv = f; }
+  void SetXverr(Double_t f)       {         fXverr = f; }
+  void SetYverr(Double_t f)       {         fYverr = f; }
+  void SetZverr(Double_t f)       {         fZverr = f; }
   
-  void    SetHitNumber(Int_t f) {fHitNumber=f;}
-  void    SetTrackNumber(Int_t f) {fTrackNumber=f;}
-  void    SetNextHitNumber(Int_t f) {fNextHitNumber=f;}
+  void SetHitNumber(Int_t f) {fHitNumber=f;}
+  void SetTrackNumber(Int_t f) {fTrackNumber=f;}
+  void SetNextHitNumber(Int_t f) {fNextHitNumber=f;}
 
-  void    Setup(AliL3Vertex *vertex);// does the usual setup in the right order
-  void    SetAngles();// calculate spherical angles and set values
-  void    SetIntPoint(const Double_t in_x = 0.,const Double_t in_y = 0.,
-		      const Double_t in_z = 0.,const Double_t in_x_err = 0., 
-		      const Double_t in_y_err = 0., const Double_t in_z_err = 0.);  
+  void Setup(AliL3Vertex *vertex);// does the usual setup in the right order
+  void SetAngles();// calculate spherical angles and set values
+  void SetIntPoint(const Double_t in_x = 0.,const Double_t in_y = 0.,
+	           const Double_t in_z = 0.,const Double_t in_x_err = 0., 
+		   const Double_t in_y_err = 0., const Double_t in_z_err = 0.);  
   //-> set interaction point
-  void    SetShiftedCoord();// set shifted coordinates  
-  void    SetAllCoord(const AliL3ConfMapPoint *hit);// set conformal mapping coordinates in respect to given hit
-  void    SetConfCoord();// conformal mapping
-  
+  void SetShiftedCoord();// set shifted coordinates  
+  void SetAllCoord(const AliL3ConfMapPoint *hit);// set conformal mapping coordinates in respect to given hit
+  void SetConfCoord();// conformal mapping
+
   ClassDef(AliL3ConfMapPoint, 1)   //Conformal mapping hit class.
 };
 

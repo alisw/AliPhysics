@@ -19,7 +19,6 @@ export ALIHLT_LIBDIR=$ALIHLT_TOPDIR/lib_$ALIHLT_USEPACKAGE
 
 export ALIHLT_NOLOGGING=false
 export ALIHLT_DOMC=true
-export ALIHLT_HAVEASV=true
 export ALIHLT_ALIDETECT=true
 
 export ALIHLT_MLUCDIR=/usr/local/kip/MLUC

@@ -29,8 +29,13 @@ class AliL3FileHandler:public AliL3MemHandler{
   TTree *fDigitsTree;
   FILE *fMC;//!
   
+  Bool_t fIndexCreated;   //is index created
+  Int_t  fIndex[36][159]; //stores index over digitstree 
+                          //for faster access w/o ASVVERSION
+
   Bool_t GetDigitsTree(Int_t event);
-  
+  Bool_t CreateIndex();  //create the index
+
  public:
   AliL3FileHandler();
   virtual ~AliL3FileHandler();

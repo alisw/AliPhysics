@@ -1,6 +1,8 @@
-//$Id$
+// $Id$
 
-//Author: Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
+// Author: Constantin Loizides <loizides@ikf.uni-frankfurt.de>
+//*-- Copyright &copy ALICE HLT Group
+
 
 /**
    This program extracts parameters and lookup tables needed for the

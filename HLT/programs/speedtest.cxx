@@ -1,5 +1,9 @@
 // $Id$
 
+// Author: Uli Frankenfeld <uli.frankenfeld@gsi.de>
+//*-- Copyright &copy ALICE HLT Group
+
+
 #include "speedtest.h"
 
 int main(int arg,char **arc){

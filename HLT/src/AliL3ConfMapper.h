@@ -4,7 +4,6 @@
 #define ALIL3_ConfMapper
 
 #include "AliL3RootTypes.h"
-
 #include "AliL3SpacePointData.h"
 
 class AliL3ConfMapPoint;
@@ -25,7 +24,7 @@ class AliL3ConfMapper {
 
  private:
 
-  Bool_t fBench; //run-time measurements)
+  Bool_t fBench; //run-time measurements
 
   Int_t nTracks; //number of tracks build.
 
@@ -69,10 +68,10 @@ class AliL3ConfMapper {
   
   // Cuts
   Double_t fMaxAngleTracklet[2];  //limit of angle between to pieces of a tracklet
-  Int_t fMaxDist[2];                 //maximum distance between two hits 
-  Double_t fHitChi2Cut[2];           //Maximum hit chi2
-  Double_t fGoodHitChi2[2];          //Chi2 to stop looking for next hit
-  Double_t fTrackChi2Cut[2];         //Maximum track chi2
+  Int_t fMaxDist[2];              //maximum distance between two hits 
+  Double_t fHitChi2Cut[2];        //Maximum hit chi2
+  Double_t fGoodHitChi2[2];       //Chi2 to stop looking for next hit
+  Double_t fTrackChi2Cut[2];      //Maximum track chi2
   Double_t fGoodDist;             //In segment building, distance consider good enough
   Double_t fMaxPhi;
   Double_t fMaxEta;
@@ -133,10 +132,7 @@ class AliL3ConfMapper {
   Int_t GetNumberOfTracks() {return nTracks;}
   AliL3TrackArray *GetTracks() {return fTrack;}
   Double_t GetMaxDca()  const {return fMaxDca;}
-  AliL3Vertex* GetVertex() const
-	  {
-	  return fVertex;
-	  }
+  AliL3Vertex* GetVertex() const {return fVertex;}
 
   //setters
   void SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Double_t trackChi2Cut, Int_t maxdist,Bool_t vertexconstraint); 

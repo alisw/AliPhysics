@@ -18,19 +18,23 @@ libs:
 clean:
 	for i in $(MAKEDIRS) ; do cd $$i && $(MAKE) clean ; cd .. ; done
 
+realclean: clean
+	rm -rf $(ALIHLT_LIBDIR) 
+
 print:
 	@echo "ROOTSYS           = $(ROOTSYS)"
 	@echo "ALICE_ROOT        = $(ALICE_ROOT)"
 	@echo ""
 	@echo "ALIHLT_BASEDIR    = $(ALIHLT_BASEDIR)"
 	@echo "ALIHLT_TOPDIR     = $(ALIHLT_TOPDIR)"
+	@echo "ALIHLT_LIBDIR     = $(ALIHLT_LIBDIR)"
 	@echo "ALIHLT_MLUCDIR    = $(ALIHLT_MLUCDIR)"
 	@echo "ALIHLT_USEPACKAGE = $(ALIHLT_USEPACKAGE)"
 	@echo "ALIHLT_NOLOGGING  = $(ALIHLT_NOLOGGING)"
 	@echo "ALIHLT_DOMC       = $(ALIHLT_DOMC)"
-	@echo "ALIHLT_HAVEASV    = $(ALIHLT_HAVEASV)"
 	@echo "ALIHLT_ALIDETECT  = $(ALIHLT_ALIDETECT)"
 
 help:
 	cat doc/README
 
+.phony: help print clean realclean

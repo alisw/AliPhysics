@@ -3,10 +3,11 @@
 /**
    Run this macro for cluster finder and track follower 
    (see steering class AliLevel3).
-   In argument path, you have to provide the path to where the directory where the data files
-   should be located. In case of reading from a rootfile, you have to
-   make a symbolic link "digitfile.root" which points to the rootfile containing AliROOT 
-   digits tree.
+   In argument path, you have to provide the path to the directory 
+   where the data files should be located. In case of reading from a rootfile, you have to
+   make a symbolic link "digitfile.root", which points to the rootfile containing AliROOT 
+   digits tree and a symbolic link "alirunfile.root" pointing to a file containing
+   the ALIROOT geometry (TPC param). RUN with ALIROOT (not ROOT) if using root files.
 */
 
 void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t nevent=1,Char_t *opath="./")
@@ -15,10 +16,17 @@ void runtracker(Int_t minslice=0,Int_t maxslice=35,Char_t* path="./",Int_t neven
   Bool_t binary=kFALSE; //Assume input is RLE binary files, or rootfile.
   Bool_t pileup=kFALSE; //Assume input is pileup event = non RLE binary files.
   Int_t npatches = 1;   //Options; 1, 2 and 6.
-  Char_t trackparams[] = "SetTrackingParameters_pp.C"; //Set this to correspond with mult. and BField
+  Char_t trackparams[] = "SetTrackingParameters_4000bf04.C"; //Set this to correspond 
+                                                             //with mult. and BField
   
-  AliL3Transform::Init(path,!binary);
-  
+  //for aliroot the path should point to a file 
+  //containing the tpc geometry called alirunfile.root
+  Bool_t isinit=AliL3Transform::Init(path,!binary);
+  if(!isinit){
+    cerr << "Could not create transform settings, please check log for error messages!" << endl;
+    return;
+  }
+
   for(Int_t ev=0; ev<nevent; ev++)
     {
       if(binary)

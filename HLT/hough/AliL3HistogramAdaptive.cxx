@@ -3,12 +3,15 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include <string.h>
 #include "AliL3StandardIncludes.h"
 #include "AliL3Logging.h"
 #include "AliL3HistogramAdaptive.h"
 #include "AliL3Transform.h"
 #include "AliL3Track.h"
+
+#if GCCVERSION == 3
+using namespace std;
+#endif
 
 //_____________________________________________________________
 // AliL3HistogramAdaptive
@@ -69,7 +72,7 @@ Int_t AliL3HistogramAdaptive::InitPtBins()
       delta_pt = fPtres*local_pt;
       pt += delta_pt;
       bin++;
-      //      cout<<"Setting "<<bin<<" at step "<<local_pt<<" "<<pt<<" interval "<<delta_pt<<endl;
+      //cout<<"Setting "<<bin<<" at step "<<local_pt<<" "<<pt<<" interval "<<delta_pt<<endl;
     }
 
   return (bin+1)*2; //Both negative and positive kappa.
@@ -101,7 +104,7 @@ Int_t AliL3HistogramAdaptive::FindXbin(Double_t x)
   
   Double_t ptfind = fabs(AliL3Transform::GetBFact()*AliL3Transform::GetBField()/x);
   if(ptfind < fMinPt || ptfind > fMaxPt) return -1;
-  //  cout<<"Looking for pt "<<ptfind<<endl;
+  //cout<<"Looking for pt "<<ptfind<<endl;
   Double_t pt = fMinPt;
   Double_t delta_pt,local_pt;
   Int_t bin=0;
@@ -121,7 +124,7 @@ Int_t AliL3HistogramAdaptive::FindXbin(Double_t x)
   if(bin >= fNxbins/2)
     cerr<<"AliL3HistogramAdaptive::FindXbin : Bin out of range : "<<bin<<endl;
   
-  //  cout<<"Found xbin "<<bin<<" and x is "<<x<<endl;
+  //cout<<"Found xbin "<<bin<<" and x is "<<x<<endl;
   if(x < 0)
     {
       //        cout<<"returning xbin "<<bin<<endl;
@@ -142,7 +145,7 @@ Int_t AliL3HistogramAdaptive::FindYbin(Double_t y)
 
 Double_t AliL3HistogramAdaptive::GetBinCenterX(Int_t xbin)
 {
-  //    cout<<"Looking for bin "<<xbin<<endl;
+  //cout<<"Looking for bin "<<xbin<<endl;
   if(xbin < 0 || xbin > fNxbins)
     {
       cerr<<"AliL3HistogramAdaptive::GetBinCenterX : Xbin out of range "<<xbin<<endl;
@@ -160,10 +163,10 @@ Double_t AliL3HistogramAdaptive::GetBinCenterX(Int_t xbin)
 	break;
       bin++;
     }
-  //    cout<<"get center at ptinterval "<<local_pt<<" "<<pt;
+  //cout<<"get center at ptinterval "<<local_pt<<" "<<pt;
   
   Double_t kappa = AliL3Transform::GetBFact()*AliL3Transform::GetBField()/(local_pt + 0.5*delta_pt);
-  //    cout<<" found pt "<<local_pt+delta_pt*0.5<<" kappa "<<kappa<<" xbin "<<xbin<<" fNxbins/2-1 "<<fNxbins/2-1<<endl;
+  //cout<<" found pt "<<local_pt+delta_pt*0.5<<" kappa "<<kappa<<" xbin "<<xbin<<" fNxbins/2-1 "<<fNxbins/2-1<<endl;
   if(xbin == bin)
     return -1.*kappa;
   else

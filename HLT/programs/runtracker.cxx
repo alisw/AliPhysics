@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
-// Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
-//*-- Copyright &copy ASV
+// Author: Constantin Loizides <loizides@ikf.uni-frankfurt.de>
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -34,8 +34,8 @@ int main(Int_t argc,Char_t **argv)
   sl2 = atoi(argv[3]);
   
   AliLevel3 level3;
-  level3.Init(path,kTRUE);
-  level3.SetClusterFinderParam(0.2,0.3,kFALSE);
+  level3.Init(path,kTRUE,1);
+  level3.SetClusterFinderParam(0,0,kTRUE);
   
   Int_t phi_segments,eta_segments,trackletlength,tracklength;
   Int_t rowscopetracklet,rowscopetrack;
@@ -53,9 +53,9 @@ int main(Int_t argc,Char_t **argv)
   goodDist = 5;
   maxphi=100;
   maxeta=100;
-  hitChi2Cut = 20;//100
-  goodHitChi2 = 10;//20;
-  trackChi2Cut = 50;
+  hitChi2Cut = 15;//100
+  goodHitChi2 = 5;//20;
+  trackChi2Cut = 10;
   
   //main vertex tracking parameters:
   level3.SetTrackerParam(phi_segments,eta_segments,trackletlength,tracklength,
@@ -65,7 +65,7 @@ int main(Int_t argc,Char_t **argv)
   
   //level3.WriteFiles("data/");
   level3.ProcessEvent(sl1,sl2);
-  level3.DoBench("benchmark_0");
+  level3.DoBench("1000tango");
 
   return 0;
 }

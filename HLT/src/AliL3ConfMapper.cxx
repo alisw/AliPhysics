@@ -6,13 +6,13 @@
 #include "AliL3StandardIncludes.h"
 #include <sys/time.h>
 
-#include "AliL3ConfMapper.h"
 #include "AliL3Logging.h" 
 #include "AliL3Vertex.h"
 #include "AliL3ConfMapTrack.h"
 #include "AliL3ConfMapPoint.h"
 #include "AliL3TrackArray.h"
 #include "AliL3Transform.h"
+#include "AliL3ConfMapper.h"
 
 /** \class AliL3ConfMapper
 <pre>
@@ -41,7 +41,6 @@ AliL3ConfMapper::AliL3ConfMapper()
   fBench = (Bool_t)true;
   fParamSet = (Bool_t)false;
   fVertexConstraint = (Bool_t)true;
-  
 }
 
 
@@ -105,7 +104,7 @@ void AliL3ConfMapper::InitVolumes()
 }
 
 void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
-{
+{ //sector means slice here
   //Initialize tracker for tracking in a given sector.
   //Resets track and hit arrays.
   //Here it is also possible to specify a subsector, by defining
@@ -132,7 +131,6 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   else
     {
       fEtaMin = 0;
-      //fEtaMax = sector < 18 ? 1 : -1;
       fEtaMax = sector < 18 ? 0.9 : -0.9;
     }
   
@@ -153,8 +151,6 @@ void AliL3ConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
   fTrack->Reset();
 }
 
-
-
 Bool_t AliL3ConfMapper::ReadHits(UInt_t count, AliL3SpacePointData* hits )
 {
   Int_t nhit=(Int_t)count; 
@@ -170,12 +166,11 @@ Bool_t AliL3ConfMapper::ReadHits(UInt_t count, AliL3SpacePointData* hits )
   return true;
 }
 
-
 void AliL3ConfMapper::SetPointers()
 {
-  
   //Check if there are not enough clusters to make a track in this sector
   //Can happen in pp events.
+
   if(fClustersUnused < fMinPoints[fVertexConstraint])
     return;
   
@@ -190,7 +185,6 @@ void AliL3ConfMapper::SetPointers()
   Int_t local_counter=0;
   for(Int_t j=0; j<fClustersUnused; j++)
     {
-      
       //AliL3ConfMapPoint *thisHit = (AliL3ConfMapPoint*)fHit->At(j);
       AliL3ConfMapPoint *thisHit = &(fHit[j]);
 
@@ -206,6 +200,7 @@ void AliL3ConfMapper::SetPointers()
       
       if(thisHit->phiIndex<1 || thisHit->phiIndex>fNumPhiSegment)
 	{
+	  //cout << "Phiindex: " << thisHit->phiIndex << " " << thisHit->GetPhi() << endl;
 	  fPhiHitsOutOfRange++;
 	  continue;
 	}
@@ -213,6 +208,7 @@ void AliL3ConfMapper::SetPointers()
       thisHit->etaIndex=(Int_t)((thisHit->GetEta()-fEtaMin)/etaSlice + 1);
       if(thisHit->etaIndex<1 || thisHit->etaIndex>fNumEtaSegment)
 	{
+	  //cout << "Etaindex: " << thisHit->etaIndex << " " << thisHit->GetEta() << endl;
 	  fEtaHitsOutOfRange++;
 	  continue;
 	}
@@ -233,8 +229,6 @@ void AliL3ConfMapper::SetPointers()
       else
  	((AliL3ConfMapPoint *)(fRow[(localrow-fRowMin)].last))->nextRowHit = thisHit;
 	fRow[(localrow-fRowMin)].last = (void *)thisHit;
-	
-	
     }
   
   if(fClustersUnused>0 && local_counter==0)
@@ -242,9 +236,10 @@ void AliL3ConfMapper::SetPointers()
       <<AliL3Log::kDec<<"No points passed to track finder, hits out of range: "
       <<fEtaHitsOutOfRange+fPhiHitsOutOfRange<<ENDLOG;
 
+  Int_t hits_accepted=fClustersUnused-(fEtaHitsOutOfRange+fPhiHitsOutOfRange);
   LOG(AliL3Log::kInformational,"AliL3ConfMapper::SetPointers","Setup")
     <<"Setup finished, hits out of range: "<<fEtaHitsOutOfRange+fPhiHitsOutOfRange
-    <<" hits accepted "<<fClustersUnused<<ENDLOG;
+    <<" hits accepted "<<hits_accepted<<ENDLOG;
 }
 
 void AliL3ConfMapper::MainVertexTracking_a()
@@ -260,6 +255,7 @@ void AliL3ConfMapper::MainVertexTracking_a()
 
   Double_t initCpuTime,cpuTime;
   initCpuTime = CpuTime();
+
   SetPointers();
   SetVertexConstraint(true);
   cpuTime = CpuTime() - initCpuTime;
@@ -358,8 +354,7 @@ void AliL3ConfMapper::NonVertexSettings(Int_t trackletlength, Int_t tracklength,
   SetMinPoints(tracklength,(Bool_t)false);
 }
 
-void AliL3ConfMapper::SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Double_t trackChi2Cut,Int_t maxdist,
-				   Bool_t vertexconstraint)
+void AliL3ConfMapper::SetTrackCuts(Double_t hitChi2Cut, Double_t goodHitChi2, Double_t trackChi2Cut,Int_t maxdist,Bool_t vertexconstraint)
 {
   //Settings for tracks. The cuts are:
   //HitChi2Cut:     Maximum hit chi2
@@ -401,6 +396,7 @@ void AliL3ConfMapper::ClusterLoop()
     {
       if(fRow[(row_segm-fRowMin)].first && ((AliL3ConfMapPoint*)fRow[(row_segm-fRowMin)].first)->GetPadRow() < fRowMin + 1)
 	break;
+
       for(hit = (AliL3ConfMapPoint*)fRow[(row_segm-fRowMin)].first; hit!=0; hit=hit->nextRowHit)
 	{
 	  if(hit->GetUsage() == true)
@@ -866,6 +862,7 @@ Int_t AliL3ConfMapper::FillTracks()
     {
       AliL3ConfMapTrack *track = (AliL3ConfMapTrack*)fTrack->GetTrack(i);
       track->Fill(fVertex,fMaxDca);
+      
     }
   return 1;
 

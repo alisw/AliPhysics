@@ -10,16 +10,16 @@ class MLUCLogServer;
 
 class AliL3Logger{
   public:
-  static int kAll;
-  static int kDebug;
-  static int kInformational;
-  static int kWarning;
-  static int kError;
-  static int kFatal;
+  static Int_t kAll;
+  static Int_t kDebug;
+  static Int_t kInformational;
+  static Int_t kWarning;
+  static Int_t kError;
+  static Int_t kFatal;
   AliL3Logger();
   virtual ~AliL3Logger();
-  void Set(int l);
-  void UnSet(int l);
+  void Set(Int_t l);
+  void UnSet(Int_t l);
   void UseDevNull();
   void UseStdout();
   void UseStderr();

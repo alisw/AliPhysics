@@ -115,15 +115,7 @@ AliLevel3::AliLevel3(TFile *in)
 
 void AliLevel3::Init(Char_t *path,Bool_t binary,Int_t npatches)
 {
-  /*#ifdef ASVVERSION
-  if(npatches != 1 && binary == kFALSE)
-    {
-      LOG(AliL3Log::kWarning,"AliLevel3::Init","NPatches")
-	<<"You can only read data slice by slice (1 patch) when reading from a rootfile and using the patched (ASV) AliTPC version."<<ENDLOG;
-      npatches = 1;
-    }
-#endif
-  */
+
   if(!binary && !fInputFile)
     {
       LOG(AliL3Log::kError,"AliLevel3::Init","Files")
@@ -399,15 +391,15 @@ void AliLevel3::ProcessSlice(Int_t slice){
 	  sprintf(name,"digits_%d_%d_%d.raw",fEvent,slice,patch);
         fBenchmark->Stop("Dummy Unpacker");
 
-        if(0){    //Ali to Binary
+        if(0){   //Ali to Binary
           fFileHandler->SetBinaryOutput(name);
           fFileHandler->AliDigits2CompBinary();
           fFileHandler->CloseBinaryOutput();
         }
   
-        if(1){     //Ali to Memory
+        if(1){   //Ali to Memory
           digits=(AliL3DigitRowData *)fFileHandler->AliAltroDigits2Memory(ndigits,fEvent);
-          if(0){   //Memory to Binary
+          if(0){ //Memory to Binary
             fFileHandler->SetBinaryOutput(name);
             fFileHandler->Memory2CompBinary(ndigits,digits);
             fFileHandler->CloseBinaryOutput();

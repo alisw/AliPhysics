@@ -1,6 +1,8 @@
 // $Id$
 
 // Author: Constantin Loizides <loizides@ikf.uni-frankfurt.de>
+//*-- Copyright &copy ALICE HLT Group
+
 
 /**
  Example program how to run the "standalone" clusterfinder.

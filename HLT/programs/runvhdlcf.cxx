@@ -1,6 +1,7 @@
 // $Id$
    
 // Author: Constantin Loizides <loizides@ikf.uni-frankfurt.de>
+//*-- Copyright &copy ALICE HLT Group
 
 
 #include "AliL3StandardIncludes.h"

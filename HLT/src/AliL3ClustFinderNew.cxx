@@ -1,7 +1,7 @@
-//$Id$
+// @(#) $Id$
 
-// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ASV 
+// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
+//*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
 
@@ -437,8 +437,11 @@ void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,ClusterData *list)
       fSpacePointData[counter].fPadRow = fCurrentRow;
       fSpacePointData[counter].fSigmaY2 = fpad2;
       fSpacePointData[counter].fSigmaZ2  = ftime2;
+
+      Int_t patch=fCurrentPatch;
+      if(patch==-1) patch=0; //never store negative patch number
       fSpacePointData[counter].fID = counter
-	+((fCurrentSlice&0x7f)<<25)+((fCurrentPatch&0x7)<<22);//Uli
+	+((fCurrentSlice&0x7f)<<25)+((patch&0x7)<<22);//Uli
 #ifdef do_mc
       Int_t trackID[3];
       GetTrackID((Int_t)rint(fpad),(Int_t)rint(ftime),trackID);

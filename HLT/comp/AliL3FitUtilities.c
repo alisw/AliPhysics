@@ -142,8 +142,8 @@ void f2gauss5(double x,double a[],double *y,double dyda[],int na)
 void nrerror(char error_text[])
 /* Numerical Recipes standard error handler */
 {
-  printf("%s\n",error_text);
-  exit(1);
+  //printf("%s\n",error_text);
+  //exit(1);
 }
 
 void free_vector(double *v, long nl, long nh)
@@ -209,7 +209,7 @@ double **matrix(long nrl,long nrh,long ncl,long nch)
 	return m;
 }
 
-void gaussj(double **a, int n, double **b, int m)
+int gaussj(double **a, int n, double **b, int m)
 {
 	int *indxc,*indxr,*ipiv;
 	int i,icol,irow,j,k,l,ll;
@@ -235,6 +235,7 @@ void gaussj(double **a, int n, double **b, int m)
 						free_ivector(indxr,1,n);
 						free_ivector(indxc,1,n);
 						nrerror("gaussj: Singular Matrix-1");
+						return -1;
 					}
 				}
 		++(ipiv[icol]);
@@ -249,9 +250,13 @@ void gaussj(double **a, int n, double **b, int m)
 			free_ivector(indxr,1,n);
 			free_ivector(indxc,1,n);
 			nrerror("gaussj: Singular Matrix-2");
+			return -1;
 		}
 		if (mabs(a[icol][icol]) < EPSILON ) 
-			nrerror("gaussj: a[icol][icol] == 0");
+		  {
+		    nrerror("gaussj: a[icol][icol] == 0");
+		    return -1;
+		  }
 		pivinv=1.0/a[icol][icol];
 
 		pivinv=1.0/a[icol][icol];
@@ -274,6 +279,7 @@ void gaussj(double **a, int n, double **b, int m)
 	free_ivector(ipiv,1,n);
 	free_ivector(indxr,1,n);
 	free_ivector(indxc,1,n);
+	return 0;
 }
 
 void covsrt(double **covar, int ma, int ia[], int mfit)
@@ -328,12 +334,12 @@ void mrqcof(double x[], double y[], double sig[], int ndata, double a[], int ia[
 	free_vector(dyda,1,ma);
 }
 
-void mrqmin(double x[], double y[], double sig[], int ndata, double a[], int ia[],
+int mrqmin(double x[], double y[], double sig[], int ndata, double a[], int ia[],
 	int ma, double **covar, double **alpha, double *chisq,
 	void (*funcs)(double, double [], double *, double [], int), double *alamda)
 {
 	void covsrt(double **covar, int ma, int ia[], int mfit);
-	void gaussj(double **a, int n, double **b, int m);
+	int gaussj(double **a, int n, double **b, int m);
 	void mrqcof(double x[], double y[], double sig[], int ndata, double a[],
 		int ia[], int ma, double **alpha, double beta[], double *chisq,
 		void (*funcs)(double, double [], double *, double [], int));
@@ -365,15 +371,22 @@ void mrqmin(double x[], double y[], double sig[], int ndata, double a[], int ia[
 			oneda[j][1]=beta[j];
 		}
 	}
-	gaussj(covar,mfit,oneda,1);
+	if(gaussj(covar,mfit,oneda,1)<0)
+	  {
+	    free_matrix(oneda,1,mfit,1,1);
+	    free_vector(da,1,ma);
+	    free_vector(beta,1,ma);
+	    free_vector(atry,1,ma);
+	    return -1;
+	  }
 	for (j=1;j<=mfit;j++) da[j]=oneda[j][1];
 	if (*alamda == 0.0) {
-		covsrt(covar,ma,ia,mfit);
+	        covsrt(covar,ma,ia,mfit);
 		free_matrix(oneda,1,mfit,1,1);
 		free_vector(da,1,ma);
 		free_vector(beta,1,ma);
 		free_vector(atry,1,ma);
-		return;
+		return 0;
 	}
 	for (j=0,l=1;l<=ma;l++)
 		if (ia[l]) atry[l]=a[l]+da[++j];
@@ -397,6 +410,7 @@ void mrqmin(double x[], double y[], double sig[], int ndata, double a[], int ia[
 		*alamda *= 10.0;
 		*chisq=ochisq;
 	}
+	return 0;
 }
 
 
@@ -411,20 +425,35 @@ int lev_marq_fit( double x[], double y[], double sig[], int NPT, double a[], int
 
 	if( setjmp(env) == 0 ) {	
 		alamda = -1;
-		mrqmin(x,y,sig,NPT,a,ia,MA,covar,alpha,&chisq,funcs,&alamda);
+		if(mrqmin(x,y,sig,NPT,a,ia,MA,covar,alpha,&chisq,funcs,&alamda)<0)
+		  {
+		    free_matrix(alpha,1,MA,1,MA);
+		    free_matrix(covar,1,MA,1,MA);
+		    return -1;
+		  }
 		k=1;
 		itst=0;
 		for (;;) {
 			k++;
 			ochisq=chisq;
-			mrqmin(x,y,sig,NPT,a,ia,MA,covar,alpha,&chisq,funcs,&alamda);
+			if(mrqmin(x,y,sig,NPT,a,ia,MA,covar,alpha,&chisq,funcs,&alamda)<0)
+			  {
+			    free_matrix(alpha,1,MA,1,MA);
+			    free_matrix(covar,1,MA,1,MA);
+			    return -1;
+			  }
 			if (chisq > ochisq)
 				itst=0;
 			else if (fabs(ochisq-chisq) < 0.1)
 				itst++;
 			if (itst < 4) continue;
 			alamda=0.0;
-			mrqmin(x,y,sig,NPT,a,ia,MA,covar,alpha,&chisq,funcs,&alamda);
+			if(mrqmin(x,y,sig,NPT,a,ia,MA,covar,alpha,&chisq,funcs,&alamda)<0)
+			  {
+			    free_matrix(alpha,1,MA,1,MA);
+			    free_matrix(covar,1,MA,1,MA);
+			    return -1;
+			  }
 			*chisq_p = chisq;
 			for (i=1;i<=MA;i++) 
 				dev[i] = sqrt(covar[i][i]);
@@ -438,7 +467,7 @@ int lev_marq_fit( double x[], double y[], double sig[], int NPT, double a[], int
 	  //if( control_g.print_fit_errors==2 )
 	  fprintf( stderr, " runtime error\n" );
 
-		free_matrix(alpha,1,MA,1,MA);
+	        free_matrix(alpha,1,MA,1,MA);
 		free_matrix(covar,1,MA,1,MA);
 		return -1;
 	}
