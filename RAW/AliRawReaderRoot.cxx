@@ -32,6 +32,7 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber)
 // create an object to read digits from the given input file for the
 // event with the given number
 
+  fEvent = NULL;
   TDirectory* dir = gDirectory;
   fFile = TFile::Open(fileName);
   dir->cd();
@@ -314,17 +315,21 @@ Int_t AliRawReaderRoot::CheckData() const
   Int_t subEventIndex = 0;
   UChar_t* position = 0;
   UChar_t* end = 0;
+  Int_t result = 0;
 
   while (kTRUE) {
     // get the first or the next sub event if at the end of a sub event
     if (!subEvent || (position >= end)) {
 
       // check for end of event data
-      if (subEventIndex >= fEvent->GetNSubEvents()) return 0;
+      if (subEventIndex >= fEvent->GetNSubEvents()) return result;
       subEvent = fEvent->GetSubEvent(subEventIndex++);
 
       // check the magic word of the sub event
-      if (!fSubEvent->GetHeader()->IsValid()) return kErrMagic;
+      if (!fSubEvent->GetHeader()->IsValid()) {
+	result |= kErrMagic;
+	return result;
+      }
 
       AliRawData* rawData = subEvent->GetRawData();
       position = (UChar_t*) rawData->GetBuffer();
@@ -335,15 +340,23 @@ Int_t AliRawReaderRoot::CheckData() const
     if (position >= end) continue;
 
     // check that there are enough bytes left for the mini header
-    if (position + sizeof(AliMiniHeader) > end) return kErrNoMiniHeader;
+    if (position + sizeof(AliMiniHeader) > end) {
+      result |= kErrNoMiniHeader;
+      position = end;
+      continue;
+    }
 
     // "read" and check the mini header
     AliMiniHeader* miniHeader = (AliMiniHeader*) position;
     position += sizeof(AliMiniHeader);
-    if (!CheckMiniHeader(miniHeader)) return kErrMiniMagic;
+    if (!CheckMiniHeader(miniHeader)) {
+      result |= kErrMiniMagic;
+      position = end;
+      continue;
+    }
 
     // check consistency of data size in the mini header and in the sub event
-    if (position + miniHeader->fSize > end) return kErrSize;
+    if (position + miniHeader->fSize > end) result |= kErrSize;
     position += miniHeader->fSize;
   };
 }

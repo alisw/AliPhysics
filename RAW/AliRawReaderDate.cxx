@@ -314,13 +314,14 @@ Int_t AliRawReaderDate::CheckData() const
   eventHeaderStruct* subEvent = NULL;
   UChar_t* position = 0;
   UChar_t* end = 0;
+  Int_t result = 0;
 
   while (kTRUE) {
     // get the first or the next sub event if at the end of a sub event
     if (!subEvent || (position >= end)) {
 
       // check for end of event data
-      if (position >= ((UChar_t*)fEvent)+fEvent->eventSize) return 0;
+      if (position >= ((UChar_t*)fEvent)+fEvent->eventSize) return result;
       if (subEvent) {
 	subEvent = (eventHeaderStruct*) (((UChar_t*)subEvent) + 
 					 subEvent->eventSize);
@@ -330,7 +331,10 @@ Int_t AliRawReaderDate::CheckData() const
       }
 
       // check the magic word of the sub event
-      if (subEvent->eventMagic != EVENT_MAGIC_NUMBER) return kErrMagic;
+      if (subEvent->eventMagic != EVENT_MAGIC_NUMBER) {
+	result |= kErrMagic;
+	return result;
+      }
 
       position = ((UChar_t*)subEvent) + subEvent->eventHeadSize + 
 	sizeof(equipmentHeaderStruct);
@@ -341,15 +345,23 @@ Int_t AliRawReaderDate::CheckData() const
     if (position >= end) continue;
 
     // check that there are enough bytes left for the mini header
-    if (position + sizeof(AliMiniHeader) > end) return kErrNoMiniHeader;
+    if (position + sizeof(AliMiniHeader) > end) {
+      result |= kErrNoMiniHeader;
+      position = end;
+      continue;
+    }
 
     // "read" and check the mini header
     AliMiniHeader* miniHeader = (AliMiniHeader*) position;
     position += sizeof(AliMiniHeader);
-    if (!CheckMiniHeader(miniHeader)) return kErrMiniMagic;
+    if (!CheckMiniHeader(miniHeader)){
+      result |= kErrMiniMagic;
+      position = end;
+      continue;
+    }
 
     // check consistency of data size in the mini header and in the sub event
-    if (position + miniHeader->fSize > end) return kErrSize;
+    if (position + miniHeader->fSize > end) result |= kErrSize;
     position += miniHeader->fSize;
   };
 

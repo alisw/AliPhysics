@@ -39,8 +39,8 @@ class AliRawReader: public TObject {
 
     virtual Bool_t   Reset() = 0;
 
-    enum {kErrMagic=1, kErrNoMiniHeader=2, kErrMiniMagic=3, 
-	  kErrSize=4, kErrOutOfBounds=5};
+    enum {kErrMagic=1, kErrNoMiniHeader=2, kErrMiniMagic=4, 
+	  kErrSize=8, kErrOutOfBounds=16};
     virtual Int_t    CheckData() const;
     Int_t            GetErrorCode() {return fErrorCode;};
 
