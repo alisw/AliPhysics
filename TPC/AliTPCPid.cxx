@@ -153,7 +153,7 @@ cout<<" ppi,pk,pp="<<ppi<<"  "<<pk<<"  "<<pp<<endl;
     if(pk>pp){return kaon();}else{return proton();}
 }
 //-----------------------------------------------------------
-Int_t	AliTPCPid::GetPcode(TClonesArray* rps,Float_t pm)
+Int_t	AliTPCPid::GetPcode(TClonesArray* /*rps*/,Float_t /*pm*/)
 {
     return 0;    
 }
@@ -379,7 +379,9 @@ AliTPCPid::AliTPCPid(Int_t ntrack)
 
     //fCutKa = new TF1("fkaons","[0]/x/x+[1]",0.1,1.2);
     //fCutPr = new TF1("fprotons","[0]/x/x +[1]",0.2,1.2);
-    TF1 *f_rmska = new TF1("x_frmska","1.46-7.82*x+16.78*x^2-15.53*x^3+5.24*x^4 ",
+    TF1 *f_rmska=0;
+    
+    f_rmska = new TF1("x_frmska","1.46-7.82*x+16.78*x^2-15.53*x^3+5.24*x^4 ",
 	        0.1,1.2);
     fCutKa = new TF1("fkaons",
 	   "1.25+0.044/x/x+1.25+0.044*x-13.87*x^2+22.37*x^3-10.05*x^4-2.5*x_frmska",

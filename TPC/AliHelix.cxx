@@ -37,7 +37,7 @@ AliHelix::AliHelix()
 }
 
 //_______________________________________________________________________
-AliHelix::AliHelix(const AliHelix &t){
+AliHelix::AliHelix(const AliHelix &t):TObject(t){
   //
   //
   for (Int_t i=0;i<9;i++) 
@@ -213,7 +213,7 @@ Double_t  AliHelix::GetPhase(Double_t x, Double_t y )
   return t;
 }
 
-Int_t AliHelix::GetPhase(Double_t r0, Double_t t[2]) 
+Int_t AliHelix::GetPhase(Double_t /*r0*/, Double_t * /*t[2]*/) 
 {
   //
   //calculate helix param at given r  point - return nearest point ()

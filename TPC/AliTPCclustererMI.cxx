@@ -98,7 +98,7 @@ Float_t  AliTPCclustererMI::GetSigmaZ2(Int_t iz){
   return res;
 }
 
-void AliTPCclustererMI::MakeCluster(Int_t k,Int_t max,Int_t *bins, UInt_t m,
+void AliTPCclustererMI::MakeCluster(Int_t k,Int_t max,Int_t *bins, UInt_t /*m*/,
 AliTPCclusterMI &c) 
 {
   Int_t i0=k/max;  //central pad

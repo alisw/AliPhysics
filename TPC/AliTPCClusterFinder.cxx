@@ -57,7 +57,7 @@ const Int_t kClStackSize =1000;
 
 static AliTPCClusterFinder * gClusterFinder; //for fitting routine
 
-void gauss(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+void gauss(Int_t &/*npar*/, Double_t */*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
 {
   AliArrayI * points = gClusterFinder->GetStack();
   const Int_t nbins = gClusterFinder->GetStackIndex();

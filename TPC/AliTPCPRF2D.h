@@ -50,7 +50,7 @@ public :
   virtual void SetY(Float_t y1, Float_t y2, Int_t nYdiv) ;
   virtual void SetChargeAngle(Float_t angle){fChargeAngle = angle;} //set angle of pad and charge distribution
                                                             //axes
-  virtual void SetCurrentAngle(Float_t angle){return;}
+  virtual void SetCurrentAngle(Float_t /*angle*/){return;}
   virtual void SetPadAngle(Float_t angle){fPadAngle = angle;} //set pad angle
   void SetInterpolationType(Int_t interx, Int_t intery) {fInterX=interx; fInterY =intery;}
   virtual void SetGauss(Float_t sigmaX,Float_t sigmaY , Float_t kNorm=1);
@@ -123,7 +123,7 @@ protected:
   static const Int_t   fgkNPRF;   //default number of division
 
 private: 
-  AliTPCPRF2D(const AliTPCPRF2D &prf) {;}
+  AliTPCPRF2D(const AliTPCPRF2D &prf);
   AliTPCPRF2D &operator = (const AliTPCPRF2D &prf) {return *this;}
   
   ClassDef(AliTPCPRF2D,1) 

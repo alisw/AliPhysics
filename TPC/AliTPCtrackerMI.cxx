@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2003/09/29 11:56:58  kowal2
+bug fix2
+
 Revision 1.14  2003/09/29 11:39:43  kowal2
 bug fix
 
@@ -967,7 +970,7 @@ void AliTPCtrackerMI::RotateToLocal(AliTPCseed *seed)
 
 
 //_____________________________________________________________________________
-Int_t AliTPCseed::Update(const AliTPCclusterMI *c, Double_t chisq, UInt_t index) {
+Int_t AliTPCseed::Update(const AliTPCclusterMI *c, Double_t chisq, UInt_t /*index*/) {
   //-----------------------------------------------------------------
   // This function associates a cluster with this track.
   //-----------------------------------------------------------------
@@ -3015,8 +3018,8 @@ void AliTPCtrackerMI::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 
 
 //_____________________________________________________________________________
-void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4],
-				 Float_t deltay, Bool_t bconstrain) {
+void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t */*cuts[4]*/,
+				 Float_t deltay, Bool_t /*bconstrain*/) {
   //-----------------------------------------------------------------
   // This function creates track seeds - without vertex constraint
   //-----------------------------------------------------------------
@@ -3279,7 +3282,7 @@ AliTPCseed *AliTPCtrackerMI::MakeSeed(AliTPCseed *track, Float_t r0, Float_t r1,
   Int_t p0 = int(r0*track->GetNumberOfClusters());     // point 0 
   Int_t p1 = int(r1*track->GetNumberOfClusters());
   Int_t p2 = int(r2*track->GetNumberOfClusters());   // last point
-  Int_t pp2;
+  Int_t pp2=0;
   Double_t  x0[3],x1[3],x2[3];
   x0[0]=-1;
   x0[0]=-1;
@@ -3287,6 +3290,9 @@ AliTPCseed *AliTPCtrackerMI::MakeSeed(AliTPCseed *track, Float_t r0, Float_t r1,
 
   // find track position at given ratio of the length
   Int_t  sec0, sec1, sec2;
+  sec0=0;
+  sec1=0;
+  sec2=0;
   Int_t index=-1;
   Int_t clindex;
   for (Int_t i=0;i<160;i++){

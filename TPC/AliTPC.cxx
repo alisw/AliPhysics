@@ -832,7 +832,7 @@ void    AliTPC::SetActiveSectors(Int_t flag)
 
 
 
-void AliTPC::Digits2Clusters(Int_t eventnumber)
+void AliTPC::Digits2Clusters(Int_t /*eventnumber*/)
 {
   //-----------------------------------------------------------------
   // This is a simple cluster finder.
@@ -844,7 +844,7 @@ void AliTPC::Digits2Clusters(Int_t eventnumber)
 extern Double_t SigmaY2(Double_t, Double_t, Double_t);
 extern Double_t SigmaZ2(Double_t, Double_t);
 //_____________________________________________________________________________
-void AliTPC::Hits2Clusters(Int_t eventn)
+void AliTPC::Hits2Clusters(Int_t /*eventn*/)
 {
   //--------------------------------------------------------
   // TPC simple cluster generator from hits
@@ -1227,7 +1227,7 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
 
 
 //__
-void AliTPC::SDigits2Digits2(Int_t eventnumber)  
+void AliTPC::SDigits2Digits2(Int_t /*eventnumber*/)  
 {
   //create digits from summable digits
   GenerNoise(500000); //create teble with noise
@@ -2432,7 +2432,7 @@ AliHit(shunt,track)
 //________________________________________________________________________
 // Additional code because of the AliTPCTrackHitsV2
 
-void AliTPC::MakeBranch2(Option_t *option,const char *file)
+void AliTPC::MakeBranch2(Option_t *option,const char */*file*/)
 {
   //
   // Create a new branch in the current Root Tree
@@ -2862,7 +2862,7 @@ void AliTPC::LoadPoints3(Int_t)
 
 
 
-void AliTPC::FindTrackHitsIntersection(TClonesArray * arr)
+void AliTPC::FindTrackHitsIntersection(TClonesArray * /*arr*/)
 {
 
   //

@@ -327,7 +327,7 @@ void  AliSimDigits::CompresTrackBuffer2()
 }
 
 
-Int_t  AliSimDigits::GetTrackID2(Int_t row, Int_t column, Int_t level)
+Int_t  AliSimDigits::GetTrackID2(Int_t /*row*/, Int_t /*column*/, Int_t /*level*/)
 {
   //returnb track id of digits - for buffer compresion 2
   return -2;

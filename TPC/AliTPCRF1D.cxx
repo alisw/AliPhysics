@@ -91,13 +91,15 @@ AliTPCRF1D::AliTPCRF1D(Bool_t direct,Int_t np,Float_t step)
   fOffset = 0.;
 }
 
-AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf)
+AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf):TObject(prf)
 {
+  
   //
   memcpy(this, &prf, sizeof(prf)); 
   fcharge = new Float_t[fNRF];
   memcpy(fcharge,prf.fcharge, fNRF);
   fGRF = new TF1(*(prf.fGRF)); 
+
 }
 
 AliTPCRF1D & AliTPCRF1D::operator = (const AliTPCRF1D &prf)

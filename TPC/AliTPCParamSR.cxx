@@ -38,11 +38,11 @@
 
 
 ClassImp(AliTPCParamSR)
-const static  Int_t kMaxRows=600;
-const static  Float_t  kEdgeSectorSpace = 2.5;
-const static Float_t kFacSigmaPadRow=3.;
-const static Float_t kFacSigmaPad=3.;
-const static Float_t kFacSigmaTime=3.;
+static const  Int_t kMaxRows=600;
+static const  Float_t  kEdgeSectorSpace = 2.5;
+static const Float_t kFacSigmaPadRow=3.;
+static const Float_t kFacSigmaPad=3.;
+static const Float_t kFacSigmaTime=3.;
 
 
 AliTPCParamSR::AliTPCParamSR()
@@ -237,7 +237,7 @@ void AliTPCParamSR::XYZtoCRXYZ(Float_t *xyz,
   padrow = index[1];
 }
 
-Float_t AliTPCParamSR::GetPrimaryLoss(Float_t *x, Int_t *index, Float_t *angle)
+Float_t AliTPCParamSR::GetPrimaryLoss(Float_t */*x*/, Int_t *index, Float_t *angle)
 {
   //
   //
@@ -250,7 +250,7 @@ Float_t AliTPCParamSR::GetPrimaryLoss(Float_t *x, Int_t *index, Float_t *angle)
   return length*fNPrimLoss;
 }
 
-Float_t AliTPCParamSR::GetTotalLoss(Float_t *x, Int_t *index, Float_t *angle)
+Float_t AliTPCParamSR::GetTotalLoss(Float_t */*x*/, Int_t *index, Float_t *angle)
 {
   //
   //
@@ -265,7 +265,7 @@ Float_t AliTPCParamSR::GetTotalLoss(Float_t *x, Int_t *index, Float_t *angle)
 }
 
 
-void AliTPCParamSR::GetClusterSize(Float_t *x, Int_t *index, Float_t *angle, Int_t mode, Float_t *sigma)
+void AliTPCParamSR::GetClusterSize(Float_t *x, Int_t *index, Float_t */*angle*/, Int_t /*mode*/, Float_t *sigma)
 {
   //
   //return cluster sigma2 (x,y) for particle at position x
@@ -305,15 +305,15 @@ void AliTPCParamSR::GetClusterSize(Float_t *x, Int_t *index, Float_t *angle, Int
 
 
 
-void AliTPCParamSR::GetSpaceResolution(Float_t *x, Int_t *index, Float_t *angle, 
-				       Float_t amplitude, Int_t mode, Float_t *sigma)
+void AliTPCParamSR::GetSpaceResolution(Float_t */*x*/, Int_t */*index*/, Float_t */*angle*/, 
+				       Float_t /*amplitude*/, Int_t /*mode*/, Float_t */*sigma*/)
 {
   //
   //
   //
   
 }
-Float_t  AliTPCParamSR::GetAmp(Float_t *x, Int_t *index, Float_t *angle)
+Float_t  AliTPCParamSR::GetAmp(Float_t */*x*/, Int_t */*index*/, Float_t */*angle*/)
 {
   //
   //

@@ -38,8 +38,8 @@
 
 
 ClassImp(AliTPCParamCR)
-const static  Int_t kMaxRows=600;
-const static  Float_t  kEdgeSectorSpace = 2.5;
+static const  Int_t kMaxRows=600;
+static const  Float_t  kEdgeSectorSpace = 2.5;
 
 AliTPCParamCR::AliTPCParamCR()
 {   
@@ -71,7 +71,7 @@ void AliTPCParamCR::SetDefault()
   AliTPCParam::SetDefault();  
 }  
 
-Int_t  AliTPCParamCR::CalcResponse(Float_t* xyz, Int_t * index, Int_t dummy)
+Int_t  AliTPCParamCR::CalcResponse(Float_t* xyz, Int_t * index, Int_t /*dummy*/)
 {
   //
   //calculate bin response as function of the input position -x 

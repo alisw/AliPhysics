@@ -65,7 +65,7 @@ AliTPCkineGrid::AliTPCkineGrid(Int_t npt,Int_t neta,
   fParams = new TMatrixD(fNpt,fNeta);
 }
 //-------------------------------------------------------------------------
-AliTPCkineGrid::AliTPCkineGrid(const AliTPCkineGrid& grid) {
+AliTPCkineGrid::AliTPCkineGrid(const AliTPCkineGrid& grid):TNamed(grid) {
 //-------------------------------------------------------------------------
 // Copy constructor
 //-------------------------------------------------------------------------

@@ -28,7 +28,7 @@
 
 
 
-Float_t * AliDetectorParam::GetAnglesAccMomentum(Float_t *x, Int_t * index, Float_t *momentum, Float_t *angle)
+Float_t * AliDetectorParam::GetAnglesAccMomentum(Float_t *x, Int_t * /*index*/, Float_t *momentum, Float_t *angle)
 {
   //
   //calculates deflection angle of particle with longitudinal

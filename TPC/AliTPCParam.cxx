@@ -105,7 +105,7 @@ Int_t  AliTPCParam::Transform0to1(Float_t *xyz, Int_t * index)  const
   return sector;
 }
 
-Bool_t  AliTPCParam::Transform(Float_t *xyz, Int_t *index, Int_t* oindex)
+Bool_t  AliTPCParam::Transform(Float_t */*xyz*/, Int_t *index, Int_t* /*oindex*/)
 {
   //transformation from input coodination system to output coordination system
   switch (index[0]){
@@ -178,7 +178,7 @@ void  AliTPCParam::SetSectorAngles(Float_t innerangle, Float_t innershift, Float
 {
   //
   // set opening angles  
-  const static  Float_t  kDegtoRad = 0.01745329251994;
+  static const  Float_t  kDegtoRad = 0.01745329251994;
   fInnerAngle = innerangle;       //opening angle of Inner sector
   fInnerAngleShift = innershift;  //shift of first inner sector center to the 0
   fOuterAngle = outerangle;       //opening angle of outer sector
@@ -253,91 +253,91 @@ void AliTPCParam::SetDefault()
   //
   //sector default parameters
   //
-  const static  Float_t kInnerRadiusLow = 82.97;
-  const static  Float_t kInnerRadiusUp  = 133.17;
-  const static  Float_t kOuterRadiusLow = 133.58;
-  const static  Float_t kOuterRadiusUp  = 247.78;
-  const static  Float_t kInnerAngle = 20; // 20 degrees
-  const static  Float_t kInnerAngleShift = 10;
-  const static  Float_t kOuterAngle = 20; //  20 degrees
-  const static  Float_t kOuterAngleShift = 10;
-  const static  Float_t kInnerFrameSpace = 1.5;
-  const static  Float_t kOuterFrameSpace = 1.5;
-  const static  Float_t kInnerWireMount = 1.370825926;
-  const static  Float_t kOuterWireMount = 1.370825926;
-  const static  Float_t kZLength =250.;
-  const static  Int_t   kGeometryType = 0; //straight rows 
-  const static Int_t kNRowLow = 63;
-  const static Int_t kNRowUp1 = 64;
-  const static Int_t kNRowUp2 = 32;
-  const static Int_t  kNRowUp = 96;
+  static const  Float_t kInnerRadiusLow = 82.97;
+  static const  Float_t kInnerRadiusUp  = 133.17;
+  static const  Float_t kOuterRadiusLow = 133.58;
+  static const  Float_t kOuterRadiusUp  = 247.78;
+  static const  Float_t kInnerAngle = 20; // 20 degrees
+  static const  Float_t kInnerAngleShift = 10;
+  static const  Float_t kOuterAngle = 20; //  20 degrees
+  static const  Float_t kOuterAngleShift = 10;
+  static const  Float_t kInnerFrameSpace = 1.5;
+  static const  Float_t kOuterFrameSpace = 1.5;
+  static const  Float_t kInnerWireMount = 1.370825926;
+  static const  Float_t kOuterWireMount = 1.370825926;
+  static const  Float_t kZLength =250.;
+  static const  Int_t   kGeometryType = 0; //straight rows 
+  static const Int_t kNRowLow = 63;
+  static const Int_t kNRowUp1 = 64;
+  static const Int_t kNRowUp2 = 32;
+  static const Int_t  kNRowUp = 96;
   //
   //wires default parameters
   //
-  const static Int_t    kNInnerWiresPerPad = 3;
-  const static Int_t    kInnerDummyWire = 2;
-  const static Float_t  kInnerWWPitch = 0.25;
-  const static Float_t  kRInnerFirstWire = 84.445;
-  const static Float_t  kRInnerLastWire = 132.445;
-  const static Float_t  kInnerOffWire = 0.5;
-  const static Int_t    kNOuter1WiresPerPad = 4;
-  const static Int_t    kNOuter2WiresPerPad = 6;
-  const static Float_t  kOuterWWPitch = 0.25;  
-  const static Float_t  kROuterFirstWire = 134.305;
-  const static Float_t  kROuterLastWire = 247.055;
-  const static Int_t    kOuterDummyWire = 2;
-  const static Float_t  kOuterOffWire = 0.5;
+  static const Int_t    kNInnerWiresPerPad = 3;
+  static const Int_t    kInnerDummyWire = 2;
+  static const Float_t  kInnerWWPitch = 0.25;
+  static const Float_t  kRInnerFirstWire = 84.445;
+  static const Float_t  kRInnerLastWire = 132.445;
+  static const Float_t  kInnerOffWire = 0.5;
+  static const Int_t    kNOuter1WiresPerPad = 4;
+  static const Int_t    kNOuter2WiresPerPad = 6;
+  static const Float_t  kOuterWWPitch = 0.25;  
+  static const Float_t  kROuterFirstWire = 134.305;
+  static const Float_t  kROuterLastWire = 247.055;
+  static const Int_t    kOuterDummyWire = 2;
+  static const Float_t  kOuterOffWire = 0.5;
   //
   //pad default parameters
   // 
-  const static Float_t  kInnerPadPitchLength = 0.75;
-  const static Float_t  kInnerPadPitchWidth = 0.40;
-  const static Float_t  kInnerPadLength = 0.75;
-  const static Float_t  kInnerPadWidth = 0.40;
-  const static Float_t  kOuter1PadPitchLength = 1.0;
-  const static Float_t  kOuterPadPitchWidth = 0.6;
-  const static Float_t  kOuter1PadLength = 1.0;
-  const static Float_t  kOuterPadWidth = 0.6;
-  const static Float_t  kOuter2PadPitchLength = 1.5;
-  const static Float_t  kOuter2PadLength = 1.5;
+  static const Float_t  kInnerPadPitchLength = 0.75;
+  static const Float_t  kInnerPadPitchWidth = 0.40;
+  static const Float_t  kInnerPadLength = 0.75;
+  static const Float_t  kInnerPadWidth = 0.40;
+  static const Float_t  kOuter1PadPitchLength = 1.0;
+  static const Float_t  kOuterPadPitchWidth = 0.6;
+  static const Float_t  kOuter1PadLength = 1.0;
+  static const Float_t  kOuterPadWidth = 0.6;
+  static const Float_t  kOuter2PadPitchLength = 1.5;
+  static const Float_t  kOuter2PadLength = 1.5;
 
-  const static Bool_t   kBMWPCReadout = kTRUE; //MWPC readout - another possibility GEM 
-  const static Int_t    kNCrossRows = 1; //number of rows to cross-talk
+  static const Bool_t   kBMWPCReadout = kTRUE; //MWPC readout - another possibility GEM 
+  static const Int_t    kNCrossRows = 1; //number of rows to cross-talk
   
   //
   //gas default parameters
   //
-  const static  Float_t  kDiffT = 2.2e-2; 
-  const static  Float_t  kDiffL = 2.2e-2;
-  const static  Float_t  kGasGain = 2.e4;
-  const static  Float_t  kDriftV  =2.83e6;
-  const static  Float_t  kOmegaTau = 0.145;
-  const static  Float_t  kAttCoef = 250.;
-  const static  Float_t  kOxyCont = 5.e-6;
+  static const  Float_t  kDiffT = 2.2e-2; 
+  static const  Float_t  kDiffL = 2.2e-2;
+  static const  Float_t  kGasGain = 2.e4;
+  static const  Float_t  kDriftV  =2.83e6;
+  static const  Float_t  kOmegaTau = 0.145;
+  static const  Float_t  kAttCoef = 250.;
+  static const  Float_t  kOxyCont = 5.e-6;
   //
   //electronic default parameters
   //
-  const static  Float_t  kPadCoupling=0.5;
-  const static  Int_t    kZeroSup=2;
-  const static  Float_t  kNoise = 1000;                            
-  const static  Float_t  kChipGain = 12;
-  const static  Float_t  kChipNorm = 0.4;
-  const static  Float_t  kTSample = 2.e-7; 
-  const static  Float_t  kTFWHM   = 1.9e-7;  //fwhm of charge distribution
-  const static  Int_t    kMaxTBin =445;  
-  const static  Int_t    kADCSat  =1024;  
-  const static  Float_t  kADCDynRange =2000.;  
+  static const  Float_t  kPadCoupling=0.5;
+  static const  Int_t    kZeroSup=2;
+  static const  Float_t  kNoise = 1000;                            
+  static const  Float_t  kChipGain = 12;
+  static const  Float_t  kChipNorm = 0.4;
+  static const  Float_t  kTSample = 2.e-7; 
+  static const  Float_t  kTFWHM   = 1.9e-7;  //fwhm of charge distribution
+  static const  Int_t    kMaxTBin =445;  
+  static const  Int_t    kADCSat  =1024;  
+  static const  Float_t  kADCDynRange =2000.;  
   //
   //
   //
-  const static  Float_t kBField =0.2; 
-  const static  Float_t kNPrimLoss =10.9;
-  const static  Float_t kNTotalLoss =39.9;
+  static const  Float_t kBField =0.2; 
+  static const  Float_t kNPrimLoss =10.9;
+  static const  Float_t kNTotalLoss =39.9;
   // 
   //response constants
   //
-  const static Int_t     kNResponseMax=100;
-  const static Float_t   kResponseThreshold=0.01;     
+  static const Int_t     kNResponseMax=100;
+  static const Float_t   kResponseThreshold=0.01;     
   fbStatus = kFALSE;
   //
   //set sector parameters

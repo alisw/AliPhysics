@@ -132,7 +132,7 @@ public:
    //   
    AliCluster * GetCluster (int) const {return 0;}
    AliTPCclusterMI *GetClusterMI(Int_t index) const;
-   Int_t Clusters2Tracks(const TFile *in, TFile *out){return 0;}
+   Int_t Clusters2Tracks(const TFile */*in*/, TFile */*out*/){return 0;}
    Int_t Clusters2Tracks();
    virtual void  CookLabel(AliTPCseed *t,Float_t wrong) const; 
    

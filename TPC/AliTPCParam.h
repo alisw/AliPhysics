@@ -63,34 +63,34 @@ public:
   void  Transform8to6(Float_t *xyz, Int_t *index) const;
   //transform 'digit' coordinata to dr,f coordinata 
 
-  virtual Int_t  Transform2toPadRow(Float_t *xyz, Int_t *index) const{return 0;}
+  virtual Int_t  Transform2toPadRow(Float_t */*xyz*/, Int_t */*index*/) const{return 0;}
   //transform rotated to
 
   virtual  Int_t GetPadRow(Float_t *xyz, Int_t *index) const ;
   //return pad row of point xyz - xyz is given in coordinate system -(given by index)
   //output system is 3 for straight row and 7 for cylindrical row
-  virtual void XYZtoCRXYZ(Float_t *xyz, 
-		      Int_t &sector, Int_t &padrow, Int_t option=3) const {;}
+  virtual void XYZtoCRXYZ(Float_t */*xyz*/, 
+			  Int_t &/*sector*/, Int_t &/*padrow*/, Int_t /*option*/) const {;}
   //transform global position to the position relative to the sector padrow
   //if option=0  X calculate absolute            calculate sector
   //if option=1  X           absolute            use input sector
   //if option=2  X           relative to pad row calculate sector
   //if option=3  X           relative            use input sector
 
-  virtual void CRXYZtoXYZ(Float_t *xyz,
-			  const Int_t &sector, const Int_t & padrow, Int_t option=3) const {;}  
+  virtual void CRXYZtoXYZ(Float_t */*xyz*/,
+			  const Int_t &/*sector*/, const Int_t & /*padrow*/, Int_t /*option*/) const {;}  
   //transform relative position  to the gloabal position
 
-  virtual void CRTimePadtoYZ(Float_t &y, Float_t &z, 
-			     const Float_t &time, const Float_t &pad,
-			     Int_t sector, Int_t padrow ){;}
+  virtual void CRTimePadtoYZ(Float_t &/*y*/, Float_t &/*z*/, 
+			     const Float_t &/*time*/, const Float_t &/*pad*/,
+			     Int_t /*sector*/, Int_t /*padrow*/ ){;}
   //transform position in digit  units (time slices and pads)  to "normal" 
   //units (cm)   
-  virtual void CRYZtoTimePad(const Float_t &y, const Float_t &z, 
-			     Float_t &time, Float_t &pad,
-			     Int_t sector, Int_t padrow){;}
+  virtual void CRYZtoTimePad(const Float_t &/*y*/, const Float_t &/*z*/, 
+			     Float_t &/*time*/, Float_t &/*pad*/,
+			     Int_t /*sector*/, Int_t /*padrow*/){;}
   //transform position in cm to position in digit unit 
-  virtual Int_t   CalcResponse(Float_t* x, Int_t * index, Int_t row){return 0;}
+  virtual Int_t   CalcResponse(Float_t* /*x*/, Int_t * /*index*/, Int_t /*row*/){return 0;}
   //calculate bin response as function of the input position -x and the weight 
   //if row -pad row is equal -1 calculate response for each pad row 
   //otherwise it calculate only in given pad row

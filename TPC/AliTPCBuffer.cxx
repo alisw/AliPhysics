@@ -30,7 +30,7 @@
 
 ClassImp(AliTPCBuffer)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-AliTPCBuffer::AliTPCBuffer(const char* fileName){
+AliTPCBuffer::AliTPCBuffer(const char* /*fileName*/){
   // Constructor
 #ifndef __DECCXX
   f.open("AliTPCDDL.dat",ios::binary|ios::out);
@@ -52,7 +52,7 @@ AliTPCBuffer::~AliTPCBuffer(){
   //delete fout;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-AliTPCBuffer::AliTPCBuffer(const AliTPCBuffer &source){
+AliTPCBuffer::AliTPCBuffer(const AliTPCBuffer &source):TObject(source){
   // Copy Constructor
   this->fVerbose=source.fVerbose;
   return;

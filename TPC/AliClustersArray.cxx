@@ -74,7 +74,7 @@ Bool_t  AliClustersArray::SetClusterType(Text_t * classname)
   return kTRUE;
 }
 
-Bool_t AliClustersArray::Setup(const AliDetectorParam *param)
+Bool_t AliClustersArray::Setup(const AliDetectorParam */*param*/)
 {
   //
   //make copy of param object
@@ -82,12 +82,12 @@ Bool_t AliClustersArray::Setup(const AliDetectorParam *param)
   return kTRUE;
 }
 
-Bool_t AliClustersArray::SetParam(AliDetectorParam * param)
+Bool_t AliClustersArray::SetParam(AliDetectorParam * /*param*/)
 {
   return kTRUE;
 }
 
-Bool_t AliClustersArray::SetFinder(AliClustersFinder * finder)
+Bool_t AliClustersArray::SetFinder(AliClustersFinder * /*finder*/)
 {
   return kTRUE;
 }

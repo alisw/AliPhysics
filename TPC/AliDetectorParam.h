@@ -14,15 +14,15 @@ class AliDetectorParam : public TNamed {
 public:
   AliDetectorParam(){;}
   virtual Int_t GetNSegmentsTotal() const {return 0;} //get total nuber of segments
-  virtual Bool_t Get1DIndex(Int_t *index, const Int_t * arrindex) {return kFALSE;} 
+  virtual Bool_t Get1DIndex(Int_t */*index*/, const Int_t * /*arrindex*/) {return kFALSE;} 
   //transform multidimensional index to one dimesional
-  virtual Bool_t GetNDIndex(const Int_t * index1, Int_t * arrIndex) {return kFALSE;}
+  virtual Bool_t GetNDIndex(const Int_t * /*index1*/, Int_t * /*arrIndex*/) {return kFALSE;}
   //trasnform one dimesional index to multidimesional
-  virtual Float_t GetPrimaryLoss(Float_t *x, Int_t *index, Float_t *angle){return 0;}
-  virtual Float_t GetTotalLoss(Float_t *x, Int_t *index, Float_t *angle){return 0;}
-  virtual void GetClusterSize(Float_t *x, Int_t *index, Float_t *angle, Int_t mode, Float_t *sigma){;}
-  virtual void GetSpaceResolution(Float_t *x, Int_t *index, Float_t *angle, Float_t amplitude, Int_t mode, 
-				  Float_t *sigma){;}
+  virtual Float_t GetPrimaryLoss(Float_t */*x*/, Int_t */*index*/, Float_t */*angle*/){return 0;}
+  virtual Float_t GetTotalLoss(Float_t */*x*/, Int_t */*index*/, Float_t */*angle*/){return 0;}
+  virtual void GetClusterSize(Float_t */*x*/, Int_t */*index*/, Float_t */*angle*/, Int_t /*mode*/, Float_t */*sigma*/){;}
+  virtual void GetSpaceResolution(Float_t */*x*/, Int_t */*index*/, Float_t */*angle*/, Float_t /*amplitude*/, Int_t /*mode*/, 
+				  Float_t */*sigma*/){;}
   virtual Float_t * GetAnglesAccMomentum(Float_t *x, Int_t * index, Float_t* momentum, Float_t *angle); 
 
   void  SetBField(Float_t b){fBField=b;} //set magnetic field intensity  

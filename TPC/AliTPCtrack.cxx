@@ -190,7 +190,7 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) : AliKalmanTrack(t) {
   fC30=t.fC30;  fC31=t.fC31;  fC32=t.fC32;  fC33=t.fC33;
   fC40=t.fC40;  fC41=t.fC41;  fC42=t.fC42;  fC43=t.fC43;  fC44=t.fC44;
 
-  Int_t n=GetNumberOfClusters();
+  //Int_t n=GetNumberOfClusters();
   for (Int_t i=0; i<kMaxRow; i++) fIndex[i]=t.fIndex[i];
   //
   //MI 
@@ -304,7 +304,7 @@ Double_t AliTPCtrack::GetYat(Double_t xk) const {
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho) {
+Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t rho) {
   //-----------------------------------------------------------------
   // This function propagates a track to a reference plane x=xk.
   //-----------------------------------------------------------------
