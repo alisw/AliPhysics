@@ -64,6 +64,8 @@ $(DICT):				$(HDRS)
 
 depend:			$(SRCS) $(FSRCS)
 
+HEADERS		= THijing.h
+
 TOCLEAN		= $(OBJS) *Cint.cxx *Cint.h
 
 CHECKS        = $(patsubst %.cxx,check/%.viol,$(SRCS))
