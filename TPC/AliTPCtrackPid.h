@@ -20,7 +20,7 @@ public:
     AliTPCtrackPid();
     virtual ~AliTPCtrackPid(){}
 
-public:
+private:
     Float_t fWpi;     // Particle ID
     Float_t fWk;      // Particle k
     Float_t fWp;      // Particle momentum
@@ -41,6 +41,7 @@ public:
     Float_t fGz;      // z G
     Int_t   fGcode;   // Code G
     Int_t   fGlab;    // Lab G
+    //
 
   ClassDef(AliTPCtrackPid,1)  // TPC track PID
 };
