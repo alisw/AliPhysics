@@ -9,7 +9,6 @@
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include <Rtypes.h>
-#include <iostream.h>
 
 //namespace AliITSreco {    
    const Int_t kMaxClusterPerLayer=3500*10;
@@ -31,8 +30,6 @@
 
    const Double_t kSigmaYV=0.005e+0;
    const Double_t kSigmaZV=0.010e+0;
-
-   const Double_t kConvConst=100/0.299792458/0.2; 
 //}
 
 //using namespace AliITSreco;

@@ -1,6 +1,20 @@
 Int_t AliITStestV2() {
    Int_t rc=0;
 
+   if (gAlice) {delete gAlice; gAlice=0;}
+   TFile *in=TFile::Open("galice.root");
+   if (!in->IsOpen()) {
+      cerr<<"Can't open galice.root !\n"; 
+      return 1;
+   }
+   if (!(gAlice=(AliRun*)in->Get("gAlice"))) {
+      cerr<<"Can't find gAlice !\n";
+      return 2;
+   }
+   AliKalmanTrack::SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());
+   delete gAlice; gAlice=0;
+   in->Close();
+
    gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSFindClustersV2.C");
    if (rc=AliITSFindClustersV2()) return rc;
 

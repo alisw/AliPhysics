@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2000/10/05 16:14:01  kowal2
+Forward declarations.
+
 Revision 1.2  2000/06/30 12:07:50  kowal2
 Updated from the TPC-PreRelease branch
 
@@ -242,8 +245,8 @@ void AliTPCclusterer::Digits2Clusters(const AliTPCParam *par, TFile *of)
     carray.StoreRow(sec,row);
     carray.ClearRow(sec,row);
 
-    cerr<<"sector, row, compressed digits, clusters: "
-    <<sec<<' '<<row<<' '<<digarr.GetSize()<<' '<<ncl<<"                  \r";
+    //cerr<<"sector, row, compressed digits, clusters: "
+    //<<sec<<' '<<row<<' '<<digarr.GetSize()<<' '<<ncl<<"                  \r";
 
     nclusters+=ncl;
 

@@ -5,6 +5,8 @@ Int_t AliTPCtest() {
    gROOT->LoadMacro("$(ALICE_ROOT)/macros/grun.C");
    grun();
 
+   AliKalmanTrack::SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());
+
    Int_t ver=gAlice->GetDetector("TPC")->IsVersion();
    delete gAlice; gAlice=0;
 

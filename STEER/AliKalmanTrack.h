@@ -16,7 +16,7 @@ class AliCluster;
 
 class AliKalmanTrack : public TObject {
 public:
-  AliKalmanTrack() {fLab=-3141593; fChi2=0; fN=0;}
+  AliKalmanTrack() { fLab=-3141593; fChi2=0; fN=0; }
   AliKalmanTrack(const AliKalmanTrack &t) {fLab=t.fLab;fChi2=t.fChi2;fN=t.fN;}
   virtual ~AliKalmanTrack(){};
   void SetLabel(Int_t lab) {fLab=lab;}
@@ -40,6 +40,9 @@ public:
   Int_t PropagateTo(Double_t xr,Double_t x0,Double_t rho,Double_t pm)=0;
   virtual Int_t Update(const AliCluster* c, Double_t chi2, UInt_t i)=0;
 
+  static void SetConvConst(Double_t cc) {fConvConst=cc;}
+  Double_t GetConvConst() const {return fConvConst;}
+
 protected:
   void SetChi2(Double_t chi2) {fChi2=chi2;} 
   void SetNumberOfClusters(Int_t n) {fN=n;} 
@@ -48,6 +51,8 @@ private:
   Int_t fLab;             // track label
   Double_t fChi2;         // total chi2 value for this track
   Int_t fN;               // number of associated clusters
+
+  static Double_t fConvConst; //conversion constant cm -> GeV/c
 
   ClassDef(AliKalmanTrack,1)    // Reconstructed track
 };

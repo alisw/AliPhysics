@@ -11,7 +11,8 @@ struct GoodTrack {
 Int_t good_tracks(GoodTrack *gt, Int_t max);
 
 Int_t AliTPCComparison() {
-  Int_t i;
+   cerr<<"Doing comparison...\n";
+   Int_t i;
    gBenchmark->Start("AliTPCComparison");
 
    TFile *cf=TFile::Open("AliTPCclusters.root");
@@ -92,7 +93,6 @@ Int_t AliTPCComparison() {
    }
    cerr<<"Number of good tracks : "<<ngood<<endl;
 
-   cerr<<"Doing comparison...\n";
    TH1F *hp=new TH1F("hp","PHI resolution",50,-20.,20.); hp->SetFillColor(4);
    TH1F *hl=new TH1F("hl","LAMBDA resolution",50,-20,20);hl->SetFillColor(4);
    TH1F *hpt=new TH1F("hpt","Relative Pt resolution",30,-10.,10.); 
@@ -109,7 +109,7 @@ Int_t AliTPCComparison() {
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
 
    TH1F *he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
-   TH2F *hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,200.);
+   TH2F *hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,250.);
    hep->SetMarkerStyle(8);
    hep->SetMarkerSize(0.4);
 
@@ -257,9 +257,9 @@ Int_t AliTPCComparison() {
    hg->SetXTitle("Pt (GeV/c)");
    hg->Draw();
 
-   TLine *line1 = new TLine(0,1.0,7,1.0); line1->SetLineStyle(4);
+   TLine *line1 = new TLine(0.1,1.0,6.1,1.0); line1->SetLineStyle(4);
    line1->Draw("same");
-   TLine *line2 = new TLine(0,0.9,7,0.9); line2->SetLineStyle(4);
+   TLine *line2 = new TLine(0.1,0.9,6.1,0.9); line2->SetLineStyle(4);
    line2->Draw("same");
 
    hf->SetFillColor(1);
@@ -300,7 +300,8 @@ Int_t AliTPCComparison() {
 Int_t good_tracks(GoodTrack *gt, Int_t max) {
    Int_t nt=0;
 
-   TFile *file=TFile::Open("rfio:galice.root");
+   //TFile *file=TFile::Open("rfio:galice.root");
+   TFile *file=TFile::Open("galice.root");
    if (!file->IsOpen()) {cerr<<"Can't open galice.root !\n"; exit(4);}
 
    if (!(gAlice=(AliRun*)file->Get("gAlice"))) {
@@ -379,7 +380,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
           digp->AdjustSectorRow(digits->GetID(),sec,row);
           cerr<<sec<<' '<<row<<"                                     \r";
           digits->First();
-          while (digits->Next()) {
+          do { //Many thanks to J.Chudoba who noticed this
               Int_t it=digits->CurrentRow(), ip=digits->CurrentColumn();
               Short_t dig = digits->GetDigit(it,ip);
               Int_t idx0=digits->GetTrackID(it,ip,0); 
@@ -388,7 +389,7 @@ Int_t good_tracks(GoodTrack *gt, Int_t max) {
               if (idx0>=0 && dig>=zero) count[idx0]+=1;
               if (idx1>=0 && dig>=zero) count[idx1]+=1;
               if (idx2>=0 && dig>=zero) count[idx2]+=1;
-          }
+          } while (digits->Next());
           for (Int_t j=0; j<np; j++) {
               if (count[j]>1) {
                  if (sec>=digp->GetNInnerSector())

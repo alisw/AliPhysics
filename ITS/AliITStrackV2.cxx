@@ -35,7 +35,7 @@ const Int_t kWARN=1;
 //____________________________________________________________________________
 AliITStrackV2::AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *) {
   //------------------------------------------------------------------
-  //Convertion TPC track -> ITS track
+  //Conversion TPC track -> ITS track
   //------------------------------------------------------------------
   SetLabel(t.GetLabel());
   SetChi2(0.);
@@ -45,16 +45,16 @@ AliITStrackV2::AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *) {
   if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
   else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
 
-  //Convertion of the track parameters
+  //Conversion of the track parameters
   Double_t x,p[5]; t.GetExternalParameters(x,p);
-  fX=x;    x=kConversionConstant;
+  fX=x;    x=GetConvConst();
   fP0=p[0]; 
   fP1=p[1]; 
   fP2=p[2];
   fP3=p[3];
   fP4=p[4]/x; 
 
-  //Convertion of the covariance matrix
+  //Conversion of the covariance matrix
   Double_t c[15]; t.GetExternalCovariance(c);
 
   fC00=c[0 ];
@@ -106,7 +106,7 @@ void AliITStrackV2::GetExternalCovariance(Double_t cc[15]) const {
   // This function returns an external representation of the covriance matrix.
   //   (See comments in AliTPCtrack.h about external track representation)
   //-------------------------------------------------------------------------
-  Double_t a=kConvConst;
+  Double_t a=GetConvConst();
 
   cc[0 ]=fC00;
   cc[1 ]=fC10;   cc[2 ]=fC11;

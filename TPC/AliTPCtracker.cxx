@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2001/03/13 14:25:47  hristov
+New design of tracking classes (Yu.Belikov)
+
 Revision 1.5  2000/12/20 07:51:59  kowal2
 Changes suggested by Alessandra and Paolo to avoid overlapped
 data fields in encapsulated classes.
@@ -431,7 +434,7 @@ Int_t AliTPCtracker::Clusters2Tracks(const AliTPCParam *par, TFile *of) {
              iotrack=pt;
              tracktree.Fill();
              t.UseClusters(&carray,nc);
-             cerr<<found++<<'\r';
+             found++;
           }
        }
     }

@@ -26,8 +26,6 @@
 #include <AliKalmanTrack.h>
 #include <TMath.h>
 
-const Double_t kConversionConstant=100/0.299792458/0.2; 
-
 class AliTPCClustersArray;
 class AliTPCcluster;
 
@@ -51,7 +49,7 @@ public:
   Double_t GetY()   const {return fP0;}
   Double_t GetZ()   const {return fP1;}
   Double_t GetSnp() const {return fX*fP3 - fP2;}             
-  Double_t Get1Pt() const {return fP3*kConversionConstant;}             
+  Double_t Get1Pt() const {return fP3*GetConvConst();}             
   Double_t GetTgl() const {return fP4;}
 
   Double_t GetSigmaY2() const {return fC00;}

@@ -23,3 +23,5 @@
 
 ClassImp(AliKalmanTrack)
 
+Double_t AliKalmanTrack::fConvConst;
+

@@ -53,7 +53,7 @@ public:
   Double_t GetZ()    const {return fP1;}
   Double_t GetSnp()  const {return fP2;}
   Double_t GetTgl()  const {return fP3;}
-  Double_t Get1Pt()  const {return fP4*kConvConst;}
+  Double_t Get1Pt()  const {return fP4*GetConvConst();}
 
 
   Double_t GetD() const;

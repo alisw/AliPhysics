@@ -92,7 +92,7 @@ void AliTPCtrack::GetExternalCovariance(Double_t cc[15]) const {
   // This function returns an external representation of the covriance matrix.
   //   (See comments in AliTPCtrack.h about external track representation)
   //-------------------------------------------------------------------------
-  Double_t a=kConversionConstant;
+  Double_t a=GetConvConst();
 
   Double_t c22=fX*fX*fC33-2*fX*fC32+fC22;
   Double_t c42=fX*fC43-fC42;
