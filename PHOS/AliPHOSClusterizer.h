@@ -37,7 +37,15 @@ public:
 
   virtual Float_t Calibrate(Int_t Amp) = 0 ; 
   virtual Bool_t IsInEmc(AliPHOSDigit * digit)= 0 ;   
-  virtual void  GetNumberOfClustersFound(Int_t * numb) = 0 ; 
+  virtual void GetNumberOfClustersFound(Int_t * numb) = 0 ; 
+  virtual void GetCalibrationParameters(Float_t & A, Float_t &B) = 0 ; 
+  virtual void GetEmcClusteringThreshold(Float_t & cluth) = 0 ; 
+  virtual void GetEmcEnergyThreshold(Float_t & enth) = 0 ;  
+  virtual void GetLocalMaxCut(Float_t & cut) = 0 ; 
+  virtual void GetLogWeightCut(Float_t & w) = 0 ; 
+  virtual void GetPpsdClusteringThreshold(Float_t & cluth) = 0 ; 
+  virtual void GetPpsdEnergyThreshold(Float_t & enth) = 0 ; 
+
   virtual void  MakeClusters(const DigitsList * dl, RecPointsList * emccl, RecPointsList * ppsdl) = 0 ; 
   virtual void PrintParameters() = 0 ;  
   virtual void SetCalibrationParameters(Float_t A, Float_t B) = 0 ; 
