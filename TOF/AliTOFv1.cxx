@@ -170,7 +170,7 @@ void AliTOFv1::CreateGeometry()
 }
  
 //_____________________________________________________________________________
-void AliTOFv1::DrawDetector()
+void AliTOFv1::DrawModule()
 {
   //
   // Draw a shaded view of the Time Of Flight version 1

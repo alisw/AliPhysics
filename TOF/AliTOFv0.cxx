@@ -122,7 +122,7 @@ void AliTOFv0::CreateGeometry()
 }
  
 //_____________________________________________________________________________
-void AliTOFv0::DrawDetector()
+void AliTOFv0::DrawModule()
 {
   //
   // Draw a shaded view of the common part of the TOF geometry

@@ -228,7 +228,7 @@ void AliTOFv3::TOFpc(Float_t xm, Float_t ym, Float_t zm0,
 }
 
 //_____________________________________________________________________________
-void AliTOFv3::DrawDetector()
+void AliTOFv3::DrawModule()
 {
   //
   // Draw a shaded view of the Time Of Flight version 3

@@ -23,7 +23,7 @@ public:
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 1;}
   virtual void   StepManager();
-  virtual void   DrawDetector();
+  virtual void   DrawModule();
   
   ClassDef(AliTOFv1,1)  // Time Of Flight version 1
 };

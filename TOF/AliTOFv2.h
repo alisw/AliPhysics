@@ -27,7 +27,7 @@ public:
   virtual Int_t  IsVersion() const {return 2;}
   virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t, Float_t);
   virtual void   StepManager();
-  virtual void   DrawDetector();
+  virtual void   DrawModule();
  
    ClassDef(AliTOFv2,1)  //Time Of Flight version 2
 };

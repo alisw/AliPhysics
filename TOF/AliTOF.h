@@ -26,7 +26,7 @@ public:
   Int_t           DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    StepManager()=0;
   virtual void    TOFpc(Float_t, Float_t, Float_t, Float_t, Float_t) {}
-  virtual void    DrawDetector();
+  virtual void    DrawModule();
   
   ClassDef(AliTOF,1)  // Time Of Flight base class
 };
