@@ -54,7 +54,7 @@ AliTRDdataArrayI::AliTRDdataArrayI(Int_t nrow, Int_t ncol, Int_t ntime)
 }
 
 //_____________________________________________________________________________
-AliTRDdataArrayI::AliTRDdataArrayI(const AliTRDdataArrayI &a)
+AliTRDdataArrayI::AliTRDdataArrayI(const AliTRDdataArrayI &a):AliTRDdataArray(a)
 {
   //
   // AliTRDdataArrayI copy constructor

@@ -90,7 +90,7 @@ AliTRDsim::AliTRDsim(AliModule *mod, Int_t foil, Int_t gap)
 }
 
 //_____________________________________________________________________________
-AliTRDsim::AliTRDsim(const AliTRDsim &s)
+AliTRDsim::AliTRDsim(const AliTRDsim &s):TObject(s)
 {
   //
   // AliTRDsim copy constructor

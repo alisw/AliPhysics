@@ -87,7 +87,7 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliTRDv1::AliTRDv1(const AliTRDv1 &trd)
+AliTRDv1::AliTRDv1(const AliTRDv1 &trd):AliTRD(trd)
 {
   //
   // Copy constructor

@@ -21,6 +21,8 @@ class AliTRDgeometryFull : public AliTRDgeometry {
   virtual ~AliTRDgeometryFull();
 
           void    CreateGeometry(Int_t *idtmed);
+          void    CreateFrame(Int_t *idtmed);
+          void    CreateServices(Int_t *idtmed);
           Int_t   IsVersion() const   { return 1; };
           void    Init();
 
@@ -37,7 +39,7 @@ class AliTRDgeometryFull : public AliTRDgeometry {
   Bool_t          fPHOShole;                  // Switch for the hole in front of the PHOS
   Bool_t          fRICHhole;                  // Switch for the hole in front of the RICH
 
-  ClassDef(AliTRDgeometryFull,2)              // TRD geometry without hole
+  ClassDef(AliTRDgeometryFull,3)              // TRD geometry without hole
 
 };
 

@@ -41,7 +41,7 @@ AliTRDsimple::AliTRDsimple():TObject()
 }                                                                               
  
 //_____________________________________________________________________________
-AliTRDsimple::AliTRDsimple(const AliTRDsimple &s)
+AliTRDsimple::AliTRDsimple(const AliTRDsimple &s):TObject(s)
 {
   //
   // AliTRDsimple copy constructor

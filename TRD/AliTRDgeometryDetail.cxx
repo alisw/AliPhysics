@@ -312,7 +312,6 @@ void AliTRDgeometryDetail::CreateReadout(Int_t *idtmed) const
   //
   // Create the volumina of the readout electronics
   //
-
   const Int_t   kNparBox    = 3;
 
   Float_t parBox[kNparBox];

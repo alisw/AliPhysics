@@ -27,7 +27,7 @@ class AliTRDgeometry : public AliGeometry {
   virtual void     CreateGeometry(Int_t *idtmed);
   virtual Int_t    IsVersion() const = 0;
   virtual void     Init();
-  virtual Bool_t   Impact(const TParticle * particle) const { return kTRUE; };
+  virtual Bool_t   Impact(const TParticle* ) const { return kTRUE; };
   virtual Bool_t   Local2Global(Int_t d, Float_t *local, Float_t *global, AliTRDparameter *par) const;
   virtual Bool_t   Local2Global(Int_t p, Int_t c, Int_t s, Float_t *local, Float_t *global, AliTRDparameter *par) const;
   virtual Bool_t   Rotate(Int_t d, Float_t *pos, Float_t *rot) const;
@@ -75,8 +75,8 @@ class AliTRDgeometry : public AliGeometry {
           Float_t  GetChamberWidth(const Int_t p)                 const { return fCwidth[p];     };
           Float_t  GetChamberLength(const Int_t p, const Int_t c) const { return fClength[p][c]; }; 
 
-  virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos, TMatrix &mat) const { }; 
-  virtual void     GetGlobal(const AliRecPoint *p, TVector3 &pos) const { };
+  virtual void     GetGlobal(const AliRecPoint* , TVector3& , TMatrix& ) const { }; 
+  virtual void     GetGlobal(const AliRecPoint* , TVector3& ) const { };
  
   static  Double_t GetAlpha()  { return 2 * 3.14159265358979323846 / fgkNsect; }; 
 
@@ -99,6 +99,9 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t fgkSlenTR1;                          // Length of the TRD-volume in spaceframe (BTR1)
   static const Float_t fgkSlenTR2;                          // Length of the TRD-volume in spaceframe (BTR2)
   static const Float_t fgkSlenTR3;                          // Length of the TRD-volume in spaceframe (BTR3)
+
+  static const Float_t fgkSMpltT;                           // Thickness of the super module side plates
+  static const Float_t fgkSMgapT;                           // Thickness of the gap between side plates and space frame
 
   static const Float_t fgkCraH;                             // Height of the radiator part of the chambers
   static const Float_t fgkCdrH;                             // Height of the drift region of the chambers
@@ -156,7 +159,7 @@ class AliTRDgeometry : public AliGeometry {
   Float_t              fRotB21[kNsect];                     // Matrix elements for the backward rotation
   Float_t              fRotB22[kNsect];                     // Matrix elements for the backward rotation
 
-  ClassDef(AliTRDgeometry,5)                                // TRD geometry base class
+  ClassDef(AliTRDgeometry,6)                                // TRD geometry base class
 
 };
 

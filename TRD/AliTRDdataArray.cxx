@@ -68,7 +68,7 @@ AliTRDdataArray::AliTRDdataArray(Int_t nrow, Int_t ncol, Int_t ntime)
 }
 
 //_____________________________________________________________________________
-AliTRDdataArray::AliTRDdataArray(const AliTRDdataArray &d)
+AliTRDdataArray::AliTRDdataArray(const AliTRDdataArray &d):AliTRDsegmentID(d)
 {
   //
   // AliTRDdataArray copy constructor

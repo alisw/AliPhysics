@@ -141,7 +141,7 @@ AliTRDparameter::AliTRDparameter(const Text_t *name, const Text_t *title)
 
 
 //_____________________________________________________________________________
-AliTRDparameter::AliTRDparameter(const AliTRDparameter &p)
+AliTRDparameter::AliTRDparameter(const AliTRDparameter &p):TNamed(p)
 {
   //
   // AliTRDparameter copy constructor
@@ -312,6 +312,14 @@ void AliTRDparameter::Init()
   SetColPadSize(4,0.77);
   SetColPadSize(5,0.80);
 
+  // New pad size? Needs to be checked!
+  //SetColPadSize(0,0.664);
+  //SetColPadSize(1,0.695);
+  //SetColPadSize(2,0.726);
+  //SetColPadSize(3,0.756);
+  //SetColPadSize(4,0.788);
+  //SetColPadSize(5,0.818);
+
   // The pad row (z-direction)
   SetNRowPad();
 
@@ -333,7 +341,6 @@ void AliTRDparameter::Init()
   fChipGain       = 12.4;
   fNoise          = 1000.;
   fADCoutRange    = 1023.;          // 10-bit ADC
-  //fADCinRange     = 1000.;          // 1V input range
   fADCinRange     = 2000.;          // 2V input range
   fADCthreshold   = 1;
   fADCbaseline    = 0;
@@ -373,11 +380,9 @@ void AliTRDparameter::Init()
   fTimeCoupling   = 0.4;
 
   // The tilting angle for the readout pads
-  //SetTiltingAngle(5.0);
-  SetTiltingAngle(0.0);
+  SetTiltingAngle(2.0);
 
   // The magnetic field strength in Tesla
-  //fField           = 0.2 * gAlice->Field()->Factor();
   fField           = 0.4;
 
   //

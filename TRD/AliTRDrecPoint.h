@@ -21,9 +21,9 @@ class AliTRDrecPoint : public AliRecPoint {
   AliTRDrecPoint(const char * opt);
   virtual ~AliTRDrecPoint();
 
-  virtual void    Print(Option_t* opt) const {};
+  virtual void    Print(Option_t* ) const {};
   virtual void    AddDigit(Int_t digit);
-  virtual void    AddDigit(AliDigitNew &digit) {};
+  virtual void    AddDigit(AliDigitNew& ) {};
 
   virtual void    SetEnergy(Float_t amp)          { fAmp      = amp; };
   virtual void    SetDetector(Int_t det)          { fDetector = det; };

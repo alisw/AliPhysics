@@ -77,6 +77,7 @@ AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(Text_t *classname, Int_t n)
 
 //_____________________________________________________________________________
 AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(const AliTRDsegmentArrayBase &a)
+:TNamed(a)
 {
   //
   // AliTRDsegmentArrayBase copy constructor

@@ -57,7 +57,7 @@ AliTRDpoints::AliTRDpoints(Int_t nhitsE, Int_t nhitsT):AliPoints(nhitsE)
 }
 	 
 //_____________________________________________________________________________
-AliTRDpoints::AliTRDpoints(const AliTRDpoints &p)
+AliTRDpoints::AliTRDpoints(const AliTRDpoints &p):AliPoints(p)
 {
   //
   // Copy contructor

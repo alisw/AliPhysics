@@ -94,7 +94,7 @@ AliTRDsimpleMC::AliTRDsimpleMC(const char *name, const char *title)
 }                                                                               
  
 //_____________________________________________________________________________
-AliTRDsimpleMC::AliTRDsimpleMC(const AliTRDsimpleMC &m)
+AliTRDsimpleMC::AliTRDsimpleMC(const AliTRDsimpleMC &m):TVirtualMC(m)
 {
   //
   // AliTRDsimpleMC copy constructor
@@ -363,7 +363,7 @@ const char *AliTRDsimpleMC::CurrentVolName() const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDsimpleMC::CurrentVolOffID(Int_t off, Int_t &copyNo) const
+Int_t AliTRDsimpleMC::CurrentVolOffID(Int_t , Int_t &copyNo) const
 {
   //
   // Check for the current volume

@@ -72,7 +72,7 @@ AliTRDv2::AliTRDv2(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliTRDv2::AliTRDv2(const AliTRDv2 &trd)
+AliTRDv2::AliTRDv2(const AliTRDv2 &trd):AliTRDv1(trd)
 {
   //
   // Copy constructor
@@ -109,6 +109,8 @@ void AliTRDv2::Copy(TObject &trd)
   //
   // Copy function
   //
+
+  AliTRDv1::Copy(trd); 
 
 }
 

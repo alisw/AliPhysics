@@ -109,7 +109,7 @@ void AliTRDrecPoint::AddDigit(Int_t digit)
 }
 
 //_____________________________________________________________________________
-void AliTRDrecPoint::SetLocalPosition(TVector3 &pos)
+void AliTRDrecPoint::SetLocalPosition(TVector3 & /*pos*/)
 {
   //
   // Sets the position of the point in the local coordinate system
@@ -143,7 +143,7 @@ void AliTRDrecPoint::SetLocalPosition(TVector3 &pos)
 }
 
 //_____________________________________________________________________________
-void AliTRDrecPoint::SetTrackingYZ(Float_t sigmaY, Float_t sigmaZ)
+void AliTRDrecPoint::SetTrackingYZ(Float_t /*sigmaY*/, Float_t /*sigmaZ*/)
 {
  //
  // Sets the position of the point in the local coordinate system

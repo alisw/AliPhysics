@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.29  2003/07/22 15:56:14  hristov
+Implementing ESD functionality in the NewIO (Yu.Belikov)
+
 Revision 1.27.2.2  2003/07/14 09:19:33  hristov
 TOF included in the combined PID (Yu.Belikov)
 
@@ -2076,7 +2079,7 @@ void AliTRDtracker::UseClusters(const AliKalmanTrack* t, Int_t from) const {
 
 
 //_____________________________________________________________________
-Double_t AliTRDtracker::ExpectedSigmaY2(Double_t r, Double_t tgl, Double_t pt)
+Double_t AliTRDtracker::ExpectedSigmaY2(Double_t , Double_t , Double_t )
 {
   // Parametrised "expected" error of the cluster reconstruction in Y 
 
@@ -2085,7 +2088,7 @@ Double_t AliTRDtracker::ExpectedSigmaY2(Double_t r, Double_t tgl, Double_t pt)
 }
 
 //_____________________________________________________________________
-Double_t AliTRDtracker::ExpectedSigmaZ2(Double_t r, Double_t tgl)
+Double_t AliTRDtracker::ExpectedSigmaZ2(Double_t , Double_t )
 {
   // Parametrised "expected" error of the cluster reconstruction in Z 
 

@@ -87,7 +87,7 @@ AliTRDpid::AliTRDpid(const char* name, const char* title):TNamed(name,title)
 }
 
 //_____________________________________________________________________________
-AliTRDpid::AliTRDpid(const AliTRDpid &p)
+AliTRDpid::AliTRDpid(const AliTRDpid &p):TNamed(p)
 {
   //
   // AliTRDpid copy constructor

@@ -38,7 +38,7 @@ class AliTRDtracker : public AliTracker {
   Int_t         Clusters2Tracks(AliESD* event);
   Int_t         PropagateBack(const TFile *in, TFile *out);
   Int_t         PropagateBack(AliESD* event);
-  Int_t         RefitInward(AliESD* event) {return 0;}
+  Int_t         RefitInward(AliESD* /*event*/) {return 0;}
 
   Int_t         LoadClusters(TTree *cTree);
   void          UnloadClusters(){UnloadEvent();}

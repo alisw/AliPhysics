@@ -59,6 +59,7 @@ AliTRDsegmentArray::AliTRDsegmentArray(Text_t *classname, Int_t n)
 
 //_____________________________________________________________________________
 AliTRDsegmentArray::AliTRDsegmentArray(AliTRDsegmentArray &a)
+:AliTRDsegmentArrayBase(a)
 {
   //
   // AliTRDsegmentArray copy constructor

@@ -76,7 +76,7 @@ AliTRDmatrix::AliTRDmatrix(Int_t nRow, Int_t nCol, Int_t nTime
 }
 
 //_____________________________________________________________________________
-AliTRDmatrix::AliTRDmatrix(const AliTRDmatrix &m)
+AliTRDmatrix::AliTRDmatrix(const AliTRDmatrix &m):TObject(m)
 {
   //
   // AliTRDmatrix copy constructor

@@ -13,7 +13,120 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/*
+$Log$
+Revision 1.22  2002/11/21 22:38:47  alibrary
+Removing AliMC and AliMCProcess
+
+Revision 1.21  2002/11/21 16:09:44  cblume
+Change fgkRpadW to 1.0 cm for new pad plane
+
+Revision 1.20  2002/10/31 17:45:35  cblume
+New chamber geometry
+
+Revision 1.19  2002/10/14 14:57:43  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
+Revision 1.15.6.2  2002/07/24 10:09:30  alibrary
+Updating VirtualMC
+
+Revision 1.15.6.1  2002/06/10 15:28:58  hristov
+Merged with v3-08-02
+
+Revision 1.17  2002/04/05 13:20:12  cblume
+Remove const for CreateGeometry
+
+Revision 1.16  2002/03/28 14:59:07  cblume
+Coding conventions
+
+Revision 1.18  2002/06/12 09:54:35  cblume
+Update of tracking code provided by Sergei
+
+Revision 1.17  2002/04/05 13:20:12  cblume
+Remove const for CreateGeometry
+
+Revision 1.16  2002/03/28 14:59:07  cblume
+Coding conventions
+
+Revision 1.15  2002/02/11 14:21:16  cblume
+Update of the geometry. Get rid of MANY
+
+Revision 1.14  2001/11/06 17:19:41  cblume
+Add detailed geometry and simple simulator
+
+Revision 1.13  2001/08/02 08:30:45  cblume
+Fix positions of cooling material
+
+Revision 1.12  2001/05/21 16:45:47  hristov
+Last minute changes (C.Blume)
+
+Revision 1.11  2001/05/11 07:56:12  hristov
+Consistent declarations needed on Alpha
+
+Revision 1.10  2001/05/07 08:08:05  cblume
+Update of TRD code
+
+Revision 1.9  2001/03/27 12:48:33  cblume
+Correct for volume overlaps
+
+Revision 1.8  2001/03/13 09:30:35  cblume
+Update of digitization. Moved digit branch definition to AliTRD
+
+Revision 1.7  2001/02/14 18:22:26  cblume
+Change in the geometry of the padplane
+
+Revision 1.6  2000/11/01 14:53:20  cblume
+Merge with TRD-develop
+
+Revision 1.1.4.7  2000/10/16 01:16:53  cblume
+Changed timebin 0 to be the one closest to the readout
+
+Revision 1.1.4.6  2000/10/15 23:35:57  cblume
+Include geometry constants as static member
+
+Revision 1.1.4.5  2000/10/06 16:49:46  cblume
+Made Getters const
+
+Revision 1.1.4.4  2000/10/04 16:34:58  cblume
+Replace include files by forward declarations
+
+Revision 1.1.4.3  2000/09/22 14:43:40  cblume
+Allow the pad/timebin-dimensions to be changed after initialization
+
+Revision 1.1.4.2  2000/09/18 13:37:01  cblume
+Minor coding corrections
+
+Revision 1.5  2000/10/02 21:28:19  fca
+Removal of useless dependecies via forward declarations
+
+Revision 1.4  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
+Revision 1.3  2000/06/07 16:25:37  cblume
+Try to remove compiler warnings on Sun and HP
+
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
+Revision 1.1.4.1  2000/05/08 14:45:55  cblume
+Bug fix in RotateBack(). Geometry update
+
+Revision 1.4  2000/06/08 18:32:58  cblume
+Make code compliant to coding conventions
+
+Revision 1.3  2000/06/07 16:25:37  cblume
+Try to remove compiler warnings on Sun and HP
+
+Revision 1.2  2000/05/08 16:17:27  cblume
+Merge TRD-develop
+
+Revision 1.1.4.1  2000/05/08 14:45:55  cblume
+Bug fix in RotateBack(). Geometry update
+
+Revision 1.1  2000/02/28 19:00:44  cblume
+Add new TRD classes
+
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -57,6 +170,10 @@ ClassImp(AliTRDgeometry)
   const Float_t AliTRDgeometry::fgkSlenTR2 = 313.5; 
   const Float_t AliTRDgeometry::fgkSlenTR3 = 159.5;  
 
+  // The super module side plates
+  const Float_t AliTRDgeometry::fgkSMpltT  = 0.2;
+  const Float_t AliTRDgeometry::fgkSMgapT  = 0.5;  
+
   // Height of different chamber parts
   // Radiator
   const Float_t AliTRDgeometry::fgkCraH    =   4.8; 
@@ -65,7 +182,7 @@ ClassImp(AliTRDgeometry)
   // Amplification region
   const Float_t AliTRDgeometry::fgkCamH    =   0.7;
   // Readout
-  const Float_t AliTRDgeometry::fgkCroH    =   2.0;
+  const Float_t AliTRDgeometry::fgkCroH    =   2.316;
   // Total height
   const Float_t AliTRDgeometry::fgkCH      = AliTRDgeometry::fgkCraH
                                            + AliTRDgeometry::fgkCdrH
@@ -73,7 +190,7 @@ ClassImp(AliTRDgeometry)
                                            + AliTRDgeometry::fgkCroH;  
 
   // Vertical spacing of the chambers
-  const Float_t AliTRDgeometry::fgkVspace  =   2.1;
+  const Float_t AliTRDgeometry::fgkVspace  =   1.784;
 
   // Horizontal spacing of the chambers
   const Float_t AliTRDgeometry::fgkHspace  =   2.0;
@@ -94,7 +211,8 @@ ClassImp(AliTRDgeometry)
   const Float_t AliTRDgeometry::fgkCroW    =   0.9;
 
   // Difference of outer chamber width and pad plane width
-  const Float_t AliTRDgeometry::fgkCpadW   =   1.0;
+  //const Float_t AliTRDgeometry::fgkCpadW   =   1.0;
+  const Float_t AliTRDgeometry::fgkCpadW   =   0.0;
   const Float_t AliTRDgeometry::fgkRpadW   =   1.0;
 
   //
@@ -179,14 +297,15 @@ void AliTRDgeometry::Init()
   Int_t isect;
 
   // The outer width of the chambers
-  fCwidth[0] =  95.6;
-  fCwidth[1] = 100.1;
-  fCwidth[2] = 104.5;
-  fCwidth[3] = 108.9;
-  fCwidth[4] = 113.4;
-  fCwidth[5] = 117.8;
+  fCwidth[0] =  94.8;
+  fCwidth[1] =  99.3;
+  fCwidth[2] = 103.7;
+  fCwidth[3] = 108.1;
+  fCwidth[4] = 112.6;
+  fCwidth[5] = 117.0;
 
   // The outer lengths of the chambers
+  // Includes the spacings between the chambers!
   Float_t length[kNplan][kNcham]   = { { 124.0, 124.0, 110.0, 124.0, 124.0 }
                                      , { 131.0, 131.0, 110.0, 131.0, 131.0 }
                                      , { 138.0, 138.0, 110.0, 138.0, 138.0 }
@@ -220,7 +339,7 @@ void AliTRDgeometry::Init()
 }
 
 //_____________________________________________________________________________
-void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
+void AliTRDgeometry::CreateGeometry(Int_t* )
 {
   //
   // Create TRD geometry

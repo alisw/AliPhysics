@@ -47,7 +47,7 @@ AliTRDsimpleGen::AliTRDsimpleGen():TObject()
 }                                                                               
  
 //_____________________________________________________________________________
-AliTRDsimpleGen::AliTRDsimpleGen(const AliTRDsimpleGen &g)
+AliTRDsimpleGen::AliTRDsimpleGen(const AliTRDsimpleGen &g):TObject(g)
 {
   //
   // AliTRDsimpleGen copy constructor

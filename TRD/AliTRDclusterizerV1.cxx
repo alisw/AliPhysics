@@ -68,6 +68,7 @@ AliTRDclusterizerV1::AliTRDclusterizerV1(const Text_t* name, const Text_t* title
 
 //_____________________________________________________________________________
 AliTRDclusterizerV1::AliTRDclusterizerV1(const AliTRDclusterizerV1 &c)
+:AliTRDclusterizer(c)
 {
   //
   // AliTRDclusterizerV1 copy constructor

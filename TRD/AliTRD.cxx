@@ -144,7 +144,7 @@ AliTRD::AliTRD(const char *name, const char *title)
 }
 
 //_____________________________________________________________________________
-AliTRD::AliTRD(const AliTRD &trd)
+AliTRD::AliTRD(const AliTRD &trd):AliDetector(trd)
 {
   //
   // Copy constructor
@@ -700,6 +700,9 @@ void AliTRD::CreateMaterials()
   // Al of cooling pipes
   AliMedium(24, "Cooling" ,   1, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
+  // Cu in services
+  AliMedium(25, "Serv-Cu" ,   5, 0, isxfld, sxmgmx
+                , tmaxfd, stemax, deemax, epsil, stmin);
 
   // Save the density values for the TRD absorbtion
   fFoilDensity = dmy;
@@ -818,7 +821,7 @@ void AliTRD::Init()
 }
 
 //_____________________________________________________________________________
-void AliTRD::LoadPoints(Int_t track)
+void AliTRD::LoadPoints(Int_t )
 {
   //
   // Store x, y, z of all hits in memory.
@@ -1218,7 +1221,7 @@ AliHit* AliTRD::NextHit2()
 }
 
 //_____________________________________________________________________________
-void AliTRD::MakeBranch2(Option_t *option, const char *file)
+void AliTRD::MakeBranch2(Option_t *option, const char* )
 {
   //
   // Create a new branch in the current Root tree.

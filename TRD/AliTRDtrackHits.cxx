@@ -86,9 +86,9 @@ Bool_t AliTRDtrackHits::Next()
   fCurrentHit->fStackIndex++;
 
   AliTrackHitsParamV2 *param =  (AliTrackHitsParamV2 *)fArray->At(fCurrentHit->fParamIndex);
-  if (fCurrentHit->fStackIndex>=((UInt_t) param->fNHits)){
+  if (fCurrentHit->fStackIndex>= param->fNHits){
     fCurrentHit->fParamIndex++;
-    if (fCurrentHit->fParamIndex>=((UInt_t) fArray->GetEntriesFast())){
+    if (fCurrentHit->fParamIndex>= fArray->GetEntriesFast()){
       fCurrentHit->fStatus=kFALSE;
       return kFALSE;
     }

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.23  2003/07/22 15:56:14  hristov
+Implementing ESD functionality in the NewIO (Yu.Belikov)
+
 Revision 1.20.2.1  2003/07/14 09:19:33  hristov
 TOF included in the combined PID (Yu.Belikov)
 
@@ -128,7 +131,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
   fdQdl[0] = q;
   
   // initialisation [SR, GSI 18.02.2003] (i startd for 1)
-  for(Int_t i=1; i<kMAX_CLUSTERS_PER_TRACK; i++) {
+  for(UInt_t i=1; i<kMAX_CLUSTERS_PER_TRACK; i++) {
     fdQdl[i] = 0;
     fIndex[i] = 0;
   }
@@ -169,7 +172,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t) {
   }
 
   // initialisation (i starts from n) [SR, GSI, 18.02.2003]
-  for(Int_t i=n; i<kMAX_CLUSTERS_PER_TRACK; i++) {
+  for(UInt_t i=n; i<kMAX_CLUSTERS_PER_TRACK; i++) {
     fdQdl[i] = 0;
     fIndex[i] = 0;
   }
@@ -225,7 +228,7 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
   fCcy=c[10];   fCcz=c[11];   fCce=c42;   fCct=c[13]; fCcc=c[14];  
 
   // Initialization [SR, GSI, 18.02.2003]
-  for(Int_t i=0; i<kMAX_CLUSTERS_PER_TRACK; i++) {
+  for(UInt_t i=0; i<kMAX_CLUSTERS_PER_TRACK; i++) {
     fdQdl[i] = 0;
     fIndex[i] = 0;
   }
@@ -281,7 +284,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   fCcy=c[10];   fCcz=c[11];   fCce=c42;   fCct=c[13]; fCcc=c[14];  
 
   // Initialization [SR, GSI, 18.02.2003]
-  for(Int_t i=0; i<kMAX_CLUSTERS_PER_TRACK; i++) {
+  for(UInt_t i=0; i<kMAX_CLUSTERS_PER_TRACK; i++) {
     fdQdl[i] = 0;
     fIndex[i] = 0;
   }

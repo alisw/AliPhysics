@@ -196,7 +196,7 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager)
 }
 
 //_____________________________________________________________________________
-AliTRDdigitizer::AliTRDdigitizer(const AliTRDdigitizer &d)
+AliTRDdigitizer::AliTRDdigitizer(const AliTRDdigitizer &d):AliDigitizer(d)
 {
   //
   // AliTRDdigitizer copy constructor

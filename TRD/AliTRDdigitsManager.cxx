@@ -66,6 +66,7 @@ AliTRDdigitsManager::AliTRDdigitsManager():TObject()
 
 //_____________________________________________________________________________
 AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDdigitsManager &m)
+:TObject(m)
 {
   //
   // AliTRDdigitsManager copy constructor

@@ -93,7 +93,7 @@ AliTRDpidLQ::AliTRDpidLQ(const char* name, const char* title)
 }
 
 //_____________________________________________________________________________
-AliTRDpidLQ::AliTRDpidLQ(const AliTRDpidLQ &p)
+AliTRDpidLQ::AliTRDpidLQ(const AliTRDpidLQ &p):AliTRDpid(p)
 {
   //
   // AliTRDpidLQ copy constructor
