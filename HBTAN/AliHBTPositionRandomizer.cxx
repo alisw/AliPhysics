@@ -25,6 +25,7 @@ AliHBTPositionRandomizer::AliHBTPositionRandomizer():
  fModel(0),
  fAddToExistingPos(kFALSE),
  fOnlyParticlesFromVertex(kFALSE),
+ fRandomizeTracks(kFALSE),
  fVX(0.0),
  fVY(0.0),
  fVZ(0.0)
@@ -39,6 +40,7 @@ AliHBTPositionRandomizer::AliHBTPositionRandomizer(AliHBTReader* reader):
  fModel(0),
  fAddToExistingPos(kFALSE),
  fOnlyParticlesFromVertex(kFALSE),
+ fRandomizeTracks(kFALSE),
  fVX(0.0),
  fVY(0.0),
  fVZ(0.0)
@@ -54,6 +56,7 @@ AliHBTPositionRandomizer::AliHBTPositionRandomizer(const AliHBTPositionRandomize
  fModel(0),
  fAddToExistingPos(kFALSE),
  fOnlyParticlesFromVertex(kFALSE),
+ fRandomizeTracks(kFALSE),
  fVX(0.0),
  fVY(0.0),
  fVZ(0.0)
@@ -92,7 +95,7 @@ AliHBTEvent* AliHBTPositionRandomizer::GetTrackEvent()
  // gets from fReader and randomizes current track event
  if (fReader == 0x0) return 0x0;
  AliHBTEvent *e =  fReader->GetTrackEvent();
- if (e->IsRandomized() == kFALSE) Randomize(e);
+ if (fRandomizeTracks) if (e->IsRandomized() == kFALSE) Randomize(e);
  return e;
 }
 /*********************************************************************/
@@ -105,6 +108,7 @@ Int_t AliHBTPositionRandomizer::Read(AliHBTRun* particles, AliHBTRun *tracks)
   Int_t err = fReader->Read(particles,tracks);
   if (err) return err;
   Randomize(particles);
+  if (fRandomizeTracks) Randomize(tracks);
   return 0;
 }
 /*********************************************************************/
@@ -143,7 +147,20 @@ void AliHBTPositionRandomizer::Randomize(AliHBTEvent* event) const
      AliHBTParticle* p = event->GetParticle(i);
      Double_t x,y,z,t=0.0;
      fRandomizer->Randomize(x,y,z,p);
-     p->SetProductionVertex(x*kfmtocm,y*kfmtocm,z*kfmtocm,t*kfmtocm);
+     
+     Double_t nx = x*kfmtocm;
+     Double_t ny = y*kfmtocm;
+     Double_t nz = z*kfmtocm;
+     Double_t nt = t*kfmtocm;
+     
+     if (fAddToExistingPos)
+      {
+       nx += p->Vx();
+       ny += p->Vy();
+       nz += p->Vz();
+       nt += p->T();
+      }
+     p->SetProductionVertex(nx,ny,nz,nt); 
    }
   event->SetRandomized();
 }

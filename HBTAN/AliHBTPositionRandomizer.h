@@ -56,6 +56,10 @@ class AliHBTPositionRandomizer: public AliHBTReader
    void SetGaussianBall(Double_t rx, Double_t ry, Double_t rz);
    void SetCyllinderSurface(Double_t r, Double_t l);
    
+   void AddToPosition(Bool_t flag){fAddToExistingPos = flag;}
+   void RandomizeTracks(Bool_t flag){fRandomizeTracks = flag;}
+   
+   
  protected:
    void Randomize(Double_t& x,Double_t& y,Double_t&z, AliHBTParticle*p);
    Int_t ReadNext(){return (fReader)?fReader->Next():1;}
@@ -69,6 +73,8 @@ class AliHBTPositionRandomizer: public AliHBTReader
    Bool_t   fAddToExistingPos;  //Determines if randomized position should be added to previous one, or overwrite old one
    Bool_t   fOnlyParticlesFromVertex; //Determines if randomization should be performed for particles from vertex
 
+   Bool_t   fRandomizeTracks; //Determines if tracks should also be randimized 
+   
    Double_t fVX; //vertex position
    Double_t fVY; //vertex position
    Double_t fVZ; //vertex position
