@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2000/10/04 19:46:39  barbera
+Corrected by F. Carminati for v3.04
+
 Revision 1.8  2000/10/02 16:32:57  barbera
 Forward declarations added and formatting
 
@@ -75,8 +78,8 @@ ClassImp(AliITSmodule)
 //________________________________________________________________________
 //
 AliITSmodule::AliITSmodule() {
-  // constructor
-    fIndex       = 0;
+    // constructor
+
     fHitsM       = 0;
     fTrackIndex  = 0;
     fHitIndex    = 0;
@@ -98,7 +101,6 @@ AliITSmodule::~AliITSmodule() {
     // The destructor for AliITSmodule. Before destoring AliITSmodule
     // we must first destroy all of it's members.
 
-    fIndex   = 0;
     if(fHitsM){
 	for(Int_t i=0;i<fHitsM->GetEntriesFast();i++) 
 	    delete ((AliITShit *)(fHitsM->At(i)));
