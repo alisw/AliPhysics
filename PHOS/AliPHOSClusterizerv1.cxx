@@ -219,8 +219,13 @@ void AliPHOSClusterizerv1::Exec(Option_t * option)
 
     WriteRecPoints(ievent) ;
 
-    if(strstr(option,"deb"))  PrintRecPoints(option) ;
-  }
+    if(strstr(option,"deb"))  
+      PrintRecPoints(option) ;
+
+    //increment the total number of digits per run 
+    fRecPointsInRun += gime->EmcRecPoints()->GetEntriesFast() ;  
+    fRecPointsInRun += gime->CpvRecPoints()->GetEntriesFast() ;  
+ }
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSClusterizer");

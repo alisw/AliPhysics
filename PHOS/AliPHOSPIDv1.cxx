@@ -225,6 +225,10 @@ void  AliPHOSPIDv1::Exec(Option_t * option)
     
     if(strstr(option,"deb"))
       PrintRecParticles(option) ;
+
+    //increment the total number of rec particles per run 
+    fRecParticlesInRun += gime->RecParticles()->GetEntriesFast() ; 
+
   }
   
   if(strstr(option,"tim")){
@@ -516,8 +520,6 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
   
   cout << "AliPHOSPIDv1: event "<<gAlice->GetEvNumber()  << endl ;
   cout << "       found " << recParticles->GetEntriesFast() << " RecParticles " << endl ;
-
-  fRecParticlesInRun += recParticles->GetEntriesFast() ; 
   
   if(strstr(option,"all")) {  // printing found TS
     

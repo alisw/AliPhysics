@@ -460,6 +460,9 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     
     if(strstr(option,"deb"))
       PrintDigits(option);
+    
+    //increment the total number of Digits per run 
+    fDigitsInRun += gime->Digits()->GetEntriesFast() ;  
   }
   
   if(strstr(option,"tim")){

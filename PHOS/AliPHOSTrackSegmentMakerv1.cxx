@@ -394,6 +394,9 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t * option)
 
     if(strstr(option,"deb"))
       PrintTrackSegments(option) ;
+    
+    //increment the total number of track segments per run 
+    fTrackSegmentsInRun += gime->TrackSegments()->GetEntriesFast() ; 
 
   }
 
@@ -506,8 +509,6 @@ void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
   cout << "AliPHOSTrackSegmentMakerv1: event "<<gAlice->GetEvNumber()  << endl ;
   cout << "       Found " << trackSegments->GetEntriesFast() << "  trackSegments " << endl ;
   
-  fTrackSegmentsInRun += trackSegments->GetEntriesFast() ; 
-
   if(strstr(option,"all")) {  // printing found TS
     cout << "TrackSegment # " << "    EMC RP#    " << "    CPV RP#    " << endl ; 
     

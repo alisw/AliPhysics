@@ -1,4 +1,4 @@
-############################### PHOS Makefile #################################
+ ############################### PHOS Makefile #################################
 
 # Include machine specific definitions
 
@@ -86,8 +86,7 @@ test:
 		@echo " "
 		@echo " Starting the test of the simulation/reconstruction software. Please don't take the warning messages into account. "
 		@echo " ____________________________________________________________ "
-		@aliroot -b -q "testsim.C(100)" > out
-		@aliroot -b -q testsimglobal.C > out
+		@aliroot -b -q "test.C(100)" > out
 		@rm out
 		@rm testPHOS.root
 
@@ -96,8 +95,7 @@ test10:
 		@echo " "
 		@echo " Starting the test of the simulation/reconstruction software. Please don't take the warning messages into account. "
 		@echo " ____________________________________________________________ "
-		@aliroot -b -q "testsim.C(10)" > out
-		@aliroot -b -q testsimglobal.C > out
+		@aliroot -b -q "test.C(10)" > out
 		@rm out
 		@rm testPHOS.root
 

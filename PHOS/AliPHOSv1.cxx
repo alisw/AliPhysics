@@ -388,10 +388,6 @@ void AliPHOSv1::StepManager(void)
 
       gMC->CurrentVolOffID(10, moduleNumber) ; // get the PHOS module number ;
       
-      // fill the relevant QA Checkables
-      fQATotEner->Update( xyze[4] ) ;                                             // total energy in PHOS
-      (static_cast<AliPHOSQAFloatCheckable*>((*fQATotEnerB)[moduleNumber-1]))->Update( xyze[4] ) ; // energy in this block  
-
       Int_t strip ;
       gMC->CurrentVolOffID(3, strip);
       Int_t cell ;
@@ -418,7 +414,10 @@ void AliPHOSv1::StepManager(void)
       // add current hit to the hit list
       AddHit(fIshunt, primary,tracknumber, absid, xyze);
       
-      
+      // fill the relevant QA Checkables
+      fQATotEner->Update( xyze[4] ) ;                                             // total energy in PHOS
+      (static_cast<AliPHOSQAFloatCheckable*>((*fQATotEnerB)[moduleNumber-1]))->Update( xyze[4] ) ; // energy in this block  
+
     } // there is deposited energy
   } // we are inside a PHOS Xtal
 
