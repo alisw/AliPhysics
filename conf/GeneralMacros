@@ -51,9 +51,11 @@ macroclean:
 
 check:		$(CHECKS)
 
+PREPROC       = $(patsubst %.viol,%.i,$(CHECKS))
+
 REVENGS       = $(patsubst %.viol,%.ii,$(CHECKS))
 
-.SECONDARY: $(REVENGS)
+.SECONDARY: $(REVENGS) $(PREPROC)
 
 reveng:		check/classDiagram.dot
 
