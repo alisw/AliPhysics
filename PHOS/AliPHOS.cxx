@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  1999/12/09 14:57:51  fca
+Removal of obsolete PHOS code
+
 Revision 1.9  1999/11/08 07:12:31  fca
 Minor corrections thanks to I.Hrivnacova
 
@@ -996,6 +999,7 @@ Float_t AliPHOSCradle::GetDistortedValue(const TH2F *h, UInt_t n)
 //   ,  igamvert(ngp)
 } rcgamma;
 
+/*
 #ifdef WIN32
 #define reconsfirst RECONSFIRST
 #define type_of_call _stdcall
@@ -1005,6 +1009,7 @@ Float_t AliPHOSCradle::GetDistortedValue(const TH2F *h, UInt_t n)
 #endif
 
 extern "C" void type_of_call reconsfirst(const float &,const float &);
+*/
 
 void AliPHOSCradle::Reconstruction(Float_t signal_step, UInt_t min_signal_reject)
 {
@@ -1048,7 +1053,7 @@ void AliPHOSCradle::Reconstruction(Float_t signal_step, UInt_t min_signal_reject
 
   const float   stochastic_term   = 0.03,        // per cents over sqrt(E);  E in GeV
                 electronic_noise  = 0.01;        // GeV
-  reconsfirst(stochastic_term,electronic_noise); // Call of reconstruction program.
+//  reconsfirst(stochastic_term,electronic_noise); // Call of reconstruction program.
 
   for( int i=0; i<rcgamma.recons_gammas_amount; i++ )
   {
