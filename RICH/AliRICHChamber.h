@@ -112,9 +112,6 @@ class AliRICHChamber : public TObject
     //
     AliRICHClusterFinder* &GetReconstructionModel() {return fReconstruction;}
 
-    Int_t Nsec()              {return fnsec;}
-    void  SetNsec(Int_t nsec) {fnsec=nsec;}
-//
 // Member function forwarding to the segmentation and response models
 //
 // Calculate pulse height from energy loss  
@@ -243,9 +240,7 @@ class AliRICHChamber : public TObject
     Float_t frMax;                 // Maximum Chamber size 
     Int_t   fGid;                  // Id tag 
     Float_t fzPos;                 // z-position of this chamber
-// The segmentation models for the cathode planes
-    Int_t   fnsec;                 // fnsec=1: one plane segmented, fnsec=2: both planes are segmented.
-    
+
     TRotMatrix *fChamberMatrix;          //Rotation matrices for each chamber
     Float_t fChamberTrans[3];            //Translaction vectors for each chamber
 
