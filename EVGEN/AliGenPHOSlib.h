@@ -6,6 +6,10 @@
 
 /* $Id$ */
 
+// Library class for particle pt and y distributions used for 
+// PHOS simulations.
+// To be used with AliGenParam.
+//
 class TRandom;
 
 class AliGenPHOSlib :
@@ -43,9 +47,9 @@ public AliGenLib
     static Double_t YBaryon( Double_t *py, Double_t *dummy);
     static Int_t    IpBaryon(TRandom *ran);
     
-    GenFunc   GetPt(Int_t param, const char* tname=0);
-    GenFunc   GetY (Int_t param, const char* tname=0);
-    GenFuncIp GetIp(Int_t param, const char* tname=0);    
+    GenFunc   GetPt(Int_t param, const char* tname=0) const;
+    GenFunc   GetY (Int_t param, const char* tname=0) const;
+    GenFuncIp GetIp(Int_t param, const char* tname=0) const;    
     ClassDef(AliGenPHOSlib,0) // Library providing y and pT parameterisations
 };
 #endif

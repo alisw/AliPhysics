@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.7  2001/03/09 13:01:41  morsch
+- enum constants for paramterisation type (particle family) moved to AliGen*lib.h
+- use AliGenGSIlib::kUpsilon, AliGenPHOSlib::kEtaPrime to access the constants
+
 Revision 1.6  2000/11/30 07:12:50  alibrary
 Introducing new Rndm and QA classes
 
@@ -414,8 +418,8 @@ ClassImp(AliGenPHOSlib)
 //===================================================================
 
 
-typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
- GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* tname)
+typedef Double_t (*GenFunc) (Double_t*,  Double_t*); 
+ GenFunc AliGenPHOSlib::GetPt(Int_t param, const char* tname) const
 {
 // Return pinter to pT parameterisation
     GenFunc func;
@@ -447,7 +451,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 
- GenFunc AliGenPHOSlib::GetY(Int_t param, const char* tname)
+ GenFunc AliGenPHOSlib::GetY(Int_t param, const char* tname) const
 {
 // Return pointer to Y parameterisation
     GenFunc func;
@@ -481,7 +485,7 @@ typedef Double_t (*GenFunc) (Double_t*,  Double_t*);
     return func;
 }
 typedef Int_t (*GenFuncIp) (TRandom *);
- GenFuncIp AliGenPHOSlib::GetIp(Int_t param,  const char* tname)
+ GenFuncIp AliGenPHOSlib::GetIp(Int_t param,  const char* tname) const
 {
 // Return pointer to particle composition
     GenFuncIp func;
