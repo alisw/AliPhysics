@@ -10,8 +10,8 @@
 // Author: andreas.morsch@cern.ch
 
 #include "AliGenerator.h"
+#include "AliDecayer.h"
 class TF1;
-class AliDecayerPythia;
 
 class AliGenHIJINGpara : public AliGenerator
 {
@@ -31,14 +31,14 @@ class AliGenHIJINGpara : public AliGenerator
  private:
   void DecayPi0(Float_t* orig, Float_t * p);
  protected:
-  Int_t   fNt;         // CurrentTrack;
-  Float_t fCutVertexZ; // Vertex truncation
-  Bool_t  fPi0Decays;  // Flag for pi0 decays
-  TF1* fPtpi;          // Parametrised pt distribution for pi
-  TF1* fPtka;          // Parametrised pt distribution for ka
-  TF1* fETApic;        // Parametrised eta distribution for pi
-  TF1* fETAkac;        // Parametrised eta distribution fro ka
-  AliDecayerPythia  *fDecayer; // ! Pointer to pythia object for decays
+  Int_t   fNt;          // CurrentTrack;
+  Float_t fCutVertexZ;  // Vertex truncation
+  Bool_t  fPi0Decays;   // Flag for pi0 decays
+  TF1* fPtpi;           // Parametrised pt distribution for pi
+  TF1* fPtka;           // Parametrised pt distribution for ka
+  TF1* fETApic;         // Parametrised eta distribution for pi
+  TF1* fETAkac;         // Parametrised eta distribution fro ka
+  AliDecayer* fDecayer; // ! Pointer to pythia object for decays
   ClassDef(AliGenHIJINGpara,3) // Hijing parametrisation generator
 };
 #endif

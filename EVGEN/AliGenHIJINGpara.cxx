@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2003/01/28 15:29:07  morsch
+Spelling in name corrected.
+
 Revision 1.19  2003/01/14 10:50:18  alibrary
 Cleanup of STEER coding conventions
 
@@ -114,7 +117,6 @@ All coding rule violations except RS3 corrected (AM)
 
 #include "AliConst.h"
 #include "AliDecayer.h"
-#include "AliDecayerPythia.h"
 #include "AliGenEventHeader.h"
 #include "AliGenHIJINGpara.h"
 #include "AliRun.h"
@@ -326,7 +328,8 @@ void AliGenHIJINGpara::Init()
     }
 //
 //
-    if (fPi0Decays) fDecayer = new AliDecayerPythia();
+    if (fPi0Decays && gMC)
+	fDecayer = gMC->GetDecayer();
 }
 
 

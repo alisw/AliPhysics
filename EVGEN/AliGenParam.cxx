@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.41  2003/01/09 17:38:47  morsch
+Draw() method added.
+
 Revision 1.40  2002/10/14 14:55:35  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -132,7 +135,7 @@ Introduction of the Copyright and cvs Log
 // andreas.morsch@cern.ch
 
 #include "AliGenParam.h"
-#include "AliDecayerPythia.h"
+#include "AliDecayer.h"
 #include "AliGenMUONlib.h"
 #include "AliRun.h"
 #include <TParticle.h>
@@ -273,7 +276,7 @@ void AliGenParam::Init()
 {
 // Initialisation
 
-    fDecayer = new AliDecayerPythia();
+    if (gMC) fDecayer = gMC->GetDecayer();
   //Begin_Html
   /*
     <img src="picts/AliGenParam.gif">
