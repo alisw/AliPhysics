@@ -81,12 +81,12 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   TString branchName("Default") ;  
 
   AliPHOSTrackSegmentMakerv1 tsm(headerFile, branchName);
+  tsm.SetESD(esd) ; 
   AliPHOSPIDv1 pid(headerFile, branchName);
 
   //  AliPHOSGetter *gime = AliPHOSGetter::Instance() ;
   Int_t eventNumber = runLoader->GetEventNumber() ;
   // do current event; the loop over events is done by AliReconstruction::Run()
-  Info("FillESD 1", "%d", eventNumber) ;
   tsm.SetEventRange(eventNumber, eventNumber) ; 
   pid.SetEventRange(eventNumber, eventNumber) ; 
   if ( Debug() ) {
@@ -102,6 +102,9 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   AliPHOSGetter::Instance()->Event(eventNumber, "P") ; 
   TClonesArray *recParticles = AliPHOSGetter::Instance()->RecParticles();
   Int_t nOfRecParticles = recParticles->GetEntries();
+  esd->SetNumberOfPHOSParticles(nOfRecParticles) ; 
+  esd->SetFirstPHOSParticle(esd->GetNumberOfTracks()) ; 
+
   for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
     AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
     if (Debug()) 
@@ -109,7 +112,8 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     AliESDtrack * et = new AliESDtrack() ; 
     // fills the ESDtrack
     Double_t xyz[3];
-    for (Int_t ixyz=0; ixyz<3; ixyz++) xyz[ixyz] = rp->GetPos()[ixyz];
+    for (Int_t ixyz=0; ixyz<3; ixyz++) 
+      xyz[ixyz] = rp->GetPos()[ixyz];
     et->SetPHOSposition(xyz) ; 
     et->SetPHOSsignal  (rp->Energy()) ; 
     et->SetPHOSpid     (rp->GetPID()) ;
