@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/10/25 08:50:57  morsch
+New beamshield geometry with increased tolerances and insulation thickness.
+
 Revision 1.9  2001/05/16 14:57:22  alibrary
 New files for folders and Stack
 
@@ -122,6 +125,7 @@ void AliABSOv0::CreateGeometry()
     
     Float_t par[24], cpar[5], cpar0[5], pcpar[12], tpar[3], tpar0[3]; 
     Float_t dz;
+    Int_t idrotm[1699];
 #include "ABSOSHILConst.h"
 #include "ABSOConst.h"
 //
@@ -229,7 +233,7 @@ void AliABSOv0::CreateGeometry()
 //
 // Tungsten inner shield
 //
-  Float_t zW=zTwoDeg+.1;
+  Float_t zW = zTwoDeg+.1;
   Float_t dZ = zW+(zRear-dRear-zW)/2.;
   //
   pcpar[0]  = 0.;
@@ -249,7 +253,15 @@ void AliABSOv0::CreateGeometry()
   //
   dz=(zW+zRear-dRear)/2-(zAbsStart+zRear)/2.;
   gMC->Gspos("AWIN", 1, "ABSS", 0., 0., dz, 0, "ONLY");
-
+  cpar[0] = (200.-zW)/2.;
+  cpar[1] = rAbs;
+  cpar[2] = pcpar[5];
+  cpar[3] = rAbs;
+  cpar[4] = 200. * TMath::Tan(accMin);
+  gMC->Gsvolu("ACNO", "CONE", idtmed[kC], cpar, 5);
+  dz = zW-dZ+cpar[0];
+  
+  gMC->Gspos("ACNO", 1, "AWIN", 0., 0., dz, 0, "ONLY");
   //     Inner tracking region
   //
   //     mother volume: Cu
@@ -418,31 +430,51 @@ void AliABSOv0::CreateGeometry()
 //
 // Support cone 
 
-  par[0]  = 0.;
-  par[1]  = 360.;
-  par[2]  = 4.;
+  par[0]  =  22.5;
+  par[1]  = 360.0;
+  par[2]  =   8.0;
+  par[3]  =   4.0;
     
-  par[3]  = zRear;
-  par[4]  = 100.;
-  par[5]  = 170.;
+  par[4]  = zRear;
+  par[5]  = 100.;
+  par[6]  = 170.;
   
-  par[6]  = zRear+2.;
-  par[7]  = 100.;
-  par[8]  = 170.;
+  par[7]  = zRear+2.;
+  par[8]  = 100.;
+  par[9]  = 170.;
 
-  par[9]  = zRear+2.;
-  par[10] = 168.;
-  par[11] = 170.;
+  par[10] = zRear+2.;
+  par[11] = 168.;
+  par[12] = 170.;
 
-  par[12]  = 600.;
-  par[13] = 168.;
-  par[14] = 170.;
+  par[13] = 600.;
+  par[14] = 168.;
+  par[15] = 170.;
   
 
-  gMC->Gsvolu("ASSS", "PCON", idtmed[kSteel], par, 25);
+  gMC->Gsvolu("ASSS", "PGON", idtmed[kSteel], par, 16);
   gMC->Gspos("ASSS", 1, "ALIC", 0., 0., 0., 0, "ONLY");
 
-
+  Float_t trap[11];
+  trap[ 0] = (530.-170.)/2.;
+  trap[ 2] = 0.;
+  trap[ 3] = 2.; 
+  trap[ 4] = (600.-(zRear+2.))/2.;;
+  trap[ 5] = trap[4];
+  trap[ 6] = 0.;
+  trap[ 7] = 2.;
+  trap[ 8] = 5.;
+  trap[ 9] = 5.;
+  trap[10] = 0.;
+  trap[ 1] = -TMath::ATan((trap[4]-trap[8])/2./trap[0])*180./TMath::Pi();
+  AliMatrix(idrotm[1600], 180., 0., 90., 0., 90., 90.);
+  AliMatrix(idrotm[1601], 180., 0., 90., 0., 90., 270.);
+  gMC->Gsvolu("ASST", "TRAP", idtmed[kSteel], trap, 11);
+  dz = (600.+zRear+2.)/2.+(trap[4]-trap[8])/2.;
+  Float_t dy =  170.+trap[0];
+  
+  gMC->Gspos("ASST", 1, "ALIC", 0.,  dy, dz, idrotm[1600], "ONLY");
+  gMC->Gspos("ASST", 2, "ALIC", 0., -dy, dz, idrotm[1601], "ONLY");
 }
 
 //_____________________________________________________________________________
