@@ -60,7 +60,8 @@ $(DICT):				$(HDRS)
 
 depend:					$(SRCS)
 
-HEADERS =	$(filter-out %LinkDef.h,$(HDRS) AliConst.h AliCallf77.h)
+HEADERS =	$(filter-out %LinkDef.h,$(HDRS) AliConst.h AliCallf77.h \
+                  Copyright.h)
 
 TOCLEAN		= $(OBJS) *Cint.cxx *Cint.h
 
