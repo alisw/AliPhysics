@@ -13,6 +13,7 @@
 #include "TG4PhysicsConstructorSpecialControls.h"
 #include "TG4G3Cut.h"
 #include "TG4G3Control.h"
+#include "AliDecayer.h"
 
 #include <G4ParticleDefinition.hh>
 #include <G4VProcess.hh>
@@ -24,6 +25,7 @@ TG4PhysicsManager* TG4PhysicsManager::fgInstance = 0;
 
 TG4PhysicsManager::TG4PhysicsManager(G4VModularPhysicsList* physicsList)
   : fPhysicsList(physicsList),
+    fDecayer(0),
     fSetEMPhysics(true),
     fSetOpticalPhysics(false),
     fSetHadronPhysics(false),
@@ -51,6 +53,7 @@ TG4PhysicsManager::TG4PhysicsManager(G4VModularPhysicsList* physicsList)
 
 TG4PhysicsManager::TG4PhysicsManager(){
 //
+  delete fDecayer;
   delete fParticlesManager;
   delete fG3PhysicsManager;
 }
@@ -130,7 +133,7 @@ void TG4PhysicsManager::FillProcessMap()
   // bremsstrahlung
   fProcessMap.Add("eBrem", kPBrem);
   fProcessMap.Add("IeBrem", kPBrem);
-  fProcessMap.Add("MuBrem", kPBrem);
+  fProcessMap.Add("MuBrems", kPBrem);
   fProcessMap.Add("IMuBremsstrahlung", kPBrem);
   fProcessMap.Add("LowEnBrem", kPBrem);
 
