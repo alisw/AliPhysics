@@ -100,12 +100,16 @@ Int_t AliReaderAOD::ReadNext()
          fTree = 0x0;
          delete fFile;
          fFile = 0x0;
+         
+         delete fSimBuffer;
+         delete fRecBuffer;
+         
          fSimBuffer = 0x0;
          fRecBuffer = 0x0;
          fCurrentDir++;
          continue;
        }
-       
+      
       Info("ReadNext","Getting event %d",fCurrentEvent);
       fTree->GetEvent(fCurrentEvent);
       Info("ReadNext","Getting event %d Done",fCurrentEvent);
@@ -122,8 +126,13 @@ Int_t AliReaderAOD::ReadNext()
        } 
 
       fCurrentEvent++;
-      if (retval == 0) fNEventsRead++;
+      if (retval != 0) 
+        {
+          //something wrong has happend during reading this event, take next
+          continue;
+        }
 
+      fNEventsRead++;
       return retval;//success -> read one event
       
     }while(fCurrentDir < GetNumberOfDirs());//end of loop over directories specified in fDirs Obj Array  
@@ -168,11 +177,31 @@ Int_t AliReaderAOD::ReadRecAndSim()
      }
 
     Int_t npart = fRecBuffer->GetNumberOfParticles();
+    
+    if (npart != fSimBuffer->GetNumberOfParticles())
+     {
+       Error("ReadRecAndSim","There is different number of simulated and reconstructed particles!",
+                              fSimBuffer->GetNumberOfParticles(),npart);
+       return 1;
+     } 
     for (Int_t i = 0; i < npart; i++)
      {
        AliVAODParticle* prec = fRecBuffer->GetParticle(i);
-       if (Rejected(prec)) continue;//we make cuts only on simulated data
-
+       AliVAODParticle* psim = fSimBuffer->GetParticle(i);
+       
+       if (prec == 0x0)
+        {
+          Error("ReadRecAndSim","Reconstructed Particle is NULL !!!");
+          continue;
+        }
+       if (psim == 0x0)
+        {
+          Error("ReadRecAndSim","Simulated Particle is NULL !!!");
+          continue;
+        }
+       
+       if (Rejected(prec)) continue;//we make cuts only on reconstructed data
+       
        fEventRec->AddParticle(prec);
        fEventSim->AddParticle( fSimBuffer->GetParticle(i));
      }
