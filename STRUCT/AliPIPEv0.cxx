@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.20  2002/05/02 12:36:43  morsch
+New version of beam-pipe geometry. Ref. AL502206PL
+(used in production readiness report).
+
 Revision 1.19  2002/03/25 12:34:40  morsch
 Obsolete support rollers removed.
 
@@ -492,7 +496,7 @@ void AliPIPEv0::CreateGeometry()
     
     pund[ 0] = 0;
     pund[ 1] = 360;
-    pund[ 2] =  9;
+    pund[ 2] =  8;
 
     pund[ 3] = -ut;
     pund[ 4] = RinSt;
@@ -525,12 +529,8 @@ void AliPIPEv0::CreateGeometry()
     pund[24] = pund[21]+uw;
     pund[25] = pund[22];
     pund[26] = pund[23];
-    
-    pund[27] = pund[24];
-    pund[28] = pund[25];
-    pund[29] = RinSt+uw;
 
-    gMC->Gsvolu("QBEU", "PCON", idtmed[kInox], pund, 30);
+    gMC->Gsvolu("QBEU", "PCON", idtmed[kInox], pund, 27);
 
     for (i = 0; i < 6; i++)
     {
