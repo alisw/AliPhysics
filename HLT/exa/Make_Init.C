@@ -1,4 +1,4 @@
-void make_init(char *file){
+void Make_Init(char *file){
 
   TFile * rootf = new TFile(file,"READ");
 
@@ -14,6 +14,7 @@ void make_init(char *file){
     return;
   }
 
+  int fNTimeBins = 446;
   int fNRowLow = par->GetNRowLow();
   int fNRowUp  = par->GetNRowUp();
   int fNRow= fNRowLow+ fNRowUp;
@@ -25,6 +26,7 @@ void make_init(char *file){
   FILE *f = fopen("Init.cxx","w");
   fprintf(f,"void AliL3Transform::Init(){\n");
   fprintf(f,"  //sector:\n");
+  fprintf(f,"  fNTimeBins = %d;\n",fNTimeBins);
   fprintf(f,"  fNRowLow = %d;\n",fNRowLow);
   fprintf(f,"  fNRowUp = %d;\n",fNRowUp);
   fprintf(f,"  fNSectorLow = %d;\n",fNSectorLow);
