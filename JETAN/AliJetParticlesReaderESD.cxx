@@ -131,6 +131,7 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
   //loop over tracks
   for (Int_t i = 0;i<kntr; i++)
    {
+
      const AliESDtrack *kesdtrack = esd->GetTrack(i);
      if (kesdtrack == 0)
       {
@@ -138,9 +139,9 @@ Int_t AliJetParticlesReaderESD::ReadESD(AliESD* esd)
         continue;
       }
 
-     if ((kesdtrack->GetStatus() & fPassFlag)) // != fPassFlag)
+     if ((kesdtrack->GetStatus() & fPassFlag)!=fPassFlag)
       {
-	Info("ReadNext","Particle skipped: %ud.",kesdtrack->GetStatus());
+	Info("ReadNext","Particle skipped: %u.",kesdtrack->GetStatus());
         continue;
       }
 

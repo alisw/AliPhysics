@@ -12,6 +12,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TFile.h>
 #include <TString.h>
 #include <TParticle.h>
 #include <TLorentzVector.h>
@@ -265,13 +266,14 @@ Int_t AliJetParticlesReaderKine::OpenFile(Int_t n)
     }
 
   TString filename = dirname +"/"+ fFileName;
-  fRunLoader = AliRunLoader::Open(filename.Data()); 
-
-  if (fRunLoader == 0)
+  TFile file(filename);
+  if ( file.IsOpen() == 0)
     {
       Error("OpenNextFile","Can't open session from file %s",filename.Data());
       return kFALSE;
     }
+  file.Close();
+  fRunLoader = AliRunLoader::Open(filename.Data()); 
   
   if (fRunLoader->GetNumberOfEvents() <= 0)
     {
