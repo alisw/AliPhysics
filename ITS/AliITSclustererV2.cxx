@@ -36,6 +36,7 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
 
   fEvent=0;
   fI=0;
+  f8to10SDD=kTRUE;
 
   Int_t mmax=geom->GetIndexMax();
   if (mmax>2200) {
@@ -90,6 +91,28 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
   fHlSSD=2.00;
   fTanP=0.0275;
   fTanN=0.0075;
+}
+
+Int_t AliITSclustererV2::Convert8to10(Int_t signal) {
+    // Taken from AliITSsimulationSDD.cxx
+    // Undo the lossive 10 to 8 bit compression.
+    // code from Davide C. and Albert W.
+    if (signal < 0 || signal > 255) {
+        ::Warning("Convert8to10","out of range signal=%d",signal);
+        return 0;
+    } // end if signal <0 || signal >255
+
+    if (signal < 128) return signal;
+    if (signal < 192) {
+        if (TMath::Odd(signal)) return (128+((signal-128)<<1));
+        else  return (128+((signal-128)<<1)+1);
+    } // end if signal < 192
+    if (signal < 224) {
+        if (TMath::Odd(signal)) return (256+((signal-192)<<3)+3);
+        else  return (256+((signal-192)<<3)+4);
+    } // end if signal < 224
+    if (TMath::Odd(signal)) return (512+((signal-224)<<4)+7);
+    return (512+((signal-224)<<4)+8);
 }
 
 Int_t AliITSclustererV2::Digits2Clusters(TTree *dTree, TTree *cTree) {
@@ -647,8 +670,6 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          AliITSclusterV2 c;
          MakeCluster(idx[k], nzBins, bins[s], msk[k], c);
 
-         //if (c.GetQ() < 200) continue; //noise cluster
-
 	 /*
          Float_t s2 = c.GetSigmaY2()/c.GetQ() - c.GetY()*c.GetY();
 	 Float_t w=par->GetPadPitchWidth(sec);
@@ -687,7 +708,9 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          c.SetY(y);
          c.SetZ(z);
 
-         c.SetQ(q/20.);  //to be consistent with the SSD charges
+         c.SetQ(q/12.7);  //to be consistent with the SSD charges
+
+         if (c.GetQ() < 20.) continue; //noise cluster
 
 	 if (digits) {
 	   AliBin *b=&bins[s][idx[k]];
@@ -787,6 +810,9 @@ FindClustersSDD(const TClonesArray *digits, TClonesArray *clusters) {
      Int_t y=d->GetCoord2()+1;   //y
      Int_t z=d->GetCoord1()+1;   //z
      Int_t q=d->GetSignal();
+
+     if (f8to10SDD) q=Convert8to10(q);
+
      if (z <= fNzSDD) {
        bins[0][y*kNzBins+z].SetQ(q);
        bins[0][y*kNzBins+z].SetMask(1);
@@ -1143,7 +1169,7 @@ FindClustersSDD(const TClonesArray *digits, TClonesArray *clusters) {
   Int_t nc=points->GetEntriesFast();
   while (nc--) { //To be consistent with the SSD cluster charges
      AliITSRecPoint *p=(AliITSRecPoint*)points->UncheckedAt(nc);
-     p->SetQ(p->GetQ/12.);
+     p->SetQ(p->GetQ()/12.);
   }
   RecPoints2Clusters(points, fI, clusters);
   its->ResetClusters(1);
