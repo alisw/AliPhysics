@@ -1,4 +1,4 @@
-How to open session?
+How to open session:
 	use static methode  AliRunLoader::Open("galice.root","AlicE","update")
 How to retrive pointer to alice run loader:
         use pRICH->GetLoader()->GetRunLoader() (all detector classes inherit from AliDetector wich has GetLoader())
@@ -10,50 +10,58 @@ How to get pointers to different root trees:
 	TreeS belongs to AliLoader   , available after AliLoader::LoadSDigits()
 	TreeD belongs to AliLoader   , available after AliLoader::LoadDigits()
 	TreeR belongs to AliLoader   , available after AliLoader::LoadRecPoints()
-
-
-How to work with the stack of particles?
+        all methodes return 0 on success. 
+How to deal with the stack of particles?
         - first of all, the stack includes primary as well as secondary particles
-	- pointer to the stack is returned by AliRun::Stack() (global gAlice of type AliRun - depricated way to do)
-          or by AliRunLoader::Stack() but before one needs to load event header by AliRunLoader::LoadHeader() otherwise both methods return 0.
-          Moreover loading header gives the information about number of particles only. 
-          To retrive the list of particle one also needs to load kinematics by AliRunLoader::LoadKinematics()        
-	- total amount of particles in stack for a given event:         AliStack::GetNtrack() or AliRun::GetEvent() (after LoadHeader())
-	- total amount of primiry particles in stack for a given event: AliStack::GetNprimary() or AliLoader::TreeH()->GetEntries() (after LoadHeader())
-
-
-
+	- pointer to the stack is taken:
+         	AliRun::Stack() (global gAlice of type AliRun - depricated way to do)
+          	AliRunLoader::Stack() but before one needs to load event header by AliRunLoader::LoadHeader() otherwise both methods return 0.
+          	Moreover loading header gives the information about number of particles only. 
+          	To retrive the list of particle one also needs to load kinematics by AliRunLoader::LoadKinematics()        
+	- total amount of particles in stack for a given event:        
+         	AliStack::GetNtrack() 
+                AliRun::GetEvent() (after LoadHeader())
+	- total amount of primary particles in stack for a given event (after LoadHeader()): 
+        	AliStack::GetNprimary() 
 How to retrive hits:
-	Hits a stored on primary by primary basis. To retrieve all hits one needs to do:
-	initialise the root tree and containers:    AliLoader::LoadHits() 
-	read number of primaries in current event:
-	loop on the list of primiries:
-
-
-
+  -Hits are stored on primary by primary basis. Hits for the given primary is TClonesArray.
+   To retrieve all hits one needs to do:
+     -initialise the root tree and containers:    AliLoader::LoadHits() 
+     -read number of entries in TreeH:           TreeH()->GetEntries()
+     -loop on the list of entires:
 How to retrive sdigits? 
 	Sdigits stored in tree S with the branch of TClonesArray, all sdigits in a single TClonesArray
 	So the tree has only one entry.
 	One needs to say:
 	pRich->GetLoader()->LoadSDigits(); this one open file, get the tree and invoke AliRICH::SetTreeAddress()    
-
 What are the debug methodes avail:
 	AliModule::GetDebug() now depricated, use AliDebug printout instead
 	AliModule::SetDebug()
 	AliRun::GetDebug()
 	AliRun::SetDebug()
-
-
-How to get info for tid number?
+How to get info for a given particle number:
 	Header and Kinematics trees must be loaded, then possible to retrive pointer to Stack of particles
 	Int_t AliRunLoader::LoadHeader(); Int_t AliRunLoader::LoadKinematics()
 	AliStack *AliRunLoader::Stack()
 	TParticle *AliStack::Particle(tid)
 	TParticle::Print()
-
-How to deal with AliRunDigitizer?
+How to deal with AliRunDigitizer:
 	AliRunDigitizer::Exec() just call AliRunDigitizer::Digitize()	
-
-How to avoid using gAlice?
+How to avoid using gAlice:
 	Rich()->GetLoader()->GetRunLoader()->GetAliRun() returns gAlice global pointer.
-         
+What are hte meanings of different VMC flags:         
+	gMC->IsTrackAlive()
+	gMC->IsTrackStop()
+	gMC->IsTrackDisappeared()
+How is sdigit prodiced from hit:
+	Responsible methode is AliRICH::
+	One hit may affect one or more pads.
+        Hit position is taken on the anod wires plane as the most of avalanche is developed there.
+        This poistion is not directly avalable, track intersections with entrance and exit of amplification gap are only store.
+        So the position in the middle of the gap is calculated as average out of In and Out position.
+        Then, total charge collected for this hit is calculated by AliRICHParam::Hit2Qdc.        
+How to get pad number for a local position:
+	use static TVector AliRICHParam::Loc2Pad(TVector2 position)
+Why list of chambers belongs to AliRICHParam:
+        
+        

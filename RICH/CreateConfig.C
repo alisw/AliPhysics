@@ -2,14 +2,17 @@ class RichConfig
 {
 RQ_OBJECT()
 public:
+  
+          RichConfig(const char*sFileName);
+         ~RichConfig()                    {Info("ctor","");fMainFM->Cleanup(); delete fMainFM;}
+protected:
+  enum ERichVers  {kNoRich=-1,kNormalRich,kTestBeam,kTestRadio,kAerogel,kOnTop};
   enum EDetectors {kPIPE=1,kITS=2,kTPC=4,kTRD=8,kTOF=16,kFRAME=32,kMAG=64,kCRT=128,kHALL=256,kPHOS=512,kSTART=1024,kFMD=2048,kABSO=4096,
                    kPMD=8192,kDIPO=16384,kEMCAL=32768,kVZERO=65536,kMUON=131072,kZDC=262144,kSHILD=524288};
   enum EProcesses {kDCAY=1,kPAIR=2,kCOMP=4,kPHOT=8,kPFIS=16,kDRAY=32,kANNI=64,kBREM=128,kMUNU=256,kCKOV=512,kHADR=1024,kLOSS=2048,kMULS=4096,
                    kRAYL=8192};
   enum EGenTypes  {kGun1=100,kGun7,kPythia7,kHijing,kHijingPara};
   
-          RichConfig(const char*sFileName);
-         ~RichConfig()                    {Info("ctor","");fMain->Cleanup(); delete fMain;}
   void    AddDetector(Int_t id)          {fDetectors+=id; if(id==kTRD || id==kTOF) fDetButGrp->SetButton(kFRAME);}
   void    RemoveDetector(Int_t id)       {fDetectors-=id; if(id==kFRAME) {fDetButGrp->SetButton(kTRD,kFALSE);fDetButGrp->SetButton(kTOF,kFALSE);}}
   void    AddProcess(Int_t id)           {fProcesses+=id;}
@@ -17,11 +20,13 @@ public:
   Bool_t  IsDetectorOn(Int_t id)    const{return fDetectors&id;}
   Bool_t  IsProcessOn(Int_t id)     const{return fProcesses&id;}
   Float_t Eta2Theta(Float_t arg)    const{return (180./TMath::Pi())*2.*TMath::ATan(TMath::Exp(-arg));}
-  void    CreateConfigFile();
-protected:
-  TGMainFrame  *fMain;//main window poiter
-  TGComboBox   *fRichVersionCombo;  TGButton *fRichTopChkBtn,*fRichDeclusterChkBtn,*fRichSagChkBtn,*fRichRadioSrcChkBtn;//RICH
-  TGButton     *fMagFldChkBtn;                               //MAG
+  void    CreateConfig();
+  void    CreateRichBatch();
+  void    Exit();
+  
+  TGMainFrame  *fMainFM;//main window poiter
+  TGComboBox   *fRichVerCombo;  TGButton *fRichDeclusterBC,*fRichSagBC,*fRichDebugBC;//RICH
+  TGButton     *fMagFldBC;                               //MAG
   TGComboBox   *fGenTypeCombo,*fGenPartIdCombo,*fGenMinMomCombo,*fGenMaxMomCombo,*fGenChamberCombo; TGNumberEntry *fGenNprimEntry;//GEN
   Int_t         fDetectors; TGButtonGroup *fDetButGrp;       //DETECTORS
   Int_t         fProcesses;
@@ -33,21 +38,23 @@ RichConfig::RichConfig(const char *sFileName)
   fFileName=sFileName;
   fDetectors=0;
 // Create main frame       
-  fMain=new TGMainFrame(gClient->GetRoot(),500,400);
+  fMainFM=new TGMainFrame(gClient->GetRoot(),500,400);
 //  fMain->Connect("CloseWindow()","RichConfig",this,"CloseWindow()");   
-  fMain->AddFrame(pHorFrame=new TGHorizontalFrame(fMain,100,200));
+  fMainFM->AddFrame(pHorFrame=new TGHorizontalFrame(fMainFM,100,200));
 //RICH
   pHorFrame->AddFrame(pVerFrame=new TGVerticalFrame(pHorFrame,100,200));  
-  pVerFrame->AddFrame(pRichGrpFrm=new TGGroupFrame(pHorFrame,"RICH"));
-  pRichGrpFrm->AddFrame(fRichVersionCombo=new TGComboBox(pRichGrpFrm,100));
-  fRichVersionCombo->AddEntry("no RICH",-1);
-  fRichVersionCombo->AddEntry("version 0",0);  
-  fRichVersionCombo->AddEntry("version 1",1);
-  fRichVersionCombo->Select(1);  fRichVersionCombo->Resize(160,20);
-  pRichGrpFrm->AddFrame(fRichTopChkBtn=new TGCheckButton(pRichGrpFrm,"Rotate to Top?"));
-  pRichGrpFrm->AddFrame(fRichDeclusterChkBtn=new TGCheckButton(pRichGrpFrm,"Declustering")); fRichDeclusterChkBtn->SetState(kButtonDown);
-  pRichGrpFrm->AddFrame(fRichSagChkBtn=new TGCheckButton(pRichGrpFrm,"Wire sagita?"));       fRichSagChkBtn->SetState(kButtonDown);
-  pRichGrpFrm->AddFrame(fRichRadioSrcChkBtn=new TGCheckButton(pRichGrpFrm,"Radioactive source"));
+  pVerFrame->AddFrame(pRichFG=new TGGroupFrame(pHorFrame,"RICH"));
+  pRichFG->AddFrame(fRichVerCombo=new TGComboBox(pRichFG,100));
+  fRichVerCombo->AddEntry("no RICH"      ,kNoRich);
+  fRichVerCombo->AddEntry("normal RICH"  ,kNormalRich);
+  fRichVerCombo->AddEntry("RICH on top"  ,kOnTop);
+  fRichVerCombo->AddEntry("test beam"    ,kTestBeam);
+  fRichVerCombo->AddEntry("radio source" ,kTestRadio);
+  fRichVerCombo->AddEntry("aerogel"      ,kAerogel);
+  fRichVerCombo->Select(kNormalRich);  fRichVerCombo->Resize(150,20);
+  pRichFG->AddFrame(fRichDeclusterBC=new TGCheckButton(pRichFG,"Declustering"));       fRichDeclusterBC->SetState(kButtonDown);
+  pRichFG->AddFrame(fRichSagBC      =new TGCheckButton(pRichFG,"Wire sagita?"));       fRichSagBC      ->SetState(kButtonDown);
+  pRichFG->AddFrame(fRichDebugBC    =new TGCheckButton(pRichFG,"Debug StepManager?"));
 //Generator  
   pVerFrame->AddFrame(pGenGrpFrm=new TGGroupFrame(pHorFrame,"Generator"));
   pGenGrpFrm->AddFrame(fGenTypeCombo=new TGComboBox(pGenGrpFrm,100));
@@ -101,8 +108,8 @@ RichConfig::RichConfig(const char *sFileName)
   
 // Magnetic Field
   pVerFrame->AddFrame(pFldGrpFrm=new TGGroupFrame(pHorFrame,"Magnetic Field"));
-  pFldGrpFrm->AddFrame(fMagFldChkBtn=new TGCheckButton(pFldGrpFrm,"On/Off"));
-  fMagFldChkBtn->SetState(kButtonDown);
+  pFldGrpFrm->AddFrame(fMagFldBC=new TGCheckButton(pFldGrpFrm,"On/Off"));
+  fMagFldBC->SetState(kButtonDown);
 //Detectors
   pHorFrame->AddFrame(fDetButGrp=new TGButtonGroup(pHorFrame,"Detectors"));
   fDetButGrp->Connect("Pressed(Int_t)","RichConfig",this,"AddDetector(Int_t)");
@@ -128,36 +135,36 @@ RichConfig::RichConfig(const char *sFileName)
   new TGCheckButton(fDetButGrp,"ZDC"   ,kZDC));         
   new TGCheckButton(fDetButGrp,"SHILD" ,kSHILD));         
 //Processes  
-  pHorFrame->AddFrame(pProcButGrp=new TGButtonGroup(pHorFrame,"Processes"));
-  pProcButGrp->Connect("Pressed(Int_t)","RichConfig",this,"AddProcess(Int_t)");
-  pProcButGrp->Connect("Released(Int_t)","RichConfig",this,"RemoveProcess(Int_t)");
-  new TGCheckButton(pProcButGrp,"DCAY decay",kDCAY));  pProcButGrp->SetButton(kDCAY);       
-  new TGCheckButton(pProcButGrp,"PAIR pair production",kPAIR));  pProcButGrp->SetButton(kPAIR);       
-  new TGCheckButton(pProcButGrp,"COMP Compton",kCOMP));  pProcButGrp->SetButton(kCOMP);
-  new TGCheckButton(pProcButGrp,"PHOT",kPHOT));  pProcButGrp->SetButton(kPHOT);
-  new TGCheckButton(pProcButGrp,"PFIS Photofission",kPFIS));  
-  new TGCheckButton(pProcButGrp,"DRAY delta electrons",kDRAY));  
-  new TGCheckButton(pProcButGrp,"ANNI annihilation",kANNI));  pProcButGrp->SetButton(kANNI);       
-  new TGCheckButton(pProcButGrp,"BREM Bremstraslung",kBREM));  pProcButGrp->SetButton(kBREM);       
-  new TGCheckButton(pProcButGrp,"MUNU",kMUNU));  pProcButGrp->SetButton(kMUNU);       
-  new TGCheckButton(pProcButGrp,"CKOV Cerenkovs",kCKOV));  pProcButGrp->SetButton(kCKOV);       
-  new TGCheckButton(pProcButGrp,"HADR Hadronic interactions ",kHADR));  pProcButGrp->SetButton(kHADR);       
-  new TGCheckButton(pProcButGrp,"LOSS",kLOSS));  pProcButGrp->SetButton(kLOSS);       
-  new TGCheckButton(pProcButGrp,"MULS",kMULS));  pProcButGrp->SetButton(kMULS);       
-  new TGCheckButton(pProcButGrp,"RAYL",kRAYL));  pProcButGrp->SetButton(kRAYL);       
+  pHorFrame->AddFrame(pProcBG=new TGButtonGroup(pHorFrame,"Processes"));
+  pProcBG->Connect("Pressed(Int_t)","RichConfig",this,"AddProcess(Int_t)");
+  pProcBG->Connect("Released(Int_t)","RichConfig",this,"RemoveProcess(Int_t)");
+  new TGCheckButton(pProcBG,"DCAY Decay",kDCAY))                 ;  pProcBG->SetButton(kDCAY);       
+  new TGCheckButton(pProcBG,"PAIR Pair production",kPAIR))       ;  pProcBG->SetButton(kPAIR);       
+  new TGCheckButton(pProcBG,"COMP Compton",kCOMP))               ;  pProcBG->SetButton(kCOMP);
+  new TGCheckButton(pProcBG,"PHOT",kPHOT))                       ;  pProcBG->SetButton(kPHOT);
+  new TGCheckButton(pProcBG,"PFIS Photofission",kPFIS))          ;  
+  new TGCheckButton(pProcBG,"DRAY Delta electrons",kDRAY))       ;  
+  new TGCheckButton(pProcBG,"ANNI Annihilation",kANNI))          ;  pProcBG->SetButton(kANNI);       
+  new TGCheckButton(pProcBG,"BREM Bremstraslung",kBREM))         ;  pProcBG->SetButton(kBREM);       
+  new TGCheckButton(pProcBG,"MUNU",kMUNU))                       ;  pProcBG->SetButton(kMUNU);       
+  new TGCheckButton(pProcBG,"CKOV Cerenkovs",kCKOV))             ;  pProcBG->SetButton(kCKOV);       
+  new TGCheckButton(pProcBG,"HADR Hadronic interactions ",kHADR));  pProcBG->SetButton(kHADR);       
+  new TGCheckButton(pProcBG,"LOSS Energy losses",kLOSS))         ;  pProcBG->SetButton(kLOSS);       
+  new TGCheckButton(pProcBG,"MULS Multiple scattering",kMULS))   ;  pProcBG->SetButton(kMULS);       
+  new TGCheckButton(pProcBG,"RAYL",kRAYL))                       ;  pProcBG->SetButton(kRAYL);       
 //File    
-  fMain->AddFrame(pFileHorFrm=new TGHorizontalFrame(fMain,100,200));
-  pFileHorFrm->AddFrame(pCreateBtn=new TGTextButton(pFileHorFrm,"Create"));
-  pCreateBtn->Connect("Clicked()","RichConfig",this,"CreateConfigFile()");                                 
+  fMainFM->AddFrame(pFileHorFrm=new TGHorizontalFrame(fMainFM,100,200));
+  pFileHorFrm->AddFrame(pCreateB=new TGTextButton(pFileHorFrm,"Create"));
+  pCreateB->Connect("Clicked()","RichConfig",this,"Exit()");                                 
   pFileHorFrm->AddFrame(new TGLabel(pFileHorFrm,Form(" config file as %s",fFileName)));  
   
-  fMain->MapSubwindows();   
-  fMain->Layout();
-  fMain->SetWindowName("Create AliROOT scripts");
-  fMain->MapWindow();      
+  fMainFM->MapSubwindows();   
+  fMainFM->Layout();
+  fMainFM->SetWindowName("Create AliROOT scripts");
+  fMainFM->MapWindow();      
 }//KirCondig::ctor
 //__________________________________________________________________________________________________          
-void RichConfig::CreateConfigFile()
+void RichConfig::CreateConfig()
 {   
   FILE *fp=fopen(fFileName,"w"); if(!fp){Info("CreateConfigFile","Cannot open output file:%sn",fFileName);return;}
   
@@ -195,6 +202,7 @@ void RichConfig::CreateConfigFile()
   if(IsProcessOn(kMULS)) fprintf(fp,"  gMC->SetProcess(\"MULS\",1);");  else fprintf(fp,"  gMC->SetProcess(\"MULS\",0);");
   if(IsProcessOn(kRAYL)) fprintf(fp,"  gMC->SetProcess(\"RAYL\",1);\n");else fprintf(fp,"  gMC->SetProcess(\"RAYL\",0);\n");
   
+  fprintf(fp,"\n");  
   fprintf(fp,"  gMC->SetCut(\"CUTGAM\",0.001); ");  fprintf(fp,"  gMC->SetCut(\"CUTELE\",0.001); ");
   fprintf(fp,"  gMC->SetCut(\"CUTNEU\",0.001);\n"); fprintf(fp,"  gMC->SetCut(\"CUTHAD\",0.001); ");
   fprintf(fp,"  gMC->SetCut(\"CUTMUO\",0.001); ");  fprintf(fp,"  gMC->SetCut(\"BCUTE\" ,0.001);\n");
@@ -202,22 +210,30 @@ void RichConfig::CreateConfigFile()
   fprintf(fp,"  gMC->SetCut(\"DCUTM\" ,0.001);\n");  fprintf(fp,"  gMC->SetCut(\"PPCUTM\",0.001); ");
   fprintf(fp,"  gMC->SetCut(\"TOFMAX\",1e10);\n\n"); 
 //Field
-  if(fMagFldChkBtn->GetState()==kButtonDown) fprintf(fp,"  gAlice->SetField();\n\n");else fprintf(fp,"  gAlice->SetField(0);\n\n");
+  if(fMagFldBC->GetState()==kButtonDown) fprintf(fp,"  gAlice->SetField();\n\n");else fprintf(fp,"  gAlice->SetField(0);\n\n");
   fprintf(fp,"  pAL->CdGAFile();\n\n");                                 //????       
 //BODY-ALIC 
   fprintf(fp,"  new AliBODY(\"BODY\",\"Alice envelop\");\n\n");
 //RICH
-  if(fRichVersionCombo->GetSelected() != -1){  
-    if(fRichTopChkBtn->GetState()==kButtonDown)       fprintf(fp,"  AliRICHParam::AngleRot(0);\n");
-    if(fRichDeclusterChkBtn->GetState()!=kButtonDown) fprintf(fp,"  AliRICHParam::SetDeclustering(kFALSE);\n");
-    if(fRichSagChkBtn->GetState()!=kButtonDown)       fprintf(fp,"  AliRICHParam::SetWireSag(kFALSE);\n");
-    if(fRichRadioSrcChkBtn->GetState()==kButtonDown)  fprintf(fp,"  AliRICHParam::SetRadioSrc(kTRUE);\n");
-    switch(fRichVersionCombo->GetSelected()){//RICH
-      case 0:   fprintf(fp,"  pRICH=new AliRICHv0(\"RICH\",\"RICH version 0\");\n"); break;   
-      case 1:   fprintf(fp,"  pRICH=new AliRICHv1(\"RICH\",\"RICH version 1\");\n"); break;   
+  if(fRichVerCombo->GetSelected() != kNoRich){  
+    TString richStr="RICH "; 
+    if(fRichDeclusterBC->GetState()!=kButtonDown){richStr+="no declustering "  ; fprintf(fp,"  AliRICHParam::SetDeclustering(kFALSE);\n");}
+    if(fRichSagBC->GetState()      !=kButtonDown){richStr+="no sagita "        ; fprintf(fp,"  AliRICHParam::SetWireSag(kFALSE);\n")     ;}
+    switch(fRichVerCombo->GetSelected()){//RICH
+      case kOnTop:      richStr+="top position";fprintf(fp,"  AliRICHParam::SetAngleRot(0);\n")      ;break;   
+      case kAerogel:    richStr+="aerogel"     ;fprintf(fp,"  AliRICHParam::SetAerogel(kTRUE);\n") ;break;   
+      case kTestRadio:  richStr+="radioactive" ;fprintf(fp,"  AliRICHParam::SetRadioSrc(kTRUE);\n");
+                                                fprintf(fp,"  AliRICHParam::SetTestBeam(kTRUE);\n");break;   
+      case kTestBeam:   richStr+="test beam"   ;fprintf(fp,"  AliRICHParam::SetTestBeam(kTRUE);\n");break;   
+      case kNormalRich: richStr+="normal"      ;                                                    break;   
     }
-    fprintf(fp,"  ::Info(\"RICH private config\",\"version %i\");\n\n",fRichVersionCombo->GetSelected()); 
-  }
+    if(fRichDebugBC->GetState()    ==kButtonDown){
+      richStr+="+debug StepManager"; 
+      fprintf(fp,"  AliRICH *pRICH=new AliRICHv0(\"RICH\",\"%s\");\n\n",richStr.Data());
+    }else{
+      fprintf(fp,"  AliRICH *pRICH=new AliRICHv1(\"RICH\",\"%s\");\n\n",richStr.Data());
+    }
+  }//Rich not selected
 //Generator
   switch(fGenTypeCombo->GetSelected()){
     case kHijingPara: 
@@ -307,10 +323,10 @@ void RichConfig::CreateConfigFile()
 
   fprintf(fp,"\n  ::Info(\"RICH private config\",\"Stop\");\n"); 
   fprintf(fp,"}\n");
+out:  
   fclose(fp);  
-  CreateRichBatch();  
 //  fMain->CloseWindow();
-}//CreateConfigFile
+}//CreateConfig
 //__________________________________________________________________________________________________
 void RichConfig::CreateRichBatch()
 {//creates RichBatch.C file
@@ -318,7 +334,7 @@ void RichConfig::CreateRichBatch()
   
   fprintf(fp,"void RichBatch(const Int_t iNevents,const Bool_t isDebug,const char *sConfigFileName)\n");
   fprintf(fp,"{\n");
-  fprintf(fp,"  gSystem->Exec(\"rm -rf *.root hlt hough ZZZ*\");\n");
+  fprintf(fp,"  gSystem->Exec(\"rm -rf *.root hlt hough fort* ZZZ*\");\n");
   fprintf(fp,"  if(isDebug)   AliLog::SetGlobalDebugLevel(AliLog::kDebug);\n");
   fprintf(fp,"  TStopwatch sw;TDatime time;\n\n");
   
@@ -329,11 +345,12 @@ void RichConfig::CreateRichBatch()
     fprintf(fp,"  pSim->SetMakeDigitsFromHits(\"ITS TPC TRD\");\n");
   }
   fprintf(fp,"  pSim->Run(iNevents); delete pSim;\n\n");
-  
-  fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
-  fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH\");\n");
-  fprintf(fp,"  pRec->SetFillESD(\"ITS TPC TRD TOF RICH\");\n");
-  fprintf(fp,"  pRec->Run();         delete pRec;\n\n");
+  if(fRichVerCombo->GetSelected()==kNormalRich){
+    fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
+    fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH\");\n");
+    fprintf(fp,"  pRec->SetFillESD(\"ITS TPC TRD TOF RICH\");\n");
+    fprintf(fp,"  pRec->Run();         delete pRec;\n\n");
+  }
   
   fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/RichBatch.C>: Start time: \";time.Print();\n");
   fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/RichBatch.C>: Stop  time: \";time.Set();  time.Print();\n");
@@ -345,6 +362,14 @@ void RichConfig::CreateRichBatch()
   
   fclose(fp);  
 }//CreateRichBatch()
+//__________________________________________________________________________________________________
+void RichConfig::Exit()
+{
+//slot to be invoked by clik on the Create button  
+  CreateConfig();
+  CreateRichBatch();
+  fMainFM->SendCloseMessage();
+}
 //__________________________________________________________________________________________________
 RichConfig *p;
 void CreateConfig()
