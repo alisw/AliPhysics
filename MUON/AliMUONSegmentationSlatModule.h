@@ -76,6 +76,9 @@ public AliMUONSegmentationV0 {
     virtual void SetId(Int_t id) {fId=id;}
     
  protected:
+    AliMUONSegmentationSlatModule(const AliMUONSegmentationSlatModule& rhs);
+    AliMUONSegmentationSlatModule& operator=(const AliMUONSegmentationSlatModule& rhs);
+
     //
     //  Geometry
     //

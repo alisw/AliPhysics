@@ -43,11 +43,33 @@ AliMUONLoader::AliMUONLoader(const Char_t * detname,TFolder* eventfolder)
 {
 //constructor
 }
+//___________________________________________
+AliMUONLoader::AliMUONLoader(const AliMUONLoader& rhs)
+  : AliLoader(rhs)
+{
+// Protected copy constructor
+
+  Fatal("AliMUONLoader", "Not implemented.");
+}
+
 //_______________________________________________________________________________
 AliMUONLoader::~AliMUONLoader()
 {
 //detructor 
 }
+//-------------------------------------------------------------------
+AliMUONLoader&  
+AliMUONLoader::operator=(const AliMUONLoader& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
 //_______________________________________________________________________________
 void AliMUONLoader::SetMUONData(AliMUONData * MUONData)
 {

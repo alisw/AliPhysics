@@ -31,7 +31,7 @@ class AliMUONRecoTrack;
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
-class AliMUONRecoEvent:public TObject 
+class AliMUONRecoEvent : public TObject 
 {
   public:
     AliMUONRecoEvent(Int_t eventNo = 0);
@@ -50,6 +50,10 @@ class AliMUONRecoEvent:public TObject
 
     TClonesArray*     TracksPtr() {return fTracks;}
     
+ protected:    
+    AliMUONRecoEvent(const AliMUONRecoEvent& rhs);
+    AliMUONRecoEvent& operator=(const AliMUONRecoEvent& rhs);
+
  private:
    Int_t             fNevr;          // event number
    Int_t             fNtracks;       // number of tracks

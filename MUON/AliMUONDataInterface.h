@@ -103,6 +103,9 @@ public:
 	// Returns the currently selected cathode in TreeD.
 	Int_t   CurrentDCathode() { return fCathode;     };
 
+protected:
+        AliMUONDataInterface(const AliMUONDataInterface& rhs);
+        AliMUONDataInterface& operator=(const AliMUONDataInterface& rhs);
 private:
 
 	Bool_t LoadLoaders(TString filename, TString foldername);

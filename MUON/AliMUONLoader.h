@@ -42,6 +42,9 @@ class AliMUONLoader : public AliLoader
     AliMUONData *  GetMUONData();
  
   protected:
+    AliMUONLoader(const AliMUONLoader& rhs);
+    AliMUONLoader& operator=(const AliMUONLoader& rhs);
+
     AliMUONData * fMUONData; // data for MUON subsystem 
 
   private:

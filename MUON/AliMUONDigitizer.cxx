@@ -90,11 +90,33 @@ AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager) :
 };
 
 //___________________________________________
+AliMUONDigitizer::AliMUONDigitizer(const AliMUONDigitizer& rhs)
+  : AliDigitizer(rhs)
+{
+// Protected copy constructor
+
+  Fatal("AliMUONDigitizer", "Not implemented.");
+}
+
+//___________________________________________
 AliMUONDigitizer::~AliMUONDigitizer() 
 {
 // Destructor
 }
 
+//-------------------------------------------------------------------
+AliMUONDigitizer&  
+AliMUONDigitizer::operator=(const AliMUONDigitizer& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::Init()
 {

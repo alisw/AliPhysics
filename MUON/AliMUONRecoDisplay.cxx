@@ -111,6 +111,15 @@ AliMUONRecoDisplay::AliMUONRecoDisplay(Int_t nevent)
 }
 
 //-------------------------------------------------------------------
+AliMUONRecoDisplay::AliMUONRecoDisplay(const AliMUONRecoDisplay& rhs)
+  : AliDisplay(rhs)
+{
+// Protected copy constructor
+
+  Fatal("AliMUONRecoDisplay", "Not implemented.");
+}
+
+//-------------------------------------------------------------------
 AliMUONRecoDisplay::~AliMUONRecoDisplay()
 {
 // Destructor of display object
@@ -124,6 +133,20 @@ AliMUONRecoDisplay::~AliMUONRecoDisplay()
    }
    delete fEvGen;
 }
+
+//-------------------------------------------------------------------
+AliMUONRecoDisplay&  
+AliMUONRecoDisplay::operator=(const AliMUONRecoDisplay& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
 //-------------------------------------------------------------------
 Bool_t AliMUONRecoDisplay::Event(Int_t nevent)
 {

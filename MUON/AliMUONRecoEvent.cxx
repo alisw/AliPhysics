@@ -63,11 +63,21 @@ ClassImp(AliMUONRecoEvent)
 
 //-------------------------------------------------------------------
 AliMUONRecoEvent::AliMUONRecoEvent(Int_t eventNo) 
+  : TObject()
 {
 // Reconstructed event constructor
    fTracks 	= new TClonesArray("AliMUONRecoTrack",200);
    fNevr 	= eventNo;
    fNtracks = 0;
+}
+
+//-------------------------------------------------------------------
+AliMUONRecoEvent::AliMUONRecoEvent(const AliMUONRecoEvent& rhs)
+  : TObject(rhs)
+{
+// Protected copy constructor
+
+  Fatal("AliMUONRecoEventModule", "Not implemented.");
 }
 
 //-------------------------------------------------------------------
@@ -79,6 +89,19 @@ AliMUONRecoEvent::~AliMUONRecoEvent()
    fTracks = 0;
 }
 
+//-------------------------------------------------------------------
+AliMUONRecoEvent&  
+AliMUONRecoEvent::operator=(const AliMUONRecoEvent& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
 //-------------------------------------------------------------------
 AliMUONRecoTrack* AliMUONRecoEvent::AddEmptyTrack()
 {

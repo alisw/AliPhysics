@@ -40,7 +40,11 @@ class AliMUONMerger {
     void SetDebug(Int_t debug) {fDebug = debug;}
 	
     enum {kBgTag = -1};
-    
+
+ protected:    
+    AliMUONMerger(const AliMUONMerger& rhs);
+    AliMUONMerger& operator=(const AliMUONMerger& rhs);
+
  private:    
     // Open the bgr file
     TFile *InitBgr();

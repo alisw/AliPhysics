@@ -41,6 +41,10 @@ class AliMUONRecoDisplay:public AliDisplay
     void               RecoEfficiency(Int_t first=0, Int_t last=10000);  // *MENU*
     void               XYPlot();                                 // *MENU*
    
+  protected:
+    AliMUONRecoDisplay(const AliMUONRecoDisplay& rhs);
+    AliMUONRecoDisplay& operator=(const AliMUONRecoDisplay& rhs);
+
   private:
     //methods
     Int_t              GetBestMatch(Int_t indr, Float_t tolerance=3.0);

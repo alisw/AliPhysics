@@ -36,7 +36,7 @@
 
 ClassImp(AliMUONMerger)
 
-//___________________________________________
+//----------------------------------------------------------------------
 AliMUONMerger::AliMUONMerger()
 {
 // Default constructor    
@@ -55,6 +55,14 @@ AliMUONMerger::AliMUONMerger()
     fDebug      = 0;
 }
 
+//----------------------------------------------------------------------
+AliMUONMerger::AliMUONMerger(const AliMUONMerger&)
+{
+// Protected copy constructor
+
+  Fatal("AliMUONMergerModule", "Not implemented.");
+}
+
 //------------------------------------------------------------------------
 AliMUONMerger::~AliMUONMerger()
 {
@@ -67,6 +75,18 @@ AliMUONMerger::~AliMUONMerger()
     if (fBgrFile)    delete fBgrFile;
 }
 
+//----------------------------------------------------------------------
+AliMUONMerger&  AliMUONMerger::operator=(const AliMUONMerger& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
 //------------------------------------------------------------------------
 Bool_t AliMUONMerger::Exists(const AliMUONPadHit *padhit) const
 {

@@ -22,6 +22,13 @@ AliMUONDataInterface::AliMUONDataInterface()
 	Reset();
 };
 
+AliMUONDataInterface::AliMUONDataInterface(const AliMUONDataInterface& rhs)
+  : TObject(rhs)
+{
+// Protected copy constructor
+
+  Fatal("AliMUONDataInterface", "Not implemented.");
+}
 
 AliMUONDataInterface::~AliMUONDataInterface()
 {
@@ -33,6 +40,18 @@ AliMUONDataInterface::~AliMUONDataInterface()
 		delete fRunloader;
 };
 
+AliMUONDataInterface&  
+AliMUONDataInterface::operator=(const AliMUONDataInterface& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
 
 void AliMUONDataInterface::Reset()
 {

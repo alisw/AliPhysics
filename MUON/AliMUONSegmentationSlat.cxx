@@ -32,6 +32,7 @@
 ClassImp(AliMUONSegmentationSlat)
 
 AliMUONSegmentationSlat::AliMUONSegmentationSlat() 
+  :  AliSegmentation() 
 {
 // Default constructor
   fChamber = 0;
@@ -41,12 +42,21 @@ AliMUONSegmentationSlat::AliMUONSegmentationSlat()
 }
 
 AliMUONSegmentationSlat::AliMUONSegmentationSlat(Int_t /*nsec*/) 
+  :  AliSegmentation() 
 {
 // Non default constructor
     fSlats=0;            
     fNDiv = new TArrayI(4);
     fChamber = 0;
     fCurrentSlat = 0;
+}
+
+AliMUONSegmentationSlat::AliMUONSegmentationSlat(const AliMUONSegmentationSlat& rhs)
+  :  AliSegmentation(rhs) 
+{
+// Protected copy constructor
+
+  Fatal("AliMUONSegmentationSlatModule", "Not implemented.");
 }
 
 AliMUONSegmentationSlat::~AliMUONSegmentationSlat(){
@@ -61,6 +71,21 @@ AliMUONSegmentationSlat::~AliMUONSegmentationSlat(){
   }
 
 }
+
+//----------------------------------------------------------------------
+AliMUONSegmentationSlat& 
+AliMUONSegmentationSlat::operator=(const AliMUONSegmentationSlat& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
+
 //-----------------------------------------------------------
 void AliMUONSegmentationSlat::SetPadSize(Float_t p1, Float_t p2)
 {

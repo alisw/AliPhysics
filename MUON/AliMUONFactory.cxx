@@ -47,11 +47,32 @@ AliMUONFactory::AliMUONFactory()
 }
 
 //__________________________________________________________________________
+AliMUONFactory::AliMUONFactory(const AliMUONFactory& rhs)
+  : TObject(rhs)
+{
+// Protected copy constructor
+
+  Fatal("AliMUONFactoryModule", "Not implemented.");
+}
+
+//__________________________________________________________________________
 AliMUONFactory::~AliMUONFactory()
 {
 //
 }
 
+//__________________________________________________________________________
+AliMUONFactory&  AliMUONFactory::operator=(const AliMUONFactory& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
 //__________________________________________________________________________
 void AliMUONFactory::BuildCommon() 
 {

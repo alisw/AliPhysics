@@ -16,14 +16,18 @@ class AliMUONResponseV0;
 
 class AliMUONFactory : public  TObject {
 
- public:
+  public:
     AliMUONFactory();
     virtual ~AliMUONFactory();
     
     void Build(AliMUON* where, const char* what);
     void BuildStation(AliMUON* where, Int_t stationNumber);
 
- private:
+  protected:
+    AliMUONFactory(const AliMUONFactory& rhs);
+    AliMUONFactory& operator=(const AliMUONFactory& rhs);
+
+  private:
     void BuildCommon();
     void BuildStation1();
     void BuildStation2();
@@ -36,7 +40,7 @@ class AliMUONFactory : public  TObject {
     AliMUON*           fMUON;      // MUON detector 
     AliMUONResponseV0* fResponse0; // default response 
 
- ClassDef(AliMUONFactory,0)  // MUON Factory for Chambers and Segmentation
+  ClassDef(AliMUONFactory,0)  // MUON Factory for Chambers and Segmentation
 };
 #endif
 

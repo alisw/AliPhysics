@@ -127,6 +127,8 @@ public AliSegmentation {
     // Get the correction Function
     virtual TF1* CorrFunc(Int_t) const {return NULL;}
  protected:
+    AliMUONSegmentationSlat(const AliMUONSegmentationSlat& rhs);
+    AliMUONSegmentationSlat& operator=(const AliMUONSegmentationSlat& rhs);
     
     virtual void GlobalToLocal(
 	Float_t x, Float_t y, Float_t z,  Int_t &islat, Float_t &xlocal, Float_t &ylocal);

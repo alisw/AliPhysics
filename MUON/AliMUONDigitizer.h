@@ -42,6 +42,9 @@ public:
 	void SetDebug(Int_t level){fDebug = level;}   // Set debug level.    
 
 protected:
+        AliMUONDigitizer(const AliMUONDigitizer& rhs);
+        AliMUONDigitizer& operator=(const AliMUONDigitizer& rhs);
+
 
 	// Parses the option string given to the Exec method.
 	virtual void ParseOptions(Option_t* options);

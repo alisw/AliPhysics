@@ -32,7 +32,8 @@
 //___________________________________________
 ClassImp(AliMUONSegmentationSlatModule)
 
-AliMUONSegmentationSlatModule::AliMUONSegmentationSlatModule() 
+AliMUONSegmentationSlatModule::AliMUONSegmentationSlatModule()  
+  : AliMUONSegmentationV0()
 {
 // Default constructor
     fNDiv = 0;      
@@ -40,6 +41,7 @@ AliMUONSegmentationSlatModule::AliMUONSegmentationSlatModule()
 }
 
 AliMUONSegmentationSlatModule::AliMUONSegmentationSlatModule(Int_t nsec) 
+  : AliMUONSegmentationV0()
 {
 // Non default constructor
     fNsec = nsec;
@@ -49,6 +51,17 @@ AliMUONSegmentationSlatModule::AliMUONSegmentationSlatModule(Int_t nsec)
     (*fDpxD)[0]=(*fDpxD)[1]=(*fDpxD)[2]=(*fDpxD)[3]=0;     
 }
 
+//----------------------------------------------------------------------
+AliMUONSegmentationSlatModule::AliMUONSegmentationSlatModule(
+                                  const AliMUONSegmentationSlatModule& rhs)
+  :  AliMUONSegmentationV0(rhs) 
+{
+// Protected copy constructor
+
+  Fatal("AliMUONSegmentationSlatModule", "Not implemented.");
+}
+
+
 AliMUONSegmentationSlatModule::~AliMUONSegmentationSlatModule() 
 {
 // Destructor
@@ -56,6 +69,20 @@ AliMUONSegmentationSlatModule::~AliMUONSegmentationSlatModule()
     if (fDpxD) delete fDpxD;
 }
 
+//----------------------------------------------------------------------
+AliMUONSegmentationSlatModule& 
+AliMUONSegmentationSlatModule::operator=(        
+                                 const AliMUONSegmentationSlatModule& rhs)
+{
+// Protected assignement operator
+
+  if (this == &rhs) return *this;
+
+  Fatal("operator=", "Not implemented.");
+    
+  return *this;  
+}    
+          
 void AliMUONSegmentationSlatModule::SetPcbBoards(Int_t n[4])
 {
 //
