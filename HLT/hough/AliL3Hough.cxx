@@ -973,7 +973,7 @@ void AliL3Hough::FindTrackCandidatesRow()
 	  if(hist->GetNEntries()==0) continue;
 	  fPeakFinder->SetHistogram(hist);
 	  fPeakFinder->SetEtaSlice(j);
-	  fPeakFinder->SetTrackLUTs(((AliL3HoughTransformerRow *)tr)->fTrackNRows,((AliL3HoughTransformerRow *)tr)->fTrackFirstRow,((AliL3HoughTransformerRow *)tr)->fTrackLastRow);
+	  fPeakFinder->SetTrackLUTs(((AliL3HoughTransformerRow *)tr)->GetTrackNRows(),((AliL3HoughTransformerRow *)tr)->GetTrackFirstRow(),((AliL3HoughTransformerRow *)tr)->GetTrackLastRow());
 #ifdef do_mc
 	  LOG(AliL3Log::kInformational,"AliL3Hough::FindTrackCandidates()","")
 	    <<"Starting "<<j<<" etaslice"<<ENDLOG;

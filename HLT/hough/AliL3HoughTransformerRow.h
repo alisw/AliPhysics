@@ -22,10 +22,13 @@ struct AliL3EtaRow {
 };
 
 struct AliL3PadHoughParams {
-  Float_t fAlpha;
-  Float_t fDeltaAlpha;
-  Int_t fFirstBin;
-  Int_t fLastBin;
+  // Parameters which represent given pad in the hough space
+  // Used in order to avoid as much as possible floating
+  // point operations during the hough transform
+  Float_t fAlpha; // Starting value for the hough parameter alpha1
+  Float_t fDeltaAlpha; // Slope of alpha1
+  Int_t fFirstBin; // First alpha2 bin to be filled 
+  Int_t fLastBin; // Last alpha2 bin to be filled
 };
 
 class AliL3DigitData;
@@ -50,18 +53,20 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   AliL3Histogram *GetHistogram(Int_t etaindex);
   Double_t GetEta(Int_t etaindex,Int_t slice) const;
   Int_t GetTrackID(Int_t etaindex,Double_t alpha1,Double_t alpha2) const;
-  UChar_t *GetGapCount(Int_t etaindex);
-  UChar_t *GetCurrentRowCount(Int_t etaindex);
-  UChar_t *GetPrevBin(Int_t etaindex);
-  UChar_t *GetNextBin(Int_t etaindex);
-  UChar_t *GetNextRow(Int_t etaindex);
-  UChar_t *GetTrackNRows();
-  UChar_t *GetTrackFirstRow();
-  UChar_t *GetTrackLastRow();
+  UChar_t *GetGapCount(Int_t etaindex) const { return fGapCount[etaindex]; }
+  UChar_t *GetCurrentRowCount(Int_t etaindex) const { return fCurrentRowCount[etaindex]; }
+  UChar_t *GetPrevBin(Int_t etaindex) const { return fPrevBin[etaindex]; }
+  UChar_t *GetNextBin(Int_t etaindex) const { return fNextBin[etaindex]; }
+  UChar_t *GetNextRow(Int_t etaindex) const { return fNextRow[etaindex]; }
+  UChar_t *GetTrackNRows() const { return fTrackNRows; }
+  UChar_t *GetTrackFirstRow() const { return fTrackFirstRow; }
+  UChar_t *GetTrackLastRow() const { return fTrackLastRow; }
   static Float_t GetBeta1() {return fgBeta1;}
   static Float_t GetBeta2() {return fgBeta2;}
 
   void SetTPCRawStream(AliTPCRawStream *rawstream) {fTPCRawStream=rawstream;}
+
+ private:
 
   UChar_t **fGapCount; //!
   UChar_t **fCurrentRowCount; //!
@@ -87,8 +92,6 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   Float_t *fLUTbackwardZ; //!
   Float_t *fLUTbackwardZ2; //!
 
- private:
-  
   AliL3Histogram **fParamSpace; //!
 
   void TransformCircleFromDigitArray();
@@ -106,9 +109,11 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   inline void FillClusterMCLabels(AliL3DigitData digpt,AliL3EtaRow *etaclust);
 #endif
 
+  void SetTransformerArrays(AliL3HoughTransformerRow *tr);
+
   static Float_t fgBeta1,fgBeta2; // Two curves which define the Hough space
 
-  AliTPCRawStream *fTPCRawStream;
+  AliTPCRawStream *fTPCRawStream; // Pointer to the raw stream in case of fast reading of the raw data (fast_raw flag)
 
   ClassDef(AliL3HoughTransformerRow,1) //TPC Rows Hough transformation class
 

@@ -1,8 +1,7 @@
 // @(#) $Id$
 
 
-// Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
-//*-- Copyright &copy ALICE HLT Group
+// Author: Cvetan Cheshkov <mailto:cvetan.cheshkov@cern.ch>
 
 #include "AliL3StandardIncludes.h"
 
@@ -21,8 +20,10 @@ using namespace std;
 //_____________________________________________________________
 // AliL3HoughTransformerRow
 //
-// TPC rows Hough transformation class
+// Impelementation of the so called "TPC rows Hough transformation" class
 //
+// Transforms the TPC data into the hough space and counts the missed TPC
+// rows corresponding to each track cnadidate - hough space bin
 
 ClassImp(AliL3HoughTransformerRow)
 
@@ -242,10 +243,13 @@ void AliL3HoughTransformerRow::DeleteHistograms()
 }
 
 struct AliL3TrackLength {
-  Bool_t fIsFilled;
-  UInt_t fFirstRow;
-  UInt_t fLastRow;
-  Float_t fTrackPt;
+  // Structure is used for temporarely storage of the LUT
+  // which contains the track lengths associated to each hough
+  // space bin
+  Bool_t fIsFilled; // Is bin already filled?
+  UInt_t fFirstRow; // First TPC row crossed by the track
+  UInt_t fLastRow; // Last TPC row crossed by the track
+  Float_t fTrackPt; // Pt of the track
 };
 
 void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
@@ -265,29 +269,7 @@ void AliL3HoughTransformerRow::CreateHistograms(Int_t nxbin,Float_t xmin,Float_t
     }
 
   if(fLastTransformer) {
-
-    fGapCount = ((AliL3HoughTransformerRow *)fLastTransformer)->fGapCount;
-    fCurrentRowCount = ((AliL3HoughTransformerRow *)fLastTransformer)->fCurrentRowCount;
-#ifdef do_mc
-    fTrackID = ((AliL3HoughTransformerRow *)fLastTransformer)->fTrackID;
-#endif
-    fTrackNRows = ((AliL3HoughTransformerRow *)fLastTransformer)->fTrackNRows;
-    fTrackFirstRow = ((AliL3HoughTransformerRow *)fLastTransformer)->fTrackFirstRow;
-    fTrackLastRow = ((AliL3HoughTransformerRow *)fLastTransformer)->fTrackLastRow;
-    fInitialGapCount = ((AliL3HoughTransformerRow *)fLastTransformer)->fInitialGapCount;
-
-    fPrevBin = ((AliL3HoughTransformerRow *)fLastTransformer)->fPrevBin;
-    fNextBin = ((AliL3HoughTransformerRow *)fLastTransformer)->fNextBin;
-    fNextRow = ((AliL3HoughTransformerRow *)fLastTransformer)->fNextRow;
-
-    fStartPadParams = ((AliL3HoughTransformerRow *)fLastTransformer)->fStartPadParams;
-    fEndPadParams = ((AliL3HoughTransformerRow *)fLastTransformer)->fEndPadParams;
-    fLUTr2 = ((AliL3HoughTransformerRow *)fLastTransformer)->fLUTr2;
-    fLUTforwardZ = ((AliL3HoughTransformerRow *)fLastTransformer)->fLUTforwardZ;
-    fLUTforwardZ2 = ((AliL3HoughTransformerRow *)fLastTransformer)->fLUTforwardZ2;
-    fLUTbackwardZ = ((AliL3HoughTransformerRow *)fLastTransformer)->fLUTbackwardZ;
-    fLUTbackwardZ2 = ((AliL3HoughTransformerRow *)fLastTransformer)->fLUTbackwardZ2;
-
+    SetTransformerArrays((AliL3HoughTransformerRow *)fLastTransformer);
     return;
   }
 #ifdef do_mc
@@ -694,6 +676,10 @@ Double_t AliL3HoughTransformerRow::GetEta(Int_t etaindex,Int_t /*slice*/) const
 
 void AliL3HoughTransformerRow::TransformCircle()
 {
+  // This method contains the hough transformation
+  // Depending on the option selected, it reads as an input
+  // either the preloaded array with digits or directly raw
+  // data stream (option fast_raw)
   if(GetDataPointer())
     TransformCircleFromDigitArray();
   else if(fTPCRawStream)
@@ -1083,53 +1069,17 @@ Int_t AliL3HoughTransformerRow::GetTrackID(Int_t etaindex,Double_t alpha1,Double
   return -1;
 }
 
-UChar_t *AliL3HoughTransformerRow::GetGapCount(Int_t etaindex)
-{
-  return fGapCount[etaindex];
-}
-
-UChar_t *AliL3HoughTransformerRow::GetCurrentRowCount(Int_t etaindex)
-{
-  return fCurrentRowCount[etaindex];
-}
-
-UChar_t *AliL3HoughTransformerRow::GetTrackNRows()
-{
-  return fTrackNRows;
-}
-
-
-UChar_t *AliL3HoughTransformerRow::GetTrackFirstRow()
-{
-  return fTrackFirstRow;
-}
-
-UChar_t *AliL3HoughTransformerRow::GetTrackLastRow()
-{
-  return fTrackLastRow;
-}
-
-UChar_t *AliL3HoughTransformerRow::GetPrevBin(Int_t etaindex)
-{
-  return fPrevBin[etaindex];
-}
-
-UChar_t *AliL3HoughTransformerRow::GetNextBin(Int_t etaindex)
-{
-  return fNextBin[etaindex];
-}
-
-UChar_t *AliL3HoughTransformerRow::GetNextRow(Int_t etaindex)
-{
-  return fNextRow[etaindex];
-}
-
 inline void AliL3HoughTransformerRow::FillClusterRow(UChar_t i,Int_t binx1,Int_t binx2,UChar_t *ngaps2,UChar_t *currentrow2,UChar_t *lastrow2
 #ifdef do_mc
 			   ,AliL3EtaRow etaclust,AliL3TrackIndex *trackid
 #endif
 			   )
 {
+  // The method is a part of the fast hough transform.
+  // It fills one row of the hough space.
+  // It is called by FillCluster() method inside the
+  // loop over alpha2 bins
+
   for(Int_t bin=binx1;bin<=binx2;bin++)
     {
       if(ngaps2[bin] < MAX_N_GAPS) {
@@ -1163,6 +1113,9 @@ inline void AliL3HoughTransformerRow::FillClusterRow(UChar_t i,Int_t binx1,Int_t
 
 inline void AliL3HoughTransformerRow::FillCluster(UChar_t i,Int_t etaindex,AliL3EtaRow *etaclust,Int_t ilastpatch,Int_t firstbinx,Int_t lastbinx,Int_t nbinx,Int_t firstbiny)
 {
+  // The method is a part of the fast hough transform.
+  // It fills a TPC cluster into the hough space.
+
   UChar_t *ngaps = fGapCount[etaindex];
   UChar_t *currentrow = fCurrentRowCount[etaindex];
   UChar_t *lastrow = fTrackLastRow;
@@ -1271,6 +1224,9 @@ inline void AliL3HoughTransformerRow::FillCluster(UChar_t i,Int_t etaindex,AliL3
 #ifdef do_mc
 inline void AliL3HoughTransformerRow::FillClusterMCLabels(AliL3DigitData digpt,AliL3EtaRow *etaclust)
 {
+  // The method is a part of the fast hough transform.
+  // It fills the MC labels of a TPC cluster into a
+  // special hough space array.
   for(Int_t t=0; t<3; t++)
     {
       Int_t label = digpt.fTrackID[t];
@@ -1284,3 +1240,34 @@ inline void AliL3HoughTransformerRow::FillClusterMCLabels(AliL3DigitData digpt,A
     }
 }
 #endif
+
+void AliL3HoughTransformerRow::SetTransformerArrays(AliL3HoughTransformerRow *tr)
+{
+  // In case of sequential filling of the hough space, the method is used to
+  // transmit the pointers to the hough arrays from one transformer to the
+  // following one.
+
+    fGapCount = tr->fGapCount;
+    fCurrentRowCount = tr->fCurrentRowCount;
+#ifdef do_mc
+    fTrackID = tr->fTrackID;
+#endif
+    fTrackNRows = tr->fTrackNRows;
+    fTrackFirstRow = tr->fTrackFirstRow;
+    fTrackLastRow = tr->fTrackLastRow;
+    fInitialGapCount = tr->fInitialGapCount;
+
+    fPrevBin = tr->fPrevBin;
+    fNextBin = tr->fNextBin;
+    fNextRow = tr->fNextRow;
+
+    fStartPadParams = tr->fStartPadParams;
+    fEndPadParams = tr->fEndPadParams;
+    fLUTr2 = tr->fLUTr2;
+    fLUTforwardZ = tr->fLUTforwardZ;
+    fLUTforwardZ2 = tr->fLUTforwardZ2;
+    fLUTbackwardZ = tr->fLUTbackwardZ;
+    fLUTbackwardZ2 = tr->fLUTbackwardZ2;
+
+    return;
+}
