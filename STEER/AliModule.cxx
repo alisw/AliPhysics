@@ -64,6 +64,7 @@ AliModule::AliModule():
   fActive(0),
   fHistograms(0),
   fNodes(0),
+  fDebug(0),
   fEnable(1),
   fTrackReferences(0),
   fMaxIterTrackRef(0),
@@ -87,6 +88,7 @@ AliModule::AliModule(const char* name,const char *title):
   fActive(0),
   fHistograms(new TList()),
   fNodes(new TList()),
+  fDebug(0),
   fEnable(1),
   fTrackReferences(new TClonesArray("AliTrackReference", 100)),
   fMaxIterTrackRef(0),
@@ -132,6 +134,7 @@ AliModule::AliModule(const AliModule &mod):
   fActive(0),
   fHistograms(0),
   fNodes(0),
+  fDebug(0),
   fEnable(0),
   fTrackReferences(0),
   fMaxIterTrackRef(0),
@@ -875,5 +878,5 @@ void AliModule::Digits2Raw()
 Int_t AliModule::GetDebug() const
 {
   AliWarning("Don't use this method any more, use AliDebug instead");
-  return fDebug;
+  return 0;
 }
