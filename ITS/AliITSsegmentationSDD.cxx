@@ -15,12 +15,12 @@
 
 #include <TMath.h>
 
-#include "AliITSgeom.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITS.h"
+#include "AliITSgeom.h"
 #include "AliRun.h"
+#include "AliITSresponse.h"
 
-class AliITS;
 
 ClassImp(AliITSsegmentationSDD)
 //------------------------------
@@ -71,7 +71,8 @@ void AliITSsegmentationSDD::Init(){
   // Standard initilisation routine
 
    if(!fGeom) {
-        fGeom = ((AliITS*)gAlice->GetModule("ITS"))->GetITSgeom();
+     return;
+     //fGeom = ((AliITS*)gAlice->GetModule("ITS"))->GetITSgeom();
    }
    AliITSgeomSDD *gsdd = (AliITSgeomSDD *) (fGeom->GetShape(3,1,1));
 
@@ -83,23 +84,22 @@ void AliITSsegmentationSDD::Init(){
 
 //------------------------------
 void AliITSsegmentationSDD::
-Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[4], Int_t Zlist[4]){
-  // returns neighbers for use in Cluster Finder routines and the like
+Neighbours(Int_t iX, Int_t iZ, Int_t* Nlist, Int_t Xlist[8], Int_t Zlist[8]){
+  // returns neighbours for use in Cluster Finder routines and the like
 
     if(iX >= fNanodes) printf("iX > fNanodes %d %d\n",iX,fNanodes);
     if(iZ >= fNsamples) printf("iZ > fNsamples %d %d\n",iZ,fNsamples);
     *Nlist=4;
     Xlist[0]=Xlist[1]=iX;
-    if(iX) Xlist[2]=iX-1;
+    if(iX && (iX != fNanodes/2)) Xlist[2]=iX-1;
     else Xlist[2]=iX;
-    if (iX < fNanodes) Xlist[3]=iX+1;
+    if ((iX !=fNanodes/2 -1) && (iX != fNanodes)) Xlist[3]=iX+1;
     else Xlist[3]=iX;
     if(iZ) Zlist[0]=iZ-1;
     else Zlist[0]=iZ;
     if (iZ < fNsamples) Zlist[1]=iZ+1;
     else Zlist[1]=iZ;
     Zlist[2]=Zlist[3]=iZ;
-
 }
 //------------------------------
 void AliITSsegmentationSDD::GetPadIxz(Float_t x,Float_t z,Int_t &timebin,Int_t &anode){
@@ -147,19 +147,22 @@ void AliITSsegmentationSDD::GetPadTxz(Float_t &x,Float_t &z){
 
     const Float_t kconv=10000;  // cm->um
 
+    //Float_t x0=x;
     Float_t speed=fResponse->DriftSpeed();
-    Int_t na = fNanodes/2;
+    //Int_t na = fNanodes/2;
     Float_t driftpath=fDx-TMath::Abs(kconv*x);
     x=driftpath/speed/fTimeStep;
-    z=kconv*z/fPitch + (float)na/2;
-    if (x > 0) x += (float)na;
+    z=kconv*z/fPitch;
+    // z=kconv*z/fPitch + (float)na/2;
+    //if (x0 > 0) z += (float)na;
 
 }
 //------------------------------
 void AliITSsegmentationSDD::GetLocal(Int_t module,Float_t *g ,Float_t *l){
   // returns local coordinates from global
     if(!fGeom) {
-        fGeom = ((AliITS*)gAlice->GetModule("ITS"))->GetITSgeom();
+        return;
+        //fGeom = ((AliITS*)gAlice->GetModule("ITS"))->GetITSgeom();
     }
     fGeom->GtoL(module,g,l);
 }
@@ -167,7 +170,8 @@ void AliITSsegmentationSDD::GetLocal(Int_t module,Float_t *g ,Float_t *l){
 void AliITSsegmentationSDD::GetGlobal(Int_t module,Float_t *l ,Float_t *g){
   // return global coordinates from local
     if(!fGeom) {
-        fGeom = ((AliITS*)gAlice->GetModule("ITS"))->GetITSgeom();
+        return;
+        //fGeom = ((AliITS*)gAlice->GetModule("ITS"))->GetITSgeom();
     }
 
     fGeom->LtoG(module,l,g);
