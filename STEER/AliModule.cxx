@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2002/10/29 14:26:49  hristov
+Code clean-up (F.Carminati)
+
 Revision 1.18  2001/12/19 14:46:26  morsch
 Add possibility to disable StepManager() for each module separately.
 
@@ -77,7 +80,6 @@ Introduction of the Copyright and cvs Log
 #include "AliModule.h"
 #include "AliRun.h"
 #include "AliMagF.h"
-#include "AliMC.h"
 #include "AliConfig.h"
 
 ClassImp(AliModule)

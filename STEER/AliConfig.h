@@ -6,6 +6,9 @@
 /* $Id$ */
 /* 
  * $Log$
+ * Revision 1.8  2002/10/29 14:59:45  alibrary
+ * Some more code cleanup
+ *
  * Revision 1.7  2002/10/29 14:26:49  hristov
  * Code clean-up (F.Carminati)
  *
@@ -32,11 +35,11 @@
  * 
  */
 
-#include "AliMC.h"
 
 class TDatabasePDG;
 class TFolder;
 class TString;
+class TVirtualMC;
 
 class AliConfig;
 class AliDetector;
@@ -52,7 +55,7 @@ public:
   virtual ~ AliConfig ();
   
   void  Add (AliGenerator *generator);
-  void  Add (AliMC *mc);
+  void  Add (TVirtualMC *mc);
   void  Add (TDatabasePDG *pdg);
   void  Add (AliModule *module);
   void  Add (AliDetector *detector);

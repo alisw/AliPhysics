@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2002/10/29 14:26:49  hristov
+Code clean-up (F.Carminati)
+
 Revision 1.7  2002/10/14 14:57:32  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -66,7 +69,6 @@ Introducing new Rndm and QA classes
 #include "AliMCQA.h"
 #include "AliRun.h"
 #include "AliModule.h"
-#include "AliMC.h"
 
 ClassImp(AliMCQA)
 

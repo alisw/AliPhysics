@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.92  2002/11/15 17:12:04  alibrary
+Cleaning includes
+
 Revision 1.91  2002/10/29 14:26:49  hristov
 Code clean-up (F.Carminati)
 
@@ -265,42 +268,42 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <Riostream.h>
  
-#include <TFile.h>
-#include <TBRIK.h> 
-#include <TCint.h> 
-#include <TSystem.h>
-#include <TObjectTable.h>
-#include <TTree.h>
-#include <TGeometry.h>
-#include <TROOT.h>
-#include <TBrowser.h>
-#include <TFolder.h>
-#include <TKey.h>
-#include <TNode.h>
+#include "Riostream.h"
+#include "TBRIK.h" 
+#include "TBrowser.h"
+#include "TCint.h" 
+#include "TFile.h"
+#include "TFolder.h"
+#include "TGeometry.h"
+#include "TKey.h"
+#include "TNode.h"
+#include "TObjectTable.h"
 #include "TParticle.h"
-#include "AliRun.h"
+#include "TRandom3.h"
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TTree.h"
+
+#include "AliConfig.h"
+#include "AliDetector.h"
 #include "AliDisplay.h"
-#include "AliMC.h"
+#include "AliGenEventHeader.h"
+#include "AliGenerator.h"
+#include "AliHeader.h"
+#include "AliHit.h"
 #include "AliLego.h"
+#include "AliLegoGenerator.h"
+#include "AliMCQA.h"
 #include "AliMagFC.h"
 #include "AliMagFCM.h"
 #include "AliMagFDM.h"
-#include "AliHit.h"
-#include "TRandom3.h"
-#include "AliMCQA.h"
-#include "AliGenerator.h"
-#include "AliLegoGenerator.h"
-#include "AliConfig.h"
-#include "AliStack.h"
-#include "AliGenEventHeader.h"
-#include "AliHeader.h"
-#include "AliDetector.h"
 #include "AliPDG.h"
+#include "AliRun.h"
+#include "AliStack.h"
 
 AliRun *gAlice;
 
@@ -1732,7 +1735,7 @@ void AliRun::SetCurrentTrack(Int_t track)
 //_______________________________________________________________________
 void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
 		      Float_t *vpos, Float_t *polar, Float_t tof,
-		      AliMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
+		      TMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
 { 
 // Delegate to stack
 //
@@ -1746,7 +1749,7 @@ void AliRun::SetTrack(Int_t done, Int_t parent, Int_t pdg,
   	              Double_t px, Double_t py, Double_t pz, Double_t e,
   		      Double_t vx, Double_t vy, Double_t vz, Double_t tof,
 		      Double_t polx, Double_t poly, Double_t polz,
-		      AliMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
+		      TMCProcess mech, Int_t &ntr, Float_t weight, Int_t is)
 { 
   // Delegate to stack
   //

@@ -14,8 +14,6 @@
 #pragma link C++ enum VertexSmear_t;
 #pragma link C++ enum VertexSource_t;
 
-#pragma link C++ typedef AliMC;
-#pragma link C++ typedef AliMCProcess;
 #pragma link C++ class  AliPDG+;
 
 #pragma link C++ class  AliGenerator+;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/10/29 14:59:45  alibrary
+Some more code cleanup
+
 Revision 1.8  2002/10/29 14:26:49  hristov
 Code clean-up (F.Carminati)
 
@@ -50,6 +53,7 @@ New files for folders and Stack
 #include <TInterpreter.h>
 #include <TROOT.h>
 #include <TSystem.h>
+#include <TVirtualMC.h>
 
 #include "AliConfig.h"
 #include "AliDetector.h"
@@ -309,7 +313,7 @@ void    AliConfig::Add (AliGenerator * obj)
 }
 
 //____________________________________________________________________________
-void    AliConfig::Add (AliMC * obj)
+void    AliConfig::Add (TVirtualMC * obj)
 {
   AddInFolder(fMCFolder, obj);
 }

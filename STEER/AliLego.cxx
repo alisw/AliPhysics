@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.30  2002/10/29 14:26:49  hristov
+Code clean-up (F.Carminati)
+
 Revision 1.29  2002/10/14 14:57:32  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -135,7 +138,6 @@ Introduction of the Copyright and cvs Log
 #include "AliDebugVolume.h"
 #include "AliLego.h"
 #include "AliLegoGenerator.h"
-#include "AliMC.h"
 #include "AliRun.h"
 
 ClassImp(AliLego)

@@ -20,4 +20,4 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR= STEERLinkDef.h
 
-EXPORT:=$(SRCS:.cxx=.h) AliMC.h AliConst.h AliCallf77.h AliMCProcess.h 
+EXPORT:=$(SRCS:.cxx=.h) AliConst.h AliCallf77.h 
