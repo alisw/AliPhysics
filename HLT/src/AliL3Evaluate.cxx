@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <fstream.h>
 #include <TFile.h>
 #include <TH1.h>
 #include <TParticle.h>
@@ -45,20 +46,13 @@ AliL3Evaluate::AliL3Evaluate()
   fTransform = new AliL3Transform();
 }
 
-AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Char_t *digitsfile,Int_t *slice)
+AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Int_t *slice)
 {
   //Normal constructor. Input are the rootfile containing the 
   //original MC information of the simulated event. 
 
-  fDigitsFile = new TFile(digitsfile,"READ");
   fEventFile = new TFile(mcfile,"READ");
-  if(!fDigitsFile->IsOpen())
-    {
-      LOG(AliL3Log::kError,"AliL3Evaluation::AliL3Evaluation","File Open")
-	<<"Inputfile "<<mcfile<<" does not exist"<<ENDLOG;
-      return;
-    }
-  
+    
   fParam = (AliTPCParam*)fEventFile->Get("75x40_100x60");
   fTransform = new AliL3Transform();
   
@@ -111,10 +105,10 @@ void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
   fGoodFound = 0;
   fGoodGen = 0;
   Char_t fname[256];
-  AliL3FileHandler *clusterfile[36][5];
+  AliL3FileHandler *clusterfile[36][6];
   for(Int_t s=fMinSlice; s<=fMaxSlice; s++)
     {
-      for(Int_t p=0; p<5; p++)
+      for(Int_t p=0; p<6; p++)
 	{
 	  fClusters[s][p] = 0;
 	  clusterfile[s][p] = new AliL3FileHandler();
@@ -146,10 +140,17 @@ void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
   delete tfile;
 }
 
-void AliL3Evaluate::SetupSlow(Char_t *trackfile,Char_t *path)
+void AliL3Evaluate::SetupSlow(Char_t *trackfile,Char_t *digitsfile,Char_t *path)
 {
   //Setup for using the slow simulator.
   
+  fDigitsFile = new TFile(digitsfile,"READ");
+  if(!fDigitsFile->IsOpen())
+    {
+      LOG(AliL3Log::kError,"AliL3Evaluate::SetupSlow","File Open")
+	<<"Inputfile "<<digitsfile<<" does not exist"<<ENDLOG;
+      return;
+    }
   fIsSlow = true;
   Setup(trackfile,path);
   
@@ -180,8 +181,13 @@ Bool_t AliL3Evaluate::InitMC()
   if(fIsSlow)
     {
       fDigitsFile->cd();
-      fDigitsTree = (TTree*)fDigitsFile->Get("TreeD_75x40_100x60");
-      if(!fDigitsTree) return false;
+      fDigitsTree = (TTree*)fDigitsFile->Get("TreeD_75x40_100x60_0");
+      if(!fDigitsTree) 
+	{
+	  LOG(AliL3Log::kError,"AliL3Evaluate::InitMC","Digits Tree")
+	    <<AliL3Log::kHex<<"Error getting digitstree "<<(Int_t)fDigitsTree<<ENDLOG;
+	  return false;
+	}
       fDigitsTree->GetBranch("Segment")->SetAddress(&fDigits);
       for(Int_t i=0; i<fDigitsTree->GetEntries(); i++)
 	{
@@ -194,10 +200,10 @@ Bool_t AliL3Evaluate::InitMC()
     }
   
   fEventFile->cd();
-  AliRun *gAlice = (AliRun*)fEventFile->Get("gAlice");
+  gAlice = (AliRun*)fEventFile->Get("gAlice");
   if (!gAlice) 
     {
-      LOG(AliL3Log::kError,"AliL3Evaluate::SetParticleArray","gAlice")
+      LOG(AliL3Log::kError,"AliL3Evaluate::InitMC","gAlice")
 	<<"AliRun object non existing on file"<<ENDLOG;
       return false;
     }
@@ -210,10 +216,33 @@ Bool_t AliL3Evaluate::InitMC()
 
 
 
-void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_number)
+void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_number,Char_t *fname)
 {
   //Loop over MC particles, and mark the good ones
   //(which the tracker should find...)
+  
+  
+  ifstream in(fname);
+  if(in)
+    {
+      LOG(AliL3Log::kInformational,"AliL3Evaluate::DefineGoodTracks","infile")
+	<<"Reading good particles from file "<<fname<<ENDLOG;
+      while (in>>fGoodTracks[fGoodGen].label>>fGoodTracks[fGoodGen].code>>
+	     fGoodTracks[fGoodGen].px>>fGoodTracks[fGoodGen].py>>fGoodTracks[fGoodGen].pz>>
+	     fGoodTracks[fGoodGen].pt) 
+	{
+	  fGoodGen++;
+	  if (fGoodGen==15000) 
+	    {
+	      LOG(AliL3Log::kWarning,"AliL3Evaluate::DefineGoodTracks","fGoodGen")
+		<<"Too many good tracks"<<ENDLOG;
+	      break;
+	    }
+	}
+      if (!in.eof()) cerr<<"Read error (good_tracks_tpc) !\n";
+      return;
+    }
+  
   
   AliTPC *TPC = (AliTPC*)gAlice->GetDetector("TPC");
   
@@ -239,7 +268,10 @@ void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_numbe
       AliTPCClustersArray carray;
       carray.Setup(fParam);
       carray.SetClusterType("AliTPCcluster");
-      Bool_t clusterok = carray.ConnectTree("Segment Tree");
+      Char_t cname[100];
+      Int_t eventn = 0;
+      sprintf(cname,"TreeC_TPC_%d",eventn);
+      Bool_t clusterok = carray.ConnectTree(cname);
       if(!clusterok) 
 	LOG(AliL3Log::kError,"AliL3Evaluate::DefineGoodTracks","Cluster Array")
 	  <<"Error loading clusters from rootfile"<<ENDLOG;
@@ -319,55 +351,73 @@ void AliL3Evaluate::DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_numbe
   
   TTree *TH=gAlice->TreeH();
   Int_t npart=(Int_t)TH->GetEntries();
-  Int_t nt=0;
   Int_t max = 15000;
   while (npart--) {
     AliTPChit *hit0=0;
     
-      TPC->ResetHits();
-      TH->GetEvent(npart);
-      AliTPChit * hit = (AliTPChit*) TPC->FirstHit(-1);
-      while (hit){
-        if (hit->fQ==0.) break;
-        hit =  (AliTPChit*) TPC->NextHit();
-      }
-      if (hit) {
-        hit0 = new AliTPChit(*hit); //Make copy of hit
-        hit = hit0;
-      }
-      else continue;
-      AliTPChit *hit1=(AliTPChit*)TPC->NextHit();       
-      if (hit1==0) continue;
-      if (hit1->fQ != 0.) continue;
-      Int_t i=hit->Track();
-      TParticle *p = (TParticle*)gAlice->Particle(i);
-      
-      printf("Checking particle %d with code %d\n",i,p->GetPdgCode());
-      if (p->GetFirstMother()>=0) continue;  //secondary particle
-      if (good[i] < good_number) continue;
-      if (p->Pt()<fMinGoodPt) continue;
-      if (TMath::Abs(p->Pz()/p->Pt())>0.999) continue;
-      printf("Checking particle %d, nHits %d\n",i,good[i]);
-      fGoodGen++;
-      fGoodTracks[nt].label=i;
-      fGoodTracks[nt].code=p->GetPdgCode();
-      //**** px py pz - in global coordinate system, x y z - in local !
-      fGoodTracks[nt].px=hit->X(); fGoodTracks[nt].py=hit->Y(); fGoodTracks[nt].pz=hit->Z();
-      
-      nt++;     
-      if (hit0) delete hit0;
-      if (nt==max) {cerr<<"Too many good tracks !n"; break;}
-   }
+    TPC->ResetHits();
+    TH->GetEvent(npart);
+    AliTPChit * hit = (AliTPChit*) TPC->FirstHit(-1);
+    while (hit){
+      if (hit->fQ==0.) break;
+      hit =  (AliTPChit*) TPC->NextHit();
+    }
+    if (hit) {
+      hit0 = new AliTPChit(*hit); //Make copy of hit
+      hit = hit0;
+    }
+    else continue;
+    AliTPChit *hit1=(AliTPChit*)TPC->NextHit();       
+    if (hit1==0) continue;
+    if (hit1->fQ != 0.) continue;
+    Int_t i=hit->Track();
+    TParticle *p = (TParticle*)gAlice->Particle(i);
+    
+    //printf("Checking particle %d with code %d\n",i,p->GetPdgCode());
+    if (p->GetFirstMother()>=0) continue;  //secondary particle
+    if (good[i] < good_number) continue;
+    if (p->Pt()<fMinGoodPt) continue;
+    if (TMath::Abs(p->Pz()/p->Pt())>0.999) continue;
+    printf("Found good particle %d, nHits %d\n",i,good[i]);
+    
+    fGoodTracks[fGoodGen].label=i;
+    fGoodTracks[fGoodGen].code=p->GetPdgCode();
+    //**** px py pz - in global coordinate system, x y z - in local !
+    fGoodTracks[fGoodGen].px=hit->X(); fGoodTracks[fGoodGen].py=hit->Y(); fGoodTracks[fGoodGen].pz=hit->Z();
+    fGoodTracks[fGoodGen].pt = p->Pt();
+    fGoodGen++;
+    //nt++;     
+    if (hit0) delete hit0;
+    if (fGoodGen==max) {cerr<<"Too many good tracks !n"; break;}
+  }
   
   delete [] good;
-    
+  
+  LOG(AliL3Log::kInformational,"AliL3Evaluate::DefineGoodParticles","Eval")
+    <<AliL3Log::kDec<<"Found "<<fGoodGen<<"good tracks"<<ENDLOG;
+  
+  ofstream out(fname);
+  if(out) 
+    {
+      for (Int_t ngd=0; ngd<fGoodGen; ngd++)            
+	out<<fGoodTracks[ngd].label<<' '<<fGoodTracks[ngd].code<<' '<<
+	  fGoodTracks[ngd].px<<' '<<fGoodTracks[ngd].py<<' '<<fGoodTracks[ngd].pz<<' '<<
+	  fGoodTracks[ngd].pt<<endl; 
+      
+    } 
+  else
+    LOG(AliL3Log::kError,"AliL3Evaluate::DefineGoodParticles","file")
+      <<"Can not open file containing good tracks"<<ENDLOG;
+  
+  out.close();
+  
 }
 
 void AliL3Evaluate::EvaluatePatch(Int_t slice,Int_t patch,Int_t min_points,Int_t good_number)
 {
   //Make efficiency plots for tracking on patch level (before any merging).
   
-  Int_t row[5][2] = {{ 0, 45},{46,77},{78,109},{110,141},{142,175}};
+  Int_t row[6][2] = {{ 0, 45},{46,77},{78,109},{110,141},{142,175}};
   Int_t sl[2] ={slice,slice};
   DefineGoodTracks(sl,row[patch],good_number);
   SetMinPoints(min_points);
@@ -395,17 +445,19 @@ void AliL3Evaluate::EvaluateSlice(Int_t slice,Int_t min_points,Int_t good_number
   CalcEffHistos();
 }
 
-void AliL3Evaluate::EvaluateGlobal(Int_t min_points,Int_t good_number)
+void AliL3Evaluate::EvaluateGlobal(Int_t min_points,Int_t good_number,Char_t *fname)
 {
   //Make efficiency plots for tracking on several slices.
   
   Int_t row[2] = {0,175};
   SetMinPoints(min_points);
   Int_t slice[2] = {fMinSlice,fMaxSlice};
-  DefineGoodTracks(slice,row,good_number);
+  DefineGoodTracks(slice,row,good_number,fname);
   AssignIDs();
   CreateHistos(20,0,5);
+  printf("filling histos\n");
   FillEffHistos();
+  printf("done fillling\n");
   CalcEffHistos();
 }
 
@@ -622,6 +674,9 @@ void AliL3Evaluate::CreateHistos(Int_t nbin,Int_t xlow,Int_t xup)
 {
   //Create the histograms 
   
+  LOG(AliL3Log::kInformational,"AliL3Evaluate::CreateHistos","Allocating")
+    <<"Creating histograms..."<<ENDLOG;
+  
   fNtuppel = new TNtuple("fNtuppel","Pt resolution","pt_gen:pt_found:nHits");
 
   fPtRes = new TH1F("fPtRes","Relative Pt resolution",30,-10.,10.); 
@@ -636,6 +691,7 @@ void AliL3Evaluate::CreateHistos(Int_t nbin,Int_t xlow,Int_t xup)
   fNFakeTracksEta = new TH1F("fNFakeTracksEta","Fake tracks vs eta",20,-50,50);
   fTrackEffEta = new TH1F("fTrackEffEta","Tracking efficienct vs eta",20,-50,50);
   fFakeTrackEffEta = new TH1F("fFakeTrackEffEta","Efficiency for fake tracks vs eta",20,-50,50);
+  printf("finished creating histos\n");
 }
 
 void AliL3Evaluate::FillEffHistos()
@@ -646,6 +702,7 @@ void AliL3Evaluate::FillEffHistos()
     {
       Double_t ptg=fGoodTracks[i].pt,pzg=fGoodTracks[i].pz;
       Float_t dipangle=TMath::ATan2(pzg,ptg)*180./TMath::Pi();
+      printf("filling particle with pt %f and dipangle %f\n",ptg,dipangle);
       fNGoodTracksPt->Fill(ptg);
       fNGoodTracksEta->Fill(dipangle);
       Int_t found = 0;
@@ -658,7 +715,7 @@ void AliL3Evaluate::FillEffHistos()
 	  
 	  Int_t tracklabel;
 	  tracklabel = track->GetMCid();
-	  
+	  printf("evaluating track id %d\n",tracklabel);
 	  if(TMath::Abs(tracklabel) != fGoodTracks[i].label) continue;
 	  found=1;
 	  if(tracklabel == fGoodTracks[i].label) {fNFoundTracksPt->Fill(ptg); fNFoundTracksEta->Fill(dipangle);}

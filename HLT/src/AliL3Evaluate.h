@@ -12,6 +12,7 @@ struct GoodTrack
 {
 
   Int_t label;
+  Double_t eta;
   Int_t code;
   Double_t px,py,pz;
   Double_t pt;
@@ -43,13 +44,13 @@ class AliL3Evaluate : public TObject {
   TObjArray *fParticles;
   AliL3TrackArray *fTracks; //!
   AliTPCParam *fParam;
-  AliL3SpacePointData *fClusters[36][5]; //!
+  AliL3SpacePointData *fClusters[36][6]; //!
   AliL3Transform *fTransform; //!
   AliSimDigits *fDigits;
   TTree *fDigitsTree;
   Int_t fMinSlice;
   Int_t fMaxSlice;
-  UInt_t fNcl[36][5];
+  UInt_t fNcl[36][6];
   Int_t fRowid[36][176];
   Int_t fMinPointsOnTrack;  //Minimum points on track to be considered.
   Bool_t fIsSlow;
@@ -79,25 +80,25 @@ class AliL3Evaluate : public TObject {
   void CalcEffHistos();
   void AssignIDs();
   Bool_t InitMC();
-  void DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_number);
+  void DefineGoodTracks(Int_t *slice,Int_t *padrow,Int_t good_number,Char_t *fname="good_tracks_tpc");
   Int_t GetMCTrackLabel(AliL3Track *track);
   Int_t **GetClusterIDs(AliL3Track *track);
   void GetFastClusterIDs(Char_t *path);
   
  public:
   AliL3Evaluate();
-  AliL3Evaluate(Char_t *mcfile,Char_t *digitsfile,Int_t *slice);
+  AliL3Evaluate(Char_t *mcfile,Int_t *slice);
   AliL3Evaluate(Int_t *slice);
 
   virtual ~AliL3Evaluate();
 
   void SetupFast(Char_t *trackfile,Char_t *mcClusterfile,Char_t *path=".");
-  void SetupSlow(Char_t *trackfile,Char_t *path=".");
+  void SetupSlow(Char_t *trackfile,Char_t *digitsfile,Char_t *path=".");
   void Setup(Char_t *trackfile,Char_t *path);
   void CreateHistos(Int_t nbin=20,Int_t xlow=0,Int_t xup=4);
   void EvaluatePatch(Int_t slice,Int_t patch,Int_t min_points,Int_t good_number);
   void EvaluateSlice(Int_t slice,Int_t min_points,Int_t good_number);
-  void EvaluateGlobal(Int_t min_points,Int_t good_number);
+  void EvaluateGlobal(Int_t min_points,Int_t good_number,Char_t *fname);
   void Write2File(Char_t *outputfile);
     
   TH1F *GetTrackEffPt() {return fTrackEffPt;}
