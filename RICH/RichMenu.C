@@ -76,17 +76,36 @@ void Show()
     Int_t iNparticles=al->Stack()->GetNtrack();
     Int_t iNprims=al->Stack()->GetNprimary();
     
+    Int_t iElectronCounter=0,iPositronCounter=0;    
+    Int_t iPiPlusCounter=0,iPiMinusCounter=0;    
     Int_t iKPlusCounter=0,iKMinusCounter=0;    
+    Int_t iProtonCounter=0,iProtonBarCounter=0;    
+    Int_t nP=0;
+    Info("Show-STA"," %i particles to be read",iNparticles);
     for(Int_t iParticleN=0;iParticleN<iNparticles;iParticleN++){//stack loop
       TParticle *pPart=al->Stack()->Particle(iParticleN);
+      nP++;
+      if(nP%10000==0) Info("Show-STA"," %i particles read",nP);
       switch(pPart->GetPdgCode()){
         case kKPlus: iKPlusCounter++; break;
         case kKMinus:iKMinusCounter++; break;
+        case kProton: iProtonCounter++; break;
+        case kProtonBar:iProtonBarCounter++; break;
+        case kElectron: iElectronCounter++; break;
+        case kPositron:iPositronCounter++; break;
+        case kPiPlus: iPiPlusCounter++; break;
+        case kPiMinus:iPiMinusCounter++; break;
       }
     }//stack loop
     
+    Info("Show-STA","Evt %i->   %i particles %i primaries  %i e- %i e+",
+                     iEventN,   iNparticles,    iNprims,      iElectronCounter,      iPositronCounter);
+    Info("Show-STA","Evt %i->   %i particles %i primaries  %i p+ %i p-",
+                     iEventN,   iNparticles,    iNprims,      iPiPlusCounter,        iPiMinusCounter);
     Info("Show-STA","Evt %i->   %i particles %i primaries  %i K+ %i K-",
                      iEventN,   iNparticles,    iNprims,      iKPlusCounter,         iKMinusCounter);
+    Info("Show-STA","Evt %i->   %i particles %i primaries  %i p  %i pbar",
+                     iEventN,   iNparticles,    iNprims,      iProtonCounter,        iProtonBarCounter);
     
     Int_t iHitsCounter=0;
     Int_t iNentries=rl->TreeH()->GetEntries();
@@ -97,7 +116,6 @@ void Show()
         iHitsCounter++;
         AliRICHhit *pHit = (AliRICHhit*)r->Hits()->At(iHitN);//get current hit
         TParticle *pPart=al->Stack()->Particle(pHit->GetTrack());//get stack particle which produced the current hit
-        FillContribs(pPart->GetPdgCode(),pHit->C(),kFALSE);
       }//hits loop
       
       if(iEntryN<7) Info("Show","Evt %i-> prim %4i has %4i hits from %s (,%7.2f,%7.2f)",
