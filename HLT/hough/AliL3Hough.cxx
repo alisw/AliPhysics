@@ -392,6 +392,7 @@ void AliL3Hough::FindTrackCandidates()
 	  if(hist->GetNEntries()==0) continue;
 	  fPeakFinder->Reset();
 	  fPeakFinder->SetHistogram(hist);
+	  //fPeakFinder->FindPeak1(3,1);
 	  fPeakFinder->FindMaxima(0,0); //Simple maxima finder
 	  //fPeakFinder->FindAbsMaxima();
 
@@ -401,7 +402,7 @@ void AliL3Hough::FindTrackCandidates()
 	      AliL3HoughTrack *track = (AliL3HoughTrack*)fTracks[i]->NextTrack();
 	      track->SetTrackParameters(fPeakFinder->GetXPeak(k),fPeakFinder->GetYPeak(k),fPeakFinder->GetWeight(k));
 	      track->SetEtaIndex(j);
-	      track->SetEta(tr->GetEta(j));
+	      track->SetEta(tr->GetEta(j,fCurrentSlice));
 	      track->SetRowRange(AliL3Transform::GetFirstRow(0),AliL3Transform::GetLastRow(5));
 	    }
 	}

@@ -47,7 +47,7 @@ class AliL3HoughBaseTransformer {
  
   virtual Int_t GetEtaIndex(Double_t eta) = 0;
   virtual AliL3Histogram *GetHistogram(Int_t eta_index) = 0;
-  virtual Double_t GetEta(Int_t eta_index) = 0;
+  virtual Double_t GetEta(Int_t eta_index,Int_t slice) = 0;
 
   //setters
   virtual void Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100);

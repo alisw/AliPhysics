@@ -82,7 +82,7 @@ class AliL3HoughTransformerVhdl : public AliL3HoughBaseTransformer
 
   Int_t GetEtaIndex(Double_t eta);
   AliL3Histogram *GetHistogram(Int_t eta_index);
-  Double_t GetEta(Int_t eta_index);
+  Double_t GetEta(Int_t eta_index,Int_t slice);
 
 #ifdef VHDLVERSION
   void Print();

@@ -28,7 +28,7 @@ class AliL3HoughTransformer : public AliL3HoughBaseTransformer {
 
   Int_t GetEtaIndex(Double_t eta);
   AliL3Histogram *GetHistogram(Int_t eta_index);
-  Double_t GetEta(Int_t eta_index);
+  Double_t GetEta(Int_t eta_index,Int_t slice);
 
   //void Init(Int_t slice=0,Int_t patch=0,Int_t n_eta_segments=100);
   

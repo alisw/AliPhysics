@@ -113,11 +113,11 @@ inline AliL3Histogram *AliL3HoughTransformer::GetHistogram(Int_t eta_index)
   return fParamSpace[eta_index];
 }
 
-Double_t AliL3HoughTransformer::GetEta(Int_t eta_index)
+Double_t AliL3HoughTransformer::GetEta(Int_t eta_index,Int_t slice)
 {
   Double_t eta_slice = (GetEtaMax()-GetEtaMin())/GetNEtaSegments();
   Double_t eta=(Double_t)((eta_index+0.5)*eta_slice);
-  if(GetSlice()>17) eta*=-1;
+  if(slice>17) eta*=-1;
   return eta;
 }
 

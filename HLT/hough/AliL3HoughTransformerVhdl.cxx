@@ -317,7 +317,7 @@ Int_t AliL3HoughTransformerVhdl::GetEtaIndex(Double_t eta)
   return FindIndex(rz2);
 }
 
-Double_t AliL3HoughTransformerVhdl::GetEta(Int_t eta_index){
+Double_t AliL3HoughTransformerVhdl::GetEta(Int_t eta_index,Int_t slice){
   if(eta_index >= fNEtas || eta_index < 0){
     LOG(AliL3Log::kWarning,"AliL3HoughTransformerVhdl::GetEta","Index")
       <<"Index out of range."<<ENDLOG;
