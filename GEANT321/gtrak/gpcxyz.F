@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:21  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:41  cernlib
 * Geant
 *
@@ -80,7 +83,7 @@ C
          GOTO 30
       ENDIF
 C
- 1000 FORMAT(' =====> TRACK ',I4,' STACK NR',I4,' NTMULT=',I5,5X,
+ 1000 FORMAT(' =====> TRACK ',I4,' STACK NR',I4,' NTMULT=',I10,5X,
      +5A4,5X,'TOFG =',F10.3,' NS')
  1100 FORMAT('       X          Y          Z          R   ',
      +'  NAME  NUMBER',

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:21  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:44  cernlib
 * Geant
 *
@@ -260,17 +263,13 @@ C.    ------------------------------------------------------------------
             LMEC(NMEC) = 30
             WRITE(CHMAIL,10200) MAXNST
             CALL GMAIL(1,0)
-            WRITE(CHMAIL,10250) IEVENT,IDEVT,(NRNDM(I),I = 1,2)
-            CALL GMAIL(0,0)
-            WRITE(CHMAIL,10300)ITRA,ISTAK,NTMULT,(NAPART(I),I=1,5),
-     +      TOFG*1.E9
+            CALL GPCXYZ
+            WRITE(CHMAIL,10250) IEVENT,IDEVT,(NRNDM(I),I=1,2),TOFG*1.E9
             CALL GMAIL(0,1)
 10200       FORMAT(' *** GTRACK *** More than ',I6,
      +             ' steps, tracking abandoned!')
-10250       FORMAT('                IEVENT=',I7,' IDEVT=',I7,
-     +             ' Random Seeds = ',I10,2X,I10)
-10300       FORMAT('                Track ',I5,' stack ',I5,' NTMULT ',
-     +             I5,1X,5A4,1X,'Time of flight ',F10.3,' ns')
+10250       FORMAT(' IEVENT ',I7,' IDEVT ',I7,' Random Seeds ',I10,2X
+     $           ,I10,' Time of flight ',F10.3,' ns')
          ENDIF
       ENDIF
 *
