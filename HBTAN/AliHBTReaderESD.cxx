@@ -75,7 +75,7 @@ Int_t AliHBTReaderESD::ReadNext()
   Double_t mom[3];//momentum
   Double_t pos[3];//position
   
-  if (AliHBTParticle::fgDebug)
+  if (AliHBTParticle::GetDebug())
     Info("ReadNext","Entered");
     
   TDatabasePDG* pdgdb = TDatabasePDG::Instance();
@@ -111,7 +111,7 @@ Int_t AliHBTReaderESD::ReadNext()
      AliESD* esd = dynamic_cast<AliESD*>(fFile->Get(esdname));
      if (esd == 0x0)
       {
-        if (AliHBTParticle::fgDebug > 2 )
+        if (AliHBTParticle::GetDebug() > 2 )
           {
             Info("ReadNext","Can not find ESD object named %s.",esdname.Data());
           }
@@ -144,14 +144,14 @@ Int_t AliHBTReaderESD::ReadNext()
         //if (esdtrack->HasVertexParameters() == kFALSE) 
         if ((esdtrack->GetStatus() & AliESDtrack::kITSrefit) == kFALSE)
          {
-           if (AliHBTParticle::fgDebug > 2) 
+           if (AliHBTParticle::GetDebug() > 2) 
              Info("ReadNext","Particle skipped: Data at vertex not available.");
            continue;
          }
          
         if ((esdtrack->GetStatus()&AliESDtrack::kESDpid) == kFALSE) 
          {
-           if (AliHBTParticle::fgDebug > 2) 
+           if (AliHBTParticle::GetDebug() > 2) 
              Info("ReadNext","Particle skipped: PID BIT is not set.");
            continue;
          }
@@ -190,14 +190,14 @@ Int_t AliHBTReaderESD::ReadNext()
         for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) rc+=concentr[s]*pidtable[s];
         if (rc==0.0) 
          {
-           if (AliHBTParticle::fgDebug > 2) 
+           if (AliHBTParticle::GetDebug() > 2) 
              Info("ReadNext","Particle rejected since total bayessian PID probab. is zero.");
            continue;
          }
 
         for (Int_t s=0; s<AliESDtrack::kSPECIES; s++) w[s]=concentr[s]*pidtable[s]/rc;
 
-        if (AliHBTParticle::fgDebug > 4)
+        if (AliHBTParticle::GetDebug() > 4)
          { 
            Info("ReadNext","###########################################################################");
            Info("ReadNext","Momentum: %f %f %f",mom[0],mom[1],mom[2]);
@@ -216,7 +216,7 @@ Int_t AliHBTReaderESD::ReadNext()
               msg+=")";
             }
            Info("ReadNext","%s",msg.Data());
-         }//if (AliHBTParticle::fgDebug>4)
+         }//if (AliHBTParticle::GetDebug()>4)
 
         for (Int_t s = 0; s<kNSpecies; s++)
          {
@@ -250,7 +250,7 @@ Int_t AliHBTReaderESD::ReadNext()
            if (particle) fParticlesEvent->AddParticle(particle);
            keeppart = kTRUE;
                
-           if (AliHBTParticle::fgDebug > 4 )
+           if (AliHBTParticle::GetDebug() > 4 )
             {
               Info("ReadNext","\n\nAdding Particle with incarnation %d",pdgcode);
               track->Print();
