@@ -302,6 +302,10 @@ ifndef ALIQUIET
 endif
 	$(MUTE)rm -rf bin/tgt_$(ALICE_TARGET)
 
+clean-check-all:			$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,clean-check-%,$(CHECKMODULES))
+
+clean-reveng-all:			$(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,clean-reveng-%,$(CHECKMODULES))
+
 htmldoc:
 	@rm -rf html/roothtml
 	@rm -f  html/picts
