@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/06 09:09:56  morsch
+Outer radius of chambers adjusted to accomodate slat chambers (to be checked and updated).
+
 Revision 1.3  2000/10/02 16:58:29  egangler
 Cleaning of the code :
 -> coding conventions
@@ -39,7 +42,7 @@ Int_t   AliMUONConstants::fgNTrackingCh = 10;
 Int_t   AliMUONConstants::fgNTriggerCh = 4;
 Int_t   AliMUONConstants::fgNTriggerCircuit = 234;
 Float_t AliMUONConstants::fgDefaultChamberZ[14] =
-{518., 538., 680., 700., 965., 985., 1239., 1259., 1439., 1459.,
+{530., 550., 672.5, 699.5, 960.1, 988.9, 1252.29, 1282.04, 1413.13, 1442.88,
 		   1610, 1625., 1710., 1725.}; 
 
 Float_t  AliMUONConstants::fgDmin[7] = {  35.,  47.,  66.0,   80.,   80., 100., 100.};    
