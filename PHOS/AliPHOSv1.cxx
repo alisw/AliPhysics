@@ -104,6 +104,7 @@ AliPHOSv0(name,title)
   // and the TreeD at the end of the event (branch is set in FinishEvent() ).
   
   fHits= new TClonesArray("AliPHOSHit",1000) ;
+  gAlice->AddHitList(fHits);
 
   fNhits = 0 ;
 
@@ -164,7 +165,7 @@ AliPHOSv1::AliPHOSv1(AliPHOSReconstructioner * Reconstructioner, const char *nam
 
   fDigits = 0 ;
   fHits= new TClonesArray("AliPHOSHit",1000) ;
-
+  gAlice->AddHitList(fHits);
   fNhits = 0 ;
 
   fIshunt     =  1 ; // All hits are associated with primary particles
