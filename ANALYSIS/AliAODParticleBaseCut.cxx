@@ -1,5 +1,26 @@
 #include "AliAODParticleBaseCut.h"
-
+//__________________________________________________________________________
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// class AliAODParticleBaseCut                                            //
+//                                                                        //
+// Set of classes for performing cuts on particle properties of           //
+// AliAODParticleBaseCut is a base class for "base                        //
+// particle cuts". Further, there are implemented classes that performs   //
+// cuts on the most common particle properties like pt, pseudo rapidity,  //
+// angles, anergy, etc.                                                   //
+//                                                                        //
+// There are also implemeted base cuts that perform logical operations    //
+// on results of base particle cuts: AliAODOrCut and  AliAODAndCut.       //
+//                                                                        //
+// Each base cut has a property, thet allows to distinguish them.         //
+// This functionality is used by the interface methods of Particle Cut    //
+// that allows easy update ranges.                                        //
+//                                                                        //
+// more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html    //
+// responsible: Piotr Skowronski@cern.ch                                  //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 
 #include <Riostream.h>

@@ -5,23 +5,33 @@
 //                                                                        //
 // class AliAODParticleCut                                                //
 //                                                                        //
-// Classes for single particle cuts                                       //
-// User should use only AliAODParticleCut, eventually                     //
-// EmptyCut which passes all particles                                    //
+// Classes for single particle cuts.                                      //
+// User should use mainly AliAODParticleCut interface methods,            //
+// eventually EmptyCut which passes all particles.                        //
+//                                                                        //
 // There is all interface for setting cuts on all particle properties     //
-// The main method is Pass - which returns                                //
+// The main method is Rejected - which returns                            //
 //         True to reject particle                                        //
 //         False in case it meets all the criteria of the given cut       //
 //                                                                        //
-// User should create (and also destroy) cuts himself                     // 
-// and then pass them to the Analysis And Function by a proper method     //
+// This class has the list of base particle  cuts that perform check on   //
+// single property. Particle  is rejected if any of cuts rejects it.      //
+// There are implemented logical base cuts that perform logical           //
+// operations on results of two other base cuts. Using them user can      //
+// create a tree structure of a base cuts that performs sophisticated     //
+// cut.                                                                   //
 //                                                                        //
+// User can also implement a base cut that performs complicated           //
+// calculations, if it is only more convenient and/or efficint.           //
 //                                                                        //
-// more info: http://alisoft.cern.ch/people/skowron/analyzer/index.html   //
-// responsible: Piotr Skowronski@cern.ch                                   //
+// User should delete created cuts  himself                               //
+// because when setting a cut, other objects (functions,analyses,         //
+// readers, other cuts) make their own copy of a cut.                     //
+//                                                                        //
+// more info: http://aliweb.cern.ch/people/skowron/analyzer/index.html    //
+// responsible: Piotr Skowronski@cern.ch                                  //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-
 
 #include <TObject.h>
 #include "AliVAODParticle.h"
