@@ -5,14 +5,14 @@
 
 /* $Id$ */
 
-#include "TFile.h"
+#include "TObject.h"
 #include "TString.h"
 
 class AliALIFE : public  TObject {
  public:
     AliALIFE(const char *name1, const char *name2);
     AliALIFE();    
-    ~AliALIFE(){;}
+    virtual ~AliALIFE() {}
     void Cylinder(Float_t rmin, Float_t rmax,
 		  Float_t zmin, Float_t zmax,
 		  Float_t pos[3],
