@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2003/04/10 10:36:54  hristov
+Code for unified TPC/TRD tracking (S.Radomski)
+
 Revision 1.17  2003/02/19 09:02:28  hristov
 Track time measurement (S.Radomski)
 
@@ -232,10 +235,12 @@ void  AliTRDtrack::GetBarrelTrack(AliBarrelTrack *track) {
   track->SetNClusters(GetNumberOfClusters(), GetChi2());
   track->SetNWrongClusters(fNWrong);
   track->SetNRotate(fNRotate);
-  track->SetTime(fIntegratedTime, fIntegratedLength);
+  Double_t times[10];
+  GetIntegratedTimes(times);
+  track->SetTime(times, GetIntegratedLength());
 
-  track->SetMass(fMass);
-  track->SetdEdX(fdEdx);
+  track->SetMass(GetMass());
+  track->SetdEdX(GetdEdx());
 
   GetExternalParameters(xr, vec);
   track->SetStateVector(vec);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2003/04/10 10:36:54  hristov
+Code for unified TPC/TRD tracking (S.Radomski)
+
 Revision 1.19  2003/03/03 16:56:53  hristov
 Corrections to obey coding conventions
 
@@ -170,10 +173,12 @@ void  AliTPCtrack::GetBarrelTrack(AliBarrelTrack *track) {
   track->SetLabel(GetLabel());
   track->SetX(fX, fAlpha);
   track->SetNClusters(GetNumberOfClusters(), GetChi2());
-  track->SetTime(fIntegratedTime, fIntegratedLength);
+  Double_t times[10];
+  GetIntegratedTimes(times);
+  track->SetTime(times, GetIntegratedLength());
 
-  track->SetMass(fMass);
-  track->SetdEdX(fdEdx);
+  track->SetMass(GetMass());
+  track->SetdEdX(GetdEdx());
 
   track->SetNWrongClusters(fNWrong);
   track->SetNRotate(fNRotation);
