@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2002/10/14 14:55:35  hristov
+Merging the VirtualMC branch to the main development branch (HEAD)
+
 Revision 1.14  2002/10/11 10:05:18  morsch
 pdg code for psi' corrected.
 
@@ -75,6 +78,7 @@ Realisation of AliDecayer using Pythia6
 
 #include "AliDecayerPythia.h"
 #include "AliPythia.h"
+#include "AliPDG.h"
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
 
@@ -147,7 +151,7 @@ void AliDecayerPythia::Decay(Int_t idpart, TLorentzVector* p)
     
     Lu1Ent(0, idpart, energy, theta, phi);
     fPythia->GetPrimaries();
-    fPythia->Pylist(1);
+//    fPythia->Pylist(1);
     
 }
 
@@ -299,58 +303,43 @@ Int_t AliDecayerPythia::CountProducts(Int_t channel, Int_t particle)
 
 void AliDecayerPythia::ForceHadronicD()
 {
+//
 // Force golden D decay modes
 //
-
+    const Int_t kNHadrons = 4;
     Int_t channel;
+    Int_t hadron[kNHadrons] = {411,  421, 431, 4112};
+    Int_t decayP[kNHadrons][3] = 
+	{ 
+	    {kKMinus, kPiPlus, kPiPlus},
+	    {kKMinus, kPiPlus, 0      },
+	    {-1     , -1     , -1     },
+	    {-1     , -1     , -1     }
+	};
     
-// D+ -> K- pi+ pi+ 
-    Int_t kc=fPythia->Pycomp(411);
-    fPythia->SetMDCY(kc,1,1);
-    Int_t ifirst=fPythia->GetMDCY(kc,2);
-    Int_t ilast=ifirst+fPythia->GetMDCY(kc,3)-1;
-    for (channel=ifirst; channel<=ilast;channel++) {
-	if (channel==837) {
-	    fPythia->SetMDME(channel,1,1);
-	} else {
-	    fPythia->SetMDME(channel,1,0);
-	    fBraPart[kc]-=fPythia->GetBRAT(channel);
-	}
-    }
 
-// D0 -> K- pi+
-    kc=fPythia->Pycomp(421);
-    fPythia->SetMDCY(kc,1,1);
-    ifirst=fPythia->GetMDCY(kc,2);
-    ilast=ifirst+fPythia->GetMDCY(kc,3)-1;
-    for (channel=ifirst; channel<=ilast;channel++) {
-	if (channel==881) {
-	    fPythia->SetMDME(channel,1,1);
-	} else {
-	    fPythia->SetMDME(channel,1,0);
-	    fBraPart[kc]-=fPythia->GetBRAT(channel);
-	}
-    }
+    for (Int_t ihadron = 0; ihadron < kNHadrons; ihadron++)
+    {
+	Int_t kc = fPythia->Pycomp(hadron[ihadron]);	
+	fPythia->SetMDCY(kc,1,1);	
+	Int_t ifirst = fPythia->GetMDCY(kc,2);
+	Int_t ilast  = ifirst + fPythia->GetMDCY(kc,3)-1;
 
-// no D_s decays
-    kc=fPythia->Pycomp(431);
-    fPythia->SetMDCY(kc,1,1);
-    ifirst=fPythia->GetMDCY(kc,2);
-    ilast=ifirst+fPythia->GetMDCY(kc,3)-1;
-    for (channel=ifirst; channel<=ilast;channel++) {
-	fPythia->SetMDME(channel,1,0);
-	fBraPart[kc]-=fPythia->GetBRAT(channel);
-    }
-
-// no Lambda_c decays
-    kc=fPythia->Pycomp(4122);
-    fPythia->SetMDCY(kc,1,1);
-    ifirst=fPythia->GetMDCY(kc,2);
-    ilast=ifirst+fPythia->GetMDCY(kc,3)-1;
-    for (channel=ifirst; channel<=ilast;channel++) {
-	fPythia->SetMDME(channel,1,0);
-	fBraPart[kc]-=fPythia->GetBRAT(channel);
-    }
+	for (channel = ifirst; channel <= ilast; channel++) {
+	    if (
+		fPythia->GetKFDP(channel,1) == decayP[ihadron][0] &&
+		fPythia->GetKFDP(channel,2) == decayP[ihadron][1] &&
+		fPythia->GetKFDP(channel,3) == decayP[ihadron][2] &&
+		fPythia->GetKFDP(channel,4) == 0
+		)
+	    {
+		fPythia->SetMDME(channel,1,1);
+	    } else {
+		fPythia->SetMDME(channel,1,0);
+		fBraPart[kc] -= fPythia->GetBRAT(channel);
+	    } // selected channel ?
+	} // decay channels
+    } // hadrons
 }
 
 void AliDecayerPythia::ForceParticleDecay(Int_t particle, Int_t product, Int_t mult)
@@ -439,11 +428,21 @@ void  AliDecayerPythia::ForceOmega()
 {
     // Force Omega -> Lambda K- Decay
     Int_t kc=fPythia->Pycomp(3334);
-    fPythia->SetMDCY(kc,1,1);
-    fPythia->SetMDME(1202,1,1);
-    fPythia->SetMDME(1203,1,0);
-    fPythia->SetMDME(1204,1,0);
-    fPythia->SetMDME(1205,1,0);
+    fPythia->SetMDCY(kc,1,1);	
+    Int_t ifirst = fPythia->GetMDCY(kc,2);
+    Int_t ilast  = ifirst + fPythia->GetMDCY(kc,3)-1;
+    for (Int_t channel = ifirst; channel <= ilast; channel++) {
+	if (
+	    fPythia->GetKFDP(channel,1) == kLambda0 &&
+	    fPythia->GetKFDP(channel,2) == kKMinus  &&
+	    fPythia->GetKFDP(channel,3) == 0
+	    )
+	{
+	    fPythia->SetMDME(channel,1,1);
+	} else {
+	    fPythia->SetMDME(channel,1,0);
+	} // selected channel ?
+    } // decay channels
 }
 
 
