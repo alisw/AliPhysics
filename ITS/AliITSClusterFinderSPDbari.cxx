@@ -80,7 +80,7 @@ AliITSClusterFinderSPDbari&
 }
 
 //_____________________________________________________________________________
-void AliITSClusterFinderSPDbari::FindRawClusters(){
+void AliITSClusterFinderSPDbari::FindRawClusters(Int_t module){
    
     // input of Cluster Finder  
     Int_t digitcount=0;

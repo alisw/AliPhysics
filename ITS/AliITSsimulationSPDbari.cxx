@@ -185,52 +185,52 @@ void AliITSsimulationSPDbari::HitToDigit(AliITSmodule *mod, Int_t hitpos, Int_t 
    ntrack=hit->GetTrack();
    idhit=mod->GetHitHitIndex(hitpos);     
 
-   /* //debug
-     printf("layer,etot,ntrack,status %d %f %d %d\n",layer,etot,ntrack,hit->GetTrackStatus()); //debug
+    
+    /*
+    printf("\n layer,etot,ntrack,status %d %f %d %d\n",layer,etot,ntrack,hit->GetTrackStatus()); //debug
     Int_t idtrack; //debug
     mod->GetHitTrackAndHitIndex(hitpos,idtrack,idhit);     
     printf("idtrack,idhit %d %d\n",idtrack,idhit); //debug
+    printf("(Dx, Dz)=(%f, %f)\n",fSegmentation->Dx(),fSegmentation->Dz()); //debug
     */
-
+    
+   
 
         if (hit->GetTrackStatus()==66) {
 	      hit->GetPositionL(x1l,y1l,z1l);
           // positions shifted and converted in microns 
           x1l = x1l*kconv + fSegmentation->Dx()/2.;
           z1l = z1l*kconv + fSegmentation->Dz()/2.;
+          //printf("(x1l, z2l)=(%f, %f)\n",x1l,z1l); //debug
         }
         else {
 	      hit->GetPositionL(x2l,y2l,z2l);	      
           // positions  shifted and converted in microns
           x2l = x2l*kconv + fSegmentation->Dx()/2.;
           z2l = z2l*kconv + fSegmentation->Dz()/2.;
+          //printf("(x2l, z2l)=(%f, %f)\n",x2l,z2l); //debug
 
 
-          // to account for 83750 effective sensitive area
-          // introduced in geometry (Dz=83600)
-          if (z1l>fSegmentation->Dz()) return;
-          if (z2l>fSegmentation->Dz()) return;
-          // to preserve for hit having x>12800
-          if (x1l>fSegmentation->Dx()) return;
-          if (x2l>fSegmentation->Dx()) return;
+
+          // to account for the effective sensitive area
+          // introduced in geometry 
+          if (z1l<0 || z1l>fSegmentation->Dz()) return;
+          if (z2l<0 || z2l>fSegmentation->Dz()) return;
+          if (x1l<0 || x1l>fSegmentation->Dx()) return;
+          if (x2l<0 || x2l>fSegmentation->Dx()) return;
 
           //Get the col and row number starting from 1
           // the x direction is not inverted for the second layer!!!
 	      fSegmentation->GetPadIxz(x1l, z1l, c1, r1); 
 	      fSegmentation->GetPadIxz(x2l, z2l, c2, r2);
 
+          //printf("(c1, r1)=(%d, %d) (c2, r2)=(%d, %d)\n",c1,r1,c2,r2); //debug
+
           // to account for unexpected equal entrance and 
           // exit coordinates
           if (x1l==x2l) x2l=x2l+x2l*0.000001;
           if (z1l==z2l) z2l=z2l+z2l*0.000001;
 
-          // to account for tracks at the edge of the sensitive area
-          // of SPDs
-          if (x1l<0) return;
-          if (x2l<0) return;
-          if (z1l<0) return;
-          if (z2l<0) return;
-	      
 
 	      if ((r1==r2) && (c1==c2)) 
 	      {
@@ -319,7 +319,7 @@ void AliITSsimulationSPDbari::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
    fSegmentation->GetPadCxz(c1, r1-1, xpos, zpos); 
 
    Float_t xsize = fSegmentation->Dpx(0);
-   Float_t zsize = fSegmentation->Dpz(r1);
+   Float_t zsize = fSegmentation->Dpz(r1-1);
 
    if (dirx == 1) refr = xpos+xsize/2.;
              else refr = xpos-xsize/2.;
@@ -367,7 +367,10 @@ void AliITSsimulationSPDbari::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
 	     }     
 
          // shift to the pixel in the next cell in row direction
-         Float_t zsizeNext = fSegmentation->Dpz(rb);
+         Float_t zsizeNext = fSegmentation->Dpz(rb-1);
+         //to account for cell at the borders of the detector
+         if(zsizeNext==0) zsizeNext = zsize;
+
 	     refn += zsizeNext*dirz;
 
       }
@@ -387,7 +390,10 @@ void AliITSsimulationSPDbari::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
 	     }
 
          // shift to the pixel in the next cell in column direction
-         Float_t xsizeNext = fSegmentation->Dpx(cb);
+         Float_t xsizeNext = fSegmentation->Dpx(cb-1);
+         //to account for cell at the borders of the detector
+         if(xsizeNext==0) xsizeNext = xsize;
+
 	     refr += xsizeNext*dirx;
         
       }
@@ -397,8 +403,6 @@ void AliITSsimulationSPDbari::ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,
       epar = etot*(epar/dtot);
 
       //store row, column and energy lost in the crossed pixel
-
-
       frowpixel[npixel] = r1;
       fcolpixel[npixel] = c1;
       fenepixel[npixel] = epar;
@@ -563,6 +567,7 @@ void AliITSsimulationSPDbari::GetList(Int_t label,Int_t idhit, Float_t **pList,
 
           
   signal=fMapA2->GetSignal(iz,ix);
+
 
   globalIndex = iz*fNPixelsX+ix; // globalIndex starts from 1
 

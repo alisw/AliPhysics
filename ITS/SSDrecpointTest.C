@@ -142,9 +142,10 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
    //AliITSgeom *aliitsgeo = ITS->GetITSgeom();
    AliITSgeom *geom = ITS->GetITSgeom();
 
+
    //Int_t cp[8]={0,0,0,0,0,0,0,0};
 
-   cout << "SSD" << endl;
+   //cout << "SSD" << endl;
 
    AliITSDetType *iDetType=ITS->DetType(2);
    AliITSsegmentationSSD *seg2=(AliITSsegmentationSSD*)iDetType->GetSegmentationModel();
@@ -155,13 +156,13 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
    TClonesArray *dig2  = ITS->DigitsAddress(2);
    TClonesArray *recp2  = ITS->ClustersAddress(2);
-   //   AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2,recp2);
    AliITSClusterFinderSSD *rec2=new AliITSClusterFinderSSD(seg2,dig2);
    ITS->SetReconstructionModel(2,rec2);
-   // test
-   printf("SSD dimensions %f %f \n",seg2->Dx(),seg2->Dz());
-   printf("SSD nstrips %d %d \n",seg2->Npz(),seg2->Npx());
 
+   // test
+   printf("SSD dimensions %f %f %f \n",seg2->Dx(),seg2->Dz(),seg2->Dy());
+   printf("SSD nstrips %d %d \n",seg2->Npz(),seg2->Npx());
+   Float_t ylim = seg2->Dy()/2 - 12;
    
 //
 //   Loop over events
@@ -236,8 +237,8 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
      printf("det type %d first2, last2 %d %d \n",2,first2,last2);
 
      // module loop for the SSD
-     //for (mod=first2; mod<last2+1; mod++) {  // for the "ALL" option
-     for (mod=0; mod<last2-first2+1; mod++) { //for the "SSD" option
+     for (mod=first2; mod<last2+1; mod++) {  // for the "ALL" option
+       //for (mod=0; mod<last2-first2+1; mod++) { //for the "SSD" option
 
        TTree *TR = gAlice->TreeR();
        Int_t nentrec=TR->GetEntries();
@@ -255,8 +256,8 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 
        Int_t nrecp = ITSrec->GetEntries();
        totpoints += nrecp;
-       if (nrecp) printf("Found %d rec points for module %d\n",nrecp,mod);
-       //if (!nrecp) continue;
+       //if (nrecp) printf("Found %d rec points for module %d\n",nrecp,mod);
+       if (!nrecp) continue;
        Int_t nclusters = ITSclu->GetEntries();
        totclust += nclusters;
        //if (nclusters) printf("Found %d clusters for module %d\n",nrecc,mod);
@@ -270,7 +271,7 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
        //       printf("Mod: %X\n",Mod);
        Int_t nhits = Mod->GetNhits();
        Float_t epart = 0;
-       //cout <<" module,nrecp,nclusters,nhits ="<<mod<<","<<nrecp<<","<<nclusters<<","<<nhits<< endl;
+       cout <<" module,nrecp,nclusters,nhits ="<<mod<<","<<nrecp<<","<<nclusters<<","<<nhits<< endl;
 
        // ---------------- cluster/hit analysis ---------------------
 
@@ -304,7 +305,6 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	 Int_t tr2 = itsPnt->GetLabel(ii);
          Int_t ii = 2;
 	 Int_t tr3 = itsPnt->GetLabel(ii);
-	 //cout<<"pnt,ntrover,tr1,tr2,tr3 ="<<pnt<<","<<ntrover<<","<<tr1<<","<<tr2<<","<<tr3<<endl;
 	 // fill ntuple2
 	     ntuple2_st.nxP = nxP;
              ntuple2_st.nxN = nxN;
@@ -346,12 +346,11 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
    //  partcode (pdgCode): 11 - e-, 13 - mu-, 22 - gamma, 111 - pi0, 211 - i+
    //  310 - K0s, 321 - K+, 2112 - n, 2212 - p, 3122 - lambda
 
-	   //cout<<"hit,hitstat,track,partcode,parent ="<<hit<<","<<hitstat<<","<<track<<","<<partcode<<","<<parent<<endl;
            Float_t pmod = itsHit->GetParticle()->P(); // the momentum at the
 	                                              // vertex
 	   pmod *= 1.0e+3;
 
-	  if(hitstat == 66 && yhit < -146.) {  // entering hit
+	  if(hitstat == 66 && yhit < -ylim) {  // entering hit
 	    xhit0 = xhit;
 	    yhit0 = yhit;
 	    zhit0 = zhit;
@@ -369,7 +368,6 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	  // Consider the hits only with the track number equaled to one
 	  // of the recpoint
 	  if((track == tr1) || (track == tr2) || (track == tr3)) flagtrack = 1;
-	  //cout<<"!!Ok: track,tr1,tr2,tr3 ="<<track<<","<<tr1<<","<<tr2<<","<<tr3<<endl;
 
          if(flagtrack == 1) {     // the hit corresponds to the recpoint
 
@@ -404,8 +402,6 @@ void SSDrecpointTest (Int_t evNumber1=0,Int_t evNumber2=0)
 	      noverprim += 1;
 	    }
 	     pathInSSD = TMath::Sqrt((xhit0-xhit)*(xhit0-xhit)+(yhit0-yhit)*(yhit0-yhit)+(zhit0-zhit)*(zhit0-zhit));
-
-	     //cout<<"lay,pnt,hit,xmed,xrec,xdif,zmed,zrec,zdif ="<<hitlayer<<","<<pnt<<","<<hit<<","<<xmed<<","<<xrec<<","<<xdif<<","<<zmed<<","<<zrec<<","<<zdif<<endl;
 
 	     // fill ntuple
              ntuple_st.lay = hitlayer;

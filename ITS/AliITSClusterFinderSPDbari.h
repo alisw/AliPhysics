@@ -35,7 +35,7 @@ public:
   }
 
   // Search for clusters
-  virtual void FindRawClusters(); 
+  virtual void FindRawClusters(Int_t module); 
   void  DigitToPoint(Int_t nclus, Float_t *xcenter, Float_t *zcenter,
 		   Float_t *errxcenter,Float_t *errzcenter,
 		  Int_t *tr1clus, Int_t *tr2clus, Int_t *tr3clus);

@@ -2,16 +2,6 @@
 
 gROOT->Reset();
 
-// Dynamically link some shared libs
-
-  if (gClassTable->GetID("AliRun") < 0) {
-    gROOT->LoadMacro("loadlibs.C");
-    loadlibs();
-  } else {
-      delete gAlice;
-      gAlice=0;
-  }
-
 TFile f("SDD_histos_test.root");
 
 Int_t nbins = 18;

@@ -225,18 +225,11 @@ void ITSsddanalysis (Int_t evNumber1=0,Int_t evNumber2=0)
     ITS->GetTreeC(nev);
     TTree *TC=ITS->TreeC();
     Int_t nentclu=TC->GetEntries();
-    printf("Found %d entries in the Hit tree (must be one per module per event!)\n",nentclu);
+    printf("Found %d entries in the Cluster tree (must be one per module per event!)\n",nentclu);
     
     TTree *TR = gAlice->TreeR();
     Int_t nentrec=TR->GetEntries();
     printf("Found %d entries in the Rec tree (must be one per module per event!)\n",nentrec);
-    
-    // Get Pointers to Clusters & Recpoints TClonesArrays
-    
-    Int_t iDet = 1;  // 1 = SDD
-
-    TClonesArray *ITSclu  = ITS->ClustersAddress(iDet);
-    TClonesArray *ITSrec  = ITS->RecPoints(); 
     
     // check recpoints
     
@@ -252,12 +245,25 @@ void ITSsddanalysis (Int_t evNumber1=0,Int_t evNumber2=0)
     
     TObjArray *fITSmodules = ITS->GetModules();
     
-    Int_t first = aliitsgeo->GetStartDet(iDet);
-    Int_t last = aliitsgeo->GetLastDet(iDet);
+    Int_t iDet = 1;  // 1 = SDD
+
+    Int_t first = aliitsgeo->GetStartDet(0);
+    Int_t last = aliitsgeo->GetLastDet(2);
+    Int_t first_ok = aliitsgeo->GetStartDet(iDet);
+    Int_t last_ok = aliitsgeo->GetLastDet(iDet);
     printf("det type %d first, last %d %d \n",iDet,first,last);
     
-    for (Int_t mod=0; mod<last-first+1; mod++) {
-      cout << "Module: " << mod+1 << endl;
+    TClonesArray *ITSclu = 0;
+    TClonesArray *ITSrec = 0;
+    for (Int_t mod=first_ok; mod<=last_ok; mod++) {
+      cout << "Module: " << mod << endl;
+      //      if(mod < first_ok) continue;
+      //      if(mod > last_ok) continue;
+      // Get Pointers to Clusters & Recpoints TClonesArrays
+    
+      ITSclu  = ITS->ClustersAddress(iDet);
+      ITSrec  = ITS->RecPoints(); 
+    
       TTree *TR = gAlice->TreeR();
       Int_t nentrec=TR->GetEntries();
       TClonesArray *ITSrec  = ITS->RecPoints(); 
@@ -269,12 +275,12 @@ void ITSsddanalysis (Int_t evNumber1=0,Int_t evNumber2=0)
       
       Int_t nrecp = ITSrec->GetEntries();
       totpoints += nrecp;
-      //if (nrecp) printf("Found %d rec points for module %d\n",nrecp,mod);
+      if (nrecp) printf("Found %d rec points for module %d\n",nrecp,mod);
       if (!nrecp) continue;
       
       Int_t nrecc = ITSclu->GetEntries();
       totclust += nrecc;
-      //if (nrecc) printf("Found %d clusters for module %d\n",nrecc,mod);
+      if (nrecc) printf("Found %d clusters for module %d\n",nrecc,mod);
       
       Int_t nrecp = ITSrec->GetEntries();
       Int_t startSDD = aliitsgeo->GetStartSDD();

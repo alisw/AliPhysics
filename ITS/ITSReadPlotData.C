@@ -179,6 +179,8 @@ Int_t ITSReadPlotData(char *filename = "galice.root", Int_t evNum = 0) {
 			cout << "No hits in module!" << endl;
 			continue;
 		}
+		else
+			cout << "Hits scanned..." << endl;
 		for (Int_t i = 0; i < hits; i++) if (!St[i]) hhits->Fill(x[i], z[i]);
 		
 		// Reads recpoints...
@@ -187,6 +189,8 @@ Int_t ITSReadPlotData(char *filename = "galice.root", Int_t evNum = 0) {
 			cout << "No recpoints in module!" << endl;
 			continue;
 		}
+		else
+			cout << "Recpoints scanned..." << endl;
 		for (Int_t i = 0; i < recs; i++) hrecs->Fill(x[i], z[i]);
 		
 		// Reads digits...
@@ -195,6 +199,8 @@ Int_t ITSReadPlotData(char *filename = "galice.root", Int_t evNum = 0) {
 			cout << "No digits in module!" << endl;
 			//continue;
 		}
+		else
+			cout << "Digits scanned..." << endl;
 		for (Int_t i = 0; i < digits; i++) hdigits->Fill(x[i], z[i]);
 
 		// Draws read data...
@@ -234,6 +240,22 @@ Int_t ITSReadPlotData(char *filename = "galice.root", Int_t evNum = 0) {
 		legend->Draw();
 		
 		viewer->Update();
+		
+		
+		Text_t fname[250],ans;
+		cout << "Do you want to save the current canvas on a file (y/n) ? ";
+		cin >> ans;
+		if(ans == 'y' || ans == 'Y') {
+		   cout << "Enter filename: ";
+		   cin >> fname;
+		   TString *control = new TString(fname);
+		   Bool_t ok=control->Contains(".C") || control->Contains(".root") || control->Contains(".ps") || control->Contains(".eps") || control->Contains(".gif");
+		   if(!ok){ 
+		      cout << "File extension is not recognized. The canvas will be saved as Postscript file";
+		      strcat(fname,".ps");
+		   }  
+		   viewer->SaveAs(fname);
+		}
 	}
 	
 	cout << "Done. Goodbye" << endl;
@@ -332,6 +354,7 @@ Int_t GetModuleDigits(TObject *its, Int_t ID, Int_t dtype, Float_t*& X, Float_t*
 	if (!digits_num)
 		return 0;
 	else {
+		cout << "Digits to scan: " << digits_num << endl;
 		if (X) delete [] X;			
 		if (Z) delete [] Z;
 		X = new Float_t[digits_num];		
@@ -346,13 +369,18 @@ Int_t GetModuleDigits(TObject *its, Int_t ID, Int_t dtype, Float_t*& X, Float_t*
 		}
 	}
   for (Int_t j = 0; j < digits_num; j++) {
-  	cout << j << endl;
 		digit = (AliITSdigit*)digits_array->UncheckedAt(j);
 		Int_t iz=digit->fCoord1;  // cell number z
 		Int_t ix=digit->fCoord2;  // cell number x
     // Get local coordinates of the element (microns)
-		if(dtype < 2)
-    	seg->DetToLocal(ix, iz, X[j], Z[j]);
+		// ******************************* PARTE CORRETTA ***************************************
+		if(dtype < 2) {
+			Float_t xx, zz; // aggiunta
+    	seg->DetToLocal(ix, iz, xx, zz);
+			X[j] = xx; // aggiunta
+			Z[j] = zz; // aggiunta
+		}
+		// ******************************* FINE PARTE CORRETTA ***************************************
     else {
 			// SSD: if iz==0 ---> N side; if iz==1 P side
       if (ssdone[j] == 0) {
@@ -375,8 +403,8 @@ Int_t GetModuleDigits(TObject *its, Int_t ID, Int_t dtype, Float_t*& X, Float_t*
 					}
 				}
         if (!impaired) seg->GetPadCxz(pstrip, nstrip, X[j], Z[j]);
-	X[j] /= 10000.0;  // convert microns to cm
-	Z[j] /= 10000.0;  // convert microns to cm
+				X[j] /= 10000.0;  // convert microns to cm
+				Z[j] /= 10000.0;  // convert microns to cm
 			}
 		}
 	}
