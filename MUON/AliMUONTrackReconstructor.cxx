@@ -14,6 +14,10 @@
  **************************************************************************/
 /*
 $Log$
+
+Revision 1.6  2001/01/26 20:00:53  hristov
+Major upgrade of AliRoot code
+
 Revision 1.4  2000/12/21 22:14:38  morsch
 Clean-up of coding rule violations.
 
@@ -747,14 +751,18 @@ void trackf_read_fit(Int_t &ievr, Int_t &nev, Int_t &nhittot1, Int_t *izch, Doub
 	      mHit;
 	      mHit=(AliMUONHit*)pMUON->NextHit()) 
 	  {
+<<<<<<< AliMUONTrackReconstructor.cxx
+	      if (mHit->Chamber() > 10) continue;
+=======
 	      if (mHit->fChamber > 10) continue;
+>>>>>>> 1.6
 	      Int_t ftrack = mHit->Track();
 	      Int_t id = gAlice->Particle(ftrack)->GetPdgCode();
 	      
 	      if (id==kMuonPlus||id==kMuonMinus) {
 		  xgeant[nhittot1]   = mHit->Y();
 		  ygeant[nhittot1]   = mHit->X();
-		  izch[nhittot1]     = mHit->fChamber;
+		  izch[nhittot1]     = mHit->Chamber();
 //		  printf("id %d ch %d x %f y %f\n",id,izch[nhittot1],xgeant[nhittot1],ygeant[nhittot1]);  
 		  nhittot1++;
 	      }
@@ -802,7 +810,11 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 	  {
 	      if (maxidg<=20000) {
 		
+<<<<<<< AliMUONTrackReconstructor.cxx
+		if (mHit->Chamber() > 10) continue;
+=======
 		if (mHit->fChamber > 10) continue;
+>>>>>>> 1.6
 		TParticle *particle;
 		Int_t ftrack = mHit->Track();
 		Int_t id = gAlice->Particle(ftrack)->GetPdgCode();
@@ -816,14 +828,13 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 		    ygeant[maxidg]   = mHit->X();             // y-pos of hit
 		    clsize1[maxidg]   = 0;     // cluster size on 1-st cathode
 		    clsize2[maxidg]   = 0;     // cluster size on 2-nd cathode
-		    cx[maxidg]     = mHit->fCyHit;            // Px/P of hit
-		    cy[maxidg]     = mHit->fCxHit;            // Py/P of hit
-		    cz[maxidg]     = mHit->fCzHit;            // Pz/P of hit
-		    izch[maxidg]   = mHit->fChamber; 
+		    cx[maxidg]     = mHit->Cy();              // Px/P of hit
+		    cy[maxidg]     = mHit->Cx();              // Py/P of hit
+		    cz[maxidg]     = mHit->Cz();              // Pz/P of hit
+		    izch[maxidg]   = mHit->Chamber();         
 		    /*      
 		    Int_t pdgtype  = Int_t(mHit->fParticle); // particle number
 		    itypg[maxidg]  = gMC->IdFromPDG(pdgtype);
-
 		    */
 		    itypg[maxidg] = 0;
                     if (id==kMuonPlus) itypg[maxidg]  = 5;
@@ -831,7 +842,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 
                     //printf("ich, itypg[maxidg] %d %d\n",izch[maxidg],itypg[maxidg]);
 
-		    ptotg[maxidg]  = mHit->fPTot;          // P of hit 
+		    ptotg[maxidg]  = mHit->Momentum();          // P of hit 
 		    
 		    particle = gAlice->Particle(ftrack);
 		    Float_t thet = particle->Theta();
@@ -897,7 +908,7 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
       for (int i=0;i<gAliHits2->GetEntriesFast();i++) 
 	{
 	  mHit=(AliMUONHit*) (*gAliHits2)[i];
-	  if (mHit->fChamber > 10) continue;
+	  if (mHit->Chamber() > 10) continue;
 	  if (maxidg<=20000) {
 	    
 	    // inversion de x et y car le champ est inverse dans le programme tracking !!!!
@@ -907,11 +918,11 @@ void trackf_read_geant(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *p
 	    ygeant[maxidg]   = mHit->X();           // y-pos of hit
 	    clsize1[maxidg]   = 0;           // cluster size on 1-st cathode
 	    clsize2[maxidg]   = 0;           // cluster size on 2-nd cathode
-	    cx[maxidg]     = mHit->fCyHit;         // Px/P of hit
-	    cy[maxidg]     = mHit->fCxHit;         // Py/P of hit
-	    cz[maxidg]     = mHit->fCzHit;         // Pz/P of hit
-	    izch[maxidg]   = mHit->fChamber;       // chamber number
-	    ptotg[maxidg]  = mHit->fPTot;          // P of hit 
+	    cx[maxidg]     = mHit->Cy();            // Px/P of hit
+	    cy[maxidg]     = mHit->Cx();            // Py/P of hit
+	    cz[maxidg]     = mHit->Cz();            // Pz/P of hit
+	    izch[maxidg]   = mHit->Chamber();       // chamber number
+	    ptotg[maxidg]  = mHit->Momentum();      // P of hit 
 	    
 	    Int_t ftrack = mHit->Track();
 	    Int_t id1  = ftrack;                   // track number 
@@ -1011,7 +1022,7 @@ void trackf_read_spoint(Int_t *itypg, Double_t *xtrg, Double_t *ytrg, Double_t *
 		    TClonesArray *pMUONhits  = pMUON->Hits();
 		    AliMUONHit* mHit;
 		    mHit=(AliMUONHit*) (pMUONhits->UncheckedAt(ihit));
-		    Int_t id = (Int_t) mHit->fParticle;
+		    Int_t id = (Int_t) mHit->Particle();
 		    xgeant[mpoi] = mHit->Y();          
 		    ygeant[mpoi] = mHit->X(); 
 		    if (id == kMuonPlus)  itypg[mpoi]=5;

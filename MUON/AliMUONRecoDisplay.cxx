@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/01/26 20:00:53  hristov
+Major upgrade of AliRoot code
+
 Revision 1.4  2000/12/21 22:14:38  morsch
 Clean-up of coding rule violations.
 
@@ -24,6 +27,9 @@ RN3 violations corrected
 Revision 1.2  2000/11/23 10:09:39  gosset
 Bug correction in AliMUONRecoDisplay.
 Copyright, $Log$
+Copyright, Revision 1.5  2001/01/26 20:00:53  hristov
+Copyright, Major upgrade of AliRoot code
+Copyright,
 Copyright, Revision 1.4  2000/12/21 22:14:38  morsch
 Copyright, Clean-up of coding rule violations.
 Copyright,
@@ -205,7 +211,7 @@ void AliMUONRecoDisplay::MapEvent(Int_t nevent)
 	 for (AliMUONHit *muonHit=(AliMUONHit*)pMUON->FirstHit(track);
 	      muonHit;
 	      muonHit=(AliMUONHit*)pMUON->NextHit()) {
-	    ch = muonHit->fChamber - 1;
+	    ch = muonHit->Chamber() - 1;
 	    if (ch<0 || ch>9) continue;
 	    gtrack->SetHitPosition(ch, muonHit->X(),  muonHit->Y(),  muonHit->Z());
 	    gtrack->SetMomReconstr(particle->Px(), particle->Py(), particle->Pz());
@@ -445,7 +451,7 @@ Bool_t AliMUONRecoDisplay::IsReconstructible(Int_t track)
    for (AliMUONHit *muonHit=(AliMUONHit*)pMUON->FirstHit(track);
         muonHit;
 	muonHit=(AliMUONHit*)pMUON->NextHit()) {
-      ch = muonHit->fChamber - 1;
+      ch = muonHit->Chamber() - 1;
       if (ch<0 || ch>9) continue;
       chHit[ch] = kTRUE;
    }
