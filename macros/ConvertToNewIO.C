@@ -22,7 +22,8 @@ void ConvertToNewIO(const char* name)
   
   AliRunLoader* rl = AliRunLoader::Open("galiceNewIO.root","Event","recreate");
   rl->SetCompressionLevel(2);
-
+  rl->SetNumberOfEventsPerFile(100);
+  
   AliRun* outAliRun;
 
   if (gAlice == 0x0)
@@ -63,8 +64,16 @@ void ConvertToNewIO(const char* name)
    }
   TIter next(modules);
   AliModule* module;
-  while ((module = (AliModule*)next()))  
+  TObject * object;
+  while ((object = next()))  
    {
+     module = dynamic_cast<AliModule*>(object);
+     if (module == 0x0) {
+       ::Error("ConvertToNewIO.C","Can not cast module %#x ",object);
+       object->Dump();
+       continue;
+     }
+
      outAliRun->AddModule(module);
      
      TClass* modclass = module->IsA();
@@ -166,8 +175,15 @@ void ConvertToNewIO(const char* name)
        if (treeTR->GetEntries() > 0)
        {   
         next.Reset();
-        while ((module = (AliModule*)next()))  
+	TObject * object;
+        while ((object = next()))  
          {
+	   module = dynamic_cast<AliModule*>(object);
+	   if (module == 0x0) {
+	     ::Error("ConvertToNewIO.C","Can not cast module %#x ",object);
+	     object->Dump();
+	     continue;
+	   }
            TClass* modclass = module->IsA();
            AliDetector *det = (AliDetector*)(modclass->DynamicCast(detclass,module));
            if (det) 
@@ -270,6 +286,11 @@ void ConvertToNewIO(const char* name)
                      else
                       {
                         TClass* bcl = gROOT->GetClass(branch->GetClassName());
+                        if (bcl == 0x0)
+                         {
+                           ::Error("ConvertToNewIO.C","Can not get TClass object of class named %s",branch->GetClassName());
+                           continue;
+                         }
                         pbuf[nbranches] = bcl->New();
                         ::Info("ConvertToNewIO.C","Dumping buffer:");
                         ((TObject*)pbuf[nbranches])->Dump();
@@ -405,6 +426,11 @@ void ConvertToNewIO(const char* name)
                     else
                      {
                        TClass* bcl = gROOT->GetClass(branch->GetClassName());
+                        if (bcl == 0x0)
+                         {
+                           ::Error("ConvertToNewIO.C","Can not get TClass object of class named %s",branch->GetClassName());
+                           continue;
+                         }
                        pbuf[nbranches] = bcl->New();
                        ::Info("ConvertToNewIO.C","Dumping buffer:");
                        ((TObject*)pbuf[nbranches])->Dump();
@@ -465,12 +491,12 @@ void ConvertToNewIO(const char* name)
        }
       else //tree has any entries
        {
-         Info("ConvertToNewIO.C","S Digits Tree is Empty");
+         ::Info("ConvertToNewIO.C","S Digits Tree is Empty");
        }
       }
      else //treeS
       {
-        ::Warning("ConvertToNewIO.C","Could not get TreeS from in AliRun.");
+        ::Warning("ConvertToNewIO.C","Could not get TreeS from AliRun.");
       }
      delete treeS; 
 
@@ -541,6 +567,11 @@ void ConvertToNewIO(const char* name)
                     else
                      {
                        TClass* bcl = gROOT->GetClass(branch->GetClassName());
+                       if (bcl == 0x0)
+                        {
+                          ::Error("ConvertToNewIO.C","Can not get TClass object of class named %s",branch->GetClassName());
+                          continue;
+                        }
                        pbuf[nbranches] = bcl->New();
                        ::Info("ConvertToNewIO.C","Dumping buffer:");
                        ((TObject*)pbuf[nbranches])->Dump();
@@ -676,6 +707,11 @@ void ConvertToNewIO(const char* name)
                     else
                      {
                        TClass* bcl = gROOT->GetClass(branch->GetClassName());
+                       if (bcl == 0x0)
+                        {
+                          ::Error("ConvertToNewIO.C","Can not get TClass object of class named %s",branch->GetClassName());
+                          continue;
+                        }
                        pbuf[nbranches] = bcl->New();
                        ::Info("ConvertToNewIO.C","Dumping buffer:");
                        ((TObject*)pbuf[nbranches])->Dump();
