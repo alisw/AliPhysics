@@ -65,13 +65,10 @@
 #include "AliPHOS.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
-#include "AliPHOSClusterizer.h"
-#include "AliPHOSClusterizer.h"
-#include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOSTrackSegmentMaker.h"
+#include "AliPHOSClusterizerv1.h"
+#include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSTrackSegment.h"
-#include "AliPHOSPID.h" 
-#include "AliPHOSPID.h" 
+#include "AliPHOSPIDv1.h" 
 #include "AliPHOSGeometry.h"
 
 ClassImp(AliPHOSGetter)
@@ -780,7 +777,7 @@ TObject** AliPHOSGetter::ClusterizerRef(const char * name) const
   TTask * task ;
   TTask * clu = 0 ;
   TString cluname(name) ;
-  cluname+=":clu-" ;
+  cluname+=":clusterizer" ;
   while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
     if(taskname.BeginsWith(cluname)){
@@ -791,8 +788,10 @@ TObject** AliPHOSGetter::ClusterizerRef(const char * name) const
 
   if(clu) 
     return l->GetObjectRef(clu) ;
-  else
-    return 0 ;
+  else{
+    cerr << "ERROR: AliPHOSGetter::Post RerRef -> Task //" << fTasksFolder << "/Reconstructioner/clusterizer name not found!" << endl;
+    abort() ;
+  }
 }
 
 //____________________________________________________________________________ 
@@ -818,9 +817,9 @@ Bool_t AliPHOSGetter::PostClusterizer(const char * name) const
     tasks->Add(phos) ; 
   } 
 
-  AliPHOSClusterizer * phoscl = new AliPHOSClusterizer() ;
+  AliPHOSClusterizerv1 * phoscl = new AliPHOSClusterizerv1() ;
   TString clun(name) ;
-  clun+=":clusterizer" ; 
+  clun+=":clusterizerv1" ; 
   phoscl->SetName(clun) ;
   phos->Add(phoscl) ;
   return kTRUE; 
@@ -942,12 +941,12 @@ Bool_t AliPHOSGetter::PostTrackSegmentMaker(const char * name) const
     tasks->Add(phos) ; 
   } 
 
-  AliPHOSTrackSegmentMaker * phosts = 
-    dynamic_cast<AliPHOSTrackSegmentMaker*>(phos->GetListOfTasks()->FindObject(name)) ; 
+  AliPHOSTrackSegmentMakerv1 * phosts = 
+    dynamic_cast<AliPHOSTrackSegmentMakerv1*>(phos->GetListOfTasks()->FindObject(name)) ; 
   if (!phosts) { 
-    phosts = new AliPHOSTrackSegmentMaker() ;
+    phosts = new AliPHOSTrackSegmentMakerv1() ;
     TString tsn(name);
-    tsn+=":tracksegmentmaker" ; 
+    tsn+=":tracksegmentmakerv1" ; 
     phosts->SetName(tsn) ;
     phos->Add(phosts) ;      
   }
@@ -977,7 +976,7 @@ TObject** AliPHOSGetter::TSMakerRef(const char * name) const
   TTask * task ;
   TTask * tsm = 0 ;
   TString tsmname(name) ;
-  tsmname+=":tsm-" ;
+  tsmname+=":tracksegmentmaker" ;
   while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
     if(taskname.BeginsWith(tsmname)){
@@ -989,7 +988,10 @@ TObject** AliPHOSGetter::TSMakerRef(const char * name) const
   if(tsm) 
     return l->GetObjectRef(tsm) ;
   else
-    return 0 ;
+    {
+    cerr << "ERROR: AliPHOSGetter::Post TerRef -> Task //" << fTasksFolder << "/Reconstructioner/TrackSegmentMarker name not found!" << endl;
+    abort() ;
+  }
   
 } 
 
@@ -1109,7 +1111,7 @@ Bool_t AliPHOSGetter::PostPID(const char * name) const
   TList * l = phos->GetListOfTasks() ;   
   TIter it(l) ;
   TString pidname(name) ;
-  pidname+=":pid" ; 
+  pidname+=":pidv1" ; 
   TTask * task ;
   while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
@@ -1117,7 +1119,7 @@ Bool_t AliPHOSGetter::PostPID(const char * name) const
       return kTRUE ;
   }
  
-  AliPHOSPID * phospid = new AliPHOSPID() ;
+  AliPHOSPIDv1 * phospid = new AliPHOSPIDv1() ;
   phospid->SetName(pidname) ; 
   phos->Add(phospid) ;      
   
@@ -1137,7 +1139,7 @@ TObject** AliPHOSGetter::PIDRef(const char * name) const
         
   TTask * phos = dynamic_cast<TTask*>(tasks->GetListOfTasks()->FindObject("PHOS")) ; 
   if ( !phos )  {
-    cerr <<"WARNING: AliPHOSGetter::Post PerRef -> //" << fTasksFolder << "/ReconstructionerPHOS not found!" << endl; 
+    cerr <<"WARNING: AliPHOSGetter::Post PerRef -> //" << fTasksFolder << "/Reconstructioner/PHOS not found!" << endl; 
     return 0 ; 
   }   
   
@@ -1146,7 +1148,7 @@ TObject** AliPHOSGetter::PIDRef(const char * name) const
   TTask * task ;
   TTask * pid = 0 ;
   TString pidname(name) ;
-  pidname+=":pid-" ;
+  pidname+=":pid" ;
   while((task = static_cast<TTask *>(it.Next()) )){
     TString taskname(task->GetName()) ;
     if(taskname.BeginsWith(pidname)){
@@ -1157,8 +1159,10 @@ TObject** AliPHOSGetter::PIDRef(const char * name) const
   
   if(pid) 
     return l->GetObjectRef(pid) ;
-  else
-    return 0 ;
+  else{
+    cerr << "ERROR: AliPHOSGetter::Post PerRef -> Task //" << fTasksFolder << "/Reconstructioner/PID name not found!" << endl;
+    abort() ;
+  }
   
 } 
 
@@ -1208,9 +1212,9 @@ const TParticle * AliPHOSGetter::Primary(Int_t index) const
   if(index < 0) 
     return 0 ;
   TParticle *  p = gAlice->Particle(index) ; 
-  if (p->GetFirstMother() != -1 ) {
-    cout << "AliPHOSGetter::Primary : Not a primary " << endl ; 
-  }
+//   if (p->GetFirstMother() != -1 ) {
+//     cout << "AliPHOSGetter::Primary : Not a primary " << endl ; 
+//   }
   return p ; 
   
   
@@ -1408,13 +1412,12 @@ Int_t AliPHOSGetter::ReadTreeR(Bool_t any)
   // This is a feature needed by PID to be able to reconstruct several times particles (each time a ther title is given)
   // from a given set of TrackSegments (with a given name)
   // This is why any is NOT used to read the branch of RecParticles
-  // See AliPHOSPIDv2    
+  // See AliPHOSPIDv1    
 
   if(gAlice->TreeR()== 0){
     cerr <<   "WARNING: AliPHOSGetter::ReadTreeR: can not read TreeR " << endl ;
     return 1;
   }
-  
   // RecPoints 
   TObjArray * lob = static_cast<TObjArray*>(gAlice->TreeR()->GetListOfBranches()) ;
   TIter next(lob) ; 
@@ -1905,12 +1908,12 @@ const TTask * AliPHOSGetter::ReturnT(TString what, TString name) const
   } else  if (what.CompareTo("Clusterizer") == 0){ 
     if ( name.IsNull() )
       name =  fRecPointsTitle ;
-    name.Append(":clu") ;
+    name.Append(":clusterizer") ;
   }
   else  if (what.CompareTo("TrackSegmentMaker") == 0){ 
     if ( name.IsNull() )
       name =  fTrackSegmentsTitle ;
-    name.Append(":tsm") ;
+    name.Append(":tracksegmentmaker") ;
   }
   else  if (what.CompareTo("PID") == 0){ 
     if ( name.IsNull() )
