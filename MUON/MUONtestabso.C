@@ -137,8 +137,8 @@ void MUONtestabso (Int_t evNumber1=0,Int_t evNumber2=0)
 		       if (dE<5.5) hde2->Fill(dE, (float) 1);
 		       xmuon=mHit->fX;
 		       ymuon=mHit->fY;
-		       Float_t thetax=TMath::ATan2(mHit->fCxHit, mHit->fPTot);
-		       Float_t thetay=TMath::ATan2(mHit->fCyHit, mHit->fPTot);
+		       Float_t thetax=TMath::ATan2(mHit->Px(), mHit->Momentum());
+		       Float_t thetay=TMath::ATan2(mHit->Py(), mHit->Momentum());
 		       dtheta->Fill((thetax-thetax0)*1000., 1.);
 		       dtheta->Fill((thetay-thetay0)*1000., 1.);		       
 		   }

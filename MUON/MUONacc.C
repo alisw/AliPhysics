@@ -142,10 +142,7 @@ void MUONacc (Float_t d=3., Int_t evNumber1=0, Int_t evNumber2=0)
 			
 			if (Particle != kMuonPlus && Particle != kMuonMinus) continue;
 			
-			Float_t P    =
-			    TMath::Sqrt(mHit->Cx()*mHit->Cx()+
-					mHit->Cy()*mHit->Cy()+
-					mHit->Cz()*mHit->Cz());
+			Float_t P   = mhit->Momentum();
 			Float_t R   = TMath::Sqrt(x*x+y*y);
 			TParticlePDG* Part = DataBase->GetParticle(Particle);
 			Double_t mass = Part->Mass();

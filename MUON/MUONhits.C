@@ -135,10 +135,7 @@ void MUONhits (Int_t evNumber1=0,Int_t evNumber2=0, Int_t ic=1)
 		    Float_t Eloss =    mHit->Eloss();
 		    Float_t Theta =    mHit->Theta();
 		    Float_t Particle = mHit->Particle();
-		    Float_t P    =     
-			TMath::Sqrt(mHit->Cx()*mHit->Cx()+
-				    mHit->Cy()*mHit->Cy()+
-				    mHit->Cz()*mHit->Cz());
+		    Float_t P     =    mHit->Momentum(); 
 		    TParticlePDG* Part = DataBase->GetParticle(Particle);
 		    Double_t mass = Part->Mass();
 		    

@@ -78,22 +78,21 @@ void MUONstraggling (Int_t evNumber1=0,Int_t evNumber2=0)
 		   mHit;
 		   mHit=(AliMUONHit*)MUON->NextHit()) 
 	       {
-		   Int_t   nch   = mHit->fChamber;  // chamber number
-		   Float_t x     = mHit->fX;        // x-pos of hit
-		   Float_t y     = mHit->fY;        // y-pos
-		   Float_t z     = mHit->fZ;        // y-pos
-		   Float_t p=mHit->fPTot;
-		   Float_t px=mHit->fCxHit;
-		   Float_t py=mHit->fCyHit;
-		   Float_t pz=mHit->fCzHit;
+		   Int_t   nch   = mHit->Chamber();  // chamber number
+		   Float_t x     = mHit->X();        // x-pos of hit
+		   Float_t y     = mHit->Y();        // y-pos
+		   Float_t z     = mHit->Z();        // y-pos
+		   Float_t p=mHit->Momentum();
+		   Float_t px=mHit->Px();
+		   Float_t py=mHit->Py();
+		   Float_t pz=mHit->Pz();
 		   
 		   if (nch != 1) continue;
 		   
-		   Int_t ipart = mHit->fParticle;
-		   TClonesArray *fPartArray = gAlice->Particles();
+		   Int_t ipart = mHit->Particle();
 		   TParticle *Part;
-		   Int_t ftrack = mHit->fTrack;
-		   Part = (TParticle*) fPartArray->UncheckedAt(ftrack);
+		   Int_t ftrack = mHit->Track();
+		   Part = gAlice->Particle(ftrack);
 		   Int_t ipart = Part->GetPdgCode();
 		   TParticle *Mother;
 		   Float_t px0=Part->Px();
