@@ -42,7 +42,17 @@ AliITSresponseSDD::AliITSresponseSDD()
    SetFilenames();
    SetOutputOption();
    SetDo10to8();
+   // set the default zero suppression parameters
+   fCPar[0]=0;
+   fCPar[1]=0;
+   fCPar[2]=(Int_t)(fBaseline + 2.*fNoiseAfterEl);
+   fCPar[3]=(Int_t)(fBaseline + 2.*fNoiseAfterEl);
+   fCPar[4]=0;
+   fCPar[5]=0;
+   fCPar[6]=0;
+   fCPar[7]=0;
 }
+
 AliITSresponseSDD::~AliITSresponseSDD() { 
 
   if(fGaus) delete fGaus;
