@@ -11,10 +11,8 @@
 
 #include "AliGenMC.h"
 #include <TString.h>
-#include <TArrayI.h>
 
 class THijing;
-class TArrayI;
 class TParticle;
 class TClonesArray;
 class TGraph;
@@ -57,30 +55,30 @@ class AliGenHijing : public AliGenMC
 	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
     virtual void    SetBoostLHC(Int_t flag = 0)         {fLHC        = flag;}
 // Getters
-    virtual Float_t GetEnergyCMS() {return fEnergyCMS;}
-    virtual TString GetReferenceFrame() {return fFrame;}
-    virtual void    GetProjectile(TString& tar, Int_t& a, Int_t& z)
+    virtual Float_t GetEnergyCMS()       const {return fEnergyCMS;}
+    virtual TString GetReferenceFrame()  const {return fFrame;}
+    virtual void    GetProjectile(TString& tar, Int_t& a, Int_t& z)       const
 	{tar = fProjectile; a = fAProjectile; z = fZProjectile;}    
-    virtual void    GetTarget(TString& tar, Int_t& a, Int_t& z)
+    virtual void    GetTarget(TString& tar, Int_t& a, Int_t& z)           const
 	{tar = fTarget; a = fATarget; z = fZTarget;}    
-    virtual void    GetImpactParameterRange(Float_t& bmin, Float_t& bmax)
+    virtual void    GetImpactParameterRange(Float_t& bmin, Float_t& bmax) const
 	{bmin = fMinImpactParam; bmax = fMaxImpactParam;}
-    virtual Int_t   GetJetQuenching()                    {return fQuench;}
-    virtual Int_t   GetShadowing()                       {return fShadowing;}
-    virtual Int_t   GetTrigger()                         {return fTrigger;}
-    virtual Int_t   GetFlavor()                          {return fFlavor;}
-    virtual Int_t   GetRadiation()                       {return fRadiation;}    
-    virtual Int_t   GetSpectators()                      {return fSpectators;}
-    virtual Float_t GetPtJet()                           {return fPtMinJet;}
-    virtual void    GetJetEtaRange(Float_t& etamin, Float_t& etamax)
+    virtual Int_t   GetJetQuenching()                    const {return fQuench;}
+    virtual Int_t   GetShadowing()                       const {return fShadowing;}
+    virtual Int_t   GetTrigger()                         const {return fTrigger;}
+    virtual Int_t   GetFlavor()                          const {return fFlavor;}
+    virtual Int_t   GetRadiation()                       const {return fRadiation;}    
+    virtual Int_t   GetSpectators()                      const {return fSpectators;}
+    virtual Float_t GetPtJet()                           const {return fPtMinJet;}
+    virtual void    GetJetEtaRange(Float_t& etamin, Float_t& etamax)      const 
 	{etamin = fEtaMinJet; etamax = fEtaMaxJet;}
-    virtual void    GetJetPhiRange(Float_t& phimin, Float_t& phimax)
+    virtual void    GetJetPhiRange(Float_t& phimin, Float_t& phimax)      const
 	{phimin = fPhiMinJet*180./TMath::Pi(); phimax = fPhiMaxJet*180./TMath::Pi();}
     
 
 // Physics Routines
-    virtual Bool_t ProvidesCollisionGeometry() const {return kTRUE;}
-    virtual void EvaluateCrossSections();
+    virtual Bool_t  ProvidesCollisionGeometry() const {return kTRUE;}
+    virtual void    EvaluateCrossSections();
     virtual TGraph* CrossSection()     {return fDsigmaDb;}
     virtual TGraph* BinaryCollisions() {return fDnDb;}
     virtual Bool_t  CheckTrigger();
@@ -89,12 +87,8 @@ class AliGenHijing : public AliGenMC
  protected:
     Bool_t SelectFlavor(Int_t pid);
     void   MakeHeader();
- private:
-    void Copy(TObject &rhs) const;
-
  protected:
-    TString     fFrame;         // Reference frame 
-
+    TString     fFrame;          // Reference frame 
     Float_t     fMinImpactParam; // minimum impact parameter
     Float_t     fMaxImpactParam; // maximum impact parameter	
     Int_t       fKeep;           // Flag to keep full event information
@@ -108,8 +102,6 @@ class AliGenHijing : public AliGenMC
     Float_t     fEnergyCMS;      // Centre of mass energy
     Float_t     fKineBias;       // Bias from kinematic selection
     Int_t       fTrials;         // Number of trials
-    TArrayI     fParentSelect;   // Parent particles to be selected 
-    TArrayI     fChildSelect;    // Decay products to be selected
     Float_t     fXsection;       // Cross-section
     THijing    *fHijing;         //!Hijing
     Float_t     fPtHardMin;      // lower pT-hard cut 
@@ -130,16 +122,16 @@ class AliGenHijing : public AliGenMC
     Int_t 	fSpecn;		 // Num. of spectator neutrons
     Int_t 	fSpecp;		 // Num. of spectator protons
     Int_t       fLHC;            // Assume LHC as lab frame
-
  private:
+    void Copy(TObject &rhs) const;
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
     // check seleted daughters
     Bool_t DaughtersSelection(TParticle* iparticle);
     // check if stable
-    Bool_t Stable(TParticle*  particle);
+    Bool_t Stable(TParticle*  particle) const;
     
-    ClassDef(AliGenHijing,4) // AliGenerator interface to Hijing
+    ClassDef(AliGenHijing, 5) // AliGenerator interface to Hijing
 };
 #endif
 

@@ -18,10 +18,10 @@
 // Generator using HIJING as an external generator
 // The main HIJING options are accessable for the user through this interface.
 // Uses the THijing implementation of TGenerator.
+// Author:
+// Andreas Morsch    (andreas.morsch@cern.ch)
 //
-// andreas.morsch@cern.ch
 
-#include <TArrayI.h>
 #include <TGraph.h>
 #include <THijing.h>
 #include <TLorentzVector.h>
@@ -462,7 +462,7 @@ Bool_t AliGenHijing::SelectFlavor(Int_t pid)
     return res;
 }
 
-Bool_t AliGenHijing::Stable(TParticle*  particle)
+Bool_t AliGenHijing::Stable(TParticle*  particle) const
 {
 // Return true for a stable particle
 //
