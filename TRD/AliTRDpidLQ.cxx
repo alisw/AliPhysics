@@ -13,33 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.2.8.2  2002/07/24 10:09:31  alibrary
-Updating VirtualMC
-
-Revision 1.2.8.1  2002/06/10 15:28:58  hristov
-Merged with v3-08-02
-
-Revision 1.4  2002/03/28 15:44:55  cblume
-Remove const from GetIndex()
-
-Revision 1.3  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.4  2002/03/28 15:44:55  cblume
-Remove const from GetIndex()
-
-Revision 1.3  2002/03/28 14:59:07  cblume
-Coding conventions
-
-Revision 1.2  2001/11/07 11:04:22  hristov
-Minor corrections needed on Sun (arrays with undefined size created by new, inline decration removed when the body was hot in the header file)
-
-Revision 1.1  2001/11/06 17:19:41  cblume
-Add detailed geometry and simple simulator
-
-*/
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -220,7 +194,7 @@ Bool_t AliTRDpidLQ::AssignLikelihood(AliTRDtrack *t)
   TH1F   *hTmpPi;
 
   t->SetLikelihoodElectron(-1.);
-  if (isnan(t->GetP())) return kFALSE;
+  if (TMath::IsNaN(t->GetP())) return kFALSE;
   Float_t mom = t->GetP();
 
   // Calculate the total charge in each plane
@@ -334,7 +308,7 @@ Bool_t AliTRDpidLQ::CreateHistograms(const Int_t   nmom
 
 //   Bool_t status = kTRUE;
 
-//   if (isnan(t->GetP())) return kFALSE;
+//   if (TMath::IsNaN(t->GetP())) return kFALSE;
 
 //   Float_t        mom     = t->GetP();
 //   Int_t          ipid    = MCpid(t);
@@ -370,7 +344,7 @@ Bool_t AliTRDpidLQ::FillSpectra(const AliTRDtrack *t)
 
   const Int_t kNpla = AliTRDgeometry::Nplan();
 
-  if (isnan(t->GetP())) return kFALSE;
+  if (TMath::IsNaN(t->GetP())) return kFALSE;
 
   Float_t * charge = new Float_t[kNpla];
   Int_t   * nCluster = new Int_t[kNpla];
@@ -408,7 +382,7 @@ Int_t AliTRDpidLQ::GetIndex(const AliTRDtrack *t)
   // Returns the histogram index
   //
 
-  if (isnan(t->GetP())) return -1;
+  if (TMath::IsNaN(t->GetP())) return -1;
   Float_t mom  = t->GetP();
   Int_t   ipid = MCpid(t);
 
