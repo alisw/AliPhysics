@@ -4,6 +4,7 @@ void Config()
     // Switch on Transition Radiation simulation. 6/12/00 18:00
     // iZDC=1  7/12/00 09:00
     // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
+    // Theta range given through pseudorapidity limits 22/6/2001
 
     // Set Random Number seed
     // gRandom->SetSeed(12345);
@@ -75,8 +76,10 @@ void Config()
 
     gener->SetMomentumRange(0, 999);
     gener->SetPhiRange(0, 360);
-    //  gener->SetThetaRange(0.28,179.72);
-    gener->SetThetaRange(0., 180.);
+    // Set pseudorapidity range from -8 to 8.
+    Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
+    Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
+    gener->SetThetaRange(thmin,thmax);
     gener->SetOrigin(0, 0, 0);  //vertex position
     gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
     gener->Init();
@@ -348,4 +351,8 @@ void Config()
     }
 
 
+}
+
+Float_t EtaToTheta(Float_t arg){
+  return (180./TMath::Pi())*2.*atan(exp(-arg));
 }
