@@ -30,6 +30,9 @@ AliL3Histogram::AliL3Histogram()
   fEntries = 0;
   fContent = 0;
   fThreshold = 0;
+#ifdef use_root
+  fRootHisto = 0;
+#endif
 }
 
   
@@ -66,12 +69,11 @@ AliL3Histogram::~AliL3Histogram()
   //Destructor
   if(fContent)
     delete [] fContent;
-
 #ifdef use_root
   if(fRootHisto)
     delete fRootHisto;
 #endif
-
+  
 }
 
 
@@ -127,7 +129,7 @@ Int_t AliL3Histogram::GetBin(Int_t xbin,Int_t ybin)
     }
   if(ybin < 0 || ybin > GetLastYbin())
     {
-      LOG(AliL3Log::kError,"AliL3Histogram::FindYbin","array")<<AliL3Log::kDec<<
+      LOG(AliL3Log::kError,"AliL3Histogram::Getbin","array")<<AliL3Log::kDec<<
 	"ybin out of range "<<xbin<<ENDLOG;
       return 0;
     }

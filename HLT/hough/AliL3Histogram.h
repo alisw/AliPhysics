@@ -10,7 +10,7 @@
 
 class AliL3Histogram {
   
- private:
+ protected:
   
   Int_t *fContent; //!
   Char_t fName[100];
@@ -28,21 +28,21 @@ class AliL3Histogram {
   Double_t fYmin;
   Double_t fXmax;
   Double_t fYmax;
-
+  
 #ifdef use_root
   TH2F *fRootHisto;
 #endif  
-
+  
  public:
   AliL3Histogram();
   AliL3Histogram(Char_t *name,Char_t *id,Int_t nxbin,Double_t xmin,Double_t xmax,Int_t nybin,Double_t ymin,Double_t ymax);
   virtual ~AliL3Histogram();
   
   void Reset();
-  void Fill(Double_t x,Double_t y,Int_t weight=1);
-  Int_t FindBin(Double_t x,Double_t y);
-  Int_t FindXbin(Double_t x);
-  Int_t FindYbin(Double_t y);
+  virtual void Fill(Double_t x,Double_t y,Int_t weight=1);
+  virtual Int_t FindBin(Double_t x,Double_t y);
+  virtual Int_t FindXbin(Double_t x);
+  virtual Int_t FindYbin(Double_t y);
   Int_t GetBin(Int_t xbin,Int_t ybin);
   Int_t GetBinContent(Int_t bin);
   void SetBinContent(Int_t xbin,Int_t ybin,Int_t value);
@@ -51,8 +51,9 @@ class AliL3Histogram {
   void AddBinContent(Int_t bin,Int_t weight);
   void Add(AliL3Histogram *h1,Double_t weight=1);
   void SetThreshold(Int_t i) {fThreshold = i;}
-  void Draw(Char_t *option="hist");
   void CreateRootHisto();
+  virtual void Draw(Char_t *option="hist");
+  virtual void Print() {};
 
 #ifdef use_root
   TH2F *GetRootHisto();
@@ -64,8 +65,8 @@ class AliL3Histogram {
   Double_t GetXmax() {return fXmax;}
   Double_t GetYmin() {return fYmin;}
   Double_t GetYmax() {return fYmax;}
-  Double_t GetBinCenterX(Int_t xbin);
-  Double_t GetBinCenterY(Int_t ybin);
+  virtual Double_t GetBinCenterX(Int_t xbin);
+  virtual Double_t GetBinCenterY(Int_t ybin);
   Int_t GetFirstXbin() {return fFirstXbin;}
   Int_t GetLastXbin() {return fLastXbin;}
   Int_t GetFirstYbin() {return fFirstYbin;}

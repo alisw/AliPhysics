@@ -8,16 +8,16 @@
 class AliL3HistogramAdaptive : public AliL3Histogram {
   
  private:
-  Double_t *fKvalue; //!
+  Double_t fPtres;
   Double_t fMinPt;
   Double_t fMaxPt;
   Float_t fPtstep;
   
-  Int_t InitPtBins(Int_t firstpatch,Int_t lastpatch,Double_t xyresolution);
+  Int_t InitPtBins();
   
  public:
   AliL3HistogramAdaptive();
-  AliL3HistogramAdaptive(Char_t *name,Int_t firstpatch,Int_t lastpatch,Double_t minpt,Double_t maxpt,
+  AliL3HistogramAdaptive(Char_t *name,Double_t minpt,Double_t maxpt,Double_t ptres,
 			 Int_t nybins,Double_t ymin,Double_t ymax);
   ~AliL3HistogramAdaptive();
 
