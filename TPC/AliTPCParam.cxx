@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  1999/09/29 09:24:34  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////
@@ -259,13 +262,13 @@ Int_t AliTPCParam::GetWire(Float_t & x)
   //is at center of pad
   //
   Float_t xrel= x/fWWPitch;
-  if ((fnWires>>1)==0) xrel+=1;
+  if ((fnWires&1)==0) xrel+=1;
   else  xrel+=0.5;
   Int_t nw=Int_t(xrel);
   if (xrel<0) nw-=1;
   
   x=(nw*fWWPitch);
-  if ((fnWires>>1)==0) x-=fWWPitch/2.;
+  if ((fnWires&1)==0) x-=fWWPitch/2.;
   return nw;
 }
 
