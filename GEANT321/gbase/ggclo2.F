@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:16  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:11  cernlib
 * Geant
 *
@@ -200,5 +203,7 @@ C.
      +        I3,') daughters ; volume sorting not possible !')
 *                                                             END GGCLOS
   999 END
- 
+#else
+      SUBROUTINE GGCLO2_DUMMY
+      END
 #endif

@@ -185,4 +185,7 @@ c     Set the pRNG seeds (In this version there is one sequence per node)
 
       return
       end
+#else
+      SUBROUTINE GPREADRNG_DUMMY
+      END
 #endif

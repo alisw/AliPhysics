@@ -36,4 +36,7 @@ c       		          (representative for printout ...)
 
       return
       end
+#else
+      SUBROUTINE GPDYNAMIC_DUMMY
+      END
 #endif

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:16  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:03  cernlib
 * Geant
 *
@@ -58,5 +61,8 @@ C     AUSDRUCKEN
    50 FORMAT(1H0,15HIV(J),IV(I),LL=,3I5)
    60 CONTINUE
       RETURN
+      END
+#else
+      SUBROUTINE VERTEX_DUMMY
       END
 #endif

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:20  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:27  cernlib
 * Geant
 *
@@ -33,5 +36,8 @@ C
       ZX=ZS*LOG(1.+3.34*(ZC/(BETA2*137.036))**2)
       OMC=6702.33*ZS*DENS*EXP((ZE-ZX)/ZS)
 *
+      END
+#else
+      SUBROUTINE GMOLI1_DUMMY
       END
 #endif

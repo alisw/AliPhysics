@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:15  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:19:54  cernlib
 * Geant
 *
@@ -1013,5 +1016,8 @@ C*****STORE,END OF NORMAL CYCLE
 *  Do not pick up the fission fragments, rather go back to Evevap
       HEVSUM=SMOM1(3)+SMOM1(5)+SMOM1(6)+SMOM1(4)
       RETURN
+      END
+#else
+      SUBROUTINE DRES_DUMMY
       END
 #endif

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:57  cernlib
 * Geant
 *
@@ -325,5 +328,8 @@ C*****  End of Code Expanded From Routine:  GTRNSF
       NUMED = Q(JVO+4)
 *                                                             END GMEDIA
   999 IF(JGSTAT.NE.0) CALL GFSTAT(2)
+      END
+#else
+      SUBROUTINE GMEDI2_DUMMY
       END
 #endif

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:21  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:38  cernlib
 * Geant
 *
@@ -67,5 +70,8 @@ C-----------------------------------------------------------------------
          CALL GSTCOR(X,EOSC(I),PLOG,DENS,D)
          AOSC(I) = LOG(TWOELM/EOSC(I)) +C3 -D
    50 CONTINUE
+      END
+#else
+      SUBROUTINE GOSCMG_DUMMY
       END
 #endif

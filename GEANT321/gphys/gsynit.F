@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:20  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:35  cernlib
 * Geant
 *
@@ -104,4 +107,7 @@ C...
    60 BKS53 = .1909859*BKS53
       RETURN
       E N D
+#else
+      SUBROUTINE GSYNIT_DUMMY
+      END
 #endif

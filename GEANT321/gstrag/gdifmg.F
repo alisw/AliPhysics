@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:20  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:37  cernlib
 * Geant
 *
@@ -82,5 +85,8 @@ C-----------------------------------------------------------------------
       ENDIF
       IF (DEL.GE.DCUTE*1E6) DEL = DCUTE*1E6
  
+      END
+#else
+      SUBROUTINE GDIFMG_DUMMY
       END
 #endif

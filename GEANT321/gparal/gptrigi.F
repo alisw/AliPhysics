@@ -18,4 +18,7 @@
 
       return
       end
+#else
+      SUBROUTINE GPTRIGI_DUMMY
+      END
 #endif

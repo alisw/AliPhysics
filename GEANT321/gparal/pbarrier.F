@@ -21,4 +21,7 @@ c
       endif
       return
       end
+#else
+      SUBROUTINE PBARRIER_DUMMY
+      END
 #endif

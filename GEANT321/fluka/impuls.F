@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:16  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:00  cernlib
 * Geant
 *
@@ -72,5 +75,8 @@ C*****HPS,HPZ ARE THE TRANSVERSAL AND LONGITUDINAL MOMENTUM
     3 FORMAT(1H0,19HPS,PX,PY,PZ,E,M,LL=,6F8.4,I3)
     2 CONTINUE
       RETURN
+      END
+#else
+      SUBROUTINE IMPULS_DUMMY
       END
 #endif

@@ -22,4 +22,7 @@
 
       RETURN
       END
+#else
+      SUBROUTINE GPROCS_DUMMY
+      END
 #endif

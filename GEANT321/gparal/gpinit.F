@@ -80,4 +80,7 @@ c       		          (representative for printout ...)
 
       return
       end
+#else
+      SUBROUTINE GPINIT_DUMMY
+      END
 #endif

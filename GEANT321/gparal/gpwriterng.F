@@ -155,4 +155,7 @@ c
 
       return
       end
+#else
+      SUBROUTINE GPWRITERNG_DUMMY
+      END
 #endif

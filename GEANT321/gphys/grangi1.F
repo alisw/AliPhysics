@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:20  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:33  cernlib
 * Geant
 *
@@ -119,5 +122,8 @@ C.
          ENDIF
    50 CONTINUE
 *
+      END
+#else
+      SUBROUTINE GRANGI1_DUMMY
       END
 #endif

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:45  cernlib
 * Geant
 *
@@ -49,3 +52,5 @@ C    Contact Nils Hoimyr/CN/CE or Jouko Vuoskoski/CN/AS if you have any
 C    questions regarding the interface.
  
  
+      SUBROUTINE README_DUMMY
+      END

@@ -90,5 +90,8 @@ c
 #endif
       return
       end
+#else
+      SUBROUTINE GPDEFRNG_DUMMY
+      END
 #endif
 

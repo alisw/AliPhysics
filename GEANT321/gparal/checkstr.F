@@ -26,4 +26,7 @@
       endif
       return
       end
+#else
+      SUBROUTINE CHECKSTR_DUMMY
+      END
 #endif

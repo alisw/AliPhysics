@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:17  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:20:45  cernlib
 * Geant
 *
@@ -26,3 +29,5 @@
 *             only to divisions
 *  23-04-93 : Names changes to GEANT name convention scheme.  Some
 *             cleaning done to GDEXCA (Earlier SETDRS)
+      SUBROUTINE HISTORY_DUMMY
+      END

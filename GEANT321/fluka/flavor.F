@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:15  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:19:56  cernlib
 * Geant
 *
@@ -352,5 +355,8 @@ C*****CHOICE OF THE QUARKFLAVOURS IN DEPENDENCE OF THE VERTEX IV
    70 FORMAT(1H0,'IV(I),LL,KFA1,KFA2,KFR1(I),KFR2(I)=',6I3 )
    80 CONTINUE
       RETURN
+      END
+#else
+      SUBROUTINE FLAVOR_DUMMY
       END
 #endif

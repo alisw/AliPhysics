@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:15  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:19:59  cernlib
 * Geant
 *
@@ -130,5 +133,8 @@ C  IT1,IT2, IT3 ARE THE PRODUCED PARTICLES FROM  IT
   928 FORMAT(' NUMBER OF STAB. FINAL PART. IS GREATER THAN',I5)
       IHAD = IR
       RETURN
+      END
+#else
+      SUBROUTINE DECAY_DUMMY
       END
 #endif

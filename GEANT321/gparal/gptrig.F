@@ -35,4 +35,7 @@ c     call GRNDMQ( iseeda, iseedb, iseqnc, 'G' )
 
       return
       end
+#else
+      SUBROUTINE GPTRIG_DUMMY
+      END
 #endif

@@ -86,4 +86,7 @@ c     of such a routine can be found in "muxread".
 
       return
       end
+#else
+      SUBROUTINE GPRUN_DUMMY
+      END
 #endif

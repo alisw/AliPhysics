@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:20  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:27  cernlib
 * Geant
 *
@@ -46,4 +49,7 @@ C
 *
       END
  
+#else
+      SUBROUTINE GMOLI2_DUMMY
+      END
 #endif

@@ -2,6 +2,9 @@
 * $Id$
 *
 * $Log$
+* Revision 1.1.1.1  1999/05/18 15:55:21  fca
+* AliRoot sources
+*
 * Revision 1.1.1.1  1995/10/24 10:21:45  cernlib
 * Geant
 *
@@ -400,5 +403,8 @@ C*****  End of Code Expanded From Routine:  GTRNSF
       ENDIF
 *                                                             END GINVOL
   999 IF(JGSTAT.NE.0) CALL GFSTAT(ISAME)
+      END
+#else
+      SUBROUTINE GINVO2_DUMMY
       END
 #endif

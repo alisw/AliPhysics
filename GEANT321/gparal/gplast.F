@@ -25,4 +25,7 @@ c
       write(*,*) ' Calling STOP in MPI_finalize on node ', nprank
       stop
       end
+#else
+      SUBROUTINE GPLAST_DUMMY
+      END
 #endif
