@@ -29,13 +29,7 @@
 //     and  : Yves Schutz (SUBATECH)
 //     and  : Jennifer Klay (LBL)
 
-// --- ROOT system ---
-
-// --- Standard library ---
-//#include <stdlib.h> 
-
 // --- AliRoot header files ---
-//#include <TError.h>
 #include <TMath.h>
 #include <TVector3.h>
 
@@ -57,6 +51,7 @@ AliEMCALGeometry::~AliEMCALGeometry(void){
 
 //______________________________________________________________________
 const Bool_t AliEMCALGeometry::AreInSameTower(Int_t id1, Int_t id2) const {
+  // Find out whether two hits are in the same tower
   Int_t idmax = TMath::Max(id1, id2) ; 
   Int_t idmin = TMath::Min(id1, id2) ;
   if ( ((idmax - GetNZ() * GetNPhi()) == idmin ) || 
@@ -69,130 +64,42 @@ const Bool_t AliEMCALGeometry::AreInSameTower(Int_t id1, Int_t id2) const {
 //______________________________________________________________________
 void AliEMCALGeometry::Init(void){
   // Initializes the EMCAL parameters
-  // naming convention : GUV_L_WX_N_YZ_M gives the composition of a tower
-  // UV inform about the compsition of the pre-shower section: 
-  //   thickness in mm of Pb radiator (U) and of scintillator (V), and number of scintillator layers (L)
+  // naming convention : GUV_WX_N_ gives the composition of a tower
   // WX inform about the composition of the EM calorimeter section: 
-  //   thickness in mm of Pb radiator (W) and of scintillator (X), and number of scintillator layers (N) 
-  // YZ inform about the composition of the hadron calorimeter section: 
-  //   thickness in mm of Cu radiator (Y) and of scintillator (Z), and number of scintillator layers (M) 
-  // Valid geometries are G56_2_55_19_104_14
-  //                      G56_2_55_19 or EMCAL_5655_21
-  //                      G65_2_64_19 or EMCAL_6564_21 
+  //   thickness in mm of Pb radiator (W) and of scintillator (X), and number of scintillator layers (N)
+  // New geometry: EMCAL_55_25
 
-  fgInit = kFALSE; // Assume failer untill proven otherwise.
+  fgInit = kFALSE; // Assume failed until proven otherwise.
   TString name(GetName()) ; 
-
-  if ( name == "G56_2_55_19_104_14" ) {
-    fPRPbRadThickness  = 0.5;  // cm, Thickness of the Pb radiators for the preshower section 
-    fPRScintThick      = 0.6;  // cm, Thickness of the sintilator for the preshower section of the tower
-    fNPRLayers         = 2;    // number of scintillator layers in the preshower section 
+  if (name == "EMCAL_55_25") {
+    fECPbRadThickness  = 0.5;  // cm, Thickness of the Pb radiators
+    fECScintThick      = 0.5;  // cm, Thickness of the scintillator
+    fNECLayers         = 25;   // number of scintillator layers
     
-    fECPbRadThickness  = 0.5;  // cm, Thickness of the Pb radiators for the EM calorimeter  section 
-    fECScintThick      = 0.5;  // cm, Thickness of the sintilator for the EM alorimeter section of the tower  
-    fNECLayers         = 19;   // number of scintillator layers in the EM calorimeter section 
-    
-    fHCCuRadThickness  = 1.0;  // cm, Thickness of the Cu radiators.
-    fHCScintThick      = 0.4;  // cm, Thickness of the sintilator for the hadronic alorimeter section of the tower  
-    fNHCLayers         = 14;   // number of scintillator layers in the hadronic calorimeter section
-    
-    fSampling          = 11.3 ; 
-    fSummationFraction = 0.8 ;
-
-    fAlFrontThick      = 3.0;  // cm, Thickness of front Al layer
+    fSampling          = 11.8; 
+ 
+    fAlFrontThick      = 3.5;  // cm, Thickness of front Al layer
     fGap2Active        = 1.0;  // cm, Gap between Al and 1st Scintillator
   }
-  else if ( name == "G56_2_55_19" || name == "EMCAL_5655_21" ) {
-    fPRPbRadThickness  = 0.5;  // cm, Thickness of the Pb radiators for the preshower section 
-    fPRScintThick      = 0.6;  // cm, Thickness of the sintilator for the preshower section of the tower
-    fNPRLayers         = 2;    // number of scintillator layers in the preshower section 
-    
-    fECPbRadThickness  = 0.5;  // cm, Thickness of the Pb radiators for the EM calorimeter  section 
-    fECScintThick      = 0.5;  // cm, Thickness of the sintilator for the EM alorimeter section of the tower  
-    fNECLayers         = 19;   // number of scintillator layers in the EM calorimeter section 
-    
-    fHCCuRadThickness  = 0.0;  // cm, Thickness of the Cu radiators.
-    fHCScintThick      = 0.0;  // cm, Thickness of the sintilator for the hadronic alorimeter section of the tower  
-    fNHCLayers         = 0;    // number of scintillator layers in the hadronic calorimeter section
-    
-    fSampling          = 11.3 ; 
-    fSummationFraction = 0.8 ;
- 
-    fAlFrontThick      = 3.0;  // cm, Thickness of front Al layer
-    fGap2Active        = 1.0;  // cm, Gap between Al and 1st Scintillator
-  }
-  else if ( name == "G65_2_64_19" || name == "EMCAL_6564_21" ) {
-    fPRPbRadThickness  = 0.6;  // cm, Thickness of the Pb radiators for the preshower section 
-    fPRScintThick      = 0.5;  // cm, Thickness of the sintilator for the preshower section of the tower
-    fNPRLayers         = 2;    // number of scintillator layers in the preshower section 
-    
-    fECPbRadThickness  = 0.6;  // cm, Thickness of the Pb radiators for the EM calorimeter  section 
-    fECScintThick      = 0.4;  // cm, Thickness of the sintilator for the EM alorimeter section of the tower  
-    fNECLayers         = 19;   // number of scintillator layers in the EM calorimeter section 
-    
-    fHCCuRadThickness  = 0.0;  // cm, Thickness of the Cu radiators.
-    fHCScintThick      = 0.0;  // cm, Thickness of the sintilator for the hadronic alorimeter section of the tower  
-    fNHCLayers         = 0;    // number of scintillator layers in the hadronic calorimeter section
-    
-    fSampling          = 16. ; 
-    fSummationFraction = 0.8 ;
- 
-    fAlFrontThick      = 3.0;  // cm, Thickness of front Al layer
-    fGap2Active        = 1.0;  // cm, Gap between Al and 1st Scintillator
+  else if( name == "G56_2_55_19" || name == "EMCAL_5655_21" || name == "G56_2_55_19_104_14"|| name == "G65_2_64_19" || name == "EMCAL_6564_21"){
+    Fatal("Init", "%s is an old geometry! Please update your Config file", name.Data()) ;
   }
   else
     Fatal("Init", "%s is an undefined geometry!", name.Data()) ; 
 		 
-   //  if( name != "EMCALArch1a" &&
-// 	name != "EMCALArch1b" && 
-// 	name != "EMCALArch2a" && 
-// 	name != "EMCALArch2b" && 
-// 	name != "EMCALArch1aN" ){
-//       Fatal("Init", "%s is not a known geometry (choose among EMCALArch1a, EMCALArch1b, EMCALArch2a and EMCALArch2b, EMCALArch1aN)",  name.Data()) ;  
-//     } // end if
-//     //
-//     if ( name == "EMCALArch1a"  ||
-// 	 name == "EMCALArch1b"  || 
-// 	 name == "EMCALArch1aN") {
-//       fNZ         = 96;
-//       fNPhi       = 144;
-//     } // end if
-//     if ( name == "EMCALArch2a"  ||
-// 	 name == "EMCALArch2b" ) {
-// 	fNZ         = 112;
-// 	fNPhi       = 168;
-//     } // end if
-//     if ( name == "EMCALArch1a"  ||
-// 	 name == "EMCALArch2a" ) {
-//       fNPRLayers  = 2;
-//       fNECLayers  = 19;
-//       fNHCLayers  = 0;
-//     } // end if
-//     if ( name == "EMCALArch1b"  ||
-// 	 name == "EMCALArch2b" ) {
-// 	fNPRLayers  = 2;
-// 	fNECLayers  = 23;
-// 	fNHCLayers  = 0;
-//     } // end if
-//     if ( name == "EMCALArch1aN") { 
-//       fNPRLayers   = 2;
-//       fNECLayers  = 19;
-//       fNHCLayers  = 14;
-//     }
-
   // geometry
-  fNZ             = 96;    // granularity along Z (eta) 
-  fNPhi           = 144;   // granularity in phi (azimuth)
-  fArm1PhiMin     =  60.0; // degrees, Starting EMCAL Phi position
-  fArm1PhiMax     = 180.0; // degrees, Ending EMCAL Phi position
-  fArm1EtaMin     = -0.7;  // pseudorapidity, Starting EMCAL Eta position
-  fArm1EtaMax     = +0.7;  // pseudorapidity, Ending EMCAL Eta position
+  fNZ             = 114;	// granularity along Z (eta) 
+  fNPhi           = 168;	// granularity in phi (azimuth)
+  fArm1PhiMin     = 60.0;	// degrees, Starting EMCAL Phi position
+  fArm1PhiMax     = 180.0;	// degrees, Ending EMCAL Phi position
+  fArm1EtaMin     = -0.7;	// pseudorapidity, Starting EMCAL Eta position
+  fArm1EtaMax     = +0.7;	// pseudorapidity, Ending EMCAL Eta position
   
   fIPDistance     = 454.0; // cm, Radial distance to inner surface of EMCAL
-  fShellThickness = fAlFrontThick + fGap2Active + 2.*(GetPRScintThick() + GetPRPbRadThick()) + // pre shower 
-    (fNECLayers-1)*(GetECScintThick()+ GetECPbRadThick()) + // E cal -1 because the last element is a scintillator
-    fNHCLayers*(GetHCScintThick()+ GetHCCuRadThick()) + // H cal
-    GetHCScintThick() ; // last scintillator
+
+  //There is always one more scintillator than radiator layer because of the first block of aluminium
+  fShellThickness = fAlFrontThick + fGap2Active + fNECLayers*GetECScintThick()+(fNECLayers-1)*GetECPbRadThick();
+
   fZLength        = 2.*ZFromEtaR(fIPDistance+fShellThickness,fArm1EtaMax); // Z coverage
   fEnvelop[0]     = fIPDistance; // mother volume inner radius
   fEnvelop[1]     = fIPDistance + fShellThickness; // mother volume outer r.
@@ -201,11 +108,8 @@ void AliEMCALGeometry::Init(void){
   fgInit = kTRUE; 
   
   if (gDebug) {
-    Info("Init", "geometry of EMCAL named %s is as follows:", name.Data());
-    printf( "Tower geometry pre-shower: %d x (%f mm Pb, %f mm Sc) \n", GetNPRLayers(), GetPRPbRadThick(), GetPRScintThick() ) ; 
+    printf("Init: geometry of EMCAL named %s is as follows:", name.Data());
     printf( "               ECAL      : %d x (%f mm Pb, %f mm Sc) \n", GetNECLayers(), GetECPbRadThick(), GetECScintThick() ) ; 
-    if ( GetNHCLayers() > 0 )
-      printf( "               HCAL      : %d x (%f mm Pb, %f mm Sc) \n", GetNHCLayers(), GetHCCuRadThick(), GetHCScintThick() ) ; 
     printf("Granularity: %d in eta and %d in phi\n", GetNZ(), GetNPhi()) ;
     printf("Layout: phi = (%f, %f), eta = (%f, %f), y = %f\n",  
 	   GetArm1PhiMin(), GetArm1PhiMax(),GetArm1EtaMin(), GetArm1EtaMax(), GetIPDistance() ) ;    
@@ -238,12 +142,10 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
 	} // end if strcmp(name,"")
     }else{
 	if ( strcmp(fgGeom->GetName(), name) != 0 ) {
-	  TString message("\n") ; 
-	  message += "current geometry is " ;  
-	  message += fgGeom->GetName() ;
-	  message += "\n                      you cannot call     " ; 
-	  message += name ;  
-	  ::Info("GetGeometry", message.Data() ) ; 
+	  printf("\ncurrent geometry is ") ;  
+	  printf(fgGeom->GetName());
+	  printf("\n                      you cannot call     "); 
+	  printf(name);  
 	}else{
 	  rv = (AliEMCALGeometry *) fgGeom; 
 	} // end if
@@ -254,12 +156,10 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
 //______________________________________________________________________
 Int_t AliEMCALGeometry::TowerIndex(Int_t ieta,Int_t iphi) const {
   // Returns the tower index number from the based on the Z and Phi
-  // index numbers. There are 2 times the number of towers to separate
-  // out the full towers from the pre-showers.
+  // index numbers.
   // Inputs:
-  //   Int_t ieta    // index allong z axis [1-fNZ]
-  //   Int_t iphi  // index allong phi axis [1-fNPhi]
-  //   Int_t where // 1 = PRE section, 0 = EC section, 2 = HC section
+  //   Int_t ieta    // index along z axis [1-fNZ]
+  //   Int_t iphi  // index along phi axis [1-fNPhi]
   // Outputs:
   //   none.
   // Returned
@@ -273,31 +173,19 @@ Int_t AliEMCALGeometry::TowerIndex(Int_t ieta,Int_t iphi) const {
 }
 
 //______________________________________________________________________
-void AliEMCALGeometry::TowerIndexes(Int_t index,Int_t &ieta,Int_t &iphi,
-				    Int_t &ipre) const {
+void AliEMCALGeometry::TowerIndexes(Int_t index,Int_t &ieta,Int_t &iphi) const {
   // Inputs:
-  //   Int_t index // Tower index number [1-i*fNZ*fNPhi] PRE(i=1)/ECAL(i=2)/HCAL(i=3)
+  //   Int_t index // Tower index number [1-fNZ*fNPhi]
   // Outputs:
   //   Int_t ieta    // index allong z axis [1-fNZ]
   //   Int_t iphi  // index allong phi axis [1-fNPhi]
-  //   Int_t ipre  // 0 = ECAL section, 1 = Pre-shower section, 2 = HCAL section
   // Returned
   //   none.
-  
 
-  Int_t nindex = 0, itowers = GetNEta() * GetNPhi();
+  Int_t nindex = 0;
 
-  if ( IsInPRE(index) ) {       // PRE index
-    nindex = index - itowers;
-    ipre = 1 ; 
-  }
-  else  if ( IsInECA(index) ) { // ECAL index
+  if ( IsInECA(index) ) { // ECAL index
     nindex = index ;
-    ipre = 0 ; 
-  }
-  else  if ( IsInHCA(index) ) { // HCAL index
-    nindex = index - 2*itowers;
-    ipre = 2 ; 
   }
   else 
     Fatal("TowerIndexes", "Unexpected Id number!") ;
@@ -309,7 +197,7 @@ void AliEMCALGeometry::TowerIndexes(Int_t index,Int_t &ieta,Int_t &iphi,
   ieta = nindex - (iphi - 1) * GetNZ() ; 
 
   if (gDebug==2)
-    Info("TowerIndexes", "index=%d,%d, ieta=%d, iphi = %d", index, nindex,ieta, iphi) ; 
+    printf("TowerIndexes: index=%d,%d, ieta=%d, iphi = %d", index, nindex,ieta, iphi) ; 
   return;
   
 }
@@ -319,19 +207,19 @@ void AliEMCALGeometry::EtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi) co
     // given the tower index number it returns the based on the eta and phi
     // of the tower.
     // Inputs:
-    //   Int_t index // Tower index number [1-i*fNZ*fNPhi] PRE(i=1)/ECAL(i=2)/HCAL(i=3)
+    //   Int_t index // Tower index number [1-fNZ*fNPhi]
     // Outputs:
     //   Float_t eta  // eta of center of tower in pseudorapidity
     //   Float_t phi  // phi of center of tower in degrees
     // Returned
     //   none.
-    Int_t ieta, iphi, ipre ;
+    Int_t ieta, iphi;
     Float_t deta, dphi ;
 
-    TowerIndexes(index,ieta,iphi,ipre);
+    TowerIndexes(index,ieta,iphi);
     
     if (gDebug == 2) 
-      Info("EtaPhiFromIndex","index = %d, ieta = %d, iphi = %d", index, ieta, iphi) ;
+      printf("EtaPhiFromIndex: index = %d, ieta = %d, iphi = %d", index, ieta, iphi) ;
 
     deta = (GetArm1EtaMax()-GetArm1EtaMin())/(static_cast<Float_t>(GetNEta()));
     eta  = GetArm1EtaMin() + ((static_cast<Float_t>(ieta) - 0.5 ))*deta;
@@ -388,21 +276,19 @@ Int_t AliEMCALGeometry::PreTowerIndexFromEtaPhi(Float_t eta,Float_t phi) const {
 Bool_t AliEMCALGeometry::AbsToRelNumbering(Int_t AbsId, Int_t *relid) const {
     // Converts the absolute numbering into the following array/
     //  relid[0] = EMCAL Arm number 1:1 
-    //  relid[1] = 0  ECAL section ; = 1  PRE section; = 2 HCA section
-    //  relid[2] = Row number inside EMCAL
-    //  relid[3] = Column number inside EMCAL
+    //  relid[1] = Row number inside EMCAL
+    //  relid[2] = Column number inside EMCAL
     // Input:
     //   Int_t AbsId // Tower index number [1-2*fNZ*fNPhi]
     // Outputs:
-    //   Int_t *relid // array of 5. Discribed above.
+    //   Int_t *relid // array of 3. Discribed above.
     Bool_t rv  = kTRUE ;
-    Int_t ieta=0,iphi=0,ipre=0,index=AbsId;
+    Int_t ieta=0,iphi=0,index=AbsId;
 
-    TowerIndexes(index,ieta,iphi,ipre);
+    TowerIndexes(index,ieta,iphi);
     relid[0] = 1;
-    relid[1] = ipre; 
-    relid[2] = ieta;
-    relid[3] = iphi;
+    relid[1] = ieta;
+    relid[2] = iphi;
 
     return rv;
 }
@@ -412,26 +298,18 @@ void AliEMCALGeometry::PosInAlice(const Int_t *relid, Float_t &theta, Float_t &p
 {
   // Converts the relative numbering into the local EMCAL-module (x, z)
   // coordinates
-  Int_t sect = relid[1]; // PRE/ECAL/HCAL section 1/0/2
-  Int_t ieta = relid[2]; // offset along x axis
-  Int_t iphi = relid[3]; // offset along z axis
+  Int_t ieta = relid[1]; // offset along x axis
+  Int_t iphi = relid[2]; // offset along z axis
   Int_t index;
   Float_t eta;
   
   index = TowerIndex(ieta,iphi);
   EtaPhiFromIndex(index,eta,phi);
-  theta = 180.*(2.0*TMath::ATan(TMath::Exp(-eta)))/TMath::Pi();
+  //theta = 180.*(2.0*TMath::ATan(TMath::Exp(-eta)))/TMath::Pi();
+  theta = 2.0*TMath::ATan(TMath::Exp(-eta));
 
-    // correct for distance to IP different in PRE/ECAL/HCAL
-  Float_t d = 0. ; 
-  if (sect == 1)
-    d = GetIP2PRESection() -  GetIPDistance() ; 
-  else if (sect == 0)
-    d = GetIP2ECASection() - GetIPDistance() ; 
-  else if (sect == 2) 
-    d = GetIP2HCASection() - GetIPDistance() ;
-  else 
-    Fatal("PosInAlice", "Unexpected tower section!") ; 
+  // correct for distance to IP
+  Float_t d = GetIP2ECASection() - GetIPDistance() ;  
 
   Float_t correction = 1 + d/GetIPDistance() ; 
   Float_t tantheta = TMath::Tan(theta) * correction ; 
@@ -448,10 +326,10 @@ void AliEMCALGeometry::PosInAlice(const Int_t absid, Float_t &theta, Float_t &ph
   // Converts the relative numbering into the local EMCAL-module (x, z)
   // coordinates
   
-  Int_t relid[4] ; 
+  Int_t relid[3] ; 
   AbsToRelNumbering(absid, relid) ;
-  Int_t ieta = relid[2]; // offset along x axis
-  Int_t iphi = relid[3]; // offset along z axis
+  Int_t ieta = relid[1]; // offset along x axis
+  Int_t iphi = relid[2]; // offset along z axis
   Int_t index;
   Float_t eta;
   
@@ -459,14 +337,10 @@ void AliEMCALGeometry::PosInAlice(const Int_t absid, Float_t &theta, Float_t &ph
   EtaPhiFromIndex(index,eta,phi);
   theta = 2.0*TMath::ATan(TMath::Exp(-eta)) ;
   
-  // correct for distance to IP different in PRE/ECAL/HCAL
+  // correct for distance to IP
   Float_t d = 0. ; 
-  if (IsInPRE(absid))
-    d = GetIP2PRESection() -  GetIPDistance() ; 
-  else if (IsInECA(absid))
+  if (IsInECA(absid))
     d = GetIP2ECASection() - GetIPDistance() ; 
-  else if (IsInHCA(absid)) 
-    d = GetIP2HCASection() - GetIPDistance() ;
   else 
     Fatal("PosInAlice", "Unexpected id # %d!", absid) ; 
 
@@ -491,30 +365,22 @@ void AliEMCALGeometry::XYZFromIndex(const Int_t *relid,Float_t &x,Float_t &y, Fl
     // Returned
     //   none.
     
-    Float_t eta,theta, phi,cyl_radius=0. ;
+    Float_t eta,theta, phi,cylradius=0. ;
     
-    Int_t ieta   = relid[2]; // offset along x axis
-    Int_t iphi = relid[3]; // offset along z axis
-    Int_t ipre = relid[1]; // indicates 0 ECAL section, 1 PRE section, 2 HCAL section.
+    Int_t ieta   = relid[1]; // offset along x axis
+    Int_t iphi = relid[2]; // offset along z axis.
     Int_t index;
     
     index = TowerIndex(ieta,iphi);
     EtaPhiFromIndex(index,eta,phi);
     theta = 180.*(2.0*TMath::ATan(TMath::Exp(-eta)))/TMath::Pi();
     
-    if ( ipre == 0 ) 
-      cyl_radius = GetIP2ECASection() ;
-    else if ( ipre == 1 ) 
-      cyl_radius = GetIP2PRESection() ;
-    else if ( ipre == 2 ) 
-      cyl_radius = GetIP2HCASection() ;
-    else 
-      Fatal("XYZFromIndex", "Unexpected Tower section # %d", ipre) ;  
+    cylradius = GetIP2ECASection() ;  
 
     Double_t  kDeg2Rad = TMath::DegToRad() ; 
-    x =  cyl_radius * TMath::Cos(phi * kDeg2Rad ) ;
-    y =  cyl_radius * TMath::Sin(phi * kDeg2Rad ) ; 
-    z =  cyl_radius / TMath::Tan(theta * kDeg2Rad ) ; 
+    x =  cylradius * TMath::Cos(phi * kDeg2Rad ) ;
+    y =  cylradius * TMath::Sin(phi * kDeg2Rad ) ; 
+    z =  cylradius / TMath::Tan(theta * kDeg2Rad ) ; 
  
  return;
 } 
@@ -531,23 +397,19 @@ void AliEMCALGeometry::XYZFromIndex(const Int_t absid,  TVector3 &v) const {
     // Returned
     //   none.
     
-    Float_t theta, phi,cyl_radius=0. ;
+    Float_t theta, phi,cylradius=0. ;
         
     PosInAlice(absid, theta, phi) ; 
     
     if ( IsInECA(absid) ) 
-      cyl_radius = GetIP2ECASection() ;
-    else if ( IsInPRE(absid) ) 
-      cyl_radius = GetIP2PRESection() ;
-    else if ( IsInHCA(absid) ) 
-      cyl_radius = GetIP2HCASection() ;
+      cylradius = GetIP2ECASection() ;
     else 
       Fatal("XYZFromIndex", "Unexpected Tower section") ;  
 
     Double_t  kDeg2Rad = TMath::DegToRad() ; 
-    v.SetX(cyl_radius * TMath::Cos(phi * kDeg2Rad ) );
-    v.SetY(cyl_radius * TMath::Sin(phi * kDeg2Rad ) ); 
-    v.SetZ(cyl_radius / TMath::Tan(theta * kDeg2Rad ) ) ; 
+    v.SetX(cylradius * TMath::Cos(phi * kDeg2Rad ) );
+    v.SetY(cylradius * TMath::Sin(phi * kDeg2Rad ) ); 
+    v.SetZ(cylradius / TMath::Tan(theta * kDeg2Rad ) ) ; 
  
  return;
 } 
@@ -565,11 +427,10 @@ Boot_t AliEMCALGeometry::AreNeighbours(Int_t index1,Int_t index2) const {
     // Returned
     //   Boot_t kTRUE if the towers are neighbours otherwise false.
     Boot_t anb = kFALSE;
-    Int_t ieta1 = 0, ieta2 = 0, iphi1 = 0, iphi2 = 0, ipre1 = 0, ipre2 = 0;
+    Int_t ieta1 = 0, ieta2 = 0, iphi1 = 0, iphi2 = 0;
 
-    TowerIndexes(index1,ieta1,iphi1,ipre1);
-    TowerIndexes(index2,ieta2,iphi2,ipre2);
-    if(ipre1!=ipre2) return anb;
+    TowerIndexes(index1,ieta1,iphi1);
+    TowerIndexes(index2,ieta2,iphi2);
     if((ieta1>=ieta2-1 && ieta1<=ieta2+1) && (iphi1>=iphi2-1 &&iphi1<=iphi2+1))
                                                                  anb = kTRUE;
     return anb;

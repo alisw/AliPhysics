@@ -1,4 +1,4 @@
-/**************************************************************************
+ /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -97,7 +97,7 @@ Bool_t AliEMCALHit::operator==(AliEMCALHit const &rValue) const{
     // from the same enterring Particle 
     Bool_t rv = kFALSE;
 
-    if ( (fId == rValue.GetId()) && ( fIparent == rValue.GetIparent()) )
+    if ( (fId == rValue.GetId()) && ( fIparent == rValue.GetIparent()))
 	rv = kTRUE;
 
     return rv;

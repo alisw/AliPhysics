@@ -17,7 +17,7 @@
 
 #include "TTask.h"
 class AliEMCALDigitizer ;
-class AliEMCALClusterizer ;
+class AliEMCALClusterizerv1 ;
 //class AliEMCALTrackSegmentMaker ;
 class AliEMCALPID ;
 class AliEMCALSDigitizer ;
@@ -43,7 +43,7 @@ public:
   virtual void Exec(Option_t * option) ;
 
   AliEMCALDigitizer         * GetDigitizer()  const { return fDigitizer   ; }
-  AliEMCALClusterizer       * GetClusterizer()const { return fClusterizer ; }
+  AliEMCALClusterizerv1       * GetClusterizer()const { return fClusterizer ; }
   //AliEMCALPID               * GetPID()        const { return fPID;          }
   //AliEMCALTrackSegmentMaker * GetTSMaker()    const { return fTSMaker ;     }
   AliEMCALSDigitizer        * GetSDigitizer() const { return fSDigitizer  ; }
@@ -72,14 +72,14 @@ private:
 
 
   AliEMCALDigitizer         * fDigitizer ;   //! Pointer to AliEMCALDigitizer
-  AliEMCALClusterizer       * fClusterizer ; //! Pointer to AliEMCALClusterizer
+  AliEMCALClusterizerv1       * fClusterizer ; //! Pointer to AliEMCALClusterizer
   //AliEMCALPID               * fPID ;         //! Pointer to AliEMCALPID
   //AliEMCALTrackSegmentMaker * fTSMaker ;     //! Pointer to AliEMCALTrackSegmentMaker
   AliEMCALSDigitizer        * fSDigitizer ;  //! Pointer to AliEMCALSDigitizer
 
   Bool_t   fIsInitialized ; // kTRUE if reconstructioner is initialized
  
-  ClassDef(AliEMCALReconstructioner,2)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructioner,3)  // Reconstruction algorithm class (Base Class)
 
 }; 
 

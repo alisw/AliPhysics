@@ -132,12 +132,8 @@ class AliEMCALGetter : public TObject {
     return  EmcalLoader()->WriteDigitizer(opt) ; }
   
   //========== RecPoints =============
-  TObjArray *             PRERecPoints() const ;
-  AliEMCALRecPoint *      PRERecPoint(const Int_t index) const { return static_cast<AliEMCALRecPoint *>(PRERecPoints()->At(index)) ;} 
-  TObjArray *             ECARecPoints() const ;
-  AliEMCALTowerRecPoint * ECARecPoint(const Int_t index) const { return static_cast<AliEMCALTowerRecPoint *>(ECARecPoints()->At(index)) ;} 
-  TObjArray *             HCARecPoints() const ;
-  AliEMCALTowerRecPoint * HCARecPoint(const Int_t index) const { return static_cast<AliEMCALTowerRecPoint *>(HCARecPoints()->At(index)) ;} 
+  TObjArray *             ECARecPoints() const;
+  AliEMCALTowerRecPoint * ECARecPoint(const Int_t index) const{ return static_cast<AliEMCALTowerRecPoint *>(ECARecPoints()->At(index)) ;}    
   TTree *                 TreeR() const ;
   AliEMCALClusterizer *   Clusterizer()  ;
   TString                 GetRecPointsFileName() const { return EmcalLoader()->GetRecPointsFileName() ; } 

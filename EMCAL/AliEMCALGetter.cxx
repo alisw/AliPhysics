@@ -149,22 +149,6 @@ AliEMCALDigitizer * AliEMCALGetter::Digitizer()
   return rv ; 
 }
 
-
-//____________________________________________________________________________ 
-TObjArray * AliEMCALGetter::PRERecPoints() const 
-{
-  // asks the Loader to return the EMC RecPoints container 
-
-  TObjArray * rv = 0 ; 
-  
-  rv = EmcalLoader()->PRERecPoints() ; 
-  if (!rv) {
-    EmcalLoader()->MakeRecPointsArray() ;
-    rv = EmcalLoader()->PRERecPoints() ; 
-  }
-  return rv ; 
-}
-
 //____________________________________________________________________________ 
 TObjArray * AliEMCALGetter::ECARecPoints() const 
 {
@@ -176,21 +160,6 @@ TObjArray * AliEMCALGetter::ECARecPoints() const
   if (!rv) {
     EmcalLoader()->MakeRecPointsArray() ;
     rv = EmcalLoader()->ECARecPoints() ; 
-  }
-  return rv ; 
-}
-
-//____________________________________________________________________________ 
-TObjArray * AliEMCALGetter::HCARecPoints() const 
-{
-  // asks the Loader to return the EMC RecPoints container 
-
-  TObjArray * rv = 0 ; 
-  
-  rv = EmcalLoader()->HCARecPoints() ; 
-  if (!rv) {
-    EmcalLoader()->MakeRecPointsArray() ;
-    rv = EmcalLoader()->HCARecPoints() ; 
   }
   return rv ; 
 }
@@ -288,9 +257,6 @@ void AliEMCALGetter::Event(const Int_t event, const char* opt)
 
   if( strstr(opt,"P") )
     ReadTreeP() ;
-
-//   if( strstr(opt,"Q") )
-//     ReadTreeQA() ;
  
 }
 
@@ -323,8 +289,6 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
 {
   // Creates and returns the pointer of the unique instance
   // Must be called only when the environment has changed
-  
-  //::Info("Instance","alirunFileName=%s version=%s openingOption=%s",alirunFileName,version,openingOption);
   
   if(!fgObjGetter){ // first time the getter is called 
     fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;
@@ -432,7 +396,7 @@ TClonesArray * AliEMCALGetter::Primaries()
   // creates the Primaries container if needed
   if ( !fPrimaries ) {
     if (fgDebug) 
-      Info("Primaries", "Creating a new TClonesArray for primaries") ; 
+      printf("Primaries: Creating a new TClonesArray for primaries") ; 
     fPrimaries = new TClonesArray("TParticle", 1000) ;
   } 
   return fPrimaries ; 
@@ -444,7 +408,7 @@ void  AliEMCALGetter::Print()
   // Print usefull information about the getter
     
   AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
-  ::Info( "Print", "gAlice file is %s -- version name is %s", (rl->GetFileName()).Data(), rl->GetEventFolder()->GetName() ) ; 
+  printf("Print: gAlice file is %s -- version name is %s", (rl->GetFileName()).Data(), rl->GetEventFolder()->GetName() ) ; 
 }
 
 //____________________________________________________________________________ 
@@ -461,7 +425,7 @@ void AliEMCALGetter::ReadPrimaries()
   fNPrimaries = rl->Stack()->GetNtrack() ; 
 
   if (fgDebug) 
-    Info( "ReadTreeK", "Found %d particles in event # %d", fNPrimaries, EventNumber() ) ; 
+    printf("ReadTreeK: Found %d particles in event # %d", fNPrimaries, EventNumber() ) ; 
 
 
   // first time creates the container

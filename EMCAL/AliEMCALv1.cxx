@@ -16,13 +16,12 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// Implementation version v1 of EMCAL Manager class 
-// An object of this class does not produce digits
-// It is the one to use if you do want to produce outputs in TREEH 
-//                  
+//*-- Implementation version v1 of EMCAL Manager class 
+//*-- An object of this class does not produce digits
+//*-- It is the one to use if you do want to produce outputs in TREEH 
+//*--                  
 //*-- Author: Sahal Yacoob (LBL /UCT)
 //*--       : Jennifer Klay (LBL)
-
 // This Class not stores information on all particles prior to EMCAL entry - in order to facilitate analysis.
 // This is done by setting fIShunt =2, and flagging all parents of particles entering the EMCAL.
 
@@ -78,7 +77,7 @@ AliEMCALv1::~AliEMCALv1(){
 void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t iparent, Float_t ienergy, 
 			Int_t id, Float_t * hits,Float_t * p){
     // Add a hit to the hit list.
-    // An EMCAL hit is the sum of all hits in a tower section (PRE, ECAL, HCAL) 
+    // An EMCAL hit is the sum of all hits in a tower section
     //   originating from the same entering particle 
     Int_t hitCounter;
     
@@ -87,7 +86,7 @@ void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
     Bool_t deja = kFALSE;
 
     newHit = new AliEMCALHit(shunt, primary, tracknumber, iparent, ienergy, id, hits, p);
-    for ( hitCounter = fNhits-1; hitCounter >= 0 && !deja; hitCounter-- ) {
+     for ( hitCounter = fNhits-1; hitCounter >= 0 && !deja; hitCounter-- ) {
 	curHit = (AliEMCALHit*) (*fHits)[hitCounter];
 	// We add hits with the same tracknumber, while GEANT treats
 	// primaries succesively
@@ -96,9 +95,9 @@ void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
 	if( *curHit == *newHit ) {
 	    *curHit = *curHit + *newHit;
 	    deja = kTRUE;
-	} // end if
+	    } // end if
     } // end for hitCounter
-
+    
     if ( !deja ) {
 	new((*fHits)[fNhits]) AliEMCALHit(*newHit);
 	fNhits++;
@@ -110,7 +109,7 @@ void AliEMCALv1::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t ipa
 void AliEMCALv1::StepManager(void){
   // Accumulates hits as long as the track stays in a tower
 
-  Int_t          id[2];           // (layer, phi, Eta) indices
+  Int_t          id[2];           // (phi, Eta) indices
   // position wrt MRS and energy deposited
   Float_t        xyzte[5]={0.,0.,0.,0.,0.};// position wrt MRS, time and energy deposited
   Float_t        pmom[4]={0.,0.,0.,0.};
@@ -167,27 +166,21 @@ void AliEMCALv1::StepManager(void){
       
       Int_t tower = (id[0]-1) % geom->GetNZ() + 1 + (id[1] - 1) * geom->GetNZ() ;  
       Int_t layer = static_cast<Int_t>((id[0]-1)/(geom->GetNZ())) + 1 ; 
-      Int_t absid = tower ; 
-      if (layer <= geom->GetNPRLayers() )
-	absid += geom->GetNZ() * geom->GetNPhi() ;
-      else if (layer > geom->GetNECLayers() + geom->GetNPRLayers() )
-	absid += 2 * geom->GetNZ() * geom->GetNPhi() ;
-      else {
-	Int_t nlayers = geom->GetNPRLayers()+ geom->GetNECLayers()+ geom->GetNHCLayers() ;
-	if (layer > nlayers) 
-	  Fatal("StepManager", "Wrong calculation of layer number: layer = %d > %d\n", layer, nlayers) ;
-      }
+      Int_t absid = tower; 
+      Int_t nlayers = geom->GetNECLayers();
+      if ((layer > nlayers)||(layer<1)) 
+        Fatal("StepManager", "Wrong calculation of layer number: layer = %d > %d\n", layer, nlayers) ;
+
 	
       Float_t lightYield =  depositedEnergy ;
-					     ;
       xyzte[4] = lightYield  ;
    
       primary = gAlice->GetMCApp()->GetPrimary(tracknumber);
 
       if (gDebug == 2) 
-	Info("StepManager", "id0 = %d, id1 = %d, absid = %d tower = %d layer = %d energy = %f\n", id[0], id[1], absid, tower, layer, xyzte[4]) ;
+	printf("StepManager: id0 = %d, id1 = %d, absid = %d tower = %d layer = %d energy = %f\n", id[0], id[1], absid, tower, layer, xyzte[4]) ;
 
-      AddHit(fIshunt, primary,tracknumber, iparent, ienergy, absid, xyzte, pmom);
+      AddHit(fIshunt, primary,tracknumber, iparent, ienergy, absid,  xyzte, pmom);
     } // there is deposited energy
   }
 }

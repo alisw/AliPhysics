@@ -73,11 +73,7 @@ ClassImp( AliEMCALTrackSegmentMakerv1)
 { 
   // dtor
   // fDefaultInit = kTRUE if TrackSegmentMaker created by default ctor (to get just the parameters)
-  
-  if (!fDefaultInit) {
-    delete fPRELinkArray  ;
-    delete fHCALinkArray  ;
-  }
+
 }
 
 //____________________________________________________________________________
@@ -110,7 +106,7 @@ Float_t  AliEMCALTrackSegmentMakerv1::HowClose(AliEMCALTowerRecPoint * ec, AliEM
     toofar = kTRUE ;
 
   if (gDebug == 2 ) 
-    Info("HowClose", "ec = %d, rp = %d pro = %f, toofar=%d", ec->GetIndexInList(), rp->GetIndexInList(), pro, toofar ) ; 
+    printf("HowClose: ec = %d, rp = %d pro = %f, toofar=%d", ec->GetIndexInList(), rp->GetIndexInList(), pro, toofar ) ; 
  
   return r ;
 }
@@ -121,9 +117,7 @@ void  AliEMCALTrackSegmentMakerv1::Init()
   // Make all memory allocations that are not possible in default constructor
   
   AliEMCALGetter* gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName.Data());
-
-  fPRELinkArray = new TClonesArray("AliEMCALLink", 1000); 
-  fHCALinkArray = new TClonesArray("AliEMCALLink", 1000); 
+ 
   if ( !gime->TrackSegmentMaker() ) {
     gime->PostTrackSegmentMaker(this);
   }
@@ -133,8 +127,6 @@ void  AliEMCALTrackSegmentMakerv1::Init()
 void  AliEMCALTrackSegmentMakerv1::InitParameters()
 {
   fClose              = 10e-3 ;   
-  fPRELinkArray       = 0 ;
-  fHCALinkArray       = 0 ;
   fTrackSegmentsInRun = 0 ; 
 }
 
@@ -146,10 +138,10 @@ void  AliEMCALTrackSegmentMakerv1::MakeLinks()const
   // which are not further apart from each other than fDangle 
   // and sort them in accordance with this distance
   
-  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+  /* AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   TObjArray * aECARecPoints  = gime->ECARecPoints() ; 
-  TObjArray * aPRERecPoints  = gime->PRERecPoints() ; 
-  TObjArray * aHCARecPoints  = gime->HCARecPoints() ; 
+  // TObjArray * aPRERecPoints  = gime->PRERecPoints() ; 
+  //TObjArray * aHCARecPoints  = gime->HCARecPoints() ; 
 
   fPRELinkArray->Clear() ;    
   fHCALinkArray->Clear() ;    
@@ -190,6 +182,7 @@ void  AliEMCALTrackSegmentMakerv1::MakeLinks()const
   
   fPRELinkArray->Sort() ;  //first links with largest scalar product
   fHCALinkArray->Sort() ;  //first links with largest scalar product
+  */
 }
 
 //____________________________________________________________________________
@@ -200,8 +193,8 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
   // unassigned RecParticles. We assign these RecPoints to TrackSegment and 
   // remove them from the list of "unassigned". 
   
-  AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
-  TObjArray * aECARecPoints = gime->ECARecPoints() ; 
+  /*AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
+   TObjArray * aECARecPoints = gime->ECARecPoints() ; 
   TObjArray * aPRERecPoints = gime->PRERecPoints() ; 
   TObjArray * aHCARecPoints = gime->HCARecPoints() ; 
   TClonesArray * trackSegments = gime->TrackSegments() ;   
@@ -248,7 +241,7 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
 	(dynamic_cast<AliEMCALTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++ ;
 	if (gDebug == 2 ) 
-	  Info("MakePairs", "ECAL section with PRE section") ; 	
+	  printf("MakePairs: ECAL section with PRE section") ; 	
 	ecaExist[linkPRE->GetECA()] = -1 ; //Mark ecal  that pre was found 
 	//mark PRE recpoint as already used 
 	preExist[linkPRE->GetOther()] = kFALSE ;
@@ -280,7 +273,7 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
 	if (found){
 	  ts->SetHCARecPoint( dynamic_cast<AliEMCALTowerRecPoint *>(aHCARecPoints->At(linkHCA->GetOther())) ) ;
 	  if (gDebug == 2 ) 
-	    Info("MakePairs", "ECAL section with PRE and HCAL sections") ;
+	    printf("MakePairs: ECAL section with PRE and HCAL sections") ;
 	} 	
 	if (!found) {
 	  new ((* trackSegments)[fNTrackSegments]) 
@@ -289,7 +282,7 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
 	(dynamic_cast<AliEMCALTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++ ;
 	if (gDebug == 2 ) 
-	  Info("MakePairs", "ECAL section with HCAL section") ; 	
+	  printf("MakePairs: ECAL section with HCAL section") ; 	
 	}
 	ecaExist[linkHCA->GetECA()] = -2 ; //Mark ecal  that hcal was found 
 	//mark HCAL recpoint as already used 
@@ -309,13 +302,14 @@ void  AliEMCALTrackSegmentMakerv1::MakePairs()
 	(dynamic_cast<AliEMCALTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++;    
 	if( gDebug == 2 ) 
-	  Info("MakePairs", "ECAL section alone") ; 
+	  printf("MakePairs: ECAL section alone") ; 
      } 
     }
   }
   delete [] ecaExist ; 
   delete [] preExist ; 
   delete [] hcaExist ; 
+  */
 }
 
 //____________________________________________________________________________
@@ -359,7 +353,7 @@ void  AliEMCALTrackSegmentMakerv1::Exec(Option_t * option)
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALTSMaker");
-    Info("Exec", "took %f seconds for making TS %f seconds per event", 
+    printf("Exec: took %f seconds for making TS %f seconds per event", 
 	 gBenchmark->GetCpuTime("EMCALTSMaker"), gBenchmark->GetCpuTime("EMCALTSMaker")/nevents) ;
   }
    Unload();
@@ -368,6 +362,7 @@ void  AliEMCALTrackSegmentMakerv1::Exec(Option_t * option)
 //____________________________________________________________________________
 void AliEMCALTrackSegmentMakerv1::Unload() 
 {
+  // Unloads the RecPoints and Tracks
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ;  
   gime->EmcalLoader()->UnloadRecPoints() ;
   gime->EmcalLoader()->UnloadTracks() ;
@@ -378,7 +373,7 @@ void AliEMCALTrackSegmentMakerv1::Print(Option_t * /*option*/)const
 {
   //  Print TrackSegmentMaker parameters
 
-  Info("Print", "TrackSegmentMakerv1 parameters:") ; 
+  printf("Print: TrackSegmentMakerv1 parameters:") ; 
   if( strcmp(GetName(), "") != 0 ) { 
     printf("Making Track segments with parameters:\n") ; 
     printf("    Allowed spred on the scalar product of two recpoints with same direction: %f\n", fClose) ;
@@ -425,17 +420,17 @@ void AliEMCALTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
   TClonesArray * trackSegments = AliEMCALGetter::Instance()->TrackSegments() ; 
 
 
-  Info("PrintTrackSegments", "Results from TrackSegmentMaker:") ; 
+  printf("PrintTrackSegments: Results from TrackSegmentMaker:") ; 
   printf("nevent: %d\n", gAlice->GetEvNumber()) ; 
   printf("        Found %d TrackSegments\n", trackSegments->GetEntriesFast() ); 
 
   if(strstr(option,"all")) {  // printing found TS
-    printf("TrackSegment#  ECAL RP#  PRE RP#   HCAL RP#  \n") ; 
+    printf("TrackSegment#  ECAL RP#  \n") ; 
     Int_t index;
     for (index = 0 ; index < fNTrackSegments ; index++) {
       AliEMCALTrackSegment * ts = (AliEMCALTrackSegment * )trackSegments->At(index) ; 
-      printf("   %d           %d        %d         %d \n", 
-	     ts->GetIndexInList(), ts->GetECAIndex(), ts->GetPREIndex(), ts->GetHCAIndex() ); 
+      printf("   %d           %d \n", 
+	     ts->GetIndexInList(), ts->GetECAIndex()); 
     }	
   }
 }

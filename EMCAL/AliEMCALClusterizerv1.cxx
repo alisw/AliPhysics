@@ -105,19 +105,10 @@ const TString AliEMCALClusterizerv1::BranchName() const
 }
 
 //____________________________________________________________________________
-Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Int_t where) const
+Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp) const
 {
-  //To be replased later by the method, reading individual parameters from the database
-  // where = 0 == PRE ; where = 1 == ECAL ; where = 2 == HCAL
-  if ( where == 0 ) // calibrate as PRE section
-    return -fADCpedestalPRE + amp * fADCchannelPRE ; 
-  else if (where == 1) //calibrate as ECA section 
-    return -fADCpedestalECA + amp * fADCchannelECA ;
-  else if (where == 2) //calibrate as HCA section
-    return -fADCpedestalHCA + amp * fADCchannelHCA ;
-  else 
-    Fatal("Calibrate", "Something went wrong!") ;
-  return -9999999. ; 
+  //To be replased later by the method, reading individual parameters from the database 
+  return -fADCpedestalECA + amp * fADCchannelECA ; 
 }
 
 //____________________________________________________________________________
@@ -142,7 +133,7 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
 
     GetCalibrationParameters() ;
 
-    fNumberOfPREClusters = fNumberOfECAClusters = fNumberOfHCAClusters = 0 ;
+    fNumberOfECAClusters = 0;
            
     MakeClusters() ;
 
@@ -154,17 +145,15 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
     if(strstr(option,"deb"))  
       PrintRecPoints(option) ;
 
-    //increment the total number of recpoints per run 
-    fRecPointsInRun += gime->PRERecPoints()->GetEntriesFast() ;  
+    //increment the total number of recpoints per run   
     fRecPointsInRun += gime->ECARecPoints()->GetEntriesFast() ;  
-    fRecPointsInRun += gime->HCARecPoints()->GetEntriesFast() ;  
   }
   
   Unload();
 
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALClusterizer");
-    Info("Exec", "took %f seconds for Clusterizing %f seconds per event", 
+    printf("Exec took %f seconds for Clusterizing %f seconds per event", 
 	 gBenchmark->GetCpuTime("EMCALClusterizer"), gBenchmark->GetCpuTime("EMCALClusterizer")/nevents ) ;
   }
 }
@@ -180,7 +169,6 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALTowerRecPoint * emcRP, AliEMCALDig
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   TClonesArray * digits = gime->Digits() ; 
   
-
   gMinuit->mncler();                     // Reset Minuit's list of paramters
   gMinuit->SetPrintLevel(-1) ;           // No Printout
   gMinuit->SetFCN(AliEMCALClusterizerv1::UnfoldingChiSquare) ;  
@@ -205,7 +193,7 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALTowerRecPoint * emcRP, AliEMCALDig
   for(iDigit = 0; iDigit < nDigits; iDigit++){
     digit = maxAt[iDigit]; 
 
-    Int_t relid[4] ;
+    Int_t relid[3] ;
     Float_t x = 0.;
     Float_t z = 0.;
     geom->AbsToRelNumbering(digit->GetId(), relid) ;
@@ -264,20 +252,15 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALTowerRecPoint * emcRP, AliEMCALDig
 //____________________________________________________________________________
 void AliEMCALClusterizerv1::GetCalibrationParameters() 
 {
+  // Gets the parameters for the calibration from the digitizer
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
 
   if ( !gime->Digitizer() ) 
     gime->LoadDigitizer();
-  AliEMCALDigitizer * dig = gime->Digitizer(); 
-   
-  fADCchannelPRE  = dig->GetPREchannel() ;
-  fADCpedestalPRE = dig->GetPREpedestal() ; 
+  AliEMCALDigitizer * dig = gime->Digitizer();  
 
   fADCchannelECA   = dig->GetECAchannel() ;
   fADCpedestalECA  = dig->GetECApedestal();
-
-  fADCchannelHCA   = dig->GetHCAchannel() ;
-  fADCpedestalHCA  = dig->GetHCApedestal();
 }
 
 //____________________________________________________________________________
@@ -300,25 +283,15 @@ void AliEMCALClusterizerv1::Init()
 
 //____________________________________________________________________________
 void AliEMCALClusterizerv1::InitParameters()
-{
-  fNumberOfPREClusters = fNumberOfECAClusters = fNumberOfHCAClusters = 0 ;   
-  fPREClusteringThreshold  = 0.0001; // must be adjusted according to the noise leve set by digitizer
+{ 
+  // Initializes the parameters for the Clusterizer
+  fNumberOfECAClusters = 0;
   fECAClusteringThreshold   = 0.0045;  // must be adjusted according to the noise leve set by digitizer
-  fHCAClusteringThreshold   = 0.001;  // must be adjusted according to the noise leve set by digitizer  
-  fPRELocMaxCut = 0.03 ;
   fECALocMaxCut = 0.03 ;
-  fHCALocMaxCut = 0.03 ;
-  
-  fPREW0    = 4.0 ;
   fECAW0     = 4.5 ;
-  fHCAW0     = 4.5 ;
-
   fTimeGate = 1.e-8 ; 
-  
   fToUnfold = kFALSE ;
-   
-  fRecPointsInRun          = 0 ;
- 
+  fRecPointsInRun  = 0 ;
 }
 
 //____________________________________________________________________________
@@ -335,37 +308,36 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
 
   Int_t rv = 0 ; 
 
-  Int_t relid1[4] ; 
+  Int_t relid1[3] ; 
   geom->AbsToRelNumbering(d1->GetId(), relid1) ; 
 
-  Int_t relid2[4] ; 
+  Int_t relid2[3] ; 
   geom->AbsToRelNumbering(d2->GetId(), relid2) ; 
   
-  if ( (relid1[0] == relid2[0]) && // inside the same EMCAL Arm  
-       (relid1[1]==relid2[1]) ) {  // and same tower section
-    Int_t rowdiff = TMath::Abs( relid1[2] - relid2[2] ) ;  
-    Int_t coldiff = TMath::Abs( relid1[3] - relid2[3] ) ;  
+  if ( (relid1[0] == relid2[0])){ // inside the same EMCAL Arm 
+    Int_t rowdiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
+    Int_t coldiff = TMath::Abs( relid1[2] - relid2[2] ) ;  
     
     if (( coldiff <= 1 )  && ( rowdiff <= 1 )){
-      if((relid1[1] != 0) || (TMath::Abs(d1->GetTime() - d2->GetTime() ) < fTimeGate))
-      rv = 1 ; 
+      if(TMath::Abs(d1->GetTime() - d2->GetTime() ) < fTimeGate)
+        rv = 1 ; 
     }
     else {
-      if((relid2[2] > relid1[2]) && (relid2[3] > relid1[3]+1)) 
+      if((relid2[1] > relid1[1]) && (relid2[2] > relid1[2]+1)) 
 	rv = 2; //  Difference in row numbers is too large to look further 
     }
 
   } 
   else {
     
-    if( (relid1[0] < relid2[0]) || (relid1[1] != relid2[1]) )  
+    if(relid1[0] < relid2[0])  
       rv=0 ;
   }
 
   if (gDebug == 2 ) 
-    Info("AreNeighbours", "neighbours=%d, id1=%d, relid1=%d,%d,%d,%d \n id2=%d, relid2=%d,%d,%d,%d", 
-	 rv, d1->GetId(), relid1[0], relid1[1], relid1[2], relid1[3], 
-	 d2->GetId(), relid2[0], relid2[1], relid2[2], relid2[3]) ;   
+    printf("AreNeighbours: neighbours=%d, id1=%d, relid1=%d,%d,%d \n id2=%d, relid2=%d,%d,%d ", 
+	 rv, d1->GetId(), relid1[0], relid1[1], relid1[2],
+	 d2->GetId(), relid2[0], relid2[1], relid2[2]) ;   
   
   return rv ; 
 }
@@ -373,6 +345,7 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
 //____________________________________________________________________________
 void AliEMCALClusterizerv1::Unload() 
 {
+  // Unloads the Digits and RecPoints
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   gime->EmcalLoader()->UnloadDigits() ; 
   gime->EmcalLoader()->UnloadRecPoints() ; 
@@ -387,25 +360,13 @@ void AliEMCALClusterizerv1::WriteRecPoints()
 
   AliEMCALGetter *gime = AliEMCALGetter::Instance() ; 
 
-  TObjArray * aPRERecPoints = gime->PRERecPoints() ; 
   TObjArray * aECARecPoints = gime->ECARecPoints() ; 
-  TObjArray * aHCARecPoints = gime->HCARecPoints() ; 
 
   TClonesArray * digits = gime->Digits() ; 
   TTree * treeR = gime->TreeR(); ; 
   
   Int_t index ;
 
-  //Evaluate position, dispersion and other RecPoint properties for PRE section
-  for(index = 0; index < aPRERecPoints->GetEntries(); index++)
-    (dynamic_cast<AliEMCALRecPoint *>(aPRERecPoints->At(index)))->EvalAll(fPREW0,digits)  ;
-  aPRERecPoints->Sort() ;
-  
-  for(index = 0; index < aPRERecPoints->GetEntries(); index++)
-    (dynamic_cast<AliEMCALRecPoint *>(aPRERecPoints->At(index)))->SetIndexInList(index) ;
-  
-  aPRERecPoints->Expand(aPRERecPoints->GetEntriesFast()) ;
-  
   //Evaluate position, dispersion and other RecPoint properties for EC section
   for(index = 0; index < aECARecPoints->GetEntries(); index++)
     (dynamic_cast<AliEMCALTowerRecPoint *>(aECARecPoints->At(index)))->EvalAll(fECAW0,digits) ;
@@ -417,35 +378,14 @@ void AliEMCALClusterizerv1::WriteRecPoints()
 
   aECARecPoints->Expand(aECARecPoints->GetEntriesFast()) ; 
   
-  //Evaluate position, dispersion and other RecPoint properties for HCA section
-  for(index = 0; index < aHCARecPoints->GetEntries(); index++)
-    (dynamic_cast<AliEMCALTowerRecPoint *>(aHCARecPoints->At(index)))->EvalAll(fHCAW0,digits) ;
-  
-  aHCARecPoints->Sort() ;
-
-  for(index = 0; index < aHCARecPoints->GetEntries(); index++)
-    (dynamic_cast<AliEMCALTowerRecPoint *>(aHCARecPoints->At(index)))->SetIndexInList(index) ;
-
-  aHCARecPoints->Expand(aHCARecPoints->GetEntriesFast()) ; 
- 
   Int_t bufferSize = 32000 ;    
   Int_t splitlevel = 0 ; 
-  
-  //PRE section branch 
-  TBranch * branchPRE = treeR->Branch("EMCALPRERP","TObjArray",&aPRERecPoints,bufferSize,splitlevel);
-  branchPRE->SetTitle(BranchName());
 
   //EC section branch
   TBranch * branchECA = treeR->Branch("EMCALECARP","TObjArray",&aECARecPoints,bufferSize,splitlevel);
   branchECA->SetTitle(BranchName());
 
-  //HCA section branch
-  TBranch * branchHCA = treeR->Branch("EMCALHCARP","TObjArray",&aHCARecPoints,bufferSize,splitlevel);
-  branchHCA->SetTitle(BranchName());
-
-  branchPRE->Fill() ;
   branchECA->Fill() ;
-  branchHCA->Fill() ;
 
   gime->WriteRecPoints("OVERWRITE");
   gime->WriteClusterizer("OVERWRITE");
@@ -461,99 +401,49 @@ void AliEMCALClusterizerv1::MakeClusters()
 
   AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
 
-
-  TObjArray * aPRERecPoints = gime->PRERecPoints() ; 
   TObjArray * aECARecPoints  = gime->ECARecPoints() ; 
-  TObjArray * aHCARecPoints  = gime->HCARecPoints() ; 
 
-  aPRERecPoints->Delete() ;
   aECARecPoints->Delete() ;
-  aHCARecPoints->Delete() ;
 
   TClonesArray * digits = gime->Digits() ; 
 
   TIter next(digits) ; 
   AliEMCALDigit * digit ; 
-  Int_t ndigECA=0, ndigPRE=0, ndigHCA=0 ; 
+  Int_t ndigECA=0 ; 
 
   // count the number of digits in ECA section
   while ( (digit = dynamic_cast<AliEMCALDigit *>(next())) ) { // scan over the list of digits 
     if (geom->IsInECA(digit->GetId())) 
       ndigECA++ ; 
-    else if (geom->IsInPRE(digit->GetId()))
-      ndigPRE++; 
-    else if (geom->IsInHCA(digit->GetId()))
-      ndigHCA++;
     else {
       Error("MakeClusters", "id = %d is a wrong ID!", digit->GetId()) ; 
       abort() ;
     }
   }
-
-  // add amplitude of PRE and ECA sections
-  Int_t digECA ; 
-  for (digECA = 0 ; digECA < ndigECA ; digECA++) {
-    digit = dynamic_cast<AliEMCALDigit *>(digits->At(digECA)) ;
-    Int_t digPRE ;
-    for (digPRE = ndigECA ; digPRE < ndigECA+ndigPRE ; digPRE++) {
-      AliEMCALDigit *  digitPRE = dynamic_cast<AliEMCALDigit *>(digits->At(digPRE)) ;
-      if ( geom->AreInSameTower(digit->GetId(), digitPRE->GetId()) ){
-	Float_t  amp = static_cast<Float_t>(digit->GetAmp()) + geom->GetSummationFraction() * static_cast<Float_t>(digitPRE->GetAmp()) + 0.5 ; 
-	digit->SetAmp(static_cast<Int_t>(amp)) ; 
-	break ; 
-      }
-    }
-    if (gDebug) 
-      Info("MakeClusters","id = %d amp = %d", digit->GetId(), digit->GetAmp()) ; 
-  }  
-
   TClonesArray * digitsC =  dynamic_cast<TClonesArray*>(digits->Clone()) ;
-  
-  
   // Clusterization starts  
   
   TIter nextdigit(digitsC) ; 
-  Bool_t notremovedECA = kTRUE, notremovedPRE = kTRUE ;
   
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigit())) ) { // scan over the list of digitsC
     AliEMCALRecPoint * clu = 0 ; 
     
-    TArrayI clusterPREdigitslist(50), clusterECAdigitslist(50), clusterHCAdigitslist(50);   
+    TArrayI clusterECAdigitslist(50);   
  
-    Bool_t inPRE = kFALSE, inECA = kFALSE, inHCA = kFALSE ;
-    if( geom->IsInPRE(digit->GetId()) ) {
-      inPRE = kTRUE ; 
-    }
-    else if( geom->IsInECA(digit->GetId()) ) {
-      inECA = kTRUE ;
-    }
-    else if( geom->IsInHCA(digit->GetId()) ) {
-      inHCA = kTRUE ;
-    }
-    
+    Bool_t inECA = kFALSE;
+    if( geom->IsInECA(digit->GetId()) ) {
+       inECA = kTRUE ;
+     }    
     if (gDebug == 2) { 
-      if (inPRE)
-	Info("MakeClusters","id = %d, ene = %f , thre = %f ", 
-	     digit->GetId(),Calibrate(digit->GetAmp(), 0), fPREClusteringThreshold) ;  
       if (inECA)
-	Info("MakeClusters","id = %d, ene = %f , thre = %f", 
-	     digit->GetId(),Calibrate(digit->GetAmp(), 1), fECAClusteringThreshold) ;  
-      if (inHCA)
-	Info("MakeClusters","id = %d, ene = %f , thre = %f", 
-	     digit->GetId(),Calibrate(digit->GetAmp(), 2), fHCAClusteringThreshold ) ;  
+	printf("MakeClusters: id = %d, ene = %f , thre = %f", 
+	     digit->GetId(),Calibrate(digit->GetAmp()), fECAClusteringThreshold) ;  
     }
-    
-    if ( (inPRE  && (Calibrate(digit->GetAmp(), 0) > fPREClusteringThreshold  )) || 
-	 (inECA && (Calibrate(digit->GetAmp(), 1) > fECAClusteringThreshold  ))  || 
-	 (inHCA && (Calibrate(digit->GetAmp(), 2) > fHCAClusteringThreshold  )) ) {
-      
-      Int_t  iDigitInPRECluster = 0, iDigitInECACluster = 0, iDigitInHCACluster = 0; 
-      Int_t where ; // PRE = 0, ECAl = 1, HCAL = 2
+    if (inECA && (Calibrate(digit->GetAmp()) > fECAClusteringThreshold  ) ){
 
-      // Find the seed in each of the section ECAL/PRE/HCAL
-
+    Int_t iDigitInECACluster = 0;
+      // Find the seed
       if( geom->IsInECA(digit->GetId()) ) {   
-	where = 1 ; // to tell we are in ECAL
 	// start a new Tower RecPoint
 	if(fNumberOfECAClusters >= aECARecPoints->GetSize()) 
 	  aECARecPoints->Expand(2*fNumberOfECAClusters+1) ;
@@ -562,96 +452,31 @@ void AliEMCALClusterizerv1::MakeClusters()
 	aECARecPoints->AddAt(rp, fNumberOfECAClusters) ;
 	clu = dynamic_cast<AliEMCALTowerRecPoint *>(aECARecPoints->At(fNumberOfECAClusters)) ; 
   	fNumberOfECAClusters++ ; 
-	clu->AddDigit(*digit, Calibrate(digit->GetAmp(), where)) ; 
+	clu->AddDigit(*digit, Calibrate(digit->GetAmp())) ; 
 	clusterECAdigitslist[iDigitInECACluster] = digit->GetIndexInList() ;	
 	iDigitInECACluster++ ; 
 	digitsC->Remove(digit) ; 
 	if (gDebug == 2 ) 
-	  Info("MakeClusters","OK id = %d, ene = %f , thre = %f ", digit->GetId(),Calibrate(digit->GetAmp(), 1), fECAClusteringThreshold) ;  
+	  printf("MakeClusters: OK id = %d, ene = %f , thre = %f ", digit->GetId(),Calibrate(digit->GetAmp()), fECAClusteringThreshold) ;  
 	
-      } 
-      else if( geom->IsInPRE(digit->GetId()) ) { 
-	where = 0 ; // to tell we are in PRE
-	// start a new Pre Shower cluster
-	if(fNumberOfPREClusters >= aPRERecPoints->GetSize()) 
-	  aPRERecPoints->Expand(2*fNumberOfPREClusters+1);
-	AliEMCALTowerRecPoint * rp = new AliEMCALTowerRecPoint("") ;	
-	rp->SetPRE() ; 
-	aPRERecPoints->AddAt(rp, fNumberOfPREClusters) ;
-	clu =  dynamic_cast<AliEMCALTowerRecPoint *>(aPRERecPoints->At(fNumberOfPREClusters))  ;  
-	fNumberOfPREClusters++ ; 
-	clu->AddDigit(*digit, Calibrate(digit->GetAmp(), where));	
-	clusterPREdigitslist[iDigitInPRECluster] = digit->GetIndexInList()  ;	
-	iDigitInPRECluster++ ; 
-	digitsC->Remove(digit) ;
-	if (gDebug == 2 ) 
-	  Info("MakeClusters","OK id = %d, ene = %f , thre = %f ", digit->GetId(),Calibrate(digit->GetAmp(), 0), fPREClusteringThreshold) ;  
-	
-	nextdigit.Reset() ;
-
-	// Here we remove remaining ECA digits, which cannot make a cluster
-	
-	if( notremovedECA ) { 
-	  while( ( digit = dynamic_cast<AliEMCALDigit *>(nextdigit()) ) ) {
-	    if( geom->IsInECA(digit->GetId()) )
-	      digitsC->Remove(digit) ;
-	    else 
-	      break ; 
-	  }
-	  notremovedECA = kFALSE ;
-	}
-
-      } 
-      else if( geom->IsInHCA(digit->GetId()) ) { 
-	where = 2 ; // to tell we are in HCAL
-	// start a new HCAL cluster
-	if(fNumberOfHCAClusters >= aHCARecPoints->GetSize()) 
-	  aHCARecPoints->Expand(2*fNumberOfHCAClusters+1);
-	AliEMCALTowerRecPoint * rp = new AliEMCALTowerRecPoint("") ;	
-	rp->SetHCA() ; 
-	aHCARecPoints->AddAt(rp, fNumberOfHCAClusters) ;
-	clu =  dynamic_cast<AliEMCALTowerRecPoint *>(aHCARecPoints->At(fNumberOfHCAClusters))  ;  
-	fNumberOfHCAClusters++ ; 
-	clu->AddDigit(*digit, Calibrate(digit->GetAmp(), where));	
-	clusterHCAdigitslist[iDigitInHCACluster] = digit->GetIndexInList()  ;	
-	iDigitInHCACluster++ ; 
-	digitsC->Remove(digit) ;
-	if (gDebug == 2 ) 
-	  Info("MakeClusters","OK id = %d, ene = %f , thre = %f ", digit->GetId(),Calibrate(digit->GetAmp(), 2), fHCAClusteringThreshold) ;  
- 
-	nextdigit.Reset() ;
-   
-	// Here we remove remaining PRE digits, which cannot make a cluster
-	
-	if( notremovedPRE ) { 
-	  while( ( digit = dynamic_cast<AliEMCALDigit *>(nextdigit()) ) ) {
-	    if( geom->IsInPRE(digit->GetId()) )
-	      digitsC->Remove(digit) ;
-	    else 
-	      break ; 
-	  }
-	  notremovedPRE = kFALSE ;
-	}	
-      }        
-      
+      }    
       nextdigit.Reset() ;
       
       AliEMCALDigit * digitN ; 
       Int_t index = 0 ;
 
-      // Do the Clustering in each of the three section ECAL/PRE/HCAL
+      // Do the Clustering
 
       while (index < iDigitInECACluster){ // scan over digits already in cluster 
 	digit =  (AliEMCALDigit*)digits->At(clusterECAdigitslist[index])  ;      
 	index++ ; 
         while ( (digitN = (AliEMCALDigit *)nextdigit()) ) { // scan over the reduced list of digits 
-	  Int_t ineb = AreNeighbours(digit, digitN);       // call (digit,digitN) in THAT oder !!!!!
-	  // Info("MakeClusters","id1 = %d, id2 = %d , neighbours = %d", digit->GetId(), digitN->GetId(), ineb) ;  
+	  Int_t ineb = AreNeighbours(digit, digitN);       // call (digit,digitN) in THAT oder !!!!! 
          switch (ineb ) {
           case 0 :   // not a neighbour
 	    break ;
 	  case 1 :   // are neighbours 
-	    clu->AddDigit(*digitN, Calibrate( digitN->GetAmp(), 1) ) ;
+	    clu->AddDigit(*digitN, Calibrate( digitN->GetAmp()) ) ;
 	    clusterECAdigitslist[iDigitInECACluster] = digitN->GetIndexInList() ; 
 	    iDigitInECACluster++ ; 
 	    digitsC->Remove(digitN) ;
@@ -665,65 +490,13 @@ void AliEMCALClusterizerv1::MakeClusters()
       endofloop1: ;
 	nextdigit.Reset() ; 
       } // loop over ECA cluster
-      
-      index = 0 ; 
-      while (index < iDigitInPRECluster){ // scan over digits already in cluster 
-	digit =  (AliEMCALDigit*)digits->At(clusterPREdigitslist[index])  ;      
-	index++ ; 
-        while ( (digitN = (AliEMCALDigit *)nextdigit()) ) { // scan over the reduced list of digits 
-	  Int_t ineb = AreNeighbours(digit, digitN);       // call (digit,digitN) in THAT oder !!!!!
-	  //	  Info("MakeClusters","id1 = %d, id2 = %d , neighbours = %d", digit->GetId(), digitN->GetId(), ineb) ;  
-	  switch (ineb ) {
-          case 0 :   // not a neighbour
-	    break ;
-	  case 1 :   // are neighbours 
-	    clu->AddDigit(*digitN, Calibrate( digitN->GetAmp(), 0) ) ;
-	    clusterPREdigitslist[iDigitInPRECluster] = digitN->GetIndexInList() ; 
-	    iDigitInPRECluster++ ; 
-	    digitsC->Remove(digitN) ;
-	    break ;
-          case 2 :   // too far from each other
-	    goto endofloop2;   
-	  } // switch
-	  
-	} // while digitN
-	
-      endofloop2: ;
-       	nextdigit.Reset() ; 
-      } // loop over PRE cluster
-    
-      index = 0 ; 
-      while (index < iDigitInHCACluster){ // scan over digits already in cluster 
-	digit =  (AliEMCALDigit*)digits->At(clusterHCAdigitslist[index])  ;      
-	index++ ; 
-        while ( (digitN = (AliEMCALDigit *)nextdigit()) ) { // scan over the reduced list of digits 
-	  Int_t ineb = AreNeighbours(digit, digitN);       // call (digit,digitN) in THAT oder !!!!!
-	  //Info("MakeClusters","id1 = %d, id2 = %d , neighbours = %d", digit->GetId(), digitN->GetId(), ineb) ;  
-	  switch (ineb ) {
-          case 0 :   // not a neighbour
-	    break ;
-	  case 1 :   // are neighbours 
-	    clu->AddDigit(*digitN, Calibrate( digitN->GetAmp(), 2) ) ;
-	    clusterHCAdigitslist[iDigitInHCACluster] = digitN->GetIndexInList() ; 
-	    iDigitInHCACluster++ ; 
-	    digitsC->Remove(digitN) ;
-	    break ;
-          case 2 :   // too far from each other
-	    goto endofloop3;   
-	  } // switch  
-	} // while digitN
-	
-      endofloop3: ;
-	nextdigit.Reset() ; 
-      } // loop over HCA cluster
-
     } // energy theshold     
   } // while digit  
   delete digitsC ;
 }
 
 //____________________________________________________________________________
-void AliEMCALClusterizerv1::MakeUnfolding()
+void AliEMCALClusterizerv1::MakeUnfolding() const
 {
   Fatal("AliEMCALClusterizerv1::MakeUnfolding", "--> Unfolding not implemented") ;
  
@@ -745,7 +518,7 @@ Double_t  AliEMCALClusterizerv1::ShowerShape(Double_t r)
 void  AliEMCALClusterizerv1::UnfoldCluster(AliEMCALTowerRecPoint * /*iniTower*/, 
 					   Int_t /*nMax*/, 
 					   AliEMCALDigit ** /*maxAt*/, 
-					   Float_t * /*maxAtEnergy*/)
+					   Float_t * /*maxAtEnergy*/) const
 {
   // Performs the unfolding of a cluster with nMax overlapping showers 
   
@@ -774,98 +547,46 @@ void AliEMCALClusterizerv1::Print(Option_t * /*option*/)const
     
     // Print parameters
  
-    TString taskName(GetName()) ; 
+    TString taskName(GetName()) ;
     taskName.ReplaceAll(Version(), "") ;
     
-    message += "--------------- " ; 
-    message += taskName.Data() ; 
-    message += " " ; 
-    message += GetTitle() ; 
-    message += "-----------\n" ;  
-    message += "Clusterizing digits from the file: " ; 
-    message += taskName.Data() ;  
-    message += "\n                           Branch: " ; 
-    message += GetName() ;  
-    message += "\n                       Pre Shower Clustering threshold = " ; 
-    message += fPREClusteringThreshold ;
-    message += "\n                       Pre Shower  Local Maximum cut    = " ;
-    message += fPRELocMaxCut ;
-    message += "\n                       Pre Shower Logarothmic weight   = " ; 
-    message += fPREW0 ;
-    message += "\n                       ECA Clustering threshold = " ; 
-    message += fECAClusteringThreshold ; 
-    message += "\n                       ECA Local Maximum cut    = " ;
-    message += fECALocMaxCut ; 
-    message += "\n                       ECA Logarothmic weight   = " ;
-    message += fECAW0 ;
-    message += "\n                       Pre Shower Clustering threshold = " ; 
-    message += fHCAClusteringThreshold ; 
-    message += "\n                       HCA Local Maximum cut    = " ;
-    message += fHCALocMaxCut ; 
-    message += "\n                       HCA Logarothmic weight   = " ;
-    message += fHCAW0 ;
+    printf("--------------- "); 
+    printf(taskName.Data()) ; 
+    printf(" "); 
+    printf(GetTitle()) ; 
+    printf("-----------\n");  
+    printf("Clusterizing digits from the file: "); 
+    printf(taskName.Data());  
+    printf("\n                           Branch: "); 
+    printf(GetName()); 
+    printf("\n                       ECA Local Maximum cut    = %f", fECALocMaxCut); 
+    printf("\n                       ECA Logarothmic weight   = %f", fECAW0); 
     if(fToUnfold)
-      message +="\nUnfolding on\n" ;
+      printf("\nUnfolding on\n");
     else
-      message += "\nUnfolding off\n";
+      printf("\nUnfolding off\n");
     
-    message += "------------------------------------------------------------------" ; 
+    printf("------------------------------------------------------------------"); 
   }
   else
-    message += "AliEMCALClusterizerv1 not initialized " ;
-  
-  Info("Print", message.Data() ) ; 
+    printf("AliEMCALClusterizerv1 not initialized ") ;
 }
 
 //____________________________________________________________________________
 void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
 {
-  // Prints list of RecPoints produced at the current pass of AliEMCALClusterizer
-
-  TObjArray * aPRERecPoints = AliEMCALGetter::Instance()->PRERecPoints() ; 
+  // Prints list of RecPoints produced at the current pass of AliEMCALClusterizer 
   TObjArray * aECARecPoints = AliEMCALGetter::Instance()->ECARecPoints() ; 
-  TObjArray * aHCARecPoints = AliEMCALGetter::Instance()->HCARecPoints() ; 
-
-  Info("PrintRecPoints", "Clusterization result:") ; 
+  printf("PrintRecPoints: Clusterization result:") ; 
   
   printf("event # %d\n", gAlice->GetEvNumber() ) ;
-  printf("           Found %d PRE SHOWER RecPoints, %d ECA Rec Points and %d HCA Rec Points\n ", 
-	 aPRERecPoints->GetEntriesFast(), aECARecPoints->GetEntriesFast(), aHCARecPoints->GetEntriesFast() ) ; 
+  printf("           Found %d ECA Rec Points\n ", 
+	 aECARecPoints->GetEntriesFast()) ; 
 
-  fRecPointsInRun +=  aPRERecPoints->GetEntriesFast() ; 
   fRecPointsInRun +=  aECARecPoints->GetEntriesFast() ; 
-  fRecPointsInRun +=  aHCARecPoints->GetEntriesFast() ; 
   
   if(strstr(option,"all")) {
-
-    //Pre shower recPoints
-
-    printf("-----------------------------------------------------------------------\n") ;
-    printf("Clusters in PRE section\n") ;
-    printf("Index    Ene(GeV) Multi Module     phi     r   theta    X    Y      Z   Dispersion Lambda 1   Lambda 2  # of prim  Primaries list\n") ;      
-
-    Int_t index ;
-    
-    for (index = 0 ; index < aPRERecPoints->GetEntries() ; index++) {
-      AliEMCALTowerRecPoint * rp = dynamic_cast<AliEMCALTowerRecPoint *>(aPRERecPoints->At(index)) ; 
-      TVector3  globalpos;  
-      rp->GetGlobalPosition(globalpos);
-      TVector3  localpos;  
-      rp->GetLocalPosition(localpos);
-      Float_t lambda[2]; 
-      rp->GetElipsAxis(lambda);
-      Int_t * primaries;
-      Int_t nprimaries;
-      primaries = rp->GetPrimaries(nprimaries);
-      printf("\n%6d  %8.4f  %3d     %2d     %4.1f    %4.1f %4.1f  %4.1f %4.1f %4.1f    %4.1f   %4f  %4f    %2d     : ", 
-	     rp->GetIndexInList(), rp->GetEnergy(), rp->GetMultiplicity(), rp->GetEMCALArm(), 
-	     globalpos.X(), globalpos.Y(), globalpos.Z(), localpos.X(), localpos.Y(), localpos.Z(), 
-	     rp->GetDispersion(), lambda[0], lambda[1], nprimaries) ; 
-      for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-	printf("%d ", primaries[iprimary] ) ; 
-      }  	 
-    }
-    
+    Int_t index =0;
     printf("\n-----------------------------------------------------------------------\n") ;
     printf("Clusters in ECAL section\n") ;
     printf("Index    Ene(GeV) Multi Module     phi     r   theta    X    Y      Z   Dispersion Lambda 1   Lambda 2  # of prim  Primaries list\n") ;      
@@ -889,31 +610,6 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
 	printf("%d ", primaries[iprimary] ) ; 
       } 
     }
-
-    printf("\n-----------------------------------------------------------------------\n") ;
-    printf("Clusters in HCAL section\n") ;
-    printf("Index    Ene(GeV) Multi Module     phi     r   theta    X    Y      Z   Dispersion Lambda 1   Lambda 2  # of prim  Primaries list\n") ;      
-    
-    for (index = 0 ; index < aHCARecPoints->GetEntries() ; index++) {
-      AliEMCALTowerRecPoint * rp = dynamic_cast<AliEMCALTowerRecPoint * >(aHCARecPoints->At(index)) ; 
-      TVector3  globalpos;  
-      rp->GetGlobalPosition(globalpos);
-      TVector3  localpos;  
-      rp->GetLocalPosition(localpos);
-      Float_t lambda[2]; 
-      rp->GetElipsAxis(lambda);
-      Int_t * primaries; 
-      Int_t nprimaries;
-      primaries = rp->GetPrimaries(nprimaries);
-      printf("\n%6d  %8.4f  %3d     %2d     %4.1f    %4.1f %4.1f  %4.1f %4.1f %4.1f    %4.1f   %4f  %4f    %2d     : ", 
-	     rp->GetIndexInList(), rp->GetEnergy(), rp->GetMultiplicity(), rp->GetEMCALArm(), 
-	     globalpos.X(), globalpos.Y(), globalpos.Z(), localpos.X(), localpos.Y(), localpos.Z(), 
-	     rp->GetDispersion(), lambda[0], lambda[1], nprimaries) ;      
-      for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-	printf("%d ", primaries[iprimary] ) ; 
-      } 
-    }
-
     printf("\n-----------------------------------------------------------------------\n");
   }
 }

@@ -48,8 +48,6 @@ AliEMCAL::AliEMCAL():AliDetector()
 {
   // Default ctor 
   fName="EMCAL";
-  //fQATask = 0;
-  fTreeQA = 0;
   fGeom = 0 ; 
 }
 
@@ -57,9 +55,6 @@ AliEMCAL::AliEMCAL():AliDetector()
 AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
 {
   //   ctor : title is used to identify the layout
-  
-  //fQATask = 0;
-  fTreeQA = 0;
   fGeom = 0;
 }
 
@@ -95,11 +90,6 @@ void AliEMCAL::CreateMaterials()
   AliMaterial(3, "Al$", 26.98, 13., 2.7, 8.9, 999., 0, 0) ;
   // ---         Absorption length is ignored ^
 
-  // --- Copper ---
-  AliMaterial(4, "Cu$", 63.546, 29, 8.96, 1.43, 14.8, 0, 0) ; 
-  // ---         Absorption length is ignored ^
-
-
   // DEFINITION OF THE TRACKING MEDIA
 
   // for EMCAL: idtmed[1599->1698] equivalent to fIdtmed[0->100]
@@ -118,7 +108,6 @@ void AliEMCAL::CreateMaterials()
   AliMedium(1, "Lead      $", 1, 0,
 	     isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.1, 0.1, 0, 0) ;
 
- 
  // The scintillator of the CPV made of Polystyrene scintillator                   -> idtmed[1601]
   AliMedium(2, "CPV scint.   $", 2, 1,
             isxfld, sxmgmx, 10.0, 0.001, 0.1, 0.001, 0.001, 0, 0) ;
@@ -126,11 +115,6 @@ void AliEMCAL::CreateMaterials()
   // Various Aluminium parts made of Al                                            -> idtmed[1602]
   AliMedium(3, "Al parts     $", 3, 0,
              isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
-
-  // Copper for HCal (post shower)                                                 -> idtmed[1603]
-  AliMedium(4, "Copper       $", 4, 0,
-             isxfld, sxmgmx, 10.0, 0.1, 0.1, 0.001, 0.001, 0, 0) ;
-
 
 
 // --- Set decent energy thresholds for gamma and electron tracking
@@ -152,19 +136,10 @@ void AliEMCAL::CreateMaterials()
   gMC->Gstpar(idtmed[1602], "DCUTE",0.00001) ;
   gMC->Gstpar(idtmed[1602], "DCUTM",0.00001) ;
 
-// --- in copper parts ---
-  gMC->Gstpar(idtmed[1603], "LOSS",3.) ;
-  gMC->Gstpar(idtmed[1603], "DRAY",1.) ;
-  gMC->Gstpar(idtmed[1603], "DCUTE",0.00001) ;
-  gMC->Gstpar(idtmed[1603], "DCUTM",0.00001) ;
-
-
-
 // --- and finally thresholds for photons and electrons in the scintillator ---
   gMC->Gstpar(idtmed[1601],"CUTGAM",0.00008) ;
   gMC->Gstpar(idtmed[1601],"CUTELE",0.001) ;
   gMC->Gstpar(idtmed[1601],"BCUTE",0.0001) ;
-
 
 }
 
@@ -195,7 +170,6 @@ void AliEMCAL::SetTreeAddress()
       { 
 	if (fHits == 0x0) 
 	  fHits= new TClonesArray("AliEMCALHit",1000);
-	//Info("SetTreeAddress","<%s> Setting Hits Address",GetName());
 	branch->SetAddress(&fHits);
       }
     else
@@ -203,36 +177,6 @@ void AliEMCAL::SetTreeAddress()
 	Warning("SetTreeAddress","<%s> Failed",GetName());
       }
   }
-}
-//____________________________________________________________________________
-void AliEMCAL::WriteQA()
-{
-  
-  // Make TreeQA in the output file. 
-  
-  if(fTreeQA == 0)
-    fTreeQA = new TTree("TreeQA", "QA Alarms") ;    
-  // Create Alarms branches
-  Int_t bufferSize = 32000 ;    
-  Int_t splitlevel = 0 ; 
-  
-  TFolder* topfold = GetLoader()->GetTopFolder(); //get top aliroot folder; skowron
-  TString emcalqafn(AliConfig::Instance()->GetQAFolderName()+"/"); //get name of QAaut folder relative to top event; skowron
-  emcalqafn+=GetName(); //hard wired string!!! add the detector name to the pathname; skowron 
-  TFolder * alarmsF = (TFolder*)topfold->FindObjectAny(emcalqafn); //get the folder
-  
-  if (alarmsF == 0x0)
-    {
-      Error("WriteQA","Can not find folder with qa alarms");
-      return;
-    }
-  TString branchName(alarmsF->GetName());
-  TBranch * alarmsBranch = fTreeQA->Branch(branchName,"TFolder", &alarmsF, bufferSize, splitlevel);
-  TString branchTitle = branchName + " QA alarms" ; 
-  alarmsBranch->SetTitle(branchTitle);
-  alarmsBranch->Fill() ; 
-  
-  //fTreeQA
 }
 
 //____________________________________________________________________________

@@ -89,9 +89,7 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) : TTask(sd
 
   fA             = sd.fA ;
   fB             = sd.fB ;
-  fPREPrimThreshold = sd.fPREPrimThreshold ;
   fECPrimThreshold  = sd.fECPrimThreshold ;
-  fHCPrimThreshold  = sd.fHCPrimThreshold ;
   fSDigitsInRun  = sd.fSDigitsInRun ;
   SetName(sd.GetName()) ; 
   SetTitle(sd.GetTitle()) ; 
@@ -137,24 +135,20 @@ void AliEMCALSDigitizer::InitParameters()
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ;
   const AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
   if (geom->GetSampling() == 0.) {
-    Error("InitParameters", "Sampling factor not set !") ; 
+    printf("InitParameters: Sampling factor not set !") ; 
     abort() ;
   }
   else
-    Info("InitParameters", "Sampling factor set to %f\n", geom->GetSampling()) ; 
+    printf("InitParameters: Sampling factor set to %f\n", geom->GetSampling()) ; 
   
   // this threshold corresponds approximately to 100 MeV
-  fECPrimThreshold     = 100E-3 / ( geom->GetSampling() * ( geom->GetNPRLayers() + geom->GetNECLayers()) ) * geom->GetNECLayers() ;
-  fPREPrimThreshold    = 100E-3 / ( geom->GetSampling() * ( geom->GetNPRLayers() + geom->GetNECLayers()) ) * geom->GetNPRLayers() ; 
-  fHCPrimThreshold     = fECPrimThreshold/5. ; // 5 is totally arbitrary
-
+  fECPrimThreshold     = 100E-3 / ( geom->GetSampling() * geom->GetNECLayers()) * geom->GetNECLayers() ;
 }
 
 //____________________________________________________________________________
 void AliEMCALSDigitizer::Exec(Option_t *option) 
 { 
-  // Collects all hits in the section (PRE/ECAL/HCAL) of the same tower into digit
-  
+  // Collects all hit of the same tower into digits
   if (strstr(option, "print") ) {
     Print() ; 
     return ; 
@@ -169,12 +163,11 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   if (!fInit) { // to prevent overwrite existing file
     Error( "Exec", "Give a version name different from %s", fEventFolderName.Data() ) ;
     return ;
-  }
-  
+    }
+
   Int_t nevents = gime->MaxEvent() ; 
   Int_t ievent ;   
   for(ievent = 0; ievent < nevents; ievent++){     
-  
     gime->Event(ievent,"H") ;  
 
     TTree * treeS = gime->TreeS(); 
@@ -187,7 +180,6 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     // Attention nPrim is the number of primaries tracked by Geant 
     // and this number could be different to the number of Primaries in TreeK;
     Int_t iprim ;
-
     for ( iprim = 0 ; iprim < nPrim ; iprim++ ) { 
       //=========== Get the EMCAL branch from Hits Tree for the Primary iprim
       gime->Track(iprim) ;
@@ -199,20 +191,8 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 	Bool_t newsdigit = kTRUE; 
 
 	// Assign primary number only if deposited energy is significant
-
 	AliEMCALGeometry * geom = gime->EMCALGeometry() ; 
-
-	if( geom->IsInPRE(hit->GetId()) )  
-	  if( hit->GetEnergy() > fPREPrimThreshold )
-	    curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
-					    hit->GetIparent(), hit->GetId(), 
-					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
-	  else
-	    curSDigit =  new AliEMCALDigit( -1               , 
-					    -1               ,
-					    hit->GetId(), 
-					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
-	else if( geom->IsInECA(hit->GetId()) )
+	if( geom->IsInECA(hit->GetId()) ){
 	  if( hit->GetEnergy() >  fECPrimThreshold )
 	    curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
 					    hit->GetIparent(), hit->GetId(), 
@@ -222,34 +202,29 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 					    -1               ,
 					    hit->GetId(), 
 					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
-	else if( geom->IsInHCA(hit->GetId()) )
-	  if( hit->GetEnergy() >  fHCPrimThreshold )
-	    
-	    curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
-					    hit->GetIparent(), hit->GetId(), 
-					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
-	  else
-	    curSDigit =  new AliEMCALDigit( -1               , 
-					    -1               ,
-					    hit->GetId(), 
-					    Digitize(hit->GetEnergy()), hit->GetTime() ) ;
-	
+	}
+	else{
+	  newsdigit = kFALSE;
+	}
+
 	Int_t check = 0 ;
+
 	for(check= 0; check < nSdigits ; check++) {
 	  sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(check)) ;
-	  if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same ECAL/HCAL/preshower tower ?              
+          if(curSDigit != 0){
+	    if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same ECAL tower ?              
 	    *sdigit = *sdigit + *curSDigit;
 	    newsdigit = kFALSE;
+	    }
 	  }
 	}
-	if (newsdigit) { 
+	if (newsdigit) {
 	  new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
 	  nSdigits++ ;  
 	}
 	delete curSDigit ; 
-      }  // loop over all hits (hit = deposited energy/layer/entering particle)
+      }  // loop over all hits (hit = deposited energy/entering particle)
     } // loop over iprim
-    
     sdigits->Sort() ;
     
     nSdigits = sdigits->GetEntriesFast() ;
@@ -269,7 +244,6 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     }
     
     // Now write SDigits    
-    
     //First list of sdigits
 
     Int_t bufferSize = 32000 ;    
@@ -293,7 +267,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALSDigitizer"); 
-    Info("Exec", "took %f seconds for SDigitizing %f seconds per event", 
+    printf("Exec: took %f seconds for SDigitizing %f seconds per event", 
 	 gBenchmark->GetCpuTime("EMCALSDigitizer"), gBenchmark->GetCpuTime("EMCALSDigitizer") ) ; 
   }
 }
@@ -303,13 +277,11 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 void AliEMCALSDigitizer::Print()const
 { 
   // Prints parameters of SDigitizer
-  Info("Print", "\n------------------- %s -------------", GetName() ) ; 
+  printf("Print: \n------------------- %s -------------", GetName() ) ; 
   printf("   Writing SDigits to branch with title  %s\n", fEventFolderName.Data()) ;
   printf("   with digitization parameters  A = %f\n", fA) ; 
   printf("                                 B = %f\n", fB) ;
-  printf("   Threshold for PRE Primary assignment= %f\n", fPREPrimThreshold)  ; 
   printf("   Threshold for EC Primary assignment= %f\n", fECPrimThreshold)  ; 
-  printf("   Threshold for HC Primary assignment= %f\n", fHCPrimThreshold)  ; 
   printf("---------------------------------------------------\n") ;
 
 }
@@ -319,11 +291,8 @@ Bool_t AliEMCALSDigitizer::operator==( AliEMCALSDigitizer const &sd )const
 {
   // Equal operator.
   // SDititizers are equal if their pedestal, slope and threshold are equal
-
   if( (fA==sd.fA)&&(fB==sd.fB)&&
-      (fECPrimThreshold==sd.fECPrimThreshold) &&
-      (fHCPrimThreshold==sd.fHCPrimThreshold) &&
-      (fPREPrimThreshold==sd.fPREPrimThreshold))
+      (fECPrimThreshold==sd.fECPrimThreshold))
     return kTRUE ;
   else
     return kFALSE ;
@@ -338,33 +307,30 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   const TClonesArray * sdigits = gime->SDigits() ; 
   
-  TString message("\n") ;  
-  message += "event " ; 
-  message += gAlice->GetEvNumber() ;
-  message += "\n      Number of entries in SDigits list " ;
-  message += sdigits->GetEntriesFast() ; 
+  printf("\n") ;  
+  printf("event %i", gAlice->GetEvNumber()) ;
+  printf("\n      Number of entries in SDigits list %i", sdigits->GetEntriesFast()); 
   if(strstr(option,"all")||strstr(option,"EMC")){
     
     //loop over digits
     AliEMCALDigit * digit;
-    message += "\n   Id  Amplitude    Time          Index Nprim: Primaries list \n" ;    
+    printf("\n   Id  Amplitude    Time          Index Nprim: Primaries list \n") ;    
     Int_t index ;
     char * tempo = new char[8192]; 
     for (index = 0 ; index < sdigits->GetEntries() ; index++) {
       digit = dynamic_cast<AliEMCALDigit *>( sdigits->At(index) ) ;
       sprintf(tempo, "\n%6d  %8d    %6.5e %4d      %2d :",
 	      digit->GetId(), digit->GetAmp(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
-      message += tempo ; 
+      printf(tempo); 
       
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
 	sprintf(tempo, "%d ",digit->GetPrimary(iprimary+1) ) ; 
-	message += tempo ; 
+	printf(tempo); 
       }  	 
     }
     delete tempo ;
   }
-  Info("PrintSDigits", message.Data() ) ; 
 }
 
 //____________________________________________________________________________ 

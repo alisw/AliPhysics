@@ -112,13 +112,13 @@ void Config()
 //     gener->Init();
 
     AliGenBox *gener = new AliGenBox(1);
-    gener->SetMomentumRange(10,11.);
+    gener->SetMomentumRange(50.,100.);
     gener->SetPhiRange(60.0,180.0);
     gener->SetThetaRange(EtaToTheta(-0.7), EtaToTheta(0.7));
 
     gener->SetOrigin(0,0,0);        //vertex position
     gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
-    gener->SetPart(22);
+    gener->SetPart(kGamma);
     gener->Init();
  
     // 

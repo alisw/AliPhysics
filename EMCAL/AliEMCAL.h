@@ -32,18 +32,15 @@ class AliEMCAL : public AliDetector {
     Fatal("cpy ctor", "not implemented") ;  
   }
   virtual ~AliEMCAL() ; 
-  virtual void   AddHit(Int_t, Int_t*, Float_t *) {
+  virtual void   AddHit(Int_t, Int_t*, Float_t *) const{
     Fatal("AddHit(Int_t, Int_t*, Float_t *", "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
   }
   virtual void  CreateMaterials() ;   
-  virtual void  FinishRun() {WriteQA();}                  
+  virtual void  FinishRun() {}                  
   virtual AliEMCALGeometry * GetGeometry() const ;   
-  virtual Int_t   IsVersion(void) const = 0 ; 
-  //AliEMCALQAChecker * QAChecker() const {return fQATask;}  
-  virtual void  SetTreeAddress() ;
-  virtual TTree * TreeQA() const {return fTreeQA; }                
-  virtual const TString Version() const {return TString(" ") ; }  
-  virtual void WriteQA() ; 
+  virtual Int_t   IsVersion(void) const = 0 ;   
+  virtual void  SetTreeAddress() ;              
+  virtual const TString Version() const {return TString(" ") ; }   
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/)  {
     Fatal("operator =", "not implemented") ;  return *this ; }
  
@@ -53,12 +50,9 @@ class AliEMCAL : public AliDetector {
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
 
 protected:
-
-  //AliEMCALQAChecker * fQATask ; //! PHOS checkers container
-  TTree * fTreeQA ;            // the QA tree that contains the alarms
   AliEMCALGeometry * fGeom ;   // the geometry object
 
-  ClassDef(AliEMCAL,4) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,5) // Electromagnetic calorimeter (base class)
 
 } ;
 

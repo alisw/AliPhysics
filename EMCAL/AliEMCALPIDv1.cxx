@@ -134,7 +134,7 @@ void  AliEMCALPIDv1::Exec(Option_t * option)
   }
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALPID");
-    Info("Exec", "took %f seconds for PID %f seconds per event", 
+    printf("Exec: took %f seconds for PID %f seconds per event", 
 	 gBenchmark->GetCpuTime("EMCALPID"),  
 	 gBenchmark->GetCpuTime("EMCALPID")/nevents) ;
   } 
@@ -149,10 +149,8 @@ void  AliEMCALPIDv1::MakeRecParticles(){
   
   AliEMCALGetter * gime = AliEMCALGetter::Instance() ; 
   TObjArray * aECARecPoints = gime->ECARecPoints() ; 
-  TObjArray * aPRERecPoints = gime->PRERecPoints() ; 
-  TObjArray * aHCARecPoints = gime->HCARecPoints() ; 
   TClonesArray * trackSegments = gime->TrackSegments() ; 
-  if ( !aECARecPoints || !aPRERecPoints || !aHCARecPoints || !trackSegments ) {
+  if ( !aECARecPoints || !trackSegments ) {
     Fatal("MakeRecParticles", "RecPoints or TrackSegments not found !") ;  
   }
   TClonesArray * recParticles  = gime->RecParticles() ; 
@@ -172,14 +170,6 @@ void  AliEMCALPIDv1::MakeRecParticles(){
     AliEMCALTowerRecPoint * eca = 0 ;
     if(ts->GetECAIndex()>=0)
       eca = dynamic_cast<AliEMCALTowerRecPoint *>(aECARecPoints->At(ts->GetECAIndex())) ;
-    
-    AliEMCALTowerRecPoint * pre = 0 ;
-    if(ts->GetPREIndex()>=0)
-      pre = dynamic_cast<AliEMCALTowerRecPoint *>(aPRERecPoints->At(ts->GetPREIndex())) ;
-    
-    AliEMCALTowerRecPoint * hca = 0 ;
-    if(ts->GetHCAIndex()>=0)
-      hca = dynamic_cast<AliEMCALTowerRecPoint *>(aHCARecPoints->At(ts->GetHCAIndex())) ;
 
     // Now set type (reconstructed) of the particle
 
@@ -232,7 +222,7 @@ void  AliEMCALPIDv1:: Print(Option_t * /*option*/) const
 {
   // Print the parameters used for the particle type identification
 
-    Info("Print", "=============== AliEMCALPID1 ================") ;
+    printf("Print: =============== AliEMCALPID1 ================") ;
     printf("Making PID\n");
     printf("    Pricipal analysis file from 0.5 to 100 %s\n", fFileName.Data() ) ; 
     printf("    Name of parameters file     %s\n", fFileNamePar.Data() )  ;
@@ -247,28 +237,22 @@ void AliEMCALPIDv1::PrintRecParticles(Option_t * option)
 
   TClonesArray * recParticles = gime->RecParticles() ; 
 
-  TString message ; 
-  message  = "\nevent " ;
-  message += gAlice->GetEvNumber() ; 
-  message += "       found " ; 
-  message += recParticles->GetEntriesFast(); 
-  message += " RecParticles\n" ; 
+  printf("\nevent %i", gAlice->GetEvNumber()); 
+  printf("       found %i", recParticles->GetEntriesFast()); 
+  printf(" RecParticles\n"); 
 
   if(strstr(option,"all")) {  // printing found TS
-    message += "\n  PARTICLE         Index    \n" ; 
+    printf("\n  PARTICLE         Index    \n"); 
     
     Int_t index ;
     for (index = 0 ; index < recParticles->GetEntries() ; index++) {
       AliEMCALRecParticle * rp = (AliEMCALRecParticle * ) recParticles->At(index) ;       
-      message += "\n" ;
-      message += rp->Name().Data() ;  
-      message += " " ;
-      message += rp->GetIndexInList() ;  
-      message += " " ;
-      message += rp->GetType()  ;
+      printf("\n");
+      printf(rp->Name().Data());  
+      printf(" %i", rp->GetIndexInList());  
+      printf(" %i", rp->GetType());
     }
   }
-  Info("Print", message.Data() ) ; 
 }
 
 //____________________________________________________________________________

@@ -39,7 +39,7 @@ public:
 
   virtual void   Exec(Option_t * option) ;
   Float_t HowClose(AliEMCALTowerRecPoint * ec, AliEMCALTowerRecPoint * rp, Bool_t &toofar) const ;
-          void   MakeLinks() const;      //Evaluates distances(links) between PRE/EC/HC recpoints
+          void   MakeLinks() const;      //Evaluates distances(links) between recpoints
           void   MakePairs() ;           //Finds pairs(triplets) with smallest link
   virtual void   Print(Option_t * option) const ;
   virtual const char * Version() const { return "tsm-v1" ; }  
@@ -65,8 +65,6 @@ private:
   Float_t fClose ;               // Spread within which 2 recpoints are declared to have the same direction 
   Bool_t  fDefaultInit ;         //! Says if the task was created by defaut ctor (only parameters are initialized)
   Int_t fNTrackSegments ;        // number of track segments found 
-  TClonesArray * fPRELinkArray  ;//! Contains the links ECAL-PRE
-  TClonesArray * fHCALinkArray  ;//! Contains the links ECAL-HCAL
   Int_t fTrackSegmentsInRun ;    //! Total number of track segments in one run
 
   ClassDef( AliEMCALTrackSegmentMakerv1,3)  // Implementation version 1 of algorithm class to make EMCAL track segments 

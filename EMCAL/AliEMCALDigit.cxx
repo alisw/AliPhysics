@@ -172,7 +172,7 @@ Int_t AliEMCALDigit::GetPrimary(Int_t index) const
 {
   // retrieves the primary particle number given its index in the list 
   Int_t rv = -1 ;
-  if ( index <= fNprimary && index > 0){
+  if ( (index <= fNprimary) && (index > 0)){
     rv = fPrimary[index-1] ;
   } 
 
@@ -195,7 +195,7 @@ Int_t AliEMCALDigit::GetIparent(Int_t index) const
 
 //____________________________________________________________________________
 void AliEMCALDigit::ShiftPrimary(Int_t shift){
-  //shifts primary nimber to BIG offset, to separate primary in different TreeK
+  //shifts primary number to BIG offset, to separate primary in different TreeK
   Int_t index  ;
   for(index = 0; index <fNprimary; index++ ){
     fPrimary[index] = fPrimary[index]+ shift * 10000000   ;}

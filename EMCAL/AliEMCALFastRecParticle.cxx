@@ -17,9 +17,12 @@
 
 //_________________________________________________________________________
 //  A  Particle modified by EMCAL response and produced by AliEMCALvFast
+//*--
 //  To become a general class of AliRoot ?    
-//               
+//*--               
 //*-- Author: Yves Schutz (SUBATECH)
+//*--
+/////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 
@@ -264,7 +267,7 @@ void AliEMCALFastRecParticle::Print(Option_t * /*opt*/)const
 {
   // Print the type, energy and momentum of the reconstructed particle
   
-  Info("Print", "Summary:") ; 
+  printf("Print Summary:") ; 
   printf("AliEMCALFastRecParticle > type is  %s\n", Name().Data()) ; 
   printf("                      Energy = %f\n", fE) ; 
   printf("                         Px     = %f\n", fPx) ; 

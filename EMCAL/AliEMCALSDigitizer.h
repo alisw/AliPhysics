@@ -51,9 +51,7 @@ private:
 private:
   Float_t fA ;                     // Pedestal parameter
   Float_t fB ;                     // Slope Digitizition parameters
-  Float_t fPREPrimThreshold ;      // To store primary if Pre Shower Elos > threshold
   Float_t fECPrimThreshold ;       // To store primary if EC Shower Elos > threshold
-  Float_t fHCPrimThreshold ;       // To store primary if HC Shower Elos > threshold
   Bool_t  fDefaultInit;            //! Says if the task was created by defaut ctor (only parameters are initialized)
   TString fEventFolderName;        // event folder name
   Bool_t  fInit ;                  //! tells if initialisation wennt OK, will revent exec if not

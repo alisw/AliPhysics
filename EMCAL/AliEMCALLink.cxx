@@ -29,16 +29,15 @@
 
 ClassImp(AliEMCALLink)
 //____________________________________________________________________________
-  AliEMCALLink::AliEMCALLink(Float_t prod, Int_t eca, Int_t rp, unsigned int what)
+  AliEMCALLink::AliEMCALLink(Float_t prod, Int_t eca, Int_t rp)
 {
   // ctor
 
   if (gDebug == 2 ) 
-    Info("ctor", "prod = %f, ec=%d , rp=%d, what=%d", prod, eca, rp, what) ;  
+    printf("ctor: prod = %f, ec=%d , rp=%d", prod, eca, rp) ;  
   fProd   = prod ;  
   fECAN   = eca ;
   fOtherN = rp ;
-  fWhat   = what ;
 }
 
 //____________________________________________________________________________

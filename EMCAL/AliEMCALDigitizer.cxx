@@ -129,12 +129,6 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d) : AliDigitizer
   fADCchannelEC       = d.fADCchannelEC ; 
   fADCpedestalEC      = d.fADCpedestalEC ; 
   fNADCEC             = d.fNADCEC ;
-  fADCchannelHC       = d.fADCchannelHC ; 
-  fADCpedestalHC      = d.fADCpedestalHC ; 
-  fNADCHC             = d.fNADCHC ;
-  fADCchannelPRE      = d.fADCchannelPRE ; 
-  fADCpedestalPRE     = d.fADCpedestalPRE ; 
-  fNADCPRE            = d.fNADCPRE ;
   fEventFolderName    = d.fEventFolderName;
  }
 
@@ -178,12 +172,10 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
   digits->Clear() ;
 
   const AliEMCALGeometry *geom = gime->EMCALGeometry() ; 
-  //Making digits with noise, first EMC
-  Int_t nEMC = 0 ; 
-  if (geom->GetNHCLayers() > 0 )
-    nEMC = 3*geom->GetNPhi()*geom->GetNZ(); //max number of digits possible (Preshower, ECAL, HCAL)
-  else 
-    nEMC = 2*geom->GetNPhi()*geom->GetNZ(); //max number of digits possible (Preshower, ECAL)
+
+  //Making digits from noise first
+  Int_t nEMC = 0 ;
+  nEMC = geom->GetNPhi()*geom->GetNZ(); //max number of digits possible
   
   Int_t absID ;
 
@@ -245,7 +237,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
       Float_t b = TMath::Abs( a /fTimeSignalLength) ;
       //Mark the beginning of the signal
       new((*ticks)[contrib++]) AliEMCALTick(digit->GetTime(),0, b);  
-      //Mark the end of the ignal     
+      //Mark the end of the signal     
       new((*ticks)[contrib++]) AliEMCALTick(digit->GetTime()+fTimeSignalLength, -a, -b);
       
       // loop over input
@@ -255,7 +247,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
 	else
 	  curSDigit = 0 ;
 	//May be several digits will contribute from the same input
-	while(curSDigit && curSDigit->GetId() == absID){	   
+	while(curSDigit && (curSDigit->GetId() == absID)){	   
 	  //Shift primary to separate primaries belonging different inputs
 	  Int_t primaryoffset ;
 	  if(fManager)
@@ -298,13 +290,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
       }
     }
     // add the noise now
-    
-    if (geom->IsInECA(digit->GetId())) 
-      amp += TMath::Abs(gRandom->Gaus(0., fPinNoise)) ;
-    else if (geom->IsInPRE(digit->GetId())) 
-      amp += TMath::Abs(gRandom->Gaus(0., fPinNoise/100.)) ; // arbitrarely divide by 100, assuming that the gain of APD will be higher
-    else if (geom->IsInHCA(digit->GetId())) 
-      amp += TMath::Abs(gRandom->Gaus(0., fPinNoise/10.)) ;  // arbitrarely divide by 10, assuming that the gain of APD will be higher
+    amp += TMath::Abs(gRandom->Gaus(0., fPinNoise)) ;
     digit->SetAmp(sDigitizer->Digitize(amp)) ;  
   }
   
@@ -316,15 +302,7 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
   //remove digits below thresholds
   for(i = 0 ; i < nEMC ; i++){
     digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
-    Float_t threshold = 0 ; 
-
-    if (geom->IsInECA(digit->GetId())) 
-      threshold = fDigitThreshold ; 
-    else  if (geom->IsInPRE(digit->GetId()))
-      threshold = fDigitThreshold / 100. ; // arbitrary see before when noise is added
-    else  if (geom->IsInHCA(digit->GetId()))
-      threshold = fDigitThreshold / 10. ; // arbitrary see before when noise is added    
-
+    Float_t threshold = fDigitThreshold ; 
     if(sDigitizer->Calibrate( digit->GetAmp() ) < threshold)
       digits->RemoveAt(i) ;
     else 
@@ -341,33 +319,18 @@ void AliEMCALDigitizer::Digitize(const Int_t event)
     digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ; 
     digit->SetIndexInList(i) ; 
     Float_t energy = sDigitizer->Calibrate(digit->GetAmp()) ;
-    digit->SetAmp(DigitizeEnergy(energy,digit->GetId()) ) ;
+    digit->SetAmp(DigitizeEnergy(energy) ) ;
   }
 }
 
 //____________________________________________________________________________
 
-Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
+Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy)
 { 
-  Int_t channel = -999;
-  AliEMCALGeometry * geom = AliEMCALGetter::Instance()->EMCALGeometry() ; 
-  
-  if(geom->IsInPRE(absId)){        //digitize as PRE section
-    channel =  static_cast<Int_t>(TMath::Ceil( (energy + fADCpedestalPRE)/fADCchannelPRE ))  ;
-    if(channel > fNADCPRE ) 
-      channel =  fNADCPRE ;
-  }
-  else if(geom->IsInECA(absId)){  //digitize as ECAL section
-    channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
-    if(channel > fNADCEC ) 
-      channel =  fNADCEC ;
-  } 
-  else if(geom->IsInHCA(absId)){  //digitize as HCAL section
-    channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalHC)/fADCchannelHC ))  ;
-    if(channel > fNADCHC ) 
-      channel =  fNADCHC ;
-  }
-  
+  Int_t channel = -999; 
+  channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
+  if(channel > fNADCEC ) 
+    channel =  fNADCEC ;   
   return channel ;
 }
 
@@ -415,7 +378,7 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALDigitizer");
-    Info("Exec", "took %f seconds for Digitizing %f seconds per event", 
+    printf("Exec: took %f seconds for Digitizing %f seconds per event", 
 	 gBenchmark->GetCpuTime("EMCALDigitizer"), gBenchmark->GetCpuTime("EMCALDigitizer")/nevents ) ;
   } 
 }
@@ -499,14 +462,6 @@ void AliEMCALDigitizer::InitParameters()
   fADCpedestalEC   = 0.005 ;                       // GeV
   fNADCEC          = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
 
-  fADCchannelHC    = 0.000220;                     // width of one ADC channel in GeV
-  fADCpedestalHC   = 0.005 ;                       // GeV
-  fNADCHC          = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC
-
-  fADCchannelPRE   = 0.0000300;                    // width of one ADC channel in Pre Shower
-  fADCpedestalPRE  = 0.005 ;                       // GeV 
-  fNADCPRE         = (Int_t) TMath::Power(2,12);   // number of channels in Pre ShowerADC
-
   fTimeThreshold      = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
  
 }
@@ -567,7 +522,7 @@ void AliEMCALDigitizer::MixWith(const TString alirunFileName, const TString even
 void AliEMCALDigitizer::Print()const 
 {
   // Print Digitizer's parameters
-  Info("Print", "\n------------------- %s -------------", GetName() ) ; 
+  printf("Print: \n------------------- %s -------------", GetName() ) ; 
   if( strcmp(fEventFolderName.Data(), "") != 0 ){
     printf(" Writing Digits to branch with title  %s\n", fEventFolderName.Data()) ;
     
@@ -597,7 +552,7 @@ void AliEMCALDigitizer::Print()const
     printf("---------------------------------------------------\n")  ;
   }
   else
-    Info("Print", "AliEMCALDigitizer not initialized") ; 
+    printf("Print: AliEMCALDigitizer not initialized") ; 
 }
 
 //__________________________________________________________________
@@ -606,7 +561,7 @@ void AliEMCALDigitizer::PrintDigits(Option_t * option){
   AliEMCALGetter * gime = AliEMCALGetter::Instance(GetTitle(), fEventFolderName) ; 
   TClonesArray * digits = gime->Digits() ;
   
-  Info("PrintDigits", "%d", digits->GetEntriesFast()) ; 
+  printf("PrintDigits: %d", digits->GetEntriesFast()) ; 
   printf("\nevent %d", gAlice->GetEvNumber()) ;
   printf("\n       Number of entries in Digits list %d", digits->GetEntriesFast() )  ;  
   
@@ -639,7 +594,7 @@ Float_t AliEMCALDigitizer::TimeOfNoise(void)
 //__________________________________________________________________
 void AliEMCALDigitizer::Unload() 
 {  
-  
+  // Unloads the SDigits and Digits
   Int_t i ; 
   for(i = 1 ; i < fInput ; i++){
     TString tempo(fEventNames[i]) ; 

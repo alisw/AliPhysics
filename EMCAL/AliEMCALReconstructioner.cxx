@@ -183,30 +183,29 @@ AliEMCALReconstructioner::~AliEMCALReconstructioner()
 void AliEMCALReconstructioner::Print(Option_t * option)const {
   // Print reconstructioner data  
 
-  TString message("\n") ; 
+  printf("\n") ; 
 
-  message += " Reconstruction of the header file " ; 
-  message += fHeaderFileName.Data() ;
-  message += "\n with the following modules:\n" ;
+  printf(" Reconstruction of the header file "); 
+  printf(fHeaderFileName.Data());
+  printf("\n with the following modules:\n");
 
   if(fSDigitizer->IsActive()){
-     message += "   (+)   " ; 
-     message += fSDigitizer->GetName() ; 
-     message +=" to branch : " ; 
-     message += fSDigitsBranch.Data() ; 
+     printf("   (+)   "); 
+     printf(fSDigitizer->GetName()); 
+     printf(" to branch : "); 
+     printf(fSDigitsBranch.Data()); 
   }
   if(fDigitizer->IsActive()){
-    message += "\n   (+)   " ; 
-    message += fDigitizer->GetName() ; 
-    message += " to branch : " ; 
-    message += fDigitsBranch.Data() ; 
+    printf("\n   (+)   "); 
+    printf(fDigitizer->GetName()); 
+    printf(" to branch : "); 
+    printf(fDigitsBranch.Data()); 
   }
   
   if(fClusterizer->IsActive()){
-    message += "\n   (+)   " ; 
-    message += fClusterizer->GetName() ; 
-    message += " to branch : " ; 
-    message += fRecPointBranch.Data() ; 
-  }
-  Info("Print", message.Data() ) ; 
+    printf("\n   (+)   "); 
+    printf(fClusterizer->GetName()); 
+    printf(" to branch : "); 
+    printf(fRecPointBranch.Data()); 
+  } 
 }

@@ -31,33 +31,24 @@ public:
   virtual Float_t GetTowerLocalMaxCut()const {Warning("GetTowerLocalMaxCut", "Not Defined") ; return 0. ; }
   virtual Float_t GetTowerLogWeight()const {Warning("GetTowerLogWeight", "Not Defined") ; return 0. ; }
   virtual Float_t GetTimeGate() const {Warning("GetTimeGate", "Not Defined") ; return 0. ; }
-  virtual Float_t GetPreShoClusteringThreshold()const {Warning("GetPreShoClusteringThreshold", "Not Defined") ; return 0. ; }
-  virtual Float_t GetPreShoLocalMaxCut()const {Warning("GetPreShoLocalMaxCut", "Not Defined") ; return 0. ; }
-  virtual Float_t GetPreShoLogWeight()const {Warning("GetPreShoLogWeight", "Not Defined") ; return 0. ; }
   virtual const char *  GetRecPointsBranch() const {Warning("GetRecPointsBranch", "Not Defined") ; return 0 ; }
   virtual const Int_t GetRecPointsInRun()  const {Warning("GetRecPointsInRun", "Not Defined") ; return 0 ; }
   virtual const char *  GetDigitsBranch() const  {Warning("GetDigitsBranch", "Not Defined") ; return 0 ; }
 
-  virtual void MakeClusters() {Warning("MakeClusters", "Not Defined") ; }
+  virtual void MakeClusters() const {Warning("MakeClusters", "Not Defined") ; }
   virtual void Print(Option_t * /*option*/)const {Warning("Print", "Not Defined") ; }
 
   virtual void SetECAClusteringThreshold(Float_t) = 0;
   virtual void SetECALocalMaxCut(Float_t)         = 0;
   virtual void SetECALogWeight(Float_t)           = 0;
-  virtual void SetHCAClusteringThreshold(Float_t) = 0;
-  virtual void SetHCALocalMaxCut(Float_t)         = 0;
-  virtual void SetHCALogWeight(Float_t)           = 0;
   virtual void SetTimeGate(Float_t)               = 0;
-  virtual void SetPREClusteringThreshold(Float_t) = 0;
-  virtual void SetPRELocalMaxCut(Float_t)         = 0;
-  virtual void SetPRELogWeight(Float_t)           = 0;
   virtual void SetUnfolding(Bool_t)               = 0;
   virtual const char * Version() const {Warning("Version", "Not Defined") ; return 0 ; } 
 
 protected:
   TString fEventFolderName ;  // event folder name
 
-  ClassDef(AliEMCALClusterizer,3)  // Clusterization algorithm class 
+  ClassDef(AliEMCALClusterizer,4)  // Clusterization algorithm class 
 
 } ;
 

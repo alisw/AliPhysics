@@ -28,31 +28,18 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
-#include "AliEMCALTrackSegment.h" 
+#include "AliEMCALTrackSegment.h"
 
 ClassImp(AliEMCALTrackSegment)
 
 //____________________________________________________________________________
-AliEMCALTrackSegment::AliEMCALTrackSegment( AliEMCALTowerRecPoint * eca, AliEMCALTowerRecPoint * pre, AliEMCALTowerRecPoint * hca)
+AliEMCALTrackSegment::AliEMCALTrackSegment( AliEMCALTowerRecPoint * eca)
 {
   // ctor
-
-  if( pre )   
-    fPRERecPoint =  pre->GetIndexInList() ;
-  else 
-    fPRERecPoint = -1 ;
-
   if( eca )   
     fECARecPoint =  eca->GetIndexInList() ;
   else 
     fECARecPoint = -1 ;
-
-  if( hca )   
-    fHCARecPoint =  hca->GetIndexInList() ;
-  else 
-    fHCARecPoint = -1 ;
-
   fIndexInList = -1 ;
 }
 
@@ -72,9 +59,7 @@ void AliEMCALTrackSegment::Copy(TObject & obj)
   // Copy of a track segment into another track segment
 
    TObject::Copy(obj) ;
-   ( (AliEMCALTrackSegment &)obj ).fPRERecPoint = fPRERecPoint ; 
    ( (AliEMCALTrackSegment &)obj ).fECARecPoint = fECARecPoint ; 
-   ( (AliEMCALTrackSegment &)obj ).fHCARecPoint = fHCARecPoint ; 
    ( (AliEMCALTrackSegment &)obj ).fIndexInList = fIndexInList ; 
 }
 
@@ -82,38 +67,10 @@ void AliEMCALTrackSegment::Copy(TObject & obj)
 void AliEMCALTrackSegment::Print(Option_t *) const
 {
   // Print all information on this track Segment
-  
-  
-  Info("Print", "TrackSegment information:") ; 
+  printf("Print: TrackSegment information:") ; 
   printf("--------AliEMCALTrackSegment-------- \n");
   printf("Stored at position %d\n", fIndexInList) ;
-  if (fPRERecPoint) 
-    printf("PRE RecPoint #     %d\n", fPRERecPoint) ;
   if (fECARecPoint) 
     printf("EC RecPoint  #     %d\n", fECARecPoint) ;
-  if (fHCARecPoint) 
-    printf("HC RecPoint  #     %d\n", fHCARecPoint) ;
-
-  printf("------------------------------------ \n") ; 
-  
-}
-
-//____________________________________________________________________________
-void AliEMCALTrackSegment::SetPRERecPoint(AliEMCALRecPoint * pre) 
-{
-  // gives an id from its position in the list
-  if( pre )  
-    fPRERecPoint = pre->GetIndexInList() ;
- else 
-    fPRERecPoint = -1 ;
-}
-
-//____________________________________________________________________________
-void AliEMCALTrackSegment::SetHCARecPoint(AliEMCALRecPoint * hca) 
-{
-  // gives an id from its position in the list
-  if( hca )  
-    fHCARecPoint = hca->GetIndexInList() ;
- else 
-    fHCARecPoint = -1 ;
+  printf("------------------------------------ \n") ;  
 }

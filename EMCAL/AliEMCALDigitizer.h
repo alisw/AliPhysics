@@ -46,10 +46,6 @@ public:
   const Float_t GetTimeResolution() const { return fTimeResolution ; }
   const Float_t GetECAchannel()     const { return fADCchannelEC ; }
   const Float_t GetECApedestal()    const { return fADCpedestalEC ; }
-  const Float_t GetHCAchannel()     const { return fADCchannelHC ; }
-  const Float_t GetHCApedestal()    const { return fADCpedestalHC ; }
-  const Float_t GetPREchannel()     const { return fADCchannelPRE ; }
-  const Float_t GetPREpedestal()    const { return fADCpedestalPRE ; }
 
   void    SetDigitThreshold(Float_t EMCThreshold)  {fDigitThreshold = EMCThreshold;}
   void    SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
@@ -77,7 +73,7 @@ private:
 
   //Calculate the time of crossing of the threshold by front edge
   Float_t FrontEdgeTime(TClonesArray * ticks) ;
-  Int_t   DigitizeEnergy(Float_t energy, Int_t absId) ;
+  Int_t   DigitizeEnergy(Float_t energy) ;
 
 private:
   
@@ -100,12 +96,6 @@ private:
   Float_t fADCchannelEC ;         // width of one ADC channel in EC section (GeV)
   Float_t fADCpedestalEC ;        //
   Int_t   fNADCEC ;               // number of channels in EC section ADC
-  Float_t fADCchannelHC ;         // width of one ADC channel in HC section (GeV)
-  Float_t fADCpedestalHC ;        //
-  Int_t   fNADCHC ;               // number of channels in HC section ADC
-  Float_t fADCchannelPRE ;        // width of one ADC channel in PRE section (GeV)
-  Float_t fADCpedestalPRE ;       // 
-  Int_t fNADCPRE ;                // number of channels in PRE section ADC
 
   TString fEventFolderName;         // skowron: name of EFN to read data from in stand alone mode
 

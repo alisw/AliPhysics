@@ -47,8 +47,6 @@ class AliEMCALRecPoint : public AliRecPoint {
                                                       return fTracksList ; }
   virtual Bool_t  IsEmc(void)const { return kTRUE ;  }
   const Bool_t IsInECA(void) const { return fECASection ; } 
-  const Bool_t IsInHCA(void) const { return fHCASection ; } 
-  const Bool_t IsInPRE(void) const { return fPRESection ; } 
   virtual Bool_t  IsSortable() const { 
     // tells that this is a sortable object
     return kTRUE ; 
@@ -59,8 +57,6 @@ class AliEMCALRecPoint : public AliRecPoint {
   } 
   
   void SetECA() { fECASection = kTRUE ; } 
-  void SetHCA() { fHCASection = kTRUE ; } 
-  void SetPRE()  { fPRESection  = kTRUE ; } 
   AliEMCALRecPoint & operator = (const AliEMCALRecPoint & )  {
     Fatal("operator =", "not implemented") ;
     return *this ; 
@@ -72,8 +68,6 @@ protected:
   Float_t fTheta ; // theta angle in Alice
   Float_t fPhi ;   // phi angle in Alice
   Bool_t  fECASection ; // tells if the recpoint is in ECAL section 
-  Bool_t  fHCASection ; // tells if the recpoint is in HCAL section 
-  Bool_t  fPRESection ;  // tells if the recpoint is in PRE section 
 
   ClassDef(AliEMCALRecPoint,3) // RecPoint for EMCAL (Base Class)
  

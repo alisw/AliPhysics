@@ -47,7 +47,7 @@ AliEMCALRecPoint::AliEMCALRecPoint()
   fMaxTrack = 0 ;
   fTheta = fPhi = 0. ; 
   fEMCALArm = 0;
-  fPRESection = fECASection = fHCASection = kFALSE ; 
+  fECASection = kFALSE ; 
 }
 
 //____________________________________________________________________________
@@ -113,7 +113,7 @@ void AliEMCALRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t)
     AliEMCALGeometry * emcalgeom =  (AliEMCALGetter::Instance())->EMCALGeometry() ;
 
     Int_t iDigit;
-    Int_t relid[4] ;
+    Int_t relid[3] ;
   
     const Int_t kMulDigit=AliEMCALRecPoint::GetDigitsMultiplicity() ;
     Float_t * xi = new Float_t [kMulDigit] ; 
@@ -183,7 +183,7 @@ void AliEMCALRecPoint::EvalEMCALArm(AliEMCALDigit * digit)
 
 
   if( fEMCALArm == 0){
-  Int_t relid[4] ; 
+  Int_t relid[3] ; 
   
   AliEMCALGeometry * emcalgeom = (AliEMCALGetter::Instance())->EMCALGeometry();
 
@@ -251,10 +251,6 @@ void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos) const
   gpos.SetX(fPhi) ;
   if ( IsInECA() ) 
     gpos.SetY(emcalgeom->GetIP2ECASection()) ;
-  else if ( IsInPRE() )
-    gpos.SetY(emcalgeom->GetIP2PRESection()) ;
-  else if ( IsInHCA() )
-    gpos.SetY(emcalgeom->GetIP2HCASection()) ;
   else 
     Fatal("GetGlobalPosition", "Unexpected tower section") ; 
   gpos.SetZ(fTheta) ; 

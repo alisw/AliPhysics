@@ -9,7 +9,7 @@
 //  EMCAL digit: 
 // 
 //  A  Digit is the sum of energy in a Tower (Hit sum) and stores information, about primaries
-//  and enterring particle contributing to a Digit
+//  and entering particle contributing to a Digit
 //
 //*-- Author: Sahal Yacoob (LBL)
 // based on : AliPHOSDigit
@@ -51,7 +51,7 @@ class AliEMCALDigit : public AliDigitNew {
   void    SetAmp(Int_t amp) { fAmp= amp ; } 
   void    SetId(Int_t id) {fId = id ;}
   void    SetTime(Float_t time) {fTime = time ;}
-  void    ShiftPrimary(Int_t shift); // shift to semarate different TreeK in merging
+  void    ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
  
  private: 
 

@@ -41,22 +41,12 @@ public:
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
 
-  virtual Float_t Calibrate(Int_t amp, Int_t where)const ;  // Tranforms Amp to energy 
+  virtual Float_t Calibrate(Int_t amp)const ;  // Tranforms Amp to energy 
 
-  virtual void    GetNumberOfClustersFound(int * numb )const{ numb[0] = fNumberOfPREClusters ; 
-                                                              numb[1] = fNumberOfECAClusters ; 
-                                                              numb[2] = fNumberOfHCAClusters ; }
-
-  virtual Float_t GetPREClusteringThreshold()const{ return fPREClusteringThreshold;  } 
-  virtual Float_t GetECAClusteringThreshold()const{ return fECAClusteringThreshold;}
-  virtual Float_t GetHCAClusteringThreshold()const{ return fHCAClusteringThreshold;}
-
-  virtual Float_t GetPRELocalMaxCut()const       { return fPRELocMaxCut;} 
-  virtual Float_t GetPREShoLogWeight()const      { return fPREW0;}  
+  virtual void    GetNumberOfClustersFound(int numb )const{ numb = fNumberOfECAClusters ;} 
+  virtual Float_t GetECAClusteringThreshold()const{ return fECAClusteringThreshold;}  
   virtual Float_t GetECALocalMaxCut()const       { return fECALocMaxCut;} 
-  virtual Float_t GetECALogWeight()const         { return fECAW0;}  
-  virtual Float_t GetHCALocalMaxCut()const       { return fHCALocMaxCut;} 
-  virtual Float_t GetHCALogWeight()const         { return fHCAW0;}  
+  virtual Float_t GetECALogWeight()const         { return fECAW0;}   
 
   virtual Float_t GetTimeGate() const            { return fTimeGate ; }
   virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
@@ -69,13 +59,7 @@ public:
   virtual void SetECAClusteringThreshold(Float_t cluth)  { fECAClusteringThreshold = cluth ; }
   virtual void SetECALocalMaxCut(Float_t cut)            { fECALocMaxCut = cut ; }
   virtual void SetECALogWeight(Float_t w)                { fECAW0 = w ; }
-  virtual void SetHCAClusteringThreshold(Float_t cluth)  { fHCAClusteringThreshold = cluth ; }
-  virtual void SetHCALocalMaxCut(Float_t cut)            { fHCALocMaxCut = cut ; }
-  virtual void SetHCALogWeight(Float_t w)                { fHCAW0 = w ; }
   virtual void SetTimeGate(Float_t gate)                 { fTimeGate = gate ;}
-  virtual void SetPREClusteringThreshold(Float_t cluth)  { fPREClusteringThreshold = cluth ; }
-  virtual void SetPRELocalMaxCut(Float_t cut)            { fPRELocMaxCut = cut ; }
-  virtual void SetPRELogWeight(Float_t w)                { fPREW0 = w ; }
   virtual void SetUnfolding(Bool_t toUnfold = kTRUE )    {fToUnfold = toUnfold ;}  
   static Double_t ShowerShape(Double_t r) ; // Shape of EM shower used in unfolding; 
                                             //class member function (not object member function)
@@ -99,11 +83,11 @@ private:
   void Init() ;
   void InitParameters() ;
 
-  virtual void   MakeUnfolding() ;
+  virtual void   MakeUnfolding() const;
   void           UnfoldCluster(AliEMCALTowerRecPoint * /*iniEmc*/, Int_t /*Nmax*/, 
 			       AliEMCALDigit ** /*maxAt*/,
-			       Float_t * /*maxAtEnergy*/ ) ; //Unfolds cluster using TMinuit package
-  void           PrintRecPoints(Option_t * /*option*/) ;
+			       Float_t * /*maxAtEnergy*/ ) const; //Unfolds cluster using TMinuit package
+  void           PrintRecPoints(Option_t * option) ;
 
 private:
 
@@ -112,28 +96,15 @@ private:
   Int_t   fNTowers ;                 // number of Towers in EMCAL
 
   Bool_t  fToUnfold ;                // To perform unfolding 
-
-  Int_t   fNumberOfPREClusters ;     // number of clusters found in PRE section 
   Int_t   fNumberOfECAClusters ;     // number of clusters found in EC section
-  Int_t   fNumberOfHCAClusters ;     // number of clusters found in HC section
   
   //Calibration parameters... to be replaced by database 
-  Float_t fADCchannelPRE ;          // width of one ADC channel for PRE section (GeV)
-  Float_t fADCpedestalPRE ;         // pedestal of ADC for PRE section (GeV)
   Float_t fADCchannelECA ;          // width of one ADC channel for EC section (GeV)
   Float_t fADCpedestalECA ;         // pedestal of ADC for EC section (GeV) 
-  Float_t fADCchannelHCA ;          // width of one ADC channel for HC section (GeV)
-  Float_t fADCpedestalHCA ;         // pedestal of ADC for HC section (GeV) 
  
   Float_t fECAClusteringThreshold ;  // minimum energy to include a EC digit in a cluster
-  Float_t fHCAClusteringThreshold ;  // minimum energy to include a HC digit in a cluster
-  Float_t fPREClusteringThreshold ;  // minimum energy to include a PRE digit in a cluster
   Float_t fECALocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
   Float_t fECAW0 ;                   // logarithmic weight for the cluster center of gravity calculation
-  Float_t fHCALocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
-  Float_t fHCAW0 ;                   // logarithmic weight for the cluster center of gravity calculation
-  Float_t fPRELocMaxCut ;            //  minimum energy difference to distinguish local maxima in a CPV cluster
-  Float_t fPREW0 ;                   // logarithmic weight for the CPV cluster center of gravity calculation
   Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fTimeGate ;                // Maximum time difference between the digits in ont EMC cluster
     

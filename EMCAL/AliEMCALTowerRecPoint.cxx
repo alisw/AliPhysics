@@ -123,14 +123,14 @@ Bool_t AliEMCALTowerRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigi
   
   AliEMCALGeometry * phosgeom =  (AliEMCALGetter::Instance())->EMCALGeometry();
 
-  Int_t relid1[4] ; 
+  Int_t relid1[3] ; 
   phosgeom->AbsToRelNumbering(digit1->GetId(), relid1) ; 
 
-  Int_t relid2[4] ; 
+  Int_t relid2[3] ; 
   phosgeom->AbsToRelNumbering(digit2->GetId(), relid2) ; 
   
-  Int_t rowdiff = TMath::Abs( relid1[2] - relid2[2] ) ;  
-  Int_t coldiff = TMath::Abs( relid1[3] - relid2[3] ) ;  
+  Int_t rowdiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
+  Int_t coldiff = TMath::Abs( relid1[2] - relid2[2] ) ;  
 
   if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0)) 
     aren = kTRUE ;
@@ -207,7 +207,7 @@ void AliEMCALTowerRecPoint::ExecuteEvent(Int_t /*event*/, Int_t, Int_t) const
 //   case kButton1Down: {
 //     AliEMCALDigit * digit ;
 //     Int_t iDigit;
-//     Int_t relid[4] ;
+//     Int_t relid[3] ;
     
 //     const Int_t kMulDigit = AliEMCALTowerRecPoint::GetDigitsMultiplicity() ; 
 //     Float_t * xi = new Float_t[kMulDigit] ; 
@@ -311,13 +311,9 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
   const Float_t kDeg2Rad = TMath::DegToRad() ; 
     
   Float_t cyl_radius = 0 ;  
-  
-  if (IsInPRE()) 
-    cyl_radius = emcalgeom->GetIP2PRESection() ;
-  else if (IsInECA()) 
+
+  if (IsInECA()) 
     cyl_radius = emcalgeom->GetIP2ECASection() ;
-  else if (IsInHCA()) 
-    cyl_radius = emcalgeom->GetIP2HCASection() ;
   else 
     Fatal("EvalDispersion", "Unexpected tower section!") ; 
   
@@ -326,7 +322,7 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
   Float_t z =  fLocPos.Z() ; 
   
   if (gDebug == 2) 
-    Info("EvalDispersion", "x,y,z = %f,%f,%f", x, y, z) ;
+    printf("EvalDispersion: x,y,z = %f,%f,%f", x, y, z) ;
 
 // Calculates the dispersion in coordinates 
   wtot = 0.;
@@ -340,7 +336,7 @@ void  AliEMCALTowerRecPoint::EvalDispersion(Float_t logWeight,TClonesArray * dig
     Float_t zi =  cyl_radius / TMath::Tan(thetai * kDeg2Rad ) ; 
 
     if (gDebug == 2) 
-      Info("EvalDispersion", "id = %d, xi,yi,zi = %f,%f,%f", digit->GetId(), xi, yi, zi) ;
+      printf("EvalDispersion: id = %d, xi,yi,zi = %f,%f,%f", digit->GetId(), xi, yi, zi) ;
 
     Float_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
     d += w * ( (xi-x)*(xi-x) + (zi-z)*(zi-z) ) ; 
@@ -438,12 +434,8 @@ void  AliEMCALTowerRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digi
   
    Float_t cyl_radius = 0 ;  
   
-  if (IsInPRE()) 
-    cyl_radius = emcalgeom->GetIP2PRESection() ;
-  else if (IsInECA()) 
+  if (IsInECA()) 
     cyl_radius = emcalgeom->GetIP2ECASection() ;
-  else if (IsInHCA()) 
-    cyl_radius = emcalgeom->GetIP2HCASection() ;
   else 
     Fatal("EvalDispersion", "Unexpected tower section!") ; 
 
@@ -521,7 +513,7 @@ void AliEMCALTowerRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray *
   // Calculates the center of gravity in the local EMCAL-module coordinates 
   Float_t wtot = 0. ;
  
-  //  Int_t relid[4] ;
+  //  Int_t relid[3] ;
   
   AliEMCALDigit * digit ;
   AliEMCALGeometry * emcalgeom  =  (AliEMCALGetter::Instance())->EMCALGeometry();
@@ -552,12 +544,8 @@ void AliEMCALTowerRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray *
   
   Float_t cyl_radius = 0 ;  
 
-  if (IsInPRE()) 
-    cyl_radius = emcalgeom->GetIP2PRESection() ;
-  else if (IsInECA()) 
+  if (IsInECA()) 
     cyl_radius = emcalgeom->GetIP2ECASection() ;
-  else if (IsInHCA()) 
-    cyl_radius = emcalgeom->GetIP2HCASection() ;
   else 
     Fatal("EvalGlobalPosition", "Unexpected tower section!") ; 
   
@@ -570,9 +558,7 @@ void AliEMCALTowerRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray *
   fLocPos.SetZ(z)  ;
     
   if (gDebug==2)
-    Info("EvalGlobalPosition", "x,y,z = %f,%f,%f", fLocPos.X(), fLocPos.Y(), fLocPos.Z()) ; 
-
-
+    printf("EvalGlobalPosition: x,y,z = %f,%f,%f", fLocPos.X(), fLocPos.Y(), fLocPos.Z()) ; 
   fLocPosM = 0 ;
 }
 
@@ -618,13 +604,11 @@ Int_t  AliEMCALTowerRecPoint::GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float
   AliEMCALDigit * digit ;
   AliEMCALDigit * digitN ;
   
-
   Int_t iDigitN ;
   Int_t iDigit ;
 
   for(iDigit = 0; iDigit < fMulDigit; iDigit++)
     maxAt[iDigit] = (AliEMCALDigit*) digits->At(fDigitsList[iDigit])  ;
-
   
   for(iDigit = 0 ; iDigit < fMulDigit; iDigit++) {   
     if(maxAt[iDigit]) {
@@ -680,36 +664,27 @@ void AliEMCALTowerRecPoint::Print(Option_t *)
 {
   // Print the list of digits belonging to the cluster
   
-  TString message("\n") ; 
+  printf("\n") ; 
 
   Int_t iDigit;
-  message += "digits # = " ;
+  printf("digits # = ");
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
-    message += fDigitsList[iDigit] ; 
-    message += "  " ;
+     printf("%i ", fDigitsList[iDigit]); 
   } 
   
-  message += "\nEnergies = " ;
+  printf("\nEnergies = ");
   for(iDigit=0; iDigit<fMulDigit; iDigit++) { 
-    message += fEnergyList[iDigit] ; 
-    message += "  " ;
+    printf("%f ", fEnergyList[iDigit]); 
   }
   
-   message += "\nPrimaries  " ;
+   printf("\nPrimaries  ");
    for(iDigit = 0;iDigit < fMulTrack; iDigit++) {
-     message += fTracksList[iDigit] ;
-     message += " " ;
+     printf("%i ", fTracksList[iDigit]);
    }
-   message += "\n       Multiplicity    = " ; 
-   message += fMulDigit ;
-   message += "\n       Cluster Energy  = " ; 
-   message += fAmp ;
-   message += "\n       Number of primaries " ; 
-   message += fMulTrack ;
-   message += "\n       Stored at position " ;
-   message += GetIndexInList() ; 
-   
-   Info("Print", message.Data() ) ; 
+   printf("\n       Multiplicity    = %i", fMulDigit);
+   printf("\n       Cluster Energy  = %f", fAmp);
+   printf("\n       Number of primaries %i", fMulTrack);
+   printf("\n       Stored at position: %i", GetIndexInList()); 
 }
  
 //____________________________________________________________________________
@@ -718,7 +693,7 @@ const TVector3 AliEMCALTowerRecPoint::XYZInAlice(Float_t r, Float_t theta, Float
   // spherical coordinates of recpoint in Alice reference frame
 
   if (gDebug == 2) 
-    Info("XYZInAlice", "this= %d , r = %f, theta = %f, phi = %f", this, r, theta, phi) ; 
+    printf("XYZInAlice: r = %f, theta = %f, phi = %f", r, theta, phi) ; 
 
   if (theta == 9999. || phi == 9999. || r == 9999.) {
     TVector3  globalpos;  
