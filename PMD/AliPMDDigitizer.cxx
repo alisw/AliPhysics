@@ -32,8 +32,6 @@
 #include "AliPMDdigit.h"
 #include "AliPMDDigitizer.h"
 #include "AliPMDClustering.h"
-#include "AliPMDrecpoint.h"
-
 
 ClassImp(AliPMDDigitizer)
 //
