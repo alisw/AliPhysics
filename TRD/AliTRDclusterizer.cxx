@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2003/02/07 09:45:24  cblume
+Modification in OpenOutput() for many events in single file
+
 Revision 1.15  2002/11/07 15:52:09  cblume
 Update of tracking code for tilted pads
 
@@ -251,7 +254,9 @@ Bool_t AliTRDclusterizer::OpenOutput(const Char_t *name)
 
   if (strcmp(name,fInputFile->GetName()) != 0) {
     savedir = gDirectory;
-    if (fOutputFile->IsOpen()) {
+    TFile *file = (TFile *) gROOT->FindObject(name);
+    if (file) {
+      fOutputFile = file;
       fOutputFile->cd();
     }
     else {
@@ -383,10 +388,14 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     fClusterTree->Write();
 
     AliTRDgeometry *geo = fTRD->GetGeometry();
-    geo->SetName("TRDgeometry");
-    geo->Write();
-    fPar->Write();     
-     
+    if (!fOutputFile->Get("TRDgeometry")) {
+      geo->SetName("TRDgeometry");
+      geo->Write();
+    }
+    if (!fOutputFile->Get("TRDparameter")) {
+      fPar->Write();     
+    }    
+
     return kTRUE;  
 
   }
