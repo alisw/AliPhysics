@@ -176,26 +176,28 @@ void AliPMDClustering::Order()
 	}
     }
   // sort and store sorting information in iord1
-  for(j=1; j < kNMX; j++)
-    {
-      itst = 0;
-      adum = dd[j];
-      idum = iord1[j];
-      for(i1=0; i1 < j ; i1++)
-	{
-	  if(adum > dd[i1] && itst == 0)
-	    {
-	      itst = 1;
-	      for(i2=j-1; i2 >= i1 ; i2=i2--)
-		{
-		  dd[i2+1]    = dd[i2];
-		  iord1[i2+1] = iord1[i2];
-		}
-	      dd[i1]    = adum;
-	      iord1[i1] = idum;
-	    }
-	}
-    }
+//   for(j=1; j < kNMX; j++)
+//     {
+//       itst = 0;
+//       adum = dd[j];
+//       idum = iord1[j];
+//       for(i1=0; i1 < j ; i1++)
+// 	{
+// 	  if(adum > dd[i1] && itst == 0)
+// 	    {
+// 	      itst = 1;
+// 	      for(i2=j-1; i2 >= i1 ; i2=i2--)
+// 		{
+// 		  dd[i2+1]    = dd[i2];
+// 		  iord1[i2+1] = iord1[i2];
+// 		}
+// 	      dd[i1]    = adum;
+// 	      iord1[i1] = idum;
+// 	    }
+// 	}
+//     }
+
+  TMath::Sort(kNMX,dd,iord1); //PH Using much better algorithm...
   // store the sorted information in fIord for later use
   for(i=0; i<kNMX; i++)
     {
