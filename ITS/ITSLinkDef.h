@@ -141,5 +141,6 @@
 #pragma link C++ class AliITSneuralTracker+;
 // Tasks
 #pragma link C++ class AliITSreconstruction+;
+#pragma link C++ class AliITSsDigitize+;
 #pragma link C++ class AliITSDigitizer+;
 #endif
