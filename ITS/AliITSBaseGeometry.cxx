@@ -19,36 +19,10 @@
 #include <TObject.h>
 #include <TObjArray.h>
 
-//#include <TGeoArb8.h>
-//#include <TGeoEltu.h>
-//#include <TGeoOverlap.h>
-//#include <TGeoTrack.h>
-//#include <TGeoAtt.h>
-//#include <TGeoManager.h>
-//#include <TGeoPainter.h>
-//#include <TGeoTrd1.h>
-//#include <TGeoBBox.h>
 #include <TGeoMaterial.h>
-//#include <TGeoPara.h>
-//#include <TGeoTrd2.h>
-//#include <TGeoBoolNode.h>
 #include <TGeoMatrix.h>
-//#include <TGeoPatternFinder.h>
-//#include <TGeoTube.h>
-//#include <TGeoCache.h>
-//#include <TGeoMCGeometry.h>
-//#include <TGeoPcon.h>
-//#include <TGeoVolume.h>
-//#include <TGeoChecker.h>
 #include <TGeoMedium.h>
 #include <TGeoPgon.h>
-//#include <TGeoVoxelFinder.h>
-//#include <TGeoCompositeShape.h>
-//#include <TGeometry.h>
-//#include <TGeoShape.h>
-//#include <TGeoCone.h>
-//#include <TGeoNode.h>
-//#include <TGeoSphere.h>
 #include "AliITSBaseGeometry.h"
 
 
@@ -150,21 +124,108 @@ AliITSMixture::AliITSMixture(const char *name,Int_t N,Double_t *w,TObjArray *m,
     } // end for i
     delete[] nw;
 }
+//======================================================================
+ClassImp(AliITSGeoCable)
+;
+AliITSGeoCable::AliITSGepCable(){
+    //
 
-//ClassImp(AliITSArb8)
+    fRmin = fRmax = 0.0;
+    fNs.SetXYZ(0.0,0.0,0.0);
+    fNe.SetXYZ(0.0,0.0,0.0);
+    fTubes    = 0;
+    fTranRot  = 0;
+}
+//----------------------------------------------------------------------
+AliITSGeoCable::AliITSGepCable(const char *name,TObjArray *vect,
+                               const Double_t Rmin,const Double_t Rmax
+                               const TVector3 ns,const TVector3 ne){
+    //
+    // Inputs:
+    //    char      *name   Name of this compound object
+    //    TObjArray *vect   Array of TVector3's of points representing the
+    //                      path of the cable
+    //    TVector3  ns=0    Normal vector representing the angle of the 
+    //                      starting surface, default perpendicular
+    //    TVector3  ne=0    Normal vector representing the angle of the 
+    //                      ending surface, default perpendicular
+    // Outputs:
+    //    none.
+    // Return:
+    //    A fully initilized and created AliITSGeoCable class.
+    Char_t nam[500];
+    Int_t i,n;
+    Double_t s,th,ph;
+    TVector3 x0,x1,x2,d,t;
 
-//ClassImp(AliITSBBox)
+    fRmin = fRmax = 0.0;
+    fNs.SetXYZ(0.0,0.0,-1.0);
+    fNe.SetXYZ(0.0,0.0,1.0);
+    n = vect->GetEnteries();
+    fTubes = new TObjArray(n-1);
+    fTran  = new TObjArray(n-1);
+    fRot   = new TObjArray(n-1);
+    if(ns!=0) fNs = ns/ns.Mag();
+    if(ne!=0) fNe = ne/ne.Mag();
+    //
+    x0 = (TVector3)(*(vect->At(0)));
+    n0 = ns;
+    for(i=1;i<n;i++){
+        x1 = (TVector3)(*(vect->At(i)));
+        d  = x1 - x0;
+        if(i<n-1) {
+            x2 = (TVector3)(*(vect->At(i+1)));
+            n1 = d + (x2-x1);
+            n1 /= n1.Mag();
+        }else{
+            n1 = fNe;
+        } // end if
+        t  = 0.5*(x1 + x0);
+        th =  TMath::ATan2(TMath::Sqrt(2.*d.Mag2()-d.z()-2.*d.Mag()*d.y()-
+                                        2.*d.Mag()*d.x()),
+                           TMath::Sqrt(d.z()*d.z()-2.*d.Mag()*d.z()+d.Mag2()));
+        th *= TMath::RadToDeg();
+        ph =  TMath::ATan2(d.y()-d.Mag(),d.x()-d.Mag());
+        ph *= TMath::RadToDeg();
+        sprintf(nam,"%sCombiTrans%dCable",name,i-1);
+        fTranRot[i-1] = new TCombiTrans(nam,t.x(),t.y(),t.z(),
+                                        new TGeoRotation("",ph,th,0.0);)
+        s  = d.Mag();
+        sprintf(nam,"%sPart%dCable",name,i-1);
+        fTubes[i-1]  = new TGeoCtub(nam,fRmin,fRmax,0.5*s,0.0,360.0,
+                                  n0.x(),n0.y(),n0.z(),n1.x(),n1.y(),n1.z());
+        n0 = -n1;
+        x0 = x1;
+    } // end for i
+}
+//----------------------------------------------------------------------
+AliITSGeoCable::~AliITSGepCable(){
+    //
+    // Inputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+    Int_t i;
 
-//ClassImp(AliITSCone)
-
-//ClassImp(AliITSConeSeg)
-
-//ClassImp(AliITSCtub)
-
-//ClassImp(AliITSEltu)
-
-//ClassImp(AliITSGtra)
-
-//ClassImp(AliITSpCon)
-
-//ClassImp(AliITSTube)
+    if(fTubes){
+        for(i=0;i<fTubes->GetEnteries();i++) 
+            delete (TGeoCtub*)(fTubes->At(i));
+        delete fTubes;
+    } // end if
+    fTubes = 0;
+    if(fTran){
+        for(i=0;i<fTram->GetEnteries();i++) 
+            delete (TGeoTransofmation*)(fTran->At(i));
+        delete fTran;
+    } // end if
+    fTran  = 0;
+    if(fRot){
+        for(i=0;i<fRot->GetEnteries();i++) 
+            delete (TGeoRotation*)(fRot->At(i));
+        delete fRot;
+    } // end if
+    fRot   = 0;
+}
+//----------------------------------------------------------------------

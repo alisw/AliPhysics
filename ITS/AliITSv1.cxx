@@ -860,6 +860,6 @@ void AliITSv1::StepManager(){
     hits[5]=momentum[2];
     hits[6]=gMC->Edep();
     hits[7]=gMC->TrackTime();
-    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetCurrentTrackNumber(),vol,hits);
+    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
 */
 }
