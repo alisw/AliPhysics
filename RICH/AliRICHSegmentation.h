@@ -26,9 +26,9 @@ public TObject {
     //
     // Anod wire coordinate closest to xhit
     virtual Float_t GetAnod(Float_t xhit)               =0;
-    // Transform from pad (wire) to real coordinates
-    virtual void    GetPadIxy(Float_t x ,Float_t y ,Int_t   &ix,Int_t   &iy)=0;
     // Transform from real to pad coordinates
+    virtual void    GetPadIxy(Float_t x ,Float_t y ,Int_t   &ix,Int_t   &iy)=0;
+    // Transform from pad to real coordinates
     virtual void    GetPadCxy(Int_t   ix,Int_t   iy,Float_t &x ,Float_t &y )=0;
     //
     // Initialisation
