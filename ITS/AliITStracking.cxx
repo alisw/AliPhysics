@@ -583,50 +583,52 @@ void AliITStracking::KalmanFilterVert(AliITStrack *newTrack,TVector &cluster,Dou
 
 /////////////////////  Matrix R inversion ////////////////////////////////////////////
  
-  Int_t n=4;
+  const Int_t n=4;
   Double_t big, hold;
   Double_t d=1.;
   Int_t ll[n],mm[n];
+
+  Int_t i,j,k;
   
-  for(Int_t k=0; k<n; k++) {
+  for(k=0; k<n; k++) {
     ll[k]=k;
     mm[k]=k;
     big=R[k][k];
-    for(Int_t j=k; j<n ; j++) {
-      for (Int_t i=j; i<n; i++) {
+    for(j=k; j<n ; j++) {
+      for (i=j; i<n; i++) {
         if(TMath::Abs(big) < TMath::Abs(R[i][j]) ) { big=R[i][j]; ll[k]=i; mm[k]=j; }
       }
     }    
 //
-    Int_t j= ll[k];
+    j= ll[k];
     if(j > k) {
-      for(Int_t i=0; i<n; i++) { hold=-R[k][i]; R[k][i]=R[j][i]; R[j][i]=hold; }
+      for(i=0; i<n; i++) { hold=-R[k][i]; R[k][i]=R[j][i]; R[j][i]=hold; }
       
     }
 //
-    Int_t i=mm[k];
+    i=mm[k];
     if(i > k ) { 
-      for(int j=0; j<n; j++) { hold=-R[j][k]; R[j][k]=R[j][i]; R[j][i]=hold; }
+      for(j=0; j<n; j++) { hold=-R[j][k]; R[j][k]=R[j][i]; R[j][i]=hold; }
     }
 //
     if(!big) {
       d=0.;
       cout << "Singular matrix\n"; 
     }
-    for(Int_t i=0; i<n; i++) {
+    for(i=0; i<n; i++) {
       if(i == k) { continue; }    
       R[i][k]=R[i][k]/(-big);
     }   
 //
-    for(Int_t i=0; i<n; i++) {
+    for(i=0; i<n; i++) {
       hold=R[i][k];
-      for(Int_t j=0; j<n; j++) {
+      for(j=0; j<n; j++) {
         if(i == k || j == k) { continue; }
 	R[i][j]=hold*R[k][j]+R[i][j];
       }
     }
 //  
-    for(Int_t j=0; j<n; j++) {
+    for(j=0; j<n; j++) {
       if(j == k) { continue; }
       R[k][j]=R[k][j]/big;
     }
@@ -636,14 +638,14 @@ void AliITStracking::KalmanFilterVert(AliITStrack *newTrack,TVector &cluster,Dou
     R[k][k]=1./big;        
   } 
 //  
-  for(Int_t k=n-1; k>=0; k--) {
-    Int_t i=ll[k];
+  for(k=n-1; k>=0; k--) {
+    i=ll[k];
     if(i > k) {
-      for (Int_t j=0; j<n; j++) {hold=R[j][k]; R[j][k]=-R[j][i]; R[j][i]=hold;}
+      for (j=0; j<n; j++) {hold=R[j][k]; R[j][k]=-R[j][i]; R[j][i]=hold;}
     }  
-    Int_t j=mm[k];
+    j=mm[k];
     if(j > k) {
-      for (Int_t i=0; i<n; i++) {hold=R[k][i]; R[k][i]=-R[j][i]; R[j][i]=hold;}
+      for (i=0; i<n; i++) {hold=R[k][i]; R[k][i]=-R[j][i]; R[j][i]=hold;}
       }
   }
 //////////////////////////////////////////////////////////////////////////////////
@@ -727,48 +729,47 @@ void AliITStracking::KalmanFilterVert(AliITStrack *newTrack,TVector &cluster,Dou
 
 /////////////////////// VMC matrix inversion ///////////////////////////////////  
  
-  n=4;
   d=1.;
   
-  for(Int_t k=0; k<n; k++) {
+  for(k=0; k<n; k++) {
     ll[k]=k;
     mm[k]=k;
     big=VMC[k][k];
-    for(Int_t j=k; j<n ; j++) {
-      for (Int_t i=j; i<n; i++) {
+    for(j=k; j<n ; j++) {
+      for (i=j; i<n; i++) {
         if(TMath::Abs(big) < TMath::Abs(VMC[i][j]) ) { big=VMC[i][j]; ll[k]=i; mm[k]=j; }
       }
     }    
 //
-    Int_t j= ll[k];
+    j= ll[k];
     if(j > k) {
-      for(Int_t i=0; i<n; i++) { hold=-VMC[k][i]; VMC[k][i]=VMC[j][i]; VMC[j][i]=hold; }
+      for(i=0; i<n; i++) { hold=-VMC[k][i]; VMC[k][i]=VMC[j][i]; VMC[j][i]=hold; }
       
     }
 //
-    Int_t i=mm[k];
+    i=mm[k];
     if(i > k ) { 
-      for(int j=0; j<n; j++) { hold=-VMC[j][k]; VMC[j][k]=VMC[j][i]; VMC[j][i]=hold; }
+      for(j=0; j<n; j++) { hold=-VMC[j][k]; VMC[j][k]=VMC[j][i]; VMC[j][i]=hold; }
     }
 //
     if(!big) {
       d=0.;
       cout << "Singular matrix\n"; 
     }
-    for(Int_t i=0; i<n; i++) {
+    for(i=0; i<n; i++) {
       if(i == k) { continue; }    
       VMC[i][k]=VMC[i][k]/(-big);
     }   
 //
-    for(Int_t i=0; i<n; i++) {
+    for(i=0; i<n; i++) {
       hold=VMC[i][k];
-      for(Int_t j=0; j<n; j++) {
+      for(j=0; j<n; j++) {
         if(i == k || j == k) { continue; }
 	VMC[i][j]=hold*VMC[k][j]+VMC[i][j];
       }
     }
 //  
-    for(Int_t j=0; j<n; j++) {
+    for(j=0; j<n; j++) {
       if(j == k) { continue; }
       VMC[k][j]=VMC[k][j]/big;
     }
@@ -778,14 +779,14 @@ void AliITStracking::KalmanFilterVert(AliITStrack *newTrack,TVector &cluster,Dou
     VMC[k][k]=1./big;        
   } 
 //  
-  for(Int_t k=n-1; k>=0; k--) {
-    Int_t i=ll[k];
+  for(k=n-1; k>=0; k--) {
+    i=ll[k];
     if(i > k) {
-      for (Int_t j=0; j<n; j++) {hold=VMC[j][k]; VMC[j][k]=-VMC[j][i]; VMC[j][i]=hold;}
+      for (j=0; j<n; j++) {hold=VMC[j][k]; VMC[j][k]=-VMC[j][i]; VMC[j][i]=hold;}
     }  
-    Int_t j=mm[k];
+    j=mm[k];
     if(j > k) {
-      for (Int_t i=0; i<n; i++) {hold=VMC[k][i]; VMC[k][i]=-VMC[j][i]; VMC[j][i]=hold;}
+      for (i=0; i<n; i++) {hold=VMC[k][i]; VMC[k][i]=-VMC[j][i]; VMC[j][i]=hold;}
       }
   }
 
