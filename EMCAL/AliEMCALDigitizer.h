@@ -101,7 +101,7 @@ private:
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
 
-  ClassDef(AliEMCALDigitizer,4)  // description 
+  ClassDef(AliEMCALDigitizer,5)  // description 
 
 };
 

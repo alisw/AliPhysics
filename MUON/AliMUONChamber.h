@@ -147,7 +147,7 @@ public TObject
   AliMUONClusterFinderVS *fReconstruction;  // pointer to reconstruction
   AliMUONResponse        *fResponse;        // pointer to response
   AliMUONChamberGeometry *fGeometry;        // pointer to geometry
-  ClassDef(AliMUONChamber,1) // Muon tracking chamber class
+  ClassDef(AliMUONChamber,2) // Muon tracking chamber class
 };
 
 #endif

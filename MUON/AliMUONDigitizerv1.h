@@ -35,7 +35,7 @@ protected:
 	virtual Bool_t InitInputData(AliMUONLoader* muonloader);
 	virtual void CleanupInputData(AliMUONLoader* muonloader);
    
-	ClassDef(AliMUONDigitizerv1, 1)
+	ClassDef(AliMUONDigitizerv1, 2)
 };    
 #endif
 

@@ -145,7 +145,6 @@ protected:
   TGeometry     *fGeometry;          //  Pointer to geometry
   AliMC         *fMCApp;             //  Pointer to virtual MC Application
   AliDisplay    *fDisplay;           //! Pointer to event display
-  //  TStopwatch     fTimer;             //  Timer object
   AliMagF       *fField;             //  Magnetic Field Map
   TVirtualMC    *fMC;                //! Pointer to MonteCarlo object
   Int_t          fNdets;             //  Number of detectors
@@ -160,7 +159,7 @@ protected:
 private:
   void Copy(TObject &arun) const;
 
-  ClassDef(AliRun,8)      //Supervisor class for all Alice detectors
+  ClassDef(AliRun,9)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

@@ -62,7 +62,7 @@ private:
              const TGeoHMatrix& matrix, Int_t npar, Double_t* param,
 	     const char* only) const;
 
-   ClassDef(AliMUONv1,1)  // MUON Detector class Version 1
+   ClassDef(AliMUONv1,2)  // MUON Detector class Version 1
 
 
 };

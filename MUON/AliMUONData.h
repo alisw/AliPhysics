@@ -147,7 +147,7 @@ class AliMUONData : public TNamed {
     Int_t           fNrectriggertracks; //! Number of reconstructed tracks
     Int_t           fSplitLevel; // Splitting of branches 0 no spitting (root files are smaller) 1 splitting (larger output files)
 
-    ClassDef(AliMUONData,1)
+    ClassDef(AliMUONData,2)
  };
 #endif
 
