@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.72  2001/07/03 08:10:57  hristov
+J.Chudoba's changes merged correctly with the HEAD
+
 Revision 1.70  2001/06/29 08:01:36  morsch
 Small correction to the previous.
 
@@ -831,7 +834,7 @@ Int_t AliRun::GetEvent(Int_t event)
   if (fStack) delete fStack;
   fStack = fHeader->Stack();
   if (fStack) {
-    if (!fStack->GetEvent(event,0)) fStack = 0;
+    if (!fStack->GetEvent(event)) fStack = 0;
   }
 
   //
