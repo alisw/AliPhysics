@@ -26,7 +26,7 @@ AliL3Transform::~AliL3Transform(){
 
 void AliL3Transform::Init(){
   //sector:
-  fNTimeBins = 512;  //?uli
+  fNTimeBins = 446;  //anders
   fNRowLow = 55;
   fNRowUp = 119;
   fNSectorLow = 36;
