@@ -5,11 +5,13 @@
 
 #ifdef use_reconstruction
 #include "AliReconstructor.h"
-
+#include "AliL3Logging.h"
 
 class AliHLTReconstructor: public AliReconstructor {
 public:
-  AliHLTReconstructor(): AliReconstructor() {};
+  AliHLTReconstructor(): AliReconstructor() {
+    AliL3Log::fgLevel=AliL3Log::kWarning;
+  };
   virtual ~AliHLTReconstructor() {};
   virtual void         Reconstruct(AliRunLoader* runLoader) const;
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
