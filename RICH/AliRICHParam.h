@@ -279,7 +279,9 @@ void AliRICHParam::Loc2Area(TVector2 x2,Int_t &iPadXmin,Int_t &iPadYmin,Int_t &i
 Bool_t AliRICHParam::IsOverTh(Int_t c,Int_t x,Int_t y,Double_t q)
 {
 // Calculate the new charge subtracting pedestal and if the current digit is over threshold
-  if(q>NsigmaTh()*fSigmaThMap[c-1][x-1][y-1]) return kTRUE; else return kFALSE;
+  if (c>0 && x>0 && y>0 && c<kNCH && x<kNpadsX && y<kNpadsY)
+    if(q>NsigmaTh()*fSigmaThMap[c-1][x-1][y-1]) return kTRUE;
+  return kFALSE;
 }
 //__________________________________________________________________________________________________
 TVector2 AliRICHParam::ShiftToWirePos(TVector2 x2)
