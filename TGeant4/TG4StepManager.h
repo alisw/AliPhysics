@@ -20,6 +20,8 @@ class G4SteppingManager;
 
 class TLorentzVector;
 
+enum TG4StepStatus { kPreStepPoint, kPostStepPoint};
+
 class TG4StepManager
 {
   public:
@@ -37,7 +39,7 @@ class TG4StepManager
     void Rndm(Float_t* array, const Int_t size) const;
     
     // set methods
-    void SetStep(G4Step* step);                          // G4 specific
+    void SetStep(G4Step* step, TG4StepStatus status);    // G4 specific
     void SetSteppingManager(G4SteppingManager* manager); // G4 specific
     void SetMaxStep(Float_t step);
     void SetMaxNStep(Int_t maxNofSteps);  //??
@@ -45,6 +47,7 @@ class TG4StepManager
     
     // get methods
     G4Step* GetStep() const;                              // G4 specific
+    TG4StepStatus GetStepStatus() const;                  // G4 specific
     
         // tracking volume(s) 
     Int_t CurrentVolID(Int_t& copyNo) const;
@@ -107,6 +110,9 @@ class TG4StepManager
     
     // data members
     G4Step*             fStep;            //current step
+    TG4StepStatus       fStepStatus;      //step status that decides whether
+                                          //track properties will be returned
+					  //from PreStepPoint or PostStepPoint
     G4SteppingManager*  fSteppingManager; //G4SteppingManager
 };
 
@@ -115,14 +121,17 @@ class TG4StepManager
 inline TG4StepManager* TG4StepManager::Instance() 
 { return fgInstance; }
 
-inline void TG4StepManager::SetStep(G4Step* step)
-{ fStep = step; }
+inline void TG4StepManager::SetStep(G4Step* step, TG4StepStatus status)
+{ fStep = step; fStepStatus = status; }
 
 inline void TG4StepManager::SetSteppingManager(G4SteppingManager* manager)
 { fSteppingManager = manager; }
 
 inline G4Step* TG4StepManager::GetStep() const
 { return fStep; }
+
+inline TG4StepStatus TG4StepManager::GetStepStatus() const
+{ return fStepStatus; }
 
 #endif //TG4_STEP_MANAGER_H
 
