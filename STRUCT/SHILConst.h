@@ -119,7 +119,7 @@
 // Chamber positions
 //
 const Float_t dzch=10.;
-const Float_t zch1=532.5;
+const Float_t zch1=528.0;
 const Float_t zch2=690.;
 
 #endif
