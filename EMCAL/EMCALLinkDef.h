@@ -4,6 +4,14 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ enum  AliEMCALJetFinderAlgoBGCalcType_t;
+#pragma link C++ enum  AliEMCALJetFinderResetType_t;
+#pragma link C++ enum  AliEMCALJetFinderTrackType_t;
+#pragma link C++ enum  AliEMCALJetFinderSmearingType_t;
+#pragma link C++ enum  AliEMCALJetFinderEMCALType_t;
+#pragma link C++ enum  AliEMCALJetFinderFileType_t;
+#pragma link C++ enum  AliEMCALJetFinderAlgoUA1UnitFlagType_t;
+#pragma link C++ enum  AliEMCALJetFinderAlgoUA1FillUnitFlagType_t;
 #pragma link C++ class AliEMCAL+;
 #pragma link C++ class AliEMCALGeometry+; 
 #pragma link C++ class AliEMCALv0+;
