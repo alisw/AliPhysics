@@ -27,6 +27,7 @@ protected:
     Float_t     fBias;
     Int_t       fTrials;
     Decay_t     fForceDecay;
+    Int_t       fCutOnChild;
     TArrayI   fChildSelect;
     AliPythia *fPythia;
  private:
@@ -47,6 +48,7 @@ protected:
   // force decay type
   virtual void ForceDecay(Decay_t decay=dimuon) {fForceDecay=decay;}
   virtual void SetWeighting(Weighting_t flag=analog) {fAnalog=flag;}	
+  virtual void SetCutOnChild(Int_t flag=0) {fCutOnChild=flag;}
   ClassDef(AliGenParam,1) // Generator using parameterised pt- and y-distribution
 };
 #endif

@@ -27,6 +27,7 @@ AliGenParam::AliGenParam()
   fYPara  = 0;
   fParam  = jpsi_p;
   fAnalog = analog;
+  SetCutOnChild();
 }
 
 //____________________________________________________________
@@ -49,6 +50,7 @@ AliGenParam::AliGenParam(Int_t npart, Param_t param)
   fChildSelect.Set(5);
   for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
   ForceDecay();
+  SetCutOnChild();
 }
 
 //____________________________________________________________
@@ -135,14 +137,16 @@ void AliGenParam::Generate()
 // on the vertex is done if selected
 
 
+  //printf("Generate !!!!!!!!!!!!!\n");
+
   Float_t polar[3]= {0,0,0};
   //
   Float_t origin[3], origin0[3];
   Float_t pt, pl, ptot;
   Float_t phi, theta;
-  Float_t p[3];
+  Float_t p[3], pc[3], och[3], pch[10][3];
   Float_t ty, xmt;
-  Int_t i, nt, j;
+  Int_t nt, i, j, kfch[10];
   Float_t  wgtp, wgtch;
   Double_t dummy;
   static TClonesArray *particles;
@@ -158,8 +162,9 @@ void AliGenParam::Generate()
 	      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
       }
   }
-  for(i=0;i<fNpart;i++) {
-      while(1) {
+  Int_t ipa=0;
+  while (ipa<fNpart) {
+    while(1) {
 //
 // particle type
 	  Int_t Ipart = fIpParaFunc();
@@ -201,45 +206,82 @@ void AliGenParam::Generate()
 		      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	      }
 	  }
-	  
-//
-// parent
-
-	  gAlice->
-	      SetTrack(0,-1,Ipart,p,origin,polar,0,"Primary",nt,wgtp);
-	  Int_t iparent=nt;
 //
 // use lujet to decay particle
 
 	  Float_t energy=TMath::Sqrt(ptot*ptot+am*am);
 	  fPythia->DecayParticle(Ipart,energy,theta,phi);
-//	  fPythia->LuList(1);
-	  
+	  //	  fPythia->LuList(1);
+
+
+	  //printf("origin0 %f %f %f\n",origin0[0],origin0[1],origin0[2]);
+	  //printf("fCutOnChild %d \n",fCutOnChild);
 //
 // select muons
-	  fPythia->ImportParticles(particles) ;
-	  Int_t np = particles->GetEntriesFast();
-	  for (Int_t i = 0; i<np; i++) {
+	  Int_t np=fPythia->ImportParticles(particles,"All");
+          //printf("np     %d \n",np);
+	  Int_t ncsel=0;
+	  for (i = 1; i<np; i++) {
 	      TParticle *  iparticle = (TParticle *) particles->At(i);
 	      Int_t kf = iparticle->GetPdgCode();
+              //printf("kf %d\n",kf);
 //
 // children
 	      if (ChildSelected(TMath::Abs(kf)))
 	      {
-		  p[0]=iparticle->Px();
-		  p[1]=iparticle->Py();
-		  p[2]=iparticle->Pz();
-		  origin[0]=origin0[0]+iparticle->Vx()/10;
-		  origin[1]=origin0[1]+iparticle->Vy()/10;
-		  origin[2]=origin0[2]+iparticle->Vz()/10;
-		  gAlice->SetTrack(fTrackIt,iparent,kf,
-				   p,origin,polar,
-  				   0,"Decay",nt,wgtch);
-		  gAlice->KeepTrack(nt);
+		  pc[0]=iparticle->Px();
+		  pc[1]=iparticle->Py();
+		  pc[2]=iparticle->Pz();
+		  och[0]=origin0[0]+iparticle->Vx()/10;
+		  och[1]=origin0[1]+iparticle->Vy()/10;
+		  och[2]=origin0[2]+iparticle->Vz()/10;
+		  if (fCutOnChild) {
+		    Float_t PtChild=TMath::Sqrt(pc[0]*pc[0]+pc[1]*pc[1]);
+		    Float_t PChild=TMath::Sqrt(PtChild*PtChild+pc[2]*pc[2]);
+		    Float_t ThetaChild=TMath::ATan2(PtChild,pc[2]);
+		    Float_t PhiChild=TMath::ATan2(pc[1],pc[0])+TMath::Pi();
+		    if ((PtChild   > fPtMin   && PtChild   <fPtMax)      &&
+			(PChild    > fPMin    && PChild    <fPMax)       &&
+			(ThetaChild>fThetaMin && ThetaChild<fThetaMax)   &&
+			(PhiChild  >  fPhiMin && PhiChild  <fPhiMax))
+		      {
+			pch[ncsel][0]=pc[0];
+			pch[ncsel][1]=pc[1];
+			pch[ncsel][2]=pc[2];
+			kfch[ncsel]=kf;
+			ncsel++;
+		      } else {
+			ncsel=-1;
+			break;
+		      } // child kine cuts
+		  } else {
+		    pch[ncsel][0]=pc[0];
+		    pch[ncsel][1]=pc[1];
+		    pch[ncsel][2]=pc[2];
+		    kfch[ncsel]=kf;
+		    ncsel++;
+		  } // if child selection
 	      } // select muon
 	  } // decay particle loop
+	  Int_t iparent;
+	  if ((fCutOnChild && ncsel >0) || !fCutOnChild){
+	      ipa++;
+//
+// parent
+	      gAlice->
+		  SetTrack(0,-1,Ipart,p,origin,polar,0,"Primary",nt,wgtp);
+	      iparent=nt;
+
+	      for (i=0; i< ncsel; i++) {
+		  gAlice->SetTrack(fTrackIt,iparent,kfch[i],
+				   &pch[i][0],och,polar,
+				   0,"Decay",nt,wgtch);
+		  gAlice->KeepTrack(nt); 
+	      }
+	      
+	  } // kinematic selection
 	  break;
-      } // kinematic selection
+    } // while
   } // event loop
 }
 
