@@ -66,7 +66,6 @@ void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader) const
   else 
     clu.ExecuteTask("") ;  
 
-  AliEMCALGetter::Instance()->EmcalLoader()->CleanReconstructioner();
 }
 
 //____________________________________________________________________________

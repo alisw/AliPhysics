@@ -59,7 +59,7 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader) const
   // the global tracking.
  
   TString headerFile(runLoader->GetFileName()) ; 
-  TString branchName("Default") ;  
+  TString branchName(runLoader->GetEventFolder()->GetName()) ;  
   
   AliPHOSClusterizerv1 clu(headerFile, branchName);
   clu.SetEventRange(0, -1) ; // do all the events
@@ -68,7 +68,6 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader) const
   else 
     clu.ExecuteTask("") ;  
 
-  AliPHOSGetter::Instance()->PhosLoader()->CleanReconstructioner();
 }
 
 //____________________________________________________________________________
