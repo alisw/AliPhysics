@@ -1,8 +1,8 @@
 // $Id$
 // Category: interfaces
 //
-// Author: D. Adamova, I. Hrivnacova
-//=============================================================
+// Author: D. Adamova
+//==============================================================
 //
 //----------------TG4GeometryGUI.h--------------------------//
 //----------------AG4 Geometry Browser----------------------//
@@ -14,28 +14,30 @@
 
 #include <TObject.h>
 
-class TG4GUI;
+class TG4MainFrame;
 class G4LogicalVolume;
 class TGListTreeItem;
-  
+class G4LogicalVolumeStore;  
 
 class TG4GeometryGUI : public TObject
 {
 public:
     TG4GeometryGUI();
-    virtual ~TG4GeometryGUI(){ ;}
+    virtual ~TG4GeometryGUI();
     
     void  ReadGeometryTree();
-    void  RegisterLogicalVolume(G4LogicalVolume* lv, TGListTreeItem* itemv); 
- 
+    void  RegisterLogicalVolume(G4LogicalVolume* lv, TGListTreeItem* itemv);
+    void  ReadMaterials() const; 
+
+protected:
+
+    TG4GeometryGUI(const TG4GeometryGUI& gg) ;
+    TG4GeometryGUI& operator=(const TG4GeometryGUI& gg) ;
+
  private:
-    TG4GUI* fPanel;   // the main  panel
+    TG4MainFrame* fPanel;   // the main  panel
   
- private:
-  TG4GeometryGUI(const TG4GeometryGUI& gg) {;}
-  TG4GeometryGUI& operator=(const TG4GeometryGUI& gg) 
-  {return *this;}
-    
+
     ClassDef(TG4GeometryGUI,1)  // GUI for Geant4 geometry  
 };
 

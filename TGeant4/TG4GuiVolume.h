@@ -2,7 +2,7 @@
 // Category: interfaces
 //
 // Author: D. Adamova
-//===============================================================
+//================================================================
 // 
 //----------------TG4GuiVolume.h-------------------------------//
 //----Creating link for Logical Volume Tree in AG4 Geometry----//
@@ -16,27 +16,33 @@
 #include <TGListTree.h>
  
 class G4LogicalVolume;
- 
+
+
 class TG4GuiVolume : public TObject 
 {
 public:
     TG4GuiVolume(const char* name, G4LogicalVolume* lvolume);
     virtual ~TG4GuiVolume(){;}
 
-//---> Inlines :
+    G4LogicalVolume* GetLogicalVolume() const;
+    TGListTreeItem* GetItem() const;
+    const char* GetName() const;
 
-    virtual const char*   GetName() const { return fkName;}
-    virtual G4LogicalVolume* GetLogicalVolume() const;
-    virtual void  SetItem(TGListTreeItem* item) {fItem = item;}
-    virtual TGListTreeItem* GetItem() {return fItem;}
-	                                              
-private:
-    const char*       fkName;    //name of the gui volume                   
+//---> Inlines :
+    void  SetItem(TGListTreeItem* item) {fItem = item;}
+
+//--------------------------------------------------------------------
+protected:
+    TG4GuiVolume(const TG4GuiVolume& gv) ;
+
+    // operators
+    TG4GuiVolume & operator=(const TG4GuiVolume& gv) ;
+    
+//---------------------------------------------------------------------    
+    
+private:      
     G4LogicalVolume*  fLogicalVolume;    // geant logical volume 
     TGListTreeItem*   fItem; // current item
-
-  TG4GuiVolume(const TG4GuiVolume& gv) {}
-  TG4GuiVolume & operator=(const TG4GuiVolume& gv) {return *this;}
 
     ClassDef(TG4GuiVolume,0)   
 };

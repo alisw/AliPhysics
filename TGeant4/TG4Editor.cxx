@@ -2,14 +2,16 @@
 // Category: interfaces
 //
 // Author: D. Adamova
-//===================================================
+//========================================================
 //
-//--------TG4Editor.cxx--------------------------//
-//------- A service class for GUI--------------//
+//---------------TG4Editor.cxx---------------------------//
+//------- A supplementary service class for--------------//
+//-----------AG4 Geometry Browser------------------------//
 //
-//=================================================
+//=========================================================
 
 #include "TG4Editor.h"
+#include "TG4Globals.h"
 
 #include <TGButton.h>
 #include <TGTextEdit.h>
@@ -48,6 +50,26 @@ TG4Editor::TG4Editor(const TGWindow* main, UInt_t w, UInt_t h) :
    SetWMPosition(ax, ay);
 }
 
+TG4Editor::TG4Editor(const TG4Editor& ge) :
+     TGTransientFrame( (const TGTransientFrame&) ge)
+{
+// Dummy copy constructor 
+  TG4Globals::Exception(
+    "Attempt to use TG4Editor copy constructor.");
+}
+
+TG4Editor& TG4Editor::operator=(const TG4Editor& ge)
+{
+  // check assignement to self
+  if (this == &ge) return *this;
+
+  TG4Globals::Exception(
+    "Attempt to assign TG4Editor singleton.");
+    
+  return *this;  
+}    
+
+
 TG4Editor::~TG4Editor()
 {
    // Delete editor accessories
@@ -66,10 +88,10 @@ void TG4Editor::SetTitle()
    Bool_t untitled = !strlen(txt->GetFileName()) ? kTRUE : kFALSE;
 
    char title[256];
-   //if (untitled)
+   if (untitled)
       sprintf(title, "Status Report");
-   //else
-      //sprintf(title, "Editor - %s", txt->GetFileName());
+   else
+      sprintf(title, "Editor - %s", txt->GetFileName());
 
    SetWindowName(title);
    SetIconName(title);
@@ -82,18 +104,11 @@ void TG4Editor::Popup()
    MapWindow();
 }
 
-void TG4Editor::LoadBuffer(const char* buffer)
+void TG4Editor::LoadBuffer(const char* buffer) 
 {
    // Load a text buffer in the editor.
 
    fEdit->LoadBuffer(buffer);
-}
-
-void TG4Editor::LoadFile(const char* file)
-{
-   // Load a file in the editor.
-
-   fEdit->LoadFile(file);
 }
 
 void TG4Editor::CloseWindow()
