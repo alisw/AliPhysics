@@ -566,7 +566,7 @@ void TFluka::TrackMomentum(TLorentzVector& momentum) const
     return;
   }
   else {
-    Double_t p = sqrt(TRACKR.etrack*TRACKR.etrack - PAPROP.am[TRACKR.jtrack]*PAPROP.am[TRACKR.jtrack]);
+    Double_t p = sqrt(TRACKR.etrack*TRACKR.etrack - PAPROP.am[TRACKR.jtrack+6]*PAPROP.am[TRACKR.jtrack+6]);
     momentum.SetPx(p*TRACKR.cxtrck);
     momentum.SetPy(p*TRACKR.cytrck);
     momentum.SetPz(p*TRACKR.cztrck);
@@ -584,10 +584,17 @@ Double_t TFluka::TrackStep() const
 
 Double_t TFluka::TrackLength() const
 {
-// It is wrong
-// should be the sum of all steps starting from the beginning of the track
+// Still wrong !!!
+// This is the sum of substeps !!!
+// TRACKR.ctrack = total curved path of the current step
+// Sum of the substeps is identical to TRACKR.ctrack if the is no mag. field
+// The sum of all step length starting from the beginning of the track
 // for the time being returns only the length in centimeters of the current step
-    return TRACKR.ctrack;
+    Double_t sum = 0;
+    for ( Int_t j=0;j<TRACKR.ntrack;j++) {
+      sum +=TRACKR.ttrack[j];
+    }
+    return sum;
 }
 
 Double_t TFluka::TrackTime() const
@@ -772,7 +779,7 @@ Bool_t   TFluka::IsTrackAlive() const
 Int_t TFluka::NSecondaries() const
 // Number of secondary particles generated in the current step
 // FINUC.np = number of secondaries except light and heavy ions
-// FINUC.np = number of secondaries for light and heavy secondary ions
+// FHEAVY.npheav = number of secondaries for light and heavy secondary ions
 {
   return FINUC.np + FHEAVY.npheav;
 }
@@ -781,6 +788,24 @@ void     TFluka::GetSecondary(Int_t isec, Int_t& particleId,
 		TLorentzVector& position, TLorentzVector& momentum)
 {
   if (isec >= 0 && isec < FINUC.np) {
+	  // more fine condition depending on icode
+	  // icode = 100 ?
+	  // icode = 101 OK
+	  // icode = 102 OK
+	  // icode = 103 ?
+	  // icode = 104 ?
+	  // icode = 105 ?
+	  // icode = 208 ?
+	  // icode = 210 ?
+	  // icode = 212 ?
+	  // icode = 214 OK
+	  // icode = 215 OK
+	  // icode = 219 ?
+	  // icode = 221 OK
+	  // icode = 225 ?
+	  // icode = 300 ?
+	  // icode = 400 ?
+	  
     particleId = PDGFromId(FINUC.kpart[isec]);
     position.SetX(fXsco);
     position.SetY(fYsco);
