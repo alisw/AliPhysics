@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  1999/11/03 17:43:20  fca
+New version from G.Martinez & A.Morsch
+
 Revision 1.5  1999/09/29 09:24:14  fca
 Introduction of the Copyright and cvs Log
 
@@ -387,12 +390,15 @@ void AliGenBox::Generate()
   }
   for(i=0;i<fNpart;i++) {
     gMC->Rndm(random,3);
-    pmom=fPMin+random[0]*(fPMax-fPMin);
-    theta=fThetaMin+random[1]*(fThetaMax-fThetaMin);
-    phi=fPhiMin+random[2]*(fPhiMax-fPhiMin);
-    p[0] = pmom*TMath::Cos(phi)*TMath::Sin(theta);
-    p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
-    p[2] = pmom*TMath::Cos(theta);
+    do {
+      pmom=fPMin+random[0]*(fPMax-fPMin);
+      theta=fThetaMin+random[1]*(fThetaMax-fThetaMin);
+      phi=fPhiMin+random[2]*(fPhiMax-fPhiMin);
+      p[0] = pmom*TMath::Cos(phi)*TMath::Sin(theta);
+      p[1] = pmom*TMath::Sin(phi)*TMath::Sin(theta);
+      p[2] = pmom*TMath::Cos(theta);
+    } while (fPtMin<=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]) && 
+	     TMath::Sqrt(p[0]*p[0]+p[1]*p[1])<=fPtMax);
     if(fVertexSmear==perTrack) {
       gMC->Rndm(random,6);
       for (j=0;j<3;j++) {

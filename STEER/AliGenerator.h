@@ -59,7 +59,7 @@ protected:
 	{fOsigma[0]=sx;fOsigma[1]=sy;fOsigma[2]=sz;}
     virtual void SetMomentumRange(Float_t pmin=0, Float_t pmax=1.e10)
 	{fPMin = pmin; fPMax = pmax;}
-    virtual void SetPtRange(Float_t ptmin=0, Float_t ptmax=20.)
+    virtual void SetPtRange(Float_t ptmin=0, Float_t ptmax=1.e10)
 	{fPtMin = ptmin; fPtMax = ptmax;}
     virtual void SetPhiRange(Float_t phimin=-180., Float_t phimax=180)
 	{fPhiMin = TMath::Pi()*phimin/180;
