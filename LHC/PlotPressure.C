@@ -122,7 +122,29 @@ void PlotPressure()
     hr5->Draw("L");
     hr6->Draw("L");
     text();
+//
+// One example of interaction rate calculation
+//
+// 3rd year, full intensity
+//
+    Float_t r[20];
+    const Float_t crossSection = 0.094e-28;   //  m^2
+    const Float_t pFlux        = 1.e11/25.e-9; // 1/s
     
+    for (Int_t i= 0; i < 20; i++) 
+    {
+	r[i] =  g5[i] * crossSection * pFlux; // 1/m/s 
+    }
+
+    TCanvas *c5 = new TCanvas("c5","Interaction Rate Beam 1, 3rd year", 200, 10, 700, 500);
+    gPad->SetLogy();
+    
+    TGraph* rr1  = new TGraph(20, z1, r);
+    rr1->SetMaximum(1e6);
+    rr1->SetMinimum(1e1);    
+    rr1->SetLineColor(4);
+    rr1->SetTitle("Ring 1");
+    rr1->Draw("AL");
 }
 
 void text()
