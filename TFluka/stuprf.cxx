@@ -30,6 +30,7 @@ extern "C" {
 		Double_t& xx, Double_t& yy, Double_t& zz,
 		Int_t& numsec, Int_t& npprmr)
 {
+    printf("stuprf \n");
 //*----------------------------------------------------------------------*
 //*                                                                      *
 //*  SeT User PRoperties for Fluka particles                             *
@@ -125,6 +126,7 @@ extern "C" {
 //
 //  Save current track number
     STACK.ispark[STACK.lstack][mkbmx2-1] = ntr;
+    STACK.ispark[STACK.lstack][mkbmx2-2] = 0;
   } // end of if (numsec-1 > npprmr)
 } // end of stuprf
 } // end of extern "C"

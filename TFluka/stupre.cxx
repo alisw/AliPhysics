@@ -32,7 +32,7 @@ void stupre()
 //*  SeT User PRoperties for Emf particles                               *
 //*                                                                      *
 //*----------------------------------------------------------------------*
-
+    printf("stupre \n");
   Int_t lbhabh = 0;
   if (EVTFLG.ldltry == 1) {
     if (EMFSTK.ichemf[EMFSTK.npemf-1] * EMFSTK.ichemf[EMFSTK.npemf-2] < 0) lbhabh = 1;
@@ -117,6 +117,7 @@ void stupre()
 	if (debug) cout << endl << " !!! stupre (PAIR, ..) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
 
 	EMFSTK.iespak[kp][mkbmx2-1] = ntr;
+	EMFSTK.iespak[kp][mkbmx2-2] = 0;
     } // end of lpairp, lphoel, lannfl, lannrs
     
 //* Compton: secondary is true only if charged (e+, e-)
@@ -129,6 +130,7 @@ void stupre()
 			       polx, poly, polz, mech, ntr, weight, is);
 	    if (debug) cout << endl << " !!! stupre (COMPTON) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
 	    EMFSTK.iespak[kp][mkbmx2-1] = ntr;
+	    EMFSTK.iespak[kp][mkbmx2-2] = 0;
 	}
     } // end of lcmptn
     
@@ -141,6 +143,7 @@ void stupre()
 			       polx, poly, polz, mech, ntr, weight, is);
 	    if (debug) cout << endl << " !!! stupre (BREMS) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
 	    EMFSTK.iespak[kp][mkbmx2-1] = ntr;
+	    EMFSTK.iespak[kp][mkbmx2-2] = 0;
 	}
     } // end of lbrmsp
     
@@ -153,6 +156,7 @@ void stupre()
 				   px, py, pz, e, vx, vy, vz, tof,
 				   polx, poly, polz, mech, ntr, weight, is);
 		EMFSTK.iespak[kp][mkbmx2-1] = ntr;
+		EMFSTK.iespak[kp][mkbmx2-2] = 0;
 	   if (debug) cout << endl << " !!! stupre (BHABA) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
 	    } // end of Bhabha
 	} // lbhabh == 1
@@ -166,6 +170,7 @@ void stupre()
 			       polx, poly, polz, mech, ntr, weight, is);
 	    if (debug) cout << endl << " !!! stupre (Moller) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
 	    EMFSTK.iespak[kp][mkbmx2-1] = ntr;
+	    EMFSTK.iespak[kp][mkbmx2-2] = 0;
 	} // end of Delta ray
     } // end of ldltry
     
