@@ -57,6 +57,12 @@ AliSTARTDigitizer::AliSTARTDigitizer(AliRunDigitizer* manager)
 
   ftimeTDC = new TArrayI(24); 
   fADC = new TArrayI(24); 
+
+  TFile* file = TFile::Open("$ALICE_ROOT/START/PMTefficiency.root");
+  fEff = (TH1F*) file->Get("hEff")->Clone();
+  fEff->SetDirectory(NULL);
+  file->Close();
+  delete file;
 }
 
 //------------------------------------------------------------------------
@@ -67,6 +73,7 @@ AliSTARTDigitizer::~AliSTARTDigitizer()
   AliDebug(1,"START"); 
   delete ftimeTDC;
   delete fADC;
+  delete fEff;
 }
 
  //------------------------------------------------------------------------
@@ -249,16 +256,8 @@ Bool_t AliSTARTDigitizer::RegisterPhotoE(Float_t e)
   //  Float_t hc=197.326960*1.e6; //mev*nm
   Float_t hc=1.973*1.e-6; //gev*nm
   Float_t lambda=hc/e;
-  Char_t filename[80];
-  TH1F *hEff;
-  Char_t *dirname=getenv("ALICE_ROOT");
-  sprintf(filename,"%s/START/PMTefficiency.root",dirname);
-  TFile *file= new TFile(filename);
-  file->cd();
-  hEff =  (TH1F*)file->Get("hEff");
-  Int_t bin=  hEff->GetXaxis()->FindBin(lambda);
-  Float_t eff=hEff->GetBinContent(bin);
-  file->Close();
+  Int_t bin=  fEff->GetXaxis()->FindBin(lambda);
+  Float_t eff=fEff->GetBinContent(bin);
   Double_t  p = gRandom->Rndm();
   if (p > eff)
     return kFALSE;

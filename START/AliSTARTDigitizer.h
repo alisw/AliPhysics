@@ -35,8 +35,9 @@ private:
   AliSTARTdigit *fdigits   ; // digits
   TArrayI *ftimeTDC    ; //array of TDC signal from right side
   TArrayI *fADC     ;//array of ADC signal from left sida
+  TH1*     fEff;    // efficiency histogram
   
-    ClassDef(AliSTARTDigitizer,0)
+    ClassDef(AliSTARTDigitizer,1)
 };    
 #endif
 
