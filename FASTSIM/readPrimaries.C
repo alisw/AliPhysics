@@ -23,11 +23,10 @@ void readPrimaries(Int_t evNumber1=0, Int_t evNumber2=0)
 //
 //   Loop over events 
 //
-    
+    rl->LoadKinematics();
+    rl->LoadHeader();    
     for (Int_t nev=0; nev<= evNumber2; nev++) {
 	rl->GetEvent(nev);
-	rl->LoadKinematics();
-	rl->LoadHeader();
 	AliStack* stack = rl->Stack();
 	Int_t npart = stack->GetNprimary();
 	if (nev < evNumber1) continue;
