@@ -452,7 +452,7 @@ public:
    Bool_t StopLoop() const { return fStopLoop; }
 
    void   SetDebugLevel(Int_t level) { fDebugLevel = level; }
-   Bool_t GetDebugLevel() const { return fDebugLevel; }
+   Int_t  GetDebugLevel() const { return fDebugLevel; }
 
    static Bool_t DeleteFiles() { return fgDeleteFiles; }
 
@@ -462,6 +462,6 @@ public:
 R__EXTERN AliMDC *gAliMDC;
 
 #define ALIDEBUG(level) \
-   if (gAliMDC && gAliMDC->GetDebugLevel() >= (level))
+   if (gAliMDC && (gAliMDC->GetDebugLevel() >= (level)))
 
 #endif
