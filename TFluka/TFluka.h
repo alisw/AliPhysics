@@ -242,7 +242,7 @@ class TFluka : public AliMC
     // other (then geometry/step/run management) methods
     // ----------------------------------------------
     //
-    virtual AliMCGeomType GetAliMCGeomType() const
+    virtual AliMCGeomType GetMCGeomType() const
 	{printf("AliMCGeomType not yet implemented !\n"); return 0;}
     
     //
@@ -277,7 +277,9 @@ class TFluka : public AliMC
   // Control Methods
 
   virtual void Init()
-      {printf("Init not yet implemented !\n");}
+      {printf("Init not yet implemented !\n");
+      }
+  
   virtual void FinishGeometry()
       {printf("FinishGeometry not yet implemented !\n");}
   virtual void BuildPhysics()
