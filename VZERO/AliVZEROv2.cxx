@@ -1064,7 +1064,7 @@ void AliVZEROv2::StepManager()
 ////////////////////////////////////////////////////////////////////////////         
      Float_t angle1 = Float_t(TMath::ATan2(Double_t(pos[1]),Double_t(pos[0])))*kRaddeg;
      if(angle1 < 0.0) angle1 = angle1 + 360.0;
-     printf(" RingNumber, copy, phi1  = %f %d %f \n\n", ringNumber,vol[1],angle1); 
+     //PH     printf(" RingNumber, copy, phi1  = %f %d %f \n\n", ringNumber,vol[1],angle1); 
 ////////////////////////////////////////////////////////////////////////////	
 	 	 
      
