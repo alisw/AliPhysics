@@ -27,6 +27,8 @@ class AliITSpListItem: public TObject {
 	                    return ( (i>=0&&i<fkSize-1) ? fSignal[i] : 0.0);}
     virtual Double_t GetSignal(){
 	                    return fTsignal;}
+    virtual Double_t GetSignalAfterElect(){
+	                    return fSignalAfterElect;}
     // Returns the Sum/Total signal
     virtual Double_t GetSumSignal() const {return fTsignal+fNoise;}
     // Returns the  noise
@@ -36,6 +38,8 @@ class AliITSpListItem: public TObject {
     // Addes track number and signal to this existing list.
     virtual void AddSignal(Int_t track,Int_t hit,Int_t module,
 			   Int_t index,Double_t signal);
+    // Adds signal after electronics to this existing list.
+    virtual void AddSignalAfterElect(Int_t module,Int_t index,Double_t signal);
     // Addes noise to this existing list.
     virtual void AddNoise(Int_t module,Int_t index,Double_t noise);
     // Returns track number.
@@ -50,6 +54,8 @@ class AliITSpListItem: public TObject {
     // Returns index number.
     virtual Int_t GetIndex(){
 	                    return findex;}
+    // Adds the contents of pl to this 
+    virtual void Add(AliITSpListItem *pl);
     // Adds the contents of pl to this with track number off set given by
     // fileIndex.
     virtual void AddTo(Int_t fileIndex,AliITSpListItem *pl);
@@ -71,6 +77,7 @@ class AliITSpListItem: public TObject {
     Double_t fSignal[fkSize]; //[fkSize] Signals
     Double_t fTsignal;        // Total signal (no noise)
     Double_t fNoise;          // Total noise, coupling, ...
+    Double_t fSignalAfterElect; // Signal after electronics
 
     ClassDef(AliITSpListItem,2) // Item list of signals and track numbers
 };	
@@ -212,7 +219,7 @@ class AliITSpList: public AliITSMap {
     TObjArray *fa;       // array of pList items
     Int_t     fEnteries; // keepts track of the number of non-zero entries.
 
-    ClassDef(AliITSpList,2) // list of signals and track numbers
+    ClassDef(AliITSpList,3) // list of signals and track numbers
 };	
 // Input and output functions for standard C++ input/output.
 ostream & operator<<(ostream &os,AliITSpList &source);
