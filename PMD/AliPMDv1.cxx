@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.25  2003/10/01 11:08:04  bnandi
+changes for NewIO
+
 Revision 1.24  2003/10/01 08:32:51  hristov
 CurrentTrack replaced by GetCurrentTrackNumber
 
@@ -566,7 +569,8 @@ void AliPMDv1::CreatePMD()
   //Complete detector for Type A
   //Position Super modules type A for both CPV and PMD in EPMD  
   Float_t z_psa,z_pba,z_fea,z_cva; 
-  z_psa = - gaspmd[3] + sm_thick/2.;
+
+  z_psa = - gaspmd[2] + sm_thick/2.;
 
   gMC->Gsposp("EMPA", 1, "EPMD", x_sma, y_sma, z_psa, 0, "ONLY",dbox_mm1,3);
   gMC->Gsposp("EMPA", 2, "EPMD", -x_sma, -y_sma, z_psa, jhrot12, "ONLY",dbox_mm1,3);
@@ -583,7 +587,7 @@ void AliPMDv1::CreatePMD()
   //Complete detector for Type B
   //Position Super modules type B for both CPV and PMD in EPMD  
   Float_t z_psb,z_pbb,z_feb,z_cvb; 
-  z_psb = - gaspmd[3] + sm_thick/2.;
+  z_psb = - gaspmd[2] + sm_thick/2.;
   
   gMC->Gsposp("EMPB", 3, "EPMD", x_smb, y_smb, z_psb, 0, "ONLY",dbox_mm2,3);
   gMC->Gsposp("EMPB", 4, "EPMD", -x_smb, -y_smb, z_psb, jhrot12, "ONLY",dbox_mm2,3);
