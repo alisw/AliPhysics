@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.17  2001/02/09 00:05:31  nilsen
+Added fMajor/MinorVersion variables and made other changes to better make
+use of the new code changes in AliITSgeom related classes.
+
 Revision 1.16  2001/01/30 09:23:13  hristov
 Streamers removed (R.Brun)
 
@@ -477,7 +481,8 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
   pcits[4] = 47.+0.1;
   gMC->Gsvolu("ICO2", "CONE", idtmed[264], pcits, 5);    
   gMC->Gspos("ICO2", 1, "ITSD", 0., 0., 59.+pcits[0], 0, "ONLY");
-  
+  gMC->Gspos("ICO2", 2, "ITSD", 0., 0., -(59.+pcits[0]), idrotm[200], "ONLY");
+    
   // SERVICES
     
   // --- DEFINE CABLES AT THE END OF THE ITS CONES - COPPER PART
