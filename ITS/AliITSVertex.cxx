@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -36,53 +36,22 @@ AliITSVertex::AliITSVertex() {
 //
 // Default Constructor, set everything to 0
 //
-    fPosition[0]   = 0;
-    fPosition[1]   = 0;
-    fPosition[2]   = 0;
-    fCovXX         = 0;
-    fCovXY         = 0;
-    fCovYY         = 0;
-    fCovXZ         = 0;
-    fCovYZ         = 0;
-    fCovZZ         = 0;
-
-    fSNR[0]        = 0;
-    fSNR[1]        = 0;
-    fSNR[2]        = 0;
-
-    fPhi           = 0;
-    fChi2          = 0;
-    fNContributors = 0;
-
-    SetDebug();
+  SetToZero();
 }
 //--------------------------------------------------------------------------
 AliITSVertex::AliITSVertex(Double_t positionZ,Double_t sigmaZ,
 			   Int_t nContributors,Char_t *vtxName) {
-//
-// Constructor for vertex Z from pixels
-//
-    fPosition[0]   = 0;
-    fPosition[1]   = 0;
-    fPosition[2]   = positionZ;
-    fCovXX         = 0;
-    fCovXY         = 0;
-    fCovYY         = 0;
-    fCovXZ         = 0;
-    fCovYZ         = 0;
-    fCovZZ         = sigmaZ*sigmaZ;
+  //
+  // Constructor for vertex Z from pixels
+  //
 
-    fSNR[0]        = 0;
-    fSNR[1]        = 0;
-    fSNR[2]        = 0;
+  SetToZero();
 
-    fPhi           = 0;
-    fChi2          = 0;
-    fNContributors = nContributors;
+  fPosition[2]   = positionZ;
+  fCovZZ         = sigmaZ*sigmaZ;
+  fNContributors = nContributors;
+  SetName(vtxName);
 
-    SetName(vtxName);
-
-    SetDebug();
 }
 //------------------------------------------------------------------------- 
 AliITSVertex::AliITSVertex(Double_t phi,
@@ -91,6 +60,8 @@ AliITSVertex::AliITSVertex(Double_t phi,
 //
 // Constructor for vertex in 3D from tracks
 //
+
+  SetToZero();
     fPosition[0]   = position[0];
     fPosition[1]   = position[1];
     fPosition[2]   = position[2];
@@ -101,9 +72,6 @@ AliITSVertex::AliITSVertex(Double_t phi,
     fCovYZ         = covmatrix[4];
     fCovZZ         = covmatrix[5];
 
-    fSNR[0]        = 0;
-    fSNR[1]        = 0;
-    fSNR[2]        = 0;
 
     fPhi           = phi;
     fChi2          = chi2;
@@ -111,7 +79,6 @@ AliITSVertex::AliITSVertex(Double_t phi,
 
     SetName(vtxName);
 
-    SetDebug();
 }
 //--------------------------------------------------------------------------
 AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
@@ -119,6 +86,8 @@ AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
 //
 // Constructor for smearing of true position
 //
+
+  SetToZero();
     fPosition[0]   = position[0];
     fPosition[1]   = position[1];
     fPosition[2]   = position[2];
@@ -129,51 +98,64 @@ AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
     fCovYZ         = 0;
     fCovZZ         = sigma[2]*sigma[2];
 
-    fSNR[0]        = 0;
-    fSNR[1]        = 0;
-    fSNR[2]        = 0;
-
-    fPhi           = 0;
-    fChi2          = 0;
-    fNContributors = 0;
 
     SetName(vtxName);
 
-    SetDebug();
 }
 //--------------------------------------------------------------------------
 AliITSVertex::AliITSVertex(Double_t position[3],Double_t sigma[3],
 			   Double_t snr[3],Char_t *vtxName) {
-//
-// Constructor for Pb-Pb
-//
-    fPosition[0]   = position[0];
-    fPosition[1]   = position[1];
-    fPosition[2]   = position[2];
-    fCovXX         = sigma[0]*sigma[0];
-    fCovXY         = 0;
-    fCovYY         = sigma[1]*sigma[1];
-    fCovXZ         = 0;
-    fCovYZ         = 0;
-    fCovZZ         = sigma[2]*sigma[2];
+  //
+  // Constructor for Pb-Pb
+  //
 
-    fSNR[0]        = snr[0];
-    fSNR[1]        = snr[1];
-    fSNR[2]        = snr[2];
+  SetToZero();
+  fPosition[0]   = position[0];
+  fPosition[1]   = position[1];
+  fPosition[2]   = position[2];
+  fCovXX         = sigma[0]*sigma[0];
+  fCovXY         = 0;
+  fCovYY         = sigma[1]*sigma[1];
+  fCovXZ         = 0;
+  fCovYZ         = 0;
+  fCovZZ         = sigma[2]*sigma[2];
 
-    fPhi           = 0;
-    fChi2          = 0;
-    fNContributors = 0;
+  fSNR[0]        = snr[0];
+  fSNR[1]        = snr[1];
+  fSNR[2]        = snr[2];
 
-    SetName(vtxName);
+  SetName(vtxName);
 
-    SetDebug();
+}
+//--------------------------------------------------------------------------
+void AliITSVertex::SetToZero() {
+  //
+  // Set some data members to 0. Used by constructors
+  //
+  for(Int_t i=0; i<3; i++){
+    fPosition[i] = 0.;
+    fTruePos[i] = 0;
+    fSNR[i] = 0.;
+  }
+  fCovXX         = 0;
+  fCovXY         = 0;
+  fCovYY         = 0;
+  fCovXZ         = 0;
+  fCovYZ         = 0;
+  fCovZZ         = 0;
+
+  fPhi           = 0;
+  fChi2          = 0;
+  fNContributors = 0;
+
+  SetDebug();
 }
 //--------------------------------------------------------------------------
 AliITSVertex::~AliITSVertex() {
 //  
 // Default Destructor
 //
+
 }
 //--------------------------------------------------------------------------
 void AliITSVertex::GetXYZ(Double_t position[3]) const {
@@ -327,6 +309,8 @@ void AliITSVertex::PrintStatus() const {
   printf(" S/N = (%f, %f, %f)\n",fSNR[0],fSNR[1],fSNR[2]);
   printf(" chi2 = %f\n",fChi2);
   printf(" # tracks (or tracklets) = %d\n",fNContributors);
+
+  printf(" True vertex position - for comparison: %12.10f  %12.10f  %12.10f\n ",fTruePos[0],fTruePos[1],fTruePos[2]);
 
   return;
 }

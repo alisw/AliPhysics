@@ -1,6 +1,6 @@
 #ifndef ALIITSVERTEX_H
 #define ALIITSVERTEX_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 
@@ -73,9 +73,16 @@ class AliITSVertex : public TNamed {
 
   void     PrintStatus() const;
   void     SetDebug(Int_t dbg = 0) { fDebug = dbg; return; }
+  void SetTruePos(Double_t *tp){for(Int_t i=0;i<3;i++)fTruePos[i]=tp[i];}
+  void GetTruePos(Double_t &x,Double_t &y,Double_t &z) const 
+       {x=fTruePos[0]; y=fTruePos[1]; z=fTruePos[2];}
         
  private:
-    
+
+  void SetToZero();
+
+ protected:
+
   Double_t fPosition[3];  // vertex position
   Double_t fCovXX,fCovXY,fCovYY,fCovXZ,fCovYZ,fCovZZ;  // vertex covariance matrix
   Double_t fSNR[3];  // S/N ratio
@@ -83,8 +90,8 @@ class AliITSVertex : public TNamed {
   Double_t fChi2;  // chi2 of vertex fit
   Int_t    fNContributors;  // # of tracklets/tracks used for the estimate 
   Int_t    fDebug;  //! for debugging
-
-  ClassDef(AliITSVertex,2)  // Class for Primary Vertex
+  Double_t fTruePos[3];   //true vertex position (for comparison purposes)
+  ClassDef(AliITSVertex,3)  // Class for Primary Vertex
     };
 
 #endif
