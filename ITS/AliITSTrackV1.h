@@ -36,6 +36,8 @@ public:
   Double_t GetC() const {return fX4;}            // gets the curvature value for the track
   Double_t GetD() const{return fX2;}             // gets the radial impact parameter for the track
   Double_t GetPt() const {return 0.299792458*0.2*fFieldFactor/(fX4*100.);} // gets the transvers momentum 
+  Float_t GetdEdx() const {return fdEdx;}        //gets fdEdx    // oggi
+
                                                                            // value for the track           
   void SetVertex(TVector &vert) { for(Int_t i=0;i<3;i++) fVertex(i) = vert(i);} // sets the vertex
                                                                                 // cohordinates
@@ -62,7 +64,9 @@ public:
                                                                                            // of state vector
   void PutXElements(Double_t X0, Double_t X1, Double_t X2, Double_t X3, Double_t X4);  // put elements
  
-  void PutMass(Double_t mass) {fMass=mass;} // put the  particle mass                                                                                        // of state vector
+  void PutMass(Double_t mass) {fMass=mass;} // put the particle mass
+  Double_t GetMass() const {return fMass;}  // get the particle mass   // oggi                                                                                      // of state vector
+
     
   void SetLayer(Int_t layer) { fLayer = layer;}      // set current layer
   AliTPCtrack *GetTPCtrack() const { return fTPCtrack;}    // get hte TPC track
@@ -115,7 +119,10 @@ public:
   //Double_t GetxoTPC() const {return fxoTPC;}  // gets fxoTPC
   Int_t  Getfnoclust() const {return fnoclust;}  //gets fnoclust 
   Double_t GetPredChi2(Double_t m[2], Double_t sigma[2]) const; //get predicted chi2
- 
+  void Setfcor()                  //set correction for layer                // oggi
+   {if(fLayer>=3) fcor[fLayer-3] = 1./TMath::Sqrt(1.+ fX3*fX3);}            // oggi
+  Float_t Getfcor(Int_t i) {return fcor[i];}  //return correction for layer // oggi
+
         	        
 //////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -152,7 +159,11 @@ public:
   TVector           ftgl2;              // C(3,3)  for primary track
   TVector           fdtgl;              // C(2,3)  for primary track
 
-  Double_t          fMass;         //  particle mass 
+  Double_t          fMass;         //  tracking particle mass
+  
+  Float_t           fdEdx ;         // energy loss                  // oggi
+  Float_t           fcor[4];          // corrections for dE/dx      // oggi
+ 
   
   Int_t   fnoclust;  //nm of layers in which tracking doesn't add a cluster to the track
   		   

@@ -6,7 +6,7 @@ Bool_t TPCSortTracks(Int_t event = 0)
 {
    TFile *fileTracks   = TFile::Open("AliTPCtracks.root");
    TFile *fileClusters = TFile::Open("AliTPCclusters.root");
-	TFile *fileEvent    = TFile::Open("galice.root");
+   TFile *fileEvent    = TFile::Open("galice.root");
 
    // get TPC parameterization
    AliTPCParam *param=(AliTPCParam *)fileEvent->Get("75x40_100x60_150x60");
@@ -82,17 +82,7 @@ void AliITSTrackingV1(Int_t evNumber1=0,Int_t evNumber2=0, Int_t min_t=-1, Int_t
     gAlice=0;
   }
   
-  cout << "Sorting TPC tracks w.r. to transverse momentum...";
-  Bool_t success_sorting = TPCSortTracks();
-  if (success_sorting) {
-     cout << "DONE!" << endl;
-  }
-  else {
-	cout << "Some error occurred..." << endl;
-	return 1;
-  }
-
-// Connect the Root Galice file containing Geometry, Kine and Hits
+  // Connect the Root Galice file containing Geometry, Kine and Hits
    TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
    if (!file) file = new TFile("galice.root","UPDATE");
    //if (!file) file = new TFile(filename);
@@ -103,6 +93,19 @@ void AliITSTrackingV1(Int_t evNumber1=0,Int_t evNumber2=0, Int_t min_t=-1, Int_t
       if (gAlice) printf("AliRun object found on file\n");
       if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
    }
+   
+   AliKalmanTrack::SetMagneticField(gAlice->Field()->SolenoidField() / 10.0);
+
+  
+  cout << "Sorting TPC tracks w.r. to transverse momentum...";
+  Bool_t success_sorting = TPCSortTracks();
+  if (success_sorting) {
+     cout << "DONE!" << endl;
+  }
+  else {
+	cout << "Some error occurred..." << endl;
+	return 1;
+  }
 
   AliITS* IITTSS =(AliITS *)gAlice->GetDetector("ITS");        
   if (!IITTSS) return;                                           

@@ -38,6 +38,11 @@ class AliITSIOTrack : public TObject {
   Float_t GetPy() const {return fPy;}   // gets the y momentum component at the fX,fY,fZ point  
   Float_t GetPz() const {return fPz;}    // gets the z momentum component at the fX,fY,fZ point  
   Double_t GetDz() const {return fDz;}   // gets the longitudinal impact parameter
+  Int_t    GetPid() const {return fPid;} // gets the identified particle code
+  Double_t GetMass() {return fMass;}                             // get the tracking mass  
+  Float_t GetdEdx() {return fdEdx;}                              //get the track energy loss
+  void SetMass(Double_t mass) {fMass=mass;}                      // put the tracking mass
+  void SetPid(Int_t pid) {fPid=pid;}                             // put the identified particle code
   
   void SetCovMatrix(Double_t C00, Double_t C10, Double_t C11, Double_t C20, Double_t C21, 
        Double_t C22, Double_t C30, Double_t C31, Double_t C32, Double_t C33, Double_t C40, 
@@ -63,6 +68,8 @@ class AliITSIOTrack : public TObject {
   void SetPy(Float_t py) {fPy=py;}   // sets the y momentum component at the fX,fY,fZ point
   void SetPz(Float_t pz) {fPz=pz;}   // sets the z momentum component at the fX,fY,fZ point
   void SetDz(Double_t dz) {fDz=dz;}  //sets the longitudinal impact parameter
+  void SetdEdx(Float_t dedx) {fdEdx=dedx;} //sets the de/dx
+
 
  private:
     
@@ -87,9 +94,15 @@ class AliITSIOTrack : public TObject {
   Double_t  fStateVC;            //  state vector component C
 	 
   Double_t  fRadius;             //  distance of the point from the origin
+  Int_t     fPid;                //  identified particle code
   Int_t     fCharge;             //  particle charge 
   
-  Double_t  fDz;                  //longitudinal impact parameter 
+  Double_t  fMass;               //  tracking mass
+  
+  Double_t  fDz;                 // longitudinal impact parameter 
+  
+  Float_t fdEdx;             //track energy loss by trouncated method
+
 
 //  Covariance matrix
   Double_t  fC00;                                   // first row elements of the covariance matrix

@@ -77,8 +77,8 @@ Int_t	AliITSPid::wpik(Int_t nc,Float_t q)
     sigk =cut[nc][4];
     appi = aprob[0][nc-5];
     apk  = aprob[1][nc-5];
-    cout<<"qmpi,sigpi,qmk,sigk="<<qmpi<<"  "<<sigpi<<"  "<<qmk<<"  "<<sigk<<endl;
-    cout<<"appi,apk="<<appi<<","<<apk<<endl;
+//    cout<<"qmpi,sigpi,qmk,sigk="<<qmpi<<"  "<<sigpi<<"  "<<qmk<<"  "<<sigk<<endl;
+//    cout<<"appi,apk="<<appi<<","<<apk<<endl;
     Float_t dqpi=(q-qmpi)/sigpi;
     Float_t dqk =(q-qmk )/sigk;
     if( dqk<-1. )return pion();
@@ -91,9 +91,9 @@ Int_t	AliITSPid::wpik(Int_t nc,Float_t q)
     pk = apk*TMath::Gaus(q,qmk, sigk )
         /(appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk));
 
-    Float_t rpik=ppi/(pk+0.0000001); 
-	cout<<"q,dqpi,dqk, wpik: ppi,pk,rpik="
-	<<q<<"  "<<dqpi<<"  "<<dqk<<"  "<<ppi<<"  "<<pk<<"  "<<rpik<<endl;
+//    Float_t rpik=ppi/(pk+0.0000001); 
+//	cout<<"q,dqpi,dqk, wpik: ppi,pk,rpik="
+//	<<q<<"  "<<dqpi<<"  "<<dqk<<"  "<<ppi<<"  "<<pk<<"  "<<rpik<<endl;
 
     fWp=0.; fWpi=ppi; fWk=pk;
     if( pk>ppi){return kaon();}else{return pion();}
@@ -130,10 +130,10 @@ Int_t	AliITSPid::wpikp(Int_t nc,Float_t q)
 
     fWp=pp; fWpi=ppi; fWk=pk;
 
-cout<<" wpikp: mid,sig pi,k,p="<<qmpi<<" "<<sigpi<<";   "<<qmk<<" "<<sigk<<";   "
-    <<qmp<<" "<<sigp<<"; "<<endl;
- cout<<" aprob: "<<appi<<"  "<<apk<<"  "<<app<<endl;
-cout<<" ppi,pk,pp="<<ppi<<"  "<<pk<<"  "<<pp<<endl;
+//cout<<" wpikp: mid,sig pi,k,p="<<qmpi<<" "<<sigpi<<";   "<<qmk<<" "<<sigk<<";   "
+//    <<qmp<<" "<<sigp<<"; "<<endl;
+// cout<<" aprob: "<<appi<<"  "<<apk<<"  "<<app<<endl;
+//cout<<" ppi,pk,pp="<<ppi<<"  "<<pk<<"  "<<pp<<endl;
 
     if( ppi>pk&&ppi>pp )  { return pion(); }
     if(pk>pp){return kaon();}else{return proton();}
@@ -155,7 +155,7 @@ Int_t   AliITSPid::GetPcode(AliTPCtrack *track)
       Float_t mom=1./(pt_1*TMath::Cos(lam));
       Float_t dedx=track->GetdEdx();
     Int_t pcode=GetPcode(dedx/40.,mom);
-    cout<<"TPCtrack dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
+//    cout<<"TPCtrack dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
     return pcode?pcode:211;
     }
 //------------------------------------------------------------
@@ -167,11 +167,11 @@ Int_t   AliITSPid::GetPcode(AliITSIOTrack *track)
     pz=track->GetPz();
     Float_t mom=TMath::Sqrt(px*px+py*py+pz*pz);
 //???????????????????
-    Float_t dedx=1.0;
-    //  Float_t dedx=track->GetdEdx();
+    // Float_t dedx=1.0;
+    Float_t dedx=track->GetdEdx();
 //???????????????????    
     Int_t pcode=GetPcode(dedx,mom);
-    cout<<"ITSV1 dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
+//    cout<<"ITSV1 dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
 return pcode?pcode:211;
 }
 //-----------------------------------------------------------
@@ -187,9 +187,9 @@ Int_t   AliITSPid::GetPcode(AliITStrackV2 *track)
     Float_t mom=0.;
     if( (pt_1*TMath::Cos(lam))!=0. ){ mom=1./(pt_1*TMath::Cos(lam)); }else{mom=0.;};
     Float_t dedx=track->GetdEdx();
-    cout<<"lam,pt_1,mom,dedx="<<lam<<","<<pt_1<<","<<mom<<","<<dedx<<endl;
+//    cout<<"lam,pt_1,mom,dedx="<<lam<<","<<pt_1<<","<<mom<<","<<dedx<<endl;
     Int_t pcode=GetPcode(dedx,mom);
-    cout<<"ITS V2 dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
+//    cout<<"ITS V2 dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
 return pcode?pcode:211;
 }
 //-----------------------------------------------------------
@@ -335,7 +335,7 @@ for(Int_t i=0;i<trs->GetEntries();i++)
 	    xx(9)=GetWp();
 //       3)Print table
 	    if(xx(0)>0){
-		    cout<<xx(0)<<" ";
+//		    cout<<xx(0)<<" ";
 		    for(Int_t j=1;j<11;j++){
 		      if(i<7){ cout.width(7);cout.precision(4);cout<<xx(j);}
                       if(i>7){ cout.width(7);cout.precision(5);cout<<xx(j);}

@@ -84,7 +84,7 @@ Int_t AliITSStoreFindableTracksCompiled
 	}
 	
 	// Scan recpoints and define findable tracks
-	Int_t nModules = (Int_t)TR->GetEntries(), nPoints = 0;
+	Int_t nModules = (Int_t)TR->GetEntries(), nPoints = 0, nEmpty = 0;
 	cout << "Found " << nModules;
 	cout << " entries in the TreeR (must be one per module!)" << endl;
 	for (Int_t layer = 1; layer <= 6; layer++) {
@@ -93,7 +93,7 @@ Int_t AliITSStoreFindableTracksCompiled
 			TR->GetEntry(mod);
 			nPoints = recPoints->GetEntries();
 			if(!nPoints) {
-				cout << "Module " << mod << " is empty..." << endl;
+				nEmpty++;
 				continue;
 			}
 			for (Int_t point = 0; point < nPoints; point++) {
@@ -111,6 +111,7 @@ Int_t AliITSStoreFindableTracksCompiled
 			} //loop over points
 		} //loop over modules
 	} //loop over layers
+	cout << "Found " << nEmpty << " empty modules" << endl;
 	
 	// Scan the file of tracks in TPC to retrieve the findable TPC tracks
 	TString strLabelsTPC;
@@ -125,7 +126,7 @@ Int_t AliITSStoreFindableTracksCompiled
 			
 	// Define the TTree with tracks data by means of a set of variables
 	Int_t nFindablesITS = 0, nFindablesITSTPC = 0;
-	Int_t nhits, tpc_ok, entry = 0;
+	Int_t nhits, tpc_ok, mother, entry = 0;
 	Double_t vx, vy, vz;
 	Double_t px, py, pz, pt;
 
@@ -140,6 +141,7 @@ Int_t AliITSStoreFindableTracksCompiled
 	tree->Branch("pt", &pt, "pt/D");
 	tree->Branch("label", &label, "label/I");
 	tree->Branch("entry", &entry, "entry/I");
+	tree->Branch("mother", &mother, "mother/I");
 	tree->Branch("pdg_code", &pdg_code, "pdg_code/I");
 	tree->Branch("nhits", &nhits, "nhits/I");
 	tree->Branch("tpc_ok", &tpc_ok, "tpc_ok/I");
@@ -148,6 +150,9 @@ Int_t AliITSStoreFindableTracksCompiled
 	cout << endl;
 	TParticle *p = 0;
 	for (Int_t i = 0; i < nTracks; i++) {
+		nhits = 0;
+		for (Int_t j = 0; j < 6; j++) if (hitITSLayer[j][i]) nhits++;
+		if (nhits < nMinClusters) continue;
 		p = gAlice->Particle(i);
 		px = p->Px();
 		py = p->Py();
@@ -156,9 +161,7 @@ Int_t AliITSStoreFindableTracksCompiled
 		vx = p->Vx();
 		vy = p->Vy();
 		vz = p->Vz();
-		nhits = 0;
-		for (Int_t j = 0; j < 6; j++) if (hitITSLayer[j][i]) nhits++;
-		if (nhits < nMinClusters) continue;
+		mother = p->GetFirstMother();
 		cout << "Track " << i << " stored\r" << flush;
 		tpc_ok = (strLabelsTPC.Contains(Form("[%d]", i)));
 		pdg_code = p->GetPdgCode();
