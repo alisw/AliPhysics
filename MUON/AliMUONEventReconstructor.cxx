@@ -1183,8 +1183,8 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegme
       // increment number of track candidates with 2 segments
       nbCan2Seg++;
     }
+    delete extrapSegment; // should not delete HitForRec's it points to !!!!
   } // for (iEndSegment = 0;...
-  delete extrapSegment; // should not delete HitForRec's it points to !!!!
   return nbCan2Seg;
 }
 
@@ -1245,9 +1245,8 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
 	// increment number of track candidates
 	nbCan1Seg1Hit++;
       }
+      delete extrapHitForRec;
     } // for (iHit = iHitMin;...
-    delete extrapHitForRec;
-    extrapHitForRec = NULL;
   } // for (ch = ch2;...
   return nbCan1Seg1Hit;
 }
