@@ -54,12 +54,28 @@ AliHBTTrackPoints::AliHBTTrackPoints(Int_t n, AliESDtrack* track, Float_t mf, Fl
      return;
    }
 
+  if ( ((track->GetStatus() & AliESDtrack::kTPCrefit) == kFALSE)&& 
+       ((track->GetStatus() & AliESDtrack::kTPCin) == kFALSE)  )
+   {
+     //could happend: its stand alone tracking
+     if (GetDebug() > 3) 
+       Warning("AliHBTTrackPoints","This ESD track does not contain TPC information");
+       
+     fN = 0;
+     delete [] fX;
+     delete [] fY;
+     delete [] fZ;
+     fX = fY = fZ = 0x0;
+     
+     return;
+   }
+  
   Double_t x;
   Double_t par[5];
   track->GetInnerExternalParameters(x,par);     //get properties of the track
   if (par[4] == 0)
    {
-     Error("AliHBTTrackPoints","This ESD track does not contain TPC information");
+     Error("AliHBTTrackPoints","This ESD track seem not to contain TPC information (curv is 0)");
      return;
    }
 
@@ -169,12 +185,14 @@ void AliHBTTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t
      Double_t ftmp = (c2*rc + cst1/rc)/cst2;
      if (ftmp > 1.0) 
       {
-        Warning("AliHBTTrackPoints","ASin argument > 1 %f:",ftmp);
+        if (GetDebug() > 1) 
+          Warning("AliHBTTrackPoints","ASin argument > 1 %f:",ftmp);
         ftmp=1.0;
       }
      else if (ftmp < -1.0) 
       {
-        Warning("AliHBTTrackPoints","ASin argument < -1 %f:",ftmp);
+        if (GetDebug() > 1) 
+          Warning("AliHBTTrackPoints","ASin argument < -1 %f:",ftmp);
         ftmp=-1.0;
       }
       
@@ -184,19 +202,22 @@ void AliHBTTrackPoints::MakePoints( Float_t dr, Float_t r0, Double_t x, Double_t
      ftmp = (rc*rc-dcasq)/cst2;
      if (ftmp < 0.0) 
       {
-        Warning("AliHBTTrackPoints","Sqrt argument < 0: %f",ftmp);
-        ftmp=1.0;
+        if (GetDebug() > 1) 
+          Warning("AliHBTTrackPoints","Sqrt argument < 0: %f",ftmp);
+        ftmp=0.0;
       }
      
      ftmp = c2*TMath::Sqrt(ftmp);
      if (ftmp > 1.0) 
       {
-        Warning("AliHBTTrackPoints","ASin argument > 1: %f",ftmp);
+        if (GetDebug() > 1) 
+          Warning("AliHBTTrackPoints","ASin argument > 1: %f",ftmp);
         ftmp=1.0;
       }
      else if (ftmp < -1.0) 
       {
-        Warning("AliHBTTrackPoints","ASin argument < -1: %f",ftmp);
+        if (GetDebug() > 1) 
+          Warning("AliHBTTrackPoints","ASin argument < -1: %f",ftmp);
         ftmp=-1.0;
       }
      Double_t factorZ = TMath::ASin(ftmp)*par[3]/c2;
@@ -244,14 +265,16 @@ void AliHBTTrackPoints::PositionAt(Int_t n, Float_t &x,Float_t &y,Float_t &z)
 Double_t AliHBTTrackPoints::AvarageDistance(const AliHBTTrackPoints& tr)
 {
   //returns the aritmethic avarage distance between two tracks
-  if (fN != tr.fN)
-   {
-     Error("AvarageDistance","Number of points is not equal");
-     return -1;
-   }
+//  Info("AvarageDistance","Entered");
   if ( (fN <= 0) || (tr.fN <=0) )
    {
-     Error("AvarageDistance","One of tracks is empty");
+     if (GetDebug()) Warning("AvarageDistance","One of tracks is empty");
+     return -1;
+   }
+
+  if (fN != tr.fN)
+   {
+     Warning("AvarageDistance","Number of points is not equal");
      return -1;
    }
    
@@ -273,7 +296,7 @@ Double_t AliHBTTrackPoints::AvarageDistance(const AliHBTTrackPoints& tr)
      Double_t dz = fZ[i]-tr.fZ[i];
      sum+=TMath::Sqrt(dx*dx + dy*dy + dz*dz);
      
-     if (GetDebug()>0)
+     if (GetDebug()>1)
       {
        Info("AvarageDistance","Diff: x ,y z: %f , %f, %f",dx,dy,dz);
        Info("AvarageDistance","xxyyzz %f %f %f %f %f %f",
