@@ -31,7 +31,7 @@ SRCS          = AliTRD.cxx AliTRDv0.cxx AliTRDv1.cxx AliTRDv2.cxx \
                 AliTRDpid.cxx AliTRDpidLQ.cxx                     \
                 AliTRDmcTrack.cxx                                 \
                 AliTRDsimple.cxx AliTRDsimpleMC.cxx               \
-                AliTRDsimpleGen.cxx
+                AliTRDsimpleGen.cxx 
 
 # C++ Headers
 
