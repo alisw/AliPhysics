@@ -12,18 +12,21 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /*
 $Log$
 */ 
+#include <iostream.h>
+#include <fstream.h>
 
+#include "AliRun.h"
 #include "AliSTART.h"
 #include "AliSTARTdigit.h"
-#include "AliRun.h"
+
 ClassImp(AliSTARTdigit)
 
-AliSTARTdigit::AliSTARTdigit(Int_t *tracks, Int_t *digits):
-  AliDigit(tracks){
+AliSTARTdigit::AliSTARTdigit(Int_t Timeav, Int_t Timediff)
+  //:  AliDigit(tracks)
+{
   //
   // Create START digit
   //     The creator for the AliSTARTdigit class. This routine fills the
@@ -33,13 +36,7 @@ AliSTARTdigit::AliSTARTdigit(Int_t *tracks, Int_t *digits):
   // fTime_average = digits[1], fTime_diff = digits[1], and fDet = digits[4].
   // Therefore the array digits is expected to be at least 5 elements long.
   //
-  fEvent        = digits[0];
-  fTime_average = digits[1];
-  fTime_diff    = digits[2];
+  Timeav = fTime_average;
+  Timediff = fTime_diff;
 
 }
-
-
-
-
-
