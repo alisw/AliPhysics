@@ -365,6 +365,11 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
   // Store header in tree
   if (fTagDB) fTagDB->Fill();
 
+  // Make top event object ready for next event data
+  fEvent->Reset();
+  // Clean up HLT ESD for the next event
+  if (fESD) fESD->Reset();
+
   return nBytes;
 }
 
@@ -581,9 +586,9 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 
     // Make top event object ready for next event data
     //printf("Event %d has %d sub-events\n", numEvents, fEvent->GetNSubEvents());
-    fEvent->Reset();
+    //    fEvent->Reset();
     // Clean up HLT ESD for the next event
-    if (fESD) fESD->Reset();
+    //    if (fESD) fESD->Reset();
 
     if (!inputFile) {
 #ifdef USE_EB
