@@ -4,6 +4,7 @@ AliVZERO.cxx \
 AliVZEROv2.cxx \
 AliVZEROv3.cxx \
 AliVZEROv4.cxx \
+AliVZEROv5.cxx \
 AliVZEROhit.cxx \
 AliVZEROdigit.cxx \
 AliVZERODigitizer.cxx \
