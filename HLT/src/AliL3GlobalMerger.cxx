@@ -1,3 +1,5 @@
+//$Id$
+
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy Uli 
 
@@ -46,6 +48,53 @@ void AliL3GlobalMerger::InitSlice(Int_t slice){
   fCurrentTracks = fSlice - fFirst; 
 }
 
+Double_t AliL3GlobalMerger::CheckTracks(AliL3Track *innertrack,AliL3Track *outertrack,Int_t slice)
+{
+  //Compare the tracks by propagating the outermost track to the last and first point plane
+  //of the innermost track. This plane is defined by the padrow plane where these points
+  //are.
+  
+  
+  Float_t angle = PI/36;//5 degrees = perpendicular to padrowplane (in local system)
+  fTransformer->Local2GlobalAngle(&angle,slice);
+  Double_t dx[2],dy[2],dz[2];
+  Double_t diff =-1;
+  AliL3Track *tracks[2];
+  tracks[0] = innertrack;
+  tracks[1] = outertrack;
+  SortGlobalTracks(tracks,2);
+  innertrack = tracks[0]; 
+  outertrack = tracks[1];
+  
+  Float_t point[3];
+  
+  point[0]=innertrack->GetLastPointX();
+  point[1]=innertrack->GetLastPointY();
+  point[2]=innertrack->GetLastPointZ();
+  fTransformer->Global2Local(point,slice,kTRUE);
+  
+  outertrack->CalculateReferencePoint(angle,point[0]);//local x = global distance to padrowplane
+  if(!outertrack->IsPoint()) return diff;
+  dx[0] = fabs(outertrack->GetPointX()-innertrack->GetLastPointX());
+  dy[0] = fabs(outertrack->GetPointY()-innertrack->GetLastPointY());
+  dz[0] = fabs(outertrack->GetPointZ()-innertrack->GetLastPointZ());
+  
+  point[0]=innertrack->GetFirstPointX();
+  point[1]=innertrack->GetFirstPointY();
+  point[2]=innertrack->GetFirstPointZ();
+  fTransformer->Global2Local(point,slice,kTRUE);
+  
+  outertrack->CalculateReferencePoint(angle,point[0]);//local x = global distance to padrowplane
+  if(!outertrack->IsPoint()) return diff;
+  dx[1] = fabs(outertrack->GetPointX()-innertrack->GetFirstPointX());
+  dy[1] = fabs(outertrack->GetPointY()-innertrack->GetFirstPointY());
+  dz[1] = fabs(outertrack->GetPointZ()-innertrack->GetFirstPointZ());
+  
+  for(Int_t i=0; i<2; i++)
+    diff += sqrt(dx[i]*dx[i] + dy[i]*dy[i] + dz[i]*dz[i]);
+  return diff;
+}
+
 void AliL3GlobalMerger::SlowMerge(){
   void* ntuple=GetNtuple();
   AliL3Track *track[2];
@@ -72,14 +121,14 @@ void AliL3GlobalMerger::SlowMerge(){
       if(!track0) continue;
       track0->CalculateHelix();
       track0->CalculateEdgePoint(angle);
-//      if(track0->IsPoint()) AddTrack(tout,track0);
+      //      if(track0->IsPoint()) AddTrack(tout,track0);
     }
     for(Int_t s1=0;s1<ttt1->GetNTracks();s1++){
       AliL3Track *track1=ttt1->GetCheckedTrack(s1);
       if(!track1) continue;
       track1->CalculateHelix();
       track1->CalculateEdgePoint(angle);
-//      if(track1->IsPoint())  AddTrack(tout,track1); 
+      //      if(track1->IsPoint())  AddTrack(tout,track1); 
     }
     Bool_t merge = kTRUE;
     while(merge){
@@ -93,8 +142,11 @@ void AliL3GlobalMerger::SlowMerge(){
           AliL3Track *track1=ttt1->GetCheckedTrack(s1);
           if(!track1) continue;
           if(!track1->IsPoint()) continue;
-          Double_t diff = TrackDiff(track0,track1);
-          if(diff>=0&&diff<min){
+	  
+          //Double_t diff = TrackDiff(track0,track1,angle);
+	  Double_t diff = CheckTracks(track0,track1,slice);
+	  //PrintDiff(track0,track1);
+	  if(diff>=0&&diff<min){
             min=diff;
             min0=s0;
             min1=s1;
@@ -110,7 +162,7 @@ void AliL3GlobalMerger::SlowMerge(){
         MultiMerge(tout,track,2); 
         track0->CalculateReferencePoint(angle);
         track1->CalculateReferencePoint(angle);
-        PrintDiff(track0,track1);
+	PrintDiff(track0,track1);
         FillNtuple(ntuple,track0,track1);
         ttt0->Remove(min0);
         ttt1->Remove(min1);

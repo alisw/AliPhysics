@@ -12,6 +12,8 @@ class AliL3GlobalMerger : public AliL3Merger{
   Int_t fFirst;
   Int_t fLast;
 
+  Double_t CheckTracks(AliL3Track *innertrack,AliL3Track *outertrack,Int_t slice);
+  
  public:
   AliL3GlobalMerger();
   AliL3GlobalMerger(Int_t first,Int_t last);
