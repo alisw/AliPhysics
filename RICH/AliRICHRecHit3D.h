@@ -14,6 +14,7 @@ public:
   Float_t     fOmega;              //Cherenkov angle omega
   Float_t     fX;                  //Impact coordinate x
   Float_t     fY;                  //Impact coordinate y
+  Float_t     fMeanRadius;         //Mean radius from input digits
  
  public:
     AliRICHRecHit3D() {

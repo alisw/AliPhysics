@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.1  2000/11/01 15:31:56  jbarbosa
+  New rec. point object for 3D Hough reconstruction.
+
   Revision 1.2  2000/06/30 16:36:58  dibari
   Several new data members for Bari reconstruction
 
@@ -38,6 +41,7 @@ AliRICHRecHit3D::AliRICHRecHit3D(Int_t id, Float_t *rechit)
     fOmega        = rechit[2];
     fX            = rechit[3];
     fY            = rechit[4];
+    fMeanRadius   = rechit[5];
 }
 
 
