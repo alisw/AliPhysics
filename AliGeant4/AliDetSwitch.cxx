@@ -12,12 +12,10 @@
 
 //_____________________________________________________________________________
 AliDetSwitch::AliDetSwitch(G4String detName, G4int nofVersions, 
-                 G4int defaultVersion, AliModuleType modType, 
-		 G4bool isStandalone)
+                           G4int defaultVersion, AliModuleType modType)
   : fDetName(detName),
     fNofVersions(nofVersions),
     fDefaultVersion(defaultVersion),
-    fIsStandalone(isStandalone),
     fType(modType),
     fSwitchedVersion(-1)
 {
@@ -49,7 +47,6 @@ AliDetSwitch& AliDetSwitch::operator=(const AliDetSwitch& right)
   fDefaultVersion = right.fDefaultVersion;
   fSwitchedVersion = right.fSwitchedVersion;
   fType = right.fType;
-  fIsStandalone = right.fIsStandalone;
   
   return *this;
 }
