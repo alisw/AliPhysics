@@ -1,4 +1,4 @@
-// $Id: AliCollider.cxx,v 1.1 2002/11/27 21:25:52 nick Exp $
+// $Id: AliCollider.cxx,v 1.2 2002/11/29 13:54:52 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCollider
@@ -89,7 +89,7 @@
 //
 //
 //--- Author: Nick van Eijndhoven 22-nov-2002 Utrecht University
-//- Modified: NvE $Date: 2002/11/27 21:25:52 $ Utrecht University
+//- Modified: NvE $Date: 2002/11/29 13:54:52 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCollider.h"
@@ -289,8 +289,11 @@ void AliCollider::Init(char* frame,Int_t zp,Int_t ap,Int_t zt,Int_t at,Float_t w
 // Initialisation of the underlying Pythia generator package for the generation
 // of nucleus-nucleus interactions.
 // In addition to the Pythia standard arguments 'frame' and 'win', the user
-// can specify here (Z,A) values of the projectile and target nuclei and the number
-// 'npart' of the participant nucleons for this collision.
+// can specify here (Z,A) values of the projectile and target nuclei.
+//
+// Note : The 'win' value denotes either the cms energy per nucleon-nucleon collision
+//        (i.e. frame="cms") or the momentum per nucleon in all other cases.
+//
 // The event number is reset to 0.
  fEventnum=0;
  fNucl=1;
@@ -351,10 +354,22 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
 // the number of participant nucleons.
 // In case of a standard Pythia run for 'elementary' particle interactions,
 // the value of npt is totally irrelevant.
+//
 // The argument 'medit' denotes the edit mode used for Pyedit().
+// Note : medit<0 suppresses the invokation of Pyedit().
 // By default, only 'stable' final particles are kept (i.e. medit=1). 
+//
 // The argument 'mlist' denotes the list mode used for Pylist().
-// By default, no listing is produced (i.e. mlist=0).
+// Note : mlist<0 suppresses the invokation of Pylist().
+// By default, no listing is produced (i.e. mlist=-1).
+//
+// In the case of a standard Pythia run concerning 'elementary' particle
+// interactions, the projectile and target particle ID's for the created
+// event structure are set to the corresponding Pythia KF codes.
+// All the A and Z values are in that case set to zero.
+// In case of a nucleus-nucleus interaction, the proper A and Z values for 
+// the projectile and target particles are set in the event structure.
+// However, in this case both particle ID's are set to zero.
 
  fEventnum++; 
 
@@ -464,20 +479,30 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
  fEvent->SetRunNumber(fRunnum);
  fEvent->SetEventNumber(fEventnum);
 
- AliVertex vert;
- if (fVertexmode)
- {
-  // Make sure the primary vertex gets correct location and Id=1
-  vert.SetId(1);
-  vert.SetTrackCopy(0);
-  vert.SetVertexCopy(0);
-  fEvent->AddVertex(vert,0);
- }
-
  AliTrack t;
  Ali3Vector p;
  AliPosition r,rx;
  Float_t v[3];
+ AliVertex vert;
+
+ if (fVertexmode)
+ {
+  // Make sure the primary vertex gets correct location and Id=1
+  v[0]=0;
+  v[1]=0;
+  v[2]=0;
+  r.SetPosition(v,"car");
+  v[0]=fResolution;
+  v[1]=fResolution;
+  v[2]=fResolution;
+  r.SetPositionErrors(v,"car");
+
+  vert.SetId(1);
+  vert.SetTrackCopy(0);
+  vert.SetVertexCopy(0);
+  vert.SetPosition(r);
+  fEvent->AddVertex(vert,0);
+ }
 
  Int_t kf=0,kc=0;
  Float_t charge=0,mass=0;
@@ -494,6 +519,8 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
  }
 
  // Generate all the various collisions
+ Int_t first=1; // Flag to indicate the first collision process
+ Double_t pnucl;
  Int_t npart=0,ntk=0;
  Double_t dist=0;
  for (Int_t itype=0; itype<ntypes; itype++)
@@ -509,9 +536,42 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
   {
    GenerateEvent();
 
-   Pyedit(medit); // Define which particles are to be kept
+   if (first) // Store projectile and target information in the event structure
+   {
+    if (fNucl)
+    {
+     v[0]=GetP(1,1);
+     v[1]=GetP(1,2);
+     v[2]=GetP(1,3);
+     pnucl=sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+     fEvent->SetProjectile(fAproj,fZproj,pnucl);
+     v[0]=GetP(2,1);
+     v[1]=GetP(2,2);
+     v[2]=GetP(2,3);
+     pnucl=sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+     fEvent->SetTarget(fAtarg,fZtarg,pnucl);
+    }
+    else
+    {
+     v[0]=GetP(1,1);
+     v[1]=GetP(1,2);
+     v[2]=GetP(1,3);
+     pnucl=sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+     kf=GetK(1,2);
+     fEvent->SetProjectile(0,0,pnucl,kf);
+     v[0]=GetP(2,1);
+     v[1]=GetP(2,2);
+     v[2]=GetP(2,3);
+     pnucl=sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+     kf=GetK(2,2);
+     fEvent->SetTarget(0,0,pnucl,kf);
+    }
+    first=0;
+   }
 
-   if (mlist) Pylist(mlist);
+   if (medit >= 0) Pyedit(medit); // Define which particles are to be kept
+
+   if (mlist >= 0) Pylist(mlist);
 
    ImportParticles();
    npart=0;
@@ -539,7 +599,7 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
     v[0]=(part->GetVx())/10;
     v[1]=(part->GetVy())/10;
     v[2]=(part->GetVz())/10;
-    r.SetVector(v,"car");
+    r.SetPosition(v,"car");
 
     ntk++;
 
@@ -585,6 +645,10 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
       AliTrack* tx=fEvent->GetIdTrack(ntk);
       if (tx)
       {
+       v[0]=fResolution;
+       v[1]=fResolution;
+       v[2]=fResolution;
+       r.SetPositionErrors(v,"car");
        vert.Reset();
        vert.SetTrackCopy(0);
        vert.SetVertexCopy(0);

@@ -320,3 +320,7 @@
 27-nov-2002 NvE New class AliCollider introduced and RALICEHeaders.h and RALICELinkdef.h
                 updated accordingly.
 29-nov-2002 NvE Typo corrected in AliCollider.cxx.
+30-nov-2002 NvE Vertex position errors based on fResolution introduced in AliCollider.cxx.
+02-dec-2002 NvE Facility for user defined projectile and target particle ID introduced in
+                AliEvent and projectile/target information provided in the AliCollider created
+                event structure.

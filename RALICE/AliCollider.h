@@ -1,7 +1,7 @@
 #ifndef ALICOLLIDER_H
 #define ALICOLLIDER_H
 
-// $Id$
+// $Id: AliCollider.h,v 1.1 2002/11/27 21:25:52 nick Exp $
 
 #include "Riostream.h"
 #include "TPythia6.h"
@@ -29,7 +29,7 @@ class AliCollider : public TPythia6
   Int_t GetPrintFreq();                                 // Provide the print frequency
   void Init(char* frame,char* beam,char* target,Float_t win); // Standard Pythia initialisation
   void Init(char* frame,Int_t zp,Int_t ap,Int_t zt,Int_t at,Float_t win); // Nucl-Nucl initialisation
-  void MakeEvent(Int_t npt,Int_t mlist=0,Int_t medit=1);// Generate a single event with npt participant nucleons
+  void MakeEvent(Int_t npt,Int_t mlist=-1,Int_t medit=1);// Generate a single event with npt participant nucleons
   void EndRun();                                        // Properly close all buffers and output file
   AliEvent* GetEvent();                                 // Provide pointer to the generated event structure
 
@@ -58,6 +58,6 @@ class AliCollider : public TPythia6
 
   void GetFractions(Float_t zp,Float_t ap,Float_t zt,Float_t at); // Determine various N-N collision fractions
 
- ClassDef(AliCollider,1) // Pythia based universal physics event generator
+ ClassDef(AliCollider,2) // Pythia based universal physics event generator
 };
 #endif

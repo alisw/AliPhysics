@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.6 2002/04/26 11:23:37 nick Exp $
+// $Id: AliEvent.cxx,v 1.7 2002/06/25 09:38:28 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
@@ -189,7 +189,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2002/04/26 11:23:37 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2002/06/25 09:38:28 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -206,9 +206,11 @@ AliEvent::AliEvent()
  fAproj=0;
  fZproj=0;
  fPnucProj=0;
+ fIdProj=0;
  fAtarg=0;
  fZtarg=0;
  fPnucTarg=0;
+ fIdTarg=0;
  fNcals=0;
  fCalorimeters=0;
  fCalCopy=0;
@@ -225,9 +227,11 @@ AliEvent::AliEvent(Int_t n): AliVertex(n)
  fAproj=0;
  fZproj=0;
  fPnucProj=0;
+ fIdProj=0;
  fAtarg=0;
  fZtarg=0;
  fPnucTarg=0;
+ fIdTarg=0;
  fNcals=0;
  fCalorimeters=0;
  fCalCopy=0;
@@ -255,9 +259,11 @@ void AliEvent::Reset()
  fAproj=0;
  fZproj=0;
  fPnucProj=0;
+ fIdProj=0;
  fAtarg=0;
  fZtarg=0;
  fPnucTarg=0;
+ fIdTarg=0;
 
  fNcals=0;
  if (fCalorimeters)
@@ -334,12 +340,14 @@ Int_t AliEvent::GetEventNumber()
  return fEvent;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::SetProjectile(Int_t a,Int_t z,Double_t pnuc)
+void AliEvent::SetProjectile(Int_t a,Int_t z,Double_t pnuc,Int_t id)
 {
-// Set the projectile A, Z and momentum value per nucleon.
+// Set the projectile A, Z, momentum per nucleon and user defined particle ID.
+// By default the particle ID is set to zero.
  fAproj=a;
  fZproj=z;
  fPnucProj=pnuc;
+ fIdProj=id;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliEvent::GetProjectileA()
@@ -360,12 +368,20 @@ Double_t AliEvent::GetProjectilePnuc()
  return fPnucProj;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::SetTarget(Int_t a,Int_t z,Double_t pnuc)
+Int_t AliEvent::GetProjectileId()
 {
-// Set the target A, Z and momentum value per nucleon.
+// Provide the user defined particle ID of the projectile.
+ return fIdProj;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::SetTarget(Int_t a,Int_t z,Double_t pnuc,Int_t id)
+{
+// Set the target A, Z, momentum per nucleon and user defined particle ID.
+// By default the particle ID is set to zero.
  fAtarg=a;
  fZtarg=z;
  fPnucTarg=pnuc;
+ fIdTarg=id;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliEvent::GetTargetA()
@@ -384,6 +400,12 @@ Double_t AliEvent::GetTargetPnuc()
 {
 // Provide the target momentum value per nucleon.
  return fPnucTarg;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliEvent::GetTargetId()
+{
+// Provide the user defined particle ID of the target.
+ return fIdTarg;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::HeaderInfo()
