@@ -1,18 +1,6 @@
-//Author:        Anders Strand Vestbo 
-//Author:        Uli Frankenfeld
-//Last Modified: 06.03.2001
+// Author: Anders Vestbo <mailto:vestbo$fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
+//*-- Copyright &copy ASV
 
-//____________________________________
-// AliL3Track
-//
-// Base track class for L3
-
-//Changes:
-
-//14.03.01: Moved fHitNumbers from protected to private.-ASV
-//          Set memory to zero in ctor.
-//          Moved fNHits 2 private. Protected data members not a good idea after all.
-//19.03.01: Made the method void Set(AliL3Track) virtual.
 
 #include "AliL3RootTypes.h"
 
@@ -22,6 +10,10 @@
 #include "AliL3Transform.h"
 #include <math.h>
 
+//_____________________________________________________________
+// AliL3Track
+//
+// Track base class
 
 ClassImp(AliL3Track)
 
@@ -159,16 +151,16 @@ void AliL3Track::CalculateHelix(){
   fCenterY = fFirstPoint[1] - fRadius *  sin(trackPhi0);
 }
 
-Double_t AliL3Track::GetCrossingAngle(Int_t padrow)
+Double_t AliL3Track::GetCrossingAngle(Int_t padrow) 
 {
   //Calculate the crossing angle between track and given padrow.
-
+  
   if(!IsLocal())
     {
       printf("Track is not given in local coordinates\n");
       return 0;
     }
-
+  
   Float_t xyz[3];
   if(!GetCrossingPoint(padrow,xyz))
     printf("AliL3HoughTrack::GetCrossingPoint : Track does not cross line!!\n");
@@ -187,11 +179,12 @@ Double_t AliL3Track::GetCrossingAngle(Int_t padrow)
   
 }
 
-Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
+Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz) 
 {
   //Assumes the track is given in local coordinates
 
   AliL3Transform *transform = new AliL3Transform();
+  
   if(!IsLocal())
     {
       printf("GetCrossingPoint: Track is given on global coordinates\n");

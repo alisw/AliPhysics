@@ -93,8 +93,9 @@ class AliL3Track {
   Double_t GetPhi0() const {return fPhi0;}
   Double_t GetPsi() const {return fPsi;}
   Double_t GetR0() const {return fR0;}
-  Double_t GetZ0() const {return fZ0;}
-
+  Double_t GetZ0() const {return fFirstPoint[2];}
+  //Double_t GetZ0() const {return fZ0;}
+  
   Double_t   GetKappa()            const { return fKappa;}
   Double_t   GetRadius()           const { return fRadius;}
   Double_t   GetCenterX()          const { return fCenterX;}
@@ -134,7 +135,8 @@ class AliL3Track {
   void SetPsi(Double_t f) {fPsi = f;}
   void SetR0(Double_t f) {fR0 = f;}
   void SetTgl(Double_t f) {fTanl =f;}
-  void SetZ0(Double_t f) {fZ0 = f;}
+  //void SetZ0(Double_t f) {fZ0 = f;}
+  void SetZ0(Double_t f) {fFirstPoint[2] = f;}
   void SetPt(Double_t f) {fPt = f;}
   void SetLength(Double_t f) {fLength = f;}
   void SetPterr(Double_t f) {fPterr = f;}
@@ -156,7 +158,7 @@ class AliL3Track {
   
   void   ComesFromMainVertex(Bool_t f) { fFromMainVertex = f; }
   
-  ClassDef(AliL3Track,1) //Conformal mapping track class
+  ClassDef(AliL3Track,1) //Base track class
 };
     
 #endif
