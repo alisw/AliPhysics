@@ -1388,7 +1388,7 @@ c MC2
        x2_2b=ibits(bitpx(4,icircT),31,1)
        dble2_31=iand(x2_1,ior(x2_2a,x2_2b))
        
-       dblex2(icircT)=dble2_0+2*dble2_1_30+(2**31)*dble2_31  !dble X on MC2
+       dblex2(icircT)=dble2_0+2*dble2_1_30+(2.**31)*dble2_31  !dble X on MC2
 
        x2_1=ibits(bitpx(3,icircT),0,32)
        sgle2A=ieor(x2_1,dblex2(icircT))
@@ -1406,7 +1406,7 @@ c MC2
        x2_2b=ibits(dblex2(icircT),31,1)
        sgle2_31=ior(x2_2a,x2_2b)
               
-       sgle2B=sgle2_0+2*sgle2_1_30+(2**31)*sgle2_31
+       sgle2B=sgle2_0+2*sgle2_1_30+(2.**31)*sgle2_31
        sgle2B=not(sgle2B)
        sgle2B=iand(sgle2B,bitpx(4,icircT))
        
