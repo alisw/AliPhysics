@@ -24,18 +24,16 @@
 ClassImp(AliMUONTransientDigit)
 
 //____________________________________________________________________________
-AliMUONTransientDigit::AliMUONTransientDigit()
-  : AliMUONDigit()
+AliMUONTransientDigit::AliMUONTransientDigit() :
+  fChamber(0),
+  fTrackList(0)
 {
-// Constructor
-
-  fTrackList=0;
+  // Default constructor
 }
  
 //____________________________________________________________________________
-
-  AliMUONTransientDigit::AliMUONTransientDigit(const AliMUONTransientDigit& digit)
-    : AliMUONDigit(digit)
+AliMUONTransientDigit::AliMUONTransientDigit(const AliMUONTransientDigit& digit) :
+  AliMUONDigit(digit)
 {
 // Protected copy constructor
 
@@ -43,15 +41,15 @@ AliMUONTransientDigit::AliMUONTransientDigit()
 }
 
 
-AliMUONTransientDigit::AliMUONTransientDigit(Int_t ich, Int_t *digits): 
-    AliMUONDigit(digits)
+AliMUONTransientDigit::AliMUONTransientDigit(Int_t ich, Int_t *digits) : 
+  AliMUONDigit(digits),
+  fChamber(ich),
+  fTrackList(new TObjArray(5))
+  // 5 is arbitrary number, just to decrease default 16
 {
-    //
-    // Creates a MUON digit list object
-    //
-    fChamber     = ich;
-    fTrackList   = new TObjArray(5);   
-    // 5 is arbitrary number, just to decrease default 16
+  //
+  // Creates a MUON digit list object
+  //
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -23,7 +23,7 @@ class TDataType;
 
 class AliClassInfo : public TNamed { 
 public:   
-  AliClassInfo(){;}
+  AliClassInfo() : fSize(0) {}
   virtual ~AliClassInfo(){;}
   virtual void CTORBuffer(void * /*pointer*/, UInt_t /*size=1*/){;}
     //  {return (*ctorbuffer)(p,size);}

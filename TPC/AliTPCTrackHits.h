@@ -22,10 +22,12 @@ class AliObjectArray;
 class AliTrackHitsInfo   {
   friend  class  AliTPCTrackHits;
   friend class   AliTPC;
+
  public:
-  AliTrackHitsInfo(){fgCounter1++;fgCounter2++;}
+  AliTrackHitsInfo();
   ~AliTrackHitsInfo(){fgCounter1--;}
- private:  
+ 
+private:  
   Int_t   fTrackID;  //track ID
   Int_t   fVolumeID;   //volume ID
   UInt_t   fHitParamIndex; //corresponding index  
@@ -40,7 +42,7 @@ class AliTrackHitsParam {
   friend  class  AliTPCTrackHits;
   friend  class  AliTPCTempHitInfo;
  public:
-  AliTrackHitsParam(){fgCounter1++;fgCounter2++;}
+  AliTrackHitsParam();
   ~AliTrackHitsParam(){fgCounter1--;}
  private:
   Float_t fR;  //radius
@@ -61,7 +63,7 @@ class AliHitInfo {
   friend  class  AliTPCTrackHits;
   friend  class  AliTPCTempHitInfo;
 public:
-  AliHitInfo(){fgCounter1++;fgCounter2++;}
+  AliHitInfo() : fHitDistance(0), fCharge(0) {fgCounter1++;fgCounter2++;}
   ~AliHitInfo(){fgCounter1--;}
  private:
   Short_t fHitDistance; //distance to previous hit

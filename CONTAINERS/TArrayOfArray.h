@@ -43,6 +43,10 @@ public:
   Int_t ArraySize(){ return fArray->GetSize();}
   virtual Int_t GetSize(){return (fIndex) ?(Int_t)fIndex->GetSize()-1:0;}
 private:
+
+  TArrayOfArrayVStack(const TArrayOfArrayVStack & taa);
+  TArrayOfArrayVStack & operator=(const TArrayOfArrayVStack & taa);
+
   AliObjectArray * fIndex;
   AliObjectArray * fArray;
   ClassDef(TArrayOfArrayVStack,1) 

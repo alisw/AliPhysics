@@ -260,7 +260,35 @@ void   AliTPCTempHitInfo::Fit(AliTrackHitsParam * param)
   
 }
 
+//______________________________________________________________________
+AliTrackHitsInfo::AliTrackHitsInfo() : 
+  fTrackID(0),
+  fVolumeID(0),
+  fHitParamIndex(0)
+{
+  //
+  // Default constructor
+  //
+  fgCounter1++;
+  fgCounter2++;
+}
 
+//______________________________________________________________________
+AliTrackHitsParam::AliTrackHitsParam() :
+  fR(0),
+  fZ(0),
+  fFi(0),
+  fAn(0),
+  fAd(0),
+  fTheta(0),
+  fThetaD(0)
+{
+  //
+  // Default constructor
+  //
+  fgCounter1++;
+  fgCounter2++;
+}
 
 
 AliTPCTrackHits::AliTPCTrackHits()
