@@ -48,9 +48,6 @@ class AliPHOS : public AliDetector {
   virtual Int_t   IsVersion(void) const = 0 ;  
   virtual AliLoader* MakeLoader(const char* topfoldername);
   AliPHOSQAChecker * QAChecker() {return fQATask;}  
-  void    SetDebug() { fDebug = kTRUE ; }
-  void    ResetDebug() { fDebug = kFALSE ; }
-  Bool_t  Debug() const { return fDebug ; } 
   virtual void    SetTreeAddress();   
   virtual TTree * TreeQA() const {return fTreeQA; } 
   virtual const TString Version() const {return TString(" ") ; } 
