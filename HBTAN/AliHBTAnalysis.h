@@ -39,6 +39,9 @@ class AliHBTAnalysis: public TObject
      void SetReader(AliHBTReader* r){fReader = r;}
      
      void WriteFunctions();
+     
+     void SetBufferSize(Int_t buffsize){fBufferSize=buffsize;}
+    
    protected:
      
      Bool_t RunCoherencyCheck();
@@ -65,6 +68,7 @@ class AliHBTAnalysis: public TObject
 
       AliHBTPairCut *fPairCut;//!
       
+      Int_t fBufferSize; //defines the size of buffer for mixed events; -1==MIX All
      /**********************************************/
      
      
