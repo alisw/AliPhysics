@@ -28,18 +28,22 @@ class AliGenHIJINGpara : public AliGenerator
   virtual void Init();
   virtual void SetPtRange(Float_t ptmin = 0., Float_t ptmax=15.);
   virtual void SetPi0Decays(Bool_t flag = kFALSE) {fPi0Decays = flag;}
- private:
-  void DecayPi0(Float_t* orig, Float_t * p);
-  void Copy(AliGenHIJINGpara &para) const;
+  virtual void SetWeighting(Int_t flag = 0) {fAnalog = flag;}
+
  protected:
   Int_t   fNt;          // CurrentTrack;
-  Float_t fCutVertexZ;  // Vertex truncation
   Bool_t  fPi0Decays;   // Flag for pi0 decays
+  Float_t fPtWgtPi;     // pt weight for pions
+  Float_t fPtWgtKa;     // pt weight for kaons
   TF1* fPtpi;           // Parametrised pt distribution for pi
   TF1* fPtka;           // Parametrised pt distribution for ka
   TF1* fETApic;         // Parametrised eta distribution for pi
   TF1* fETAkac;         // Parametrised eta distribution fro ka
   AliDecayer* fDecayer; // ! Pointer to pythia object for decays
+
+ private:
+  void DecayPi0(Float_t* orig, Float_t * p);
+  void Copy(AliGenHIJINGpara &para) const;
   ClassDef(AliGenHIJINGpara,3) // Hijing parametrisation generator
 };
 #endif
