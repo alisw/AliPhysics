@@ -97,7 +97,7 @@ void AliITSsegmentationSDD::GetPadIxz(Float_t x,Float_t z,
     Int_t na = fNanodes/2;
     Float_t driftpath=fDx-TMath::Abs(kconv*x);
     timebin=(Int_t)(driftpath/fDriftSpeed/fTimeStep);
-    anode=(Int_t)(kconv*z/fPitch + na/2));
+    anode=(Int_t)(kconv*z/fPitch + na/2);
     if (x > 0) anode += na;
 
     timebin+=1;
