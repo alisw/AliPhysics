@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/10/02 21:28:15  fca
+Removal of useless dependecies via forward declarations
+
 Revision 1.12  2000/06/20 10:53:01  morsch
 Volume placed outside mother volume (DDIP) corrected (Galina Chabratova)
 
@@ -97,6 +100,12 @@ void AliDIPOv2::CreateGeometry()
   
   Int_t *idtmed = fIdtmed->GetArray()-1799;
 
+//  const Int_t kCoil = 1813;
+//  const Int_t kCable= 1811;
+
+  const Int_t kCoil = 1808;
+  const Int_t kCable= 1808;
+  
   accMax = 9.;   // ANGLE POLAIRE MAXIMUM 
 
   //       DIPOLE MAGNET 
@@ -131,10 +140,10 @@ void AliDIPOv2::CreateGeometry()
   cpar[3] = 119.;
   cpar[4] = 241. ; 
   //   coil - high cuts
-  gMC->Gsvolu("DC1 ", "TUBS", idtmed[1853], cpar, 5);
+  gMC->Gsvolu("DC1 ", "TUBS", idtmed[kCoil+40], cpar, 5);
   cpar[3] = -61.;
   cpar[4] = 61.;
-  gMC->Gsvolu("DC2 ", "TUBS", idtmed[1853], cpar, 5);
+  gMC->Gsvolu("DC2 ", "TUBS", idtmed[kCoil+40], cpar, 5);
 
   //  coil - low cuts cuts
   cpar[0] = 207.;
@@ -143,12 +152,12 @@ void AliDIPOv2::CreateGeometry()
   cpar[3] = 119.;
   cpar[4] = 241.;
 
-  gMC->Gsvolu("DC3 ", "TUBS", idtmed[1813], cpar, 5);
+  gMC->Gsvolu("DC3 ", "TUBS", idtmed[kCoil], cpar, 5);
   cpar[0] = 207.; 
   cpar[1] = 217; 
   cpar[3] = -61.;
   cpar[4] = 61.;
-  gMC->Gsvolu("DC4 ", "TUBS", idtmed[1813], cpar, 5);
+  gMC->Gsvolu("DC4 ", "TUBS", idtmed[kCoil], cpar, 5);
 
   gMC->Gspos("DC3 ", 1, "DC1 ", 0., 0., 0., 0, "ONLY");
   gMC->Gspos("DC4 ", 1, "DC2 ", 0., 0., 0., 0, "ONLY");
@@ -189,7 +198,7 @@ void AliDIPOv2::CreateGeometry()
   cpar[3] = 270.;
   cpar[4] = 360.;
 //*  coil high cuts
-  gMC->Gsvolu("DC11", "TUBS", idtmed[1853], cpar, 5);
+  gMC->Gsvolu("DC11", "TUBS", idtmed[kCoil+40], cpar, 5);
 
   dx = TMath::Sin(30.5*kDegrad) * -(207.+33.5)+5./TMath::Sin(30.5*kDegrad) ; 
   dy = TMath::Cos(30.5*kDegrad) * -(207.+33.5);  
@@ -208,7 +217,7 @@ void AliDIPOv2::CreateGeometry()
   cpar[3] = 0.;
   cpar[4] = 90.;
 //*  coil high cuts
-  gMC->Gsvolu("DC12", "TUBS", idtmed[1853], cpar, 5);
+  gMC->Gsvolu("DC12", "TUBS", idtmed[kCoil+40], cpar, 5);
 
   dx = TMath::Sin(30.5*kDegrad) * -(207.+33.5)+5./TMath::Sin(30.5*kDegrad) ; 
   dy = TMath::Cos(30.5*kDegrad) *(207.+33.5);  
@@ -246,13 +255,13 @@ void AliDIPOv2::CreateGeometry()
   tpar[0] = 37.65;
   tpar[1] = 33.5;
   tpar[2] = 145.5;
-  gMC->Gsvolu("DL1 ", "BOX ", idtmed[1853], tpar, 3);
+  gMC->Gsvolu("DL1 ", "BOX ", idtmed[kCoil+40], tpar, 3);
 
 // coil - low cuts
 
   tpar[0] = 5.;
   dx = 37.65  - 5.;  
-  gMC->Gsvolu("DL2 ", "BOX ", idtmed[1813], tpar, 3);
+  gMC->Gsvolu("DL2 ", "BOX ", idtmed[kCoil], tpar, 3);
   gMC->Gspos("DL2 ", 1, "DL1 ", dx, 0., 0., 0, "ONLY");
 
   dx =-53.62;
@@ -500,7 +509,7 @@ void AliDIPOv2::CreateGeometry()
   cpar[3] = -24.;
   cpar[4] = 24.; 
  
-  gMC->Gsvolu("DCOJ", "TUBS", idtmed[1811], cpar, 5);
+  gMC->Gsvolu("DCOJ", "TUBS", idtmed[kCable], cpar, 5);
 
   //  dx = 274. + 1.5  +2. +40.;
   //  dx = 5. + 1.5 +2. +40.;
@@ -517,7 +526,7 @@ void AliDIPOv2::CreateGeometry()
   cpar[3] = 180.-24.;
   cpar[4] = 180.+24.; 
 
-   gMC->Gsvolu("DCOK", "TUBS", idtmed[1811], cpar, 5);
+   gMC->Gsvolu("DCOK", "TUBS", idtmed[kCable], cpar, 5);
 
   //  dx = 274. + 1.5  +2. +40.;
   //  dx = 5. + 1.5 +2. +40.;
@@ -559,7 +568,7 @@ void AliDIPOv2::CreateGeometry()
   the3 = 0.;
   phi3 = 0.;
   AliMatrix(idrotm[1808], the1, phi1, the2, phi2, the3, phi3);
- gMC->Gspos("DY1 ", 2, "DDIP", 0., -dy, -dz, idrotm[1808] , "ONLY");
+  gMC->Gspos("DY1 ", 2, "DDIP", 0., -dy, -dz, idrotm[1808] , "ONLY");
 
 // side walls
   //  ypar[0] = 579./2. ; 
