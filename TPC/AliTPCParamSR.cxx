@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/12/06 07:49:30  kowal2
+corrected number of pads calculation
+
 Revision 1.4  2000/11/02 07:33:15  kowal2
 Improvements of the code.
 
@@ -56,7 +59,7 @@ New Detector parameters handling class
 #include <AliTPCParamSR.h>
 #include "AliTPCPRF2D.h"
 #include "AliTPCRF1D.h"
-
+#include "TH1.h"
 
 
 ClassImp(AliTPCParamSR)
@@ -130,7 +133,14 @@ Int_t  AliTPCParamSR::CalcResponse(Float_t* xyz, Int_t * index, Int_t row)
   Int_t lpad    = TMath::Min(TMath::Nint(xyz[1]+sfpad),fpad+19);     //last pad
   Int_t ltime   = TMath::Min(TMath::Nint(xyz[2]+GetZOffset()/GetZWidth()+sftime),ftime+19);    // last time
   ltime         = TMath::Min(ltime,GetMaxTBin()-1); 
- 
+  // 
+  Int_t npads = GetNPads(index[1],row);
+  if (fpad<-npads/2) 
+    fpad = -npads/2;
+  if (lpad>npads/2) 
+    lpad= npads/2;
+  if (ftime<0) ftime=0;
+  // 
   if (row>=0) { //if we are interesting about given pad row
     if (fpadrow<=row) fpadrow =row;
     else 
@@ -408,7 +418,131 @@ void AliTPCParamSR::Streamer(TBuffer &R__b)
       AliTPCParam::Streamer(R__b);    
    }
 }
+Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
+{
+  //
+  //calculate bin response as function of the input position -x 
+  //return number of valid response bin
+  //
+  //we suppose that coordinate is expressed in float digits 
+  // it's mean coordinate system 8
+  //xyz[0] - float padrow xyz[1] is float pad  (center pad is number 0) and xyz[2] is float time bin
+  if ( (fInnerPRF==0)||(fOuterPRF==0)||(fTimeRF==0) ){ 
+    Error("AliTPCParamSR", "response function was not adjusted");
+    return -1;
+  }
+  
+  const Int_t padn =  500;
+  const Float_t fpadn =  500.;
+  const Int_t timen = 500;
+  const Float_t ftimen = 500.;
+  const Int_t padrn = 500;
+  const Float_t fpadrn = 500.;
 
+ 
+
+  static Float_t prfinner[2*padrn][5*padn];  //pad divided by 50
+  static Float_t prfouter[2*padrn][5*padn];  //prfouter division
+  
+  static Float_t rftime[5*timen];         //time division
+  static Int_t blabla=0;
+  static Float_t zoffset=0;
+  static Float_t zwidth=0;
+  static Float_t zoffset2=0;
+  static TH1F * hdiff=0;
+  static TH1F * hdiff1=0;
+  static TH1F * hdiff2=0;
+  
+  if (blabla==0) {  //calculate Response function - only at the begginning
+    hdiff =new TH1F("prf_diff","prf_diff",10000,-1,1);
+    hdiff1 =new TH1F("no_repsonse1","no_response1",10000,-1,1);
+    hdiff2 =new TH1F("no_response2","no_response2",10000,-1,1);
+    
+    blabla=1;
+    zoffset = GetZOffset();
+    zwidth  = fZWidth;
+    zoffset2 = zoffset/zwidth;
+    for (Int_t i=0;i<5*timen;i++){
+      rftime[i] = fTimeRF->GetRF(((i-2.5*ftimen)/ftimen)*zwidth+zoffset);
+    }
+    for (Int_t i=0;i<5*padn;i++){    
+      for (Int_t j=0;j<2*padrn;j++){
+	prfinner[j][i] =
+	  fInnerPRF->GetPRF((i-2.5*fpadn)/fpadn
+			    *fInnerPadPitchWidth,(j-fpadrn)/fpadrn*fInnerPadPitchLength);
+	prfouter[j][i] =
+	  fOuterPRF->GetPRF((i-2.5*fpadn)/fpadn
+			    *fOuterPadPitchWidth,(j-fpadrn)/fpadrn*fOuterPadPitchLength);
+      }
+    }      
+  }
+  // calculate central padrow, pad, time
+  Int_t npads = GetNPads(index[1],index[2]);
+  Int_t cpadrow = index[2];
+  Int_t cpad    = TMath::Nint(xyz[1]);
+  Int_t ctime   = TMath::Nint(xyz[2]+zoffset2);
+  //calulate deviation
+  Float_t dpadrow = xyz[0];
+  Float_t dpad    = xyz[1]-cpad;
+  Float_t dtime   = xyz[2]+zoffset2-ctime;
+  Int_t cindex =0;
+  Int_t cindex3 =0;
+  Int_t maxt =GetMaxTBin();
+
+  Int_t fpadrow;
+  Int_t lpadrow;
+
+  if (row>=0) { //if we are interesting about given pad row
+    fpadrow = row-cpadrow;
+    lpadrow = row-cpadrow;
+  }else{
+    fpadrow = (index[2]>1) ? -1 :0;
+    lpadrow = (index[2]<GetNRow(index[1])-1) ? 1:0;
+  }
+  Int_t fpad =  (cpad > -npads/2+1) ? -2: -npads/2-cpad;
+  Int_t lpad =  (cpad < npads/2-1)  ?  2: npads/2-cpad;
+  Int_t ftime =  (ctime>1) ? -2: -ctime;
+  Int_t ltime =  (ctime<maxt-2) ? 2: maxt-ctime-1;
+
+  Int_t apadrow= TMath::Nint((dpadrow-fpadrow)*fpadrn+fpadrn);
+  //Int_t apadrow= TMath::Nint((-dpadrow-fpadrow)*fpadrn+fpadrn);
+  
+  for (Int_t ipadrow = fpadrow; ipadrow<=lpadrow;ipadrow++){
+    if ( (apadrow<0) || (apadrow>=2*padrn)) 
+      continue;
+    Int_t apad= TMath::Nint((dpad-fpad)*fpadn+2.5*fpadn);
+    for (Int_t ipad = fpad; ipad<=lpad;ipad++){
+	Float_t cweight;
+	if (index[1]<fNInnerSector)
+	  cweight=prfinner[apadrow][apad];
+	else
+	  cweight=prfouter[apadrow][apad];
+	//	if (cweight<fResponseThreshold) continue;
+	Int_t atime = TMath::Nint((dtime-ftime)*ftimen+2.5*ftimen);
+	for (Int_t itime = ftime;itime<=ltime;itime++){	
+	  Float_t cweight2 = cweight*rftime[atime];
+	  if (cweight2>fResponseThreshold) {
+	    fResponseBin[cindex3++]=cpadrow+ipadrow;
+	    fResponseBin[cindex3++]=cpad+ipad;
+	    fResponseBin[cindex3++]=ctime+itime;
+	    fResponseWeight[cindex++]=cweight2;
+	    
+	    if (cweight2>100) 
+	      {
+		printf("Pici pici %d %f %d\n",ipad,dpad,apad);
+	      }
+	    
+	  }
+	  atime-=timen;
+	}
+	apad-= padn;	
+    }
+    apadrow-=padrn;
+  }
+  fCurrentMax=cindex;	
+  return fCurrentMax;    
+  
+}
 
 
 

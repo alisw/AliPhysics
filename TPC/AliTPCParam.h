@@ -277,7 +277,7 @@ public:
   //  
   Int_t * GetResBin(Int_t i);  
   //return response bin i  - bin given by  padrow [0] pad[1] timebin[2] 
-  Float_t GetResWeight(Int_t i);
+  Float_t & GetResWeight(Int_t i);
   //return  weight of response bin i
 protected :
 
@@ -391,11 +391,11 @@ inline Int_t * AliTPCParam::GetResBin(Int_t i)
   else return 0;
 };
   
-inline Float_t AliTPCParam::GetResWeight(Int_t i)
+inline Float_t &AliTPCParam::GetResWeight(Int_t i)
 {
   //return  weight of response bin i
   if (i<fCurrentMax) return fResponseWeight[i];
-  else return 0;
+  else return fResponseWeight[i];
 }
 
 

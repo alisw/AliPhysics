@@ -17,9 +17,12 @@ class AliTPCParamSR : public AliTPCParam {
 public:
   AliTPCParamSR();
   virtual ~AliTPCParamSR();
+
   Int_t  CalcResponse(Float_t* x, Int_t * index, Int_t row);
+  Int_t CalcResponseFast(Float_t* x, Int_t * index, Int_t row);
   //calculate bin response as function of the input position -x 
   //return number of valid response bin
+
   
   void XYZtoCRXYZ(Float_t *xyz, 
 		  Int_t &sector, Int_t &padrow, Int_t option=3) const;
