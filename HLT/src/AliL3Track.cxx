@@ -17,6 +17,11 @@
 // AliL3Track
 //
 // Track base class
+//Begin_Html
+/*
+<img src="track_coordinates.gif">
+*/
+//End_Html
 
 ClassImp(AliL3Track)
 
