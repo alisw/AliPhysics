@@ -35,13 +35,13 @@ public:
   AliPHOSv4(const AliPHOSv4 & fast) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
-    assert(0==1) ; 
+    Fatal("cpy ctor", "not implemented") ;
   }
   virtual ~AliPHOSv4(void) ;
 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
     // useless since there are no hits
-    assert(0==1) ; 
+    Fatal("AliPHOSv1", "no AddHit is needed") ;
   }
   void           AddRecParticle(const AliPHOSFastRecParticle & rp) ; // adds primary particle to the RecParticles list
   virtual void   BuildGeometry(void) ;                               // creates the geometry for the ROOT display
@@ -74,7 +74,7 @@ public:
 
   AliPHOSv4 & operator = (const AliPHOSv4 & )  {
     // assignement operator requested by coding convention but not needed
-    assert(0==1) ;
+    Fatal("operator =", "not implemented") ; return *this ; 
     return *this ; 
   }
   
