@@ -20,8 +20,6 @@
 #include "TObject.h"  
 class TParticle ;
 class TTree ; 
-class TGraph ;
-class TF1 ;
 
 // --- Standard library ---
 
@@ -50,6 +48,16 @@ public:
   AliPHOSGetter(){    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
     Fatal("ctor", "AliPHOSGetter is a singleton default ctor not callable") ;
   } 
+protected :
+  AliPHOSGetter(Int_t /*i*/){    // special constructor for onflight 
+
+  } 
+private:
+  AliPHOSGetter(const char* headerFile,
+		const char* version = AliConfig::GetDefaultEventFolderName(),
+		Option_t * openingOption = "READ") ;
+
+public:
   AliPHOSGetter(const AliPHOSGetter & obj) : TObject(obj) {
     // cpy ctor requested by Coding Convention 
     Fatal("cpy ctor", "not implemented") ;
@@ -71,131 +79,132 @@ public:
   static void Print() ; 
   
   //=========== General information about run ==============
-  Bool_t IsLoaded(TString tree) const { return fLoadingStatus.Contains(tree) ; } 
-  void   SetLoaded(TString tree) { fLoadingStatus += tree ; } 
+  virtual Bool_t IsLoaded(TString tree) const { return fLoadingStatus.Contains(tree) ; } 
+  virtual void   SetLoaded(TString tree) { fLoadingStatus += tree ; } 
   
-  Int_t  MaxEvent() const ; 
-  Int_t  EventNumber() const ; 
-  Bool_t VersionExists(TString & opt) const ; 
-  UShort_t EventPattern(void) const ; 
-  Float_t  BeamEnergy(void) const ;
+  virtual Int_t  MaxEvent() const ; 
+  virtual Int_t  EventNumber() const ; 
+  virtual Bool_t VersionExists(TString & opt) const ; 
+  virtual UShort_t EventPattern(void) const ; 
+  virtual Float_t  BeamEnergy(void) const ;
   
   //========== PHOSGeometry and PHOS ============= 
-  AliPHOS *         PHOS() const  ;  
-  AliPHOSGeometry * PHOSGeometry() const ; 
+  virtual AliPHOS *         PHOS() const  ;  
+  virtual AliPHOSGeometry * PHOSGeometry() const ; 
   
   //========== Methods to read something from file ==========
-  void   Event(Int_t event, const char * opt = "HSDRTP") ;    
-  void   Track(Int_t itrack) ;
+  virtual void   Event(Int_t event, const char * opt = "HSDRTP") ;    
+  virtual void   Track(Int_t itrack) ;
+ 
   
   //-----------------now getter's data--------------------------------------
-  //  AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
-  //  void ReadCalibrationDB(const char * name, const char * filename) ;
+  virtual AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
+  virtual void ReadCalibrationDB(const char * /*name*/, const char * /*filename*/){ ;}
   
   //=========== Primaries ============
-  TClonesArray *    Primaries(void) ;
-  TParticle * Primary(Int_t index) const ;
-  Int_t       NPrimaries()const { return fNPrimaries; }
-  TParticle * Secondary(const TParticle * p, Int_t index=1) const ;  
+  virtual TClonesArray *    Primaries(void) ;
+  virtual TParticle * Primary(Int_t index) const ;
+  virtual Int_t       NPrimaries()const { return fNPrimaries; }
+  virtual TParticle * Secondary(const TParticle * p, Int_t index=1) const ;  
   
   //=========== Hits =================
-  TClonesArray *  Hits(void)  ; 
-  AliPHOSHit *    Hit(Int_t index) { return dynamic_cast<AliPHOSHit*>(Hits()->At(index) );}
-  TTree *         TreeH() const ; 
+  virtual TClonesArray *  Hits(void)  ; 
+  virtual AliPHOSHit *    Hit(Int_t index) { return dynamic_cast<AliPHOSHit*>(Hits()->At(index) );}
+  virtual TTree *         TreeH() const ; 
   
   //=========== SDigits ==============
-  TClonesArray *      SDigits() ;  
-  AliPHOSDigit *      SDigit(Int_t index) { return static_cast<AliPHOSDigit *>(SDigits()->At(index)) ;} 
-  TTree *             TreeS() const ; 
-  AliPHOSSDigitizer * SDigitizer() ;  
+  virtual TClonesArray *      SDigits() ;  
+  virtual AliPHOSDigit *      SDigit(Int_t index) { return static_cast<AliPHOSDigit *>(SDigits()->At(index)) ;} 
+  virtual TTree *             TreeS() const ; 
+  virtual AliPHOSSDigitizer * SDigitizer() ;  
   
-  TString             GetSDigitsFileName() const { return PhosLoader()->GetSDigitsFileName() ; }  
-  Int_t               LoadSDigits(Option_t* opt="") const { return PhosLoader()->LoadSDigits(opt) ; }
-  Int_t               LoadSDigitizer(Option_t* opt="") const { return  PhosLoader()->LoadSDigitizer(opt) ; }
-  Int_t               WriteSDigits(Option_t* opt="") const  { return PhosLoader()->WriteSDigits(opt) ; }
-  Int_t               WriteSDigitizer(Option_t* opt="") const {
+  virtual TString             GetSDigitsFileName() const { return PhosLoader()->GetSDigitsFileName() ; }  
+  virtual Int_t               LoadSDigits(Option_t* opt="") const { return PhosLoader()->LoadSDigits(opt) ; }
+  virtual Int_t               LoadSDigitizer(Option_t* opt="") const { return  PhosLoader()->LoadSDigitizer(opt) ; }
+  virtual Int_t               WriteSDigits(Option_t* opt="") const  { return PhosLoader()->WriteSDigits(opt) ; }
+  virtual Int_t               WriteSDigitizer(Option_t* opt="") const {
     return  PhosLoader()->WriteSDigitizer(opt) ; }
   
   //========== Digits ================
-  TClonesArray * Digits() ;
-  AliPHOSDigit * Digit(Int_t index) { return static_cast<AliPHOSDigit *>(Digits()->At(index)) ;} 
-  TTree *        TreeD() const ; 
-  AliPHOSDigitizer * Digitizer() ;
-  TString             GetDigitsFileName() const { return PhosLoader()->GetDigitsFileName() ; }  
-  Int_t               LoadDigits(Option_t* opt="") const { return PhosLoader()->LoadDigits(opt) ; }
-  Int_t               LoadDigitizer(Option_t* opt="") const {
+  virtual TClonesArray * Digits() ;
+  virtual AliPHOSDigit * Digit(Int_t index) { return static_cast<AliPHOSDigit *>(Digits()->At(index)) ;} 
+  virtual TTree *        TreeD() const ; 
+  virtual AliPHOSDigitizer * Digitizer() ;
+  virtual TString             GetDigitsFileName() const { return PhosLoader()->GetDigitsFileName() ; }  
+  virtual Int_t               LoadDigits(Option_t* opt="") const { return PhosLoader()->LoadDigits(opt) ; }
+  virtual Int_t               LoadDigitizer(Option_t* opt="") const {
     return  PhosLoader()->LoadDigitizer(opt) ; }
-  Int_t               WriteDigits(Option_t* opt="") const { return PhosLoader()->WriteDigits(opt) ; }
-  Int_t               WriteDigitizer(Option_t* opt="") const {
+  virtual Int_t               WriteDigits(Option_t* opt="") const { return PhosLoader()->WriteDigits(opt) ; }
+  virtual Int_t               WriteDigitizer(Option_t* opt="") const {
     return  PhosLoader()->WriteDigitizer(opt) ; }
+
+  //Methods to distinguish raw and simulated digits
+  virtual Bool_t              IsRawDigits(void) const {return fRawDigits;}
+  virtual void                SetRawDigits(Bool_t isRaw = kTRUE){fRawDigits = isRaw;}
   
   //========== RecPoints =============
-  TObjArray *           EmcRecPoints() ;
-  AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) { return static_cast<AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;} 
-  TObjArray *           CpvRecPoints() ; 
-  AliPHOSCpvRecPoint *  CpvRecPoint(Int_t index) { return static_cast<AliPHOSCpvRecPoint *>(CpvRecPoints()->At(index)) ;} 
-  TTree *               TreeR() const ;
-  AliPHOSClusterizer * Clusterizer() ;
-  TString               GetRecPointsFileName() const { return PhosLoader()->GetRecPointsFileName() ; } 
-  Int_t                 LoadRecPoints(Option_t* opt="") const { return PhosLoader()->LoadRecPoints(opt) ; }
-  Int_t                 LoadClusterizer(Option_t* opt="") const {
+  virtual TObjArray *           EmcRecPoints() ;
+  virtual AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) { return static_cast<AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;} 
+  virtual TObjArray *           CpvRecPoints() ; 
+  virtual AliPHOSCpvRecPoint *  CpvRecPoint(Int_t index) { return static_cast<AliPHOSCpvRecPoint *>(CpvRecPoints()->At(index)) ;} 
+  virtual TTree *               TreeR() const ;
+  virtual AliPHOSClusterizer * Clusterizer() ;
+  virtual TString               GetRecPointsFileName() const { return PhosLoader()->GetRecPointsFileName() ; } 
+  virtual Int_t                 LoadRecPoints(Option_t* opt="") const { return PhosLoader()->LoadRecPoints(opt) ; }
+  virtual Int_t                 LoadClusterizer(Option_t* opt="") const {
     return  PhosLoader()->LoadClusterizer(opt) ; }
-  Int_t                 WriteRecPoints(Option_t* opt="") const { return PhosLoader()->WriteRecPoints(opt) ; }
-  Int_t                 WriteClusterizer(Option_t* opt="") const {
+  virtual Int_t                 WriteRecPoints(Option_t* opt="") const { return PhosLoader()->WriteRecPoints(opt) ; }
+  virtual Int_t                 WriteClusterizer(Option_t* opt="") const {
     return  PhosLoader()->WriteClusterizer(opt) ; }
   
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
-  TClonesArray *           TrackSegments() ;
-  AliPHOSTrackSegment *  TrackSegment(Int_t index) { return static_cast<AliPHOSTrackSegment *>(TrackSegments()->At(index)) ;} 
-  TTree *               TreeT() const ;
-  AliPHOSTrackSegmentMaker * TrackSegmentMaker() ;
-  TString               GetTracksFileName() const { return PhosLoader()->GetTracksFileName() ; } 
-  Int_t                 LoadTracks(Option_t* opt="") const { return PhosLoader()->LoadTracks(opt) ; }
-  Int_t                 LoadTrackSegementMaker(Option_t* opt="") const {
+  virtual TClonesArray *           TrackSegments() ;
+  virtual AliPHOSTrackSegment *  TrackSegment(Int_t index) { return static_cast<AliPHOSTrackSegment *>(TrackSegments()->At(index)) ;} 
+  virtual TTree *               TreeT() const ;
+  virtual AliPHOSTrackSegmentMaker * TrackSegmentMaker() ;
+  virtual TString               GetTracksFileName() const { return PhosLoader()->GetTracksFileName() ; } 
+  virtual Int_t                 LoadTracks(Option_t* opt="") const { return PhosLoader()->LoadTracks(opt) ; }
+  virtual Int_t                 LoadTrackSegementMaker(Option_t* opt="") const {
     return  PhosLoader()->LoadTrackSegmentMaker(opt) ; }
-  Int_t                 WriteTracks(Option_t* opt="") const { return PhosLoader()->WriteTracks(opt) ; }
-  Int_t                 WriteTrackSegmentMaker(Option_t* opt="") const {
+  virtual Int_t                 WriteTracks(Option_t* opt="") const { return PhosLoader()->WriteTracks(opt) ; }
+  virtual Int_t                 WriteTrackSegmentMaker(Option_t* opt="") const {
     return  PhosLoader()->WriteTracker(opt) ; }
   
   //========== RecParticles ===========
-  TClonesArray *         RecParticles() ;
-  AliPHOSRecParticle *   RecParticle(Int_t index) { return static_cast<AliPHOSRecParticle *>(RecParticles()->At(index)) ;} 
-  TTree *               TreeP() const ;
-  AliPHOSPID * PID() ;
-  TString               GetRecParticlesFileName() const { return PhosLoader()->GetRecParticlesFileName() ; } 
-  Int_t                 LoadRecParticles(Option_t* opt="") const { return PhosLoader()->LoadRecParticles(opt) ; }
-  Int_t                 LoadPID(Option_t* opt="") const {
+  virtual TClonesArray *         RecParticles() ;
+  virtual AliPHOSRecParticle *   RecParticle(Int_t index) { return static_cast<AliPHOSRecParticle *>(RecParticles()->At(index)) ;} 
+  virtual TTree *               TreeP() const ;
+  virtual AliPHOSPID * PID() ;
+  virtual TString               GetRecParticlesFileName() const { return PhosLoader()->GetRecParticlesFileName() ; } 
+  virtual Int_t                 LoadRecParticles(Option_t* opt="") const { return PhosLoader()->LoadRecParticles(opt) ; }
+  virtual Int_t                 LoadPID(Option_t* opt="") const {
     return  PhosLoader()->LoadPID(opt) ; }
-  Int_t                 WriteRecParticles(Option_t* opt="") const { return PhosLoader()->WriteRecParticles(opt) ; }
-  Int_t                 WritePID(Option_t* opt="") const {
+  virtual Int_t                 WriteRecParticles(Option_t* opt="") const { return PhosLoader()->WriteRecParticles(opt) ; }
+  virtual Int_t                 WritePID(Option_t* opt="") const {
     return  PhosLoader()->WritePID(opt) ; }
 
   //========== Raw ===========
-  Int_t ReadRaw(Int_t event) ; 
+  virtual Int_t ReadRaw(Int_t event) ; 
 
-  void SetDebug(Int_t level) {fgDebug = level;} // Set debug level 
-  void PostClusterizer(AliPHOSClusterizer * clu) 
+  virtual void SetDebug(Int_t level) {fgDebug = level;} // Set debug level 
+  virtual void PostClusterizer(AliPHOSClusterizer * clu) 
     const{PhosLoader()->PostClusterizer(clu) ; }
-  void PostPID(AliPHOSPID * pid) 
+  virtual void PostPID(AliPHOSPID * pid) 
     const{PhosLoader()->PostPID(pid) ; }
-  void PostTrackSegmentMaker(AliPHOSTrackSegmentMaker * tr) 
+  virtual void PostTrackSegmentMaker(AliPHOSTrackSegmentMaker * tr) 
     const{PhosLoader()->PostTrackSegmentMaker(tr) ; }
-  void PostSDigitizer (AliPHOSSDigitizer * sdigitizer) 
+  virtual void PostSDigitizer (AliPHOSSDigitizer * sdigitizer) 
     const {PhosLoader()->PostSDigitizer(sdigitizer);}    
-  void PostDigitizer (AliPHOSDigitizer * digitizer)    
+  virtual void PostDigitizer (AliPHOSDigitizer * digitizer)    
     const {PhosLoader()->PostDigitizer(dynamic_cast<AliDigitizer *>(digitizer));}
   
-  TString Version() const  { return PhosLoader()->GetTitle() ; } 
-  AliPHOSLoader * PhosLoader() const { return  fgPhosLoader ; }
-  void Reset() ;
+  virtual TString Version() const  { return PhosLoader()->GetTitle() ; } 
+  virtual AliPHOSLoader * PhosLoader() const { return  fgPhosLoader ; }
+  virtual void Reset() ;
   
-  AliESD * ESD() const { return fESD ; }
+  virtual AliESD * ESD() const { return fESD ; }
   
 private:
-  
-  AliPHOSGetter(const char* headerFile,
-		const char* version = AliConfig::GetDefaultEventFolderName(),
-		Option_t * openingOption = "READ") ;
   
   Int_t ReadTreeD(void) ;
   Int_t ReadTreeH(void) ;
@@ -208,7 +217,6 @@ private:
   Bool_t OpenESDFile() ;
   void ReadPrimaries(void) ;
 
-  void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Int_t & amp, Double_t & time) ; 
 
 private:
   
@@ -222,13 +230,17 @@ private:
   TString           fESDFileName ;       //! ESD File Name
   AliESD *          fESD ;               //! ESD object
   TTree *           fESDTree ;           //! ESD Tree
+  
+  Bool_t            fRawDigits ;         //!
 
-  //  AliPHOSCalibrationDB * fcdb ;       //!
+  AliPHOSCalibrationDB * fcdb ;       //!
   
   static AliPHOSLoader * fgPhosLoader ; // the loader for the NewIO
-  static AliPHOSGetter * fgObjGetter; // pointer to the unique instance of the singleton 
   
   enum EDataTypes{kHits,kSDigits,kDigits,kRecPoints,kTracks,kNDataTypes};
+
+ protected:
+  static AliPHOSGetter * fgObjGetter; // pointer to the unique instance of the singleton 
   
   
   ClassDef(AliPHOSGetter,1)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 

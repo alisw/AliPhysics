@@ -97,6 +97,7 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option
   else 
     fgPhosLoader->SetTitle(version);
   
+  printf("Got PHOSLoader \n") ;
   
   // initialize data members
   SetDebug(0) ; 
@@ -105,27 +106,36 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option
   fLoadingStatus = "" ; 
  
   fESDFileName = rl->GetFileName()  ; // this should be the galice.root file
+  printf("File Name \n") ;
   fESDFileName.ReplaceAll("galice.root", "AliESDs.root") ;  
   fESDFile = 0 ; 
   fESD = 0 ; 
   fESDTree = 0 ; 
+  fRawDigits = kFALSE ;
 }
 
 //____________________________________________________________________________ 
 AliPHOSGetter::~AliPHOSGetter()
 {
   // dtor
-  delete fgPhosLoader ;
-  fgPhosLoader = 0 ;
-  delete fBTE ; 
-  fBTE = 0 ; 
-  fPrimaries->Delete() ; 
-  delete fPrimaries ; 
-  fgObjGetter = 0;
+  if(fgPhosLoader){
+    delete fgPhosLoader ;
+    fgPhosLoader = 0 ;
+  }
+  if(fBTE){
+    delete fBTE ; 
+    fBTE = 0 ;
+  } 
+  if(fPrimaries){
+    fPrimaries->Delete() ; 
+    delete fPrimaries ;
+  } 
   if (fESD) 
     delete fESD ; 
   if (fESDTree) 
-    delete fESDTree ; 
+    delete fESDTree ;
+ 
+  //  fgObjGetter = 0;
 }
 
 //____________________________________________________________________________ 
@@ -261,62 +271,72 @@ void AliPHOSGetter::Event(Int_t event, const char* opt)
 {
   // Reads the content of all Tree's S, D and R
 
-  if ( event >= MaxEvent() ) {
-    Error("Event", "%d not found in TreeE !", event) ; 
-    return ; 
-  }
+//   if ( event >= MaxEvent() ) {
+//     Error("Event", "%d not found in TreeE !", event) ; 
+//     return ; 
+//   }
 
   AliRunLoader * rl = AliRunLoader::GetRunLoader(PhosLoader()->GetTitle());
 
-  // checks if we are dealing with test-beam data
-  TBranch * btb = rl->TreeE()->GetBranch("AliPHOSBeamTestEvent") ;
-  if(btb){
-    if(!fBTE)
-      fBTE = new AliPHOSBeamTestEvent() ;
-    btb->SetAddress(&fBTE) ;
-    btb->GetEntry(event) ;
-  }
-  else{
-    if(fBTE){
-      delete fBTE ;
-      fBTE = 0 ;
-    }
-  }
+//   // checks if we are dealing with test-beam data
+//   TBranch * btb = rl->TreeE()->GetBranch("AliPHOSBeamTestEvent") ;
+//   if(btb){
+//     if(!fBTE)
+//       fBTE = new AliPHOSBeamTestEvent() ;
+//     btb->SetAddress(&fBTE) ;
+//     btb->GetEntry(event) ;
+//   }
+//   else{
+//     if(fBTE){
+//       delete fBTE ;
+//       fBTE = 0 ;
+//     }
+//   }
 
   // Loads the type of object(s) requested
   
   rl->GetEvent(event) ;
 
-  if( strstr(opt,"X") || (strcmp(opt,"")==0) )
+  if(strstr(opt,"X") || (strcmp(opt,"")==0)){
     ReadPrimaries() ;
-
-  if(strstr(opt,"H") )
+  }
+  
+  if(strstr(opt,"H")  ){
     ReadTreeH();
-
-  if(strstr(opt,"S") )
+  }
+  
+  if(strstr(opt,"S")  ){
     ReadTreeS() ;
-
-  if( strstr(opt,"D") )
+  }
+  
+  if(strstr(opt,"D") ){
     ReadTreeD() ;
-
-  if( strstr(opt,"R") )
+  }
+  
+  if(strstr(opt,"R") ){
     ReadTreeR() ;
+  }
 
-  if( strstr(opt,"T") )
+  if( strstr(opt,"T") ){
     ReadTreeT() ;
+  }    
 
-  if( strstr(opt,"P") )
+  if( strstr(opt,"P") ){
     ReadTreeP() ;
+  }    
 
-  if( strstr(opt,"E") )
+  if( strstr(opt,"E") ){
     ReadTreeE(event) ;
+  }    
 
-  if( strstr(opt,"W") )
+if( strstr(opt,"W")  ){
     ReadRaw(event) ;
+  }    
  
 
-//   if( strstr(opt,"Q") )
+//   if( strstr(opt,"Q")   && (fCurentEvent[9]!=event) )
 //     ReadTreeQA() ;
+//   }    
  
 }
 
@@ -532,111 +552,6 @@ Bool_t AliPHOSGetter::OpenESDFile()
   return rv ; 
 }
 
-
-//____________________________________________________________________________ 
-void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Int_t & amp, Double_t & time)
-{
-  // Fits the raw signal time distribution 
-
-  const Int_t kNoiseThreshold = 0 ;
-  Double_t timezero1 = 0., timezero2 = 0., timemax = 0. ;
-  Double_t signal = 0., signalmax = 0. ;       
-  Double_t energy = time = 0. ; 
-
-  if (lowGainFlag) {
-    timezero1 = timezero2 = signalmax = timemax = 0. ;
-    signalF->FixParameter(0, PHOS()->GetRawFormatLowCharge()) ; 
-    signalF->FixParameter(1, PHOS()->GetRawFormatLowGain()) ; 
-    Int_t index ; 
-    for (index = 0; index < PHOS()->GetRawFormatTimeBins(); index++) {
-      gLowGain->GetPoint(index, time, signal) ; 
-      if (signal > kNoiseThreshold && timezero1 == 0.) 
-	timezero1 = time ;
-      if (signal <= kNoiseThreshold && timezero1 > 0. && timezero2 == 0.)
-	timezero2 = time ; 
-      if (signal > signalmax) {
-	signalmax = signal ; 
-	timemax   = time ; 
-      }
-    }
-    signalmax /= PHOS()->RawResponseFunctionMax(PHOS()->GetRawFormatLowCharge(), 
-						PHOS()->GetRawFormatLowGain()) ;
-    if ( timezero1 + PHOS()->GetRawFormatTimePeak() < PHOS()->GetRawFormatTimeMax() * 0.4 ) { // else its noise 
-      signalF->SetParameter(2, signalmax) ; 
-      signalF->SetParameter(3, timezero1) ;    	    
-      gLowGain->Fit(signalF, "QRON", "", 0., timezero2); //, "QRON") ; 
-      energy = signalF->GetParameter(2) ; 
-      time   = signalF->GetMaximumX() - PHOS()->GetRawFormatTimePeak() - PHOS()->GetRawFormatTimeTrigger() ;
-    }
-  } else {
-    timezero1 = timezero2 = signalmax = timemax = 0. ;
-    signalF->FixParameter(0, PHOS()->GetRawFormatHighCharge()) ; 
-    signalF->FixParameter(1, PHOS()->GetRawFormatHighGain()) ; 
-    Int_t index ; 
-    for (index = 0; index < PHOS()->GetRawFormatTimeBins(); index++) {
-      gHighGain->GetPoint(index, time, signal) ;               
-      if (signal > kNoiseThreshold && timezero1 == 0.) 
-	timezero1 = time ;
-      if (signal <= kNoiseThreshold && timezero1 > 0. && timezero2 == 0.)
-	timezero2 = time ; 
-      if (signal > signalmax) {
-	signalmax = signal ;   
-	timemax   = time ; 
-      }
-    }
-    signalmax /= PHOS()->RawResponseFunctionMax(PHOS()->GetRawFormatHighCharge(), 
-						PHOS()->GetRawFormatHighGain()) ;;
-    if ( timezero1 + PHOS()->GetRawFormatTimePeak() < PHOS()->GetRawFormatTimeMax() * 0.4 ) { // else its noise  
-      signalF->SetParameter(2, signalmax) ; 
-      signalF->SetParameter(3, timezero1) ;               
-      gHighGain->Fit(signalF, "QRON", "", 0., timezero2) ; 
-      energy = signalF->GetParameter(2) ; 
-      time   = signalF->GetMaximumX() - PHOS()->GetRawFormatTimePeak() - PHOS()->GetRawFormatTimeTrigger() ;
-    }
-  }
-  
-  if (time == 0. && energy == 0.) 
-    amp = 0 ; 
-  else {
-  AliPHOSDigitizer * digitizer = Digitizer() ; 
-  amp = static_cast<Int_t>( (energy - digitizer->GetEMCpedestal()) / digitizer->GetEMCchannel() + 0.5 ) ; 
-  }
-  // dessin
-//   TCanvas * c1 = new TCanvas("c1","A Simple Graph Example",200,10,700,500);
-//   c1->SetFillColor(42);
-//   c1->SetGrid();
-//   gLowGain->SetLineColor(2);
-//   gLowGain->SetLineWidth(4);
-//   gLowGain->SetMarkerColor(4);
-//   gLowGain->SetMarkerStyle(21);
-//   gLowGain->SetTitle("Lowgain");
-//   gLowGain->GetXaxis()->SetTitle("X title");
-//   gLowGain->GetYaxis()->SetTitle("Y title");
-//   gLowGain->Draw("ACP");
-  
-//   c1->Update();
-//   c1->GetFrame()->SetFillColor(21);
-//   c1->GetFrame()->SetBorderSize(12);
-//   c1->Modified();
-  
-//   TCanvas * c2 = new TCanvas("c2","A Simple Graph Example",200,10,700,500);
-//   c2->SetFillColor(42);
-//   c2->SetGrid();
-//   gHighGain->SetLineColor(2);
-//   gHighGain->SetLineWidth(4);
-//   gHighGain->SetMarkerColor(4);
-//   gHighGain->SetMarkerStyle(21);
-//   gHighGain->SetTitle("Highgain");
-//   gHighGain->GetXaxis()->SetTitle("X title");
-//   gHighGain->GetYaxis()->SetTitle("Y title");
-//     gHighGain->Draw("ACP");
-  
-//   c2->Update();
-//   c2->GetFrame()->SetFillColor(21);
-//   c2->GetFrame()->SetBorderSize(12);
-//   c2->Modified();
-}
-
 //____________________________________________________________________________ 
 Int_t AliPHOSGetter::ReadRaw(Int_t event)
 {
@@ -645,74 +560,37 @@ Int_t AliPHOSGetter::ReadRaw(Int_t event)
 
   AliRawReaderFile rawReader(event) ; 
   AliPHOSRawStream in(&rawReader);
-
-  Bool_t first = kTRUE ;
-  
-  TF1 * signalF = new TF1("signal", AliPHOS::RawResponseFunction, 0, PHOS()->GetRawFormatTimeMax(), 4);
-  signalF->SetParNames("Charge", "Gain", "Amplitude", "TimeZero") ; 
-
-  Int_t relId[4], id ;
-  Bool_t lowGainFlag = kFALSE ; 
  
   TClonesArray * digits = Digits() ;
   digits->Clear() ; 
   Int_t idigit = 0 ; 
-  Int_t amp = 0 ; 
-  Double_t time = 0. ; 
-
-  TGraph * gLowGain = new TGraph(PHOS()->GetRawFormatTimeBins()) ; 
-  TGraph * gHighGain= new TGraph(PHOS()->GetRawFormatTimeBins()) ;  
 
   while ( in.Next() ) { // PHOS entries loop 
-    if ( (in.IsNewRow() || in.IsNewColumn() || in.IsNewModule()) ) {
-      if (!first) {
-	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, amp, time) ; 
-	if (amp > 0) {
-	  new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;	
-	  idigit++ ; 
-	}
-	Int_t index ; 
-	for (index = 0; index < PHOS()->GetRawFormatTimeBins(); index++) {
-	  gLowGain->SetPoint(index, index * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 0) ;  
-	  gHighGain->SetPoint(index, index * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 0) ; 
-	} 
-      }
-      first = kFALSE ; 
-      relId[0] = in.GetModule() ;
-      if ( relId[0] >= PHOS()->GetRawFormatLowGainOffset() ) { 
-	relId[0] -=  PHOS()->GetRawFormatLowGainOffset() ; 
-	lowGainFlag = kTRUE ; 
-      } else 
-	lowGainFlag = kFALSE ; 
-      relId[1] = 0 ; 
-      relId[2] = in.GetRow() ; 
-      relId[3] = in.GetColumn() ; 
-      PHOSGeometry()->RelToAbsNumbering(relId, id) ;	
+ 
+    Int_t amp = in.GetSignal() ; 
+    Double_t time = in.GetTime() ; 
+    Int_t relId[4], id ;
+
+    relId[0] = in.GetModule() ;
+    if ( relId[0] >= PHOS()->GetRawFormatLowGainOffset() ) { 
+      relId[0] -=  PHOS()->GetRawFormatLowGainOffset() ; 
     }
-    if (lowGainFlag)
-      gLowGain->SetPoint(in.GetTime(), 
-		     in.GetTime()* PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 
-		     in.GetSignal()) ;
-    else 
-      gHighGain->SetPoint(in.GetTime(), 
-			 in.GetTime() * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 
-			 in.GetSignal() ) ;
-
+    relId[1] = 0 ; 
+    relId[2] = in.GetRow() ; 
+    relId[3] = in.GetColumn() ; 
+    PHOSGeometry()->RelToAbsNumbering(relId, id) ;	
+    
+    if (amp > 0 && id >=0 ) {
+      new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;	
+      idigit++ ; 
+    }
+    
   } // PHOS entries loop
-
-  FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, amp, time) ; 
-  if (amp > 0 ) {
-    new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;
-    idigit++ ; 
-  }
+  
   digits->Sort() ; 
-
-  delete signalF ; 
-  delete gLowGain, gHighGain ; 
   
   return digits->GetEntriesFast() ; 
 }
-
 //____________________________________________________________________________ 
 Int_t AliPHOSGetter::ReadTreeD()
 {
