@@ -28,6 +28,9 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDparameter.h"
 
+#include "AliRun.h"
+#include "AliTRD.h"
+
 ClassImp(AliTRDgeometry)
 
 //_____________________________________________________________________________
@@ -507,7 +510,15 @@ AliTRDgeometry* AliTRDgeometry::GetGeometry(AliRunLoader* runLoader)
   TDirectory* saveDir = gDirectory;
   runLoader->CdGAFile();
 
+  // Try from the galice.root file
   AliTRDgeometry* geom = (AliTRDgeometry*) gDirectory->Get("TRDgeometry");
+
+  if (!geom) {
+    // It is not in the file, try to get it from gAlice, 
+    // which corresponds to the run loader 
+    AliTRD * trd = (AliTRD*)runLoader->GetAliRun()->GetDetector("TRD");
+    geom = trd->GetGeometry();
+  }
   if (!geom) ::Error("AliTRDgeometry::GetGeometry", "Geometry not found");
 
   saveDir->cd();
