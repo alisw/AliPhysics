@@ -8,15 +8,11 @@
 //  Manager class for TPC   clusters                   //
 ////////////////////////////////////////////////
 
+class TClonesArray;
+
 #include "AliCTypes.h"
-//#include "AliSegmentID.h"
-//#include "AliArrayS.h"
-//#include "AliTPC.h"
-//#include "TVector3.h"
-//#include "AliObjectArray.h"
 #include "TArrayOfArray.h"
 
-class TClonesArray;
 class AliArrayS;
 class AliTPChit;
 class AliTPCTempHitInfo;
@@ -42,7 +38,7 @@ class AliTrackHitsInfo   {
 
 class AliTrackHitsParam {
   friend  class  AliTPCTrackHits;
-  friend  struct AliTPCTempHitInfo;
+  friend  class  AliTPCTempHitInfo;
  public:
   AliTrackHitsParam(){fgCounter1++;fgCounter2++;}
   ~AliTrackHitsParam(){fgCounter1--;}
@@ -63,7 +59,7 @@ class AliTrackHitsParam {
 
 class AliHitInfo {
   friend  class  AliTPCTrackHits;
-  friend  struct AliTPCTempHitInfo;
+  friend  class  AliTPCTempHitInfo;
 public:
   AliHitInfo(){fgCounter1++;fgCounter2++;}
   ~AliHitInfo(){fgCounter1--;}
@@ -80,7 +76,7 @@ public:
 
 class AliTPCTrackHits : public TObject{
   friend class AliTPC;
-  friend  struct AliTPCTempHitInfo;
+  friend class AliTPCTempHitInfo;
 public:
   AliTPCTrackHits(); 
   ~AliTPCTrackHits();

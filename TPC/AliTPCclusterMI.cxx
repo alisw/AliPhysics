@@ -13,6 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//-------------------------------------------------------
+//          Implementation of the TPC cluser
+//
+//   Origin: Marian Ivanov   Marian.Ivanov@cern.ch
+// 
+//  AliTPC parallel tracker - 
+//  Description of this class together with its intended usage
+//  will follow shortly
+//  
+//-------------------------------------------------------
+
+/* $Id$ */
 
 #include "AliTPCclusterMI.h"
 

@@ -34,14 +34,10 @@
 //                                                                          //
 ///////////////////////////////////////////////////////////////////////////////
 
-//#include "TVector3.h"
-//#include "TClonesArray.h"    
-#include "AliTPCTrackHits.h"
+#include <TError.h>
+
 #include "AliTPC.h"
-
-//#include <Riostream.h>
-
-
+#include "AliTPCTrackHits.h"
 
 ClassImp(AliTPCTrackHits) 
 LClassImp(AliTrackHitsInfo) 
@@ -60,14 +56,7 @@ const Double_t AliTPCTrackHits::fgkPrecision=1e-6;  //precision
 const Double_t AliTPCTrackHits::fgkPrecision2=1e-20;  //precision
 
 
-/************************************************************/
-//           Interface classes                              // 
-#include "AliTPCTrackHitsInterfaces.h"
-
-
-
-
-struct AliTPCCurrentHit {
+class AliTPCCurrentHit {
   friend class AliTPCTrackHits;
 private:
   AliTPChit fHit;     //   - hit in "standard" representation
@@ -79,16 +68,16 @@ private:
 };   
 
 
-struct  AliTPCTempHitInfo {
+class  AliTPCTempHitInfo {
   friend class AliTPCTrackHits;
 private:
   enum    { kStackSize = 100};
   AliTPCTempHitInfo(); 
-  AliTPCTempHitInfo(const AliTPCTempHitInfo &t){
-  }
-  AliTPCTempHitInfo   & operator=(const AliTPCTempHitInfo& r){
-    return *this;
-  }
+  AliTPCTempHitInfo(const AliTPCTempHitInfo &)
+    {::Fatal("copy ctor","Not implemented\n");}
+  AliTPCTempHitInfo & operator = (const AliTPCTempHitInfo &)
+    {::Fatal("= operator","Not implemented\n");return *this;}
+
   void     NewParam(Double_t r, Double_t z, Double_t fi, Int_t q);
   void     SetHit(Double_t r, Double_t z, Double_t fi, Int_t q);
   Double_t * GetPosition(Int_t index){return &fPositionStack[index*3];}

@@ -12,6 +12,9 @@
 //
 //   Origin: 
 //-------------------------------------------------------
+
+#include <TError.h>
+
 #include "AliTracker.h"
 #include "AliTPCtrack.h"
 #include "AliComplexCluster.h"
@@ -67,6 +70,8 @@ class AliTPCseed : public AliTPCtrack {
      //
      //
  private:
+     AliTPCseed & operator = (const AliTPCseed &)
+       {::Fatal("= operator","Not Implemented\n");return *this;}
      AliESDtrack * fEsd; //!
      AliTPCclusterMI*   fClusterPointer[160];  //! array of cluster pointers  - 
      TClonesArray * fPoints;              // array with points along the track
@@ -133,7 +138,7 @@ public:
    //   
    AliCluster * GetCluster (int) const {return 0;}
    AliTPCclusterMI *GetClusterMI(Int_t index) const;
-   Int_t Clusters2Tracks(const TFile */*in*/, TFile */*out*/){return 0;}
+   Int_t Clusters2Tracks(const TFile */*in*/, TFile */*out*/) const {return 0;}
    Int_t Clusters2Tracks();
    virtual void  CookLabel(AliTPCseed *t,Float_t wrong) const; 
    
@@ -149,7 +154,7 @@ public:
    Int_t UpdateClusters(AliTPCseed& t,  Int_t nr);
    Int_t FollowToNextCluster( AliTPCseed& t, Int_t nr);
 
-   virtual Int_t PropagateBack (const TFile *, TFile *){return 0;}
+   virtual Int_t PropagateBack (const TFile *, TFile *) const {return 0;}
    Int_t PropagateBack(TObjArray * arr);
    Int_t PropagateBack(AliESD * event);
    Int_t PropagateBack(AliTPCseed *pt, Int_t row0, Int_t row1);   
@@ -195,7 +200,7 @@ public:
      
      void SetX(Double_t x) {fX=x;}
      Double_t GetX() const {return fX;}
-   private:  
+private:  
      Float_t fDeadZone;  // the width of the dead zone
      AliTPCclusterMI *fClusters1; //array with clusters 1
      Int_t fN1;  //number of clusters on left side

@@ -31,28 +31,25 @@
 /* $Id$ */
 
 
-#include <TObjArray.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <TClonesArray.h>
 
 #include "Riostream.h"
+#include <TClonesArray.h>
+#include <TFile.h>
+#include <TObjArray.h>
+#include <TTree.h>
 
-#include "AliTPCclusterMI.h"
 #include "AliComplexCluster.h"
-#include "AliTPCParam.h"
-#include "AliTPCClustersRow.h"
-#include "AliTPCpolyTrack.h"
-#include "TStopwatch.h"
 #include "AliESD.h"
 #include "AliHelix.h"
-//
 #include "AliRunLoader.h"
-//
+#include "AliTPCClustersRow.h"
+#include "AliTPCParam.h"
+#include "AliTPCclusterMI.h"
+#include "AliTPCpolyTrack.h"
 #include "AliTPCreco.h" 
 #include "AliTPCtrackerMI.h"
-
-
+#include "TStopwatch.h"
+//
 
 ClassImp(AliTPCseed)
 ClassImp(AliTPCtrackerMI)
@@ -67,7 +64,6 @@ public:
 };
 
 Double_t AliTPCFastMath::fgFastAsin[20000];
-AliTPCFastMath gAliTPCFastMath;
 
 AliTPCFastMath::AliTPCFastMath(){
   //
