@@ -240,7 +240,7 @@ void Config()
     {
         //=================== SHIL parameters ============================
 
-        AliSHIL *SHIL = new AliSHILv0("SHIL", "Shielding");
+        AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding");
     }
 
 
