@@ -246,7 +246,7 @@ void AliCRTv0::CreateGeometry()
   // the scintillators, the aluminium frame, etc.
   box[0] = fModule->FrameLength()/2;
   box[1] = fModule->FrameThickness()/2;
-  box[3] = fModule->FrameWidth()/2;
+  box[2] = fModule->FrameWidth()/2;
   gMC->Gsvolu("CRT2", "BOX", idtmed[1114], box, 3);
 
   // The scintillators
