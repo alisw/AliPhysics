@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2003/04/30 14:48:21  hristov
+Changes related to the initialization of random numbers generators. Now one can use its own randoms for each module, particle generator, and/or tracking package. The interface with Fortran is simplified and some inter-library dependencies are avoided. Future improvements are welcome...
+
 Revision 1.16  2003/04/08 10:22:05  morsch
 Rapidity shift calculated in Init().
 
@@ -196,8 +199,6 @@ Bool_t AliGenMC::ChildSelected(Int_t ip) const
 Bool_t AliGenMC::KinematicSelection(TParticle *particle, Int_t flag) const
 {
 // Perform kinematic selection
-    Float_t px    = particle->Px();
-    Float_t py    = particle->Py();
     Float_t pz    = particle->Pz();
     Float_t  e    = particle->Energy();
     Float_t pt    = particle->Pt();
@@ -205,8 +206,8 @@ Bool_t AliGenMC::KinematicSelection(TParticle *particle, Int_t flag) const
     Float_t theta = particle->Theta();
     Float_t mass  = particle->GetCalcMass();
     Float_t mt2   = pt * pt + mass * mass;
+    Float_t phi   = particle->Phi();
     
-    Float_t phi   = Float_t(TMath::ATan2(Double_t(py),Double_t(px)));
     Double_t y, y0;
 
     if (TMath::Abs(pz) <  e) {
