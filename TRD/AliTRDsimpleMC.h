@@ -124,14 +124,19 @@ class AliTRDsimpleMC : public TVirtualMC {
   //
 
   // Set methods
+#if ROOT_VERSION_CODE > 262150
+    virtual Bool_t   SetCut(const char* , Double_t ) { return kTRUE; }
+    virtual Bool_t   SetProcess(const char* , Int_t ) { return kTRUE; }
+#else
     virtual void     SetCut(const char* , Double_t ) {}
     virtual void     SetProcess(const char* , Int_t ) {}
+    virtual void     DefineParticles() {}
+#endif
     virtual Double_t Xsec(char*, Double_t, Int_t, Int_t) { return 0.; }
 
   // Particle table usage
     virtual Int_t   IdFromPDG(Int_t ) const { return 0; }
     virtual Int_t   PDGFromId(Int_t ) const { return 0; }
-    virtual void    DefineParticles() {}
 
   //
   // Methods for step management
@@ -200,7 +205,7 @@ class AliTRDsimpleMC : public TVirtualMC {
   virtual void          GetSecondary(Int_t , Int_t& ,
                                      TLorentzVector& ,
                                      TLorentzVector& )                                    { };
-  virtual TMCProcess  ProdProcess(Int_t ) const                                           { return kPNoProcess; };
+  virtual TMCProcess    ProdProcess(Int_t ) const                                           { return kPNoProcess; };
   virtual Int_t         StepProcesses(TArrayI& ) const                                    { return 0; };
 
   //
@@ -223,8 +228,13 @@ class AliTRDsimpleMC : public TVirtualMC {
     virtual void Gspart(Int_t, const char*, Int_t, Double_t, Double_t, Double_t) {}
     // Dummy methods
 #if ROOT_VERSION_CODE > 197895
+#if ROOT_VERSION_CODE > 262150
+    virtual Bool_t DefineParticle(int, const char*, TMCParticleType, double, double, double){ return kTRUE; }
+    virtual Bool_t DefineIon(const char*, int, int, int, double, double) { return kTRUE; }
+#else
     virtual void DefineParticle(int, const char*, TMCParticleType, double, double, double){;}
     virtual void DefineIon(const char*, int, int, int, double, double){;}
+#endif
     virtual TString  ParticleName(int) const {return "";}
     virtual Double_t ParticleMass(int) const {return 0.;}
     virtual Double_t ParticleCharge(int) const {return 0.;}
