@@ -37,10 +37,8 @@ AliMUONTransientDigit::AliMUONTransientDigit(Int_t ich, Int_t *digits):
     //
     // Creates a MUON digit list object
     //
-
     fChamber     = ich;
     fTrackList   = new TObjArray;
-    
 }
 
 AliMUONTransientDigit::~AliMUONTransientDigit() 

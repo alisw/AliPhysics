@@ -19,6 +19,8 @@ class AliMUONTransientDigit : public AliMUONDigit {
     AliMUONTransientDigit(const AliMUONTransientDigit& digit);
     AliMUONTransientDigit(Int_t rpad, Int_t *digits);
     virtual ~AliMUONTransientDigit();
+    Int_t Chamber() {return fChamber;}
+	    
     TObjArray  *TrackList()   {return fTrackList;}
     AliMUONTransientDigit & operator =(const AliMUONTransientDigit & rhs);
     
