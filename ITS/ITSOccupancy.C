@@ -173,17 +173,17 @@ Int_t ITSOccupancy(char* opt, char *name = "galice", Int_t evNum = 0) {
 		tot[i] = gm->GetNladders(i+1) * gm->GetNdetectors(i+1) * seg->GetNPads();
 		cout.setf(ios::fixed);
 		cout << tot[i] << endl;
-		Text_t name[7];
+		Text_t hname[7];
 		for (Int_t j = 0; j < 4; j++) {
-			name[0] = 'h';
-			name[1] = 'i';
-			name[2] = 's';
-			name[3] = 't';
-			name[4] = '0' + j;
-			name[5] = '0' + i;
-			name[6] = '\0';
+			hname[0] = 'h';
+			hname[1] = 'i';
+			hname[2] = 's';
+			hname[3] = 't';
+			hname[4] = '0' + j;
+			hname[5] = '0' + i;
+			hname[6] = '\0';
 			Int_t nbins = (Int_t)(2. * zmax[i] / binw[i]);
-			hist[j][i] = new TH1D(name, "histo", nbins, -zmax[i], zmax[i]);
+			hist[j][i] = new TH1D(hname, "histo", nbins, -zmax[i], zmax[i]);
 		}
 	}
 	// Here is put the value of the density for each bin of each layer's TH1D
