@@ -48,8 +48,8 @@ class AliL3MemHandler{
   Int_t fSlice;
   Int_t fPatch;
 
-  Int_t fEtaMinTimeBin[176];
-  Int_t fEtaMaxTimeBin[176];
+  Int_t fEtaMinTimeBin[159];
+  Int_t fEtaMaxTimeBin[159];
   
   FILE *fInBinary;//!
   FILE *fOutBinary;//!
