@@ -50,7 +50,7 @@ endif
 
 LEVELSO = $(LIBDIR)/libAliL3.so
 
-all : $(LEVELSO) $(OBJDIR) 
+all : $(OBJDIR) $(LEVELSO) 
 
 $(LEVELSO) : $(OBJS)
 	$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
