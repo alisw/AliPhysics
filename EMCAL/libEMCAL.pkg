@@ -11,6 +11,17 @@ AliEMCALSDigitizer.cxx \
 AliEMCALDigitizer.cxx \
 AliEMCALGetter.cxx \
 AliEMCALJetFinder.cxx \
+AliEMCALJetFinderInput.cxx \
+AliEMCALJetFinderInputSimPrep.cxx \
+AliEMCALJetFinderInputPrep.cxx \
+AliEMCALJetFinderOutput.cxx \
+AliEMCALJetFinderAlgo.cxx \
+AliEMCALJetFinderAlgoOmni.cxx \
+AliEMCALJetFinderAlgoUA1Unit.cxx \
+AliEMCALJetFinderAlgoUA1.cxx \
+AliEMCALJetFinderAlgoUA1Revised.cxx \
+AliEMCALJetFinderAlgoUA1Hybrid.cxx \
+AliEMCALJetFinderPlots.cxx \
 AliEMCALJet.cxx \
 AliEMCALFast.cxx \
 AliEMCALTick.cxx \
@@ -30,8 +41,7 @@ AliEMCALLink.cxx \
 AliEMCALRecParticle.cxx \
 AliEMCALFastRecParticle.cxx \
 AliEMCALPID.cxx \
-AliEMCALPIDv1.cxx \
-AliEMCALLoader.cxx 
+AliEMCALPIDv1.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 

@@ -19,6 +19,17 @@
 #pragma link C++ class AliEMCALClusterizerv1+;
 #pragma link C++ class AliEMCALGetter+;
 #pragma link C++ class AliEMCALJetFinder+;
+#pragma link C++ class AliEMCALJetFinderInput+;
+#pragma link C++ class AliEMCALJetFinderInputPrep+;
+#pragma link C++ class AliEMCALJetFinderInputSimPrep+;
+#pragma link C++ class AliEMCALJetFinderOutput+;
+#pragma link C++ class AliEMCALJetFinderAlgo+;
+#pragma link C++ class AliEMCALJetFinderAlgoOmni+;
+#pragma link C++ class AliEMCALJetFinderAlgoUA1Unit+;
+#pragma link C++ class AliEMCALJetFinderAlgoUA1+;
+#pragma link C++ class AliEMCALJetFinderAlgoUA1Revised+;
+#pragma link C++ class AliEMCALJetFinderAlgoUA1Hybrid+;
+#pragma link C++ class AliEMCALJetFinderPlots+;
 #pragma link C++ class AliEMCALJet+;
 #pragma link C++ class AliEMCALJetMicroDst+;
 #pragma link C++ class AliEMCALFast+;
@@ -34,5 +45,4 @@
 #pragma link C++ class AliEMCALFastRecParticle+;		
 #pragma link C++ class AliEMCALPID+;		
 #pragma link C++ class AliEMCALPIDv1+;		
-#pragma link C++ class AliEMCALLoader+;		
 #endif

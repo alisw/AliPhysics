@@ -13,7 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/*
+$Log$
+Revision 1.1  2002/01/17 23:52:43  morsch
+First commit.
+
+*/
 
 #include "AliEMCALHadronCorrection.h"
 
