@@ -3,8 +3,9 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>, Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
 //*-- Copyright &copy ALICE HLT Group 
 
+#include "AliL3RootTypes.h"
 #include "AliL3StandardIncludes.h"
-
+#include "AliL3DigitData.h"
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
 #include "AliL3TrackSegmentData.h"
@@ -1215,4 +1216,26 @@ void AliL3MemHandler::UpdateRowPointer(AliL3DigitRowData *&tempPt)
   Int_t size = sizeof(AliL3DigitRowData) + tempPt->fNDigit*sizeof(AliL3DigitData);
   tmp += size;
   tempPt = (AliL3DigitRowData*)tmp;
+}
+
+inline Int_t  AliL3MemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_t time) const
+{
+  if(fNUsed>=fNDigits) return -2;
+
+  if(pad==fDPt[fNUsed]->fPad&&time==fDPt[fNUsed]->fTime) return 0;
+
+  if(pad<fDPt[fNUsed]->fPad) return -1;
+  if(pad==fDPt[fNUsed]->fPad&&time<fDPt[fNUsed]->fTime)  return -1;
+
+  return 1;
+}
+
+inline Int_t AliL3MemHandler::CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b) const
+{
+  if(a->fPad==b->fPad && a->fTime == b->fTime) return 0;
+
+  if(a->fPad<b->fPad) return -1;
+  if(a->fPad==b->fPad && a->fTime<b->fTime) return -1;
+  
+  return 1;
 }

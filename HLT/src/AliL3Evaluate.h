@@ -4,9 +4,25 @@
 #define ALIL3_Evaluate
 
 
+class AliL3Track;
 class TClonesArray;
-#include <TNtuple.h>
-#include <TH1F.h>
+class TFile;
+class AliL3TrackArray;
+class AliL3SpacePointData;
+class TH1F;
+class AliTPCParam;
+class TTree;
+class AliSimDigits;
+class TObjArray;
+class TParticle;
+class AliL3FileHandler;
+class TClonesArray;
+class TNtuple;
+class TH1F;
+//#include <TNtuple.h>
+//#include <TH1F.h>
+
+class AliL3Evaluate {
 
 struct AliGoodTrack 
 {
@@ -20,20 +36,12 @@ struct AliGoodTrack
 };
 typedef struct AliGoodTrack AliGoodTrack;
 
-class AliL3Track;
-class TClonesArray;
-class TFile;
-class AliL3TrackArray;
-class AliL3SpacePointData;
-class TH1F;
-class AliTPCParam;
-class TTree;
-class AliSimDigits;
-class TObjArray;
-class TParticle;
-class AliL3FileHandler;
-
-class AliL3Evaluate {
+struct AliS 
+{
+  Int_t flab; //lab
+  Int_t fmax; //max
+};
+typedef struct AliS AliS;
 
  private:
 
@@ -88,7 +96,7 @@ class AliL3Evaluate {
   void CalcEffHistos();
   void AssignPIDs();
   void AssignIDs();
-  void GetGoodParticles(Char_t *particle_file,Int_t event=-1,Int_t *padrowrange=0);
+  void GetGoodParticles(Char_t *particlefile,Int_t event=-1,Int_t *padrowrange=0);
   void GetFastClusterIDs(Char_t *path);
   void GetCFeff(Char_t *path,Char_t *outfile,Int_t nevent=0,Bool_t sp=kFALSE);
   Int_t GetMCTrackLabel(AliL3Track *track);

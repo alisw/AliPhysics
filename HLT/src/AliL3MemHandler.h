@@ -3,14 +3,16 @@
 #ifndef ALIL3_MEMHANDLER_H
 #define ALIL3_MEMHANDLER_H
 
-#include "AliL3RootTypes.h"
-#include "AliL3DigitData.h"
+//#include "AliL3RootTypes.h"
+//#include "AliL3DigitData.h"
 
+class AliL3DigitData;
 class AliL3SpacePointData;
 class AliL3DigitRowData;
 class AliL3TrackSegmentData;
 class AliL3TrackArray;
 class AliL3RandomPointData;
+class AliL3RandomDigitData;
 
 #ifdef use_newio
 class AliRunLoader;
@@ -191,27 +193,4 @@ class AliL3MemHandler {
 
   ClassDef(AliL3MemHandler,1) // Memory handler class
 };
-
-inline Int_t  AliL3MemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_t time) const
-{
-  if(fNUsed>=fNDigits) return -2;
-
-  if(pad==fDPt[fNUsed]->fPad&&time==fDPt[fNUsed]->fTime) return 0;
-
-  if(pad<fDPt[fNUsed]->fPad) return -1;
-  if(pad==fDPt[fNUsed]->fPad&&time<fDPt[fNUsed]->fTime)  return -1;
-
-  return 1;
-}
-
-inline Int_t AliL3MemHandler::CompareDigits(AliL3RandomDigitData *a,AliL3RandomDigitData *b) const
-{
-  if(a->fPad==b->fPad && a->fTime == b->fTime) return 0;
-
-  if(a->fPad<b->fPad) return -1;
-  if(a->fPad==b->fPad && a->fTime<b->fTime) return -1;
-  
-  return 1;
-}
-
 #endif

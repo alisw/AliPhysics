@@ -4,7 +4,7 @@
 //*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
-
+#include "AliL3RootTypes.h"
 #include "AliL3RootTypes.h"
 #include "AliL3Logging.h"
 #include "AliL3Track.h"
@@ -114,8 +114,8 @@ Double_t AliL3Track::GetEta() const
 Double_t AliL3Track::GetRapidity() const
 { 
   //get rap
-  const Double_t m_pi = 0.13957;
-  return 0.5 * log((m_pi + GetPz()) / (m_pi - GetPz()));
+  const Double_t kmpi = 0.13957;
+  return 0.5 * log((kmpi + GetPz()) / (kmpi - GetPz()));
 }
 
 void AliL3Track::Rotate(Int_t slice,Bool_t tolocal)
@@ -216,11 +216,10 @@ Double_t AliL3Track::GetCrossingAngle(Int_t padrow,Int_t slice)
   tangent[0] = (fPoint[1] - GetCenterY())/GetRadius();
   tangent[1] = -1.*(fPoint[0] - GetCenterX())/GetRadius();
 
-  Double_t perp_padrow[2] = {cos(angle),sin(angle)}; 
-  
-  Double_t cos_beta = fabs(tangent[0]*perp_padrow[0] + tangent[1]*perp_padrow[1]);
-  if(cos_beta > 1) cos_beta=1;
-  return acos(cos_beta);
+  Double_t perppadrow[2] = {cos(angle),sin(angle)}; 
+  Double_t cosbeta = fabs(tangent[0]*perppadrow[0] + tangent[1]*perppadrow[1]);
+  if(cosbeta > 1) cosbeta=1;
+  return acos(cosbeta);
 }
 
 Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
@@ -252,11 +251,11 @@ Bool_t AliL3Track::GetCrossingPoint(Int_t padrow,Float_t *xyz)
   if(angle1 < 0) angle1 += 2.*AliL3Transform::Pi();
   Double_t angle2 = atan2((GetFirstPointY() - GetCenterY()),(GetFirstPointX() - GetCenterX()));
   if(angle2 < 0) angle2 += AliL3Transform::TwoPi();
-  Double_t diff_angle = angle1 - angle2;
-  diff_angle = fmod(diff_angle,AliL3Transform::TwoPi());
-  if((GetCharge()*diff_angle) > 0) diff_angle = diff_angle - GetCharge()*AliL3Transform::TwoPi();
-  Double_t s_tot = fabs(diff_angle)*GetRadius();
-  Double_t zHit = GetFirstPointZ() + s_tot*GetTgl();
+  Double_t diffangle = angle1 - angle2;
+  diffangle = fmod(diffangle,AliL3Transform::TwoPi());
+  if((GetCharge()*diffangle) > 0) diffangle = diffangle - GetCharge()*AliL3Transform::TwoPi();
+  Double_t stot = fabs(diffangle)*GetRadius();
+  Double_t zHit = GetFirstPointZ() + stot*GetTgl();
   xyz[2] = zHit;
  
   return true;
@@ -268,12 +267,12 @@ Bool_t AliL3Track::CalculateReferencePoint(Double_t angle,Double_t radius)
   // Global coordinate: crossing point with y = ax+ b; 
   // a=tan(angle-AliL3Transform::PiHalf());
   //
-  const Double_t rr=radius; //position of reference plane
-  const Double_t xr = cos(angle) * rr;
-  const Double_t yr = sin(angle) * rr;
+  const Double_t krr=radius; //position of reference plane
+  const Double_t kxr = cos(angle) * krr;
+  const Double_t kyr = sin(angle) * krr;
   
   Double_t a = tan(angle-AliL3Transform::PiHalf());
-  Double_t b = yr - a * xr;
+  Double_t b = kyr - a * kxr;
 
   Double_t pp=(fCenterX+a*fCenterY-a*b)/(1+pow(a,2));
   Double_t qq=(pow(fCenterX,2)+pow(fCenterY,2)-2*fCenterY*b+pow(b,2)-pow(fRadius,2))/(1+pow(a,2));
@@ -287,8 +286,8 @@ Bool_t AliL3Track::CalculateReferencePoint(Double_t angle,Double_t radius)
   Double_t y0 = a*x0 + b;
   Double_t y1 = a*x1 + b;
 
-  Double_t diff0 = sqrt(pow(x0-xr,2)+pow(y0-yr,2));
-  Double_t diff1 = sqrt(pow(x1-xr,2)+pow(y1-yr,2));
+  Double_t diff0 = sqrt(pow(x0-kxr,2)+pow(y0-kyr,2));
+  Double_t diff1 = sqrt(pow(x1-kxr,2)+pow(y1-kyr,2));
  
   if(diff0<diff1){
     fPoint[0]=x0;
@@ -433,25 +432,25 @@ void AliL3Track::UpdateToFirstPoint()
   Double_t xc = GetCenterX() - GetFirstPointX();
   Double_t yc = GetCenterY() - GetFirstPointY();
   
-  Double_t dist_x1 = xc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t dist_y1 = yc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t distance1 = sqrt(dist_x1*dist_x1 + dist_y1*dist_y1);
+  Double_t distx1 = xc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t disty1 = yc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t distance1 = sqrt(distx1*distx1 + disty1*disty1);
   
-  Double_t dist_x2 = xc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t dist_y2 = yc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t distance2 = sqrt(dist_x2*dist_x2 + dist_y2*dist_y2);
+  Double_t distx2 = xc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t disty2 = yc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t distance2 = sqrt(distx2*distx2 + disty2*disty2);
   
   //Choose the closest:
   Double_t point[2];
   if(distance1 < distance2)
     {
-      point[0] = dist_x1 + GetFirstPointX();
-      point[1] = dist_y1 + GetFirstPointY();
+      point[0] = distx1 + GetFirstPointX();
+      point[1] = disty1 + GetFirstPointY();
     }
   else
     {
-      point[0] = dist_x2 + GetFirstPointX();
-      point[1] = dist_y2 + GetFirstPointY();
+      point[0] = distx2 + GetFirstPointX();
+      point[1] = disty2 + GetFirstPointY();
     }
 
   Double_t pointpsi = atan2(point[1]-GetCenterY(),point[0]-GetCenterX());
@@ -466,7 +465,7 @@ void AliL3Track::UpdateToFirstPoint()
   
 }
 
-void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_t &closest_y,Double_t &closest_z)
+void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closestx,Double_t &closesty,Double_t &closestz)
 {
   //Calculate the point of closest approach to the vertex
   //This function calculates the minimum distance from the helix to the vertex, and choose 
@@ -475,28 +474,28 @@ void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_
   Double_t xc = GetCenterX() - vertex->GetX();
   Double_t yc = GetCenterY() - vertex->GetY();
   
-  Double_t dist_x1 = xc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t dist_y1 = yc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t distance1 = sqrt(dist_x1*dist_x1 + dist_y1*dist_y1);
+  Double_t distx1 = xc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t disty1 = yc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t distance1 = sqrt(distx1*distx1 + disty1*disty1);
   
-  Double_t dist_x2 = xc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t dist_y2 = yc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t distance2 = sqrt(dist_x2*dist_x2 + dist_y2*dist_y2);
+  Double_t distx2 = xc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t disty2 = yc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
+  Double_t distance2 = sqrt(distx2*distx2 + disty2*disty2);
   
   //Choose the closest:
   if(distance1 < distance2)
     {
-      closest_x = dist_x1 + vertex->GetX();
-      closest_y = dist_y1 + vertex->GetY();
+      closestx = distx1 + vertex->GetX();
+      closesty = disty1 + vertex->GetY();
     }
   else
     {
-      closest_x = dist_x2 + vertex->GetX();
-      closest_y = dist_y2 + vertex->GetY();
+      closestx = distx2 + vertex->GetX();
+      closesty = disty2 + vertex->GetY();
     }
   
   //Get the z coordinate:
-  Double_t angle1 = atan2((closest_y-GetCenterY()),(closest_x-GetCenterX()));
+  Double_t angle1 = atan2((closesty-GetCenterY()),(closestx-GetCenterX()));
   if(angle1 < 0) angle1 = angle1 + AliL3Transform::TwoPi();
  
   Double_t angle2 = atan2((GetFirstPointY()-GetCenterY()),(GetFirstPointX()-GetCenterX()));
@@ -506,7 +505,6 @@ void AliL3Track::GetClosestPoint(AliL3Vertex *vertex,Double_t &closest_x,Double_
   diff_angle = fmod(diff_angle,AliL3Transform::TwoPi());
   
   if((GetCharge()*diff_angle) < 0) diff_angle = diff_angle + GetCharge()*AliL3Transform::TwoPi();
-  Double_t s_tot = fabs(diff_angle)*GetRadius();
-  
-  closest_z = GetFirstPointZ() - s_tot*GetTgl();
+  Double_t stot = fabs(diff_angle)*GetRadius();
+  closestz = GetFirstPointZ() - stot*GetTgl();
 }

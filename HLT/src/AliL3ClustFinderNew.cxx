@@ -4,7 +4,7 @@
 //*-- Copyright &copy ALICE HLT Group
 
 #include "AliL3StandardIncludes.h"
-
+#include "AliL3RootTypes.h"
 #include "AliL3Logging.h"
 #include "AliL3ClustFinderNew.h"
 #include "AliL3DigitData.h"
@@ -167,7 +167,7 @@ void AliL3ClustFinderNew::ProcessDigits()
 void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 {
   //process row
-  UInt_t last_pad = 123456789;
+  UInt_t lastpad = 123456789;
 
   AliClusterData *pad1[5000]; //2 lists for internal memory=2pads
   AliClusterData *pad2[5000]; //2 lists for internal memory=2pads
@@ -177,13 +177,13 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
   AliClusterData **previousPt; //List of pointers to the previous pad
   currentPt = pad2;
   previousPt = pad1;
-  UInt_t n_previous=0,n_current=0,n_total=0;
+  UInt_t nprevious=0,ncurrent=0,ntotal=0;
 
   //Loop over sequences of this row:
   for(UInt_t bin=0; bin<tempPt->fNDigit; bin++)
     {
       AliL3DigitData *data = tempPt->fDigitData;
-      if(data[bin].fPad != last_pad)
+      if(data[bin].fPad != lastpad)
 	{
 	  //This is a new pad
 	  
@@ -198,32 +198,32 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	      currentPt = pad2;
 	      previousPt = pad1;
 	    }
-	  n_previous = n_current;
-	  n_current = 0;
-	  if(bin[data].fPad != last_pad+1)
+	  nprevious = ncurrent;
+	  ncurrent = 0;
+	  if(bin[data].fPad != lastpad+1)
 	    {
 	      //this happens if there is a pad with no signal.
-	      n_previous = n_current = 0;
+	      nprevious = ncurrent = 0;
 	    }
-	  last_pad = data[bin].fPad;
+	  lastpad = data[bin].fPad;
 	}
 
-      Bool_t new_cluster = kTRUE;
-      UInt_t seq_charge=0,seq_average=0,seq_error=0;
-      UInt_t last_charge=0,last_was_falling=0;
-      Int_t new_bin=-1;
+      Bool_t newcluster = kTRUE;
+      UInt_t seqcharge=0,seqaverage=0,seqerror=0;
+      UInt_t lastcharge=0,lastwas_falling=0;
+      Int_t newbin=-1;
 
       if(fDeconvTime)
 	{
 	redo: //This is a goto.
-	  if(new_bin > -1)
+	  if(newbin > -1)
 	    {
-	      bin = new_bin;
-	      new_bin = -1;
+	      bin = newbin;
+	      newbin = -1;
 	    }
 	  
-	  last_charge=0;
-	  last_was_falling = 0;
+	  lastcharge=0;
+	  lastwas_falling = 0;
 	}
       
       while(1) //Loop over current sequence
@@ -241,22 +241,22 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	  if(fDeconvTime)
 	    {
 	      //Check if the last pixel in the sequence is smaller than this
-	      if(charge > last_charge)
+	      if(charge > lastcharge)
 		{
-		  if(last_was_falling)
+		  if(lastwas_falling)
 		    {
-		      new_bin = bin;
+		      newbin = bin;
 		      break;
 		    }
 		}
-	      else last_was_falling = 1; //last pixel was larger than this
-	      last_charge = charge;
+	      else lastwas_falling = 1; //last pixel was larger than this
+	      lastcharge = charge;
 	    }
 	  
 	  //Sum the total charge of this sequence
-	  seq_charge += charge;
-	  seq_average += data[bin].fTime*charge;
-	  seq_error += data[bin].fTime*data[bin].fTime*charge;
+	  seqcharge += charge;
+	  seqaverage += data[bin].fTime*charge;
+	  seqerror += data[bin].fTime*data[bin].fTime*charge;
 
 	  //Check where to stop:
 	  if(bin >= tempPt->fNDigit - 1) //out of range
@@ -270,28 +270,28 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 	}//end loop over sequence
       
       //Calculate mean of sequence:
-      Int_t seq_mean=0;
-      if(seq_charge)
-	seq_mean = seq_average/seq_charge;
+      Int_t seqmean=0;
+      if(seqcharge)
+	seqmean = seqaverage/seqcharge;
       else
 	{
 	  LOG(AliL3Log::kFatal,"AliL3ClustFinderNew::ProcessRow","Data")
 	    <<"Error in data given to the cluster finder"<<ENDLOG;
-	  seq_mean = 1;
-	  seq_charge = 1;
+	  seqmean = 1;
+	  seqcharge = 1;
 	}
       
       //Calculate mean in pad direction:
-      Int_t pad_mean = seq_charge*data[bin].fPad;
-      Int_t pad_error = data[bin].fPad*pad_mean;
+      Int_t padmean = seqcharge*data[bin].fPad;
+      Int_t paderror = data[bin].fPad*padmean;
 
       //Compare with results on previous pad:
-      for(UInt_t p=0; p<n_previous; p++)
+      for(UInt_t p=0; p<nprevious; p++)
 	{
 	  //dont merge sequences on the same pad twice
 	  if(previousPt[p]->fLastMergedPad==data[bin].fPad) continue;
 
-	  Int_t difference = seq_mean - previousPt[p]->fMean;
+	  Int_t difference = seqmean - previousPt[p]->fMean;
 	  if(difference < -fMatch) break;
 
 	  if(difference <= fMatch) //There is a match here!!
@@ -300,7 +300,7 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 
 	      if(fDeconvPad)
 		{
-		  if(seq_charge > local->fLastCharge)
+		  if(seqcharge > local->fLastCharge)
 		    {
 		      if(local->fChargeFalling) //The previous pad was falling
 			{			
@@ -309,72 +309,72 @@ void AliL3ClustFinderNew::ProcessRow(AliL3DigitRowData *tempPt)
 		    }
 		  else
 		    local->fChargeFalling = 1;
-		  local->fLastCharge = seq_charge;
+		  local->fLastCharge = seqcharge;
 		}
 	      
 	      //Don't create a new cluster, because we found a match
-	      new_cluster = kFALSE;
+	      newcluster = kFALSE;
 	      
 	      //Update cluster on current pad with the matching one:
-	      local->fTotalCharge += seq_charge;
-	      local->fPad += pad_mean;
-	      local->fPad2 += pad_error;
-	      local->fTime += seq_average;
-	      local->fTime2 += seq_error;
-	      local->fMean = seq_mean;
+	      local->fTotalCharge += seqcharge;
+	      local->fPad += padmean;
+	      local->fPad2 += paderror;
+	      local->fTime += seqaverage;
+	      local->fTime2 += seqerror;
+	      local->fMean = seqmean;
 	      local->fFlags++; //means we have more than one pad 
 	      local->fLastMergedPad = data[bin].fPad;
 
-	      currentPt[n_current] = local;
-	      n_current++;
+	      currentPt[ncurrent] = local;
+	      ncurrent++;
 	      
 	      break;
 	    } //Checking for match at previous pad
 	} //Loop over results on previous pad.
       
-      if(new_cluster)
+      if(newcluster)
 	{
 	  //Start a new cluster. Add it to the clusterlist, and update
 	  //the list of pointers to clusters in current pad.
 	  //current pad will be previous pad on next pad.
 
 	  //Add to the clusterlist:
-	  AliClusterData *tmp = &clusterlist[n_total];
-	  tmp->fTotalCharge = seq_charge;
-	  tmp->fPad = pad_mean;
-	  tmp->fPad2 = pad_error;
-	  tmp->fTime = seq_average;
-	  tmp->fTime2 = seq_error;
-	  tmp->fMean = seq_mean;
+	  AliClusterData *tmp = &clusterlist[ntotal];
+	  tmp->fTotalCharge = seqcharge;
+	  tmp->fPad = padmean;
+	  tmp->fPad2 = paderror;
+	  tmp->fTime = seqaverage;
+	  tmp->fTime2 = seqerror;
+	  tmp->fMean = seqmean;
 	  tmp->fFlags = 0;  //flags for single pad clusters
 	  tmp->fLastMergedPad = data[bin].fPad;
 
 	  if(fDeconvPad)
 	    {
 	      tmp->fChargeFalling = 0;
-	      tmp->fLastCharge = seq_charge;
+	      tmp->fLastCharge = seqcharge;
 	    }
 
 	  //Update list of pointers to previous pad:
-	  currentPt[n_current] = &clusterlist[n_total];
-	  n_total++;
-	  n_current++;
+	  currentPt[ncurrent] = &clusterlist[ntotal];
+	  ntotal++;
+	  ncurrent++;
 	}
 
       if(fDeconvTime)
-	if(new_bin >= 0) goto redo;
+	if(newbin >= 0) goto redo;
     }//Loop over digits on this padrow
   
-  WriteClusters(n_total,clusterlist);
+  WriteClusters(ntotal,clusterlist);
 }
 
-void AliL3ClustFinderNew::WriteClusters(Int_t n_clusters,AliClusterData *list)
+void AliL3ClustFinderNew::WriteClusters(Int_t nclusters,AliClusterData *list)
 {
   //write cluster to output pointer
   Int_t thisrow,thissector;
   UInt_t counter = fNClusters;
   
-  for(int j=0; j<n_clusters; j++)
+  for(int j=0; j<nclusters; j++)
     {
       if(!list[j].fFlags) continue; //discard single pad clusters
       if(list[j].fTotalCharge < fThreshold) continue; //noise cluster

@@ -3,31 +3,28 @@
 #ifndef AliL3_ClustFinderNew
 #define AliL3_ClustFinderNew
 
-#include "AliL3RootTypes.h"
-
-
-struct AliClusterData
-{
-  UInt_t fTotalCharge;
-  UInt_t fPad;
-  UInt_t fTime;
-  ULong64_t fPad2;     //for error in XY direction
-  ULong64_t fTime2;    //for error in Z  direction
-  UInt_t fMean;
-  UInt_t fFlags;
-  UInt_t fChargeFalling; //for deconvolution
-  UInt_t fLastCharge;    //for deconvolution
-  UInt_t fLastMergedPad; //dont merge twice per pad
-};
-typedef struct AliClusterData AliClusterData;
-
 class AliL3DigitRowData;
 class AliL3SpacePointData;
 
 class AliL3ClustFinderNew {
- 
+
+ public:
+  struct AliClusterData
+  {
+    UInt_t fTotalCharge;   //tot charge of cluster
+    UInt_t fPad;           //pad value
+    UInt_t fTime;          //time value
+    ULong64_t fPad2;       //for error in XY direction
+    ULong64_t fTime2;      //for error in Z  direction
+    UInt_t fMean;          //mean in time
+    UInt_t fFlags;         //different flags
+    UInt_t fChargeFalling; //for deconvolution
+    UInt_t fLastCharge;    //for deconvolution
+    UInt_t fLastMergedPad; //dont merge twice per pad
+  };
+  typedef struct AliClusterData AliClusterData; //!
+
  private:
-  
   AliL3DigitRowData *fDigitRowData; //!
   AliL3SpacePointData *fSpacePointData; //!
   Bool_t fDeconvTime; //deconv in time direction
@@ -76,9 +73,7 @@ class AliL3ClustFinderNew {
   Int_t GetNumberOfClusters() const {return fNClusters;}
   
   ClassDef(AliL3ClustFinderNew,1) //Fast cluster finder
-
 };
-
 #endif
 
 

@@ -3,10 +3,6 @@
 #ifndef ALIL3TRACK_H
 #define ALIL3TRACK_H
 
-#include <string.h>
-
-#include "AliL3RootTypes.h"
-
 class AliL3Vertex;
 class AliL3SpacePointData;
 

@@ -3,7 +3,16 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include "AliL3StandardIncludes.h"
+/** \class AliL3Evaluate
+<pre>
+//_____________________________________________________________
+// AliL3Evaluate
+//
+// Evaluation class for tracking; plots, efficiencies etc..
+//
+</pre>
+*/
+
 #include <TObject.h>
 #include <TFile.h>
 #include <TH1.h>
@@ -23,13 +32,7 @@
 #include <AliComplexCluster.h>
 #include <AliStack.h>
 
-#if __GNUC__ == 3
-#include <fstream>
-#include <iosfwd>
-#else
-#include <fstream.h>
-#endif
-
+#include "AliL3StandardIncludes.h"
 #include "AliL3Logging.h"
 #include "AliL3Transform.h"
 #include "AliL3SpacePointData.h"
@@ -39,18 +42,9 @@
 #include "AliL3Evaluate.h"
 
 #if __GNUC__ == 3
+#include <iosfwd>
 using namespace std;
 #endif
-
-/** \class AliL3Evaluate
-<pre>
-//_____________________________________________________________
-// AliL3Evaluate
-//
-// Evaluation class for tracking; plots, efficiencies etc..
-//
-</pre>
-*/
 
 ClassImp(AliL3Evaluate)
 
@@ -60,7 +54,7 @@ AliL3Evaluate::AliL3Evaluate()
   Clear();
 }
 
-AliL3Evaluate::AliL3Evaluate(Char_t *datapath,Int_t min_clusters,Int_t minhits,Double_t minpt,Double_t maxpt,Int_t *slice)
+AliL3Evaluate::AliL3Evaluate(Char_t *datapath,Int_t minclusters,Int_t minhits,Double_t minpt,Double_t maxpt,Int_t *slice)
 { 
   //constructor
   Clear();
@@ -77,7 +71,7 @@ AliL3Evaluate::AliL3Evaluate(Char_t *datapath,Int_t min_clusters,Int_t minhits,D
     }
 
   sprintf(fPath,"%s",datapath);
-  fMinPointsOnTrack = min_clusters;
+  fMinPointsOnTrack = minclusters;
   fMinHitsFromParticle = minhits;
   fMinGoodPt = minpt;
   fMaxGoodPt = maxpt;
@@ -310,7 +304,6 @@ Float_t AliL3Evaluate::GetTrackPID(AliL3Track *track)
   return trackDEdx;
 }
 
-struct S {Int_t lab; Int_t max;};
 Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track)
 { 
   //Returns the MCtrackID of the belonging clusters.
@@ -322,15 +315,15 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track)
   
   
 #ifdef do_mc
-  Int_t num_of_clusters = track->GetNumberOfPoints();
-  S *s=new S[num_of_clusters];
+  Int_t numofclusters = track->GetNumberOfPoints();
+  AliS *s=new AliS[numofclusters];
   Int_t i;
-  for (i=0; i<num_of_clusters; i++) s[i].lab=s[i].max=0;
+  for (i=0; i<numofclusters; i++) s[i].flab=s[i].fmax=0;
   UInt_t *hitnum = track->GetHitNumbers();  
   UInt_t id;
     
   Int_t lab=123456789;
-  for (i=0; i<num_of_clusters; i++) 
+  for (i=0; i<numofclusters; i++) 
     {
       //Tricks to get the clusters belonging to this track:
       id = hitnum[i];
@@ -351,15 +344,15 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track)
       lab=points[pos].fTrackID[0];
 
       Int_t j;
-      for (j=0; j<num_of_clusters; j++)
-        if (s[j].lab==lab || s[j].max==0) break;
-      s[j].lab=lab;
-      s[j].max++;
+      for (j=0; j<numofclusters; j++)
+        if (s[j].flab==lab || s[j].fmax==0) break;
+      s[j].flab=lab;
+      s[j].fmax++;
     }
   
   Int_t max=0;
-  for (i=0; i<num_of_clusters; i++) 
-    if (s[i].max>max) {max=s[i].max; lab=s[i].lab;}
+  for (i=0; i<numofclusters; i++) 
+    if (s[i].fmax>max) {max=s[i].fmax; lab=s[i].flab;}
   
   if(lab == -1)
     return -1; //If most clusters is -1, this is a noise track.
@@ -368,7 +361,7 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track)
   
   delete[] s;
   
-  for (i=0; i<num_of_clusters; i++) 
+  for (i=0; i<numofclusters; i++) 
     {
       id = hitnum[i];
       Int_t slice = (id>>25) & 0x7f;
@@ -390,17 +383,17 @@ Int_t AliL3Evaluate::GetMCTrackLabel(AliL3Track *track)
   
   
   //Check if more than 10% of the clusters were assigned incorrectly:
-  if (1.-Float_t(max)/num_of_clusters > fMaxFalseClusters) 
+  if (1.-Float_t(max)/numofclusters > fMaxFalseClusters) 
     {
       return -lab;
     }
   else //Check if at least half of the 10% innermost clusters are assigned correctly.
     {
-      Int_t tail=Int_t(0.10*num_of_clusters);
+      Int_t tail=Int_t(0.10*numofclusters);
       max=0;
       for (i=1; i<=tail; i++) 
 	{
-	  id = hitnum[num_of_clusters - i];
+	  id = hitnum[numofclusters - i];
 	  Int_t slice = (id>>25) & 0x7f;
 	  Int_t patch = (id>>22) & 0x7;
 	  UInt_t pos = id&0x3fffff;	      
@@ -761,16 +754,16 @@ void AliL3Evaluate::CalculateResiduals()
 	      continue;
 	    }
 	  
-	  Float_t xyz_cross[3] = {track->GetPointX(),track->GetPointY(),track->GetPointZ()};
-	  //AliL3Transform::Global2Local(xyz_cross,slice,kTRUE);	  
-	  AliL3Transform::Global2LocHLT(xyz_cross,slice);
+	  Float_t xyzcross[3] = {track->GetPointX(),track->GetPointY(),track->GetPointZ()};
+	  //AliL3Transform::Global2Local(xyzcross,slice,kTRUE);	  
+	  AliL3Transform::Global2LocHLT(xyzcross,slice);
 	  
 	  Double_t beta = track->GetCrossingAngle(padrow,slice);
 	  
-	  Double_t yres = xyz_cross[1] - xyz[1];
-	  Double_t zres = xyz_cross[2] - xyz[2];
+	  Double_t yres = xyzcross[1] - xyz[1];
+	  Double_t zres = xyzcross[2] - xyz[2];
 	  Double_t dipangle = atan(track->GetTgl());
-	  ntuppel->Fill(yres,zres,xyz_cross[2],track->GetPt(),dipangle,beta,padrow,track->GetNumberOfPoints());
+	  ntuppel->Fill(yres,zres,xyzcross[2],track->GetPt(),dipangle,beta,padrow,track->GetNumberOfPoints());
 	  
 	}
     }
@@ -851,7 +844,7 @@ void AliL3Evaluate::EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *to
 	  
 	  AliTPCClustersRow *ro = (AliTPCClustersRow *)arr->GetRow(cursec,currow);
 	  TClonesArray *clusters = ro->GetArray();
-	  int num_of_offline=clusters->GetEntriesFast();
+	  int numofoffline=clusters->GetEntriesFast();
 	  
 	  //Get the found clusters:
 	  Int_t slice,padrow;
@@ -866,10 +859,10 @@ void AliL3Evaluate::EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *to
 	  if(!points)
 	    continue;
 	  
-	  //cout<<"Slice "<<slice<<" padrow "<<padrow<<" has "<<num_of_offline<<" clusters "<<endl;
+	  //cout<<"Slice "<<slice<<" padrow "<<padrow<<" has "<<numofoffline<<" clusters "<<endl;
 	  Int_t clustercount=0;
 	  Int_t crosscount=0;
-	  for(Int_t m=0; m<num_of_offline; m++)
+	  for(Int_t m=0; m<numofoffline; m++)
 	    {
 	      AliComplexCluster *cluster = (AliComplexCluster *)clusters->UncheckedAt(m);
 #ifdef use_newio
@@ -888,22 +881,22 @@ void AliL3Evaluate::EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *to
 		 cluster->fX < 1 || cluster->fX > AliL3Transform::GetNTimeBins() - 2)
 		continue;
 #endif	      
-	      Float_t xyz_ex[3];
+	      Float_t xyzex[3];
 	      
 #ifdef use_newio
-	      AliL3Transform::Raw2Local(xyz_ex,cursec,currow,cluster->GetY(),cluster->GetX());
+	      AliL3Transform::Raw2Local(xyzex,cursec,currow,cluster->GetY(),cluster->GetX());
 #else	      
-	      AliL3Transform::Raw2Local(xyz_ex,cursec,currow,cluster->fY,cluster->fX);
+	      AliL3Transform::Raw2Local(xyzex,cursec,currow,cluster->fY,cluster->fX);
 #endif	      
 	      //In function AliTPC::Hits2ExactClusters the time offset is not included,
 	      //so we have to substract it again here.
 	      if(slice<18)
-		xyz_ex[2]-=AliL3Transform::GetZOffset();
+		xyzex[2]-=AliL3Transform::GetZOffset();
 	      else
-		xyz_ex[2]+=AliL3Transform::GetZOffset();
+		xyzex[2]+=AliL3Transform::GetZOffset();
 	      
 	      //Outside our cone:
-	      if(param->GetPadRowRadii(cursec,currow)<230./250.*fabs(xyz_ex[2]))
+	      if(param->GetPadRowRadii(cursec,currow)<230./250.*fabs(xyzex[2]))
 		continue;
 	      
 	      TParticle *part = astack->Particle(mcId);
@@ -919,10 +912,10 @@ void AliL3Evaluate::EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *to
 	      for(UInt_t c=0; c<fNcl[slice][patch]; c++)
 		{
 		  if((Int_t)points[c].fPadRow!=padrow) continue;
-		  Float_t xyz_cl[3] = {points[c].fX,points[c].fY,points[c].fZ};
+		  Float_t xyzcl[3] = {points[c].fX,points[c].fY,points[c].fZ};
 		  
 		  if(!offline)
-		    AliL3Transform::Global2Local(xyz_cl,cursec);
+		    AliL3Transform::Global2Local(xyzcl,cursec);
 		  tempcount++;
 		  
 		  if(points[c].fTrackID[0] != mcId &&
@@ -931,18 +924,18 @@ void AliL3Evaluate::EvaluatePoints(Char_t *rootfile,Char_t *exactfile,Char_t *to
 		    continue;
 		  
 		  //Residuals:
-		  Float_t resy = xyz_cl[1] - xyz_ex[1];
-		  Float_t resz = xyz_cl[2] - xyz_ex[2];
+		  Float_t resy = xyzcl[1] - xyzex[1];
+		  Float_t resz = xyzcl[2] - xyzex[2];
 		  
 		  //Cluster shape
 		  Int_t charge = (Int_t)points[c].fCharge;
-		  Float_t beta = GetCrossingAngle(part,slice,padrow,xyz_ex);
-		  Double_t tanl = xyz_ex[2]/sqrt(xyz_ex[0]*xyz_ex[0]+xyz_ex[1]*xyz_ex[1]);
-		  Float_t psigmaY2 = AliL3Transform::GetParSigmaY2(padrow,xyz_ex[2],beta);
-		  Float_t psigmaZ2 = AliL3Transform::GetParSigmaZ2(padrow,xyz_ex[2],tanl);
+		  Float_t beta = GetCrossingAngle(part,slice,padrow,xyzex);
+		  Double_t tanl = xyzex[2]/sqrt(xyzex[0]*xyzex[0]+xyzex[1]*xyzex[1]);
+		  Float_t psigmaY2 = AliL3Transform::GetParSigmaY2(padrow,xyzex[2],beta);
+		  Float_t psigmaZ2 = AliL3Transform::GetParSigmaZ2(padrow,xyzex[2],tanl);
 		  Float_t sigmaY2 = points[c].fSigmaY2;
 		  Float_t sigmaZ2 = points[c].fSigmaZ2;
-		  ntuppel->Fill(slice,padrow,charge,resy,resz,xyz_ex[2],part->Pt(),beta,sigmaY2,sigmaZ2,psigmaY2,psigmaZ2);
+		  ntuppel->Fill(slice,padrow,charge,resy,resz,xyzex[2],part->Pt(),beta,sigmaY2,sigmaZ2,psigmaY2,psigmaZ2);
 		}
 	      clustercount=tempcount;
 	    }
@@ -1097,11 +1090,11 @@ Float_t AliL3Evaluate::GetCrossingAngle(TParticle *part,Int_t slice,Int_t /*padr
   tangent[0] = -1.*(xyz[1] - yc)/radius;
   tangent[1] = (xyz[0] - xc)/radius;
   
-  Double_t perp_padrow[2] = {1,0}; //locally in slice
+  Double_t perppadrow[2] = {1,0}; //locally in slice
   
-  Double_t cos_beta = fabs(tangent[0]*perp_padrow[0] + tangent[1]*perp_padrow[1]);
-  if(cos_beta > 1) cos_beta=1;
-  return acos(cos_beta);
+  Double_t cosbeta = fabs(tangent[0]*perppadrow[0] + tangent[1]*perppadrow[1]);
+  if(cosbeta > 1) cosbeta=1;
+  return acos(cosbeta);
 }
 
 Int_t AliL3Evaluate::FindPrimaries(Int_t nparticles)
