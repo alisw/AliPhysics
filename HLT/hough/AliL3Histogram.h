@@ -4,7 +4,8 @@
 #include "AliL3RootTypes.h"
 #include <TH2.h>
 
-class AliL3Histogram : public TH2F {
+
+class AliL3Histogram : public TObject {
   
  private:
   
@@ -14,12 +15,17 @@ class AliL3Histogram : public TH2F {
   Int_t fNybins;
   Int_t fNcells;
   Int_t fEntries;
-  
+  Int_t fFirstXbin;
+  Int_t fFirstYbin;
+  Int_t fLastXbin;
+  Int_t fLastYbin;
+
   Double_t fXmin;
   Double_t fYmin;
   Double_t fXmax;
   Double_t fYmax;
   
+  TH2F *fRootHisto;
   
  public:
   AliL3Histogram();
@@ -29,20 +35,29 @@ class AliL3Histogram : public TH2F {
   void Reset();
   void Fill(Double_t x,Double_t y,Int_t weight);
   Int_t FindBin(Double_t x,Double_t y);
+  Int_t FindXbin(Double_t x);
+  Int_t FindYbin(Double_t y);
+  Int_t GetBin(Int_t xbin,Int_t ybin);
+  Double_t GetBinContent(Int_t bin);
+  void SetBinContent(Int_t xbin,Int_t ybin);
+  void SetBinContent(Int_t bin);
   void AddBinContent(Int_t xbin,Int_t ybin,Int_t weight);
   void AddBinContent(Int_t bin,Int_t weight);
-  void Draw();
+  void Draw(Char_t *option="hist");
 
+  TH2F *GetRootHisto() {return fRootHisto;}
   Double_t GetXmin() {return fXmin;}
   Double_t GetXmax() {return fXmax;}
   Double_t GetYmin() {return fYmin;}
   Double_t GetYmax() {return fXmax;}
-  Double_t GetXBinCenter(Int_t xbin);
-  Double_t GetYBinCenter(Int_t ybin);
-  Int_t GetFirstXbin() {return 1 + (Int_t)(fNxbins*(fXmin-fXmin)/(fXmax-fXmin));}
-  Int_t GetLastXbin() {return 1 + (Int_t)(fNxbins*(fXmax-fXmin)/(fXmax-fXmin));}
-  Int_t GetFirstYbin() {return 1 + (Int_t)(fNxbins*(fXmin-fXmin)/(fXmax-fXmin));}
-  Int_t GetLastYbin() {return 1 + (Int_t)(fNybins*(fYmax-fYmin)/(fYmax-fYmin));}
+  Double_t GetBinCenterX(Int_t xbin);
+  Double_t GetBinCenterY(Int_t ybin);
+  Int_t GetFirstXbin() {return fFirstXbin;}
+  Int_t GetLastXbin() {return fLastXbin;}
+  Int_t GetFirstYbin() {return fFirstYbin;}
+  Int_t GetLastYbin() {return fLastYbin;}
+  Int_t GetNbinsX() {return fNxbins;}
+  Int_t GetNbinsY() {return fNybins;}
   Int_t GetNEntries() {return fEntries;}
 
   ClassDef(AliL3Histogram,1)

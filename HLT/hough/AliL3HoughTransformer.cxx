@@ -1,35 +1,30 @@
+//Author:        Anders Strand Vestbo
+//Last Modified: 28.6.01
+
 #include <math.h>
+#include <TH2.h>
 
 #include <TFile.h>
 #include <TTree.h>
-#include <TH2.h>
 
 #include "AliTPCParam.h"
 #include "AliSimDigits.h"
 
+#include "AliL3Histogram.h"
+#include "AliL3Logging.h"
 #include "AliL3Defs.h"
 #include "AliL3Transform.h"
 #include "AliL3HoughTransformer.h"
 #include "AliL3HoughTrack.h"
 #include "AliL3TrackArray.h"
+#include "AliL3DigitData.h"
 
 ClassImp(AliL3HoughTransformer)
 
 AliL3HoughTransformer::AliL3HoughTransformer()
 {
   //Default constructor
-  fTransform = 0;
-  fEtaMin = 0;
-  fEtaMax = 0;
-  fSlice = 0;
-  fPatch = 0;
-  fRowContainer = 0;
-  fPhiRowContainer = 0;
-  fVolume=0;
-  fNumOfPadRows=0;
-  fContainerBounds=0;
-  fNDigits=0;
-  fIndex = 0;
+  
 }
 
 
@@ -66,28 +61,220 @@ AliL3HoughTransformer::AliL3HoughTransformer(Int_t slice,Int_t patch,Double_t *e
   fSlice = slice;
   fPatch = patch;
   fNumOfPadRows = NRowsSlice;
+  
+  fNRowsInPatch = NRows[fPatch][1]-NRows[fPatch][0] + 1;
+  fBinTableBounds = (fNRowsInPatch+1)*(MaxNPads+1);
+  fNDigitRowData = 0;
+  fDigitRowData = 0;
+  fHistoPt = 0;
 }
 
 
 AliL3HoughTransformer::~AliL3HoughTransformer()
 {
   //Destructor
-  if(fRowContainer)
-    delete [] fRowContainer;
+  if(fBinTable)
+    {
+      for(Int_t i=0; i<fBinTableBounds; i++)
+	delete [] fBinTable[i];
+      delete [] fBinTable;
+    }
+  if(fEtaIndex)
+    delete [] fEtaIndex;
+  if(fTrackTable)
+    {
+      for(Int_t i=0; i<fNumEtaSegments; i++)
+	delete [] fTrackTable[i];
+      delete [] fTrackTable;
+    }
   if(fTransform)
     delete fTransform;
-  if(fPhiRowContainer)
-    delete [] fPhiRowContainer;
-  if(fVolume)
-    delete [] fVolume;
-  if(fIndex)
-    {
-      for(Int_t i=0; i<fNDigits; i++)
-	delete [] fIndex[i];
-      delete [] fIndex;
-    }
+  
+  
 }
 
+void AliL3HoughTransformer::SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr)
+{
+  fNDigitRowData = ndigits;
+  fDigitRowData = ptr;
+}
+
+void AliL3HoughTransformer::InitTables()
+{
+  //Create LUT for the circle transform.
+  //the actual transformation is done in TransformTables.
+
+  AliL3Histogram *hist = fHistoPt;
+  
+  Int_t nbinsy = hist->GetNbinsY();
+  
+  fBinTable = new Int_t*[fBinTableBounds];
+  Int_t index;
+
+  Double_t etaslice = fEtaMax/fNumEtaSegments;
+  
+  Int_t etabounds = (MaxNPads+1)*(fNRowsInPatch+1)*(MaxNTimeBins+1);
+
+  fEtaIndex = new Int_t[etabounds];
+  for(Int_t i=0; i<etabounds; i++)
+    fEtaIndex[i] = -1;
+  
+  fTrackTable = new UChar_t*[fNumEtaSegments];
+  for(Int_t i=0; i<fNumEtaSegments; i++)
+    {
+      fTrackTable[i] = new UChar_t[fBinTableBounds];
+      for(Int_t j=0; j<fBinTableBounds; j++)
+	fTrackTable[i][j] = 0;
+    }
+  
+  for(Int_t r=NRows[fPatch][0]; r<=NRows[fPatch][1]; r++)
+    {
+      Int_t prow = r - NRows[fPatch][0];
+      
+      for(Int_t p=0; p<fTransform->GetNPads(r); p++)
+	{
+	  Float_t xyz[3];
+	  Int_t sector,row;
+	  for(Int_t t=0; t<fTransform->GetNTimeBins(); t++)
+	    {
+	      fTransform->Slice2Sector(fSlice,r,sector,row);
+	      fTransform->Raw2Local(xyz,sector,row,p,t);
+	      Double_t eta = fTransform->GetEta(xyz);
+	      if(eta < fEtaMin || eta > fEtaMax) continue;
+	      Int_t ind = (prow<<17) + (p<<9) + t;
+	      if(fEtaIndex[ind]>=0)
+		printf("AliL3HoughTransformer::InitTables : Overlapping indexes in eta!!\n");
+	      Int_t eta_index = (Int_t)(eta/etaslice);	      
+	      if(eta_index < 0 || eta_index > fNumEtaSegments)
+		continue;
+	      fEtaIndex[ind] = eta_index;
+	      
+	    }
+	  
+	  Double_t r_pix = sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+	  Double_t phi_pix = fTransform->GetPhi(xyz);
+	  index = (prow<<8) + p;
+	  fBinTable[index] = new Int_t[nbinsy+1];
+	  
+	  for(Int_t b=hist->GetFirstYbin(); b<=hist->GetLastYbin(); b++)
+	    {
+	      Double_t phi0 = hist->GetBinCenterY(b);
+	      Double_t kappa = 2*sin(phi_pix-phi0)/r_pix;
+	      Int_t bin = hist->FindBin(kappa,phi0);
+	      if(fBinTable[index][b]!=0)
+		printf("AliL3HoughTransformer::InitTables : Overlapping indexes %d %d b %d\n",fBinTable[index][b],index,b);
+	      fBinTable[index][b] = bin;
+	    }
+	}
+
+    }
+
+}
+
+void AliL3HoughTransformer::TransformTables(AliL3Histogram **histos,AliL3Histogram **images)
+{
+  //Transform all the pixels while reading, and fill the corresponding histograms.
+  //Transform is done using LUT created in InitTables.
+  //fTrackTable : table telling whether a specific pixel is active (nonzero):
+  //fTrackTable = 0  ->  no track
+  //fTrackindex = 1  ->  track present
+  //fTrackindex = 2  ->  track has been removed (already found)
+  //fEtaIndex : table storing the etaindex -> used to find correct histogram to fill
+  //fBinTable : table storing all the bins to fill for each nonzero pixel
+    
+  Int_t eta_index;
+  AliL3DigitRowData *tempPt = (AliL3DigitRowData*)fDigitRowData;
+  AliL3Histogram *hist;
+  
+  if(!tempPt)
+    {
+      LOG(AliL3Log::kError,"AliL3HoughTransformer::TransformTables","data")<<
+	"Zero datapointer"<<ENDLOG;
+      return;
+    }
+
+  Int_t out_count=0,tot_count=0;
+  Int_t index,ind;
+  
+  for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
+    {
+      Int_t prow = i - NRows[fPatch][0];
+      AliL3DigitData *bins = tempPt->fDigitData;
+      for(UInt_t dig=0; dig<tempPt->fNDigit; dig++)
+	{
+	  index = (prow<<8) + bins[dig].fPad;
+	  ind = (prow<<17) + (bins[dig].fPad<<9) + bins[dig].fTime;
+	  eta_index = fEtaIndex[ind];
+	  if(eta_index < 0) continue;  //pixel out of etarange
+	  
+	  if(fTrackTable[eta_index][index]==2) continue; //this pixel has already been removed. 
+	  fTrackTable[eta_index][index] = 1; //this pixel is now marked as active (it is nonzero)
+	  
+	  tot_count++;
+	  hist = histos[eta_index];
+	  
+	  if(images)
+	    {
+	      //Display the transformed images.
+	      AliL3Histogram *image = images[eta_index];
+	      Float_t xyz_local[3];
+	      Int_t sector,row;
+	      fTransform->Slice2Sector(fSlice,i,sector,row);
+	      fTransform->Raw2Local(xyz_local,sector,row,bins[dig].fPad,bins[dig].fTime);
+	      image->Fill(xyz_local[0],xyz_local[1],bins[dig].fCharge);
+	    }
+	  
+	  if(!hist)
+	    {
+	      printf("Error getting histogram!\n");
+	      continue;
+	    }
+	  for(Int_t p=hist->GetFirstYbin(); p<=hist->GetLastYbin(); p++)
+	    hist->AddBinContent(fBinTable[index][p],bins[dig].fCharge);
+	  
+	}
+      
+      Byte_t *tmp = (Byte_t*)tempPt;
+      Int_t size = sizeof(AliL3DigitRowData) + tempPt->fNDigit*sizeof(AliL3DigitData);
+      tmp += size;
+      tempPt = (AliL3DigitRowData*)tmp;
+    }  
+  
+}
+
+void AliL3HoughTransformer::WriteTables()
+{
+  //Write the tables to asci files.
+  
+  AliL3Histogram *hist = fHistoPt;
+  Char_t name[100];
+  sprintf(name,"histogram_table_%d.txt",fPatch);
+  FILE *file = fopen(name,"w");
+  
+  Int_t etabounds = (MaxNPads+1)*(fNRowsInPatch+1)*(MaxNTimeBins+1);
+  for(Int_t i=0; i<etabounds; i++)
+    {
+      if(fEtaIndex[i]<0) continue;
+      fprintf(file,"%d %d\n",i,fEtaIndex[i]);
+    }
+  fclose(file);
+  
+  sprintf(name,"bin_table_%d.txt",fPatch);
+  FILE *file2 = fopen(name,"w");
+  for(Int_t i=0; i<fBinTableBounds; i++)
+    {
+      if(!fBinTable[i]) continue;
+      fprintf(file2,"%d ",i);
+      for(Int_t j=hist->GetFirstYbin(); j<=hist->GetLastYbin(); j++)
+	{
+	  fprintf(file2,"%d ",fBinTable[i][j]);
+	}
+      fprintf(file2,"\n");
+    }
+  fclose(file2);
+}
+
+/*
 void AliL3HoughTransformer::InitTemplates(TH2F *hist)
 {
 
@@ -135,110 +322,12 @@ void AliL3HoughTransformer::InitTemplates(TH2F *hist)
 }
 
 
-void AliL3HoughTransformer::CountBins()
-{
-  
-  Int_t middle_row = 87; //middle of the slice
-  
-  Double_t r_in_bundle = fTransform->Row2X(middle_row);
-  //  Double_t phi_min = (fSlice*20 - 10)*ToRad;
-  //Double_t phi_max = (fSlice*20 + 10)*ToRad;
-  Double_t phi_min = -15*ToRad;
-  Double_t phi_max = 15*ToRad;
-
-  Double_t phi_slice = (phi_max - phi_min)/fNPhiSegments;
-  Double_t min_phi0 = 10000;
-  Double_t max_phi0 = 0;
-  Double_t min_kappa = 100000;
-  Double_t max_kappa = 0;
-  
-  Int_t xbin = 60;
-  Int_t ybin = 60;
-  Float_t xrange[2] = {-0.006 , 0.006}; //Pt 0.2->
-  Float_t yrange[2] = {-0.26 , 0.26}; //slice 2 0.55->0.88
-  
-  TH2F *histo = new TH2F("histo","Parameter space",xbin,xrange[0],xrange[1],ybin,yrange[0],yrange[1]);
-  
-  for(Int_t padrow=NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
-    {
-      for(Int_t pad=0; pad < fTransform->GetNPads(padrow); pad++)
-	{
-	  for(Int_t time = 0; time < fTransform->GetNTimeBins(); time++)
-	    {
-	      Float_t xyz[3];
-	      Int_t sector,row;
-	      fTransform->Slice2Sector(fSlice,padrow,sector,row);
-	      fTransform->Raw2Global(xyz,sector,row,pad,time);
-	      Double_t eta = fTransform->GetEta(xyz);
-	      if(eta < fEtaMin || eta > fEtaMax) continue;
-	      fTransform->Global2Local(xyz,sector);
-	      Double_t r_pix = sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-	      Double_t phi_pix = fTransform->GetPhi(xyz);
-	      
-	      for(Int_t p=0; p<=fNPhiSegments; p++)
-		{
-		  Double_t phi_in_bundle = phi_min + p*phi_slice;
-		  
-		  Double_t tanPhi0 = (r_pix*sin(phi_in_bundle)-r_in_bundle*sin(phi_pix))/(r_pix*cos(phi_in_bundle)-r_in_bundle*cos(phi_pix));
-		  
-		  Double_t phi0 = atan(tanPhi0);
-		  //  if(phi0 < 0.55 || phi0 > 0.88) continue;
-		  
-		  //if(phi0 < 0) phi0 = phi0 +2*Pi;
-		  //Double_t kappa = sin(phi_in_bundle - phi0)*2/r_in_bundle;
-		  
-		  Double_t angle = phi_pix - phi0;
-		  Double_t kappa = 2*sin(angle)/r_pix;
-		  histo->Fill(kappa,phi0,1);
-		  if(phi0 < min_phi0)
-		    min_phi0 = phi0;
-		  if(phi0 > max_phi0)
-		    max_phi0 = phi0;
-		  if(kappa < min_kappa)
-		    min_kappa = kappa;
-		  if(kappa > max_kappa)
-		    max_kappa = kappa;
-		    		  
-		}
-	      
-	    }
-	  
-	}
-      
-    }
-  Int_t count=0,bi=0;
-    
-  Int_t xmin = histo->GetXaxis()->GetFirst();
-  Int_t xmax = histo->GetXaxis()->GetLast();
-  Int_t ymin = histo->GetYaxis()->GetFirst();
-  Int_t ymax = histo->GetYaxis()->GetLast();
-
-
-  for(Int_t xbin=xmin+1; xbin<xmax; xbin++)
-    {
-      for(Int_t ybin=ymin+1; ybin<ymax; ybin++)
-	{
-	  bi++;
-	  Int_t bin = histo->GetBin(xbin,ybin);
-	  if(histo->GetBinContent(bin)>0)
-	    count++;
-	}
-    }
-
-
-  printf("Number of possible tracks in this region %d, bins %d\n",count,bi);
-  printf("Phi, min %f max %f\n",min_phi0,max_phi0);
-  printf("Kappa, min %f max %f\n",min_kappa,max_kappa);
-  histo->Draw("box");
-}
-
-
 void AliL3HoughTransformer::Transform2Circle(TH2F *hist,Int_t eta_index)
 {
   //Transformation is done with respect to local coordinates in slice.
   //Transform every pixel into whole phirange, using parametrisation:
   //kappa = 2*sin(phi-phi0)/R
-  //Assumes you run InitTemplates firstly!!!!
+  //Assumes you run InitTemplates first!!!!
 
   AliL3Digits *pix1;
     
@@ -254,7 +343,12 @@ void AliL3HoughTransformer::Transform2Circle(TH2F *hist,Int_t eta_index)
       //for(pix1=(AliL3Digits*)fRowContainer[padrow].first; pix1!=0; pix1=(AliL3Digits*)pix1->nextRowPixel)
       for(pix1=(AliL3Digits*)fVolume[vol_index].first; pix1!=0; pix1=(AliL3Digits*)pix1->fNextVolumePixel)
 	{
-	  
+	  Float_t xyz[3];
+	  fTransform->Raw2Global(xyz,2,padrow,pix1->fPad,pix1->fTime);
+	  Double_t eta = fTransform->GetEta(xyz);
+	  if(eta < fEtaMin || eta > fEtaMax)
+	    printf("\n Eta OUT OF RANGE\n");
+
 	  Short_t signal = pix1->fCharge;
 	  Int_t index = pix1->fIndex;
 	  if(index < 0) continue; //This pixel has been removed.
@@ -269,50 +363,70 @@ void AliL3HoughTransformer::Transform2Circle(TH2F *hist,Int_t eta_index)
   printf("Total signal %d\n",totsignal);
 }
 
-/*
-  void AliL3HoughTransformer::Transform2Circle(TH2F *hist)
-  {
-  //Transformation is done with respect to local coordinates in slice.
-  //Transform every pixel into whole phirange, using parametrisation:
-  //kappa = 2*sin(phi-phi0)/R
+void AliL3HoughTransformer::Transform2Circle(TH2F **histos,Int_t n_eta_segments,UInt_t ndigits,AliL3DigitRowData *ptr)
+{
+  //Transform all the pixels while reading them, and fill the corresponding histograms.
+  //Everything is done in one go here. 
+
+  Double_t etaslice = 0.9/n_eta_segments;
+  Int_t eta_index;
+  AliL3DigitRowData *tempPt = (AliL3DigitRowData*)ptr;
+  TH2F *hist;
+
+  Int_t out_count=0,tot_count=0;
+  for(Int_t i=NRows[fPatch][0]; i<=NRows[fPatch][1]; i++)
+    {
+      printf("doing row %d\n",i);
+      for(UInt_t dig=0; dig<tempPt->fNDigit; dig++)
+	{
+	  
+	  AliL3DigitData *bins = tempPt->fDigitData;
+	  Float_t xyz[3];
+	  Int_t sector,row;
+	  fTransform->Slice2Sector(fSlice,i,sector,row);
+	  fTransform->Raw2Local(xyz,sector,row,bins[dig].fPad,bins[dig].fTime);
+	  Double_t eta = fTransform->GetEta(xyz);
+	  eta_index = (Int_t)(eta/etaslice);
+	  if(eta_index < 0 || eta_index >= n_eta_segments)
+	    {
+	      //printf("Eta index out of range %d\n",eta_index);
+	      out_count++;
+	      continue;
+	    }
+	  tot_count++;
+	  hist = histos[eta_index];
+	  if(!hist)
+	    {
+	      printf("Error getting histogramm!\n");
+	      return;
+	    }
+	  
+	  Int_t ymin = hist->GetYaxis()->GetFirst();
+	  Int_t ymax = hist->GetYaxis()->GetLast();
+	  
+	  Double_t r_pix = sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+	  Double_t phi_pix = fTransform->GetPhi(xyz);
+	  for(Int_t p=ymin; p<=ymax; p++)
+	    {
+	      Double_t phi0 = hist->GetYaxis()->GetBinCenter(p);
+	      Double_t kappa = 2*sin(phi_pix-phi0)/r_pix;
+	      //printf("kappa %f phi0 %f\n",kappa,phi0);
+	      hist->Fill(kappa,phi0,bins[dig].fCharge);
+	    }
+	}
+      
+      
+      Byte_t *tmp = (Byte_t*)tempPt;
+      Int_t size = sizeof(AliL3DigitRowData) + tempPt->fNDigit*sizeof(AliL3DigitData);
+      tmp += size;
+      tempPt = (AliL3DigitRowData*)tmp;
+      
+    }
   
-  printf("Transforming 1 pixel only\n");
-  
-  AliL3Digits *pix1;
-  Int_t sector,row;
-  
-  Int_t ymin = hist->GetYaxis()->GetFirst();
-  Int_t ymax = hist->GetYaxis()->GetLast();
-  
-  for(Int_t padrow = NRows[fPatch][0]; padrow <= NRows[fPatch][1]; padrow++)
-  {
-  
-  for(pix1=(AliL3Digits*)fRowContainer[padrow].first; pix1!=0; pix1=(AliL3Digits*)pix1->nextRowPixel)
-  {
-  
-  Float_t xyz[3];
-  fTransform->Slice2Sector(fSlice,padrow,sector,row);
-  fTransform->Raw2Local(xyz,sector,row,pix1->fPad,pix1->fTime);
-  
-  Double_t r_pix = sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-  
-  Double_t phi_pix = fTransform->GetPhi(xyz);
-  Short_t signal = pix1->fCharge;
-  
-  for(Int_t p=ymin+1; p<=ymax; p++)
-  {
-  Double_t phi0 = hist->GetYaxis()->GetBinCenter(p);
-  Double_t kappa = 2*sin(phi_pix-phi0)/r_pix;
-  hist->Fill(kappa,phi0,signal);
-  }
-  
-  }
-  
-  }
-  
-  
-  }
-*/
+  printf("There were %d pixels out of range and %d inside\n", out_count,tot_count);
+
+}
+
 
 void AliL3HoughTransformer::TransformLines2Circle(TH2F *hist,AliL3TrackArray *tracks)
 {
@@ -419,8 +533,11 @@ void AliL3HoughTransformer::Transform2Line(TH2F *hist,Int_t ref_row,Int_t *rowra
     
 }
 
+
 void AliL3HoughTransformer::GetPixels(Char_t *rootfile,TH2F *hist)
 {
+
+  //read data from rootfile. more or less obsolete code this.
 
   TFile *file = new TFile(rootfile);
   file->cd();
@@ -448,27 +565,27 @@ void AliL3HoughTransformer::GetPixels(Char_t *rootfile,TH2F *hist)
   //fContainerBounds = (fNPhiSegments+1)*(fNumOfPadRows+1);
   //printf("Allocating %d bytes to container of size %d\n",fContainerBounds*sizeof(AliL3HoughContainer),fContainerBounds);
 
-  /*
-    if(fPhiRowContainer)
-    delete [] fPhiRowContainer;
-    fPhiRowContainer = new AliL3HoughContainer[fContainerBounds];
-    memset(fPhiRowContainer,0,fContainerBounds*sizeof(AliL3HoughContainer));
-  */
+  
+  //  if(fPhiRowContainer)
+  //  delete [] fPhiRowContainer;
+  //  fPhiRowContainer = new AliL3HoughContainer[fContainerBounds];
+  //  memset(fPhiRowContainer,0,fContainerBounds*sizeof(AliL3HoughContainer));
+  
   fContainerBounds = (fNumEtaSegments+1)*(fNumOfPadRows+1);
   if(fVolume)
     delete [] fVolume;
   fVolume = new AliL3HoughContainer[fContainerBounds];
   memset(fVolume,0,fContainerBounds*sizeof(AliL3HoughContainer));
-  /*
-    Double_t phi_min = -10*ToRad;
-    Double_t phi_max = 10*ToRad;
-    Double_t delta_phi = (phi_max-phi_min)/fNPhiSegments;
-  */
+  
+  //  Double_t phi_min = -10*ToRad;
+  //  Double_t phi_max = 10*ToRad;
+  //  Double_t delta_phi = (phi_max-phi_min)/fNPhiSegments;
+  
   Double_t eta_slice = (fEtaMax-fEtaMin)/fNumEtaSegments;
   Int_t index;
   digit_counter=0;
 
-  printf("\nLoading ALL pixels in slice\n\n");
+  //printf("\nLoading ALL pixels in slice\n\n");
 
   for (Int_t i=0; i<num_of_entries; i++) 
     { 
@@ -532,21 +649,21 @@ void AliL3HoughTransformer::GetPixels(Char_t *rootfile,TH2F *hist)
 	  ((AliL3Digits*)(fVolume[index].last))->fNextVolumePixel = dig;
 	fVolume[index].last = (void*)dig;
 	
-	/*
-	  Int_t phi_index = (Int_t)((phi-phi_min)/delta_phi);
-	  index = phi_index*fNumOfPadRows + padrow;
-	  if(phi_index > fContainerBounds || phi_index < 0)
-	  {
-	  printf("AliL3HoughTransform::GetPixels : index out of range %d\n",phi_index);
-	  continue;
-	  }
+	
+	//  Int_t phi_index = (Int_t)((phi-phi_min)/delta_phi);
+	//  index = phi_index*fNumOfPadRows + padrow;
+	//  if(phi_index > fContainerBounds || phi_index < 0)
+	// {
+	//  printf("AliL3HoughTransform::GetPixels : index out of range %d\n",phi_index);
+	//  continue;
+	//  }
 	  
-	  if(fPhiRowContainer[index].first == NULL)
-	  fPhiRowContainer[index].first = (void*)dig;
-	  else
-	  ((AliL3Digits*)(fPhiRowContainer[index].last))->nextPhiRowPixel = dig;
-	  fPhiRowContainer[index].last=(void*)dig;
-	*/
+	//  if(fPhiRowContainer[index].first == NULL)
+	//  fPhiRowContainer[index].first = (void*)dig;
+	//  else
+	//  ((AliL3Digits*)(fPhiRowContainer[index].last))->nextPhiRowPixel = dig;
+	//  fPhiRowContainer[index].last=(void*)dig;
+	
       }while (digarr->Next());
       
     }
@@ -558,3 +675,4 @@ void AliL3HoughTransformer::GetPixels(Char_t *rootfile,TH2F *hist)
   delete file;
   
 }
+*/
