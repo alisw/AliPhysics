@@ -8,7 +8,7 @@ CXX           = cxx
 F77	      = f77
 
 # Global optimisation
-OPT           = -O2 
+OPT           = -g 
 
 CXXOPTS       = $(OPT) -nostdnew -rtti
 COPT	      = $(OPT)
