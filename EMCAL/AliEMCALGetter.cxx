@@ -217,7 +217,6 @@ void AliEMCALGetter::Event(Int_t event, const char* opt)
   }
 
   AliRunLoader * rl = AliRunLoader::GetRunLoader(EmcalLoader()->GetTitle());
-
   // checks if we are dealing with test-beam data
 //   TBranch * btb = rl->TreeE()->GetBranch("AliEMCALBeamTestEvent") ;
 //   if(btb){
@@ -315,7 +314,8 @@ AliEMCALGetter * AliEMCALGetter::Instance(const char* alirunFileName, const char
     }
     else { 
       AliRunLoader * rl = AliRunLoader::GetRunLoader(fgEmcalLoader->GetTitle());
-      delete rl ; 
+      if ( strstr(version, AliConfig::fgkDefaultEventFolderName) ) // false in case of merging
+	delete rl ; 
       fgObjGetter = new AliEMCALGetter(alirunFileName, version, openingOption) ;      
     }
   }
@@ -520,7 +520,7 @@ Int_t AliEMCALGetter::ReadTreeS()
   
   
   // gets TreeS from the root file (EMCAL.SDigits.root)
-  if ( !IsLoaded("S") ) {
+   if ( !IsLoaded("S") ) {
     EmcalLoader()->LoadSDigits("UPDATE") ;
     EmcalLoader()->LoadSDigitizer("UPDATE") ;
     SetLoaded("S") ; 

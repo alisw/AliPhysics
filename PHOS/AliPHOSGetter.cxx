@@ -338,7 +338,8 @@ AliPHOSGetter * AliPHOSGetter::Instance(const char* alirunFileName, const char* 
     }
     else {
       AliRunLoader * rl = AliRunLoader::GetRunLoader(fgPhosLoader->GetTitle()) ; 
-      delete rl ; 
+      if ( strstr(version, AliConfig::fgkDefaultEventFolderName) ) // false in case of merging
+	delete rl ; 
       fgObjGetter = new AliPHOSGetter(alirunFileName, version, openingOption) ;      
     }
   }
