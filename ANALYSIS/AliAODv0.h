@@ -14,6 +14,10 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
+#include <TDatabasePDG.h>
+
+#define MASS(PID)  TDatabasePDG::Instance()->GetParticle((PID))->Mass()
+#define MASS2(PID) MASS((PID))*MASS((PID))
 
 class AliESD;
 class AliESDVertex;
@@ -32,6 +36,8 @@ public:
   Double_t DecayVertexV0X() const;
   Double_t DecayVertexV0Y() const;
   Double_t DecayVertexV0Z() const;
+
+  Double_t DecayLengthV0() const;
                      
   Double_t DcaV0Daughters() const;
   Double_t DcaV0ToPrimVertex() const;
@@ -62,6 +68,18 @@ public:
   Double_t MomNegAlongV0() const;
   Double_t AlphaV0() const;
   Double_t PtArmV0() const;
+  Double_t EPosProton() const;
+  Double_t ENegProton() const;
+  Double_t EPosPion() const;
+  Double_t ENegPion() const;
+  Double_t ELambda() const;
+  Double_t EK0Short() const;
+  Double_t MassLambda() const;
+  Double_t MassAntiLambda() const;
+  Double_t MassK0Short() const;
+  Double_t RapK0Short() const;
+  Double_t RapLambda() const;
+
 
 protected:
   Double_t fDecayVertexV0X;       // decay vertex of V0 along X
@@ -90,6 +108,17 @@ protected:
 inline Double_t AliAODv0::DecayVertexV0X() const {return fDecayVertexV0X;}
 inline Double_t AliAODv0::DecayVertexV0Y() const {return fDecayVertexV0Y;}
 inline Double_t AliAODv0::DecayVertexV0Z() const {return fDecayVertexV0Z;}
+
+inline Double_t AliAODv0::DecayLengthV0() const {
+  if (fEvent&&fEvent->GetVertex()){
+    Double_t tPrimaryVertexPosition[3];
+    fEvent->GetVertex()->GetXYZ(tPrimaryVertexPosition);
+    return ::sqrt(::pow(DecayVertexV0X() - tPrimaryVertexPosition[0],2) +
+		  ::pow(DecayVertexV0Y() - tPrimaryVertexPosition[1],2) +
+		  ::pow(DecayVertexV0Z() - tPrimaryVertexPosition[2],2));
+  }
+  return 0.;
+}
 
 inline Double_t AliAODv0::DcaV0Daughters() const {return fDcaV0Daughters;}
 inline Double_t AliAODv0::DcaV0ToPrimVertex() const {return fDcaV0ToPrimVertex;}
@@ -147,6 +176,54 @@ inline Double_t AliAODv0::AlphaV0() const {
 }
 inline Double_t AliAODv0::PtArmV0() const {
   return ::sqrt(Ptot2Pos()-MomPosAlongV0()*MomPosAlongV0());
+}
+
+inline Double_t AliAODv0::EPosProton() const {
+  return ::sqrt(Ptot2Pos()+MASS2("proton"));
+}
+
+inline Double_t AliAODv0::ENegProton() const {
+  return ::sqrt(Ptot2Neg()+MASS2("antiproton"));
+}
+
+inline Double_t AliAODv0::EPosPion() const {
+  return ::sqrt(Ptot2Pos()+MASS2("pi+"));
+}
+
+inline Double_t AliAODv0::ENegPion() const {
+  return ::sqrt(Ptot2Neg()+MASS2("pi-"));
+}
+
+inline Double_t AliAODv0::ELambda() const {
+  return ::sqrt(Ptot2V0()+MASS2("Lambda0"));
+}
+
+inline Double_t AliAODv0::EK0Short() const {
+  return ::sqrt(Ptot2V0()+MASS2("K_S0"));
+}
+
+inline Double_t AliAODv0::MassLambda() const {
+  return ::sqrt(::pow(EPosProton()+ENegPion(),2)-Ptot2V0());
+}
+
+inline Double_t AliAODv0::MassAntiLambda() const {
+  return ::sqrt(::pow(ENegProton()+EPosPion(),2)-Ptot2V0());
+}
+
+inline Double_t AliAODv0::MassK0Short() const {
+  return ::sqrt(::pow(EPosPion()+ENegPion(),2)-Ptot2V0());
+}
+
+inline Double_t AliAODv0::RapK0Short() const {
+  Double_t ek0 = EK0Short();
+  Double_t mMomV0Z = MomV0Z();
+  return 0.5*::log((ek0+mMomV0Z)/(ek0-mMomV0Z));
+}
+
+inline Double_t AliAODv0::RapLambda() const {
+  Double_t eLambda = ELambda();
+  Double_t mMomV0Z = MomV0Z();
+  return 0.5*::log((eLambda+mMomV0Z)/(eLambda-mMomV0Z));
 }
 
 #endif
