@@ -111,7 +111,7 @@ protected:
   TClonesArray  fV0s;            // V0 vertices
   TClonesArray  fCascades;       // Cascade vertices
   
-  ClassDef(AliESD,3)  //ESD class 
+  ClassDef(AliESD,4)  //ESD class 
                       //ver. 2: Magnetic Field Added; skowron
 };
 

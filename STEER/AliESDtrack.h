@@ -188,7 +188,7 @@ protected:
   Float_t fRICHsignal;     // detector's PID signal (beta for RICH)
   Float_t fRICHr[kSPECIES];// "detector response probabilities" (for the PID)
   	
-  ClassDef(AliESDtrack,2)  //ESDtrack 
+  ClassDef(AliESDtrack,3)  //ESDtrack 
 };
 
 #endif 
