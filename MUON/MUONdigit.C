@@ -59,9 +59,10 @@ void MUONdigit (Int_t evNumber1=0, Int_t evNumber2=0, Int_t ibg=0, Int_t bgr=10)
 
    if (!gAlice) {
        gAlice = (AliRun*)file->Get("gAlice");
-       if (gAlice) printf("AliRun object found on file\n");
+       if (gAlice) cout<<"AliRun object found on file"<<endl;
        if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
    }
+
    AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON");
    if (pMUON) {
 // creation
@@ -90,13 +91,9 @@ void MUONdigit (Int_t evNumber1=0, Int_t evNumber2=0, Int_t ibg=0, Int_t bgr=10)
 	    merger->SetBackgroundEventNumber(nbgr_ev);
 	}
 
-	gAlice->SDigits2Digits();
+	gAlice->SDigits2Digits("MUON");
 
-	char hname[30];
-	sprintf(hname,"TreeD%d",nev);
-	gAlice->TreeD()->Write(hname);
-	// reset tree
-	gAlice->TreeD()->Reset();
+// Tree writing was moved to AliMUON::SDigits2Digits();
 
     }   // event loop 
 }
