@@ -24,12 +24,12 @@ public:
   virtual void  CreateMaterials();
   Int_t         Digitize(Int_t Det, Int_t Quad, Int_t Light);
   virtual void  SDigits2Digits();
+  virtual void  Hits2Digits(Int_t ntracks = 0);
   virtual void  MakeBranch(Option_t* opt, char *file=0);
   virtual Int_t IsVersion() const {return 1;}
   virtual void  DrawModule();
   virtual void  Init();
   virtual void  InitTables();
-  virtual void  Hits2Digits(Int_t ntracks = 0);
   virtual void  StepManager();
   
 //  // Digitization parameters setters and getters
@@ -53,6 +53,7 @@ protected:
   Int_t   fMedSensZEM;        // Sensitive medium for EM ZDC
   Int_t   fMedSensGR;         // Other sensitive medium
   Int_t   fMedSensPI;         // Beam pipe and magnet coils
+  Int_t   fMedSensTDI;        // TDI Cu shielding 
   
   // Parameters for light tables
   Int_t   fNalfan;	      // Number of Alfa (neutrons)
@@ -75,6 +76,10 @@ protected:
   // NB -> parameters used in CreateZDC() and in StepManager()
   // (other parameters are defined in CreateZDC())
   Float_t fPosZEM[3]; // Position of EM detector
+  
+  // Parameters for tracking studies
+//  Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected;
+  
   
 //  // Parameters for conversion of light yield in ADC channels
 //  Float_t fPMGain[3][5];      // PM gain
