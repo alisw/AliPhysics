@@ -28,6 +28,9 @@
 #ifdef G4UI_USE_GAG
 #include <G4UIGAG.hh>
 #endif
+#ifdef G4UI_USE_TCSH
+#include "G4UItcsh.hh" 
+#endif
 
 #include <TROOT.h> 
 #include <TRint.h>
