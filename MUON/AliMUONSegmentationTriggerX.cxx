@@ -15,10 +15,14 @@
 
 /*
 $Log$
+Revision 1.2  2000/06/15 07:58:48  morsch
+Code from MUON-dev joined
+
 Revision 1.1.2.1  2000/06/09 21:51:03  morsch
 Code from AliMUONSegResTrigger.cxx
 
 */
+
 
 
 /*
@@ -38,27 +42,32 @@ Draft version from P. Crochet
 */
 
 #include "AliMUONSegmentationTriggerX.h"
+#include "AliMUONTriggerConstants.h"
 #include "TMath.h"
 #include "TRandom.h"
 #include "TArc.h"
 #include "AliMUONChamber.h"
 #include <iostream.h> 
 ClassImp(AliMUONSegmentationTriggerX)
-    
+
+//------------------------------------------------------------------
 void AliMUONSegmentationTriggerX::Init(AliMUONChamber* Chamber)
 {
+// intialize X segmentation 
   cout << "Initialize Trigger Chamber Geometry X " << "\n";    
   AliMUONSegmentationTrigger::Init(Chamber);
 
 // calculate x & y position of X strips
-  for (Int_t imodule=0; imodule<fgNmodule; imodule++) {
-    Float_t width=StripSizeX(fgNum[imodule]);     
-    for (Int_t istrip=0; istrip<fgNstripx[imodule]; istrip++){    
-      fXofxsmin[imodule][istrip] = fgXcmin[imodule]*fZscale;
-      fXofxsmax[imodule][istrip] = fgXcmax[imodule]*fZscale;
+  Int_t nModule=AliMUONTriggerConstants::Nmodule();
+  for (Int_t imodule=0; imodule<nModule; imodule++) {
+    Float_t width=StripSizeX(AliMUONTriggerConstants::ModuleId(imodule));     
+    Int_t nStrip=AliMUONTriggerConstants::NstripX(imodule);
+    for (Int_t istrip=0; istrip<nStrip; istrip++){    
+      fXofxsmin[imodule][istrip] = AliMUONTriggerConstants::XcMin(imodule)*fZscale;
+      fXofxsmax[imodule][istrip] = AliMUONTriggerConstants::XcMax(imodule)*fZscale;
       
-      fYofxsmin[imodule][istrip] = (fgYcmin[imodule]+width*(istrip))*fZscale;
-      fYofxsmax[imodule][istrip] = (fgYcmin[imodule]+width*(istrip+1))*fZscale;
+      fYofxsmin[imodule][istrip] = (fYcmin[imodule]+width*(istrip))*fZscale;
+      fYofxsmax[imodule][istrip] = (fYcmin[imodule]+width*(istrip+1))*fZscale;
     }
   }
 }
@@ -69,14 +78,16 @@ void AliMUONSegmentationTriggerX::GetPadIxy(Float_t x,Float_t y,Int_t &ix,Int_t 
 //  x,y = real coordinates; ix = module number , iy = strip number
   ix = 0;    
   iy = 0;
-  for (Int_t imodule=0; imodule<fgNmodule; imodule++) {
-    for (Int_t istrip=0; istrip<fgNstripx[imodule]; istrip++){
-      if (x>fXofxsmin[imodule][istrip]&&x<fXofxsmax[imodule][istrip]&&
-      	  y>fYofxsmin[imodule][istrip]&&y<fYofxsmax[imodule][istrip]){
-	  ix = fgNum[imodule];
-	  iy = istrip;
+  Int_t nModule=AliMUONTriggerConstants::Nmodule();
+  for (Int_t imodule=0; imodule<nModule; imodule++) {
+      Int_t nStrip=AliMUONTriggerConstants::NstripX(imodule);
+      for (Int_t istrip=0; istrip<nStrip; istrip++){
+	  if (x>fXofxsmin[imodule][istrip]&&x<fXofxsmax[imodule][istrip]&&
+	      y>fYofxsmin[imodule][istrip]&&y<fYofxsmax[imodule][istrip]){
+	      ix = AliMUONTriggerConstants::ModuleId(imodule);
+	      iy = istrip;
+	  }
       }
-    }
   }
 }
 
@@ -86,9 +97,10 @@ void AliMUONSegmentationTriggerX::GetPadCxy(Int_t ix, Int_t iy, Float_t &x, Floa
 //  ix = module number , iy = strip number;  x,y = center of strip
   x = 0.;    
   y = 0.; 
-  
-  for (Int_t imodule=0; imodule<fgNmodule; imodule++) {
-    if (fgNum[imodule]==ix){
+  Int_t nModule=AliMUONTriggerConstants::Nmodule();
+
+  for (Int_t imodule=0; imodule<nModule; imodule++) {
+    if (AliMUONTriggerConstants::ModuleId(imodule)==ix){
       x=fXofxsmin[imodule][iy]+(fXofxsmax[imodule][iy]-fXofxsmin[imodule][iy])/2.;
       y=fYofxsmin[imodule][iy]+(fYofxsmax[imodule][iy]-fYofxsmin[imodule][iy])/2.;
     }
@@ -115,7 +127,7 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[2], Int_t Ylist[2]){
   if (absiX!=0) {                           
     Int_t numModule=ModuleNumber(absiX);
     
-    if (iY<fgNstripx[numModule]-1) {          // strip up in same module 
+    if (iY<AliMUONTriggerConstants::NstripX(numModule)-1) { // strip up in same module 
       *Nlist=1;
       Xlist[0]=absiX;
       Ylist[0]=iY+1;
@@ -157,7 +169,8 @@ Int_t AliMUONSegmentationTriggerX::Iy()
 
 //------------------------------------------------------------------
 Float_t AliMUONSegmentationTriggerX::Dpx(Int_t isec)
-{ // returns x size of x strips for sector isec
+{ 
+// returns x size of x strips for sector isec
     
   if (isec==1) {
     return 17.0*fZscale;
@@ -178,8 +191,8 @@ Float_t AliMUONSegmentationTriggerX::Dpx(Int_t isec)
 
 //------------------------------------------------------------------
 Float_t AliMUONSegmentationTriggerX::Dpy(Int_t isec)
-{ // returns y size of x strips for sector isec
-    // cout << " In AliMUONSegmentationTriggerX::Dpx" << "\n";  
+{ 
+// returns y size of x strips for sector isec
 
   if (isec==1) {
     return 1.0625*fZscale;
@@ -200,16 +213,20 @@ Float_t AliMUONSegmentationTriggerX::Dpy(Int_t isec)
 
 //------------------------------------------------------------------   
 void AliMUONSegmentationTriggerX::SetHit(Float_t xhit, Float_t yhit)
-{ AliMUONSegmentationTrigger::SetHit(xhit,yhit);}
+{ 
+// set hit during disIntegration
+AliMUONSegmentationTrigger::SetHit(xhit,yhit);
+}
 
 //------------------------------------------------------------------   
 Int_t AliMUONSegmentationTriggerX::Sector(Int_t ix, Int_t iy)
 {
 // Returns sector number for given module
 // 
+    
   Int_t absix=TMath::Abs(ix);
   Int_t iwidth=Int_t(StripSizeX(absix));
-  
+
   if (absix==52) {
     return 1;
   } else if (absix==41||absix==61) {
@@ -230,8 +247,9 @@ Int_t AliMUONSegmentationTriggerX::Sector(Int_t ix, Int_t iy)
 //------------------------------------------------------------------   
 void AliMUONSegmentationTriggerX::
 IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& x3, Float_t& width) 
-{ // returns quantities needed to evaluate neighbour strip response
-//  cout << " In AliMUONSegmentationTriggerX::IntegrationLimits" << "\n";
+{ 
+// returns quantities needed to evaluate neighbour strip response
+
   Int_t ix,iy;
   Float_t xstrip,ystrip;
   GetPadIxy(fxhit,fyhit,ix,iy);  
