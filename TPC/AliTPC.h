@@ -120,7 +120,7 @@ public:
    void SetHitType(Int_t type){fHitType =type;} //set type of hit container
    void SetDigitsSwitch(Int_t sw){fDigitsSwitch = sw;}
    void SetDefSwitch(Int_t def){fDefaults = def;}
-
+   virtual void  Merge(TTree * intree, Int_t *mask, Int_t nin, Int_t outid);
 
 private:
   //

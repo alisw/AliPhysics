@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.44  2001/08/30 09:28:48  hristov
+TTree names are explicitly set via SetName(name) and then Write() is called
+
 Revision 1.43  2001/07/28 12:02:54  hristov
 Branch split level set to 99
 
@@ -1031,7 +1034,7 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
   //
   TParticle *particle; // pointer to a given particle
   AliTPChit *tpcHit; // pointer to a sigle TPC hit
-  Int_t sector,nhits;
+  //  Int_t sector,nhits;
   Int_t ipart;
   const Int_t kcmaxhits=30000;
   TVector * xxxx = new TVector(kcmaxhits*4);
@@ -1048,29 +1051,60 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
   TTree *tH = gAlice->TreeH();
   Stat_t ntracks = tH->GetEntries();
   Int_t npart = gAlice->GetNtrack();
-    
+  TBranch * br = tH->GetBranch("fTrackHitsInfo");
+  //MI change
+  TBranch * branch=0;
+  if (fHitType&2) branch = tH->GetBranch("TPC2");
+  else branch = tH->GetBranch("TPC");
+
   //------------------------------------------------------------
   // Loop over tracks
   //------------------------------------------------------------
   
-  for(Int_t track=0;track<ntracks;track++){
+  for(Int_t track=0;track<ntracks;track++){ 
+    Bool_t isInSector=kTRUE;
     ResetHits();
-    tH->GetEvent(track);
+        
+    if (fHitType&2) {
+      isInSector=kFALSE;    
+      br->GetEvent(track);
+      AliObjectArray * ar = fTrackHits->fTrackHitsInfo;
+      for (UInt_t j=0;j<ar->GetSize();j++){
+	if (  ((AliTrackHitsInfo*)ar->At(j))->fVolumeID==isec) isInSector=kTRUE;
+      }
+    }
+    if (!isInSector) continue;
+    //MI change
+    branch->GetEntry(track); // get next track
+
+
     //
     //  Get number of the TPC hits and a pointer
     //  to the particles
     //
-    nhits=fHits->GetEntriesFast();
+    //nhits=fHits->GetEntriesFast();
     //
     // Loop over hits
     //
     Int_t currentIndex=0;
     Int_t lastrow=-1;  //last writen row
-    for(Int_t hit=0;hit<nhits;hit++){
-      tpcHit=(AliTPChit*)fHits->UncheckedAt(hit);
-      if (tpcHit==0) continue;
-      sector=tpcHit->fSector; // sector number
-      if(sector != isec) continue; 
+
+    //M.I. changes
+
+    tpcHit = (AliTPChit*)FirstHit(-1);
+    while(tpcHit){
+      
+      Int_t sector=tpcHit->fSector; // sector number
+      if(sector != isec){
+	tpcHit = (AliTPChit*) NextHit();
+	continue; 
+      }
+
+      //for(Int_t hit=0;hit<nhits;hit++){
+      //tpcHit=(AliTPChit*)fHits->UncheckedAt(hit);
+      //if (tpcHit==0) continue;
+      //sector=tpcHit->fSector; // sector number
+      //if(sector != isec) continue; 
       ipart=tpcHit->Track();
       if (ipart<npart) particle=gAlice->Particle(ipart);
       
@@ -1079,7 +1113,7 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
       Float_t  x[3]={tpcHit->X(),tpcHit->Y(),tpcHit->Z()};
       Int_t    index[3]={1,isec,0};
       Int_t    currentrow = fTPCParam->GetPadRow(x,index) ;	
-      if (currentrow<0) continue;
+      if (currentrow<0) {tpcHit = (AliTPChit*)NextHit(); continue;}
       if (lastrow<0) lastrow=currentrow;
       if (currentrow==lastrow){
 	if ( currentIndex>=maxhits){
@@ -1143,22 +1177,24 @@ void AliTPC::Hits2ExactClustersSector(Int_t isec)
 	  Float_t bz=detbz/det; //z angle
 	  sumy/=Float_t(currentIndex);
 	  sumz/=Float_t(currentIndex);
-	  AliComplexCluster cl;
-	  cl.fX=z;
-	  cl.fY=y;
-	  cl.fQ=sumq;
-	  cl.fSigmaX2=bz;
-	  cl.fSigmaY2=by;
-	  cl.fTracks[0]=ipart;
-	  
+
 	  AliTPCClustersRow * row = (fClustersArray->GetRow(isec,lastrow));
-	  if (row!=0) row->InsertCluster(&cl);
+	  if (row!=0) {
+	    AliComplexCluster* cl = new((AliComplexCluster*)row->Append()) AliComplexCluster ;
+	    //	  AliComplexCluster cl;
+	    cl->fX=z;
+	    cl->fY=y;
+	    cl->fQ=sumq;
+	    cl->fSigmaX2=bz;
+	    cl->fSigmaY2=by;
+	    cl->fTracks[0]=ipart;
+	  }
 	  currentIndex=0;
 	  lastrow=currentrow;
 	} //end of calculating cluster for given row
 	
 	
-	
+      tpcHit = (AliTPChit*)NextHit();
     } // end of loop over hits
   }   // end of loop over tracks 
   //write padrows to tree 
@@ -1188,14 +1224,25 @@ void AliTPC::SDigits2Digits2(Int_t eventnumber)
   t->GetBranch("Segment")->SetAddress(&dummy);
   Stat_t nentries = t->GetEntries();
 
-  //make tree with digits   
+  // set zero suppression
+
+  fTPCParam->SetZeroSup(2);
+
+  // get zero suppression
+
+  Int_t zerosup = fTPCParam->GetZeroSup();
+
+  //make tree with digits 
+  
   AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
   arr->SetClass("AliSimDigits");
   arr->Setup(fTPCParam);
   arr->MakeTree(fDigitsFile);
   
   AliTPCParam * par =fTPCParam;
+
   //Loop over segments of the TPC
+
   for (Int_t n=0; n<nentries; n++) {
     t->GetEvent(n);
     Int_t sec, row;
@@ -1212,47 +1259,146 @@ void AliTPC::SDigits2Digits2(Int_t eventnumber)
     digrow->ExpandTrackBuffer();
     digarr.ExpandTrackBuffer();
 
-    for (row=0;row<nrows; row++)
-      for (Int_t col=0;col<ncols; col++){
-	Float_t  q  = digarr.GetDigitFast(row,col);
-	q/=16;  //konversion faktor
-	//add noise
-	q = gRandom->Gaus(q,fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()); 
-	if(q > fTPCParam->GetADCSat()) q = fTPCParam->GetADCSat();
-	if (q>3){
-	  digrow->SetDigitFast((Short_t)q,row,col);  
-	  for (Int_t tr=0;tr<3;tr++)	
-	    ((AliSimDigits*)digrow)->SetTrackIDFast(digarr.GetTrackIDFast(row,col,tr),row,col,tr);
-	}
-      }
-      
-
- 
     
+    for (Int_t rows=0;rows<nrows; rows++){
+      for (Int_t col=0;col<ncols; col++){
+	Float_t  q  = digarr.GetDigitFast(rows,col);
+	//add noise
+	q = gRandom->Gaus(q,fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()*16); 
+	q/=16;  //conversion faktor
+        q=(Short_t)q; // digits are short integers
+
+	if (q > zerosup){
+          if(q > fTPCParam->GetADCSat()) q = (Short_t)(fTPCParam->GetADCSat());
+	  digrow->SetDigitFast(q,rows,col);  
+	  for (Int_t tr=0;tr<3;tr++) 	
+	   
+((AliSimDigits*)digrow)->SetTrackIDFast(digarr.GetTrackIDFast(rows,col,tr)-2,rows,col,tr);
+	}
+       }   
+      }        
     arr->StoreRow(sec,row);
-    //    printf("*** Sector, row, compressed digits %d %d %d ***\n",sec,row,ndig); 
-    arr->ClearRow(sec,row);  
+    arr->ClearRow(sec,row);   
+    cerr<<sec<<"\t"<<row<<"\n";   
+  }  
 
-   
-  }
-
-
-  cerr<<"Digitizing TPC...\n";   
-
-  //Hits2Digits(eventnumber);
-   
     
   //write results
 
-  //  char treeName[100];
-
-  //  sprintf(treeName,"TreeD_%s_%d",fTPCParam->GetTitle(),eventnumber);
   
   arr->GetTree()->SetName(dname);  
   arr->GetTree()->Write();  
   delete arr;
 }
+//_________________________________________
+void AliTPC::Merge(TTree * intree, Int_t *mask, Int_t nin, Int_t outid)
+{
+  
+  //intree - pointer to array of trees with s digits
+  //mask   - mask for each 
+  //nin    - number of inputs
+  //outid  - event  number of the output event
 
+  //create digits from summable digits 
+  //conect tree with sSDigits
+
+    
+  AliSimDigits ** digarr = new AliSimDigits*[nin];
+  for (Int_t i1=0;i1<nin; i1++){
+    digarr[i1]=0;
+    intree[i1].GetBranch("Segment")->SetAddress(&digarr[i1]);
+  }
+  Stat_t nentries = intree[0].GetEntries();
+  
+  //make tree with digits   
+  char  dname[100];
+  sprintf(dname,"TreeD_%s_%d",fTPCParam->GetTitle(),outid);
+  AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
+  arr->SetClass("AliSimDigits");
+  arr->Setup(fTPCParam);
+  arr->MakeTree(fDigitsFile);  
+
+  // set zero suppression
+
+  fTPCParam->SetZeroSup(2);
+
+  // get zero suppression
+
+  Int_t zerosup = fTPCParam->GetZeroSup();
+
+
+  AliTPCParam * par =fTPCParam;
+
+  //Loop over segments of the TPC
+  for (Int_t n=0; n<nentries; n++) {
+    
+    for (Int_t i=0;i<nin; i++){ 
+      //connect proper digits
+      intree[i].GetEvent(n);      
+      digarr[i]->ExpandBuffer();
+      digarr[i]->ExpandTrackBuffer();
+    }      
+    Int_t sec, row;
+    if (!par->AdjustSectorRow(digarr[0]->GetID(),sec,row)) {
+      cerr<<"AliTPC warning: invalid segment ID ! "<<digarr[0]->GetID()<<endl;
+      continue;
+    }
+
+    AliSimDigits * digrow =(AliSimDigits*) arr->CreateRow(sec,row);
+    Int_t nrows = digrow->GetNRows();
+    Int_t ncols = digrow->GetNCols();
+
+    digrow->ExpandBuffer();
+    digrow->ExpandTrackBuffer();
+   
+    for (Int_t rows=0;rows<nrows; rows++){
+      for (Int_t col=0;col<ncols; col++){
+        Float_t q=0;
+        Int_t label[1000]; // i hope no more than 300 events merged
+        Int_t labptr = 0;
+        // looop over digits
+        for (Int_t i=0;i<nin; i++){ 
+          q  += digarr[i]->GetDigitFast(rows,col);
+          for (Int_t tr=0;tr<3;tr++) {
+            Int_t lab = digarr[i]->GetTrackIDFast(rows,col,tr);
+            if ( lab > 1) {
+              label[labptr]=lab+mask[i]-2;
+              labptr++;
+            }
+          }
+        }
+        //add noise
+        q = gRandom->Gaus(q,fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()*16); 
+        
+        q/=16;  //conversion faktor
+        q=(Short_t)q;
+
+        if (q> zerosup){
+
+          if(q > fTPCParam->GetADCSat()) q = (Short_t)(fTPCParam->GetADCSat());
+          digrow->SetDigitFast(q,rows,col);  
+          for (Int_t tr=0;tr<3;tr++){
+            if (tr<labptr)
+              ((AliSimDigits*)digrow)->SetTrackIDFast(label[tr],rows,col,tr);
+            else
+              ((AliSimDigits*)digrow)->SetTrackIDFast(-1,rows,col,tr);
+          }
+        }
+      } 
+     }         
+      arr->StoreRow(sec,row);
+
+      arr->ClearRow(sec,row);   
+      cerr<<sec<<"\t"<<row<<"\n";  
+  }  
+  
+  delete digarr;
+  arr->GetTree()->SetName(dname); 
+  arr->GetTree()->Write(); 
+ 
+  delete arr;  
+  
+}
 
 /*_________________________________________
 void AliTPC::SDigits2Digits(Int_t eventnumber)
@@ -1380,6 +1526,10 @@ void AliTPC::Hits2SDigits2(Int_t eventnumber)
   cerr<<"Digitizing TPC...\n"; 
 
   fDigitsSwitch=1; // summable digits
+  
+    // set zero suppression to "0"
+
+  fTPCParam->SetZeroSup(0);
 
  for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) Hits2DigitsSector(isec);
 
@@ -1601,6 +1751,7 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
       }
 
       else {
+       if(q <= 0.) continue; // do not fill zeros
        q *= 16.;
        q = (Int_t)q;
       }
