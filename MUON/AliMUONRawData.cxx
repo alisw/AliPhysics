@@ -380,13 +380,13 @@ Int_t AliMUONRawData::WriteTrackerDDL(Int_t iCh)
     }
     if (iDDL == 0) {
       // write DDL 1
-      header.fSize = index + headerSize;// total length in word
+      header.fSize = (index + headerSize) * 4;// total length in bytes
       fwrite((char*)(&header),headerSize*4,1,fFile1);
       fwrite(buffer,sizeof(int),index,fFile1);
     } 
     if (iDDL == 1) {
       // write DDL 2
-      header.fSize = index + headerSize;// total length in word
+      header.fSize = (index + headerSize) * 4;// total length in bytes
       fwrite((char*)(&header),headerSize*4,1,fFile2);
       fwrite(buffer,sizeof(int),index,fFile2);
     }
@@ -556,13 +556,13 @@ Int_t AliMUONRawData::WriteTriggerDDL()
     
     if (iDDL == 0) {
       // write DDL 1
-      header.fSize = index + headerSize;// total length in word
+      header.fSize = (index + headerSize) * 4;// total length in bytes
       fwrite((char*)(&header),headerSize*4,1,fFile1);
       fwrite(buffer,sizeof(int),index,fFile1);
     } 
     if (iDDL == 1) {
       // write DDL 2
-      header.fSize = index + headerSize;// total length in word
+      header.fSize = (index + headerSize) * 4;// total length in bytes
       fwrite((char*)(&header),headerSize*4,1,fFile2);
       fwrite(buffer,sizeof(int),index,fFile2);
     }
