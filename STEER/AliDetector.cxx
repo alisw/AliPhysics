@@ -47,7 +47,6 @@
 #include "AliHit.h"
 #include "AliPoints.h"
 #include "AliRun.h"
-#include "AliTrackReference.h"
 
 
 // Static variables for the hit iterator routines
@@ -67,10 +66,7 @@ AliDetector::AliDetector():
   fHits(0),
   fDigits(0),
   fDigitsFile(0),
-  fPoints(0),
-  fTrackReferences(0),
-  fMaxIterTrackRef(0),
-  fCurrentIterTrackRef(0)
+  fPoints(0)
 {
   //
   // Default constructor for the AliDetector class
@@ -88,10 +84,7 @@ AliDetector::AliDetector(const AliDetector &det):
   fHits(0),
   fDigits(0),
   fDigitsFile(0),
-  fPoints(0),
-  fTrackReferences(0),
-  fMaxIterTrackRef(0),
-  fCurrentIterTrackRef(0)
+  fPoints(0)
 {
   det.Copy(*this);
 }
@@ -107,10 +100,7 @@ AliDetector::AliDetector(const char* name,const char *title):
   fHits(0),
   fDigits(0),
   fDigitsFile(0),
-  fPoints(0),
-  fTrackReferences(new TClonesArray("AliTrackReference", 100)),
-  fMaxIterTrackRef(0),
-  fCurrentIterTrackRef(0)
+  fPoints(0)
 {
   //
   // Normal constructor invoked by all Detectors.
@@ -293,24 +283,6 @@ void AliDetector::FinishRun()
   //
 }
 
-//_______________________________________________________________________
-void AliDetector::RemapTrackReferencesIDs(Int_t *map)
-{
-  // 
-  // Remapping track reference
-  // Called at finish primary
-  //
-  if (!fTrackReferences) return;
-  for (Int_t i=0;i<fTrackReferences->GetEntries();i++){
-    AliTrackReference * ref = dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(i));
-    if (ref) {
-      Int_t newID = map[ref->GetTrack()];
-      if (newID>=0) ref->SetTrack(newID);
-      else ref->SetTrack(-1);
-      
-    }
-  }
-}
 
 //_______________________________________________________________________
 AliHit* AliDetector::FirstHit(Int_t track)
@@ -335,27 +307,6 @@ AliHit* AliDetector::FirstHit(Int_t track)
 
 
 //_______________________________________________________________________
-AliTrackReference* AliDetector::FirstTrackReference(Int_t track)
-{
-  //
-  // Initialise the hit iterator
-  // Return the address of the first hit for track
-  // If track>=0 the track is read from disk
-  // while if track<0 the first hit of the current
-  // track is returned
-  // 
-  if(track>=0) {
-    gAlice->ResetTrackReferences();
-    gAlice->TreeTR()->GetEvent(track);
-  }
-  //
-  fMaxIterTrackRef     = fTrackReferences->GetEntriesFast();
-  fCurrentIterTrackRef = 0;
-  if(fMaxIterTrackRef) return dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(0));
-  else            return 0;
-}
-
-//_______________________________________________________________________
 AliHit* AliDetector::NextHit()
 {
   //
@@ -372,22 +323,6 @@ AliHit* AliDetector::NextHit()
   }
 }
 
-//_______________________________________________________________________
-AliTrackReference* AliDetector::NextTrackReference()
-{
-  //
-  // Return the next hit for the current track
-  //
-  if(fMaxIterTrackRef) {
-    if(++fCurrentIterTrackRef<fMaxIterTrackRef) 
-      return dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(fCurrentIterTrackRef));
-    else        
-      return 0;
-  } else {
-    printf("* AliDetector::NextTrackReference * TrackReference  Iterator called without calling FistTrackReference before\n");
-    return 0;
-  }
-}
 
 //_______________________________________________________________________
 void AliDetector::LoadPoints(Int_t)
@@ -528,16 +463,6 @@ void AliDetector::ResetHits()
 }
 
 //_______________________________________________________________________
-void AliDetector::ResetTrackReferences()
-{
-  //
-  // Reset number of hits and the hits array
-  //
-  fMaxIterTrackRef   = 0;
-  if (fTrackReferences)   fTrackReferences->Clear();
-}
-
-//_______________________________________________________________________
 void AliDetector::ResetPoints()
 {
   //
@@ -573,13 +498,8 @@ void AliDetector::SetTreeAddress()
     branch = treeD->GetBranch(branchname);
     if (branch) branch->SetAddress(&fDigits);
   }
-
-  // Branch address for tr  tree
-  TTree *treeTR = gAlice->TreeTR();
-  if (treeTR && fTrackReferences) {
-    branch = treeTR->GetBranch(branchname);
-    if (branch) branch->SetAddress(&fTrackReferences);
-  }
+  
+  AliModule::SetTreeAddress();
 }
 
  

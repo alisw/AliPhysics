@@ -6,14 +6,14 @@
 /* $Id$ */
 
 #include "TObject.h"
-#include "TVirtualMC.h"
+#include "TMath.h"
 
 class AliTrackReference : public TObject {
 
 public:
 
   AliTrackReference();
-  AliTrackReference(Int_t label, TVirtualMC *vMC);
+  AliTrackReference(Int_t label);
   virtual ~AliTrackReference() {}
 
   virtual Int_t GetTrack() const {return fTrack;}

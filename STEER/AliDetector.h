@@ -7,10 +7,8 @@
 
 #include <AliModule.h>
 class AliHit;
-class AliTrackReference;
 class TTree;
 class TBranch;
-
 class AliDetector : public AliModule {
 
 public:
@@ -27,9 +25,6 @@ public:
   virtual int   GetNhits()   const {return fNhits;}
   TClonesArray *Digits() const {return fDigits;}
   TClonesArray *Hits()   const {return fHits;}
-  TClonesArray *TrackReferences()   const {return fTrackReferences;}
-  virtual void        RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
-
   TObjArray    *Points() const {return fPoints;}
   Int_t         GetIshunt() const {return fIshunt;}
   void          SetIshunt(Int_t ishunt) {fIshunt=ishunt;}
@@ -45,8 +40,6 @@ public:
   virtual void        MakeBranchTR(Option_t *opt=" ", const char *file=0 );
   virtual void        ResetDigits();
   virtual void        ResetHits();
-  virtual void        ResetTrackReferences();
-
   virtual void        ResetPoints();
   virtual void        SetTreeAddress();
   virtual void        SetTimeGate(Float_t gate) {fTimeGate=gate;}
@@ -55,8 +48,6 @@ public:
   virtual void        DrawModule() {}
   virtual AliHit*     FirstHit(Int_t track);
   virtual AliHit*     NextHit();
-  virtual AliTrackReference * FirstTrackReference(Int_t track);
-  virtual AliTrackReference * NextTrackReference();
   virtual void        SetBufferSize(Int_t bufsize=8000) {fBufferSize = bufsize;}  
   virtual TBranch*    MakeBranchInTree(TTree *tree, const char* cname, void* address, Int_t size=32000, const char *file=0);
   virtual TBranch*    MakeBranchInTree(TTree *tree, const char* cname, const char* name, void* address, Int_t size=32000, Int_t splitlevel=99, const char *file=0);
@@ -74,9 +65,7 @@ protected:
   TClonesArray *fDigits;      //List of digits for this detector
   char         *fDigitsFile;  //!File to store branches of digits tree for detector 
   TObjArray    *fPoints;      //!Array of points for each track (all tracks in memory)
-  TClonesArray *fTrackReferences; //list of track references - for one primary track only -MI
-  Int_t         fMaxIterTrackRef; //!for track refernce iterator routines
-  Int_t         fCurrentIterTrackRef; //!for track refernce iterator routines
-  ClassDef(AliDetector,2)  //Base class for ALICE detectors
+
+  ClassDef(AliDetector,3)  //Base class for ALICE detectors
 };
 #endif

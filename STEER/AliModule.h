@@ -17,6 +17,7 @@ class TClonesArray;
 class TBrowser;
 class TArrayI;
 class TFile;
+class AliTrackReference;
 
 class AliModule : public TNamed , public TAttLine, public TAttMarker,
                   public AliRndm {
@@ -90,21 +91,16 @@ public:
   virtual void        FinishEvent() {}
   virtual void        FinishRun() {}
   virtual void        FinishPrimary() {}
-  virtual void        RemapTrackHitIDs(Int_t *) {}
-  virtual void        RemapTrackReferencesIDs(Int_t *) {} //remaping track references MI
-
   //virtual void        Hits2Digits() {}
   virtual void        Init() {}
   virtual void        LoadPoints(Int_t ) {}
   virtual void        MakeBranch(Option_t *, const char* =0 ) {} 
-  virtual void        MakeBranchTR(Option_t * =" ", const char * =0 ){}
   virtual void        Paint(Option_t *) {}
   virtual void        ResetDigits() {}
   virtual void        ResetSDigits() {}
   virtual void        ResetHits() {}
-  virtual void        ResetTrackReferences() {}
   virtual void        ResetPoints() {}
-  virtual void        SetTreeAddress() {}
+  virtual void        SetTreeAddress();
   virtual void        SetTimeGate(Float_t) {}
   virtual Float_t     GetTimeGate() const {return 1.e10;}
   virtual void        StepManager() {}
@@ -116,6 +112,17 @@ public:
   virtual void        SetEuclidFile(char *material,char *geometry=0);
   virtual void ReadEuclid(const char *filnam, char *topvol);
   virtual void ReadEuclidMedia(const char *filnam);
+// Track reference related
+  TClonesArray *TrackReferences()   const {return fTrackReferences;}
+  virtual void        RemapTrackHitIDs(Int_t *) {}
+  virtual void        RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
+  virtual void        ResetTrackReferences();
+  virtual void  AddTrackReference(Int_t label);
+  virtual  AliTrackReference * FirstTrackReference(Int_t track);
+  virtual  AliTrackReference * NextTrackReference();
+  virtual void MakeBranchTR(Option_t *option, const char *file);
+  
+//
   AliModule& operator=(const AliModule &mod)
     {mod.Copy(*this); return (*this);}
  
@@ -137,6 +144,9 @@ protected:
   TList        *fNodes;       //List of geometry nodes
   Int_t         fDebug;       //Debug flag
   Bool_t        fEnable;      //StepManager enabling flag
-  ClassDef(AliModule,2)  //Base class for ALICE Modules
+  TClonesArray *fTrackReferences;     //list of track references - for one primary track only -MI
+  Int_t         fMaxIterTrackRef;     //!for track refernce iterator routines
+  Int_t         fCurrentIterTrackRef; //!for track refernce iterator routines
+  ClassDef(AliModule,3)  //Base class for ALICE Modules
 };
 #endif

@@ -15,6 +15,7 @@
 
 
 #include "AliTrackReference.h"
+#include "TVirtualMC.h"
 #include "TParticle.h"
 #include "AliRun.h"
 #include "TLorentzVector.h"
@@ -53,7 +54,7 @@ ClassImp(AliTrackReference)
 }
 
 //_______________________________________________________________________
-AliTrackReference::AliTrackReference(Int_t label, TVirtualMC *vMC) {
+AliTrackReference::AliTrackReference(Int_t label) {
   //
   // Create Reference object out of label and
   // data in TVirtualMC object
@@ -64,20 +65,20 @@ AliTrackReference::AliTrackReference(Int_t label, TVirtualMC *vMC) {
   // Sylwester Radomski, (S.Radomski@gsi.de)
   // GSI, Jan 31, 2003
   //
-
+    
   TLorentzVector vec;
   
   fTrack = label;
-  fLength = vMC->TrackLength();
-  fTime = vMC->TrackTime();
+  fLength = gMC->TrackLength();
+  fTime = gMC->TrackTime();
 
-  vMC->TrackPosition(vec);
+  gMC->TrackPosition(vec);
 
   fX = vec[0];
   fY = vec[1];
   fZ = vec[2];
   
-  vMC->TrackMomentum(vec);
+  gMC->TrackMomentum(vec);
   
   fPx = vec[0];
   fPy = vec[1];
@@ -88,13 +89,13 @@ AliTrackReference::AliTrackReference(Int_t label, TVirtualMC *vMC) {
 
   for(Int_t i=0; i<16; i++) ResetBit(BIT(i));
 
-  SetBit(BIT(0), vMC->IsNewTrack());
-  SetBit(BIT(1), vMC->IsTrackAlive());
-  SetBit(BIT(2), vMC->IsTrackDisappeared());
-  SetBit(BIT(3), vMC->IsTrackEntering());
-  SetBit(BIT(4), vMC->IsTrackExiting());
-  SetBit(BIT(5), vMC->IsTrackInside());
-  SetBit(BIT(6), vMC->IsTrackOut());
-  SetBit(BIT(7), vMC->IsTrackStop()); 
+  SetBit(BIT(0), gMC->IsNewTrack());
+  SetBit(BIT(1), gMC->IsTrackAlive());
+  SetBit(BIT(2), gMC->IsTrackDisappeared());
+  SetBit(BIT(3), gMC->IsTrackEntering());
+  SetBit(BIT(4), gMC->IsTrackExiting());
+  SetBit(BIT(5), gMC->IsTrackInside());
+  SetBit(BIT(6), gMC->IsTrackOut());
+  SetBit(BIT(7), gMC->IsTrackStop()); 
 }
 //_______________________________________________________________________
