@@ -17,6 +17,8 @@
 // --- ROOT system ---
 #include "TObjString.h"
 class TArrayI ;
+class TClonesArray ; 
+
 // --- Standard library ---
 
 // --- AliRoot header files ---
