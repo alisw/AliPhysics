@@ -85,28 +85,28 @@ public:
   void SetPID(Float_t pid) {fPID = pid;}
 
 protected:
-  Int_t fNHits;  // Number of assigned clusters
+  UShort_t fNHits;  // Number of assigned clusters
 
   Int_t fMCid;  //Assigned id from MC data.
 
-  Int_t fWeight; //Weight associated to Hough Transform
+  UShort_t fWeight; //Weight associated to Hough Transform
 
   Bool_t   fFromMainVertex; // true if tracks origin is the main vertex, otherwise false
   
   Int_t fRowRange[2]; //Subsector where this track was build
-  Int_t fSector;      //Sector # where  this track was build
+  UShort_t fSector;      //Sector # where  this track was build
 
-  Double_t fFirstPoint[3]; //First and last track point in TPC
-  Double_t fLastPoint[3];
+  Float_t fFirstPoint[3]; //First and last track point in TPC
+  Float_t fLastPoint[3];
 
   Int_t    fQ;    //track charge
-  Double_t fTanl; //tan of dipangle
-  Double_t fPsi;  //azimuthal angle of the momentum 
-  Double_t fPt;   //transverse momentum
+  Float_t fTanl; //tan of dipangle
+  Float_t fPsi;  //azimuthal angle of the momentum 
+  Float_t fPt;   //transverse momentum
 
-  Double_t fPterr;
-  Double_t fPsierr;
-  Double_t fTanlerr;
+  Float_t fPterr;
+  Float_t fPsierr;
+  Float_t fTanlerr;
 
   Float_t fBinX;
   Float_t fBinY;
@@ -115,7 +115,7 @@ protected:
   
   Float_t fPID; //so far filled only for conformal mapper tracks
 
-  ClassDef(AliESDHLTtrack,1) //ESD HLT track class
+  ClassDef(AliESDHLTtrack,2) //ESD HLT track class
 };
 
 #endif
