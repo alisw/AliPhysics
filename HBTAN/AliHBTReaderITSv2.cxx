@@ -207,10 +207,11 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
        
        aGAliceFile->cd();
        gAlice->GetEvent(currentEvent);
-       TParticle * part = gAlice->Particle(0);
-       Double_t orz=part->Vz();
+
+//       TParticle * part = gAlice->Particle(0);
       
        aClustersFile->cd();
+//       Double_t orz=part->Vz();
 //       tracker = new AliITStrackerV2(geom,currentEvent,orz); //<---- this is for Massimo version
 //       tracker = new AliITStrackerV2(geom,currentEvent);
        sprintf(tname,"TreeT_ITS_%d",currentEvent);
@@ -232,7 +233,7 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
        Int_t itsfault = 0;
        for (i=0; i<Ntracks; i++) //loop over all tpc tracks
         { 
-          if(i%100 == 0)cout<<"all: "<<i<<"   accepted: "<<accepted<<"   tpc faults: "<<tpcfault<<"   its faults: "<<itsfault<<"\r";
+          if(i%100 == 0)cout<<"all: "<<i<<"   accepted: "<<accepted<<"   tpc faults: "<<tpcfault<<"\r";
           
           tbranch->SetAddress(&iotrack);
           tracktree->GetEvent(i);
@@ -243,13 +244,6 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
              tpcfault++;
              continue;
            }
-//          tracker->CookLabel(iotrack,0.);
-//          Int_t itsLabel=iotrack->GetLabel();
- //         if (itsLabel != label)
- //          {
- //           itsfault++;
- //           continue; 
- //          }
 
           TParticle *p = (TParticle*)gAlice->Particle(label);
           if(Pass(p->GetPdgCode())) continue; //check if we are intersted with particles of this type 
