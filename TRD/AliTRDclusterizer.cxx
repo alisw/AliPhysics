@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2003/03/19 17:16:23  hristov
+Fixes for the file managment(T.Kuhr)
+
 Revision 1.17  2003/02/10 11:09:26  cblume
 Further modifications in OpenOutput and WriteCluster
 
@@ -251,26 +254,34 @@ Bool_t AliTRDclusterizer::OpenOutput(const Char_t *name)
 
   TDirectory *savedir = NULL;
 
-  if (!fInputFile) return kFALSE;
+  if (!fInputFile) {
+    printf("<AliTRDclusterizer::OpenOutput> ");
+    printf("No input file defined\n");
+    return kFALSE;
+  }
 
   if (strcmp(name,fInputFile->GetName()) != 0) {
     savedir = gDirectory;
     TFile *file = (TFile *) gROOT->FindObject(name);
     if (file) {
+      printf("<AliTRDclusterizer::OpenOutput> ");
+      printf("Use same file for output: %s.\n",name);
       fOutputFile = file;
       fOutputFile->cd();
     }
     else {
-      printf("AliTRDclusterizer::OpenOutput -- ");
+      printf("<AliTRDclusterizer::OpenOutput> ");
       printf("Open the output file %s.\n",name);
       fOutputFile = new TFile(name,"RECREATE");
       fOutputFileCreated = kTRUE;
     }
   }
+  else {
+    fOutputFile = fInputFile;
+  }
 
   // Create a tree for the cluster
-  Char_t treeName[12];
-  sprintf(treeName,"TreeR%d_TRD",fEvent);
+  Char_t treeName[12];  sprintf(treeName,"TreeR%d_TRD",fEvent);
   fClusterTree = new TTree(treeName,"TRD cluster");
   TObjArray *ioArray = 0;
   fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
@@ -304,6 +315,10 @@ Bool_t AliTRDclusterizer::OpenInput(const Char_t *name, Int_t nEvent)
   }
 
   // Get AliRun object from file
+  if (gAlice) { 
+    delete gAlice;
+    gAlice = 0;
+  }
   if (!(gAlice)) gAlice = (AliRun *) fInputFile->Get("gAlice");
   if (!(gAlice)) {
     printf("AliTRDclusterizer::OpenInput -- ");
