@@ -30,7 +30,7 @@ class AliGenGSIlib :public TObject{
     static GenFunc   GetPt(Param_t param,const char * tname=0);
     static GenFunc   GetY(Param_t param,const char * tname=0);
     static GenFuncIp GetIp(Param_t param,const char *tname=0);    
-    static void SetDebug(Bool_t debug){fDebug=debug;}
+    static void SetDebug(Bool_t debug){fgDebug=debug;}
 private:
     static Bool_t fgDebug;  // Debug flag 
   ClassDef(AliGenGSIlib,1)
