@@ -677,8 +677,8 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
         CookdEdxTimBin(*pt2);
 	seed->UpdateTrackParams(pt2, AliESDtrack::kTRDrefit);
         for (Int_t i=0;i<kNPlane;i++) {
-          seed->SetTRDsignals(seed2->GetPIDsignals(i),i);
-          seed->SetTRDTimBin(seed2->GetPIDTimBin(i),i);
+          seed->SetTRDsignals(pt2->GetPIDsignals(i),i);
+          seed->SetTRDTimBin(pt2->GetPIDTimBin(i),i);
         }
       }
       delete pt2;
