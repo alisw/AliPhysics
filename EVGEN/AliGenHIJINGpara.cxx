@@ -38,15 +38,15 @@
 ///////////////////////////////////////////////////////////////////
 
 #include <TArrayF.h>
+#include <TCanvas.h>
 #include <TClonesArray.h>
 #include <TDatabasePDG.h>
 #include <TF1.h>
 #include <TH1.h>
-#include <TParticle.h>
 #include <TPDGCode.h>
-#include <TCanvas.h>
-#include <TVirtualMC.h>
+#include <TParticle.h>
 #include <TROOT.h>
+#include <TVirtualMC.h>
 
 #include "AliConst.h"
 #include "AliDecayer.h"

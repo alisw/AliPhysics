@@ -32,18 +32,15 @@
 
 //
 
-//#include <TList.h>
 #include <TObjArray.h>
-#include <TF1.h>
 #include <TParticle.h>
 
-#include "AliGenParam.h"
-#include "AliGenMUONlib.h"
-#include "AliGenMUONCocktail.h"
 #include "AliGenCocktailEntry.h"
-#include "AliCollisionGeometry.h"
-#include "AliRun.h"
+#include "AliGenMUONCocktail.h"
+#include "AliGenMUONlib.h"
+#include "AliGenParam.h"
 #include "AliMC.h"
+#include "AliRun.h"
 #include "AliStack.h"
 
 ClassImp(AliGenMUONCocktail)

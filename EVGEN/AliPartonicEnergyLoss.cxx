@@ -15,6 +15,14 @@
 
 /* $Id$ */
 
+//
+// Calculate parton energy loss
+// in nucleus nucleus
+// reactions via calculation
+// of quenching weights
+// Author: A.Morsch
+//
+
 #include "AliPartonicEnergyLoss.h"
 #include <TMath.h>
 

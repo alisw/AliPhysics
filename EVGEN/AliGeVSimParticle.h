@@ -1,13 +1,18 @@
 #ifndef ALIGEVSIMPARTICLE_H
 #define ALIGEVSIMPARTICLE_H
 
-////////////////////////////////////////////////////////////////////////////////
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+//////////////////////////////////////////////////////////////////////////////
 //
 // AliGeVSimParticle is a helper class for GeVSim (AliGenGeVSim) event generator.
 // An object of this class represents one particle type and contain 
 // information about particle type thermal parameters.
 //
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 //
 // For examples, parameters and testing macros refer to:
 // http:/home.cern.ch/radomski
@@ -22,7 +27,7 @@
 //  
 // S.Radomski@gsi.de
 //
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 //
 // Updated and revised: September 2002, S. Radomski, GSI
 //
@@ -62,12 +67,12 @@ class AliGeVSimParticle : public TObject {
   // Multiplicity
 
   void    SetMultiplicity(Float_t mult);
-  Float_t GetMultiplicity() {return fN;}
+  Float_t GetMultiplicity() const {return fN;}
 
   void   SetMultTotal(Bool_t isTotal = kTRUE);
 
-  Bool_t IsMultTotal() {return fMultTotal;}
-  Bool_t IsMultForced() {return fIsSetMult;}
+  Bool_t IsMultTotal() const {return fMultTotal;}
+  Bool_t IsMultForced() const {return fIsSetMult;}
   
   // Flow
   
@@ -78,7 +83,7 @@ class AliGeVSimParticle : public TObject {
   void SetEllipticParam(Float_t v21, Float_t pTmax, Float_t v22=0.);
   void SetEllipticOld(Float_t v21, Float_t v22, Float_t v23);
 
-  Bool_t IsFlowSimple();
+  Bool_t IsFlowSimple() const;
 
   Float_t GetDirectedFlow(Float_t pt, Float_t y);
   Float_t GetEllipticFlow(Float_t pt, Float_t y);
@@ -105,8 +110,6 @@ class AliGeVSimParticle : public TObject {
   Bool_t fIsEllipticSimple;  // indicate use constant value for elliptic (v2)
   Bool_t fIsEllipticOld;     // linear / quadratical pT parametrisation
 
- public:
-  
   ClassDef(AliGeVSimParticle, 3)
     
 };

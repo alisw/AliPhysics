@@ -15,11 +15,12 @@
 
 /* $Id$ */
 
-// Experimental data inspired Gray Particle Model for p-Pb collisions
 //
+// Experimental data inspired Gray Particle Model for p-Pb collisions
 // The number of gray nucleons  is proportional to the number of collisions.
 // The number of black nucleons is proportional to the number of collisions
 // Fluctuations are calculated from a binomial distribution.
+// Author: A.Morsch
 //
 
 #include "AliSlowNucleonModelExp.h"
@@ -30,7 +31,9 @@ ClassImp(AliSlowNucleonModelExp)
 
 AliSlowNucleonModelExp::AliSlowNucleonModelExp()
 {
-// Default constructor
+  //
+  // Default constructor
+  //
     fP = 82;
     fN = 208 - 82;
     fAlphaGray  = 2.;
@@ -39,7 +42,7 @@ AliSlowNucleonModelExp::AliSlowNucleonModelExp()
 
 
 void AliSlowNucleonModelExp::GetNumberOfSlowNucleons(AliCollisionGeometry* geo, 
-						      Int_t& ngp, Int_t& ngn, Int_t & nbp, Int_t & nbn)
+						      Int_t& ngp, Int_t& ngn, Int_t & nbp, Int_t & nbn) const
 {
 //
 // Return the number of black and gray nucleons

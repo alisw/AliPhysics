@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+//
+// Calculate parton energy loss
+// in nucleus nucleus reactions
+// Author: A.Morsch
+//
+
 #include <TObject.h>
 
 class AliPartonicEnergyLoss : public TObject {

@@ -21,11 +21,13 @@
 // decay products and particle selection.
 // andreas.morsch@cern.ch
 
+#include <TClonesArray.h>
 #include <TMath.h>
 #include <TPDGCode.h>
 #include <TParticle.h>
 
 #include "AliGenMC.h"
+#include "AliGeometry.h"
 
 ClassImp(AliGenMC)
 

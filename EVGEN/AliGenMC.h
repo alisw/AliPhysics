@@ -12,14 +12,14 @@
 // decay products and particle selection.
 // andreas.morsch@cern.ch
 
-#include "AliGenerator.h"
-#include "AliDecayer.h"
-#include "AliGeometry.h"
+class TClonesArray;
+class TParticle;
 #include <TArrayI.h>   
-#include <TClonesArray.h>
 #include <TString.h>
 
-class TParticle;
+class AliGeometry;
+#include "AliDecayer.h"
+#include "AliGenerator.h"
 
 class AliGenMC : public AliGenerator
 {

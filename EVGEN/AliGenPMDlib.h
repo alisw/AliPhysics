@@ -5,11 +5,17 @@
 
 /* $Id$ */
 
-#include "AliGenLib.h"
+//
+// Library of generators for PMD
+// providing y and pt parametrisation
+// for generated tracks
+//
+
 class TRandom;
 
-class AliGenPMDlib :
-public AliGenLib
+#include "AliGenLib.h"
+
+class AliGenPMDlib :public AliGenLib
 {
  public:
      enum constants{kPion, kEta};

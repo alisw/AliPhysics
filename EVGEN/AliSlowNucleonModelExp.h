@@ -5,6 +5,12 @@
 
 /* $Id$ */
 
+//
+// Experimental data inspired Gray Particle Model for p-Pb collisions
+// Fluctuations are calculated from a binomial distribution.
+// Author: A.Morsch
+//
+
 #include "AliSlowNucleonModel.h"
 
 class AliCollisionGeometry;
@@ -15,7 +21,7 @@ class AliSlowNucleonModelExp : public AliSlowNucleonModel
     AliSlowNucleonModelExp();
     virtual ~AliSlowNucleonModelExp(){;}
     virtual void GetNumberOfSlowNucleons(AliCollisionGeometry* geo,
-					 Int_t& ngp, Int_t& ngn, Int_t& nbp, Int_t& nbn);
+					 Int_t& ngp, Int_t& ngn, Int_t& nbp, Int_t& nbn) const;
     virtual void SetParameters(Float_t alpha1, Float_t alpha2);
     
  protected:

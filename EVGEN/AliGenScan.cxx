@@ -22,7 +22,6 @@
 // Author: andreas.morsch@cern.ch
 
 #include "AliGenScan.h"
-#include "AliRun.h"
 
  ClassImp(AliGenScan)
     

@@ -24,7 +24,6 @@
 #include <TFile.h>
 #include <TParticle.h>
 #include <TTree.h>
-#include <TVirtualMC.h>
 
 #include "AliGenReaderEcalJets.h"
 

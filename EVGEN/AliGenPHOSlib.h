@@ -6,6 +6,13 @@
 
 /* $Id$ */
 
+//======================================================================
+//  AliGenPHOSlib class contains parameterizations of the
+//  pion, kaon, eta, omega, etaprime, phi and baryon (proton, 
+//  antiproton, neutron and anti-neutron) particles for the 
+//  study of the neutral background in PHOS detector. 
+//======================================================================
+
 class TRandom;
 
 class AliGenPHOSlib :

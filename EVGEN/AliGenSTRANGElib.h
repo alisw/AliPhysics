@@ -7,6 +7,14 @@
 
 /* $Id$ */
 
+//======================================================================
+//  AliGenSTRANGElib class contains parameterizations of the
+//  kaon, phi and hyperon (Lambda, Anti-Lambda, Xi, anti-Xi, Omega,
+//  anti-Omega)  for the PPR study of the strange particle production. 
+//
+//  Rocco CALIANDRO. Rosa Anna FINI, Tiziano VIRGILI
+//======================================================================
+
 class TRandom;
 
 class AliGenSTRANGElib :

@@ -232,7 +232,7 @@ void AliGenHaloProtvino::Generate()
   
   Float_t zVertexOld = -1.e10;
   Int_t   nInt       = 0;        // Counts number of interactions
-  Float_t Wgt = 0.;
+  Float_t wwgt = 0.;
   
   while(1) {
 //
@@ -343,7 +343,7 @@ void AliGenHaloProtvino::Generate()
 	      PushTrack(fTrackIt,ntP,ipart[nprim],p,origin,polar,t,kPNoProcess,nt,fParentWeight);
 	  }
       }
-      Wgt += fParentWeight;
+      wwgt += fParentWeight;
       
       SetHighWaterMark(nt);
   }
@@ -356,7 +356,7 @@ void AliGenHaloProtvino::Generate()
   delete [] vy;      
   delete [] tx;      
   delete [] ty;     
-  printf("Total weight %f\n\n", Wgt);
+  printf("Total weight %f\n\n", wwgt);
   
 }
  

@@ -34,7 +34,7 @@
 //     Tiziano.Virgili@roma1.infn.it
 //======================================================================
 
-/* $Id: */
+/* $Id$ */
 
 #include "TMath.h"
 #include "TRandom.h"

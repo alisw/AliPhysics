@@ -9,9 +9,10 @@
 // used for the ALICE TDRs.
 // Author: andreas.morsch@cern.ch
 
+class TF1;
+
 #include "AliGenerator.h"
 #include "AliDecayer.h"
-class TF1;
 
 class AliGenHIJINGpara : public AliGenerator
 {

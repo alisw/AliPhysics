@@ -767,9 +767,10 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 
 GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 {
+  //    
+  // Return pointer to y- parameterisation
+  //
     TString sname = TString(tname);
-    
-// Return pointer to y- parameterisation
     GenFunc func;
     switch (param) 
     {

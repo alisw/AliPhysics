@@ -15,6 +15,14 @@
 
 /* $Id$ */
 
+//
+// Library of generators for PMD
+// providing y and pt parametrisation
+// for generated tracks
+// Specific for PMD needs
+// Author: PMD Offline Group
+//
+
 #include <TMath.h>
 #include <TPDGCode.h>
 
