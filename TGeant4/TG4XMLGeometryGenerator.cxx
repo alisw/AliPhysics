@@ -124,7 +124,8 @@ void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv)
   fConvertor->OpenComposition(name);
       
   // write positions  
-  for (G4int i=0; i<nofDaughters; i++) {
+  G4int i;
+  for (i=0; i<nofDaughters; i++) {
     G4VPhysicalVolume* vpvd = lv->GetDaughter(i);
     G4LogicalVolume* lvd = vpvd->GetLogicalVolume();
       
@@ -169,7 +170,7 @@ void TG4XMLGeometryGenerator::ProcessLogicalVolume(G4LogicalVolume* lv)
   // -> change to a global map of names of written compositions 
   //    and test against this map 
   G4std::vector<G4LogicalVolume*> vect;
-  for (G4int i=0; i<nofDaughters; i++) {
+  for (i=0; i<nofDaughters; i++) {
     G4LogicalVolume* lvd = lv->GetDaughter(i)->GetLogicalVolume();
     G4bool store = true;
     for (G4int j=0; j<vect.size(); j++) 
