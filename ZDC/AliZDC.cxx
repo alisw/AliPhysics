@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2001/03/20 08:21:55  coppedis
+ZDC needs PIPE, ABSO, DIPO and SHIL
+
 Revision 1.17  2001/03/16 16:18:03  coppedis
 Correction for superposition of ZDC volumes with MUON arm one
 
@@ -85,16 +88,15 @@ AliZDC::AliZDC()
   //
   // Default constructor for the Zero Degree Calorimeter base class
   //
+  
+  fIshunt = 1;
 
   fNhits = 0;
 
   fNStHits = 0;
-  fStHits = new TClonesArray("AliZDCHit",1000);
 
   fNPrimaryHits = 0;
   fNoShower   = 0;
-  
-  fIshunt = 0;
 }
  
 //_____________________________________________________________________________
@@ -118,6 +120,8 @@ AliZDC::AliZDC(const char *name, const char *title)
 
   //
   // Allocate the array of hits
+  
+  fIshunt =  1;
 
   fHits   = new TClonesArray("AliZDCHit",1000);
   gAlice->AddHitList(fHits);
@@ -127,8 +131,6 @@ AliZDC::AliZDC(const char *name, const char *title)
 
   fNPrimaryHits = 0;
   fNoShower   = 0;
-  
-  fIshunt =  0;
 
 }
 //____________________________________________________________________________ 
@@ -139,6 +141,7 @@ AliZDC::~AliZDC()
   //
 
   fIshunt   = 0;
+
 //  delete fHits;
 //  if(fStHits){
 //    fStHits->Delete();
@@ -160,17 +163,15 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   
   static Float_t primKinEn, xImpact, yImpact, sFlag;
 
-  TClonesArray &lsthits = *fStHits;
-
-
   AliZDCHit *newquad, *curevquad, *curprimquad;
   newquad = new AliZDCHit(fIshunt, track, vol, hits);
 
+  TClonesArray &lsthits = *fStHits;
   TClonesArray &lhits = *fHits;
    
   Int_t i,j,kStHit = 1;
   for(i=0; i<fNStHits; i++){
-    // If the hits are equal (same track, same volume), sum them.
+    // If hits are equal (same track, same volume), sum them.
      curevquad = (AliZDCHit*) lsthits[i];
      kStHit = 1;
      if(*curevquad == *newquad){
@@ -180,7 +181,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   }
 
   for(j=0; j<fNhits; j++){
-    // If the hits are equal (same track, same volume), sum them.
+    // If hits are equal (same track, same volume), sum them.
      curprimquad = (AliZDCHit*) lhits[j];
      if(*curprimquad == *newquad){
         *curprimquad = *curprimquad+*newquad;
@@ -220,12 +221,12 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       fNStHits++;
     }
  
-    if(fDebug == 1){ 
+//    if(fDebug == 1){ 
       printf("\n  Primary Hits --------------------------------------------------------\n");
       fHits->Print("");
       printf("\n  Event Hits --------------------------------------------------------\n");
       fStHits->Print("");
-    }
+//    }
 
     delete newquad;
   }

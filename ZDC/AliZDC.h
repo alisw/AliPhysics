@@ -32,9 +32,8 @@ public:
   void  Shower()  {fNoShower=0;}
   
 protected:
-  
   // TClonesArray of stored hits -> not reset et finish event
-  // 	(for digitization at the end of the event)
+  // 	 (for digitization at the end of the event)
   TClonesArray *fStHits;
   Int_t fNStHits;
   
