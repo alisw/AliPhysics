@@ -40,6 +40,7 @@ const UInt_t AliHBTAnalysis::fgkDefaultMixingInfo = 1000;
 const Int_t  AliHBTAnalysis::fgkDefaultBufferSize = 5;
 
 AliHBTAnalysis::AliHBTAnalysis():
+  fProcEvent(&AliHBTAnalysis::ProcessRecAndSim),
   fReader(0x0),
   fNTrackFunctions(0),
   fNParticleFunctions(0),
@@ -57,6 +58,9 @@ AliHBTAnalysis::AliHBTAnalysis():
   fBufferSize(2),
   fDisplayMixingInfo(fgkDefaultMixingInfo),
   fIsOwner(kFALSE),
+  fPartBuffer(0x0),
+  fTrackBuffer(0x0),
+  fNoCorrfctns(kFALSE),
   fkPass(&AliHBTAnalysis::PassPartAndTrack), //by default perform cut on both track and particle pair 
   fkPass1(&AliHBTAnalysis::PassPartAndTrack1), //used onluy by ProcessTracksAndParticles
   fkPass2(&AliHBTAnalysis::PassPartAndTrack2),
@@ -69,6 +73,7 @@ AliHBTAnalysis::AliHBTAnalysis():
 
 AliHBTAnalysis::AliHBTAnalysis(const AliHBTAnalysis& in):
   AliAnalysis(in),
+  fProcEvent(&AliHBTAnalysis::ProcessRecAndSim),
   fReader(0x0),
   fNTrackFunctions(0),
   fNParticleFunctions(0),
@@ -86,6 +91,9 @@ AliHBTAnalysis::AliHBTAnalysis(const AliHBTAnalysis& in):
   fBufferSize(fgkDefaultBufferSize),
   fDisplayMixingInfo(fgkDefaultMixingInfo),
   fIsOwner(kFALSE),
+  fPartBuffer(0x0),
+  fTrackBuffer(0x0),
+  fNoCorrfctns(kFALSE),
   fkPass(&AliHBTAnalysis::PassPartAndTrack), //by default perform cut on both track and particle pair 
   fkPass1(&AliHBTAnalysis::PassPartAndTrack1),
   fkPass2(&AliHBTAnalysis::PassPartAndTrack2),
@@ -142,14 +150,14 @@ Int_t AliHBTAnalysis::ProcessEvent(AliAOD* aodrec, AliAOD* aodsim)
      return 2;
    }
   
-  return 0;
+  return  (this->*fProcEvent)(aodrec,aodsim);
 }
 /*************************************************************************************/ 
 
 Int_t AliHBTAnalysis::Finish()
 {
   WriteFunctions();
-  return 1;
+  return 0;
 }
 /*************************************************************************************/ 
 
@@ -230,6 +238,17 @@ Int_t AliHBTAnalysis::Init()
 {
 //Initializeation method
 //calls Init for all functions
+  
+  
+ if (fPartBuffer == 0x0)  fPartBuffer = new AliEventBuffer (fBufferSize);
+ else fPartBuffer->Reset();
+
+ if (fTrackBuffer == 0x0)  fTrackBuffer = new AliEventBuffer (fBufferSize);
+ else fTrackBuffer->Reset();
+
+
+ fNoCorrfctns = (fNParticleFunctions == 0) && (fNTrackFunctions == 0) && (fNParticleAndTrackFunctions == 0);
+ 
  UInt_t ii;
  for(ii = 0;ii<fNParticleFunctions;ii++)
    fParticleFunctions[ii]->Init();
@@ -269,7 +288,222 @@ void AliHBTAnalysis::ResetFunctions()
   }
 }
 /*************************************************************************************/ 
+Int_t AliHBTAnalysis::ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim)
+{
+//Makes analysis for both tracks and particles
+//mainly for resolution study and analysies with weighting algirithms
+//In order to minimize calling AliRun::GetEvent (we need at one time particles from different events),
+//the loops are splited
+  
+// cut on particles only -- why?
+// - PID: when we make resolution analysis we want to take only tracks with correct PID
+// We need cut on tracks because there are data characteristic to 
+  
+  AliVAODParticle * part1, * part2;
+  AliVAODParticle * track1, * track2;
+  
+  AliAOD * trackEvent = aodrec, *partEvent = aodsim;
+  AliAOD* trackEvent1 = new AliAOD();
+  AliAOD* partEvent1 = new AliAOD();
+  partEvent1->SetOwner(kTRUE);
+  trackEvent1->SetOwner(kTRUE);
 
+  AliAOD * trackEvent2,*partEvent2;
+  
+//  Int_t N1, N2, N=0; //number of particles in current event(we prcess two events in one time)
+  
+//  Int_t nev = fReader->GetNumberOfTrackEvents();
+  AliHBTPair tpair;
+  AliHBTPair ppair;
+
+  AliHBTPair* trackpair = &tpair;
+  AliHBTPair* partpair = &ppair;
+ 
+  AliHBTPair * tmptrackpair;//temprary pointers to pairs
+  AliHBTPair * tmppartpair;
+  
+  register UInt_t ii;
+  
+  
+
+  if ( !partEvent || !trackEvent ) 
+   {
+     Error("ProcessRecAndSim","Can not get event");
+     return 1;
+   }
+
+  if ( partEvent->GetNumberOfParticles() != trackEvent->GetNumberOfParticles() )
+   {
+     Error("ProcessRecAndSim",
+           "Number of simulated particles (%d) not equal to number of reconstructed tracks (%d). Skipping Event.",
+            partEvent->GetNumberOfParticles() , trackEvent->GetNumberOfParticles());
+     return 2;
+   }
+
+
+  for (Int_t j = 0; j<partEvent->GetNumberOfParticles() ; j++)
+   {
+     /***************************************/
+     /******   Looping same events   ********/
+     /******   filling numerators    ********/
+     /***************************************/
+     if ( (j%fDisplayMixingInfo) == 0)
+        Info("ProcessTracksAndParticles",
+             "Mixing particle %d with particles from the same event",j);
+
+     part1= partEvent->GetParticle(j);
+     track1= trackEvent->GetParticle(j);
+
+     Bool_t firstcut = (this->*fkPass1)(part1,track1);
+     if (fBufferSize != 0) 
+       if ( (firstcut == kFALSE) || ( (this->*fkPass2)(part1,track1) == kFALSE ) )
+        {
+          //accepted by any cut
+          // we have to copy because reader keeps only one event
+
+          partEvent1->AddParticle(new AliAODParticle(*part1));
+          trackEvent1->AddParticle(new AliAODParticle(*track1));
+        }
+
+     if (firstcut) continue;
+
+     for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
+       fParticleMonitorFunctions[ii]->Process(part1);
+     for(ii = 0; ii<fNTrackMonitorFunctions; ii++)
+       fTrackMonitorFunctions[ii]->Process(track1);
+     for(ii = 0; ii<fNParticleAndTrackMonitorFunctions; ii++)
+       fParticleAndTrackMonitorFunctions[ii]->Process(track1,part1);
+
+     if (fNoCorrfctns) continue;
+
+     for (Int_t k =j+1; k < partEvent->GetNumberOfParticles() ; k++)
+      {
+        part2= partEvent->GetParticle(k);
+        if (part1->GetUID() == part2->GetUID()) continue;
+        partpair->SetParticles(part1,part2);
+
+        track2= trackEvent->GetParticle(k);
+        trackpair->SetParticles(track1,track2);
+
+        if( (this->*fkPass)(partpair,trackpair) ) //check pair cut 
+          { //do not meets crietria of the pair cut, try with swapped pairs
+            if( (this->*fkPass)((AliHBTPair*)partpair->GetSwappedPair(),(AliHBTPair*)trackpair->GetSwappedPair()) )
+              continue; //swaped pairs do not meet criteria of pair cut as well, take next particle
+            else 
+             { //swaped pair meets all the criteria
+               tmppartpair = (AliHBTPair*)partpair->GetSwappedPair();
+               tmptrackpair = (AliHBTPair*)trackpair->GetSwappedPair();
+             }
+          }
+        else
+         {//meets criteria of the pair cut
+           tmptrackpair = trackpair;
+           tmppartpair = partpair;
+         }
+
+        for(ii = 0;ii<fNParticleFunctions;ii++)
+               fParticleFunctions[ii]->ProcessSameEventParticles(tmppartpair);
+
+        for(ii = 0;ii<fNTrackFunctions;ii++)
+               fTrackFunctions[ii]->ProcessSameEventParticles(tmptrackpair);
+
+        for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
+               fParticleAndTrackFunctions[ii]->ProcessSameEventParticles(tmptrackpair,tmppartpair);
+       //end of 2nd loop over particles from the same event  
+      }//for (Int_t k =j+1; k < partEvent->GetNumberOfParticles() ; k++)
+
+     /***************************************/
+     /***** Filling denominators    *********/
+     /***************************************/
+     if (fBufferSize == 0) continue;
+
+     fPartBuffer->ResetIter();
+     fTrackBuffer->ResetIter();
+     Int_t m = 0;
+     while (( partEvent2 = fPartBuffer->Next() ))
+      {
+        trackEvent2 = fTrackBuffer->Next();
+
+        m++;
+        if ( (j%fDisplayMixingInfo) == 0)
+           Info("ProcessTracksAndParticles",
+                "Mixing particle %d from current event with particles from event %d",j,-m);
+
+        for(Int_t l = 0; l<partEvent2->GetNumberOfParticles();l++)   //  ... on all particles
+          {
+            part2= partEvent2->GetParticle(l);
+            partpair->SetParticles(part1,part2);
+
+            track2= trackEvent2->GetParticle(l);
+            trackpair->SetParticles(track1,track2);
+
+            if( (this->*fkPass)(partpair,trackpair) ) //check pair cut
+              { //do not meets crietria of the 
+                if( (this->*fkPass)((AliHBTPair*)partpair->GetSwappedPair(),(AliHBTPair*)trackpair->GetSwappedPair()) )
+                  continue;
+                else 
+                 {
+                   tmppartpair = (AliHBTPair*)partpair->GetSwappedPair();
+                   tmptrackpair = (AliHBTPair*)trackpair->GetSwappedPair();
+                 }
+              }
+            else
+             {//meets criteria of the pair cut
+              tmptrackpair = trackpair;
+              tmppartpair = partpair;
+             }
+
+            for(ii = 0;ii<fNParticleFunctions;ii++)
+              fParticleFunctions[ii]->ProcessDiffEventParticles(tmppartpair);
+
+            for(ii = 0;ii<fNTrackFunctions;ii++)
+              fTrackFunctions[ii]->ProcessDiffEventParticles(tmptrackpair);
+
+            for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
+              fParticleAndTrackFunctions[ii]->ProcessDiffEventParticles(tmptrackpair,tmppartpair);
+          }//for(Int_t l = 0; l<N2;l++)   //  ... on all particles
+
+      }
+    //end of loop over particles from first event
+   }//for (Int_t j = 0; j<partEvent->GetNumberOfParticles() ; j++)
+  delete fPartBuffer->Push(partEvent1);
+  delete fTrackBuffer->Push(trackEvent1);
+ //end of loop over events  
+  return 0;
+}
+/*************************************************************************************/ 
+
+Int_t AliHBTAnalysis::ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim)
+{
+ if (aodsim == 0x0) return 0;
+ return 1;
+}
+/*************************************************************************************/ 
+Int_t AliHBTAnalysis::ProcessRec(AliAOD* aodrec, AliAOD* /*aodsim*/)
+{
+ if (aodrec== 0x0) return 0;
+ return 1;
+}
+/*************************************************************************************/ 
+     
+Int_t AliHBTAnalysis::ProcessRecAndSimNonId(AliAOD* aodrec, AliAOD* aodsim)
+{
+ if (aodsim && aodrec== 0x0) return 0;
+ return 1;
+}
+/*************************************************************************************/ 
+Int_t AliHBTAnalysis::ProcessSimNonId(AliAOD* aodrec, AliAOD* /*aodsim*/)
+{
+ if (aodrec== 0x0) return 0;
+ return 1;
+}
+/*************************************************************************************/ 
+Int_t AliHBTAnalysis::ProcessRecNonId(AliAOD* /*aodrec*/, AliAOD* aodsim)
+{
+ if (aodsim== 0x0) return 0;
+ return 1;
+}
+/*************************************************************************************/ 
 void AliHBTAnalysis::Process(Option_t* option)
 {
  //default option  = "TracksAndParticles"
@@ -344,209 +578,19 @@ void AliHBTAnalysis::ProcessTracksAndParticles()
 // - PID: when we make resolution analysis we want to take only tracks with correct PID
 // We need cut on tracks because there are data characteristic to 
   
-  AliVAODParticle * part1, * part2;
-  AliVAODParticle * track1, * track2;
-  
   AliAOD * trackEvent, *partEvent;
-  AliAOD * trackEvent1 = 0x0,*partEvent1 = 0x0;
-  AliAOD * trackEvent2,*partEvent2;
-  
-//  Int_t N1, N2, N=0; //number of particles in current event(we prcess two events in one time)
-  
-//  Int_t nev = fReader->GetNumberOfTrackEvents();
-  AliHBTPair * trackpair = new AliHBTPair();
-  AliHBTPair * partpair = new AliHBTPair();
 
-  AliHBTPair * tmptrackpair;//temprary pointers to pairs
-  AliHBTPair * tmppartpair;
-
-  AliEventBuffer partbuffer(fBufferSize);
-  AliEventBuffer trackbuffer(fBufferSize);
-  
-  register UInt_t ii;
-  
-  Bool_t nocorrfctns = (fNParticleFunctions == 0) && (fNTrackFunctions == 0) && (fNParticleAndTrackFunctions == 0);
-  
   fReader->Rewind();
   Int_t i = -1;
   while (fReader->Next() == kFALSE)
     {
       i++;
-      partEvent= fReader->GetEventSim();
+      partEvent = fReader->GetEventSim();
       trackEvent = fReader->GetEventRec();
-      
-      if ( !partEvent || !trackEvent ) 
-       {
-         Error("ProcessTracksAndParticles","Can not get event");
-         return;
-       }
-       
-      if ( partEvent->GetNumberOfParticles() != trackEvent->GetNumberOfParticles() )
-       {
-         Fatal("ProcessTracksAndParticles",
-               "Event %d: Number of simulated particles (%d) not equal to number of reconstructed tracks (%d)",
-               i,partEvent->GetNumberOfParticles() , trackEvent->GetNumberOfParticles());
-         return;
-       }
-      
-      if(partEvent1 == 0x0) 
-       {
-         partEvent1 = new AliAOD();
-         partEvent1->SetOwner(kTRUE);
+      ProcessRecAndSim(trackEvent,partEvent);
 
-         trackEvent1 = new AliAOD();
-         trackEvent1->SetOwner(kTRUE);
-       }
-      else
-       {
-         partEvent1->Reset();
-         trackEvent1->Reset();
-       }
-       
-      for (Int_t j = 0; j<partEvent->GetNumberOfParticles() ; j++)
-       {
-         /***************************************/
-         /******   Looping same events   ********/
-         /******   filling numerators    ********/
-         /***************************************/
-         if ( (j%fDisplayMixingInfo) == 0)
-            Info("ProcessTracksAndParticles",
-                 "Mixing particle %d from event %d with particles from event %d",j,i,i);
-
-         part1= partEvent->GetParticle(j);
-         track1= trackEvent->GetParticle(j);
-  
-//PID imperfections ???
-//         if( part1->GetPdgCode() != track1->GetPdgCode() )
-//          {
-//            Fatal("ProcessTracksAndParticles",
-//                  "Event %d: Particle %d: PID of simulated particle (%d) not the same of reconstructed track (%d)",
-//                  i,j, part1->GetPdgCode(),track1->GetPdgCode() );
-//            return;
-//          }
-         
-         Bool_t firstcut = (this->*fkPass1)(part1,track1);
-         if (fBufferSize != 0) 
-           if ( (firstcut == kFALSE) || ( (this->*fkPass2)(part1,track1) == kFALSE ) )
-            {
-              //accepted by any cut
-              // we have to copy because reader keeps only one event
-
-              partEvent1->AddParticle(new AliAODParticle(*part1));
-              trackEvent1->AddParticle(new AliAODParticle(*track1));
-            }
-
-         if (firstcut) continue;
-         
-         for(ii = 0; ii<fNParticleMonitorFunctions; ii++)
-           fParticleMonitorFunctions[ii]->Process(part1);
-         for(ii = 0; ii<fNTrackMonitorFunctions; ii++)
-           fTrackMonitorFunctions[ii]->Process(track1);
-         for(ii = 0; ii<fNParticleAndTrackMonitorFunctions; ii++)
-           fParticleAndTrackMonitorFunctions[ii]->Process(track1,part1);
-
-         if (nocorrfctns) continue;
-        
-         for (Int_t k =j+1; k < partEvent->GetNumberOfParticles() ; k++)
-          {
-            part2= partEvent->GetParticle(k);
-            if (part1->GetUID() == part2->GetUID()) continue;
-            partpair->SetParticles(part1,part2);
-           
-            track2= trackEvent->GetParticle(k);
-            trackpair->SetParticles(track1,track2);
-
-            if( (this->*fkPass)(partpair,trackpair) ) //check pair cut 
-              { //do not meets crietria of the pair cut, try with swapped pairs
-                if( (this->*fkPass)((AliHBTPair*)partpair->GetSwappedPair(),(AliHBTPair*)trackpair->GetSwappedPair()) )
-                  continue; //swaped pairs do not meet criteria of pair cut as well, take next particle
-                else 
-                 { //swaped pair meets all the criteria
-                   tmppartpair = (AliHBTPair*)partpair->GetSwappedPair();
-                   tmptrackpair = (AliHBTPair*)trackpair->GetSwappedPair();
-                 }
-              }
-            else
-             {//meets criteria of the pair cut
-               tmptrackpair = trackpair;
-               tmppartpair = partpair;
-             }
-             
-            for(ii = 0;ii<fNParticleFunctions;ii++)
-                   fParticleFunctions[ii]->ProcessSameEventParticles(tmppartpair);
-                
-            for(ii = 0;ii<fNTrackFunctions;ii++)
-                   fTrackFunctions[ii]->ProcessSameEventParticles(tmptrackpair);
-                 
-            for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
-                   fParticleAndTrackFunctions[ii]->ProcessSameEventParticles(tmptrackpair,tmppartpair);
-           //end of 2nd loop over particles from the same event  
-          }//for (Int_t k =j+1; k < partEvent->GetNumberOfParticles() ; k++)
-          
-         /***************************************/
-         /***** Filling denominators    *********/
-         /***************************************/
-         if (fBufferSize == 0) continue;
-         
-         partbuffer.ResetIter();
-         trackbuffer.ResetIter();
-         Int_t m = 0;
-         while (( partEvent2 = partbuffer.Next() ))
-          {
-            trackEvent2 = trackbuffer.Next();
-            
-            m++;
-            if ( (j%fDisplayMixingInfo) == 0)
-               Info("ProcessTracksAndParticles",
-                    "Mixing particle %d from event %d with particles from event %d",j,i,i-m);
-         
-            for(Int_t l = 0; l<partEvent2->GetNumberOfParticles();l++)   //  ... on all particles
-              {
-                part2= partEvent2->GetParticle(l);
-                partpair->SetParticles(part1,part2);
-
-                track2= trackEvent2->GetParticle(l);
-                trackpair->SetParticles(track1,track2);
-
-                if( (this->*fkPass)(partpair,trackpair) ) //check pair cut
-                  { //do not meets crietria of the 
-                    if( (this->*fkPass)((AliHBTPair*)partpair->GetSwappedPair(),(AliHBTPair*)trackpair->GetSwappedPair()) )
-                      continue;
-                    else 
-                     {
-                       tmppartpair = (AliHBTPair*)partpair->GetSwappedPair();
-                       tmptrackpair = (AliHBTPair*)trackpair->GetSwappedPair();
-                     }
-                  }
-                else
-                 {//meets criteria of the pair cut
-                  tmptrackpair = trackpair;
-                  tmppartpair = partpair;
-                 }
-
-                for(ii = 0;ii<fNParticleFunctions;ii++)
-                  fParticleFunctions[ii]->ProcessDiffEventParticles(tmppartpair);
-                 
-                for(ii = 0;ii<fNTrackFunctions;ii++)
-                  fTrackFunctions[ii]->ProcessDiffEventParticles(tmptrackpair);
-                 
-                for(ii = 0;ii<fNParticleAndTrackFunctions;ii++)
-                  fParticleAndTrackFunctions[ii]->ProcessDiffEventParticles(tmptrackpair,tmppartpair);
-              }//for(Int_t l = 0; l<N2;l++)   //  ... on all particles
-
-          }
-        //end of loop over particles from first event
-       }//for (Int_t j = 0; j<partEvent->GetNumberOfParticles() ; j++)
-      partEvent1  = partbuffer.Push(partEvent1);
-      trackEvent1 = trackbuffer.Push(trackEvent1);
-     //end of loop over events  
     }//while (fReader->Next() == kFALSE)
     
-   delete trackpair;
-   delete partpair;
-
-   partbuffer.SetOwner(kTRUE);
-   trackbuffer.SetOwner(kTRUE);
 } 
 /*************************************************************************************/
 
@@ -1608,6 +1652,7 @@ void AliHBTAnalysis::SetCutsOnTracks()
  // -- aplies only to Process("TracksAndParticles")
  // (ProcessTracksAndParticles and ProcessTracksAndParticlesNonIdentAnal)
  // Only tracks properties are checkes against cuts
+  Info("SetCutsOnTracks","Only reconstructed particles will be checked");
   fkPass = &AliHBTAnalysis::PassTrack;
   fkPass1 = &AliHBTAnalysis::PassTrack1;
   fkPass2 = &AliHBTAnalysis::PassTrack2;

@@ -30,6 +30,8 @@ class AliHBTCut;
 class AliHBTRun;
 class AliAOD;
 class AliReader;
+class AliEventBuffer;
+
 class AliHBTOnePairFctn;      
 class AliHBTTwoPairFctn;
 
@@ -89,6 +91,24 @@ class AliHBTAnalysis: public AliAnalysis
      void FilterOut(AliAOD* out1, AliAOD* out2, AliAOD* in)const;
      void DeleteFunctions();
      
+
+     /**********************************************/
+     /*      E V E N T     P R O C E S S I N G     */
+     /**********************************************/
+     // NEW AOD schema
+     Int_t (AliHBTAnalysis::*fProcEvent)(AliAOD* aodrec, AliAOD* aodsim);//Pointer to the processing method
+
+     virtual Int_t ProcessSim(AliAOD* /*aodrec*/, AliAOD* aodsim);
+     virtual Int_t ProcessRec(AliAOD* aodrec, AliAOD* /*aodsim*/);
+     virtual Int_t ProcessRecAndSim(AliAOD* aodrec, AliAOD* aodsim);
+     
+     virtual Int_t ProcessRecAndSimNonId(AliAOD* aodrec, AliAOD* aodsim);
+     virtual Int_t ProcessSimNonId(AliAOD* aodrec, AliAOD* /*aodsim*/);
+     virtual Int_t ProcessRecNonId(AliAOD* /*aodrec*/, AliAOD* aodsim);
+     
+
+     // OLD legacy schema
+
      virtual void ProcessTracks();
      virtual void ProcessParticles();
      virtual void ProcessTracksAndParticles();
@@ -96,6 +116,7 @@ class AliHBTAnalysis: public AliAnalysis
      virtual void ProcessTracksAndParticlesNonIdentAnal();
      virtual void ProcessParticlesNonIdentAnal();
      virtual void ProcessTracksNonIdentAnal();
+
 
      AliReader* fReader;//! Pointer to reader
      
@@ -126,8 +147,18 @@ class AliHBTAnalysis: public AliAnalysis
      Int_t  fBufferSize; //!defines the size of buffer for mixed events; -1==MIX All
      Int_t  fDisplayMixingInfo;//!defines every which particle mixing info is displayed
      Bool_t fIsOwner;//!defines of all functions are supposed to be deleted while by the way of analysis defaulr false
-
+    
+     AliEventBuffer* fPartBuffer;//Sim Particles event buffer
+     AliEventBuffer* fTrackBuffer;//Rec Tracks event buffer
+     
+     Bool_t          fNoCorrfctns;//Internal flag indicating that no cfs are set by the user (only monitor ones)
+     
    private:
+   
+     /**********************************************/
+     /*                C U T S                     */
+     /**********************************************/
+   
      Bool_t (AliHBTAnalysis::*fkPass)(AliAODPair* partpair, AliAODPair* trackpair) const;//Pointer to function that performes pair cut
      Bool_t (AliHBTAnalysis::*fkPass1)(AliVAODParticle* partpair, AliVAODParticle* trackpair) const;//Pointer to function that performes cut on first particle
      Bool_t (AliHBTAnalysis::*fkPass2)(AliVAODParticle* partpair, AliVAODParticle* trackpair) const;//Pointer to function that performes cut on second particle

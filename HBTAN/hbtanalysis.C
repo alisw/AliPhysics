@@ -1,36 +1,40 @@
+#ifndef __MAKECINT__
+ #ifndef __CINT__
+
   #include "AliHBTAnalysis.h"
 //  #include "alles.h"
-  #include "AliHBTReader.h"
-  #include "AliHBTReaderKineTree.h"
-  #include "AliHBTReaderITSv2.h"
-  #include "AliHBTReaderITSv1.h"
-  #include "AliHBTReaderTPC.h"
-  #include "AliHBTReaderInternal.h"
-  #include "AliHBTParticleCut.h"
-  #include "AliHBTEvent.h"
-  #include "AliHBTPairCut.h"
+  #include "AliLoader.h"
+  #include "AliReader.h"
+  #include "AliReaderESD.h"
+  #include "AliReaderKineTree.h"
+  #include "AliAOD.h"
+  #include "AliAODPairCut.h"
   #include "AliHBTQResolutionFctns.h"
   #include "AliHBTQDistributionFctns.h"
   #include "AliHBTTwoTrackEffFctn.h"
   #include "AliHBTCorrelFctn.h"
+  #include "AliHBTLLWeights.h"
+  #include "AliHBTWeightTheorFctn.h"
   #include "TSystem.h"
   #include "TObjString.h"
   #include "TString.h"
   #include "TPDGCode.h"
+  #include "TFile.h"
   #include "AliHBTMonDistributionFctns.h"
   #include "AliHBTMonResolutionFctns.h"
+ #endif
+#endif
   
 void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles", 
                 Int_t first = -1,Int_t last = -1, 
                 char *outfile = "hbtanalysis.root")
  {
    
-  AliHBTTrackPoints::SetDebug(0);
-  AliHBTParticle::SetDebug(0);
+  AliVAODParticle::SetDebug(0);
   AliLoader::SetDebug(0);
   
-  AliHBTParticleCut c1;
-  AliHBTParticleCut c2 = c1;
+  AliAODParticleCut c1;
+  AliAODParticleCut c2 = c1;
 
 //HBT Anlysis Macro
 //Anlyzes TPC recontructed tracks and simulated particles that corresponds to them
@@ -76,44 +80,24 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   AliHBTAnalysis * analysis = new AliHBTAnalysis();
   analysis->SetCutsOnTracks();
   
-  AliHBTReader* reader;
+  AliReader* reader;
   Int_t kine = strcmp(datatype,"Kine");
   Int_t ESD = strcmp(datatype,"ESD");
-  Int_t TPC = strcmp(datatype,"TPC");
-  Int_t ITSv1 = strcmp(datatype,"ITSv1");
-  Int_t ITSv2 = strcmp(datatype,"ITSv2");
   Int_t intern = strcmp(datatype,"Intern");
   
   if(!kine)
    {
-    reader = new AliHBTReaderKineTree();
+    reader = new AliReaderKineTree();
     processopt="Particles"; //this reader by definition reads only simulated particles
    }
   else if(!ESD)
    {
-    AliHBTReaderESD* esdreader = new AliHBTReaderESD();
-    esdreader->ReadParticles(kTRUE);
+    AliReaderESD* esdreader = new AliReaderESD();
+    esdreader->MustTPC(kTRUE);
+    esdreader->ReadSimulatedData(kTRUE);
     esdreader->SetNumberOfTrackPoints(5,30.);
     esdreader->SetClusterMap();
     reader = esdreader;
-   }
-  else if(!TPC)
-   {
-    reader = new AliHBTReaderTPC();
-    //((AliHBTReaderTPC*)reader)->SetNumberOfTrackPoints(5,30.);
-    ((AliHBTReaderTPC*)reader)->SetClusterMap();
-   }
-  else if(!ITSv1)
-   {
-    reader = new AliHBTReaderITSv1();
-   }
-  else if(!ITSv2)
-   {
-    reader = new AliHBTReaderITSv2();
-   }
-  else if(!intern)
-   {
-    reader = new AliHBTReaderInternal("data.root");
    }
   else
    {
@@ -140,7 +124,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   /***********************************************************/    
   
   //we want have only low pt pi+ so set a cut to reader
-  AliHBTParticleCut* readerpartcut= new AliHBTParticleCut();
+  AliAODParticleCut* readerpartcut= new AliAODParticleCut();
   readerpartcut->SetPtRange(0.0,10.0);
   readerpartcut->SetPID(kPiPlus);
   reader->AddParticleCut(readerpartcut);//read this particle type with this cut
@@ -151,7 +135,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   
   analysis->SetReader(reader);
 
-  AliHBTPairCut *paircut = new AliHBTPairCut();
+  AliAODPairCut *paircut = new AliAODPairCut();
   Float_t qinvmin = 0.0;
   Float_t qinvmax = 0.05;//50MeV
   paircut->SetQInvRange(qinvmin,qinvmax);  
@@ -159,7 +143,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
  // paircut->SetAvSeparationRange(10.); //AntiMerging
   paircut->SetClusterOverlapRange(-.5,1.0);//AntiSplitting
   
-//  AliHBTParticleCut* partcut= new AliHBTParticleCut();
+//  AliVAODParticleCut* partcut= new AliVAODParticleCut();
 //  partcut->SetPID(kPiPlus);
 //  paircut->SetFirstPartCut(partcut);
 //  partcut->SetPID(kPiMinus);
@@ -211,7 +195,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   AliHBTQOutLCMSCorrelFctn* qoutT = new AliHBTQOutLCMSCorrelFctn(); 
   qoutT->Rename("qoutT","Track (recontructed) Q_{out} CF \\pi^{+} \\pi^{+}");
 
-  AliHBTPairCut *outPairCut = new AliHBTPairCut();
+  AliAODPairCut *outPairCut = new AliAODPairCut();
   outPairCut->SetQOutCMSLRange(0.0,0.15);
   outPairCut->SetQSideCMSLRange(0.0,0.02);
   outPairCut->SetQLongCMSLRange(0.0,0.02);
@@ -230,7 +214,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   AliHBTQSideLCMSCorrelFctn* qsideT = new AliHBTQSideLCMSCorrelFctn(100,qinvmax); 
   qsideT->Rename("qsideT","Track (recontructed) Q_{side} CF \\pi^{+} \\pi^{+}");
 
-  AliHBTPairCut *sidePairCut = new AliHBTPairCut();
+  AliAODPairCut *sidePairCut = new AliAODPairCut();
   sidePairCut->SetQOutCMSLRange(0.0,0.02);
   sidePairCut->SetQSideCMSLRange(0.0,0.15);
   sidePairCut->SetQLongCMSLRange(0.0,0.02);
@@ -249,7 +233,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   AliHBTQLongLCMSCorrelFctn* qlongT = new AliHBTQLongLCMSCorrelFctn(100,qinvmax); 
   qlongT->Rename("qlongT","Track (recontructed) Q_{long} CF \\pi^{+} \\pi^{+}");
 
-  AliHBTPairCut *longPairCut = new AliHBTPairCut();
+  AliAODPairCut *longPairCut = new AliAODPairCut();
   longPairCut->SetQOutCMSLRange(0.0,0.02);
   longPairCut->SetQSideCMSLRange(0.0,0.02);
   longPairCut->SetQLongCMSLRange(0.0,0.15);
@@ -310,7 +294,7 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   if (threeDcuts) pairThetaVsKt.SetPairCut(longPairCut);
   //analysis->AddResolutionFunction(&pairThetaVsKt);
 
-  AliHBTPairCut phipc;
+  AliAODPairCut phipc;
   phipc.SetQLongCMSLRange(0.0,0.02);
 
   AliHBTPairPhiResolVsQInvFctn pairPhiVsqinv(200,qinvmax,qinvmin,300,0.015,-0.015);
@@ -414,6 +398,8 @@ void hbtanalysis(Option_t* datatype, Option_t* processopt="TracksAndParticles",
   /****   P R O C E S S                 ***********************/
   /************************************************************/
   analysis->SetBufferSize(2);
+  analysis->SetCutsOnTracks();
+  analysis->Init();
   analysis->Process(processopt);
   
   TFile histoOutput(outfile,"recreate"); 
