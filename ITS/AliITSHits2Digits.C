@@ -49,6 +49,13 @@ Int_t AliITSHits2Digits()
   Float_t baseline = 10.;
   Float_t noise = 1.75;
 
+  AliITSDetType *iDetType=ITS->DetType(1);
+  AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
+  if (!res1) {
+    res1=new AliITSresponseSDD();
+    ITS->SetResponseModel(1,res1);
+  }
+
   // SDD compression param: 2 fDecrease, 2fTmin, 2fTmax or disable, 2 fTolerance
   //Float_t fCutAmp = baseline + 2.*noise;
 
@@ -61,12 +68,7 @@ Int_t AliITSHits2Digits()
   
   Int_t cp[8]={0,0,fCutAmp,fCutAmp,0,0,0,0};
 
-  AliITSDetType *iDetType=ITS->DetType(1);
-  AliITSresponseSDD *res1 = (AliITSresponseSDD*)iDetType->GetResponseModel();
-  if (!res1) {
-    res1=new AliITSresponseSDD();
-    ITS->SetResponseModel(1,res1);
-  }
+
   //res1->SetZeroSupp("2D");
   res1->SetZeroSupp("1D");
   res1->SetNoiseParam(noise,baseline);
