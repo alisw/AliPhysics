@@ -274,6 +274,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
 	    tang[k]=TMath::Tan(tang[k]);
 
 	    // w is the coord. perpendicular to the strips
+	    /*
 	    if(k==0) {
 		w = (x+(GetSegmentation()->Dx()*1.0E-4)/2) -
 		    (z+(GetSegmentation()->Dz()*1.0E-4)/2)*tang[k]; 
@@ -282,6 +283,13 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
 		    (z-(GetSegmentation()->Dz()*1.0E-4)/2)*tang[k];
 	    } // end if
 	    w /= (GetStripPitch()*1.0E-4); // w is converted in units of pitch
+	    */
+	    { // replacement block for the above.
+		Float_t xp=x*1.E-4,zp=z*1.e-4; // microns
+		GetSegmentation()->GetPadTxz(xp,zp);
+		if(k==0) w = xp; // P side strip number
+		else w = zp; // N side strip number
+	    } // end test block
 
 	    if((w<(-0.5)) || (w>(GetNStrips()-0.5))) {
 		// this check rejects hits in regions not covered by strips
