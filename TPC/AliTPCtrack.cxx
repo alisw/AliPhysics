@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2002/10/23 07:17:34  alibrary
+Introducing Riostream.h
+
 Revision 1.12  2002/10/14 14:57:43  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -68,15 +71,13 @@ const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
 }
 
 //_____________________________________________________________________________
-AliTPCtrack::AliTPCtrack(const AliKalmanTrack& t,Double_t alpha) {
+AliTPCtrack::AliTPCtrack(const AliKalmanTrack& t,Double_t alpha) :
+AliKalmanTrack(t) {
   //-----------------------------------------------------------------
   // Conversion AliKalmanTrack -> AliTPCtrack.
   //-----------------------------------------------------------------
-  SetLabel(t.GetLabel());
   SetChi2(0.);
-  SetMass(t.GetMass());
   SetNumberOfClusters(0);
-  //SetConvConst(t.GetConvConst());
 
   fdEdx  = 0.;
   fAlpha = alpha;

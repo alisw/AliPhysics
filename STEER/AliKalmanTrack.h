@@ -16,8 +16,15 @@ class AliCluster;
 
 class AliKalmanTrack : public TObject {
 public:
-  AliKalmanTrack() { fLab=-3141593; fChi2=0; fN=0; fMass=0.13957;}
+  AliKalmanTrack() {
+    if (fConvConst==0) 
+      Fatal("AliKalmanTrack()","The magnetic field has not been set !\n"); 
+    fLab=-3141593; fChi2=0; fN=0; fMass=0.13957;
+  }
   AliKalmanTrack(const AliKalmanTrack &t) {
+    if (fConvConst==0) 
+       Fatal("AliKalmanTrack(const AliKalmanTrack&)",
+             "The magnetic field has not been set !\n"); 
     fLab=t.fLab; fChi2=t.fChi2; fN=t.fN; fMass=t.fMass;
   }
   virtual ~AliKalmanTrack(){};
@@ -45,6 +52,11 @@ public:
 
   static void SetConvConst(Double_t cc) {fConvConst=cc;}
   Double_t GetConvConst() const {return fConvConst;}
+
+  static void SetMagneticField(Double_t f) {// f - Magnetic field in T
+    fConvConst=100/0.299792458/f;
+  }
+  Double_t GetMagneticField() const {return 100/0.299792458/fConvConst;}
 
 protected:
   void SetChi2(Double_t chi2) {fChi2=chi2;} 

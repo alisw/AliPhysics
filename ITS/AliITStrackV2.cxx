@@ -34,14 +34,13 @@ ClassImp(AliITStrackV2)
 const Int_t kWARN=5;
 
 //____________________________________________________________________________
-AliITStrackV2::AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *) {
+AliITStrackV2::AliITStrackV2(const AliTPCtrack& t) throw (const Char_t *) :
+AliKalmanTrack(t) {
   //------------------------------------------------------------------
   //Conversion TPC track -> ITS track
   //------------------------------------------------------------------
-  SetLabel(t.GetLabel());
   SetChi2(0.);
   SetNumberOfClusters(0);
-  //SetConvConst(t.GetConvConst());
 
   fdEdx  = t.GetdEdx();
   SetMass(t.GetMass());
