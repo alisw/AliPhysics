@@ -25,7 +25,7 @@
 #include "TGraph.h"
 #include "TPaveText.h"
 #include "TClonesArray.h"
-#include "TMath.h" 
+#include "TMath.h"
 
 // --- Standard library ---
 
@@ -61,8 +61,8 @@ AliEMCALRecPoint::AliEMCALRecPoint()
 AliEMCALRecPoint::AliEMCALRecPoint(const char * opt) : AliRecPoint(opt)
 {
   // ctor
-  fMaxTrack = 200 ;
-  fMaxParent = 200;
+  fMaxTrack = 1000 ;
+  fMaxParent = 1000;
   fMulDigit   = 0 ; 
   fMulParent = 0; 
   fAmp   = 0. ;   
@@ -441,6 +441,7 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
   Double_t dzz  = 0.;
   Double_t dxz  = 0.;
 
+  const Float_t kDeg2Rad = TMath::DegToRad();
   AliEMCALDigit * digit ;
 
   AliEMCALGeometry * geom = (AliEMCALGetter::Instance())->EMCALGeometry();
@@ -452,14 +453,17 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
     Float_t etai = 0. ;
     Float_t phii = 0. ; 
     geom->EtaPhiFromIndex(digit->GetId(), etai, phii);
+    phii = phii * kDeg2Rad;
     Double_t w = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+
     dxx  += w * etai * etai ;
     x    += w * etai ;
     dzz  += w * phii * phii ;
     z    += w * phii ; 
-    dxz  += w * etai * etai ; 
+    dxz  += w * etai * phii ; 
     wtot += w ;
   }
+
   if ( wtot > 0 ) { 
     dxx /= wtot ;
     x   /= wtot ;
@@ -477,6 +481,7 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
       fLambda[0] = 0;
     
     fLambda[1] =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+
     if(fLambda[1] > 0) //To avoid exception if numerical errors lead to negative lambda.
       fLambda[1] = TMath::Sqrt(fLambda[1]) ;
     else
@@ -485,6 +490,8 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
     fLambda[0]= 0. ;
     fLambda[1]= 0. ;
   }
+
+
 }
 
 //______________________________________________________________________________
