@@ -7,7 +7,7 @@
 // 6 = not neutron
 
 
-Int_t particle_type=5;
+Int_t particle_type=0;
 
 #include "iostream.h"
 
