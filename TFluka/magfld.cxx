@@ -1,4 +1,5 @@
 #include "TVirtualMCApplication.h"
+#include "TFluka.h"
 #include "Fdblprc.h"  //(DBLPRC) fluka common
 //
 // #include "TCallf77.h"
@@ -31,7 +32,6 @@ extern "C" void type_of_call magfld(double& x,   double& y,   double& z,
 *----------------------------------------------------------------------*
 */
     
-    idisc = 0;
     
     Double_t bc[3];
     Double_t xc[3];
@@ -41,7 +41,17 @@ extern "C" void type_of_call magfld(double& x,   double& y,   double& z,
     xc[2] = z;
     
     
-	
+
+//
+//  Check if stopping has been required by user
+//
+    idisc = 0;
+    TFluka* fluka =  (TFluka*) gMC;
+    if (fluka->GetStoppingCondition()) {
+	fluka->ResetStoppingCondition();
+	idisc = 1;
+    }
+    
     (TVirtualMCApplication::Instance())->Field(xc, bc);
     
     b = sqrt(bc[0] * bc[0] + bc[1] * bc[1] + bc[2] * bc[2]);
