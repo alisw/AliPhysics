@@ -29,7 +29,9 @@ class AliMUONClusterFinderAZ : public AliMUONClusterFinderVS {
   void FindRawClusters(); // the same interface as for old cluster finder
   void EventLoop(Int_t nev, Int_t ch); // first event 
   Bool_t TestTrack(Int_t t); // test if track was selected
+
   static AliMUONClusterFinderAZ* fgClusterFinder;
+
   Int_t fnPads[2]; // ! number of pads in the cluster on 2 cathodes
   Float_t fXyq[6][kDim]; // ! pad information
   Int_t fPadIJ[2][kDim]; // ! pad information
@@ -70,10 +72,10 @@ class AliMUONClusterFinderAZ : public AliMUONClusterFinderVS {
   void Split(TH2D *mlem, Double_t *coef); // steering function for pixels
   void AddBin(TH2D *mlem, Int_t ic, Int_t jc, Int_t mode, Bool_t* used, TObjArray *pix); // add a bin to the cluster
   TObject* BinToPix(TH2D *mlem, Int_t jc, Int_t ic); // hist. bin-to-pixel
-  void AddCluster(Int_t ic, Int_t nclust, TMatrixD *aij_clu_clu, Bool_t *used, Int_t *clustNumb, Int_t &nCoupled); // add a cluster to the group of coupled clusters
-  Double_t MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb, TMatrixD *aij_clu_clu, Int_t *minGroup); // find group of cluster with min. coupling to others
-  Int_t SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *clustNumb, Int_t *clustFit, TMatrixD *aij_clu_clu); //select pads for fit
-  void Merge(Int_t nForFit, Int_t nCoupled, Int_t *clustNumb, Int_t *clustFit, TObjArray **clusters, TMatrixD *aij_clu_clu, TMatrixD *aij_clu_pad); // merge clusters
+  void AddCluster(Int_t ic, Int_t nclust, TMatrixD *aijcluclu, Bool_t *used, Int_t *clustNumb, Int_t &nCoupled); // add a cluster to the group of coupled clusters
+  Double_t MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb, TMatrixD *aijcluclu, Int_t *minGroup); // find group of cluster with min. coupling to others
+  Int_t SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *clustNumb, Int_t *clustFit, TMatrixD *aijcluclu); //select pads for fit
+  void Merge(Int_t nForFit, Int_t nCoupled, Int_t *clustNumb, Int_t *clustFit, TObjArray **clusters, TMatrixD *aijcluclu, TMatrixD *aijclupad); // merge clusters
   Int_t Fit(Int_t nfit, Int_t *clustFit, TObjArray **clusters, Double_t *parOk); // do the fitting 
   void UpdatePads(Int_t nfit, Double_t *par); // subtract fitted charges from pads
   void AddRawCluster(Double_t x, Double_t y, Double_t fmin); // add new raw cluster

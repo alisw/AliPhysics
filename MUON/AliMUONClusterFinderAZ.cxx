@@ -25,6 +25,10 @@
 #include "AliMUONPixel.h"
 #include "AliMC.h"
 
+// Clusterizer class developped by Zitchenko (Dubna)
+//
+//
+//
 // This function is used for fitting
 void fcn1(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 
@@ -94,7 +98,7 @@ void AliMUONClusterFinderAZ::EventLoop(Int_t nev=0, Int_t ch=0)
   TView *view = 0;
   TH2F *hist = 0;
   Double_t p1[3]={0}, p2[3];
-  TTree *TR = 0;
+  TTree *treeR = 0;
   if (fDraw) {
     // File
     lun = fopen("pool.dat","w");
@@ -116,31 +120,31 @@ newev:
   cout << "nparticles  " << nparticles <<endl;
   if (nparticles <= 0) return;
   
-  TTree *TH = gime->TreeH();
-  Int_t ntracks = (Int_t) TH->GetEntries();
+  TTree *treeH = gime->TreeH();
+  Int_t ntracks = (Int_t) treeH->GetEntries();
   cout<<"ntracks "<<ntracks<<endl;
     
   // Get pointers to Alice detectors and Digits containers
-  AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON");
-  if (!MUON) return;
+  AliMUON *muon  = (AliMUON*) gAlice->GetModule("MUON");
+  if (!muon) return;
   //       TClonesArray *Particles = gAlice->Particles();
   if (!fReco) {
-    TR = gime->TreeR();
-    if (TR) {
-      MUON->ResetRawClusters();
-      nent = (Int_t) TR->GetEntries();
+    treeR = gime->TreeR();
+    if (treeR) {
+      muon->ResetRawClusters();
+      nent = (Int_t) treeR->GetEntries();
       if (nent != 1) {
 	cout << "Error in MUONdrawClust" << endl;
 	cout << " nent = " <<  nent << " not equal to 1" << endl;
 	//exit(0);
       }
-    } // if (TR)
+    } // if (treeR)
   } // if (!fReco)
 
-  TTree *TD = gime->TreeD();
-  //MUON->ResetDigits();
+  TTree *treeD = gime->TreeD();
+  //muon->ResetDigits();
 
-  TClonesArray *MUONrawclust;
+  TClonesArray *listMUONrawclust ;
   AliMUONChamber*       iChamber = 0;
   
   // As default draw the first cluster of the chamber #0
@@ -148,17 +152,17 @@ newev:
 newchamber:
   if (ch > 9) {if (fReco) return; nev++; ch = 0; goto newev;}
   //gAlice->ResetDigits();
-  fMuonDigits  = MUON->GetMUONData()->Digits(ch);
+  fMuonDigits  = muon->GetMUONData()->Digits(ch);
   if (fMuonDigits == 0) return;
-  iChamber = &(MUON->Chamber(ch));
+  iChamber = &(muon->Chamber(ch));
   fSegmentation[0] = iChamber->SegmentationModel(1);
   fSegmentation[1] = iChamber->SegmentationModel(2);
   fResponse = iChamber->ResponseModel();
     
   nent = 0;
  
-  if (TD) {
-    nent = (Int_t) TD->GetEntries();
+  if (treeD) {
+    nent = (Int_t) treeD->GetEntries();
     //printf(" entries %d \n", nent);
   }
 
@@ -185,8 +189,8 @@ next:
   for (Int_t iii = 0; iii<2; iii++) { 
     Int_t cath = TMath::Odd(iii);
     gAlice->ResetDigits();
-    TD->GetEvent(cath);
-    fMuonDigits  = MUON->GetMUONData()->Digits(ch);
+    treeD->GetEvent(cath);
+    fMuonDigits  = muon->GetMUONData()->Digits(ch);
 
     ndigits[cath] = fMuonDigits->GetEntriesFast();
     if (!ndigits[0] && !ndigits[1]) {if (fReco) return; ch++; goto newchamber;}
@@ -196,7 +200,7 @@ next:
     AliMUONDigit  *mdig;
     Int_t digit;
 
-    Bool_t EOC = kTRUE; // end-of-cluster
+    Bool_t eEOC = kTRUE; // end-of-cluster
     for (digit = 0; digit < ndigits[cath]; digit++) {
       mdig    = (AliMUONDigit*)fMuonDigits->UncheckedAt(digit);
       if (mdig->Cathode() != cath) continue;
@@ -213,10 +217,10 @@ next:
       }
       // Add pad - recursive call
       AddPad(cath,digit);
-      EOC = kFALSE;
+      eEOC = kFALSE;
       if (digit >= 0) break;
     }
-    if (first && EOC) {
+    if (first && eEOC) {
       // No more unused pads 
       if (cath == 0) continue; // on cathode #0 - check #1
       else {
@@ -226,7 +230,7 @@ next:
 	goto newchamber; // next chamber
       }
     }
-    if (EOC) break; // cluster found
+    if (eEOC) break; // cluster found
     first = kFALSE;
     cout << " nPads: " << fnPads[cath] << " " << nShown[cath]+fnPads[cath] << " " << cath << endl;
   } // for (Int_t iii = 0;
@@ -388,10 +392,10 @@ next:
   fnMu = 0;
   Int_t ix, iy, iok;
   for (Int_t i=0; i<ntracks; i++) {
-    TH->GetEvent(i);
-    for (AliMUONHit* mHit=(AliMUONHit*)MUON->FirstHit(-1); 
+    treeH->GetEvent(i);
+    for (AliMUONHit* mHit=(AliMUONHit*)muon->FirstHit(-1); 
 	 mHit;
-	 mHit=(AliMUONHit*)MUON->NextHit()) {
+	 mHit=(AliMUONHit*)muon->NextHit()) {
       if (mHit->Chamber() != ch+1) continue;  // chamber number
       if (TMath::Abs(mHit->Z()-zpad0) > 1) continue; // different slat
       p2[0] = p1[0] = mHit->X();        // x-pos of hit
@@ -433,14 +437,14 @@ next:
   } // for (Int_t i=0; i<ntracks;
 
   // Draw reconstructed coordinates
-  MUONrawclust = MUON->GetMUONData()->RawClusters(ch);
-  TR->GetEvent(ch);
-  //cout << MUONrawclust << " " << MUONrawclust->GetEntries() << endl;
+  listMUONrawclust  = muon->GetMUONData()->RawClusters(ch);
+  treeR->GetEvent(ch);
+  //cout << listMUONrawclust  << " " << listMUONrawclust ->GetEntries() << endl;
   AliMUONRawCluster *mRaw;
   gStyle->SetLineColor(3);
   cout << " *** Reconstructed hits *** " << endl;
-  for (Int_t i=0; i<MUONrawclust->GetEntries(); i++) {
-    mRaw = (AliMUONRawCluster*)MUONrawclust->UncheckedAt(i);
+  for (Int_t i=0; i<listMUONrawclust ->GetEntries(); i++) {
+    mRaw = (AliMUONRawCluster*)listMUONrawclust ->UncheckedAt(i);
     if (TMath::Abs(mRaw->fZ[0]-zpad0) > 1) continue; // different slat
     p2[0] = p1[0] = mRaw->fX[0];        // x-pos of hit
     p2[1] = p1[1] = mRaw->fY[0];        // y-pos
@@ -449,7 +453,7 @@ next:
     if (p1[1] < hist->GetYaxis()->GetXmin() || 
 	p1[1] > hist->GetYaxis()->GetXmax()) continue;
     /*
-      TD->GetEvent(cath);
+      treeD->GetEvent(cath);
       cout << mRaw->fMultiplicity[0] << mRaw->fMultiplicity[1] << endl;
       for (Int_t j=0; j<mRaw->fMultiplicity[cath]; j++) {
       Int_t digit = mRaw->fIndexMap[j][cath];
@@ -475,7 +479,7 @@ next:
 	line[nLine++]->Draw();
       }
     }
-  } // for (Int_t i=0; i<MUONrawclust->GetEntries();
+  } // for (Int_t i=0; i<listMUONrawclust ->GetEntries();
   if (fDraw) c1->Update();
 
 skip:
@@ -1565,8 +1569,8 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
   }
 
   // Compute couplings of clusters to pads
-  TMatrixD *aij_clu_pad = new TMatrixD(nclust,npad);
-  *aij_clu_pad = 0;
+  TMatrixD *aijclupad = new TMatrixD(nclust,npad);
+  *aijclupad = 0;
   Int_t npxclu;
   for (Int_t iclust=0; iclust<nclust; iclust++) {
     pix = clusters[iclust];
@@ -1577,32 +1581,32 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
 	// Exclude overflows
 	if (fPadIJ[1][j] < 0) continue;
 	if (coef[j*nPix+indx] < kCouplMin) continue;
-	(*aij_clu_pad)(iclust,j) += coef[j*nPix+indx];
+	(*aijclupad)(iclust,j) += coef[j*nPix+indx];
       }
     }
   }
   // Compute couplings between clusters
-  TMatrixD *aij_clu_clu = new TMatrixD(nclust,nclust);
-  *aij_clu_clu = 0;
+  TMatrixD *aijcluclu = new TMatrixD(nclust,nclust);
+  *aijcluclu = 0;
   for (Int_t iclust=0; iclust<nclust; iclust++) {
     for (Int_t j=0; j<npad; j++) {
       // Exclude overflows
       if (fPadIJ[1][j] < 0) continue;
-      if ((*aij_clu_pad)(iclust,j) < kCouplMin) continue;
+      if ((*aijclupad)(iclust,j) < kCouplMin) continue;
       for (Int_t iclust1=iclust+1; iclust1<nclust; iclust1++) {
-	if ((*aij_clu_pad)(iclust1,j) < kCouplMin) continue;
-	(*aij_clu_clu)(iclust,iclust1) += 
-	  TMath::Sqrt ((*aij_clu_pad)(iclust,j)*(*aij_clu_pad)(iclust1,j));
+	if ((*aijclupad)(iclust1,j) < kCouplMin) continue;
+	(*aijcluclu)(iclust,iclust1) += 
+	  TMath::Sqrt ((*aijclupad)(iclust,j)*(*aijclupad)(iclust1,j));
       }
     }
   }
   for (Int_t iclust=0; iclust<nclust; iclust++) {
     for (Int_t iclust1=iclust+1; iclust1<nclust; iclust1++) {
-      (*aij_clu_clu)(iclust1,iclust) = (*aij_clu_clu)(iclust,iclust1);
+      (*aijcluclu)(iclust1,iclust) = (*aijcluclu)(iclust,iclust1);
     }
   }
 
-  if (nclust > 1) aij_clu_clu->Print();
+  if (nclust > 1) aijcluclu->Print();
 
   // Find groups of coupled clusters
   used = new Bool_t[nclust];
@@ -1617,7 +1621,7 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
     clustNumb[0] = igroup;
     nCoupled = 1;
     // Find group of coupled clusters
-    AddCluster(igroup, nclust, aij_clu_clu, used, clustNumb, nCoupled); // recursive
+    AddCluster(igroup, nclust, aijcluclu, used, clustNumb, nCoupled); // recursive
     cout << " nCoupled: " << nCoupled << endl;
     for (Int_t i=0; i<nCoupled; i++) cout << clustNumb[i] << " "; cout << endl; 
 
@@ -1631,7 +1635,7 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
 	// Find the lowest coupling of 1, 2, min(3,nLinks/2) pixels with 
 	// all the others in the group 
 	for (Int_t j=0; j<3; j++) minGroup[j] = -1;
-	Double_t coupl = MinGroupCoupl(nCoupled, clustNumb, aij_clu_clu, minGroup);
+	Double_t coupl = MinGroupCoupl(nCoupled, clustNumb, aijcluclu, minGroup);
 
 	// Flag clusters for fit
 	nForFit = 0;
@@ -1645,12 +1649,12 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
       } // else
 
       // Select pads for fit. 
-      if (SelectPad(nCoupled, nForFit, clustNumb, clustFit, aij_clu_pad) < 3 && nCoupled > 1) {
+      if (SelectPad(nCoupled, nForFit, clustNumb, clustFit, aijclupad) < 3 && nCoupled > 1) {
 	// Deselect pads
 	for (Int_t j=0; j<npad; j++) if (TMath::Abs(fPadIJ[1][j]) == 1) fPadIJ[1][j] = 0;
 	// Merge the failed cluster candidates (with too few pads to fit) with 
 	// the one with the strongest coupling
-	Merge(nForFit, nCoupled, clustNumb, clustFit, clusters, aij_clu_clu, aij_clu_pad);
+	Merge(nForFit, nCoupled, clustNumb, clustFit, clusters, aijcluclu, aijclupad);
       } else {
 	// Do the fit
 	nfit = Fit(nForFit, clustFit, clusters, parOk);
@@ -1685,7 +1689,7 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
 	  indx = clustNumb[iclust] + 999;
 	  for (Int_t iclust1=0; iclust1<nCoupled; iclust1++) {
 	    indx1 = clustNumb[iclust1];
-	    (*aij_clu_clu)(indx,indx1) = (*aij_clu_clu)(indx1,indx) = 0;
+	    (*aijcluclu)(indx,indx1) = (*aijcluclu)(indx1,indx) = 0;
 	  }
 	}
 
@@ -1695,14 +1699,14 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
 	  if (fPadIJ[1][j] != -1) continue;
 	  for (Int_t iclust=0; iclust<nCoupled; iclust++) {
 	    indx = clustNumb[iclust];
-	    if ((*aij_clu_pad)(indx,j) < kCouplMin) continue;
+	    if ((*aijclupad)(indx,j) < kCouplMin) continue;
 	    for (Int_t iclust1=iclust+1; iclust1<nCoupled; iclust1++) {
 	      indx1 = clustNumb[iclust1];
-	      if ((*aij_clu_pad)(indx1,j) < kCouplMin) continue;
+	      if ((*aijclupad)(indx1,j) < kCouplMin) continue;
 	      // Check this
-	      (*aij_clu_clu)(indx,indx1) -= 
-		TMath::Sqrt ((*aij_clu_pad)(indx,j)*(*aij_clu_pad)(indx1,j));
-	      (*aij_clu_clu)(indx1,indx) = (*aij_clu_clu)(indx,indx1);
+	      (*aijcluclu)(indx,indx1) -= 
+		TMath::Sqrt ((*aijclupad)(indx,j)*(*aijclupad)(indx1,j));
+	      (*aijcluclu)(indx1,indx) = (*aijcluclu)(indx,indx1);
 	    }
 	  }
 	  fPadIJ[1][j] = -9;
@@ -1711,8 +1715,8 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
     } // while (nCoupled > 0)
   } // for (Int_t igroup=0; igroup<nclust;
 
-  //delete aij_clu; aij_clu = 0; delete aij_clu_pad; aij_clu_pad = 0;
-  aij_clu_clu->Delete(); aij_clu_pad->Delete();
+  //delete aij_clu; aij_clu = 0; delete aijclupad; aijclupad = 0;
+  aijcluclu->Delete(); aijclupad->Delete();
   for (Int_t iclust=0; iclust<nclust; iclust++) {
     pix = clusters[iclust]; 
     pix->Clear();
@@ -1772,21 +1776,21 @@ TObject* AliMUONClusterFinderAZ::BinToPix(TH2D *mlem, Int_t jc, Int_t ic)
 }
 
 //_____________________________________________________________________________
-void AliMUONClusterFinderAZ::AddCluster(Int_t ic, Int_t nclust, TMatrixD *aij_clu_clu, Bool_t *used, Int_t *clustNumb, Int_t &nCoupled)
+void AliMUONClusterFinderAZ::AddCluster(Int_t ic, Int_t nclust, TMatrixD *aijcluclu, Bool_t *used, Int_t *clustNumb, Int_t &nCoupled)
 {
   // Add a cluster to the group of coupled clusters
 
   for (Int_t i=0; i<nclust; i++) {
     if (used[i]) continue;
-    if ((*aij_clu_clu)(i,ic) < kCouplMin) continue;
+    if ((*aijcluclu)(i,ic) < kCouplMin) continue;
     used[i] = kTRUE;
     clustNumb[nCoupled++] = i;
-    AddCluster(i, nclust, aij_clu_clu, used, clustNumb, nCoupled);
+    AddCluster(i, nclust, aijcluclu, used, clustNumb, nCoupled);
   }
 }
 
 //_____________________________________________________________________________
-Double_t AliMUONClusterFinderAZ::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb, TMatrixD *aij_clu_clu, Int_t *minGroup)
+Double_t AliMUONClusterFinderAZ::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb, TMatrixD *aijcluclu, Int_t *minGroup)
 {
   // Find group of clusters with minimum coupling to all the others
 
@@ -1815,19 +1819,19 @@ Double_t AliMUONClusterFinderAZ::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb,
       for (Int_t j=i+1; j<nCoupled; j++) {
 	indx2 = clustNumb[j];
 	if (i123 == 1) {
-	  coupl1[i] += (*aij_clu_clu)(indx1,indx2);
-	  coupl1[j] += (*aij_clu_clu)(indx1,indx2);
+	  coupl1[i] += (*aijcluclu)(indx1,indx2);
+	  coupl1[j] += (*aijcluclu)(indx1,indx2);
 	} 
 	else if (i123 == 2) {
 	  indx = i*nCoupled + j;
 	  coupl2[indx] = coupl1[i] + coupl1[j];
-	  coupl2[indx] -= 2 * ((*aij_clu_clu)(indx1,indx2));
+	  coupl2[indx] -= 2 * ((*aijcluclu)(indx1,indx2));
 	} else {
 	  for (Int_t k=j+1; k<nCoupled; k++) {
 	    indx3 = clustNumb[k];
 	    indx = i*nCoupled*nCoupled + j*nCoupled + k;
 	    coupl3[indx] = coupl2[i*nCoupled+j] + coupl1[k];
-	    coupl3[indx] -= 2 * ((*aij_clu_clu)(indx1,indx3)+(*aij_clu_clu)(indx2,indx3));
+	    coupl3[indx] -= 2 * ((*aijcluclu)(indx1,indx3)+(*aijcluclu)(indx2,indx3));
 	  }
 	} // else
       } // for (Int_t j=i+1;
@@ -1868,17 +1872,17 @@ Double_t AliMUONClusterFinderAZ::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb,
 }
 
 //_____________________________________________________________________________
-Int_t AliMUONClusterFinderAZ::SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *clustNumb, Int_t *clustFit, TMatrixD *aij_clu_pad)
+Int_t AliMUONClusterFinderAZ::SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *clustNumb, Int_t *clustFit, TMatrixD *aijclupad)
 {
   // Select pads for fit. If too many coupled clusters, find pads giving 
   // the strongest coupling with the rest of clusters and exclude them from the fit.
 
   Int_t npad = fnPads[0] + fnPads[1];
-  Double_t *pad_pix = 0;
+  Double_t *padpix = 0;
 
   if (nCoupled > 3) {
-    pad_pix = new Double_t[npad];
-    for (Int_t i=0; i<npad; i++) pad_pix[i] = 0; 
+    padpix = new Double_t[npad];
+    for (Int_t i=0; i<npad; i++) padpix[i] = 0; 
   }
 
   Int_t nOK = 0, indx, indx1;
@@ -1886,7 +1890,7 @@ Int_t AliMUONClusterFinderAZ::SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *cl
     indx = clustFit[iclust];
     for (Int_t j=0; j<npad; j++) {
       if (fPadIJ[1][j] < 0) continue; // exclude overflows and used pads
-      if ((*aij_clu_pad)(indx,j) < kCouplMin) continue;
+      if ((*aijclupad)(indx,j) < kCouplMin) continue;
       fPadIJ[1][j] = 1; // pad to be used in fit
       nOK++;
       if (nCoupled > 3) {
@@ -1894,8 +1898,8 @@ Int_t AliMUONClusterFinderAZ::SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *cl
 	for (Int_t iclust1=0; iclust1<nCoupled; iclust1++) {
 	  indx1 = clustNumb[iclust1];
 	  if (indx1 < 0) continue;
-	  if ((*aij_clu_pad)(indx1,j) < kCouplMin) continue;
-	  pad_pix[j] += (*aij_clu_pad)(indx1,j);
+	  if ((*aijclupad)(indx1,j) < kCouplMin) continue;
+	  padpix[j] += (*aijclupad)(indx1,j);
 	}
       } // if (nCoupled > 3)
     } // for (Int_t j=0; j<npad;
@@ -1904,19 +1908,19 @@ Int_t AliMUONClusterFinderAZ::SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *cl
 
   Double_t aaa = 0;
   for (Int_t j=0; j<npad; j++) {
-    if (pad_pix[j] < kCouplMin) continue;
-    cout << j << " " << pad_pix[j] << " "; 
+    if (padpix[j] < kCouplMin) continue;
+    cout << j << " " << padpix[j] << " "; 
     cout << fXyq[0][j] << " " << fXyq[1][j] << endl;
-    aaa += pad_pix[j];
+    aaa += padpix[j];
     fPadIJ[1][j] = -1; // exclude pads with strong coupling to the other clusters
     nOK--;
   }
-  delete [] pad_pix; pad_pix = 0;
+  delete [] padpix; padpix = 0;
   return nOK;
 }
   
 //_____________________________________________________________________________
-void AliMUONClusterFinderAZ::Merge(Int_t nForFit, Int_t nCoupled, Int_t *clustNumb, Int_t *clustFit, TObjArray **clusters, TMatrixD *aij_clu_clu, TMatrixD *aij_clu_pad)
+void AliMUONClusterFinderAZ::Merge(Int_t nForFit, Int_t nCoupled, Int_t *clustNumb, Int_t *clustFit, TObjArray **clusters, TMatrixD *aijcluclu, TMatrixD *aijclupad)
 {
   // Merge the group of clusters with the one having the strongest coupling with them
 
@@ -1932,14 +1936,14 @@ void AliMUONClusterFinderAZ::Merge(Int_t nForFit, Int_t nCoupled, Int_t *clustNu
     for (Int_t icl1=0; icl1<nCoupled; icl1++) {
       indx1 = clustNumb[icl1];
       if (indx1 < 0) continue;
-      if ((*aij_clu_clu)(indx,indx1) > couplMax) {
-	couplMax = (*aij_clu_clu)(indx,indx1);
+      if ((*aijcluclu)(indx,indx1) > couplMax) {
+	couplMax = (*aijcluclu)(indx,indx1);
 	imax = indx1;
       }
     } // for (Int_t icl1=0;
     /*if (couplMax < kCouplMin) {
       cout << " Oops " << couplMax << endl;
-      aij_clu_clu->Print();
+      aijcluclu->Print();
       cout << icl << " " << indx << " " << npxclu << " " << nLinks << endl;
       ::exit(0);
       }*/
@@ -1950,20 +1954,20 @@ void AliMUONClusterFinderAZ::Merge(Int_t nForFit, Int_t nCoupled, Int_t *clustNu
     for (Int_t i=0; i<npxclu; i++) { pix1->Add(pix->UncheckedAt(i)); pix->RemoveAt(i); }
     cout << " New number of pixels: " << npxclu1 << " " << pix1->GetEntriesFast() << endl;
     //Add cluster-to-cluster couplings
-    //aij_clu_clu->Print();
+    //aijcluclu->Print();
     for (Int_t icl1=0; icl1<nCoupled; icl1++) {
       indx1 = clustNumb[icl1];
       if (indx1 < 0 || indx1 == imax) continue;
-      (*aij_clu_clu)(indx1,imax) += (*aij_clu_clu)(indx,indx1);
-      (*aij_clu_clu)(imax,indx1) = (*aij_clu_clu)(indx1,imax);
+      (*aijcluclu)(indx1,imax) += (*aijcluclu)(indx,indx1);
+      (*aijcluclu)(imax,indx1) = (*aijcluclu)(indx1,imax);
     }
-    (*aij_clu_clu)(indx,imax) = (*aij_clu_clu)(imax,indx) = 0;
-    //aij_clu_clu->Print();
+    (*aijcluclu)(indx,imax) = (*aijcluclu)(imax,indx) = 0;
+    //aijcluclu->Print();
     //Add cluster-to-pad couplings
     for (Int_t j=0; j<fnPads[0]+fnPads[1]; j++) {
       if (fPadIJ[1][j] < 0) continue; // exclude overflows and used pads
-      (*aij_clu_pad)(imax,j) += (*aij_clu_pad)(indx,j);
-      (*aij_clu_pad)(indx,j) = 0;
+      (*aijclupad)(imax,j) += (*aijclupad)(indx,j);
+      (*aijclupad)(indx,j) = 0;
     }
   } // for (Int_t icl=0; icl<nForFit;
 }
