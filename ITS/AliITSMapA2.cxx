@@ -151,29 +151,11 @@ void  AliITSMapA2::FillMap(){
     } // end for ndig
 }
 //______________________________________________________________________
-void  AliITSMapA2::SetHit(Int_t iz, Int_t ix, Double_t signal){
-    // set signal at a certain position in array
-
-    fHitMapD[CheckedIndex(iz, ix)]=signal;
-}
-//______________________________________________________________________
-void AliITSMapA2::DeleteHit(Int_t iz, Int_t ix){
-    //set the entry value to zero
-
-    fHitMapD[CheckedIndex(iz, ix)]=0;
-}
-//______________________________________________________________________
 void AliITSMapA2::FlagHit(Int_t iz, Int_t ix){
   //flag an entry
 
     fHitMapD[CheckedIndex(iz, ix)]=
                 -1000.*TMath::Abs((Int_t)(fHitMapD[CheckedIndex(iz, ix)])+1.);
-}
-//______________________________________________________________________
-Int_t AliITSMapA2::GetHitIndex(Int_t iz, Int_t ix){
-    //return the index of an entry in array 
-
-    return CheckedIndex(iz, ix);
 }
 //______________________________________________________________________
 TObject* AliITSMapA2::GetHit(Int_t i, Int_t dummy){

@@ -35,17 +35,22 @@ class AliITSMapA2 : public AliITSMapA1{
     virtual void ClearMap();    
     // set hit. Over written with a null function. See Double version below.
     virtual void SetHit(Int_t iz, Int_t ix, Int_t signal){}
-    // set hit
-    void  SetHit(Int_t iz, Int_t ix, Double_t signal);
+    // set signal at a certain position in array
+    void  SetHit(Int_t iz, Int_t ix, Double_t signal){
+	fHitMapD[CheckedIndex(iz, ix)]=signal;}
+    // set signal at a certain position in array
+    void  SetHit(Int_t index, Double_t signal){fHitMapD[index]=signal;}
     // Flag a hit as used
     // Set threshold for the signal
     virtual void SetThreshold(Int_t thresh) {fMapThresholdD=(Double_t)thresh;}
     // flags hit in map
     virtual  void  FlagHit(Int_t iz, Int_t ix);
-    // delets hit from map
-    virtual  void  DeleteHit(Int_t iz, Int_t ix);
-    // Get index in the map
-    virtual Int_t  GetHitIndex(Int_t iz, Int_t ix);
+    //set the entry value to zero
+    virtual  void  DeleteHit(Int_t iz, Int_t ix){
+	fHitMapD[CheckedIndex(iz, ix)]=0;}
+    //return the index of an entry in array
+    virtual Int_t  GetHitIndex(Int_t iz, Int_t ix){
+	return CheckedIndex(iz, ix);};
     // Get object (1D histogram)
     virtual TObject *GetHit(Int_t iz, Int_t dummy);
     // Test hit status
