@@ -852,19 +852,19 @@ void  FGeometryInit::Gmtod(double* xm, double* xd, int iflag)
     FluggNavigator        * ptrNavig     = getNavigatorForTracking();
     //setting variables (and dimension: Fluka uses cm.!)
     G4ThreeVector pGlob(xm[0],xm[1],xm[2]);
-    pGlob *= 10.0; // in millimeters
-    G4ThreeVector pLoc;
+        G4ThreeVector pLoc;
     
     if (iflag == 1) {
+	pGlob *= 10.0; // in mm
 	pLoc = 
 	    ptrNavig->ComputeLocalPoint(pGlob);
+	pLoc /= 10.0;  // in cm
     } else if (iflag == 2) {
 	pLoc = 
 	    ptrNavig->ComputeLocalAxis(pGlob);	
     } else {
 	G4cout << "Flugg FGeometryInit::Gmtod called with undefined flag" << G4endl;
     }
-    
     xd[0] = pLoc[0]; xd[1] = pLoc[1]; xd[2] = pLoc[2];
 }
 
@@ -889,10 +889,13 @@ void  FGeometryInit::Gdtom(double* xd, double* xm, int iflag)
 
     FluggNavigator        * ptrNavig     = getNavigatorForTracking();
     G4ThreeVector pLoc(xd[0],xd[1],xd[2]);
+        
     G4ThreeVector pGlob;
      if (iflag == 1) {
+	 pLoc  *= 10.0; // in mm
 	 pGlob = ptrNavig->GetLocalToGlobalTransform().
 	     TransformPoint(pLoc);
+	 pGlob /= 10.0; // in cm
      } else if (iflag == 2) {
 	 pGlob = ptrNavig->GetLocalToGlobalTransform().
 	     TransformAxis(pLoc);
