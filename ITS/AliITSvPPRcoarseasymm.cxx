@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2001/05/25 15:59:59  morsch
+Overlaps corrected. (R. Barbera)
+
 Revision 1.25  2001/05/03 08:40:15  barbera
 Volume ITSD slightly modified to be consistent with v5. Some improvement in the printouts. The last commit did not complete successfully.
 
@@ -221,41 +224,41 @@ void AliITSvPPRcoarseasymm::BuildGeometry(){
 //    Geometry builder for the ITS version 6.
 ////////////////////////////////////////////////////////////////////////
     TNode *node, *top;
-    const int kColorITS=kYellow;
+    const Int_t kColorITS=kYellow;
     //
     top = gAlice->GetGeometry()->GetNode("alice");
 
-    new TTUBE("S_layer1","Layer1 of ITS","void",3.95,3.95+0.05475,12.25);
+    new TTUBE("S_layer1","Layer1 of ITS","void",3.8095,3.8095+1.03*9.36/100.,14.35);
     top->cd();
     node = new TNode("Layer1","Layer1","S_layer1",0,0,0,"");
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
 
-    new TTUBE("S_layer2","Layer2 of ITS","void",7.,7.+0.05475,16.3);
+    new TTUBE("S_layer2","Layer2 of ITS","void",7.,7.+1.03*9.36/100.,14.35);
     top->cd();
     node = new TNode("Layer2","Layer2","S_layer2",0,0,0,"");
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
 
-    new TTUBE("S_layer3","Layer3 of ITS","void",15.,15.+0.05288,21.1);
+    new TTUBE("S_layer3","Layer3 of ITS","void",15.,15.+0.94*9.36/100.,25.1);
     top->cd();
     node = new TNode("Layer3","Layer3","S_layer3",0,0,0,"");
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
 
-    new TTUBE("S_layer4","Layer4 of ITS","void",24,24+0.05288,29.6);
+    new TTUBE("S_layer4","Layer4 of ITS","void",24.1,24.1+0.95*9.36/100.,32.1);
     top->cd();
     node = new TNode("Layer4","Layer4","S_layer4",0,0,0,"");
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
 
-    new TTUBE("S_layer5","Layer5 of ITS","void",40,40+0.05382,45.1);
+    new TTUBE("S_layer5","Layer5 of ITS","void",38.5,38.5+0.91*9.36/100.,49.405);
     top->cd();
     node = new TNode("Layer5","Layer5","S_layer5",0,0,0,"");
     node->SetLineColor(kColorITS);
     fNodes->Add(node);
 
-    new TTUBE("S_layer6","Layer6 of ITS","void",45,45+0.05382,50.4);
+    new TTUBE("S_layer6","Layer6 of ITS","void",43.5765,43.5765+0.87*9.36/100.,55.27);
     top->cd();
     node = new TNode("Layer6","Layer6","S_layer6",0,0,0,"");
     node->SetLineColor(kColorITS);
@@ -268,7 +271,7 @@ void AliITSvPPRcoarseasymm::CreateGeometry(){
 ////////////////////////////////////////////////////////////////////////
   
   //INNER RADII OF THE SILICON LAYERS 
-  Float_t rl[6]    = { 3.8095,7.,15.,24.,38.1,43.5765 };   
+  Float_t rl[6]    = { 3.8095,7.,15.,24.,38.5,43.5765 };   
   //THICKNESSES OF LAYERS (in % radiation length)
   Float_t drl[6]   = { 1.03,1.03,0.94,0.95,0.91,0.87 };   
   //HALF LENGTHS OF LAYERS  
