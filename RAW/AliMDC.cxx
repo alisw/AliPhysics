@@ -457,10 +457,9 @@ Int_t AliMDC::Run()
 
                // Read equipment raw data
                AliRawData &subRaw = *equipment.GetRawData();
-	       // To be checked !
-	       //	       Int_t eqSize = equipmentHeader.GetEquipmentSize() -
-	       //                              equipHeaderSize;
-	       Int_t eqSize = equipmentHeader.GetEquipmentSize();
+
+	       Int_t eqSize = equipmentHeader.GetEquipmentSize() -
+			       equipHeaderSize;
                if ((status = ReadRawData(subRaw, eqSize, ebdata)) != eqSize) {
                   if (status == 0) {
                      Error("Run", "unexpected EOF reading sub-event raw data");
