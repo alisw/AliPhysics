@@ -253,8 +253,11 @@ class TFluka : public TVirtualMC {
   virtual void FinishGeometry();
   virtual void BuildPhysics();
   virtual void ProcessEvent();
-  virtual void ProcessRun(Int_t nevent);
-  
+#if ROOT_VERSION_CODE >= 262150
+  virtual Bool_t ProcessRun(Int_t nevent);
+#else
+  virtual void   ProcessRun(Int_t nevent);
+#endif
 
   //
   //New Getter and Setters

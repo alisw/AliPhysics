@@ -206,7 +206,11 @@ void TFluka::ProcessEvent() {
 }
 
 //______________________________________________________________________________ 
-void TFluka::ProcessRun(Int_t nevent) {
+#if ROOT_VERSION_CODE >= 262150
+Bool_t TFluka::ProcessRun(Int_t nevent) {
+#else
+void   TFluka::ProcessRun(Int_t nevent) {
+#endif
   if (fVerbosityLevel >=3)
     cout << "==> TFluka::ProcessRun(" << nevent << ") called." 
 	 << endl;
@@ -222,7 +226,7 @@ void TFluka::ProcessRun(Int_t nevent) {
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::ProcessRun(" << nevent << ") called." 
 	 << endl;
-
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
