@@ -37,7 +37,7 @@
 {
   // ctor
   const Int_t nSPECIES = AliESDtrack::kSPECIES;
-  for(Int_t i = 0; i<nSPECIES ; i++)
+  for(Int_t i = 0; i<nSPECIES+4 ; i++)
     fPID[i]=0.;
 }
 
@@ -73,7 +73,7 @@
   fPolarPhi    = rp.fPolarPhi;
   fParticlePDG = rp.fParticlePDG; 
   const Int_t nSPECIES = AliESDtrack::kSPECIES;
-  for(Int_t i = 0; i<nSPECIES ; i++)
+  for(Int_t i = 0; i<nSPECIES+4 ; i++)
     fPID[i]=rp.fPID[i];
 }
 
