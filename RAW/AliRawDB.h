@@ -49,6 +49,7 @@ public:
    virtual Bool_t      Create(const char* fileName = NULL);
    virtual void        Close();
    Int_t               Fill();
+   Int_t               GetTotalSize();
 
    void         WriteStats(AliStats* stats);
 

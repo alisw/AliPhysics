@@ -25,6 +25,7 @@
 #include <errno.h>
 
 #include <TSystem.h>
+#include <TKey.h>
 
 #ifdef ALI_DATE
 #include "event.h"
@@ -313,6 +314,44 @@ Int_t AliRawDB::Fill()
    fTree->Fill();
    if (fESDTree) fESDTree->Fill();
    return Int_t(fRawDB->GetBytesWritten() - bytes);
+}
+
+//______________________________________________________________________________
+Int_t AliRawDB::GetTotalSize()
+{
+   // Return the total size of the trees
+  Int_t total = 0;
+
+  {
+    Int_t skey = 0;
+    TDirectory *dir = fTree->GetDirectory();
+    if (dir) {
+      TKey *key = dir->GetKey(fTree->GetName());
+      if (key) skey = key->GetKeylen();
+    }
+    total += skey;
+    if (fTree->GetZipBytes() > 0) total += fTree->GetTotBytes();
+    TBuffer b(TBuffer::kWrite,10000);
+    TTree::Class()->WriteBuffer(b,fTree);
+    total += b.Length();
+  }
+
+  if(fESDTree)
+    {
+      Int_t skey = 0;
+      TDirectory *dir = fESDTree->GetDirectory();
+      if (dir) {
+	TKey *key = dir->GetKey(fESDTree->GetName());
+	if (key) skey = key->GetKeylen();
+      }
+      total += skey;
+      if (fESDTree->GetZipBytes() > 0) total += fESDTree->GetTotBytes();
+      TBuffer b(TBuffer::kWrite,10000);
+      TTree::Class()->WriteBuffer(b,fESDTree);
+      total += b.Length();
+    }
+
+  return total;
 }
 
 //______________________________________________________________________________

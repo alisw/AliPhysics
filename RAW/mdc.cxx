@@ -52,6 +52,13 @@ int alimdcProcessEvent(void* alimdc, void* event, int isIovecArray)
   return ((AliMDC*)alimdc)->ProcessEvent(event, isIovecArray);
 }
 
+int alimdcGetTotalFileSize(void* alimdc)
+{
+// return the total current file size
+
+  return ((AliMDC*)alimdc)->GetTotalSize();
+}
+
 int alimdcClose(void* alimdc)
 {
 // close the raw DB

@@ -227,6 +227,18 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 // or, if isIovecArray is kTRUE, a pointer to an array of iovecs with one
 // iovec per subevent (used by the event builder).
 // The return value is the number of written bytes or an error code
+  const UInt_t kFileSizeWarningLevel = 1800000000;
+  const UInt_t kFileSizeErrorLevel   = 1900000000;
+
+  UInt_t currentFileSize = GetTotalSize();
+  if(currentFileSize > kFileSizeErrorLevel) {
+    Error("ProcessEvent", "file size (%u) exceeds the limit "
+	  , currentFileSize);
+    return kErrFileSize;
+  }
+  if(currentFileSize > kFileSizeWarningLevel)
+    Warning("ProcessEvent", "file size (%u) is close to the limit "
+	    , currentFileSize);
 
   Int_t status;
   char* data = (char*) event;
@@ -371,6 +383,16 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
   if (fESD) fESD->Reset();
 
   return nBytes;
+}
+
+//______________________________________________________________________________
+Int_t AliMDC::GetTotalSize()
+{
+// return the total current raw DB file size
+
+  if (!fRawDB) return -1;
+
+  return fRawDB->GetTotalSize();
 }
 
 //______________________________________________________________________________

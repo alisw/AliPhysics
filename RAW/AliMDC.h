@@ -47,7 +47,8 @@ public:
 		     kErrSubHeader = -4, 
 		     kErrDataSize = -5, 
 		     kErrEquipmentHeader = -6, 
-		     kErrEquipment = -7 };
+		     kErrEquipment = -7,
+                     kErrFileSize = -8 };
 
    AliMDC(Int_t compress, Bool_t deleteFiles, 
 	  EFilterMode filterMode = kFilterTransparent, 
@@ -58,6 +59,7 @@ public:
 
    Int_t      Open(EWriteMode mode, const char* fileName);
    Int_t      ProcessEvent(void* event, Bool_t isIovecArray = kFALSE);
+   Int_t      GetTotalSize();
    Int_t      Close();
 
    Int_t      Run(const char* inputFile, Bool_t loop,
