@@ -39,19 +39,10 @@
 ClassImp(AliRICHv0)
     
 //___________________________________________
-AliRICHv0::AliRICHv0() : AliRICH()
-{
-
-// Default constructor
-
-    //fChambers = 0;
-}
-
-//___________________________________________
 AliRICHv0::AliRICHv0(const char *name, const char *title)
-    : AliRICH(name,title)
+          :AliRICH(name,title)
 {
-    //
+//
 // Version 0
 // Default Segmentation, no hits
     AliRICHSegmentationV0* segmentation = new AliRICHSegmentationV0;
@@ -109,107 +100,10 @@ AliRICHv0::AliRICHv0(const char *name, const char *title)
       SetGeometryModel(i,geometry);
       SetSegmentationModel(i, segmentation);
       SetResponseModel(i, response);
-      SetDebugLevel(0);
     }
-}
-
-
-
-//___________________________________________
-
-void AliRICHv0::Init()
-{
-
-  if(fDebug) {
-    printf("%s: *********************************** RICH_INIT ***********************************\n",ClassName());
-    printf("%s: *                                                                               *\n",ClassName());
-    printf("%s: *                       AliRICHv0 Default version started                       *\n",ClassName());
-    printf("%s: *                                                                               *\n",ClassName());
-  }
-
-  
-  AliSegmentation*  segmentation;
-  AliRICHGeometry*  geometry;
-  AliRICHResponse*  response;
-
-
-    // 
-    // Initialize Tracking Chambers
-    //
-    for (Int_t i=0; i<kNCH; i++) {
-	//printf ("i:%d",i);
-      //PH	( (AliRICHChamber*) (*fChambers)[i])->Init(i);  
-	( (AliRICHChamber*) fChambers->At(i))->Init(i);  
-    }  
-    
-    //
-    // Set the chamber (sensitive region) GEANT identifier
-    
-    //PH    ((AliRICHChamber*)(*fChambers)[0])->SetGid(1);  
-    //PH    ((AliRICHChamber*)(*fChambers)[1])->SetGid(2);  
-    //PH    ((AliRICHChamber*)(*fChambers)[2])->SetGid(3);  
-    //PH    ((AliRICHChamber*)(*fChambers)[3])->SetGid(4);  
-    //PH    ((AliRICHChamber*)(*fChambers)[4])->SetGid(5);  
-    //PH    ((AliRICHChamber*)(*fChambers)[5])->SetGid(6);  
-    //PH    ((AliRICHChamber*)(*fChambers)[6])->SetGid(7); 
-
-    ((AliRICHChamber*)fChambers->At(0))->SetGid(1);  
-    ((AliRICHChamber*)fChambers->At(1))->SetGid(2);  
-    ((AliRICHChamber*)fChambers->At(2))->SetGid(3);  
-    ((AliRICHChamber*)fChambers->At(3))->SetGid(4);  
-    ((AliRICHChamber*)fChambers->At(4))->SetGid(5);  
-    ((AliRICHChamber*)fChambers->At(5))->SetGid(6);  
-    ((AliRICHChamber*)fChambers->At(6))->SetGid(7);  
-
-    segmentation=Chamber(0).GetSegmentationModel(0);
-    geometry=Chamber(0).GetGeometryModel();
-    response=Chamber(0).GetResponseModel();
-    
-    Float_t offset       = 490 + 1.276 - geometry->GetGapThickness()/2;        //distance from center of mother volume to methane
-    Float_t deltaphi     = 19.5;                                               //phi angle between center of chambers - z direction
-    Float_t deltatheta   = 20;                                                 //theta angle between center of chambers - x direction
-    Float_t cosphi       = TMath::Cos(deltaphi*TMath::Pi()/180);
-    Float_t sinphi       = TMath::Sin(deltaphi*TMath::Pi()/180);
-    Float_t costheta     = TMath::Cos(deltatheta*TMath::Pi()/180);
-    Float_t sintheta     = TMath::Sin(deltatheta*TMath::Pi()/180);
-
-    Float_t pos1[3]={0.                , offset*cosphi         , offset*sinphi};
-    Float_t pos2[3]={offset*sintheta   , offset*costheta       , 0. };
-    Float_t pos3[3]={0.                , offset                , 0.};
-    Float_t pos4[3]={-offset*sintheta  , offset*costheta       , 0.};
-    Float_t pos5[3]={offset*sinphi     , offset*costheta*cosphi, -offset*sinphi};
-    Float_t pos6[3]={0.                , offset*cosphi         , -offset*sinphi};
-    Float_t pos7[3]={ -offset*sinphi   , offset*costheta*cosphi, -offset*sinphi};
-
-    Chamber(0).SetChamberTransform(pos1[0],pos1[1],pos1[2],new TRotMatrix("rot993","rot993",90., 0.               , 90. - deltaphi, 90.             , deltaphi, -90.           ));
-    Chamber(1).SetChamberTransform(pos2[0],pos2[1],pos2[2],new TRotMatrix("rot994","rot994",90., -deltatheta      , 90.           , 90.- deltatheta , 0.      , 0.             ));
-    Chamber(2).SetChamberTransform(pos3[0],pos3[1],pos3[2],new TRotMatrix("rot995","rot995",90., 0.               , 90.           , 90.             , 0.      , 0.             ));
-    Chamber(3).SetChamberTransform(pos4[0],pos4[1],pos4[2],new TRotMatrix("rot996","rot996",90.,  deltatheta      , 90.           , 90 + deltatheta , 0.      , 0.             ));
-    Chamber(4).SetChamberTransform(pos5[0],pos5[1],pos5[2],new TRotMatrix("rot997","rot997",90., 360. - deltatheta, 108.2         , 90.- deltatheta ,18.2     , 90 - deltatheta));
-    Chamber(5).SetChamberTransform(pos6[0],pos6[1],pos6[2],new TRotMatrix("rot998","rot998",90., 0.               , 90 + deltaphi , 90.             , deltaphi, 90.            ));
-    Chamber(6).SetChamberTransform(pos7[0],pos7[1],pos7[2],new TRotMatrix("rot999","rot999",90., deltatheta       , 108.2         , 90.+ deltatheta ,18.2     , 90 + deltatheta));   
-     
-    if(fDebug) {
-      printf("%s: *                            Pads            : %3dx%3d                          *\n",
-	     ClassName(),segmentation->Npx(),segmentation->Npy());
-      printf("%s: *                            Pad size        : %5.2f x%5.2f mm2                 *\n",
-	     ClassName(),segmentation->Dpx(),segmentation->Dpy()); 
-      printf("%s: *                            Gap Thickness   : %5.1f cm                         *\n",
-	     ClassName(),geometry->GetGapThickness());
-      printf("%s: *                            Radiator Width  : %5.1f cm                         *\n",
-	     ClassName(),geometry->GetQuartzWidth());
-      printf("%s: *                            Radiator Length : %5.1f cm                         *\n",
-	     ClassName(),geometry->GetQuartzLength());
-      printf("%s: *                            Freon Thickness : %5.1f cm                         *\n",
-	     ClassName(),geometry->GetFreonThickness());
-      printf("%s: *                            Charge Slope    : %5.1f ADC                        *\n",
-	     ClassName(),response->ChargeSlope());
-      printf("%s: *                            Feedback Prob.  : %5.2f %%                          *\n",
-	     ClassName(),response->AlphaFeedback()*100);
-      printf("%s: *                                                                               *\n",
-	     ClassName());
-      printf("%s: *********************************************************************************\n",
-	     ClassName());
-    }
-}
-
+}//name ctor
+//______________________________________________________________________________
+void AliRICHv0::StepManager()
+{//
+}//AliRICHv0::StepManager()
+//______________________________________________________________________________
