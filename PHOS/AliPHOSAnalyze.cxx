@@ -411,7 +411,7 @@ void AliPHOSAnalyze::Ls(){
   
   //scan over all events
   Int_t event ;
-  Int_t maxevent = gAlice->TreeE()->GetEntries() ; 
+  Int_t maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
   //  for(event = 0; event < gime->MaxEvent(); event++  ){
   for(event = 0; event < maxevent; event++  ){
     gime->Event(event);
@@ -431,7 +431,7 @@ void AliPHOSAnalyze::Ls(){
     nRecParticles[mevent] = iRecPhot-1 ;  
 
     //check, if it is time to calculate invariant mass?
-    Int_t maxevent = gAlice->TreeE()->GetEntries() ; 
+    Int_t maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
     if((mevent == 0) && (event +1 == maxevent)){
 
     //   if((mevent == 0) && (event +1 == gime->MaxEvent())){
@@ -532,7 +532,7 @@ void AliPHOSAnalyze::Ls(){
   const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
 
   Int_t ievent;
-  Int_t maxevent = gAlice->TreeE()->GetEntries() ; 
+  Int_t maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
   //  for ( ievent=0; ievent < gime->MaxEvent() ; ievent++){
   for ( ievent=0; ievent < maxevent ; ievent++){
 
@@ -652,10 +652,9 @@ void AliPHOSAnalyze::PositionResolution(const char * branchTitle)
   const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
 
   Int_t ievent;
- Int_t maxevent = gAlice->TreeE()->GetEntries() ; 
+ Int_t maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
   //  for ( ievent=0; ievent < gime->MaxEvent() ; ievent++){
   for ( ievent=0; ievent < maxevent ; ievent++){
-
 
     //read the current event
     gime->Event(ievent) ;
@@ -868,9 +867,9 @@ void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance(ffileName.Data(),RecPointsTitle) ;
   const AliPHOSGeometry * phosgeom = gime->PHOSGeometry() ; 
-
+  
   Int_t ievent;
- Int_t maxevent = gAlice->TreeE()->GetEntries() ; 
+  Int_t maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
   //  for ( ievent=0; ievent < gime->MaxEvent() ; ievent++){
   for ( ievent=0; ievent < maxevent ; ievent++){
     
@@ -1078,7 +1077,7 @@ void AliPHOSAnalyze::Contamination(const char* RecPointsTitle){
  
   
   //print Final Table
-  maxevent = gAlice->TreeE()->GetEntries() ; 
+  maxevent = (Int_t)gAlice->TreeE()->GetEntries() ; 
  //  cout << "Resolutions: Analyzed " << gime->MaxEvent() << " event(s)" << endl ;
 
   cout << "Resolutions: Analyzed " << maxevent << " event(s)" << endl ;
