@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.57  2001/02/23 17:40:23  buncic
+All trees needed for simulation created in RunMC(). TreeR and its branches
+are now created in new RunReco() method.
+
 Revision 1.56  2001/02/14 15:45:20  hristov
 Algorithmic way of getting entry index in fParticleMap. Protection of fParticleFileMap (I.Hrivnacova)
 
@@ -597,6 +601,7 @@ void AliRun::FinishEvent()
     CleanParents();
     if(fTreeK->GetEntries() ==0) {
       // set the fParticleFileMap size for the first time
+      if (fHgwmk+1 > fParticleFileMap.GetSize())
       fParticleFileMap.Set(fHgwmk+1);
     }
      //    fTreeK->Fill();
