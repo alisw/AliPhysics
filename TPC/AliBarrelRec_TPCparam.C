@@ -11,18 +11,16 @@
  *                - determined using points on SPD in pp events (M.Masera)  *
  *             5) ITS track finding V2                                      *
  *                * in pp, redetermine the z position of the primary vertex *
- *                  using the reconstructed tracks                          *
+ *                  using the reconstructed tracks
  *             6) Create a reference file with simulation info (p,PDG...)   *
  *                                                                          *
- * If TString mode="A" all 6 steps are executed                             *
- * If TString mode="B" only steps 3-6 are executed                          *
- *                                                                          *  
  * (Origin: A.Dainese, Padova, andrea.dainese@pd.infn.it                    * 
  *  from AliTPCtest.C & AliITStestV2.C by I.Belikov                         *
  ****************************************************************************/
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 //-- --- standard headers------------- 
-#include <iostream.h>
+#include "Riostream.h"
 //--------Root headers ---------------
 #include <TFile.h>
 #include <TStopwatch.h>
@@ -68,56 +66,86 @@ typedef struct {
 
 //===== Functions definition ================================================= 
 
-Int_t TPCParamTracks(const Char_t *galiceName,const Char_t *outName,
-		     const Int_t coll,const Double_t Bfield,Int_t n);
+Int_t MarkEvtsToSkip(const Char_t *evtsName,
+		           Bool_t *skipEvt);
 
-Int_t ITSHits2FastRecPoints(const Char_t *galiceName,Int_t n);
+Int_t TPCParamTracks(const Char_t  *galiceName,
+		     const Char_t  *outName,
+		     const Int_t    coll,
+		     const Double_t Bfield,
+		           Int_t    n);
 
-Int_t ITSFindClustersV2(const Char_t *galiceName,const Char_t *outName,
-			Int_t *skipEvt,Int_t n);
+Int_t ITSHits2FastRecPoints(const Char_t *galiceName,
+			          Bool_t *skipEvt,
+			          Int_t  n);
 
-Int_t ZvtxFromHeader(const Char_t *galiceName,Int_t n);
+Int_t ITSFindClustersV2(const Char_t *galiceName,
+			const Char_t *outName,
+			      Bool_t *skipEvt,
+			      Int_t   n);
 
-Int_t ZvtxFromSPD(const Char_t *galiceName,Int_t n);
+Int_t ZvtxFromHeader(const Char_t *galiceName,
+		           Bool_t *skipEvt,
+		           Int_t   n);
 
-Int_t ZvtxFromTracks(const Char_t *trkame,Int_t n);
+Int_t ZvtxFromSPD(const Char_t *galiceName,
+		        Bool_t *skipEvt,
+		        Int_t   n);
 
-Int_t ZvtxFastpp(const Char_t *galiceName,Int_t n);
+Int_t ZvtxFromTracks(const Char_t *trkame,
+		           Bool_t *skipEvt,
+		           Int_t  n);
 
-void EvalZ(TH1F *hist,Int_t sepa,Float_t &av,Float_t &sig,Int_t ncoinc,
-	   TArrayF *zval,ofstream *deb);
+Int_t ZvtxFastpp(const Char_t *galiceName,
+		       Bool_t *skipEvt,
+		        Int_t  n);
 
-Bool_t VtxTrack(Double_t pt,Double_t d0rphi);
+void EvalZ(TH1F    *hist,
+	   Int_t    sepa,
+	  Float_t  &av,
+	  Float_t  &sig,
+	  Int_t     ncoinc,
+	  TArrayF  *zval,
+	  ofstream *deb);
+
+Bool_t VtxTrack(Double_t pt,
+		Double_t d0rphi);
 
 Double_t d0zRes(Double_t pt);
 
-Int_t UpdateEvtsToSkip(const Char_t *logName,const Char_t *evtsName,Int_t n);
+Int_t ITSFindTracksV2(const Char_t   *galiceName,
+		      const Char_t   *inName,
+		      const Char_t   *inName2,
+		      const Char_t   *outName,
+		            Bool_t   *skipEvt,
+			    Option_t *vtxMode,
+			    Int_t     n);
 
-Int_t MarkEvtsToSkip(const Char_t *evtsName,Int_t *skipEvt);
+Int_t ITSMakeRefFile(const Char_t *galiceName,
+		     const Char_t *inName, 
+		     const Char_t *outName,
+		           Bool_t *skipEvt,
+		            Int_t  n);
 
-Int_t ITSFindTracksV2(const Char_t *galiceName,const Char_t *inName,
-		      const Char_t *inName2,const Char_t *outName,
-		      Int_t *skipEvt,TString vtxMode,Int_t n);
+void WriteZvtx(const Char_t   *name,
+		     Double_t *zvtx,
+		     Int_t     n);
 
-Int_t ITSMakeRefFile(const Char_t *galiceName,const Char_t *inName, 
-		     const Char_t *outName,Int_t *skipEvt,Int_t n);
-
-void WriteVtx(const Char_t *name,Double_t *zvtx,Int_t n);
-
-void ReadVtx(const Char_t *name,Double_t *zvtx,Int_t n);
+void ReadZvtx(const Char_t   *name,
+	            Double_t *zvtx,
+	            Int_t     n);
 
 //=============================================================================
 
-void AliBarrelRec_TPCparam(TString mode="A",Int_t n=5000) {
+Int_t AliBarrelRec_TPCparam(Int_t n=1) {
 
   const Char_t *name=" AliBarrelRec_TPCparam";
   cerr<<'\n'<<name<<"...\n";
   gBenchmark->Start(name);
 
-
-  // filenames
-  const Char_t *galiceName  = "galice.root";
+  const Char_t *evtsName    = "EvtsToSkip.dat";
   const Char_t *TPCtrkNameS = "AliTPCtracksParam.root";
+  const Char_t *galiceName  = "galice.root";
   const Char_t *ITSclsName  = "AliITSclustersV2.root";
   const Char_t *ITStrkName  = "AliITStracksV2.root";
   const Char_t *ITStrkName2 = "AliITStracksV2_2.root";
@@ -133,114 +161,68 @@ void AliBarrelRec_TPCparam(TString mode="A",Int_t n=5000) {
   const Bool_t   retrack     = kFALSE;
   // set here the value of the magnetic field
   const Double_t BfieldValue = 0.4;
-
-  // set conversion constant for kalman tracks 
+ 
   AliKalmanTrack::SetConvConst(100/0.299792458/BfieldValue);
 
-  Bool_t clust = kTRUE;
+  Bool_t *skipEvt = new Bool_t[n];
 
-  //################ SWITCH #############################################
-  switch (*(mode.Data())) {
-    //############## case A #############################################
-  case 'A':
-    // ********** Build TPC tracks with parameterization *********** //
-    TPCParamTracks(galiceName,TPCtrkNameS,collcode,BfieldValue,n);
+  // Mark events that have to be skipped (read from file ascii evtsName)
+  for(Int_t i=0;i<n;i++) skipEvt[i] = kFALSE;
+  if(!gSystem->AccessPathName(evtsName,kFileExists)) { 
+    MarkEvtsToSkip(evtsName,skipEvt);
+  }
   
-    // ********** ITS RecPoints ************************************ //
-    ITSHits2FastRecPoints(galiceName,n);
-
-    break;  
-    //############## case B #############################################
-  case 'B':
-    cerr<<"       ---> only tracking in ITS <---"<<endl;
-
-    if(!UpdateEvtsToSkip("itstracking.log","evtsToSkip.dat",n)) return;
-
-    if(!UpdateEvtsToSkip("itsclusters.log","evtsToSkip.dat",n)) clust=kFALSE;
-
-    break;
-    //############## END SWITCH #########################################
-  }
-
-  // Mark events that have to be skipped (if any)
-  Int_t *skipEvt = new Int_t[n];
-  for(Int_t i=0;i<n;i++) skipEvt[i] = 0;
-  if(!gSystem->AccessPathName("evtsToSkip.dat",kFileExists)) { 
-    MarkEvtsToSkip("evtsToSkip.dat",skipEvt);
-  }
-
+  // ********** Build TPC tracks with parameterization *********** //
+  TPCParamTracks(galiceName,TPCtrkNameS,collcode,BfieldValue,n);
+  
+    
+  // ********** ITS RecPoints ************************************ //
+  ITSHits2FastRecPoints(galiceName,skipEvt,n);
+  
+  
   // ********** Find ITS clusters ******************************** //
-  if(clust) ITSFindClustersV2(galiceName,ITSclsName,skipEvt,n);
+  ITSFindClustersV2(galiceName,ITSclsName,skipEvt,n);
+  
 
   // ********** Tracking in ITS ********************************** //
-  TString vtxMode;
-  switch (collcode) {
-  case 0:   // ***** Pb-Pb *****
-    ZvtxFromHeader(galiceName,n);
-    vtxMode="H";
-    ITSFindTracksV2(galiceName,TPCtrkNameS,ITSclsName,ITStrkName,
-		    skipEvt,vtxMode,n); 
-    break;
-  case 1:   // *****  pp   *****
-    if(slowVtx) {
-      ZvtxFromSPD(galiceName,n);  
-      vtxMode="P";
-      ITSFindTracksV2(galiceName,TPCtrkNameS,ITSclsName,ITStrkName,
-		      skipEvt,vtxMode,n); 
-      ZvtxFromTracks(ITStrkName,n);
-      if(retrack) {
-	vtxMode="T"; 
-	ITSFindTracksV2(galiceName,TPCtrkNameS,ITSclsName,ITStrkName2,
-			skipEvt,vtxMode,n);
-      }
-    } else { 
-      ZvtxFastpp(galiceName,n);  
-      vtxMode="F";
-      ITSFindTracksV2(galiceName,TPCtrkNameS,ITSclsName,ITStrkName,
-		      skipEvt,vtxMode,n); 
-    }
-    break;
+  Char_t *vtxMode;
+  //  Pb-Pb
+  if(collcode==0) {
+    ZvtxFromHeader(galiceName,skipEvt,n);
+    vtxMode="Header";
+    ITSFindTracksV2(galiceName,TPCtrkNameS,ITSclsName,ITStrkName,skipEvt,vtxMode,n); 
   }
-
+  //   pp
+  if(collcode==1 && slowVtx) {
+    ZvtxFromSPD(galiceName,skipEvt,n);  
+    vtxMode="SPD";
+    ITSFindTracksV2(galiceName,TPCtrkNameS,ITSclsName,ITStrkName,skipEvt,vtxMode,n); 
+    ZvtxFromTracks(ITStrkName,skipEvt,n);
+    if(retrack) {
+      vtxMode="Tracks"; 
+      ITSFindTracksV2(galiceName,TPCtrkNameS,ITSclsName,ITStrkName2,skipEvt,vtxMode,n);
+    }
+  }  
+  if(collcode==1 && !slowVtx) {
+    ZvtxFastpp(galiceName,skipEvt,n);  
+    vtxMode="Fast";
+    ITSFindTracksV2(galiceName,TPCtrkNameS,ITSclsName,ITStrkName,skipEvt,vtxMode,n); 
+  }
 
   // ********** Make ITS tracks reference file ******************* //
   ITSMakeRefFile(galiceName,ITStrkName,ITSrefName,skipEvt,n);
+  
+  
 
   delete [] skipEvt;
-
-
 
   gBenchmark->Stop(name);
   gBenchmark->Show(name);
 
-  return;
+  return 0;
 }
 //-----------------------------------------------------------------------------
-Int_t UpdateEvtsToSkip(const Char_t *logName,const Char_t *evtsName,Int_t n) {
-
-    if(!gSystem->AccessPathName(logName,kFileExists)) { 
-      FILE *ifile = fopen(logName,"r");
-      Int_t lEvt=0,nCol=1;
-      while(nCol>0) {
-	nCol = fscanf(ifile,"%d",&lEvt);
-      }
-      fclose(ifile);
-      if(lEvt==n) { 
-	cerr<<" All events already reconstructed "<<endl; 
-	return 0;  
-      } else {
-	FILE *ofile = fopen("evtsToSkip.dat","a");
-	fprintf(ofile,"%d\n",lEvt);
-	fclose(ofile);
-      }
-    } else { 
-      cerr<<"File itstracking.log not found"<<endl;
-    }
-
-    return 1;
-}
-//-----------------------------------------------------------------------------
-Int_t MarkEvtsToSkip(const Char_t *evtsName,Int_t *skipEvt) {
+Int_t MarkEvtsToSkip(const Char_t *evtsName,Bool_t *skipEvt) {
 
   cerr<<"\n*******************************************************************\n";
   cerr<<"\nChecking for events to skip...\n";
@@ -251,7 +233,7 @@ Int_t MarkEvtsToSkip(const Char_t *evtsName,Int_t *skipEvt) {
   while(1) {
     ncol = fscanf(f,"%d",&evt);
     if(ncol<1) break;
-    skipEvt[evt] = 1;
+    skipEvt[evt] = kTRUE;
     cerr<<" ev. "<<evt<<" will be skipped\n";
   }
   fclose(f);
@@ -285,7 +267,7 @@ Int_t TPCParamTracks(const Char_t *galiceName,const Char_t *outName,
   return 0;
 }
 //-----------------------------------------------------------------------------
-Int_t ITSHits2FastRecPoints(const Char_t *galiceName,Int_t n) {
+Int_t ITSHits2FastRecPoints(const Char_t *galiceName,Bool_t *skipEvt,Int_t n) {
  
   cerr<<"\n*******************************************************************\n";
 
@@ -315,6 +297,7 @@ Int_t ITSHits2FastRecPoints(const Char_t *galiceName,Int_t n) {
   // Event Loop
   //
   for(Int_t ev=0; ev<n; ev++) {
+    if(skipEvt[ev]) continue;
     cerr<<" --- Processing event "<<ev<<" ---"<<endl;
     Int_t nparticles = gAlice->GetEvent(ev);
     cerr<<"Number of particles: "<<nparticles<<endl;
@@ -340,7 +323,7 @@ Int_t ITSHits2FastRecPoints(const Char_t *galiceName,Int_t n) {
 }
 //-----------------------------------------------------------------------------
 Int_t ITSFindClustersV2(const Char_t *galiceName,const Char_t *outName,
-			Int_t *skipEvt,Int_t n) {
+			Bool_t *skipEvt,Int_t n) {
   //
   // This function converts AliITSRecPoint(s) to AliITSclusterV2
   //
@@ -365,16 +348,9 @@ Int_t ITSFindClustersV2(const Char_t *galiceName,const Char_t *outName,
   TFile *outFile = TFile::Open(outName,"recreate");
   geom->Write();
 
-  // open logfile for done events
-  FILE *logfile = fopen("itsclusters.log","w");
-
   // loop on events
   for(Int_t ev=0; ev<n; ev++) {
-    // write to logfile of begun events
-    fprintf(logfile,"%d\n",ev);
-
     if(skipEvt[ev]) continue;
-
     cerr<<"--- Processing event "<<ev<<" ---"<<endl;
     inFile->cd();
     gAlice->GetEvent(ev);
@@ -398,10 +374,8 @@ Int_t ITSFindClustersV2(const Char_t *galiceName,const Char_t *outName,
 
     cerr<<"Number of entries in TreeR_RF: "<<nentr<<endl;
 
-    //    Float_t *lp  = new Float_t[5]; 
-    //    Int_t   *lab = new Int_t[6];
-    Float_t lp[5];
-    Int_t   lab[6];
+    Float_t *lp  = new Float_t[5]; 
+    Int_t   *lab = new Int_t[6];
 
     for(Int_t i=0; i<nentr; i++) {
       points->Clear();
@@ -415,8 +389,8 @@ Int_t ITSFindClustersV2(const Char_t *galiceName,const Char_t *outName,
       nclusters+=ncl;
       
       Float_t kmip=1; // ADC->mip normalization factor for the SDD and SSD 
-      if(lay==4 || lay==3) kmip=280.;
-      if(lay==6 || lay==5) kmip= 38.;
+      if(lay==4 || lay==3){kmip=280.;};
+      if(lay==6 || lay==5){kmip=38.;};
 
       for(Int_t j=0; j<ncl; j++) {
 	AliITSRecPoint *p=(AliITSRecPoint*)points->UncheckedAt(j);
@@ -427,7 +401,7 @@ Int_t ITSFindClustersV2(const Char_t *galiceName,const Char_t *outName,
 	lp[4]=p->GetQ(); lp[4]/=kmip;
 	lab[0]=p->GetLabel(0);lab[1]=p->GetLabel(1);lab[2]=p->GetLabel(2);
 	lab[3]=ndet;
-       
+	
 	Int_t label=lab[0];
 	if(label>=0) {
 	  TParticle *part=(TParticle*)gAlice->Particle(label);
@@ -442,6 +416,7 @@ Int_t ITSFindClustersV2(const Char_t *galiceName,const Char_t *outName,
 	  else if(lab[2]<0) lab[2]=label;
 	  else cerr<<"No empty labels !\n";
 	}
+	
 	new(cl[j]) AliITSclusterV2(lab,lp);
       }
       cTree->Fill(); clusters->Delete();
@@ -452,14 +427,12 @@ Int_t ITSFindClustersV2(const Char_t *galiceName,const Char_t *outName,
     cTree->Write();
 
     cerr<<"Number of clusters: "<<nclusters<<endl;
-    //delete [] lp;
-    //delete [] lab;
+    delete [] lp;
+    delete [] lab;
     delete cTree; delete clusters; delete points;
 
   } // end loop on events
     
-  fprintf(logfile,"%d\n",n); //this means all evts are successfully completed
-  fclose(logfile);
 
   delete gAlice; gAlice=0;
   
@@ -472,7 +445,8 @@ Int_t ITSFindClustersV2(const Char_t *galiceName,const Char_t *outName,
    return 0;
 }
 //-----------------------------------------------------------------------------
-Int_t ZvtxFromHeader(const Char_t *galiceName,Int_t n) {
+Int_t ZvtxFromHeader(const Char_t *galiceName,
+		     Bool_t *skipEvt,Int_t n) {
 
   cerr<<"\n*******************************************************************\n";
 
@@ -485,6 +459,7 @@ Int_t ZvtxFromHeader(const Char_t *galiceName,Int_t n) {
   Double_t *zvtx    = new Double_t[n];
 
   for(Int_t ev=0; ev<n; ev++){
+    if(skipEvt[ev]) continue;
     cerr<<" --- Processing event "<<ev<<" ---"<<endl;
     
     TArrayF o = 0;
@@ -509,7 +484,7 @@ Int_t ZvtxFromHeader(const Char_t *galiceName,Int_t n) {
   galice->Close();
 
   // Write vertices to file
-  WriteVtx("vtxHeader.root",zvtx,n);
+  WriteZvtx("zvtxHeader.dat",zvtx,n);
 
   delete [] zvtx;
  
@@ -519,7 +494,8 @@ Int_t ZvtxFromHeader(const Char_t *galiceName,Int_t n) {
   return 0;
 }
 //-----------------------------------------------------------------------------
-Int_t ZvtxFastpp(const Char_t *galiceName,Int_t n) {
+Int_t ZvtxFastpp(const Char_t *galiceName,
+		 Bool_t *skipEvt,Int_t n) {
 
   cerr<<"\n*******************************************************************\n";
 
@@ -537,6 +513,7 @@ Int_t ZvtxFastpp(const Char_t *galiceName,Int_t n) {
   Double_t dNchdy,E,theta,eta,zvtxTrue,sigmaz,probVtx;
 
   for(Int_t ev=0; ev<n; ev++) {
+    if(skipEvt[ev]) continue;
     cerr<<" --- Processing event "<<ev<<" ---"<<endl;
 
     TArrayF o = 0;
@@ -594,7 +571,7 @@ Int_t ZvtxFastpp(const Char_t *galiceName,Int_t n) {
   galice->Close();
 
   // Write vertices to file
-  WriteVtx("vtxFastpp.root",zvtx,n);
+  WriteZvtx("zvtxFastpp.dat",zvtx,n);
 
   delete [] zvtx;
   //delete gAlice; gAlice=0;
@@ -606,7 +583,7 @@ Int_t ZvtxFastpp(const Char_t *galiceName,Int_t n) {
   return 0;
 }
 //-----------------------------------------------------------------------------
-Int_t ZvtxFromSPD(const Char_t *galiceName,Int_t n) {
+Int_t ZvtxFromSPD(const Char_t *galiceName,Bool_t *skipEvt,Int_t n) {
 
 
   Double_t *zvtx    = new Double_t[n];
@@ -649,6 +626,7 @@ Int_t ZvtxFromSPD(const Char_t *galiceName,Int_t n) {
   Float_t avesca2=0;
   Int_t N=0;
   for(Int_t event=0; event<n; event++){
+    if(skipEvt[event]) continue;
     sprintf(name,"event_%d",event);
     hz2z1=new TH2F(name,"z2 vs z1",50,-15.,15.,50,-15.,15.);
     hz2z1->SetDirectory(currdir);
@@ -805,7 +783,7 @@ Int_t ZvtxFromSPD(const Char_t *galiceName,Int_t n) {
   //hz2z1->Draw("box");
 
   // Write vertices to file
-  WriteVtx("vtxSPD.root",zvtx,n);
+  WriteZvtx("zvtxSPD.dat",zvtx,n);
   delete [] zvtx;
 
   if(N>1) {
@@ -877,7 +855,7 @@ void EvalZ(TH1F *hist,Int_t sepa,Float_t &av, Float_t &sig,Int_t ncoinc,
   return;
 }
 //-----------------------------------------------------------------------------
-Int_t ZvtxFromTracks(const Char_t *trkName,Int_t n) {
+Int_t ZvtxFromTracks(const Char_t *trkName,Bool_t *skipEvt,Int_t n) {
 
   cerr<<"\n*******************************************************************\n";
 
@@ -887,7 +865,7 @@ Int_t ZvtxFromTracks(const Char_t *trkName,Int_t n) {
 
   Double_t *zvtx = new Double_t[n];
   Double_t *zvtxSPD = new Double_t[n];
-  ReadVtx("vtxSPD.root",zvtxSPD,n);
+  ReadZvtx("zvtxSPD.dat",zvtxSPD,n);
 
   TFile *itstrk = TFile::Open(trkName);
 
@@ -945,7 +923,7 @@ Int_t ZvtxFromTracks(const Char_t *trkName,Int_t n) {
 
 
   // Write vertices to file
-  WriteVtx("vtxTracks.root",zvtx,n);
+  WriteZvtx("zvtxTracks.dat",zvtx,n);
   delete [] zvtx;
   delete [] zvtxSPD;
 
@@ -969,7 +947,7 @@ Double_t d0zRes(Double_t pt) {
 //-----------------------------------------------------------------------------
 Int_t ITSFindTracksV2(const Char_t *galiceName,const Char_t *inName, 
 		      const Char_t *inName2,const Char_t *outName, 
-		      Int_t *skipEvt,TString vtxMode,Int_t n) {
+		      Bool_t *skipEvt,Option_t *vtxMode,Int_t n) {
 
   
   cerr<<"\n*******************************************************************\n";
@@ -980,29 +958,19 @@ Int_t ITSFindTracksV2(const Char_t *galiceName,const Char_t *inName,
 
   // Read vertices from file 
   Double_t *zvtx = new Double_t[n];
-  Char_t *vtxfile="vtxHeader.root";
-  
-  cerr<<" Using vtxMode: ";
-  switch (*(vtxMode.Data())) {
-  case 'H':
-    cerr<<" Header"<<endl;
-    vtxfile = "vtxHeader.root";
-    break;
-  case 'F':
-    cerr<<" fast pp"<<endl;
-    vtxfile = "vtxFastpp.root";
-    break;
-  case 'P':
-    cerr<<" SPD"<<endl;
-    vtxfile = "vtxSPD.root";
-    break;
-  case 'T':
-    cerr<<" Tracks"<<endl;
-    vtxfile = "vtxTracks.root";
-    break;
-  }
+  Char_t *vtxfile="zvtxHeader.dat";
 
-  ReadVtx(vtxfile,zvtx,n);
+  const Char_t *header = strstr(vtxMode,"Header");
+  const Char_t *fastpp = strstr(vtxMode,"Fast");
+  const Char_t *spd    = strstr(vtxMode,"SPD");
+  const Char_t *tracks = strstr(vtxMode,"Tracks");
+
+  if(header) vtxfile = "zvtxHeader.dat";
+  if(fastpp) vtxfile = "zvtxFastpp.dat";
+  if(spd)    vtxfile = "zvtxSPD.dat";
+  if(tracks) vtxfile = "zvtxTracks.dat";
+
+  ReadZvtx(vtxfile,zvtx,n);
 
 
   TFile *outFile = TFile::Open(outName,"recreate");
@@ -1014,20 +982,10 @@ Int_t ITSFindTracksV2(const Char_t *galiceName,const Char_t *inName,
   
   Int_t flag1stPass,flag2ndPass;
 
-  // open logfile for done events
-  FILE *logfile = fopen("itstracking.log","w");
-
-  AliITStrackerV2 tracker(geom);
-  // loop on events
   for(Int_t ev=0; ev<n; ev++){
-    // write to logfile of begun events
-    fprintf(logfile,"%d\n",ev);
-
     if(skipEvt[ev]) continue;
     cerr<<" --- Processing event "<<ev<<" ---"<<endl;
-
-    // pass event number to tracker
-    tracker.SetEventNumber(ev);
+    AliITStrackerV2 tracker(geom,ev);
 
     // set position of primary vertex
     Double_t vtx[3];
@@ -1053,13 +1011,8 @@ Int_t ITSFindTracksV2(const Char_t *galiceName,const Char_t *inName,
     flags[0]=flag2ndPass;
     tracker.SetupSecondPass(flags);
     
-    // find the tracks
     tracker.Clusters2Tracks(inFile,outFile);
-
-  } // loop on events
-
-  fprintf(logfile,"%d\n",n); //this means all evts are successfully completed
-  fclose(logfile);
+  }
 
   inFile->Close();
   inFile2->Close();
@@ -1074,7 +1027,7 @@ Int_t ITSFindTracksV2(const Char_t *galiceName,const Char_t *inName,
 }
 //-----------------------------------------------------------------------------
 Int_t ITSMakeRefFile(const Char_t *galice,const Char_t *inname, 
-		     const Char_t *outname,Int_t *skipEvt,Int_t n) {
+		     const Char_t *outname,Bool_t *skipEvt,Int_t n) {
 
  
   cerr<<"\n*******************************************************************\n";
@@ -1099,7 +1052,7 @@ Int_t ITSMakeRefFile(const Char_t *galice,const Char_t *inname,
   Int_t label;
   TParticle *Part;  
   TParticle *Mum;
-  RECTRACK rectrk;
+  static RECTRACK rectrk;
   
 
   for(Int_t ev=0; ev<n; ev++){
@@ -1168,67 +1121,28 @@ Int_t ITSMakeRefFile(const Char_t *galice,const Char_t *inname,
   return rc;
 }
 //-----------------------------------------------------------------------------
-void WriteVtx(const Char_t *name,Double_t *zvtx,Int_t n) {
+void WriteZvtx(const Char_t *name,Double_t *zvtx,Int_t n) {
 
-  // Set Random Number seed
-  TDatime dt;
-  UInt_t curtime=dt.Get();
-  UInt_t procid=gSystem->GetPid();
-  UInt_t seed=curtime-procid;
-  gRandom->SetSeed(seed);
-
-  Double_t xvtx,yvtx;
-  Double_t sigmaVtxTransverse = 15.e-4;
-  TVector3 *ioVtx = new TVector3;
-  TTree *vtxtree = new TTree("TreeVtx","Tree with positions of primary vertex");
-  vtxtree->Branch("vertices","TVector3",&ioVtx);
-
-  for(Int_t ev=0; ev<n; ev++) {
-    // x and y coordinates of the vertex are smeared according to a gaussian
-    xvtx = gRandom->Gaus(0.,sigmaVtxTransverse);
-    yvtx = gRandom->Gaus(0.,sigmaVtxTransverse);
-
-    ioVtx->SetX(xvtx);
-    ioVtx->SetY(yvtx);
-    ioVtx->SetZ(zvtx[ev]);
-
-    //cerr<<"W ev "<<ev<<"  ("<<ioVtx->X()<<","<<ioVtx->Y()<<","<<ioVtx->Z()<<")"<<endl;
-
-      
-    vtxtree->Fill();
+  FILE *f = fopen(name,"w");
+  for(Int_t i=0;i<n;i++) {
+    fprintf(f,"%f\n",zvtx[i]);
   }
-
-  // write the tree to a file
-  TFile *f = new TFile(name,"recreate");
-  vtxtree->Write();
-  f->Close();
+  fclose(f);
 
   return;
 }
 //-----------------------------------------------------------------------------
-void ReadVtx(const Char_t *name,Double_t *zvtx,Int_t n) {
+void ReadZvtx(const Char_t *name,Double_t *zvtx,Int_t n) {
 
-  TFile *f = TFile::Open(name);
-
-  TVector3 *ioVtx = 0;
-  TTree *vtxtree = (TTree*)f->Get("TreeVtx");
-  vtxtree->SetBranchAddress("vertices",&ioVtx);
-  Int_t entries = (Int_t)vtxtree->GetEntries();
-
-  for(Int_t ev=0; ev<n; ev++) {
-    vtxtree->GetEvent(ev);
-
-    zvtx[ev] = ioVtx->Z();
-
-    //cerr<<"R ev "<<ev<<"  ("<<ioVtx->X()<<","<<ioVtx->Y()<<","<<zvtx[ev]<<")"<<endl;
-
+  FILE *f = fopen(name,"r");
+  for(Int_t i=0;i<n;i++) {
+    fscanf(f,"%lf",&zvtx[i]);
   }
-
-  f->Close();
+  fclose(f);
 
   return;
 }
-//-----------------------------------------------------------------------------
+
 
 
 

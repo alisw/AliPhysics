@@ -20,7 +20,7 @@
  ****************************************************************************/
 
 #ifndef __CINT__
-#include <iostream.h>
+#include "Riostream.h"
 #include <TFile.h>
 #include <TStopwatch.h>
 #include <TObject.h>
@@ -45,7 +45,7 @@
 
 void TPCParamTracks(const Char_t *galice,const Char_t *outname,const Int_t coll,const Double_t Bfield,Int_t n);
 void CreateAllGeantTracks(const Char_t *galice, const Char_t *outname,const Int_t coll,const Double_t Bfield,Int_t n);
-void TrackCompare(const Int_t coll,const Double_t Bfield);
+void TrackCompare(const Int_t coll,const Double_t Bfield,Int_t n);
 void BuildDataBase(const Int_t coll,const Double_t Bfield);
 
 void AliTPCtrackingParamDB(Int_t n=1) {
@@ -107,8 +107,8 @@ void TPCParamTracks(const Char_t *galice, const Char_t *outname,
   TFile *outfile=TFile::Open(outname,"recreate");
   TFile *infile =TFile::Open(galice);
 
-  AliTPCtrackerParam tracker(coll,Bfield);
-  tracker.BuildTPCtracks(infile,outfile,n);
+  AliTPCtrackerParam tracker(coll,Bfield,n);
+  tracker.BuildTPCtracks(infile,outfile);
 
   delete gAlice; gAlice=0;
 
@@ -135,9 +135,9 @@ void CreateAllGeantTracks(const Char_t *galice, const Char_t *outname,
   TFile *outfile=TFile::Open(outname,"recreate");
   TFile *infile =TFile::Open(galice);
 
-  AliTPCtrackerParam tracker(coll,Bfield);
+  AliTPCtrackerParam tracker(coll,Bfield,n);
   tracker.AllGeantTracks(); // this is to switch-off selection and smearing
-  tracker.BuildTPCtracks(infile,outfile,n);
+  tracker.BuildTPCtracks(infile,outfile);
 
   delete gAlice; gAlice=0;
 
@@ -150,7 +150,7 @@ void CreateAllGeantTracks(const Char_t *galice, const Char_t *outname,
   return;
 }
 //_____________________________________________________________________________
-void TrackCompare(const Int_t coll,const Double_t Bfield) {
+void TrackCompare(const Int_t coll,const Double_t Bfield,Int_t n) {
 //
 // Compare Kalman tracks with tracks at TPC 1st hit
 //
@@ -160,7 +160,7 @@ void TrackCompare(const Int_t coll,const Double_t Bfield) {
   cerr<<'\n'<<name<<"...\n";
   gBenchmark->Start(name);
 
-  AliTPCtrackerParam tracker(coll,Bfield);
+  AliTPCtrackerParam tracker(coll,Bfield,n);
   tracker.CompareTPCtracks();
 
   gBenchmark->Stop(name);
