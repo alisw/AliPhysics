@@ -9,15 +9,16 @@
 /g4mc/setMuon false
 /aliRun/initialize
 
-/aliDet/body/setFrame ALIC
-/aliDet/body/setVolume ALIC
-/aliDet/body/setLVTreeColour Green
+/aliTree/setVolume ALIC
+/aliTree/setLVTreeColour Green
 
 /vis/open OGLSX
 #/vis/open DAWNFILE
-
 /vis/scene/create                                              
 /vis/sceneHandler/attach
+/vis/scene/add/axes  0 0 0 5 m
+/vis/viewer/viewpointThetaPhi  35 35
+/vis/viewer/zoom  1.2 
 
 /g4mc/rootCmd new TG4GeometryGUI()
 /g4mc/root

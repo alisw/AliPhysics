@@ -4,17 +4,25 @@
 # two pi- are generated and one event is run
 # and visualized.
 #
+
 /aliDet/switchOn TPC0
 /aliDet/fieldValue 0.2 tesla
 
 /aliRun/initialize
 
-/aliDet/body/setVolume ALIC
-/aliDet/body/setVolVisibility true
-/aliDet/body/setVolColour Green
+/aliTree/setVolume ALIC
+/aliTree/setLVTreeVisibility true
+/aliTree/setLVTreeColour Green
 
-/vis~/create_view/new_graphics_system DAWNFILE
-/vis~/camera/zoom 15.
+# visualization commands
+/vis/open OGLSXm
+#/vis/open DAWNFILE
+/vis/drawVolume
+/vis/viewer/zoom 10.
+
+# uncomment to draw only geometry before event
+#/vis/viewer/refresh
+#/vis/viewer/update
 
 /aliGenerator/set Gun
 
@@ -34,19 +42,19 @@
 
 /aliRun/beamOn 1
 
-/control/exit
+exit
 
-// Possible options:
-
-// only high verbose level is listed
-
-// /tracking/verbose 5
-// /hits/verbose 1
-// /event/verbose 2
-// /run/verbose 2
-// /aliTracking/verbose 3
-// /aliTracking/loopVerbose 5
-// /aliEvent/verbose 2
-// /particle/select pi-
-// /particle/process/verbose 1
+# Possible options:
+#
+# only high verbose level is listed
+#
+# /tracking/verbose 5
+# /hits/verbose 1
+# /event/verbose 2
+# /run/verbose 2
+# /aliTracking/verbose 3
+# /aliTracking/loopVerbose 5
+# /aliEvent/verbose 2
+# /particle/select pi-
+# /particle/process/verbose 1
 

@@ -67,26 +67,22 @@ void AliEventAction::DisplayEvent(const G4Event* event) const
 // Draws trajectories.
 // ---
 
-  // trajectories processing
-  G4TrajectoryContainer* trajectoryContainer 
-    = event->GetTrajectoryContainer();
+  if (G4VVisManager::GetConcreteInstance()) {
 
-  G4int nofTrajectories = 0;
-  if (trajectoryContainer)
-  { nofTrajectories = trajectoryContainer->entries(); }
+    // trajectories processing
+    G4TrajectoryContainer* trajectoryContainer 
+      = event->GetTrajectoryContainer();
+
+    G4int nofTrajectories = 0;
+    if (trajectoryContainer)
+      nofTrajectories = trajectoryContainer->entries(); 
   
-  if (fVerboseLevel>0 && nofTrajectories>0) {
-    G4cout << "    " << nofTrajectories; 
-    G4cout << " trajectories stored." << G4endl;
-  }  
+    if (fVerboseLevel>0 && nofTrajectories>0) {
+      G4cout << "    " << nofTrajectories; 
+      G4cout << " trajectories stored." << G4endl;
+    }  
 
-  G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
-  if(pVVisManager && nofTrajectories>0)
-  {
-    G4UImanager::GetUIpointer()->ApplyCommand("/vis~/draw/current");
-
-    for (G4int i=0; i<nofTrajectories; i++)
-    { 
+    for (G4int i=0; i<nofTrajectories; i++) { 
       G4VTrajectory* vtrajectory = (*(event->GetTrajectoryContainer()))[i];
       G4Trajectory* trajectory = dynamic_cast<G4Trajectory*>(vtrajectory);
       if (!trajectory) {
@@ -100,8 +96,7 @@ void AliEventAction::DisplayEvent(const G4Event* event) const
 	    // use 2000 to make step points well visible
       }	
     }      
-    G4UImanager::GetUIpointer()->ApplyCommand("/vis~/show/view");
-  }  
+  }
 }
 
 // public methods

@@ -22,6 +22,7 @@
 #include "TG4VSDConstruction.h"
 
 #include <G4Run.hh>
+#include <G4VVisManager.hh>
 #include <G4UImanager.hh>
 
 //_____________________________________________________________________________
@@ -107,6 +108,11 @@ void AliRunAction::BeginOfRunAction(const G4Run* run)
     G4UImanager::GetUIpointer()->ApplyCommand("/aliGenerator/set AliGenerator");
   }  
 
+  // notify graphics 
+  if (G4VVisManager::GetConcreteInstance()) {
+    G4UImanager::GetUIpointer()->ApplyCommand("/vis/scene/notifyHandlers");
+  } 
+
   G4cout << "### Run " << run->GetRunID() << " start." << G4endl;
   fTimer->Start();
 }
@@ -126,6 +132,11 @@ void AliRunAction::EndOfRunAction(const G4Run* run)
     GetSDConstruction()->UnsetLego();
     G4UImanager::GetUIpointer()->ApplyCommand("/aliEvent/verbose 1");
   }  
+
+  // update graphics 
+  if (G4VVisManager::GetConcreteInstance()) {
+     G4UImanager::GetUIpointer()->ApplyCommand("/vis/viewer/update");
+  }
 
   G4cout << "Time of this run:   " << *fTimer << G4endl;
   G4cout << "Number of events processed: " << run->GetNumberOfEvent() << G4endl;
