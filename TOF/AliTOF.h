@@ -30,6 +30,7 @@ class AliTOFMerger;
 #include <Riostream.h>
 #include "AliTOFMerger.h"
 #include "AliTOFSDigitizer.h"
+#include "AliTOFGeometry.h"
 
 
 class AliTOF : public AliDetector {
@@ -88,6 +89,7 @@ public:
   TClonesArray *ReconParticles() const {return fReconParticles;}
   void RecreateSDigitsArray();
   void CreateSDigitsArray();
+  AliTOFGeometry *GetGeometry() const { return fTOFGeometry; }; 
 
   Int_t   fNevents ;        // Number of events to digitize
 
@@ -128,9 +130,10 @@ protected:
   Int_t   fNFec;       // number of FEC
   Int_t   fNTdc;       // number of TDC
   Int_t   fNPadXRoc;   // number of pads for each ROC
-  Int_t   fIdSens;     // the unique numeric identifier for sensitive volume FPAD 
+  Int_t   fIdSens;     // the unique identifier for sensitive volume FPAD 
   Bool_t  fTZero;      // flag indicating if T0 is used
-
+  AliTOFGeometry *fTOFGeometry; //The TOF Geometry parameters
+ 
 private:
 
   ClassDef(AliTOF,6)  // Time Of Flight base class

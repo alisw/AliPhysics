@@ -53,6 +53,7 @@
 #include <TVirtualMC.h>
 
 #include "AliConst.h"
+#include "AliTOFGeometry.h"
 #include "AliDetector.h"
 #include "AliHeader.h"
 #include "AliLoader.h"
@@ -60,7 +61,6 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliTOF.h"
-#include "AliTOFConstants.h"
 #include "AliTOFHitMap.h"
 #include "AliTOFPad.h"
 #include "AliTOFRecHit.h"
@@ -384,21 +384,21 @@ void AliTOFReconstructioner::Exec(const char* datafile, Option_t *option)
     cout << "number of primary tracked tracks in current event " << ntracks << endl; // number of primary tracked tracks
     // array declaration and initialization
     // TOF arrays
-    //    Int_t mapPixels[AliTOFConstants::fgkNSectors*AliTOFConstants::fgkNPlates][AliTOFConstants::fgkNStripC][AliTOFConstants::fgkNpadZ*AliTOFConstants::fgkNpadX];
+    //    Int_t mapPixels[AliTOFGeometry::NSectors()*AliTOFGeometry::NPlates()][AliTOFGeometry::NStripC()][AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX()];
 
-    Int_t *** mapPixels = new Int_t**[AliTOFConstants::fgkNSectors*AliTOFConstants::fgkNPlates];
-    for (Int_t i=0; i<AliTOFConstants::fgkNSectors*AliTOFConstants::fgkNPlates; i++) mapPixels[i] = new Int_t*[AliTOFConstants::fgkNStripC];
-    for (Int_t i=0; i<AliTOFConstants::fgkNSectors*AliTOFConstants::fgkNPlates; i++) {
-      for (Int_t j=0; j<AliTOFConstants::fgkNStripC; j++) {
-        mapPixels[i][j]= new Int_t[AliTOFConstants::fgkNpadZ*AliTOFConstants::fgkNpadX];
+    Int_t *** mapPixels = new Int_t**[AliTOFGeometry::NSectors()*AliTOFGeometry::NPlates()];
+    for (Int_t i=0; i<AliTOFGeometry::NSectors()*AliTOFGeometry::NPlates(); i++) mapPixels[i] = new Int_t*[AliTOFGeometry::NStripC()];
+    for (Int_t i=0; i<AliTOFGeometry::NSectors()*AliTOFGeometry::NPlates(); i++) {
+      for (Int_t j=0; j<AliTOFGeometry::NStripC(); j++) {
+        mapPixels[i][j]= new Int_t[AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX()];
       }
     }
 
 
     // initializing the previous array
-    for (Int_t i=0;i<AliTOFConstants::fgkNSectors*AliTOFConstants::fgkNPlates;i++) {
-      for (Int_t j=0;j<AliTOFConstants::fgkNStripC;j++) {
-        for (Int_t l=0;l<AliTOFConstants::fgkNpadZ*AliTOFConstants::fgkNpadX;l++) {
+    for (Int_t i=0;i<AliTOFGeometry::NSectors()*AliTOFGeometry::NPlates();i++) {
+      for (Int_t j=0;j<AliTOFGeometry::NStripC();j++) {
+        for (Int_t l=0;l<AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();l++) {
           mapPixels[i][j][l]=0;
         }
       } 
@@ -466,12 +466,12 @@ void AliTOFReconstructioner::Exec(const char* datafile, Option_t *option)
     delete [] iTrackPt;
     delete [] ptTrack;
 
-   for (Int_t i=0; i<AliTOFConstants::fgkNSectors*AliTOFConstants::fgkNPlates; i++) {
-      for (Int_t j=0; j<AliTOFConstants::fgkNStripC; j++) {
+   for (Int_t i=0; i<AliTOFGeometry::NSectors()*AliTOFGeometry::NPlates(); i++) {
+      for (Int_t j=0; j<AliTOFGeometry::NStripC(); j++) {
         delete [] mapPixels[i][j];
       }
     }
-    for (Int_t i=0; i<AliTOFConstants::fgkNSectors*AliTOFConstants::fgkNPlates; i++) delete [] mapPixels[i];
+    for (Int_t i=0; i<AliTOFGeometry::NSectors()*AliTOFGeometry::NPlates(); i++) delete [] mapPixels[i];
 
     delete [] mapPixels;
 
@@ -536,25 +536,25 @@ void AliTOFReconstructioner::PrintParameters()const
   cout << " Number of events:                        " << fNevents << endl; 
   cout << " Recostruction from event                 "<< fFirstEvent << "  to event "<< fLastEvent << endl;
   cout << " TOF geometry parameters                  " << endl;
-  cout << " Min. radius of the TOF (cm)              "<< AliTOFConstants::fgkrmin << endl;
-  cout << " Max. radius of the TOF (cm)              "<< AliTOFConstants::fgkrmax << endl;
-  cout << " Number of TOF geom. levels               "<< AliTOFConstants::fgkmaxtoftree<< endl;
-  cout << " Number of TOF sectors                    "<< AliTOFConstants::fgkNSectors << endl;
-  cout << " Number of TOF modules                    "<< AliTOFConstants::fgkNPlates << endl;
-  cout << " Max. Number of strips in a module        "<< AliTOFConstants::fgkNStripC << endl;
-  cout << " Number of pads per strip                 "<< AliTOFConstants::fgkNpadX*AliTOFConstants::fgkNpadZ << endl;
-  cout << " Number of strips in central module       "<< AliTOFConstants::fgkNStripA << endl;
-  cout << " Number of strips in intermediate modules "<< AliTOFConstants::fgkNStripB << endl;
-  cout << " Number of strips in outer modules        "<< AliTOFConstants::fgkNStripC << endl;
-  cout << " Number of MRPC in x strip direction      "<< AliTOFConstants::fgkNpadX<< endl;
-  cout << " Size of MRPC (cm) along X                "<< AliTOFConstants::fgkXPad<< endl;
-  cout << " Number of MRPC in z strip direction      "<< AliTOFConstants::fgkNpadZ<<endl;
-  cout << " Size of MRPC (cm) along Z                "<< AliTOFConstants::fgkZPad<<endl;
+  cout << " Min. radius of the TOF (cm)              "<< AliTOFGeometry::Rmin() << endl;
+  cout << " Max. radius of the TOF (cm)              "<< AliTOFGeometry::Rmax() << endl;
+  cout << " Number of TOF geom. levels               "<< AliTOFGeometry::MaxTOFTree()<< endl;
+  cout << " Number of TOF sectors                    "<< AliTOFGeometry::NSectors() << endl;
+  cout << " Number of TOF modules                    "<< AliTOFGeometry::NPlates() << endl;
+  cout << " Max. Number of strips in a module        "<< AliTOFGeometry::NStripC() << endl;
+  cout << " Number of pads per strip                 "<< AliTOFGeometry::NpadX()*AliTOFGeometry::NpadZ() << endl;
+  cout << " Number of strips in central module       "<< AliTOFGeometry::NStripA() << endl;
+  cout << " Number of strips in intermediate modules "<< AliTOFGeometry::NStripB() << endl;
+  cout << " Number of strips in outer modules        "<< AliTOFGeometry::NStripC() << endl;
+  cout << " Number of MRPC in x strip direction      "<< AliTOFGeometry::NpadX()<< endl;
+  cout << " Size of MRPC (cm) along X                "<< AliTOFGeometry::XPad()<< endl;
+  cout << " Number of MRPC in z strip direction      "<< AliTOFGeometry::NpadZ()<<endl;
+  cout << " Size of MRPC (cm) along Z                "<< AliTOFGeometry::ZPad()<<endl;
   cout << " Module Lengths (cm)" << endl;
-  cout << " A Module: "<< AliTOFConstants::fgkzlenA<< "  B Modules: "<< AliTOFConstants::fgkzlenB<< "  C Modules: "<< AliTOFConstants::fgkzlenC<< endl;
-  cout << " Inner radius of the TOF detector (cm): "<<AliTOFConstants::fgkrmin << endl;
-  cout << " Outer radius of the TOF detector (cm): "<<AliTOFConstants::fgkrmax << endl;
-  cout << " Max. half z-size of TOF (cm)         : "<<AliTOFConstants::fgkMaxhZtof << endl;
+  cout << " A Module: "<< AliTOFGeometry::ZlenA()<< "  B Modules: "<< AliTOFGeometry::ZlenB()<< "  C Modules: "<< AliTOFGeometry::ZlenC()<< endl;
+  cout << " Inner radius of the TOF detector (cm): "<<AliTOFGeometry::Rmin() << endl;
+  cout << " Outer radius of the TOF detector (cm): "<<AliTOFGeometry::Rmax() << endl;
+  cout << " Max. half z-size of TOF (cm)         : "<<AliTOFGeometry::MaxhZtof() << endl;
   cout << " TOF Pad parameters   " << endl;
   cout << " Time Resolution (ns) "<< fTimeResolution <<" Pad Efficiency: "<< fpadefficiency << endl;
   cout << " Edge Effect option:  "<<  fEdgeEffect<< endl;
@@ -643,7 +643,7 @@ void AliTOFReconstructioner::IsInsideThePad(TVirtualMC *vmc, Float_t x, Float_t 
   char name[5];
   name[4]=0;
   
-  for (i=0; i<AliTOFConstants::fgkmaxtoftree; i++) nGeom[i]=0;
+  for (i=0; i<AliTOFGeometry::MaxTOFTree(); i++) nGeom[i]=0;
   zPad=100.;
   xPad=100.;
   
@@ -836,7 +836,7 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
   //         qCenterPad - charge extimated for each pad, arb. units
   //         weightsSum - sum of weights extimated for each pad fired, arb. units
   
-  const Float_t kSigmaForTail[2] = {AliTOFConstants::fgkSigmaForTail1,AliTOFConstants::fgkSigmaForTail2}; //for tail                                                   
+  const Float_t kSigmaForTail[2] = {AliTOFGeometry::SigmaForTail1(),AliTOFGeometry::SigmaForTail2()}; //for tail                                                   
   Int_t iz = 0, ix = 0;
   Float_t dX = 0., dZ = 0., x = 0., z = 0.;
   Float_t h = fHparameter, h2 = fH2parameter, k = fKparameter, k2 = fK2parameter;
@@ -856,17 +856,17 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
   nFiredPads = 0;
   
   (z0 <= 0) ? iz = 0 : iz = 1;
-  dZ = z0 + (0.5 * AliTOFConstants::fgkNpadZ - iz - 0.5) * AliTOFConstants::fgkZPad; // hit position in the pad frame, (0,0) - center of the pad
-  z = 0.5 * AliTOFConstants::fgkZPad - TMath::Abs(dZ);                               // variable for eff., res. and timeWalk. functions
-  iz++;                                                                              // z row: 1, ..., AliTOFConstants::fgkNpadZ = 2
-  ix = (Int_t)((x0 + 0.5 * AliTOFConstants::fgkNpadX * AliTOFConstants::fgkXPad) / AliTOFConstants::fgkXPad);
-  dX = x0 + (0.5 * AliTOFConstants::fgkNpadX - ix - 0.5) * AliTOFConstants::fgkXPad; // hit position in the pad frame, (0,0) - center of the pad
-  x = 0.5 * AliTOFConstants::fgkXPad - TMath::Abs(dX);                               // variable for eff., res. and timeWalk. functions;
-  ix++;                                                                              // x row: 1, ..., AliTOFConstants::fgkNpadX = 48
+  dZ = z0 + (0.5 * AliTOFGeometry::NpadZ() - iz - 0.5) * AliTOFGeometry::ZPad(); // hit position in the pad frame, (0,0) - center of the pad
+  z = 0.5 * AliTOFGeometry::ZPad() - TMath::Abs(dZ);                               // variable for eff., res. and timeWalk. functions
+  iz++;                                                                              // z row: 1, ..., AliTOFGeometry::NpadZ() = 2
+  ix = (Int_t)((x0 + 0.5 * AliTOFGeometry::NpadX() * AliTOFGeometry::XPad()) / AliTOFGeometry::XPad());
+  dX = x0 + (0.5 * AliTOFGeometry::NpadX() - ix - 0.5) * AliTOFGeometry::XPad(); // hit position in the pad frame, (0,0) - center of the pad
+  x = 0.5 * AliTOFGeometry::XPad() - TMath::Abs(dX);                               // variable for eff., res. and timeWalk. functions;
+  ix++;                                                                              // x row: 1, ..., AliTOFGeometry::NpadX() = 48
   
   ////// Pad A:
   nActivatedPads++;
-  nPlace[nActivatedPads-1] = (iz - 1) * AliTOFConstants::fgkNpadX + ix;
+  nPlace[nActivatedPads-1] = (iz - 1) * AliTOFGeometry::NpadX() + ix;
   qInduced[nActivatedPads-1] = qCenterPad;
   padId[nActivatedPads-1] = 1;
   
@@ -928,7 +928,7 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
     if(z < k && z > 0) {
       if( (iz == 1 && dZ > 0) || (iz == 2 && dZ < 0) ) {
 	nActivatedPads++;
-	nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFConstants::fgkNpadX;
+	nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX();
 	eff[nActivatedPads-1] = effZ;
 	res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns 
 	timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ; // ns
@@ -980,7 +980,7 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
 	if(z < k && z > 0) {
 	  if( (iz == 1 && dZ > 0) || (iz == 2 && dZ < 0) ) {
 	    nActivatedPads++;
-	    nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFConstants::fgkNpadX - 1;
+	    nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX() - 1;
 	    eff[nActivatedPads-1] = effX * effZ;
 	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns
 	    (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ : timeWalk[nActivatedPads-1] = 0.001 * timeWalkX; // ns
@@ -1008,7 +1008,7 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
       }  // end C
       
       //   E:
-      if(ix < AliTOFConstants::fgkNpadX && dX > 0) {
+      if(ix < AliTOFGeometry::NpadX() && dX > 0) {
 	nActivatedPads++;
 	nPlace[nActivatedPads-1] = nPlace[0] + 1;
 	eff[nActivatedPads-1] = effX;
@@ -1031,7 +1031,7 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
 	if(z < k && z > 0) {
 	  if( (iz == 1 && dZ > 0) || (iz == 2 && dZ < 0) ) {
 	    nActivatedPads++;
-	    nPlace[nActivatedPads - 1] = nPlace[0] + (3 - 2 * iz) * AliTOFConstants::fgkNpadX + 1;
+	    nPlace[nActivatedPads - 1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX() + 1;
 	    eff[nActivatedPads - 1] = effX * effZ;
 	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns
 	    (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ : timeWalk[nActivatedPads-1] = 0.001*timeWalkX; // ns
@@ -1120,7 +1120,7 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
   //         qCenterPad - charge extimated for each pad, arb. units
   //         weightsSum - sum of weights extimated for each pad fired, arb. units
   
-  const Float_t kSigmaForTail[2] = {AliTOFConstants::fgkSigmaForTail1,AliTOFConstants::fgkSigmaForTail2}; //for tail                                                   
+  const Float_t kSigmaForTail[2] = {AliTOFGeometry::SigmaForTail1(),AliTOFGeometry::SigmaForTail2()}; //for tail                                                   
   Int_t iz = 0, ix = 0;
   Float_t dX = 0., dZ = 0., x = 0., z = 0.;
   Float_t h = fHparameter, h2 = fH2parameter, k = fKparameter, k2 = fK2parameter;
@@ -1139,17 +1139,17 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
   nFiredPads = 0;
   
   (z0 <= 0) ? iz = 0 : iz = 1;
-  dZ = z0 + (0.5 * AliTOFConstants::fgkNpadZ - iz - 0.5) * AliTOFConstants::fgkZPad; // hit position in the pad frame, (0,0) - center of the pad
-  z = 0.5 * AliTOFConstants::fgkZPad - TMath::Abs(dZ);                               // variable for eff., res. and timeWalk. functions
-  iz++;                                                                              // z row: 1, ..., AliTOFConstants::fgkNpadZ = 2
-  ix = (Int_t)((x0 + 0.5 * AliTOFConstants::fgkNpadX * AliTOFConstants::fgkXPad) / AliTOFConstants::fgkXPad);
-  dX = x0 + (0.5 * AliTOFConstants::fgkNpadX - ix - 0.5) * AliTOFConstants::fgkXPad; // hit position in the pad frame, (0,0) - center of the pad
-  x = 0.5 * AliTOFConstants::fgkXPad - TMath::Abs(dX);                               // variable for eff., res. and timeWalk. functions;
-  ix++;                                                                              // x row: 1, ..., AliTOFConstants::fgkNpadX = 48
+  dZ = z0 + (0.5 * AliTOFGeometry::NpadZ() - iz - 0.5) * AliTOFGeometry::ZPad(); // hit position in the pad frame, (0,0) - center of the pad
+  z = 0.5 * AliTOFGeometry::ZPad() - TMath::Abs(dZ);                               // variable for eff., res. and timeWalk. functions
+  iz++;                                                                              // z row: 1, ..., AliTOFGeometry::NpadZ() = 2
+  ix = (Int_t)((x0 + 0.5 * AliTOFGeometry::NpadX() * AliTOFGeometry::XPad()) / AliTOFGeometry::XPad());
+  dX = x0 + (0.5 * AliTOFGeometry::NpadX() - ix - 0.5) * AliTOFGeometry::XPad(); // hit position in the pad frame, (0,0) - center of the pad
+  x = 0.5 * AliTOFGeometry::XPad() - TMath::Abs(dX);                               // variable for eff., res. and timeWalk. functions;
+  ix++;                                                                              // x row: 1, ..., AliTOFGeometry::NpadX() = 48
   
   ////// Pad A:
   nActivatedPads++;
-  nPlace[nActivatedPads-1] = (iz - 1) * AliTOFConstants::fgkNpadX + ix;
+  nPlace[nActivatedPads-1] = (iz - 1) * AliTOFGeometry::NpadX() + ix;
   qInduced[nActivatedPads-1] = qCenterPad;
   padId[nActivatedPads-1] = 1;
   
@@ -1211,7 +1211,7 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
     if(z < k && z > 0) {
       if( (iz == 1 && dZ > 0) || (iz == 2 && dZ < 0) ) {
 	nActivatedPads++;
-	nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFConstants::fgkNpadX;
+	nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX();
 	eff[nActivatedPads-1] = effZ;
 	res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns 
 	timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ; // ns
@@ -1261,7 +1261,7 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
 	if(z < k && z > 0) {
 	  if( (iz == 1 && dZ > 0) || (iz == 2 && dZ < 0) ) {
 	    nActivatedPads++;
-	    nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFConstants::fgkNpadX - 1;
+	    nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX() - 1;
 	    eff[nActivatedPads-1] = effX * effZ;
 	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns
 	    (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ : timeWalk[nActivatedPads-1] = 0.001 * timeWalkX; // ns
@@ -1287,7 +1287,7 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
       }  // end C
       
       //   E:
-      if(ix < AliTOFConstants::fgkNpadX && dX > 0) {
+      if(ix < AliTOFGeometry::NpadX() && dX > 0) {
 	nActivatedPads++;
 	nPlace[nActivatedPads-1] = nPlace[0] + 1;
 	eff[nActivatedPads-1] = effX;
@@ -1309,7 +1309,7 @@ void AliTOFReconstructioner::BorderEffect(Float_t z0, Float_t x0, Float_t geantT
 	if(z < k && z > 0) {
 	  if( (iz == 1 && dZ > 0) || (iz == 2 && dZ < 0) ) {
 	    nActivatedPads++;
-	    nPlace[nActivatedPads - 1] = nPlace[0] + (3 - 2 * iz) * AliTOFConstants::fgkNpadX + 1;
+	    nPlace[nActivatedPads - 1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX() + 1;
 	    eff[nActivatedPads - 1] = effX * effZ;
 	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns
 	    (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ : timeWalk[nActivatedPads-1] = 0.001*timeWalkX; // ns
@@ -1649,7 +1649,7 @@ void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits,
   TParticle *particle;
   Int_t nHitOutofTofVolumes; // number of hits out of TOF GEANT volumes (it happens in very
                              // few cases)
-  Int_t * npixel = new Int_t[AliTOFConstants::fgkmaxtoftree]; // array used by TOFRecon for check on TOF geometry
+  Int_t * npixel = new Int_t[AliTOFGeometry::MaxTOFTree()]; // array used by TOFRecon for check on TOF geometry
   Int_t npions=0;    // number of pions for the current event
   Int_t nkaons=0;    // number of kaons for the current event
   Int_t nprotons=0;  // number of protons for the current event
@@ -1817,12 +1817,12 @@ void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits,
 	    nHitOutofTofVolumes++;
 	  }
 	} else {
-	  Float_t zStrip=AliTOFConstants::fgkZPad*(padz-0.5-0.5*AliTOFConstants::fgkNpadZ)+Zpad; 
+	  Float_t zStrip=AliTOFGeometry::ZPad()*(padz-0.5-0.5*AliTOFGeometry::NpadZ())+Zpad; 
 	  if(padz!=npixel[3]) printf("            : Zpad=%f, padz=%i, npixel[3]=%i, zStrip=%f\n",Zpad,padz,npixel[3],zStrip);
-	  Float_t xStrip=AliTOFConstants::fgkXPad*(padx-0.5-0.5*AliTOFConstants::fgkNpadX)+Xpad;
+	  Float_t xStrip=AliTOFGeometry::XPad()*(padx-0.5-0.5*AliTOFGeometry::NpadX())+Xpad;
 	  
 	  Int_t nPlace[4]={0,0,0,0};
-	  nPlace[0]=(padz-1)*AliTOFConstants::fgkNpadX+padx;
+	  nPlace[0]=(padz-1)*AliTOFGeometry::NpadX()+padx;
 	  
 	  Int_t   nActivatedPads=0;
 	  Int_t   nFiredPads=0;
@@ -1850,7 +1850,7 @@ void AliTOFReconstructioner::ReadTOFHits(Int_t ntracks, TTree* treehits,
 
 		}// close - the hit belongs to a fired pad
 		
-		Int_t iMapFirstIndex=AliTOFConstants::fgkNSectors*(npixel[1]-1)+npixel[0]-1;
+		Int_t iMapFirstIndex=AliTOFGeometry::NSectors()*(npixel[1]-1)+npixel[0]-1;
 		Int_t iMapValue=MapPixels[iMapFirstIndex][npixel[2]-1][nPlace[indexOfPad]-1];
 	
 		if(iMapValue==0) {
@@ -1946,20 +1946,20 @@ void AliTOFReconstructioner::AddNoiseFromOuter(Option_t *option, Int_t ***MapPix
   // to parameterized fZNoise distribution (to be used with events 
   // generated in the barrel region)
 
-  Float_t * zLen = new Float_t[AliTOFConstants::fgkNPlates+1];
-  Float_t * zStrips = new Float_t[AliTOFConstants::fgkNPlates];
-  zStrips[0]=(Float_t) (AliTOFConstants::fgkNStripC);
-  zStrips[1]=(Float_t) (AliTOFConstants::fgkNStripB);
-  zStrips[2]=(Float_t) (AliTOFConstants::fgkNStripA);
-  zStrips[3]=(Float_t) (AliTOFConstants::fgkNStripB);
-  zStrips[4]=(Float_t) (AliTOFConstants::fgkNStripC);
+  Float_t * zLen = new Float_t[AliTOFGeometry::NPlates()+1];
+  Float_t * zStrips = new Float_t[AliTOFGeometry::NPlates()];
+  zStrips[0]=(Float_t) (AliTOFGeometry::NStripC());
+  zStrips[1]=(Float_t) (AliTOFGeometry::NStripB());
+  zStrips[2]=(Float_t) (AliTOFGeometry::NStripA());
+  zStrips[3]=(Float_t) (AliTOFGeometry::NStripB());
+  zStrips[4]=(Float_t) (AliTOFGeometry::NStripC());
 
-  zLen[5]=AliTOFConstants::fgkzlenA*0.5+AliTOFConstants::fgkzlenB+AliTOFConstants::fgkzlenC;
-  zLen[4]=zLen[5]-AliTOFConstants::fgkzlenC;
-  zLen[3]=zLen[4]-AliTOFConstants::fgkzlenB;
-  zLen[2]=zLen[3]-AliTOFConstants::fgkzlenA;
-  zLen[1]=zLen[2]-AliTOFConstants::fgkzlenB;
-  zLen[0]=zLen[1]-AliTOFConstants::fgkzlenC;
+  zLen[5]=AliTOFGeometry::ZlenA()*0.5+AliTOFGeometry::ZlenB()+AliTOFGeometry::ZlenC();
+  zLen[4]=zLen[5]-AliTOFGeometry::ZlenC();
+  zLen[3]=zLen[4]-AliTOFGeometry::ZlenB();
+  zLen[2]=zLen[3]-AliTOFGeometry::ZlenA();
+  zLen[1]=zLen[2]-AliTOFGeometry::ZlenB();
+  zLen[0]=zLen[1]-AliTOFGeometry::ZlenC();
 
   
   Int_t isector;    // random sector number 
@@ -1975,10 +1975,10 @@ void AliTOFReconstructioner::AddNoiseFromOuter(Option_t *option, Int_t ***MapPix
   TF1 *noiseTof = new TF1("noiseTof","exp(-x/20)",0,100);
 
   if(strstr(option,"pp")){
-    fZnoise = new TF1("fZnoise","257.8-0.178*x-0.000457*x*x",-AliTOFConstants::fgkMaxhZtof,AliTOFConstants::fgkMaxhZtof);
+    fZnoise = new TF1("fZnoise","257.8-0.178*x-0.000457*x*x",-AliTOFGeometry::MaxhZtof(),AliTOFGeometry::MaxhZtof());
   }
   if(strstr(option,"Pb-Pb")){
-    fZnoise = new TF1("fZnoise","182.2-0.09179*x-0.0001931*x*x",-AliTOFConstants::fgkMaxhZtof,AliTOFConstants::fgkMaxhZtof);
+    fZnoise = new TF1("fZnoise","182.2-0.09179*x-0.0001931*x*x",-AliTOFGeometry::MaxhZtof(),AliTOFGeometry::MaxhZtof());
   }
 
   if(fNoise) {
@@ -1986,7 +1986,7 @@ void AliTOFReconstructioner::AddNoiseFromOuter(Option_t *option, Int_t ***MapPix
 
     for(Int_t i=0;i<fNoise;i++) {
 
-      isector=(Int_t) (AliTOFConstants::fgkNSectors*gRandom->Rndm())+1; //the sector number
+      isector=(Int_t) (AliTOFGeometry::NSectors()*gRandom->Rndm())+1; //the sector number
       //  non-flat z-distribution of additional hits
       Float_t zNoise=fZnoise->GetRandom();
 
@@ -1995,15 +1995,15 @@ void AliTOFReconstructioner::AddNoiseFromOuter(Option_t *option, Int_t ***MapPix
 	// to be checked the holes case
 	if(isector>12 && isector<16) { // sectors 13,14,15 - RICH
 	  do {
-	    iplate=(Int_t) (AliTOFConstants::fgkNPlates*gRandom->Rndm())+1;
+	    iplate=(Int_t) (AliTOFGeometry::NPlates()*gRandom->Rndm())+1;
 	  } while (iplate==2 || iplate==3 || iplate==4);
 	  //         } else if(isector>11 && isector<17) { // sectors 12,13,14,15,16 - PHOS
 	} else if(isector>2 && isector<8) { // sectors 3,4,5,6,7 - PHOS
 	  do {
-	    iplate=(Int_t) (AliTOFConstants::fgkNPlates*gRandom->Rndm())+1;
+	    iplate=(Int_t) (AliTOFGeometry::NPlates()*gRandom->Rndm())+1;
 	  } while (iplate==3);
 	} else {
-	  iplate=(Int_t) (AliTOFConstants::fgkNPlates*gRandom->Rndm())+1;
+	  iplate=(Int_t) (AliTOFGeometry::NPlates()*gRandom->Rndm())+1;
 	}
       } else {
 	iplate=0;
@@ -2028,12 +2028,12 @@ void AliTOFReconstructioner::AddNoiseFromOuter(Option_t *option, Int_t ***MapPix
       istrip=(Int_t)((zNoise-zLen[iplate-1])/((zLen[iplate]-zLen[iplate-1])/zStrips[iplate-1])); //the strip number in the plate
       istrip++;
 
-      ipadAlongX = (Int_t)(AliTOFConstants::fgkNpadX*gRandom->Rndm())+1;
-      ipadAlongZ = (Int_t)(AliTOFConstants::fgkNpadZ*gRandom->Rndm())+1;
-      ipad=(Int_t)(ipadAlongZ-1)*AliTOFConstants::fgkNpadX+ipadAlongX;    //the pad number
+      ipadAlongX = (Int_t)(AliTOFGeometry::NpadX()*gRandom->Rndm())+1;
+      ipadAlongZ = (Int_t)(AliTOFGeometry::NpadZ()*gRandom->Rndm())+1;
+      ipad=(Int_t)(ipadAlongZ-1)*AliTOFGeometry::NpadX()+ipadAlongX;    //the pad number
       
-      Float_t xStrip=(ipadAlongX-1)*AliTOFConstants::fgkXPad+AliTOFConstants::fgkXPad*gRandom->Rndm()-0.5*AliTOFConstants::fgkNpadX*AliTOFConstants::fgkXPad;//x-coor.in the strip frame
-      Float_t zStrip=(ipadAlongZ-1)*AliTOFConstants::fgkZPad+AliTOFConstants::fgkZPad*gRandom->Rndm()-0.5*AliTOFConstants::fgkNpadZ*AliTOFConstants::fgkZPad;//z-coor.in the strip frame 
+      Float_t xStrip=(ipadAlongX-1)*AliTOFGeometry::XPad()+AliTOFGeometry::XPad()*gRandom->Rndm()-0.5*AliTOFGeometry::NpadX()*AliTOFGeometry::XPad();//x-coor.in the strip frame
+      Float_t zStrip=(ipadAlongZ-1)*AliTOFGeometry::ZPad()+AliTOFGeometry::ZPad()*gRandom->Rndm()-0.5*AliTOFGeometry::NpadZ()*AliTOFGeometry::ZPad();//z-coor.in the strip frame 
 
       Int_t nPlace[4]={0,0,0,0};
       nPlace[0]=ipad;
@@ -2062,12 +2062,12 @@ void AliTOFReconstructioner::AddNoiseFromOuter(Option_t *option, Int_t ***MapPix
 
 	    ipad = nPlace[indexOfPad];
 	    
-	    Int_t iMapValue=MapPixels[AliTOFConstants::fgkNSectors*(iplate-1)+isector-1][istrip-1][ipad-1];
+	    Int_t iMapValue=MapPixels[AliTOFGeometry::NSectors()*(iplate-1)+isector-1][istrip-1][ipad-1];
 	    
 	    if(iMapValue==0) {
 	      ipixel++;
 	      if(indexOfPad) nPixEdge++;
-	      MapPixels[AliTOFConstants::fgkNSectors*(iplate-1)+isector-1][istrip-1][ipad-1]=ipixel;
+	      MapPixels[AliTOFGeometry::NSectors()*(iplate-1)+isector-1][istrip-1][ipad-1]=ipixel;
 	      pixelArray[ipixel-1].SetGeom(isector,iplate,istrip,ipad);
 	      pixelArray[ipixel-1].AddState(1);
 	      pixelArray[ipixel-1].SetRealTime(tofAfterSimul[indexOfPad]);
@@ -2116,7 +2116,7 @@ void AliTOFReconstructioner::AddNoiseFromOuter(Option_t *option, Int_t ***MapPix
   Float_t occupancy;
   // numberOfPads for AliTOFV4 (Full coverage) 
   // - to be upgraded checking the used TOF version -
-  Float_t numberOfPads=AliTOFConstants::fgkPadXSector*AliTOFConstants::fgkNSectors;
+  Float_t numberOfPads=AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors();
   occupancy=100.*ipixel/numberOfPads;   // percentage of fired pads
   printf(" Overall TOF occupancy (percentage of fired pads after adding noise) = %f\n",occupancy); 
   delete [] zLen;
@@ -2607,7 +2607,7 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
       coslam=gpt/gp;
       sinlam=gpz/gp;
       //      helixRadius=100.*gpt/TMath::Abs(0.299792458*chargeField);
-      helixRadius=100.*gpt/TMath::Abs(AliTOFConstants::fgkSpeedOfLight*chargeField);
+      helixRadius=100.*gpt/TMath::Abs(AliTOFGeometry::SpeedOfLight()*chargeField);
       xHelixCenter=x-helixRadius*TMath::Cos(phi0);
       yHelixCenter=y-helixRadius*TMath::Sin(phi0);
       zHelixCenter=z;
@@ -2616,7 +2616,7 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
       //   Solves the equation f(s)=r(s)-RTOFINNER=0 by the Newton's method:
       //   snew=s-f/f'
       istep=0;
-      s=AliTOFConstants::fgkrmin-TMath::Sqrt(x*x+y*y);;
+      s=AliTOFGeometry::Rmin()-TMath::Sqrt(x*x+y*y);;
       do {
 	istep++;
 	xRespectToHelixCenter=helixRadius*TMath::Cos(phi0+s*helixFactor);
@@ -2624,7 +2624,7 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
 	gx=xHelixCenter+xRespectToHelixCenter;
 	gy=yHelixCenter+yRespectToHelixCenter;
 	gr=TMath::Sqrt(gx*gx+gy*gy);
-	deltaRadius=gr-AliTOFConstants::fgkrmin;
+	deltaRadius=gr-AliTOFGeometry::Rmin();
 	xp=-helixFactor*yRespectToHelixCenter;
 	yp= helixFactor*xRespectToHelixCenter;
 	fp=(gx*xp+gy*yp)/gr;
@@ -2679,7 +2679,7 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
 	  if(cosAngl<0) printf(" cosAngl<0: gx=%f,gy=%f,  gxLast=%f,gyLast=%f,gzLast=%f\n",gx,gy,gxLast,gyLast,gzLast);
 
 	  area /= cosAngl;
-	  TestTracks=(Int_t) (2*area/(AliTOFConstants::fgkXPad * AliTOFConstants::fgkZPad));
+	  TestTracks=(Int_t) (2*area/(AliTOFGeometry::XPad() * AliTOFGeometry::ZPad()));
 
 	  if(TestTracks<12) TestTracks=12;
 
@@ -2706,9 +2706,9 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
 	  iwork2=npixel[1];
 	  iwork3=npixel[2];
 	  //		   iwork4=npixel[3];
-	  iwork4=(npixel[3]-1)*AliTOFConstants::fgkNpadX+npixel[4];
+	  iwork4=(npixel[3]-1)*AliTOFGeometry::NpadX()+npixel[4];
 
-	  Int_t ifirstindex=AliTOFConstants::fgkNSectors*(npixel[1]-1)+npixel[0];
+	  Int_t ifirstindex=AliTOFGeometry::NSectors()*(npixel[1]-1)+npixel[0];
 	  iMapValue=mapPixels[ifirstindex-1][iwork3-1][iwork4-1];
 	  if(iMapValue==0) {
 	    ipixel++;
@@ -2763,7 +2763,7 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
 	gyLast=gy;
 	gzLast=gz;
 	
-      } while(rho<AliTOFConstants::fgkrmax); //end of do 
+      } while(rho<AliTOFGeometry::Rmax()); //end of do 
 
       
       if(istep>0) {
@@ -2772,7 +2772,7 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
 	    istep=-3;            // holes in TOF
 	  }
 	} else {
-	  if(TMath::Abs(gz)<AliTOFConstants::fgkMaxhZtof) {
+	  if(TMath::Abs(gz)<AliTOFGeometry::MaxhZtof()) {
 	    //                   if(TMath::Abs(gz)<MAXZTOF2) {
 	    istep=-2;            // PHOS and RICH holes or holes in between TOF plates
 	  } else {
@@ -2915,7 +2915,7 @@ void AliTOFReconstructioner::Matching(AliTOFTrack* trackArray, AliTOFRecHit* hit
 	
 	inverseOfParticleSpeed=time/wLength;
 	//w=900.*inverseOfParticleSpeed*inverseOfParticleSpeed-1.;
-	w=(100.*AliTOFConstants::fgkSpeedOfLight)*(100.*AliTOFConstants::fgkSpeedOfLight)*inverseOfParticleSpeed*inverseOfParticleSpeed-1.;
+	w=(100.*AliTOFGeometry::SpeedOfLight())*(100.*AliTOFGeometry::SpeedOfLight())*inverseOfParticleSpeed*inverseOfParticleSpeed-1.;
 	w2=pvtx*pvtx;
 	Float_t squareMass=w2*w;
 	mass=TMath::Sqrt(TMath::Abs(squareMass));

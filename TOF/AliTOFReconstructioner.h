@@ -256,6 +256,7 @@ private:
   Float_t fPBound;         //tracks/hits with P(GeV/c)<PBOUND do not take into account (kinematical cut)
 
  protected:
+ 
 
   ClassDef(AliTOFReconstructioner,1)  // Task class for TOF reconstruction
 

@@ -12,13 +12,8 @@
 #pragma link C++ class  AliTOFT0+;
 #pragma link C++ class  AliTOFPID+;
 #pragma link C++ class  AliTOFProb+;
-#pragma link C++ class  AliTOFv0+;
-#pragma link C++ class  AliTOFv1+;
-#pragma link C++ class  AliTOFv2+;
-#pragma link C++ class  AliTOFv3+;
-#pragma link C++ class  AliTOFv4+;
+#pragma link C++ class  AliTOFGeometry+;
 #pragma link C++ class  AliTOFv4T0+;
-#pragma link C++ class  AliTOFv2FHoles+;
 
 #pragma link C++ class  AliTOFhit+;
 #pragma link C++ class  AliTOFhitT0+;
@@ -32,7 +27,6 @@
 #pragma link C++ class  AliTOFMerger+;
 #pragma link C++ class  AliTOFSDigit+;
 #pragma link C++ class  AliTOFHitMap+;
-#pragma link C++ class  AliTOFConstants+;
 #pragma link C++ class  AliTOFPad+;
 #pragma link C++ class  AliTOFTrack+;
 #pragma link C++ class  AliTOFRecHit+;

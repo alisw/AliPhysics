@@ -35,7 +35,7 @@
 
 #include "AliRun.h"
 #include "AliTOF.h"
-#include "AliTOFConstants.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFSDigit.h"
 
 ClassImp(AliTOFSDigit)
@@ -59,6 +59,7 @@ AliTOFSDigit::AliTOFSDigit(Int_t tracknum, Int_t *vol,Float_t *digit)
   //
   // Constructor of digit object
   //
+
   fSector = vol[0];
   fPlate  = vol[1];
   fStrip  = vol[2];
@@ -141,7 +142,7 @@ void AliTOFSDigit::Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track)
   //
   
   Int_t sameTime = -1;
-  Float_t tdcwindow=((Float_t)AliTOFConstants::fgkTimeDiff)/tdcbin;
+  Float_t tdcwindow=((Float_t)AliTOFGeometry::TimeDiff())/tdcbin;
   for (Int_t i = 0; i < fNDigits; i++) {
     if (TMath::Abs(tdc-fTdc->At(i)) < tdcwindow) {
       sameTime = i;
@@ -201,7 +202,7 @@ void AliTOFSDigit::Update(AliTOFSDigit* sdig)
     
     
     Int_t sameTime = -1;
-    Float_t tdcwindow=((Float_t)AliTOFConstants::fgkTimeDiff)/tdcbin;
+    Float_t tdcwindow=((Float_t)AliTOFGeometry::TimeDiff())/tdcbin;
     for (Int_t i = 0; i < fNDigits; i++) {
       if (TMath::Abs(tdc-fTdc->At(i)) < tdcwindow) {
 	sameTime = i;
@@ -261,24 +262,24 @@ Int_t AliTOFSDigit::GetTotPad() const
   // starting from the digits data.
   //
   
-  Int_t pad = fPadx+AliTOFConstants::fgkNpadX*(fPadz-1);
+  Int_t pad = fPadx+AliTOFGeometry::NpadX()*(fPadz-1);
   Int_t before=0;
   
   switch(fPlate){ 
   case 1: before = 0;
     break;
-  case 2: before = AliTOFConstants::fgkNStripC;
+  case 2: before = AliTOFGeometry::NStripC();
     break;
-  case 3: before = AliTOFConstants::fgkNStripB + AliTOFConstants::fgkNStripC;
+  case 3: before = AliTOFGeometry::NStripB() + AliTOFGeometry::NStripC();
     break;
-  case 4: before = AliTOFConstants::fgkNStripA + AliTOFConstants::fgkNStripB + AliTOFConstants::fgkNStripC;
+  case 4: before = AliTOFGeometry::NStripA() + AliTOFGeometry::NStripB() + AliTOFGeometry::NStripC();
     break;
-  case 5: before = AliTOFConstants::fgkNStripA + 2*AliTOFConstants::fgkNStripB + AliTOFConstants::fgkNStripC;
+  case 5: before = AliTOFGeometry::NStripA() + 2*AliTOFGeometry::NStripB() + AliTOFGeometry::NStripC();
     break;
   }
   
   Int_t strip = fStrip+before;
-  Int_t padTot = AliTOFConstants::fgkPadXStrip*(strip-1)+pad;
+  Int_t padTot = AliTOFGeometry::NpadX()*AliTOFGeometry::NpadZ()*(strip-1)+pad;
   return padTot;
 }
 

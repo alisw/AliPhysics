@@ -37,7 +37,7 @@
 
 #include "AliTOFDigitMap.h"
 #include "AliTOFdigit.h"
-#include "AliTOFConstants.h"
+#include "AliTOFGeometry.h"
 
 
 #include <TClonesArray.h>
@@ -62,11 +62,11 @@ AliTOFDigitMap::AliTOFDigitMap(TClonesArray *dig)
   // of course, these constants must not be hardwired
   // change later
   
-  fNSector = AliTOFConstants::fgkNSectors;
-  fNplate = AliTOFConstants::fgkNPlates;
-  fNstrip = AliTOFConstants::fgkNStripC;
-  fNpx  = AliTOFConstants::fgkNpadX;
-  fNpz  = AliTOFConstants::fgkNpadZ;
+  fNSector = AliTOFGeometry::NSectors();
+  fNplate = AliTOFGeometry::NPlates();
+  fNstrip = AliTOFGeometry::NStripC();
+  fNpx  = AliTOFGeometry::NpadX();
+  fNpz  = AliTOFGeometry::NpadZ();
   fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
   fDigitMap = new Int_t[fMaxIndex];
   fDigits =  dig;

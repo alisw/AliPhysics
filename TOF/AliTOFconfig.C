@@ -26,7 +26,6 @@
 #include "STRUCT/AliPIPEv0.h"
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv2FHoles.h"
 #include "TOF/AliTOFv4T0.h"
 #include "RICH/AliRICHv3.h"
 #include "ZDC/AliZDCv2.h"
@@ -70,8 +69,7 @@ enum PprMag_t
 
 // This part for configuration    
 static PprRun_t srun = test50;
-//static PprRun_t srun = kPythia6;
-static PprGeo_t sgeo = kNoHoles;
+static PprGeo_t sgeo = kHoles;
 static PprRad_t srad = kGluonRadiation;
 static PprMag_t smag = k5kG;
 
@@ -374,14 +372,7 @@ void Config()
     }
 
 
-    if (iTOF) {
-	if (sgeo == kHoles) {
-        //=================== TOF parameters ============================
-	    AliTOF *TOF = new AliTOFv2FHoles("TOF", "TOF with Holes");
-	} else {
-	    AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
-	}
-    }
+    if (iTOF) AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
 
 
     if (iRICH)

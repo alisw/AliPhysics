@@ -22,7 +22,7 @@
 //                                                                           //
 //  VERSION WITH 5 MODULES AND TILTED STRIPS                                 //
 //                                                                           //
-//   FULL COVERAGE VERSION                                                   //
+//   FULL COVERAGE VERSION +OPTION for PHOS holes                            //
 //                                                                           //
 //   Author:                                                                 //
 //   Fabrizio Pierella                                                       //
@@ -51,7 +51,6 @@
 #include "AliConst.h"
 #include "AliRun.h"
 #include "AliTOFv4T0.h"
-#include "AliTOFConstants.h" // AdC
 #include "AliMC.h"
  
 ClassImp(AliTOFv4T0)
@@ -74,20 +73,29 @@ AliTOFv4T0::AliTOFv4T0(const char *name, const char *title)
   //
   // Check that FRAME is there otherwise we have no place where to
   // put TOF
+
+
   AliModule* frame=gAlice->GetModule("FRAME");
   if(!frame) {
     Error("Ctor","TOF needs FRAME to be present\n");
     exit(1);
-  } else
-    if(frame->IsVersion()!=1) {
-      Error("Ctor","FRAME version 1 needed with this version of TOF\n");
-      exit(1);
-    }
- 
-}
+  } else{
+    
+    if (fTOFGeometry) delete fTOFGeometry;
+    fTOFGeometry = new AliTOFGeometry();
+
+    if(frame->IsVersion()==1) {
+      cout << " Frame version " << frame->IsVersion() << endl; 
+      cout << " Full Coverage for TOF" << endl;
+      fTOFHoles=false;}    
+    else {
+      cout << " Frame version " << frame->IsVersion() << endl; 
+      cout << " TOF with Holes for PHOS " << endl;
+      fTOFHoles=true;}      
+  }
+} 
 
 //____________________________________________________________________________
-
 void AliTOFv4T0::BuildGeometry()
 {
   //
@@ -191,6 +199,7 @@ void AliTOFv4T0::CreateGeometry()
   AliTOF::CreateGeometry();
 }
  
+
 //_____________________________________________________________________________
 void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 		     Float_t zlenB, Float_t zlenA, Float_t ztof0)
@@ -199,14 +208,14 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   // Definition of the Time Of Fligh Resistive Plate Chambers
   // xFLT, yFLT, zFLT - sizes of TOF modules (large)
   
-  Float_t  ycoor, zcoor;
+  Float_t  ycoor;
   Float_t  par[3];
   Int_t    *idtmed = fIdtmed->GetArray()-499;
   Int_t    idrotm[100];
   Int_t    nrot = 0;
-  Float_t  hTof = fRmax-fRmin;
-  
+
   Float_t radius = fRmin+2.;//cm
+
   
   par[0] =  xtof * 0.5;
   par[1] =  ytof * 0.5;
@@ -226,6 +235,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   AliMatrix(idrotm[0], 90.,  0., 0., 0., 90,-90.);
   AliMatrix(idrotm[1], 90.,180., 0., 0., 90, 90.);
+
   gMC->Gspos("FTOC", 1, "BTO1", 0,  zcor1, 0, idrotm[0], "ONLY");
   gMC->Gspos("FTOC", 2, "BTO1", 0, -zcor1, 0, idrotm[1], "ONLY");
   gMC->Gspos("FTOC", 1, "BTO2", 0,  zcor1, 0, idrotm[0], "ONLY");
@@ -241,9 +251,10 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   gMC->Gspos("FTOB", 2, "BTO3", 0, -zcor2, 0, idrotm[1], "ONLY");
   
   gMC->Gspos("FTOA", 0, "BTO1", 0, zcor3,  0, idrotm[0], "ONLY");
-  gMC->Gspos("FTOA", 0, "BTO2", 0, zcor3,  0, idrotm[0], "ONLY");
+  if(!fTOFHoles)gMC->Gspos("FTOA", 0, "BTO2", 0, zcor3,  0, idrotm[0], "ONLY");
   gMC->Gspos("FTOA", 0, "BTO3", 0, zcor3,  0, idrotm[0], "ONLY");
   
+
   Float_t db = 0.5;//cm
   Float_t xFLT, xFST, yFLT, zFLTA, zFLTB, zFLTC;
   
@@ -281,7 +292,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   ///// Layers of Aluminum before and after detector /////
   ///// Aluminum Box for Modules (1.8 mm thickness)  /////
   ///// lateral walls not simulated for the time being
-  //const Float_t khAlWall = 0.18;
+  //    const Float_t khAlWall = 0.18;
   // fp to be checked
   const Float_t khAlWall = 0.11;
   par[0] = xFLT*0.5;
@@ -306,7 +317,6 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   //and the boundary of the strip
   const Int_t    knx    = fNpadX;          // number of pads along x
   const Int_t    knz    = fNpadZ;          // number of pads along z
-  const Float_t  kspace = fSpace;            //cm distance from the front plate of the box
   
   Float_t zSenStrip  = fZpad*fNpadZ;//cm
   Float_t stripWidth = zSenStrip + 2*kdeadBound;
@@ -337,12 +347,12 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   const Float_t klstripx = 122.;
   
   Float_t parfp[3]={klstripx*0.5,khstripy*0.5,kwstripz*0.5};
-  // coordinates of the strip center in the strip reference frame; used for positioning
-  // internal strip volumes
+  // Coordinates of the strip center in the strip reference frame; 
+  // used for positioninG internal strip volumes
   Float_t posfp[3]={0.,0.,0.};  
   
   
-  // FSTR volume definition and filling this volume with non sensitive Gas Mixture
+  // FSTR volume definition-filling this volume with non sensitive Gas Mixture
   gMC->Gsvolu("FSTR","BOX",idtmed[512],parfp,3);
   //-- HONY Layer definition
   //  parfp[0] = -1;
@@ -356,6 +366,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   gMC->Gspos("FHON",2,"FSTR",0.,-posfp[1],0.,0,"ONLY");
   
   //-- PCB Layer definition 
+ 
   parfp[1] = khpcby*0.5;
   gMC->Gsvolu("FPCB","BOX",idtmed[504],parfp,3);
   // positioning 2 PCB Layers on FSTR volume
@@ -368,6 +379,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   
   //-- MYLAR Layer definition
+
   parfp[1] = khmyly*0.5;
   gMC->Gsvolu("FMYL","BOX",idtmed[511],parfp,3);
   // positioning 2 MYLAR Layers on FSTR volume
@@ -381,6 +393,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   
   //-- Graphite Layer definition
+ 
   parfp[1] = khgraphy*0.5;
   gMC->Gsvolu("FGRP","BOX",idtmed[502],parfp,3);
   // positioning 2 Graphite Layers on FSTR volume
@@ -394,6 +407,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   
   //-- Glass (EXT. +Semi INT.) Layer definition
+
   parfp[1] = khglasseiy*0.5;
   gMC->Gsvolu("FGLA","BOX",idtmed[514],parfp,3);
   // positioning 2 Glass Layers on FSTR volume
@@ -407,6 +421,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   
   //-- Sensitive Mixture Layer definition
+ 
   parfp[0] = klsensmx*0.5;
   parfp[1] = khsensmy*0.5;
   parfp[2] = kwsensmz*0.5;
@@ -420,10 +435,12 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   gMC->Gspos("FSEN",0,"FSTR", 0.,-posfp[1],0.,0,"ONLY");
   
   // dividing FSEN along z in knz=2 and along x in knx=48
+
   gMC->Gsdvn("FSEZ","FSEN",knz,3);
   gMC->Gsdvn("FSEX","FSEZ",knx,1);
   
   // FPAD volume definition
+
   parfp[0] = klpadx*0.5;   
   parfp[1] = khsensmy*0.5;
   parfp[2] = kwpadz*0.5;
@@ -431,186 +448,55 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   // positioning the FPAD volumes on previous divisions
   gMC->Gspos("FPAD",0,"FSEX",0.,0.,0.,0,"ONLY");
   
-  ////  Positioning the Strips  (FSTR) in the FLT volumes  /////
-  
-  // Plate A (Central) 
-  
-  Float_t t = zFLTC+zFLTB+zFLTA*0.5+ 2*db;//Half Width of Barrel
-  
-  Float_t gap  = fGapA+0.5; //cm  updated distance between the strip axis
-  Float_t zpos = 0;
-  Float_t ang  = 0;
-  Int_t j=1; // AdC
-  nrot  = 0;
-  zcoor = 0;
-  ycoor = -14.5 + kspace ; //2 cm over front plate
-  
-  AliMatrix (idrotm[0],  90.,  0.,90.,90.,0., 90.);  
 
-  Int_t centerLoc= (Int_t)(fNStripA/2.) + 1; // AdC
+  ///////////////////Positioning A module//////////////////////////
 
-  //gMC->Gspos("FSTR",j,"FLTA",0.,ycoor, 0.,idrotm[0],"ONLY");
-  gMC->Gspos("FSTR",centerLoc,"FLTA",0.,ycoor, 0.,idrotm[0],"ONLY"); // AdC
-  if(fDebug>=1) {
-    printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,j); // AdC
-    printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
+
+  for(Int_t istrip =0; istrip < fTOFGeometry->NStripA(); istrip++){
+
+    Float_t ang = fTOFGeometry->GetAngles(2,istrip);
+    AliMatrix (idrotm[0],90.,0.,90.-ang,90.,-ang, 90.);  
+    ang /= kRaddeg;
+    Float_t zpos = tan(ang)*radius;
+    Float_t ypos= fTOFGeometry->GetHeights(2,istrip);
+    gMC->Gspos("FSTR",fNStripA-istrip,"FLTA",0.,ypos, zpos,idrotm[0],  "ONLY");
+    if(fDebug>=1) {
+      printf("y = %f,  z = %f, , z coord = %f, Rot ang = %f, St. %2i \n",ypos,zpos,tan(ang)*radius ,ang*kRaddeg,istrip);
+    }
   }
-  zcoor -= zSenStrip;
-  //j++; // AdC
-  Int_t upDown = -1; // upDown=-1 -> Upper strip
-                     // upDown=+1 -> Lower strip
-  do{
-    ang = atan(zcoor/radius);
-    ang *= kRaddeg;
-    AliMatrix (idrotm[nrot],  90.,  0.,90.-ang,90.,-ang, 90.);  
-    AliMatrix (idrotm[nrot+1],90.,180.,90.+ang,90., ang, 90.);
-    ang /= kRaddeg;
-    ycoor = -14.5+ kspace; //2 cm over front plate
-    ycoor += (1-(upDown+1)/2)*gap;
-    //gMC->Gspos("FSTR",j  ,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
-    //gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
-    gMC->Gspos("FSTR",centerLoc-j,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY"); // AdC
-    gMC->Gspos("FSTR",centerLoc+j,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY"); // AdC
-    if(fDebug>=1) {
-      printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,j); // AdC
-      printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
-    }
-    j++; //j += 2; // AdC
-    upDown*= -1; // Alternate strips 
-    zcoor = zcoor-(zSenStrip/2)/TMath::Cos(ang)-
-      upDown*gap*TMath::Tan(ang)-
-      (zSenStrip/2)/TMath::Cos(ang);
-  } while (zcoor-(stripWidth/2)*TMath::Cos(ang)>-t+zFLTC+zFLTB+db*2);
-  
-  zcoor = zcoor+(zSenStrip/2)/TMath::Cos(ang)+
-    upDown*gap*TMath::Tan(ang)+
-    (zSenStrip/2)/TMath::Cos(ang);
-  
-  gap = fGapB;
-  zcoor = zcoor-(zSenStrip/2)/TMath::Cos(ang)-
-    upDown*gap*TMath::Tan(ang)-
-    (zSenStrip/2)/TMath::Cos(ang);
-  
-  ang = atan(zcoor/radius);
-  ang *= kRaddeg;
-  AliMatrix (idrotm[nrot],  90.,  0.,90.-ang,90.,-ang, 90.);  
-  AliMatrix (idrotm[nrot+1],90.,180.,90.+ang,90., ang, 90.);
-  ang /= kRaddeg;
-  
-  ycoor = -14.5+ kspace; //2 cm over front plate
-  ycoor += (1-(upDown+1)/2)*gap;
-  //gMC->Gspos("FSTR",j  ,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
-  //gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
-  gMC->Gspos("FSTR",centerLoc-j,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY"); // AdC
-  gMC->Gspos("FSTR",centerLoc+j,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY"); // AdC
-  if(fDebug>=1) {
-    printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,j); // AdC
-    printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
-  }
-  ycoor = -hTof/2.+ kspace;//2 cm over front plate
-  
-  // Plate  B
-  
-  nrot = 0;
-  Int_t i=1; // AdC
-  upDown = 1;
-  Float_t deadRegion = 1.0;//cm
-  
-  zpos = zcoor - (zSenStrip/2)/TMath::Cos(ang)-
-    upDown*gap*TMath::Tan(ang)-
-    (zSenStrip/2)/TMath::Cos(ang)-
-    deadRegion/TMath::Cos(ang);
-  
-  ang = atan(zpos/radius);
-  ang *= kRaddeg;
-  AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 270.);
-  ang /= kRaddeg;
-  ycoor = -hTof*0.5+ kspace ; //2 cm over front plate
-  ycoor += (1-(upDown+1)/2)*gap;
-  zcoor = zpos+(zFLTA*0.5+zFLTB*0.5+db); // Moves to the system of the modulus FLTB
-  gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-  if(fDebug>=1) {   
-    printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i); 
-    printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos); 
-  }   
-  i++;
-  upDown*=-1;
-  
-  do {
-    zpos = zpos - (zSenStrip/2)/TMath::Cos(ang)-
-      upDown*gap*TMath::Tan(ang)-
-      (zSenStrip/2)/TMath::Cos(ang);
-    ang = atan(zpos/radius);
-    ang *= kRaddeg;
-    AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 270.);
-    ang /= kRaddeg;
-    Float_t deltaSpaceinB=-0.5; // [cm] to avoid overlaps with the end of freon frame
-    Float_t deltaGapinB=0.5;    // [cm] to avoid overlaps in between initial strips
-    ycoor = -hTof*0.5+ kspace+deltaSpaceinB ; //2 cm over front plate
-    ycoor += (1-(upDown+1)/2)*(gap+deltaGapinB);
-    zcoor = zpos+(zFLTA*0.5+zFLTB*0.5+db); // Moves to the system of the modulus FLTB
-    gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-    if(fDebug>=1) {
-      printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i);
-      printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
-    }
-    upDown*=-1;
-    i++;
-  } while (TMath::Abs(ang*kRaddeg)<22.5);
-  //till we reach a tilting angle of 22.5 degrees
-  
-  ycoor = -hTof*0.5+ kspace ; //2 cm over front plate
-  zpos = zpos - zSenStrip/TMath::Cos(ang);
-  // this avoid overlaps in between outer strips in plate B
-  Float_t deltaMovingUp=0.8;    // [cm]
-  Float_t deltaMovingDown=-0.5; // [cm]
-  
-  do {
-    ang = atan(zpos/radius);
-    ang *= kRaddeg;
-    AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 270.);
-    ang /= kRaddeg;
-    zcoor = zpos+(zFLTB/2+zFLTA/2+db);
-    gMC->Gspos("FSTR",i, "FLTB", 0., ycoor+deltaMovingDown+deltaMovingUp, zcoor,idrotm[nrot], "ONLY");
-    deltaMovingUp+=0.8; // update delta moving toward the end of the plate
-    zpos = zpos - zSenStrip/TMath::Cos(ang);
-    if(fDebug>=1) {
-      printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i);
-      printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
-    }
-    i++;
-    
-  }  while (zpos-stripWidth*0.5/TMath::Cos(ang)>-t+zFLTC+db);
-  
-  // Plate  C
-  
-  zpos = zpos + zSenStrip/TMath::Cos(ang);
-  
-  zpos = zpos - (zSenStrip/2)/TMath::Cos(ang)+
-    gap*TMath::Tan(ang)-
-    (zSenStrip/2)/TMath::Cos(ang);
-  
-  nrot = 0;
-  i=0;
-  Float_t deltaGap=-2.5; // [cm] update distance from strip center and plate
-  ycoor= -hTof*0.5+kspace+gap+deltaGap;
-  
-  do {
-    i++;
-    ang = atan(zpos/radius);
-    ang *= kRaddeg;
-    AliMatrix (idrotm[nrot], 90., 0., 90.-ang,90.,ang, 270.);
-    ang /= kRaddeg;
-    zcoor = zpos+(zFLTC*0.5+zFLTB+zFLTA*0.5+db*2);
-    gMC->Gspos("FSTR",i, "FLTC", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
-    if(fDebug>=1) {
-      printf("%s: %f,  St. %2i, Pl.5 ",ClassName(),ang*kRaddeg,i);
-      printf("y = %f,  z = %f, zpos = %f \n",ycoor,zcoor,zpos);
-     }
-    zpos = zpos - zSenStrip/TMath::Cos(ang);
-  }  while (zpos-stripWidth*TMath::Cos(ang)*0.5>-t);
 
- 
+  
+  ///////////////////Positioning B module//////////////////////////
+
+  for(Int_t istrip =0; istrip < fTOFGeometry->NStripB(); istrip++){
+
+    Float_t ang = fTOFGeometry->GetAngles(3,istrip);
+    AliMatrix (idrotm[0],90.,0.,90.-ang,90.,-ang, 90.);  
+    ang /= kRaddeg;
+    Float_t zpos = tan(ang)*radius+(zFLTA*0.5+zFLTB*0.5+db);
+    Float_t ypos= fTOFGeometry->GetHeights(3,istrip);
+    gMC->Gspos("FSTR",istrip+1,"FLTB",0.,ypos, zpos,idrotm[nrot],  "ONLY");
+    if(fDebug>=1) {
+      printf("y = %f,  z = %f, , z coord = %f, Rot ang = %f, St. %2i \n",ypos,zpos,tan(ang)*radius,ang*kRaddeg,istrip);
+    }
+  }
+
+  
+  ///////////////////Positioning C module//////////////////////////
+
+  for(Int_t istrip =0; istrip < fTOFGeometry->NStripC(); istrip++){
+
+    Float_t ang = fTOFGeometry->GetAngles(4,istrip);
+    AliMatrix (idrotm[0],90.,0.,90.-ang,90.,-ang, 90.);  
+    ang /= kRaddeg;
+    Float_t zpos = tan(ang)*radius+(zFLTC*0.5+zFLTB+zFLTA*0.5+db*2);
+    Float_t ypos= fTOFGeometry->GetHeights(4,istrip);
+    gMC->Gspos("FSTR",istrip+1,"FLTC",0.,ypos, zpos,idrotm[nrot],  "ONLY");
+    if(fDebug>=1) {
+      printf("y = %f,  z = %f, z coord = %f, Rot ang = %f, St. %2i \n",ypos,zpos,tan(ang)*radius,ang*kRaddeg,istrip);
+    }
+  }
+   
   ////////// Layers after strips /////////////////
   // Al Layer thickness (2.3mm) factor 0.7
   
@@ -631,6 +517,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   
   // plexiglass thickness: 1.5 mm ; factor 0.3
+
   ycoor += par[1];
   par[0] = xFLT*0.5;
   par[1] = 0.075*0.3; // factor 0.3 
@@ -646,6 +533,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   gMC->Gspos ("FECC", 0, "FLTC", 0., ycoor, 0., 0, "ONLY");
   
   // frame of Air
+
   ycoor += par[1];
   par[0] = xFLT*0.5;
   par[1] = (yFLT/2-ycoor-khAlWall)*0.5; // Aluminum layer considered (0.18 cm)
@@ -667,6 +555,8 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   // card volume definition
   
   // see GEOM200 in GEANT manual
+
+
   AliMatrix(idrotm[98], 90., 0., 90., 90., 0., 0.); // 0 deg
   
   Float_t cardpar[3];
@@ -687,7 +577,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   cardpos[2]= -53.;
   Float_t aplpos1 = -2.;
   Int_t icard;
-  for (icard=0; icard<15; ++icard) {
+  for (icard=0; icard < fTOFGeometry->NStripA(); ++icard) {
     cardpos[2]= cardpos[2]+stepforcardA;
     aplpos2 = cardpos[2]+0.15;
     gMC->Gspos("FCAR",icard,"FAIA",cardpos[0],cardpos[1],cardpos[2],idrotm[98],"ONLY");
@@ -699,7 +589,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   // intermediate module positioning (FAIB)
   Float_t stepforcardB= 7.05;
   cardpos[2]= -70.5;
-  for (icard=0; icard<19; ++icard) {
+  for (icard=0; icard < fTOFGeometry->NStripB(); ++icard) {
     cardpos[2]= cardpos[2]+stepforcardB;
     aplpos2 = cardpos[2]+0.15; 
     gMC->Gspos("FCAR",icard,"FAIB",cardpos[0],cardpos[1],cardpos[2],idrotm[98],"ONLY");
@@ -710,7 +600,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   // outer module positioning (FAIC)
   Float_t stepforcardC= 8.45238;
   cardpos[2]= -88.75;
-  for (icard=0; icard<20; ++icard) {
+  for (icard=0; icard < fTOFGeometry->NStripC(); ++icard) {
     cardpos[2]= cardpos[2]+stepforcardC;
     aplpos2 = cardpos[2]+0.15;
     gMC->Gspos("FCAR",icard,"FAIC",cardpos[0],cardpos[1],cardpos[2],idrotm[98],"ONLY");
@@ -718,6 +608,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   }
   
   // tube volume definition
+
   Float_t tubepar[3];
   tubepar[0]= 0.;
   tubepar[1]= 0.4;
@@ -740,7 +631,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   tubepos[2]= -53.+tdis;
   //  tub1pos = 5.;
   Int_t itub;
-  for (itub=0; itub<15; ++itub) {
+  for (itub=0; itub < fTOFGeometry->NStripA(); ++itub) {
     tubepos[2]= tubepos[2]+stepforcardA;
     gMC->Gspos("FTUB",itub,"FAIA",tubepos[0],tubepos[1],tubepos[2],idrotm[99],
 	       "ONLY");
@@ -749,7 +640,7 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   // intermediate module positioning (FAIB)
   tubepos[2]= -70.5+tdis;
-  for (itub=0; itub<19; ++itub) {
+  for (itub=0; itub < fTOFGeometry->NStripB(); ++itub) {
     tubepos[2]= tubepos[2]+stepforcardB;
     gMC->Gspos("FTUB",itub,"FAIB",tubepos[0],tubepos[1],tubepos[2],idrotm[99],
 	       "ONLY");
@@ -757,14 +648,13 @@ void AliTOFv4T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   
   // outer module positioning (FAIC)
   tubepos[2]= -88.75+tdis;
-  for (itub=0; itub<20; ++itub) {
+  for (itub=0; itub < fTOFGeometry->NStripC(); ++itub) {
     tubepos[2]= tubepos[2]+stepforcardC;
     gMC->Gspos("FTUB",itub,"FAIC",tubepos[0],tubepos[1],tubepos[2],idrotm[99],
 	       "ONLY");
   }
 
 }
-
 //_____________________________________________________________________________
 void AliTOFv4T0::DrawModule() const
 {
@@ -1042,9 +932,11 @@ void AliTOFv4T0::Init()
 //_____________________________________________________________________________
 void AliTOFv4T0::StepManager()
 {
+
   //
   // Procedure called at each step in the Time Of Flight
   //
+
   TLorentzVector mom, pos;
   Float_t xm[3],pm[3],xpad[3],ppad[3];
   Float_t hits[14],phi,phid,z;
@@ -1053,7 +945,7 @@ void AliTOFv4T0::StepManager()
   Int_t   copy, padzid, padxid, stripid, i;
   Int_t   *idtmed = fIdtmed->GetArray()-499;
   Float_t incidenceAngle;
-  
+      
   if(gMC->GetMedium()==idtmed[513] && 
      gMC->IsTrackEntering() && gMC->TrackCharge()
      && gMC->CurrentVolID(copy)==fIdSens) 
@@ -1062,6 +954,7 @@ void AliTOFv4T0::StepManager()
     
     padzid=gMC->CurrentVolOffID(2,copy);
     padz=copy; 
+
     
     padxid=gMC->CurrentVolOffID(1,copy);
     padx=copy; 
@@ -1072,10 +965,13 @@ void AliTOFv4T0::StepManager()
     gMC->TrackPosition(pos);
     gMC->TrackMomentum(mom);
 
-//    Double_t NormPos=1./pos.Rho();
+
+    //    Double_t NormPos=1./pos.Rho();
+
     Double_t normMom=1./mom.Rho();
 
-//  getting the cohordinates in pad ref system
+    //  getting the cohordinates in pad ref system
+
     xm[0] = (Float_t)pos.X();
     xm[1] = (Float_t)pos.Y();
     xm[2] = (Float_t)pos.Z();
@@ -1089,9 +985,11 @@ void AliTOFv4T0::StepManager()
 
     incidenceAngle = TMath::ACos(ppad[1])*kRaddeg;
 
+
     z = pos[2];
 
-    plate = 0;  
+    plate = -1;  
+
     if (TMath::Abs(z) <=  fZlenA*0.5)  plate = 2; //3; // AdC
     if (z < (fZlenA*0.5+fZlenB) && 
         z >  fZlenA*0.5)               plate = 1; //4; // AdC
@@ -1100,21 +998,31 @@ void AliTOFv4T0::StepManager()
     if (z > (fZlenA*0.5+fZlenB))       plate = 0; //5; // AdC
     if (z <-(fZlenA*0.5+fZlenB))       plate = 4; //1; // AdC
 
-    if (plate==0) strip=AliTOFConstants::fgkNStripC-strip; // AdC
-    else if (plate==1) strip=AliTOFConstants::fgkNStripB-strip; // AdC
+
+    if (plate==0) strip=fTOFGeometry->NStripC()-strip; // AdC
+    else if (plate==1) strip=fTOFGeometry->NStripB()-strip; // AdC
     else strip--; // AdC
+ 
+    //Apply ALICE conventions for volume numbering increasing with theta, phi 
 
-    if (z<=0.) padx=AliTOFConstants::fgkNpadX-padx; // AdC
-    else padx--; // AdC
+    if (plate==3 || plate==4){
+      padx=fTOFGeometry->NpadX()-padx; // SA
+      padz=fTOFGeometry->NpadZ()-padz; // AdC
+      xpad[0]=-xpad[0];      
+      xpad[2]=-xpad[2];      
+    }
+    else {
+     padx--; // AdC
+     padz--; // AdC
+    }
 
-    if (plate==3 || plate==4) padz=AliTOFConstants::fgkNpadZ-padz; // AdC
-    else padz--; // AdC
+
 
     phi = pos.Phi();
     if (phi>=0.) phid = phi*kRaddeg; //+180.; // AdC
     else phid = phi*kRaddeg + 360.; // AdC
+
     sector = Int_t (phid/20.);
-    //sector++; // AdC
 
     for(i=0;i<3;++i) {
       hits[i]   = pos[i];
@@ -1134,8 +1042,8 @@ void AliTOFv4T0::StepManager()
     vol[1]= plate;
     vol[2]= strip;
     vol[3]= padx;
-    vol[4]= padz;
-    
+    vol[4]= padz;    
+
     AddT0Hit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol, hits);
   }
 }

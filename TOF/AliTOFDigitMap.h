@@ -17,6 +17,7 @@
 
 #include "AliHitMap.h"
 #include "TObject.h"
+#include "AliTOFGeometry.h"
 class TClonesArray;
 
 class AliTOFDigitMap : public TObject

@@ -10,6 +10,7 @@
 //-------------------------------------------------------
 
 #include <TObject.h>
+#include "AliTOFGeometry.h"
 
 class AliESD;
 class TFile;
@@ -73,6 +74,8 @@ private:
 
   Int_t fN;                  // number of the TOF clusters
   AliTOFcluster *fClusters[kMaxCluster];  // pointers to the TOF clusters
+
+  AliTOFGeometry *fTOFGeometry; //The TOF Geometry
 
   ClassDef(AliTOFpidESD,1)   // TOF PID class
 };

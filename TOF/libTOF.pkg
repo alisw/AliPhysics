@@ -1,4 +1,9 @@
-SRCS  = AliTOF.cxx  AliTOFv0.cxx  AliTOFv1.cxx  AliTOFv2.cxx  AliTOFv3.cxx  AliTOFv4.cxx AliTOFv4T0.cxx AliTOFhit.cxx  AliTOFhitT0.cxx AliTOFPID.cxx AliTOFT0.cxx AliTOFdigit.cxx AliTOFRawSector.cxx  AliTOFRoc.cxx  AliTOFRawDigit.cxx AliTOFDigitizer.cxx AliTOFSDigitizer.cxx AliTOFMerger.cxx  AliTOFv2FHoles.cxx AliTOFSDigit.cxx AliTOFHitMap.cxx AliTOFConstants.cxx AliTOFPad.cxx AliTOFRecHit.cxx AliTOFTrack.cxx AliTOFReconstructioner.cxx AliTOFProb.cxx AliTOFTrackV2.cxx AliTOFReconstructionerV2.cxx AliTOFDigitMap.cxx AliTOFpidESD.cxx
+SRCS  = AliTOF.cxx  AliTOFGeometry.cxx AliTOFv4T0.cxx  AliTOFhit.cxx  AliTOFhitT0.cxx  \
+        AliTOFPID.cxx  AliTOFT0.cxx  AliTOFdigit.cxx  AliTOFRawSector.cxx  AliTOFRoc.cxx  \
+        AliTOFRawDigit.cxx  AliTOFDigitizer.cxx  AliTOFSDigitizer.cxx  AliTOFMerger.cxx  \
+        AliTOFSDigit.cxx  AliTOFHitMap.cxx  AliTOFPad.cxx  AliTOFRecHit.cxx  AliTOFTrack.cxx  \
+        AliTOFReconstructioner.cxx  AliTOFProb.cxx  AliTOFTrackV2.cxx  AliTOFReconstructionerV2.cxx  \
+        AliTOFDigitMap.cxx  AliTOFpidESD.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)

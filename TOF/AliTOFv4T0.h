@@ -17,7 +17,9 @@ class AliTOFv4T0 : public AliTOF {
 public:
   AliTOFv4T0();
   AliTOFv4T0(const char *name, const char *title);
-  virtual ~AliTOFv4T0() {}
+  virtual ~AliTOFv4T0() {   if (fTOFGeometry) {delete fTOFGeometry; 
+    fTOFGeometry  = 0;  }
+}
   virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
@@ -29,9 +31,7 @@ public:
   virtual void   DrawModule() const;
   virtual void   DrawDetectorModules();
   virtual void   DrawDetectorStrips();
-//  virtual void   DrawDetectorModulesinFrame();
-//  virtual void   DrawDetectorStripsinFrame();
-
+ 
 private:
   Int_t fIdFTOA; // FTOA volume identifier (outer plate A)
   Int_t fIdFTOB; // FTOB volume identifier (outer plate B)
@@ -39,8 +39,9 @@ private:
   Int_t fIdFLTA; // FLTA volume identifier (inner plate A)
   Int_t fIdFLTB; // FLTB volume identifier (inner plate B)
   Int_t fIdFLTC; // FLTC volume identifier (inner plate C)
-  
-   ClassDef(AliTOFv4T0,1)  //Time Of Flight version 4
+  Bool_t fTOFHoles; // Selecting Geometry with and w/o holes
+ 
+  ClassDef(AliTOFv4T0,1)  //Time Of Flight version 4
 };
  
 #endif /* ALITOFv4T0_H */

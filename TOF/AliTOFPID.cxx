@@ -73,7 +73,7 @@
 #include "TLeaf.h"
 
 #include "AliConst.h"
-#include "AliTOFConstants.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFPID.h"
 
 #include <stdlib.h>
@@ -95,6 +95,7 @@ ClassImp(AliTOFPID)
   fNtuple   = 0;
   fgen      = 0;
   foutfileName  = 0;
+
 }
            
 //____________________________________________________________________________ 
@@ -114,6 +115,7 @@ ClassImp(AliTOFPID)
   // add Task to //root/Tasks folder
   TTask * roottasks = (TTask*)gROOT->GetRootFolder()->FindObject("Tasks") ; 
   roottasks->Add(this) ; 
+
 }
 //____________________________________________________________________________ 
 void AliTOFPID::Init(const Option_t* opt)
@@ -370,19 +372,19 @@ void AliTOFPID::Exec(const Option_t *eventType, const Option_t *outputmode, cons
     switch(abspdgcode){
     case 321:
       if(isSelected && (matc==3 || matc==4)) kamatch->Fill(pvtx);
-      mt=TMath::Sqrt(AliTOFConstants::fgkKaonMass*AliTOFConstants::fgkKaonMass+px*px+py*py);
+      mt=TMath::Sqrt(AliTOFGeometry::KaonMass()*AliTOFGeometry::KaonMass()+px*px+py*py);
       break;
     case 2212:
       if(isSelected && (matc==2 || matc==3 || matc==4)) prmatch->Fill(pvtx);
-      mt=TMath::Sqrt(AliTOFConstants::fgkProtonMass*AliTOFConstants::fgkProtonMass+px*px+py*py);
+      mt=TMath::Sqrt(AliTOFGeometry::ProtonMass()*AliTOFGeometry::ProtonMass()+px*px+py*py);
       break;
     case 11:
       if(strstr(eventType,"pp") && (matc==3 || matc==4)) elmatch->Fill(pvtx); //  as in kaon case
-      mt=TMath::Sqrt(AliTOFConstants::fgkElectronMass*AliTOFConstants::fgkElectronMass+px*px+py*py);
+      mt=TMath::Sqrt(AliTOFGeometry::ElectronMass()*AliTOFGeometry::ElectronMass()+px*px+py*py);
       break;
     default:
       if(isSelected && matc>0) pimatch->Fill(pvtx);
-      mt=TMath::Sqrt(AliTOFConstants::fgkPionMass*AliTOFConstants::fgkPionMass+px*px+py*py);
+      mt=TMath::Sqrt(AliTOFGeometry::PionMass()*AliTOFGeometry::PionMass()+px*px+py*py);
       break;
     }
 

@@ -91,6 +91,7 @@ AliTOF::AliTOF()
   fName="TOF";
   fMerger = 0x0;
   fTZero = kFALSE;
+  fTOFGeometry = 0;
 }
  
 //_____________________________________________________________________________
@@ -110,6 +111,7 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   fReTask= 0x0;
   fReconParticles= 0x0;
   fMerger = 0x0;
+  fTOFGeometry = 0;
 
   if (strstr(option,"tzero")){
     fHits   = new TClonesArray("AliTOFhitT0",  1000);

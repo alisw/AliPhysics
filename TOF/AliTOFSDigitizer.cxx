@@ -44,7 +44,7 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliTOF.h"
-#include "AliTOFConstants.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFHitMap.h"
 #include "AliTOFSDigit.h"
 #include "AliTOFSDigitizer.h"
@@ -338,8 +338,8 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 	    nselectedHitsinEv++;
 	    if (particle->GetFirstMother() < 0) nHitsFromPrim++; // counts hits due to primary particles
 	    
-	    Float_t xStrip=AliTOFConstants::fgkXPad*(vol[3]+0.5-0.5*AliTOFConstants::fgkNpadX)+Xpad;
-	    Float_t zStrip=AliTOFConstants::fgkZPad*(vol[4]+0.5-0.5*AliTOFConstants::fgkNpadZ)+Zpad;
+	    Float_t xStrip=AliTOFGeometry::XPad()*(vol[3]+0.5-0.5*AliTOFGeometry::NpadX())+Xpad;
+	    Float_t zStrip=AliTOFGeometry::ZPad()*(vol[4]+0.5-0.5*AliTOFGeometry::NpadZ())+Zpad;
 
 	    Int_t nActivatedPads = 0, nFiredPads = 0;
 	    Bool_t isFired[4] = {kFALSE, kFALSE, kFALSE, kFALSE};
@@ -362,8 +362,8 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 
 		  // recalculate the volume only for neighbouring pads
 		  if(indexOfPad){
-		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[4] = 0 : vol[4] = 1;
-		    (nPlace[indexOfPad]<=AliTOFConstants::fgkNpadX) ? vol[3] = nPlace[indexOfPad] - 1 : vol[3] = nPlace[indexOfPad] - AliTOFConstants::fgkNpadX - 1;
+		    (nPlace[indexOfPad]<=AliTOFGeometry::NpadX()) ? vol[4] = 0 : vol[4] = 1;
+		    (nPlace[indexOfPad]<=AliTOFGeometry::NpadX()) ? vol[3] = nPlace[indexOfPad] - 1 : vol[3] = nPlace[indexOfPad] - AliTOFGeometry::NpadX() - 1;
 		  }
 		  // check if two sdigit are on the same pad;
 		  // in that case we sum the two or more sdigits
@@ -465,11 +465,11 @@ void AliTOFSDigitizer::Print(Option_t* /*opt*/)const
 //__________________________________________________________________
 void AliTOFSDigitizer::SelectSectorAndPlate(Int_t sector, Int_t plate)
 {
-  Bool_t isaWrongSelection=(sector < 0) || (sector >= AliTOFConstants::fgkNSectors) || (plate < 0) || (plate >= AliTOFConstants::fgkNPlates);
+  Bool_t isaWrongSelection=(sector < 0) || (sector >= AliTOFGeometry::NSectors()) || (plate < 0) || (plate >= AliTOFGeometry::NPlates());
   if(isaWrongSelection){
     cout << "You have selected an invalid value for sector or plate " << endl;
-    cout << "The correct range for sector is [0,"<< AliTOFConstants::fgkNSectors-1 <<"]\n";
-    cout << "The correct range for plate  is [0,"<< AliTOFConstants::fgkNPlates-1  <<"]\n";
+    cout << "The correct range for sector is [0,"<< AliTOFGeometry::NSectors()-1 <<"]\n";
+    cout << "The correct range for plate  is [0,"<< AliTOFGeometry::NPlates()-1  <<"]\n";
     cout << "By default we continue sdigitizing all hits in all plates of all sectors \n";
   } else {
     fSelectedSector=sector;
@@ -510,7 +510,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
   //         qCenterPad - charge extimated for each pad, arb. units
   //         weightsSum - sum of weights extimated for each pad fired, arb. units
   
-  const Float_t kSigmaForTail[2] = {AliTOFConstants::fgkSigmaForTail1,AliTOFConstants::fgkSigmaForTail2}; //for tail                                                   
+  const Float_t kSigmaForTail[2] = {AliTOFGeometry::SigmaForTail1(),AliTOFGeometry::SigmaForTail2()}; //for tail                                                   
   Int_t iz = 0, ix = 0;
   Float_t dX = 0., dZ = 0., x = 0., z = 0.;
   Float_t h = fHparameter, h2 = fH2parameter, k = fKparameter, k2 = fK2parameter;
@@ -530,17 +530,17 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
   nFiredPads = 0;
   
   (z0 <= 0) ? iz = 0 : iz = 1;
-  dZ = z0 + (0.5 * AliTOFConstants::fgkNpadZ - iz - 0.5) * AliTOFConstants::fgkZPad; // hit position in the pad frame, (0,0) - center of the pad
-  z = 0.5 * AliTOFConstants::fgkZPad - TMath::Abs(dZ);                               // variable for eff., res. and timeWalk. functions
-  iz++;                                                                              // z row: 1, ..., AliTOFConstants::fgkNpadZ = 2
-  ix = (Int_t)((x0 + 0.5 * AliTOFConstants::fgkNpadX * AliTOFConstants::fgkXPad) / AliTOFConstants::fgkXPad);
-  dX = x0 + (0.5 * AliTOFConstants::fgkNpadX - ix - 0.5) * AliTOFConstants::fgkXPad; // hit position in the pad frame, (0,0) - center of the pad
-  x = 0.5 * AliTOFConstants::fgkXPad - TMath::Abs(dX);                               // variable for eff., res. and timeWalk. functions;
-  ix++;                                                                              // x row: 1, ..., AliTOFConstants::fgkNpadX = 48
+  dZ = z0 + (0.5 * AliTOFGeometry::NpadZ() - iz - 0.5) * AliTOFGeometry::ZPad(); // hit position in the pad frame, (0,0) - center of the pad
+  z = 0.5 * AliTOFGeometry::ZPad() - TMath::Abs(dZ);                               // variable for eff., res. and timeWalk. functions
+  iz++;                                                                              // z row: 1, ..., AliTOFGeometry::NpadZ = 2
+  ix = (Int_t)((x0 + 0.5 * AliTOFGeometry::NpadX() * AliTOFGeometry::XPad()) / AliTOFGeometry::XPad());
+  dX = x0 + (0.5 * AliTOFGeometry::NpadX() - ix - 0.5) * AliTOFGeometry::XPad(); // hit position in the pad frame, (0,0) - center of the pad
+  x = 0.5 * AliTOFGeometry::XPad() - TMath::Abs(dX);                               // variable for eff., res. and timeWalk. functions;
+  ix++;                                                                              // x row: 1, ..., AliTOFGeometry::NpadX = 48
   
   ////// Pad A:
   nActivatedPads++;
-  nPlace[nActivatedPads-1] = (iz - 1) * AliTOFConstants::fgkNpadX + ix;
+  nPlace[nActivatedPads-1] = (iz - 1) * AliTOFGeometry::NpadX() + ix;
   qInduced[nActivatedPads-1] = qCenterPad;
   padId[nActivatedPads-1] = 1;
   
@@ -602,7 +602,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
     if(z < k && z > 0) {
       if( (iz == 1 && dZ > 0) || (iz == 2 && dZ < 0) ) {
 	nActivatedPads++;
-	nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFConstants::fgkNpadX;
+	nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX();
 	eff[nActivatedPads-1] = effZ;
 	res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns 
 	timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ; // ns
@@ -654,7 +654,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	if(z < k && z > 0) {
 	  if( (iz == 1 && dZ > 0) || (iz == 2 && dZ < 0) ) {
 	    nActivatedPads++;
-	    nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFConstants::fgkNpadX - 1;
+	    nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX() - 1;
 	    eff[nActivatedPads-1] = effX * effZ;
 	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns
 	    (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ : timeWalk[nActivatedPads-1] = 0.001 * timeWalkX; // ns
@@ -682,7 +682,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
       }  // end C
       
       //   E:
-      if(ix < AliTOFConstants::fgkNpadX && dX > 0) {
+      if(ix < AliTOFGeometry::NpadX() && dX > 0) {
 	nActivatedPads++;
 	nPlace[nActivatedPads-1] = nPlace[0] + 1;
 	eff[nActivatedPads-1] = effX;
@@ -705,7 +705,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	if(z < k && z > 0) {
 	  if( (iz == 1 && dZ > 0) || (iz == 2 && dZ < 0) ) {
 	    nActivatedPads++;
-	    nPlace[nActivatedPads - 1] = nPlace[0] + (3 - 2 * iz) * AliTOFConstants::fgkNpadX + 1;
+	    nPlace[nActivatedPads - 1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX() + 1;
 	    eff[nActivatedPads - 1] = effX * effZ;
 	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(10400 + resZ * resZ); // 10400=30^2+20^2+40^2+50^2+50^2+50^2 ns
 	    (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ : timeWalk[nActivatedPads-1] = 0.001*timeWalkX; // ns

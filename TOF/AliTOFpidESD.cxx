@@ -28,19 +28,17 @@
 #include "AliESDtrack.h"
 #include "AliTOFdigit.h"
 
-#include <TGeant3.h>
-#include "../STRUCT/AliBODY.h"
-#include "../STRUCT/AliFRAMEv2.h"
+#include <TGeant3.h>              // For DtoM and InitGeo, should  
+#include "../STRUCT/AliBODY.h"    // be removed after we switch to 
+#include "../STRUCT/AliFRAMEv2.h" // AliTOGeometry::GetPos
 #include "AliTOFv2FHoles.h"
-#include "AliTOFConstants.h"
 
 #include <stdlib.h>
 
-class TVirtualMC;
-extern TVirtualMC *gMC;
 
 ClassImp(AliTOFpidESD)
 
+//_________________________________________________________________________
 static Int_t InitGeo() {
   //gSystem->Load("libgeant321");
   //new TGeant3("C++ Interface to Geant3");
@@ -59,21 +57,6 @@ static Int_t InitGeo() {
 } 
 
 //_________________________________________________________________________
-AliTOFpidESD::AliTOFpidESD(Double_t *param) throw (const Char_t *) {
-  //
-  //  The main constructor
-  //
-  if (InitGeo()) throw "AliTOFpidESD: can not initialize the geometry !\n";
-
-  fR=378.; 
-  fDy=AliTOFConstants::fgkXPad; fDz=AliTOFConstants::fgkZPad; 
-  fN=0; fEventN=0;
-
-  fSigma=param[0];
-  fRange=param[1];
-
-}
-
 static Int_t DtoM(Int_t *dig, Float_t *g) {
   const Int_t kMAX=13;
   Int_t lnam[kMAX],lnum[kMAX];
@@ -85,29 +68,29 @@ static Int_t DtoM(Int_t *dig, Float_t *g) {
   strncpy((Char_t*)(lnam+1),"B077",4); lnum[1]=1;
 
 //4 padx  if z<=0 then ...
-if ((dig[1]==4)||(dig[1]==3)) dig[4]=AliTOFConstants::fgkNpadX-dig[4];
+if ((dig[1]==4)||(dig[1]==3)) dig[4]=AliTOFGeometry::NpadX()-dig[4];
 else if (dig[1]==2) {
-   if (dig[2]>7) dig[4]=AliTOFConstants::fgkNpadX-dig[4];
+   if (dig[2]>7) dig[4]=AliTOFGeometry::NpadX()-dig[4];
    else if (dig[2]==7) {
-      if (dig[3]==1) dig[4]=AliTOFConstants::fgkNpadX-dig[4];
+      if (dig[3]==1) dig[4]=AliTOFGeometry::NpadX()-dig[4];
       else dig[4]+=1; 
    } else dig[4]+=1; 
 } else dig[4]+=1;
 
 //3 padz
-if ((dig[1]==3)||(dig[1]==4)) dig[3]=AliTOFConstants::fgkNpadZ-dig[3];
+if ((dig[1]==3)||(dig[1]==4)) dig[3]=AliTOFGeometry::NpadZ()-dig[3];
 else dig[3]+=1;
 
 //2 strip
-if (dig[1]==0) dig[2]=AliTOFConstants::fgkNStripC-dig[2]; 
-else if (dig[1]==1) dig[2]=AliTOFConstants::fgkNStripB-dig[2];
+if (dig[1]==0) dig[2]=AliTOFGeometry::NStripC()-dig[2]; 
+else if (dig[1]==1) dig[2]=AliTOFGeometry::NStripB()-dig[2];
 else dig[2]+=1; 
 
 //1 module
-dig[1]=AliTOFConstants::fgkNPlates-dig[1];
+dig[1]=AliTOFGeometry::NPlates()-dig[1];
 
 //0 sector
-dig[0]+=(AliTOFConstants::fgkNSectors/2); dig[0]%=AliTOFConstants::fgkNSectors;
+dig[0]+=(AliTOFGeometry::NSectors()/2); dig[0]%=AliTOFGeometry::NSectors();
 dig[0]+=1;
 
   //sector
@@ -261,10 +244,37 @@ dig[0]+=1;
   return 0;
 }
 
+
+//_________________________________________________________________________
+AliTOFpidESD::AliTOFpidESD(Double_t *param) throw (const Char_t *) {
+  //
+  //  The main constructor
+  //
+  if (InitGeo()) throw "AliTOFpidESD: can not initialize the geometry !\n";
+
+
+  if (fTOFGeometry) delete fTOFGeometry;
+  fTOFGeometry = new AliTOFGeometry();
+
+  fR=378.; 
+  fDy=fTOFGeometry->XPad(); fDz=fTOFGeometry->ZPad(); 
+  fN=0; fEventN=0;
+
+  fSigma=param[0];
+  fRange=param[1];
+
+}
+
+
+//_________________________________________________________________________
+
+//_________________________________________________________________________
 Int_t AliTOFpidESD::LoadClusters(const TFile *df) {
+
   //--------------------------------------------------------------------
   //This function loads the TOF clusters
   //--------------------------------------------------------------------
+
   if (!((TFile *)df)->IsOpen()) {
     Error("LoadClusters","file with the TOF digits has not been open !\n");
     return 1;
@@ -299,6 +309,7 @@ Int_t AliTOFpidESD::LoadClusters(const TFile *df) {
     dig[3]=d->GetPadz();
     dig[4]=d->GetPadx();
 
+    // fTOFGeometry->GetPos(dig,g);   // uncomment this 
     DtoM(dig,g);
 
     Double_t h[5];
@@ -314,6 +325,7 @@ Int_t AliTOFpidESD::LoadClusters(const TFile *df) {
   return 0;
 }
 
+//_________________________________________________________________________
 Int_t AliTOFpidESD::LoadClusters(TTree *dTree) {
   //--------------------------------------------------------------------
   //This function loads the TOF clusters
@@ -340,6 +352,7 @@ Int_t AliTOFpidESD::LoadClusters(TTree *dTree) {
     dig[3]=d->GetPadz();
     dig[4]=d->GetPadx();
 
+    //fTOFGeometry->GetPos(dig,g);
     DtoM(dig,g);
 
     Double_t h[5];
@@ -354,6 +367,7 @@ Int_t AliTOFpidESD::LoadClusters(TTree *dTree) {
   return 0;
 }
 
+//_________________________________________________________________________
 void AliTOFpidESD::UnloadClusters() {
   //--------------------------------------------------------------------
   //This function unloads TOF clusters
@@ -362,6 +376,7 @@ void AliTOFpidESD::UnloadClusters() {
   fN=0;
 }
 
+//_________________________________________________________________________
 Int_t AliTOFpidESD::InsertCluster(AliTOFcluster *c) {
   //--------------------------------------------------------------------
   //This function adds a cluster to the array of clusters sorted in Z
@@ -379,6 +394,7 @@ Int_t AliTOFpidESD::InsertCluster(AliTOFcluster *c) {
   return 0;
 }
 
+//_________________________________________________________________________
 Int_t AliTOFpidESD::FindClusterIndex(Double_t z) const {
   //--------------------------------------------------------------------
   // This function returns the index of the nearest cluster 
@@ -517,3 +533,4 @@ Double_t dz=5*TMath::Sqrt(cov[2]) + 0.5*fDz + 2.5*TMath::Abs(par[3]);
 
   return 0;
 }
+

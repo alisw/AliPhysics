@@ -46,7 +46,7 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliTOF.h"
-#include "AliTOFConstants.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFDigitMap.h"
 #include "AliTOFHitMap.h"
 #include "AliTOFReconstructionerV2.h"
@@ -383,7 +383,7 @@ void AliTOFReconstructionerV2::Exec(Option_t* option)
 	  
 	  // check if the point falls into a pad
 	  // using the G3 geometry
-	  Int_t* volumeID = new Int_t[AliTOFConstants::fgkmaxtoftree];
+	  Int_t* volumeID = new Int_t[AliTOFGeometry::MaxTOFTree()];
 	  // volumeID[0] -> TOF Sector range [1-18]
 	  // volumeID[1] -> TOF Plate  range [1- 5]
 	  // volumeID[2] -> TOF Strip  max range [1-20]
@@ -709,7 +709,7 @@ void AliTOFReconstructionerV2::IsInsideThePad(Float_t x, Float_t y, Float_t z, I
   char name[5];
   name[4]=0;
   
-  for (i=0; i<AliTOFConstants::fgkmaxtoftree; i++) nGeom[i]=0;
+  for (i=0; i<AliTOFGeometry::MaxTOFTree(); i++) nGeom[i]=0;
   zPad=100.;
   xPad=100.;
   
