@@ -416,7 +416,6 @@ void AliPHOSv1::StepManager(void)
 	if(vertd[1]<-GetGeometry()->GetCrystalSize(1)/2.-0.1){ //Particle is created in foront of PHOS 0.1 to get rid of numerical errors 
 	  while ( parent != -1 ) {
 	    part = gAlice->GetMCApp()->Particle(parent) ; 
-	    part->Print() ;
 	    part->SetBit(kKeepBit);
 	    parent = part->GetFirstMother() ; 
 	  }
