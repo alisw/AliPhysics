@@ -53,7 +53,7 @@ public:
   Short_t     GetNExMax(void) const {return fNExMax ;}             // Number of maxima found in cluster in unfolding:
                                                                    // 0: was no unfolging
                                                                    //-1: unfolding failed
-  void        SetNExMax(Int_t nmax){fNExMax = static_cast<Short_t>(nmax) ;}
+  void        SetNExMax(Int_t nmax=1){fNExMax = static_cast<Short_t>(nmax) ;}
   virtual Int_t GetNumberOfLocalMax(AliPHOSDigit **  maxAt, Float_t * maxAtEnergy,
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 
                                                                    // searches for the local maxima 
@@ -64,6 +64,12 @@ public:
   void        Print(Option_t * opt = "void")const ; 
   void        Purify(Float_t threshold) ;                          //Removes digits below threshold
 
+  Float_t     GetM2x()   const {return fM2x;  } // Get second X-moment
+  Float_t     GetM2z()   const {return fM2z;  } // Get second Z-moment
+  Float_t     GetM3x()   const {return fM3x;  } // Get third  X-moment
+  Float_t     GetM4z()   const {return fM4z;  } // Get forth  Z-moment
+  Float_t     GetPhixe() const {return fPhixe;} // Get angle between center gravity and eigen vector
+
   AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & rvalue)  { return *this ; }
 
  protected:
@@ -71,6 +77,7 @@ public:
   virtual void  EvalLocalPosition(Float_t logWeight,TClonesArray * digits) ;// computes the position in the PHOS module 
   virtual void  EvalDispersion(Float_t logWeight,TClonesArray * digits) ;   // computes the dispersion of the shower
   virtual void  EvalElipsAxis(Float_t logWeight, TClonesArray * digits );   // computes the axis of shower ellipsoide
+          void  EvalMoments(Float_t logWeight, TClonesArray * digits );     // computes shower moments
           void  EvalTime( TClonesArray * digits );
   virtual Bool_t AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) const ;
 
@@ -79,9 +86,17 @@ public:
   Float_t fDispersion ;       // shower dispersion
   Float_t *fEnergyList ;      //[fMulDigit] energy of digits
   Float_t fTime ;             // Time of the digit with maximal energy deposition
-  Short_t fNExMax ;           //number of (Ex-)maxima before unfolding
+  Short_t fNExMax ;           // number of (Ex-)maxima before unfolding
+
+  Float_t fM2x;               // Second moment along X axis
+  Float_t fM2z;               // Second moment along Z axis
+  Float_t fM3x;               // Third  moment along X axis
+  Float_t fM4z;               // Forth  moment along Z axis
+  Float_t fPhixe;             // Angle between center-gravity vector and eigen vector
+
+  Int_t fDebug;               //! debug level (0 - no output)
   
-  ClassDef(AliPHOSEmcRecPoint,1)  // EMC RecPoint (cluster)
+  ClassDef(AliPHOSEmcRecPoint,2)  // EMC RecPoint (cluster)
 
 };
 

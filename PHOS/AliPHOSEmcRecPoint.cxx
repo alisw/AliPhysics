@@ -53,6 +53,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() : AliPHOSRecPoint()
   fNExMax     = 0 ;   //Not unfolded yet
   fTime = -1. ;
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
+  fDebug=0;
    
 }
 
@@ -68,6 +69,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const char * opt) : AliPHOSRecPoint(opt)
   fEnergyList = 0 ;
   fTime = -1. ;
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
+  fDebug=0;
   
 }
 
@@ -498,12 +500,140 @@ void  AliPHOSEmcRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 }
 
 //____________________________________________________________________________
+void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits)
+{
+  // Calculate the shower moments in the eigen reference system
+  // M2x, M2z, M3x, M4z
+  // Calculate the angle between the shower position vector and the eigen vector
+
+  Double_t wtot = 0. ;
+  Double_t x    = 0.;
+  Double_t z    = 0.;
+  Double_t dxx  = 0.;
+  Double_t dzz  = 0.;
+  Double_t dxz  = 0.;
+  Double_t lambda0=0, lambda1=0;
+
+  AliPHOSDigit * digit ;
+
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  AliPHOSGeometry * phosgeom =  (AliPHOSGeometry*)gime->PHOSGeometry();
+
+  Int_t iDigit;
+
+  // 1) Find covariance matrix elements:
+  //    || dxx dxz ||
+  //    || dxz dzz ||
+
+  Float_t xi ;
+  Float_t zi ;
+  Int_t relid[4] ;
+  Double_t w;
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    digit = (AliPHOSDigit *) digits->At(fDigitsList[iDigit])  ;
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xi, zi);
+    w     = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+    x    += w * xi ;
+    z    += w * zi ; 
+    dxx  += w * xi * xi ;
+    dzz  += w * zi * zi ;
+    dxz  += w * xi * zi ; 
+    wtot += w ;
+  }
+  x   /= wtot ;
+  z   /= wtot ;
+  dxx /= wtot ;
+  dzz /= wtot ;
+  dxz /= wtot ;
+  dxx -= x * x ;
+  dzz -= z * z ;
+  dxz -= x * z ;
+
+  // 2) Find covariance matrix eigen values lambda0 and lambda1
+
+  lambda0 =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+  lambda1 =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+
+  // 3) Find covariance matrix eigen vectors e0 and e1
+
+  TVector2 e0,e1;
+  if (dxz != 0)
+    e0.Set(1.,(lambda0-dxx)/dxz);
+  else
+    e0.Set(0.,1.);
+
+  e0 = e0.Unit();
+  e1.Set(-e0.Y(),e0.X());
+
+  // 4) Rotate cluster tensor from (x,z) to (e0,e1) system
+  //    and calculate moments M3x and M4z
+
+  Float_t cosPhi = e0.X();
+  Float_t sinPhi = e0.Y();
+
+  Float_t xiPHOS ;
+  Float_t ziPHOS ;
+  Double_t dx3, dz3, dz4;
+  wtot = 0.;
+  x    = 0.;
+  z    = 0.;
+  dxx  = 0.;
+  dzz  = 0.;
+  dxz  = 0.;
+  dx3  = 0.;
+  dz3  = 0.;
+  dz4  = 0.;
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) {
+    digit = (AliPHOSDigit *) digits->At(fDigitsList[iDigit])  ;
+    phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
+    phosgeom->RelPosInModule(relid, xiPHOS, ziPHOS);
+    xi    = xiPHOS*cosPhi + ziPHOS*sinPhi;
+    zi    = ziPHOS*cosPhi - xiPHOS*sinPhi;
+    w     = TMath::Max(0.,logWeight+TMath::Log(fEnergyList[iDigit]/fAmp ) ) ;
+    x    += w * xi ;
+    z    += w * zi ; 
+    dxx  += w * xi * xi ;
+    dzz  += w * zi * zi ;
+    dxz  += w * xi * zi ; 
+    dx3  += w * xi * xi * xi;
+    dz3  += w * zi * zi * zi ;
+    dz4  += w * zi * zi * zi * zi ;
+    wtot += w ;
+  }
+  x   /= wtot ;
+  z   /= wtot ;
+  dxx /= wtot ;
+  dzz /= wtot ;
+  dxz /= wtot ;
+  dx3 /= wtot ;
+  dz3 /= wtot ;
+  dz4 /= wtot ;
+  dx3 += -3*dxx*x + 2*x*x*x;
+  dz4 += -4*dz3*z + 6*dzz*z*z -3*z*z*z*z;
+  dxx -= x * x ;
+  dzz -= z * z ;
+  dxz -= x * z ;
+
+  // 5) Find an angle between cluster center vector and eigen vector e0
+
+  Float_t phi = TMath::ACos ((x*e0.X() + z*e0.Y()) / sqrt(x*x + z*z));
+
+  fM2x   = lambda0;
+  fM2z   = lambda1;
+  fM3x   = dx3;
+  fM4z   = dz4;
+  fPhixe = phi;
+
+}
+//____________________________________________________________________________
 void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
 {
   // Evaluates all shower parameters
 
   EvalLocalPosition(logWeight, digits) ;
   EvalElipsAxis(logWeight, digits) ;
+  EvalMoments(logWeight, digits) ;
   EvalDispersion(logWeight, digits) ;
   EvalCoreEnergy(logWeight, digits);
   EvalTime(digits) ;
