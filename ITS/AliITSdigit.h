@@ -22,9 +22,9 @@ class AliITSdigit: public TObject  {
     //Destructor
     virtual ~AliITSdigit() { }
     //returns pointer to array of tracks
-    virtual Int_t *GetTracks() const {return 0;}
+    virtual Int_t *GetTracks() {return 0;}
     //returns pointer to array of hits
-    virtual Int_t *GetHits() const {return 0;}
+    virtual Int_t *GetHits() {return 0;}
     // returns track number kept in the array element i of fTracks 
     virtual Int_t GetTrack(Int_t i) const {return 0;}
     // returns hit number kept in the array element i of fHits 
@@ -59,7 +59,7 @@ class AliITSdigitSPD: public AliITSdigit {
     AliITSdigitSPD(const Int_t *digits,const Int_t *tracks,const Int_t *hits);
     virtual ~AliITSdigitSPD(){/*destructor*/}
     // returns pointer to the array of tracks which make this digit
-    virtual int *GetTracks() {return &fTracks[0];}
+    virtual Int_t *GetTracks() {return &fTracks[0];}
      //returns the pointer to the array of hits which made this digit
     virtual Int_t *GetHits() {return &fHits[0];}
     // returns track number kept in the array element i of fTracks 
@@ -104,7 +104,7 @@ class AliITSdigitSDD: public AliITSdigit {
 		    const Int_t *hits,const Float_t *charges);
     virtual ~AliITSdigitSDD(){/* destructor*/}
     // returns pointer to the array of tracks which make this digit
-    virtual int *GetTracks() {return &fTracks[0];}
+    virtual Int_t *GetTracks() {return &fTracks[0];}
     // returns the pointer to the array of hits which made this digit
     virtual Int_t *GetHits() {return &fHits[0];}
     // returns track number kept in the array element i of fTracks 
@@ -184,7 +184,7 @@ class AliITSdigitSSD: public AliITSdigit {
     //returns 1  when side P and 0 when side N
     Int_t  IsSideP() const {return fCoord1;}
     // returns pointer to the array of tracks which make this digit
-    virtual int *GetTracks() {return &fTracks[0];}
+    virtual Int_t *GetTracks() {return &fTracks[0];}
     // returns the pointer to the array of hits which made this digit
     virtual Int_t *GetHits() {return &fHits[0];}
     // returns track number kept in the array element i of fTracks 
