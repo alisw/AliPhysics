@@ -14,7 +14,13 @@
  **************************************************************************/
 
 /* $Id$ */
-
+//
+// Realisation of AliGenReader to be used with AliGenExtFile
+// It reads events from a kinematics TreeK.
+// NextEvent() is used to loop over events 
+// and NextParticle() to loop over particles.  
+// Author: andreas.morsch@cern.ch
+//
 #include <TFile.h>
 #include <TTree.h>
 #include <TParticle.h>
@@ -165,6 +171,8 @@ void AliGenReaderTreeK::Copy(AliGenReaderTreeK&) const
 
 TString& AliGenReaderTreeK::GetDirName(Int_t entry)
  {
+// Get the current directory name
+
    TString* retval;//return value
    if (fDirs ==  0x0)
     {

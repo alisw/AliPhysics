@@ -4,13 +4,17 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-
+//
+// Realisation of AliGenReader to be used with AliGenExtFile
+// It reads events from a kinematics TreeK.
+// Author: andreas.morsch@cern.ch
+//
 #include "AliGenReader.h"
 #include "AliStack.h"
 
 class TFile;
-class AliHeader;
 class AliRunLoader;
+class AliStack;
 class TString;
 class TObjArray;
 
@@ -30,8 +34,7 @@ class AliGenReaderTreeK : public AliGenReader
     AliGenReaderTreeK & operator=(const AliGenReaderTreeK & rhs);
     void SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names
     void AddDir(const char* dirname);
- private:
-    void Copy(AliGenReaderTreeK&) const;
+
  protected:
     Int_t             fNcurrent;          // points to the next entry
     Int_t             fNparticle;         // Next particle in list
@@ -46,7 +49,8 @@ class AliGenReaderTreeK : public AliGenReader
     
     TString&   GetDirName(Int_t entry);
     TParticle* GetParticle(Int_t i);
-    
+ private:
+    void Copy(AliGenReaderTreeK&) const;    
     ClassDef(AliGenReaderTreeK,1) // Read particles from TreeK
 };
 
