@@ -237,17 +237,17 @@ gener->SetVertexSmear(kPerTrack);
 gener->Init();
 gAlice->SetField(-999,2);    //Specify maximum magnetic field in Tesla (neg. ==> default field)
 
-Int_t iMAG=1;
+Int_t iMAG=0;
 Int_t iITS=1;
 Int_t iTPC=1;
-Int_t iTOF=0;
+Int_t iTOF=1;
 Int_t iRICH=1;
 Int_t iZDC=0;
 Int_t iCASTOR=0;
 Int_t iTRD=1;
-Int_t iABSO=1;
-Int_t iDIPO=1;
-Int_t iHALL=1;
+Int_t iABSO=0;
+Int_t iDIPO=0;
+Int_t iHALL=0;
 Int_t iFRAME=1;
 Int_t iSHIL=0;
 Int_t iPIPE=1;
@@ -401,6 +401,8 @@ if(iRICH) {
     Response->SetKy2(0.962);
     Response->SetKy4(0.379);
     Response->SetPitch(0.25);
+    Response->SetWireSag(1);                     // 1->On, 0->Off
+    Response->SetVoltage(2100);                  // Should only be 2000, 2050, 2100 or 2150
 
       
   for (Int_t i=0; i<7; i++) {

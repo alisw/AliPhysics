@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.19  2001/02/13 20:10:22  jbarbosa
+  Removed call to SetNSec() (obsolete). Fixed bug in chamber initialisation (not all chambers were initialised).
+
   Revision 1.18  2000/12/20 14:07:36  jbarbosa
   Removed dependencies on TGeant3 (thanks to F. Carminati and I. Hrivnacova)
 
@@ -104,11 +107,11 @@ AliRICHv0::AliRICHv0(const char *name, const char *title)
     //
 // Version 0
 // Default Segmentation, no hits
-    AliRICHSegmentationV0* segmentationV0 = new AliRICHSegmentationV0;
+    AliRICHSegmentationV0* segmentation = new AliRICHSegmentationV0;
 //
 //  Segmentation parameters
-    segmentationV0->SetPadSize(0.84,0.80);
-    segmentationV0->SetDAnod(0.84/2);
+    segmentation->SetPadSize(0.84,0.80);
+    segmentation->SetDAnod(0.84/2);
 //
 //  Geometry parameters
     AliRICHGeometry* geometry = new AliRICHGeometry;
@@ -124,21 +127,22 @@ AliRICHv0::AliRICHv0(const char *name, const char *title)
     geometry->SetFreonThickness(1.5);
 //
 //  Response parameters
-    AliRICHResponseV0*  responseV0   = new AliRICHResponseV0;
-    responseV0->SetSigmaIntegration(5.);
-    responseV0->SetChargeSlope(27.);
-    responseV0->SetChargeSpread(0.18, 0.18);
-    responseV0->SetMaxAdc(4096);
-    responseV0->SetAlphaFeedback(0.036);
-    responseV0->SetEIonisation(26.e-9);
-    responseV0->SetSqrtKx3(0.77459667);
-    responseV0->SetKx2(0.962);
-    responseV0->SetKx4(0.379);
-    responseV0->SetSqrtKy3(0.77459667);
-    responseV0->SetKy2(0.962);
-    responseV0->SetKy4(0.379);
-    responseV0->SetPitch(0.25);
-//
+    AliRICHResponseV0*  response   = new AliRICHResponseV0;
+    response->SetSigmaIntegration(5.);
+    response->SetChargeSlope(27.);
+    response->SetChargeSpread(0.18, 0.18);
+    response->SetMaxAdc(4096);
+    response->SetAlphaFeedback(0.036);
+    response->SetEIonisation(26.e-9);
+    response->SetSqrtKx3(0.77459667);
+    response->SetKx2(0.962);
+    response->SetKx4(0.379);
+    response->SetSqrtKy3(0.77459667);
+    response->SetKy2(0.962);
+    response->SetKy4(0.379);
+    response->SetPitch(0.25);
+    response->SetWireSag(0);                     // 1->On, 0->Off
+    response->SetVoltage(2150);                  // Should only be 2000, 2050, 2100 or 2150
 //
 //    AliRICH *RICH = (AliRICH *) gAlice->GetDetector("RICH"); 
     
@@ -155,8 +159,8 @@ AliRICHv0::AliRICHv0(const char *name, const char *title)
   
     for (i=0; i<kNCH; i++) {
       SetGeometryModel(i,geometry);
-      SetSegmentationModel(i, segmentationV0);
-      SetResponseModel(i, responseV0);
+      SetSegmentationModel(i, segmentation);
+      SetResponseModel(i, response);
       SetDebugLevel(0);
     }
 }

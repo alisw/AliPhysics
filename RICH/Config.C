@@ -60,8 +60,8 @@ geant3->SetCUTS(1.e-5,5.e-5, 1.e-3, 1.e-4, cut, cut,  cut,  cut, cut,  cut, tofm
      AliGenFixed *gener = new AliGenFixed(ntracks);
      gener->SetMomentum(3);
      gener->SetPhiRange(90);
-     gener->SetThetaRange(92);
-     gener->SetOrigin(0,0,0);                 //vertex position
+     gener->SetThetaRange(90);
+     gener->SetOrigin(0,0,-15);                 //vertex position
      gener->SetPart(kPiPlus);                 //GEANT particle type
      break;
  case box:  
@@ -401,6 +401,8 @@ if(iRICH) {
     Response->SetKy2(0.962);
     Response->SetKy4(0.379);
     Response->SetPitch(0.25);
+    Response->SetWireSag(1);                     // 1->On, 0->Off
+    Response->SetVoltage(2150);                  // Should only be 2000, 2050, 2100 or 2150
 
       
   for (Int_t i=0; i<7; i++) {
