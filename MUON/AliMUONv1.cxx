@@ -151,7 +151,7 @@ void AliMUONv1::CreateGeometry()
      iChamber2 =(AliMUONChamber*) (*fChambers)[1];
      zpos1=iChamber1->Z(); 
      zpos2=iChamber2->Z();
-     dstation = zpos2 - zpos1;
+     dstation = TMath::Abs(zpos2 - zpos1);
      // DGas decreased from standard one (0.5)
      iChamber->SetDGas(0.4); iChamber2->SetDGas(0.4);
      // DAlu increased from standard one (3% of X0),
@@ -309,7 +309,7 @@ void AliMUONv1::CreateGeometry()
      iChamber2 =(AliMUONChamber*) (*fChambers)[3];
      zpos1=iChamber1->Z(); 
      zpos2=iChamber2->Z();
-     dstation = zpos2 - zpos1;
+     dstation = TMath::Abs(zpos2 - zpos1);
      // DGas and DAlu not changed from standard values
      zfpos=-(iChamber->DGas()+dframez+iChamber->DAlu())/2;
      
@@ -563,7 +563,7 @@ void AliMUONv1::CreateGeometry()
      iChamber2 =(AliMUONChamber*) (*fChambers)[5];
      zpos1=iChamber1->Z(); 
      zpos2=iChamber2->Z();
-     dstation = zpos2 - zpos1;
+     dstation = TMath::Abs(zpos2 - zpos1);
 
 //      zfpos=-(iChamber->DGas()+dframez+iChamber->DAlu())/2; // not used any more
 //
@@ -581,8 +581,8 @@ void AliMUONv1::CreateGeometry()
        slats5Mother="DDIP";
        slats6Mother="DDIP";
 
-       zoffs5 = zpos1;
-       zoffs6 = zpos2;
+       zoffs5 = TMath::Abs(zpos1);
+       zoffs6 = TMath::Abs(zpos2);
      }
      else {
        gMC->Gsvolu("S05M", "TUBE", idAir, tpar, 3);
@@ -844,7 +844,7 @@ void AliMUONv1::CreateGeometry()
      iChamber2 =(AliMUONChamber*) (*fChambers)[7];
      zpos1=iChamber1->Z(); 
      zpos2=iChamber2->Z();
-     dstation = zpos2 - zpos1;
+     dstation = TMath::Abs(zpos2 - zpos1);
 //      zfpos=-(iChamber->DGas()+dframez+iChamber->DAlu())/2; // not used any more
      
 //
@@ -1052,7 +1052,7 @@ void AliMUONv1::CreateGeometry()
      iChamber2 =(AliMUONChamber*) (*fChambers)[9];
      zpos1=iChamber1->Z(); 
      zpos2=iChamber2->Z();
-     dstation = zpos2 - zpos1;
+     dstation = TMath::Abs(zpos2 - zpos1);
 //      zfpos=-(iChamber->DGas()+dframez+iChamber->DAlu())/2; // not used any more
      
 //

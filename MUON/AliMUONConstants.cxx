@@ -25,8 +25,8 @@ Int_t   AliMUONConstants::fgNTrackingCh = 10;
 Int_t   AliMUONConstants::fgNTriggerCh = 4;
 Int_t   AliMUONConstants::fgNTriggerCircuit = 234;
 Float_t AliMUONConstants::fgDefaultChamberZ[14] =
-{533.5, 546.5, 678.5, 693.5, 964.0, 986.0, 1251.5, 1278.5, 1416.5, 1443.5,
- 1603.5, 1620.5, 1703.5, 1720.5};
+{-533.5, -546.5, -678.5, -693.5, -964.0, -986.0, -1251.5, -1278.5, -1416.5, -1443.5,
+ -1603.5, -1620.5, -1703.5, -1720.5};
 
 Float_t  AliMUONConstants::fgDmin[7] = {  36.4,  46.2,  66.0,   80.,   80., 100., 100.};    
 Float_t  AliMUONConstants::fgDmax[7]  = {183., 245., 395.,  560.,  563., 850., 900.};  

@@ -302,8 +302,8 @@ void AliMUON::SetAcceptance(Bool_t acc, Float_t angmin, Float_t angmax)
       for (Int_t stCH = 0; stCH < 2; stCH++) {
 	ch = 2 * st + stCH;
 	//         Set chamber inner and outer radius according to acceptance cuts
-	Chamber(ch).SetRInner(AliMUONConstants::DefaultChamberZ(ch)*TMath::Tan(fAccMin));
-	Chamber(ch).SetROuter(AliMUONConstants::DefaultChamberZ(ch)*TMath::Tan(fAccMax));
+	Chamber(ch).SetRInner(TMath::Abs(AliMUONConstants::DefaultChamberZ(ch)*TMath::Tan(fAccMin)));
+	Chamber(ch).SetROuter(TMath::Abs(AliMUONConstants::DefaultChamberZ(ch)*TMath::Tan(fAccMax)));
       } // chamber loop
     } // station loop
   }
