@@ -92,7 +92,7 @@ public AliSegmentation {
 	{
 	    Int_t ix, iy;
 	    GetPadI(x,y,0.,ix,iy);
-	    Sector(ix,iy);
+	    return Sector(ix,iy);
 	}
     
     //
