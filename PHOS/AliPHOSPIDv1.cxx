@@ -458,7 +458,7 @@ void  AliPHOSPIDv1::SetParameters()
   // -Finally there is a row with the energy calibration parameters, 
   // 3 parameters. 
 
-  fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.YVK.dat");
+  fFileNamePar = gSystem->ExpandPathName("$ALICE_ROOT/PHOS/Parameters.dat");
   fParameters = new TMatrixD(14,4) ;
   const Int_t maxLeng=255;
   char string[maxLeng];
