@@ -31,38 +31,6 @@ DEPENDFFLAGS  = $(FFLAGS)
 # rootcint flags
 CINTFLAGS     = 
 
-DICTNOLOAD:=
-
-DICTLOAD:= -Wl,-u,_G__cpp_setupG__AliL3Comp -Wl,-u,_G__cpp_setupG__AliL3Hough \
--Wl,-u,_G__cpp_setupG__AliL3Misc -Wl,-u,_G__cpp_setupG__AliL3Src \
--Wl,-u,_G__cpp_setupG__AliPythia6 -Wl,-u,_G__cpp_setupG__CONTAINERS \
--Wl,-u,_G__cpp_setupG__CRT -Wl,-u,_G__cpp_setupG__EMCAL \
--Wl,-u,_G__cpp_setupG__ESD -Wl,-u,_G__cpp_setupG__EVGEN \
--Wl,-u,_G__cpp_setupG__FASTSIM -Wl,-u,_G__cpp_setupG__FMDbase \
--Wl,-u,_G__cpp_setupG__FMDrec -Wl,-u,_G__cpp_setupG__FMDsim \
--Wl,-u,_G__cpp_setupG__ITS -Wl,-u,_G__cpp_setupG__MUONbase \
--Wl,-u,_G__cpp_setupG__MUONgeometry -Wl,-u,_G__cpp_setupG__MUONmapping \
--Wl,-u,_G__cpp_setupG__MUONrec -Wl,-u,_G__cpp_setupG__MUONsim \
--Wl,-u,_G__cpp_setupG__PHOS -Wl,-u,_G__cpp_setupG__PMDbase \
--Wl,-u,_G__cpp_setupG__PMDrec -Wl,-u,_G__cpp_setupG__PMDsim \
--Wl,-u,_G__cpp_setupG__RAW -Wl,-u,_G__cpp_setupG__RICH \
--Wl,-u,_G__cpp_setupG__STARTbase -Wl,-u,_G__cpp_setupG__STARTrec \
--Wl,-u,_G__cpp_setupG__STARTsim -Wl,-u,_G__cpp_setupG__STEER \
--Wl,-u,_G__cpp_setupG__STRUCT -Wl,-u,_G__cpp_setupG__TEPEMGEN \
--Wl,-u,_G__cpp_setupG__THbtp -Wl,-u,_G__cpp_setupG__THerwig \
--Wl,-u,_G__cpp_setupG__THijing -Wl,-u,_G__cpp_setupG__TMEVSIM \
--Wl,-u,_G__cpp_setupG__TOFbase -Wl,-u,_G__cpp_setupG__TOFrec \
--Wl,-u,_G__cpp_setupG__TOFsim -Wl,-u,_G__cpp_setupG__TPCbase \
--Wl,-u,_G__cpp_setupG__TPCfast -Wl,-u,_G__cpp_setupG__TPCrec \
--Wl,-u,_G__cpp_setupG__TPCsim -Wl,-u,_G__cpp_setupG__TPHIC \
--Wl,-u,_G__cpp_setupG__TRDbase -Wl,-u,_G__cpp_setupG__TRDfast \
--Wl,-u,_G__cpp_setupG__TRDrec -Wl,-u,_G__cpp_setupG__TRDsim \
--Wl,-u,_G__cpp_setupG__VZERObase -Wl,-u,_G__cpp_setupG__VZEROrec \
--Wl,-u,_G__cpp_setupG__VZEROsim \
--Wl,-u,_G__cpp_setupG__ZDCbase -Wl,-u,_G__cpp_setupG__ZDCrec \
--Wl,-u,_G__cpp_setupG__ZDCsim -Wl,-u,_G__cpp_setupG__hijing \
--Wl,-u,_G__cpp_setupG__pythia6
-
 LD            = export MACOSX_DEPLOYMENT_TARGET=10.3 ; \
 		unset LD_PREBIND ; \
 		g++

@@ -24,6 +24,9 @@ ELIBS:=ESD RAW MDC STEER TPCbase TPCsim TPCrec CONTAINERS AliL3Src AliL3Misc Ali
 
 #ifneq (,$(findstring macosx,$(ALICE_TARGET)))
 ifeq (macosx,$(ALICE_TARGET))
+@PACKAGE@LIBSINIT:=$(filter-out microcern,$(ELIBS))
+@PACKAGE@LIBSINIT:=$(filter-out pdf,$(@PACKAGE@LIBSINIT))
+PACKLDFLAGS:=$(LDFLAGS) $(@PACKAGE@LIBSINIT:%=-Wl,-u,_G__cpp_setupG__%)
 # On Mac OS X gcc we need g2c
 ELIBS+=g2c
 endif

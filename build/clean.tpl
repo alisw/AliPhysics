@@ -1,3 +1,4 @@
+#-*- Mode: Makefile -*-
 
 #  Clean option for the whole module
 clean-@MODULE@:

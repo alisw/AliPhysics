@@ -1,3 +1,5 @@
+#-*- Mode: Makefile -*-
+
 SRCS:=aliroot.cxx
 CSRCS:=fpu.c
 
@@ -15,8 +17,17 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONmapping \
         TPHIC FASTSIM microcern RAW AliL3Src AliL3Comp AliL3Misc AliL3Hough
 
 ifeq (macosx,$(ALICE_TARGET))
+
+@PACKAGE@LIBSINIT:=$(filter-out microcern,$(ELIBS))
+@PACKAGE@LIBSINIT:=$(filter-out pdf,$(@PACKAGE@LIBSINIT))
+@PACKAGE@LIBSINIT:=$(filter-out mevsim,$(@PACKAGE@LIBSINIT))
+@PACKAGE@LIBSINIT:=$(filter-out HBTP,$(@PACKAGE@LIBSINIT))
+@PACKAGE@LIBSINIT:=$(filter-out herwig,$(@PACKAGE@LIBSINIT))
+@PACKAGE@LIBSINIT:=$(filter-out EPEMGEN,$(@PACKAGE@LIBSINIT))
+PACKLDFLAGS:=$(LDFLAGS) $(@PACKAGE@LIBSINIT:%=-Wl,-u,_G__cpp_setupG__%)
 # On Mac OS X gcc we need g2c
 ELIBS+=g2c
+
 endif
 
 # The two variables below are used for the creation of profile target.
@@ -77,7 +88,3 @@ ARLIBS:= \
 
 SHLIBS:= $(BINLIBDIRS) -lEVGEN -lpythia6 -lAliPythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
 
-ifeq (macosx,$(ALICE_TARGET))
-# On Mac OS X gcc we need g2c
-SHLIBS+=-lg2c
-endif
