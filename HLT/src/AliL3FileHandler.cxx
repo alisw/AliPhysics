@@ -337,7 +337,7 @@ Bool_t AliL3FileHandler::IsDigit(Int_t event)
   if(!fInAli){
     LOG(AliL3Log::kWarning,"AliL3FileHandler::IsDigit","File")
     <<"Pointer to fInAli = 0x0 "<<ENDLOG;
-    return kTRUE;  //maybe you are using binary input which is Digits!!
+    return kTRUE;  //maybe you are using binary input which is Digits!
   }
 #ifdef use_newio
   AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
@@ -479,6 +479,21 @@ AliL3DigitRowData * AliL3FileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event
   Int_t nrows=0;
   Int_t ndigitcount=0;
   Int_t entries = (Int_t)fDigitsTree->GetEntries();
+  if(entries==0) {
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::AliDigits2Memory","ndigits")
+      <<"No TPC digits (entries==0)!"<<ENDLOG;
+    nrow = (UInt_t)(fRowMax-fRowMin+1);
+    Int_t size = nrow*sizeof(AliL3DigitRowData);
+    data=(AliL3DigitRowData*) Allocate(size);
+    AliL3DigitRowData *tempPt = data;
+    for(Int_t r=fRowMin;r<=fRowMax;r++){
+      tempPt->fRow = r;
+      tempPt->fNDigit = 0;
+      tempPt++;
+    }
+    return data;
+  }
+
   Int_t * ndigits = new Int_t[entries];
   Float_t xyz[3];
 
@@ -612,10 +627,9 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
   if(eventmerge == kTRUE && event >= 1024)
     {
       LOG(AliL3Log::kError,"AliL3FileHandler::AliAltroDigits2Memory","TrackIDs")
-	<<"Too many events if you want to merge!!"<<ENDLOG;
+	<<"Too many events if you want to merge!"<<ENDLOG;
       return 0;
     }
-  
   delete fDigits;
   fDigits=0;
 #ifdef use_newio 
@@ -634,6 +648,20 @@ AliL3DigitRowData * AliL3FileHandler::AliAltroDigits2Memory(UInt_t & nrow,Int_t 
   Int_t nrows=0;
   Int_t ndigitcount=0;
   Int_t entries = (Int_t)fDigitsTree->GetEntries();
+  if(entries==0) {
+    LOG(AliL3Log::kWarning,"AliL3FileHandler::AliAltroDigits2Memory","ndigits")
+      <<"No TPC digits (entries==0)!"<<ENDLOG;
+    nrow = (UInt_t)(fRowMax-fRowMin+1);
+    Int_t size = nrow*sizeof(AliL3DigitRowData);
+    data=(AliL3DigitRowData*) Allocate(size);
+    AliL3DigitRowData *tempPt = data;
+    for(Int_t r=fRowMin;r<=fRowMax;r++){
+      tempPt->fRow = r;
+      tempPt->fNDigit = 0;
+      tempPt++;
+    }
+    return data;
+  }
   Int_t * ndigits = new Int_t[entries];
   Int_t lslice,lrow;
   Int_t zerosupval=AliL3Transform::GetZeroSup();
