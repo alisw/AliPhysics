@@ -74,7 +74,14 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
   // Launches the Reconstruction process in the sequence: Make the reconstructed poins (clusterize)
   //                                                      Make the track segments 
   //                                                      Make the reconstructed particles
-  Int_t index ; 
+  Int_t index ;   
+  cout << "Start making reconstructed points (clusterizing!!)" << endl;
+  fClusterizer->MakeClusters(dl, emccl, ppsdl);
+
+  cout << "AliPHOSReconstructioner: Digit list entries is " << dl->GetEntries() << endl ;
+  cout << "AliPHOSReconstructioner: Emc  list entries is " << emccl->GetEntries() << endl ;
+  cout << "AliPHOSReconstructioner: Ppsd list entries is " << ppsdl->GetEntries() << endl ;
+
   // Digit Debuging
   if  (fDebugReconstruction)     {
     cout << ">>>>>>>>>>>>>>>>>>>>>> DebugReconstruction  <<<<<<<<<<<<<<<<<<<<<<<<<<"  << endl ;
@@ -110,7 +117,6 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
 
   // Making Clusters
   if  (fDebugReconstruction)  cout << "DebugReconstruction>>> Start making reconstructed points (clusterizing)" << endl;
-  fClusterizer->MakeClusters(dl, emccl, ppsdl);
 
   // mark the position of the RecPoints in the array
   AliPHOSEmcRecPoint * emcrp ; 
