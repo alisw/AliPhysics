@@ -27,6 +27,7 @@
 #include <TROOT.h>
 #include <TTree.h>
 
+#include "AliHeader.h"
 #include "AliRun.h"
 
 #include "AliMUONEventReconstructor.h"
