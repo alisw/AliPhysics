@@ -199,7 +199,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
     Int_t* fStations = new Int_t[5];
     for (Int_t i=0; i<5; i++) fStations[i] = 1;
-    //    fStations[2] = 1;
+    fStations[2] = 1;
 
     if (fStations[2])
     {
@@ -246,9 +246,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
      Float_t hFramepar2[3] = { tlength/2., hFramepar[1], hFramepar[2]}; 
      Float_t bFramepar2[3] = { tlength/2., bFramepar[1], bFramepar[2]}; 
      Float_t *dum=0;
+     Float_t pcbDLength3   = (kPcbLength - tlength);
 
      const Int_t kNslats3 = 5;  // number of slats per quadrant
-     const Int_t kNPCB3[kNslats3] = {4,4,4,3,2}; // n PCB per slat
+     const Int_t kNPCB3[kNslats3] = {4, 4, 4, 3, 2}; // n PCB per slat
      const Float_t kXpos3[kNslats3] = {0., 0., 0., 0., 0.};//{31., 0., 0., 0., 0.};
      Float_t slatLength3[kNslats3]; 
 
@@ -257,24 +258,21 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
      char idSlatCh5[5];
      char idSlatCh6[5];
      Float_t xSlat3;
+     Float_t ySlat3;
      Float_t angle = 0.;
      Float_t spar2[3];
      for (i = 0; i < kNslats3; i++){
        slatLength3[i] = kPcbLength * kNPCB3[i] + 2. * kDslatLength; 
        xSlat3 = slatLength3[i]/2. + kVframeLength/2. + kXpos3[i]; 
-       Float_t ySlat31 =  kSensHeight * i - kYoverlap * i; 
-       Float_t ySlat32 = -kSensHeight * i + kYoverlap * i; 
+       ySlat3 = kSensHeight * i - kYoverlap * i; 
        spar[0] = slatLength3[i]/2.; 
        spar[1] = kSlatHeight/2.;
        spar[2] = kSlatWidth/2. * 1.01; 
        // take away 5 cm from the first slat in chamber 5
-       Float_t xSlat32 = 0;
-       if (i==0 || i==1 || i==2) { // 1 pcb is shortened by 5cm
-	 spar2[0] = spar[0]-5./2.;
-	 xSlat32 = xSlat3;// - 5/2.;
+        if (i == 0 || i == 1 || i == 2) { // 1 pcb is shortened by 5cm
+	 spar2[0] = spar[0] - pcbDLength3/2.;
        } else {
 	 spar2[0] = spar[0];
-	 xSlat32 = xSlat3;
        }
        spar2[1] = spar[1];
        spar2[2] = spar[2]; 
@@ -285,53 +283,51 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
        sprintf(idSlatCh5,"LA%d",kNslats3-1+i);
        gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
        detElemId = 500 + i + kNslats3-1;
-       GetEnvelopes(4)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat32, ySlat31, zSlat+2.*dzCh3),
+       GetEnvelopes(4)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, ySlat3, zSlat+2.*dzCh3),
 						 TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
 
        sprintf(idSlatCh5,"LA%d",3*kNslats3-2+i);
        gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
        detElemId = 550 + i + kNslats3-1;
-       GetEnvelopes(4)->AddEnvelope(idSlatCh5,  detElemId, true, TGeoTranslation(-xSlat32, ySlat31, zSlat-2.*dzCh3),
+       GetEnvelopes(4)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat-2.*dzCh3),
 						 TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
 
        if (i > 0) { 
 	 sprintf(idSlatCh5,"LA%d",kNslats3-1-i);
 	 gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
 	 detElemId = 500 - i + kNslats3-1;
-	 GetEnvelopes(4)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat32, ySlat32, zSlat+2.*dzCh3), 
+	 GetEnvelopes(4)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, zSlat+2.*dzCh3), 
 						   TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
 
 	 sprintf(idSlatCh5,"LA%d",3*kNslats3-2-i);
 	 gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
 	 detElemId = 550 - i + kNslats3-1;
-	 GetEnvelopes(4)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat32, ySlat32, zSlat-2.*dzCh3),
+	 GetEnvelopes(4)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat-2.*dzCh3),
 						   TGeoRotation("rot4",90,180+angle,90,270+angle,0,0) );
        }
 
        sprintf(idSlatCh6,"LB%d",kNslats3-1+i);  
-
-       gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar2,3);
+       gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
        detElemId = 600 + i  + kNslats3-1;
-       GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, ySlat31, zSlat+2.*dzCh3),
+       GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, ySlat3, zSlat+2.*dzCh3),
 						 TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
        sprintf(idSlatCh6,"LB%d",3*kNslats3-2+i);
-
-       gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar2,3);
+       gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
        detElemId = 650 + i + kNslats3-1;
-       GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, ySlat31, zSlat-2.*dzCh3),
+       GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat-2.*dzCh3),
 						 TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) );
 
        if (i > 0) { 
 	 sprintf(idSlatCh6,"LB%d",kNslats3-1-i);
-	 gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar2,3);
+	 gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
 	 detElemId = 600 - i + kNslats3-1;
-	 GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, ySlat32, zSlat+2.*dzCh3),
+	 GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, zSlat+2.*dzCh3),
 						   TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
 
 	 sprintf(idSlatCh6,"LB%d",3*kNslats3-2-i);
-	 gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar2,3);
+	 gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
 	 detElemId = 650 - i + kNslats3-1;
-	 GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, ySlat32, zSlat-2.*dzCh3),
+	 GetEnvelopes(5)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat-2.*dzCh3),
 						   TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) );
        }
      }
@@ -394,7 +390,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	 Float_t xvFrame  = (slatLength3[i] - kVframeLength)/2.;
 	 Float_t xvFrame2  = xvFrame;
 
-	 if (i == 0 || i == 1 || i == 2) xvFrame2 -= 5./2.;
+	 if (i == 0 || i == 1 || i == 2) xvFrame2 -= pcbDLength3/2.;
 
 	 // position the vertical frames 
 	 if ( i > 2) { 
@@ -432,7 +428,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	   if (i == 0 && j == 0) continue;
 	   index++;
 	   Float_t xx = kSensLength * (-kNPCB3[i]/2. + j + 0.5); 
-   	   Float_t xx2 = xx - 5/2.; 
+   	   Float_t xx2 = xx - pcbDLength3/2.; 
 	 
 	   Float_t zPanel = spar[2] - panelpar[2]; 
 
@@ -440,13 +436,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	     GetEnvelopes(4)->AddEnvelopeConstituent("SB5C", idSlatCh5, 2*index-1,TGeoTranslation(xx2,0.,zPanel));
 	     GetEnvelopes(4)->AddEnvelopeConstituent("SB5C", idSlatCh5, 2*index,TGeoTranslation(xx2,0.,-zPanel));
 	     GetEnvelopes(4)->AddEnvelopeConstituent("SB5I", idSlatCh5, index,TGeoTranslation(xx2,0.,0.));
-	   }
-	   else if ( (i == 0 || i == 1 || i == 2) && j < kNPCB3[i]-1) {
-	     GetEnvelopes(4)->AddEnvelopeConstituent("S05C", idSlatCh5, 2*index-1,TGeoTranslation(xx,0.,zPanel));
-	     GetEnvelopes(4)->AddEnvelopeConstituent("S05C", idSlatCh5, 2*index,TGeoTranslation(xx,0.,-zPanel));
-	     GetEnvelopes(4)->AddEnvelopeConstituent("S05I", idSlatCh5, index,TGeoTranslation(xx,0.,0.));
-	   }
-	   else {
+	   } else {
 	     GetEnvelopes(4)->AddEnvelopeConstituent("S05C", idSlatCh5, 2*index-1,TGeoTranslation(xx,0.,zPanel));
 	     GetEnvelopes(4)->AddEnvelopeConstituent("S05C", idSlatCh5, 2*index,TGeoTranslation(xx,0.,-zPanel));
 	     GetEnvelopes(4)->AddEnvelopeConstituent("S05I", idSlatCh5, index,TGeoTranslation(xx,0.,0.));
@@ -494,7 +484,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
      gMC->Gsvolu("S05N","BOX",kNulocMaterial,nulocpar,3);
      gMC->Gsvolu("S06N","BOX",kNulocMaterial,nulocpar,3);
      index = 0;
-     Float_t xxmax2 = xxmax - 5./2.;
+     Float_t xxmax2 = xxmax - pcbDLength3/2.;
      for (xx = -xxmax; xx <= xxmax; xx += 2*kNulocLength) { 
        index++; 
        gMC->Gspos("S05N",2*index-1,"S05B", xx, 0.,-kBframeWidth/4., 0, "ONLY");
@@ -541,10 +531,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
        }
      }
 
-     // Volumes close to the beam pipe for slat i=0 so 2 slats per chamber (Lattes centrales de la station 3)
+     // Volumes close to the beam pipe for slat i=0 so 2 slats per chamber (central slat for station 3)
      //      Gines Martinez, Subatech sep 04
      // 9 box volumes are used to define the PCB closed to the beam pipe of the slat 122000SR1 of chamber 5 and 6 of St3
-     // Cette code a ete ecrit suivant le plan PQ-LAT-SR1 de CEA-DSM-DAPNIA-SIS/BE ph HARDY 8-Oct-2002
+     // Accordingly to plan PQ-LAT-SR1 of CEA-DSM-DAPNIA-SIS/BE ph HARDY 8-Oct-2002
      // Rmin = 31.5 cm
      Double_t rmin_122000SR1 = 31.5; //in cm  
      ndiv  = 9; 
@@ -593,7 +583,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
      iChamber2 = GetChamber(7);
 
      const Int_t kNslats4 = 7;  // number of slats per quadrant
-     const Int_t kNPCB4[kNslats4] = {5,6,5,5,4,3,2}; // n PCB per slat
+     const Int_t kNPCB4[kNslats4] = {5, 6, 5, 5, 4, 3, 2}; // n PCB per slat
      const Float_t kXpos4[kNslats4] = {38.5, 0., 0., 0., 0., 0., 0.};
      Float_t slatLength4[kNslats4];     
 
@@ -834,7 +824,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
      iChamber2 = GetChamber(9);
  
      const Int_t kNslats5 = 7;  // number of slats per quadrant
-     const Int_t kNPCB5[kNslats5] = {5,6,6,6,5,4,3}; // n PCB per slat
+     const Int_t kNPCB5[kNslats5] = {5, 6, 6, 6, 5, 4, 3}; // n PCB per slat
      const Float_t kXpos5[kNslats5] = {38.5, 0., 0., 0., 0., 0., 0.};
      Float_t slatLength5[kNslats5]; 
 
