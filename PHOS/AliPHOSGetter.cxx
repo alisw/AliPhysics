@@ -118,6 +118,30 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* branchTitle )
   fDebug=0;
 }
 //____________________________________________________________________________ 
+AliPHOSGetter::~AliPHOSGetter(){
+  //Here we remove all TFolders and TTasks with current title and file name
+  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
+  
+  if(aliceF){
+    //Hits:  the hierarchy is //YSALICE/WhiteBoard/Hits/PHOS/...
+    TFolder * hitsF  = (TFolder*)aliceF->FindObject("WhiteBoard/Hits/PHOS") ; 
+    if(hitsF){
+      TObject * h = hitsF->FindObject("hits") ;
+      hitsF->Remove(h) ;
+    }
+    
+    //SDigits:  the hierarchy is //YSALICE/WhiteBoard/SDigits/PHOS/...
+    TFolder * sdigitsF  = (TFolder*)aliceF->FindObject("WhiteBoard/SDigits/PHOS") ; 
+    if(sdigitsF){
+      TCollection* l = sdigitsF->GetListOfFolders() ;
+      TIter it(l) ;
+      TObject * sf ;
+      while((sf = it.Next()) )
+	sdigitsF->RecursiveRemove(sf) ;
+    }
+  }
+}
+//____________________________________________________________________________ 
 void AliPHOSGetter::CreateWhiteBoard() const
 {
   // Posts a few item to the white board (folders)
@@ -153,7 +177,7 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
        (fgObjGetter->fHeaderFile.CompareTo(headerFile)==0))
       return fgObjGetter ;
     else
-      delete fgObjGetter ;  // delete it if already exists another version
+      fgObjGetter->~AliPHOSGetter() ;  // delete it if already exists another version
   
   fgObjGetter = new AliPHOSGetter(headerFile,branchTitle) ; 
   
@@ -1031,7 +1055,7 @@ void AliPHOSGetter::ReadTreeD()
   }
 
   if ( !phosfound || !digitizerfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeD -> Cannot find Digits and/or Digitizer with name " 
+    cout << "WARNING: AliPHOSGetter::ReadTreeD -> Cannot find Digits and/or Digitizer with name " 
 	 << fDigitsTitle << endl ;
     return ; 
   }   
@@ -1064,7 +1088,7 @@ void AliPHOSGetter::ReadTreeH()
   
   TBranch * hitsbranch = (TBranch*)gAlice->TreeH()->GetBranch("PHOS") ;
   if ( !hitsbranch ) {
-    cerr << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
+    cout << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
     return ;
   }
   if(!Hits())
@@ -1088,7 +1112,7 @@ void AliPHOSGetter::Track(Int_t itrack)
   
   TBranch * hitsbranch = (TBranch*)gAlice->TreeH()->GetListOfBranches()->FindObject("PHOS") ;
   if ( !hitsbranch ) {
-    cerr << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
+    cout << "WARNING:  AliPHOSGetter::ReadTreeH -> Cannot find branch PHOS" << endl ; 
     return ;
   }  
   if(!Hits())
@@ -1111,7 +1135,7 @@ void AliPHOSGetter::ReadTreeQA()
   
   TBranch * qabranch = PHOS()->TreeQA()->GetBranch("PHOS") ; 
   if (!qabranch) { 
-    cerr << "WARNING: AliPHOSGetter::ReadTreeQA -> Cannot find QA Alarms for PHOS" << endl ;
+    cout << "WARNING: AliPHOSGetter::ReadTreeQA -> Cannot find QA Alarms for PHOS" << endl ;
     return ; 
   }   
   
@@ -1160,17 +1184,17 @@ void AliPHOSGetter::ReadTreeR()
     }
 
   if ( !phosemcrpfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find EmcRecPoints with title " 
+    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find EmcRecPoints with title " 
 	 << fRecPointsTitle << endl ;
     return ; 
   }   
   if ( !phoscpvrpfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find CpvRecPoints with title " 
+    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find CpvRecPoints with title " 
 	 << fRecPointsTitle << endl ;
     return ; 
   }   
   if ( !clusterizerfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeR -> Can not find Clusterizer with title " 
+    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Can not find Clusterizer with title " 
 	 << fRecPointsTitle << endl ;
     return ; 
   }   
@@ -1209,7 +1233,7 @@ void AliPHOSGetter::ReadTreeR()
     }
   
   if ( !phostsfound || !tsmakerfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find TrackSegments and/or TrackSegmentMaker with name "
+    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find TrackSegments and/or TrackSegmentMaker with name "
 	 << fTrackSegmentsTitle << endl ;
     return ; 
   } 
@@ -1246,7 +1270,7 @@ void AliPHOSGetter::ReadTreeR()
     }
   
   if ( !phosrpafound || !pidfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find RecParticles and/or PID with name " 
+    cout << "WARNING: AliPHOSGetter::ReadTreeR -> Cannot find RecParticles and/or PID with name " 
 	 << fRecParticlesTitle << endl ;
     return ; 
   } 
@@ -1322,7 +1346,7 @@ void AliPHOSGetter::ReadTreeS(Int_t event)
       }
     }
     if ( !phosfound || !sdigitizerfound ) {
-      cerr << "WARNING: AliPHOSDigitizer::ReadSDigits -> Digits and/or Digitizer branch with name " << GetName() 
+      cout << "WARNING: AliPHOSDigitizer::ReadSDigits -> Digits and/or Digitizer branch with name " << GetName() 
 	   << " not found" << endl ;
       return ; 
     }   
@@ -1380,7 +1404,7 @@ void AliPHOSGetter::ReadTreeS(TTree * treeS, Int_t input)
     }
   }
   if ( !phosfound || !sdigitizerfound ) {
-    cerr << "WARNING: AliPHOSGetter::ReadTreeS -> Digits and/or Digitizer branch not found" << endl ;
+    cout << "WARNING: AliPHOSGetter::ReadTreeS -> Digits and/or Digitizer branch not found" << endl ;
     return ; 
   }   
   
@@ -1677,6 +1701,6 @@ const TTask * AliPHOSGetter::ReturnT(TString what, TString name) const
   }
   
   if(fDebug)
-    cerr << "WARNING: AliPHOSGetter::ReturnT -> Task " << path << "/" << name << " not found!" << endl ; 
+    cout << "WARNING: AliPHOSGetter::ReturnT -> Task " << path << "/" << name << " not found!" << endl ; 
   return 0 ;
 }
