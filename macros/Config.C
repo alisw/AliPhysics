@@ -387,10 +387,6 @@ void Config()
     {
         //=================== FMD parameters ============================
 	AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
-        FMD->SetRingsSi1(256);
-        FMD->SetRingsSi2(128);
-        FMD->SetSectorsSi1(20);
-        FMD->SetSectorsSi2(40);      
    }
 
     if (iMUON)
