@@ -80,7 +80,7 @@ AliTRDsegmentArray::~AliTRDsegmentArray()
 }
 
 //_____________________________________________________________________________
-void AliTRDsegmentArray::Copy(TObject &a)
+void AliTRDsegmentArray::Copy(TObject &a) const
 {
   //
   // Copy function

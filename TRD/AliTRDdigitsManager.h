@@ -32,7 +32,7 @@ class AliTRDdigitsManager : public TObject {
 
   virtual void                CreateArrays();
   virtual void                ResetArrays();
-  virtual void                Copy(TObject &m);
+  virtual void                Copy(TObject &m) const;
 
   virtual Bool_t              MakeBranch(TTree *tree);
           

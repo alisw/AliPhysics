@@ -29,15 +29,19 @@ class AliTRDpidLQ : public AliTRDpid {
   virtual ~AliTRDpidLQ();
   AliTRDpidLQ &operator=(const AliTRDpidLQ &p);
 
-  virtual void          Copy(TObject &p);
+  virtual void          Copy(TObject &p) const;
   virtual Bool_t        Init();
+  virtual Bool_t        AssignLikelihood()            { return 0; };
+  virtual Bool_t        AssignLikelihood(TObjArray *) { return 0; };
   virtual Bool_t        AssignLikelihood(AliTRDtrack *t);
   virtual Bool_t        CreateHistograms(Int_t nmom, Float_t minmom, Float_t maxmom);
+  virtual Bool_t        FillSpectra()                 { return 0; };
+  virtual Bool_t        FillSpectra(TObjArray*)       { return 0; };
   virtual Bool_t        FillSpectra(const AliTRDtrack *t);
 
-  Int_t         GetIndex(const AliTRDtrack *t);
-  Int_t         GetIndex(Int_t imom, Int_t ipid);
-  Int_t         GetIndex(Float_t mom, Int_t ipid);
+          Int_t         GetIndex(const AliTRDtrack *t);
+          Int_t         GetIndex(Int_t imom, Int_t ipid);
+          Int_t         GetIndex(Float_t mom, Int_t ipid);
 
           TObjArray*    GetHist() const                     { return fHist;        };
 

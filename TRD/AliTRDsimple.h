@@ -26,7 +26,7 @@ class AliTRDsimple : public TObject {
   AliTRDsimple &operator=(const AliTRDsimple &s);    
 
   virtual void             Init();
-  virtual void             Copy(TObject &s);
+  virtual void             Copy(TObject &s) const;
   virtual void             ProcessEvent(Int_t ievent);
 
   virtual AliTRDsimpleGen *GetGenerator()      const { return fGenerator; };

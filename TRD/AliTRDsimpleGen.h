@@ -23,7 +23,7 @@ class AliTRDsimpleGen : public TObject {
   virtual ~AliTRDsimpleGen();
   AliTRDsimpleGen &operator=(const AliTRDsimpleGen &g);    
 
-  virtual void         Copy(TObject &g);
+  virtual void         Copy(TObject &g) const;
   virtual void         NewParticle(Int_t ievent);
 
   virtual void         SetMomentum(Double_t min, Double_t max) { fMomMin = min;

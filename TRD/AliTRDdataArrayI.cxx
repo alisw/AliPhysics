@@ -93,7 +93,7 @@ void AliTRDdataArrayI::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
 }
 
 //_____________________________________________________________________________
-void AliTRDdataArrayI::Copy(TObject &a)
+void AliTRDdataArrayI::Copy(TObject &a) const
 {
   //
   // Copy function

@@ -103,7 +103,7 @@ AliTRDclusterizerV1 &AliTRDclusterizerV1::operator=(const AliTRDclusterizerV1 &c
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizerV1::Copy(TObject &c)
+void AliTRDclusterizerV1::Copy(TObject &c) const
 {
   //
   // Copy function

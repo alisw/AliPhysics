@@ -23,6 +23,7 @@ class AliTRDclusterizerMI : public AliTRDclusterizerV1 {
   virtual ~AliTRDclusterizerMI();
   virtual Bool_t   MakeClusters(); 
   void MakeCluster(Float_t * padSignal, Float_t * pos, Float_t &sigma, Float_t & relpad);
+  virtual void AddCluster(Float_t*, int, float, Int_t*, Float_t*, int) {};
   AliTRDclusterMI *  AddCluster();
   void SetCluster(AliTRDclusterMI * cl, Float_t *pos, Int_t det, Float_t amp
 		  , Int_t *tracks, Float_t *sig, Int_t iType, Float_t sigmay,Float_t relpos);

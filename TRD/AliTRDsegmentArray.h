@@ -25,7 +25,7 @@ class AliTRDsegmentArray : public AliTRDsegmentArrayBase {
   AliTRDsegmentArray(AliTRDsegmentArray &a);
   virtual ~AliTRDsegmentArray();
 
-  virtual void             Copy(TObject &a);
+  virtual void             Copy(TObject &a) const;
   virtual void             Delete();
   virtual void             Delete(const char *) { Delete(); };
 

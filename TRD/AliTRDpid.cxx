@@ -136,7 +136,7 @@ AliTRDpid &AliTRDpid::operator=(const AliTRDpid &p)
 }
 
 //_____________________________________________________________________________
-void AliTRDpid::Copy(TObject &p)
+void AliTRDpid::Copy(TObject &p) const
 {
   //
   // Copy function

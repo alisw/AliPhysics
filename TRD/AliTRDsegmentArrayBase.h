@@ -33,7 +33,7 @@ class AliTRDsegmentArrayBase: public TNamed {
           Bool_t           AddSegment(AliTRDsegmentID *segment);
           AliTRDsegmentID *AddSegment(Int_t index);  
           void             ClearSegment(Int_t index); 
-  virtual void             Copy(TObject &a);
+  virtual void             Copy(TObject &a) const;
   virtual Bool_t           ConnectTree(const char *treeName);
           Bool_t           MakeArray(Int_t n);    
   virtual AliTRDsegmentID *NewSegment(); 

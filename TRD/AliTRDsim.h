@@ -27,7 +27,7 @@ class AliTRDsim : public TObject {
   virtual ~AliTRDsim();
   AliTRDsim &operator=(const AliTRDsim &s);
 
-  virtual void          Copy(TObject &s);
+  virtual void          Copy(TObject &s) const;
   virtual void          Init();
   virtual Int_t         CreatePhotons(Int_t pdg, Float_t p
                                     , Int_t &nPhoton, Float_t *ePhoton);

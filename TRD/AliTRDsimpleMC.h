@@ -35,7 +35,7 @@ class AliTRDsimpleMC : public TVirtualMC {
   virtual ~AliTRDsimpleMC();
   AliTRDsimpleMC &operator=(const AliTRDsimpleMC &m);
 
-  virtual void          Copy(TObject &m);
+  virtual void          Copy(TObject &m) const;
 
   //
   // Methods for building / management of geometry

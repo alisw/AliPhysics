@@ -91,7 +91,7 @@ void AliTRDsimple::Init()
 }
  
 //_____________________________________________________________________________
-void AliTRDsimple::Copy(TObject &s)
+void AliTRDsimple::Copy(TObject &s) const
 {
   //
   // Copy function

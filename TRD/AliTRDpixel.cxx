@@ -54,7 +54,7 @@ AliTRDpixel::~AliTRDpixel()
 }
 
 //_____________________________________________________________________________
-void AliTRDpixel::Copy(TObject &p)
+void AliTRDpixel::Copy(TObject &p) const
 {
   //
   // Copy function

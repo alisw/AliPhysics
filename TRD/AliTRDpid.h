@@ -32,7 +32,7 @@ class AliTRDpid : public TNamed {
   virtual ~AliTRDpid();
   AliTRDpid &operator=(const AliTRDpid &p);
 
-  virtual void          Copy(TObject &p);
+  virtual void          Copy(TObject &p) const;
   virtual Bool_t        Init();
   virtual Bool_t        AssignLikelihood();
   virtual Bool_t        AssignLikelihood(TObjArray *tarray);

@@ -49,7 +49,7 @@ AliTRDarrayI::~AliTRDarrayI()
 }
 
 //_____________________________________________________________________________
-void AliTRDarrayI::Copy(TObject &a)
+void AliTRDarrayI::Copy(TObject &a) const
 {
   //
   // Copy function

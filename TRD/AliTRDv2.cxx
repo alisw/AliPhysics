@@ -104,7 +104,7 @@ AliTRDv2 &AliTRDv2::operator=(const AliTRDv2 &trd)
 }
  
 //_____________________________________________________________________________
-void AliTRDv2::Copy(TObject &trd)
+void AliTRDv2::Copy(TObject &trd) const
 {
   //
   // Copy function

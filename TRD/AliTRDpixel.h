@@ -18,7 +18,7 @@ public:
   AliTRDpixel();
   virtual ~AliTRDpixel();
 
-  virtual void    Copy(TObject &p);
+  virtual void    Copy(TObject &p) const;
 
   static  Int_t   NTrackPixel()                  { return fgkNTrackPixel; };
 

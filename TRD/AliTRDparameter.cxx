@@ -212,7 +212,7 @@ AliTRDparameter &AliTRDparameter::operator=(const AliTRDparameter &p)
 }
 
 //_____________________________________________________________________________
-void AliTRDparameter::Copy(TObject &p)
+void AliTRDparameter::Copy(TObject &p) const
 {
   //
   // Copy function
@@ -328,13 +328,6 @@ void AliTRDparameter::Init()
   //
 
   // The pad size in column direction (rphi-direction)
-  //SetColPadSize(0,0.65);
-  //SetColPadSize(1,0.68);
-  //SetColPadSize(2,0.71);
-  //SetColPadSize(3,0.74);
-  //SetColPadSize(4,0.77);
-  //SetColPadSize(5,0.80);
-
   SetColPadSize(0,0.664);
   SetColPadSize(1,0.695);
   SetColPadSize(2,0.726);

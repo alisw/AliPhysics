@@ -129,7 +129,7 @@ AliTRDpidLQ &AliTRDpidLQ::operator=(const AliTRDpidLQ &p)
 }
 
 //_____________________________________________________________________________
-void AliTRDpidLQ::Copy(TObject &p)
+void AliTRDpidLQ::Copy(TObject &p) const
 {
   //
   // Copy function

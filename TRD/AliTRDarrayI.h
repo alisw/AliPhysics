@@ -21,7 +21,7 @@ public:
 
   AliTRDarrayI();
   virtual ~AliTRDarrayI();
-  void Copy(TObject &a);
+  void Copy(TObject &a) const;
   void Expand(Int_t n);  
 
   ClassDef(AliTRDarrayI,1)  // An array of integers

@@ -241,7 +241,7 @@ AliTRDdigitizer &AliTRDdigitizer::operator=(const AliTRDdigitizer &d)
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitizer::Copy(TObject &d)
+void AliTRDdigitizer::Copy(TObject &d) const
 {
   //
   // Copy function

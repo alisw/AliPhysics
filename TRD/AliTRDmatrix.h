@@ -30,7 +30,7 @@ public:
   virtual void         AddSignal(Int_t iRow, Int_t iCol, Int_t iTime, Float_t signal);
   virtual Bool_t       AddTrack(Int_t iRow, Int_t iCol, Int_t iTime, Int_t track);
 
-  virtual void         Copy(TObject &m);
+  virtual void         Copy(TObject &m) const;
   virtual void         Draw(Option_t *opt = " ");
   virtual void         DrawRow(Int_t iRow);
   virtual void         DrawCol(Int_t iCol);

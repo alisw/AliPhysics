@@ -35,13 +35,14 @@ class AliTRD : public AliDetector {
 
           AliTRD    &operator=(const AliTRD &trd);
 
+  virtual void       AddHit(Int_t, Int_t*, Float_t*) { }; 
   virtual void       AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q, Bool_t inDrift); 
   virtual void       BuildGeometry();
-  virtual void       Copy(TObject &trd);
+  virtual void       Copy(TObject &trd) const;
   virtual void       CreateGeometry();
   virtual void       CreateMaterials();
-  virtual void       DrawModule() const;
-  Int_t              DistancetoPrimitive(Int_t px, Int_t py) const;
+  virtual void       DrawModule();
+  virtual Int_t      DistancetoPrimitive(Int_t px, Int_t py);
   virtual void       LoadPoints(Int_t track);    
   virtual void       Init();
   virtual Int_t      IsVersion() const = 0;

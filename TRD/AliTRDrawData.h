@@ -26,7 +26,7 @@ class AliTRDrawData : public TObject {
   virtual ~AliTRDrawData();
   AliTRDrawData &operator=(const AliTRDrawData &r);
 
-  virtual void                 Copy(TObject &r);
+  virtual void                 Copy(TObject &r) const;
 
   virtual Bool_t               Digits2Raw(TTree *digits);
   virtual AliTRDdigitsManager* Raw2Digits(AliRawReader* rawReader);

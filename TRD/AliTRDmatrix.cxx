@@ -128,7 +128,7 @@ void AliTRDmatrix::AddSignal(Int_t iRow, Int_t iCol, Int_t iTime, Float_t signal
 }
 
 //_____________________________________________________________________________
-void AliTRDmatrix::Copy(TObject &m)
+void AliTRDmatrix::Copy(TObject &m) const
 {
   //
   // Copy function

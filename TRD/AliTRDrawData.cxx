@@ -77,7 +77,7 @@ AliTRDrawData &AliTRDrawData::operator=(const AliTRDrawData &r)
 }
 
 //_____________________________________________________________________________
-void AliTRDrawData::Copy(TObject &r)
+void AliTRDrawData::Copy(TObject &r) const
 {
   //
   // Copy function

@@ -27,7 +27,7 @@ class AliTRDparameter : public TNamed {
   virtual ~AliTRDparameter();
   AliTRDparameter &operator=(const AliTRDparameter &p); 
 
-  virtual void     Copy(TObject &p);
+  virtual void     Copy(TObject &p) const;
   virtual void     Init();
   virtual void     ReInit();
  

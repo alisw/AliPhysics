@@ -34,7 +34,7 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual ~AliTRDdigitizer();
   AliTRDdigitizer &operator=(const AliTRDdigitizer &d);
 
-  virtual void         Copy(TObject &d);
+  virtual void         Copy(TObject &d) const;
   virtual Bool_t       InitDetector();
   virtual void         Exec(Option_t* option = 0);  
   virtual Bool_t       Open(const Char_t *file, Int_t nEvent = 0);

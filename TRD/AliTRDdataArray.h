@@ -25,7 +25,7 @@ class AliTRDdataArray : public AliTRDsegmentID {
   virtual ~AliTRDdataArray();
   AliTRDdataArray &operator=(const AliTRDdataArray &d);
 
-  virtual void   Copy(TObject &d);
+  virtual void   Copy(TObject &d) const;
   virtual void   Allocate(Int_t nrow, Int_t ncol,Int_t ntime);
   virtual void   Reset();
 

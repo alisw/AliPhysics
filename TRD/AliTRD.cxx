@@ -425,7 +425,7 @@ void AliTRD::BuildGeometry()
 }
  
 //_____________________________________________________________________________
-void AliTRD::Copy(TObject &trd)
+void AliTRD::Copy(TObject &trd) const
 {
   //
   // Copy function
@@ -694,7 +694,7 @@ void AliTRD::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliTRD::DrawModule() const
+void AliTRD::DrawModule()
 {
   //
   // Draw a shaded view of the Transition Radiation Detector version 0
@@ -753,7 +753,7 @@ void AliTRD::DrawModule() const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRD::DistancetoPrimitive(Int_t , Int_t ) const
+Int_t AliTRD::DistancetoPrimitive(Int_t , Int_t )
 {
   //
   // Distance between the mouse and the TRD detector on the screen

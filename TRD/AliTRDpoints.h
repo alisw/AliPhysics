@@ -24,7 +24,7 @@ class AliTRDpoints : public AliPoints {
   virtual ~AliTRDpoints();
   AliTRDpoints &operator=(const AliTRDpoints &p);
 
-  virtual void           Copy(TObject &p);   
+  virtual void           Copy(TObject &p) const;   
   virtual void           Draw(Option_t *option);
 
   virtual void           SetTRpoints(Int_t n, Float_t *coor);

@@ -130,7 +130,7 @@ AliTRDv1 &AliTRDv1::operator=(const AliTRDv1 &trd)
 }
  
 //_____________________________________________________________________________
-void AliTRDv1::Copy(TObject &trd)
+void AliTRDv1::Copy(TObject &trd) const
 {
   //
   // Copy function
@@ -762,7 +762,7 @@ void AliTRDv1::StepManagerFixedStep()
   Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
   cha = ((Int_t) idChamber / kNplan);
   pla = ((Int_t) idChamber % kNplan);
-  
+
   // Check on selected volumes
   Int_t addthishit = 1;
   if(fSensSelect) {

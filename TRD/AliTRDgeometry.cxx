@@ -190,21 +190,32 @@ void AliTRDgeometry::Init()
   Int_t isect;
 
   // The outer width of the chambers
-  fCwidth[0] =  94.8;
-  fCwidth[1] =  99.3;
-  fCwidth[2] = 103.7;
-  fCwidth[3] = 108.1;
-  fCwidth[4] = 112.6;
-  fCwidth[5] = 117.0;
+  //
+  // Changed with the introduction of 
+  // the new layer 0. The old layer 6
+  // is removed.
+  fCwidth[0] =  92.6;
+  fCwidth[1] =  94.8;
+  fCwidth[2] =  99.3;
+  fCwidth[3] = 103.7;
+  fCwidth[4] = 108.1;
+  fCwidth[5] = 112.6;
+  // Old layer 6
+  // fCwidth[5] = 117.0;
 
   // The outer lengths of the chambers
   // Includes the spacings between the chambers!
+  // Changed with the introduction of 
+  // the new layer 0. The old layer 6
+  // is removed.
   Float_t length[kNplan][kNcham]   = { { 124.0, 124.0, 110.0, 124.0, 124.0 }
+				     , { 124.0, 124.0, 110.0, 124.0, 124.0 }
                                      , { 131.0, 131.0, 110.0, 131.0, 131.0 }
                                      , { 138.0, 138.0, 110.0, 138.0, 138.0 }
                                      , { 145.0, 145.0, 110.0, 145.0, 145.0 }
-                                     , { 147.0, 147.0, 110.0, 147.0, 147.0 }
-                                     , { 147.0, 147.0, 110.0, 147.0, 147.0 } };
+				     , { 147.0, 147.0, 110.0, 147.0, 147.0 } };
+  // Old layer 6
+  //                                 , { 147.0, 147.0, 110.0, 147.0, 147.0 } };
 
   for (icham = 0; icham < kNcham; icham++) {
     for (iplan = 0; iplan < kNplan; iplan++) {
@@ -301,19 +312,21 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
 
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::Global2Local(Int_t mode, Float_t *local, Float_t *global, Int_t* index,  AliTRDparameter *par) const
+Bool_t AliTRDgeometry::Global2Local(Int_t mode, Float_t *local, Float_t *global
+                                  , Int_t* index,  AliTRDparameter *par) const
 {
   //
   // Converts local pad-coordinates (row,col,time) into 
   // global ALICE reference frame coordinates (x,y,z)
   //
-  //index[0]=plane number
-  //index[1]=chamber number
-  //index[2]=sector number
+  // index[0] = plane number
+  // index[1] = chamber number
+  // index[2] = sector number
   //
   // mode=0  - local coordinate in y, z,             x - rotated global   
   // mode=2  - local coordinate in pad, and pad row, x - rotated global
   //
+
   if (!par) {
     Error("Local2Global","No parameter defined\n");
     return kFALSE;
@@ -346,12 +359,13 @@ Bool_t AliTRDgeometry::Global2Local(Int_t mode, Float_t *local, Float_t *global,
 Bool_t   AliTRDgeometry::Global2Detector(Float_t global[3], Int_t index[3], AliTRDparameter *par)
 {
   //  
+  // input    = global position
+  // output   = index
+  // index[0] = plane number
+  // index[1] = chamber number
+  // index[2] = sector number
   //
-  //input = global position
-  //output =index
-  //index[0]=plane number
-  //index[1]=chamber number
-  //index[2]=sector number
+
   Float_t fi;
   //
   fi = TMath::ATan2(global[1],global[0]);

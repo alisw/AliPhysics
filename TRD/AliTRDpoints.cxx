@@ -91,7 +91,7 @@ AliTRDpoints &AliTRDpoints::operator=(const AliTRDpoints &p)
 }
 
 //_____________________________________________________________________________
-void AliTRDpoints::Copy(TObject &p)
+void AliTRDpoints::Copy(TObject &p) const
 {
   //
   // Copy function

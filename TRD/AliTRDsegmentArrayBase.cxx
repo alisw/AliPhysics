@@ -118,7 +118,7 @@ AliTRDsegmentArrayBase &AliTRDsegmentArrayBase
 }
 
 //_____________________________________________________________________________
-void AliTRDsegmentArrayBase::Copy(TObject &a)
+void AliTRDsegmentArrayBase::Copy(TObject &a) const
 {
   //
   // Copy function

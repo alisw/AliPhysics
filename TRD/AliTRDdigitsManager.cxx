@@ -97,7 +97,7 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitsManager::Copy(TObject &m)
+void AliTRDdigitsManager::Copy(TObject &m) const
 {
   //
   // Copy function

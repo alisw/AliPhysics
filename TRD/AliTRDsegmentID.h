@@ -23,7 +23,7 @@ class AliTRDsegmentID : public TObject {
   virtual ~AliTRDsegmentID();
 
           Int_t  GetID() const      { return fSegmentID;    }
-  virtual Int_t  GetSize()          { return sizeof(*this); }
+  virtual Int_t  GetSize() const    { return sizeof(*this); }
 
           void   SetID(Int_t index) { fSegmentID = index;} 
 

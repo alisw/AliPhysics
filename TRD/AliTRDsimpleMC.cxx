@@ -127,7 +127,7 @@ AliTRDsimpleMC &AliTRDsimpleMC::operator=(const AliTRDsimpleMC &m)
 }
  
 //_____________________________________________________________________________
-void AliTRDsimpleMC::Copy(TObject &m)
+void AliTRDsimpleMC::Copy(TObject &m) const
 {
   //
   // Copy function

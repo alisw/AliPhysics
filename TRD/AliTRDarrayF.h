@@ -21,7 +21,7 @@ public:
 
   AliTRDarrayF();
   virtual ~AliTRDarrayF();
-  void Copy(TObject &a);
+  void Copy(TObject &a) const;
   void Expand(Int_t n);  
 
   ClassDef(AliTRDarrayF,1)  // An array of floats

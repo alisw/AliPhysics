@@ -102,7 +102,7 @@ AliTRDdataArray &AliTRDdataArray::operator=(const AliTRDdataArray &d)
 }
 
 //_____________________________________________________________________________
-void AliTRDdataArray::Copy(TObject &d)
+void AliTRDdataArray::Copy(TObject &d) const
 {
   //
   // Copy function

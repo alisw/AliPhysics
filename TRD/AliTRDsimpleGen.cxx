@@ -80,7 +80,7 @@ AliTRDsimpleGen &AliTRDsimpleGen::operator=(const AliTRDsimpleGen &g)
 }
  
 //_____________________________________________________________________________
-void AliTRDsimpleGen::Copy(TObject &g)
+void AliTRDsimpleGen::Copy(TObject &g) const
 {
   //
   // Copy function

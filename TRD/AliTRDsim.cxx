@@ -132,7 +132,7 @@ AliTRDsim &AliTRDsim::operator=(const AliTRDsim &s)
 }
 
 //_____________________________________________________________________________
-void AliTRDsim::Copy(TObject &s)
+void AliTRDsim::Copy(TObject &s) const
 {
   //
   // Copy function
