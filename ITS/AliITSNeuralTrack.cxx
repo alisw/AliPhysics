@@ -17,6 +17,9 @@
 //#include <TObjArray.h>
 //#include <TH1.h>
 #include <TMatrixD.h>
+#if ROOT_VERSION_CODE >= 262146
+#include <TMatrixDEigen.h>
+#endif
 
 //#include "AliITSVertex.h"
 #include "AliITSIOTrack.h"
@@ -790,7 +793,15 @@ Bool_t AliITSNeuralTrack::RiemannFit()
 	// Eigenvalue problem solving for V matrix
 	Int_t ileast = 0;
 	TVectorD eval(3), n(3);
+	//	TMatrixD evec = mV.EigenVectors(eval);
+#if ROOT_VERSION_CODE >= 262146
+	TMatrixDEigen ei(mV);
+	TMatrixD evec = ei.GetEigenVectors();
+	eval = ei.GetEigenValues();
+#else
 	TMatrixD evec = mV.EigenVectors(eval);
+#endif
+
 	if (eval(1) < eval(ileast)) ileast = 1;
 	if (eval(2) < eval(ileast)) ileast = 2;
 	n(0) = evec(0, ileast);

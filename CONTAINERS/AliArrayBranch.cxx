@@ -728,7 +728,11 @@ AliObjectBranch::AliObjectBranch(const Text_t *name, const Text_t *classname, vo
    fClassName      = classname;
    fBasketEntry    = new Int_t[fMaxBaskets];
    fBasketBytes    = new Int_t[fMaxBaskets];
+#if ROOT_VERSION_CODE >= 262146
+   fBasketSeek     = new Long64_t[fMaxBaskets];
+#else
    fBasketSeek     = new Seek_t[fMaxBaskets];
+#endif
    fOldObject      = 0;
 
    fBasketEntry[0] = fEntryNumber;
