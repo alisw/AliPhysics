@@ -1,0 +1,65 @@
+#include "AliHBTRun.h"
+
+#include <TObjArray.h>
+
+
+ClassImp(AliHBTRun)
+/**************************************************************************/ 
+
+AliHBTRun::AliHBTRun()
+  { 
+  //contructor
+  
+    fEvents = new TObjArray();//create array for AliHBTEvents
+    if(!fEvents) Fatal("AliHBTRun::AliHBTRun","Can not allocate memory");
+    fEvents->SetOwner(); //array is an owner: when is deleted or cleared it deletes objects that it contains
+  }
+/**************************************************************************/
+AliHBTRun::~AliHBTRun()
+  {
+    //destructor
+    
+    delete fEvents;//delete array with events
+  }
+
+
+/**************************************************************************/
+void AliHBTRun::Reset()
+ { 
+   fEvents->Clear();//clear an array with events. 
+                    //All events are deleted because array is an owner (set in constructor)
+ }
+/**************************************************************************/
+
+
+void AliHBTRun::AddParticle(Int_t event, AliHBTParticle* part)
+{
+ //Adds particle to event
+ 
+ //if there is no event of this number, crate it and add to the collection
+ if(!GetEvent(event))  fEvents->AddAtAndExpand(new AliHBTEvent, event);
+ 
+ GetEvent(event)->AddParticle(part);
+}
+/**************************************************************************/
+
+
+void AliHBTRun::AddParticle(Int_t event, TParticle* part)
+{
+ //if there is no event of this number, crate it and add to the collection
+ if(!GetEvent(event))  fEvents->AddAtAndExpand(new AliHBTEvent, event);
+ GetEvent(event)->AddParticle(part);
+}
+/**************************************************************************/
+
+
+void AliHBTRun::AddParticle(Int_t event, Int_t pdg, 
+                            Double_t px, Double_t py, Double_t pz, Double_t etot,
+                            Double_t vx, Double_t vy, Double_t vz, Double_t time)
+{
+ //if there is no event of this number, crate it and add to the collection
+ if(!GetEvent(event))  fEvents->AddAtAndExpand(new AliHBTEvent, event);
+ GetEvent(event)->AddParticle(pdg,px,py,pz,etot,vx,vy,vz,time);
+}
+
+/**************************************************************************/ 

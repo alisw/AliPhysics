@@ -1,0 +1,14 @@
+SRCS          =   \
+AliHBTAnalysis.cxx    AliHBTPair.cxx         AliHBTQResolutionFctns.cxx  AliHBTReaderPPprod.cxx\
+AliHBTCorrelFctn.cxx  AliHBTPairCut.cxx      AliHBTReader.cxx            AliHBTReaderTPC.cxx\
+AliHBTEvent.cxx       AliHBTParticle.cxx     AliHBTRun.cxx\
+AliHBTFunction.cxx    AliHBTParticleCut.cxx  
+
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= HBTAnalysisLinkDef.h
+
+EINCLUDE:= TPC CONTAINERS 
+
+
