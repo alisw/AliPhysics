@@ -10,6 +10,10 @@
 	@$(F77) $(FFLAGS) -c $*.f -o $*.o
 .F.o:
 	@$(F77) $(FFLAGS) -c $*.F -o $*.o
+
+# Current Version
+
+VERSION		= 3.02pre
  
 # Which makedepend
 MAKEDEPEND    = $(ROOTSYS)/bin/makedepend
