@@ -1224,12 +1224,6 @@ void AliRunDB::Close()
 class AliMDCInterruptHandler : public TSignalHandler {
 public:
    AliMDCInterruptHandler(AliMDC *mdc) : TSignalHandler(kSigUser1, kFALSE), fMDC(mdc) { }
-   AliMDCInterruptHandler(const AliMDCInterruptHandler& handler): TSignalHandler(handler)
-     {Fatal("AliMDCInterruptHandler", "copy constructor not implemented");};
-   AliMDCInterruptHandler& operator = (const AliMDCInterruptHandler& /*rawDB*/) {
-     Fatal("operator =", "assignment operator not implemented");
-     return *this;
-   };
    Bool_t Notify() {
       Info("Notify", "received a SIGUSR1 signal");
       fMDC->SetStopLoop();
@@ -1237,6 +1231,9 @@ public:
    }
 private:
    AliMDC *fMDC;   // alimdc to signal
+
+   AliMDCInterruptHandler(const AliMDCInterruptHandler &);
+   void operator=(const AliMDCInterruptHandler &);
 };
 
 //______________________________________________________________________________
