@@ -141,7 +141,7 @@ void AliLVStructure::ClearAndDestroy(LVStructuresVector* structures)
          tmp.insert(current);
     }
     
-  typename G4std::set<AliLVStructure*, G4std::greater<AliLVStructure*> >::iterator it;
+  G4std::set<AliLVStructure*, G4std::greater<AliLVStructure*> >::iterator it;
   for (it=tmp.begin(); it!=tmp.end(); it++)
     {
       delete *it;
@@ -178,7 +178,7 @@ void AliLVStructure::AddNewVolume(G4LogicalVolume* lv,
     // the logical volumes should be kept in this directory.
     G4LogicalVolume* targetLV = GetVolume(lv->GetName());
     if (targetLV != 0) {
-      // G4cout << lv->GetName() << " had already stored in "
+      // G4cout << lv->GetName() << " has been already stored in "
       //        << fPathName << G4endl;
     }
     else {
