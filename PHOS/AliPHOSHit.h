@@ -30,7 +30,6 @@ class AliPHOSHit : public AliHit {
     // default ctor 
   }
   AliPHOSHit(const AliPHOSHit & hit) ; 
-  AliPHOSHit(Int_t primary, Int_t id, Float_t *hits) ;
   AliPHOSHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t id, Float_t *hits) ;
   virtual ~AliPHOSHit(void) {
     // dtor 
