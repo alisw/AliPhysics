@@ -3,9 +3,18 @@
 ////////////////////////////////////////////////
 //  Manager class for TPC parameters          //
 ////////////////////////////////////////////////
-#include"TObject.h"
 
-const Int_t kMaxRows=600;
+#include "TObject.h"
+
+// the last things from AliTPCSecGeo
+//const Float_t z_end = 250.; 
+//const Float_t alpha_low=0.523598775; // 30 degrees
+//const Float_t alpha_up=0.261799387; //  15 degrees
+//const Float_t q_el = 1.602e-19; // elementary charge
+//const Float_t adc_sat = 1023; // dynamic range (10 bits)
+//const Float_t dyn_range = 2000.; // output dynamic range (mV)
+
+
 
 class AliTPCParam : public TObject {
   //////////////////////////////////////////////////////
@@ -59,17 +68,17 @@ public:
   //set cosinus and sinus of rotation angles for sector isec
   Int_t GetNRowLow() const;   //get the number of pad rows in low sector
   Int_t GetNRowUp() const;    //get the number of pad rows in up sector
-  Int_t GetNRow(Int_t isec) {return  ((isec<25) ?  fnRowLow:fnRowUp);}
+  Int_t GetNRow(Int_t isec) {return  ((isec<fNInnerSector) ?  fnRowLow:fnRowUp);}
   //get the nuber of pad row in given sector
   Float_t GetPadRowRadiiLow(Int_t irow) const; //get the pad row (irow) radii
   Float_t GetPadRowRadiiUp(Int_t irow) const;  //get the pad row (irow) radii
   Float_t GetPadRowRadii(Int_t isec,Int_t irow) const {
-    return ( (isec < 25) ?GetPadRowRadiiLow(irow):GetPadRowRadiiUp(irow));}
+    return ( (isec < fNInnerSector) ?GetPadRowRadiiLow(irow):GetPadRowRadiiUp(irow));}
     //retrun raii of the pad row irow in sector i
   Int_t GetNPadsLow(Int_t irow) const;    //get the number of pads in row irow 
   Int_t GetNPadsUp(Int_t irow) const;     //get the number of pads in row irow
   Int_t GetNPads(Int_t isector,Int_t irow){
-     return ( (isector < 25) ?GetNPadsLow(irow) : GetNPadsUp(irow));}
+     return ( (isector < fNInnerSector) ?GetNPadsLow(irow) : GetNPadsUp(irow));}
     //get the number of pads  in given sector and row
   //  Int_t GetNPads(Int_t isector, Int_t irow) const;         
    //get the number of pads in sector isector and row irow
@@ -78,6 +87,18 @@ public:
   void  SetOuterRadiusLow(Float_t OuterRadiusLow ){  fOuterRadiusLow=OuterRadiusLow;} 
   void  SetInnerRadiusUp(Float_t InnerRadiusUp){  fInnerRadiusUp= InnerRadiusUp;} 
   void  SetOuterRadiusUp(Float_t OuterRadiusUp){  fOuterRadiusUp= OuterRadiusUp;} 
+  
+  void  SetSectorAngles(Float_t innerangle, Float_t innershift, Float_t outerangle,
+			Float_t outershift,Bool_t inDegree=kTRUE);
+
+  void    SetInSecLowEdge(Float_t isle){fInSecLowEdge=isle;}
+  void    SetInSecUpEdge(Float_t isue){fInSecUpEdge=isue;}
+  void    SetOuSecLowEdge(Float_t osle){fOuSecLowEdge=osle;}
+  void    SetOuSecUpEdge(Float_t osue){fOuSecUpEdge=osue;}
+
+  void    SetEdge(Float_t edge){fEdge = edge;}
+  void    SetDeadZone(Float_t zone){fDeadZone = zone;} 
+
 
   void  SetPadPitchLength(Float_t PadPitchLength){  fPadPitchLength=PadPitchLength;}
   void  SetPadPitchWidth(Float_t PadPitchWidth){  fPadPitchWidth = PadPitchWidth;}
@@ -105,6 +126,22 @@ public:
   Float_t  GetInnerRadiusUp(){return fInnerRadiusUp;} 
   Float_t  GetOuterRadiusUp(){return fOuterRadiusUp;} 
 
+  Float_t  GetInnerAngle(){return fInnerAngle;}
+  Float_t  GetInnerAngleShift(){return fInnerAngleShift;}
+  Float_t  GetOuterAngle(){return fOuterAngle;} 
+  Float_t  GetOuterAngleShift(){return fOuterAngleShift;} 
+  Int_t    GetNInnerSector(){return fNInnerSector;}
+  Int_t    GetNOuterSector(){return fNOuterSector;}
+  Int_t    GetNSector(){return fNSector;}
+
+  Float_t    GetInSecLowEdge(){return fInSecLowEdge;}
+  Float_t    GetInSecUpEdge(){return fInSecUpEdge;}
+  Float_t    GetOuSecLowEdge(){return fOuSecLowEdge;}
+  Float_t    GetOuSecUpEdge(){return fOuSecUpEdge;}  
+
+  Float_t    GetEdge(){return fEdge;}
+  Float_t    GetDeadZone(){return fDeadZone;}
+
   Float_t  GetPadPitchLength(){return fPadPitchLength;}
   Float_t  GetPadPitchWidth(){return fPadPitchWidth;}
   Float_t  GetPadLength(){return fPadLength;}
@@ -127,7 +164,7 @@ public:
   Int_t    GetNWires(){return fnWires;}
   Float_t  GetWWPitch(){return fWWPitch;}
   Int_t    GetZeroSup(){return fZeroSup;}
-
+  Int_t    GetMaxTBin(){return fMaxTBin;}
 
 private :
   Bool_t fbStatus;  //indicates consistency of the data
@@ -140,6 +177,26 @@ private :
   Float_t fInnerRadiusUp;   // upper radius of inner  sector
   Float_t fOuterRadiusUp;   // upper radius of outer  sector
 
+  Float_t fInnerAngle;       //opening angle of Inner sector
+  Float_t fInnerAngleShift;  //shift of first inner sector center to the 0
+  Float_t fOuterAngle;       //opening angle of outer sector
+  Float_t fOuterAngleShift;  //shift of first sector center to the 0
+ 
+  Int_t   fNInnerSector;      //!number of inner sectors
+  Int_t   fNOuterSector;      //!number of outer sectors
+  Int_t   fNSector;           //! total number of sectors
+
+  Float_t   fInSecLowEdge;      // inner sector lower edge
+  Float_t   fInSecUpEdge;       // inner sector upper edge
+  Float_t   fOuSecLowEdge;      // outer sector lower edge
+  Float_t   fOuSecUpEdge;       // outer sector upper edge
+  
+  Float_t   fEdge;              // thickness of the sector edge
+  Float_t   fDeadZone;          // dead zone due to the sector mounting etc.
+ 
+  //---------------------------------------------------------------------
+  //   ALICE TPC pad parameters
+  //--------------------------------------------------------------------
   Float_t   fPadPitchLength;    //pad pitch length
   Float_t   fPadPitchWidth;     //pad pitch width
   Float_t   fPadLength;         //pad  length
@@ -178,6 +235,7 @@ private :
   Float_t fTSample; // sampling time
   Float_t fZWidth;  //derived value calculated using TSample and driftw 
   Float_t fTSigma;  // width of the Preamp/Shaper function
+  Int_t   fMaxTBin; //maximum time bin number
   //--------------------------------------------------------
   //
   Int_t fNtRows;  //total number of rows in TPC  
@@ -185,6 +243,31 @@ private :
 };
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+//---------------------------------------------------------------------
+//   ALICE TPC Cluster Parameters
+//--------------------------------------------------------------------
+//
+//
+// Sigma rphi
+/*const Float_t a_rphi=0.41818e-2;
+const Float_t b_rphi=0.17460e-4;
+const Float_t c_rphi=0.30993e-2;
+const Float_t d_rphi=0.41061e-3;
+// Sigma z
+const Float_t a_z=0.39614e-2;
+const Float_t b_z=0.22443e-4;
+const Float_t c_z=0.51504e-1;
+// Cluster width in rphi
+const Float_t ac_rphi=0.18322;
+const Float_t bc_rphi=0.59551e-3;
+const Float_t cc_rphi=0.60952e-1;
+// Cluster width in z
+const Float_t ac_z=0.19081;
+const Float_t bc_z=0.55938e-3;
+const Float_t cc_z=0.30428;
+*/
 
 
 

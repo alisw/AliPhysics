@@ -37,6 +37,11 @@ protected:
   //MK changes
 
   Float_t        fSide;  // selects left(-1), right(+1), or both(0) sides of the TPC
+  Int_t          fNoComp; // number of a drift gas components
+  Int_t          fMixtComp[3]; // drift gas components
+  Float_t        fMixtProp[3]; // mixture proportions
+
+  //   
 
   TClonesArray   *fClusters;        // List of clusters for all sectors
   TClonesArray   *fTracks;          // List of reconstructed tracks
@@ -80,6 +85,9 @@ public:
   //MK changes
 
   virtual void  SetSide(Float_t side);
+  virtual void  SetGasMixt(Int_t nc,Int_t c1,Int_t c2,Int_t c3,Float_t p1,
+                           Float_t p2,Float_t p3); 
+
   virtual void  StepManager()=0;
   virtual void  DrawDetector() {}
   AliTPCD*  GetDigParam() {return fDigParam;} //MI change8

@@ -1,57 +1,69 @@
 ///////////////////////////////////////////////////////////////////////
 //  Manager and of geomety  classes for set: TPC                     //
 //                                                                   //
+//  !sectors are numbered from  0                                     //
+//  !pad rows are numbered from 0                                     //
+//  
+//  12.6.   changed z relative 
 //  Origin:  Marian Ivanov, Uni. of Bratislava, ivanov@fmph.uniba.sk // 
 //                                                                   //  
 ///////////////////////////////////////////////////////////////////////
 
-// MI change global variables for geometry 
-// declaration of the global static variable 
-// of AliTPCParam objects
 
 #include <iostream.h>
 #include <TMath.h>
-//#include <TObject.h>
-#include "AliTPCParam.h"
-//some old TPC parameters in AliTPCSecGeo.h
+#include <TObject.h>
 #include "AliTPCSecGeo.h"
+#include <AliTPCParam.h>
 
 
 ClassImp(AliTPCParam)
 
+const static  Int_t kMaxRows=600;
+
+
 // default values  
+const static   Int_t kMaxTBin =512; 
 
-const  Float_t kInnerRadiusLow = 89.45;
-const  Float_t kOuterRadiusLow = 143.725;
-const  Float_t kInnerRadiusUp  = 134.55;
-const  Float_t kOuterRadiusUp  = 248.275;
 
-const Float_t kPadPitchLength = 2.05;
-const Float_t kPadPitchWidth = 0.35;
-const Float_t kPadLength = 2.05;
-const Float_t kPadWidth = 0.35;
+const static  Float_t kInnerRadiusLow = 89.45;
+const static  Float_t kOuterRadiusLow = 143.725;
+const static  Float_t kInnerRadiusUp  = 134.55;
+const static  Float_t kOuterRadiusUp  = 248.275;
+
+const static  Float_t kInnerAngle = 0.523598775; // 30 degrees
+const static  Float_t kInnerAngleShift = 0;
+const static  Float_t kOuterAngle = 0.261799387; //  15 degrees
+const static  Float_t kOuterAngleShift = 0;
+
+const static Float_t kPadPitchLength = 2.05;
+const static Float_t kPadPitchWidth = 0.35;
+const static Float_t kPadLength = 2.05;
+const static Float_t kPadWidth = 0.35;
+
 //  Number of wires per pad and wire-wire pitch
-const Int_t knWires = 5;
-const  Float_t  kDiffT = 2.2e-2; 
-const  Float_t  kDiffL = 2.2e-2; 
-const  Float_t  kDriftV  =2.85e6;
+const static Int_t knWires = 5;
+const static  Float_t  kDiffT = 2.2e-2; 
+const static  Float_t  kDiffL = 2.2e-2; 
+const static  Float_t  kDriftV  =2.85e6;
 
-const  Float_t  kOmegaTau = 0.145;
-const  Float_t  kAttCoef = 250.;
-const  Float_t  kOxyCont = 5.e-6;
+const static  Float_t  kOmegaTau = 0.145;
+const static  Float_t  kAttCoef = 250.;
+const static  Float_t  kOxyCont = 5.e-6;
 
 
-
-const  Float_t  kChipGain = 24;
-const  Float_t  kGasGain = 1e4;
-const  Float_t  kTSample = 2.e-7; //TSAMPLE
-const  Float_t  kTFWHM   = 2.5e-7;  //fwhm of charge distribution
+const static  Float_t  kChipGain = 24;
+const static  Float_t  kGasGain = 1e4;
+const static  Float_t  kTSample = 2.e-7; //TSAMPLE
+const static  Float_t  kTFWHM   = 2.5e-7;  //fwhm of charge distribution
  
-const  Float_t  kNoise = 500;  //default noise = 1000 el 
-const  Int_t  kZeroSup=5;
-const  Float_t  kPadCoupling=0.5;
+const static  Float_t  kNoise = 500;  //default noise = 1000 el 
+const static  Int_t    kZeroSup=5;
+const static  Float_t  kPadCoupling=0.5;
 // 
-const  Float_t  kEdgeSectorSpace = 5.26;
+const static  Float_t  kEdgeSectorSpace = 1.15;
+const static  Float_t  kDegtoRad = 0.01745329251994;
+const static  Float_t  kRadtoDeg = 57.29577951309;
 
 
 
@@ -64,28 +76,49 @@ AliTPCParam::AliTPCParam()
 }
 
 
+void  AliTPCParam::SetSectorAngles(Float_t innerangle, Float_t innershift, Float_t outerangle,
+			Float_t outershift, Bool_t inDegree)
+{
+  //
+  // set opening angles  
+  fInnerAngle = innerangle;       //opening angle of Inner sector
+  fInnerAngleShift = innershift;  //shift of first inner sector center to the 0
+  fOuterAngle = outerangle;       //opening angle of outer sector
+  fOuterAngleShift = outershift;  //shift of first sector center to the 0  
+  if (inDegree==kTRUE){
+    fInnerAngle *=kDegtoRad;
+    fInnerAngleShift *=kDegtoRad;
+    fOuterAngle *=kDegtoRad;
+    fOuterAngleShift *=kDegtoRad;
+  }    
+}
+
+
 void AliTPCParam::CRXYZtoXYZ(Float_t *xyz,
 	       const Int_t &sector, const Int_t & padrow, Int_t option) const  
 {  
   //transform relative coordinates to absolute
   Bool_t rel = ( (option&2)!=0);
   Float_t row_first; 
-  row_first = (sector<25) ? fPadRowLow[0] : fPadRowUp[0]; 
-  if (rel==kTRUE)  //if we have 
+  row_first = (sector<=fNInnerSector) ? fPadRowLow[0] : fPadRowUp[0]; 
+  if (rel==kTRUE)  //if the position is relative to pad row  
     {
       xyz[0]+=row_first;
       xyz[0]+=(Int_t) padrow*fPadPitchLength;
     }  
-  if (sector<25) 
-    if ( sector>12)	xyz[2]*=-1.;
+
+  xyz[2]=z_end-xyz[2];
+  if (sector<fNInnerSector)
+    if ( sector>=(fNInnerSector>>1))	xyz[2]*=-1.;
   else 
-     if (sector>48)    xyz[2]*=-1;       
+    if ( (sector-fNInnerSector) > (fNOuterSector>>1) )    xyz[2]*=-1;       
+  
   Float_t x1=xyz[0];
   Float_t y1=xyz[1];
   Float_t cos,sin;
   AdjustAngles(sector,cos,sin);
-  xyz[0]=x1*cos - y1*sin;
-  xyz[1]=x1*sin + y1*cos;
+  xyz[0]= x1*cos - y1*sin;
+  xyz[1]= x1*sin + y1*cos;
 }
 
 void AliTPCParam::XYZtoCRXYZ(Float_t *xyz,
@@ -111,9 +144,10 @@ void AliTPCParam::XYZtoCRXYZ(Float_t *xyz,
 	if   (xyz[0]<0)   angle=TMath::Pi()-angle;
 	if ( (xyz[0]>0) && (xyz[1]<0) ) angle=2*TMath::Pi()+angle;
       }
-  //transform global position to the position relative to the sector padrow
-  //fistly calculate xyz[0] "polomer for lover sector
-    sector=Int_t(angle/alpha_low)+1;      
+    //transform global position to the position relative to the sector padrow
+    //fistly calculate xyz[0] radius  for lover sector
+    //bacause in this moment we dont know in which sector we are
+    sector=Int_t((angle-fInnerAngleShift)/fInnerAngle);      
     Float_t x1;
     Float_t y1;
     //firstly we suppose that we are in inner sector
@@ -124,15 +158,15 @@ void AliTPCParam::XYZtoCRXYZ(Float_t *xyz,
     y1=-xyz[0]*sin + xyz[1]*cos;
     if (x1>fOuterRadiusLow)
       {
-	sector=Int_t(angle/alpha_up)+25;
+	sector=Int_t((angle-fOuterAngleShift)/fOuterAngle)+fNInnerSector;
 	AdjustAngles(sector,cos,sin);        
 	x1=xyz[0]*cos + xyz[1]*sin;
 	y1=-xyz[0]*sin + xyz[1]*cos;      
-	if (xyz[2]<0) 	sector+=24;            
+	if (xyz[2]<0) 	sector+=(fNOuterSector>>1);            
       }
     else   
-      if (xyz[2]<0) sector+=12;    
-    if (xyz[2]<0) xyz[2]=-xyz[2];  
+      if (xyz[2]<0) sector+=(fNInnerSector>>1);    
+
   if  (x1<fOuterRadiusLow)   
     padrow =Int_t( (x1-fPadRowLow[0])/fPadPitchLength+0.5);
   else
@@ -143,7 +177,8 @@ void AliTPCParam::XYZtoCRXYZ(Float_t *xyz,
 	x1-=padrow*fPadPitchLength+fPadRowUp[0];  
    xyz[0]=x1;
    xyz[1]=y1;    
-  }
+   xyz[2]=z_end-TMath::Abs(xyz[2]);  
+  }   //endif we don't have information about sector
   else{
     //if we have information about sector
     Float_t cos,sin;
@@ -154,23 +189,22 @@ void AliTPCParam::XYZtoCRXYZ(Float_t *xyz,
     x1=xyz[0]*cos + xyz[1]*sin;
     y1=-xyz[0]*sin + xyz[1]*cos; 
     //calculate pad row number
-    if (sector<25) {
+    if (sector<fNInnerSector) {
       padrow =Int_t( (x1-fPadRowLow[0])/fPadPitchLength+1.5)-1;
-      if ( sector>12)	xyz[2]=-xyz[2];
     }
     else {
       padrow =Int_t( (x1-fPadRowUp[0])/fPadPitchLength+1.5)-1;
-      if (sector>48)    xyz[2]=-xyz[2];      
     }
     //if we store relative position calculate position relative to pad row
     if (rel==kTRUE){
-      if (sector<25)
+      if (sector<fNInnerSector)
 	x1-=padrow*fPadPitchLength+fPadRowLow[0];
       else 
 	x1-=padrow*fPadPitchLength+fPadRowUp[0];
     }      
     xyz[0]=x1;
     xyz[1]=y1;
+    xyz[2]=z_end-TMath::Abs(xyz[2]);  
   }
 }
 
@@ -179,24 +213,20 @@ void AliTPCParam::CRYZtoTimePad(const Float_t &y, const Float_t &z,
 				Int_t sector, Int_t padrow)
 {
   //transform position in cm to position in time slices and pads
-  Float_t  nofpads = (sector < 25) ? fnPadsLow[padrow] : fnPadsUp[padrow];
+  Float_t  nofpads = GetNPads(sector,padrow);
   Float_t padc=(nofpads+1)/2; // this is the "central" pad for a row
   pad = y/(fPadPitchWidth)+padc;
-  time=(z_end-z)/(fDriftV*fTSample);  
-  //  cout<<y<<"  "<<z<<"   "<<time<<"    "<<pad<<"  "<<
-  //    sector<<"   "<<padrow<<"\n";	
+  time=z/fZWidth;  
 }
 void AliTPCParam::CRTimePadtoYZ(Float_t &y, Float_t &z,
 				const Float_t &time, const Float_t &pad,
 				Int_t sector, Int_t padrow)
 {
   //transform position in time slices and pads  to cm 
-   Float_t  nofpads = (sector < 25) ? fnPadsLow[padrow] : fnPadsUp[padrow];
+   Float_t  nofpads = GetNPads(sector,padrow);
    Float_t padc=(nofpads+1)/2; // this is the "central" pad for a row
    y=(pad-padc)*fPadPitchWidth;
-   z=z_end-time*(fDriftV*fTSample);
-   //   cout<<y<<"  "<<z<<"   "<<time<<"    "<<pad<<"  "<<
-   //    sector<<"   "<<padrow<<"\n";	
+   z=time*fZWidth;
 }
 
 Int_t AliTPCParam::GetWire(Float_t & x)
@@ -225,8 +255,8 @@ Int_t AliTPCParam::GetIndex(Int_t sector, Int_t row)
   //give index of the given sector and pad row 
   //no control if the sectors and rows  are reasonable !!!
   //
-  if (sector<25) return (sector-1)*fnRowLow+row;
-  return (24*fnRowLow)+(sector-25)*fnRowUp+row;  
+  if (sector<fNInnerSector) return sector*fnRowLow+row;
+  return (fNInnerSector*fnRowLow)+(sector-fNInnerSector)*fnRowUp+row;  
 }
 
 Bool_t   AliTPCParam::AdjustSectorRow(Int_t index, Int_t & sector, Int_t &row)
@@ -236,17 +266,15 @@ Bool_t   AliTPCParam::AdjustSectorRow(Int_t index, Int_t & sector, Int_t &row)
   //if index is reasonable return true else return false
   //
   if ( (index<0) || (index>fNtRows))  return kFALSE;
-  Int_t outindex = 24*fnRowLow;
+  Int_t outindex = fNInnerSector*fnRowLow;
   if (index<outindex) {
     sector = index/fnRowLow;
     row    = index - sector*fnRowLow;
-    sector++;
     return kTRUE;
   }
   index-= outindex;
   sector = index/fnRowUp;
   row    = index - sector*fnRowUp;
-  sector++;
   return kTRUE;         
 } 
 
@@ -269,11 +297,12 @@ void AliTPCParam::SetDefault()
 {
   //set default TPC param   
   fbStatus = kFALSE;
-  //set radius parameters
+  //set sector  parameters
   fInnerRadiusLow = kInnerRadiusLow;
   fOuterRadiusLow = kOuterRadiusLow;
   fInnerRadiusUp  = kInnerRadiusUp;
-  fOuterRadiusUp  = kOuterRadiusUp; 
+  fOuterRadiusUp  = kOuterRadiusUp;   
+  SetSectorAngles(kInnerAngle,kInnerAngleShift, kOuterAngle, kOuterAngleShift); 
   // set default pad size and shape
   fPadPitchLength  = kPadPitchLength;
   fPadPitchWidth   = kPadPitchWidth;
@@ -294,45 +323,69 @@ void AliTPCParam::SetDefault()
   fPadCoupling= kPadCoupling;
   fTSample =kTSample;
   fTSigma  =kTFWHM/2.35; 
-  fDriftV=kDriftV;
-  //calculate sin and cosine of rotations angle   
-  for (Int_t i=1; i<80; i++)
-    {
-      Float_t angle;
-      if(i < 25){
-	angle = (i < 13) ? (i-1)*alpha_low : (i-13)*alpha_low;
-      }
-      else {
-	angle = (i < 49) ? (i-25)*alpha_up : (i-49)*alpha_up;
-      }
-      fRotAngle[i]=TMath::Cos(angle);
-      fRotAngle[100+i]=TMath::Sin(angle);
-    }
+  fDriftV=kDriftV;  
+  fMaxTBin = kMaxTBin;
   fbStatus = Update();
 }
 
 void  AliTPCParam::AdjustAngles(Int_t isec, Float_t &cos, Float_t &sin) const
 {
+  //
   //set cosinus and sinus of rotation angles for sector isec
-  cos=fRotAngle[isec];
-  sin=fRotAngle[100+isec];
+  //
+  cos=fRotAngle[isec*2];
+  sin=fRotAngle[isec*2+1];
 }
           
 Bool_t AliTPCParam::Update()
 {
+  //
+  // update some calculated parameter which must be updated after changing "base"
+  // parameters 
+  // for example we can change size of pads and according this recalculate number
+  // of pad rows, number of of pads in given row ....
+  //
   fbStatus = kFALSE;
-  Int_t i;
+
+  Int_t i,j;  //loop variables because HP 
+  //-----------------Sector section------------------------------------------
+  //calclulate number of sectors
+  fNInnerSector = Int_t(4*TMath::Pi()/fInnerAngle+0.2); // number of inner sectors - factor 0.2 to don't
+  //be influnced by inprecision
+  if (fNInnerSector%2) return kFALSE;
+  fNOuterSector = Int_t(4*TMath::Pi()/fOuterAngle+0.2); 
+  if (fNOuterSector%2) return kFALSE;
+  fNSector  = fNInnerSector+fNOuterSector;
+  //calculate sin and cosine of rotations angle     
+  //sectors angles numbering from 0
+  j=fNInnerSector;
+  Float_t angle = fInnerAngleShift; 
+  for (i=0; i<fNInnerSector*2; i+=2, j+=2 , angle +=fInnerAngle){
+    fRotAngle[i]=TMath::Cos(angle);
+    fRotAngle[i+1]=TMath::Sin(angle);
+    fRotAngle[j] =  fRotAngle[i];
+    fRotAngle[j+1] =  fRotAngle[i+1];
+  }
+  angle = fOuterAngleShift; 
+  j=(fNInnerSector+fNOuterSector/2)*2;
+  for (i=fNInnerSector*2; i<fNSector*2; i+=2,j+=2, angle +=fOuterAngle){
+    fRotAngle[i]=TMath::Cos(angle);
+    fRotAngle[i+1]=TMath::Sin(angle);
+    fRotAngle[j] =  fRotAngle[i];
+    fRotAngle[j+1] =  fRotAngle[i+1];
+  }
+
+  
+  //----------------PAD section------------------------------------
   //recalculate and check some geometric parameters 
   if (0.001>fPadPitchLength){
     cout<<"ERROR !!! Small pad pitch length \n"<<flush;
     return kFALSE;
   }
-
   if (fPadPitchLength<fPadLength) {
     cout<<"ERROR !!! Pitch length  smaller then length of pad \n"<<flush;
     return kFALSE;
   } 
-
   fnRowUp   = Int_t((0.01+fOuterRadiusUp-fOuterRadiusLow)/fPadPitchLength)+1; 
   if ( kMaxRows<fnRowUp) fnRowUp = kMaxRows;
   if (1>fnRowUp) return kFALSE;
@@ -344,27 +397,30 @@ Bool_t AliTPCParam::Update()
   for (i = 0;i<fnRowUp;i++) 
     {
        Float_t x  = fOuterRadiusLow +fPadPitchLength*(Float_t)i;
-       Float_t y = (x-0.5*fPadPitchLength)*2.*tan(alpha_up/2)-kEdgeSectorSpace;
+       //Float_t y =  x*2*tan(alpha_up/2)-kEdgeSectorSpace;
+       Float_t y = (x-0.5*fPadPitchLength)*tan(fOuterAngle/2)-kEdgeSectorSpace
+       -fPadPitchWidth/2.;
        fPadRowUp[i] = x;
-       fnPadsUp[i] = (Int_t)(y/fPadPitchWidth) ;        
-       if ((fnPadsUp[i]%2) == 0) fnPadsUp[i]-=1;        
+       fnPadsUp[i] = 1+2*(Int_t)(y/fPadPitchWidth) ;        
+       
     }
   // adjust lower sectors pad row positions and pad numbers 
   for (i = 0;i<fnRowLow;i++) 
     {
        Float_t x  = fInnerRadiusLow +fPadPitchLength*(Float_t)i;
-       Float_t y = (x-0.5*fPadPitchLength)*2.*tan(alpha_low/2)-kEdgeSectorSpace;
+       //  Float_t y =  x*2*tan(alpha_low/2)-kEdgeSectorSpace;
+       Float_t y = (x-0.5*fPadPitchLength)*tan(fInnerAngle/2)-kEdgeSectorSpace
+       -fPadPitchWidth/2.;
        fPadRowLow[i] = x;
-       fnPadsLow[i] = (Int_t)(y/fPadPitchWidth) ;
-       if ((fnPadsLow[i]%2) == 0) fnPadsLow[i]-=1;        
+       fnPadsLow[i] = 1+2*(Int_t)(y/fPadPitchWidth) ;
+         
     }
 
   //that variable are not writen to the file there are calculated
   //
   fWWPitch= fPadPitchLength/Float_t(fnWires);
   fZWidth = fTSample*fDriftV;  
-  fNtRows = 24*fnRowLow+48*fnRowUp;
-
+  fNtRows = fNInnerSector*fnRowLow+fNOuterSector*fnRowUp;
   fbStatus = kTRUE;
   return kTRUE;
 }
@@ -433,19 +489,23 @@ void AliTPCParam::Streamer(TBuffer &R__b)
       Version_t R__v = R__b.ReadVersion(); if (R__v) { }
       TObject::Streamer(R__b);
       if (R__v < 2) return;
-      
+      //sector parameters      
       R__b >> fInnerRadiusLow;
       R__b >> fInnerRadiusUp;
       R__b >> fOuterRadiusLow;
       R__b >> fOuterRadiusUp;
-
+      R__b >> fInnerAngle;
+      R__b >> fInnerAngleShift;
+      R__b >> fOuterAngle;
+      R__b >> fOuterAngleShift;
+      //pad parameters
       R__b >> fPadPitchLength;
       R__b >> fPadPitchWidth;
       R__b >> fPadLength;
       R__b >> fPadWidth;
 
       R__b >> fnWires;
-      
+      //gas parameters
       R__b >>fDiffT;
       R__b >>fDiffL;
       R__b >>fGasGain;
@@ -454,7 +514,6 @@ void AliTPCParam::Streamer(TBuffer &R__b)
       R__b >>fOxyCont;
       R__b >>fAttCoef;
       
-
       R__b >>fPadCoupling;
       R__b >>fZeroSup;
       R__b >>fNoise;
@@ -463,9 +522,6 @@ void AliTPCParam::Streamer(TBuffer &R__b)
       R__b >>fTSample;
       R__b >>fTSigma;     
       //
-      fWWPitch= fPadPitchLength/Float_t(fnWires);
-      fZWidth = fTSample*fDriftV;  
-      fNtRows = 24*fnRowLow+48*fnRowUp;
       Update();
    } else {
       R__b.WriteVersion(AliTPCParam::IsA());
@@ -474,6 +530,10 @@ void AliTPCParam::Streamer(TBuffer &R__b)
       R__b << fInnerRadiusUp;
       R__b << fOuterRadiusLow;
       R__b << fOuterRadiusUp;
+      R__b << fInnerAngle;
+      R__b << fInnerAngleShift;
+      R__b << fOuterAngle;
+      R__b << fOuterAngleShift;
 
       R__b << fPadPitchLength;
       R__b << fPadPitchWidth;

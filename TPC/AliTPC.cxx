@@ -36,6 +36,7 @@
 #include "AliTPCRF1D.h"
 
 
+
 ClassImp(AliTPC) 
 
 //_____________________________________________________________________________
@@ -179,41 +180,82 @@ void AliTPC::BuildGeometry()
   TTUBS *tubs;
   Int_t i;
   const int kColorTPC=19;
-  char name[5], title[20];
+  char name[5], title[25];
   const Double_t kDegrad=TMath::Pi()/180;
-  const Double_t loAng=30;
-  const Double_t hiAng=15;
-  const Int_t nLo = Int_t (360/loAng+0.5);
-  const Int_t nHi = Int_t (360/hiAng+0.5);
+  const Double_t kRaddeg=180./TMath::Pi();
+
+  AliTPCParam * fTPCParam = &(fDigParam->GetParam());
+
+  Float_t InnerOpenAngle = fTPCParam->GetInnerAngle();
+  Float_t OuterOpenAngle = fTPCParam->GetOuterAngle();
+
+  Float_t InnerAngleShift = fTPCParam->GetInnerAngleShift();
+  Float_t OuterAngleShift = fTPCParam->GetOuterAngleShift();
+
+  Int_t nLo = fTPCParam->GetNInnerSector()/2;
+  Int_t nHi = fTPCParam->GetNOuterSector()/2;  
+
+  const Double_t loAng = (Double_t)TMath::Nint(InnerOpenAngle*kRaddeg);
+  const Double_t hiAng = (Double_t)TMath::Nint(OuterOpenAngle*kRaddeg);
+  const Double_t loAngSh = (Double_t)TMath::Nint(InnerAngleShift*kRaddeg);
+  const Double_t hiAngSh = (Double_t)TMath::Nint(OuterAngleShift*kRaddeg);  
+
+
   const Double_t loCorr = 1/TMath::Cos(0.5*loAng*kDegrad);
   const Double_t hiCorr = 1/TMath::Cos(0.5*hiAng*kDegrad);
+
+  Double_t rl,ru;
+  
+
   //
   // Get ALICE top node
-  Top=gAlice->GetGeometry()->GetNode("alice");
   //
-  // Inner sectors
+
+  Top=gAlice->GetGeometry()->GetNode("alice");
+
+  //  inner sectors
+
+  rl = fTPCParam->GetInSecLowEdge();
+  ru = fTPCParam->GetInSecUpEdge();
+ 
+
   for(i=0;i<nLo;i++) {
     sprintf(name,"LS%2.2d",i);
-    sprintf(title,"TPC low sector %d",i);
-    tubs = new TTUBS(name,title,"void",88*loCorr,136*loCorr,250,loAng*(i-0.5),loAng*(i+0.5));
+    name[4]='\0';
+    sprintf(title,"TPC low sector %3d",i);
+    title[24]='\0';
+    
+    tubs = new TTUBS(name,title,"void",rl*loCorr,ru*loCorr,250.,
+                     loAng*(i-0.5)+loAngSh,loAng*(i+0.5)+loAngSh);
     tubs->SetNumberOfDivisions(1);
     Top->cd();
     Node = new TNode(name,title,name,0,0,0,"");
     Node->SetLineColor(kColorTPC);
     fNodes->Add(Node);
   }
+
   // Outer sectors
+
+  rl = fTPCParam->GetOuSecLowEdge();
+  ru = fTPCParam->GetOuSecUpEdge();
+
   for(i=0;i<nHi;i++) {
     sprintf(name,"US%2.2d",i);
+    name[4]='\0';
     sprintf(title,"TPC upper sector %d",i);
-    tubs = new TTUBS(name,title,"void",142*hiCorr,250*hiCorr,250,hiAng*(i-0.5),hiAng*(i+0.5));
+    title[24]='\0';
+    tubs = new TTUBS(name,title,"void",rl*hiCorr,ru*hiCorr,250,
+                     hiAng*(i-0.5)+hiAngSh,hiAng*(i+0.5)+hiAngSh);
     tubs->SetNumberOfDivisions(1);
     Top->cd();
     Node = new TNode(name,title,name,0,0,0,"");
     Node->SetLineColor(kColorTPC);
     fNodes->Add(Node);
   }
-}
+}  
+  
+  
+
 //_____________________________________________________________________________
 Int_t AliTPC::DistancetoPrimitive(Int_t , Int_t )
 {
@@ -545,92 +587,278 @@ void AliTPC::CreateMaterials()
   //-----------------------------------------------------------------
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
   //-----------------------------------------------------------------
-  
+
   Int_t ISXFLD=gAlice->Field()->Integ();
   Float_t SXMGMX=gAlice->Field()->Max();
+
+  Float_t amat[5]; // atomic numbers
+  Float_t zmat[5]; // z
+  Float_t wmat[5]; // proportions
+
+  Float_t density;
+
+  //  ********************* Gases *******************
+
+  //--------------------------------------------------------------
+  // pure gases
+  //--------------------------------------------------------------
+
+  // Ne
+
+
+  Float_t a_ne = 20.18;
+  Float_t z_ne = 10.;
   
-  Float_t absl, radl, a, d, z;
-  Float_t dg;
-  Float_t x0ne;
-  Float_t buf[1];
-  Int_t nbuf;
+  density = 0.0009;
+
+  AliMaterial(20,"Ne",a_ne,z_ne,density,999.,999.);
+
+  // Ar
+
+  Float_t a_ar = 39.948;
+  Float_t z_ar = 18.;
+
+  density = 0.001782;
+ 
+  AliMaterial(21,"Ar",a_ar,z_ar,density,999.,999.);
+
+  Float_t a_pure[2];
   
-  // --- Methane (CH4) --- 
-  Float_t am[2] = { 12.,1. };
-  Float_t zm[2] = { 6.,1. };
-  Float_t wm[2] = { 1.,4. };
-  Float_t dm    = 7.17e-4;
-  // --- The Neon CO2 90/10 mixture --- 
-  Float_t ag[2] = { 20.18 };
-  Float_t zg[2] = { 10. };
-  Float_t wg[2] = { .8,.2 };
-  Float_t dne   = 9e-4;        // --- Neon density in g/cm3 ---
+  a_pure[0] = a_ne;
+  a_pure[1] = a_ar;
   
-  // --- Mylar (C5H4O2) --- 
-  Float_t amy[3] = { 12.,1.,16. };
-  Float_t zmy[3] = { 6.,1.,8. };
-  Float_t wmy[3] = { 5.,4.,2. };
-  Float_t dmy    = 1.39;
-  // --- CO2 --- 
-  Float_t ac[2] = { 12.,16. };
-  Float_t zc[2] = { 6.,8. };
-  Float_t wc[2] = { 1.,2. };
-  Float_t dc    = .001977;
-  // --- Carbon density and radiation length --- 
-  Float_t densc = 2.265;
-  Float_t radlc = 18.8;
-  // --- Silicon --- 
-  Float_t asi   = 28.09;
-  Float_t zsi   = 14.;
-  Float_t desi  = 2.33;
-  Float_t radsi = 9.36;
-  
-  // --- Define the various materials for GEANT --- 
-  AliMaterial(0, "Al $", 26.98, 13., 2.7, 8.9, 37.2);
-  x0ne = 28.94 / dne;
-  AliMaterial(1, "Ne $", 20.18, 10., dne, x0ne, 999.);
-  
-  // --  Methane, defined by the proportions of atoms 
-  
-  AliMixture(2, "Methane$", am, zm, dm, -2, wm);
-  
-  // --- CO2, defined by the proportion of atoms 
-  
-  AliMixture(7, "CO2$", ac, zc, dc, -2, wc);
-  
-  // --  Get A,Z etc. for CO2 
-  
+
+  //--------------------------------------------------------------
+  // gases - compounds
+  //--------------------------------------------------------------
+
+  Float_t amol[3];
+
+  //  CO2
+
+  amat[0]=12.011;
+  amat[1]=15.9994;
+
+  zmat[0]=6.;
+  zmat[1]=8.;
+
+  wmat[0]=1.;
+  wmat[1]=2.;
+
+  density=0.001977;
+
+  amol[0] = amat[0]*wmat[0]+amat[1]*wmat[1];
+
+  AliMixture(10,"CO2",amat,zmat,density,-2,wmat);
+
+  // CF4
+
+  amat[0]=12.011;
+  amat[1]=18.998;
+
+  zmat[0]=6.;
+  zmat[1]=9.;
+ 
+  wmat[0]=1.;
+  wmat[1]=4.;
+ 
+  density=0.003034;
+
+  amol[1] = amat[0]*wmat[0]+amat[1]*wmat[1];
+
+  AliMixture(11,"CF4",amat,zmat,density,-2,wmat); 
+
+  // CH4
+
+  amat[0]=12.011;
+  amat[1]=1.;
+
+  zmat[0]=6.;
+  zmat[1]=1.;
+
+  wmat[0]=1.;
+  wmat[1]=4.;
+
+  density=0.000717;
+
+  amol[2] = amat[0]*wmat[0]+amat[1]*wmat[1];
+
+  AliMixture(12,"CH4",amat,zmat,density,-2,wmat);
+
+  //----------------------------------------------------------------
+  // gases - mixtures, ID >= 20 pure gases, <= 10 ID < 20 -compounds
+  //----------------------------------------------------------------
+ 
   char namate[21];
-  gMC->Gfmate((*fIdmate)[7], namate, a, z, d, radl, absl, buf, nbuf);
-  ag[1] = a;
-  zg[1] = z;
-  dg = dne * .9 + dc * .1;
+ 
+  density = 0.;
+  Float_t am=0;
+  Int_t nc;
+
+  Float_t a,z,rho,absl,X0,buf[1];
+  Int_t nbuf;
+
+  for(nc = 0;nc<fNoComp;nc++)
+    {
+    
+      // retrive material constants
+      
+      gMC->Gfmate((*fIdmate)[fMixtComp[nc]],namate,a,z,rho,X0,absl,buf,nbuf);
+
+      amat[nc] = a;
+      zmat[nc] = z;
+
+      Int_t nnc = (fMixtComp[nc]>=20) ? fMixtComp[nc]%20 : fMixtComp[nc]%10;
+ 
+      am += fMixtProp[nc]*((fMixtComp[nc]>=20) ? a_pure[nnc] : amol[nnc]); 
+      density += fMixtProp[nc]*rho;  // density of the mixture
+      
+    }
+
+  // mixture proportions by weight!
+
+  for(nc = 0;nc<fNoComp;nc++)
+    {
+
+      Int_t nnc = (fMixtComp[nc]>=20) ? fMixtComp[nc]%20 : fMixtComp[nc]%10;
+
+      wmat[nc] = fMixtProp[nc]*((fMixtComp[nc]>=20) ? a_pure[nnc] : amol[nnc])/am;
+
+    }  
   
-  // --  Create Ne/CO2 90/10 mixture 
+  AliMixture(31,"Drift gas 1",amat,zmat,density,fNoComp,wmat);
+  AliMixture(32,"Drift gas 2",amat,zmat,density,fNoComp,wmat);
+  AliMixture(33,"Drift gas 3",amat,zmat,density,fNoComp,wmat); 
+
+  AliMedium(2, "Drift gas 1", 31, 0, ISXFLD, SXMGMX, 10., 999.,.1, .001, .001);
+  AliMedium(3, "Drift gas 2", 32, 0, ISXFLD, SXMGMX, 10., 999.,.1, .001, .001);
+  AliMedium(4, "Drift gas 3", 33, 1, ISXFLD, SXMGMX, 10., 999.,.1, .001, .001);
+
+  // Air 
+
+  AliMaterial(24, "Air", 14.61, 7.3, .001205, 30420., 67500.);
+
+  AliMedium(24, "Air", 24, 0, ISXFLD, SXMGMX, 10., .1, .1, .1, .1);
+
+  //----------------------------------------------------------------------
+  //               solid materials
+  //----------------------------------------------------------------------
+
+  // Al
+
+  AliMaterial(30, "Al", 26.98, 13., 2.7, 8.9, 37.2);
+
+  AliMedium(0, "Al",30, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1);
+
+  // Si
+
+  AliMaterial(31, "Si", 28.086, 14.,2.33, 9.36, 999.);
+
+  AliMedium(7, "Al",31, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1);
   
-  AliMixture(3, "Gas-mixt $", ag, zg, dg, 2, wg);
-  AliMixture(4, "Gas-mixt $", ag, zg, dg, 2, wg);
+
+  // Mylar C5H4O2
+
+  amat[0]=12.011;
+  amat[1]=1.;
+  amat[2]=15.9994;
+
+  zmat[0]=6.;
+  zmat[1]=1.;
+  zmat[2]=8.;
+
+  wmat[0]=5.;
+  wmat[1]=4.;
+  wmat[2]=2.; 
+
+  density = 1.39;
   
-  AliMaterial(5, "G10$", 20., 10., 1.7, 19.4, 999.);
-  AliMixture(6, "Mylar$", amy, zmy, dmy, -3, wmy);
+  AliMixture(32, "Mylar",amat,zmat,density,-3,wmat);
+
+  AliMedium(5, "Mylar",32, 0, ISXFLD, SXMGMX, 10., .1, .1, .001, .01);
+
+
+
+
+  // Carbon (normal)
+
+  AliMaterial(33,"C normal",12.011,6.,2.265,18.8,999.);
+
+  AliMedium(6,"C normal",33,0, ISXFLD, SXMGMX, 10., .1, .1, .001, .01);
+
+  // G10 for inner and outr field cage
+  // G10 is 60% SiO2 + 40% epoxy, right now I use A and Z for SiO2
+
+  Float_t rhoFactor;
+
+  amat[0]=28.086;
+  amat[1]=15.9994;
+
+  zmat[0]=14.;
+  zmat[1]=8.;
+
+  wmat[0]=1.;
+  wmat[1]=2.;
+
+  density = 1.7;
   
-  a = ac[0];
-  z = zc[0];
-  AliMaterial(8, "Carbon", a, z, densc, radlc, 999.);
+
+  AliMixture(34,"G10 aux.",amat,zmat,density,-2,wmat);
+
+
+  gMC->Gfmate((*fIdmate)[34],namate,a,z,rho,X0,absl,buf,nbuf);
+
+  Float_t thickX0 = 0.0052; // field cage in X0 units
   
-  AliMaterial(9, "Silicon", asi, zsi, desi, radsi, 999.);
-  AliMaterial(99, "Air$", 14.61, 7.3, .001205, 30420., 67500.);
+  Float_t thick = 2.; // in cm
+
+  X0=19.4; // G10 
+
+  rhoFactor = X0*thickX0/thick;
+  density = rho*rhoFactor;
+
+  AliMaterial(35,"G10-fc",a,z,density,999.,999.);
+
+  AliMedium(8,"G10-fc",35,0, ISXFLD, SXMGMX, 10., .1, .1, .001, .01);
+
+  thickX0 = 0.0027; // inner vessel (eta <0.9)
+  thick=0.5;
+  rhoFactor = X0*thickX0/thick;
+  density = rho*rhoFactor;
+
+  AliMaterial(36,"G10-iv",a,z,density,999.,999.);  
+
+  AliMedium(9,"G10-iv",36,0, ISXFLD, SXMGMX, 10., .1, .1, .001, .01);
+
+  //  Carbon fibre  
   
-  AliMedium(0, "Al wall$",  0, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1);
-  AliMedium(2, "Gas mix1$", 3, 0, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
-  AliMedium(3, "Gas mix2$", 3, 0, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
-  AliMedium(4, "Gas mix3$", 4, 1, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
-  AliMedium(5, "G10 pln$",  5, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
-  AliMedium(6, "Mylar  $",  6, 0, ISXFLD, SXMGMX, 10., .01,.1, .001, .01);
-  AliMedium(7, "CO2    $",  7, 0, ISXFLD, SXMGMX, 10., .01,.1, .01,  .01);
-  AliMedium(8, "Carbon $",  8, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
-  AliMedium(9, "Silicon$",  9, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
-  AliMedium(99, "Air gap$", 99, 0, ISXFLD, SXMGMX, 10., .1, .1, .1,   .1 );
+  gMC->Gfmate((*fIdmate)[33],namate,a,z,rho,X0,absl,buf,nbuf);
+
+  thickX0 = 0.0133; // outer vessel
+  thick=3.0;
+  rhoFactor = X0*thickX0/thick;
+  density = rho*rhoFactor;
+
+
+  AliMaterial(37,"C-ov",a,z,density,999.,999.);
+
+  AliMedium(10,"C-ov",37,0, ISXFLD, SXMGMX, 10., .1, .1, .001, .01);  
+
+  thickX0=0.015; // inner vessel (cone, eta > 0.9)
+  thick=1.5;
+  rhoFactor = X0*thickX0/thick;
+  density = rho*rhoFactor;
+
+  AliMaterial(38,"C-ivc",a,z,density,999.,999.);
+
+  AliMedium(11,"C-ivc",38,0, ISXFLD, SXMGMX, 10., .1, .1, .001, .01);
+
+  //
+
+  AliMedium(12,"CO2",10,0, ISXFLD, SXMGMX, 10., 999.,.1, .001, .001);
+    
+
+
 }
 
 //_____________________________________________________________________________
@@ -978,12 +1206,9 @@ void AliTPC::Hits2Clusters()
 	xyz[2]=tpcHit->fQ;                                     // q
 	xyz[3]=sigma_rphi;                                     // fSigmaY2
 	xyz[4]=sigma_z;                                        // fSigmaZ2
-	
-	//find row number
-	//MI we must change
-	Int_t row = fTPCParam->GetPadRow(sector,xprim) ;	
+		
 	// and finally add the cluster
-	Int_t tracks[5]={tpcHit->fTrack, -1, -1, sector, row+1};
+	Int_t tracks[5]={tpcHit->fTrack, -1, -1, sector, tpcHit->fPadRow};
 	AddCluster(xyz,tracks);
 	
       } // end of loop over hits
@@ -1006,7 +1231,7 @@ void AliTPC::Hits2Digits()
   // Sectors 1-24 are lower sectors, 1-12 z>0, 13-24 z<0
   // Sectors 25-72 are upper sectors, 25-48 z>0, 49-72 z<0
   //----
-  for(Int_t isec=1;isec<fNsectors+1;isec++)  Hits2DigitsSector(isec);
+  for(Int_t isec=0;isec<fNsectors;isec++)  Hits2DigitsSector(isec);
 }
 
 
@@ -1317,8 +1542,8 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet)
   //  and a single track signal
   // 
    
-  TMatrix *m1   = new TMatrix(1,n_of_pads[iFlag],1,MAXTPCTBK); // integrated
-  TMatrix *m2   = new TMatrix(1,n_of_pads[iFlag],1,MAXTPCTBK); // single
+  TMatrix *m1   = new TMatrix(0,n_of_pads[iFlag]-1,0,MAXTPCTBK-1); // integrated
+  TMatrix *m2   = new TMatrix(0,n_of_pads[iFlag]-1,0,MAXTPCTBK-1); // single
 
   //
 
@@ -1355,7 +1580,7 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet)
   //  Cross talk from the neighbouring pad-rows
   //
 
-  TMatrix *m3 =  new TMatrix(1,n_of_pads[iFlag],1,MAXTPCTBK); // cross-talk
+  TMatrix *m3 =  new TMatrix(0,n_of_pads[iFlag]-1,0,MAXTPCTBK-1); // cross-talk
 
   TMatrix &Cross = *m3;
 
@@ -1391,12 +1616,12 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet)
   Int_t digits[5];
 
 
-  for(Int_t ip=1;ip<n_of_pads[iFlag]+1;ip++){
-    for(Int_t it=1;it<MAXTPCTBK+1;it++){
+  for(Int_t ip=0;ip<n_of_pads[iFlag];ip++){
+    for(Int_t it=0;it<MAXTPCTBK;it++){
 
       Float_t q = Total(ip,it);
 
-      Int_t gi =(it-1)*n_of_pads[iFlag]+ip-1; // global index
+      Int_t gi =it*n_of_pads[iFlag]+ip; // global index
 
       q = gRandom->Gaus(q,fTPCParam->GetNoise()); // apply noise
       q *= (q_el*1.e15); // convert to fC
@@ -1415,7 +1640,7 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rowTriplet)
       }
 
       digits[0]=isec;
-      digits[1]=irow+1;
+      digits[1]=irow;
       digits[2]=ip;
       digits[3]=it;
       digits[4]= (Int_t)q;
@@ -1472,12 +1697,13 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, Int_t np, TMatrix *m1, TMatr
   
   Float_t label = v(0);
 
-  Int_t CentralPad = (np+1)/2;
+  Int_t CentralPad = (np-1)/2;
   Int_t PadNumber;
   Int_t nElectrons = (tv->GetNrows()-1)/4;
   Float_t range=((np-1)/2 + 0.5)*fTPCParam->GetPadPitchWidth(); // pad range
-  range -= 0.5; // dead zone, 5mm from the edge, according to H.G. Fischer
 
+  range -= 0.5; // dead zone, 5mm from the edge, according to H.G. Fischer
+  
   Float_t IneffFactor = 0.5; // inefficiency in the gain close to the edge, as above
 
 
@@ -1509,7 +1735,7 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, Int_t np, TMatrix *m1, TMatr
      PadNumber=CentralPad;
    }
    else if (absy < range){
-     PadNumber=(Int_t) ((absy-0.5*fTPCParam->GetPadPitchWidth())/fTPCParam->GetPadPitchWidth() +1.);
+     PadNumber=(Int_t) ((absy-0.5*fTPCParam->GetPadPitchWidth())/fTPCParam->GetPadPitchWidth());
      PadNumber=(Int_t) (TMath::Sign((Float_t)PadNumber, y)+CentralPad);
    }
    else continue; // electron out of pad-range , lost at the sector edge
@@ -1523,16 +1749,16 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, Int_t np, TMatrix *m1, TMatr
      PadSignal[i] *= fTPCParam->GetPadCoupling();
    }
 
-   Int_t  LeftPad = TMath::Max(1,PadNumber-3);
-   Int_t  RightPad = TMath::Min(np,PadNumber+3);
+   Int_t  LeftPad = TMath::Max(0,PadNumber-3);
+   Int_t  RightPad = TMath::Min(np-1,PadNumber+3);
 
    Int_t pmin=LeftPad-PadNumber+3; // lower index of the pad_signal vector
    Int_t pmax=RightPad-PadNumber+3; // upper index     
    
-   Float_t z_drift = (z_end-z)*zwidthm1;
+   Float_t z_drift = z*zwidthm1;
    Float_t z_offset = z_drift-(Int_t)z_drift;
   //distance to the centre of nearest time bin (in time bin units)
-   Int_t FirstBucket = (Int_t)z_drift+1; 
+   Int_t FirstBucket = (Int_t)z_drift; 
 
 
    // loop over time bins (4 bins is enough - 3 sigma truncated Gaussian)
@@ -1540,7 +1766,7 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr, Int_t np, TMatrix *m1, TMatr
      Int_t TrueTime = FirstBucket+i2; // current time bucket
      Float_t dz   = (Float_t(i2)+z_offset)*zwidth; 
      Float_t ampl = fRF->GetRF(dz); 
-     if( (TrueTime>MAXTPCTBK) ) break; // beyond the time range
+     if( (TrueTime>MAXTPCTBK-1) ) break; // beyond the time range
      
      IndexRange[2]=TMath::Min(IndexRange[2],TrueTime); // min time
      IndexRange[3]=TMath::Max(IndexRange[3],TrueTime); // max time
@@ -1579,7 +1805,7 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrix *m,Int_t *IndexRange,
     for(Int_t ip=IndexRange[0];ip<IndexRange[1]+1;ip++){
 
 
-        Int_t GlobalIndex = (it-1)*np+ip-1; // GlobalIndex starts from 0!
+        Int_t GlobalIndex = it*np+ip; // GlobalIndex starts from 0!
         
         if(!pList[GlobalIndex]){
         
@@ -1877,7 +2103,7 @@ void AliTPC::GetCrossTalk (Int_t iFlag,TObjArray *p,Int_t ntracks,Int_t *npads,
  TVector *tv; 
  TMatrix &signal = *m;
 
- Int_t CentralPad = (nPadsSignal+1)/2;
+ Int_t CentralPad = (nPadsSignal-1)/2;
  Float_t PadSignal[7]; // signal from a single electron
  // Loop over tracks
  for(Int_t nt=0;nt<ntracks;nt++){
@@ -1907,7 +2133,7 @@ void AliTPC::GetCrossTalk (Int_t iFlag,TObjArray *p,Int_t ntracks,Int_t *npads,
        PadNumber=CentralPad;
      }
      else if (absy < range){
-       PadNumber=(Int_t) ((absy-0.5*fTPCParam->GetPadPitchWidth())/fTPCParam->GetPadPitchWidth() +1.);
+       PadNumber=(Int_t) ((absy-0.5*fTPCParam->GetPadPitchWidth())/fTPCParam->GetPadPitchWidth());
        PadNumber=(Int_t) (TMath::Sign((Float_t)PadNumber, y)+CentralPad);
      }
      else continue; // electron out of sense wire range, lost at the sector edge
@@ -1923,23 +2149,23 @@ void AliTPC::GetCrossTalk (Int_t iFlag,TObjArray *p,Int_t ntracks,Int_t *npads,
      }
      // real pad range
 
-     Int_t  LeftPad = TMath::Max(1,PadNumber-3);
-     Int_t  RightPad = TMath::Min(nPadsSignal,PadNumber+3);
+     Int_t  LeftPad = TMath::Max(0,PadNumber-3);
+     Int_t  RightPad = TMath::Min(nPadsSignal-1,PadNumber+3);
 
      Int_t pmin=LeftPad-PadNumber+3; // lower index of the pad_signal vector
      Int_t pmax=RightPad-PadNumber+3; // upper index  
 
 
-     Float_t z_drift = (z_end-z)*zwidthm1;
+     Float_t z_drift = z*zwidthm1;
      Float_t z_offset = z_drift-(Int_t)z_drift;
      //distance to the centre of nearest time bin (in time bin units)
-     Int_t FirstBucket = (Int_t)z_drift+1; 
+     Int_t FirstBucket = (Int_t)z_drift; 
      // MI check it --time offset
      for (Int_t i2=0;i2<4;i2++){     
        Int_t TrueTime = FirstBucket+i2; // current time bucket
        Float_t dz   = (Float_t(i2)+z_offset)*zwidth; 
        Float_t ampl = fRF->GetRF(dz); 
-       if((TrueTime>MAXTPCTBK)) break; // beyond the time range
+       if((TrueTime>MAXTPCTBK-1)) break; // beyond the time range
 
 
        // loop over pads, from pmin to pmax
@@ -1947,7 +2173,7 @@ void AliTPC::GetCrossTalk (Int_t iFlag,TObjArray *p,Int_t ntracks,Int_t *npads,
        for(Int_t i3=pmin;i3<pmax+1;i3++){
          Int_t TruePad = LeftPad+i3-pmin;
 
-         if(TruePad<nPadsDiff+1 || TruePad > nPadsSignal-nPadsDiff) continue;
+         if(TruePad<nPadsDiff || TruePad > nPadsSignal-nPadsDiff-1) continue;
 
          TruePad -= nPadsDiff;
          signal(TruePad,TrueTime)+=(PadSignal[i3]*ampl); // not converted to charge!
@@ -2117,7 +2343,23 @@ void AliTPC::SetSide(Float_t side)
   fSide = side;
  
 }
+//____________________________________________________________________________
+void AliTPC::SetGasMixt(Int_t nc,Int_t c1,Int_t c2,Int_t c3,Float_t p1,
+                           Float_t p2,Float_t p3)
+{
 
+ fNoComp = nc;
+ 
+ fMixtComp[0]=c1;
+ fMixtComp[1]=c2;
+ fMixtComp[2]=c3;
+
+ fMixtProp[0]=p1;
+ fMixtProp[1]=p2;
+ fMixtProp[2]=p3; 
+ 
+ 
+}
 //_____________________________________________________________________________
 void AliTPC::Streamer(TBuffer &R__b)
 {

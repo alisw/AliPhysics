@@ -3,10 +3,10 @@ void AliTPCHits2Digits(const  char * name= "pokusD_")
 {
  
   // Dynamically link some shared libs
-    if (gClassTable->GetID("AliRun") < 0) {
-     gROOT->LoadMacro("loadlibs.C");
-     loadlibs();
-   }
+        if (gClassTable->GetID("AliRun") < 0) {
+        gROOT->LoadMacro("loadlibs.C");
+      loadlibs();
+     }
   
    //names of trees
    const char * inFile = "galice.root";
@@ -52,7 +52,12 @@ void AliTPCHits2Digits(const  char * name= "pokusD_")
   param.SetDiffL(0.022);
   param.SetNoise(500);
   param.SetGasGain(1.e4);
-  param.SetChipGain(24);      
+  param.SetChipGain(24); 
+  param.SetSectorAngles(40.,0.,20.,10.);
+  param.SetInnerRadiusLow(83.7);
+  param.SetInnerRadiusUp(132.9);
+  param.SetOuterRadiusLow(146.9);
+  param.SetOuterRadiusUp(249.4);     
   param.Update();
 
     //Set z (time) response function
@@ -74,7 +79,7 @@ void AliTPCHits2Digits(const  char * name= "pokusD_")
   prf.Dump();
   printf("**********Digit object dump end********************\n");
 
-   TPC->Hits2DigitsSector(1);     
+   TPC->Hits2DigitsSector(0);     
          
  
    file->cd();

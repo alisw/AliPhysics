@@ -1,27 +1,28 @@
 //void ViewTPC()
 {
- gMC->Gsatt("TPC ","seen",0); 
- gMC->Gsatt("TGAS","seen",0); 
- gMC->Gsatt("TPSG","seen",0); 
- gMC->Gsatt("TPHV","seen",1); 
- gMC->Gsatt("TRCS","seen",1); 
- gMC->Gsatt("TSGA","seen",-1); 
- gMC->Gsatt("TRCL","seen",1); 
- gMC->Gsatt("TLGA","seen",-1); 
- gMC->Gsatt("TSWS","seen",1); 
- gMC->Gsatt("TPW1","seen",1); 
- gMC->Gsatt("TPW2","seen",1); 
- gMC->Gsatt("TPW3","seen",1); 
- gMC->Gsatt("TPW4","seen",1); 
- gMC->Gsatt("TSPI","seen",1); 
- gMC->Gsatt("TSP1","seen",0); 
- gMC->Gsatt("TSPO","seen",1); 
- gMC->Gsatt("TSP2","seen",0); 
- gMC->Gsatt("TSWH","seen",1); 
- gMC->Gsatt("TSW1","seen",0); 
- gMC->Gsatt("TCOV","seen",0); 
- gMC->Gsatt("TPOI","seen",1); 
- gMC->Gsatt("TPIV","seen",1); 
- gMC->Gsatt("TPVD","seen",1); 
+  gMC->Gsatt("TPC","SEEN",0);
+  gMC->Gsatt("TGAS","SEEN",0);
+  gMC->Gsatt("TPSG","SEEN",0);
+  gMC->Gsatt("TPHV","SEEN",1);
+  gMC->Gsatt("TPMH","SEEN",1);
+  gMC->Gsatt("TPEC","SEEN",0);
+  gMC->Gsatt("TRCS","SEEN",1);
+  gMC->Gsatt("TRCL","SEEN",1);
+  gMC->Gsatt("TPWL","SEEN",1);
+  gMC->Gsatt("TPWI","SEEN",1);
+  gMC->Gsatt("TPWS","SEEN",1);
+  gMC->Gsatt("TPW1","SEEN",1);
+  gMC->Gsatt("TPS1","SEEN",1);
+  gMC->Gsatt("TPS2","SEEN",1);
+  gMC->Gsatt("TPG1","SEEN",1);
+  gMC->Gsatt("TPG2","SEEN",1);
+  gMC->Gsatt("TPWC","SEEN",1);
+  gMC->Gsatt("TPSI","SEEN",1); 
+  gMC->Gsatt("TPSO","SEEN",1);
+  gMC->Gsatt("TPCO","SEEN",1);
+  gMC->Gsatt("TPOV","SEEN",1);
+  gMC->Gsatt("TPVD","SEEN",1);
+  gMC->Gsatt("TLGA","SEEN",-1);
+  gMC->Gsatt("TSGA","SEEN",-1);
 
 }

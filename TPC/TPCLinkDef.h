@@ -20,25 +20,6 @@
 #pragma link C++ class  AliTPCPRF2D-;
 
 
-//Marian Ivanov  objects  - doesn't go to oficial version
-#pragma link C++ class AliArrayI; //MI change 18.5.1999 - maybe better to change it in Root
-#pragma link C++ class AliArrayS; //MI change 18.5.1999 - maybe better to change it in Root
-
-#pragma link C++ class AliSegment;
-#pragma link C++ class AliSegmentArray;
-#pragma link C++ class AliDigits;
-#pragma link C++ class AliSimDigits;
-
-#pragma link C++ class AliTPCDigitsH-;
-#pragma link C++ class AliClusterFinder-;
-#pragma link C++ class AliCluster;
-#pragma link C++ class THit;
-#pragma link C++ class THitPAngle;
-#pragma link C++ class AliTPCup-;
-#pragma link C++ class AliH2F;
-#pragma link C++ class AliTPCClustersRow;
-#pragma link C++ class AliTPCClustersArray;
-
 
 #endif
 
