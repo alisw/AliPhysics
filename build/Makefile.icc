@@ -31,7 +31,7 @@ LD            = icc
 LDFLAGS       = $(OPT) 
 
 SHLD	      = $(LD)
-SOFLAGS       = -Wl,-soname,$$TMPLIB -shared -O
+SOFLAGS       = -Wl,-soname,$$TMPLIB -shared $(OPT)
 SHLIB         =
 SOEXT 	      = so
 
