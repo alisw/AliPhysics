@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2002/06/05 14:05:46  morsch
+Decayer option kPhiKK for forced phi->K+K- decay added.
+
 Revision 1.9  2002/05/30 14:58:29  morsch
 Add pointer to AliGeometry to handle geometrical acceptance. (G. MArtinez)
 
@@ -128,6 +131,7 @@ void AliGenMC::Init()
 	fChildSelect[1]=kKPlus;
 	break;
     case kPhiKK:
+	fChildSelect[0]=kKPlus;
     case kOmega:	
     case kAll:
     case kNoDecay:
