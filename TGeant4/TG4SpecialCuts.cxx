@@ -4,14 +4,15 @@
 // See the class description in the header file.
 
 #include "TG4SpecialCuts.h"
-#include "TG4CutVector.h"
+#include "TG4G3CutVector.h"
 #include "TG4Limits.h"
 
 #include <G4UserLimits.hh>
 
 #include <G4EnergyLossTables.hh>
 
-TG4SpecialCuts::TG4SpecialCuts(TG3ParticleWSP particle, TG4CutVector* cutVector,
+TG4SpecialCuts::TG4SpecialCuts(TG4G3ParticleWSP particle, 
+                               TG4G3CutVector* cutVector,
                                const G4String& processName)
   : G4UserSpecialCuts(processName),
     fCutVector(cutVector)
@@ -19,27 +20,27 @@ TG4SpecialCuts::TG4SpecialCuts(TG3ParticleWSP particle, TG4CutVector* cutVector,
 //
   switch (particle) {
     case kGamma:
-      fPtrMinEkineInCutVector = &TG4CutVector::GetMinEkineForGamma;
+      fPtrMinEkineInCutVector = &TG4G3CutVector::GetMinEkineForGamma;
       fPtrMinEkineInLimits = &TG4Limits::GetMinEkineForGamma;
       break;
     case kElectron: case kEplus:  
-      fPtrMinEkineInCutVector = &TG4CutVector::GetMinEkineForElectron;
+      fPtrMinEkineInCutVector = &TG4G3CutVector::GetMinEkineForElectron;
       fPtrMinEkineInLimits = &TG4Limits::GetMinEkineForElectron;
       break;
     case kChargedHadron:  
-      fPtrMinEkineInCutVector = &TG4CutVector::GetMinEkineForHadron;
+      fPtrMinEkineInCutVector = &TG4G3CutVector::GetMinEkineForHadron;
       fPtrMinEkineInLimits = &TG4Limits::GetMinEkineForHadron;
       break;
     case kNeutralHadron:  
-      fPtrMinEkineInCutVector = &TG4CutVector::GetMinEkineForNeutralHadron;
+      fPtrMinEkineInCutVector = &TG4G3CutVector::GetMinEkineForNeutralHadron;
       fPtrMinEkineInLimits = &TG4Limits::GetMinEkineForNeutralHadron;
       break;
     case kMuon:  
-      fPtrMinEkineInCutVector = &TG4CutVector::GetMinEkineForMuon;
+      fPtrMinEkineInCutVector = &TG4G3CutVector::GetMinEkineForMuon;
       fPtrMinEkineInLimits = &TG4Limits::GetMinEkineForMuon;
       break;
     case kAny:
-      fPtrMinEkineInCutVector = &TG4CutVector::GetMinEkineForOther;
+      fPtrMinEkineInCutVector = &TG4G3CutVector::GetMinEkineForOther;
       fPtrMinEkineInLimits = &TG4Limits::GetMinEkineForOther;
       break;
     case kNofParticlesWSP:

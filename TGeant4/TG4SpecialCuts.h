@@ -7,19 +7,20 @@
 #define TG4_SPECIAL_CUTS_H
 
 #include <G4UserSpecialCuts.hh>
-#include "TG3ParticleWSP.h"
+#include "TG4G3ParticleWSP.h"
 
-class TG4CutVector;
+class TG4G3CutVector;
 class TG4Limits;
 
-typedef G4double(TG4CutVector::*PtrMinEkineInCutVector)(const G4Track&) const;
+typedef G4double(TG4G3CutVector::*PtrMinEkineInCutVector)(const G4Track&)
+const;
 typedef G4double(TG4Limits::*PtrMinEkineInLimits)(const G4Track&) const;
 
 class TG4SpecialCuts: public G4UserSpecialCuts
 // to do: change to inheritance from G4VProcess
 {
   public:
-    TG4SpecialCuts(TG3ParticleWSP particle, TG4CutVector* cutVector, 
+    TG4SpecialCuts(TG4G3ParticleWSP particle, TG4G3CutVector* cutVector, 
                    const G4String& processName ="specialCut");
     // --> protected
     // TG4SpecialCuts();		   
@@ -42,7 +43,7 @@ class TG4SpecialCuts: public G4UserSpecialCuts
     
   private:
     // data members
-    TG4CutVector*           fCutVector;              //TG4CutVector 
+    TG4G3CutVector*         fCutVector;              //TG4G3CutVector 
     PtrMinEkineInCutVector  fPtrMinEkineInCutVector; //pointer to 
                                 //TG4CutVector::GetMinEKineForXX() method for 
 				//the particle XX that this process is applied to 
