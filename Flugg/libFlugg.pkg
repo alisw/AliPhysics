@@ -1,0 +1,30 @@
+FLUGGDUMMYSRCS := G4SDManager.cxx G4VUserDetectorConstruction.cxx \
+	          G4FastSimulationManager.cxx
+FLUGGDUMMYHDRS := $(filter-out source.h,$(FLUGGDUMMYSRCS:.cxx=.hh) )
+FLUGGWRAPSRCS := FGeometryInit.cxx WrapDN.cxx WrapG1.cxx WrapG1RT.cxx \
+		 WrapIncrHist.cxx WrapIniHist.cxx WrapInit.cxx WrapLookDB.cxx \
+		 WrapLookFX.cxx WrapLookMG.cxx WrapLookZ.cxx WrapMag.cxx \
+		 WrapNorml.cxx WrapReg.cxx WrapSavHist.cxx WrapUtils.cxx
+FLUGGWRAPHDRS := WrapUtils.hh Wrappers.hh NavHistWithCount.hh
+FLUGGOTHERSRCS := FluggNavigator.cxx
+FLUGGOTHERHDRS := $(filter-out source.h,$(FLUGGOTHERSRCS:.cxx=.hh) )
+
+
+# Sources
+SRCS:= $(FLUGGDUMMYSRCS) $(FLUGGWRAPSRCS) $(FLUGGOTHERSRCS)
+
+
+# Headers
+HDRS:=  $(FLUGGDUMMYHDRS) $(FLUGGWRAPHDRS) $(FLUGGOTHERHDRS)
+
+# ROOT Dictionary
+# DHDR:=  FluggLinkDef.h
+
+# Extra includes and libraries
+EINCLUDE:= Flugg $(G4INSTALL)/include $(CLHEP_BASE_DIR)/include
+ELIBSDIR:= $(G4INSTALL)/lib/$(G4SYSTEM)
+ELIBS   := G4brep G4csg G4geomBoolean G4geometrymng G4geomver G4globman \
+	   G4graphics_reps G4hepnumerics G4intercoms G4magneticfield \
+	   G4materials G4specsolids G4step G4stepinterface G4volumes
+
+CXXFLAGS += -fno-for-scope -DGNU_GCC -DGEOMETRY_DEBUG -DG4OPTIMISE -DG4USE_STL -DG4USE_STD_NAMESPACE -DG4VERBOSE -DG4_STORE_TRAJECTORY
