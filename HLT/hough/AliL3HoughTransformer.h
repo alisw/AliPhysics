@@ -36,11 +36,13 @@ class AliL3HoughTransformer {
   
   void SetInputData(UInt_t ndigits,AliL3DigitRowData *ptr);
   void CreateHistograms(Int_t nxbin,Double_t ptmin,Int_t nybin,Double_t phimin,Double_t phimax);
-  void CreateHistograms(Int_t nxbin=64,Double_t xmin=-0.006,Double_t xmax=0.006,
-			Int_t nybin=64,Double_t ymin=-0.26,Double_t ymax=0.26);
+  void CreateHistograms(Int_t nxbin,Double_t xmin,Double_t xmax,
+			Int_t nybin,Double_t ymin,Double_t ymax);
+  //void CreateHistograms(Int_t nxbin=64,Double_t xmin=-0.006,Double_t xmax=0.006,
+  //Int_t nybin=64,Double_t ymin=-0.26,Double_t ymax=0.26);
   void Reset();
   void TransformCircle();
-  void TransformCircleC();
+  void TransformCircleC(Int_t row_range);
   void TransformLine();
 
   //Getters
