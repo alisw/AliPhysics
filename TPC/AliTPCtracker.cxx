@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2002/03/18 17:59:13  kowal2
+Chnges in the pad geometry - 3 pad lengths introduced.
+
 Revision 1.16  2001/11/08 16:39:03  hristov
 Additional protection (M.Masera)
 
@@ -960,6 +963,7 @@ Int_t AliTPCtracker::AliTPCRow::Find(Double_t y) const {
   //-----------------------------------------------------------------------
   // Return the index of the nearest cluster 
   //-----------------------------------------------------------------------
+  if(fN<=0) return 0;
   if (y <= fClusters[0]->GetY()) return 0;
   if (y > fClusters[fN-1]->GetY()) return fN;
   Int_t b=0, e=fN-1, m=(b+e)/2;
