@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  1999/10/15 15:35:19  fca
+New version for frame1099 with and without holes
+
 Revision 1.9  1999/09/29 09:24:33  fca
 Introduction of the Copyright and cvs Log
 
@@ -51,7 +54,6 @@ Introduction of the Copyright and cvs Log
 #include <TBRIK.h>
 #include "AliRun.h"
 #include "AliConst.h"
-#include <stdlib.h>
  
 ClassImp(AliTOF)
  
@@ -78,14 +80,6 @@ AliTOF::AliTOF(const char *name, const char *title)
   SetMarkerColor(7);
   SetMarkerStyle(2);
   SetMarkerSize(0.4);
-  //
-  // Check that FRAME is there otherwise we have no place where to
-  // put TOF
-  AliModule* FRAME=gAlice->GetModule("FRAME");
-  if(!FRAME) {
-    Error("Ctor","TOF needs FRAME to be present\n");
-    exit(1);
-  }
 }
 
 //_____________________________________________________________________________
@@ -792,20 +786,10 @@ void AliTOF::Init()
   //
   // Initialise TOF detector after it has been built
   //
-  Int_t i;
-  //
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" TOF_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  cout << "TOF version " << IsVersion() <<" initialized" << endl;
   //
   // Set id of TOF sensitive volume
   if (IsVersion() !=0) fIdSens=gMC->VolId("FPAD");
   //
-  for(i=0;i<80;i++) printf("*");
-  printf("\n");
 }
 
  

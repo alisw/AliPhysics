@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  1999/10/16 19:22:18  fca
+Corrected Rotation Matrix and CVS log
+
 Revision 1.1  1999/10/15 15:35:20  fca
 New version for frame1099 with and without holes
 
@@ -46,6 +49,8 @@ New version for frame1099 with and without holes
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <stdlib.h>
 
 #include "AliTOFv4.h"
 #include "AliRun.h"
@@ -372,12 +377,35 @@ void AliTOFv4::Init()
   //
   // Initialise the detector after the geometry has been defined
   //
+  printf("**************************************"
+	 "  TOF  "
+	 "**************************************\n");
+  printf("\n     Version 4 of TOF initialing, "
+	 "with openings for PHOS and RICH\n\n");
+
   AliTOF::Init();
+
+  //
+  // Check that FRAME is there otherwise we have no place where to
+  // put TOF
+  AliModule* FRAME=gAlice->GetModule("FRAME");
+  if(!FRAME) {
+    Error("Ctor","TOF needs FRAME to be present\n");
+    exit(1);
+  } else 
+    if(FRAME->IsVersion()!=0) {
+      Error("Ctor","FRAME version 0 needed with this version of TOF\n");
+      exit(1);
+    }
+
   fIdFTO2=gMC->VolId("FTO2");
   fIdFTO3=gMC->VolId("FTO3");
   fIdFLT1=gMC->VolId("FLT1");
   fIdFLT2=gMC->VolId("FLT2");
   fIdFLT3=gMC->VolId("FLT3");
+  printf("**************************************"
+	 "  TOF  "
+	 "**************************************\n");
 }
  
 //_____________________________________________________________________________

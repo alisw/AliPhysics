@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  1999/10/04 14:48:07  fca
+Avoid warnings on non-ansi compiler HP-UX CC
+
 Revision 1.13  1999/09/29 09:24:35  fca
 Introduction of the Copyright and cvs Log
 
@@ -32,6 +35,8 @@ Introduction of the Copyright and cvs Log
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <stdlib.h>
 
 #include <TMath.h>
 #include <TVector.h>
@@ -474,7 +479,27 @@ void AliTRDv2::Init()
   // Includes the default settings of all parameter for the digitization.
   //
 
+  printf("**************************************"
+	 "  TRD  "
+	 "**************************************\n");
+  printf("\n     Version 2 of TRD initialing, "
+	 "symmetric TRD\n\n");
+
   AliTRD::Init();
+
+
+  //
+  // Check that FRAME is there otherwise we have no place where to
+  // put TRD
+  AliModule* FRAME=gAlice->GetModule("FRAME");
+  if(!FRAME) {
+    Error("Ctor","TRD needs FRAME to be present\n");
+    exit(1);
+  } else 
+    if(FRAME->IsVersion()!=1) {
+      Error("Ctor","FRAME version 1 needed with this version of TRD\n");
+      exit(1);
+    }
 
   if (fSensPlane)
     printf("          Only plane %d is sensitive\n",fSensPlane);
@@ -545,6 +570,9 @@ void AliTRDv2::Init()
   if (!(fDiffusionT))   fDiffusionT   = 0.060;
   if (!(fDiffusionL))   fDiffusionL   = 0.017;
 
+  printf("**************************************"
+	 "  TRD  "
+	 "**************************************\n");
 }
 
 //_____________________________________________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  1999/09/29 09:24:35  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,6 +34,8 @@ $Log$
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <stdlib.h>
 
 #include <TMath.h>
 #include <TRandom.h>
@@ -109,7 +114,26 @@ void AliTRDv1::Init()
   // Initialise the Transition Radiation Detector after the geometry is built
   //
 
+  printf("**************************************"
+	 "  TRD  "
+	 "**************************************\n");
+  printf("\n     Version 1 of TRD initialing, "
+	 "with openings for PHOS and RICH\n\n");
+
   AliTRD::Init();
+
+  //
+  // Check that FRAME is there otherwise we have no place where to
+  // put TRD
+  AliModule* FRAME=gAlice->GetModule("FRAME");
+  if(!FRAME) {
+    Error("Ctor","TRD needs FRAME to be present\n");
+    exit(1);
+  } else 
+    if(FRAME->IsVersion()!=0) {
+      Error("Ctor","FRAME version 0 needed with this version of TRD\n");
+      exit(1);
+    }
 
   for (Int_t i = 0; i < 80; i++) printf("*");
   printf("\n");
@@ -127,6 +151,9 @@ void AliTRDv1::Init()
   fIdChamber2 = gMC->VolId("UCIM");
   fIdChamber3 = gMC->VolId("UCII");
 
+  printf("**************************************"
+	 "  TRD  "
+	 "**************************************\n");
 }
 
 //_____________________________________________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  1999/09/29 09:24:35  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -29,6 +32,8 @@ $Log$
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <stdlib.h>
 
 #include <TMath.h>
 #include <TRandom.h>
@@ -111,6 +116,25 @@ void AliTRDv0::Init()
 
   AliTRD::Init();
 
+  printf("**************************************"
+	 "  TRD  "
+	 "**************************************\n");
+  printf("\n     Version 0 of TRD initialing, "
+	 "symmetric TRD\n\n");
+
+  //
+  // Check that FRAME is there otherwise we have no place where to
+  // put TRD
+  AliModule* FRAME=gAlice->GetModule("FRAME");
+  if(!FRAME) {
+    Error("Ctor","TRD needs FRAME to be present\n");
+    exit(1);
+  } else 
+    if(FRAME->IsVersion()!=1) {
+      Error("Ctor","FRAME version 1 needed with this version of TRD\n");
+      exit(1);
+    }
+
   for (Int_t i = 0; i < 80; i++) printf("*");
   printf("\n");
   
@@ -127,6 +151,9 @@ void AliTRDv0::Init()
   fIdChamber2 = gMC->VolId("UCIM");
   fIdChamber3 = gMC->VolId("UCII");
 
+  printf("**************************************"
+	 "  TRD  "
+	 "**************************************\n");
 }
 
 //_____________________________________________________________________________

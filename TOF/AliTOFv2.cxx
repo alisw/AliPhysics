@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  1999/10/22 08:04:14  fca
+Correct improper use of negative parameters
+
 Revision 1.11  1999/10/16 19:30:05  fca
 Corrected Rotation Matrix and CVS log
 
@@ -54,6 +57,8 @@ Introduction of the Copyright and cvs Log
 //End_Html
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+#include <stdlib.h>
 
 #include "AliTOFv2.h"
 #include "AliRun.h"
@@ -477,12 +482,35 @@ void AliTOFv2::Init()
   //
   // Initialise the detector after the geometry has been defined
   //
+  printf("**************************************"
+	 "  TOF  "
+	 "**************************************\n");
+  printf("\n     Version 2 of TOF initialing, "
+	 "with openings for PHOS and RICH in symmetric frame\n\n");
+
   AliTOF::Init();
+
+  //
+  // Check that FRAME is there otherwise we have no place where to
+  // put TOF
+  AliModule* FRAME=gAlice->GetModule("FRAME");
+  if(!FRAME) {
+    Error("Ctor","TOF needs FRAME to be present\n");
+    exit(1);
+  } else 
+    if(FRAME->IsVersion()!=1) {
+      Error("Ctor","FRAME version 1 needed with this version of TOF\n");
+      exit(1);
+    }
+
   fIdFTO2=gMC->VolId("FTO2");
   fIdFTO3=gMC->VolId("FTO3");
   fIdFLT1=gMC->VolId("FLT1");
   fIdFLT2=gMC->VolId("FLT2");
   fIdFLT3=gMC->VolId("FLT3");
+  printf("**************************************"
+	 "  TOF  "
+	 "**************************************\n");
 }
  
 //_____________________________________________________________________________

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  1999/09/29 09:24:34  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,8 +35,6 @@ $Log$
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
-#include <stdlib.h>
 
 #include <TMath.h>
 #include <TNode.h>
@@ -74,14 +75,6 @@ AliTRD::AliTRD(const char *name, const char *title)
   //
   // Standard constructor for the TRD
   //
-
-
-  // Check that FRAME is there otherwise we have no place where to put the TRD
-  AliModule* FRAME = gAlice->GetModule("FRAME");
-  if (!FRAME) {
-    Error("AliTRD","TRD needs FRAME to be present\n");
-    exit(1);
-  }
 
   // Allocate the hit array
   fHits   = new TClonesArray("AliTRDhit",  405);
@@ -737,14 +730,6 @@ void AliTRD::Init()
   // Initialise the TRD detector after the geometry has been created
   //
 
-  Int_t i;
-  
-  printf("\n");
-  for(i=0;i<35;i++) printf("*");
-  printf(" TRD_INIT ");
-  for(i=0;i<35;i++) printf("*");
-  printf("\n");
-  
   // Here the TRD initialisation code (if any!)
   if (fGasMix == 1) 
     printf("          Gas Mixture: 90%% Xe + 10%% CO2\n");
