@@ -4,11 +4,11 @@
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
-//
-// class AliJetEvent
-//
-// Piotr.Skowronski@cern.ch 
-//
+//                                                               //
+// class AliJetEvent                                             //
+//                                                               //
+// loizides@ikf.uni-frankfurt.de                                 //
+//                                                               //
 ///////////////////////////////////////////////////////////////////
 
 #include <TObject.h>

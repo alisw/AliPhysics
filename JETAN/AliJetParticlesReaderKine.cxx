@@ -122,7 +122,8 @@ Int_t AliJetParticlesReaderKine::ReadNext()
 	fEventParticles->SetVertex(kv->Vx(),kv->Vy(),kv->Vz());
       }
 
-      Int_t npart = stack->GetNprimary();
+      Int_t nprim = stack->GetNprimary();
+      Int_t npart = nprim;
       if(fUseTracks)
 	npart = stack->GetNtrack();
 
@@ -134,7 +135,7 @@ Int_t AliJetParticlesReaderKine::ReadNext()
 	  Int_t child1 = p->GetFirstDaughter();
 	  //Int_t child2 = p->GetLastDaughter();	
 	  //Int_t mother = p->GetFirstMother();	   
-	  if((child1>=0) && (child1<npart)) continue; 
+	  if((child1>=0) && (child1<nprim)) continue; 
 	  //cout << child1 << " " << child2 << " " << mother << endl;
 
 	  if(IsAcceptedParticle(p)) //put particle in event

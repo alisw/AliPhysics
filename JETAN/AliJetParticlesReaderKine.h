@@ -58,7 +58,7 @@ inline Bool_t AliJetParticlesReaderKine::IsAcceptedParticle(TParticle *p) const
     if(!fEM) return kFALSE;
   }  else {
     TParticlePDG *pdg=p->GetPDG();
-    Float_t ch=pdg->Charge(); 
+    Int_t ch=(Int_t)pdg->Charge(); 
     if((!fCharged)&&(ch)) return kFALSE;
     if((!fNeutral)&&(!ch)) return kFALSE;
   }
