@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.1  2002/02/14 11:41:28  morsch
+Magnetic field map for ALICE for L3+muon spectrometer stored in 3 seperate
+root files.
+
 */
 
 //
@@ -46,7 +50,6 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
   if(fDebug>-1) printf("%s: Constant Mesh Field %s created: map= %d, factor= %f, file= %s\n",
 	 ClassName(),fName.Data(), fMap, factor,fTitle.Data());
     if (fMap == k2kG) {
-/*
 	fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B02.root");
 	file = new TFile(fname);
 	fFieldMap[0] = (AliFieldMap*) file->Get("L3B02");
@@ -64,8 +67,6 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, const Int_t integ,
 	fFieldMap[2] = (AliFieldMap*) file->Get("ExtB02");
 	file->Close();
 	delete file;
-*/
-	Fatal("AliMagFMaps", "Bcent = 0.2 T not yet available");
 	
 	fSolenoid = 2.;
     } else if (fMap == k4kG) {
