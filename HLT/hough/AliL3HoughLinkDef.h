@@ -9,6 +9,7 @@
 #pragma link C++ class AliL3HoughMaxFinder;
 #pragma link C++ class AliL3HoughEval;
 #pragma link C++ class AliL3HoughMerge;
+#pragma link C++ class AliL3Histogram;
 
 #endif
 
