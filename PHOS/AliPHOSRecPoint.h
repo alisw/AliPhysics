@@ -24,6 +24,8 @@
 class AliPHOSRecPoint : public AliRecPoint {
 
  public:
+  
+  typedef TObjArray RecPointsList ; 
 
   AliPHOSRecPoint() ;                   // ctor         
   AliPHOSRecPoint(const AliPHOSRecPoint & rp) {
@@ -69,9 +71,6 @@ class AliPHOSRecPoint : public AliRecPoint {
   
   Int_t fPHOSMod ;      // PHOS Module number in which the RecPoint is found
 
- private:
-  
-  typedef TObjArray RecPointsList ; 
 
   ClassDef(AliPHOSRecPoint,1) // RecPoint for PHOS (Base Class)
  
