@@ -106,7 +106,8 @@ AliEMCALSDigitizer::~AliEMCALSDigitizer()
   if (fSplitFile) 
     if ( fSplitFile->IsOpen() ) 
       fSplitFile->Close() ; 
-
+  AliEMCALGetter * gime = AliEMCALGetter::GetInstance() ; 
+  gime->CloseFile() ; 
 }
 
 //____________________________________________________________________________ 

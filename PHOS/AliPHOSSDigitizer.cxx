@@ -105,6 +105,8 @@ AliPHOSSDigitizer::~AliPHOSSDigitizer()
   if (fSplitFile) 
     if ( fSplitFile->IsOpen() ) 
       fSplitFile->Close() ; 
+  AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
+  gime->CloseFile() ; 
 }
 
 //____________________________________________________________________________ 
