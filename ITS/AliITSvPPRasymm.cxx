@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2001/02/19 20:10:34  barbera
+Set option=2 and thickness=2 as default values --> SetMinorVersion=22
+
 Revision 1.15  2001/02/19 19:44:00  barbera
 Air density parameter corrected
 
@@ -4906,9 +4909,9 @@ void AliITSvPPRasymm::CreateMaterials(){
   AliMedium(4,"C (M55J)$",4,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
 
   AliMaterial(5,"AIR$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
-  AliMedium(5,"AIR$",5,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E02,.10000E+01,0);
+  AliMedium(5,"AIR$",5,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E-02,.10000E+01,0);
 
-  AliMaterial(6,"GEN AIR$",0.14610E+02,0.73000E+01,0.12050E02,0.30423E+05,0.99900E+03);
+  AliMaterial(6,"GEN AIR$",0.14610E+02,0.73000E+01,0.12050E-02,0.30423E+05,0.99900E+03);
   AliMedium(6,"GEN AIR$",6,0,isxfld,sxmgmx,.10000E+01,.10000E+01,0.30000E-02,.10000E+01,0);
 
   AliMaterial(7,"SDD SI CHIP$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
@@ -5043,7 +5046,7 @@ void AliITSvPPRasymm::InitAliITSgeom(){
     } // end if
     cout << "Reading Geometry transformation directly from Geant 3." << endl;
     const Int_t nlayers = 6;
-    const Int_t ndeep = 7;
+    const Int_t ndeep = 9;
     Int_t itsGeomTreeNames[nlayers][ndeep],lnam[20],lnum[20];
     Int_t nlad[nlayers],ndet[nlayers];
     Double_t t[3],r[10];
@@ -5051,20 +5054,45 @@ void AliITSvPPRasymm::InitAliITSgeom(){
     Int_t    npar,natt,idshape,imat,imed;
     AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
     Int_t mod,lay,lad,det,i,j,k;
-    char *names[nlayers][ndeep] = {
-     {"ALIC","ITSV","ITSD","IT12","I132","I131","ITS1"}, // lay=1
-     {"ALIC","ITSV","ITSD","IT12","I132","I186","ITS2"}, // lay=2
-     {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3"}, // lay=3
-     {"ALIC","ITSV","ITSD","IT34","I005","I402","ITS4"}, // lay=4
-     {"ALIC","ITSV","ITSD","IT56","I565","I562","ITS5"}, // lay=5
-     {"ALIC","ITSV","ITSD","IT56","I569","I566","ITS6"}};// lay=6
-    Int_t itsGeomTreeCopys[nlayers][ndeep] = {{1,1,1,1,10, 2, 4},// lay=1
-					      {1,1,1,1,10, 4, 4},// lay=2
-					      {1,1,1,1,14, 6, 1},// lay=3
-					      {1,1,1,1,22, 8, 1},// lay=4
-					      {1,1,1,1,34,22, 1},// lay=5
-					      {1,1,1,1,38,25, 1}};//lay=6
-
+    char names[nlayers][ndeep][4];
+    Int_t itsGeomTreeCopys[nlayers][ndeep];
+    if(fMinorVersion == 11 || fMinorVersion == 21){ // Option A
+    char *namesA[nlayers][ndeep] = {
+     {"ALIC","ITSV","ITSD","IT12","I12A","I10A","I103","I101","ITS1"}, // lay=1
+     {"ALIC","ITSV","ITSD","IT12","I12A","I20A","I1D3","I1D1","ITS2"}, // lay=2
+     {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3","    ","    "}, // lay=3
+     {"ALIC","ITSV","ITSD","IT34","I005","I402","ITS4","    ","    "}, // lay=4
+     {"ALIC","ITSV","ITSD","IT56","I565","I562","ITS5","    ","    "}, // lay=5
+     {"ALIC","ITSV","ITSD","IT56","I569","I566","ITS6","    ","    "}};// lay=6
+    Int_t itsGeomTreeCopysA[nlayers][ndeep]= {{1,1,1,1,10, 2, 4,1,1},// lay=1
+					      {1,1,1,1,10, 4, 4,1,1},// lay=2
+					      {1,1,1,1,14, 6, 1,0,0},// lay=3
+					      {1,1,1,1,22, 8, 1,0,0},// lay=4
+					      {1,1,1,1,34,22, 1,0,0},// lay=5
+					      {1,1,1,1,38,25, 1,0,0}};//lay=6
+    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++){
+	for(k=0;k<4;k++) names[i][j][k] = namesA[i][j][k];
+	itsGeomTreeCopys[i][j] = itsGeomTreeCopysA[i][j];
+    } // end for i,j
+    }else if(fMinorVersion == 22 || fMinorVersion == 12){ // Option B
+    char *namesB[nlayers][ndeep] = {
+     {"ALIC","ITSV","ITSD","IT12","I12B","I10B","I107","I101","ITS1"}, // lay=1
+     {"ALIC","ITSV","ITSD","IT12","I12B","I20B","I1D7","I1D1","ITS2"}, // lay=2
+     {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3","    ","    "}, // lay=3
+     {"ALIC","ITSV","ITSD","IT34","I005","I402","ITS4","    ","    "}, // lay=4
+     {"ALIC","ITSV","ITSD","IT56","I565","I562","ITS5","    ","    "}, // lay=5
+     {"ALIC","ITSV","ITSD","IT56","I569","I566","ITS6","    ","    "}};// lay=6
+    Int_t itsGeomTreeCopysB[nlayers][ndeep]= {{1,1,1,1,10, 2, 4,1,1},// lay=1
+					      {1,1,1,1,10, 4, 4,1,1},// lay=2
+					      {1,1,1,1,14, 6, 1,0,0},// lay=3
+					      {1,1,1,1,22, 8, 1,0,0},// lay=4
+					      {1,1,1,1,34,22, 1,0,0},// lay=5
+					      {1,1,1,1,38,25, 1,0,0}};//lay=6
+    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++){
+	for(k=0;k<4;k++) names[i][j][k] = namesB[i][j][k];
+	itsGeomTreeCopys[i][j] = itsGeomTreeCopysB[i][j];
+    } // end for i,j
+    } // end if fMinorVersion
     // Sorry, but this is not very pritty code. It should be replaced
     // at some point with a version that can search through the geometry
     // tree its self.
@@ -5103,10 +5131,6 @@ void AliITSvPPRasymm::InitAliITSgeom(){
 					par,att,imat,imed);
 			fITSgeom->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
 			if(!(fITSgeom->IsShapeDefined((Int_t)kSPD)))
-			    if(fMinorVersion==21){
-                             fITSgeom->ReSetShape(kSPD,
-						  new AliITSgeomSPD425Short());
-			    } else if(fMinorVersion==22)
                              fITSgeom->ReSetShape(kSPD,
 						  new AliITSgeomSPD425Short());
 		    } // end for det

@@ -39,11 +39,8 @@ class AliITSvPPRasymm : public AliITS {
 	                                          fEuclidOut = euclid;}
     virtual void   SetEUCLIDFileName(const char *f){ // set write file
 	                     fEuclidGeometry=f;fEuclidOut = kTRUE;}
-    virtual void   SetMinorVersion(Int_t v){ // Choose between existing minor versions
-	fMinorVersion = 1;
-	if(v==1) fMinorVersion = 1;
-	else if(v==2) fMinorVersion = 2;
-	else Warning("SetMinorVersion","Undefined Minor Version setting =1");}
+    virtual void   SetMinorVersion(Int_t v=22){ // Choose between existing minor versions
+	fMinorVersion = v;}
     virtual Bool_t GetEUCLID(){return fEuclidOut;}// returns value Euclid flag.
     virtual const char  *GetEULIIDFileName() const{ // return .euc file name
 	                               return fEuclidGeometry.Data();}
