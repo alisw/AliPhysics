@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2001/09/04 14:54:31  hristov
+Const multidimentional arrays cause problems in the CINT dictionary on HP, const removed
+
 Revision 1.10  2001/08/24 21:06:37  nilsen
 Added more documentation, fixed up some coding violations, and some
 forward declorations.
@@ -668,7 +671,15 @@ void AliITSgeomMatrix::Print(ostream *os){
 // Standard output format for this class.
 ////////////////////////////////////////////////////////////////////////
     Int_t i,j;
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
     Int_t fmt;
+#endif
+#else
+    Int_t fmt;
+#endif
 
     fmt = os->setf(ios::scientific);  // set scientific floating point output
     *os << fDetectorIndex << " ";
