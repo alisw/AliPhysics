@@ -9,6 +9,7 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
 #include <Riostream.h>
+#include <TVector2.h>
 
 #include "AliMpMotifMap.h"
 #include "AliMpVMotif.h"
@@ -207,12 +208,20 @@ Bool_t AliMpMotifMap::AddMotifPosition(AliMpMotifPosition* motifPosition, Bool_t
 // ---
 
   AliMpMotifPosition* found = FindMotifPosition(motifPosition->GetID());
-  if (found) {    
-    if (warn && found == motifPosition) 
+  if (found) { 
+    if (warn && found == motifPosition) {
+      cerr << "ID: " << motifPosition->GetID() 
+           << "  found: " << found 
+	   << "  new:   " << motifPosition << endl;   
       Warning("AddMotifPosition", "This motif position is already in map.");
-    if (warn && found != motifPosition) 
+    }  
+    if (warn && found != motifPosition) { 
+      cerr << "ID: " << motifPosition->GetID() 
+           << "  found: " << found 
+	   << "  new:   " << motifPosition << endl;   
       Warning("AddMotifposition", 
-              "Another motif position with the same ID is already in map.");      
+              "Another motif position with the same ID is already in map.");
+    }	            
     return false;
   }  
 
@@ -240,7 +249,7 @@ void AliMpMotifMap::FillMotifPositionMap2()
 }
 
 //_____________________________________________________________________________
-void  AliMpMotifMap::Print() const
+void  AliMpMotifMap::Print(const char* /*option*/) const
 {
 // Prints the motifs and motif types maps.
 // ---
@@ -333,8 +342,8 @@ AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID) const
 
 //_____________________________________________________________________________
 AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID, 
-                             const TString& motifTypeID,
-			     TVector2 padDimensions ) const
+                                      const TString& motifTypeID,
+			              const TVector2& padDimensions ) const
 {
 // Finds the motif with the specified ID and returns it
 // only if its motif type and motif dimensions agree
@@ -391,7 +400,8 @@ AliMpMotifType* AliMpMotifMap::FindMotifType(const TString& motifTypeID) const
 }
 
 //_____________________________________________________________________________
-AliMpMotifPosition* AliMpMotifMap::FindMotifPosition(Int_t motifPositionID) const
+AliMpMotifPosition* 
+AliMpMotifMap::FindMotifPosition(Int_t motifPositionID) const
 {
 // Finds the motif position with the specified motif position ID.
 // ---
@@ -405,7 +415,8 @@ AliMpMotifPosition* AliMpMotifMap::FindMotifPosition(Int_t motifPositionID) cons
 }
 
 //_____________________________________________________________________________
-AliMpMotifPosition* AliMpMotifMap::FindMotifPosition(AliMpIntPair indices) const
+AliMpMotifPosition* 
+AliMpMotifMap::FindMotifPosition(const AliMpIntPair& indices) const
 {
 // Finds the last motif position which has the global indices (low limit)
 // less then the indices specified.
