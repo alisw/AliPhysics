@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2001/09/05 16:31:00  hristov
+The deletion of TOF folders temporarily commented out
+
 Revision 1.23  2001/08/29 12:59:01  vicinanz
 Minor changes to the Digitizer procedure
 
@@ -125,6 +128,9 @@ AliTOF::AliTOF()
   //
   // Default constructor
   //
+  fFGeom = 0;
+  fDTask = 0;
+  fReTask = 0;
   fIshunt   = 0;
   fSDigits       = 0 ;
   fDigits        = 0 ;
