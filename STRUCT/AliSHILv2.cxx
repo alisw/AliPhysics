@@ -75,7 +75,9 @@ void AliSHILv2::CreateGeometry()
     Float_t dz, dZ;
     
     Int_t *idtmed = fIdtmed->GetArray()-1699;
-    
+
+    Int_t idrotm[1799];
+
 #include "ABSOSHILConst.h"
 #include "SHILConst2.h"
     
@@ -231,7 +233,8 @@ void AliSHILv2::CreateGeometry()
 
   gMC->Gsvolu("YMOT", "PCON", idtmed[kVacuum], par0, 87);
   dz=zstart+dl;
-  gMC->Gspos("YMOT", 1, "ALIC", 0., 0., dz, 0, "ONLY"); 
+  AliMatrix(idrotm[1705], 270., 0., 90., 90., 180., 0.);
+  gMC->Gspos("YMOT", 1, "ALIC", 0., 0., - dz, idrotm[1705], "ONLY"); 
   gMC->Gsbool("YMOT","L3DO");
   gMC->Gsbool("YMOT","L3O1");
   gMC->Gsbool("YMOT","L3O2");
@@ -1451,7 +1454,7 @@ void AliSHILv2::CreateGeometry()
 //
 
   dz=1921.6 + tpar[2];
-  gMC->Gspos("YAEM", 1, "ALIC", 0., 0., dz, 0, "ONLY"); 
+  gMC->Gspos("YAEM", 1, "ALIC", 0., 0., - dz, 0, "ONLY"); 
 
 
 // 
@@ -1552,7 +1555,7 @@ void AliSHILv2::CreateGeometry()
   tpar[2] -= 10.;
   gMC->Gsvolu("YFII","TUBE", idtmed[kFe], tpar, 3);
   gMC->Gspos("YFII", 1, "YFIM", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("YFIM", 1, "ALIC", 0., 0., dz, 0, "ONLY");
+  gMC->Gspos("YFIM", 1, "ALIC", 0., 0., - dz, 0, "ONLY");
 //
 // Shielding close to chamber
 //
@@ -1595,8 +1598,7 @@ void AliSHILv2::CreateGeometry()
   ptubs[3] =   0.;
   ptubs[4] =  90.;  
   gMC->Gsvolu("YCR0", "TUBS", idtmed[kNiCuW], ptubs, 0);
-  Int_t idrotm[1799];
-  
+    
   AliMatrix(idrotm[1701],90.,   0., 90.,  90., 0., 0.);
   AliMatrix(idrotm[1702],90.,  90., 90., 180., 0., 0.);
   AliMatrix(idrotm[1703],90., 180., 90., 270., 0., 0.); 
