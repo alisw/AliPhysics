@@ -26,31 +26,31 @@ extern AliRun *gAlice;
 
 Int_t AliESDanalysis(Int_t nev=1) { 
   TH2F *tpcHist=
-     new TH2F("tpcHist","TPC dE/dX vs momentum",100,0.,3.,100,0.,500.);
+     new TH2F("tpcHist","TPC dE/dX vs momentum",100,0.,4.,100,0.,500.);
    tpcHist->SetXTitle("p (GeV/c)"); tpcHist->SetYTitle("dE/dx (Arb. Units)");
      tpcHist->SetMarkerStyle(8); 
      tpcHist->SetMarkerSize(0.3);
  
-  TH1F *piG=new TH1F("piG","",20,0.,3.);
-  TH1F *piR=new TH1F("piR","",20,0.,3.);
-  TH1F *piF=new TH1F("piF","",20,0.,3.);
-  TH1F *piGood=new TH1F("piGood","Combined PID for pions",20,0.,3.); 
+  TH1F *piG=new TH1F("piG","",20,0.,4.);
+  TH1F *piR=new TH1F("piR","",20,0.,4.);
+  TH1F *piF=new TH1F("piF","",20,0.,4.);
+  TH1F *piGood=new TH1F("piGood","Combined PID for pions",20,0.,4.); 
   piGood->SetLineColor(4); piGood->SetXTitle("p (GeV/c)");
-  TH1F *piFake=new TH1F("piFake","",20,0.,3.); piFake->SetLineColor(2);
+  TH1F *piFake=new TH1F("piFake","",20,0.,4.); piFake->SetLineColor(2);
 
-  TH1F *kaG=new TH1F("kaG","",20,0.,3.);
-  TH1F *kaR=new TH1F("kaR","",20,0.,3.);
-  TH1F *kaF=new TH1F("kaF","",20,0.,3.);
-  TH1F *kaGood=new TH1F("kaGood","Combined PID for kaons",20,0.,3.); 
+  TH1F *kaG=new TH1F("kaG","",20,0.,4.);
+  TH1F *kaR=new TH1F("kaR","",20,0.,4.);
+  TH1F *kaF=new TH1F("kaF","",20,0.,4.);
+  TH1F *kaGood=new TH1F("kaGood","Combined PID for kaons",20,0.,4.); 
   kaGood->SetLineColor(4); kaGood->SetXTitle("p (GeV/c)");
-  TH1F *kaFake=new TH1F("kaFake","",20,0.,3.); kaFake->SetLineColor(2);
+  TH1F *kaFake=new TH1F("kaFake","",20,0.,4.); kaFake->SetLineColor(2);
 
-  TH1F *prG=new TH1F("prG","",20,0.,3.);
-  TH1F *prR=new TH1F("prR","",20,0.,3.);
-  TH1F *prF=new TH1F("prF","",20,0.,3.);
-  TH1F *prGood=new TH1F("prGood","Combined PID for protons",20,0.,3.); 
+  TH1F *prG=new TH1F("prG","",20,0.,4.);
+  TH1F *prR=new TH1F("prR","",20,0.,4.);
+  TH1F *prF=new TH1F("prF","",20,0.,4.);
+  TH1F *prGood=new TH1F("prGood","Combined PID for protons",20,0.,4.); 
   prGood->SetLineColor(4); prGood->SetXTitle("p (GeV/c)");
-  TH1F *prFake=new TH1F("prFake","",20,0.,3.); prFake->SetLineColor(2);
+  TH1F *prFake=new TH1F("prFake","",20,0.,4.); prFake->SetLineColor(2);
 
    if (gAlice) {
       delete gAlice->GetRunLoader();

@@ -25,7 +25,6 @@
 
 #include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
-// #include "../ITS/AliITStrackV2.h"
 
 ClassImp(AliESDtrack)
 
@@ -55,7 +54,7 @@ fTRDncls(0),
 fTRDsignal(0),
 fTOFchi2(0),
 fTOFindex(0),
-fTOFsignal(0)
+fTOFsignal(-1)
 {
   //
   // The default ESD constructor 
@@ -68,10 +67,11 @@ fTOFsignal(0)
     fTRDr[i]=0;
     fTOFr[i]=0;
   }
-  for (Int_t i=0; i<5; fRp[i++]);
-  for (Int_t i=0; i<15; fRc[i++]);
-  for (Int_t i=0; i<6; fITSindex[i++]);
-  for (Int_t i=0; i<180; fTPCindex[i++]);
+  Int_t i;
+  for (i=0; i<5; i++)   fRp[i]=0.;
+  for (i=0; i<15; i++)  fRc[i]=0.;
+  for (i=0; i<6; i++)   fITSindex[i]=0;
+  for (i=0; i<180; i++) fTPCindex[i]=0;
 }
 
 //_______________________________________________________________________
@@ -120,6 +120,7 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
   case kTRDin: case kTRDout: case kTRDrefit:
     fTRDncls=t->GetNumberOfClusters();
     fTRDchi2=t->GetChi2();
+    for (Int_t i=0;i<fTRDncls;i++) fTRDindex[i]=t->GetClusterIndex(i);
     fTRDsignal=t->GetPIDsignal();
     break;
   default: 
@@ -142,7 +143,6 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
   
   if (flags == kITSin)
    {
-     //     AliITStrackV2* itstrack = dynamic_cast<AliITStrackV2*>(t);
      AliKalmanTrack *itstrack = t;
      if (itstrack)
       {
@@ -170,24 +170,6 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
    }
   
   return kTRUE;
-}
-
-//_______________________________________________________________________
-void AliESDtrack::GetExternalParametersAt(Double_t x, Double_t p[5]) const {
-  //---------------------------------------------------------------------
-  // This function returns external representation of the track parameters
-  // at the plane x
-  //---------------------------------------------------------------------
-  Double_t dx=x-fRx;
-  Double_t c=fRp[4]/AliKalmanTrack::GetConvConst();
-  Double_t f1=fRp[2], f2=f1 + c*dx;
-  Double_t r1=sqrt(1.- f1*f1), r2=sqrt(1.- f2*f2);    
-
-  p[0]=fRp[0]+dx*(f1+f2)/(r1+r2);
-  p[1]=fRp[1]+dx*(f1+f2)/(f1*r2 + f2*r1)*fRp[3];
-  p[2]=fRp[2]+dx*c;
-  p[3]=fRp[3];
-  p[4]=fRp[4];
 }
 
 //_______________________________________________________________________
@@ -221,7 +203,7 @@ void AliESDtrack::GetXYZ(Double_t *xyz) const {
   //---------------------------------------------------------------------
   // This function returns the global track position
   //---------------------------------------------------------------------
-  Double_t phi=TMath::ASin(fRp[2]) + fRalpha;
+  Double_t phi=TMath::ATan2(fRp[0],fRx) + fRalpha;
   Double_t r=TMath::Sqrt(fRx*fRx + fRp[0]*fRp[0]);
   xyz[0]=r*TMath::Cos(phi); xyz[1]=r*TMath::Sin(phi); xyz[2]=fRp[1]; 
 }
@@ -288,6 +270,15 @@ void AliESDtrack::SetTPCpid(const Double_t *p) {
 void AliESDtrack::GetTPCpid(Double_t *p) const {
   // Gets the probability of each particle type (in TPC)
   for (Int_t i=0; i<kSPECIES; i++) p[i]=fTPCr[i];
+}
+
+//_______________________________________________________________________
+Int_t AliESDtrack::GetTRDclusters(UInt_t *idx) const {
+  //---------------------------------------------------------------------
+  // This function returns indices of the assgined TRD clusters 
+  //---------------------------------------------------------------------
+  for (Int_t i=0; i<90; i++) idx[i]=fTRDindex[i];  // MI I prefer some constant
+  return fTRDncls;
 }
 
 //_______________________________________________________________________

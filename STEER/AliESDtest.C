@@ -91,7 +91,6 @@ Int_t AliESDtest(Int_t nev=1) {
    );
 
 
-
 /**** The ITS corner ********************/
 
    AliITSLoader* itsl = (AliITSLoader*)rl->GetLoader("ITSLoader");
@@ -220,6 +219,8 @@ Int_t AliESDtest(Int_t nev=1) {
 
      rl->GetEvent(i);
  
+
+//***** Initial path towards the primary vertex
      TTree *tpcTree=tpcl->TreeR();
      if (!tpcTree) {
         cerr<<"Can't get the TPC cluster tree !\n";
@@ -228,43 +229,35 @@ Int_t AliESDtest(Int_t nev=1) {
      tpcTracker.LoadClusters(tpcTree);
      rc+=tpcTracker.Clusters2Tracks(event);
 
-
      TTree *itsTree=itsl->TreeR();
      if (!itsTree) {
-        cerr<<"Can't get the TPC cluster tree !\n";
+        cerr<<"Can't get the ITS cluster tree !\n";
         return 4;
      }     
      itsTracker.LoadClusters(itsTree);
      rc+=itsTracker.Clusters2Tracks(event);
 
-     rc+=vtxer.Tracks2V0vertices(event);            // V0 finding
-     rc+=cvtxer.V0sTracks2CascadeVertices(event);   // cascade finding
 
+//***** Back propagation towards the outer barrel detectors
      rc+=itsTracker.PropagateBack(event); 
-     itsTracker.UnloadClusters();
      //itsPID.MakePID(event);
      
      rc+=tpcTracker.PropagateBack(event);
-     tpcTracker.UnloadClusters();
      tpcPID.MakePID(event);
-
 
      TTree *trdTree=trdl->TreeR();
      if (!trdTree) {
-        cerr<<"Can't get the TPC cluster tree !\n";
+        cerr<<"Can't get the TRD cluster tree !\n";
         return 4;
      } 
      trdTracker.LoadClusters(trdTree);
      rc+=trdTracker.PropagateBack(event);
-     trdTracker.UnloadClusters();
-
 /*
      for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
        AliESDtrack* track = event->GetTrack(iTrack);
        trdPID->MakePID(track);
      }
 */
-
      TTree *tofTree=tofl->TreeD();
      if (!tofTree) {
         cerr<<"Can't get the TOF cluster tree !\n";
@@ -275,9 +268,31 @@ Int_t AliESDtest(Int_t nev=1) {
      tofPID.UnloadClusters();
 
 
-    //Here is the combined PID
+
+//***** Here is the combined PID
      AliESDpid::MakePID(event);
 
+
+
+//***** Now the final refit at the primary vertex...
+     rc+=trdTracker.RefitInward(event);
+     trdTracker.UnloadClusters();
+
+     rc+=tpcTracker.RefitInward(event);
+     tpcTracker.UnloadClusters();
+
+     rc+=itsTracker.RefitInward(event); 
+     itsTracker.UnloadClusters();
+
+
+
+//***** Hyperon reconstruction 
+     rc+=vtxer.Tracks2V0vertices(event);            // V0 finding
+     rc+=cvtxer.V0sTracks2CascadeVertices(event);   // cascade finding
+
+
+
+//***** Some final manipulations with this event 
      if (rc==0) {
         Char_t ename[100]; 
         sprintf(ename,"%d",i);

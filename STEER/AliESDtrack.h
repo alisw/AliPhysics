@@ -28,7 +28,6 @@ public:
   ULong_t GetStatus() const {return fFlags;}
   Int_t GetLabel() const {return fLabel;}
   Double_t GetAlpha() const {return fRalpha;}
-  void GetExternalParametersAt(Double_t x, Double_t p[5]) const;
   void GetExternalParameters(Double_t &x, Double_t p[5]) const;
   void GetExternalCovariance(Double_t cov[15]) const;
   Double_t GetIntegratedLength() const {return fTrackLength;}
@@ -51,6 +50,7 @@ public:
   void SetTRDpid(const Double_t *p);
   void GetTRDpid(Double_t *p) const;
   Float_t GetTRDsignal() const {return fTRDsignal;}
+  Int_t GetTRDclusters(UInt_t *idx) const;
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Float_t GetTRDpid(Int_t iSpecies) const;
 
@@ -124,12 +124,13 @@ protected:
   // TRD related track information
   Float_t fTRDchi2;        // chi2 in the TRD
   Int_t   fTRDncls;        // number of clusters assigned in the TRD
+  UInt_t  fTRDindex[90];   //! indices of the assigned TRD clusters
   Float_t fTRDsignal;      // detector's PID signal
   Float_t fTRDr[kSPECIES]; //! "detector response probabilities" (for the PID)
 
   // TOF related track information
   Float_t fTOFchi2;        // chi2 in the TOF
-  UInt_t  fTOFindex;       //! index of the assigned TOF cluster
+  UInt_t  fTOFindex;       // index of the assigned TOF cluster
   Float_t fTOFsignal;      // detector's PID signal
   Float_t fTOFr[kSPECIES]; // "detector response probabilities" (for the PID)
 
