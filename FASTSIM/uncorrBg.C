@@ -33,8 +33,8 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 //  For b = 0
 //  (factor 1.35 to scale from 10% most central to b=0)
 //    
-    Float_t scaleC0 = 1.35 * ptUp / dpt;
-    Float_t scaleB0 = 1.35 * ptUp / dpt;
+    Float_t scaleC0 = 2. * 1.35 * ptUp / dpt;
+    Float_t scaleB0 = 2. * 1.35 * ptUp / dpt;
     Float_t scaleD0 = 1.35 * etar * ptUp / 1.35; // scaled by 1.35 to match ALICE-INT-2002-6
     
 //
@@ -74,9 +74,6 @@ void uncorrBg(Int_t nev = 1000000, Double_t bmin = 0., Double_t bmax = 5.)
 //
 //  Heavy Flavors
 //
-    f = new TFile("HVQinc.root");
-    TH1F* ptBB = (TH1F*) f->Get("hPtCorra");
-    TH1F* ptCC = (TH1F*) f->Get("hpta");   
     
     TF1*  ptBBLf = new TF1("ptBBLf", "[0] * x / (1. + (x/[1])**2)**[2]", 0., 3.);
     ptBBLf->SetParameter(0, 4.46695e-03);
