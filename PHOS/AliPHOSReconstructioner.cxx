@@ -29,6 +29,8 @@
 
 // --- Standard library ---
 
+#include <iomanip>
+
 // --- AliRoot header files ---
 
 #include "AliPHOSReconstructioner.h"
@@ -46,6 +48,7 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
   fClusterizer        = Clusterizer ;
   fTrackSegmentMaker  = Tracker ;
   fPID                = Pid ; 
+  fDebugReconstruction = kFALSE ;
 } 
 
 
@@ -57,6 +60,7 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
   fClusterizer        = Clusterizer ;
   fTrackSegmentMaker  = Tracker ;
   fPID                = Pid ; 
+  fDebugReconstruction = kFALSE ;
 } 
 
 //____________________________________________________________________________
@@ -68,9 +72,45 @@ AliPHOSReconstructioner::AliPHOSReconstructioner(AliPHOSClusterizer * Clusterize
   //                                                      Make the reconstructed particles
 
   Int_t index ; 
-  
-  cout << "Start making reconstructed points (clusterizing)" << endl;
+  // Digit Debuging
+
+
+  if  (fDebugReconstruction) 
+    {
+      cout << ">>>>>>>>>>>>>>>>>>>>>> DebugReconstruction  <<<<<<<<<<<<<<<<<<<<<<<<<<"  << endl ;
+      cout << "DebugReconstruction>>> Digit list entries is " <<    dl->GetEntries() << endl ;
+      AliPHOSDigit * Digit;
+      cout << "DebugReconstruction>>>    Vol Id " << 
+	  " Energy (MeV) "             <<                         
+	  " Index "                    << 
+	  " Nprim "                     << 
+	  " Prim1 "                      << 
+	  " Prim2 "                      << 
+	  " Prim3 "                      <<  endl;  
+
+      for (index = 0 ; index < dl->GetEntries() ; index++) {
+	Digit = (AliPHOSDigit * )  dl->At(index) ;
+	cout << "DebugReconstruction>>>  " << 
+	  setw(8) <<Digit->GetId() << "  "  << 
+	  setw(10) << 1000.*fClusterizer->Calibrate(Digit->GetAmp()) <<       "  "  <<                   
+	  setw(6) <<  Digit->GetIndexInList() << "  "  << 
+	  setw(5) <<  Digit->GetNprimary() <<"  "  << 
+	  setw(5) <<  Digit->GetPrimary(1) <<"  "  << 
+	  setw(5) <<  Digit->GetPrimary(2) <<"  "  << 
+	  setw(5) <<  Digit->GetPrimary(3) << endl;  	 
+  }
+
+    }
+
+
+  if  (fDebugReconstruction)  cout << "DebugReconstruction > Start making reconstructed points (clusterizing)" << endl;
   fClusterizer->MakeClusters(dl, emccl, ppsdl);
+
+  cout << "Emccl list entries is " << emccl->GetEntries() << endl ;
+  cout << "Ppsdl list entries is " << emccl->GetEntries() << endl ;
+
+
+
 
   // mark the position of the RecPoints in the array
   AliPHOSEmcRecPoint * emcrp ; 

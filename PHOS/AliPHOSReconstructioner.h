@@ -39,9 +39,12 @@ public:
   void Make(TClonesArray * DL, RecPointsList * emccl, RecPointsList * ppsdl, 
 	    TrackSegmentsList * trsl, RecParticlesList * rpl) ; // does the job
 
+  void SetDebugReconstruction(Bool_t deb) { fDebugReconstruction = deb; }
+
 
 private:
   
+  Bool_t               fDebugReconstruction;      // For debuging of the Reconstruction procedure
   AliPHOSClusterizer * fClusterizer ;             // Method for clusterization 
   AliPHOSTrackSegmentMaker * fTrackSegmentMaker ; // Method for track segments finding
   AliPHOSPID * fPID ;                             // Method for identifying the type of particle
