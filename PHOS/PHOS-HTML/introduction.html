@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+               "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta name="GENERATOR" content="Mozilla/4.51 [en] (X11; I; Linux 2.2.5-15 i686) [Netscape]">
+    <title>PHOS Geometry in AliRoot</title>
+    <link REL="stylesheet" href="http://www-subatech.in2p3.fr/~photons/gps_alice.css" type="text/css">
+  <body>
+    
+    <h1 class="page-header">
+      Introduction
+    </h1>
+    <br><br>
+    <p>
+      This document result from the effort lead by the Photon Group at SUBATECH
+      to organize within the PHOS collaboration the software needed for the performance
+      and physics simulation of PHOS and for the reconstruction of the raw data
+      (presently simulated one's and real data in the future). 
+    </p>
+    <p>
+      The PHOS software is a package of AliRoot, the off line project for ALICE. Before doing
+      anything you should carefully read the general AliRoot <a href="http://AliSoft.cern.ch/offline/">documentation</a>.
+      The current stable version is V3.02. This is the last version which still includes the old structure. The higher 
+      versions (the branch tagged as <i>HEAD</i> in the CVS server) are a major rewriting of the entire package.
+      It has been rewritten to follow the lines defined by the AliRoot project.
+    </p>
+    <h1>
+      Rules
+    </h1>
+    During the development phase any participant to the PHOS collobaration is a potentiel developper. To keep
+    consistency within the PHOS package and the AliRoot project, the following rules must be obeyed: <br><br>
+    <ol>
+      <li> The <a href="http://AliSoft.cern.ch/offline/offpol.html">AliRoot offline policy</a> must be followed.
+      </li>
+      <li>
+	<a href="http://www-subatech.in2p3.fr/~photons/subatech/">SUBATECH</a>
+	represented by <a href="mailto:schutz@in2p3.fr">Yves Schutz</a> is the
+	librarian of the PHOS contribution to AliRoot. 
+      </li>
+
+      <li>
+	Any modification to the existing software or any new piece of software
+	must be approved by the librarian who is in charge of the updates.
+      </li>
+      <li>
+	Developpers must used CVS to download the official software from the CERN
+	repository.
+      </li>
+      <li>
+	Developpers must comply with the <a href="http://AliSoft.cern.ch/offline/development.html#"a>Coding AliRoot coding convention</a>.
+      </li>
+      <li>
+	FORTRAN is a strictly prohibited language.
+      </li>
+      <li>
+	Any new piece of code must be documented along the line: what is the purpose,
+	how is it done, how to use it. You can start any new class from a canevas, available in the PHOS package:
+	<br><h3> canevas.h </h3> 
+        <pre>
+#ifndef ALIPHOSXXX_H
+#define ALIPHOSXXX_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+//_________________________________________________________________________
+//  Base Class for PHOS     
+//                  
+//*-- Author: (SUBATECH)
+
+
+// --- ROOT system ---
+
+// --- Standard library ---
+
+// --- AliRoot header files ---
+
+class AliPHOSxxx {
+
+public:
+  AliPHOSxxx() ;          // ctor
+
+  virtual ~AliPHOSxxx() ; // dtor
+
+private:
+
+  ClassDef(AliPHOSxxx,1)  // description 
+
+};
+
+#endif // AliPHOSXXX_H
+        </pre>
+        <br><h3>canevas.cxx </h3>
+        <pre>
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+//_________________________________________________________________________
+// Short description  
+//
+//*-- Author :  (SUBATECH) 
+//////////////////////////////////////////////////////////////////////////////
+
+// --- ROOT system ---
+
+// --- Standard library ---
+
+// --- AliRoot header files ---
+
+#include "AliPHOSxxx.h"
+
+ClassImp(AliPHOSxxx)
+
+
+//____________________________________________________________________________ 
+  AliPHOSxxx::AliPHOSxxx() 
+{
+  // ctor
+
+}
+
+//____________________________________________________________________________ 
+  AliPHOSxxx::~AliPHOSxxx()
+{
+  // ctor
+
+}
+        </pre>
+      </li>
+    </ol>
+    <br><br>
+    The PHOS package is organized along two directions which we will try to
+    keep as independent as possible. The simulation is the first one, the reconstruction
+    the second one. 
+    <p>
+      <center>
+      <a href="usecase.gif">
+	<img src="usecase.gif" alt="use case diagram" height=334 width=470>
+      </a>	
+      <br><br>
+      <b> Figure 1.: </b> <i> Use case diagram of the simulation and reconstruction for PHOS (click on image for full size)</i>
+      </center>
+    </p>
+
+<hr>
+<address class="left">
+      &copy; <a href="mailto:schutz@in2p3.fr">>Groupe Photons Subatech (Yves SCHUTZ)</a>
+      <a href="http://www-subatech.in2p3.fr/~photons/subatech/en_index.shtml">[Go
+	to the GPS Home Page]</a>
+</address>
+<!-- Created: Wed Nov 17 12:16:58 CET 1999 -->
+<!-- hhmts start -->
+Last modified: Tue Mar 14 16:21:55 CET 2000
+<!-- hhmts end -->
+<div align=right><a href="http://validator.w3.org/check/referer"><img SRC="vh40.gif" ALT="Valid HTML 4.0!" BORDER=0 height=31 width=88></a><a href="http://jigsaw.w3.org/css-validator"><img SRC="vcss.gif" ALT="Valid CSS!" BORDER=0 height=31 width=88></a></div>
+
+
+</body>
+</html>
+
