@@ -11,11 +11,6 @@
 #include "AliDetector.h"
 #include "AliMUONTriggerCircuit.h" // cp
 
-static const int kNCH=14;
-static const int kNTrackingCh=10;
-static const int kNTriggerCh=4;
-static const int kNTriggerCircuit=234;   
-
 class AliMUONChamber;
 class AliMUONLocalTrigger;
 class AliMUONGlobalTrigger;
