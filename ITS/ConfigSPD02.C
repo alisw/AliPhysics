@@ -79,7 +79,7 @@ void Config(){
     gMC->SetCut("DCUTM",  cut);
     gMC->SetCut("PPCUTM", cut);
     gMC->SetCut("TOFMAX", tofmax);
-    int     nParticles = 10;
+    int     nParticles = 1;
     if (gSystem->Getenv("CONFIG_NPARTICLES")){
       nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
     } // end if
