@@ -386,10 +386,10 @@ void AliTrack::ListAll(TString f)
  }
 
  AliTrack* t=this;
- Dump(t,1,f); // Information of all decay products
+ Dumps(t,1,f); // Information of all decay products
 }
 //////////////////////////////////////////////////////////////////////////
-void AliTrack::Dump(AliTrack* t,Int_t n,TString f)
+void AliTrack::Dumps(AliTrack* t,Int_t n,TString f)
 {
 // Recursively provide the info of all decay levels of this track
  AliTrack* td; 
@@ -406,11 +406,11 @@ void AliTrack::Dump(AliTrack* t,Int_t n,TString f)
    }
 
    // Go for next decay level of this decay track recursively
-   Dump(td,n+1,f);
+   Dumps(td,n+1,f);
   }
   else
   {
-   cout << " *AliTrack::Dump* Error : No decay track present." << endl; 
+   cout << " *AliTrack::Dumps* Error : No decay track present." << endl; 
   }
  }
 } 

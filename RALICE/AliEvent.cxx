@@ -13,13 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliEvent.cxx,v 1.11 2003/02/25 12:36:28 nick Exp $
+// $Id: AliEvent.cxx,v 1.13 2003/08/29 09:05:11 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliEvent
 // Creation and investigation of an Alice physics event.
 // An AliEvent can be constructed by adding AliTracks, Alivertices, AliJets
-// and/or AliCalorimeters.
+// and/or devices like AliCalorimeters.
+// All objects which are derived from TObject can be regarded as a device.
 //
 // The basic functionality of AliEvent is identical to the one of AliVertex.
 // So, an AliEvent may be used as the primary vertex with some additional
@@ -27,30 +28,41 @@
 //
 // To provide maximal flexibility to the user, the two modes of track/jet/vertex
 // storage as described in AliJet and AliVertex can be used.
-// In addition an identical structure is provided for the storage of AliCalorimeter
-// objects, which can be selected by means of the memberfunction SetCalCopy().
+// In addition an identical structure is provided for the storage of devices like
+// AliCalorimeter objects, which can be selected by means of the memberfunction
+// SetDevCopy().
 //
-// a) SetCalCopy(0) (which is the default).
-//    Only the pointers of the 'added' calorimeters are stored.
-//    This mode is typically used by making cal. studies based on a fixed set
-//    of calorimeters which stays under user control or is kept on an external
+// a) SetDevCopy(0) (which is the default).
+//    Only the pointers of the 'added' devices are stored.
+//    This mode is typically used by making studies based on a fixed set
+//    of devices which stays under user control or is kept on an external
 //    file/tree. 
 //    In this way the AliEvent just represents a 'logical structure' for the
 //    physics analysis.
 //
 //    Note :
-//    Modifications made to the original calorimeters also affect the AliCalorimeter
+//    Modifications made to the original devices also affect the device
 //    objects which are stored in the AliEvent. 
 //
-// b) SetCalCopy(1).
-//    Of every 'added' calorimeter a private copy will be made of which the pointer
+// b) SetDevCopy(1).
+//    Of every 'added' device a private copy will be made of which the pointer
 //    will be stored.
 //    In this way the AliEvent represents an entity on its own and modifications
 //    made to the original calorimeters do not affect the AliCalorimeter objects
 //    which are stored in the AliEvent. 
-//    This mode will allow 'adding' many different AliCalorimeters into an AliEvent by
-//    creating only one AliCalorimeter instance in the main programme and using the
-//    AliCalorimeter::Reset() and AliCalorimeter parameter setting memberfunctions.
+//    This mode will allow 'adding' many different devices into an AliEvent by
+//    creating only one device instance in the main programme and using the
+//    Reset() and parameter setting memberfunctions of the object representing the device.
+//
+//    Note :
+//    The copy is made using the Clone() memberfunction.
+//    All devices (i.e. classes derived from TObject) have the default TObject::Clone() 
+//    memberfunction.
+//    However, devices generally contain an internal (signal) data structure
+//    which may include pointers to other objects. Therefore it is recommended to provide
+//    for all devices a specific copy constructor and override the default Clone()
+//    memberfunction using this copy constructor.
+//    An example for this may be seen from AliCalorimeter.   
 //
 // See also the documentation provided for the memberfunction SetOwner(). 
 //
@@ -66,7 +78,7 @@
 // Specify the event object as the repository of all objects
 // for the event building and physics analysis.
 // 
-//        evt.SetCalCopy(1);
+//        evt.SetDevCopy(1);
 //        evt.SetTrackCopy(1);
 //
 // Fill the event structure with the basic objects
@@ -76,7 +88,7 @@
 //         ... // code to fill the calorimeter data
 //         ...
 //
-//        evt.AddCalorimeter(emcal);
+//        evt.AddDevice(emcal);
 //
 //        AliTrack* tx=new AliTrack();
 //        for (Int_t i=0; i<10; i++)
@@ -189,7 +201,7 @@
 // Note : All quantities are in GeV, GeV/c or GeV/c**2
 //
 //--- Author: Nick van Eijndhoven 27-may-2001 UU-SAP Utrecht
-//- Modified: NvE $Date: 2003/02/25 12:36:28 $ UU-SAP Utrecht
+//- Modified: NvE $Date: 2003/08/29 09:05:11 $ UU-SAP Utrecht
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliEvent.h"
@@ -212,9 +224,8 @@ AliEvent::AliEvent() : AliVertex()
  fZtarg=0;
  fPnucTarg=0;
  fIdTarg=0;
- fNcals=0;
- fCalorimeters=0;
- fCalCopy=0;
+ fDevices=0;
+ fDevCopy=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliEvent::AliEvent(Int_t n) : AliVertex(n)
@@ -236,18 +247,17 @@ AliEvent::AliEvent(Int_t n) : AliVertex(n)
  fZtarg=0;
  fPnucTarg=0;
  fIdTarg=0;
- fNcals=0;
- fCalorimeters=0;
- fCalCopy=0;
+ fDevices=0;
+ fDevCopy=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliEvent::~AliEvent()
 {
 // Default destructor
- if (fCalorimeters)
+ if (fDevices)
  {
-  delete fCalorimeters;
-  fCalorimeters=0;
+  delete fDevices;
+  fDevices=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -265,26 +275,26 @@ AliEvent::AliEvent(AliEvent& evt) : AliVertex(evt)
  fZtarg=evt.fZtarg;
  fPnucTarg=evt.fPnucTarg;
  fIdTarg=evt.fIdTarg;
- fNcals=evt.fNcals;
- fCalCopy=evt.fCalCopy;
+ fDevCopy=evt.fDevCopy;
 
- fCalorimeters=0;
- if (fNcals)
+ fDevices=0;
+ Int_t ndevs=evt.GetNdevices();
+ if (ndevs)
  {
-  fCalorimeters=new TObjArray(fNcals);
-  if (fCalCopy) fCalorimeters->SetOwner();
-  for (Int_t i=1; i<=fNcals; i++)
+  fDevices=new TObjArray(ndevs);
+  if (fDevCopy) fDevices->SetOwner();
+  for (Int_t i=1; i<=ndevs; i++)
   {
-   AliCalorimeter* cal=evt.GetCalorimeter(i);
-   if (cal)
+   TObject* dev=evt.GetDevice(i);
+   if (dev)
    {
-    if (fCalCopy)
+    if (fDevCopy)
     {
-     fCalorimeters->Add(new AliCalorimeter(*cal));
+     fDevices->Add(dev->Clone());
     }
     else
     {
-     fCalorimeters->Add(cal);
+     fDevices->Add(dev);
     }
    }
   }
@@ -312,11 +322,10 @@ void AliEvent::Reset()
  fPnucTarg=0;
  fIdTarg=0;
 
- fNcals=0;
- if (fCalorimeters)
+ if (fDevices)
  {
-  delete fCalorimeters;
-  fCalorimeters=0;
+  delete fDevices;
+  fDevices=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -343,8 +352,8 @@ void AliEvent::SetOwner(Bool_t own)
 
  Int_t mode=1;
  if (!own) mode=0;
- if (fCalorimeters) fCalorimeters->SetOwner(own);
- fCalCopy=mode;
+ if (fDevices) fDevices->SetOwner(own);
+ fDevCopy=mode;
 
  AliVertex::SetOwner(own);
 }
@@ -456,10 +465,10 @@ Int_t AliEvent::GetTargetId()
 void AliEvent::HeaderData()
 {
 // Provide event header information
- cout << " *AliEvent::Data* Run : " << fRun << " Event : " << fEvent
+ cout << " *" << ClassName() << "::Data* Run : " << fRun << " Event : " << fEvent
       << " Date : " << fDaytime.AsString() << endl;
 
- ShowCalorimeters();
+ ShowDevices();
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::Data(TString f)
@@ -469,111 +478,149 @@ void AliEvent::Data(TString f)
  AliVertex::Data(f);
 } 
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetNcalorimeters()
+Int_t AliEvent::GetNdevices()
 {
-// Provide the number of stored calorimeter systems
- return fNcals;
+// Provide the number of stored devices
+ Int_t ndevs=0;
+ if (fDevices) ndevs=fDevices->GetEntries();
+ return ndevs;
 } 
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::AddCalorimeter(AliCalorimeter& c)
+void AliEvent::AddDevice(TObject& d)
 {
-// Add a calorimeter system to the event
- if (!fCalorimeters)
+// Add a device to the event.
+//
+// Note :
+// In case a private copy is made, this is performed via the Clone() memberfunction.
+// All devices (i.e. classes derived from TObject) have the default TObject::Clone() 
+// memberfunction.
+// However, devices generally contain an internal (signal) data structure
+// which may include pointers to other objects. Therefore it is recommended to provide
+// for all devices a specific copy constructor and override the default Clone()
+// memberfunction using this copy constructor.
+// An example for this may be seen from AliCalorimeter.   
+
+ if (!fDevices)
  {
-  fCalorimeters=new TObjArray();
-  if (fCalCopy) fCalorimeters->SetOwner();
+  fDevices=new TObjArray();
+  if (fDevCopy) fDevices->SetOwner();
  }
  
- // Add the calorimeter system to this event
- fNcals++;
- if (fCalCopy)
+ // Add the device to this event
+ if (fDevCopy)
  {
-  fCalorimeters->Add(new AliCalorimeter(c));
+  fDevices->Add(d.Clone());
  }
  else
  {
-  fCalorimeters->Add(&c);
+  fDevices->Add(&d);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::SetCalCopy(Int_t j)
+void AliEvent::SetDevCopy(Int_t j)
 {
-// (De)activate the creation of private copies of the added calorimeters.
-// j=0 ==> No private copies are made; pointers of original cals. are stored.
-// j=1 ==> Private copies of the cals. are made and these pointers are stored.
+// (De)activate the creation of private copies of the added devices.
+// j=0 ==> No private copies are made; pointers of original devices are stored.
+// j=1 ==> Private copies of the devices are made and these pointers are stored.
 //
-// Note : Once the storage contains pointer(s) to AliCalorimeter(s) one cannot
-//        change the CalCopy mode anymore.
-//        To change the CalCopy mode for an existing AliEvent containing
-//        calorimeters one first has to invoke Reset().
- if (!fCalorimeters)
+//
+// Notes :
+//  In case a private copy is made, this is performed via the Clone() memberfunction.
+//  All devices (i.e. classes derived from TObject) have the default TObject::Clone() 
+//  memberfunction.
+//  However, devices generally contain an internal (signal) data structure
+//  which may include pointers to other objects. Therefore it is recommended to provide
+//  for all devices a specific copy constructor and override the default Clone()
+//  memberfunction using this copy constructor.
+//  An example for this may be seen from AliCalorimeter.   
+//
+//  Once the storage contains pointer(s) to device(s) one cannot
+//  change the DevCopy mode anymore.
+//  To change the DevCopy mode for an existing AliEvent containing
+//  devices one first has to invoke Reset().
+
+ if (!fDevices)
  {
   if (j==0 || j==1)
   {
-   fCalCopy=j;
+   fDevCopy=j;
   }
   else
   {
-   cout << "*AliEvent::SetCalCopy* Invalid argument : " << j << endl;
+   cout << " *" << ClassName() << "::SetDevCopy* Invalid argument : " << j << endl;
   }
  }
  else
  {
-  cout << "*AliEvent::SetCalCopy* Storage already contained calorimeters."
-       << "  ==> CalCopy mode not changed." << endl; 
+  cout << " *" << ClassName() << "::SetDevCopy* Storage already contained devices."
+       << "  ==> DevCopy mode not changed." << endl; 
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t AliEvent::GetCalCopy()
+Int_t AliEvent::GetDevCopy()
 {
-// Provide value of the CalCopy mode.
-// 0 ==> No private copies are made; pointers of original cals. are stored.
-// 1 ==> Private copies of the cals. are made and these pointers are stored.
- return fCalCopy;
+// Provide value of the DevCopy mode.
+// 0 ==> No private copies are made; pointers of original devices are stored.
+// 1 ==> Private copies of the devices are made and these pointers are stored.
+//
+// Note :
+// In case a private copy is made, this is performed via the Clone() memberfunction.
+// All devices (i.e. classes derived from TObject) have the default TObject::Clone() 
+// memberfunction.
+// However, devices generally contain an internal (signal) data structure
+// which may include pointers to other objects. Therefore it is recommended to provide
+// for all devices a specific copy constructor and override the default Clone()
+// memberfunction using this copy constructor.
+// An example for this may be seen from AliCalorimeter.   
+
+ return fDevCopy;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalorimeter* AliEvent::GetCalorimeter(Int_t i)
+TObject* AliEvent::GetDevice(Int_t i)
 {
-// Return the i-th calorimeter of this event
- if (!fCalorimeters)
+// Return the i-th device of this event.
+// The first device corresponds to i=1.
+
+ if (!fDevices)
  {
-  cout << " *AliEvent::GetCalorimeter* No calorimeters present." << endl;
+  cout << " *AliEvent::GetDevice* No devices present." << endl;
   return 0;
  }
  else
  {
-  if (i<=0 || i>fNcals)
+  Int_t ndevs=GetNdevices();
+  if (i<=0 || i>ndevs)
   {
-   cout << " *AliEvent::GetCalorimeter* Invalid argument i : " << i
-        << " Ncals = " << fNcals << endl;
+   cout << " *" << ClassName() << "::GetDevice* Invalid argument i : " << i
+        << " ndevs = " << ndevs << endl;
    return 0;
   }
   else
   {
-   return (AliCalorimeter*)fCalorimeters->At(i-1);
+   return fDevices->At(i-1);
   }
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalorimeter* AliEvent::GetCalorimeter(TString name)
+TObject* AliEvent::GetDevice(TString name)
 {
-// Return the calorimeter with name tag "name"
- if (!fCalorimeters)
+// Return the device with name tag "name"
+ if (!fDevices)
  {
-  cout << " *AliEvent::GetCalorimeter* No calorimeters present." << endl;
+  cout << " *" << ClassName() << "::GetDevice* No devices present." << endl;
   return 0;
  }
  else
  {
-  AliCalorimeter* cx;
   TString s;
-  for (Int_t i=0; i<fNcals; i++)
+  Int_t ndevs=GetNdevices();
+  for (Int_t i=0; i<ndevs; i++)
   {
-   cx=(AliCalorimeter*)fCalorimeters->At(i);
-   if (cx)
+   TObject* dev=fDevices->At(i);
+   if (dev)
    {
-    s=cx->GetName();
-    if (s == name) return cx;
+    s=dev->GetName();
+    if (s == name) return dev;
    }
   }
 
@@ -581,21 +628,27 @@ AliCalorimeter* AliEvent::GetCalorimeter(TString name)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliEvent::ShowCalorimeters()
+void AliEvent::ShowDevices()
 {
-// Provide an overview of the available calorimeter systems.
- if (fNcals>0)
+// Provide an overview of the available devices.
+ Int_t ndevs=GetNdevices();
+ if (ndevs)
  {
-  cout << " The following " << fNcals << " calorimeter systems are available :" << endl; 
-  for (Int_t i=1; i<=fNcals; i++)
+  cout << " The following " << ndevs << " devices are available :" << endl; 
+  for (Int_t i=1; i<=ndevs; i++)
   {
-   AliCalorimeter* cal=GetCalorimeter(i);
-   if (cal) cout << " Calorimeter number : " << i << " Name : " << (cal->GetName()).Data() << endl;
+   TObject* dev=GetDevice(i);
+   if (dev)
+   {
+    cout << " Device number : " << i
+         << " Class : " << dev->ClassName()
+         << " Name : " << dev->GetName() << endl;
+   }
   }
  }
  else
  {
-  cout << " No calorimeters present for this event." << endl;
+  cout << " No devices present for this event." << endl;
  }
 }
 ///////////////////////////////////////////////////////////////////////////

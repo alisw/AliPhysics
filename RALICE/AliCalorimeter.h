@@ -7,7 +7,7 @@
 
 #include <math.h>
  
-#include "TObject.h"
+#include "TNamed.h"
 #include "TObjArray.h"
 #include "TH2.h"
 #include "TString.h"
@@ -19,14 +19,14 @@
 #include "AliPositionObj.h"
 #include "AliAttribObj.h"
  
-class AliCalorimeter : public TObject
+class AliCalorimeter : public TNamed
 {
  public:
   AliCalorimeter();                                // Default constructor
   AliCalorimeter(Int_t nrow,Int_t ncol);           // Create a calorimeter matrix
   virtual ~AliCalorimeter();                       // Destructor
   AliCalorimeter(AliCalorimeter& c);               // Copy constructor
-  virtual AliCalorimeter* MakeCopy(AliCalorimeter& c); // Make a deep copy and provide pointer of the copy
+  virtual TObject* Clone(char* name);              // Make a deep copy and provide pointer of the copy
   Int_t GetNrows();                                // Return number of rows of the matrix
   Int_t GetNcolumns();                             // Return number of columns of the matrix
   void SetSignal(Int_t row,Int_t col,Float_t s);   // Set signal for a certain module
@@ -64,8 +64,6 @@ class AliCalorimeter : public TObject
   void AddVetoSignal(AliSignal* s) { AddVetoSignal(*s); }
   AliSignal* GetVetoSignal(Int_t j);               // Access to veto signal number j
   Int_t GetNvetos();                               // Provide the number of veto signals
-  void SetName(TString name);                      // Set the name of the calorimeter system
-  TString GetName();                               // Provide the name of the calorimeter system
   void SetSwapMode(Int_t swap=1);                  // Set the swapmode for the storage of the matrices
   Int_t GetSwapMode();                             // Provide the swapmode for the storage of the matrices
  
@@ -84,8 +82,7 @@ class AliCalorimeter : public TObject
   TObjArray* fVetos;                         // The array of associated (extrapolated) veto signals
   TObjArray* fAttributes;                    //! Matrix with module attributes (e.g. gain, offset etc...)
   AliObjMatrix* fPositions;                  //! The matrix of module position pointers
-  TString fName;                             // Name of the calorimeter system
  
- ClassDef(AliCalorimeter,5) // Description of a modular calorimeter system.
+ ClassDef(AliCalorimeter,6) // Description of a modular calorimeter system.
 };
 #endif

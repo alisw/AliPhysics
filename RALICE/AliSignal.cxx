@@ -90,7 +90,7 @@
  
 ClassImp(AliSignal) // Class implementation to enable ROOT I/O
  
-AliSignal::AliSignal() : TObject(),AliPosition(),AliAttrib()
+AliSignal::AliSignal() : TNamed(),AliPosition(),AliAttrib()
 {
 // Creation of an AliSignal object and initialisation of parameters.
 // Several signal values (with errors) can be stored in different slots.
@@ -99,7 +99,7 @@ AliSignal::AliSignal() : TObject(),AliPosition(),AliAttrib()
  fSignals=0;
  fDsignals=0;
  fWaveforms=0;
- fName="Unspecified";
+ SetName("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSignal::~AliSignal()
@@ -122,12 +122,11 @@ AliSignal::~AliSignal()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliSignal::AliSignal(AliSignal& s) : TObject(s),AliPosition(s),AliAttrib(s)
+AliSignal::AliSignal(AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
 {
 // Copy constructor
  fSignals=0;
  fDsignals=0;
- fName=s.fName;
  fWaveforms=0;
 
  Int_t n=s.GetNvalues();
@@ -266,14 +265,6 @@ void AliSignal::DeleteSignals(Int_t mode)
  }
 
  DeleteWaveform(0);
-}
-///////////////////////////////////////////////////////////////////////////
-void AliSignal::ResetPosition()
-{
-// Reset the position and corresponding errors to 0.
- Double_t r[3]={0,0,0};
- SetPosition(r,"sph");
- SetErrors(r,"car");
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::SetSignal(Double_t sig,Int_t j)
@@ -423,35 +414,46 @@ Float_t AliSignal::GetSignalError(Int_t j)
  return err;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSignal::Data(TString f,Int_t j)
+void AliSignal::Data(TString f)
 {
-// Provide signal information for the j-th slot within the coordinate frame f.
+// Provide all signal information within the coordinate frame f.
+
+ cout << " *" << ClassName() << "::Data* Signal of kind : " << GetName() << endl;
+ cout << " Position";
+ Ali3Vector::Data(f);
+
+ List(-1);
+} 
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::List(Int_t j)
+{
+// Provide signal information for the j-th slot.
 // The first slot is at j=1.
 // In case j=0 (default) the data of all slots will be listed.
+// In case j=-1 the data of all slots will be listed, but the header
+// information will be suppressed.
 
- if (j<0) 
+ if (j<-1) 
  {
-  cout << " *AliSignal::Data* Invalid argument j = " << j << endl;
+  cout << " *AliSignal::List* Invalid argument j = " << j << endl;
   return;
  }
 
- cout << " *AliSignal::Data* Signal of kind : " << fName.Data() << endl;
- cout << " Position";
- Ali3Vector::Data(f);
+ if (j != -1) cout << " *" << ClassName() << "::List* Signal of kind : " << GetName() << endl;
 
  Int_t nvalues=GetNvalues();
  Int_t nerrors=GetNerrors();
  Int_t n=nvalues;
  if (nerrors>n) n=nerrors;
 
- if (j==0)
+ if (j<=0)
  {
   for (Int_t i=1; i<=n; i++)
   {
    cout << "   Signal";
    if (i<=nvalues) cout << " value : " << GetSignal(i);
    if (i<=nerrors) cout << " error : " << GetSignalError(i);
-   AliAttrib::Data(i);
+   AliAttrib::List(i);
    cout << endl;
   }
  }
@@ -462,23 +464,11 @@ void AliSignal::Data(TString f,Int_t j)
    cout << "   Signal";
    if (j<=nvalues) cout << " value : " << GetSignal(j);
    if (j<=nerrors) cout << " error : " << GetSignalError(j);
-   AliAttrib::Data(j);
+   AliAttrib::List(j);
    cout << endl;
   }
  }
 } 
-///////////////////////////////////////////////////////////////////////////
-void AliSignal::SetName(TString name)
-{
-// Set the name tag to indicate the kind of signal.
- fName=name;
-}
-///////////////////////////////////////////////////////////////////////////
-TString AliSignal::GetName()
-{
-// Provide the name tag indicating the kind of signal.
- return fName;
-}
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliSignal::GetNvalues()
 {
@@ -629,17 +619,21 @@ void AliSignal::DeleteWaveform(Int_t j)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliSignal* AliSignal::MakeCopy(AliSignal& s)
+TObject* AliSignal::Clone(char* name)
 {
-// Make a deep copy of the input object and provide the pointer to the copy.
+// Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the
-// correct type depending on the argument type, a feature which may be very useful
+// correct type depending on the object type, a feature which may be very useful
 // for containers when adding objects in case the container owns the objects.
 // This feature allows e.g. AliTrack to store either AliSignal objects or
 // objects derived from AliSignal via the AddSignal memberfunction, provided
-// these derived classes also have a proper MakeCopy memberfunction. 
+// these derived classes also have a proper Clone memberfunction. 
 
- AliSignal* sig=new AliSignal(s);
+ AliSignal* sig=new AliSignal(*this);
+ if (name)
+ {
+  if (strlen(name)) sig->SetName(name);
+ }
  return sig;
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -482,7 +482,9 @@ void Ali4Vector::GetErrors(Double_t* e,TString f)
  Double_t a[3];
  fV.GetErrors(a,f);
 
+ Double_t dum=GetScalar();
  e[0]=GetResultError();
+
  for (Int_t i=0; i<3; i++)
  {
   e[i+1]=a[i];

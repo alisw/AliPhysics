@@ -137,6 +137,14 @@ void AliPosition::GetPositionErrors(Float_t* r,TString f)
  GetErrors(r,f);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliPosition::ResetPosition()
+{
+// Reset the position and corresponding errors to 0.
+ Double_t r[3]={0,0,0};
+ SetVector(r,"sph");
+ SetErrors(r,"car");
+}
+///////////////////////////////////////////////////////////////////////////
 Double_t AliPosition::GetDistance(AliPosition& p)
 {
 // Provide distance to position p.

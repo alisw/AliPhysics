@@ -15,7 +15,7 @@ class AliRandom : public TObject
   AliRandom();                                 // Constructor with default sequence
   AliRandom(Int_t seed);                       // Constructor with user defined seed
   AliRandom(Int_t seed,Int_t cnt1,Int_t cnt2); // User defined starting point
-  ~AliRandom();                                // Destructor
+  virtual ~AliRandom();                        // Destructor
   Int_t GetSeed();                             // Provide current seed value
   Int_t GetCnt1();                             // Provide current counter value cnt1
   Int_t GetCnt2();                             // Provide current counter value cnt2

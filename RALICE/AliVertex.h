@@ -22,15 +22,15 @@ class AliVertex : public AliJet,public AliPosition
   virtual ~AliVertex();                   // Default destructor
   AliVertex(AliVertex& v);                // Copy constructor
   virtual void SetOwner(Bool_t own=kTRUE);// Set ownership of all added objects
-  void Reset();                           // Reset all values and stored vertex and jet lists
+  virtual void Reset();                   // Reset all values and stored vertex and jet lists
   void ResetVertices();                   // Reset stored vertex list
   void AddJet(AliJet& j,Int_t tracks=1);  // Add a jet (and its tracks) to the vertex
   void AddVertex(AliVertex& v,Int_t connect=1);// Add (and connect) a (sec.) vertex to the current vertex
   void AddJet(AliJet* j,Int_t tracks=1)    { AddJet(*j,tracks); }
   void AddVertex(AliVertex* v,Int_t connect=1) { AddVertex(*v,connect); }
-  void Data(TString f="car");             // Print the vertex info within coordinate frame f
-  void List(TString f="car");             // Print vertex prim. track information for coord. frame f
-  void ListAll(TString f="car");          // Print prim. + sec. vertex full track info for coord. frame f
+  virtual void Data(TString f="car");     // Print the vertex info within coordinate frame f
+  virtual void List(TString f="car");     // Print vertex prim. track information for coord. frame f
+  virtual void ListAll(TString f="car");  // Print prim. + sec. vertex full track info for coord. frame f
   Int_t GetNvertices();                   // Return the number of (secondary) vertices
   AliVertex* GetVertex(Int_t i);          // Provide i-th (secondary) vertex
   AliVertex* GetIdVertex(Int_t id);       // Provide the vertex with user identifier "id"
@@ -45,7 +45,8 @@ class AliVertex : public AliJet,public AliPosition
   Int_t GetJetCopy();                     // Provide JetCopy flag value      
   Int_t IsConnectTrack(AliTrack* t);      // Indicate if track is created by vertex connection
   Int_t IsJetTrack(AliTrack* t);          // Indicate if track is resulting from jet addition
-  void Draw(Int_t secs=1,Int_t cons=1,Int_t jets=0); // Draw the vertex in an event display
+  virtual void Draw(Option_t* opt) { Draw(1,1,0); } // Override TObject::Draw for default event display
+  virtual void Draw(Int_t secs,Int_t cons=1,Int_t jets=0); // Draw the vertex in an event display
 
  protected:
   void Init();          // Initialisation of pointers etc... 
@@ -62,8 +63,8 @@ class AliVertex : public AliJet,public AliPosition
   TObjArray* fLines;    //! Array to (temporarily) store the 3D lines for the event display 
 
  private:
-  void Dump(AliVertex* v,Int_t n,TString f); // Recursively print all sec. vertices
+  void Dumps(AliVertex* v,Int_t n,TString f); // Recursively print all sec. vertices
  
- ClassDef(AliVertex,4) // Creation and investigation of an AliVertex.
+ ClassDef(AliVertex,6) // Creation and investigation of an AliVertex.
 };
 #endif

@@ -399,3 +399,36 @@
                 Therefore the Load() memberfunction has been removed from AliPositionObj.
 03-oct-2003 NvE Typos fixed in AliCalorimeter.cxx.
                 Also memberfunction MakeCopy introduced in class AliCalorimeter.
+07-oct-2003 NvE Arguments of SetSignal and AddSignal memberfunctions of AliCalmodule corrected
+                to comply with the corresponding virtual functions of AliSignal.
+                AliCalorimeter modified accordingly.
+09-oct-2003 NvE Argument of all MakeCopy memberfunctions removed to obey the ANSI C++ rules for
+                virtual functions and to prepare for a common base class.
+                Due to the fact that not all compilers seem to accept the standard ANSI rule
+                that a virtual function is allowed to differ in return type from the corresponding
+                virtual function in the base class, the MakeCopy() memberfunctions have all been
+                given a return type of TObject*.
+                Also AliAttrib::Data renamed to AliAttrib::List to prevent violation of ANSI virtual
+                function rules and class AliSignal updated accordingly. 
+                Memberfunction ResetPosition() moved from AliSignal to AliPosition.
+                Explicitly declared all memberfunctions virtual in the derived classes in case
+                the corresponding memberfunctions were also declared virtual in the base class.
+                Various memberfunctions which were declared virtual but were actually not meant
+                to be overridden declared as non-virtual in various low-level classes like
+                Ali3Vector, Ali4Vector, AliPosition etc...
+13-oct-2003 NvE Argument 'npt' of AliCollider::MakeEvent also made optional.
+24-oct-2003 NvE Private memberfunction Dump of AliTrack and AliVertex renamed to Dumps in order
+                not to override the Dump memberfunction of TObject.
+                Also definition of AliVertex::Draw slightly modified to comply with the standard
+                ANSI virtual function rules concerning TObject::Draw.
+                Invokation of ClassName() used in printout of AliSignal::Data to make the output
+                information more generic. 
+25-oct-2003 NvE Memberfunction AddCalorimeter of AliEvent replaced by memberfunction AddDevice
+                to make the functionality more generic.
+                To comply with the enhanced flexibility of AliEvent::AddDevice the class
+                AliCalorimeter has been derived from TNamed and the MakeCopy() memberfunction
+                has been replaced by Clone() to override the default one of TNamed.
+                The specific GetName and SetName memberfunctions of AliCalorimeter have been removed.
+26-oct-2003 NvE Class AliSignal derived from TNamed and MakeCopy() memberfunction replaced by Clone()
+                like was done for AliCalorimeter.
+                The latter was also done for AliCalmodule and AliAttribObj.

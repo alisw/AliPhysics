@@ -17,25 +17,25 @@ class Ali4Vector
   Ali4Vector(const Ali4Vector& v);                  // Copy constructor
   virtual void Load(Ali4Vector& q);                 // Load all attributes of input Ali4Vector
   virtual void SetZero();                           // (Re)set all attributes to zero
-  virtual void SetVector(Double_t v0,Ali3Vector& v);// Store contravariant vector
-  virtual void SetVector(Double_t* v,TString f);    // Store contravariant vector v^i in frame f
-  virtual void GetVector(Double_t* v,TString f);    // Provide contravariant vector v^i in frame f
-  virtual void SetVector(Float_t*  v,TString f);    // Store contravariant vector v^i in frame f
-  virtual void GetVector(Float_t*  v,TString f);    // Provide contravariant vector v^i in frame f
-  virtual void SetScalar(Double_t v0,Double_t dv0=0); // Set the scalar part (with error) of v
-  virtual void SetScalarError(Double_t dv0);        // Set error on the scalar part of v
+  void SetVector(Double_t v0,Ali3Vector& v);        // Store contravariant vector
+  void SetVector(Double_t* v,TString f);            // Store contravariant vector v^i in frame f
+  void GetVector(Double_t* v,TString f);            // Provide contravariant vector v^i in frame f
+  void SetVector(Float_t*  v,TString f);            // Store contravariant vector v^i in frame f
+  void GetVector(Float_t*  v,TString f);            // Provide contravariant vector v^i in frame f
+  void SetScalar(Double_t v0,Double_t dv0=0);       // Set the scalar part (with error) of v
+  void SetScalarError(Double_t dv0);                // Set error on the scalar part of v
   Double_t GetScalar();                             // Provide the scalar part of v
-  virtual void Set3Vector(Ali3Vector& v);           // Set the 3-vector part of v
-  virtual void Set3Vector(Double_t* v,TString f);   // Set the 3-vector part of v in frame f
-  virtual void Set3Vector(Float_t*  v,TString f);   // Set the 3-vector part of v in frame f
+  void Set3Vector(Ali3Vector& v);                   // Set the 3-vector part of v
+  void Set3Vector(Double_t* v,TString f);           // Set the 3-vector part of v in frame f
+  void Set3Vector(Float_t*  v,TString f);           // Set the 3-vector part of v in frame f
   Ali3Vector Get3Vector();                          // Provide the 3-vector part of v
-  virtual void SetInvariant(Double_t v2,Double_t dv2=0); // Set the Lorentz invariant (with error)
-  virtual void SetInvariantError(Double_t dv2);     // Set error on the Lorentz invariant
+  void SetInvariant(Double_t v2,Double_t dv2=0);    // Set the Lorentz invariant (with error)
+  void SetInvariantError(Double_t dv2);             // Set error on the Lorentz invariant
   Double_t GetInvariant();                          // Provide the Lorentz invariant
-  virtual void SetErrors(Double_t* v,TString f);    // Store errors of vector v^i in frame f
-  virtual void GetErrors(Double_t* v,TString f);    // Provide errors of vector v^i in frame f
-  virtual void SetErrors(Float_t*  v,TString f);    // Store errors of vector v^i in frame f
-  virtual void GetErrors(Float_t*  v,TString f);    // Provide errors of vector v^i in frame f
+  void SetErrors(Double_t* v,TString f);            // Store errors of vector v^i in frame f
+  void GetErrors(Double_t* v,TString f);            // Provide errors of vector v^i in frame f
+  void SetErrors(Float_t*  v,TString f);            // Store errors of vector v^i in frame f
+  void GetErrors(Float_t*  v,TString f);            // Provide errors of vector v^i in frame f
   virtual void Data(TString f="car");               // Print contravariant components in frame f
   Double_t Dot(Ali4Vector& q);                      // Provide dot product v^i*q_i
   Double_t GetResultError();                        // Provide error on scalar result (e.g. Dot)
@@ -63,6 +63,6 @@ class Ali4Vector
   Double_t GetScaTrans(); // Provide "transverse value" of scalar part w.r.t. z-axis
   Double_t GetScaLong();  // Provide "longitudinal value" of scalar part w.r.t. z-axis
 
- ClassDef(Ali4Vector,4) // Handling of Lorentz 4-vectors in various reference frames.
+ ClassDef(Ali4Vector,5) // Handling of Lorentz 4-vectors in various reference frames.
 };
 #endif

@@ -62,7 +62,7 @@
 
 ClassImp(AliCalorimeter) // Class implementation to enable ROOT I/O
  
-AliCalorimeter::AliCalorimeter() : TObject()
+AliCalorimeter::AliCalorimeter() : TNamed()
 {
 // Default constructor, all parameters set to 0.
 // Create a calorimeter module matrix with fixed row and column size.
@@ -80,7 +80,7 @@ AliCalorimeter::AliCalorimeter() : TObject()
  fVetos=0;
  fAttributes=0;
  fPositions=0;
- fName="Unspecified AliCalorimeter";
+ SetName("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
 AliCalorimeter::~AliCalorimeter()
@@ -123,7 +123,7 @@ AliCalorimeter::~AliCalorimeter()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol) : TObject()
+AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol) : TNamed()
 {
 // Create a calorimeter module matrix with fixed row and column size.
 // The modules at the edges are automatically marked as "edge modules".
@@ -162,10 +162,10 @@ AliCalorimeter::AliCalorimeter(Int_t nrow,Int_t ncol) : TObject()
 
  fVetos=0;
 
- fName="Unspecified AliCalorimeter";
+ SetName("Unspecified");
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalorimeter::AliCalorimeter(AliCalorimeter& c) : TObject(c)
+AliCalorimeter::AliCalorimeter(AliCalorimeter& c) : TNamed(c)
 {
 // Copy constructor
  fClusters=0;
@@ -181,7 +181,6 @@ AliCalorimeter::AliCalorimeter(AliCalorimeter& c) : TObject(c)
 
  fNrows=c.fNrows;
  fNcolumns=c.fNcolumns;
- fName=c.fName;
 
  fSwap=c.fSwap;
 
@@ -286,6 +285,8 @@ void AliCalorimeter::SetSignal(Int_t row,Int_t col,Float_t sig)
  if (!m) // initialise for a new module
  {
   m=new AliCalmodule();
+  m->SetRow(row);
+  m->SetColumn(col);
   AliPosition* r=0;
   if (fPositions) r=(AliPositionObj*)fPositions->GetObject(row,col);
   if (r) m->SetPosition(*r);
@@ -304,7 +305,7 @@ void AliCalorimeter::SetSignal(Int_t row,Int_t col,Float_t sig)
   fMatrix->EnterObject(row,col,m);
  }
 
- m->SetSignal(row,col,sig);
+ m->SetSignal(sig);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliCalorimeter::AddSignal(Int_t row, Int_t col, Float_t sig)
@@ -327,7 +328,7 @@ void AliCalorimeter::AddSignal(Int_t row, Int_t col, Float_t sig)
   }
   else
   {
-   m->AddSignal(row,col,sig);
+   m->AddSignal(sig);
   }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -392,7 +393,7 @@ void AliCalorimeter::AddSignal(AliCalmodule* mod)
  }
  else
  {
-  m->AddSignal(row,col,sig);
+  m->AddSignal(sig);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -1530,20 +1531,20 @@ TH2F* AliCalorimeter::DrawModules(Float_t thresh,Int_t mode)
  
  Int_t nmods=GetNsignals();
 
- Float_t row,col,signal;
+ Int_t row,col;
+ Float_t signal;
  Int_t dead;
  for (Int_t i=1; i<=nmods; i++)
  {
   AliCalmodule* m=(AliCalmodule*)fMatrix->GetObject(i);
   if (m)
   {
-   row=float(m->GetRow());
-   col=float(m->GetColumn());
+   row=m->GetRow();
+   col=m->GetColumn();
    dead=m->GetDeadValue();
    signal=0;
-   if (!dead) signal=GetSignal(static_cast<Int_t>(row),
-			       static_cast<Int_t>(col),mode);
-   if (signal>thresh) fHmodules->Fill(col,row,signal);
+   if (!dead) signal=GetSignal(row,col,mode);
+   if (signal>thresh) fHmodules->Fill(float(col),float(row),signal);
   }
  }
  
@@ -1579,16 +1580,17 @@ TH2F* AliCalorimeter::DrawClusters(Float_t thresh)
  }
  
  AliCalcluster* c;
- Float_t row,col,signal;
+ Int_t row,col;
+ Float_t signal;
  for (Int_t i=0; i<GetNclusters(); i++)
  {
   c=(AliCalcluster*)fClusters->At(i);
   if (c)
   {
-   row=float(c->GetRow());
-   col=float(c->GetColumn());
+   row=c->GetRow();
+   col=c->GetColumn();
    signal=c->GetSignal();
-   if (signal>thresh) fHclusters->Fill(col,row,signal);
+   if (signal>thresh) fHclusters->Fill(float(col),float(row),signal);
   }
  }
  
@@ -1655,18 +1657,6 @@ AliSignal* AliCalorimeter::GetVetoSignal(Int_t i)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalorimeter::SetName(TString name)
-{
-// Set the name of the calorimeter system.
- fName=name;
-}
-///////////////////////////////////////////////////////////////////////////
-TString AliCalorimeter::GetName()
-{
-// Provide the name of the calorimeter system.
- return fName;
-}
-///////////////////////////////////////////////////////////////////////////
 void AliCalorimeter::SetSwapMode(Int_t swap)
 {
 // Set the swap mode for the module and position matrices.
@@ -1689,15 +1679,19 @@ Int_t AliCalorimeter::GetSwapMode()
  return fSwap;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalorimeter* AliCalorimeter::MakeCopy(AliCalorimeter& c)
+TObject* AliCalorimeter::Clone(char* name)
 {
-// Make a deep copy of the input object and provide the pointer to the copy.
+// Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the
-// correct type depending on the argument type, a feature which may be very useful
+// correct type depending on the object type, a feature which may be very useful
 // for containers like AliEvent when adding objects in case the
 // container owns the objects.
 
- AliCalorimeter* cal=new AliCalorimeter(c);
+ AliCalorimeter* cal=new AliCalorimeter(*this);
+ if (name)
+ {
+  if (strlen(name)) cal->SetName(name);
+ } 
  return cal;
 }
 ///////////////////////////////////////////////////////////////////////////

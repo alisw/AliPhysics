@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliCollider.h,v 1.3 2002/12/11 14:45:12 nick Exp $
+// $Id: AliCollider.h,v 1.4 2003/08/29 09:05:11 nick Exp $
 
 #include "TPythia6.h"
 #include "TString.h"
@@ -29,7 +29,7 @@ class AliCollider : public TPythia6
   Int_t GetPrintFreq();                                 // Provide the print frequency
   void Init(char* frame,char* beam,char* target,Float_t win); // Standard Pythia initialisation
   void Init(char* frame,Int_t zp,Int_t ap,Int_t zt,Int_t at,Float_t win); // Nucl-Nucl initialisation
-  void MakeEvent(Int_t npt,Int_t mlist=-1,Int_t medit=1);// Generate a single event with npt participant nucleons
+  void MakeEvent(Int_t npt=0,Int_t mlist=-1,Int_t medit=1);// Generate a single event with npt participant nucleons
   void EndRun();                                        // Properly close all buffers and output file
   AliEvent* GetEvent();                                 // Provide pointer to the generated event structure
 
@@ -58,6 +58,6 @@ class AliCollider : public TPythia6
 
   void GetFractions(Float_t zp,Float_t ap,Float_t zt,Float_t at); // Determine various N-N collision fractions
 
- ClassDef(AliCollider,3) // Pythia based universal physics event generator
+ ClassDef(AliCollider,4) // Pythia based universal physics event generator
 };
 #endif

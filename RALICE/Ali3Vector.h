@@ -18,14 +18,14 @@ class Ali3Vector
   Ali3Vector(const Ali3Vector& v);               // Copy constructor
   virtual void Load(Ali3Vector& q);              // Load all attributes of input Ali3Vector
   virtual void SetZero();                        // (Re)set all attributes to zero.
-  virtual void SetVector(Double_t* v,TString f); // Store vector v in frame f
-  virtual void GetVector(Double_t* v,TString f); // Provide vector v in frame f
-  virtual void SetVector(Float_t*  v,TString f); // Store vector v in frame f
-  virtual void GetVector(Float_t*  v,TString f); // Provide vector v in frame f
-  virtual void SetErrors(Double_t* e,TString f); // Store errors of vector in frame f
-  virtual void GetErrors(Double_t* e,TString f); // Provide errors of vector in frame f
-  virtual void SetErrors(Float_t*  e,TString f); // Store errors of vector in frame f
-  virtual void GetErrors(Float_t*  e,TString f); // Provide errors of vector in frame f
+  void SetVector(Double_t* v,TString f);         // Store vector v in frame f
+  void GetVector(Double_t* v,TString f);         // Provide vector v in frame f
+  void SetVector(Float_t*  v,TString f);         // Store vector v in frame f
+  void GetVector(Float_t*  v,TString f);         // Provide vector v in frame f
+  void SetErrors(Double_t* e,TString f);         // Store errors of vector in frame f
+  void GetErrors(Double_t* e,TString f);         // Provide errors of vector in frame f
+  void SetErrors(Float_t*  e,TString f);         // Store errors of vector in frame f
+  void GetErrors(Float_t*  e,TString f);         // Provide errors of vector in frame f
   virtual void Data(TString f="car");            // Print vector components in frame f
   Double_t GetNorm();                            // Provide norm of the vector
   Double_t Dot(Ali3Vector& q);                   // Provide dot product with q
@@ -48,6 +48,6 @@ class Ali3Vector
   Double_t fDx,fDy,fDz;       // Errors on Cartesian coordinates
   Double_t fDresult;          // Error on scalar result (e.g. norm or dotproduct)
 
- ClassDef(Ali3Vector,4) // Handling of 3-vectors in various reference frames.
+ ClassDef(Ali3Vector,5) // Handling of 3-vectors in various reference frames.
 };
 #endif

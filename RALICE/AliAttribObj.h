@@ -16,8 +16,8 @@ class AliAttribObj : public TObject,public AliAttrib
   AliAttribObj(AliAttrib& a);                      // Constructor
   virtual ~AliAttribObj();                         // Destructor
   AliAttribObj(AliAttribObj& a);                   // Copy constructor
-  virtual AliAttribObj* MakeCopy(AliAttribObj& a); // Make a deep copy and provide its pointer
+  virtual TObject* Clone(char* name);              // Make a deep copy and provide its pointer
 
- ClassDef(AliAttribObj,1) // Generic handling of detector signal (calibration) attributes.
+ ClassDef(AliAttribObj,2) // Generic handling of detector signal (calibration) attributes.
 };
 #endif

@@ -52,7 +52,7 @@ AliCalmodule::AliCalmodule(AliCalmodule& m) : AliSignal(m)
  fSigc=m.fSigc;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalmodule::AliCalmodule(Int_t row,Int_t col,Float_t sig) : AliSignal()
+AliCalmodule::AliCalmodule(Int_t row,Int_t col,Double_t sig) : AliSignal()
 {
 // Module constructor with initialisation of module data
  fRow=row;
@@ -73,25 +73,23 @@ void AliCalmodule::SetColumn(Int_t i)
  fCol=i;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalmodule::SetSignal(Int_t row,Int_t col,Float_t sig)
+void AliCalmodule::SetSignal(Double_t sig,Int_t j)
 {
-// Set or change the data of the module
- fRow=row;
- fCol=col;
- AliSignal::SetSignal(sig);
- fSigc=sig;
+// Set or change the data of the module.
+// This is an extension of AliSignal::SetSignal in view of the clustered signal.
+ AliSignal::SetSignal(sig,j);
+ if (j==1) fSigc=sig;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalmodule::AddSignal(Int_t row,Int_t col,Float_t sig)
+void AliCalmodule::AddSignal(Double_t sig,Int_t j)
 {
 // Add or change the data of the module
- fRow=row;
- fCol=col;
- AliSignal::AddSignal(sig);
- fSigc+=sig;
+// This is an extension of AliSignal::AddSignal in view of the clustered signal.
+ AliSignal::AddSignal(sig,j);
+ if (j==1) fSigc+=sig;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliCalmodule::SetClusteredSignal(Float_t sig)
+void AliCalmodule::SetClusteredSignal(Double_t sig)
 {
 // Set or change the signal of the module after clustering
  fSigc=sig;
@@ -123,18 +121,22 @@ Float_t AliCalmodule::GetClusteredSignal()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliCalmodule* AliCalmodule::MakeCopy(AliCalmodule& m)
+TObject* AliCalmodule::Clone(char* name)
 {
-// Make a deep copy of the input object and provide the pointer to the copy.
+// Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the
-// correct type depending on the argument type, a feature which may be very useful
+// correct type depending on the object type, a feature which may be very useful
 // for containers like AliCalorimeter when adding objects in case the
 // container owns the objects. This feature allows e.g. AliCalorimeter
 // to store either AliCalmodule objects or objects derived from AliCalmodule
 // via tha AddSignal memberfunction, provided these derived classes also have
-// a proper MakeCopy memberfunction. 
+// a proper Clone memberfunction. 
 
- AliCalmodule* cal=new AliCalmodule(m);
- return cal;
+ AliCalmodule* m=new AliCalmodule(*this);
+ if (name)
+ {
+  if (strlen(name)) m->SetName(name);
+ }
+ return m;
 }
 ///////////////////////////////////////////////////////////////////////////

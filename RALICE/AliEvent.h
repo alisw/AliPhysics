@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id: AliEvent.h,v 1.8 2003/02/25 12:36:28 nick Exp $
+// $Id: AliEvent.h,v 1.10 2003/08/29 09:05:11 nick Exp $
 
 #include <math.h>
  
@@ -39,16 +39,16 @@ class AliEvent : public AliVertex
   TDatime GetDayTime();                   // Provide the date and time stamp
   Int_t GetRunNumber();                   // Provide the run number
   Int_t GetEventNumber();                 // Provide the event number
-  void HeaderData();                      // Print the event header information
-  void Data(TString f="car");             // Print the event info within coordinate frame f
-  void SetCalCopy(Int_t j);               // (De)activate creation of private copies in fCalorimeters
-  Int_t GetCalCopy();                     // Provide CalCopy flag value      
-  void AddCalorimeter(AliCalorimeter& c); // Add a calorimeter system to the event
-  void AddCalorimeter(AliCalorimeter* c) { AddCalorimeter(*c); }
-  Int_t GetNcalorimeters();               // Provide the number of calorimeter systems
-  void ShowCalorimeters();                // Provide on overview of the available calorimeter systems
-  AliCalorimeter* GetCalorimeter(Int_t i);// Provide i-th calorimeter system of the event
-  AliCalorimeter* GetCalorimeter(TString name); // Provide calorimeter with name "name"
+  virtual void HeaderData();              // Print the event header information
+  virtual void Data(TString f="car");     // Print the event info within coordinate frame f
+  void SetDevCopy(Int_t j);               // (De)activate creation of private copies of the devices
+  Int_t GetDevCopy();                     // Provide DevCopy flag value      
+  void AddDevice(TObject& d);             // Add a device to the event
+  void AddDevice(TObject* d) { AddDevice(*d); }
+  Int_t GetNdevices();                    // Provide the number of devices
+  void ShowDevices();                     // Provide on overview of the available devices
+  TObject* GetDevice(Int_t i);            // Provide i-th device of the event
+  TObject* GetDevice(TString name);       // Provide device with name "name"
 
  protected:
   TDatime fDaytime;         // The date and time stamp
@@ -62,10 +62,9 @@ class AliEvent : public AliVertex
   Int_t fZtarg;             // The target Z value
   Double_t fPnucTarg;       // The target momentum per nucleon
   Int_t fIdTarg;            // User defined target particle ID
-  Int_t fNcals;             // The number of calorimeter systems 
-  TObjArray* fCalorimeters; // Array to hold the pointers to the calorimeter systems
-  Int_t fCalCopy;           // Flag to denote creation of private copies in fCalorimeters
+  TObjArray* fDevices;      // Array to hold the pointers to the various devices
+  Int_t fDevCopy;           // Flag to denote creation of private copies of the devices
 
- ClassDef(AliEvent,7) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,9) // Creation and investigation of an Alice physics event.
 };
 #endif

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// $Id: AliCollider.cxx,v 1.5 2003/02/03 13:19:44 nick Exp $
+// $Id: AliCollider.cxx,v 1.6 2003/08/29 09:05:11 nick Exp $
 
 ///////////////////////////////////////////////////////////////////////////
 // Class AliCollider
@@ -104,7 +104,7 @@
 //
 //
 //--- Author: Nick van Eijndhoven 22-nov-2002 Utrecht University
-//- Modified: NvE $Date: 2003/02/03 13:19:44 $ Utrecht University
+//- Modified: NvE $Date: 2003/08/29 09:05:11 $ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliCollider.h"
@@ -481,17 +481,17 @@ void AliCollider::MakeEvent(Int_t npt,Int_t mlist,Int_t medit)
   delete [] rans;
  }
 
-  if (!(fEventnum%fPrintfreq))
+ if (!(fEventnum%fPrintfreq))
+ {
+  cout << " *AliCollider::MakeEvent* Run : " << fRunnum << " Event : " << fEventnum
+       << endl;
+  if (fNucl)
   {
-   cout << " *AliCollider::MakeEvent* Run : " << fRunnum << " Event : " << fEventnum
-        << endl;
-   if (fNucl)
-   {
-    cout << " npart = " << npt << " ncol = " << ncol 
-         << " ncolpp = " << ncols[0] << " ncolnp = " << ncols[1]
-         << " ncolpn = " << ncols[2] << " ncolnn = " << ncols[3] << endl;
-   }
+   cout << " npart = " << npt << " ncol = " << ncol 
+        << " ncolpp = " << ncols[0] << " ncolnp = " << ncols[1]
+        << " ncolpn = " << ncols[2] << " ncolnn = " << ncols[3] << endl;
   }
+ }
 
  if (!fEvent)
  {

@@ -21,7 +21,6 @@ class AliAttrib
   Int_t GetNoffsets();                         // Provide the number of specified offsets
   Int_t GetNcalflags();                        // Provide the number of specified calib. flags
   Int_t GetNnames();                           // Provide the maximum number of specified names
-  virtual AliAttrib* MakeCopy(AliAttrib& a);   // Make a deep copy and provide its pointer
   void SetGain(Double_t gain,Int_t j=1);       // Set gain of the j-th attribute slot
   Float_t GetGain(Int_t j=1);                  // Provide gain of the j-th attribute slot
   void SetOffset(Double_t off,Int_t j=1);      // Set offset value of the j-th attribute slot
@@ -40,7 +39,7 @@ class AliAttrib
   void DecreaseEdgeValue(Int_t j=1);           // Decrease the edge value of the j-th slot by 1
   void SetEdgeValue(Int_t val,Int_t j=1);      // Set a specific edge value for the j-th slot
   Int_t GetEdgeValue(Int_t j=1);               // Provide the edge value of the j-th slot
-  virtual void Data(Int_t j=0);                // Printout of attribute data
+  virtual void List(Int_t j=0);                // Printout of attribute data
   virtual void Load(AliAttrib& a,Int_t j=0);   // Load j-th slot or all attributes of the input AliAttrib
   void SetSlotName(TString s,Int_t j=1);       // Set user defined name for the j-th slot
   TString GetSlotName(Int_t j=1);              // Provide user defined name for the j-th slot

@@ -617,10 +617,10 @@ void AliVertex::ListAll(TString f)
  }
 
  AliVertex* v=this;
- Dump(v,1,f); // Information of all sec. vertices
+ Dumps(v,1,f); // Information of all sec. vertices
 }
 //////////////////////////////////////////////////////////////////////////
-void AliVertex::Dump(AliVertex* v,Int_t n,TString f)
+void AliVertex::Dumps(AliVertex* v,Int_t n,TString f)
 {
 // Recursively provide the info of all secondary vertices of this vertex
  AliVertex* vs; 
@@ -646,16 +646,16 @@ void AliVertex::Dump(AliVertex* v,Int_t n,TString f)
     }
     else
     {
-     cout << " *AliVertex::Dump* Error : No track present." << endl; 
+     cout << " *AliVertex::Dumps* Error : No track present." << endl; 
     }
    }
 
    // Go for next sec. vertex level of this sec. vertex recursively
-   Dump(vs,n+1,f);
+   Dumps(vs,n+1,f);
   }
   else
   {
-   cout << " *AliVertex::Dump* Error : No sec. vertex present." << endl; 
+   cout << " *AliVertex::Dumps* Error : No sec. vertex present." << endl; 
   }
  }
 } 
@@ -872,14 +872,14 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
 // negative track : blue
 // jet-track      : magenta (if explicit marking selected)
 //
-// secs = 1 --> Draw secondary vertices.
+// secs = 1 --> Draw secondary vertices. (Default)
 //        0 --> Don't draw secondary vertices.
 //
-// cons = 1 --> Draw (auto generated) connecting tracks. 
+// cons = 1 --> Draw (auto generated) connecting tracks. (Default) 
 //        0 --> Don't draw (auto generated) connecting tracks.
 //                  
 // jets = 1 --> Mark tracks belonging to jets.
-//        0 --> Don't mark jet-tracks.
+//        0 --> Don't mark jet-tracks. (Default)
 //
 // Notes :
 // -------
@@ -892,7 +892,7 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
  AliVertex* vx=0;
  AliPosition* r=0;
  Ali3Vector p;
- Int_t charge;
+ Float_t charge;
 
  AliPosition dummy;
 
@@ -907,7 +907,7 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
 
   if (!tx) continue;
 
-  charge=static_cast<int>(tx->GetCharge());
+  charge=tx->GetCharge();
 
   TPolyLine3D* line=new TPolyLine3D();
   fLines->Add(line);
@@ -940,9 +940,9 @@ void AliVertex::Draw(Int_t secs,Int_t cons,Int_t jets)
    line->SetLineWidth(3);
   }
 
-  if (charge>0) line->SetLineColor(kRed);   // Positive track
-  if (!charge)  line->SetLineColor(kGreen); // Neutral track
-  if (charge<0) line->SetLineColor(kBlue);  // Negative track
+  line->SetLineColor(kGreen);              // Neutral track
+  if (charge>0) line->SetLineColor(kRed);  // Positive track
+  if (charge<0) line->SetLineColor(kBlue); // Negative track
  
   // Mark tracks belonging to jets
   if (IsJetTrack(tx))

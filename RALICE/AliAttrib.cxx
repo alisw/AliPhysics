@@ -718,17 +718,6 @@ Int_t AliAttrib::GetDeadValue(Int_t j)
  return dead;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliAttrib* AliAttrib::MakeCopy(AliAttrib& a)
-{
-// Make a deep copy of the input object and provide the pointer to the copy.
-// This memberfunction enables automatic creation of new objects of the
-// correct type depending on the argument type, a feature which may be very useful
-// for containers when adding objects in case the container owns the objects.
-
- AliAttrib* att=new AliAttrib(a);
- return att;
-}
-///////////////////////////////////////////////////////////////////////////
 void AliAttrib::SetSlotName(TString s,Int_t j)
 {
 // Set a user defined name for the j-th (default j=1) slot. 
@@ -805,7 +794,7 @@ Int_t AliAttrib::GetSlotIndex(TString name)
  return index;
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliAttrib::Data(Int_t j)
+void AliAttrib::List(Int_t j)
 {
 // Provide attribute information for the j-th slot.
 // The first slot is at j=1.

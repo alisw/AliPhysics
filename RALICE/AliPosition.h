@@ -18,19 +18,20 @@ class AliPosition : public Ali3Vector
   AliPosition();                                         // Default constructor
   virtual ~AliPosition();                                // Destructor
   AliPosition(const AliPosition& p);                     // Copy constructor
-  virtual void SetPosition(Double_t* r,TString f);       // Store position r in frame f
-  virtual void GetPosition(Double_t* r,TString f);       // Provide position r in frame f
-  virtual void SetPosition(Float_t*  r,TString f);       // Store position r in frame f
-  virtual void GetPosition(Float_t*  r,TString f);       // Provide position r in frame f
+  void SetPosition(Double_t* r,TString f);               // Store position r in frame f
+  void GetPosition(Double_t* r,TString f);               // Provide position r in frame f
+  void SetPosition(Float_t*  r,TString f);               // Store position r in frame f
+  void GetPosition(Float_t*  r,TString f);               // Provide position r in frame f
   AliPosition& GetPosition();                            // Provide position
-  virtual void SetPosition(Ali3Vector& r);               // Store position r
+  void SetPosition(Ali3Vector& r);                       // Store position r
   Double_t GetDistance(AliPosition& p);                  // Provide distance to position p
   Double_t GetDistance(AliPosition* p) { return GetDistance(*p); }
-  virtual void SetPositionErrors(Double_t* r,TString f); // Store position r in frame f
-  virtual void GetPositionErrors(Double_t* r,TString f); // Provide position r in frame f
-  virtual void SetPositionErrors(Float_t*  r,TString f); // Store position r in frame f
-  virtual void GetPositionErrors(Float_t*  r,TString f); // Provide position r in frame f
+  void SetPositionErrors(Double_t* r,TString f);         // Store position r in frame f
+  void GetPositionErrors(Double_t* r,TString f);         // Provide position r in frame f
+  void SetPositionErrors(Float_t*  r,TString f);         // Store position r in frame f
+  void GetPositionErrors(Float_t*  r,TString f);         // Provide position r in frame f
+  void ResetPosition();                                  // Reset position and errors to 0
 
- ClassDef(AliPosition,2) // Handling of positions in various reference frames.
+ ClassDef(AliPosition,4) // Handling of positions in various reference frames.
 };
 #endif

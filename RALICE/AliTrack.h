@@ -21,15 +21,15 @@ class AliTrack : public TObject,public Ali4Vector
   AliTrack();                           // Default constructor
   virtual ~AliTrack();                  // Destructor
   AliTrack(AliTrack& t);                // Copy constructor
-  void Reset();                         // Reset all values to 0
+  virtual void Reset();                 // Reset all values to 0
   void Set4Momentum(Ali4Vector& p);     // Set track 4-momentum
   void Set3Momentum(Ali3Vector& p);     // Set track 3-momentum
   void SetMass(Double_t m,Double_t dm=0); // Set particle mass and error
   void SetMass();                       // Set mass and error to mass hypothesis with highest prob.
   void SetCharge(Float_t q);            // Set particle charge
-  void Data(TString f="car");           // Print track information for coord. frame f
-  void List(TString f="car");           // Print track and decay level 1 information for coord. frame f
-  void ListAll(TString f="car");        // Print track and all decay level information for coord. frame f
+  virtual void Data(TString f="car");   // Print track information for coord. frame f
+  virtual void List(TString f="car");   // Print track and decay level 1 information for coord. frame f
+  virtual void ListAll(TString f="car");// Print track and all decay level information for coord. frame f
   Ali3Vector Get3Momentum();            // Provide track 3-momentum
   Double_t GetMomentum();               // Provide value of track 3-momentum
   Double_t GetMass();                   // Provide particle mass
@@ -98,8 +98,8 @@ class AliTrack : public TObject,public Ali4Vector
   AliTrack* fParent;         // Pointer to the parent track
 
  private:
-  void Dump(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
+  void Dumps(AliTrack* t,Int_t n,TString f); // Recursively print all decay levels
  
- ClassDef(AliTrack,5) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,7) // Handling of the attributes of a reconstructed particle track.
 };
 #endif

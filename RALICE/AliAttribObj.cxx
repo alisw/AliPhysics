@@ -72,14 +72,14 @@ AliAttribObj::AliAttribObj(AliAttribObj& a) : TObject(a),AliAttrib(a)
 // Copy constructor
 }
 ///////////////////////////////////////////////////////////////////////////
-AliAttribObj* AliAttribObj::MakeCopy(AliAttribObj& a)
+TObject* AliAttribObj::Clone(char* name)
 {
-// Make a deep copy of the input object and provide the pointer to the copy.
+// Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the
-// correct type depending on the argument type, a feature which may be very useful
+// correct type depending on the object type, a feature which may be very useful
 // for containers when adding objects in case the container owns the objects.
 
- AliAttribObj* att=new AliAttribObj(a);
+ AliAttribObj* att=new AliAttribObj(*this);
  return att;
 }
 ///////////////////////////////////////////////////////////////////////////
