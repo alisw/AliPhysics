@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2000/10/29 18:30:14  barbera
+Z resolution of pixel changed according with the default lenght of 425 microns
+
 Revision 1.1.2.6  2000/10/29 18:29:51  barbera
 Z resolution of pixel changed according with the default lenght of 425 microns
 
@@ -87,7 +90,7 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod, Int_t mo
 
 
    numofhits = mod->GetNhits();
-   printf("numofhits %d \n",numofhits);
+   //printf("numofhits %d \n",numofhits);
    flag = 1;
    for(ihit=0;ihit<numofhits;ihit++){
      AliITShit *hit=mod->GetHit(ihit);

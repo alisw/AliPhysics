@@ -71,8 +71,8 @@ void ITSHitsToFastPoints (Int_t evNumber1=0,Int_t evNumber2=0,Int_t nsignal=25, 
        timer.Stop(); timer.Print();
    } // event loop 
 
-   delete gAlice;
-      gAlice=0;
+   //delete gAlice;
+   //gAlice=0;
    file->Close();
 }
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.49  2001/05/11 07:37:49  hristov
+Legacy lines commented
+
 Revision 1.48  2001/05/10 18:14:25  barbera
 A typo corrected
 
@@ -1250,7 +1253,7 @@ void AliITS::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t *opt)
 	  first = geom->GetStartDet(id);
 	  last = geom->GetLastDet(id);
 	} else first=last=0;
-	//printf("first last %d %d\n",first,last);
+	printf("first module - last module %d %d\n",first,last);
 	for(module=first;module<=last;module++) {
               this->ResetDigits();
               if (all) gAlice->TreeD()->GetEvent(lastentry+module);
@@ -1333,8 +1336,13 @@ Option_t *option,Option_t *opt,Text_t *filename)
            exit(1);
 	   // or SetDefaultSimulation();
 	}
-	Int_t first = geom->GetStartDet(id);
-	Int_t last = geom->GetLastDet(id);
+
+        Int_t first,last;
+        if(geom) {
+	  first = geom->GetStartDet(id);
+	  last = geom->GetLastDet(id);
+        } else first=last=0;
+        printf("first module - last module %d %d\n",first,last);
 	for(module=first;module<=last;module++) {
 	    AliITSmodule *mod = (AliITSmodule *)fITSmodules->At(module);
 	    sim->CreateFastRecPoints(mod,module,random);
