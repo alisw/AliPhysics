@@ -228,13 +228,13 @@ void AliMUONEventReconstructor::SetReconstructionParametersToDefaults(void)
   // scaled to the real distance between chambers in a station
   fSegmentMaxDistBending[0] = TMath::Abs( 1.5 *
     ((&(pMUON->Chamber(1)))->Z() - (&(pMUON->Chamber(0)))->Z()) / 20.0);
-  fSegmentMaxDistBending[1] =  TMath::Abs( 1.5 *
+  fSegmentMaxDistBending[1] = TMath::Abs( 1.5 *
     ((&(pMUON->Chamber(3)))->Z() - (&(pMUON->Chamber(2)))->Z()) / 20.0);
-  fSegmentMaxDistBending[2] =  TMath::Abs( 3.0 *
+  fSegmentMaxDistBending[2] = TMath::Abs( 3.0 *
     ((&(pMUON->Chamber(5)))->Z() - (&(pMUON->Chamber(4)))->Z()) / 20.0);
-  fSegmentMaxDistBending[3] =  TMath::Abs( 6.0 *
+  fSegmentMaxDistBending[3] = TMath::Abs( 6.0 *
     ((&(pMUON->Chamber(7)))->Z() - (&(pMUON->Chamber(6)))->Z()) / 20.0);
-  fSegmentMaxDistBending[4] =  TMath::Abs( 6.0 *
+  fSegmentMaxDistBending[4] = TMath::Abs( 6.0 *
     ((&(pMUON->Chamber(9)))->Z() - (&(pMUON->Chamber(8)))->Z()) / 20.0);
   
   fBendingResolution = fgkDefaultBendingResolution;
@@ -869,7 +869,6 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
   Bool_t last2st;
   Double_t bendingSlope, distBend, distNonBend, extBendCoor, extNonBendCoor,
       impactParam = 0., maxImpactParam = 0., minImpactParam = 0.; // =0 to avoid compilation warnings.
-  AliMUON *pMUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
   if (fPrintLevel >= 1)
     cout << "enter MakeSegmentsPerStation (0...) " << Station << endl;
   // first and second chambers (0...) in the station
@@ -889,8 +888,7 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
   else last2st = kFALSE;
   // extrapolation factor from Z of first chamber to Z of second chamber
   // dZ to be changed to take into account fine structure of chambers ????
-  Double_t extrapFact =
-    (&(pMUON->Chamber(ch2)))->Z() / (&(pMUON->Chamber(ch1)))->Z();
+  Double_t extrapFact;
   // index for current segment
   Int_t segmentIndex = 0;
   // Loop over HitsForRec in the first chamber of the station
@@ -902,8 +900,6 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
     // extrapolation,
     // on the straight line joining the HitForRec to the vertex (0,0,0),
     // to the Z of the second chamber of the station
-    extBendCoor = extrapFact * hit1Ptr->GetBendingCoor();
-    extNonBendCoor = extrapFact * hit1Ptr->GetNonBendingCoor();
     // Loop over HitsForRec in the second chamber of the station
     for (Int_t hit2 = fIndexOfFirstHitForRecPerChamber[ch2];
 	 hit2 < fIndexOfFirstHitForRecPerChamber[ch2] + fNHitsForRecPerChamber[ch2];
@@ -913,6 +909,9 @@ void AliMUONEventReconstructor::MakeSegmentsPerStation(Int_t Station)
       // absolute values of distances, in bending and non bending planes,
       // between the HitForRec in the second chamber
       // and the previous extrapolation
+      extrapFact = hit2Ptr->GetZ()/ hit1Ptr->GetZ();
+      extBendCoor = extrapFact * hit1Ptr->GetBendingCoor();
+      extNonBendCoor = extrapFact * hit1Ptr->GetNonBendingCoor();
       distBend = TMath::Abs(hit2Ptr->GetBendingCoor() - extBendCoor);
       distNonBend = TMath::Abs(hit2Ptr->GetNonBendingCoor() - extNonBendCoor);
       if (last2st) {
@@ -1110,7 +1109,8 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegme
   // the first segment being pointed to by "BegSegment".
   // Returns the number of such track candidates.
   Int_t endStation, iEndSegment, nbCan2Seg;
-  AliMUONSegment *endSegment, *extrapSegment;
+  AliMUONSegment *endSegment;
+  AliMUONSegment *extrapSegment = NULL;
   AliMUONTrack *recTrack;
   Double_t mcsFactor;
   if (fPrintLevel >= 1) cout << "enter MakeTrackCandidatesWithTwoSegments" << endl;
@@ -1121,8 +1121,6 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegme
     GetBendingMomentumFromImpactParam(BegSegment->GetBendingImpact());
   mcsFactor	= fChamberThicknessInX0 * mcsFactor * mcsFactor;
   // linear extrapolation to end station
-  extrapSegment =
-    BegSegment->CreateSegmentFromLinearExtrapToStation(endStation, mcsFactor);
   // number of candidates with 2 segments to 0
   nbCan2Seg = 0;
   // Loop over segments in the end station
@@ -1131,6 +1129,8 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithTwoSegments(AliMUONSegme
     endSegment = (AliMUONSegment*) ((*fSegmentsPtr[endStation])[iEndSegment]);
     // test compatibility between current segment and "extrapSegment"
     // 4 because 4 quantities in chi2
+    extrapSegment =
+      BegSegment->CreateSegmentFromLinearExtrapToStation(endSegment->GetZ(), mcsFactor);
     if ((endSegment->
 	 NormalizedChi2WithSegment(extrapSegment,
 				   fMaxSigma2Distance)) <= 4.0) {
@@ -1162,7 +1162,8 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
   // in stations(1..) 4 and 5,
   // the segment being pointed to by "BegSegment".
   Int_t ch, ch1, ch2, endStation, iHit, iHitMax, iHitMin, nbCan1Seg1Hit;
-  AliMUONHitForRec *extrapHitForRec, *hit;
+  AliMUONHitForRec *extrapHitForRec= NULL;
+  AliMUONHitForRec *hit;
   AliMUONTrack *recTrack;
   Double_t mcsFactor;
   if (fPrintLevel >= 1)
@@ -1180,9 +1181,6 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
   nbCan1Seg1Hit = 0;
   // Loop over chambers of the end station
   for (ch = ch2; ch >= ch1; ch--) {
-    // linear extrapolation to chamber
-    extrapHitForRec =
-      BegSegment->CreateHitForRecFromLinearExtrapToChamber(ch, mcsFactor);
     // limits for the hit index in the loop
     iHitMin = fIndexOfFirstHitForRecPerChamber[ch];
     iHitMax = iHitMin + fNHitsForRecPerChamber[ch];
@@ -1192,6 +1190,9 @@ Int_t AliMUONEventReconstructor::MakeTrackCandidatesWithOneSegmentAndOnePoint(Al
       hit = (AliMUONHitForRec*) ((*fHitsForRecPtr)[iHit]);
       // test compatibility between current HitForRec and "extrapHitForRec"
       // 2 because 2 quantities in chi2
+      // linear extrapolation to chamber
+      extrapHitForRec =
+	BegSegment->CreateHitForRecFromLinearExtrapToChamber( hit->GetZ(), mcsFactor);
       if ((hit->
 	   NormalizedChi2WithHitForRec(extrapHitForRec,
 				       fMaxSigma2Distance)) <= 2.0) {
@@ -1257,8 +1258,8 @@ void AliMUONEventReconstructor::FollowTracks(void)
 {
   // Follow tracks in stations(1..) 3, 2 and 1
   // too long: should be made more modular !!!!
-  AliMUONHitForRec *bestHit, *extrapHit, *extrapCorrHit, *hit;
-  AliMUONSegment *bestSegment, *extrapSegment, *extrapCorrSegment, *segment;
+  AliMUONHitForRec *bestHit, *extrapHit, *hit;
+  AliMUONSegment *bestSegment, *extrapSegment, *segment;
   AliMUONTrack *track, *nextTrack;
   AliMUONTrackParam *trackParam1, trackParam[2], trackParamVertex;
   // -1 to avoid compilation warnings
@@ -1299,7 +1300,6 @@ void AliMUONEventReconstructor::FollowTracks(void)
       // extrapolation to station
       trackParam1->ExtrapToStation(station, trackParam);
       extrapSegment = new AliMUONSegment(); //  empty segment
-      extrapCorrSegment = new AliMUONSegment(); //  empty corrected segment
       // multiple scattering factor corresponding to one chamber
       // and momentum in bending plane (not total)
       mcsFactor = 0.0136 * trackParam1->GetInverseBendingMomentum();
@@ -1319,14 +1319,6 @@ void AliMUONEventReconstructor::FollowTracks(void)
       extrapSegment->UpdateFromStationTrackParam
 	(trackParam, mcsFactor, dZ1, dZ2, dZ3, station,
 	 trackParam1->GetInverseBendingMomentum());
-      // same thing for corrected segment
-      // better to use copy constructor, after checking that it works properly !!!!
-      extrapCorrSegment->SetBendingCoorReso2(fBendingResolution * fBendingResolution);
-      extrapCorrSegment->
-	SetNonBendingCoorReso2(fNonBendingResolution * fNonBendingResolution);
-      extrapCorrSegment->UpdateFromStationTrackParam
-	(trackParam, mcsFactor, dZ1, dZ2, dZ3, station,
-	 trackParam1->GetInverseBendingMomentum());
       bestChi2 = 5.0;
       bestSegment = NULL;
       if (fPrintLevel >= 10) {
@@ -1342,18 +1334,14 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	segment = (AliMUONSegment*) ((*fSegmentsPtr[station])[iSegment]);
 	// correction of corrected segment (fBendingCoor and fNonBendingCoor)
 	// according to real Z value of "segment" and slopes of "extrapSegment"
-	extrapCorrSegment->
-	  SetBendingCoor(extrapSegment->GetBendingCoor() +
-			 extrapSegment->GetBendingSlope() *
-			 (segment->GetHitForRec1()->GetZ() -
-			  (&(pMUON->Chamber(2 * station)))->Z()));
-	extrapCorrSegment->
-	  SetNonBendingCoor(extrapSegment->GetNonBendingCoor() +
-			    extrapSegment->GetNonBendingSlope() *
-			    (segment->GetHitForRec1()->GetZ() -
-			     (&(pMUON->Chamber(2 * station)))->Z()));
+	(&(trackParam[0]))->ExtrapToZ(segment->GetZ());
+	(&(trackParam[1]))->ExtrapToZ(segment->GetZ());
+	extrapSegment->SetBendingCoor((&(trackParam[0]))->GetBendingCoor());
+	extrapSegment->SetNonBendingCoor((&(trackParam[0]))->GetNonBendingCoor());
+	extrapSegment->SetBendingSlope((&(trackParam[0]))->GetBendingSlope());
+	extrapSegment->SetNonBendingSlope((&(trackParam[0]))->GetNonBendingSlope());
 	chi2 = segment->
-	  NormalizedChi2WithSegment(extrapCorrSegment, maxSigma2Distance);
+	  NormalizedChi2WithSegment(extrapSegment, maxSigma2Distance);
 	if (chi2 < bestChi2) {
 	  // update best Chi2 and Segment if better found
 	  bestSegment = segment;
@@ -1362,6 +1350,8 @@ void AliMUONEventReconstructor::FollowTracks(void)
       }
       if (bestSegment) {
 	// best segment found: add it to track candidate
+	(&(trackParam[0]))->ExtrapToZ(bestSegment->GetZ());
+	(&(trackParam[1]))->ExtrapToZ(bestSegment->GetZ());
 	track->AddSegment(bestSegment);
 	// set track parameters at these two TrakHit's
 	track->SetTrackParamAtHit(track->GetNTrackHits() - 2, &(trackParam[0]));
@@ -1378,7 +1368,6 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	// should consider all possibilities ????
 	// multiple scattering ???? do about like for extrapSegment !!!!
 	extrapHit = new AliMUONHitForRec(); //  empty hit
-	extrapCorrHit = new AliMUONHitForRec(); //  empty corrected hit
 	bestChi2 = 3.0;
 	bestHit = NULL;
 	if (fPrintLevel >= 10) {
@@ -1388,41 +1377,22 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	}
 	// Loop over chambers of the station
 	for (chInStation = 0; chInStation < 2; chInStation++) {
-	  // coordinates of extrapolated hit
-	  extrapHit->
-	    SetBendingCoor((&(trackParam[chInStation]))->GetBendingCoor());
-	  extrapHit->
-	    SetNonBendingCoor((&(trackParam[chInStation]))->GetNonBendingCoor());
-	  // resolutions from "extrapSegment"
-	  extrapHit->SetBendingReso2(extrapSegment->GetBendingCoorReso2());
-	  extrapHit->SetNonBendingReso2(extrapSegment->GetNonBendingCoorReso2());
-	  // same things for corrected hit
-	  // better to use copy constructor, after checking that it works properly !!!!
-	  extrapCorrHit->
-	    SetBendingCoor((&(trackParam[chInStation]))->GetBendingCoor());
-	  extrapCorrHit->
-	    SetNonBendingCoor((&(trackParam[chInStation]))->GetNonBendingCoor());
-	  extrapHit->SetBendingReso2(extrapSegment->GetBendingCoorReso2());
-	  extrapHit->SetNonBendingReso2(extrapSegment->GetNonBendingCoorReso2());
-	  // Loop over hits in the chamber
 	  ch = 2 * station + chInStation;
 	  for (iHit = fIndexOfFirstHitForRecPerChamber[ch];
 	       iHit < fIndexOfFirstHitForRecPerChamber[ch] +
 		 fNHitsForRecPerChamber[ch];
 	       iHit++) {
 	    hit = (AliMUONHitForRec*) ((*fHitsForRecPtr)[iHit]);
-	    // correction of corrected hit (fBendingCoor and fNonBendingCoor)
-	    // according to real Z value of "hit" and slopes of right "trackParam"
-	    extrapCorrHit->
-	      SetBendingCoor((&(trackParam[chInStation]))->GetBendingCoor() +
-			     (&(trackParam[chInStation]))->GetBendingSlope() *
-			     (hit->GetZ() -
-			      (&(trackParam[chInStation]))->GetZ()));
-	    extrapCorrHit->
-	      SetNonBendingCoor((&(trackParam[chInStation]))->GetNonBendingCoor() +
-				(&(trackParam[chInStation]))->GetNonBendingSlope() *
-				(hit->GetZ() -
-				 (&(trackParam[chInStation]))->GetZ()));
+	    // coordinates of extrapolated hit
+	    (&(trackParam[chInStation]))->ExtrapToZ(hit->GetZ());
+	    extrapHit->
+	      SetBendingCoor((&(trackParam[chInStation]))->GetBendingCoor());
+	    extrapHit->
+	      SetNonBendingCoor((&(trackParam[chInStation]))->GetNonBendingCoor());
+	    // resolutions from "extrapSegment"
+	    extrapHit->SetBendingReso2(extrapSegment->GetBendingCoorReso2());
+	    extrapHit->SetNonBendingReso2(extrapSegment->GetNonBendingCoorReso2());
+	    // Loop over hits in the chamber
 	    // condition for hit not already in segment ????
 	    chi2 = hit->NormalizedChi2WithHitForRec(extrapHit, maxSigma2Distance);
 	    if (chi2 < bestChi2) {
@@ -1435,6 +1405,7 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	}
 	if (bestHit) {
 	  // best hit found: add it to track candidate
+	  (&(trackParam[chBestHit]))->ExtrapToZ(bestHit->GetZ());
 	  track->AddHitForRec(bestHit);
 	  // set track parameters at this TrackHit
 	  track->SetTrackParamAtHit(track->GetNTrackHits() - 1,
@@ -1450,17 +1421,13 @@ void AliMUONEventReconstructor::FollowTracks(void)
 	  // and corresponding TrackHit's, ...
 	  track->Remove();
 	  delete extrapSegment;
-	  delete extrapCorrSegment;
 	  delete extrapHit;
-	  delete extrapCorrHit;
 	  break; // stop the search for this candidate:
 	  // exit from the loop over station
 	}
 	delete extrapHit;
-	delete extrapCorrHit;
       }
       delete extrapSegment;
-      delete extrapCorrSegment;
       // Sort track hits according to increasing Z
       track->GetTrackHitsPtr()->Sort();
       // Update track parameters at first track hit (smallest Z)

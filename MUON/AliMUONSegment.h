@@ -37,13 +37,15 @@ class AliMUONSegment : public TObject
   void SetBendingCoorReso2(Double_t BendingCoorReso2) {fBendingCoorReso2 = BendingCoorReso2;}
   Double_t GetNonBendingCoorReso2(void) const {return fNonBendingCoorReso2;}
   void SetNonBendingCoorReso2(Double_t NonBendingCoorReso2) {fNonBendingCoorReso2 = NonBendingCoorReso2;}
+  Double_t GetZ(void) const {return fZ;}
+  
   Double_t GetBendingImpact(void) const {return fBendingImpact;}
   Bool_t GetInTrack(void) const {return fInTrack;}
   void SetInTrack(Bool_t InTrack) {fInTrack = InTrack;}
 
-  AliMUONSegment* CreateSegmentFromLinearExtrapToStation (Int_t Station, Double_t MCSfactor) const;
+  AliMUONSegment* CreateSegmentFromLinearExtrapToStation (Double_t z, Double_t MCSfactor) const;
   Double_t NormalizedChi2WithSegment(AliMUONSegment* Segment, Double_t Sigma2Cut) const;
-  AliMUONHitForRec* CreateHitForRecFromLinearExtrapToChamber (Int_t Chamber, Double_t MCSfactor) const;
+  AliMUONHitForRec* CreateHitForRecFromLinearExtrapToChamber (Double_t z, Double_t MCSfactor) const;
   void UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, Double_t MCSfactor, Double_t Dz1, Double_t Dz2, Double_t Dz3, Int_t Station, Double_t InverseMomentum);
 
   // What is necessary for sorting TClonesArray's; sufficient too ????
@@ -73,6 +75,7 @@ class AliMUONSegment : public TObject
   Double_t fNonBendingSlopeReso2; // Covariance(slope)
   Double_t fNonBendingCoorSlopeReso2; // Covariance(C1,slope)
   Double_t fNonBendingImpact; // Impact parameter in non bending plane
+  Double_t fZ;                // Z of the segment
   Bool_t fInTrack; // TRUE if segment belongs to one track
   
   ClassDef(AliMUONSegment, 1) // Segment for reconstruction in ALICE dimuon spectrometer

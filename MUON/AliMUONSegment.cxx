@@ -57,6 +57,7 @@ AliMUONSegment::AliMUONSegment()
   fNonBendingCoorReso2 = 0.0; // Covariance(coordinate C1 in first chamber)
   fNonBendingSlopeReso2 = 0.0; // Covariance(slope)
   fNonBendingCoorSlopeReso2 = 0.0; // Covariance(C1,slope)
+  fZ = 0.0; // z in first plane
   fNonBendingImpact = 0.0; // Impact parameter in non bending plane
   fInTrack = kFALSE; // TRUE if segment belongs to one track
 }
@@ -78,6 +79,7 @@ AliMUONSegment::AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2)
   fHitForRecPtr1 = Hit1;
   fHitForRecPtr2 = Hit2;
   dz = Hit1->GetZ() - Hit2->GetZ();
+  fZ = Hit1->GetZ();
   // bending plane
   fBendingCoor = Hit1->GetBendingCoor();
   fBendingSlope = (fBendingCoor - Hit2->GetBendingCoor()) / dz;
@@ -175,7 +177,7 @@ Double_t AliMUONSegment::NormalizedChi2WithSegment(AliMUONSegment* Segment, Doub
 }
 
   //__________________________________________________________________________
-AliMUONSegment* AliMUONSegment::CreateSegmentFromLinearExtrapToStation (Int_t Station, Double_t MCSfactor) const
+AliMUONSegment* AliMUONSegment::CreateSegmentFromLinearExtrapToStation ( Double_t z, Double_t MCSfactor) const
 {
   // Extrapolates linearly the current Segment (this) to station (0..) "Station".
   // Multiple Coulomb scattering calculated from "MCSfactor"
@@ -188,10 +190,9 @@ AliMUONSegment* AliMUONSegment::CreateSegmentFromLinearExtrapToStation (Int_t St
   // The caller has the responsibility to delete this object.
   AliMUONSegment* extrapSegment = new AliMUONSegment(); // creates empty new segment
   // dZ from first hit of current Segment to first chamber of station "Station"
-  AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
-  Double_t dZ =
-    (&(pMUON->Chamber(2 * Station)))->Z() - (this->fHitForRecPtr1)->GetZ();
+  Double_t dZ =  z - this->GetZ();
   // Data in bending plane
+  extrapSegment->fZ = z;
   //  coordinate
   extrapSegment->fBendingCoor = this->fBendingCoor + this->fBendingSlope * dZ;
   //  slope
@@ -219,7 +220,7 @@ AliMUONSegment* AliMUONSegment::CreateSegmentFromLinearExtrapToStation (Int_t St
 }
 
   //__________________________________________________________________________
-AliMUONHitForRec* AliMUONSegment::CreateHitForRecFromLinearExtrapToChamber (Int_t Chamber, Double_t MCSfactor) const
+AliMUONHitForRec* AliMUONSegment::CreateHitForRecFromLinearExtrapToChamber ( Double_t z, Double_t MCSfactor) const
 {
   // Extrapolates linearly the current Segment (this) to chamber(0..) "Chamber".
   // Multiple Coulomb scattering calculated from "MCSfactor"
@@ -230,10 +231,9 @@ AliMUONHitForRec* AliMUONSegment::CreateHitForRecFromLinearExtrapToChamber (Int_
   // The caller has the responsibility to delete this object.
   AliMUONHitForRec* extrapHitForRec = new AliMUONHitForRec(); // creates empty new HitForRec
   // dZ from first hit of current Segment to chamber
-  AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
-  Double_t dZ =
-    (&(pMUON->Chamber(Chamber)))->Z() - (this->fHitForRecPtr1)->GetZ();
+  Double_t dZ = z - this->GetZ();
   // Data in bending plane
+  extrapHitForRec->SetZ(z);
   //  coordinate
   extrapHitForRec->SetBendingCoor(this->fBendingCoor + this->fBendingSlope * dZ);
   //  covariance, including multiple Coulomb scattering over dZ due to one chamber
@@ -318,6 +318,8 @@ void AliMUONSegment::UpdateFromStationTrackParam(AliMUONTrackParam *TrackParam, 
   // Non bending plane
   fNonBendingCoor = param0->GetNonBendingCoor(); // coordinate
   fNonBendingSlope = param0->GetNonBendingSlope(); // slope
+
+  fZ = param0->GetZ(); // z
 
   // Resolutions
   // cReso2 and sReso2 have to be subtracted here from the parametrization

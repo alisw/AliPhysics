@@ -39,7 +39,33 @@ AliMUONTrackHit::AliMUONTrackHit()
   fNextTrackHitWithSameHitForRec = 0;
   fPrevTrackHitWithSameHitForRec = 0;
 }
+  //__________________________________________________________________________
+AliMUONTrackHit::AliMUONTrackHit (const AliMUONTrackHit& theMUONTrackHit)
+  :  TObject(theMUONTrackHit)
+{
+  fTrackParam                    =  theMUONTrackHit.fTrackParam;
+  fHitForRecPtr                  =  theMUONTrackHit.fHitForRecPtr;
+  fNextTrackHitWithSameHitForRec =  theMUONTrackHit.fNextTrackHitWithSameHitForRec;
+  fPrevTrackHitWithSameHitForRec =  theMUONTrackHit.fPrevTrackHitWithSameHitForRec;
+}
+  //__________________________________________________________________________
+AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& theMUONTrackHit)
+{
+  // check assignement to self
+  if (this == &theMUONTrackHit)
+    return *this;
 
+  // base class assignement
+  TObject::operator=(theMUONTrackHit);
+
+  fTrackParam                    =  theMUONTrackHit.fTrackParam;
+  fHitForRecPtr                  =  theMUONTrackHit.fHitForRecPtr;
+  fNextTrackHitWithSameHitForRec = theMUONTrackHit.fNextTrackHitWithSameHitForRec;
+  fPrevTrackHitWithSameHitForRec = theMUONTrackHit.fPrevTrackHitWithSameHitForRec;
+
+  return *this;
+
+}
   //__________________________________________________________________________
 AliMUONTrackHit::AliMUONTrackHit(AliMUONHitForRec* Hit)
 {
@@ -58,28 +84,6 @@ AliMUONTrackHit::AliMUONTrackHit(AliMUONHitForRec* Hit)
   fNextTrackHitWithSameHitForRec = NULL;
   Hit->SetNTrackHits(Hit->GetNTrackHits() + 1);
 }
-
-  //__________________________________________________________________________
-AliMUONTrackHit::AliMUONTrackHit (const AliMUONTrackHit& theMUONTrackHit)
-  : TObject(theMUONTrackHit)
-{
-// Protected copy constructor
-
-  Fatal("AliMUONTrackHit", "Not implemented.");
-}
-
-  //__________________________________________________________________________
-AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  Fatal("operator=", "Not implemented.");
-    
-  return *this;  
-}
-
 
   //__________________________________________________________________________
 AliMUONTrackHit::~AliMUONTrackHit()

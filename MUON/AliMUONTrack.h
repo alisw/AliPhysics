@@ -41,6 +41,7 @@ class AliMUONTrack : public TObject
   void SetTrackParamAtVertex(void); // Set track parameters at vertex from last stations 4 & 5
   void SetTrackParamAtVertex(AliMUONTrackParam* TrackParam) {fTrackParamAtVertex = *TrackParam;}
   TClonesArray *GetTrackParamAtHit(void) const {return fTrackParamAtHit;}
+  void ResetTrackParamAtHit(void) { fTrackParamAtHit->Delete(); }
   void AddTrackParamAtHit(const AliMUONTrackParam *trackParam) 
     {new ((*fTrackParamAtHit)[fTrackParamAtHit->GetEntriesFast()]) AliMUONTrackParam(*trackParam);}
 
