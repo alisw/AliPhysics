@@ -66,9 +66,7 @@ class AliGenerator : public TNamed, public AliRndm
     void VertexExternal();
     virtual void VertexInternal();
     virtual void FinishRun();
-    virtual void SetMC(TGenerator *theMC) 
-	{if (!fgMCEvGen) fgMCEvGen =theMC;}
-
+    virtual void SetMC(TGenerator *theMC) {fMCEvGen =theMC;}
     AliGenerator & operator=(const AliGenerator &gen);
 
   // Getters
@@ -99,7 +97,7 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void   SetHighWaterMark(Int_t nt);
     
  protected:
-    static  TGenerator* fgMCEvGen; //Pointer to the generator
+    TGenerator* fMCEvGen;      //!Pointer to the generator
     Float_t     fThetaMin;     //Minimum theta of generation in radians
     Float_t     fThetaMax;     //Maximum theta of generation in radians
     Float_t     fPhiMin;       //Minimum phi of generation in radians

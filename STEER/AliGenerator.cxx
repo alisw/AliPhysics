@@ -44,7 +44,6 @@
 
 ClassImp(AliGenerator)
 
-TGenerator* AliGenerator::fgMCEvGen=0;
 
 //_______________________________________________________________________
 AliGenerator::AliGenerator():
@@ -220,9 +219,9 @@ AliGenerator::~AliGenerator()
   //
   fOrigin.Set(0);
   fOsigma.Set(0);
-  if (fgMCEvGen) {
-    delete fgMCEvGen;
-    fgMCEvGen=0;
+  if (fMCEvGen) {
+    delete fMCEvGen;
+    fMCEvGen=0;
   }
 }
 
