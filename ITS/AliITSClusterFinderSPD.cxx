@@ -287,7 +287,7 @@ void AliITSClusterFinderSPD::TracksInCluster()
 
   Int_t i, ix, iz, jx, jz, xstart, xstop, zstart, zstop, nclx, nclz;
   //  Int_t signal, track0, track1, track2;
-  Int_t trmax = 100;
+  const Int_t trmax = 100;
   Int_t cltracks[trmax], itr, tracki, ii, is, js, ie, ntr, tr0, tr1, tr2;
 
   for(i=0; i<nofClusters; i++) { 
