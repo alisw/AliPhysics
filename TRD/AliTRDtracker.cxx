@@ -15,6 +15,9 @@
                                                       
 /*
 $Log$
+Revision 1.23  2003/02/10 14:06:10  cblume
+Add tracking without tilted pads as option
+
 Revision 1.22  2003/01/30 15:19:58  cblume
 New set of  parameters
 
@@ -549,6 +552,9 @@ Int_t AliTRDtracker::PropagateBack(const TFile *inp, TFile *out) {
 	CookLabel(ps, 1-fLabelFraction);
 	UseClusters(ps);
       }
+      
+      // Propagate to outer reference plane [SR, GSI, 18.02.2003]
+      ps->PropagateTo(364.8);
       otrack_trd=ps;
       trdTree.Fill();
       cout<<found++<<'\r';

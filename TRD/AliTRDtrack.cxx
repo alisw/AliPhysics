@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2003/02/10 14:06:10  cblume
+Add tracking without tilted pads as option
+
 Revision 1.15  2003/01/27 16:34:49  cblume
 Update of tracking by Sergei and Chuncheng
 
@@ -105,7 +108,12 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
   if(s*s < 1) q *= TMath::Sqrt((1-s*s)/(1+t*t));
 
   fdQdl[0] = q;
-
+  
+  // initialisation [SR, GSI 18.02.2003] (i startd for 1)
+  for(Int_t i=1; i<kMAX_CLUSTERS_PER_TRACK; i++) {
+    fdQdl[i] = 0;
+    fIndex[i] = 0;
+  }
 }                              
            
 //_____________________________________________________________________________
@@ -140,6 +148,11 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t) {
     fdQdl[i]=t.fdQdl[i];
   }
 
+  // initialisation (i starts from n) [SR, GSI, 18.02.2003]
+  for(Int_t i=n; i<kMAX_CLUSTERS_PER_TRACK; i++) {
+    fdQdl[i] = 0;
+    fIndex[i] = 0;
+  }
 }                                
 
 //_____________________________________________________________________________
@@ -189,6 +202,11 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
   fCty=c[6 ];   fCtz=c[7 ];   fCte=c32;   fCtt=c[9 ];
   fCcy=c[10];   fCcz=c[11];   fCce=c42;   fCct=c[13]; fCcc=c[14];  
 
+  // Initialization [SR, GSI, 18.02.2003]
+  for(Int_t i=0; i<kMAX_CLUSTERS_PER_TRACK; i++) {
+    fdQdl[i] = 0;
+    fIndex[i] = 0;
+  }
 }              
 
 //____________________________________________________________________________
@@ -299,6 +317,9 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
     return 0;
   }
 
+  // track Length measurement [SR, GSI, 17.02.2003]
+  Double_t oldX = fX, oldY = fY, oldZ = fZ;  
+
   Double_t x1=fX, x2=x1+(xk-x1), dx=x2-x1, y1=fY, z1=fZ;
   Double_t c1=fC*x1 - fE;
   if((c1*c1) > 1) return 0;
@@ -366,6 +387,12 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   cc=fC;
   fC*=(1.- sqrt(p2+GetMass()*GetMass())/p2*dE);
   fE+=fX*(fC-cc);    
+
+  // track time measurement [SR, GSI 17.02.2002]
+  if (IsStartedTimeIntegral()) {
+    Double_t l2 = (fX-oldX)*(fX-oldX) + (fY-oldY)*(fY-oldY) + (fZ-oldZ)*(fZ-oldZ);
+    AddTimeStep(TMath::Sqrt(l2));
+  }
 
   return 1;            
 }     
