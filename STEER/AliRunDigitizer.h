@@ -90,6 +90,8 @@ public:
 // (index without mask)
   TParticle* GetParticle(Int_t i, Int_t input, Int_t event) const;
 
+// return TString with input file name  
+  TString GetInputFileName(const Int_t input, const Int_t order) const;
   
   Int_t     GetDebug() const {return fDebug;}
   void      SetDebug(Int_t level) {fDebug = level;}

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2002/06/07 09:18:47  jchudoba
+Changes to enable merging of ITS fast rec points. Although this class should be responsible for a creation of digits only, other solutions would be more complicated.
+
 Revision 1.15  2002/04/09 13:38:47  jchudoba
 Add const to the filename argument
 
@@ -630,3 +633,18 @@ void AliRunDigitizer::ExecuteTask(Option_t* option)
   fHasExecuted = kTRUE;
   return;
 }
+////////////////////////////////////////////////////////////////////////
+TString AliRunDigitizer::GetInputFileName(const Int_t input, const Int_t order) const 
+{
+// returns file name of the order-th file in the input stream input
+// returns empty string if such file does not exist
+// first input stream is 0
+// first file in the input stream is 0
+  TString fileName("");
+  if (input >= fNinputs) return fileName;
+  AliStream * stream = static_cast<AliStream*>(fInputStreams->At(input));
+  if (order > stream->GetNInputFiles()) return fileName;
+  fileName = stream->GetFileName(order);
+  return fileName;
+}
+////////////////////////////////////////////////////////////////////////
