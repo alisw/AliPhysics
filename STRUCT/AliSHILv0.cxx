@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.5  2000/06/12 19:40:00  morsch
+New structure of beam pipe and heating jacket.
+Optional outer Pb cone added. Not yet compatible with chamber inner radii.
+
 Revision 1.4  2000/04/03 08:13:40  fca
 Introduce extra scope for non ANSI compliant C++ compilers
 
@@ -103,6 +107,11 @@ void AliSHILv0::CreateGeometry()
   typedef enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 		kNiCuW=1720, kVacuum=1714, kAir=1714, kConcrete=1716,
 		kPolyCH2=1717, kSteel=1709, kInsulation=1713};	
+//
+// Material of the rear part of the shield
+  Int_t iHeavy=kNiCuW;
+  if (fPbCone) iHeavy=kPb;
+  
   
 //
 // Mother volume
@@ -461,7 +470,7 @@ void AliSHILv0::CreateGeometry()
   par2[23] = 30.;
 
 
-  gMC->Gsvolu("YGO2", "PCON", idtmed[kNiCuW+40], par2, 24);
+  gMC->Gsvolu("YGO2", "PCON", idtmed[iHeavy+40], par2, 24);
 //
 // Lead cone option replacing Tungsten 
 //
@@ -628,7 +637,7 @@ void AliSHILv0::CreateGeometry()
   rBox=par3[22]-0.1;
   Float_t r3=par3[25];
   
-  gMC->Gsvolu("YGO3", "PCON", idtmed[kNiCuW+40], par3, 27);
+  gMC->Gsvolu("YGO3", "PCON", idtmed[iHeavy+40], par3, 27);
 
   parPb[0]  = dl;
   parPb[1]  = parPb[10];
@@ -787,7 +796,7 @@ void AliSHILv0::CreateGeometry()
   par4[19] = rAbs;
   par4[20] = R43;
 
-  gMC->Gsvolu("YGO4", "PCON", idtmed[kNiCuW+40], par4, 21);
+  gMC->Gsvolu("YGO4", "PCON", idtmed[iHeavy+40], par4, 21);
 
   parPb[0]  = (zvac10-zvac9)/2.;
   parPb[1]  = parPb[3];
