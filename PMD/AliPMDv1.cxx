@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.35  2004/01/07 10:49:49  hristov
+Initialization to avoid runtime problems (valgrind)
+
 Revision 1.34  2003/12/18 04:25:03  bnandi
 overlap with beam pipe fixed and Gsposp changed to Gspos
 
@@ -722,6 +725,11 @@ void AliPMDv1::CreateMaterials()
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
   Float_t zsteel[4] = { 26.,24.,28.,14. };
   Float_t wsteel[4] = { .715,.18,.1,.005 };
+  // Mylar
+  Float_t aMylar[3]={1.00794,12.0107,15.9994};
+  Float_t zMylar[3]={1.,6.,8.};
+  Float_t wMylar[3]={0.041959,0.625017,0.333025};
+  Float_t dMylar   = 1.4;
   
   Int_t *idtmed = fIdtmed->GetArray()-599;
   Int_t isxfld = gAlice->Field()->Integ();
@@ -743,8 +751,8 @@ void AliPMDv1::CreateMaterials()
   AliMaterial(17, "POLYCARBONATE    $", 20., 10., 1.2, 34.6, 999.);
   AliMixture(19, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel); 
   // AliMaterial(31, "Xenon$", 131.3, 54., dxe, x0xe, 6.5e4);
-  
-  AliMaterial(96, "MYLAR$", 8.73, 4.55, 1.39, 28.7, 62.);
+  // AliMaterial(96, "MYLAR$", 8.73, 4.55, 1.39, 28.7, 62.);
+  AliMixture(96, "MYLAR$", aMylar, zMylar, dMylar, 3, wMylar);
   AliMaterial(97, "CONCR$", 20., 10., 2.5, 10.7, 40.);
   AliMaterial(98, "Vacum$", 1e-9, 1e-9, 1e-9, 1e16, 1e16);
   AliMaterial(99, "Air  $", 14.61, 7.3, .0012, 30420., 67500.);
