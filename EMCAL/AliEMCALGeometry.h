@@ -86,23 +86,23 @@ class AliEMCALGeometry : public AliGeometry {
 	// pseudorapidity and r=sqrt(x*x+y*y).
 	return r/TMath::Tan(AngleFromEta(eta));
 	}
-    Int_t TowerIndex(Int_t iz,Int_t iphi,Int_t ipre); // returns tower index
+    Int_t TowerIndex(Int_t iz,Int_t iphi,Int_t ipre) const; // returns tower index
     // returns tower indexs iz, iphi.
-    void TowerIndexes(Int_t index,Int_t &iz,Int_t &iphi,Int_t &ipre);
+    void TowerIndexes(Int_t index,Int_t &iz,Int_t &iphi,Int_t &ipre) const;
     // for a given tower index it returns eta and phi of center of that tower.
-    void EtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi);
+    void EtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi) const;
     // for a given eta and phi in the EMCAL it returns the tower index.
-    Int_t TowerIndexFromEtaPhi(Float_t eta,Float_t phi);
+    Int_t TowerIndexFromEtaPhi(Float_t eta,Float_t phi) const;
     // for a given eta and phi in the EMCAL it returns the pretower index.
-    Int_t PreTowerIndexFromEtaPhi(Float_t eta,Float_t phi);
+    Int_t PreTowerIndexFromEtaPhi(Float_t eta,Float_t phi) const;
     // Returns theta and phi (degree) for a given EMCAL cell indecated by relid
     void PosInAlice(const Int_t *relid,Float_t &theta,Float_t &phi);
     // Returns an array indicating the Tower/preshower, iz, and iphi for a
     // specific EMCAL indes.
-    Bool_t AbsToRelNumbering(Int_t AbsId, Int_t *relid);
+    Bool_t AbsToRelNumbering(Int_t AbsId, Int_t *relid) const;
     /*
     // Returns kTRUE if the two indexs are neighboring towers or preshowers.
-    Boot_t AliEMCALGeometry::AreNeighbours(Int_t index1,Int_t index2);
+    Boot_t AliEMCALGeometry::AreNeighbours(Int_t index1,Int_t index2) const;
  */
 
  protected:

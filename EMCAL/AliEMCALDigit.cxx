@@ -42,7 +42,7 @@
 ClassImp(AliEMCALDigit)
 
 //____________________________________________________________________________
-  AliEMCALDigit::AliEMCALDigit() 
+  AliEMCALDigit::AliEMCALDigit()  
 {
   // default ctor 
 
@@ -149,7 +149,7 @@ const Float_t AliEMCALDigit::GetEta() const
 {
   Float_t eta=-10., phi=-10.;
   Int_t id = GetId();
-  AliEMCALGeometry *g = AliEMCALGetter::GetInstance()->EMCALGeometry();
+  const AliEMCALGeometry *g = AliEMCALGetter::GetInstance()->EMCALGeometry();
   g->EtaPhiFromIndex(id,eta,phi);
   return eta ;
 }
@@ -159,7 +159,7 @@ const Float_t AliEMCALDigit::GetPhi() const
 {
   Float_t eta=-10., phi=-10.;
   Int_t id = GetId();
-  AliEMCALGeometry *g = AliEMCALGetter::GetInstance()->EMCALGeometry();
+  const AliEMCALGeometry *g = AliEMCALGetter::GetInstance()->EMCALGeometry();
   g->EtaPhiFromIndex(id,eta,phi);
   return phi ;
 }
