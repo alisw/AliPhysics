@@ -15,6 +15,9 @@
  
 /*
 $Log$
+Revision 1.25  2002/10/24 17:12:58  barbera
+ITS tracking V1 integrated with the last version of ITS PID
+
 Revision 1.24  2002/10/23 14:28:38  barbera
 Fixes added to get into account the new magnetic field conversion factor automatically
 
@@ -633,7 +636,7 @@ void AliITSTrackerV1::DoTracking(Int_t evNumber,Int_t minTr,Int_t maxTr,
 	 }
 	 else {
 		 mass = track->GetMass();
-		 cout << "Mass = " << mass << endl;
+//		 cout << "Mass = " << mass << endl;
 	 }
 	 
 	
