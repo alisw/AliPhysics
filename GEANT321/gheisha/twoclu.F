@@ -26,6 +26,8 @@ C
 #include "geant321/s_genio.inc"
 C
       REAL NUCSUP
+      INTEGER NIHIL
+      REAL RENORM,ZNOL,ATNOL
       DIMENSION SIDE(MXGKCU),C1PAR(5),G1PAR(5),NUCSUP(5)
       DIMENSION RNDM(3)
       DATA C1PAR/0.6,0.6,0.35,0.15,0.10/
@@ -44,6 +46,7 @@ C
       MX6=MX+6
       MX7=MX+7
       MX8=MX+8
+      CALL CORANH(NIHIL,NFL)
       EK=ENP(5)
       EN=ENP(6)
       P=ENP(7)
@@ -79,6 +82,9 @@ C**
 C** DISTRIBUTE PARTICLES IN FORWARD AND BACKWARD HEMISPHERE OF CMS
 C** OF THE HADRON NUCLEON INTERACTION
 C**
+      ZNOL = ZNO2
+      IF(NFL .EQ. 1)ZNOL = ZNOL -1
+      ATNOL = ATNO2 - 1 
       SIDE(1)= 1.
       SIDE(2)=-1.
       TARG=0.
@@ -121,9 +127,15 @@ C**
       IF(RNDM(1).GT.(10.-P)/6.) GOTO 3
       CALL GRNDM(RNDM,1)
       IF(RNDM(1).GT.ATNO2/300.) GOTO 3
+      IF(ATNOL .LT. 0.9) GOTO 3
       IPA(I)=14
       CALL GRNDM(RNDM,1)
-      IF(RNDM(1).GT.ZNO2/ATNO2) IPA(I)=16
+      IF(RNDM(1).GT.ZNOL/ATNOL)THEN
+      IPA(I)=16
+      ZNOL = ZNOL + 1
+      ENDIF
+      ZNOL = ZNOL -1
+      ATNOL = ATNOL -1
       TARG=TARG+1.
     3 CONTINUE
       TB=2.*IBACK
@@ -148,16 +160,22 @@ C**
       IPX=IFIX(P/3.)+1
       IF(IPX.GT.5) IPX=5
       DO 4 I=NT1,NT2
+      IF(ATNOL .GT. 0.99)THEN
       CALL GRNDM(RNDM,1)
       RAN=RNDM(1)
       IF(RAN.LT.NUCSUP(IPX)) GOTO 52
+      ENDIF
       CALL GRNDM(RNDM,1)
       IPA(I)=-(7+IFIX(RNDM(1)*3.0))
       GOTO 4
    52 IPA(I)=-16
-      PNRAT=1.-ZNO2/ATNO2
+      PNRAT=1.-ZNOL/ATNOL
       CALL GRNDM(RNDM,1)
-      IF(RNDM(1).GT.PNRAT) IPA(I)=-14
+      IF(RNDM(1).GT.PNRAT)THEN
+      IPA(I)=-14
+      ZNOL = ZNOL -1
+      ENDIF
+      ATNOL = ATNOL -1
       TARG=TARG+1.
     4 SIDE(I)=-2.
       NT=NT2
@@ -319,9 +337,6 @@ C**
 C**
 C** SET |T| AND |TMIN|
 C**
-      T=-1.0E10
-      CALL GRNDM(RNDM,1)
-      IF (B .NE. 0.0) T=LOG(1.-RNDM(1))/B
       CALL LENGTX(MX1,PIN)
       TACMIN=(PV(4,MX1) -PV(4,MX3))**2 -(PIN-PF)**2
 C**
@@ -329,6 +344,10 @@ C** CACULATE (SIN(TETA/2.)**2 AND COS(TETA), SET AZIMUTH ANGLE PHI
 C**
       DUMNVE=4.0*PIN*PF
       IF (DUMNVE .EQ. 0.0) DUMNVE=1.0E-10
+      RENORM = 1. - EXP(B*(TACMIN - DUMNVE))
+      T=-1.0E10
+      CALL GRNDM(RNDM,1)
+      IF (B .NE. 0.0) T=LOG(1.-RENORM*RNDM(1))/B
       CTET=-(T-TACMIN)/DUMNVE
       CTET=1.0-2.0*CTET
       IF (CTET .GT. 1.0) CTET=1.0
@@ -461,6 +480,8 @@ C**
       IF(PV(5,I).GT.0.5) TARG=TARG+1.
       CALL LOR(I,MX2,I)
    36 CONTINUE
+      IF(ABS(AMAS) .GT. 0.5)TARG = TARG -1
+      IF(NIHIL .GT. 0)TARG = TARG + 2
       IF(TARG.LT.0.5) TARG=1.
 C**
 C** SOMETIMES THE LEADING STRANGE PARTICLES ARE LOST , SET THEM BACK
@@ -698,7 +719,7 @@ C**
       CALL POISSO(BLACK,NBL)
       IF(NPRT(4))
      *WRITE(NEWBCD,3003) NBL,TEX
-      IF(IFIX(TARG)+NBL.GT.ATNO2) NBL=ATNO2-TARG
+      IF(NBL.GT.ATNOL) NBL=ATNOL
       IF(NT+NBL.GT.MXGKPV-2) NBL=MXGKPV-2-NT
       IF(NBL.LE.0) GOTO 445
       EKIN=TEX/NBL
@@ -719,9 +740,13 @@ C**
       IF(EKIN2.GT.TEX) EKIN1=TEX-(EKIN2-EKIN1)
       IF (EKIN1 .LT. 0.0) EKIN1=1.0E-6
       IPA1=16
-      PNRAT=1.-ZNO2/ATNO2
+      PNRAT=1.-ZNOL/ATNOL
       CALL GRNDM(RNDM,3)
-      IF(RNDM(1).GT.PNRAT) IPA1=14
+      IF(RNDM(1).GT.PNRAT)THEN
+      IPA1=14
+      ZNOL = ZNOL -1
+      ENDIF
+      ATNOL = ATNOL -1
       NT=NT+1
       SPALL=SPALL+1.
       COST=-1.0+RNDM(2)*2.0
@@ -762,6 +787,8 @@ C**
   444 CONTINUE
   445 TEX=ENP(3)
       IF(TEX.LT.0.001) GOTO 40
+      IF(ATNOL .LT. ZNOL + 1)GOTO 40
+      IF(ZNOL .LT. 1)GOTO 40
       BLACK=(1.5+1.25*TARG)*ENP(3)/(ENP(1)+ENP(3))
       CALL POISSO(BLACK,NBL)
       IF(NT+NBL.GT.MXGKPV-2) NBL=MXGKPV-2-NT
@@ -772,6 +799,8 @@ C**
       IF(NPRT(4))
      *WRITE(NEWBCD,3004) NBL,TEX
       DO 442 I=1,NBL
+      IF(ATNOL .LT. ZNOL + 1)GOTO 40
+      IF(ZNOL .LT. 1)GOTO 40
       CALL GRNDM(RNDM,1)
       IF(RNDM(1).LT.SPROB) GOTO 442
       IF(NT.EQ.MXGKPV-2) GOTO 442
@@ -793,12 +822,24 @@ C**
       PHI=TWPI*RNDM(2)
       RAN=RNDM(3)
       IPA(NT+1)=-30
-      IF(RAN.GT.0.60) IPA(NT+1)=-31
-      IF(RAN.GT.0.90) IPA(NT+1)=-32
+      ATNOL = ATNOL -2
+      ZNOL = ZNOL -1
+      IF(RAN.GT.0.60)THEN
+      IF(ATNOL .GT. ZNOL + 0.9)THEN
+      IPA(NT+1)=-31
+      ATNOL = ATNOL -1
+      IF(RAN.GT.0.90)THEN
+      IF((ATNOL .GT. 0.9) .AND. (ZNOL .GT. 0.9))THEN
+      IPA(NT+1)=-32
+      ATNOL = ATNOL -1
+      ZNOL = ZNOL -1
+      ENDIF
+      ENDIF
+      ENDIF
+      ENDIF
       SIDE(NT+1)=-4.
       PV(5,NT+1)=(ABS(IPA(NT+1))-28)*MP
       SPALL=SPALL+PV(5,NT+1)*1.066
-      IF(SPALL.GT.ATNO2) GOTO 40
       NT=NT+1
       PV(6,NT)=1.
       IF(IPA(NT).EQ.-32) PV(6,NT)=2.
@@ -813,20 +854,7 @@ C**
 C**
 C** STORE ON EVENT COMMON
 C**
-   40 CALL GRNDM(RNDM,1)
-      IF(RS.GT.(4.+RNDM(1)*1.)) GOTO 42
-      DO 41 I=1,NT
-      CALL LENGTX(I,ETB)
-      IF(ETB.LT.P) GOTO 41
-      ETF=P
-      PV(4,I)=SQRT(PV(5,I)**2+ETF**2)
-      DUMNVE=ETB
-      IF (DUMNVE .EQ. 0.0) DUMNVE=1.0E-10
-      ETF=ETF/DUMNVE
-      PV(1,I)=PV(1,I)*ETF
-      PV(2,I)=PV(2,I)*ETF
-      PV(3,I)=PV(3,I)*ETF
-   41 CONTINUE
+   40 CONTINUE
    42 EKIN=PV(4,MXGKPV)-ABS(PV(5,MXGKPV))
       EKIN1=PV(4,MXGKPV-1)-ABS(PV(5,MXGKPV-1))
       EKIN2=0.
