@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.15  2001/02/07 20:23:21  nilsen
+Fixed bug with HP and no unget in iostream.h. Now using putback instead.
+Other changes and fixes also included.
+
 Revision 1.14  2001/02/03 00:00:29  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -377,7 +381,7 @@ void AliITSgeom::ReadNewFile(const char *filename){
 		ssd = 0;
 		break;
 	    default:
-		Error("AliITSgeom::ReadNewFile","Unknown fShape type");
+		Error("ReadNewFile","Unknown fShape type number=%d c=%c",ldet,c);
 		for(;fp->get(c)==NULL,c!='\n';); // skip to end of line.
 		break;
 	    } // end switch
@@ -392,7 +396,7 @@ void AliITSgeom::ReadNewFile(const char *filename){
 	    m = 0;
 	    break;
 	default:
-	    Error("AliITSgeom::ReadNewFile","Data line");
+	    Error("ReadNewFile","Data line i=%d c=%c",i,c);
 	    for(;fp->get(c)==NULL,c!='\n';); // skip this line
 	    break;
 	} // end switch i
@@ -505,7 +509,7 @@ TryAgain:
                   &l,&a,&d,&x,&y,&z,&o,&p,&q,&r,&s,&t);
       if(l>lm) lm = l;
       if(l<1 || l>fNlayers) {
-         printf("error in file %s layer=%d min. is 1 max is %d/n",
+         printf("error in file %s layer=%d min. is 1 max is %d\n",
                  filename,l,fNlayers);
          continue;
       }// end if l
