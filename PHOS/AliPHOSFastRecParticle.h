@@ -22,15 +22,15 @@
 
 typedef TClonesArray  FastRecParticlesList ; 
 
-const static Int_t kUNDEFINED     = -1; 
-const static Int_t kGAMMA         = 0 ; 
-const static Int_t kELECTRON      = 1 ;
-const static Int_t kNEUTRAL       = 2 ;  
-const static Int_t kCHARGED       = 3 ;  
-const static Int_t kCHARGEDHADRON = 4 ;  
-const static Int_t kNEUTRALHADRON = 5 ;  
-const static Int_t kNEUTRALEM     = 6 ;  
-const static Int_t kGAMMAHADRON   = 7 ; 
+const static Int_t kUNDEFINED =-1 ;
+const static Int_t kNEUTRAL_EM = 0 ;
+const static Int_t kNEUTRAL_HA = 1 ;
+const static Int_t kGAMMA      = 2 ; 
+const static Int_t kGAMMA_HA   = 3 ; 
+const static Int_t kABSURD_EM  = 4 ;
+const static Int_t kABSURD_HA  = 5 ;
+const static Int_t kELECTRON   = 6 ;
+const static Int_t kCHARGED_HA = 7 ;
 
 
 class AliPHOSFastRecParticle : public TParticle {

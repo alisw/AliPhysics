@@ -20,7 +20,7 @@
 // Construct histograms and displays them.
 // Use the macro EditorBar.C for best access to the functionnalities
 //
-//*-- Author: Y. Schutz (SUBATECH) 
+//*-- Author: Y. Schutz (SUBATECH) & Gines Martinez (SUBATECH)
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
@@ -176,7 +176,7 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
           if (ievent==0)  cout << "AnalyzeManyEvents > " << "Starting Analyzing " << endl ; 
 	  //========== Create the Clusterizer
 	  fClu = new AliPHOSClusterizerv1() ; 
-	  fClu->SetEmcEnergyThreshold(0.025) ; 
+	  fClu->SetEmcEnergyThreshold(0.05) ; 
 	  fClu->SetEmcClusteringThreshold(0.50) ; 
 	  fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
 	  fClu->SetPpsdClusteringThreshold(0.0000001) ; 
@@ -266,25 +266,25 @@ void AliPHOSAnalyze::AnalyzeOneEvent(Int_t evt)
 		      //fhElectronPositionY->Fill(recpart. ) ; 
 		      cout << "ELECTRON" << endl;
 		      break;
-		    case kNEUTRALHADRON:
+		    case kNEUTRAL_HA:
 		      fhNeutralHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhNeutralHadronPositionX->Fill(recpart. ) ;
 		      //fhNeutralHadronPositionY->Fill(recpart. ) ; 
 		      cout << "NEUTRAl HADRON" << endl;
 		      break ;
-		    case kNEUTRALEM:
+		    case kNEUTRAL_EM:
 		      fhNeutralEMEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhNeutralEMPositionX->Fill(recpart. ) ;
 		      //fhNeutralEMPositionY->Fill(recpart. ) ; 
 		      //cout << "NEUTRAL EM" << endl;
 		      break ;
-		    case kCHARGEDHADRON:
+		    case kCHARGED_HA:
 		      fhChargedHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhChargedHadronPositionX->Fill(recpart. ) ;
 		      //fhChargedHadronPositionY->Fill(recpart. ) ; 
 		      cout << "CHARGED HADRON" << endl;
 		      break ;
-		    case kGAMMAHADRON:
+		    case kGAMMA_HA:
 		      fhPhotonHadronEnergy->Fill(recparticle->Energy() ) ; 
 		      //fhPhotonHadronPositionX->Fill(recpart. ) ;
 		      //fhPhotonHadronPositionY->Fill(recpart. ) ; 
@@ -396,7 +396,7 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
 
     fClu =  new AliPHOSClusterizerv1() ; 
     fClu->SetEmcEnergyThreshold(0.030) ; 
-    fClu->SetEmcClusteringThreshold(1.0) ; 
+    fClu->SetEmcClusteringThreshold(0.50) ; 
     fClu->SetPpsdEnergyThreshold    (0.0000002) ; 
     fClu->SetPpsdClusteringThreshold(0.0000001) ; 
     fClu->SetLocalMaxCut(0.03) ;
@@ -414,10 +414,13 @@ Bool_t AliPHOSAnalyze::Init(Int_t evt)
     
     fPID = new AliPHOSPIDv1() ;
     cout <<  "AnalyzeOneEvent > using particle identifier " << fPID->GetName() << endl ; 
-    
+    //fPID->SetShowerProfileCuts(Float_t l1m, Float_t l1M, Float_t l2m, Float_t l2M) ; 
+    fPID->SetShowerProfileCuts(0.7, 2.0 , 0.6 , 1.5) ; 
+
     //========== Creates the Reconstructioner  
     
-    fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ;     
+    fRec = new AliPHOSReconstructioner(fClu, fTrs, fPID) ;
+    fRec -> SetDebugReconstruction(kTRUE);     
     
     //=========== Connect the various Tree's for evt
     

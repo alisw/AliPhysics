@@ -47,7 +47,7 @@ ClassImp(AliPHOSRecParticle)
   fPx               = kenergy * momdir.X() ; 
   fPy               = kenergy * momdir.Y() ; 
   fPz               = kenergy * momdir.Z() ; 
-  fType             = kUNDEFINED ;  
+  fType             = kUNDEFINED;  
   fE                = kenergy ;    // !!! all particles have mass = 0 
 }
 

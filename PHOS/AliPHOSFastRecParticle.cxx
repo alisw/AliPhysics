@@ -183,20 +183,17 @@ TString AliPHOSFastRecParticle::Name()
    case kELECTRON:
      name = "ELECTRON" ;
     break ; 
-  case kNEUTRAL:
-    name = "NEUTRAL" ;
+   case kCHARGED_HA:
+    name = "CHARGED_HA" ;
     break ; 
-   case kCHARGEDHADRON:
-    name = "CHARGED HADRON" ;
+  case kNEUTRAL_HA:
+    name = "NEUTRAL_HA" ; 
     break ; 
-  case kNEUTRALHADRON:
-    name = "NEUTRAL HADRON" ; 
+  case kNEUTRAL_EM:
+    name = "NEUTRAL_EM" ; 
     break ; 
-  case kNEUTRALEM:
-    name = "NEUTRAL EM" ; 
-    break ; 
-  case kGAMMAHADRON:
-    name = "PHOTON HADRON" ; 
+  case kGAMMA_HA:
+    name = "PHOTON_HA" ; 
     break ; 
 
   }

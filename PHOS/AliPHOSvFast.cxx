@@ -352,26 +352,26 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
     else {
       ran = fRan.Rndm() ; 
       if( ran <= 0.9498 )
-	rv = kNEUTRALEM ; 
+	rv = kNEUTRAL_EM ; 
       else
-	rv = kNEUTRALHADRON ; 
+	rv = kNEUTRAL_HA ; 
     }     
     break ; 
 
   case 2112:  // it's a neutron
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9998 )
-      rv = kNEUTRALHADRON ; 
+      rv = kNEUTRAL_HA ; 
     else 
-      rv = kNEUTRALEM ; 
+      rv = kNEUTRAL_EM ; 
     break ; 
 
   case -2112: // it's a anti-neutron
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9984 )
-      rv = kNEUTRALHADRON ; 
+      rv = kNEUTRAL_HA ; 
     else 
-      rv = kNEUTRALEM ; 
+      rv = kNEUTRAL_EM ; 
     break ; 
     
   case 11:    // it's a electron
@@ -379,7 +379,7 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
     if ( ran <= 0.9996 )
       rv = kELECTRON ; 
     else 
-      rv = kCHARGEDHADRON ; 
+      rv = kCHARGED_HA ; 
     break; 
 
   case -11:   // it's a positon
@@ -387,13 +387,13 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
     if ( ran <= 0.9996 )
       rv = kELECTRON ; 
     else 
-      rv = kCHARGEDHADRON ; 
+      rv = kCHARGED_HA ; 
     break; 
 
   case -1:    // it's a charged
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9996 )
-      rv = kCHARGEDHADRON ; 
+      rv = kCHARGED_HA ; 
     else 
       rv = kGAMMA ; 
 

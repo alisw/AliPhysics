@@ -19,7 +19,7 @@
 // Implementation version v1 of the PHOS particle identifier 
 // Identification is based on information from PPSD and EMC
 //                  
-//*-- Author: Yves Schutz (SUBATECH)
+//*-- Author: Yves Schutz (SUBATECH)  & Gines Martinez (SUBATECH)
 
 
 // --- ROOT system ---
@@ -47,53 +47,31 @@ void  AliPHOSPIDv1::MakeParticles(TrackSegmentsList * trsl, RecParticlesList * r
   Int_t index = 0 ; 
   AliPHOSRecParticle * rp ; 
   Int_t type ; 
+  Int_t shower_profile;  // 0 narrow and 1 wide
+  Int_t cpv_detector;  // 1 hit and 0 no hit
+  Int_t pc_detector;  // 1 hit and 0 no hit
 
   while ( (tracksegment = (AliPHOSTrackSegment *)next()) ) {
     new( (*rpl)[index] ) AliPHOSRecParticle(tracksegment) ;
     rp = (AliPHOSRecParticle *)rpl->At(index) ; 
+    AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ; 
+    Float_t * lambda = new Float_t[2]; 
+    recp->GetElipsAxis(lambda) ; 
 
-    // try to figure out the type of particle:
-    //    1. just looking at the PPSD information 
-    
-    if( tracksegment->GetPpsdUpRecPoint() == 0 ) {     // Neutral
-      
-      if( tracksegment->GetPpsdLowRecPoint() == 0 )    // Neutral  
-	type = kNEUTRAL ;   
-      else {    // check the shower profile       
-	AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ; 
-	Float_t * lambda = new Float_t[2]; 
-	recp->GetElipsAxis(lambda) ; 
-	if ( ( lambda[0] > fLambda1m && lambda[0] < fLambda1M ) && // shower profile cut
-	     ( lambda[1] > fLambda2m && lambda[1] < fLambda2M ) )	
-	  type = kGAMMA ;                      // a well identified photon 
-	else 
-	  type = kGAMMAHADRON ;                // looks like a photon but is a hadron (most likely)  
-      }
-    } // Neutral
-    else                            // Charged           
-      type = kCHARGED ;   
-    
-    //   2. from the shower profile analysis
-    if ( type == kNEUTRAL ) { 
-      AliPHOSEmcRecPoint * recp = tracksegment->GetEmcRecPoint() ; 
-      Float_t * lambda = new Float_t[2]; 
-      recp->GetElipsAxis(lambda) ; 
-      if ( ( lambda[0] > fLambda1m && lambda[0] < fLambda1M ) && // shower profile cut
-	   ( lambda[1] > fLambda2m && lambda[1] < fLambda2M ) )
-	type = kNEUTRALEM ; 
-      else 
-	type = kNEUTRALHADRON ; 
-      delete lambda ; 
-   }
-
-    //   3. from the shower dispersion 
-    if (type == kCHARGED) { 
-      
-      if( tracksegment->GetEmcRecPoint()->GetDispersion() > fCutOnDispersion)  // shower dispersion cut
-	type = kCHARGEDHADRON ;
-	//     else  
-	//	type = kELECTRON ; 
-    } 
+ // Looking at the lateral development of the shower
+    if ( ( lambda[0] > fLambda1m && lambda[0] < fLambda1M ) && // shower profile cut
+	 ( lambda[1] > fLambda2m && lambda[1] < fLambda2M ) )	      shower_profile = 0 ;   // NARROW PROFILE   
+    else      shower_profile = 1 ;// WIDE PROFILE
+  
+    // Looking at the photon conversion detector
+    if( tracksegment->GetPpsdLowRecPoint() == 0 )   pc_detector = 0;  // No hit
+    else      pc_detector = 1;  // hit
+  
+    // Looking at the photon conversion detector
+    if( tracksegment->GetPpsdUpRecPoint() == 0 )         cpv_detector = 0;  // No hit
+    else      cpv_detector = 1;  // Hit
+     
+    type = shower_profile + 2*pc_detector + 4*cpv_detector;
     rp->SetType(type) ; 
     index++ ; 
   }
