@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2000/10/07 15:33:07  barbera
+Small corrections to the ITSV mother volume
+
 Revision 1.3  2000/10/07 13:06:50  barbera
 Some new materials and media defined
 
@@ -447,15 +450,25 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   // SERVICES
   
   
-  // --- Define cables at the end of the ITS cones
+  // --- Define cables at the end of the ITS cones - copper part
   
   dgh[0] = 45.;
-  dgh[1] = 56.;
+  dgh[1] = 45.+1.0;
   dgh[2] = 9.75;
   
-  gMC->Gsvolu("ICA1", "TUBE", idtmed[281], dgh, 3);  
-  gMC->Gspos("ICA1", 1, "ITSV", 0., 0., 86.45, 0, "ONLY");
-  gMC->Gspos("ICA1", 2, "ITSV", 0., 0., -86.45, idrotm[200], "ONLY");
+  gMC->Gsvolu("ICCU", "TUBE", idtmed[279], dgh, 3);  
+  gMC->Gspos("ICCU", 1, "ITSV", 0., 0., 86.45, 0, "ONLY");
+  gMC->Gspos("ICCU", 2, "ITSV", 0., 0., -86.45, idrotm[200], "ONLY");
+  
+  // --- Define cables at the end of the ITS cones - carbon part
+  
+  dgh[0] = 45.+1.0;
+  dgh[1] = 45.+1.0+1.5;
+  dgh[2] = 9.75;
+  
+  gMC->Gsvolu("ICCC", "TUBE", idtmed[274], dgh, 3);  
+  gMC->Gspos("ICCC", 1, "ITSV", 0., 0., 86.45, 0, "ONLY");
+  gMC->Gspos("ICCC", 2, "ITSV", 0., 0., -86.45, idrotm[200], "ONLY");  
   
   // --- Define patch panels at the end of the ITS cones
   
@@ -463,26 +476,57 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dgh[1] = 56.;
   dgh[2] = 2.25;
   
-  gMC->Gsvolu("IPAN", "TUBE", idtmed[282], dgh, 3);  // check medium !!!  
+  gMC->Gsvolu("IPAN", "TUBE", idtmed[285], dgh, 3);  
   gMC->Gspos("IPAN", 1, "ITSV", 0., 0., 98.45, 0, "ONLY");  
   gMC->Gspos("IPAN", 2, "ITSV", 0., 0., -98.45, idrotm[200], "ONLY"); 
   
-  // --- Define cables/cooling below the TPC 
+  // --- Define cables/cooling below the TPC - copper part
   
   dgh[0] = 0.;
   dgh[1] = 360.;
   dgh[2] = 2.;
   dgh[3] = 100.7;
   dgh[4] = 45.2;
-  dgh[5] = 50.53;    // same cross section
+  dgh[5] = 45.2+1.0;    
   dgh[6] = xltpc;
   dgh[7] = 61.8;
-  dgh[8] = 65.8;    // same cross section
-  gMC->Gsvolu("ICC1", "PCON", idtmed[283], dgh, 9);    
-  gMC->Gspos("ICC1", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
-  gMC->Gspos("ICC1", 2, "ITSV", 0., 0., 0., idrotm[200], "ONLY"); 
+  dgh[8] = 61.8+1.0;    
+  gMC->Gsvolu("ICU1", "PCON", idtmed[279], dgh, 9);    
+  gMC->Gspos("ICU1", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
+  gMC->Gspos("ICU1", 2, "ITSV", 0., 0., 0., idrotm[200], "ONLY"); 
   
-  // --- Define cables/cooling behind the TPC 
+  // --- Define cables/cooling below the TPC - carbon part
+  
+  dgh[0] = 0.;
+  dgh[1] = 360.;
+  dgh[2] = 2.;
+  dgh[3] = 100.7;
+  dgh[4] = 45.2+1.0;
+  dgh[5] = 45.2+1.0+1.5;    
+  dgh[6] = xltpc;
+  dgh[7] = 61.8+1.0;
+  dgh[8] = 61.8+1.0+1.5;    
+  gMC->Gsvolu("ICC1", "PCON", idtmed[274], dgh, 9);    
+  gMC->Gspos("ICC1", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
+  gMC->Gspos("ICC1", 2, "ITSV", 0., 0., 0., idrotm[200], "ONLY");   
+  
+  
+  // --- Define cables/cooling behind the TPC - copper part
+  
+  dgh[0] = 0.;
+  dgh[1] = 360.;
+  dgh[2] = 2.;
+  dgh[3] = xltpc+1.5;
+  dgh[4] = 62.5;
+  dgh[5] = 74.5;
+  dgh[6] = xltpc+1.5+1.0;
+  dgh[7] = 62.5;
+  dgh[8] = 74.5;    
+  gMC->Gsvolu("ICU2", "PCON", idtmed[279], dgh, 9);    
+  gMC->Gspos("ICU2", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
+  gMC->Gspos("ICU2", 2, "ITSV", 0., 0., 0., idrotm[200], "ONLY");   
+  
+  // --- Define cables/cooling behind the TPC - carbon part
   
   dgh[0] = 0.;
   dgh[1] = 360.;
@@ -490,12 +534,12 @@ void AliITSvPPRcoarsesymm::CreateGeometry(){
   dgh[3] = xltpc;
   dgh[4] = 62.5;
   dgh[5] = 74.5;
-  dgh[6] = xltpc+4.;
+  dgh[6] = xltpc+1.5;
   dgh[7] = 62.5;
   dgh[8] = 74.5;    
-  gMC->Gsvolu("ICC2", "PCON", idtmed[283], dgh, 9);    
+  gMC->Gsvolu("ICC2", "PCON", idtmed[274], dgh, 9);    
   gMC->Gspos("ICC2", 1, "ITSV", 0., 0., 0., 0, "ONLY");  
-  gMC->Gspos("ICC2", 2, "ITSV", 0., 0., 0., idrotm[200], "ONLY");   
+  gMC->Gspos("ICC2", 2, "ITSV", 0., 0., 0., idrotm[200], "ONLY");     
     
   // --- Define hook to the TPC on other side w.r.t. the absorber
   
@@ -698,16 +742,17 @@ void AliITSvPPRcoarsesymm::CreateMaterials(){
   AliMaterial(77, "GEN Vacuum$", 1e-16, 1e-16, 1e-16, 1e16, 1e16);
   AliMixture( 78, "GEN POLYETHYL$", apoly, zpoly, .95, -2, wpoly);
   AliMixture( 79, "GEN SERVICES$",  aserv, zserv, 4.68, 4, wserv);
-  AliMaterial(80, "GEN Copper$", 63.546, 29., 8.96, 1.43, 999.);
+  AliMaterial(80, "GEN Copper$", 63.546, 29., 8.96, 1.43, 999.);  
   // After a call with ratios by number (negative number of elements), 
   // the ratio array is changed to the ratio by weight, so all successive 
   // calls with the same array must specify the number of elements as 
   // positive 
   AliMixture(81, "GEN Water $", awat, zwat, denswat, 2, wwat);
-  AliMaterial(82, "GEN Cables$", 12.011, 6., 2.265, 18.8, 999.);  // check !!!
-  AliMaterial(83, "GEN patch pan$", 12.011, 6., 2.265, 18.8, 999.);  // check !!!  
-  AliMaterial(84, "GEN serv$", 12.011, 6., 2.265, 18.8, 999.);  // check !!!  
+  //AliMaterial(82, "GEN Cables$", 12.011, 6., 2.265, 18.8, 999.);  // check !!!
+  //AliMaterial(83, "GEN patch pan$", 12.011, 6., 2.265, 18.8, 999.);  // check !!!  
+  //AliMaterial(84, "GEN serv$", 12.011, 6., 2.265, 18.8, 999.);  // check !!!  
   AliMixture(85, "GEN Inox$", asteel, zsteel, 7.88, 4, wsteel);
+  AliMaterial(86, "GEN Al$",      26.981539, 13., 2.6989, 8.9, 999);
   // ** 
   AliMedium(75,"GEN C$",        75, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(76,"GEN Air$",      76, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
@@ -716,10 +761,12 @@ void AliITSvPPRcoarsesymm::CreateMaterials(){
   AliMedium(79,"GEN SERVICES$", 79, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(80,"GEN Copper$",   80, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(81,"GEN Water $",   81, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(82,"GEN Cables$",   82, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
-  AliMedium(83,"GEN patch pan$",83, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);  
-  AliMedium(84,"GEN serv$",     84, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  //AliMedium(82,"GEN Cables$",   82, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  //AliMedium(83,"GEN patch pan$",83, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);  
+  //AliMedium(84,"GEN serv$",     84, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
   AliMedium(85,"GEN Inox$",     85, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+  AliMedium(86, "GEN Al$",      86, 0,isxfld,sxmgmx, 10., .01, .1, .003, .003);
+
 }
 //_____________________________________________________________________________
 void AliITSvPPRcoarsesymm::Init(){
