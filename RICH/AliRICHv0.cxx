@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.12  2000/06/13 13:06:28  jbarbosa
+  Fixed compiling error for HP (multiple declaration)
+
   Revision 1.11  2000/06/12 15:35:44  jbarbosa
   Cleaned up version.
 
@@ -138,6 +141,7 @@ AliRICHv0::AliRICHv0(const char *name, const char *title)
       SetSegmentationModel(i, segmentationV0);
       SetResponseModel(i, responseV0);
       SetNsec(i,1);
+      SetDebugLevel(0);
     }
 }
 
@@ -615,7 +619,8 @@ void AliRICHv0::CreateMaterials()
     // --- Photon energy (GeV) 
     // --- Refraction indexes 
     for (i = 0; i < 26; ++i) {
-	rIndexFreon[i] = ppckov[i] * .0172 * 1e9 + 1.177;
+      rIndexFreon[i] = ppckov[i] * .0172 * 1e9 + 1.177;
+      //rIndexFreon[i] = 1;
 	//printf ("rIndexFreon: %e \n efficCsI: %e for energy: %e\n",rIndexFreon[i], efficCsI[i], ppckov[i]);
     }
             
@@ -1000,12 +1005,12 @@ void AliRICHv0::Init()
      
     printf("*                            Pads            : %3dx%3d                          *\n",segmentation->Npx(),segmentation->Npy());
     printf("*                            Pad size        : %5.2f x%5.2f mm2                 *\n",segmentation->Dpx(),segmentation->Dpy()); 
-    printf("*                            Gap Thickness   : %5.1f mm                         *\n",geometry->GetGapThickness());
-    printf("*                            Radiator Width  : %5.1f mm                         *\n",geometry->GetQuartzWidth());
-    printf("*                            Radiator Length : %5.1f mm                         *\n",geometry->GetQuartzLength());
-    printf("*                            Freon Thickness : %5.1f mm                         *\n",geometry->GetFreonThickness());
+    printf("*                            Gap Thickness   : %5.1f cm                         *\n",geometry->GetGapThickness());
+    printf("*                            Radiator Width  : %5.1f cm                         *\n",geometry->GetQuartzWidth());
+    printf("*                            Radiator Length : %5.1f cm                         *\n",geometry->GetQuartzLength());
+    printf("*                            Freon Thickness : %5.1f cm                         *\n",geometry->GetFreonThickness());
     printf("*                            Charge Slope    : %5.1f ADC                        *\n",response->ChargeSlope());
-    printf("*                            Feedback Prob.  : %5.2f %%                          *\n",response->AlphaFeedback());
+    printf("*                            Feedback Prob.  : %5.2f %%                         *\n",response->AlphaFeedback()*100);
     printf("*                                                                               *\n");
     printf("*                                   Success!                                    *\n");
     printf("*                                                                               *\n");
