@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2001/12/05 08:51:56  hristov
+The default constructor now creates no objects (thanks to r.Brun). Some corrections required by the previous changes.
+
 Revision 1.16  2001/11/20 09:27:55  hristov
 Possibility to investigate a primary of not yet loaded particle (I.Hrivnacova)
 
@@ -127,7 +130,6 @@ AliStack::~AliStack()
   // Destructor
   //
   
-  delete fParticleBuffer;
   if (fParticles) {
     fParticles->Delete();
     delete fParticles;
