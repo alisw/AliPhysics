@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/03/30 14:40:14  cblume
+Update of the digitization parameter
+
 Revision 1.6  2000/11/01 14:53:20  cblume
 Merge with TRD-develop
 
@@ -76,6 +79,7 @@ Add new TRD classes
 #include "AliRun.h"
 #include "AliTRD.h"
 #include "AliTRDclusterizer.h"
+#include "AliTRDcluster.h"
 #include "AliTRDrecPoint.h"
 #include "AliTRDgeometry.h"
 
@@ -88,8 +92,11 @@ AliTRDclusterizer::AliTRDclusterizer():TNamed()
   // AliTRDclusterizer default constructor
   //
 
-  fInputFile = NULL;
-  fEvent     = 0;
+  fInputFile   = NULL;
+  fOutputFile  = NULL;
+  fClusterTree = NULL;
+  fEvent       = 0;
+  fVerbose     = 0;
 
 }
 
@@ -101,10 +108,11 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t* name, const Text_t* title)
   // AliTRDclusterizer default constructor
   //
 
-  fInputFile = NULL;
-  fEvent     = 0;
-
-  Init();
+  fInputFile   = NULL;
+  fOutputFile  = NULL;
+  fClusterTree = NULL;
+  fEvent       = 0;
+  fVerbose     = 0;
 
 }
 
@@ -131,6 +139,15 @@ AliTRDclusterizer::~AliTRDclusterizer()
     delete fInputFile;
   }
 
+  if (fOutputFile) {
+    fOutputFile->Close();
+    delete fOutputFile;
+  }
+
+  if (fClusterTree) {
+    delete fClusterTree;
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -152,22 +169,76 @@ void AliTRDclusterizer::Copy(TObject &c)
   // Copy function
   //
 
-  ((AliTRDclusterizer &) c).fInputFile = NULL;
-  ((AliTRDclusterizer &) c).fEvent     = 0;  
-
-}
-
-//_____________________________________________________________________________
-void AliTRDclusterizer::Init()
-{
-  //
-  // Initializes the cluster finder
-  //
+  ((AliTRDclusterizer &) c).fInputFile   = NULL;
+  ((AliTRDclusterizer &) c).fOutputFile  = NULL;
+  ((AliTRDclusterizer &) c).fClusterTree = NULL;
+  ((AliTRDclusterizer &) c).fEvent       = 0;  
+  ((AliTRDclusterizer &) c).fVerbose     = fVerbose;  
 
 }
 
 //_____________________________________________________________________________
 Bool_t AliTRDclusterizer::Open(const Char_t *name, Int_t nEvent)
+{
+  //
+  // Opens the AliROOT file. Output and input are in the same file
+  //
+
+  OpenInput(name,nEvent);
+  OpenOutput(name);
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDclusterizer::Open(const Char_t *inname, const Char_t *outname
+                              , Int_t nEvent)
+{
+  //
+  // Opens the AliROOT file. Output and input are in different files
+  //
+
+  OpenInput(inname,nEvent);
+  OpenOutput(outname);
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDclusterizer::OpenOutput(const Char_t *name)
+{
+  //
+  // Open the output file
+  //
+
+  TDirectory *savedir = NULL;
+
+  if (!fInputFile) return kFALSE;
+
+  if (strcmp(name,fInputFile->GetName()) != 0) {
+    savedir = gDirectory;
+    printf("AliTRDclusterizer::OpenOutput -- ");
+    printf("Open the output file %s.\n",name);
+    fOutputFile = new TFile(name,"RECREATE");
+  }
+
+  // Create a tree for the cluster
+  fClusterTree = new TTree("ClusterTree","Tree with TRDcluster");
+  TObjArray *ioArray = 0;
+  fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
+
+  if (savedir) {
+    savedir->cd();
+  }
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDclusterizer::OpenInput(const Char_t *name, Int_t nEvent)
 {
   //
   // Opens a ROOT-file with TRD-hits and reads in the digits-tree
@@ -176,23 +247,21 @@ Bool_t AliTRDclusterizer::Open(const Char_t *name, Int_t nEvent)
   // Connect the AliRoot file containing Geometry, Kine, and Hits
   fInputFile = (TFile*) gROOT->GetListOfFiles()->FindObject(name);
   if (!fInputFile) {
-    printf("AliTRDclusterizer::Open -- ");
+    printf("AliTRDclusterizer::OpenInput -- ");
     printf("Open the ALIROOT-file %s.\n",name);
     fInputFile = new TFile(name,"UPDATE");
   }
   else {
-    printf("AliTRDclusterizer::Open -- ");
+    printf("AliTRDclusterizer::OpenInput -- ");
     printf("%s is already open.\n",name);
   }
 
-  // Get AliRun object from file or create it if not on file
+  // Get AliRun object from file
+  gAlice = (AliRun *) fInputFile->Get("gAlice");
   if (!(gAlice)) {
-    gAlice = (AliRun *) fInputFile->Get("gAlice");
-    if (!(gAlice)) {
-      printf("AliTRDclusterizer::Open -- ");
-      printf("Could not find AliRun object.\n");
-      return kFALSE;
-    }
+    printf("AliTRDclusterizer::OpenInput -- ");
+    printf("Could not find AliRun object.\n");
+    return kFALSE;
   }
 
   fEvent = nEvent;
@@ -200,17 +269,18 @@ Bool_t AliTRDclusterizer::Open(const Char_t *name, Int_t nEvent)
   // Import the Trees for the event nEvent in the file
   Int_t nparticles = gAlice->GetEvent(fEvent);
   if (nparticles <= 0) {
-    printf("AliTRDclusterizer::Open -- ");
+    printf("AliTRDclusterizer::OpenInput -- ");
     printf("No entries in the trees for event %d.\n",fEvent);
     return kFALSE;
   }
 
-  // Create a tree for the reconstructed points
-  TTree *recPointTree = new TTree("ClusterTree","Tree with clusters and rec. points");
-  TObjArray *ioArray = 0;
-  recPointTree->Branch("TRDrecPoints","TObjArray",&ioArray,32000,0);
-//   TObjArray *iopointer = 0;
-//   recPointTree->Branch("Clusters","TObjArray",&iopointer,32000,0);
+  // Get the TRD object
+  fTRD = (AliTRD*) gAlice->GetDetector("TRD"); 
+  if (!fTRD) {
+    printf("AliTRDclusterizer::OpenInput -- ");
+    printf("No TRD detector object found\n");
+    return kFALSE;
+  }
 
   return kTRUE;
 
@@ -220,59 +290,68 @@ Bool_t AliTRDclusterizer::Open(const Char_t *name, Int_t nEvent)
 Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 {
   //
-  // Fills TRDrecPoints branch in TRDrecPoints## tree with rec. points 
+  // Fills TRDcluster branch in the tree with the clusters 
   // found in detector = det. For det=-1 writes the tree. 
-  // For det=-2 recreates the tree.
   //
 
-  Char_t treeName[14];
-  sprintf(treeName,"TRDrecPoints%d", fEvent);
+  if ((det < -1) || (det >= AliTRDgeometry::Ndet())) {
+    printf("AliTRDclusterizer::WriteClusters -- ");
+    printf("Unexpected detector index %d.\n",det);
+    return kFALSE;
+  }
+ 
+  TDirectory *savedir = gDirectory;
 
-  if (det == -2) {
-    fInputFile->Delete(treeName);
-    TTree *tree = new TTree(treeName,"Tree with TRD rec. points");
-    tree->Write();
-    return kTRUE;
+  if (fOutputFile) {
+    fOutputFile->cd();
   }
 
-  //TTree *tree = (TTree *) fInputFile->Get(treeName);
-  TTree *tree = (TTree *) fInputFile->Get("ClusterTree");
-  TBranch *branch = tree->GetBranch("TRDrecPoints");
-
-  if(!branch) {
+  TBranch *branch = fClusterTree->GetBranch("TRDcluster");
+  if (!branch) {
     TObjArray *ioArray = 0;
-    branch = tree->Branch("TRDrecPoints","TObjArray",&ioArray,32000,0);
+    branch = fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
   }
 
   if ((det >= 0) && (det < AliTRDgeometry::Ndet())) {
 
-    AliTRD *TRD = (AliTRD*) gAlice->GetDetector("TRD");
-    Int_t nRecPoints = TRD->RecPoints()->GetEntriesFast();
-    TObjArray *fDetRecPoints = new TObjArray(400);
+    Int_t nRecPoints = fTRD->RecPoints()->GetEntriesFast();
+    TObjArray *detRecPoints = new TObjArray(400);
 
-    for (Int_t i=0; i<nRecPoints; i++) {
-      AliTRDrecPoint *p=(AliTRDrecPoint*)TRD->RecPoints()->UncheckedAt(i);
-      if(det == p->GetDetector()) fDetRecPoints->AddLast(p);
-      else printf("attempt to write a RecPoint with unexpected detector index");
+    for (Int_t i = 0; i < nRecPoints; i++) {
+      AliTRDcluster *c = (AliTRDcluster *) fTRD->RecPoints()->UncheckedAt(i);
+      if (det == c->GetDetector()) {
+        detRecPoints->AddLast(c);
+      }
+      else {
+        printf("AliTRDclusterizer::WriteClusters --");
+        printf("Attempt to write a cluster with unexpected detector index\n");
+      }
     }
 
-    branch->SetAddress(&fDetRecPoints);
-    tree->Fill();
+    branch->SetAddress(&detRecPoints);
+    fClusterTree->Fill();
+
     return kTRUE;
+
   }
 
   if (det == -1) {
 
-    printf("\rAliTRDclusterizer::WriteClusters -- ");
+    printf("AliTRDclusterizer::WriteClusters -- ");
     printf("Writing the cluster tree %-18s for event %d.\n"
-	   ,tree->GetName(),fEvent);
+	  ,fClusterTree->GetName(),fEvent);
 
-    tree->Write();     
+    fClusterTree->Write();
+     
     return kTRUE;  
+
   }
   
-  printf("\rAliTRDclusterizer::WriteClusters -- ");
-  printf("Unexpected detector index %d.\n", det); 
+  savedir->cd();
+
+  printf("AliTRDclusterizer::WriteClusters -- ");
+  printf("Unexpected detector index %d.\n",det);
+ 
   return kFALSE;  
 
 }

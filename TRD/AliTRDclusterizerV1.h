@@ -28,28 +28,25 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   virtual Bool_t  MakeClusters();
   virtual Bool_t  ReadDigits();
 
-  virtual void    SetClusMaxThresh(Float_t thresh)          { fClusMaxThresh = thresh; };
-  virtual void    SetClusSigThresh(Float_t thresh)          { fClusSigThresh = thresh; };
-  virtual void    SetClusMethod(Int_t meth)                 { fClusMethod    = meth;   };
+  virtual void    SetClusMaxThresh(Int_t thresh)          { fClusMaxThresh = thresh; };
+  virtual void    SetClusSigThresh(Int_t thresh)          { fClusSigThresh = thresh; };
 
-  virtual Float_t GetClusMaxThresh() const                  { return fClusMaxThresh; };
-  virtual Float_t GetClusSigThresh() const                  { return fClusSigThresh; };
-  virtual Int_t   GetClusMethod() const                     { return fClusMethod;    };
+  virtual Int_t GetClusMaxThresh() const                  { return fClusMaxThresh; };
+  virtual Int_t GetClusSigThresh() const                  { return fClusSigThresh; };
 
  protected:
 
   AliTRDdigitsManager *fDigitsManager; //! TRD digits manager
 
-  Float_t              fClusMaxThresh; // Threshold value for cluster maximum
-  Float_t              fClusSigThresh; // Threshold value for cluster signal
-  Int_t                fClusMethod;    // Clustering method
+  Int_t              fClusMaxThresh; // Threshold value for cluster maximum
+  Int_t              fClusSigThresh; // Threshold value for cluster signal
 
  private:
 
   virtual Float_t  Unfold(Float_t eps, Float_t *padSignal);
   virtual Float_t  PadResponse(Float_t x);
 
-  ClassDef(AliTRDclusterizerV1,1)      // TRD-Cluster manager, slow simulator
+  ClassDef(AliTRDclusterizerV1,2)      // TRD-Cluster finder, slow simulator
 
 };
 

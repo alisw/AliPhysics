@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/02/14 18:22:26  cblume
+Change in the geometry of the padplane
+
 Revision 1.6  2000/11/01 14:53:20  cblume
 Merge with TRD-develop
 
@@ -143,16 +146,14 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
   // Generates the cluster
   //
 
-  // Get the pointer to the detector class and check for version 1
-  AliTRD *trd = (AliTRD*) gAlice->GetDetector("TRD");
-  if (trd->IsVersion() != 0) {
+  if (fTRD->IsVersion() != 0) {
     printf("AliTRDclusterizerV0::MakeCluster -- ");
     printf("TRD must be version 0 (fast simulator).\n");
     return kFALSE; 
   }
 
   // Get the geometry
-  AliTRDgeometry *geo = trd->GetGeometry();
+  AliTRDgeometry *geo = fTRD->GetGeometry();
   
   printf("AliTRDclusterizerV0::MakeCluster -- ");
   printf("Start creating cluster.\n");
@@ -193,12 +194,12 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
           nBytes += hitTree->GetEvent(iTrack);
 
           // Get the number of hits in the TRD created by this particle
-          Int_t nHit = trd->Hits()->GetEntriesFast();
+          Int_t nHit = fTRD->Hits()->GetEntriesFast();
 
           // Loop through the TRD hits  
           for (Int_t iHit = 0; iHit < nHit; iHit++) {
 
-            if (!(hit = (AliTRDhit *) trd->Hits()->UncheckedAt(iHit))) 
+            if (!(hit = (AliTRDhit *) fTRD->Hits()->UncheckedAt(iHit))) 
               continue;
 
             Float_t pos[3];
@@ -316,7 +317,7 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
           Int_t detector  = recPoint1->GetDetector();
           Int_t digits[3] = {0};
 	  Int_t tr[9] = {-1}; 
-          trd->AddRecPoint(smear,digits,detector,0.0,tr);
+          fTRD->AddCluster(smear,digits,detector,0.0,tr,0);
 
 	}
 
@@ -328,7 +329,7 @@ Bool_t AliTRDclusterizerV0::MakeClusters()
   }
 
   printf("AliTRDclusterizerV0::MakeCluster -- ");
-  printf("Found %d points.\n",trd->RecPoints()->GetEntries());
+  printf("Found %d points.\n",fTRD->RecPoints()->GetEntries());
   printf("AliTRDclusterizerV0::MakeCluster -- ");
   printf("Fill the cluster tree.\n");
   clusterTree->Fill();
