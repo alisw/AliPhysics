@@ -23,6 +23,7 @@ $Log$
 
 #include "AliABSOvF.h"
 #include "AliRun.h"
+#include "AliMC.h"
 #include "AliConst.h"
 #include "AliALIFE.h"
 
@@ -67,6 +68,29 @@ void AliABSOvF::CreateGeometry()
 
 #include "ABSOSHILConst.h"
 #include "ABSOConst.h"
+    Float_t dzFe = 11.;
+//
+// 3 < theta < 9
+    fNLayers[0] = 11; 
+    fMLayers[0][ 0] = kAir;              fZLayers[0][ 0] = zAbsStart;
+    fMLayers[0][ 1] = kC;                fZLayers[0][ 1] = zAbsCc;             
+    fMLayers[0][ 2] = kConcrete;         fZLayers[0][ 2] = zRear-dRear-dzFe;
+    fMLayers[0][ 3] = kFe;               fZLayers[0][ 3] = zRear-dRear;
+    fMLayers[0][ 4] = kPb;               fZLayers[0][ 4] = fZLayers[0][3] + 5.;
+    fMLayers[0][ 5] = kPolyCH2;          fZLayers[0][ 5] = fZLayers[0][4] + 5.;
+    fMLayers[0][ 6] = kPb;               fZLayers[0][ 6] = fZLayers[0][5] + 5.;
+    fMLayers[0][ 7] = kPolyCH2;          fZLayers[0][ 7] = fZLayers[0][6] + 5.;
+    fMLayers[0][ 8] = kPb;               fZLayers[0][ 8] = fZLayers[0][7] + 5.;
+    fMLayers[0][ 9] = kPolyCH2;          fZLayers[0][ 9] = fZLayers[0][8] + 5.;
+    fMLayers[0][10] = kPb;               fZLayers[0][10] = zRear;
+// 2 < theta < 3
+    fNLayers[1] = 5; 
+    fMLayers[1][0] = fMLayers[0][0];      fZLayers[1][0] = fZLayers[0][0];
+    fMLayers[1][1] = fMLayers[0][1];      fZLayers[1][1] = fZLayers[0][1];
+    fMLayers[1][2] = fMLayers[0][2];      fZLayers[1][2] = fZLayers[0][2];
+    fMLayers[1][3] = fMLayers[0][3];      fZLayers[1][3] = fZLayers[0][3];
+    fMLayers[1][4] = kNiCuW;              fZLayers[1][4] = zRear;
+//
     Float_t dTube=0.1;                     // tube thickness
     Float_t dInsu=0.5;                     // insulation thickness
     Float_t dEnve=0.1;                     // protective envelope thickness
@@ -188,7 +212,7 @@ void AliABSOvF::CreateGeometry()
   pcpar[9]  = -pcpar[3];
   pcpar[10] = zRear * TMath::Tan(accMin);
   pcpar[11] = zRear * TMath::Tan(accMax);
-  gMC->Gsvolu("AITR", "PCON", idtmed[kPb], pcpar, 12);
+  gMC->Gsvolu("AITR", "PCON", idtmed[fMLayers[0][4]], pcpar, 12);
   //
   // special Pb medium for last 5 cm of Pb
   Float_t zr=zRear-2.-0.001;
@@ -197,7 +221,7 @@ void AliABSOvF::CreateGeometry()
   cpar[2] = zr * TMath::Tan(accMax);
   cpar[3] = cpar[1] + TMath::Tan(thetaR) * 2;
   cpar[4] = cpar[2] + TMath::Tan(accMax) * 2;
-  gMC->Gsvolu("ARPB", "CONE", idtmed[kPb], cpar, 5);
+  gMC->Gsvolu("ARPB", "CONE", idtmed[fMLayers[0][4]], cpar, 5);
   dz=(zRear-zAbsStart)/2.-cpar[0]-0.001;
   gMC->Gspos("ARPB", 1, "AITR", 0., 0., dz, 0, "ONLY");
   //
@@ -206,15 +230,31 @@ void AliABSOvF::CreateGeometry()
   pcpar[9]  = pcpar[3]+(zRear-dRear-zAbsStart);
   pcpar[10] = (zRear-dRear) * TMath::Tan(accMin);
   pcpar[11] = (zRear-dRear) * TMath::Tan(accMax);
-  gMC->Gsvolu("ACON", "PCON", idtmed[kConcrete+40], pcpar, 12);
+  gMC->Gsvolu("ACON", "PCON", idtmed[fMLayers[0][2]+40], pcpar, 12);
   gMC->Gspos("ACON", 1, "AITR", 0., 0., 0., 0, "ONLY");
+//
+//    Fe Cone 
+//
+  zr = zRear-dRear-dzFe-1.;
+  cpar[0]  = dzFe/2.;
+  cpar[1] = zr * TMath::Tan(accMin);
+  cpar[2] = zr * TMath::Tan(accMax);
+  cpar[3] = cpar[1] + TMath::Tan(thetaR) * dzFe;
+  cpar[4] = cpar[2] + TMath::Tan(accMax) * dzFe;
+  gMC->Gsvolu("ACFE", "CONE",idtmed[fMLayers[0][3]], cpar, 5);
+
+  dz = (zRear-zAbsStart)/2.-dRear-dzFe/2.-1.;
+  
+  gMC->Gspos("ACFE", 1, "ACON", 0., 0., dz, 0, "ONLY");
+
+
   //
   //     carbon cone: carbon
   //
   pcpar[9]  = pcpar[3]+(zAbsCc-zAbsStart);
   pcpar[10]  = zAbsCc * TMath::Tan(accMin);
   pcpar[11]  = zAbsCc * TMath::Tan(accMax);
-  gMC->Gsvolu("ACAR", "PCON", idtmed[kC+40], pcpar, 12);
+  gMC->Gsvolu("ACAR", "PCON", idtmed[fMLayers[0][1]+40], pcpar, 12);
   gMC->Gspos("ACAR", 1, "ACON", 0., 0., 0., 0, "ONLY");
  //
  //     carbon cone outer region
@@ -225,7 +265,7 @@ void AliABSOvF::CreateGeometry()
   cpar[3]  = rAbs;
   cpar[4]  = cpar[2]+2. * cpar[0] * TMath::Tan(accMax);
 
-  gMC->Gsvolu("ACAO", "CONE", idtmed[kC], cpar, 5);
+  gMC->Gsvolu("ACAO", "CONE", idtmed[fMLayers[0][1]], cpar, 5);
   dz=-(zRear-zAbsStart)/2.+cpar[0];
   gMC->Gspos("ACAO", 1, "ACAR", 0., 0., dz, 0, "ONLY");
   //
@@ -239,7 +279,7 @@ void AliABSOvF::CreateGeometry()
   cpar[2] = zr * TMath::Tan(thetaR*repsi);
   cpar[3] = cpar[1] + TMath::Tan(accMin) * (dRear-epsi);
   cpar[4] = cpar[2] + TMath::Tan(thetaR*repsi) * (dRear-epsi);
-  gMC->Gsvolu("ARW0", "CONE", idtmed[kNiCuW+40], cpar, 5);
+  gMC->Gsvolu("ARW0", "CONE", idtmed[fMLayers[1][4]+40], cpar, 5);
   dz=(zRear-zAbsStart)/2.-cpar[0];
   gMC->Gspos("ARW0", 1, "AITR", 0., 0., dz, 0, "ONLY");
   //
@@ -250,14 +290,14 @@ void AliABSOvF::CreateGeometry()
   cpar[2] = zr * TMath::Tan(thetaR*repsi);
   cpar[3] = cpar[1] + TMath::Tan(accMin) * 5.;
   cpar[4] = cpar[2] + TMath::Tan(thetaR*repsi) * 5.;
-  gMC->Gsvolu("ARW1", "CONE", idtmed[kNiCuW+20], cpar, 5);
+  gMC->Gsvolu("ARW1", "CONE", idtmed[fMLayers[1][4]+20], cpar, 5);
   dz=(dRear-epsi)/2.-cpar[0];
   gMC->Gspos("ARW1", 1, "ARW0", 0., 0., dz, 0, "ONLY");
   //
   // PolyEthylene Layers
   Float_t drMin=TMath::Tan(thetaR) * 5;
   Float_t drMax=TMath::Tan(accMax) * 5;
-  gMC->Gsvolu("ARPE", "CONE", idtmed[kPolyCH2], cpar, 0);
+  gMC->Gsvolu("ARPE", "CONE", idtmed[fMLayers[0][5]], cpar, 0);
   cpar[0]=2.5;
   { // Begin local scope for i
       for (Int_t i=0; i<3; i++) {
