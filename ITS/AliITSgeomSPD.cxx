@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.9  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.8  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -210,6 +215,11 @@ istream &operator>>(istream &is,AliITSgeomSPD &r){
 
 /*
 $Log$
+Revision 1.9  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.8  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -299,6 +309,11 @@ istream &operator>>(istream &is,AliITSgeomSPD300 &r){
 //=====================================================================
 /*
 $Log$
+Revision 1.9  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.8  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -343,7 +358,7 @@ AliITSgeomSPD425Short::AliITSgeomSPD425Short(){
     const Int_t   knbinx = 256;    // number of pixels along x direction.
     const Float_t kbinz0 = 0.0425; // cm; Standard pixel size in z direction.
     const Float_t kbinz1 = 0.0625; // cm; Special pixel size in z direction.
-    const Int_t   knbinz = 160;    // number of pixels along z direction.
+    const Int_t   knbinz = 161;    // number of pixels along z direction.
     Int_t i;
     Float_t dx,dz,*binSizeX,*binSizeZ;
 
@@ -407,6 +422,11 @@ istream &operator>>(istream &is,AliITSgeomSPD425Short &r){
 
 /*
 $Log$
+Revision 1.9  2001/02/09 00:00:57  nilsen
+Fixed compatibility problem with HP unix {ios::fmtflags -> Int_t}. Fixed
+bugs in iostream based streamers used to read and write .det files. Fixed
+some detector sizes. Fixed bugs in some default-special constructors.
+
 Revision 1.8  2001/02/03 00:00:30  nilsen
 New version of AliITSgeom and related files. Now uses automatic streamers,
 set up for new formatted .det file which includes detector information.
@@ -451,7 +471,7 @@ AliITSgeomSPD425Long::AliITSgeomSPD425Long(){
     const Int_t   knbinx = 256;    // number of pixels along x direction.
     const Float_t kbinz0 = 0.0425; // cm; Standard pixel size in z direction.
     const Float_t kbinz1 = 0.0625; // cm; Special pixel size in z direction.
-    const Int_t   knbinz = 196;    // number of pixels along z direction.
+    const Int_t   knbinz = 192;    // number of pixels along z direction.
     Int_t i;
     Float_t dx,dz,*binSizeX,*binSizeZ;
 
@@ -465,17 +485,17 @@ AliITSgeomSPD425Long::AliITSgeomSPD425Long(){
     binSizeZ[ 31] = kbinz1;
     binSizeZ[ 32] = kbinz1;
 
+    binSizeZ[ 63] = kbinz1;
     binSizeZ[ 64] = kbinz1;
-    binSizeZ[ 65] = kbinz1;
 
-    binSizeZ[ 97] = kbinz1;
-    binSizeZ[ 98] = kbinz1;
+    binSizeZ[ 95] = kbinz1;
+    binSizeZ[ 96] = kbinz1;
 
-    binSizeZ[130] = kbinz1;
-    binSizeZ[131] = kbinz1;
+    binSizeZ[127] = kbinz1;
+    binSizeZ[128] = kbinz1;
 
-    binSizeZ[163] = kbinz1;
-    binSizeZ[164] = kbinz1;
+    binSizeZ[159] = kbinz1;
+    binSizeZ[160] = kbinz1;
 
     // correct detector size for bin size.
     dx = 0.0;
