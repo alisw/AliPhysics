@@ -46,9 +46,10 @@ int main(int argc,char **argv)
 
   //Init cluster finder
   cf.InitSlice(0,0,0,ndigits-1,10000);
-  cf.SetXYError(0.2);
-  cf.SetZError(0.3);
+  //cf.SetXYError(0.2);
+  //cf.SetZError(0.3);
   cf.SetSTDOutput(kTRUE);
+  cf.SetCalcErr(kTRUE);
 
   //Switch off deconvolution:
   cf.SetDeconv(false);
