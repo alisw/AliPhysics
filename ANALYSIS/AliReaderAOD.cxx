@@ -55,6 +55,7 @@ Int_t AliReaderAOD::ReadNext()
 {
 //Reads next event
   
+  Info("ReadNext","Entered");
   do  //do{}while; is OK even if 0 dirs specified. In that case we try to read from "./"
     {
       if (fFile == 0x0)
@@ -68,8 +69,9 @@ Int_t AliReaderAOD::ReadNext()
            }
          fCurrentEvent = 0;
        }
-      
+      Info("ReadNext","Getting event %d",fCurrentEvent);
       fTree->GetEvent(fCurrentEvent);
+      Info("ReadNext","Getting event %d Done",fCurrentEvent);
       
       //Temporary testing sollution
       fEventSim = fSimBuffer;
@@ -86,6 +88,8 @@ Int_t AliReaderAOD::ReadNext()
             fTree = 0x0;
             delete fFile;
             fFile = 0x0;
+            fSimBuffer = 0x0;
+            fRecBuffer = 0x0;
             fCurrentDir++;
           } 
        }
@@ -105,7 +109,8 @@ Int_t AliReaderAOD::OpenFile(Int_t n)
 {
 //opens fFile with  tree
 
- const TString& dirname = GetDirName(n);
+// Info("ReadNext","Opening File %d",n);
+ const TString dirname = GetDirName(n);
  if (dirname == "")
   {
     if (AliVAODParticle::GetDebug() > 2 )
@@ -129,6 +134,8 @@ Int_t AliReaderAOD::OpenFile(Int_t n)
     fFile = 0x0;
     return 3;
   }
+
+ Info("ReadNext","File Is Opened, Getting the TREE");
  
  fTree = dynamic_cast<TTree*>(fFile->Get(fgkTreeName));
  if (fTree == 0x0)
@@ -143,8 +150,13 @@ Int_t AliReaderAOD::OpenFile(Int_t n)
     return 4;
   }
 
+//  Info("ReadNext","Got TREE, Setting branch addresses");
+
   fTree->SetBranchAddress(fgkSimulatedDataBranchName,&fSimBuffer);
   fTree->SetBranchAddress(fgkRecosntructedDataBranchName,&fRecBuffer);
+  
+//  Info("ReadNext","Got TREE, Addresses are set.");
+//  Info("ReadNext","Quitting the method.");
   
   return 0;
  
@@ -207,7 +219,7 @@ Int_t AliReaderAOD::WriteAOD(AliReader* reader, const char* outfilename, const c
 
      if (reader->ReadsSim())
       {
-        AliAOD* event = reader->GetEventRec();
+        AliAOD* event = reader->GetEventSim();
         if ( eventsim->GetParticleClass() != event->GetParticleClass() )
          {//if class type is not what what we whant we copy particles
            eventsim->CopyData(event);
@@ -218,8 +230,8 @@ Int_t AliReaderAOD::WriteAOD(AliReader* reader, const char* outfilename, const c
            simbuffer = event;
          } 
       }
-     eventrec->GetParticle(0)->Print();
-     eventsim->GetParticle(0)->Print();
+     recbuffer->GetParticle(0)->Print();
+     simbuffer->GetParticle(0)->Print();
      tree->Fill();
    }
   

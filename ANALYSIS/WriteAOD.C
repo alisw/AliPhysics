@@ -34,6 +34,8 @@ void WriteAOD(Option_t* datatype, Int_t first = -1,Int_t last = -1,
 //
 //these names I use when analysis is done directly from CASTOR files via RFIO
 
+  Bool_t multcheck = kTRUE;
+
   const char* basedir=".";
   const char* serie="";
   const char* field = "";
@@ -44,7 +46,31 @@ void WriteAOD(Option_t* datatype, Int_t first = -1,Int_t last = -1,
   gSystem->Load("$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)/libANALYSIS");
   cout<<"WriteAOD.C: ..... Loaded\n";
   
-  Bool_t multcheck = kTRUE;
+  Int_t PID[11];
+  PID[0]=kProton;
+  PID[1]=kProtonBar;
+  PID[2]=kKPlus;
+  PID[3]=kKMinus;
+  PID[4]=kPiPlus;
+  PID[5]=kPiMinus;
+  PID[6]=kElectron;
+  PID[7]=kPositron;
+  PID[8]=kMuonMinus;
+  PID[9]=kMuonPlus;
+  PID[10]=0;//Last must be 0!!!!!!!!!!!!!!!!!!
+  
+  Float_t PIDprob[11];
+  PIDprob[0] = 0.5;
+  PIDprob[1] = 0.5;
+  PIDprob[2] = 0.5;
+  PIDprob[3] = 0.5;
+  PIDprob[4] = 0.5;
+  PIDprob[5] = 0.5;
+  PIDprob[6] = 0.5;
+  PIDprob[7] = 0.5;
+  PIDprob[8] = 0.5;
+  PIDprob[9] = 0.5;
+  PIDprob[10] = 0.5;
   /***********************************************************/
    
   AliReader* reader;
@@ -62,6 +88,10 @@ void WriteAOD(Option_t* datatype, Int_t first = -1,Int_t last = -1,
    {
     AliReaderESD* esdreader = new AliReaderESD();
     esdreader->ReadSimulatedData(kTRUE);
+    esdreader->SetNumberOfTrackPoints(5,30.);//5 points every 30 cm
+    esdreader->SetITSTrackPoints(kTRUE);
+    esdreader->SetClusterMap(kTRUE);
+    
     reader = esdreader;
     multcheck = kTRUE;
    }
@@ -93,14 +123,23 @@ void WriteAOD(Option_t* datatype, Int_t first = -1,Int_t last = -1,
     }
 
    reader->SetDirs(dirs);
-    
-   AliAODParticleCut* readerpartcut= new AliAODParticleCut();
-   readerpartcut->SetPtRange(0.4,1.2);
-   readerpartcut->SetPID(kPiPlus);
-   AliAODPIDCut* pidcut = new AliAODPIDCut(kPiPlus,0.5);
-   readerpartcut->AddBasePartCut(pidcut);
-   
-   reader->AddParticleCut(readerpartcut);//read this particle type with this cut
+
+  AliAODParticleCut* readerpartcut= new AliAODParticleCut();
+
+  Int_t l = 0;
+  while (PID[l] != 0)
+   {
+     cout<<"WriteAOD.C: Adding PID  = "<<PID[l]<<" l = "<<l<<endl;
+     readerpartcut->SetPID(PID[l]);
+     AliAODParticleCut * pcut = (AliAODParticleCut*)readerpartcut->Clone();
+     AliAODPIDCut* pidcut = new AliAODPIDCut(PID[l],PIDprob[l]);
+     pcut->AddBasePartCut(pidcut);
+     reader->AddParticleCut(pcut);//read this particle type with this cut
+     delete pcut;
+     l++;
+   }
+  
+//   readerpartcut->SetPtRange(0.0,1.2);
 
    cout<<"WriteAOD.C:   P R O C S E S S I N G .....\n\n";
    AliReaderAOD::WriteAOD(reader,outfile,"AliAODParticle",multcheck);

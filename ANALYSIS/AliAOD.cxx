@@ -74,7 +74,6 @@ AliAOD& AliAOD::operator=(const AliAOD& in)
   fParticleClass = in.fParticleClass ; //althought it is pointer, this points to object in class list of gROOT
   return *this;
 }
-
 /**************************************************************************/
 
 AliAOD::~AliAOD()
@@ -132,11 +131,18 @@ void AliAOD::CopyData(AliAOD* aod)
                 TObject& obj = *(fParticles->At(i));
                 obj = inobj;
               }
-
+             
+             TClass* partclass = GetParticleClass();
+             if (partclass == 0x0)
+              {
+                Fatal("CopyData","Can not get particle class");
+                return;//pro forma
+              }
+              
              for (Int_t i = curentr; i < inentr; i++)
               {
                 TObject& inobj = *(in.fParticles->At(i));
-                TObject& obj =  *((TObject*)(fParticleClass->New(arr[i])));
+                TObject& obj =  *((TObject*)(partclass->New(arr[i])));
                 obj = inobj;
               }
            }
@@ -201,6 +207,17 @@ void AliAOD::SetParticleClass(TClass* pclass)
      fParticles = new TClonesArray(fParticleClass);
    }
 }
+/**************************************************************************/
+TClass* AliAOD::GetParticleClass()
+{
+//returns TClass of particle class
+  if (fParticleClass) return fParticleClass;
+  
+  if (fParticles == 0x0) return 0x0;
+  
+  fParticleClass = fParticles->GetClass();
+  return fParticleClass;
+}
 
 /**************************************************************************/
 
@@ -227,8 +244,15 @@ void  AliAOD::AddParticle(AliVAODParticle* particle)
 
   Int_t idx = fParticles->GetLast() + 1;
   TClonesArray& arr = *fParticles;
+
+  TClass* partclass = GetParticleClass();
+  if (partclass == 0x0)
+   {
+     Error("AddParticle(AliVAODParticle*)","Can not get particle class");
+     return;
+   }
   
-  AliVAODParticle* pp = (AliVAODParticle*)fParticleClass->New(arr[idx]);
+  AliVAODParticle* pp = (AliVAODParticle*)partclass->New(arr[idx]);
   pp->operator=(*particle);
   
 }
@@ -244,8 +268,15 @@ void  AliAOD::AddParticle(Int_t pdg, Int_t idx,
 
   Int_t newpartidx = fParticles->GetLast() + 1;
   TClonesArray& arr = *fParticles;
-  
-  AliVAODParticle* p =  (AliVAODParticle*)fParticleClass->New(arr[newpartidx]);
+
+  TClass* partclass = GetParticleClass();
+  if (partclass == 0x0)
+   {
+     Error("AddParticle(Int_t,...)","Can not get particle class");
+     return;
+   }
+
+  AliVAODParticle* p =  (AliVAODParticle*)partclass->New(arr[newpartidx]);
   
   p->SetPdgCode(pdg);
   p->SetUID(idx);
@@ -261,7 +292,15 @@ void AliAOD::SwapParticles(Int_t i, Int_t j)
   if ( (i<0) || (i>=GetNumberOfParticles()) ) return;
   if ( (j<0) || (j>=GetNumberOfParticles()) ) return;
   
-  AliVAODParticle* tmpobj = (AliVAODParticle*)fParticleClass->New();
+
+  TClass* partclass = GetParticleClass();
+  if (partclass == 0x0)
+   {
+     Error("SwapParticles","Can not get particle class");
+     return;
+   }
+    
+  AliVAODParticle* tmpobj = (AliVAODParticle*)partclass->New();
   AliVAODParticle& tmp = *tmpobj;
   AliVAODParticle& first = *(GetParticle(i));
   AliVAODParticle& second = *(GetParticle(j));
@@ -337,6 +376,7 @@ void AliAOD::Move(Double_t x, Double_t y, Double_t z)
      if (tp) tp->Move(x,y,z);
    }
 }
+/**************************************************************************/
 
 void AliAOD::Print(Option_t* /*option*/)
 {

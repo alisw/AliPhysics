@@ -401,21 +401,25 @@ TString AliReader::GetDirName(Int_t entry)
       }
      else
       {
-        return retval;
+       return retval;
       }  
    }
-
-  if ( (entry>fDirs->GetEntries()) || (entry<0))//if out of bounds return empty string
+  
+  
+  if ( (entry >= fDirs->GetEntries()) || (entry < 0))//if out of bounds return empty string
    {                                            //note that entry==0 is accepted even if array is empty (size=0)
-     Error("GetDirName","Name out of bounds");
+    if ( (fDirs->GetEntries() == 0) && (entry == 0) )
+      { 
+        retval = ".";
+        return retval;
+      }
+     if (AliVAODParticle::GetDebug() > 0)
+      {
+        Warning("GetDirName","Index %d out of bounds",entry);
+      }
      return retval;
    }
 
-  if (fDirs->GetEntries() == 0)
-   { 
-     retval = ".";
-     return retval;
-   }
 
   TClass *objclass = fDirs->At(entry)->IsA();
   TClass *stringclass = TObjString::Class();
@@ -439,13 +443,26 @@ void AliReader::Blend()
   //is used to check if some distributions (of many particle properties) 
   //depend on the order of particles
   //(tracking gives particles Pt sorted)
-  
-  if (fEventSim == 0x0) return;
-  
-  for (Int_t i = 2; i < fEventSim->GetNumberOfParticles(); i++)
+  Int_t npart = 0;
+
+  if (fEventSim ) 
+   {
+     npart = fEventSim->GetNumberOfParticles();
+    } 
+  else 
+    if (fEventRec ) 
+     {
+        npart = fEventRec->GetNumberOfParticles();
+     }
+    else
+     {
+       return;
+     }
+  for (Int_t i = 2;  i < npart; i++)
    {
      Int_t with = gRandom->Integer(i);
-     fEventSim->SwapParticles(i,with);
+//     Info("Blend","%d %d",i, with);
+     if (fEventSim) fEventSim->SwapParticles(i,with);
      if (fEventRec) fEventRec->SwapParticles(i,with);
    }
 }

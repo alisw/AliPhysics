@@ -50,14 +50,14 @@ public:
   void                     Move(Double_t x, Double_t y, Double_t z);//moves all spacial coordinates about this vector
   virtual void             SetOwner(Bool_t owner);
   virtual void             Print(Option_t* /*option*/ = 0);
-  const TClass*            GetParticleClass() const {return fParticleClass;}
+  TClass*            GetParticleClass();
 private:
   TClonesArray            *fParticles;   // array of AOD particles, AliAOD is owner of particles
   Bool_t                   fIsRandomized;//flag indicating if positions of particles were randomized - used by HBTAN
   Double_t                 fPrimaryVertexX;//X position of the primary vertex
   Double_t                 fPrimaryVertexY;//Y position of the primary vertex
   Double_t                 fPrimaryVertexZ;//Z position of the primary vertex
-  TClass*                  fParticleClass;//object that defines type of the particle       
+  TClass*                  fParticleClass;//!object that defines type of the particle       
   
   ClassDef(AliAOD,1)  // base class for AOD containers
 };
