@@ -5,6 +5,7 @@
 #include "TLorentzVector.h"
 #include "TFile.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "TParticle.h"
 #include "TTree.h"
 #include <Riostream.h>
@@ -73,10 +74,15 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
   // File for histograms and histogram booking
   TFile *histoFile = new TFile("MUONmassPlot.root", "RECREATE");
   TH1F *hPtMuon = new TH1F("hPtMuon", "Muon Pt (GeV/c)", 100, 0., 20.);
+  TH1F *hPtMuonPlus = new TH1F("hPtMuonPlus", "Muon+ Pt (GeV/c)", 100, 0., 20.);
+  TH1F *hPtMuonMinus = new TH1F("hPtMuonMinus", "Muon- Pt (GeV/c)", 100, 0., 20.);
   TH1F *hPMuon = new TH1F("hPMuon", "Muon P (GeV/c)", 100, 0., 200.);
   TH1F *hChi2PerDof = new TH1F("hChi2PerDof", "Muon track chi2/d.o.f.", 100, 0., 20.);
   TH1F *hInvMassAll = new TH1F("hInvMassAll", "Mu+Mu- invariant mass (GeV/c2)", 480, 0., 12.);
-  TH1F *hInvMassRes;
+  TH1F *hInvMassBg = new TH1F("hInvMassBg", "Mu+Mu- invariant mass BG(GeV/c2)", 480, 0., 12.);
+TH2F *hInvMassAll_vs_Pt = new TH2F("hInvMassAll_vs_Pt","hInvMassAll_vs_Pt",480,0.,12.,80,0.,20.);
+TH2F *hInvMassBgk_vs_Pt = new TH2F("hInvMassBgk_vs_Pt","hInvMassBgk_vs_Pt",480,0.,12.,80,0.,20.);
+TH1F *hInvMassRes;
 
   if (ResType == 553) {
     hInvMassRes = new TH1F("hInvMassRes", "Mu+Mu- invariant mass (GeV/c2) around Upsilon", 60, 8., 11.);
@@ -88,6 +94,8 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
   TH1F *hRapMuon = new TH1F("hRapMuon"," Muon Rapidity",50,-4.5,-2);
   TH1F *hRapResonance = new TH1F("hRapResonance"," Resonance Rapidity",50,-4.5,-2);
   TH1F *hPtResonance = new TH1F("hPtResonance", "Resonance Pt (GeV/c)", 100, 0., 20.);
+  TH2F *hThetaPhiPlus = new TH2F("hThetaPhiPlus", "Theta vs Phi +", 760, -190., 190., 400, 160., 180.);
+  TH2F *hThetaPhiMinus = new TH2F("hThetaPhiMinus", "Theta vs Phi -", 760, -190., 190., 400, 160., 180.);
 
 
   // settings
@@ -196,7 +204,13 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 	hPMuon->Fill(p1);
 	hChi2PerDof->Fill(ch1);
 	hRapMuon->Fill(rapMuon1);
-
+	if (fCharge > 0) {
+	  hPtMuonPlus->Fill(pt1);
+	  hThetaPhiPlus->Fill(TMath::ATan2(fPyRec1,fPxRec1)*180./TMath::Pi(),TMath::ATan2(pt1,fPzRec1)*180./3.1415);
+	} else {
+	  hPtMuonMinus->Fill(pt1);
+	  hThetaPhiMinus->Fill(TMath::ATan2(fPyRec1,fPxRec1)*180./TMath::Pi(),TMath::ATan2(pt1,fPzRec1)*180./3.1415);
+	}
 	// loop over second track of combination
 	for (Int_t iTrack2 = iTrack + 1; iTrack2 < nTracks; iTrack2++) {
 	  
@@ -236,7 +250,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 	      // fill histos hInvMassAll and hInvMassRes
 	      hInvMassAll->Fill(invMass);
 	      hInvMassRes->Fill(invMass);
-
+	      hInvMassAll_vs_Pt->Fill(invMass,fVtot.Pt());
 	      if (invMass > massMin && invMass < massMax) {
 		EventInMass++;
   		hRapResonance->Fill(fVtot.Rapidity());
@@ -250,7 +264,43 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
     } // for (Int_t iTrack = 0; iTrack < nrectracks; iTrack++)
 
     hNumberOfTrack->Fill(nTracks);
+    esdFile->Delete();
   } // for (Int_t iEvent = FirstEvent;
+
+// Loop over events for bg event
+
+  Double_t thetaPlus,  phiPlus;
+  Double_t thetaMinus, phiMinus;
+  Float_t PtMinus, PtPlus;
+  
+  for (Int_t iEvent = 0; iEvent < hInvMassAll->Integral(); iEvent++) {
+
+    hThetaPhiPlus->GetRandom2(phiPlus, thetaPlus);
+    hThetaPhiMinus->GetRandom2(phiMinus,thetaMinus);
+    PtPlus = hPtMuonPlus->GetRandom();
+    PtMinus = hPtMuonMinus->GetRandom();
+
+    fPxRec1  = PtPlus * TMath::Cos(TMath::Pi()/180.*phiPlus);
+    fPyRec1  = PtPlus * TMath::Sin(TMath::Pi()/180.*phiPlus);
+    fPzRec1  = PtPlus / TMath::Tan(TMath::Pi()/180.*thetaPlus);
+
+    fE1 = TMath::Sqrt(muonMass * muonMass + fPxRec1 * fPxRec1 + fPyRec1 * fPyRec1 + fPzRec1 * fPzRec1);
+    fV1.SetPxPyPzE(fPxRec1, fPyRec1, fPzRec1, fE1);
+
+    fPxRec2  = PtMinus * TMath::Cos(TMath::Pi()/180.*phiMinus);
+    fPyRec2  = PtMinus * TMath::Sin(TMath::Pi()/180.*phiMinus);
+    fPzRec2  = PtMinus / TMath::Tan(TMath::Pi()/180.*thetaMinus);
+
+    fE2 = TMath::Sqrt(muonMass * muonMass + fPxRec2 * fPxRec2 + fPyRec2 * fPyRec2 + fPzRec2 * fPzRec2);
+    fV2.SetPxPyPzE(fPxRec2, fPyRec2, fPzRec2, fE2);
+
+    // invariant mass
+    fVtot = fV1 + fV2;
+      
+    // fill histos hInvMassAll and hInvMassRes
+    hInvMassBg->Fill(fVtot.M());
+    hInvMassBgk_vs_Pt->Fill( fVtot.M(), fVtot.Pt() );
+  }
 
   histoFile->Write();
   histoFile->Close();
