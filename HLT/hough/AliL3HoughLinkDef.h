@@ -14,7 +14,6 @@
 #pragma link C++ class AliL3HoughMerger;
 #pragma link C++ class AliL3Histogram;
 #pragma link C++ class AliL3Histogram1D;
-#pragma link C++ class AliL3ClusterFinder;
 #pragma link C++ class AliL3HoughIntMerger;
 #pragma link C++ class AliL3HoughGlobalMerger;
 #pragma link C++ class AliL3HoughDisplay;
