@@ -101,7 +101,14 @@ Double_t AliESDtrack::GetMass() const {
   for (Int_t i=0; i<kSPECIES; i++) {
     if (fR[i]>max) {k=i; max=fR[i];}
   }
-  if (k==0) return 0.00051;
+  if (k==0) { // dE/dx "crossing points" in the TPC
+     Double_t p=GetP();
+     if ((p>0.38)&&(p<0.48))
+        if (fR[0]<fR[3]*10.) return 0.49368;
+     if ((p>0.75)&&(p<0.85))
+        if (fR[0]<fR[4]*10.) return 0.93827;
+     return 0.00051;
+  }
   if (k==1) return 0.10566;
   if (k==2||k==-1) return 0.13957;
   if (k==3) return 0.49368;
@@ -212,17 +219,22 @@ Bool_t AliESDtrack::UpdateTrackParams(AliKalmanTrack *t, ULong_t flags) {
 
   case kTRDout:
     { //requested by the PHOS/EMCAL  ("temporary solution")
-      Double_t r=460.;
-      if (t->PropagateTo(r,30.,0.)) {  
+      Int_t i;
+      Double_t x=460.,buf[15];
+      if (t->PropagateTo(x,30.,0.)) {  
          fOalpha=t->GetAlpha();
-         t->GetExternalParameters(fOx,fOp);
-         t->GetExternalCovariance(fOc);
+         t->GetExternalParameters(x,buf); fOx=x;
+         for (i=0; i<5; i++) fOp[i]=buf[i];
+         t->GetExternalCovariance(buf);
+         for (i=0; i<15; i++) fOc[i]=buf[i];
       }
-      r=450.;
-      if (t->PropagateTo(r,30.,0.)) {  
+      x=450.;
+      if (t->PropagateTo(x,30.,0.)) {  
          fXalpha=t->GetAlpha();
-         t->GetExternalParameters(fXx,fXp);
-         t->GetExternalCovariance(fXc);
+         t->GetExternalParameters(x,buf); fXx=x;
+         for (i=0; i<5; i++) fXp[i]=buf[i];
+         t->GetExternalCovariance(buf);
+         for (i=0; i<15; i++) fXc[i]=buf[i];
       }
     }
   case kTOFin: 
@@ -253,9 +265,13 @@ AliESDtrack::SetConstrainedTrackParams(AliKalmanTrack *t, Double_t chi2) {
   //
   // This function sets the constrained track parameters 
   //
+  Int_t i;
+  Double_t x,buf[15];
   fCalpha=t->GetAlpha();
-  t->GetExternalParameters(fCx,fCp);
-  t->GetExternalCovariance(fCc);
+  t->GetExternalParameters(x,buf); fCx=x;
+  for (i=0; i<5; i++) fCp[i]=buf[i];
+  t->GetExternalCovariance(buf);
+  for (i=0; i<15; i++) fCc[i]=buf[i];
   fCchi2=chi2;
 }
 
