@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/03/16 09:48:35  morsch
+Exclude pdg particle definitions. Done by root now by default from Pythia6 table.
+
 Revision 1.2  2001/01/31 14:32:42  morsch
 Some B mesons added
 
@@ -54,6 +57,9 @@ ClassImp(AliPDG)
 // Bottom mesons
 // mass and life-time from PDG
 //
+  pdgDB->AddParticle("Upsilon(3S)","Upsilon(3S)",10.3552,kTRUE,
+                     0,1,"Bottonium",200553);
+
 // Done by default now from Pythia6 table!
 //
 //
