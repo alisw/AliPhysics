@@ -20,6 +20,7 @@
 class TLorentzVector;
 class AliMC;
 class AliDecayer;
+class TArrayI;
 
 R__EXTERN AliMC *gMC;
 
@@ -75,7 +76,11 @@ class AliMC : public TNamed, public AliRndm
                         const char *konly="ONLY") = 0; 
     virtual void  Gsposp(const char *name, Int_t nr, const char *mother,  
                          Float_t x, Float_t y, Float_t z, Int_t irot,
-                         const char *konly, Float_t *upar, Int_t np) = 0; 
+                         const char *konly, Float_t *upar, Int_t np) = 0;
+
+    virtual void  SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
+                  Float_t *absco, Float_t *effic, Float_t *rindex) = 0;
+  
     
     // functions for drawing
     virtual void  DrawOneSpec(const char* name) = 0;
@@ -165,7 +170,8 @@ class AliMC : public TNamed, public AliRndm
     virtual Int_t NSecondaries() const=0;
     virtual void  GetSecondary(Int_t isec, Int_t& particleId, 
                     TLorentzVector& position, TLorentzVector& momentum) =0;
-    virtual AliMCProcess ProdProcess() const =0; 
+    virtual AliMCProcess ProdProcess(Int_t isec) const =0; 
+    virtual Int_t StepProcesses(TArrayI &proc) const = 0;
 
     //
     // other (then geometry/step/run management) methods

@@ -577,7 +577,8 @@ public:
   Bool_t IsTrackAlive() const;
   Int_t  NSecondaries() const;
   Int_t  CurrentEvent() const;
-  AliMCProcess  ProdProcess() const;
+  AliMCProcess  ProdProcess(Int_t isec) const;
+  Int_t  StepProcesses(TArrayI &proc) const;
   void   GetSecondary(Int_t isec, Int_t& ipart, TLorentzVector &x, 
 		      TLorentzVector &p);
   void   StopTrack();
@@ -689,7 +690,7 @@ public:
    virtual  void  Gmate(); 
    virtual  void  Gpart(); 
    virtual  void  Gsckov(Int_t itmed, Int_t npckov, Float_t *ppckov,
-			 Float_t *absco, Float_t *effic, Float_t *rindex); 
+                       Float_t *absco, Float_t *effic, Float_t *rindex); 
    virtual  void  Gsdk(Int_t ipart, Float_t *bratio, Int_t *mode); 
    virtual  void  Gsmate(Int_t imat, const char *name, Float_t a, Float_t z,  
                          Float_t dens, Float_t radl, Float_t absl); 
@@ -703,7 +704,9 @@ public:
                          Float_t stmin); 
    virtual  void  Gstpar(Int_t itmed, const char *param, Float_t parval); 
  
-      // functions from GKINE 
+   virtual void  SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
+			     Float_t *absco, Float_t *effic, Float_t *rindex);
+  // functions from GKINE 
    virtual  void  Gfkine(Int_t itra, Float_t *vert, Float_t *pvert, 
                          Int_t &ipart, Int_t &nvert); 
    virtual  void  Gfvert(Int_t nvtx, Float_t *v, Int_t &ntbeam, Int_t &nttarg, Float_t &tofg); 
@@ -832,7 +835,7 @@ public:
   virtual void FinishGeometry();
   virtual void BuildPhysics();
 
- protected:
+protected:
   Int_t fNextVol;    // Iterator for GeomIter
 
 //--------------Declarations for ZEBRA--------------------- 
@@ -880,10 +883,10 @@ public:
 
   Int_t fPDGCode[kMaxParticles];  // Translation table of PDG codes
 
+  AliDecayer* fDecayer;      // Pointer to decayer
 
+  AliMCProcess G3toVMC(Int_t iproc) const;
 
-protected:
-    AliDecayer* fDecayer;      // Pointer to decayer
 private:
   TGeant3(const TGeant3 &) {}
   TGeant3 & operator=(const TGeant3&) {return *this;}

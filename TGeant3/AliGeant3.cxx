@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2000/11/30 07:12:54  alibrary
+Introducing new Rndm and QA classes
+
 Revision 1.12  2000/11/06 11:35:46  morsch
 Call BuildGeometry() after Init() to be able to share common detector parameters.
 
@@ -744,7 +747,7 @@ void gustep()
 
   // --- Add new created particles 
   if (gMC->NSecondaries() > 0) {
-    pProc=gMC->ProdProcess();
+    pProc=gMC->ProdProcess(0);
     for (jk = 0; jk < geant3->Gcking()->ngkine; ++jk) {
       ipp = Int_t (geant3->Gcking()->gkin[jk][4]+0.5);
       // --- Skip neutrinos! 

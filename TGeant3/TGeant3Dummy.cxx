@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.26  2000/12/18 11:33:50  alibrary
+New call frequence histograms per module and volume
+
 Revision 1.25  2000/11/30 07:12:54  alibrary
 Introducing new Rndm and QA classes
 
@@ -120,7 +123,9 @@ Bool_t  TGeant3::IsTrackOut() const {return 0;}
 Bool_t  TGeant3::IsTrackDisappeared() const {return 0;}
 Bool_t  TGeant3::IsTrackStop() const {return 0;}
 Int_t   TGeant3::NSecondaries() const {return 0;}
-AliMCProcess TGeant3::ProdProcess() const {return kPNoProcess;}
+AliMCProcess TGeant3::ProdProcess(Int_t) const {return kPNoProcess;}
+AliMCProcess TGeant3::G3toVMC(Int_t) const {return kPNoProcess;}
+Int_t  TGeant3::StepProcesses(TArrayI &) const {return 0;}
 void    TGeant3::GetSecondary(Int_t, Int_t&, 
 			      TLorentzVector&, TLorentzVector&){}
 Float_t TGeant3::MaxStep() const {return 0;}
@@ -185,8 +190,8 @@ void  TGeant3::Gsmixt(Int_t, const char*, Float_t*, Float_t*, Float_t, Int_t, Fl
 void  TGeant3::Gspart(Int_t, const char*, Int_t,   Float_t, Float_t, Float_t) {}
 void  TGeant3::Gstmed(Int_t, const char*, Int_t, Int_t, 
                    Int_t, Float_t, Float_t, Float_t, Float_t, Float_t, Float_t) {}
-void  TGeant3::Gstpar(Int_t, const char*, Float_t) {}
 void  TGeant3::Gsckov(Int_t, Int_t, Float_t *, Float_t *, Float_t *, Float_t *) {}
+void  TGeant3::Gstpar(Int_t, const char*, Float_t) {}
 
 
 //=======================functions from GKINE
@@ -201,6 +206,8 @@ Int_t TGeant3::Gsvert(Float_t*, Int_t, Int_t, Float_t*, Int_t){return 0;}
 //=======================functions from GPHYS
 //___________________________________________
 void  TGeant3::Gphysi() {}
+void  TGeant3::SetCerenkov(Int_t, Int_t, Float_t *, Float_t *, 
+			   Float_t *, Float_t *) {}
 
 
 //=======================functions from GTRAK

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.42  2000/12/19 08:37:48  alibrary
+Using dlsym to retrieve address of commons
+
 Revision 1.41  2000/12/18 11:33:50  alibrary
 New call frequence histograms per module and volume
 
@@ -126,6 +129,7 @@ Introduction of the Copyright and cvs Log
 #include "TROOT.h" 
 #include "TDatabasePDG.h"
 #include "TLorentzVector.h"
+#include "TArrayI.h"
 
 #include "THIGZ.h" 
 #include "TGeant3.h" 
@@ -1754,14 +1758,13 @@ Int_t   TGeant3::CurrentEvent() const
 }
 
 //_____________________________________________________________________________
-AliMCProcess TGeant3::ProdProcess() const
+AliMCProcess TGeant3::ProdProcess(Int_t ) const
 {
   //
   // Name of the process that has produced the secondary particles
   // in the current step
   //
-  const Int_t kIpMec[13] = { 5,6,7,8,9,10,11,12,21,23,25,105,108 };
-  const Int_t kIpProc[13] = { kPDecay, kPPair, kPCompton, 
+  const AliMCProcess kIpProc[13] = { kPDecay, kPPair, kPCompton, 
 			      kPPhotoelectric, kPBrem, kPDeltaRay,
 			      kPAnnihilation, kPHadronic, 
 			      kPMuonNuclear, kPPhotoFission,
@@ -1771,11 +1774,55 @@ AliMCProcess TGeant3::ProdProcess() const
   if(fGcking->ngkine>0) 
     for (km = 0; km < fGctrak->nmec; ++km) 
       for (im = 0; im < 13; ++im) 
-	if (fGctrak->lmec[km] == kIpMec[im]) 
-	    return (AliMCProcess) kIpProc[im];
+	if (G3toVMC(fGctrak->lmec[km]) == kIpProc[im]) 
+	    return kIpProc[im];
   //  
-  return (AliMCProcess) kPNoProcess;
+  return kPNoProcess;
 }
+
+//_____________________________________________________________________________
+Int_t TGeant3::StepProcesses(TArrayI &proc) const
+{
+  //
+  // Return processes active in the current step
+  //
+  Int_t i;
+  Int_t nproc=Gctrak()->nmec;
+  //
+  proc.Set(nproc);
+  Int_t nvproc=0;
+  //
+  for (i=0; i<nproc; ++i) 
+    if((proc[nvproc]=G3toVMC(Gctrak()->lmec[i]))!=kPNoProcess) nvproc++;
+  //
+  proc.Set(nvproc);
+  //
+  return nvproc;
+}
+
+//_____________________________________________________________________________
+AliMCProcess TGeant3::G3toVMC(Int_t iproc) const
+{
+  //
+  // Conversion between GEANT and AliMC processes
+  //
+  
+  const AliMCProcess kPG2MC1[30] = {kPNoProcess, kPMultipleScattering, kPEnergyLoss, kPMagneticFieldL, kPDecay, 
+			     kPPair, kPCompton, kPPhotoelectric, kPBrem, kPDeltaRay,
+			     kPAnnihilation, kPHadronic, kPNoProcess, kPEvaporation, kPNuclearFission, 
+			     kPNuclearAbsorption, kPPbarAnnihilation, kPNCapture, kPHElastic, kPHInhelastic,
+			     kPMuonNuclear, kPTOFlimit, kPPhotoFission, kPNoProcess, kPRayleigh,
+			     kPNoProcess, kPNoProcess, kPNoProcess, kPNull, kPStop};
+  
+  const AliMCProcess kPG2MC2[9] = {kPLightAbsorption, kPLightScattering, kStepMax, kPNoProcess, kPCerenkov,
+			    kPLightReflection, kPLightRefraction, kPSynchrotron, kPNoProcess};
+
+  AliMCProcess proc=kPNoProcess;
+  if(1<iproc && iproc<=30) proc= kPG2MC1[iproc-1];
+  else if(101<=iproc && iproc<=109) proc= kPG2MC2[iproc-100-1];
+  return proc;
+}
+
 
 //_____________________________________________________________________________
 void    TGeant3::GetSecondary(Int_t isec, Int_t& ipart, 
@@ -2408,7 +2455,29 @@ void  TGeant3::Gstmed(Int_t numed, const char *name, Int_t nmat, Int_t isvol,
  
 //_____________________________________________________________________________
 void  TGeant3::Gsckov(Int_t itmed, Int_t npckov, Float_t *ppckov,
-		      Float_t *absco, Float_t *effic, Float_t *rindex)
+			   Float_t *absco, Float_t *effic, Float_t *rindex)
+{ 
+  //
+  //    Stores the tables for UV photon tracking in medium ITMED 
+  //    Please note that it is the user's responsability to 
+  //    provide all the coefficients:
+  //
+  //
+  //       ITMED       Tracking medium number
+  //       NPCKOV      Number of bins of each table
+  //       PPCKOV      Value of photon momentum (in GeV)
+  //       ABSCO       Absorbtion coefficients 
+  //                   dielectric: absorbtion length in cm
+  //                   metals    : absorbtion fraction (0<=x<=1)
+  //       EFFIC       Detection efficiency for UV photons 
+  //       RINDEX      Refraction index (if=0 metal)
+  //
+  gsckov(itmed,npckov,ppckov,absco,effic,rindex);
+}
+
+//_____________________________________________________________________________
+void  TGeant3::SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
+			   Float_t *absco, Float_t *effic, Float_t *rindex)
 { 
   //
   //    Stores the tables for UV photon tracking in medium ITMED 

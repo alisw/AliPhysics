@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  1999/09/29 09:24:07  fca
+Introduction of the Copyright and cvs Log
+
 */
 
 //////////////////////////////////////////////////////////////////////////
@@ -75,16 +78,15 @@ int main(int argc, char **argv)
   // run and event number, the number of vertices, tracks and primary tracks
   // in the event.
   //
-  new AliRun("gAlice"," The Alice Geant3-based MonteCarlo");
+  new AliRun("gAlice","The ALICE Off-line Simulation Framework");
   
   // Start interactive geant
   
   TRint *theApp = new TRint("aliroot", &argc, argv, 0, 0);
   
-  // --- Initialisation of the GALICE package ---
+  // --- Start the event loop ---
   theApp->Run();
   
-  // --- Simulation of all events ---
   return(0);
 }
 
