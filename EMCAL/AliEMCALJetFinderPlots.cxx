@@ -308,7 +308,7 @@ delete 	  fhEtaPhiSpread;
 
 }	
 
-void AliEMCALJetFinderPlots::FillFromOutput(AliEMCALJetFinderOutput* output, Float_t weight=1.0)
+void AliEMCALJetFinderPlots::FillFromOutput(AliEMCALJetFinderOutput* output, Float_t weight)
 {
 	// Fill histograms from an output object
 if (!fInitialised) InitPlots();	
@@ -431,8 +431,8 @@ if (numappjet > 1)
   fhEtaPhiSpread2->Fill(jethighest->Eta()-parton->Eta(),jethighest->Phi() - parton->Phi());
   fhJetEtSecond2->Fill(jetsecond->Energy()*fScaleFactor,weight); 
   fhJetEtRatio2->Fill(jetsecond->Energy()/jethighest->Energy(),weight); 
-  fhEtaPhiDist2->Fill( TMath::Sqrt((jethighest->Eta() - jetsecond->Eta())*(jethighest->Eta() - jetsecond->Eta(),weight)
-		      + (jethighest->Phi() - jetsecond->Phi())*(jethighest->Phi() - jetsecond->Phi())	  ));  
+  fhEtaPhiDist2->Fill( TMath::Sqrt((jethighest->Eta() - jetsecond->Eta())*(jethighest->Eta() - jetsecond->Eta())
+		      + (jethighest->Phi() - jetsecond->Phi())*(jethighest->Phi() - jetsecond->Phi())	  ),weight);  
   /* 
   Float_t *pt,*phi,*eta;
   Int_t *pdg;
