@@ -585,8 +585,6 @@ void AliMC::Init()
 
    //=================Create Materials and geometry
    gMC->Init();
-   gMC->DefineParticles();  //Create standard MC particles
-
    //Read the cuts for all materials
    ReadTransPar();
    //Build the special IMEDIA table
