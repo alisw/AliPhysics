@@ -23,10 +23,10 @@ class AliL3Transform {
   Int_t fNSlice;
   Int_t fNRow;
   Double_t fPi;
-  Double_t fCos[36];
-  Double_t fSin[36];
-  Double_t fX[174];
-  Int_t fNPads[174];
+  Double_t fCos[36]; //change this following Init
+  Double_t fSin[36]; //change this following Init
+  Double_t fX[176];  //change this following Init
+  Int_t fNPads[176]; //change this following Init
  public:
   AliL3Transform();
   virtual ~AliL3Transform();
@@ -41,7 +41,7 @@ class AliL3Transform {
   Bool_t Sector2Slice(Int_t & slice, Int_t & slicerow,Int_t  sector, Int_t row) const;
   
   Double_t Row2X(Int_t slicerow);
-  Int_t GetNPads(Int_t row){return (row<174)?fNPads[row]:0;}
+  Int_t GetNPads(Int_t row){return (row<fNRow)?fNPads[row]:0;}
   Int_t GetNTimeBins(){return fNTimeBins;}
 
   Double_t GetEta(Float_t *xyz);
