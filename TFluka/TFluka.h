@@ -17,13 +17,16 @@
 #include "TVirtualMC.h"
 #include "TMCProcess.h" 
 
+//Forward declaration
+class TG4GeometryManager;
+class TG4DetConstruction;
 
 class TFluka : public TVirtualMC {
   
  public:
   TFluka(const char *title, Int_t verbosity = 0);
   TFluka();
-  virtual ~TFluka() {}
+  virtual ~TFluka();
   
   //
   // methods for building/management of geometry
@@ -33,87 +36,64 @@ class TFluka : public TVirtualMC {
   // functions from GCONS 
   virtual void  Gfmate(Int_t imat, char *name, Float_t &a, Float_t &z,  
 		       Float_t &dens, Float_t &radl, Float_t &absl,
-		       Float_t* ubuf, Int_t& nbuf)
-    {printf("WARNING: Gfmate not yet implemented !\n");}
+		       Float_t* ubuf, Int_t& nbuf);
   virtual void  Gfmate(Int_t imat, char *name, Double_t &a, Double_t &z,  
 		       Double_t &dens, Double_t &radl, Double_t &absl,
-		       Double_t* ubuf, Int_t& nbuf)
-    {printf("WARNING: Gfmate not yet implemented !\n");}
+		       Double_t* ubuf, Int_t& nbuf);
   
   // detector composition
   virtual void  Material(Int_t& kmat, const char* name, Double_t a, 
 			 Double_t z, Double_t dens, Double_t radl, Double_t absl,
-			 Float_t* buf, Int_t nwbuf)
-    {printf("WARNING: Material not yet implemented !\n");}
+			 Float_t* buf, Int_t nwbuf);
   virtual void  Material(Int_t& kmat, const char* name, Double_t a, 
 			 Double_t z, Double_t dens, Double_t radl, Double_t absl,
-			 Double_t* buf, Int_t nwbuf)
-    {printf("WARNING: Material not yet implemented !\n");}
+			 Double_t* buf, Int_t nwbuf);
   virtual void  Mixture(Int_t& kmat, const char *name, Float_t *a, 
-			Float_t *z, Double_t dens, Int_t nlmat, Float_t *wmat)
-    {printf("WARNING: Mixture not yet implemented !\n");}
+			Float_t *z, Double_t dens, Int_t nlmat, Float_t *wmat);
   virtual void  Mixture(Int_t& kmat, const char *name, Double_t *a, 
-			Double_t *z, Double_t dens, Int_t nlmat, Double_t *wmat)
-    {printf("WARNING: Mixture not yet implemented !\n");}
+			Double_t *z, Double_t dens, Int_t nlmat, Double_t *wmat);
   virtual void  Medium(Int_t& kmed, const char *name, Int_t nmat, 
 		       Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
 		       Double_t stemax, Double_t deemax, Double_t epsil, 
-		       Double_t stmin, Float_t* ubuf, Int_t nbuf)
-    {printf("WARNING: Medium not yet implemented !\n");}
+		       Double_t stmin, Float_t* ubuf, Int_t nbuf);
   virtual void  Medium(Int_t& kmed, const char *name, Int_t nmat, 
 		       Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
 		       Double_t stemax, Double_t deemax, Double_t epsil, 
-		       Double_t stmin, Double_t* ubuf, Int_t nbuf)
-    {printf("WARNING: Medium not yet implemented !\n");}
+		       Double_t stmin, Double_t* ubuf, Int_t nbuf);
   virtual void  Matrix(Int_t& krot, Double_t thetaX, Double_t phiX, 
 		       Double_t thetaY, Double_t phiY, Double_t thetaZ, 
-		       Double_t phiZ)
-    {printf("WARNING: Matrix not yet implemented !\n");}
-  virtual void  Gstpar(Int_t itmed, const char *param, Double_t parval)
-    {printf("WARNING: Gstpar not yet implemented !\n");}
+		       Double_t phiZ);
+  virtual void  Gstpar(Int_t itmed, const char *param, Double_t parval);
   
   // functions from GGEOM 
   virtual Int_t  Gsvolu(const char *name, const char *shape, Int_t nmed,  
-                          Float_t *upar, Int_t np)
-    {printf("WARNING: Gsvolu not yet implemented !\n"); return -1;}
+			Float_t *upar, Int_t np);
   virtual Int_t  Gsvolu(const char *name, const char *shape, Int_t nmed,  
-			Double_t *upar, Int_t np)
-    {printf("WARNING: Gsvolu not yet implemented !\n"); return -1;}
+			Double_t *upar, Int_t np);
   virtual void  Gsdvn(const char *name, const char *mother, Int_t ndiv, 
-		      Int_t iaxis)
-    {printf("WARNING: Gsdvn not yet implemented !\n");}
+		      Int_t iaxis);
   virtual void  Gsdvn2(const char *name, const char *mother, Int_t ndiv, 
-		       Int_t iaxis, Double_t c0i, Int_t numed)
-    {printf("WARNING: Gsdvn2 not yet implemented !\n");}
+		       Int_t iaxis, Double_t c0i, Int_t numed);
   virtual void  Gsdvt(const char *name, const char *mother, Double_t step, 
-		      Int_t iaxis, Int_t numed, Int_t ndvmx)
-    {printf("WARNING: Gsdvt not yet implemented !\n");}
+		      Int_t iaxis, Int_t numed, Int_t ndvmx);
   virtual void  Gsdvt2(const char *name, const char *mother, Double_t step, 
-		       Int_t iaxis, Double_t c0, Int_t numed, Int_t ndvmx)
-    {printf("WARNING: Gsdvt2 not yet implemented !\n");}
-  virtual void  Gsord(const char *name, Int_t iax)
-    {printf("WARNING: Gsord not yet implemented !\n");}
+		       Int_t iaxis, Double_t c0, Int_t numed, Int_t ndvmx);
+  virtual void  Gsord(const char *name, Int_t iax);
   virtual void  Gspos(const char *name, Int_t nr, const char *mother,  
 		      Double_t x, Double_t y, Double_t z, Int_t irot, 
-		      const char *konly="ONLY")
-    {printf("WARNING: Gspos not yet implemented !\n");}
+		      const char *konly="ONLY");
   virtual void  Gsposp(const char *name, Int_t nr, const char *mother,  
 		       Double_t x, Double_t y, Double_t z, Int_t irot,
-		       const char *konly, Float_t *upar, Int_t np)
-    {printf("WARNING: Gsposp not yet implemented !\n");}
+		       const char *konly, Float_t *upar, Int_t np);
   virtual void  Gsposp(const char *name, Int_t nr, const char *mother,  
 		       Double_t x, Double_t y, Double_t z, Int_t irot,
-		       const char *konly, Double_t *upar, Int_t np)
-    {printf("WARNING: Gsposp not yet implemented !\n");}
-  virtual void  Gsbool(const char* onlyVolName, const char* manyVolName)
-    {printf("WARNING: Gsbool not yet implemented !\n");}
+		       const char *konly, Double_t *upar, Int_t np);
+  virtual void  Gsbool(const char* onlyVolName, const char* manyVolName);
   
   virtual void  SetCerenkov(Int_t itmed, Int_t npckov, Float_t *ppckov,
-			    Float_t *absco, Float_t *effic, Float_t *rindex)
-    {printf("WARNING: SetCerenkov not yet implemented !\n");}
+			    Float_t *absco, Float_t *effic, Float_t *rindex);
   virtual void  SetCerenkov(Int_t itmed, Int_t npckov, Double_t *ppckov,
-			    Double_t *absco, Double_t *effic, Double_t *rindex)
-    {printf("WARNING: SetCerenkov not yet implemented !\n");}
+			    Double_t *absco, Double_t *effic, Double_t *rindex);
   
   
   // functions for drawing
@@ -127,8 +107,7 @@ class TFluka : public TVirtualMC {
     {printf("WARNING: Gdraw not yet implemented !\n");}
   
   // Euclid
-  virtual void  WriteEuclid(const char*, const char*, Int_t, Int_t)
-    {printf("WARNING: WriteEuclid not yet implemented !\n");}
+  virtual void  WriteEuclid(const char*, const char*, Int_t, Int_t);
   
   // get methods
   virtual Int_t VolId(const Text_t* volName) const
@@ -298,10 +277,8 @@ class TFluka : public TVirtualMC {
   //
   
   virtual void Init();
-  virtual void FinishGeometry()
-    {printf("WARNING: FinishGeometry not yet implemented !\n");}
-  virtual void BuildPhysics()
-    {printf("WARNING: BuildPhysics not yet implemented !\n");}
+  virtual void FinishGeometry();
+  virtual void BuildPhysics();
   virtual void ProcessEvent();
   virtual void ProcessRun(Int_t nevent);
   
@@ -327,10 +304,9 @@ class TFluka : public TVirtualMC {
   
 
 
-
-  enum {kMaxParticles = 100};
-  Int_t fNPDGCodes;               // Number of PDG codes known by FLUKA
-  Int_t fPDGCode[kMaxParticles];  // Translation table of PDG codes
+  //Geometry through Geant4 for the time being!!!
+  TG4GeometryManager*  fGeometryManager; //geometry manager
+  TG4DetConstruction*  fDetector;        //Detector
 
 
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo
