@@ -742,8 +742,8 @@ void AliMUON::Reconstruct() const
 {
 // reconstruct clusters
 
-  AliLoader* loader = GetLoader();
-  AliRunLoader* runLoader = loader->GetRunLoader();
+//  AliLoader* loader = GetLoader();
+  AliRunLoader* runLoader = fLoader->GetRunLoader();
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
   for (Int_t i = 0; i < 10; i++) {
@@ -754,9 +754,9 @@ void AliMUON::Reconstruct() const
 
   AliMUONEventReconstructor* reco = new AliMUONEventReconstructor();
 
-  loader->LoadRecPoints("RECREATE");
-  loader->LoadTracks("RECREATE");
-  loader->LoadDigits("READ");
+  fLoader->LoadRecPoints("RECREATE");
+  fLoader->LoadTracks("RECREATE");
+  fLoader->LoadDigits("READ");
 
 
   //   Loop over events              
@@ -765,7 +765,7 @@ void AliMUON::Reconstruct() const
     runLoader->GetEvent(ievent);
 
     //---------------------------- digit2Reco & Trigger ---------------------
-    if (!loader->TreeR()) loader->MakeRecPointsContainer();
+    if (!fLoader->TreeR()) fLoader->MakeRecPointsContainer();
      
     // tracking branch
     fMUONData->MakeBranch("RC");
@@ -778,7 +778,7 @@ void AliMUON::Reconstruct() const
     const_cast<AliMUON*>(this)->Trigger(ievent); 
 
     //---------------------------- Track & TriggerTrack ---------------------
-    if (!loader->TreeT()) loader->MakeTracksContainer();
+    if (!fLoader->TreeT()) fLoader->MakeTracksContainer();
 
     fMUONData->MakeBranch("RT"); //track
     fMUONData->SetTreeAddress("RT");
@@ -798,7 +798,7 @@ void AliMUON::Reconstruct() const
     }
     fMUONData->Fill("RL");
 
-    loader->WriteTracks("OVERWRITE");  
+    fLoader->WriteTracks("OVERWRITE");  
   
     //--------------------------- Resetting branches -----------------------
     fMUONData->ResetDigits();
@@ -807,9 +807,10 @@ void AliMUON::Reconstruct() const
     fMUONData->ResetRecTracks();
     fMUONData->ResetRecTriggerTracks();
   }
-  loader->UnloadDigits();
-  loader->UnloadRecPoints();
-  loader->UnloadTracks();
+  fLoader->UnloadDigits();
+  fLoader->UnloadRecPoints();
+  fLoader->UnloadTracks();
+  //delete reco;
 }
 //________________________________________________________________________
 void AliMUON::FillESD(AliESD* event) const
