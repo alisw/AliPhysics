@@ -38,8 +38,8 @@ public:
   Float_t Vz()    const {return fVz;};
   Float_t Eloss() const {return fEloss;}
   Float_t Tleng() const {return fTleng;}
-  Float_t Nphot() const {return fNphot;}
-  Float_t Cell()  const {return fCell;}
+  Int_t   Nphot() const {return fNphot;}
+  Int_t   Cell()  const {return fCell;}
  
 private:
   Int_t   fVolume;        // Current volume ID
