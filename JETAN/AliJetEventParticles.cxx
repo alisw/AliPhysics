@@ -80,7 +80,7 @@ void AliJetEventParticles::AddParticle(AliJetParticle* part)
 void AliJetEventParticles::AddParticle(const AliJetParticle* part)
 {
   //Adds new particle to the event
-  fParticles->AddAt(new AliJetParticle(*part),fNParticles++); 
+  new((*fParticles)[fNParticles++]) AliJetParticle(*part);
 }
 
 /**************************************************************************/ 

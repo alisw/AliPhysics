@@ -43,12 +43,12 @@ class AliJetParticlesReader: public TNamed
   AliJetEventParticles* GetEventParticles(Bool_t o) 
     {fOwner=o; return fEventParticles;} //return particles and set ownership
 
-  Int_t GetNumberOfDirs()       const {return (fDirs)?fDirs->GetEntries():0;}
-  Int_t GetCurEventNumber()     const {return fCurrentEvent;}
-  Int_t GetCurDirNumber()       const {return fCurrentDir;}
-  Int_t GetTotEventsRead()      const {return fNEventsRead;} 
-  Int_t GetFirstEvent()         const {return fFirst;}
-  Int_t GetLastEvent()          const {return fLast;}
+  Int_t GetNumberOfDirs()   const {return (fDirs)?fDirs->GetEntries():0;}
+  Int_t GetCurEventNumber() const {return fCurrentEvent;}
+  Int_t GetCurDirNumber()   const {return fCurrentDir;}
+  Int_t GetTotEventsRead()  const {return fNEventsRead;} 
+  Int_t GetFirstEvent()     const {return fFirst;}
+  Int_t GetLastEvent()      const {return fLast;}
 
   protected:
 

@@ -89,7 +89,7 @@ Int_t AliJetParticlesReaderKine::ReadNext()
   if((!fOwner) || (fEventParticles == 0)) 
     fEventParticles = new AliJetEventParticles();
 
-  do  
+  while(fCurrentDir < GetNumberOfDirs())
     { 
       if (!OpenFile(fCurrentDir))
       { 
@@ -131,16 +131,20 @@ Int_t AliJetParticlesReaderKine::ReadNext()
 	{
 	  TParticle *p = stack->Particle(i);
 	  if(!p) continue;
-	  if(p->GetFirstMother() >= 0) continue; 
+	  Int_t child1 = p->GetFirstDaughter();
+	  //Int_t child2 = p->GetLastDaughter();	
+	  //Int_t mother = p->GetFirstMother();	   
+	  if((child1>=0) && (child1<npart)) continue; 
+	  //cout << child1 << " " << child2 << " " << mother << endl;
 
 	  if(IsAcceptedParticle(p)) //put particle in event
 	    fEventParticles->AddParticle(p,i); 
 	}
-
       fCurrentEvent++;
+      fCurrentDir++;
       fNEventsRead++;
       return kTRUE;
-    } while(fCurrentDir < GetNumberOfDirs());
+    }
       //end of loop over directories specified in fDirs Obj Array
   return kFALSE;
 }
@@ -159,6 +163,7 @@ Int_t AliJetParticlesReaderKine::OpenFile(Int_t n)
     }
 
   TString filename = dirname +"/"+ fFileName;
+  if(fRunLoader) delete fRunLoader;
   fRunLoader = AliRunLoader::Open(filename.Data()); 
 
   if (fRunLoader == 0)

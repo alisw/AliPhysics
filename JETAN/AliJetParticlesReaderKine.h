@@ -51,7 +51,8 @@ class AliJetParticlesReaderKine: public AliJetParticlesReader
 
 inline Bool_t AliJetParticlesReaderKine::IsAcceptedParticle(TParticle *p) const
 {
-  //if(p->GetStatusCode()%100!=1) return kFALSE;
+  //p->Print();
+
   Int_t pcode=p->GetPdgCode();  
   if ((pcode==11)||(pcode==-11)||(pcode==22)) {
     if(!fEM) return kFALSE;
