@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2001/12/01 20:00:45  hristov
+New protections added
+
 Revision 1.16  2001/10/30 08:25:14  jchudoba
 Small correction to prevent crash when hit is at the edge of a slat
 
@@ -169,6 +172,8 @@ void AliMUONSegmentationSlat::GlobalToLocal(
     Float_t zlocal;
     Int_t i;
     Int_t index=-1;
+    Float_t eps = 1.e-4;
+    
 // Transform According to slat plane z-position: negative side is shifted down 
 //                                                 positive side is shifted up
 // by half the overlap
@@ -183,7 +188,7 @@ void AliMUONSegmentationSlat::GlobalToLocal(
 // Find slat number                      
     for (i=ifirst; i<fNSlats; i+=2) {
 	index=i;
-	if ((y >= fYPosition[i]) && (y <= fYPosition[i]+fSlatY)) break;
+	if ((y >= fYPosition[i]-eps) && (y <= fYPosition[i]+fSlatY+eps)) break;
     }
     
 //
@@ -377,7 +382,6 @@ FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy)
 {
 // Initialises iteration over pads for charge distribution algorithm
 //
-
 
 
     Int_t islat;
