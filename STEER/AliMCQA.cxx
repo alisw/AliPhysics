@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2001/01/26 19:58:48  hristov
+Major upgrade of AliRoot code
+
 Revision 1.4  2001/01/17 10:50:50  hristov
 Corrections to destructors
 
@@ -176,6 +179,9 @@ AliMCQA::~AliMCQA() {
     delete fModNames;
     fModNames=0;
   }
+  delete [] fDetDone;
+  delete fMPaveLabel;
+  delete fVPaveLabel;
 }
 
 //_____________________________________________________________________________
