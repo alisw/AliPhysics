@@ -35,6 +35,7 @@ AliITSresponseSDD::AliITSresponseSDD()
    SetDataType();
    SetFilenames();
    SetOutputOption();
+   SetDo10to8();
 
 }
 
@@ -56,6 +57,7 @@ AliITSresponseSDD::AliITSresponseSDD(const AliITSresponseSDD &source){
   this->fZeroSuppFlag = source.fZeroSuppFlag;
   this->fMinVal = source.fMinVal;
   this->fWrite = source.fWrite;
+  this->fBitComp = source.fBitComp;
   this->fOption = source.fOption;
   this->fParam1 = source.fParam1;
   return;
@@ -80,6 +82,7 @@ AliITSresponseSDD&
   this->fZeroSuppFlag = source.fZeroSuppFlag;
   this->fMinVal = source.fMinVal;
   this->fWrite = source.fWrite;
+  this->fBitComp = source.fBitComp;
   this->fOption = source.fOption;
   this->fParam1 = source.fParam1;
   return *this;

@@ -28,10 +28,10 @@ public:
     return fMaxAdc;
   }                       
   
-  virtual void    SetMagicValue(Float_t p1=1024) {
+  virtual void    SetMagicValue(Float_t p1=96.95) {
     // Set maximum Adc-top value
     fTopValue=p1;
-    //it was 96.95
+    //it was 1024
   }
   virtual Float_t MagicValue()  {
     // Get maximum Adc-top value
@@ -92,6 +92,16 @@ public:
   virtual  void  GetNoiseParam(Float_t &n, Float_t &b) {
     // get noise param
     n=fNoise; b=fBaseline;
+  }  
+
+  virtual  void  SetDo10to8(Bool_t bitcomp=kTRUE) {
+    // set the option for 10 to 8 bit compression
+    fBitComp = bitcomp;
+  }
+
+  Bool_t Do10to8() {
+    // get 10 to 8 compression option
+    return fBitComp;
   }   
   
   virtual void    SetZeroSupp (const char *opt="2D") {
@@ -182,6 +192,8 @@ protected:
   Int_t      fMinVal;        // Min value used in 2D zero-suppression algo
   
   Bool_t     fWrite;         // Write option for the compression algorithms
+  Bool_t     fBitComp;       // 10 to 8 bit compression option
+
   TString    fOption;        // Zero-suppresion option (1D, 2D or none)
   TString    fParam1;        // Read baselines from file option
   TString    fParam2;        // Read compression algo thresholds from file 
