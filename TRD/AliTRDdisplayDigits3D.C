@@ -79,6 +79,8 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
   Int_t totalbgnd   = 0;
   Int_t totalmerged = 0;
 
+  AliTRDparameter *par = new AliTRDparameter("TRDparameter","TRD parameter class");
+ 
   // Loop through all detectors
   for (Int_t idet = 0; idet < geo->Ndet(); idet++) {
 
@@ -94,9 +96,9 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
     Int_t isec    = geo->GetSector(idet);
     Int_t icha    = geo->GetChamber(idet);
     Int_t ipla    = geo->GetPlane(idet);
-    Int_t  rowMax = geo->GetRowMax(ipla,icha,isec);
-    Int_t  colMax = geo->GetColMax(ipla);
-    Int_t timeMax = geo->GetTimeMax();
+    Int_t  rowMax = par->GetRowMax(ipla,icha,isec);
+    Int_t  colMax = par->GetColMax(ipla);
+    Int_t timeMax = par->GetTimeMax();
 
     Int_t ndigits = digits->GetOverThreshold(thresh);
 
@@ -135,7 +137,7 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
               loc[0] = row;
               loc[1] = col;
               loc[2] = time;
-              geo->Local2Global(idet,loc,glb);
+              geo->Local2Global(idet,loc,glb,par);
               Float_t x = glb[0];
               Float_t y = glb[1];
               Float_t z = glb[2];
