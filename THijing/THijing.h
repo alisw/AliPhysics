@@ -122,6 +122,8 @@ public:
 
    virtual Float_t     GetPATT(Int_t key1, Int_t key2) const;
 
+   virtual Float_t     GetVATT(Int_t key1, Int_t key2) const;
+
 
    // common HIJJET1 access routines - read-only common: 
 

@@ -266,11 +266,12 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 		  HIMAIN2.patt[1][i] ,
 		  HIMAIN2.patt[2][i] ,
 		  HIMAIN2.patt[3][i] ,
-		  
-		  0,
-		  0,
-		  0,
-		  0);
+
+		  HIMAIN2.vatt[0][i] ,
+		  HIMAIN2.vatt[1][i] ,
+		  HIMAIN2.vatt[2][i] ,
+		  HIMAIN2.vatt[3][i] 
+		  );
 	  }
       }
   }
@@ -300,10 +301,11 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 	      HIMAIN2.patt[2][i] ,
 	      HIMAIN2.patt[3][i] ,
 	      
-	      0,
-	      0,
-	      0,
-	      0);
+	      HIMAIN2.vatt[0][i] ,
+	      HIMAIN2.vatt[1][i] ,
+	      HIMAIN2.vatt[2][i] ,
+	      HIMAIN2.vatt[3][i]
+	      );
       }
   }
   return nump;
@@ -598,7 +600,7 @@ Int_t THijing::GetKATT(Int_t key1, Int_t key2) const
 //______________________________________________________________________________
 Float_t THijing::GetPATT(Int_t key1, Int_t key2) const
 {
-   if ( key1<1 || key1>130000 ) {
+   if ( key1<1 || key1>200000 ) {
       printf("ERROR in THijing::GetPATT(key1,key2):\n");
       printf("      key1=%i is out of range [1..130000]\n",key1);
       return 0;
@@ -611,6 +613,23 @@ Float_t THijing::GetPATT(Int_t key1, Int_t key2) const
    }
    
    return   HIMAIN2.patt[key2-1][key1-1];
+}
+
+Float_t THijing::GetVATT(Int_t key1, Int_t key2) const
+{
+   if ( key1<1 || key1>200000 ) {
+      printf("ERROR in THijing::GetVATT(key1,key2):\n");
+      printf("      key1=%i is out of range [1..130000]\n",key1);
+      return 0;
+   }
+
+   if ( key2<1 || key2>4 ) {
+      printf("ERROR in THijing::GetVATT(key1,key2):\n");
+      printf("      key2=%i is out of range [1..4]\n",key2);
+      return 0;
+   }
+   
+   return   HIMAIN2.vatt[key2-1][key1-1];
 }
 
 //====================== access to common HIJJET1 ===============================
