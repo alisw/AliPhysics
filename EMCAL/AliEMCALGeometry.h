@@ -23,7 +23,6 @@
 
 #include "AliGeometry.h"
 
-
 class AliEMCALGeometry : public AliGeometry {
  public:
     AliEMCALGeometry() {
@@ -50,16 +49,43 @@ class AliEMCALGeometry : public AliGeometry {
     // Return EMCA geometrical parameters
     // geometry
     const Float_t GetAirGap() const { return fAirGap ; }
+    const Float_t GetAlFrontThickness() const { return fAlFrontThick;}
     const Float_t GetArm1PhiMin() const { return fArm1PhiMin ; }
     const Float_t GetArm1PhiMax() const { return fArm1PhiMax ; }
+    const Float_t GetArm1EtaMin() const { return fArm1EtaMin;}
+    const Float_t GetArm1EtaMax() const { return fArm1EtaMax;}
     const Float_t GetIPDistance()   const { return  fIPDistance  ; } 
     const Float_t GetEnvelop(Int_t index) const { return fEnvelop[index] ; }  
     const Float_t GetShellThickness() const { return fShellThickness ; }
     const Float_t GetZLength() const { return fZLength ; } 
     const Float_t GetGap2Active() const {return  fGap2Active ; }
+    const Float_t GetDeltaEta() const {return (fArm1EtaMax-fArm1EtaMin)/
+					   ((Float_t)fNZ);}
+    const Float_t GetDeltaPhi() const {return (fArm1PhiMax-fArm1PhiMin)/
+					   ((Float_t)fNPhi);}
     const Int_t   GetNLayers() const {return fNLayers ;}
     const Int_t   GetNZ() const {return fNZ ;}
+    const Int_t   GetNEta() const {return fNZ ;}
     const Int_t   GetNPhi() const {return fNPhi ;}
+    const Float_t GetPbRadThick(){ // returns Pb radiator thickness in cm.
+	return fPbRadThickness;
+    }
+    const Float_t GetFullSintThick(){ // returns Full tower sintilator
+	                              // thickness in cm.
+	return fFullShowerSintThick;
+    }
+    const Float_t GetPreSintThick(){ // returns PreShower tower sintilator
+	                              // thickness in cm.
+	return fPreShowerSintThick;
+    }
+    Float_t AngleFromEta(Float_t eta){ // returns angle in radians for a given
+	// pseudorapidity.
+	return 2.0*TMath::ATan(TMath::Exp(-eta));
+	}
+    Float_t ZFromEtaR(Float_t r,Float_t eta){ // returns z in for a given
+	// pseudorapidity and r=sqrt(x*x+y*y).
+	return r/TMath::Tan(AngleFromEta(eta));
+	}
     Int_t TowerIndex(Int_t iz,Int_t iphi,Int_t ipre); // returns tower index
     // returns tower indexs iz, iphi.
     void TowerIndexes(Int_t index,Int_t &iz,Int_t &iphi,Int_t &ipre);
@@ -81,35 +107,39 @@ class AliEMCALGeometry : public AliGeometry {
 
  protected:
     AliEMCALGeometry(const Text_t* name, const Text_t* title="") :
-	AliGeometry(name, title) { 
-	// ctor only for internal usage (singleton)
-	Init() ; 
+	AliGeometry(name, title) {// ctor only for internal usage (singleton)
+	Init();
     };
     void Init(void) ;            // initializes the parameters of EMCAL
+
  private:
     static AliEMCALGeometry * fgGeom ; // pointer to the unique instance
                                        // of the singleton 
-    static Bool_t fgInit ;// Tells if geometry has been succesfully set up
-                          // geometry
-    Float_t fAirGap ; // Distance between envelop and active material 
-    Float_t fArm1PhiMin ; // Minimum angular position of EMCAL in Phi (degrees)
-    Float_t fArm1PhiMax ; // Maximum angular position of EMCAL in Phi (degrees)
+    static Bool_t fgInit;// Tells if geometry has been succesfully set up.
+    Float_t fAirGap;     // Distance between envelop and active material
+    Float_t fAlFrontThick; // Thickness of the front Al face of the support box
+    Float_t fPreShowerSintThick; // Thickness of the sintilator for the
+                                 // preshower part of the calorimeter
+    Float_t fFullShowerSintThick;// Thickness of the sintilaor for the full
+                                 // shower part of the calorimeter
+    Float_t fPbRadThickness; // Thickness of Pb radiators cm.
+    Float_t fArm1PhiMin; // Minimum angular position of EMCAL in Phi (degrees)
+    Float_t fArm1PhiMax; // Maximum angular position of EMCAL in Phi (degrees)
+    Float_t fArm1EtaMin; // Minimum pseudorapidity position of EMCAL in Eta
+    Float_t fArm1EtaMax; // Maximum pseudorapidity position of EMCAL in Eta
 
     // It is assumed that Arm1 and Arm2 have the same following parameters
-    Float_t fEnvelop[3] ;              // the GEANT TUB for the detector 
-    Float_t fIPDistance ; // Distance of the inner surface to the
-                          // interaction point
-    Float_t fShellThickness ;          // Total thickness in (x,y) direction
-    Float_t fZLength ;                 // Total length in z direction
-    Float_t fGap2Active ; // Gap between the envelop and the active material
-    Int_t fNLayers ; // Number of layers of material in the R direction
-    Int_t fNZ ;                      // Number of Towers in the Z direction
-    Int_t fNPhi ;                    //Number of Towers in the Phi Direction
+    Float_t fEnvelop[3];      // the GEANT TUB for the detector 
+    Float_t fIPDistance; // Radial Distance of the inner surface of the EMCAL
+    Float_t fShellThickness; // Total thickness in (x,y) direction
+    Float_t fZLength;        // Total length in z direction
+    Float_t fGap2Active;     // Gap between the envelop and the active material
+    Int_t   fNLayers;        // Number of layers of material in the R direction
+    Int_t   fNZ;             // Number of Towers in the Z direction
+    Int_t   fNPhi;           //Number of Towers in the Phi Direction
  
-    ClassDef(AliEMCALGeometry,2)       // EMCAL geometry class 
+    ClassDef(AliEMCALGeometry,3) // EMCAL geometry class 
 
-} ;
+};
 
 #endif // AliEMCALGEOMETRY_H
-
-
