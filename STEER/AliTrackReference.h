@@ -27,13 +27,14 @@ public:
   virtual Float_t R() const {return TMath::Sqrt(fX*fX+fY*fY);}
   virtual Float_t Pt() const {return TMath::Sqrt(fPx*fPx+fPy*fPy);}
   virtual Float_t Phi() const {return TMath::Pi()+TMath::ATan2(-fPy,-fPx);}
-  virtual Float_t Theta() const {return (fZ==0)?TMath::Pi()/2:TMath::ACos(fZ/TMath::Sqrt(fX*fX+fY*fY+fZ*fZ)); }
+  virtual Float_t Theta() const {return (fPz==0)?TMath::Pi()/2:TMath::ACos(fPz/P());}
   virtual Float_t X() const {return fX;}
   virtual Float_t Y() const {return fY;}
   virtual Float_t Z() const {return fZ;}
   virtual Float_t Px() const {return fPx;}
   virtual Float_t Py() const {return fPy;}
   virtual Float_t Pz() const {return fPz;}
+  virtual Float_t P() const {return TMath::Sqrt(fPx*fPx+fPy*fPy+fPz*fPz);}
   virtual void SetPosition(Float_t x, Float_t y, Float_t z){fX=x; fY=y; fZ=z;}
   virtual void SetMomentum(Float_t px, Float_t py, Float_t pz){fPx=px; fPy=py; fPz=pz;}
 
