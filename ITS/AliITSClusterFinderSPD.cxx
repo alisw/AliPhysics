@@ -382,7 +382,13 @@ void AliITSClusterFinderSPD::ClusterFinder(Int_t ndigits,
      zcenter[i] = zcenter[i] - fSegmentation->Dz()/2.;
 
 
-     AliITSRawClusterSPD *clust = new AliITSRawClusterSPD(zcenter[i],xcenter[i],ndig,ndz,ndx,0.,0.,0.,0.,0.,0.,0.);
+     AliITSRawClusterSPD *clust = new AliITSRawClusterSPD(zcenter[i], //f
+							  xcenter[i], //f
+							  ndig, //f
+							  ndz,ndx, //ii
+							  0,0,0,0, //iiii
+							  0.,0., //ff
+							  0); //i
      iTS->AddCluster(0,clust);
      delete clust;
   }//end loop on clusters   

@@ -370,11 +370,11 @@ void AliITSsimulationSSD::IntegrateGaussian(Int_t k,Double_t par, Double_t w,
 
 	// for the time being, signal is the charge
 	// in ChargeToSignal signal is converted in ADC channel
-	fMapA2->AddSignal(k,strip,dXCharge1);
+	fMapA2->AddSignal(k,(Int_t)strip,dXCharge1);
 	if(((Int_t) strip) < (GetNStrips()-1)) {
 	    // strip doesn't have to be the last (remind: last=GetNStrips()-1)
 	    // otherwise part of the charge is lost
-	    fMapA2->AddSignal(k,(strip+1),dXCharge2);
+	    fMapA2->AddSignal(k,((Int_t)strip+1),dXCharge2);
 	} // end if
     
 	if(dXCharge1 > 1.) {
@@ -408,11 +408,11 @@ void AliITSsimulationSSD::IntegrateGaussian(Int_t k,Double_t par, Double_t w,
 
 	// for the time being, signal is the charge
 	// in ChargeToSignal signal is converted in ADC channel
-	fMapA2->AddSignal(k,strip,dXCharge1);
+	fMapA2->AddSignal(k,(Int_t)strip,dXCharge1);
 	if(((Int_t) strip) > 0) {
 	    // strip doesn't have to be the first
 	    // otherwise part of the charge is lost
-	    fMapA2->AddSignal(k,(strip-1),dXCharge2);
+	    fMapA2->AddSignal(k,((Int_t)strip-1),dXCharge2);
 	} // end if
     
 	if(dXCharge1 > 1.) {

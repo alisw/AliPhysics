@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.35  2001/10/19 10:16:28  barbera
+A bug corrected in the definition of a TPCON
+
 Revision 1.34  2001/10/18 12:25:07  barbera
 Detailed geometry in BuildGeometry() commented out (450 MB needed to compile the file). Six cylinders put back but improved by comparison with the ITS coarse geometry
 
@@ -29110,7 +29113,7 @@ void AliITSvPPRsymm::SetDefaults(){
 		     s1->GetDz()*2.*kconv, // for now.
 		     s1->GetDy()*2.*kconv); // x,z,y full width in microns.
     bx[0] = 1000./((s1->GetDx()*kconv/seg1->Dpx(0))/resp1->DriftSpeed()); // clock in Mhz
-    seg1->SetNPads(256,bx[0]);// Use AliITSgeomSDD for now
+    seg1->SetNPads(256,(Int_t)(bx[0]));// Use AliITSgeomSDD for now
     SetSegmentationModel(kSDD,seg1);
     const char *kData1=(iDetType->GetResponseModel())->DataType();
     const char *kopt=iDetType->GetResponseModel()->ZeroSuppOption();

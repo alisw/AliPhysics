@@ -36,11 +36,11 @@ AliITSClusterFinderSDD::AliITSClusterFinderSDD(AliITSsegmentation *seg,
 					       TClonesArray *recp){
     // standard constructor
 
-    fSegmentation=seg;
-    fResponse=response;
-    fDigits=digits;
-    fClusters=recp;
-    fNclusters= fClusters->GetEntriesFast();
+    fSegmentation = seg;
+    fResponse     = response;
+    fDigits       = digits;
+    fClusters     = recp;
+    fNclusters    = fClusters->GetEntriesFast();
     SetCutAmplitude();
     SetDAnode();
     SetDTime();
@@ -49,19 +49,19 @@ AliITSClusterFinderSDD::AliITSClusterFinderSDD(AliITSsegmentation *seg,
     SetMaxNCells();
     SetTimeCorr();
     SetMinCharge();
-    fMap=new AliITSMapA1(fSegmentation,fDigits,fCutAmplitude);
+    fMap = new AliITSMapA1(fSegmentation,fDigits,fCutAmplitude);
 }
 //______________________________________________________________________
 AliITSClusterFinderSDD::AliITSClusterFinderSDD(){
     // default constructor
 
-    fSegmentation=0;
-    fResponse=0;
-    fDigits=0;
-    fClusters=0;
-    fNclusters=0;
-    fMap=0;
-    fCutAmplitude=0;
+    fSegmentation = 0;
+    fResponse     = 0;
+    fDigits       = 0;
+    fClusters     = 0;
+    fNclusters    = 0;
+    fMap          = 0;
+    fCutAmplitude = 0;
     SetDAnode();
     SetDTime();
     SetMinPeak();
@@ -83,22 +83,22 @@ void AliITSClusterFinderSDD::SetCutAmplitude(Float_t nsigma){
 
     fResponse->GetNoiseParam(noise,baseline);
     noise_after_el = ((AliITSresponseSDD*)fResponse)->GetNoiseAfterElectronics();
-    fCutAmplitude=(Int_t)((baseline + nsigma*noise_after_el));
+    fCutAmplitude = (Int_t)((baseline + nsigma*noise_after_el));
 }
 //______________________________________________________________________
 void AliITSClusterFinderSDD::Find1DClusters(){
     // find 1D clusters
-    static AliITS *iTS=(AliITS*)gAlice->GetModule("ITS");
+    static AliITS *iTS = (AliITS*)gAlice->GetModule("ITS");
   
     // retrieve the parameters 
-    Int_t fNofMaps = fSegmentation->Npz();
+    Int_t fNofMaps       = fSegmentation->Npz();
     Int_t fMaxNofSamples = fSegmentation->Npx();
-    Int_t fNofAnodes = fNofMaps/2;
-    Int_t dummy=0;
-    Float_t fTimeStep = fSegmentation->Dpx(dummy);
-    Float_t fSddLength = fSegmentation->Dx();
-    Float_t fDriftSpeed = fResponse->DriftSpeed();  
-    Float_t anodePitch = fSegmentation->Dpz(dummy);
+    Int_t fNofAnodes     = fNofMaps/2;
+    Int_t dummy          = 0;
+    Float_t fTimeStep    = fSegmentation->Dpx(dummy);
+    Float_t fSddLength   = fSegmentation->Dx();
+    Float_t fDriftSpeed  = fResponse->DriftSpeed();  
+    Float_t anodePitch   = fSegmentation->Dpz(dummy);
 
     // map the signal
     fMap->SetThreshold(fCutAmplitude);
@@ -112,7 +112,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
     Int_t i;
     Float_t **dfadc = new Float_t*[fNofAnodes];
     for(i=0;i<fNofAnodes;i++) dfadc[i] = new Float_t[fMaxNofSamples];
-    Float_t fadc = 0.;
+    Float_t fadc  = 0.;
     Float_t fadc1 = 0.;
     Float_t fadc2 = 0.;
     Int_t j,k,idx,l,m;
@@ -131,19 +131,19 @@ void AliITSClusterFinderSDD::Find1DClusters(){
 	for(k=0;k<fNofAnodes;k++) {
 	//cout << "Anode: " << k+1 << ", Wing: " << j+1 << endl;
 	    idx = j*fNofAnodes+k;
-	    Int_t imax = 0;
+	    Int_t imax  = 0;
 	    Int_t imaxd = 0;
-	    Int_t it=0;
+	    Int_t it    = 0;
 	    while(it <= fMaxNofSamples-3) {
-		imax = it;
+		imax  = it;
 		imaxd = it;
 		// maximum of signal	  
-		Float_t fadcmax = 0.;
+		Float_t fadcmax  = 0.;
 		Float_t dfadcmax = 0.;
-		Int_t lthrmina = 1;
-		Int_t lthrmint = 3;
-		Int_t lthra = 1;
-		Int_t lthrt = 0;
+		Int_t lthrmina   = 1;
+		Int_t lthrmint   = 3;
+		Int_t lthra      = 1;
+		Int_t lthrt      = 0;
 		for(m=0;m<20;m++) {
 		    Int_t id = it+m;
 		    if(id>=fMaxNofSamples) break;
@@ -154,7 +154,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
 		    } // end if
 		    if(dfadc[k][id] > dfadcmax) {
 			dfadcmax = dfadc[k][id];
-			imaxd = id;
+			imaxd    = id;
 		    } // end if
 		} // end for m
 		it = imaxd;
@@ -166,7 +166,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
 		if(lthrt >= lthrmint && lthra >= lthrmina) ilcl = 1;
 		if(ilcl) {
 		    nofFoundClusters++;
-		    Int_t tstop = tstart;
+		    Int_t tstop      = tstart;
 		    Float_t dfadcmin = 10000.;
 		    Int_t ij;
 		    for(ij=0; ij<20; ij++) {
@@ -181,17 +181,17 @@ void AliITSClusterFinderSDD::Find1DClusters(){
 		    } // end for ij
 
 		    Float_t clusterCharge = 0.;
-		    Float_t clusterAnode = k+0.5;
-		    Float_t clusterTime = 0.;
-		    Float_t clusterMult = 0.;
+		    Float_t clusterAnode  = k+0.5;
+		    Float_t clusterTime   = 0.;
+		    Int_t   clusterMult   = 0;
 		    Float_t clusterPeakAmplitude = 0.;
-		    Int_t its,peakpos=-1;
+		    Int_t its,peakpos     = -1;
 		    Float_t n, baseline;
 		    fResponse->GetNoiseParam(n,baseline);
 		    for(its=tstart; its<=tstop; its++) {
 			fadc=(float)fMap->GetSignal(idx,its);
-			if(fadc>baseline) fadc-=baseline;
-			else fadc=0.;
+			if(fadc>baseline) fadc -= baseline;
+			else fadc = 0.;
 			clusterCharge += fadc;
 			// as a matter of fact we should take the peak
 			// pos before FFT
@@ -199,32 +199,35 @@ void AliITSClusterFinderSDD::Find1DClusters(){
 			if(fadc > clusterPeakAmplitude) {
 			    clusterPeakAmplitude = fadc;
 			    //peakpos=fMap->GetHitIndex(idx,its);
-			    Int_t shift=(int)(fTimeCorr/fTimeStep);
+			    Int_t shift = (int)(fTimeCorr/fTimeStep);
 			    if(its>shift && its<(fMaxNofSamples-shift))
-				peakpos=fMap->GetHitIndex(idx,its+shift);
-			    else peakpos=fMap->GetHitIndex(idx,its);
-			    if(peakpos<0) peakpos=fMap->GetHitIndex(idx,its);
+				peakpos  = fMap->GetHitIndex(idx,its+shift);
+			    else peakpos = fMap->GetHitIndex(idx,its);
+			    if(peakpos<0) peakpos =fMap->GetHitIndex(idx,its);
 			} // end if
 			clusterTime += fadc*its;
 			if(fadc > 0) clusterMult++;
 			if(its == tstop) {
 			    clusterTime /= (clusterCharge/fTimeStep);   // ns
-			    if(clusterTime>fTimeCorr) clusterTime-=fTimeCorr;
+			    if(clusterTime>fTimeCorr) clusterTime -=fTimeCorr;
 			    //ns
 			} // end if
 		    } // end for its
 
 		    Float_t clusteranodePath = (clusterAnode - fNofAnodes/2)*
-			                                            anodePitch;
+			                       anodePitch;
 		    Float_t clusterDriftPath = clusterTime*fDriftSpeed;
 		    clusterDriftPath = fSddLength-clusterDriftPath;
 		    if(clusterCharge <= 0.) break;
-		    AliITSRawClusterSDD clust(j+1,clusterAnode,clusterTime,
-					      clusterCharge,
-					      clusterPeakAmplitude,
-					      peakpos,0.,0.,clusterDriftPath,
-					      clusteranodePath,clusterMult,0,0,
-					      0,0,0,0,0);
+		    AliITSRawClusterSDD clust(j+1,//i
+					      clusterAnode,clusterTime,//ff
+					      clusterCharge, //f
+					      clusterPeakAmplitude, //f
+					      peakpos, //i
+					      0.,0.,clusterDriftPath,//fff
+					      clusteranodePath, //f
+					      clusterMult, //i
+					      0,0,0,0,0,0,0);//7*i
 		    iTS->AddCluster(1,&clust);
 		    it = tstop;
 		} // ilcl

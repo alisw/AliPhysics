@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.13  2001/10/12 22:07:20  nilsen
+A patch for C++ io manipulation functions so that they will work both
+with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
+other platforms.
+
 Revision 1.12  2001/08/24 21:06:37  nilsen
 Added more documentation, fixed up some coding violations, and some
 forward declorations.
@@ -250,7 +255,7 @@ void AliITSgeomSDD::Print(ostream *os) const {
 #endif
 #else
     Int_t fmt;
-#endif;
+#endif
 
     fmt = os->setf(ios::scientific);  // set scientific floating point output
     *os << "TBRIK" << " ";
@@ -314,6 +319,11 @@ istream &operator>>(istream &is,AliITSgeomSDD &r){
 //======================================================================
 /*
 $Log$
+Revision 1.13  2001/10/12 22:07:20  nilsen
+A patch for C++ io manipulation functions so that they will work both
+with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
+other platforms.
+
 Revision 1.12  2001/08/24 21:06:37  nilsen
 Added more documentation, fixed up some coding violations, and some
 forward declorations.
@@ -779,6 +789,11 @@ istream &operator>>(istream &is,AliITSgeomSDD256 &r){
 //======================================================================
 /*
 $Log$
+Revision 1.13  2001/10/12 22:07:20  nilsen
+A patch for C++ io manipulation functions so that they will work both
+with GNU gcc 2.96 and GNU gcc 3.01 compilers. Needs to be tested with
+other platforms.
+
 Revision 1.12  2001/08/24 21:06:37  nilsen
 Added more documentation, fixed up some coding violations, and some
 forward declorations.
