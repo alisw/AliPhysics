@@ -35,8 +35,8 @@ Int_t   TGeant3::CurrentVolOffID(Int_t, Int_t&) const {return 0;}
 const char *TGeant3::CurrentVolOffName(Int_t) const {return 0;}
 void    TGeant3::TrackPosition(TLorentzVector&) const {}
 void    TGeant3::TrackMomentum(TLorentzVector&) const {}
-Int_t   TGeant3::IdFromPDG(Int_t pdg) const {return -1;}
-Int_t   TGeant3::PDGFromId(Int_t pdg) const {return -1;}
+Int_t   TGeant3::IdFromPDG(Int_t) const {return -1;}
+Int_t   TGeant3::PDGFromId(Int_t) const {return -1;}
 void    TGeant3::DefineParticles() {}
 Int_t   TGeant3::VolId(Text_t*) const {return 0;}
 const char*   TGeant3::VolName(Int_t ) const {return 0;}
