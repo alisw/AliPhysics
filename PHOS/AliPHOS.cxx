@@ -80,6 +80,12 @@ void AliPHOS::Copy(AliPHOS & phos)
 }
 
 //____________________________________________________________________________
+AliDigitizer* AliPHOS::CreateDigitizer(AliRunDigitizer* manager) const
+{
+  return new AliPHOSDigitizer(manager);
+}
+
+//____________________________________________________________________________
 void AliPHOS::CreateMaterials()
 {
   // Definitions of materials to build PHOS and associated tracking media.
@@ -368,6 +374,17 @@ void AliPHOS::CreateMaterials()
   gMC->Gstpar(idtmed[715], "DRAY",0.) ;
   gMC->Gstpar(idtmed[715], "STRA",2.) ;
 
+}
+
+//____________________________________________________________________________
+void AliPHOS::Hits2SDigits()  
+{ 
+// create summable digits
+
+  AliPHOSSDigitizer* phosDigitizer = 
+    new AliPHOSSDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
+  phosDigitizer->SetEventRange(0, -1) ; // do all the events
+  phosDigitizer->ExecuteTask("all") ;
 }
 
 //____________________________________________________________________________
