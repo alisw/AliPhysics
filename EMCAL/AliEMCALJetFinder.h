@@ -45,7 +45,7 @@ class AliEMCALJetFinder : public TTask {
     virtual void SetPtCut(Float_t par = 1.);
     virtual void SetMomentumSmearing(Bool_t flag = kFALSE) {fSmear = flag;}
     virtual void SetEfficiencySim(Bool_t flag = kFALSE)    {fEffic = flag;}
-    virtual void SetSamplingFraction(Float_t par = 12.9) {fSamplingF = par;}
+    virtual void SetSamplingFraction(Float_t par) {fSamplingF = par;}
     virtual void SetIncludeK0andN(Bool_t flag = kFALSE) {fK0N = flag;}
     // Correction of hadronic energy
     virtual void SetHadronCorrector(AliEMCALHadronCorrection* corr)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.31  2003/01/08 17:13:41  schutz
+added the HCAL section
+
 Revision 1.30  2002/12/09 16:26:28  morsch
 - Nummber of particles per jet increased to 1000
 - Warning removed.
@@ -321,7 +324,10 @@ void AliEMCALJetFinder::Init()
 //  Geometry 
     AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
     AliEMCALGeometry* geom = 
-	AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
+    AliEMCALGeometry::GetInstance(pEMCAL->GetTitle(), "");
+
+    SetSamplingFraction(geom->GetSampling());
+
     fNbinEta = geom->GetNZ();
     fNbinPhi = geom->GetNPhi();
     fPhiMin  = geom->GetArm1PhiMin()*TMath::Pi()/180.;
