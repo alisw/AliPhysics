@@ -88,7 +88,7 @@ AliRoot3.01.tar.gz AliLibs3.01.tar.gz AliOffline3.01.tar.gz:
 		@ls -1d $^ | sed -e "s/^/$(ALICE_LEVEL)\//" > /tmp/saves
 	 	@cd $(ALICE) ; \
                 gtar cvfz $@ --exclude '*.o' --exclude '*Cint.*' \
-                --exclude '*/roothtml/*' `cat /tmp/saves` ; \
+                --exclude '*/roothtml/*' --exclude '*/CVS' `cat /tmp/saves` 
 
 alidepend:
 		@for i in $(ALIROOT_DIRS) ; do \
