@@ -14,10 +14,11 @@ class AliGenCocktailEventHeader : public AliGenEventHeader
  public:
     AliGenCocktailEventHeader();
     AliGenCocktailEventHeader(const char* name);
-    virtual ~AliGenCocktailEventHeader() {}
+    AliGenCocktailEventHeader(const AliGenCocktailEventHeader &header);
+    virtual ~AliGenCocktailEventHeader();
     virtual void AddHeader(AliGenEventHeader* header);
     virtual TList* GetHeaders() {return fHeaders;}
-    
+    AliGenCocktailEventHeader & operator=(const AliGenCocktailEventHeader & rhs);
 protected:
     TList  *fHeaders;     // List of Headers
     ClassDef(AliGenCocktailEventHeader,1)  // Event header for Cocktail event

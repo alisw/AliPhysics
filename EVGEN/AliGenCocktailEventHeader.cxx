@@ -35,9 +35,32 @@ AliGenCocktailEventHeader::AliGenCocktailEventHeader(const char* name):AliGenEve
     fHeaders = 0x0;
 }
 
+AliGenCocktailEventHeader::AliGenCocktailEventHeader(const AliGenCocktailEventHeader &header):
+AliGenEventHeader(header)
+{
+// Copy Constructor
+    header.Copy(*this);
+}
+
+AliGenCocktailEventHeader::~AliGenCocktailEventHeader()
+{
+// Constructor
+    if (fHeaders) {
+	fHeaders->Clear();
+	delete fHeaders;
+    }
+}
+
 void AliGenCocktailEventHeader::AddHeader(AliGenEventHeader* header)
 {
 // Add a header to the list
     if (!fHeaders) fHeaders = new TList();
     fHeaders->Add(header);
+}
+
+AliGenCocktailEventHeader& AliGenCocktailEventHeader::operator=(const  AliGenCocktailEventHeader& rhs)
+{
+// Assignment operator
+    rhs.Copy(*this); 
+    return (*this);
 }
