@@ -21,5 +21,6 @@
 #pragma link C++ class  AliTOFRoc+;
 #pragma link C++ class  AliTOFRawSector+;
 #pragma link C++ class  AliTOFRawDigit+;
+#pragma link C++ class  AliTOFDigitizer+;
 
 #endif

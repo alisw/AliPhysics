@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2001/05/16 14:57:24  alibrary
+New files for folders and Stack
+ 
 Revision 1.20  2001/05/04 10:09:48  vicinanz
 Major upgrades to the strip structure
 
@@ -58,13 +61,13 @@ Introduction of the Copyright and cvs Log
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Time Of Flight: design of C.Williams                             
-//
+//  Time Of Flight: design of C.Williams                                     //
+//     									     //
 //  This class contains the functions for version 1 of the Time Of Flight    //
 //  detector.                                                                //
 //
 //  VERSION WITH 5 MODULES AND TILTED STRIPS 
-//  
+//
 //  HOLES FOR PHOS DETECTOR
 //
 //   Authors:
@@ -145,13 +148,13 @@ AliTOFv1::~AliTOFv1()
     delete fHits ;
     fHits = 0 ; 
   }
-/*
+
   if ( fSDigits) {
     fSDigits->Delete() ; 
     delete fSDigits ;
     fSDigits = 0 ; 
   }
-*/
+
   if ( fDigits) {
     fDigits->Delete() ; 
     delete fDigits ;
@@ -331,11 +334,11 @@ void AliTOFv1::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
 // Large not sensitive volumes with Insensitive Freon
   par[0] = xFLT*0.5;
   par[1] = yFLT*0.5;
-
+ 
   if(fDebug) cout << ClassName()
   << ": ************************* TOF geometry **************************"
   <<endl;
- 
+   
   par[2] = (zFLTA *0.5);
   gMC->Gsvolu("FLTA", "BOX ", idtmed[512], par, 3); // Insensitive Freon
   gMC->Gspos ("FLTA", 0, "FTOA", 0., 0., 0., 0, "ONLY");
@@ -713,7 +716,7 @@ fp */
 }
 
 //_____________________________________________________________________________
-void AliTOFv1::DrawModule()
+void AliTOFv1::DrawModule() const
 {
   //
   // Draw a shaded view of the Time Of Flight version 1

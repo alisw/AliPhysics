@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2001/05/16 14:57:24  alibrary
+New files for folders and Stack
+
 Revision 1.20  2001/05/04 10:09:47  vicinanz
 Major upgrades to the strip structure
 
@@ -55,9 +58,10 @@ Revision 1.9  1999/09/29 09:24:33  fca
 Introduction of the Copyright and cvs Log
 
 */
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Time Of Flight                               FCA                         //
+//  Time Of Flight                                                           //
 //  This class contains the basic functions for the Time Of Flight           //
 //  detector. Functions specific to one particular geometry are              //
 //  contained in the derived classes                                         //
@@ -82,15 +86,24 @@ Introduction of the Copyright and cvs Log
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <iostream.h>
+#include <strstream.h>
 
 #include "AliTOF.h"
-#include "AliTOFD.h"
+#include "AliTOFhit.h"
+#include "AliTOFdigit.h"
+#include "AliTOFRawSector.h"
+#include "AliTOFRoc.h"
+#include "AliTOFRawDigit.h"
+
+#include "TROOT.h"
 #include "TBRIK.h"
 #include "TNode.h"
 #include "TObject.h"
 #include "TRandom.h"
 #include "TTree.h"
 #include "TFile.h"
+#include "TFolder.h"
+#include "TTask.h"
 
 #include "AliRun.h"
 #include "AliMC.h"
@@ -107,6 +120,10 @@ AliTOF::AliTOF()
   // Default constructor
   //
   fIshunt   = 0;
+  fSDigits       = 0 ;
+  fDigits        = 0 ;
+  fName="TOF";
+  CreateTOFFolders();
 }
  
 //_____________________________________________________________________________
@@ -119,12 +136,17 @@ AliTOF::AliTOF(const char *name, const char *title)
   // Here are fixed some important parameters
   //
 
-  // Initialization of hits and digits array
+  // Initialization of hits, sdigits and digits array
   //
   fHits   = new TClonesArray("AliTOFhit",  405);
   gAlice->AddHitList(fHits);
   fIshunt  = 0;
-  fDigits = new TClonesArray("AliTOFdigit",405);
+
+  fSDigits       = new TClonesArray("AliTOFdigit",  405);
+
+  fDigits        = new TClonesArray("AliTOFdigit",  405);
+
+
   //
   // Digitization parameters
   //
@@ -165,11 +187,73 @@ AliTOF::AliTOF(const char *name, const char *title)
   fChrgRes = 100.;//pC
 
 // DAQ characteristics
-  fPadXSector = 1932;
-  fNRoc       = 14;
-  fNFec       = 32;
-  fNTdc       = 32;
-  fNPadXRoc   = (Int_t)fPadXSector/fNRoc;
+// cfr. TOF-TDR pag. 105 for Glossary
+// TARODA : TOF-ALICE Read Out and Data Acquisition system
+  fPadXSector = 8928; // number of pad per sector -with no holes-
+                      // ((15+2*19+2*20)*(48*2))
+  fNRoc       = 14;   // number of Roc (Read Out Controller) (TARODA)
+  fNFec       = 32;   // number of Fec (Front-End electronic Card)
+                      // (TARODA)
+  fNTdc       = 32;   // number of Tdc (Time to Digital Converter)
+  fNPadXRoc   = (Int_t)fPadXSector/fNRoc; // number of pads for each ROC
+
+  // Create TOF Folder Structure
+  CreateTOFFolders(); 
+}
+
+//_____________________________________________________________________________
+void AliTOF::CreateTOFFolders()
+{
+  // create the ALICE TFolder
+  // create the ALICE TTasks
+  // create the ALICE main TFolder
+  // to be done by AliRun
+
+  TFolder * alice = new TFolder();
+  alice->SetNameTitle("FPAlice", "Alice Folder") ;
+  gROOT->GetListOfBrowsables()->Add(alice) ;
+
+  TFolder * aliceF  = alice->AddFolder("folders", "Alice memory Folder") ;
+  //  make it the owner of the objects that it contains
+  aliceF->SetOwner() ;
+  // geometry folder
+  TFolder * geomF = aliceF->AddFolder("Geometry", "Geometry objects") ;
+  TFolder * aliceT  = alice->AddFolder("tasks", "Alice tasks Folder") ;   
+  //  make it the owner of the objects that it contains
+  aliceT->SetOwner() ;
+
+  TTask * aliceDi = new TTask("(S)Digitizer", "Alice SDigitizer & Digitizer") ;
+  aliceT->Add(aliceDi);
+
+  TTask * aliceRe = new TTask("Reconstructioner", "Alice Reconstructioner") ;
+  aliceT->Add(aliceRe);
+
+  char * tempo = new char[80] ;
+
+  // creates the TOF Digitizer and adds it to alice main (S)Digitizer task
+  sprintf(tempo, "%sDigitizers container",GetName() ) ;
+  fDTask = new TTask(GetName(), tempo);
+  aliceDi->Add(fDTask) ;
+
+  // creates the TOF reconstructioner and adds it to alice main Reconstructioner task
+  sprintf(tempo, "%sReconstructioner container",GetName() ) ;
+  fReTask = new TTask(GetName(), tempo);
+  aliceRe->Add(fReTask) ;
+
+  delete tempo ;
+ 
+  // creates the TOF geometry  folder
+  geomF->AddFolder("TOF", "Geometry for TOF") ;
+}
+
+//_____________________________________________________________________________
+AliTOF::~AliTOF()
+{
+  // remove the alice folder 
+  // and task that TOF creates instead of AliRun
+  TFolder * alice = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("FPAlice") ;
+  delete alice;
+  alice = 0;
 }
 
 //_____________________________________________________________________________
@@ -177,6 +261,7 @@ void AliTOF::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {
   //
   // Add a TOF hit
+  // new with placement used
   //
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliTOFhit(fIshunt, track, vol, hits);
@@ -187,6 +272,7 @@ void AliTOF::AddDigit(Int_t *tracks, Int_t *vol, Float_t *digits)
 {
   //
   // Add a TOF digit
+  // new with placement used
   //
   TClonesArray &ldigits = *fDigits;
   new (ldigits[fNdigits++]) AliTOFdigit(tracks, vol, digits);
@@ -222,7 +308,7 @@ void AliTOF::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliTOF::DrawModule()
+void AliTOF::DrawModule() const
 {
   //
   // Draw a shaded view of the common part of the TOF geometry
@@ -389,7 +475,7 @@ void AliTOF::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-Int_t AliTOF::DistancetoPrimitive(Int_t , Int_t )
+Int_t AliTOF::DistancetoPrimitive(Int_t , Int_t ) const
 {
   //
   // Returns distance from mouse pointer to detector, default version
@@ -415,111 +501,196 @@ void AliTOF::MakeBranch(Option_t* option, const char *file)
  // Initializes the Branches of the TOF inside the 
  // trees written for each event. 
  //  AliDetector::MakeBranch initializes just the 
- // Branch inside TreeH. Here we add the branch in 
- // TreeD.
+ // Branch inside TreeH. Here we add the branches in 
+ // TreeD and TreeS.
  //
-
   AliDetector::MakeBranch(option,file);
 
   Int_t buffersize = 4000;
   Char_t branchname[10];
   sprintf(branchname,"%s",GetName());
   
-  const char *D = strstr(option,"D");
+  const char *oD = strstr(option,"D");
+  const char *oS = strstr(option,"S");
 
-  if (fDigits && gAlice->TreeD() && D){
-     MakeBranchInTree(gAlice->TreeD(), 
+  if (oD)
+  //
+  // one branch for TOF digits
+  // 
+
+
+  if (fDigits && gAlice->TreeD() && oD){
+             MakeBranchInTree(gAlice->TreeD(), 
                               branchname, &fDigits,buffersize, file) ;
   }
+
+  if (oS)
+  //
+  // one branch for TOF sdigits
+  //
+
+
+  if (fSDigits && gAlice->TreeS() && oS){
+             MakeBranchInTree(gAlice->TreeS(),
+                              branchname, &fSDigits,buffersize, file) ;
+  }
+
+}
+
+//____________________________________________________________________________
+void AliTOF::Makehits(Bool_t hits) 
+{
+// default argument used, see AliTOF.h
+// Enable/Disable the writing of the TOF-hits branch 
+// on TreeH
+// by default : enabled for TOFv1, v2, v3, v4
+//              disabled for TOFv0
+// 
+   if (hits &&  (IsVersion()!=0))
+      fIdSens = gMC->VolId("FPAD");
+   else
+      cout << "Option for writing the TOF-hits branch on TreeH: disabled" << endl;
 }
 
 //____________________________________________________________________________
 void AliTOF::FinishEvent()
 {
-//  Hits2Digits();
+// do nothing
 }
 
 //___________________________________________
 void AliTOF::SDigits2Digits()
 {
 //
-// Genneratedigits
+// Generate digits
 //
     int nparticles = gAlice->GetNtrack();
     cout << "Particles       :" <<nparticles<<endl;
     if (nparticles > 0 ) {
-      Hits2Digits(0);
+      AliTOF::Hits2Digits();
     }
 }
 
 //____________________________________________________________________________
-void AliTOF::Hits2Digits(Int_t evNumber)
+void AliTOF::Hits2Digits()
 {
 //
-//  Starting from the Hits Tree (TreeH), this
-// function writes the Digits Tree (TreeD) storing 
+// Starting from the Hits Tree (TreeH), this
+// function writes the TOF Digits Branch in the Tree (TreeD) storing 
 // the digits informations.
-// Has to be called just at the end of an event or 
+// It has to be called just at the end of an event or 
 // at the end of a whole run.
-//  It could  also be called by AliTOF::Finish Event()
-// but it can be too heavy.
+// It could  also be called by AliTOF::Finish Event()
 // Just for MC events. 
 //
-// Called by the macro H2D.C
+// Called by the ROOT script Hits2Digits.C
 //
+// Simulation of detector response.
 
-  AliTOFhit* currentHit;
-  TTree    *tD, *tH;
-  Int_t    tracks[3];
-  Int_t    vol[5];
-  Float_t  digit[2];
-  TClonesArray* tofhits=this->Hits();
+   Int_t ver = this->IsVersion();
+   if(ver==0) return; // no digits for AliTOFv0
 
-  Int_t nparticles =  gAlice->GetNtrack();
-  if (nparticles <= 0) return;
-
-  tD = gAlice->TreeD();
-  tH = gAlice->TreeH();
-  Int_t    ntracks =(Int_t) tH->GetEntries();
-  Int_t    nbytes, nhits;
+  Int_t nhits = 0;       // total number of hits for the current track
+  Int_t evNumber = 0;    // evnumber
+  Int_t    tracks[3];    // track info
+  Int_t    vol[5];       // dummy location for digit
+  Float_t  digit[2];     // TOF digit variables
+  
   TRandom* rnd = new TRandom();
 
-  for (Int_t ntk=0; ntk<ntracks; ntk++){
 
-     nbytes = tH->GetEvent(ntk);
-     nhits  = tofhits->GetEntriesFast();
+  // Get pointers to Alice detectors and Hits containers
+  AliDetector* TOF  = gAlice->GetDetector("TOF");
 
-     for (Int_t hit=0; hit<nhits; hit++){
 
-        currentHit = (AliTOFhit*)(tofhits->At(hit));
+  TTree*  tD = gAlice->TreeD();
 
-        vol[0] = currentHit->GetSector();
-        vol[1] = currentHit->GetPlate();
-        vol[2] = currentHit->GetPadx();
-        vol[3] = currentHit->GetPadz();
-        vol[4] = currentHit->GetStrip();
+  TTree* tH = gAlice->TreeH(); // pointer to the hits tree
+  Stat_t ntracks = tH->GetEntries();
 
-        Float_t idealtime = currentHit->GetTof();
+  cout << "Total number of processed tracks in event " << gAlice->GetEvNumber() <<
+  " :" << ntracks << endl;
+
+  // do nothing if no tracked particles
+
+  if( ntracks > 0){
+
+  // ptr to the current TOF hit
+  AliTOFhit* tofHit;
+  
+  // Start loop on tracks in the hits containers
+  // check for the total number of processed hits
+  Int_t totnhits   =0;
+  Int_t totndigits =0;
+
+  if(TOF) {
+
+  for (Int_t track=0; track<ntracks;track++) {
+  
+      // loop on all hits for the current track
+
+      for(tofHit=(AliTOFhit*)TOF->FirstHit(track); tofHit; tofHit=(AliTOFhit*)TOF->NextHit()) {
+        ++nhits;  
+        ++totnhits;
+
+        vol[0] = tofHit->GetSector();
+        vol[1] = tofHit->GetPlate();
+        vol[2] = tofHit->GetPadx();
+        vol[3] = tofHit->GetPadz();
+        vol[4] = tofHit->GetStrip();
+
+        // 95% of efficiency to be inserted here
+        // edge effect to be inserted here
+        // cross talk  to be inserted here
+
+        Float_t idealtime = tofHit->GetTof(); // unit s
+        idealtime *= 1.E+12;  // conversion from s to ps
+                              // fTimeRes is given usually in ps
         Float_t tdctime   = rnd->Gaus(idealtime, fTimeRes);	
         digit[0] = tdctime;
 
-        Float_t idealcharge = currentHit->GetEdep();
+        // typical Landau Distribution to be inserted here
+        // instead of Gaussian Distribution
+        Float_t idealcharge = tofHit->GetEdep();
         Float_t adccharge = rnd->Gaus(idealcharge, fChrgRes);
         digit[1] = adccharge;
-
-        Int_t tracknum = currentHit -> GetTrack();
+        Int_t tracknum = tofHit -> GetTrack();
         tracks[0] = tracknum;
 	tracks[1] = 0;
 	tracks[2] = 0;
 
         Bool_t overlap = CheckOverlap(vol, digit, tracknum);
-        if(!overlap) AddDigit(tracks, vol, digit);
-     }
-  }
-  delete rnd;
-  rnd = 0;
-  tD->Fill();
-  tD->Write();  
+        if(!overlap) 
+        AddDigit(tracks, vol, digit);
+        ++totndigits;
+        } // end loop on hits for the current track
+
+     } // end loop on ntracks
+
+  // some statistics concerning digitization
+  cout << "Total number of processed TOF hits: " << totnhits   << endl;
+  cout << "Total number of created TOF digits: " << totndigits << endl;
+
+  } // close if TOF switched ON
+
+} // close if( ntracks > 0)
+
+// free used memory for TRandom object
+   delete rnd;
+   rnd = 0;
+
+// fill and write the branch
+
+   evNumber = gAlice->GetEvNumber();
+   char hname[30];
+   sprintf(hname,"TreeD%d",evNumber);
+
+   tD->Fill();
+
+   tD->Write(hname,TObject::kOverwrite);
+
+   // reset tree
+   gAlice->TreeD()->Reset();
 }
 
 //___________________________________________________________________________
@@ -568,6 +739,7 @@ void AliTOF::Digits2Raw(Int_t evNumber)
 
   TTree* tD;
 
+  // do nothing if no particles
   Int_t nparticles = gAlice->GetEvent(evNumber); 
   if (nparticles <= 0) return;
 
@@ -597,8 +769,8 @@ void AliTOF::Digits2Raw(Int_t evNumber)
 	    AliTOFRoc* currentROC = (AliTOFRoc*)rocData->UncheckedAt(roc);
 	    Int_t error    = 0;
             currentROC->AddItem(fec, tdc, error, charge, time);
-	}
-     }
+	} // close if (sector==isect) i.e. end loop on digits for the current sector
+     } // end loop on TOF digits
      
      UInt_t totSize=16,rocSize=0;
      UInt_t rocHead[14],rocChek[14];
@@ -698,188 +870,6 @@ void AliTOF::Raw2Digits(Int_t evNumber)
      }
   }
   tD->Fill();
-  tD->Write();
+  tD->Write(0,TObject::kOverwrite);
 } 
-
-
-/******************************************************************************/
-
-ClassImp(AliTOFhit)
-
-//____________________________________________________________________________
-AliTOFhit::AliTOFhit(const AliTOFhit & hit)
-{
-   //
-   // copy ctor for AliTOFhit object
-   //
-  fTrack  = hit.fTrack;  
-  fX      = hit.fX;
-  fY      = hit.fY;
-  fZ      = hit.fZ;
-  fSector = hit.fSector;
-  fPlate  = hit.fPlate;
-  fStrip  = hit.fStrip;
-  fPadx   = hit.fPadx;
-  fPadz   = hit.fPadz;
-  fPx     = hit.fPx;
-  fPy     = hit.fPy;
-  fPz     = hit.fPz;
-  fPmom   = hit.fPmom;
-  fTof    = hit.fTof;
-  fDx     = hit.fDx;
-  fDy     = hit.fDy;
-  fDz     = hit.fDz;
-  fIncA   = hit.fIncA;
-  fEdep   = hit.fEdep;
-
-}
- 
-//______________________________________________________________________________
-AliTOFhit::AliTOFhit(Int_t shunt, Int_t track, Int_t *vol,
-                     Float_t *hits)
-:AliHit(shunt, track)
-{
-//
-// Constructor of hit object
-//
-  //
-  // Hit Volume
-  // 
-  fSector= vol[0];
-  fPlate = vol[1];
-  fStrip = vol[2];
-  fPadx = vol[3];
-  fPadz = vol[4];
-  //
-  //Position of the hit
-  fX = hits[0];
-  fY = hits[1];
-  fZ = hits[2];
-  //
-  // Momentum components of the particle in the ALICE frame when hit is produced
-  fPx  = hits[3];
-  fPy  = hits[4];
-  fPz  = hits[5];
-  fPmom= hits[6];
-  //
-  // Time Of Flight for the particle that produces hit
-  fTof = hits[7];   //TOF[s]
-  //
-  // Other Data
-  fDx  = hits[8];   //Distance from the edge along x axis
-  fDy  = hits[9];   //Y cohordinate of the hit
-  fDz  = hits[10];  //Distance from the edge along z axis
-  fIncA= hits[11];  //Incidence angle
-  fEdep= hits[12];  //Energy loss in TOF pad
-}
-
-//******************************************************************************
-
-ClassImp(AliTOFdigit)
-
-//______________________________________________________________________________
-AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol,Float_t *digit)
-:AliDigit(tracks)
-{
-//
-// Constructor of digit object
-//
-
-  fSector = vol[0];
-  fPlate  = vol[1];
-  fStrip  = vol[2];
-  fPadx  = vol[3];
-  fPadz  = vol[4];
-  fTdc    = digit[0];
-  fAdc    = digit[1];
-}
-
-//____________________________________________________________________________
-AliTOFdigit::AliTOFdigit(const AliTOFdigit & digit)
-{
-  // 
-  // copy ctor for AliTOFdigit object
-  //
-
-  Int_t i ;
-  for ( i = 0; i < 3 ; i++)
-    fTracks[i]  = digit.fTracks[i] ;
-  fSector = digit.fSector;
-  fPlate  = digit.fPlate;
-  fStrip  = digit.fStrip;
-  fPadx   = digit.fPadx;
-  fPadz   = digit.fPadz;
-  fTdc    = digit.fTdc;
-  fAdc    = digit.fAdc;
-
-}
-   
-//______________________________________________________________________________
-void AliTOFdigit::GetLocation(Int_t *Loc)
-{
-//
-// Get the cohordinates of the digit
-// in terms of Sector - Plate - Strip - Pad
-//
-
-   Loc[0]=fSector;
-   Loc[1]=fPlate;
-   Loc[2]=fStrip;
-   Loc[3]=fPadx;
-   Loc[4]=fPadz;
-}
-
-//______________________________________________________________________________
-Int_t AliTOFdigit::GetTotPad()
-{
-//
-// Get the "total" index of the pad inside a Sector
-// starting from the digits data.
-//
-
-  AliTOF* tof;
-  
-  if(gAlice){
-     tof =(AliTOF*) gAlice->GetDetector("TOF");
-  }else{
-     printf("AliTOFdigit::GetTotPad - No AliRun object present, exiting");
-     return 0;
-  }
-  
-  Int_t pad = fPadx+tof->GetNpadX()*(fPadz-1);
-  Int_t before=0;
-
-  switch(fPlate){ 
-  case 1: before = 0;
-          break;
-  case 2: before = tof->GetNStripC();
-          break;
-  case 3: before = tof->GetNStripB() + tof->GetNStripC();
-          break;
-  case 4: before = tof->GetNStripA() + tof->GetNStripB() + tof->GetNStripC();
-          break;
-  case 5: before = tof->GetNStripA() + 2*tof->GetNStripB() + tof->GetNStripC();
-          break;
-  }
-  
-  Int_t strip = fStrip+before;
-  Int_t padTot = tof->GetPadXStr()*(strip-1)+pad;
-  return padTot;
-}
-
-//______________________________________________________________________________
-void AliTOFdigit::AddTrack(Int_t track)
-{
-//
-// Add a track to the digit 
-//
-
-  if (fTracks[1]==0){
-     fTracks[1] = track;
-  }else if (fTracks[2]==0){
-     fTracks[2] = track;
-  }else{
-  //   printf("AliTOFdigit::AddTrack ERROR: Too many Tracks (>3) \n");
-  }
-}
 

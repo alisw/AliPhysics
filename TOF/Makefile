@@ -9,7 +9,7 @@ PACKAGE = TOF
 
 # C++ sources
 
-SRCS  = AliTOF.cxx  AliTOFv0.cxx  AliTOFv1.cxx  AliTOFv2.cxx AliTOFv3.cxx AliTOFv4.cxx AliTOFD.cxx
+SRCS  = AliTOF.cxx  AliTOFv0.cxx  AliTOFv1.cxx  AliTOFv2.cxx  AliTOFv3.cxx  AliTOFv4.cxx AliTOFhit.cxx  AliTOFdigit.cxx AliTOFRawSector.cxx  AliTOFRoc.cxx  AliTOFRawDigit.cxx AliTOFDigitizer.cxx
 
 # C++ Headers
 
@@ -67,3 +67,4 @@ include $(ALICE_ROOT)/conf/GeneralMacros
 ############################ Dependencies #####################################
 
 -include tgt_$(ALICE_TARGET)/Make-depend 
+# DO NOT DELETE

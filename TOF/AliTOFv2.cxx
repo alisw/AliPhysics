@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2001/05/16 14:57:24  alibrary
+New files for folders and Stack
+
 Revision 1.19  2001/05/04 10:09:48  vicinanz
 Major upgrades to the strip structure
 
@@ -55,9 +58,9 @@ Introduction of the Copyright and cvs Log
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Time Of Flight: design of C.Williams                    
-//
-//  This class contains the functions for version 1 of the Time Of Flight    //
+//  Time Of Flight: design of C.Williams                                     
+//									     
+//  This class contains the functions for version 2 of the Time Of Flight    //
 //  detector.                                                                //
 //
 //  VERSION WITH 5 MODULES AND TILTED STRIPS 
@@ -140,13 +143,13 @@ AliTOFv2::~AliTOFv2()
     delete fHits ;
     fHits = 0 ; 
   }
-/*
+
   if ( fSDigits) {
     fSDigits->Delete() ; 
     delete fSDigits ;
     fSDigits = 0 ; 
   }
-*/
+
   if ( fDigits) {
     fDigits->Delete() ; 
     delete fDigits ;
@@ -506,7 +509,7 @@ void AliTOFv2::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
      gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
 
      if(fDebug) {
-       printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i); 
+       printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i);
        printf("%s: y = %f,  z = %f, zpos = %f \n",ClassName(),ycoor,zcoor,zpos);
      }
 
@@ -537,10 +540,10 @@ void AliTOFv2::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   gMC->Gspos("FSTR",j  ,"FLTA",0.,ycoor, zcoor,idrotm[nrot],  "ONLY");
   gMC->Gspos("FSTR",j+1,"FLTA",0.,ycoor,-zcoor,idrotm[nrot+1],"ONLY");
 
-  if(fDebug) {
-     printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i); 
-     printf("%s: y = %f,  z = %f, zpos = %f \n",ClassName(),ycoor,zcoor,zpos);
-  }
+  if(fDebug) {   
+     printf("%s: %f,  St. %2i, Pl.3 ",ClassName(),ang*kRaddeg,i);  
+     printf("%s: y = %f,  z = %f, zpos = %f \n",ClassName(),ycoor,zcoor,zpos);  
+  }   
 
   ycoor = -hTof/2.+ kspace;//2 cm over front plate
 
@@ -565,10 +568,10 @@ void AliTOFv2::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
   zcoor = zpos+(zFLTA*0.5+zFLTB*0.5+db); // Moves to the system of the modulus FLTB
   gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
 
-  if(fDebug) {
-     printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i); 
+  if(fDebug) {   
+     printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i);
      printf("%s: y = %f,  z = %f, zpos = %f \n",ClassName(),ycoor,zcoor,zpos);
-  }
+  }   
 
   i++;
   upDown*=-1;
@@ -587,7 +590,7 @@ void AliTOFv2::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
      gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
 
      if(fDebug) {
-       printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i); 
+       printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i);
        printf("%s: y = %f,  z = %f, zpos = %f \n",ClassName(),ycoor,zcoor,zpos);
      }
 
@@ -608,7 +611,7 @@ void AliTOFv2::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
      gMC->Gspos("FSTR",i, "FLTB", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
      zpos = zpos - zSenStrip/TMath::Cos(ang);
      if(fDebug) {
-       printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i); 
+       printf("%s: %f,  St. %2i, Pl.4 ",ClassName(),ang*kRaddeg,i);
        printf("%s: y = %f,  z = %f, zpos = %f \n",ClassName(),ycoor,zcoor,zpos);
      }
      i++;
@@ -637,7 +640,7 @@ void AliTOFv2::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenC,
      gMC->Gspos("FSTR",i, "FLTC", 0., ycoor, zcoor,idrotm[nrot], "ONLY");
 
      if(fDebug) {
-       printf("%s: %f,  St. %2i, Pl.5 ",ClassName(),ang*kRaddeg,i); 
+       printf("%s: %f,  St. %2i, Pl.5 ",ClassName(),ang*kRaddeg,i);
        printf("%s: y = %f,  z = %f, zpos = %f \n",ClassName(),ycoor,zcoor,zpos);
      }
 
@@ -723,7 +726,7 @@ fp */
 }
 
 //_____________________________________________________________________________
-void AliTOFv2::DrawModule()
+void AliTOFv2::DrawModule() const
 {
   //
   // Draw a shaded view of the Time Of Flight version 1
@@ -786,13 +789,13 @@ void AliTOFv2::Init()
   //
   // Initialise the detector after the geometry has been defined
   //
-  if(fDebug) {
+  if(fDebug) {   
     printf("%s: **************************************"
-	   "  TOF  "
-	   "**************************************\n",ClassName());
+           "  TOF  "
+           "**************************************\n",ClassName());
     printf("\n%s:   Version 2 of TOF initialing, "
-	   "TOF with holes for PHOS and RICH \n",ClassName());
-  }
+           "TOF with holes for PHOS and RICH \n",ClassName());
+  }  
 
   AliTOF::Init();
 
@@ -805,8 +808,8 @@ void AliTOFv2::Init()
 
   if(fDebug) {
     printf("%s: **************************************"
-	   "  TOF  "
-	   "**************************************\n",ClassName());
+           "  TOF  "
+           "**************************************\n",ClassName());
   }
 }
  

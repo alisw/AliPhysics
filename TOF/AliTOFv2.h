@@ -13,7 +13,6 @@
 /* $Id$ */
  
 #include "AliTOF.h"
-#include "AliHit.h"
  
  
 class AliTOFv2 : public AliTOF {
@@ -30,7 +29,7 @@ public:
   virtual void   TOFpc(Float_t xtof,Float_t ytof,Float_t zlenC,Float_t zlenB,
                        Float_t zlenA,Float_t ztof0);
   virtual void   StepManager();
-  virtual void   DrawModule();
+  virtual void   DrawModule() const;
 
 private:
   Int_t fIdFTOA; // FTOA volume identifier (outer plate A)
