@@ -185,9 +185,10 @@ Int_t * AliPHOSRecPoint::GetPrimaries(Int_t & number)
   Int_t maxcounter = 10 ;
   Int_t counter    = 0 ;
   Int_t * tempo    = new Int_t[maxcounter] ;
+  AliPHOSIndexToObject * please = AliPHOSIndexToObject::GetInstance() ;
   
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
-    digit = (AliPHOSDigit *) fDigitsList[index] ; 
+    digit = please->GimeDigit( fDigitsList[index] ) ; 
     Int_t nprimaries = digit->GetNprimary() ;
     Int_t * newprimaryarray = new Int_t[nprimaries] ;
     Int_t ii ; 
