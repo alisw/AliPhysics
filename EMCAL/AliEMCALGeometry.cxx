@@ -79,7 +79,7 @@ void AliEMCALGeometry::Init(void){
     } // end if
     if ( name == "EMCALArch1a"  ||
 	 name == "EMCALArch2a" ) {
-	fNLayers    = 21;
+      fNLayers    = 21;
     } // end if
     if ( name == "EMCALArch1b"  ||
 	 name == "EMCALArch2b" ) {
@@ -87,9 +87,10 @@ void AliEMCALGeometry::Init(void){
     } // end if
 
     // geometry
-    fAirGap         = 5.0; // cm, air gap between EMCAL mother volume and 
+    //fAirGap         = 5.0; // cm, air gap between EMCAL mother volume and 
                            // active material.
     fAlFrontThick   = 3.18; // cm, Thickness of front Al layer
+    fGap2Active     = 1.0;  // cm, Gap between Al and 1st Scintillator
     fPbRadThickness = 0.5; // cm, Thickness of the Pb radiators.
     fPreShowerSintThick = 0.6; // cm, Thickness of the sintilator for the
                                // preshower part of the calorimeter
@@ -100,14 +101,13 @@ void AliEMCALGeometry::Init(void){
     fArm1EtaMin     = -0.7; // pseudorapidity, Starting EMCAL Eta position
     fArm1EtaMax     = +0.7; // pseudorapidity, Ending EMCAL Eta position
     fIPDistance     = 454.0; // cm, Radial distance to inner surface of EMCAL
-    fShellThickness = GetAlFrontThickness() + 2.*GetPreSintThick() +
-	(fNLayers-2)*GetFullSintThick()+(fNLayers-1)*GetPbRadThick();
-    //below; cm, Z lenght of the EMCAL.
+    fShellThickness = fAlFrontThick + fGap2Active + 2.*(GetPreSintThick() + GetPbRadThick()) + 
+	(fNLayers-3)*(GetFullSintThick()+ GetPbRadThick()) + GetFullSintThick() ;
+    //below; cm, Z length of the EMCAL.
     fZLength        = 2.*ZFromEtaR(fIPDistance+fShellThickness,fArm1EtaMax);
     fEnvelop[0]     = fIPDistance; // mother volume inner radius
     fEnvelop[1]     = fIPDistance + fShellThickness; // mother volume outer r.
     fEnvelop[2]     = 1.00001*fZLength; // add some padding for mother volume. 
-    fGap2Active     = 1.0;  // cm, Gap between 
     fgInit = kTRUE; 
 }
 

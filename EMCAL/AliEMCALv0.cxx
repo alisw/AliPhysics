@@ -92,8 +92,39 @@ void AliEMCALv0::BuildGeometry()
 //______________________________________________________________________
 void AliEMCALv0::CreateGeometry()
 {
-    // Create the EMCAL geometry for Geant
-
+  // Create the EMCAL geometry for Geant
+  // Geometry of a tower
+  //|-----------------------------------------------------| XEN1
+  //| |                                                 | |
+  //| |    Al thickness = GetAlFrontThickness()         | |
+  //| |                                                 | |
+  //| |                                                 | |
+  //| |                                                 | |
+  //|  -------------------------------------------------  |
+  //| |    Air Gap = GetGap2Active()                    | |
+  //| |                                                 | |
+  //|  -------------------------------------------------  |
+  //| |    XU0 : XPST (PreShower e = GetPreSintThick() )| |
+  //|  -------------------------------------------------  |
+  //| |    XU0 : XPBX (PreShower e = GetPbRadThick() )  | |
+  //|  -------------------------------------------------  |
+  //| |    XU0 : XPST (PreShower e = GetPreSintThick() )| |
+  //|  -------------------------------------------------  |
+  //| |    XU0 : XPBX (PreShower e = GetPbRadThick() )  | |
+  //|  -------------------------------------------------  |
+  //| |    XU1 : XPST (Tower e = GetFullSintThick() )   | |
+  //|  -------------------------------------------------  |
+  //| |    XU1 : XPBX (Tower e = GetPbRadThick() )      | |
+  //|  -------------------------------------------------  |
+  //| |    XU1 : XPST (Tower e = GetFullSintThick()     | |
+  //|  -------------------------------------------------  |
+  //| |    XU1 : XPBX (Tower e = GetPbRadThick() )      | |
+  //|  -------------------------------------------------  |
+  //|    etc .....                                        |
+  //|  -------------------------------------------------  |
+  //| |    XU10 : XPST (Tower e = GetFullSintThick() )  | |
+  //|-----------------------------------------------------|
+ 
     Float_t etamin,etamax;
     Float_t *dum=0;
 
@@ -143,7 +174,8 @@ void AliEMCALv0::CreateGeometry()
     gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY");
 
     tseg = geom->GetFullSintThick()+geom->GetPbRadThick();
-    for (int i = 1; i < ((geom->GetNLayers()-1)/2) + 1 ; i++ ){
+    Int_t i ; 
+    for (i = 1; i < ((geom->GetNLayers()-2)/2) + 1 ; i++ ){
 	label = "XU" ;
 	label += i ;
 	envelopA[0] = envelopA[1]; //rmin
@@ -153,7 +185,18 @@ void AliEMCALv0::CreateGeometry()
 	gMC->Gsvolu(label.Data(), "TUBS ", idtmed[1599], envelopA, 5);
 	gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
     } // end  i
-
+ 
+    tseg = geom->GetFullSintThick() ;
+    label = "XU" ;
+    label += i ;
+    envelopA[0] = envelopA[1]; //rmin
+    envelopA[1] = envelopA[0] + tseg;  //rmax
+    
+    //filled with air
+    gMC->Gsvolu(label.Data(), "TUBS ", idtmed[1599], envelopA, 5);
+    gMC->Gspos(label.Data(), 1, "XEN1", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
+  
+  
     // Create the shapes of active material (LEAD/Aluminium/Scintillator)
     // to be placed
     Float_t envelopB[10]; // First Layer of Aluminium
@@ -195,12 +238,12 @@ void AliEMCALv0::CreateGeometry()
     gMC->Gsdvn("XPHI", "XPST", geom->GetNPhi(), 2);
 
     // Position Aluminium Layer in the Envelope 
-    gMC->Gspos("XALU", 1, "XEN1", 0.0, 0.0, 0.0 , idrotm, "ONLY") ;
+    gMC->Gspos("XALU", 1, "XEN1", 0.0, 0.0, 0.0 , idrotm, "ONLY") ; 
 
     // The loop below places the scintillator in Lead Layers alternately.
     for (int i = 0; i < geom->GetNLayers() ; i++ ){
 	label = "XU" ;
-        label += (int) i/2  ; // we will place two layers (i = one layer) in each mini envelope)	
+        label += static_cast<Int_t> (i/2)  ; // we will place two layers (i = one layer) in each mini envelope)	
         envelopC[5] = envelopD[6] ; //rmin
 	envelopC[6] = envelopD[6] + ((i > 1)  ? geom->GetFullSintThick() : 
 				     geom->GetPreSintThick());//rmax larger for first two layers (preshower)
@@ -214,7 +257,8 @@ void AliEMCALv0::CreateGeometry()
 		((j+1)*geom->GetDeltaEta());
 	    envelopC[4] = geom->ZFromEtaR(envelopD[6],etamin); //z begin  
 	    envelopC[7] = geom->ZFromEtaR(envelopD[6],etamax);// z end 
-	    gMC->Gsposp("XPST",1+j+i*(geom->GetNEta()), label.Data(), // should be used but there's a weird crash above i = 18, 
+
+	    gMC->Gsposp("XPST",1+j+i*(geom->GetNEta()), label.Data(), 
 			0.0, 0.0, 0.0 , idrotm, "ONLY", envelopC, 10); // Position and define layer
 	} // end for j
 
@@ -232,7 +276,8 @@ void AliEMCALv0::CreateGeometry()
 		envelopD[7] = geom->ZFromEtaR(envelopC[6],etamax);// z end
 
 		// Position and Define Layer
-		gMC->Gsposp("XPBX",1+ j+i*(geom->GetNEta()), label.Data(), 
+
+		gMC->Gsposp("XPBX",1+j+i*(geom->GetNEta()), label.Data(), 
 			    0.0, 0.0, 0.0 , idrotm, "ONLY", envelopD, 10);
 	    } // end for j
 	} // end if i
