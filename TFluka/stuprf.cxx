@@ -80,8 +80,8 @@ extern "C" {
 
     
     Double_t px = FINUC.plr[numsec-1] * FINUC.cxr[numsec-1];
-    Double_t pz = FINUC.plr[numsec-1] * FINUC.cyr[numsec-1];
-    Double_t py = FINUC.plr[numsec-1] * FINUC.czr[numsec-1];
+    Double_t py = FINUC.plr[numsec-1] * FINUC.cyr[numsec-1];
+    Double_t pz = FINUC.plr[numsec-1] * FINUC.czr[numsec-1];
     Double_t e  = FINUC.tki[numsec-1] + PAPROP.am[FINUC.kpart[numsec-1]+6];
 
     Double_t vx = xx;
