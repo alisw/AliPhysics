@@ -257,12 +257,12 @@ void AliITSgeom::ReadNewFile(const char *filename){
 	                "fNDetectorTypes","fShape"  ,"Matrix"};
     Int_t i,j,lNdetTypes,ldet;
     char cmd[20],c;
-    AliITSgeomSPD *spd;
-    AliITSgeomSDD *sdd;
-    AliITSgeomSSD *ssd;
-    AliITSgeomMatrix *m;
-    ifstream *fp;
-    char *filtmp;
+    AliITSgeomSPD *spd=0;
+    AliITSgeomSDD *sdd=0;
+    AliITSgeomSSD *ssd=0;
+    AliITSgeomMatrix *m=0;
+    ifstream *fp=0;
+    char *filtmp=0;
 
     filtmp = gSystem->ExpandPathName(filename);
     cout << "AliITSgeom, Reading New .det file " << filtmp << endl;
@@ -328,21 +328,21 @@ void AliITSgeom::ReadNewFile(const char *filename){
 	    if(fShape==0) fShape = new TObjArray(5,0);
 	    switch (ldet){
 	    case kSPD :
-		ReSetShape(ldet,(TObject*) new AliITSgeomSPD());
-		spd = (AliITSgeomSPD*) (fShape->At(ldet));
+		spd = new AliITSgeomSPD();
 		*fp >> *spd;
+		ReSetShape(ldet,spd);
 		spd = 0;
 		break;
-	    case kSDD :
-		ReSetShape(ldet,(TObject*) new AliITSgeomSDD());
-		sdd = (AliITSgeomSDD*) (fShape->At(ldet));
+	    case kSDD : case kSDDp:
+		sdd = new AliITSgeomSDD();
 		*fp >> *sdd;
+		ReSetShape(ldet,sdd);
 		sdd = 0;
 		break;
 	    case kSSD : case kSSDp :
-		ReSetShape(ldet,(TObject*) new AliITSgeomSSD());
-		ssd = (AliITSgeomSSD*) (fShape->At(ldet));
+		ssd = new AliITSgeomSSD();
 		*fp >> *ssd;
+		ReSetShape(ldet,ssd);
 		ssd = 0;
 		break;
 	    default:
@@ -843,6 +843,24 @@ ofstream & AliITSgeom::PrintGeom(ofstream &rb){
     for(i=0;i<fNmodules;i++) {
 	rb <<setprecision(16) << *(GetGeomMatrix(i)) << "\n";
     } // end for i
+    rb << fShape->GetEntries()<<endl;
+    for(i=0;i<fShape->GetEntries();i++) if(fShape->At(i)!=0) switch (i){
+    case kSPD:
+	rb << kSPD <<","<< (AliITSgeomSPD*)(fShape->At(kSPD));
+	break;
+    case kSDD:
+	rb << kSDD <<","<< (AliITSgeomSDD*)(fShape->At(kSDD));
+	break;
+    case kSSD:
+	rb << kSSD <<","<< (AliITSgeomSSD*)(fShape->At(kSSD));
+	break;
+    case kSSDp:
+	rb << kSSDp <<","<< (AliITSgeomSSD*)(fShape->At(kSSDp));
+	break;
+    case kSDDp:
+	rb << kSDDp <<","<< (AliITSgeomSDD*)(fShape->At(kSDDp));
+	break;
+    } // end for i / switch
     return rb;
 }
 //______________________________________________________________________
@@ -852,7 +870,7 @@ ifstream & AliITSgeom::ReadGeom(ifstream &rb){
     // ifstream &rb    The input streaming buffer.
     // Outputs are:
     // ifstream &rb    The input streaming buffer.
-    Int_t i;
+    Int_t i,j;
 
     fNlad = new Int_t[fNlayers];
     fNdet = new Int_t[fNlayers];
@@ -871,6 +889,38 @@ ifstream & AliITSgeom::ReadGeom(ifstream &rb){
 	fGm->AddAt(new AliITSgeomMatrix,i);
 	rb >> *(GetGeomMatrix(i));
     } // end for i
+    rb >> i;
+    fShape = new TObjArray(i);
+    for(i=0;i<fShape->GetEntries();i++) {
+	rb >> j;
+	switch (j){
+	case kSPD:{
+	    AliITSgeomSPD *s = new AliITSgeomSPD();
+	    rb >> *s;
+	    fShape->AddAt(s,kSPD);}
+	    break;
+	case kSDD:{
+	    AliITSgeomSDD *s = new AliITSgeomSDD();
+	    rb >> *s;
+	    fShape->AddAt(s,kSDD);}
+	    break;
+	case kSSD:{
+	    AliITSgeomSSD *s = new AliITSgeomSSD();
+	    rb >> *s;
+	    fShape->AddAt(s,kSSD);}
+	    break;
+	case kSSDp:{
+	    AliITSgeomSSD *s = new AliITSgeomSSD();
+	    rb >> *s;
+	    fShape->AddAt(s,kSSDp);}
+	    break;
+	case kSDDp:{
+	    AliITSgeomSDD *s = new AliITSgeomSDD();
+	    rb >> *s;
+	    fShape->AddAt(s,kSDDp);}
+	    break;
+	} // end  switch
+    } //  end for i
     return rb;
 }
 //______________________________________________________________________

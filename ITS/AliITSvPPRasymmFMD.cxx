@@ -75,6 +75,8 @@
 #include "AliRun.h"
 #include "AliTrackReference.h"
 
+#define GEANTGEOMETRY kTRUE
+
 ClassImp(AliITSvPPRasymmFMD)
  
 //______________________________________________________________________
@@ -93,12 +95,13 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD() {
     fIdSens       = 0;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kFALSE; // Don't Read .det file
+    fGeomDetIn    = kTRUE; // Read .det file
     fMajorVersion = IsVersion();
     fMinorVersion = -1;
     for(i=0;i<60;i++) fRead[i] = '\0';
     for(i=0;i<60;i++) fWrite[i] = '\0';
     for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
+    strncpy(fRead,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det",60);
 }
 //______________________________________________________________________
 AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title) 
@@ -128,7 +131,7 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title)
     fMinorVersion = 2;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kFALSE; // Don't Read .det file
+    fGeomDetIn    = kTRUE; // Read .det file
     SetThicknessDet1();
     SetThicknessDet2();
     SetThicknessChip1();
@@ -139,6 +142,7 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title)
     strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det",60);
     strncpy(fRead,fEuclidGeomDet,60);
     strncpy(fWrite,fEuclidGeomDet,60);
+    strncpy(fRead,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det",60);
 }
 //______________________________________________________________________
 AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source) :
@@ -4996,7 +5000,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
     //   none.
     // Return:
     //   none.
-
+//#if GEANTGEOMETRY
     if(strcmp(gMC->GetName(),"TGeant3")) {
 	Error("InitAliITSgeom",
 	      "Wrong Monte Carlo. InitAliITSgeom uses TGeant3 calls");
@@ -5130,6 +5134,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
 	    break;
 	} // end switch
     } // end for lay
+//#endif
     return;
 }
 //______________________________________________________________________
@@ -5145,7 +5150,7 @@ void AliITSvPPRasymmFMD::Init(){
 
     cout << endl;
     for(i=0;i<26;i++) cout << "*";
-    cout << " ITSvPPRasymm" << fMinorVersion << "_Init ";
+    cout << " ITSvPPRasymmFMD" << fMinorVersion << "_Init ";
     for(i=0;i<25;i++) cout << "*";cout << endl;
     //
     if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
@@ -5153,7 +5158,7 @@ void AliITSvPPRasymmFMD::Init(){
     if(fITSgeom!=0) delete fITSgeom;
     fITSgeom = new AliITSgeom();
     if(fGeomDetIn) fITSgeom->ReadNewFile(fRead);
-    if(!fGeomDetIn) this->InitAliITSgeom();
+    else this->InitAliITSgeom();
     if(fGeomDetOut) fITSgeom->WriteNewFile(fWrite);
     AliITS::Init();
     //
