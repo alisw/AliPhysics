@@ -30,19 +30,19 @@ class AliPHOSDigitizer: public AliDigitizer {
 
 public:
   AliPHOSDigitizer() ;          // ctor
-  AliPHOSDigitizer(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ; 
+  AliPHOSDigitizer(TString alirunFileNameFile, TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ; 
   AliPHOSDigitizer(const AliPHOSDigitizer & dtizer) ;
   AliPHOSDigitizer(AliRunDigitizer * manager) ;
   virtual ~AliPHOSDigitizer() ;       
 
-  void    Digitize(const Int_t event) ;            // Make Digits from SDigits 
+  void    Digitize(Int_t event) ;            // Make Digits from SDigits 
   void    Exec(Option_t *option);                  // Supervising method
 
   //CPV parameters
-  const Float_t GetCPVNoise()     const { return fCPVNoise ;}
-  const Float_t GetCPVThreshold() const { return fCPVDigitThreshold ;}
-  const Float_t GetCPVchannel()   const { return fADCchanelCpv; }
-  const Float_t GetCPVpedestal()  const { return fADCpedestalCpv; }
+  Float_t GetCPVNoise()     const { return fCPVNoise ;}
+  Float_t GetCPVThreshold() const { return fCPVDigitThreshold ;}
+  Float_t GetCPVchannel()   const { return fADCchanelCpv; }
+  Float_t GetCPVpedestal()  const { return fADCpedestalCpv; }
 
   void    SetCPVNoise(Float_t CPVNoise)          {fCPVNoise = CPVNoise;}
   void    SetCPVThreshold(Float_t CPVThreshold)  {fCPVDigitThreshold= CPVThreshold;}
@@ -52,11 +52,11 @@ public:
 
 
   //EMC parameters
-  const Float_t GetEMCThreshold() const { return fEMCDigitThreshold;}
-  const Float_t GetEMCchannel()   const { return fADCchanelEmc; }
-  const Float_t GetEMCpedestal()  const { return fADCpedestalEmc; }  
-  const Float_t GetPinNoise()     const { return fPinNoise;}
-  const Float_t GetTimeResolution() const { return fTimeResolution ; }
+  Float_t GetEMCThreshold() const { return fEMCDigitThreshold;}
+  Float_t GetEMCchannel()   const { return fADCchanelEmc; }
+  Float_t GetEMCpedestal()  const { return fADCpedestalEmc; }  
+  Float_t GetPinNoise()     const { return fPinNoise;}
+  Float_t GetTimeResolution() const { return fTimeResolution ; }
 
   void   SetEMCThreshold(Float_t EMCThreshold)  {fEMCDigitThreshold = EMCThreshold;}
   void   SetPinNoise(Float_t PinNoise )         {fPinNoise = PinNoise;}
@@ -68,9 +68,9 @@ public:
   void   SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
 
   //General
-  const Int_t   GetDigitsInRun()  const { return fDigitsInRun ;}  
-  void    MixWith(const TString alirunFileName, 
-		  const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ; // Add another one file to mix
+  Int_t   GetDigitsInRun()  const { return fDigitsInRun ;}  
+  void    MixWith(TString alirunFileName, 
+		  TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ; // Add another one file to mix
   void    Print()const ;
  
   AliPHOSDigitizer & operator = (const AliPHOSDigitizer & /*rvalue*/)  {

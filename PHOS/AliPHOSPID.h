@@ -36,7 +36,7 @@ class AliPHOSPID : public TTask {
   AliPHOSPID(const AliPHOSPID & pid) : TTask(pid) {;} 
   virtual ~AliPHOSPID() ; // dtor
 
-  virtual const Int_t GetRecParticlesInRun()  const { Warning("GetRecParticlesInRun", "not defined" ) ; return 0 ;} 
+  virtual Int_t GetRecParticlesInRun()  const { Warning("GetRecParticlesInRun", "not defined" ) ; return 0 ;} 
   virtual void Print() const { Warning("Print", "not defined" ) ;}
   void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void SetEventFolderName(TString name) { fEventFolderName = name ; }

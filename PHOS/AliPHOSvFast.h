@@ -49,10 +49,10 @@ public:
   }
 
   void    MakeBranch(Option_t* opt);
-  Double_t MakeEnergy(const Double_t energy) ;                       // makes the detected energy    
-  TVector3 MakePosition(const Double_t energy, const TVector3 pos, const Double_t th, const Double_t ph) ; 
+  Double_t MakeEnergy(Double_t energy) ;                       // makes the detected energy    
+  TVector3 MakePosition(Double_t energy, TVector3 pos, Double_t th, Double_t ph) ; 
                                                                      // makes the detected position
-  void MakeRecParticle(const Int_t modid, const TVector3 pos, AliPHOSFastRecParticle & rp) ;  // makes a reconstructes particle from primary
+  void MakeRecParticle(Int_t modid, TVector3 pos, AliPHOSFastRecParticle & rp) ;  // makes a reconstructes particle from primary
   Int_t   MakeType(AliPHOSFastRecParticle & rp) ;                    // gets the detected type of particle
   // gets TClonesArray of reconstructed particles
   TClonesArray * FastRecParticles() const { return fFastRecParticles ; } 

@@ -66,7 +66,7 @@ AliPHOSJet::~AliPHOSJet(){
   
 }
 //____________________________________________________________________________ 
-void AliPHOSJet::AddParticle(const TParticle * p,const Int_t index){
+void AliPHOSJet::AddParticle(const TParticle * p, Int_t index){
   //adds particle to jet. Calculates change in jet direction, 
   //due to addition of this particle and if it is smaller, than fMaxDev, 
   //add particle, axcept new direction and return true.
@@ -101,7 +101,7 @@ void AliPHOSJet::AddParticle(const TParticle * p,const Int_t index){
   }
 }
 //____________________________________________________________________________ 
-void AliPHOSJet::AddDigit(const Double_t e,const Double_t eta,const Double_t phi, const Int_t index){
+void AliPHOSJet::AddDigit(Double_t e, Double_t eta, Double_t phi, Int_t index){
   //adds particle to jet. Calculates change in jet direction, 
   //due to addition of this particle and if it is smaller, than fMaxDev, 
   //add particle, axcept new direction and return true.
@@ -180,7 +180,7 @@ Bool_t AliPHOSJet::AcceptConeDeviation(const TParticle * p)const
     return kFALSE ;
 }
 //____________________________________________________________________________ 
-Bool_t AliPHOSJet::AcceptConeDeviation(const Double_t e,const Double_t eta,const Double_t phi)const
+Bool_t AliPHOSJet::AcceptConeDeviation(Double_t e, Double_t eta, Double_t phi)const
 { //Calculate cone deviation in case of inclusion of the given
   //particle to jet. 
 
@@ -223,7 +223,7 @@ Bool_t AliPHOSJet::IsInCone(const TParticle * p)const
     return kFALSE ;
 }
 //____________________________________________________________________________ 
-Bool_t AliPHOSJet::IsInCone(const Double_t eta,const Double_t phi)const
+Bool_t AliPHOSJet::IsInCone(Double_t eta, Double_t phi)const
 {
   //Says if particle is inside the defined cone
   Double_t dEta ;

@@ -69,8 +69,8 @@ public:
   static void Print() ; 
   
   //=========== General information about run ==============
-  Bool_t IsLoaded(const TString tree) const { return fLoadingStatus.Contains(tree) ; } 
-  void   SetLoaded(const TString tree) { fLoadingStatus += tree ; } 
+  Bool_t IsLoaded(TString tree) const { return fLoadingStatus.Contains(tree) ; } 
+  void   SetLoaded(TString tree) { fLoadingStatus += tree ; } 
   
   Int_t  MaxEvent() const ; 
   Int_t  EventNumber() const ; 
@@ -83,8 +83,8 @@ public:
   AliPHOSGeometry * PHOSGeometry() const ; 
   
   //========== Methods to read something from file ==========
-  void   Event(const Int_t event, const char * opt = "HSDRP") ;    
-  void   Track(const Int_t itrack) ;
+  void   Event(Int_t event, const char * opt = "HSDRP") ;    
+  void   Track(Int_t itrack) ;
   
   //-----------------now getter's data--------------------------------------
   //  AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
@@ -94,16 +94,16 @@ public:
   TClonesArray *    Primaries(void) ;
   TParticle * Primary(Int_t index) const ;
   Int_t       NPrimaries()const { return fNPrimaries; }
-  TParticle * Secondary(const TParticle * p, const Int_t index=1) const ;  
+  TParticle * Secondary(const TParticle * p, Int_t index=1) const ;  
   
   //=========== Hits =================
   TClonesArray *  Hits(void)  ; 
-  AliPHOSHit *    Hit(const Int_t index) { return dynamic_cast<AliPHOSHit*>(Hits()->At(index) );}
+  AliPHOSHit *    Hit(Int_t index) { return dynamic_cast<AliPHOSHit*>(Hits()->At(index) );}
   TTree *         TreeH() const ; 
   
   //=========== SDigits ==============
   TClonesArray *      SDigits() ;  
-  AliPHOSDigit *      SDigit(const Int_t index) { return static_cast<AliPHOSDigit *>(SDigits()->At(index)) ;} 
+  AliPHOSDigit *      SDigit(Int_t index) { return static_cast<AliPHOSDigit *>(SDigits()->At(index)) ;} 
   TTree *             TreeS() const ; 
   AliPHOSSDigitizer * SDigitizer() ;  
   
@@ -116,7 +116,7 @@ public:
   
   //========== Digits ================
   TClonesArray * Digits() ;
-  AliPHOSDigit * Digit(const Int_t index) { return static_cast<AliPHOSDigit *>(Digits()->At(index)) ;} 
+  AliPHOSDigit * Digit(Int_t index) { return static_cast<AliPHOSDigit *>(Digits()->At(index)) ;} 
   TTree *        TreeD() const ; 
   AliPHOSDigitizer * Digitizer() ;
   TString             GetDigitsFileName() const { return PhosLoader()->GetDigitsFileName() ; }  
@@ -129,9 +129,9 @@ public:
   
   //========== RecPoints =============
   TObjArray *           EmcRecPoints() ;
-  AliPHOSEmcRecPoint *  EmcRecPoint(const Int_t index) { return static_cast<AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;} 
+  AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) { return static_cast<AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;} 
   TObjArray *           CpvRecPoints() ; 
-  AliPHOSCpvRecPoint *  CpvRecPoint(const Int_t index) { return static_cast<AliPHOSCpvRecPoint *>(CpvRecPoints()->At(index)) ;} 
+  AliPHOSCpvRecPoint *  CpvRecPoint(Int_t index) { return static_cast<AliPHOSCpvRecPoint *>(CpvRecPoints()->At(index)) ;} 
   TTree *               TreeR() const ;
   AliPHOSClusterizer * Clusterizer() ;
   TString               GetRecPointsFileName() const { return PhosLoader()->GetRecPointsFileName() ; } 
@@ -144,7 +144,7 @@ public:
   
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
   TClonesArray *           TrackSegments() ;
-  AliPHOSTrackSegment *  TrackSegments(const Int_t index) { return static_cast<AliPHOSTrackSegment *>(TrackSegments()->At(index)) ;} 
+  AliPHOSTrackSegment *  TrackSegments(Int_t index) { return static_cast<AliPHOSTrackSegment *>(TrackSegments()->At(index)) ;} 
   TTree *               TreeT() const ;
   AliPHOSTrackSegmentMaker * TrackSegmentMaker() ;
   TString               GetTracksFileName() const { return PhosLoader()->GetTracksFileName() ; } 
@@ -157,7 +157,7 @@ public:
   
   //========== RecParticles ===========
   TClonesArray *         RecParticles() ;
-  AliPHOSRecParticle *   RecPaticles(const Int_t index) { return static_cast<AliPHOSRecParticle *>(RecParticles()->At(index)) ;} 
+  AliPHOSRecParticle *   RecPaticles(Int_t index) { return static_cast<AliPHOSRecParticle *>(RecParticles()->At(index)) ;} 
   TTree *               TreeP() const ;
   AliPHOSPID * PID() ;
   TString               GetRecParticlesFileName() const { return PhosLoader()->GetRecParticlesFileName() ; } 

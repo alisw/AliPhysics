@@ -224,7 +224,7 @@ TClonesArray * AliPHOSGetter::RecParticles()
   return rv ; 
 }
 //____________________________________________________________________________ 
-void AliPHOSGetter::Event(const Int_t event, const char* opt) 
+void AliPHOSGetter::Event(Int_t event, const char* opt) 
 {
   // Reads the content of all Tree's S, D and R
 
@@ -608,7 +608,7 @@ AliPHOSSDigitizer * AliPHOSGetter::SDigitizer()
 }
 
 //____________________________________________________________________________ 
-TParticle * AliPHOSGetter::Secondary(const TParticle* p, const Int_t index) const
+TParticle * AliPHOSGetter::Secondary(const TParticle* p, Int_t index) const
 {
   // Return first (index=1) or second (index=2) secondary particle of primary particle p 
 
@@ -627,7 +627,7 @@ TParticle * AliPHOSGetter::Secondary(const TParticle* p, const Int_t index) cons
 }
 
 //____________________________________________________________________________ 
-void AliPHOSGetter::Track(const Int_t itrack) 
+void AliPHOSGetter::Track(Int_t itrack) 
 {
   // Read the first entry of PHOS branch in hit tree gAlice->TreeH()
  

@@ -291,7 +291,7 @@ void AliPHOSvFast::MakeBranch(Option_t* opt)
 }
 //____________________________________________________________________________
 
-Double_t AliPHOSvFast::MakeEnergy(const Double_t energy)
+Double_t AliPHOSvFast::MakeEnergy(Double_t energy)
 {  
   // Smears the energy according to the energy dependent energy resolution.
   // A gaussian distribution is assumed
@@ -301,7 +301,7 @@ Double_t AliPHOSvFast::MakeEnergy(const Double_t energy)
 }
 //____________________________________________________________________________
 
-TVector3 AliPHOSvFast::MakePosition(const Double_t energy, const TVector3 pos, const Double_t theta, const Double_t phi)
+TVector3 AliPHOSvFast::MakePosition(Double_t energy, TVector3 pos, Double_t theta, Double_t phi)
 {
   // Smears the impact position according to the energy dependent position resolution
   // A gaussian position distribution is assumed
@@ -321,7 +321,7 @@ TVector3 AliPHOSvFast::MakePosition(const Double_t energy, const TVector3 pos, c
 }
 
 //____________________________________________________________________________
-void AliPHOSvFast::MakeRecParticle(const Int_t modid, const TVector3 pos, AliPHOSFastRecParticle & rp)
+void AliPHOSvFast::MakeRecParticle(Int_t modid, TVector3 pos, AliPHOSFastRecParticle & rp)
 {
   // Modify the primary particle properties according
   //  1. the response function of PHOS

@@ -726,7 +726,7 @@ Float_t AliPHOSEmcRecPoint::GetMaximalEnergy(void) const
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSEmcRecPoint::GetMultiplicityAtLevel(const Float_t H) const
+Int_t AliPHOSEmcRecPoint::GetMultiplicityAtLevel(Float_t H) const
 {
   // Calculates the multiplicity of digits with energy larger than H*energy 
   

@@ -237,7 +237,7 @@ const TString AliPHOSPIDv1::GetFileNamePrincipal(TString particle) const
 }
 
 //____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetParameterCalibration(Int_t i) const 
+Float_t  AliPHOSPIDv1::GetParameterCalibration(Int_t i) const 
 {
   // Get the i-th parameter "Calibration"
   Float_t param = 0.;
@@ -249,7 +249,7 @@ const Float_t  AliPHOSPIDv1::GetParameterCalibration(Int_t i) const
 }
 
 //____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetCalibratedEnergy(const Float_t e) const
+Float_t  AliPHOSPIDv1::GetCalibratedEnergy(Float_t e) const
 {
 //      It calibrates Energy depending on the recpoint energy.
 //      The energy of the reconstructed cluster is corrected with 
@@ -265,7 +265,7 @@ const Float_t  AliPHOSPIDv1::GetCalibratedEnergy(const Float_t e) const
 }
 
 //____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetParameterCpv2Emc(Int_t i, TString axis) const 
+Float_t  AliPHOSPIDv1::GetParameterCpv2Emc(Int_t i, TString axis) const 
 {
   // Get the i-th parameter "CPV-EMC distance" for the specified axis
   Float_t param = 0.;
@@ -281,7 +281,7 @@ const Float_t  AliPHOSPIDv1::GetParameterCpv2Emc(Int_t i, TString axis) const
 }
 
 //____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetCpv2EmcDistanceCut(TString axis, Float_t e) const
+Float_t  AliPHOSPIDv1::GetCpv2EmcDistanceCut(TString axis, Float_t e) const
 {
   // Get CpvtoEmcDistance Cut depending on the cluster energy, axis and 
   // Purity-Efficiency point 
@@ -294,7 +294,7 @@ const Float_t  AliPHOSPIDv1::GetCpv2EmcDistanceCut(TString axis, Float_t e) cons
 }
 
 //____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetEllipseParameter(TString particle, TString param, Float_t e) const 
+Float_t  AliPHOSPIDv1::GetEllipseParameter(TString particle, TString param, Float_t e) const 
 {
   // Calculates the parameter param of the ellipse
 
@@ -314,7 +314,7 @@ const Float_t  AliPHOSPIDv1::GetEllipseParameter(TString particle, TString param
 }
 
 //_____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetParameterPhotonBoundary (Int_t i) const
+Float_t  AliPHOSPIDv1::GetParameterPhotonBoundary (Int_t i) const
 { 
   // Get the parameter "i" to calculate the boundary on the moment M2x
   // for photons at high p_T
@@ -327,7 +327,7 @@ const Float_t  AliPHOSPIDv1::GetParameterPhotonBoundary (Int_t i) const
 }
 
 //____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetParameterPi0Boundary (Int_t i) const
+Float_t  AliPHOSPIDv1::GetParameterPi0Boundary (Int_t i) const
 { 
   // Get the parameter "i" to calculate the boundary on the moment M2x
   // for pi0 at high p_T
@@ -340,7 +340,7 @@ const Float_t  AliPHOSPIDv1::GetParameterPi0Boundary (Int_t i) const
 }
 
 //____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetParameterTimeGate(Int_t i) const
+Float_t  AliPHOSPIDv1::GetParameterTimeGate(Int_t i) const
 {
   // Get TimeGate parameter depending on Purity-Efficiency i:
   // i=0 - Low purity, i=1 - Medium purity, i=2 - High purity
@@ -353,7 +353,7 @@ const Float_t  AliPHOSPIDv1::GetParameterTimeGate(Int_t i) const
 }
 
 //_____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(TString particle, TString param, Int_t i) const
+Float_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(TString particle, TString param, Int_t i) const
 { 
   // Get the parameter "i" that is needed to calculate the ellipse 
   // parameter "param" for the particle "particle" ("photon" or "pi0")
@@ -387,7 +387,7 @@ const Float_t  AliPHOSPIDv1::GetParameterToCalculateEllipse(TString particle, TS
 
 
 //____________________________________________________________________________
-const Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Option_t *  axis)const
+Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Option_t *  axis)const
 {
   // Calculates the distance between the EMC RecPoint and the PPSD RecPoint
   
@@ -414,7 +414,7 @@ const Float_t  AliPHOSPIDv1::GetDistance(AliPHOSEmcRecPoint * emc,AliPHOSRecPoin
   return 100000000 ;
 }
 //____________________________________________________________________________
-const Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv,const Int_t effPur, Float_t e) const
+Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * cpv, Int_t effPur, Float_t e) const
 {
   if(effPur>2 || effPur<0)
     Error("GetCPVBit","Invalid Efficiency-Purity choice %d",effPur);
@@ -432,7 +432,7 @@ const Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSEmcRecPoint * emc,AliPHOSRecPoint * 
 }
 
 //____________________________________________________________________________
-const Int_t  AliPHOSPIDv1::GetPrincipalBit(TString particle, const Double_t* p,const Int_t effPur, Float_t e)const
+Int_t  AliPHOSPIDv1::GetPrincipalBit(TString particle, const Double_t* p, Int_t effPur, Float_t e)const
 {
   //Is the particle inside de PCA ellipse?
   
@@ -459,7 +459,7 @@ const Int_t  AliPHOSPIDv1::GetPrincipalBit(TString particle, const Double_t* p,c
 
 }
 //____________________________________________________________________________
-const Int_t  AliPHOSPIDv1::GetHardPhotonBit(AliPHOSEmcRecPoint * emc) const
+Int_t  AliPHOSPIDv1::GetHardPhotonBit(AliPHOSEmcRecPoint * emc) const
 {
   // Set bit for identified hard photons (E > 30 GeV)
   // if the second moment M2x is below the boundary
@@ -479,7 +479,7 @@ const Int_t  AliPHOSPIDv1::GetHardPhotonBit(AliPHOSEmcRecPoint * emc) const
 }
 
 //____________________________________________________________________________
-const Int_t  AliPHOSPIDv1::GetHardPi0Bit(AliPHOSEmcRecPoint * emc) const
+Int_t  AliPHOSPIDv1::GetHardPi0Bit(AliPHOSEmcRecPoint * emc) const
 {
   // Set bit for identified hard pi0  (E > 30 GeV)
   // if the second moment M2x is above the boundary

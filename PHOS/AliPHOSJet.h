@@ -30,8 +30,8 @@ public:
   }
   virtual ~AliPHOSJet() ; 
 
-  void AddDigit(const Double_t e,const Double_t eta,const Double_t phi,const Int_t index) ;
-  void AddParticle(const TParticle * p,const Int_t index) ;
+  void AddDigit(Double_t e, Double_t eta, Double_t phi, Int_t index) ;
+  void AddParticle(const TParticle * p, Int_t index) ;
   //adds particle p to jet. index: index of p in list of all particles in event
 
   Double_t DistanceToJet(const TParticle *p)const ;
@@ -44,9 +44,9 @@ public:
   const Int_t * Indexs(Int_t & nIndexs)const{nIndexs = fNpart; return fList->GetArray() ;}
 
   Bool_t IsInCone(const TParticle * p)const ;
-  Bool_t IsInCone(const Double_t eta,const Double_t phi)const ;
+  Bool_t IsInCone(Double_t eta, Double_t phi)const ;
   Bool_t AcceptConeDeviation(const TParticle *p)const ;
-  Bool_t AcceptConeDeviation(const Double_t e,const Double_t eta,const Double_t phi)const ;
+  Bool_t AcceptConeDeviation(Double_t e, Double_t eta, Double_t phi)const ;
 
   void SetConeRadius(Double_t r){fConeRad = r ;} ;
   void SetMaxConeMove(Double_t max = 0.15){fMaxConeMove = max ;} ;

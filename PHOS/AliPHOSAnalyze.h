@@ -49,7 +49,7 @@ public:
 
   void Ls() ; //Prints PHOS-related contents of TreeS, TreeD and TreeR
 
-  void SetEnergyCorrection(const Float_t ecor){fCorrection = ecor ;} 
+  void SetEnergyCorrection(Float_t ecor){fCorrection = ecor ;} 
 
   AliPHOSAnalyze & operator = (const AliPHOSAnalyze & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
@@ -59,7 +59,7 @@ public:
  
 private:
 
-  Float_t CorrectedEnergy(const Float_t ReconstEnergy)const
+  Float_t CorrectedEnergy(Float_t ReconstEnergy)const
     {return ReconstEnergy * fCorrection;} 
   //Converts reconstructed energy (energy of the EMCRecPoint) to the energy of primary
   //The coeficient shoud be (and was) calculated usin Erec vs. Eprim plot 

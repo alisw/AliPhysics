@@ -44,20 +44,20 @@ public:
   const TString GetFileNameParameters()      const {return fFileNameParameters ;}
 
   // Get number of rec.particles in this run
-  virtual const Int_t GetRecParticlesInRun() const {return fRecParticlesInRun ;}  
+  virtual Int_t GetRecParticlesInRun() const {return fRecParticlesInRun ;}  
 
   // Get PID parameters as they are defined in fParameters
-  const Float_t GetParameterCalibration    (Int_t i)               const;
-  const Float_t GetParameterCpv2Emc        (Int_t i, TString axis) const;
-  const Float_t GetParameterTimeGate       (Int_t i)               const;
-  const Float_t GetParameterToCalculateEllipse(TString particle, TString param, Int_t i) const  ;     
-  const Float_t GetParameterPhotonBoundary (Int_t i)               const;
-  const Float_t GetParameterPi0Boundary    (Int_t i)               const;
+  Float_t GetParameterCalibration    (Int_t i)               const;
+  Float_t GetParameterCpv2Emc        (Int_t i, TString axis) const;
+  Float_t GetParameterTimeGate       (Int_t i)               const;
+  Float_t GetParameterToCalculateEllipse(TString particle, TString param, Int_t i) const  ;     
+  Float_t GetParameterPhotonBoundary (Int_t i)               const;
+  Float_t GetParameterPi0Boundary    (Int_t i)               const;
 
   // Get energy-dependent PID parameters
-  const Float_t GetCalibratedEnergy    (const Float_t e)                            const;
-  const Float_t GetCpv2EmcDistanceCut  (TString axis, Float_t e)                    const ;
-  const Float_t GetEllipseParameter    (TString particle, TString param, Float_t e) const;
+  Float_t GetCalibratedEnergy    (Float_t e)                 const;
+  Float_t GetCpv2EmcDistanceCut  (TString axis, Float_t e)   const ;
+  Float_t GetEllipseParameter    (TString particle, TString param, Float_t e) const;
 
   // Set PID parameters to change appropriate element of fParameters
   void SetParameterCalibration   (Int_t i, Float_t param);
@@ -80,11 +80,11 @@ private:
   virtual void  InitParameters() ;
   void          MakeRecParticles(void ) ;
   // Relative Distance CPV-EMC
-  const Float_t GetDistance     (AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * axis)const ; 
-  const Int_t   GetCPVBit       (AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Int_t EffPur, Float_t e) const;
-  const Int_t   GetPrincipalBit (TString particle, const Double_t* P, Int_t EffPur, Float_t e)const ; //Principal cut
-  const Int_t   GetHardPhotonBit(AliPHOSEmcRecPoint * emc) const;
-  const Int_t   GetHardPi0Bit   (AliPHOSEmcRecPoint * emc) const;
+  Float_t GetDistance     (AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Option_t * axis)const ; 
+  Int_t   GetCPVBit       (AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv, Int_t EffPur, Float_t e) const;
+  Int_t   GetPrincipalBit (TString particle, const Double_t* P, Int_t EffPur, Float_t e)const ; //Principal cut
+  Int_t   GetHardPhotonBit(AliPHOSEmcRecPoint * emc) const;
+  Int_t   GetHardPi0Bit   (AliPHOSEmcRecPoint * emc) const;
   TVector3      GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRecPoint * cpv)const ;
   void          PrintRecParticles(Option_t * option) ;
   virtual void  WriteRecParticles() ; 

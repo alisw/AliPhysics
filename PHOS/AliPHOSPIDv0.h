@@ -35,7 +35,7 @@ public:
   virtual void Exec(Option_t * option);
   //  virtual char * GetRecParticlesBranch()const {return (char*) fRecParticlesTitle.Data() ;}      
   //  virtual char * GetTrackSegmentsBranch()const{return (char*) fTrackSegmentsTitle.Data(); }
-  virtual const Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
+  virtual Int_t GetRecParticlesInRun() const  {return fRecParticlesInRun ;}  
 
   virtual void PlotDispersionCuts()const ;
   virtual void Print()const ; 

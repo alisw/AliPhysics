@@ -45,7 +45,7 @@ public:
   Float_t     GetMaximalEnergy(void) const ;                       // get the highest energy in the cluster
   Int_t       GetMaximumMultiplicity() const {return fMaxDigit ;}  // gets the maximum number of digits allowed
   Int_t       GetMultiplicity(void) const { return fMulDigit ; }   // gets the number of digits making this recpoint
-  Int_t       GetMultiplicityAtLevel(const Float_t level) const ;  // computes multiplicity of digits with 
+  Int_t       GetMultiplicityAtLevel(Float_t level) const ;  // computes multiplicity of digits with 
                                                                    // energy above relative level
   Short_t     GetNExMax(void) const {return fNExMax ;}             // Number of maxima found in cluster in unfolding:
                                                                    // 0: was no unfolging

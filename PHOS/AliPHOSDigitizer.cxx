@@ -90,7 +90,7 @@ ClassImp(AliPHOSDigitizer)
 }
 
 //____________________________________________________________________________ 
-AliPHOSDigitizer::AliPHOSDigitizer(const TString alirunFileName, const TString eventFolderName):
+AliPHOSDigitizer::AliPHOSDigitizer(TString alirunFileName, TString eventFolderName):
   AliDigitizer("PHOS"+AliConfig::fgkDigitizerTaskName, alirunFileName),
   fInputFileNames(0), fEventNames(0), fEventFolderName(eventFolderName)
 {
@@ -151,7 +151,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd):
 }
 
 //____________________________________________________________________________
-void AliPHOSDigitizer::Digitize(const Int_t event) 
+void AliPHOSDigitizer::Digitize(Int_t event) 
 { 
   
   // Makes the digitization of the collected summable digits.
@@ -532,7 +532,7 @@ void AliPHOSDigitizer::InitParameters()
 }
 
 //__________________________________________________________________
-void AliPHOSDigitizer::MixWith(const TString alirunFileName, const TString eventFolderName)
+void AliPHOSDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
 {
   // Allows to produce digits by superimposing background and signal event.
   // It is assumed, that headers file with SIGNAL events is opened in 

@@ -103,5 +103,5 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
     Int_t primaryindex = dynamic_cast<AliPHOSEmcRecPoint*>(gime->EmcRecPoints()->At(emcRPindex))->GetPrimaries(dummy)[index] ; 
     return gime->Primary(primaryindex) ;
    } 
-  return 0 ; 
+  //  return 0 ; 
 }

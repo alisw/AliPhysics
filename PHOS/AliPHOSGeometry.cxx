@@ -171,7 +171,7 @@ void AliPHOSGeometry::SetPHOSAngles()
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSGeometry::AbsToRelNumbering(const Int_t AbsId, Int_t * relid) const
+Bool_t AliPHOSGeometry::AbsToRelNumbering(Int_t AbsId, Int_t * relid) const
 {
   // Converts the absolute numbering into the following array/
   //  relid[0] = PHOS Module number 1:fNModules 
@@ -207,7 +207,7 @@ Bool_t AliPHOSGeometry::AbsToRelNumbering(const Int_t AbsId, Int_t * relid) cons
 }
 
 //____________________________________________________________________________  
-void AliPHOSGeometry::EmcModuleCoverage(const Int_t mod, Double_t & tm, Double_t & tM, Double_t & pm, Double_t & pM, Option_t * opt) const 
+void AliPHOSGeometry::EmcModuleCoverage(Int_t mod, Double_t & tm, Double_t & tM, Double_t & pm, Double_t & pM, Option_t * opt) const 
 {
   // calculates the angular coverage in theta and phi of one EMC (=PHOS) module
 
@@ -324,7 +324,7 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) co
 }
 
 //____________________________________________________________________________
-void AliPHOSGeometry::ImpactOnEmc(const Double_t theta, const Double_t phi, Int_t & ModuleNumber, Double_t & z, Double_t & x) const
+void AliPHOSGeometry::ImpactOnEmc(Double_t theta, Double_t phi, Int_t & ModuleNumber, Double_t & z, Double_t & x) const
 {
   // calculates the impact coordinates on PHOS of a neutral particle  
   // emitted in the direction theta and phi in the ALICE global coordinate system
@@ -394,7 +394,7 @@ Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId) c
 
 //____________________________________________________________________________
 
-void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos ) const
+void AliPHOSGeometry::RelPosInAlice(Int_t id, TVector3 & pos ) const
 {
   // Converts the absolute numbering into the global ALICE coordinate system
   
