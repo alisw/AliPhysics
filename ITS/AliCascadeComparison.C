@@ -177,9 +177,9 @@ Int_t AliCascadeComparison(Int_t code=3312) {
    Int_t i;
    for (i=0; i<nentr; i++) {
        AliCascadeVertex *cascade=(AliCascadeVertex*)carray.UncheckedAt(i);
-       nlab=TMath::Abs(cascade->GetNlabel()); 
-       plab=TMath::Abs(cascade->GetPlabel());
-       blab=TMath::Abs(cascade->GetBlabel());
+       nlab=TMath::Abs(cascade->GetNindex()); 
+       plab=TMath::Abs(cascade->GetPindex());
+       blab=TMath::Abs(cascade->GetBindex());
 
        /** Kinematical cuts **/
        Double_t pxn,pyn,pzn; cascade->GetNPxPyPz(pxn,pyn,pzn); 
@@ -382,7 +382,7 @@ Int_t good_cascades(GoodCascade *gc, Int_t max) {
 
    while (np--) {
       cerr<<np<<'\r';
-      TParticle *cp=gAlice->Particle(np);
+      TParticle *cp=gAlice->GetMCApp()->Particle(np);
 
       /*** only these cascades are "good" ***/
       Int_t code=cp->GetPdgCode();
@@ -395,8 +395,8 @@ Int_t good_cascades(GoodCascade *gc, Int_t max) {
       if (v0lab<0) continue;
       if (blab<0) continue;
 
-      TParticle *p0=gAlice->Particle(v0lab);
-      TParticle *bp=gAlice->Particle(blab);
+      TParticle *p0=gAlice->GetMCApp()->Particle(v0lab);
+      TParticle *bp=gAlice->GetMCApp()->Particle(blab);
       if ((p0->GetPdgCode()!=kLambda0) && (p0->GetPdgCode()!=kLambda0Bar)) {
          TParticle *p=p0; p0=bp; bp=p;
          Int_t i=v0lab; v0lab=blab; blab=i;         
@@ -424,12 +424,12 @@ Int_t good_cascades(GoodCascade *gc, Int_t max) {
       Double_t x=bp->Vx(), y=bp->Vy(), r2=x*x+y*y; //bachelor
       if (r2<r2min) continue;
       if (r2>r2max) continue;
-      TParticle *pp=gAlice->Particle(plab);
+      TParticle *pp=gAlice->GetMCApp()->Particle(plab);
       x=pp->Vx(); y=pp->Vy(); r2=x*x+y*y;                      //V0
       if (r2<r2min) continue;
       if (r2>r2max) continue;
 
-      if (gAlice->Particle(plab)->GetPDG()->Charge() < 0.) {
+      if (gAlice->GetMCApp()->Particle(plab)->GetPDG()->Charge() < 0.) {
          i=plab; plab=nlab; nlab=i;
       }
 

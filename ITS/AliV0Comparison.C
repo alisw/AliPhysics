@@ -160,8 +160,8 @@ Int_t AliV0Comparison(Int_t code=310) { //Lambda=3122, LambdaBar=-3122
    Int_t i;
    for (i=0; i<nentr; i++) {
        AliV0vertex *vertex=(AliV0vertex*)varray.UncheckedAt(i);
-       nlab=TMath::Abs(vertex->GetNlabel());
-       plab=TMath::Abs(vertex->GetPlabel());
+       nlab=TMath::Abs(vertex->GetNindex());
+       plab=TMath::Abs(vertex->GetPindex());
 
        /** Kinematical cuts **/
        Double_t pxn,pyn,pzn; vertex->GetNPxPyPz(pxn,pyn,pzn); 
@@ -355,7 +355,7 @@ Int_t good_vertices(GoodVertex *gv, Int_t max) {
 
    while (np--) {
       cerr<<np<<'\r';
-      TParticle *p0=gAlice->Particle(np);
+      TParticle *p0=gAlice->GetMCApp()->Particle(np);
 
       /*** only these V0s are "good" ***/
       Int_t code=p0->GetPdgCode();
@@ -375,12 +375,12 @@ Int_t good_vertices(GoodVertex *gv, Int_t max) {
       if (i==ngt) continue;
 
       /*** fiducial volume ***/
-      TParticle *p=gAlice->Particle(nlab);
+      TParticle *p=gAlice->GetMCApp()->Particle(nlab);
       Double_t x=p->Vx(), y=p->Vy(), z=p->Vz(), r2=x*x+y*y;
       if (r2<r2min) continue;
       if (r2>r2max) continue;
        
-      if (gAlice->Particle(plab)->GetPDG()->Charge() < 0.) {
+      if (gAlice->GetMCApp()->Particle(plab)->GetPDG()->Charge() < 0.) {
          i=plab; plab=nlab; nlab=i;
       }
       
