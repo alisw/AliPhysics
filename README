@@ -1,10 +1,9 @@
 AliRoot
 -------
 
-########################### Pre-release version ###############################
-########################### Use at your onw risk ##############################
+########################### Release version ###############################
 
-Last update Mon Jun  7 11:49:05 - Federico Carminati
+Last update Tue Jun 15 08:10:40 1999 - Federico Carminati
 
 This is the Version 3.01 of the ALICE simulation and reconstruction
 software. This code will be released after the May ALICE Offline
@@ -37,7 +36,7 @@ PATH			= $PATH\:$ALICE_ROOT/bin
 At this point you should logout, login again and check that the symbols are
 set correctly
 
-- Get the file /afs/cern.ch/alice/offline/AliOffline3.01.tar.gz
+- Get the file /afs/cern.ch/alice/offline/dist/AliOffline3.01.tar.gz
 
 - Unpack it with
 
