@@ -581,7 +581,7 @@ Bool_t AliGenHijing::CheckTrigger()
 }
 
 
-void AliGenHijing::Copy(AliGenHijing &) const
+void AliGenHijing::Copy(TObject &) const
 {
   Fatal("Copy","Not implemented!\n");
 }

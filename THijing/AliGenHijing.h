@@ -80,7 +80,6 @@ class AliGenHijing : public AliGenMC
 
 // Physics Routines
     virtual Bool_t ProvidesCollisionGeometry() const {return kTRUE;}
-    virtual AliCollisionGeometry* CollisionGeometry() const {return fCollisionGeometry;}
     virtual void EvaluateCrossSections();
     virtual TGraph* CrossSection()     {return fDsigmaDb;}
     virtual TGraph* BinaryCollisions() {return fDnDb;}
@@ -91,7 +90,7 @@ class AliGenHijing : public AliGenMC
     Bool_t SelectFlavor(Int_t pid);
     void   MakeHeader();
  private:
-    void Copy(AliGenHijing &rhs) const;
+    void Copy(TObject &rhs) const;
 
  protected:
     TString     fFrame;         // Reference frame 

@@ -81,7 +81,7 @@ class AliGenerator : public TNamed, public AliRndm
   // Collision Geometry
     virtual Bool_t ProvidesCollisionGeometry() const {return kFALSE;}
     virtual Bool_t NeedsCollisionGeometry()    const {return kFALSE;}    
-    virtual AliCollisionGeometry* CollisionGeometry() {return fCollisionGeometry;}
+    virtual AliCollisionGeometry* CollisionGeometry() const {return fCollisionGeometry;}
     virtual void SetCollisionGeometry(AliCollisionGeometry* geom) {fCollisionGeometry = geom;}
  protected:
     virtual  void  PushTrack(Int_t done, Int_t parent, Int_t pdg,
