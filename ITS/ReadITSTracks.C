@@ -35,12 +35,12 @@
    Int_t nentr=tracktree->GetEntries();
 
    TObjArray tarray(nentr);
-   AliITSiotrack *iotrack=0;
+   AliITSIOTrack *iotrack=0;
    printf("nentr %d\n",nentr);
 	
    for (Int_t i=0; i<nentr; i++) {
-      AliITSiotrack *iotrack=new AliITSiotrack;
-      // tarray.AddAt(new AliITSiotrack,i);
+      AliITSIOTrack *iotrack=new AliITSIOTrack;
+      // tarray.AddAt(new AliITSIOTrack,i);
       // iotrack=(AliITSiotrack*)tarray.UncheckedAt(i);
        tbranch->SetAddress(&iotrack);
        tracktree->GetEvent(i);
@@ -48,9 +48,9 @@
    }
 	file->Close();		 
 	
-	  AliITSiotrack *iotrack;
+	  AliITSIOTrack *iotrack;
    for (Int_t i=0; i<nentr; i++) {	
-	 iotrack=(AliITSiotrack*)tarray.UncheckedAt(i);
+	 iotrack=(AliITSIOTrack*)tarray.UncheckedAt(i);
 	 if(!iotrack) continue;
      Int_t label=iotrack->GetLabel();
 	  Double_t phistate=iotrack->GetStatePhi();
