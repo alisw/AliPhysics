@@ -61,7 +61,7 @@ class AliGenPythia : public AliGenMC
     virtual void    SetJetEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
 	{fEtaMinJet = etamin; fEtaMaxJet = etamax;}
     virtual void    SetJetReconstructionMode(Int_t mode = kCell) {fJetReconstruction = mode;}
-    virtual void    SetJetPhiRange(Float_t phimin = -180., Float_t phimax = 180.)
+    virtual void    SetJetPhiRange(Float_t phimin = 0., Float_t phimax = 360.)
 	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
     virtual void    SetGammaEtaRange(Float_t etamin = -20., Float_t etamax = 20.)
 	{fEtaMinGamma = etamin; fEtaMaxGamma = etamax;}
