@@ -706,6 +706,138 @@ Double_t AliL3Transform::fSin[36] = { 0.1736481786,
 				      -0.1736481786
 };
 
+#ifdef use_aliroot
+Bool_t AliL3Transform::Init(AliRunLoader *runLoader)
+{
+  if(!runLoader) {
+    LOG(AliL3Log::kFatal,"AliL3Transform::Init","RunLoader")
+      <<" Missing RunLoader! 0x0"<<ENDLOG;
+    return kFALSE;
+  }
+ 
+  if(fVersion != fV_default)
+    LOG(AliL3Log::kWarning,"AliL3Transform::Init","Init values")
+      <<AliL3Log::kDec<<"You are initializing the parameters more than once; check your code please! "<<fVersion<<ENDLOG;
+
+  TDirectory* savedir1 = gDirectory;
+  runLoader->CdGAFile();
+  AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get(GetParamName());
+  savedir1->cd();
+  if(!param)
+    {
+      LOG(AliL3Log::kFatal,"AliL3Transform::Init","File")
+	<<"No TPC parameters found!"<<ENDLOG;
+      return kFALSE;
+    }
+
+  AliTPCPRF2D    * prfinner    = new AliTPCPRF2D;
+  AliTPCPRF2D    * prfouter1   = new AliTPCPRF2D;
+  AliTPCPRF2D    * prfouter2   = new AliTPCPRF2D;  
+  AliTPCRF1D     * rf    = new AliTPCRF1D(kTRUE);
+  rf->SetGauss(param->GetZSigma(),param->GetZWidth(),1.);
+  rf->SetOffset(3*param->GetZSigma());
+  rf->Update();
+  
+  TDirectory *savedir2=gDirectory;
+  TFile *prf_file = TFile::Open("$ALICE_ROOT/TPC/AliTPCprf2d.root");
+  if (!prf_file->IsOpen()) 
+    { 
+      LOG(AliL3Log::kError,"AliL3Transform::Init","File")
+	<<"Can't open $ALICE_ROOT/TPC/AliTPCprf2d.root !"<<ENDLOG;
+      return kFALSE;
+    }
+  prfinner ->Read("prf_07504_Gati_056068_d02");
+  prfouter1->Read("prf_10006_Gati_047051_d03");
+  prfouter2->Read("prf_15006_Gati_047051_d03");  
+  prf_file->Close();
+  savedir2->cd();
+  
+  param->SetInnerPRF(prfinner);
+  param->SetOuter1PRF(prfouter1); 
+  param->SetOuter2PRF(prfouter2);
+  param->SetTimeRF(rf);
+  
+  fNTimeBins = param->GetMaxTBin()+1;
+  fNRowLow = param->GetNRowLow();
+  fNRowUp  = param->GetNRowUp();
+  fNRowUp1 = param->GetNRowUp1();
+  fNRowUp2 = param->GetNRowUp2();
+  fNRow= fNRowLow + fNRowUp;
+  if(fNRow!=159){
+    LOG(AliL3Log::kError,"AliL3Transform::Init","fNRow")
+      <<"Number of rows have changed in ALIROOT"<<ENDLOG;
+    return kFALSE;
+  }
+  
+  fNSectorLow = param->GetNInnerSector();
+  fNSectorUp = param->GetNOuterSector();
+  fNSector = fNSectorLow + fNSectorUp;
+
+  //test whether they were changes to the rotation shift
+  fNRotShift=0;
+  Float_t irotshift = param->GetInnerAngleShift(); //shift angle
+  Float_t orotshift = param->GetOuterAngleShift(); //shift angle
+  const Float_t kDegtoRad = 0.01745329251994;
+  Int_t shift1=TMath::Nint(irotshift/kDegtoRad);
+  Int_t shift2=TMath::Nint(orotshift/kDegtoRad+0.1);
+  if((shift1!=shift2) || (shift1!=10)){
+    LOG(AliL3Log::kError,"AliL3Transform::Init","Rotshiftangle")
+      <<"Rotation shift angle has changed in ALIROOT"<<ENDLOG;
+    return kFALSE;
+  } else {
+    fNRotShift=0.5; //our version of the shift angle
+  }
+  
+  fVersion=fV_aliroot;
+  SetBFieldFactor((Double_t)runLoader->GetAliRun()->Field()->Factor());
+  SetSolenoidBField((Double_t)runLoader->GetAliRun()->Field()->SolenoidField());
+  fPadPitchWidthLow=param->GetInnerPadPitchWidth();
+  fPadPitchWidthUp=param->GetOuterPadPitchWidth();
+  fZWidth=param->GetZWidth();
+  fZSigma=param->GetZSigma();
+  fZLength=param->GetZLength();
+  fZOffset=param->GetZOffset();
+  fDiffT=param->GetDiffT();
+  fDiffL=param->GetDiffL();
+  fOmegaTau=param->GetOmegaTau();
+  fInnerPadLength=param->GetInnerPadLength();
+  fOuter1PadLength=param->GetOuter1PadLength();
+  fOuter2PadLength=param->GetOuter2PadLength();
+  fInnerPRFSigma=param->GetInnerPRF()->GetSigmaX();
+  fOuter1PRFSigma=param->GetOuter1PRF()->GetSigmaX();
+  fOuter2PRFSigma=param->GetOuter2PRF()->GetSigmaX();
+  fTimeSigma=param->GetTimeRF()->GetSigma();
+  fADCSat=param->GetADCSat();
+  fZeroSup=param->GetZeroSup();
+  fNSlice=fNSectorLow;
+    
+  //now do the arrays
+  for(Int_t i=0;i<fNRow;i++){
+    Int_t sec,row;
+    if( i < fNRowLow){sec =0;row =i;}
+    else{sec = fNSectorLow;row =i-fNRowLow;}
+    fX[i]=param->GetPadRowRadii(sec,row);
+  } 
+  for(Int_t i=0;i<fNRow;i++){
+    Int_t sec,row;
+    if( i < fNRowLow){sec =0;row =i;}
+    else{sec = fNSectorLow;row =i-fNRowLow;}
+    fNPads[i]=param->GetNPads(sec,row);
+  }
+  for(Int_t i=0;i<fNSector;i++){
+    if(i<fNSectorLow) fSectorLow[i]=1;
+    else fSectorLow[i]=0;
+  }
+
+  TTimeStamp time;
+  Char_t tmpfile[1024];
+  sprintf(tmpfile,"./l3transform.config-%d",(Int_t)time.GetSec());
+
+  return SaveInitFile(tmpfile);
+
+}
+#endif
+
 Bool_t AliL3Transform::Init(Char_t* path,Bool_t UseAliTPCParam)
 {
   //Overwrite the parameters with values stored in file "l3transform.config" in path.

@@ -42,15 +42,14 @@ void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader) const
   if(!runLoader) {
     LOG(AliL3Log::kFatal,"AliHLTReconstructor::Reconstruct","RunLoader")
       <<" Missing RunLoader! 0x0"<<ENDLOG;
+    return;
   }
   gSystem->Exec("rm -rf hlt");
   gSystem->MakeDirectory("hlt");
   gSystem->Exec("rm -rf hough");
   gSystem->MakeDirectory("hough");
-  gSystem->Exec("rm -f alirunfile.root");
-  gSystem->Exec("ln -s galice.root alirunfile.root");
 
-  Bool_t isinit=AliL3Transform::Init("./",kTRUE);
+  Bool_t isinit=AliL3Transform::Init(runLoader);
   if(!isinit){
     cerr << "Could not create transform settings, please check log for error messages!" << endl;
     return;

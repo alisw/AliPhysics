@@ -64,6 +64,9 @@ class AliL3Transform {
   static Double_t fSin[36]; //stores the sin value for local to global rotations  
 
  public:
+#ifdef use_aliroot
+  static Bool_t Init(AliRunLoader *runLoader); //init transformer params using a run loader
+#endif
   static Bool_t Init(Char_t* path,Bool_t UseAliTPCParam=kFALSE); //init transformer settings (versions)
   static Bool_t MakeInitFile(Char_t *rootfilename,Char_t *filename); //create the init file from rootfile
   static Bool_t ReadInit(Char_t *path);         //read init (possibly from root file)
