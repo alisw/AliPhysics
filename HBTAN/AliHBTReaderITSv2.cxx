@@ -174,8 +174,8 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
     if( (i=OpenFiles(aTracksFile,aClustersFile,aGAliceFile,currentdir)) )
      {
        Error("Read","Exiting due to problems with opening files. Errorcode %d",i);
-       delete iotrack;
-       return i;
+       currentdir++;
+       continue;
      }
     
     if (gAlice->TreeE())//check if tree E exists
@@ -183,22 +183,22 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
       Nevents = (Int_t)gAlice->TreeE()->GetEntries();//if yes get number of events in gAlice
       cout<<"________________________________________________________\n";
       cout<<"Found "<<Nevents<<" event(s) in directory "<<GetDirName(currentdir)<<endl;
-      cout<<"Setting Magnetic Field. Factor is "<<gAlice->Field()->Factor()<<endl;
-      AliKalmanTrack::SetConvConst(100/0.299792458/0.2/gAlice->Field()->Factor());  
+      cout<<"Setting Magnetic Field: B="<<gAlice->Field()->SolenoidField()<<"T"<<endl;
+      AliKalmanTrack::SetConvConst(1000/0.299792458/gAlice->Field()->SolenoidField());
      }
     else
      {//if not return an error
        Error("Read","Can not find Header tree (TreeE) in gAlice");
-       delete iotrack;
-       return 1;
+       currentdir++;
+       continue;
      }
     
     AliITSgeom *geom=(AliITSgeom*)aClustersFile->Get("AliITSgeom");
     if (!geom) 
      { 
        Error("Read","Can't get the ITS geometry!"); 
-       delete iotrack;
-       return 2; 
+       currentdir++;
+       continue;
      }
 
     for(Int_t currentEvent =0; currentEvent<Nevents;currentEvent++)//loop over all events
@@ -208,21 +208,14 @@ Int_t AliHBTReaderITSv2::Read(AliHBTRun* particles, AliHBTRun *tracks)
        aGAliceFile->cd();
        gAlice->GetEvent(currentEvent);
 
-//       TParticle * part = gAlice->Particle(0);
-      
        aClustersFile->cd();
-//       Double_t orz=part->Vz();
-//       tracker = new AliITStrackerV2(geom,currentEvent,orz); //<---- this is for Massimo version
-//       tracker = new AliITStrackerV2(geom,currentEvent);
        sprintf(tname,"TreeT_ITS_%d",currentEvent);
        
        tracktree=(TTree*)aTracksFile->Get(tname);
        if (!tracktree) 
          {
            Error("Read","Can't get a tree with ITS tracks"); 
-           delete iotrack;
- //          delete tracker;
-           return 4;
+           continue;
          }
        TBranch *tbranch=tracktree->GetBranch("tracks");
       
