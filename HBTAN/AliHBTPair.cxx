@@ -172,12 +172,13 @@ AliHBTPair::AliHBTPair(const AliHBTPair& in):
 }
 /************************************************************************/
 
-const AliHBTPair& AliHBTPair::operator=(const AliHBTPair& in)
+AliHBTPair& AliHBTPair::operator=(const AliHBTPair& in)
 {
  //Assigment operator
  in.Copy(*this);
  return *this;
 }
+/************************************************************************/
 
 Double_t AliHBTPair::GetInvMass()
 {

@@ -24,7 +24,7 @@ class AliHBTPair: public TObject
    
    virtual ~AliHBTPair(){}
    
-   const AliHBTPair& operator=(const AliHBTPair& in);
+   AliHBTPair& operator=(const AliHBTPair& in);
    
    void SetParticles(AliHBTParticle* p1,AliHBTParticle* p2); //sets particles in the pair
    AliHBTPair* GetSwapedPair() {return fSwapedPair;} //returns pair with swapped particles

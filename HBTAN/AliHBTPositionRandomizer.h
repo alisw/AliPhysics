@@ -28,7 +28,7 @@ class AliHBTPositionRandomizer: public AliHBTReader
    
    virtual ~AliHBTPositionRandomizer();
 
-   const AliHBTPositionRandomizer& operator=(const AliHBTPositionRandomizer& in);
+   AliHBTPositionRandomizer& operator=(const AliHBTPositionRandomizer& in);
    
    Int_t  Next(){return (fReader)?fReader->Next():1;}
    void   Rewind(){if(fReader) fReader->Rewind();}

@@ -72,7 +72,7 @@ fMaxMomentum(100.0)
   //ctor
 }
 //===================================================================
-const AliHBTCrab & AliHBTCrab::operator=(const AliHBTCrab& /*source*/)
+AliHBTCrab & AliHBTCrab::operator=(const AliHBTCrab& /*source*/)
 {
 //cpy constructor
  return *AliHBTCrab::Instance();

@@ -69,7 +69,7 @@ AliHBTPositionRandomizer::~AliHBTPositionRandomizer()
   delete fRandomizer;
 }
 /*********************************************************************/
-const AliHBTPositionRandomizer& AliHBTPositionRandomizer::operator=(const AliHBTPositionRandomizer& in)
+AliHBTPositionRandomizer& AliHBTPositionRandomizer::operator=(const AliHBTPositionRandomizer& in)
 {
   //assigment operator
   in.Copy(*this);

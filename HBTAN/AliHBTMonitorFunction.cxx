@@ -65,7 +65,7 @@ AliHBTMonitorFunction::AliHBTMonitorFunction(const AliHBTMonitorFunction& /*in*/
   MayNotUse("AliHBTMonitorFunction(const AliHBTMonitorFunction&");
 }
 /******************************************************************/
-const AliHBTMonitorFunction& AliHBTMonitorFunction::operator=(const AliHBTMonitorFunction& /*in*/)
+AliHBTMonitorFunction& AliHBTMonitorFunction::operator=(const AliHBTMonitorFunction& /*in*/)
 {
   //assigment operator 
   // We cannot copy because it is a mess with names (histogram and functions)

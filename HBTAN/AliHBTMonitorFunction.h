@@ -57,7 +57,7 @@ class AliHBTMonitorFunction: public TNamed
     AliHBTMonitorFunction(const AliHBTMonitorFunction& /*in*/);
     virtual ~AliHBTMonitorFunction();
     
-    const AliHBTMonitorFunction& operator=(const AliHBTMonitorFunction& /*in*/);
+    AliHBTMonitorFunction& operator=(const AliHBTMonitorFunction& /*in*/);
     
     
     virtual TH1* GetResult() = 0;
@@ -101,7 +101,7 @@ class AliHBTMonOneParticleFctn: public AliHBTMonitorFunction
     AliHBTMonOneParticleFctn(const AliHBTMonOneParticleFctn& in):AliHBTMonitorFunction(in){MayNotUse("Cpy Ctor");}
     virtual ~AliHBTMonOneParticleFctn(){}
     
-    const AliHBTMonOneParticleFctn& operator=(const AliHBTMonOneParticleFctn& /*in*/){MayNotUse("operator=");return *this;} 
+    AliHBTMonOneParticleFctn& operator=(const AliHBTMonOneParticleFctn& /*in*/){MayNotUse("operator=");return *this;} 
     
     virtual void Process(AliHBTParticle* particle) = 0;
     
@@ -123,7 +123,7 @@ class AliHBTMonOneParticleFctn1D: public AliHBTMonOneParticleFctn
   
   virtual ~AliHBTMonOneParticleFctn1D();
   
-  const AliHBTMonOneParticleFctn1D& operator=(const AliHBTMonOneParticleFctn1D& /*in*/){MayNotUse("operator=");return *this;}   
+  AliHBTMonOneParticleFctn1D& operator=(const AliHBTMonOneParticleFctn1D& /*in*/){MayNotUse("operator=");return *this;}   
   TH1* GetResult(){return fResult;}
 
   void Process(AliHBTParticle* particle);
@@ -145,7 +145,7 @@ class AliHBTMonOneParticleFctn2D: public AliHBTMonOneParticleFctn
                AliHBTMonOneParticleFctn(in),fResult(0x0){MayNotUse("Cpy Ctor");}
   virtual ~AliHBTMonOneParticleFctn2D();
   
-  const AliHBTMonOneParticleFctn2D& operator=(const AliHBTMonOneParticleFctn2D& /*in*/){MayNotUse("operator=");return *this;}   
+  AliHBTMonOneParticleFctn2D& operator=(const AliHBTMonOneParticleFctn2D& /*in*/){MayNotUse("operator=");return *this;}   
   TH1* GetResult(){return fResult;}
   
   void Process(AliHBTParticle* particle);
@@ -173,7 +173,7 @@ class AliHBTMonOneParticleFctn3D: public AliHBTMonOneParticleFctn
 	    
   virtual ~AliHBTMonOneParticleFctn3D();
 
-  const AliHBTMonOneParticleFctn3D& operator=(const AliHBTMonOneParticleFctn3D& /*in*/){MayNotUse("operator=");return *this;}   
+  AliHBTMonOneParticleFctn3D& operator=(const AliHBTMonOneParticleFctn3D& /*in*/){MayNotUse("operator=");return *this;}   
   TH1* GetResult(){return fResult;}
 
  protected:
@@ -191,7 +191,7 @@ class AliHBTMonTwoParticleFctn: public AliHBTMonitorFunction
     AliHBTMonTwoParticleFctn(const Char_t *name, const Char_t *title):AliHBTMonitorFunction(name,title){}
     AliHBTMonTwoParticleFctn(const AliHBTMonTwoParticleFctn& in):AliHBTMonitorFunction(in){MayNotUse("Cpy Ctor");}
     virtual ~AliHBTMonTwoParticleFctn(){};
-    const AliHBTMonTwoParticleFctn& operator=(const AliHBTMonTwoParticleFctn& /*in*/){MayNotUse("operator=");return *this;} 
+    AliHBTMonTwoParticleFctn& operator=(const AliHBTMonTwoParticleFctn& /*in*/){MayNotUse("operator=");return *this;} 
     
     virtual void 
     Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle) = 0;
@@ -213,7 +213,7 @@ class AliHBTMonTwoParticleFctn1D: public AliHBTMonTwoParticleFctn
                AliHBTMonTwoParticleFctn(in),fResult(0x0){MayNotUse("Cpy Ctor");}
   virtual ~AliHBTMonTwoParticleFctn1D();
   
-  const AliHBTMonTwoParticleFctn1D& operator=(const AliHBTMonTwoParticleFctn1D& /*in*/){MayNotUse("operator=");return *this;}   
+  AliHBTMonTwoParticleFctn1D& operator=(const AliHBTMonTwoParticleFctn1D& /*in*/){MayNotUse("operator=");return *this;}   
   TH1* GetResult(){return fResult;}
   
   void Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);
@@ -236,7 +236,7 @@ class AliHBTMonTwoParticleFctn2D: public AliHBTMonTwoParticleFctn
                AliHBTMonTwoParticleFctn(in),fResult(0x0){MayNotUse("Cpy Ctor");}
   virtual ~AliHBTMonTwoParticleFctn2D();
   
-  const AliHBTMonTwoParticleFctn2D& operator=(const AliHBTMonTwoParticleFctn2D& /*in*/){MayNotUse("operator=");return *this;}   
+  AliHBTMonTwoParticleFctn2D& operator=(const AliHBTMonTwoParticleFctn2D& /*in*/){MayNotUse("operator=");return *this;}   
   TH1* GetResult(){return fResult;}
   
   void Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);
@@ -262,7 +262,7 @@ class AliHBTMonTwoParticleFctn3D: public AliHBTMonTwoParticleFctn
                AliHBTMonTwoParticleFctn(in),fResult(0x0){MayNotUse("Cpy Ctor");}
   virtual ~AliHBTMonTwoParticleFctn3D(){}
   
-  const AliHBTMonTwoParticleFctn3D& operator=(const AliHBTMonTwoParticleFctn3D& /*in*/){MayNotUse("operator=");return *this;}   
+  AliHBTMonTwoParticleFctn3D& operator=(const AliHBTMonTwoParticleFctn3D& /*in*/){MayNotUse("operator=");return *this;}   
   TH1* GetResult(){return fResult;}
   
   void Process(AliHBTParticle* trackparticle, AliHBTParticle* partparticle);

@@ -91,7 +91,7 @@ AliHBTAnalysis::AliHBTAnalysis(const AliHBTAnalysis& in):
    Fatal("AliHBTAnalysis(const AliHBTAnalysis&)","Sensless");
  }
 /*************************************************************************************/ 
-const AliHBTAnalysis& AliHBTAnalysis::operator=(const AliHBTAnalysis& /*right*/)
+AliHBTAnalysis& AliHBTAnalysis::operator=(const AliHBTAnalysis& /*right*/)
  {
 //operator =
    Fatal("AliHBTAnalysis(const AliHBTAnalysis&)","Sensless");

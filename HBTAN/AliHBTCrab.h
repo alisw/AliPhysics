@@ -44,7 +44,7 @@ class AliHBTCrab: public AliHBTWeights
    private:
      AliHBTCrab();
      AliHBTCrab(const AliHBTCrab &/*source*/);
-     const AliHBTCrab & operator=(const AliHBTCrab& /*source*/);
+     AliHBTCrab & operator=(const AliHBTCrab& /*source*/);
 
      void GetComQuantities(const AliHBTPair* pair, double *qred,double *r,double *qdotr,double *mom, int *test);
      double  CorrCalc(double trueqred,double trueqdotr,double truer);
