@@ -37,7 +37,7 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual void   SetReadDet(const char *f){ // set read file
 	                               strncpy(fRead,f,60);fGeomDetIn = kTRUE;}
     virtual void   SetEUCLIDFileName(const char *f){ // set write file
-	                     fEuclidGeometry=f;fEuclidOut = kTRUE;}
+	                     fEuclidGeometry=f; SetEUCLID();}
     virtual void   SetMinorVersion(Int_t v=22){ // Choose between existing minor versions
 	fMinorVersion = v;}
     virtual void   SetThicknessDet1(Float_t v=300.){ 
@@ -64,7 +64,6 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual void SetDensityServicesByMass(){// uses services density
 	// calculation based on the Mass of the services.
 	fByThick = kFALSE;}
-    virtual Bool_t GetEUCLID() const {return fEuclidOut;}// returns value Euclid flag.
     virtual const char  *GetEULIIDFileName() const{ // return .euc file name
 	                               return fEuclidGeometry.Data();}
     virtual Bool_t GetWriteDet() const { // returns value GeomDetOut flag.

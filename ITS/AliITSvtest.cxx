@@ -30,11 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <TMath.h>
-#include <TNode.h>
-#include <TObjArray.h>
-#include <TObjString.h>
 #include <TSystem.h>
-#include <TTUBE.h>
 #include <TVirtualMC.h>
 
 #include "AliRun.h"
@@ -58,7 +54,7 @@ AliITSvtest::AliITSvtest() {
     fIdN    = 0;
     fIdName = 0;
     fIdSens = 0;
-    fEuclidOut    = kFALSE; // Don't write Euclide file
+    SetEUCLID(kFALSE);
     fGeomDetOut   = kFALSE; // Don't write .det file
     fGeomDetIn    = kTRUE; // Read .det file
     fMajorVersion = IsVersion();
@@ -108,7 +104,7 @@ AliITSvtest::AliITSvtest(const char *fileeuc,const char *filetme,
     for (Int_t i=0;i<fIdN;i++) fIdSens[i] = 0;
     fMajorVersion = IsVersion();
     fMinorVersion = 1;
-    fEuclidOut    = kFALSE; // Don't write Euclide file
+    SetEUCLID(kFALSE);
     fGeomDetOut   = kFALSE; // Don't write .det file
     fGeomDetIn    = kTRUE; // Read .det file
 
@@ -191,23 +187,23 @@ void AliITSvtest::InitAliITSgeom(){
 	return;
     } // end if
     cout << "Reading Geometry transformation directly from Geant 3." << endl;
-    const Int_t nlayers = 6;
-    const Int_t ndeep = 9;
-    Int_t itsGeomTreeNames[nlayers][ndeep],lnam[20],lnum[20];
-    Int_t nlad[nlayers],ndet[nlayers];
+    const Int_t kNlayers = 6;
+    const Int_t kndeep = 9;
+    Int_t itsGeomTreeNames[kNlayers][kndeep],lnam[20],lnum[20];
+    Int_t nlad[kNlayers],ndet[kNlayers];
     Double_t t[3],r[10];
     Float_t  par[20],att[20];
     Int_t    npar,natt,idshape,imat,imed;
     AliITSGeant3Geometry *ig = new AliITSGeant3Geometry();
     Int_t mod,lay,lad,det,i,j,k;
-    const char *names[nlayers][ndeep] = {
+    const char *names[kNlayers][kndeep] = {
      {"ALIC","ITSV","ITSD","IT12","I12B","I10B","I107","I101","ITS1"}, // lay=1
      {"ALIC","ITSV","ITSD","IT12","I12B","I20B","I1D7","I1D1","ITS2"}, // lay=2
      {"ALIC","ITSV","ITSD","IT34","I004","I302","ITS3","    ","    "}, // lay=3
      {"ALIC","ITSV","ITSD","IT34","I005","I402","ITS4","    ","    "}, // lay=4
      {"ALIC","ITSV","ITSD","IT56","I565","I562","ITS5","    ","    "}, // lay=5
      {"ALIC","ITSV","ITSD","IT56","I569","I566","ITS6","    ","    "}};// lay=6
-    Int_t itsGeomTreeCopys[nlayers][ndeep] = {{1,1,1,1,10, 2, 4, 1, 1},// lay=1
+    Int_t itsGeomTreeCopys[kNlayers][kndeep] = {{1,1,1,1,10, 2, 4, 1, 1},// lay=1
 					      {1,1,1,1,10, 4, 4, 1, 1},// lay=2
 					      {1,1,1,1,14, 6, 1, 0, 0},// lay=3
 					      {1,1,1,1,22, 8, 1, 0, 0},// lay=4
@@ -219,13 +215,13 @@ void AliITSvtest::InitAliITSgeom(){
     // tree its self.
     cout << "Reading Geometry informaton from Geant3 common blocks" << endl;
     for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
-    for(i=0;i<nlayers;i++)for(j=0;j<ndeep;j++)
+    for(i=0;i<kNlayers;i++)for(j=0;j<kndeep;j++)
         strncpy((char*) &itsGeomTreeNames[i][j],names[i][j],4); 
     //	itsGeomTreeNames[i][j] = ig->StringToInt(names[i][j]);
     mod = 0;
-    for(i=0;i<nlayers;i++){
+    for(i=0;i<kNlayers;i++){
 	k = 1;
-	for(j=0;j<ndeep;j++) if(itsGeomTreeCopys[i][j]!=0)
+	for(j=0;j<kndeep;j++) if(itsGeomTreeCopys[i][j]!=0)
 	    k *= TMath::Abs(itsGeomTreeCopys[i][j]);
 	mod += k;
     } // end for i
@@ -235,9 +231,9 @@ void AliITSvtest::InitAliITSgeom(){
     ndet[0]=4;ndet[1]=4;ndet[2]=6;ndet[3]=8;ndet[4]=22;ndet[5]=25;
     fITSgeom = new AliITSgeom(0,6,nlad,ndet,mod);
     mod = -1;
-    for(lay=1;lay<=nlayers;lay++){
-	for(j=0;j<ndeep;j++) lnam[j] = itsGeomTreeNames[lay-1][j];
-	for(j=0;j<ndeep;j++) lnum[j] = itsGeomTreeCopys[lay-1][j];
+    for(lay=1;lay<=kNlayers;lay++){
+	for(j=0;j<kndeep;j++) lnam[j] = itsGeomTreeNames[lay-1][j];
+	for(j=0;j<kndeep;j++) lnum[j] = itsGeomTreeCopys[lay-1][j];
 	switch (lay){
 	case 1: case 2: // layers 1 and 2 are a bit special
 	    lad = 0;
@@ -249,7 +245,7 @@ void AliITSvtest::InitAliITSgeom(){
 		    for(det=1;det<=itsGeomTreeCopys[lay-1][6];det++){
 			lnum[6] = det;
 			mod++;
-			ig->GetGeometry(ndeep,lnam,lnum,t,r,idshape,npar,natt,
+			ig->GetGeometry(kndeep,lnam,lnum,t,r,idshape,npar,natt,
 					par,att,imat,imed);
 			fITSgeom->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
 			if(!(fITSgeom->IsShapeDefined((Int_t)kSPD)))
