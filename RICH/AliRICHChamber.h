@@ -59,6 +59,8 @@ public:
   TVector3    G2L(Double_t x,Double_t y,Double_t z)  const{return G2L(TVector3(x,y,z));}
   Float_t     G2Lx(Double_t x,Double_t y,Double_t z) const{TVector3 x3=G2L(x,y,z); return x3.X();}
   Float_t     G2Ly(Double_t x,Double_t y,Double_t z) const{TVector3 x3=G2L(x,y,z); return x3.Z();}
+  TVector3    L2Gvector(TVector3 x3)                 const{x3.Transform(fRot);return x3;}
+  TVector3    G2Lvector(TVector3 x3)                 const{x3.Transform(fRot.Inverse()); return x3;}
 //  TLorentzVector L2G(TLorentzVector v4)  const{v4.Transform(fRot.Inverse());v4+=fCenterV3;return v4;}???
   void        Print(Option_t *sOption)const;//virtual      
    
