@@ -1,9 +1,18 @@
+void MainTrank()
+{
+  TStopwatch sw;TDatime time;
+  OLD_S_SD(); SD_D(); //D_C();
+  cout<<"\nInfo in <MainTrank>: Start time: ";time.Print();
+  cout<<"Info in <MainTrank>: Stop  time: ";time.Set();  time.Print();
+  cout<<"Info in <MainTrank>: Time  used: ";sw.Print();
+}
+
 void ss()
 {
   if(rl->LoadSDigits()) return;
   rl->TreeS()->GetEntry(0);
   r->SDigits()->Print();
-  Info("sd","totally %i",r->SDigits()->GetEntries());
+  Info("ss","totally %i",r->SDigits()->GetEntries());
   rl->UnloadSDigits();
 }
 
@@ -18,6 +27,7 @@ void sd()
 void sc()
 {
   if(rl->LoadRecPoints()) return;
+  r->SetTreeAddress();
   rl->TreeR()->GetEntry(0);
   for(int i=1;i<=7;i++) r->Clusters(i)->Print();
   rl->UnloadRecPoints();
@@ -53,14 +63,6 @@ void Digits2Recos()
 
 
 
-void MainTranck()
-{
-  TStopwatch sw;TDatime time;
-  OLD_S_SD(); SD_D(); D_C();
-  cout<<"\nInfo in <hits->digits>: Start time: ";time.Print();
-  cout<<"Info in <hits->digits>: Stop  time: ";time.Set();  time.Print();
-  cout<<"Info in <hits->digits>: Time  used: ";sw.Print();
-}
 
 void D_C()
 {
@@ -575,7 +577,7 @@ void TestSD()
             Int_t padx,pady; r->Param()->Loc2Pad(locX3.X(),locX3.Y(),padx,pady);
             cout<<"hit="<<iHitN<<" ("<<locX3.X()<<','<<locX3.Y()<<")("<<padx<<','<<pady<<") cur pad("<<iPadX<<","<<iPadY<<") qtot="<<iTotQdc<<" qfrac="<<r->Param()->Loc2PadFrac(locX3,iPadX,iPadY)<<endl;
           }
-//            r->AddSdigit(pHit->C(),padx,pady,r->Param()->Local2PadQdc(localX3,padx,pady),pHit->GetTrack());
+//            r->AddSDigit(pHit->C(),padx,pady,r->Param()->Local2PadQdc(localX3,padx,pady),pHit->GetTrack());
       }//hits loop
     }//prims loop
     rl->TreeS()->Fill();
@@ -593,20 +595,25 @@ void TestSD()
   Info("TestSdigits","Stop.");
 }//void TestSdigits()
 //__________________________________________________________________________________________________
-void TestClustersOLD()
+void TestC()
 {
-  Info("TestClusters","Creating test clusters.");
+  Info("TestC","Creating test clusters.");
   rl->MakeTree("R");r->MakeBranch("R");
   
-  AliRICHRawCluster c;
-  r->AddClusterOld(1,c);  
+  AliRICHcluster c;
+  c.AddDigit(new AliRICHdigit(1,20,21,200,1,2,3));
+  c.AddDigit(new AliRICHdigit(1,22,21,250,1,2,3));
+  c.CoG();
+  
+  r->AddCluster(c);  
+  
   rl->TreeR()->Fill();
   rl->WriteRecPoints("OVERWRITE");
   rl->UnloadRecPoints();
-  r->ResetRawClusters();
+  r->ResetClusters();
   
-  Info("TestClusters","Stop.");
-}//void TestClustersOLD()
+  Info("TestC","Stop.");
+}//TestC()
 //__________________________________________________________________________________________________
 void TestSeg()
 {
@@ -682,13 +689,13 @@ void TestSeg()
 void TestMenu()
 {
   TControlBar *pMenu = new TControlBar("vertical","RICH test");
-  pMenu->AddButton("Test segmentation",  "TestSeg()",         "Test AliRICHParam::L2P() method");
-  pMenu->AddButton("Test transform",     "TestTransform()",   "Test ALiRICHChamber::L2G() and G2L methods");
-  pMenu->AddButton("Test gain",          "TestGain()",        "Test AliRICHParam::Gain() method");
+  pMenu->AddButton("Test segmentation",  "TestSeg()",         "Test AliRICHParam segmentation methods");
+  pMenu->AddButton("Test transform",     "TestTransform()",   "Test ALiRICHChamber methods");
+  pMenu->AddButton("Test gain",          "TestGain()",        "Test AliRICHParam response methods");
   pMenu->AddButton("Test MIP charge",    "TestMipCharge()",   "Test AliRICHParam::TotalCharge() method");
   pMenu->AddButton("Test sdigits",       "TestSD()",          "Create test set of sdigits");
-  pMenu->AddButton("Test Digits OLD",    "TestDigitsOLD()",   "Create test set of OLD digits");
-  pMenu->AddButton("Test Clusters OLD",  "TestClustersOLD()", "Create test set of OLD clusters");
+  pMenu->AddButton("Test digits OLD",    "TestDigitsOLD()",   "Create test set of OLD digits");
+  pMenu->AddButton("Test clusters",      "TestC()",           "Create test set of clusters");
   pMenu->Show();  
 }//TestMenu()
 //__________________________________________________________________________________________________
@@ -715,10 +722,10 @@ void menu()
 { 
   TControlBar *pMenu = new TControlBar("vertical","RICH main");
        
-  pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
-  pMenu->AddButton("Debug OFF",    "DebugOFF();",   "Switch debug on-off");   
   if(ReadAlice()){//it's from file, reconstruct
-    pMenu->AddButton("hits->sdigits->digits","MainTranck()","Convert");
+    pMenu->AddButton("hits->sdigits->digits","MainTrank()","Convert");
+    pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
+    pMenu->AddButton("Debug OFF",    "DebugOFF();",   "Switch debug on-off");   
     
     pMenu->AddButton("hits->sdigits",    "H_SD()",       "Perform first phase converstion");
     pMenu->AddButton("sdigits->digits",  "SD_D()",       "Perform first phase converstion");
