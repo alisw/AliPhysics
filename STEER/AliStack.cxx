@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2001/07/20 10:13:54  morsch
+In Particle(Int_t) use GetEntriesFast to speed up the procedure.
+
 Revision 1.9  2001/07/03 08:10:57  hristov
 J.Chudoba's changes merged correctly with the HEAD
 
@@ -779,7 +782,7 @@ void AliStack::FinishRun()
 }
 
 //_____________________________________________________________________________
-Bool_t AliStack::GetEvent(Int_t event, Int_t dummy)
+Bool_t AliStack::GetEvent(Int_t event)
 {
 //
 // Get new event from TreeK
