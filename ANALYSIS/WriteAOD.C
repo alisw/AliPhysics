@@ -48,6 +48,7 @@ void WriteAOD(Option_t* datatype, Int_t first = -1,Int_t last = -1,
   cout<<"WriteAOD.C: ..... Loaded\n";
   
   Int_t PID[11];
+
   PID[0]=kProton;
   PID[1]=kProtonBar;
   PID[2]=kKPlus;
@@ -100,7 +101,14 @@ void WriteAOD(Option_t* datatype, Int_t first = -1,Int_t last = -1,
 
   else if(!intern)
    {
-    reader = new AliHBTReaderAOD("AOD.root");
+    AliReaderAOD* aodreader = new AliReaderAOD("AOD.root");
+    if (strstr(processopt,"Particles"))
+      aodreader->ReadSimulatedData(kTRUE);
+    else
+      aodreader->ReadSimulatedData(kFALSE);
+    
+    reader = aodreader;
+    
     multcheck = kTRUE;
    }
 
