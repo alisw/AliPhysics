@@ -13,7 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Log$ */
+/* 
+$Log$
+Revision 1.1  2001/11/22 11:22:51  hristov
+Updated version of TOF digitization, N^2 problem solved (J.Chudoba)
+
+*/
 
 ////////////////////////////////////////////////////////////////////////
 //
