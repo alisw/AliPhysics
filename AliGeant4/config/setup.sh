@@ -324,7 +324,7 @@ fi
 #
 
 if [ -d $LHCXX_BASE/CLHEP/1.5.0.0 ]; then
-  export CLHEP_BASE_DIR=$LHCXX_BASE/CLHEP/1.5.0.0
+  export CLHEP_BASE_DIR=$LHCXX_BASE/CLHEP/1.6.0.0
 else
   echo "WARNING: CLHEP has not been found in the default path."
   if [ "$VERBOSE" = "YES" ]; then
