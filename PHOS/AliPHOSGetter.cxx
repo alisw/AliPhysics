@@ -189,7 +189,7 @@ AliPHOSGetter * AliPHOSGetter::GetInstance(const char* headerFile,
 void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char * name, const Int_t event) const 
 {
   // Adds a new folder for summable digits 
- 
+
   TString foldertitle ; 
   if ( event >= 0 ) 
     foldertitle += event ; 
@@ -367,7 +367,7 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
     // the hierarchy is //YSALICE/tasks/Reconstructionner/PHOS/recpointsname
     AliPHOSClusterizer * clusterizer; 
     if ( strstr(name, "clu-v1") != 0 )   
-	 clusterizer = new AliPHOSClusterizerv1() ;
+      clusterizer = new AliPHOSClusterizerv1() ;
     else {
       cerr << "ERROR: AliPHOSGetter::Post Rer -> " << name << " unknown clusterizer version" << endl ;  
       abort() ; 
@@ -426,7 +426,7 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
     // the hierarchy is //YSALICE/tasks/Reconstructionner/PHOS/tracksegmentsname
     AliPHOSTrackSegmentMaker * tracksegmentmaker ; 
     if ( strstr(name, "tsm-v1") != 0 )   
-	 tracksegmentmaker = new AliPHOSTrackSegmentMakerv1() ;
+      tracksegmentmaker = new AliPHOSTrackSegmentMakerv1() ;
     else {
       cerr << "ERROR: AliPHOSGetter::Post Ter -> " << name << " unknown track segment maker version" << endl ;  
       abort() ; 
@@ -485,7 +485,7 @@ void AliPHOSGetter::Post(const char * headerFile, const char * opt, const char *
     // the hierarchy is //YSALICE/tasks/Reconstructionner/PHOS/recparticlesname
     AliPHOSPID * pid ; 
     if ( strstr(name, "pid-v1") != 0 )   
-	 pid = new AliPHOSPIDv1() ;
+      pid = new AliPHOSPIDv1() ;
     else {
       cerr << "ERROR: AliPHOSGetter::Post Per -> " << name << " unknown PID maker version" << endl ;  
       abort() ; 
@@ -594,10 +594,12 @@ void AliPHOSGetter::ReadTreeD()
  
 
  // Post the Digits
-  Post(fHeaderFile, "D", fDigitsTitle) ; 
+  if (EventNumber() == 0)
+    Post(fHeaderFile, "D", fDigitsTitle) ; 
   
    // Post the Digitizer
-  Post(fHeaderFile, "Der", fDigitsTitle) ; 
+  if (EventNumber() == 0)
+    Post(fHeaderFile, "Der", fDigitsTitle) ; 
 
   TClonesArray * digits = Digits(fDigitsTitle) ; 
   digits->Clear() ; 
@@ -697,7 +699,8 @@ void AliPHOSGetter::ReadTreeR()
   }   
  
  // Post the RecPoints
-  Post(fHeaderFile, "R", fRecPointsTitle) ; 
+  if (EventNumber() == 0)
+    Post(fHeaderFile, "R", fRecPointsTitle) ; 
 
   // Post the Clusterizer
   //  Need the version first
@@ -706,8 +709,8 @@ void AliPHOSGetter::ReadTreeR()
   clusterizerbranch->GetEntry(0) ;
   TString clusterizerName(fRecPointsTitle) ; 
   clusterizerName.Append(clusterizer->Version()) ; 
-  delete clusterizer ;
-  Post(fHeaderFile, "Rer", clusterizerName) ; 
+  if (EventNumber() == 0)
+    Post(fHeaderFile, "Rer", clusterizerName) ; 
 
   TObjArray * emcRecPoints = EmcRecPoints(fRecPointsTitle) ;
   emcRecPoints->Delete() ; 
@@ -717,6 +720,7 @@ void AliPHOSGetter::ReadTreeR()
   cpvRecPoints->Delete() ; 
   cpvbranch->SetAddress(&cpvRecPoints) ;
 
+  delete clusterizer ;
   clusterizer = Clusterizer(clusterizerName) ;
   clusterizerbranch->SetAddress(&clusterizer) ;
 
@@ -747,7 +751,8 @@ void AliPHOSGetter::ReadTreeR()
   } 
 
  // Post the TrackSegments
-  Post(fHeaderFile, "T", fTrackSegmentsTitle) ; 
+  if (EventNumber() == 0)
+    Post(fHeaderFile, "T", fTrackSegmentsTitle) ; 
 
   // Post the TrackSegment Maker
   //  Need the version first
@@ -756,13 +761,14 @@ void AliPHOSGetter::ReadTreeR()
   tsmakerbranch->GetEntry(0) ;
   TString tsmakerName(fTrackSegmentsTitle) ; 
   tsmakerName.Append(tsmaker->Version()) ; 
-  delete tsmaker ;
-  Post(fHeaderFile, "Ter", tsmakerName) ; 
+  if (EventNumber() == 0)
+    Post(fHeaderFile, "Ter", tsmakerName) ; 
 
   TClonesArray * tracksegments = TrackSegments(fTrackSegmentsTitle) ;
   tracksegments->Clear() ; 
   tsbranch->SetAddress(&tracksegments) ;
  
+  delete tsmaker ;
   tsmaker = TrackSegmentMaker(tsmakerName) ; 
   tsmakerbranch->SetAddress(&tsmaker) ;
 
@@ -792,7 +798,8 @@ void AliPHOSGetter::ReadTreeR()
   } 
 
   // Post the RecParticles
-  Post(fHeaderFile, "P", fRecParticlesTitle) ; 
+  if (EventNumber() == 0)
+    Post(fHeaderFile, "P", fRecParticlesTitle) ; 
 
   // Post the PID
   //  Need the version first
@@ -801,14 +808,14 @@ void AliPHOSGetter::ReadTreeR()
   pidbranch->GetEntry(0) ;
   TString pidName(fRecParticlesTitle) ; 
   pidName.Append(pid->Version()) ; 
-  delete pid ;
-
-  Post(fHeaderFile, "Per", pidName) ; 
+  if (EventNumber() == 0)
+    Post(fHeaderFile, "Per", pidName) ; 
 
   TClonesArray * recParticles = RecParticles(fRecParticlesTitle) ; 
   recParticles->Clear() ; 
   rpabranch->SetAddress(&recParticles) ;
 
+  delete pid ;
   pid = PID(pidName) ; 
   pidbranch->SetAddress(&pid) ;
   
@@ -851,10 +858,12 @@ void AliPHOSGetter::ReadTreeS()
   }   
 
   // -- the SDigits 
-  Post(fHeaderFile, "S", fSDigitsTitle) ; 
+  if (EventNumber() == 0)
+    Post(fHeaderFile, "S", fSDigitsTitle) ; 
 
   // Post the SDigitizer
-  Post(fHeaderFile, "Ser", fSDigitsTitle) ; 
+  if (EventNumber() == 0)
+    Post(fHeaderFile, "Ser", fSDigitsTitle) ; 
   
   TClonesArray * sdigits = SDigits(fSDigitsTitle) ; 
   sdigits->Clear() ; 
@@ -955,14 +964,14 @@ void AliPHOSGetter::Event(Int_t event)
   }
   
   gAlice->GetEvent(event) ;
-  
+  gAlice->SetEvent(event) ;
+
   ReadTreeH() ;
   ReadTreeS() ;
   ReadTreeD() ;
   ReadTreeR() ;
-  ReadTreeQA() ;
+//    ReadTreeQA() ;
   ReadPrimaries() ;
-
 }
 
 //____________________________________________________________________________ 
@@ -1080,15 +1089,15 @@ const TTask * AliPHOSGetter::ReturnT(TString what, TString name) const
   else if ( what.CompareTo("QATasks") == 0 ) 
     path += "/QA" ; 
 
-  TFolder * aliceF  = (TFolder*)gROOT->FindObjectAny("YSAlice") ; 
-  TTask * aliceT  = (TTask*)aliceF->FindObject(path) ; 
+  TFolder * aliceF  = (TFolder*)gROOT ->FindObjectAny("YSAlice") ; 
+  TTask   * aliceT  = (TTask*)  aliceF->FindObject(path) ; 
 
   if (!aliceT) {
     cerr << "ERROR: AliPHOSGetter::ReturnT -> Task " << path << " not found!" << endl ;  
     abort() ;
   }
 
-  TTask * phosT = (TTask*)aliceT->GetListOfTasks()->FindObject("PHOS") ; 
+  TTask   * phosT   = (TTask*)  aliceT->GetListOfTasks()->FindObject("PHOS") ; 
   if (!phosT) { 
     cerr << "ERROR: AliPHOSGetter::ReturnT -> Task " << path << "/PHOS not found!" << endl ;  
     abort() ;

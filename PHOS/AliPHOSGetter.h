@@ -67,7 +67,7 @@ class AliPHOSGetter : public TObject {
   
   void Post(const char * file, const char * opt, const char * name = 0, const Int_t event=-1) const ;  
   void  Event(Int_t event) ; // reads event from file 
-  //     Int_t EventNumber(){ return (Int_t) gAlice->GetEvNumber() ; }
+  Int_t EventNumber()       { return (Int_t) gAlice->GetEvNumber() ; }
   Int_t MaxEvent()          { return (Int_t) gAlice->TreeE()->GetEntries() ; }
   static AliPHOSGetter * GetInstance(const char* headerFile,
 				     const char* branchTitle = "No Name" ) ; 
@@ -153,6 +153,7 @@ class AliPHOSGetter : public TObject {
     abort() ;
     return *this ; 
   }
+  void ReadTreeQA() ;
   
  private:
 
@@ -163,7 +164,6 @@ class AliPHOSGetter : public TObject {
   void DefineBranchTitles(char* branch, char* branchTitle) ;
   void ReadTreeD() ;
   void ReadTreeH() ;
-  void ReadTreeQA() ;
   void ReadTreeR() ;
   void ReadTreeS() ;
   void ReadPrimaries() ;
