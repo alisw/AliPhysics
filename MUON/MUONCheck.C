@@ -1,3 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 //
 // Macro for checking aliroot output and associated files contents
 // Gines Martinez, Subatech June 2003
@@ -157,13 +174,19 @@ void MUONdigits(char * filename="galice.root")
 	  Int_t PadX   = mDigit->PadX();     // Pad X number
 	  Int_t PadY   = mDigit->PadY();     // Pad Y number
 	  Int_t Signal = mDigit->Signal();   // Physics Signal
+	  Int_t Physics= mDigit->Physics();  // Physics contribution to signal
 	  Int_t Hit    = mDigit->Hit();      // iHit
 	  Int_t Cathode= mDigit->Cathode();  // Cathode
 	  Int_t Track0 = mDigit->Track(0);
 	  Int_t Track1 = mDigit->Track(1); 
 	  Int_t Track2 = mDigit->Track(2);
+	  Int_t TCharges0 = mDigit->TrackCharge(0);  //charge per track making this digit (up to 10)
+	  Int_t TCharges1 = mDigit->TrackCharge(1);
+	  Int_t TCharges2 = mDigit->TrackCharge(2);
 	  
-	  printf(">>> Digit %4d cathode %1d hit %4d PadX %3d PadY %3d Signal %4d Track0 %4d Track1 %'d Track2 %4d \n",idigit, Cathode,Hit, PadX, PadY, Signal, Track0, Track1, Track2);
+	  printf(">>> Digit %4d cathode %1d hit %4d PadX %3d PadY %3d Signal %4d Physics %4d Track0 %4d TrackCharge0 %4d Track1 %'d 
+	  TrackCharge1 %4d Track2 %4d TrackCharge2 %4d \n",idigit, Cathode,Hit, PadX, PadY, Signal, Physics, 
+	  Track0, TCharges0, Track1, TCharges1, Track2, TCharges2);
 	} // end digit loop
       } // end chamber loop
       muondata.ResetDigits();
@@ -261,8 +284,8 @@ void MUONTestTrigger (char * filename="galice.root"){
   // Creating Run Loader and openning file containing Hits
   AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
   if (RunLoader ==0x0) {
-      printf(">>> Error : Error Opening %s file \n",filename);
-      return;
+    printf(">>> Error : Error Opening %s file \n",filename);
+    return;
   }
   
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
@@ -270,7 +293,7 @@ void MUONTestTrigger (char * filename="galice.root"){
   // Creating MUON data container
   AliMUONData muondata(MUONLoader,"MUON","MUON");
   
-
+  
   Int_t ievent, nevents;
   nevents = RunLoader->GetNumberOfEvents();
   
@@ -278,69 +301,72 @@ void MUONTestTrigger (char * filename="galice.root"){
   AliMUONLocalTrigger *locTrg;
   
   for (ievent=0; ievent<nevents; ievent++) {
-      RunLoader->GetEvent(ievent);
+    RunLoader->GetEvent(ievent);
+    
+    muondata.SetTreeAddress("GLT"); 
+    muondata.GetTrigger();
+    
+    globalTrigger = muondata.GlobalTrigger();
+    localTrigger = muondata.LocalTrigger();
+    
+    Int_t nglobals = (Int_t) globalTrigger->GetEntriesFast(); // should be 1
+    Int_t nlocals  = (Int_t) localTrigger->GetEntriesFast(); // up to 234
+    printf("###################################################\n");
+    cout << " event " << ievent 
+	 << " nglobals nlocals: " << nglobals << " " << nlocals << "\n"; 
+    
+    for (Int_t iglobal=0; iglobal<nglobals; iglobal++) { // Global Trigger
+      gloTrg = static_cast<AliMUONGlobalTrigger*>(globalTrigger->At(iglobal));
       
-      muondata.SetTreeAddress("GLT"); 
-      muondata.GetTrigger();
+      printf("===================================================\n");
+      printf(" Global Trigger output       Low pt  High pt   All\n");
+      printf(" number of Single Plus      :\t");
+      printf("%i\t%i\t%i\t",gloTrg->SinglePlusLpt(),
+	     gloTrg->SinglePlusHpt(),gloTrg->SinglePlusApt());
+      printf("\n");
+      printf(" number of Single Minus     :\t");
+      printf("%i\t%i\t%i\t",gloTrg->SingleMinusLpt(),
+	     gloTrg->SingleMinusHpt(),gloTrg->SingleMinusApt());
+      printf("\n");
+      printf(" number of Single Undefined :\t"); 
+      printf("%i\t%i\t%i\t",gloTrg->SingleUndefLpt(),
+	     gloTrg->SingleUndefHpt(),gloTrg->SingleUndefApt());
+      printf("\n");
+      printf(" number of UnlikeSign pair  :\t"); 
+      printf("%i\t%i\t%i\t",gloTrg->PairUnlikeLpt(),
+	     gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt());
+      printf("\n");
+      printf(" number of LikeSign pair    :\t");  
+      printf("%i\t%i\t%i\t",gloTrg->PairLikeLpt(),
+	     gloTrg->PairLikeHpt(),gloTrg->PairLikeApt());
+      printf("\n");
+      printf("===================================================\n");
       
-      globalTrigger = muondata.GlobalTrigger();
-      localTrigger = muondata.LocalTrigger();
+    } // end of loop on Global Trigger
+    
+    for (Int_t ilocal=0; ilocal<nlocals; ilocal++) { // Local Trigger
+      cout << " >>> Output for Local Trigger " << ilocal << "\n";
       
-      Int_t nglobals = (Int_t) globalTrigger->GetEntriesFast(); // should be 1
-      Int_t nlocals  = (Int_t) localTrigger->GetEntriesFast(); // up to 234
-      printf("###################################################\n");
-      cout << " event " << ievent 
-	   << " nglobals nlocals: " << nglobals << " " << nlocals << "\n"; 
+      locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
       
-      for (Int_t iglobal=0; iglobal<nglobals; iglobal++) { // Global Trigger
-	  gloTrg = static_cast<AliMUONGlobalTrigger*>(globalTrigger->At(iglobal));
-	  
-	  printf("===================================================\n");
-	  printf(" Global Trigger output       Low pt  High pt   All\n");
-	  printf(" number of Single Plus      :\t");
-	  printf("%i\t%i\t%i\t",gloTrg->SinglePlusLpt(),
-		 gloTrg->SinglePlusHpt(),gloTrg->SinglePlusApt());
-	  printf("\n");
-	  printf(" number of Single Minus     :\t");
-	  printf("%i\t%i\t%i\t",gloTrg->SingleMinusLpt(),
-		 gloTrg->SingleMinusHpt(),gloTrg->SingleMinusApt());
-	  printf("\n");
-	  printf(" number of Single Undefined :\t"); 
-	  printf("%i\t%i\t%i\t",gloTrg->SingleUndefLpt(),
-		 gloTrg->SingleUndefHpt(),gloTrg->SingleUndefApt());
-	  printf("\n");
-	  printf(" number of UnlikeSign pair  :\t"); 
-	  printf("%i\t%i\t%i\t",gloTrg->PairUnlikeLpt(),
-		 gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt());
-	  printf("\n");
-	  printf(" number of LikeSign pair    :\t");  
-	  printf("%i\t%i\t%i\t",gloTrg->PairLikeLpt(),
-		 gloTrg->PairLikeHpt(),gloTrg->PairLikeApt());
-	  printf("\n");
-	  printf("===================================================\n");
-	  
-      } // end of loop on Global Trigger
+      cout << "Circuit StripX Dev StripY: " 
+	   << locTrg->LoCircuit() << " " 
+	   << locTrg->LoStripX() << " " 
+	   << locTrg->LoDev() << " " 
+	   << locTrg->LoStripY() 
+	   << "\n";
+      cout << "Lpt Hpt Apt: "     
+	   << locTrg->LoLpt() << " "   
+	   << locTrg->LoHpt() << " "  
+	   << locTrg->LoApt() << "\n";
       
-      for (Int_t ilocal=0; ilocal<nlocals; ilocal++) { // Local Trigger
-	  cout << " >>> Output for Local Trigger " << ilocal << "\n";
-	  
-	  locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
-	  
-	  cout << "Circuit StripX Dev StripY: " 
-	       << locTrg->LoCircuit() << " " 
-	       << locTrg->LoStripX() << " " 
-	       << locTrg->LoDev() << " " 
-	       << locTrg->LoStripY() 
-	       << "\n";
-	  cout << "Lpt Hpt Apt: "     
-	       << locTrg->LoLpt() << " "   
-	       << locTrg->LoHpt() << " "  
-	       << locTrg->LoApt() << "\n";
-	  
-      } // end of loop on Local Trigger
-      muondata.ResetTrigger();
+    } // end of loop on Local Trigger
+    muondata.ResetTrigger();
   } // end loop on event  
-} 
+  MUONLoader->UnloadRecPoints();
+}
+
+
 
 
 
