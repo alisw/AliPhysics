@@ -7,7 +7,6 @@
 #include "AliITSIOTrack.h"
 #include "AliITStrackV2.h"
 #include <assert.h>
-//#include <stl.h>
 //___________________________________________________________________________
 class  AliITSPid :
   public TObject {
@@ -25,18 +24,20 @@ public:
 	TVector* GetVec(Int_t track);
 	Int_t	GetPcode(TClonesArray*,Float_t);
 	Int_t	GetPcode(Float_t,Float_t);
-	Int_t   GetPcode(AliTPCtrack*);  // For PID TPC
-//        Int_t   GetPcode(AliITSIOTrack*); // For PID ITS tracking V1
-        Int_t   GetPcode(AliITStrackV2*); // For PID ITS tracking V2
+	Int_t   GetPcode(AliTPCtrack*);
+        Int_t   GetPcode(AliITSIOTrack*); 
+        Int_t   GetPcode(AliITStrackV2*);
 	void	SetCut(Int_t,Float_t,Float_t,Float_t,
 			    Float_t,Float_t,Float_t,Float_t);
+	void    SetAProb(Int_t ivar,Int_t icut,Float_t apro){ aprob[ivar][icut]=apro; } 
+	Float_t GetAProb(Int_t ivar,Int_t icut){ return aprob[ivar][icut]; } 
 	Float_t GetWpi(){return fWpi;}
 	Float_t GetWk(){return fWk;}
 	Float_t GetWp(){return fWp;}
 	Int_t	GetPid(){return fPcode;};
 protected:
 public:
-	Float_t cut[13][7];
+	Float_t cut[13][7],aprob[3][8];
 	Int_t       mxtrs;
 	TClonesArray *trs;
 	Float_t qtot;
@@ -49,6 +50,7 @@ public:
 	int	qcomp(Float_t* qa,Float_t* qb){return qa[0]>qb[0]?1:0;}
 	Float_t qtrm(Int_t track);
 	Float_t qtrm(Float_t qarr[6],Int_t narr);
+	Float_t fSigmin;
 	Int_t	wpik(Int_t,Float_t);
 	Int_t	wpikp(Int_t,Float_t);
 	Int_t	pion(){return fWpi=1.,fPcode=211;}

@@ -4,7 +4,6 @@
 #include <iostream.h>
 ClassImp(AliITSPid)
 
-//-----------------------------------------------------------
 Float_t AliITSPid::qcorr(Float_t xc)
 {
     assert(0);
@@ -13,44 +12,53 @@ Float_t AliITSPid::qcorr(Float_t xc)
   if(fcorr<=0.1)fcorr=0.1;
 return qtot/fcorr;
 }
-//-----------------------------------------------------------
-//PH #include "vector.h"
-#include <vector>
-#include <algorithm>
+
 Float_t AliITSPid::qtrm(Int_t track)
 {
     TVector q(*( this->GetVec(track)  ));
-    Int_t nl=(Int_t)q(0);
-    if(nl<1)return 0.;
-    vector<float> vf(nl);
+    Int_t ml=(Int_t)q(0);
+    if(ml<1)return 0.;
+    if(ml>6)ml=6;
+    float vf[6];
+    Int_t nl=0; for(Int_t i=0;i<ml;i++){if(q(i)>fSigmin){vf[nl]=q(i+1);nl++;}}
+    if(nl==0)return 0.;
     switch(nl){
       case  1:q(6)=q(1); break;
       case  2:q(6)=(q(1)+q(2))/2.; break;
       default:
-	for(Int_t i=0;i<nl;i++){vf[i]=q(i+1);}
-        sort(vf.begin(),vf.end());
+	for(int fi=0;fi<2;fi++){
+	  Int_t swap;
+	  do{ swap=0; float qmin=vf[fi];
+	  for(int j=fi+1;j<nl;j++)
+	    if(qmin>vf[j]){qmin=vf[j];vf[j]=vf[fi];vf[fi]=qmin;swap=1;};
+	  }while(swap==1);
+	}
         q(6)= (vf[0]+vf[1])/2.;
         break;
     }
     for(Int_t i=0;i<nl;i++){q(i+1)=vf[i];} this->SetVec(track,q);
     return (q(6));
 }
-//........................................................
+
 Float_t AliITSPid::qtrm(Float_t qarr[6],Int_t narr)
 {
-  Float_t q[6],qm;
+  Float_t q[6],qm,qmin;
   Int_t nl,ml;
-  narr>6?ml=6:ml=narr;
-  nl=0; for(Int_t i=0;i<ml;i++){if(qarr[i]>0.){q[i]=qarr[i];nl++;}}
+  if(narr>0&&narr<7){ml=narr;}else{return 0;};
+  nl=0; for(Int_t i=0;i<ml;i++){if(qarr[i]>fSigmin){q[nl]=qarr[i];nl++;}}
   if(nl==0)return 0.;
-    vector<float> vf(nl);
     switch(nl){
       case  1:qm=q[0]; break;
       case  2:qm=(q[0]+q[1])/2.; break;
       default:
-	for(Int_t i=0;i<nl;i++){vf[i]=q[i];}
-        sort(vf.begin(),vf.end());
-        qm= (vf[0]+vf[1])/2.;
+	Int_t swap;
+	for(int fi=0;fi<2;fi++){
+	  do{ swap=0; qmin=q[fi];
+	  for(int j=fi+1;j<nl;j++)
+	    if(qmin>q[j]){qmin=q[j];q[j]=q[fi];q[fi]=qmin;swap=1;};
+	  }while(swap==1);
+	}
+        qm= (q[0]+q[1])/2.;
         break;
     }
     return qm;
@@ -59,34 +67,43 @@ Float_t AliITSPid::qtrm(Float_t qarr[6],Int_t narr)
 //inline
 Int_t	AliITSPid::wpik(Int_t nc,Float_t q)
 {
-       return pion();   
+  //         return pion();   
 
     Float_t qmpi,qmk,sigpi,sigk,dpi,dk,ppi,pk;
+    Float_t appi,apk;
     qmpi =cut[nc][1];
     sigpi=cut[nc][2];
     qmk  =cut[nc][3];
     sigk =cut[nc][4];
+    appi = aprob[0][nc-5];
+    apk  = aprob[1][nc-5];
+    cout<<"qmpi,sigpi,qmk,sigk="<<qmpi<<"  "<<sigpi<<"  "<<qmk<<"  "<<sigk<<endl;
+    cout<<"appi,apk="<<appi<<","<<apk<<endl;
     Float_t dqpi=(q-qmpi)/sigpi;
     Float_t dqk =(q-qmk )/sigk;
     if( dqk<-1. )return pion();
-    dpi =TMath::Abs(dqpi);
-    dk  =TMath::Abs(dqk);
-    ppi =1.- TMath::Erf(dpi);  // +0.5;
-    pk  =1.- TMath::Erf(dk);   // +0.5;
+    dpi =fabs(dqpi);
+    dk  =fabs(dqk);
+    //ppi =1.- TMath::Erf(dpi);  // +0.5;
+    //pk  =1.- TMath::Erf(dk);   // +0.5;
+    ppi=appi*TMath::Gaus(q,qmpi,sigpi)
+        /(appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk));
+    pk = apk*TMath::Gaus(q,qmk, sigk )
+        /(appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk));
+
     Float_t rpik=ppi/(pk+0.0000001); 
 	cout<<"q,dqpi,dqk, wpik: ppi,pk,rpik="
-	<<q<<" "<<dqpi<<" "<<dqk<<" "<<ppi<<" "<<pk<<" "<<rpik<<endl;
-    if( rpik>=1000. ){return pion();}
-    if( rpik>0.001 ){fWk=1./(rpik+1.); fWpi=1.-fWk;return 0;}
-    return pion();    
+	<<q<<"  "<<dqpi<<"  "<<dqk<<"  "<<ppi<<"  "<<pk<<"  "<<rpik<<endl;
+
+    fWp=0.; fWpi=ppi; fWk=pk;
+    if( pk>ppi){return kaon();}else{return pion();}
 }
 //-----------------------------------------------------------
 //inline
 Int_t	AliITSPid::wpikp(Int_t nc,Float_t q)
 {
-       return pion();   
-
-   Float_t qmpi,qmk,qmp,sigpi,sigk,sigp,ppi,pka,ppr,rppi,rpka;
+   Float_t qmpi,qmk,qmp,sigpi,sigk,sigp,ppi,pk,pp;
+   Float_t appi,apk,app;
 
     qmpi =cut[nc][1];
     sigpi=cut[nc][2];
@@ -95,19 +112,31 @@ Int_t	AliITSPid::wpikp(Int_t nc,Float_t q)
     qmp  =cut[nc][5];
     sigp =cut[nc][6];
 
-    ppi =TMath::Erf( TMath::Abs((q-qmpi)/sigpi) )+0.5;
-    pka =TMath::Erf( TMath::Abs((q-qmk )/sigk)  )+0.5;
-    ppr =TMath::Erf( TMath::Abs((q-qmp )/sigp)  )+0.5;
+    //appi = apk = app = 1.;
+    appi = aprob[0][nc-5];
+    apk  = aprob[1][nc-5];
+    app  = aprob[2][nc-5];
 
-    rppi=ppr/ppi;
-    rpka=ppr/pka;
-    Float_t rp;
-    if( rppi>rpka )  { rp=rpka; }
-	         else{ rp=rppi; }
-    if( rp>=1000. ){ return proton(); }
-    if( rp>0.001  ){ fWp=rp/(rp+1.);return proton(); }
-    
-    return 0;    
+    //ppi =TMath::Erf( TMath::Abs((q-qmpi)/sigpi) )+0.5;
+    //pka =TMath::Erf( TMath::Abs((q-qmk )/sigk)  )+0.5;
+    //ppr =TMath::Erf( TMath::Abs((q-qmp )/sigp)  )+0.5;
+
+    ppi=appi*TMath::Gaus(q,qmpi,sigpi)
+      /( appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk)+app*TMath::Gaus(q,qmp,sigp) );
+    pk = apk*TMath::Gaus(q,qmk, sigk )
+      /( appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk)+app*TMath::Gaus(q,qmp,sigp) );
+    pp = app*TMath::Gaus(q,qmp, sigp )
+      /( appi*TMath::Gaus(q,qmpi,sigpi)+apk*TMath::Gaus(q,qmk,sigk)+app*TMath::Gaus(q,qmp,sigp) );
+
+    fWp=pp; fWpi=ppi; fWk=pk;
+
+cout<<" wpikp: mid,sig pi,k,p="<<qmpi<<" "<<sigpi<<";   "<<qmk<<" "<<sigk<<";   "
+    <<qmp<<" "<<sigp<<"; "<<endl;
+ cout<<" aprob: "<<appi<<"  "<<apk<<"  "<<app<<endl;
+cout<<" ppi,pk,pp="<<ppi<<"  "<<pk<<"  "<<pp<<endl;
+
+    if( ppi>pk&&ppi>pp )  { return pion(); }
+    if(pk>pp){return kaon();}else{return proton();}
 }
 //-----------------------------------------------------------
 Int_t	AliITSPid::GetPcode(TClonesArray* rps,Float_t pm)
@@ -130,7 +159,6 @@ Int_t   AliITSPid::GetPcode(AliTPCtrack *track)
     return pcode?pcode:211;
     }
 //------------------------------------------------------------
-/*
 Int_t   AliITSPid::GetPcode(AliITSIOTrack *track)
 {
     Double_t px,py,pz;
@@ -139,21 +167,19 @@ Int_t   AliITSPid::GetPcode(AliITSIOTrack *track)
     pz=track->GetPz();
     Float_t mom=TMath::Sqrt(px*px+py*py+pz*pz);
 //???????????????????
-   // Float_t dedx=1.0;
-     Float_t dedx=track->GetdEdx();
+    Float_t dedx=1.0;
+    //  Float_t dedx=track->GetdEdx();
 //???????????????????    
     Int_t pcode=GetPcode(dedx,mom);
     cout<<"ITSV1 dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
 return pcode?pcode:211;
 }
-*/
 //-----------------------------------------------------------
 Int_t   AliITSPid::GetPcode(AliITStrackV2 *track)
 {
   if(track==0)return 0;
-  //track->Propagate(track->GetAlpha(),3.,0.1/65.19*1.848,0.1*1.848);
+  //      track->Propagate(track->GetAlpha(),3.,0.1/65.19*1.848,0.1*1.848);
       track->PropagateTo(3.,0.0028,65.19);
-
       track->PropagateToVertex();
     Double_t xk,par[5]; track->GetExternalParameters(xk,par);
     Float_t lam=TMath::ATan(par[3]);
@@ -161,53 +187,53 @@ Int_t   AliITSPid::GetPcode(AliITStrackV2 *track)
     Float_t mom=0.;
     if( (pt_1*TMath::Cos(lam))!=0. ){ mom=1./(pt_1*TMath::Cos(lam)); }else{mom=0.;};
     Float_t dedx=track->GetdEdx();
-    //cout<<"lam,pt_1,mom,dedx="<<lam<<","<<pt_1<<","<<mom<<","<<dedx<<endl;
+    cout<<"lam,pt_1,mom,dedx="<<lam<<","<<pt_1<<","<<mom<<","<<dedx<<endl;
     Int_t pcode=GetPcode(dedx,mom);
-    //cout<<"ITS V2 dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
+    cout<<"ITS V2 dedx,mom,pcode="<<dedx<<","<<mom<<","<<pcode<<endl;
 return pcode?pcode:211;
 }
 //-----------------------------------------------------------
 Int_t	AliITSPid::GetPcode(Float_t q,Float_t pm)
 {
-    fWpi=fWk=fWp=-1.;     fPcode=0;
-//1)
+    fWpi=fWk=fWp=0.;     fPcode=0;
+//1)---------------------- 0-120 MeV/c --------------
     if ( pm<=cut[1][0] )
 	{ return pion(); }
-//2)
+//2)----------------------120-200 Mev/c ------------- 
     if ( pm<=cut[2][0] )
 	{ if( q<cut[2][2] ){ return pion(); } else { return  kaon();} }
-//3)
+//3)----------------------200-300 Mev/c -------------
     if ( pm<=cut[3][0] )
 	if( q<cut[3][2])
 		{ return pion(); }
 	     else
 		{ if ( q<=cut[3][5] ) {return kaon();} else {return proton();}}
-//4)
+//4)----------------------300-410 Mev/c -------------
     if ( pm<=cut[4][0] )
 	if( q<cut[4][2] )
 		{ return pion(); }
 	    else
 		{ if( q<=cut[4][4] ) {return kaon();} else {return proton(); }}
-//5)
+//5)----------------------410-470 Mev/c -------------
     if ( pm<=cut[5][0] )
 	if ( q>cut[5][5] ) {return proton();} else {return wpik(5,q);};
-//6)
+//6)----------------------470-530 Mev/c -------------
     if ( pm<=cut[6][0] )
 	if ( q>cut[6][5] ) {return proton();} else {return wpik(6,q);};
-//7)
+//7)----------------------530-590 Mev/c -------------
     if ( pm<=cut[7][0] )
-	if ( q<=cut[7][5] ) {return fPcode;} else {return proton();};
-//8)
+	if ( q<=cut[7][5] ) {return wpik(7,q);} else {return proton();};
+//8)----------------------590-650 Mev/c -------------
     if ( pm<=cut[8][0] )
-	if ( q<=cut[8][5] ) {return fPcode;} else {return proton();}; 
-//9)
+	if ( q<=cut[8][5] ) {return wpik(8,q);} else {return proton();}; 
+//9)----------------------650-730 Mev/c -------------
     if ( pm<=cut[9][0] )
-	if ( q<=cut[9][5] ) {return fPcode;} else {return proton();};
-//10)
+	if ( q<=cut[9][5] ) {return wpik(9,q);} else {return proton();};
+//10)----------------------730-830 Mev/c -------------
     if( pm<=cut[10][0] ){ return wpikp(10,q); }
-//11)
+//11)----------------------830-930 Mev/c -------------
     if( pm<=cut[11][0] ){ return wpikp(11,q); }
-//12)
+//12)----------------------930-1030 Mev/c -------------
     if( pm<=cut[12][0] ){ return wpikp(12,q); }
 
     return fPcode;    
@@ -225,7 +251,7 @@ void	AliITSPid::SetCut(Int_t n,Float_t pm,Float_t pilo,Float_t pihi,
     cut[n][6]=phi;
     return ;    
 }
-//-----------------------------------------------------------
+//------------------------------------------------------------
 void AliITSPid::SetVec(Int_t ntrack,TVector info)
 {
 TClonesArray& arr=*trs;
@@ -311,7 +337,8 @@ for(Int_t i=0;i<trs->GetEntries();i++)
 	    if(xx(0)>0){
 		    cout<<xx(0)<<" ";
 		    for(Int_t j=1;j<11;j++){
-		        cout.width(7);cout.precision(5);cout<<xx(j);
+		      if(i<7){ cout.width(7);cout.precision(4);cout<<xx(j);}
+                      if(i>7){ cout.width(7);cout.precision(5);cout<<xx(j);}
 		    }
 		    cout<<endl;
 		}
@@ -334,6 +361,7 @@ void AliITSPid::Reset(void)
 //-----------------------------------------------------------
 AliITSPid::AliITSPid(Int_t ntrack)
 {
+  fSigmin=0.01;
     trs = new TClonesArray("TVector",ntrack);
     TClonesArray &arr=*trs;
     for(Int_t i=0;i<ntrack;i++)new(arr[i])TVector(0,11);
@@ -347,16 +375,28 @@ const int inf=10;
     SetCut(  3, 0.30 ,  0.  ,  3.5 , 3.5  , 9.0   , 9.0  , inf  );
     SetCut(  4, 0.41 ,  0.  ,  1.9 , 1.9  , 4.0   , 4.0  , inf  );
 //----------------------------------------------------------------
-    SetCut(  5, 0.47 ,  1.  ,  0.12, 1.98 , 0.17  , 3.5  , inf  );
-    SetCut(  6, 0.53 ,  1.  ,  0.12, 1.75 , 0.16  , 3.0  , inf  );
+    SetCut(  5, 0.47 , 0.935, 0.139, 1.738 , 0.498  , 3.5  , inf  );  //410-470
+    SetCut(  6, 0.53 , 0.914, 0.136, 1.493 , 0.436  , 3.0  , inf  );  //470-530
 //----------------------------------------------------------------    
-    SetCut(  7, 0.59 ,  0.  ,  0.  , 1.18 , 0.125 , 2.7  , inf  );
-    SetCut(  8, 0.65 ,  0.  ,  0.  , 1.18 , 0.125 , 2.5  , inf  );
-    SetCut(  9, 0.73 ,  0.  ,  0.  , 0.   , 0.125 , 2.0  , inf  );
+    SetCut(  7, 0.59 , 0.895, 0.131, 1.384 , 0.290 , 2.7  , inf  );    //530-590
+    SetCut(  8, 0.65 , 0.887, 0.121, 1.167 , 0.287 , 2.5  , inf  );     //590-650
+    SetCut(  9, 0.73 , 0.879, 0.120, 1.153 , 0.257 , 2.0  , inf  );     //650-730
 //----------------------------------------------------------------    
-    SetCut( 10, 0.83 ,  0.  ,  0.  , 1.25 , 0.13  , 2.14 , 0.20 );
-    SetCut( 11, 0.93 ,  0.  ,  0.  , 1.18 , 0.125 , 1.88 , 0.18 );
-    SetCut( 12, 1.03 ,  0.  ,  0.  , 1.13 , 0.12  , 1.68 , 0.155);
+    SetCut( 10, 0.83 , 0.880, 0.126, 1.164 , 0.204 , 2.308 , 0.297 );       //730-830
+    SetCut( 11, 0.93 , 0.918, 0.145, 1.164 , 0.204 , 2.00 , 0.168 );        //830-930
+    SetCut( 12, 1.03 , 0.899, 0.128, 1.164 , 0.204  ,1.80 , 0.168);
+    //------------------------ pi,K ---------------------
+    aprob[0][0]=1212;     aprob[1][0]=33.;   // aprob[0][i] - const for pions,cut[i+5] 
+    aprob[0][1]=1022;     aprob[1][1]=46.2 ; // aprob[1][i] -           kaons
+    //---------------------------------------------------
+    aprob[0][2]= 889.7;   aprob[1][2]=66.58; aprob[2][2]=14.53;
+    aprob[0][3]= 686.;    aprob[1][3]=88.8;  aprob[2][3]=19.27;   
+    aprob[0][4]= 697.;    aprob[1][4]=125.6; aprob[2][4]=28.67;
+    //------------------------ pi,K,p -------------------
+    aprob[0][5]= 633.7;   aprob[1][5]=100.1;   aprob[2][5]=37.99;   // aprob[2][i] -  protons
+    aprob[0][6]= 469.5;   aprob[1][6]=20.74;   aprob[2][6]=25.43;
+    aprob[0][7]= 355.;    aprob[1][7]=
+                          355.*(20.74/469.5);  aprob[2][7]=34.08;
 }
 //-----------------------------------------------------------
 
