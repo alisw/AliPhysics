@@ -408,6 +408,7 @@ AliHBTTwoPairFctn1D(Int_t nbins, Double_t maxval, Double_t minval)
    
    fNumerator->Sumw2();
    fDenominator->Sumw2();
+   fNBinsToScale = 30;
  }
 
 AliHBTTwoPairFctn1D::
@@ -428,6 +429,7 @@ AliHBTTwoPairFctn1D(const Char_t* name, const Char_t* title,
    
    fNumerator->Sumw2();
    fDenominator->Sumw2();
+   fNBinsToScale = 30;
  }
 
 
