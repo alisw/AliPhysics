@@ -24,9 +24,6 @@ public:
   virtual ~AliPHOSv2(void) ;
 
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) ; 
-// adds a hit to the hit tree (any pre=digitalization is done here (so large root file !!) 
-  virtual void    FinishEvent(void) ;          // makes the digits from the hits 
-  virtual void    StepManager(void) ;  // StepManager to keep current tack number in the hit
 
 protected:
 

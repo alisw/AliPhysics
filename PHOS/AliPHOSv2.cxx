@@ -94,18 +94,37 @@ AliPHOSv2::~AliPHOSv2()
 void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.
-  // In this version of AliPHOSv1, a PHOS hit is real geant 
-  // hits in a single crystal or in a single PPSD gas cell
+  // A PHOS hit is the sum of all hits in a single crystal
+  //   or in a single PPSD gas cell
 
-  TClonesArray &ltmphits = *fHits ;
+  Int_t hitCounter ;
+  TClonesArray &ltmphits = *fTmpHits ;
   AliPHOSHit *newHit ;
-  
-  //  fHits->Print("");
-  
+  AliPHOSHit *curHit ;
+  Bool_t deja = kFALSE ;
+
+  // In any case, fills the fTmpHit TClonesArray (with "accumulated hits")
+
   newHit = new AliPHOSHit(shunt, primary, tracknumber, Id, hits) ;
-  
-  // We DO want to save in TreeH the raw hits 
-  new(ltmphits[fNhits]) AliPHOSHit(*newHit) ;
+
+  // We do want to save in TreeH the raw hits 
+  TClonesArray &lhits = *fHits;
+
+  for ( hitCounter = 0 ; hitCounter < fNTmpHits && !deja ; hitCounter++ ) {
+    curHit = (AliPHOSHit*) ltmphits[hitCounter] ;
+  if( *curHit == *newHit ) {
+    *curHit = *curHit + *newHit ;
+    deja = kTRUE ;
+    }
+  }
+         
+  if ( !deja ) {
+    new(ltmphits[fNTmpHits]) AliPHOSHit(*newHit) ;
+    fNTmpHits++ ;
+  }
+
+  // We do want to save in TreeH the raw hits 
+  new(lhits[fNhits]) AliPHOSHit(*newHit) ;    
   fNhits++ ;
 
   // Please note that the fTmpHits array must survive up to the
@@ -116,142 +135,4 @@ void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t Id, 
 
 }
 
-
-
-
-//___________________________________________________________________________
-void AliPHOSv2::FinishEvent()
-{
-  // Makes the digits from the sum of summed hit in a single crystal or PPSD gas cell
-  // Adds to the energy the electronic noise
-  // Keeps digits with energy above fDigitThreshold
-
-  // Save the cumulated hits instead of raw hits (need to create the branch myself)
-  // It is put in the Digit Tree because the TreeH is filled after each primary
-  // and the TreeD at the end of the event.
-  
-  Int_t i ;
-  Int_t relid[4];
-  Int_t j ; 
-  TClonesArray &lDigits = *fDigits ;
-  AliPHOSHit  * hit ;
-  AliPHOSDigit * newdigit ;
-  AliPHOSDigit * curdigit ;
-  Bool_t deja = kFALSE ; 
-  
-  for ( i = 0 ; i < fNhits ; i++ ) {
-    hit = (AliPHOSHit*)fHits->At(i) ;
-    newdigit = new AliPHOSDigit( hit->GetPrimary(), hit->GetId(), Digitize( hit->GetEnergy() ) ) ;
-    deja =kFALSE ;
-    for ( j = 0 ; j < fNdigits ;  j++) { 
-      curdigit = (AliPHOSDigit*) lDigits[j] ;
-      if ( *curdigit == *newdigit) {
-	*curdigit = *curdigit + *newdigit ; 
-	deja = kTRUE ; 
-      }
-    }
-    if ( !deja ) {
-      new(lDigits[fNdigits]) AliPHOSDigit(* newdigit) ;
-      fNdigits++ ;  
-    }
- 
-    delete newdigit ;    
-  } 
-  
-  // Noise induced by the PIN diode of the PbWO crystals
-
-  Float_t energyandnoise ;
-  for ( i = 0 ; i < fNdigits ; i++ ) {
-    newdigit =  (AliPHOSDigit * ) fDigits->At(i) ;
-    fGeom->AbsToRelNumbering(newdigit->GetId(), relid) ;
-
-    if (relid[1]==0){   // Digits belong to EMC (PbW0_4 crystals)
-      energyandnoise = newdigit->GetAmp() + Digitize(gRandom->Gaus(0., fPinElectronicNoise)) ;
-
-      if (energyandnoise < 0 ) 
-	energyandnoise = 0 ;
-
-      if ( newdigit->GetAmp() < fDigitThreshold ) // if threshold not surpassed, remove digit from list
-	fDigits->RemoveAt(i) ; 
-    }
-  }
-  
-  fDigits->Compress() ;  
-
-  fNdigits =  fDigits->GetEntries() ; 
-  for (i = 0 ; i < fNdigits ; i++) { 
-    newdigit = (AliPHOSDigit *) fDigits->At(i) ; 
-    newdigit->SetIndexInList(i) ; 
-  }
-
-}
-
-void AliPHOSv2::StepManager(void)
-{
-  // Accumulates hits as long as the track stays in a single crystal or PPSD gas Cell
-
-  Int_t          relid[4] ;      // (box, layer, row, column) indices
-  Float_t        xyze[4] ;       // position wrt MRS and energy deposited
-  TLorentzVector pos ;
-  Int_t copy ;
-
-  Int_t tracknumber =  gAlice->CurrentTrack() ; 
-  Int_t primary     =  gAlice->GetPrimary( gAlice->CurrentTrack() );
-
-  TString name = fGeom->GetName() ; 
-  if ( name == "GPS2" ) { // the CPV is a PPSD
-    if( gMC->CurrentVolID(copy) == gMC->VolId("GCEL") ) // We are inside a gas cell 
-    {
-      gMC->TrackPosition(pos) ;
-      xyze[0] = pos[0] ;
-      xyze[1] = pos[1] ;
-      xyze[2] = pos[2] ;
-      xyze[3] = gMC->Edep() ; 
-
-      if ( xyze[3] != 0 ) { // there is deposited energy 
-       	gMC->CurrentVolOffID(5, relid[0]) ;  // get the PHOS Module number
-       	gMC->CurrentVolOffID(3, relid[1]) ;  // get the Micromegas Module number 
-      // 1-> Geom->GetNumberOfModulesPhi() *  fGeom->GetNumberOfModulesZ() upper                         
-      //  >  fGeom->GetNumberOfModulesPhi()  *  fGeom->GetNumberOfModulesZ() lower
-       	gMC->CurrentVolOffID(1, relid[2]) ;  // get the row number of the cell
-        gMC->CurrentVolID(relid[3]) ;        // get the column number 
-
-	// get the absolute Id number
-
-	Int_t absid ; 
-       	fGeom->RelToAbsNumbering(relid, absid) ; 
-
-	// add current hit to the hit list      
-	AddHit(fIshunt, primary, tracknumber, absid, xyze);
-
-      } // there is deposited energy 
-     } // We are inside the gas of the CPV  
-   } // GPS2 configuration
-  
-   if(gMC->CurrentVolID(copy) == gMC->VolId("PXTL") )  //  We are inside a PBWO crystal
-     {
-       gMC->TrackPosition(pos) ;
-       xyze[0] = pos[0] ;
-       xyze[1] = pos[1] ;
-       xyze[2] = pos[2] ;
-       xyze[3] = gMC->Edep() ;
-
-       if ( xyze[3] != 0 ) {
-          gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
-          relid[1] = 0   ;                    // means PBW04
-          gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
-          gMC->CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
-
-      // get the absolute Id number
-
-          Int_t absid ; 
-          fGeom->RelToAbsNumbering(relid, absid) ; 
- 
-      // add current hit to the hit list
-
-          AddHit(fIshunt, primary,tracknumber, absid, xyze);
-    
-       } // there is deposited energy
-    } // we are inside a PHOS Xtal
-}
 
