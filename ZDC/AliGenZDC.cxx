@@ -67,18 +67,18 @@ AliGenZDC::AliGenZDC(Int_t npart)
      fProbintp[i] = 0;
      fProbintn[i] = 0;
   }
-  for(j=0; j<3; j++){
-     fPp[i] = 0;
-  }
+  for(j=0; j<3; j++) fPp[i] = 0;
   fDebugOpt = 0;
 }
 
 //_____________________________________________________________________________
 void AliGenZDC::Init()
 {
-  printf("\n\n		AliGenZDC initialized with:\n");
-  printf("   Fermi flag = %d, Beam Divergence = %f, Crossing Angle "
-         "= %f, Crossing Plane = %d\n\n", fFermiflag, fBeamDiv, fBeamCrossAngle,
+  printf("\n\n		AliGenZDC initialization:\n");
+  printf("   Particle: %d, Track cosines: x = %f, y = %f, z = %f \n", 
+  	 fIpart,fCosx,fCosy,fCosz);
+  printf("   Fermi flag = %d, Beam divergence = %f, Crossing angle "
+         "= %f, Crossing plane = %d\n\n", fFermiflag, fBeamDiv, fBeamCrossAngle,
 	 fBeamCrossPlane);
 
   //Initialize Fermi momentum distributions for Pb-Pb
@@ -108,35 +108,29 @@ void AliGenZDC::Generate()
     pLab[1] = 0.;
     pLab[2] = ptot*TMath::Cos(scang);
   }
-  for(i=0; i<=2; i++){
-     fP[i] = pLab[i];
+  for(i=0; i<=2; i++) fP[i] = pLab[i];  
+  if(fDebugOpt == 1){
+    printf("\n\n		Particle momentum before divergence and crossing\n");
+    for(i=0; i<=2; i++)printf(" 	pLab[%d] = %f\n",i,pLab[i]);
   }
-  
   
   // Beam divergence and crossing angle
   if(fBeamCrossAngle!=0.) {
     BeamDivCross(1,fBeamDiv,fBeamCrossAngle,fBeamCrossPlane,pLab);
-    for(i=0; i<=2; i++){
-       fP[i] = pLab[i];
-    }
+    for(i=0; i<=2; i++) fP[i] = pLab[i];
   }
   if(fBeamDiv!=0.) {
     BeamDivCross(0,fBeamDiv,fBeamCrossAngle,fBeamCrossPlane,pLab);
-    for(i=0; i<=2; i++){
-       fP[i] = pLab[i];
-    }
+    for(i=0; i<=2; i++) fP[i] = pLab[i];
   }
 
   // If required apply the Fermi momentum
   if(fFermiflag==1){
-    if((fIpart==kProton) || (fIpart==kNeutron)){
+    if((fIpart==kProton) || (fIpart==kNeutron))
       ExtractFermi(fIpart,fPp,fProbintp,fProbintn,ddp);
-    }
     Mass=gAlice->PDGDB()->GetParticle(fIpart)->Mass();
     fP0 = TMath::Sqrt(fP[0]*fP[0]+fP[1]*fP[1]+fP[2]*fP[2]+Mass*Mass);
-    for(i=0; i<=2; i++){
-       dddp[i] = ddp[i];
-    }
+    for(i=0; i<=2; i++) dddp[i] = ddp[i];
     dddp0 = TMath::Sqrt(dddp[0]*dddp[0]+dddp[1]*dddp[1]+dddp[2]*dddp[2]+Mass*Mass);
     
     TVector3 b(fP[0]/fP0, fP[1]/fP0, fP[2]/fP0);
@@ -150,9 +144,7 @@ void AliGenZDC::Generate()
 
   }
   
-  for(i=0; i<=2; i++){
-     fPTrack[i] = fP[i];
-  }
+  for(i=0; i<=2; i++) fPTrack[i] = fP[i];
       
   Float_t polar[3] = {0,0,0};
   gAlice->GetMCApp()->PushTrack(fTrackIt,-1,fIpart,fPTrack,fOrigin.GetArray(),polar,0,
@@ -193,9 +185,8 @@ void AliGenZDC::FermiTwoGaussian(Float_t A, Double_t *fPp,
    }
    if(fDebugOpt == 1){
      printf("\n\n		Initialization of Fermi momenta distribution \n");
-     for(Int_t i=0; i<=200; i++){
-        printf(" fProbintp[%d] = %f, fProbintn[%d] = %f\n",i,fProbintp[i],i,fProbintn[i]);
-     }
+     //for(Int_t i=0; i<=200; i++)
+     //   printf(" fProbintp[%d] = %f, fProbintn[%d] = %f\n",i,fProbintp[i],i,fProbintn[i]);
    }
 } 
 //_____________________________________________________________________________
@@ -240,11 +231,12 @@ void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossA
   Double_t tetpart, fipart, tetdiv=0, fidiv=0, angleSum[2], tetsum, fisum;
   Double_t rvec;
 
-  Int_t i;
+  Int_t sign=0;
+  if(pLab[2]>=0.)  sign=1;
+  else sign=-1;
   Double_t pmq = 0.;
-  for(i=0; i<=2; i++){
-     pmq = pmq+pLab[i]*pLab[i];
-  }
+  Int_t i;
+  for(i=0; i<=2; i++) pmq = pmq+pLab[i]*pLab[i];
   Double_t pmod = TMath::Sqrt(pmq);
 
   if(icross==0){
@@ -268,12 +260,8 @@ void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossA
   }
 
   tetpart = TMath::ATan(TMath::Sqrt(pLab[0]*pLab[0]+pLab[1]*pLab[1])/pLab[2]);
-  if(pLab[1]!=0. || pLab[0]!=0.){
-    fipart = TMath::ATan2(pLab[1],pLab[0]);
-  }
-  else{
-    fipart = 0.;
-  }
+  if(pLab[1]!=0. || pLab[0]!=0.) fipart = TMath::ATan2(pLab[1],pLab[0]);
+  else fipart = 0.;
   if(fipart<0.) {fipart = fipart+k2PI;}
   tetdiv = tetdiv*kRaddeg;
   fidiv = fidiv*kRaddeg;
@@ -286,12 +274,11 @@ void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossA
   fisum = fisum*kDegrad;
   pLab[0] = pmod*TMath::Sin(tetsum)*TMath::Cos(fisum);
   pLab[1] = pmod*TMath::Sin(tetsum)*TMath::Sin(fisum);
-  pLab[2] = pmod*TMath::Cos(tetsum);
+  if(sign==1) pLab[2] = pmod*TMath::Cos(tetsum);
+  else pLab[2] = -pmod*TMath::Cos(tetsum);
   if(fDebugOpt == 1){
     printf("\n\n		Beam divergence and crossing angle\n");
-    for(i=0; i<=2; i++){
-       printf(" 	pLab[%d] = %f\n",i,pLab[i]);
-    }
+    for(i=0; i<=2; i++)printf(" 	pLab[%d] = %f\n",i,pLab[i]);
   }
 }
   
