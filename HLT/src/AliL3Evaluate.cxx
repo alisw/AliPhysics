@@ -65,6 +65,8 @@ AliL3Evaluate::AliL3Evaluate(Char_t *mcfile,Int_t *slice)
 
 AliL3Evaluate::AliL3Evaluate(Int_t *slice)
 {
+  //ctor to use if you do not need any rootfile.
+
 
   fMinSlice = slice[0];
   fMaxSlice = slice[1];
@@ -123,7 +125,9 @@ void AliL3Evaluate::Setup(Char_t *trackfile,Char_t *path)
 	  clusterfile[s][p]->CloseBinaryInput();
 	}
     }
-    
+
+  return;
+
   AliL3FileHandler *tfile = new AliL3FileHandler();
   if(!tfile->SetBinaryInput(trackfile)){
     LOG(AliL3Log::kError,"AliL3Evaluation::Setup","File Open")
@@ -241,7 +245,7 @@ TObjArray *AliL3Evaluate::DefineGoodTracks(Int_t slice,Int_t *padrow,Int_t good_
       if(!clusterok) 
 	LOG(AliL3Log::kError,"AliL3Evaluate::DefineGoodTracks","Cluster Array")
 	  <<"Error loading clusters from rootfile"<<ENDLOG;
-            
+         
       for(Int_t i=0; i<carray.GetTree()->GetEntries(); i++)  
 	{
 	  Int_t sec,row,sl,lr;
@@ -322,7 +326,7 @@ TObjArray *AliL3Evaluate::DefineGoodTracks(Int_t slice,Int_t *padrow,Int_t good_
      if (phi_part < 0) phi_part += 2*TMath::Pi();
      
 
-     if(phi_part < phi_min*torad || phi_part > phi_max*torad) {continue;}
+     //if(phi_part < phi_min*torad || phi_part > phi_max*torad) {continue;}
      if(ptg<0.100) continue;
      if(fabs(pzg/ptg)>0.999) {continue;}
      Int_t entries = good_part->GetEntriesFast();
@@ -712,7 +716,7 @@ TNtuple *AliL3Evaluate::CalculateResiduals()
 {
 
   TNtuple *ntuppel=new TNtuple("ntuppel","Residuals","residual_trans:residual_long:zHit:pt:dipangle:beta:padrow:nHits");
-  
+
   for(int f=fMinSlice; f<=fMaxSlice; f++)
     {
       AliL3FileHandler *tfile = new AliL3FileHandler();
@@ -727,8 +731,7 @@ TNtuple *AliL3Evaluate::CalculateResiduals()
       tfile->Binary2TrackArray(fTracks);
       tfile->CloseBinaryInput();
       delete tfile;
-      
-      
+      printf("Looking in slice %d\n",f);
       for(Int_t i=0; i<fTracks->GetNTracks(); i++)
 	{
 	  
@@ -741,12 +744,14 @@ TNtuple *AliL3Evaluate::CalculateResiduals()
 	  
 	  Float_t xyz[3];
 	  Int_t padrow;
-	  for(Int_t j=0; j<track->GetNumberOfPoints(); j++)
+	  for(Int_t j=0; j<track->GetNumberOfPoints()-1; j++)
 	    {
 	      id = hitnum[j];
 	      Int_t slice = (id>>25) & 0x7f;
 	      Int_t patch = (id>>22) & 0x7;
 	      UInt_t pos = id&0x3fffff;	      
+	      
+	      //if(slice!=1) continue;
 	      
 	      AliL3SpacePointData *points = fClusters[slice][patch];
 	      
@@ -767,7 +772,7 @@ TNtuple *AliL3Evaluate::CalculateResiduals()
 	      xyz[1] = points[pos].fY;
 	      xyz[2] = points[pos].fZ;
 	      padrow = points[pos].fPadRow;
-	      fTransform->Global2Local(xyz,slice);
+	      //fTransform->Global2Local(xyz,slice);
 	      
 	      Float_t xyz_cross[3];
 	      track->GetCrossingPoint(padrow,xyz_cross);
@@ -785,5 +790,212 @@ TNtuple *AliL3Evaluate::CalculateResiduals()
 	delete fTracks;
     }
   return ntuppel;
+}
+
+TNtuple *AliL3Evaluate::EvaluatePoints()
+{
+  //Compare the input points with the crossing point of generated particles.
+  //Points can either come from clusterfinder, or fast simulator.
+  
+ 
+  TNtuple *ntuppel = new TNtuple("ntuppel","residuals","resy:ptgen:padrow:zHit:slice");
+  
+  Int_t good_number=173;
+  Int_t row[2] = {0,173};
+  UInt_t id;
+
+  for(Int_t slice=fMinSlice; slice<=fMaxSlice; slice++)
+    {
+      Int_t *particle_id = new Int_t[fParticles->GetEntriesFast()];
+      TObjArray *good_particles = DefineGoodTracks(slice,row,good_number,particle_id);
+      
+      Float_t xyz_cl[3],cross_points[2];
+      Int_t padrow,prev_row=-1,p;
+      Int_t *trackID = new Int_t[3];
+      
+      for(Int_t i=0; i<good_particles->GetEntriesFast(); i++)
+	{
+	  TParticle *part = (TParticle*)good_particles->UncheckedAt(i);
+	  printf("Evaluating particle %d\n",i);
+	  for(Int_t patch=0; patch<5; patch++)
+	    {
+	      AliL3SpacePointData *points = fClusters[slice][patch];
+	      for(UInt_t pos=0; pos<fNcl[slice][patch]; pos++)
+		{
+		  /*
+		    id = hitnum[i];
+		    Int_t slice = (id>>25) & 0x7f;
+		    Int_t patch = (id>>22) & 0x7;
+		    UInt_t pos = id&0x3fffff;	      
+		  */
+		  id = (slice<<25)|(patch<<22)|(pos);
+
+		  xyz_cl[0] = points[pos].fX;
+		  xyz_cl[1] = points[pos].fY;
+		  xyz_cl[2] = points[pos].fZ;
+		  padrow = points[pos].fPadRow;
+		  
+		  Int_t se,ro;
+		  fTransform->Slice2Sector(slice,padrow,se,ro);
+		  fTransform->Local2Raw(xyz_cl,se,ro);
+		  //printf("slice %d padrow %d\n",slice,padrow);
+		  if(padrow!=prev_row)
+		    {
+		      if(!GetParticleCrossingPoint(part,slice,padrow,cross_points))
+			{
+			  printf("AliL3Evaluate::EvaluateClusterFinder : PArticle does not cross padrow!!!\n");
+			  continue;
+			}
+		      if(fIsSlow)
+			{
+			  p = fRowid[slice][padrow];
+			  
+			  if(!fDigitsTree->GetEvent(p)) 
+			    LOG(AliL3Log::kError,"AliL3Evaluate::GetClusterIDs","Digits Tree")
+			      <<"Error reading digits tree"<<ENDLOG;
+			}		      
+		      prev_row = padrow;
+		    }
+		  if(fIsSlow)
+		    {
+		      trackID[0] = fDigits->GetTrackID((Int_t)xyz_cl[2],(Int_t)xyz_cl[1],0);
+		      trackID[1] = fDigits->GetTrackID((Int_t)xyz_cl[2],(Int_t)xyz_cl[1],1);
+		      trackID[2] = fDigits->GetTrackID((Int_t)xyz_cl[2],(Int_t)xyz_cl[1],2);
+		    }
+		  else
+		    {
+		      Int_t tmp_pid=0;
+		      for(Int_t ii=0; ii<fNFastPoints; ii++)
+			{
+			  tmp_pid = fMcId[ii];
+			  if(fMcIndex[ii] == id) break;
+			}
+		      trackID[0] = tmp_pid;
+		      trackID[1] = -1;
+		      trackID[2] = -1;
+		    }
+		  if(particle_id[i]!=trackID[0] && particle_id[i]!=trackID[1] && particle_id[i]!=trackID[2]) continue;
+		  fTransform->Raw2Local(xyz_cl,se,ro,xyz_cl[1],xyz_cl[2]);
+		  Float_t yres = xyz_cl[1]-cross_points[1];
+		  //printf("Found match ID %d on row %d\n",particle_id[i],padrow);
+		  //printf("Difference in y %f %f %f\n",yres,xyz_cl[1],cross_points[1]);
+		  
+		  ntuppel->Fill(yres,part->Pt(),padrow,xyz_cl[2],slice);
+		}
+	    }
+	}
+      
+      delete [] particle_id;
+      delete [] trackID;
+      delete good_particles;
+    }
+  return ntuppel;
+}
+
+TNtuple *AliL3Evaluate::EvaluateGEANT()
+{
+  TNtuple *ntuppel = new TNtuple("ntuppel","residuals","resy:ptgen:padrow:zHit:slice");
+  
+  Int_t good_number=173;
+  Int_t row[2] = {0,173};
+      
+  Float_t xyz_cross[3];
+  Float_t xyz_cl[3];
+  
+  for(Int_t slice=fMinSlice; slice<=fMaxSlice; slice++)
+    {
+      Int_t *particle_id = new Int_t[fParticles->GetEntriesFast()];
+      TObjArray *good_particles = DefineGoodTracks(slice,row,good_number,particle_id);
+      
+      if(fMCclusterfile)
+	{
+	  fMCclusterfile->Close();
+	  delete fMCclusterfile;
+	  fMCclusterfile = new TFile("/nfs/david/subatom/alice/data/V3.04/fast/clusters/hg_8k_v0_s1-3_e0_cl.root");
+	  fMCclusterfile->cd();
+	}
+      AliTPCClustersArray arr;
+      arr.Setup(fParam);
+      arr.SetClusterType("AliTPCcluster");
+      Bool_t clusterok = arr.ConnectTree("Segment Tree");
+      if(!clusterok) 
+	LOG(AliL3Log::kError,"AliL3Evaluate::DefineGoodTracks","Cluster Array")
+	  <<"Error loading clusters from rootfile"<<ENDLOG;
+      
+      for(Int_t ci=0; ci<arr.GetTree()->GetEntries(); ci++)  
+	{
+	  Int_t sec,row,sl,lr;
+	  AliSegmentID *s = arr.LoadEntry(ci);
+	  fParam->AdjustSectorRow(s->GetID(),sec,row);
+	  fTransform->Sector2Slice(sl,lr,sec,row);
+	  if(sl != slice) {arr.ClearRow(sec,row); continue;}
+	  //if(lr!=pr) {carray.ClearRow(sec,row); continue;}
+	  AliTPCClustersRow *cRow = arr.GetRow(sec,row);
+	  printf("evaluating slice %d row %d\n",slice,lr);
+	  for(Int_t j=0; j<cRow->GetArray()->GetEntriesFast(); j++)
+	    {
+	      
+	      AliTPCcluster *cluster=(AliTPCcluster*)(*cRow)[j];
+	      xyz_cl[1] = cluster->GetY();
+	      xyz_cl[2] = cluster->GetZ();
+	      Int_t lab=cluster->GetLabel(0);
+	      if(lab<0) continue;
+	      
+	      for(Int_t pa=0; pa<good_particles->GetEntriesFast(); pa++)
+		{
+		  if(particle_id[pa]!=lab) continue;
+		  TParticle *part = (TParticle*)good_particles->UncheckedAt(pa);
+		  GetParticleCrossingPoint(part,slice,lr,xyz_cross);
+		  Double_t yres = xyz_cl[1] - xyz_cross[1];
+		  ntuppel->Fill(yres,part->Pt(),lr,xyz_cl[2],slice);
+		}
+	    }
+	  if(arr.GetRow(sec,row)) 
+	    arr.ClearRow(sec,row);
+	}
+      delete [] particle_id;
+      delete good_particles;
+    }
+  return ntuppel;
+}
+
+Bool_t AliL3Evaluate::GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t padrow,Float_t *xyz)
+{
+  //Calcluate the crossing point between a generated particle and given padrow.
+  
+
+  Double_t kappa = 0.2*0.0029980/part->Pt();
+  
+  Double_t radius = 1/fabs(kappa);
+  if(part->GetPdgCode() > 0) kappa = -kappa;
+  
+  Float_t angl[1] = {part->Phi()};
+  
+  fTransform->Global2LocalAngle(angl,slice);
+  
+  Double_t charge = -1.*kappa;
+  Double_t trackPhi0 = angl[0] + charge*0.5*Pi/fabs(charge);
+  
+  Double_t x0=0;
+  Double_t y0=0;
+  Double_t xc = x0 - radius * cos(trackPhi0);
+  Double_t yc = y0 - radius * sin(trackPhi0);
+  
+  //printf("radius %f xc %f yc %f\n",radius,xc,yc);
+
+  Double_t xHit = fTransform->Row2X(padrow);
+  xyz[0] = xHit;
+  Double_t aa = (xHit - xc)*(xHit - xc);
+  Double_t r2 = radius*radius;
+  if(aa > r2)
+    return false;
+
+  Double_t aa2 = sqrt(r2 - aa);
+  Double_t y1 = yc + aa2;
+  Double_t y2 = yc - aa2;
+  xyz[1] = y1;
+  if(fabs(y2) < fabs(y1)) xyz[1] = y2;
+
+  return true;
 }
 

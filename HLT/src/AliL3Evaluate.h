@@ -18,6 +18,7 @@ class AliTPCParam;
 class TTree;
 class AliSimDigits;
 class TObjArray;
+class TParticle;
 
 class AliL3Evaluate : public TObject {
 
@@ -90,8 +91,10 @@ class AliL3Evaluate : public TObject {
   void SetMinPoints(Int_t f) {fMinPointsOnTrack = f;}
   
   TNtuple *CalculateResiduals();
-  
-  
+  TNtuple *EvaluatePoints();
+  Bool_t GetParticleCrossingPoint(TParticle *part,Int_t slice,Int_t padrow,Float_t *xyz);
+  TNtuple *EvaluateGEANT();
+
   ClassDef(AliL3Evaluate,1) 
 };
 
