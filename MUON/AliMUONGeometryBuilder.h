@@ -31,6 +31,12 @@ class AliMUONGeometryBuilder : public TObject
     void  CreateGeometry();
     void  CreateMaterials();
     void  InitGeometry();
+    void  WriteTransformations();
+    void  WriteSVMaps(Bool_t rebuild = true);
+
+    // Alignement
+    virtual Bool_t  GetAlign() const;
+    virtual void    SetAlign(Bool_t align);
  
     void  AddBuilder(AliMUONVGeometryBuilder* geomBuilder);
    
@@ -46,12 +52,19 @@ class AliMUONGeometryBuilder : public TObject
 
     // data members
     AliMUON*        fMUON;                // MUON detector
+    Bool_t          fAlign;               // option to read transformations 
+                                          // from a file
     TGeoCombiTrans* fGlobalTransformation;// global transformation 
                                           // applied to the whole geometry 
-    TObjArray*      fGeometryBuilders;    // List of Geometry Builders
+    TObjArray*      fGeometryBuilders;    // list of Geometry Builders
 
   ClassDef(AliMUONGeometryBuilder,2)  // MUON Detector class Version 1
 };
+
+// inline functions
+
+inline Bool_t  AliMUONGeometryBuilder::GetAlign() const
+{ return fAlign; }
 
 #endif //ALI_MUON_GEOMETRY_BUILDER_H
 

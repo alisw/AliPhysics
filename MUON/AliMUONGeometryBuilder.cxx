@@ -33,6 +33,7 @@
 #include "AliMUONVGeometryBuilder.h"	
 #include "AliMUONChamberGeometry.h"	
 #include "AliMUONGeometryEnvelope.h"	
+#include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryConstituent.h"	
 #include "AliMagF.h"
 #include "AliRun.h"
@@ -43,6 +44,7 @@ ClassImp(AliMUONGeometryBuilder)
 AliMUONGeometryBuilder::AliMUONGeometryBuilder() 
   : TObject(),
     fMUON(0),
+    fAlign(false),
     fGlobalTransformation(0),
     fGeometryBuilders(0)
 {
@@ -53,6 +55,7 @@ AliMUONGeometryBuilder::AliMUONGeometryBuilder()
 AliMUONGeometryBuilder::AliMUONGeometryBuilder(AliMUON* muon)
   : TObject(),
     fMUON(muon),
+    fAlign(false),
     fGlobalTransformation(0), 
     fGeometryBuilders(0)
 {
@@ -197,8 +200,14 @@ void AliMUONGeometryBuilder::CreateGeometry()
 
     // Create geometry with each builder
     if (builder) {
-      builder->CreateGeometry();
-      builder->SetTransformations();
+      if (fAlign) {
+        builder->ReadTransformations();
+        builder->CreateGeometry();
+      }
+      else {  
+        builder->CreateGeometry();
+        builder->SetTransformations();
+      } 
     }
   }
 
@@ -210,7 +219,7 @@ void AliMUONGeometryBuilder::CreateGeometry()
           // Skip chambers with not defined geometry  
 	  
     // Loop over envelopes
-    const TObjArray* kEnvelopes = geometry->GetEnvelopes();
+    const TObjArray* kEnvelopes = geometry->GetEnvelopeStore()->GetEnvelopes();
     for (Int_t k=0; k<kEnvelopes->GetEntriesFast(); k++) {
 
       // Get envelope
@@ -436,7 +445,45 @@ void AliMUONGeometryBuilder::InitGeometry()
       = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
 
     // Set sesitive volumes with each builder
-    if (builder) builder->SetSensitiveVolumes();
+    builder->SetSensitiveVolumes();
+
+    // Read sensitive volume map from a file
+    builder->ReadSVMap();
+    if (!fAlign)  builder->FillTransformations();
+  }
+}
+
+//______________________________________________________________________________
+void AliMUONGeometryBuilder::WriteTransformations()
+{
+ // Writes transformations into files per builder
+ // ---
+
+  for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
+
+    // Get the builder
+    AliMUONVGeometryBuilder* builder
+      = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
+
+    // Write transformations
+    builder->WriteTransformations();
+  }
+}
+
+//______________________________________________________________________________
+void AliMUONGeometryBuilder::WriteSVMaps(Bool_t rebuild)
+{
+ // Writes sensitive volume maps into files per builder
+ // ---
+
+  for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
+
+    // Get the builder
+    AliMUONVGeometryBuilder* builder
+      = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
+
+    // Write transformations      
+    builder->WriteSVMap(rebuild);
   }
 }
 
@@ -448,4 +495,24 @@ void AliMUONGeometryBuilder::AddBuilder(AliMUONVGeometryBuilder* geomBuilder)
 
   fGeometryBuilders->Add(geomBuilder);
 }
+
+//_____________________________________________________________________________
+void AliMUONGeometryBuilder::SetAlign(Bool_t align)
+{ 
+// Sets the option for alignement
+// ---
+
+  fAlign = align; 
+
+  for (Int_t j=0; j<AliMUONConstants::NCh(); j++) {
+
+    AliMUONChamberGeometry* geometry = fMUON->Chamber(j).GetGeometry();
+
+    if (!geometry) continue;
+          // Skip chambers with not defined geometry  
+	  
+    geometry->SetAlign(align);	  
+  }	  
+}
+
 
