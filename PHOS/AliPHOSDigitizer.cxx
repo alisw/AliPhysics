@@ -606,7 +606,8 @@ void AliPHOSDigitizer::SetSplitFile(const TString splitFileName) const
   TDirectory * cwd = gDirectory ;
   TFile * splitFile = gAlice->InitTreeFile("D",splitFileName.Data());
   splitFile->cd() ; 
-  gAlice->Write();
+  if ( !splitFile->Get("gAlice") ) 
+    gAlice->Write();
   
   TTree *treeE  = gAlice->TreeE();
   if (!treeE) {
@@ -615,19 +616,24 @@ void AliPHOSDigitizer::SetSplitFile(const TString splitFileName) const
   }      
   
   // copy TreeE
-  AliHeader *header = new AliHeader();
-  treeE->SetBranchAddress("Header", &header);
-  treeE->SetBranchStatus("*",1);
-  TTree *treeENew =  treeE->CloneTree();
-  treeENew->Write();
-  
-  // copy AliceGeom
-  TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
-  if (!AliceGeom) {
-    cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
-    abort() ;
+  if ( !splitFile->Get("TreeE") ) {
+    AliHeader *header = new AliHeader();
+    treeE->SetBranchAddress("Header", &header);
+    treeE->SetBranchStatus("*",1);
+    TTree *treeENew =  treeE->CloneTree();
+    treeENew->Write();
   }
-  AliceGeom->Write();
+
+  // copy AliceGeom
+  if ( !splitFile->Get("AliceGeom") ) {
+    TGeometry *AliceGeom = static_cast<TGeometry*>(cwd->Get("AliceGeom"));
+    if (!AliceGeom) {
+      cerr << "ERROR: AliPHOSDigitizer::SetSplitFile -> AliceGeom was not found in the input file "<<endl;
+      abort() ;
+    }
+    AliceGeom->Write();
+  }
+  
   cwd->cd() ; 
   gAlice->MakeTree("D",splitFile);
   cout << "INFO: AliPHOSDigitizer::SetSPlitMode -> Digits will be stored in " << splitFileName.Data() << endl ; 
