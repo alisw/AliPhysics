@@ -11,12 +11,14 @@
 #ifndef TG4_PHYSICS_MANAGER_H
 #define TG4_PHYSICS_MANAGER_H
 
-#include "TG4Globals.h"
+#include "TG4Verbose.h"
+#include "TG4PhysicsMessenger.h"
 #include "TG4ProcessControlMap.h"
 #include "TG4ProcessMCMap.h"
 #include "TG4NameMap.h"
 #include "TG4G3Cut.h"
 #include "TG4G3Control.h"
+#include "TG4Globals.h"
 
 #include <Rtypes.h>
 #include "AliMCProcess.h"
@@ -32,7 +34,7 @@ class G4ParticleDefinition;
 class G4VProcess;
 class TG4ModularPhysicsList;
 
-class TG4PhysicsManager
+class TG4PhysicsManager : public TG4Verbose
 {
   public:
     TG4PhysicsManager(TG4ModularPhysicsList* physicsList);
@@ -100,6 +102,7 @@ class TG4PhysicsManager
     static TG4PhysicsManager*  fgInstance; //this instance
     
     // data members
+    TG4PhysicsMessenger    fMessenger;        //messenger
     TG4ParticlesManager*   fParticlesManager; //particles manager
     TG4G3PhysicsManager*   fG3PhysicsManager; //G3 physics manager
     TG4ModularPhysicsList* fPhysicsList; //physics list
