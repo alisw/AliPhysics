@@ -1553,7 +1553,6 @@ Int_t AliTPCtrackerMI::FollowToNextFast(AliTPCseed& t, Int_t nr) {
   //
   //
   if (TMath::Abs(y)>ymax){
-    return 0;
     
     if (y > ymax) {
       t.fRelativeSector= (t.fRelativeSector+1) % fN;

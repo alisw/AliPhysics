@@ -256,10 +256,10 @@ Int_t    AliHelix::GetRPHIintersections(AliHelix &h, Double_t phase[2][2], Doubl
     x0[0] = (d+c1[2]-c2[2])*c2[0]/(2*d)+ fHelix[5];
     y0[0] = (d+c1[2]-c2[2])*c2[1]/(2*d)+ fHelix[0];
     return 0;
-    phase[0][0] = GetPhase(x0[0],y0[0]);
-    phase[0][1] = h.GetPhase(x0[0],y0[0]);
-    ri[0] = x0[0]*x0[0]+y0[0]*y0[0];
-    return 1;
+//      phase[0][0] = GetPhase(x0[0],y0[0]);
+//      phase[0][1] = h.GetPhase(x0[0],y0[0]);
+//      ri[0] = x0[0]*x0[0]+y0[0]*y0[0];
+//      return 1;
   }
   if ( (d+c2[2])<c1[2]){
     if ( (d+c2[2])+cut<c1[2]) return 0;
