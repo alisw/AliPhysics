@@ -485,7 +485,7 @@ Int_t AliITSClusterFinderSDD::SearchPeak( Float_t *spect, Int_t xdim, Int_t zdim
 }
 
 
-void AliITSClusterFinderSDD::PeakFunc( Int_t xdim, Int_t zdim, Float_t *par, Float_t *spe, Float_t *Integral=0 ) 
+void AliITSClusterFinderSDD::PeakFunc( Int_t xdim, Int_t zdim, Float_t *par, Float_t *spe, Float_t *Integral) 
 {
   Int_t Electronics = fResponse->Electronics(); // 1 = PASCAL, 2 = OLA
   Int_t param_peak = 5;
