@@ -13,7 +13,7 @@ Int_t AliTOFtest()
   // Initialize the test setup 
 
   //gAlice->Init("$(ALICE_ROOT)/TOF/AliTOFconfig.C");
-  gAlice->Init("AliTOFconfig.C");
+  gAlice->Init("$ALICE_ROOT/TOF/AliTOFconfig.C");
 
   // Run one central Hijing event and create the hits (time required: 
   // some minuts)
