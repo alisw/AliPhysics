@@ -10,9 +10,9 @@ OPT           = -O -g
 
 CXXOPTS       = $(OPT) -Wall -W -pipe -fsigned-char -fno-common -fweak-coalesced -fmessage-length=0
 COPT	      = $(OPT) -Wall -W -fno-common -fweak-coalesced
-FOPT	      = $(OPT) -fno-second-underscore -fweak-coalesced
+FOPT	      = $(OPT) -fno-second-underscore 
 CXXFLAGS      = $(CXXOPTS) -I/sw/include
-CFLAGS	      = -Wall -pipe
+CFLAGS	      = -Wall -pipe -I/sw/include
 
 # rootcint flags
 CINTFLAGS     = 
@@ -27,17 +27,19 @@ CLIBFOPT      =
 # Common Fortran compilation flags
 FFLAGS = $(CLIBFOPT)  $(CLIBDEFS) $(FOPT)
 		
-LD            = export MACOSX_DEPLOYMENT_TARGET=10.2 ; g++
+LD            = export MACOSX_DEPLOYMENT_TARGET=10.3 ; \
+		unset LD_PREBIND ; \
+		g++
 LDFLAGS       = $(OPT) 
 
 SHLD	     := $(LD)
-SOFLAGS      := -bundle -flat_namespace -undefined suppress
+SOFLAGS      := -bundle -flat_namespace -undefined dynamic_lookup
 #SHLIB        := -lg2c
 SHLIB        :=
 SOEXT 	     := so
 
 DYLD	     := $(LD)
-DYFLAGS       = -dynamiclib -flat_namespace -undefined suppress -single_module
+DYFLAGS       = -dynamiclib -flat_namespace -undefined dynamic_lookup -single_module
 DYLIB        :=
 DYEXT        := dylib
 
