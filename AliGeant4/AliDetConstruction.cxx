@@ -215,51 +215,6 @@ void AliDetConstruction::CheckDetDependencies()
       AliGlobals::Warning(text);
     }  
   }
-/*  
-  if (verTRD > -1 && verTOF > -1) {
-    // both TRD and TOF 
-    if (verTOF == 2 || verTOF == 3 || verTOF == 5 || verTOF == 6) {
-      G4String text = "AliDetConstruction::CheckDetDependencies: \n";
-      text = text + "    Switched TOF and TRD require different FRAME versions."; 
-      AliGlobals::Exception(text);
-    }  
-    if (verFRAME != 0) {
-      detSwitchFRAME->SwitchOn(0);
-      G4String text = "AliDetConstruction::CheckDetDependencies: \n";
-      text = text + "    Switched TOF and TRD require FRAME v0.\n"; 
-      text = text + "    The det switch for FRAME has been changed."; 
-      AliGlobals::Warning(text);
-    }  
-  }
-  else if (verTRD > -1 && verTOF == -1)   {
-    // only TRD
-    if (verFRAME != 0) {
-      detSwitchFRAME->SwitchOn(0);
-      G4String text = "AliDetConstruction::CheckDetDependencies: \n";
-      text = text + "    Switched TRD requires FRAME v0.\n"; 
-      text = text + "    The det switch for FRAME has been changed."; 
-      AliGlobals::Warning(text);
-    }          
-  }  
-  else if (verTRD == -1 && verTOF > -1)   {
-    // only TOF
-    if ((verTOF == 0 || verTOF == 1 || verTOF == 4) && (verFRAME !=0)) {
-      detSwitchFRAME->SwitchOn(0);
-      G4String text = "AliDetConstruction::CheckDetDependencies: \n";
-      text = text + "    Switched TOF requires FRAME v0.\n"; 
-      text = text + "    The det switch for FRAME has been changed."; 
-      AliGlobals::Warning(text);
-    }
-    if ((verTOF == 2 || verTOF == 3 || verTOF == 5 || verTOF == 6) &&
-        (verFRAME != 1)) {
-      detSwitchFRAME->SwitchOn(1);
-      G4String text = "AliDetConstruction::CheckDetDependencies: \n";
-      text = text + "    Switched TOF requires FRAME v1.\n"; 
-      text = text + "    The det switch for FRAME has been changed."; 
-      AliGlobals::Warning(text);
-    }
-  }
-*/    
 }  
 
 // public methods
