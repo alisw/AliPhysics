@@ -67,6 +67,8 @@ class AliStack : public TVirtualMCStack
     TParticle*  Particle(Int_t id);
     Int_t       GetPrimary(Int_t id);
     TTree*      TreeK() const {return fTreeK;}
+    TParticle*  ParticleFromTreeK(Int_t id) const;
+    Int_t       TreeKEntry(Int_t id) const;
     
   protected:
     // methods

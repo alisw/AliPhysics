@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.24  2002/10/22 15:02:15  alibrary
+Introducing Riostream.h
+
 Revision 1.23  2002/10/14 14:57:32  hristov
 Merging the VirtualMC branch to the main development branch (HEAD)
 
@@ -660,11 +663,7 @@ TParticle* AliStack::Particle(Int_t i)
     Int_t nentries = fParticles->GetEntriesFast();
     // algorithmic way of getting entry index
     // (primary particles are filled after secondaries)
-    Int_t entry;
-    if (i<fNprimary)
-	entry = i+fNtrack-fNprimary;
-    else 
-	entry = i-fNprimary;
+    Int_t entry = TreeKEntry(i);
     // check whether algorithmic way and 
     // and the fParticleFileMap[i] give the same;
     // give the fatal error if not
@@ -680,6 +679,33 @@ TParticle* AliStack::Particle(Int_t i)
   }
   //PH  return (TParticle *) (*fParticleMap)[i];
   return (TParticle *) fParticleMap->At(i);
+}
+
+//_____________________________________________________________________________
+TParticle* AliStack::ParticleFromTreeK(Int_t id) const
+{
+// 
+// return pointer to TParticle with label id
+//
+  Int_t entry;
+  if ((entry = TreeKEntry(id)) < 0) return 0;
+  if (fTreeK->GetEntry(entry)<=0) return 0;
+  return fParticleBuffer;
+}
+
+//_____________________________________________________________________________
+Int_t AliStack::TreeKEntry(Int_t id) const 
+{
+//
+// return entry number in the TreeK for particle with label id
+// return negative number if label>fNtrack
+//
+  Int_t entry;
+  if (id<fNprimary)
+    entry = id+fNtrack-fNprimary;
+  else 
+    entry = id-fNprimary;
+  return entry;
 }
 
 //_____________________________________________________________________________
