@@ -216,7 +216,7 @@ void AliPMDDiscriminator::EmpDiscrimination(TObjArray *pmdcontin, TObjArray *pmd
 	  clusdata[2] = adcpre[jjsort];
 	  clusdata[3] = ncellpre[jjsort];
 	  clusdata[4] = radpre[jjsort];
-	  clusdata[5] = (Float_t) clupidpre[jjsort];
+	  //PH	  clusdata[5] = (Float_t) clupidpre[jjsort];
 
 	  // Temporary the cluster PID is set to 1 if the
 	  // adc > 3MIP units which will be changed later on.
