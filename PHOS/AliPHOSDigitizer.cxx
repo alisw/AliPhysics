@@ -108,8 +108,8 @@ AliPHOSDigitizer::AliPHOSDigitizer(const char *headerFile,const char * name)
 AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * ard):AliDigitizer(ard)
 {
   // ctor
-  SetName("");     //Will call init in the digitizing
-  SetTitle("aliroot") ;
+  InitParameters() ; 
+  
 }
 
 //____________________________________________________________________________ 
@@ -148,12 +148,11 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   // contribution to new SDigits only.
 
   AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ; 
-  TClonesArray * digits = gime->Digits(GetName()) ; 
+ TClonesArray * digits = gime->Digits(GetName()) ; 
 
   digits->Clear() ;
 
   const AliPHOSGeometry *geom = gime->PHOSGeometry() ; 
-
   //Making digits with noise, first EMC
   Int_t nEMC = geom->GetNModules()*geom->GetNPhi()*geom->GetNZ();
   
@@ -167,7 +166,7 @@ void AliPHOSDigitizer::Digitize(const Int_t event)
   digits->Expand(nCPV) ;
 
   // get first the sdigitizer from the tasks list (must have same name as the digitizer)
-  const AliPHOSSDigitizer * sDigitizer = gime->SDigitizer(GetName()); 
+  const AliPHOSSDigitizer * sDigitizer = new AliPHOSSDigitizer() ; //gime->SDigitizer(GetName()); 
   if ( !sDigitizer) {
     cerr << "ERROR: AliPHOSDigitizer::Digitize -> SDigitizer with name " << GetName() << " not found " << endl ; 
     abort() ; 
@@ -380,7 +379,6 @@ void AliPHOSDigitizer::Exec(Option_t *option)
 
   if(strcmp(GetName(), "") == 0 )   
     Init() ;
-  
   if (strstr(option,"print")) {
     Print("");
     return ; 
@@ -440,15 +438,17 @@ void AliPHOSDigitizer::Exec(Option_t *option)
   for(ievent = 0; ievent < nevents; ievent++){
   
     if(fManager){
+
       Int_t input ;
       for(input = 0 ; input < fManager->GetNinputs(); input ++){
   	TTree * treeS = fManager->GetInputTreeS(input) ;
 	if(!treeS){
-	  cerr << "AliPHOSDigitizer -> No Input " << endl ;
+	  cerr << "AliPHOSDigitizer::Exec -> No Input " << endl ;
 	  return ;
 	}
 	gime->ReadTreeS(treeS,input) ;
       }
+
     }
     else
       gime->Event(ievent,"S") ;
@@ -505,6 +505,7 @@ Bool_t AliPHOSDigitizer::Init()
   } 
   
   const AliPHOSGeometry * geom = gime->PHOSGeometry() ;
+
   fEmcCrystals = geom->GetNModules() *  geom->GetNCristalsInModule() ;
   
   // Post Digits to the white board
