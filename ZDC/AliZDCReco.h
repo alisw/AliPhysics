@@ -19,18 +19,22 @@ public:
   virtual ~AliZDCReco() {}
 
   // Getters 
-  virtual Float_t GetZNenergy()      {return fZNenergy;}
-  virtual Float_t GetZPenergy()      {return fZPenergy;}
-  virtual Float_t GetZDCenergy()     {return fZDCenergy;}
-  virtual Float_t GetZEMenergy()     {return fZEMenergy;}
-  virtual Int_t   GetNDetSpecN()     {return fNDetSpecN;}
-  virtual Int_t   GetNDetSpecP()     {return fNDetSpecP;}
-  virtual Int_t   GetNTrueSpecN()    {return fNTrueSpecN;}
-  virtual Int_t   GetNTrueSpecP()    {return fNTrueSpecP;}
-  virtual Int_t   GetNTrueSpec()     {return fNTrueSpec;}
-  virtual Int_t   GetNPart()         {return fNPart;}
-  virtual Float_t GetImpPar()        {return fImpPar;}
+  virtual Float_t GetZNenergy()    const  {return fZNenergy;}
+  virtual Float_t GetZPenergy()    const  {return fZPenergy;}
+  virtual Float_t GetZDCenergy()   const  {return fZDCenergy;}
+  virtual Float_t GetZEMenergy()   const  {return fZEMenergy;}
+  virtual Int_t   GetNDetSpecN()   const  {return fNDetSpecN;}
+  virtual Int_t   GetNDetSpecP()   const  {return fNDetSpecP;}
+  virtual Int_t   GetNTrueSpecN()  const  {return fNTrueSpecN;}
+  virtual Int_t   GetNTrueSpecP()  const  {return fNTrueSpecP;}
+  virtual Int_t   GetNTrueSpec()   const  {return fNTrueSpec;}
+  virtual Int_t   GetNPart()       const  {return fNPart;}
+  virtual Float_t GetImpPar()      const  {return fImpPar;}
 
+  // Print method
+  virtual void Print(Option_t *) const;
+
+private:
   // Data members
   Float_t fZNenergy;	// Energy detected in neutron ZDC
   Float_t fZPenergy;	// Energy detected in proton ZDC
@@ -44,14 +48,6 @@ public:
   Int_t	  fNPart;	// Estimate of the number of participants for 1 nucleus
   Float_t fImpPar;	// Estimate of the impact parameter
 
-  // Print method
-  virtual void Print(Option_t *) const {
-     printf("	---   Reconstruction -> EZN = %f TeV, EZP = %f TeV, EZDC = %f TeV,"
-            " EZEM = %f GeV \n 		NDetSpecN = %d, NDetSpecP = %d, Nspecn = %d,"
-	    " Nspecp = %d, Npart = %d, b = %f fm.\n ", 
-	    fZNenergy,fZPenergy,fZDCenergy,fZEMenergy,fNDetSpecN,fNDetSpecP,
-	    fNTrueSpecN,fNTrueSpecP,fNPart,fImpPar);
-  }
 
   ClassDef(AliZDCReco,1)  // RecPoints for the Zero Degree Calorimeters
 };

@@ -17,6 +17,9 @@
 
 ////////////////////////////////////////////////
 //  RecPoints classes for set ZDC             //
+//  This class reconstructs the space         //
+//  points from digits                        //
+//  for the ZDC calorimeter                   //
 ////////////////////////////////////////////////
 
 
@@ -28,6 +31,9 @@ ClassImp(AliZDCReco)
 AliZDCReco::AliZDCReco(Float_t ezn, Float_t ezp, Float_t ezdc, Float_t ezem,
      Int_t detspn, Int_t detspp, Int_t trspn, Int_t trspp, Int_t trsp, Int_t part, Float_t b)
 { 
+  //
+  // Standard constructor
+  //
   fZNenergy  = ezn;
   fZPenergy  = ezp;
   fZDCenergy = ezdc;
@@ -40,4 +46,16 @@ AliZDCReco::AliZDCReco(Float_t ezn, Float_t ezp, Float_t ezdc, Float_t ezem,
   fNPart     = part;
   fImpPar    = b;
   
+}
+
+//______________________________________________________________________________
+void AliZDCReco::Print(Option_t *) const {
+  //
+  // Printing Reconstruction Parameters
+  //
+  printf("	---   Reconstruction -> EZN = %f TeV, EZP = %f TeV, EZDC = %f TeV,"
+	 " EZEM = %f GeV \n 		NDetSpecN = %d, NDetSpecP = %d, Nspecn = %d,"
+	 " Nspecp = %d, Npart = %d, b = %f fm.\n ", 
+	 fZNenergy,fZPenergy,fZDCenergy,fZEMenergy,fNDetSpecN,fNDetSpecP,
+	 fNTrueSpecN,fNTrueSpecP,fNPart,fImpPar);
 }
