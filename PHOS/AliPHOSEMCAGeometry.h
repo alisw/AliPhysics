@@ -39,6 +39,7 @@ public:
   }
 
   Float_t * GetStripHalfSize()   {return fStripHalfSize ;}
+  Float_t   GetStripWallWidthOut() {return fStripWallWidthOut ;}
   Float_t * GetAirCellHalfSize() {return fAirCellHalfSize ;}
   Float_t * GetWrappedHalfSize() {return fWrappedHalfSize ;}
   Float_t   GetAirGapLed() const {return fAirGapLed ;}

@@ -104,6 +104,8 @@ public:
   Float_t  GetIPtoUpperCPVsurface(void)         const { return fIPtoUpperCPVsurface ; }
   Float_t  GetOuterBoxSize(Int_t index)         const { return 2.*fPHOSParams[index]; }
   Float_t  GetCrystalSize(Int_t index)          const { return fGeometryEMCA->GetCrystalSize(index) ;  }
+  Float_t  GetCellStep(void)                    const { return 2*(fGeometryEMCA->GetAirCellHalfSize()[0] + 
+							          fGeometryEMCA->GetStripWallWidthOut()) ;}
 
   // Return EMCA geometry parameters
 

@@ -431,9 +431,9 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
   Int_t column     = relid[3] ; //offset along z axis
 
   
-  if ( relid[1] == 0 ) { // its a PbW04 crystal 
-    x = - ( GetNPhi()/2. - row    + 0.5 ) *  GetCrystalSize(0) ; // position of Xtal with respect
-    z =   ( GetNZ()  /2. - column + 0.5 ) *  GetCrystalSize(2) ; // of center of PHOS module  
+  if ( relid[1] == 0 ) { // its a PbW04 crystal
+    x = - ( GetNPhi()/2. - row    + 0.5 ) *  GetCellStep() ; // position of Xtal with respect
+    z =   ( GetNZ()  /2. - column + 0.5 ) *  GetCellStep() ; // of center of PHOS module  
   }  
   else  {    
     x = - ( GetNumberOfCPVPadsPhi()/2. - row    - 0.5 ) * GetPadSizePhi()  ; // position of pad  with respect
