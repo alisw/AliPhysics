@@ -52,6 +52,7 @@ AliPHOS:: AliPHOS() : AliDetector()
   fName="PHOS";
   fQATask = 0;
   fTreeQA = 0;
+  fDebug = kFALSE ; 
 }
 
 //____________________________________________________________________________
@@ -61,6 +62,7 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
   
   fQATask = 0;
   fTreeQA = 0;
+  fDebug = kFALSE ; 
 }
 
 //____________________________________________________________________________
@@ -397,8 +399,11 @@ void AliPHOS::FillESD(AliESD* esd) const
 
   AliPHOSGetter *gime = AliPHOSGetter::Instance( (fLoader->GetRunLoader()->GetFileName()).Data() ) ;
   Int_t eventNumber = gime->EventNumber();
-  rec->SetEventRange(eventNumber, eventNumber) ; // do all the events
-  rec->ExecuteTask("deb") ; 
+  rec->SetEventRange(eventNumber, eventNumber) ; // do current event; the loop over events is done by AliReconstruction::Run()
+  if ( Debug() ) 
+    rec->ExecuteTask("deb all") ;
+  else 
+    rec->ExecuteTask("") ;
 
   // Creates AliESDtrack from AliPHOSRecParticles 
   gime->Event(eventNumber, "P") ; 
@@ -406,14 +411,16 @@ void AliPHOS::FillESD(AliESD* esd) const
   Int_t nOfRecParticles = recParticles->GetEntries();
   for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
     AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
-    rp->Print();
+    if (Debug()) 
+      rp->Print();
     AliESDtrack * et = new AliESDtrack() ; 
     // fills the ESDtrack
     Double_t xyz[3];
     for (Int_t ixyz=0; ixyz<3; ixyz++) xyz[ixyz] = rp->GetPos()[ixyz];
     et->SetPHOSposition(xyz) ; 
     et->SetPHOSsignal  (rp->Energy()) ; 
-    et->SetPHOSpid     (rp->GetPID()) ; 
+    et->SetPHOSpid     (rp->GetPID()) ;
+    et->SetStatus(0x10000) ; 
     // add the track to the esd object
     esd->AddTrack(et);
     delete et;
@@ -483,7 +490,11 @@ void AliPHOS::Reconstruct() const
       task->SetActive(kFALSE) ; 
   }
   rec->SetEventRange(0, -1) ; // do all the events
-  rec->ExecuteTask("deb all") ; 
+  if ( Debug() ) 
+    rec->ExecuteTask("deb all") ; 
+  else 
+    rec->ExecuteTask("") ; 
+  
 }
 
 //____________________________________________________________________________

@@ -50,6 +50,9 @@ class AliPHOS : public AliDetector {
   virtual AliLoader* MakeLoader(const char* topfoldername);
   AliPHOSQAChecker * QAChecker() {return fQATask;}  
   virtual void Reconstruct() const; 
+  void    SetDebug() { fDebug = kTRUE ; }
+  void    ResetDebug() { fDebug = kFALSE ; }
+  Bool_t  Debug() const { return fDebug ; } 
   virtual void    SetTreeAddress();   
   virtual TTree * TreeQA() const {return fTreeQA; } 
   virtual const TString Version() const {return TString(" ") ; } 
@@ -61,7 +64,7 @@ protected:
   
   AliPHOSQAChecker * fQATask ; //! PHOS checkers container
   TTree * fTreeQA ;            // the QA tree that contains the alarms
-
+  Bool_t fDebug ;              //! to control debugging  
   ClassDef(AliPHOS,2) // Photon Spectrometer Detector (base class)
 
 } ;
