@@ -41,7 +41,7 @@ ClassImp( AliPHOSTrackSegmentMaker)
 //____________________________________________________________________________
  AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() // ctor
 {
-  fR0 = 4. ;   
+
 }
 
 
