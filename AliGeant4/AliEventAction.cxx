@@ -3,6 +3,10 @@
 //
 // See the class description in the header file.
 
+#include <G4Timer.hh>
+   // in order to avoid the odd dependency for the
+   // times system function this include must be the first
+
 #include "AliEventAction.h"
 #include "AliEventActionMessenger.h"
 #include "AliRun.h"
@@ -26,6 +30,7 @@ AliEventAction::AliEventAction()
 {
 //
   fMessenger = new AliEventActionMessenger(this);
+  fTimer = new G4Timer();
 }
 
 AliEventAction::AliEventAction(const AliEventAction& right) {
@@ -36,6 +41,7 @@ AliEventAction::AliEventAction(const AliEventAction& right) {
 AliEventAction::~AliEventAction() {
 //
   delete fMessenger;
+  delete fTimer;
 }
 
 // operators
@@ -111,6 +117,8 @@ void AliEventAction::BeginOfEventAction(const G4Event* event)
 
   if (fVerboseLevel>0)
     G4cout << ">>> Event " << event->GetEventID() << G4endl;
+
+  fTimer->Start();
 }
 
 void AliEventAction::EndOfEventAction(const G4Event* event)
@@ -126,8 +134,11 @@ void AliEventAction::EndOfEventAction(const G4Event* event)
 
   if (fVerboseLevel>0) {
     G4int nofPrimaryTracks = trackingAction->GetNofPrimaryTracks();
+    G4int nofTracks = trackingAction->GetNofTracks();
     G4cout  << "    " << nofPrimaryTracks << 
                " primary tracks processed." << G4endl;
+    G4cout  << "    " << nofTracks << 
+               " all tracks processed." << G4endl;
   }	       
 
   // display event
@@ -141,7 +152,8 @@ void AliEventAction::EndOfEventAction(const G4Event* event)
   gAlice->GetHeader()->SetNtrack(trackingAction->GetNofSavedTracks());
 
   gAlice->FinishEvent();    
-}
 
-
-
+  // print time
+  fTimer->Stop();
+  G4cout << "Time of this event = " << *fTimer << G4endl;
+ }
