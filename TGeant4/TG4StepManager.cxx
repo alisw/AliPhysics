@@ -5,6 +5,7 @@
 
 #include "TG4StepManager.h"
 #include "TG4GeometryServices.h"
+#include "TG4SDServices.h"
 #include "TG4ParticlesManager.h"
 #include "TG4PhysicsManager.h"
 #include "TG4VSensitiveDetector.h"
@@ -27,6 +28,7 @@
 
 TG4StepManager* TG4StepManager::fgInstance = 0;
 
+//_____________________________________________________________________________
 TG4StepManager::TG4StepManager() 
   : fTrack(0),
     fStep(0),
@@ -42,18 +44,21 @@ TG4StepManager::TG4StepManager()
   fgInstance = this;  
 }
 
+//_____________________________________________________________________________
 TG4StepManager::TG4StepManager(const TG4StepManager& right) {
 // 
   TG4Globals::Exception(
     "Attempt to copy TG4StepManager singleton.");
 }
 
+//_____________________________________________________________________________
 TG4StepManager::~TG4StepManager() {
 //
 }
 
 // operators
 
+//_____________________________________________________________________________
 TG4StepManager& TG4StepManager::operator=(const TG4StepManager& right)
 {
   // check assignement to self
@@ -67,6 +72,7 @@ TG4StepManager& TG4StepManager::operator=(const TG4StepManager& right)
           
 // private methods
 
+//_____________________________________________________________________________
 void TG4StepManager::CheckTrack() const
 {
 // Gives exception in case the track is not defined.
@@ -77,6 +83,7 @@ void TG4StepManager::CheckTrack() const
 }     
 
 
+//_____________________________________________________________________________
 void TG4StepManager::CheckStep(const G4String& method) const
 {
 // Gives exception in case the step is not defined.
@@ -90,6 +97,7 @@ void TG4StepManager::CheckStep(const G4String& method) const
 }     
 
 
+//_____________________________________________________________________________
 void TG4StepManager::CheckSteppingManager() const
 {
 // Gives exception in case the step is not defined.
@@ -100,6 +108,7 @@ void TG4StepManager::CheckSteppingManager() const
 }     
 
 
+//_____________________________________________________________________________
 void TG4StepManager::SetTLorentzVector(G4ThreeVector xyz, G4double t, 
                                        TLorentzVector& lv) const				       
 {
@@ -112,6 +121,7 @@ void TG4StepManager::SetTLorentzVector(G4ThreeVector xyz, G4double t,
    lv[3] = t;
 }     				       
 
+//_____________________________________________________________________________
 G4VPhysicalVolume* TG4StepManager::GetCurrentOffPhysicalVolume(G4int off) const 
 {
 // Returns the physical volume of the off-th mother's
@@ -141,6 +151,7 @@ G4VPhysicalVolume* TG4StepManager::GetCurrentOffPhysicalVolume(G4int off) const
 
 // public methods
 
+//_____________________________________________________________________________
 void TG4StepManager::StopTrack()
 {
 // Stops the current track and skips to the next.
@@ -164,6 +175,7 @@ void TG4StepManager::StopTrack()
   // fTrack->SetTrackStatus(fKillTrackAndSecondaries);
 }
 
+//_____________________________________________________________________________
 void TG4StepManager::StopEvent()
 {
 // Aborts the current event processing.
@@ -179,6 +191,7 @@ void TG4StepManager::StopEvent()
   G4UImanager::GetUIpointer()->ApplyCommand("/alStacking/clearStack");
 }
 
+//_____________________________________________________________________________
 void TG4StepManager::SetMaxStep(Float_t step)
 {
 // Maximum step allowed in the current logical volume.
@@ -204,6 +217,7 @@ void TG4StepManager::SetMaxStep(Float_t step)
 
 }
 
+//_____________________________________________________________________________
 void TG4StepManager::SetMaxNStep(Int_t maxNofSteps)
 {
 // Not yet implemented.
@@ -213,6 +227,7 @@ void TG4StepManager::SetMaxNStep(Int_t maxNofSteps)
     "TG4StepManager::SetMaxNStep(..) is not yet implemented.");
 }
 
+//_____________________________________________________________________________
 void TG4StepManager::SetUserDecay(Int_t pdg)
 {
 // Not yet implemented.
@@ -222,6 +237,7 @@ void TG4StepManager::SetUserDecay(Int_t pdg)
     "TG4StepManager::SetUserDecay(..) is not yet implemented.");
 }
 
+//_____________________________________________________________________________
 G4VPhysicalVolume* TG4StepManager::GetCurrentPhysicalVolume() const 
 {
 // Returns the current physical volume.
@@ -263,6 +279,7 @@ G4VPhysicalVolume* TG4StepManager::GetCurrentPhysicalVolume() const
   return physVolume;
 }     
 
+//_____________________________________________________________________________
 Int_t TG4StepManager::CurrentVolID(Int_t& copyNo) const
 {
 // Returns the current sensitive detector ID
@@ -273,10 +290,11 @@ Int_t TG4StepManager::CurrentVolID(Int_t& copyNo) const
   copyNo = physVolume->GetCopyNo() + 1;
 
   // sensitive detector ID
-  TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
-  return geometryServices->GetVolumeID(physVolume->GetLogicalVolume());
+  TG4SDServices* sdServices = TG4SDServices::Instance();
+  return sdServices->GetVolumeID(physVolume->GetLogicalVolume());
 } 
 
+//_____________________________________________________________________________
 Int_t TG4StepManager::CurrentVolOffID(Int_t off, Int_t&  copyNo) const
 { 
 // Returns the off-th mother's of the current volume
@@ -291,8 +309,8 @@ Int_t TG4StepManager::CurrentVolOffID(Int_t off, Int_t&  copyNo) const
     copyNo = mother->GetCopyNo() + 1;
 
     // sensitive detector ID
-    TG4GeometryServices* geometryServices = TG4GeometryServices::Instance();
-    return geometryServices->GetVolumeID(mother->GetLogicalVolume());
+    TG4SDServices* sdServices = TG4SDServices::Instance();
+    return sdServices->GetVolumeID(mother->GetLogicalVolume());
   }
   else {
     copyNo = 0;
@@ -300,6 +318,7 @@ Int_t TG4StepManager::CurrentVolOffID(Int_t off, Int_t&  copyNo) const
   }  
 }
 
+//_____________________________________________________________________________
 const char* TG4StepManager::CurrentVolName() const
 {
 // Returns the current physical volume name.
@@ -308,6 +327,7 @@ const char* TG4StepManager::CurrentVolName() const
   return GetCurrentPhysicalVolume()->GetName();
 }
 
+//_____________________________________________________________________________
 const char* TG4StepManager::CurrentVolOffName(Int_t off) const
 { 
 // Returns the off-th mother's physical volume name.
@@ -323,6 +343,7 @@ const char* TG4StepManager::CurrentVolOffName(Int_t off) const
     return 0;
 }
 
+//_____________________________________________________________________________
 Int_t TG4StepManager::CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens, 
                           Float_t &radl, Float_t &absl) const
 {
@@ -359,6 +380,7 @@ Int_t TG4StepManager::CurrentMaterial(Float_t &a, Float_t &z, Float_t &dens,
   }
 }
 
+//_____________________________________________________________________________
 void TG4StepManager::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag) 
 { 
 // Transforms a position from the world reference frame
@@ -414,6 +436,7 @@ void TG4StepManager::Gmtod(Float_t* xm, Float_t* xd, Int_t iflag)
   xd[2] = theLocalPoint.z();
 } 
  
+//_____________________________________________________________________________
 void TG4StepManager::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag) 
 { 
 // Transforms a position from the current volume reference frame
@@ -470,6 +493,7 @@ void TG4StepManager::Gdtom(Float_t* xd, Float_t* xm, Int_t iflag)
   xm[2] = theGlobalPoint.z();
 } 
  
+//_____________________________________________________________________________
 Float_t TG4StepManager::MaxStep() const
 {   
 // Returns maximum step allowed in the current logical volume
@@ -498,6 +522,7 @@ Float_t TG4StepManager::MaxStep() const
   }  
 }
 
+//_____________________________________________________________________________
 Int_t TG4StepManager::GetMaxNStep() const
 {   
 // Not yet implemented.
@@ -508,6 +533,7 @@ Int_t TG4StepManager::GetMaxNStep() const
   return 0; 
 }
 
+//_____________________________________________________________________________
 void TG4StepManager::TrackPosition(TLorentzVector& position) const
 { 
 // Current particle position (in the world reference frame)
@@ -531,6 +557,7 @@ void TG4StepManager::TrackPosition(TLorentzVector& position) const
   SetTLorentzVector(positionVector, time, position);
 }
 
+//_____________________________________________________________________________
 Int_t TG4StepManager::GetMedium() const
 {   
 // Returns the second index of the current material (corresponding to
@@ -546,6 +573,7 @@ Int_t TG4StepManager::GetMedium() const
   return geometryServices->GetMediumId(curMaterial);
 }
 
+//_____________________________________________________________________________
 void TG4StepManager::TrackMomentum(TLorentzVector& momentum) const
 {  
 // Current particle "momentum" (px, py, pz, Etot).
@@ -564,6 +592,7 @@ void TG4StepManager::TrackMomentum(TLorentzVector& momentum) const
   SetTLorentzVector(momentumVector, energy, momentum);
 }
 
+//_____________________________________________________________________________
 void TG4StepManager::TrackVertexPosition(TLorentzVector& position) const
 { 
 // The vertex particle position (in the world reference frame)
@@ -586,6 +615,7 @@ void TG4StepManager::TrackVertexPosition(TLorentzVector& position) const
   SetTLorentzVector(positionVector, time, position);
 }
 
+//_____________________________________________________________________________
 void TG4StepManager::TrackVertexMomentum(TLorentzVector& momentum) const
 {  
 // The vertex particle "momentum" (px, py, pz, Ekin)
@@ -605,6 +635,7 @@ void TG4StepManager::TrackVertexMomentum(TLorentzVector& momentum) const
   SetTLorentzVector(momentumVector, energy, momentum);
 }
 
+//_____________________________________________________________________________
 Float_t TG4StepManager::TrackStep() const
 {   
 // Returns the current step length.
@@ -626,6 +657,7 @@ Float_t TG4StepManager::TrackStep() const
   return length;
 }
 
+//_____________________________________________________________________________
 Float_t TG4StepManager::TrackLength() const
 {
 // Returns the length of the current track from its origin.
@@ -640,6 +672,7 @@ Float_t TG4StepManager::TrackLength() const
   return length;
 }
 
+//_____________________________________________________________________________
 Float_t TG4StepManager::TrackTime() const
 {
 // Returns the local time since the current track is created.
@@ -657,6 +690,7 @@ Float_t TG4StepManager::TrackTime() const
   return time;
 }
 
+//_____________________________________________________________________________
 Float_t TG4StepManager::Edep() const
 {   
 // Returns total energy deposit in this step.
@@ -678,6 +712,7 @@ Float_t TG4StepManager::Edep() const
   return energyDeposit;
 }
 
+//_____________________________________________________________________________
 Int_t TG4StepManager::TrackPid() const
 {   
 // Returns the current particle PDG encoding.
@@ -699,6 +734,7 @@ Int_t TG4StepManager::TrackPid() const
   return pdgEncoding;
 }
 
+//_____________________________________________________________________________
 Float_t TG4StepManager::TrackCharge() const
 {   
 // Returns the current particle charge.
@@ -715,6 +751,7 @@ Float_t TG4StepManager::TrackCharge() const
   return charge;
 }
 
+//_____________________________________________________________________________
 Float_t TG4StepManager::TrackMass() const
 {   
 // Returns current particle rest mass.
@@ -731,6 +768,7 @@ Float_t TG4StepManager::TrackMass() const
   return mass;
 }
 
+//_____________________________________________________________________________
 Float_t TG4StepManager::Etot() const
 {   
 // Returns total energy of the current particle.
@@ -746,6 +784,7 @@ Float_t TG4StepManager::Etot() const
   return energy;
 }
 
+//_____________________________________________________________________________
 Bool_t TG4StepManager::IsTrackInside() const
 {   
 // Returns true if particle does not cross geometrical boundary
@@ -760,6 +799,7 @@ Bool_t TG4StepManager::IsTrackInside() const
   return false;    
 }
 
+//_____________________________________________________________________________
 Bool_t TG4StepManager::IsTrackEntering() const
 {   
 // Returns true if particle cross a geometrical boundary
@@ -774,6 +814,7 @@ Bool_t TG4StepManager::IsTrackEntering() const
   return false;  
 }
 
+//_____________________________________________________________________________
 Bool_t TG4StepManager::IsTrackExiting() const
 {   
 // Returns true if particle cross a geometrical boundary.
@@ -792,6 +833,7 @@ Bool_t TG4StepManager::IsTrackExiting() const
   return false;  
 }
 
+//_____________________________________________________________________________
 Bool_t TG4StepManager::IsTrackOut() const
 {   
 // Returns true if particle cross the world boundary
@@ -813,6 +855,7 @@ Bool_t TG4StepManager::IsTrackOut() const
     return false;
 }
 
+//_____________________________________________________________________________
 Bool_t TG4StepManager::IsTrackStop() const
 {   
 // Returns true if particle has stopped 
@@ -849,6 +892,7 @@ Bool_t TG4StepManager::IsTrackStop() const
     return false; 
 }
 
+//_____________________________________________________________________________
 Bool_t TG4StepManager::IsTrackDisappeared() const
 { 
 // Returns true if particle has disappeared 
@@ -873,6 +917,7 @@ Bool_t TG4StepManager::IsTrackDisappeared() const
     return false;
 }
 
+//_____________________________________________________________________________
 Bool_t TG4StepManager::IsTrackAlive() const
 {   
 // Returns true if particle continues tracking.
@@ -890,6 +935,7 @@ Bool_t TG4StepManager::IsTrackAlive() const
     return false; 
 }
 
+//_____________________________________________________________________________
 Bool_t TG4StepManager::IsNewTrack() const
 {
 // Returns true when track performs the first step.
@@ -901,6 +947,7 @@ Bool_t TG4StepManager::IsNewTrack() const
     return false;
 }
 
+//_____________________________________________________________________________
 Int_t TG4StepManager::NSecondaries() const
 {
 // Returns the number of secondary particles generated 
@@ -919,6 +966,7 @@ Int_t TG4StepManager::NSecondaries() const
   return nofSecondaries;
 }
 
+//_____________________________________________________________________________
 void TG4StepManager::GetSecondary(Int_t index, Int_t& particleId, 
                           TLorentzVector& position, TLorentzVector& momentum)
 {
@@ -973,6 +1021,7 @@ void TG4StepManager::GetSecondary(Int_t index, Int_t& particleId,
   }
 }
 
+//_____________________________________________________________________________
 AliMCProcess TG4StepManager::ProdProcess(Int_t isec) const
 {
 // The process that has produced the secondary particles specified 
@@ -1025,7 +1074,7 @@ AliMCProcess TG4StepManager::ProdProcess(Int_t isec) const
   }
 }
 
-
+//_____________________________________________________________________________
 Int_t TG4StepManager::StepProcesses(TArrayI &proc) const
 {
 // Fills the array of processes that were active in the current step
