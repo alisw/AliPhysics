@@ -25,30 +25,48 @@
 //*-- Author: Yves Schutz (SUBATECH)
 
 // --- ROOT system ---
-
+ 
 #include "TBRIK.h"
 #include "TNode.h"
 #include "TParticle.h"
+#include "TTree.h"
+#include "TGeometry.h"
+#include "TFile.h"
 
 // --- Standard library ---
 
 #include <stdio.h>
 
 // --- AliRoot header files ---
-
+#include "AliPHOSFastRecParticle.h"
+#include "AliPHOSGeometry.h"
 #include "AliPHOSvFast.h"
+#include "AliPHOSGetter.h"
 #include "AliRun.h"
 #include "AliConst.h"
+#include "AliMC.h"
 
 ClassImp(AliPHOSvFast)
 
 //____________________________________________________________________________
-AliPHOSvFast::AliPHOSvFast()
+AliPHOSvFast::AliPHOSvFast() : AliPHOS()
 {
-  // ctor
+  // default ctor : initialize data member
+   fBigBoxX = 0. ;                      
+   fBigBoxY = 0. ;                      
+   fBigBoxZ = 0. ;                       
+   fFastRecParticles = 0 ;        
+   fNRecParticles = 0 ;                
+   fRan = 0 ;                            
+   fResPara1 = 0. ;                       
+   fResPara2 = 0. ;                        
+   fResPara3 = 0. ;                      
+   fPosParaA0 = 0. ;                      
+   fPosParaA1 = 0. ;
+   fPosParaB0 = 0. ;     
+   fPosParaB1 = 0. ;    
+   fPosParaB2 = 0. ;    
 
-  fFastRecParticles = 0 ; 
-  fNRecParticles = 0 ; 
 }
 
 //____________________________________________________________________________
@@ -57,31 +75,27 @@ AliPHOSvFast::AliPHOSvFast(const char *name, const char *title):
 {
   // ctor
 
-  // gets an instance of the geometry parameters class  
-   
-  fGeom = AliPHOSGeometry::GetInstance(title, "") ; 
-
-  if (GetGeometry()->IsInitialized() ) 
-    cout << "AliPHOSvFast : PHOS geometry intialized for " << GetGeometry()->GetName() << endl ;
-  else
-    cout << "AliPHOSvFast : PHOS geometry initialization failed !" << endl ;   
   
-  SetBigBox(0, GetGeometry()->GetOuterBoxSize(0) ) ;
-  SetBigBox(1, GetGeometry()->GetOuterBoxSize(1) + GetGeometry()->GetCPVBoxSize(1) ) ; 
-  SetBigBox(2, GetGeometry()->GetOuterBoxSize(0) ); 
+  // create the geometry parameters object  
+  // and post it to a folder (Post retrieves the correct geometry)
+  AliPHOSGetter::GetInstance(gDirectory->GetName(), 0)->PostGeometry() ;    
+    
+    SetBigBox(0, GetGeometry()->GetOuterBoxSize(0) ) ;
+    SetBigBox(1, GetGeometry()->GetOuterBoxSize(3) + GetGeometry()->GetCPVBoxSize(1) ) ; 
+    SetBigBox(2, GetGeometry()->GetOuterBoxSize(2) ); 
+    
+    fNRecParticles = 0 ; 
+    fFastRecParticles = new AliPHOSFastRecParticle::FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
 
-  fNRecParticles = 0 ; 
-  fFastRecParticles = new AliPHOSFastRecParticle::FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
-
-  fResPara1 = 0.030 ;    // GeV
-  fResPara2 = 0.00003 ; 
-  fResPara3 = 0.00001 ; 
-
-  fPosParaA0 = 2.87 ;    // mm
-  fPosParaA1 = -0.0975 ;  
-  fPosParaB0 = 0.257 ;   
-  fPosParaB1 = 0.137 ; 
-  fPosParaB2 = 0.00619 ; 
+    fResPara1 = 0.030 ;    // GeV
+    fResPara2 = 0.00003 ; 
+    fResPara3 = 0.00001 ; 
+    
+    fPosParaA0 = 2.87 ;    // mm
+    fPosParaA1 = -0.0975 ;  
+    fPosParaB0 = 0.257 ;   
+    fPosParaB1 = 0.137 ; 
+    fPosParaB2 = 0.00619 ; 
 }
 
 //____________________________________________________________________________
@@ -227,7 +241,7 @@ void AliPHOSvFast::Init(void)
 }
 
 //___________________________________________________________________________
-Float_t AliPHOSvFast::GetBigBox(Int_t index)
+Float_t AliPHOSvFast::GetBigBox(Int_t index) const
 {
   // Get the X, Y or Z dimension of the box describing a PHOS module
   
@@ -256,7 +270,7 @@ void AliPHOSvFast::MakeBranch(Option_t* opt, const char *file)
   
   char branchname[10];
   sprintf(branchname,"%s",GetName());
-  char *cd = strstr(opt,"R");
+  const char *cd = strstr(opt,"R");
   
   if (fFastRecParticles && gAlice->TreeR() && cd) {
     MakeBranchInTree(gAlice->TreeR(), 
@@ -344,59 +358,56 @@ Int_t AliPHOSvFast::MakeType(AliPHOSFastRecParticle & rp )
   else
     test = rp.GetPdgCode() ; 
 
+  cout << " SHOULD NOT BE USED until values of probabilities are properly set " << endl ;
+  assert(1==0) ;    // NB: ALL VALUES SHOLD BE CHECKED !!!!
   switch (test) { 
 
-  case 22:    // it's a photon
+  case 22:    // it's a photon              // NB: ALL VALUES SHOLD BE CHECKED !!!!
     ran = fRan.Rndm() ; 
-    if ( ran <= 0.5 )  // 50 % 
-      rv =  AliPHOSFastRecParticle::kGAMMA ; 
-    else {
-      ran = fRan.Rndm() ; 
-      if( ran <= 0.9498 )
-	rv =  AliPHOSFastRecParticle::kNEUTRALEM ; 
-      else
-	rv =  AliPHOSFastRecParticle::kNEUTRALHA ; 
-    }     
+    if( ran <= 0.9498 )
+      rv =  AliPHOSFastRecParticle::kNEUTRALHAFAST ; 
+    else
+      rv =  AliPHOSFastRecParticle::kNEUTRALEMFAST ;     
     break ; 
 
   case 2112:  // it's a neutron
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9998 )
-      rv =  AliPHOSFastRecParticle::kNEUTRALHA ; 
+      rv =  AliPHOSFastRecParticle::kNEUTRALHASLOW ; 
     else 
-      rv = AliPHOSFastRecParticle::kNEUTRALEM ; 
+      rv = AliPHOSFastRecParticle::kNEUTRALEMSLOW ; 
     break ; 
-
+    
   case -2112: // it's a anti-neutron
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9984 )
-      rv =  AliPHOSFastRecParticle::kNEUTRALHA ; 
+      rv =  AliPHOSFastRecParticle::kNEUTRALHASLOW ; 
     else 
-      rv =  AliPHOSFastRecParticle::kNEUTRALEM ; 
+      rv =  AliPHOSFastRecParticle::kNEUTRALEMSLOW ; 
     break ; 
     
   case 11:    // it's a electron
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9996 )
-      rv =  AliPHOSFastRecParticle::kELECTRON ; 
+      rv =  AliPHOSFastRecParticle::kCHARGEDEMFAST ; 
     else 
-      rv =  AliPHOSFastRecParticle::kCHARGEDHA ; 
+      rv =  AliPHOSFastRecParticle::kCHARGEDHAFAST ; 
     break; 
 
   case -11:   // it's a positon
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9996 )
-      rv =  AliPHOSFastRecParticle::kELECTRON ; 
+      rv =  AliPHOSFastRecParticle::kCHARGEDEMFAST ; 
     else 
-      rv =  AliPHOSFastRecParticle::kCHARGEDHA ; 
+      rv =  AliPHOSFastRecParticle::kCHARGEDHAFAST ; 
     break; 
 
   case -1:    // it's a charged
     ran = fRan.Rndm() ; 
     if ( ran <= 0.9996 )
-      rv =  AliPHOSFastRecParticle::kCHARGEDHA ; 
+      rv =  AliPHOSFastRecParticle::kCHARGEDHAFAST ; 
     else 
-      rv =  AliPHOSFastRecParticle::kGAMMA ; 
+      rv =  AliPHOSFastRecParticle::kNEUTRALHAFAST ; 
 
     break ; 
   }
@@ -471,30 +482,40 @@ Double_t AliPHOSvFast::SigmaP(Double_t energy, Int_t incidence)
 void AliPHOSvFast::StepManager(void)
 {
   // Only verifies if the particle reaches PHOS and stops the tracking 
-  
+
   Int_t primary =  gAlice->GetPrimary( gAlice->CurrentTrack() ); 
+
   TLorentzVector lv ; 
   gMC->TrackPosition(lv) ;
   TVector3 pos = lv.Vect() ; 
   Int_t modid  ; 
   gMC->CurrentVolID(modid);
   
-  // Makes a reconstructed particle from the primary particle
+  Float_t energy = gMC->Etot() ; //Total energy of current track
 
-  TClonesArray * particlelist = gAlice->Particles() ;
-  TParticle * part = (TParticle *)particlelist->At(primary) ;  
+  //Calculating mass of current particle
+  TDatabasePDG * pdg = TDatabasePDG::Instance() ;
+  TParticlePDG * partPDG = pdg->GetParticle(gMC->TrackPid()) ;
+  Float_t mass = partPDG->Mass() ;
 
-  AliPHOSFastRecParticle rp(*part) ;
-  rp.SetPrimary(primary) ; 
+  if(energy > mass){
+    pos.SetMag(TMath::Sqrt(energy*energy-mass*mass)) ;
+    TLorentzVector pTrack(pos, energy) ;  
 
-  // Adds the response of PHOS to the particle
+    TParticle * part = new TParticle(gMC->TrackPid(), 0,-1,-1,-1,-1, pTrack, lv)  ;
+        
+    AliPHOSFastRecParticle rp(*part) ;
+    rp.SetPrimary(primary) ; 
 
-  MakeRecParticle(modid, pos, rp) ;
+    // Adds the response of PHOS to the particle
+    MakeRecParticle(modid, pos, rp) ;
+    
+    // add the `track' particle to the FastRecParticles list
   
-  // add the primary particle to the FastRecParticles list
-  
-  AddRecParticle(rp) ;
+    AddRecParticle(rp) ;
 
+    part->Delete() ;
+  }
   // stop the track as soon PHOS is reached
   
   gMC->StopTrack() ; 
