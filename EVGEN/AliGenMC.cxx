@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2002/05/30 14:58:29  morsch
+Add pointer to AliGeometry to handle geometrical acceptance. (G. MArtinez)
+
 Revision 1.8  2002/04/26 10:42:35  morsch
 Case kNoDecayHeavy added. (N. Carrer)
 
@@ -124,6 +127,7 @@ void AliGenMC::Init()
 	fChildSelect[0]=kPiPlus;
 	fChildSelect[1]=kKPlus;
 	break;
+    case kPhiKK:
     case kOmega:	
     case kAll:
     case kNoDecay:

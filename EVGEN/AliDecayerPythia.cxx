@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2002/04/26 10:32:59  morsch
+Option kNoDecayHeavy added.
+
 Revision 1.10  2002/02/22 17:28:05  morsch
 ReadDecayTable() and WriteDecayTable() methods added.
 
@@ -148,7 +151,7 @@ void AliDecayerPythia::ForceDecay()
 {
 // Force a particle decay mode
     Decay_t decay=fDecay;
-    
+    fPythia->SetMSTJ(21,2);
     if (decay == kNoDecayHeavy) return;
 
 //
@@ -244,11 +247,16 @@ void AliDecayerPythia::ForceDecay()
     case kHadronicD:
 	ForceHadronicD();
 	break;
+    case kPhiKK:
+	ForceParticleDecay(333,321,2); // Phi->K+K-
+	break;
     case kOmega:
 	ForceOmega();
     case kAll:
 	break;
     case kNoDecay:
+	fPythia->SetMSTJ(21,0);
+	break;
     case kNoDecayHeavy:
 	break;
     }
