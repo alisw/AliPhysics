@@ -36,8 +36,8 @@ protected:
   Int_t   fMedSensZN;         // Sensitive medium for ZN
   Int_t   fMedSensZEM;        // Sensitive medium for EM ZDC
   Int_t   fMedSensGR;         // Other sensitive medium
-//  Int_t   fMedSensPI;         // Beam pipe and magnet coils
-//  Int_t   fMedSensTDI;        // TDI Cu shielding 
+  Int_t   fMedSensPI;         // Beam pipe and magnet coils
+  Int_t   fMedSensTDI;        // TDI Cu shielding 
   
   // Parameters for light tables
   Int_t   fNalfan;	      // Number of Alfa (neutrons)
@@ -64,7 +64,7 @@ protected:
   Float_t fZEMLength; // ZEM length
   
   // Parameters for tracking studies
-//  Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected;
+  Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected;
   
    ClassDef(AliZDCv2,1)  // Zero Degree Calorimeter version 1
 }; 
