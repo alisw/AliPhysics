@@ -96,6 +96,6 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry()
   fAirFilledBoxSize[0] =  fTextolitBoxSize[0] - 2 * fTextolitBoxThickness[0] ; 
   fAirFilledBoxSize[1] =  fTextolitBoxSize[1] - fSecondUpperPlateThickness ; 
   fAirFilledBoxSize[2] =  fTextolitBoxSize[2] - 2 * fTextolitBoxThickness[2] ; 
-  
+  fRotMatrixArray = 0; 
 }
 //____________________________________________________________________________
