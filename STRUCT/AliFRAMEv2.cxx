@@ -1273,9 +1273,10 @@ void AliFRAMEv2::CreateMaterials()
   Float_t wsteel[4] = { .715,.18,.1,.005 };
 
   AliMixture(65, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
-  AliMaterial(5, "AIR$      ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  AliMedium(65, "Stainless Steel", 65, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMixture(5, "AIR$      ", aAir, zAir, dAir,4, wAir);
+
+  AliMedium(65, "Stainless Steel", 65, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium( 5, "Air", 5, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
 }
 
