@@ -63,6 +63,7 @@ MAKEDEPEND    = $(ROOTSYS)/bin/rmkdepend
 # Root libraries
  
 ROOTLIBS      = $(shell $(ROOTSYS)/bin/root-config --glibs) -lMinuit -lHtml
+ROOTLIBS      := $(filter-out -lNew,$(ROOTLIBS))
 
 # Alice libraries
 

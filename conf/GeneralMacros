@@ -32,7 +32,7 @@ headers:	$(patsubst %,$(ALICE_ROOT)/include/%,$(HEADERS))
 
 $(DICT):
 		@echo "Generating $@"
-		@rootcint -f $@ -c -I$(ALICE_ROOT)/include $^
+		@rootcint -f $@ -c $(filter -I%,$(CXXFLAGS)) $^
  
 depend:
 		@$(MAKEDEPEND) -ftgt_$(ALICE_TARGET)/Make-depend -ptgt_$(ALICE_TARGET)/ -- $(CXXFLAGS) $(DEPINC) -- $^
