@@ -50,7 +50,15 @@ Int_t AliITSHits2Digits()
   Float_t noise = 1.75;
 
   // SDD compression param: 2 fDecrease, 2fTmin, 2fTmax or disable, 2 fTolerance
+  //Float_t fCutAmp = baseline + 2.*noise;
+
+  Float_t maxadc = res1->MaxAdc();    
+  Float_t topValue = res1->MagicValue();
+  Float_t norm = maxadc/topValue;
+
   Float_t fCutAmp = baseline + 2.*noise;
+  fCutAmp *= norm;  
+  
   Int_t cp[8]={0,0,fCutAmp,fCutAmp,0,0,0,0};
 
   AliITSDetType *iDetType=ITS->DetType(1);
