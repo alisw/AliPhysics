@@ -548,10 +548,13 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
     Int_t lbl = seed->GetLabel();
     AliTRDtrack *track = new AliTRDtrack(*seed);
     track->SetSeedLabel(lbl);
+    seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup); //make backup
     fNseeds++;
     Float_t p4 = track->GetC();
     //
     Int_t expectedClr = FollowBackProlongation(*track);
+    /*
+      // only debug purpose
     if (track->GetNumberOfClusters()<expectedClr/3){
       AliTRDtrack *track1 = new AliTRDtrack(*seed);
       track1->SetSeedLabel(lbl);
@@ -562,27 +565,39 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
       delete track1;
       delete track2;
     }
-    if (TMath::Abs(track->GetC()-p4)/TMath::Abs(p4)>0.2) {
+    */
+     if (TMath::Abs(track->GetC()-p4)/TMath::Abs(p4)>0.2) {
       delete track;
       continue; //too big change of curvature - to be checked
     }
+
     Int_t foundClr = track->GetNumberOfClusters();
     if (foundClr >= foundMin) {
-      if(foundClr >= 2) {
-	track->CookdEdx(); 
-	CookLabel(track, 1-fgkLabelFraction);
+      track->CookdEdx(); 
+      CookLabel(track, 1-fgkLabelFraction);
+      if(track->GetChi2()/track->GetNumberOfClusters()<6) {   // sign only gold tracks
 	UseClusters(track);
       }
-      
-      // Propagate to outer reference plane [SR, GSI, 18.02.2003]
-      //      track->PropagateTo(364.8);  why?
-      
-      //seed->UpdateTrackParams(track, AliESDtrack::kTRDout);
-      //found++;
-      if (track->GetNCross()==0) seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
-      else{
-	if (track->GetBackupTrack()) seed->UpdateTrackParams(track->GetBackupTrack(), AliESDtrack::kTRDbackup);
+      Bool_t isGold = kFALSE;
+     
+      if (track->GetChi2()/track->GetNumberOfClusters()<5) {  //full gold track
+	seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
+	isGold = kTRUE;
       }
+      if (!isGold && track->GetNCross()==0&&track->GetChi2()/track->GetNumberOfClusters()<7){ //almost gold track
+	seed->UpdateTrackParams(track, AliESDtrack::kTRDbackup);
+	isGold = kTRUE;
+      }
+      if (!isGold && track->GetBackupTrack()){
+	if (track->GetBackupTrack()->GetNumberOfClusters()>foundMin&&
+	    (track->GetBackupTrack()->GetChi2()/(track->GetBackupTrack()->GetNumberOfClusters()+1))<7){	  
+	  seed->UpdateTrackParams(track->GetBackupTrack(), AliESDtrack::kTRDbackup);
+	  isGold = kTRUE;
+	}
+      }
+    }
+    else{
+      continue;
     }
 
     //Propagation to the TOF (I.Belikov)
@@ -664,12 +679,16 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
   Int_t n = event->GetNumberOfTracks();
   for (Int_t i=0; i<n; i++) {
     AliESDtrack* seed=event->GetTrack(i);
+    AliTRDtrack* seed2 = new AliTRDtrack(*seed);
+    if (seed2->GetX()<270){
+      seed->UpdateTrackParams(seed2, AliESDtrack::kTRDbackup); // backup TPC track - only update
+      continue;
+    }
+
     ULong_t status=seed->GetStatus();
     if ( (status & AliESDtrack::kTRDout ) == 0 ) continue;
     if ( (status & AliESDtrack::kTRDin) != 0 ) continue;
-    nseed++;
-
-    AliTRDtrack* seed2 = new AliTRDtrack(*seed);
+    nseed++;    
     seed2->ResetCovariance(5.); 
     AliTRDtrack *pt = new AliTRDtrack(*seed2,seed2->GetAlpha());
     UInt_t * indexes2 = seed2->GetIndexes();
