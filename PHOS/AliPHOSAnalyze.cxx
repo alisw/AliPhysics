@@ -1083,8 +1083,8 @@ void AliPHOSAnalyze::AnalyzeCPV(Int_t Nevents)
 	  TParticle * primary ;
 	  Double_t distance = minDistance ;
 	  Double_t dX, dZ; 
-	  Double dXmin = 0.; 
-	  Double dZmin = 0. ;
+	  Double_t dXmin = 0.; 
+	  Double_t dZmin = 0. ;
 	  for ( index = 0 ; index < numberofprimaries ; index++){
 	    primary = (TParticle*)primaryList->UncheckedAt(listofprimaries[index]) ;
 	    Int_t moduleNumber ;
