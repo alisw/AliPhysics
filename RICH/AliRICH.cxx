@@ -15,6 +15,9 @@
 
 /*
   $Log$
+  Revision 1.39  2001/01/22 21:40:24  jbarbosa
+  Removing magic numbers
+
   Revision 1.37  2000/12/20 14:07:25  jbarbosa
   Removed dependencies on TGeant3 (thanks to F. Carminati and I. Hrivnacova)
 
@@ -111,6 +114,7 @@
 
 #include "AliRICH.h"
 #include "AliSegmentation.h"
+#include "AliRICHSegmentationV0.h"
 #include "AliRICHHit.h"
 #include "AliRICHCerenkov.h"
 #include "AliRICHPadHit.h"
@@ -368,33 +372,80 @@ void AliRICH::BuildGeometry()
     top=gAlice->GetGeometry()->GetNode("alice");
 
     AliRICH *pRICH = (AliRICH *) gAlice->GetDetector("RICH"); 
-    AliSegmentation*  segmentation;
+    AliRICHSegmentationV0*  segmentation;
     AliRICHChamber*       iChamber;
 
     iChamber = &(pRICH->Chamber(0));
-    segmentation=iChamber->GetSegmentationModel(0);
+    segmentation=(AliRICHSegmentationV0*) iChamber->GetSegmentationModel(0);
     
     new TBRIK("S_RICH","S_RICH","void",71.09999,11.5,73.15);
 
-    //if (segmentation->GetPadPlaneWidth())
-      //new TBRIK("PHOTO","PHOTO","void",segmentation->GetPadPlaneWidth(),.1,segmentation->GetPadPlaneLength());
-    
+    Float_t csi_length = segmentation->Npx()*segmentation->Dpx() + segmentation->DeadZone();
+    Float_t csi_width = segmentation->Npy()*segmentation->Dpy() + 2*segmentation->DeadZone();
+
+    Float_t padplane_width = (csi_width - 2*segmentation->DeadZone())/3;
+    Float_t padplane_length = (csi_length - segmentation->DeadZone())/2;
+
+    //if (segmentation->GetPadPlaneWidth()>0)
+      //{
+	new TBRIK("PHOTO","PHOTO","void", padplane_width/2,.1,padplane_length/2);
+	//printf("\n\n\n\n\n Padplane   w: %f l: %f \n\n\n\n\n", padplane_width/2,padplane_length/2);
+	//printf("\n\n\n\n\n Padplane   w: %f l: %f \n\n\n\n\n", segmentation->GetPadPlaneWidth(), segmentation->GetPadPlaneLength());
+      //}
+
     top->cd();
     Float_t pos1[3]={0,471.8999,165.2599};
     //Chamber(0).SetChamberTransform(pos1[0],pos1[1],pos1[2],
     new TRotMatrix("rot993","rot993",90,0,70.69,90,19.30999,-90);
     node = new TNode("RICH1","RICH1","S_RICH",pos1[0],pos1[1],pos1[2],"rot993");
     node->SetLineColor(kColorRICH);
+    node->cd();
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
     fNodes->Add(node);
 
 
-    top->cd();
-    
+    top->cd(); 
     Float_t pos2[3]={171,470,0};
     //Chamber(1).SetChamberTransform(pos2[0],pos2[1],pos2[2],
     new TRotMatrix("rot994","rot994",90,-20,90,70,0,0);
     node = new TNode("RICH2","RICH2","S_RICH",pos2[0],pos2[1],pos2[2],"rot994");
     node->SetLineColor(kColorRICH);
+    node->cd();
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
     fNodes->Add(node);
 
 
@@ -404,9 +455,25 @@ void AliRICH::BuildGeometry()
     new TRotMatrix("rot995","rot995",90,0,90,90,0,0);
     node = new TNode("RICH3","RICH3","S_RICH",pos3[0],pos3[1],pos3[2],"rot995");
     node->SetLineColor(kColorRICH);
-    //subnode = new TNode("PHOTO1","PHOTO1","PHOTO",pos3[0],pos3[1],pos3[2],"rot995");
-    //subnode->SetLineColor(kGreen);
-    //fNodes->Add(subnode);
+    node->cd();
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
     fNodes->Add(node);
 
     top->cd();
@@ -415,6 +482,25 @@ void AliRICH::BuildGeometry()
     new TRotMatrix("rot996","rot996",90,20,90,110,0,0);  
     node = new TNode("RICH4","RICH4","S_RICH",pos4[0],pos4[1],pos4[2],"rot996");
     node->SetLineColor(kColorRICH);
+    node->cd();
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
     fNodes->Add(node);
 
 
@@ -424,6 +510,25 @@ void AliRICH::BuildGeometry()
     new TRotMatrix("rot997","rot997",90,340,108.1999,70,18.2,70);
     node = new TNode("RICH5","RICH5","S_RICH",pos5[0],pos5[1],pos5[2],"rot997");
     node->SetLineColor(kColorRICH);
+    node->cd();
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
     fNodes->Add(node);
 
 
@@ -433,7 +538,26 @@ void AliRICH::BuildGeometry()
     new TRotMatrix("rot998","rot998",90,0,109.3099,90,19.30999,90);
     node = new TNode("RICH6","RICH6","S_RICH",pos6[0],pos6[1],pos6[2],"rot998");
     node->SetLineColor(kColorRICH);
-    fNodes->Add(node);
+    
+    fNodes->Add(node);node->cd();
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
 
 
     top->cd();
@@ -442,6 +566,25 @@ void AliRICH::BuildGeometry()
     new TRotMatrix("rot999","rot999",90,20,108.1999,110,18.2,110);
     node = new TNode("RICH7","RICH7","S_RICH",pos7[0],pos7[1],pos7[2],"rot999");
     node->SetLineColor(kColorRICH);
+    node->cd();
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,padplane_length/2 + segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",padplane_width + segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",0,0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
+    subnode = new TNode("PHOTO1","PHOTO1","PHOTO",-padplane_width - segmentation->DeadZone(),0,-padplane_length/2 - segmentation->DeadZone()/2,"");
+    subnode->SetLineColor(kGreen);
+    fNodes->Add(subnode);
     fNodes->Add(node); 
     
 }
