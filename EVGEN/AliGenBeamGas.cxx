@@ -15,11 +15,15 @@
 
 /*
 $Log$
+Revision 1.1  2002/05/15 08:59:36  morsch
+First commit.
+
 */
 
-
-// Event generator that using an instance of type AliGenReader
-// reads particles from a file and applies cuts. 
+//
+// Generator to simulate beam gas interactions.
+// At present single interactions are read from an external file. 
+// Several interactions are combined in one event.
 
 
 #include "AliGenBeamGas.h"
@@ -38,6 +42,9 @@ AliGenBeamGas::AliGenBeamGas()
 //  Constructor
 //
     fInteractions = 1;
+    fOsigma[0] =    0.;
+    fOsigma[1] =    0.;
+    fOsigma[2] = 2000.;
 }
 
 AliGenBeamGas::AliGenBeamGas(const AliGenBeamGas & ExtFile)
@@ -77,7 +84,7 @@ void AliGenBeamGas::Generate()
 //
 //  Interaction vertex
 //
-      origin[2] = 4000. * random[0] - 2000.;
+      origin[2] = 2. * fOsigma[2] * random[0] - fOsigma[2];
 //
 //    beam 1 or 2
 //      

@@ -27,7 +27,7 @@ class AliGenBeamGas : public AliGenExtFile
  protected:
     Int_t fInteractions;
     
-    ClassDef(AliGenBeamGas,1) //Generate particles from external file
+    ClassDef(AliGenBeamGas,1) //Generate for beam gas interactions
 	
 };
 #endif
