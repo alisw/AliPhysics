@@ -684,3 +684,35 @@ Float_t AliEMCALRecPoint::ThetaToEta(Float_t arg) const
   //Converts Eta (Radians) to Theta(Radians)
   return (-1 * TMath::Log(TMath::Tan(0.5 * arg)));
 }
+
+//____________________________________________________________________________
+void AliEMCALRecPoint::Print(Option_t *) const
+{
+  // Print the list of digits belonging to the cluster
+  
+  TString message ; 
+  message  = "AliPHOSEmcRecPoint:\n" ;
+  message +=  " digits # = " ; 
+  Info("Print", message.Data()) ; 
+
+  Int_t iDigit;
+  for(iDigit=0; iDigit<fMulDigit; iDigit++)
+    printf(" %d ", fDigitsList[iDigit] ) ;  
+  
+  Info("Print", " Energies = ") ;
+  for(iDigit=0; iDigit<fMulDigit; iDigit++) 
+    printf(" %f ", fEnergyList[iDigit] ) ;
+  printf("\n") ; 
+   Info("Print", " Primaries  ") ;
+  for(iDigit = 0;iDigit < fMulTrack; iDigit++)
+    printf(" %d ", fTracksList[iDigit]) ;
+  printf("\n") ; 	
+  message  = "       Multiplicity    = %d" ;
+  message += "       Cluster Energy  = %f" ; 
+  message += "       Core energy     = %f" ; 
+  message += "       Core radius     = %f" ; 
+  message += "       Number of primaries %d" ; 
+  message += "       Stored at position %d" ; 
+ 
+  Info("Print", message.Data(), fMulDigit, fAmp, fCoreEnergy, fCoreRadius, fMulTrack, GetIndexInList() ) ;  
+}

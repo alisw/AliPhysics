@@ -67,9 +67,7 @@ class AliEMCALRecPoint : public AliRecPoint {
     return kTRUE ; 
   }  
   virtual void    Paint(Option_t * option="");
-  virtual void    Print(Option_t * /*opt = "void"*/) const {
-    // Print prototype
-  } 
+  virtual void    Print(Option_t * ) const ; 
   
   AliEMCALRecPoint & operator = (const AliEMCALRecPoint & )  {
     Fatal("operator =", "not implemented") ;
