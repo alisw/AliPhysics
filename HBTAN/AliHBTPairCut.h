@@ -223,6 +223,19 @@ class AliHBTQLongCMSLCCut: public AliHbtBasePairCut
   ClassDef(AliHBTQLongCMSLCCut,1)
 };
 /******************************************************************/
+
+class AliHBTCluterOverlapCut: public AliHbtBasePairCut
+{
+ public:
+  AliHBTCluterOverlapCut(Double_t min = 0.0, Double_t max = 1e5):
+    AliHbtBasePairCut(min,max,kHbtPairCutPropClOverlap){}
+  virtual ~AliHBTCluterOverlapCut(){}
+
+ protected:
+  virtual Double_t  GetValue(AliHBTPair* pair) const;
+  ClassDef(AliHBTCluterOverlapCut,1)
+};
+/******************************************************************/
   
 class AliHBTAvSeparationCut: public AliHbtBasePairCut
 {
@@ -237,16 +250,27 @@ class AliHBTAvSeparationCut: public AliHbtBasePairCut
 };
 /******************************************************************/
 
-class AliHBTCluterOverlapCut: public AliHbtBasePairCut
+class AliHBTOutSideSameSignCut: public AliHbtBasePairCut
 {
  public:
-  AliHBTCluterOverlapCut(Double_t min = 0.0, Double_t max = 1e5):
-    AliHbtBasePairCut(min,max,kHbtPairCutPropClOverlap){}
-  virtual ~AliHBTCluterOverlapCut(){}
-  
+  AliHBTOutSideSameSignCut(){}
+  virtual ~AliHBTOutSideSameSignCut(){}
+  virtual Bool_t Pass(AliHBTPair *p) const;
  protected:
-  virtual Double_t  GetValue(AliHBTPair* pair) const;
-  ClassDef(AliHBTCluterOverlapCut,1)
+  virtual Double_t  GetValue(AliHBTPair* pair) const {return 0.0;}
+  ClassDef(AliHBTOutSideSameSignCut,1)
+};
+/******************************************************************/
+
+class AliHBTOutSideDiffSignCut: public AliHbtBasePairCut
+{
+ public:
+  AliHBTOutSideDiffSignCut(){}
+  virtual ~AliHBTOutSideDiffSignCut(){}
+  virtual Bool_t Pass(AliHBTPair *p) const;
+ protected:
+  virtual Double_t  GetValue(AliHBTPair* pair) const {return 0.0;}
+  ClassDef(AliHBTOutSideDiffSignCut,1)
 };
 /******************************************************************/
 

@@ -12,6 +12,7 @@
 #include "AliHBTPairCut.h"
 #include "AliHBTPair.h"
 #include "AliHBTParticleCut.h"
+#include "AliHBTTrackPoints.h"
 #include "AliHBTClusterMap.h"
 
 ClassImp(AliHBTPairCut)
@@ -228,7 +229,6 @@ void AliHBTPairCut::SetKStarRange(Double_t min, Double_t max)
   else fCuts[fNCuts++] = new AliHBTKStarCut(min,max);
 }
 /**********************************************************/
-
 void AliHBTPairCut::SetAvSeparationRange(Double_t min, Double_t max)
 {
   //sets avarage separation cut ->Anti-Merging cut
@@ -335,8 +335,22 @@ ClassImp(AliHBTAvSeparationCut)
     
 Double_t AliHBTAvSeparationCut::GetValue(AliHBTPair* pair) const 
 {
-  //checks if avarage distance of two tracks is in given range
-  return pair->GetAvarageDistance();
+  //chacks if avarage distance of two tracks is in given range
+  AliHBTTrackPoints* tpts1 = pair->Particle1()->GetTrackPoints();
+  if ( tpts1 == 0x0)
+   {//it could be simulated pair
+//     Warning("GetValue","Track 1 does not have Track Points. Pair NOT Passed.");
+     return -1.0;
+   }
+
+  AliHBTTrackPoints* tpts2 = pair->Particle2()->GetTrackPoints();
+  if ( tpts2 == 0x0)
+   {
+//     Warning("GetValue","Track 2 does not have Track Points. Pair NOT Passed.");
+     return -1.0;
+   }
+   
+  return tpts1->AvarageDistance(*tpts2);
 }
 /******************************************************************/
 
@@ -366,7 +380,34 @@ Double_t  AliHBTCluterOverlapCut::GetValue(AliHBTPair* pair) const
   return cm1->GetOverlapFactor(*cm2);
 }
 /******************************************************************/
+ClassImp(AliHBTOutSideSameSignCut)
 
+Bool_t AliHBTOutSideSameSignCut::Pass(AliHBTPair *p) const
+{
+  //returns kTRUE if pair DO NOT meet cut criteria
+  
+  if ( p->GetQOutCMSLC()*p->GetQSideCMSLC() > 0 ) 
+   {
+     return kFALSE;//accpeted
+   }
+
+  return kTRUE ;//rejected
+}
+/******************************************************************/
+ClassImp(AliHBTOutSideDiffSignCut)
+
+Bool_t AliHBTOutSideDiffSignCut::Pass(AliHBTPair *p) const
+{
+  //returns kTRUE if pair DO NOT meet cut criteria
+  
+  if ( p->GetQOutCMSLC()*p->GetQSideCMSLC() > 0 ) 
+   {
+     return kTRUE;//rejected
+   }
+  
+  return kFALSE;//accepted
+}
+/******************************************************************/
 ClassImp( AliHBTLogicalOperPairCut )
 
 AliHBTLogicalOperPairCut::AliHBTLogicalOperPairCut():

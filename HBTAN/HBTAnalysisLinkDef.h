@@ -52,6 +52,8 @@
 #pragma link C++ class AliHBTQLongCMSLCCut+;
 #pragma link C++ class AliHBTAvSeparationCut+;
 #pragma link C++ class AliHBTCluterOverlapCut+;
+#pragma link C++ class AliHBTOutSideSameSignCut+;
+#pragma link C++ class AliHBTOutSideDiffSignCut+;
 #pragma link C++ class AliHBTLogicalOperPairCut-;
 #pragma link C++ class AliHBTOrPairCut+;
 #pragma link C++ class AliHBTAndPairCut+;

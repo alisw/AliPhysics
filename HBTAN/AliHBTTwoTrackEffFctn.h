@@ -48,8 +48,8 @@ class AliHBTTwoTrackEffFctnPtThetaPhi: public AliHBTOnePairFctn3D, public AliHBT
  {
   public:
     AliHBTTwoTrackEffFctnPtThetaPhi(Int_t nXbins = 100, Double_t maxXval = 0.15, Double_t minXval = 0.0,
-                                    Int_t nYbins = 100, Double_t maxYval = 0.5, Double_t minYval = 0.0,
-	                Int_t nZbins = 100, Double_t maxZval = 0.5, Double_t minZval = 0.0);
+                                    Int_t nYbins = 100, Double_t maxYval = 0.3, Double_t minYval = 0.0,
+	                Int_t nZbins = 100, Double_t maxZval = 0.3, Double_t minZval = 0.0);
     virtual ~AliHBTTwoTrackEffFctnPtThetaPhi(){}
     TH1* GetResult();
   protected:
