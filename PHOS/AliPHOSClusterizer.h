@@ -25,7 +25,7 @@ public:
 
   AliPHOSClusterizer() ;        // default ctor
   AliPHOSClusterizer(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
-  AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer) { ; }
+  AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer) : TTask(clusterizer) { ; }
   virtual ~AliPHOSClusterizer() ; // dtor
   virtual Float_t GetEmcClusteringThreshold()const {Warning("GetEmcClusteringThreshold", "Not Defined" ) ; return 0. ; }  
   virtual Float_t GetEmcLocalMaxCut()const {Warning("GetEmcLocalMaxCut", "Not Defined" ) ; return 0. ; } 
@@ -34,24 +34,20 @@ public:
   virtual Float_t GetCpvClusteringThreshold()const {Warning("GetCpvClusteringThreshold", "Not Defined" ) ; return 0. ; } 
   virtual Float_t GetCpvLocalMaxCut()const {Warning("GetCpvLocalMaxCut", "Not Defined" ) ; return 0. ; } 
   virtual Float_t GetCpvLogWeight()const {Warning("GetCpvLogWeight", "Not Defined" ) ; return 0. ; } 
-  virtual const char *  GetRecPointsBranch() const {Warning("GetRecPointsBranch", "Not Defined" ) ; return 0 ; }  ;
   virtual const Int_t GetRecPointsInRun()  const {Warning("GetRecPointsInRun", "Not Defined" ) ; return 0 ; } 
-  virtual const char *  GetDigitsBranch() const{Warning("GetDigitsBranch", "Not Defined" ) ; return 0 ; }   ;
 
   virtual void MakeClusters() {Warning("MakeClusters", "Not Defined" ) ; } 
   virtual void Print()const {Warning("Print", "Not Defined" ) ; } 
 
-  virtual void SetEmcClusteringThreshold(Float_t cluth) {Warning("SetEmcClusteringThreshold", "Not Defined" ) ; } 
-  virtual void SetEmcLocalMaxCut(Float_t cut) {Warning("SetEmcLocalMaxCut", "Not Defined" ) ; } 
+  virtual void SetEmcClusteringThreshold(Float_t) = 0;//{Warning("SetEmcClusteringThreshold", "Not Defined" ) ; } 
+  virtual void SetEmcLocalMaxCut(Float_t ) = 0;//cut) {Warning("SetEmcLocalMaxCut", "Not Defined" ) ; } 
     
-  virtual void SetEmcLogWeight(Float_t w) {Warning("SetEmcLogWeight", "Not Defined" ) ; } 
-  virtual void SetEmcTimeGate(Float_t gate) {Warning("SetEmcTimeGate", "Not Defined" ) ; } 
-  virtual void SetCpvClusteringThreshold(Float_t cluth) {Warning("SetCpvClusteringThreshold", "Not Defined" ) ; } 
-  virtual void SetCpvLocalMaxCut(Float_t cut) {Warning("SetCpvLocalMaxCut", "Not Defined" ) ; } 
-  virtual void SetCpvLogWeight(Float_t w) {Warning("SetCpvLogWeight", "Not Defined" ) ;  } 
-  virtual void SetDigitsBranch(const char * title) {Warning("SetDigitsBranch", "Not Defined" ) ; }  
-  virtual void SetRecPointsBranch(const char *title) {Warning("SetRecPointsBranch", "Not Defined" ) ; } 
-  virtual void SetUnfolding(Bool_t toUnfold ){Warning("SetUnfolding", "Not Defined" ) ;}
+  virtual void SetEmcLogWeight(Float_t) = 0;// w) {Warning("SetEmcLogWeight", "Not Defined" ) ; } 
+  virtual void SetEmcTimeGate(Float_t) = 0;// gate) {Warning("SetEmcTimeGate", "Not Defined" ) ; } 
+  virtual void SetCpvClusteringThreshold(Float_t) = 0;// cluth) {Warning("SetCpvClusteringThreshold", "Not Defined" ) ; } 
+  virtual void SetCpvLocalMaxCut(Float_t) = 0;// cut) {Warning("SetCpvLocalMaxCut", "Not Defined" ) ; } 
+  virtual void SetCpvLogWeight(Float_t) = 0;// w) {Warning("SetCpvLogWeight", "Not Defined" ) ;  } 
+  virtual void SetUnfolding(Bool_t) = 0;// toUnfold ){Warning("SetUnfolding", "Not Defined" ) ;}
   void   SetEventFolderName(TString name) { fEventFolderName = name ; }
 
   AliPHOSClusterizer & operator = (const AliPHOSClusterizer & rvalue)  {return *this ;} 

@@ -27,7 +27,7 @@ public:
 
   AliPHOSvImpacts(void) ;
   AliPHOSvImpacts(const char *name, const char *title="") ;
-  AliPHOSvImpacts(const AliPHOSvImpacts & phos) {
+  AliPHOSvImpacts(const AliPHOSvImpacts & phos) : AliPHOSv1(phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;

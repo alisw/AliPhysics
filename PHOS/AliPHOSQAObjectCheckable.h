@@ -27,7 +27,8 @@ public:
     fObject = 0;
   }           // default ctor not to be used
   AliPHOSQAObjectCheckable(const char * name) ;          // ctor
-  AliPHOSQAObjectCheckable(AliPHOSQAObjectCheckable& obj) {assert(0==1);}
+  AliPHOSQAObjectCheckable(AliPHOSQAObjectCheckable& obj) : AliPHOSQAVirtualCheckable(obj)
+  {assert(0==1);}
   virtual ~AliPHOSQAObjectCheckable() ; // dtor
 
   virtual TObject * GetObject() const { return fObject ; }

@@ -25,7 +25,8 @@ public:
 
   AliPHOSQAFloatCheckable(){}           // default ctor not to be used
   AliPHOSQAFloatCheckable(const char * name) ;          // ctor
-  AliPHOSQAFloatCheckable(AliPHOSQAFloatCheckable& obj) {assert(0==1);}
+  AliPHOSQAFloatCheckable(AliPHOSQAFloatCheckable& obj)
+    : AliPHOSQAVirtualCheckable(obj) {assert(0==1);}
   virtual ~AliPHOSQAFloatCheckable() ; // dtor
 
   virtual Float_t GetValue() const { return fValue ; }

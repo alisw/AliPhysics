@@ -30,7 +30,7 @@ public:
 
   AliPHOSCpvRecPoint() ;
   AliPHOSCpvRecPoint(const char * opt) ;
-  AliPHOSCpvRecPoint(const AliPHOSCpvRecPoint & rp) {
+  AliPHOSCpvRecPoint(const AliPHOSCpvRecPoint & rp) : AliPHOSEmcRecPoint(rp) {
     // cpy ctor requested by Coding Convention 
     // but not yet needed
     assert(0==1) ; 
@@ -49,7 +49,7 @@ public:
   Bool_t IsEmc(void) const {return kFALSE ; }        // tells that this is not a EMC
   Bool_t IsCPV(void) const {return kTRUE  ; }        // true if the recpoint is in CPV
   Bool_t IsSortable() const { return kTRUE ; }    // tells that this is a sortable object
-  void   Print(Option_t * opt = "void") ; 
+  void   Print(Option_t *) ; 
 
   AliPHOSCpvRecPoint & operator = (const AliPHOSCpvRecPoint & rvalue)  {
     // assignement operator requested by coding convention but not needed

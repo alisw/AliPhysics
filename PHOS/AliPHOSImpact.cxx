@@ -39,6 +39,7 @@ ClassImp(AliPHOSImpact)
 
 //____________________________________________________________________________
 AliPHOSImpact::AliPHOSImpact(const AliPHOSImpact & hit) 
+  : AliHit(hit)
 {
    // copy ctor
    

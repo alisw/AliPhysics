@@ -24,7 +24,7 @@ class AliPHOSJet : public TObject {
 
 public:
   AliPHOSJet() ;          // ctor
-  AliPHOSJet(const AliPHOSJet & jet) {
+  AliPHOSJet(const AliPHOSJet & jet) : TObject(jet){
     // copy ctor: no implementation yet
     Fatal("cpy ctor", "not implemented") ;
   }

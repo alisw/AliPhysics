@@ -38,7 +38,7 @@
 ClassImp(AliPHOSHit)
   
   //____________________________________________________________________________
-  AliPHOSHit::AliPHOSHit(const AliPHOSHit & hit) 
+  AliPHOSHit::AliPHOSHit(const AliPHOSHit & hit) : AliHit(hit)
 {
   // copy ctor
   fX       = hit.fX ; 

@@ -54,6 +54,7 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc ,
 
 //____________________________________________________________________________
 AliPHOSTrackSegment::AliPHOSTrackSegment( const AliPHOSTrackSegment & ts) 
+  : TObject(ts)
 {
   // Copy ctor
 

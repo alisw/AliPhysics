@@ -147,7 +147,7 @@ void AliPHOSGeometry::SetPHOSAngles()
 { 
   // Calculates the position of the PHOS modules in ALICE global coordinate system
   
-  Double_t const kRADDEG = 180.0 / kPI ;
+  Double_t const kRADDEG = 180.0 / TMath::Pi() ;
   Float_t pphi =  2 * TMath::ATan( GetOuterBoxSize(0)  / ( 2.0 * GetIPtoUpperCPVsurface() ) ) ;
   pphi *= kRADDEG ;
   if (pphi > fAngle){ 
@@ -275,7 +275,7 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TM
     }  
 
   Float_t phi           = GetPHOSAngle( tmpPHOS->GetPHOSMod()) ; 
-  Double_t const kRADDEG = 180.0 / kPI ;
+  Double_t const kRADDEG = 180.0 / TMath::Pi() ;
   Float_t rphi          = phi / kRADDEG ; 
   
   TRotation rot ;
@@ -283,6 +283,7 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TM
   
   TRotation dummy = rot.Invert() ;  // to transform from original frame to rotate frame
   gpos.Transform(rot) ; // rotate the baby 
+  gmat = 0;             // Not implemented yet
 
 }
 
@@ -305,7 +306,7 @@ void AliPHOSGeometry::GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) co
     }  
 
   Float_t phi           = GetPHOSAngle( tmpPHOS->GetPHOSMod()) ; 
-  Double_t const kRADDEG = 180.0 / kPI ;
+  Double_t const kRADDEG = 180.0 / TMath::Pi() ;
   Float_t rphi          = phi / kRADDEG ; 
   
   TRotation rot ;
@@ -408,7 +409,7 @@ void AliPHOSGeometry::RelPosInAlice(const Int_t id, TVector3 & pos ) const
     pos.SetY(y0) ;
     
     Float_t phi           = GetPHOSAngle( phosmodule) ; 
-    Double_t const kRADDEG = 180.0 / kPI ;
+    Double_t const kRADDEG = 180.0 / TMath::Pi() ;
     Float_t rphi          = phi / kRADDEG ; 
     
     TRotation rot ;

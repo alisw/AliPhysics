@@ -26,7 +26,7 @@ class AliPHOSCalibrator: public TTask{
 public:
   AliPHOSCalibrator() ;          // ctor
   AliPHOSCalibrator(const char* run, const char * title = "Default") ;
-  AliPHOSCalibrator(const AliPHOSCalibrator & ctor) {
+  AliPHOSCalibrator(const AliPHOSCalibrator & ctor) : TTask(ctor) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;

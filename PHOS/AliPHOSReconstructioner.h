@@ -32,7 +32,7 @@ public:
 
   AliPHOSReconstructioner() ; //ctor            
   AliPHOSReconstructioner(const char * headreFile, const char * branchName = "Default");
-  AliPHOSReconstructioner(const AliPHOSReconstructioner & rec) {
+  AliPHOSReconstructioner(const AliPHOSReconstructioner & rec) : TTask(rec) {
     // cpy ctor: 
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;

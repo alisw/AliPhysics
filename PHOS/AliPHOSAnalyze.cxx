@@ -115,6 +115,7 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * fileName)
 
 //____________________________________________________________________________
 AliPHOSAnalyze::AliPHOSAnalyze(const AliPHOSAnalyze & ana)
+  : TObject(ana)
 {
   // copy ctor
   ( (AliPHOSAnalyze &)ana ).Copy(*this) ;

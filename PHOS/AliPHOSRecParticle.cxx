@@ -38,6 +38,7 @@ ClassImp(AliPHOSRecParticle)
 
 //____________________________________________________________________________
  AliPHOSRecParticle::AliPHOSRecParticle(const AliPHOSRecParticle & rp)
+   : AliPHOSFastRecParticle(rp)
 {
   // copy ctor
 

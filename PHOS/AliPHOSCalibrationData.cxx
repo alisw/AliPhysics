@@ -59,6 +59,7 @@ ClassImp(AliPHOSCalibrationData)
 }
 //____________________________________________________________________________ 
 AliPHOSCalibrationData::AliPHOSCalibrationData(const AliPHOSCalibrationData & cd)
+  : TObject(cd)
 {
   //copy ctor
   fData = new TArrayF(*cd.fData) ;

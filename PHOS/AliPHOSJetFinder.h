@@ -22,7 +22,7 @@ class AliPHOSJetFinder : public TNamed {
 
 public:
   AliPHOSJetFinder() ;          // ctor
-  AliPHOSJetFinder(const AliPHOSJetFinder & jet) {
+  AliPHOSJetFinder(const AliPHOSJetFinder & jet) : TNamed(jet) {
     // copy ctor: no implementation yet
     Fatal("cpy ctor", "not implemented") ;
   }

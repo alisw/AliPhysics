@@ -149,7 +149,7 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t px, Int_t py)
       clustertext ->Draw("");
     }
     gPad->Update() ; 
-    Print() ;
+    Print("dummy") ;
     delete[] xi ; 
     delete[] zi ; 
    }
@@ -171,7 +171,7 @@ break;
   }
 }
 //____________________________________________________________________________
-void AliPHOSRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits) 
+void AliPHOSRecPoint::EvalAll(Float_t,TClonesArray * digits) 
 {
   //evaluates (if necessary) all RecPoint data members 
 

@@ -56,7 +56,7 @@ class AliPHOSLoader : public AliLoader {
  public:
 
   AliPHOSLoader();
-  AliPHOSLoader(const AliPHOSLoader & obj){}
+  AliPHOSLoader(const AliPHOSLoader & obj) : AliLoader(obj) {}
   AliPHOSLoader(const Char_t *detname,const Char_t *eventfoldername); 
   
   virtual ~AliPHOSLoader() ; 

@@ -33,7 +33,7 @@ class AliPHOSPID : public TTask {
 
   AliPHOSPID() ;          // ctor            
   AliPHOSPID (const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;
-  AliPHOSPID(const AliPHOSPID & pid) {;} 
+  AliPHOSPID(const AliPHOSPID & pid) : TTask(pid) {;} 
   virtual ~AliPHOSPID() ; // dtor
 
   virtual void Exec(Option_t * option) { Warning("Exec", "not defined" ) ; }

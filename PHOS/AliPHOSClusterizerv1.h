@@ -33,7 +33,7 @@ public:
   
   AliPHOSClusterizerv1() ;         
   AliPHOSClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName);
-  AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clu) {
+  AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clu) : AliPHOSClusterizer(clu) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;

@@ -88,7 +88,9 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName, const char * e
 }
 
 //____________________________________________________________________________ 
-AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer & sd) {
+AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer & sd)
+  : TTask(sd)
+{
   //cpy ctor 
 
   fA             = sd.fA ;

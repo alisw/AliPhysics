@@ -111,6 +111,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(const TString alirunFileName, const TString e
 
 //____________________________________________________________________________ 
 AliPHOSDigitizer::AliPHOSDigitizer(const AliPHOSDigitizer & d)
+  : AliDigitizer(d)
 {
   // copyy ctor 
 

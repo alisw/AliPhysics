@@ -70,7 +70,7 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t tim
 }
 
 //____________________________________________________________________________
-AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) 
+AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) : AliDigitNew(digit)
 {
   // copy ctor
 
@@ -132,7 +132,7 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
   
 }
 //____________________________________________________________________________
-void AliPHOSDigit::Print(Option_t *option) const
+void AliPHOSDigit::Print(Option_t *) const
 {
   printf("PHOS digit: Amp=%d, Id=%d, Time=%f, NPrim=%d ",fAmp,fId,fTime,fNprimary);
   for(Int_t index = 0; index <fNprimary; index ++ )

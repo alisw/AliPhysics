@@ -45,6 +45,7 @@ AliPHOSFastRecParticle::AliPHOSFastRecParticle() : TParticle()
 
 //____________________________________________________________________________
  AliPHOSFastRecParticle::AliPHOSFastRecParticle(const AliPHOSFastRecParticle & rp)
+   : TParticle(rp)
 {
   // copy ctor
 

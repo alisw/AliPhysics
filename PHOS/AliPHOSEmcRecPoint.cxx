@@ -845,7 +845,7 @@ void AliPHOSEmcRecPoint::Purify(Float_t threshold){
 
 }
 //____________________________________________________________________________
-void AliPHOSEmcRecPoint::Print(Option_t * option) const
+void AliPHOSEmcRecPoint::Print(Option_t *) const
 {
   // Print the list of digits belonging to the cluster
   

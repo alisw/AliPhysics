@@ -30,7 +30,7 @@ class AliPHOSRecPoint : public AliRecPoint {
 
   AliPHOSRecPoint() ;                   // ctor         
   AliPHOSRecPoint(const char * opt) ;   // ctor 
-  AliPHOSRecPoint(const AliPHOSRecPoint & rp) {
+  AliPHOSRecPoint(const AliPHOSRecPoint & rp) : AliRecPoint(rp) {
     // cpy ctor requested by Coding Convention 
     // but not yet needed
     assert(0==1) ; 
@@ -48,7 +48,7 @@ class AliPHOSRecPoint : public AliRecPoint {
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
   virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
-  virtual void    EvalAll(Float_t logWeight,TClonesArray * digits) ;  
+  virtual void    EvalAll(Float_t ,TClonesArray * digits) ;  
   virtual void    EvalPHOSMod(AliPHOSDigit * digit) ;  
   virtual void    EvalPrimaries(TClonesArray * digits) ;  
   virtual void    GetGlobalPosition(TVector3 & gpos, TMatrix & gmat) const ; // return global position in ALICE
@@ -61,7 +61,7 @@ class AliPHOSRecPoint : public AliRecPoint {
     return kTRUE ; 
   }  
   virtual void    Paint(Option_t * option="");
-  virtual void    Print(Option_t * opt = "void") const {
+  virtual void    Print(Option_t *) const {
     // Print prototype
   } 
 

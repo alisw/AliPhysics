@@ -29,7 +29,7 @@ class AliPHOS : public AliDetector {
 
   AliPHOS() ;
   AliPHOS(const char* name, const char* title="") ;  
-  AliPHOS(const AliPHOS & phos) {
+  AliPHOS(const AliPHOS & phos) : AliDetector(phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;

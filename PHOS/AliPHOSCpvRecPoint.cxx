@@ -340,7 +340,7 @@ void AliPHOSCpvRecPoint::EvalClusterLengths(TClonesArray * digits)
 
 
 //____________________________________________________________________________
-void AliPHOSCpvRecPoint::Print(Option_t * option) 
+void AliPHOSCpvRecPoint::Print(Option_t *) 
 {
   // Print the list of digits belonging to the cluster
   

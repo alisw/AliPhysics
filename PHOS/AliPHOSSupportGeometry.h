@@ -24,11 +24,11 @@ class AliPHOSSupportGeometry : public TObject {
 
 public: 
 
-           AliPHOSSupportGeometry();
-           AliPHOSSupportGeometry(const AliPHOSSupportGeometry & cpv) {
-             // cpy ctor requested by Coding Convention but not yet needed
-             assert(0==1) ;
-           } 
+  AliPHOSSupportGeometry();
+  AliPHOSSupportGeometry(const AliPHOSSupportGeometry & geom) : TObject(geom) {
+    // cpy ctor requested by Coding Convention but not yet needed
+    assert(0==1) ;
+  } 
   virtual ~AliPHOSSupportGeometry(void) {}
 
   AliPHOSSupportGeometry & operator = (const AliPHOSSupportGeometry  & rvalue) {

@@ -32,7 +32,7 @@ public:
 
   AliPHOSTrackSegmentMaker();
   AliPHOSTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName = AliConfig::fgkDefaultEventFolderName) ;                     
-  AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) { ; } 
+  AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) : TTask(tsmaker) { ; } 
   virtual ~ AliPHOSTrackSegmentMaker() ;
 
   virtual void    Exec(Option_t * option){Warning("Exec", "Not Defined" ) ; } 

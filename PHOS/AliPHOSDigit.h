@@ -45,7 +45,7 @@ class AliPHOSDigit : public AliDigitNew {
   Int_t   GetPrimary(Int_t index) const ; 
   Float_t GetTime(void) const {return fTime ;}
   Bool_t  IsSortable() const { return kTRUE ; }
-  void    Print(Option_t *option) const;
+  void    Print(Option_t *) const;
   void    SetAmp(Int_t Amp) { fAmp=Amp ; } 
   void    SetTime(Float_t Time) {fTime = Time ;}
   void    ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging

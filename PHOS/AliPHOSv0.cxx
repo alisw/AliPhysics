@@ -104,7 +104,7 @@ void AliPHOSv0:: BuildGeometryforEMC(void)
   const Int_t kColorPHOS = kRed ;
   const Int_t kColorXTAL = kBlue ;
   
-  Double_t const kRADDEG = 180.0 / kPI ;
+  Double_t const kRADDEG = 180.0 / TMath::Pi() ;
   
   AliPHOSGeometry * geom = GetGeometry() ; 
   AliPHOSEMCAGeometry * emcg = geom->GetEMCAGeometry() ;
@@ -184,7 +184,7 @@ void AliPHOSv0:: BuildGeometryforCPV(void)
   */
   //END_HTML  
 
-  const Double_t kRADDEG         = 180.0 / kPI ;
+  const Double_t kRADDEG         = 180.0 / TMath::Pi() ;
   const Int_t    kColorCPV       = kGreen ;
   const Int_t    kColorFrame     = kYellow ;
   const Int_t    kColorGassiplex = kRed;
@@ -320,7 +320,7 @@ void AliPHOSv0::CreateGeometry()
   // --- Position  PHOS mdules in ALICE setup ---
   
   Int_t idrotm[99] ;
-  Double_t const kRADDEG = 180.0 / kPI ;
+  Double_t const kRADDEG = 180.0 / TMath::Pi() ;
   Float_t * phosParams = geom->GetPHOSParams() ;
 
   Float_t r = geom->GetIPtoOuterCoverDistance() + phosParams[3] - geom->GetCPVBoxSize(1) ;

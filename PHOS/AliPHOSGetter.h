@@ -50,7 +50,7 @@ class AliPHOSGetter : public TObject {
   AliPHOSGetter(){    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
     Fatal("ctor", "AliPHOSGetter is a singleton default ctor not callable") ;
   } 
-  AliPHOSGetter(const AliPHOSGetter & obj) {
+  AliPHOSGetter(const AliPHOSGetter & obj) : TObject(obj) {
     // cpy ctor requested by Coding Convention 
     Fatal("cpy ctor", "not implemented") ;
   } 

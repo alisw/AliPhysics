@@ -23,7 +23,7 @@ class AliPHOSv0 : public AliPHOS {
 
   AliPHOSv0() {}
   AliPHOSv0(const char *name, const char *title="") ;
-  AliPHOSv0(const AliPHOSv0 & phos) {
+  AliPHOSv0(const AliPHOSv0 & phos) : AliPHOS(phos) {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;
@@ -32,7 +32,8 @@ class AliPHOSv0 : public AliPHOS {
     // dtor
   } 
 
-  virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
+//    virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_t *hits ) {
+  virtual void   AddHit( Int_t, Int_t, Int_t, Int_t, Float_t*) {
     // useless since there are no hits
     Fatal("AddHit", "not to be used with v0") ;
   }

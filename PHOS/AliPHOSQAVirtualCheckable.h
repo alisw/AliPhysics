@@ -35,7 +35,7 @@ public:
     fAlarms = 0;
   }           // default ctor not to be used
   AliPHOSQAVirtualCheckable(const char * name) ;          // ctor
-  AliPHOSQAVirtualCheckable(AliPHOSQAVirtualCheckable& obj) {assert(0==1);}
+  AliPHOSQAVirtualCheckable(AliPHOSQAVirtualCheckable& obj) : TNamed(obj) {assert(0==1);}
   virtual ~AliPHOSQAVirtualCheckable() ; // dtor
 
   void AddChecker(AliPHOSQAChecker * ch) ; 

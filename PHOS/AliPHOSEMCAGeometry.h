@@ -25,11 +25,11 @@ class AliPHOSEMCAGeometry : public TObject {
 
 public: 
 
-           AliPHOSEMCAGeometry();
-           AliPHOSEMCAGeometry(const AliPHOSEMCAGeometry & cpv) {
-             // cpy ctor requested by Coding Convention but not yet needed
-             assert(0==1) ;
-           } 
+  AliPHOSEMCAGeometry();
+  AliPHOSEMCAGeometry(const AliPHOSEMCAGeometry & cpv) : TObject(cpv) {
+    // cpy ctor requested by Coding Convention but not yet needed
+    assert(0==1) ;
+  } 
   virtual ~AliPHOSEMCAGeometry(void) {}
 
   AliPHOSEMCAGeometry & operator = (const AliPHOSEMCAGeometry  & rvalue) {

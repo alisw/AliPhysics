@@ -48,7 +48,7 @@ public:
     fgGeom        = 0;
     fRotMatrixArray = 0;  }  
 
-  AliPHOSGeometry(const AliPHOSGeometry & geom) {
+  AliPHOSGeometry(const AliPHOSGeometry & geom) : AliGeometry(geom) {
     // cpy ctor requested by Coding Convention but not yet needed
     
     assert(0==1) ;
