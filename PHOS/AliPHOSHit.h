@@ -49,6 +49,10 @@ class AliPHOSHit : public AliHit {
     // returns the primary particle id at the origine of this hit 
     return fPrimary ; 
   }
+  virtual Float_t X() const ;
+  virtual Float_t Y() const ;
+  virtual Float_t Z() const ;
+
 
   Bool_t operator == (AliPHOSHit const &rValue) const ;
   AliPHOSHit operator + (const AliPHOSHit& rValue) ;

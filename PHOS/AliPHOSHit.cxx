@@ -33,6 +33,9 @@
 #include "AliPHOSHit.h"
 #include "AliRun.h"
 #include "AliConst.h"
+#include "AliPHOSGetter.h"
+#include "AliPHOSGeometry.h"
+
 
 
 ClassImp(AliPHOSHit)
@@ -42,6 +45,9 @@ AliPHOSHit::AliPHOSHit(const AliPHOSHit & hit)
 {
    // copy ctor
    
+  fX       = hit.fX ; 
+  fY       = hit.fY ; 
+  fZ       = hit.fZ ; 
   fId      = hit.fId ; 
   fELOS    = hit.fELOS ;
   fPrimary = hit.fPrimary ; 
@@ -58,9 +64,37 @@ AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t primary, Int_t track, Int_t id, Float_
   //
 
   fId         = id ;
+  fX          = hits[0] ;
+  fY          = hits[1] ;
+  fZ          = hits[2] ;
   fELOS       = hits[3] ;
   fPrimary    = primary ;
 }
+//____________________________________________________________________________
+Float_t AliPHOSHit::X() const
+{
+    TVector3  pos ;
+    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;  
+    ((AliPHOSGeometry *) gime->PHOSGeometry()) ->RelPosInAlice(GetId(),  pos);
+    return pos.X();
+}
+//____________________________________________________________________________
+Float_t AliPHOSHit::Y() const
+{
+    TVector3  pos ;
+    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;  
+    ((AliPHOSGeometry *) gime->PHOSGeometry()) ->RelPosInAlice(GetId(),  pos);
+    return pos.Y();
+}
+//____________________________________________________________________________
+Float_t AliPHOSHit::Z() const
+{
+    TVector3  pos ;
+    AliPHOSGetter * gime = AliPHOSGetter::GetInstance() ;  
+    ((AliPHOSGeometry *) gime->PHOSGeometry()) ->RelPosInAlice(GetId(),  pos);
+    return pos.Z() ;
+}
+
 
 //____________________________________________________________________________
 Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
