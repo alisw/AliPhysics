@@ -75,7 +75,7 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader) const
 }
 
 //____________________________________________________________________________
-void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReaderFile* rawreader) const 
+void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawreader) const 
 {
   // method called by AliReconstruction; 
   // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track

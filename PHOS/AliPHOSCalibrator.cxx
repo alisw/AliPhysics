@@ -59,9 +59,15 @@
 #include "AliPHOSCalibrationData.h"
 #include "AliPHOSCalibrator.h"
 #include "AliPHOSConTableDB.h"
-#include "AliPHOSRawReaderDate.h"
+#include "AliRawReaderDate.h"
 #include "AliPHOSRawStream.h"
 #include "AliPHOSDigit.h"
+
+#ifdef ALI_DATE
+#include "event.h"
+#else
+#define PHYSICS_EVENT 7
+#endif
 
 ClassImp(AliPHOSCalibrator)
 
@@ -279,7 +285,7 @@ void AliPHOSCalibrator::ScanPedestals(Option_t * option )
       printf("Processing file %s \n ",file->String().Data()) ;
     
     //Now open data file
-    AliPHOSRawReaderDate *rawReader = new AliPHOSRawReaderDate(file->String().Data()) ; 
+    AliRawReaderDate *rawReader = new AliRawReaderDate(file->String().Data()) ; 
     AliPHOSRawStream     *rawStream = new AliPHOSRawStream(rawReader) ;
     rawStream->SetConTableDB(fctdb) ;
     TClonesArray * digits = new TClonesArray("AliPHOSDigit",300) ;
@@ -401,7 +407,7 @@ void AliPHOSCalibrator::ScanGains(Option_t * option)
   TObjString * file ;
   while((file = static_cast<TObjString *>(next()))){
     //Now open data file
-    AliPHOSRawReaderDate *rawReader = new AliPHOSRawReaderDate(file->String().Data()) ; 
+    AliRawReaderDate *rawReader = new AliRawReaderDate(file->String().Data()) ; 
     AliPHOSRawStream     *rawStream = new AliPHOSRawStream(rawReader) ;
     rawStream->SetConTableDB(fctdb) ;
   

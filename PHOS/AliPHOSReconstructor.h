@@ -45,7 +45,7 @@ public:
   AliTracker *CreateTracker(AliRunLoader* runLoader) const;
   virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
   virtual void               Reconstruct(AliRunLoader* runLoader) const ;
-  virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReaderFile * rawreader) const ;
+  virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReader * rawreader) const ;
 
   AliPHOSReconstructor & operator = (const AliPHOSReconstructor & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed

@@ -55,7 +55,8 @@
 #include "AliPHOSOnlineMonitor.h"
 #include "AliPHOSConTableDB.h"
 #include "AliPHOSGeometry.h"
-#include "AliPHOSRawReaderDate.h"
+#include "AliRawReaderDateV3.h"
+#include "AliRawEventHeader.h"
 #include "AliPHOSRawStream.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSGetterLight.h"  
@@ -592,7 +593,8 @@ void  AliPHOSOnlineMonitor::Go(){
   }
   
   //Now open data file
-  AliPHOSRawReaderDate *rawReader = new AliPHOSRawReaderDate(fInputFile) ; 
+  AliRawReaderDateV3 *rawReader = new AliRawReaderDateV3(fInputFile) ; 
+  rawReader->RequireHeader(kFALSE);
   AliPHOSRawStream     *rawStream = new AliPHOSRawStream(rawReader) ;
   rawStream->SetConTableDB(fcdb) ;
   
@@ -619,7 +621,7 @@ void  AliPHOSOnlineMonitor::Go(){
   printf("      ") ;
   while(rawReader->NextEvent()){
     //Is it PHYSICAL event
-    if(rawReader->GetType() == PHYSICS_EVENT){
+    if(rawReader->GetType() == AliRawEventHeader::kPhysicsEvent){
       fNevents++ ;
       if(fNevents%100 ==0){
 	printf("\b\b\b\b\b\b%6d",fNevents) ;

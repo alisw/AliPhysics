@@ -36,14 +36,11 @@
 
 #include "AliPHOSRawStream.h"
 #include "AliRawReader.h"
+#include "AliRawEventHeader.h"
 #include "AliPHOSConTableDB.h"
 #include "AliPHOSDigit.h"
 
-#ifdef ALI_DATE
-#include "event.h"
-#else
-#include "AliPHOSevent.h"
-#endif
+#define EVENT_TYPE_MASK      ((UInt_t)0x0000FFFF)
 
 ClassImp(AliPHOSRawStream)
 
@@ -75,7 +72,7 @@ Bool_t AliPHOSRawStream::ReadDigits(TClonesArray * digits){
   digits->Clear() ;
 
   //Check, if current event - PHYSICS event
-  if(!((fRawReader->GetType() & EVENT_TYPE_MASK)==PHYSICS_EVENT)){
+  if(!((fRawReader->GetType() & EVENT_TYPE_MASK)==AliRawEventHeader::kPhysicsEvent)){
     return kFALSE ;
   }
 
