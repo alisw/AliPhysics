@@ -6,8 +6,6 @@ AliHBTFunction.cxx    AliHBTParticleCut.cxx  \
 AliHBTReaderITSv1.cxx AliHBTReaderITSv2.cxx AliHBTReaderKineTree.cxx\
 AliHBTTwoTrackEffFctn.cxx AliHBTReaderInternal.cxx
 
-FSRCS   = FsiTools.F  FsiWeightLednicky2.F
-
 HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR= HBTAnalysisLinkDef.h
