@@ -413,10 +413,12 @@ Double_t AliL3Transform::GetEta(Float_t *xyz)
   return eta;
 }
 
-Double_t AliL3Transform::GetEta(Int_t row,Int_t pad,Int_t time)
+Double_t AliL3Transform::GetEta(Int_t padrow,Int_t pad,Int_t time)
 {
   Float_t xyz[3];
-  Raw2Local(xyz,0,row,pad,time);
+  Int_t sector,row;
+  Slice2Sector(0,padrow,sector,row);
+  Raw2Local(xyz,sector,row,pad,time);
   
   return GetEta(xyz);
 }
