@@ -54,6 +54,7 @@
 #include "AliPHOSLoader.h"
 #include "AliPHOSBeamTestEvent.h"
 #include "AliMC.h"
+#include "AliESD.h"
 
 ClassImp(AliPHOSGetter)
   
@@ -92,6 +93,8 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option
   fBTE = 0 ; 
   fPrimaries = 0 ; 
   fLoadingStatus = "" ; 
+  fESDFileName = "AliESDs.root" ; 
+  fESDFile = 0 ; 
 }
 
 //____________________________________________________________________________ 
@@ -271,7 +274,7 @@ void AliPHOSGetter::Event(const Int_t event, const char* opt)
 
   if( strstr(opt,"P") )
     ReadTreeP() ;
-
+ 
 //   if( strstr(opt,"Q") )
 //     ReadTreeQA() ;
  
@@ -336,7 +339,7 @@ AliPHOSGetter * AliPHOSGetter::Instance(const char* alirunFileName, const char* 
       fgObjGetter = new AliPHOSGetter(alirunFileName, version, openingOption) ;      
   }
   if (!fgObjGetter) 
-    ::Error("Instance", "Failed to create the PHOS Getter object") ;
+    ::Error("AliPHOSGetter::Instance", "Failed to create the PHOS Getter object") ;
   else 
     if (fgDebug)
       Print() ;
@@ -349,8 +352,8 @@ AliPHOSGetter *  AliPHOSGetter::Instance()
 {
   // Returns the pointer of the unique instance already defined
   
-  if(!fgObjGetter)
-     ::Error("Instance", "Getter not initialized") ;
+  if(!fgObjGetter && fgDebug)
+     ::Warning("AliPHOSGetter::Instance", "Getter not initialized") ;
 
    return fgObjGetter ;
            
@@ -455,6 +458,35 @@ void AliPHOSGetter::ReadPrimaries()
   for (index = 0 ; index < fNPrimaries; index++) { 
     new ((*fPrimaries)[index]) TParticle(*(Primary(index)));
   }
+}
+
+//____________________________________________________________________________ 
+AliESD * AliPHOSGetter::ESD(Int_t event)
+{
+  //Read the ESD
+  if (!fESDFile)
+    OpenESDFile() ; 
+  
+  TString esdEvent("ESD") ;  
+  esdEvent+= event ; 
+  AliESD * esd = dynamic_cast<AliESD *>(fESDFile->Get(esdEvent)) ; 
+  return esd ; 
+}
+
+//____________________________________________________________________________ 
+Bool_t AliPHOSGetter::OpenESDFile(TString name) 
+{
+  Bool_t rv = kTRUE ; 
+  fESDFileName = name ; 
+  if (!fESDFile)
+    fESDFile = new TFile(fESDFileName) ;
+  else if (fESDFile->IsOpen()) {
+    fESDFile->Close() ; 
+    fESDFile = TFile::Open(fESDFileName) ;
+  }
+  if (!fESDFile->IsOpen())
+    rv = kFALSE ; 
+  return rv ; 
 }
 
 //____________________________________________________________________________ 

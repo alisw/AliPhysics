@@ -25,8 +25,6 @@ class TTree ;
 
 // --- AliRoot header files ---
 #include "AliConfig.h" 
-
-// #include "AliRun.h"
 #include "AliPHOSLoader.h" 
 #include "AliPHOSHit.h" 
 #include "AliPHOSDigit.h"
@@ -42,10 +40,11 @@ class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;  
 class AliPHOSPID ; 
 class AliPHOSBeamTestEvent ;
+class AliESD ; 
 
 class AliPHOSGetter : public TObject {
   
- public:  
+public:  
   AliPHOSGetter(){    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
     Fatal("ctor", "AliPHOSGetter is a singleton default ctor not callable") ;
   } 
@@ -66,40 +65,38 @@ class AliPHOSGetter : public TObject {
 				  const char* version = AliConfig::fgkDefaultEventFolderName,
 				  Option_t * openingOption = "READ" ) ; 
   static AliPHOSGetter * Instance() ; 
-
+  
   static void Print() ; 
   
-//   //=========== General information about run ==============
+  //=========== General information about run ==============
   Bool_t IsLoaded(const TString tree) const { return fLoadingStatus.Contains(tree) ; } 
   void   SetLoaded(const TString tree) { fLoadingStatus += tree ; } 
-
+  
   Int_t  MaxEvent() const ; 
   Int_t  EventNumber() const ; 
   Bool_t VersionExists(TString & opt) const ; 
   UShort_t EventPattern(void) const ; 
   Float_t  BeamEnergy(void) const ;
   
-//   //========== PHOSGeometry and PHOS ============= 
+  //========== PHOSGeometry and PHOS ============= 
   AliPHOS *         PHOS() const  ;  
   AliPHOSGeometry * PHOSGeometry() const ; 
   
-//   //========== Methods to read something from file ==========
+  //========== Methods to read something from file ==========
   void   Event(const Int_t event, const char * opt = "HSDRP") ;    
   void   Track(const Int_t itrack) ;
   
-//   //-----------------now getter's data--------------------------------------
-// //  AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
-// //  void ReadCalibrationDB(const char * name, const char * filename) ;
-
+  //-----------------now getter's data--------------------------------------
+  //  AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
+  //  void ReadCalibrationDB(const char * name, const char * filename) ;
+  
   //=========== Primaries ============
-//   TTree *           TreeK(TString filename="") ; 
   TClonesArray *    Primaries(void) ;
   TParticle * Primary(Int_t index) const ;
   Int_t       NPrimaries()const { return fNPrimaries; }
   TParticle * Secondary(const TParticle * p, const Int_t index=1) const ;  
   
-//   //=========== Hits =================
-//   TTree *               TreeH(TString filename="") ; 
+  //=========== Hits =================
   TClonesArray *  Hits(void)  ; 
   AliPHOSHit *    Hit(const Int_t index) { return dynamic_cast<AliPHOSHit*>(Hits()->At(index) );}
   TTree *         TreeH() const ; 
@@ -109,7 +106,7 @@ class AliPHOSGetter : public TObject {
   AliPHOSDigit *      SDigit(const Int_t index) { return static_cast<AliPHOSDigit *>(SDigits()->At(index)) ;} 
   TTree *             TreeS() const ; 
   AliPHOSSDigitizer * SDigitizer() ;  
-
+  
   TString             GetSDigitsFileName() const { return PhosLoader()->GetSDigitsFileName() ; }  
   Int_t               LoadSDigits(Option_t* opt="") const { return PhosLoader()->LoadSDigits(opt) ; }
   Int_t               LoadSDigitizer(Option_t* opt="") const { return  PhosLoader()->LoadSDigitizer(opt) ; }
@@ -144,7 +141,7 @@ class AliPHOSGetter : public TObject {
   Int_t                 WriteRecPoints(Option_t* opt="") const { return PhosLoader()->WriteRecPoints(opt) ; }
   Int_t                 WriteClusterizer(Option_t* opt="") const {
     return  PhosLoader()->WriteClusterizer(opt) ; }
-
+  
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
   TClonesArray *           TrackSegments() ;
   AliPHOSTrackSegment *  TrackSegments(const Int_t index) { return static_cast<AliPHOSTrackSegment *>(TrackSegments()->At(index)) ;} 
@@ -157,8 +154,8 @@ class AliPHOSGetter : public TObject {
   Int_t                 WriteTracks(Option_t* opt="") const { return PhosLoader()->WriteTracks(opt) ; }
   Int_t                 WriteTrackSegmentMaker(Option_t* opt="") const {
     return  PhosLoader()->WriteTracker(opt) ; }
+  
   //========== RecParticles ===========
-
   TClonesArray *         RecParticles() ;
   AliPHOSRecParticle *   RecPaticles(const Int_t index) { return static_cast<AliPHOSRecParticle *>(RecParticles()->At(index)) ;} 
   TTree *               TreeP() const ;
@@ -170,8 +167,7 @@ class AliPHOSGetter : public TObject {
   Int_t                 WriteRecParticles(Option_t* opt="") const { return PhosLoader()->WriteRecParticles(opt) ; }
   Int_t                 WritePID(Option_t* opt="") const {
     return  PhosLoader()->WritePID(opt) ; }
-
-
+  
   void SetDebug(Int_t level) {fgDebug = level;} // Set debug level 
   void PostClusterizer(AliPHOSClusterizer * clu) 
     const{PhosLoader()->PostClusterizer(clu) ; }
@@ -183,49 +179,50 @@ class AliPHOSGetter : public TObject {
     const {PhosLoader()->PostSDigitizer(sdigitizer);}    
   void PostDigitizer (AliPHOSDigitizer * digitizer)    
     const {PhosLoader()->PostDigitizer(dynamic_cast<AliDigitizer *>(digitizer));}
-
+  
   TString Version() const  { return PhosLoader()->GetTitle() ; } 
   AliPHOSLoader * PhosLoader() const { return  fgPhosLoader ; }
   void Reset() {fgPhosLoader = 0; fgObjGetter = 0; }
+  
+  AliESD * ESD(Int_t event = 0) ;
+  Bool_t OpenESDFile(TString name = "AliESDs.root") ;
   
 private:
   
   AliPHOSGetter(const char* headerFile,
 		const char* version = AliConfig::fgkDefaultEventFolderName,
 		Option_t * openingOption = "READ") ;
-
+  
   Int_t ReadTreeD(void) ;
   Int_t ReadTreeH(void) ;
   Int_t ReadTreeR(void) ;
   Int_t ReadTreeT(void) ;
   Int_t ReadTreeS(void) ;
   Int_t ReadTreeP(void) ;
-
-
+   
   void ReadPrimaries(void) ;
-
+  
 private:
-
-//   static TFile * fgFile;           //! 
-
+  
   AliPHOSBeamTestEvent * fBTE ;           //! Header if BeamTest Event
-
   static Int_t          fgDebug ;             //! Debug level
-
+  
   TString           fLoadingStatus ;     //! tells which trees are loaded
   Int_t             fNPrimaries ;        //! # of primaries  
   TClonesArray *    fPrimaries ;         //! list of lists of primaries
-
-//  AliPHOSCalibrationDB * fcdb ;       //!
-   
+  TFile *           fESDFile ;           //! ESD file
+  TString           fESDFileName ;       //! ESD File Name
+  
+  //  AliPHOSCalibrationDB * fcdb ;       //!
+  
   static AliPHOSLoader * fgPhosLoader ; // the loader for the NewIO
   static AliPHOSGetter * fgObjGetter; // pointer to the unique instance of the singleton 
   
   enum EDataTypes{kHits,kSDigits,kDigits,kRecPoints,kTracks,kNDataTypes};
-
-
+  
+  
   ClassDef(AliPHOSGetter,1)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
-
-};
+    
+    };
 
 #endif // AliPHOSGETTER_H
