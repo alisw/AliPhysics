@@ -230,3 +230,10 @@
                 and AliCalorimeter::AddSignal() updated to invoke AliCalorimeter::SetSignal()
                 in case of new modules instead of having duplicate code.
                 (Thanks to Eugene van der Pijll).
+12-mar-2000 NvE Computation of Integer Order Modified Bessel functions I_n(x) and K_n(x)
+                introduced in class AliMath.
+                Also already existing AliMath facilities converted to Double_t handling
+                to enhance flexibility.
+06-jun-2000 NvE AliMath::K() etc... renamed to AliMath::BesselK() etc... for clarity.
+07-jun-2000 NvE Vertex linking of AliVertex::Add(AliVertex&) made more sophisticated
+                by introduction of automatic generation of connecting track.
