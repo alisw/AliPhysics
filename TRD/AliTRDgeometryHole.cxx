@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2003/09/18 09:06:07  cblume
+Geometry update, Removal of compiler warnings
+
 Revision 1.9  2002/11/21 22:38:47  alibrary
 Removing AliMC and AliMCProcess
 
@@ -86,6 +89,19 @@ AliTRDgeometryHole::~AliTRDgeometryHole()
   // AliTRDgeometryHole destructor
   //
 
+}
+
+Bool_t   AliTRDgeometryHole::IsHole(Int_t iplan, Int_t icham, Int_t isec) const
+{
+  // Position of Holes for PHOS (P) and RICH (R) starting at 6h
+  //                 P  P  P  -  -  R  R  R  -  -  -  -  -  -  -  -  P  P
+  //Int_t cham[18] = {1, 1, 1, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
+  Int_t cham[18] = {2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0 };  // did we want this?
+
+  if ((cham[17-isec]==1) && (fClengthPH[iplan][icham]<0.00001)) return kTRUE;
+  if ((cham[17-isec]==2) &&(fClengthRH[iplan][icham]<0.000001))  return kTRUE;
+  return kFALSE;
+  
 }
 
 //_____________________________________________________________________________
