@@ -909,8 +909,9 @@ NOBREM:
 		      cerenkovProp->GetMaximumWavelength(), 
 		      cerenkovProp->GetMaximumWavelength(), 
 	      	      Float_t(idmat), Float_t(idmat), 0.0);
+	      
 	      if (cerenkovProp->IsMetal()) {
-		  fprintf(pAliceInp, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",  
+		  fprintf(pAliceInp, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fMETAL\n",  
 			  -100., -100., -100., 
 			  Float_t(idmat), Float_t(idmat), 0.0);
 	      } else {
@@ -925,6 +926,13 @@ NOBREM:
 			  -100., -100., -100., 
 			  Float_t(idmat), Float_t(idmat), 0.0);
 	      }
+	      // Photon detection efficiency user defined
+
+	      if (cerenkovProp->IsSensitive())
+		  fprintf(pAliceInp, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fSENSITIV\n",  
+			  -100., -100., -100., 
+			  Float_t(idmat), Float_t(idmat), 0.0);
+		  
 	  } // materials
       } else if (iProcessValue[i] == 0) {
 	  fprintf(pAliceInp,"*\n*No Cerenkov photon generation\n");
@@ -1538,7 +1546,7 @@ NOBREM:
       // fLastMaterial = upper bound of the material indices in which the respective thresholds apply
       fprintf(pAliceInp,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f\n",-fCutValue[i],zero,zero,three,fLastMaterial);
       fprintf(pAliceInp,"DELTARAY  %10.4g%10.3f%10.3f%10.1f%10.1f%10.1f\n",fCutValue[i], 100., 1.03, 3.0, fLastMaterial, 1.0);
-      fprintf(pAliceInp,"STEPSIZE  %10.4g%10.3f%10.3f%10.1f%10.1f\n",fCutValue[i], 0.1 , 1.00, 
+      fprintf(pAliceInp,"STEPSIZE  %10.4g%10.3f%10.3f%10.1f%10.1f\n", 0.1, 1.0, 1.00, 
 	      Float_t(gGeoManager->GetListOfUVolumes()->GetEntriesFast()-1), 1.0);
     }
     
@@ -1565,6 +1573,14 @@ NOBREM:
 // Add START and STOP card
    fprintf(pAliceInp,"START     %10.1f\n",fEventsPerRun);
    fprintf(pAliceInp,"STOP      \n");
+   
+   
+// Close files
+
+   fclose(pAliceCoreInp);
+   fclose(pAliceFlukaMat);
+   fclose(pAliceInp);
+   
 } // end of InitPhysics
 
 
