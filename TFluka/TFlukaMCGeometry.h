@@ -118,6 +118,8 @@ class TFlukaMCGeometry : public TVirtualMCGeometry {
    // FLUKA specific methods
     void          CreateFlukaMatFile(const char *fname=0);
     void          PrintHeader(ofstream &out, const char *text) const;
+    void          SetMreg(Int_t mreg);
+    void          SetNextRegion(Int_t mreg, Int_t latt);
     Int_t         RegionId() const; 
     void          ToFlukaString(TString &str) const;
 
@@ -129,7 +131,9 @@ class TFlukaMCGeometry : public TVirtualMCGeometry {
     TFlukaMCGeometry& operator=(const TFlukaMCGeometry& rhs) {return (*this);}
 
     static TFlukaMCGeometry*  fgInstance; // singleton instance
-    Int_t        fLastMaterial;
+    Int_t        fLastMaterial;           // last FLUKA material index
+    Int_t        fNextRegion;             // next region number
+    Int_t        fNextLattice;            // next lattice history
   ClassDef(TFlukaMCGeometry,1)  //Virtual MonteCarlo Interface
 };
 

@@ -103,6 +103,8 @@ TFlukaMCGeometry::TFlukaMCGeometry(const char *name, const char *title)
   // Standard constructor
   //
   fLastMaterial = 0;
+  fNextRegion = 0;
+  fNextLattice = 0;
   fluka = (TFluka*)gMC;
   mcgeom = this;
 }
@@ -115,6 +117,8 @@ TFlukaMCGeometry::TFlukaMCGeometry()
   // Default constructor
   //
   fLastMaterial = 0;
+  fNextRegion = 0;
+  fNextLattice = 0;
   fluka = (TFluka*)gMC;
   mcgeom = this;
 }
@@ -1102,7 +1106,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       mat = vol->GetMedium()->GetMaterial();
       idmat = mat->GetIndex();
 //      flagfield = (vol->GetField())?1.:0.;
-      flagfield = 0.;
+      flagfield = 1.;
       out << setw(10) << "ASSIGNMAT ";
       out.setf(static_cast<std::ios::fmtflags>(0),std::ios::floatfield);
       out << setw(10) << setiosflags(ios::fixed) << Double_t(idmat);
@@ -1139,6 +1143,26 @@ Int_t TFlukaMCGeometry::RegionId() const
    if (gGeoManager->IsOutside()) return 0;
    return gGeoManager->GetCurrentNode()->GetUniqueID();
 }
+//_____________________________________________________________________________
+void TFlukaMCGeometry::SetMreg(Int_t mreg)
+{
+// Update if needed next history;
+   Int_t curreg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
+   if (mreg==curreg) return;
+   if (mreg==fNextRegion) {
+      if (fNextLattice!=999999999) gGeoManager->CdNode(fNextLattice-1);
+      return;
+   }   
+   printf("ERROR: mreg=%i neither current nor next region\n", mreg);
+}
+
+//_____________________________________________________________________________
+void TFlukaMCGeometry::SetNextRegion(Int_t mreg, Int_t latt)
+{
+// Set index/history for next entered region
+   fNextRegion = mreg;
+   fNextLattice = latt;
+}   
 
 //_____________________________________________________________________________
 void TFlukaMCGeometry::ToFlukaString(TString &str) const
@@ -1202,12 +1226,17 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 
    // Initialize current point/direction
    printf("========== Inside G1WR\n");
-   printf("   point/dir:(%g, %g, %g, %g, %g, %g)\n", pSx,pSy,pSz,pV[0],pV[1],pV[2]);
+   printf("   point/dir:(%14.9f, %14.9f, %14.9f, %g, %g, %g)\n", pSx,pSy,pSz,pV[0],pV[1],pV[2]);
    gGeoManager->SetCurrentPoint(pSx, pSy, pSz);
    gGeoManager->SetCurrentDirection(pV);
    printf("   oldReg=%i  oldLttc=%i  pstep=%f\n",oldReg, oldLttc, propStep);
+   if (oldLttc==999999999) printf("WOOPS - wrong old lattice\n");
+   if (gGeoManager->IsOutside()) {
+      gGeoManager->SetOutside(kFALSE);
+      gGeoManager->CdTop();
+   }   
    Int_t curLttc = gGeoManager->GetCurrentNodeId()+1;
-   Int_t curreg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
+   Int_t curreg = gGeoManager->GetCurrentVolume()->GetNumber();
    printf("   curReg=%i  curLttc=%i curPath=%s\n", curreg, curLttc, gGeoManager->GetPath());
    Bool_t regsame = (curreg==oldReg)?kTRUE:kFALSE;
    if (!regsame) printf("   REGIONS DOES NOT MATCH\n");
@@ -1215,7 +1244,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       printf("   HISTORIES DOES NOT MATCH\n");
       gGeoManager->CdNode(oldLttc-1);
       curLttc = gGeoManager->GetCurrentNodeId()+1;
-      curreg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
+      curreg  = gGeoManager->GetCurrentVolume()->GetNumber();
       printf("   re-initialized point: curReg=%i  curLttc=%i curPath=%s\n", curreg, curLttc, gGeoManager->GetPath());
    }         
    lttcFlag = 0;
@@ -1231,6 +1260,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    Double_t snext = 0.;
    Int_t istep = 0;
    Bool_t done = kFALSE;
+   Double_t pst;
    Int_t i;
    while (!done) {
       gGeoManager->FindNextBoundary(-propStep);
@@ -1243,6 +1273,8 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       sLt[lttcFlag] = propStep;
       jrLt[lttcFlag] = gGeoManager->GetCurrentNodeId()+1;     
       lttcFlag++; //1
+      sLt[lttcFlag] = 0.;
+      jrLt[lttcFlag] = -1;     
       newReg = curreg;
       newLttc = oldLttc;
       if (snext<propStep) {
@@ -1270,15 +1302,57 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
             steptot += 1E-6;
             istep++;
          }            
-         lttcFlag++; //1                
          if (steptot>propStep) {printf("Error\n");return;}
          // we managed to cross the boundary -> in which region
          newReg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();
-         sLt[lttcFlag] = propStep-steptot;
+         lttcFlag++; //1                
          newLttc = (gGeoManager->IsOutside())?999999999:gGeoManager->GetCurrentNodeId()+1;
+         sLt[lttcFlag] = snext; // at 1
          jrLt[lttcFlag] = newLttc;
+         sLt[lttcFlag+1] = 0.;
+         jrLt[lttcFlag+1] = -1;
+         // !!!!!!!!!!
+
+         while (newReg==oldReg && steptot<propStep) {
+            printf("   Entered SAME region... continue\n");
+            pst = propStep-steptot;
+            gGeoManager->FindNextBoundary(-pst);
+            snext = gGeoManager->GetStep();
+            steptot += snext;
+            if (snext<pst) {
+               printf("Found new boundary\n");
+               sLt[lttcFlag] = snext;
+               retStep = steptot; // ???
+               for (i=0;i<3;i++) point[i]+=(snext+1E-6)*dir[i];
+               steptot += 1E-6;
+               gGeoManager->FindNode();
+               if (gGeoManager->IsSameLocation()) {
+                  printf("Cannot cross boundary\n");
+                  break;
+               }
+               newReg = (gGeoManager->IsOutside())?(mcgeom->NofVolumes()+1):gGeoManager->GetCurrentVolume()->GetNumber();  
+               newLttc = (gGeoManager->IsOutside())?999999999:gGeoManager->GetCurrentNodeId()+1;  
+               printf("Found newreg=%i, newLttc=%i, lttFlag is: %i\n", newReg, newLttc, lttcFlag);
+               sLt[lttcFlag-1] += snext; // correct step in old region
+               sLt[lttcFlag] = propStep-snext;
+               jrLt[lttcFlag] = newLttc;
+               sLt[lttcFlag+1] = 0.;
+               jrLt[lttcFlag+1] = -1;
+               if (newReg != oldReg) break; // lttcFlag=1
+               lttcFlag++;
+            } else {
+                printf("Not crossing next\n");
+                lttcFlag--; //0
+                retStep=steptot;
+                sLt[lttcFlag] = retStep;
+                sLt[lttcFlag+1] = 0.;
+                jrLt[lttcFlag+1] = -1;
+                done = kTRUE;  
+            }  
+         }
+            
+         lttcFlag++; //2
          if (!gGeoManager->IsOutside()) {
-            lttcFlag++; //2
             printf("   ENTERED region %i, newLttc=%i in: %s\n", newReg,newLttc,gGeoManager->GetPath());
          } else printf("   EXIT GEOMETRY: BLKHOLE reg=%i\n", newReg);
       } 
@@ -1287,6 +1361,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       done = kTRUE;
    }   
    printf("=> newReg=%i newLttc=%i lttcFlag=%i\n", newReg, newLttc, lttcFlag);
+   mcgeom->SetNextRegion(newReg, newLttc);
    printf("=> snext=%g safe=%g\n", snext, saf);
    for (Int_t i=0; i<lttcFlag+1; i++) printf("   jrLt[%i]=%i  sLt[%i]=%g\n", i,jrLt[i],i,sLt[i]);
    if (newLttc!=oldLttc) {
@@ -1348,8 +1423,14 @@ void lkdbwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
    TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
    if (gGeoManager->IsOutside()) {
+      printf("OUTSIDE\n");
       newReg = mcgeom->NofVolumes()+1;
-      newLttc = gGeoManager->GetCurrentNodeId();
+//      newLttc = gGeoManager->GetCurrentNodeId();
+      newLttc = 999999999;
+      printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+      printf("<= LKMGWR\n");
+      flagErr = newReg;
+      return;
    } 
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1; 
@@ -1368,8 +1449,14 @@ void lkfxwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
    TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
    if (gGeoManager->IsOutside()) {
+      printf("OUTSIDE\n");
       newReg = mcgeom->NofVolumes()+1;
-      newLttc = gGeoManager->GetCurrentNodeId();
+//      newLttc = gGeoManager->GetCurrentNodeId();
+      newLttc = 999999999;
+      printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+      printf("<= LKMGWR\n");
+      flagErr = newReg;
+      return;
    } 
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1; 
@@ -1388,8 +1475,14 @@ void lkmgwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
    TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
    if (gGeoManager->IsOutside()) {
+      printf("OUTSIDE\n");
       newReg = mcgeom->NofVolumes()+1;
-      newLttc = gGeoManager->GetCurrentNodeId();
+//      newLttc = gGeoManager->GetCurrentNodeId();
+      newLttc = 999999999;
+      printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+      printf("<= LKMGWR\n");
+      flagErr = newReg;
+      return;
    } 
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1; 
@@ -1408,8 +1501,14 @@ void lkwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
    TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
    if (gGeoManager->IsOutside()) {
+      printf("OUTSIDE\n");
       newReg = mcgeom->NofVolumes()+1;
-      newLttc = gGeoManager->GetCurrentNodeId();
+//      newLttc = gGeoManager->GetCurrentNodeId();
+      newLttc = 999999999;
+      printf("  out: newReg=%i newLttc=%i\n", newReg, newLttc);
+      printf("<= LKMGWR\n");
+      flagErr = newReg;
+      return;
    } 
    newReg = node->GetVolume()->GetNumber();
    newLttc = gGeoManager->GetCurrentNodeId()+1; 
