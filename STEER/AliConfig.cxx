@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2001/10/04 15:30:56  hristov
+Changes to accommodate the set of PHOS folders and tasks (Y.Schutz)
+
 Revision 1.2  2001/05/21 17:22:50  buncic
 Fixed problem with missing AliConfig while reading galice.root
 
@@ -63,14 +66,15 @@ AliConfig::AliConfig(const char *name, const char *title)
   fGeneratorFolder   =  "RunMC/Configuration/Generators" ;
   fMCFolder          =  "RunMC/Configuration/VirtualMC" ;
   fModuleFolder      =  "Run/Configuration/Modules" ;
-  fDetectorFolder    =  new char*[7] ; 
+  fDetectorFolder    =  new char*[8] ; 
   fDetectorFolder[0] = "Run/Conditions/Calibration" ;
   fDetectorFolder[1] = "Run/Event/Data" ;
   fDetectorFolder[2] = "Run/Event/RecData" ;
   fDetectorFolder[3] = "RunMC/Event/Data/Hits" ;
   fDetectorFolder[4] = "RunMC/Event/Data/SDigits" ;
   fDetectorFolder[5] = "Run/Conditions/QA" ;  
-  fDetectorFolder[6] = 0 ;  
+  fDetectorFolder[6] = "RunMC/Event/Data/TrackReferences" ;  
+  fDetectorFolder[7] = 0 ;  
   fDetectorTask    =  new char*[5] ; 
   fDetectorTask[0] = "Tasks/QA" ;  
   fDetectorTask[1] = "Tasks/SDigitizer" ;  
@@ -153,6 +157,9 @@ AliConfig::AliConfig(const char *name, const char *title)
  subfolder = 
     data_mc->AddFolder ("SDigits", "MonteCarlo SDigits") ; 
 
+ subfolder = 
+    data_mc->AddFolder ("TrackReferences", "MonteCarlo track references") ; 
+
 
   
   // Add the tasks to //Folders
@@ -176,7 +183,7 @@ AliConfig::AliConfig(const char *name, const char *title)
 //____________________________________________________________________________
 AliConfig::~AliConfig()
 { 
-  delete fDetectorFolder ;  
+  delete [] fDetectorFolder ;  
   delete fDetectorTask ;  
   delete fTopFolder ; 
 }
