@@ -30,6 +30,19 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
   fLoLpt     = 0;
   fLoHpt     = 0;
   fLoApt     = 0;
+
+  fX1Pattern  = 0;
+  fX2Pattern  = 0;
+  fX3Pattern  = 0;
+  fX4Pattern  = 0;
+
+  fY1Pattern  = 0;
+  fY2Pattern  = 0;
+  fY3Pattern  = 0;
+  fY4Pattern  = 0;
+
+  fLoDecision = 0;
+
 }
 //----------------------------------------------------------------------
 AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocalTrig)
@@ -43,6 +56,18 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocal
   fLoLpt     = theMUONLocalTrig.fLoLpt;
   fLoHpt     = theMUONLocalTrig.fLoHpt;
   fLoApt     = theMUONLocalTrig.fLoApt;
+
+  fX1Pattern  = theMUONLocalTrig.fX1Pattern;
+  fX2Pattern  = theMUONLocalTrig.fX2Pattern;
+  fX3Pattern  = theMUONLocalTrig.fX3Pattern;
+  fX4Pattern  = theMUONLocalTrig.fX4Pattern;
+
+  fY1Pattern  = theMUONLocalTrig.fY1Pattern;
+  fY2Pattern  = theMUONLocalTrig.fY2Pattern;
+  fY3Pattern  = theMUONLocalTrig.fY3Pattern;
+  fY4Pattern  = theMUONLocalTrig.fY4Pattern;
+
+  fLoDecision =  theMUONLocalTrig.fLoDecision;
 }
 //----------------------------------------------------------------------
 AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& theMUONLocalTrig)
@@ -62,11 +87,23 @@ AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& t
   fLoHpt     = theMUONLocalTrig.fLoHpt;
   fLoApt     = theMUONLocalTrig.fLoApt;
 
+  fX1Pattern  = theMUONLocalTrig.fX1Pattern;
+  fX2Pattern  = theMUONLocalTrig.fX2Pattern;
+  fX3Pattern  = theMUONLocalTrig.fX3Pattern;
+  fX4Pattern  = theMUONLocalTrig.fX4Pattern;
+
+  fY1Pattern  = theMUONLocalTrig.fY1Pattern;
+  fY2Pattern  = theMUONLocalTrig.fY2Pattern;
+  fY3Pattern  = theMUONLocalTrig.fY3Pattern;
+  fY4Pattern  = theMUONLocalTrig.fY4Pattern;
+
+  fLoDecision =  theMUONLocalTrig.fLoDecision;
+
   return *this;
 }
 
 //----------------------------------------------------------------------
-AliMUONLocalTrigger::AliMUONLocalTrigger(Int_t *localtr)
+AliMUONLocalTrigger::AliMUONLocalTrigger(Int_t* localtr)
 {
 // add a local trigger object 
   fLoCircuit = localtr[0];
@@ -76,5 +113,23 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(Int_t *localtr)
   fLoLpt     = localtr[4];
   fLoHpt     = localtr[5];
   fLoApt     = localtr[6];
-}
 
+  // keep on with this way
+  fX1Pattern = (UShort_t)localtr[7];
+  fX2Pattern = (UShort_t)localtr[8];
+  fX3Pattern = (UShort_t)localtr[9];
+  fX4Pattern = (UShort_t)localtr[10];
+
+  fY1Pattern = (UShort_t)localtr[11];
+  fY2Pattern = (UShort_t)localtr[12];
+  fY3Pattern = (UShort_t)localtr[13];
+  fY4Pattern = (UShort_t)localtr[14];
+}
+//----------------------------------------------------------------------
+Char_t AliMUONLocalTrigger::GetLoDecision()
+{
+  fLoDecision  = (fLoLpt & 0x3);
+  fLoDecision |= (fLoHpt << 2) & 0xC;
+
+  return fLoDecision;
+}

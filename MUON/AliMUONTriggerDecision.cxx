@@ -1404,18 +1404,33 @@ void AliMUONTriggerDecision::Digits2Trigger(){
   
   for (Int_t icirc=0; icirc<AliMUONConstants::NTriggerCircuit(); icirc++) { 
     if(GetITrigger(icirc)==1) {
-      Int_t localtr[7]={0,0,0,0,0,0,0};      
+      Int_t localtr[15]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};      
       Int_t loLpt[2]={0,0}; Int_t loHpt[2]={0,0}; Int_t loApt[2]={0,0};
       GetLutOutput(icirc, loLpt, loHpt, loApt);
       localtr[0] = icirc;
       localtr[1] = GetStripX11(icirc);
       localtr[2] = GetDev(icirc);
       localtr[3] = GetStripY11(icirc);
-      for (Int_t i=0; i<2; i++) {    // convert the Lut output in 1 digit 
-	localtr[4] = localtr[4]+Int_t(loLpt[i]*TMath::Power(2,i));
-	localtr[5] = localtr[5]+Int_t(loHpt[i]*TMath::Power(2,i));
-	localtr[6] = localtr[6]+Int_t(loApt[i]*TMath::Power(2,i));
+      for (Int_t i = 0; i < 2; i++) {    // convert the Lut output in 1 digit 
+	localtr[4] += Int_t(loLpt[i]*TMath::Power(2,i));
+	localtr[5] += Int_t(loHpt[i]*TMath::Power(2,i));
+	localtr[6] += Int_t(loApt[i]*TMath::Power(2,i));
       }
+
+      for (Int_t i = 0; i < 16; i++) {    // convert X/Y bit in bit pattern
+	localtr[7]  |= (fXbit11[icirc][i] << i);
+	localtr[8]  |= (fXbit12[icirc][i] << i);
+
+	// 8 first and last elts correspond to neighbouring cards
+	localtr[9]  |= (fXbit21[icirc][i+8] << i);
+	localtr[10] |= (fXbit22[icirc][i+8] << i);
+
+	localtr[11] |= (fYbit11[icirc][i] << i);
+	localtr[12] |= (fYbit12[icirc][i] << i);
+	localtr[13] |= (fYbit21[icirc][i] << i);
+	localtr[14] |= (fYbit22[icirc][i] << i);
+      }
+
       AliMUONLocalTrigger* pLocTrig = new AliMUONLocalTrigger(localtr);
       fMUONData->AddLocalTrigger(*pLocTrig);  // add a local trigger in the list
     }
