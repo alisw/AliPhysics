@@ -345,8 +345,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option) {
 	delete file;
       }
       
-      sdigitsBranch->Fill() ;
-      sdigitizerBranch->Fill() ;
+      gAlice->TreeS()->Fill() ; 
       gAlice->TreeS()->Write(0,TObject::kOverwrite) ;
       
       if(strstr(option,"deb"))
