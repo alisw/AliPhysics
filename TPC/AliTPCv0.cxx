@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2000/04/17 09:37:33  kowal2
+removed obsolete AliTPCDigitsDisplay.C
+
 Revision 1.13.8.2  2000/04/10 08:33:44  kowal2
 
 Updated readout chambers
@@ -370,16 +373,7 @@ void AliTPCv0::CreateGeometry()
 
   gMC->Gspos("TPOV",1,"TPCO",0.,0.,0.,0,"ONLY");
 
-
-  // G10 plugs
-
-  dm[0] = 258.;
-  dm[1] = 260.;
-  dm[2] = 1.;
-
-  gMC->Gsvolu("TPG1","TUBE",idtmed[8],dm,3);
-  gMC->Gspos("TPG1",1,"TPCO",0.,0.,251.,0,"ONLY");
-  gMC->Gspos("TPG1",2,"TPCO",0.,0.,-251.,0,"ONLY");  
+ 
 
   gMC->Gspos("TPCO",1,"TPC ",0.,0.,0.,0,"ONLY");
 
