@@ -21,7 +21,7 @@ RICHmenu(Int_t nev=1)
    menu->AddButton("Configure",            "gSystem->Exec(\"rconfig\"); gSystem->Exit(0);","Configure the simulation");
    //menu->AddButton("Run",               "RICHInit(nev)","Process an Alice event - WARNING: Overwrites previous data file!");
    menu->AddButton("Run",               "gAlice->Run(events)","Process an Alice event - WARNING: Overwrites previous data file!");
-   //menu->AddButton("Run Lego",          "gAlice->RunLego()","Special run to generate the radl/absl lego plots");
+   menu->AddButton("Run Lego",          ".x RICHRunLego.C","Special runs to generate the radl/absl lego plots");
    menu->AddButton("Digitise Event",             ".x RICHdigit.C(0,events-1)","Digitise event");
    menu->AddButton("Clusterize Event",      ".x RICHrawclusters.C(0,events-1)","Reconstruct clusters");
    // TODO: add the diaglevel here before the script
