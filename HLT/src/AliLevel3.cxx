@@ -2,16 +2,13 @@
 //Author:        Anders Strand Vestbo
 //Last Modified: 13.12.2000
 
-#include "AliL3Logging.h"
-
 #include <TFile.h>
 #include <TDirectory.h>
 #include <TClonesArray.h>
 #include <TStopwatch.h>
 #include <iostream.h>
 
-//#include <AliTPCcluster.h>
-//#include "AliTPCParam.h"
+#include "AliL3Logging.h"
 #include "AliLevel3.h"
 #include "AliL3ConfMapper.h"
 #include "AliL3Vertex.h"
@@ -26,7 +23,9 @@
 #include "AliL3DigitData.h"
 #include "AliL3TrackArray.h"
 #include "AliL3MemHandler.h"
+#ifdef use_aliroot
 #include "AliL3FileHandler.h"
+#endif
 #include "AliL3Benchmark.h"
 
 #include "AliL3DigitData.h"
@@ -120,8 +119,12 @@ void AliLevel3::Init(){
   fTracker = new AliL3ConfMapper();
   fTrackMerger = new AliL3TrackMerger(fNPatch);
   fInterMerger = new AliL3InterMerger();
+  #ifdef use_aliroot
   fFileHandler = new AliL3FileHandler();
   fFileHandler->SetAliInput(fInputFile);
+  #else
+  fFileHandler = new AliL3MemHandler();
+  #endif
   fBenchmark = new AliL3Benchmark();
 }
 
@@ -130,8 +133,10 @@ void AliLevel3::DoBench(char* name){
 }
 
 void AliLevel3::DoMc(char* file){
+  #ifdef use_aliroot
   if(!fFileHandler->IsDigit())
     fFileHandler->SetMCOutput(file);
+  #endif
 }
 
 AliLevel3::~AliLevel3(){
@@ -176,9 +181,7 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last){
     fGlobalMerger->SetVertex(fVertex);
     fGlobalMerger->SetTransformer(fTransformer);
     fGlobalMerger->InitSlice(i);
-    fBenchmark->Start("Fill Global Merger");
     fGlobalMerger->FillTracks(fNTrackData,fTrackData);
-    fBenchmark->Stop("Fill Global Merger");
     fFileHandler->Free();   //free the memory
     fNTrackData=0;
     fTrackData=0;
@@ -194,7 +197,6 @@ void AliLevel3::ProcessEvent(Int_t first,Int_t last){
 
 void AliLevel3::ProcessSlice(Int_t slice){
   char name[256];
-  Bool_t isdigit = fFileHandler->IsDigit();
 //  Int_t row[5][2] = {{ 0,173}};
   Int_t row[5][2] = {{ 0, 45},{46,77},{78,109},{110,141},{142,173}};
   const Int_t maxpoints=100000;
@@ -256,9 +258,6 @@ void AliLevel3::ProcessSlice(Int_t slice){
           fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
           fBenchmark->Stop("Unpacker");
           memory->Free();
-          if(1)
-            cerr<<endl<<dsize/1024<<" "<<rsize/1024<<" "
-                                    <<100.*rsize/dsize<<"%"<<endl;
         }
       }
 
@@ -278,8 +277,6 @@ void AliLevel3::ProcessSlice(Int_t slice){
         datasize = fFileHandler->CompMemory2Memory(ndigits,digits,comp); 
         fBenchmark->Stop("Unpacker"); 
         memory->Free();
-        if(1)
-         cerr<<endl<<datasize/1024<<" "<<endl;
       }
 
 
@@ -291,9 +288,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
       fClusterFinder->SetXYError(0.1);
       fClusterFinder->SetZError(0.2);
       fClusterFinder->SetOutputArray(points);
-      fBenchmark->Start("Read Cluster Finder");
       fClusterFinder->Read(ndigits,digits);
-      fBenchmark->Stop("Read Cluster Finder");
       fBenchmark->Start("Cluster Finder");
       fClusterFinder->ProcessDigits();
       fBenchmark->Stop("Cluster Finder");
@@ -307,9 +302,10 @@ void AliLevel3::ProcessSlice(Int_t slice){
     }
 
     else{
-      if(isdigit){
+#ifdef use_aliroot
+      if(fFileHandler->IsDigit()){
         sprintf(name,"digits_%d_%d.raw",slice,patch);
-   
+
         if(0){    //Ali to Binary
           fFileHandler->SetBinaryOutput(name);
           fFileHandler->AliDigits2CompBinary();
@@ -326,6 +322,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
         }
       }
       else   points = fFileHandler->AliPoints2Memory(npoints);
+#endif
     }
 
     if(patch == fNPatch-1){
@@ -386,9 +383,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
     fInterMerger->SetTransformer(fTransformer);
     fInterMerger->Init(row[patch],patch);
 
-    fBenchmark->Start("Fill Inter Merger");
     fInterMerger->FillTracks(ntracks0,trackdata0);
-    fBenchmark->Stop("Fill Inter Merger");
     fBenchmark->Start("Inter Merger");
     fInterMerger->Merge();
 //    fInterMerger->SlowMerge();
@@ -408,9 +403,7 @@ void AliLevel3::ProcessSlice(Int_t slice){
     memory->TrackArray2Memory(ntracks1,trackdata1,fInterMerger->GetInTracks(0));
 
     fTrackMerger->InitSector(slice,patch);
-    fBenchmark->Start("Fill Patch Merger");
     fTrackMerger->FillTracks(ntracks1,trackdata1);
-    fBenchmark->Stop("Fill Patch Merger");
 
     memory->Free();
   }
@@ -447,7 +440,7 @@ void AliLevel3::WriteSpacePoints(UInt_t npoints,AliL3SpacePointData *points,
 
 
 Int_t AliLevel3::WriteTracks(char *filename,AliL3Merger *merger,char opt){
-  AliL3FileHandler *memory = new AliL3FileHandler();
+  AliL3MemHandler *memory = new AliL3MemHandler();
   memory->SetBinaryOutput(filename);
   if(opt=='a'||opt=='i'){  //add intracks
     for(Int_t i=0;i<merger->GetNIn();i++){

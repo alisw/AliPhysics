@@ -2,18 +2,16 @@
 #define ALILEVEL3_H
 
 #include <TObject.h>
-#include <TBuffer.h>
 #include <TFile.h>
 
 #include "AliL3DigitData.h"
+#include "AliL3RootTypes.h"
 
 class AliL3SpacePointData;
 class AliL3DigitRowData;
 class AliL3TrackSegmentData;
 class AliL3DigitData;
 class AliL3Transform;
-class TClonesArray;
-class AliTPCParam;
 class AliL3ConfMapper;
 class AliL3Vertex;
 class AliL3VertexFinder;
@@ -24,7 +22,11 @@ class AliL3Transform;
 class AliL3ClustFinder;
 class AliL3Merger;
 class AliL3InterMerger;
+#ifdef use_aliroot
 class AliL3FileHandler;
+#else
+class AliL3MemHandler;
+#endif
 class AliL3Benchmark;
 
 class AliLevel3 : public TObject {
@@ -39,7 +41,11 @@ class AliLevel3 : public TObject {
   AliL3GlobalMerger *fGlobalMerger; //!
   AliL3InterMerger *fInterMerger; //!
   AliL3ClustFinder *fClusterFinder; //! 
+  #ifdef use_aliroot
   AliL3FileHandler *fFileHandler; //!
+  #else
+  AliL3MemHandler *fFileHandler; //!
+  #endif
   AliL3Benchmark *fBenchmark;//!
   Int_t fNPatch;
   Char_t fPath[256];

@@ -376,7 +376,7 @@ GLIBS         = $(ROOTGLIBS) $(SYSLIBS)
 
 #------------------------------------------------------------------------------
 
-SRCS           = AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx AliLevel3_Root.cxx\
+SRCS           = AliL3ConfMapper.cxx AliL3ConfMapPoint.cxx AliLevel3.cxx\
                  AliL3ConfMapTrack.cxx AliL3ConfMapFit.cxx AliL3Track.cxx\
                  AliL3Transform.cxx AliL3TrackMerger.cxx AliL3VertexArray.cxx \
                  AliL3Vertex.cxx AliL3VertexFinder.cxx AliL3HoughTrack.cxx\
