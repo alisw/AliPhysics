@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2001/11/22 11:15:41  jchudoba
+Proper deletion of arrays (thanks to Rene Brun)
+
 Revision 1.6  2001/11/02 12:55:45  jchudoba
 cleanup of the code, add const to Get methods
 
@@ -83,8 +86,6 @@ AliMUONDigitizer::~AliMUONDigitizer()
 // Destructor
   if (fHits)       delete fHits;
   if (fPadHits)    delete fPadHits;
-  if (fHitMap)     delete [] fHitMap;
-  if (fTDList)     delete fTDList;
 }
 
 //------------------------------------------------------------------------
