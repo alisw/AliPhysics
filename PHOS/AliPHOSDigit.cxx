@@ -46,7 +46,6 @@ ClassImp(AliPHOSDigit)
 
   fIndexInList = -1 ; 
   fNprimary    = 0 ;  
-  fNMaxPrimary = 5 ;
   fPrimary = 0;
 }
 
@@ -55,48 +54,46 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t tim
 {  
   // ctor with all data 
 
-  fNMaxPrimary = 5 ; 
   fAmp         = digEnergy ;
   fTime        = time ;
   fId          = id ;
   fIndexInList = index ; 
-  fPrimary = new Int_t[fNMaxPrimary] ;
   if( primary != -1){
     fNprimary    = 1 ; 
+    fPrimary = new Int_t[fNprimary] ;
     fPrimary[0]  = primary ;
   }
   else{  //If the contribution of this primary smaller than fDigitThreshold (AliPHOSv1)
-    fNprimary    = 0 ; 
-    fPrimary[0]  = -1 ;
+    fNprimary = 0 ; 
+    fPrimary  = 0 ;
   }
-  Int_t i ;
-  for ( i = 1; i < fNMaxPrimary ; i++)
-    fPrimary[i]  = -1 ; 
 }
 
 //____________________________________________________________________________
 AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) 
 {
   // copy ctor
-  
 
-  fNMaxPrimary = digit.fNMaxPrimary ;  
-  fPrimary = new Int_t[fNMaxPrimary] ;
-  Int_t i ;
-  for ( i = 0; i < fNMaxPrimary ; i++)
-    fPrimary[i]  = digit.fPrimary[i] ;
+  fNprimary = digit.fNprimary ;  
+  if(fNprimary){
+    fPrimary = new Int_t[fNprimary] ;
+    for (Int_t i = 0; i < fNprimary ; i++)
+       fPrimary[i]  = digit.fPrimary[i] ;
+  }
+  else
+    fPrimary = 0 ;
   fAmp         = digit.fAmp ;
   fTime        = digit.fTime ;
   fId          = digit.fId;
   fIndexInList = digit.fIndexInList ; 
-  fNprimary    = digit.fNprimary ;
 }
 
 //____________________________________________________________________________
 AliPHOSDigit::~AliPHOSDigit() 
 {
   // Delete array of primiries if any
-  delete [] fPrimary ;
+  if(fPrimary)
+    delete [] fPrimary ;
 }
 
 //____________________________________________________________________________
@@ -137,15 +134,17 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
 //____________________________________________________________________________
 void AliPHOSDigit::Print(Option_t *option) const
 {
-  printf("PHOS digit: Amp=%d, Id=%d\n",fAmp,fId);
+  printf("PHOS digit: Amp=%d, Id=%d, Time=%f, NPrim=%d ",fAmp,fId,fTime,fNprimary);
+  for(Int_t index = 0; index <fNprimary; index ++ )
+    printf(" %d ",fPrimary[index]); 
+  printf("\n") ;
 }
 //____________________________________________________________________________
 void AliPHOSDigit::ShiftPrimary(Int_t shift)
 {
   //shifts primary number to BIG offset, to separate primary in different TreeK
-  Int_t index  ;
-  for(index = 0; index <fNprimary; index ++ ){
-    fPrimary[index] = fPrimary[index]+ shift ;
+  for(Int_t index = 0; index <fNprimary; index ++ ){
+    fPrimary[index]+= shift ;
   } 
 }
 //____________________________________________________________________________
@@ -162,36 +161,32 @@ Bool_t AliPHOSDigit::operator==(AliPHOSDigit const & digit) const
 //____________________________________________________________________________
 AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit) 
 {
-  // Adds the amplitude of digits and completes the list of primary particles
-  // if amplitude is larger than 
-  
-  fAmp += digit.fAmp ;
-  if(fTime > digit.fTime)
-    fTime = digit.fTime ;
-  
-  Int_t max1 = fNprimary ; 
-  
-  Int_t index ; 
-  for (index = 0 ; index < digit.fNprimary ; index++){
-    Bool_t deja = kTRUE ;
-    Int_t old ;
-    for ( old = 0 ; (old < max1) && deja; old++) { //already have this primary?
-      if(fPrimary[old] == (digit.fPrimary)[index])
-	deja = kFALSE;
-    }
-    if(deja){
-      fPrimary[fNprimary] = (digit.fPrimary)[index] ; 
-      fNprimary++ ;
-      if(fNprimary>fNMaxPrimary) {
-	Error("Operator +", "Increase NMaxPrimary") ;
-	return *this ;
-      }
-    }
-  }
-  
-  return *this ;
-}
 
+  // Adds the amplitude of digits and completes the list of primary particles
+  if(digit.fNprimary>0){
+     Int_t *tmp = new Int_t[fNprimary+digit.fNprimary] ;
+     if(fAmp < digit.fAmp){//most energetic primary in second digit => first primaries in list from second digit
+        for (Int_t index = 0 ; index < digit.fNprimary ; index++)
+           tmp[index]=(digit.fPrimary)[index] ;
+        for (Int_t index = 0 ; index < fNprimary ; index++)
+           tmp[index+digit.fNprimary]=fPrimary[index] ;
+     }
+     else{ //add new primaries to the end
+        for (Int_t index = 0 ; index < fNprimary ; index++)
+           tmp[index]=fPrimary[index] ;
+        for (Int_t index = 0 ; index < digit.fNprimary ; index++)
+           tmp[index+fNprimary]=(digit.fPrimary)[index] ;
+     }
+     if(fPrimary)
+       delete []fPrimary ;
+     fPrimary = tmp ;
+   }
+   fNprimary+=digit.fNprimary ;
+   fAmp += digit.fAmp ;
+   if(fTime > digit.fTime)
+      fTime = digit.fTime ;
+   return *this ;
+}
 //____________________________________________________________________________
 AliPHOSDigit& AliPHOSDigit::operator*(Float_t factor) 
 {

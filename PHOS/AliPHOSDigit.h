@@ -53,8 +53,7 @@ class AliPHOSDigit : public AliDigitNew {
  private:
 
   Int_t fNprimary ;        // Number of primaries
-  Int_t fNMaxPrimary ;     //! Max Number of primaries
-  Int_t * fPrimary ;       //[fNMaxPrimary] Array of primaries      
+  Int_t * fPrimary ;       //[fNprimary] Array of primaries      
   Float_t fTime ;          // Calculcated time 
     
   ClassDef(AliPHOSDigit,2)   // Digit in PHOS 
